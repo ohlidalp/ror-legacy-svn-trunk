@@ -1,12 +1,16 @@
-Rigs of Rods Copyright (C) 2007,2008,2009 Pierre-Michel Ricordel
+Copyright 2005,2006,2007,2008,2009 Pierre-Michel Ricordel
+Copyright 2007,2008,2009 Thomas Fischer
 
-This program is a freeware which is offered to you at no cost.
-You can redistribute the installer pack as long as you do not modify it in any way.
+For more information, see http://www.rigsofrods.com/
 
-This program is distributed in the hope that it will entertain you,
+Rigs of Rods is free software: you can redistribute it and/or modify
+it under the terms of the GNU General Public License version 3, as 
+published by the Free Software Foundation.
+
+Rigs of Rods is distributed in the hope that it will be useful,
 but WITHOUT ANY WARRANTY; without even the implied warranty of
-MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+GNU General Public License for more details.
 
-By using this program, you agree that in the case you create and publish
-a content for it (for example a vehicle), you accept that the author can include
-it in the official distribution, however you still retain the copyright of your work.
+You should have received a copy of the GNU General Public License
+along with Rigs of Rods.  If not, see <http://www.gnu.org/licenses/>.
