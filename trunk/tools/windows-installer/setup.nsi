@@ -2,7 +2,7 @@
 
 ; HM NIS Edit Wizard helper defines
 !define PRODUCT_NAME "Rigs of Rods"
-!define PRODUCT_VERSION "0.36 BETA 6"
+!define PRODUCT_VERSION "0.36"
 !define PRODUCT_PUBLISHER "Pierre-Michel Ricordel"
 !define PRODUCT_WEB_SITE "http://www.rigsofrods.com"
 !define PRODUCT_UNINST_KEY "Software\Microsoft\Windows\CurrentVersion\Uninstall\${PRODUCT_NAME}"
