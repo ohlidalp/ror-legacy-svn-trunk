@@ -1,0 +1,13 @@
+material tracks/acontainer
+{
+	technique
+	{
+		pass
+		{
+			texture_unit
+			{
+				texture acontainer.dds
+			}
+		}
+	}
+}

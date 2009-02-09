@@ -1,0 +1,85 @@
+material tracks/flatdaf
+{
+	technique
+	{
+		pass
+		{
+			scene_blend alpha_blend
+			alpha_rejection greater 128 
+			texture_unit
+			{
+				texture flatdaf.dds
+			}
+		}
+		pass
+		{
+			scene_blend add
+			depth_write off
+			lighting off
+			texture_unit
+			{
+				texture flatdaf_emissive.dds
+			}
+		}
+	}
+}
+
+material tracks/flatdafrwheelface
+{
+	technique
+	{
+		pass
+		{
+
+			texture_unit
+			{
+				texture flatdafrwheelface.dds
+			}
+		}
+	}
+}
+
+material tracks/flatdaffwheelface
+{
+	technique
+	{
+		pass
+		{
+
+			texture_unit
+			{
+				texture flatdaffwheelface.dds
+			}
+		}
+	}
+}
+
+material tracks/flatdafwheelband
+{
+	technique
+	{
+		pass
+		{
+
+			texture_unit
+			{
+				texture dafwheelband.dds
+			}
+		}
+	}
+}
+
+material tracks/flatdafhelp
+{
+	technique
+	{
+		pass
+		{
+
+			texture_unit
+			{
+				texture flatdafhelp.dds
+			}
+		}
+	}
+}

@@ -1,0 +1,1 @@
+rorconfig.exe /buildmode

@@ -1,0 +1,13 @@
+material nedlloyd
+{
+	technique
+	{
+		pass
+		{
+			texture_unit
+			{
+				texture nedlloyd.dds
+			}
+		}
+	}
+}

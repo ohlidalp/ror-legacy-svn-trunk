@@ -1,0 +1,14 @@
+material tracks/monorail
+{
+	technique
+	{
+		pass
+		{
+			texture_unit
+			{
+				texture monorail.dds
+			}
+		}
+	}
+}
+

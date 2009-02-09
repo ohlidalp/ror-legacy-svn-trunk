@@ -1,0 +1,1133 @@
+msgid ""
+msgstr ""
+"Project-Id-Version: \n"
+"POT-Creation-Date: \n"
+"PO-Revision-Date: \n"
+"Last-Translator: CommunityTranslate.org\n"
+"Language-Team: CommunityTranslate.org\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+# | communitytranslateid=12643
+msgid "Your network name. Maximum 20 Characters."
+msgstr "Seu nome em rede (no multijogador). Maximo 20 Caracteres."
+
+# | communitytranslateid=14357
+msgid "Your Forum User Token."
+msgstr "Seu fórum Token."
+
+# | communitytranslateid=14306
+msgid "You must save and restart the program to activate the new language!"
+msgstr "Deves guardar as alterações e reiniciar o programa para actuvar a nova linguagem!"
+
+# : source/configurator.cpp:1167
+# | communitytranslateid=11824
+msgid "You do not need to change these settings unless you experience problems"
+msgstr "Não precisas de alterar estas configurações, a não ser que tenhas problemas"
+
+# | communitytranslateid=14425
+msgid "wrote screenshot:"
+msgstr "Fotografia guardada:"
+
+# | communitytranslateid=14363
+msgid "Worst FPS: "
+msgstr "Pior FPS:"
+
+# | communitytranslateid=14307
+msgid "Wheels: "
+msgstr "Rodas:"
+
+# : source/configurator.cpp:1068
+# | communitytranslateid=11784
+msgid "Water type:"
+msgstr "Tipo de água"
+
+# : source/configurator.cpp:1074
+# | communitytranslateid=11788
+msgid "Water spray"
+msgstr "Spray de água"
+
+# : source/configurator.cpp:1070
+# | communitytranslateid=11785
+msgid "Water reflection is slower, and requires a good GPU. In speed optimized mode you may experience excessive camera shaking."
+msgstr "Reflexo da água é mais lento, e precisa de uma boa GPU. Em modo velocidade otimizada você poderá sentir agitação da câmera excessiva."
+
+# | communitytranslateid=14366
+msgid "VSync"
+msgstr "VSync"
+
+# : source/configurator.cpp:1098
+# | communitytranslateid=11800
+msgid "Visual effects"
+msgstr "Efeitos visuais"
+
+# : source/configurator.cpp:1023
+# : source/configurator.cpp:1025
+# | communitytranslateid=11774
+msgid "Video mode:"
+msgstr "Modo Video:"
+
+# | communitytranslateid=14310
+msgid "Vehicle Type: "
+msgstr "Tipo do veículo:"
+
+# : source/configurator.cpp:1082
+# | communitytranslateid=11790
+msgid "Vegetation:"
+msgstr "Vegetação:"
+
+# | communitytranslateid=14416
+msgid "User Token: "
+msgstr "ID do utilizador:"
+
+# : source/configurator.cpp:1956
+# | communitytranslateid=11861
+msgid "Upper"
+msgstr "Alta"
+
+# : source/configurator.cpp:1165
+# | communitytranslateid=11823
+msgid "Update"
+msgstr "Atualizar"
+
+# | communitytranslateid=14349
+msgid "unkown encoding problem"
+msgstr "Problema desconhecido de codificação"
+
+# | communitytranslateid=14351
+msgid "unknown.dds"
+msgstr "Desconhecido.dds"
+
+# : source/configurator.cpp:1189
+# | communitytranslateid=11830
+msgid "Uncheck in case you have a fog problem"
+msgstr "Desmarque no caso de você ter um problema com o nevoeiro"
+
+# | communitytranslateid=14358
+msgid "Unable to connect to the server. It is certainly down or you have network problems."
+msgstr "Não é possível conectar-se ao servidor. É certamente Demora ou problemas de rede."
+
+# : source/configurator.cpp:1300
+# | communitytranslateid=11849
+msgid "Type"
+msgstr "Tipo"
+
+# | communitytranslateid=12642
+msgid "Truck"
+msgstr "camião"
+
+# | communitytranslateid=14422
+msgid "Triangle Count: "
+msgstr "Triângulo cont:"
+
+# | communitytranslateid=14426
+msgid "tracks/CreditsOverlay"
+msgstr "faixas / CréditosOverlay"
+
+# | communitytranslateid=14361
+msgid "Torque: "
+msgstr "Torque:"
+
+# | communitytranslateid=14408
+msgid "tons"
+msgstr "toneladas"
+
+# : source/configurator.cpp:1121
+# : source/configurator.cpp:1122
+# | communitytranslateid=11810
+msgid "Thread number:"
+msgstr "Número de thread:"
+
+# | communitytranslateid=14308
+msgid "This setting overrides the system's default language. You need to restart the configurator to apply the changes."
+msgstr "Essa configuração substitui o sistema padrão da língua. Você precisará reiniciar o configurador para aplicar as alterações."
+
+# : source/configurator.cpp:1089
+# | communitytranslateid=11794
+msgid "This may hurt framerate a bit on old systems, but it looks pretty good."
+msgstr "Pode tornar o jogo mais lento em sistemas mais antigos, mas fica bastante bem."
+
+# : source/configurator.cpp:1085
+# | communitytranslateid=11791
+msgid "This determines how much grass and how many trees (and such objects) should get displayed."
+msgstr "Esta determina quanta grama e quantas árvores (e os objectos), deverá obter exibido."
+
+# : source/configurator.cpp:1161
+# | communitytranslateid=11822
+msgid "The server password, if required."
+msgstr "A senha do servidor, se for necessário."
+
+# : source/configurator.cpp:1035
+# : source/configurator.cpp:1037
+# | communitytranslateid=11776
+msgid "Texture filtering:"
+msgstr "Filtro de textura"
+
+# : source/configurator.cpp:994
+# | communitytranslateid=11768
+msgid "Test"
+msgstr "Testar"
+
+# | communitytranslateid=14309
+msgid "Terrain not found: "
+msgstr "Terreno não encontrado:"
+
+# | communitytranslateid=14312
+msgid "Terrain loading error"
+msgstr "Erro no carregamento do terreno"
+
+# : source/configurator.cpp:1099
+# | communitytranslateid=11801
+msgid "Sunburn"
+msgstr "Queimadura solar"
+
+# | communitytranslateid=14311
+msgid "Startup error"
+msgstr "Erro de inicialização"
+
+# : source/configurator.cpp:1048
+# | communitytranslateid=11780
+msgid "Special effects"
+msgstr "Efeitos Especiais"
+
+# : source/configurator.cpp:938
+# | communitytranslateid=11762
+msgid "Sounds"
+msgstr "Sons"
+
+# : source/configurator.cpp:1114
+# : source/configurator.cpp:1117
+# | communitytranslateid=11809
+msgid "Sound rendering:"
+msgstr "Som:"
+
+# : source/configurator.cpp:1052
+# | communitytranslateid=11781
+msgid "Sky type:"
+msgstr "Tipo de Céu:"
+
+# | communitytranslateid=14320
+msgid "Simple Settings"
+msgstr "Configurações simples"
+
+# : source/configurator.cpp:1097
+# | communitytranslateid=11799
+msgid "Shows the rear view mirrors in 1st person view. May cause compatibility problems for very old video cards."
+msgstr "Mostra os espelhos retrovisores, em 1a pessoa vista. Pode causar problemas de compatibilidade em antigas placas."
+
+# : source/configurator.cpp:1198
+# | communitytranslateid=11836
+msgid "Shows the dynamic dashboard in 1st person view. May cause compatibility problems for very old video cards."
+msgstr "Mostra o painel dinâmico em 1a pessoa vista. Pode causar problemas de compatibilidade muito antigas placas."
+
+# : source/configurator.cpp:1207
+# | communitytranslateid=11842
+msgid "Shows all Collision meshes in Red to be able to position them correctly. Only use for debugging!"
+msgstr "Mostra todas as malhas de colisão em vermelho para ser capaz de posição-los corretamente. Só uso para depuração!"
+
+# : source/configurator.cpp:1059
+# : source/configurator.cpp:1061
+# | communitytranslateid=11783
+msgid "Shadow type:"
+msgstr "Tipo de Sombra:"
+
+# | communitytranslateid=14412
+msgid "Sets all settings in a simple way"
+msgstr "Coloca todas as opções numa forma simples"
+
+# : source/configurator.cpp:1148
+# : source/configurator.cpp:1507
+# | communitytranslateid=11819
+msgid "Server port number: "
+msgstr "Número da Porta do servidor:"
+
+# : source/configurator.cpp:1154
+# | communitytranslateid=11821
+msgid "Server password: "
+msgstr "Senha do servidor:"
+
+# : source/configurator.cpp:1144
+# : source/configurator.cpp:1505
+# | communitytranslateid=11817
+msgid "Server host name: "
+msgstr "Nome do servidor de acolhimento:"
+
+# | communitytranslateid=14314
+msgid "Search"
+msgstr "Pesquisa"
+
+# : source/configurator.cpp:1171
+# | communitytranslateid=11825
+msgid "Screenshot Format:"
+msgstr "Formato de imagem:"
+
+# : source/configurator.cpp:1007
+# | communitytranslateid=11771
+msgid "Screen configuration"
+msgstr "Configuração de tela"
+
+# : source/configurator.cpp:920
+# | communitytranslateid=11757
+msgid "Save the current configuration and start RoR."
+msgstr "Gravar a configuração atual e dar início ao RoR."
+
+# : source/configurator.cpp:924
+# | communitytranslateid=11759
+msgid "Save the current configuration and close the configuration program."
+msgstr "Gravar a configuração atual e fechar o programa."
+
+# : source/configurator.cpp:918
+# : source/configurator.cpp:927
+# | communitytranslateid=11756
+msgid "Save and Play"
+msgstr "Gravar e Jogar"
+
+# : source/configurator.cpp:921
+# | communitytranslateid=11758
+msgid "Save and Exit"
+msgstr "Gravar e Sair"
+
+# : source/configurator.cpp:1014
+# : source/configurator.cpp:1019
+# : source/configurator.cpp:1021
+# | communitytranslateid=11773
+msgid "RTT Mode:"
+msgstr "Modo RTT"
+
+# : source/configurator.cpp:897
+# | communitytranslateid=11751
+msgid "Rigs of Rods configuration"
+msgstr "Configuração do Rigs of Rods"
+
+# : source/configurator.cpp:1953
+# | communitytranslateid=11859
+msgid "reverse axis"
+msgstr "Eixo Invertido"
+
+# : source/configurator.cpp:1950
+# | communitytranslateid=11858
+msgid "Reverse"
+msgstr "Invertida"
+
+# : source/configurator.cpp:917
+# : source/configurator.cpp:926
+# | communitytranslateid=11755
+msgid "Restore the default configuration."
+msgstr "Restaurar a configuração padrão."
+
+# : source/configurator.cpp:915
+# | communitytranslateid=11754
+msgid "Restore Defaults"
+msgstr "Restaurar Padrões"
+
+# : source/configurator.cpp:1105
+# | communitytranslateid=11806
+msgid "Requires a recent video card. Adds a motion blur effect."
+msgstr "Necessita de uma recente placa de vídeo. Adiciona um efeito blur do movimento."
+
+# : source/configurator.cpp:1102
+# | communitytranslateid=11804
+msgid "Requires a recent video card. Adds a light blurring effect."
+msgstr "Necessita de uma recente placa de vídeo. Acrescenta-se uma luz esbater efeito."
+
+# : source/configurator.cpp:1100
+# | communitytranslateid=11802
+msgid "Requires a recent video card. Adds a bluish blinding effect."
+msgstr "Necessita de uma recente placa de vídeo. Adiciona um efeito azulado."
+
+# : source/configurator.cpp:1201
+# | communitytranslateid=11838
+msgid "Replay mode. (Can affect your frame rate)"
+msgstr "Modo de Replay (Pode afetar seu frame rate)"
+
+# : source/configurator.cpp:1199
+# | communitytranslateid=11837
+msgid "Replay Mode"
+msgstr "Modo de Replay"
+
+# : source/configurator.cpp:1962
+# | communitytranslateid=11864
+msgid "Region"
+msgstr "Região"
+
+# : source/configurator.cpp:1204
+# | communitytranslateid=11840
+msgid "Prints all node masses to the RoR.log. Only use for truck debugging!"
+msgstr "Adiciona todas os pesos para o nó RoR.log. Apenas para uso camião depuração!"
+
+# : source/configurator.cpp:316
+# | communitytranslateid=11733
+msgid "Please select an input event."
+msgstr "Selecione um evento."
+
+# | communitytranslateid=14313
+msgid "Please clear the place first"
+msgstr "Por favor limpe o local Primeiro"
+
+# : source/configurator.cpp:1195
+# | communitytranslateid=11834
+msgid "Particles like water cannons or plain trails. Can be over-used in Multiplayer."
+msgstr "Partículas como mangueiras de água ou trilhas de aviões. Pode ser usado em excesso no modo Multijogador."
+
+# : source/configurator.cpp:1086
+# | communitytranslateid=11792
+msgid "Particle systems"
+msgstr "Sistemas de partículas"
+
+# : source/configurator.cpp:1833
+# | communitytranslateid=11851
+msgid "Options"
+msgstr "Opções"
+
+# : source/configurator.cpp:494
+# : source/configurator.cpp:500
+# | communitytranslateid=11742
+msgid "ok (end test)"
+msgstr "ok (fim do teste)"
+
+# | communitytranslateid=14315
+msgid "OK"
+msgstr "OK"
+
+# : source/configurator.cpp:1838
+# | communitytranslateid=11852
+msgid "Ogre config validation error"
+msgstr "Validação erro da configuração do Ogre"
+
+# : source/configurator.cpp:1854
+# | communitytranslateid=11854
+msgid "Ogre config error"
+msgstr "Erro da configuração do Ogre"
+
+# : source/configurator.cpp:1192
+# | communitytranslateid=11832
+msgid "Not much impact on speed."
+msgstr "Não há muito impacto na velocidade."
+
+# | communitytranslateid=14328
+msgid "normal camera"
+msgstr "Câmera normal"
+
+# | communitytranslateid=14419
+msgid "Non-Driveable"
+msgstr "não dirigível"
+
+# | communitytranslateid=14430
+msgid "Nodes: "
+msgstr "Nós:"
+
+# | communitytranslateid=14433
+msgid "node count: "
+msgstr "Contas de nós:"
+
+# : source/configurator.cpp:1076
+# | communitytranslateid=11789
+msgid "No effect unless you mess with water, looks pretty good also."
+msgstr "Nenhum efeito a menos que você entrar na água, parece bem agradável também."
+
+# : source/configurator.cpp:1966
+# | communitytranslateid=11867
+msgid "no deadzone"
+msgstr "sem zona-morta"
+
+# | communitytranslateid=14339
+msgid "no author information available"
+msgstr "Nenhuma informação do autor disponível"
+
+# : source/configurator.cpp:1133
+# : source/configurator.cpp:1503
+# | communitytranslateid=11813
+msgid "Nickname: "
+msgstr "Apelido:"
+
+# | communitytranslateid=14319
+msgid "new Language selected"
+msgstr "Nova língua selecionada!"
+
+# : source/configurator.cpp:997
+# | communitytranslateid=11769
+msgid "Network"
+msgstr "Rede"
+
+# : source/configurator.cpp:498
+# | communitytranslateid=11744
+msgid "mousecfg.bmp"
+msgstr "mousecfg.bmp"
+
+# : source/configurator.cpp:1103
+# | communitytranslateid=11805
+msgid "Motion blur"
+msgstr "Moção de borrão"
+
+# : source/configurator.cpp:1095
+# | communitytranslateid=11798
+msgid "Mirrors"
+msgstr "Espelhos"
+
+# : source/configurator.cpp:1216
+# : source/configurator.cpp:1296
+# | communitytranslateid=11847
+msgid "minimum visibility range in percent"
+msgstr "intervalo mínimo de visibilidade  em por cento"
+
+# | communitytranslateid=14332
+msgid "max Speed:"
+msgstr "Velocidade máxima:"
+
+# | communitytranslateid=14338
+msgid "Mass: "
+msgstr "Massa/peso:"
+
+# | communitytranslateid=14342
+msgid "Manual shift - Auto clutch"
+msgstr "Marcha manual - Desenbraio automático"
+
+# | communitytranslateid=14331
+msgid "Machine"
+msgstr "Máquina"
+
+# : source/configurator.cpp:1960
+# | communitytranslateid=11863
+msgid "Lower"
+msgstr "Baixa"
+
+# | communitytranslateid=14427
+msgid "Loader"
+msgstr "Carga"
+
+# | communitytranslateid=14325
+msgid "List"
+msgstr "Lista"
+
+# : source/configurator.cpp:1180
+# : source/configurator.cpp:1182
+# : source/configurator.cpp:1184
+# | communitytranslateid=11827
+msgid "Light source effects:"
+msgstr "Efeitos fonte luminosa:"
+
+# | communitytranslateid=14324
+msgid "Language:"
+msgstr "Língua:"
+
+# : source/configurator.cpp:504
+# | communitytranslateid=11745
+msgid "keyboardcfg.bmp"
+msgstr "keyboardcfg.bmp"
+
+# : source/configurator.cpp:312
+# | communitytranslateid=11732
+msgid "Keyboard"
+msgstr "Teclado"
+
+# : source/configurator.cpp:1302
+# | communitytranslateid=11850
+msgid "Key/Axis"
+msgstr "Tecla/Eixo"
+
+# : source/configurator.cpp:1950
+# | communitytranslateid=11857
+msgid "Joystick Options"
+msgstr "Opções do Joystick"
+
+# : source/configurator.cpp:1954
+# | communitytranslateid=11860
+msgid "Joystick Axis Region"
+msgstr "Região eixo do joystick"
+
+# : source/configurator.cpp:1963
+# | communitytranslateid=11865
+msgid "Joystick Axis Deadzones"
+msgstr "Zona-morta do eixo no Joystick"
+
+# : source/configurator.cpp:496
+# | communitytranslateid=11743
+msgid "joycfg.bmp"
+msgstr "joycfg.bmp"
+
+# : source/configurator.cpp:323
+# : source/configurator.cpp:976
+# | communitytranslateid=11734
+msgid "Input Type: "
+msgstr "Tipo de entrada:"
+
+# : source/configurator.cpp:1173
+# | communitytranslateid=11826
+msgid "In what Format should screenshots be saved?"
+msgstr "Em qual formato as imagens serão salvas?"
+
+# : source/configurator.cpp:983
+# | communitytranslateid=11766
+msgid "Import Keymap"
+msgstr "Importar Keymap"
+
+# | communitytranslateid=14410
+msgid "If you use XFire, you can switch on this option to generate a more detailed game info."
+msgstr "Se usas XFire, podes activar esta opção para gerar informação do jogo mais detalhada."
+
+# | communitytranslateid=14434
+msgid "If you dislike the pitching external vehicle camera, you can disable it here."
+msgstr "Se você não gosta da câmera externa do veículo, você pode desactivar isso aqui."
+
+# : source/configurator.cpp:1208
+# | communitytranslateid=11843
+msgid "Hydrax Water System"
+msgstr "Sistema de água Hydrax"
+
+# : source/configurator.cpp:1106
+# | communitytranslateid=11807
+msgid "High quality reflective effects"
+msgstr "Alta qualidade de efeitos reflexivos"
+
+# | communitytranslateid=14321
+msgid "High Quality"
+msgstr "Alta qualidade"
+
+# | communitytranslateid=14322
+msgid "High Performance"
+msgstr "Alto desenpenho"
+
+# | communitytranslateid=14350
+msgid "here you can get help"
+msgstr "Aqui você pode obter ajuda"
+
+# : source/configurator.cpp:1090
+# | communitytranslateid=11795
+msgid "HeatHaze"
+msgstr "Névoa de Calor"
+
+# : source/configurator.cpp:1093
+# | communitytranslateid=11796
+msgid "Heat Haze from engines, major slowdown. (only activate with recent hardware)"
+msgstr "Névoa de Calore motores, grande abrandamento. (apenas activar a recente hardware)"
+
+# | communitytranslateid=14327
+msgid "health: "
+msgstr "Saúde:"
+
+# | communitytranslateid=14347
+msgid "Graphics Settings"
+msgstr "Configurações de gráfico"
+
+# : source/configurator.cpp:935
+# | communitytranslateid=11761
+msgid "Graphics"
+msgstr "Gráficos"
+
+# | communitytranslateid=14341
+msgid "Fully Manual shift"
+msgstr "Câmbio/marcha totalmente manual"
+
+# : source/configurator.cpp:1043
+# | communitytranslateid=11778
+msgid "Full screen mode uses a bit less memory resources"
+msgstr "Modo de tela cheia usa um pouco menos de recursos de memória"
+
+# : source/configurator.cpp:1041
+# | communitytranslateid=11777
+msgid "Full screen"
+msgstr "Tela cheia"
+
+# : source/configurator.cpp:1958
+# | communitytranslateid=11862
+msgid "Full"
+msgstr "Cheio/total"
+
+# | communitytranslateid=14343
+msgid "free camera"
+msgstr "Câmera livre"
+
+# : source/configurator.cpp:1187
+# | communitytranslateid=11829
+msgid "Fog"
+msgstr "Nevoeiro"
+
+# | communitytranslateid=14346
+msgid "fixed free camera"
+msgstr "Câmera fixa e livre"
+
+# : source/configurator.cpp:986
+# | communitytranslateid=11767
+msgid "Export Keymap"
+msgstr "Exportar Keymap"
+
+# : source/configurator.cpp:394
+# | communitytranslateid=11741
+msgid "Event Value (left = 0%, right = 100%)"
+msgstr "Valor do evento (esquerda = 0%, direita = 100%)"
+
+# SOME DESCRIPTIVE TITLE.
+# Copyright (C) YEAR THE PACKAGE'S COPYRIGHT HOLDER
+# This file is distributed under the same license as the PACKAGE package.
+# FIRST AUTHOR <EMAIL@ADDRESS>, YEAR.
+# : source/configurator.cpp:298
+# : source/configurator.cpp:308
+# : source/configurator.cpp:321
+# | communitytranslateid=11731
+msgid "Event Name: "
+msgstr "Nome do Evento:"
+
+# : source/configurator.cpp:393
+# | communitytranslateid=11740
+msgid "Event Name"
+msgstr "Nome do evento"
+
+# : source/configurator.cpp:392
+# | communitytranslateid=11739
+msgid "Event Description: "
+msgstr "Descrição do Evento"
+
+# : source/configurator.cpp:1298
+# | communitytranslateid=11848
+msgid "Event"
+msgstr "Evento"
+
+# | communitytranslateid=14432
+msgid "Error while retrieving user space path"
+msgstr "Erro ao usuário recuperar espaço do caminho"
+
+# | communitytranslateid=14431
+msgid "Error while retrieving program space path"
+msgstr "Erro ao recuperar caminho do espaço do programa"
+
+# : source/configurator.cpp:1190
+# | communitytranslateid=11831
+msgid "Engine smoke"
+msgstr "Fumaça do motor"
+
+# : source/configurator.cpp:1073
+# | communitytranslateid=11787
+msgid "Enabling waves adds a lot of fun in boats, but can have a big performance impact on some specific hardwares."
+msgstr "A ativação das ondas acrescenta muita diversão em barcos, mas pode ter um grande impacto sobre o desempenho em alguns hardwares específicos."
+
+# : source/configurator.cpp:1210
+# | communitytranslateid=11844
+msgid "Enables the new water rendering system. EXPERIMENTAL. Overrides any water settings."
+msgstr "Permite que o novo sistema de fusão da água. EXPERIMENTAL. Sobrepõe qualquer água configurações."
+
+# | communitytranslateid=14414
+msgid "Enable XFire Extension"
+msgstr "Activar extenção XFire"
+
+# : source/configurator.cpp:1071
+# | communitytranslateid=11786
+msgid "Enable waves"
+msgstr "Ativar ondas"
+
+# | communitytranslateid=14435
+msgid "Enable Visual Beam Debug"
+msgstr "Ativar Depuração Visual beam"
+
+# : source/configurator.cpp:1129
+# : source/configurator.cpp:1132
+# | communitytranslateid=11812
+msgid "Enable network mode"
+msgstr "Ativar modo de rede"
+
+# : source/configurator.cpp:1109
+# | communitytranslateid=11808
+msgid "Enable high quality reflective effects. Causes a slowdown."
+msgstr "Ativar efeitos de alta qualidade  de effeito reflexiva. Provoca uma desaceleração."
+
+# : source/configurator.cpp:1123
+# : source/configurator.cpp:1128
+# | communitytranslateid=11811
+msgid "Enable advanced wheel model"
+msgstr "Ativar o modelo avançado de rodas"
+
+# : source/configurator.cpp:1087
+# | communitytranslateid=11793
+msgid "Dust"
+msgstr "Poeira"
+
+# | communitytranslateid=14436
+msgid "Displays node numbers and more info along nodes and beams."
+msgstr "Exibe números de nó e mais informação ao longo nós e vigas"
+
+# : source/configurator.cpp:1213
+# | communitytranslateid=11846
+msgid "Disabled the map. This is for testing purposes only, you should not gain any FPS with that."
+msgstr "Desativa o  mapa. Este é apenas para fins de teste, não deve aumentar o FPS qualquer FPS com isso."
+
+# : source/configurator.cpp:1211
+# | communitytranslateid=11845
+msgid "Disable Overview Map"
+msgstr "Desativar o mapa geral"
+
+# | communitytranslateid=14409
+msgid "Disable Camera Pitching"
+msgstr "desactivar a camera de lançamento"
+
+# : source/configurator.cpp:1009
+# : source/configurator.cpp:1012
+# : source/configurator.cpp:1017
+# | communitytranslateid=11772
+msgid "Device:"
+msgstr "Dispositivo:"
+
+# | communitytranslateid=14334
+msgid "destruction: "
+msgstr "Destruição:"
+
+# : source/configurator.cpp:981
+# | communitytranslateid=11765
+msgid "Delete selected"
+msgstr "Apagar selecionados"
+
+# | communitytranslateid=14330
+msgid "deformed: "
+msgstr "Deformado:"
+
+# : source/configurator.cpp:1202
+# | communitytranslateid=11839
+msgid "Debug Truck Mass"
+msgstr "Depurar o peso do caminhão"
+
+# : source/configurator.cpp:1205
+# | communitytranslateid=11841
+msgid "Debug Collision Meshes"
+msgstr "Depurar colisões de malhas"
+
+# : source/configurator.cpp:2276
+# : source/configurator.cpp:2287
+# | communitytranslateid=11878
+msgid "Deadzone"
+msgstr "Zona-morta"
+
+# : source/configurator.cpp:900
+# : source/configurator.cpp:902
+# : source/configurator.cpp:908
+# | communitytranslateid=11752
+msgid "data\\\\config.bmp"
+msgstr "data\\\\config.bmp"
+
+# : source/configurator.cpp:507
+# : source/configurator.cpp:510
+# | communitytranslateid=11746
+msgid "data\\\\"
+msgstr "data\\\\"
+
+# : source/configurator.cpp:914
+# | communitytranslateid=11753
+msgid "data/config.bmp"
+msgstr "data/config.bmp"
+
+# : source/configurator.cpp:565
+# | communitytranslateid=11747
+msgid "data/"
+msgstr "data/"
+
+# : source/configurator.cpp:1196
+# | communitytranslateid=11835
+msgid "Dashboard"
+msgstr "Painel"
+
+# : source/configurator.cpp:1193
+# | communitytranslateid=11833
+msgid "Custom Particles"
+msgstr "Partículas Personalizados"
+
+# | communitytranslateid=14323
+msgid "current Speed:"
+msgstr "Velocidade atual:"
+
+# | communitytranslateid=14353
+msgid "current RPM:"
+msgstr "RPM atual:"
+
+# | communitytranslateid=14354
+msgid "current mass:"
+msgstr "Massa/peso atual"
+
+# | communitytranslateid=14348
+msgid "Current FPS: "
+msgstr "Actual FPS:"
+
+# | communitytranslateid=14336
+msgid "CPU Settings"
+msgstr "Configurações da CPU"
+
+# : source/configurator.cpp:941
+# | communitytranslateid=11763
+msgid "CPU"
+msgstr "CPU"
+
+# : source/configurator.cpp:1854
+# | communitytranslateid=11855
+msgid "Could not write config file"
+msgstr "Não foi possível gravar arquivo de configuração"
+
+# : source/configurator.cpp:1838
+# | communitytranslateid=11853
+msgid "Could not open Rendering device"
+msgstr "Não foi possível ativar o dispositivo 3D"
+
+# : source/configurator.cpp:977
+# | communitytranslateid=11764
+msgid "Controls"
+msgstr "Controles"
+
+# : source/configurator.cpp:1948
+# | communitytranslateid=11856
+msgid "Configure error"
+msgstr "Erro de Configuração"
+
+# | communitytranslateid=14345
+msgid "Community / Support"
+msgstr "Cominidade/Ajuda"
+
+# | communitytranslateid=14335
+msgid "Commands:"
+msgstr "Comandos:"
+
+# : source/configurator.cpp:1094
+# | communitytranslateid=11797
+msgid "Cockpit options"
+msgstr "Opções do cockpit"
+
+# : source/configurator.cpp:336
+# | communitytranslateid=11738
+msgid "close this dialog"
+msgstr "Feche esta janela"
+
+# : source/configurator.cpp:1186
+# | communitytranslateid=11828
+msgid "Clear cache"
+msgstr "Limpar cache"
+
+# : source/configurator.cpp:932
+# | communitytranslateid=11760
+msgid "Cancel the configuration changes and close the configuration program."
+msgstr "Cancelar as alterações (na configuração) e fechar o programa de configuração."
+
+# : source/configurator.cpp:327
+# | communitytranslateid=11737
+msgid "Cancel"
+msgstr "Cancelar"
+
+# : source/configurator.cpp:1054
+# | communitytranslateid=11782
+msgid "Caelum sky is nice but quite slow unless you have a high-powered GPU."
+msgstr "O céu Caelum é agradável, mas é muito lento, a menos que você tenha uma GPU de alta potência."
+
+# | communitytranslateid=14318
+msgid "broken: "
+msgstr "Quebra:"
+
+# | communitytranslateid=14316
+msgid "Boat"
+msgstr "Barco"
+
+# : source/configurator.cpp:1101
+# | communitytranslateid=11803
+msgid "Bloom"
+msgstr "Bloom"
+
+# | communitytranslateid=14360
+msgid "Best FPS: "
+msgstr "Melhor FPS:"
+
+# | communitytranslateid=14421
+msgid "beam count: "
+msgstr "numero de vigas:"
+
+# | communitytranslateid=14344
+msgid "Balanced"
+msgstr "Balanceado"
+
+# | communitytranslateid=14355
+msgid "Bad server port"
+msgstr "Prota do servidor errada/incorreta"
+
+# | communitytranslateid=14356
+msgid "average stress: "
+msgstr "Média de tensão:"
+
+# | communitytranslateid=14362
+msgid "Average FPS: "
+msgstr "FPS médio:"
+
+# | communitytranslateid=14359
+msgid "average deformation: "
+msgstr "deformação média:"
+
+# | communitytranslateid=14340
+msgid "Automatic shift"
+msgstr "Marcha/câmbio automático"
+
+# | communitytranslateid=14333
+msgid "Authors: "
+msgstr "Autores:"
+
+# : source/configurator.cpp:1027
+# : source/configurator.cpp:1029
+# | communitytranslateid=11775
+msgid "Anti-aliasing:"
+msgstr "Anti-aliasing:"
+
+# : source/configurator.cpp:1134
+# | communitytranslateid=11814
+msgid "Anonymous"
+msgstr "Anônimos"
+
+# | communitytranslateid=14326
+msgid "Altitude:"
+msgstr "Altitude:"
+
+# | communitytranslateid=14329
+msgid "Airplane"
+msgstr "Avião"
+
+# : source/configurator.cpp:1003
+# | communitytranslateid=11770
+msgid "Advanced"
+msgstr "Avançado"
+
+# : source/configurator.cpp:326
+# : source/configurator.cpp:923
+# | communitytranslateid=11736
+msgid "Add the key"
+msgstr "Adicionar a palrava-chave"
+
+# : source/configurator.cpp:324
+# | communitytranslateid=11735
+msgid "Add"
+msgstr "Adicionar"
+
+# | communitytranslateid=14337
+msgid "A network error occured"
+msgstr "Foi encontrado um erro do servidor"
+
+# : source/configurator.cpp:1969
+# | communitytranslateid=11869
+msgid "5% deadzone"
+msgstr "5% de zona-morta"
+
+# : source/configurator.cpp:1966
+# , c-format
+# | communitytranslateid=11868
+msgid "5 %"
+msgstr "5 %"
+
+# : source/configurator.cpp:1981
+# | communitytranslateid=11877
+msgid "30% deadzone"
+msgstr "30% de zona-morta"
+
+# : source/configurator.cpp:1978
+# , c-format
+# | communitytranslateid=11876
+msgid "30 %"
+msgstr "30 %"
+
+# : source/configurator.cpp:1978
+# | communitytranslateid=11875
+msgid "20% deadzone"
+msgstr "20% de zona-morta"
+
+# : source/configurator.cpp:1975
+# , c-format
+# | communitytranslateid=11874
+msgid "20 %"
+msgstr "20 %"
+
+# : source/configurator.cpp:1975
+# | communitytranslateid=11873
+msgid "15% deadzone"
+msgstr "15% de Zona-morta"
+
+# : source/configurator.cpp:1972
+# , c-format
+# | communitytranslateid=11872
+msgid "15 %"
+msgstr "15 %"
+
+# : source/configurator.cpp:1145
+# : source/configurator.cpp:1149
+# : source/configurator.cpp:1147
+# | communitytranslateid=11818
+msgid "127.0.0.1"
+msgstr "127.0.0.1"
+
+# : source/configurator.cpp:1152
+# | communitytranslateid=11820
+msgid "12333"
+msgstr "12333"
+
+# : source/configurator.cpp:1972
+# | communitytranslateid=11871
+msgid "10% deadzone"
+msgstr "10% de zona-morta"
+
+# : source/configurator.cpp:1969
+# , c-format
+# | communitytranslateid=11870
+msgid "10 %"
+msgstr "10 %"
+
+# : source/configurator.cpp:1963
+# | communitytranslateid=11866
+msgid "0 % (No deadzone)"
+msgstr "0% (sem zona-morta)"
+
+# : source/configurator.cpp:1141
+# : source/configurator.cpp:1143
+# | communitytranslateid=11816
+msgid "<p>How to play in Multiplayer:</p><br><ol><li>Click on the <b>Update</b> button to see available servers here.</li><li>Click on any underlined Server in the list.</li><li>Click on <b>Save and Play</b> button to start the game.</li></ol>"
+msgstr "<p> Como jogar em Multiplayer: </ p> <br> <ol> <li> <b> Clique no botão Atualizar </ b> para ver os servidores disponíveis aqui. </ li> <li> Clique em qualquer Servidor sublinhado na lista. </ li> <li> Clique em Salvar e <b> Play </ b> botão para iniciar o jogo. </ li> </ ol>"
+
+# : source/configurator.cpp:587
+# | communitytranslateid=11748
+msgid "(Please press a key)"
+msgstr "Aperte uma tecla"
+
+# : source/configurator.cpp:613
+# | communitytranslateid=11749
+msgid "(Please press a Joystick Button)"
+msgstr "Aperte um botão do joystick"
+
+# : source/configurator.cpp:829
+# | communitytranslateid=11750
+msgid "(Please move an Axis)\n"
+msgstr "(Por favor mover um Eixo) \n"
+
+# | communitytranslateid=14317
+msgid "(No Languages found)"
+msgstr "(Nenhuma Língua encontrada!)"
+
+# | communitytranslateid=14352
+msgid "(no author information available)"
+msgstr "(Nenhuma informação do autor disponível)"
+
+# | communitytranslateid=14411
+msgid "^8 Player: ^7"
+msgstr "^8 jogador: ^7"
+
+# | communitytranslateid=14429
+msgid "^1 usage: /rcmd [command] [optional arguments]"
+msgstr "^ 1 uso: / rcmd [comando] [argumentos opcionais]"
+
+# | communitytranslateid=14364
+msgid "^1 unkown Command: "
+msgstr "^1 comando desconhecido:"
+
+# | communitytranslateid=14428
+msgid "^1 ERROR: you must use /rlogin [password] first"
+msgstr "^ 1 ERRO: você deve utilizar / rlogin [senha] primeiro"
+
+# | communitytranslateid=14415
+msgid "^1 ERROR: protocol error while trying to send command to RCON: "
+msgstr "^1 ERRO:Erro de protocolo enquanto tentava enviar comando ao RCON:"
+
+# | communitytranslateid=14413
+msgid "^1 ERROR: protocol error while trying to log into RCON: "
+msgstr "^1 ERRO: Erro de protocolo enquanto tentava ligar ao RCON:"
+
+# | communitytranslateid=14365
+msgid "^1 ERROR: not in network mode"
+msgstr "^1 ERRO: Não está em modo rede"
+
+# | communitytranslateid=14417
+msgid "^1 Error Parsing command"
+msgstr "^1 Erro de analise de comando"
+

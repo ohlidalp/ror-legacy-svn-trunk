@@ -1,0 +1,14 @@
+material chp
+{
+	technique
+	{
+		pass
+		{
+			texture_unit
+			{
+				texture chp.dds
+			}
+		}
+	}
+}
+

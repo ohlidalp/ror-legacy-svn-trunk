@@ -1,0 +1,13 @@
+material tracks/semiflat
+{
+	technique
+	{
+		pass
+		{
+			texture_unit
+			{
+				texture semiflat.dds
+			}
+		}
+	}
+}

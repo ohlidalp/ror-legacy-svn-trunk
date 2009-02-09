@@ -1,0 +1,28 @@
+material tracks/3Duptex
+{
+	technique
+	{
+		pass
+		{
+			texture_unit
+			{
+				texture dashboard.dds
+			}
+		}
+	}
+}
+
+material tracks/dashblend
+{
+	technique
+	{
+		pass
+		{
+			scene_blend add
+			texture_unit
+			{
+				texture dashblend.dds
+			}
+		}
+	}
+}

@@ -1,0 +1,13 @@
+/!CHANGELOG.txt/1.3/Wed Mar 14 15:14:18 2007//Tv1-4-5
+/!DEPENDENCIES.txt/1.1/Fri Dec 22 14:30:48 2006//Tv1-4-5
+/!LGPL.txt/1.1/Fri Dec 22 14:30:48 2006//Tv1-4-5
+/!README.txt/1.1/Fri Dec 22 14:30:48 2006//Tv1-4-5
+/Copy_Ogre_Debug_Dlls_And_Inject_Manifests_To_InstallData.bat/1.1/Fri Dec 22 14:30:48 2006//Tv1-4-5
+/Copy_Ogre_Release_Dlls_To_InstallData.bat/1.1/Fri Dec 22 14:30:48 2006//Tv1-4-5
+/LEXIExport.sln/1.3/Wed Jan 31 18:04:00 2007//Tv1-4-5
+D/Config////
+D/GDIMetaLib////
+D/GDITestApp////
+D/LexiExport////
+D/LexiExportInstall////
+D/SharedUtilities////

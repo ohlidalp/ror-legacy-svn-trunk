@@ -1,0 +1,1133 @@
+msgid ""
+msgstr ""
+"Project-Id-Version: \n"
+"POT-Creation-Date: \n"
+"PO-Revision-Date: \n"
+"Last-Translator: CommunityTranslate.org\n"
+"Language-Team: CommunityTranslate.org\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+# | communitytranslateid=12636
+msgid "Your network name. Maximum 20 Characters."
+msgstr "A network neved. Maximum 20 karakter."
+
+# | communitytranslateid=14247
+msgid "Your Forum User Token."
+msgstr "A forum felhasználód jele."
+
+# | communitytranslateid=14600
+msgid "You must save and restart the program to activate the new language!"
+msgstr "Mentsd el majd indítsd újra a játékot a nyelv aktiválásához!"
+
+# : source/configurator.cpp:1167
+# | communitytranslateid=11381
+msgid "You do not need to change these settings unless you experience problems"
+msgstr "Nem kell ezeket az adatokat megvátoztasd míg hibát nem eszlelsz."
+
+# | communitytranslateid=14259
+msgid "wrote screenshot:"
+msgstr "fénykép neve:"
+
+# | communitytranslateid=14251
+msgid "Worst FPS: "
+msgstr "Leg kisebb FPS:"
+
+# | communitytranslateid=14284
+msgid "Wheels: "
+msgstr "Kerekek:"
+
+# : source/configurator.cpp:1068
+# | communitytranslateid=11341
+msgid "Water type:"
+msgstr "Víz tipusa:"
+
+# : source/configurator.cpp:1074
+# | communitytranslateid=11345
+msgid "Water spray"
+msgstr "Víz spray"
+
+# : source/configurator.cpp:1070
+# | communitytranslateid=11342
+msgid "Water reflection is slower, and requires a good GPU. In speed optimized mode you may experience excessive camera shaking."
+msgstr "A vízvisszatükröződés lassabb, és igényel egy jó CPU-t."
+
+# : source/configurator.cpp:1044
+# : source/configurator.cpp:1046
+# | communitytranslateid=11336
+msgid "VSync"
+msgstr "VSync"
+
+# : source/configurator.cpp:1098
+# | communitytranslateid=11357
+msgid "Visual effects"
+msgstr "Látható effektek"
+
+# : source/configurator.cpp:1023
+# : source/configurator.cpp:1025
+# | communitytranslateid=11331
+msgid "Video mode:"
+msgstr "Videó Mód:"
+
+# | communitytranslateid=14293
+msgid "Vehicle Type: "
+msgstr "Jármű tipus:"
+
+# : source/configurator.cpp:1082
+# | communitytranslateid=11347
+msgid "Vegetation:"
+msgstr "Növényzet:"
+
+# | communitytranslateid=14617
+msgid "User Token: "
+msgstr "Felhasználo jele:"
+
+# : source/configurator.cpp:1956
+# | communitytranslateid=11418
+msgid "Upper"
+msgstr "Fenti"
+
+# : source/configurator.cpp:1165
+# | communitytranslateid=11380
+msgid "Update"
+msgstr "Frissítés"
+
+# | communitytranslateid=14294
+msgid "unkown encoding problem"
+msgstr "ismeretlen kódolási probléma"
+
+# | communitytranslateid=14281
+msgid "unknown.dds"
+msgstr "ismeretlen.dds"
+
+# : source/configurator.cpp:1189
+# | communitytranslateid=11387
+msgid "Uncheck in case you have a fog problem"
+msgstr "Abban az esetben távolítsd el ha problemát észlelsz a köddel"
+
+# | communitytranslateid=14256
+msgid "Unable to connect to the server. It is certainly down or you have network problems."
+msgstr "Nem lehet csatlakozni a szerverhez. Jelenleg nem működik vagy hálózati problémáid lehetnek."
+
+# : source/configurator.cpp:1300
+# | communitytranslateid=11406
+msgid "Type"
+msgstr "Típus"
+
+# | communitytranslateid=14289
+msgid "Truck"
+msgstr "Kamion"
+
+# | communitytranslateid=14253
+msgid "Triangle Count: "
+msgstr "Háromszög számolás:"
+
+# | communitytranslateid=14266
+msgid "tracks/CreditsOverlay"
+msgstr "zeneszámok/KészítőiÖsszefoglaló"
+
+# | communitytranslateid=14287
+msgid "Torque: "
+msgstr "Forgatónyomaték:"
+
+# | communitytranslateid=12634
+msgid "tons"
+msgstr "tons"
+
+# : source/configurator.cpp:1121
+# : source/configurator.cpp:1122
+# | communitytranslateid=11367
+msgid "Thread number:"
+msgstr "Fonál szám:"
+
+# | communitytranslateid=14620
+msgid "This setting overrides the system's default language. You need to restart the configurator to apply the changes."
+msgstr "Ez a beállítás helyettesíti a rendszer alapártelmezett nyelvét. Ujra kell indítanod a beállításokat hogy jóváhgyd a beállításokat."
+
+# : source/configurator.cpp:1089
+# | communitytranslateid=11351
+msgid "This may hurt framerate a bit on old systems, but it looks pretty good."
+msgstr "Sértheti az fps-t az öreg rendszereken, de jól néz ki."
+
+# : source/configurator.cpp:1085
+# | communitytranslateid=11348
+msgid "This determines how much grass and how many trees (and such objects) should get displayed."
+msgstr "Ez befojásolja a novényzet mennyiségét."
+
+# : source/configurator.cpp:1161
+# | communitytranslateid=11379
+msgid "The server password, if required."
+msgstr "A szerverjelszó, ha igényelt."
+
+# : source/configurator.cpp:1035
+# : source/configurator.cpp:1037
+# | communitytranslateid=11333
+msgid "Texture filtering:"
+msgstr "Textúra szűrés:"
+
+# : source/configurator.cpp:994
+# | communitytranslateid=11325
+msgid "Test"
+msgstr "Teszt"
+
+# | communitytranslateid=14257
+msgid "Terrain not found: "
+msgstr "A terep nem található:"
+
+# | communitytranslateid=14258
+msgid "Terrain loading error"
+msgstr "Terep betoltési probléma"
+
+# : source/configurator.cpp:1099
+# | communitytranslateid=11358
+msgid "Sunburn"
+msgstr "Napégetés"
+
+# | communitytranslateid=14295
+msgid "Startup error"
+msgstr "Indítási hiba"
+
+# : source/configurator.cpp:1048
+# | communitytranslateid=11337
+msgid "Special effects"
+msgstr "Speciális effektek:"
+
+# : source/configurator.cpp:938
+# | communitytranslateid=11319
+msgid "Sounds"
+msgstr "Hangok"
+
+# : source/configurator.cpp:1114
+# : source/configurator.cpp:1117
+# | communitytranslateid=11366
+msgid "Sound rendering:"
+msgstr "Hang minőség:"
+
+# : source/configurator.cpp:1052
+# | communitytranslateid=11338
+msgid "Sky type:"
+msgstr "Égbolt tipusa:"
+
+# | communitytranslateid=14608
+msgid "Simple Settings"
+msgstr "Egyszerű beállítások"
+
+# : source/configurator.cpp:1097
+# | communitytranslateid=11356
+msgid "Shows the rear view mirrors in 1st person view. May cause compatibility problems for very old video cards."
+msgstr "Az oldalso tükrököt aktiválja.A regi videókártyák esetében hibák eszlelhetőek."
+
+# : source/configurator.cpp:1198
+# | communitytranslateid=11393
+msgid "Shows the dynamic dashboard in 1st person view. May cause compatibility problems for very old video cards."
+msgstr "Megjeleníti a műszerfalatban találhato kijelzőket."
+
+# : source/configurator.cpp:1207
+# | communitytranslateid=11399
+msgid "Shows all Collision meshes in Red to be able to position them correctly. Only use for debugging!"
+msgstr "Shows all Collision meshes in Red to be able to position them correctly. Only use for debugging!"
+
+# : source/configurator.cpp:1059
+# : source/configurator.cpp:1061
+# | communitytranslateid=11340
+msgid "Shadow type:"
+msgstr "Árnyék tipusa:"
+
+# | communitytranslateid=14611
+msgid "Sets all settings in a simple way"
+msgstr "Egyszerűbb beállítás"
+
+# : source/configurator.cpp:1148
+# : source/configurator.cpp:1507
+# | communitytranslateid=11376
+msgid "Server port number: "
+msgstr "Szerver kapu száma:"
+
+# : source/configurator.cpp:1154
+# | communitytranslateid=11378
+msgid "Server password: "
+msgstr "Szerver jelszava:"
+
+# : source/configurator.cpp:1144
+# : source/configurator.cpp:1505
+# | communitytranslateid=11374
+msgid "Server host name: "
+msgstr "Szerver host neve:"
+
+# | communitytranslateid=14280
+msgid "Search"
+msgstr "Keresés"
+
+# : source/configurator.cpp:1171
+# | communitytranslateid=11382
+msgid "Screenshot Format:"
+msgstr "Fenykép Típusa:"
+
+# : source/configurator.cpp:1007
+# | communitytranslateid=11328
+msgid "Screen configuration"
+msgstr "Képernyő Beállítások"
+
+# : source/configurator.cpp:920
+# | communitytranslateid=11314
+msgid "Save the current configuration and start RoR."
+msgstr "Mentsd el a jelenlegi konfigurációkat és indítsd a RoR-t."
+
+# : source/configurator.cpp:924
+# | communitytranslateid=11316
+msgid "Save the current configuration and close the configuration program."
+msgstr "Mentsd el a jelenlegi konfigurációkat és zárd be a konfiguráló programot."
+
+# : source/configurator.cpp:918
+# : source/configurator.cpp:927
+# | communitytranslateid=11313
+msgid "Save and Play"
+msgstr "Mentés és Indítás"
+
+# : source/configurator.cpp:921
+# | communitytranslateid=11315
+msgid "Save and Exit"
+msgstr "Mentés és Kilepes"
+
+# : source/configurator.cpp:1014
+# : source/configurator.cpp:1019
+# : source/configurator.cpp:1021
+# | communitytranslateid=11330
+msgid "RTT Mode:"
+msgstr "RTT mód:"
+
+# : source/configurator.cpp:897
+# | communitytranslateid=11308
+msgid "Rigs of Rods configuration"
+msgstr "Rigs of Rods konfiguráció"
+
+# : source/configurator.cpp:1953
+# | communitytranslateid=11416
+msgid "reverse axis"
+msgstr "Vissza tengely"
+
+# : source/configurator.cpp:1950
+# | communitytranslateid=11415
+msgid "Reverse"
+msgstr "Hátra"
+
+# : source/configurator.cpp:917
+# : source/configurator.cpp:926
+# | communitytranslateid=11312
+msgid "Restore the default configuration."
+msgstr "Eredeti konfigurációk visszaállítása."
+
+# : source/configurator.cpp:915
+# | communitytranslateid=11311
+msgid "Restore Defaults"
+msgstr "Eredeti Visszaállítása"
+
+# : source/configurator.cpp:1105
+# | communitytranslateid=11363
+msgid "Requires a recent video card. Adds a motion blur effect."
+msgstr "Jó videókártyat igényel. Motion blur effektet kölcsönöz."
+
+# : source/configurator.cpp:1102
+# | communitytranslateid=11361
+msgid "Requires a recent video card. Adds a light blurring effect."
+msgstr "Jó videókártyát igényel. Egy könnyed homályosodást okoz."
+
+# : source/configurator.cpp:1100
+# | communitytranslateid=11359
+msgid "Requires a recent video card. Adds a bluish blinding effect."
+msgstr "Jó videókártyát igényel."
+
+# : source/configurator.cpp:1201
+# | communitytranslateid=11395
+msgid "Replay mode. (Can affect your frame rate)"
+msgstr "befojasolhatja az fps-t"
+
+# : source/configurator.cpp:1199
+# | communitytranslateid=11394
+msgid "Replay Mode"
+msgstr "Visszajátszás mód"
+
+# : source/configurator.cpp:1962
+# | communitytranslateid=11421
+msgid "Region"
+msgstr "Terület"
+
+# : source/configurator.cpp:1204
+# | communitytranslateid=11397
+msgid "Prints all node masses to the RoR.log. Only use for truck debugging!"
+msgstr "Prints all node masses to the RoR.log. Only use for truck debugging!"
+
+# : source/configurator.cpp:316
+# | communitytranslateid=11290
+msgid "Please select an input event."
+msgstr "Válassz ki egy bemeneti eseményt."
+
+# | communitytranslateid=14276
+msgid "Please clear the place first"
+msgstr "Kérlek ürítsd ki a helyet előszőr"
+
+# : source/configurator.cpp:1195
+# | communitytranslateid=11391
+msgid "Particles like water cannons or plain trails. Can be over-used in Multiplayer."
+msgstr "Lassithatja a teljesítmenyt Többjátékos módban."
+
+# : source/configurator.cpp:1086
+# | communitytranslateid=11349
+msgid "Particle systems"
+msgstr "Részecske rendszer"
+
+# : source/configurator.cpp:1833
+# | communitytranslateid=11408
+msgid "Options"
+msgstr "Beállítások"
+
+# : source/configurator.cpp:494
+# : source/configurator.cpp:500
+# | communitytranslateid=11299
+msgid "ok (end test)"
+msgstr "rendben (teszt vége)"
+
+# | communitytranslateid=14277
+msgid "OK"
+msgstr "OK"
+
+# : source/configurator.cpp:1838
+# | communitytranslateid=11409
+msgid "Ogre config validation error"
+msgstr "Ogre konfig érvenyesítési hiba"
+
+# : source/configurator.cpp:1854
+# | communitytranslateid=11411
+msgid "Ogre config error"
+msgstr "Ogre konfig hiba"
+
+# : source/configurator.cpp:1192
+# | communitytranslateid=11389
+msgid "Not much impact on speed."
+msgstr "Nem nagyon befojásolja a sebességet."
+
+# | communitytranslateid=14262
+msgid "normal camera"
+msgstr "normális kamera"
+
+# | communitytranslateid=14288
+msgid "Non-Driveable"
+msgstr "Nem-vezethető"
+
+# | communitytranslateid=14286
+msgid "Nodes: "
+msgstr "Csomópontok:"
+
+# | communitytranslateid=14601
+msgid "node count: "
+msgstr "Csomópontok száma:"
+
+# : source/configurator.cpp:1076
+# | communitytranslateid=11346
+msgid "No effect unless you mess with water, looks pretty good also."
+msgstr "Nincs effekt amíg vízzel nem találkozol, ugyancsak jól néz ki."
+
+# : source/configurator.cpp:1966
+# | communitytranslateid=11424
+msgid "no deadzone"
+msgstr "nincs holtpont"
+
+# | communitytranslateid=14282
+msgid "no author information available"
+msgstr "nincs készitői információ"
+
+# : source/configurator.cpp:1133
+# : source/configurator.cpp:1503
+# | communitytranslateid=11370
+msgid "Nickname: "
+msgstr "Nicknév:"
+
+# | communitytranslateid=14628
+msgid "new Language selected"
+msgstr "új nyelv kiválasztása"
+
+# : source/configurator.cpp:997
+# | communitytranslateid=11326
+msgid "Network"
+msgstr "Hálózat"
+
+# : source/configurator.cpp:498
+# | communitytranslateid=11301
+msgid "mousecfg.bmp"
+msgstr "mousecfg.bmp"
+
+# : source/configurator.cpp:1103
+# | communitytranslateid=11362
+msgid "Motion blur"
+msgstr "Motion blur"
+
+# : source/configurator.cpp:1095
+# | communitytranslateid=11355
+msgid "Mirrors"
+msgstr "Tükrök"
+
+# : source/configurator.cpp:1216
+# : source/configurator.cpp:1296
+# | communitytranslateid=11404
+msgid "minimum visibility range in percent"
+msgstr "Minimum láthatósági távolság százalékban"
+
+# | communitytranslateid=14605
+msgid "max Speed:"
+msgstr "max Sebesség:"
+
+# | communitytranslateid=14285
+msgid "Mass: "
+msgstr "Tömeg:"
+
+# | communitytranslateid=14264
+msgid "Manual shift - Auto clutch"
+msgstr "Manuális sebességváltó - Automata kuplung"
+
+# | communitytranslateid=14292
+msgid "Machine"
+msgstr "Gépezet"
+
+# : source/configurator.cpp:1960
+# | communitytranslateid=11420
+msgid "Lower"
+msgstr "Lenti"
+
+# | communitytranslateid=14278
+msgid "Loader"
+msgstr "Rakodó"
+
+# | communitytranslateid=14279
+msgid "List"
+msgstr "Lista"
+
+# : source/configurator.cpp:1180
+# : source/configurator.cpp:1182
+# : source/configurator.cpp:1184
+# | communitytranslateid=11384
+msgid "Light source effects:"
+msgstr "Fényforrás effektek:"
+
+# | communitytranslateid=14618
+msgid "Language:"
+msgstr "Nyelv:"
+
+# : source/configurator.cpp:504
+# | communitytranslateid=11302
+msgid "keyboardcfg.bmp"
+msgstr "keyboardcfg.bmp"
+
+# : source/configurator.cpp:312
+# | communitytranslateid=11289
+msgid "Keyboard"
+msgstr "Billenytűzet"
+
+# : source/configurator.cpp:1302
+# | communitytranslateid=11407
+msgid "Key/Axis"
+msgstr "Gomb/Kezelőszerv"
+
+# : source/configurator.cpp:1950
+# | communitytranslateid=11414
+msgid "Joystick Options"
+msgstr "Joystick Beállítások"
+
+# : source/configurator.cpp:1954
+# | communitytranslateid=11417
+msgid "Joystick Axis Region"
+msgstr "Joiystick tengely terület"
+
+# : source/configurator.cpp:1963
+# | communitytranslateid=11422
+msgid "Joystick Axis Deadzones"
+msgstr "Joystick tengely holtpont"
+
+# : source/configurator.cpp:496
+# | communitytranslateid=11300
+msgid "joycfg.bmp"
+msgstr "joycfg.bmp"
+
+# : source/configurator.cpp:323
+# : source/configurator.cpp:976
+# | communitytranslateid=11291
+msgid "Input Type: "
+msgstr "Bemenetei Típus:"
+
+# : source/configurator.cpp:1173
+# | communitytranslateid=11383
+msgid "In what Format should screenshots be saved?"
+msgstr "Mielyen formátumba legyenek a képeid elmentve?"
+
+# : source/configurator.cpp:983
+# | communitytranslateid=11323
+msgid "Import Keymap"
+msgstr "Beállítások importálása"
+
+# | communitytranslateid=14624
+msgid "If you use XFire, you can switch on this option to generate a more detailed game info."
+msgstr "Ha XTüzet használasz, bekapcsolhatod ezt a tulajdonságot hogy kifinomultabb képet kapj."
+
+# | communitytranslateid=14622
+msgid "If you dislike the pitching external vehicle camera, you can disable it here."
+msgstr "Ha nem szereted a rázkodást a külső kamerában, itt kikapcsolhatod."
+
+# : source/configurator.cpp:1208
+# | communitytranslateid=11400
+msgid "Hydrax Water System"
+msgstr "Hzdrax víz rendszer"
+
+# : source/configurator.cpp:1106
+# | communitytranslateid=11364
+msgid "High quality reflective effects"
+msgstr "Nagy minőségű világitás effektek"
+
+# | communitytranslateid=14614
+msgid "High Quality"
+msgstr "Legjobb minőség"
+
+# | communitytranslateid=14612
+msgid "High Performance"
+msgstr "Magas Teljesítmény"
+
+# | communitytranslateid=14627
+msgid "here you can get help"
+msgstr "itt találhatsz segítséget"
+
+# : source/configurator.cpp:1090
+# | communitytranslateid=11352
+msgid "HeatHaze"
+msgstr "Hő-köd"
+
+# : source/configurator.cpp:1093
+# | communitytranslateid=11353
+msgid "Heat Haze from engines, major slowdown. (only activate with recent hardware)"
+msgstr "Hő-köd a motrokból, jelentős lelassulást okoz."
+
+# | communitytranslateid=14301
+msgid "health: "
+msgstr "egésszség:"
+
+# | communitytranslateid=14615
+msgid "Graphics Settings"
+msgstr "Grafikai Beállítások"
+
+# : source/configurator.cpp:935
+# | communitytranslateid=11318
+msgid "Graphics"
+msgstr "Grafika"
+
+# | communitytranslateid=14265
+msgid "Fully Manual shift"
+msgstr "Teljesen manuális sebességváltás"
+
+# : source/configurator.cpp:1043
+# | communitytranslateid=11335
+msgid "Full screen mode uses a bit less memory resources"
+msgstr "Teljes képernyő mód kevesebb memoria forrást használ."
+
+# : source/configurator.cpp:1041
+# | communitytranslateid=11334
+msgid "Full screen"
+msgstr "Teljes képernyő:"
+
+# : source/configurator.cpp:1958
+# | communitytranslateid=11419
+msgid "Full"
+msgstr "Teljes"
+
+# | communitytranslateid=14261
+msgid "free camera"
+msgstr "szabad kamera"
+
+# : source/configurator.cpp:1187
+# | communitytranslateid=11386
+msgid "Fog"
+msgstr "Köd"
+
+# | communitytranslateid=14260
+msgid "fixed free camera"
+msgstr "rogzített szabad kamera"
+
+# : source/configurator.cpp:986
+# | communitytranslateid=11324
+msgid "Export Keymap"
+msgstr "Billentyűzetbeállítások exportálása"
+
+# : source/configurator.cpp:394
+# | communitytranslateid=11298
+msgid "Event Value (left = 0%, right = 100%)"
+msgstr "Esemény Érték(bal = 0%, jobb = 100%)"
+
+# SOME DESCRIPTIVE TITLE.
+# Copyright (C) YEAR THE PACKAGE'S COPYRIGHT HOLDER
+# This file is distributed under the same license as the PACKAGE package.
+# FIRST AUTHOR <EMAIL@ADDRESS>, YEAR.
+# : source/configurator.cpp:298
+# : source/configurator.cpp:308
+# : source/configurator.cpp:321
+# | communitytranslateid=11288
+msgid "Event Name: "
+msgstr "Esemény Neve:"
+
+# : source/configurator.cpp:393
+# | communitytranslateid=11297
+msgid "Event Name"
+msgstr "Esemény neve"
+
+# : source/configurator.cpp:392
+# | communitytranslateid=11296
+msgid "Event Description: "
+msgstr "Esemény leírása"
+
+# : source/configurator.cpp:1298
+# | communitytranslateid=11405
+msgid "Event"
+msgstr "Esemény"
+
+# | communitytranslateid=14296
+msgid "Error while retrieving user space path"
+msgstr "Hiba a felhasználo hely szerzése közben"
+
+# | communitytranslateid=12637
+msgid "Error while retrieving program space path"
+msgstr ""
+
+# : source/configurator.cpp:1190
+# | communitytranslateid=11388
+msgid "Engine smoke"
+msgstr "Kipufogó füst"
+
+# : source/configurator.cpp:1073
+# | communitytranslateid=11344
+msgid "Enabling waves adds a lot of fun in boats, but can have a big performance impact on some specific hardwares."
+msgstr "Sok élvezetet kölcsönöz, de nagyban befojásólhatja a számítógépet sebességét."
+
+# : source/configurator.cpp:1210
+# | communitytranslateid=11401
+msgid "Enables the new water rendering system. EXPERIMENTAL. Overrides any water settings."
+msgstr "Engedélyezi az új viz alkoto rendszert."
+
+# | communitytranslateid=14623
+msgid "Enable XFire Extension"
+msgstr "XTűz kiterjesztés engedélyezése"
+
+# : source/configurator.cpp:1071
+# | communitytranslateid=11343
+msgid "Enable waves"
+msgstr "Hullámok engedélyezése"
+
+# | communitytranslateid=14625
+msgid "Enable Visual Beam Debug"
+msgstr "Láthato tartórudak bekapcsolása"
+
+# : source/configurator.cpp:1129
+# : source/configurator.cpp:1132
+# | communitytranslateid=11369
+msgid "Enable network mode"
+msgstr "Network mód engedélyezése"
+
+# : source/configurator.cpp:1109
+# | communitytranslateid=11365
+msgid "Enable high quality reflective effects. Causes a slowdown."
+msgstr "Engedélyezi a nagy minőségű világítás effektet. Lassulást eredményez."
+
+# : source/configurator.cpp:1123
+# : source/configurator.cpp:1128
+# | communitytranslateid=11368
+msgid "Enable advanced wheel model"
+msgstr "Engedélyezi az egyedi kerék módot"
+
+# : source/configurator.cpp:1087
+# | communitytranslateid=11350
+msgid "Dust"
+msgstr "Pór"
+
+# | communitytranslateid=14626
+msgid "Displays node numbers and more info along nodes and beams."
+msgstr "Csomópontok száma és egyéb információ megjelenítése a csomópontok és tartórudak mentén."
+
+# : source/configurator.cpp:1213
+# | communitytranslateid=11403
+msgid "Disabled the map. This is for testing purposes only, you should not gain any FPS with that."
+msgstr "A térkép letíltása.Semmilyen teljesítmeny növekvés nem érhető el ezáltal."
+
+# : source/configurator.cpp:1211
+# | communitytranslateid=11402
+msgid "Disable Overview Map"
+msgstr "Térkép letiltása"
+
+# | communitytranslateid=14621
+msgid "Disable Camera Pitching"
+msgstr "Kamerarázkódás kikapcsolása"
+
+# : source/configurator.cpp:1009
+# : source/configurator.cpp:1012
+# : source/configurator.cpp:1017
+# | communitytranslateid=11329
+msgid "Device:"
+msgstr "Berendezés:"
+
+# | communitytranslateid=14302
+msgid "destruction: "
+msgstr "romlás:"
+
+# : source/configurator.cpp:981
+# | communitytranslateid=11322
+msgid "Delete selected"
+msgstr "Kijelölt törlése"
+
+# | communitytranslateid=14303
+msgid "deformed: "
+msgstr "deformáltság:"
+
+# : source/configurator.cpp:1202
+# | communitytranslateid=11396
+msgid "Debug Truck Mass"
+msgstr "Debug Truck Mass"
+
+# : source/configurator.cpp:1205
+# | communitytranslateid=11398
+msgid "Debug Collision Meshes"
+msgstr "Debug Collision Meshes"
+
+# : source/configurator.cpp:2276
+# : source/configurator.cpp:2287
+# | communitytranslateid=11435
+msgid "Deadzone"
+msgstr "Holtpont"
+
+# : source/configurator.cpp:900
+# : source/configurator.cpp:902
+# : source/configurator.cpp:908
+# | communitytranslateid=11309
+msgid "data\\\\config.bmp"
+msgstr "data\\\\config.bmp"
+
+# : source/configurator.cpp:507
+# : source/configurator.cpp:510
+# | communitytranslateid=11303
+msgid "data\\\\"
+msgstr "data\\\\"
+
+# : source/configurator.cpp:914
+# | communitytranslateid=11310
+msgid "data/config.bmp"
+msgstr "data/config.bmp"
+
+# : source/configurator.cpp:565
+# | communitytranslateid=11304
+msgid "data/"
+msgstr "data/"
+
+# : source/configurator.cpp:1196
+# | communitytranslateid=11392
+msgid "Dashboard"
+msgstr "Műszerfal"
+
+# : source/configurator.cpp:1193
+# | communitytranslateid=11390
+msgid "Custom Particles"
+msgstr "Sajátos elemek"
+
+# | communitytranslateid=14604
+msgid "current Speed:"
+msgstr "jelenlegi sebesség:"
+
+# | communitytranslateid=14603
+msgid "current RPM:"
+msgstr "jelenlegi RPM:"
+
+# | communitytranslateid=14602
+msgid "current mass:"
+msgstr "jelenlegi tömeg:"
+
+# | communitytranslateid=14248
+msgid "Current FPS: "
+msgstr "Jelenlegi FPS-ed:"
+
+# | communitytranslateid=14610
+msgid "CPU Settings"
+msgstr "CPU Beállítások"
+
+# : source/configurator.cpp:941
+# | communitytranslateid=11320
+msgid "CPU"
+msgstr "CPU"
+
+# : source/configurator.cpp:1854
+# | communitytranslateid=11412
+msgid "Could not write config file"
+msgstr "Nem lehetséges a config file írása"
+
+# : source/configurator.cpp:1838
+# | communitytranslateid=11410
+msgid "Could not open Rendering device"
+msgstr "Nem lehet megnyitani a rendering devicet"
+
+# : source/configurator.cpp:977
+# | communitytranslateid=11321
+msgid "Controls"
+msgstr "Irányítás"
+
+# : source/configurator.cpp:1948
+# | communitytranslateid=11413
+msgid "Configure error"
+msgstr "Konfigurációs probléma"
+
+# | communitytranslateid=14609
+msgid "Community / Support"
+msgstr "Közösség / Segítség"
+
+# | communitytranslateid=14607
+msgid "Commands:"
+msgstr "Parancsok:"
+
+# : source/configurator.cpp:1094
+# | communitytranslateid=11354
+msgid "Cockpit options"
+msgstr "Pilótafülke beállításai"
+
+# : source/configurator.cpp:336
+# | communitytranslateid=11295
+msgid "close this dialog"
+msgstr "ablak bezárása"
+
+# : source/configurator.cpp:1186
+# | communitytranslateid=11385
+msgid "Clear cache"
+msgstr "Rejtett elemek ürítése"
+
+# : source/configurator.cpp:932
+# | communitytranslateid=11317
+msgid "Cancel the configuration changes and close the configuration program."
+msgstr "Konfigurációk visszavonása és kilépés a beállítasokbol."
+
+# : source/configurator.cpp:327
+# | communitytranslateid=11294
+msgid "Cancel"
+msgstr "Mégsem"
+
+# : source/configurator.cpp:1054
+# | communitytranslateid=11339
+msgid "Caelum sky is nice but quite slow unless you have a high-powered GPU."
+msgstr "Caelum égbolt jol néz ki azonban jócskan lassítja a számítógépet."
+
+# | communitytranslateid=14300
+msgid "broken: "
+msgstr "tőrve:"
+
+# | communitytranslateid=14291
+msgid "Boat"
+msgstr "Csónak"
+
+# : source/configurator.cpp:1101
+# | communitytranslateid=11360
+msgid "Bloom"
+msgstr "Ködösség"
+
+# | communitytranslateid=14250
+msgid "Best FPS: "
+msgstr "Legjobb FPS:"
+
+# | communitytranslateid=14298
+msgid "beam count: "
+msgstr "tartórúd számítás"
+
+# | communitytranslateid=14613
+msgid "Balanced"
+msgstr "Egyensúlyozottság"
+
+# | communitytranslateid=14254
+msgid "Bad server port"
+msgstr "Rossz szerver port"
+
+# | communitytranslateid=14305
+msgid "average stress: "
+msgstr "átlag erő:"
+
+# | communitytranslateid=14249
+msgid "Average FPS: "
+msgstr "Átlag FPS:"
+
+# | communitytranslateid=14304
+msgid "average deformation: "
+msgstr "átlag deformáció:"
+
+# | communitytranslateid=14263
+msgid "Automatic shift"
+msgstr "Automata sebességvaltó"
+
+# | communitytranslateid=14283
+msgid "Authors: "
+msgstr "Készítők:"
+
+# : source/configurator.cpp:1027
+# : source/configurator.cpp:1029
+# | communitytranslateid=11332
+msgid "Anti-aliasing:"
+msgstr "Anti-fedőnév:"
+
+# : source/configurator.cpp:1134
+# | communitytranslateid=11371
+msgid "Anonymous"
+msgstr "Ismeretlen"
+
+# | communitytranslateid=14606
+msgid "Altitude:"
+msgstr "Magasság:"
+
+# | communitytranslateid=14290
+msgid "Airplane"
+msgstr "Repülőgép"
+
+# : source/configurator.cpp:1003
+# | communitytranslateid=11327
+msgid "Advanced"
+msgstr "Haladó"
+
+# : source/configurator.cpp:326
+# : source/configurator.cpp:923
+# | communitytranslateid=11293
+msgid "Add the key"
+msgstr "Add hozza a billentyűt"
+
+# : source/configurator.cpp:324
+# | communitytranslateid=11292
+msgid "Add"
+msgstr "Hozzáadás"
+
+# | communitytranslateid=14255
+msgid "A network error occured"
+msgstr "Egy hálózati hiba lépett fel"
+
+# : source/configurator.cpp:1969
+# | communitytranslateid=11426
+msgid "5% deadzone"
+msgstr "5 % holtpont"
+
+# : source/configurator.cpp:1966
+# , c-format
+# | communitytranslateid=11425
+msgid "5 %"
+msgstr "5 %"
+
+# : source/configurator.cpp:1981
+# | communitytranslateid=11434
+msgid "30% deadzone"
+msgstr "30% holtpont"
+
+# : source/configurator.cpp:1978
+# , c-format
+# | communitytranslateid=11433
+msgid "30 %"
+msgstr "30 %"
+
+# : source/configurator.cpp:1978
+# | communitytranslateid=11432
+msgid "20% deadzone"
+msgstr "20 % holtpont"
+
+# : source/configurator.cpp:1975
+# , c-format
+# | communitytranslateid=11431
+msgid "20 %"
+msgstr "20 %"
+
+# : source/configurator.cpp:1975
+# | communitytranslateid=11430
+msgid "15% deadzone"
+msgstr "15 % holtpont"
+
+# : source/configurator.cpp:1972
+# , c-format
+# | communitytranslateid=11429
+msgid "15 %"
+msgstr "15 %"
+
+# : source/configurator.cpp:1145
+# : source/configurator.cpp:1149
+# : source/configurator.cpp:1147
+# | communitytranslateid=11375
+msgid "127.0.0.1"
+msgstr "127.0.0.1"
+
+# : source/configurator.cpp:1152
+# | communitytranslateid=11377
+msgid "12333"
+msgstr "12333"
+
+# : source/configurator.cpp:1972
+# | communitytranslateid=11428
+msgid "10% deadzone"
+msgstr "10 % holtpont"
+
+# : source/configurator.cpp:1969
+# , c-format
+# | communitytranslateid=11427
+msgid "10 %"
+msgstr "10 %"
+
+# : source/configurator.cpp:1963
+# | communitytranslateid=11423
+msgid "0 % (No deadzone)"
+msgstr "0% (nincs holtpont)"
+
+# | communitytranslateid=14616
+msgid "<p>How to play in Multiplayer:</p><br><ol><li>Click on the <b>Update</b> button to see available servers here.</li><li>Click on any underlined Server in the list.</li><li>Click on <b>Save and Play</b> button to start the game.</li></ol>"
+msgstr "<p>Hogyan kell játszani tobbjátékos módban:</p><br><ol><li>Kattints az <b>Update</b> gombra, hogy lásd a lehetséges szervereket.</li><li>Kattints bármelyik aláhúzott szerverre a listából.</li><li>Kattints a <b>Mentés és indítás</b> gombra hogy indítsd a játékot.</li></ol>"
+
+# : source/configurator.cpp:587
+# | communitytranslateid=11305
+msgid "(Please press a key)"
+msgstr "(Kérlek nyomj le egy gombot)"
+
+# : source/configurator.cpp:613
+# | communitytranslateid=11306
+msgid "(Please press a Joystick Button)"
+msgstr "(Kérlek nyomj le egy Joystick Gombot)"
+
+# : source/configurator.cpp:829
+# | communitytranslateid=11307
+msgid "(Please move an Axis)\n"
+msgstr "(Kérlek mozdíts meg egy érzékelőszervet)\n"
+
+# | communitytranslateid=14619
+msgid "(No Languages found)"
+msgstr "(Nyelv nem található)"
+
+# | communitytranslateid=14297
+msgid "(no author information available)"
+msgstr "(nincs készítői informáació)"
+
+# | communitytranslateid=14267
+msgid "^8 Player: ^7"
+msgstr "^8 Játékos: ^7"
+
+# | communitytranslateid=14271
+msgid "^1 usage: /rcmd [command] [optional arguments]"
+msgstr "^1 használat: /rcmd [command] [optional arguments]"
+
+# | communitytranslateid=14274
+msgid "^1 unkown Command: "
+msgstr "^1 ismeretlen parancs:"
+
+# | communitytranslateid=14269
+msgid "^1 ERROR: you must use /rlogin [password] first"
+msgstr "^1 HIBA: használnod kell / belépés [jelszó] előszőr"
+
+# | communitytranslateid=14272
+msgid "^1 ERROR: protocol error while trying to send command to RCON: "
+msgstr "^1 HIBA: protokoll hiba az RCON-nak való utasítás közben:"
+
+# | communitytranslateid=14268
+msgid "^1 ERROR: protocol error while trying to log into RCON: "
+msgstr "^1 HIBA: protocol hiba az RCON kapcsolódása közben:"
+
+# | communitytranslateid=14273
+msgid "^1 ERROR: not in network mode"
+msgstr "^1 HIBA: nem hálózati mód"
+
+# | communitytranslateid=14275
+msgid "^1 Error Parsing command"
+msgstr "^1 Hiba a parancs elemzése közben"
+

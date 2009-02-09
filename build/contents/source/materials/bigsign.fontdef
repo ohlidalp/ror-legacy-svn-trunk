@@ -1,0 +1,24 @@
+SignFont_Extra_Big
+{
+	type 		truetype
+	source 		bluehigh.ttf
+	size 		90
+	resolution 	55
+}
+
+SignFont_Big
+{
+	type 		truetype
+	source 		bluehigh.ttf
+	size 		60
+	resolution 	55
+}
+
+SignFont_Small
+{
+	type 		truetype
+	source 		bluehigh.ttf
+	size 		30
+	resolution 	55
+}
+

@@ -1,0 +1,37 @@
+/Makefile.am/1.13/Fri Jan 26 17:17:44 2007//Tv1-4-5
+/OgreGLATIFSInit.h/1.2/Thu Jan 15 21:32:32 2004//Tv1-4-5
+/OgreGLContext.h/1.6/Sat Feb  3 21:59:16 2007//Tv1-4-5
+/OgreGLDefaultHardwareBufferManager.h/1.8/Sat Feb  3 21:59:16 2007//Tv1-4-5
+/OgreGLFBOMultiRenderTarget.h/1.4/Sat Feb  3 21:59:16 2007//Tv1-4-5
+/OgreGLFBORenderTexture.h/1.11/Sat Feb  3 21:59:16 2007//Tv1-4-5
+/OgreGLFrameBufferObject.h/1.4/Sat Feb  3 21:59:16 2007//Tv1-4-5
+/OgreGLGpuNvparseProgram.h/1.8/Sat Feb  3 21:59:16 2007//Tv1-4-5
+/OgreGLGpuProgram.h/1.12/Sat Feb  3 21:59:16 2007//Tv1-4-5
+/OgreGLGpuProgramManager.h/1.10/Sat Feb  3 21:59:16 2007//Tv1-4-5
+/OgreGLHardwareBufferManager.h/1.11.2.1/Wed May 30 13:52:00 2007//Tv1-4-5
+/OgreGLHardwareIndexBuffer.h/1.9/Sat Mar 17 16:00:31 2007//Tv1-4-5
+/OgreGLHardwareOcclusionQuery.h/1.9/Sat Feb  3 21:59:16 2007//Tv1-4-5
+/OgreGLHardwarePixelBuffer.h/1.10/Sat Feb  3 21:59:16 2007//Tv1-4-5
+/OgreGLHardwareVertexBuffer.h/1.9/Sat Mar 17 16:00:31 2007//Tv1-4-5
+/OgreGLPBRenderTexture.h/1.5/Sat Feb  3 21:59:16 2007//Tv1-4-5
+/OgreGLPBuffer.h/1.5/Sat Feb  3 21:59:16 2007//Tv1-4-5
+/OgreGLPixelFormat.h/1.8/Sat Feb  3 21:59:16 2007//Tv1-4-5
+/OgreGLPlugin.h/1.1.2.1/Tue Apr  3 15:18:44 2007//Tv1-4-5
+/OgreGLPrerequisites.h/1.47/Tue Mar 20 17:56:30 2007//Tv1-4-5
+/OgreGLRenderSystem.h/1.81.2.4/Mon Jul  9 17:55:57 2007//Tv1-4-5
+/OgreGLRenderTexture.h/1.6/Sat Feb  3 21:59:16 2007//Tv1-4-5
+/OgreGLSupport.h/1.24/Sat Feb  3 21:59:16 2007//Tv1-4-5
+/OgreGLTexture.h/1.37/Sat Feb  3 21:59:16 2007//Tv1-4-5
+/OgreGLTextureManager.h/1.14/Sat Feb  3 21:59:16 2007//Tv1-4-5
+/OgreSDLGLSupport.h/1.10/Sat Feb  3 21:59:16 2007//Tv1-4-5
+/OgreSDLPrerequisites.h/1.9/Wed Aug 23 08:18:53 2006//Tv1-4-5
+/OgreSDLWindow.h/1.15/Sat Feb  3 21:59:16 2007//Tv1-4-5
+/OgreWin32Context.h/1.6/Sat Feb  3 21:59:16 2007//Tv1-4-5
+/OgreWin32GLSupport.h/1.16/Sat Feb  3 21:59:16 2007//Tv1-4-5
+/OgreWin32Prerequisites.h/1.6/Wed Aug 23 08:18:53 2006//Tv1-4-5
+/OgreWin32RenderTexture.h/1.11/Sat Feb  3 21:59:16 2007//Tv1-4-5
+/OgreWin32Window.h/1.19.2.2/Mon Jun 25 13:56:16 2007//Tv1-4-5
+D/GL////
+D/GLX////
+D/OSX////
+D/gtk////

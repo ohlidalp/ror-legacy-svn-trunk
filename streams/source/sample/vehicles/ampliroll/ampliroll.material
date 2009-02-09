@@ -1,0 +1,54 @@
+material tracks/aflatbed
+{
+	technique
+	{
+		pass
+		{
+			texture_unit
+			{
+				texture aflatbed.dds
+			}
+		}
+	}
+}
+
+material tracks/ampliroll
+{
+	technique
+	{
+		pass
+		{
+			scene_blend alpha_blend
+			alpha_rejection greater 128 
+			texture_unit
+			{
+				texture ampliroll.dds
+			}
+		}
+		pass
+		{
+			scene_blend add
+			depth_write off
+			lighting off
+			texture_unit
+			{
+				texture ampliroll_emissive.dds
+			}
+		}
+	}
+}
+
+material tracks/amplirollhelp
+{
+	technique
+	{
+		pass
+		{
+
+			texture_unit
+			{
+				texture amplirollhelp.dds
+			}
+		}
+	}
+}

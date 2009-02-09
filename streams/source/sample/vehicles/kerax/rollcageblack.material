@@ -1,0 +1,17 @@
+material tracks/rollcageblack
+{
+	technique
+	{
+		pass
+		{
+			//scene_blend alpha_blend
+			//alpha_rejection greater 160
+			texture_unit
+			{
+				texture rollcageblack.dds
+			}
+		}
+	}
+
+}
+

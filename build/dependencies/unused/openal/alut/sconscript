@@ -1,0 +1,43 @@
+import SCons, os, glob, os.path
+
+Import("env")
+localenv = env.Copy()
+
+# this is just a make wrapper in this case
+
+def CleanFlagIsSet() :
+	import SCons.Script.Main
+	return SCons.Script.Main.options.clean
+
+redirect = ""
+if env['silent']:
+	redirect = ">>/dev/null 2>&1"
+
+if CleanFlagIsSet():
+	print "\x1b[00;32mCleaning Alut ...\x1b[00m"
+	sts = os.system("make clean " + redirect)
+	if sts != 0:
+		raise SCons.Errors.UserError, "Problem while cleaning Alut"
+	print "\x1b[00;32m... Alut cleaned!\x1b[00m"
+else:
+	if not os.path.isfile(env.File("#/openal/alut/src/.libs/libalut.so.0.1.0").abspath) or env['forcerebuild']:
+		if env['forcerebuild']:
+			# clean first
+			print "\x1b[00;32mcleaning Alut because of forced Rebuild!\x1b[00m"
+			sts = os.system("make clean " + redirect)
+			if sts != 0:
+				raise SCons.Errors.UserError, "Problem while cleaning Alut"
+		print "\x1b[00;32mConfiguring Alut ...\x1b[00m"
+		sts = os.system("sh autogen.sh " + redirect)
+		if sts != 0:
+			raise SCons.Errors.UserError, "Problem while executing autogen.sh"
+		sts = os.system("sh configure " + redirect)
+		if sts != 0:
+			raise SCons.Errors.UserError, "Problem while configuring Alut"
+		print "\x1b[00;32mBuilding Alut ...\x1b[00m"
+		sts = os.system("make -j" + env['parallel'] + " " + redirect)
+		if sts != 0:
+			raise SCons.Errors.UserError, "Problem while making Alut"
+		print "\x1b[00;32m... Alut build and ready!\x1b[00m"
+	else:
+		print "\x1b[00;32mAlut already built!\x1b[00m"

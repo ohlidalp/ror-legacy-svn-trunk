@@ -1,0 +1,30 @@
+material tracks/renault
+{
+	technique
+	{
+		pass
+		{
+			scene_blend alpha_blend
+			alpha_rejection greater 128 
+			texture_unit
+			{
+				texture renault.dds
+			}
+		}
+	}
+}
+
+material tracks/renaulthelp
+{
+	technique
+	{
+		pass
+		{
+
+			texture_unit
+			{
+				texture renaulthelp.dds
+			}
+		}
+	}
+}

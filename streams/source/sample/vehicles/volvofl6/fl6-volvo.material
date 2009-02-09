@@ -1,0 +1,40 @@
+material tracks/fl6-volvo
+{
+	technique
+	{
+		pass
+		{
+			scene_blend alpha_blend
+			alpha_rejection greater 160
+			texture_unit
+			{
+				texture fl6-volvo.dds
+			}
+		}
+		pass
+		{
+			scene_blend add
+			depth_write off
+			lighting off
+			texture_unit
+			{
+				texture fl6-volvo_emissive.dds
+			}
+		}
+	}
+}
+
+material tracks/fl6-volvo-help
+{
+	technique
+	{
+		pass
+		{
+
+			texture_unit
+			{
+				texture fl6-volvo-help.dds
+			}
+		}
+	}
+}

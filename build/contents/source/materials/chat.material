@@ -1,0 +1,35 @@
+material tracks/netchat2/bg/left
+{
+    technique
+    {
+        pass
+        {
+			lighting off
+			depth_check off
+            scene_blend alpha_blend
+            texture_unit
+            {
+                colour_op_ex source1 src_manual src_current 0.3 0.3 0.3
+                alpha_op_ex source1 src_manual src_current 0.7
+            }
+        } 
+    }
+}
+
+material tracks/netchat2/bg/box
+{
+    technique
+    {
+        pass
+        {
+			lighting off
+			depth_check off
+            scene_blend alpha_blend
+            texture_unit
+            {
+                colour_op_ex source1 src_manual src_current 0.3 0.3 0.3
+                alpha_op_ex source1 src_manual src_current 0.7
+            }
+        } 
+    }
+}

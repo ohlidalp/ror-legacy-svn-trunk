@@ -1,0 +1,24 @@
+/OGRESTLportInstaller.nsi/1.2/Sat Feb 26 00:33:57 2005//Tv1-4-5
+/WriteEnvStr.nsh/1.2/Sat Feb 26 00:33:57 2005//Tv1-4-5
+/alterrefapp.sed/1.6/Sat Mar  3 07:09:47 2007//Tv1-4-5
+/altersamples.sed/1.8/Sat Mar  3 07:09:23 2007//Tv1-4-5
+/buildsdk.bat/1.1/Sat Feb 10 00:14:35 2007//Tv1-4-5
+/buildsdk_vc71.bat/1.1/Sat Feb 10 07:50:19 2007//Tv1-4-5
+/copysamples.sh/1.9/Sun Mar 25 05:12:01 2007//Tv1-4-5
+/dir.txt/1.3/Sat Feb 10 00:14:35 2007//Tv1-4-5
+/disablememmgr.sed/1.1/Sat Feb 10 00:14:35 2007//Tv1-4-5
+/makeCBMingW.bat/1.2/Sun Sep 17 22:36:24 2006//Tv1-4-5
+/makeCBMingW_STLP.bat/1.2/Sun Sep 17 22:36:24 2006//Tv1-4-5
+/makevc71.bat/1.7/Sat Feb 10 07:50:19 2007//Tv1-4-5
+/makevc80.bat/1.5/Sat Feb 10 00:58:18 2007//Tv1-4-5
+/ogresdk.nsh/1.31.2.5/Sat Sep 29 16:57:24 2007//Tv1-4-5
+/ogresdk_CBMingW.nsi/1.6/Sun Sep 17 22:36:24 2006//Tv1-4-5
+/ogresdk_CBMingW_STLP.nsi/1.2/Sun Sep 17 22:36:24 2006//Tv1-4-5
+/ogresdk_vc6.nsi/1.3/Sat Feb 26 17:02:22 2005//Tv1-4-5
+/ogresdk_vc7.nsi/1.4/Sun Feb 19 18:48:55 2006//Tv1-4-5
+/ogresdk_vc71.nsi/1.3/Sun Feb 19 18:48:55 2006//Tv1-4-5
+/ogresdk_vc80.nsi/1.2/Mon Nov 14 17:44:26 2005//Tv1-4-5
+/prepsdkbuild.sh/1.1/Sat Feb 10 00:14:36 2007//Tv1-4-5
+/readme.txt/1.2/Tue Jan 30 16:25:32 2007//Tv1-4-5
+D/docs////
+D/samples////

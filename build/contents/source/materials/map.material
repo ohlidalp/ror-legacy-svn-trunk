@@ -1,0 +1,19 @@
+material tracks/map/icons/missing
+{
+}
+
+material tracks/map/background
+{
+	technique
+	{
+		pass
+		{
+			lighting off
+
+			texture_unit
+			{
+				texture MapRttTex1
+			}
+		}
+	}
+}

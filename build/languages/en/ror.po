@@ -1,0 +1,1411 @@
+msgid ""
+msgstr ""
+"Project-Id-Version: \n"
+"Report-Msgid-Bugs-To: \n"
+"POT-Creation-Date: 2009-02-01 10:42-0000\n"
+"PO-Revision-Date: \n"
+"Last-Translator: Thomas Fischer <thomas{AT}thomasfischer{DOT}biz>\n"
+"Language-Team: \n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"X-Poedit-KeywordsList: _L;_\n"
+"X-Poedit-Basepath: .\n"
+"X-Poedit-SearchPath-0: C:\\data\\ror-trunk\\RoRdev\\build\\main\\source\n"
+"X-Poedit-SearchPath-1: C:\\data\\ror-trunk\\RoRdev\\build\\configurator\n"
+
+#: C:\data\ror-trunk\RoRdev\build\main\source/CacheSystem.cpp:578
+msgid "incremental check: deleted and changed files"
+msgstr ""
+
+#: C:\data\ror-trunk\RoRdev\build\main\source/CacheSystem.cpp:590
+#: C:\data\ror-trunk\RoRdev\build\main\source/CacheSystem.cpp:605
+msgid "incremental check: deleted and changed files\n"
+msgstr ""
+
+#: C:\data\ror-trunk\RoRdev\build\main\source/CacheSystem.cpp:590
+#: C:\data\ror-trunk\RoRdev\build\main\source/CacheSystem.cpp:604
+#: C:\data\ror-trunk\RoRdev\build\main\source/CacheSystem.cpp:605
+msgid " not existing"
+msgstr ""
+
+#: C:\data\ror-trunk\RoRdev\build\main\source/CacheSystem.cpp:623
+msgid " changed"
+msgstr ""
+
+#: C:\data\ror-trunk\RoRdev\build\main\source/CacheSystem.cpp:636
+#: C:\data\ror-trunk\RoRdev\build\main\source/CacheSystem.cpp:650
+msgid "incremental check: processing changed zips\n"
+msgstr ""
+
+#: C:\data\ror-trunk\RoRdev\build\main\source/CacheSystem.cpp:656
+msgid "incremental check: new content\n"
+msgstr ""
+
+#: C:\data\ror-trunk\RoRdev\build\main\source/CacheSystem.cpp:660
+msgid "incremental check: new files\n"
+msgstr ""
+
+#: C:\data\ror-trunk\RoRdev\build\main\source/CacheSystem.cpp:664
+msgid "incremental check: duplicates\n"
+msgstr ""
+
+#: C:\data\ror-trunk\RoRdev\build\main\source/CacheSystem.cpp:742
+msgid "loading...\n"
+msgstr ""
+
+#: C:\data\ror-trunk\RoRdev\build\main\source/CacheSystem.cpp:2489
+msgid "Loading zips in group "
+msgstr ""
+
+#: C:\data\ror-trunk\RoRdev\build\main\source/CacheSystem.cpp:2507
+msgid "Loading directory\n"
+msgstr ""
+
+#: C:\data\ror-trunk\RoRdev\build\main\source/CacheSystem.cpp:2552
+msgid "checking for new zips in "
+msgstr ""
+
+#: C:\data\ror-trunk\RoRdev\build\main\source/CacheSystem.cpp:2571
+msgid "checking for new directories in "
+msgstr ""
+
+# in the game
+#: C:\data\ror-trunk\RoRdev\build\main\source/ExampleFrameListener.cpp:219
+msgid "Current FPS: "
+msgstr ""
+
+# in the game
+#: C:\data\ror-trunk\RoRdev\build\main\source/ExampleFrameListener.cpp:220
+msgid "Average FPS: "
+msgstr ""
+
+# in the game
+#: C:\data\ror-trunk\RoRdev\build\main\source/ExampleFrameListener.cpp:221
+msgid "Best FPS: "
+msgstr ""
+
+# in the game
+#: C:\data\ror-trunk\RoRdev\build\main\source/ExampleFrameListener.cpp:222
+msgid "Worst FPS: "
+msgstr "Worst FPS: "
+
+# in the game
+#: C:\data\ror-trunk\RoRdev\build\main\source/ExampleFrameListener.cpp:223
+msgid "Triangle Count: "
+msgstr ""
+
+# in the game
+#: C:\data\ror-trunk\RoRdev\build\main\source/ExampleFrameListener.cpp:1292
+msgid "Bad server port"
+msgstr ""
+
+# in the game
+#: C:\data\ror-trunk\RoRdev\build\main\source/ExampleFrameListener.cpp:1292
+msgid "A network error occured"
+msgstr ""
+
+#: C:\data\ror-trunk\RoRdev\build\main\source/ExampleFrameListener.cpp:1307
+msgid "Trying to connect to server ..."
+msgstr ""
+
+# in the game
+#: C:\data\ror-trunk\RoRdev\build\main\source/ExampleFrameListener.cpp:1316
+msgid "Unable to connect to the server. It is certainly down or you have network problems."
+msgstr ""
+
+#: C:\data\ror-trunk\RoRdev\build\main\source/ExampleFrameListener.cpp:1317
+msgid "Unable to connect to server"
+msgstr ""
+
+# in the game
+# in the game
+#: C:\data\ror-trunk\RoRdev\build\main\source/ExampleFrameListener.cpp:1342
+#: C:\data\ror-trunk\RoRdev\build\main\source/ExampleFrameListener.cpp:4302
+msgid "Terrain not found: "
+msgstr ""
+
+# in the game
+# in the game
+#: C:\data\ror-trunk\RoRdev\build\main\source/ExampleFrameListener.cpp:1343
+#: C:\data\ror-trunk\RoRdev\build\main\source/ExampleFrameListener.cpp:4303
+msgid "Terrain loading error"
+msgstr ""
+
+# in the game
+#: C:\data\ror-trunk\RoRdev\build\main\source/ExampleFrameListener.cpp:2190
+msgid "wrote screenshot:"
+msgstr ""
+
+# in the game
+#: C:\data\ror-trunk\RoRdev\build\main\source/ExampleFrameListener.cpp:2225
+msgid "fixed free camera"
+msgstr ""
+
+# in the game
+# in the game
+#: C:\data\ror-trunk\RoRdev\build\main\source/ExampleFrameListener.cpp:2230
+#: C:\data\ror-trunk\RoRdev\build\main\source/ExampleFrameListener.cpp:2249
+msgid "free camera"
+msgstr ""
+
+# in the game
+#: C:\data\ror-trunk\RoRdev\build\main\source/ExampleFrameListener.cpp:2242
+msgid "normal camera"
+msgstr ""
+
+# in the game
+#: C:\data\ror-trunk\RoRdev\build\main\source/ExampleFrameListener.cpp:2267
+msgid ""
+"Press Y again to exit the editor!\n"
+"Press I for help."
+msgstr ""
+
+# in the game
+#: C:\data\ror-trunk\RoRdev\build\main\source/ExampleFrameListener.cpp:2616
+msgid "Automatic shift"
+msgstr ""
+
+# in the game
+#: C:\data\ror-trunk\RoRdev\build\main\source/ExampleFrameListener.cpp:2617
+msgid "Manual shift - Auto clutch"
+msgstr ""
+
+# in the game
+#: C:\data\ror-trunk\RoRdev\build\main\source/ExampleFrameListener.cpp:2618
+msgid "Fully Manual shift"
+msgstr ""
+
+# in the game
+#: C:\data\ror-trunk\RoRdev\build\main\source/ExampleFrameListener.cpp:4038
+msgid "tracks/CreditsOverlay"
+msgstr ""
+
+# in the game
+#: C:\data\ror-trunk\RoRdev\build\main\source/ExampleFrameListener.cpp:4062
+msgid "^8 Player: ^7"
+msgstr ""
+
+# in the game
+#: C:\data\ror-trunk\RoRdev\build\main\source/ExampleFrameListener.cpp:4094
+msgid "^1 ERROR: protocol error while trying to log into RCON: "
+msgstr ""
+
+# in the game
+#: C:\data\ror-trunk\RoRdev\build\main\source/ExampleFrameListener.cpp:4108
+msgid "^1 ERROR: you must use /rlogin [password] first"
+msgstr ""
+
+# in the game
+#: C:\data\ror-trunk\RoRdev\build\main\source/ExampleFrameListener.cpp:4113
+msgid "^1 usage: /rcmd [command] [optional arguments]"
+msgstr ""
+
+# in the game
+# in the game
+# in the game
+# in the game
+#: C:\data\ror-trunk\RoRdev\build\main\source/ExampleFrameListener.cpp:4119
+#: C:\data\ror-trunk\RoRdev\build\main\source/ExampleFrameListener.cpp:4130
+#: C:\data\ror-trunk\RoRdev\build\main\source/ExampleFrameListener.cpp:4143
+#: C:\data\ror-trunk\RoRdev\build\main\source/ExampleFrameListener.cpp:4158
+msgid "^1 ERROR: protocol error while trying to send command to RCON: "
+msgstr ""
+
+# in the game
+#: C:\data\ror-trunk\RoRdev\build\main\source/ExampleFrameListener.cpp:4163
+msgid "^1 ERROR: not in network mode"
+msgstr ""
+
+# in the game
+#: C:\data\ror-trunk\RoRdev\build\main\source/ExampleFrameListener.cpp:4168
+msgid "^1 unkown Command: "
+msgstr ""
+
+# in the game
+#: C:\data\ror-trunk\RoRdev\build\main\source/ExampleFrameListener.cpp:4171
+msgid "^1 Error Parsing command"
+msgstr ""
+
+#: C:\data\ror-trunk\RoRdev\build\main\source/ExampleFrameListener.cpp:4185
+msgid "Loading Terrain"
+msgstr ""
+
+# in the game
+#: C:\data\ror-trunk\RoRdev\build\main\source/ExampleFrameListener.cpp:6848
+msgid "Please clear the place first"
+msgstr ""
+
+# in the game
+#: C:\data\ror-trunk\RoRdev\build\main\source/gui_loader.cpp:60
+msgid "OK"
+msgstr ""
+
+# in the game
+#: C:\data\ror-trunk\RoRdev\build\main\source/gui_loader.cpp:61
+msgid "Cancel"
+msgstr ""
+
+# in the game
+#: C:\data\ror-trunk\RoRdev\build\main\source/gui_loader.cpp:62
+msgid "Loader"
+msgstr ""
+
+# in the game
+#: C:\data\ror-trunk\RoRdev\build\main\source/gui_loader.cpp:63
+msgid "Search"
+msgstr "Suchen"
+
+# in the game
+# in the game
+#: C:\data\ror-trunk\RoRdev\build\main\source/gui_loader.cpp:480
+msgid "unknown.dds"
+msgstr ""
+
+# in the game
+#: C:\data\ror-trunk\RoRdev\build\main\source/gui_loader.cpp:532
+msgid "no author information available"
+msgstr ""
+
+# in the game
+#: C:\data\ror-trunk\RoRdev\build\main\source/gui_loader.cpp:537
+msgid "Authors: "
+msgstr ""
+
+# in the game
+#: C:\data\ror-trunk\RoRdev\build\main\source/gui_loader.cpp:538
+msgid "Wheels: "
+msgstr ""
+
+# in the game
+#: C:\data\ror-trunk\RoRdev\build\main\source/gui_loader.cpp:539
+msgid "Mass: "
+msgstr ""
+
+# in the game
+#: C:\data\ror-trunk\RoRdev\build\main\source/gui_loader.cpp:539
+msgid "tons"
+msgstr ""
+
+# in the game
+#: C:\data\ror-trunk\RoRdev\build\main\source/gui_loader.cpp:540
+msgid "Nodes: "
+msgstr ""
+
+# in the game
+#: C:\data\ror-trunk\RoRdev\build\main\source/gui_loader.cpp:541
+msgid "Torque: "
+msgstr ""
+
+# in the game
+#: C:\data\ror-trunk\RoRdev\build\main\source/gui_loader.cpp:543
+msgid "Non-Driveable"
+msgstr ""
+
+# in the game
+#: C:\data\ror-trunk\RoRdev\build\main\source/gui_loader.cpp:543
+msgid "Truck"
+msgstr ""
+
+# in the game
+#: C:\data\ror-trunk\RoRdev\build\main\source/gui_loader.cpp:543
+msgid "Airplane"
+msgstr ""
+
+# in the game
+#: C:\data\ror-trunk\RoRdev\build\main\source/gui_loader.cpp:543
+msgid "Boat"
+msgstr ""
+
+# in the game
+#: C:\data\ror-trunk\RoRdev\build\main\source/gui_loader.cpp:543
+msgid "Machine"
+msgstr ""
+
+# in the game
+#: C:\data\ror-trunk\RoRdev\build\main\source/gui_loader.cpp:544
+msgid "Vehicle Type: "
+msgstr ""
+
+# in the game
+#: C:\data\ror-trunk\RoRdev\build\main\source/IngameConsole.cpp:308
+msgid "unkown encoding problem"
+msgstr ""
+
+# in the game
+#: C:\data\ror-trunk\RoRdev\build\main\source/IngameEditor.cpp:646
+msgid ""
+"Keytable for the truck editor:\n"
+"Y - exit/enter editor\n"
+"R - Reset Plane and cursors\n"
+"SPACE / Left Mouse Button - Place Beams\n"
+"G - Switch Beam type\n"
+"H - Show coordinates information\n"
+"M / Right Mouse Button - Move selected Node\n"
+"N - change node type\n"
+"Mouse - move curor\n"
+"NUMPAD 4682/93/5 - rotate/zoom/reset view\n"
+"PAGE UP/DOWN - Move Editingg Plane forwards/backwards\n"
+"UP/LEFT/RIGHT/DOWN - move red cursor up/left/right/down\n"
+"Please note that you do not drag with the mouse. Rather click twice!\n"
+msgstr ""
+
+# in the game
+#: C:\data\ror-trunk\RoRdev\build\main\source/Settings.cpp:94
+msgid "Error while retrieving program space path"
+msgstr ""
+
+# in the game
+# in the game
+#: C:\data\ror-trunk\RoRdev\build\main\source/Settings.cpp:94
+#: C:\data\ror-trunk\RoRdev\build\main\source/Settings.cpp:102
+msgid "Startup error"
+msgstr ""
+
+# in the game
+#: C:\data\ror-trunk\RoRdev\build\main\source/Settings.cpp:102
+msgid "Error while retrieving user space path"
+msgstr ""
+
+# in the game
+#: C:\data\ror-trunk\RoRdev\build\main\source/TruckHUD.cpp:105
+msgid "(no author information available)"
+msgstr ""
+
+# in the game
+#: C:\data\ror-trunk\RoRdev\build\main\source/TruckHUD.cpp:143
+msgid "beam count: "
+msgstr ""
+
+# in the game
+#: C:\data\ror-trunk\RoRdev\build\main\source/TruckHUD.cpp:147
+msgid "broken: "
+msgstr ""
+
+# in the game
+#: C:\data\ror-trunk\RoRdev\build\main\source/TruckHUD.cpp:154
+msgid "health: "
+msgstr ""
+
+# in the game
+#: C:\data\ror-trunk\RoRdev\build\main\source/TruckHUD.cpp:162
+msgid "destruction: "
+msgstr ""
+
+# in the game
+#: C:\data\ror-trunk\RoRdev\build\main\source/TruckHUD.cpp:167
+msgid "deformed: "
+msgstr ""
+
+# in the game
+#: C:\data\ror-trunk\RoRdev\build\main\source/TruckHUD.cpp:171
+msgid "average deformation: "
+msgstr ""
+
+# in the game
+#: C:\data\ror-trunk\RoRdev\build\main\source/TruckHUD.cpp:175
+msgid "average stress: "
+msgstr ""
+
+# in the game
+#: C:\data\ror-trunk\RoRdev\build\main\source/TruckHUD.cpp:181
+msgid "node count: "
+msgstr ""
+
+# in the game
+#: C:\data\ror-trunk\RoRdev\build\main\source/TruckHUD.cpp:184
+msgid "current mass:"
+msgstr ""
+
+# in the game
+#: C:\data\ror-trunk\RoRdev\build\main\source/TruckHUD.cpp:211
+msgid "current RPM:"
+msgstr ""
+
+# in the game
+#: C:\data\ror-trunk\RoRdev\build\main\source/TruckHUD.cpp:233
+msgid "current Speed:"
+msgstr ""
+
+# in the game
+#: C:\data\ror-trunk\RoRdev\build\main\source/TruckHUD.cpp:234
+msgid "max Speed:"
+msgstr ""
+
+# in the game
+#: C:\data\ror-trunk\RoRdev\build\main\source/TruckHUD.cpp:276
+msgid "Altitude:"
+msgstr ""
+
+# in the game
+#: C:\data\ror-trunk\RoRdev\build\main\source/TruckHUD.cpp:345
+msgid "Commands:"
+msgstr ""
+
+# in the configurator
+#: C:\data\ror-trunk\RoRdev\build\configurator/source/configurator.cpp:378
+msgid "Event Name: "
+msgstr ""
+
+# in the configurator
+#: C:\data\ror-trunk\RoRdev\build\configurator/source/configurator.cpp:388
+#: C:\data\ror-trunk\RoRdev\build\configurator/source/configurator.cpp:401
+msgid "Keyboard"
+msgstr ""
+
+# in the configurator
+#: C:\data\ror-trunk\RoRdev\build\configurator/source/configurator.cpp:392
+msgid "Please select an input event."
+msgstr ""
+
+# in the configurator
+#: C:\data\ror-trunk\RoRdev\build\configurator/source/configurator.cpp:396
+msgid "Input Type: "
+msgstr ""
+
+# in the configurator
+#: C:\data\ror-trunk\RoRdev\build\configurator/source/configurator.cpp:403
+#: C:\data\ror-trunk\RoRdev\build\configurator/source/configurator.cpp:1415
+msgid "Add"
+msgstr ""
+
+# in the configurator
+#: C:\data\ror-trunk\RoRdev\build\configurator/source/configurator.cpp:404
+msgid "Add the key"
+msgstr ""
+
+# in the configurator
+#: C:\data\ror-trunk\RoRdev\build\configurator/source/configurator.cpp:407
+msgid "close this dialog"
+msgstr ""
+
+# in the configurator
+#: C:\data\ror-trunk\RoRdev\build\configurator/source/configurator.cpp:416
+msgid "Event Description: "
+msgstr ""
+
+# in the configurator
+#: C:\data\ror-trunk\RoRdev\build\configurator/source/configurator.cpp:472
+msgid "Event Name"
+msgstr ""
+
+# in the configurator
+#: C:\data\ror-trunk\RoRdev\build\configurator/source/configurator.cpp:473
+msgid "Event Value (left = 0%, right = 100%)"
+msgstr ""
+
+# in the configurator
+#: C:\data\ror-trunk\RoRdev\build\configurator/source/configurator.cpp:474
+msgid "ok (end test)"
+msgstr ""
+
+# in the configurator
+#: C:\data\ror-trunk\RoRdev\build\configurator/source/configurator.cpp:639
+msgid "(Please press a key)"
+msgstr ""
+
+# in the configurator
+#: C:\data\ror-trunk\RoRdev\build\configurator/source/configurator.cpp:661
+msgid "(Please press a Joystick Button)"
+msgstr ""
+
+# in the configurator
+#: C:\data\ror-trunk\RoRdev\build\configurator/source/configurator.cpp:687
+msgid "(Please move an Axis)\n"
+msgstr ""
+
+# in the configurator
+#: C:\data\ror-trunk\RoRdev\build\configurator/source/configurator.cpp:1233
+msgid "Rigs of Rods configuration"
+msgstr ""
+
+# in the configurator
+#: C:\data\ror-trunk\RoRdev\build\configurator/source/configurator.cpp:1338
+msgid "Restore Defaults"
+msgstr ""
+
+# in the configurator
+#: C:\data\ror-trunk\RoRdev\build\configurator/source/configurator.cpp:1339
+msgid "Restore the default configuration."
+msgstr ""
+
+# in the configurator
+# in the configurator
+#: C:\data\ror-trunk\RoRdev\build\configurator/source/configurator.cpp:1342
+#: C:\data\ror-trunk\RoRdev\build\configurator/source/configurator.cpp:1355
+msgid "Save and Play"
+msgstr ""
+
+# in the configurator
+#: C:\data\ror-trunk\RoRdev\build\configurator/source/configurator.cpp:1343
+#: C:\data\ror-trunk\RoRdev\build\configurator/source/configurator.cpp:1356
+msgid "Save the current configuration and start RoR."
+msgstr ""
+
+# in the configurator
+#: C:\data\ror-trunk\RoRdev\build\configurator/source/configurator.cpp:1346
+msgid "Save and Exit"
+msgstr ""
+
+# in the configurator
+#: C:\data\ror-trunk\RoRdev\build\configurator/source/configurator.cpp:1347
+msgid "Save the current configuration and close the configuration program."
+msgstr ""
+
+# in the configurator
+#: C:\data\ror-trunk\RoRdev\build\configurator/source/configurator.cpp:1351
+msgid "Cancel the configuration changes and close the configuration program."
+msgstr ""
+
+# in the configurator
+#: C:\data\ror-trunk\RoRdev\build\configurator/source/configurator.cpp:1364
+msgid "Simple Settings"
+msgstr ""
+
+# in the configurator
+#: C:\data\ror-trunk\RoRdev\build\configurator/source/configurator.cpp:1367
+msgid "Graphics"
+msgstr ""
+
+# in the configurator
+#: C:\data\ror-trunk\RoRdev\build\configurator/source/configurator.cpp:1370
+msgid "Sounds"
+msgstr ""
+
+# in the configurator
+#: C:\data\ror-trunk\RoRdev\build\configurator/source/configurator.cpp:1373
+msgid "CPU"
+msgstr ""
+
+# in the configurator
+#: C:\data\ror-trunk\RoRdev\build\configurator/source/configurator.cpp:1376
+msgid "Controls"
+msgstr ""
+
+# in the configurator
+#: C:\data\ror-trunk\RoRdev\build\configurator/source/configurator.cpp:1416
+msgid "Delete selected"
+msgstr ""
+
+# in the configurator
+#: C:\data\ror-trunk\RoRdev\build\configurator/source/configurator.cpp:1420
+msgid "Import Keymap"
+msgstr ""
+
+# in the configurator
+#: C:\data\ror-trunk\RoRdev\build\configurator/source/configurator.cpp:1422
+msgid "Export Keymap"
+msgstr ""
+
+# in the configurator
+#: C:\data\ror-trunk\RoRdev\build\configurator/source/configurator.cpp:1425
+msgid "Test"
+msgstr ""
+
+# in the configurator
+#: C:\data\ror-trunk\RoRdev\build\configurator/source/configurator.cpp:1433
+msgid "Network"
+msgstr ""
+
+# in the configurator
+#: C:\data\ror-trunk\RoRdev\build\configurator/source/configurator.cpp:1436
+msgid "Advanced"
+msgstr ""
+
+# in the configurator
+#: C:\data\ror-trunk\RoRdev\build\configurator/source/configurator.cpp:1439
+msgid "Community / Support"
+msgstr ""
+
+# in the configurator
+#: C:\data\ror-trunk\RoRdev\build\configurator/source/configurator.cpp:1447
+msgid ""
+"This can help you to set the Configurations in a simple way.\n"
+"Just move the slider below and press save and play."
+msgstr ""
+
+# in the configurator
+#: C:\data\ror-trunk\RoRdev\build\configurator/source/configurator.cpp:1449
+msgid "CPU Settings"
+msgstr ""
+
+# in the configurator
+#: C:\data\ror-trunk\RoRdev\build\configurator/source/configurator.cpp:1452
+#: C:\data\ror-trunk\RoRdev\build\configurator/source/configurator.cpp:1461
+msgid "Sets all settings in a simple way"
+msgstr ""
+
+# in the configurator
+#: C:\data\ror-trunk\RoRdev\build\configurator/source/configurator.cpp:1454
+#: C:\data\ror-trunk\RoRdev\build\configurator/source/configurator.cpp:1463
+msgid "High Performance"
+msgstr ""
+
+# in the configurator
+#: C:\data\ror-trunk\RoRdev\build\configurator/source/configurator.cpp:1455
+#: C:\data\ror-trunk\RoRdev\build\configurator/source/configurator.cpp:1464
+msgid "Balanced"
+msgstr ""
+
+# in the configurator
+#: C:\data\ror-trunk\RoRdev\build\configurator/source/configurator.cpp:1456
+#: C:\data\ror-trunk\RoRdev\build\configurator/source/configurator.cpp:1465
+msgid "High Quality"
+msgstr ""
+
+# in the configurator
+#: C:\data\ror-trunk\RoRdev\build\configurator/source/configurator.cpp:1458
+msgid "Graphics Settings"
+msgstr ""
+
+# in the configurator
+#: C:\data\ror-trunk\RoRdev\build\configurator/source/configurator.cpp:1470
+msgid "Screen configuration"
+msgstr ""
+
+# in the configurator
+#: C:\data\ror-trunk\RoRdev\build\configurator/source/configurator.cpp:1473
+msgid "Device:"
+msgstr ""
+
+# in the configurator
+#: C:\data\ror-trunk\RoRdev\build\configurator/source/configurator.cpp:1475
+msgid ""
+"Select the graphics card you want to use.\n"
+"If you have more than one video card, you should choose the fastest."
+msgstr ""
+
+# in the configurator
+#: C:\data\ror-trunk\RoRdev\build\configurator/source/configurator.cpp:1478
+#: C:\data\ror-trunk\RoRdev\build\configurator/source/configurator.cpp:1483
+msgid "RTT Mode:"
+msgstr ""
+
+# in the configurator
+#: C:\data\ror-trunk\RoRdev\build\configurator/source/configurator.cpp:1480
+#: C:\data\ror-trunk\RoRdev\build\configurator/source/configurator.cpp:1485
+msgid ""
+"Select the preferred Render To Texture mode.\n"
+"Change this in case of artefacts in water, dashboard or mirrors, or to improve performances."
+msgstr ""
+
+# in the configurator
+#: C:\data\ror-trunk\RoRdev\build\configurator/source/configurator.cpp:1487
+msgid "Video mode:"
+msgstr ""
+
+# in the configurator
+#: C:\data\ror-trunk\RoRdev\build\configurator/source/configurator.cpp:1489
+msgid ""
+"Select the video mode you want to use.\n"
+"Smaller screen sizes may be faster on some hardwares.\n"
+"16-bit colour modes uses less video memory, but adds strange colour artifacts."
+msgstr ""
+
+# in the configurator
+#: C:\data\ror-trunk\RoRdev\build\configurator/source/configurator.cpp:1491
+msgid "Anti-aliasing:"
+msgstr ""
+
+# in the configurator
+#: C:\data\ror-trunk\RoRdev\build\configurator/source/configurator.cpp:1493
+msgid ""
+"Gives a smoother image and reduces jagged edges,\n"
+"but may be incompatible with several other options, including visual effects and water effects."
+msgstr ""
+
+# in the configurator
+#: C:\data\ror-trunk\RoRdev\build\configurator/source/configurator.cpp:1495
+msgid "Texture filtering:"
+msgstr ""
+
+# in the configurator
+#: C:\data\ror-trunk\RoRdev\build\configurator/source/configurator.cpp:1501
+msgid ""
+"Most recent hardware can do Anisotropic filtering without significant slowdown.\n"
+"Use lower settings only on old or poor video chipsets."
+msgstr ""
+
+# in the configurator
+#: C:\data\ror-trunk\RoRdev\build\configurator/source/configurator.cpp:1503
+msgid "Full screen"
+msgstr ""
+
+# in the configurator
+#: C:\data\ror-trunk\RoRdev\build\configurator/source/configurator.cpp:1507
+msgid "Full screen mode uses a bit less memory resources"
+msgstr ""
+
+# in the configurator
+#: C:\data\ror-trunk\RoRdev\build\configurator/source/configurator.cpp:1509
+msgid "VSync"
+msgstr ""
+
+# in the configurator
+#: C:\data\ror-trunk\RoRdev\build\configurator/source/configurator.cpp:1510
+msgid ""
+"Check this only if you have way more than 60fps, to avoid visual artifacts.\n"
+"Below 60fps this is a waste of CPU time."
+msgstr ""
+
+# in the configurator
+#: C:\data\ror-trunk\RoRdev\build\configurator/source/configurator.cpp:1512
+msgid "Special effects"
+msgstr ""
+
+# in the configurator
+#: C:\data\ror-trunk\RoRdev\build\configurator/source/configurator.cpp:1514
+msgid "Sky type:"
+msgstr ""
+
+# in the configurator
+#: C:\data\ror-trunk\RoRdev\build\configurator/source/configurator.cpp:1518
+msgid "Caelum sky is nice but quite slow unless you have a high-powered GPU."
+msgstr ""
+
+# in the configurator
+#: C:\data\ror-trunk\RoRdev\build\configurator/source/configurator.cpp:1520
+msgid "Shadow type:"
+msgstr ""
+
+# in the configurator
+#: C:\data\ror-trunk\RoRdev\build\configurator/source/configurator.cpp:1525
+msgid ""
+"Texture shadows are fast but limited: jagged edges, no object self-shadowing, limited shadow distance.\n"
+"Stencil shadows are slow but gives perfect shadows."
+msgstr ""
+
+# in the configurator
+#: C:\data\ror-trunk\RoRdev\build\configurator/source/configurator.cpp:1527
+msgid "Water type:"
+msgstr ""
+
+# in the configurator
+#: C:\data\ror-trunk\RoRdev\build\configurator/source/configurator.cpp:1534
+msgid "Water reflection is slower, and requires a good GPU. In speed optimized mode you may experience excessive camera shaking."
+msgstr ""
+
+# in the configurator
+#: C:\data\ror-trunk\RoRdev\build\configurator/source/configurator.cpp:1536
+msgid "Enable waves"
+msgstr ""
+
+# in the configurator
+#: C:\data\ror-trunk\RoRdev\build\configurator/source/configurator.cpp:1537
+msgid "Enabling waves adds a lot of fun in boats, but can have a big performance impact on some specific hardwares."
+msgstr ""
+
+# in the configurator
+#: C:\data\ror-trunk\RoRdev\build\configurator/source/configurator.cpp:1539
+msgid "Water spray"
+msgstr ""
+
+# in the configurator
+#: C:\data\ror-trunk\RoRdev\build\configurator/source/configurator.cpp:1540
+msgid "No effect unless you mess with water, looks pretty good also."
+msgstr ""
+
+# in the configurator
+#: C:\data\ror-trunk\RoRdev\build\configurator/source/configurator.cpp:1542
+msgid "Vegetation:"
+msgstr ""
+
+# in the configurator
+#: C:\data\ror-trunk\RoRdev\build\configurator/source/configurator.cpp:1548
+msgid "This determines how much grass and how many trees (and such objects) should get displayed."
+msgstr ""
+
+# in the configurator
+#: C:\data\ror-trunk\RoRdev\build\configurator/source/configurator.cpp:1551
+msgid "Particle systems"
+msgstr ""
+
+# in the configurator
+#: C:\data\ror-trunk\RoRdev\build\configurator/source/configurator.cpp:1552
+msgid "Dust"
+msgstr ""
+
+# in the configurator
+#: C:\data\ror-trunk\RoRdev\build\configurator/source/configurator.cpp:1553
+msgid "This may hurt framerate a bit on old systems, but it looks pretty good."
+msgstr ""
+
+# in the configurator
+#: C:\data\ror-trunk\RoRdev\build\configurator/source/configurator.cpp:1555
+msgid "HeatHaze"
+msgstr ""
+
+# in the configurator
+#: C:\data\ror-trunk\RoRdev\build\configurator/source/configurator.cpp:1556
+msgid "Heat Haze from engines, major slowdown. (only activate with recent hardware)"
+msgstr ""
+
+# in the configurator
+#: C:\data\ror-trunk\RoRdev\build\configurator/source/configurator.cpp:1559
+msgid "Cockpit options"
+msgstr ""
+
+# in the configurator
+#: C:\data\ror-trunk\RoRdev\build\configurator/source/configurator.cpp:1560
+msgid "Mirrors"
+msgstr ""
+
+# in the configurator
+#: C:\data\ror-trunk\RoRdev\build\configurator/source/configurator.cpp:1561
+msgid "Shows the rear view mirrors in 1st person view. May cause compatibility problems for very old video cards."
+msgstr ""
+
+# in the configurator
+#: C:\data\ror-trunk\RoRdev\build\configurator/source/configurator.cpp:1563
+msgid "Visual effects"
+msgstr ""
+
+# in the configurator
+#: C:\data\ror-trunk\RoRdev\build\configurator/source/configurator.cpp:1564
+msgid "Sunburn"
+msgstr ""
+
+# in the configurator
+#: C:\data\ror-trunk\RoRdev\build\configurator/source/configurator.cpp:1565
+msgid "Requires a recent video card. Adds a bluish blinding effect."
+msgstr ""
+
+# in the configurator
+#: C:\data\ror-trunk\RoRdev\build\configurator/source/configurator.cpp:1566
+msgid "Bloom"
+msgstr ""
+
+# in the configurator
+#: C:\data\ror-trunk\RoRdev\build\configurator/source/configurator.cpp:1567
+msgid "Requires a recent video card. Adds a light blurring effect."
+msgstr ""
+
+# in the configurator
+#: C:\data\ror-trunk\RoRdev\build\configurator/source/configurator.cpp:1568
+msgid "Motion blur"
+msgstr ""
+
+# in the configurator
+#: C:\data\ror-trunk\RoRdev\build\configurator/source/configurator.cpp:1569
+msgid "Requires a recent video card. Adds a motion blur effect."
+msgstr ""
+
+# in the configurator
+#: C:\data\ror-trunk\RoRdev\build\configurator/source/configurator.cpp:1571
+msgid "High quality reflective effects"
+msgstr ""
+
+# in the configurator
+#: C:\data\ror-trunk\RoRdev\build\configurator/source/configurator.cpp:1572
+msgid "Enable high quality reflective effects. Causes a slowdown."
+msgstr ""
+
+# in the configurator
+#: C:\data\ror-trunk\RoRdev\build\configurator/source/configurator.cpp:1575
+msgid "Sound rendering:"
+msgstr ""
+
+# in the configurator
+#: C:\data\ror-trunk\RoRdev\build\configurator/source/configurator.cpp:1580
+msgid ""
+"Software sound is stereo only.\n"
+"Hardware sound will uses all your speakers, but this mode is buggy with some sound card drivers."
+msgstr ""
+
+# in the configurator
+#: C:\data\ror-trunk\RoRdev\build\configurator/source/configurator.cpp:1583
+msgid "Thread number:"
+msgstr ""
+
+# in the configurator
+#: C:\data\ror-trunk\RoRdev\build\configurator/source/configurator.cpp:1587
+msgid ""
+"If you have a Hyper-Threading, or Dual core or multiprocessor computer,\n"
+"you will have a huge gain in speed by choosing the second option.\n"
+"But this mode has some camera shaking issues.\n"
+msgstr ""
+
+# in the configurator
+#: C:\data\ror-trunk\RoRdev\build\configurator/source/configurator.cpp:1589
+msgid "Enable advanced wheel model"
+msgstr ""
+
+# in the configurator
+#: C:\data\ror-trunk\RoRdev\build\configurator/source/configurator.cpp:1590
+msgid ""
+"Some vehicles may include an advanced wheel model that is CPU intensive.\n"
+"You can force these vehicles to use a simpler model by unchecking this box."
+msgstr ""
+
+# in the configurator
+#: C:\data\ror-trunk\RoRdev\build\configurator/source/configurator.cpp:1597
+msgid "Enable network mode"
+msgstr ""
+
+# in the configurator
+#: C:\data\ror-trunk\RoRdev\build\configurator/source/configurator.cpp:1598
+msgid ""
+"This switches RoR into network mode.\n"
+"Be aware that many features are not available in network mode.\n"
+"For example, you not be able to leave your vehicle or hook objects."
+msgstr ""
+
+# in the configurator
+#: C:\data\ror-trunk\RoRdev\build\configurator/source/configurator.cpp:1601
+msgid "Nickname: "
+msgstr ""
+
+# in the configurator
+#: C:\data\ror-trunk\RoRdev\build\configurator/source/configurator.cpp:1602
+#: C:\data\ror-trunk\RoRdev\build\configurator/source/configurator.cpp:2036
+msgid "Anonymous"
+msgstr ""
+
+# in the configurator
+#: C:\data\ror-trunk\RoRdev\build\configurator/source/configurator.cpp:1603
+msgid "Your network name. Maximum 20 Characters."
+msgstr ""
+
+# in the configurator
+#: C:\data\ror-trunk\RoRdev\build\configurator/source/configurator.cpp:1611
+msgid "<p>How to play in Multiplayer:</p><br><ol><li>Click on the <b>Update</b> button to see available servers here.</li><li>Click on any underlined Server in the list.</li><li>Click on <b>Save and Play</b> button to start the game.</li></ol>"
+msgstr ""
+
+# in the configurator
+#: C:\data\ror-trunk\RoRdev\build\configurator/source/configurator.cpp:1612
+msgid ""
+"Click on Update to update the list.\n"
+"Click on blue hyperlinks to select a server."
+msgstr ""
+
+# in the configurator
+#: C:\data\ror-trunk\RoRdev\build\configurator/source/configurator.cpp:1617
+msgid "Server host name: "
+msgstr ""
+
+# in the configurator
+#: C:\data\ror-trunk\RoRdev\build\configurator/source/configurator.cpp:1618
+#: C:\data\ror-trunk\RoRdev\build\configurator/source/configurator.cpp:2038
+msgid "127.0.0.1"
+msgstr ""
+
+# in the configurator
+#: C:\data\ror-trunk\RoRdev\build\configurator/source/configurator.cpp:1619
+#: C:\data\ror-trunk\RoRdev\build\configurator/source/configurator.cpp:1623
+msgid ""
+"This field is automatically filled if you click on an hyperlink in the list.\n"
+"Do not change it."
+msgstr ""
+
+# in the configurator
+#: C:\data\ror-trunk\RoRdev\build\configurator/source/configurator.cpp:1621
+msgid "Server port number: "
+msgstr ""
+
+# in the configurator
+#: C:\data\ror-trunk\RoRdev\build\configurator/source/configurator.cpp:1622
+#: C:\data\ror-trunk\RoRdev\build\configurator/source/configurator.cpp:2040
+msgid "12333"
+msgstr ""
+
+# in the configurator
+#: C:\data\ror-trunk\RoRdev\build\configurator/source/configurator.cpp:1626
+msgid "Server password: "
+msgstr ""
+
+# in the configurator
+#: C:\data\ror-trunk\RoRdev\build\configurator/source/configurator.cpp:1628
+msgid "The server password, if required."
+msgstr ""
+
+# in the configurator
+#: C:\data\ror-trunk\RoRdev\build\configurator/source/configurator.cpp:1631
+msgid "User Token: "
+msgstr ""
+
+# in the configurator
+#: C:\data\ror-trunk\RoRdev\build\configurator/source/configurator.cpp:1633
+msgid "Your Forum User Token."
+msgstr ""
+
+# in the configurator
+#: C:\data\ror-trunk\RoRdev\build\configurator/source/configurator.cpp:1635
+msgid "Update"
+msgstr ""
+
+# in the configurator
+#: C:\data\ror-trunk\RoRdev\build\configurator/source/configurator.cpp:1647
+msgid "You do not need to change these settings unless you experience problems"
+msgstr ""
+
+# in the configurator
+#: C:\data\ror-trunk\RoRdev\build\configurator/source/configurator.cpp:1649
+msgid "Screenshot Format:"
+msgstr ""
+
+# in the configurator
+#: C:\data\ror-trunk\RoRdev\build\configurator/source/configurator.cpp:1653
+msgid "In what Format should screenshots be saved?"
+msgstr ""
+
+# in the configurator
+#: C:\data\ror-trunk\RoRdev\build\configurator/source/configurator.cpp:1655
+msgid "Light source effects:"
+msgstr ""
+
+# in the configurator
+#: C:\data\ror-trunk\RoRdev\build\configurator/source/configurator.cpp:1662
+msgid ""
+"Determines which lights will project light on the environment.\n"
+"The more light sources are used, the slowest it will be."
+msgstr ""
+
+# in the configurator
+#: C:\data\ror-trunk\RoRdev\build\configurator/source/configurator.cpp:1664
+msgid ""
+"In case the mods cache becomes corrupted, \n"
+"press this button to clear the cache. \n"
+"It will be regenerated\n"
+"the next time you launch the game:"
+msgstr ""
+
+# in the configurator
+#: C:\data\ror-trunk\RoRdev\build\configurator/source/configurator.cpp:1666
+msgid "Clear cache"
+msgstr ""
+
+# in the configurator
+#: C:\data\ror-trunk\RoRdev\build\configurator/source/configurator.cpp:1668
+msgid "Language:"
+msgstr ""
+
+# in the configurator
+#: C:\data\ror-trunk\RoRdev\build\configurator/source/configurator.cpp:1684
+#: C:\data\ror-trunk\RoRdev\build\configurator/source/configurator.cpp:2127
+msgid "(No Languages found)"
+msgstr ""
+
+# in the configurator
+#: C:\data\ror-trunk\RoRdev\build\configurator/source/configurator.cpp:1691
+msgid "This setting overrides the system's default language. You need to restart the configurator to apply the changes."
+msgstr ""
+
+# in the configurator
+#: C:\data\ror-trunk\RoRdev\build\configurator/source/configurator.cpp:1693
+msgid "Fog"
+msgstr ""
+
+# in the configurator
+#: C:\data\ror-trunk\RoRdev\build\configurator/source/configurator.cpp:1694
+msgid "Uncheck in case you have a fog problem"
+msgstr ""
+
+# in the configurator
+#: C:\data\ror-trunk\RoRdev\build\configurator/source/configurator.cpp:1696
+msgid "Engine smoke"
+msgstr ""
+
+# in the configurator
+#: C:\data\ror-trunk\RoRdev\build\configurator/source/configurator.cpp:1697
+msgid "Not much impact on speed."
+msgstr ""
+
+# in the configurator
+#: C:\data\ror-trunk\RoRdev\build\configurator/source/configurator.cpp:1699
+msgid "Custom Particles"
+msgstr ""
+
+# in the configurator
+#: C:\data\ror-trunk\RoRdev\build\configurator/source/configurator.cpp:1700
+msgid "Particles like water cannons or plain trails. Can be over-used in Multiplayer."
+msgstr ""
+
+# in the configurator
+#: C:\data\ror-trunk\RoRdev\build\configurator/source/configurator.cpp:1702
+msgid "Dashboard"
+msgstr ""
+
+# in the configurator
+#: C:\data\ror-trunk\RoRdev\build\configurator/source/configurator.cpp:1703
+msgid "Shows the dynamic dashboard in 1st person view. May cause compatibility problems for very old video cards."
+msgstr ""
+
+# in the configurator
+#: C:\data\ror-trunk\RoRdev\build\configurator/source/configurator.cpp:1705
+msgid "Replay Mode"
+msgstr ""
+
+# in the configurator
+#: C:\data\ror-trunk\RoRdev\build\configurator/source/configurator.cpp:1706
+msgid "Replay mode. (Can affect your frame rate)"
+msgstr ""
+
+# in the configurator
+#: C:\data\ror-trunk\RoRdev\build\configurator/source/configurator.cpp:1708
+msgid "Debug Truck Mass"
+msgstr ""
+
+# in the configurator
+#: C:\data\ror-trunk\RoRdev\build\configurator/source/configurator.cpp:1709
+msgid "Prints all node masses to the RoR.log. Only use for truck debugging!"
+msgstr ""
+
+# in the configurator
+#: C:\data\ror-trunk\RoRdev\build\configurator/source/configurator.cpp:1711
+msgid "Debug Collision Meshes"
+msgstr ""
+
+# in the configurator
+#: C:\data\ror-trunk\RoRdev\build\configurator/source/configurator.cpp:1712
+msgid "Shows all Collision meshes in Red to be able to position them correctly. Only use for debugging!"
+msgstr ""
+
+# in the configurator
+#: C:\data\ror-trunk\RoRdev\build\configurator/source/configurator.cpp:1714
+msgid "Hydrax Water System"
+msgstr ""
+
+# in the configurator
+#: C:\data\ror-trunk\RoRdev\build\configurator/source/configurator.cpp:1715
+msgid "Enables the new water rendering system. EXPERIMENTAL. Overrides any water settings."
+msgstr ""
+
+# in the configurator
+#: C:\data\ror-trunk\RoRdev\build\configurator/source/configurator.cpp:1717
+msgid "Disable Overview Map"
+msgstr ""
+
+# in the configurator
+#: C:\data\ror-trunk\RoRdev\build\configurator/source/configurator.cpp:1718
+msgid "Disabled the map. This is for testing purposes only, you should not gain any FPS with that."
+msgstr ""
+
+# in the configurator
+#: C:\data\ror-trunk\RoRdev\build\configurator/source/configurator.cpp:1720
+msgid "Disable Camera Pitching"
+msgstr ""
+
+# in the configurator
+#: C:\data\ror-trunk\RoRdev\build\configurator/source/configurator.cpp:1721
+msgid "If you dislike the pitching external vehicle camera, you can disable it here."
+msgstr ""
+
+# in the configurator
+#: C:\data\ror-trunk\RoRdev\build\configurator/source/configurator.cpp:1723
+msgid "Enable XFire Extension"
+msgstr ""
+
+# in the configurator
+#: C:\data\ror-trunk\RoRdev\build\configurator/source/configurator.cpp:1724
+msgid "If you use XFire, you can switch on this option to generate a more detailed game info."
+msgstr ""
+
+# in the configurator
+#: C:\data\ror-trunk\RoRdev\build\configurator/source/configurator.cpp:1726
+msgid "Enable Visual Beam Debug"
+msgstr ""
+
+# in the configurator
+#: C:\data\ror-trunk\RoRdev\build\configurator/source/configurator.cpp:1727
+msgid "Displays node numbers and more info along nodes and beams."
+msgstr ""
+
+# in the configurator
+#: C:\data\ror-trunk\RoRdev\build\configurator/source/configurator.cpp:1729
+msgid "minimum visibility range in percent"
+msgstr ""
+
+# in the configurator
+#: C:\data\ror-trunk\RoRdev\build\configurator/source/configurator.cpp:1732
+msgid ""
+"This sets the minimum sight range Setting. It determines how far the terrain should be drawn. \n"
+"100% means you can view the whole terrain. \n"
+"With 130% you can view everything across the diagonal Axis."
+msgstr ""
+
+# in the configurator
+#: C:\data\ror-trunk\RoRdev\build\configurator/source/configurator.cpp:1739
+msgid "<h2>Latest News</h2>None atm<h2>Support / Community</h2><a href='http://wiki.rigsofrods.com/index.php?title=Tutorials'>tutorials</a><p/> (this site is to be enhanced...)"
+msgstr ""
+
+# in the configurator
+#: C:\data\ror-trunk\RoRdev\build\configurator/source/configurator.cpp:1740
+msgid "here you can get help"
+msgstr ""
+
+# in the configurator
+#: C:\data\ror-trunk\RoRdev\build\configurator/source/configurator.cpp:1801
+msgid "You must save and restart the program to activate the new language!"
+msgstr ""
+
+# in the configurator
+#: C:\data\ror-trunk\RoRdev\build\configurator/source/configurator.cpp:1802
+msgid "new Language selected"
+msgstr ""
+
+# in the configurator
+#: C:\data\ror-trunk\RoRdev\build\configurator/source/configurator.cpp:1823
+msgid "Event"
+msgstr ""
+
+# in the configurator
+#: C:\data\ror-trunk\RoRdev\build\configurator/source/configurator.cpp:1825
+msgid "Type"
+msgstr ""
+
+# in the configurator
+#: C:\data\ror-trunk\RoRdev\build\configurator/source/configurator.cpp:1827
+msgid "Key/Axis"
+msgstr ""
+
+# in the configurator
+#: C:\data\ror-trunk\RoRdev\build\configurator/source/configurator.cpp:1829
+msgid "Options"
+msgstr ""
+
+# in the configurator
+#: C:\data\ror-trunk\RoRdev\build\configurator/source/configurator.cpp:2283
+msgid "Ogre config validation error"
+msgstr ""
+
+# in the configurator
+#: C:\data\ror-trunk\RoRdev\build\configurator/source/configurator.cpp:2289
+msgid "Could not open Rendering device"
+msgstr ""
+
+# in the configurator
+#: C:\data\ror-trunk\RoRdev\build\configurator/source/configurator.cpp:2289
+msgid "Ogre config error"
+msgstr ""
+
+# in the configurator
+#: C:\data\ror-trunk\RoRdev\build\configurator/source/configurator.cpp:2298
+msgid "Could not write config file"
+msgstr ""
+
+# in the configurator
+#: C:\data\ror-trunk\RoRdev\build\configurator/source/configurator.cpp:2298
+msgid "Configure error"
+msgstr ""
+
+# in the configurator
+#: C:\data\ror-trunk\RoRdev\build\configurator/source/configurator.cpp:2322
+msgid "Joystick Options"
+msgstr ""
+
+# in the configurator
+#: C:\data\ror-trunk\RoRdev\build\configurator/source/configurator.cpp:2324
+msgid "Reverse"
+msgstr ""
+
+# in the configurator
+#: C:\data\ror-trunk\RoRdev\build\configurator/source/configurator.cpp:2324
+msgid "reverse axis"
+msgstr ""
+
+# in the configurator
+#: C:\data\ror-trunk\RoRdev\build\configurator/source/configurator.cpp:2327
+msgid "Joystick Axis Region"
+msgstr ""
+
+# in the configurator
+#: C:\data\ror-trunk\RoRdev\build\configurator/source/configurator.cpp:2328
+msgid "Upper"
+msgstr ""
+
+# in the configurator
+#: C:\data\ror-trunk\RoRdev\build\configurator/source/configurator.cpp:2330
+msgid "Full"
+msgstr ""
+
+# in the configurator
+#: C:\data\ror-trunk\RoRdev\build\configurator/source/configurator.cpp:2332
+msgid "Lower"
+msgstr ""
+
+# in the configurator
+#: C:\data\ror-trunk\RoRdev\build\configurator/source/configurator.cpp:2334
+msgid "Region"
+msgstr ""
+
+# in the configurator
+#: C:\data\ror-trunk\RoRdev\build\configurator/source/configurator.cpp:2336
+msgid "Joystick Axis Deadzones"
+msgstr ""
+
+# in the configurator
+#: C:\data\ror-trunk\RoRdev\build\configurator/source/configurator.cpp:2337
+msgid "0 % (No deadzone)"
+msgstr ""
+
+# in the configurator
+#: C:\data\ror-trunk\RoRdev\build\configurator/source/configurator.cpp:2337
+msgid "no deadzone"
+msgstr ""
+
+# in the configurator
+#: C:\data\ror-trunk\RoRdev\build\configurator/source/configurator.cpp:2340
+msgid "5 %"
+msgstr ""
+
+# in the configurator
+#: C:\data\ror-trunk\RoRdev\build\configurator/source/configurator.cpp:2340
+#, c-format
+msgid "5% deadzone"
+msgstr "5% deadzone"
+
+# in the configurator
+#: C:\data\ror-trunk\RoRdev\build\configurator/source/configurator.cpp:2343
+msgid "10 %"
+msgstr "10 %"
+
+# in the configurator
+#: C:\data\ror-trunk\RoRdev\build\configurator/source/configurator.cpp:2343
+#, c-format
+msgid "10% deadzone"
+msgstr "10% deadzone"
+
+# in the configurator
+#: C:\data\ror-trunk\RoRdev\build\configurator/source/configurator.cpp:2346
+msgid "15 %"
+msgstr "15 %"
+
+# in the configurator
+#: C:\data\ror-trunk\RoRdev\build\configurator/source/configurator.cpp:2346
+#, c-format
+msgid "15% deadzone"
+msgstr ""
+
+# in the configurator
+#: C:\data\ror-trunk\RoRdev\build\configurator/source/configurator.cpp:2349
+msgid "20 %"
+msgstr ""
+
+# in the configurator
+#: C:\data\ror-trunk\RoRdev\build\configurator/source/configurator.cpp:2349
+#, c-format
+msgid "20% deadzone"
+msgstr ""
+
+# in the configurator
+#: C:\data\ror-trunk\RoRdev\build\configurator/source/configurator.cpp:2352
+msgid "30 %"
+msgstr ""
+
+# in the configurator
+#: C:\data\ror-trunk\RoRdev\build\configurator/source/configurator.cpp:2352
+#, c-format
+msgid "30% deadzone"
+msgstr ""
+
+# in the configurator
+#: C:\data\ror-trunk\RoRdev\build\configurator/source/configurator.cpp:2355
+msgid "Deadzone"
+msgstr ""
+
+# in the configurator
+#: C:\data\ror-trunk\RoRdev\build\configurator/source/configurator.cpp:2650
+#: C:\data\ror-trunk\RoRdev\build\configurator/source/configurator.cpp:2661
+msgid "Choose a file"
+msgstr ""
+

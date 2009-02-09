@@ -1,0 +1,37 @@
+material tracks/bigsign/empty
+{
+	technique
+	{
+		pass
+		{
+			scene_blend alpha_blend
+			alpha_rejection greater 0
+			cull_hardware none
+			cull_software none
+
+			texture_unit
+			{
+				texture bigsign_empty.dds
+			}
+		}
+	}
+}
+
+material tracks/bigsign/town
+{
+	technique
+	{
+		pass
+		{
+			scene_blend alpha_blend
+			alpha_rejection greater 0
+			cull_hardware none
+			cull_software none
+
+			texture_unit
+			{
+				texture bigsign_town.dds
+			}
+		}
+	}
+}

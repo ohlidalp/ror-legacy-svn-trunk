@@ -1,0 +1,46 @@
+material tracks/liebherr
+{
+	technique
+	{
+		pass
+		{
+			scene_blend alpha_blend
+			alpha_rejection greater 128 
+			texture_unit
+			{
+				texture liebherr.dds
+			}
+		}
+	}
+}
+
+
+material tracks/liebherrwheelface
+{
+	technique
+	{
+		pass
+		{
+			texture_unit
+			{
+				texture liebherrwheelface.dds
+			}
+		}
+	}
+}
+
+
+material tracks/liebherrhelp
+{
+	technique
+	{
+		pass
+		{
+
+			texture_unit
+			{
+				texture liebherrhelp.dds
+			}
+		}
+	}
+}

@@ -1,0 +1,222 @@
+// !$*UTF8*$!
+{
+	archiveVersion = 1;
+	classes = {
+	};
+	objectVersion = 44;
+	objects = {
+
+/* Begin PBXBuildFile section */
+		6C0BA25C0D1290F300037CF0 /* TreeLoader2D.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 6C0BA2540D1290F300037CF0 /* TreeLoader2D.cpp */; };
+		6C0BA25D0D1290F300037CF0 /* ImpostorPage.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 6C0BA2550D1290F300037CF0 /* ImpostorPage.cpp */; };
+		6C0BA25E0D1290F300037CF0 /* StaticBillboardSet.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 6C0BA2560D1290F300037CF0 /* StaticBillboardSet.cpp */; };
+		6C0BA25F0D1290F300037CF0 /* TreeLoader3D.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 6C0BA2570D1290F300037CF0 /* TreeLoader3D.cpp */; };
+		6C0BA2600D1290F300037CF0 /* GrassLoader.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 6C0BA2580D1290F300037CF0 /* GrassLoader.cpp */; };
+		6C0BA2610D1290F300037CF0 /* PagedGeometry.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 6C0BA2590D1290F300037CF0 /* PagedGeometry.cpp */; };
+		6C0BA2620D1290F300037CF0 /* BatchedGeometry.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 6C0BA25A0D1290F300037CF0 /* BatchedGeometry.cpp */; };
+		6C0BA2630D1290F300037CF0 /* BatchPage.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 6C0BA25B0D1290F300037CF0 /* BatchPage.cpp */; };
+/* End PBXBuildFile section */
+
+/* Begin PBXFileReference section */
+		6C0BA2540D1290F300037CF0 /* TreeLoader2D.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = TreeLoader2D.cpp; path = ../../source/TreeLoader2D.cpp; sourceTree = SOURCE_ROOT; };
+		6C0BA2550D1290F300037CF0 /* ImpostorPage.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = ImpostorPage.cpp; path = ../../source/ImpostorPage.cpp; sourceTree = SOURCE_ROOT; };
+		6C0BA2560D1290F300037CF0 /* StaticBillboardSet.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = StaticBillboardSet.cpp; path = ../../source/StaticBillboardSet.cpp; sourceTree = SOURCE_ROOT; };
+		6C0BA2570D1290F300037CF0 /* TreeLoader3D.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = TreeLoader3D.cpp; path = ../../source/TreeLoader3D.cpp; sourceTree = SOURCE_ROOT; };
+		6C0BA2580D1290F300037CF0 /* GrassLoader.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = GrassLoader.cpp; path = ../../source/GrassLoader.cpp; sourceTree = SOURCE_ROOT; };
+		6C0BA2590D1290F300037CF0 /* PagedGeometry.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = PagedGeometry.cpp; path = ../../source/PagedGeometry.cpp; sourceTree = SOURCE_ROOT; };
+		6C0BA25A0D1290F300037CF0 /* BatchedGeometry.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = BatchedGeometry.cpp; path = ../../source/BatchedGeometry.cpp; sourceTree = SOURCE_ROOT; };
+		6C0BA25B0D1290F300037CF0 /* BatchPage.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = BatchPage.cpp; path = ../../source/BatchPage.cpp; sourceTree = SOURCE_ROOT; };
+		D2AAC046055464E500DB518D /* libPagedGeometry.a */ = {isa = PBXFileReference; explicitFileType = archive.ar; includeInIndex = 0; path = libPagedGeometry.a; sourceTree = BUILT_PRODUCTS_DIR; };
+/* End PBXFileReference section */
+
+/* Begin PBXFrameworksBuildPhase section */
+		D289987405E68DCB004EDB86 /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXFrameworksBuildPhase section */
+
+/* Begin PBXGroup section */
+		08FB7794FE84155DC02AAC07 /* PagedGeometry */ = {
+			isa = PBXGroup;
+			children = (
+				08FB7795FE84155DC02AAC07 /* Source */,
+				C6A0FF2B0290797F04C91782 /* Documentation */,
+				1AB674ADFE9D54B511CA2CBB /* Products */,
+			);
+			name = PagedGeometry;
+			sourceTree = "<group>";
+		};
+		08FB7795FE84155DC02AAC07 /* Source */ = {
+			isa = PBXGroup;
+			children = (
+				6C0BA2540D1290F300037CF0 /* TreeLoader2D.cpp */,
+				6C0BA2550D1290F300037CF0 /* ImpostorPage.cpp */,
+				6C0BA2560D1290F300037CF0 /* StaticBillboardSet.cpp */,
+				6C0BA2570D1290F300037CF0 /* TreeLoader3D.cpp */,
+				6C0BA2580D1290F300037CF0 /* GrassLoader.cpp */,
+				6C0BA2590D1290F300037CF0 /* PagedGeometry.cpp */,
+				6C0BA25A0D1290F300037CF0 /* BatchedGeometry.cpp */,
+				6C0BA25B0D1290F300037CF0 /* BatchPage.cpp */,
+			);
+			name = Source;
+			sourceTree = "<group>";
+		};
+		1AB674ADFE9D54B511CA2CBB /* Products */ = {
+			isa = PBXGroup;
+			children = (
+				D2AAC046055464E500DB518D /* libPagedGeometry.a */,
+			);
+			name = Products;
+			sourceTree = "<group>";
+		};
+		C6A0FF2B0290797F04C91782 /* Documentation */ = {
+			isa = PBXGroup;
+			children = (
+			);
+			name = Documentation;
+			sourceTree = "<group>";
+		};
+/* End PBXGroup section */
+
+/* Begin PBXHeadersBuildPhase section */
+		D2AAC043055464E500DB518D /* Headers */ = {
+			isa = PBXHeadersBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXHeadersBuildPhase section */
+
+/* Begin PBXNativeTarget section */
+		D2AAC045055464E500DB518D /* PagedGeometry */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = 1DEB91EB08733DB70010E9CD /* Build configuration list for PBXNativeTarget "PagedGeometry" */;
+			buildPhases = (
+				D2AAC043055464E500DB518D /* Headers */,
+				D2AAC044055464E500DB518D /* Sources */,
+				D289987405E68DCB004EDB86 /* Frameworks */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+			);
+			name = PagedGeometry;
+			productName = PagedGeometry;
+			productReference = D2AAC046055464E500DB518D /* libPagedGeometry.a */;
+			productType = "com.apple.product-type.library.static";
+		};
+/* End PBXNativeTarget section */
+
+/* Begin PBXProject section */
+		08FB7793FE84155DC02AAC07 /* Project object */ = {
+			isa = PBXProject;
+			buildConfigurationList = 1DEB91EF08733DB70010E9CD /* Build configuration list for PBXProject "PagedGeometry" */;
+			compatibilityVersion = "Xcode 3.0";
+			hasScannedForEncodings = 1;
+			mainGroup = 08FB7794FE84155DC02AAC07 /* PagedGeometry */;
+			projectDirPath = "";
+			projectRoot = "";
+			targets = (
+				D2AAC045055464E500DB518D /* PagedGeometry */,
+			);
+		};
+/* End PBXProject section */
+
+/* Begin PBXSourcesBuildPhase section */
+		D2AAC044055464E500DB518D /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				6C0BA25C0D1290F300037CF0 /* TreeLoader2D.cpp in Sources */,
+				6C0BA25D0D1290F300037CF0 /* ImpostorPage.cpp in Sources */,
+				6C0BA25E0D1290F300037CF0 /* StaticBillboardSet.cpp in Sources */,
+				6C0BA25F0D1290F300037CF0 /* TreeLoader3D.cpp in Sources */,
+				6C0BA2600D1290F300037CF0 /* GrassLoader.cpp in Sources */,
+				6C0BA2610D1290F300037CF0 /* PagedGeometry.cpp in Sources */,
+				6C0BA2620D1290F300037CF0 /* BatchedGeometry.cpp in Sources */,
+				6C0BA2630D1290F300037CF0 /* BatchPage.cpp in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXSourcesBuildPhase section */
+
+/* Begin XCBuildConfiguration section */
+		1DEB91EC08733DB70010E9CD /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				COPY_PHASE_STRIP = NO;
+				GCC_DYNAMIC_NO_PIC = NO;
+				GCC_ENABLE_FIX_AND_CONTINUE = YES;
+				GCC_MODEL_TUNING = G5;
+				GCC_OPTIMIZATION_LEVEL = 0;
+				INSTALL_PATH = /usr/local/lib;
+				PRODUCT_NAME = PagedGeometry;
+				ZERO_LINK = YES;
+			};
+			name = Debug;
+		};
+		1DEB91ED08733DB70010E9CD /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
+				GCC_MODEL_TUNING = G5;
+				INSTALL_PATH = /usr/local/lib;
+				PRODUCT_NAME = PagedGeometry;
+			};
+			name = Release;
+		};
+		1DEB91F008733DB70010E9CD /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				GCC_WARN_ABOUT_RETURN_TYPE = YES;
+				GCC_WARN_UNUSED_VARIABLE = YES;
+				PREBINDING = NO;
+				SDKROOT = "$(DEVELOPER_SDK_DIR)/MacOSX10.4u.sdk";
+			};
+			name = Debug;
+		};
+		1DEB91F108733DB70010E9CD /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ARCHS = i386;
+				GCC_WARN_ABOUT_RETURN_TYPE = YES;
+				GCC_WARN_UNUSED_VARIABLE = YES;
+				HEADER_SEARCH_PATHS = (
+					"\"$(SRCROOT)/../../include\"",
+					"\"$(SRCROOT)/../../../ogrenew/OgreMain/include\"",
+				);
+				PREBINDING = NO;
+				SDKROOT = "$(DEVELOPER_SDK_DIR)/MacOSX10.4u.sdk";
+			};
+			name = Release;
+		};
+/* End XCBuildConfiguration section */
+
+/* Begin XCConfigurationList section */
+		1DEB91EB08733DB70010E9CD /* Build configuration list for PBXNativeTarget "PagedGeometry" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				1DEB91EC08733DB70010E9CD /* Debug */,
+				1DEB91ED08733DB70010E9CD /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+		1DEB91EF08733DB70010E9CD /* Build configuration list for PBXProject "PagedGeometry" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				1DEB91F008733DB70010E9CD /* Debug */,
+				1DEB91F108733DB70010E9CD /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+/* End XCConfigurationList section */
+	};
+	rootObject = 08FB7793FE84155DC02AAC07 /* Project object */;
+}
