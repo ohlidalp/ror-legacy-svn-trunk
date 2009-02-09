@@ -1,0 +1,13 @@
+material kwhale
+{
+	technique
+	{
+		pass
+		{
+			texture_unit
+			{
+				texture kwhale.dds
+			}
+		}
+	}
+}

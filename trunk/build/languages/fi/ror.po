@@ -1,0 +1,1136 @@
+msgid ""
+msgstr ""
+"Project-Id-Version: \n"
+"POT-Creation-Date: \n"
+"PO-Revision-Date: \n"
+"Last-Translator: CommunityTranslate.org\n"
+"Language-Team: CommunityTranslate.org\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+# : source/configurator.cpp:1140
+# | communitytranslateid=11076
+msgid "Your network name. Maximum 20 Characters."
+msgstr "Nimesi nettipelissä. Maksimipituus 20 merkkiä."
+
+# | communitytranslateid=13725
+msgid "Your Forum User Token."
+msgstr "Käyttäjätunnuksesi pelin foorumilla."
+
+# | communitytranslateid=13607
+msgid "You must save and restart the program to activate the new language!"
+msgstr "Sinun täytyy tallentaa ja käynnistää ohjelma uudestaan aktivoidaksesi uuden kielen!"
+
+# : source/configurator.cpp:1167
+# | communitytranslateid=11085
+msgid "You do not need to change these settings unless you experience problems"
+msgstr "Sinun ei tarvitse vaihtaa näitä asetuksia, ellet koe ongelmia"
+
+# | communitytranslateid=13643
+msgid "wrote screenshot:"
+msgstr "Kuva otettu:"
+
+# | communitytranslateid=13688
+msgid "Worst FPS: "
+msgstr "Matalin FPS:"
+
+# | communitytranslateid=13611
+msgid "Wheels: "
+msgstr "Renkaat:"
+
+# : source/configurator.cpp:1068
+# | communitytranslateid=11045
+msgid "Water type:"
+msgstr "Veden tyyppi:"
+
+# : source/configurator.cpp:1074
+# | communitytranslateid=11049
+msgid "Water spray"
+msgstr "Veden roiskeet"
+
+# : source/configurator.cpp:1070
+# | communitytranslateid=11046
+msgid "Water reflection is slower, and requires a good GPU. In speed optimized mode you may experience excessive camera shaking."
+msgstr "Heijastusefekti on hitaampi ja vaatii tehokkaan näytönohjaimen. Jos käytät suorituskykyyn optimoitua asetusta, pelin kamera saattaa tärähdellä."
+
+# : source/configurator.cpp:1044
+# : source/configurator.cpp:1046
+# | communitytranslateid=11040
+msgid "VSync"
+msgstr "VSync"
+
+# : source/configurator.cpp:1098
+# | communitytranslateid=11061
+msgid "Visual effects"
+msgstr "Visuaaliset efektit"
+
+# : source/configurator.cpp:1023
+# : source/configurator.cpp:1025
+# | communitytranslateid=11035
+msgid "Video mode:"
+msgstr "Resoluutio:"
+
+# | communitytranslateid=13699
+msgid "Vehicle Type: "
+msgstr "Ajoneuvon tyyppi:"
+
+# : source/configurator.cpp:1082
+# | communitytranslateid=11051
+msgid "Vegetation:"
+msgstr "Kasvillisuus:"
+
+# | communitytranslateid=13728
+msgid "User Token: "
+msgstr "Käyttäjätunnus:"
+
+# : source/configurator.cpp:1956
+# | communitytranslateid=11122
+msgid "Upper"
+msgstr "Ylempi"
+
+# : source/configurator.cpp:1165
+# | communitytranslateid=11084
+msgid "Update"
+msgstr "Päivitä"
+
+# | communitytranslateid=13767
+msgid "unkown encoding problem"
+msgstr "koodausongelma"
+
+# | communitytranslateid=13701
+msgid "unknown.dds"
+msgstr "unknown.dds"
+
+# : source/configurator.cpp:1189
+# | communitytranslateid=11091
+msgid "Uncheck in case you have a fog problem"
+msgstr "Jos esiintyy ongelmia sumun kanssa, jätä valitsematta"
+
+# | communitytranslateid=14227
+msgid "Unable to connect to the server. It is certainly down or you have network problems."
+msgstr "Yhteyden muodostus ei onnistu. Palvelin on kaatunut tai yhteydessäsi on ongelmia."
+
+# : source/configurator.cpp:1300
+# | communitytranslateid=11110
+msgid "Type"
+msgstr "Tyyppi"
+
+# | communitytranslateid=13613
+msgid "Truck"
+msgstr "Kuorma-auto"
+
+# | communitytranslateid=14230
+msgid "Triangle Count: "
+msgstr "Kolmioita:"
+
+# | communitytranslateid=14232
+msgid "tracks/CreditsOverlay"
+msgstr "tracks/CreditsOverlay"
+
+# | communitytranslateid=14233
+msgid "Torque: "
+msgstr "Vääntö:"
+
+# | communitytranslateid=13769
+msgid "tons"
+msgstr "tonnia"
+
+# : source/configurator.cpp:1121
+# : source/configurator.cpp:1122
+# | communitytranslateid=11071
+msgid "Thread number:"
+msgstr "Ytimien määrä:"
+
+# | communitytranslateid=14381
+msgid "This setting overrides the system's default language. You need to restart the configurator to apply the changes."
+msgstr "Tämä asetus muuttaa järjestelmän oletuskieltä. Ohjelma täytyy käynnistää uudestaan, jotta asetukset tulevat voimaan."
+
+# : source/configurator.cpp:1089
+# | communitytranslateid=11055
+msgid "This may hurt framerate a bit on old systems, but it looks pretty good."
+msgstr "Voi hidastaa peliä vanhemmilla tietokoneilla, mutta näyttää hyvältä."
+
+# : source/configurator.cpp:1085
+# | communitytranslateid=11052
+msgid "This determines how much grass and how many trees (and such objects) should get displayed."
+msgstr "Kuinka paljon ruohoa ja puita näet pelin aikana."
+
+# : source/configurator.cpp:1161
+# | communitytranslateid=11083
+msgid "The server password, if required."
+msgstr "Palvelimen salasana, kirjoita jos vaaditaan."
+
+# : source/configurator.cpp:1035
+# : source/configurator.cpp:1037
+# | communitytranslateid=11037
+msgid "Texture filtering:"
+msgstr "Tekstuurinsuodatus:"
+
+# : source/configurator.cpp:994
+# | communitytranslateid=11029
+msgid "Test"
+msgstr "Testi"
+
+# | communitytranslateid=13765
+msgid "Terrain not found: "
+msgstr "Maastoa ei löytynyt:"
+
+# | communitytranslateid=13763
+msgid "Terrain loading error"
+msgstr "Maaston latausvirhe"
+
+# : source/configurator.cpp:1099
+# | communitytranslateid=11062
+msgid "Sunburn"
+msgstr "Auringonpaiste"
+
+# | communitytranslateid=14235
+msgid "Startup error"
+msgstr "Käynnistysvirhe"
+
+# : source/configurator.cpp:1048
+# | communitytranslateid=11041
+msgid "Special effects"
+msgstr "Erityisefektit"
+
+# : source/configurator.cpp:938
+# | communitytranslateid=11023
+msgid "Sounds"
+msgstr "Äänet"
+
+# : source/configurator.cpp:1114
+# : source/configurator.cpp:1117
+# | communitytranslateid=11070
+msgid "Sound rendering:"
+msgstr "Ääni:"
+
+# : source/configurator.cpp:1052
+# | communitytranslateid=11042
+msgid "Sky type:"
+msgstr "Taivaan tyyppi:"
+
+# | communitytranslateid=14236
+msgid "Simple Settings"
+msgstr "Yksinkertaiset asetukset"
+
+# : source/configurator.cpp:1097
+# | communitytranslateid=11060
+msgid "Shows the rear view mirrors in 1st person view. May cause compatibility problems for very old video cards."
+msgstr "Näyttää heijastukset peileissä. Saattaa aiheuttaa yhteensopivuusongelmia vanhoilla näytönohjaimilla."
+
+# : source/configurator.cpp:1198
+# | communitytranslateid=11097
+msgid "Shows the dynamic dashboard in 1st person view. May cause compatibility problems for very old video cards."
+msgstr "Näyttää dynaamisen kojelaudan ohjaamoissa. Saattaa aiheuttaa yhteensopivuusongelmia vanhempien grafiikkakorttien kanssa."
+
+# : source/configurator.cpp:1207
+# | communitytranslateid=11103
+msgid "Shows all Collision meshes in Red to be able to position them correctly. Only use for debugging!"
+msgstr "Näyttää kaikki osumakohdat punaisella jotta voisit kohdistaa ne helpommin. Käytä vain testaukseen!"
+
+# : source/configurator.cpp:1059
+# : source/configurator.cpp:1061
+# | communitytranslateid=11044
+msgid "Shadow type:"
+msgstr "Varjot:"
+
+# | communitytranslateid=13753
+msgid "Sets all settings in a simple way"
+msgstr "Asettaa kaikki asetukset yksinkertaisella tavalla"
+
+# : source/configurator.cpp:1148
+# : source/configurator.cpp:1507
+# | communitytranslateid=11080
+msgid "Server port number: "
+msgstr "Portin numero:"
+
+# : source/configurator.cpp:1154
+# | communitytranslateid=11082
+msgid "Server password: "
+msgstr "Salasana:"
+
+# : source/configurator.cpp:1144
+# : source/configurator.cpp:1505
+# | communitytranslateid=11078
+msgid "Server host name: "
+msgstr "IP:"
+
+# | communitytranslateid=13660
+msgid "Search"
+msgstr "Etsi"
+
+# : source/configurator.cpp:1171
+# | communitytranslateid=11086
+msgid "Screenshot Format:"
+msgstr "Kuvakaappausten muoto:"
+
+# : source/configurator.cpp:1007
+# | communitytranslateid=11032
+msgid "Screen configuration"
+msgstr "Näytön kokoonpano"
+
+# : source/configurator.cpp:920
+# | communitytranslateid=11018
+msgid "Save the current configuration and start RoR."
+msgstr "Tallenna nykyiset asetukset ja aloita pelaaminen."
+
+# : source/configurator.cpp:924
+# | communitytranslateid=11020
+msgid "Save the current configuration and close the configuration program."
+msgstr "Tallenna nykyiset asetukset ja sulje ohjelma."
+
+# : source/configurator.cpp:918
+# : source/configurator.cpp:927
+# | communitytranslateid=11017
+msgid "Save and Play"
+msgstr "Tallenna ja pelaa"
+
+# : source/configurator.cpp:921
+# | communitytranslateid=11019
+msgid "Save and Exit"
+msgstr "Tallenna ja lopeta"
+
+# : source/configurator.cpp:1014
+# : source/configurator.cpp:1019
+# : source/configurator.cpp:1021
+# | communitytranslateid=11034
+msgid "RTT Mode:"
+msgstr "RTT:"
+
+# : source/configurator.cpp:897
+# | communitytranslateid=11012
+msgid "Rigs of Rods configuration"
+msgstr "Rigs of Rods -asetukset"
+
+# : source/configurator.cpp:1953
+# | communitytranslateid=11120
+msgid "reverse axis"
+msgstr "käänteinen akseli"
+
+# : source/configurator.cpp:1950
+# | communitytranslateid=11119
+msgid "Reverse"
+msgstr "Käänteinen"
+
+# : source/configurator.cpp:917
+# : source/configurator.cpp:926
+# | communitytranslateid=11016
+msgid "Restore the default configuration."
+msgstr "Palauta alkuperäinen kokoonpano."
+
+# : source/configurator.cpp:915
+# | communitytranslateid=11015
+msgid "Restore Defaults"
+msgstr "Palauta oletusasetukset"
+
+# : source/configurator.cpp:1105
+# | communitytranslateid=11067
+msgid "Requires a recent video card. Adds a motion blur effect."
+msgstr "Vaatii tehokkaan näytönohjaimen. Lisää liikkeen sumennuksen."
+
+# : source/configurator.cpp:1102
+# | communitytranslateid=11065
+msgid "Requires a recent video card. Adds a light blurring effect."
+msgstr "Vaatii tehokkaan näytönohjaimen. Lisää kevyen sumennuksen."
+
+# : source/configurator.cpp:1100
+# | communitytranslateid=11063
+msgid "Requires a recent video card. Adds a bluish blinding effect."
+msgstr "Vaatii tehokkaan näytönohjaimen. Lisää sinertävän lisäkerroksen."
+
+# : source/configurator.cpp:1201
+# | communitytranslateid=11099
+msgid "Replay mode. (Can affect your frame rate)"
+msgstr "Uusintatoiminto (saattaa vaikuttaa pelin nopeuteen)"
+
+# : source/configurator.cpp:1199
+# | communitytranslateid=11098
+msgid "Replay Mode"
+msgstr "Uusintatoiminto"
+
+# : source/configurator.cpp:1962
+# | communitytranslateid=11125
+msgid "Region"
+msgstr "Alue"
+
+# : source/configurator.cpp:1204
+# | communitytranslateid=11101
+msgid "Prints all node masses to the RoR.log. Only use for truck debugging!"
+msgstr "Kopioi sidoskohtien massat tiedostoon RoR.log. Käytä vain testaukseen!"
+
+# : source/configurator.cpp:316
+# | communitytranslateid=10994
+msgid "Please select an input event."
+msgstr "Valitse tapahtuma."
+
+# | communitytranslateid=13710
+msgid "Please clear the place first"
+msgstr "Tyhjennä ensin paikka"
+
+# : source/configurator.cpp:1195
+# | communitytranslateid=11095
+msgid "Particles like water cannons or plain trails. Can be over-used in Multiplayer."
+msgstr "Kustomoidut partikkeliefektit, kuten vesisuihkut paloautoissa. Voidaan käyttää liiallisesti nettipelissä."
+
+# : source/configurator.cpp:1086
+# | communitytranslateid=11053
+msgid "Particle systems"
+msgstr "Partikkeliefektit"
+
+# : source/configurator.cpp:1833
+# | communitytranslateid=11112
+msgid "Options"
+msgstr "Valinnat"
+
+# : source/configurator.cpp:494
+# : source/configurator.cpp:500
+# | communitytranslateid=11003
+msgid "ok (end test)"
+msgstr "ok (lopeta testaus)"
+
+# | communitytranslateid=13620
+msgid "OK"
+msgstr "OK"
+
+# : source/configurator.cpp:1838
+# | communitytranslateid=11113
+msgid "Ogre config validation error"
+msgstr "Ogre-moottorin vahvistusvirhe"
+
+# : source/configurator.cpp:1854
+# | communitytranslateid=11115
+msgid "Ogre config error"
+msgstr "Ogre-moottorin asetusvirhe"
+
+# : source/configurator.cpp:1192
+# | communitytranslateid=11093
+msgid "Not much impact on speed."
+msgstr "Ei vaikuta pelin nopeuteen suuresti."
+
+# | communitytranslateid=13704
+msgid "normal camera"
+msgstr "normaali kamera"
+
+# | communitytranslateid=14382
+msgid "Non-Driveable"
+msgstr "Ei-ajettava"
+
+# | communitytranslateid=13697
+msgid "Nodes: "
+msgstr "Sidoskohtia:"
+
+# | communitytranslateid=14384
+msgid "node count: "
+msgstr "Sidoskohtien lukumäärä:"
+
+# : source/configurator.cpp:1076
+# | communitytranslateid=11050
+msgid "No effect unless you mess with water, looks pretty good also."
+msgstr "Ei vaikuta ellet aja vedessä, näyttää hienolta."
+
+# : source/configurator.cpp:1966
+# | communitytranslateid=11128
+msgid "no deadzone"
+msgstr "no deadzone"
+
+# | communitytranslateid=13760
+msgid "no author information available"
+msgstr "tekijä tietoja ei saatavilla"
+
+# : source/configurator.cpp:1133
+# : source/configurator.cpp:1503
+# | communitytranslateid=11074
+msgid "Nickname: "
+msgstr "Nimi:"
+
+# | communitytranslateid=13742
+msgid "new Language selected"
+msgstr "uusi kieli valittu"
+
+# : source/configurator.cpp:997
+# | communitytranslateid=11030
+msgid "Network"
+msgstr "Nettipeli"
+
+# : source/configurator.cpp:498
+# | communitytranslateid=11005
+msgid "mousecfg.bmp"
+msgstr "mousecfg.bmp"
+
+# : source/configurator.cpp:1103
+# | communitytranslateid=11066
+msgid "Motion blur"
+msgstr "Liikkeen sumennus"
+
+# : source/configurator.cpp:1095
+# | communitytranslateid=11059
+msgid "Mirrors"
+msgstr "Taustapeilit"
+
+# : source/configurator.cpp:1216
+# : source/configurator.cpp:1296
+# | communitytranslateid=11108
+msgid "minimum visibility range in percent"
+msgstr "minimi näkyvyys, prosenteissa"
+
+# | communitytranslateid=13671
+msgid "max Speed:"
+msgstr "Huippunopeus:"
+
+# | communitytranslateid=13694
+msgid "Mass: "
+msgstr "Paino:"
+
+# | communitytranslateid=13683
+msgid "Manual shift - Auto clutch"
+msgstr "Manuaalinen vaihteisto - Automattinen kytkin"
+
+# | communitytranslateid=13657
+msgid "Machine"
+msgstr "Kone"
+
+# : source/configurator.cpp:1960
+# | communitytranslateid=11124
+msgid "Lower"
+msgstr "Alempi"
+
+# | communitytranslateid=13745
+msgid "Loader"
+msgstr "Kuormaaja"
+
+# | communitytranslateid=13721
+msgid "List"
+msgstr "Lista"
+
+# : source/configurator.cpp:1180
+# : source/configurator.cpp:1182
+# : source/configurator.cpp:1184
+# | communitytranslateid=11088
+msgid "Light source effects:"
+msgstr "Valaistus:"
+
+# | communitytranslateid=13666
+msgid "Language:"
+msgstr "Kieli:"
+
+# : source/configurator.cpp:504
+# | communitytranslateid=11006
+msgid "keyboardcfg.bmp"
+msgstr "keyboardcfg.bmp"
+
+# : source/configurator.cpp:312
+# | communitytranslateid=10993
+msgid "Keyboard"
+msgstr "Näppäimistö"
+
+# : source/configurator.cpp:1302
+# | communitytranslateid=11111
+msgid "Key/Axis"
+msgstr "Näppäin/akseli"
+
+# : source/configurator.cpp:1950
+# | communitytranslateid=11118
+msgid "Joystick Options"
+msgstr "Ohjaimen asetukset"
+
+# : source/configurator.cpp:1954
+# | communitytranslateid=11121
+msgid "Joystick Axis Region"
+msgstr "Joystick Axis Region"
+
+# : source/configurator.cpp:1963
+# | communitytranslateid=11126
+msgid "Joystick Axis Deadzones"
+msgstr "Joystick Axis Deadzones"
+
+# : source/configurator.cpp:496
+# | communitytranslateid=11004
+msgid "joycfg.bmp"
+msgstr "joycfg.bmp"
+
+# : source/configurator.cpp:323
+# : source/configurator.cpp:976
+# | communitytranslateid=10995
+msgid "Input Type: "
+msgstr "Syöttölaite:"
+
+# : source/configurator.cpp:1173
+# | communitytranslateid=11087
+msgid "In what Format should screenshots be saved?"
+msgstr "Missä muodossa ottamasi kuvat tallennetaan?"
+
+# : source/configurator.cpp:983
+# | communitytranslateid=11027
+msgid "Import Keymap"
+msgstr "Tuo näppäimistöasetukset"
+
+# | communitytranslateid=14237
+msgid "If you use XFire, you can switch on this option to generate a more detailed game info."
+msgstr "Jos käytät XFire:ä, voit laittaa tämän asetuksen päälle saadaksesi tarkempia pelitietoja."
+
+# | communitytranslateid=14385
+msgid "If you dislike the pitching external vehicle camera, you can disable it here."
+msgstr "Jos et pidä liikkuvasta kolmannen persoonan kuvakulmasta, voit ottaa sen pois käytöstä tästä."
+
+# : source/configurator.cpp:1208
+# | communitytranslateid=11104
+msgid "Hydrax Water System"
+msgstr "Hydrax Water System"
+
+# : source/configurator.cpp:1106
+# | communitytranslateid=11068
+msgid "High quality reflective effects"
+msgstr "Korkealaatuiset heijastusefektit"
+
+# | communitytranslateid=14238
+msgid "High Quality"
+msgstr "Korkea laatu"
+
+# | communitytranslateid=14239
+msgid "High Performance"
+msgstr "Parempi suorituskyky"
+
+# | communitytranslateid=13674
+msgid "here you can get help"
+msgstr "täältä saat apua"
+
+# : source/configurator.cpp:1090
+# | communitytranslateid=11056
+msgid "HeatHaze"
+msgstr "Lämpöefekti"
+
+# : source/configurator.cpp:1093
+# | communitytranslateid=11057
+msgid "Heat Haze from engines, major slowdown. (only activate with recent hardware)"
+msgstr "Lisää lämpöefektit, aiheuttaa suuren pudotuksen ruudunpäivitysnopeuteen (käytä vain jos sinulla on tehokas näytönohjain)"
+
+# | communitytranslateid=13964
+msgid "health: "
+msgstr "Kunto:"
+
+# | communitytranslateid=13757
+msgid "Graphics Settings"
+msgstr "Grafiikka-asetukset"
+
+# : source/configurator.cpp:935
+# | communitytranslateid=11022
+msgid "Graphics"
+msgstr "Grafiikka"
+
+# | communitytranslateid=13712
+msgid "Fully Manual shift"
+msgstr "Täysin manuaalinen vaihteisto"
+
+# : source/configurator.cpp:1043
+# | communitytranslateid=11039
+msgid "Full screen mode uses a bit less memory resources"
+msgstr "Koko näytön tila käyttää vähemmän muistia"
+
+# : source/configurator.cpp:1041
+# | communitytranslateid=11038
+msgid "Full screen"
+msgstr "Koko näyttö"
+
+# : source/configurator.cpp:1958
+# | communitytranslateid=11123
+msgid "Full"
+msgstr "Täysi"
+
+# | communitytranslateid=13716
+msgid "free camera"
+msgstr "vapaa kamera"
+
+# : source/configurator.cpp:1187
+# | communitytranslateid=11090
+msgid "Fog"
+msgstr "Sumu"
+
+# | communitytranslateid=13755
+msgid "fixed free camera"
+msgstr "kiinteä vapaa kamera"
+
+# : source/configurator.cpp:986
+# | communitytranslateid=11028
+msgid "Export Keymap"
+msgstr "Vie näppäimistöasetukset"
+
+# : source/configurator.cpp:394
+# | communitytranslateid=11002
+msgid "Event Value (left = 0%, right = 100%)"
+msgstr "Arvo (vasen = 0%, oikea = 100%)"
+
+# SOME DESCRIPTIVE TITLE.
+# Copyright (C) YEAR THE PACKAGE'S COPYRIGHT HOLDER
+# This file is distributed under the same license as the PACKAGE package.
+# FIRST AUTHOR <EMAIL@ADDRESS>, YEAR.
+# : source/configurator.cpp:298
+# : source/configurator.cpp:308
+# : source/configurator.cpp:321
+# | communitytranslateid=10992
+msgid "Event Name: "
+msgstr "Tapahtuman nimi:"
+
+# : source/configurator.cpp:393
+# | communitytranslateid=11001
+msgid "Event Name"
+msgstr "Tapahtuman nimi"
+
+# : source/configurator.cpp:392
+# | communitytranslateid=11000
+msgid "Event Description: "
+msgstr "Tapahtuman kuvaus:"
+
+# : source/configurator.cpp:1298
+# | communitytranslateid=11109
+msgid "Event"
+msgstr "Tapahtuma"
+
+# | communitytranslateid=14389
+msgid "Error while retrieving user space path"
+msgstr "Virhe haettaessa käyttäjän tilapolkua (?)"
+
+# | communitytranslateid=14390
+msgid "Error while retrieving program space path"
+msgstr "Virhe haettaessa ohjelman polkua."
+
+# : source/configurator.cpp:1190
+# | communitytranslateid=11092
+msgid "Engine smoke"
+msgstr "Moottorinsavu"
+
+# : source/configurator.cpp:1073
+# | communitytranslateid=11048
+msgid "Enabling waves adds a lot of fun in boats, but can have a big performance impact on some specific hardwares."
+msgstr "Aallot lisäävät hupia veneilyyn, mutta joillakin tietyillä kokoonpanoilla se voi aiheuttaa suuren pudotuksen ruudunpäivitysnopeudessa."
+
+# : source/configurator.cpp:1210
+# | communitytranslateid=11105
+msgid "Enables the new water rendering system. EXPERIMENTAL. Overrides any water settings."
+msgstr "Ottaa käyttöön uuden veden renderöinnin. KOKEELLINEN. Korvaa kaikki muut veden asetukset."
+
+# | communitytranslateid=14240
+msgid "Enable XFire Extension"
+msgstr "Ota käyttöön XFire laajennus"
+
+# : source/configurator.cpp:1071
+# | communitytranslateid=11047
+msgid "Enable waves"
+msgstr "Aallot"
+
+# | communitytranslateid=14391
+msgid "Enable Visual Beam Debug"
+msgstr "Ota käyttöön visuaalinen palkkien testaus"
+
+# : source/configurator.cpp:1129
+# : source/configurator.cpp:1132
+# | communitytranslateid=11073
+msgid "Enable network mode"
+msgstr "Nettipeli"
+
+# : source/configurator.cpp:1109
+# | communitytranslateid=11069
+msgid "Enable high quality reflective effects. Causes a slowdown."
+msgstr "Ota korkealaatuiset heijastusefektit käyttöön. Aiheuttaa pelin hidastumista."
+
+# : source/configurator.cpp:1123
+# : source/configurator.cpp:1128
+# | communitytranslateid=11072
+msgid "Enable advanced wheel model"
+msgstr "Ota käyttöön edistynyt rengasmallinnus"
+
+# : source/configurator.cpp:1087
+# | communitytranslateid=11054
+msgid "Dust"
+msgstr "Pöly"
+
+# | communitytranslateid=14392
+msgid "Displays node numbers and more info along nodes and beams."
+msgstr "Näyttää sidoskohtien numerot ja lisää tietoa sidoskohdista ja palkeista."
+
+# : source/configurator.cpp:1213
+# | communitytranslateid=11107
+msgid "Disabled the map. This is for testing purposes only, you should not gain any FPS with that."
+msgstr "Poistaa kartan. Tämä on vain testikäyttöön, eikä sinun pelin pitäisi nopeutua jos poistat tämän asetuksen."
+
+# : source/configurator.cpp:1211
+# | communitytranslateid=11106
+msgid "Disable Overview Map"
+msgstr "Näytä kartta"
+
+# | communitytranslateid=14407
+msgid "Disable Camera Pitching"
+msgstr "Poista käytöstä kameran liikkuminen"
+
+# : source/configurator.cpp:1009
+# : source/configurator.cpp:1012
+# : source/configurator.cpp:1017
+# | communitytranslateid=11033
+msgid "Device:"
+msgstr "Laite:"
+
+# | communitytranslateid=14386
+msgid "destruction: "
+msgstr "Tuhoutuneistuus:"
+
+# : source/configurator.cpp:981
+# | communitytranslateid=11026
+msgid "Delete selected"
+msgstr "Poista valittu"
+
+# | communitytranslateid=14387
+msgid "deformed: "
+msgstr "vääntyneitä:"
+
+# : source/configurator.cpp:1202
+# | communitytranslateid=11100
+msgid "Debug Truck Mass"
+msgstr "Testaa ajoneuvojen massa"
+
+# : source/configurator.cpp:1205
+# | communitytranslateid=11102
+msgid "Debug Collision Meshes"
+msgstr "Testaa osumakohdat"
+
+# : source/configurator.cpp:2276
+# : source/configurator.cpp:2287
+# | communitytranslateid=11139
+msgid "Deadzone"
+msgstr "Deadzone"
+
+# : source/configurator.cpp:900
+# : source/configurator.cpp:902
+# : source/configurator.cpp:908
+# | communitytranslateid=11013
+msgid "data\\\\config.bmp"
+msgstr "data\\\\config.bmp"
+
+# : source/configurator.cpp:507
+# : source/configurator.cpp:510
+# | communitytranslateid=11007
+msgid "data\\\\"
+msgstr "data\\\\"
+
+# : source/configurator.cpp:914
+# | communitytranslateid=11014
+msgid "data/config.bmp"
+msgstr "data/config.bmp"
+
+# : source/configurator.cpp:565
+# | communitytranslateid=11008
+msgid "data/"
+msgstr "data/"
+
+# : source/configurator.cpp:1196
+# | communitytranslateid=11096
+msgid "Dashboard"
+msgstr "Kojelauta"
+
+# : source/configurator.cpp:1193
+# | communitytranslateid=11094
+msgid "Custom Particles"
+msgstr "Omat partikkeliefektit"
+
+# | communitytranslateid=14241
+msgid "current Speed:"
+msgstr "Nykyinen nopeus:"
+
+# | communitytranslateid=14242
+msgid "current RPM:"
+msgstr "Kierrosluku"
+
+# | communitytranslateid=14404
+msgid "current mass:"
+msgstr "tämänhetkinen massa;"
+
+# | communitytranslateid=14228
+msgid "Current FPS: "
+msgstr "Tämänhetkinen FPS:"
+
+# | communitytranslateid=14383
+msgid "CPU Settings"
+msgstr "Suorittimen asetukset"
+
+# : source/configurator.cpp:941
+# | communitytranslateid=11024
+msgid "CPU"
+msgstr "Suoritin"
+
+# : source/configurator.cpp:1854
+# | communitytranslateid=11116
+msgid "Could not write config file"
+msgstr "Ei voi ylikirjoittaa konfigurointitiedostoa"
+
+# : source/configurator.cpp:1838
+# | communitytranslateid=11114
+msgid "Could not open Rendering device"
+msgstr "Could not open Rendering device"
+
+# : source/configurator.cpp:977
+# | communitytranslateid=11025
+msgid "Controls"
+msgstr "Ohjaimet"
+
+# : source/configurator.cpp:1948
+# | communitytranslateid=11117
+msgid "Configure error"
+msgstr "Määrittele virhe (?)"
+
+# | communitytranslateid=14405
+msgid "Community / Support"
+msgstr "Yhteisö / tuki"
+
+# | communitytranslateid=13719
+msgid "Commands:"
+msgstr "Komennot:"
+
+# : source/configurator.cpp:1094
+# | communitytranslateid=11058
+msgid "Cockpit options"
+msgstr "Ohjaamon asetukset"
+
+# : source/configurator.cpp:336
+# | communitytranslateid=10999
+msgid "close this dialog"
+msgstr "sulje tämä ikkuna"
+
+# : source/configurator.cpp:1186
+# | communitytranslateid=11089
+msgid "Clear cache"
+msgstr "Tyhjennä välimuisti"
+
+# : source/configurator.cpp:932
+# | communitytranslateid=11021
+msgid "Cancel the configuration changes and close the configuration program."
+msgstr "Hylkää muutokset ja sulkee tämän ikkunan."
+
+# : source/configurator.cpp:327
+# | communitytranslateid=10998
+msgid "Cancel"
+msgstr "Peruuta"
+
+# : source/configurator.cpp:1054
+# | communitytranslateid=11043
+msgid "Caelum sky is nice but quite slow unless you have a high-powered GPU."
+msgstr "Caelum -taivas on näyttävä, mutta hidas ellei sinulla ole huipputehoista näytönohjainta."
+
+# | communitytranslateid=13708
+msgid "broken: "
+msgstr "hajonneita:"
+
+# | communitytranslateid=13658
+msgid "Boat"
+msgstr "Vene"
+
+# : source/configurator.cpp:1101
+# | communitytranslateid=11064
+msgid "Bloom"
+msgstr "Bloom"
+
+# | communitytranslateid=13746
+msgid "Best FPS: "
+msgstr "Paras FPS:"
+
+# | communitytranslateid=14402
+msgid "beam count: "
+msgstr "palkkien lukumäärä"
+
+# | communitytranslateid=14406
+msgid "Balanced"
+msgstr "Tasapainoitettu"
+
+# | communitytranslateid=13750
+msgid "Bad server port"
+msgstr "Epäkelpo palvelimen portti"
+
+# | communitytranslateid=14388
+msgid "average stress: "
+msgstr "keskimääräinen rasitus:"
+
+# | communitytranslateid=14229
+msgid "Average FPS: "
+msgstr "Keskim. FPS"
+
+# | communitytranslateid=14403
+msgid "average deformation: "
+msgstr "keskimääräinen vääntyminen"
+
+# | communitytranslateid=13682
+msgid "Automatic shift"
+msgstr "Automaattivaihteisto"
+
+# | communitytranslateid=13653
+msgid "Authors: "
+msgstr "Tekijät:"
+
+# : source/configurator.cpp:1027
+# : source/configurator.cpp:1029
+# | communitytranslateid=11036
+msgid "Anti-aliasing:"
+msgstr "Reunanpehmennys:"
+
+# : source/configurator.cpp:1134
+# | communitytranslateid=11075
+msgid "Anonymous"
+msgstr "Nimetön"
+
+# | communitytranslateid=13649
+msgid "Altitude:"
+msgstr "Korkeus:"
+
+# | communitytranslateid=13648
+msgid "Airplane"
+msgstr "Lentokone"
+
+# : source/configurator.cpp:1003
+# | communitytranslateid=11031
+msgid "Advanced"
+msgstr "Muut asetukset"
+
+# : source/configurator.cpp:326
+# : source/configurator.cpp:923
+# | communitytranslateid=10997
+msgid "Add the key"
+msgstr "Lisää näppäin"
+
+# : source/configurator.cpp:324
+# | communitytranslateid=10996
+msgid "Add"
+msgstr "Lisää"
+
+# | communitytranslateid=14231
+msgid "A network error occured"
+msgstr "Yhteysongelma havaittu"
+
+# : source/configurator.cpp:1969
+# | communitytranslateid=11130
+msgid "5% deadzone"
+msgstr "5% deadzone"
+
+# : source/configurator.cpp:1966
+# , c-format
+# | communitytranslateid=11129
+msgid "5 %"
+msgstr "5 %"
+
+# : source/configurator.cpp:1981
+# | communitytranslateid=11138
+msgid "30% deadzone"
+msgstr "30% deadzone"
+
+# : source/configurator.cpp:1978
+# , c-format
+# | communitytranslateid=11137
+msgid "30 %"
+msgstr "30 %"
+
+# : source/configurator.cpp:1978
+# | communitytranslateid=11136
+msgid "20% deadzone"
+msgstr "20% deadzone"
+
+# : source/configurator.cpp:1975
+# , c-format
+# | communitytranslateid=11135
+msgid "20 %"
+msgstr "20 %"
+
+# : source/configurator.cpp:1975
+# | communitytranslateid=11134
+msgid "15% deadzone"
+msgstr "15% deadzone"
+
+# : source/configurator.cpp:1972
+# , c-format
+# | communitytranslateid=11133
+msgid "15 %"
+msgstr "15 %"
+
+# : source/configurator.cpp:1145
+# : source/configurator.cpp:1149
+# : source/configurator.cpp:1147
+# | communitytranslateid=11079
+msgid "127.0.0.1"
+msgstr "127.0.0.1"
+
+# : source/configurator.cpp:1152
+# | communitytranslateid=11081
+msgid "12333"
+msgstr "12333"
+
+# : source/configurator.cpp:1972
+# | communitytranslateid=11132
+msgid "10% deadzone"
+msgstr "10% deadzone"
+
+# : source/configurator.cpp:1969
+# , c-format
+# | communitytranslateid=11131
+msgid "10 %"
+msgstr "10 %"
+
+# : source/configurator.cpp:1963
+# | communitytranslateid=11127
+msgid "0 % (No deadzone)"
+msgstr "0 % (No deadzone)"
+
+# : source/configurator.cpp:1141
+# : source/configurator.cpp:1143
+# | communitytranslateid=11077
+msgid "<p>How to play in Multiplayer:</p><br><ol><li>Click on the <b>Update</b> button to see available servers here.</li><li>Click on any underlined Server in the list.</li><li>Click on <b>Save and Play</b> button to start the game.</li></ol>"
+msgstr "<p>Miten pelata moninpeliä:</p><br><ol><li>Klikkaa painiketta <b> Päivitä </b>nähdäksesi avoimet palvelimet.</li><li>Valitse jokin niistä klikkaamalla sen nimeä.</li><li>Paina <b>Tallenna ja pelaa</b> aloittaaksesi pelin.</li></ol>"
+
+# : source/configurator.cpp:587
+# | communitytranslateid=11009
+msgid "(Please press a key)"
+msgstr "(Paina näppäintä)"
+
+# : source/configurator.cpp:613
+# | communitytranslateid=11010
+msgid "(Please press a Joystick Button)"
+msgstr "(Paina ohjaimen painiketta)"
+
+# : source/configurator.cpp:829
+# | communitytranslateid=11011
+msgid "(Please move an Axis)\n"
+msgstr "(Liikuta akselia)\n"
+
+# | communitytranslateid=13758
+msgid "(No Languages found)"
+msgstr "(Kieliä ei löytynyt)"
+
+# | communitytranslateid=14246
+msgid "(no author information available)"
+msgstr "(tekijän tietoja ei saatavilla)"
+
+# | communitytranslateid=14393
+msgid "^8 Player: ^7"
+msgstr "^8 Pelaaja: ^7"
+
+# | communitytranslateid=14396
+msgid "^1 usage: /rcmd [command] [optional arguments]"
+msgstr "^1 käyttö: /rcmd [komento] [ei-pakolliset attribuutit]"
+
+# | communitytranslateid=14399
+msgid "^1 unkown Command: "
+msgstr "^1 tuntematon komento"
+
+# | communitytranslateid=14395
+msgid "^1 ERROR: you must use /rlogin [password] first"
+msgstr "^1 VIRHE: syötä käytä ensin /rlogin [salasana]"
+
+# | communitytranslateid=14397
+msgid "^1 ERROR: protocol error while trying to send command to RCON: "
+msgstr "^1 VIRHE: protokollavirhe lähetettäessä komentoa RCON:iin:"
+
+# | communitytranslateid=14394
+msgid "^1 ERROR: protocol error while trying to log into RCON: "
+msgstr "^1 VIRHE: protokollavirhe kirjauduttaessa RCON:iin:"
+
+# | communitytranslateid=14398
+msgid "^1 ERROR: not in network mode"
+msgstr "^1 VIRHE: ei verkkotilassa"
+
+# | communitytranslateid=14400
+msgid "^1 Error Parsing command"
+msgstr "^1 Virhe jäsennetäessä komentoa"
+

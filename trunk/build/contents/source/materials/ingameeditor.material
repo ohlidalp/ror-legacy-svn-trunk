@@ -1,0 +1,163 @@
+material tracks/IngameEditor/Grid1
+{
+	technique
+	{
+		pass
+		{
+			scene_blend alpha_blend
+            cull_hardware none 
+            cull_software none 
+			//alpha_rejection greater 128
+
+			texture_unit
+			{
+				texture grid1.png
+			}
+		}
+	}
+}
+
+material tracks/IngameEditor/Selector1
+{
+    technique
+    {
+        pass
+        {
+			lighting off
+			//depth_check off
+            cull_hardware none 
+            scene_blend alpha_blend
+            //depth_write off
+            texture_unit
+            {
+                colour_op_ex source1 src_manual src_current 1 0 0
+                alpha_op_ex source1 src_manual src_current 0.7
+            }
+        } 
+    }
+}
+
+material tracks/IngameEditor/Selector2
+{
+    technique
+    {
+        pass
+        {
+			lighting off
+			depth_check off
+            cull_hardware none 
+            scene_blend alpha_blend
+            depth_write off
+            texture_unit
+            {
+                colour_op_ex source1 src_manual src_current 0.5 0 0
+                alpha_op_ex source1 src_manual src_current 0.7
+            }
+        } 
+    }
+}
+
+material tracks/IngameEditor/Selector3
+{
+    technique
+    {
+        pass
+        {
+			lighting off
+			depth_check off
+            cull_hardware none 
+            scene_blend alpha_blend
+            depth_write off
+            texture_unit
+            {
+                colour_op_ex source1 src_manual src_current 0 0 1
+                alpha_op_ex source1 src_manual src_current 0.7
+            }
+        } 
+    }
+}
+
+material tracks/IngameEditor/mat-beam-behind
+{
+    technique
+    {
+        pass
+        {
+			lighting off
+            scene_blend alpha_blend
+            texture_unit
+            {
+                colour_op_ex source1 src_manual src_current 1 0.2 0.2
+                alpha_op_ex source1 src_manual src_current 0.9
+            }
+        } 
+    }
+}
+
+material tracks/IngameEditor/mat-beam-infront
+{
+    technique
+    {
+        pass
+        {
+			lighting off
+            scene_blend alpha_blend
+            texture_unit
+            {
+                colour_op_ex source1 src_manual src_current 0.2 0.2 1
+                alpha_op_ex source1 src_manual src_current 0.8
+            }
+        } 
+    }
+}
+
+material tracks/IngameEditor/mat-beam-fit
+{
+    technique
+    {
+        pass
+        {
+			lighting off
+			depth_check off
+            scene_blend alpha_blend
+            texture_unit
+            {
+                colour_op_ex source1 src_manual src_current 0.2 1 0.2
+                alpha_op_ex source1 src_manual src_current 1
+            }
+        } 
+    }
+}
+
+material tracks/IngameEditor/mat-beam-cross
+{
+    technique
+    {
+        pass
+        {
+			lighting off
+            scene_blend alpha_blend
+            texture_unit
+            {
+                colour_op_ex source1 src_manual src_current 0.2 0.6 0.2
+                alpha_op_ex source1 src_manual src_current 0.5
+            }
+        } 
+    }
+}
+
+material tracks/IngameEditor/mat-beam-trans
+{
+    technique
+    {
+        pass
+        {
+            scene_blend alpha_blend
+            texture_unit
+            {
+                colour_op_ex source1 src_manual src_current 0 0 0
+                alpha_op_ex source1 src_manual src_current 0.3
+            }
+        } 
+    }
+}

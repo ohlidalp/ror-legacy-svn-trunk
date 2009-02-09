@@ -1,0 +1,6 @@
+base referer
+rect $classOgre_1_1ShadowCameraSetup.html 8,56 197,80
+rect $classOgre_1_1DefaultShadowCameraSetup.html 265,8 494,32
+rect $classOgre_1_1FocusedShadowCameraSetup.html 260,56 500,80
+rect $classOgre_1_1PlaneOptimalShadowCameraSetup.html 245,104 514,128
+rect $classOgre_1_1LiSPSMShadowCameraSetup.html 562,56 800,80

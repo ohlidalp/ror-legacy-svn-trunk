@@ -1,0 +1,20 @@
+
+material AC3D/bouy/Mat001_Tex00
+{
+	technique
+	{
+		pass
+		{
+			ambient 0.2 0.2 0.2 1
+			specular 0.2 0.2 0.2 1 128
+			alpha_rejection greater 0
+
+			texture_unit
+			{
+				texture bouy.dds
+			}
+		}
+
+	}
+
+}

@@ -1,0 +1,13 @@
+material smallhouse2
+{
+	technique
+	{
+		pass
+		{
+			texture_unit
+			{
+				texture smallhouse2.dds
+			}
+		}
+	}
+}

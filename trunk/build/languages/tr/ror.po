@@ -1,0 +1,54 @@
+msgid ""
+msgstr ""
+"Project-Id-Version: \n"
+"POT-Creation-Date: \n"
+"PO-Revision-Date: \n"
+"Last-Translator: CommunityTranslate.org\n"
+"Language-Team: CommunityTranslate.org\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+# | communitytranslateid=14632
+msgid "Your network name. Maximum 20 Characters."
+msgstr "Ağ isminiz. En fazla 20 karakter."
+
+# | communitytranslateid=14635
+msgid "Worst FPS: "
+msgstr "En kötü FPS:"
+
+# | communitytranslateid=14639
+msgid "Unable to connect to the server. It is certainly down or you have network problems."
+msgstr "Server bağlanılamıyor. Server devre dışı veya ağla ilgili problemleriniz var."
+
+# | communitytranslateid=14636
+msgid "Triangle Count: "
+msgstr "Üçgen Sayısı:"
+
+# | communitytranslateid=14640
+msgid "Terrain not found: "
+msgstr "Harita bulunamadı."
+
+# | communitytranslateid=14641
+msgid "Terrain loading error"
+msgstr "Harita yükleme hatası"
+
+# | communitytranslateid=14631
+msgid "Current FPS: "
+msgstr "FPS(ŞU ANKİ):"
+
+# | communitytranslateid=14634
+msgid "Best FPS: "
+msgstr "En iyi FPS:"
+
+# | communitytranslateid=14637
+msgid "Bad server port"
+msgstr "Kötü server portu"
+
+# | communitytranslateid=14633
+msgid "Average FPS: "
+msgstr "Ortalama FPS"
+
+# | communitytranslateid=14638
+msgid "A network error occured"
+msgstr "Ağ hatası meydana geldi"
+

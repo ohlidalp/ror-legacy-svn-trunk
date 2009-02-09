@@ -1,0 +1,36 @@
+/Makefile.am/1.30/Mon Feb 26 16:29:32 2007//Tv1-4-5
+/OgreGLATIFSInit.cpp/1.2/Thu Jan 15 21:32:32 2004//Tv1-4-5
+/OgreGLContext.cpp/1.6/Thu Oct 19 21:27:44 2006//Tv1-4-5
+/OgreGLDefaultHardwareBufferManager.cpp/1.8/Thu Mar 22 15:50:37 2007//Tv1-4-5
+/OgreGLEngineDll.cpp/1.9/Mon Feb 26 16:55:06 2007//Tv1-4-5
+/OgreGLFBOMultiRenderTarget.cpp/1.3/Wed Aug 23 08:18:53 2006//Tv1-4-5
+/OgreGLFBORenderTexture.cpp/1.15/Sat Mar 10 10:04:06 2007//Tv1-4-5
+/OgreGLFrameBufferObject.cpp/1.5/Tue Oct 10 21:52:58 2006//Tv1-4-5
+/OgreGLGpuNvparseProgram.cpp/1.12/Thu Jan 25 10:44:53 2007//Tv1-4-5
+/OgreGLGpuProgram.cpp/1.17.2.1/Fri Aug 17 13:58:34 2007//Tv1-4-5
+/OgreGLGpuProgramManager.cpp/1.16/Thu Jan 25 10:44:53 2007//Tv1-4-5
+/OgreGLHardwareBufferManager.cpp/1.17/Sat Mar 17 15:14:18 2007//Tv1-4-5
+/OgreGLHardwareIndexBuffer.cpp/1.19.2.1/Fri May 25 14:51:49 2007//Tv1-4-5
+/OgreGLHardwareOcclusionQuery.cpp/1.11/Sun Nov 26 16:07:30 2006//Tv1-4-5
+/OgreGLHardwarePixelBuffer.cpp/1.26.2.1/Mon Aug 27 16:36:39 2007//Tv1-4-5
+/OgreGLHardwareVertexBuffer.cpp/1.22.2.1/Fri May 25 14:51:49 2007//Tv1-4-5
+/OgreGLPBRenderTexture.cpp/1.6/Mon Mar 19 15:42:39 2007//Tv1-4-5
+/OgreGLPixelFormat.cpp/1.26/Mon Feb 26 16:55:06 2007//Tv1-4-5
+/OgreGLPlugin.cpp/1.1.2.1/Tue Apr  3 15:18:44 2007//Tv1-4-5
+/OgreGLRenderSystem.cpp/1.227.2.4/Mon Jul  9 17:55:58 2007//Tv1-4-5
+/OgreGLRenderTexture.cpp/1.7/Tue Jan  2 16:34:00 2007//Tv1-4-5
+/OgreGLSupport.cpp/1.22/Mon Feb 26 16:55:06 2007//Tv1-4-5
+/OgreGLTexture.cpp/1.85/Tue Jan  2 16:34:00 2007//Tv1-4-5
+/OgreGLTextureManager.cpp/1.15/Sun Mar 18 13:17:02 2007//Tv1-4-5
+/OgreWin32GLSupport.cpp/1.33.2.4/Fri Aug 17 13:58:34 2007//Tv1-4-5
+/OgreWin32RenderTexture.cpp/1.19/Tue Jan  2 16:34:00 2007//Tv1-4-5
+/OgreWin32Window.cpp/1.45.2.6/Wed Aug 15 12:11:39 2007//Tv1-4-5
+/glew.cpp/1.7/Thu Jan 18 16:55:52 2007//Tv1-4-5
+D/GLSL////
+D/GLX////
+D/OSX////
+D/SDL////
+D/atifs////
+D/gtk////
+D/nvparse////
+D/win32////

@@ -1,0 +1,37 @@
+project(RoR_Dependencies)
+
+# non - ogre dependent
+if(ROR_BUILD_LUASCRIPT)
+ add_subdirectory("lua-5.1.2")
+endif(ROR_BUILD_LUASCRIPT)
+
+add_subdirectory("mysocketw")
+add_subdirectory("OIS-HEAD")
+#add_subdirectory("openal-soft-1.5.304")
+add_subdirectory("openal-soft-1.6.372")
+
+set(OGRE_SET_DISABLE_FREEIMAGE 1)
+add_subdirectory("ogrenew")
+
+# OGRE dependent
+if(CAELUM_BUILD_NEW)
+  add_subdirectory("caelum")
+else(CAELUM_BUILD_NEW)
+  add_subdirectory("Caelum-2006-11-09")
+endif(CAELUM_BUILD_NEW)
+
+if(ROR_BUILD_HYDRAX)
+  add_subdirectory("hydrax")
+endif(ROR_BUILD_HYDRAX)
+
+if(ROR_BUILD_PAGED)
+  add_subdirectory("PagedGeometry")
+endif(ROR_BUILD_PAGED)
+
+add_subdirectory("moFileReader")
+
+if(ROR_BUILD_NEWNET)
+add_subdirectory("raknet")
+endif(ROR_BUILD_NEWNET)
+
+add_subdirectory("mygui")

@@ -1,0 +1,8 @@
+monorailstation.mesh
+1, 1, 1
+
+beginmesh
+mesh monorailstation.mesh
+endmesh
+
+end

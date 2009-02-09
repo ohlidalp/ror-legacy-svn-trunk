@@ -1,0 +1,16 @@
+material tracks/An12
+{
+	technique
+	{
+		pass
+		{
+			scene_blend alpha_blend
+			alpha_rejection greater 128 
+			texture_unit
+			{
+				texture an-12.dds
+			}
+		}
+	}
+}
+

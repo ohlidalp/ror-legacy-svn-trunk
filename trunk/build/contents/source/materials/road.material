@@ -1,0 +1,42 @@
+material road
+{
+	technique
+	{
+		pass
+		{
+			texture_unit
+			{
+				texture road.dds
+			}
+		}
+	}
+}
+
+material roadbf
+{
+	technique
+	{
+		pass
+		{
+			cull_hardware none
+			texture_unit
+			{
+				texture road.dds
+			}
+		}
+	}
+}
+
+material runway
+{
+	technique
+	{
+		pass
+		{
+			texture_unit
+			{
+				texture runway.dds
+			}
+		}
+	}
+}

@@ -1,0 +1,24 @@
+/Makefile.am/1.3/Fri Jan 26 17:17:44 2007//Tv1-4-5
+/OgreD3D9Driver.cpp/1.13/Wed Aug 23 08:18:51 2006//Tv1-4-5
+/OgreD3D9DriverList.cpp/1.10/Wed Aug 23 08:18:51 2006//Tv1-4-5
+/OgreD3D9EngineDll.cpp/1.12/Mon Jan 29 15:21:31 2007//Tv1-4-5
+/OgreD3D9GpuProgram.cpp/1.20/Tue Jan  2 16:33:59 2007//Tv1-4-5
+/OgreD3D9GpuProgramManager.cpp/1.11/Sun Oct  8 16:34:04 2006//Tv1-4-5
+/OgreD3D9HLSLProgram.cpp/1.19.2.1/Mon Sep 24 09:44:34 2007//Tv1-4-5
+/OgreD3D9HLSLProgramFactory.cpp/1.7/Tue Jan 30 11:28:20 2007//Tv1-4-5
+/OgreD3D9HardwareBufferManager.cpp/1.15/Sun Sep 24 23:10:01 2006//Tv1-4-5
+/OgreD3D9HardwareIndexBuffer.cpp/1.16/Tue Jan  2 16:33:59 2007//Tv1-4-5
+/OgreD3D9HardwareOcclusionQuery.cpp/1.10/Wed Feb 28 19:17:21 2007//Tv1-4-5
+/OgreD3D9HardwarePixelBuffer.cpp/1.21.2.2/Mon Jun 25 11:53:17 2007//Tv1-4-5
+/OgreD3D9HardwareVertexBuffer.cpp/1.16/Tue Jan  2 16:33:59 2007//Tv1-4-5
+/OgreD3D9Mappings.cpp/1.33/Thu Mar  8 14:00:03 2007//Tv1-4-5
+/OgreD3D9MultiRenderTarget.cpp/1.4.2.1/Mon Jun 11 09:11:36 2007//Tv1-4-5
+/OgreD3D9Plugin.cpp/1.1.2.1/Tue Apr  3 15:18:30 2007//Tv1-4-5
+/OgreD3D9RenderSystem.cpp/1.178.2.9/Tue Aug 28 14:27:42 2007//Tv1-4-5
+/OgreD3D9RenderWindow.cpp/1.59.2.9/Tue Aug 14 15:33:04 2007//Tv1-4-5
+/OgreD3D9Texture.cpp/1.78.2.1/Fri May 18 10:15:59 2007//Tv1-4-5
+/OgreD3D9TextureManager.cpp/1.14/Sat Jan 27 18:01:58 2007//Tv1-4-5
+/OgreD3D9VertexDeclaration.cpp/1.12/Wed Aug 23 08:18:52 2006//Tv1-4-5
+/OgreD3D9VideoMode.cpp/1.9/Wed Aug 23 08:18:52 2006//Tv1-4-5
+/OgreD3D9VideoModeList.cpp/1.11/Wed Aug 23 08:18:52 2006//Tv1-4-5
+D

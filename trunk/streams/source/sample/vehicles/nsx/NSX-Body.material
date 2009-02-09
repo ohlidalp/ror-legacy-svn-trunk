@@ -1,0 +1,87 @@
+material Material#6/SOLID/TEX/window.tga
+{
+	technique
+	{
+		pass
+		{
+			scene_blend alpha_blend
+			alpha_rejection greater 128
+			texture_unit
+			{
+				texture NSX-window.png
+			}
+		}
+	}
+}
+material Material#5/SOLID/TEX/window.tga
+{
+	technique
+	{
+		pass
+		{
+			scene_blend alpha_blend
+			alpha_rejection greater 128
+			texture_unit
+			{
+				texture NSX-window.png
+			}
+		}
+	}
+}
+material Material#2/SOLID/TEX/body.tga
+{
+	technique
+	{
+		pass
+		{
+
+			texture_unit
+			{
+				texture NSX-body.png
+			}
+		}
+	}
+}
+material Material#4/SOLID/TEX/window.tga
+{
+	technique
+	{
+		pass
+		{
+			scene_blend alpha_blend
+			alpha_rejection greater 128
+			texture_unit
+			{
+				texture NSX-window.png
+			}
+		}
+	}
+}
+material Material#1/SOLID/TEX/body.tga
+{
+	technique
+	{
+		pass
+		{
+
+			texture_unit
+			{
+				texture NSX-body.png
+			}
+		}
+	}
+}
+material Material#3/SOLID/TEX/helmet.tga
+{
+	technique
+	{
+		pass
+		{
+
+			texture_unit
+			{
+				texture NSX-helmet.png
+			}
+		}
+	}
+}

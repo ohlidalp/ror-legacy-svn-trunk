@@ -1,0 +1,111 @@
+## Copyright (C) 2007 Crestez Leonard - cdleonard@gmail.com
+##
+## This file is part of Caelum
+##
+## Caelum is free software; you can redistribute it and/or modify
+## it under the terms of the GNU General Public License as published by
+## the Free Software Foundation; either version 2 of the License, or
+## (at your option) any later version.
+##
+## Caelum is distributed in the hope that it will be useful,
+## but WITHOUT ANY WARRANTY; without even the implied warranty of
+## MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+## GNU General Public License for more details.
+##
+## You should have received a copy of the GNU General Public License
+## along with this program.  If not, see <http://www.gnu.org/licenses/>.
+
+import os, sys, glob
+import SCons.Action
+import SCons.Builder
+import SCons.Scanner.C
+import SCons.Util
+import SCons.Script
+from stat import *
+
+SCons.Script.EnsureSConsVersion(0,97)
+SConsignFile()
+
+# Initialize environment and return it.
+def HandleOptions(env):
+    # Create options
+    opts = Options(['SConstruct.config'], ARGUMENTS)
+    opts.Add(
+        BoolOption('debug', 'Build with debugging options', 0),
+    )
+
+    # Create help
+    env.Help(opts.GenerateHelpText(env))
+
+    opts.Update(env);
+    opts.Save('SConstruct.config', env);
+
+# Search for external libraries. Returns a dict of extra flags
+def AutoConfigure(env):
+    # Get dependency flags from pkg-config.
+    depflags = {
+        'ogre': env.ParseFlags('!pkg-config OGRE --cflags --libs'),
+        'ois': env.ParseFlags('!pkg-config OIS --cflags --libs'),
+        'cegui': env.ParseFlags('!pkg-config CEGUI CEGUI-OGRE --cflags --libs'),
+    }
+
+    # Don't do checks on cleaning.
+    if env.GetOption('clean'):
+        return depflags
+
+    # Check if the dependency flags work correctly. Don't add any.
+    conf_env = env.Clone();
+    map(conf_env.MergeFlags, depflags.values());
+    conf = conf_env.Configure()
+
+    if not conf.CheckCXXHeader('Ogre.h'):
+        print 'Fatal error: Did not find Ogre library or headers.'
+        Exit(1)
+
+    if not conf.CheckCXXHeader('OIS.h'):
+        print 'Warning: Did not find OIS library or headers, demos will be skipped.'
+        depflags['ois'] = None
+
+    if depflags.has_key('ois') and not conf.CheckCXXHeader('CEGUI/CEGUI.h'):
+        print 'Warning: Did not find CEGUI library, CEGUI demos will be skipped.'
+        depflags['cegui'] = None
+
+    # Don't replace env
+    conf.Finish()
+    return depflags
+
+# Create the actual projects.
+def CreateProjects(env, depflags):
+    # configure debug in standard env.
+    if env.get('debug', 0):
+        env.Append(CPPDEFINES = '_DEBUG')
+        env.Append(CCFLAGS = Split('-g -Wsign-compare -Wall'))
+    else:
+        env.Append(CPPDEFINES = 'NDEBUG')
+        env.Append(CCFLAGS = Split('-O2'))
+
+    # Main caelum lib
+    ogreEnv = env.Clone()
+    ogreEnv.Append(**depflags['ogre'])
+    ogreEnv.Append(CPPPATH = 'main/include')
+    ogreEnv.Library('Caelum', Glob('main/src/*.cpp'))
+
+    # OIS-only demos
+    if depflags.has_key('ois'):
+        oisDemoEnv = ogreEnv.Clone()
+        oisDemoEnv.AppendUnique(**depflags['ois'])
+        oisDemoEnv.AppendUnique(LIBPATH = '.')
+        oisDemoEnv.AppendUnique(LIBS = 'Caelum')
+        oisDemoEnv.AppendUnique(CPPPATH = 'samples/include');
+        oisDemoEnv.Program('CaelumDemo', 'samples/src/CaelumDemo.cpp')
+
+    # CEGUI-based demos
+    if depflags.has_key('cegui'):
+        ceguiDemoEnv = oisDemoEnv.Clone();
+        ceguiDemoEnv.AppendUnique(**depflags['cegui'])
+        ceguiDemoEnv.Program('CaelumLab', 'samples/src/CaelumLab.cpp')
+
+env = Environment()
+HandleOptions(env)
+depflags = AutoConfigure(env)
+CreateProjects(env, depflags)

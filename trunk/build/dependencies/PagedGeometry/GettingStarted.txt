@@ -1,0 +1,28 @@
+To compile and run:
+
+1. Go into "examples/bin/release", and copy all of Ogre's release-mode DLLs into this folder.
+
+2. Go into "examples/bin/debug", and copy all of Ogre's debug-mode DLLs into this folder.
+
+3. Copy "OgreCore.zip" and the "Fonts" folder from Ogre's media folder into the
+   PagedGeometry's "examples/media" folder
+
+4. Open up "PagedGeometry.sln" in Microsoft Visual C++. Select
+   "Project->PagedGeometry Properties" from the menu. Now click on the "Debugging" item
+   on the left panel (under "Configuration Properties"). Click on the "Working Directory"
+   item on the right, and enter "$(TargetDir)". This allows the EXE to locate the
+   Ogre DLL files.
+
+
+To learn more about how to use the library, take a look at the API documentation
+in the comments in header files (particularly PagedGeometry.h).
+
+
+Note: Please note that this is the Beta version of PagedGeometry 1.0. If you have any problems
+using this library, please report them to the author.
+
+You can view the PagedGeometry support thread here:
+http://www.ogre3d.org/phpBB2/viewtopic.php?t=24918
+
+Note: While this Beta version should be feature-complete, it does not have the full
+documentation and examples that the final version will include.

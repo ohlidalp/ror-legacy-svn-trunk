@@ -1,0 +1,8 @@
+base referer
+rect $classOgre_1_1Serializer.html 9,56 121,80
+rect $classOgre_1_1MeshSerializer.html 184,8 330,32
+rect $classOgre_1_1MeshSerializerImpl.html 172,56 342,80
+rect $classOgre_1_1SkeletonSerializer.html 174,104 340,128
+rect $classOgre_1_1MeshSerializerImpl__v1__3.html 392,56 600,80
+rect $classOgre_1_1MeshSerializerImpl__v1__2.html 648,56 856,80
+rect $classOgre_1_1MeshSerializerImpl__v1__1.html 904,56 1112,80

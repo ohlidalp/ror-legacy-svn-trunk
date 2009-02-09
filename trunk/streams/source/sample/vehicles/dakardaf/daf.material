@@ -1,0 +1,41 @@
+material tracks/daf
+{
+	technique
+	{
+		pass
+		{
+			scene_blend alpha_blend
+			alpha_rejection greater 128 
+			texture_unit
+			{
+				texture daf.dds
+			}
+		}
+		pass
+		{
+			scene_blend add
+			depth_write off
+			lighting off
+			texture_unit
+			{
+				texture daf_emissive.dds
+			}
+		}
+	}
+}
+
+
+material tracks/dafhelp
+{
+	technique
+	{
+		pass
+		{
+
+			texture_unit
+			{
+				texture dafhelp.dds
+			}
+		}
+	}
+}

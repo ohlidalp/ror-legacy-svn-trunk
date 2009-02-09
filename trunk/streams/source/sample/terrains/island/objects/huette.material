@@ -1,0 +1,13 @@
+material huette
+{
+	technique
+	{
+		pass
+		{
+			texture_unit
+			{
+				texture huette.dds
+			}
+		}
+	}
+}

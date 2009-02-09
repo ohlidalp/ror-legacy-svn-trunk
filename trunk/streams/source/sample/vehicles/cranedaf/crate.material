@@ -1,0 +1,14 @@
+material tracks/crate
+{
+	technique
+	{
+		pass
+		{
+			texture_unit
+			{
+				texture crate.dds
+			}
+		}
+	}
+}
+

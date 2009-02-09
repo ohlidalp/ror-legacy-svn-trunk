@@ -1,0 +1,4 @@
+base referer
+rect $classOgre_1_1FileSystemArchiveFactory.html 8,158 221,182
+rect $classOgre_1_1ZipArchiveFactory.html 245,158 410,182
+rect $classOgre_1_1FactoryObj.html 126,9 316,33

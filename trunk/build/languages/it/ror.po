@@ -1,0 +1,70 @@
+msgid ""
+msgstr ""
+"Project-Id-Version: \n"
+"POT-Creation-Date: \n"
+"PO-Revision-Date: \n"
+"Last-Translator: CommunityTranslate.org\n"
+"Language-Team: CommunityTranslate.org\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+# | communitytranslateid=13502
+msgid "Your network name. Maximum 20 Characters."
+msgstr "Il Suo nome di rete. Massimo 20 caratteri."
+
+# | communitytranslateid=13513
+msgid "Your Forum User Token."
+msgstr "Il Suo gettone di utente di foro."
+
+# | communitytranslateid=13519
+msgid "You must save and restart the program to activate the new language!"
+msgstr "Lei deve salvare e ricominciare il programma per attivare la lingua nuova!"
+
+# | communitytranslateid=13537
+msgid "You do not need to change these settings unless you experience problems"
+msgstr "Lei non ha bisogno di cambiare questi setting a meno che Lei sperimenta problemi"
+
+# | communitytranslateid=13530
+msgid "Worst FPS: "
+msgstr "FPS peggiore:"
+
+# | communitytranslateid=13990
+msgid "Vegetation:"
+msgstr "vegetazione"
+
+# | communitytranslateid=13555
+msgid "Unable to connect to the server. It is certainly down or you have network problems."
+msgstr "Incapace connettere al sistema di servizio. Certamente è depresso o Lei ha problemi di rete."
+
+# | communitytranslateid=13539
+msgid "Triangle Count: "
+msgstr "Conto di triangolo:"
+
+# | communitytranslateid=13563
+msgid "Terrain not found: "
+msgstr "Terreno non fondato:"
+
+# | communitytranslateid=13568
+msgid "Terrain loading error"
+msgstr "Terreno che carica errore"
+
+# | communitytranslateid=13336
+msgid "Current FPS: "
+msgstr "FPS corrente:"
+
+# | communitytranslateid=13523
+msgid "Best FPS: "
+msgstr "Più buon FPS:"
+
+# | communitytranslateid=13544
+msgid "Bad server port"
+msgstr "Cattivo porto di sistema di servizio"
+
+# | communitytranslateid=13508
+msgid "Average FPS: "
+msgstr "FPS medio:"
+
+# | communitytranslateid=13550
+msgid "A network error occured"
+msgstr "Un occured di errore di rete"
+

@@ -1,0 +1,5 @@
+//
+// Prefix header for all source files of the 'PagedGeometry' target in the 'PagedGeometry' project.
+//
+
+#include <Carbon/Carbon.h>

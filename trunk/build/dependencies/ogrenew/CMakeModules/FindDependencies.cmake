@@ -1,0 +1,216 @@
+# Find all necessary and optional OGRE dependencies
+
+# Set hardcoded path guesses for various platforms
+#TODO use find lib path suffixes - in progress
+if (WIN32)
+  #Set path from variables
+  set(OGRE_DEPENDENCIES_DIR "" CACHE PATH "Path to OGRE dependencies folder")
+  set(DEP_INCLUDE_SEARCH_DIR "${OGRE3D_SOURCE_DIR}" "${OGRE_DEPENDENCIES_DIR}" "C:/Program Files/NVIDIA Corporation/Cg/include")
+  set(DEP_INCLUDE_SEARCH_SUFFIXES "Dependencies/include" "Dependencies/include/CEGUI" "Dependencies/include/OIS")
+  set(DEP_LIB_SEARCH_DIR "${OGRE3D_SOURCE_DIR}" "${OGRE_DEPENDENCIES_DIR}" "C:/Program Files/NVIDIA Corporation/Cg/lib")
+  set(DEP_LIB_SEARCH_SUFFIXES "Dependencies/lib/Release")
+  set(DEP_LIBD_SEARCH_DIR "${OGRE3D_SOURCE_DIR}" "${OGRE_DEPENDENCIES_DIR}")
+  set(DEP_LIBD_SEARCH_SUFFIXES "Dependencies/lib/Debug")
+  include_directories("${OGRE3D_SOURCE_DIR}/Dependencies/include" "${OGRE_DEPENDENCIES_DIR}/Dependencies/include")
+elseif (UNIX)
+  set(DEP_INCLUDE_SEARCH_DIR
+    /usr/local/include
+    /usr/local/include/OIS
+    /usr/local/include/CEGUI
+    /usr/include/CEGUI
+    /usr/include/OIS
+  )
+  set(DEP_LIB_SEARCH_DIR /usr/local/lib)
+  set(DEP_LIBD_SEARCH_DIR /usr/local/lib)
+  include_directories("/usr/local/include")
+elseif (APPLE)
+endif (WIN32)
+
+# Check for PkgConfig and try to locate the dependencies
+# with its help.
+find_package(PkgConfig)
+if (PKG_CONFIG_FOUND)
+  message(STATUS "Searching for dependencties with PkgConfig")
+  pkg_check_modules(PKGDEP freetype2 zziplib zzip-zlib-config CEGUI)
+  if (PKGDEP_FOUND)
+    set(DEP_INCLUDE_SEARCH_DIR ${DEP_INCLUDE_SEARCH_DIR} ${PKGDEP_INCLUDE_DIRS})
+    set(DEP_LIB_SEARCH_DIR ${DEP_LIB_SEARCH_DIR} ${PKGDEP_LIBRARY_DIRS})
+  endif (PKGDEP_FOUND)
+endif (PKG_CONFIG_FOUND)
+
+
+# Find zlib
+find_path(ZLIB_INCLUDE_DIR zlib.h PATHS ${DEP_INCLUDE_SEARCH_DIR} PATH_SUFFIXES ${DEP_INCLUDE_SEARCH_SUFFIXES})
+find_library(ZLIB_LIBRARY_REL NAMES zlib z PATHS ${DEP_LIB_SEARCH_DIR} PATH_SUFFIXES ${DEP_LIB_SEARCH_SUFFIXES})
+find_library(ZLIB_LIBRARY_DBG NAMES zlibd zd zlib z zlib_d PATHS ${DEP_LIBD_SEARCH_DIR} PATH_SUFFIXES ${DEP_LIBD_SEARCH_SUFFIXES})
+if (ZLIB_LIBRARY_REL AND ZLIB_LIBRARY_DBG)
+  set(ZLIB_LIBRARY optimized ${ZLIB_LIBRARY_REL} debug ${ZLIB_LIBRARY_DBG})
+elseif (ZLIB_LIBRARY_REL)
+  set(ZLIB_LIBRARY ${ZLIB_LIBRARY_REL})
+elseif (ZLIB_LIBRARY_DBG)
+  set(ZLIB_LIBRARY ${ZLIB_LIBRARY_DBG})
+endif (ZLIB_LIBRARY_REL AND ZLIB_LIBRARY_DBG)  
+if (ZLIB_INCLUDE_DIR AND ZLIB_LIBRARY)
+  set(ZLIB_FOUND TRUE)
+endif (ZLIB_INCLUDE_DIR AND ZLIB_LIBRARY)  
+macro_log_feature(ZLIB_FOUND "zlib" "ZLib" "http://" TRUE "" "")
+
+# Find zziplib
+find_path(ZZIP_INCLUDE_DIR zzip/zzip.h zzip.h PATHS ${DEP_INCLUDE_SEARCH_DIR} PATH_SUFFIXES ${DEP_INCLUDE_SEARCH_SUFFIXES})
+find_library(ZZIP_LIBRARY_REL NAMES zziplib zzip PATHS ${DEP_LIB_SEARCH_DIR} PATH_SUFFIXES ${DEP_LIB_SEARCH_SUFFIXES})
+find_library(ZZIP_LIBRARY_DBG NAMES zziplibd zzipd PATHS ${DEP_LIBD_SEARCH_DIR} PATH_SUFFIXES ${DEP_LIBD_SEARCH_SUFFIXES})
+if (ZZIP_LIBRARY_REL AND ZZIP_LIBRARY_DBG)
+  set(ZZIP_LIBRARY optimized ${ZZIP_LIBRARY_REL} debug ${ZZIP_LIBRARY_DBG})
+elseif (ZZIP_LIBRARY_REL)
+  set(ZZIP_LIBRARY ${ZZIP_LIBRARY_REL})
+elseif (ZZIP_LIBRARY_DBG)
+  set(ZZIP_LIBRARY ${ZZIP_LIBRARY_DBG})
+endif (ZZIP_LIBRARY_REL AND ZZIP_LIBRARY_DBG)  
+if (ZZIP_INCLUDE_DIR AND ZZIP_LIBRARY)
+  set(ZZIP_FOUND TRUE)
+endif (ZZIP_INCLUDE_DIR AND ZZIP_LIBRARY)
+macro_log_feature(ZZIP_FOUND "zzip" "ZZip" "http://" TRUE "" "")
+
+# Find FreeImage
+find_path(FREEIMAGE_INCLUDE_DIR FreeImage.h PATHS ${DEP_INCLUDE_SEARCH_DIR} PATH_SUFFIXES ${DEP_INCLUDE_SEARCH_SUFFIXES})
+find_library(FREEIMAGE_LIBRARY_REL NAMES freeimage FreeImage PATHS ${DEP_LIB_SEARCH_DIR} PATH_SUFFIXES ${DEP_LIB_SEARCH_SUFFIXES})
+find_library(FREEIMAGE_LIBRARY_DBG NAMES freeimaged FreeImaged PATHS ${DEP_LIBD_SEARCH_DIR} PATH_SUFFIXES ${DEP_LIBD_SEARCH_SUFFIXES})
+if (FREEIMAGE_LIBRARY_REL AND FREEIMAGE_LIBRARY_DBG)
+  set(FREEIMAGE_LIBRARY optimized ${FREEIMAGE_LIBRARY_REL} debug ${FREEIMAGE_LIBRARY_DBG})
+elseif (FREEIMAGE_LIBRARY_REL)
+  set(FREEIMAGE_LIBRARY ${FREEIMAGE_LIBRARY_REL})
+elseif (FREEIMAGE_LIBRARY_DBG)
+  set(FREEIMAGE_LIBRARY ${FREEIMAGE_LIBRARY_DBG})
+endif (FREEIMAGE_LIBRARY_REL AND FREEIMAGE_LIBRARY_DBG)  
+if (FREEIMAGE_INCLUDE_DIR AND FREEIMAGE_LIBRARY)
+  set(FREEIMAGE_FOUND TRUE)
+endif (FREEIMAGE_INCLUDE_DIR AND FREEIMAGE_LIBRARY)
+macro_log_feature(FREEIMAGE_FOUND "freeimage" "FreeImage" "http://" TRUE "" "")
+
+# Find FreeType
+find_path(FREETYPE_INCLUDE_DIR NAMES freetype/freetype.h freetype.h PATHS ${DEP_INCLUDE_SEARCH_DIR} PATH_SUFFIXES ${DEP_INCLUDE_SEARCH_SUFFIXES})
+find_library(FREETYPE_LIBRARY_REL NAMES freetype2 freetype235 freetype PATHS ${DEP_LIB_SEARCH_DIR} PATH_SUFFIXES ${DEP_LIB_SEARCH_SUFFIXES})
+find_library(FREETYPE_LIBRARY_DBG NAMES freetype2_d freetype235_d freetype_d PATHS ${DEP_LIBD_SEARCH_DIR} PATH_SUFFIXES ${DEP_LIBD_SEARCH_SUFFIXES})
+if (FREETYPE_LIBRARY_REL AND FREETYPE_LIBRARY_DBG)
+  set(FREETYPE_LIBRARY optimized ${FREETYPE_LIBRARY_REL} debug ${FREETYPE_LIBRARY_DBG})
+elseif (FREETYPE_LIBRARY_REL)
+  set(FREETYPE_LIBRARY ${FREETYPE_LIBRARY_REL})
+elseif (FREETYPE_LIBRARY_DBG)
+  set(FREETYPE_LIBRARY ${FREETYPE_LIBRARY_DBG})
+endif (FREETYPE_LIBRARY_REL AND FREETYPE_LIBRARY_DBG)  
+if (FREETYPE_INCLUDE_DIR AND FREETYPE_LIBRARY)
+  set(FREETYPE_FOUND TRUE)
+endif (FREETYPE_INCLUDE_DIR AND FREETYPE_LIBRARY)
+macro_log_feature(FREETYPE_FOUND "freetype" "FreeType" "http://" TRUE "" "")
+
+# Find OpenGL
+find_package(OpenGL)
+macro_log_feature(OPENGL_FOUND "opengl" "For the OpenGL render system" "http://" FALSE "" "")
+
+# Find X11
+if (UNIX)
+	find_package(X11)
+	macro_log_feature(X11_FOUND "X11" "X11" "http://" TRUE "" "")
+	macro_log_feature(X11_Xt_FOUND "Xt" "Xt" "http://" TRUE "" "")
+	find_library(XAW_LIBRARY NAMES Xaw Xaw7 PATHS ${DEP_LIB_SEARCH_DIR})
+	macro_log_feature(XAW_LIBRARY "Xaw" "Xaw" "http://" TRUE "" "")
+elseif(WIN32)
+	find_package(DirectX)
+	macro_log_feature(DirectX_FOUND "DirectX" "For the DirectX render system" "http://" FALSE "" "")
+endif()
+
+# Find CEGUI
+find_path(CEGUI_INCLUDE_DIR CEGUIBase.h ${DEP_INCLUDE_SEARCH_DIR})
+find_library(CEGUI_LIBRARY_REL NAMES CEGUIBase PATHS ${DEP_LIB_SEARCH_DIR})
+find_library(CEGUI_LIBRARY_DBG NAMES CEGUIBase_d PATHS ${DEP_LIBD_SEARCH_DIR})
+if (CEGUI_LIBRARY_REL AND CEGUI_LIBRARY_DBG)
+  set(CEGUI_LIBRARY optimized ${CEGUI_LIBRARY_REL} debug ${CEGUI_LIBRARY_DBG})
+elseif (CEGUI_LIBRARY_REL)
+  set(CEGUI_LIBRARY ${CEGUI_LIBRARY_REL})
+elseif (CEGUI_LIBRARY_DBG)
+  set(CEGUI_LIBRARY ${CEGUI_LIBRARY_DBG})
+endif (CEGUI_LIBRARY_REL AND CEGUI_LIBRARY_DBG)  
+if (CEGUI_INCLUDE_DIR AND CEGUI_LIBRARY)
+  set(CEGUI_FOUND TRUE)
+endif (CEGUI_INCLUDE_DIR AND CEGUI_LIBRARY)
+macro_log_feature(CEGUI_FOUND "CEGUI" "CEGUI" "http://" FALSE "" "")
+
+# Find OIS
+find_path(OIS_INCLUDE_DIR OIS.h ${DEP_INCLUDE_SEARCH_DIR})
+find_library(OIS_LIBRARY_REL NAMES OIS PATHS ${DEP_LIB_SEARCH_DIR})
+find_library(OIS_LIBRARY_DBG NAMES OIS_d PATHS ${DEP_LIBD_SEARCH_DIR})
+if (OIS_LIBRARY_REL AND OIS_LIBRARY_DBG)
+  set(OIS_LIBRARY optimized ${OIS_LIBRARY_REL} debug ${OIS_LIBRARY_DBG})
+elseif (OIS_LIBRARY_REL)
+  set(OIS_LIBRARY ${OIS_LIBRARY_REL})
+elseif (OIS_LIBRARY_DBG)
+  set(OIS_LIBRARY ${OIS_LIBRARY_DBG})
+endif (OIS_LIBRARY_REL AND OIS_LIBRARY_DBG)  
+if (OIS_INCLUDE_DIR AND OIS_LIBRARY)
+  set(OIS_FOUND TRUE)
+endif (OIS_INCLUDE_DIR AND OIS_LIBRARY)
+macro_log_feature(OIS_FOUND "OIS" "OIS is needed to build the samples" "http://" FALSE "" "")
+
+# Find Cg
+find_path(CG_INCLUDE_DIR NAMES Cg/cg.h cg.h PATHS ${DEP_INCLUDE_SEARCH_DIR})
+find_library(CG_LIBRARY_REL NAMES Cg cg PATHS ${DEP_LIB_SEARCH_DIR})
+find_library(CG_LIBRARY_DBG NAMES Cg cg PATHS ${DEP_LIBD_SEARCH_DIR})
+#message("CG_INCLUDE_DIR: "${CG_INCLUDE_DIR})
+#message("CG_LIBRARY_REL: "${CG_LIBRARY_REL})
+#message("CG_LIBRARY_DBG: "${CG_LIBRARY_DBG})
+if (CG_LIBRARY_REL AND CG_LIBRARY_DBG)
+  set(CG_LIBRARY optimized ${CG_LIBRARY_REL} debug ${CG_LIBRARY_DBG})
+elseif (CG_LIBRARY_REL)
+  set(CG_LIBRARY ${CG_LIBRARY_REL})
+elseif (CG_LIBRARY_DBG)
+  set(CG_LIBRARY ${CG_LIBRARY_DBG})
+endif (CG_LIBRARY_REL AND CG_LIBRARY_DBG)  
+if (CG_INCLUDE_DIR AND CG_LIBRARY)
+  set(CG_FOUND TRUE)
+endif (CG_INCLUDE_DIR AND CG_LIBRARY)
+macro_log_feature(CG_FOUND "NVidia Cg" "Gc is needed for the optional Cg plugin" "http://" FALSE "" "")
+
+# Find Boost
+#if (BOOST_STATIC)
+#  set(Boost_USE_STATIC_LIBS TRUE)
+#endif()
+#set(Boost_ADDITIONAL_VERSIONS "1.36.0")
+#find_package(Boost COMPONENTS thread)
+
+SET(Boost_USE_STATIC_LIBS ON)
+SET(Boost_USE_MULTITHREAD OFF)
+FIND_PACKAGE( Boost 1.36.0 COMPONENTS thread )
+macro_log_feature(Boost_FOUND "Boost" "Boost is used for threading support" "http://boost.org" FALSE "" "")
+
+mark_as_advanced(
+  ZLIB_INCLUDE_DIR
+  ZLIB_LIBRARY
+  ZZIP_INCLUDE_DIR
+  ZZIP_LIBRARY
+  FREEIMAGE_INCLUDE_DIR
+  FREEIMAGE_LIBRARY
+  FREETYPE_INCLUDE_DIR
+  FREETYPE_LIBRARY
+  CEGUI_INCLUDE_DIR
+  CEGUI_LIBRARY
+  CG_INCLUDE_DIR
+  CG_LIBRARY
+  OIS_INCLUDE_DIR
+  OIS_LIBRARY
+  ZLIB_LIBRARY_DBG
+  ZLIB_LIBRARY_REL
+  ZZIP_LIBRARY_DBG
+  ZZIP_LIBRARY_REL
+  FREEIMAGE_LIBRARY_DBG
+  FREEIMAGE_LIBRARY_REL
+  FREETYPE_LIBRARY_DBG
+  FREETYPE_LIBRARY_REL
+  CEGUI_LIBRARY_DBG
+  CEGUI_LIBRARY_REL
+  CG_LIBRARY_DBG
+  CG_LIBRARY_REL
+  OIS_LIBRARY_REL
+  OIS_LIBRARY_DBG
+  XAW_LIBRARY
+)
+

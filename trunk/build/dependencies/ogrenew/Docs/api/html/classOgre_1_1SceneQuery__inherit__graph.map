@@ -1,0 +1,4 @@
+base referer
+rect $classOgre_1_1IntersectionSceneQuery.html 8,83 208,107
+rect $classOgre_1_1RaySceneQuery.html 232,83 386,107
+rect $classOgre_1_1RegionSceneQuery.html 410,83 584,107
