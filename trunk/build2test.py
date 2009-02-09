@@ -81,11 +81,12 @@ def main():
   	PSOURCE=os.path.join(SOURCE, 'bin', 'release', 'macos')
   copyAll(PSOURCE, CURRENT)
   #copy configurator files
-  print "copying configurator data"
-  CFT=os.path.join(CURRENT, 'languages')
-  mkdir(CFT)
-  copyAll(os.path.join(SOURCE, 'languages'), CFT)
+  #print "copying configurator data"
+  #CFT=os.path.join(CURRENT, 'languages')
+  #mkdir(CFT)
+  #copyAll(os.path.join(SOURCE, 'languages'), CFT)
   #copy built-in game resources
+  print "please download latest language files from: http://translate.rigsofrods.com/ror/?action=downloadproject"
   print "copying buit-in resources"
   REST=os.path.join(CURRENT, 'resources')
   mkdir(REST)
