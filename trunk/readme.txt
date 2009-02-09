@@ -35,4 +35,14 @@ HOWTO BUILD (new style)
 4. Build contents     : RoRdev\build\contents\build_contents.py
 5. Build streams      : RoRdev\streams\build_streams.py
 6. Switch to test mode: RoRdev\build2test.py
+7. go to RoRdev\test\current to find the release directory
 
+HOWTO BUILD (new style) under linux
+1. make a new directory and change to it: RoRdev\build\build
+2. execute: ccmake ..
+3. execute: make -j <your number of CPU cores +1>
+4. execute: make install
+5. Build contents     : cd RoRdev\build\contents\ && python build_contents.py
+6. Build streams      : cd RoRdev\streams\ && python build_streams.py
+7. Switch to test mode: cd RoRdev\ && python build2test.py
+8. go to RoRdev\test\current to find the release directory
