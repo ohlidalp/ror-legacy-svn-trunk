@@ -58,7 +58,9 @@ void MapTextureCreator::init()
 	mat->getTechnique(0)->setLightingEnabled(false);
 	mat->getTechnique(0)->setSceneBlending(SBT_TRANSPARENT_ALPHA);
 	mat->getTechnique(0)->setTextureFiltering(TFO_ANISOTROPIC);
-
+	mat->getTechnique(0)->setDepthCheckEnabled(true);
+	mat->getTechnique(0)->setDepthWriteEnabled(true);
+	mat->getTechnique(0)->setCullingMode(Ogre::CULL_NONE);
 
 	tex = mat->getTechnique(0)->getPass(0)->createTextureUnitState("MapRttTex"+StringConverter::toString(counter));
 	rttTex->addListener(this);

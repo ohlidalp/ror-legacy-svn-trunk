@@ -2366,7 +2366,15 @@ int Beam::getWheelNodeCount()
 					//create a wheel
 					char propname[256];
 					sprintf(propname, "prop-%s-%i-wheel", truckname, free_prop);
-					Entity *te = manager->createEntity(propname, diwmeshname);
+					Entity *te=0;
+					try
+					{
+						te = manager->createEntity(propname, diwmeshname);
+					}catch(...)
+					{
+						LogManager::getSingleton().logMessage("error loading mesh: "+diwmeshname);
+						continue;
+					}
 					if(materialFunctionMapper) materialFunctionMapper->replaceMeshMaterials(te);
 					props[free_prop].wheel=manager->getRootSceneNode()->createChildSceneNode();
 					props[free_prop].wheel->attachObject(te);
@@ -2374,7 +2382,15 @@ int Beam::getWheelNodeCount()
 				}
 				char propname[256];
 				sprintf(propname, "prop-%s-%i", truckname, free_prop);
-				Entity *te = manager->createEntity(propname, meshname);
+				Entity *te=0;
+				try
+				{
+					te = manager->createEntity(propname, meshname);
+				}catch(...)
+				{
+					LogManager::getSingleton().logMessage("error loading mesh: "+String(meshname));
+					continue;
+				}
 				if(materialFunctionMapper) materialFunctionMapper->replaceMeshMaterials(te);
 				props[free_prop].snode=manager->getRootSceneNode()->createChildSceneNode();
 				props[free_prop].snode->attachObject(te);
@@ -2555,7 +2571,15 @@ int Beam::getWheelNodeCount()
 				char wnamei[256];
 				sprintf(wnamei, "wingobj-%s-%i",truckname, free_wing);
 				wings[free_wing].fa=new FlexAirfoil(manager, wname, nodes, nds[0], nds[1], nds[2], nds[3], nds[4], nds[5], nds[6], nds[7], texname, Vector2(txes[0], txes[1]), Vector2(txes[2], txes[3]), Vector2(txes[4], txes[5]), Vector2(txes[6], txes[7]), type, cratio, mind, maxd, afname, aeroengines, state!=NETWORKED);
-				Entity *ec = manager->createEntity(wnamei, wname);
+				Entity *ec=0;
+				try
+				{
+					ec = manager->createEntity(wnamei, wname);
+				}catch(...)
+				{
+					LogManager::getSingleton().logMessage("error loading mesh: "+String(wname));
+					continue;
+				}
 				if(materialFunctionMapper) materialFunctionMapper->replaceMeshMaterials(ec);
 				wings[free_wing].cnode = manager->getRootSceneNode()->createChildSceneNode();
 				wings[free_wing].cnode->attachObject(ec);
@@ -3688,13 +3712,22 @@ int Beam::getWheelNodeCount()
 			LogManager::getSingleton().logMessage("BEAM: creating mesh");
 			cabMesh=new FlexObj(manager, nodes, free_texcoord, texcoords, free_cab, cabs, free_sub, subtexcoords, subcabs, texname, wname, subisback, backmatname, transmatname);
 			LogManager::getSingleton().logMessage("BEAM: creating entity");
-			Entity *ec = manager->createEntity(wnamei,wname);
-			if(materialFunctionMapper) materialFunctionMapper->replaceMeshMaterials(ec);
-			//		ec->setRenderQueueGroup(RENDER_QUEUE_6);
-			LogManager::getSingleton().logMessage("BEAM: creating node");
+			
+			LogManager::getSingleton().logMessage("BEAM: creating cabnode");
 			cabNode = manager->getRootSceneNode()->createChildSceneNode();
-			LogManager::getSingleton().logMessage("BEAM: attaching");
-			cabNode->attachObject(ec);
+			Entity *ec = 0;
+			try
+			{
+				LogManager::getSingleton().logMessage("BEAM: loading cab");
+				ec = manager->createEntity(wnamei, wname);
+				//		ec->setRenderQueueGroup(RENDER_QUEUE_6);
+				LogManager::getSingleton().logMessage("BEAM: attaching cab");
+				cabNode->attachObject(ec);
+			}catch(...)
+			{
+				LogManager::getSingleton().logMessage("error loading mesh: "+String(wname));
+			}
+			if(materialFunctionMapper) materialFunctionMapper->replaceMeshMaterials(ec);
 		};
 		LogManager::getSingleton().logMessage("BEAM: cab ok");
 		//	mWindow->setDebugText("Beam number:"+ StringConverter::toString(free_beam));
@@ -4131,18 +4164,31 @@ int Beam::getWheelNodeCount()
 		if (meshwheel)
 		{
 			vwheels[free_wheel].fm=new FlexMeshWheel(manager, wname, nodes, node1, node2, nodebase, rays, texf, texb, rimradius, rimreverse, materialFunctionMapper);
-			Entity *ec = manager->createEntity(wnamei, wname);
-			if(materialFunctionMapper) materialFunctionMapper->replaceMeshMaterials(ec);
-			vwheels[free_wheel].cnode = manager->getRootSceneNode()->createChildSceneNode();
-			vwheels[free_wheel].cnode->attachObject(ec);
+			try
+			{
+				Entity *ec = 0;
+				vwheels[free_wheel].cnode = manager->getRootSceneNode()->createChildSceneNode();
+				vwheels[free_wheel].cnode->attachObject(ec);
+				if(materialFunctionMapper) materialFunctionMapper->replaceMeshMaterials(ec);
+			}catch(...)
+			{
+				LogManager::getSingleton().logMessage("error loading mesh: "+String(wname));
+			}
 		}
 		else
 		{
 			vwheels[free_wheel].fm=new FlexMesh(manager, wname, nodes, node1, node2, nodebase, rays, texf, texb);
-			Entity *ec = manager->createEntity(wnamei, wname);
-			if(materialFunctionMapper) materialFunctionMapper->replaceMeshMaterials(ec);
-			vwheels[free_wheel].cnode = manager->getRootSceneNode()->createChildSceneNode();
-			vwheels[free_wheel].cnode->attachObject(ec);
+			try
+			{
+				Entity *ec = 0;
+				ec = manager->createEntity(wnamei, wname);
+				if(materialFunctionMapper) materialFunctionMapper->replaceMeshMaterials(ec);
+				vwheels[free_wheel].cnode = manager->getRootSceneNode()->createChildSceneNode();
+				vwheels[free_wheel].cnode->attachObject(ec);
+			} catch(...)
+			{
+				LogManager::getSingleton().logMessage("error loading mesh: "+String(wname));
+			}
 		}
 		free_wheel++;
 	}
@@ -4321,14 +4367,21 @@ int Beam::getWheelNodeCount()
 		sprintf(wnamei, "wheelobj-%s-%i",truckname, free_wheel);
 		//	strcpy(texf, "tracks/wheelface,");
 		vwheels[free_wheel].fm=new FlexMesh(manager, wname, nodes, node1, node2, nodebase, rays, texf, texb, true, radius/radius2);
-		Entity *ec = manager->createEntity(wnamei, wname);
-		if(materialFunctionMapper) materialFunctionMapper->replaceMeshMaterials(ec);
-		//	ec->setMaterialName("tracks/wheel");
-		//ec->setMaterialName("Test/ColourTest");
-		vwheels[free_wheel].cnode = manager->getRootSceneNode()->createChildSceneNode();
-		vwheels[free_wheel].cnode->attachObject(ec);
-		//	cnode->setPosition(1000,2,940);
-		free_wheel++;
+		try
+		{
+			Entity *ec = 0;
+			ec = manager->createEntity(wnamei, wname);
+			if(materialFunctionMapper) materialFunctionMapper->replaceMeshMaterials(ec);
+			//	ec->setMaterialName("tracks/wheel");
+			//ec->setMaterialName("Test/ColourTest");
+			vwheels[free_wheel].cnode = manager->getRootSceneNode()->createChildSceneNode();
+			vwheels[free_wheel].cnode->attachObject(ec);
+			//	cnode->setPosition(1000,2,940);
+			free_wheel++;
+		}catch(...)
+		{
+			LogManager::getSingleton().logMessage("error loading mesh: "+String(wname));
+		}
 	}
 
 	void Beam::init_node(int pos, Real x, Real y, Real z, int type, Real m, int iswheel, Real friction, int id)
@@ -4424,7 +4477,14 @@ int Beam::getWheelNodeCount()
 			//the cube is 100x100x100
 			char bname[255];
 			sprintf(bname, "beam-%s-%i", truckname, pos);
-			beams[pos].mEntity = manager->createEntity(bname, "beam.mesh");
+			try
+			{
+				beams[pos].mEntity = manager->createEntity(bname, "beam.mesh");
+			}catch(...)
+			{
+				LogManager::getSingleton().logMessage("error loading mesh: beam.mesh");
+			}
+
 			// no materialmapping for beams!
 			//		ec->setCastShadows(false);
 			if (type==BEAM_HYDRO || type==BEAM_MARKED) beams[pos].mEntity->setMaterialName("tracks/Chrome");
