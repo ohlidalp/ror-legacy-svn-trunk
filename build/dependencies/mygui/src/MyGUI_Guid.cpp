@@ -8,7 +8,7 @@
 #include "MyGUI_Guid.h"
 #include "MyGUI_Common.h"
 #if   OGRE_PLATFORM == OGRE_PLATFORM_LINUX
-#include <uuid/uuid.h>
+//#include <uuid/uuid.h>
 #elif OGRE_PLATFORM == OGRE_PLATFORM_WIN32
 #include <objbase.h>
 #endif
