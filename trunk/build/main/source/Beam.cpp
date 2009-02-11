@@ -4205,7 +4205,7 @@ int Beam::getWheelNodeCount()
 			vwheels[free_wheel].fm=new FlexMeshWheel(manager, wname, nodes, node1, node2, nodebase, rays, texf, texb, rimradius, rimreverse, materialFunctionMapper);
 			try
 			{
-				Entity *ec = 0;
+				Entity *ec = manager->createEntity(wnamei, wname);
 				vwheels[free_wheel].cnode = manager->getRootSceneNode()->createChildSceneNode();
 				vwheels[free_wheel].cnode->attachObject(ec);
 				if(materialFunctionMapper) materialFunctionMapper->replaceMeshMaterials(ec);
@@ -4219,8 +4219,7 @@ int Beam::getWheelNodeCount()
 			vwheels[free_wheel].fm=new FlexMesh(manager, wname, nodes, node1, node2, nodebase, rays, texf, texb);
 			try
 			{
-				Entity *ec = 0;
-				ec = manager->createEntity(wnamei, wname);
+				Entity *ec = manager->createEntity(wnamei, wname);
 				if(materialFunctionMapper) materialFunctionMapper->replaceMeshMaterials(ec);
 				vwheels[free_wheel].cnode = manager->getRootSceneNode()->createChildSceneNode();
 				vwheels[free_wheel].cnode->attachObject(ec);
@@ -4408,8 +4407,7 @@ int Beam::getWheelNodeCount()
 		vwheels[free_wheel].fm=new FlexMesh(manager, wname, nodes, node1, node2, nodebase, rays, texf, texb, true, radius/radius2);
 		try
 		{
-			Entity *ec = 0;
-			ec = manager->createEntity(wnamei, wname);
+			Entity *ec = manager->createEntity(wnamei, wname);
 			if(materialFunctionMapper) materialFunctionMapper->replaceMeshMaterials(ec);
 			//	ec->setMaterialName("tracks/wheel");
 			//ec->setMaterialName("Test/ColourTest");
