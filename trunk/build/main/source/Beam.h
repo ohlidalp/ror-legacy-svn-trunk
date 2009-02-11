@@ -647,6 +647,7 @@ public:
 	node_t *lockId;
 	Beam *lockTruck;
 	int free_node;
+	int dynamicMapMode;
 	int tied;
 	int canwork;
 	int hashelp;

@@ -785,7 +785,7 @@ ExampleFrameListener::ExampleFrameListener(RenderWindow* win, Camera* cam, Scene
 	bigMap=0;
 	envmap=0;
 	debugCollisions=false;
-	interactivemap=false;
+	interactivemap=0;
 	free_localizer=0;
 	loading_state=NONE_LOADED;
 	pressure_pressed=false;
@@ -3868,7 +3868,7 @@ bool ExampleFrameListener::updateEvents(float dt)
 		{
 			if(interactivemap)
 			{
-				interactivemap=false;
+				interactivemap=0;
 				mtc->setCamZoom(((mapsizex+mapsizez)/2)*0.5); // zoom that fits 1:1 to the map
 				mtc->setCamPosition(Vector3(mapsizex/2, hfinder->getHeightAt(mapsizex/2, mapsizez/2) , mapsizez/2), Quaternion(Degree(0), Vector3::UNIT_X));
 				mtc->update();
@@ -3878,7 +3878,7 @@ bool ExampleFrameListener::updateEvents(float dt)
 			{
 				mtc->setCamZoom(30); // zoom very near
 				bigMap->setEntityVisibility(false);
-				interactivemap=true;
+				interactivemap=1;
 				LogManager::getSingleton().logMessage("enabled interactive Map");
 			}
 		}
@@ -5756,6 +5756,14 @@ void ExampleFrameListener::setCurrentTruck(int v)
 		// hide truckhud
 		TRUCKHUD.show(false);
 
+		// return to normal mapmode
+		if(mtc && interactivemap > 1)
+		{
+			// 2 = disabled normally, enabled for car
+			interactivemap = 0;
+			bigMap->setEntityVisibility(true);
+		}
+
 		//getting outside
 		mouseOverlay->hide();
 		trucks[previous_truck]->prepareInside(false);
@@ -5801,7 +5809,19 @@ void ExampleFrameListener::setCurrentTruck(int v)
 			showDashboardOverlays(true, trucks[current_truck]->driveable);
 			showEditorOverlay(trucks[current_truck]->editorId>=0);
 		}
-		
+
+		// mapmode change?
+		if(mtc && trucks[current_truck]->dynamicMapMode > 0)
+		{
+			// > 1 = disabled normally, enabled for car
+			if(interactivemap == 0)
+				interactivemap = 1 + trucks[current_truck]->dynamicMapMode;
+			else if(interactivemap == 1 && trucks[current_truck]->dynamicMapMode == 2)
+				interactivemap = 3;
+			mtc->setCamZoom(30);
+			bigMap->setEntityVisibility(false);
+		}
+
 		// show minimap and put it into lower left corner
 		if(bigMap) 
 		{
@@ -6058,6 +6078,13 @@ void ExampleFrameListener::moveCamera(float dt)
 	{
 		if(mtc && interactivemap)
 		{
+			// update the interactive map
+			// to improve: make the map, so it "looks forward", means the truck is at the bottom
+			// to improve: use average vehicle speed, not the current one
+			if(interactivemap == 3) // auto - zoom
+			{
+				mtc->setCamZoom(30 + trucks[current_truck]->WheelSpeed * 0.5);
+			}
 			mtc->setCamPosition(trucks[current_truck]->getPosition(), mCamera->getOrientation());
 			mtc->update();
 		}

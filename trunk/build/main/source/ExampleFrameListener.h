@@ -187,7 +187,7 @@ protected:
 
 	MapControl *bigMap;
 	StaticGeometry *bakesg;
-	bool interactivemap;
+	int interactivemap;
     bool xfire_enabled;
 	int externalCameraMode;
 
