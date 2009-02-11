@@ -3869,13 +3869,14 @@ bool ExampleFrameListener::updateEvents(float dt)
 			if(interactivemap)
 			{
 				interactivemap=false;
-				mtc->setCamZoom(1);
-				mtc->setCamPosition(mapsizex/2, mapsizez/2);
+				mtc->setCamZoom(((mapsizex+mapsizez)/2)*0.5); // zoom that fits 1:1 to the map
+				mtc->setCamPosition(Vector3(mapsizex/2, hfinder->getHeightAt(mapsizex/2, mapsizez/2) , mapsizez/2), Quaternion(Degree(0), Vector3::UNIT_X));
 				mtc->update();
 				bigMap->setEntityVisibility(true);
 				LogManager::getSingleton().logMessage("disabled interactive Map");
 			} else
 			{
+				mtc->setCamZoom(30); // zoom very near
 				bigMap->setEntityVisibility(false);
 				interactivemap=true;
 				LogManager::getSingleton().logMessage("enabled interactive Map");
@@ -3888,18 +3889,18 @@ bool ExampleFrameListener::updateEvents(float dt)
 	{
 		//LogManager::getSingleton().logMessage("zoom in");
 		if(INPUTENGINE.isKeyDown(OIS::KC_LSHIFT) || INPUTENGINE.isKeyDown(OIS::KC_RSHIFT))
-			mtc->setCamZoomRel(1);
+			mtc->setCamZoomRel(4);
 		else
-			mtc->setCamZoomRel(0.2);
+			mtc->setCamZoomRel(1);
 		mtc->update();
 	}
 	if (INPUTENGINE.getEventBoolValue("MAP_OUT") && mTimeUntilNextToggle <= 0 && interactivemap && mtc)
 	{
 		//LogManager::getSingleton().logMessage("zoom out");
 		if(INPUTENGINE.isKeyDown(OIS::KC_LSHIFT) || INPUTENGINE.isKeyDown(OIS::KC_RSHIFT))
-			mtc->setCamZoomRel(-1);
+			mtc->setCamZoomRel(-4);
 		else
-			mtc->setCamZoomRel(-0.2);
+			mtc->setCamZoomRel(-1);
 		mtc->update();
 	}
 #ifdef PAGED
@@ -4621,16 +4622,6 @@ void ExampleFrameListener::loadTerrain(String terrainfile)
 	if(terrainmaterial)
 		LogManager::getSingleton().logMessage("using Terrain Material '"+terrainmaterial->getName()+"'");
 
-	if(bigMap)
-	{
-		mtc = new MapTextureCreator(mScene, mCamera, this);
-		//mtc->setCamClip(mapsizex*1.2);
-		mtc->setCamPosition(mapsizex/2, mapsizez/2);
-		mtc->setAutoUpdated(false); // important!
-		bigMap->setVisibility(false);
-		bigMap->setBackgroundMaterial(mtc->getMaterialName());
-	}
-
 	//create sky material
 	//			MaterialPtr skmat=(MaterialPtr)(MaterialManager::getSingleton().create("Skycol", "Standard"));
 	//			Technique* sktechnique = skmat->getTechnique(0);
@@ -4880,6 +4871,17 @@ void ExampleFrameListener::loadTerrain(String terrainfile)
 
 	hfinder = new TSMHeightFinder(geom, terrainmap, wheight);
 	collisions->setHfinder(hfinder);
+
+	if(bigMap)
+	{
+		mtc = new MapTextureCreator(mScene, mCamera, this);
+		//mtc->setCamClip(mapsizex*1.2);
+		mtc->setCamZoom(((mapsizex+mapsizez)/2)*0.5);
+		mtc->setCamPosition(Vector3(mapsizex/2, hfinder->getHeightAt(mapsizex/2, mapsizez/2) , mapsizez/2), Quaternion(Degree(0), Vector3::UNIT_X));
+		mtc->setAutoUpdated(false); // important!
+		bigMap->setVisibility(false);
+		bigMap->setBackgroundMaterial(mtc->getMaterialName());
+	}
 
 	// fix the person starting position
 	if(persostart.isZeroLength() && !spl.pos.isZeroLength())
@@ -5975,7 +5977,7 @@ void ExampleFrameListener::moveCamera(float dt)
 	{
 		if(mtc && interactivemap)
 		{
-			mtc->setCamPosition(person->getPosition().x, person->getPosition().z);
+			mtc->setCamPosition(person->getPosition(), mCamera->getOrientation());
 			mtc->update();
 		}
 		//perso mode
@@ -6056,7 +6058,7 @@ void ExampleFrameListener::moveCamera(float dt)
 	{
 		if(mtc && interactivemap)
 		{
-			mtc->setCamPosition(trucks[current_truck]->getPosition().x, trucks[current_truck]->getPosition().z);
+			mtc->setCamPosition(trucks[current_truck]->getPosition(), mCamera->getOrientation());
 			mtc->update();
 		}
 		if (cameramode==CAMERA_EXT)
