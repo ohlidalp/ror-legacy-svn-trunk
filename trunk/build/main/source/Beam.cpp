@@ -2922,6 +2922,34 @@ int Beam::getWheelNodeCount()
 					else if(!strncmp(value, "zoom", 255))
 						dynamicMapMode = 2;
 				}
+				if(!strncmp(keyword, "debugBeams", 255) && strnlen(value, 255) > 0)
+				{
+					debugVisuals = 0;
+					if(!strncmp(value, "off", 255))
+						debugVisuals = 0;
+					else if(!strncmp(value, "node-numbers", 255))
+						debugVisuals = 1;
+					else if(!strncmp(value, "beam-numbers", 255))
+						debugVisuals = 2;
+					else if(!strncmp(value, "node-and-beam-numbers", 255))
+						debugVisuals = 3;
+					else if(!strncmp(value, "node-mass", 255))
+						debugVisuals = 4;
+					else if(!strncmp(value, "node-locked", 255))
+						debugVisuals = 5;
+					else if(!strncmp(value, "beam-compression", 255))
+						debugVisuals = 6;
+					else if(!strncmp(value, "beam-broken", 255))
+						debugVisuals = 7;
+					else if(!strncmp(value, "beam-stress", 255))
+						debugVisuals = 8;
+					else if(!strncmp(value, "beam-strength", 255))
+						debugVisuals = 9;
+					else if(!strncmp(value, "beam-hydros", 255))
+						debugVisuals = 10;
+					else if(!strncmp(value, "beam-commands", 255))
+						debugVisuals = 11;
+				}
 				if(!strncmp(keyword, "tachoMaterial", 255) && strnlen(value, 255) > 0)
 				{
 					tachomat = String(value);
@@ -6975,8 +7003,8 @@ float torques[MAX_WHEELS];
 		//sounds too
 		updateSoundSources();
 
-		if(debugVisuals>0)
-			updateDebugOverlay();
+		if(debugVisuals) updateDebugOverlay();
+
 		//dust
 		if (dustp && state==ACTIVATED) dustp->update(WheelSpeed);
 		if (dripp) dripp->update(WheelSpeed);
@@ -7743,79 +7771,147 @@ void Beam::setReplayMode(bool rm)
 
 void Beam::updateDebugOverlay()
 {
+	if(!debugVisuals) return;
 	if(nodedebugstate<0)
 	{
-		// add node labels
-
-		for(int i=0; i<free_node; i++)
+		LogManager::getSingleton().logMessage("initializing debugVisuals with mode "+StringConverter::toString(debugVisuals));
+		if(debugVisuals == 1 || (debugVisuals >= 3 && debugVisuals <= 5))
 		{
-			debugtext_t t;
-			char nodeName[255]="", entName[255]="";
-			sprintf(nodeName, "%s-nodesDebug-%d", truckname, i);
-			sprintf(entName, "%s-nodesDebug-%d-Ent", truckname, i);
-			Entity *b = tsm->createEntity(entName, "beam.mesh");
-			t.id=i;
-			t.txt = new MovableText(nodeName, "n"+StringConverter::toString(i));
-			t.txt->setFontName("highcontrast_black");
-			t.txt->setTextAlignment(MovableText::H_LEFT, MovableText::V_BELOW);
-			//t.txt->setAdditionalHeight(0);
-			t.txt->showOnTop(true);
-			t.txt->setCharacterHeight(0.5);
-			t.txt->setColor(ColourValue::White);
+			// add node labels
+			for(int i=0; i<free_node; i++)
+			{
+				debugtext_t t;
+				char nodeName[255]="", entName[255]="";
+				sprintf(nodeName, "%s-nodesDebug-%d", truckname, i);
+				sprintf(entName, "%s-nodesDebug-%d-Ent", truckname, i);
+				Entity *b = tsm->createEntity(entName, "beam.mesh");
+				t.id=i;
+				t.txt = new MovableText(nodeName, "n"+StringConverter::toString(i));
+				t.txt->setFontName("highcontrast_black");
+				t.txt->setTextAlignment(MovableText::H_LEFT, MovableText::V_BELOW);
+				//t.txt->setAdditionalHeight(0);
+				t.txt->showOnTop(true);
+				t.txt->setCharacterHeight(0.5);
+				t.txt->setColor(ColourValue::White);
 
-			t.node = tsm->getRootSceneNode()->createChildSceneNode();
-			t.node->attachObject(t.txt);
-			t.node->attachObject(b);
-			t.node->setScale(Vector3(0.05,0.05,0.05));
+				t.node = tsm->getRootSceneNode()->createChildSceneNode();
+				t.node->attachObject(t.txt);
+				t.node->attachObject(b);
+				t.node->setScale(Vector3(0.05,0.05,0.05));
 
-			t.node->setPosition(nodes[i].smoothpos);
-			nodes_debug.push_back(t);
-		}
-
-
-
-		// add beam labels
-		/*
-		for(int i=0; i<free_beam; i++)
+				t.node->setPosition(nodes[i].smoothpos);
+				nodes_debug.push_back(t);
+			}
+		} else if(debugVisuals == 2 || debugVisuals == 3 || (debugVisuals >= 6 && debugVisuals <= 11))
 		{
-			debugtext_t t;
-			char nodeName[255]="";
-			sprintf(nodeName, "%s-beamsDebug-%d", truckname, i);
-			t.id=i;
-			t.txt = new MovableText(nodeName, "b"+StringConverter::toString(i));
-			t.txt->setFontName("highcontrast_black");
-			t.txt->setTextAlignment(MovableText::H_LEFT, MovableText::V_BELOW);
-			//t.txt->setAdditionalHeight(0);
-			t.txt->showOnTop(true);
-			t.txt->setCharacterHeight(1);
-			t.txt->setColor(ColourValue::White);
+			// add beam labels
+			for(int i=0; i<free_beam; i++)
+			{
+				debugtext_t t;
+				char nodeName[255]="";
+				sprintf(nodeName, "%s-beamsDebug-%d", truckname, i);
+				t.id=i;
+				t.txt = new MovableText(nodeName, "b"+StringConverter::toString(i));
+				t.txt->setFontName("highcontrast_black");
+				t.txt->setTextAlignment(MovableText::H_LEFT, MovableText::V_BELOW);
+				//t.txt->setAdditionalHeight(0);
+				t.txt->showOnTop(true);
+				t.txt->setCharacterHeight(1);
+				t.txt->setColor(ColourValue::White);
 
-			t.node = tsm->getRootSceneNode()->createChildSceneNode();
-			t.node->attachObject(t.txt);
+				t.node = tsm->getRootSceneNode()->createChildSceneNode();
+				t.node->attachObject(t.txt);
 
-			Vector3 pos = beams[i].p1->smoothpos - (beams[i].p1->smoothpos - beams[i].p2->smoothpos)/2;
-			t.node->setPosition(pos);
-			t.node->setScale(Vector3(0.1,0.1,0.1));
-			beams_debug.push_back(t);
+				Vector3 pos = beams[i].p1->smoothpos - (beams[i].p1->smoothpos - beams[i].p2->smoothpos)/2;
+				t.node->setPosition(pos);
+				t.node->setScale(Vector3(0.1,0.1,0.1));
+				beams_debug.push_back(t);
+			}
 		}
-		*/
 
 		nodedebugstate=0;
-	} else
+		// update now
+	}
+	switch(debugVisuals)
 	{
-		// just update the positions
-		std::vector<debugtext_t>::iterator it;
-		for(it=nodes_debug.begin(); it!=nodes_debug.end();it++)
+	case 0: // off
+		return;
+	case 1: // node-numbers
+		// not written dynamically
+		for(std::vector<debugtext_t>::iterator it=nodes_debug.begin(); it!=nodes_debug.end();it++)
+			it->node->setPosition(nodes[it->id].smoothpos);
+		break;
+	case 2: // beam-numbers
+		// not written dynamically
+		for(std::vector<debugtext_t>::iterator it=beams_debug.begin(); it!=beams_debug.end();it++)
+			it->node->setPosition(beams[it->id].p1->smoothpos - (beams[it->id].p1->smoothpos - beams[it->id].p2->smoothpos)/2);
+		break;
+	case 3: // node-and-beam-numbers
+		// not written dynamically
+		for(std::vector<debugtext_t>::iterator it=nodes_debug.begin(); it!=nodes_debug.end();it++)
+			it->node->setPosition(nodes[it->id].smoothpos);
+		for(std::vector<debugtext_t>::iterator it=beams_debug.begin(); it!=beams_debug.end();it++)
+			it->node->setPosition(beams[it->id].p1->smoothpos - (beams[it->id].p1->smoothpos - beams[it->id].p2->smoothpos)/2);
+		break;
+	case 4: // node-mass
+		for(std::vector<debugtext_t>::iterator it=nodes_debug.begin(); it!=nodes_debug.end();it++)
 		{
 			it->node->setPosition(nodes[it->id].smoothpos);
+			it->txt->setCaption(StringConverter::toString(nodes[it->id].mass));
 		}
-
-		for(it=beams_debug.begin(); it!=beams_debug.end();it++)
+		break;
+	case 5: // node-locked
+		for(std::vector<debugtext_t>::iterator it=nodes_debug.begin(); it!=nodes_debug.end();it++)
+		{
+			it->txt->setCaption((nodes[it->id].locked)?"locked":"unlocked");
+			it->node->setPosition(nodes[it->id].smoothpos);
+		}
+		break;
+	case 6: // beam-compression
+		for(std::vector<debugtext_t>::iterator it=beams_debug.begin(); it!=beams_debug.end();it++)
 		{
 			it->node->setPosition(beams[it->id].p1->smoothpos - (beams[it->id].p1->smoothpos - beams[it->id].p2->smoothpos)/2);
-			//int scale = (int)(beams[it->id].scale * 100);
-			//it->txt->setCaption("b"+StringConverter::toString(it->id)+"("+StringConverter::toString(scale)+")");
+			int scale=(int)(beams[it->id].scale * 100);
+			it->txt->setCaption(StringConverter::toString(scale));
 		}
+		break;
+	case 7: // beam-broken
+		for(std::vector<debugtext_t>::iterator it=beams_debug.begin(); it!=beams_debug.end();it++)
+		{
+			it->node->setPosition(beams[it->id].p1->smoothpos - (beams[it->id].p1->smoothpos - beams[it->id].p2->smoothpos)/2);
+			it->txt->setCaption((beams[it->id].broken)?"BROKEN":"");
+		}
+		break;
+	case 8: // beam-stress
+		for(std::vector<debugtext_t>::iterator it=beams_debug.begin(); it!=beams_debug.end();it++)
+		{
+			it->node->setPosition(beams[it->id].p1->smoothpos - (beams[it->id].p1->smoothpos - beams[it->id].p2->smoothpos)/2);
+			it->txt->setCaption(StringConverter::toString(beams[it->id].stress));
+		}
+		break;
+	case 9: // beam-strength
+		for(std::vector<debugtext_t>::iterator it=beams_debug.begin(); it!=beams_debug.end();it++)
+		{
+			it->node->setPosition(beams[it->id].p1->smoothpos - (beams[it->id].p1->smoothpos - beams[it->id].p2->smoothpos)/2);
+			it->txt->setCaption(StringConverter::toString(beams[it->id].strength));
+		}
+		break;
+	case 10: // beam-hydros
+		for(std::vector<debugtext_t>::iterator it=beams_debug.begin(); it!=beams_debug.end();it++)
+		{
+			it->node->setPosition(beams[it->id].p1->smoothpos - (beams[it->id].p1->smoothpos - beams[it->id].p2->smoothpos)/2);
+			int v = (beams[it->id].L / beams[it->id].Lhydro) * 100;
+			it->txt->setCaption(StringConverter::toString(v));
+		}
+		break;
+	case 11: // beam-commands
+		for(std::vector<debugtext_t>::iterator it=beams_debug.begin(); it!=beams_debug.end();it++)
+		{
+			it->node->setPosition(beams[it->id].p1->smoothpos - (beams[it->id].p1->smoothpos - beams[it->id].p2->smoothpos)/2);
+			int v = (beams[it->id].L / beams[it->id].commandLong) * 100;
+			it->txt->setCaption(StringConverter::toString(v));
+		}
+		break;
 	}
 }
 
