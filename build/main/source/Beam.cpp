@@ -80,6 +80,7 @@ Beam::Beam(int tnum, SceneManager *manager, SceneNode *parent, RenderWindow* win
 	nodedebugstate=-1;
 	debugVisuals=0;
 	netMT = 0;
+	dynamicMapMode=0;
 	meshesVisible=true;
 	//netDist = 0;
 	disable_default_sounds=false;
@@ -2910,6 +2911,16 @@ int Beam::getWheelNodeCount()
 				if (result < 2 || result == EOF) {
 					LogManager::getSingleton().logMessage("Error parsing File (guisettings) " + String(fname) +" line " + StringConverter::toString(linecounter) + ". trying to continue ...");
 					continue;
+				}
+				if(!strncmp(keyword, "interactiveOverviewMap", 255) && strnlen(value, 255) > 0)
+				{
+					dynamicMapMode = 0;
+					if(!strncmp(value, "off", 255))
+						dynamicMapMode = 0;
+					else if(!strncmp(value, "simple", 255))
+						dynamicMapMode = 1;
+					else if(!strncmp(value, "zoom", 255))
+						dynamicMapMode = 2;
 				}
 				if(!strncmp(keyword, "tachoMaterial", 255) && strnlen(value, 255) > 0)
 				{
