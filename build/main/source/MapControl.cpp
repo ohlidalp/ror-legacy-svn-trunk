@@ -39,19 +39,19 @@ MapTextureCreator::MapTextureCreator(SceneManager *mgr, Ogre::Camera *maincam, E
 	counter++;
 	smgr=mgr;
 	statics=0;
+	camdir=Quaternion::ZERO;
 	init();
 }
 
 void MapTextureCreator::init()
 {
-	TexturePtr texture = TextureManager::getSingleton().createManual("MapRttTex"+StringConverter::toString(counter), ResourceGroupManager::DEFAULT_RESOURCE_GROUP_NAME, TEX_TYPE_2D, 2048, 2048, 0, PF_R8G8B8, TU_RENDERTARGET,new ResourceBuffer());
+	TexturePtr texture = TextureManager::getSingleton().createManual("MapRttTex"+StringConverter::toString(counter), ResourceGroupManager::DEFAULT_RESOURCE_GROUP_NAME, TEX_TYPE_2D, 1024, 1024, 0, PF_R8G8B8, TU_RENDERTARGET, new ResourceBuffer());
 	rttTex = texture->getBuffer()->getRenderTarget();
 	rttTex->setAutoUpdated(true);
 	mCamera = smgr->createCamera("MapRenderCam");
-	mCamera->setAutoAspectRatio(true);
 
 	v = rttTex->addViewport(mCamera);
-	v->setBackgroundColour(ColourValue::White);
+	v->setBackgroundColour(ColourValue::Black);
 	v->setOverlaysEnabled(false);
 
 	mat = MaterialManager::getSingleton().create("MapRttMat"+StringConverter::toString(counter), ResourceGroupManager::DEFAULT_RESOURCE_GROUP_NAME);
@@ -66,33 +66,17 @@ void MapTextureCreator::init()
 	rttTex->addListener(this);
 	//mCamera->setProjectionType(PT_ORTHOGRAPHIC);
 
-	zoom = 1;
+	zoom = 3;
 
 	mCamera->setPosition(0, 4500, 0.0001);
 	mCamera->lookAt(0,0,0);
 
-	//setCamPosition(1500, 1500, 0);
-	mCamera->setNearClipDistance(1);
-	mCamera->setFarClipDistance(10000);
-	rttTex->update();
-}
-
-Ogre::Matrix4 MapTextureCreator::BuildScaledOrthoMatrix(float left, float right, float bottom, float top, float fnear, float ffar)
-{
-	float invw = 1 / (right - left);
-	float invh = 1 / (top - bottom);
-	float invd = 1 / (ffar - fnear);
-
-	Matrix4 proj = Matrix4::ZERO;
-	proj[0][0] = 2 * invw;
-	proj[0][3] = -(right + left) * invw;
-	proj[1][1] = 2 * invh;
-	proj[1][3] = -(top + bottom) * invh;
-	proj[2][2] = -2 * invd;
-	proj[2][3] = -(ffar + fnear) * invd;
-	proj[3][3] = 1;
-
-	return proj;
+	mCamera->setFarClipDistance(0);
+	mCamera->setAspectRatio(1.0);
+	mCamera->setFixedYawAxis(false);
+	mCamera->setProjectionType(Ogre::PT_ORTHOGRAPHIC);
+	mCamera->setFOVy(Radian(Math::HALF_PI));
+	mCamera->setNearClipDistance(zoom);
 }
 
 void MapTextureCreator::setTranlucency(float amount)
@@ -113,7 +97,7 @@ void MapTextureCreator::setStaticGeometry(Ogre::StaticGeometry *geo)
 
 void MapTextureCreator::setCamZoomRel(float zoomdelta)
 {
-	zoom += zoomdelta;
+	zoom += zoomdelta * zoom/100;
 }
 
 void MapTextureCreator::setCamZoom(float newzoom)
@@ -121,29 +105,28 @@ void MapTextureCreator::setCamZoom(float newzoom)
 	zoom = newzoom;
 }
 
-void MapTextureCreator::setCamPosition(float x, float z)
+void MapTextureCreator::setCamPosition(Vector3 pos, Quaternion direction)
 {
-	camx = x;
-	camz = -z;
+	campos = pos;
+	camdir = direction;
 }
 
 
 void MapTextureCreator::update()
 {
 	// 1 = max out = total overview
-	if(zoom<=0.1)
-		zoom=0.1;
+	if(zoom<=0.3)
+		zoom=0.3;
 
 	float width = mefl->mapsizex;
 	float height = mefl->mapsizez;
+	float zoomfactor = zoom * ((width+height)/2) * 0.002;
 
 	//LogManager::getSingleton().logMessage(StringConverter::toString(zoom));
-	Matrix4 p = BuildScaledOrthoMatrix(width  / zoom / -2.0f + camx,
-	                                   width  / zoom /  2.0f + camx,
-	                                   height / zoom / -2.0f + camz,
-	                                   height / zoom /  2.0f + camz, 0, 5000);
-	// apply zoom matrix to camera
-	mCamera->setCustomProjectionMatrix(true, p);
+	mCamera->setNearClipDistance(zoom);
+	mCamera->setPosition(campos + Vector3(0, zoomfactor, 0));
+	if(camdir != Quaternion::ZERO) mCamera->setOrientation(camdir);
+	mCamera->lookAt(campos - Vector3(0, zoomfactor, 0));
 
 	// output the zoom factor for debug purposes
 	//LogManager::getSingleton().logMessage(StringConverter::toString(zoom));
@@ -158,23 +141,9 @@ void MapTextureCreator::update()
 	*/
 
 	if(statics)
-		statics->setRenderingDistance(10000);
+		statics->setRenderingDistance(0);
 	// thats a huge workaround to be able to not use the normal LOD
-#ifdef OGREPLUGIN
-	TerrainOptions to;
-	if(!mefl->usingETM())
-	{
-		to = ((TerrainSceneManager*)smgr)->getOptions();
-		((TerrainSceneManager*)smgr)->setMaxPixelError(0);
-		((TerrainSceneManager*)smgr)->setLODMorphStart(100000);
-		((TerrainSceneManager*)smgr)->setUseLODMorph(false);
-		((TerrainSceneManager*)smgr)->setDetailTextureRepeat(0);
-		((TerrainSceneManager*)smgr)->setMaxGeoMipMapLevel(2);
-		((TerrainSceneManager*)smgr)->setPrimaryCamera(mCamera);
-		((TerrainSceneManager*)smgr)->setUseTriStrips(false);
-		//((TerrainSceneManager*)smgr)->setUseVertexNormals(false);
-	}
-#endif
+
 	setFogVisible(false);
 
 	rttTex->update();
@@ -193,18 +162,6 @@ void MapTextureCreator::update()
 		mefl->getTruck(i)->preMapLabelRenderUpdate(false);
 	*/
 
-#ifdef OGREPLUGIN
-	if(!mefl->usingETM())
-	{
-		((TerrainSceneManager*)smgr)->setMaxPixelError((int)to.maxPixelError);
-		((TerrainSceneManager*)smgr)->setLODMorphStart(to.lodMorphStart);
-		((TerrainSceneManager*)smgr)->setUseLODMorph(to.lodMorph);
-		((TerrainSceneManager*)smgr)->setDetailTextureRepeat((int)to.detailTile);
-		((TerrainSceneManager*)smgr)->setMaxGeoMipMapLevel((int)to.maxGeoMipMapLevel);
-		((TerrainSceneManager*)smgr)->setPrimaryCamera(mainCam);
-		((TerrainSceneManager*)smgr)->setUseTriStrips(to.useTriStrips);
-	}
-#endif
 }
 
 void MapTextureCreator::setFogVisible(bool value)

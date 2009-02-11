@@ -44,7 +44,7 @@ public:
 	Ogre::String getRTName();
 	void setAutoUpdated(bool value);
 	void update();
-	void setCamPosition(float x, float z);
+	void setCamPosition(Ogre::Vector3 pos, Ogre::Quaternion direction);
 	void setCameraMode(Ogre::PolygonMode pm);
 	void setStaticGeometry(Ogre::StaticGeometry *geo);
 	void setCamZoom(float newzoom);
@@ -53,10 +53,11 @@ public:
 protected:
 	void preRenderTargetUpdate(const Ogre::RenderTargetEvent& evt);
     void postRenderTargetUpdate(const Ogre::RenderTargetEvent& evt);
-	Ogre::Matrix4 BuildScaledOrthoMatrix(float left, float right, float bottom, float top, float near, float far);
 	void setFogVisible(bool value);
 	static int counter;
-	float zoom, camx, camz;
+	float zoom;
+	Ogre::Vector3 campos;
+	Ogre::Quaternion camdir;
 	Ogre::Viewport *v;
 	Ogre::StaticGeometry *statics;
 	Ogre::Camera *mainCam;
