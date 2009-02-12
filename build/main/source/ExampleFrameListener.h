@@ -55,11 +55,6 @@ along with Rigs of Rods.  If not, see <http://www.gnu.org/licenses/>.
 
 class DustPool;
 
-#ifdef CLOUDS
-class OgreCloudObject;
-namespace simul{ namespace clouds { class CellularCloudNode; }};
-#endif
-
 class Caelum;
 class MapTextureCreator;
 
@@ -586,11 +581,6 @@ protected:
 	
 	std::vector<animated_object_t> animatedObjects;
 	bool updateAnimatedObjects(float dt);
-#ifdef CLOUDS
-	OgreCloudObject *cloud;
-	simul::clouds::CellularCloudNode *ci;
-#endif
-
 };
 
 

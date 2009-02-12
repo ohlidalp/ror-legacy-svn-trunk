@@ -55,11 +55,13 @@ option(ROR_BUILD_CONFIGURATOR "builds the RoRConfig" TRUE)
 option(ROR_BUILD_ROR "toggles building of RoR and its dependencies" TRUE)
 option(WSYNC_BUILD_WSYNC "builds the wsync tool" FALSE)
 
+set(NVIDIA_CG_DIR "$ENV{PROGRAMFILES}\\NVIDIA Corporation\\Cg" CACHE PATH "directory of the nvidia cg toolkit installation")
+
 #experimental ones
-option(ROR_BUILD_PYTHONSCRIPT "adds the Python Scripting engine" FALSE)
+#option(ROR_BUILD_PYTHONSCRIPT "adds the Python Scripting engine" FALSE)
+set(ROR_BUILD_PYTHONSCRIPT FALSE)
 option(WSYNC_BUILD_INSTALLER "builds the installer" FALSE)
 option(ROR_BUILD_NEWNET "builds the new network approach using raknet" FALSE)
-option(ROR_BUILD_CLOUDS "build RoR with clouds engine support (windows only, experimental)" FALSE)
 option(CAELUM_BUILD_NEW "uses a more recent caelum version" FALSE)
 
 #layouteditor is currently broken
@@ -108,9 +110,7 @@ endif(ROR_BUILD_NEWNET)
 message(STATUS "==== RoR Configuration =======")
 message(STATUS " * HYDRAX water:          ${ROR_BUILD_HYDRAX}")
 message(STATUS " * paged geometry:        ${ROR_BUILD_PAGED}")
-message(STATUS " * clouds engine:         ${ROR_BUILD_CLOUDS}")
 message(STATUS " * Profiling (Beamstats): ${ROR_BUILD_BEAMSTATS}")
-message(STATUS " * Python Script Engine:  ${ROR_BUILD_PYTHONSCRIPT}")
 message(STATUS " * LUA Script Engine:     ${ROR_BUILD_LUASCRIPT}")
 message(STATUS "==============================")
 

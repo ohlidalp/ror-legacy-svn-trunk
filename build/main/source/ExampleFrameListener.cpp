@@ -100,18 +100,6 @@ along with Rigs of Rods.  If not, see <http://www.gnu.org/licenses/>.
 
 #include "writeTextToTexture.h"
 
-#ifdef CLOUDS
-#include "Simul/Visual/OgreImplementation/OgreCloudObject.h"
-#include "Simul/Graph/Meta/Group.h"
-#include "Simul/Base/EnvironmentVariables.h"
-#include "Simul/Visual/OgreImplementation/OgreViewNode.h"
-#include "Simul/Graph/Meta/NodeFinderVisitor.h"
-#include "Simul/Clouds/CellularCloudNode.h"
-#include "Simul/Sky/SkyNode.h"
-#include "Simul/Graph/StandardNodes/RigidBody.h"
-#include "Simul/Graph/Camera/Camera.h"
-#endif
-
 #if OGRE_PLATFORM == OGRE_PLATFORM_APPLE
 //#include <CFUserNotification.h>
 #endif
@@ -771,10 +759,6 @@ float ExampleFrameListener::gravity = DEFAULT_GRAVITY;
 // Constructor takes a RenderWindow because it uses that to determine input context
 ExampleFrameListener::ExampleFrameListener(RenderWindow* win, Camera* cam, SceneManager* scm, Root* root) :  initialized(false)
 {
-#ifdef CLOUDS
-	cloud=0;
-	ci=0;
-#endif
 	externalCameraMode=0;
 	gameStartTime = CACHE.getTimeStamp();
 	loadedTerrain="none";
@@ -4231,67 +4215,6 @@ void ExampleFrameListener::loadTerrain(String terrainfile)
 	SCRIPTINGENGINE.runScript(terrainfile+String(".py"));
 #endif
 
-
-
-#ifdef CLOUDS
-	cloud=0;
-	ci=0;
-	// 3d clouds !?
-	bool useClouds = (SETTINGS.getSetting("Clouds") == "Yes");
-	if(useClouds)
-	{
-		std::string working=simul::base::EnvironmentVariables::GetWorkingDirectory();
-		simul::visual::representation::ShaderOptions *shader_options= new simul::visual::representation::ShaderOptions;
-		shader_options->exposure=2.0f;
-
-		ci=new simul::clouds::CellularCloudNode;
-
-		ci->SetSeparateSecondaryLight(true);
-		ci->SetQuicklight(true);
-		ci->SetRealtime(true);
-		ci->SetWrap(true);
-
-		ci->SetRandomSeed(15);
-
-		ci->SetGridLength(128);
-		ci->SetGridWidth(128);
-		ci->SetGridHeight(16);
-
-		ci->SetCloudBaseZ(1000.f);
-		ci->SetCloudWidth(40000.f);
-		ci->SetCloudLength(40000.f);
-		ci->SetCloudHeight(3200.f);
-
-		ci->SetFractalRepeatLength(8400.f);
-		ci->SetFractalOffsetScale(1200.f);
-
-		ci->SetDensity(.001f);
-		ci->SetHumidity(.5f);
-		ci->SetActivation(.01f);
-
-		ci->SetExtinction(0.002f);
-		ci->SetLightResponseMultiplier(0.03f);
-		ci->SetAmbientLightMultiplier(1.f);
-		ci->SetAnisotropicLightMultiplier(0.05f);
-		ci->SetSecondaryLightMultiplier(0.03f);
-
-		ci->SetNoiseResolution(8);
-		ci->SetNoiseOctaves(3);
-
-		ci->SetMarchSteps(6);
-		ci->Generate();
-
-		cloud = new OgreCloudObject("clouds");
-		cloud->Recalculate(ci);
-		cloud->Rebuild(mCamera->getPosition().ptr(), ci, false, true);
-
-		SceneNode *cloudnode=mSceneMgr->getRootSceneNode()->createChildSceneNode();
-		cloudnode->attachObject(cloud);
-		cloudnode->setVisible(true);
-		cloudnode->setPosition(0,0,0);
-	}
-#endif
-
 	//we load terrain
 	//FILE *fd;
 	char geom[1024];
@@ -5906,12 +5829,6 @@ bool ExampleFrameListener::processUnbufferedMouseInput(const FrameEvent& evt)
 
 void ExampleFrameListener::moveCamera(float dt)
 {
-
-#ifdef CLOUDS
-	if(cloud && ci)
-		cloud->Rebuild(mCamera->getPosition().ptr(), ci, false, true);
-#endif
-
 	if(!hfinder)
 		return;
 	if (loading_state!=ALL_LOADED && loading_state != EDITOR_PAUSE) return;

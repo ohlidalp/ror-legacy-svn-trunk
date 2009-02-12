@@ -21,20 +21,25 @@ PROJECT(OpenAL C)
 SET(CMAKE_ALLOW_LOOSE_LOOP_CONSTRUCTS TRUE)
 
 
-OPTION(ALSA    "Check for ALSA backend"                ON)
-OPTION(OSS     "Check for OSS backend"                 ON)
-OPTION(SOLARIS "Check for Solaris backend"             ON)
-OPTION(DSOUND  "Check for DirectSound backend"         ON)
-OPTION(WINMM   "Check for Windows Multimedia backend"  ON)
+#OPTION(ALSA    "Check for ALSA backend"                ON)
+#OPTION(OSS     "Check for OSS backend"                 ON)
+#OPTION(SOLARIS "Check for Solaris backend"             ON)
+#OPTION(DSOUND  "Check for DirectSound backend"         ON)
+#OPTION(WINMM   "Check for Windows Multimedia backend"  ON)
+#OPTION(DLOPEN  "Check for the dlopen API for loading optional libs"  ON)
+#OPTION(WERROR  "Treat compile warnings as errors"      OFF)
+#OPTION(EXAMPLES  "Build example programs"              ON)
+#OPTION(XCOMPILEWIN32  "Cross-compile to Win32" OFF)
 
-OPTION(DLOPEN  "Check for the dlopen API for loading optional libs"  ON)
-
-OPTION(WERROR  "Treat compile warnings as errors"      OFF)
-
-OPTION(EXAMPLES  "Build example programs"              ON)
-
-OPTION(XCOMPILEWIN32  "Cross-compile to Win32" OFF)
-
+set(ALSA    ON)
+set(OSS     ON)
+set(SOLARIS ON)
+set(DSOUND  ON)
+set(WINMM   ON)
+set(DLOPEN  ON)
+set(WERROR  OFF)
+set(EXAMPLES OFF)
+set(XCOMPILEWIN32 OFF)
 
 IF(WIN32 OR XCOMPILEWIN32)
     SET(LIBNAME openal32)
