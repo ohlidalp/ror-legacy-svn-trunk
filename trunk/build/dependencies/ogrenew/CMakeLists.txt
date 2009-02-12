@@ -41,38 +41,52 @@ find_package(Dependencies)
 #macro_display_feature_log()
 
 # Provide options for selective builds
-option(OGRE_STATIC "Static build (keep LGPL restrictions in mind!)" FALSE)
+#option(OGRE_STATIC "Static build (keep LGPL restrictions in mind!)" FALSE)
+set(OGRE_STATIC FALSE)
 if (WIN32)
-  option(OGRE_BUILD_RENDERSYSTEM_D3D9 "Build Direct3D9 RenderSystem" TRUE)
+  #option(OGRE_BUILD_RENDERSYSTEM_D3D9 "Build Direct3D9 RenderSystem" TRUE)
+  set(OGRE_BUILD_RENDERSYSTEM_D3D9 TRUE)
 endif (WIN32)
-option(OGRE_BUILD_RENDERSYSTEM_GL "Build OpenGL RenderSystem" TRUE)
-option(OGRE_BUILD_PLUGIN_BSP "Build BSP SceneManager plugin" TRUE)
-option(OGRE_BUILD_PLUGIN_OCTREE "Build Octree SceneManager plugin" TRUE)
+set(OGRE_BUILD_RENDERSYSTEM_GL TRUE)
+#option(OGRE_BUILD_RENDERSYSTEM_GL "Build OpenGL RenderSystem" TRUE)
+#option(OGRE_BUILD_PLUGIN_BSP "Build BSP SceneManager plugin" TRUE)
+set(OGRE_BUILD_PLUGIN_BSP FALSE)
+set(OGRE_BUILD_PLUGIN_OCTREE TRUE)
+set(OGRE_BUILD_PLUGIN_PFX TRUE)
+set(OGRE_BUILD_PLUGIN_CG TRUE)
+set(OGRE_BUILD_CEGUIRENDERER FALSE)
+set(OGRE_BUILD_SAMPLES FALSE)
+set(OGRE_CONFIG_PROFILING FALSE)
+set(OGRE_CONFIG_ASSERTMODE 0)
+set(OGRE_CONFIG_DOUBLE FALSE)
+set(OGRE_CONFIG_THREADS 0)
+
+#option(OGRE_BUILD_PLUGIN_OCTREE "Build Octree SceneManager plugin" TRUE)
 #option(OGRE_BUILD_PLUGIN_PCZ "Build PCZ SceneManager plugin" TRUE)
-option(OGRE_BUILD_PLUGIN_PFX "Build ParticleFX plugin" TRUE)
-option(OGRE_BUILD_PLUGIN_CG "Build Cg plugin" TRUE)
-option(OGRE_BUILD_CEGUIRENDERER "Build CEGUI renderer" TRUE)
-option(OGRE_BUILD_SAMPLES "Build Ogre demos" FALSE)
+#option(OGRE_BUILD_PLUGIN_PFX "Build ParticleFX plugin" TRUE)
+#option(OGRE_BUILD_PLUGIN_CG "Build Cg plugin" TRUE)
+#option(OGRE_BUILD_CEGUIRENDERER "Build CEGUI renderer" TRUE)
+#option(OGRE_BUILD_SAMPLES "Build Ogre demos" FALSE)
 # Provide options for configuring OGRE
-option(OGRE_CONFIG_PROFILING "Enable Ogre profiling code" FALSE)
-set(OGRE_CONFIG_ASSERTMODE 0 CACHE STRING 
-"Set Ogre assertion mode. Possible values:
-  0 - Regular asserts in debug, none in release
-  1 - Regular asserts in debug, exceptions in release
-  2 - Exceptions in debug and release"
-)
-option(OGRE_CONFIG_DOUBLE "Use doubles instead of floats in Ogre" FALSE)
-option(OGRE_CONFIG_MEMTRACK_DEBUG "Enable Ogre's memory tracker in debug mode" FALSE)
-option(OGRE_CONFIG_MEMTRACK_RELEASE "Enable Ogre's memory tracker in release mode" FALSE)
-set(OGRE_CONFIG_THREADS 0 CACHE STRING 
-"Enable Ogre thread support for background loading. Possible values:
-  0 - Threading off.
-  1 - Full background loading.
-  2 - Background resource preparation."
-)
-option(OGRE_CONFIG_DISABLE_FREEIMAGE "Don't build FreeImage codec. If you use this option, you need to provide your own image handling codecs." TRUE)
-option(OGRE_CONFIG_DISABLE_DDS "Don't build DDS codec.")
-option(OGRE_CONFIG_NEW_COMPILERS "Use the new script compilers." TRUE)
+#option(OGRE_CONFIG_PROFILING "Enable Ogre profiling code" FALSE)
+#set(OGRE_CONFIG_ASSERTMODE 0 CACHE STRING 
+#"Set Ogre assertion mode. Possible values:
+#  0 - Regular asserts in debug, none in release
+#  1 - Regular asserts in debug, exceptions in release
+#  2 - Exceptions in debug and release"
+#)
+#option(OGRE_CONFIG_DOUBLE "Use doubles instead of floats in Ogre" FALSE)
+#option(OGRE_CONFIG_MEMTRACK_DEBUG "Enable Ogre's memory tracker in debug mode" FALSE)
+#option(OGRE_CONFIG_MEMTRACK_RELEASE "Enable Ogre's memory tracker in release mode" FALSE)
+#set(OGRE_CONFIG_THREADS 0 CACHE STRING 
+#"Enable Ogre thread support for background loading. Possible values:
+#  0 - Threading off.
+#  1 - Full background loading.
+#  2 - Background resource preparation."
+#)
+#option(OGRE_CONFIG_DISABLE_FREEIMAGE "Don't build FreeImage codec. If you use this option, you need to provide your own image handling codecs." TRUE)
+#option(OGRE_CONFIG_DISABLE_DDS "Don't build DDS codec.")
+#option(OGRE_CONFIG_NEW_COMPILERS "Use the new script compilers." TRUE)
 
 if (OGRE_STATIC)
   set(OGRE_LIB_TYPE STATIC)

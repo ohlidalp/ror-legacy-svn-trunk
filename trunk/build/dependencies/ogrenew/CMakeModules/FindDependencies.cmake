@@ -4,10 +4,10 @@
 #TODO use find lib path suffixes - in progress
 if (WIN32)
   #Set path from variables
-  set(OGRE_DEPENDENCIES_DIR "" CACHE PATH "Path to OGRE dependencies folder")
-  set(DEP_INCLUDE_SEARCH_DIR "${OGRE3D_SOURCE_DIR}" "${OGRE_DEPENDENCIES_DIR}" "C:/Program Files/NVIDIA Corporation/Cg/include")
+  #set(OGRE_DEPENDENCIES_DIR "" CACHE PATH "Path to OGRE dependencies folder")
+  set(DEP_INCLUDE_SEARCH_DIR "${OGRE3D_SOURCE_DIR}" "${OGRE_DEPENDENCIES_DIR}" "${NVIDIA_CG_DIR}/include")
   set(DEP_INCLUDE_SEARCH_SUFFIXES "Dependencies/include" "Dependencies/include/CEGUI" "Dependencies/include/OIS")
-  set(DEP_LIB_SEARCH_DIR "${OGRE3D_SOURCE_DIR}" "${OGRE_DEPENDENCIES_DIR}" "C:/Program Files/NVIDIA Corporation/Cg/lib")
+  set(DEP_LIB_SEARCH_DIR "${OGRE3D_SOURCE_DIR}" "${OGRE_DEPENDENCIES_DIR}" "${NVIDIA_CG_DIR}/lib")
   set(DEP_LIB_SEARCH_SUFFIXES "Dependencies/lib/Release")
   set(DEP_LIBD_SEARCH_DIR "${OGRE3D_SOURCE_DIR}" "${OGRE_DEPENDENCIES_DIR}")
   set(DEP_LIBD_SEARCH_SUFFIXES "Dependencies/lib/Debug")
