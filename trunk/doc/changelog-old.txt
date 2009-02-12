@@ -1,14 +1,14 @@
++ see svn log on the SF site for further changelog
 ===  RoR went open source, 8th of February 2009
 --- Content
 + dodge charger flexbody by Bonehead
-+ optimized flatmap, pagesize = 5 now
 + f1-track by sneer to test different friction code: grass will behave like grass and tarmac like it should
 + new stream concept
 + new skies
 + small island spawn point fix
 + better race system overlay position and font
 
---- Features
+--- Features / Improvements
 + Improved friction: more realistic, better working alhorithm
 + new User Interface: we are using MyGUI now for all ingame UI windows:
  + new loader and progress bar
@@ -26,40 +26,36 @@
 + added damage blend material for trucks. The material will blend to the damaged version if the underlying beam model is damaged
 + added true environment mapping (chrome effect)
 + incremental Cache updates: no more need to update the whole cache if one file is changed.
-+ new method to sync RoR files in order to be up to date using a tool called wsync
 + added printing of supported shader models to RoR.log
-+ added 'fresh' category to trucks, which contains the latest added trucks
++ added 'fresh' category to trucks, which contains the latest added trucks (last 24 hours)
 + improved FPS debug overlay a bit (F key)
 + added option to disable the ingame map (for testing of laptop GPU's) in the configurator
 + slightly faster truck loading
 + new traction behavior: new ground traction types. More realistically now.
 + flexbody zero position ability: align the flexbody in the truck's coordinnate system, no need to find reeference nodes. See http://wiki.rigsofrods.com/index.php?title=Truck_Description_File#Flexbodies
-+ G-Meter added to truck-HUD
++ Gee-Meter added to truck-HUD
 + added improvements for the linux mouse and OIS: now possible to play without that RoR 'grabs' the mouse.
 + sparkle effects: if you crash into a wall, some sparkles will be shown
 + added gripnodes alpha: beware: not ready yet, unstable code, will certainly crash your game!
 + added 'clump' dirt effect for tires driving over grass
 + switch-able mouse buttons for left hand people, via RoR.cfg: set 'Switch Mouse Buttons<TAB Character>Yes' in RoR.cfg
-+ new RoR Updater: updates RoR to the latest version without downloading the whole thing again
 + added camera free mode: press SHIFT+C to toggle free mode, ALT+C to pin the camera at a position (to be able to take over truck control again)
 + added vertical movements keys (in free camera mode usable): page-up and page-down
 + procedural roads system wrapping: ability to reload procedural structures on the fly (not used yet)
-+ added user authentication via token to the MP code: http://forum.rigsofrods.com/index.php?action=mpsettings
++ added user authentication via token to the MP code: http://forum.rigsofrods.com/index.php?action=mpsettings (not active yet)
 + added materialmapping for flares, see: http://wiki.rigsofrods.com/index.php?title=Truck_Description_File#Materialflarebindings
 + added ability to switch between fullscreen and windowed mode, while the game is running: press ALT+RETURN
-+ python scripting engine: alpha status. not much usage yet, but it should replace LUA at some date
-  + examples: see data/base.py, data/trucks/ampliroll.truck.py
-  + documentation of the interfaces is WIP, see forums for latest info about that
 + xFire support: now RoR will show up in XFire, ingame working as well as custom game data
 + more airplane control surfaces: http://wiki.rigsofrods.com/index.php?title=Truck_Description_File#Wings
 + added node grabbing line (when grabing a truck with the mouse)
 + new skeleton mode: working with 1px width lines instead of the real beams: better to look through
-+ added skin basics: http://wiki.rigsofrods.com/index.php?title=Skins
++ new beam debug, see debugBeams in wiki
++ added skin basics: http://wiki.rigsofrods.com/index.php?title=Skins (currently not fully working, to be fixed)
   + skin selection gui missing, to be done. Currently it just picks a random skin.
 + airplane-input controlled hydros for thrust vectoring (beta), see http://wiki.rigsofrods.com/index.php?title=Truck_Description_File#Hydros)
 + improved network connection error messages: no more just -1 error. Now something will appear that should make more sense.
 + new cache format: see mods.cache (users should not have to deal with it, since its an internal-only improvement)
-+ new toolchain to create trucks more easily
++ new toolchain to create trucks more easily (released separately)
 + new "Debug Collisions" options: will show the cell collision use on the loaded terrain
 + proper LUA error handling now
 + added support for custom skyboxes (see nhelens or island map)
