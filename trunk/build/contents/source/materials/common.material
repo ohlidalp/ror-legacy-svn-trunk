@@ -80,8 +80,27 @@ material tracks/Chrome
 
 			texture_unit
 			{
-				texture Chrome.dds
-				env_map spherical
+				//texture Chrome.dds
+				cubic_texture EnvironmentTexture combinedUVW
+				env_map cubic_reflection 
+			}
+		}
+	}
+}
+
+material tracks/chrome
+{
+ receive_shadows off
+	technique
+	{
+		pass
+		{
+
+			texture_unit
+			{
+				//texture Chrome.dds
+				cubic_texture EnvironmentTexture combinedUVW
+				env_map cubic_reflection 
 			}
 		}
 	}
