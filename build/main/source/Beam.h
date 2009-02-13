@@ -120,7 +120,7 @@ extern String debugText;
 
 // version 1 = pre 0.32
 // version 2 = post 0.32
-#define TRUCKFILEFORMATVERSION 2
+#define TRUCKFILEFORMATVERSION 3
 
 #define IRON_DENSITY 7874.0
 #define BEAM_BREAK 1000000.0
