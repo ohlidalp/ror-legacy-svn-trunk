@@ -2347,9 +2347,15 @@ int Beam::getWheelNodeCount()
 				props[free_prop].mirror=0;
 				props[free_prop].pale=0;
 				props[free_prop].spinner=0;
-				if (!strncmp("leftmirror", meshname, 10)) props[free_prop].mirror=1;
-				if (!strncmp("rightmirror", meshname, 11)) props[free_prop].mirror=-1;
-				if (!strncmp("dashboard", meshname, 9))
+				String meshnameString = String(meshname);
+				std::string::size_type loc = meshnameString.find("leftmirror", 0);
+				if( loc != std::string::npos ) props[free_prop].mirror=1;
+				
+				loc = meshnameString.find("rightmirror", 0);
+				if( loc != std::string::npos ) props[free_prop].mirror=-1;
+				
+				loc = meshnameString.find("dashboard", 0);
+				if( loc != std::string::npos ) 
 				{
 					char dirwheelmeshname[256];
 					float dwx=0, dwy=0, dwz=0;
