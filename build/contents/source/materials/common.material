@@ -86,7 +86,6 @@ material tracks/invisible
 
 material tracks/Chrome
 {
- receive_shadows off
 	technique
 	{
 		pass
@@ -104,7 +103,6 @@ material tracks/Chrome
 
 material tracks/chrome
 {
- receive_shadows off
 	technique
 	{
 		pass
