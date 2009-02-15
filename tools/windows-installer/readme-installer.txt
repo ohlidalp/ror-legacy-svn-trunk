@@ -12,5 +12,9 @@ but WITHOUT ANY WARRANTY; without even the implied warranty of
 MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 GNU General Public License for more details.
 
-You should have received a copy of the GNU General Public License
-along with Rigs of Rods.  If not, see <http://www.gnu.org/licenses/>.
+Source code is available at http://rigsofrods.sourceforge.net/
+
+By using this program, you agree that in the case you create and publish
+a content for it (for example a vehicle), you accept that the project can
+include it in an official distribution, however you still retain the 
+copyright of your work.
