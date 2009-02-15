@@ -39,9 +39,6 @@ CRCCheck on
 ; License page
 !insertmacro MUI_PAGE_LICENSE "readme-installer.txt"
 
-; BETA agreement, comment out on release
-!insertmacro MUI_PAGE_LICENSE "readme-beta.txt"
-
 ; Components page
 ;!insertmacro MUI_PAGE_COMPONENTS
 ; Directory page
@@ -155,10 +152,10 @@ FunctionEnd
 ; if you dont want the splash comment out the following function:
 Function .onInit
 	InitPluginsDir
-	File /oname=$PLUGINSDIR\splash-beta.bmp "splash-beta.bmp"
-	advsplash::show 1000 1300 600 -1 $PLUGINSDIR\splash-beta
+	File /oname=$PLUGINSDIR\splash.bmp "splash.bmp"
+	advsplash::show 1000 1300 600 -1 $PLUGINSDIR\splash
 	Pop $0
-	Delete $PLUGINSDIR\splash-beta
+	Delete $PLUGINSDIR\splash
 	!insertmacro MUI_LANGDLL_DISPLAY
 FunctionEnd
 
@@ -172,15 +169,11 @@ Section "!RoR" SEC02
 	SetOverwrite try
 
 	; docs
-	;File ..\docs\keysheet\keysheet.pdf
-	;File "..\docs\manual\Things you can do in Rigs of Rods.pdf"
+	File ..\..\doc\keysheet.pdf
+	File "..\..\doc\Things you can do in Rigs of Rods.pdf"
 	; data
 	File /r /x .svn ..\..\test\current\*
 
-;	File ..\rorserver-sf\rorserver.exe
-;	File ..\rorserver-sf\win32\mysocketw.dll
-;	File ..\rorserver-sf\win32\pthreadVC2.dll
-	;File ..\docs\changelog.txt
 SectionEnd
 
 ;Section "Modding Tools" SEC03
