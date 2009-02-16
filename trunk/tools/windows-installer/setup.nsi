@@ -134,7 +134,7 @@ Function InstallDirectX
 	InitPluginsDir
 	File /oname=$PLUGINSDIR\dxwebsetup.exe "dxwebsetup.exe"
 	Banner::show /NOUNLOAD "Installing lastest DirectX (This can take some minutes)"
-	ExecWait '"$PLUGINSDIR\dxwebsetup.exe /Q"'
+	ExecWait '"$PLUGINSDIR\dxwebsetup.exe"'
 	Delete $PLUGINSDIR\dxwebsetup.exe
 	Banner::destroy
 FunctionEnd
@@ -143,7 +143,7 @@ Function InstallVisualStudioRuntime
 	InitPluginsDir
 	File /oname=$PLUGINSDIR\vcredist_x86.exe "vcredist_x86.exe"
 	Banner::show /NOUNLOAD "Installing Visual Studio Runtime (This can take some minutes)"
-	ExecWait "vcredist_x86.exe /q"
+	ExecWait "vcredist_x86.exe"
 	Delete $PLUGINSDIR\vcredist_x86.exe
 	Banner::destroy
 FunctionEnd
