@@ -72,6 +72,8 @@
 // I hate people trying to reinvent the wheel and breaking software because type names are not cool enough
 // I mean, define UINT_8  unsigned __int8, WTF???
 # define UINT_8 unsigned char
+
+// 64 BIT BUG BELOW!!
 # define UINT_32 unsigned long
 
 /*
