@@ -123,7 +123,7 @@ CRCCheck on
 ; MUI end ------
 
 Name "${PRODUCT_NAME} ${PRODUCT_VERSION}"
-OutFile "RoR ${PRODUCT_VERSION} Setup.exe"
+OutFile "RoR-${PRODUCT_VERSION}-Setup.exe"
 InstallDir "$PROGRAMFILES\Rigs of Rods ${PRODUCT_VERSION}"
 
 
