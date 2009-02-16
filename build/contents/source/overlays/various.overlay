@@ -240,7 +240,7 @@ tracks/PressureNeedleOverlay
 
 tracks/FadeInOut
 {
-   zorder 1000
+   zorder 600
 
    container Panel(FadeInOutPanel)
    {
