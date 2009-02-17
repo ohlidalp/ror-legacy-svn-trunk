@@ -528,6 +528,7 @@ protected:
 
 	int objcounter;
 	char terrainmap[256];
+	Ogre::String terrainUID;
 	Road *road;
 	Water *w;
 	Mirrors *mirror;

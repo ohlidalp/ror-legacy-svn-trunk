@@ -763,6 +763,7 @@ ExampleFrameListener::ExampleFrameListener(RenderWindow* win, Camera* cam, Scene
 	gameStartTime = CACHE.getTimeStamp();
 	loadedTerrain="none";
 	creditsviewtime=5;
+	terrainUID="";
 	fogmode=-1;
 	fogdensity=0;
 	mtc=0;
@@ -1689,21 +1690,38 @@ void ExampleFrameListener::loadObject(char* name, float px, float py, float pz, 
 	int event_filter = EVENT_ALL;
 	rotation=Quaternion(Degree(rx), Vector3::UNIT_X)*Quaternion(Degree(ry), Vector3::UNIT_Y)*Quaternion(Degree(rz), Vector3::UNIT_Z);
 
-	sprintf(fname,"%s.odef", name);
-	String odefname = String(fname);
+	// try to load with UID first!
 	String odefgroup = "";
-	try
+	String odefname = "";
+	if(terrainUID != "" && !CACHE.stringHasUID(name))
 	{
-		odefgroup = ResourceGroupManager::getSingleton().findGroupContainingResource(odefname);
-	} catch(...)
+		sprintf(fname,"%s-%s.odef", terrainUID.c_str(), name);
+		odefname = String(fname);
+		try
+		{
+			odefgroup = ResourceGroupManager::getSingleton().findGroupContainingResource(odefname);
+		} catch(...)
+		{
+		}
+	} else
 	{
+		sprintf(fname,"%s.odef", name);
+		odefname = String(fname);
+		try
+		{
+			odefgroup = ResourceGroupManager::getSingleton().findGroupContainingResource(odefname);
+		} catch(...)
+		{
+		}
 	}
+	
 	//if(!CACHE.checkResourceLoaded(odefname, odefgroup))
 	if(odefgroup == "")
 	{
 		LogManager::getSingleton().logMessage("Error while loading Terrain: could not find required .odef file: " + odefname + ". Ignoring entry.");
 		return;
 	}
+
 	DataStreamPtr ds=ResourceGroupManager::getSingleton().openResource(odefname, odefgroup);
 	//mesh
 	ds->readLine(mesh, 1023);
@@ -3659,6 +3677,7 @@ bool ExampleFrameListener::updateEvents(float dt)
 				Cache_Entry *sel = UILOADER.getSelection();
 				if(sel)
 				{
+					terrainUID = sel->uniqueid;
 					loadTerrain(sel->fname);
 
 					//load truck list
@@ -5035,65 +5054,71 @@ void ExampleFrameListener::loadTerrain(String terrainfile)
 				sscanf(line, "grass %d, %f, %f, %f, %f, %f, %f, %f, %f, %d, %f, %f, %s %s %s", &range, &SwaySpeed, &SwayLength, &SwayDistribution, &Density, &minx, &miny, &maxx, &maxy, &growtechnique, &minH, &maxH, grassmat, ColorMap, DensityMap);
 
 			//Initialize the PagedGeometry engine
-			if(!grass)
+			try
 			{
-				grass = new PagedGeometry(mCamera, 30);
-				//Set up LODs
+				if(!grass)
+				{
+					grass = new PagedGeometry(mCamera, 30);
+					//Set up LODs
 
-				grass->addDetailLevel<GrassPage>(range * pagedDetailFactor); // original value: 80
+					grass->addDetailLevel<GrassPage>(range * pagedDetailFactor); // original value: 80
 
-				//Set up a GrassLoader for easy use
-				grassLoader = new GrassLoader(grass);
-				grass->setPageLoader(grassLoader);
-				grassLoader->setHeightFunction(&getTerrainHeight);
-			}
+					//Set up a GrassLoader for easy use
+					grassLoader = new GrassLoader(grass);
+					grass->setPageLoader(grassLoader);
+					grassLoader->setHeightFunction(&getTerrainHeight);
+				}
 
-			// render grass at first
-			grassLoader->setRenderQueueGroup(RENDER_QUEUE_MAIN);
+				// render grass at first
+				grassLoader->setRenderQueueGroup(RENDER_QUEUE_MAIN);
 
-			GrassLayer* grassLayer = grassLoader->addLayer(grassmat);
-			grassLayer->setHeightRange(minH, maxH);
+				GrassLayer* grassLayer = grassLoader->addLayer(grassmat);
+				grassLayer->setHeightRange(minH, maxH);
 
-			grassLayer->setAnimationEnabled((SwaySpeed>0));
-			grassLayer->setSwaySpeed(SwaySpeed);
-			grassLayer->setSwayLength(SwayLength);
-			grassLayer->setSwayDistribution(SwayDistribution);
+				grassLayer->setAnimationEnabled((SwaySpeed>0));
+				grassLayer->setSwaySpeed(SwaySpeed);
+				grassLayer->setSwayLength(SwayLength);
+				grassLayer->setSwayDistribution(SwayDistribution);
 
-			grassdensityTextureFilename = String(DensityMap);
+				grassdensityTextureFilename = String(DensityMap);
 
-			grassLayer->setDensity(Density * pagedDetailFactor);
-			if(techn>10)
-				grassLayer->setRenderTechnique(static_cast<GrassTechnique>(techn-10), true);
-			else
-				grassLayer->setRenderTechnique(static_cast<GrassTechnique>(techn), false);
+				grassLayer->setDensity(Density * pagedDetailFactor);
+				if(techn>10)
+					grassLayer->setRenderTechnique(static_cast<GrassTechnique>(techn-10), true);
+				else
+					grassLayer->setRenderTechnique(static_cast<GrassTechnique>(techn), false);
 
-			grassLayer->setMapBounds(TBounds(0, 0, mapsizex, mapsizez));
+				grassLayer->setMapBounds(TBounds(0, 0, mapsizex, mapsizez));
 
-			if(strcmp(ColorMap,"none") != 0)
+				if(strcmp(ColorMap,"none") != 0)
+				{
+					grassLayer->setColorMap(ColorMap);
+					grassLayer->setColorMapFilter(MAPFILTER_BILINEAR);
+				}
+
+				if(strcmp(DensityMap,"none") != 0)
+				{
+					grassLayer->setDensityMap(DensityMap);
+					grassLayer->setDensityMapFilter(MAPFILTER_BILINEAR);
+				}
+
+				//grassLayer->setMinimumSize(0.5,0.5);
+				//grassLayer->setMaximumSize(1.0, 1.0);
+
+				grassLayer->setMinimumSize(minx, miny);
+				grassLayer->setMaximumSize(maxx, maxy);
+
+				// growtechnique
+				if(growtechnique == 0)
+					grassLayer->setFadeTechnique(FADETECH_GROW);
+				else if(growtechnique == 1)
+					grassLayer->setFadeTechnique(FADETECH_ALPHAGROW);
+				else if(growtechnique == 2)
+					grassLayer->setFadeTechnique(FADETECH_ALPHA);
+			} catch(...)
 			{
-				grassLayer->setColorMap(ColorMap);
-				grassLayer->setColorMapFilter(MAPFILTER_BILINEAR);
+				LogManager::getSingleton().logMessage("error loading grass!");
 			}
-
-			if(strcmp(DensityMap,"none") != 0)
-			{
-				grassLayer->setDensityMap(DensityMap);
-				grassLayer->setDensityMapFilter(MAPFILTER_BILINEAR);
-			}
-
-			//grassLayer->setMinimumSize(0.5,0.5);
-			//grassLayer->setMaximumSize(1.0, 1.0);
-
-			grassLayer->setMinimumSize(minx, miny);
-			grassLayer->setMaximumSize(maxx, maxy);
-
-			// growtechnique
-			if(growtechnique == 0)
-				grassLayer->setFadeTechnique(FADETECH_GROW);
-			else if(growtechnique == 1)
-				grassLayer->setFadeTechnique(FADETECH_ALPHAGROW);
-			else if(growtechnique == 2)
-				grassLayer->setFadeTechnique(FADETECH_ALPHA);
 
 			continue;
 		}
