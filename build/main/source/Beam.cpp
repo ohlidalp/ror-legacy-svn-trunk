@@ -7993,14 +7993,9 @@ void Beam::deleteNetTruck()
 
 void *threadstart(void* vid)
 {
-#ifdef IA64
 	// 64 bit systems does have longer addresses!
 	long int id;
 	id=(long int)vid;
-#else
-	int id;
-	id=(int)vid;
-#endif
 	Beam *beam=threadbeam[id];
 
 	while (1)
