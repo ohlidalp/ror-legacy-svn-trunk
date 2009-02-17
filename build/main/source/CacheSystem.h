@@ -205,7 +205,11 @@ public:
 	
 	void startup();
 	void loadAllZips();
+	
 	static Ogre::String stripUIDfromString(Ogre::String uidstr);
+	static Ogre::String getUIDfromString(Ogre::String uidstr);
+	static bool stringHasUID(Ogre::String uidstr);
+	
 	void loadAllZipsInResourceGroup(Ogre::String group);
 
 	bool checkResourceLoaded(Cache_Entry t);

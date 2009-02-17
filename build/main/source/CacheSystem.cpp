@@ -999,6 +999,13 @@ char *CacheSystem::restoreSpaces(char *str)
 	return str;
 }
 
+bool CacheSystem::stringHasUID(Ogre::String uidstr)
+{
+	size_t pos = uidstr.find("-");
+	if(pos != String::npos && pos >= 3 && uidstr.substr(pos-3, 3) == "UID")
+		return true;
+	return false;
+}
 
 Ogre::String CacheSystem::stripUIDfromString(Ogre::String uidstr)
 {
@@ -1006,6 +1013,14 @@ Ogre::String CacheSystem::stripUIDfromString(Ogre::String uidstr)
 	if(pos != String::npos && pos >= 3 && uidstr.substr(pos-3, 3) == "UID")
 		return uidstr.substr(pos+1, uidstr.length()-pos);
 	return uidstr;
+}
+
+Ogre::String CacheSystem::getUIDfromString(Ogre::String uidstr)
+{
+	size_t pos = uidstr.find("-");
+	if(pos != String::npos && pos >= 3 && uidstr.substr(pos-3, 3) == "UID")
+		return uidstr.substr(0, pos);
+	return "";
 }
 
 void CacheSystem::addFile(Ogre::FileInfo f, String ext)
@@ -2180,8 +2195,11 @@ void CacheSystem::fillTerrainDetailInfo(Cache_Entry &entry, Ogre::DataStreamPtr 
 	char line[1024];
 	int linecounter = 0;
 	int categoryid=-1, version=-1;
-	char uniqueid[255];
-	memset(uniqueid, 0, 255);
+
+	// try to get unique ID from the filename!
+	String uniqueid = "no-uid";
+	String fileuid = getUIDfromString(fname);
+	if(fileuid != "") uniqueid = fileuid;
 
 	while (!ds->eof())
 	{
@@ -2212,29 +2230,32 @@ void CacheSystem::fillTerrainDetailInfo(Cache_Entry &entry, Ogre::DataStreamPtr 
 			author.name = String(authorname);
 			author.email = String(authoremail);
 			entry.authors.push_back(author);
-		}
-		else if (!strncmp(categorytag, line, strnlen(categorytag, 254)))
+		} else if (!strncmp(categorytag, line, strnlen(categorytag, 254)))
 		{
-			int result = sscanf(line, categoryformat, uniqueid, &categoryid, &version);
+			char uidtmp[255] = "";
+			int result = sscanf(line, categoryformat, uidtmp, &categoryid, &version);
 			if (result < 3 || result == EOF)
 			{
 				LogManager::getSingleton().logMessage("Error parsing File (fileinfo) " + String(fname) +" line " + StringConverter::toString(linecounter) + ". trying to continue ...");
 				continue;
 			}
 			
-			// remove trailing comma
-			size_t slen = strnlen(uniqueid, 250);
-			if(slen > 0 && uniqueid[slen-1] == ',')
-				uniqueid[slen-1] = 0;
+			if(uniqueid != "")
+			{
+				// remove trailing comma
+				size_t slen = strnlen(uidtmp, 250);
+				if(slen > 0 && uidtmp[slen-1] == ',')
+					uidtmp[slen-1] = 0;
 
-			// fix the -1 from the old format
-			if(!strncmp(uniqueid, "-1", 2))
-				strcpy(uniqueid, "no-uid");
+				// fix the -1 from the old format
+				if(strnlen(uidtmp, 5) > 0 && strncmp(uidtmp, "-1", 2))
+					uniqueid = String(uidtmp);
+			}
 
 		}
 	}
 	entry.categoryid = categoryid;
-	entry.uniqueid = Ogre::String(uniqueid);
+	entry.uniqueid = uniqueid;
 	entry.version = version;
 }
 
