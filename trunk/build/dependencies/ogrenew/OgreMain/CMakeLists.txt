@@ -448,6 +448,8 @@ elseif (UNIX)
   )
   set(PLATFORM_LIBS ${X11_LIBRARIES} ${X11_Xt_LIB} ${XAW_LIBRARY})
   set(PLATFORM_HEADER_INSTALL "GLX")
+
+  set(FREEIMAGE_INCLUDE_DIR ${FREEIMAGE_INCLUDE_DIR} /usr/include/freetype2)
 elseif (APPLE)
   include_directories("include/OSX")
 endif(WIN32)
