@@ -1693,6 +1693,7 @@ void ExampleFrameListener::loadObject(char* name, float px, float py, float pz, 
 	// try to load with UID first!
 	String odefgroup = "";
 	String odefname = "";
+	bool odefFound = false;
 	if(terrainUID != "" && !CACHE.stringHasUID(name))
 	{
 		sprintf(fname,"%s-%s.odef", terrainUID.c_str(), name);
@@ -1700,23 +1701,29 @@ void ExampleFrameListener::loadObject(char* name, float px, float py, float pz, 
 		try
 		{
 			odefgroup = ResourceGroupManager::getSingleton().findGroupContainingResource(odefname);
+			odefFound = true;
 		} catch(...)
 		{
+			odefFound=false;
 		}
-	} else
+	}
+
+	if(!odefFound)
 	{
 		sprintf(fname,"%s.odef", name);
 		odefname = String(fname);
 		try
 		{
 			odefgroup = ResourceGroupManager::getSingleton().findGroupContainingResource(odefname);
+			odefFound=true;
 		} catch(...)
 		{
+			odefFound=false;
 		}
 	}
 	
 	//if(!CACHE.checkResourceLoaded(odefname, odefgroup))
-	if(odefgroup == "")
+	if(!odefFound)
 	{
 		LogManager::getSingleton().logMessage("Error while loading Terrain: could not find required .odef file: " + odefname + ". Ignoring entry.");
 		return;
