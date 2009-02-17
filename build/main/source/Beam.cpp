@@ -3333,6 +3333,15 @@ int Beam::getWheelNodeCount()
 					LogManager::getSingleton().logMessage("Error parsing File (managedmaterials) " + String(fname) +" line " + StringConverter::toString(linecounter) + ". trying to continue ...");
 					continue;
 				}
+				//first, check if work has already been done
+				MaterialPtr tstmat=(MaterialPtr)(MaterialManager::getSingleton().getByName(material));
+				if (!tstmat.isNull())
+				{
+					//material already exists, probably because the vehicle was already spawned previously
+					LogManager::getSingleton().logMessage("Warning: managed material '" + String(material) +"' already exists");
+					continue;
+				}
+
 				if (!strcmp(type, "flexmesh_standard"))
 				{
 					char maintex[255];
@@ -3347,15 +3356,6 @@ int Beam::getWheelNodeCount()
 						LogManager::getSingleton().logMessage("Error parsing File (managedmaterials) " + String(fname) +" line " + StringConverter::toString(linecounter) + ". trying to continue ...");
 						continue;
 					}
-					//first, check if work has already been done
-					MaterialPtr tstmat=(MaterialPtr)(MaterialManager::getSingleton().getByName(material));
-					if (!tstmat.isNull())
-					{
-						//material already exists, probably because the vehicle was already spawned previously
-						LogManager::getSingleton().logMessage("Warning: managed material '" + String(material) +"' already exists");
-						continue;
-					}
-
 					//different cases
 					//caution, this is hardwired against the managed.material file
 					if (strlen(dmgtex)==0 || dmgtex[0]=='-')
