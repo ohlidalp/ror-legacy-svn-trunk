@@ -1806,11 +1806,18 @@ int Beam::getWheelNodeCount()
 				cabs[free_cab*3]=id1;
 				cabs[free_cab*3+1]=id2;
 				cabs[free_cab*3+2]=id3;
-				if (type=='c') {collcabs[free_collcab]=free_cab; free_collcab++;};
-				if (type=='b') {buoycabs[free_buoycab]=free_cab; buoycabtypes[free_buoycab]=BUOY_NORMAL; free_buoycab++; if (!buoyance) buoyance=new Buoyance(water, splashp, ripplep);};
-				if (type=='r') {buoycabs[free_buoycab]=free_cab; buoycabtypes[free_buoycab]=BUOY_DRAGONLY; free_buoycab++; if (!buoyance) buoyance=new Buoyance(water, splashp, ripplep);};
-				if (type=='s') {buoycabs[free_buoycab]=free_cab; buoycabtypes[free_buoycab]=BUOY_DRAGLESS; free_buoycab++; if (!buoyance) buoyance=new Buoyance(water, splashp, ripplep);};
-				if (type=='D')
+				if(free_collcab >= MAX_CABS)
+				{
+					LogManager::getSingleton().logMessage("unable to create cabs: cabs limit reached ("+StringConverter::toString(MAX_CABS)+"): " + String(fname) +" line " + StringConverter::toString(linecounter) + ". trying to continue ...");
+					continue;
+				}
+				if (type=='c') {collcabs[free_collcab]=free_cab; collcabstype[free_collcab]=0; free_collcab++;};
+				if (type=='p') {collcabs[free_collcab]=free_cab; collcabstype[free_collcab]=1; free_collcab++;};
+				if (type=='u') {collcabs[free_collcab]=free_cab; collcabstype[free_collcab]=2; free_collcab++;};
+				if (type=='b') {buoycabs[free_buoycab]=free_cab; collcabstype[free_collcab]=0; buoycabtypes[free_buoycab]=BUOY_NORMAL; free_buoycab++; if (!buoyance) buoyance=new Buoyance(water, splashp, ripplep);};
+				if (type=='r') {buoycabs[free_buoycab]=free_cab; collcabstype[free_collcab]=0; buoycabtypes[free_buoycab]=BUOY_DRAGONLY; free_buoycab++; if (!buoyance) buoyance=new Buoyance(water, splashp, ripplep);};
+				if (type=='s') {buoycabs[free_buoycab]=free_cab; collcabstype[free_collcab]=0; buoycabtypes[free_buoycab]=BUOY_DRAGLESS; free_buoycab++; if (!buoyance) buoyance=new Buoyance(water, splashp, ripplep);};
+				if (type=='D' || type == 'F' || type == 'S')
 				{
 
 					if(free_collcab >= MAX_CABS || free_buoycab >= MAX_CABS)
@@ -1818,7 +1825,11 @@ int Beam::getWheelNodeCount()
 						LogManager::getSingleton().logMessage("unable to create buoycabs: cabs limit reached ("+StringConverter::toString(MAX_CABS)+"): " + String(fname) +" line " + StringConverter::toString(linecounter) + ". trying to continue ...");
 						continue;
 					}
-					collcabs[free_collcab]=free_cab; free_collcab++;
+					collcabs[free_collcab]=free_cab; 
+					collcabstype[free_collcab]=0;
+					if(type == 'F') collcabstype[free_collcab]=1;
+					if(type == 'S') collcabstype[free_collcab]=2;
+					free_collcab++;
 					buoycabs[free_buoycab]=free_cab; buoycabtypes[free_buoycab]=BUOY_NORMAL; free_buoycab++; if (!buoyance) buoyance=new Buoyance(water, splashp, ripplep);
 				}
 				free_cab++;
@@ -5828,6 +5839,7 @@ void Beam::SyncReset()
 					float mindist=1;
 					//search closest tri
 					int t;
+					int colltype=0;
 					for (t=0; t<numtrucks; t++)
 					{
 						if (trucks[t]->state==SLEEPING || trucks[t]->state==NETWORKED || trucks[t]->state==RECYCLE) continue;
@@ -5855,6 +5867,7 @@ void Beam::SyncReset()
 									if (fabs(point.z)<mindist)
 									{
 										mintri=trucks[t]->collcabs[i];
+										colltype=trucks[t]->collcabstype[i];
 										mintruck=t;
 										mindist=fabs(point.z);
 									}
@@ -5868,7 +5881,11 @@ void Beam::SyncReset()
 						Vector3 point=trucks[mintruck]->transforms[mintri].forward*(nodes[contacters[j].nodeid].AbsPosition-trucks[mintruck]->transforms[mintri].vo);
 						// fix possible zero division bug
 						float fl=nodes[contacters[j].nodeid].mass*(0.02-fabs(point.z))/(dt*dt);
-						if (fl>1000000.0) fl=1000000.0;
+						// colltype = 0, default, as always
+						// colltype = 1, tripe force possible
+						// colltype = 2, no more check, no breaking
+						if (colltype == 0 && fl>1000000.0) fl=1000000.0;
+						if (colltype == 1 && fl>3000000.0) fl=3000000.0;
 						if (point.z>0) fl=-fl;
 						//friction
 						//Vector3 vrel=transforms[mintri].forward*(nodes[contacters[j].nodeid].Velocity-(nodes[cabs[mintri*3]].Velocity+nodes[cabs[mintri*3+1]].Velocity+nodes[cabs[mintri*3+2]].Velocity)/3.0);

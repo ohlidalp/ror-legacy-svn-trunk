@@ -839,6 +839,8 @@ protected:
 	int subcabs[MAX_SUBMESHES];
 	Vector3 texcoords[MAX_TEXCOORDS];
 	int collcabs[MAX_CABS];
+	int collcabstype[MAX_CABS];
+	
 	int buoycabs[MAX_CABS];
 	int buoycabtypes[MAX_CABS];
 	FlexObj *cabMesh;
