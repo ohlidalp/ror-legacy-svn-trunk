@@ -5,7 +5,12 @@ import sys, os, os.path, platform, subprocess, zipfile, glob, shutil, time, plat
 if platform.system() == 'Windows':
     NVDXT_EXECUTABLE = os.path.join(os.path.dirname(os.path.abspath(__file__)), '..', 'tools', 'dxt', 'nvdxt')
 else:
-    NVDXT_EXECUTABLE = os.path.join(os.path.dirname(os.path.abspath(__file__)), '..', 'tools', 'dxt', 'nvcompress')
+    NVDXT_EXECUTABLE = os.path.join(os.path.dirname(os.path.abspath(__file__)), '..', 'tools', 'dxt', 'nvcompress_'+os.uname()[-1])
+    if not os.path.isfile(NVDXT_EXECUTABLE):
+        print "tool exetubale file not found: %s" % NVDXT_EXECUTABLE
+        print "please download and compile this: http://code.google.com/p/nvidia-texture-tools/"
+        print "and put the nvcompress into the deirectory %s with the name %s." % (os.path.join(os.path.dirname(os.path.abspath(__file__)), '..', 'tools', 'dxt'), 'nvcompress_'+os.uname()[-1])
+        sys.exit(-1)
 
 RELEASEDIR = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'release')
 SOURCEDIR = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'source')
