@@ -2,14 +2,25 @@
 # thomas fischer 08/16/08
 import sys, os, os.path, platform, subprocess, zipfile, glob, shutil, time, fnmatch
 
+# this sets the architecture thats used to find tool binaries
+ARCH = os.uname()[-1]
+
+if platform.system() == 'Windows':
+    NVDXT_EXECUTABLE = os.path.join(os.path.dirname(os.path.abspath(__file__)), '..', '..', 'tools', 'dxt', 'nvdxt')
+else:
+    NVDXT_EXECUTABLE = os.path.join(os.path.dirname(os.path.abspath(__file__)), '..', '..', 'tools', 'dxt', 'nvcompress_'+ARCH)
+    if not os.path.isfile(NVDXT_EXECUTABLE):
+        print "tool exetubale file not found: %s" % NVDXT_EXECUTABLE
+        print "please download and compile this: http://code.google.com/p/nvidia-texture-tools/"
+        print "and put the nvcompress into the deirectory %s with the name %s." % (os.path.join(os.path.dirname(os.path.abspath(__file__)), 'tools', 'dxt'), 'nvcompress_'+ARCH)
+        sys.exit(-1)
+
 RELEASEDIR = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'release')
 SOURCEDIR = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'source')
 
 if sys.platform.startswith('linux'):
-  NVDXT_EXECUTABLE = os.path.join(os.path.dirname(os.path.abspath(__file__)), '..', '..', 'tools', 'dxt', 'nvcompress')
   NVDXT_SETTINGS={'noalpha':'-bc1', 'alphasharp':'-bc2', 'alphasmooth':'-bc3'}
 else:
-  NVDXT_EXECUTABLE = os.path.join(os.path.dirname(os.path.abspath(__file__)), '..', '..', 'tools', 'dxt', 'nvdxt')
   NVDXT_SETTINGS={'noalpha':'-dxt1c', 'alphasharp':'-dxt3', 'alphasmooth':'-dxt5'}
 
 def copyIfNewer(srcfile, dstfile):
