@@ -27,6 +27,8 @@ along with Rigs of Rods.  If not, see <http://www.gnu.org/licenses/>.
 #include "gui_loader.h"
 #include "language.h"
 
+using namespace RoR; //CSHA1
+
 // singleton pattern
 CacheSystem* CacheSystem::myInstance = 0;
 

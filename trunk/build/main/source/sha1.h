@@ -89,6 +89,9 @@ typedef union
 	UINT_32 l[16];
 } SHA1_WORKSPACE_BLOCK;
 
+namespace RoR
+{
+
 class CSHA1
 {
 public:
@@ -139,4 +142,5 @@ private:
 	SHA1_WORKSPACE_BLOCK *m_block; // SHA1 pointer to the byte array above
 };
 
+}; //namespace RigsOfRods
 #endif

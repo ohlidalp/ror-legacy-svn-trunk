@@ -34,7 +34,7 @@ using namespace std;
 using namespace Ogre;
 using namespace RakNet;
 
-NetworkNew::NetworkNew(Beam **btrucks, std::string servername, long sport, ExampleFrameListener *efl) : NetworkBase(btrucks, servername, sport, efl), peer(0)
+NetworkNew::NetworkNew(Beam **btrucks, Ogre::String servername, long sport, ExampleFrameListener *efl) : NetworkBase(btrucks, servername, sport, efl), peer(0)
 {
 	LogManager::getSingleton().logMessage("NetworkNew::NetworkNew()");
 	for (int i=0; i<MAX_PEERS; i++) clients[i].used=false;
