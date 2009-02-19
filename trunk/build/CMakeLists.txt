@@ -2,6 +2,13 @@ CMAKE_MINIMUM_REQUIRED( VERSION 2.6.0 )
 
 project(RoR)
 
+#detup the default build mode
+IF(NOT CMAKE_BUILD_TYPE)
+  SET(CMAKE_BUILD_TYPE RelWithDebInfo CACHE STRING
+      "Choose the type of build, options are: None Debug Release RelWithDebInfo MinSizeRel."
+      FORCE)
+ENDIF(NOT CMAKE_BUILD_TYPE)
+
 # setup path for cmake add-ons
 SET(RoR_Dependencies_CMAKE_DIR "${RoR_SOURCE_DIR}/dependencies/cmake")
 SET(BUILD_SHARED_LIBS ON)
