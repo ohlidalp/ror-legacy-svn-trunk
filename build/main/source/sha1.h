@@ -67,16 +67,6 @@
 /////////////////////////////////////////////////////////////////////////////
 // Define 8- and 32-bit variables
 
-// thats a quick hack for linux platforms, otherwise it ends in chaos
-// PMR: the same bad crazyness here in windows, so this is not a quick hack its a fix!
-// I hate people trying to reinvent the wheel and breaking software because type names are not cool enough
-// I mean, define UINT_8  unsigned __int8, WTF???
-# define UINT_8 unsigned char
-
-// 64 BIT BUG BELOW!!
-# define UINT_32 unsigned long
-
-/*
 #ifndef UINT_32
 # ifdef _MSC_VER
 #  define UINT_8  unsigned __int8
@@ -90,7 +80,6 @@
 #  endif
 # endif
 #endif
-*/
 /////////////////////////////////////////////////////////////////////////////
 // Declare SHA1 workspace
 
