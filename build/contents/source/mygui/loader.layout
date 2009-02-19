@@ -1,52 +1,39 @@
 ﻿<?xml version="1.0" encoding="UTF-8"?>
 <MyGUI type="Layout">
-    <Widget type="Window" skin="WindowCSX" position="40 47 624 535" align="ALIGN_CENTER" layer="Back" name="loaderWindow">
+    <Widget type="Window" skin="WindowCSX" position="264 140 624 535" align="ALIGN_CENTER" layer="Back" name="loaderWindow">
         <Property key="Widget_Caption" value="Loader"/>
-        
-        <Widget type="Tab" skin="Tab" position_real="0 0 1 1" align="ALIGN_STRETCH" >
+        <Widget type="Tab" skin="Tab" position_real="0 0 1 1" align="ALIGN_STRETCH">
             <Property key="Tab_SmoothShow" value="true"/>
             <Property key="Tab_ButtonAutoWidth" value="true"/>
-            
-            <Widget name="sheet_cache" type="Sheet" skin="Default" position_real="0 0 1 1" >
+            <Widget type="Sheet" skin="Default" position_real="0.00651466 0.0522088 0.985342 0.935743" name="sheet_cache">
                 <Property key="Widget_Caption" value="Cache"/>
-
                 <Widget type="List" skin="List" position="5 35 248 431" align="ALIGN_VSTRETCH ALIGN_LEFT ALIGN_TOP" name="list"/>
-                
                 <Widget type="ComboBox" skin="ComboBox" position="5 2 248 32" align="ALIGN_LEFT ALIGN_TOP" name="combobox"/>
-                
-                <Widget type="StaticImage" skin="StaticImage" position="261 66 248 248" align="ALIGN_TOP ALIGN_LEFT" name="image_preview"/>
-                
+                <Widget type="StaticImage" skin="StaticImage" position="416 256 176 168" align="Right Bottom" name="image_preview"/>
                 <Widget type="StaticText" skin="StaticText" position="261 3 352 56" align="ALIGN_HSTRETCH ALIGN_TOP ALIGN_LEFT" name="text_entry_name">
                     <Property key="Widget_FontName" value="VeraMonoBold"/>
                     <Property key="Widget_FontHeight" value="25"/>
                 </Widget>
-                
-                <Widget type="StaticText" skin="StaticText" position="261 323 352 110" align="ALIGN_STRETCH ALIGN_TOP ALIGN_LEFT" name="text_entry_descr"/>
-                
+                <Widget type="StaticText" skin="StaticText" position="269 56 323 232" align="ALIGN_STRETCH ALIGN_TOP ALIGN_LEFT" name="text_entry_descr">
+                    <Property key="Widget_FontHeight" value="17"/>
+                </Widget>
                 <Widget type="Button" skin="Button" position="261 436 167 31" align="ALIGN_RIGHT ALIGN_BOTTOM" name="btnOk">
                     <Property key="Widget_Caption" value="OK"/>
                 </Widget>
                 <Widget type="Button" skin="Button" position="437 436 167 31" align="ALIGN_RIGHT ALIGN_BOTTOM" name="btnCancel">
                     <Property key="Widget_Caption" value="Cancel"/>
                 </Widget>
-                
-                <Widget type="ComboBox" skin="ComboBox" position="265 315 239 29" layer="Back" name="combo_configs"/>                
+                <Widget type="ComboBox" skin="ComboBox" position="273 258 135 30" layer="Back" name="combo_configs"/>
             </Widget>
-            
-            <Widget name="sheet_search" type="Sheet" skin="Default" position_real="0 0 1 1" >
+            <Widget type="Sheet" skin="Default" position_real="0.00651466 0.0522088 0.985342 0.935743" name="sheet_search">
                 <Property key="Widget_Caption" value="Search"/>
-
                 <Widget type="Edit" skin="Edit" position="10 10 400 30" layer="Back" name="editSearch">
                     <Property key="Widget_Caption" value="Not working yet"/>
                 </Widget>
-                
                 <Widget type="Button" skin="Button" position="410 10 150 30" name="btnSearch">
                     <Property key="Widget_Caption" value="Search"/>
                 </Widget>
-                
             </Widget>
-
-            
         </Widget>
     </Widget>
 </MyGUI>
