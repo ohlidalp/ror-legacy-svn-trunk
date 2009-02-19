@@ -2,14 +2,17 @@
 # thomas fischer 08/16/08
 import sys, os, os.path, platform, subprocess, zipfile, glob, shutil, time, platform
 
+# this sets the architecture thats used to find tool binaries
+ARCH = os.uname()[-1]
+
 if platform.system() == 'Windows':
     NVDXT_EXECUTABLE = os.path.join(os.path.dirname(os.path.abspath(__file__)), '..', 'tools', 'dxt', 'nvdxt')
 else:
-    NVDXT_EXECUTABLE = os.path.join(os.path.dirname(os.path.abspath(__file__)), '..', 'tools', 'dxt', 'nvcompress_'+os.uname()[-1])
+    NVDXT_EXECUTABLE = os.path.join(os.path.dirname(os.path.abspath(__file__)), '..', 'tools', 'dxt', 'nvcompress_'+ARCH)
     if not os.path.isfile(NVDXT_EXECUTABLE):
         print "tool exetubale file not found: %s" % NVDXT_EXECUTABLE
         print "please download and compile this: http://code.google.com/p/nvidia-texture-tools/"
-        print "and put the nvcompress into the deirectory %s with the name %s." % (os.path.join(os.path.dirname(os.path.abspath(__file__)), '..', 'tools', 'dxt'), 'nvcompress_'+os.uname()[-1])
+        print "and put the nvcompress into the deirectory %s with the name %s." % (os.path.join(os.path.dirname(os.path.abspath(__file__)), '..', 'tools', 'dxt'), 'nvcompress_'+ARCH)
         sys.exit(-1)
 
 RELEASEDIR = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'release')
@@ -136,9 +139,9 @@ def main():
             uoptions.checktr_writeCorrected = False # this will update the truck file with the fixed version
             uoptions.tools = {
                 'Linux':{
-                    'OgreXMLConverter'    : os.path.join(os.path.dirname(os.path.abspath(__file__)), "..", "tools", "linux", "OgreXMLConverter"),
-                    'OgreMeshUpgrade'     : os.path.join(os.path.dirname(os.path.abspath(__file__)), "..", "tools", "linux", "OgreMeshUpgrade"),
-                    'OgreMaterialUpgrade' : os.path.join(os.path.dirname(os.path.abspath(__file__)), "..", "tools", "linux", "OgreMaterialUpgrade"),
+                    'OgreXMLConverter'    : os.path.join(os.path.dirname(os.path.abspath(__file__)), "..", "tools", "linux", "OgreXMLConverter_"+ARCH),
+                    'OgreMeshUpgrade'     : os.path.join(os.path.dirname(os.path.abspath(__file__)), "..", "tools", "linux", "OgreMeshUpgrade_"+ARCH),
+                    'OgreMaterialUpgrade' : os.path.join(os.path.dirname(os.path.abspath(__file__)), "..", "tools", "linux", "OgreMaterialUpgrade_"+ARCH),
                     'MeshMagick'          : "echo ",
                     'convert'             : "/bin/nice -n 19 /usr/bin/convert",
                 },
