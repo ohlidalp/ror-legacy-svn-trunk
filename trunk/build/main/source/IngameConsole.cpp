@@ -382,7 +382,7 @@ int IngameConsole::parseCommand(String &msg, std::vector<String> &arguments)
 void IngameConsole::splitString(String &str, String &delim, std::vector<String> &output)
 {
 	unsigned int offset = 0;
-	unsigned int delimIndex = 0;
+	size_t delimIndex = 0;
 
 	delimIndex = (unsigned int)str.find(delim, offset);
 	while (delimIndex != String::npos)
