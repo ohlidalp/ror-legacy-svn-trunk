@@ -31,6 +31,8 @@
 
 #include "sha1.h"
 
+using namespace RoR;
+
 #ifdef SHA1_UTILITY_FUNCTIONS
 #define SHA1_MAX_FILE_BUFFER 8000
 #endif

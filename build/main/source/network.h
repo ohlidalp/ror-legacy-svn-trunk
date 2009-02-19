@@ -39,7 +39,7 @@ class ExampleFrameListener;
 class NetworkBase
 {
 public:
-	NetworkBase(Beam **btrucks, std::string servername, long sport, ExampleFrameListener *efl) {};
+	NetworkBase(Beam **btrucks, Ogre::String servername, long sport, ExampleFrameListener *efl) {};
 	~NetworkBase() {};
 
 	//external call to check if a vehicle is to be spawned

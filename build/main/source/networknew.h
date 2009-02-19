@@ -39,7 +39,7 @@ protected:
 
 
 public:
-	NetworkNew(Beam **btrucks, std::string servername, long sport, ExampleFrameListener *efl);
+	NetworkNew(Beam **btrucks, Ogre::String servername, long sport, ExampleFrameListener *efl);
 	~NetworkNew();
 
 	//external call to check if a vehicle is to be spawned

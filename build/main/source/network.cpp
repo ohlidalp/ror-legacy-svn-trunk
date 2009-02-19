@@ -26,6 +26,8 @@ along with Rigs of Rods.  If not, see <http://www.gnu.org/licenses/>.
 #include "sha1.h"
 #include "Settings.h"
 
+using namespace RoR; //CSHA1
+
 #if OGRE_PLATFORM == OGRE_PLATFORM_APPLE
 //#include <CFUserNotification.h>
 #endif
