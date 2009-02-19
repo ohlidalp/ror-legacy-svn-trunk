@@ -84,6 +84,10 @@ ELSEIF(UNIX)
   add_definitions("
     -isystem ${RoR_Dependencies_SOURCE_DIR}/ogrenew/OgreMain/include
   ")
+
+  EXEC_PROGRAM(pkg-config ARGS "--cflags gtk+" OUTPUT_VARIABLE CFLAGS_GTK)
+  SET(CMAKE_C_FLAGS "${CMAKE_PKGCONFIG_C_FLAGS} ${CFLAGS_GTK}")
+
 ELSEIF(APPLE)
 #  add_definitions("")
 ENDIF(WIN32)
@@ -162,6 +166,14 @@ if(ROR_BUILD_LUASCRIPT)
   target_link_libraries(RoR lua)
 endif(ROR_BUILD_LUASCRIPT)
 
+
+IF(WIN32)
+ELSEIF(UNIX)
+  EXEC_PROGRAM(pkg-config ARGS "--libs gtk+" OUTPUT_VARIABLE LDFLAGS_GTK)
+  SET(CMAKE_SHARED_LINKER_FLAGS "${CMAKE_SHARED_LINKER_FLAGS} ${LDFLAGS_GTK}")
+ELSEIF(APPLE)
+ENDIF(WIN32)
+
 # platform specific libraries (external ones only)
 IF(WIN32)
   target_link_libraries(RoR
@@ -175,8 +187,6 @@ ELSEIF(UNIX)
     /usr/lib/libX11.so
     /usr/lib/libXt.so
 
-    /usr/lib/libgdk-x11-2.0.so
-    /usr/lib/libgtk-x11-2.0.so
     /usr/lib/libXaw.so
   )
 ELSEIF(APPLE)
