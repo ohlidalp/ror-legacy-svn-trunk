@@ -927,39 +927,25 @@ int getAvLang(wxString dir, std::vector<wxLanguageInfo*> &files)
 		{
 			wxChar dot=_T('.');
 			if (name.StartsWith(&dot))
+			{
 				// do not add dot directories
 				continue;
+			}
 			if(name.Len() != 2)
+			{
 				// do not add other than language 2 letter code style directories
 				continue;
+			}
 			wxLanguageInfo *li = const_cast<wxLanguageInfo *>(getLanguageInfoByName(name));
 			if(li)
+			{
 				files.push_back(li);
+			} else
+			{
+				logfile->AddLine(conv("failed to get Language: "+conv(name)));logfile->Write();				
+			}
 		} while (dp.GetNext(&name));
 	}
-/* NOT PORTABLE
-	DIR *dp;
-	struct dirent *dirp;
-	if((dp  = opendir(dir.c_str())) == NULL)
-	{
-		printf("error opening %s\n", dir.c_str());
-		return -1;
-	}
-	while ((dirp = readdir(dp)) != NULL)
-	{
-		char *name = dirp->d_name;
-		if(!strncmp(name, ".", 1))
-			// do not add dot directories
-			continue;
-		if(strnlen(name, 3) != 2)
-			// do not add other than language 2 letter code style directories
-			continue;
-		wxLanguageInfo *li = const_cast<wxLanguageInfo *>(getLanguageInfoByName(conv(name)));
-		if(li)
-			files.push_back(li);
-	}
-	closedir(dp);
-*/
 	return 0;
 }
 
