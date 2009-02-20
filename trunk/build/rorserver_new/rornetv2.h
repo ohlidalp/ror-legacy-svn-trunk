@@ -18,8 +18,8 @@ You should have received a copy of the GNU General Public License
 along with Rigs of Rods.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-#ifndef NETWORK_H__
-#define NETWORK_H__
+#ifndef RORNETV2_H__
+#define RORNETV2_H__
 
 #define MAX_CLIENTS 10
 #define SERVER_PORT 31117
@@ -28,46 +28,42 @@ along with Rigs of Rods.  If not, see <http://www.gnu.org/licenses/>.
 #include <ctime>
 #include <cstdlib>
 
+#include "RakPeerInterface.h"
+#include "MessageIdentifiers.h"
+#include "RakNetworkFactory.h"
 
-#define RANDOM_DATA_MSG ID_USER_PACKET_ENUM
+#define ROR_DATA_MSG ID_USER_PACKET_ENUM
+#define RORNETv2_VERSION "RoRnet3.0.0"
+
+typedef struct
+{
+	int time;
+	float engine_speed;
+	float engine_force;
+	unsigned int flagmask;
+} oob2_t;
+
+enum {
+	MSG3_VERSION = 1,
+	MSG3_USE_VEHICLE,
+	MSG3_BUFFER_SIZE,
+	MSG3_VEHICLE_DATA,
+	MSG3_HELLO,
+	MSG3_USER_CREDENTIALS,
+	MSG3_TERRAIN_RESP,
+	MSG3_SERVER_FULL,
+	MSG3_USER_BANNED,
+	MSG3_WRONG_SERVER_PW,
+	MSG3_WELCOME,
+	MSG3_CHAT,
+	MSG3_DELETE,
+	MSG3_GAME_CMD
+};
+
+
+
 using namespace std;
 
-
-// fill a buffer with random data
-void random_numbers(unsigned int size, unsigned char *ptr)
-{
-    srand((unsigned)time(0));
-    for(int index=0; index<size; index++, ptr++)
-        (*ptr) = int(255.0f*rand()/(RAND_MAX + 1.0f));
-}
-
-// hex 'editor like' display to check the content of a buffer
-void display_buffer(unsigned int size, unsigned char *buf)
-{
-    unsigned int c1=1;
-    printf("%06x ", 0);
-    for(unsigned int c=0;c<size;c++, c1++)
-    {
-        printf("%02x ", *(buf+c));
-        if(c1>20)
-        {
-            printf("\n%06x ", c);
-            c1=0;
-        }
-    }
-    printf("\n");
-}
-
-
-// get correct packet type, even with timestamp
-unsigned char GetPacketIdentifier(Packet *p)
-{
-    if (p==0)
-        return 255;
-
-    if ((unsigned char)p->data[0] == ID_TIMESTAMP)
-        return (unsigned char) p->data[sizeof(unsigned char) + sizeof(unsigned long)];
-    else
-        return (unsigned char) p->data[0];
-}
 #endif
+
+

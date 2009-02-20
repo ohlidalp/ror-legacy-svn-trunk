@@ -61,6 +61,7 @@ option(ROR_BUILD_LUASCRIPT "adds the LUA Scripting engine" TRUE)
 option(ROR_BUILD_CONFIGURATOR "builds the RoRConfig" TRUE)
 option(ROR_BUILD_ROR "toggles building of RoR and its dependencies" TRUE)
 option(WSYNC_BUILD_WSYNC "builds the wsync tool" FALSE)
+option(ROR_USE_OPTIMIZATIONS_WINDOWS "optimize build, gives more FPS, but needs longer to compile" TRUE)
 
 set(NVIDIA_CG_DIR "$ENV{PROGRAMFILES}\\NVIDIA Corporation\\Cg" CACHE PATH "directory of the nvidia cg toolkit installation")
 

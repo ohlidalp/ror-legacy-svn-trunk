@@ -1,5 +1,5 @@
 project(rorserver)
-set(server_src rornetv2.h server.cpp)
+set(server_src rornetv2.h server.cpp nethelper.h nethelper.cpp)
 
 include_directories (${RoR_Dependencies_SOURCE_DIR}/raknet/Source)
 

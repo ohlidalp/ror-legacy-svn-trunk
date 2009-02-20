@@ -25,8 +25,8 @@ along with Rigs of Rods.  If not, see <http://www.gnu.org/licenses/>.
 
 #include "network.h"
 #include "RakPeerInterface.h"
-
-#define ROR_DATA_MSG ID_USER_PACKET_ENUM
+#include "BitStream.h"
+#include "rornetv2.h"
 
 class NetworkNew : public NetworkBase
 {
@@ -64,9 +64,32 @@ public:
 	int getRConState();
 
 
-	// custom functions
-	//void __cdecl printMessage(RPCParameters *rpcParameters); /// this is the RPC method to be called by peers
-	unsigned char getPacketIdentifier(Packet *p);
+	void sendthreadstart();
+	void receivethreadstart();
+	pthread_mutex_t send_work_mutex;
+	pthread_cond_t send_work_cv;
+	pthread_mutex_t clients_mutex;
+	pthread_mutex_t chat_mutex;
+	pthread_t sendthread;
+	pthread_t receivethread;
+	bool shutdown;
+	char* send_buffer;
+	int send_buffer_len;
+	int last_time;
+	Timer timer;
+	oob2_t send_oob;
+	unsigned myuid;
+	Beam** trucks;
+	ExampleFrameListener *mefl;
+
+	char terrainName[255];
+	void handlePacket(unsigned char type, unsigned char source, unsigned long size, char *buffer);
+
+	SoundScriptManager* soundManager;
+	char sendthreadstart_buffer[MAX_MESSAGE_LENGTH];
+	void netFatalError(String error, bool exit=true);
+
+	SystemAddress serverAddress;
 };
 
 #endif //NETWORKNEW_H
