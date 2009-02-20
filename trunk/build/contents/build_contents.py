@@ -3,11 +3,11 @@
 import sys, os, os.path, platform, subprocess, zipfile, glob, shutil, time, fnmatch
 
 # this sets the architecture thats used to find tool binaries
-ARCH = os.uname()[-1]
 
 if platform.system() == 'Windows':
     NVDXT_EXECUTABLE = os.path.join(os.path.dirname(os.path.abspath(__file__)), '..', '..', 'tools', 'dxt', 'nvdxt')
 else:
+    ARCH = os.uname()[-1]
     NVDXT_EXECUTABLE = os.path.join(os.path.dirname(os.path.abspath(__file__)), '..', '..', 'tools', 'dxt', 'nvcompress_'+ARCH)
     if not os.path.isfile(NVDXT_EXECUTABLE):
         print "tool exetubale file not found: %s" % NVDXT_EXECUTABLE
