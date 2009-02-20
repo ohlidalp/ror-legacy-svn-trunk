@@ -6,9 +6,7 @@ AIRPLANE_AIRBRAKES_MORE        Keyboard             EXPL+4
 AIRPLANE_AIRBRAKES_NONE        Keyboard             CTRL+3 
 AIRPLANE_BRAKE                 Keyboard             B 
 AIRPLANE_ELEVATOR_DOWN         Keyboard             DOWN 
-AIRPLANE_ELEVATOR_DOWN         JoystickAxis         2 UPPER 
 AIRPLANE_ELEVATOR_UP           Keyboard             UP 
-AIRPLANE_ELEVATOR_UP           JoystickAxis         2 LOWER 
 AIRPLANE_FLAPS_FULL            Keyboard             CTRL+2 
 AIRPLANE_FLAPS_LESS            Keyboard             EXPL+1 
 AIRPLANE_FLAPS_MORE            Keyboard             EXPL+2 
@@ -18,9 +16,7 @@ AIRPLANE_REVERSE               Keyboard             R
 AIRPLANE_RUDDER_LEFT           Keyboard             Z 
 AIRPLANE_RUDDER_RIGHT          Keyboard             X 
 AIRPLANE_STEER_LEFT            Keyboard             LEFT 
-AIRPLANE_STEER_LEFT            JoystickAxis         3 LOWER 
 AIRPLANE_STEER_RIGHT           Keyboard             RIGHT 
-AIRPLANE_STEER_RIGHT           JoystickAxis         3 UPPER 
 AIRPLANE_THROTTLE_AXIS         None                 
 AIRPLANE_THROTTLE_DOWN         Keyboard             EXPL+PGDOWN 
 AIRPLANE_THROTTLE_FULL         Keyboard             CTRL+PGUP 
@@ -218,14 +214,12 @@ TERRAIN_UPDATE_LIGHTMAP        Keyboard             EXPL+5
 
 ; TRUCK
 TRUCK_ACCELERATE               Keyboard             UP 
-TRUCK_ACCELERATE               JoystickAxis         2 LOWER 
 TRUCK_AUTOSHIFT_DOWN           Keyboard             PGDOWN 
 TRUCK_AUTOSHIFT_UP             Keyboard             PGUP 
 TRUCK_BLINK_LEFT               Keyboard             COMMA 
 TRUCK_BLINK_RIGHT              Keyboard             PERIOD 
 TRUCK_BLINK_WARN               Keyboard             MINUS 
 TRUCK_BRAKE                    Keyboard             DOWN 
-TRUCK_BRAKE                    JoystickAxis         2 UPPER 
 TRUCK_HORN                     Keyboard             H 
 TRUCK_LIGHTTOGGLE1             Keyboard             EXPL+CTRL+1 
 TRUCK_LIGHTTOGGLE10            Keyboard             EXPL+CTRL+0 
@@ -244,8 +238,6 @@ TRUCK_SHIFT_NEUTRAL            Keyboard             D
 TRUCK_SHIFT_UP                 Keyboard             A 
 TRUCK_STARTER                  Keyboard             S 
 TRUCK_STEER_LEFT               Keyboard             LEFT 
-TRUCK_STEER_LEFT               JoystickAxis         3 LOWER 
 TRUCK_STEER_RIGHT              Keyboard             RIGHT 
-TRUCK_STEER_RIGHT              JoystickAxis         3 UPPER 
 TRUCK_SWITCH_SHIFT_MODES       Keyboard             Q 
 TRUCK_TOGGLE_CONTACT           Keyboard             X 
