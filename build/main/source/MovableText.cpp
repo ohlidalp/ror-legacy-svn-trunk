@@ -38,7 +38,8 @@ MovableText::MovableText(const String &name, const String &caption, const String
         throw Exception(Exception::ERR_INVALIDPARAMS, "Trying to create MovableText without name", "MovableText::MovableText");
 
     if (caption == "")
-        throw Exception(Exception::ERR_INVALIDPARAMS, "Trying to create MovableText without caption", "MovableText::MovableText");
+    //    throw Exception(Exception::ERR_INVALIDPARAMS, "Trying to create MovableText without caption", "MovableText::MovableText");
+		mCaption = ".";
 
     mRenderOp.vertexData = NULL;
     this->setFontName(mFontName);

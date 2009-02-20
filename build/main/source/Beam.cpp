@@ -7190,14 +7190,15 @@ float torques[MAX_WHEELS];
 			Vector3 vdir=(position)-mCamera->getPosition();
 			float vlen=vdir.length();
 			float h = vlen/30.0;
-			if(h<1)
-				h=1;
+			if(h<0.6)
+				h=0.6;
 			netMT->setCharacterHeight(h);
-			//netDist->setCharacterHeight(h*0.8);
 			if(vlen>1000)
 				netMT->setCaption(String(networkInfo.nickname) + "  (" + StringConverter::toString( (float)(ceil(vlen/100)/10.0) )+ " km)");
-			else
+			else if (vlen>20 && vlen <= 1000)
 				netMT->setCaption(String(networkInfo.nickname) + "  (" + StringConverter::toString((int)vlen)+ " m)");
+			else
+				netMT->setCaption(String(networkInfo.nickname));
 
 			//netMT->setAdditionalHeight((maxy-miny)+h+0.1);
 			//netDist->setAdditionalHeight((maxy-miny)+0.1);
