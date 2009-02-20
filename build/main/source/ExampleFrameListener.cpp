@@ -1298,10 +1298,13 @@ ExampleFrameListener::ExampleFrameListener(RenderWindow* win, Camera* cam, Scene
 			return;
 		}
 		LogManager::getSingleton().logMessage("trying to join server '" + String(sname) + "' on port " + StringConverter::toString(sport) + "'...");
+
+		UILOADER.setProgress(UI_PROGRESSBAR_AUTOTRACK, _L("Trying to connect to server ..."));
+		// important note: all new network code is written in order to allow also the old network protocol to further exist.
+		// at some point you need to decide with what type of server you communicate below and choose the correct class
 #ifdef NEWNET
 		net = new NetworkNew(trucks, sname, sport, this);
 #else
-		UILOADER.setProgress(UI_PROGRESSBAR_AUTOTRACK, _L("Trying to connect to server ..."));
 		net = new Network(trucks, sname, sport, this);
 #endif
 		bool connres = net->connect();
@@ -6669,8 +6672,11 @@ bool ExampleFrameListener::frameStarted(const FrameEvent& evt)
 				}
 				if (!recy)
 				{
+					std::vector<Ogre::String> truckconfig;
+					truckconfig.push_back("networked");
+
 					trucks[free_truck]=new Beam(free_truck, mSceneMgr, mSceneMgr->getRootSceneNode(), mWindow,
-						&mapsizex, &mapsizez, truckx, trucky, truckz, Quaternion::ZERO, name, collisions, dustp, clumpp, sparksp, dripp, splashp, ripplep, hfinder, w, mCamera, mirror, true, true,false,0,false,flaresMode);
+						&mapsizex, &mapsizez, truckx, trucky, truckz, Quaternion::ZERO, name, collisions, dustp, clumpp, sparksp, dripp, splashp, ripplep, hfinder, w, mCamera, mirror, true, true,false,0,false,flaresMode, &truckconfig);
 					trucks[free_truck]->label=label;
 #ifdef PYTHONSCRIPT
 					SCRIPTINGENGINE.runScript(String(name)+String(".py"));
