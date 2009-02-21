@@ -28,7 +28,7 @@ int sendmessage(RakPeerInterface *peer, SystemAddress address, int type, char so
 	
 	stream.SerializeBits(true, (unsigned char*)buffer, size*8);
 
-	peer->Send(&stream, MEDIUM_PRIORITY, RELIABLE_SEQUENCED, 0, address, false);
+	peer->Send(&stream, MEDIUM_PRIORITY, RELIABLE_SEQUENCED, source, address, false);
 	return 0;
 }
 

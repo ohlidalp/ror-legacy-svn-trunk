@@ -385,17 +385,18 @@ void RigsOfRods::exploreTerrains()
 #define HELPTEXT "--help (this)\n-map <map> (loads map on startup)\n-truck <truck> (loads truck on startup)\n-setup shows the ogre configurator\n\nFor example: RoR.exe -map oahu -truck semi"
 
 // option identifiers
-enum { OPT_HELP, OPT_MAP, OPT_TRUCK, OPT_SETUP, OPT_MPJOIN, OPT_WDIR, OPT_ETM, OPT_BUILD};
+enum { OPT_HELP, OPT_MAP, OPT_TRUCK, OPT_SETUP, OPT_MPJOIN, OPT_WDIR, OPT_ETM, OPT_BUILD, OPT_CONFIG};
 
 // option array
 CSimpleOpt::SOption cmdline_options[] = {
-	{ OPT_MAP,   ("-map"),   SO_REQ_SEP },
-	{ OPT_TRUCK, ("-truck"), SO_REQ_SEP },
-	{ OPT_MPJOIN,("-join"),  SO_REQ_SEP },
-	{ OPT_WDIR,  ("-wd"),    SO_REQ_SEP },
-	{ OPT_SETUP, ("-setup"), SO_NONE    },
-	{ OPT_BUILD, ("-build"), SO_NONE    },
-	{ OPT_HELP,  ("--help"), SO_NONE    },
+	{ OPT_MAP,   ("-map"),    SO_REQ_SEP },
+	{ OPT_TRUCK, ("-truck"),  SO_REQ_SEP },
+	{ OPT_MPJOIN,("-join"),   SO_REQ_SEP },
+	{ OPT_WDIR,  ("-wd"),     SO_REQ_SEP },
+	{ OPT_SETUP, ("-setup"),  SO_NONE    },
+	{ OPT_CONFIG,("-config"), SO_NONE    },
+	{ OPT_BUILD, ("-build"),  SO_NONE    },
+	{ OPT_HELP,  ("--help"),  SO_NONE    },
 	SO_END_OF_OPTIONS
 };
 
@@ -474,6 +475,8 @@ int main(int argc, char *argv[])
 				SETTINGS.setSetting("Preselected Map", String(args.OptionArg()));
 			} else if (args.OptionId() == OPT_MPJOIN) {
 				SETTINGS.setSetting("join URI", String(args.OptionArg()));
+			} else if (args.OptionId() == OPT_CONFIG) {
+				SETTINGS.setSetting("configfile", String(args.OptionArg()));
 			} else if (args.OptionId() == OPT_WDIR) {
 #if OGRE_PLATFORM == OGRE_PLATFORM_WIN32
 				SetCurrentDirectory(args.OptionArg());

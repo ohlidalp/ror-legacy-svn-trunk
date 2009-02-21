@@ -206,12 +206,6 @@ bool Settings::setupPaths()
 	strcpy(ogrelog_path, ogrelog_fname);
 	strcat(ogrelog_fname, "RoR.log");
 
-	printf(" * user path:        %s\n", user_path);
-	printf(" * program path:     %s\n", program_path);
-	printf(" * used plugins.cfg: %s\n", plugins_fname);
-	printf(" * used ogre.cfg:    %s\n", ogreconf_fname);
-	printf(" * used ogre.log:    %s\n", ogrelog_fname);
-
 	// now update our settings with the results:
 	String dsStr = "\\";
 #if OGRE_PLATFORM != OGRE_PLATFORM_WIN32
@@ -228,6 +222,23 @@ bool Settings::setupPaths()
 	settings["plugins.cfg"] = String(plugins_fname);
 	settings["ogre.cfg"] = String(ogreconf_fname);
 	settings["ogre.log"] = String(ogrelog_fname);
+
+	// now enable the user to override that:
+	try
+	{
+		String configfile = settings["configfile"];
+		if(!configfile.size()) configfile = "config.cfg";
+		loadSettings(configfile, true);
+	} catch(...)
+	{
+	}
+
+	printf(" * user path:        %s\n", settings["User Path"].c_str());
+	printf(" * program path:     %s\n", settings["Program Path"].c_str());
+	printf(" * used plugins.cfg: %s\n", settings["plugins.cfg"].c_str());
+	printf(" * used ogre.cfg:    %s\n", settings["ogre.cfg"].c_str());
+	printf(" * used ogre.log:    %s\n", settings["ogre.log"].c_str());
+
 	return true;
 }
 
