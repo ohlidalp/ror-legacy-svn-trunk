@@ -76,7 +76,10 @@ NetworkNew::NetworkNew(Beam **btrucks, Ogre::String servername, long sport, Exam
 	last_time = 0;
 	soundManager = SoundScriptManager::getSingleton();
 	strcpy(terrainName, "");
-	
+	strcpy(ourTruckname, "");
+	myuid = -1;
+	send_buffer = 0;
+
 	pthread_mutex_init(&send_work_mutex, NULL);
 	pthread_cond_init(&send_work_cv, NULL);
 	pthread_mutex_init(&clients_mutex, NULL);
@@ -94,7 +97,70 @@ NetworkNew::~NetworkNew()
 	pthread_cond_destroy(&send_work_cv);
 }
 
+void NetworkNew::netFatalError(String errormsg, bool exitProgram)
+{
+	if(shutdown)
+		return;
 
+#if OGRE_PLATFORM == OGRE_PLATFORM_WIN32
+	String err = "Network fatal error: "+errormsg;
+	MessageBox( NULL, err.c_str(), "Network Connection Problem", MB_OK | MB_ICONERROR | MB_TOPMOST);
+#elif OGRE_PLATFORM == OGRE_PLATFORM_LINUX
+#elif OGRE_PLATFORM == OGRE_PLATFORM_APPLE
+#endif
+
+	LogManager::getSingleton().logMessage("NET FATAL ERROR: " + errormsg);
+	if(exitProgram)
+		exit(124);
+}
+
+bool NetworkNew::connect()
+{
+	LogManager::getSingleton().logMessage("NetworkNew::connect()");
+
+    peer = RakNetworkFactory::GetRakPeerInterface();
+    
+	Packet *packet;
+    peer->Startup(1, 30, &SocketDescriptor(), 1);
+	peer->Connect(myServerName.c_str(), myServerPort, 0, 0);
+
+	//start the handling threads
+	pthread_create(&receivethread, NULL, s_new_receivethreadstart, (void*)(0));
+
+	int t=timer.getMilliseconds();
+	while(timer.getMilliseconds()-t<5000 && myuid == -1)
+	{
+		Sleep(10);
+	}
+	if(myuid == -1)
+		netFatalError("error getting user id");
+
+	return true;
+}
+
+void NetworkNew::sendVehicleType(char* name, int buffersize)
+{
+	LogManager::getSingleton().logMessage("NetworkNew::sendVehicleType()");
+	
+	strcpy(ourTruckname, name);
+	//lets send our vehicle name
+	LogManager::getSingleton().logMessage("sending truckname: '"+String(name)+"'...");
+	sendmessage(peer, serverAddress, MSG3_USE_VEHICLE, myuid, strlen(name), name);
+	
+	//send the buffer size
+	send_buffer_len=buffersize;
+	unsigned int bsize=sizeof(oob_t)+send_buffer_len;
+	send_buffer=(char*)malloc(send_buffer_len);
+	
+	sendmessage(peer, serverAddress, MSG3_BUFFER_SIZE, myuid, 4, (char*)(&bsize));
+	
+	//start the handling threads
+	pthread_create(&sendthread, NULL, s_new_sendthreadstart, (void*)(0));
+	//pthread_create(&receivethread, NULL, s_new_receivethreadstart, (void*)(0));
+
+}
+
+//this is called at each frame to check if a new vehicle must be spawn
 bool NetworkNew::vehicle_to_spawn(char* name, unsigned int *uid, unsigned int *label)
 {
 	//LogManager::getSingleton().logMessage("NetworkNew::vehicle_to_spawn()");
@@ -131,32 +197,6 @@ client_t NetworkNew::vehicle_spawned(unsigned int uid, int trucknum)
 	}
 	pthread_mutex_unlock(&clients_mutex);
 	return return_client;
-}
-
-void NetworkNew::sendVehicleType(char* name, int buffersize)
-{
-	LogManager::getSingleton().logMessage("NetworkNew::sendVehicleType()");
-	//lets send our vehicle name
-
-	char tmp[255]="";
-	strcpy(tmp, name);
-	tmp[strlen(name)] = 0;
-	const char *nickname = SETTINGS.getSetting("Nickname").c_str();
-	strcpy(tmp + strlen(name)+1, nickname);
-	int len = strlen(name) + 1 + strlen(nickname);
-	sendmessage(peer, serverAddress, MSG3_USE_VEHICLE, len, tmp);
-	
-	//send the buffer size
-	send_buffer_len=buffersize;
-	unsigned int bsize=sizeof(oob_t)+send_buffer_len;
-	send_buffer=(char*)malloc(send_buffer_len);
-	
-	sendmessage(peer, serverAddress, MSG3_BUFFER_SIZE, 4, (char*)(&bsize));
-	
-	//start the handling threads
-	pthread_create(&sendthread, NULL, s_new_sendthreadstart, (void*)(0));
-	//pthread_create(&receivethread, NULL, s_new_receivethreadstart, (void*)(0));
-
 }
 
 void NetworkNew::sendData(Beam* truck)
@@ -257,9 +297,30 @@ void NetworkNew::sendData(Beam* truck)
 	}
 }
 
+void NetworkNew::sendthreadstart()
+{
+	LogManager::getSingleton().logMessage("Sendthread starting");
+	while (!shutdown)
+	{
+		//wait signal
+		pthread_mutex_lock(&send_work_mutex);
+		pthread_cond_wait(&send_work_cv, &send_work_mutex);
+		pthread_mutex_unlock(&send_work_mutex);
+		//send data
+		if (send_buffer)
+		{
+			int blen = send_buffer_len+sizeof(oob_t);
+			//LogManager::getSingleton().logMessage("sending data: " + StringConverter::toString(blen));
+			memcpy(sendthreadstart_buffer, (char*)&send_oob, sizeof(oob_t));
+			memcpy(sendthreadstart_buffer+sizeof(oob_t), (char*)send_buffer, send_buffer_len);
+			sendmessage(peer, serverAddress, MSG3_VEHICLE_DATA, myuid, blen, sendthreadstart_buffer);
+		}
+	}
+}
+
 void NetworkNew::sendChat(char* line)
 {
-	int etype=sendmessage(peer, serverAddress, MSG3_CHAT, (int)strlen(line), line);
+	int etype=sendmessage(peer, serverAddress, MSG3_CHAT, myuid, (int)strlen(line), line);
 	if (etype)
 	{
 		char emsg[256];
@@ -267,39 +328,6 @@ void NetworkNew::sendChat(char* line)
 		netFatalError(emsg);
 		return;
 	}
-}
-
-bool NetworkNew::connect()
-{
-	LogManager::getSingleton().logMessage("NetworkNew::connect()");
-
-    peer = RakNetworkFactory::GetRakPeerInterface();
-    
-	Packet *packet;
-    peer->Startup(1, 30, &SocketDescriptor(), 1);
-	peer->Connect(myServerName.c_str(), myServerPort, 0, 0);
-
-	//start the handling threads
-	pthread_create(&receivethread, NULL, s_new_receivethreadstart, (void*)(0));
-
-	return true;
-}
-
-void NetworkNew::netFatalError(String errormsg, bool exitProgram)
-{
-	if(shutdown)
-		return;
-
-#if OGRE_PLATFORM == OGRE_PLATFORM_WIN32
-	String err = "Network fatal error: "+errormsg;
-	MessageBox( NULL, err.c_str(), "Network Connection Problem", MB_OK | MB_ICONERROR | MB_TOPMOST);
-#elif OGRE_PLATFORM == OGRE_PLATFORM_LINUX
-#elif OGRE_PLATFORM == OGRE_PLATFORM_APPLE
-#endif
-
-	LogManager::getSingleton().logMessage("NET FATAL ERROR: " + errormsg);
-	if(exitProgram)
-		exit(124);
 }
 
 void NetworkNew::receivethreadstart()
@@ -353,6 +381,9 @@ void NetworkNew::receivethreadstart()
 					stream.Read(contentSource);
 					stream.Read(contentSize);
 
+					// clear the buffer, important...
+					memset(buffer, 0, MAX_MESSAGE_LENGTH);
+
 					// fill buffer
                     stream.SerializeBits(false, (unsigned char*)buffer, contentSize*8);
 
@@ -405,8 +436,13 @@ void NetworkNew::handlePacket(unsigned char type, unsigned char source, unsigned
 			}
 		}
 		pthread_mutex_unlock(&clients_mutex);
-	}
-	else if (type==MSG3_USE_VEHICLE)
+	} else if (type == MSG3_WELCOME)
+	{
+		unsigned short *uid = (unsigned short *)buffer;
+		myuid = *uid;
+		LogManager::getSingleton().logMessage("userid is now " + StringConverter::toString(myuid));
+
+	} else if (type==MSG3_USE_VEHICLE)
 	{
 		//LogManager::getSingleton().logMessage("I got a vehicle");
 		//we want first to check if the vehicle name is valid before committing to anything
@@ -422,7 +458,7 @@ void NetworkNew::handlePacket(unsigned char type, unsigned char source, unsigned
 		if(!resourceExists)
 		{
 			resourceExists=false;
-			LogManager::getSingleton().logMessage("Network warning: truck named "+truckname+" not found in local installation");
+			LogManager::getSingleton().logMessage("Network warning: truck named '"+truckname+"' not found in local installation");
 		}
 		//spawn vehicle query
 		pthread_mutex_lock(&clients_mutex);
@@ -444,6 +480,8 @@ void NetworkNew::handlePacket(unsigned char type, unsigned char source, unsigned
 					clients[i].loaded=false;
 					clients[i].uid=source;
 					clients[i].authed=authed;
+					if(strnlen(clients[i].nickname, 5) == 0)
+						strcpy(clients[i].nickname, "unkown");
 					buffer[wrotelen]=0;
 
 					strcpy(clients[i].vehicle, truckname.c_str());
@@ -489,6 +527,10 @@ void NetworkNew::handlePacket(unsigned char type, unsigned char source, unsigned
 			}
 		}
 		pthread_mutex_unlock(&clients_mutex);
+
+		// also, send out our ID, so people know us :D
+		sendmessage(peer, serverAddress, MSG3_USE_VEHICLE, myuid, strlen(ourTruckname), ourTruckname);
+
 	}
 	else if (type==MSG3_DELETE)
 	{
@@ -556,32 +598,12 @@ void NetworkNew::handlePacket(unsigned char type, unsigned char source, unsigned
 	}
 }
 
-void NetworkNew::sendthreadstart()
-{
-	LogManager::getSingleton().logMessage("Sendthread starting");
-	while (!shutdown)
-	{
-		//wait signal
-		pthread_mutex_lock(&send_work_mutex);
-		pthread_cond_wait(&send_work_cv, &send_work_mutex);
-		pthread_mutex_unlock(&send_work_mutex);
-		//send data
-		if (send_buffer)
-		{
-			int blen = send_buffer_len+sizeof(oob_t);
-			//LogManager::getSingleton().logMessage("sending data: " + StringConverter::toString(blen));
-			memcpy(sendthreadstart_buffer, (char*)&send_oob, sizeof(oob_t));
-			memcpy(sendthreadstart_buffer+sizeof(oob_t), (char*)send_buffer, send_buffer_len);
-			sendmessage(peer, serverAddress, MSG3_VEHICLE_DATA, blen, sendthreadstart_buffer);
-		}
-	}
-}
-
 
 void NetworkNew::disconnect()
 {
+	shutdown=true;
+	sendmessage(peer, serverAddress, MSG2_DELETE, myuid, 0, 0);
 	LogManager::getSingleton().logMessage("NetworkNew::disconnect()");
-
 }
 
 int NetworkNew::rconlogin(char* rconpasswd)
@@ -606,7 +628,7 @@ char *NetworkNew::getTerrainName()
 {
 	LogManager::getSingleton().logMessage("NetworkNew::getTerrainName()");
     //peer->RPC("getTerrainName", 0, 0, HIGH_PRIORITY, RELIABLE_ORDERED, 0, UNASSIGNED_SYSTEM_ADDRESS, false, 0, UNASSIGNED_NETWORK_ID, 0);
-	return "nhelens";
+	return "aspen-test";
 }
 
 char *NetworkNew::getNickname()

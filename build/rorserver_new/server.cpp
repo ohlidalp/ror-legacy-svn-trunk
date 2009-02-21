@@ -145,15 +145,17 @@ int main(int argc, char **argv)
 					// read basic stuff
 					unsigned char useTimeStamp=0, typeId=0;
 					unsigned long timeStamp=0, size=0;
-					unsigned char contentType=0,source=0;
+					unsigned char contentType=0, contentSource=0;
 					unsigned long contentSize;
 					int mySize=0;
 					stream.Read(useTimeStamp);
 					stream.Read(timeStamp);
 					stream.Read(typeId); // should be ROR_DATA_MSG
 					stream.Read(contentType);
+					stream.Read(contentSource);
 					stream.Read(contentSize);
-					printf("GOT message %s (%d) (%d bytes) from client %s\n", MSG3_NAMES[contentType], contentType, contentSize, packet->guid.ToString());
+					if(contentType != MSG3_VEHICLE_DATA)
+						printf("GOT message %s (%d) (%d bytes) from client %d, %s\n", MSG3_NAMES[contentType], contentType, contentSize, contentSource, packet->guid.ToString());
                     
                     // allocate buffer
                     //unsigned char *buf = (unsigned char *)malloc(mySize);
@@ -163,7 +165,7 @@ int main(int argc, char **argv)
                     // *8 because this is using bits instead of bytes
                     
 					// broadcast
-					peer->Send(&stream, MEDIUM_PRIORITY, RELIABLE_SEQUENCED, 0, UNASSIGNED_SYSTEM_ADDRESS, true);
+					peer->Send(&stream, MEDIUM_PRIORITY, RELIABLE_SEQUENCED, 0, packet->systemAddress, true);
                     // do something useful with the buffer here
                     // we just display it for now
                     //if(mySize<256)
@@ -177,7 +179,10 @@ int main(int argc, char **argv)
 					{
                     printf("A connection is incoming.\n");
 					printf("sending our server version\n");
-					sendmessage(peer, packet->systemAddress, MSG3_HELLO, (unsigned int)strlen(RORNETv2_VERSION), RORNETv2_VERSION);
+					sendmessage(peer, packet->systemAddress, MSG3_HELLO, 0, (unsigned int)strlen(RORNETv2_VERSION), RORNETv2_VERSION);
+
+					printf("sending user his ID: %d\n", packet->systemIndex);
+					sendmessage(peer, packet->systemAddress, MSG3_WELCOME, 0, sizeof(unsigned short), (char *)&packet->systemIndex);
 					}
 					break;
                 case ID_NO_FREE_INCOMING_CONNECTIONS:
