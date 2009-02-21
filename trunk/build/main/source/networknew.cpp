@@ -528,7 +528,8 @@ void NetworkNew::handlePacket(unsigned char type, unsigned char source, unsigned
 		pthread_mutex_unlock(&clients_mutex);
 
 		// also, send out our ID, so people know us :D
-		sendmessage(peer, serverAddress, MSG3_USE_VEHICLE, myuid, strlen(ourTruckname), ourTruckname);
+		// EDIT: this ends in a broadcasting storm, so do not do it
+		//sendmessage(peer, serverAddress, MSG3_USE_VEHICLE, myuid, strlen(ourTruckname), ourTruckname);
 
 	}
 	else if (type==MSG3_DELETE)
