@@ -83,6 +83,8 @@ public:
 	ExampleFrameListener *mefl;
 
 	char terrainName[255];
+	char ourTruckname[255];
+
 	void handlePacket(unsigned char type, unsigned char source, unsigned long size, char *buffer);
 
 	SoundScriptManager* soundManager;

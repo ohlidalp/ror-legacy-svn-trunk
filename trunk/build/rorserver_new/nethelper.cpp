@@ -21,10 +21,10 @@ int createBitStream(RakPeerInterface *peer, RakNet::BitStream &stream, unsigned 
 	return 0;
 }
 
-int sendmessage(RakPeerInterface *peer, SystemAddress address, int type, unsigned int size, char *buffer)
+int sendmessage(RakPeerInterface *peer, SystemAddress address, int type, char source, unsigned int size, char *buffer)
 {
 	BitStream stream;
-	createBitStream(peer, stream, type, 0, size);
+	createBitStream(peer, stream, type, source, size);
 	
 	stream.SerializeBits(true, (unsigned char*)buffer, size*8);
 
