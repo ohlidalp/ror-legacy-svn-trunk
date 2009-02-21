@@ -73,11 +73,7 @@
 #  define UINT_32 unsigned __int32
 # else
 #  define UINT_8 unsigned char
-#  if (ULONG_MAX == 0xFFFFFFFF)
-#   define UINT_32 unsigned long
-#  else
-#   define UINT_32 unsigned int
-#  endif
+#  define UINT_32 unsigned long
 # endif
 #endif
 /////////////////////////////////////////////////////////////////////////////
