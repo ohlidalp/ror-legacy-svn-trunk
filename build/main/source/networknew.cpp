@@ -130,7 +130,6 @@ bool NetworkNew::connect()
 	int t=timer.getMilliseconds();
 	while(timer.getMilliseconds()-t<5000 && myuid == -1)
 	{
-		Sleep(10);
 	}
 	if(myuid == -1)
 		netFatalError("error getting user id");
