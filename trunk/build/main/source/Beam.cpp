@@ -889,7 +889,7 @@ void Beam::calc_masses2(Real total)
 float Beam::getTotalMass()
 {
 	float mass = totalmass; //already computed in calc_masses2
-	if (lockTruck)
+	if (lockTruck && lockTruck->getTruckName() != getTruckName())
 		mass += lockTruck->getTotalMass();
 	return mass;
 }
@@ -7324,7 +7324,7 @@ float torques[MAX_WHEELS];
 		}
 
 		for (i=0; i<free_tie; i++) if (beams[ties[i]].disabled) beams[ties[i]].mSceneNode->detachAllObjects();
-		if (lockTruck)
+		if (lockTruck && lockTruck->getTruckName() != getTruckName())
 			lockTruck->showSkeleton();
 		lockSkeletonchange=false;
 	}
@@ -7404,7 +7404,7 @@ float torques[MAX_WHEELS];
 			if (beams[ties[i]].disabled)
 				beams[ties[i]].mSceneNode->detachAllObjects();
 
-		if (lockTruck)
+		if (lockTruck && lockTruck->getTruckName() != getTruckName())
 			lockTruck->hideSkeleton();
 		lockSkeletonchange=false;
 	}
@@ -7513,7 +7513,7 @@ float torques[MAX_WHEELS];
 		meshesVisible = visible;
 
 		// apply to the locked truck
-		//if (lockTruck) lockTruck->setMeshVisibility(visible);
+		if (lockTruck && lockTruck->getTruckName() != getTruckName()) lockTruck->setMeshVisibility(visible);
 	}
 
 	void Beam::cabFade(float amount)
