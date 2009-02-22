@@ -193,7 +193,7 @@ Function InstallDirectX
 	InitPluginsDir
 	File /oname=$PLUGINSDIR\dxwebsetup.exe "dxwebsetup.exe"
 	Banner::show /NOUNLOAD "Installing lastest DirectX (This can take some minutes)"
-	ExecWait '"$PLUGINSDIR\dxwebsetup.exe"'
+    ExecWait '"$PLUGINSDIR\dxwebsetup.exe /Q"'
 	Delete $PLUGINSDIR\dxwebsetup.exe
 	Banner::destroy
 FunctionEnd
@@ -202,7 +202,7 @@ Function InstallVisualStudioRuntime
 	InitPluginsDir
 	File /oname=$PLUGINSDIR\vcredist_x86.exe "vcredist_x86.exe"
 	Banner::show /NOUNLOAD "Installing Visual Studio Runtime (This can take some minutes)"
-	ExecWait "vcredist_x86.exe"
+	ExecWait "vcredist_x86.exe /q"
 	Delete $PLUGINSDIR\vcredist_x86.exe
 	Banner::destroy
 FunctionEnd
@@ -257,7 +257,7 @@ Section "!RoR" SEC02
 	File ..\..\doc\keysheet.pdf
 	File "..\..\doc\Things you can do in Rigs of Rods.pdf"
 	; data
-	;File /r /x .svn ..\..\test\current\*
+	File /r /x .svn ..\..\test\current\*
 
 SectionEnd
 
