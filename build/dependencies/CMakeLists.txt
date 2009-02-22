@@ -28,6 +28,10 @@ if(ROR_BUILD_PAGED)
   add_subdirectory("PagedGeometry")
 endif(ROR_BUILD_PAGED)
 
+IF(ROR_BUILD_ANGELSCRIPT)
+  add_subdirectory(angelscript)
+ENDIF(ROR_BUILD_ANGELSCRIPT)
+
 add_subdirectory("moFileReader")
 
 if(ROR_BUILD_NEWNET)

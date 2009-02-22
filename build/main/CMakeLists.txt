@@ -62,6 +62,11 @@ if(ROR_BUILD_XFIRE)
   add_definitions("-DXFIRE")
 endif(ROR_BUILD_XFIRE)
 
+IF(ROR_BUILD_ANGELSCRIPT)
+  add_definitions("-DANGELSCRIPT")
+  include_directories (${RoR_Dependencies_SOURCE_DIR}/angelscript/include)
+ENDIF(ROR_BUILD_ANGELSCRIPT)
+
 if(ROR_BUILD_NEWNET)
   add_definitions("-DNEWNET")
   include_directories (${RoR_Dependencies_SOURCE_DIR}/raknet/Source)
