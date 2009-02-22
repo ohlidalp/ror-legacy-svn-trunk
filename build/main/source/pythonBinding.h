@@ -22,12 +22,12 @@ along with Rigs of Rods.  If not, see <http://www.gnu.org/licenses/>.
 #ifndef PYTHONBINDING_H
 #define PYTHONBINDING_H
 
-// $LastChangedDate: 2009-02-08 19:49:52 +0000 (Sun, 08 Feb 2009) $
-// $LastChangedRevision: 1891 $
-// $LastChangedBy: pricorde $
-// $Id: pythonBinding.h 1891 2009-02-08 19:49:52Z pricorde $
-// $Rev: 1891 $
-#define REVISION "$Rev: 1891 $"
+// $LastChangedDate$
+// $LastChangedRevision$
+// $LastChangedBy$
+// $Id$
+// $Rev$
+#define REVISION "$Rev$"
 
 
 #include <OgrePrerequisites.h>
