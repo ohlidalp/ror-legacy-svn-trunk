@@ -7511,6 +7511,9 @@ float torques[MAX_WHEELS];
 		}
 		if(cabMesh) cabNode->setVisible(visible);
 		meshesVisible = visible;
+
+		// apply to the locked truck
+		if (lockTruck) lockTruck->setMeshVisibility(visible);
 	}
 
 	void Beam::cabFade(float amount)
