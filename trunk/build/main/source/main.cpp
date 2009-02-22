@@ -382,10 +382,10 @@ void RigsOfRods::exploreTerrains()
 // license: MIT
 #include "SimpleOpt.h"
 
-#define HELPTEXT "--help (this)\n-map <map> (loads map on startup)\n-truck <truck> (loads truck on startup)\n-setup shows the ogre configurator\n\nFor example: RoR.exe -map oahu -truck semi"
+#define HELPTEXT "--help (this)\n-map <map> (loads map on startup)\n-truck <truck> (loads truck on startup)\n-setup shows the ogre configurator\n-version shows the version information\n\nFor example: RoR.exe -map oahu -truck semi"
 
 // option identifiers
-enum { OPT_HELP, OPT_MAP, OPT_TRUCK, OPT_SETUP, OPT_MPJOIN, OPT_WDIR, OPT_ETM, OPT_BUILD, OPT_CONFIG};
+enum { OPT_HELP, OPT_MAP, OPT_TRUCK, OPT_SETUP, OPT_MPJOIN, OPT_WDIR, OPT_ETM, OPT_BUILD, OPT_CONFIG, OPT_VER};
 
 // option array
 CSimpleOpt::SOption cmdline_options[] = {
@@ -397,6 +397,7 @@ CSimpleOpt::SOption cmdline_options[] = {
 	{ OPT_CONFIG,("-config"), SO_NONE    },
 	{ OPT_BUILD, ("-build"),  SO_NONE    },
 	{ OPT_HELP,  ("--help"),  SO_NONE    },
+	{ OPT_VER,   ("-version"),SO_NONE    },
 	SO_END_OF_OPTIONS
 };
 
@@ -429,11 +430,23 @@ static void setupExceptionHandler()
 extern "C" {
 #endif
 
-void showUsage() {
+void showUsage()
+{
 #if OGRE_PLATFORM == OGRE_PLATFORM_WIN32
 	MessageBox( NULL, HELPTEXT, "Command Line Arguments", MB_OK | MB_ICONINFORMATION | MB_TASKMODAL);
 #else
 	std::cerr << HELPTEXT << std::endl;
+#endif
+}
+
+void showVersion()
+{
+	char tmp[1024] = "";
+	sprintf(tmp, "Rigs of Rods version %s\n%s\n%s\n", ROR_VERSION_STRING, SVN_REVISION, SVN_ID);
+#if OGRE_PLATFORM == OGRE_PLATFORM_WIN32
+	MessageBox( NULL, tmp, "Version Information", MB_OK | MB_ICONINFORMATION | MB_TASKMODAL);
+#else
+	std::cerr << tmp << std::endl;
 #endif
 }
 
@@ -485,6 +498,9 @@ int main(int argc, char *argv[])
 				app.useogreconfig = true;
 			} else if (args.OptionId() == OPT_BUILD) {
 				app.buildmode = true;
+			} else if (args.OptionId() == OPT_VER) {
+				showVersion();
+				return 0;
 			}
 		} else {
 			showUsage();
