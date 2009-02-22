@@ -110,7 +110,14 @@ class MapControl;
 #define MAX_PLAYLIST_ENTRIES 20
 
 // this defines the version that is used for the scripts and console stuff.
-#define ROR_VERSION_STRING "0.36"
+// $LastChangedDate$
+// $LastChangedRevision$
+// $LastChangedBy$
+// $Id$
+// $Rev$
+#define SVN_REVISION "$Rev$"
+#define SVN_ID "$Id$"
+#define ROR_VERSION_STRING "0.36.1"
 
 using namespace Ogre;
 
