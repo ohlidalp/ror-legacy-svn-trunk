@@ -120,7 +120,7 @@ bool NetworkNew::connect()
 
     peer = RakNetworkFactory::GetRakPeerInterface();
     
-	Packet *packet;
+	//Packet *packet;
     peer->Startup(1, 30, &SocketDescriptor(), 1);
 	peer->Connect(myServerName.c_str(), myServerPort, 0, 0);
 

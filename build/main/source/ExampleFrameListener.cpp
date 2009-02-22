@@ -1250,13 +1250,6 @@ ExampleFrameListener::ExampleFrameListener(RenderWindow* win, Camera* cam, Scene
 
 	objcounter=0;
 
-#ifdef PAGED
-	// paged objects
-	trees = 0;
-	grass = 0;
-	grassLoader = 0;
-#endif
-
 	useIngameEditor = false;
 
 	//network
@@ -1431,8 +1424,19 @@ ExampleFrameListener::~ExampleFrameListener()
 {
 //	if (joy) delete (joy);
 #ifdef PAGED
-	if (grass) delete (grass);
-	if (trees) delete (trees);
+	for(std::vector<paged_geometry_t>::iterator it=pagedGeometry.begin(); it!=pagedGeometry.end(); it++)
+	{
+		if(it->geom)
+		{
+			delete(it->geom);
+			it->geom=0;
+		}
+		if(it->loader)
+		{
+			delete(it->loader);
+			it->loader=0;
+		}
+	}
 #endif
 	if (net) delete (net);
 	//we should destroy OIS here
@@ -3917,6 +3921,8 @@ bool ExampleFrameListener::updateEvents(float dt)
 		mtc->update();
 	}
 #ifdef PAGED
+//TODO: fix code below
+#if 0
 	if (INPUTENGINE.getEventBoolValue("GRASS_LESS") && mTimeUntilNextToggle <= 0)
 	{
 		if(grass)
@@ -3967,7 +3973,8 @@ bool ExampleFrameListener::updateEvents(float dt)
 			mTimeUntilNextToggle = 0.2;
 		}
 	}
-#endif
+#endif //0
+#endif //paged
 	if (INPUTENGINE.getEventBoolValue("COMMON_OUTPUT_POSITION") && mTimeUntilNextToggle <= 0 && loading_state == ALL_LOADED)
 	{
 		Vector3 pos = Vector3::ZERO;
@@ -4879,119 +4886,6 @@ void ExampleFrameListener::loadTerrain(String terrainfile)
 		size_t ll=ds->readLine(line, 1023);
 		if (line[0]=='/' || ll==0) continue; //comments
 		if (!strcmp("end",line)) break;
-		//ugly stuff to parse trees :)
-#ifdef PAGED
-		if(treemode>0)
-		{
-			if(!strncmp("tree_end", line, 8) || !strncmp("tree_end2", line, 9))
-			{
-				LogManager::getSingleton().logMessage("loaded " + StringConverter::toString(treecounter) + " Trees of type " + treename);
-				treemode = 0;
-				continue;
-			}
-			if(pagedMode == 0 || !treeLoader || !curTree)
-				continue;
-			float x=0, z=0;
-			if(!strncmp("random", line, 6))
-			{
-				sscanf(line, "random %f", &x);
-				for(int i=0;i<x;i++)
-				{
-					// thiss prevents trees under water :)
-					float nx=0, nz=0;
-					if(waterline == -9999)
-					{
-						// no water
-						nx = Math::RangeRandom(0, mapsizex);
-						nz = Math::RangeRandom(0, mapsizez);
-					} else
-					{
-						while(getTerrainHeight(nx, nz) < waterline)
-						{
-							nx = Math::RangeRandom(0, mapsizex);
-							nz = Math::RangeRandom(0, mapsizez);
-						}
-					}
-
-					float yaw = Math::RangeRandom(0, 360);
-					float scale = treescale_min;
-					if(treescale_min != treescale_max)
-						scale = Math::RangeRandom(treescale_min, treescale_max);
-					treeLoader->addTree(curTree, Vector3(nx, 0, nz), Degree(yaw), (Ogre::Real)scale);
-				}
-			}
-			else
-			{
-				sscanf(line, "%f, %f", &x, &z);
-				float yaw = Math::RangeRandom(0, 360);
-				float scale = treescale_min;
-				if(treescale_min != treescale_max)
-					scale = Math::RangeRandom(treescale_min, treescale_max);
-				treeLoader->addTree(curTree, Vector3(x, 0, z), Degree(yaw), (Ogre::Real)scale);
-				//float y = getTerrainHeight(x, z);
-				treecounter++;
-			}
-
-			// FIXME: support separate collision meshs for trees!
-			/*
-			size_t vertex_count,index_count;
-			Vector3* vertices;
-			unsigned* indices;
-
-			getMeshInformation(curTree->getMesh().getPointer(),vertex_count,vertices,index_count,indices, Vector3(x,y,z), Quaternion::ZERO, Vector3(scale, scale, scale));
-
-			for (int i=0; i<(int)index_count/3; i++)
-			{
-			collisions->addCollisionTri(vertices[indices[i*3]], vertices[indices[i*3+1]], vertices[indices[i*3+2]]);
-			}
-
-			delete[] vertices;
-			delete[] indices;
-			*/
-
-			continue;
-		}
-		if(!strncmp("tree_begin", line, 10))
-		{
-			treecounter = 0;
-			char meshname[255]="";
-			char colormap[255]="";
-			if(!strncmp("tree_begin2", line, 11))
-				sscanf(line, "tree_begin2 %s %f %f %s", meshname, &treescale_min, &treescale_max, colormap);
-			else if(!strncmp("tree_begin", line, 10))
-				sscanf(line, "tree_begin %s %f %f", meshname, &treescale_min, &treescale_max);
-			if(!trees && pagedMode>0)
-			{
-				//Initialize the PagedGeometry engine
-				trees = new PagedGeometry();
-				trees->setTempDir(SETTINGS.getSetting("User Path") + "cache" + SETTINGS.getSetting("dirsep"));
-				trees->setCamera(mCamera);
-				trees->setPageSize(50);
-				trees->setInfinite();
-				//trees->setBounds(TBounds(0, 0, mapsizex, mapsizez));
-
-				//Set up LODs
-				//trees->addDetailLevel<EntityPage>(50);
-				trees->addDetailLevel<BatchPage>(90 * pagedDetailFactor, 30);
-				trees->addDetailLevel<ImpostorPage>(700 * pagedDetailFactor, 50);
-
-				//Set up a TreeLoader for easy use
-				treeLoader = new TreeLoader2D(trees, TBounds(0, 0, mapsizex, mapsizez));
-				trees->setPageLoader(treeLoader);
-				treeLoader->setHeightFunction(&getTerrainHeight);
-				if(strnlen(colormap,255)>0)
-					treeLoader->setColorMap(colormap);
-			}
-			if(pagedMode>0)
-				curTree = mSceneMgr->createEntity(meshname, meshname);
-			if(!strncmp("tree_begin2", line, 11))
-				treemode=2;
-			else if(!strncmp("tree_begin", line, 10))
-				treemode=1;
-			treename = meshname;
-			continue;
-		}
-#endif //PAGED
 		//sandstorm cube texture
 		if (!strncmp(line,"sandstormcubemap", 16))
 		{
@@ -5045,6 +4939,78 @@ void ExampleFrameListener::loadTerrain(String terrainfile)
 			continue;
 		}
 #ifdef PAGED
+		//ugly stuff to parse trees :)
+		if(!strncmp("trees", line, 5))
+		{
+			if(pagedMode==0)
+				continue;
+			char ColorMap[255]="";
+			char DensityMap[255]="";
+			char treemesh[255]="";
+			float yawfrom=0, yawto=0, scalefrom=0, scaleto=0;
+			int highdens=1, minDist=90, maxDist=700;
+			sscanf(line, "trees %f, %f, %f, %f, %d, %d, %d, %s %s %s", &yawfrom, &yawto, &scalefrom, &scaleto, &highdens, &minDist, &maxDist, treemesh, ColorMap, DensityMap);
+			if(strnlen(ColorMap, 3) == 0)
+			{
+				LogManager::getSingleton().logMessage("tree ColorMap map zero!");
+				continue;
+			}
+			if(strnlen(DensityMap, 3) == 0)
+			{
+				LogManager::getSingleton().logMessage("tree DensityMap zero!");
+				continue;
+			}
+			Forests::DensityMap *densityMap = Forests::DensityMap::load(DensityMap, CHANNEL_COLOR);
+			if(!densityMap)
+			{
+				LogManager::getSingleton().logMessage("could not load densityMap: "+String(DensityMap));
+				continue;
+			}
+			densityMap->setFilter(Forests::MAPFILTER_BILINEAR);
+			densityMap->setMapBounds(TBounds(0, 0, mapsizex, mapsizez));
+			
+			paged_geometry_t paged;
+			paged.geom = new PagedGeometry();
+			paged.geom->setTempDir(SETTINGS.getSetting("User Path") + "cache" + SETTINGS.getSetting("dirsep"));
+			paged.geom->setCamera(mCamera);
+			paged.geom->setPageSize(50);
+			paged.geom->setInfinite();
+			//trees->setBounds(TBounds(0, 0, mapsizex, mapsizez));
+
+			//Set up LODs
+			//trees->addDetailLevel<EntityPage>(50);
+			paged.geom->addDetailLevel<BatchPage>(minDist * pagedDetailFactor, 30);
+			paged.geom->addDetailLevel<ImpostorPage>(maxDist * pagedDetailFactor, 50);
+			TreeLoader2D *treeLoader = new TreeLoader2D(paged.geom, TBounds(0, 0, mapsizex, mapsizez));
+			paged.geom->setPageLoader(treeLoader);
+			treeLoader->setHeightFunction(&getTerrainHeight);
+			treeLoader->setColorMap(ColorMap);
+
+			curTree = mSceneMgr->createEntity(String("paged_")+treemesh+StringConverter::toString(pagedGeometry.size()), treemesh);
+
+			float density = 0, yaw=0, scale=0;
+			int numTreesToPlace=0;
+			int gridsize = 10;
+			for(int x=0;x<mapsizex;x+=gridsize)
+			{
+				for(int z=0;z<mapsizez;z+=gridsize)
+				{
+					density = densityMap->_getDensityAt_Unfiltered(x, z);
+					numTreesToPlace = (int)((float)(highdens) * density);
+					float nx=0, nz=0;
+					while(numTreesToPlace-->0)
+					{
+						nx = Math::RangeRandom(x, x + gridsize);
+						nz = Math::RangeRandom(z, z + gridsize);
+						yaw = Math::RangeRandom(yawfrom, yawto);
+						scale = Math::RangeRandom(scalefrom, scaleto);
+						treeLoader->addTree(curTree, Vector3(nx, 0, nz), Degree(yaw), (Ogre::Real)scale);
+					}
+				}
+			}
+			paged.loader = (void*)treeLoader;
+			pagedGeometry.push_back(paged);
+		}
 		//ugly stuff to parse grass :)
 		if (!strncmp("grass", line, 5) || !strncmp("grass2", line, 6))
 		{
@@ -5066,18 +5032,16 @@ void ExampleFrameListener::loadTerrain(String terrainfile)
 			//Initialize the PagedGeometry engine
 			try
 			{
-				if(!grass)
-				{
-					grass = new PagedGeometry(mCamera, 30);
-					//Set up LODs
+				paged_geometry_t paged;
+				PagedGeometry *grass = new PagedGeometry(mCamera, 30);
+				//Set up LODs
 
-					grass->addDetailLevel<GrassPage>(range * pagedDetailFactor); // original value: 80
+				grass->addDetailLevel<GrassPage>(range * pagedDetailFactor); // original value: 80
 
-					//Set up a GrassLoader for easy use
-					grassLoader = new GrassLoader(grass);
-					grass->setPageLoader(grassLoader);
-					grassLoader->setHeightFunction(&getTerrainHeight);
-				}
+				//Set up a GrassLoader for easy use
+				GrassLoader *grassLoader = new GrassLoader(grass);
+				grass->setPageLoader(grassLoader);
+				grassLoader->setHeightFunction(&getTerrainHeight);
 
 				// render grass at first
 				grassLoader->setRenderQueueGroup(RENDER_QUEUE_MAIN);
@@ -5125,6 +5089,9 @@ void ExampleFrameListener::loadTerrain(String terrainfile)
 					grassLayer->setFadeTechnique(FADETECH_ALPHAGROW);
 				else if(growtechnique == 2)
 					grassLayer->setFadeTechnique(FADETECH_ALPHA);
+				paged.geom = grass;
+				paged.loader = (void*)grassLoader;
+				pagedGeometry.push_back(paged);
 			} catch(...)
 			{
 				LogManager::getSingleton().logMessage("error loading grass!");
@@ -5459,10 +5426,11 @@ void ExampleFrameListener::updateXFire()
 void ExampleFrameListener::setGrassDensity(float x, float y, int density, bool relative)
 {
 #ifdef PAGED
+// todo to fix
+#if 0
 	if(!grassLoader)
 		return;
 	GrassLayer *grassLayer = grassLoader->getLayerList().front();
-#if 0
 	PixelBox *b = grassLayer->getDensityMapData();
 	if(!b || ! grassLayer)
 		return;
@@ -5518,7 +5486,8 @@ void ExampleFrameListener::setGrassDensity(float x, float y, int density, bool r
 
 void ExampleFrameListener::updateGrass(Vector3 pos)
 {
-#ifdef PAGED
+#if 0
+// todo: fix
 	if(!grassLoader || !grass)
 		return;
 
@@ -6572,10 +6541,10 @@ bool ExampleFrameListener::frameStarted(const FrameEvent& evt)
 	{
 #ifdef PAGED
 		// paged geometry
-		if(trees)
-			trees->update();
-		if(grass)
-			grass->update();
+		for(std::vector<paged_geometry_t>::iterator it=pagedGeometry.begin();it!=pagedGeometry.end();it++)
+		{
+			if(it->geom) it->geom->update();
+		}
 #endif //PAGED
 
 		//airplane chatter

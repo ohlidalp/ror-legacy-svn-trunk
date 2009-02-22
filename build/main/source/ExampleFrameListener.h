@@ -147,6 +147,13 @@ typedef struct
 	Quaternion rot;
 } spawn_location_t;
 
+#ifdef PAGED
+typedef struct
+{
+	PagedGeometry *geom;
+	void *loader;
+} paged_geometry_t;
+#endif //PAGED
 
 typedef struct
 {
@@ -356,9 +363,7 @@ protected:
 	void placeNeedle(RenderWindow* win, SceneNode *node, float x, float y, float len);
 
 #ifdef PAGED
-	PagedGeometry *grass;
-	PagedGeometry *trees;
-	GrassLoader *grassLoader;
+	std::vector<paged_geometry_t> pagedGeometry;
 #endif
 	String grassdensityTextureFilename;
 	void setGrassDensity(float x, float y, int density, bool relative=false);
