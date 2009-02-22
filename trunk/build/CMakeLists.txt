@@ -62,6 +62,7 @@ option(ROR_BUILD_CONFIGURATOR "builds the RoRConfig" TRUE)
 option(ROR_BUILD_ROR "toggles building of RoR and its dependencies" TRUE)
 option(WSYNC_BUILD_WSYNC "builds the wsync tool" FALSE)
 option(ROR_USE_OPTIMIZATIONS_WINDOWS "optimize build, gives more FPS, but needs longer to compile" TRUE)
+option(ROR_BUILD_ANGELSCRIPT "build and use the new scripting engine" FALSE)
 
 set(NVIDIA_CG_DIR "$ENV{PROGRAMFILES}\\NVIDIA Corporation\\Cg" CACHE PATH "directory of the nvidia cg toolkit installation")
 
@@ -120,5 +121,6 @@ message(STATUS " * HYDRAX water:          ${ROR_BUILD_HYDRAX}")
 message(STATUS " * paged geometry:        ${ROR_BUILD_PAGED}")
 message(STATUS " * Profiling (Beamstats): ${ROR_BUILD_BEAMSTATS}")
 message(STATUS " * LUA Script Engine:     ${ROR_BUILD_LUASCRIPT}")
+message(STATUS " * AS Script Engine:      ${ROR_BUILD_ANGELSCRIPT}")
 message(STATUS "==============================")
 
