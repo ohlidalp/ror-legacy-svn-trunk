@@ -4947,9 +4947,9 @@ void ExampleFrameListener::loadTerrain(String terrainfile)
 			char ColorMap[255]="";
 			char DensityMap[255]="";
 			char treemesh[255]="";
-			float yawfrom=0, yawto=0, scalefrom=0, scaleto=0;
-			int highdens=1, minDist=90, maxDist=700;
-			sscanf(line, "trees %f, %f, %f, %f, %d, %d, %d, %s %s %s", &yawfrom, &yawto, &scalefrom, &scaleto, &highdens, &minDist, &maxDist, treemesh, ColorMap, DensityMap);
+			float yawfrom=0, yawto=0, scalefrom=0, scaleto=0, highdens=1;
+			int minDist=90, maxDist=700;
+			sscanf(line, "trees %f, %f, %f, %f, %f, %d, %d, %s %s %s", &yawfrom, &yawto, &scalefrom, &scaleto, &highdens, &minDist, &maxDist, treemesh, ColorMap, DensityMap);
 			if(strnlen(ColorMap, 3) == 0)
 			{
 				LogManager::getSingleton().logMessage("tree ColorMap map zero!");
@@ -4984,7 +4984,8 @@ void ExampleFrameListener::loadTerrain(String terrainfile)
 			TreeLoader2D *treeLoader = new TreeLoader2D(paged.geom, TBounds(0, 0, mapsizex, mapsizez));
 			paged.geom->setPageLoader(treeLoader);
 			treeLoader->setHeightFunction(&getTerrainHeight);
-			treeLoader->setColorMap(ColorMap);
+			if(String(ColorMap) != "none")
+				treeLoader->setColorMap(ColorMap);			
 
 			curTree = mSceneMgr->createEntity(String("paged_")+treemesh+StringConverter::toString(pagedGeometry.size()), treemesh);
 
