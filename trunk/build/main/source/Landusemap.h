@@ -34,7 +34,7 @@ protected:
 	Ogre::String configFilename;
 	Ogre::String TSMconfigFilename;
 	Ogre::String textureFilename;
-	Ogre::String defaultUse;
+	char defaultUse;
 	Collisions *coll;
 	Ogre::Real mapsizex, mapsizez;
 	std::map < Ogre::uint32, Ogre::String > usemap;
