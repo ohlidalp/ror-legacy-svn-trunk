@@ -49,7 +49,7 @@ void Landusemap::loadSettings()
 	{
 		linecounter++;
 		size_t ll=ds->readLine(line, 1023);
-		if (ll==0 || line[0]==';' || line[0]=='/' || !strnlen(line, 255))
+		if (!line || ll==0 || line[0]==';' || line[0]=='/' || !strnlen(line, 255))
 			continue;
 		if(!strcmp(line, "config"))
 		{
@@ -114,35 +114,40 @@ void Landusemap::loadSettings()
 	colourMap->setFilter(Forests::MAPFILTER_NONE);
 	Ogre::TRect<Ogre::Real> bounds = TBounds(0, 0, mapsizex, mapsizez);
 	
+	/*
+	// debug things below
 	printf("found ground use definitions:\n");
 	for(std::map < uint32, String >::iterator it=usemap.begin(); it!=usemap.end(); it++)
 	{
-		printf(" 0x%Lx : %s\n", it->first, it->second.c_str());
-		
+		printf(" 0x%Lx : %s\n", it->first, it->second.c_str());	
 	}
+	*/
 
 	// now allocate the data buffer
 	data=(unsigned char*)malloc(mapsizex*mapsizez*sizeof(unsigned char));
 	unsigned char *ptr=data;
-	std::map < String, int > counters;
+	//std::map < String, int > counters;
 	for(int z=0; z<mapsizez; z++)
 	{
 		for(int x=0; x<mapsizex; x++)
 		{
 			uint32 col = colourMap->getColorAt(x, z, bounds);
 			String use = usemap[col];
-			if(use!="")
-				counters[use]++;
+			//if(use!="")
+			//	counters[use]++;
 			*ptr = (unsigned char)coll->getGroundModelNumberByString(const_cast<char*>(use.c_str()));
 			ptr++;
 		}
 	}
 	
+	/*
+	// debug things below
 	printf("used ground models:\n");
 	for(std::map < String, int >::iterator it=counters.begin(); it!=counters.end(); it++)
 	{
 		printf(" %s : %d\n", it->first.c_str(), it->second);
 	}
+	*/
 	
 }
 
