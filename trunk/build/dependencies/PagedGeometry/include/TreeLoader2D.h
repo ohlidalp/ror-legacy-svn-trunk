@@ -22,7 +22,7 @@ namespace Forests {
 class TreeIterator3D;
 class TreeIterator2D;
 
-/** \brief A PageLoader-derived object you can use with PagedGeometry to easily place trees on your terrain.
+/** \brief A PageLoader-derived object you can use with PagedGeometry to easily place trees on your terrain. 
 
 \note TreeLoader2D is derived from PageLoader - this implementation provides you with an easy way
 to add trees to your scene. Remember that if the included PageLoader's aren't enough, you can easily
@@ -47,7 +47,7 @@ TreeLoader2D::setHeightFunction() documentation for more information.
 keep in mind that calculating the height of Ogre's built-in terrain this way can
 be VERY slow if not done properly, and may cause stuttering due to long paging delays.
 
-If the inability to supply a vertical coordinate to addTree() is too limiting, or you are unable to implement
+If the inability to supply a vertical coordinate to addTree() is too limiting, or you are unable to implement 
 a fast enough height function, please refer to TreeLoader3D. TreeLoader3D allows you to provide full 3D x/y/z
 coordinates, although 40% more memory is required per tree.
 */
@@ -59,7 +59,7 @@ public:
 	\param bounds The rectangular boundary in which all trees will be placed. */
 	TreeLoader2D(PagedGeometry *geom, const TBounds &bounds);
 	~TreeLoader2D();
-
+	
 	/** \brief Adds an entity to the scene with the specified location, rotation, and scale.
 	\param entity The entity to be added to the scene.
 	\param position The desired position of the tree
@@ -75,7 +75,7 @@ public:
 	a height function with setHeightFunction() in order for TreeLoader2D to be able to
 	calculate the desired height values when the time comes. If you do not specify a
 	height function, all trees will appear at 0 height.
-
+	
 	\warning By default, scale values may not exceed 2.0. If you need to use higher scale
 	values than 2.0, use setMaximumScale() to reconfigure the maximum. */
 	void addTree(Ogre::Entity *entity, const Ogre::Vector3 &position, Ogre::Degree yaw = Ogre::Degree(0), Ogre::Real scale = 1.0f, void* userData = NULL);
@@ -92,7 +92,7 @@ public:
 	#else
 		void
 	#endif
-	deleteTrees(const Ogre::Vector3 &position, float radius = 0.001f, Ogre::Entity *type = NULL);
+	deleteTrees(const Ogre::Vector3 &position, Ogre::Real radius = 0.001f, Ogre::Entity *type = NULL);
 
 	/** \brief Deletes trees within a certain rectangular area.
 	\param area The area where trees are to be deleted
@@ -107,10 +107,21 @@ public:
 	#endif
 	deleteTrees(TBounds area, Ogre::Entity *type = NULL);
 
+#ifdef PAGEDGEOMETRY_USER_DATA
+	/** \brief Find trees within a certain radius of the given coordinates.
+		\param position The coordinate of the tree(s) to look for
+		\param radius The radius from the given coordinate where trees will be deleted
+		\param type The type of tree to find (optional)
+
+		\note If the "type" parameter is set to an entity, only trees created with that entity
+		will be found. */
+	std::vector<void*> findTrees(const Ogre::Vector3 &position, float radius, Ogre::Entity *type = NULL);
+#endif
+
 	/** \brief Sets the height function used to calculate tree height coordinates
 	\param heightFunction A pointer to a height function
 	\param userData Optional user data to be supplied to the height function
-
+	
 	Unless you want all your trees placed at 0 height, you need to specify a height function
 	so TreeLoader2D will be able to calculate the height coordinate. The height function given
 	to setHeightFunction() should use the following prototype (although you can name the
@@ -127,9 +138,9 @@ public:
 	function is called, and is completely optional (although you can't actually omit it from the
 	declaration, you can ignore it). Any userData value you choose to supply to setHeightFunction()
 	will be passed on to your height function every time it is called.
-
+	
 	After you've defined a height function, using setHeightFunction is easy:
-
+	
 	\code
 	pageLoader2D->setHeightFunction(&getHeightAt);
 	//Or (if you want to pass additional data on to your height function)...
@@ -146,11 +157,13 @@ public:
 	}
 
 	/** \brief Gets an iterator which can be used to access all added trees.
-
+	
 	The returned TreeIterator can be used to iterate through every tree that was added
 	to this TreeLoader fairly efficiently.
 
 	\see The TreeIterator class documentation for more info.
+	\warning Be sure to test TreeIterator3D::hasMoreElements() before calling other members of the
+	TreeIterator3D class.
 	*/
 	TreeIterator2D getTrees();
 
@@ -176,7 +189,7 @@ public:
 
 	\note The texture data you provide is copied into RAM, so you can delete the texture after
 	calling this function without risk of crashing. */
-	void setColorMap(Ogre::Texture *map, MapChannel channel = CHANNEL_COLOR);
+	void setColorMap(Ogre::TexturePtr map, MapChannel channel = CHANNEL_COLOR);
 
 	/** \brief Gets a pointer to the color map being used
 
@@ -264,7 +277,7 @@ public:
 
 	void loadPage(PageInfo &page);
 
-protected:
+private:
 	friend class TreeIterator2D;
 
 	struct TreeDef
@@ -300,7 +313,7 @@ protected:
 	std::map<Ogre::Entity*, std::vector<TreeDef>*> pageGridList;
 	typedef std::map<Ogre::Entity*, std::vector<TreeDef>*>::iterator PageGridListIterator;
 	typedef std::pair<Ogre::Entity*, std::vector<TreeDef>*> PageGridListValue;
-
+	
 	inline std::vector<TreeDef> &_getGridPage(std::vector<TreeDef> *grid, int x, int z)
 	{
 		#ifdef _DEBUG
@@ -344,7 +357,7 @@ public:
 
 	/** Returns the tree's uniform scale value */
 	inline Ogre::Real &getScale() { return scale; }
-
+	
 	/** Returns the tree's orientation as a Quaternion */
 	inline Ogre::Quaternion getOrientation() { return Ogre::Quaternion(yaw, Ogre::Vector3::UNIT_Y); }
 
@@ -352,8 +365,8 @@ public:
 	inline Ogre::Entity *getEntity() { return entity; }
 
 #ifdef PAGEDGEOMETRY_USER_DATA
-   /** Returns the user-defined data associated with this tree */
-   inline void* getUserData() { return userData; }
+	/** Returns the user-defined data associated with this tree */
+	inline void* getUserData() { return userData; }
 #endif
 
 private:
@@ -387,7 +400,7 @@ public:
 
 	/** Returns a pointer to the next tree, without advancing to the next */
 	inline TreeRef *peekNextPtr() { return &prevTreeDat; }
-
+	
 	/** Moves the iterator on to the next tree */
 	void moveNext();
 

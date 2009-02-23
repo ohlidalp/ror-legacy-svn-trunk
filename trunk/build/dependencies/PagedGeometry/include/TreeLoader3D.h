@@ -21,7 +21,7 @@ namespace Forests {
 class TreeIterator3D;
 class TreeIterator2D;
 
-/** \brief A PageLoader-derived object you can use with PagedGeometry to easily place trees on your terrain.
+/** \brief A PageLoader-derived object you can use with PagedGeometry to easily place trees on your terrain. 
 
 \note TreeLoader3D is derived from PageLoader - this implementation provides you with an easy way
 to add trees to your scene. Remember that if the included PageLoader's aren't enough, you can easily
@@ -54,8 +54,8 @@ public:
 	\param scale The desired scale of the entity
 
 	While TreeLoader3D allows you to provide full 3-dimensional x/y/z coordinates,
-	you are restricted to only yaw rotation, and only uniform scale.
-
+	you are restricted to only yaw rotation, and only uniform scale. 
+	
 	\warning By default, scale values may not exceed 2.0. If you need to use higher scale
 	values than 2.0, use setMaximumScale() to reconfigure the maximum. */
 	void addTree(Ogre::Entity *entity, const Ogre::Vector3 &position, Ogre::Degree yaw = Ogre::Degree(0), Ogre::Real scale = 1.0f, void* userData = NULL);
@@ -72,7 +72,19 @@ public:
 	#else
 		void
 	#endif
-	deleteTrees(const Ogre::Vector3 &position, float radius, Ogre::Entity *type = NULL);
+		deleteTrees(const Ogre::Vector3 &position, Ogre::Real radius, Ogre::Entity *type = NULL);
+
+#ifdef PAGEDGEOMETRY_USER_DATA
+	/** \brief Find trees within a certain radius of the given coordinates.
+		\param position The coordinate of the tree(s) to look for
+		\param radius The radius from the given coordinate where trees will be deleted
+		\param type The type of tree to find (optional)
+
+		\note If the "type" parameter is set to an entity, only trees created with that entity
+		will be found. */
+	std::vector<void*> findTrees(const Ogre::Vector3 &position, float radius, Ogre::Entity *type = NULL);
+#endif
+
 
 	/** \brief Deletes trees within a certain rectangular area.
 	\param area The area where trees are to be deleted
@@ -93,7 +105,8 @@ public:
 	to this TreeLoader3D fairly efficiently.
 
 	\see The TreeIterator class documentation for more info.
-	*/
+	\warning Be sure to test TreeIterator3D::hasMoreElements() before calling other members of the
+	TreeIterator3D class. */
 	TreeIterator3D getTrees();
 
 	/** \brief Sets the color map used to color trees
@@ -118,7 +131,7 @@ public:
 
 	\note The texture data you provide is copied into RAM, so you can delete the texture after
 	calling this function without risk of crashing. */
-	void setColorMap(Ogre::Texture *map, MapChannel channel = CHANNEL_COLOR);
+	void setColorMap(Ogre::TexturePtr map, MapChannel channel = CHANNEL_COLOR);
 
 	/** \brief Gets a pointer to the color map being used
 
@@ -291,8 +304,8 @@ public:
 	inline Ogre::Entity *getEntity() { return entity; }
 
 #ifdef PAGEDGEOMETRY_USER_DATA
-   /** Returns the user-defined data associated with this tree */
-   inline void* getUserData() { return userData; }
+	/** Returns the user-defined data associated with this tree */
+	inline void* getUserData() { return userData; }
 #endif
 
 private:

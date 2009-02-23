@@ -19,19 +19,28 @@ Permission is granted to anyone to use this software for any purpose, including 
 #include "PagedGeometry.h"
 #include "StaticBillboardSet.h"
 
-#if OGRE_PLATFORM == OGRE_PLATFORM_LINUX
-#include <memory> // gcc 4.3 auto_ptr fix
-#endif
-
 #include <OgrePrerequisites.h>
 #include <OgreTextureManager.h>
 #include <OgreRenderTexture.h>
 
-
+//The number of angle increments around the yaw axis to render impostor "snapshots" of trees
 #define IMPOSTOR_YAW_ANGLES 8
+
+//The number of angle increments around the pitch axis to render impostor "snapshots" of trees
 #define IMPOSTOR_PITCH_ANGLES 4
-//If set to 1, imposter textures will be read and saved to disc; if set to 0 they will stay in memory and need to be regenerated each time the application is run.
-#define IMPOSTOR_FILE_SAVE 1
+
+//When IMPOSTOR_RENDER_ABOVE_ONLY is defined, impostor images will only be rendered from angles around and
+//above entities. If this is disabled, bottom views of the entities will be rendered to the impostor atlas
+//and therefore allow those angles to be viewed from a distance. However, this requires the IMPOSTOR_PITCH_ANGLES
+//to be doubled to maintain an equal level of impostor angle correctness compared to when impostors are rendered
+//from above only.
+#define IMPOSTOR_RENDER_ABOVE_ONLY
+
+//When IMPOSTOR_FILE_SAVE is defined, impostor textures will be read and saved to disc; if not, they will stay
+//in memory and need to be regenerated each time the application is run (remove or comment out the line below if this
+//is desired)
+#define IMPOSTOR_FILE_SAVE
+
 namespace Forests {
 
 class ImpostorBatch;
@@ -74,14 +83,14 @@ class ImpostorPage: public GeometryPage
 	friend class ImpostorTexture;
 
 public:
-	void init(PagedGeometry *geom);
+	void init(PagedGeometry *geom, const Ogre::Any &data);
 	~ImpostorPage();
-
+	
 	void setRegion(Ogre::Real left, Ogre::Real top, Ogre::Real right, Ogre::Real bottom);
 	void addEntity(Ogre::Entity *ent, const Ogre::Vector3 &position, const Ogre::Quaternion &rotation, const Ogre::Vector3 &scale, const Ogre::ColourValue &color);
 	void build();
 	void removeEntities();
-
+	
 	void setVisible(bool visible);
 	void setFade(bool enabled, Ogre::Real visibleDist, Ogre::Real invisibleDist);
 
@@ -90,11 +99,11 @@ public:
 	/**
 	\brief Sets the resolution for single impostor images.
 	\param pixels The width/height of one square impostor render
-
+	
 	The default impostor resolution is 128x128. Note that 32 impostor images
 	will be stored in a single texture (8 x 4), so a impostor resolution of 128,
 	for example, results in final texture size of 1024 x 512.
-
+	
 	\warning Calling this function will have no effect unless it is done before
 	any entities are added to any page.
 	*/
@@ -144,7 +153,7 @@ public:
 	/**
 	\brief Regenerates the impostor texture for the specified entity
 	\param ent The entity which will have it's impostor texture regenerated
-
+	
 	This function can be called to force the regeneration of a specific impostor.
 	Normally, impostors are generated once (saved to a file), and simply preloaded
 	from the file afterwards (unless you delete the file). Calling this will
@@ -168,7 +177,7 @@ public:
 	\warning This is NOT a real-time operation - it may take a few seconds to complete.
 	*/
 	static void regenerateAll();
-
+	
 
 	inline void setBlendMode(ImpostorBlendMode blendMode) { this->blendMode = blendMode; }
 	inline ImpostorBlendMode getBlendMode() { return blendMode; }
@@ -181,7 +190,7 @@ protected:
 	static int impostorResolution;
 	static Ogre::ColourValue impostorBackgroundColor;
 	static Ogre::BillboardOrigin impostorPivot;
-
+	
 	static Ogre::uint32 selfInstances;
 	static Ogre::uint32 updateInstanceID;
 	Ogre::uint32 instanceID;
@@ -190,7 +199,7 @@ protected:
 
 	Ogre::Vector3 center;
 	int aveCount;
-
+	
 	std::map<Ogre::String, ImpostorBatch *> impostorBatches;
 };
 
@@ -261,11 +270,11 @@ public:
 	 * @param renderContext The ImpostorTexture to which this instance belongs.
 	 */
 	ImpostorTextureResourceLoader(ImpostorTexture& impostorTexture);
-
-
+	
+	
 	/**
 	 *    At load time the texture will be rerendered.
-	 * @param resource
+	 * @param resource 
 	 */
 	virtual void loadResource (Ogre::Resource *resource);
 protected:
@@ -287,7 +296,7 @@ public:
 	already exist, one will automatically be created.
 	*/
 	static ImpostorTexture *getTexture(ImpostorPage *group, Ogre::Entity *entity);
-
+	
 	/** remove created texture, note that all of the ImposterTextures
 	must be deleted at once, because there is no track if a texture is still
 	being used by something else
@@ -298,7 +307,7 @@ public:
 	static void regenerateAll();
 
 	~ImpostorTexture();
-
+	
 protected:
 	ImpostorTexture(ImpostorPage *group, Ogre::Entity *entity);
 
@@ -311,7 +320,6 @@ protected:
 	Ogre::SceneManager *sceneMgr;
 	Ogre::Entity *entity;
 	Ogre::String entityKey;
-	ImpostorPage *group;
 
 	Ogre::MaterialPtr material[IMPOSTOR_PITCH_ANGLES][IMPOSTOR_YAW_ANGLES];
 	Ogre::TexturePtr texture;
@@ -326,7 +334,7 @@ protected:
 	{
 		return prefix + Ogre::StringConverter::toString(++GUID);
 	}
-
+	
 	//This will only be used when IMPOSTOR_FILE_SAVE is set to 0
 	std::auto_ptr<ImpostorTextureResourceLoader> loader;
 };
@@ -343,7 +351,7 @@ void ImpostorBatch::addBillboard(const Ogre::Vector3 &position, const Ogre::Quat
 	float degrees = Ogre::Math::ATan2(zVector.x, zVector.z).valueDegrees();
 	if (degrees < 0) degrees += 360;
 
-	int n = (int)(IMPOSTOR_YAW_ANGLES * (degrees / 360.0f) + 0.5f);
+	int n = IMPOSTOR_YAW_ANGLES * (degrees / 360.0f) + 0.5f;
 	Ogre::uint16 texCoordIndx = (IMPOSTOR_YAW_ANGLES - n) % IMPOSTOR_YAW_ANGLES;
 
 	bbset->createBillboard(position + (rotation * entityBBCenter) * scale,
