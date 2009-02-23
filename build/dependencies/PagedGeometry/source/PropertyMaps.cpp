@@ -23,22 +23,22 @@ using namespace Ogre;
 
 namespace Forests {
 
-std::map<Ogre::String, DensityMap*> DensityMap::selfList;
+std::map<String, DensityMap*> DensityMap::selfList;
 
-DensityMap *DensityMap::load(const Ogre::String &fileName, MapChannel channel)
+DensityMap *DensityMap::load(const String &fileName, MapChannel channel)
 {
 	//Load image
 	TexturePtr map = TextureManager::getSingleton().load(fileName, ResourceGroupManager::DEFAULT_RESOURCE_GROUP_NAME);
 
 	//Copy image to pixelbox
-	return load(map.getPointer(), channel);
+	return load(map, channel);
 }
 
-DensityMap *DensityMap::load(Ogre::Texture *texture, MapChannel channel)
+DensityMap *DensityMap::load(TexturePtr texture, MapChannel channel)
 {
 	const String key = texture->getName() + StringConverter::toString((int)channel);
 
-	std::map<Ogre::String, DensityMap*>::iterator i;
+	std::map<String, DensityMap*>::iterator i;
 	i = selfList.find(key);
 
 	DensityMap *m;
@@ -68,9 +68,9 @@ DensityMap::~DensityMap()
 	selfList.erase(selfKey);
 }
 
-DensityMap::DensityMap(Texture *map, MapChannel channel)
+DensityMap::DensityMap(TexturePtr map, MapChannel channel)
 {
-	assert(map);
+	assert(map.isNull() == false);
 	filter = MAPFILTER_BILINEAR;
 
 	//Add self to selfList
@@ -122,7 +122,7 @@ DensityMap::DensityMap(Texture *map, MapChannel channel)
 
 //Returns the density map value at the given location
 //Make sure a density map exists before calling this.
-float DensityMap::_getDensityAt_Unfiltered(float x, float z)
+float DensityMap::_getDensityAt_Unfiltered(float x, float z, const TRect<Real> &mapBounds)
 {
 	assert(pixels);
 
@@ -131,8 +131,12 @@ float DensityMap::_getDensityAt_Unfiltered(float x, float z)
 	float boundsWidth = mapBounds.width();
 	float boundsHeight = mapBounds.height();
 
-  uint32 xindex = (uint32)(mapWidth * (x - mapBounds.left) / boundsWidth);
-  uint32 zindex = (uint32)(mapHeight * (z - mapBounds.top) / boundsHeight);
+	//Patch incorrect PixelBox::getWidth() in OpenGL mode
+	if (Root::getSingleton().getRenderSystem()->getName() == "OpenGL Rendering Subsystem")
+		--mapWidth;
+
+	uint32 xindex = mapWidth * (x - mapBounds.left) / boundsWidth;
+	uint32 zindex = mapHeight * (z - mapBounds.top) / boundsHeight;
 	if (xindex < 0 || zindex < 0 || xindex >= mapWidth || zindex >= mapHeight)
 		return 0.0f;
 
@@ -144,7 +148,7 @@ float DensityMap::_getDensityAt_Unfiltered(float x, float z)
 
 //Returns the density map value at the given location with bilinear filtering
 //Make sure a density map exists before calling this.
-float DensityMap::_getDensityAt_Bilinear(float x, float z)
+float DensityMap::_getDensityAt_Bilinear(float x, float z, const TRect<Real> &mapBounds)
 {
 	assert(pixels);
 
@@ -153,11 +157,15 @@ float DensityMap::_getDensityAt_Bilinear(float x, float z)
 	float boundsWidth = mapBounds.width();
 	float boundsHeight = mapBounds.height();
 
+	//Patch incorrect PixelBox::getWidth() in OpenGL mode
+	if (Root::getSingleton().getRenderSystem()->getName() == "OpenGL Rendering Subsystem")
+		--mapWidth;
+
 	float xIndexFloat = (mapWidth * (x - mapBounds.left) / boundsWidth) - 0.5f;
 	float zIndexFloat = (mapHeight * (z - mapBounds.top) / boundsHeight) - 0.5f;
 
-  uint32 xIndex = (uint32)xIndexFloat;
-  uint32 zIndex = (uint32)zIndexFloat;
+	uint32 xIndex = xIndexFloat;
+	uint32 zIndex = zIndexFloat;
 	if (xIndex < 0 || zIndex < 0 || xIndex >= mapWidth-1 || zIndex >= mapHeight-1)
 		return 0.0f;
 
@@ -185,22 +193,22 @@ float DensityMap::_getDensityAt_Bilinear(float x, float z)
 
 //----------------------------------------------------------------------------------------------
 
-std::map<Ogre::String, ColorMap*> ColorMap::selfList;
+std::map<String, ColorMap*> ColorMap::selfList;
 
-ColorMap *ColorMap::load(const Ogre::String &fileName, MapChannel channel)
+ColorMap *ColorMap::load(const String &fileName, MapChannel channel)
 {
 	//Load image
 	TexturePtr map = TextureManager::getSingleton().load(fileName, ResourceGroupManager::DEFAULT_RESOURCE_GROUP_NAME);
 
 	//Copy image to pixelbox
-	return load(map.getPointer(), channel);
+	return load(map, channel);
 }
 
-ColorMap *ColorMap::load(Ogre::Texture *texture, MapChannel channel)
+ColorMap *ColorMap::load(TexturePtr texture, MapChannel channel)
 {
 	const String key = texture->getName() + StringConverter::toString((int)channel);
 
-	std::map<Ogre::String, ColorMap*>::iterator i;
+	std::map<String, ColorMap*>::iterator i;
 	i = selfList.find(key);
 
 	ColorMap *m;
@@ -208,7 +216,7 @@ ColorMap *ColorMap::load(Ogre::Texture *texture, MapChannel channel)
 		m = i->second;
 	else
 		m = new ColorMap(texture, channel);
-
+	
 	++(m->refCount);
 	return m;
 }
@@ -230,9 +238,9 @@ ColorMap::~ColorMap()
 	selfList.erase(selfKey);
 }
 
-ColorMap::ColorMap(Texture *map, MapChannel channel)
+ColorMap::ColorMap(TexturePtr map, MapChannel channel)
 {
-	assert(map);
+	assert(map.isNull() == false);
 	filter = MAPFILTER_BILINEAR;
 
 	//Add self to selfList
@@ -302,7 +310,7 @@ ColorMap::ColorMap(Texture *map, MapChannel channel)
 }
 
 //Returns the color map value at the given location
-uint32 ColorMap::_getColorAt(float x, float z)
+uint32 ColorMap::_getColorAt(float x, float z, const TRect<Real> &mapBounds)
 {
 	assert(pixels);
 
@@ -311,8 +319,8 @@ uint32 ColorMap::_getColorAt(float x, float z)
 	float boundsWidth = mapBounds.width();
 	float boundsHeight = mapBounds.height();
 
-  uint32 xindex = (uint32)(mapWidth * (x - mapBounds.left) / boundsWidth);
-  uint32 zindex = (uint32)(mapHeight * (z - mapBounds.top) / boundsHeight);
+	uint32 xindex = mapWidth * (x - mapBounds.left) / boundsWidth;
+	uint32 zindex = mapHeight * (z - mapBounds.top) / boundsHeight;
 	if (xindex < 0 || zindex < 0 || xindex >= mapWidth || zindex >= mapHeight)
 		return 0xFFFFFFFF;
 
@@ -335,16 +343,16 @@ uint32 ColorMap::_interpolateColor(uint32 color1, uint32 color2, float ratio, fl
 	d2 = (color2 >> 24 & 0xFF);
 
 	uint8 a, b, c, d;
-  a = (uint8)(ratioInv * a1 + ratio * a2);
-  b = (uint8)(ratioInv * b1 + ratio * b2);
-  c = (uint8)(ratioInv * c1 + ratio * c2);
-  d = (uint8)(ratioInv * d1 + ratio * d2);
+	a = ratioInv * a1 + ratio * a2;
+	b = ratioInv * b1 + ratio * b2;
+	c = ratioInv * c1 + ratio * c2;
+	d = ratioInv * d1 + ratio * d2;
 
 	uint32 clr = a | (b << 8) | (c << 16) | (d << 24);
 	return clr;
 }
 
-uint32 ColorMap::_getColorAt_Bilinear(float x, float z)
+uint32 ColorMap::_getColorAt_Bilinear(float x, float z, const TRect<Real> &mapBounds)
 {
 	assert(pixels);
 
@@ -356,10 +364,10 @@ uint32 ColorMap::_getColorAt_Bilinear(float x, float z)
 	float xIndexFloat = (mapWidth * (x - mapBounds.left) / boundsWidth) - 0.5f;
 	float zIndexFloat = (mapHeight * (z - mapBounds.top) / boundsHeight) - 0.5f;
 
-  uint32 xIndex = (uint32)xIndexFloat;
-  uint32 zIndex = (uint32)zIndexFloat;
+	uint32 xIndex = xIndexFloat;
+	uint32 zIndex = zIndexFloat;
 	if (xIndex < 0 || zIndex < 0 || xIndex >= mapWidth-1 || zIndex >= mapHeight-1)
-    return 0;
+		return 0.0f;
 
 	float xRatio = xIndexFloat - xIndex;
 	float xRatioInv = 1 - xRatio;

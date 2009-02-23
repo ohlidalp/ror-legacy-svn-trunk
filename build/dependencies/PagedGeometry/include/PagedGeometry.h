@@ -64,6 +64,7 @@ about a certain function or class.
 <li><b><a href="http://sjcomp.com">Alexander Shyrokov</a></b> (aka. sj) - <i>Testing / co-design</i></li>
 <li><b><a href="http://www.pop-3d.com">Tuan Kuranes</a></b> - <i>Imposter image render technique</i></li>
 <li><b></b> (Falagard) - <i>Camera-facing billboard vertex shader</i></li>
+<li><b><a href="http://www.wendigostudios.com/">Wendigo Studios</a></b> - <i>Tree animation code & various patches/improvements</i></li>
 </ul>
 
 
@@ -92,6 +93,7 @@ Permission is granted to anyone to use this software for any purpose, including 
 #define __PagedGeometry_H__
 
 #include <limits> // numeric_limits<>
+#include <memory>
 
 #include <OgreRoot.h>
 #include <OgrePrerequisites.h>
@@ -146,7 +148,7 @@ public:
 	\brief Initializes a PagedGeometry object.
 	\param cam A camera which the PagedGeometry object will use for LOD calculations.
 	\param pageSize The page size (pages are square)
-
+	
 	pageSize sets the size of a single "page" of geometry. If your pages are too big,
 	you may experience "hiccuping" during the game as these regions are loaded. However,
 	regions that are too small may result in lower frame rates (depending on what detail
@@ -179,8 +181,6 @@ public:
 	*/
 	void setCamera(Ogre::Camera *cam);
 
-	void setTempDir(Ogre::String dir);
-
 	/**
 	\brief Gets the camera which is used to calculate levels of detail.
 	\returns The camera assigned to this PagedGeometry object.
@@ -190,7 +190,7 @@ public:
 	instead of storing a local copy. This is an inline function, so don't worry
 	too much about performance.
 	*/
-	inline Ogre::Camera *getCamera()
+	inline Ogre::Camera *getCamera() const
 	{
 		return sceneCam;
 	}
@@ -198,14 +198,14 @@ public:
 	/**
 	\brief Gets the scene manager which is being used to display the geometry
 	\returns A SceneManager
-
+	
 	This function simply returns the SceneManager that this PagedGeometry object
 	is using. If no camera has been set yet, this will return NULL, since PagedGeometry
 	has no way of knowing which SceneManager to use. However, once a camera is set,
 	the SceneManager this function returns will always remain the same - even if the
 	camera is later set to NULL.
 	*/
-	inline Ogre::SceneManager *getSceneManager()
+	inline Ogre::SceneManager *getSceneManager() const
 	{
 		return sceneMgr;
 	}
@@ -230,7 +230,7 @@ public:
 	from the assigned camera). However, once a camera is set, the SceneNode this function
 	returns will always remain the same - even if the camera is later set to NULL.
 	*/
-	inline Ogre::SceneNode *getSceneNode()
+	inline Ogre::SceneNode *getSceneNode() const
 	{
 		return rootNode;
 	}
@@ -240,12 +240,12 @@ public:
 	\brief Sets the coordinate system to be used by PagedGeometry
 	\param up A vector pointing to whatever direction you consider to be "up"
 	\param right A vector pointing to whatever direction you consider to be "right"
-
+	
 	By default, PagedGeometry uses the standard coordinate system where X is right, Y is up,
 	and Z is back. If you use an alternate coordinate system, for example where Z is up, you'll
 	have to use this function to configure PagedGeometry to use that coordinate system; otherwise,
 	LOD calculations, impostors, etc. will be all messed up.
-
+	
 	To do so, simply supply which directions you consider "right" and "up". For example, if your
 	coordinate system uses X as right, Y as forward, and Z as up, you would set the "right" parameter
 	to Vector3::UNIT_X and the "up" parameter to Vector3::UNIT_Z. The forward direction
@@ -254,7 +254,7 @@ public:
 
 	\warning Be sure to configure PagedGeometry with your coordinate system before using any PageLoader's,
 	since they may depend on the current coordinate system to function properly.
-
+	
 	\note By default this function is disabled and won't appear in the PagedGeometry library. To
 	enable it, reenable the line near the top of PagedGeometry.h where PAGEDGEOMETRY_ALTERNATE_COORDSYSTEM
 	is defined by un-commenting it (then recompile).
@@ -273,17 +273,17 @@ public:
 	structures to fill the boundaries. This may result in a slight frame rate boost
 	compared to an infinite world, although it will take a little more memory
 	(especially with large areas).
-
+	
 	Since bounded mode requires more memory for larger boundaries, it is best suited
 	for small to medium sized worlds, while infinite mode is best for huge or even
 	near-infinite worlds.
-
+	
 	\note Bounds must be square.
 
 	\see setInfinite()
 	*/
 	void setBounds(const TBounds bounds);
-
+	
 	/**
 	\brief Switches to infinite mode
 
@@ -295,7 +295,7 @@ public:
 	expand the size of your game world almost to infinity. Since only what's on the
 	screen is actually loaded, it makes little difference if your world is 100 square
 	miles, or 1,000,000 square miles.
-
+	
 	The only disadvantage to using infinite mode is that cache efficiency will be
 	slightly reduced in some cases. For example, bounded mode will achieve better
 	performance if you are often switching between multiple cameras, since the cache
@@ -308,7 +308,7 @@ public:
 	/**
 	\brief Gets the current geometry boundary.
 	\returns The geometry boundary which was set in the constructor.
-
+	
 	\see The PagedGeometry constructor for information about the geometry boundary.
 
 	This returns a TBounds value, which contains information about the boundaries
@@ -323,12 +323,17 @@ public:
 
 	Ogre's documentation should contain more information about TRect members.
 	*/
-	inline const TBounds &getBounds()
+	inline const TBounds &getBounds() const
 	{
 		return m_bounds;
 	}
 
-	/**
+	/** 
+	\brief Convert an Ogre::AxisAlignedBox to a TBounds coplanar to the plane defined by the UP axis.
+	*/
+	TBounds convertAABToTBounds( const Ogre::AxisAlignedBox & aab ) const;
+
+	/** 
 	\brief Sets the page size
 
 	This sets the size of a single "page" of geometry. If your pages are too big,
@@ -358,6 +363,7 @@ public:
 	\param PageType The page type class you want to use for this detail level.
 	\param maxRange The maximum distance this detail level will be used at.
 	\param transitionLength The desired length of fade transitions - optional
+	\param data An extra parameter to pass to the PageType constructor - optional
 
 	\note PageType is not really a function parameter, but a template parameter.
 	See the code below for an example on how this "parameter" is used.
@@ -437,10 +443,15 @@ public:
 	before adding detail levels with this function. After a detail level is added you
 	cannot call these functions without first removing them with removeDetailLevels().
 
+	The "data" parameter is entirely optional, so there should never be any requirement that it
+	be used. Just what type of data this parameter accepts, and what it does, depends entirely
+	on the specific GeometryPage implementation you're using. See the appropriate page type
+	documentation for info on how this parameter can be used (if at all).
+
 	\see The GeometryPage class documention for more information on adding custom
 	page types.
 	*/
-	template <class PageType> inline GeometryPageManager* addDetailLevel(Ogre::Real maxRange, Ogre::Real transitionLength = 0);
+	template <class PageType> inline GeometryPageManager* addDetailLevel(Ogre::Real maxRange, Ogre::Real transitionLength = 0, const Ogre::Any &data = Ogre::Any());
 
 	/**
 	\brief Removes all detail levels from the PagedGeometry object.
@@ -450,7 +461,7 @@ public:
 	Remember that you will need to re-add all the detail levels again with
 	addDetailLevel() before any of the geometry will be displayed.
 	*/
-	void removeDetailLevels();
+	void removeDetailLevels(); 
 
 	/**
 	\brief Returns a reference to a list of all added detail levels.
@@ -484,7 +495,7 @@ public:
 	\brief Gets the PageLoader currently being used to load geometry.
 	\returns A PageLoader object which is currently being used to load geometry.
 
-	This can be useful if you want to retreive the current page loader to delete it,
+	This can be useful if you want to retrieve the current page loader to delete it,
 	or any other task that needs to be done to the currently used page loader.
 	*/
 	inline PageLoader *getPageLoader()
@@ -521,21 +532,21 @@ public:
 	/**
 	\brief Reloads geometry at the given location.
 	\param point The point in 3D space where geometry needs to be reloaded.
-
+	
 	If your PageLoader changes it's output during runtime, you normally won't see
 	the changes immediately (and in many cases, you will never see the changes).
 	This function provides a way to reload the geometry to force the changes to take
 	effect immediately.
-
+	
 	This function will cause a certain page of visible geometry to be reloaded
 	during the next update. Unlike reloadGeometry(), this function allows pinpoint
 	reloading to take place, resulting in better performance if a small portion
 	of the geometry changes.
-
+	
 	Since this doesn't actually reload anything immediately, you can call this
 	function as many times as you need without worrying too much about performance.
 	For example, if you update 150 trees in your game, simply supply this function
-	with the locations of each tree. When the scene is about to be rendered, the
+	with the locations of each tree. When the scene is about to be rendered, the 
 	appropriate geometry pages will automatically be reloaded.
 	*/
 	void reloadGeometryPage(const Ogre::Vector3 &point);
@@ -561,13 +572,13 @@ public:
 	Since this doesn't actually reload anything immediately, you can call this
 	function as many times as you need without worrying too much about performance.
 	For example, if you update 150 trees in your game, simply supply this function
-	with the locations of each tree. When the scene is about to be rendered, the
+	with the locations of each tree. When the scene is about to be rendered, the 
 	appropriate geometry pages will automatically be reloaded.
 	*/
 	void reloadGeometryPages(const Ogre::Vector3 &center, Ogre::Real radius);
 
 	/**
-	\brief Reloads geometry in the given radius area.
+	\brief Reloads geometry in the given rect area.
 	\param area A rectangular area that needs reloading
 
 	\note This is identical to reloadGeometryPage() except it allows you to reload
@@ -586,10 +597,58 @@ public:
 	Since this doesn't actually reload anything immediately, you can call this
 	function as many times as you need without worrying too much about performance.
 	For example, if you update 150 trees in your game, simply supply this function
-	with the locations of each tree. When the scene is about to be rendered, the
+	with the locations of each tree. When the scene is about to be rendered, the 
 	appropriate geometry pages will automatically be reloaded.
 	*/
-	void reloadGeometryPages(const TBounds area);
+	void reloadGeometryPages(const TBounds & area);
+
+	/**
+	\brief Preloads a region of geometry (loads once and never loads again)
+	\param area A rectangular area of the world that needs to be preloaded
+
+	You can use this function to preload entire areas of geometry. Doing this
+	will basically turn off dynamic paging for the given region, since all the
+	pages effecting it will stay loaded forever (until you delete the PagedGeometry
+	object, or if using infinite mode, until you move away from the region).
+
+	\note The rectangular bounds value you supply does not indicate a
+	rectangular area to preload, but instead a rectangular area in which you need
+	the camera to be able to freely move around without having to dynamically load
+	any pages. In other words, this function will preload all geometry within
+	viewing range of the given bounds area.
+	*/
+	void preloadGeometry(const TBounds & area);
+
+	/**
+	\brief Releases geometry preloaded with preloadGeometry() to be unloaded if necessary
+
+	When you call preloadGeometry() to preload region(s) of geometry, it makes those
+	regions un-unloadable; in other words, they will never be unloaded automatically
+	by PagedGeometry (except for some cases in infinite mode). This way you can load
+	a region of your world once and never have to load it again (optimally).
+
+	This function allows you to undo all this by allowing all the geometry to be
+	unloaded once again when necessary. It won't unload anything, but it will
+	allow geometry to unload that previously was not allowed.
+	*/
+	void resetPreloadedGeometry();
+
+	/**
+	\brief Hides or unhides all geometry managed by this PagedGeometry instance
+	\params visible Whether or not you want this PagedGeometry to be visible
+
+	By default everything is visible. This can be used to hide an entire PagedGeometry
+	"group" of geometry if desired.
+	*/
+	void setVisible(bool visible) { geometryAllowedVisible = visible; }
+
+	/**
+	\brief Returns whether or not geometry managed by this PagedGeometry instance is visible
+
+	By default, everything will be visible of course. This function simply returns the
+	visible/invisible state as set by the setVisible() command.
+	*/
+	bool getVisible() { return geometryAllowedVisible; }
 
 	/*
 	\brief Immediately loads visible geometry.
@@ -602,7 +661,7 @@ public:
 
 	For example, in your loading code, you might call PagedGeometry::cacheGeometry() to
 	load all your trees/etc. managed by PagedGeometry instantly, rather than later on.
-
+	
 	If it takes several seconds to cache geometry, you may want to update a progress bar
 	more often. The maxTime parameter allows you to split up this task into smaller
 	segments for this purpose. Simply call cacheGeometry(maxTime) repeatedly until
@@ -610,47 +669,106 @@ public:
 	*/
 	//todo
 	//bool cacheGeometry(unsigned long maxTime = 0);
-
+	
 
 	/** INTERNAL FUNCTION - DO NOT USE */
-	Ogre::Vector3 _convertToLocal(const Ogre::Vector3 &globalVec);
+	Ogre::Vector3 _convertToLocal(const Ogre::Vector3 &globalVec) const;
 
-	Ogre::String getTempdir() { return this->tempdir; };
+	/**
+	\brief Sets or creates a custom parameter for an entity managed by PagedGeometry
+	This can be used to set custom parameters / data for entities which can be accessed
+	from other PagedGeometry subsystems or your own code. Primarily, this is intended
+	for use with GeometryPage implementations or PageLoader implementations.
+
+	PagedGeometry includes a GeometryPage implementation, "WindBatchPage", which applies
+	a wind animation shader to your trees, which you can control using these custom
+	parameters: windFactorX and windFactorY.
+
+	If you're using 3rd party PagedGeometry "plugins" like GeometryPage implementations,
+	etc., there may be more custom parameters available to you. Check with the appropriate
+	module documentation for info on supported custom parameters and their usage.
+
+	\param entity Name of the entity
+	\param paramName Name of the parameter for this entity
+	\param paramValue Value to assign to the parameter
+	*/
+	void setCustomParam( std::string entity, std::string paramName, float paramValue);
+
+	/**
+	\brief Sets or creates a custom parameter for an entity managed by PagedGeometry
+	This can be used to set custom parameters / data for entities which can be accessed
+	from other PagedGeometry subsystems or your own code. Primarily, this is intended
+	for use with GeometryPage implementations or PageLoader implementations.
+
+	PagedGeometry includes a GeometryPage implementation, "WindBatchPage", which applies
+	a wind animation shader to your trees, which you can control using these custom
+	parameters: windFactorX and windFactorY.
+
+	If you're using 3rd party PagedGeometry "plugins" like GeometryPage implementations,
+	etc., there may be more custom parameters available to you. Check with the appropriate
+	module documentation for info on supported custom parameters and their usage.
+
+	\param entity Name of the entity
+	\param paramName Name of the parameter for this entity
+	\param paramValue Value to assign to the parameter
+	*/
+	void setCustomParam( std::string paramName, float paramValue);
+
+	/**
+	\brief Returns the value of the custom parameter
+	\param entity Name of the entity
+	\param paramName Name of the parameter for this entity
+	\param defaultParamValue Value to return if no entry is found
+	\returns float value if entry is found or the defaultParamValue if not
+	*/
+	float getCustomParam( std::string entity, std::string paramName, float defaultParamValue) const;
+
+	/**
+	\brief Returns the value of the custom parameter
+	\param entity Name of the entity
+	\param paramName Name of the parameter for this entity
+	\param defaultParamValue Value to return if no entry is found
+	\returns float value if entry is found or the defaultParamValue if not
+	*/
+	float getCustomParam( std::string paramName, float defaultParamValue) const;
 
 protected:
 	//Internal function - do not use
 	void _addDetailLevel(GeometryPageManager *mgr, Ogre::Real maxRange, Ogre::Real transitionLength);
 
-	Ogre::SceneManager*				sceneMgr;
-	Ogre::SceneNode*				rootNode;				//PagedGeometry's own "root" node
+	Ogre::SceneManager *sceneMgr;
+	Ogre::SceneNode *rootNode;				//PagedGeometry's own "root" node
+
+	bool geometryAllowedVisible;	//If set to false, all geometry managed by this PagedGeometry is hidden
 
 	#ifdef PAGEDGEOMETRY_ALTERNATE_COORDSYSTEM
-	Ogre::Quaternion				coordinateSystemQuat;	//The orientation of rootNode
+	Ogre::Quaternion coordinateSystemQuat;	//The orientation of rootNode
 	#endif
 
 	//Camera data
-	Ogre::Camera*					sceneCam;
-	Ogre::Vector3					oldCamPos;
+	Ogre::Camera *sceneCam;
+	Ogre::Vector3 oldCamPos;
 
-	Ogre::Camera*					lastSceneCam;
-	Ogre::Vector3					lastOldCamPos;
+	Ogre::Camera *lastSceneCam;
+	Ogre::Vector3 lastOldCamPos;
 
 	//This list keeps track of all the GeometryPageManager's added with addPageManager()
-	std::list<GeometryPageManager *> managerList;
+	std::list<GeometryPageManager*> managerList;
 
 	//The assigned PageLoader used to load entities
-	PageLoader*						pageLoader;
+	PageLoader *pageLoader;
 
 	//The bounds and page size
-	TBounds							m_bounds;
+	TBounds m_bounds;
 	//The page size
-	Ogre::Real						pageSize;
+	Ogre::Real pageSize;
 
 	//Time-related data
-	Ogre::Timer						timer;
-	unsigned long					lastTime;
+	Ogre::Timer timer;
+	unsigned long lastTime;
 
-	Ogre::String tempdir;
+private:
+	std::map<std::string, float> customParam;
 };
 
 
@@ -721,9 +839,15 @@ public:
 	/**
 	\brief Prepare a geometry page for use.
 	\param geom The PagedGeometry object that's creating this GeometryPage.
+	\param data A single parameter of custom data (optional).
 
 	This is called immediately after creating a new GeometryPage. It is never called more
 	than once for a single instance of your geometry page.
+
+	The "data" parameter is set for all pages when PagedGeometry::addDetailLevel() is
+	called. This parameter is optional and can be used for whatever you like if you
+	need a constructor parameter of some kind. Be sure to document what kind of variable
+	the user needs to supply and what it's purpose is in your GeometryPage implementation.
 
 	\note If you need to get the current camera, scene manager, etc., use the geom
 	parameter. The PagedGeometry class contains inline methods you can use to access
@@ -732,19 +856,19 @@ public:
 	\warning Do NOT store a local copy of geom->getCamera()! The camera returned by this
 	function may change at any time!
 	*/
-	virtual void init(PagedGeometry *geom) = 0;
-
+	virtual void init(PagedGeometry *geom, const Ogre::Any &data) = 0;
+	
 	/**
 	\brief Prepare a geometry page for entities
 	\param left The minimum x-coordinate any entities will have.
 	\param top The minimum z-coordinate any entities will have.
 	\param right The maximum x-coordinate any entities will have.
 	\param bottom The maximum z-coordinate any entities will have.
-
+	
 	This basically provides you with a region where upcoming entities will be located,
 	since many geometry rendering methods require this data. It's up to you how this
 	data is used, if at all.
-
+	
 	setRegion() is never called when the page contains entities; only once just before
 	a load process (when entities are added with addEntity).
 
@@ -788,11 +912,11 @@ public:
 	Make sure this completely reverses the effects of both build() and addEntity(). This
 	is necessary, because after this is called, the entities will most likely be added
 	again with addEntity() and build().
-
+	
 	Do not leave any remains of the entities in memory after this function is called.
 	One of the advantages of using paged geometry is that you can have near-infinite
 	game worlds, which would normally exceed a computer's RAM capacity. This advantage
-	would completely dissappear if you did not clean up properly when the page manager
+	would completely disappear if you did not clean up properly when the page manager
 	calls this function.
 	*/
 	virtual void removeEntities() = 0;
@@ -808,7 +932,7 @@ public:
 	visibleDist should have alpha values of 1, while geometry at invisibleDist should
 	have alpha values of 0. Important: Distances must be calculated in the xz plane
 	only - the y coordinate should be disregarded when calculating distance.
-
+	
 	setFade() won't be called unless the user's computer supports vertex shaders.
 
 	\note invisibleDist may be greater than or less than visibleDist, depending on
@@ -833,14 +957,14 @@ public:
 	*/
 	virtual void update() {}
 
-	/**
+	/**	
 	\brief Gets the center point of the page.
 	\returns The center points of the page.
 	\note This is a non-virtual utility function common to all GeometryPage classes, don't
 	try to override it.
 	*/
 	inline Ogre::Vector3 &getCenterPoint() { return _centerPoint; }
-
+	
 	/**
 	\brief Return the current visibility status of the page.
 	\returns The current visibility status of the page.
@@ -871,7 +995,7 @@ public:
 
 	/**
 	\brief Advanced: Expand the current bounding box to include the given entity
-
+	
 	Advanced: Override this function only if your page implementation already computes a
 	bounding box (local to the page center) for added entities. This way you can prevent
 	the bounding box from being computed twice.
@@ -898,6 +1022,12 @@ public:
 	*/
 	virtual ~GeometryPage() {}
 
+	/**
+	\brief Constructor
+	Initialise everything to zero, false or NULL except for _trueBoundsUndefined that is set to true.
+	*/
+	GeometryPage();
+
 private:
 	//These values and functions are used by the GeometryPageManager internally.
 	Ogre::Vector3 _centerPoint;		//The central point of this page (used to visibility calculation)
@@ -909,6 +1039,7 @@ private:
 	bool _pending;		//Flag indicating if page needs loading
 	bool _loaded;		//Flag indicating if page is loaded
 	bool _needsUnload;	//Flag indicating if page needs unloading before next load
+	bool _keepLoaded;	//Flag indicating if the page should not be unloaded
 	std::list<GeometryPage*>::iterator _iter;	//Iterator in loadedList
 
 	Ogre::AxisAlignedBox _trueBounds;	//Actual bounding box of the 3D geometry added to this page
@@ -933,10 +1064,10 @@ struct PageInfo
 {
 	/**
 	\brief The page boundaries in which all entities should be placed.
-
+	
 	This specifies the rectangular boundary of the page. Every entity
 	contained in the page should reside within these boundaries.
-
+	
 	<ul>
 	<li>bounds.left is the minimum X coordinate allowed for any entity in the page.</li>
 	<li>bounds.right is the maximum X coordinate allowed for any entity in the page.</li>
@@ -955,11 +1086,11 @@ struct PageInfo
 
 	/**
 	\brief The X index of the page tile.
-
+	
 	If all the geometry pages were arranged in a big 2D grid, this would be the
 	X index of this page in that grid.
-
-	This is mathematically equivelant to Math::Floor( bounds.left / bounds.width() ),
+	
+	This is mathematically equivalent to Math::Floor( bounds.left / bounds.width() ),
 	although this should be used instead due to floating point precision
 	issues which may occur otherwise.
 	*/
@@ -967,11 +1098,11 @@ struct PageInfo
 
 	/**
 	\brief The Z index of the page tile.
-
+	
 	If all the geometry pages were arranged in a big 2D grid, this would be the
 	Z index of this page in that grid.
-
-	This is mathematically equivelant to Math::Floor( bounds.top / bounds.height() ),
+	
+	This is mathematically equivalent to Math::Floor( bounds.top / bounds.height() ),
 	although this should be used instead due to floating point precision
 	issues which may occur otherwise.
 	*/
@@ -1051,7 +1182,7 @@ public:
 	Override this function to load entities within the specified boundary. The boundary
 	information is contained in the "page" parameter, along with other useful information
 	as well (see the PageInfo documentation for more info about this).
-
+	
 	Simply use the member function addEntity() to add all the entities you want. If you
 	create your own objects inside this function, you are responsible for deleting it
 	appropriately in unloadPage() or somewhere else. The PageInfo::userData member is
@@ -1068,7 +1199,7 @@ public:
 	/**
 	\brief This may be overridden (optional) to unload custom data associated with a page.
 	\param page A PageInfo variable which includes boundary information and other useful values.
-
+	
 	During a PageLoader::loadPage() call, you are supposed to add entities by calling
 	the addEntity() member function. In case you created anything else (particle systems,
 	sound effects, etc.), this function	gives you a chance to delete them along with
@@ -1076,7 +1207,7 @@ public:
 
 	\note Entities added with addEntity() will automatically be deleted after this
 	function returns, so you don't need to worry about them.
-
+	
 	In most cases you won't need to implement this function in your page loader at all,
 	since addEntity() is usually all that is used.
 	*/
@@ -1091,7 +1222,7 @@ public:
 	\warning This function is actually called every time PagedGeometry::update() is called, so if the
 	application doesn't call PagedGeometry::update() as it should, this function will not be called
 	either.
-
+	
 	\note frameUpdate() will be called after PagedGeometry::update() is called but before any
 	GeometryPage's are actually loaded/unloaded for the frame.
 	*/
@@ -1243,7 +1374,7 @@ public:
 	The inactivePageLife allows you to set how long inactive pages remain in memory. An inactive page
 	is one that is out of the cache range and may not be immediately needed. By allowing these pages
 	to remain in memory for a short period of time, the camera can return to it's previous position
-	with no need to reload anything.
+	with no need to reload anything. 
 
 	\note Even with large inactivePageLife values, pages may be unloaded if the camera moves far enough
 	from them, so setting extremely high inactivePageLife values won't result in massive memory usage.
@@ -1253,7 +1384,7 @@ public:
 		GeometryPageManager::maxCacheInterval = maxCacheInterval;
 		GeometryPageManager::inactivePageLife = inactivePageLife;
 	}
-
+	
 	inline void setTransition(Ogre::Real transitionLength)
 	{
 		if (transitionLength > 0) {
@@ -1261,7 +1392,7 @@ public:
 			fadeLength = transitionLength;
 			fadeLengthSq = fadeLength * fadeLength;
 			fadeEnabled = true;
-	    } else {
+		} else {
 			//<= 0 indicates disabled transition
 			fadeLength = 0;
 			fadeLengthSq = 0;
@@ -1277,12 +1408,12 @@ public:
 		return fadeLength;
 	}
 
-
+	
 	/** \brief Internal function - DO NOT USE */
 	inline TPGeometryPages getLoadedPages() const { return loadedList; }
 
 	/** \brief Internal function - DO NOT USE */
-	template <class PageType> void initPages(const TBounds& bounds);
+	template <class PageType> void initPages(const TBounds& bounds, const Ogre::Any &data = Ogre::Any());
 
 	/** \brief Internal function - DO NOT USE */
 	void update(unsigned long deltaTime, Ogre::Vector3 &camPos, Ogre::Vector3 &camSpeed, bool &enableCache, GeometryPageManager *prevManager);
@@ -1297,7 +1428,13 @@ public:
 	void reloadGeometryPages(const Ogre::Vector3 &center, Ogre::Real radius);
 
 	/** \brief Internal function - DO NOT USE */
-	void reloadGeometryPages(const TBounds area);
+	void reloadGeometryPages(const TBounds & area);
+
+	/** \brief Internal function - DO NOT USE */
+	void preloadGeometry(const TBounds & area);
+
+	/** \brief Internal function - DO NOT USE */
+	void resetPreloadedGeometry();
 
 private:
 	PagedGeometry *mainGeom;
@@ -1365,26 +1502,26 @@ private:
 
 //-------------------------------------------------------------------------------------
 
-template <class PageType> inline GeometryPageManager* PagedGeometry::addDetailLevel(Ogre::Real maxRange, Ogre::Real transitionLength)
+template <class PageType> inline GeometryPageManager* PagedGeometry::addDetailLevel(Ogre::Real maxRange, Ogre::Real transitionLength, const Ogre::Any &data)
 {
-    //Create a new page manager
-    GeometryPageManager *mgr = new GeometryPageManager(this);
+	//Create a new page manager
+	GeometryPageManager *mgr = new GeometryPageManager(this);
 
 	//If vertex shaders aren't supported, don't use transitions
 	Ogre::Root *root = root->getSingletonPtr();	//Work-around for Linux compiler bug
 	if (!root->getRenderSystem()->getCapabilities()->hasCapability(Ogre::RSC_VERTEX_PROGRAM))
 		transitionLength = 0;
 
-    //Add it to the list (also initializing maximum viewing distance)
-    _addDetailLevel(mgr, maxRange, transitionLength);
-
+	//Add it to the list (also initializing maximum viewing distance)
+	_addDetailLevel(mgr, maxRange, transitionLength);
+	
 	//And initialize the paged (dependent on maximum viewing distance)
-    mgr->initPages<PageType>(getBounds());
+	mgr->initPages<PageType>(getBounds(), data);
 
-    return mgr;
+	return mgr;
 }
 
-template <class PageType> inline void GeometryPageManager::initPages(const TBounds& bounds)
+template <class PageType> inline void GeometryPageManager::initPages(const TBounds& bounds, const Ogre::Any &data)
 {
 	// Calculate grid size, if left is Real minimum, it means that bounds are infinite
 	// scrollBuffer is used as a flag. If it is allocated than infinite bounds are used
@@ -1394,7 +1531,7 @@ template <class PageType> inline void GeometryPageManager::initPages(const TBoun
 	{
 		// In case of infinite bounds bounding rect needs to be calculated in a different manner, since
 		// it represents local bounds, which are shifted along with the player's movements around the world.
-		geomGridX = (int)(2 * farTransDist / mainGeom->getPageSize()) + 4;
+		geomGridX = (2 * farTransDist / mainGeom->getPageSize()) + 4;
 		gridBounds.top = 0;
 		gridBounds.left = 0;
 		gridBounds.right = geomGridX * mainGeom->getPageSize();
@@ -1411,7 +1548,7 @@ template <class PageType> inline void GeometryPageManager::initPages(const TBoun
 		//Bounded mode
 		gridBounds = bounds;
 		// In case the devision does not give the round number use the next largest integer
-		geomGridX = (int)std::ceil(gridBounds.width() / mainGeom->getPageSize());
+		geomGridX = std::ceil(gridBounds.width() / mainGeom->getPageSize());
 	}
 	geomGridZ = geomGridX; //Note: geomGridX == geomGridZ; Need to merge.
 
@@ -1419,26 +1556,29 @@ template <class PageType> inline void GeometryPageManager::initPages(const TBoun
 	//Allocate grid array
 	geomGrid = new GeometryPage *[geomGridX * geomGridZ];
 
+	int xioffset = Ogre::Math::Floor(gridBounds.left / mainGeom->getPageSize());
+	int zioffset = Ogre::Math::Floor(gridBounds.top / mainGeom->getPageSize());
 	for (int x = 0; x < geomGridX; ++x)
 	{
 		for (int z = 0; z < geomGridZ; ++z)
 		{
 			GeometryPage* page = new PageType();
-			page->init(mainGeom);
+			page->init(mainGeom, data);
 			// 0,0 page is located at (gridBounds.left,gridBounds.top) corner of the bounds
 			page->_centerPoint.x = ((x + 0.5f) * mainGeom->getPageSize()) + gridBounds.left;
 			page->_centerPoint.z = ((z + 0.5f) * mainGeom->getPageSize()) + gridBounds.top;
 			page->_centerPoint.y = 0.0f;
-			page->_xIndex = x;
-			page->_zIndex = z;
+			page->_xIndex = x + xioffset;
+			page->_zIndex = z + zioffset;
 			page->_inactiveTime = 0;
 			page->_loaded = false;
 			page->_needsUnload = false;
 			page->_pending = false;
+			page->_keepLoaded = false;
 			page->_visible = false;
 			page->_userData = 0;
 			page->_fadeEnable = false;
-
+			
 			page->clearBoundingBox();
 
 			_setGridPage(x, z, page);
