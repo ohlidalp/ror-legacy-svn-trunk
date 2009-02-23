@@ -82,7 +82,7 @@ void Landusemap::loadSettings()
 			if(key == "texture")
 				textureFilename = value;
 			else if(key == "defaultuse")
-				defaultUse = value;
+				defaultUse = coll->getGroundModelNumberByString(const_cast<char*>(value.c_str()));
 
 		} else if(section == 2)
 		{
@@ -158,6 +158,8 @@ Landusemap::~Landusemap()
 
 ground_model_t *Landusemap::getGroundModelAt(int x, int z)
 {
+	if(x<0 || x > mapsizex || z<0 || z>mapsizez)
+		return ground_models[defaultUse];
 	return ground_models[*(data + x + z * (int)mapsizex)];
 }
 
