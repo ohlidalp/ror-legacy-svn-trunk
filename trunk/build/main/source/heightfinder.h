@@ -68,27 +68,4 @@ public:
 	inline int re(int v) {return size-v-1;} // reversed
 };
 
-
-// Editable Terrain Scene Manager
-
-//some forward declarations:
-namespace ET {
-	class TerrainInfo;
-};
-
-/**
- * Heightfinder for the Editable Terrain Scene Manager
- */
-class ETMHeightFinder : public HeightFinder
-{
-protected:
-	ET::TerrainInfo *terrainInfo;
-public:
-	ETMHeightFinder(ET::TerrainInfo *terrainInfo);
-	~ETMHeightFinder();
-
-	float getHeightAt(float x, float z);
-	void getNormalAt(float x, float z, Ogre::Vector3 *result, float precision=0.1);
-};
-
 #endif

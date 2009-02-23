@@ -1854,7 +1854,7 @@ void ExampleFrameListener::loadObject(char* name, float px, float py, float pz, 
 		}
 		if (!strncmp("friction", ptline, 8))
 		{
-			collisions->parseGroundModel(&gmi, ptline+9);
+			collisions->parseGroundModel(&gmi, ptline+9, "custom");
 //				sscanf(ptline, "friction %f, %f, %f, %f, %f",&gmi.ms, &gmi.mc, &gmi.t2, &gmi.vs, &gmi.alpha);
 			gm=&gmi;
 			continue;
@@ -4891,6 +4891,12 @@ void ExampleFrameListener::loadTerrain(String terrainfile)
 		{
 			sscanf(line, "sandstormcubemap %s", sandstormcubemap);
 		};
+		if (!strncmp("ground-model", line, 12))
+		{
+			collisions->setupLandUse(line+13);
+			continue;
+		}
+
 #ifdef HYDRAX
 		if (!strncmp("hydraxconfig", line, 12))
 		{
@@ -4967,20 +4973,25 @@ void ExampleFrameListener::loadTerrain(String terrainfile)
 				continue;
 			}
 			densityMap->setFilter(Forests::MAPFILTER_BILINEAR);
-			densityMap->setMapBounds(TBounds(0, 0, mapsizex, mapsizez));
+			//densityMap->setMapBounds(TRect(0, 0, mapsizex, mapsizez));
 			
 			paged_geometry_t paged;
 			paged.geom = new PagedGeometry();
-			paged.geom->setTempDir(SETTINGS.getSetting("User Path") + "cache" + SETTINGS.getSetting("dirsep"));
+			//paged.geom->setTempDir(SETTINGS.getSetting("User Path") + "cache" + SETTINGS.getSetting("dirsep"));
 			paged.geom->setCamera(mCamera);
 			paged.geom->setPageSize(50);
 			paged.geom->setInfinite();
-			//trees->setBounds(TBounds(0, 0, mapsizex, mapsizez));
+			Ogre::TRect<Ogre::Real> bounds = TBounds(0, 0, mapsizex, mapsizez);
+			//trees->setBounds(bounds);
 
 			//Set up LODs
 			//trees->addDetailLevel<EntityPage>(50);
-			paged.geom->addDetailLevel<BatchPage>(minDist * pagedDetailFactor, 30);
-			paged.geom->addDetailLevel<ImpostorPage>(maxDist * pagedDetailFactor, 50);
+			float min = minDist * pagedDetailFactor;
+			if(min<10) min = 10;
+			paged.geom->addDetailLevel<BatchPage>(min, min/2);
+			float max = maxDist * pagedDetailFactor;
+			if(max<10) max = 10;
+			paged.geom->addDetailLevel<ImpostorPage>(max, max/10);
 			TreeLoader2D *treeLoader = new TreeLoader2D(paged.geom, TBounds(0, 0, mapsizex, mapsizez));
 			paged.geom->setPageLoader(treeLoader);
 			treeLoader->setHeightFunction(&getTerrainHeight);
@@ -4996,8 +5007,8 @@ void ExampleFrameListener::loadTerrain(String terrainfile)
 			{
 				for(int z=0;z<mapsizez;z+=gridsize)
 				{
-					density = densityMap->_getDensityAt_Unfiltered(x, z);
-					numTreesToPlace = (int)((float)(highdens) * density);
+					density = densityMap->_getDensityAt_Unfiltered(x, z, bounds);
+					numTreesToPlace = (int)((float)(highdens) * density * pagedDetailFactor);
 					float nx=0, nz=0;
 					while(numTreesToPlace-->0)
 					{
@@ -6447,6 +6458,8 @@ bool ExampleFrameListener::frameStarted(const FrameEvent& evt)
 	// update GUI
 	INPUTENGINE.Capture();
 	MYGUI.frameStarted(evt);
+
+	//if(collisions) 	printf("> ground model used: %s\n", collisions->last_used_ground_model->name);
 
 	// exit frame started method when just displaying the GUI
 	if (UILOADER.getFrameForced())
