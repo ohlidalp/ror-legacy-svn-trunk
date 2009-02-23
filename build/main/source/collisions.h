@@ -86,6 +86,7 @@ typedef struct _ground_model_t
 	float strength; //gound strength, must be below 1.0
 	int fx_type;
 	ColourValue fx_coulour;
+	char name[255];
 } ground_model_t;
 
 extern ground_model_t GROUND_CONCRETE;
@@ -97,6 +98,8 @@ extern ground_model_t GROUND_SNOW;
 extern ground_model_t GROUND_METAL;
 extern ground_model_t GROUND_GRASS;
 extern ground_model_t GROUND_SAND;
+
+extern ground_model_t *ground_models[9];
 
 typedef struct _collision_box
 {
@@ -156,6 +159,8 @@ typedef struct _hash
 	cell_t *cell;
 } hash_t;
 
+class Landusemap;
+
 class Collisions
 {
 private:
@@ -185,6 +190,7 @@ private:
 	int collision_count;
 	int largest_cellcount;
 	bool debugMode;
+	Landusemap *landuse;
 
 private:
 	void hash_add(int cell_x, int cell_z, int value);
@@ -205,7 +211,12 @@ public:
     ExampleFrameListener *efl, bool debugMode);
 
 	void loadDefaultModels();
-	void parseGroundModel(ground_model_t* gm, char* line);
+	void parseGroundModel(ground_model_t* gm, char* line, char *name);
+	void loadGroundModelLine(char *line);
+	ground_model_t *getGroundModelByString(char *stdf);
+	ground_model_t *last_used_ground_model;
+	void setupLandUse(char *configfile);
+	int getGroundModelNumberByString(char *stdf);
 	void addCollisionBox(SceneNode *tenode, bool rotating, bool virt, float px, float py, float pz, float rx, float ry, float rz, float lx,float hx,float ly,float hy,float lz,float hz,float srx,float sry,float srz, char* eventname, char* instancename, bool forcecam, Vector3 campos, float scx=1.0, float scy=1.0, float scz=1.0, float drx=0.0, float dry=0.0, float drz=0.0, int event_filter=EVENT_ALL, int luahandler=-1);
 	int addCollisionTri(Vector3 p1, Vector3 p2, Vector3 p3, ground_model_t* gm);
 	bool collisionCorrect(Vector3 *refpos);

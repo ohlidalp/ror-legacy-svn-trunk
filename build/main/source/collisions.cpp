@@ -19,6 +19,7 @@ along with Rigs of Rods.  If not, see <http://www.gnu.org/licenses/>.
 */
 #include "collisions.h"
 #include "Settings.h"
+#include "Landusemap.h"
 
 //these default values are overwritten by the data/ground_models.cfg file!
 ground_model_t GROUND_CONCRETE={3.0, 1.20, 0.60, 0.010, 5.0, 2.0, 0.5, 0};
@@ -31,6 +32,7 @@ ground_model_t GROUND_METAL={   3.0, 0.40, 0.20, 0.001, 4.0, 2.0, 0.5, 0};
 ground_model_t GROUND_GRASS={   3.0, 0.50, 0.25, 0.005, 8.0, 2.0, 0.5, 0};
 ground_model_t GROUND_SAND={    3.0, 0.40, 0.20, 0.0001,9.0, 2.0, 0.5, 0};
 
+extern ground_model_t *ground_models[9] = {&GROUND_CONCRETE, &GROUND_ASPHALT, &GROUND_GRAVEL, &GROUND_ROCK, &GROUND_ICE, &GROUND_SNOW, &GROUND_METAL, &GROUND_GRASS, &GROUND_SAND};
 
 //hash function SBOX
 //from http://home.comcast.net/~bretm/hash/10.html
@@ -108,7 +110,9 @@ Collisions::Collisions(
 #endif
   ExampleFrameListener *efl, bool _debugMode) : mefl(efl)
 {
+	landuse=0;
 	debugMode=_debugMode;
+	last_used_ground_model=&GROUND_GRAVEL;
 #ifdef LUASCRIPT
 	lua=mlua;
 #endif
@@ -135,33 +139,63 @@ void Collisions::loadDefaultModels()
 	{
 		fscanf(fd," %[^\n\r]",line);
 		if (line[0]==';')
-		{
 			continue;
-		};
-		char stdf[256];
-		ground_model_t *gm=0;
-		sscanf(line,"%s ",stdf);
-		if (!strcmp("concrete", stdf)) gm=&GROUND_CONCRETE;
-		if (!strcmp("asphalt", stdf)) gm=&GROUND_ASPHALT;
-		if (!strcmp("gravel", stdf)) gm=&GROUND_GRAVEL;
-		if (!strcmp("rock", stdf)) gm=&GROUND_ROCK;
-		if (!strcmp("ice", stdf)) gm=&GROUND_ICE;
-		if (!strcmp("snow", stdf)) gm=&GROUND_SNOW;
-		if (!strcmp("metal", stdf)) gm=&GROUND_METAL;
-		if (!strcmp("grass", stdf)) gm=&GROUND_GRASS;
-		if (!strcmp("sand", stdf)) gm=&GROUND_SAND;
-		if (gm)
-		{
-			Ogre::LogManager::getSingleton().logMessage("COLL: parsing default model for '"+String(stdf)+"'");
-			parseGroundModel(gm, line+strlen(stdf)+1);
-//			Ogre::LogManager::getSingleton().logMessage("COLL: this model has "+Ogre::StringConverter::toString((unsigned int)gm)+" "+Ogre::StringConverter::toString(gm->fx_type));
-
-		}
+		loadGroundModelLine(line);
 	}
 	fclose(fd);
 }
 
-void Collisions::parseGroundModel(ground_model_t* gm, char* line)
+void Collisions::setupLandUse(char *configfile)
+{
+	if(landuse) return;
+	landuse = new Landusemap(configfile, this, mefl->mapsizex, mefl->mapsizez);
+}
+
+ground_model_t *Collisions::getGroundModelByString(char *stdf)
+{
+	if (!strcmp("concrete", stdf)) return &GROUND_CONCRETE;
+	if (!strcmp("asphalt", stdf)) return &GROUND_ASPHALT;
+	if (!strcmp("gravel", stdf)) return &GROUND_GRAVEL;
+	if (!strcmp("rock", stdf)) return &GROUND_ROCK;
+	if (!strcmp("ice", stdf)) return &GROUND_ICE;
+	if (!strcmp("snow", stdf)) return &GROUND_SNOW;
+	if (!strcmp("metal", stdf)) return &GROUND_METAL;
+	if (!strcmp("grass", stdf)) return &GROUND_GRASS;
+	if (!strcmp("sand", stdf)) return &GROUND_SAND;
+	return &GROUND_GRAVEL; // default
+}
+
+int Collisions::getGroundModelNumberByString(char *stdf)
+{
+	if (!strcmp("concrete", stdf)) return 0;
+	if (!strcmp("asphalt", stdf)) return 1;
+	if (!strcmp("gravel", stdf)) return 2;
+	if (!strcmp("rock", stdf)) return 3;
+	if (!strcmp("ice", stdf)) return 4;
+	if (!strcmp("snow", stdf)) return 5;
+	if (!strcmp("metal", stdf)) return 6;
+	if (!strcmp("grass", stdf)) return 7;
+	if (!strcmp("sand", stdf)) return 8;
+	return 2; // default
+}
+
+
+void Collisions::loadGroundModelLine(char *line)
+{
+	char stdf[256];
+	ground_model_t *gm=0;
+	sscanf(line,"%s ",stdf);
+	gm = getGroundModelByString(stdf);
+	if (gm)
+	{
+		Ogre::LogManager::getSingleton().logMessage("COLL: parsing default model for '"+String(stdf)+"'");
+		parseGroundModel(gm, line+strlen(stdf)+1, stdf);
+//		Ogre::LogManager::getSingleton().logMessage("COLL: this model has "+Ogre::StringConverter::toString((unsigned int)gm)+" "+Ogre::StringConverter::toString(gm->fx_type));
+
+	}
+}
+
+void Collisions::parseGroundModel(ground_model_t* gm, char* line, char *name)
 {
 	float va, ms, mc, t2, vs, alpha, strength;
 	char fxt[256];
@@ -173,6 +207,7 @@ void Collisions::parseGroundModel(ground_model_t* gm, char* line)
 	if (nbe<8) Ogre::LogManager::getSingleton().logMessage("COLL: ERROR too few parameters while parsing ground model");
 	gm->va=va;
 	gm->ms=ms;
+	strncpy(gm->name, name, 255);
 	gm->mc=mc;
 	gm->t2=t2;
 	gm->vs=vs;
@@ -1108,6 +1143,8 @@ bool Collisions::groundCollision(node_t *node, float dt, ground_model_t** ogm, f
 {
 	if (!hfinder) return false;
 	ground_model_t *gm=&GROUND_GRAVEL; //to be determined by the landuse map
+	if(landuse) gm = landuse->getGroundModelAt(node->AbsPosition.x, node->AbsPosition.z);
+	last_used_ground_model = gm;
 	if (ogm) *ogm=gm; //write that info to the caller
 	//new ground collision code
 	Real v=hfinder->getHeightAt(node->AbsPosition.x, node->AbsPosition.z);
