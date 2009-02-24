@@ -66,6 +66,7 @@ public:
 	void framestep(float dt);
 	bool allowUnderWater();
 	int loadConfig(Ogre::String configfile);
+	void setHeight(float value);
 };
 
 

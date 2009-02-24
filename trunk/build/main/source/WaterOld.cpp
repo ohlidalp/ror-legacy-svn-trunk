@@ -127,6 +127,7 @@ WaterOld::WaterOld(int type, Camera *camera, SceneManager *mSceneMgr, RenderWind
 	framecounter=0;
 	mCamera=camera;
 	height=wheight;
+	orgheight=wheight;
 	mType=type;
 	rttTex1=0;
 	rttTex2=0;
@@ -323,7 +324,7 @@ void WaterOld::moveTo(Camera *cam, float centerheight)
 		offset.y=0;
 		offset.normalise();
 		pos = pos + offset * *mapsizex * 0.46666;
-		pos.y=0;
+		pos.y=orgheight - height;
 		pos.x=((int)pos.x/60)*60;
 		pos.z=((int)pos.z/60)*60;
 		pTestNode->setPosition(pos);
@@ -414,6 +415,12 @@ void WaterOld::prepareShutdown()
 }
 
 float WaterOld::getHeight() {return height;};
+
+void WaterOld::setHeight(float value)
+{
+	height = value;
+	update();
+}
 
 float WaterOld::getHeightWaves(Vector3 pos)
 {

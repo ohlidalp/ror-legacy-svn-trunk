@@ -469,6 +469,14 @@ public:
 	Ogre::Ray getMouseRay();
 	void shutdown_pre();
 	void shutdown_final();
+	
+	// Caelum system
+	caelum::CaelumSystem *mCaelumSystem;
+	// Caelum model
+	caelum::SkyColourModel *mCaelumModel;
+	//caelum maps?
+
+	Water *w;
 protected:
 
 	HeatHaze *heathaze;
@@ -479,11 +487,6 @@ protected:
 	float terrainzsize;
 
 
-	// Caelum system
-	caelum::CaelumSystem *mCaelumSystem;
-	// Caelum model
-	caelum::SkyColourModel *mCaelumModel;
-	//caelum maps?
 
 	//OIS::InputManager* mInputManager;
 	//OIS::Mouse* mMouse;
@@ -547,7 +550,6 @@ protected:
 	char terrainmap[256];
 	Ogre::String terrainUID;
 	Road *road;
-	Water *w;
 	Mirrors *mirror;
 	Dashboard *dashboard;
 	FILE *editorfd;

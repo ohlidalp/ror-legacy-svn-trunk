@@ -24,6 +24,8 @@ along with Rigs of Rods.  If not, see <http://www.gnu.org/licenses/>.
 #include "Ogre.h"
 #include "ExampleFrameListener.h"
 #include "scriptstring/scriptstring.h" // angelscript addon
+#include "scriptmath/scriptmath.h" // angelscript addon
+#include "water.h"
 
 using namespace Ogre;
 using namespace std;
@@ -146,6 +148,7 @@ void ScriptEngine::init()
 	// The SDK do however provide a standard add-on for registering a string type, so it's not
 	// necessary to register your own string type if you don't want to.
 	RegisterScriptString_Native(engine);
+	RegisterScriptMath_Native(engine);
 
 	// Register everything
 	result = engine->RegisterObjectType("GameScriptClass", sizeof(GameScript), asOBJ_VALUE | asOBJ_POD | asOBJ_APP_CLASS);
@@ -153,6 +156,10 @@ void ScriptEngine::init()
 	result = engine->RegisterObjectMethod("GameScriptClass", "double getTime()", asMETHOD(GameScript,getTime), asCALL_THISCALL);
 	result = engine->RegisterObjectMethod("GameScriptClass", "void setPersonPosition(float, float, float)", asMETHOD(GameScript,setPersonPosition), asCALL_THISCALL);
 	result = engine->RegisterObjectMethod("GameScriptClass", "void movePerson(float, float, float)", asMETHOD(GameScript,movePerson), asCALL_THISCALL);
+	result = engine->RegisterObjectMethod("GameScriptClass", "float getCaelumTime()", asMETHOD(GameScript,getCaelumTime), asCALL_THISCALL);
+	result = engine->RegisterObjectMethod("GameScriptClass", "void setCaelumTime(float)", asMETHOD(GameScript,setCaelumTime), asCALL_THISCALL);
+	result = engine->RegisterObjectMethod("GameScriptClass", "void setWaterHeight(float)", asMETHOD(GameScript,setWaterHeight), asCALL_THISCALL);
+	result = engine->RegisterObjectMethod("GameScriptClass", "float getWaterHeight()", asMETHOD(GameScript,getWaterHeight), asCALL_THISCALL);
 
 
 	GameScript *gamescript = new GameScript(this, mefl);
@@ -242,4 +249,27 @@ void GameScript::movePerson(float x, float y, float z)
 {
 	if(mefl && mefl->person) mefl->person->move(Vector3(x, y, z));
 }
+
+float GameScript::getCaelumTime()
+{
+	if(mefl && mefl->mCaelumSystem) return mefl->mCaelumSystem->getLocalTime();
+	return 0;
+}
+
+void GameScript::setCaelumTime(float value)
+{
+	if(mefl && mefl->mCaelumSystem) mefl->mCaelumSystem->setLocalTime(value);
+}
+
+void GameScript::setWaterHeight(float value)
+{
+	if(mefl && mefl->w) mefl->w->setHeight(value);
+}
+
+float GameScript::getWaterHeight()
+{
+	if(mefl && mefl->w) return mefl->w->getHeight();
+	return 0;
+}
+
 #endif //ANGELSCRIPT
