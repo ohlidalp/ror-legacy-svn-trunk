@@ -1598,7 +1598,6 @@ int Beam::getWheelNodeCount()
 					{
 						case 'i':	// invisible
 							beams[free_beam].type = BEAM_INVISIBLE_HYDRO;
-							beams[free_beam].hydroFlags |= HYDRO_FLAG_DIR;
 							break;
 						case 'n':	// normal
 							beams[free_beam].type = BEAM_HYDRO;
