@@ -143,17 +143,10 @@ void ScriptEngine::init()
 	// necessary to register your own string type if you don't want to.
 	RegisterScriptString_Native(engine);
 
-	asString<char *>::Register(engine);
-
-
 	// Register everything
 	result = engine->RegisterObjectType("GameScript", sizeof(GameScript), asOBJ_VALUE | asOBJ_POD | asOBJ_APP_CLASS);
 	result = engine->RegisterObjectMethod("GameScript", "void log(const string &in)", asMETHOD(GameScript,log), asCALL_THISCALL);
 	result = engine->RegisterObjectMethod("GameScript", "double getTime()", asMETHOD(GameScript,getTime), asCALL_THISCALL);
-
-	// ARGHHHH, not working :(
-	//result = engine->RegisterGlobalFunction("int parseInt(asBSTR *s)", asFUNCTION(Ogre::StringConverter::parseInt), asCALL_CDECL);
-	//result = engine->RegisterGlobalFunction("bstr toString(int in)", asFUNCTION(myToString), asCALL_CDECL);
 
 	GameScript *gamescript = new GameScript(this, mefl);
 	result = engine->RegisterGlobalProperty("GameScript game", gamescript);
