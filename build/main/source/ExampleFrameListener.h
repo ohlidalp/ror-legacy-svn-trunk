@@ -64,6 +64,7 @@ class LuaSystem;
 
 class Road;
 class ProceduralManager;
+class ScriptEngine;
 class Editor;
 class Water;
 class HeatHaze;
@@ -532,6 +533,10 @@ protected:
 
 #ifdef LUASCRIPT
 	LuaSystem *lua;
+#endif
+#ifdef ANGELSCRIPT
+	ScriptEngine *scriptEngine;
+	float timeLastScriptStep;
 #endif
 
 	Collisions *collisions;

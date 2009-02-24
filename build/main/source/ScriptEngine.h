@@ -40,10 +40,13 @@ public:
 	ScriptEngine(ExampleFrameListener *efl);
 	~ScriptEngine();
 	int loadTerrainScript(Ogre::String terrainname);
+	int framestep(Ogre::Real dt);
 
 protected:
     ExampleFrameListener *mefl;
     asIScriptEngine *engine;
+	asIScriptContext *context;
+	int frameStepFunctionPtr;
 
     void init();
     

@@ -763,6 +763,10 @@ float ExampleFrameListener::gravity = DEFAULT_GRAVITY;
 // Constructor takes a RenderWindow because it uses that to determine input context
 ExampleFrameListener::ExampleFrameListener(RenderWindow* win, Camera* cam, SceneManager* scm, Root* root) :  initialized(false)
 {
+#ifdef ANGELSCRIPT
+	scriptEngine = 0;
+	timeLastScriptStep = 0;
+#endif
 	externalCameraMode=0;
 	gameStartTime = CACHE.getTimeStamp();
 	loadedTerrain="none";
@@ -4242,8 +4246,8 @@ void ExampleFrameListener::loadTerrain(String terrainfile)
 
 #ifdef ANGELSCRIPT
 	LogManager::getSingleton().logMessage("Loading Angelscript Script engine." );
-	ScriptEngine *se = new ScriptEngine(this);
-	se->loadTerrainScript(terrainfile+".sa");
+	scriptEngine = new ScriptEngine(this);
+	scriptEngine->loadTerrainScript(terrainfile+".sa");
 #endif
 
 
@@ -6476,6 +6480,18 @@ bool ExampleFrameListener::frameStarted(const FrameEvent& evt)
 	// exit frame started method when just displaying the GUI
 	if (UILOADER.getFrameForced())
 		return true;
+
+#ifdef ANGELSCRIPT
+	// only call the script step every 200ms, not more often!
+	if(scriptEngine && timeLastScriptStep > 0.2)
+	{
+		scriptEngine->framestep(timeLastScriptStep);
+		timeLastScriptStep = 0;
+	} else
+	{
+		timeLastScriptStep += dt;
+	}
+#endif
 
 	if(showcredits && creditsviewtime > 0)
 		creditsviewtime-= dt;
