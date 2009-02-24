@@ -266,7 +266,7 @@ void MapEntity::init()
 	// check if static only icon
 	String staticImgFile = "icon_"+myType+".dds";
 	String staticMatName = "tracks/map/icons/"+myType;
-	String group="General";
+	String group=ResourceGroupManager::DEFAULT_RESOURCE_GROUP_NAME;
 	/*
 	// we use a different method here to remove all the error warnings in the log files
 	if(group == "")
@@ -290,7 +290,7 @@ void MapEntity::init()
 			m = MaterialManager::getSingleton().getByName(staticMatName);
 		} else
 		{
-			m = MaterialManager::getSingleton().create(staticMatName, "General");
+			m = MaterialManager::getSingleton().create(staticMatName, ResourceGroupManager::DEFAULT_RESOURCE_GROUP_NAME);
 			m->getTechnique(0)->getPass(0)->createTextureUnitState(staticImgFile);
 			m->getTechnique(0)->getPass(0)->setSceneBlending(Ogre::SBT_TRANSPARENT_ALPHA);
 		}
@@ -522,7 +522,7 @@ MapControl::MapControl(int _mapsizex, int _mapsizez) : container(0), bgInitiated
 	mainOverlay->add2D(container);
 
 	String matName = ovName+"_bgmat";
-	bgMat=MaterialManager::getSingleton().create(matName, "General");
+	bgMat=MaterialManager::getSingleton().create(matName, ResourceGroupManager::DEFAULT_RESOURCE_GROUP_NAME);
 	container->setMaterialName(matName);
 }
 

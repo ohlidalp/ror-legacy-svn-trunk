@@ -63,7 +63,7 @@ void GUIManager::setup(Ogre::Camera *cam, Ogre::SceneManager *scm, Ogre::RenderW
 	String gui_core = "core.xml";
 	if(SETTINGS.getSetting("GUI Core") != "")
 		gui_core = SETTINGS.getSetting("GUI Core");
-	mGUI->initialise(mWindow, gui_core, "General", gui_logfilename);
+	mGUI->initialise(mWindow, gui_core, ResourceGroupManager::DEFAULT_RESOURCE_GROUP_NAME, gui_logfilename);
 	initialized=true;
 	enabled=true;
 

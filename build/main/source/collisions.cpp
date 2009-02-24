@@ -1232,7 +1232,7 @@ int Collisions::createCollisionDebugVisualization()
 	{
 		//register a material for skeleton view
 		sprintf(bname, "mat-coll-dbg-%d", i);
-		MaterialPtr mat=(MaterialPtr)(MaterialManager::getSingleton().create(bname, "General"));
+		MaterialPtr mat=(MaterialPtr)(MaterialManager::getSingleton().create(bname, ResourceGroupManager::DEFAULT_RESOURCE_GROUP_NAME));
 		float f = fabs(((float)i)/100);
 		Pass *p = mat->getTechnique(0)->getPass(0); //
 		p->createTextureUnitState()->setColourOperationEx(LBX_MODULATE, LBS_MANUAL, LBS_CURRENT, ColourValue(f*2.0, 2.0*(1.0-f), 0.2, 0.7));

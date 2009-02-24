@@ -847,7 +847,7 @@ void Network::receivethreadstart()
 					// we have a space between the command and the data!
 					LogManager::getSingleton().logMessage("Creating Overlay via GAME_CMD");
 					MemoryDataStream *mds = new MemoryDataStream(buffer+14, wrotelen-14);
-					const String group = "General";
+					const String group = ResourceGroupManager::DEFAULT_RESOURCE_GROUP_NAME;
                     DataStreamPtr dptr(mds);
 					OverlayManager::getSingleton().parseScript(dptr, group);
 					pthread_mutex_unlock(&chat_mutex);

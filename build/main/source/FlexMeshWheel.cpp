@@ -40,7 +40,7 @@ FlexMeshWheel::FlexMeshWheel(SceneManager *manager, char* name, node_t *nds, int
 		rnode->attachObject(rimEnt);
 
 		/// Create the mesh via the MeshManager
-        msh = MeshManager::getSingleton().createManual(name, "General",new ResourceBuffer());
+        msh = MeshManager::getSingleton().createManual(name, ResourceGroupManager::DEFAULT_RESOURCE_GROUP_NAME,new ResourceBuffer());
 
         /// Create submeshes
         sub = msh->createSubMesh();

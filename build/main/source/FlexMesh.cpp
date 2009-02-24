@@ -27,7 +27,7 @@ FlexMesh::FlexMesh(SceneManager *manager, char* name, node_t *nds, int n1, int n
 		nbrays=nrays;
 		nodes=nds;
 		/// Create the mesh via the MeshManager
-        msh = MeshManager::getSingleton().createManual(name, "General",new ResourceBuffer());
+        msh = MeshManager::getSingleton().createManual(name, ResourceGroupManager::DEFAULT_RESOURCE_GROUP_NAME,new ResourceBuffer());
 
         /// Create submeshes
         subface = msh->createSubMesh();

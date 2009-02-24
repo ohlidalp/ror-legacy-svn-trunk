@@ -74,7 +74,7 @@ FlexObj::FlexObj(SceneManager *manager, node_t *nds, int numtexcoords, Vector3* 
 		smanager=manager;
 		nodes=nds;
 		/// Create the mesh via the MeshManager
-        msh = MeshManager::getSingleton().createManual(name, "General",new ResourceBuffer());
+        msh = MeshManager::getSingleton().createManual(name, ResourceGroupManager::DEFAULT_RESOURCE_GROUP_NAME,new ResourceBuffer());
 
         /// Create submeshes
 		subs=(SubMesh**)malloc(numsubmeshes*sizeof(SubMesh*));

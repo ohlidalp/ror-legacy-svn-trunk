@@ -550,7 +550,7 @@ void Road2::createMesh()
 	/// Create the mesh via the MeshManager
 	char n2[256];
 	sprintf(n2, "roadsystem-%i", mid);
-	msh = MeshManager::getSingleton().createManual(n2, "General", new ResourceBuffer());
+	msh = MeshManager::getSingleton().createManual(n2, ResourceGroupManager::DEFAULT_RESOURCE_GROUP_NAME, new ResourceBuffer());
 
 	/// Create submeshes
 	mainsub = msh->createSubMesh();

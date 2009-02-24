@@ -118,17 +118,17 @@ bool RigsOfRods::setup(void)
 	loadMainResource("OgreCore", "Bootstrap");
 	//main game resources
 	LogManager::getSingleton().logMessage("Loading main resources");
-	loadMainResource("airfoils", "General");
-	loadMainResource("materials", "General");
-	loadMainResource("meshes", "General");
-	loadMainResource("overlays", "General");
-	loadMainResource("paged", "General");
-	loadMainResource("particles", "General");
-	loadMainResource("mygui", "General");
-	loadMainResource("scripts", "General");
-	loadMainResource("sounds", "General");
-	loadMainResource("textures", "General");
-	loadMainResource("hydrax", "Hydrax");
+	loadMainResource("airfoils", ResourceGroupManager::DEFAULT_RESOURCE_GROUP_NAME);
+	loadMainResource("materials", ResourceGroupManager::DEFAULT_RESOURCE_GROUP_NAME);
+	loadMainResource("meshes", ResourceGroupManager::DEFAULT_RESOURCE_GROUP_NAME);
+	loadMainResource("overlays", ResourceGroupManager::DEFAULT_RESOURCE_GROUP_NAME);
+	loadMainResource("paged", ResourceGroupManager::DEFAULT_RESOURCE_GROUP_NAME);
+	loadMainResource("particles", ResourceGroupManager::DEFAULT_RESOURCE_GROUP_NAME);
+	loadMainResource("mygui", ResourceGroupManager::DEFAULT_RESOURCE_GROUP_NAME);
+	loadMainResource("scripts", ResourceGroupManager::DEFAULT_RESOURCE_GROUP_NAME);
+	loadMainResource("sounds", ResourceGroupManager::DEFAULT_RESOURCE_GROUP_NAME);
+	loadMainResource("textures", ResourceGroupManager::DEFAULT_RESOURCE_GROUP_NAME);
+	loadMainResource("hydrax", ResourceGroupManager::DEFAULT_RESOURCE_GROUP_NAME);
 	//streams path, to be processed later by the cache system
 	LogManager::getSingleton().logMessage("Loading filesystems");
 
@@ -136,9 +136,9 @@ bool RigsOfRods::setup(void)
 	ResourceGroupManager::getSingleton().addResourceLocation(SETTINGS.getSetting("Streams Path"), "FileSystem", "Streams");
 	exploreStreams(); //this will explore subdirs and register them as Packs dirs
 	//cache, flat
-	ResourceGroupManager::getSingleton().addResourceLocation(SETTINGS.getSetting("User Path")+"cache", "FileSystem", "General");
+	ResourceGroupManager::getSingleton().addResourceLocation(SETTINGS.getSetting("User Path")+"cache", "FileSystem", ResourceGroupManager::DEFAULT_RESOURCE_GROUP_NAME);
 	//config, flat
-	ResourceGroupManager::getSingleton().addResourceLocation(SETTINGS.getSetting("User Path")+"config", "FileSystem", "General");
+	ResourceGroupManager::getSingleton().addResourceLocation(SETTINGS.getSetting("User Path")+"config", "FileSystem", ResourceGroupManager::DEFAULT_RESOURCE_GROUP_NAME);
 	//packs, to be processed later by the cache system
 	ResourceGroupManager::getSingleton().addResourceLocation(SETTINGS.getSetting("User Path")+"packs", "FileSystem", "Packs", true);
 	//user vehicles, to be processed later by the cache system
@@ -222,7 +222,7 @@ bool RigsOfRods::setup(void)
 		LogManager::getSingleton().logMessage("catched error while initializing Resource groups: " + e.getFullDescription());
 	}
 
-	//rgm.initialiseResourceGroup("General");
+	//rgm.initialiseResourceGroup(ResourceGroupManager::DEFAULT_RESOURCE_GROUP_NAME);
 
 	// load language, must happen after initializing Settings class and Ogre Root!
 	// also it must happen after loading all basic resources!

@@ -1215,7 +1215,7 @@ bool InputEngine::loadMapping(Ogre::String outfile, bool append)
 #ifndef NOOGRE
 	LogManager::getSingleton().logMessage("Loading input mapping...");
 	{
-		DataStreamPtr ds = ResourceGroupManager::getSingleton().openResource(outfile, "General");
+		DataStreamPtr ds = ResourceGroupManager::getSingleton().openResource(outfile, ResourceGroupManager::DEFAULT_RESOURCE_GROUP_NAME);
 		while (!ds->eof())
 		{
 			size_t size = 1024;
