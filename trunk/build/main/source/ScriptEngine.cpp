@@ -28,7 +28,7 @@ along with Rigs of Rods.  If not, see <http://www.gnu.org/licenses/>.
 using namespace Ogre;
 using namespace std;
 
-ScriptEngine::ScriptEngine(ExampleFrameListener *efl) : mefl(efl)
+ScriptEngine::ScriptEngine(ExampleFrameListener *efl) : mefl(efl), engine(0), context(0), frameStepFunctionPtr(-1)
 {
 	init();
 }
@@ -37,6 +37,7 @@ ScriptEngine::~ScriptEngine()
 {
 	// Clean up
 	engine->Release();
+	if(context) context->Release();
 }
 
 int ScriptEngine::loadTerrainScript(Ogre::String scriptname)
@@ -54,7 +55,7 @@ int ScriptEngine::loadTerrainScript(Ogre::String scriptname)
 	// Add the script to the module as a section. If desired, multiple script
 	// sections can be added to the same module. They will then be compiled
 	// together as if it was one large script. 
-	asIScriptModule *mod = engine->GetModule("MyModule", asGM_ALWAYS_CREATE);
+	asIScriptModule *mod = engine->GetModule("terrainScript", asGM_ALWAYS_CREATE);
 	result = mod->AddScriptSection(scriptname.c_str(), script.c_str(), script.length());
 	if( result < 0 )
 	{
@@ -93,21 +94,24 @@ int ScriptEngine::loadTerrainScript(Ogre::String scriptname)
 		return 1;
 	}
 
+	// get some other optional functions
+	frameStepFunctionPtr = mod->GetFunctionIdByDecl("void frameStep(float)");
+
 	// Create our context, prepare it, and then execute
-	asIScriptContext *ctx = engine->CreateContext();
-	ctx->Prepare(funcId);
-	result = ctx->Execute();
+	context = engine->CreateContext();
+	context->Prepare(funcId);
+	LogManager::getSingleton().logMessage("SE| Executing main()");
+	result = context->Execute();
 	if( result != asEXECUTION_FINISHED )
 	{
 		// The execution didn't complete as expected. Determine what happened.
 		if( result == asEXECUTION_EXCEPTION )
 		{
 			// An exception occurred, let the script writer know what happened so it can be corrected.
-			LogManager::getSingleton().logMessage("SE| An exception '" + String(ctx->GetExceptionString()) + "' occurred. Please correct the code in file '" + scriptname + "' and try again.");
+			LogManager::getSingleton().logMessage("SE| An exception '" + String(context->GetExceptionString()) + "' occurred. Please correct the code in file '" + scriptname + "' and try again.");
 		}
 	}
 
-	ctx->Release();
 	return 0;
 }
 
@@ -144,13 +148,18 @@ void ScriptEngine::init()
 	RegisterScriptString_Native(engine);
 
 	// Register everything
-	result = engine->RegisterObjectType("GameScript", sizeof(GameScript), asOBJ_VALUE | asOBJ_POD | asOBJ_APP_CLASS);
-	result = engine->RegisterObjectMethod("GameScript", "void log(const string &in)", asMETHOD(GameScript,log), asCALL_THISCALL);
-	result = engine->RegisterObjectMethod("GameScript", "double getTime()", asMETHOD(GameScript,getTime), asCALL_THISCALL);
+	result = engine->RegisterObjectType("GameScriptClass", sizeof(GameScript), asOBJ_VALUE | asOBJ_POD | asOBJ_APP_CLASS);
+	result = engine->RegisterObjectMethod("GameScriptClass", "void log(const string &in)", asMETHOD(GameScript,log), asCALL_THISCALL);
+	result = engine->RegisterObjectMethod("GameScriptClass", "double getTime()", asMETHOD(GameScript,getTime), asCALL_THISCALL);
 
 	GameScript *gamescript = new GameScript(this, mefl);
-	result = engine->RegisterGlobalProperty("GameScript game", gamescript);
-	
+	result = engine->RegisterGlobalProperty("GameScriptClass game", gamescript);
+
+	result = engine->RegisterObjectType("Vector3Class", sizeof(Ogre::Vector3), asOBJ_VALUE | asOBJ_POD | asOBJ_APP_CLASS);
+	// TODO: add complete Vector3 class :(
+	//result = engine->RegisterObjectMethod("Vector3Class", "...", asMETHOD(Ogre::Vector3,...), asCALL_THISCALL);
+
+
 	LogManager::getSingleton().logMessage("SE| Registration done");
 }
 
@@ -182,6 +191,24 @@ int ScriptEngine::loadScriptFile(const char *fileName, string &script)
 	// DO NOT CLOSE THE STREAM (it closes automatically)
 	return 1;
 } 
+
+int ScriptEngine::framestep(Ogre::Real dt)
+{
+	if(frameStepFunctionPtr<0) return 1;
+	context->Prepare(frameStepFunctionPtr);
+
+	// Set the function arguments
+	context->SetArgFloat(0, dt);
+
+	LogManager::getSingleton().logMessage("SE| Executing framestep()");
+	int r = context->Execute();
+	if( r == asEXECUTION_FINISHED )
+	{
+	  // The return value is only valid if the execution finished successfully
+	  asDWORD ret = context->GetReturnDWord();
+	}
+	return 0;
+}
 
 
 /* class that implements the interface for the scripts */ 
