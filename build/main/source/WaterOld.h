@@ -61,7 +61,7 @@ private:
 	int framecounter;
 	SceneNode *pTestNode;
 	SceneNode *pBottomNode;
-	float height;
+	float height, orgheight;
 	wavetrain_t wavetrains[MAX_WAVETRAINS];
 	int free_wavetrain;
 	float maxampl;
@@ -93,6 +93,7 @@ public:
 	void setSunPosition(Ogre::Vector3);
 	void framestep(float dt);
 	bool allowUnderWater();
+	void setHeight(float value);
 
 };
 

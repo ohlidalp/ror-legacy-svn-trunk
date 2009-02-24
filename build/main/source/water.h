@@ -52,6 +52,7 @@ public:
 	virtual void setSunPosition(Ogre::Vector3)= 0;
 	virtual void framestep(float dt)= 0;
 	virtual bool allowUnderWater()= 0;
+	virtual void setHeight(float value)= 0;
 };
 
 

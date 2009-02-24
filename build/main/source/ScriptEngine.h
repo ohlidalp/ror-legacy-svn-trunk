@@ -69,6 +69,10 @@ public:
 	double getTime();
 	void setPersonPosition(float x, float y, float z);
 	void movePerson(float x, float y, float z);
+	float getCaelumTime();
+	void setCaelumTime(float value);
+	float getWaterHeight();
+	void setWaterHeight(float value);
 };
 
 #endif

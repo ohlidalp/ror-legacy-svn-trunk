@@ -156,6 +156,11 @@ float HydraxWater::getHeight()
 	return wheight;
 }
 
+void HydraxWater::setHeight(float value)
+{
+	wheight = value;
+}
+
 void HydraxWater::setVisible(bool value)
 {
 	if(mHydrax)
