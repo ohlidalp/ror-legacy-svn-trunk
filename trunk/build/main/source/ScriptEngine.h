@@ -67,6 +67,8 @@ public:
 
 	void log(std::string &msg);
 	double getTime();
+	void setPersonPosition(float x, float y, float z);
+	void movePerson(float x, float y, float z);
 };
 
 #endif

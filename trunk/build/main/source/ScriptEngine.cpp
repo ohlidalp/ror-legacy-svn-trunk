@@ -151,6 +151,9 @@ void ScriptEngine::init()
 	result = engine->RegisterObjectType("GameScriptClass", sizeof(GameScript), asOBJ_VALUE | asOBJ_POD | asOBJ_APP_CLASS);
 	result = engine->RegisterObjectMethod("GameScriptClass", "void log(const string &in)", asMETHOD(GameScript,log), asCALL_THISCALL);
 	result = engine->RegisterObjectMethod("GameScriptClass", "double getTime()", asMETHOD(GameScript,getTime), asCALL_THISCALL);
+	result = engine->RegisterObjectMethod("GameScriptClass", "void setPersonPosition(float, float, float)", asMETHOD(GameScript,setPersonPosition), asCALL_THISCALL);
+	result = engine->RegisterObjectMethod("GameScriptClass", "void movePerson(float, float, float)", asMETHOD(GameScript,movePerson), asCALL_THISCALL);
+
 
 	GameScript *gamescript = new GameScript(this, mefl);
 	result = engine->RegisterGlobalProperty("GameScriptClass game", gamescript);
@@ -230,4 +233,13 @@ double GameScript::getTime()
 	return this->mefl->getTime();
 }
 
+void GameScript::setPersonPosition(float x, float y, float z)
+{
+	if(mefl && mefl->person) mefl->person->setPosition(Vector3(x, y, z));
+}
+
+void GameScript::movePerson(float x, float y, float z)
+{
+	if(mefl && mefl->person) mefl->person->move(Vector3(x, y, z));
+}
 #endif //ANGELSCRIPT
