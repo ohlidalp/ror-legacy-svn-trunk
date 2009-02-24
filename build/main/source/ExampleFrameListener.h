@@ -350,7 +350,6 @@ protected:
 
 	SceneNode *pointerDestination;
 
-	Character *person;
 	//SceneNode *personode;
 	//AnimationState *persoanim;
 	//float persoangle;
@@ -427,6 +426,7 @@ public:
 			const Vector3 &position = Vector3::ZERO,
 			const Quaternion &orient = Quaternion::IDENTITY,const Vector3 &scale = Vector3::UNIT_SCALE);
 
+	Character *person;
 	bool getSwitchButtons() { return switchMouseButtons; };
 	static HeightFinder *hfinder;
 	double getTime() {return rtime;};

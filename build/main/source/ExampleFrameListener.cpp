@@ -6481,18 +6481,6 @@ bool ExampleFrameListener::frameStarted(const FrameEvent& evt)
 	if (UILOADER.getFrameForced())
 		return true;
 
-#ifdef ANGELSCRIPT
-	// only call the script step every 200ms, not more often!
-	if(scriptEngine && timeLastScriptStep > 0.2)
-	{
-		scriptEngine->framestep(timeLastScriptStep);
-		timeLastScriptStep = 0;
-	} else
-	{
-		timeLastScriptStep += dt;
-	}
-#endif
-
 	if(showcredits && creditsviewtime > 0)
 		creditsviewtime-= dt;
 	if(showcredits && creditsviewtime < 0 && !shutdownall)
@@ -6725,6 +6713,19 @@ bool ExampleFrameListener::frameStarted(const FrameEvent& evt)
 			}
 		}
 	}
+
+
+#ifdef ANGELSCRIPT
+	// only call the script step every 200ms, not more often!
+	if(scriptEngine && timeLastScriptStep > 0.2)
+	{
+		scriptEngine->framestep(timeLastScriptStep);
+		timeLastScriptStep = 0;
+	} else
+	{
+		timeLastScriptStep += dt;
+	}
+#endif
 
 	return true;
 }
