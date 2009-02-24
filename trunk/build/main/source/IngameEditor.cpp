@@ -99,7 +99,7 @@ void IngameEditor::setup(ExampleFrameListener *efl)
 	// constrution line
 	lineManualObject =  mefl->getSceneMgr()->createManualObject("manualLine"); 
 	lineNode = mefl->getSceneMgr()->getRootSceneNode()->createChildSceneNode("manualLineNode"); 
-	MaterialPtr myManualObjectMaterial = MaterialManager::getSingleton().create("manualLineMaterial","general",true,new ResourceBuffer()); 
+	MaterialPtr myManualObjectMaterial = MaterialManager::getSingleton().create("manualLineMaterial",ResourceGroupManager::DEFAULT_RESOURCE_GROUP_NAME,true,new ResourceBuffer()); 
 	myManualObjectMaterial->setReceiveShadows(false); 
 	myManualObjectMaterial->getTechnique(0)->setLightingEnabled(true); 
 	myManualObjectMaterial->getTechnique(0)->getPass(0)->setDiffuse(1,1,0,0); 
@@ -114,7 +114,7 @@ void IngameEditor::setup(ExampleFrameListener *efl)
 	// help line 1
 	lineManualObject2 =  mefl->getSceneMgr()->createManualObject("manualLine2"); 
 	lineNode2 = mefl->getSceneMgr()->getRootSceneNode()->createChildSceneNode("manualLineNode2"); 
-	MaterialPtr myManualObjectMaterial2 = MaterialManager::getSingleton().create("manualLineMaterialHelp1","general",true,new ResourceBuffer()); 
+	MaterialPtr myManualObjectMaterial2 = MaterialManager::getSingleton().create("manualLineMaterialHelp1",ResourceGroupManager::DEFAULT_RESOURCE_GROUP_NAME,true,new ResourceBuffer()); 
 	myManualObjectMaterial2->setReceiveShadows(false); 
 	myManualObjectMaterial2->getTechnique(0)->setLightingEnabled(true);
 	myManualObjectMaterial2->getTechnique(0)->getPass(0)->setDiffuse(0,1,1,0.7);

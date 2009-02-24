@@ -65,6 +65,7 @@ endif(ROR_BUILD_XFIRE)
 IF(ROR_BUILD_ANGELSCRIPT)
   add_definitions("-DANGELSCRIPT")
   include_directories (${RoR_Dependencies_SOURCE_DIR}/angelscript/include)
+  include_directories (${RoR_Dependencies_SOURCE_DIR}/angelscript/add_on)
 ENDIF(ROR_BUILD_ANGELSCRIPT)
 
 if(ROR_BUILD_NEWNET)
@@ -118,10 +119,6 @@ if(ROR_BUILD_ETM)
   add_dependencies(RoR etm)
 endif(ROR_BUILD_ETM)
 
-if(ROR_BUILD_PYTHONSCRIPT)
-  #add_dependencies(RoR python)
-endif(ROR_BUILD_PYTHONSCRIPT)
-
 if(ROR_BUILD_LUASCRIPT)
   add_dependencies(RoR lua)
 endif(ROR_BUILD_LUASCRIPT)
@@ -141,9 +138,6 @@ target_link_libraries(RoR
   mygui
   mofilereader
 )
-if(ROR_BUILD_NEWNET)
- target_link_libraries(RoR RakNet)
-endif(ROR_BUILD_NEWNET)
 
 IF(WIN32)
   set_target_properties(RoR PROPERTIES LINK_FLAGS_DEBUG "/SUBSYSTEM:CONSOLE")
@@ -179,6 +173,16 @@ if(ROR_BUILD_LUASCRIPT)
   add_dependencies(RoR lua)
   target_link_libraries(RoR lua)
 endif(ROR_BUILD_LUASCRIPT)
+
+if(ROR_BUILD_NEWNET)
+ add_dependencies(RoR RakNet)
+ target_link_libraries(RoR RakNet)
+endif(ROR_BUILD_NEWNET)
+
+IF(ROR_BUILD_ANGELSCRIPT)
+ add_dependencies(RoR angelscript)
+ target_link_libraries(RoR angelscript)
+ENDIF(ROR_BUILD_ANGELSCRIPT)
 
 
 IF(WIN32)

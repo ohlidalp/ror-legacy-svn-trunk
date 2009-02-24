@@ -38,7 +38,7 @@ Landusemap::Landusemap(String cfgfilename, Collisions *c, Real _mapsizex, Real _
 
 void Landusemap::loadSettings()
 {
-	DataStreamPtr ds = ResourceGroupManager::getSingleton().openResource(configFilename, "General");
+	DataStreamPtr ds = ResourceGroupManager::getSingleton().openResource(configFilename, ResourceGroupManager::DEFAULT_RESOURCE_GROUP_NAME);
 	int linecounter = -1;
 	char line[1024]="";
 	usemap.clear();

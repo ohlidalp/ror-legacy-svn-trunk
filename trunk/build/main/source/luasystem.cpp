@@ -112,7 +112,7 @@ LuaSystem::LuaSystem(ExampleFrameListener *efl)
 	registerFunctions();
 
 	// load through ogre system
-	DataStreamPtr ds=ResourceGroupManager::getSingleton().openResource("base.lua", "General");
+	DataStreamPtr ds=ResourceGroupManager::getSingleton().openResource("base.lua", ResourceGroupManager::DEFAULT_RESOURCE_GROUP_NAME);
 	int s = lua_load(L, luaFileReader, ((void *)&ds), "base.lua");
 	if(!s)
 		lua_run(L, "base.lua");

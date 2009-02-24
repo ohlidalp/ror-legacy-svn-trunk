@@ -28,6 +28,10 @@ along with Rigs of Rods.  If not, see <http://www.gnu.org/licenses/>.
 # include "luasystem.h"
 #endif
 
+#ifdef ANGELSCRIPT
+#include "ScriptEngine.h"
+#endif
+
 #include "Road.h"
 #include "road2.h"
 #include "editor.h"
@@ -1349,7 +1353,7 @@ ExampleFrameListener::ExampleFrameListener(RenderWindow* win, Camera* cam, Scene
 		//MaterialPtr tmat=(MaterialPtr)(MaterialManager::getSingleton().getByName("tracks/Map"));
 
 		//search if mini picture exists
-		//FileInfoListPtr files= ResourceGroupManager::getSingleton().findResourceFileInfo("General", ppname);
+		//FileInfoListPtr files= ResourceGroupManager::getSingleton().findResourceFileInfo(ResourceGroupManager::DEFAULT_RESOURCE_GROUP_NAME`, ppname);
 		//if ( && !files->empty())
 		//{
 		//	tmat->getTechnique(0)->getPass(0)->getTextureUnitState(0)->setTextureName(ppname);
@@ -1498,7 +1502,7 @@ rotation=Quaternion(Degree(rx), Vector3::UNIT_X)*Quaternion(Degree(ry), Vector3:
 sprintf(fname,"%s.odef", name);
 //fd=fopen(fname, "r");
 ResourceGroupManager& rgm = ResourceGroupManager::getSingleton();
-DataStreamPtr ds=rgm.openResource(fname, "General");
+DataStreamPtr ds=rgm.openResource(fname, DEFAULT_RESOURCE_GROUP_NAME);
 //mesh
 //fscanf(fd," %[^\n\r]",mesh);
 ds->readLine(mesh, 1023);
@@ -1940,7 +1944,7 @@ void ExampleFrameListener::loadObject(char* name, float px, float py, float pz, 
 			{
 				te->setMaterialName(String(mat));
 				// load it
-				//MaterialManager::getSingleton().load(String(mat), "General");
+				//MaterialManager::getSingleton().load(String(mat), ResourceGroupManager::DEFAULT_RESOURCE_GROUP_NAME);
 			}
 			continue;
 		}
@@ -2005,7 +2009,7 @@ void ExampleFrameListener::loadObject(char* name, float px, float py, float pz, 
 			char tmpTextName[255]="", tmpMatName[255]="";
 			sprintf(tmpTextName, "TextOnTexture_%d_Texture", textureNumber);
 			sprintf(tmpMatName, "TextOnTexture_%d_Material", textureNumber);			// Make sure the texture is not WRITE_ONLY, we need to read the buffer to do the blending with the font (get the alpha for example)
-			TexturePtr texture = TextureManager::getSingleton().createManual(tmpTextName, "General", TEX_TYPE_2D, (Ogre::uint)background->getWidth(), (Ogre::uint)background->getHeight(), MIP_UNLIMITED , PF_X8R8G8B8, Ogre::TU_STATIC|Ogre::TU_AUTOMIPMAP, new ResourceBuffer());
+			TexturePtr texture = TextureManager::getSingleton().createManual(tmpTextName, ResourceGroupManager::DEFAULT_RESOURCE_GROUP_NAME, TEX_TYPE_2D, (Ogre::uint)background->getWidth(), (Ogre::uint)background->getHeight(), MIP_UNLIMITED , PF_X8R8G8B8, Ogre::TU_STATIC|Ogre::TU_AUTOMIPMAP, new ResourceBuffer());
 			if(texture.getPointer() == 0)
 			{
 				LogManager::getSingleton().logMessage("ODEF: problem with drawTextOnMeshTexture command: could not create texture: "+String(fname)+" : "+String(ptline));
@@ -4236,8 +4240,16 @@ void ExampleFrameListener::loadTerrain(String terrainfile)
 		//bigMap->resizeToScreenRatio(win);
 	}
 
+#ifdef ANGELSCRIPT
+	LogManager::getSingleton().logMessage("Loading Angelscript Script engine." );
+	ScriptEngine *se = new ScriptEngine(this);
+	se->loadTerrainScript(terrainfile+".sa");
+#endif
+
+
 #ifdef LUASCRIPT
 	//setup lua
+	LogManager::getSingleton().logMessage("Loading LUA Script engine." );
 	lua=new LuaSystem(this);
 	//setup collision system
 	collisions=new Collisions(lua, this, debugCollisions);

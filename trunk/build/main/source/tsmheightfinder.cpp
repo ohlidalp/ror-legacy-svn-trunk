@@ -40,7 +40,7 @@ TSMHeightFinder::TSMHeightFinder(char *_cfgfilename, char *fname, float defaulth
     ConfigFile config;
     String val;
 	ResourceGroupManager& rgm = ResourceGroupManager::getSingleton();
-	DataStreamPtr stream=rgm.openResource(cfgfilename, "General");
+	DataStreamPtr stream=rgm.openResource(cfgfilename, ResourceGroupManager::DEFAULT_RESOURCE_GROUP_NAME);
     config.load( stream );
     val = config.getSetting( "PageSize" );
     if ( !val.empty() ) size=atoi(val.c_str());
@@ -62,7 +62,7 @@ TSMHeightFinder::TSMHeightFinder(char *_cfgfilename, char *fname, float defaulth
     scale.z /= size - 1;
 
 	data=(unsigned short*)malloc(size*size*2);
-	DataStreamPtr ds=rgm.openResource(fname, "General");
+	DataStreamPtr ds=rgm.openResource(fname, ResourceGroupManager::DEFAULT_RESOURCE_GROUP_NAME);
 	ds->read(data, size*size*2);
 	// ds closes automatically, so do not close it explicitly here
 	loadSettings();
@@ -71,7 +71,7 @@ TSMHeightFinder::TSMHeightFinder(char *_cfgfilename, char *fname, float defaulth
 void TSMHeightFinder::loadSettings()
 {
 	ConfigFile cfg;
-	DataStreamPtr ds = ResourceGroupManager::getSingleton().openResource(String(cfgfilename), "General");
+	DataStreamPtr ds = ResourceGroupManager::getSingleton().openResource(String(cfgfilename), ResourceGroupManager::DEFAULT_RESOURCE_GROUP_NAME);
 	cfg.load(ds, "\t:=", false);
 	flipped=(cfg.getSetting("Heightmap.flip")=="true");
 	LogManager::getSingleton().logMessage("loading HeightFinder configuration from " + String(cfgfilename) + " flipped: " + StringConverter::toString(flipped));
