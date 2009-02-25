@@ -102,7 +102,13 @@ public:
 	 * triggers an event. Not to be used by the end-user
 	 * @param eventValue \see enum scriptEvents
 	 */
-	void triggerEvent(enum scriptEvents);   
+	void triggerEvent(enum scriptEvents);
+
+	/**
+	 * executes a string (useful for the console)
+	 * @param command string to execute
+	 */
+	void executeString(Ogre::String command);
 
 protected:
     ExampleFrameListener *mefl;             //!< local Exampleframelistener instance, used as proxy for many functions

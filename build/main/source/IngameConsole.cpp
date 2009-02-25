@@ -40,6 +40,7 @@ IngameConsole::IngameConsole()
 	scrollOffset=0;
 	scrolling=false;
 	mefl=0;
+	scriptMode=false;
 }
 
 IngameConsole::~IngameConsole()
@@ -186,7 +187,7 @@ bool IngameConsole::createOverlays()
 		textArea->setPosition(bordersize, bordersize + (lineheight + linespace) * i);
 		textArea->setDimensions(width, lineheight);
 		textArea->setCharHeight(lineheight + 2);
-		textArea->setFontName("BlueHighway");
+		textArea->setFontName("VeraMono");
 #ifndef COLOROVERLAYWORKAROUND
 		textArea->setValueBottom(0.7);
 		textArea->setValueTop(0.9);
@@ -360,12 +361,13 @@ void IngameConsole::noScroll()
 }
 // ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-
-int IngameConsole::getMessageType(String msg)
+void IngameConsole::setScriptMode(bool value)
 {
-	if(msg.substr(0,1) == "/")
-		return CONSOLE_MSG_COMMAND;
-	return CONSOLE_MSG_CHAT;
+	scriptMode = value;
+	if(scriptMode)
+		addText("-- CONSOLE MODE --");
+	else
+		addText("-- CHAT MODE --");
 }
 
 int IngameConsole::parseCommand(String &msg, std::vector<String> &arguments)

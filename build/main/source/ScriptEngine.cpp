@@ -27,6 +27,7 @@ along with Rigs of Rods.  If not, see <http://www.gnu.org/licenses/>.
 #include "scriptmath/scriptmath.h" // angelscript addon
 #include "water.h"
 #include "Beam.h"
+#include "IngameConsole.h"
 
 using namespace Ogre;
 using namespace std;
@@ -99,7 +100,7 @@ int ScriptEngine::loadTerrainScript(Ogre::String scriptname)
 
 	// get some other optional functions
 	frameStepFunctionPtr = mod->GetFunctionIdByDecl("void frameStep(float)");
-	eventCallbackFunctionPtr = mod->GetFunctionIdByDecl("void eventCallbackFunctionPtr(event_t)");
+	eventCallbackFunctionPtr = mod->GetFunctionIdByDecl("void eventCallbackFunctionPtr(scriptEvents)");
 
 	// Create our context, prepare it, and then execute
 	context = engine->CreateContext();
@@ -363,6 +364,17 @@ int ScriptEngine::framestep(Ogre::Real dt)
 	return 0;
 }
 
+void ScriptEngine::executeString(Ogre::String command)
+{
+	// TOFIX: add proper error output
+	if(!context) return;
+
+	int result = engine->ExecuteString("terrainScript", command.c_str(), &context);
+	if(result<0)
+	{
+		CONSOLE.addText("error while executing string");
+	}
+}
 
 /* class that implements the interface for the scripts */ 
 GameScript::GameScript(ScriptEngine *se, ExampleFrameListener *efl) : mse(se), mefl(efl)
@@ -375,6 +387,8 @@ GameScript::~GameScript()
 
 void GameScript::log(std::string &msg)
 {
+	if(CONSOLE.getScriptMode())
+		CONSOLE.addText(msg);
 	Ogre::LogManager::getSingleton().logMessage("SE| LOG: " + msg);
 }
 
