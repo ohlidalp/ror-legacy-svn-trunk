@@ -100,7 +100,7 @@ int ScriptEngine::loadTerrainScript(Ogre::String scriptname)
 
 	// get some other optional functions
 	frameStepFunctionPtr = mod->GetFunctionIdByDecl("void frameStep(float)");
-	eventCallbackFunctionPtr = mod->GetFunctionIdByDecl("void eventCallbackFunctionPtr(scriptEvents)");
+	//eventCallbackFunctionPtr = mod->GetFunctionIdByDecl("void eventCallbackFunctionPtr(event_t)");
 
 	// Create our context, prepare it, and then execute
 	context = engine->CreateContext();
@@ -328,6 +328,9 @@ void ScriptEngine::msgCallback(const asSMessageInfo *msg, void *param)
 	char tmp[1024]="";
 	sprintf(tmp, "SE| %s (%d, %d): %s = %s", msg->section, msg->row, msg->col, type, msg->message);
 	LogManager::getSingleton().logMessage(tmp);
+
+	// AFTER HERE: CRASH!
+	// even if this whole method is empty ...
 }
 
 int ScriptEngine::loadScriptFile(const char *fileName, string &script)
