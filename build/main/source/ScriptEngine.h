@@ -128,7 +128,7 @@ protected:
 	 * @param msg arguments that contain details about the crash
 	 * @param param unkown?
 	 */
-    void msgCallback(const asSMessageInfo *msg, void *param);
+    void msgCallback(const asSMessageInfo *msg);
 
 	/**
 	 * This function reads a file into the provided string.

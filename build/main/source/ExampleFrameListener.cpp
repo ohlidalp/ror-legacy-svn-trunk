@@ -4124,8 +4124,8 @@ void ExampleFrameListener::processConsoleInput()
 		// script mode
 #ifdef ANGELSCRIPT
 		//execute string
-		if(scriptEngine) scriptEngine->executeString(chatline);
 		CONSOLE.addText(chatline);
+		if(scriptEngine) scriptEngine->executeString(chatline);
 #else
 		CONSOLE.addText(_L("No scripting support compiled in."));
 		CONSOLE.setScriptMode(false);
