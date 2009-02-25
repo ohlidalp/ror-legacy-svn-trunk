@@ -259,7 +259,7 @@ public:
 	 * registers for a new event to be received by the scripting system
 	 * @param eventValue \see enum scriptEvents
 	 */
-	void registerForEvent(enum scriptEvents eventValue);
+	void registerForEvent(int eventValue);
 };
 
 #endif
