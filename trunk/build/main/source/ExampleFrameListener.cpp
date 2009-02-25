@@ -30,6 +30,7 @@ along with Rigs of Rods.  If not, see <http://www.gnu.org/licenses/>.
 
 #ifdef ANGELSCRIPT
 #include "ScriptEngine.h"
+#include "ogreconsole.h"
 #endif
 
 #include "Road.h"
@@ -778,6 +779,9 @@ ExampleFrameListener::ExampleFrameListener(RenderWindow* win, Camera* cam, Scene
 #ifdef ANGELSCRIPT
 	scriptEngine = 0;
 	timeLastScriptStep = 0;
+	new OgreConsole;
+	OgreConsole::getSingleton().init(root);
+	OgreConsole::getSingleton().setVisible(false);
 #endif
 	externalCameraMode=0;
 	gameStartTime = CACHE.getTimeStamp();

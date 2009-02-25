@@ -21,15 +21,11 @@ along with Rigs of Rods.  If not, see <http://www.gnu.org/licenses/>.
 #ifndef __INGAMECONSOLE_H__
 #define __INGAMECONSOLE_H__
 
+
 #include <vector>
 #include "Ogre.h"
 #include "OgreTextAreaOverlayElement.h"
 #include "ColoredTextAreaOverlayElement.h"
-
-//#if OGRE_PLATFORM == OGRE_PLATFORM_APPLE
-// broken on all platforms!
-#define COLOROVERLAYWORKAROUND
-//#endif
 
 #define CONSOLE IngameConsole::getInstance()
 
@@ -93,11 +89,7 @@ private:
 	void updateEnterText();
 
 	Ogre::OverlayContainer *consoleOverlay;
-#ifdef COLOROVERLAYWORKAROUND
-	std::vector < Ogre::TextAreaOverlayElement * > chatLines;
-#else
 	std::vector < ColoredTextAreaOverlayElement * > chatLines;
-#endif
 	std::vector < Ogre::String > chatBuffer;
 	void updateDisplay();
 

@@ -109,7 +109,9 @@ DisplayString ColoredTextAreaOverlayElement::StripColors(const Ogre::String& ote
 
 void ColoredTextAreaOverlayElement::setCaption(const DisplayString& text)
 {
+	m_Colors.clear();
 	m_Colors.resize(text.size(), 9);
+	bool noColor = true;
 	int i, iNumColorCodes = 0, iNumSpaces = 0;
 	for (i = 0; i < (int)text.size()-1; ++i)
 	{
@@ -126,17 +128,19 @@ void ColoredTextAreaOverlayElement::setCaption(const DisplayString& text)
 			fill(m_Colors.begin()+i-(2*iNumColorCodes)-iNumSpaces, m_Colors.end(), text[i+1]-'0');
 			++i;
 			++iNumColorCodes;
+			updateColours();
+			noColor = false;
 		}
 	}
+	if (noColor)
+		updateColours();
 	// Set the caption using the base class, but strip the color codes from it first
 	TextAreaOverlayElement::setCaption(StripColors(text));
 }
 
 void ColoredTextAreaOverlayElement::updateColours(void)
 {
-#if OGRE_PLATFORM == OGRE_PLATFORM_APPLE
-	return; //this creates a visual bug, but it crashes GL hardly on MacOS
-#endif
+	if(!mRenderOp.vertexData) return;
 	// Convert to system-specific
 	RGBA topColour, bottomColour;
 	// Set default to white

@@ -103,6 +103,9 @@ bool RigsOfRods::setup(void)
 
 	CACHE.setLocation(SETTINGS.getSetting("Cache Path"), SETTINGS.getSetting("Config Root"));
 
+	ColoredTextAreaOverlayElementFactory *cef = new ColoredTextAreaOverlayElementFactory();
+	OverlayManager::getSingleton().addOverlayElementFactory(cef);
+
 #ifdef HAS_EDITOR
 	spinfact=new SpinControlOverlayElementFactory();
 	Ogre::OverlayManager::getSingleton().addOverlayElementFactory(spinfact);

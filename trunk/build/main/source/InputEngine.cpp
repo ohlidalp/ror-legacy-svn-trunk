@@ -31,6 +31,7 @@ freely, subject to the following restrictions:
 #ifndef NOOGRE
 #include "IngameConsole.h"
 #include "gui_manager.h"
+#include "ogreconsole.h"
 #endif
 
 #if OGRE_PLATFORM == OGRE_PLATFORM_APPLE
@@ -361,6 +362,12 @@ bool InputEngine::keyPressed( const OIS::KeyEvent &arg )
 		inputsChanged=true;
 	keyState[arg.key] = 1;
 
+#ifndef NOOGRE
+# ifdef ANGELSCRIPT
+	OgreConsole::getSingleton().onKeyPressed(arg);
+# endif
+#endif
+
 	if(recordChat)
 	{
 		// chatting stuff
@@ -370,11 +377,7 @@ bool InputEngine::keyPressed( const OIS::KeyEvent &arg )
 			{
 				keyInput = keyInput.substr(0, keyInput.size()-1);
 #ifndef NOOGRE
-#ifndef COLOROVERLAYWORKAROUND
 				CONSOLE.setEnterText("^7"+keyInput, true, true);
-#else
-				CONSOLE.setEnterText(keyInput, true, true);
-#endif
 #endif
 			}
 
@@ -385,11 +388,7 @@ bool InputEngine::keyPressed( const OIS::KeyEvent &arg )
 				sprintf(tmp, "%c", arg.text);
 				keyInput += String(tmp);
 #ifndef NOOGRE
-#ifndef COLOROVERLAYWORKAROUND
 				CONSOLE.setEnterText("^7"+keyInput, true, true);
-#else
-				CONSOLE.setEnterText(keyInput, true, true);
-#endif
 #endif
 			}
 		}

@@ -144,11 +144,7 @@ bool IngameConsole::destroyOverlays()
 	{
 		OverlayManager::getSingleton().destroyOverlayElement((OverlayElement *)consoleOverlay);
 	}
-#ifdef COLOROVERLAYWORKAROUND
-	vector<TextAreaOverlayElement *>::iterator i;
-#else
 	vector<ColoredTextAreaOverlayElement *>::iterator i;
-#endif
 	for(i = chatLines.begin(); i!=chatLines.end(); i++)
 	{
 		OverlayManager::getSingleton().destroyOverlayElement((OverlayElement *)*i);
@@ -178,20 +174,14 @@ bool IngameConsole::createOverlays()
 	{
 		char tmp[255];
 		sprintf(tmp,"tracks/ConsoleOverlay/Chatline%d",i);
-#ifdef COLOROVERLAYWORKAROUND
-		TextAreaOverlayElement *textArea = static_cast<TextAreaOverlayElement*>(overlayManager.createOverlayElement("TextArea", tmp));
-#else
 		ColoredTextAreaOverlayElement *textArea = static_cast<ColoredTextAreaOverlayElement*>(overlayManager.createOverlayElement("ColoredTextArea", tmp));
-#endif
 		textArea->setMetricsMode(Ogre::GMM_PIXELS);
 		textArea->setPosition(bordersize, bordersize + (lineheight + linespace) * i);
 		textArea->setDimensions(width, lineheight);
 		textArea->setCharHeight(lineheight + 2);
 		textArea->setFontName("VeraMono");
-#ifndef COLOROVERLAYWORKAROUND
 		textArea->setValueBottom(0.7);
 		textArea->setValueTop(0.9);
-#endif
 		textArea->setCaption("");
 		//textArea->setCaption(String("^1Line^7 ")+StringConverter::toString(i));
 		textArea->show();
@@ -237,40 +227,23 @@ bool IngameConsole::addText(String msg, bool addtime)
 void IngameConsole::updateEnterText()
 {
 	static const String cursor = "_";
-#ifdef COLOROVERLAYWORKAROUND
-	vector<TextAreaOverlayElement *>::reverse_iterator enterline = chatLines.rbegin();
-#else
 	vector<ColoredTextAreaOverlayElement *>::reverse_iterator enterline = chatLines.rbegin();
-#endif
 	try
 	{
 		if(cursorBlinkState)
 		{
-#ifndef COLOROVERLAYWORKAROUND
 			(*enterline)->setCaption("^7> " + enterText + cursor);
 			(*enterline)->updateColours();
-#else
-			(*enterline)->setCaption("> "+enterText + cursor);
-#endif
 		}
 		else
 		{
-#ifndef COLOROVERLAYWORKAROUND
 			(*enterline)->setCaption("^7> " + enterText);
 			(*enterline)->updateColours();
-#else
-			(*enterline)->setCaption("> "+enterText);
-
-#endif
 		}
 	}
 	catch(...)
 	{
-#ifndef COLOROVERLAYWORKAROUND
 		(*enterline)->setCaption("^7> ^1CODEC ERROR");
-#else
-		(*enterline)->setCaption("> CODEC ERROR");
-#endif
 	}
 }
 
@@ -278,11 +251,7 @@ bool IngameConsole::setEnterText(String msg, bool visible, bool cursor)
 {
 	enterText = msg;
 	cursorBlink = cursor;
-#ifdef COLOROVERLAYWORKAROUND
-	vector<TextAreaOverlayElement *>::reverse_iterator enterline = chatLines.rbegin();
-#else
 	vector<ColoredTextAreaOverlayElement *>::reverse_iterator enterline = chatLines.rbegin();
-#endif
 	if(!visible)
 	{
 		(*enterline)->setCaption("");
@@ -297,11 +266,7 @@ void IngameConsole::updateDisplay()
 		return;
 	if(chatLines.size() == 0 || chatBuffer.size() == 0)
 		return;
-#ifdef COLOROVERLAYWORKAROUND
-	vector<TextAreaOverlayElement *>::reverse_iterator i;
-#else
 	vector<ColoredTextAreaOverlayElement *>::reverse_iterator i;
-#endif
 	vector<String>::reverse_iterator ib;
 	// chatLines + 1 because last line is for entering something!
 	for(i = chatLines.rbegin() + 1, ib = chatBuffer.rbegin() + (scrollOffset); i!=chatLines.rend() && ib != chatBuffer.rend(); i++, ib++)
@@ -309,12 +274,8 @@ void IngameConsole::updateDisplay()
 		//LogManager::getSingleton().logMessage(*ib);
 		try
 		{
-#ifndef COLOROVERLAYWORKAROUND
 			(*i)->setCaption(*ib);
 			(*i)->updateColours();
-#else
-			(*i)->setCaption(ColoredTextAreaOverlayElement::StripColors(*ib));
-#endif
 		}
 		catch(...)
 		{
