@@ -598,6 +598,9 @@ public:
 	Vector3 affforce;
 	Vector3 ffforce;
 
+	void scaleTruck(float value);
+	float currentScale;
+
 	node_t nodes[MAX_NODES];
 	beam_t beams[MAX_BEAMS];
 

@@ -33,6 +33,7 @@ along with Rigs of Rods.  If not, see <http://www.gnu.org/licenses/>.
 
 class ExampleFrameListener;
 class GameScript;
+class Beam;
 
 class ScriptEngine
 {
@@ -53,6 +54,10 @@ protected:
     void msgCallback(const asSMessageInfo *msg, void *param);
 	int loadScriptFile(const char *fileName, std::string &script);
 
+	//
+	void ExceptionCallback(asIScriptContext *ctx, void *param);
+	void PrintVariables(asIScriptContext *ctx, int stackLevel);
+	void LineCallback(asIScriptContext *ctx, void *param);
 };
 
 class GameScript
@@ -73,6 +78,10 @@ public:
 	void setCaelumTime(float value);
 	float getWaterHeight();
 	void setWaterHeight(float value);
+	Beam *getCurrentTruck();
+	Beam *getTruckByNum(int num);
+	int getNumTrucks();
+	int getCurrentTruckNumber();
 };
 
 #endif
