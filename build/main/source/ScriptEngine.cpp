@@ -26,6 +26,7 @@ along with Rigs of Rods.  If not, see <http://www.gnu.org/licenses/>.
 #include "scriptstring/scriptstring.h" // angelscript addon
 #include "scriptmath/scriptmath.h" // angelscript addon
 #include "water.h"
+#include "Beam.h"
 
 using namespace Ogre;
 using namespace std;
@@ -101,6 +102,12 @@ int ScriptEngine::loadTerrainScript(Ogre::String scriptname)
 
 	// Create our context, prepare it, and then execute
 	context = engine->CreateContext();
+	
+	//context->SetLineCallback(asMETHOD(ScriptEngine,LineCallback), this, asCALL_THISCALL);
+	
+	// this does not work :(
+	//context->SetExceptionCallback(asMETHOD(ScriptEngine,ExceptionCallback), this, asCALL_THISCALL);
+	
 	context->Prepare(funcId);
 	LogManager::getSingleton().logMessage("SE| Executing main()");
 	result = context->Execute();
@@ -115,6 +122,101 @@ int ScriptEngine::loadTerrainScript(Ogre::String scriptname)
 	}
 
 	return 0;
+}
+
+void ScriptEngine::ExceptionCallback(asIScriptContext *ctx, void *param)
+{
+	asIScriptEngine *engine = ctx->GetEngine();
+	int funcID = ctx->GetExceptionFunction();
+	const asIScriptFunction *function = engine->GetFunctionDescriptorById(funcID);
+	LogManager::getSingleton().logMessage("--- exception ---");
+	LogManager::getSingleton().logMessage("desc: " + String(ctx->GetExceptionString()));
+	LogManager::getSingleton().logMessage("func: " + String(function->GetDeclaration()));
+	LogManager::getSingleton().logMessage("modl: " + String(function->GetModuleName()));
+	LogManager::getSingleton().logMessage("sect: " + String(function->GetScriptSectionName()));
+	int col, line = ctx->GetExceptionLineNumber(&col);
+	LogManager::getSingleton().logMessage("line: "+StringConverter::toString(line)+","+StringConverter::toString(col));
+
+	// Print the variables in the current function
+	PrintVariables(ctx, -1);
+
+	// Show the call stack with the variables
+	LogManager::getSingleton().logMessage("--- call stack ---");
+	for( int n = 0; n < ctx->GetCallstackSize(); n++ )
+	{
+		funcID = ctx->GetCallstackFunction(n);
+		const asIScriptFunction *func = engine->GetFunctionDescriptorById(funcID);
+		line = ctx->GetCallstackLineNumber(n,&col);
+		LogManager::getSingleton().logMessage(String(func->GetModuleName()) + ":" + func->GetDeclaration() + ":" + StringConverter::toString(line)+ "," + StringConverter::toString(col));
+
+		PrintVariables(ctx, n);
+	}
+}
+
+void ScriptEngine::LineCallback(asIScriptContext *ctx, void *param)
+{
+	char tmp[1024]="";
+	asIScriptEngine *engine = ctx->GetEngine();
+	int funcID = ctx->GetCurrentFunction();
+	int col;
+	int line = ctx->GetCurrentLineNumber(&col);
+	int indent = ctx->GetCallstackSize();
+	for( int n = 0; n < indent; n++ )
+		sprintf(tmp+n," ");
+	const asIScriptFunction *function = engine->GetFunctionDescriptorById(funcID);
+	sprintf(tmp+indent,"%s:%s:%d,%d", function->GetModuleName(),
+	                    function->GetDeclaration(),
+	                    line, col);
+
+	LogManager::getSingleton().logMessage(tmp);
+
+//	PrintVariables(ctx, -1);
+}
+
+void ScriptEngine::PrintVariables(asIScriptContext *ctx, int stackLevel)
+{
+	char tmp[1024]="";
+	asIScriptEngine *engine = ctx->GetEngine();
+
+	int typeId = ctx->GetThisTypeId(stackLevel);
+	void *varPointer = ctx->GetThisPointer(stackLevel);
+	if( typeId )
+	{
+		sprintf(tmp," this = 0x%x", varPointer);
+		LogManager::getSingleton().logMessage(tmp);
+	}
+
+	int numVars = ctx->GetVarCount(stackLevel);
+	for( int n = 0; n < numVars; n++ )
+	{
+		int typeId = ctx->GetVarTypeId(n, stackLevel); 
+		void *varPointer = ctx->GetAddressOfVar(n, stackLevel);
+		if( typeId == engine->GetTypeIdByDecl("int") )
+		{
+			sprintf(tmp, " %s = %d", ctx->GetVarDeclaration(n, 0, stackLevel), *(int*)varPointer);
+			LogManager::getSingleton().logMessage(tmp);
+		}
+		else if( typeId == engine->GetTypeIdByDecl("string") )
+		{
+			CScriptString *str = (CScriptString*)varPointer;
+			if( str )
+			{			
+				sprintf(tmp, " %s = '%s'", ctx->GetVarDeclaration(n, 0, stackLevel), str->buffer.c_str());
+				LogManager::getSingleton().logMessage(tmp);
+			} else
+			{
+				sprintf(tmp, " %s = <null>", ctx->GetVarDeclaration(n, 0, stackLevel));
+				LogManager::getSingleton().logMessage(tmp);
+			}
+		LogManager::getSingleton().logMessage(tmp);
+		}
+	}
+}
+
+CScriptString &getTruckName(Beam *beam)
+{
+	CScriptString *str = new CScriptString(beam->getTruckName());
+	return *str;
 }
 
 void ScriptEngine::init()
@@ -151,6 +253,12 @@ void ScriptEngine::init()
 	RegisterScriptMath_Native(engine);
 
 	// Register everything
+	result = engine->RegisterObjectType("BeamClass", sizeof(Beam), asOBJ_VALUE | asOBJ_POD | asOBJ_APP_CLASS);
+	result = engine->RegisterObjectMethod("BeamClass", "void scaleTruck(float)", asMETHOD(Beam,scaleTruck), asCALL_THISCALL);
+	result = engine->RegisterObjectMethod("BeamClass", "string &getTruckName()", asFUNCTION(getTruckName), asCALL_CDECL_OBJLAST);
+	result = engine->RegisterObjectProperty("BeamClass", "float currentScale", offsetof(Beam, currentScale));
+
+
 	result = engine->RegisterObjectType("GameScriptClass", sizeof(GameScript), asOBJ_VALUE | asOBJ_POD | asOBJ_APP_CLASS);
 	result = engine->RegisterObjectMethod("GameScriptClass", "void log(const string &in)", asMETHOD(GameScript,log), asCALL_THISCALL);
 	result = engine->RegisterObjectMethod("GameScriptClass", "double getTime()", asMETHOD(GameScript,getTime), asCALL_THISCALL);
@@ -160,6 +268,11 @@ void ScriptEngine::init()
 	result = engine->RegisterObjectMethod("GameScriptClass", "void setCaelumTime(float)", asMETHOD(GameScript,setCaelumTime), asCALL_THISCALL);
 	result = engine->RegisterObjectMethod("GameScriptClass", "void setWaterHeight(float)", asMETHOD(GameScript,setWaterHeight), asCALL_THISCALL);
 	result = engine->RegisterObjectMethod("GameScriptClass", "float getWaterHeight()", asMETHOD(GameScript,getWaterHeight), asCALL_THISCALL);
+	result = engine->RegisterObjectMethod("GameScriptClass", "int getCurrentTruckNumber()", asMETHOD(GameScript,getCurrentTruckNumber), asCALL_THISCALL);
+	result = engine->RegisterObjectMethod("GameScriptClass", "int getNumTrucks()", asMETHOD(GameScript,getCurrentTruckNumber), asCALL_THISCALL);
+
+	result = engine->RegisterObjectMethod("GameScriptClass", "BeamClass &getCurrentTruck()", asMETHOD(GameScript,getCurrentTruck), asCALL_THISCALL);
+	result = engine->RegisterObjectMethod("GameScriptClass", "BeamClass &getTruckByNum(int)", asMETHOD(GameScript,getTruckByNum), asCALL_THISCALL);
 
 
 	GameScript *gamescript = new GameScript(this, mefl);
@@ -272,4 +385,27 @@ float GameScript::getWaterHeight()
 	return 0;
 }
 
+Beam *GameScript::getCurrentTruck()
+{
+	if(mefl) return mefl->getCurrentTruck();
+	return 0;
+}
+
+Beam *GameScript::getTruckByNum(int num)
+{
+	if(mefl) return mefl->getTruck(num);
+	return 0;
+}
+
+int GameScript::getNumTrucks()
+{
+	if(mefl) return mefl->getTruckCount();
+	return 0;
+}
+
+int GameScript::getCurrentTruckNumber()
+{
+	if(mefl) return mefl->getCurrentTruckNumber();
+	return -1;
+}
 #endif //ANGELSCRIPT

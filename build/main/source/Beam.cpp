@@ -68,7 +68,7 @@ Beam::Beam(int tnum, SceneManager *manager, SceneNode *parent, RenderWindow* win
 {
 	LogManager::getSingleton().logMessage("BEAM: loading new truck: " + String(fname));
 	trucknum=tnum;
-
+	currentScale=1;
 	// copy truck config
 	if(_truckconfig && _truckconfig->size())
 		for(std::vector<String>::iterator it = _truckconfig->begin(); it!=_truckconfig->end();it++)
@@ -409,6 +409,33 @@ Beam::Beam(int tnum, SceneManager *manager, SceneNode *parent, RenderWindow* win
 	}
 
 	//updateDebugOverlay();
+}
+
+void Beam::scaleTruck(float value)
+{
+	if(value<0) return;
+	// scale nodes
+	for(int i=0;i<free_node;i++)
+	{
+		nodes[i].iPosition *= value;
+		nodes[i].AbsPosition *= value;
+		nodes[i].RelPosition *= value;
+		nodes[i].smoothpos *= value;
+		nodes[i].Velocity *= value;
+		nodes[i].Forces *= value;
+		nodes[i].lockedPosition *= value;
+		nodes[i].lockedVelocity *= value;
+		nodes[i].lockedForces *= value;
+	}
+	// scale beams
+	for(int i=0;i<free_beam;i++)
+	{
+		beams[i].L *= value;
+		beams[i].refL *= value;
+		beams[i].Lhydro *= value;
+		beams[i].diameter *= value;
+		beams[i].refL *= value;
+	}
 }
 
 void Beam::initSimpleSkeleton()
