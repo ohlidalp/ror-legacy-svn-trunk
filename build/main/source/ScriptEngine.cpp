@@ -449,4 +449,11 @@ int GameScript::getCurrentTruckNumber()
 	if(mefl) return mefl->getCurrentTruckNumber();
 	return -1;
 }
+
+void GameScript::registerForEvent(enum scriptEvents eventValue)
+{
+	if(!mse) return;
+	mse->eventMask |= eventValue;
+}
+
 #endif //ANGELSCRIPT
