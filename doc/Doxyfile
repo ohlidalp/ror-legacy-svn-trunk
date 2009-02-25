@@ -721,7 +721,7 @@ SOURCE_BROWSER         = YES
 # Setting the INLINE_SOURCES tag to YES will include the body 
 # of functions and classes directly in the documentation.
 
-INLINE_SOURCES         = YES
+INLINE_SOURCES         = NO
 
 # Setting the STRIP_CODE_COMMENTS tag to YES (the default) will instruct 
 # doxygen to hide any special comment blocks from generated source code 
@@ -1279,7 +1279,8 @@ INCLUDE_FILE_PATTERNS  =
 
 PREDEFINED             = HYDRAX \
                          PAGED \
-                         LUASCRIPT
+                         LUASCRIPT \
+                         ANGELSCRIPT
 
 # If the MACRO_EXPANSION and EXPAND_ONLY_PREDEF tags are set to YES then 
 # this tag can be used to specify a list of macro names that should be expanded. 
