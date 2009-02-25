@@ -253,10 +253,12 @@ void ScriptEngine::init()
 	RegisterScriptMath_Native(engine);
 
 	// Register everything
-	result = engine->RegisterObjectType("BeamClass", sizeof(Beam), asOBJ_VALUE | asOBJ_POD | asOBJ_APP_CLASS);
+	result = engine->RegisterObjectType("BeamClass", sizeof(Beam), asOBJ_REF);
 	result = engine->RegisterObjectMethod("BeamClass", "void scaleTruck(float)", asMETHOD(Beam,scaleTruck), asCALL_THISCALL);
 	result = engine->RegisterObjectMethod("BeamClass", "string &getTruckName()", asFUNCTION(getTruckName), asCALL_CDECL_OBJLAST);
 	result = engine->RegisterObjectProperty("BeamClass", "float currentScale", offsetof(Beam, currentScale));
+	result = engine->RegisterObjectBehaviour("BeamClass", asBEHAVE_ADDREF,"void f()",asMETHOD(Beam,addRef), asCALL_THISCALL);
+	result = engine->RegisterObjectBehaviour("BeamClass", asBEHAVE_RELEASE,"void f()",asMETHOD(Beam,release), asCALL_THISCALL);
 
 
 	result = engine->RegisterObjectType("GameScriptClass", sizeof(GameScript), asOBJ_VALUE | asOBJ_POD | asOBJ_APP_CLASS);
@@ -271,8 +273,8 @@ void ScriptEngine::init()
 	result = engine->RegisterObjectMethod("GameScriptClass", "int getCurrentTruckNumber()", asMETHOD(GameScript,getCurrentTruckNumber), asCALL_THISCALL);
 	result = engine->RegisterObjectMethod("GameScriptClass", "int getNumTrucks()", asMETHOD(GameScript,getCurrentTruckNumber), asCALL_THISCALL);
 
-	result = engine->RegisterObjectMethod("GameScriptClass", "BeamClass &getCurrentTruck()", asMETHOD(GameScript,getCurrentTruck), asCALL_THISCALL);
-	result = engine->RegisterObjectMethod("GameScriptClass", "BeamClass &getTruckByNum(int)", asMETHOD(GameScript,getTruckByNum), asCALL_THISCALL);
+	result = engine->RegisterObjectMethod("GameScriptClass", "BeamClass @getCurrentTruck()", asMETHOD(GameScript,getCurrentTruck), asCALL_THISCALL);
+	result = engine->RegisterObjectMethod("GameScriptClass", "BeamClass @getTruckByNum(int)", asMETHOD(GameScript,getTruckByNum), asCALL_THISCALL);
 
 
 	GameScript *gamescript = new GameScript(this, mefl);
