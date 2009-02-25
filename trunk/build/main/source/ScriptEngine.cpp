@@ -184,7 +184,7 @@ void ScriptEngine::PrintVariables(asIScriptContext *ctx, int stackLevel)
 	void *varPointer = ctx->GetThisPointer(stackLevel);
 	if( typeId )
 	{
-		sprintf(tmp," this = 0x%x", varPointer);
+		sprintf(tmp," this = 0x%x", (unsigned int)varPointer);
 		LogManager::getSingleton().logMessage(tmp);
 	}
 
@@ -468,7 +468,7 @@ int GameScript::getCurrentTruckNumber()
 	return -1;
 }
 
-void GameScript::registerForEvent(enum scriptEvents eventValue)
+void GameScript::registerForEvent(int eventValue)
 {
 	if(!mse) return;
 	mse->eventMask |= eventValue;
