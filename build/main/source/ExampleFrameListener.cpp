@@ -1277,10 +1277,6 @@ ExampleFrameListener::ExampleFrameListener(RenderWindow* win, Camera* cam, Scene
 	netmode=(SETTINGS.getSetting("Network enable")=="Yes" || SETTINGS.getSetting("join URI") != "");
 	net=0;
 
-	// this must be before any truck/map loading
-#ifdef PYTHONSCRIPT
-	SCRIPTINGENGINE.setup(this);
-#endif
 	// preselected map or truck?
 	String preselected_map = SETTINGS.getSetting("Preselected Map");
 	String preselected_truck = SETTINGS.getSetting("Preselected Truck");
@@ -3759,9 +3755,6 @@ bool ExampleFrameListener::updateEvents(float dt)
 					std::vector<Ogre::String> *configptr = &config;
 					if(config.size() == 0) configptr = 0;
 					trucks[free_truck] = new Beam(free_truck, mSceneMgr, mSceneMgr->getRootSceneNode(), mWindow, &mapsizex, &mapsizez, reload_pos.x, reload_pos.y, reload_pos.z, reload_dir, selected, collisions, dustp, clumpp, sparksp, dripp, splashp, ripplep, hfinder, w, mCamera, mirror, true, false, false, reload_box, false, flaresMode, configptr);
-#ifdef PYTHONSCRIPT
-					SCRIPTINGENGINE.runScript(String(selected)+String(".py"));
-#endif
 				}
 
 				if(bigMap)
@@ -4043,9 +4036,6 @@ bool ExampleFrameListener::updateEvents(float dt)
 int ExampleFrameListener::addTruck(char *fname, Vector3 pos)
 {
 	trucks[free_truck] = new Beam(free_truck, mSceneMgr, mSceneMgr->getRootSceneNode(), mWindow, &mapsizex, &mapsizez, pos.x, pos.y, pos.z, Quaternion::ZERO, fname, collisions, dustp, clumpp, sparksp, dripp, splashp, ripplep, hfinder, w, mCamera, mirror, true,false,false,0,false,flaresMode);
-#ifdef PYTHONSCRIPT
-	SCRIPTINGENGINE.runScript(String(fname)+String(".py"));
-#endif
 
 	if(bigMap)
 	{
@@ -4274,10 +4264,6 @@ void ExampleFrameListener::loadTerrain(String terrainfile)
 	lua->loadTerrain(terrainfile);
 #else
   collisions=new Collisions(this, debugCollisions);
-#endif
-
-#ifdef PYTHONSCRIPT
-	SCRIPTINGENGINE.runScript(terrainfile+String(".py"));
 #endif
 
 	//we load terrain
@@ -5626,17 +5612,9 @@ void ExampleFrameListener::initTrucks(bool loadmanual, Ogre::String selected, Og
 				}
 			}
 			trucks[free_truck]=new Beam(free_truck, mSceneMgr, mSceneMgr->getRootSceneNode(), mWindow, &mapsizex, &mapsizez, spawnpos.x, spawnpos.y, spawnpos.z, spawnrot, selectedchr, collisions, dustp, clumpp, sparksp, dripp, splashp, ripplep, hfinder, w, mCamera, mirror, false, false, netmode,0,false,flaresMode, truckconfig);
-			// load python file if existing
-#ifdef PYTHONSCRIPT
-			SCRIPTINGENGINE.runScript(String(selectedchr)+String(".py"));
-#endif
-
 		} else
 		{
 			trucks[free_truck]=new Beam(free_truck, mSceneMgr, mSceneMgr->getRootSceneNode(), mWindow, &mapsizex, &mapsizez, truckx, trucky, truckz, Quaternion::ZERO, selectedchr, collisions, dustp, clumpp, sparksp, dripp, splashp, ripplep, hfinder, w, mCamera, mirror, false, false, netmode,0,false,flaresMode, truckconfig);
-#ifdef PYTHONSCRIPT
-			SCRIPTINGENGINE.runScript(String(selectedchr)+String(".py"));
-#endif
 		}
 
 		if(bigMap)
@@ -5661,9 +5639,6 @@ void ExampleFrameListener::initTrucks(bool loadmanual, Ogre::String selected, Og
 		{
 			trucks[free_truck]=new Beam(free_truck, mSceneMgr, mSceneMgr->getRootSceneNode(), mWindow,
 				&mapsizex, &mapsizez, truck_preload[i].px, truck_preload[i].py, truck_preload[i].pz, truck_preload[i].rotation, truck_preload[i].name, collisions, dustp, clumpp, sparksp, dripp, splashp, ripplep, hfinder, w, mCamera, mirror,false,false,false,0,truck_preload[i].ismachine,flaresMode, truckconfig);
-#ifdef PYTHONSCRIPT
-			SCRIPTINGENGINE.runScript(String(truck_preload[i].name)+String(".py"));
-#endif
 			if(bigMap)
 			{
 				MapEntity *e = bigMap->createNamedMapEntity("Truck"+StringConverter::toString(free_truck), MapControl::getTypeByDriveable(trucks[free_truck]->driveable));
@@ -5718,9 +5693,7 @@ void ExampleFrameListener::setCurrentTruck(int v)
 	if (current_truck==-1)
 	{
 		if(bigMap) bigMap->setVisibility(false);
-#ifdef PYTHONSCRIPT
-		SCRIPTINGENGINE.fireTruckEvent(previous_truck, "exitTruck");
-#endif
+
 		// hide truckhud
 		TRUCKHUD.show(false);
 
@@ -5766,9 +5739,6 @@ void ExampleFrameListener::setCurrentTruck(int v)
 	}
 	else
 	{
-#ifdef PYTHONSCRIPT
-		SCRIPTINGENGINE.fireTruckEvent(current_truck, "enterTruck");
-#endif
 		//getting inside
 		mouseOverlay->show();
 		person->setVisible(false);
@@ -6690,9 +6660,6 @@ bool ExampleFrameListener::frameStarted(const FrameEvent& evt)
 					trucks[free_truck]=new Beam(free_truck, mSceneMgr, mSceneMgr->getRootSceneNode(), mWindow,
 						&mapsizex, &mapsizez, truckx, trucky, truckz, Quaternion::ZERO, name, collisions, dustp, clumpp, sparksp, dripp, splashp, ripplep, hfinder, w, mCamera, mirror, true, true,false,0,false,flaresMode, &truckconfig);
 					trucks[free_truck]->label=label;
-#ifdef PYTHONSCRIPT
-					SCRIPTINGENGINE.runScript(String(name)+String(".py"));
-#endif
 
 					if(bigMap)
 					{
