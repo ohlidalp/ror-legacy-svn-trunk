@@ -317,7 +317,7 @@ void ScriptEngine::init()
 	LogManager::getSingleton().logMessage("SE| Registration done");
 }
 
-void ScriptEngine::msgCallback(const asSMessageInfo *msg, void *param)
+void ScriptEngine::msgCallback(const asSMessageInfo *msg)
 {
 	const char *type = "Error";
 	if( msg->type == asMSGTYPE_INFORMATION )
@@ -352,6 +352,7 @@ int ScriptEngine::loadScriptFile(const char *fileName, string &script)
 int ScriptEngine::framestep(Ogre::Real dt)
 {
 	if(frameStepFunctionPtr<0) return 1;
+	if(!context) context = engine->CreateContext();
 	context->Prepare(frameStepFunctionPtr);
 
 	// Set the function arguments
