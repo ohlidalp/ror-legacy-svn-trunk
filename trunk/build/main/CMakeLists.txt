@@ -40,10 +40,6 @@ if(ROR_BUILD_BEAMSTATS)
   add_definitions("-DBEAMSTATS -DTIMING")
 endif(ROR_BUILD_BEAMSTATS)
 
-if(ROR_BUILD_PYTHONSCRIPT)
-  add_definitions("-DPYTHONSCRIPT")
-endif(ROR_BUILD_PYTHONSCRIPT)
-
 if(ROR_BUILD_LUASCRIPT)
   add_definitions("-DLUASCRIPT")
   include_directories (${RoR_Dependencies_SOURCE_DIR}/lua-5.1.2/src)
