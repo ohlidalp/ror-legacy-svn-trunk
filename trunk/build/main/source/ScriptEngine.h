@@ -68,33 +68,42 @@ public:
 	 */
 	enum scriptEvents
 	{
-		SE_COLLISION_BOX_ENTER,             //!< called when truck or person enters a previous registered collision box
-		SE_COLLISION_BOX_LEAVE,             //!< called when truck or person leaves a previous registered and entered collision box
+		SE_COLLISION_BOX_ENTER             = 0x00000001, //!< triggered when truck or person enters a previous registered collision box
+		SE_COLLISION_BOX_LEAVE             = 0x00000002, //!< triggered when truck or person leaves a previous registered and entered collision box
 
-		SE_TRUCK_ENTER,                     //!< called when switching from person mode to truck mode
-		SE_TRUCK_EXIT,                      //!< called when switching from truck mode to person mode
+		SE_TRUCK_ENTER                     = 0x00000004, //!< triggered when switching from person mode to truck mode
+		SE_TRUCK_EXIT                      = 0x00000008, //!< triggered when switching from truck mode to person mode
 
-		SE_TRUCK_ENGINE_DIED,               //!< called when the trucks engine dies (from underrev, water, etc)
-		SE_TRUCK_ENGINE_FIRE,               //!< called when the planes engines start to get on fire
-		SE_TRUCK_TOUCHED_WATER,             //!< called when any part of the truck touches water
-		SE_TRUCK_BEAM_BROKE,                //!< called when a beam breaks
-		SE_TRUCK_LOCKED,                    //!< called when the truck got lock to another truck
-		SE_TRUCK_UNLOCKED,                  //!< called when the truck unlocks again
-		SE_TRUCK_LIGHT_TOGGLE,              //!< called when the main light is toggled
-		SE_TRUCK_SKELETON_TOGGLE,           //!< called when the user enters or exits skeleton mode
-		SE_TRUCK_TIE_TOGGLE,                //!< called when the user toggles ties
-		SE_TRUCK_PARKINGBREAK_TOGGLE,       //!< called when the user toggles the parking break
-		SE_TRUCK_BEACONS_TOGGLE,            //!< called when the user toggles beacons
-		SE_TRUCK_CPARTICLES_TOGGLE,         //!< called when the user toggles custom particles
-		SE_TRUCK_GROUND_CONTACT_CHANGED,    //!< called when the trucks ground contact changed (no contact, different ground models, etc)
+		SE_TRUCK_ENGINE_DIED               = 0x00000010, //!< triggered when the trucks engine dies (from underrev, water, etc)
+		SE_TRUCK_ENGINE_FIRE               = 0x00000020, //!< triggered when the planes engines start to get on fire
+		SE_TRUCK_TOUCHED_WATER             = 0x00000040, //!< triggered when any part of the truck touches water
+		SE_TRUCK_BEAM_BROKE                = 0x00000080, //!< triggered when a beam breaks
+		SE_TRUCK_LOCKED                    = 0x00000100, //!< triggered when the truck got lock to another truck
+		SE_TRUCK_UNLOCKED                  = 0x00000200, //!< triggered when the truck unlocks again
+		SE_TRUCK_LIGHT_TOGGLE              = 0x00000400, //!< triggered when the main light is toggled
+		SE_TRUCK_SKELETON_TOGGLE           = 0x00000800, //!< triggered when the user enters or exits skeleton mode
+		SE_TRUCK_TIE_TOGGLE                = 0x00001000, //!< triggered when the user toggles ties
+		SE_TRUCK_PARKINGBREAK_TOGGLE       = 0x00002000, //!< triggered when the user toggles the parking break
+		SE_TRUCK_BEACONS_TOGGLE            = 0x00004000, //!< triggered when the user toggles beacons
+		SE_TRUCK_CPARTICLES_TOGGLE         = 0x00008000, //!< triggered when the user toggles custom particles
+		SE_TRUCK_GROUND_CONTACT_CHANGED    = 0x00010000, //!< triggered when the trucks ground contact changed (no contact, different ground models, etc)
 
-		SE_GENERIC_NEW_TRUCK,               //!< called when the user spawns a new truck
-		SE_GENERIC_DELETED_TRUCK,           //!< called when the user deletes a truck
+		SE_GENERIC_NEW_TRUCK               = 0x00020000, //!< triggered when the user spawns a new truck
+		SE_GENERIC_DELETED_TRUCK           = 0x00040000, //!< triggered when the user deletes a truck
 
-		SE_GENERIC_INPUT_EVENT,             //!< called when an input event bound to the scripting engine is toggled
-		SE_GENERIC_MOUSE_BEAM_INTERACTION,  //!< called when the user uses the mouse to interact with the truck
+		SE_GENERIC_INPUT_EVENT             = 0x00080000, //!< triggered when an input event bound to the scripting engine is toggled
+		SE_GENERIC_MOUSE_BEAM_INTERACTION  = 0x00100000, //!< triggered when the user uses the mouse to interact with the truck
 
 	};
+	
+	int eventMask;                          //!< filter mask for script events
+	
+	/**
+	 * triggers an event. Not to be used by the end-user
+	 * @param eventValue \see enum scriptEvents
+	 */
+	void triggerEvent(enum scriptEvents);   
+
 protected:
     ExampleFrameListener *mefl;             //!< local Exampleframelistener instance, used as proxy for many functions
     asIScriptEngine *engine;                //!< instance of the scripting engine
@@ -239,6 +248,12 @@ public:
 	 * @param value new gravity terrain wide (default is -9.81)
 	 */
 	void setGravity(float value);
+
+	/**
+	 * registers for a new event to be received by the scripting system
+	 * @param eventValue \see enum scriptEvents
+	 */
+	void registerForEvent(enum scriptEvents eventValue);
 };
 
 #endif
