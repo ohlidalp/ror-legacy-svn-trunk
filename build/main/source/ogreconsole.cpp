@@ -12,38 +12,47 @@ OgreConsole::~OgreConsole(){
    
 }
 
-void OgreConsole::init(Ogre::Root *root){
-   if(!root->getSceneManagerIterator().hasMoreElements())
-      OGRE_EXCEPT( Exception::ERR_INTERNAL_ERROR, "No scene manager found!", "init" );
+void OgreConsole::init(Ogre::Root *root)
+{
+	if(!root->getSceneManagerIterator().hasMoreElements())
+	  OGRE_EXCEPT( Exception::ERR_INTERNAL_ERROR, "No scene manager found!", "init" );
 
-   this->root=root;
-   scene=root->getSceneManagerIterator().getNext();
-   root->addFrameListener(this);
+	this->root=root;
+	scene=root->getSceneManagerIterator().getNext();
+	root->addFrameListener(this);
 
-   height=1;
+	height=1;
 
-   // Create background rectangle covering the whole screen
-   rect = new Rectangle2D(true);
-   rect->setCorners(-1, 1, 1, 1-height);
-   rect->setMaterial("console/background");
-   rect->setRenderQueueGroup(RENDER_QUEUE_OVERLAY);
-   rect->setBoundingBox(AxisAlignedBox(-100000.0*Vector3::UNIT_SCALE, 100000.0*Vector3::UNIT_SCALE));
-   node = scene->getRootSceneNode()->createChildSceneNode("#Console");
-   node->attachObject(rect);
+	MaterialPtr mat = MaterialManager::getSingleton().getByName("console/background");
+	if(mat.isNull())
+	{
+		// create one fast
+		MaterialPtr mat = MaterialManager::getSingleton().create("console/background", ResourceGroupManager::DEFAULT_RESOURCE_GROUP_NAME);
+		mat->getTechnique(0)->getPass(0)->setSceneBlending(Ogre::SBT_TRANSPARENT_ALPHA);
+		mat->getTechnique(0)->getPass(0)->setDiffuse(0, 0, 1, 0.6);
+	}
+	// Create background rectangle covering the whole screen
+	rect = new Rectangle2D(true);
+	rect->setCorners(-1, 1, 1, 1-height);
+	rect->setMaterial("console/background");
+	rect->setRenderQueueGroup(RENDER_QUEUE_OVERLAY);
+	rect->setBoundingBox(AxisAlignedBox(-100000.0*Vector3::UNIT_SCALE, 100000.0*Vector3::UNIT_SCALE));
+	node = scene->getRootSceneNode()->createChildSceneNode("#Console");
+	node->attachObject(rect);
 
-   textbox=OverlayManager::getSingleton().createOverlayElement("TextArea","ConsoleText");
-   textbox->setCaption("hello");
-   textbox->setMetricsMode(GMM_RELATIVE);
-   textbox->setPosition(0,0);
-   textbox->setParameter("font_name","VeraMono");
-   textbox->setParameter("colour_top","1 1 1");
-   textbox->setParameter("colour_bottom","1 1 1");
-   textbox->setParameter("char_height","0.03");
-   
-   overlay=OverlayManager::getSingleton().create("Console");   
-   overlay->add2D((OverlayContainer*)textbox);
-   overlay->show();
-   LogManager::getSingleton().getDefaultLog()->addListener(this);
+	textbox=OverlayManager::getSingleton().createOverlayElement("TextArea","ConsoleText");
+	textbox->setCaption("hello");
+	textbox->setMetricsMode(GMM_RELATIVE);
+	textbox->setPosition(0,0);
+	textbox->setParameter("font_name","VeraMono");
+	textbox->setParameter("colour_top","1 1 1");
+	textbox->setParameter("colour_bottom","1 1 1");
+	textbox->setParameter("char_height","0.03");
+
+	overlay=OverlayManager::getSingleton().create("Console");   
+	overlay->add2D((OverlayContainer*)textbox);
+	overlay->show();
+	LogManager::getSingleton().getDefaultLog()->addListener(this);
 }
 
 void OgreConsole::shutdown(){
@@ -63,7 +72,7 @@ void OgreConsole::onKeyPressed(const OIS::KeyEvent &arg){
       const char *str=prompt.c_str();
       vector<String> params;
       String param="";
-      for(int c=0;c<prompt.length();c++){
+      for(int c=0;c<(int)prompt.length();c++){
          if(str[c]==' '){
             if(param.length())
                params.push_back(param);
@@ -97,7 +106,7 @@ void OgreConsole::onKeyPressed(const OIS::KeyEvent &arg){
    }
    if (arg.key == OIS::KC_PGDOWN)
    {
-      if(start_line<lines.size())
+      if(start_line<(int)lines.size())
          start_line++;
    }
    else
@@ -136,7 +145,7 @@ bool OgreConsole::frameStarted(const Ogre::FrameEvent &evt){
       list<String>::iterator i,start,end;
       
       //make sure is in range
-      if(start_line>lines.size())
+      if(start_line>(int)lines.size())
          start_line=lines.size();
 
       int lcount=0;
