@@ -54,12 +54,14 @@ public:
 	bool getVisible() { return isvisible; };
 	void setVisible(bool visible);
 
-	int getMessageType(Ogre::String msg);
 	int parseCommand(Ogre::String &msg, std::vector<Ogre::String> &arguments);
 
 	void scrollPageUp();
 	void scrollPageDown();
 	void noScroll();
+
+	bool getScriptMode() { return scriptMode; };
+	void setScriptMode(bool value);
 
 protected:
 	IngameConsole();
@@ -72,6 +74,7 @@ private:
 	int top, left, width, height;
 	int lineheight, bordersize;
 	int displaymode;
+	bool scriptMode;
 	ExampleFrameListener *mefl;
 	
 	// cursor stuff

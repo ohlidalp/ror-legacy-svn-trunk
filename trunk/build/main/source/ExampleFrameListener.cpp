@@ -77,7 +77,6 @@ along with Rigs of Rods.  If not, see <http://www.gnu.org/licenses/>.
 #ifdef TIMING
 	#include "BeamStats.h"
 #endif
-#include "pythonBinding.h" // always include!
 
 #ifdef PAGED
 # include "TreeLoader2D.h"
@@ -4092,129 +4091,46 @@ void ExampleFrameListener::hideMap()
 void ExampleFrameListener::processConsoleInput()
 {
 	String chatline = INPUTENGINE.getKeyLine();
-	// DEBUG:
-	//LogManager::getSingleton().logMessage(StringConverter::toString(arg.key));
-	if (chatline.size()==0)
-		return;
-	if(CONSOLE.getMessageType(chatline) == CONSOLE_MSG_CHAT)
-	{
-		if(netmode)
-		{
-			CONSOLE.addText("^8" + ColoredTextAreaOverlayElement::StripColors(String(net->getNickname())) + ": ^7" + ColoredTextAreaOverlayElement::StripColors(chatline), false);
-			net->sendChat(const_cast<char *>(chatline.c_str()));
-		} else
-			CONSOLE.addText(_L("^8 Player: ^7") + chatline);
-	}
-	else if(CONSOLE.getMessageType(chatline) == CONSOLE_MSG_COMMAND)
-	{
-		// echo to console again
-		CONSOLE.addText("^5" + chatline);
-		// now process
-		std::vector<String> command;
-		if(!CONSOLE.parseCommand(chatline, command))
-		{
-			// TODO: process more commands
-			if(command[0] == "/version")
-			{
-        CONSOLE.addText("^7 This is Rigs of Rods Version " + String(ROR_VERSION_STRING));
-#ifdef LUASCRIPT
-        CONSOLE.addText("^7 LUA interface version " + String(LUA_INTERFACE_VERSION));
-#endif
-        CONSOLE.addText("^7 Protocol version " + String(RORNET_VERSION));
-			}
-			else if(command[0] == "/rlogin")
-			{
-				if(net)
-				{
-					if(command.size() == 1)
-					{
-						CONSOLE.addText("^1 usage: /rlogin [password]");
-					}
-					else if(command.size() == 2)
-					{
-						int res = net->rconlogin(const_cast<char*>(command[1].c_str()));
-						if(res < 0)
-						{
-							CONSOLE.addText(_L("^1 ERROR: protocol error while trying to log into RCON: ") + StringConverter::toString(res));
-						}
-					}
-				}else
-				{
-					CONSOLE.addText("^1 ERROR: not in network mode");
-				}
-			}
-			else if(command[0] == "/rcmd")
-			{
-				if(net)
-				{
-					if(net->getRConState() == 0)
-					{
-						CONSOLE.addText(_L("^1 ERROR: you must use /rlogin [password] first"));
-					}else
-					{
-						if(command.size() == 1)
-						{
-							CONSOLE.addText(_L("^1 usage: /rcmd [command] [optional arguments]"));
-						}
-						else if(command.size() == 2)
-						{
-							int res = net->rconcommand(const_cast<char*>(command[1].c_str()));
-							if(res < 0)
-								CONSOLE.addText(_L("^1 ERROR: protocol error while trying to send command to RCON: ") + StringConverter::toString(res));
-						}
-						else if(command.size() == 3)
-						{
-							char buffer[512];
-							memset(buffer, 0, 512);
-							strcat(buffer, const_cast<char*>(command[1].c_str()));
-							strcat(buffer, " ");
-							strcat(buffer, const_cast<char*>(command[2].c_str()));
-							int res = net->rconcommand(buffer);
-							if(res < 0)
-								CONSOLE.addText(_L("^1 ERROR: protocol error while trying to send command to RCON: ") + StringConverter::toString(res));
-						}
-						else if(command.size() == 4)
-						{
-							char buffer[512];
-							memset(buffer, 0, 512);
-							strcat(buffer, const_cast<char*>(command[1].c_str()));
-							strcat(buffer, " ");
-							strcat(buffer, const_cast<char*>(command[2].c_str()));
-							strcat(buffer, " ");
-							strcat(buffer, const_cast<char*>(command[3].c_str()));
-							int res = net->rconcommand(buffer);
-							if(res < 0)
-								CONSOLE.addText(_L("^1 ERROR: protocol error while trying to send command to RCON: ") + StringConverter::toString(res));
-						}
-						else if(command.size() == 5)
-						{
-							char buffer[512];
-							memset(buffer, 0, 512);
-							strcat(buffer, const_cast<char*>(command[1].c_str()));
-							strcat(buffer, " ");
-							strcat(buffer, const_cast<char*>(command[2].c_str()));
-							strcat(buffer, " ");
-							strcat(buffer, const_cast<char*>(command[3].c_str()));
-							strcat(buffer, " ");
-							strcat(buffer, const_cast<char*>(command[4].c_str()));
-							int res = net->rconcommand(buffer);
-							if(res < 0)
-								CONSOLE.addText(_L("^1 ERROR: protocol error while trying to send command to RCON: ") + StringConverter::toString(res));
-						}
-					}
-				}else
-				{
-					CONSOLE.addText(_L("^1 ERROR: not in network mode"));
-				}
-			}
-			else
-			{
-				CONSOLE.addText(_L("^1 unkown Command: ") + command[0]);
-			}
-		} else
-			CONSOLE.addText(_L("^1 Error Parsing command"));
-	}
 
+	if (chatline.size()==0) return;
+	if(!CONSOLE.getScriptMode())
+	{
+		// normal chat mode
+
+#ifdef ANGELSCRIPT
+		// switch to script mode?
+		if(chatline == "/console")
+		{
+			CONSOLE.addText(_L("^8 Player: ^7") + chatline);
+			CONSOLE.setScriptMode(true);
+
+		} else 
+		{
+#endif //ANGELSCRIPT
+
+			if(netmode)
+			{
+				CONSOLE.addText("^8" + ColoredTextAreaOverlayElement::StripColors(String(net->getNickname())) + ": ^7" + ColoredTextAreaOverlayElement::StripColors(chatline), false);
+				net->sendChat(const_cast<char *>(chatline.c_str()));
+			} else
+				CONSOLE.addText(_L("^8 Player: ^7") + chatline);
+
+#ifdef ANGELSCRIPT
+		}
+#endif //ANGELSCRIPT
+
+	} else
+	{
+		// script mode
+#ifdef ANGELSCRIPT
+		//execute string
+		if(scriptEngine) scriptEngine->executeString(chatline);
+		CONSOLE.addText(chatline);
+#else
+		CONSOLE.addText(_L("No scripting support compiled in."));
+		CONSOLE.setScriptMode(false);
+#endif //ANGELSCRIPT
+	}
 	CONSOLE.setEnterText("", false);
 	//CONSOLE.noScroll();
 }

@@ -364,7 +364,7 @@ bool InputEngine::keyPressed( const OIS::KeyEvent &arg )
 	if(recordChat)
 	{
 		// chatting stuff
-		if (keyInput.size()<59)
+		if (keyInput.size()<255)
 		{
 			if ((arg.key==OIS::KC_DELETE || arg.key==OIS::KC_BACK) && keyInput.size()>0)
 			{
@@ -377,8 +377,9 @@ bool InputEngine::keyPressed( const OIS::KeyEvent &arg )
 #endif
 #endif
 			}
+
 			// exclude control keys
-			if(arg.text>=32 && arg.text<=126)
+			if(arg.text > 20)
 			{
 				char tmp[1]="";
 				sprintf(tmp, "%c", arg.text);
