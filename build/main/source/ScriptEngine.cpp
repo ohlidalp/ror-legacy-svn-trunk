@@ -260,6 +260,7 @@ void ScriptEngine::init()
 	result = engine->RegisterObjectBehaviour("BeamClass", asBEHAVE_ADDREF,"void f()",asMETHOD(Beam,addRef), asCALL_THISCALL);
 	result = engine->RegisterObjectBehaviour("BeamClass", asBEHAVE_RELEASE,"void f()",asMETHOD(Beam,release), asCALL_THISCALL);
 
+	// todo: add Vector3 classes and other utility classes!
 
 	result = engine->RegisterObjectType("GameScriptClass", sizeof(GameScript), asOBJ_VALUE | asOBJ_POD | asOBJ_APP_CLASS);
 	result = engine->RegisterObjectMethod("GameScriptClass", "void log(const string &in)", asMETHOD(GameScript,log), asCALL_THISCALL);
@@ -272,6 +273,8 @@ void ScriptEngine::init()
 	result = engine->RegisterObjectMethod("GameScriptClass", "float getWaterHeight()", asMETHOD(GameScript,getWaterHeight), asCALL_THISCALL);
 	result = engine->RegisterObjectMethod("GameScriptClass", "int getCurrentTruckNumber()", asMETHOD(GameScript,getCurrentTruckNumber), asCALL_THISCALL);
 	result = engine->RegisterObjectMethod("GameScriptClass", "int getNumTrucks()", asMETHOD(GameScript,getCurrentTruckNumber), asCALL_THISCALL);
+	result = engine->RegisterObjectMethod("GameScriptClass", "float getGravity()", asMETHOD(GameScript,getGravity), asCALL_THISCALL);
+	result = engine->RegisterObjectMethod("GameScriptClass", "void setGravity(float value)", asMETHOD(GameScript,setGravity), asCALL_THISCALL);
 
 	result = engine->RegisterObjectMethod("GameScriptClass", "BeamClass @getCurrentTruck()", asMETHOD(GameScript,getCurrentTruck), asCALL_THISCALL);
 	result = engine->RegisterObjectMethod("GameScriptClass", "BeamClass @getTruckByNum(int)", asMETHOD(GameScript,getTruckByNum), asCALL_THISCALL);
@@ -325,7 +328,7 @@ int ScriptEngine::framestep(Ogre::Real dt)
 	// Set the function arguments
 	context->SetArgFloat(0, dt);
 
-	LogManager::getSingleton().logMessage("SE| Executing framestep()");
+	//LogManager::getSingleton().logMessage("SE| Executing framestep()");
 	int r = context->Execute();
 	if( r == asEXECUTION_FINISHED )
 	{
@@ -391,6 +394,17 @@ Beam *GameScript::getCurrentTruck()
 {
 	if(mefl) return mefl->getCurrentTruck();
 	return 0;
+}
+
+float GameScript::getGravity()
+{
+	if(mefl) return mefl->getGravity();
+	return 0;
+}
+
+void GameScript::setGravity(float value)
+{
+	if(mefl) mefl->setGravity(value);
 }
 
 Beam *GameScript::getTruckByNum(int num)

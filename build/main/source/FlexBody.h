@@ -36,20 +36,20 @@ class FlexBody
 {
 private:
 
-typedef struct
-{
-	int from;
-	int to;
-} interval_t;
+	typedef struct
+	{
+		int from;
+		int to;
+	} interval_t;
 
-typedef struct
-{
-	int ref;
-	int nx;
-	int ny;
-	int nz;
-	Vector3 coords;
-} Locator_t;
+	typedef struct
+	{
+		int ref;
+		int nx;
+		int ny;
+		int nz;
+		Vector3 coords;
+	} Locator_t;
 
 	node_t *nodes;
 	int numnodes;

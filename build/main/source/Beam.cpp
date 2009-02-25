@@ -414,28 +414,76 @@ Beam::Beam(int tnum, SceneManager *manager, SceneNode *parent, RenderWindow* win
 void Beam::scaleTruck(float value)
 {
 	if(value<0) return;
-	// scale nodes
-	for(int i=0;i<free_node;i++)
+	currentScale *= value;
+	// scale beams
+	for(int i=0;i<free_beam;i++)
 	{
-		nodes[i].iPosition *= value;
-		nodes[i].AbsPosition *= value;
-		nodes[i].RelPosition *= value;
-		nodes[i].smoothpos *= value;
+		//beams[i].k *= value;
+		beams[i].d *= value;
+		beams[i].L *= value;
+		beams[i].refL *= value;
+		beams[i].Lhydro *= value;
+		beams[i].hydroRatio *= value;
+		
+		beams[i].diameter *= value;
+		beams[i].stress *= value;
+		beams[i].lastforce *= value;
+		beams[i].maxposstress *= value;
+		beams[i].maxnegstress *= value;
+		
+	}
+	// scale nodes
+	Vector3 refpos = nodes[0].AbsPosition;
+	Vector3 relpos = nodes[0].RelPosition;
+	Vector3 smopos = nodes[0].smoothpos;
+	for(int i=1;i<free_node;i++)
+	{
+		nodes[i].iPosition = refpos + (nodes[i].iPosition-refpos) * value;
+		nodes[i].AbsPosition = refpos + (nodes[i].AbsPosition-refpos) * value;
+		nodes[i].RelPosition = relpos + (nodes[i].RelPosition-relpos) * value;
+		nodes[i].smoothpos = smopos + (nodes[i].smoothpos-smopos) * value;
 		nodes[i].Velocity *= value;
 		nodes[i].Forces *= value;
 		nodes[i].lockedPosition *= value;
 		nodes[i].lockedVelocity *= value;
 		nodes[i].lockedForces *= value;
+		nodes[i].mass *= value;
 	}
-	// scale beams
-	for(int i=0;i<free_beam;i++)
+	// props and stuff
+	// TOFIX: care about prop positions as well!
+	for(int i=0;i<free_prop;i++)
 	{
-		beams[i].L *= value;
-		beams[i].refL *= value;
-		beams[i].Lhydro *= value;
-		beams[i].diameter *= value;
-		beams[i].refL *= value;
+		if(props[i].snode) props[i].snode->scale(value, value, value);
+		if(props[i].wheel) props[i].wheel->scale(value, value, value);
+		if(props[i].wheel) props[i].wheelpos = relpos + (props[i].wheelpos-relpos) * value;
+		if(props[i].bbsnode[0]) props[i].bbsnode[0]->scale(value, value, value);
+		if(props[i].bbsnode[1]) props[i].bbsnode[1]->scale(value, value, value);
+		if(props[i].bbsnode[2]) props[i].bbsnode[2]->scale(value, value, value);
+		if(props[i].bbsnode[3]) props[i].bbsnode[3]->scale(value, value, value);
 	}
+	// tell the cabmesh that resizing is ok, and they dont need to break ;)
+	if(cabMesh) cabMesh->scale(value);
+	// update engine values
+	if(engine)
+	{
+		//engine->maxRPM *= value;
+		//engine->iddleRPM *= value;
+		engine->engineTorque *= value;
+		//engine->stallRPM *= value;
+		//engine->brakingTorque *= value;
+	}
+	// todo: scale flexbody
+	for(int i=0;i<free_flexbody;i++)
+	{
+		flexbodies[i]->getSceneNode()->scale(value, value, value);
+	}
+	// todo: fix meshwheels
+	//for(int i=0;i<free_wheel;i++)
+	//{
+		//if(vwheels[i].cnode) vwheels[i].cnode->scale(value, value, value);
+		//if(vwheels[i].fm && vwheels[i].cnode) vwheels[i].cnode->scale(value, value, value);
+	//}
+
 }
 
 void Beam::initSimpleSkeleton()
@@ -913,10 +961,16 @@ void Beam::calc_masses2(Real total)
 	LogManager::getSingleton().logMessage("Beams status: unstable:"+StringConverter::toString(unst)+" wheel:"+StringConverter::toString(wunst)+" normal:"+StringConverter::toString(free_beam-unst-wunst-st)+" superstable:"+StringConverter::toString(st));
 }
 
-float Beam::getTotalMass()
+// this recalcs the masses, useful when the gravity was changed...
+void Beam::recalc_masses()
+{
+	this->calc_masses2(totalmass);
+}
+
+float Beam::getTotalMass(bool withLocked)
 {
 	float mass = totalmass; //already computed in calc_masses2
-	if (lockTruck && lockTruck->getTruckName() != getTruckName())
+	if (withLocked && lockTruck && lockTruck->getTruckName() != getTruckName())
 		mass += lockTruck->getTotalMass();
 	return mass;
 }

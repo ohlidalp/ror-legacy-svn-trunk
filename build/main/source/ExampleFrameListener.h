@@ -465,6 +465,7 @@ public:
 	caelum::CaelumSystem *getCaelumSystem() { return mCaelumSystem; };
 
 	static float getGravity() { return gravity; };
+	static void setGravity(float value);
 	
 	Ogre::Ray getMouseRay();
 	void shutdown_pre();

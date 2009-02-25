@@ -45,11 +45,6 @@ enum autoswitch {REAR=0, NEUTRAL=1, DRIVE=2, TWO=3, ONE=4, MANUALMODE=5};
 class BeamEngine
 {
 protected:
-	float iddleRPM;
-	float maxRPM;
-	float stallRPM;
-	float engineTorque;
-	float brakingTorque;
 	float reverseRatio;
 	int numGears;
 	float *gearsRatio;
@@ -81,6 +76,11 @@ protected:
 	SoundScriptManager *ssm;
 
 public:
+	float iddleRPM;
+	float maxRPM;
+	float stallRPM;
+	float engineTorque;
+	float brakingTorque;
 
 	bool hasturbo;
 	bool hasair;

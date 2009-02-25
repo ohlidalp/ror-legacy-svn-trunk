@@ -33,25 +33,25 @@ using namespace Ogre;
 class FlexObj
 {
 private:
-typedef struct
-{
-	Vector3 vertex;
-	Vector3 normal;
-//	Vector3 color;
-	Vector2 texcoord;
-} CoVertice_t;
+	typedef struct
+	{
+		Vector3 vertex;
+		Vector3 normal;
+	//	Vector3 color;
+		Vector2 texcoord;
+	} CoVertice_t;
 
-typedef struct
-{
-	Vector3 vertex;
-} posVertice_t;
+	typedef struct
+	{
+		Vector3 vertex;
+	} posVertice_t;
 
-typedef struct
-{
-	Vector3 normal;
-//	Vector3 color;
-	Vector2 texcoord;
-} norVertice_t;
+	typedef struct
+	{
+		Vector3 normal;
+	//	Vector3 color;
+		Vector2 texcoord;
+	} norVertice_t;
 
 	Ogre::MeshPtr msh;
 	SubMesh** subs;
@@ -63,19 +63,19 @@ typedef struct
 	//shadow
 	union
 	{
-	float *shadowposvertices;
-	posVertice_t *coshadowposvertices;
+		float *shadowposvertices;
+		posVertice_t *coshadowposvertices;
 	};
 	union
 	{
-	float *shadownorvertices;
-	norVertice_t *coshadownorvertices;
+		float *shadownorvertices;
+		norVertice_t *coshadownorvertices;
 	};
 
 	union
 	{
-	float *vertices;
-	CoVertice_t *covertices;
+		float *vertices;
+		CoVertice_t *covertices;
 	};
 	//nodes
 	int *nodeIDs;
@@ -87,20 +87,21 @@ typedef struct
 	SceneManager *smanager;
 
 	float *sref;
+	int triangleCount;
 
 public:
 
 
 	FlexObj(SceneManager *manager, node_t *nds, int numtexcoords, Vector3* texcoords, int numtriangles, int* triangles, int numsubmeshes, int* subtexindex, int* subtriindex, char* texname, char* name, int* subisback, char* backtexname, char* transtexname);
 
-//find the zeroed id of the node v in the context of the tidx triangle
-int findID(int tidx, int v, int numsubmeshes, int* subtexindex, int* subtriindex);
-//with normals
-Vector3 updateVertices();
-//with normals
-Vector3 updateShadowVertices();
-Vector3 flexit();
-
+	//find the zeroed id of the node v in the context of the tidx triangle
+	int findID(int tidx, int v, int numsubmeshes, int* subtexindex, int* subtriindex);
+	//with normals
+	Vector3 updateVertices();
+	//with normals
+	Vector3 updateShadowVertices();
+	Vector3 flexit();
+	void scale(float factor);
 };
 
 

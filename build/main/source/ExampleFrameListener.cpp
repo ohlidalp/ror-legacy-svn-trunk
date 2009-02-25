@@ -209,6 +209,7 @@ public:
 
 // static heightfinder
 HeightFinder *ExampleFrameListener::hfinder = 0;
+ExampleFrameListener *eflsingleton = 0;
 
 //workaround for pagedgeometry
 inline float getTerrainHeight(Ogre::Real x, Ogre::Real z, void *unused=0)
@@ -760,9 +761,21 @@ void ExampleFrameListener::placeNeedle(RenderWindow* win, SceneNode *node, float
 
 float ExampleFrameListener::gravity = DEFAULT_GRAVITY;
 
+void ExampleFrameListener::setGravity(float value)
+{
+	if(!eflsingleton) return;
+	// update the mass of all trucks
+	gravity = value;
+	for (int t=0; t<eflsingleton->free_truck; t++)
+	{
+		eflsingleton->trucks[t]->recalc_masses();
+	}
+}
+
 // Constructor takes a RenderWindow because it uses that to determine input context
 ExampleFrameListener::ExampleFrameListener(RenderWindow* win, Camera* cam, SceneManager* scm, Root* root) :  initialized(false)
 {
+	eflsingleton=this;
 #ifdef ANGELSCRIPT
 	scriptEngine = 0;
 	timeLastScriptStep = 0;
@@ -6717,14 +6730,14 @@ bool ExampleFrameListener::frameStarted(const FrameEvent& evt)
 
 #ifdef ANGELSCRIPT
 	// only call the script step every 200ms, not more often!
+	timeLastScriptStep += dt;
+	// TODO: let the script choose the sleep time itself
 	if(scriptEngine && timeLastScriptStep > 0.2)
 	{
 		scriptEngine->framestep(timeLastScriptStep);
 		timeLastScriptStep = 0;
-	} else
-	{
-		timeLastScriptStep += dt;
 	}
+
 #endif
 
 	return true;

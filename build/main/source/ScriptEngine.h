@@ -82,6 +82,8 @@ public:
 	Beam *getTruckByNum(int num);
 	int getNumTrucks();
 	int getCurrentTruckNumber();
+	float getGravity();
+	void setGravity(float value);
 };
 
 #endif
