@@ -20,190 +20,199 @@ along with Rigs of Rods.  If not, see <http://www.gnu.org/licenses/>.
 #include "FlexObj.h"
 #include "ResourceBuffer.h"
 FlexObj::FlexObj(SceneManager *manager, node_t *nds, int numtexcoords, Vector3* texcoords, int numtriangles, int* triangles, int numsubmeshes, int* subtexindex, int* subtriindex, char* texname, char* name, int* subisback, char* backtexname, char* transtexname)
-    {
-		unsigned int i;
-		int j;
-		/*
-		//okay, we munch a bit the data to optimize submesh count
-		Vector3* texcoords=(Vector3*)malloc(sizeof(Vector3)*numtexcoords);
-		int* triangles=(int*)malloc(sizeof(int)*3*numtriangles);
-		int numsubmeshes=3;
-		int subtexindex[4];
-		int subtriindex[4];
-		int subisback[3]={0,1,2};
-		int numtex[3]={0,0,0};
-		int numtri[3]={0,0,0};
-		int postex[3]={0,0,0};
-		int postri[3]={0,0,0};
-		for (j=0; j<onumsubmeshes; j++)
-		{
-			int type=0;
+{
+	unsigned int i;
+	int j;
+	triangleCount = numtriangles;
+	/*
+	//okay, we munch a bit the data to optimize submesh count
+	Vector3* texcoords=(Vector3*)malloc(sizeof(Vector3)*numtexcoords);
+	int* triangles=(int*)malloc(sizeof(int)*3*numtriangles);
+	int numsubmeshes=3;
+	int subtexindex[4];
+	int subtriindex[4];
+	int subisback[3]={0,1,2};
+	int numtex[3]={0,0,0};
+	int numtri[3]={0,0,0};
+	int postex[3]={0,0,0};
+	int postri[3]={0,0,0};
+	for (j=0; j<onumsubmeshes; j++)
+	{
+		int type=0;
 // 			if (j<numsubmeshes-1)
-			{
-				type=osubisback[j+1];
-			}
-			numtex[type]+=osubtexindex[j+1]-osubtexindex[j];
-			numtri[type]+=osubtriindex[j+1]-osubtriindex[j];
-		}
-		postex[0]=0; postex[1]=numtex[0]; postex[2]=numtex[0]+numtex[1];
-		subtexindex[0]=0; subtexindex[1]=numtex[0]; subtexindex[2]=numtex[0]+numtex[1]; subtexindex[3]=numtex[0]+numtex[1]+numtex[2];
-		postri[0]=0; postri[1]=numtri[0]; postri[2]=numtri[0]+numtri[1];
-		subtriindex[0]=0; subtriindex[1]=numtri[0]; subtriindex[2]=numtri[0]+numtri[1]; subtriindex[3]=numtri[0]+numtri[1]+numtri[2];
-		for (j=0; j<onumsubmeshes; j++)
 		{
-			int type=0;
-			if (j<numsubmeshes-1)
-			{
-				type=osubisback[j+1];
-			}
-			for (i=0; i<osubtexindex[j+1]-osubtexindex[j]; i++)
-			{
-				texcoords[postex[type]]=otexcoords[osubtexindex[j]+i];
-			}
-			postex[type]+=osubtexindex[j+1]-osubtexindex[j];
-			for (i=0; i<osubtriindex[j+1]-osubtriindex[j]; i++)
-			{
-				int k;
-				for (k=0; k<3; k++)
-					triangles[postri[type]*3+k]=otriangles[(osubtriindex[j]+i)*3+k];
-			}
-			postri[type]+=osubtriindex[j+1]-osubtriindex[j];
+			type=osubisback[j+1];
 		}
+		numtex[type]+=osubtexindex[j+1]-osubtexindex[j];
+		numtri[type]+=osubtriindex[j+1]-osubtriindex[j];
+	}
+	postex[0]=0; postex[1]=numtex[0]; postex[2]=numtex[0]+numtex[1];
+	subtexindex[0]=0; subtexindex[1]=numtex[0]; subtexindex[2]=numtex[0]+numtex[1]; subtexindex[3]=numtex[0]+numtex[1]+numtex[2];
+	postri[0]=0; postri[1]=numtri[0]; postri[2]=numtri[0]+numtri[1];
+	subtriindex[0]=0; subtriindex[1]=numtri[0]; subtriindex[2]=numtri[0]+numtri[1]; subtriindex[3]=numtri[0]+numtri[1]+numtri[2];
+	for (j=0; j<onumsubmeshes; j++)
+	{
+		int type=0;
+		if (j<numsubmeshes-1)
+		{
+			type=osubisback[j+1];
+		}
+		for (i=0; i<osubtexindex[j+1]-osubtexindex[j]; i++)
+		{
+			texcoords[postex[type]]=otexcoords[osubtexindex[j]+i];
+		}
+		postex[type]+=osubtexindex[j+1]-osubtexindex[j];
+		for (i=0; i<osubtriindex[j+1]-osubtriindex[j]; i++)
+		{
+			int k;
+			for (k=0; k<3; k++)
+				triangles[postri[type]*3+k]=otriangles[(osubtriindex[j]+i)*3+k];
+		}
+		postri[type]+=osubtriindex[j+1]-osubtriindex[j];
+	}
 */
-		//finished munching
-		smanager=manager;
-		nodes=nds;
-		/// Create the mesh via the MeshManager
-        msh = MeshManager::getSingleton().createManual(name, ResourceGroupManager::DEFAULT_RESOURCE_GROUP_NAME,new ResourceBuffer());
+	//finished munching
+	smanager=manager;
+	nodes=nds;
+	/// Create the mesh via the MeshManager
+    msh = MeshManager::getSingleton().createManual(name, ResourceGroupManager::DEFAULT_RESOURCE_GROUP_NAME,new ResourceBuffer());
 
-        /// Create submeshes
-		subs=(SubMesh**)malloc(numsubmeshes*sizeof(SubMesh*));
-		for (j=0; j<numsubmeshes; j++)
+    /// Create submeshes
+	subs=(SubMesh**)malloc(numsubmeshes*sizeof(SubMesh*));
+	for (j=0; j<numsubmeshes; j++)
+	{
+		subs[j] = msh->createSubMesh();
+		//materials
+		if (j<numsubmeshes-1)
 		{
-			subs[j] = msh->createSubMesh();
-			//materials
-			if (j<numsubmeshes-1)
-			{
-				if (subisback[j+1]==0) subs[j]->setMaterialName(texname);
-				if (subisback[j+1]==1) subs[j]->setMaterialName(backtexname);
-				if (subisback[j+1]==2) subs[j]->setMaterialName(transtexname);
-			}
-			else
-				subs[j]->setMaterialName(texname);
-		};
-
-        /// Define the vertices (8 vertices, each consisting of 3 groups of 3 floats
-        nVertices = numtexcoords;
-        vbufCount = (2*3+2)*nVertices;
-		vertices=(float*)malloc(vbufCount*sizeof(float));
-		//shadow
-		shadownorvertices=(float*)malloc(nVertices*(3+2)*sizeof(float));
-		shadowposvertices=(float*)malloc(nVertices*3*2*sizeof(float));
-		nodeIDs=(int*)malloc(nVertices*sizeof(int));
-
-		//define node ids
-		for (i=0; i<nVertices; i++)
-		{
-			nodeIDs[i]=(int)(texcoords[i].x);
+			if (subisback[j+1]==0) subs[j]->setMaterialName(texname);
+			if (subisback[j+1]==1) subs[j]->setMaterialName(backtexname);
+			if (subisback[j+1]==2) subs[j]->setMaterialName(transtexname);
 		}
+		else
+			subs[j]->setMaterialName(texname);
+	};
 
-		//textures coordinates
-		for (i=0; i<nVertices; i++)
-		{
-			covertices[i].texcoord=Vector2(texcoords[i].y,texcoords[i].z);
-		}
+    /// Define the vertices (8 vertices, each consisting of 3 groups of 3 floats
+    nVertices = numtexcoords;
+    vbufCount = (2*3+2)*nVertices;
+	vertices=(float*)malloc(vbufCount*sizeof(float));
+	//shadow
+	shadownorvertices=(float*)malloc(nVertices*(3+2)*sizeof(float));
+	shadowposvertices=(float*)malloc(nVertices*3*2*sizeof(float));
+	nodeIDs=(int*)malloc(nVertices*sizeof(int));
 
-        /// Define triangles
-        /// The values in this table refer to vertices in the above table
-        ibufCount = 3*numtriangles;
-        faces=(unsigned short*)malloc(ibufCount*sizeof(unsigned short));
-		for (i=0; i<ibufCount; i++)
-		{
-			faces[i]=findID(i/3, triangles[i], numsubmeshes, subtexindex, subtriindex);
-		}
+	//define node ids
+	for (i=0; i<nVertices; i++)
+	{
+		nodeIDs[i]=(int)(texcoords[i].x);
+	}
 
-		sref=(float*)malloc(numtriangles*sizeof(float));
+	//textures coordinates
+	for (i=0; i<nVertices; i++)
+	{
+		covertices[i].texcoord=Vector2(texcoords[i].y,texcoords[i].z);
+	}
 
-		for (i=0; i<(unsigned int)numtriangles;i++)
-		{
-			Vector3 v1, v2;
-			v1=nodes[nodeIDs[faces[i*3+1]]].RelPosition-nodes[nodeIDs[faces[i*3]]].RelPosition;
-			v2=nodes[nodeIDs[faces[i*3+2]]].RelPosition-nodes[nodeIDs[faces[i*3]]].RelPosition;
-			v1=v1.crossProduct(v2);
-			sref[i]=v1.length()*2.0;
-		}
+    /// Define triangles
+    /// The values in this table refer to vertices in the above table
+    ibufCount = 3*numtriangles;
+    faces=(unsigned short*)malloc(ibufCount*sizeof(unsigned short));
+	for (i=0; i<ibufCount; i++)
+	{
+		faces[i]=findID(i/3, triangles[i], numsubmeshes, subtexindex, subtriindex);
+	}
+
+	sref=(float*)malloc(numtriangles*sizeof(float));
+
+	for (i=0; i<(unsigned int)numtriangles;i++)
+	{
+		Vector3 v1, v2;
+		v1=nodes[nodeIDs[faces[i*3+1]]].RelPosition-nodes[nodeIDs[faces[i*3]]].RelPosition;
+		v2=nodes[nodeIDs[faces[i*3+2]]].RelPosition-nodes[nodeIDs[faces[i*3]]].RelPosition;
+		v1=v1.crossProduct(v2);
+		sref[i]=v1.length()*2.0;
+	}
 
 
-		//update coords
-		updateVertices();
+	//update coords
+	updateVertices();
 
 
 
-        /// Create vertex data structure for vertices shared between submeshes
-        msh->sharedVertexData = new VertexData();
-        msh->sharedVertexData->vertexCount = nVertices;
+    /// Create vertex data structure for vertices shared between submeshes
+    msh->sharedVertexData = new VertexData();
+    msh->sharedVertexData->vertexCount = nVertices;
 
 
-        /// Create declaration (memory format) of vertex data
-        decl = msh->sharedVertexData->vertexDeclaration;
-        size_t offset = 0;
-        decl->addElement(0, offset, VET_FLOAT3, VES_POSITION);
-        offset += VertexElement::getTypeSize(VET_FLOAT3);
-        decl->addElement(0, offset, VET_FLOAT3, VES_NORMAL);
-        offset += VertexElement::getTypeSize(VET_FLOAT3);
+    /// Create declaration (memory format) of vertex data
+    decl = msh->sharedVertexData->vertexDeclaration;
+    size_t offset = 0;
+    decl->addElement(0, offset, VET_FLOAT3, VES_POSITION);
+    offset += VertexElement::getTypeSize(VET_FLOAT3);
+    decl->addElement(0, offset, VET_FLOAT3, VES_NORMAL);
+    offset += VertexElement::getTypeSize(VET_FLOAT3);
 //        decl->addElement(0, offset, VET_FLOAT3, VES_DIFFUSE);
 //        offset += VertexElement::getTypeSize(VET_FLOAT3);
-        decl->addElement(0, offset, VET_FLOAT2, VES_TEXTURE_COORDINATES, 0);
-        offset += VertexElement::getTypeSize(VET_FLOAT2);
+    decl->addElement(0, offset, VET_FLOAT2, VES_TEXTURE_COORDINATES, 0);
+    offset += VertexElement::getTypeSize(VET_FLOAT2);
 
 
-        /// Allocate vertex buffer of the requested number of vertices (vertexCount) 
-        /// and bytes per vertex (offset)
-        vbuf = 
-          HardwareBufferManager::getSingleton().createVertexBuffer(
-              offset, msh->sharedVertexData->vertexCount, HardwareBuffer::HBU_DYNAMIC_WRITE_ONLY_DISCARDABLE);
+    /// Allocate vertex buffer of the requested number of vertices (vertexCount) 
+    /// and bytes per vertex (offset)
+    vbuf = 
+      HardwareBufferManager::getSingleton().createVertexBuffer(
+          offset, msh->sharedVertexData->vertexCount, HardwareBuffer::HBU_DYNAMIC_WRITE_ONLY_DISCARDABLE);
 
-        /// Upload the vertex data to the card
-        vbuf->writeData(0, vbuf->getSizeInBytes(), vertices, true);
-
-
-        /// Set vertex buffer binding so buffer 0 is bound to our vertex buffer
-        VertexBufferBinding* bind = msh->sharedVertexData->vertexBufferBinding; 
-        bind->setBinding(0, vbuf);
+    /// Upload the vertex data to the card
+    vbuf->writeData(0, vbuf->getSizeInBytes(), vertices, true);
 
 
+    /// Set vertex buffer binding so buffer 0 is bound to our vertex buffer
+    VertexBufferBinding* bind = msh->sharedVertexData->vertexBufferBinding; 
+    bind->setBinding(0, vbuf);
 
 
-        /// Set parameters of the submeshes
-		for (j=0; j<numsubmeshes; j++)
-		{
-			int smcount=3*(subtriindex[j+1]-subtriindex[j]);
-	        subs[j]->useSharedVertices = true;
-			/// Allocate index buffer of the requested number of vertices (ibufCount) 
-			HardwareIndexBufferSharedPtr ibuf = HardwareBufferManager::getSingleton().
-			 createIndexBuffer(
-				 HardwareIndexBuffer::IT_16BIT, 
-					smcount, 
-					HardwareBuffer::HBU_STATIC_WRITE_ONLY);
-
-			/// Upload the index data to the card
-			ibuf->writeData(0, ibuf->getSizeInBytes(), &faces[subtriindex[j]*3], true);
-		    subs[j]->indexData->indexBuffer = ibuf;
-			subs[j]->indexData->indexCount = smcount;
-	        subs[j]->indexData->indexStart = 0;
-		}
 
 
-        /// Set bounding information (for culling)
-        msh->_setBounds(AxisAlignedBox(-100,-100,-100,100,100,100), true);
-        //msh->_setBoundingSphereRadius(100);
+    /// Set parameters of the submeshes
+	for (j=0; j<numsubmeshes; j++)
+	{
+		int smcount=3*(subtriindex[j+1]-subtriindex[j]);
+        subs[j]->useSharedVertices = true;
+		/// Allocate index buffer of the requested number of vertices (ibufCount) 
+		HardwareIndexBufferSharedPtr ibuf = HardwareBufferManager::getSingleton().
+		 createIndexBuffer(
+			 HardwareIndexBuffer::IT_16BIT, 
+				smcount, 
+				HardwareBuffer::HBU_STATIC_WRITE_ONLY);
+
+		/// Upload the index data to the card
+		ibuf->writeData(0, ibuf->getSizeInBytes(), &faces[subtriindex[j]*3], true);
+	    subs[j]->indexData->indexBuffer = ibuf;
+		subs[j]->indexData->indexCount = smcount;
+        subs[j]->indexData->indexStart = 0;
+	}
 
 
-        /// Notify Mesh object that it has been loaded
-        msh->load();
-		msh->buildEdgeList();
+    /// Set bounding information (for culling)
+    msh->_setBounds(AxisAlignedBox(-100,-100,-100,100,100,100), true);
+    //msh->_setBoundingSphereRadius(100);
 
-    }
+
+    /// Notify Mesh object that it has been loaded
+    msh->load();
+	msh->buildEdgeList();
+
+}
+
+void FlexObj::scale(float factor)
+{
+	for (int i=0; i<triangleCount;i++)
+	{
+		sref[i] *= factor;
+	}
+}
 
 //find the zeroed id of the node v in the context of the tidx triangle
 int FlexObj::findID(int tidx, int v, int numsubmeshes, int* subtexindex, int* subtriindex)

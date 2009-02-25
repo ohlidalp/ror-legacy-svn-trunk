@@ -730,7 +730,8 @@ public:
 	int getNodeCount(){return free_node;};
 	node_t *getNodes(){return nodes;};
 
-	float getTotalMass();
+	float getTotalMass(bool withLocked=true);
+	void recalc_masses();
 	int getWheelNodeCount();
 	void setMass(float m) { truckmass = m; };
 
