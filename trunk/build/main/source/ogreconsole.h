@@ -1,51 +1,48 @@
-#pragma once
+#ifndef OGRECONSOLE_H__
+#define OGRECONSOLE_H__
+
 #include <OgreFrameListener.h>
 #include <Ogre.h>
 #include <OIS.h>
 #include <list>
 #include <vector>
 
-using namespace Ogre;
-using namespace std;
-
-class OgreConsole: public Singleton<OgreConsole>, FrameListener, LogListener
+class OgreConsole: public Ogre::Singleton<OgreConsole>, Ogre::FrameListener, Ogre::LogListener
 {
 public:
-   OgreConsole();
-   ~OgreConsole();
+	OgreConsole();
+	~OgreConsole();
 
-   void   init(Ogre::Root *root);
-   void   shutdown();
+	void init(Ogre::Root *root);
+	void shutdown();
 
-   void   setVisible(bool visible);
-   bool   isVisible(){return visible;}
+	void setVisible(bool visible);
+	bool isVisible(){return visible;}
 
-   void   print(const String &text);
+	void print(const Ogre::String &text);
 
-   virtual bool frameStarted(const Ogre::FrameEvent &evt);
-   virtual bool frameEnded(const Ogre::FrameEvent &evt);
+	virtual bool frameStarted(const Ogre::FrameEvent &evt);
+	virtual bool frameEnded(const Ogre::FrameEvent &evt);
 
-   void onKeyPressed(const OIS::KeyEvent &arg);
+	void onKeyPressed(const OIS::KeyEvent &arg);
 
-   void addCommand(const String &command, void (*)(vector<String>&));
-   void removeCommand(const String &command);
+	void messageLogged( const Ogre::String& message, Ogre::LogMessageLevel lml, bool maskDebug, const Ogre::String &logName );
 
-   //log
-   void messageLogged( const String& message, LogMessageLevel lml, bool maskDebug, const String &logName ) {print(logName+": "+message);}
-private:
-   bool            visible;
-   bool            initialized;
-   Root         *root;
-   SceneManager   *scene;
-   Rectangle2D   *rect;
-   SceneNode      *node;
-   OverlayElement *textbox;
-   Overlay      *overlay;
+protected:
+	bool visible;
+	bool initialized;
+	Ogre::Root *root;
+	Ogre::SceneManager *scene;
+	Ogre::Rectangle2D *rect;
+	Ogre::SceneNode *node;
+	Ogre::OverlayElement *textbox;
+	Ogre::Overlay *overlay;
 
-   float            height;
-   bool            update_overlay;
-   int               start_line;
-   list<String>      lines;
-   String            prompt;
-   map<String,void (*)(vector<String>&)>  commands;
+	float height;
+	bool update_overlay;
+	int start_line;
+	std::list<Ogre::String> lines;
+	Ogre::String prompt;
 };
+
+#endif //OGRECONSOLE_H__

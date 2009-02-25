@@ -31,7 +31,6 @@ freely, subject to the following restrictions:
 #ifndef NOOGRE
 #include "IngameConsole.h"
 #include "gui_manager.h"
-#include "ogreconsole.h"
 #endif
 
 #if OGRE_PLATFORM == OGRE_PLATFORM_APPLE
@@ -50,6 +49,10 @@ freely, subject to the following restrictions:
 #if OGRE_PLATFORM == OGRE_PLATFORM_LINUX
 #include <X11/Xlib.h>
 #include <linux/LinuxMouse.h>
+#endif
+
+#ifndef NOOGRE
+#include "ogreconsole.h"
 #endif
 
 using namespace std;

@@ -30,7 +30,6 @@ along with Rigs of Rods.  If not, see <http://www.gnu.org/licenses/>.
 
 #ifdef ANGELSCRIPT
 #include "ScriptEngine.h"
-#include "ogreconsole.h"
 #endif
 
 #include "Road.h"
@@ -103,6 +102,7 @@ along with Rigs of Rods.  If not, see <http://www.gnu.org/licenses/>.
 //#include "OgreTerrainSceneManager.h" // = ILLEGAL to link to a plugin!
 
 #include "writeTextToTexture.h"
+#include "ogreconsole.h"
 
 #if OGRE_PLATFORM == OGRE_PLATFORM_APPLE
 //#include <CFUserNotification.h>
