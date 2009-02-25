@@ -528,6 +528,13 @@ class Beam//: public FrameListener
 {
 public:
 	Beam() {}; // for wrapper, DO NOT USE!
+
+#ifdef ANGELSCRIPT
+	// we have to add this to be able to use the class as reference inside scripts
+	void addRef(){};
+	void release(){};
+#endif
+
 	//constructor
 	Beam(int tnum, SceneManager *manager, SceneNode *parent, RenderWindow* win, float *mapsizex, float *mapsizez, Real px, Real py, Real pz, Quaternion rot, char* fname, Collisions *icollisions, DustPool *mdust, DustPool *mclump, DustPool *msparks, DustPool *mdrip, DustPool *msplash, DustPool *mripple, HeightFinder *mfinder, Water *w, Camera *pcam, Mirrors *mmirror, bool postload=false, bool networked=false, bool networking=false, collision_box_t *spawnbox=NULL, bool ismachine=false, int flareMode=0, std::vector<Ogre::String> *truckconfig=0);
 	void activate();
