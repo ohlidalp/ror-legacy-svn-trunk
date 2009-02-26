@@ -76,10 +76,10 @@ void IngameConsole::setMode(ExampleFrameListener *efl, int mode, bool visible)
 	if(mode == displaymode)
 		return;
 
-	if(mode >= CONSOLE_END)
-		mode = CONSOLE_LEFT_SMALL;
-	if(mode < CONSOLE_LEFT_SMALL)
-		mode = CONSOLE_LEFT_SMALL;
+	if(mode >= NETCHAT_END)
+		mode = NETCHAT_LEFT_SMALL;
+	if(mode < NETCHAT_LEFT_SMALL)
+		mode = NETCHAT_LEFT_SMALL;
 	displaymode = mode;
 
 	unsigned int screenWidth, screenHeight, depth;
@@ -87,15 +87,15 @@ void IngameConsole::setMode(ExampleFrameListener *efl, int mode, bool visible)
 	RenderWindow *rw = mefl->getRenderWindow();
 	rw->getMetrics(screenWidth, screenHeight, depth, left, top);
 
-	if (mode == CONSOLE_LEFT_SMALL) // 0
+	if (mode == NETCHAT_LEFT_SMALL) // 0
 	{
 		resize(0, (int)(((float)screenHeight) * 0.56), 600, (int)(ceil(((float)screenHeight) * 0.2)));
 	}
-	else if (mode == CONSOLE_LEFT_FULL) // 1
+	else if (mode == NETCHAT_LEFT_FULL) // 1
 	{
     resize(0, 0, 600, (int)(((float)screenHeight) * 0.8));
 	}
-	else if (mode == CONSOLE_TOP) // 2
+	else if (mode == NETCHAT_TOP) // 2
 	{
     resize((int)(((float)screenWidth)*0.5) - 300, 0, 600, 115);
 	}

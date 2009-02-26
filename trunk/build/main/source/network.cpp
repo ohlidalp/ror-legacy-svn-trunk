@@ -615,44 +615,6 @@ void Network::receivethreadstart()
 			netFatalError(errmsg);
 			return;
 		}
-		if (type==MSG2_RCON_COMMAND_FAILED)
-		{
-			pthread_mutex_lock(&chat_mutex);
-			CONSOLE.addText("^1 RCON command failed: " + String(buffer));
-			pthread_mutex_unlock(&chat_mutex);
-			continue;
-		}
-		else if (type==MSG2_RCON_COMMAND_SUCCESS)
-		{
-			pthread_mutex_lock(&chat_mutex);
-			CONSOLE.addText("^2 RCON command successful: " + String(buffer));
-			pthread_mutex_unlock(&chat_mutex);
-			continue;
-		}
-		else if (type==MSG2_RCON_LOGIN_SUCCESS)
-		{
-			rconauthed=1;
-			pthread_mutex_lock(&chat_mutex);
-			CONSOLE.addText("^2 RCON login successful!");
-			pthread_mutex_unlock(&chat_mutex);
-			continue;
-		}
-		else if (type==MSG2_RCON_LOGIN_NOTAV)
-		{
-			rconauthed=0;
-			pthread_mutex_lock(&chat_mutex);
-			CONSOLE.addText("^1 ERROR: RCON not available on this server!");
-			pthread_mutex_unlock(&chat_mutex);
-			continue;
-		}
-		else if (type==MSG2_RCON_LOGIN_FAILED)
-		{
-			rconauthed=0;
-			pthread_mutex_lock(&chat_mutex);
-			CONSOLE.addText("^1 ERROR: RCON login failed!");
-			pthread_mutex_unlock(&chat_mutex);
-			continue;
-		}
 		else if (type==MSG2_VEHICLE_DATA)
 		{
 			//we must update a vehicle
@@ -742,9 +704,9 @@ void Network::receivethreadstart()
 							Cache_Entry entry = CACHE.getResourceInfo(truckname);
 							truckname = entry.dname;
 						}
-						CONSOLE.addText("^9* " + ColoredTextAreaOverlayElement::StripColors(clients[i].nickname) + " joined with " + truckname);
+						NETCHAT.addText("^9* " + ColoredTextAreaOverlayElement::StripColors(clients[i].nickname) + " joined with " + truckname);
 						if(!resourceExists)
-							CONSOLE.addText("^1* " + String(clients[i].vehicle) + " not found. Player will be invisible.");
+							NETCHAT.addText("^1* " + String(clients[i].vehicle) + " not found. Player will be invisible.");
 						pthread_mutex_unlock(&chat_mutex);
 
 						break;
@@ -780,7 +742,7 @@ void Network::receivethreadstart()
 
 					// add some chat msg
 					pthread_mutex_lock(&chat_mutex);
-					CONSOLE.addText("^9* " + ColoredTextAreaOverlayElement::StripColors(clients[i].nickname) + " disconnected");
+					NETCHAT.addText("^9* " + ColoredTextAreaOverlayElement::StripColors(clients[i].nickname) + " disconnected");
 					pthread_mutex_unlock(&chat_mutex);
 
 					break;
@@ -801,7 +763,7 @@ void Network::receivethreadstart()
 						String nickname = ColoredTextAreaOverlayElement::StripColors(String(clients[i].nickname));
 						if(clients[i].invisible)
 							nickname += " (i)";
-						CONSOLE.addText("^8" + nickname + ": ^7" + ColoredTextAreaOverlayElement::StripColors(String(buffer)));
+						NETCHAT.addText("^8" + nickname + ": ^7" + ColoredTextAreaOverlayElement::StripColors(String(buffer)));
 						pthread_mutex_unlock(&chat_mutex);
 						break;
 					}
@@ -810,7 +772,7 @@ void Network::receivethreadstart()
 			{
 				// server msg
 				pthread_mutex_lock(&chat_mutex);
-				CONSOLE.addText(String(buffer));
+				NETCHAT.addText(String(buffer));
 				pthread_mutex_unlock(&chat_mutex);
 			}
 		}
@@ -819,143 +781,6 @@ void Network::receivethreadstart()
 			if(source!=-1)
 				// only accept game commands from the server and no one else
 				continue;
-			// TODO
-			// work with scanf here and forward the results to a method in EFL
-			// notice that it must be a threadsafe call!
-			if(!strncmp(buffer, "newgoal", 7))
-			{
-				float x=0, y=0, z=0;
-				char text[255];
-				memset(text, 0, 254);
-				int res = sscanf(buffer, "newgoal %f, %f, %f, %s", &x, &y, &z, text);
-				if(res < 4)
-				{
-					LogManager::getSingleton().logMessage("invalid newgoal GAME_CMD received!");
-					continue;
-				}
-				// mis-use the chat mutex here
-				pthread_mutex_lock(&chat_mutex);
-				mefl->setDirectionArrow(text, Vector3(x, y, z));
-				pthread_mutex_unlock(&chat_mutex);
-				continue;
-			}
-			if(!strncmp(buffer, "createoverlay", 13))
-			{
-				try
-				{
-					pthread_mutex_lock(&chat_mutex);
-					// we have a space between the command and the data!
-					LogManager::getSingleton().logMessage("Creating Overlay via GAME_CMD");
-					MemoryDataStream *mds = new MemoryDataStream(buffer+14, wrotelen-14);
-					const String group = ResourceGroupManager::DEFAULT_RESOURCE_GROUP_NAME;
-                    DataStreamPtr dptr(mds);
-					OverlayManager::getSingleton().parseScript(dptr, group);
-					pthread_mutex_unlock(&chat_mutex);
-					continue;
-				}
-				catch(...)
-				{
-					LogManager::getSingleton().logMessage("error while handling createoverlay GAME_CMD");
-					continue;
-				}
-			}
-			if(!strncmp(buffer, "setoverlayvisible", 17))
-			{
-				char oname[255];
-				int visible=0;
-				memset(oname, 0, 254);
-				int res = sscanf(buffer, "setoverlayvisible %d, %s", &visible, oname);
-				if(res < 2)
-				{
-					LogManager::getSingleton().logMessage("invalid setoverlayvisible GAME_CMD received!");
-					continue;
-				}
-				try
-				{
-					pthread_mutex_lock(&chat_mutex);
-					Overlay *o = OverlayManager::getSingleton().getByName(String(oname));
-					if(!o)
-					{
-						LogManager::getSingleton().logMessage("invalid setoverlayvisible GAME_CMD received: Overlay "+String(oname)+" does not exist!");
-						pthread_mutex_unlock(&chat_mutex);
-						continue;
-					}
-					if(visible)
-						o->show();
-					else
-						o->hide();
-					pthread_mutex_unlock(&chat_mutex);
-					continue;
-				}
-				catch(...)
-				{
-					LogManager::getSingleton().logMessage("invalid setoverlayvisible GAME_CMD received! (error 2)");
-					continue;
-				}
-			}
-			if(!strncmp(buffer, "setoverlayelementcolor", 22))
-			{
-				char oname[255];
-				float r=0, g=0, b=0, a=0;
-				memset(oname, 0, 254);
-				int res = sscanf(buffer, "setoverlayelementcolor %f, %f, %f, %f, %s", &r, &g, &b, &a, oname);
-				if(res < 5)
-				{
-					LogManager::getSingleton().logMessage("invalid setoverlayelementcolor GAME_CMD received!");
-					continue;
-				}
-				try
-				{
-					pthread_mutex_lock(&chat_mutex);
-					TextAreaOverlayElement *taoe = (TextAreaOverlayElement *)OverlayManager::getSingleton().getOverlayElement(String(oname));
-					if(!taoe)
-					{
-						LogManager::getSingleton().logMessage("invalid setoverlayelementcolor GAME_CMD received: TextAreaOverlayElement "+String(oname)+" does not exist!");
-						pthread_mutex_unlock(&chat_mutex);
-						continue;
-					}
-					taoe->setColour(ColourValue(r,g,b,a));
-					pthread_mutex_unlock(&chat_mutex);
-					continue;
-				}
-				catch(...)
-				{
-					LogManager::getSingleton().logMessage("invalid setoverlayelementcolor GAME_CMD received! (error 2)");
-					continue;
-				}
-			}
-			if(!strncmp(buffer, "setoverlayelementtext", 21))
-			{
-				char oname[255];
-				memset(oname, 0, 254);
-				char text[1024];
-				memset(text, 0, 1023);
-				int res = sscanf(buffer, "setoverlayelementtext %s %s", text, oname);
-				if(res < 2)
-				{
-					LogManager::getSingleton().logMessage("invalid setoverlayelementtext GAME_CMD received!");
-					continue;
-				}
-				try
-				{
-					pthread_mutex_lock(&chat_mutex);
-					TextAreaOverlayElement *taoe = (TextAreaOverlayElement *)OverlayManager::getSingleton().getOverlayElement(String(oname));
-					if(!taoe)
-					{
-						LogManager::getSingleton().logMessage("invalid setoverlayelementtext GAME_CMD received: TextAreaOverlayElement "+String(oname)+" does not exist!");
-						pthread_mutex_unlock(&chat_mutex);
-						continue;
-					}
-					taoe->setCaption(String(text));
-					pthread_mutex_unlock(&chat_mutex);
-					continue;
-				}
-				catch(...)
-				{
-					LogManager::getSingleton().logMessage("invalid setoverlayelementtext GAME_CMD received! (error 2)");
-					continue;
-				}
-			}
 		}
 		else if (type==MSG2_FORCE)
 		{
