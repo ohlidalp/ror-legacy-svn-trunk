@@ -178,7 +178,7 @@ std::vector<Ogre::String> GUI_Loader::getTruckConfig()
 
 void GUI_Loader::selectionDone()
 {
-	if(!selectedtruck)
+	if(!selectedtruck || selectiondone)
 		return;
 
 	// check if the resource is loaded
@@ -332,6 +332,7 @@ void GUI_Loader::setEnableCancel(bool enabled)
 
 void GUI_Loader::show(int type)
 {
+	selectiondone=false;
 	setProgress(UI_PROGRESSBAR_HIDE);
 	// show mouse cursor
 	MyGUI::PointerManager::getInstance().setVisible(true);
