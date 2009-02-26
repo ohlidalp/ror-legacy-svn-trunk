@@ -355,6 +355,7 @@ int ScriptEngine::loadScriptFile(const char *fileName, string &script)
 int ScriptEngine::framestep(Ogre::Real dt)
 {
 	if(frameStepFunctionPtr<0) return 1;
+	if(!engine) return 0;
 	if(!context) context = engine->CreateContext();
 	context->Prepare(frameStepFunctionPtr);
 
@@ -374,7 +375,8 @@ int ScriptEngine::framestep(Ogre::Real dt)
 void ScriptEngine::executeString(Ogre::String command)
 {
 	// TOFIX: add proper error output
-	if(!context) return;
+	if(!engine) return;
+	if(!context) context = engine->CreateContext();
 
 	int result = engine->ExecuteString("terrainScript", command.c_str(), &context);
 	if(result<0)
