@@ -63,9 +63,9 @@ public:
 		needlesOverlay->show();
 		blendOverlay->show();
 		//hide unwanted overlays
-		consolevisible = CONSOLE.getVisible();
+		consolevisible = NETCHAT.getVisible();
 		if(consolevisible)
-			CONSOLE.setVisible(false);
+			NETCHAT.setVisible(false);
 
     }
     void postRenderTargetUpdate(const RenderTargetEvent& evt)
@@ -86,7 +86,7 @@ public:
 		blendOverlay->hide();
 
 		if(consolevisible)
-			CONSOLE.setVisible(true);
+			NETCHAT.setVisible(true);
     }
 
 };

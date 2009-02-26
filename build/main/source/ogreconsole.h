@@ -17,7 +17,7 @@ public:
 	void shutdown();
 
 	void setVisible(bool visible);
-	bool isVisible(){return visible;}
+	bool getVisible(){return visible;}
 
 	void print(const Ogre::String &text);
 

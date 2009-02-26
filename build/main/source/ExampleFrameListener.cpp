@@ -306,7 +306,7 @@ void ExampleFrameListener::updateGUI(float dt)
 
 	//update the truck info gui (also if not displayed!)
 	TRUCKHUD.update(dt, trucks[current_truck], mSceneMgr, mCamera, mWindow, mTruckInfoOn);
-	CONSOLE.update(dt);
+	NETCHAT.update(dt);
 
 #ifdef TIMING
 	BES.updateGUI(dt, current_truck, trucks);
@@ -1290,7 +1290,7 @@ ExampleFrameListener::ExampleFrameListener(RenderWindow* win, Camera* cam, Scene
 	//LogManager::getSingleton().logMessage("huette debug 1");
 
 	// hide console when not in netmode
-	CONSOLE.setMode(this, CONSOLE_LEFT_SMALL, false);
+	NETCHAT.setMode(this, NETCHAT_LEFT_SMALL, false);
 
 	if(netmode)
 	{
@@ -2178,12 +2178,12 @@ bool ExampleFrameListener::updateEvents(float dt)
 	}
 
 
-	if (CONSOLE.getVisible() && INPUTENGINE.getEventBoolValue("COMMON_ENTER_CHAT") && mTimeUntilNextToggle <= 0 && !hidegui)
+	if (NETCHAT.getVisible() && INPUTENGINE.getEventBoolValue("COMMON_ENTER_CHAT") && mTimeUntilNextToggle <= 0 && !hidegui)
 	{
 		if (chatting)
 		{
 			processConsoleInput();
-			CONSOLE.setEnterText("", false);
+			NETCHAT.setEnterText("", false);
 			mTimeUntilNextToggle = 0.5;
 			chatting=false;
 			INPUTENGINE.setRecordInput(false);
@@ -2193,7 +2193,7 @@ bool ExampleFrameListener::updateEvents(float dt)
 		{
 			INPUTENGINE.resetKeyLine();
 			INPUTENGINE.setRecordInput(true);
-			CONSOLE.setEnterText("", true, true);
+			NETCHAT.setEnterText("", true, true);
 			chatting=true;
 			mTimeUntilNextToggle = 0.5;
 		}
@@ -3647,15 +3647,21 @@ bool ExampleFrameListener::updateEvents(float dt)
 			mTimeUntilNextToggle = 0.2;
 		}
 
-		if (INPUTENGINE.getEventBoolValue("COMMON_CONSOLEDISPLAY") && mTimeUntilNextToggle <=0)
+		if (INPUTENGINE.getEventBoolValue("COMMON_NETCHATDISPLAY") && mTimeUntilNextToggle <=0)
 		{
-			CONSOLE.toggleVisible(this);
+			NETCHAT.toggleVisible(this);
 			mTimeUntilNextToggle = 0.2;
 		}
 
-		if (INPUTENGINE.getEventBoolValue("COMMON_CONSOLEMODE") && mTimeUntilNextToggle <=0)
+		if (INPUTENGINE.getEventBoolValue("COMMON_CONSOLEDISPLAY") && mTimeUntilNextToggle <=0)
 		{
-			CONSOLE.toggleMode(this);
+			OgreConsole::getSingleton().setVisible(!OgreConsole::getSingleton().getVisible());
+			mTimeUntilNextToggle = 0.2;
+		}
+
+		if (INPUTENGINE.getEventBoolValue("COMMON_NETCHATMODE") && mTimeUntilNextToggle <=0)
+		{
+			NETCHAT.toggleMode(this);
 			mTimeUntilNextToggle = 0.2;
 		}
 
@@ -3746,7 +3752,7 @@ bool ExampleFrameListener::updateEvents(float dt)
 					initTrucks(true, selt->fname, selt->fext, configptr);
 				// show console in netmode!
 				if(netmode)
-					CONSOLE.setMode(this, CONSOLE_LEFT_SMALL, true);
+					NETCHAT.setMode(this, NETCHAT_LEFT_SMALL, true);
 
 			} else if (loading_state==RELOADING) {
 				Cache_Entry *selt = UILOADER.getSelection();
@@ -3831,8 +3837,8 @@ bool ExampleFrameListener::updateEvents(float dt)
 		if(hidegui)
 		{
 			mouseOverlay->hide();
-			if (netmode && CONSOLE.getVisible())
-				CONSOLE.toggleVisible(this);
+			if (netmode && NETCHAT.getVisible())
+				NETCHAT.toggleVisible(this);
 
 			showDashboardOverlays(false,0);
 			showEditorOverlay(false);
@@ -3841,8 +3847,8 @@ bool ExampleFrameListener::updateEvents(float dt)
 		}
 		else
 		{
-			if (netmode && !CONSOLE.getVisible())
-				CONSOLE.toggleVisible(this);
+			if (netmode && !NETCHAT.getVisible())
+				NETCHAT.toggleVisible(this);
 			if(current_truck != -1 && cameramode!=CAMERA_INT)
 			{
 				mouseOverlay->show();
@@ -4097,46 +4103,15 @@ void ExampleFrameListener::processConsoleInput()
 	String chatline = INPUTENGINE.getKeyLine();
 
 	if (chatline.size()==0) return;
-	if(!CONSOLE.getScriptMode())
+	if(netmode)
 	{
-		// normal chat mode
-
-#ifdef ANGELSCRIPT
-		// switch to script mode?
-		if(chatline == "/console")
-		{
-			CONSOLE.addText(_L("^8 Player: ^7") + chatline);
-			CONSOLE.setScriptMode(true);
-
-		} else 
-		{
-#endif //ANGELSCRIPT
-
-			if(netmode)
-			{
-				CONSOLE.addText("^8" + ColoredTextAreaOverlayElement::StripColors(String(net->getNickname())) + ": ^7" + ColoredTextAreaOverlayElement::StripColors(chatline), false);
-				net->sendChat(const_cast<char *>(chatline.c_str()));
-			} else
-				CONSOLE.addText(_L("^8 Player: ^7") + chatline);
-
-#ifdef ANGELSCRIPT
-		}
-#endif //ANGELSCRIPT
-
+		NETCHAT.addText("^8" + ColoredTextAreaOverlayElement::StripColors(String(net->getNickname())) + ": ^7" + ColoredTextAreaOverlayElement::StripColors(chatline), false);
+		net->sendChat(const_cast<char *>(chatline.c_str()));
 	} else
-	{
-		// script mode
-#ifdef ANGELSCRIPT
-		//execute string
-		CONSOLE.addText(chatline);
-		if(scriptEngine) scriptEngine->executeString(chatline);
-#else
-		CONSOLE.addText(_L("No scripting support compiled in."));
-		CONSOLE.setScriptMode(false);
-#endif //ANGELSCRIPT
-	}
-	CONSOLE.setEnterText("", false);
-	//CONSOLE.noScroll();
+		NETCHAT.addText(_L("^8 Player: ^7") + chatline);
+
+	NETCHAT.setEnterText("", false);
+	//NETCHAT.noScroll();
 }
 
 void ExampleFrameListener::loadTerrain(String terrainfile)

@@ -18,8 +18,8 @@ You should have received a copy of the GNU General Public License
 along with Rigs of Rods.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-#ifndef __INGAMECONSOLE_H__
-#define __INGAMECONSOLE_H__
+#ifndef __INGAMECHAT_H__
+#define __INGAMECHAT_H__
 
 
 #include <vector>
@@ -27,10 +27,10 @@ along with Rigs of Rods.  If not, see <http://www.gnu.org/licenses/>.
 #include "OgreTextAreaOverlayElement.h"
 #include "ColoredTextAreaOverlayElement.h"
 
-#define CONSOLE IngameConsole::getInstance()
+#define NETCHAT IngameConsole::getInstance()
 
-enum {CONSOLE_LEFT_SMALL, CONSOLE_LEFT_FULL, CONSOLE_TOP, CONSOLE_END};
-enum {CONSOLE_MSG_CHAT, CONSOLE_MSG_COMMAND};
+enum {NETCHAT_LEFT_SMALL, NETCHAT_LEFT_FULL, NETCHAT_TOP, NETCHAT_END};
+enum {NETCHAT_MSG_CHAT, NETCHAT_MSG_COMMAND};
 
 class ExampleFrameListener;
 

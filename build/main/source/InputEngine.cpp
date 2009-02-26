@@ -380,18 +380,16 @@ bool InputEngine::keyPressed( const OIS::KeyEvent &arg )
 			{
 				keyInput = keyInput.substr(0, keyInput.size()-1);
 #ifndef NOOGRE
-				CONSOLE.setEnterText("^7"+keyInput, true, true);
+				NETCHAT.setEnterText("^7"+keyInput, true, true);
 #endif
 			}
 
 			// exclude control keys
 			if(arg.text > 20)
 			{
-				char tmp[1]="";
-				sprintf(tmp, "%c", arg.text);
-				keyInput += String(tmp);
+				keyInput.push_back(arg.text);
 #ifndef NOOGRE
-				CONSOLE.setEnterText("^7"+keyInput, true, true);
+				NETCHAT.setEnterText("^7"+keyInput, true, true);
 #endif
 			}
 		}

@@ -53,7 +53,7 @@ void OgreConsole::init(Ogre::Root *root)
 	textbox->setParameter("font_name","VeraMono");
 	textbox->setParameter("colour_top","1 1 1");
 	textbox->setParameter("colour_bottom","1 1 1");
-	textbox->setParameter("char_height","0.03");
+	textbox->setParameter("char_height","0.02");
 
 	overlay=OverlayManager::getSingleton().create("Console");   
 	overlay->add2D((OverlayContainer*)textbox);

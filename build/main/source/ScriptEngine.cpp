@@ -376,7 +376,7 @@ void ScriptEngine::executeString(Ogre::String command)
 	int result = engine->ExecuteString("terrainScript", command.c_str(), &context);
 	if(result<0)
 	{
-		CONSOLE.addText("error while executing string");
+		LogManager::getSingleton().logMessage("error while executing string");
 	}
 }
 
@@ -391,9 +391,7 @@ GameScript::~GameScript()
 
 void GameScript::log(std::string &msg)
 {
-	if(CONSOLE.getScriptMode())
-		CONSOLE.addText(msg);
-	Ogre::LogManager::getSingleton().logMessage("SE| LOG: " + msg);
+	Ogre::LogManager::getSingleton().logMessage("SE| " + msg);
 }
 
 double GameScript::getTime()
