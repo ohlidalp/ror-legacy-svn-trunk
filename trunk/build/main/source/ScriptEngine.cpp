@@ -32,6 +32,9 @@ along with Rigs of Rods.  If not, see <http://www.gnu.org/licenses/>.
 using namespace Ogre;
 using namespace std;
 
+template<> ScriptEngine *Ogre::Singleton<ScriptEngine>::ms_Singleton=0;
+
+
 ScriptEngine::ScriptEngine(ExampleFrameListener *efl) : mefl(efl), engine(0), context(0), frameStepFunctionPtr(-1)
 {
 	init();

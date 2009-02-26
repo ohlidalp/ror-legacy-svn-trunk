@@ -27,7 +27,7 @@ void OgreConsole::init(Ogre::Root *root)
 	scene=root->getSceneManagerIterator().getNext();
 	root->addFrameListener(this);
 
-	height=1;
+	height=0;
 
 	MaterialPtr mat = MaterialManager::getSingleton().getByName("console/background");
 	if(mat.isNull())
@@ -35,7 +35,8 @@ void OgreConsole::init(Ogre::Root *root)
 		// create one fast
 		MaterialPtr mat = MaterialManager::getSingleton().create("console/background", ResourceGroupManager::DEFAULT_RESOURCE_GROUP_NAME);
 		mat->getTechnique(0)->getPass(0)->setSceneBlending(Ogre::SBT_TRANSPARENT_ALPHA);
-		mat->getTechnique(0)->getPass(0)->setDiffuse(0, 0, 1, 0.6);
+		mat->getTechnique(0)->getPass(0)->setDiffuse(0, 0, 0, 0.9f);
+		//mat->getTechnique(0)->getPass(0)->setLightingEnabled(false);
 	}
 	// Create background rectangle covering the whole screen
 	rect = new Rectangle2D(true);
@@ -61,7 +62,8 @@ void OgreConsole::init(Ogre::Root *root)
 	LogManager::getSingleton().getDefaultLog()->addListener(this);
 }
 
-void OgreConsole::shutdown(){
+void OgreConsole::shutdown()
+{
 	if(!initialized) return;
 	delete rect;
 	delete node;
@@ -76,6 +78,10 @@ void OgreConsole::onKeyPressed(const OIS::KeyEvent &arg)
 	if (arg.key == OIS::KC_RETURN)
 	{
 		// execute stuff here later
+#ifdef ANGELSCRIPT
+		
+#endif //ANGELSCRIPT
+
 		print(prompt);
 		prompt="";
 	}
@@ -94,7 +100,7 @@ void OgreConsole::onKeyPressed(const OIS::KeyEvent &arg)
 	else
 	{
 		char legalchars[]="ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz1234567890+!\"#'%&/()=?[]\\*-_.:,; ";
-		for(int c=0;c<sizeof(legalchars);c++)
+		for(int c=0;c<sizeof(legalchars)-1;c++)
 		{
 			if(legalchars[c]==arg.text)
 			{
@@ -199,5 +205,10 @@ void OgreConsole::setVisible(bool visible)
 
 void OgreConsole::messageLogged( const Ogre::String& message, LogMessageLevel lml, bool maskDebug, const String &logName )
 {
-	this->print(logName+": "+message);
+	String msg = message;
+	//this->print(logName+": "+message);
+	// strip script engine things
+	if(message.substr(0,4) == "SE| ")
+		msg = message.substr(4);
+	this->print(msg);
 }

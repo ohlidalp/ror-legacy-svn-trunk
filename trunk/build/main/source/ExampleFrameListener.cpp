@@ -777,8 +777,7 @@ ExampleFrameListener::ExampleFrameListener(RenderWindow* win, Camera* cam, Scene
 {
 	eflsingleton=this;
 #ifdef ANGELSCRIPT
-	scriptEngine = 0;
-	timeLastScriptStep = 0;
+	new ScriptEngine(this);
 	new OgreConsole;
 	OgreConsole::getSingleton().init(root);
 	OgreConsole::getSingleton().setVisible(false);
@@ -4144,8 +4143,7 @@ void ExampleFrameListener::loadTerrain(String terrainfile)
 
 #ifdef ANGELSCRIPT
 	LogManager::getSingleton().logMessage("Loading Angelscript Script engine." );
-	scriptEngine = new ScriptEngine(this);
-	scriptEngine->loadTerrainScript(terrainfile+".sa");
+	ScriptEngine::getSingleton().loadTerrainScript(terrainfile+".sa");
 #endif
 
 
@@ -6591,15 +6589,7 @@ bool ExampleFrameListener::frameStarted(const FrameEvent& evt)
 
 
 #ifdef ANGELSCRIPT
-	// only call the script step every 200ms, not more often!
-	timeLastScriptStep += dt;
-	// TODO: let the script choose the sleep time itself
-	if(scriptEngine && timeLastScriptStep > 0.2)
-	{
-		scriptEngine->framestep(timeLastScriptStep);
-		timeLastScriptStep = 0;
-	}
-
+	ScriptEngine::getSingleton().framestep(dt);
 #endif
 
 	return true;

@@ -43,7 +43,7 @@ class Beam;
 /**
  *  @brief This class represents the angelscript scripting interface. It can load and execute scripts.
  */
-class ScriptEngine
+class ScriptEngine : public Ogre::Singleton<ScriptEngine>
 {
 public:
 	ScriptEngine(ExampleFrameListener *efl);

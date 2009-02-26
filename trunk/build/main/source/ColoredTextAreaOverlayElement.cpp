@@ -140,6 +140,12 @@ void ColoredTextAreaOverlayElement::setCaption(const DisplayString& text)
 
 void ColoredTextAreaOverlayElement::updateColours(void)
 {
+	// no colours under linux and apple ...
+#if OGRE_PLATFORM == OGRE_PLATFORM_LINUX
+	return;
+#elif OGRE_PLATFORM == OGRE_PLATFORM_APPLE
+	return;
+#endif
 	if(!mRenderOp.vertexData) return;
 	// Convert to system-specific
 	RGBA topColour, bottomColour;
