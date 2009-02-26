@@ -1717,6 +1717,9 @@ int Beam::getWheelNodeCount()
 
 					}
 					options_pointer++;
+					// if you use the i flag on its own, add the direction to it
+					if(beams[free_beam].type == BEAM_INVISIBLE_HYDRO && !beams[free_beam].hydroFlags)
+						beams[free_beam].hydroFlags |= HYDRO_FLAG_DIR;
 				}
 				free_beam++;
 			}
