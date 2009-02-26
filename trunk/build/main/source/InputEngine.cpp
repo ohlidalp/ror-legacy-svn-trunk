@@ -360,16 +360,10 @@ bool InputEngine::povMoved( const OIS::JoyStickEvent &, int )
 /* --- Key Events ------------------------------------------ */
 bool InputEngine::keyPressed( const OIS::KeyEvent &arg )
 {
-	printf("%d - %c\n", arg.key, arg.text);
 #ifndef NOOGRE
 # ifdef ANGELSCRIPT
 	if(OgreConsole::getSingleton().getVisible())
 	{
-		if(arg.key == OIS::KC_KANJI)
-		{
-			OgreConsole::getSingleton().setVisible(false);
-			return true;
-		}
 		OgreConsole::getSingleton().onKeyPressed(arg);
 		return true;
 	}
@@ -572,6 +566,20 @@ bool InputEngine::isEventDefined(String eventName)
 			return true;
 	}
 	return false;
+}
+
+int InputEngine::getKeboardKeyForCommand(Ogre::String eventName)
+{
+	float returnValue = 0;
+	std::vector<event_trigger_t> t_vec = events[eventName];
+	for(std::vector<event_trigger_t>::iterator i = t_vec.begin(); i != t_vec.end(); i++)
+	{
+		event_trigger_t t = *i;
+		float value = 0;
+		if(t.eventtype == ET_Keyboard)
+			return t.keyCode;
+		return -1;
+	}
 }
 
 float InputEngine::getEventValue(String eventName)

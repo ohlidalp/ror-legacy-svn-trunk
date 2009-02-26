@@ -1,5 +1,6 @@
 #include "ogreconsole.h"
 #include "ScriptEngine.h"
+#include "InputEngine.h"
 
 using namespace Ogre;
 using namespace std;
@@ -66,7 +67,7 @@ void OgreConsole::init(Ogre::Root *root)
 	promptbox=OverlayManager::getSingleton().createOverlayElement("TextArea","ConsoleTextPrompt");
 	promptbox->setCaption("_");
 	promptbox->setMetricsMode(GMM_RELATIVE);
-	promptbox->setPosition(0, 0.01f);
+	promptbox->setPosition(0, 0);
 	promptbox->setParameter("font_name","VeraMono");
 	promptbox->setParameter("colour_top","1 1 1");
 	promptbox->setParameter("colour_bottom","1 1 1");
@@ -94,22 +95,44 @@ void OgreConsole::onKeyPressed(const OIS::KeyEvent &arg)
 {
 	if(!visible)
 		return;
+
+	// hide key pressed?
+	if(arg.key == INPUTENGINE.getKeboardKeyForCommand("COMMON_CONSOLEDISPLAY"))
+	{
+		OgreConsole::getSingleton().setVisible(false);
+		return;
+	}
+
 	switch(arg.key)
 	{
 	case OIS::KC_RETURN:
+		// add some specials
+		if(history[history_pos] == "hide")
+		{
+			this->setVisible(false);
+			history.push_back(""); // new, empty last entry
+			cursor_position=0;
+			return;
+		}
+
+		// normal from now on
 		print(history[history_pos]);
 #ifdef ANGELSCRIPT
 		ScriptEngine::getSingleton().executeString(history[history_pos]);
 #endif //ANGELSCRIPT
 		cursor_position=0;
-		if(history_pos != history.size() - 1)
-			// add the edited element to the back
-			history.push_back(history[history_pos]);
 		history.push_back(""); // new, empty last entry
 		history_pos = history.size() - 1; // switch to the new line
 		break;
 	
 	case OIS::KC_BACK:
+		// if you try to edit the history, rather make a new copy and edit that then :)
+		if(history_pos != history.size() - 1)
+		{
+			// add the edited element to the back
+			history.push_back(history[history_pos]);
+			history_pos = history.size() - 1;
+		}
 		// combine what is before and after the cursor
 		if(cursor_position>0)
 		{
@@ -119,6 +142,13 @@ void OgreConsole::onKeyPressed(const OIS::KeyEvent &arg)
 		break;
 	
 	case OIS::KC_DELETE:
+		// if you try to edit the history, rather make a new copy and edit that then :)
+		if(history_pos != history.size() - 1)
+		{
+			// add the edited element to the back
+			history.push_back(history[history_pos]);
+			history_pos = history.size() - 1;
+		}
 		// combine what is before and after the cursor
 		if(cursor_position<(int)history[history_pos].size())
 		{
@@ -173,6 +203,13 @@ void OgreConsole::onKeyPressed(const OIS::KeyEvent &arg)
 		{
 			if(legalchars[c]==arg.text)
 			{
+				// if you try to edit the history, rather make a new copy and edit that then :)
+				if(history_pos != history.size() - 1)
+				{
+					// add the edited element to the back
+					history.push_back(history[history_pos]);
+					history_pos = history.size() - 1;
+				}
 				if(cursor_position == history[history_pos].size())
 					history[history_pos] += arg.text;
 				else if(insertmode)

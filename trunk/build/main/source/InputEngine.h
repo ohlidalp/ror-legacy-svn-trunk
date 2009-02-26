@@ -148,6 +148,8 @@ public:
 	void hideMouse(bool visible);
 	void setMousePosition(int x, int y, bool padding=true);
 
+	int getKeboardKeyForCommand(Ogre::String val);
+
 protected:
 	InputEngine();
 	~InputEngine();
