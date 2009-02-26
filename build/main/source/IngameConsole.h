@@ -56,9 +56,6 @@ public:
 	void scrollPageDown();
 	void noScroll();
 
-	bool getScriptMode() { return scriptMode; };
-	void setScriptMode(bool value);
-
 protected:
 	IngameConsole();
 	IngameConsole(const IngameConsole&);
@@ -70,7 +67,6 @@ private:
 	int top, left, width, height;
 	int lineheight, bordersize;
 	int displaymode;
-	bool scriptMode;
 	ExampleFrameListener *mefl;
 	
 	// cursor stuff
@@ -92,8 +88,6 @@ private:
 	std::vector < ColoredTextAreaOverlayElement * > chatLines;
 	std::vector < Ogre::String > chatBuffer;
 	void updateDisplay();
-
-	void splitString(Ogre::String &str, Ogre::String &delim, std::vector<Ogre::String> &output);
 };
 
 

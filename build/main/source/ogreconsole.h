@@ -36,13 +36,18 @@ protected:
 	Ogre::Rectangle2D *rect;
 	Ogre::SceneNode *node;
 	Ogre::OverlayElement *textbox;
+	Ogre::OverlayElement *promptbox;
 	Ogre::Overlay *overlay;
 
 	float height;
+	float blinkdelay;
 	bool update_overlay;
+	bool insertmode;
 	int start_line;
+	int history_pos;
+	int cursor_position;
 	std::list<Ogre::String> lines;
-	Ogre::String prompt;
+	std::vector<Ogre::String> history;
 };
 
 #endif //OGRECONSOLE_H__

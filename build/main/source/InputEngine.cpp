@@ -360,6 +360,7 @@ bool InputEngine::povMoved( const OIS::JoyStickEvent &, int )
 /* --- Key Events ------------------------------------------ */
 bool InputEngine::keyPressed( const OIS::KeyEvent &arg )
 {
+	printf("%d - %c\n", arg.key, arg.text);
 #ifndef NOOGRE
 # ifdef ANGELSCRIPT
 	if(OgreConsole::getSingleton().getVisible())
