@@ -12,6 +12,11 @@ template<> OgreConsole *Ogre::Singleton<OgreConsole>::ms_Singleton=0;
 OgreConsole::OgreConsole()
 {
 	start_line=0;
+	cursor_position=0;
+	blinkdelay=0;
+	history_pos=0;
+	history.push_back("");
+	insertmode=true;
 }
 
 OgreConsole::~OgreConsole()
@@ -48,8 +53,9 @@ void OgreConsole::init(Ogre::Root *root)
 	node = scene->getRootSceneNode()->createChildSceneNode("#Console");
 	node->attachObject(rect);
 
+	// BE WARNED: you have to use a monospaced font, otherwise the cursor is not going to work correctly!
 	textbox=OverlayManager::getSingleton().createOverlayElement("TextArea","ConsoleText");
-	textbox->setCaption("hello");
+	textbox->setCaption("_");
 	textbox->setMetricsMode(GMM_RELATIVE);
 	textbox->setPosition(0,0);
 	textbox->setParameter("font_name","VeraMono");
@@ -57,8 +63,19 @@ void OgreConsole::init(Ogre::Root *root)
 	textbox->setParameter("colour_bottom","1 1 1");
 	textbox->setParameter("char_height","0.025");
 
+	promptbox=OverlayManager::getSingleton().createOverlayElement("TextArea","ConsoleTextPrompt");
+	promptbox->setCaption("_");
+	promptbox->setMetricsMode(GMM_RELATIVE);
+	promptbox->setPosition(0, 0.01f);
+	promptbox->setParameter("font_name","VeraMono");
+	promptbox->setParameter("colour_top","1 1 1");
+	promptbox->setParameter("colour_bottom","1 1 1");
+	promptbox->setParameter("char_height","0.025");
+	
+
 	overlay=OverlayManager::getSingleton().create("Console");   
 	overlay->add2D((OverlayContainer*)textbox);
+	overlay->add2D((OverlayContainer*)promptbox);
 	overlay->show();
 	LogManager::getSingleton().getDefaultLog()->addListener(this);
 }
@@ -69,6 +86,7 @@ void OgreConsole::shutdown()
 	delete rect;
 	delete node;
 	delete textbox;
+	delete promptbox;
 	delete overlay;
 }
 
@@ -76,34 +94,93 @@ void OgreConsole::onKeyPressed(const OIS::KeyEvent &arg)
 {
 	if(!visible)
 		return;
-	if (arg.key == OIS::KC_RETURN)
+	switch(arg.key)
 	{
-		print(prompt);
+	case OIS::KC_RETURN:
+		print(history[history_pos]);
 #ifdef ANGELSCRIPT
-		ScriptEngine::getSingleton().executeString(prompt);
+		ScriptEngine::getSingleton().executeString(history[history_pos]);
 #endif //ANGELSCRIPT
-		prompt="";
-	}
-	if (arg.key == OIS::KC_BACK)
-		prompt=prompt.substr(0,prompt.length()-1);
-	if (arg.key == OIS::KC_PGUP)
-	{
+		cursor_position=0;
+		if(history_pos != history.size() - 1)
+			// add the edited element to the back
+			history.push_back(history[history_pos]);
+		history.push_back(""); // new, empty last entry
+		history_pos = history.size() - 1; // switch to the new line
+		break;
+	
+	case OIS::KC_BACK:
+		// combine what is before and after the cursor
+		if(cursor_position>0)
+		{
+			history[history_pos] = history[history_pos].substr(0,cursor_position-1) + history[history_pos].substr(cursor_position);
+			cursor_position--;
+		}
+		break;
+	
+	case OIS::KC_DELETE:
+		// combine what is before and after the cursor
+		if(cursor_position<(int)history[history_pos].size())
+		{
+			history[history_pos] = history[history_pos].substr(0,cursor_position) + history[history_pos].substr(cursor_position+1);
+			cursor_position++;
+		}
+		break;
+
+	case OIS::KC_INSERT:
+		insertmode = !insertmode;
+		break;
+
+	case OIS::KC_UP:
+		if(history_pos > 0)
+		{
+			history_pos--;
+			cursor_position=history[history_pos].size()-1;
+		}
+		break;
+
+	case OIS::KC_DOWN:
+		if(history_pos < (int)history.size() - 1)
+		{
+			history_pos++;
+			cursor_position=history[history_pos].size()-1;
+		}
+		break;
+
+	case OIS::KC_PGUP:
 		if(start_line>0)
 			start_line--;
-	}
-	if (arg.key == OIS::KC_PGDOWN)
-	{
+		break;
+
+	case OIS::KC_LEFT:
+		if(cursor_position>0)
+			cursor_position--;
+		break;
+
+	case OIS::KC_RIGHT:
+		if(cursor_position<(int)history[history_pos].size())
+			cursor_position++;
+		break;
+
+	case OIS::KC_PGDOWN:
 		if(start_line<(int)lines.size())
 			start_line++;
-	}
-	else
-	{
-		char legalchars[]="ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz1234567890+!\"#'%&/()=?[]\\*-_.:,; ";
+		break;
+	
+	default:
+		char legalchars[]="ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz1234567890+!\"#'%&/()=?[]\\*-_.:,;<> ";
 		for(int c=0;c<sizeof(legalchars)-1;c++)
 		{
 			if(legalchars[c]==arg.text)
 			{
-				prompt+=arg.text;
+				if(cursor_position == history[history_pos].size())
+					history[history_pos] += arg.text;
+				else if(insertmode)
+					history[history_pos] = history[history_pos].substr(0,cursor_position) + arg.text + history[history_pos].substr(cursor_position);
+				else if(!insertmode)
+					history[history_pos] = history[history_pos].substr(0,cursor_position) + arg.text + history[history_pos].substr(cursor_position+1);
+				
+				cursor_position++;
 				break;
 			}
 		}
@@ -113,10 +190,24 @@ void OgreConsole::onKeyPressed(const OIS::KeyEvent &arg)
 
 bool OgreConsole::frameStarted(const Ogre::FrameEvent &evt)
 {
+	if(!visible && height < 0.01f) return true;
+	
+	blinkdelay += evt.timeSinceLastFrame;	
+	if(visible && blinkdelay > 0.2f)
+	{
+		if(promptbox->isVisible())
+			promptbox->hide();
+		else
+			promptbox->show();
+
+		blinkdelay = 0;
+	}
+	
 	if(visible&&height<1)
 	{
 		height+=evt.timeSinceLastFrame*2;
 		textbox->show();
+		promptbox->show();
 		if(height>=1)
 		{
 			height=1;
@@ -128,15 +219,17 @@ bool OgreConsole::frameStarted(const Ogre::FrameEvent &evt)
 		{
 			height=0;
 			textbox->hide();
+			promptbox->hide();
 		}
 	}
 
 	textbox->setPosition(0,(height-1)*0.5);
+	promptbox->setPosition(0,(height-1)*0.5);
 	rect->setCorners(-1,1+height,1,1-height);
 
 	if(update_overlay)
 	{
-		String text;
+		String text, text_prompt;
 		list<String>::iterator i,start,end;
 
 		//make sure is in range
@@ -155,12 +248,25 @@ bool OgreConsole::frameStarted(const Ogre::FrameEvent &evt)
 			end++;
 		}
 		for(i=start;i!=end;i++)
-			text+=(*i)+"\n";
+		{
+			text += *i + "\n";
+			text_prompt += "\n";
+		}
 
-		//add the prompt
-		text+="] "+prompt;
+		// browsing in history
+		String entry = history[history_pos];
+		text += "] " + entry;
+		if(cursor_position > (int)entry.size())
+			cursor_position = entry.size();
+		
+		String blank = "";
+		for(int i=0;i<cursor_position;i++)
+			blank+=" ";
+
+		text_prompt += "  " + blank + (insertmode?"_":"_");
 
 		textbox->setCaption(text);
+		promptbox->setCaption(text_prompt);
 		update_overlay=false;
 	}
 	return true;

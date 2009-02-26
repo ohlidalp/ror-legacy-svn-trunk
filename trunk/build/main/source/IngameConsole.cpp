@@ -40,7 +40,6 @@ IngameConsole::IngameConsole()
 	scrollOffset=0;
 	scrolling=false;
 	mefl=0;
-	scriptMode=false;
 }
 
 IngameConsole::~IngameConsole()
@@ -319,41 +318,4 @@ void IngameConsole::noScroll()
 	scrollOffset=0;
 	scrolling=false;
 	updateDisplay();
-}
-// ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-
-void IngameConsole::setScriptMode(bool value)
-{
-	scriptMode = value;
-	if(scriptMode)
-		addText("-- CONSOLE MODE --");
-	else
-		addText("-- CHAT MODE --");
-}
-
-int IngameConsole::parseCommand(String &msg, std::vector<String> &arguments)
-{
-	String delim = " ";
-	splitString(msg, delim, arguments);
-	if(arguments.size() > 0)
-		return 0;
-	// cut off the delimiting character, XXX: not working yet?!
-	//arguments[0] = arguments[0].substr(1, String::npos);
-	return 1;
-}
-
-void IngameConsole::splitString(String &str, String &delim, std::vector<String> &output)
-{
-	unsigned int offset = 0;
-	size_t delimIndex = 0;
-
-	delimIndex = (unsigned int)str.find(delim, offset);
-	while (delimIndex != String::npos)
-	{
-		output.push_back(str.substr(offset, delimIndex - offset));
-		offset += delimIndex - offset + delim.length();
-		delimIndex = (unsigned int)str.find(delim, offset);
-	}
-
-	output.push_back(str.substr(offset));
 }
