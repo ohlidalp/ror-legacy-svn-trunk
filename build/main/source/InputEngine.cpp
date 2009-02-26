@@ -360,16 +360,25 @@ bool InputEngine::povMoved( const OIS::JoyStickEvent &, int )
 /* --- Key Events ------------------------------------------ */
 bool InputEngine::keyPressed( const OIS::KeyEvent &arg )
 {
+#ifndef NOOGRE
+# ifdef ANGELSCRIPT
+	if(OgreConsole::getSingleton().getVisible())
+	{
+		if(arg.key == OIS::KC_KANJI)
+		{
+			OgreConsole::getSingleton().setVisible(false);
+			return true;
+		}
+		OgreConsole::getSingleton().onKeyPressed(arg);
+		return true;
+	}
+# endif
+#endif
+
 	//LogManager::getSingleton().logMessage("*** keyPressed");
 	if(keyState[arg.key] != 1)
 		inputsChanged=true;
 	keyState[arg.key] = 1;
-
-#ifndef NOOGRE
-# ifdef ANGELSCRIPT
-	OgreConsole::getSingleton().onKeyPressed(arg);
-# endif
-#endif
 
 	if(recordChat)
 	{
