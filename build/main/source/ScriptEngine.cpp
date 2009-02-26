@@ -385,6 +385,11 @@ void ScriptEngine::executeString(Ogre::String command)
 	}
 }
 
+void ScriptEngine::triggerEvent(enum scriptEvents)
+{
+	// TODO: implement
+}
+
 /* class that implements the interface for the scripts */ 
 GameScript::GameScript(ScriptEngine *se, ExampleFrameListener *efl) : mse(se), mefl(efl)
 {
