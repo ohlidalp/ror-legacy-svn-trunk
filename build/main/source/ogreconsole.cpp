@@ -1,4 +1,5 @@
 #include "ogreconsole.h"
+#include "ScriptEngine.h"
 
 using namespace Ogre;
 using namespace std;
@@ -54,7 +55,7 @@ void OgreConsole::init(Ogre::Root *root)
 	textbox->setParameter("font_name","VeraMono");
 	textbox->setParameter("colour_top","1 1 1");
 	textbox->setParameter("colour_bottom","1 1 1");
-	textbox->setParameter("char_height","0.02");
+	textbox->setParameter("char_height","0.025");
 
 	overlay=OverlayManager::getSingleton().create("Console");   
 	overlay->add2D((OverlayContainer*)textbox);
@@ -77,12 +78,10 @@ void OgreConsole::onKeyPressed(const OIS::KeyEvent &arg)
 		return;
 	if (arg.key == OIS::KC_RETURN)
 	{
-		// execute stuff here later
-#ifdef ANGELSCRIPT
-		
-#endif //ANGELSCRIPT
-
 		print(prompt);
+#ifdef ANGELSCRIPT
+		ScriptEngine::getSingleton().executeString(prompt);
+#endif //ANGELSCRIPT
 		prompt="";
 	}
 	if (arg.key == OIS::KC_BACK)
