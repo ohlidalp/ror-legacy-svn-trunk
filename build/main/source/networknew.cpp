@@ -160,7 +160,7 @@ void NetworkNew::sendVehicleType(char* name, int buffersize)
 	}
 
 	// now the client/server info
-	strncpy(user_info.server_password, sha1pwresult, 254);
+	strncpy(user_info.server_password, sha1pwresult, 49);
 	strncpy(user_info.client_version, ROR_VERSION_STRING, 10);
 	strncpy(user_info.protocol_version, RORNETv2_VERSION, 19);
 
