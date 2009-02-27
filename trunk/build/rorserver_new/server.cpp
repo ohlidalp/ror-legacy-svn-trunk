@@ -192,7 +192,7 @@ int main(int argc, char **argv)
 
 						// TODO: make the username unique on the server...
 						// TODO: modify the broadcasted stream with the server overwritten data!
-						peer->Send(&stream, MEDIUM_PRIORITY, RELIABLE_SEQUENCED, 0, packet->systemAddress, true);
+						//peer->Send(&stream, MEDIUM_PRIORITY, RELIABLE_SEQUENCED, 0, packet->systemAddress, true);
 
 						// now we need to send the new client all already known clients
 						for(std::map<int, client_t>::iterator it=clients.begin();it!=clients.end(); it++)
@@ -211,7 +211,11 @@ int main(int argc, char **argv)
 							strncpy(netinfo.user_name, it->second.info.user_name, 20);
 							netinfo.user_level = it->second.info.user_level;
 
+							// send that clients info the the new client
 							sendmessage(peer, packet->systemAddress, MSG3_USER_INFO, netinfo.user_id, sizeof(net_userinfo_t), (char *)&netinfo);
+							
+							// send the new clients info to the client
+							sendmessage(peer, it->second.sa, MSG3_USER_INFO, netinfo.user_id, sizeof(net_userinfo_t), (char *)&client);
 						}
 						continue;
 					}
