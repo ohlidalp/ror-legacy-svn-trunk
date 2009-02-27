@@ -101,7 +101,10 @@ int main(int argc, char **argv)
     }
     peer = RakNetworkFactory::GetRakPeerInterface();
     Packet *packet;
-    peer->Startup(MAX_CLIENTS, 30, &SocketDescriptor(atoi(argv[2]), argv[1]), 1);
+	char ip[255]="";
+	strcpy(ip, argv[1], 255);
+	int port = atoi(argv[2]);
+    peer->Startup(MAX_CLIENTS, 30, &SocketDescriptor(port, ip), 1);
     printf("Starting the server.\n");
     // We need to let the server accept incoming connections from the clients
     peer->SetMaximumIncomingConnections(MAX_CLIENTS);
