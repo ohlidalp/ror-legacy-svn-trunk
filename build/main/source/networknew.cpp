@@ -484,6 +484,18 @@ void NetworkNew::handlePacket(unsigned char type, unsigned char source, unsigned
 		//we want first to check if the vehicle name is valid before committing to anything
 
 		net_userinfo_t *user_info = (net_userinfo_t *) buffer;
+		LogManager::getSingleton().logMessage(" ** client registered:");
+		LogManager::getSingleton().logMessage(" client version:      " + String(user_info->client_version));
+		LogManager::getSingleton().logMessage(" protocol version:    " + String(user_info->protocol_version));
+		LogManager::getSingleton().logMessage(" server password:     " + String(user_info->server_password));
+		LogManager::getSingleton().logMessage(" truck name:          " + String(user_info->truck_name));
+		LogManager::getSingleton().logMessage(" truck size in bytes: " + StringConverter::toString(user_info->truck_size));
+		LogManager::getSingleton().logMessage(" client id:           " + StringConverter::toString(user_info->user_id));
+		LogManager::getSingleton().logMessage(" client language:     " + String(user_info->user_language));
+		LogManager::getSingleton().logMessage(" client level:        " + StringConverter::toString(user_info->user_level));
+		LogManager::getSingleton().logMessage(" client nickname:     " + String(user_info->user_name));
+		LogManager::getSingleton().logMessage(" client token:        " + String(user_info->user_token));
+
 
 		// check if we have the truck
 		String truckname = String(user_info->truck_name);
@@ -496,7 +508,9 @@ void NetworkNew::handlePacket(unsigned char type, unsigned char source, unsigned
 			if(!resourceExists)
 			{
 				LogManager::getSingleton().logMessage("Network warning: truck named '"+String(user_info->truck_name)+"' not found in local installation");
-			}
+				return;
+			} else
+			truckname = truckname2;
 		}
 		
 		//spawn vehicle query
