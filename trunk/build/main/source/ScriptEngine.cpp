@@ -300,9 +300,14 @@ void ScriptEngine::init()
 	result = engine->RegisterObjectMethod("GameScriptClass", "BeamClass @getTruckByNum(int)", asMETHOD(GameScript,getTruckByNum), asCALL_THISCALL); assert_net(result>=0);
 
 	result = engine->RegisterObjectType("CacheSystemClass", sizeof(CacheSystem), asOBJ_REF);
-	result = engine->RegisterObjectMethod("CacheSystemClass", "string stripUIDfromString(string in)", asFUNCTION(CacheSystem::stripUIDfromString), asCALL_CDECL); assert_net(result>=0);
+	// todo: add everything ...
 	result = engine->RegisterObjectBehaviour("CacheSystemClass", asBEHAVE_ADDREF, "void f()",asMETHOD(CacheSystem,addRef), asCALL_THISCALL); assert_net(result>=0);
 	result = engine->RegisterObjectBehaviour("CacheSystemClass", asBEHAVE_RELEASE, "void f()",asMETHOD(CacheSystem,release), asCALL_THISCALL); assert_net(result>=0);
+
+	// these are static methods, special handling for them :)
+	result = engine->RegisterGlobalFunction("string stripUIDfromString(string)", asFUNCTION(CacheSystem::stripUIDfromString), asCALL_CDECL); assert_net(result>=0);
+	result = engine->RegisterGlobalFunction("string getUIDfromString(string)", asFUNCTION(CacheSystem::getUIDfromString), asCALL_CDECL); assert_net(result>=0);
+	result = engine->RegisterGlobalFunction("bool stringHasUID(string)", asFUNCTION(CacheSystem::stringHasUID), asCALL_CDECL); assert_net(result>=0);
 
 	result = engine->RegisterEnum("scriptEvents"); assert_net(result>=0);
 	result = engine->RegisterEnumValue("scriptEvents", "SE_COLLISION_BOX_ENTER", SE_COLLISION_BOX_ENTER); assert_net(result>=0);
