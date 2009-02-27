@@ -377,7 +377,7 @@ void NetworkNew::receivethreadstart()
         if (packet)
         {
 			int packetID = getPacketIdentifier(packet);
-			LogManager::getSingleton().logMessage("NET| got packet: "+StringConverter::toString(packetID));
+			//LogManager::getSingleton().logMessage("NET| got packet: "+StringConverter::toString(packetID));
             switch (packetID)
             {
                 case ID_CONNECTION_ATTEMPT_FAILED:
@@ -422,8 +422,10 @@ void NetworkNew::receivethreadstart()
 					// fill buffer
                     stream.SerializeBits(false, (unsigned char*)buffer, contentSize*8);
 
-					//printf("GOT message %s (%d) (%d bytes) from client %d (%s)\n", MSG3_NAMES[contentType], contentType, contentSize, contentSource, packet->guid.ToString());
-					printf("GOT message %s (%d) (%d bytes) from client %d\n", MSG3_NAMES[contentType], contentType, contentSize, contentSource);
+
+					if(contentType != MSG3_VEHICLE_DATA)
+						//printf("GOT message %s (%d) (%d bytes) from client %d (%s)\n", MSG3_NAMES[contentType], contentType, contentSize, contentSource, packet->guid.ToString());
+						printf("GOT message %s (%d) (%d bytes) from client %d\n", MSG3_NAMES[contentType], contentType, contentSize, contentSource);
 					this->handlePacket(contentType, contentSource, contentSize, buffer);                    
                 }
                 break;

@@ -217,7 +217,7 @@ int main(int argc, char **argv)
 							
 							printf(" sending info about client %d to client %d ...\n", user_id, it->first);
 							// send the iterated clients info about the new client
-							sendmessage(peer, it->second.sa, MSG3_USER_INFO, user_id, sizeof(net_userinfo_t), (char *)&client);
+							sendmessage(peer, it->second.sa, MSG3_USER_INFO, user_id, sizeof(net_userinfo_t), (char *)&client.info);
 						}
 						continue;
 					}
