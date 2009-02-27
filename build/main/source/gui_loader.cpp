@@ -202,6 +202,7 @@ void GUI_Loader::event_btnCancel_MouseButtonClick(MyGUI::WidgetPtr _sender)
 
 void GUI_Loader::event_combo_configs_eventComboAccept(MyGUI::WidgetPtr _sender, size_t _index)
 {
+	if(!visible) return;
 	try
 	{
 		truck_configs.clear();
@@ -214,6 +215,7 @@ void GUI_Loader::event_combo_configs_eventComboAccept(MyGUI::WidgetPtr _sender, 
 
 void GUI_Loader::event_combobox_eventComboAccept(MyGUI::WidgetPtr _sender, size_t _index)
 {
+	if(!visible) return;
 	try
 	{
 		int categoryID = *combobox->getItemDataAt<int>(_index);
@@ -225,6 +227,7 @@ void GUI_Loader::event_combobox_eventComboAccept(MyGUI::WidgetPtr _sender, size_
 
 void GUI_Loader::event_combobox_eventComboChangePosition(MyGUI::WidgetPtr _sender, size_t _index)
 {
+	if(!visible) return;
 	try
 	{
 		int categoryID = *combobox->getItemDataAt<int>(_index);
@@ -236,6 +239,7 @@ void GUI_Loader::event_combobox_eventComboChangePosition(MyGUI::WidgetPtr _sende
 
 void GUI_Loader::event_list_eventListChangePosition(MyGUI::WidgetPtr _sender, size_t _index)
 {
+	if(!visible) return;
 	try
 	{
 		int entryID = *list->getItemDataAt<int>(_index);
@@ -247,6 +251,7 @@ void GUI_Loader::event_list_eventListChangePosition(MyGUI::WidgetPtr _sender, si
 
 void GUI_Loader::event_window_eventKeyButtonPressed(MyGUI::WidgetPtr _sender, MyGUI::KeyCode _key, MyGUI::Char _char)
 {
+	if(!visible) return;
 	int cid = combobox->getIndexSelected();
 	int iid = list->getIndexSelected();
 
