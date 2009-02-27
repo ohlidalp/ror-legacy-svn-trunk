@@ -478,11 +478,13 @@ void NetworkNew::handlePacket(unsigned char type, unsigned char source, unsigned
 		net_userinfo_t *user_info = (net_userinfo_t *) buffer;
 
 		// check if we have the truck
-		bool resourceExists = CACHE.checkResourceLoaded(String(user_info->truck_name));
+		String truckname = String(user_info->truck_name);
+		bool resourceExists = CACHE.checkResourceLoaded(truckname);
 		if(!resourceExists)
 		{
 			// check for different UID
-			resourceExists = CACHE.checkResourceLoaded(CACHE.stripUIDfromString(user_info->truck_name));
+			String truckname2 = CACHE.stripUIDfromString(user_info->truck_name);
+			resourceExists = CACHE.checkResourceLoaded(truckname2);
 			if(!resourceExists)
 			{
 				LogManager::getSingleton().logMessage("Network warning: truck named '"+String(user_info->truck_name)+"' not found in local installation");
