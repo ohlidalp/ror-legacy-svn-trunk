@@ -129,11 +129,18 @@ bool NetworkNew::connect()
 	pthread_create(&receivethread, NULL, s_new_receivethreadstart, (void*)(0));
 
 	int t=timer.getMilliseconds();
-	while(timer.getMilliseconds()-t<5000 && myuid == -1)
+	while(timer.getMilliseconds()-t<10000 && myuid == -1)
 	{
+#if OGRE_PLATFORM == OGRE_PLATFORM_WIN32
+		Sleep(100);
+#elif OGRE_PLATFORM == OGRE_PLATFORM_LINUX
+		sleep(1);
+#elif OGRE_PLATFORM == OGRE_PLATFORM_APPLE
+		sleep(1);
+#endif
 	}
 	if(myuid == -1)
-		netFatalError("error getting user id");
+		netFatalError("timeout while trying to connect to the server");
 
 	return true;
 }
@@ -370,6 +377,8 @@ void NetworkNew::receivethreadstart()
 	Packet *packet;
 
 	char *buffer=(char*)malloc(MAX_MESSAGE_LENGTHv2);
+
+	LogManager::getSingleton().logMessage("NET| receivethread running");
     while (!shutdown)
     {
         packet=peer->Receive();
@@ -695,6 +704,20 @@ int NetworkNew::getConnectedClientCount()
 
 char *NetworkNew::getTerrainName()
 {
+	int t=timer.getMilliseconds();
+	while(timer.getMilliseconds()-t<10000 && !strlen(terrainName))
+	{
+#if OGRE_PLATFORM == OGRE_PLATFORM_WIN32
+		Sleep(100);
+#elif OGRE_PLATFORM == OGRE_PLATFORM_LINUX
+		sleep(1);
+#elif OGRE_PLATFORM == OGRE_PLATFORM_APPLE
+		sleep(1);
+#endif
+	}
+	if(!strlen(terrainName))
+		netFatalError("timeout while waiting for terrain name");
+
 	return terrainName;
 }
 

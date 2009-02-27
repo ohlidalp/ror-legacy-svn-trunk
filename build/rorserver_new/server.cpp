@@ -131,7 +131,7 @@ int main(int argc, char **argv)
 	strncpy(server_info.server_version, "server-0.1.0", 19);
 	strncpy(server_info.terrain_name, terrainname, 255);
 	
-	printf("starting server %s with %s, terrain: %s\n", server_info.server_version, server_info.protocol_version, server_info.terrain_name);
+	printf("starting server %s:%d %s with %s, terrain: %s\n", ip, port, server_info.server_version, server_info.protocol_version, server_info.terrain_name);
 	while (1)
     {
         packet=peer->Receive();
