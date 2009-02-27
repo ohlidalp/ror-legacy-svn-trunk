@@ -22,7 +22,6 @@ along with Rigs of Rods.  If not, see <http://www.gnu.org/licenses/>.
 #define RORNETV2_H__
 
 #define MAX_CLIENTS 10
-#define SERVER_PORT 31117
 
 #include <iostream>
 #include <ctime>
@@ -34,8 +33,9 @@ along with Rigs of Rods.  If not, see <http://www.gnu.org/licenses/>.
 
 #define ROR_DATA_MSG ID_USER_PACKET_ENUM
 #define RORNETv2_VERSION "RoRnet3.0.0"
+#define MAX_MESSAGE_LENGTHv2 8192
 
-typedef struct
+typedef struct net_oob2
 {
 	int time;
 	float engine_speed;
@@ -43,10 +43,31 @@ typedef struct
 	unsigned int flagmask;
 } oob2_t;
 
+// note: never ever put std::string in any of those structs that go over the net (since we memset the structs)
+typedef struct net_userinfo
+{
+	// client-server data
+	char          server_password[50];
+	char          client_version[11];
+	char          protocol_version[20];
+	
+	// truck data
+	char          truck_name[256];
+	unsigned int  truck_size;
+	
+	// user data
+	char          user_language[11];
+	char          user_token[51];
+	char          user_name[21];
+
+	// fields overwritten by the server
+	unsigned int  user_level;
+	unsigned int  user_id;
+} net_userinfo_t;
+
 enum {
 	MSG3_VERSION = 1,
-	MSG3_USE_VEHICLE,
-	MSG3_BUFFER_SIZE,
+	MSG3_USER_INFO,
 	MSG3_VEHICLE_DATA,
 	MSG3_HELLO,
 	MSG3_USER_CREDENTIALS,

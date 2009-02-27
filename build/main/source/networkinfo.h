@@ -26,14 +26,19 @@ along with Rigs of Rods.  If not, see <http://www.gnu.org/licenses/>.
 
 typedef struct
 {
-	bool used;
-	bool invisible;
-	bool authed;
-	char vehicle[256];
-	char nickname[256];
-	unsigned int uid;
-	int trucknum;
-	bool loaded;
+	bool          used;
+	int           trucknum;
+	bool          loaded;
+	bool          invisible;
+
+	char          client_version[10];
+	char          protocol_version[10];
+	char          truck_name[255];
+	unsigned int  truck_size;
+	char          user_language[10];
+	char          user_name[20];
+	unsigned int  user_id;
+	unsigned int  user_level;
 } client_t;
 
 #endif

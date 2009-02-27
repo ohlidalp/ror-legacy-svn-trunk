@@ -82,7 +82,6 @@ Beam::Beam(int tnum, SceneManager *manager, SceneNode *parent, RenderWindow* win
 	netMT = 0;
 	dynamicMapMode=0;
 	meshesVisible=true;
-	//netDist = 0;
 	disable_default_sounds=false;
 #ifdef TIMING
 	statistics = BES.getClient(tnum);
@@ -7277,14 +7276,13 @@ float torques[MAX_WHEELS];
 				h=0.6;
 			netMT->setCharacterHeight(h);
 			if(vlen>1000)
-				netMT->setCaption(String(networkInfo.nickname) + "  (" + StringConverter::toString( (float)(ceil(vlen/100)/10.0) )+ " km)");
+				netMT->setCaption(String(networkInfo.user_name) + "  (" + StringConverter::toString( (float)(ceil(vlen/100)/10.0) )+ " km)");
 			else if (vlen>20 && vlen <= 1000)
-				netMT->setCaption(String(networkInfo.nickname) + "  (" + StringConverter::toString((int)vlen)+ " m)");
+				netMT->setCaption(String(networkInfo.user_name) + "  (" + StringConverter::toString((int)vlen)+ " m)");
 			else
-				netMT->setCaption(String(networkInfo.nickname));
+				netMT->setCaption(String(networkInfo.user_name));
 
 			//netMT->setAdditionalHeight((maxy-miny)+h+0.1);
-			//netDist->setAdditionalHeight((maxy-miny)+0.1);
 			netMT->setVisible(true);
 		}
 	}
@@ -8029,14 +8027,14 @@ void Beam::setNetworkInfo(client_t netinfo)
 	if (netLabelNode && netMT)
 
 	{
-		//netDist->setCaption("-");
-		netMT->setCaption(networkInfo.nickname);
-		if(networkInfo.authed)
+		// ha, this caused the empty caption bug, but fixed now since we change the caption if its empty:
+		netMT->setCaption(networkInfo.user_name);
+		if(networkInfo.user_level)
 		{
 			netMT->setFontName("highcontrast_green");
 		} else
 		{
-			if (!strcmp(networkInfo.nickname, "Pricorde") || !strcmp(networkInfo.nickname, "Thomas"))
+			if (!strcmp(networkInfo.user_name, "Pricorde") || !strcmp(networkInfo.user_name, "Thomas"))
 				netMT->setFontName("highcontrast_red");
 			else
 				netMT->setFontName("highcontrast_black");
@@ -8047,7 +8045,7 @@ void Beam::setNetworkInfo(client_t netinfo)
 	{
 		char wname[256];
 		sprintf(wname, "netlabel-%s",truckname);
-		netMT = new MovableText(wname, ColoredTextAreaOverlayElement::StripColors(networkInfo.nickname));
+		netMT = new MovableText(wname, ColoredTextAreaOverlayElement::StripColors(networkInfo.user_name));
 		netMT->setFontName("highcontrast_black");
 		netMT->setTextAlignment(MovableText::H_CENTER, MovableText::V_ABOVE);
 		//netMT->setAdditionalHeight(2);
@@ -8055,21 +8053,12 @@ void Beam::setNetworkInfo(client_t netinfo)
 		netMT->setCharacterHeight(2);
 		netMT->setColor(ColourValue::White);
 
-		//sprintf(wname, "netlabeldist-%s",truckname);
-		//netDist = new MovableText(wname, "-");
-		//netDist->setFontName("highcontrast_black");
-		//netDist->setTextAlignment(MovableText::H_CENTER, MovableText::V_ABOVE);
-		//netDist->setAdditionalHeight(2.5);
-		//netDist->showOnTop(false);
-		//netDist->setCharacterHeight(1);
-		//netDist->setColor(ColourValue::White);
-
-		if(networkInfo.authed)
+		if(networkInfo.user_level)
 		{
 			netMT->setFontName("highcontrast_green");
 		} else
 		{
-			if (!strcmp(networkInfo.nickname, "Pricorde") || !strcmp(networkInfo.nickname, "Thomas"))
+			if (!strcmp(networkInfo.user_name, "Pricorde") || !strcmp(networkInfo.user_name, "Thomas"))
 				netMT->setFontName("highcontrast_red");
 			else
 				netMT->setFontName("highcontrast_black");
@@ -8077,7 +8066,6 @@ void Beam::setNetworkInfo(client_t netinfo)
 
 		netLabelNode=parentNode->createChildSceneNode();
 		netLabelNode->attachObject(netMT);
-		//netLabelNode->attachObject(netDist);
 		netLabelNode->setPosition(position);
 		netLabelNode->setVisible(true);
 	}
@@ -8089,8 +8077,6 @@ void Beam::deleteNetTruck()
 	state=RECYCLE;
 	if(netMT)
 		netMT->setCaption("");
-	//if(netDist)
-	//	netDist->setCaption("");
 	resetPosition(100000, 100000, false, 100000);
 	netLabelNode->setVisible(false);
 }

@@ -3,6 +3,10 @@ set(server_src rornetv2.h server.cpp nethelper.h nethelper.cpp)
 
 include_directories (${RoR_Dependencies_SOURCE_DIR}/raknet/Source)
 
+IF(WIN32)
+  add_definitions("-D_CRT_SECURE_NO_WARNINGS")
+ENDIF(WIN32)
+
 add_executable(rorserver ${server_src})
 
 # add dependencies
