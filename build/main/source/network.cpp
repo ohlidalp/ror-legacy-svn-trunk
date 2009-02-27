@@ -649,7 +649,8 @@ void Network::receivethreadstart()
 			if(!resourceExists)
 			{
 				// check for different UID
-				resourceExists = CACHE.checkResourceLoaded(CACHE.stripUIDfromString(truckname));
+				String truckname2 = CACHE.stripUIDfromString(truckname);
+				resourceExists = CACHE.checkResourceLoaded(truckname2);
 				if(!resourceExists)
 				{
 					LogManager::getSingleton().logMessage("Network warning: truck named '"+truckname+"' not found in local installation");
