@@ -393,8 +393,8 @@ bool Network::vehicle_to_spawn(char* name, unsigned int *uid, unsigned int *labe
 	{
 		if (clients[i].used && !clients[i].loaded && !clients[i].invisible)
 		{
-			strcpy(name, clients[i].vehicle);
-			*uid=clients[i].uid;
+			strcpy(name, clients[i].truck_name);
+			*uid=clients[i].user_id;
 			*label=i;
 			pthread_mutex_unlock(&clients_mutex);
 			return true;
@@ -411,7 +411,7 @@ client_t Network::vehicle_spawned(unsigned int uid, int trucknum)
 	pthread_mutex_lock(&clients_mutex);
 	for (int i=0; i<MAX_PEERS; i++)
 	{
-		if (clients[i].uid==uid)
+		if (clients[i].user_id==uid)
 		{
 			clients[i].loaded=true;
 			clients[i].trucknum=trucknum;
@@ -557,7 +557,7 @@ void Network::sendthreadstart()
 					{
 						if (clients[i].used && !clients[i].invisible && clients[i].trucknum==netlock.remote_truck)
 						{
-							uid=clients[i].uid;
+							uid=clients[i].user_id;
 							break;
 						}
 					}
@@ -623,7 +623,7 @@ void Network::receivethreadstart()
 			pthread_mutex_lock(&clients_mutex);
 			for (int i=0; i<MAX_PEERS; i++)
 			{
-				if (clients[i].used && !clients[i].invisible && clients[i].uid==source && clients[i].loaded)
+				if (clients[i].used && !clients[i].invisible && clients[i].user_id==source && clients[i].loaded)
 				{
 					//okay
 					trucks[clients[i].trucknum]->pushNetwork(buffer, wrotelen);
@@ -648,8 +648,12 @@ void Network::receivethreadstart()
 			// check if found
 			if(!resourceExists)
 			{
-				resourceExists=false;
-				LogManager::getSingleton().logMessage("Network warning: truck named "+truckname+" not found in local installation");
+				// check for different UID
+				resourceExists = CACHE.checkResourceLoaded(CACHE.stripUIDfromString(truckname));
+				if(!resourceExists)
+				{
+					LogManager::getSingleton().logMessage("Network warning: truck named '"+truckname+"' not found in local installation");
+				}
 			}
 			//spawn vehicle query
 			pthread_mutex_lock(&clients_mutex);
@@ -657,7 +661,7 @@ void Network::receivethreadstart()
 			bool known=false;
 			for (int i=0; i<MAX_PEERS; i++)
 			{
-				if (clients[i].used && clients[i].uid==source) known=true;
+				if (clients[i].used && clients[i].user_id==source) known=true;
 			}
 			if (!known)
 			{
@@ -669,23 +673,23 @@ void Network::receivethreadstart()
 						clients[i].used=true;
 						clients[i].invisible=!resourceExists;
 						clients[i].loaded=false;
-						clients[i].uid=source;
-						clients[i].authed=authed;
+						clients[i].user_id=source;
+						clients[i].user_level=authed;
 						buffer[wrotelen]=0;
 
 						//strcpy(clients[i].vehicle, truckname.c_str());
 						// fix for MP, important to support the same vehicle with different UID's
 						String vehicle_without_uid = CACHE.stripUIDfromString(truckname);
-						strcpy(clients[i].vehicle, vehicle_without_uid.c_str());
+						strcpy(clients[i].truck_name, vehicle_without_uid.c_str());
 
-						strcpy(clients[i].nickname, nickname.c_str()); //buffer+strlen(buffer)+1); //magical!  // rather hackish if you ask me ...
+						strcpy(clients[i].user_name, nickname.c_str()); //buffer+strlen(buffer)+1); //magical!  // rather hackish if you ask me ...
 
 						// update playerlist
 						if(i < MAX_PLAYLIST_ENTRIES)
 						{
 							try
 							{
-								String plstr = StringConverter::toString(i) + ": " + ColoredTextAreaOverlayElement::StripColors(String(clients[i].nickname));
+								String plstr = StringConverter::toString(i) + ": " + ColoredTextAreaOverlayElement::StripColors(String(clients[i].user_name));
 								if(!resourceExists)
 									plstr += " (i)";
 								mefl->playerlistOverlay[i]->setCaption(plstr);
@@ -698,15 +702,15 @@ void Network::receivethreadstart()
 						pthread_mutex_lock(&chat_mutex);
 
 						// if we know the truck, use its name rather then the full UID thing
-						String truckname = clients[i].vehicle;
+						String truckname = clients[i].truck_name;
 						if(resourceExists)
 						{
 							Cache_Entry entry = CACHE.getResourceInfo(truckname);
 							truckname = entry.dname;
 						}
-						NETCHAT.addText("^9* " + ColoredTextAreaOverlayElement::StripColors(clients[i].nickname) + " joined with " + truckname);
+						NETCHAT.addText("^9* " + ColoredTextAreaOverlayElement::StripColors(clients[i].user_name) + " joined with " + truckname);
 						if(!resourceExists)
-							NETCHAT.addText("^1* " + String(clients[i].vehicle) + " not found. Player will be invisible.");
+							NETCHAT.addText("^1* " + String(clients[i].truck_name) + " not found. Player will be invisible.");
 						pthread_mutex_unlock(&chat_mutex);
 
 						break;
@@ -720,7 +724,7 @@ void Network::receivethreadstart()
 			pthread_mutex_lock(&clients_mutex);
 			for (int i=0; i<MAX_PEERS; i++)
 			{
-				if (clients[i].used && clients[i].uid==source && (clients[i].loaded || clients[i].invisible))
+				if (clients[i].used && clients[i].user_id==source && (clients[i].loaded || clients[i].invisible))
 				{
 					// pass event to the truck itself
 					if(!clients[i].invisible)
@@ -742,7 +746,7 @@ void Network::receivethreadstart()
 
 					// add some chat msg
 					pthread_mutex_lock(&chat_mutex);
-					NETCHAT.addText("^9* " + ColoredTextAreaOverlayElement::StripColors(clients[i].nickname) + " disconnected");
+					NETCHAT.addText("^9* " + ColoredTextAreaOverlayElement::StripColors(clients[i].user_name) + " disconnected");
 					pthread_mutex_unlock(&chat_mutex);
 
 					break;
@@ -756,11 +760,11 @@ void Network::receivethreadstart()
 			{
 				for (int i=0; i<MAX_PEERS; i++)
 				{
-					if (clients[i].uid==source)
+					if (clients[i].user_id==source)
 					{
 						buffer[wrotelen]=0;
 						pthread_mutex_lock(&chat_mutex);
-						String nickname = ColoredTextAreaOverlayElement::StripColors(String(clients[i].nickname));
+						String nickname = ColoredTextAreaOverlayElement::StripColors(String(clients[i].user_name));
 						if(clients[i].invisible)
 							nickname += " (i)";
 						NETCHAT.addText("^8" + nickname + ": ^7" + ColoredTextAreaOverlayElement::StripColors(String(buffer)));

@@ -27,18 +27,19 @@ along with Rigs of Rods.  If not, see <http://www.gnu.org/licenses/>.
 #include "rornetv2.h"
 #include "nethelper.h"
 #include <vector>
+#include <map>
 
 using namespace RakNet;
 
 RakPeerInterface *peer=0;
 typedef struct {
 	SystemAddress sa;
-	string name;
+	net_userinfo_t info;
 } client_t;
 
-std::vector<client_t> clients;
+std::map<int, client_t> clients;
 
-char MSG3_NAMES[255][255] = {"ERROR", "MSG3_VERSION", "MSG3_USE_VEHICLE", "MSG3_BUFFER_SIZE", "MSG3_VEHICLE_DATA", "MSG3_HELLO", "MSG3_USER_CREDENTIALS", "MSG3_TERRAIN_RESP", "MSG3_SERVER_FULL", "MSG3_USER_BANNED", "MSG3_WRONG_SERVER_PW", "MSG3_WELCOME", "MSG3_CHAT", "MSG3_DELETE", "MSG3_GAME_CMD"};
+char MSG3_NAMES[255][255] = {"ERROR", "MSG3_VERSION", "MSG3_USER_INFO", "MSG3_VEHICLE_DATA", "MSG3_HELLO", "MSG3_USER_CREDENTIALS", "MSG3_TERRAIN_RESP", "MSG3_SERVER_FULL", "MSG3_USER_BANNED", "MSG3_WRONG_SERVER_PW", "MSG3_WELCOME", "MSG3_CHAT", "MSG3_DELETE", "MSG3_GAME_CMD"};
 
 // fill a buffer with random data
 void random_numbers(unsigned int size, unsigned char *ptr)
@@ -78,22 +79,13 @@ unsigned char GetPacketIdentifier(Packet *p)
         return (unsigned char) p->data[0];
 }
 
-void registerClient(SystemAddress sa, std::string name)
-{
-	client_t c;
-	c.sa = sa;
-	c.name = name;
-	printf(" ** client registered: %s\n", c.name.c_str());
-	clients.push_back(c);
-}
-
 void unregisterClient(SystemAddress sa)
 {
-	for(std::vector<client_t>::iterator it=clients.begin();it!=clients.end(); it++)
+	for(std::map<int, client_t>::iterator it=clients.begin();it!=clients.end(); it++)
 	{
-		if(it->sa == sa)
+		if(it->second.sa == sa)
 		{
-			printf(" ** client unregistered: %s\n", it->name.c_str());
+			printf(" ** client unregistered: %s\n", it->second.info.user_name);
 			clients.erase(it);
 			return;
 		}
@@ -102,17 +94,18 @@ void unregisterClient(SystemAddress sa)
 
 int main(int argc, char **argv)
 {
-    if(argc != 2)
+    if(argc != 3)
     {
-        printf("usage: %s <IP to listen on>\n", argv[0]);
+        printf("usage: %s <IP to listen on> <port>\n", argv[0]);
         return 1;
     }
     peer = RakNetworkFactory::GetRakPeerInterface();
     Packet *packet;
-    peer->Startup(MAX_CLIENTS, 30, &SocketDescriptor(SERVER_PORT, argv[1]), 1);
+    peer->Startup(MAX_CLIENTS, 30, &SocketDescriptor(atoi(argv[2]), argv[1]), 1);
     printf("Starting the server.\n");
     // We need to let the server accept incoming connections from the clients
     peer->SetMaximumIncomingConnections(MAX_CLIENTS);
+	char *buffer=(char*)malloc(MAX_MESSAGE_LENGTHv2);
     
     while (1)
     {
@@ -157,6 +150,68 @@ int main(int argc, char **argv)
 					if(contentType != MSG3_VEHICLE_DATA)
 						printf("GOT message %s (%d) (%d bytes) from client %d, %s\n", MSG3_NAMES[contentType], contentType, contentSize, contentSource, packet->guid.ToString());
                     
+
+					if(contentType == MSG3_USER_INFO)
+					{
+						//we got a new client, store its data and overwrite some :)
+						// clear the buffer, important...
+						unsigned int user_id = packet->systemIndex;
+						memset(buffer, 0, MAX_MESSAGE_LENGTHv2);
+						// fill buffer
+						stream.SerializeBits(false, (unsigned char*)buffer, contentSize*8);
+
+						net_userinfo_t *user_info = (net_userinfo_t *)buffer;
+						
+						// set the user index
+						user_info->user_id = user_id;
+
+						// set the user level, to be improved later
+						user_info->user_level = 0;
+
+						// copy the info to our little memory DB
+						client_t client;
+						client.sa = packet->systemAddress;
+						memcpy(&client.info, user_info, sizeof(net_userinfo_t));
+
+						clients[user_id] = client;
+
+						printf(" ** client registered:\n");
+						printf(" client version:      '%s'\n", user_info->client_version);
+						printf(" protocol version:    '%s'\n", user_info->protocol_version);
+						printf(" server password:     '%s'\n", user_info->server_password);
+						printf(" truck name:          '%s'\n", user_info->truck_name);
+						printf(" truck size in bytes: %d\n", user_info->truck_size);
+						printf(" client id:           %d\n", user_info->user_id);
+						printf(" client language:     '%s'\n", user_info->user_language);
+						printf(" client level:        %d\n", user_info->user_level);
+						printf(" client nickname:     '%s'\n", user_info->user_name);
+						//printf(" client token:        '%s'\n", user_info->user_token);
+
+						// TODO: make the username unique on the server...
+						// TODO: modify the broadcasted stream with the server overwritten data!
+						peer->Send(&stream, MEDIUM_PRIORITY, RELIABLE_SEQUENCED, 0, packet->systemAddress, true);
+
+						// now we need to send the new client all already known clients
+						for(std::map<int, client_t>::iterator it=clients.begin();it!=clients.end(); it++)
+						{
+							if(it->first == user_id)
+								continue;
+							printf(" sending info about client %d to client %d ...\n", it->first, user_id);
+							net_userinfo_t netinfo;
+							memset(&netinfo, 0, sizeof(net_userinfo_t));
+							strncpy(netinfo.client_version, it->second.info.client_version, 20);
+							strncpy(netinfo.protocol_version, it->second.info.protocol_version, 19);
+							strncpy(netinfo.truck_name, it->second.info.truck_name, 255);
+							netinfo.truck_size = it->second.info.truck_size;
+							netinfo.user_id = it->first;
+							strncpy(netinfo.user_language, it->second.info.user_language, 10);
+							strncpy(netinfo.user_name, it->second.info.user_name, 20);
+							netinfo.user_level = it->second.info.user_level;
+
+							sendmessage(peer, packet->systemAddress, MSG3_USER_INFO, netinfo.user_id, sizeof(net_userinfo_t), (char *)&netinfo);
+						}
+						continue;
+					}
                     // allocate buffer
                     //unsigned char *buf = (unsigned char *)malloc(mySize);
                     

@@ -45,7 +45,7 @@ using namespace std;
 using namespace Ogre;
 using namespace RakNet;
 
-char MSG3_NAMES[255][255] = {"ERROR", "MSG3_VERSION", "MSG3_USE_VEHICLE", "MSG3_BUFFER_SIZE", "MSG3_VEHICLE_DATA", "MSG3_HELLO", "MSG3_USER_CREDENTIALS", "MSG3_TERRAIN_RESP", "MSG3_SERVER_FULL", "MSG3_USER_BANNED", "MSG3_WRONG_SERVER_PW", "MSG3_WELCOME", "MSG3_CHAT", "MSG3_DELETE", "MSG3_GAME_CMD"};
+char MSG3_NAMES[255][255] = {"ERROR", "MSG3_VERSION", "MSG3_USER_INFO", "MSG3_VEHICLE_DATA", "MSG3_HELLO", "MSG3_USER_CREDENTIALS", "MSG3_TERRAIN_RESP", "MSG3_SERVER_FULL", "MSG3_USER_BANNED", "MSG3_WRONG_SERVER_PW", "MSG3_WELCOME", "MSG3_CHAT", "MSG3_DELETE", "MSG3_GAME_CMD"};
 
 NetworkNew *net_new_instance; // workaround for thread entry points
 
@@ -141,22 +141,51 @@ void NetworkNew::sendVehicleType(char* name, int buffersize)
 {
 	LogManager::getSingleton().logMessage("NetworkNew::sendVehicleType()");
 	
-	strcpy(ourTruckname, name);
-	//lets send our vehicle name
-	LogManager::getSingleton().logMessage("sending truckname: '"+String(name)+"'...");
-	sendmessage(peer, serverAddress, MSG3_USE_VEHICLE, myuid, strlen(name), name);
+	net_userinfo_t user_info;
+	memset(&user_info, 0, sizeof(net_userinfo_t));
 	
-	//send the buffer size
-	send_buffer_len=buffersize;
-	unsigned int bsize=sizeof(oob_t)+send_buffer_len;
-	send_buffer=(char*)malloc(send_buffer_len);
+	// fill the struct will all required data
+	char pwbuffer[250]="";
+	memset(pwbuffer, 0, 250);
+	strncpy(pwbuffer, SETTINGS.getSetting("Server password").c_str(), 250);
+
+	char sha1pwresult[250]="";
+	memset(sha1pwresult, 0, 250);
+	if(strnlen(pwbuffer, 250)>0)
+	{
+		RoR::CSHA1 sha1;
+		sha1.UpdateHash((UINT_8 *)pwbuffer, strnlen(pwbuffer, 250));
+		sha1.Final();
+		sha1.ReportHash(sha1pwresult, RoR::CSHA1::REPORT_HEX_SHORT);
+	}
+
+	// now the client/server info
+	strncpy(user_info.server_password, sha1pwresult, 255);
+	strncpy(user_info.client_version, ROR_VERSION_STRING, 10);
+	strncpy(user_info.protocol_version, RORNETv2_VERSION, 10);
+
+	// the truck info
+	strncpy(user_info.truck_name, name, 255);
+	user_info.truck_size = buffersize;
+
+	// and the user info
+	strncpy(user_info.user_language, SETTINGS.getSetting("Language Short").c_str(), 10);
+	strncpy(user_info.user_token, SETTINGS.getSetting("User Token").c_str(), 40);
 	
-	sendmessage(peer, serverAddress, MSG3_BUFFER_SIZE, myuid, 4, (char*)(&bsize));
+	String nick = SETTINGS.getSetting("Nickname");
+	StringUtil::toLowerCase(nick);
+	if (nick==String("pricorde") || nick==String("thomas"))
+		nick = "Anonymous";
+
+	strncpy(user_info.user_name, nick.c_str(), 20);
 	
+	// finished constructing struct, send it now :)
+
+	sendmessage(peer, serverAddress, MSG3_USER_INFO, myuid, sizeof(net_userinfo_t), (char *)&user_info);
+
+
 	//start the handling threads
 	pthread_create(&sendthread, NULL, s_new_sendthreadstart, (void*)(0));
-	//pthread_create(&receivethread, NULL, s_new_receivethreadstart, (void*)(0));
-
 }
 
 //this is called at each frame to check if a new vehicle must be spawn
@@ -168,8 +197,8 @@ bool NetworkNew::vehicle_to_spawn(char* name, unsigned int *uid, unsigned int *l
 	{
 		if (clients[i].used && !clients[i].loaded && !clients[i].invisible)
 		{
-			strcpy(name, clients[i].vehicle);
-			*uid=clients[i].uid;
+			strcpy(name, clients[i].truck_name);
+			*uid=clients[i].user_id;
 			*label=i;
 			pthread_mutex_unlock(&clients_mutex);
 			return true;
@@ -186,7 +215,7 @@ client_t NetworkNew::vehicle_spawned(unsigned int uid, int trucknum)
 	pthread_mutex_lock(&clients_mutex);
 	for (int i=0; i<MAX_PEERS; i++)
 	{
-		if (clients[i].uid==uid)
+		if (clients[i].user_id==uid)
 		{
 			clients[i].loaded=true;
 			clients[i].trucknum=trucknum;
@@ -333,7 +362,7 @@ void NetworkNew::receivethreadstart()
 {
 	Packet *packet;
 
-	char *buffer=(char*)malloc(MAX_MESSAGE_LENGTH);
+	char *buffer=(char*)malloc(MAX_MESSAGE_LENGTHv2);
     while (!shutdown)
     {
         packet=peer->Receive();
@@ -426,7 +455,7 @@ void NetworkNew::handlePacket(unsigned char type, unsigned char source, unsigned
 		pthread_mutex_lock(&clients_mutex);
 		for (int i=0; i<MAX_PEERS; i++)
 		{
-			if (clients[i].used && !clients[i].invisible && clients[i].uid==source && clients[i].loaded)
+			if (clients[i].used && !clients[i].invisible && clients[i].user_id==source && clients[i].loaded)
 			{
 				//okay
 				trucks[clients[i].trucknum]->pushNetwork(buffer, wrotelen);
@@ -441,31 +470,32 @@ void NetworkNew::handlePacket(unsigned char type, unsigned char source, unsigned
 		myuid = *uid;
 		LogManager::getSingleton().logMessage("userid is now " + StringConverter::toString(myuid));
 
-	} else if (type==MSG3_USE_VEHICLE)
+	} else if (type==MSG3_USER_INFO)
 	{
-		//LogManager::getSingleton().logMessage("I got a vehicle");
+		LogManager::getSingleton().logMessage("new user announced!");
 		//we want first to check if the vehicle name is valid before committing to anything
 
-		//possible load from cache system
-		String truckname = buffer;
-		String nickname = buffer+strlen(buffer)+1;
-		bool authed=false;
-		if(strnlen(buffer+strlen(buffer)+1+nickname.size()+1,5) == 6 && !strncmp(buffer+strlen(buffer)+1+nickname.size()+1,"ATUHED",6))
-			authed=true;
-		bool resourceExists = CACHE.checkResourceLoaded(truckname);
-		// check if found
+		net_userinfo_t *user_info = (net_userinfo_t *) buffer;
+
+		// check if we have the truck
+		bool resourceExists = CACHE.checkResourceLoaded(String(user_info->truck_name));
 		if(!resourceExists)
 		{
-			resourceExists=false;
-			LogManager::getSingleton().logMessage("Network warning: truck named '"+truckname+"' not found in local installation");
+			// check for different UID
+			resourceExists = CACHE.checkResourceLoaded(CACHE.stripUIDfromString(user_info->truck_name));
+			if(!resourceExists)
+			{
+				LogManager::getSingleton().logMessage("Network warning: truck named '"+String(user_info->truck_name)+"' not found in local installation");
+			}
 		}
+		
 		//spawn vehicle query
 		pthread_mutex_lock(&clients_mutex);
 		//first check if its not already known
 		bool known=false;
 		for (int i=0; i<MAX_PEERS; i++)
 		{
-			if (clients[i].used && clients[i].uid==source) known=true;
+			if (clients[i].used && clients[i].user_id==source) known=true;
 		}
 		if (!known)
 		{
@@ -473,22 +503,28 @@ void NetworkNew::handlePacket(unsigned char type, unsigned char source, unsigned
 			{
 				if (!clients[i].used)
 				{
+					// set up new client :)
 					//LogManager::getSingleton().logMessage("Registering as client "+StringConverter::toString(i));
-					clients[i].used=true;
-					clients[i].invisible=!resourceExists;
+					clients[i].used = true;
+					clients[i].trucknum = -1;
 					clients[i].loaded=false;
-					clients[i].uid=source;
-					clients[i].authed=authed;
-					if(strnlen(clients[i].nickname, 5) == 0)
-						strcpy(clients[i].nickname, "unkown");
+					clients[i].invisible=!resourceExists;
+
+					strncpy(clients[i].client_version, user_info->client_version, 10);
+					strncpy(clients[i].protocol_version, user_info->protocol_version, 19);
+					strncpy(clients[i].truck_name, user_info->truck_name, 255);
+					clients[i].truck_size = user_info->truck_size;
+
+					strncpy(clients[i].user_language, user_info->user_language, 10);
+					strncpy(clients[i].user_name, user_info->user_name, 20);
+					clients[i].user_id = user_info->user_id;
+					clients[i].user_level = user_info->user_level;
+
+
+					if(strnlen(clients[i].user_name, 5) == 0)
+						strcpy(clients[i].user_name, "unkown");
+					
 					buffer[wrotelen]=0;
-
-					strcpy(clients[i].vehicle, truckname.c_str());
-					// fix for MP, important to support the same vehicle with different UID's
-					String vehicle_without_uid = CACHE.stripUIDfromString(truckname);
-					strcpy(clients[i].vehicle, vehicle_without_uid.c_str());
-
-					strcpy(clients[i].nickname, nickname.c_str()); //buffer+strlen(buffer)+1); //magical!  // rather hackish if you ask me ...
 
 					// update playerlist
 
@@ -496,7 +532,7 @@ void NetworkNew::handlePacket(unsigned char type, unsigned char source, unsigned
 					{
 						try
 						{
-							String plstr = StringConverter::toString(i) + ": " + ColoredTextAreaOverlayElement::StripColors(String(clients[i].nickname));
+							String plstr = StringConverter::toString(i) + ": " + ColoredTextAreaOverlayElement::StripColors(String(clients[i].user_name));
 							if(!resourceExists)
 								plstr += " (i)";
 							mefl->playerlistOverlay[i]->setCaption(plstr);
@@ -509,15 +545,15 @@ void NetworkNew::handlePacket(unsigned char type, unsigned char source, unsigned
 					pthread_mutex_lock(&chat_mutex);
 
 					// if we know the truck, use its name rather then the full UID thing
-					String truckname = clients[i].vehicle;
+					String truckname = String(clients[i].truck_name);
 					if(resourceExists)
 					{
 						Cache_Entry entry = CACHE.getResourceInfo(truckname);
 						truckname = entry.dname;
 					}
-					CONSOLE.addText("^9* " + ColoredTextAreaOverlayElement::StripColors(clients[i].nickname) + " joined with " + truckname);
+					NETCHAT.addText("^9* " + ColoredTextAreaOverlayElement::StripColors(clients[i].user_name) + " joined with " + truckname);
 					if(!resourceExists)
-						CONSOLE.addText("^1* " + String(clients[i].vehicle) + " not found. Player will be invisible.");
+						NETCHAT.addText("^1* " + String(clients[i].truck_name) + " not found. Player will be invisible.");
 					pthread_mutex_unlock(&chat_mutex);
 
 
@@ -526,18 +562,13 @@ void NetworkNew::handlePacket(unsigned char type, unsigned char source, unsigned
 			}
 		}
 		pthread_mutex_unlock(&clients_mutex);
-
-		// also, send out our ID, so people know us :D
-		// EDIT: this ends in a broadcasting storm, so do not do it
-		//sendmessage(peer, serverAddress, MSG3_USE_VEHICLE, myuid, strlen(ourTruckname), ourTruckname);
-
 	}
 	else if (type==MSG3_DELETE)
 	{
 		pthread_mutex_lock(&clients_mutex);
 		for (int i=0; i<MAX_PEERS; i++)
 		{
-			if (clients[i].used && clients[i].uid==source && (clients[i].loaded || clients[i].invisible))
+			if (clients[i].used && clients[i].user_id==source && (clients[i].loaded || clients[i].invisible))
 			{
 				// pass event to the truck itself
 				if(!clients[i].invisible)
@@ -559,7 +590,7 @@ void NetworkNew::handlePacket(unsigned char type, unsigned char source, unsigned
 
 				// add some chat msg
 				pthread_mutex_lock(&chat_mutex);
-				CONSOLE.addText("^9* " + ColoredTextAreaOverlayElement::StripColors(clients[i].nickname) + " disconnected");
+				NETCHAT.addText("^9* " + ColoredTextAreaOverlayElement::StripColors(clients[i].user_name) + " disconnected");
 				pthread_mutex_unlock(&chat_mutex);
 
 				break;
@@ -573,14 +604,14 @@ void NetworkNew::handlePacket(unsigned char type, unsigned char source, unsigned
 		{
 			for (int i=0; i<MAX_PEERS; i++)
 			{
-				if (clients[i].uid==source)
+				if (clients[i].user_id==source)
 				{
 					buffer[wrotelen]=0;
 					pthread_mutex_lock(&chat_mutex);
-					String nickname = ColoredTextAreaOverlayElement::StripColors(String(clients[i].nickname));
+					String nickname = ColoredTextAreaOverlayElement::StripColors(String(clients[i].user_name));
 					if(clients[i].invisible)
 						nickname += " (i)";
-					CONSOLE.addText("^8" + nickname + ": ^7" + ColoredTextAreaOverlayElement::StripColors(String(buffer)));
+					NETCHAT.addText("^8" + nickname + ": ^7" + ColoredTextAreaOverlayElement::StripColors(String(buffer)));
 					pthread_mutex_unlock(&chat_mutex);
 					break;
 				}
@@ -589,7 +620,7 @@ void NetworkNew::handlePacket(unsigned char type, unsigned char source, unsigned
 		{
 			// server msg
 			pthread_mutex_lock(&chat_mutex);
-			CONSOLE.addText(String(buffer));
+			NETCHAT.addText(String(buffer));
 			pthread_mutex_unlock(&chat_mutex);
 		}
 	}
