@@ -339,6 +339,7 @@ void GUI_Loader::show(int type)
 	// focus main window (for key input)
 	truck_configs.clear();
 	MyGUI::InputManager::getInstance().setKeyFocusWidget(window);
+	window->setEnabledSilent(true);
 	window->showSmooth();
 	selectedtruck = 0;
 	loaderType = type;
@@ -349,6 +350,7 @@ void GUI_Loader::show(int type)
 void GUI_Loader::hide()
 {
 	window->setVisible(false);
+	window->setEnabledSilent(false);
 	// hide cursor
 	MyGUI::PointerManager::getInstance().setVisible(false);
 }

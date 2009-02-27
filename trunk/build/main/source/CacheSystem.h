@@ -203,6 +203,13 @@ class CacheSystem
 public:
 	static CacheSystem &Instance();
 	
+
+#ifdef ANGELSCRIPT
+	// we have to add this to be able to use the class as reference inside scripts
+	void addRef(){};
+	void release(){};
+#endif
+
 	void startup();
 	void loadAllZips();
 	

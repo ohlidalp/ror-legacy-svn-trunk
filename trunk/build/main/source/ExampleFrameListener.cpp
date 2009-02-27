@@ -775,6 +775,7 @@ void ExampleFrameListener::setGravity(float value)
 // Constructor takes a RenderWindow because it uses that to determine input context
 ExampleFrameListener::ExampleFrameListener(RenderWindow* win, Camera* cam, SceneManager* scm, Root* root) :  initialized(false)
 {
+	loaded_terrain=0;
 	eflsingleton=this;
 #ifdef ANGELSCRIPT
 	new ScriptEngine(this);
@@ -1360,6 +1361,9 @@ ExampleFrameListener::ExampleFrameListener(RenderWindow* win, Camera* cam, Scene
 #endif
 			exit(123);
 		}
+
+		// set the terrain cache entry
+		loaded_terrain = &CACHE.getResourceInfo(mapname);
 
 		loadTerrain(mapname);
 		//miniature map stuff
@@ -4191,6 +4195,9 @@ void ExampleFrameListener::loadTerrain(String terrainfile)
 #endif
 		exit(123);
 	}
+
+	// set the terrain cache entry
+	loaded_terrain = &CACHE.getResourceInfo(terrainfile);
 
 	DataStreamPtr ds=ResourceGroupManager::getSingleton().openResource(terrainfile, group);
 	ds->readLine(line, 1023);
