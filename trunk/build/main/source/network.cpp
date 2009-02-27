@@ -308,6 +308,10 @@ void Network::sendVehicleType(char* name, int buffersize)
 	pthread_create(&receivethread, NULL, s_receivethreadstart, (void*)(0));
 }
 
+Ogre::String Network::getNickname()
+{
+	return String(nickname);
+}
 
 int Network::sendmessage(SWInetSocket *socket, int type, unsigned int len, char* content)
 {
