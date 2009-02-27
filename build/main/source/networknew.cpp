@@ -415,7 +415,8 @@ void NetworkNew::receivethreadstart()
 					// fill buffer
                     stream.SerializeBits(false, (unsigned char*)buffer, contentSize*8);
 
-					printf("GOT message %s (%d) (%d bytes) from client %d (%s)\n", MSG3_NAMES[contentType], contentType, contentSize, contentSource, packet->guid.ToString());
+					//printf("GOT message %s (%d) (%d bytes) from client %d (%s)\n", MSG3_NAMES[contentType], contentType, contentSize, contentSource, packet->guid.ToString());
+					printf("GOT message %s (%d) (%d bytes) from client %d\n", MSG3_NAMES[contentType], contentType, contentSize, contentSource);
 					this->handlePacket(contentType, contentSource, contentSize, buffer);                    
                 }
                 break;
