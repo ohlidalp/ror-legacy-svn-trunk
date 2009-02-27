@@ -183,6 +183,9 @@ void NetworkNew::sendVehicleType(char* name, int buffersize)
 
 	sendmessage(peer, serverAddress, MSG3_USER_INFO, myuid, sizeof(net_userinfo_t), (char *)&user_info);
 
+	//allocate the send buffer
+	unsigned int bsize=sizeof(oob_t)+buffersize;
+	send_buffer=(char*)malloc(buffersize);
 
 	//start the handling threads
 	pthread_create(&sendthread, NULL, s_new_sendthreadstart, (void*)(0));
