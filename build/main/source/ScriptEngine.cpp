@@ -23,7 +23,7 @@ along with Rigs of Rods.  If not, see <http://www.gnu.org/licenses/>.
 #include "ScriptEngine.h"
 #include "Ogre.h"
 #include "ExampleFrameListener.h"
-#include "scriptstring/scriptstring.h" // angelscript addon
+#include "stdstring/stdstring.h" // angelscript addon
 #include "scriptmath/scriptmath.h" // angelscript addon
 #include "water.h"
 #include "Beam.h"
@@ -34,6 +34,17 @@ using namespace Ogre;
 using namespace std;
 
 template<> ScriptEngine *Ogre::Singleton<ScriptEngine>::ms_Singleton=0;
+
+#if OGRE_PLATFORM == OGRE_PLATFORM_WIN32
+extern "C" {
+_CRTIMP void __cdecl _wassert(_In_z_ const wchar_t * _Message, _In_z_ const wchar_t *_File, _In_ unsigned _Line);
+}
+# define assert_net(_Expression) (void)( (!!(_Expression)) || (_wassert(_CRT_WIDE(#_Expression), _CRT_WIDE(__FILE__), __LINE__), 0) )
+#elif OGRE_PLATFORM == OGRE_PLATFORM_LINUX
+# define assert_net(expr) assert(expr)
+#elif OGRE_PLATFORM == OGRE_PLATFORM_APPLE
+# define assert_net(expr) assert(expr)
+#endif
 
 
 ScriptEngine::ScriptEngine(ExampleFrameListener *efl) : mefl(efl), engine(0), context(0), frameStepFunctionPtr(-1), eventMask(0)
@@ -204,10 +215,10 @@ void ScriptEngine::PrintVariables(asIScriptContext *ctx, int stackLevel)
 		}
 		else if( typeId == engine->GetTypeIdByDecl("string") )
 		{
-			CScriptString *str = (CScriptString*)varPointer;
+			std::string *str = (std::string*)varPointer;
 			if( str )
 			{			
-				sprintf(tmp, " %s = '%s'", ctx->GetVarDeclaration(n, 0, stackLevel), str->buffer.c_str());
+				sprintf(tmp, " %s = '%s'", ctx->GetVarDeclaration(n, 0, stackLevel), str->c_str());
 				LogManager::getSingleton().logMessage(tmp);
 			} else
 			{
@@ -220,18 +231,6 @@ void ScriptEngine::PrintVariables(asIScriptContext *ctx, int stackLevel)
 };
 
 // wrappers for functions that are not directly usable
-CScriptString &getTruckName(Beam *beam)
-{
-	CScriptString *rstr = new CScriptString(beam->getTruckName());
-	return *rstr;
-}
-
-CScriptString &stripUIDfromString(std::string str)
-{
-	CScriptString *rstr = new CScriptString(CACHE.stripUIDfromString(str).c_str());
-	return *rstr;
-}
-
 
 // continue with initializing everything
 void ScriptEngine::init()
@@ -264,76 +263,77 @@ void ScriptEngine::init()
 	// string type for C++ applications. Every developer is free to register it's own string type.
 	// The SDK do however provide a standard add-on for registering a string type, so it's not
 	// necessary to register your own string type if you don't want to.
-	RegisterScriptString_Native(engine);
+	RegisterStdString(engine);
 	RegisterScriptMath_Native(engine);
 
 	// Register everything
-	result = engine->RegisterObjectType("BeamClass", sizeof(Beam), asOBJ_REF);
-	result = engine->RegisterObjectMethod("BeamClass", "void scaleTruck(float)", asMETHOD(Beam,scaleTruck), asCALL_THISCALL);
-	result = engine->RegisterObjectMethod("BeamClass", "string &getTruckName()", asFUNCTION(getTruckName), asCALL_CDECL_OBJLAST);
-	result = engine->RegisterObjectProperty("BeamClass", "float currentScale", offsetof(Beam, currentScale));
-	result = engine->RegisterObjectBehaviour("BeamClass", asBEHAVE_ADDREF, "void f()",asMETHOD(Beam,addRef), asCALL_THISCALL);
-	result = engine->RegisterObjectBehaviour("BeamClass", asBEHAVE_RELEASE, "void f()",asMETHOD(Beam,release), asCALL_THISCALL);
+	result = engine->RegisterObjectType("BeamClass", sizeof(Beam), asOBJ_REF); assert_net(result>=0);
+	result = engine->RegisterObjectMethod("BeamClass", "void scaleTruck(float)", asMETHOD(Beam,scaleTruck), asCALL_THISCALL); assert_net(result>=0);
+	result = engine->RegisterObjectMethod("BeamClass", "string &getTruckName()", asMETHOD(Beam,getTruckName), asCALL_THISCALL); assert_net(result>=0);
+	result = engine->RegisterObjectProperty("BeamClass", "float currentScale", offsetof(Beam, currentScale)); assert_net(result>=0);
+	result = engine->RegisterObjectBehaviour("BeamClass", asBEHAVE_ADDREF, "void f()",asMETHOD(Beam,addRef), asCALL_THISCALL); assert_net(result>=0);
+	result = engine->RegisterObjectBehaviour("BeamClass", asBEHAVE_RELEASE, "void f()",asMETHOD(Beam,release), asCALL_THISCALL); assert_net(result>=0);
 
 	// todo: add Vector3 classes and other utility classes!
-
-	result = engine->RegisterObjectType("GameScriptClass", sizeof(GameScript), asOBJ_VALUE | asOBJ_POD | asOBJ_APP_CLASS);
-	result = engine->RegisterObjectMethod("GameScriptClass", "void log(const string &in)", asMETHOD(GameScript,log), asCALL_THISCALL);
-	result = engine->RegisterObjectMethod("GameScriptClass", "double getTime()", asMETHOD(GameScript,getTime), asCALL_THISCALL);
-	result = engine->RegisterObjectMethod("GameScriptClass", "void setPersonPosition(float, float, float)", asMETHOD(GameScript,setPersonPosition), asCALL_THISCALL);
-	result = engine->RegisterObjectMethod("GameScriptClass", "void movePerson(float, float, float)", asMETHOD(GameScript,movePerson), asCALL_THISCALL);
-	result = engine->RegisterObjectMethod("GameScriptClass", "float getCaelumTime()", asMETHOD(GameScript,getCaelumTime), asCALL_THISCALL);
-	result = engine->RegisterObjectMethod("GameScriptClass", "void setCaelumTime(float)", asMETHOD(GameScript,setCaelumTime), asCALL_THISCALL);
-	result = engine->RegisterObjectMethod("GameScriptClass", "void setWaterHeight(float)", asMETHOD(GameScript,setWaterHeight), asCALL_THISCALL);
-	result = engine->RegisterObjectMethod("GameScriptClass", "float getWaterHeight()", asMETHOD(GameScript,getWaterHeight), asCALL_THISCALL);
-	result = engine->RegisterObjectMethod("GameScriptClass", "int getCurrentTruckNumber()", asMETHOD(GameScript,getCurrentTruckNumber), asCALL_THISCALL);
-	result = engine->RegisterObjectMethod("GameScriptClass", "int getNumTrucks()", asMETHOD(GameScript,getCurrentTruckNumber), asCALL_THISCALL);
-	result = engine->RegisterObjectMethod("GameScriptClass", "float getGravity()", asMETHOD(GameScript,getGravity), asCALL_THISCALL);
-	result = engine->RegisterObjectMethod("GameScriptClass", "void setGravity(float)", asMETHOD(GameScript,setGravity), asCALL_THISCALL);
-
-	result = engine->RegisterObjectMethod("GameScriptClass", "void flashMessage(const string &in, float, float)", asMETHOD(GameScript,flashMessage), asCALL_THISCALL);
-	result = engine->RegisterObjectMethod("GameScriptClass", "void setDirectionArrow(const string &in, float, float, float)", asMETHOD(GameScript,setDirectionArrow), asCALL_THISCALL);
 	
-	result = engine->RegisterObjectMethod("GameScriptClass", "void registerForEvent(int)", asMETHOD(GameScript,registerForEvent), asCALL_THISCALL);
 
-	result = engine->RegisterObjectMethod("GameScriptClass", "BeamClass @getCurrentTruck()", asMETHOD(GameScript,getCurrentTruck), asCALL_THISCALL);
-	result = engine->RegisterObjectMethod("GameScriptClass", "BeamClass @getTruckByNum(int)", asMETHOD(GameScript,getTruckByNum), asCALL_THISCALL);
+	result = engine->RegisterObjectType("GameScriptClass", sizeof(GameScript), asOBJ_VALUE | asOBJ_POD | asOBJ_APP_CLASS); assert_net(result>=0);
+	result = engine->RegisterObjectMethod("GameScriptClass", "void log(const string &in)", asMETHOD(GameScript,log), asCALL_THISCALL); assert_net(result>=0);
+	result = engine->RegisterObjectMethod("GameScriptClass", "double getTime()", asMETHOD(GameScript,getTime), asCALL_THISCALL); assert_net(result>=0);
+	result = engine->RegisterObjectMethod("GameScriptClass", "void setPersonPosition(float, float, float)", asMETHOD(GameScript,setPersonPosition), asCALL_THISCALL); assert_net(result>=0);
+	result = engine->RegisterObjectMethod("GameScriptClass", "void movePerson(float, float, float)", asMETHOD(GameScript,movePerson), asCALL_THISCALL); assert_net(result>=0);
+	result = engine->RegisterObjectMethod("GameScriptClass", "float getCaelumTime()", asMETHOD(GameScript,getCaelumTime), asCALL_THISCALL); assert_net(result>=0);
+	result = engine->RegisterObjectMethod("GameScriptClass", "void setCaelumTime(float)", asMETHOD(GameScript,setCaelumTime), asCALL_THISCALL); assert_net(result>=0);
+	result = engine->RegisterObjectMethod("GameScriptClass", "void setWaterHeight(float)", asMETHOD(GameScript,setWaterHeight), asCALL_THISCALL); assert_net(result>=0);
+	result = engine->RegisterObjectMethod("GameScriptClass", "float getWaterHeight()", asMETHOD(GameScript,getWaterHeight), asCALL_THISCALL); assert_net(result>=0);
+	result = engine->RegisterObjectMethod("GameScriptClass", "int getCurrentTruckNumber()", asMETHOD(GameScript,getCurrentTruckNumber), asCALL_THISCALL); assert_net(result>=0);
+	result = engine->RegisterObjectMethod("GameScriptClass", "int getNumTrucks()", asMETHOD(GameScript,getCurrentTruckNumber), asCALL_THISCALL); assert_net(result>=0);
+	result = engine->RegisterObjectMethod("GameScriptClass", "float getGravity()", asMETHOD(GameScript,getGravity), asCALL_THISCALL); assert_net(result>=0);
+	result = engine->RegisterObjectMethod("GameScriptClass", "void setGravity(float)", asMETHOD(GameScript,setGravity), asCALL_THISCALL); assert_net(result>=0);
+
+	result = engine->RegisterObjectMethod("GameScriptClass", "void flashMessage(const string &in, float, float)", asMETHOD(GameScript,flashMessage), asCALL_THISCALL); assert_net(result>=0);
+	result = engine->RegisterObjectMethod("GameScriptClass", "void setDirectionArrow(const string &in, float, float, float)", asMETHOD(GameScript,setDirectionArrow), asCALL_THISCALL); assert_net(result>=0);
+	
+	result = engine->RegisterObjectMethod("GameScriptClass", "void registerForEvent(int)", asMETHOD(GameScript,registerForEvent), asCALL_THISCALL); assert_net(result>=0);
+
+	result = engine->RegisterObjectMethod("GameScriptClass", "BeamClass @getCurrentTruck()", asMETHOD(GameScript,getCurrentTruck), asCALL_THISCALL); assert_net(result>=0);
+	result = engine->RegisterObjectMethod("GameScriptClass", "BeamClass @getTruckByNum(int)", asMETHOD(GameScript,getTruckByNum), asCALL_THISCALL); assert_net(result>=0);
 
 	result = engine->RegisterObjectType("CacheSystemClass", sizeof(CacheSystem), asOBJ_REF);
-	result = engine->RegisterObjectMethod("CacheSystemClass", "string &stripUIDfromString(const string &in)", asFUNCTION(stripUIDfromString), asCALL_CDECL_OBJLAST);
-	result = engine->RegisterObjectBehaviour("CacheSystemClass", asBEHAVE_ADDREF, "void f()",asMETHOD(CacheSystem,addRef), asCALL_THISCALL);
-	result = engine->RegisterObjectBehaviour("CacheSystemClass", asBEHAVE_RELEASE, "void f()",asMETHOD(CacheSystem,release), asCALL_THISCALL);
+	result = engine->RegisterObjectMethod("CacheSystemClass", "string stripUIDfromString(string in)", asFUNCTION(CacheSystem::stripUIDfromString), asCALL_CDECL); assert_net(result>=0);
+	result = engine->RegisterObjectBehaviour("CacheSystemClass", asBEHAVE_ADDREF, "void f()",asMETHOD(CacheSystem,addRef), asCALL_THISCALL); assert_net(result>=0);
+	result = engine->RegisterObjectBehaviour("CacheSystemClass", asBEHAVE_RELEASE, "void f()",asMETHOD(CacheSystem,release), asCALL_THISCALL); assert_net(result>=0);
 
-	result = engine->RegisterEnum("scriptEvents");
-	result = engine->RegisterEnumValue("scriptEvents", "SE_COLLISION_BOX_ENTER", SE_COLLISION_BOX_ENTER);
-	result = engine->RegisterEnumValue("scriptEvents", "SE_COLLISION_BOX_LEAVE", SE_COLLISION_BOX_LEAVE);
-	result = engine->RegisterEnumValue("scriptEvents", "SE_TRUCK_ENTER", SE_TRUCK_ENTER);
-	result = engine->RegisterEnumValue("scriptEvents", "SE_TRUCK_EXIT", SE_TRUCK_EXIT);
-	result = engine->RegisterEnumValue("scriptEvents", "SE_TRUCK_ENGINE_DIED", SE_TRUCK_ENGINE_DIED);
-	result = engine->RegisterEnumValue("scriptEvents", "SE_TRUCK_ENGINE_FIRE", SE_TRUCK_ENGINE_FIRE);
-	result = engine->RegisterEnumValue("scriptEvents", "SE_TRUCK_TOUCHED_WATER", SE_TRUCK_TOUCHED_WATER);
-	result = engine->RegisterEnumValue("scriptEvents", "SE_TRUCK_BEAM_BROKE", SE_TRUCK_BEAM_BROKE);
-	result = engine->RegisterEnumValue("scriptEvents", "SE_TRUCK_LOCKED", SE_TRUCK_LOCKED);
-	result = engine->RegisterEnumValue("scriptEvents", "SE_TRUCK_UNLOCKED", SE_TRUCK_UNLOCKED);
-	result = engine->RegisterEnumValue("scriptEvents", "SE_TRUCK_LIGHT_TOGGLE", SE_TRUCK_LIGHT_TOGGLE);
-	result = engine->RegisterEnumValue("scriptEvents", "SE_TRUCK_SKELETON_TOGGLE", SE_TRUCK_SKELETON_TOGGLE);
-	result = engine->RegisterEnumValue("scriptEvents", "SE_TRUCK_TIE_TOGGLE", SE_TRUCK_TIE_TOGGLE);
-	result = engine->RegisterEnumValue("scriptEvents", "SE_TRUCK_PARKINGBREAK_TOGGLE", SE_TRUCK_PARKINGBREAK_TOGGLE);
-	result = engine->RegisterEnumValue("scriptEvents", "SE_TRUCK_BEACONS_TOGGLE", SE_TRUCK_BEACONS_TOGGLE);
-	result = engine->RegisterEnumValue("scriptEvents", "SE_TRUCK_CPARTICLES_TOGGLE", SE_TRUCK_CPARTICLES_TOGGLE);
-	result = engine->RegisterEnumValue("scriptEvents", "SE_TRUCK_GROUND_CONTACT_CHANGED", SE_TRUCK_GROUND_CONTACT_CHANGED);
-	result = engine->RegisterEnumValue("scriptEvents", "SE_GENERIC_NEW_TRUCK", SE_GENERIC_NEW_TRUCK);
-	result = engine->RegisterEnumValue("scriptEvents", "SE_GENERIC_DELETED_TRUCK", SE_GENERIC_DELETED_TRUCK);
-	result = engine->RegisterEnumValue("scriptEvents", "SE_GENERIC_INPUT_EVENT", SE_GENERIC_INPUT_EVENT);
-	result = engine->RegisterEnumValue("scriptEvents", "SE_GENERIC_MOUSE_BEAM_INTERACTION", SE_GENERIC_MOUSE_BEAM_INTERACTION);
+	result = engine->RegisterEnum("scriptEvents"); assert_net(result>=0);
+	result = engine->RegisterEnumValue("scriptEvents", "SE_COLLISION_BOX_ENTER", SE_COLLISION_BOX_ENTER); assert_net(result>=0);
+	result = engine->RegisterEnumValue("scriptEvents", "SE_COLLISION_BOX_LEAVE", SE_COLLISION_BOX_LEAVE); assert_net(result>=0);
+	result = engine->RegisterEnumValue("scriptEvents", "SE_TRUCK_ENTER", SE_TRUCK_ENTER); assert_net(result>=0);
+	result = engine->RegisterEnumValue("scriptEvents", "SE_TRUCK_EXIT", SE_TRUCK_EXIT); assert_net(result>=0);
+	result = engine->RegisterEnumValue("scriptEvents", "SE_TRUCK_ENGINE_DIED", SE_TRUCK_ENGINE_DIED); assert_net(result>=0);
+	result = engine->RegisterEnumValue("scriptEvents", "SE_TRUCK_ENGINE_FIRE", SE_TRUCK_ENGINE_FIRE); assert_net(result>=0);
+	result = engine->RegisterEnumValue("scriptEvents", "SE_TRUCK_TOUCHED_WATER", SE_TRUCK_TOUCHED_WATER); assert_net(result>=0);
+	result = engine->RegisterEnumValue("scriptEvents", "SE_TRUCK_BEAM_BROKE", SE_TRUCK_BEAM_BROKE); assert_net(result>=0);
+	result = engine->RegisterEnumValue("scriptEvents", "SE_TRUCK_LOCKED", SE_TRUCK_LOCKED); assert_net(result>=0);
+	result = engine->RegisterEnumValue("scriptEvents", "SE_TRUCK_UNLOCKED", SE_TRUCK_UNLOCKED); assert_net(result>=0);
+	result = engine->RegisterEnumValue("scriptEvents", "SE_TRUCK_LIGHT_TOGGLE", SE_TRUCK_LIGHT_TOGGLE); assert_net(result>=0);
+	result = engine->RegisterEnumValue("scriptEvents", "SE_TRUCK_SKELETON_TOGGLE", SE_TRUCK_SKELETON_TOGGLE); assert_net(result>=0);
+	result = engine->RegisterEnumValue("scriptEvents", "SE_TRUCK_TIE_TOGGLE", SE_TRUCK_TIE_TOGGLE); assert_net(result>=0);
+	result = engine->RegisterEnumValue("scriptEvents", "SE_TRUCK_PARKINGBREAK_TOGGLE", SE_TRUCK_PARKINGBREAK_TOGGLE); assert_net(result>=0);
+	result = engine->RegisterEnumValue("scriptEvents", "SE_TRUCK_BEACONS_TOGGLE", SE_TRUCK_BEACONS_TOGGLE); assert_net(result>=0);
+	result = engine->RegisterEnumValue("scriptEvents", "SE_TRUCK_CPARTICLES_TOGGLE", SE_TRUCK_CPARTICLES_TOGGLE); assert_net(result>=0);
+	result = engine->RegisterEnumValue("scriptEvents", "SE_TRUCK_GROUND_CONTACT_CHANGED", SE_TRUCK_GROUND_CONTACT_CHANGED); assert_net(result>=0);
+	result = engine->RegisterEnumValue("scriptEvents", "SE_GENERIC_NEW_TRUCK", SE_GENERIC_NEW_TRUCK); assert_net(result>=0);
+	result = engine->RegisterEnumValue("scriptEvents", "SE_GENERIC_DELETED_TRUCK", SE_GENERIC_DELETED_TRUCK); assert_net(result>=0);
+	result = engine->RegisterEnumValue("scriptEvents", "SE_GENERIC_INPUT_EVENT", SE_GENERIC_INPUT_EVENT); assert_net(result>=0);
+	result = engine->RegisterEnumValue("scriptEvents", "SE_GENERIC_MOUSE_BEAM_INTERACTION", SE_GENERIC_MOUSE_BEAM_INTERACTION); assert_net(result>=0);
 
 	// now the global instances
 	GameScript *gamescript = new GameScript(this, mefl);
-	result = engine->RegisterGlobalProperty("GameScriptClass game", gamescript);
+	result = engine->RegisterGlobalProperty("GameScriptClass game", gamescript); assert_net(result>=0);
 	
-	result = engine->RegisterGlobalProperty("CacheSystemClass cache", &CacheSystem::Instance());
+	result = engine->RegisterGlobalProperty("CacheSystemClass cache", &CacheSystem::Instance()); assert_net(result>=0);
 
-	result = engine->RegisterObjectType("Vector3Class", sizeof(Ogre::Vector3), asOBJ_VALUE | asOBJ_POD | asOBJ_APP_CLASS);
+	result = engine->RegisterObjectType("Vector3Class", sizeof(Ogre::Vector3), asOBJ_VALUE | asOBJ_POD | asOBJ_APP_CLASS); assert_net(result>=0);
 	// TODO: add complete Vector3 class :(
 	//result = engine->RegisterObjectMethod("Vector3Class", "...", asMETHOD(Ogre::Vector3,...), asCALL_THISCALL);
 
