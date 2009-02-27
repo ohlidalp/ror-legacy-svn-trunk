@@ -79,6 +79,7 @@ NetworkNew::NetworkNew(Beam **btrucks, Ogre::String servername, long sport, Exam
 	strcpy(ourTruckname, "");
 	myuid = -1;
 	send_buffer = 0;
+	send_buffer_len = 0;
 
 	pthread_mutex_init(&send_work_mutex, NULL);
 	pthread_cond_init(&send_work_cv, NULL);
@@ -184,8 +185,9 @@ void NetworkNew::sendVehicleType(char* name, int buffersize)
 	sendmessage(peer, serverAddress, MSG3_USER_INFO, myuid, sizeof(net_userinfo_t), (char *)&user_info);
 
 	//allocate the send buffer
-	unsigned int bsize=sizeof(oob_t)+buffersize;
-	send_buffer=(char*)malloc(buffersize);
+	send_buffer_len = buffersize;
+	unsigned int bsize=sizeof(oob_t)+send_buffer_len;
+	send_buffer=(char*)malloc(send_buffer_len);
 
 	//start the handling threads
 	pthread_create(&sendthread, NULL, s_new_sendthreadstart, (void*)(0));
@@ -232,6 +234,8 @@ client_t NetworkNew::vehicle_spawned(unsigned int uid, int trucknum)
 
 void NetworkNew::sendData(Beam* truck)
 {
+	if(!send_buffer) return;
+
 	if(serverAddress == UNASSIGNED_SYSTEM_ADDRESS)
 		// not yet connected
 		return;
@@ -670,8 +674,7 @@ char *NetworkNew::getTerrainName()
 
 char *NetworkNew::getNickname()
 {
-	LogManager::getSingleton().logMessage("NetworkNew::getNickname()");
-	return "notimplemented";
+	return const_cast<char*>(SETTINGS.getSetting("Nickname").c_str());
 }
 
 int NetworkNew::getRConState()
