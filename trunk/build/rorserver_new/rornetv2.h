@@ -48,7 +48,7 @@ typedef struct net_userinfo
 {
 	// client-server data
 	char          server_password[50];
-	char          client_version[11];
+	char          client_version[20];
 	char          protocol_version[20];
 	
 	// truck data
@@ -65,6 +65,13 @@ typedef struct net_userinfo
 	unsigned int  user_id;
 } net_userinfo_t;
 
+typedef struct net_serverinfo
+{
+	char          server_version[20];
+	char          protocol_version[20];
+	char          terrain_name[256];
+} net_serverinfo_t;
+
 enum {
 	MSG3_VERSION = 1,
 	MSG3_USER_INFO,
@@ -78,7 +85,8 @@ enum {
 	MSG3_WELCOME,
 	MSG3_CHAT,
 	MSG3_DELETE,
-	MSG3_GAME_CMD
+	MSG3_GAME_CMD,
+	MSG3_SERVER_INFO,
 };
 
 
