@@ -197,7 +197,9 @@ int main(int argc, char **argv)
 						// now we need to send the new client all already known clients
 						for(std::map<int, client_t>::iterator it=clients.begin();it!=clients.end(); it++)
 						{
-							printf(" sending info about client %d to client %d ...\n", it->first, user_id);
+							if(it->first == user_id)
+								continue;
+							
 							net_userinfo_t netinfo;
 							memset(&netinfo, 0, sizeof(net_userinfo_t));
 							strncpy(netinfo.client_version, it->second.info.client_version, 20);
@@ -209,14 +211,13 @@ int main(int argc, char **argv)
 							strncpy(netinfo.user_name, it->second.info.user_name, 20);
 							netinfo.user_level = it->second.info.user_level;
 
-							//if(it->first == user_id)
-							//	continue;
-							
+							printf(" sending info about client %d to client %d ...\n", it->first, user_id);
 							// send the new clients info to the iterated client
 							sendmessage(peer, packet->systemAddress, MSG3_USER_INFO, netinfo.user_id, sizeof(net_userinfo_t), (char *)&netinfo);
 							
+							printf(" sending info about client %d to client %d ...\n", user_id, it->first);
 							// send the iterated clients info about the new client
-							sendmessage(peer, it->second.sa, MSG3_USER_INFO, netinfo.user_id, sizeof(net_userinfo_t), (char *)&client);
+							sendmessage(peer, it->second.sa, MSG3_USER_INFO, user_id, sizeof(net_userinfo_t), (char *)&client);
 						}
 						continue;
 					}
