@@ -509,9 +509,10 @@ void NetworkNew::handlePacket(unsigned char type, unsigned char source, unsigned
 			{
 				LogManager::getSingleton().logMessage("Network warning: truck named '"+String(user_info->truck_name)+"' not found in local installation");
 				return;
-			} else
+			}
 			truckname = truckname2;
 		}
+		// use truckname from now on!
 		
 		//spawn vehicle query
 		pthread_mutex_lock(&clients_mutex);
@@ -536,7 +537,7 @@ void NetworkNew::handlePacket(unsigned char type, unsigned char source, unsigned
 
 					strncpy(clients[i].client_version, user_info->client_version, 10);
 					strncpy(clients[i].protocol_version, user_info->protocol_version, 19);
-					strncpy(clients[i].truck_name, user_info->truck_name, 255);
+					strncpy(clients[i].truck_name, truckname.c_str(), 255);
 					clients[i].truck_size = user_info->truck_size;
 
 					strncpy(clients[i].user_language, user_info->user_language, 10);
@@ -569,7 +570,6 @@ void NetworkNew::handlePacket(unsigned char type, unsigned char source, unsigned
 					pthread_mutex_lock(&chat_mutex);
 
 					// if we know the truck, use its name rather then the full UID thing
-					String truckname = String(clients[i].truck_name);
 					if(resourceExists)
 					{
 						Cache_Entry entry = CACHE.getResourceInfo(truckname);
@@ -577,7 +577,7 @@ void NetworkNew::handlePacket(unsigned char type, unsigned char source, unsigned
 					}
 					NETCHAT.addText("^9* " + ColoredTextAreaOverlayElement::StripColors(clients[i].user_name) + " joined with " + truckname);
 					if(!resourceExists)
-						NETCHAT.addText("^1* " + String(clients[i].truck_name) + " not found. Player will be invisible.");
+						NETCHAT.addText("^1* " + truckname + " not found. Player will be invisible.");
 					pthread_mutex_unlock(&chat_mutex);
 
 
