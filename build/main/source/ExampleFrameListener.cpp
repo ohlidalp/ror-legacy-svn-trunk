@@ -6532,7 +6532,7 @@ bool ExampleFrameListener::frameStarted(const FrameEvent& evt)
 			//send player's truck data
 			net->sendData(trucks[0]);
 			//also take care of this
-			trucks[0]->expireNetForce();
+			//trucks[0]->expireNetForce();
 			//check for chat
 			char name[256];
 			//check for new truck to spawn
