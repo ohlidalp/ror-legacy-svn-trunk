@@ -35,7 +35,7 @@ using namespace std;
 template<> ScriptEngine *Ogre::Singleton<ScriptEngine>::ms_Singleton=0;
 
 
-ScriptEngine::ScriptEngine(ExampleFrameListener *efl) : mefl(efl), engine(0), context(0), frameStepFunctionPtr(-1)
+ScriptEngine::ScriptEngine(ExampleFrameListener *efl) : mefl(efl), engine(0), context(0), frameStepFunctionPtr(-1), eventMask(0)
 {
 	init();
 }
@@ -103,7 +103,7 @@ int ScriptEngine::loadTerrainScript(Ogre::String scriptname)
 
 	// get some other optional functions
 	frameStepFunctionPtr = mod->GetFunctionIdByDecl("void frameStep(float)");
-	//eventCallbackFunctionPtr = mod->GetFunctionIdByDecl("void eventCallbackFunctionPtr(event_t)");
+	eventCallbackFunctionPtr = mod->GetFunctionIdByDecl("void eventCallback(int event, int value)");
 
 	// Create our context, prepare it, and then execute
 	context = engine->CreateContext();
@@ -279,7 +279,12 @@ void ScriptEngine::init()
 	result = engine->RegisterObjectMethod("GameScriptClass", "int getCurrentTruckNumber()", asMETHOD(GameScript,getCurrentTruckNumber), asCALL_THISCALL);
 	result = engine->RegisterObjectMethod("GameScriptClass", "int getNumTrucks()", asMETHOD(GameScript,getCurrentTruckNumber), asCALL_THISCALL);
 	result = engine->RegisterObjectMethod("GameScriptClass", "float getGravity()", asMETHOD(GameScript,getGravity), asCALL_THISCALL);
-	result = engine->RegisterObjectMethod("GameScriptClass", "void setGravity(float value)", asMETHOD(GameScript,setGravity), asCALL_THISCALL);
+	result = engine->RegisterObjectMethod("GameScriptClass", "void setGravity(float)", asMETHOD(GameScript,setGravity), asCALL_THISCALL);
+
+	result = engine->RegisterObjectMethod("GameScriptClass", "void flashMessage(const string &in, float, float)", asMETHOD(GameScript,flashMessage), asCALL_THISCALL);
+	result = engine->RegisterObjectMethod("GameScriptClass", "void setDirectionArrow(const string &in, float, float, float)", asMETHOD(GameScript,setDirectionArrow), asCALL_THISCALL);
+	
+	result = engine->RegisterObjectMethod("GameScriptClass", "void registerForEvent(int)", asMETHOD(GameScript,registerForEvent), asCALL_THISCALL);
 
 	result = engine->RegisterObjectMethod("GameScriptClass", "BeamClass @getCurrentTruck()", asMETHOD(GameScript,getCurrentTruck), asCALL_THISCALL);
 	result = engine->RegisterObjectMethod("GameScriptClass", "BeamClass @getTruckByNum(int)", asMETHOD(GameScript,getTruckByNum), asCALL_THISCALL);
@@ -385,9 +390,28 @@ void ScriptEngine::executeString(Ogre::String command)
 	}
 }
 
-void ScriptEngine::triggerEvent(enum scriptEvents)
+void ScriptEngine::triggerEvent(enum scriptEvents eventnum, int value)
 {
-	// TODO: implement
+	if(!engine) return;
+	if(eventCallbackFunctionPtr<0) return;
+	if(eventMask & eventnum)
+	{
+		// script registered for that event, so sent it
+		if(!context) context = engine->CreateContext();
+		context->Prepare(eventCallbackFunctionPtr);
+
+		// Set the function arguments
+		context->SetArgDWord(0, eventnum);
+		context->SetArgDWord(1, value);
+
+		int r = context->Execute();
+		if( r == asEXECUTION_FINISHED )
+		{
+		  // The return value is only valid if the execution finished successfully
+		  asDWORD ret = context->GetReturnDWord();
+		}
+		return;
+	}
 }
 
 /* class that implements the interface for the scripts */ 
@@ -479,7 +503,17 @@ int GameScript::getCurrentTruckNumber()
 void GameScript::registerForEvent(int eventValue)
 {
 	if(!mse) return;
-	mse->eventMask |= eventValue;
+	mse->eventMask += eventValue;
+}
+
+void GameScript::flashMessage(std::string &txt, float time, float charHeight)
+{
+	if(mefl) mefl->flashMessage(txt, time, charHeight);
+}
+
+void GameScript::setDirectionArrow(std::string &text, float positionx, float positiony, float positionz)
+{
+	if(mefl) mefl->setDirectionArrow(const_cast<char*>(text.c_str()), Vector3(positionx, positiony, positionz));
 }
 
 #endif //ANGELSCRIPT

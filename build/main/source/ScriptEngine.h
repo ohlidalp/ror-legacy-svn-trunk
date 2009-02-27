@@ -96,13 +96,13 @@ public:
 
 	};
 	
-	int eventMask;                          //!< filter mask for script events
+	unsigned int eventMask;                          //!< filter mask for script events
 	
 	/**
 	 * triggers an event. Not to be used by the end-user
 	 * @param eventValue \see enum scriptEvents
 	 */
-	void triggerEvent(enum scriptEvents);
+	void triggerEvent(enum scriptEvents, int value=0);
 
 	/**
 	 * executes a string (useful for the console)
@@ -260,6 +260,18 @@ public:
 	 * @param eventValue \see enum scriptEvents
 	 */
 	void registerForEvent(int eventValue);
+
+	/**
+	 * shows a message to the user
+	 */
+	void flashMessage(std::string &txt, float time, float charHeight);
+
+	/**
+	 * set direction arrow
+	 * @param text text to be displayed. "" to hide the text
+	 */
+	void setDirectionArrow(std::string &text, float positionx, float positiony, float positionz);
+
 };
 
 #endif

@@ -3344,7 +3344,7 @@ bool ExampleFrameListener::updateEvents(float dt)
 							if (mintruck!=-1)
 							{
 #ifdef ANGELSCRIPT
-								ScriptEngine::getSingleton().triggerEvent(ScriptEngine::SE_GENERIC_MOUSE_BEAM_INTERACTION);
+								ScriptEngine::getSingleton().triggerEvent(ScriptEngine::SE_GENERIC_MOUSE_BEAM_INTERACTION, current_truck);
 #endif //ANGELSCRIPT
 								truckgrabbed=mintruck;
 								nodegrabbed=minnode;
