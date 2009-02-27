@@ -145,11 +145,11 @@ void NetworkNew::sendVehicleType(char* name, int buffersize)
 	memset(&user_info, 0, sizeof(net_userinfo_t));
 	
 	// fill the struct will all required data
-	char pwbuffer[250]="";
+	char pwbuffer[251]="";
 	memset(pwbuffer, 0, 250);
 	strncpy(pwbuffer, SETTINGS.getSetting("Server password").c_str(), 250);
 
-	char sha1pwresult[250]="";
+	char sha1pwresult[251]="";
 	memset(sha1pwresult, 0, 250);
 	if(strnlen(pwbuffer, 250)>0)
 	{
@@ -160,9 +160,9 @@ void NetworkNew::sendVehicleType(char* name, int buffersize)
 	}
 
 	// now the client/server info
-	strncpy(user_info.server_password, sha1pwresult, 255);
+	strncpy(user_info.server_password, sha1pwresult, 254);
 	strncpy(user_info.client_version, ROR_VERSION_STRING, 10);
-	strncpy(user_info.protocol_version, RORNETv2_VERSION, 10);
+	strncpy(user_info.protocol_version, RORNETv2_VERSION, 19);
 
 	// the truck info
 	strncpy(user_info.truck_name, name, 255);
@@ -170,7 +170,7 @@ void NetworkNew::sendVehicleType(char* name, int buffersize)
 
 	// and the user info
 	strncpy(user_info.user_language, SETTINGS.getSetting("Language Short").c_str(), 10);
-	strncpy(user_info.user_token, SETTINGS.getSetting("User Token").c_str(), 40);
+	strncpy(user_info.user_token, SETTINGS.getSetting("User Token").c_str(), 50);
 	
 	String nick = SETTINGS.getSetting("Nickname");
 	StringUtil::toLowerCase(nick);
