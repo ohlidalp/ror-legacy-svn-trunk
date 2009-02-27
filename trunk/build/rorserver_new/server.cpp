@@ -104,9 +104,9 @@ void unregisterClient(SystemAddress sa)
 
 int main(int argc, char **argv)
 {
-    if(argc != 3)
+    if(argc != 4)
     {
-        printf("usage: %s <IP to listen on> <port>\n", argv[0]);
+        printf("usage: %s <IP to listen on> <port> <terrain>\n", argv[0]);
         return 1;
     }
 	char ip[255]="";
