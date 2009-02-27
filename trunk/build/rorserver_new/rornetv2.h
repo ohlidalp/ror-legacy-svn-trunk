@@ -21,7 +21,7 @@ along with Rigs of Rods.  If not, see <http://www.gnu.org/licenses/>.
 #ifndef RORNETV2_H__
 #define RORNETV2_H__
 
-#define MAX_CLIENTS 10
+#define MAX_CLIENTS 30
 
 #include <iostream>
 #include <ctime>

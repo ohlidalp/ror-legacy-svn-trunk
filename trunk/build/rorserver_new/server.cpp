@@ -112,23 +112,26 @@ int main(int argc, char **argv)
 	char ip[255]="";
 	strncpy(ip, argv[1], 255);
 	int port = atoi(argv[2]);
-	char terrain[255]="";
-	strncpy(terrain, argv[3], 255);
+	char terrainname[255]="";
+	strncpy(terrainname, argv[3], 255);
 
 	peer = RakNetworkFactory::GetRakPeerInterface();
     Packet *packet;
 	peer->Startup(MAX_CLIENTS, 30, &SocketDescriptor(port, ip), 1);
-    printf("Starting the server.\n");
-    // We need to let the server accept incoming connections from the clients
+    
+	// We need to let the server accept incoming connections from the clients
     peer->SetMaximumIncomingConnections(MAX_CLIENTS);
+	
+	// allocate the receive buffer
 	char *buffer=(char*)malloc(MAX_MESSAGE_LENGTHv2);
 
 	//construct our server info once
 	net_serverinfo_t server_info;
 	strncpy(server_info.protocol_version, RORNETv2_VERSION, 19);
-	strncpy(server_info.server_version, "server-0.1.0", 10);
-	strncpy(server_info.terrain_name, terrain, 255);
-    
+	strncpy(server_info.server_version, "server-0.1.0", 19);
+	strncpy(server_info.terrain_name, terrainname, 255);
+	
+	printf("starting server %s with %s, terrain: %s\n", server_info.server_version, server_info.protocol_version, server_info.terrain_name);
 	while (1)
     {
         packet=peer->Receive();
