@@ -60,7 +60,7 @@ public:
 	int getConnectedClientCount();
 
 	char *getTerrainName();
-	char *getNickname();
+	Ogre::String getNickname();
 	int getRConState();
 
 

@@ -60,7 +60,7 @@ public:
 	virtual int getConnectedClientCount() = 0;
 
 	virtual char *getTerrainName() = 0;
-	virtual char *getNickname() = 0;
+	virtual Ogre::String getNickname() = 0;
 	virtual int getRConState() = 0;
 };
 
@@ -119,7 +119,7 @@ public:
 	int getConnectedClientCount();
 
 	char *getTerrainName() { return terrainName; };
-	char *getNickname() { return nickname; };
+	Ogre::String getNickname();
 	int getRConState() { return rconauthed; };
 	int downloadMod(char* modname);
 };

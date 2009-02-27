@@ -686,9 +686,9 @@ char *NetworkNew::getTerrainName()
 	return "aspen-test";
 }
 
-char *NetworkNew::getNickname()
+Ogre::String NetworkNew::getNickname()
 {
-	return const_cast<char*>(SETTINGS.getSetting("Nickname").c_str());
+	return SETTINGS.getSetting("Nickname");
 }
 
 int NetworkNew::getRConState()
