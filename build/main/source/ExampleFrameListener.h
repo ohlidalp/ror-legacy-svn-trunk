@@ -544,6 +544,8 @@ protected:
 
 	int objcounter;
 	char terrainmap[256];
+	Cache_Entry *loaded_terrain;
+
 	Ogre::String terrainUID;
 	Road *road;
 	Mirrors *mirror;

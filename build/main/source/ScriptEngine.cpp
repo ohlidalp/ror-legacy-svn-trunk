@@ -28,6 +28,7 @@ along with Rigs of Rods.  If not, see <http://www.gnu.org/licenses/>.
 #include "water.h"
 #include "Beam.h"
 #include "IngameConsole.h"
+#include "CacheSystem.h"
 
 using namespace Ogre;
 using namespace std;
@@ -216,14 +217,23 @@ void ScriptEngine::PrintVariables(asIScriptContext *ctx, int stackLevel)
 		LogManager::getSingleton().logMessage(tmp);
 		}
 	}
-}
+};
 
+// wrappers for functions that are not directly usable
 CScriptString &getTruckName(Beam *beam)
 {
-	CScriptString *str = new CScriptString(beam->getTruckName());
-	return *str;
+	CScriptString *rstr = new CScriptString(beam->getTruckName());
+	return *rstr;
 }
 
+CScriptString &stripUIDfromString(std::string str)
+{
+	CScriptString *rstr = new CScriptString(CACHE.stripUIDfromString(str).c_str());
+	return *rstr;
+}
+
+
+// continue with initializing everything
 void ScriptEngine::init()
 {
 	int result;
@@ -262,8 +272,8 @@ void ScriptEngine::init()
 	result = engine->RegisterObjectMethod("BeamClass", "void scaleTruck(float)", asMETHOD(Beam,scaleTruck), asCALL_THISCALL);
 	result = engine->RegisterObjectMethod("BeamClass", "string &getTruckName()", asFUNCTION(getTruckName), asCALL_CDECL_OBJLAST);
 	result = engine->RegisterObjectProperty("BeamClass", "float currentScale", offsetof(Beam, currentScale));
-	result = engine->RegisterObjectBehaviour("BeamClass", asBEHAVE_ADDREF,"void f()",asMETHOD(Beam,addRef), asCALL_THISCALL);
-	result = engine->RegisterObjectBehaviour("BeamClass", asBEHAVE_RELEASE,"void f()",asMETHOD(Beam,release), asCALL_THISCALL);
+	result = engine->RegisterObjectBehaviour("BeamClass", asBEHAVE_ADDREF, "void f()",asMETHOD(Beam,addRef), asCALL_THISCALL);
+	result = engine->RegisterObjectBehaviour("BeamClass", asBEHAVE_RELEASE, "void f()",asMETHOD(Beam,release), asCALL_THISCALL);
 
 	// todo: add Vector3 classes and other utility classes!
 
@@ -289,6 +299,10 @@ void ScriptEngine::init()
 	result = engine->RegisterObjectMethod("GameScriptClass", "BeamClass @getCurrentTruck()", asMETHOD(GameScript,getCurrentTruck), asCALL_THISCALL);
 	result = engine->RegisterObjectMethod("GameScriptClass", "BeamClass @getTruckByNum(int)", asMETHOD(GameScript,getTruckByNum), asCALL_THISCALL);
 
+	result = engine->RegisterObjectType("CacheSystemClass", sizeof(CacheSystem), asOBJ_REF);
+	result = engine->RegisterObjectMethod("CacheSystemClass", "string &stripUIDfromString(const string &in)", asFUNCTION(stripUIDfromString), asCALL_CDECL_OBJLAST);
+	result = engine->RegisterObjectBehaviour("CacheSystemClass", asBEHAVE_ADDREF, "void f()",asMETHOD(CacheSystem,addRef), asCALL_THISCALL);
+	result = engine->RegisterObjectBehaviour("CacheSystemClass", asBEHAVE_RELEASE, "void f()",asMETHOD(CacheSystem,release), asCALL_THISCALL);
 
 	result = engine->RegisterEnum("scriptEvents");
 	result = engine->RegisterEnumValue("scriptEvents", "SE_COLLISION_BOX_ENTER", SE_COLLISION_BOX_ENTER);
@@ -316,6 +330,8 @@ void ScriptEngine::init()
 	// now the global instances
 	GameScript *gamescript = new GameScript(this, mefl);
 	result = engine->RegisterGlobalProperty("GameScriptClass game", gamescript);
+	
+	result = engine->RegisterGlobalProperty("CacheSystemClass cache", &CacheSystem::Instance());
 
 	result = engine->RegisterObjectType("Vector3Class", sizeof(Ogre::Vector3), asOBJ_VALUE | asOBJ_POD | asOBJ_APP_CLASS);
 	// TODO: add complete Vector3 class :(
