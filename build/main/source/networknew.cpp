@@ -45,7 +45,7 @@ using namespace std;
 using namespace Ogre;
 using namespace RakNet;
 
-char MSG3_NAMES[255][255] = {"ERROR", "MSG3_VERSION", "MSG3_USER_INFO", "MSG3_VEHICLE_DATA", "MSG3_HELLO", "MSG3_USER_CREDENTIALS", "MSG3_TERRAIN_RESP", "MSG3_SERVER_FULL", "MSG3_USER_BANNED", "MSG3_WRONG_SERVER_PW", "MSG3_WELCOME", "MSG3_CHAT", "MSG3_DELETE", "MSG3_GAME_CMD"};
+char MSG3_NAMES[255][255] = {"ERROR", "MSG3_VERSION", "MSG3_USER_INFO", "MSG3_VEHICLE_DATA", "MSG3_HELLO", "MSG3_USER_CREDENTIALS", "MSG3_TERRAIN_RESP", "MSG3_SERVER_FULL", "MSG3_USER_BANNED", "MSG3_WRONG_SERVER_PW", "MSG3_WELCOME", "MSG3_CHAT", "MSG3_DELETE", "MSG3_GAME_CMD", "MSG3_SERVER_INFO"};
 
 NetworkNew *net_new_instance; // workaround for thread entry points
 
@@ -474,6 +474,18 @@ void NetworkNew::handlePacket(unsigned char type, unsigned char source, unsigned
 			}
 		}
 		pthread_mutex_unlock(&clients_mutex);
+	} else if (type == MSG3_HELLO)
+	{
+		// expect a server_info packet
+		net_serverinfo_t *server_info = (net_serverinfo_t *)buffer;
+		
+		LogManager::getSingleton().logMessage(" ** got server HELLO:");
+		LogManager::getSingleton().logMessage(" server version: " + String(server_info->server_version));
+		LogManager::getSingleton().logMessage(" server protocol version: " + String(server_info->protocol_version));
+		LogManager::getSingleton().logMessage(" server terrain: " + String(server_info->terrain_name));
+		strncpy(terrainName, server_info->terrain_name, 255);
+		
+
 	} else if (type == MSG3_WELCOME)
 	{
 		unsigned short *uid = (unsigned short *)buffer;
@@ -683,9 +695,7 @@ int NetworkNew::getConnectedClientCount()
 
 char *NetworkNew::getTerrainName()
 {
-	LogManager::getSingleton().logMessage("NetworkNew::getTerrainName()");
-    //peer->RPC("getTerrainName", 0, 0, HIGH_PRIORITY, RELIABLE_ORDERED, 0, UNASSIGNED_SYSTEM_ADDRESS, false, 0, UNASSIGNED_NETWORK_ID, 0);
-	return "aspen-test";
+	return terrainName;
 }
 
 Ogre::String NetworkNew::getNickname()

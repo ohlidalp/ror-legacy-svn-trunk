@@ -39,7 +39,7 @@ typedef struct {
 
 std::map<int, client_t> clients;
 
-char MSG3_NAMES[255][255] = {"ERROR", "MSG3_VERSION", "MSG3_USER_INFO", "MSG3_VEHICLE_DATA", "MSG3_HELLO", "MSG3_USER_CREDENTIALS", "MSG3_TERRAIN_RESP", "MSG3_SERVER_FULL", "MSG3_USER_BANNED", "MSG3_WRONG_SERVER_PW", "MSG3_WELCOME", "MSG3_CHAT", "MSG3_DELETE", "MSG3_GAME_CMD"};
+char MSG3_NAMES[255][255] = {"ERROR", "MSG3_VERSION", "MSG3_USER_INFO", "MSG3_VEHICLE_DATA", "MSG3_HELLO", "MSG3_USER_CREDENTIALS", "MSG3_TERRAIN_RESP", "MSG3_SERVER_FULL", "MSG3_USER_BANNED", "MSG3_WRONG_SERVER_PW", "MSG3_WELCOME", "MSG3_CHAT", "MSG3_DELETE", "MSG3_GAME_CMD", "MSG3_SERVER_INFO"};
 
 // fill a buffer with random data
 void random_numbers(unsigned int size, unsigned char *ptr)
@@ -109,18 +109,27 @@ int main(int argc, char **argv)
         printf("usage: %s <IP to listen on> <port>\n", argv[0]);
         return 1;
     }
-    peer = RakNetworkFactory::GetRakPeerInterface();
-    Packet *packet;
 	char ip[255]="";
 	strncpy(ip, argv[1], 255);
 	int port = atoi(argv[2]);
-    peer->Startup(MAX_CLIENTS, 30, &SocketDescriptor(port, ip), 1);
+	char terrain[255]="";
+	strncpy(terrain, argv[3], 255);
+
+	peer = RakNetworkFactory::GetRakPeerInterface();
+    Packet *packet;
+	peer->Startup(MAX_CLIENTS, 30, &SocketDescriptor(port, ip), 1);
     printf("Starting the server.\n");
     // We need to let the server accept incoming connections from the clients
     peer->SetMaximumIncomingConnections(MAX_CLIENTS);
 	char *buffer=(char*)malloc(MAX_MESSAGE_LENGTHv2);
+
+	//construct our server info once
+	net_serverinfo_t server_info;
+	strncpy(server_info.protocol_version, RORNETv2_VERSION, 19);
+	strncpy(server_info.server_version, "server-0.1.0", 10);
+	strncpy(server_info.terrain_name, terrain, 255);
     
-    while (1)
+	while (1)
     {
         packet=peer->Receive();
         if (packet)
@@ -252,8 +261,8 @@ int main(int argc, char **argv)
                 case ID_NEW_INCOMING_CONNECTION:
 					{
                     printf("A connection is incoming.\n");
-					printf("sending our server version\n");
-					sendmessage(peer, packet->systemAddress, MSG3_HELLO, 0, (unsigned int)strlen(RORNETv2_VERSION), RORNETv2_VERSION);
+					printf("sending our server info\n");
+					sendmessage(peer, packet->systemAddress, MSG3_HELLO, 0, sizeof(net_serverinfo_t), (char*)&server_info);
 
 					printf("sending user his ID: %d\n", packet->systemIndex);
 					sendmessage(peer, packet->systemAddress, MSG3_WELCOME, 0, sizeof(unsigned short), (char *)&packet->systemIndex);
