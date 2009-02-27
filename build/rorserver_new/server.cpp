@@ -85,7 +85,17 @@ void unregisterClient(SystemAddress sa)
 	{
 		if(it->second.sa == sa)
 		{
-			printf(" ** client unregistered: %s\n", it->second.info.user_name);
+			printf(" ** client unregistered: %d (%s)\n", it->first, it->second.info.user_name);
+			// notify all other clients of this
+			for(std::map<int, client_t>::iterator it2=clients.begin();it2!=clients.end(); it2++)
+			{
+				if(it2->first == it->first)
+					continue;
+				
+				printf(" sending deleted client %d to client %d ...\n", it->first, it2->first);
+				// send the iterated clients info about the new client
+				sendmessage(peer, it2->second.sa, MSG3_DELETE, it->first, 0, 0);
+			}
 			clients.erase(it);
 			return;
 		}

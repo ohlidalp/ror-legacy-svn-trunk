@@ -412,7 +412,7 @@ BeamEngine::BeamEngine(float iddle, float max, float torque, float rear, int num
 		ssm->trigOnce(trucknum, SS_TRIG_SHIFT);
 		if (autoselect==REAR) curGear=-1;
 		if (autoselect==NEUTRAL) curGear=0;
-		if (autoselect==DRIVE) curGear=1;
+		if (autoselect==DRIVE && curGear <= 0) curGear=1;
 		if (autoselect==TWO) curGear=2;
 		if (autoselect==ONE) curGear=1;
 	}
