@@ -2288,8 +2288,8 @@ void CacheSystem::readCategoryTitles()
 		int number=0;
 		char title[255];
 		const char delimiters[] = ",";
-		char *token, *str_work;
-		str_work = strdup(line);
+		char *token, str_work[1024]="";
+		strncpy(str_work, line, 1024);
 		token = strtok(str_work, delimiters);
 		if(token != NULL)
 			number = atoi(token);
