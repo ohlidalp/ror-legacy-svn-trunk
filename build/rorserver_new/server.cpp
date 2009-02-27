@@ -102,7 +102,7 @@ int main(int argc, char **argv)
     peer = RakNetworkFactory::GetRakPeerInterface();
     Packet *packet;
 	char ip[255]="";
-	strcpy(ip, argv[1], 255);
+	strncpy(ip, argv[1], 255);
 	int port = atoi(argv[2]);
     peer->Startup(MAX_CLIENTS, 30, &SocketDescriptor(port, ip), 1);
     printf("Starting the server.\n");
