@@ -26,19 +26,19 @@ along with Rigs of Rods.  If not, see <http://www.gnu.org/licenses/>.
 
 typedef struct
 {
-	bool          used;
-	int           trucknum;
-	bool          loaded;
-	bool          invisible;
+	bool          used;                 //!< if this slot is used already
+	int           trucknum;             //!< the truck's number of the truck bound to this slot
+	bool          loaded;               //!< if the truck bound to this slot is loaded
+	bool          invisible;            //!< if the truck is invisible for the user (since he dont have the required resource)
 
-	char          client_version[10];
-	char          protocol_version[10];
-	char          truck_name[255];
-	unsigned int  truck_size;
-	char          user_language[10];
-	char          user_name[20];
-	unsigned int  user_id;
-	unsigned int  user_level;
+	char          client_version[10];   //!< clients version, i.e. RoR-0.36.1
+	char          protocol_version[10]; //!< protocol version, i.e. RoRNet-3.0
+	char          truck_name[255];      //!< the truck filename, i.e. agoras.truck
+	unsigned int  truck_size;           //!< the size truck buffer needed
+	char          user_language[10];    //!< the users language
+	char          user_name[20];        //!< the users nickname
+	unsigned int  user_id;              //!< the users id, set by the server
+	unsigned int  user_level;           //!< the users authorization level.
 } client_t;
 
 #endif
