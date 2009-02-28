@@ -154,7 +154,7 @@ Beam::Beam(int tnum, SceneManager *manager, SceneNode *parent, RenderWindow* win
 	hasEmissivePass=0;
 	isInside=false;
 	beacon=false;
-	strcpy(realtruckfilename, fname);
+	realtruckfilename = String(fname);
 	sprintf(truckname, "t%i", tnum);
 	simpleSkeletonManualObject=0;
 	simpleSkeletonInitiated=false;

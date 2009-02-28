@@ -131,7 +131,7 @@ int main(int argc, char **argv)
 	strncpy(server_info.server_version, "server-0.1.0", 19);
 	strncpy(server_info.terrain_name, terrainname, 255);
 	
-	printf("starting server %s:%d %s with %s, terrain: %s\n", ip, port, server_info.server_version, server_info.protocol_version, server_info.terrain_name);
+	printf("starting %s on %s:%d with %s, terrain: %s\n", server_info.server_version, ip, port, server_info.protocol_version, server_info.terrain_name);
 	while (1)
     {
         packet=peer->Receive();
@@ -176,7 +176,13 @@ int main(int argc, char **argv)
 						printf("GOT message %s (%d) (%d bytes) from client %d, %s\n", MSG3_NAMES[contentType], contentType, contentSize, contentSource, packet->guid.ToString());
                     
 
-					if(contentType == MSG3_USER_INFO)
+					if(contentType == MSG3_DELETE)
+					{
+						printf("A client has disconnected via DELETE\n");
+						unregisterClient(packet->systemAddress);
+						continue;
+					}
+					else if(contentType == MSG3_USER_INFO)
 					{
 						//we got a new client, store its data and overwrite some :)
 						// clear the buffer, important...

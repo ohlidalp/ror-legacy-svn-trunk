@@ -7,9 +7,6 @@ using namespace std;
 
 template<> OgreConsole *Ogre::Singleton<OgreConsole>::ms_Singleton=0;
 
-#define CONSOLE_LINE_LENGTH 85
-#define CONSOLE_LINE_COUNT 15
-
 OgreConsole::OgreConsole()
 {
 	start_line=0;
@@ -18,6 +15,8 @@ OgreConsole::OgreConsole()
 	history_pos=0;
 	history.push_back("");
 	insertmode=true;
+	line_count=15;
+	line_lenght=85;
 }
 
 OgreConsole::~OgreConsole()
@@ -25,12 +24,25 @@ OgreConsole::~OgreConsole()
    
 }
 
-void OgreConsole::init(Ogre::Root *root)
+void OgreConsole::init(Ogre::Root *root, Ogre::RenderWindow *win)
 {
 	if(!root->getSceneManagerIterator().hasMoreElements())
 		OGRE_EXCEPT( Exception::ERR_INTERNAL_ERROR, "No scene manager found!", "init" );
 
 	this->root=root;
+
+	//we have a monospaced font!
+	float char_height_percent = 0.025f;
+	float char_width_percent = 0.025f;
+	float char_height = char_height_percent * win->getHeight();
+	float char_width = char_width_percent * win->getWidth();
+
+	//determine the size of the console dynamically
+	line_count = ((win->getHeight() * 0.5f) / char_height) - 1; //-1 because of prompt
+	line_lenght = win->getWidth() / char_width;
+	LogManager::getSingleton().logMessage("console line count: " + StringConverter::toString(line_count));
+	LogManager::getSingleton().logMessage("console line lenght: " + StringConverter::toString(line_lenght));
+
 	scene=root->getSceneManagerIterator().getNext();
 	root->addFrameListener(this);
 
@@ -62,7 +74,8 @@ void OgreConsole::init(Ogre::Root *root)
 	textbox->setParameter("font_name","VeraMono");
 	textbox->setParameter("colour_top","1 1 1");
 	textbox->setParameter("colour_bottom","1 1 1");
-	textbox->setParameter("char_height","0.025");
+	textbox->setParameter("char_height", StringConverter::toString(char_height_percent));
+	textbox->hide();
 
 	promptbox=OverlayManager::getSingleton().createOverlayElement("TextArea","ConsoleTextPrompt");
 	promptbox->setCaption("_");
@@ -71,8 +84,8 @@ void OgreConsole::init(Ogre::Root *root)
 	promptbox->setParameter("font_name","VeraMono");
 	promptbox->setParameter("colour_top","1 1 1");
 	promptbox->setParameter("colour_bottom","1 1 1");
-	promptbox->setParameter("char_height","0.025");
-	
+	promptbox->setParameter("char_height", StringConverter::toString(char_height_percent));
+	promptbox->hide();
 
 	overlay=OverlayManager::getSingleton().create("Console");   
 	overlay->add2D((OverlayContainer*)textbox);
@@ -110,8 +123,9 @@ void OgreConsole::onKeyPressed(const OIS::KeyEvent &arg)
 		if(history[history_pos] == "hide")
 		{
 			this->setVisible(false);
-			history.push_back(""); // new, empty last entry
 			cursor_position=0;
+			history.push_back(""); // new, empty last entry
+			history_pos = history.size() - 1; // switch to the new line
 			return;
 		}
 
@@ -227,7 +241,7 @@ void OgreConsole::onKeyPressed(const OIS::KeyEvent &arg)
 
 bool OgreConsole::frameStarted(const Ogre::FrameEvent &evt)
 {
-	if(!visible && height < 0.01f) return true;
+	if(!visible && !promptbox->isVisible()) return true;
 	
 	blinkdelay += evt.timeSinceLastFrame;	
 	if(visible && blinkdelay > 0.2f)
@@ -278,7 +292,7 @@ bool OgreConsole::frameStarted(const Ogre::FrameEvent &evt)
 		for(int c=0;c<start_line;c++)
 			start++;
 		end=start;
-		for(int c=0;c<CONSOLE_LINE_COUNT;c++)
+		for(int c=0;c<line_count;c++)
 		{
 			if(end==lines.end())
 				break;
@@ -318,7 +332,7 @@ void OgreConsole::print(const String &text)
 	String line;
 	for(int c=0;c<len;c++)
 	{
-		if(str[c]=='\n'||line.length()>=CONSOLE_LINE_LENGTH)
+		if(str[c]=='\n' || (int)line.length()>=line_lenght)
 		{
 			lines.push_back(line);
 			line="";
@@ -328,8 +342,8 @@ void OgreConsole::print(const String &text)
 	}
 	if(line.length())
 		lines.push_back(line);
-	if(lines.size()>CONSOLE_LINE_COUNT)
-		start_line=lines.size()-CONSOLE_LINE_COUNT;
+	if((int)lines.size() > line_count)
+		start_line=lines.size()-line_count;
 	else
 		start_line=0;
 	update_overlay=true;

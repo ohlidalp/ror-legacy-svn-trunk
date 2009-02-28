@@ -780,7 +780,7 @@ ExampleFrameListener::ExampleFrameListener(RenderWindow* win, Camera* cam, Scene
 #ifdef ANGELSCRIPT
 	new ScriptEngine(this);
 	new OgreConsole;
-	OgreConsole::getSingleton().init(root);
+	OgreConsole::getSingleton().init(root, win);
 	OgreConsole::getSingleton().setVisible(false);
 #endif
 	externalCameraMode=0;
@@ -6544,7 +6544,7 @@ bool ExampleFrameListener::frameStarted(const FrameEvent& evt)
 				bool recy=false;
 				for (int t=0; t<free_truck; t++)
 				{
-					if (trucks[t]->state==RECYCLE && !strcmp(name, trucks[t]->realtruckfilename))
+					if (trucks[t]->state==RECYCLE && !(trucks[t]->realtruckfilename == String(name)))
 					{
 						recy=true;
 						trucks[t]->state=NETWORKED;
