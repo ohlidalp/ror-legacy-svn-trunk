@@ -267,16 +267,177 @@ void ScriptEngine::init()
 	RegisterScriptMath_Native(engine);
 
 	// Register everything
+	// class Beam
 	result = engine->RegisterObjectType("BeamClass", sizeof(Beam), asOBJ_REF); assert_net(result>=0);
 	result = engine->RegisterObjectMethod("BeamClass", "void scaleTruck(float)", asMETHOD(Beam,scaleTruck), asCALL_THISCALL); assert_net(result>=0);
 	result = engine->RegisterObjectMethod("BeamClass", "string &getTruckName()", asMETHOD(Beam,getTruckName), asCALL_THISCALL); assert_net(result>=0);
+	result = engine->RegisterObjectMethod("BeamClass", "void resetPosition(float, float, float, bool, float)", asMETHOD(Beam,resetPosition), asCALL_THISCALL); assert_net(result>=0);
+	result = engine->RegisterObjectMethod("BeamClass", "void setDetailLevel(int)", asMETHOD(Beam,setDetailLevel), asCALL_THISCALL); assert_net(result>=0);
+	result = engine->RegisterObjectMethod("BeamClass", "void showSkeleton(bool, bool)", asMETHOD(Beam,showSkeleton), asCALL_THISCALL); assert_net(result>=0);
+	result = engine->RegisterObjectMethod("BeamClass", "void hideSkeleton(bool)", asMETHOD(Beam,hideSkeleton), asCALL_THISCALL); assert_net(result>=0);
+	result = engine->RegisterObjectMethod("BeamClass", "void parkingbrakeToggle()", asMETHOD(Beam,parkingbrakeToggle), asCALL_THISCALL); assert_net(result>=0);
+	result = engine->RegisterObjectMethod("BeamClass", "void beaconsToggle()", asMETHOD(Beam,beaconsToggle), asCALL_THISCALL); assert_net(result>=0);
+	result = engine->RegisterObjectMethod("BeamClass", "void setReplayMode(bool)", asMETHOD(Beam,setReplayMode), asCALL_THISCALL); assert_net(result>=0);
+	result = engine->RegisterObjectMethod("BeamClass", "void resetAutopilot()", asMETHOD(Beam,resetAutopilot), asCALL_THISCALL); assert_net(result>=0);
+	result = engine->RegisterObjectMethod("BeamClass", "void toggleCustomParticles()", asMETHOD(Beam,toggleCustomParticles), asCALL_THISCALL); assert_net(result>=0);
+	result = engine->RegisterObjectMethod("BeamClass", "void parkingbrakeToggle()", asMETHOD(Beam,parkingbrakeToggle), asCALL_THISCALL); assert_net(result>=0);
+	result = engine->RegisterObjectMethod("BeamClass", "float getDefaultDeformation()", asMETHOD(Beam,getDefaultDeformation), asCALL_THISCALL); assert_net(result>=0);
+	result = engine->RegisterObjectMethod("BeamClass", "int getNodeCount()", asMETHOD(Beam,getNodeCount), asCALL_THISCALL); assert_net(result>=0);
+	result = engine->RegisterObjectMethod("BeamClass", "float getTotalMass(bool)", asMETHOD(Beam,getTotalMass), asCALL_THISCALL); assert_net(result>=0);
+	result = engine->RegisterObjectMethod("BeamClass", "int getWheelNodeCount()", asMETHOD(Beam,getWheelNodeCount), asCALL_THISCALL); assert_net(result>=0);
+	result = engine->RegisterObjectMethod("BeamClass", "void recalc_masses()", asMETHOD(Beam,recalc_masses), asCALL_THISCALL); assert_net(result>=0);
+	result = engine->RegisterObjectMethod("BeamClass", "void setMass(float)", asMETHOD(Beam,setMass), asCALL_THISCALL); assert_net(result>=0);
+	result = engine->RegisterObjectMethod("BeamClass", "bool getBrakeLightVisible()", asMETHOD(Beam,getBrakeLightVisible), asCALL_THISCALL); assert_net(result>=0);
+	result = engine->RegisterObjectMethod("BeamClass", "bool getCustomLightVisible(int)", asMETHOD(Beam,getCustomLightVisible), asCALL_THISCALL); assert_net(result>=0);
+	result = engine->RegisterObjectMethod("BeamClass", "void setCustomLightVisible(int, bool)", asMETHOD(Beam,setCustomLightVisible), asCALL_THISCALL); assert_net(result>=0);
+	result = engine->RegisterObjectMethod("BeamClass", "bool getBeaconMode()", asMETHOD(Beam,getBeaconMode), asCALL_THISCALL); assert_net(result>=0);
+	result = engine->RegisterObjectMethod("BeamClass", "void setBlinkType(int)", asMETHOD(Beam,setBlinkType), asCALL_THISCALL); assert_net(result>=0);
+	result = engine->RegisterObjectMethod("BeamClass", "int getBlinkType()", asMETHOD(Beam,getBlinkType), asCALL_THISCALL); assert_net(result>=0);
+	result = engine->RegisterObjectMethod("BeamClass", "bool getCustomParticleMode()", asMETHOD(Beam,getCustomParticleMode), asCALL_THISCALL); assert_net(result>=0);
+	result = engine->RegisterObjectMethod("BeamClass", "int getLowestNode()", asMETHOD(Beam,getLowestNode), asCALL_THISCALL); assert_net(result>=0);
+	result = engine->RegisterObjectMethod("BeamClass", "bool setMeshVisibility(bool)", asMETHOD(Beam,setMeshVisibility), asCALL_THISCALL); assert_net(result>=0);
+	result = engine->RegisterObjectMethod("BeamClass", "bool getCustomParticleMode()", asMETHOD(Beam,getCustomParticleMode), asCALL_THISCALL); assert_net(result>=0);
+	result = engine->RegisterObjectMethod("BeamClass", "bool getCustomParticleMode()", asMETHOD(Beam,getCustomParticleMode), asCALL_THISCALL); assert_net(result>=0);
+	result = engine->RegisterObjectMethod("BeamClass", "bool getReverseLightVisible()", asMETHOD(Beam,getCustomParticleMode), asCALL_THISCALL); assert_net(result>=0);
+	result = engine->RegisterObjectMethod("BeamClass", "float getHeadingDirectionAngle()", asMETHOD(Beam,getHeadingDirectionAngle), asCALL_THISCALL); assert_net(result>=0);
+	result = engine->RegisterObjectProperty("BeamClass", "float brake", offsetof(Beam, brake)); assert_net(result>=0);
 	result = engine->RegisterObjectProperty("BeamClass", "float currentScale", offsetof(Beam, currentScale)); assert_net(result>=0);
+	result = engine->RegisterObjectProperty("BeamClass", "int nodedebugstate", offsetof(Beam, nodedebugstate)); assert_net(result>=0);
+	result = engine->RegisterObjectProperty("BeamClass", "int debugVisuals", offsetof(Beam, debugVisuals)); assert_net(result>=0);
+	result = engine->RegisterObjectProperty("BeamClass", "bool networking", offsetof(Beam, networking)); assert_net(result>=0);
+	result = engine->RegisterObjectProperty("BeamClass", "int label", offsetof(Beam, label)); assert_net(result>=0);
+	result = engine->RegisterObjectProperty("BeamClass", "int trucknum", offsetof(Beam, trucknum)); assert_net(result>=0);
+	result = engine->RegisterObjectProperty("BeamClass", "float WheelSpeed", offsetof(Beam, WheelSpeed)); assert_net(result>=0);
+	result = engine->RegisterObjectProperty("BeamClass", "int skeleton", offsetof(Beam, skeleton)); assert_net(result>=0);
+	result = engine->RegisterObjectProperty("BeamClass", "bool replaymode", offsetof(Beam, replaymode)); assert_net(result>=0);
+	result = engine->RegisterObjectProperty("BeamClass", "int replaylen", offsetof(Beam, replaylen)); assert_net(result>=0);
+	result = engine->RegisterObjectProperty("BeamClass", "int replaypos", offsetof(Beam, replaypos)); assert_net(result>=0);
+	result = engine->RegisterObjectProperty("BeamClass", "int locked", offsetof(Beam, locked)); assert_net(result>=0);
+	result = engine->RegisterObjectProperty("BeamClass", "bool cparticle_enabled", offsetof(Beam, cparticle_enabled)); assert_net(result>=0);
+	result = engine->RegisterObjectProperty("BeamClass", "int hookId", offsetof(Beam, hookId)); assert_net(result>=0);
+	result = engine->RegisterObjectProperty("BeamClass", "BeamClass @lockTruck", offsetof(Beam, lockTruck)); assert_net(result>=0);
+	result = engine->RegisterObjectProperty("BeamClass", "int free_node", offsetof(Beam, free_node)); assert_net(result>=0);
+	result = engine->RegisterObjectProperty("BeamClass", "int dynamicMapMode", offsetof(Beam, dynamicMapMode)); assert_net(result>=0);
+	result = engine->RegisterObjectProperty("BeamClass", "int tied", offsetof(Beam, tied)); assert_net(result>=0);
+	result = engine->RegisterObjectProperty("BeamClass", "int canwork", offsetof(Beam, canwork)); assert_net(result>=0);
+	result = engine->RegisterObjectProperty("BeamClass", "int hashelp", offsetof(Beam, hashelp)); assert_net(result>=0);
+	result = engine->RegisterObjectProperty("BeamClass", "float minx", offsetof(Beam, minx)); assert_net(result>=0);
+	result = engine->RegisterObjectProperty("BeamClass", "float maxx", offsetof(Beam, maxx)); assert_net(result>=0);
+	result = engine->RegisterObjectProperty("BeamClass", "float miny", offsetof(Beam, miny)); assert_net(result>=0);
+	result = engine->RegisterObjectProperty("BeamClass", "float maxy", offsetof(Beam, maxy)); assert_net(result>=0);
+	result = engine->RegisterObjectProperty("BeamClass", "float minz", offsetof(Beam, minz)); assert_net(result>=0);
+	result = engine->RegisterObjectProperty("BeamClass", "float maxz", offsetof(Beam, maxz)); assert_net(result>=0);
+	result = engine->RegisterObjectProperty("BeamClass", "int state", offsetof(Beam, state)); assert_net(result>=0);
+	result = engine->RegisterObjectProperty("BeamClass", "int sleepcount", offsetof(Beam, sleepcount)); assert_net(result>=0);
+	result = engine->RegisterObjectProperty("BeamClass", "int driveable", offsetof(Beam, driveable)); assert_net(result>=0);
+	result = engine->RegisterObjectProperty("BeamClass", "int importcommands", offsetof(Beam, importcommands)); assert_net(result>=0);
+	result = engine->RegisterObjectProperty("BeamClass", "bool requires_wheel_contact", offsetof(Beam, requires_wheel_contact)); assert_net(result>=0);
+	result = engine->RegisterObjectProperty("BeamClass", "bool wheel_contact_requested", offsetof(Beam, wheel_contact_requested)); assert_net(result>=0);
+	result = engine->RegisterObjectProperty("BeamClass", "bool rescuer", offsetof(Beam, rescuer)); assert_net(result>=0);
+	result = engine->RegisterObjectProperty("BeamClass", "int parkingbrake", offsetof(Beam, parkingbrake)); assert_net(result>=0);
+	result = engine->RegisterObjectProperty("BeamClass", "int lights", offsetof(Beam, lights)); assert_net(result>=0);
+	result = engine->RegisterObjectProperty("BeamClass", "int smokeId", offsetof(Beam, smokeId)); assert_net(result>=0);
+	result = engine->RegisterObjectProperty("BeamClass", "int editorId", offsetof(Beam, editorId)); assert_net(result>=0);
+	result = engine->RegisterObjectProperty("BeamClass", "float leftMirrorAngle", offsetof(Beam, leftMirrorAngle)); assert_net(result>=0);
+	result = engine->RegisterObjectProperty("BeamClass", "float refpressure", offsetof(Beam, refpressure)); assert_net(result>=0);
+	result = engine->RegisterObjectProperty("BeamClass", "int free_pressure_beam", offsetof(Beam, free_pressure_beam)); assert_net(result>=0);
+	result = engine->RegisterObjectProperty("BeamClass", "int done_count", offsetof(Beam, done_count)); assert_net(result>=0);
+	result = engine->RegisterObjectProperty("BeamClass", "int free_prop", offsetof(Beam, free_prop)); assert_net(result>=0);
+	result = engine->RegisterObjectProperty("BeamClass", "float default_beam_diameter", offsetof(Beam, default_beam_diameter)); assert_net(result>=0);
+	result = engine->RegisterObjectProperty("BeamClass", "float skeleton_beam_diameter", offsetof(Beam, skeleton_beam_diameter)); assert_net(result>=0);
+	result = engine->RegisterObjectProperty("BeamClass", "int free_aeroengine", offsetof(Beam, free_aeroengine)); assert_net(result>=0);
+	result = engine->RegisterObjectProperty("BeamClass", "float elevator", offsetof(Beam, elevator)); assert_net(result>=0);
+	result = engine->RegisterObjectProperty("BeamClass", "float rudder", offsetof(Beam, rudder)); assert_net(result>=0);
+	result = engine->RegisterObjectProperty("BeamClass", "float aileron", offsetof(Beam, aileron)); assert_net(result>=0);
+	result = engine->RegisterObjectProperty("BeamClass", "int flap", offsetof(Beam, flap)); assert_net(result>=0);
+	result = engine->RegisterObjectProperty("BeamClass", "int free_wing", offsetof(Beam, free_wing)); assert_net(result>=0);
+	result = engine->RegisterObjectProperty("BeamClass", "float fadeDist", offsetof(Beam, fadeDist)); assert_net(result>=0);
+	result = engine->RegisterObjectProperty("BeamClass", "bool disableDrag", offsetof(Beam, disableDrag)); assert_net(result>=0);
+	result = engine->RegisterObjectProperty("BeamClass", "int currentcamera", offsetof(Beam, currentcamera)); assert_net(result>=0);
+	result = engine->RegisterObjectProperty("BeamClass", "int freecinecamera", offsetof(Beam, freecinecamera)); assert_net(result>=0);
+	result = engine->RegisterObjectProperty("BeamClass", "float brakeforce", offsetof(Beam, brakeforce)); assert_net(result>=0);
+	result = engine->RegisterObjectProperty("BeamClass", "bool ispolice", offsetof(Beam, ispolice)); assert_net(result>=0);
+	result = engine->RegisterObjectProperty("BeamClass", "int loading_finished", offsetof(Beam, loading_finished)); assert_net(result>=0);
+	result = engine->RegisterObjectProperty("BeamClass", "int freecamera", offsetof(Beam, freecamera)); assert_net(result>=0);
+	result = engine->RegisterObjectProperty("BeamClass", "int first_wheel_node", offsetof(Beam, first_wheel_node)); assert_net(result>=0);
+	result = engine->RegisterObjectProperty("BeamClass", "int netbuffersize", offsetof(Beam, netbuffersize)); assert_net(result>=0);
+	result = engine->RegisterObjectProperty("BeamClass", "int nodebuffersize", offsetof(Beam, nodebuffersize)); assert_net(result>=0);
+	result = engine->RegisterObjectProperty("BeamClass", "float speedoMax", offsetof(Beam, speedoMax)); assert_net(result>=0);
+	result = engine->RegisterObjectProperty("BeamClass", "bool useMaxRPMforGUI", offsetof(Beam, useMaxRPMforGUI)); assert_net(result>=0);
+	result = engine->RegisterObjectProperty("BeamClass", "string realtruckfilename", offsetof(Beam, realtruckfilename)); assert_net(result>=0);
+	result = engine->RegisterObjectProperty("BeamClass", "int free_wheel", offsetof(Beam, free_wheel)); assert_net(result>=0);
+	result = engine->RegisterObjectProperty("BeamClass", "int airbrakeval", offsetof(Beam, airbrakeval)); assert_net(result>=0);
+	result = engine->RegisterObjectProperty("BeamClass", "int cameranodecount", offsetof(Beam, cameranodecount)); assert_net(result>=0);
+	result = engine->RegisterObjectProperty("BeamClass", "int free_cab", offsetof(Beam, free_cab)); assert_net(result>=0);
+	// wont work: result = engine->RegisterObjectProperty("BeamClass", "int airbrakeval", offsetof(Beam, airbrakeval)); assert_net(result>=0);
+	result = engine->RegisterObjectProperty("BeamClass", "bool meshesVisible", offsetof(Beam, meshesVisible)); assert_net(result>=0);
 	result = engine->RegisterObjectBehaviour("BeamClass", asBEHAVE_ADDREF, "void f()",asMETHOD(Beam,addRef), asCALL_THISCALL); assert_net(result>=0);
 	result = engine->RegisterObjectBehaviour("BeamClass", asBEHAVE_RELEASE, "void f()",asMETHOD(Beam,release), asCALL_THISCALL); assert_net(result>=0);
 
+	// class Cache_Entry
+	result = engine->RegisterObjectType("Cache_EntryClass", sizeof(Cache_Entry), asOBJ_REF); assert_net(result>=0);
+	result = engine->RegisterObjectProperty("Cache_EntryClass", "string minitype", offsetof(Cache_Entry, minitype)); assert_net(result>=0);
+	result = engine->RegisterObjectProperty("Cache_EntryClass", "string fname", offsetof(Cache_Entry, fname)); assert_net(result>=0);
+	result = engine->RegisterObjectProperty("Cache_EntryClass", "string fname_without_uid", offsetof(Cache_Entry, fname_without_uid)); assert_net(result>=0);
+	result = engine->RegisterObjectProperty("Cache_EntryClass", "string dname", offsetof(Cache_Entry, dname)); assert_net(result>=0);
+	result = engine->RegisterObjectProperty("Cache_EntryClass", "int categoryid", offsetof(Cache_Entry, categoryid)); assert_net(result>=0);
+	result = engine->RegisterObjectProperty("Cache_EntryClass", "string categoryname", offsetof(Cache_Entry, categoryname)); assert_net(result>=0);
+	result = engine->RegisterObjectProperty("Cache_EntryClass", "int addtimestamp", offsetof(Cache_Entry, addtimestamp)); assert_net(result>=0);
+	result = engine->RegisterObjectProperty("Cache_EntryClass", "string uniqueid", offsetof(Cache_Entry, uniqueid)); assert_net(result>=0);
+	result = engine->RegisterObjectProperty("Cache_EntryClass", "int version", offsetof(Cache_Entry, version)); assert_net(result>=0);
+	result = engine->RegisterObjectProperty("Cache_EntryClass", "string fext", offsetof(Cache_Entry, fext)); assert_net(result>=0);
+	result = engine->RegisterObjectProperty("Cache_EntryClass", "string type", offsetof(Cache_Entry, type)); assert_net(result>=0);
+	result = engine->RegisterObjectProperty("Cache_EntryClass", "string dirname", offsetof(Cache_Entry, dirname)); assert_net(result>=0);
+	result = engine->RegisterObjectProperty("Cache_EntryClass", "string hash", offsetof(Cache_Entry, hash)); assert_net(result>=0);
+	result = engine->RegisterObjectProperty("Cache_EntryClass", "bool resourceLoaded", offsetof(Cache_Entry, resourceLoaded)); assert_net(result>=0);
+	result = engine->RegisterObjectProperty("Cache_EntryClass", "int number", offsetof(Cache_Entry, number)); assert_net(result>=0);
+	result = engine->RegisterObjectProperty("Cache_EntryClass", "bool changedornew", offsetof(Cache_Entry, changedornew)); assert_net(result>=0);
+	result = engine->RegisterObjectProperty("Cache_EntryClass", "bool deleted", offsetof(Cache_Entry, deleted)); assert_net(result>=0);
+	result = engine->RegisterObjectProperty("Cache_EntryClass", "int usagecounter", offsetof(Cache_Entry, usagecounter)); assert_net(result>=0);
+	// TODO: add Cache_Entry::authors
+	result = engine->RegisterObjectProperty("Cache_EntryClass", "string filecachename", offsetof(Cache_Entry, filecachename)); assert_net(result>=0);
+	result = engine->RegisterObjectProperty("Cache_EntryClass", "string description", offsetof(Cache_Entry, description)); assert_net(result>=0);
+	result = engine->RegisterObjectProperty("Cache_EntryClass", "string tags", offsetof(Cache_Entry, tags)); assert_net(result>=0);
+	result = engine->RegisterObjectProperty("Cache_EntryClass", "int fileformatversion", offsetof(Cache_Entry, fileformatversion)); assert_net(result>=0);
+	result = engine->RegisterObjectProperty("Cache_EntryClass", "bool hasSubmeshs", offsetof(Cache_Entry, hasSubmeshs)); assert_net(result>=0);
+	result = engine->RegisterObjectProperty("Cache_EntryClass", "int nodecount", offsetof(Cache_Entry, nodecount)); assert_net(result>=0);
+	result = engine->RegisterObjectProperty("Cache_EntryClass", "int beamcount", offsetof(Cache_Entry, beamcount)); assert_net(result>=0);
+	result = engine->RegisterObjectProperty("Cache_EntryClass", "int shockcount", offsetof(Cache_Entry, shockcount)); assert_net(result>=0);
+	result = engine->RegisterObjectProperty("Cache_EntryClass", "int fixescount", offsetof(Cache_Entry, fixescount)); assert_net(result>=0);
+	result = engine->RegisterObjectProperty("Cache_EntryClass", "int hydroscount", offsetof(Cache_Entry, hydroscount)); assert_net(result>=0);
+	result = engine->RegisterObjectProperty("Cache_EntryClass", "int wheelcount", offsetof(Cache_Entry, wheelcount)); assert_net(result>=0);
+	result = engine->RegisterObjectProperty("Cache_EntryClass", "int propwheelcount", offsetof(Cache_Entry, propwheelcount)); assert_net(result>=0);
+	result = engine->RegisterObjectProperty("Cache_EntryClass", "int commandscount", offsetof(Cache_Entry, commandscount)); assert_net(result>=0);
+	result = engine->RegisterObjectProperty("Cache_EntryClass", "int flarescount", offsetof(Cache_Entry, flarescount)); assert_net(result>=0);
+	result = engine->RegisterObjectProperty("Cache_EntryClass", "int propscount", offsetof(Cache_Entry, propscount)); assert_net(result>=0);
+	result = engine->RegisterObjectProperty("Cache_EntryClass", "int wingscount", offsetof(Cache_Entry, wingscount)); assert_net(result>=0);
+	result = engine->RegisterObjectProperty("Cache_EntryClass", "int turbopropscount", offsetof(Cache_Entry, turbopropscount)); assert_net(result>=0);
+	result = engine->RegisterObjectProperty("Cache_EntryClass", "int turbojetcount", offsetof(Cache_Entry, turbojetcount)); assert_net(result>=0);
+	result = engine->RegisterObjectProperty("Cache_EntryClass", "int rotatorscount", offsetof(Cache_Entry, rotatorscount)); assert_net(result>=0);
+	result = engine->RegisterObjectProperty("Cache_EntryClass", "int exhaustscount", offsetof(Cache_Entry, exhaustscount)); assert_net(result>=0);
+	result = engine->RegisterObjectProperty("Cache_EntryClass", "int flexbodiescount", offsetof(Cache_Entry, flexbodiescount)); assert_net(result>=0);
+	result = engine->RegisterObjectProperty("Cache_EntryClass", "int materialflarebindingscount", offsetof(Cache_Entry, materialflarebindingscount)); assert_net(result>=0);
+	result = engine->RegisterObjectProperty("Cache_EntryClass", "int soundsourcescount", offsetof(Cache_Entry, soundsourcescount)); assert_net(result>=0);
+	result = engine->RegisterObjectProperty("Cache_EntryClass", "int managedmaterialscount", offsetof(Cache_Entry, managedmaterialscount)); assert_net(result>=0);
+	result = engine->RegisterObjectProperty("Cache_EntryClass", "float truckmass", offsetof(Cache_Entry, truckmass)); assert_net(result>=0);
+	result = engine->RegisterObjectProperty("Cache_EntryClass", "float loadmass", offsetof(Cache_Entry, loadmass)); assert_net(result>=0);
+	result = engine->RegisterObjectProperty("Cache_EntryClass", "float minrpm", offsetof(Cache_Entry, minrpm)); assert_net(result>=0);
+	result = engine->RegisterObjectProperty("Cache_EntryClass", "float maxrpm", offsetof(Cache_Entry, maxrpm)); assert_net(result>=0);
+	result = engine->RegisterObjectProperty("Cache_EntryClass", "float torque", offsetof(Cache_Entry, torque)); assert_net(result>=0);
+	result = engine->RegisterObjectProperty("Cache_EntryClass", "bool customtach", offsetof(Cache_Entry, customtach)); assert_net(result>=0);
+	result = engine->RegisterObjectProperty("Cache_EntryClass", "bool custom_particles", offsetof(Cache_Entry, custom_particles)); assert_net(result>=0);
+	result = engine->RegisterObjectProperty("Cache_EntryClass", "bool forwardcommands", offsetof(Cache_Entry, forwardcommands)); assert_net(result>=0);
+	result = engine->RegisterObjectProperty("Cache_EntryClass", "bool importcommands", offsetof(Cache_Entry, importcommands)); assert_net(result>=0);
+	result = engine->RegisterObjectProperty("Cache_EntryClass", "bool rollon", offsetof(Cache_Entry, rollon)); assert_net(result>=0);
+	result = engine->RegisterObjectProperty("Cache_EntryClass", "bool rescuer", offsetof(Cache_Entry, rescuer)); assert_net(result>=0);
+	result = engine->RegisterObjectProperty("Cache_EntryClass", "int driveable", offsetof(Cache_Entry, driveable)); assert_net(result>=0);
+	result = engine->RegisterObjectProperty("Cache_EntryClass", "int numgears", offsetof(Cache_Entry, numgears)); assert_net(result>=0);
+	result = engine->RegisterObjectProperty("Cache_EntryClass", "uint8 enginetype", offsetof(Cache_Entry, enginetype)); assert_net(result>=0);
+	// TODO: add Cache_Entry::sectionconfigs
+
 	// todo: add Vector3 classes and other utility classes!
 	
-
+	// class GameScript
 	result = engine->RegisterObjectType("GameScriptClass", sizeof(GameScript), asOBJ_VALUE | asOBJ_POD | asOBJ_APP_CLASS); assert_net(result>=0);
 	result = engine->RegisterObjectMethod("GameScriptClass", "void log(const string &in)", asMETHOD(GameScript,log), asCALL_THISCALL); assert_net(result>=0);
 	result = engine->RegisterObjectMethod("GameScriptClass", "double getTime()", asMETHOD(GameScript,getTime), asCALL_THISCALL); assert_net(result>=0);
@@ -290,25 +451,27 @@ void ScriptEngine::init()
 	result = engine->RegisterObjectMethod("GameScriptClass", "int getNumTrucks()", asMETHOD(GameScript,getCurrentTruckNumber), asCALL_THISCALL); assert_net(result>=0);
 	result = engine->RegisterObjectMethod("GameScriptClass", "float getGravity()", asMETHOD(GameScript,getGravity), asCALL_THISCALL); assert_net(result>=0);
 	result = engine->RegisterObjectMethod("GameScriptClass", "void setGravity(float)", asMETHOD(GameScript,setGravity), asCALL_THISCALL); assert_net(result>=0);
-
 	result = engine->RegisterObjectMethod("GameScriptClass", "void flashMessage(const string &in, float, float)", asMETHOD(GameScript,flashMessage), asCALL_THISCALL); assert_net(result>=0);
 	result = engine->RegisterObjectMethod("GameScriptClass", "void setDirectionArrow(const string &in, float, float, float)", asMETHOD(GameScript,setDirectionArrow), asCALL_THISCALL); assert_net(result>=0);
-	
 	result = engine->RegisterObjectMethod("GameScriptClass", "void registerForEvent(int)", asMETHOD(GameScript,registerForEvent), asCALL_THISCALL); assert_net(result>=0);
-
 	result = engine->RegisterObjectMethod("GameScriptClass", "BeamClass @getCurrentTruck()", asMETHOD(GameScript,getCurrentTruck), asCALL_THISCALL); assert_net(result>=0);
 	result = engine->RegisterObjectMethod("GameScriptClass", "BeamClass @getTruckByNum(int)", asMETHOD(GameScript,getTruckByNum), asCALL_THISCALL); assert_net(result>=0);
 
-	result = engine->RegisterObjectType("CacheSystemClass", sizeof(CacheSystem), asOBJ_REF);
-	// todo: add everything ...
-	result = engine->RegisterObjectBehaviour("CacheSystemClass", asBEHAVE_ADDREF, "void f()",asMETHOD(CacheSystem,addRef), asCALL_THISCALL); assert_net(result>=0);
-	result = engine->RegisterObjectBehaviour("CacheSystemClass", asBEHAVE_RELEASE, "void f()",asMETHOD(CacheSystem,release), asCALL_THISCALL); assert_net(result>=0);
-
+	// class CacheSystem
+	result = engine->RegisterObjectType("CacheSystemClass", sizeof(CacheSystem), asOBJ_REF | asOBJ_NOHANDLE);
+	result = engine->RegisterObjectMethod("CacheSystemClass", "bool checkResourceLoaded(string &in)", asMETHODPR(CacheSystem, checkResourceLoaded, (Ogre::String &), bool), asCALL_THISCALL); assert_net(result>=0);
+	result = engine->RegisterObjectMethod("CacheSystemClass", "bool checkResourceLoaded(string &in, string &in)", asMETHODPR(CacheSystem, checkResourceLoaded, (Ogre::String &, Ogre::String &), bool), asCALL_THISCALL); assert_net(result>=0);
+	// unable to register the following:
+	//result = engine->RegisterObjectMethod("CacheSystemClass", "bool checkResourceLoaded(Cache_EntryClass)", asMETHODPR(CacheSystem, checkResourceLoaded, (Cache_Entry), bool), asCALL_THISCALL); assert_net(result>=0);
+	result = engine->RegisterObjectMethod("CacheSystemClass", "Cache_EntryClass &getResourceInfo(string)", asMETHODPR(CacheSystem, getResourceInfo, (Cache_Entry), bool), asCALL_THISCALL); assert_net(result>=0);
+	result = engine->RegisterObjectMethod("CacheSystemClass", "Cache_EntryClass &getResourceInfo(string)", asMETHODPR(CacheSystem, getResourceInfo, (Cache_Entry), bool), asCALL_THISCALL); assert_net(result>=0);
+	result = engine->RegisterObjectMethod("CacheSystemClass", "Cache_EntryClass &getResourceInfo(string)", asMETHODPR(CacheSystem, getResourceInfo, (Cache_Entry), bool), asCALL_THISCALL); assert_net(result>=0);
 	// these are static methods, special handling for them :)
 	result = engine->RegisterGlobalFunction("string stripUIDfromString(string)", asFUNCTION(CacheSystem::stripUIDfromString), asCALL_CDECL); assert_net(result>=0);
 	result = engine->RegisterGlobalFunction("string getUIDfromString(string)", asFUNCTION(CacheSystem::getUIDfromString), asCALL_CDECL); assert_net(result>=0);
 	result = engine->RegisterGlobalFunction("bool stringHasUID(string)", asFUNCTION(CacheSystem::stringHasUID), asCALL_CDECL); assert_net(result>=0);
 
+	// enum scriptEvents
 	result = engine->RegisterEnum("scriptEvents"); assert_net(result>=0);
 	result = engine->RegisterEnumValue("scriptEvents", "SE_COLLISION_BOX_ENTER", SE_COLLISION_BOX_ENTER); assert_net(result>=0);
 	result = engine->RegisterEnumValue("scriptEvents", "SE_COLLISION_BOX_LEAVE", SE_COLLISION_BOX_LEAVE); assert_net(result>=0);

@@ -680,7 +680,7 @@ void NetworkNew::handlePacket(unsigned char type, unsigned char source, unsigned
 void NetworkNew::disconnect()
 {
 	shutdown=true;
-	sendmessage(peer, serverAddress, MSG2_DELETE, myuid, 0, 0);
+	sendmessage(peer, serverAddress, MSG3_DELETE, myuid, 0, 0);
 	LogManager::getSingleton().logMessage("NetworkNew::disconnect()");
 }
 

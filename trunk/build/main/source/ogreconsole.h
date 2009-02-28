@@ -13,7 +13,7 @@ public:
 	OgreConsole();
 	~OgreConsole();
 
-	void init(Ogre::Root *root);
+	void init(Ogre::Root *root, Ogre::RenderWindow *win);
 	void shutdown();
 
 	void setVisible(bool visible);
@@ -45,6 +45,8 @@ protected:
 	bool insertmode;
 	int start_line;
 	int history_pos;
+	int line_lenght;
+	int line_count;
 	int cursor_position;
 	std::list<Ogre::String> lines;
 	std::vector<Ogre::String> history;

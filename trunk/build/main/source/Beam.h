@@ -741,7 +741,7 @@ public:
 	float speedoMax;
 	bool useMaxRPMforGUI;
 
-	char realtruckfilename[256];
+	Ogre::String realtruckfilename;
 
 	wheel_t wheels[MAX_WHEELS];
 	int free_wheel;
