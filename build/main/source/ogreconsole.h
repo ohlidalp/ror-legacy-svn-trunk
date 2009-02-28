@@ -48,6 +48,7 @@ protected:
 	int line_lenght;
 	int line_count;
 	int cursor_position;
+	Ogre::String font_name;
 	std::list<Ogre::String> lines;
 	std::vector<Ogre::String> history;
 };

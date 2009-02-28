@@ -1,6 +1,8 @@
 #include "ogreconsole.h"
 #include "ScriptEngine.h"
 #include "InputEngine.h"
+#include "OgreFont.h"
+#include "OgreFontManager.h"
 
 using namespace Ogre;
 using namespace std;
@@ -17,6 +19,7 @@ OgreConsole::OgreConsole()
 	insertmode=true;
 	line_count=15;
 	line_lenght=85;
+	font_name="VeraMono";
 }
 
 OgreConsole::~OgreConsole()
@@ -32,14 +35,16 @@ void OgreConsole::init(Ogre::Root *root, Ogre::RenderWindow *win)
 	this->root=root;
 
 	//we have a monospaced font!
+	FontPtr font = FontManager::getSingleton().getByName(font_name);
+	
 	float char_height_percent = 0.025f;
-	float char_width_percent = 0.025f;
+	float char_width_percent = char_height_percent * font->getGlyphAspectRatio('X');
 	float char_height = char_height_percent * win->getHeight();
 	float char_width = char_width_percent * win->getWidth();
 
 	//determine the size of the console dynamically
 	line_count = ((win->getHeight() * 0.5f) / char_height) - 1; //-1 because of prompt
-	line_lenght = win->getWidth() / char_width;
+	line_lenght = 100; //win->getWidth() / char_width;
 	LogManager::getSingleton().logMessage("console line count: " + StringConverter::toString(line_count));
 	LogManager::getSingleton().logMessage("console line lenght: " + StringConverter::toString(line_lenght));
 
@@ -71,7 +76,7 @@ void OgreConsole::init(Ogre::Root *root, Ogre::RenderWindow *win)
 	textbox->setCaption("_");
 	textbox->setMetricsMode(GMM_RELATIVE);
 	textbox->setPosition(0,0);
-	textbox->setParameter("font_name","VeraMono");
+	textbox->setParameter("font_name", font_name);
 	textbox->setParameter("colour_top","1 1 1");
 	textbox->setParameter("colour_bottom","1 1 1");
 	textbox->setParameter("char_height", StringConverter::toString(char_height_percent));
@@ -81,7 +86,7 @@ void OgreConsole::init(Ogre::Root *root, Ogre::RenderWindow *win)
 	promptbox->setCaption("_");
 	promptbox->setMetricsMode(GMM_RELATIVE);
 	promptbox->setPosition(0, 0);
-	promptbox->setParameter("font_name","VeraMono");
+	promptbox->setParameter("font_name", font_name);
 	promptbox->setParameter("colour_top","1 1 1");
 	promptbox->setParameter("colour_bottom","1 1 1");
 	promptbox->setParameter("char_height", StringConverter::toString(char_height_percent));
@@ -118,6 +123,10 @@ void OgreConsole::onKeyPressed(const OIS::KeyEvent &arg)
 
 	switch(arg.key)
 	{
+	case OIS::KC_ESCAPE:
+		OgreConsole::getSingleton().setVisible(false);
+		return;
+		break;
 	case OIS::KC_RETURN:
 		// add some specials
 		if(history[history_pos] == "hide")
