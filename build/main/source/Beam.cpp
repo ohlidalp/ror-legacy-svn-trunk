@@ -6,7 +6,7 @@ Copyright 2007,2008,2009 Thomas Fischer
 For more information, see http://www.rigsofrods.com/
 
 Rigs of Rods is free software: you can redistribute it and/or modify
-it under the terms of the GNU General Public License version 3, as 
+it under the terms of the GNU General Public License version 3, as
 published by the Free Software Foundation.
 
 Rigs of Rods is distributed in the hope that it will be useful,
@@ -289,10 +289,11 @@ Beam::Beam(int tnum, SceneManager *manager, SceneNode *parent, RenderWindow* win
 			lastSkidPos[i] = Vector3::ZERO;
 			skidtrails[i] = 0;
 		}
-		
+
 	}
 #endif
 
+	skidNode = 0;
 	collisions=icollisions;
 
 	dustp=mdust;
@@ -423,13 +424,13 @@ void Beam::scaleTruck(float value)
 		beams[i].refL *= value;
 		beams[i].Lhydro *= value;
 		beams[i].hydroRatio *= value;
-		
+
 		beams[i].diameter *= value;
 		beams[i].stress *= value;
 		beams[i].lastforce *= value;
 		beams[i].maxposstress *= value;
 		beams[i].maxnegstress *= value;
-		
+
 	}
 	// scale nodes
 	Vector3 refpos = nodes[0].AbsPosition;
@@ -996,7 +997,7 @@ int Beam::getWheelNodeCount()
 		LogManager::getSingleton().logMessage("BEAM: Start of truck loading");
 		String group = "";
 		String filename = String(fname);
-	
+
 		try
 		{
 			if(!CACHE.checkResourceLoaded(filename, group))
@@ -1907,7 +1908,7 @@ int Beam::getWheelNodeCount()
 						LogManager::getSingleton().logMessage("unable to create buoycabs: cabs limit reached ("+StringConverter::toString(MAX_CABS)+"): " + String(fname) +" line " + StringConverter::toString(linecounter) + ". trying to continue ...");
 						continue;
 					}
-					collcabs[free_collcab]=free_cab; 
+					collcabs[free_collcab]=free_cab;
 					collcabstype[free_collcab]=0;
 					if(type == 'F') collcabstype[free_collcab]=1;
 					if(type == 'S') collcabstype[free_collcab]=2;
@@ -2030,7 +2031,7 @@ int Beam::getWheelNodeCount()
 					commandkey[keys].description = String(descr);
 				else if (strlen(descr) == 0 && commandkey[keys].description.size() == 0)
 					commandkey[keys].description = "";
-				
+
 				//add long key
 				commandkey[keyl].beams.push_back(free_beam);
 				if(strlen(descr) != 0)
@@ -2443,12 +2444,12 @@ int Beam::getWheelNodeCount()
 				String meshnameString = String(meshname);
 				std::string::size_type loc = meshnameString.find("leftmirror", 0);
 				if( loc != std::string::npos ) props[free_prop].mirror=1;
-				
+
 				loc = meshnameString.find("rightmirror", 0);
 				if( loc != std::string::npos ) props[free_prop].mirror=-1;
-				
+
 				loc = meshnameString.find("dashboard", 0);
-				if( loc != std::string::npos ) 
+				if( loc != std::string::npos )
 				{
 					char dirwheelmeshname[256];
 					float dwx=0, dwy=0, dwz=0;
@@ -3339,7 +3340,7 @@ int Beam::getWheelNodeCount()
 				}
 				for(std::vector< std::pair<int, int> >::iterator it=intervals.begin(); it!=intervals.end(); it++)
 					LogManager::getSingleton().logMessage("gripnode group parsed: "+StringConverter::toString(it->first)+" to "+StringConverter::toString(it->second));
-				
+
 				std::vector< std::pair<int, int> >::iterator it;
 				for(it=intervals.begin(); it!=intervals.end(); it++)
 				{
@@ -3729,7 +3730,7 @@ int Beam::getWheelNodeCount()
 				for(int i=0;i<10;i++)
 				{
 					for(std::vector<String>::iterator it=truckconfig.begin(); it!=truckconfig.end(); it++)
-					{					
+					{
 						if(sectionName[i] == *it)
 						{
 							found = true;
@@ -3850,7 +3851,7 @@ int Beam::getWheelNodeCount()
 			LogManager::getSingleton().logMessage("BEAM: creating mesh");
 			cabMesh=new FlexObj(manager, nodes, free_texcoord, texcoords, free_cab, cabs, free_sub, subtexcoords, subcabs, texname, wname, subisback, backmatname, transmatname);
 			LogManager::getSingleton().logMessage("BEAM: creating entity");
-			
+
 			LogManager::getSingleton().logMessage("BEAM: creating cabnode");
 			cabNode = manager->getRootSceneNode()->createChildSceneNode();
 			Entity *ec = 0;
@@ -3906,7 +3907,7 @@ int Beam::getWheelNodeCount()
 	void Beam::addSoundSource(SoundScriptInstance *ssi, int nodenum)
 	{
 		if (!ssi) return; //fizzle
-		if (free_soundsource==MAX_SOUNDSCRIPTS_PER_TRUCK) 
+		if (free_soundsource==MAX_SOUNDSCRIPTS_PER_TRUCK)
 		{
 			LogManager::getSingleton().logMessage("BEAM: Error, too many sound sources per vehicle!");
 			return;
@@ -4236,7 +4237,7 @@ int Beam::getWheelNodeCount()
 			if (snode!=9999)
 			{
 				//back beams //BEAM_VIRTUAL
-				
+
 				if (closest1) {init_beam(free_beam , &nodes[snode], &nodes[nodebase+i*2], manager, parent, BEAM_VIRTUAL, default_break, wspring, wdamp);free_beam++;}
 				else         {init_beam(free_beam , &nodes[snode], &nodes[nodebase+i*2+1], manager, parent, BEAM_VIRTUAL, default_break, wspring, wdamp);free_beam++;};
 				/* THIS ALMOST WORKS BUT IT IS INSTABLE AT SPEED !!!!
@@ -4936,7 +4937,7 @@ void Beam::SyncReset()
 			for (t=0; t<numtrucks; t++)
 			{
 				//synchronous sleep
-				if (trucks[t]->state==GOSLEEP) trucks[t]->state=SLEEPING; 
+				if (trucks[t]->state==GOSLEEP) trucks[t]->state=SLEEPING;
 				if (trucks[t]->state==DESACTIVATED)
 				{
 					trucks[t]->sleepcount++;
@@ -5653,7 +5654,7 @@ void Beam::SyncReset()
 			//we start forces from zero
 			//start with gravity
 
-		
+
 
 
 			nodes[i].Forces=nodes[i].gravimass;
@@ -6238,7 +6239,7 @@ float torques[MAX_WHEELS];
 			if (beams[hydro[i]].hydroFlags & HYDRO_FLAG_SPEED)
 			{
 				//special treatment for SPEED
-				if (WheelSpeed<12.0) 
+				if (WheelSpeed<12.0)
 					cstate += hydrodirstate*(12.0-WheelSpeed)/12.0;
 				div++;
 			}
