@@ -195,13 +195,11 @@ IF(WIN32)
   )
 ELSEIF(UNIX)
   target_link_libraries(RoR
-#    /usr/lib/libossp-uuid_dce.so
-    /usr/lib/libzzip.so
-    /usr/lib/libfreetype.so
-    /usr/lib/libX11.so
-    /usr/lib/libXt.so
-
-    /usr/lib/libXaw.so
+    zzip
+    freetype
+    X11
+    Xt
+    Xaw
   )
 ELSEIF(APPLE)
 ENDIF(WIN32)
