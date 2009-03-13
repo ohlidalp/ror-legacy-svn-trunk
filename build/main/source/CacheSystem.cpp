@@ -2176,7 +2176,7 @@ String CacheSystem::filenamesSHA1()
 	
 	CSHA1 sha1;
 	char *data = const_cast<char*>(filenames.c_str());
-	sha1.UpdateHash((UINT_8 *)data, strlen(data));
+	sha1.UpdateHash((uint8_t *)data, strlen(data));
 	sha1.Final();
 	sha1.ReportHash(result, CSHA1::REPORT_HEX_SHORT);
 	return String(result);

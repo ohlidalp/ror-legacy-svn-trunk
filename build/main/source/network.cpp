@@ -172,7 +172,7 @@ bool Network::connect()
 	if(strnlen(pwbuffer, 250)>0)
 	{
 		CSHA1 sha1;
-		sha1.UpdateHash((UINT_8 *)pwbuffer, strnlen(pwbuffer, 250));
+		sha1.UpdateHash((uint8_t *)pwbuffer, strnlen(pwbuffer, 250));
 		sha1.Final();
 		sha1.ReportHash(sha1pwresult, CSHA1::REPORT_HEX_SHORT);
 	}
@@ -255,7 +255,7 @@ int Network::rconlogin(char* rconpasswd)
 	if(strnlen(rconpasswd, 40)>0)
 	{
 		CSHA1 sha1;
-		sha1.UpdateHash((UINT_8 *)buffer, strnlen(buffer, 250));
+		sha1.UpdateHash((uint8_t *)buffer, strnlen(buffer, 250));
 		sha1.Final();
 		sha1.ReportHash(result, CSHA1::REPORT_HEX_SHORT);
 	} else

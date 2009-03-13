@@ -162,7 +162,7 @@ void NetworkNew::sendVehicleType(char* name, int buffersize)
 	if(strnlen(pwbuffer, 250)>0)
 	{
 		RoR::CSHA1 sha1;
-		sha1.UpdateHash((UINT_8 *)pwbuffer, strnlen(pwbuffer, 250));
+		sha1.UpdateHash((uint8_t *)pwbuffer, strnlen(pwbuffer, 250));
 		sha1.Final();
 		sha1.ReportHash(sha1pwresult, RoR::CSHA1::REPORT_HEX_SHORT);
 	}
