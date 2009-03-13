@@ -32,10 +32,9 @@ HOWTO BUILD (new style)
 1. Use CMake with source code in RoRdev\build, and build directory RoRdev\build\build
 2. Open project in RoRdev\build\build\RoR.sln
 3. Build target INSTALL
-4. Build contents     : RoRdev\build\contents\build_contents.py
-5. Build streams      : RoRdev\streams\build_streams.py
-6. Switch to test mode: RoRdev\build2test.py
-7. go to RoRdev\test\current to find the release directory
+4. Switch to test mode: RoRdev\build2test.py
+5. go to RoRdev\test\current to find the release directory
+6. download latest content pack from the sourceforge website: http://sourceforge.net/project/showfiles.php?group_id=252198
 
 HOWTO BUILD (new style) under linux
 1. make a new directory: mkdir RoRdev\build\build
@@ -43,7 +42,6 @@ HOWTO BUILD (new style) under linux
 3. execute: ccmake ..
 4. execute: make -j <your number of CPU cores +1>
 5. execute: make install
-6. Build contents     : cd RoRdev\build\contents\ && python build_contents.py
-7. Build streams      : cd RoRdev\streams\ && python build_streams.py
-8. Switch to test mode: cd RoRdev\ && python build2test.py
-9. go to RoRdev\test\current to find the release directory
+6. Switch to test mode: cd RoRdev\ && python build2test.py
+7. go to RoRdev\test\current to find the release directory
+8. download latest content pack from the sourceforge website: http://sourceforge.net/project/showfiles.php?group_id=252198
