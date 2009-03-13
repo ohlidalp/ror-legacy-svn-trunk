@@ -305,9 +305,9 @@ static void InitAL(void)
             BackendList[i].Init(&BackendList[i].Funcs);
 
         str = GetConfigValue(NULL, "stereodup", "false");
-        DuplicateStereo = (strcmp(str, "true") == 0 ||
-                           strcmp(str, "yes") == 0 ||
-                           strcmp(str, "on") == 0 ||
+        DuplicateStereo = (strcasecmp(str, "true") == 0 ||
+                           strcasecmp(str, "yes") == 0 ||
+                           strcasecmp(str, "on") == 0 ||
                            atoi(str) != 0);
 
         str = GetConfigValue(NULL, "excludefx", "");

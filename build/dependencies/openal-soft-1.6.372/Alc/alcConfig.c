@@ -92,7 +92,7 @@ static void LoadConfigFromFile(FILE *f)
             nextBlock = NULL;
             for(i = 0;i < cfgCount;i++)
             {
-                if(strcmp(cfgBlocks[i].name, buffer+1) == 0)
+                if(strcasecmp(cfgBlocks[i].name, buffer+1) == 0)
                 {
                     nextBlock = cfgBlocks+i;
 //                    AL_PRINT("found block '%s'\n", nextBlock->name);
@@ -156,7 +156,7 @@ static void LoadConfigFromFile(FILE *f)
         ent = curBlock->entries;
         while((size_t)(ent-curBlock->entries) < curBlock->entryCount)
         {
-            if(strcmp(ent->key, buffer) == 0)
+            if(strcasecmp(ent->key, buffer) == 0)
                 break;
             ent++;
         }
@@ -292,12 +292,12 @@ const char *GetConfigValue(const char *blockName, const char *keyName, const cha
 
         for(i = 0;i < cfgCount;i++)
         {
-            if(strcmp(cfgBlocks[i].name, blockName) != 0)
+            if(strcasecmp(cfgBlocks[i].name, blockName) != 0)
                 continue;
 
             for(j = 0;j < cfgBlocks[i].entryCount;j++)
             {
-                if(strcmp(cfgBlocks[i].entries[j].key, keyName) == 0)
+                if(strcasecmp(cfgBlocks[i].entries[j].key, keyName) == 0)
                     return cfgBlocks[i].entries[j].value;
             }
         }
