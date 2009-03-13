@@ -1,9 +1,0 @@
-﻿<?xml version="1.0" encoding="UTF-8"?>
-<MyGUI type="Layout">
-    <Widget type="Window" skin="Window" position_real="0.192383 0.25 0.323242 0.260417" layer="Back" align="Center" name="progressWindow">
-        <Property key="Widget_Caption" value="Loading"/>
-        <Property key="Widget_Colour" value="black"/>
-        <Widget type="Progress" skin="Progress" position_real="0.0373832 0.742331 0.934579 0.196319" layer="Back" name="progressbar"/>
-        <Widget type="StaticText" skin="StaticText" position_real="0.0249221 0.0429448 0.953271 0.644172" layer="Back" name="infolabel"/>
-    </Widget>
-</MyGUI>

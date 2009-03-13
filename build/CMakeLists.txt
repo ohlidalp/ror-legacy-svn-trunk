@@ -73,10 +73,6 @@ option(WSYNC_BUILD_INSTALLER "builds the installer" FALSE)
 option(ROR_BUILD_NEWNET "builds the new network approach using raknet" FALSE)
 option(CAELUM_BUILD_NEW "uses a more recent caelum version" FALSE)
 
-#layouteditor is currently broken
-#option(GUI_BUILD_LAYOUT_EDITOR "builds the GUI LAYOUT EDITOR" FALSE)
-set(GUI_BUILD_LAYOUT_EDITOR FALSE)
-
 IF(WIN32)
   option(ROR_BUILD_XFIRE "builds the XFire Extensions" FALSE)
   option(ROR_BUILD_BUGTRAP "build RoR with Bugtrap support (windows only)" FALSE)
@@ -99,9 +95,6 @@ IF(ROR_BUILD_ROR)
     add_subdirectory(configurator)
   ENDIF(ROR_BUILD_CONFIGURATOR)
 
-  IF(GUI_BUILD_LAYOUT_EDITOR)
-    add_subdirectory(LayoutEditor)
-  ENDIF(GUI_BUILD_LAYOUT_EDITOR)
 ENDIF(ROR_BUILD_ROR)
 
 IF(WSYNC_BUILD_WSYNC)

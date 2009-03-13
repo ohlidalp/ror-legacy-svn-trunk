@@ -239,6 +239,7 @@ int Win32Keyboard::_translateText( KeyCode kc )
 
 	unsigned char buff[3] = {0,0,0};
 	int ascii = ToAsciiEx(vk, kc, keyState, (LPWORD) buff, 0, layout);
+	printf("%OIS: d\n",kc);
 	//WCHAR wide[3];
 	//int ascii = ToUnicodeEx(vk, kc, keyState, wide, 3, 0, layout);
 	if(ascii == 1 && deadKey != '\0' )
