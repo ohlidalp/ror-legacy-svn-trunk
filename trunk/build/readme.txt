@@ -1,7 +1,5 @@
 configurator: configurator source code and build env
 
-contents: multimedia contents
-
 dependencies: all C++ library dependencies used by configurator, updater and RoR
 
 main: RoR.exe source code and build env
