@@ -20,6 +20,7 @@ along with Rigs of Rods.  If not, see <http://www.gnu.org/licenses/>.
 #include "Ogre.h"
 #include "SoundManager.h"
 #include "Settings.h"
+#include "pstdint.h"
 
 using namespace Ogre;
 
@@ -349,8 +350,8 @@ int SoundManager::loadWAVFile(String filename, ALuint buffer)
 	//load RIFF/WAVE
 	char magic[5];
 	magic[4]=0;
-	unsigned long lbuf;
-	unsigned short sbuf;
+	uint32_t lbuf;
+	uint16_t sbuf;
 
 	// check magic
 	if (stream->read(magic, 4)!=4) {LogManager::getSingleton().logMessage("Could not read file "+filename);return -1;}
