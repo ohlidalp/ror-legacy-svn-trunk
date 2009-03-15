@@ -182,7 +182,6 @@
  */
 
 #ifndef _STDINT_H
-#define _STDINT_H
 
 #include <stddef.h>
 #include <limits.h>
@@ -799,6 +798,10 @@ int main () {
 	return EXIT_SUCCESS;
 }
 
+#endif
+
+#ifndef _STDINT_H
+# define _STDINT_H
 #endif
 
 #endif //_STDINT_H
