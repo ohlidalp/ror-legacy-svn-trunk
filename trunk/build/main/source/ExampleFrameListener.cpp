@@ -1315,10 +1315,10 @@ ExampleFrameListener::ExampleFrameListener(RenderWindow* win, Camera* cam, Scene
 		UILOADER.setProgress(UI_PROGRESSBAR_AUTOTRACK, _L("Trying to connect to server ..."));
 		// important note: all new network code is written in order to allow also the old network protocol to further exist.
 		// at some point you need to decide with what type of server you communicate below and choose the correct class
-#ifdef NEWNET
-		net = new NetworkNew(trucks, sname, sport, this);
-#else
+
 		net = new Network(trucks, sname, sport, this);
+#ifdef NEWNET
+		//net = new NetworkNew(trucks, sname, sport, this);
 #endif
 		bool connres = net->connect();
 		UILOADER.setProgress(UI_PROGRESSBAR_HIDE);
@@ -6544,13 +6544,18 @@ bool ExampleFrameListener::frameStarted(const FrameEvent& evt)
 				bool recy=false;
 				for (int t=0; t<free_truck; t++)
 				{
-					if (trucks[t]->state==RECYCLE && !(trucks[t]->realtruckfilename == String(name)))
+					if (trucks[t]->state==RECYCLE && trucks[t]->realtruckfilename == String(name))
 					{
 						recy=true;
 						trucks[t]->state=NETWORKED;
 						trucks[t]->label=label;
 						trucks[t]->reset();
-						client_t cinfo = net->vehicle_spawned(uid, t);
+						client_t cinfo;
+						if(net->vehicle_spawned(uid, t, cinfo))
+						{
+							// error getting info
+							// TODO: what to do now?
+						}
 						trucks[t]->setNetworkInfo(cinfo);
 						break;
 					}
@@ -6574,8 +6579,15 @@ bool ExampleFrameListener::frameStarted(const FrameEvent& evt)
 					}
 
 					free_truck++;
-					client_t cinfo = net->vehicle_spawned(uid, free_truck-1);
-					trucks[free_truck-1]->setNetworkInfo(cinfo);
+					client_t cinfo;
+					if(net->vehicle_spawned(uid, free_truck-1, cinfo))
+					{
+						// error getting truck info
+						// TODO: what to do now?
+					} else
+					{
+						trucks[free_truck-1]->setNetworkInfo(cinfo);
+					}
 
 				}
 
