@@ -128,24 +128,18 @@ void ColoredTextAreaOverlayElement::setCaption(const DisplayString& text)
 			fill(m_Colors.begin()+i-(2*iNumColorCodes)-iNumSpaces, m_Colors.end(), text[i+1]-'0');
 			++i;
 			++iNumColorCodes;
-			updateColours();
+			mColoursChanged = true;
 			noColor = false;
 		}
 	}
 	if (noColor)
-		updateColours();
+		mColoursChanged = true;
 	// Set the caption using the base class, but strip the color codes from it first
 	TextAreaOverlayElement::setCaption(StripColors(text));
 }
 
 void ColoredTextAreaOverlayElement::updateColours(void)
 {
-	// no colours under linux and apple ...
-#if OGRE_PLATFORM == OGRE_PLATFORM_LINUX
-	return;
-#elif OGRE_PLATFORM == OGRE_PLATFORM_APPLE
-	return;
-#endif
 	if(!mRenderOp.vertexData) return;
 	// Convert to system-specific
 	RGBA topColour, bottomColour;

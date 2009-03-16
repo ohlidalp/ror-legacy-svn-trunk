@@ -232,12 +232,10 @@ void IngameConsole::updateEnterText()
 		if(cursorBlinkState)
 		{
 			(*enterline)->setCaption("^7> " + enterText + cursor);
-			(*enterline)->updateColours();
 		}
 		else
 		{
 			(*enterline)->setCaption("^7> " + enterText);
-			(*enterline)->updateColours();
 		}
 	}
 	catch(...)
@@ -274,7 +272,6 @@ void IngameConsole::updateDisplay()
 		try
 		{
 			(*i)->setCaption(*ib);
-			(*i)->updateColours();
 		}
 		catch(...)
 		{
