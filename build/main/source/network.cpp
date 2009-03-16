@@ -409,9 +409,8 @@ bool Network::vehicle_to_spawn(char* name, unsigned int *uid, unsigned int *labe
 }
 
 //this is called to confirm a truck is loaded - must be called within the same frame as vehicle_to_spawn
-client_t Network::vehicle_spawned(unsigned int uid, int trucknum)
+int Network::vehicle_spawned(unsigned int uid, int trucknum, client_t &return_client)
 {
-	client_t return_client;
 	pthread_mutex_lock(&clients_mutex);
 	for (int i=0; i<MAX_PEERS; i++)
 	{
@@ -421,10 +420,12 @@ client_t Network::vehicle_spawned(unsigned int uid, int trucknum)
 			clients[i].trucknum=trucknum;
 			//ret=clients[i].nickname;
 			return_client = clients[i];
+			pthread_mutex_unlock(&clients_mutex);
+			return 0;
 		}
 	}
 	pthread_mutex_unlock(&clients_mutex);
-	return return_client;
+	return 1;
 }
 
 //external call to trigger data sending
