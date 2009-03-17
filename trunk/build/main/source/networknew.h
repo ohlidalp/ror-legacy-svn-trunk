@@ -44,7 +44,7 @@ public:
 
 	//external call to check if a vehicle is to be spawned
 	bool vehicle_to_spawn(char* name, unsigned int *uid, unsigned int *label);
-	client_t vehicle_spawned(unsigned int uid, int trucknum);
+	int vehicle_spawned(unsigned int uid, int trucknum, client_t &client);
 	
 	//external call to set vehicle type
 	void sendVehicleType(char* name, int numnodes);

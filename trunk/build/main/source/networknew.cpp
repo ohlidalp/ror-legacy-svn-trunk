@@ -220,10 +220,9 @@ bool NetworkNew::vehicle_to_spawn(char* name, unsigned int *uid, unsigned int *l
 	return false;
 }
 
-client_t NetworkNew::vehicle_spawned(unsigned int uid, int trucknum)
+int NetworkNew::vehicle_spawned(unsigned int uid, int trucknum, client_t &return_client)
 {
 	LogManager::getSingleton().logMessage("NetworkNew::vehicle_to_spawn()");
-	client_t return_client;
 	pthread_mutex_lock(&clients_mutex);
 	for (int i=0; i<MAX_PEERS; i++)
 	{
@@ -233,10 +232,11 @@ client_t NetworkNew::vehicle_spawned(unsigned int uid, int trucknum)
 			clients[i].trucknum=trucknum;
 			//ret=clients[i].nickname;
 			return_client = clients[i];
+			return 0;
 		}
 	}
 	pthread_mutex_unlock(&clients_mutex);
-	return return_client;
+	return 1;
 }
 
 void NetworkNew::sendData(Beam* truck)

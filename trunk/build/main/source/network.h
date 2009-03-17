@@ -44,7 +44,7 @@ public:
 
 	//external call to check if a vehicle is to be spawned
 	virtual bool vehicle_to_spawn(char* name, unsigned int *uid, unsigned int *label) = 0;
-	virtual client_t vehicle_spawned(unsigned int uid, int trucknum) = 0;
+	virtual int vehicle_spawned(unsigned int uid, int trucknum, client_t &client) = 0;
 	
 	//external call to set vehicle type
 	virtual void sendVehicleType(char* name, int numnodes) = 0;
@@ -103,7 +103,7 @@ public:
 	void receivethreadstart();
 	//external call to check if a vehicle is to be spawned
 	bool vehicle_to_spawn(char* name, unsigned int *uid, unsigned int *label);
-	client_t vehicle_spawned(unsigned int uid, int trucknum);
+	int vehicle_spawned(unsigned int uid, int trucknum, client_t &client);
 	//external call to set vehicle type
 	void sendVehicleType(char* name, int numnodes);
 	//external call to send vehicle data
