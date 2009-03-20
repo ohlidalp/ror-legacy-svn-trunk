@@ -22,13 +22,14 @@ along with Rigs of Rods.  If not, see <http://www.gnu.org/licenses/>.
 #include "engine.h"
 #include "turboprop.h"
 #include "language.h"
+#include "TorqueCurve.h"
 
 using namespace std;
 using namespace Ogre;
 
 TruckHUD *TruckHUD::myInstance = 0;
 
-TruckHUD::TruckHUD()
+TruckHUD::TruckHUD() : torqueLineStream(0)
 {
 	width = 400;
 	border = 10;
@@ -53,6 +54,9 @@ TruckHUD::TruckHUD()
 	maxVelos[MACHINE] = -9999;
 	minVelos[MACHINE] = 9999;
 	avVelos[MACHINE] = 0;
+
+	lastTorqueModel = "";
+	lastTorqueRatio = 0;
 
 	truckHUD = OverlayManager::getSingleton().getByName("tracks/TruckInfoBox");
 	updatetime=0;
@@ -279,6 +283,46 @@ bool TruckHUD::update(float dt, Beam *truck, SceneManager *mSceneMgr, Camera* mC
 		descl = OverlayManager::getSingleton().getOverlayElement("tracks/TruckInfoBox/CurrentRPM");
 		descl->setCaption(rpmstring);
 		checkOverflow(descl);
+		if(visible && truck->engine->getTorqueCurve())
+		{
+			// torque curve handling
+			if(!torqueLineStream) initTorqueOverlay();
+
+			// update
+			String model = truck->engine->getTorqueCurve()->getTorqueModel();
+			SimpleSpline *usedSpline = truck->engine->getTorqueCurve()->getUsedSpline();
+			float ratio = truck->engine->getRPM() / float(truck->engine->getMaxRPM());
+
+			if(lastTorqueModel != model)
+			{
+				// update the torque curve
+				LogManager::getSingleton().logMessage("regenerating torque displayed curve");
+				for(int i=0;i<1000;i++)
+				{
+					float factor = i/1000.0f;
+					float res = usedSpline->interpolate(factor).y;
+					LogManager::getSingleton().logMessage(StringConverter::toString(i)+ " - "+StringConverter::toString(res)+ " - "+StringConverter::toString(factor));
+					torqueLineStream->setExactValue(0, i, res);
+				}
+				lastTorqueModel = model;
+			}
+			// now proceed
+			// reset old ratio:
+			torqueLineStream->setExactValue(1, lastTorqueRatio * 1000.0f, 0);
+			
+			// no overflow
+			if(ratio <= 1)
+			{
+				// get data for the new ratio
+				float res = usedSpline->interpolate(ratio).y;
+				float x = ratio * 1000.0f;
+
+				//update the new point
+				torqueLineStream->setExactValue(1, x, res);
+
+				lastTorqueRatio = ratio;
+			}
+		}
 	} else if (truck->driveable == AIRPLANE){
 		char rpmstring[255];
 		
@@ -448,3 +492,31 @@ bool TruckHUD::update(float dt, Beam *truck, SceneManager *mSceneMgr, Camera* mC
 	return true;
 }
 
+void TruckHUD::initTorqueOverlay()
+{
+	// load factory to be able to create stream lines
+	OverlayManager& overlayManager = OverlayManager::getSingleton();
+	overlayManager.addOverlayElementFactory(new LineStreamOverlayElementFactory());
+	
+	OverlayContainer *lineStreamContainer = (OverlayContainer *) (OverlayManager::getSingleton().createOverlayElement("LineStream", "TorqueCurveLineStream"));
+	lineStreamContainer->_setPosition(0.37f,  0.6f);
+	lineStreamContainer->_setDimensions(0.62f, 0.2f);
+	lineStreamContainer->setMaterialName("Core/StatsBlockCenter");
+
+	torqueLineStream = dynamic_cast<Ogre::LineStreamOverlayElement *>(lineStreamContainer);
+	torqueLineStream->setNumberOfSamplesForTrace(1000);
+	torqueLineStream->setNumberOfTraces(2);
+	torqueLineStream->setMoveData(false);
+	torqueLineStream->createVertexBuffer();
+
+	torqueLineStream->setTraceColor(0, ColourValue::Red);
+	torqueLineStream->setTraceColor(1, ColourValue::Green);
+
+	OverlayContainer *oPanel = (OverlayContainer *) (OverlayManager::getSingleton().createOverlayElement("Panel","TorqueCurveLinePanel"));
+	oPanel->_setPosition(0.37f,  0.6f);
+	oPanel->_setDimensions(0.62f, 0.2f);
+	oPanel->setMaterialName("Core/StatsBlockCenter");
+
+	truckHUD->add2D(oPanel);
+	truckHUD->add2D(lineStreamContainer);
+}

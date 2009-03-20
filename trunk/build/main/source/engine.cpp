@@ -19,12 +19,14 @@ along with Rigs of Rods.  If not, see <http://www.gnu.org/licenses/>.
 */
 #include "engine.h"
 #include "SoundScriptManager.h"
+#include "TorqueCurve.h"
 
 BeamEngine::BeamEngine(float iddle, float max, float torque, float rear, int numgears, float *gears, float diff, int trucknum)
 	{
 		int i;
 		this->trucknum=trucknum;
 		ssm=SoundScriptManager::getSingleton();
+		torqueCurve = new TorqueCurve();
 		automode=AUTOMATIC;
 		iddleRPM=iddle;
 		maxRPM=max;
@@ -104,8 +106,12 @@ BeamEngine::BeamEngine(float iddle, float max, float torque, float rear, int num
 		if (curEngineRPM>100.0) totaltorque-=8.0f*hydropump/(curEngineRPM*0.105f*dt);
 		//engine power
 		//with limiter
+		float tqValue = 1.0f;
+		float rpmRatio = curEngineRPM / maxRPM;
+		if (rpmRatio > 1.0f) rpmRatio = 1.0f;
+		if (torqueCurve) tqValue = torqueCurve->getEngineTorque(rpmRatio);
 		if (contact && running && curEngineRPM<(maxRPM*1.25) && curEngineRPM>stallRPM)
-			totaltorque+=engineTorque*curAcc;
+			totaltorque += engineTorque * curAcc * tqValue;
 		if (running && curEngineRPM<stallRPM) stop();
 		//starter
 		if (contact && starter && curEngineRPM<stallRPM*1.5) totaltorque+=-brakingTorque;//1000.0f;

@@ -43,6 +43,7 @@ along with Rigs of Rods.  If not, see <http://www.gnu.org/licenses/>.
 #include "airbrake.h"
 #include "FlexBody.h"
 #include "materialFunctionMapper.h"
+#include "TorqueCurve.h"
 #include "Settings.h"
 #ifdef TIMING
 #include "BeamStats.h"
@@ -1131,6 +1132,7 @@ int Beam::getWheelNodeCount()
 			if (!strncmp("sectionconfig",line, 13)) {savedmode=mode;mode=50; /* NOT continue */};
 			if (!strncmp("section",line, 7) && mode!=50) {mode=51; /* NOT continue */};
 			/* 52 = reserved for ignored section */
+			if (!strcmp("torquecurve",line)) {mode=53;continue;};
 
 			if (!strcmp("commandlist",line))
 			{
@@ -3743,6 +3745,12 @@ int Beam::getWheelNodeCount()
 				else
 					// wait for end_section otherwise
 					mode=52;
+			}
+			else if (mode==53)
+			{
+				// parse torquecurve
+				if (engine && engine->getTorqueCurve())
+					engine->getTorqueCurve()->processLine(String(line));
 			}
 		};
 		if(!loading_finished) {
