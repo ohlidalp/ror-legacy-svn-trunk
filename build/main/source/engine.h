@@ -26,6 +26,8 @@ along with Rigs of Rods.  If not, see <http://www.gnu.org/licenses/>.
 #endif
 
 class SoundScriptManager;
+class TorqueCurve;
+
 #include <stdio.h>
 #include <stdlib.h>
 
@@ -74,6 +76,7 @@ protected:
 	int automode;
 	int trucknum;
 	SoundScriptManager *ssm;
+	TorqueCurve *torqueCurve;
 
 public:
 	float iddleRPM;
@@ -129,6 +132,7 @@ public:
 	void setManualClutch(float val);
 	int getNumGears() { return numGears; };
 	float getMaxRPM() { return maxRPM; };
+	TorqueCurve *getTorqueCurve() { return torqueCurve; };
 	~BeamEngine();
 };
 
