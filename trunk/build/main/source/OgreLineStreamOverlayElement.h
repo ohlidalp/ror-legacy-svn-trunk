@@ -70,6 +70,8 @@ namespace Ogre {
         /** Overridden from OverlayContainer */
         void _updateRenderQueue(RenderQueue* queue);
 
+		void defaultStyle();
+
 		// data members set\get
 		uint32 getNumberOfTraces() const;
 		void setNumberOfTraces(const uint32 val);
