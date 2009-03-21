@@ -341,7 +341,7 @@ namespace Ogre {
 			mTraceInfo[traceIndex].legendText->setPosition(5 + 100 * traceIndex, 5);
 			mTraceInfo[traceIndex].legendText->setFontName("VeraMono");
 			mTraceInfo[traceIndex].legendText->setDimensions(100, 12);
-			mTraceInfo[traceIndex].legendText->setCharHeight(12);
+			mTraceInfo[traceIndex].legendText->setCharHeight(20);
 			mTraceInfo[traceIndex].legendText->show();
 			this->addChild(mTraceInfo[traceIndex].legendText);
 		}
