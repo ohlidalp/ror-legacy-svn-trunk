@@ -267,6 +267,7 @@ void ExampleFrameListener::updateStats(void)
 				fpsLineStream->setNumberOfSamplesForTrace(400);
 				fpsLineStream->setNumberOfTraces(1);
 				fpsLineStream->setMoveMode(0);
+				fpsLineStream->defaultStyle();
 				fpsLineStream->createVertexBuffer();
 
 				fpsLineStream->setTraceInfo(0, ColourValue::Red, "FPS");

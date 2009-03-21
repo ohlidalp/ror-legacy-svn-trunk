@@ -72,7 +72,11 @@ namespace Ogre {
 		{
 			mInitialised = true;
 		}
+    }
 
+	//---------------------------------------------------------------------
+	void LineStreamOverlayElement::defaultStyle(void)
+	{
 		//init with default border and materials
 		BorderPanelOverlayElement::setMaterialName("Core/StatsBlockCenter");
 		BorderPanelOverlayElement::setBorderMaterialName("Core/StatsBlockBorder");
@@ -86,6 +90,7 @@ namespace Ogre {
 		BorderPanelOverlayElement::setBottomBorderUV(0.0039f, 0.0039f, 0.9961f, 0.0000f);
 		BorderPanelOverlayElement::setBottomRightBorderUV(0.9961f, 0.0039f, 1.0000f, 0.0000f);
     }
+
     //---------------------------------------------------------------------
     const String& LineStreamOverlayElement::getTypeName(void) const
     {
@@ -353,18 +358,19 @@ namespace Ogre {
 			legendTop->setFontName("VeraMono");
 			legendTop->setDimensions(50, 20);
 			legendTop->setColour(ColourValue::Black);
-			legendTop->setCharHeight(14);
+			legendTop->setCharHeight(16);
 			legendTop->show();
 			legendTop->setCaption("0");
 			this->addChild(legendTop);
 
+			// todo: fix top of the bottom element!
 			legendBottom = (TextAreaOverlayElement*)OverlayManager::getSingleton().createOverlayElement("TextArea", elName+"Bottom");
 			legendBottom->setMetricsMode(GMM_PIXELS);
 			legendBottom->setPosition(5, 180);
 			legendBottom->setFontName("VeraMono");
 			legendBottom->setDimensions(50, 20);
 			legendBottom->setColour(ColourValue::Black);
-			legendBottom->setCharHeight(14);
+			legendBottom->setCharHeight(16);
 			legendBottom->setCaption("0");
 			legendBottom->show();
 			this->addChild(legendBottom);
