@@ -35,6 +35,7 @@ along with Rigs of Rods.  If not, see <http://www.gnu.org/licenses/>.
 #include "OgreStringConverter.h"
 #include "OgreException.h"
 #include "OgreTextAreaOverlayElement.h"
+#include "OgreLineStreamOverlayElement.h"
 #include <OgrePanelOverlayElement.h>
 //#include "OgreTerrainSceneManager.h"
 #include "OgrePixelFormat.h"
@@ -192,6 +193,7 @@ protected:
 	Overlay* airneedlesOverlay;
 	Overlay* boatneedlesOverlay;
 	Overlay* needlesMaskOverlay;
+	LineStreamOverlayElement *fpsLineStream;
 	//Overlay* bigMapOverlay;
 
 	MapControl *bigMap;
@@ -401,7 +403,7 @@ public:
 	void setCurrentTruck(int v);
 	//bool processUnbufferedMouseInput(const FrameEvent& evt);
 	void moveCamera(float dt);
-	void showDebugOverlay(bool show, bool showmat=false);
+	void showDebugOverlay(int mode);
 #ifdef HAS_EDITOR
 	void showTruckEditorOverlay(bool show);
 #endif
@@ -497,7 +499,7 @@ protected:
 	Quaternion reload_dir;
 
 	RenderWindow* mWindow;
-	bool mStatsOn;
+	int mStatsOn;
 	bool mTruckInfoOn;
 	int mapMode;
 	unsigned int mNumScreenShots;

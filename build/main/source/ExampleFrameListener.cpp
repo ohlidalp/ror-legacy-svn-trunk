@@ -226,22 +226,21 @@ void ExampleFrameListener::updateStats(void)
 	static String bestFps = _L("Best FPS: ");
 	static String worstFps = _L("Worst FPS: ");
 	static String tris = _L("Triangle Count: ");
+	const RenderTarget::FrameStats& stats = mWindow->getStatistics();
 
 	// update stats when necessary
-	try {
+	try
+	{
 		OverlayElement* guiAvg = OverlayManager::getSingleton().getOverlayElement("Core/AverageFps");
 		OverlayElement* guiCurr = OverlayManager::getSingleton().getOverlayElement("Core/CurrFps");
 		OverlayElement* guiBest = OverlayManager::getSingleton().getOverlayElement("Core/BestFps");
 		OverlayElement* guiWorst = OverlayManager::getSingleton().getOverlayElement("Core/WorstFps");
 
-		const RenderTarget::FrameStats& stats = mWindow->getStatistics();
 
 		guiAvg->setCaption(avgFps + StringConverter::toString(stats.avgFPS));
 		guiCurr->setCaption(currFps + StringConverter::toString(stats.lastFPS));
-		guiBest->setCaption(bestFps + StringConverter::toString(stats.bestFPS)
-			+" "+StringConverter::toString(stats.bestFrameTime)+" ms");
-		guiWorst->setCaption(worstFps + StringConverter::toString(stats.worstFPS)
-			+" "+StringConverter::toString(stats.worstFrameTime)+" ms");
+		guiBest->setCaption(bestFps + StringConverter::toString(stats.bestFPS) + " " + StringConverter::toString(stats.bestFrameTime)+" ms");
+		guiWorst->setCaption(worstFps + StringConverter::toString(stats.worstFPS) + " " + StringConverter::toString(stats.worstFrameTime)+" ms");
 
 		OverlayElement* guiTris = OverlayManager::getSingleton().getOverlayElement("Core/NumTris");
 		String triss = tris + StringConverter::toString(stats.triangleCount);
@@ -253,6 +252,43 @@ void ExampleFrameListener::updateStats(void)
 
 		OverlayElement* guiDbg = OverlayManager::getSingleton().getOverlayElement("Core/DebugText");
 		guiDbg->setCaption(debugText);
+
+		if(mStatsOn>1)
+		{
+			static int framecounter = 0;
+			static int fpscount=0;
+			// we view the extended stats, so draw the FPS graph :)
+			if(!fpsLineStream)
+			{
+				fpsLineStream = dynamic_cast<Ogre::LineStreamOverlayElement *>(OverlayManager::getSingleton().createOverlayElement("LineStream", "FPSCurveLineStream"));
+				fpsLineStream->setMetricsMode(GMM_PIXELS);
+				fpsLineStream->setPosition(0, 460);
+				fpsLineStream->setDimensions(800, 200);
+				fpsLineStream->setNumberOfSamplesForTrace(400);
+				fpsLineStream->setNumberOfTraces(1);
+				fpsLineStream->setMoveMode(0);
+				fpsLineStream->createVertexBuffer();
+
+				fpsLineStream->setTraceInfo(0, ColourValue::Red, "FPS");
+				//fpsLineStream->setTraceInfo(1, ColourValue::Green, "triangleCount");
+				mTimingDebugOverlay->add2D(fpsLineStream);
+
+			}
+			if(!fpsLineStream)
+				return;
+			if(framecounter > 5)
+			{
+				fpsLineStream->setTraceValue(0, fpscount/5.0f);
+				//fpsLineStream->setTraceValue(1, stats.triangleCount);
+				fpsLineStream->moveForward();
+				fpscount = 0;
+				framecounter = 0;
+			} else
+			{
+				fpscount += stats.lastFPS;
+				framecounter++;
+			}
+		}
 	}
 	catch(...)
 	{
@@ -775,6 +811,7 @@ void ExampleFrameListener::setGravity(float value)
 // Constructor takes a RenderWindow because it uses that to determine input context
 ExampleFrameListener::ExampleFrameListener(RenderWindow* win, Camera* cam, SceneManager* scm, Root* root) :  initialized(false)
 {
+	fpsLineStream=0;
 	loaded_terrain=0;
 	eflsingleton=this;
 #ifdef ANGELSCRIPT
@@ -1255,7 +1292,7 @@ ExampleFrameListener::ExampleFrameListener(RenderWindow* win, Camera* cam, Scene
 	mCamera = cam;
 	gCamera = cam;
 	mWindow = win;
-	mStatsOn = false;
+	mStatsOn = 0;
 	mTruckInfoOn = false;
 	mapMode=0;
 	mTimeUntilNextToggle = 0;
@@ -1440,7 +1477,6 @@ ExampleFrameListener::ExampleFrameListener(RenderWindow* win, Camera* cam, Scene
 
 
 	initialized=true;
-	//        showDebugOverlay(true);
 }
 
 ExampleFrameListener::~ExampleFrameListener()
@@ -3879,7 +3915,13 @@ bool ExampleFrameListener::updateEvents(float dt)
 	if (INPUTENGINE.getEventBoolValue("COMMON_TOGGLE_STATS") && mTimeUntilNextToggle <= 0)
 	{
 		dirty=true;
-		mStatsOn = !mStatsOn;
+		if(mStatsOn==0)
+			mStatsOn=1;
+		else if(mStatsOn==1)
+			mStatsOn=0;
+		else if(mStatsOn==2)
+			mStatsOn=0;
+
 		showDebugOverlay(mStatsOn);
 
 		mTimeUntilNextToggle = 0.2;
@@ -3887,10 +3929,14 @@ bool ExampleFrameListener::updateEvents(float dt)
 
 	if (INPUTENGINE.getEventBoolValue("COMMON_TOGGLE_MAT_DEBUG") && mTimeUntilNextToggle <= 0)
 	{
-		static bool showMatDebug = false;
+		if(mStatsOn==0)
+			mStatsOn=2;
+		else if(mStatsOn==1)
+			mStatsOn=2;
+		else if(mStatsOn==2)
+			mStatsOn=0;
 		dirty=true;
-		showMatDebug = !showMatDebug;
-		showDebugOverlay(true, showMatDebug);
+		showDebugOverlay(mStatsOn);
 
 		mTimeUntilNextToggle = 0.2;
 	}
@@ -5579,7 +5625,6 @@ void ExampleFrameListener::initTrucks(bool loadmanual, Ogre::String selected, Og
 	showcredits=0;
 	//					showDashboardOverlays(true);
 	LogManager::getSingleton().logMessage("EFL: overlays ok");
-	//showDebugOverlay(true);
 
 	if(mtc)
 		mtc->update();
@@ -6088,23 +6133,21 @@ void ExampleFrameListener::moveCamera(float dt)
 }
 
 
-void ExampleFrameListener::showDebugOverlay(bool show, bool showmat)
+void ExampleFrameListener::showDebugOverlay(int mode)
 {
-	if (mDebugOverlay)
+	if (!mDebugOverlay || !mTimingDebugOverlay) return;
+	if (mode > 0)
 	{
-		if (show)
-		{
-			mDebugOverlay->show();
-			if(showmat)
-				mTimingDebugOverlay->show();
-			else
-				mTimingDebugOverlay->hide();
-		}
+		mDebugOverlay->show();
+		if(mode > 1)
+			mTimingDebugOverlay->show();
 		else
-		{
-			mDebugOverlay->hide();
 			mTimingDebugOverlay->hide();
-		}
+	}
+	else
+	{
+		mDebugOverlay->hide();
+		mTimingDebugOverlay->hide();
 	}
 }
 
