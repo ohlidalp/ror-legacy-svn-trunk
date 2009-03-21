@@ -494,10 +494,6 @@ bool TruckHUD::update(float dt, Beam *truck, SceneManager *mSceneMgr, Camera* mC
 
 void TruckHUD::initTorqueOverlay()
 {
-	// load factory to be able to create stream lines
-	OverlayManager& overlayManager = OverlayManager::getSingleton();
-	overlayManager.addOverlayElementFactory(new LineStreamOverlayElementFactory());
-	
 	OverlayContainer *lineStreamContainer = (OverlayContainer *) (OverlayManager::getSingleton().createOverlayElement("LineStream", "TorqueCurveLineStream"));
 	lineStreamContainer->_setPosition(0.37f,  0.6f);
 	lineStreamContainer->_setDimensions(0.62f, 0.2f);

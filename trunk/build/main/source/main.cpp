@@ -18,6 +18,7 @@ You should have received a copy of the GNU General Public License
 along with Rigs of Rods.  If not, see <http://www.gnu.org/licenses/>.
 */
 #include "main.h"
+#include "OgreLineStreamOverlayElement.h"
 #include "language.h"
 
 RigsOfRods::RigsOfRods()
@@ -105,6 +106,10 @@ bool RigsOfRods::setup(void)
 
 	ColoredTextAreaOverlayElementFactory *cef = new ColoredTextAreaOverlayElementFactory();
 	OverlayManager::getSingleton().addOverlayElementFactory(cef);
+
+	// load factory to be able to create stream lines
+	OverlayManager& overlayManager = OverlayManager::getSingleton();
+	overlayManager.addOverlayElementFactory(new LineStreamOverlayElementFactory());
 
 #ifdef HAS_EDITOR
 	spinfact=new SpinControlOverlayElementFactory();

@@ -181,6 +181,7 @@
  *
  */
 
+#include <OgrePrerequisites.h> // needed for OGRE_PLATFORM
  
 #if OGRE_PLATFORM == OGRE_PLATFORM_LINUX
 //include the original linux stdint header. due to the precompiler guard it wull skip the rest of the file
