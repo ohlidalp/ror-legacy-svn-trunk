@@ -181,6 +181,12 @@
  *
  */
 
+ 
+#if OGRE_PLATFORM == OGRE_PLATFORM_LINUX
+//include the original linux stdint header. due to the precompiler guard it wull skip the rest of the file
+#include <stdint.h>
+#endif
+ 
 #ifndef _STDINT_H
 
 #include <stddef.h>
