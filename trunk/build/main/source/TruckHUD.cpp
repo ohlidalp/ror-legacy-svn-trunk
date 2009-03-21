@@ -502,11 +502,11 @@ void TruckHUD::initTorqueOverlay()
 	torqueLineStream = dynamic_cast<Ogre::LineStreamOverlayElement *>(lineStreamContainer);
 	torqueLineStream->setNumberOfSamplesForTrace(1000);
 	torqueLineStream->setNumberOfTraces(2);
-	torqueLineStream->setMoveData(false);
+	torqueLineStream->setMoveMode(0);
 	torqueLineStream->createVertexBuffer();
 
-	torqueLineStream->setTraceColor(0, ColourValue::Red);
-	torqueLineStream->setTraceColor(1, ColourValue::Green);
+	torqueLineStream->setTraceInfo(0, ColourValue::Red, "torque");
+	torqueLineStream->setTraceInfo(1, ColourValue::Green, "");
 
 	OverlayContainer *oPanel = (OverlayContainer *) (OverlayManager::getSingleton().createOverlayElement("Panel","TorqueCurveLinePanel"));
 	oPanel->_setPosition(0.37f,  0.6f);

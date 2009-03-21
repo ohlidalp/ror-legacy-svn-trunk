@@ -51,7 +51,7 @@ namespace Ogre {
         layers, scrolling / animated textures etc. For multiple texture layers, you have to set 
         the tiling level for each layer.
     */
-    class LineStreamOverlayElement : public OverlayContainer
+    class LineStreamOverlayElement : public BorderPanelOverlayElement
     {
     public:
         /** Constructor. */
@@ -78,14 +78,22 @@ namespace Ogre {
 
 		void setTraceValue(const uint32 traceIndex, const Real traceValue);
 		void setExactValue(const uint32 traceIndex, const uint32 fieldIndex, const Real traceValue);
-		void setTraceColor(const uint32 traceIndex, const ColourValue & traceValue);
+		void setTraceInfo(const uint32 traceIndex, const ColourValue & traceValue, const String &name);
 		void updateVtxBuffer();
+		void moveForward();
 		void createVertexBuffer();
 
-		void setMoveData(bool value);
-		bool getMoveData();
+		void setMoveMode(int value);
+		int getMoveMode();
 	protected:
 
+		typedef struct trace_info
+		{
+			ColourValue colour;
+			String name;
+			TextAreaOverlayElement *legendText;
+		} trace_info_t;
+			
 		RenderOperation mRenderOp;
         
         /// internal method for setting up geometry, called by OverlayElement::update
@@ -96,16 +104,17 @@ namespace Ogre {
 
         static String msTypeName;
 
-		bool moveData;
+		int moveMode;
 
 		uint32 mNumberOfTraces;
 		uint32 mNumberOfSamplesForTrace;
 
 		uint32 mPosInStream;
+		TextAreaOverlayElement *legendTop;
+		TextAreaOverlayElement *legendBottom;
 
 		std::vector<Real> mTraceSamples;
-		std::vector<ColourValue> mTraceColors;
-		
+		std::vector<trace_info_t> mTraceInfo;
 
 		HardwareVertexBufferSharedPtr mCurrentVtxBuffer;
 		bool mDataChanged;

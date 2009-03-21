@@ -29,6 +29,8 @@ Torus Knot Software Ltd.
 #include "OgreStableHeaders.h"
 
 #include "OgreLineStreamOverlayElement.h"
+#include "OgreOverlayManager.h"
+#include "OgreLogManager.h"
 #include "OgreMaterial.h"
 #include "OgreTechnique.h"
 #include "OgrePass.h"
@@ -42,16 +44,18 @@ namespace Ogre {
     String LineStreamOverlayElement::msTypeName = "LineStream";
     //---------------------------------------------------------------------
     LineStreamOverlayElement::LineStreamOverlayElement(const String& name)
-		: OverlayContainer(name), 
+		: BorderPanelOverlayElement(name), 
 		mNumberOfTraces(1),
 		mNumberOfSamplesForTrace(100),
 		mPosInStream(0),
 		mDataChanged(false),
-		moveData(true)
+		moveMode(1),
+		legendTop(0),
+		legendBottom(0)
     {
 		// Setup render op in advance
 		mRenderOp.vertexData = new VertexData();
-		 mRenderOp.vertexData->vertexCount = 0;
+		mRenderOp.vertexData->vertexCount = 0;
 	}
     //---------------------------------------------------------------------
     LineStreamOverlayElement::~LineStreamOverlayElement()
@@ -63,11 +67,24 @@ namespace Ogre {
     {
 		bool init = !mInitialised;
 
-		OverlayContainer::initialise();
+		BorderPanelOverlayElement::initialise();
 		if (init)
 		{
 			mInitialised = true;
 		}
+
+		//init with default border and materials
+		BorderPanelOverlayElement::setMaterialName("Core/StatsBlockCenter");
+		BorderPanelOverlayElement::setBorderMaterialName("Core/StatsBlockBorder");
+		BorderPanelOverlayElement::setBorderSize(1.0f);
+		BorderPanelOverlayElement::setTopLeftBorderUV(0.0000f, 1.0000f, 0.0039f, 0.9961f);
+		BorderPanelOverlayElement::setTopBorderUV(0.0039f, 1.0000f, 0.9961f, 0.9961f);
+		BorderPanelOverlayElement::setTopRightBorderUV(0.9961f, 1.0000f, 1.0000f, 0.9961f);
+		BorderPanelOverlayElement::setLeftBorderUV(0.0000f, 0.9961f, 0.0039f, 0.0039f);
+		BorderPanelOverlayElement::setRightBorderUV(0.9961f, 0.9961f, 1.0000f, 0.0039f);
+		BorderPanelOverlayElement::setBottomLeftBorderUV(0.0000f, 0.0039f, 0.0039f, 0.0000f);
+		BorderPanelOverlayElement::setBottomBorderUV(0.0039f, 0.0039f, 0.9961f, 0.0000f);
+		BorderPanelOverlayElement::setBottomRightBorderUV(0.9961f, 0.0039f, 1.0000f, 0.0000f);
     }
     //---------------------------------------------------------------------
     const String& LineStreamOverlayElement::getTypeName(void) const
@@ -83,7 +100,7 @@ namespace Ogre {
     //---------------------------------------------------------------------
     void LineStreamOverlayElement::setMaterialName(const String& matName)
     {
-        OverlayContainer::setMaterialName(matName);
+        BorderPanelOverlayElement::setMaterialName(matName);
     }
     //---------------------------------------------------------------------
     void LineStreamOverlayElement::_updateRenderQueue(RenderQueue* queue)
@@ -93,7 +110,7 @@ namespace Ogre {
 
             if (!mpMaterial.isNull())
             {
-                OverlayElement::_updateRenderQueue(queue);
+                BorderPanelOverlayElement::_updateRenderQueue(queue);
             }
 
             // Also add children
@@ -109,12 +126,13 @@ namespace Ogre {
     void LineStreamOverlayElement::updatePositionGeometry(void)
     {
 		mDataChanged = true;
+		BorderPanelOverlayElement::updatePositionGeometry();
 		updateVtxBuffer();
     }
 	//---------------------------------------------------------------------
 	void LineStreamOverlayElement::updateTextureGeometry( void )
 	{
-		// no need
+		BorderPanelOverlayElement::updateTextureGeometry();
 	}
 	//---------------------------------------------------------------------
 	uint32 LineStreamOverlayElement::getNumberOfTraces() const
@@ -158,7 +176,7 @@ namespace Ogre {
 
 
 			mTraceSamples.resize(numberOfVertexs / 2);
-			mTraceColors.resize(mNumberOfTraces);
+			mTraceInfo.resize(mNumberOfTraces);
 	
 			mRenderOp.vertexData->vertexCount = numberOfVertexs;
 
@@ -179,13 +197,13 @@ namespace Ogre {
 			mPosInStream = 0;
 		}
 	}
-	void LineStreamOverlayElement::setMoveData(bool value)
+	void LineStreamOverlayElement::setMoveMode(int value)
 	{
-		moveData=value;
+		moveMode=value;
 	}
-	bool LineStreamOverlayElement::getMoveData()
+	int LineStreamOverlayElement::getMoveMode()
 	{
-		return moveData;
+		return moveMode;
 	}
 
 	//---------------------------------------------------------------------
@@ -232,11 +250,15 @@ namespace Ogre {
 			return;
 		}
 
-		Real left, right, top, bottom;
-		left = _getDerivedLeft() * 2 - 1;
-		right = left + (mWidth * 2);
-		top = -((_getDerivedTop() * 2) - 1);
-		bottom =  top -  (mHeight * 2);
+		Real border = 0.01f;
+		Real left, right, top, bottom, width, height;
+		width = mWidth - 2 * border;
+		height = mHeight - 2 * border;
+
+		left = _getDerivedLeft() * 2 - 1 + 4 * border;
+		right = left + (width * 2) - border;
+		top = -((_getDerivedTop() * 2) - 1) - border;
+		bottom =  top -  (height * 2) - border;
 
 		fTraceVertex * currentVtxBufferData = 
 			static_cast<fTraceVertex *>(mCurrentVtxBuffer->lock(HardwareBuffer::HBL_DISCARD));
@@ -244,30 +266,31 @@ namespace Ogre {
 		// write vertexes
 		for (uint32 trace = 0 ; trace < mNumberOfTraces ; trace++)
 		{
-			for (uint32 sample = 1 ; sample < mNumberOfSamplesForTrace ; sample++)
+			for (uint32 sample = 1 ; sample < mNumberOfSamplesForTrace - 1; sample++)
 			{
 				fTraceVertex & lineStartVtx = currentVtxBufferData[(trace * mNumberOfSamplesForTrace + sample) * 2];
-				lineStartVtx.pos.x = left + (mWidth * 2) * ( (Real)sample  / ((Real)mNumberOfSamplesForTrace + 1) );
+				lineStartVtx.pos.x = left + (width * 2) * ( (Real)sample  / ((Real)mNumberOfSamplesForTrace + 1) );
 				Real startSampleQunt = ( mTraceSamples[trace * mNumberOfSamplesForTrace + (sample + mPosInStream) % mNumberOfSamplesForTrace] / maxValue );
-				lineStartVtx.pos.y = bottom + (mHeight * 2) * startSampleQunt;
+				lineStartVtx.pos.y = bottom + (height * 2) * startSampleQunt;
 				lineStartVtx.pos.z = zValue;
 
 
 				fTraceVertex & lineEndVtx = currentVtxBufferData[(trace * mNumberOfSamplesForTrace + sample) * 2 + 1];
-				lineEndVtx.pos.x = left + (mWidth * 2) * (Real)(sample + 1) / (Real)(mNumberOfSamplesForTrace + 1) ;
+				lineEndVtx.pos.x = left + (width * 2) * (Real)(sample + 1) / (Real)(mNumberOfSamplesForTrace + 1) ;
 				Real EndSampleQunt = ( mTraceSamples[trace * mNumberOfSamplesForTrace + (sample + mPosInStream + 1) % mNumberOfSamplesForTrace] / maxValue );
-				lineEndVtx.pos.y = bottom +(mHeight * 2) * EndSampleQunt;
+				lineEndVtx.pos.y = bottom +(height * 2) * EndSampleQunt;
 				lineEndVtx.pos.z = zValue;
 
-				lineStartVtx.color = mTraceColors[trace].getAsARGB();
-				lineEndVtx.color = mTraceColors[trace].getAsARGB();
+				lineStartVtx.color = mTraceInfo[trace].colour.getAsARGB();
+				lineEndVtx.color = mTraceInfo[trace].colour.getAsARGB();
 
 			}
 			
 		}
 		mCurrentVtxBuffer->unlock();
+		if(legendTop) legendTop->setCaption(StringConverter::toString((int)maxValue));
 
-		if(moveData)
+		if(moveMode==1)
 			mPosInStream++;
 	}
 	//---------------------------------------------------------------------
@@ -278,16 +301,75 @@ namespace Ogre {
 	}
 
 	//---------------------------------------------------------------------
+	void LineStreamOverlayElement::moveForward()
+	{
+		mPosInStream++;
+	}
+
+	//---------------------------------------------------------------------
 	void LineStreamOverlayElement::setTraceValue( const uint32 traceIndex, const Real traceValue )
 	{
 		mTraceSamples[traceIndex * mNumberOfSamplesForTrace + mPosInStream % mNumberOfSamplesForTrace] = traceValue;
+		if(moveMode==2)
+			mPosInStream++;
 		mDataChanged = true;
 
 	}
 	//---------------------------------------------------------------------
-	void LineStreamOverlayElement::setTraceColor( const uint32 traceIndex, const ColourValue & traceValue )
+	void LineStreamOverlayElement::setTraceInfo( const uint32 traceIndex, const ColourValue & traceColour, const String &name )
 	{
-		mTraceColors[traceIndex] = traceValue;
+		String elName = "StreamTraceInfo"+mName+StringConverter::toString(traceIndex);
+		bool existing = false;
+		try
+		{
+			OverlayManager::getSingleton().getOverlayElement(elName);
+			existing = true;
+		} catch(...)
+		{
+			existing = false;
+		}
+		if(!existing)
+		{
+			// create
+			mTraceInfo[traceIndex].legendText = (TextAreaOverlayElement*)OverlayManager::getSingleton().createOverlayElement("TextArea", elName);
+			mTraceInfo[traceIndex].legendText->setMetricsMode(GMM_PIXELS);
+			mTraceInfo[traceIndex].legendText->setPosition(5 + 100 * traceIndex, 5);
+			mTraceInfo[traceIndex].legendText->setFontName("VeraMono");
+			mTraceInfo[traceIndex].legendText->setDimensions(100, 12);
+			mTraceInfo[traceIndex].legendText->setCharHeight(12);
+			mTraceInfo[traceIndex].legendText->show();
+			this->addChild(mTraceInfo[traceIndex].legendText);
+		}
+		mTraceInfo[traceIndex].legendText->setCaption(name);
+		mTraceInfo[traceIndex].legendText->setColour(traceColour);
+		mTraceInfo[traceIndex].colour = traceColour;
+		mTraceInfo[traceIndex].name = name;
+		
+		if(!legendTop && !legendBottom)
+		{
+			legendTop = (TextAreaOverlayElement*)OverlayManager::getSingleton().createOverlayElement("TextArea", elName+"Top");
+			legendTop->setMetricsMode(GMM_PIXELS);
+			legendTop->setPosition(5, 20);
+			legendTop->setFontName("VeraMono");
+			legendTop->setDimensions(50, 20);
+			legendTop->setColour(ColourValue::Black);
+			legendTop->setCharHeight(14);
+			legendTop->show();
+			legendTop->setCaption("0");
+			this->addChild(legendTop);
+
+			legendBottom = (TextAreaOverlayElement*)OverlayManager::getSingleton().createOverlayElement("TextArea", elName+"Bottom");
+			legendBottom->setMetricsMode(GMM_PIXELS);
+			legendBottom->setPosition(5, 180);
+			legendBottom->setFontName("VeraMono");
+			legendBottom->setDimensions(50, 20);
+			legendBottom->setColour(ColourValue::Black);
+			legendBottom->setCharHeight(14);
+			legendBottom->setCaption("0");
+			legendBottom->show();
+			this->addChild(legendBottom);
+		}
+
 	}
 	//---------------------------------------------------------------------
 	//---------------------------------------------------------------------
