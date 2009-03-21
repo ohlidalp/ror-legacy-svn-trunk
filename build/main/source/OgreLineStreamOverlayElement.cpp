@@ -171,8 +171,9 @@ namespace Ogre {
 			// Bind buffer
 			mRenderOp.vertexData->vertexBufferBinding->setBinding(0, mCurrentVtxBuffer);
 
-			ZeroMemory(mCurrentVtxBuffer->lock(HardwareBuffer::HBL_DISCARD), decl->getVertexSize(0) * mRenderOp.vertexData->vertexCount);
-			ZeroMemory(&mTraceSamples[0], sizeof(Real) * mTraceSamples.size());
+			// clear buffer
+			memset(mCurrentVtxBuffer->lock(HardwareBuffer::HBL_DISCARD), 0, decl->getVertexSize(0) * mRenderOp.vertexData->vertexCount);
+			memset(&mTraceSamples[0], 0, sizeof(Real) * mTraceSamples.size());
 			mCurrentVtxBuffer->unlock();
 
 			mPosInStream = 0;
