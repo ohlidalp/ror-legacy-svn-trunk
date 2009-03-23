@@ -279,7 +279,7 @@ void ExampleFrameListener::updateStats(void)
 				return;
 			if(framecounter > 5)
 			{
-				fpsLineStream->setTraceValue(0, fpscount/5.0f);
+				fpsLineStream->setTraceValue(0, fpscount/6.0f);
 				//fpsLineStream->setTraceValue(1, stats.triangleCount);
 				fpsLineStream->moveForward();
 				fpscount = 0;
