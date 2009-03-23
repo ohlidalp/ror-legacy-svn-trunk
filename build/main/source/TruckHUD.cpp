@@ -293,7 +293,7 @@ bool TruckHUD::update(float dt, Beam *truck, SceneManager *mSceneMgr, Camera* mC
 			SimpleSpline *usedSpline = truck->engine->getTorqueCurve()->getUsedSpline();
 			float ratio = truck->engine->getRPM() / float(truck->engine->getMaxRPM());
 
-			if(lastTorqueModel != model)
+			if(lastTorqueModel != model && usedSpline)
 			{
 				// update the torque curve
 				LogManager::getSingleton().logMessage("regenerating torque displayed curve");
@@ -311,7 +311,7 @@ bool TruckHUD::update(float dt, Beam *truck, SceneManager *mSceneMgr, Camera* mC
 			torqueLineStream->setExactValue(1, lastTorqueRatio * 1000.0f, 0);
 			
 			// no overflow
-			if(ratio <= 1)
+			if(ratio <= 1 && usedSpline)
 			{
 				// get data for the new ratio
 				float res = usedSpline->interpolate(ratio).y;
