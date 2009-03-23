@@ -6440,12 +6440,6 @@ bool ExampleFrameListener::frameStarted(const FrameEvent& evt)
 	int t;
 	if (loading_state==ALL_LOADED)
 	{
-		if (current_truck!=-1 && isnan(trucks[current_truck]->getPosition().x))
-		{
-			//physics is contaminated with QNaNs!
-			trucks[current_truck]->reset();
-			setCurrentTruck(-1);
-		}
 		for (t=0; t<free_truck; t++)
 		{
 			if (trucks[t]->state!=SLEEPING && trucks[t]->loading_finished) trucks[t]->updateVisual(dt);

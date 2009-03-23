@@ -19,6 +19,7 @@ along with Rigs of Rods.  If not, see <http://www.gnu.org/licenses/>.
 */
 
 
+#include <float.h>
 #include "Beam.h"
 
 #include "engine.h"
@@ -664,6 +665,11 @@ void Beam::expireNetForce()
 	{
 		if (netforces[i].used && mrtime-netforces[i].birthdate>0.5) netforces[i].used=false;
 	}
+}
+
+inline bool Beam::isFiniteNum(float x)
+{
+	return (x <= FLT_MAX && x >= FLT_MIN);
 }
 
 //called by the network thread
@@ -4685,6 +4691,7 @@ void Beam::SyncReset()
 		locked=UNLOCKED;
 		tied=false;
 		parkingbrake=0;
+		fusedrag=Vector3::ZERO;
 		origin=Vector3::ZERO; //to fix
 		if (engine) engine->start();
 		for (i=0; i<free_node; i++)
@@ -4694,6 +4701,8 @@ void Beam::SyncReset()
 			nodes[i].smoothpos=nodes[i].iPosition;
 			nodes[i].Velocity=Vector3::ZERO;
 			nodes[i].Forces=Vector3::ZERO;
+			nodes[i].lastdrag=Vector3::ZERO;
+			nodes[i].buoyanceForce=Vector3::ZERO;
 			//this is problematic, we should also find what is locked to this, and unlock it
 			nodes[i].lockednode=0;
 		}
@@ -4716,6 +4725,7 @@ void Beam::SyncReset()
 			beams[i].L=beams[i].refL;
 			beams[i].lastforce=Vector3::ZERO;
 			beams[i].update_timer=1.0;
+			beams[i].stress=0.0;
 			if (beams[i].mSceneNode && beams[i].type!=BEAM_VIRTUAL && beams[i].type!=BEAM_INVISIBLE && beams[i].type!=BEAM_INVISIBLE_HYDRO)
 			{
 				//reattach possibly detached nodes
@@ -4731,6 +4741,7 @@ void Beam::SyncReset()
 		for (i=0; i<free_screwprop; i++) screwprops[i]->reset();
 		for (i=0; i<free_rotator; i++) rotators[i].angle=0;
 		for (i=0; i<free_wing; i++) wings[i].fa->broken=false;
+		for (i=0; i<free_wheel; i++) wheels[i].speed=0.0;
 		if (buoyance) buoyance->setsink(0);
 		refpressure=50.0;
 		addPressure(0);
@@ -4974,6 +4985,7 @@ void Beam::SyncReset()
 	{
 		int i,j;
 		if (dt==0.0) return;
+		if (reset_requested) return;
 
 #ifdef TIMING
 		if(statistics)
@@ -5742,6 +5754,11 @@ void Beam::SyncReset()
 					}
 				}
 			}
+		}
+		if (!isFiniteNum(tminx+tmaxx+tminy+tmaxy+tminz+tmaxz))
+		{
+			reset_requested=true; // truck exploded, schedule reset
+			return; // return early to avoid propagating invalid values
 		}
 		// if skidmarks, rebuild bounding box
 		if(skidNode) skidNode->needUpdate();
