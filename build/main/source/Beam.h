@@ -796,6 +796,7 @@ public:
 	int subisback[MAX_SUBMESHES];
 	void setMeshVisibility(bool visible);
 	bool meshesVisible;
+	inline bool isFiniteNum(float x);
 protected:
 
 	void updateSimpleSkeleton();

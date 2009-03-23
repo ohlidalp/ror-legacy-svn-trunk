@@ -311,6 +311,10 @@ BeamEngine::BeamEngine(float iddle, float max, float torque, float rear, int num
 		curClutch=0;
 		autoselect=DRIVE;
 		curEngineRPM=750.0f;
+		curGearboxRPM=750.0f;
+		curClutchTorque=0.0f;
+		curTurboRPM=0.0f;
+		apressure=0.0f;
 		running=1;
 		contact=1;
 		ssm->trigStart(trucknum, SS_TRIG_IGNITION);
