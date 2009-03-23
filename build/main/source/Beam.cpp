@@ -1969,7 +1969,7 @@ int Beam::getWheelNodeCount()
 					continue;
 				}
 
-				init_beam(free_beam, &nodes[id1], &nodes[id2], manager, parent, htype, default_break, default_spring, default_damp);
+				init_beam(free_beam, &nodes[id1], &nodes[id2], manager, parent, htype, default_break, default_spring, default_damp, -1, -1, -1, 1, default_beam_diameter);
 
 				// now 'parse' the options
 				options_pointer = options;
