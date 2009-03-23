@@ -204,7 +204,7 @@ class MyDialog : public wxDialog
 public:
 	// ctor(s)
 	MyDialog(const wxString& title, MyApp *_app);
-	void UpdateOgreParams(bool scanDevices);
+	void updateRendersystems(Ogre::RenderSystem *rs);
 	void SetDefaults();
 	bool LoadConfig();
 	void SaveConfig();
@@ -218,7 +218,6 @@ public:
 	void OnQuit(wxCloseEvent& event);
 	void OnTimer(wxTimerEvent& event);
 	void OnTimerReset(wxTimerEvent& event);
-	void OnDeviceChange(wxCommandEvent& event);
 	void OnButCancel(wxCommandEvent& event);
 	void OnButSave(wxCommandEvent& event);
 	void OnButPlay(wxCommandEvent& event);
@@ -234,6 +233,7 @@ public:
 	void OnButSaveKeymap(wxCommandEvent& event);
 	void onRightClickItem(wxTreeEvent& event);
 	void OnMenuJoystickOptionsClick(wxCommandEvent& event);
+	void OnChangeRenderer(wxCommandEvent& event);
 	//void OnMenuClearClick(wxCommandEvent& event);
 	//void OnMenuTestClick(wxCommandEvent& event);
 	//void OnMenuDeleteClick(wxCommandEvent& event);
@@ -253,12 +253,12 @@ public:
 private:
 //	float caelumFogDensity, SandStormFogStart;
 	//bool postinstall;
-	wxChoice *renderdevice;
-	wxChoice *videomode;
-	wxChoice *antialiasing;
+	Ogre::Root *ogreRoot;
+	wxPanel *graphicsPanel;
+	wxChoice *renderer;
+	std::vector<wxStaticText *> renderer_text;
+	std::vector<wxChoice *> renderer_choice;
 	wxChoice *textfilt;
-	wxCheckBox *fullscreen;
-	wxCheckBox *vsync;
 	wxChoice *sky;
 	wxChoice *shadow;
 	wxChoice *water;
@@ -319,8 +319,6 @@ private:
 	HtmlWindow *helphtmw;
 //	wxTextCtrl *p2pport;
 #endif
-
-	Ogre::RenderSystem *dx9;
 
 	//Joysticks *joy;
 //	wxTextCtrl *deadzone;
@@ -791,6 +789,8 @@ enum
 	EVC_LANG,
 	SCROLL1,
 	SCROLL2,
+	EVT_CHANGE_RENDERER,
+	RENDERER_OPTION=990,
 };
 
 // ----------------------------------------------------------------------------
@@ -803,7 +803,6 @@ BEGIN_EVENT_TABLE(MyDialog, wxDialog)
 	EVT_CLOSE(MyDialog::OnQuit)
 	EVT_TIMER(CONTROLS_TIMER_ID, MyDialog::OnTimer)
 	EVT_TIMER(UPDATE_RESET_TIMER_ID, MyDialog::OnTimerReset)
-	EVT_CHOICE(device_change, MyDialog::OnDeviceChange)
 	EVT_BUTTON(command_cancel, MyDialog::OnButCancel)
 	EVT_BUTTON(command_save, MyDialog::OnButSave)
 	EVT_BUTTON(command_play, MyDialog::OnButPlay)
@@ -838,6 +837,7 @@ BEGIN_EVENT_TABLE(MyDialog, wxDialog)
 	EVT_MENU(30, MyDialog::OnMenuJoystickOptionsClick)
 	EVT_MENU(31, MyDialog::OnMenuJoystickOptionsClick)
 	EVT_MENU(32, MyDialog::OnMenuJoystickOptionsClick)
+	EVT_CHOICE(EVT_CHANGE_RENDERER, MyDialog::OnChangeRenderer)
 
 END_EVENT_TABLE()
 
@@ -1259,14 +1259,7 @@ bool MyApp::OnCmdLineParsed(wxCmdLineParser& parser)
 // ----------------------------------------------------------------------------
 
 // frame constructor
-MyDialog::MyDialog(const wxString& title, MyApp *_app)
-#if OGRE_PLATFORM == OGRE_PLATFORM_WIN32
-	: wxDialog(NULL, wxID_ANY, title,  wxPoint(100, 100), wxSize(500, 580), wxRESIZE_BORDER)
-#elif OGRE_PLATFORM == OGRE_PLATFORM_LINUX
-	: wxDialog(NULL, wxID_ANY, title,  wxPoint(100, 100), wxSize(500, 580), wxDEFAULT_DIALOG_STYLE|wxRESIZE_BORDER|wxRESIZE_BOX)
-#elif OGRE_PLATFORM == OGRE_PLATFORM_APPLE
-	: wxDialog(NULL, wxID_ANY, title,  wxPoint(100, 100), wxSize(500, 580), wxRESIZE_BORDER)
-#endif
+MyDialog::MyDialog(const wxString& title, MyApp *_app) : wxDialog(NULL, wxID_ANY, title,  wxPoint(100, 100), wxSize(500, 580), wxRESIZE_BORDER)
 {
 	app=_app;
 
@@ -1275,9 +1268,6 @@ MyDialog::MyDialog(const wxString& title, MyApp *_app)
 #endif
 	SetWindowStyle(wxRESIZE_BORDER | wxCAPTION);
 	SetMinSize(wxSize(300,300));
-
-	//no longer needed
-//	checkLinuxPaths();
 
 	logfile->AddLine(conv("InputEngine starting"));logfile->Write();
 	wxFileName tfn=wxFileName(app->UserPath, wxEmptyString);
@@ -1306,7 +1296,6 @@ MyDialog::MyDialog(const wxString& title, MyApp *_app)
 
 	//postinstall = _postinstall;
 
-	dx9=0;
 	wxFileSystem::AddHandler( new wxInternetFSHandler );
 	//build dialog here
 	wxToolTip::Enable(true);
@@ -1358,7 +1347,7 @@ MyDialog::MyDialog(const wxString& title, MyApp *_app)
 	wxPanel *simpleSettingsPanel=new wxPanel(nbook, -1);
 	nbook->AddPage(simpleSettingsPanel, _("Simple Settings"), true);
 
-	wxPanel *graphicsPanel=new wxPanel(nbook, -1);
+	graphicsPanel=new wxPanel(nbook, -1);
 	nbook->AddPage(graphicsPanel, _("Graphics"), true);
 
 	wxPanel *soundsPanel=new wxPanel(nbook, -1);
@@ -1464,45 +1453,19 @@ MyDialog::MyDialog(const wxString& title, MyApp *_app)
 	//graphics panel
 	wxStaticBox *dBox = new wxStaticBox(graphicsPanel, -1, _("Screen configuration"), wxPoint(5,5), wxSize(470, 125));
 
-#if OGRE_PLATFORM == OGRE_PLATFORM_WIN32
-	dText = new wxStaticText(graphicsPanel, -1, _("Device:"), wxPoint(10,25));
-	renderdevice=new wxChoice(graphicsPanel, device_change, wxPoint(115, 25), wxSize(200, -1), 0);
-	renderdevice->SetToolTip(_("Select the graphics card you want to use.\nIf you have more than one video card, you should choose the fastest."));
-#endif
-#if OGRE_PLATFORM == OGRE_PLATFORM_LINUX
-	dText = new wxStaticText(graphicsPanel, device_change, _("RTT Mode:"), wxPoint(10,28));
-	renderdevice=new wxChoice(graphicsPanel, device_change, wxPoint(115, 25), wxSize(200, -1), 0);
-	renderdevice->SetToolTip(_("Select the preferred Render To Texture mode.\nChange this in case of artefacts in water, dashboard or mirrors, or to improve performances."));
-#endif
-#if OGRE_PLATFORM == OGRE_PLATFORM_APPLE
-	dText = new wxStaticText(graphicsPanel, device_change, _("RTT Mode:"), wxPoint(10,28));
-	renderdevice=new wxChoice(graphicsPanel, device_change, wxPoint(115, 25), wxSize(200, -1), 0);
-	renderdevice->SetToolTip(_("Select the preferred Render To Texture mode.\nChange this in case of artefacts in water, dashboard or mirrors, or to improve performances."));
-#endif
-	dText = new wxStaticText(graphicsPanel, -1, _("Video mode:"), wxPoint(10,53));
-	videomode=new wxChoice(graphicsPanel, -1, wxPoint(115, 50), wxSize(200, -1), 0);
-	videomode->SetToolTip(_("Select the video mode you want to use.\nSmaller screen sizes may be faster on some hardwares.\n16-bit colour modes uses less video memory, but adds strange colour artifacts."));
-
-	dText = new wxStaticText(graphicsPanel, -1, _("Anti-aliasing:"), wxPoint(10,78));
-	antialiasing=new wxChoice(graphicsPanel, -1, wxPoint(115, 75), wxSize(200, -1), 0);
-	antialiasing->SetToolTip(_("Gives a smoother image and reduces jagged edges,\nbut may be incompatible with several other options, including visual effects and water effects."));
-
-	dText = new wxStaticText(graphicsPanel, -1, _("Texture filtering:"), wxPoint(10,103));
-	textfilt=new wxChoice(graphicsPanel, -1, wxPoint(115, 100), wxSize(200, -1), 0);
+	// clear the renderer settings and fill them later
+	dText = new wxStaticText(graphicsPanel, -1, _("Render System"), wxPoint(10, 28));
+	renderer = new wxChoice(graphicsPanel, EVT_CHANGE_RENDERER, wxPoint(110, 25), wxSize(120, -1), 0);
+	
+	// renderer options done, do the rest
+	dText = new wxStaticText(graphicsPanel, -1, _("Texture filtering:"), wxPoint(10,333));
+	textfilt=new wxChoice(graphicsPanel, -1, wxPoint(115, 330), wxSize(200, -1), 0);
 	textfilt->Append(conv("None (fastest)"));
 	textfilt->Append(conv("Bilinear"));
 	textfilt->Append(conv("Trilinear"));
 	textfilt->Append(conv("Anisotropic (best looking)"));
 	textfilt->SetToolTip(_("Most recent hardware can do Anisotropic filtering without significant slowdown.\nUse lower settings only on old or poor video chipsets."));
 
-	fullscreen=new wxCheckBox(graphicsPanel, -1, _("Full screen"), wxPoint(350, 53));
-#if OGRE_PLATFORM == OGRE_PLATFORM_APPLE
-	fullscreen->Disable(); //fullscreen is dangerous on a mac
-#endif
-	fullscreen->SetToolTip(_("Full screen mode uses a bit less memory resources"));
-
-	vsync=new wxCheckBox(graphicsPanel, -1, _("VSync"), wxPoint(350, 78));
-	vsync->SetToolTip(_("Check this only if you have way more than 60fps, to avoid visual artifacts.\nBelow 60fps this is a waste of CPU time."));
 
 	dBox = new wxStaticBox(graphicsPanel, -1, _("Special effects"), wxPoint(5,130), wxSize(470, 250));
 
@@ -1762,26 +1725,16 @@ MyDialog::MyDialog(const wxString& title, MyApp *_app)
 		const char *pluginsfile="plugins.cfg";
 #endif
 
-	Ogre::Root *mr = new Ogre::Root(Ogre::String(progdirPrefix.ToUTF8().data())+pluginsfile,
+	ogreRoot = new Ogre::Root(Ogre::String(progdirPrefix.ToUTF8().data())+pluginsfile,
 									Ogre::String(confdirPrefix.ToUTF8().data())+"ogre.cfg",
 									Ogre::String(logsdirPrefix.ToUTF8().data())+"RoR.log");
 
-//	Ogre::Root *mr=new Ogre::Root();
 	logfile->AddLine(conv("Root restore config"));logfile->Write();
-	Ogre::Root::getSingleton().restoreConfig();
-	logfile->AddLine(conv("Enforcing rendering subsystem"));logfile->Write();
-#if OGRE_PLATFORM == OGRE_PLATFORM_WIN32
-	mr->setRenderSystem(mr->getRenderSystemByName("Direct3D9 Rendering Subsystem"));
-#endif
-#if OGRE_PLATFORM == OGRE_PLATFORM_LINUX
-	mr->setRenderSystem(mr->getRenderSystemByName("OpenGL Rendering Subsystem"));
-#endif
-#if OGRE_PLATFORM == OGRE_PLATFORM_APPLE
-	mr->setRenderSystem(mr->getRenderSystemByName("OpenGL Rendering Subsystem"));
-#endif
+	ogreRoot->restoreConfig();
+	updateRendersystems(ogreRoot->getRenderSystem());
+
 
 	logfile->AddLine(conv("Setting default values"));logfile->Write();
-	//set values
 	SetDefaults();
 	logfile->AddLine(conv("Loading config"));logfile->Write();
 	LoadConfig();
@@ -1907,72 +1860,105 @@ void MyDialog::updateItemText(wxTreeItemId item, event_trigger_t *t)
 		cTree->SetItemText (item, 2, wxString::Format(_T("%d"), t->joystickButtonNumber));
 	}
 }
-void MyDialog::UpdateOgreParams(bool scanDevices)
+void MyDialog::updateRendersystems(Ogre::RenderSystem *rs)
 {
-	logfile->AddLine(conv("Update Ogre Params Started"));logfile->Write();
-	Ogre::RenderSystemList* lstRend;
-	Ogre::RenderSystemList::iterator pRend;
-	Ogre::ConfigOptionMap opts;
-	lstRend = Ogre::Root::getSingleton().getAvailableRenderers();
-	if(lstRend->empty())
-		exit(11);
-	pRend = lstRend->begin();//we'll have only one renderer (DX9), so take this one
-	dx9=*pRend;
-	opts = (*pRend)->getConfigOptions();
-	Ogre::ConfigOptionMap::iterator pOpt = opts.begin();
-	antialiasing->Clear();
-	if (scanDevices) renderdevice->Clear();
-	videomode->Clear();
-	while( pOpt!= opts.end() )
+	std::map<Ogre::String, bool> filterOptions;
+	filterOptions["Allow NVPerfHUD"]=true;
+	filterOptions["Floating-point mode"]=true;
+
+	if(renderer->GetCount() == 0)
 	{
-		wxChoice *choice=0;
-#if OGRE_PLATFORM == OGRE_PLATFORM_WIN32
-		if (!strncmp("Anti aliasing", pOpt->second.name.c_str(), 13)) choice=antialiasing;
-#endif
-#if OGRE_PLATFORM == OGRE_PLATFORM_LINUX
-		if (!strncmp("FSAA", pOpt->second.name.c_str(), 4)) choice=antialiasing;
-#endif
-#if OGRE_PLATFORM == OGRE_PLATFORM_APPLE
-		if (!strncmp("FSAA", pOpt->second.name.c_str(), 4)) choice=antialiasing;
-#endif
-#if OGRE_PLATFORM == OGRE_PLATFORM_WIN32
-		if (scanDevices && !strncmp("Rendering Device", pOpt->second.name.c_str(), 16)) choice=renderdevice;
-#endif
-#if OGRE_PLATFORM == OGRE_PLATFORM_LINUX
-		if (scanDevices && !strncmp("RTT Preferred Mode", pOpt->second.name.c_str(), 18)) choice=renderdevice;
-#endif
-#if OGRE_PLATFORM == OGRE_PLATFORM_APPLE
-		if (scanDevices && !strncmp("RTT Preferred Mode", pOpt->second.name.c_str(), 18)) choice=renderdevice;
-#endif
-		if (!strncmp("Video Mode", pOpt->second.name.c_str(), 10)) choice=videomode;
-//		debug->AppendText(pOpt->second.name.c_str());
-		Ogre::StringVector::iterator pPoss = pOpt->second.possibleValues.begin();
-		while (pPoss!=pOpt->second.possibleValues.end())
+		// add all rendersystems to the list
+		Ogre::RenderSystemList *list = ogreRoot->getAvailableRenderers();
+		int selection = 0;
+		int valuecounter = 0;
+		for(Ogre::RenderSystemList::iterator it=list->begin(); it!=list->end(); it++, valuecounter++)
 		{
-			if (choice) choice->Append(conv(pPoss[0]));
-//			debug->AppendText(pPoss[0].c_str());
-			++pPoss;
+			if(rs->getName() == (*it)->getName())
+				selection = valuecounter;
+			renderer->Append(conv((*it)->getName()));
 		}
-		++pOpt;
+		renderer->SetSelection(selection);
 	}
-	logfile->AddLine(conv("Update Ogre Params Finished"));logfile->Write();
+	int x = 10;
+	int y = 50;
+	int counter = 0;
+	Ogre::ConfigOptionMap opts = rs->getConfigOptions();
+	Ogre::ConfigOptionMap::iterator optIt = opts.begin();
+	for(Ogre::ConfigOptionMap::iterator optIt=opts.begin(); optIt!=opts.end(); optIt++)
+	{
+		// filter out unwanted or disabled options
+		if(filterOptions.find(optIt->first) != filterOptions.end())
+			continue;
+		if(optIt->second.immutable)
+			continue;
+
+		if(counter + 1 > (int)renderer_choice.size())
+		{
+			// not existing, add new control
+			renderer_text.resize(counter + 1);
+			renderer_choice.resize(counter + 1);
+
+			renderer_text[counter] = new wxStaticText(graphicsPanel, wxID_ANY, conv("."), wxPoint(x, y+3), wxSize(110, 25));
+			renderer_choice[counter] = new wxChoice(graphicsPanel, RENDERER_OPTION + counter, wxPoint(x + 100, y), wxSize(120, -1), 0);
+		} else
+		{
+			//existing, remove all elements
+			renderer_choice[counter]->Clear();
+		}
+		renderer_text[counter]->SetLabel(conv(optIt->first.c_str()));
+		renderer_text[counter]->Show();
+		
+		// add all values and select current value
+		int selection = 0;
+		int valueCounter = 0;
+		for(Ogre::StringVector::iterator valIt = optIt->second.possibleValues.begin(); valIt != optIt->second.possibleValues.end(); valIt++, valueCounter++)
+		{
+			if(*valIt == optIt->second.currentValue)
+				selection = valueCounter;
+			renderer_choice[counter]->Append(conv(valIt->c_str()));
+		}
+		renderer_choice[counter]->SetSelection(selection);
+		renderer_choice[counter]->Show();
+		if(optIt->second.immutable)
+			renderer_choice[counter]->Disable();
+		else
+			renderer_choice[counter]->Enable();
+
+		// layouting stuff
+		y += 25;
+		if(y> 25 * 4)
+		{
+			// use next column
+			y = 25;
+			x += 230;
+		}
+		counter++;
+		/*
+		// this is not needed!
+		if(graphicsPanel->GetSize().GetWidth() < x + 100)
+		{
+			wxSize size = graphicsPanel->GetSize();
+			size.SetWidth(x + 100);
+			graphicsPanel->SetSize(size);
+		}
+		*/
+	}
+	// hide non-used controls
+	if(counter<(int)renderer_text.size())
+	{
+		for(int i=counter;i<(int)renderer_text.size();i++)
+		{
+			renderer_text[i]->Hide();
+			renderer_choice[i]->Hide();
+		}
+	}
 }
 
 void MyDialog::SetDefaults()
 {
-	UpdateOgreParams(true);
-	//wxChoice *renderdevice;
-	renderdevice->SetSelection(0);
-	//wxChoice *videomode;
-	videomode->SetSelection(0);
-	//wxChoice *antialiasing;
-	antialiasing->SetSelection(0);
 	//wxChoice *textfilt;
 	textfilt->SetSelection(3); //anisotropic
-	//wxCheckBox *fullscreen;
-	fullscreen->SetValue(false);
-	//wxCheckBox *vsync;
-	vsync->SetValue(false);
 	//wxChoice *sky;
 	sky->SetSelection(0);//sandstorm
 	//wxChoice *shadow;
@@ -2045,24 +2031,6 @@ void MyDialog::SetDefaults()
 void MyDialog::getSettingsControls()
 {
 	char tmp[255]="";
-#if OGRE_PLATFORM == OGRE_PLATFORM_WIN32
-	settings["Anti aliasing"] = conv(antialiasing->GetStringSelection());
-#elif OGRE_PLATFORM == OGRE_PLATFORM_LINUX
-	settings["FSAA"] = conv(antialiasing->GetStringSelection());
-#elif OGRE_PLATFORM == OGRE_PLATFORM_APPLE
-	settings["FSAA"] = conv(antialiasing->GetStringSelection());
-#endif
-	settings["Full Screen"] = fullscreen->GetValue() ? "Yes" : "No";
-
-#if OGRE_PLATFORM == OGRE_PLATFORM_WIN32
-	settings["Rendering Device"] = conv(renderdevice->GetStringSelection());
-#elif OGRE_PLATFORM == OGRE_PLATFORM_LINUX
-	settings["RTT Preferred Mode"] = conv(renderdevice->GetStringSelection());
-#elif OGRE_PLATFORM == OGRE_PLATFORM_APPLE
-	settings["RTT Preferred Mode"] = conv(renderdevice->GetStringSelection());
-#endif
-	settings["VSync"] = vsync->GetValue() ? "Yes" : "No";
-	settings["Video Mode"] = conv(videomode->GetStringSelection());
 	settings["Texture Filtering"] = conv(textfilt->GetStringSelection());
 	settings["Sky effects"] = conv(sky->GetStringSelection());
 	settings["Shadow technique"] = conv(shadow->GetStringSelection());
@@ -2136,21 +2104,6 @@ void MyDialog::getSettingsControls()
 void MyDialog::updateSettingsControls()
 {
 	// this method "applies" the settings and updates the controls
-
-	//Ogre config
-#if OGRE_PLATFORM == OGRE_PLATFORM_WIN32
-	renderdevice->SetStringSelection(conv(settings["Rendering Device"]));
-	antialiasing->SetStringSelection(conv(settings["Anti aliasing"]));
-#elif OGRE_PLATFORM == OGRE_PLATFORM_LINUX
-	renderdevice->SetStringSelection(conv(settings["RTT Preferred Mode"]));
-	antialiasing->SetStringSelection(conv(settings["FSAA"]));
-#elif OGRE_PLATFORM == OGRE_PLATFORM_APPLE
-	renderdevice->SetStringSelection(conv(settings["RTT Preferred Mode"]));
-	antialiasing->SetStringSelection(conv(settings["FSAA"]));
-#endif
-	videomode->SetStringSelection(conv(settings["Video Mode"]));
-	fullscreen->SetValue(settings["Full Screen"]=="Yes");
-	vsync->SetValue(settings["VSync"]=="Yes");
 
 	Ogre::String st;
 	st = settings["Texture Filtering"]; if (st.length()>0) textfilt->SetStringSelection(conv(st));
@@ -2250,38 +2203,23 @@ void MyDialog::SaveConfig()
 
 	// then set stuff and write configs
 	INPUTENGINE.saveMapping(conv(InputMapFileName));
-	//save Ogre stuff
-	if (dx9)
-	{
-		dx9->setConfigOption("Allow NVPerfHUD", settings["Allow NVPerfHUD"]);
-#if OGRE_PLATFORM == OGRE_PLATFORM_WIN32
-		dx9->setConfigOption("Anti aliasing", settings["Anti aliasing"]);
-#elif OGRE_PLATFORM == OGRE_PLATFORM_LINUX
-		dx9->setConfigOption("FSAA", settings["FSAA"]);
-#elif OGRE_PLATFORM == OGRE_PLATFORM_APPLE
-		dx9->setConfigOption("FSAA", settings["FSAA"]);
-#endif
-		dx9->setConfigOption("Full Screen", settings["Full Screen"]);
-#if OGRE_PLATFORM == OGRE_PLATFORM_WIN32
-		dx9->setConfigOption("Rendering Device", settings["Rendering Device"]);
-#elif OGRE_PLATFORM == OGRE_PLATFORM_LINUX
-		dx9->setConfigOption("RTT Preferred Mode", settings["RTT Preferred Mode"]);
-#elif OGRE_PLATFORM == OGRE_PLATFORM_APPLE
-		dx9->setConfigOption("RTT Preferred Mode", settings["RTT Preferred Mode"]);
-#endif
-		dx9->setConfigOption("VSync", settings["VSync"]);
-		dx9->setConfigOption("Video Mode", settings["Video Mode"]);
 
-		Ogre::String err=dx9->validateConfigOptions();
-		if (err.length()>0)
-		{
-			wxMessageDialog(this, conv(err), _("Ogre config validation error"),wxOK||wxICON_ERROR).ShowModal();
-		}
-		else 
-			Ogre::Root::getSingleton().saveConfig();
+	//save Ogre stuff
+	Ogre::RenderSystem *rs = ogreRoot->getRenderSystem();
+	for(int i=0;i<(int)renderer_text.size();i++)
+	{
+		if(!renderer_text[i]->IsShown())
+			break;
+		rs->setConfigOption(conv(renderer_text[i]->GetLabel()), conv(renderer_choice[i]->GetStringSelection()));
 	}
-	else
-		wxMessageDialog(this, wxString(_("Could not open Rendering device")), wxString(_("Ogre config error")),wxOK||wxICON_ERROR).ShowModal();
+	Ogre::String err = rs->validateConfigOptions();
+	if (err.length() > 0)
+	{
+		wxMessageDialog(this, conv(err), _("Ogre config validation error"),wxOK||wxICON_ERROR).ShowModal();
+	}
+	else 
+		Ogre::Root::getSingleton().saveConfig();
+
 	//save my stuff
 	FILE *fd;
 	wxString rorcfg=app->UserPath + wxFileName::GetPathSeparator() + _T("config") + wxFileName::GetPathSeparator() + _T("RoR.cfg");
@@ -2482,20 +2420,24 @@ void MyDialog::OnQuit(wxCloseEvent& WXUNUSED(event))
 	exit(0);
 }
 
-void MyDialog::OnDeviceChange(wxCommandEvent& event)
+void MyDialog::OnChangeRenderer(wxCommandEvent& ev)
 {
-#if OGRE_PLATFORM == OGRE_PLATFORM_LINUX
-return;
-#endif
-#if OGRE_PLATFORM == OGRE_PLATFORM_APPLE
-return;
-#endif
-	logfile->AddLine(conv("Device change"));logfile->Write();
-	if (dx9) dx9->setConfigOption("Rendering Device", conv(renderdevice->GetStringSelection()));
-	UpdateOgreParams(false);
-	videomode->SetSelection(0);
-	antialiasing->SetSelection(0);
+	try
+	{
+		Ogre::RenderSystem *rs = ogreRoot->getRenderSystemByName(conv(renderer->GetStringSelection()));
+		if(rs)
+		{
+			ogreRoot->setRenderSystem(rs);
+			updateRendersystems(rs);
+		} else
+			logfile->AddLine(conv("Unable to change to new rendersystem(1)"));logfile->Write();
+	}
+	catch(...)
+	{
+		logfile->AddLine(conv("Unable to change to new rendersystem(2)"));logfile->Write();
+	}
 }
+
 
 void MyDialog::OnMenuJoystickOptionsClick(wxCommandEvent& ev)
 {
@@ -2811,13 +2753,7 @@ void MyDialog::OnSimpleSlider2Scroll(wxScrollEvent & event)
 	switch(val)
 	{
 		case 0:
-			UpdateOgreParams(true);
-			renderdevice->SetSelection(0);
-			videomode->SetSelection(0);
-			antialiasing->SetSelection(0);
 			textfilt->SetSelection(0);
-			fullscreen->SetValue(true);
-			vsync->SetValue(false);
 			sky->SetSelection(0);//sandstorm
 			shadow->SetSelection(0);//no shadows
 			water->SetSelection(0);//basic water
@@ -2842,16 +2778,7 @@ void MyDialog::OnSimpleSlider2Scroll(wxScrollEvent & event)
 			mblur->SetValue(false);
 	break;
 		case 1:
-			UpdateOgreParams(true);
-			renderdevice->SetSelection(0);
-			if(videomode->GetCount() > 6)
-				videomode->SetSelection(videomode->GetCount()/2-2);
-			else
-				videomode->SetSelection(0);
-			antialiasing->SetSelection(0);
 			textfilt->SetSelection(2);
-			fullscreen->SetValue(true);
-			vsync->SetValue(false);
 			sky->SetSelection(0);//sandstorm
 			shadow->SetSelection(1);
 			water->SetSelection(1);
@@ -2876,13 +2803,7 @@ void MyDialog::OnSimpleSlider2Scroll(wxScrollEvent & event)
 			mblur->SetValue(false);
 	break;
 		case 2:
-			UpdateOgreParams(true);
-			renderdevice->SetSelection(0);
-			videomode->SetSelection(videomode->GetCount()-1);
-			antialiasing->SetSelection(antialiasing->GetCount()-1);
 			textfilt->SetSelection(3);
-			fullscreen->SetValue(true);
-			vsync->SetValue(false);
 			sky->SetSelection(1);
 			shadow->SetSelection(1);
 			water->SetSelection(3);
