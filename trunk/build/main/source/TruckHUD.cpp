@@ -301,7 +301,7 @@ bool TruckHUD::update(float dt, Beam *truck, SceneManager *mSceneMgr, Camera* mC
 				{
 					float factor = i/1000.0f;
 					float res = usedSpline->interpolate(factor).y;
-					LogManager::getSingleton().logMessage(StringConverter::toString(i)+ " - "+StringConverter::toString(res)+ " - "+StringConverter::toString(factor));
+					//LogManager::getSingleton().logMessage(StringConverter::toString(i)+ " - "+StringConverter::toString(res)+ " - "+StringConverter::toString(factor));
 					torqueLineStream->setExactValue(0, i, res);
 				}
 				lastTorqueModel = model;
