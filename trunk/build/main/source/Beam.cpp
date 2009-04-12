@@ -3942,6 +3942,7 @@ int Beam::getWheelNodeCount()
 				addSoundSource(ssm->createInstance("tracks/default_force", trucknum, NULL), smokeId);
 				addSoundSource(ssm->createInstance("tracks/default_brakes", trucknum, NULL), 0);
 				addSoundSource(ssm->createInstance("tracks/default_parkbrakes", trucknum, NULL), 0);
+				addSoundSource(ssm->createInstance("tracks/default_reverse_beep", trucknum, NULL), 0);
 			}
 			if (engine->type=='c')
 				addSoundSource(ssm->createInstance("tracks/default_car", trucknum, NULL), smokeId);
@@ -3951,6 +3952,8 @@ int Beam::getWheelNodeCount()
 				addSoundSource(ssm->createInstance("tracks/default_air_purge", trucknum, NULL), 0);
 			//starter
 			addSoundSource(ssm->createInstance("tracks/default_starter", trucknum, NULL), 0);
+			// turn signals
+			addSoundSource(ssm->createInstance("tracks/default_turn_signal", trucknum, NULL), 0);
 		}
 		if (driveable==TRUCK)
 		{
@@ -7065,6 +7068,16 @@ float torques[MAX_WHEELS];
 		}
 		if(keysleep)
 			mTimeUntilNextToggle = 0.2;
+
+	}
+
+	void Beam::setBlinkType(blinktype blink) 
+	{
+		blinkingtype = blink;
+		if(blink == BLINK_NONE)
+			ssm->trigStop(trucknum, SS_TRIG_TURN_SIGNAL);
+		else
+			ssm->trigStart(trucknum, SS_TRIG_TURN_SIGNAL);
 
 	}
 

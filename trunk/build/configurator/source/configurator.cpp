@@ -286,6 +286,7 @@ private:
 	wxCheckBox *sunburn;
 	wxCheckBox *bloom;
 	wxCheckBox *mblur;
+	wxCheckBox *creaksound;
 	wxChoice *sound;
 	wxChoice *thread;
 	wxChoice *flaresMode;
@@ -1536,6 +1537,10 @@ MyDialog::MyDialog(const wxString& title, MyApp *_app) : wxDialog(NULL, wxID_ANY
 	sound->Append(conv("Software (stereo)"));
 	sound->Append(conv("Hardware (3D)"));
 	sound->SetToolTip(_("Software sound is stereo only.\nHardware sound will uses all your speakers, but this mode is buggy with some sound card drivers."));
+	
+	// creak sound?
+	creaksound=new wxCheckBox(soundsPanel, -1, _("disable creak sound"), wxPoint(150, 70));
+	creaksound->SetToolTip(_("You can disable the default creak sound by checking this box"));
 
 	//cpu panel
 	dText = new wxStaticText(cpuPanel, -1, _("Thread number:"), wxPoint(20,28));
@@ -2002,6 +2007,7 @@ void MyDialog::SetDefaults()
 	bloom->SetValue(false);
 	//wxCheckBox *mblur;
 	mblur->SetValue(false);
+	creaksound->SetValue(true);
 	//wxChoice *sound;
 	sound->SetSelection(1);//software
 	//wxChoice *thread;
@@ -2055,6 +2061,7 @@ void MyDialog::getSettingsControls()
 	settings["Sunburn"] = (sunburn->GetValue()) ? "Yes" : "No";
 	settings["Bloom"] = (bloom->GetValue()) ? "Yes" : "No";
 	settings["Motion blur"] = (mblur->GetValue()) ? "Yes" : "No";
+	settings["Creak Sound"] = (creaksound->GetValue()) ? "No" : "Yes";
 	settings["Enhanced wheels"] = (wheel2->GetValue()) ? "Yes" : "No";
 	settings["Fog"] = (enableFog->GetValue()) ? "Yes" : "No";
 	settings["Envmap"] = (envmap->GetValue()) ? "Yes" : "No";
@@ -2126,6 +2133,7 @@ void MyDialog::updateSettingsControls()
 	st = settings["XFire"]; if (st.length()>0) enablexfire->SetValue(st=="Yes");
 	st = settings["Dashboard"]; if (st.length()>0) dashboard->SetValue(st=="Yes");
 	st = settings["Mirrors"]; if (st.length()>0) mirror->SetValue(st=="Yes");
+	st = settings["Creak Sound"]; if (st.length()>0) creaksound->SetValue(st=="No");
 	st = settings["Envmap"]; if (st.length()>0) envmap->SetValue(st=="Yes");
 	st = settings["Sunburn"]; if (st.length()>0) sunburn->SetValue(st=="Yes");
 	st = settings["Bloom"]; if (st.length()>0) bloom->SetValue(st=="Yes");
@@ -2705,6 +2713,7 @@ void MyDialog::OnSimpleSliderScroll(wxScrollEvent & event)
 	int val = simpleSlider->GetValue();
 	// these are processor simple settings
 	// 0 (high perf) - 2 (high quality)
+	creaksound->SetValue(true); // disable creak sound
 	switch(val)
 	{
 		case 0:

@@ -216,6 +216,16 @@ BeamEngine::BeamEngine(float iddle, float max, float torque, float rear, int num
 			if (!shifting && !postshifting && curEngineRPM>maxRPM-100.0 && curGear<numGears && autoselect==DRIVE) shift(1);
 			if (!shifting && !postshifting && curEngineRPM<iddleRPM && curGear>1 && autoselect==DRIVE) shift(-1);
 		}
+		// reverse gear beep
+		if (curGear==-1 && running) 
+		{
+			ssm->trigStart(trucknum, SS_TRIG_REVERSE_GEAR);
+		}
+		else
+		{
+			ssm->trigStop(trucknum, SS_TRIG_REVERSE_GEAR);
+		}
+
 	}
 
 	float BeamEngine::getRPM() {return curEngineRPM;}
