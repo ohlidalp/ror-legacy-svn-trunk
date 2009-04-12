@@ -774,7 +774,7 @@ public:
 	}
 
 	bool getBeaconMode() { return beacon; };
-	void setBlinkType(blinktype blink) {blinkingtype = blink;};
+	void setBlinkType(blinktype blink);
 	blinktype getBlinkType() { return blinkingtype; };
 	void deleteNetTruck();
 	netlock_t netlock;

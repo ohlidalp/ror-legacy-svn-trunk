@@ -19,6 +19,7 @@ along with Rigs of Rods.  If not, see <http://www.gnu.org/licenses/>.
 */
 #include "Ogre.h"
 #include "SoundScriptManager.h"
+#include "Settings.h"
 
 using namespace Ogre;
 
@@ -325,7 +326,7 @@ bool SoundScriptTemplate::setParameter(Ogre::StringVector vec)
 		if (vec[1]==String("air_purge")) {trigger_source=SS_TRIG_AIR_PURGE;return true;};
 		if (vec[1]==String("shift")) {trigger_source=SS_TRIG_SHIFT;return true;};
 		if (vec[1]==String("gear_slide")) {trigger_source=SS_TRIG_GEARSLIDE;return true;};
-		if (vec[1]==String("creak")) {trigger_source=SS_TRIG_CREAK;return true;};
+		if (vec[1]==String("creak") && (SETTINGS.getSetting("Creak Sound")=="Yes")) {trigger_source=SS_TRIG_CREAK;return true;};
 		if (vec[1]==String("break")) {trigger_source=SS_TRIG_BREAK;return true;};
 		if (vec[1]==String("screetch")) {trigger_source=SS_TRIG_SCREETCH;return true;};
 		if (vec[1]==String("parking_brake")) {trigger_source=SS_TRIG_PARK;return true;};
@@ -339,6 +340,8 @@ bool SoundScriptTemplate::setParameter(Ogre::StringVector vec)
 		if (vec[1]==String("afterburner8")) {trigger_source=SS_TRIG_AFTERBURNER8;return true;};
 		if (vec[1]==String("aoa_horn")) {trigger_source=SS_TRIG_AOA;return true;};
 		if (vec[1]==String("ignition")) {trigger_source=SS_TRIG_IGNITION;return true;};
+		if (vec[1]==String("reverse_gear")) {trigger_source=SS_TRIG_REVERSE_GEAR;return true;};
+		if (vec[1]==String("turn_signal")) {trigger_source=SS_TRIG_TURN_SIGNAL;return true;};
 		return false;
 	}
 	if (vec[0]==String("pitch_source"))
