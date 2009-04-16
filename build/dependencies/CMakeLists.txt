@@ -14,11 +14,7 @@ set(OGRE_SET_DISABLE_FREEIMAGE 1)
 add_subdirectory("ogrenew")
 
 # OGRE dependent
-if(CAELUM_BUILD_NEW)
-  add_subdirectory("caelum")
-else(CAELUM_BUILD_NEW)
-  add_subdirectory("Caelum-2006-11-09")
-endif(CAELUM_BUILD_NEW)
+add_subdirectory("Caelum-2006-11-09")
 
 if(ROR_BUILD_HYDRAX)
   add_subdirectory("hydrax")
@@ -33,9 +29,5 @@ IF(ROR_BUILD_ANGELSCRIPT)
 ENDIF(ROR_BUILD_ANGELSCRIPT)
 
 add_subdirectory("moFileReader")
-
-if(ROR_BUILD_NEWNET)
-add_subdirectory("raknet")
-endif(ROR_BUILD_NEWNET)
 
 add_subdirectory("mygui")
