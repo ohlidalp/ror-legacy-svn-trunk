@@ -87,20 +87,20 @@ def main():
   #copyAll(os.path.join(SOURCE, 'languages'), CFT)
   #copy built-in game resources
   print "please download latest language files from: http://translate.rigsofrods.com/ror/?action=downloadproject"
-  print "copying buit-in resources"
-  REST=os.path.join(CURRENT, 'resources')
-  mkdir(REST)
-  copyAll(os.path.join(SOURCE, 'contents', 'release'), REST)
+  print "please download and unpack the content pack from SF to the test/current directory"
+  #REST=os.path.join(CURRENT, 'resources')
+  #mkdir(REST)
+  #copyAll(os.path.join(SOURCE, 'contents', 'release'), REST)
   #copy skeleton
   print "copying skeleton"
   SKT=os.path.join(CURRENT, 'skeleton')
   mkdir(SKT)
   copyAll(os.path.join(SOURCE, 'skeleton'), SKT)
   #copy streams
-  print "copying streams"
-  STT=os.path.join(CURRENT, 'streams')
-  mkdir(STT)
-  copyAll(STREAMS, STT)
+  #print "copying streams"
+  #STT=os.path.join(CURRENT, 'streams')
+  #mkdir(STT)
+  #copyAll(STREAMS, STT)
   #updater will be copied later...
   
   print "done with all. processed in %0.2f seconds." % (time.time()-ts)
