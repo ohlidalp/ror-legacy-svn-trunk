@@ -56,9 +56,10 @@ endif(COMMAND cmake_policy)
 # RoR options
 option(ROR_BUILD_HYDRAX "build RoR with HYDRAX water engine support" TRUE)
 option(ROR_BUILD_PAGED "build RoR with Paged Geometry support (grass and trees)" TRUE)
-option(ROR_BUILD_BEAMSTATS "build RoR extensive Beam engine debugging/profiling support (do not enable in release build)" FALSE)
 option(ROR_BUILD_CONFIGURATOR "builds the RoRConfig" TRUE)
-option(ROR_BUILD_ROR "toggles building of RoR and its dependencies" TRUE)
+
+# optimization things
+option(ROR_BUILD_BEAMSTATS "build RoR extensive Beam engine debugging/profiling support (do not enable in release build)" FALSE)
 option(ROR_USE_OPTIMIZATIONS_WINDOWS "optimize build, gives more FPS, but needs longer to compile" TRUE)
 
 #option(ROR_BUILD_ANGELSCRIPT "build and use the new scripting engine" FALSE)
@@ -87,14 +88,11 @@ ENDIF(WIN32)
 # HAS_EDITOR (include ingame truck editor [the old one])
 # OGREPLUGIN (use calls to terrain manager in order to update terrain visuals (obsolete) )
 
-IF(ROR_BUILD_ROR)
-  add_subdirectory(dependencies)
-  add_subdirectory(main)
-  IF(ROR_BUILD_CONFIGURATOR)
-    add_subdirectory(configurator)
-  ENDIF(ROR_BUILD_CONFIGURATOR)
-
-ENDIF(ROR_BUILD_ROR)
+add_subdirectory(dependencies)
+add_subdirectory(main)
+IF(ROR_BUILD_CONFIGURATOR)
+  add_subdirectory(configurator)
+ENDIF(ROR_BUILD_CONFIGURATOR)
 
 IF(WSYNC_BUILD_WSYNC)
   add_subdirectory(wsync)
