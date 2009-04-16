@@ -1,5 +1,0 @@
-<area shape="rect" href="$classOgre_1_1ArchiveFactory.html" title="Abstract factory class, archive codec plugins can register concrete subclasses of..." alt="" coords="312,56,565,83">
-<area shape="rect" href="$classOgre_1_1ParticleSystemRendererFactory.html" title="Abstract class definition of a factory object for ParticleSystemRenderer." alt="" coords="212,107,665,133">
-<area shape="rect" href="$classOgre_1_1FileSystemArchiveFactory.html" title="Specialisation of ArchiveFactory for FileSystem files." alt="" coords="736,5,949,32">
-<area shape="rect" href="$classOgre_1_1ZipArchiveFactory.html" title="Specialisation of ArchiveFactory for Zip files." alt="" coords="759,56,927,83">
-<area shape="rect" href="$classOgre_1_1BillboardParticleRendererFactory.html" title="Factory class for BillboardParticleRenderer." alt="" coords="715,107,971,133">

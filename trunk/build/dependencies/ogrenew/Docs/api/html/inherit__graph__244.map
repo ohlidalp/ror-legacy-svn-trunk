@@ -1,4 +1,0 @@
-base referer
-rect $classOgre_1_1Singleton.html 8,8 290,32
-rect $classOgre_1_1HardwareBufferManager.html 340,8 542,32
-rect $classOgre_1_1DefaultHardwareBufferManager.html 593,8 838,32

@@ -1,7 +1,0 @@
-base referer
-rect $classOgre_1_1OverlayContainer.html 40,158 202,182
-rect $classOgre_1_1TextAreaOverlayElement.html 226,158 432,182
-rect $classOgre_1_1StringInterface.html 74,9 218,33
-rect $classOgre_1_1Renderable.html 242,9 368,33
-rect $classOgre_1_1PanelOverlayElement.html 28,233 214,257
-rect $classOgre_1_1BorderPanelOverlayElement.html 8,307 234,331

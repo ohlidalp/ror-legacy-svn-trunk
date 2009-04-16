@@ -1,5 +1,0 @@
-base referer
-rect $classOgre_1_1MovableObject.html 91,84 238,108
-rect $classOgre_1_1ShadowCaster.html 7,9 151,33
-rect $classOgre_1_1AnimableObject.html 175,9 327,33
-rect $classOgre_1_1Resource_1_1Listener.html 262,84 433,108

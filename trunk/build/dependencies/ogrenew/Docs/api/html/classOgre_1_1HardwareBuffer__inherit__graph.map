@@ -1,6 +1,0 @@
-base referer
-rect $classOgre_1_1HardwareIndexBuffer.html 29,84 213,108
-rect $classOgre_1_1HardwarePixelBuffer.html 237,84 416,108
-rect $classOgre_1_1HardwareVertexBuffer.html 440,84 629,108
-rect $classOgre_1_1DefaultHardwareIndexBuffer.html 8,158 234,182
-rect $classOgre_1_1DefaultHardwareVertexBuffer.html 418,158 650,182
