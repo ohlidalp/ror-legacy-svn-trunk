@@ -16,7 +16,6 @@ include_directories (${RoR_Dependencies_SOURCE_DIR}/openal-soft-1.6.372/include/
 include_directories (${RoR_Dependencies_SOURCE_DIR}/openal-soft-1.6.372/include)
 include_directories (${RoR_Dependencies_SOURCE_DIR}/OIS-HEAD/ois/includes)
 include_directories (${RoR_Dependencies_SOURCE_DIR}/moFileReader/include)
-include_directories (${RoR_Dependencies_SOURCE_DIR}/rorserver-sf/source)
 include_directories (${RoR_Dependencies_SOURCE_DIR}/mygui/include)
 
 IF(WIN32)
