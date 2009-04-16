@@ -70,15 +70,15 @@ set(WSYNC_BUILD_INSTALLER FALSE)
 #option(ROR_BUILD_LUASCRIPT "adds the LUA Scripting engine" TRUE)
 set(ROR_BUILD_LUASCRIPT TRUE)
 
-set(NVIDIA_CG_DIR "$ENV{PROGRAMFILES}\\NVIDIA Corporation\\Cg" CACHE PATH "directory of the nvidia cg toolkit installation")
-
 IF(WIN32)
   set(ROR_BUILD_XFIRE TRUE)
   #option(ROR_BUILD_BUGTRAP "build RoR with Bugtrap support (windows only)" FALSE)
   set(ROR_BUILD_BUGTRAP FALSE)
+  set(NVIDIA_CG_DIR "$ENV{PROGRAMFILES}\\NVIDIA Corporation\\Cg" CACHE PATH "directory of the nvidia cg toolkit installation")
 ELSE(WIN32)
   set(ROR_BUILD_BUGTRAP FALSE)
   set(ROR_BUILD_XFIRE FALSE)
+  set(NVIDIA_CG_DIR "")
 ENDIF(WIN32)
 
 
