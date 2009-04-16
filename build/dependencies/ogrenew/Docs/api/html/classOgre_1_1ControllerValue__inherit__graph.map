@@ -1,5 +1,0 @@
-<area shape="rect" href="$classOgre_1_1AnimationStateControllerValue.html" title="ControllerValue wrapper class for AnimationState." alt="" coords="251,5,541,32">
-<area shape="rect" href="$classOgre_1_1FloatGpuParameterControllerValue.html" title="Predefined controller value for setting a single floating&#45; point value in a constant..." alt="" coords="237,56,555,83">
-<area shape="rect" href="$classOgre_1_1FrameTimeControllerValue.html" title="Predefined controller value for getting the latest frame time." alt="" coords="263,107,529,133">
-<area shape="rect" href="$classOgre_1_1TexCoordModifierControllerValue.html" title="Predefined controller value for getting / setting a texture coordinate modifications..." alt="" coords="243,157,549,184">
-<area shape="rect" href="$classOgre_1_1TextureFrameControllerValue.html" title="Predefined controller value for getting / setting the frame number of a texture layer..." alt="" coords="255,208,537,235">

@@ -1,5 +1,0 @@
-base referer
-rect $classOgre_1_1OverlayElementFactory.html 7,56 205,80
-rect $classOgre_1_1BorderPanelOverlayElementFactory.html 253,8 525,32
-rect $classOgre_1_1PanelOverlayElementFactory.html 273,56 505,80
-rect $classOgre_1_1TextAreaOverlayElementFactory.html 263,104 514,128

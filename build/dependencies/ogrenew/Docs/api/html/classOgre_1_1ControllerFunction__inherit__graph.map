@@ -1,4 +1,0 @@
-<area shape="rect" href="$classOgre_1_1AnimationControllerFunction.html" title="Predefined controller function for dealing with animation." alt="" coords="263,5,537,32">
-<area shape="rect" href="$classOgre_1_1PassthroughControllerFunction.html" title="Predefined controller function which just passes through the original source directly..." alt="" coords="255,56,545,83">
-<area shape="rect" href="$classOgre_1_1ScaleControllerFunction.html" title="Predefined controller function which simply scales an input to an output value." alt="" coords="275,107,525,133">
-<area shape="rect" href="$classOgre_1_1WaveformControllerFunction.html" title="Predefined controller function based on a waveform." alt="" coords="261,157,539,184">

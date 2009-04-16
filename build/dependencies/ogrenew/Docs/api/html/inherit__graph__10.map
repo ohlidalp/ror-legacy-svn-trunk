@@ -1,5 +1,0 @@
-base referer
-rect $classOgre_1_1AnimationTrack.html 9,56 158,80
-rect $classOgre_1_1NodeAnimationTrack.html 217,8 398,32
-rect $classOgre_1_1NumericAnimationTrack.html 208,56 408,80
-rect $classOgre_1_1VertexAnimationTrack.html 213,104 402,128
