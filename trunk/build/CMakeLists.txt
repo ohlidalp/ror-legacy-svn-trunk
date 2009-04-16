@@ -71,16 +71,10 @@ set(ROR_BUILD_LUASCRIPT TRUE)
 
 set(NVIDIA_CG_DIR "$ENV{PROGRAMFILES}\\NVIDIA Corporation\\Cg" CACHE PATH "directory of the nvidia cg toolkit installation")
 
-#experimental ones
-#option(ROR_BUILD_PYTHONSCRIPT "adds the Python Scripting engine" FALSE)
-set(ROR_BUILD_PYTHONSCRIPT FALSE)
-option(WSYNC_BUILD_INSTALLER "builds the installer" FALSE)
-option(ROR_BUILD_NEWNET "builds the new network approach using raknet" FALSE)
-option(CAELUM_BUILD_NEW "uses a more recent caelum version" FALSE)
-
 IF(WIN32)
-  option(ROR_BUILD_XFIRE "builds the XFire Extensions" FALSE)
-  option(ROR_BUILD_BUGTRAP "build RoR with Bugtrap support (windows only)" FALSE)
+  set(ROR_BUILD_XFIRE TRUE)
+  #option(ROR_BUILD_BUGTRAP "build RoR with Bugtrap support (windows only)" FALSE)
+  set(ROR_BUILD_BUGTRAP FALSE)
 ELSE(WIN32)
   set(ROR_BUILD_BUGTRAP FALSE)
   set(ROR_BUILD_XFIRE FALSE)
