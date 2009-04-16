@@ -6,7 +6,7 @@ Copyright 2007,2008,2009 Thomas Fischer
 For more information, see http://www.rigsofrods.com/
 
 Rigs of Rods is free software: you can redistribute it and/or modify
-it under the terms of the GNU General Public License version 3, as 
+it under the terms of the GNU General Public License version 3, as
 published by the Free Software Foundation.
 
 Rigs of Rods is distributed in the hope that it will be useful,
@@ -175,7 +175,7 @@ public:
 		long style = wxHW_SCROLLBAR_AUTO, const wxString& name = _T("htmlWindow"));
 	void OnLinkClicked(const wxHtmlLinkInfo& link);
 };
- 
+
 HtmlWindow::HtmlWindow(wxWindow *parent, wxWindowID id, const wxPoint& pos,
 	const wxSize& size, long style, const wxString& name)
 : wxHtmlWindow(parent, id, pos, size, style, name)
@@ -943,7 +943,7 @@ int getAvLang(wxString dir, std::vector<wxLanguageInfo*> &files)
 				files.push_back(li);
 			} else
 			{
-				logfile->AddLine(conv("failed to get Language: "+conv(name)));logfile->Write();				
+				logfile->AddLine(conv("failed to get Language: "+conv(name)));logfile->Write();
 			}
 		} while (dp.GetNext(&name));
 	}
@@ -953,7 +953,7 @@ int getAvLang(wxString dir, std::vector<wxLanguageInfo*> &files)
 void initLanguage(wxString languagePath, wxString userpath)
 {
 	// add language stuff
-	
+
 	// this prevents error messages
 	wxLogNull noLog;
 	// Initialize the catalogs we'll be using
@@ -965,8 +965,8 @@ void initLanguage(wxString languagePath, wxString userpath)
 #endif
 	//basedir = basedir + dirsep + _T("languages");
 	wxLocale::AddCatalogLookupPathPrefix(languagePath);
-	
-	// get all available languages	
+
+	// get all available languages
 	getAvLang(languagePath, avLanguages);
 	logfile->AddLine(conv("searching languages in ")+basedir);logfile->Write();
 	if(avLanguages.size() > 0)
@@ -1203,7 +1203,7 @@ bool MyApp::OnInit()
 	if (argc==2 && wxString(argv[1])==_T("/buildmode")) buildmode=true;
 	//setup the user filesystem
 	if (!filesystemBootstrap()) return false;
-	// open logfile	
+	// open logfile
 	wxFileName clfn=wxFileName(UserPath, wxEmptyString);
 	clfn.AppendDir(_T("logs"));
 	clfn.SetFullName(_T("configlog.txt"));
@@ -1401,12 +1401,12 @@ MyDialog::MyDialog(const wxString& title, MyApp *_app) : wxDialog(NULL, wxID_ANY
 	btnDeleteKey = new wxButton(controlsInfoPanel, command_delete_key, _("Delete selected"), wxPoint(130,5), wxSize(120, 50));
 	btnDeleteKey->Enable(false);
 
-	//wxButton *btnLoadKeyMap = 
+	//wxButton *btnLoadKeyMap =
 	new wxButton(controlsInfoPanel, command_load_keymap, _("Import Keymap"), wxPoint(maxTreeWidth-125,5), wxSize(120,25));
-	//wxButton *btnSaveKeyMap = 
+	//wxButton *btnSaveKeyMap =
 	new wxButton(controlsInfoPanel, command_save_keymap, _("Export Keymap"), wxPoint(maxTreeWidth-125,30), wxSize(120,25));
 
-	//wxButton *btnTest = 
+	//wxButton *btnTest =
 	new wxButton(controlsInfoPanel, command_testevents, _("Test"), wxPoint(255,5), wxSize(95, 50));
 
 	//btnRemap = new wxButton( controlsInfoPanel, BTN_REMAP, "Remap", wxPoint(maxTreeWidth-250,5), wxSize(120,45));
@@ -1422,7 +1422,7 @@ MyDialog::MyDialog(const wxString& title, MyApp *_app) : wxDialog(NULL, wxID_ANY
 
 	wxPanel *helpPanel=new wxPanel(nbook, -1);
 	nbook->AddPage(helpPanel, _("Community / Support"), false);
-	
+
 //	wxPanel *aboutPanel=new wxPanel(nbook, -1);
 //	nbook->AddPage(aboutPanel, "About", false);
 
@@ -1457,7 +1457,7 @@ MyDialog::MyDialog(const wxString& title, MyApp *_app) : wxDialog(NULL, wxID_ANY
 	// clear the renderer settings and fill them later
 	dText = new wxStaticText(graphicsPanel, -1, _("Render System"), wxPoint(10, 28));
 	renderer = new wxChoice(graphicsPanel, EVT_CHANGE_RENDERER, wxPoint(110, 25), wxSize(120, -1), 0);
-	
+
 	// renderer options done, do the rest
 	dText = new wxStaticText(graphicsPanel, -1, _("Texture filtering:"), wxPoint(10,333));
 	textfilt=new wxChoice(graphicsPanel, -1, wxPoint(115, 330), wxSize(200, -1), 0);
@@ -1537,7 +1537,7 @@ MyDialog::MyDialog(const wxString& title, MyApp *_app) : wxDialog(NULL, wxID_ANY
 	sound->Append(conv("Software (stereo)"));
 	sound->Append(conv("Hardware (3D)"));
 	sound->SetToolTip(_("Software sound is stereo only.\nHardware sound will uses all your speakers, but this mode is buggy with some sound card drivers."));
-	
+
 	// creak sound?
 	creaksound=new wxCheckBox(soundsPanel, -1, _("disable creak sound"), wxPoint(150, 70));
 	creaksound->SetToolTip(_("You can disable the default creak sound by checking this box"));
@@ -1548,7 +1548,7 @@ MyDialog::MyDialog(const wxString& title, MyApp *_app) : wxDialog(NULL, wxID_ANY
 	thread->Append(conv("1 (Standard CPU)"));
 	thread->Append(conv("2 (Hyper-Threading or Dual core CPU)"));
 	thread->SetToolTip(_("If you have a Hyper-Threading, or Dual core or multiprocessor computer,\nyou will have a huge gain in speed by choosing the second option.\nBut this mode has some camera shaking issues.\n"));
-	
+
 	wheel2=new wxCheckBox(cpuPanel, -1, _("Enable advanced wheel model"), wxPoint(150, 70));
 	wheel2->SetToolTip(_("Some vehicles may include an advanced wheel model that is CPU intensive.\nYou can force these vehicles to use a simpler model by unchecking this box."));
 
@@ -1594,7 +1594,7 @@ MyDialog::MyDialog(const wxString& title, MyApp *_app) : wxDialog(NULL, wxID_ANY
 	dText = new wxStaticText(panel_net_bottom, -1, _("User Token: "), wxPoint(10,80));
 	usertoken=new wxTextCtrl(panel_net_bottom, -1, wxString(), wxPoint(150, 80), wxSize(200, -1));
 	usertoken->SetToolTip(_("Your Forum User Token."));
-	
+
 	btnUpdate = new wxButton(panel_net_bottom, net_test, _("Update"), wxPoint(360, 5), wxSize(120,85));
 
 	netPanel->SetSizer(sizer_net);
@@ -1629,7 +1629,7 @@ MyDialog::MyDialog(const wxString& title, MyApp *_app) : wxDialog(NULL, wxID_ANY
 	new wxButton(advancedPanel, clear_cache, _("Clear cache"), wxPoint(125, 180));
 
 	dText = new wxStaticText(advancedPanel, -1, _("Language:"), wxPoint(10, 230));
-	
+
 	wxArrayString choices;
 	int sel = 0;
 	if(avLanguages.size() > 0)
@@ -1652,7 +1652,7 @@ MyDialog::MyDialog(const wxString& title, MyApp *_app) : wxDialog(NULL, wxID_ANY
 	languageMode->SetSelection(sel);
 
 	languageMode->SetToolTip(_("This setting overrides the system's default language. You need to restart the configurator to apply the changes."));
-	
+
 	enableFog=new wxCheckBox(advancedPanel, -1, _("Fog"), wxPoint(320, 50));
 	enableFog->SetToolTip(_("Uncheck in case you have a fog problem"));
 
@@ -1879,8 +1879,10 @@ void MyDialog::updateRendersystems(Ogre::RenderSystem *rs)
 		int valuecounter = 0;
 		for(Ogre::RenderSystemList::iterator it=list->begin(); it!=list->end(); it++, valuecounter++)
 		{
-			if(rs->getName() == (*it)->getName())
+			if(rs && rs->getName() == (*it)->getName())
 				selection = valuecounter;
+			else if(!rs)
+				rs = (*it);
 			renderer->Append(conv((*it)->getName()));
 		}
 		renderer->SetSelection(selection);
@@ -1913,7 +1915,7 @@ void MyDialog::updateRendersystems(Ogre::RenderSystem *rs)
 		}
 		renderer_text[counter]->SetLabel(conv(optIt->first.c_str()));
 		renderer_text[counter]->Show();
-		
+
 		// add all values and select current value
 		int selection = 0;
 		int valueCounter = 0;
@@ -2078,7 +2080,7 @@ void MyDialog::getSettingsControls()
 	wxSize s = this->GetSize();
 	sprintf(tmp, "%d, %d", s.x, s.y);
 	settings["Configurator Size"] = tmp;
-	
+
 #ifdef NETWORK
 	settings["Network enable"] = (network_enable->GetValue()) ? "Yes" : "No";
 	settings["Nickname"] = conv(nickname->GetValue().SubString(0,20));
@@ -2092,12 +2094,12 @@ void MyDialog::getSettingsControls()
 	settings["Simple Settings CPU"] = tmp;
 	sprintf(tmp, "%d", simpleSlider2->GetValue());
 	settings["Simple Settings Graphics"] = tmp;
-	
+
 	// save language, if one is set
 	if(avLanguages.size() > 0 && languageMode->GetStringSelection() != _("(No Languages found)"))
 	{
 		settings["Language"] = conv(languageMode->GetStringSelection());
-		
+
 		std::vector<wxLanguageInfo*>::iterator it;
 		for(it = avLanguages.begin(); it!=avLanguages.end(); it++)
 		{
@@ -2225,7 +2227,7 @@ void MyDialog::SaveConfig()
 	{
 		wxMessageDialog(this, conv(err), _("Ogre config validation error"),wxOK||wxICON_ERROR).ShowModal();
 	}
-	else 
+	else
 		Ogre::Root::getSingleton().saveConfig();
 
 	//save my stuff
@@ -2879,7 +2881,7 @@ void MyDialog::OnTestNet(wxCommandEvent& event)
 						  wxString(conv("?version="))+
 						  wxString(_(RORNET_VERSION))+
 						  wxString(conv("&lang="))+
-						  conv(lshort));	
+						  conv(lshort));
 
 //	networkhtmw->LoadPage("http://rigsofrods.blogspot.com/");
 	/*
