@@ -102,12 +102,29 @@ int WSync::sync(boost::filesystem::path localDir, string server, string remoteDi
 	if(filesToDownload)
 		printf("downloading %d files now (%s) ..\n", filesToDownload, formatFilesize(predDownloadSize).c_str());
 
-	// do things now!
+	int changeCounter = 0, changeMax = changedFiles.size() + newFiles.size() + deletedFiles.size();
+	// do things now!	
+	if(newFiles.size())
+	{
+		for(itf=newFiles.begin();itf!=newFiles.end();itf++, changeCounter++)
+		{
+			progressOutputShort(float(changeCounter)/float(changeMax));
+			printf(" A  %s (%s) ", itf->filename.c_str(), formatFilesize(itf->filesize).c_str());
+			path localfile = localDir / itf->filename;
+			string url = "/" + remoteDir + "/" + itf->filename;
+			if(downloadFile(localfile, server, url, true))
+				printf("\nunable to create file: %s\n", itf->filename.c_str());
+			else
+				printf("                           \n");
+		}
+	}
+
 	if(changedFiles.size())
 	{
-		for(itf=changedFiles.begin();itf!=changedFiles.end();itf++)
+		for(itf=changedFiles.begin();itf!=changedFiles.end();itf++, changeCounter++)
 		{
-			printf("U    %s (%s) ", itf->filename.c_str(), formatFilesize(itf->filesize).c_str());
+			progressOutputShort(float(changeCounter)/float(changeMax));
+			printf(" U  %s (%s) ", itf->filename.c_str(), formatFilesize(itf->filesize).c_str());
 			path localfile = localDir / itf->filename;
 			string url = "/" + remoteDir + "/" + itf->filename;
 			if(downloadFile(localfile, server, url, true))
@@ -119,9 +136,10 @@ int WSync::sync(boost::filesystem::path localDir, string server, string remoteDi
 	
 	if(deletedFiles.size() && !(modeNumber & WMO_NODELETE))
 	{
-		for(itf=deletedFiles.begin();itf!=deletedFiles.end();itf++)
+		progressOutputShort(float(changeCounter)/float(changeMax));
+		for(itf=deletedFiles.begin();itf!=deletedFiles.end();itf++, changeCounter++)
 		{
-			printf("D    %s (%s)\n", itf->filename.c_str(), formatFilesize(itf->filesize).c_str());
+			printf(" D  %s (%s)\n", itf->filename.c_str(), formatFilesize(itf->filesize).c_str());
 			path localfile = localDir / itf->filename;
 			try
 			{
@@ -132,20 +150,6 @@ int WSync::sync(boost::filesystem::path localDir, string server, string remoteDi
 			{
 				printf("unable to delete file: %s\n", localfile.string().c_str());
 			}
-		}
-	}
-	
-	if(newFiles.size())
-	{
-		for(itf=newFiles.begin();itf!=newFiles.end();itf++)
-		{
-			printf("A    %s (%s) ", itf->filename.c_str(), formatFilesize(itf->filesize).c_str());
-			path localfile = localDir / itf->filename;
-			string url = "/" + remoteDir + "/" + itf->filename;
-			if(downloadFile(localfile, server, url, true))
-				printf("\nunable to create file: %s\n", itf->filename.c_str());
-			else
-				printf("                           \n");
 		}
 	}
 
@@ -171,8 +175,11 @@ int WSync::buildFileIndex(boost::filesystem::path &outfilename, boost::filesyste
 {
 	vector<string> files;
 	listFiles(path, files);
-	for(vector<string>::iterator it=files.begin(); it!=files.end(); it++)
+	printf("building local file index ...");
+	int counter = 0, counterMax = files.size();
+	for(vector<string>::iterator it=files.begin(); it!=files.end(); it++, counter++)
 	{
+		progressOutput(float(counter)/float(counterMax));
 		// cut out root path
 		string respath = *it;
 		if(respath.substr(0, rootpath.string().size()) == rootpath.string())
@@ -198,6 +205,7 @@ int WSync::buildFileIndex(boost::filesystem::path &outfilename, boost::filesyste
 		Hashentry entry(resultHash, file_size(*it));
 		hashMap[respath] = entry;
 	}
+	printf("done.                      \n");
 	if(writeFile)
 		return saveHashMapToFile(outfilename, hashMap, mode);
 	return 0;
@@ -532,6 +540,10 @@ void WSync::progressOutput(float progress, float speed)
 	}
 }
 
+void WSync::progressOutputShort(float progress)
+{
+	printf("% 3.0f%%|", progress * 100);
+}
 
 int WSync::getTempFilename(path &tempfile)
 {

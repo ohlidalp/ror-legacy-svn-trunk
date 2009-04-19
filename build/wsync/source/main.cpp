@@ -11,6 +11,9 @@ void usage()
 	printf(" * creates a new file index for the specified directory\n");
 	printf("   mode can be 'full' or 'not-delete'\n");
 	printf("\n");
+	printf("wsync sync\n");
+	printf(" * shortcut with predefined paths for RoR\n");
+	printf("\n");
 	printf("wsync sync <local path> <remote server> <remote path>\n");
 	printf(" * syncs the specified directory with the server\n");
 }
@@ -39,6 +42,15 @@ int main(int argc, char **argv)
 		string remote_path = string(argv[4]);
 		WSync *w = new WSync();
 		w->sync(local_path, remote_server, remote_path);
+	} else if((argc == 2 && !strcmp(argv[1], "sync")) || (argc == 1) )
+	{
+		// shortcut
+		string local_path = ".";
+		string remote_server = "wsync.rigsofrods.com";
+		string remote_path = "/";
+		WSync *w = new WSync();
+		w->sync(local_path, remote_server, remote_path);
+/*
 	} else if(argc == 2 && !strcmp(argv[1], "test"))
 	{
 		std::vector< std::vector< std::string > > list;
@@ -54,8 +66,10 @@ int main(int argc, char **argv)
 				printf("'%s'\n", it2->c_str());
 			}
 		}
-		
+*/
+	} else
+	{
+		usage();
 	}
-	usage();
 	return 0;
 }
