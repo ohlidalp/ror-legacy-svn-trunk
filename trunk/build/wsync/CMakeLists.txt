@@ -17,7 +17,7 @@ ENDIF(WIN32)
 
 # first compile the lib, then the console tool
 add_library(libwsync STATIC source/SHA1.cpp source/wsync.cpp include/wsync.h)
-add_executable(wsync source/main)
+add_executable(wsync source/main source/icon.rc)
 
 target_link_libraries(wsync libwsync)
 

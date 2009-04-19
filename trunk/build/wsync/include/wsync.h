@@ -73,5 +73,6 @@ protected:
 	int ensurePathExist(boost::filesystem::path &path);
 	std::string formatFilesize(boost::uintmax_t size);
 	void progressOutput(float progress, float speed=-1);
+	void progressOutputShort(float progress);
 };
 #endif
