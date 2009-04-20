@@ -244,6 +244,7 @@ public:
 	void OnButAddKey(wxCommandEvent& event);
 	void OnButDeleteKey(wxCommandEvent& event);
 	void OnButClearCache(wxCommandEvent& event);
+	void OnButUpdateRoR(wxCommandEvent& event);
 	void OnSimpleSliderScroll(wxScrollEvent& event);
 	void OnSimpleSlider2Scroll(wxScrollEvent& event);
 
@@ -787,6 +788,7 @@ enum
 	command_delete_key,
 	command_testevents,
 	clear_cache,
+	update_ror,
 	EVC_LANG,
 	SCROLL1,
 	SCROLL2,
@@ -810,6 +812,7 @@ BEGIN_EVENT_TABLE(MyDialog, wxDialog)
 	EVT_BUTTON(command_restore, MyDialog::OnButRestore)
 	EVT_BUTTON(net_test, MyDialog::OnTestNet)
 	EVT_BUTTON(clear_cache, MyDialog::OnButClearCache)
+	EVT_BUTTON(update_ror, MyDialog::OnButUpdateRoR)
 	EVT_HTML_LINK_CLICKED(main_html, MyDialog::OnLinkClicked)
 	//EVT_SCROLL(MyDialog::OnSightRangeScroll)
 	EVT_COMMAND_SCROLL_CHANGED(SCROLL1, MyDialog::OnSimpleSliderScroll)
@@ -1627,6 +1630,11 @@ MyDialog::MyDialog(const wxString& title, MyApp *_app) : wxDialog(NULL, wxID_ANY
 	dText = new wxStaticText(advancedPanel, -1, _("In case the mods cache becomes corrupted, \npress this button to clear the cache. \nIt will be regenerated\nthe next time you launch the game:"), wxPoint(10, 110));
 	//wxButton *clearcachebut=
 	new wxButton(advancedPanel, clear_cache, _("Clear cache"), wxPoint(125, 180));
+
+	// update button only for windows users
+#if OGRE_PLATFORM == OGRE_PLATFORM_WIN32
+	new wxButton(advancedPanel, update_ror, _("Check for updates"), wxPoint(330, 280));
+#endif
 
 	dText = new wxStaticText(advancedPanel, -1, _("Language:"), wxPoint(10, 230));
 
@@ -2667,6 +2675,37 @@ void MyDialog::OnButSave(wxCommandEvent& event)
 void MyDialog::OnButRestore(wxCommandEvent& event)
 {
 	SetDefaults();
+}
+
+void MyDialog::OnButUpdateRoR(wxCommandEvent& event)
+{
+#if OGRE_PLATFORM == OGRE_PLATFORM_WIN32
+	PROCESS_INFORMATION pi;
+	STARTUPINFO si;
+	DWORD               dwCode  =   0;
+	ZeroMemory(&si,sizeof(STARTUPINFO));
+	si.cb           =   sizeof(STARTUPINFO);
+	si.dwFlags      =   STARTF_USESHOWWINDOW;
+	si.wShowWindow  =   SW_SHOWNORMAL;
+
+	char path[2048];
+	getcwd(path, 2048);
+	strcat(path, "\\update.exe");
+	logfile->AddLine(conv(path));logfile->Write();
+
+	int buffSize = (int)strlen(path) + 1;
+	LPWSTR wpath = new wchar_t[buffSize];
+	MultiByteToWideChar(CP_ACP, 0, path, buffSize, wpath, buffSize);
+
+	CreateProcess(NULL, wpath, NULL, NULL, false, NORMAL_PRIORITY_CLASS, NULL, NULL, &si, &pi);
+	// we want to exit to be able to update the configurator!
+	exit(0);
+#else
+	wxMessageDialog *w = new wxMessageDialog(this, _("Warning"), _("The update service is currently only available for windows users."), wxOK, wxDefaultPosition);
+	w->ShowModal();
+	delete(w);
+#endif
+
 }
 
 void MyDialog::OnButClearCache(wxCommandEvent& event)
