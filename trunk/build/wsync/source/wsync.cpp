@@ -80,6 +80,17 @@ int WSync::cleanURL(string &url)
 	return 0;
 }
 
+std::string WSync::findHashInHashmap(std::map<string, Hashentry> hashMap, std::string filename)
+{
+	std::map<string, Hashentry>::iterator it;
+	for(it = hashMap.begin(); it != hashMap.end(); it++)
+	{
+		if(it->first == filename)
+			return it->second.hash;
+	}
+	return "";
+}
+
 int WSync::sync(boost::filesystem::path localDir, string server, string remoteDir, bool useMirror)
 {
 	// download remote currrent file first
@@ -105,16 +116,20 @@ int WSync::sync(boost::filesystem::path localDir, string server, string remoteDi
 	//printf("#2: %s\n", remoteFileIndex.string().c_str());
 
 
-	string hashMyFileIndex = generateFileHash(myFileIndex);
-	string hashRemoteFileIndex = generateFileHash(remoteFileIndex);
+	//string hashMyFileIndex = generateFileHash(myFileIndex);
+	//string hashRemoteFileIndex = generateFileHash(remoteFileIndex);
 	//printf("#3: %s\n", hashMyFileIndex.c_str());
 	//printf("#4: %s\n", hashRemoteFileIndex.c_str());
 
+	// this wont work :(
+	// so slowly compare all entries
+	/*
 	if(hashMyFileIndex == hashRemoteFileIndex)
 	{
 		printf("Files are up to date, no sync needed\n");
 		return 0;
 	}
+	*/
 
 	// now find out what files differ
 	std::map<string, Hashentry> hashMapRemote;
@@ -137,7 +152,7 @@ int WSync::sync(boost::filesystem::path localDir, string server, string remoteDi
 			//printf("same: %s %s==%s\n", it->first.c_str(), hashMapRemote[it->first].c_str(), it->second.c_str());
 		if(hashMapRemote.find(it->first) == hashMapRemote.end())
 			deletedFiles.push_back(Fileentry(it->first, it->second.filesize));
-		else if(hashMapRemote[it->first].hash != it->second.hash)
+		else if(hashMapRemote[it->first].hash != it->second.hash && it->first != "/update.exe")
 			changedFiles.push_back(Fileentry(it->first, hashMapRemote[it->first].filesize));
 	}
 	// second, detect new files
@@ -149,6 +164,7 @@ int WSync::sync(boost::filesystem::path localDir, string server, string remoteDi
 	// done comparing
 
 	std::vector<Fileentry>::iterator itf;
+	int changeCounter = 0, changeMax = changedFiles.size() + newFiles.size() + deletedFiles.size();
 	int filesToDownload = newFiles.size() + changedFiles.size();
 	int predDownloadSize = 0;
 	for(itf=newFiles.begin(); itf!=newFiles.end(); itf++)
@@ -156,105 +172,131 @@ int WSync::sync(boost::filesystem::path localDir, string server, string remoteDi
 	for(itf=changedFiles.begin(); itf!=changedFiles.end(); itf++)
 		predDownloadSize += (int)itf->filesize;
 
-	if(filesToDownload)
-		printf("downloading %d files now (%s) ..\n", filesToDownload, formatFilesize(predDownloadSize).c_str());
-
-	// now find a suitable mirror
-	string mirror_server="", mirror_dir="", mirror_info="";
-	bool use_mirror = false;
-	if(useMirror)
+	if(changeMax)
 	{
-		printf("searching for suitable mirror...\n");
-		if(!getMirrorURL(mirror_server, mirror_dir, mirror_info))
+		string server_use = server, dir_use = remoteDir;
+		bool use_mirror = false;
+		if(filesToDownload)
 		{
-			use_mirror=true;
-			printf("using mirror server: %s, %s\n", mirror_server.c_str(), mirror_info.c_str());
+			printf("downloading %d files now (%s) ..\n", filesToDownload, formatFilesize(predDownloadSize).c_str());
+
+			// now find a suitable mirror
+			string mirror_server="", mirror_dir="", mirror_info="";
+			if(useMirror)
+			{
+				printf("searching for suitable mirror...\n");
+				if(!getMirrorURL(mirror_server, mirror_dir, mirror_info) && mirror_server != "failed")
+				{
+					use_mirror=true;
+					printf("using mirror server: %s, %s\n", mirror_server.c_str(), mirror_info.c_str());
+				}
+			}
+
+			if(use_mirror)
+			{
+				server_use = mirror_server;
+				dir_use = mirror_dir;
+			}
 		}
-	}
 
-	string server_use = server, dir_use = remoteDir;
-	if(use_mirror)
-	{
-		server_use = mirror_server;
-		dir_use = mirror_dir;
-	}
-
-	int changeCounter = 0, changeMax = changedFiles.size() + newFiles.size() + deletedFiles.size();
-	// do things now!	
-	if(newFiles.size())
-	{
-		for(itf=newFiles.begin();itf!=newFiles.end();itf++, changeCounter++)
+		// do things now!	
+		if(newFiles.size())
 		{
-			int retrycount = 0;
+			for(itf=newFiles.begin();itf!=newFiles.end();itf++, changeCounter++)
+			{
+				int retrycount = 0;
+// ARGHHHH GOTO D:
 retry:
-			progressOutputShort(float(changeCounter)/float(changeMax));
-			printf(" A  %s (%s) ", itf->filename.c_str(), formatFilesize(itf->filesize).c_str());
-			path localfile = localDir / itf->filename;
-			string url = "/" + dir_use + "/" + itf->filename;
-			int stat = downloadFile(localfile, server_use, url, true);
-			if(stat == -404 && retrycount == 0)
-			{
-				// fallback to main server!
-				printf("falling back to main server.\n");
-				server_use = server;
-				dir_use = remoteDir;
-				retrycount++;
-				goto retry;
+				progressOutputShort(float(changeCounter)/float(changeMax));
+				printf(" A  %s (%s) ", itf->filename.c_str(), formatFilesize(itf->filesize).c_str());
+				path localfile = localDir / itf->filename;
+				string url = "/" + dir_use + "/" + itf->filename;
+				int stat = downloadFile(localfile, server_use, url, true);
+				if(stat == -404 && retrycount == 0)
+				{
+					// fallback to main server!
+					printf("falling back to main server.\n");
+					server_use = server;
+					dir_use = remoteDir;
+					retrycount++;
+					goto retry;
+				}
+				if(stat)
+				{
+					printf("\nunable to create file: %s\n", itf->filename.c_str());
+				} else
+				{
+					string checkHash = generateFileHash(localfile);
+					if(findHashInHashmap(hashMapRemote, itf->filename) == checkHash)
+					{
+						printf(" OK                      \n");
+					} else
+					{
+						printf(" FAILED                  \n");
+						remove(localfile);
+					}
+				}
 			}
-			if(stat)
-				printf("\nunable to create file: %s\n", itf->filename.c_str());
-			else
-				printf("                           \n");
 		}
-	}
 
-	if(changedFiles.size())
-	{
-		for(itf=changedFiles.begin();itf!=changedFiles.end();itf++, changeCounter++)
+		if(changedFiles.size())
 		{
-			int retrycount = 0;
+			for(itf=changedFiles.begin();itf!=changedFiles.end();itf++, changeCounter++)
+			{
+				int retrycount = 0;
+// ARGHHHH GOTO D:
 retry2:
-			progressOutputShort(float(changeCounter)/float(changeMax));
-			printf(" U  %s (%s) ", itf->filename.c_str(), formatFilesize(itf->filesize).c_str());
-			path localfile = localDir / itf->filename;
-			string url = "/" + dir_use + "/" + itf->filename;
-			int stat = downloadFile(localfile, server_use, url, true);
-			if(stat == -404 && retrycount == 0)
-			{
-				// fallback to main server!
-				printf("falling back to main server.\n");
-				server_use = server;
-				dir_use = remoteDir;
-				retrycount++;
-				goto retry2;
+				progressOutputShort(float(changeCounter)/float(changeMax));
+				printf(" U  %s (%s) ", itf->filename.c_str(), formatFilesize(itf->filesize).c_str());
+				path localfile = localDir / itf->filename;
+				string url = "/" + dir_use + "/" + itf->filename;
+				int stat = downloadFile(localfile, server_use, url, true);
+				if(stat == -404 && retrycount == 0)
+				{
+					// fallback to main server!
+					printf("falling back to main server.\n");
+					server_use = server;
+					dir_use = remoteDir;
+					retrycount++;
+					goto retry2;
+				}
+				if(stat)
+				{
+					printf("\nunable to update file: %s\n", itf->filename.c_str());
+				} else
+				{
+					string checkHash = generateFileHash(localfile);
+					if(findHashInHashmap(hashMapRemote, itf->filename) == checkHash)
+						printf(" OK                      \n");
+					else
+						printf(" FAILED                  \n");
+				}
 			}
-			if(stat)
-				printf("\nunable to update file: %s\n", itf->filename.c_str());
-			else
-				printf("                           \n");
 		}
-	}
-	
-	if(deletedFiles.size() && !(modeNumber & WMO_NODELETE))
-	{
-		progressOutputShort(float(changeCounter)/float(changeMax));
-		for(itf=deletedFiles.begin();itf!=deletedFiles.end();itf++, changeCounter++)
+		
+		if(deletedFiles.size() && !(modeNumber & WMO_NODELETE))
 		{
-			printf(" D  %s (%s)\n", itf->filename.c_str(), formatFilesize(itf->filesize).c_str());
-			path localfile = localDir / itf->filename;
-			try
+			progressOutputShort(float(changeCounter)/float(changeMax));
+			for(itf=deletedFiles.begin();itf!=deletedFiles.end();itf++, changeCounter++)
 			{
-				boost::filesystem::remove(localfile);
-				if(exists(localfile))
+				progressOutputShort(float(changeCounter)/float(changeMax));
+				printf(" D  %s (%s)\n", itf->filename.c_str(), formatFilesize(itf->filesize).c_str());
+				path localfile = localDir / itf->filename;
+				try
+				{
+					boost::filesystem::remove(localfile);
+					if(exists(localfile))
+						printf("unable to delete file: %s\n", localfile.string().c_str());
+				} catch(...)
+				{
 					printf("unable to delete file: %s\n", localfile.string().c_str());
-			} catch(...)
-			{
-				printf("unable to delete file: %s\n", localfile.string().c_str());
+				}
 			}
 		}
-	}
+		printf("sync complete, downloaded %s\n", formatFilesize(downloadSize).c_str());
+	} else
+		printf("sync complete (already up to date), downloaded %s\n", formatFilesize(downloadSize).c_str());
 
-	printf("sync complete, downloaded %s\n", formatFilesize(downloadSize).c_str());
 
 	//remove temp files again
 	remove(remoteFileIndex);
@@ -490,7 +532,6 @@ int WSync::downloadFile(boost::filesystem::path localFile, string server, string
 {
 	// remove '//' and '///' from url
 	cleanURL(path);
-	//printf("\n downloading: http://%s%s\n", server.c_str(), path.c_str());
 	try
 	{
 		std::ofstream myfile;
@@ -544,11 +585,13 @@ int WSync::downloadFile(boost::filesystem::path localFile, string server, string
 		if (!response_stream || http_version.substr(0, 5) != "HTTP/")
 		{
 			std::cout << endl << "Error: Invalid response\n";
+			printf("download URL: http://%s%s\n", server.c_str(), path.c_str());
 			return 1;
 		}
 		if (status_code != 200)
 		{
 			std::cout << endl << "Error: Response returned with status code " << status_code << "\n";
+			printf("download URL: http://%s%s\n", server.c_str(), path.c_str());
 			return -status_code;
 		}
 
@@ -600,13 +643,18 @@ int WSync::downloadFile(boost::filesystem::path localFile, string server, string
 		myfile.close();
 		boost::uintmax_t fileSize = file_size(localFile);
 		if(reported_filesize != 0 && fileSize != reported_filesize)
-			printf("\nError: file size is different: should be %d, is %d\n", reported_filesize, fileSize);
+		{
+			printf("\nError: file size is different: should be %d, is %d. removing file.\n", reported_filesize, fileSize);
+			printf("download URL: http://%s%s\n", server.c_str(), path.c_str());
+			remove(localFile);
+		}
 		
 		downloadSize += fileSize;
 	}
 	catch (std::exception& e)
 	{
 		std::cout << endl << "Error: " << e.what() << "\n";
+		printf("download URL: http://%s%s\n", server.c_str(), path.c_str());
 		return 1;
 	}
 	return 0;
@@ -633,12 +681,12 @@ void WSync::progressOutput(float progress, float speed)
 {
 	if(speed<0)
 	{
-		printf("(%03.0f%%)\b\b\b\b\b\b", progress * 100);
+		printf("(% 3.0f%%)\b\b\b\b\b\b", progress * 100);
 	} else
 	{
 		char tmp[255]="";
 		string speedstr = formatFilesize((int)speed) + "/s";
-		sprintf(tmp, "(%03.0f%%, %s)", progress * 100, speedstr.c_str());
+		sprintf(tmp, "(% 3.0f%%, %s)", progress * 100, speedstr.c_str());
 		int stringsize = (int)strnlen(tmp, 255);
 		for(int i=0;i<stringsize; i++)
 			strcat(tmp, "\b");
