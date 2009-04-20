@@ -153,6 +153,8 @@ COMMON_TOGGLE_TRUCK_BEACONS    Keyboard             M
 COMMON_TOGGLE_TRUCK_LIGHTS     Keyboard             N 
 COMMON_TRUCK_INFO              Keyboard             EXPL+T 
 COMMON_VIEW_MAP                Keyboard             EXPL+TAB 
+COMMON_FOV_LESS                Keyboard             EXPL+NUMPAD7 
+COMMON_FOV_MORE                Keyboard             EXPL+CTRL+NUMPAD7
 
 ; GRASS
 GRASS_LESS                     Keyboard             6 
