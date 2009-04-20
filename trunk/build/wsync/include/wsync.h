@@ -12,6 +12,8 @@
 
 
 #define INDEXFILENAME "files.index"
+#define API_SERVER "api.rigsofrods.com"
+#define API_MIRROR "/getwsyncmirror/"
 
 #define WMO_FULL     0x00000001
 #define WMO_NODELETE 0x00000010
@@ -48,7 +50,7 @@ public:
 	WSync();
 	~WSync();
 	// main functions
-	int sync(boost::filesystem::path localDir, std::string server, std::string remoteDir);
+	int sync(boost::filesystem::path localDir, std::string server, std::string remoteDir, bool useMirror=true);
 	int createIndex(boost::filesystem::path localDir, int mode);
 
 	// useful util functions
@@ -74,5 +76,7 @@ protected:
 	std::string formatFilesize(boost::uintmax_t size);
 	void progressOutput(float progress, float speed=-1);
 	void progressOutputShort(float progress);
+	int getMirrorURL(std::string &server, std::string &path, std::string &type);
+	int cleanURL(std::string &url);
 };
 #endif

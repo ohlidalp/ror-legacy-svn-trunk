@@ -17,7 +17,14 @@ ENDIF(WIN32)
 
 # first compile the lib, then the console tool
 add_library(libwsync STATIC source/SHA1.cpp source/wsync.cpp include/wsync.h)
-add_executable(wsync source/main source/icon.rc)
+
+IF(WIN32)
+  add_definitions("-D_CRT_SECURE_NO_WARNINGS")
+  add_executable(wsync source/main source/icon.rc)
+ELSEIF(UNIX)
+  add_executable(wsync source/main)
+ELSEIF(APPLE)
+ENDIF(WIN32)
 
 target_link_libraries(wsync libwsync)
 
