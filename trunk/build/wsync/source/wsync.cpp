@@ -122,6 +122,8 @@ int WSync::sync(boost::filesystem::path localDir, string server, string remoteDi
 	//printf("#3: %s = %s\n", myFileIndex.string().c_str(), hashMyFileIndex.c_str());
 	//printf("#4: %s = %s\n", remoteFileIndex.string().c_str(), hashRemoteFileIndex.c_str());
 
+	// remove temp file again
+	remove(INDEXFILENAME);
 	if(hashMyFileIndex == hashRemoteFileIndex)
 	{
 		printf("Files are up to date, no sync needed\n");
@@ -136,6 +138,8 @@ int WSync::sync(boost::filesystem::path localDir, string server, string remoteDi
 		printf("error reading remote file index!\n");
 		return -2;
 	}
+	// remove that temp file as well
+	remove(remoteFileIndex);
 
 	std::vector<Fileentry> deletedFiles;
 	std::vector<Fileentry> changedFiles;
