@@ -535,6 +535,8 @@ int WSync::downloadFile(boost::filesystem::path localFile, string server, string
 	cleanURL(path);
 	try
 	{
+		time_t time = std::time(0);
+
 		std::ofstream myfile;
 		ensurePathExist(localFile);
 
@@ -593,7 +595,7 @@ int WSync::downloadFile(boost::filesystem::path localFile, string server, string
 		{
 			std::cout << endl << "Error: Response returned with status code " << status_code << "\n";
 			printf("download URL: http://%s%s\n", server.c_str(), path.c_str());
-			return -status_code;
+			return -(int)status_code;
 		}
 
 		// Read the response headers, which are terminated by a blank line.
@@ -622,7 +624,6 @@ int WSync::downloadFile(boost::filesystem::path localFile, string server, string
 		// Read until EOF, writing data to output as we go.
 		boost::uintmax_t datacounter=0;
 		boost::uintmax_t dataspeed=0;
-		time_t time = std::time(0);
 		while (boost::asio::read(socket, data, boost::asio::transfer_at_least(1), error))
 		{
 			if(displayProgress && std::time(0) - time > 1)
@@ -687,7 +688,7 @@ void WSync::progressOutput(float progress, float speed)
 	{
 		char tmp[255]="";
 		string speedstr = formatFilesize((int)speed) + "/s";
-		sprintf(tmp, "(% 3.0f%%, %s)", progress * 100, speedstr.c_str());
+		sprintf(tmp, "(% 3.0f%%, %s)   ", progress * 100, speedstr.c_str());
 		int stringsize = (int)strnlen(tmp, 255);
 		for(int i=0;i<stringsize; i++)
 			strcat(tmp, "\b");
