@@ -56,9 +56,11 @@ int main(int argc, char **argv)
 		w->sync(local_path, remote_server, remote_path);
 		if(argc == 1)
 		{
+#ifdef WIN32
 			// wait for key press
 			printf("Press any key to continue...\n");
-			getch();
+			_getch();
+#endif
 		}
 /*
 	} else if(argc == 2 && !strcmp(argv[1], "test"))
