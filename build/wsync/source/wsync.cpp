@@ -23,7 +23,64 @@ WSync::~WSync()
 {
 }
 
-int WSync::sync(boost::filesystem::path localDir, string server, string remoteDir)
+int WSync::getMirrorURL(string &serverStr, string &remotePath, string &infoStr)
+{
+	path filename;
+	if(getTempFilename(filename))
+		printf("error creating tempfile!\n");
+
+	if(downloadFile(filename.string(), API_SERVER, API_MIRROR))
+	{
+		printf("error communicating with RoR API\n");
+		return -1;
+	}
+
+	FILE *f = fopen(filename.string().c_str(), "r");
+	if (!f)
+	{
+		printf("error opening file '%s'", filename.string().c_str());
+		return -1;
+	}
+	while(!feof(f))
+	{
+		char server[2048]="";
+		char dir[2048]="";
+		char type[256]="";
+		boost::uintmax_t filesize = 0;
+		int res = fscanf(f, "%s %s %s\n", server, dir, type);
+		if(res < 3)
+		{
+			printf("error communicating with RoR API\n");
+			return -1;
+		} else
+		{
+			serverStr = std::string(server);
+			remotePath = std::string(dir);
+			infoStr = std::string(type);
+			return 0;
+		}
+	}
+	return 0;
+}
+
+int WSync::cleanURL(string &url)
+{
+	int position = url.find("//");
+	while (position != string::npos)
+	{
+		url.replace(position, 2, "/" );
+		position = url.find( "//", position + 1 );
+	} 
+	position = url.find("//");
+	while (position != string::npos)
+	{
+		url.replace(position, 2, "/" );
+		position = url.find( "//", position + 1 );
+	} 
+	return 0;
+}
+
+int WSync::sync(boost::filesystem::path localDir, string server, string remoteDir, bool useMirror)
 {
 	// download remote currrent file first
 	path remoteFileIndex;
@@ -102,17 +159,49 @@ int WSync::sync(boost::filesystem::path localDir, string server, string remoteDi
 	if(filesToDownload)
 		printf("downloading %d files now (%s) ..\n", filesToDownload, formatFilesize(predDownloadSize).c_str());
 
+	// now find a suitable mirror
+	string mirror_server="", mirror_dir="", mirror_info="";
+	bool use_mirror = false;
+	if(useMirror)
+	{
+		printf("searching for suitable mirror...\n");
+		if(!getMirrorURL(mirror_server, mirror_dir, mirror_info))
+		{
+			use_mirror=true;
+			printf("using mirror server: %s, %s\n", mirror_server.c_str(), mirror_info.c_str());
+		}
+	}
+
+	string server_use = server, dir_use = remoteDir;
+	if(use_mirror)
+	{
+		server_use = mirror_server;
+		dir_use = mirror_dir;
+	}
+
 	int changeCounter = 0, changeMax = changedFiles.size() + newFiles.size() + deletedFiles.size();
 	// do things now!	
 	if(newFiles.size())
 	{
 		for(itf=newFiles.begin();itf!=newFiles.end();itf++, changeCounter++)
 		{
+			int retrycount = 0;
+retry:
 			progressOutputShort(float(changeCounter)/float(changeMax));
 			printf(" A  %s (%s) ", itf->filename.c_str(), formatFilesize(itf->filesize).c_str());
 			path localfile = localDir / itf->filename;
-			string url = "/" + remoteDir + "/" + itf->filename;
-			if(downloadFile(localfile, server, url, true))
+			string url = "/" + dir_use + "/" + itf->filename;
+			int stat = downloadFile(localfile, server_use, url, true);
+			if(stat == -404 && retrycount == 0)
+			{
+				// fallback to main server!
+				printf("falling back to main server.\n");
+				server_use = server;
+				dir_use = remoteDir;
+				retrycount++;
+				goto retry;
+			}
+			if(stat)
 				printf("\nunable to create file: %s\n", itf->filename.c_str());
 			else
 				printf("                           \n");
@@ -123,11 +212,23 @@ int WSync::sync(boost::filesystem::path localDir, string server, string remoteDi
 	{
 		for(itf=changedFiles.begin();itf!=changedFiles.end();itf++, changeCounter++)
 		{
+			int retrycount = 0;
+retry2:
 			progressOutputShort(float(changeCounter)/float(changeMax));
 			printf(" U  %s (%s) ", itf->filename.c_str(), formatFilesize(itf->filesize).c_str());
 			path localfile = localDir / itf->filename;
-			string url = "/" + remoteDir + "/" + itf->filename;
-			if(downloadFile(localfile, server, url, true))
+			string url = "/" + dir_use + "/" + itf->filename;
+			int stat = downloadFile(localfile, server_use, url, true);
+			if(stat == -404 && retrycount == 0)
+			{
+				// fallback to main server!
+				printf("falling back to main server.\n");
+				server_use = server;
+				dir_use = remoteDir;
+				retrycount++;
+				goto retry2;
+			}
+			if(stat)
 				printf("\nunable to update file: %s\n", itf->filename.c_str());
 			else
 				printf("                           \n");
@@ -357,7 +458,6 @@ int WSync::downloadConfigFile(std::string server, std::string path, std::vector<
 
 int WSync::loadHashMapFromFile(boost::filesystem::path &filename, std::map<string, Hashentry> &hashMap, int &mode)
 {
-
 	FILE *f = fopen(filename.string().c_str(), "r");
 	if (!f)
 	{
@@ -388,11 +488,13 @@ int WSync::loadHashMapFromFile(boost::filesystem::path &filename, std::map<strin
 
 int WSync::downloadFile(boost::filesystem::path localFile, string server, string path, bool displayProgress)
 {
+	// remove '//' and '///' from url
+	cleanURL(path);
+	//printf("\n downloading: http://%s%s\n", server.c_str(), path.c_str());
 	try
 	{
 		std::ofstream myfile;
 		ensurePathExist(localFile);
-		myfile.open(localFile.string().c_str(), ios::out | ios::binary); 
 
 		boost::asio::io_service io_service;
 
@@ -447,6 +549,7 @@ int WSync::downloadFile(boost::filesystem::path localFile, string server, string
 		if (status_code != 200)
 		{
 			std::cout << endl << "Error: Response returned with status code " << status_code << "\n";
+			return -status_code;
 		}
 
 		// Read the response headers, which are terminated by a blank line.
@@ -464,6 +567,9 @@ int WSync::downloadFile(boost::filesystem::path localFile, string server, string
 			}
 		}
 		//printf("filesize: %d bytes\n", reported_filesize);
+
+		// open local file late -> prevent creating emoty files
+		myfile.open(localFile.string().c_str(), ios::out | ios::binary); 
 
 		// Write whatever content we already have to output.
 		if (response.size() > 0)

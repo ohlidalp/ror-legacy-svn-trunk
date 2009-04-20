@@ -1,5 +1,9 @@
 #include "wsync.h"
 
+#ifdef WIN32
+#include <conio.h> // for getch
+#endif
+
 using namespace std; 
 using namespace boost::filesystem; 
 
@@ -50,6 +54,12 @@ int main(int argc, char **argv)
 		string remote_path = "/";
 		WSync *w = new WSync();
 		w->sync(local_path, remote_server, remote_path);
+		if(argc == 1)
+		{
+			// wait for key press
+			printf("Press any key to continue...\n");
+			getch();
+		}
 /*
 	} else if(argc == 2 && !strcmp(argv[1], "test"))
 	{
