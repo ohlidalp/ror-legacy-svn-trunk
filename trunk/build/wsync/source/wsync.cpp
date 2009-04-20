@@ -110,26 +110,23 @@ int WSync::sync(boost::filesystem::path localDir, string server, string remoteDi
 	path myFileIndex = localDir / INDEXFILENAME;
 
 	std::map<string, Hashentry> hashMapLocal;
-	if(buildFileIndex(myFileIndex, localDir, localDir, hashMapLocal, false))
+	if(buildFileIndex(myFileIndex, localDir, localDir, hashMapLocal, true, 1))
 		printf("error while generating local FileIndex\n");
 	//printf("#1: %s\n", myFileIndex.string().c_str());
 	//printf("#2: %s\n", remoteFileIndex.string().c_str());
 
 
-	//string hashMyFileIndex = generateFileHash(myFileIndex);
-	//string hashRemoteFileIndex = generateFileHash(remoteFileIndex);
-	//printf("#3: %s\n", hashMyFileIndex.c_str());
-	//printf("#4: %s\n", hashRemoteFileIndex.c_str());
+	string hashMyFileIndex = generateFileHash(myFileIndex);
+	string hashRemoteFileIndex = generateFileHash(remoteFileIndex);
+	//printf("#2: CWD:%s \n", boost::filesystem::current_path().string().c_str());
+	//printf("#3: %s = %s\n", myFileIndex.string().c_str(), hashMyFileIndex.c_str());
+	//printf("#4: %s = %s\n", remoteFileIndex.string().c_str(), hashRemoteFileIndex.c_str());
 
-	// this wont work :(
-	// so slowly compare all entries
-	/*
 	if(hashMyFileIndex == hashRemoteFileIndex)
 	{
 		printf("Files are up to date, no sync needed\n");
 		return 0;
 	}
-	*/
 
 	// now find out what files differ
 	std::map<string, Hashentry> hashMapRemote;
