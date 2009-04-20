@@ -78,5 +78,6 @@ protected:
 	void progressOutputShort(float progress);
 	int getMirrorURL(std::string &server, std::string &path, std::string &type);
 	int cleanURL(std::string &url);
+	std::string findHashInHashmap(std::map<std::string, Hashentry> hashMap, std::string filename);
 };
 #endif
