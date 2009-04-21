@@ -50,13 +50,13 @@ public:
 	WSync();
 	~WSync();
 	// main functions
-	int sync(boost::filesystem::path localDir, std::string server, std::string remoteDir, bool useMirror=true);
+	int sync(boost::filesystem::path localDir, std::string server, std::string remoteDir, bool useMirror=true, bool deleteOk=false);
 	int createIndex(boost::filesystem::path localDir, int mode);
 
 	// useful util functions
 	int downloadFile(boost::filesystem::path localFile, std::string server, std::string remoteDir, bool displayProgress=false);
 	std::string generateFileHash(boost::filesystem::path file);
-	int getTempFilename(boost::filesystem::path &tempfile);
+	static int getTempFilename(boost::filesystem::path &tempfile);
 	int downloadConfigFile(std::string server, std::string remoteDir, std::vector< std::vector< std::string > > &list);
 
 protected:
