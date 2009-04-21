@@ -455,7 +455,7 @@ public:
 
 	TextAreaOverlayElement *playerlistOverlay[MAX_PLAYLIST_ENTRIES];
 
-	int cameramode;
+	int cameramode, lastcameramode;
 	void setCameraRotation(Ogre::Radian x, Ogre::Radian y, Ogre::Real distance) { camRotX=x; camRotY=y; camDist=distance;};
 	void hideMap();
 	void setDirectionArrow(char *text, Vector3 position);

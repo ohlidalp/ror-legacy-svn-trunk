@@ -822,6 +822,7 @@ ExampleFrameListener::ExampleFrameListener(RenderWindow* win, Camera* cam, Scene
 	OgreConsole::getSingleton().setVisible(false);
 #endif
 	externalCameraMode=0;
+	lastcameramode=0;
 	gameStartTime = CACHE.getTimeStamp();
 	loadedTerrain="none";
 	creditsviewtime=5;
@@ -2278,6 +2279,26 @@ bool ExampleFrameListener::updateEvents(float dt)
 		String ssmsg = _L("wrote screenshot:");
 		sprintf(tmp1, "%s %d", ssmsg.c_str(), mNumScreenShots);
 		flashMessage(tmp1);
+	}
+	
+	if (INPUTENGINE.getEventBoolValue("COMMON_FOV_LESS") && mTimeUntilNextToggle <= 0)
+	{
+		int fov = mCamera->getFOVy().valueDegrees();
+		if(fov>10)
+			fov -= 2;
+		mCamera->setFOVy(Degree(fov));
+		flashMessage(_L("FOV: ") + StringConverter::toString(fov));
+		mTimeUntilNextToggle = 0.3;
+	}
+
+	if (INPUTENGINE.getEventBoolValue("COMMON_FOV_MORE") && mTimeUntilNextToggle <= 0)
+	{
+		int fov = mCamera->getFOVy().valueDegrees();
+		if(fov<160)
+			fov += 2;
+		mCamera->setFOVy(Degree(fov));
+		flashMessage(_L("FOV: ") + StringConverter::toString(fov));
+		mTimeUntilNextToggle = 0.3;
 	}
 
 	if (INPUTENGINE.getEventBoolValue("COMMON_FULLSCREEN_TOGGLE") && mTimeUntilNextToggle <= 0)
@@ -5801,6 +5822,9 @@ void ExampleFrameListener::moveCamera(float dt)
 
 	if(useIngameEditor) return; // no movement in editor mode
 
+	bool changeCamMode = (lastcameramode != cameramode);
+	lastcameramode = cameramode;
+
 	if (cameramode==CAMERA_FREE)
 	{
 		// this is a workaround for the free camera mode :)
@@ -5888,7 +5912,8 @@ void ExampleFrameListener::moveCamera(float dt)
 			{
 				mCamera->setPosition(collisions->forcecampos);
 				mCamera->lookAt(person->getPosition()+Vector3(0.0,1.0,0.0));
-				mCamera->setFOVy(Degree(80));
+				if(changeCamMode)
+					mCamera->setFOVy(Degree(80));
 				collisions->forcecam=false;
 			}
 			else
@@ -5913,7 +5938,8 @@ void ExampleFrameListener::moveCamera(float dt)
 				if (newposition.y<h) newposition.y=h;
 				mCamera->setPosition(newposition);
 				mCamera->lookAt(person->getPosition()+Vector3(0.0,1.0,0.0));
-				mCamera->setFOVy(Degree(60));
+				if(changeCamMode)
+					mCamera->setFOVy(Degree(60));
 
 				lastPosition=person->getPosition();
 				//lastangle=angle;
@@ -5941,7 +5967,8 @@ void ExampleFrameListener::moveCamera(float dt)
 		}
 		else if (cameramode==CAMERA_INT)
 		{
-			mCamera->setFOVy(Degree(75));
+			if(changeCamMode)
+				mCamera->setFOVy(Degree(75));
 			mCamera->setPosition(person->getPosition()+Vector3(0,1.7,0));
 			Vector3 dir=Vector3(cos(person->getAngle()), 0.0, sin(person->getAngle()));
 			mCamera->lookAt(mCamera->getPosition()+dir);
@@ -5975,7 +6002,8 @@ void ExampleFrameListener::moveCamera(float dt)
 			{
 				mCamera->setPosition(collisions->forcecampos);
 				mCamera->lookAt(trucks[current_truck]->getPosition());
-				mCamera->setFOVy(Degree(80));
+				if(changeCamMode)
+					mCamera->setFOVy(Degree(80));
 				collisions->forcecam=false;
 			}
 			else
@@ -6013,7 +6041,8 @@ void ExampleFrameListener::moveCamera(float dt)
 				if (newposition.y<h) newposition.y=h;
 				mCamera->setPosition(newposition);
 				mCamera->lookAt(trucks[current_truck]->getPosition());
-				mCamera->setFOVy(Degree(60));
+				if(changeCamMode)
+					mCamera->setFOVy(Degree(60));
 
 				lastPosition=trucks[current_truck]->getPosition();
 				//lastangle=angle;
@@ -6063,7 +6092,8 @@ void ExampleFrameListener::moveCamera(float dt)
 		if (cameramode==CAMERA_INT)
 		{
 			int currentcamera=trucks[current_truck]->currentcamera;
-			mCamera->setFOVy(Degree(90));
+			if(changeCamMode)
+				mCamera->setFOVy(Degree(90));
 			if (trucks[current_truck]->cinecameranodepos>=0) lastPosition=trucks[current_truck]->nodes[trucks[current_truck]->cinecameranodepos[currentcamera]].smoothpos;
 			else lastPosition=trucks[current_truck]->nodes[trucks[current_truck]->cameranodepos[currentcamera]].smoothpos;
 			mCamera->setPosition(lastPosition);
