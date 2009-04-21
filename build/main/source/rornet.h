@@ -26,7 +26,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 //#define MAX_MLEN 1024
 #define MAX_MESSAGE_LENGTH 8192
 
-#define RORNET_VERSION "RoRnet_2.1"
+#define RORNET_VERSION "RoRnet_2.2"
 
 #define MSG_REGISTER 0      //!< client registers with magic!
 #define MSG_PING 1          //!< heartbeat sent by server ()
@@ -48,6 +48,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #define MSG2_WELCOME 1004   //!< we can proceed
 
 #define MSG2_USE_VEHICLE 1005 //!< the client says which vehicle it uses
+#define MSG2_USE_VEHICLE2 1040 //!< the client says which vehicle it uses, 2nd version
 //#define MSG2_SPAWN 1006       //!< the server asks to spawn a new vehicle / unused
 
 #define MSG2_BUFFER_SIZE 1007  //!< the clients tells the buffer size to use for
@@ -98,6 +99,22 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #define MSG2_STREAM_UNREGISTER_RESP 1035    //!< remove stream response from server to requsting client
 #define MSG2_STREAM_TAKEOVER 1036           //!< stream takeover
 #define MSG2_STREAM_TAKEOVER_RESP 1037      //!< stream takeover response from server
+
+
+#define AUTH_NONE              0x00000000
+#define AUTH_ADMIN             0x00000001
+#define AUTH_RANKED            0x00000002
+#define AUTH_MOD               0x00000004
+#define AUTH_BOT               0x00000008
+
+
+typedef struct
+{
+	char version;
+	char vehiclename[2048];
+	char nickname[20];
+	int authstatus;
+} client_info_on_join;
 
 // structure to control flow of a stream, send in both directions
 typedef struct

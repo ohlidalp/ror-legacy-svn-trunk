@@ -8068,15 +8068,15 @@ void Beam::setNetworkInfo(client_t netinfo)
 	{
 		// ha, this caused the empty caption bug, but fixed now since we change the caption if its empty:
 		netMT->setCaption(networkInfo.user_name);
-		if(networkInfo.user_level)
+		if(networkInfo.user_authlevel & AUTH_RANKED)
 		{
 			netMT->setFontName("highcontrast_green");
+		} else if(networkInfo.user_authlevel & AUTH_ADMIN)
+		{
+			netMT->setFontName("highcontrast_red");
 		} else
 		{
-			if (!strcmp(networkInfo.user_name, "Pricorde") || !strcmp(networkInfo.user_name, "Thomas"))
-				netMT->setFontName("highcontrast_red");
-			else
-				netMT->setFontName("highcontrast_black");
+			netMT->setFontName("highcontrast_black");
 		}
 		netLabelNode->setVisible(true);
 	}
@@ -8091,16 +8091,16 @@ void Beam::setNetworkInfo(client_t netinfo)
 		netMT->showOnTop(false);
 		netMT->setCharacterHeight(2);
 		netMT->setColor(ColourValue::White);
-
-		if(networkInfo.user_level)
+		
+		if(networkInfo.user_authlevel & AUTH_RANKED)
 		{
 			netMT->setFontName("highcontrast_green");
+		} else if(networkInfo.user_authlevel & AUTH_ADMIN)
+		{
+			netMT->setFontName("highcontrast_red");
 		} else
 		{
-			if (!strcmp(networkInfo.user_name, "Pricorde") || !strcmp(networkInfo.user_name, "Thomas"))
-				netMT->setFontName("highcontrast_red");
-			else
-				netMT->setFontName("highcontrast_black");
+			netMT->setFontName("highcontrast_black");
 		}
 
 		netLabelNode=parentNode->createChildSceneNode();

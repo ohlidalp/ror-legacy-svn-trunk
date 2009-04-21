@@ -38,7 +38,7 @@ typedef struct
 	char          user_language[10];    //!< the users language
 	char          user_name[20];        //!< the users nickname
 	unsigned int  user_id;              //!< the users id, set by the server
-	unsigned int  user_level;           //!< the users authorization level.
+	unsigned int  user_authlevel;       //!< the users authorization level.
 } client_t;
 
 #endif
