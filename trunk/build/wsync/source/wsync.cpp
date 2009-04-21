@@ -5,9 +5,9 @@
 #include "tokenize.h"
 #include <ctime>
 
-#ifdef _WIN32
-# include <windows.h>
-#else
+#ifdef WIN32
+#include <windows.h>
+#include <conio.h> // for getch
 #endif
 
 using namespace boost::asio;
@@ -91,7 +91,7 @@ std::string WSync::findHashInHashmap(std::map<string, Hashentry> hashMap, std::s
 	return "";
 }
 
-int WSync::sync(boost::filesystem::path localDir, string server, string remoteDir, bool useMirror)
+int WSync::sync(boost::filesystem::path localDir, string server, string remoteDir, bool useMirror, bool deleteOk)
 {
 	// download remote currrent file first
 	path remoteFileIndex;
@@ -149,11 +149,13 @@ int WSync::sync(boost::filesystem::path localDir, string server, string remoteDi
 	//first, detect deleted or changed files
 	for(it = hashMapLocal.begin(); it != hashMapLocal.end(); it++)
 	{
+		if(it->first == string("/update.temp.exe"))
+			continue;
 		//if(hashMapRemote[it->first] == it->second)
 			//printf("same: %s %s==%s\n", it->first.c_str(), hashMapRemote[it->first].c_str(), it->second.c_str());
 		if(hashMapRemote.find(it->first) == hashMapRemote.end())
 			deletedFiles.push_back(Fileentry(it->first, it->second.filesize));
-		else if(hashMapRemote[it->first].hash != it->second.hash && it->first != "/update.exe")
+		else if(hashMapRemote[it->first].hash != it->second.hash)
 			changedFiles.push_back(Fileentry(it->first, hashMapRemote[it->first].filesize));
 	}
 	// second, detect new files
@@ -164,6 +166,7 @@ int WSync::sync(boost::filesystem::path localDir, string server, string remoteDi
 	}
 	// done comparing
 
+
 	std::vector<Fileentry>::iterator itf;
 	int changeCounter = 0, changeMax = changedFiles.size() + newFiles.size() + deletedFiles.size();
 	int filesToDownload = newFiles.size() + changedFiles.size();
@@ -172,6 +175,18 @@ int WSync::sync(boost::filesystem::path localDir, string server, string remoteDi
 		predDownloadSize += (int)itf->filesize;
 	for(itf=changedFiles.begin(); itf!=changedFiles.end(); itf++)
 		predDownloadSize += (int)itf->filesize;
+
+	// security check in order not to delete the entire harddrive
+	if(deletedFiles.size() > 1000)
+	{
+		printf("are you sure you have placed the application in the correct directory?\n");
+		printf("It will delete over 1000 files! Aborting ...\n");
+#ifdef WIN32
+		printf("Press any key to continue...\n");
+		_getch();
+		exit(0);
+#endif
+	}
 
 	if(changeMax)
 	{
@@ -213,7 +228,7 @@ retry:
 				path localfile = localDir / itf->filename;
 				string url = "/" + dir_use + "/" + itf->filename;
 				int stat = downloadFile(localfile, server_use, url, true);
-				if(stat == -404 && retrycount == 0)
+				if(stat == -404 && retrycount < 2)
 				{
 					// fallback to main server!
 					printf("falling back to main server.\n");
@@ -228,13 +243,26 @@ retry:
 				} else
 				{
 					string checkHash = generateFileHash(localfile);
-					if(findHashInHashmap(hashMapRemote, itf->filename) == checkHash)
+					string hash_remote = findHashInHashmap(hashMapRemote, itf->filename);
+					if(hash_remote == checkHash)
 					{
 						printf(" OK                      \n");
 					} else
 					{
 						printf(" FAILED                  \n");
+						//printf(" hash is: '%s'\n", checkHash.c_str());
+						//printf(" hash should be: '%s'\n", hash_remote.c_str());
 						remove(localfile);
+						if(retrycount < 2)
+						{
+							// fallback to main server!
+							printf(" hash wrong, falling back to main server.\n");
+							printf(" probably the mirror is not in sync yet\n");
+							server_use = server;
+							dir_use = remoteDir;
+							retrycount++;
+							goto retry;
+						}
 					}
 				}
 			}
@@ -252,7 +280,7 @@ retry2:
 				path localfile = localDir / itf->filename;
 				string url = "/" + dir_use + "/" + itf->filename;
 				int stat = downloadFile(localfile, server_use, url, true);
-				if(stat == -404 && retrycount == 0)
+				if(stat == -404 && retrycount < 2)
 				{
 					// fallback to main server!
 					printf("falling back to main server.\n");
@@ -267,17 +295,33 @@ retry2:
 				} else
 				{
 					string checkHash = generateFileHash(localfile);
-					if(findHashInHashmap(hashMapRemote, itf->filename) == checkHash)
+					string hash_remote = findHashInHashmap(hashMapRemote, itf->filename);
+					if(hash_remote == checkHash)
+					{
 						printf(" OK                      \n");
-					else
+					} else
+					{
 						printf(" FAILED                  \n");
+						//printf(" hash is: '%s'\n", checkHash.c_str());
+						//printf(" hash should be: '%s'\n", hash_remote.c_str());
+						remove(localfile);
+						if(retrycount < 2)
+						{
+							// fallback to main server!
+							printf(" hash wrong, falling back to main server.\n");
+							printf(" probably the mirror is not in sync yet\n");
+							server_use = server;
+							dir_use = remoteDir;
+							retrycount++;
+							goto retry2;
+						}
+					}
 				}
 			}
 		}
 		
-		if(deletedFiles.size() && !(modeNumber & WMO_NODELETE))
+		if(deleteOk && deletedFiles.size() && !(modeNumber & WMO_NODELETE))
 		{
-			progressOutputShort(float(changeCounter)/float(changeMax));
 			for(itf=deletedFiles.begin();itf!=deletedFiles.end();itf++, changeCounter++)
 			{
 				progressOutputShort(float(changeCounter)/float(changeMax));
@@ -293,11 +337,14 @@ retry2:
 					printf("unable to delete file: %s\n", localfile.string().c_str());
 				}
 			}
+		} else if (!deleteOk && deletedFiles.size())
+		{
+			printf("wont delete any files, since safety conditions are not met.\n");
 		}
+
 		printf("sync complete, downloaded %s\n", formatFilesize(downloadSize).c_str());
 	} else
 		printf("sync complete (already up to date), downloaded %s\n", formatFilesize(downloadSize).c_str());
-
 
 	//remove temp files again
 	remove(remoteFileIndex);
@@ -308,7 +355,8 @@ retry2:
 string WSync::generateFileHash(boost::filesystem::path file)
 {
 	CSHA1 sha1;
-	sha1.HashFile(const_cast<char*>(file.string().c_str()));
+	bool res = sha1.HashFile(const_cast<char*>(file.string().c_str()));
+	if(!res) return string("");
 	sha1.Final();
 	char resultHash[256] = "";
 	sha1.ReportHash(resultHash, CSHA1::REPORT_HEX_SHORT);
@@ -343,6 +391,9 @@ int WSync::buildFileIndex(boost::filesystem::path &outfilename, boost::filesyste
 		if (found != string::npos)
 			continue;
 
+		found = respath.find(".temp.");
+		if (found != string::npos)
+			continue;
 
 		string resultHash = generateFileHash(it->c_str());
 
@@ -615,7 +666,12 @@ int WSync::downloadFile(boost::filesystem::path localFile, string server, string
 		//printf("filesize: %d bytes\n", reported_filesize);
 
 		// open local file late -> prevent creating emoty files
-		myfile.open(localFile.string().c_str(), ios::out | ios::binary); 
+		myfile.open(localFile.string().c_str(), ios::out | ios::binary);
+		if(!myfile.is_open())
+		{
+			printf("error opening file: %s\n", localFile.string().c_str());
+			return 2;
+		}
 
 		// Write whatever content we already have to output.
 		if (response.size() > 0)
