@@ -65,7 +65,7 @@ option(ROR_USE_OPTIMIZATIONS_WINDOWS "optimize build, gives more FPS, but needs 
 #option(ROR_BUILD_ANGELSCRIPT "build and use the new scripting engine" FALSE)
 set(ROR_BUILD_ANGELSCRIPT TRUE)
 #option(WSYNC_BUILD_WSYNC "builds the wsync tool" FALSE)
-set(WSYNC_BUILD_WSYNC TRUE)
+set(WSYNC_BUILD_WSYNC FALSE)
 set(WSYNC_BUILD_INSTALLER FALSE)
 #option(ROR_BUILD_LUASCRIPT "adds the LUA Scripting engine" TRUE)
 set(ROR_BUILD_LUASCRIPT TRUE)
