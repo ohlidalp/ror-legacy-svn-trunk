@@ -262,7 +262,9 @@ bool TruckHUD::update(float dt, Beam *truck, SceneManager *mSceneMgr, Camera* mC
 		checkOverflow(descl);
 	}
 	
-	Vector3 hdir = truck->nodes[truck->cameranodepos[0]].RelPosition-truck->nodes[truck->cameranodedir[0]].RelPosition;
+	Vector3 hdir = Vector3::ZERO;
+	if(truck->cameranodepos[0]>=0)
+		hdir = truck->nodes[truck->cameranodepos[0]].RelPosition-truck->nodes[truck->cameranodedir[0]].RelPosition;
 	hdir.normalise();
 	float g_along_hdir=hdir.dotProduct(truck->ffforce/10000.0);
 
