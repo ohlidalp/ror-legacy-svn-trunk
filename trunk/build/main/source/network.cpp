@@ -638,17 +638,34 @@ void Network::receivethreadstart()
 			}
 			pthread_mutex_unlock(&clients_mutex);
 		}
-		else if (type==MSG2_USE_VEHICLE)
+		else if (type==MSG2_USE_VEHICLE || type == MSG2_USE_VEHICLE2)
 		{
 			//LogManager::getSingleton().logMessage("I got a vehicle");
 			//we want first to check if the vehicle name is valid before committing to anything
+			bool newformat = (type == MSG2_USE_VEHICLE2);
+			String truckname = "";
+			String nickname = "";
+			int authstate = AUTH_NONE;
 
+			if(!newformat)
+			{
+				// old format does not support auth info
+				truckname = buffer;
+				nickname  = buffer+strlen(buffer)+1;
+				authstate = AUTH_NONE;
+			} else
+			{
+				// yay, new format :D
+				// version = 1 for now, be prepared to recognize more in the future
+				client_info_on_join *info = (client_info_on_join *)buffer;
+				nickname = String(info->nickname);
+				truckname = String(info->vehiclename);
+				authstate = info->authstatus;
+			}
+			
+			// WARNING: THIS PRODUCES LAGS!
+			// we need to background load this ...
 			//possible load from cache system
-			String truckname = buffer;
-			String nickname = buffer+strlen(buffer)+1;
-			bool authed=false;
-			if(strnlen(buffer+strlen(buffer)+1+nickname.size()+1,5) == 6 && !strncmp(buffer+strlen(buffer)+1+nickname.size()+1,"ATUHED",6))
-				authed=true;
 			bool resourceExists = CACHE.checkResourceLoaded(truckname);
 			// check if found
 			if(!resourceExists)
@@ -676,12 +693,12 @@ void Network::receivethreadstart()
 					if (!clients[i].used)
 					{
 						//LogManager::getSingleton().logMessage("Registering as client "+StringConverter::toString(i));
-						clients[i].used=true;
-						clients[i].invisible=!resourceExists;
-						clients[i].loaded=false;
-						clients[i].user_id=source;
-						clients[i].user_level=authed;
-						buffer[wrotelen]=0;
+						clients[i].used           = true;
+						clients[i].invisible      = !resourceExists;
+						clients[i].loaded         = false;
+						clients[i].user_id        = source;
+						clients[i].user_authlevel = authstate;
+						buffer[wrotelen] = 0;
 
 						//strcpy(clients[i].vehicle, truckname.c_str());
 						// fix for MP, important to support the same vehicle with different UID's
