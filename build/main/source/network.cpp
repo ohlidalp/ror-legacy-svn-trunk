@@ -679,6 +679,12 @@ void Network::receivethreadstart()
 			{
 				// we found ourself :D
 				// update local data
+				if(nickname != tmpnickname)
+				{
+					pthread_mutex_lock(&chat_mutex);
+					NETCHAT.addText("^9You are now known as " + tmpnickname);
+					pthread_mutex_unlock(&chat_mutex);
+				}
 				nickname = tmpnickname;
 
 				// tell the user the new infos
@@ -697,7 +703,7 @@ void Network::receivethreadstart()
 					if(!msg.empty())
 					{
 						pthread_mutex_lock(&chat_mutex);
-						NETCHAT.addText(getNickname(true) + " ^9 is now authorized as " + msg);
+						NETCHAT.addText("^9You are now authorized as " + msg);
 						pthread_mutex_unlock(&chat_mutex);
 					}
 				}
@@ -790,6 +796,11 @@ void Network::receivethreadstart()
 		else if (type==MSG2_DELETE)
 		{
 			pthread_mutex_lock(&clients_mutex);
+			if(source == myuid)
+			{
+				// we got deleted D:
+				netFatalError(String(buffer));
+			}
 			for (int i=0; i<MAX_PEERS; i++)
 			{
 				if (clients[i].used && clients[i].user_id==source && (clients[i].loaded || clients[i].invisible))
@@ -815,7 +826,7 @@ void Network::receivethreadstart()
 					// add some chat msg
 					pthread_mutex_lock(&chat_mutex);
 					
-					NETCHAT.addText(getUserChatName(&clients[i]) + " ^9disconnected");
+					NETCHAT.addText(getUserChatName(&clients[i]) + " ^9disconnected: " + String(buffer));
 					pthread_mutex_unlock(&chat_mutex);
 
 					break;
