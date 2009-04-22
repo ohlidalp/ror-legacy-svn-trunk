@@ -50,6 +50,9 @@ public:
 	bool getVisible() { return isvisible; };
 	void setVisible(bool visible);
 
+	int getFontSize() { return lineheight; };
+	void setFontSize(int size);
+
 	int parseCommand(Ogre::String &msg, std::vector<Ogre::String> &arguments);
 
 	void scrollPageUp();

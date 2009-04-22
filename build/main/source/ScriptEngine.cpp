@@ -456,6 +456,8 @@ void ScriptEngine::init()
 	result = engine->RegisterObjectMethod("GameScriptClass", "void registerForEvent(int)", asMETHOD(GameScript,registerForEvent), asCALL_THISCALL); assert_net(result>=0);
 	result = engine->RegisterObjectMethod("GameScriptClass", "BeamClass @getCurrentTruck()", asMETHOD(GameScript,getCurrentTruck), asCALL_THISCALL); assert_net(result>=0);
 	result = engine->RegisterObjectMethod("GameScriptClass", "BeamClass @getTruckByNum(int)", asMETHOD(GameScript,getTruckByNum), asCALL_THISCALL); assert_net(result>=0);
+	result = engine->RegisterObjectMethod("GameScriptClass", "int getChatFontSize()", asMETHOD(GameScript,getChatFontSize), asCALL_THISCALL); assert_net(result>=0);
+	result = engine->RegisterObjectMethod("GameScriptClass", "void setChatFontSize(int)", asMETHOD(GameScript,setChatFontSize), asCALL_THISCALL); assert_net(result>=0);
 
 	// class CacheSystem
 	result = engine->RegisterObjectType("CacheSystemClass", sizeof(CacheSystem), asOBJ_REF | asOBJ_NOHANDLE);
@@ -698,6 +700,16 @@ void GameScript::flashMessage(std::string &txt, float time, float charHeight)
 void GameScript::setDirectionArrow(std::string &text, float positionx, float positiony, float positionz)
 {
 	if(mefl) mefl->setDirectionArrow(const_cast<char*>(text.c_str()), Vector3(positionx, positiony, positionz));
+}
+
+int GameScript::getChatFontSize()
+{
+	return NETCHAT.getFontSize();
+}
+
+void GameScript::setChatFontSize(int size)
+{
+	NETCHAT.setFontSize(size);
 }
 
 #endif //ANGELSCRIPT

@@ -272,6 +272,18 @@ public:
 	 */
 	void setDirectionArrow(std::string &text, float positionx, float positiony, float positionz);
 
+
+	/**
+	 * returns the size of the font used by the chat box
+	 * @return pixel size of the chat text
+	 */
+	int getChatFontSize();
+
+	/**
+	 * changes the font size of the chat box
+	 * @param size font size in pixels
+	 */
+	void setChatFontSize(int size);
 };
 
 #endif

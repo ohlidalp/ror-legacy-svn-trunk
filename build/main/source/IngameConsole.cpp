@@ -31,7 +31,7 @@ IngameConsole::IngameConsole()
 	consoleOverlay = 0;
 	displaymode=-1;
 	top=width=left=height=0;
-	lineheight = 16; //lineheight = fontheight
+	lineheight = 12; //lineheight = fontheight
 	bordersize = 10;
 	isvisible=false;
 	cursorBlink=false;
@@ -52,6 +52,14 @@ IngameConsole &IngameConsole::getInstance()
 		myInstance = new IngameConsole();
 	}
 	return *myInstance;
+}
+
+void IngameConsole::setFontSize(int size)
+{
+	lineheight = size;
+	destroyOverlays();
+	createOverlays();
+	updateDisplay();
 }
 
 void IngameConsole::setMode(ExampleFrameListener *efl, int mode, bool visible)
