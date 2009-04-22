@@ -5906,7 +5906,14 @@ void Beam::SyncReset()
 					int t;
 					for (t=0; t<numtrucks; t++)
 					{
-						if (trucks[t]->state==SLEEPING || trucks[t]->state==NETWORKED || trucks[t]->state==RECYCLE) continue;
+						if (trucks[t]->state==SLEEPING || trucks[t]->state==RECYCLE) continue;
+						if (trucks[t]->state==NETWORKED)
+						{
+							// check if still in spawn area
+							if(trucks[t]->nodes[0].AbsPosition.distance(trucks[t]->nodes[0].iPosition) < 20)
+								// first node is in a 20 m radius of its spawn point, ignore collisions for now!
+								continue;
+						}
 						for (i=0; i<trucks[t]->free_collcab; i++)
 						{
 							//for each triangle
@@ -5953,7 +5960,14 @@ void Beam::SyncReset()
 					int colltype=0;
 					for (t=0; t<numtrucks; t++)
 					{
-						if (trucks[t]->state==SLEEPING || trucks[t]->state==NETWORKED || trucks[t]->state==RECYCLE) continue;
+						if (trucks[t]->state==SLEEPING || trucks[t]->state==RECYCLE) continue;
+						if (trucks[t]->state==NETWORKED)
+						{
+							// check if still in spawn area
+							if(trucks[t]->nodes[0].AbsPosition.distance(trucks[t]->nodes[0].iPosition) < 20)
+								// first node is in a 20 m radius of its spawn point, ignore collisions for now!
+								continue;
+						}
 						for (i=0; i<trucks[t]->free_collcab; i++)
 						{
 							//ignore self-contact
@@ -6015,9 +6029,17 @@ void Beam::SyncReset()
 
 						Vector3 force=trucks[mintruck]->transforms[mintri].reverse*Vector3(frx,fry,fl);
 						nodes[contacters[j].nodeid].Forces-=force;
-						trucks[mintruck]->nodes[trucks[mintruck]->cabs[mintri*3]].Forces+=(-point.x-point.y+1.0)*force;
-						trucks[mintruck]->nodes[trucks[mintruck]->cabs[mintri*3+1]].Forces+=(point.x)*force;
-						trucks[mintruck]->nodes[trucks[mintruck]->cabs[mintri*3+2]].Forces+=(point.y)*force;
+						if(trucks[mintruck]->state==NETWORKED)
+						{
+							// its a networked truck, we need to send the forces over the network
+
+						} else
+						{
+							// is a local truck
+							trucks[mintruck]->nodes[trucks[mintruck]->cabs[mintri*3]].Forces+=(-point.x-point.y+1.0)*force;
+							trucks[mintruck]->nodes[trucks[mintruck]->cabs[mintri*3+1]].Forces+=(point.x)*force;
+							trucks[mintruck]->nodes[trucks[mintruck]->cabs[mintri*3+2]].Forces+=(point.y)*force;
+						}
 
 						//register the contact
 						contacters[j].contacted=true;
@@ -7740,7 +7762,6 @@ float torques[MAX_WHEELS];
 		int i;
 		if (networking)
 		{
-			return; //disabled for the moment
 			if (netlock.state==LOCKED)
 			{
 				netlock.state=UNLOCKED;
