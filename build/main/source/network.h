@@ -60,7 +60,7 @@ public:
 	virtual int getConnectedClientCount() = 0;
 
 	virtual char *getTerrainName() = 0;
-	virtual Ogre::String getNickname() = 0;
+	virtual Ogre::String getNickname(bool colour=false) = 0;
 	virtual int getRConState() = 0;
 };
 
@@ -68,7 +68,8 @@ class Network : public NetworkBase
 {
 private:
 	SWInetSocket socket;
-	unsigned myuid;
+	unsigned int myuid;
+	int myauthlevel;
 	pthread_t sendthread;
 	pthread_t receivethread;
 	Timer timer;
@@ -90,10 +91,11 @@ private:
 	ExampleFrameListener *mefl;
 	char terrainName[255];
 	bool requestTerrainName();
-	char nickname[256];
+	Ogre::String nickname;
 	int rconauthed;
 	bool shutdown;
 	SoundScriptManager* ssm;
+	Ogre::String getUserChatName(client_t *c);
 public:
 
 	Network(Beam **btrucks, std::string servername, long sport, ExampleFrameListener *efl);
@@ -119,7 +121,7 @@ public:
 	int getConnectedClientCount();
 
 	char *getTerrainName() { return terrainName; };
-	Ogre::String getNickname();
+	Ogre::String getNickname(bool colour=false);
 	int getRConState() { return rconauthed; };
 	int downloadMod(char* modname);
 };
