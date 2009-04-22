@@ -195,6 +195,11 @@ public:
 		// driveable = 0 = NOT_DRIVEABLE
 		// enginetype = t = truck is default
 	}
+#ifdef ANGELSCRIPT
+	// we have to add this to be able to use the class as reference inside scripts
+	void addRef(){};
+	void release(){};
+#endif
 
 };
 
