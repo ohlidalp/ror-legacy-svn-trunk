@@ -574,7 +574,9 @@ String CacheSystem::getVirtualPath(String path)
 	char* fp;
 	fp=fnc;
 	while (*fp!=0) {if (*fp=='\\') *fp='/'; fp++;};
-	return String(fnc);
+	String path2 = String(fnc);
+	StringUtil::toLowerCase(path2); // this is required for windows since we are case insensitive ...
+	return path2;
 #else
 	return path;
 #endif

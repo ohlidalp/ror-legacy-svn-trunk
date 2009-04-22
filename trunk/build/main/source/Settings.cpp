@@ -223,6 +223,15 @@ bool Settings::setupPaths()
 	settings["ogre.cfg"] = String(ogreconf_fname);
 	settings["ogre.log"] = String(ogrelog_fname);
 
+#if OGRE_PLATFORM == OGRE_PLATFORM_WIN32
+	// windows is case insensitive, so norm here
+	StringUtil::toLowerCase(settings["Config Root"]);
+	StringUtil::toLowerCase(settings["Cache Path"]);
+	StringUtil::toLowerCase(settings["Log Path"]);
+	StringUtil::toLowerCase(settings["Resources Path"]);
+	StringUtil::toLowerCase(settings["Streams Path"]);
+	StringUtil::toLowerCase(settings["Program Path"]);
+#endif
 	// now enable the user to override that:
 	try
 	{
