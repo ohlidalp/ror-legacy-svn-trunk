@@ -681,6 +681,27 @@ void Network::receivethreadstart()
 				// update local data
 				client_info_on_join *info = (client_info_on_join *)buffer;
 				nickname = String(info->nickname);
+
+				// tell the user the new infos
+				if(myauthlevel != info->authstatus)
+				{
+					String msg = "";
+					if(!(myauthlevel & AUTH_BOT) && (info->authstatus & AUTH_BOT))
+						msg = "Bot";
+					if(!(myauthlevel & AUTH_RANKED) && (info->authstatus & AUTH_RANKED))
+						msg = "Ranked Member";
+					if(!(myauthlevel & AUTH_MOD) && (info->authstatus & AUTH_MOD))
+						msg = "Server Moderator";
+					if(!(myauthlevel & AUTH_ADMIN) && (info->authstatus & AUTH_ADMIN))
+						msg = "Server Admin";
+					
+					if(!msg.empty())
+					{
+						pthread_mutex_lock(&chat_mutex);
+						NETCHAT.addText(getNickname(true) + " ^9 is now authorized as " + msg);
+						pthread_mutex_unlock(&chat_mutex);
+					}
+				}
 				myauthlevel = info->authstatus;
 				// and discard the rest, we dont want to create a clone of us...
 				continue;
@@ -866,7 +887,7 @@ void Network::sendChat(char *line)
 	if (etype)
 	{
 		char emsg[256];
-		sprintf(emsg, "Error %i while sending netlock packet", etype);
+		sprintf(emsg, "Error %i while sending chat packet", etype);
 		netFatalError(emsg);
 		return;
 	}
