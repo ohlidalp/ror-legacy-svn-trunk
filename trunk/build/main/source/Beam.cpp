@@ -8068,12 +8068,12 @@ void Beam::setNetworkInfo(client_t netinfo)
 	{
 		// ha, this caused the empty caption bug, but fixed now since we change the caption if its empty:
 		netMT->setCaption(networkInfo.user_name);
-		if(networkInfo.user_authlevel & AUTH_RANKED)
-		{
-			netMT->setFontName("highcontrast_green");
-		} else if(networkInfo.user_authlevel & AUTH_ADMIN)
+		if(networkInfo.user_authlevel & AUTH_ADMIN)
 		{
 			netMT->setFontName("highcontrast_red");
+		} else if(networkInfo.user_authlevel & AUTH_RANKED)
+		{
+			netMT->setFontName("highcontrast_green");
 		} else
 		{
 			netMT->setFontName("highcontrast_black");
@@ -8092,12 +8092,12 @@ void Beam::setNetworkInfo(client_t netinfo)
 		netMT->setCharacterHeight(2);
 		netMT->setColor(ColourValue::White);
 		
-		if(networkInfo.user_authlevel & AUTH_RANKED)
-		{
-			netMT->setFontName("highcontrast_green");
-		} else if(networkInfo.user_authlevel & AUTH_ADMIN)
+		if(networkInfo.user_authlevel & AUTH_ADMIN)
 		{
 			netMT->setFontName("highcontrast_red");
+		} else if(networkInfo.user_authlevel & AUTH_RANKED)
+		{
+			netMT->setFontName("highcontrast_green");
 		} else
 		{
 			netMT->setFontName("highcontrast_black");

@@ -60,8 +60,9 @@ Network::Network(Beam **btrucks, std::string servername, long sport, ExampleFram
 	mySport = sport;
 	strcpy(terrainName, "");
 	mefl = efl;
+	myauthlevel = AUTH_NONE;
 	net_instance=this;
-	nickname[0]=0;
+	nickname = "";
 	trucks=btrucks;
 	myuid=0;
 	rconauthed=0;
@@ -157,11 +158,11 @@ bool Network::connect()
 	socket.set_timeout(0, 0);
 
 	//send credencials
-	strncpy(nickname, SETTINGS.getSetting("Nickname").c_str(), 255);
-	String nick=String(nickname);
+	nickname = SETTINGS.getSetting("Nickname");
+	String nick = nickname;
 	StringUtil::toLowerCase(nick);
 	if (nick==String("pricorde") || nick==String("thomas"))
-		strcpy(nickname, "Anonymous");
+		nickname = "Anonymous";
 
 	char pwbuffer[250];
 	memset(pwbuffer, 0, 250);
@@ -182,7 +183,7 @@ bool Network::connect()
 	// construct user credentials
 	user_credentials_t c;
 	memset(&c, 0, sizeof(user_credentials_t));
-	strncpy(c.username, nickname, 20);
+	strncpy(c.username, nickname.c_str(), 20);
 	strncpy(c.password, sha1pwresult, 40);
 	strncpy(c.uniqueid, usertoken.c_str(), 40);
 
@@ -308,9 +309,21 @@ void Network::sendVehicleType(char* name, int buffersize)
 	pthread_create(&receivethread, NULL, s_receivethreadstart, (void*)(0));
 }
 
-Ogre::String Network::getNickname()
+Ogre::String Network::getNickname(bool colour)
 {
-	return String(nickname);
+	// returns coloured nickname
+	int nickColour = 8;
+	if(myauthlevel & AUTH_NONE)   nickColour = 8; // grey
+	if(myauthlevel & AUTH_BOT )   nickColour = 4; // blue
+	if(myauthlevel & AUTH_RANKED) nickColour = 2; // green
+	if(myauthlevel & AUTH_MOD)    nickColour = 1; // red
+	if(myauthlevel & AUTH_ADMIN)  nickColour = 1; // red
+
+	String nick = ColoredTextAreaOverlayElement::StripColors(nickname);
+	if(colour)
+		return String("^") + StringConverter::toString(nickColour) + nick + String("^7");
+	
+	return nick;
 }
 
 int Network::sendmessage(SWInetSocket *socket, int type, unsigned int len, char* content)
@@ -662,6 +675,16 @@ void Network::receivethreadstart()
 				truckname = String(info->vehiclename);
 				authstate = info->authstatus;
 			}
+			if(source == myuid)
+			{
+				// we found ourself :D
+				// update local data
+				client_info_on_join *info = (client_info_on_join *)buffer;
+				nickname = String(info->nickname);
+				myauthlevel = info->authstatus;
+				// and discard the rest, we dont want to create a clone of us...
+				continue;
+			}
 			
 			// WARNING: THIS PRODUCES LAGS!
 			// we need to background load this ...
@@ -731,7 +754,9 @@ void Network::receivethreadstart()
 							Cache_Entry entry = CACHE.getResourceInfo(truckname);
 							truckname = entry.dname;
 						}
-						NETCHAT.addText("^9* " + ColoredTextAreaOverlayElement::StripColors(clients[i].user_name) + " joined with " + truckname);
+
+						NETCHAT.addText(getUserChatName(&clients[i]) + " ^9joined with " + truckname);
+
 						if(!resourceExists)
 							NETCHAT.addText("^1* " + String(clients[i].truck_name) + " not found. Player will be invisible.");
 						pthread_mutex_unlock(&chat_mutex);
@@ -769,7 +794,8 @@ void Network::receivethreadstart()
 
 					// add some chat msg
 					pthread_mutex_lock(&chat_mutex);
-					NETCHAT.addText("^9* " + ColoredTextAreaOverlayElement::StripColors(clients[i].user_name) + " disconnected");
+					
+					NETCHAT.addText(getUserChatName(&clients[i]) + " ^9disconnected");
 					pthread_mutex_unlock(&chat_mutex);
 
 					break;
@@ -787,10 +813,8 @@ void Network::receivethreadstart()
 					{
 						buffer[wrotelen]=0;
 						pthread_mutex_lock(&chat_mutex);
-						String nickname = ColoredTextAreaOverlayElement::StripColors(String(clients[i].user_name));
-						if(clients[i].invisible)
-							nickname += " (i)";
-						NETCHAT.addText("^8" + nickname + ": ^7" + ColoredTextAreaOverlayElement::StripColors(String(buffer)));
+						
+						NETCHAT.addText(getUserChatName(&clients[i]) + ": ^7" + ColoredTextAreaOverlayElement::StripColors(String(buffer)));
 						pthread_mutex_unlock(&chat_mutex);
 						break;
 					}
@@ -818,6 +842,22 @@ void Network::receivethreadstart()
 			}
 		}
 	}
+}
+
+Ogre::String Network::getUserChatName(client_t *c)
+{
+	// returns coloured nickname
+	int nickColour = 8;
+	if(c->user_authlevel & AUTH_NONE)   nickColour = 8; // grey
+	if(c->user_authlevel & AUTH_BOT )   nickColour = 4; // blue
+	if(c->user_authlevel & AUTH_RANKED) nickColour = 2; // green
+	if(c->user_authlevel & AUTH_MOD)    nickColour = 1; // red
+	if(c->user_authlevel & AUTH_ADMIN)  nickColour = 1; // red
+
+	String nickname = ColoredTextAreaOverlayElement::StripColors(c->user_name);
+	if(c->invisible)
+		nickname += "^7 (i)";
+	return String("^") + StringConverter::toString(nickColour) + nickname + String("^7");
 }
 
 void Network::sendChat(char *line)
