@@ -657,21 +657,21 @@ void Network::receivethreadstart()
 			//we want first to check if the vehicle name is valid before committing to anything
 			bool newformat = (type == MSG2_USE_VEHICLE2);
 			String truckname = "";
-			String nickname = "";
+			String tmpnickname = "";
 			int authstate = AUTH_NONE;
 
 			if(!newformat)
 			{
 				// old format does not support auth info
 				truckname = buffer;
-				nickname  = buffer+strlen(buffer)+1;
+				tmpnickname  = buffer+strlen(buffer)+1;
 				authstate = AUTH_NONE;
 			} else
 			{
 				// yay, new format :D
 				// version = 1 for now, be prepared to recognize more in the future
 				client_info_on_join *info = (client_info_on_join *)buffer;
-				nickname = String(info->nickname);
+				tmpnickname = String(info->nickname);
 				truckname = String(info->vehiclename);
 				authstate = info->authstatus;
 			}
@@ -679,20 +679,19 @@ void Network::receivethreadstart()
 			{
 				// we found ourself :D
 				// update local data
-				client_info_on_join *info = (client_info_on_join *)buffer;
-				nickname = String(info->nickname);
+				nickname = tmpnickname;
 
 				// tell the user the new infos
-				if(myauthlevel != info->authstatus)
+				if(myauthlevel != authstate)
 				{
 					String msg = "";
-					if(!(myauthlevel & AUTH_BOT) && (info->authstatus & AUTH_BOT))
+					if(!(myauthlevel & AUTH_BOT) && (authstate & AUTH_BOT))
 						msg = "Bot";
-					if(!(myauthlevel & AUTH_RANKED) && (info->authstatus & AUTH_RANKED))
+					if(!(myauthlevel & AUTH_RANKED) && (authstate & AUTH_RANKED))
 						msg = "Ranked Member";
-					if(!(myauthlevel & AUTH_MOD) && (info->authstatus & AUTH_MOD))
+					if(!(myauthlevel & AUTH_MOD) && (authstate & AUTH_MOD))
 						msg = "Server Moderator";
-					if(!(myauthlevel & AUTH_ADMIN) && (info->authstatus & AUTH_ADMIN))
+					if(!(myauthlevel & AUTH_ADMIN) && (authstate & AUTH_ADMIN))
 						msg = "Server Admin";
 					
 					if(!msg.empty())
@@ -702,7 +701,7 @@ void Network::receivethreadstart()
 						pthread_mutex_unlock(&chat_mutex);
 					}
 				}
-				myauthlevel = info->authstatus;
+				myauthlevel = authstate;
 				// and discard the rest, we dont want to create a clone of us...
 				continue;
 			}
@@ -749,7 +748,7 @@ void Network::receivethreadstart()
 						String vehicle_without_uid = CACHE.stripUIDfromString(truckname);
 						strcpy(clients[i].truck_name, vehicle_without_uid.c_str());
 
-						strcpy(clients[i].user_name, nickname.c_str()); //buffer+strlen(buffer)+1); //magical!  // rather hackish if you ask me ...
+						strcpy(clients[i].user_name, tmpnickname.c_str()); //buffer+strlen(buffer)+1); //magical!  // rather hackish if you ask me ...
 
 						// update playerlist
 						if(i < MAX_PLAYLIST_ENTRIES)
