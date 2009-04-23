@@ -393,7 +393,7 @@ void RigsOfRods::exploreTerrains()
 #define HELPTEXT "--help (this)\n-map <map> (loads map on startup)\n-truck <truck> (loads truck on startup)\n-setup shows the ogre configurator\n-version shows the version information\n\nFor example: RoR.exe -map oahu -truck semi"
 
 // option identifiers
-enum { OPT_HELP, OPT_MAP, OPT_TRUCK, OPT_SETUP, OPT_MPJOIN, OPT_WDIR, OPT_ETM, OPT_BUILD, OPT_CONFIG, OPT_VER};
+enum { OPT_HELP, OPT_MAP, OPT_TRUCK, OPT_SETUP, OPT_MPJOIN, OPT_WDIR, OPT_ETM, OPT_BUILD, OPT_CONFIG, OPT_VER, OPT_CHECKCACHE};
 
 // option array
 CSimpleOpt::SOption cmdline_options[] = {
@@ -405,6 +405,7 @@ CSimpleOpt::SOption cmdline_options[] = {
 	{ OPT_CONFIG,("-config"), SO_NONE    },
 	{ OPT_BUILD, ("-build"),  SO_NONE    },
 	{ OPT_HELP,  ("--help"),  SO_NONE    },
+	{ OPT_CHECKCACHE,  ("-checkcache"),  SO_NONE    },
 	{ OPT_VER,   ("-version"),SO_NONE    },
 	SO_END_OF_OPTIONS
 };
@@ -502,6 +503,9 @@ int main(int argc, char *argv[])
 #if OGRE_PLATFORM == OGRE_PLATFORM_WIN32
 				SetCurrentDirectory(args.OptionArg());
 #endif
+			} else if (args.OptionId() == OPT_CHECKCACHE) {
+				// just regen cache and exit
+				SETTINGS.setSetting("regen-cache-only", "True");
 			} else if (args.OptionId() == OPT_SETUP) {
 				app.useogreconfig = true;
 			} else if (args.OptionId() == OPT_BUILD) {

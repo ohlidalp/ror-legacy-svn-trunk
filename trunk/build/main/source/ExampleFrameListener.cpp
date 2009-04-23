@@ -919,6 +919,23 @@ ExampleFrameListener::ExampleFrameListener(RenderWindow* win, Camera* cam, Scene
 
 	CACHE.startup();
 
+	if(SETTINGS.getSetting("regen-cache-only") != "")
+	{
+		CACHE.startup(true);
+		String str = _L("Cache regeneration done.\n");
+		if(CACHE.newFiles > 0) str += StringConverter::toString(CACHE.newFiles) + " new files\n";
+		if(CACHE.changedFiles > 0) str += StringConverter::toString(CACHE.changedFiles) + " changed files\n";
+		if(CACHE.deletedFiles > 0) str += StringConverter::toString(CACHE.deletedFiles) + " deleted files\n";
+		if(CACHE.newFiles + CACHE.changedFiles + CACHE.deletedFiles == 0) str += "no changes";
+		str += _L("\n(These stats can be imprecise)");
+#if OGRE_PLATFORM == OGRE_PLATFORM_WIN32
+		MessageBox( NULL, str.c_str(), "Cache regeneration done", MB_OK | MB_ICONINFORMATION | MB_TOPMOST);
+#else
+		printf("Cache regeneration done: \n%s", str.c_str());
+#endif
+		exit(0);
+	}
+
 	mouseOverlay = OverlayManager::getSingleton().getByName("tracks/MouseOverlay");
 #ifdef HAS_EDITOR
 	truckeditorOverlay = OverlayManager::getSingleton().getByName("tracks/TruckEditorOverlay");

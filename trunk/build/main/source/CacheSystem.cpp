@@ -42,6 +42,9 @@ CacheSystem &CacheSystem::Instance ()
 CacheSystem::CacheSystem()
 {
 	rgcounter = 0;
+	changedFiles = 0;
+	newFiles = 0;
+	deletedFiles = 0;
 
 	// register the extensions
 	known_extensions.push_back("machine");
@@ -67,7 +70,7 @@ void CacheSystem::setLocation(String cachepath, String configpath)
 	configlocation=configpath;
 }
 
-void CacheSystem::startup()
+void CacheSystem::startup(bool forcecheck)
 {
 	// read valid categories from file
 	readCategoryTitles();
@@ -76,6 +79,8 @@ void CacheSystem::startup()
 	currentSHA1 = filenamesSHA1();
 
 	int valid = isCacheValid();
+	if(forcecheck)
+		valid = -1;
 	// valid == -1 : try incemental update
 	// valid == -2 : must update fully
 	if(valid<0)
@@ -158,8 +163,9 @@ int CacheSystem::isCacheValid()
 	}
 	if(cacheformat != String(CACHE_FILE_FORMAT))
 	{
+		entries.clear();
 		LogManager::getSingleton().logMessage("* mod cache has invalid format, trying to regenerate");
-		return -2;
+		return -1;
 	}
 	LogManager::getSingleton().logMessage("* mod cache is valid, using it.");
 	return 0;
@@ -631,6 +637,7 @@ int CacheSystem::incrementalCacheUpdate()
 				removeFileFromFileCache(it);
 				//entries.erase(it);
 				it->deleted=true;
+				deletedFiles++;
 				if(it == entries.end())
 					break;
 				continue;
@@ -646,6 +653,7 @@ int CacheSystem::incrementalCacheUpdate()
 				removeFileFromFileCache(it);
 				//entries.erase(it);
 				it->deleted = true;
+				deletedFiles++;
 				if(it == entries.end())
 					break;
 				continue;
@@ -673,6 +681,7 @@ int CacheSystem::incrementalCacheUpdate()
 
 			if(check)
 			{
+				changedFiles++;
 				LogManager::getSingleton().logMessage("- "+fn+_L(" changed"));
 				it->changedornew = true;
 				it->deleted = true; // see below
@@ -2095,7 +2104,7 @@ void CacheSystem::generateZipList()
 	for(std::vector<Cache_Entry>::iterator it = entries.begin(); it!=entries.end(); it++)
 	{
 		zipCacheList.insert(getVirtualPath(it->dirname));
-		LogManager::getSingleton().logMessage("zip path added: "+getVirtualPath(it->dirname));
+		//LogManager::getSingleton().logMessage("zip path added: "+getVirtualPath(it->dirname));
 	}
 }
 
@@ -2103,7 +2112,7 @@ bool CacheSystem::isZipUsedInEntries(Ogre::String filename)
 {
 	if(zipCacheList.empty())
 		generateZipList();
-	LogManager::getSingleton().logMessage("isZipUsedInEntries: "+getVirtualPath(filename));
+	//LogManager::getSingleton().logMessage("isZipUsedInEntries: "+getVirtualPath(filename));
 
 	return (zipCacheList.find(getVirtualPath(filename)) != zipCacheList.end());
 }
@@ -2155,6 +2164,7 @@ void CacheSystem::checkForNewFiles(Ogre::String ext)
 					LogManager::getSingleton().logMessage("- " + fn + " is new (in zip)");
 				else
 					LogManager::getSingleton().logMessage("- " + fn + " is new");
+				newFiles++;
 				addFile(*iterFiles, ext);
 			}
 		}
@@ -2636,6 +2646,7 @@ void CacheSystem::checkForNewZipsInResourceGroup(String group)
 		{
 			UILOADER.setProgress(progress, _L("checking for new zips in ") + group + "\n" + _L("loading new zip: ") + iterFiles->filename + "\n" + StringConverter::toString(i) + "/" + StringConverter::toString(filecount));
 			LogManager::getSingleton().logMessage("- "+zippath+" is new");
+			newFiles++;
 			loadSingleZip((Ogre::FileInfo)*iterFiles);
 		}
 	}
@@ -2655,8 +2666,8 @@ void CacheSystem::checkForNewDirectoriesInResourceGroup(String group)
 		if(!isDirectoryUsedInEntries(dirname))
 		{
 			UILOADER.setProgress(progress, _L("checking for new directories in ") + group + "\n" + _L("loading new directory: ") + listitem->filename + "\n" + StringConverter::toString(i) + "/" + StringConverter::toString(filecount));
-		  LogManager::getSingleton().logMessage("- "+dirname+" is new");
-		  loadSingleDirectory(dirname, group, true);
+			LogManager::getSingleton().logMessage("- "+dirname+" is new");
+			loadSingleDirectory(dirname, group, true);
 		}
 	}
 	UILOADER.setProgress(UI_PROGRESSBAR_HIDE);
