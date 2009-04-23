@@ -243,10 +243,12 @@ public:
 	void OnButTestEvents(wxCommandEvent& event);
 	void OnButAddKey(wxCommandEvent& event);
 	void OnButDeleteKey(wxCommandEvent& event);
+	void OnButRegenCache(wxCommandEvent& event);
 	void OnButClearCache(wxCommandEvent& event);
 	void OnButUpdateRoR(wxCommandEvent& event);
 	void OnSimpleSliderScroll(wxScrollEvent& event);
 	void OnSimpleSlider2Scroll(wxScrollEvent& event);
+	void OnNoteBookPageChange(wxNotebookEvent& event);
 
 	void updateItemText(wxTreeItemId item, event_trigger_t *t);
 //	void checkLinuxPaths();
@@ -788,12 +790,14 @@ enum
 	command_delete_key,
 	command_testevents,
 	clear_cache,
+	regen_cache,
 	update_ror,
 	EVC_LANG,
 	SCROLL1,
 	SCROLL2,
 	EVT_CHANGE_RENDERER,
 	RENDERER_OPTION=990,
+	mynotebook
 };
 
 // ----------------------------------------------------------------------------
@@ -812,6 +816,7 @@ BEGIN_EVENT_TABLE(MyDialog, wxDialog)
 	EVT_BUTTON(command_restore, MyDialog::OnButRestore)
 	EVT_BUTTON(net_test, MyDialog::OnTestNet)
 	EVT_BUTTON(clear_cache, MyDialog::OnButClearCache)
+	EVT_BUTTON(regen_cache, MyDialog::OnButRegenCache)
 	EVT_BUTTON(update_ror, MyDialog::OnButUpdateRoR)
 	EVT_HTML_LINK_CLICKED(main_html, MyDialog::OnLinkClicked)
 	//EVT_SCROLL(MyDialog::OnSightRangeScroll)
@@ -819,6 +824,8 @@ BEGIN_EVENT_TABLE(MyDialog, wxDialog)
 	EVT_COMMAND_SCROLL_CHANGED(SCROLL2, MyDialog::OnSimpleSlider2Scroll)
 	EVT_CHOICE(EVC_LANG, MyDialog::onChangeLanguageChoice)
 	//EVT_BUTTON(BTN_REMAP, MyDialog::OnButRemap)
+
+	EVT_NOTEBOOK_PAGE_CHANGED(mynotebook, MyDialog::OnNoteBookPageChange)
 
 	EVT_TREE_SEL_CHANGING (CTREE_ID, MyDialog::onTreeSelChange)
 	EVT_TREE_ITEM_ACTIVATED(CTREE_ID, MyDialog::onActivateItem)
@@ -1316,7 +1323,7 @@ MyDialog::MyDialog(const wxString& title, MyApp *_app) : wxDialog(NULL, wxID_ANY
 	mainsizer->Add(imagePanel, 0, wxGROW);
 
 	//notebook
-	wxNotebook *nbook=new wxNotebook(this, -1, wxPoint(3, 100), wxSize(490, 415));
+	wxNotebook *nbook=new wxNotebook(this, mynotebook, wxPoint(3, 100), wxSize(490, 415));
 	mainsizer->Add(nbook, 2, wxGROW);
 
 	wxSizer *btnsizer = new wxBoxSizer(wxHORIZONTAL);
@@ -1575,7 +1582,7 @@ MyDialog::MyDialog(const wxString& title, MyApp *_app) : wxDialog(NULL, wxID_ANY
 	networkhtmw = new wxHtmlWindow(netPanel, main_html, wxPoint(0, 30), wxSize(480, 270));
 	//networkhtmw->LoadPage(REPO_HTML_SERVERLIST);
 	networkhtmw->SetPage(_("<p>How to play in Multiplayer:</p><br><ol><li>Click on the <b>Update</b> button to see available servers here.</li><li>Click on any underlined Server in the list.</li><li>Click on <b>Save and Play</b> button to start the game.</li></ol>"));
-	networkhtmw->SetToolTip(_("Click on Update to update the list.\nClick on blue hyperlinks to select a server."));
+	networkhtmw->SetToolTip(_("Click on blue hyperlinks to select a server."));
 	sizer_net_middle->Add(networkhtmw);
 	sizer_net->Add(networkhtmw, 2, wxGROW | wxALL);
 
@@ -1629,7 +1636,13 @@ MyDialog::MyDialog(const wxString& title, MyApp *_app) : wxDialog(NULL, wxID_ANY
 
 	dText = new wxStaticText(advancedPanel, -1, _("In case the mods cache becomes corrupted, \npress this button to clear the cache. \nIt will be regenerated\nthe next time you launch the game:"), wxPoint(10, 110));
 	//wxButton *clearcachebut=
-	new wxButton(advancedPanel, clear_cache, _("Clear cache"), wxPoint(125, 180));
+	wxButton *btn;
+	btn = new wxButton(advancedPanel, regen_cache, _("Regen cache"), wxPoint(15, 180));
+	btn->SetToolTip(_("Use this to regenerate the cache outside of RoR. If this does not work, use the clear cache button."));
+
+	btn = new wxButton(advancedPanel, clear_cache, _("Clear cache"), wxPoint(125, 180));
+	btn->SetToolTip(_("Use this to remove the whole cache and force the generation from ground up."));
+	
 
 	// update button only for windows users
 #if OGRE_PLATFORM == OGRE_PLATFORM_WIN32
@@ -1707,8 +1720,9 @@ MyDialog::MyDialog(const wxString& title, MyApp *_app) : wxDialog(NULL, wxID_ANY
 
 	wxSizer *sizer_help = new wxBoxSizer(wxVERTICAL);
 	helphtmw = new HtmlWindow(helpPanel, help_html, wxPoint(0, 0), wxSize(480, 380));
-	helphtmw->SetPage(_("<h2>Latest News</h2>None atm<h2>Support / Community</h2><a href='http://wiki.rigsofrods.com/index.php?title=Tutorials'>tutorials</a><p/> (this site is to be enhanced...)"));
-	helphtmw->SetToolTip(_("here you can get help"));
+	helphtmw->SetPage(_("... loading ... (maybe you should check your internet connection)"));
+	// tooltip is confusing there, better none!
+	//helphtmw->SetToolTip(_("here you can get help"));
 	sizer_help->Add(helphtmw, 1, wxGROW);
 	helpPanel->SetSizer(sizer_help);
 
@@ -2705,7 +2719,39 @@ void MyDialog::OnButUpdateRoR(wxCommandEvent& event)
 	w->ShowModal();
 	delete(w);
 #endif
+}
 
+void MyDialog::OnButRegenCache(wxCommandEvent& event)
+{
+#if OGRE_PLATFORM == OGRE_PLATFORM_WIN32
+	PROCESS_INFORMATION pi;
+	STARTUPINFO si;
+	DWORD               dwCode  =   0;
+	ZeroMemory(&si,sizeof(STARTUPINFO));
+	si.cb           =   sizeof(STARTUPINFO);
+	si.dwFlags      =   STARTF_USESHOWWINDOW;
+	si.wShowWindow  =   SW_SHOWNORMAL;
+
+	char path[2048];
+	getcwd(path, 2048);
+	strcat(path, "\\RoR.exe -checkcache");
+	logfile->AddLine(conv(path));logfile->Write();
+
+	int buffSize = (int)strlen(path) + 1;
+	LPWSTR wpath = new wchar_t[buffSize];
+	MultiByteToWideChar(CP_ACP, 0, path, buffSize, wpath, buffSize);
+
+	CreateProcess(NULL, wpath, NULL, NULL, false, NORMAL_PRIORITY_CLASS, NULL, NULL, &si, &pi);
+#endif
+#if OGRE_PLATFORM == OGRE_PLATFORM_LINUX
+	execl("./RoR.bin -checkcache", "", (char *) 0);
+#endif
+#if OGRE_PLATFORM == OGRE_PLATFORM_APPLE
+	FSRef ref;
+	FSPathMakeRef((const UInt8*)"./RoR.app -checkcache", &ref, NULL);
+	LSOpenFSRef(&ref, NULL);
+	//execl("./RoR.app/Contents/MacOS/RoR", "", (char *) 0);
+#endif
 }
 
 void MyDialog::OnButClearCache(wxCommandEvent& event)
@@ -2889,6 +2935,7 @@ void MyDialog::OnLinkClicked(wxHtmlLinkEvent& event)
 	wxURI *uri=new wxURI(href);
 	if (uri->GetScheme()==conv("rorserver"))
 	{
+		network_enable->SetValue(true);
 		servername->SetValue(uri->GetServer());
 		serverport->SetValue(uri->GetPort());
 		//serverport->SetValue(uri->GetPassword());
@@ -2902,6 +2949,29 @@ void MyDialog::OnLinkClicked(wxHtmlLinkEvent& event)
 		networkhtmw->OnLinkClicked(linkinfo);
 //	wxMessageDialog *res=new wxMessageDialog(this, href, "Success", wxOK | wxICON_INFORMATION );
 //	res->ShowModal();
+}
+
+void MyDialog::OnNoteBookPageChange(wxNotebookEvent& event)
+{
+	if(event.GetSelection() == 7) // community page
+	{
+		helphtmw->LoadPage(wxString(_(NEWS_HTML_PAGE))+
+						   wxString(conv("?version="))+
+						   wxString(_(RORNET_VERSION))+
+						   wxString(conv("&lang="))+
+						   conv(conv(language->CanonicalName))
+						   );
+	} else if(event.GetSelection() == 5)
+	{
+		btnUpdate->Enable(false);
+		timer1->Start(10000);
+		std::string lshort = conv(language->CanonicalName).substr(0, 2);
+		networkhtmw->LoadPage(wxString(_(REPO_HTML_SERVERLIST))+
+							  wxString(conv("?version="))+
+							  wxString(_(RORNET_VERSION))+
+							  wxString(conv("&lang="))+
+							  conv(lshort));
+	}
 }
 
 void MyDialog::OnTimerReset(wxTimerEvent& event)
