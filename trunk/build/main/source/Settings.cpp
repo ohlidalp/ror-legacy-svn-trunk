@@ -224,7 +224,8 @@ bool Settings::setupPaths()
 	settings["ogre.log"] = String(ogrelog_fname);
 
 #if OGRE_PLATFORM == OGRE_PLATFORM_WIN32
-	// windows is case insensitive, so norm here
+	// XXX maybe use StringUtil::standardisePath here?
+	// windows is case insensitive, so norm here	
 	StringUtil::toLowerCase(settings["Config Root"]);
 	StringUtil::toLowerCase(settings["Cache Path"]);
 	StringUtil::toLowerCase(settings["Log Path"]);

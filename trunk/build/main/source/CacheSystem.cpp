@@ -297,6 +297,17 @@ void CacheSystem::parseModAttribute(const String& line, Cache_Entry& t)
 		// Set
 		t.fext = params[1];
 	}
+	else if (attrib == "filetime")
+	{
+		// Check params
+		if (params.size() != 2)
+		{
+			logBadTruckAttrib(line, t);
+			return;
+		}
+		// Set
+		t.filetime = params[1];
+	}
 	else if (attrib == "dname")
 	{
 		// Check params
@@ -542,44 +553,54 @@ bool CacheSystem::loadCache()
 }
 bool CacheSystem::fileExists(String filename)
 {
-	FILE* f = fopen(filename.c_str(), "rb");
-	if(f != NULL) {
-		fclose(f);
-		return true;
-	}
-	return false;
+	std::fstream file;
+	file.open(filename.c_str());
+	return file.is_open();
 }
 
+Ogre::String CacheSystem::fileTime(String filename)
+{
+#if OGRE_PLATFORM == OGRE_PLATFORM_WIN32
+	HANDLE hFile = CreateFile(filename.c_str(), FILE_READ_ATTRIBUTES, FILE_SHARE_READ, NULL, OPEN_EXISTING, FILE_ATTRIBUTE_NORMAL, NULL);
+   
+	// Set the file time on the file
+	FILETIME ftCreate, ftAccess, ftWrite;
+	SYSTEMTIME st;
+	if (!GetFileTime(hFile, &ftCreate, &ftAccess, &ftWrite))
+		return "";
+
+	if(!FileTimeToSystemTime(&ftWrite, &st))
+		return "";
+
+	char tmp[256] = "";
+	memset(tmp, 0, 256);
+	sprintf(tmp, "%d/%d/%d/%d/%d/%d/%d", st.wYear, st.wMonth, st.wDay, st.wHour, st.wMinute, st.wSecond, st.wMilliseconds);
+	return String(tmp);
+#else
+	// XXX TODO: implement linux filetime!
+	// not yet implemented for other platforms
+	return "";
+#endif
+}
 String CacheSystem::getRealPath(String path)
 {
 	// this shall convert the path names to fit the operating system's flavor
 #if OGRE_PLATFORM == OGRE_PLATFORM_WIN32
-	char *fnc = const_cast<char*>(path.c_str());
-	// convert '/' to '\' on windows ...
-	char* fp;
-	fp=fnc;
-	while (*fp!=0) {if (*fp=='/') *fp='\\'; fp++;};
-	return String(fnc);
-#else
-	return path;
+	// this is required for windows since we are case insensitive ...
+	std::replace( path.begin(), path.end(), '/', '\\' );
+	StringUtil::toLowerCase(path);
 #endif
+	return path;
 }
 
 String CacheSystem::getVirtualPath(String path)
 {
-	// this shall convert the path names to fit the operating system's flavor
+	std::replace( path.begin(), path.end(), '\\', '/' );
 #if OGRE_PLATFORM == OGRE_PLATFORM_WIN32
-	char *fnc = const_cast<char*>(path.c_str());
-	// convert '\' to '/' on windows ...
-	char* fp;
-	fp=fnc;
-	while (*fp!=0) {if (*fp=='\\') *fp='/'; fp++;};
-	String path2 = String(fnc);
-	StringUtil::toLowerCase(path2); // this is required for windows since we are case insensitive ...
-	return path2;
-#else
-	return path;
+	// this is required for windows since we are case insensitive ...
+	StringUtil::toLowerCase(path);
 #endif
+	return path;
 }
 
 int CacheSystem::incrementalCacheUpdate()
@@ -594,10 +615,12 @@ int CacheSystem::incrementalCacheUpdate()
 	LogManager::getSingleton().logMessage("* incremental check (1/5): deleted and changed files ...");
 	UILOADER.setProgress(20, _L("incremental check: deleted and changed files"));
 	std::vector<Cache_Entry>::iterator it;
-	//int counter=0;
+	int counter=0;
 	std::vector<Cache_Entry> changed_entries;
-	for(it = entries.begin(); it != entries.end(); it++)
+	for(it = entries.begin(); it != entries.end(); it++, counter++)
 	{
+		int progress = ((float)counter/(float)(entries.size()))*100;
+		UILOADER.setProgress(progress, _L("incremental check: deleted and changed files\n" + it->type + ": " + it->fname));
 		if(it->type == "FileSystem")
 		{
 			String fn = getRealPath(it->dirname + "/" + it->fname);
@@ -627,15 +650,28 @@ int CacheSystem::incrementalCacheUpdate()
 					break;
 				continue;
 			}
-			char hash[255];
-			memset(hash, 0, 255);
 			
-			CSHA1 sha1;
-			sha1.HashFile(const_cast<char*>(fn.c_str()));
-			sha1.Final();
-			sha1.ReportHash(hash, CSHA1::REPORT_HEX_SHORT);
+			// check file time, if that fails, fall back to sha1 (needed for platforms where filetime is not yet implemented!
+			bool check = false;
+			String ft = fileTime(fn);
+			if(ft.empty() || it->filetime.empty() || it->filetime == "unkown")
+			{
+				// slow sha1 check
+				char hash[255];
+				memset(hash, 0, 255);
+				
+				CSHA1 sha1;
+				sha1.HashFile(const_cast<char*>(fn.c_str()));
+				sha1.Final();
+				sha1.ReportHash(hash, CSHA1::REPORT_HEX_SHORT);
+				check = (it->hash != String(hash));
+			} else
+			{
+				// faster file time check
+				check = (it->filetime != ft);
+			}
 
-			if(it->hash != String(hash))
+			if(check)
 			{
 				LogManager::getSingleton().logMessage("- "+fn+_L(" changed"));
 				it->changedornew = true;
@@ -692,14 +728,14 @@ int CacheSystem::incrementalCacheUpdate()
 			String dira = it->dirname;
 			StringUtil::toLowerCase(dira);
 			StringUtil::splitFilename(dira, basename, basepath);
-			basepath = StringUtil::standardisePath(basepath);
+			basepath = getVirtualPath(basepath);
 			dira = basepath + basename;
 
 
 			String dirb = it2->dirname;
 			StringUtil::toLowerCase(dirb);
 			StringUtil::splitFilename(dira, basename, basepath);
-			basepath = StringUtil::standardisePath(basepath);
+			basepath = getVirtualPath(basepath);
 			dirb = basepath + basename;
 
 			String dnameA = it->dname;
@@ -810,25 +846,27 @@ Ogre::String CacheSystem::formatInnerEntry(int counter, Cache_Entry t)
 	if(!t.deleted)
 	{
 		// this ensures that we wont break the format with empty ("") values
-		if(t.minitype == "")
+		if(t.minitype.empty())
 			t.minitype = "unkown";
-		if(t.type == "")
+		if(t.type.empty())
 			t.type = "unkown";
-		if(t.dirname == "")
+		if(t.dirname.empty())
 			t.dirname = "unkown";
-		if(t.fname == "")
+		if(t.fname.empty())
 			t.fname = "unkown";
-		if(t.fext == "")
+		if(t.fext.empty())
 			t.fext = "unkown";
-		if(t.dname == "")
+		if(t.filetime.empty())
+			t.filetime = "unkown";
+		if(t.dname.empty())
 			t.dname = "unkown";
-		if(t.hash == "")
+		if(t.hash.empty())
 			t.hash = "none";
-		if(t.uniqueid == "")
+		if(t.uniqueid.empty())
 			t.uniqueid = "no-uid";
-		if(t.fname_without_uid == "")
+		if(t.fname_without_uid.empty())
 			t.fname_without_uid = "unkown";
-		if(t.filecachename == "")
+		if(t.filecachename.empty())
 			t.filecachename = "none";
 
 		result += "\tusagecounter="+StringConverter::toString(t.usagecounter)+"\n";
@@ -839,6 +877,7 @@ Ogre::String CacheSystem::formatInnerEntry(int counter, Cache_Entry t)
 		result += "\tfname="+t.fname+"\n";
 		result += "\tfname_without_uid="+t.fname_without_uid+"\n";
 		result += "\tfext="+t.fext+"\n";
+		result += "\tfiletime="+t.filetime+"\n";
 		result += "\tdname="+t.dname+"\n";
 		result += "\thash="+t.hash+"\n";
 		result += "\tcategoryid="+StringConverter::toString(t.categoryid)+"\n";
@@ -1072,6 +1111,7 @@ void CacheSystem::addFile(String filename, String archiveType, String archiveDir
 			entry.fname = filename;
 			entry.fname_without_uid = stripUIDfromString(filename);
 			entry.fext = ext;
+			entry.filetime = fileTime(archiveDirectory);
 			entry.type = archiveType;
 			entry.dirname = archiveDirectory;
 			entry.number = modcounter++;
@@ -2010,7 +2050,7 @@ void CacheSystem::parseKnownFilesOneRG(Ogre::String rg)
 void CacheSystem::parseKnownFilesOneRGDirectory(Ogre::String rg, Ogre::String dir)
 {
 	String dirb = dir;
-	Ogre::StringUtil::standardisePath(dirb);
+	getVirtualPath(dirb);
 	for(std::vector<Ogre::String>::iterator sit=known_extensions.begin();sit!=known_extensions.end();sit++)
 	{
 		FileInfoListPtr files = ResourceGroupManager::getSingleton().findResourceFileInfo(rg, String("*.")+*sit);
@@ -2019,7 +2059,7 @@ void CacheSystem::parseKnownFilesOneRGDirectory(Ogre::String rg, Ogre::String di
 			if(!iterFiles->archive) continue;
 			
 			String dira = iterFiles->archive->getName();
-			Ogre::StringUtil::standardisePath(dira);
+			getVirtualPath(dira);
 
 			if(dira == dirb)
 				addFile(*iterFiles, *sit);
@@ -2042,30 +2082,35 @@ void CacheSystem::parseFilesOneRG(Ogre::String ext, Ogre::String rg)
 
 bool CacheSystem::isFileInEntries(Ogre::String filename)
 {
-	std::vector<Cache_Entry>::iterator it;
-	for(it = entries.begin(); it!=entries.end(); it++)
+	for(std::vector<Cache_Entry>::iterator it = entries.begin(); it!=entries.end(); it++)
 	{
 		if(it->fname == filename)
 			return true;
 	}
 	return false;
 }
+void CacheSystem::generateZipList()
+{
+	zipCacheList.clear();
+	for(std::vector<Cache_Entry>::iterator it = entries.begin(); it!=entries.end(); it++)
+	{
+		zipCacheList.insert(getVirtualPath(it->dirname));
+		LogManager::getSingleton().logMessage("zip path added: "+getVirtualPath(it->dirname));
+	}
+}
 
 bool CacheSystem::isZipUsedInEntries(Ogre::String filename)
 {
-	std::vector<Cache_Entry>::iterator it;
-	for(it = entries.begin(); it!=entries.end(); it++)
-	{
-		if(it->type == "Zip" && getVirtualPath(it->dirname) == getVirtualPath(filename) && !it->deleted)
-			return true;
-	}
-	return false;
+	if(zipCacheList.empty())
+		generateZipList();
+	LogManager::getSingleton().logMessage("isZipUsedInEntries: "+getVirtualPath(filename));
+
+	return (zipCacheList.find(getVirtualPath(filename)) != zipCacheList.end());
 }
 
 bool CacheSystem::isDirectoryUsedInEntries(Ogre::String directory)
 {
 	String dira = directory;
-	Ogre::StringUtil::standardisePath(dira);
 	dira = getVirtualPath(dira);
 
 	std::vector<Cache_Entry>::iterator it;
@@ -2073,7 +2118,6 @@ bool CacheSystem::isDirectoryUsedInEntries(Ogre::String directory)
 	{
 		if(it->type != "FileSystem") continue;
 		String dirb = it->dirname;
-		Ogre::StringUtil::standardisePath(dirb);
 		dirb = getVirtualPath(dirb);
 		if(dira == dirb)
 			return true;
@@ -2590,6 +2634,7 @@ void CacheSystem::checkForNewZipsInResourceGroup(String group)
 		UILOADER.setProgress(progress, _L("checking for new zips in ") + group + "\n" + iterFiles->filename + "\n" + StringConverter::toString(i) + "/" + StringConverter::toString(filecount));
 		if(!isZipUsedInEntries(zippath2))
 		{
+			UILOADER.setProgress(progress, _L("checking for new zips in ") + group + "\n" + _L("loading new zip: ") + iterFiles->filename + "\n" + StringConverter::toString(i) + "/" + StringConverter::toString(filecount));
 			LogManager::getSingleton().logMessage("- "+zippath+" is new");
 			loadSingleZip((Ogre::FileInfo)*iterFiles);
 		}
@@ -2609,6 +2654,7 @@ void CacheSystem::checkForNewDirectoriesInResourceGroup(String group)
 		UILOADER.setProgress(progress, _L("checking for new directories in ") + group + "\n" + listitem->filename + "\n" + StringConverter::toString(i) + "/" + StringConverter::toString(filecount));
 		if(!isDirectoryUsedInEntries(dirname))
 		{
+			UILOADER.setProgress(progress, _L("checking for new directories in ") + group + "\n" + _L("loading new directory: ") + listitem->filename + "\n" + StringConverter::toString(i) + "/" + StringConverter::toString(filecount));
 		  LogManager::getSingleton().logMessage("- "+dirname+" is new");
 		  loadSingleDirectory(dirname, group, true);
 		}

@@ -29,7 +29,7 @@ along with Rigs of Rods.  If not, see <http://www.gnu.org/licenses/>.
 //#include "Beam.h" // for authorinfo_t
 
 #define CACHE_FILE "mods.cache"
-#define CACHE_FILE_FORMAT "5"
+#define CACHE_FILE_FORMAT "6"
 
 // 60*60*24 = one day
 #define CACHE_FILE_FRESHNESS 86400
@@ -85,6 +85,7 @@ public:
 	Ogre::String hash;					// file's hash
 	bool resourceLoaded;				// loaded?
 	int number;							// mod number
+	Ogre::String filetime;				// NOT OS INDEPENDENT filetime
 	bool changedornew;					// is it added or changed during this runtime?
 	bool deleted;						// is this mod deleted?
 	int usagecounter;					// how much it was used already
@@ -145,6 +146,7 @@ public:
 		uniqueid(""), \
 		version(0), \
 		fext(""), \
+		filetime(""), \
 		type(""), \
 		dirname(""), \
 		hash(""), \
@@ -314,13 +316,17 @@ protected:
 	// categories
 	std::map<int, Category_Entry> categories;
 	std::map<int, int> category_usage;
+	std::set<Ogre::String> zipCacheList;
 	void readCategoryTitles();
 
 
 	// helpers
 	char *replacesSpaces(char *str);
 	char *restoreSpaces(char *str);
+	
 	bool fileExists(Ogre::String);
+	Ogre::String fileTime(Ogre::String);
+
 	Ogre::String getRealPath(Ogre::String path);
 	Ogre::String getVirtualPath(Ogre::String path);
 
@@ -334,6 +340,7 @@ protected:
 	void checkForNewZipsInResourceGroup(Ogre::String group);
 	void checkForNewDirectoriesInResourceGroup(String group);
 
+	void generateZipList();
 	bool isZipUsedInEntries(Ogre::String filename);
 	bool isFileInEntries(Ogre::String filename);
 
