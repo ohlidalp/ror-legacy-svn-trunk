@@ -1430,9 +1430,10 @@ MyDialog::MyDialog(const wxString& title, MyApp *_app) : wxDialog(NULL, wxID_ANY
 	wxPanel *advancedPanel=new wxPanel(nbook, -1);
 	nbook->AddPage(advancedPanel, _("Advanced"), false);
 
-	wxPanel *helpPanel=new wxPanel(nbook, -1);
-	nbook->AddPage(helpPanel, _("Community / Support"), false);
-
+#if OGRE_PLATFORM == OGRE_PLATFORM_WIN32
+	wxPanel *updatePanel=new wxPanel(nbook, -1);
+	nbook->AddPage(updatePanel, _("Updates"), false);
+#endif
 //	wxPanel *aboutPanel=new wxPanel(nbook, -1);
 //	nbook->AddPage(aboutPanel, "About", false);
 
@@ -1643,12 +1644,6 @@ MyDialog::MyDialog(const wxString& title, MyApp *_app) : wxDialog(NULL, wxID_ANY
 	btn = new wxButton(advancedPanel, clear_cache, _("Clear cache"), wxPoint(125, 180));
 	btn->SetToolTip(_("Use this to remove the whole cache and force the generation from ground up."));
 	
-
-	// update button only for windows users
-#if OGRE_PLATFORM == OGRE_PLATFORM_WIN32
-	new wxButton(advancedPanel, update_ror, _("Check for updates"), wxPoint(330, 280));
-#endif
-
 	dText = new wxStaticText(advancedPanel, -1, _("Language:"), wxPoint(10, 230));
 
 	wxArrayString choices;
@@ -1718,14 +1713,19 @@ MyDialog::MyDialog(const wxString& title, MyApp *_app) : wxDialog(NULL, wxID_ANY
 	sightrange->SetPageSize(10);
 	sightrange->SetLineSize(100);
 
-	wxSizer *sizer_help = new wxBoxSizer(wxVERTICAL);
-	helphtmw = new HtmlWindow(helpPanel, help_html, wxPoint(0, 0), wxSize(480, 380));
+#if OGRE_PLATFORM == OGRE_PLATFORM_WIN32
+	wxSizer *sizer_updates = new wxBoxSizer(wxVERTICAL);
+	helphtmw = new HtmlWindow(updatePanel, help_html, wxPoint(0, 0), wxSize(480, 380));
 	helphtmw->SetPage(_("... loading ... (maybe you should check your internet connection)"));
 	// tooltip is confusing there, better none!
 	//helphtmw->SetToolTip(_("here you can get help"));
-	sizer_help->Add(helphtmw, 1, wxGROW);
-	helpPanel->SetSizer(sizer_help);
+	sizer_updates->Add(helphtmw, 1, wxGROW);
+	// update button only for windows users
+	wxButton *btnu = new wxButton(updatePanel, update_ror, _("Update now"));
+	sizer_updates->Add(btnu, 0, wxGROW);
 
+	updatePanel->SetSizer(sizer_updates);
+#endif
 
 
 	//	controlstimer=new wxTimer(this, CONTROLS_TIMER_ID);
@@ -2953,11 +2953,29 @@ void MyDialog::OnLinkClicked(wxHtmlLinkEvent& event)
 
 void MyDialog::OnNoteBookPageChange(wxNotebookEvent& event)
 {
-	if(event.GetSelection() == 7) // community page
+	if(event.GetSelection() == 7) // updates page
 	{
+		// try to find our version
+		Ogre::String ver = "";
+		FILE *f = fopen("version", "r");
+		if(f)
+		{
+			char line[10];
+			fgets(line, 10, f);
+			fclose(f);
+			int vernum = 0;
+			int res = sscanf(line, "%d", &vernum);
+			if(res>0)
+			{
+				ver = Ogre::StringConverter::toString(vernum);
+			}
+		}
+
 		helphtmw->LoadPage(wxString(_(NEWS_HTML_PAGE))+
-						   wxString(conv("?version="))+
+						   wxString(conv("?netversion="))+
 						   wxString(_(RORNET_VERSION))+
+						   wxString(conv("&version="))+
+						   wxString(conv(ver))+
 						   wxString(conv("&lang="))+
 						   conv(conv(language->CanonicalName))
 						   );
