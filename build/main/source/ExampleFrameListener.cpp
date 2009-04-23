@@ -48,9 +48,6 @@ along with Rigs of Rods.  If not, see <http://www.gnu.org/licenses/>.
 #include "truckeditor.h"
 #endif
 #include "network.h"
-#ifdef NEWNET
-#include "networknew.h"
-#endif //NEWNET
 #include "engine.h"
 #include "turboprop.h"
 #include "screwprop.h"
@@ -1356,9 +1353,7 @@ ExampleFrameListener::ExampleFrameListener(RenderWindow* win, Camera* cam, Scene
 		// at some point you need to decide with what type of server you communicate below and choose the correct class
 
 		net = new Network(trucks, sname, sport, this);
-#ifdef NEWNET
-		//net = new NetworkNew(trucks, sname, sport, this);
-#endif
+
 		bool connres = net->connect();
 		UILOADER.setProgress(UI_PROGRESSBAR_HIDE);
 		if(!connres)
