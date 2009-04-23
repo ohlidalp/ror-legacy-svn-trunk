@@ -217,7 +217,7 @@ public:
 	void release(){};
 #endif
 
-	void startup();
+	void startup(bool forcecheck=false);
 	void loadAllZips();
 	
 	static Ogre::String stripUIDfromString(Ogre::String uidstr);
@@ -244,6 +244,9 @@ public:
 	
 	Ogre::String getSkinSource(Ogre::String filename);
 
+	// this is for stats only, maybe protect it by getter later
+	int changedFiles, newFiles, deletedFiles;
+
 protected:
 	CacheSystem();
 	~CacheSystem();
@@ -257,6 +260,7 @@ protected:
 	Ogre::String currentSHA1;	// stores sha1 over the content
 	int rgcounter;				// resource group counter, used to track the resource groups created
 	int modcounter;	// counter the number of mods
+
 
 
 	// the extensions we track in the cache system

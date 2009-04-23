@@ -222,6 +222,7 @@ typedef struct
 
 //used by configurator
 #define REPO_HTML_SERVERLIST "http://api.rigsofrods.com/serverlist/"
+#define NEWS_HTML_PAGE "http://api.rigsofrods.com/news/"
 
 //debugging
 //#define REFLECT_DEBUG 
