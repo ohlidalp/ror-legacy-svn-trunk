@@ -2,6 +2,7 @@
 // Microsoft Developer Studio generated include file.
 // Used by icon.rc
 //
+CREATEPROCESS_MANIFEST_RESOURCE_ID RT_MANIFEST "windows-manifest.txt"
 #define IDI_ICON1                       101
 
 // Next default values for new objects
