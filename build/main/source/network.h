@@ -64,6 +64,7 @@ public:
 	virtual int getRConState() = 0;
 	virtual int getSpeedUp() = 0;
 	virtual int getSpeedDown() = 0;
+	virtual std::map<int, float> &getLagData() = 0;
 };
 
 class Network : public NetworkBase
@@ -101,6 +102,7 @@ private:
 	SoundScriptManager* ssm;
 	Ogre::String getUserChatName(client_t *c);
 	void calcSpeed();
+	std::map<int, float> lagDataClients;
 public:
 
 	Network(Beam **btrucks, std::string servername, long sport, ExampleFrameListener *efl);
@@ -133,6 +135,7 @@ public:
 
 	int getSpeedUp();
 	int getSpeedDown();
+	std::map<int, float> &getLagData();
 };
 
 

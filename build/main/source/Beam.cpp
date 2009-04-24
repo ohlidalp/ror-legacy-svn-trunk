@@ -4807,6 +4807,7 @@ void Beam::SyncReset()
 		//            Real dt=evt.timeSinceLastFrame;
 		int steps=100;
 		steps=(int)(2000.0*dt);
+		truckSteps = steps; // copy for the stats 
 		if (steps>100) steps=100;
 		if (dt>1.0/20.0)
 		{

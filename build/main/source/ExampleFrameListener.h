@@ -193,7 +193,7 @@ protected:
 	Overlay* airneedlesOverlay;
 	Overlay* boatneedlesOverlay;
 	Overlay* needlesMaskOverlay;
-	LineStreamOverlayElement *fpsLineStream, *netLineStream;
+	LineStreamOverlayElement *fpsLineStream, *netLineStream, *netlagLineStream;
 	//Overlay* bigMapOverlay;
 
 	MapControl *bigMap;

@@ -48,6 +48,8 @@ namespace Ogre {
 		mNumberOfTraces(1),
 		mNumberOfSamplesForTrace(100),
 		mPosInStream(0),
+		myTitle(" "),
+		titleColour(ColourValue::Black),
 		mDataChanged(false),
 		moveMode(1),
 		legendTop(0),
@@ -241,11 +243,12 @@ namespace Ogre {
 			return;
 		}
 
-		Real left, right, top, bottom;
+		Real left, right, top, bottom, gHeight;
 		left = _getDerivedLeft() * 2 - 1;
 		right = left + (mWidth * 2);
-		top = -((_getDerivedTop() * 2) - 1);
-		bottom =  top -  (mHeight * 2);
+		gHeight = mHeight * 0.6f;
+		top = -((_getDerivedTop() * 2) - 1) - mHeight * 0.4f; // this creates a border at the top and bottom
+		bottom =  top -  (gHeight * 2);
 
 		fTraceVertex * currentVtxBufferData = 
 			static_cast<fTraceVertex *>(mCurrentVtxBuffer->lock(HardwareBuffer::HBL_DISCARD));
@@ -258,14 +261,14 @@ namespace Ogre {
 				fTraceVertex & lineStartVtx = currentVtxBufferData[(trace * mNumberOfSamplesForTrace + sample) * 2];
 				lineStartVtx.pos.x = left + (mWidth * 2) * ( (Real)sample  / ((Real)mNumberOfSamplesForTrace + 1) );
 				Real startSampleQunt = ( mTraceSamples[trace * mNumberOfSamplesForTrace + (sample + mPosInStream) % mNumberOfSamplesForTrace] / maxValue );
-				lineStartVtx.pos.y = bottom + (mHeight * 2) * startSampleQunt;
+				lineStartVtx.pos.y = bottom + (gHeight * 2) * startSampleQunt;
 				lineStartVtx.pos.z = zValue;
 
 
 				fTraceVertex & lineEndVtx = currentVtxBufferData[(trace * mNumberOfSamplesForTrace + sample) * 2 + 1];
 				lineEndVtx.pos.x = left + (mWidth * 2) * (Real)(sample + 1) / (Real)(mNumberOfSamplesForTrace + 1) ;
 				Real EndSampleQunt = ( mTraceSamples[trace * mNumberOfSamplesForTrace + (sample + mPosInStream + 1) % mNumberOfSamplesForTrace] / maxValue );
-				lineEndVtx.pos.y = bottom +(mHeight * 2) * EndSampleQunt;
+				lineEndVtx.pos.y = bottom +(gHeight * 2) * EndSampleQunt;
 				lineEndVtx.pos.z = zValue;
 
 				lineStartVtx.color = mTraceInfo[trace].colour.getAsARGB();
@@ -301,6 +304,12 @@ namespace Ogre {
 			mPosInStream++;
 		mDataChanged = true;
 
+	}
+	//---------------------------------------------------------------------
+	void LineStreamOverlayElement::setTitle(ColourValue c, String title)
+	{
+		myTitle = title;
+		titleColour = c;
 	}
 	//---------------------------------------------------------------------
 	void LineStreamOverlayElement::setTraceInfo( const uint32 traceIndex, const ColourValue & traceColour, const String &name )
@@ -356,6 +365,18 @@ namespace Ogre {
 			legendBottom->setCaption("0");
 			legendBottom->show();
 			this->addChild(legendBottom);
+
+			// todo: fix top of the bottom element!
+			title = (TextAreaOverlayElement*)OverlayManager::getSingleton().createOverlayElement("TextArea", elName+"Title");
+			title->setMetricsMode(GMM_RELATIVE);
+			title->setPosition(this->getWidth()*0.4f, this->getHeight()-0.02f);
+			title->setFontName("VeraMono");
+			title->setDimensions(0.06f, 0.02f);
+			title->setColour(titleColour);
+			title->setCharHeight(0.02f);
+			title->setCaption(myTitle);
+			title->show();
+			this->addChild(title);
 		}
 
 	}

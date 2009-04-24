@@ -87,6 +87,7 @@ namespace Ogre {
 
 		void setMoveMode(int value);
 		int getMoveMode();
+		void setTitle(ColourValue colour, String title);
 	protected:
 
 		typedef struct trace_info
@@ -112,8 +113,10 @@ namespace Ogre {
 		uint32 mNumberOfSamplesForTrace;
 
 		uint32 mPosInStream;
-		TextAreaOverlayElement *legendTop;
-		TextAreaOverlayElement *legendBottom;
+		Ogre::String myTitle;
+		Ogre::ColourValue titleColour;
+		TextAreaOverlayElement *legendTop, *legendBottom, *title;
+
 
 		std::vector<Real> mTraceSamples;
 		std::vector<trace_info_t> mTraceInfo;

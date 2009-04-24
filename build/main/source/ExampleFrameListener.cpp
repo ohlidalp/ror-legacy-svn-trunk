@@ -113,6 +113,7 @@ SceneManager *caelumSM;
 Camera *gCamera;
 
 String debugText;
+int truckSteps;
 
 class disableRenderingListener : public RenderTargetListener
 {
@@ -254,9 +255,15 @@ void ExampleFrameListener::updateStats(void)
 		{
 			static int framecounter = 0;
 			static int fpscount=0;
+			static ColourValue cr = ColourValue(0.3f,0.3f,1.0f);
+			static ColourValue cg = ColourValue(0.3f,1.0f,0.3f);
+			static ColourValue gr = ColourValue(0.8f,0.8f,0.8f);
 			// we view the extended stats, so draw the FPS graph :)
 			if(!fpsLineStream)
 			{
+				float graphHeight = 0.1f;
+				float border = graphHeight * 0.1f;
+				float posY = 0;
 				MaterialPtr backMat = MaterialManager::getSingleton().create("linestream_white", ResourceGroupManager::DEFAULT_RESOURCE_GROUP_NAME);
 				TextureUnitState *t = backMat->getTechnique(0)->getPass(0)->createTextureUnitState();
 				t->setColourOperationEx(Ogre::LBX_SOURCE1, Ogre::LBS_MANUAL, Ogre::LBS_CURRENT, ColourValue::White);
@@ -267,43 +274,70 @@ void ExampleFrameListener::updateStats(void)
 				t = backMat->getTechnique(0)->getPass(0)->createTextureUnitState();
 
 				fpsLineStream = dynamic_cast<Ogre::LineStreamOverlayElement *>(OverlayManager::getSingleton().createOverlayElement("LineStream", "FPSCurveLineStream"));
-				fpsLineStream->_setPosition(0.7f, 0.0f);
-				fpsLineStream->_setDimensions(0.3f, 0.15f);
+				fpsLineStream->_setPosition(0.7f, posY);
+				fpsLineStream->_setDimensions(0.3f, graphHeight);
 				fpsLineStream->setMaterialName("linestream_lines");
 				fpsLineStream->setNumberOfSamplesForTrace(400);
-				fpsLineStream->setNumberOfTraces(1);
+				fpsLineStream->setNumberOfTraces(2);
+				fpsLineStream->setTitle(gr, "Frame stats");
+
 				fpsLineStream->setMoveMode(0);
 				fpsLineStream->createVertexBuffer();
 				mDebugOverlay->add2D(fpsLineStream);
 				OverlayContainer *debugLineStreamPanel = (OverlayContainer *) (OverlayManager::getSingleton().createOverlayElement("Panel","debugLineStreamPanel"));
-				debugLineStreamPanel->_setPosition(0.7f, 0.0f);
-				debugLineStreamPanel->_setDimensions(0.4f, 0.15f);
+				debugLineStreamPanel->_setPosition(0.7f, posY);
+				debugLineStreamPanel->_setDimensions(0.4f, graphHeight);
 				debugLineStreamPanel->setMaterialName("linestream_white");
 				mDebugOverlay->add2D(debugLineStreamPanel);
+				posY += graphHeight + border;
 
 				if(netmode)
 				{
+					// net traffic
 					netLineStream = dynamic_cast<Ogre::LineStreamOverlayElement *>(OverlayManager::getSingleton().createOverlayElement("LineStream", "NETCurveLineStream"));
-					netLineStream->_setPosition(0.7f, 0.15f);
-					netLineStream->_setDimensions(0.3f, 0.15f);
+					netLineStream->_setPosition(0.7f, posY);
+					netLineStream->_setDimensions(0.3f, graphHeight);
 					netLineStream->setMaterialName("linestream_lines");
 					netLineStream->setNumberOfSamplesForTrace(400);
 					netLineStream->setNumberOfTraces(2);
 					netLineStream->setMoveMode(0);
 					netLineStream->createVertexBuffer();
+					netLineStream->setTitle(gr, "Network Traffic");
 					mDebugOverlay->add2D(netLineStream);
 					OverlayContainer *debugLineStreamPanel = (OverlayContainer *) (OverlayManager::getSingleton().createOverlayElement("Panel","debugLineStreamPanel2"));
-					debugLineStreamPanel->_setPosition(0.7f, 0.15f);
-					debugLineStreamPanel->_setDimensions(0.4f, 0.15f);
+					debugLineStreamPanel->_setPosition(0.7f, posY);
+					debugLineStreamPanel->_setDimensions(0.4f, graphHeight);
+					debugLineStreamPanel->setMaterialName("linestream_white");
+					mDebugOverlay->add2D(debugLineStreamPanel);
+					posY += graphHeight + border;
+
+					// net lag
+					netlagLineStream = dynamic_cast<Ogre::LineStreamOverlayElement *>(OverlayManager::getSingleton().createOverlayElement("LineStream", "NETLAGCurveLineStream"));
+					netlagLineStream->_setPosition(0.7f, posY);
+					netlagLineStream->_setDimensions(0.3f, graphHeight);
+					netlagLineStream->setMaterialName("linestream_lines");
+					netlagLineStream->setNumberOfSamplesForTrace(400);
+					netlagLineStream->setNumberOfTraces(10);
+					netlagLineStream->setMoveMode(0);
+					netlagLineStream->createVertexBuffer();
+					netlagLineStream->setTitle(gr, "Network Lag");
+					mDebugOverlay->add2D(netlagLineStream);
+					debugLineStreamPanel = (OverlayContainer *) (OverlayManager::getSingleton().createOverlayElement("Panel","debugLineStreamPanel3"));
+					debugLineStreamPanel->_setPosition(0.7f, posY);
+					debugLineStreamPanel->_setDimensions(0.4f, graphHeight);
 					debugLineStreamPanel->setMaterialName("linestream_white");
 					mDebugOverlay->add2D(debugLineStreamPanel);
 				}
 
-				fpsLineStream->setTraceInfo(0, ColourValue::Red, "FPS");
+				fpsLineStream->setTraceInfo(0, cr, "FPS");
+				fpsLineStream->setTraceInfo(1, cg, "Physic Frames");
 				if(netmode && netLineStream)
 				{
-					netLineStream->setTraceInfo(0, ColourValue::Red, "TrafficUp");
-					netLineStream->setTraceInfo(1, ColourValue::Green, "TrafficDown");
+					netLineStream->setTraceInfo(0, cr, "Traffic Up");
+					netLineStream->setTraceInfo(1, cg, "Traffic Down");
+					netlagLineStream->setTraceInfo(0, cr, "Average");
+					for(int i=1;i<10;i++)
+						netlagLineStream->setTraceInfo(i, ColourValue(0.8f,0.8f,0.8f), "");
 				}
 
 			}
@@ -311,13 +345,53 @@ void ExampleFrameListener::updateStats(void)
 				return;
 			if(framecounter > 5)
 			{
+				char tmp[10]="";
+				float fps = fpscount/6.0f;
+				sprintf(tmp, "%0.0f", fps);
+
+				fpsLineStream->setTraceInfo(0, cr, "FPS: " + String(tmp));
+				fpsLineStream->setTraceInfo(1, cg, "Physic Lag: " + StringConverter::toString(truckSteps));
+
 				fpsLineStream->setTraceValue(0, fpscount/6.0f);
+				fpsLineStream->setTraceValue(1, truckSteps);
 				if(netmode && net && netLineStream)
 				{
 					// in kB/s not B/s
-					netLineStream->setTraceValue(0, net->getSpeedUp()/1024.0f);
-					netLineStream->setTraceValue(1, net->getSpeedDown()/1024.0f);
+					memset(tmp, 0, 10);
+					float speedUp = net->getSpeedUp()/1024.0f;
+					sprintf(tmp, "%0.1fkB/s", speedUp);
+					netLineStream->setTraceValue(0, speedUp);
+
+					netLineStream->setTraceInfo(0, cr, "Traffic Up: "+String(tmp));
+					
+					float speedDown = net->getSpeedDown()/1024.0f;
+					memset(tmp, 0, 10);
+					sprintf(tmp, "%0.1fkB/s", speedDown);
+					netLineStream->setTraceValue(1, speedDown);
+					netLineStream->setTraceInfo(1, cg, "Traffic Down: "+String(tmp));
+					
 					netLineStream->moveForward();
+
+					std::map<int, float> &lag = net->getLagData();
+					int c=0;
+					float sum=0;
+					for(std::map<int, float>::iterator it = lag.begin(); it!= lag.end(); it++)
+					{
+						int n = it->first;
+						float lag = fabs(it->second);
+						//LogManager::getSingleton().logMessage("lag("+StringConverter::toString(c)+")="+StringConverter::toString(lag));
+						sum += lag;
+						c++;
+						netlagLineStream->setTraceValue(c, lag);
+					}
+
+					float av = sum / (float)(c);
+					netlagLineStream->setTraceValue(0, av);
+					memset(tmp, 0, 10);
+					sprintf(tmp, "%0.0fms", av);
+
+					netlagLineStream->setTraceInfo(0, cr, "Average:" + String(tmp));
+					netlagLineStream->moveForward();
 				}
 				fpsLineStream->moveForward();
 				fpscount = 0;
@@ -850,8 +924,7 @@ void ExampleFrameListener::setGravity(float value)
 // Constructor takes a RenderWindow because it uses that to determine input context
 ExampleFrameListener::ExampleFrameListener(RenderWindow* win, Camera* cam, SceneManager* scm, Root* root) :  initialized(false)
 {
-	netLineStream=0;
-	fpsLineStream=0;
+	fpsLineStream = netLineStream = netlagLineStream = 0;
 	loaded_terrain=0;
 	eflsingleton=this;
 #ifdef ANGELSCRIPT

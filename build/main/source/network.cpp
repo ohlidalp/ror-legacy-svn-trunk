@@ -52,7 +52,7 @@ int Network::downloadMod(char* modname)
 	return 0;
 }
 
-Network::Network(Beam **btrucks, std::string servername, long sport, ExampleFrameListener *efl) : NetworkBase(btrucks, servername, sport, efl)
+Network::Network(Beam **btrucks, std::string servername, long sport, ExampleFrameListener *efl) : NetworkBase(btrucks, servername, sport, efl), lagDataClients()
 {
 	shutdown=false;
 	ssm=SoundScriptManager::getSingleton();
@@ -499,8 +499,8 @@ void Network::sendData(Beam* truck)
 		{
 			Vector3 relpos=truck->nodes[i].AbsPosition-refpos;
 			sbuf[(i-1)*3]   = (short int)(relpos.x*300.0);
-      sbuf[(i-1)*3+1] = (short int)(relpos.y*300.0);
-      sbuf[(i-1)*3+2] = (short int)(relpos.z*300.0);
+			sbuf[(i-1)*3+1] = (short int)(relpos.y*300.0);
+			sbuf[(i-1)*3+2] = (short int)(relpos.z*300.0);
 		}
 		float *wfbuf=(float*)(send_buffer+truck->nodebuffersize);
 		for (i=0; i<truck->free_wheel; i++)
@@ -645,6 +645,11 @@ void Network::disconnect()
 	LogManager::getSingleton().logMessage("Network error while disconnecting: ");
 }
 
+std::map<int, float> &Network::getLagData()
+{
+	return lagDataClients;
+}
+
 void Network::receivethreadstart()
 {
 	int type;
@@ -678,7 +683,11 @@ void Network::receivethreadstart()
 				{
 					//okay
 					trucks[clients[i].trucknum]->pushNetwork(buffer, wrotelen);
-//		LogManager::getSingleton().logMessage("Id like to push to "+StringConverter::toString(clients[i].trucknum));
+
+					// hack-ish: detect LAG:
+					oob_t *o = (oob_t *)buffer;
+					lagDataClients[source] =  o->time - (trucks[clients[i].trucknum]->getTruckTime() + trucks[clients[i].trucknum]->getNetTruckTimeOffset());
+					//LogManager::getSingleton().logMessage("Id like to push to "+StringConverter::toString(clients[i].trucknum));
 					break;
 				}
 			}
@@ -834,6 +843,10 @@ void Network::receivethreadstart()
 				// we got deleted D:
 				netFatalError(String(buffer));
 			}
+
+			// remove key from lag stats
+			if(lagDataClients.find(source) != lagDataClients.end()) lagDataClients.erase(source);
+
 			for (int i=0; i<MAX_PEERS; i++)
 			{
 				if (clients[i].used && clients[i].user_id==source && (clients[i].loaded || clients[i].invisible))
