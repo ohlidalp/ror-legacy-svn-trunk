@@ -75,6 +75,7 @@ private:
 	int myauthlevel;
 	pthread_t sendthread;
 	pthread_t receivethread;
+	pthread_t downloadthread;
 	Timer timer;
 	int last_time;
 	int speed_time;
@@ -82,6 +83,7 @@ private:
 	char* send_buffer;
 	int send_buffer_len;
 	oob_t send_oob;
+	pthread_mutex_t dl_data_mutex;
 	pthread_mutex_t send_work_mutex;
 	pthread_cond_t send_work_cv;
 	client_t clients[MAX_PEERS];
@@ -103,6 +105,7 @@ private:
 	Ogre::String getUserChatName(client_t *c);
 	void calcSpeed();
 	std::map<int, float> lagDataClients;
+	std::map<Ogre::String, Ogre::String> downloadingMods;
 public:
 
 	Network(Beam **btrucks, std::string servername, long sport, ExampleFrameListener *efl);
@@ -110,6 +113,8 @@ public:
 	int receivemessage(SWInetSocket *socket, int *type, int *source, unsigned int *wrotelen, char* content, unsigned int bufferlen);
 	void sendthreadstart();
 	void receivethreadstart();
+	void downloadthreadstart(char *modname);
+	void tryDownloadMod(Ogre::String modname);
 	//external call to check if a vehicle is to be spawned
 	bool vehicle_to_spawn(char* name, unsigned int *uid, unsigned int *label);
 	int vehicle_spawned(unsigned int uid, int trucknum, client_t &client);

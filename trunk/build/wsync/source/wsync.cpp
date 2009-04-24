@@ -23,44 +23,52 @@ WSync::~WSync()
 {
 }
 
-int WSync::getMirrorURL(string &serverStr, string &remotePath, string &infoStr)
+int WSync::downloadMod(std::string modname, boost::filesystem::path dir, bool util)
 {
-	path filename;
-	if(getTempFilename(filename))
-		printf("error creating tempfile!\n");
+	ensurePathExist(dir);
 
-	if(downloadFile(filename.string(), API_SERVER, API_MIRROR))
+	// 1) ask repo api for file
+	if(!util) printf("searching mod on repository...\n");
+	string filename="";
+	std::vector< std::vector< std::string > > list;		
+	if(!downloadConfigFile(API_SERVER, API_REPOSEARCH + string("?id=") + modname, list))
 	{
-		printf("error communicating with RoR API\n");
-		return -1;
-	}
-
-	FILE *f = fopen(filename.string().c_str(), "r");
-	if (!f)
-	{
-		printf("error opening file '%s'", filename.string().c_str());
-		return -1;
-	}
-	while(!feof(f))
-	{
-		char server[2048]="";
-		char dir[2048]="";
-		char type[256]="";
-		boost::uintmax_t filesize = 0;
-		int res = fscanf(f, "%s %s %s\n", server, dir, type);
-		if(res < 3)
+		if(list.size()>0 && list[0].size() > 0)
 		{
-			printf("error communicating with RoR API\n");
-			return -1;
+			filename = list[0][0];
+			if(!util)
+				printf("found mod on repo: %s\n", filename.c_str());
 		} else
-		{
-			serverStr = std::string(server);
-			remotePath = std::string(dir);
-			infoStr = std::string(type);
-			return 0;
+		{	if(!util)
+				printf("wrong repo response2\n");
+			else
+				printf("error\n");
+			return 2;
 		}
+	} else
+	{
+		if(!util)
+			printf("wrong repo response\n");
+		else
+			printf("error\n");
+		return 1;
 	}
-	return 0;
+	
+	// do not download non-existing files
+	if(filename == "notfound")
+	{	
+		if(util) printf("%s", filename.c_str());
+		return 3;
+	}
+
+	// 2) download the file
+	path filepath = dir / filename;
+	
+	if(!util) printf("downloading ...");
+	int res = downloadFile(filepath, REPO_SERVER, REPO_DOWNLOAD + filename, !util);
+	if(!util) printf("done!                 \n");
+	if(util) printf("%s", filename.c_str());
+	return res;
 }
 
 int WSync::cleanURL(string &url)
@@ -201,11 +209,20 @@ int WSync::sync(boost::filesystem::path localDir, string server, string remoteDi
 			if(useMirror)
 			{
 				printf("searching for suitable mirror...\n");
-				if(!getMirrorURL(mirror_server, mirror_dir, mirror_info) && mirror_server != "failed")
+				std::vector< std::vector< std::string > > list;		
+				if(!downloadConfigFile(API_SERVER, API_MIRROR, list))
 				{
-					use_mirror=true;
-					printf("using mirror server: %s, %s\n", mirror_server.c_str(), mirror_info.c_str());
-				}
+					if(list.size()>0 && list[0].size() > 2)
+					{
+						mirror_server = list[0][0];
+						mirror_dir = list[0][1];
+						mirror_info = list[0][2];
+						use_mirror=true;
+						printf("using mirror server: %s, %s\n", mirror_server.c_str(), mirror_info.c_str());
+					} else
+						printf("wrong API response2\n");
+				} else
+					printf("wrong API response\n");
 			}
 
 			if(use_mirror)
@@ -641,6 +658,39 @@ int WSync::downloadFile(boost::filesystem::path localFile, string server, string
 			std::cout << endl << "Error: Invalid response\n";
 			printf("download URL: http://%s%s\n", server.c_str(), path.c_str());
 			return 1;
+		}
+		if (status_code == 302)
+		{
+			// catch redirects
+			boost::asio::read_until(socket, response, "\r\n\r\n");
+			std::string line="",new_url="";
+			size_t counter = 0;
+			size_t reported_filesize = 0;
+			{
+				while (std::getline(response_stream, line) && line != "\r")
+				{
+					if(line.substr(0, 10) == "location: ")
+						new_url = line.substr(10).c_str();
+				}
+			}
+			// check protocol
+			if(new_url.substr(0, 7) != "http://")
+			{
+				std::cout << endl << "Error: redirection uses unkown protocol: " << new_url << "\n";
+				return 1;
+			}
+			// trim line
+			new_url = new_url.substr(0, new_url.find_first_of("\r"));
+
+			// separate URL into server and path
+			string new_server = new_url.substr(7, new_url.find_first_of("/", 7)-7);
+			string new_path = new_url.substr(new_url.find_first_of("/", 7));
+
+			//std::cout << "redirect to : '" << new_url << "'\n";
+			//std::cout << "server : '" << new_server << "'\n";
+			//std::cout << "path : '" << new_path << "'\n";
+
+			return downloadFile(localFile, new_server, new_path, displayProgress);
 		}
 		if (status_code != 200)
 		{

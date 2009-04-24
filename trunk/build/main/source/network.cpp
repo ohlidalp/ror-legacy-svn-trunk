@@ -46,10 +46,10 @@ void *s_receivethreadstart(void* vid)
 	return NULL;
 }
 
-
-int Network::downloadMod(char* modname)
+void *s_downloadthreadstart(void* vid)
 {
-	return 0;
+	net_instance->downloadthreadstart((char*)vid);
+	return NULL;
 }
 
 Network::Network(Beam **btrucks, std::string servername, long sport, ExampleFrameListener *efl) : NetworkBase(btrucks, servername, sport, efl), lagDataClients()
@@ -74,11 +74,139 @@ Network::Network(Beam **btrucks, std::string servername, long sport, ExampleFram
 	send_buffer=0;
 	pthread_mutex_init(&msgsend_mutex, NULL);
 	pthread_mutex_init(&send_work_mutex, NULL);
+	pthread_mutex_init(&dl_data_mutex, NULL);
 	pthread_cond_init(&send_work_cv, NULL);
 	for (int i=0; i<MAX_PEERS; i++) clients[i].used=false;
 	pthread_mutex_init(&clients_mutex, NULL);
 	pthread_mutex_init(&chat_mutex, NULL);
 	//delayed start, we do nothing until we know the vehicle name
+}
+
+
+void Network::downloadthreadstart(char *modname_c)
+{
+	String modname = String(modname_c);
+	// appearently we cannot free here D:
+	//free(modname_c);
+	LogManager::getSingleton().logMessage("new downloadthread for mod " + modname);
+	// we try to call the updater here that will download the file for us hopefully
+#if OGRE_PLATFORM == OGRE_PLATFORM_WIN32
+	PROCESS_INFORMATION pi;
+	STARTUPINFO si;
+	BOOL bSuccess;  /* BOOL return code for APIs */  
+
+	HANDLE hReadPipe, hWritePipe, hWritePipe2;
+	SECURITY_ATTRIBUTES saPipe;  /* security for anonymous pipe */
+	/* set up the security attributes for the anonymous pipe */
+	saPipe.nLength = sizeof(SECURITY_ATTRIBUTES);
+	saPipe.lpSecurityDescriptor = NULL;
+	/* In order for the child to be able to write to the pipe, the handle */
+	/* must be marked as inheritable by setting this flag: */
+	saPipe.bInheritHandle = TRUE;
+
+	CreatePipe(&hReadPipe,  /* read handle */
+			   &hWritePipe,  /* write handle, used as stdout by child */
+			   &saPipe,  /* security descriptor */
+			   0);  /* pipe buffer size */
+	bSuccess = DuplicateHandle(GetCurrentProcess(), /* source process */
+								hReadPipe, /* handle to duplicate */
+								GetCurrentProcess(), /* destination process */
+								NULL, /* new handle - don't want one, change original handle */
+								0, /* new access flags - ignored since DUPLICATE_SAME_ACCESS */
+								FALSE, /* make it *not* inheritable */
+								DUPLICATE_SAME_ACCESS);
+	bSuccess = DuplicateHandle(GetCurrentProcess(), /* source process */
+								hWritePipe, /* handle to duplicate */
+								GetCurrentProcess(), /* destination process */
+								&hWritePipe2, /* new handle, used as stderr by child */
+								0, /* new access flags - ignored since DUPLICATE_SAME_ACCESS */
+								TRUE, /* it's inheritable */
+								DUPLICATE_SAME_ACCESS);
+	DWORD               dwCode  =   0;
+	ZeroMemory(&si,sizeof(STARTUPINFO));
+	si.cb           =   sizeof(STARTUPINFO);
+	si.dwFlags      =   STARTF_USESTDHANDLES|STARTF_USESHOWWINDOW;
+	si.hStdInput = hWritePipe2; /* hStdInput needs a valid handle in case it is checked by the child */
+	si.hStdOutput = hWritePipe; /* write end of the pipe */
+	si.hStdError = hWritePipe2; /* duplicate of write end of the pipe */
+	si.wShowWindow  =   SW_HIDE;
+
+	String packsPath = SETTINGS.getSetting("User Path")+"packs" + SETTINGS.getSetting("dirsep") + "downloaded";
+
+	String cmd = SETTINGS.getSetting("Program Path") + "update.exe dlmod \"" + modname + "\" \"" + packsPath + "\"";
+
+	LogManager::getSingleton().logMessage("starting update.exe: " + cmd);
+	
+	char *cmdc = const_cast<char*>(cmd.c_str());
+	bSuccess = CreateProcess(NULL,  /* filename */
+							cmdc,  /* full command line for child */
+							NULL,  /* process security descriptor */
+							NULL,  /* thread security descriptor */
+							TRUE,  /* inherit handles? Also use if STARTF_USESTDHANDLES */
+							0,  /* creation flags */
+							NULL,  /* inherited environment address */
+							NULL,  /* startup dir; NULL = start in current */
+							&si,  /* pointer to startup info (input) */
+							&pi);  /* pointer to process info (output) */
+	
+	CloseHandle(pi.hThread);
+	CloseHandle(pi.hProcess);
+	bSuccess = CloseHandle(hWritePipe);
+	bSuccess = CloseHandle(hWritePipe2);
+
+	DWORD cchReadBuffer;  /* number of bytes read or to be written */
+	char chReadBuffer[300];  /* pipe read buffer */
+	String modfilename = "";
+	for (;;)
+    {
+		bSuccess = ReadFile(hReadPipe,  /* read handle */
+							chReadBuffer,  /* buffer for incoming data */
+							sizeof(chReadBuffer),  /* number of bytes to read */
+							&cchReadBuffer,  /* number of bytes actually read */
+							NULL);  /* no overlapped reading */
+		if (!bSuccess && (GetLastError() == ERROR_BROKEN_PIPE))
+			break;  /* child has died */
+
+		modfilename = String(chReadBuffer, cchReadBuffer);
+		// break since we read all at once
+		break;
+	}
+	//String targetfile = SETTINGS.getSetting("User Path")+"packs" + SETTINGS.getSetting("dirsep") + modfilename;
+	// DO NOT USE OGRE STUFF IN HERE, its not thread safe!
+	// DO AS LESS AS POSSIBLE IN THIS THREAD!
+	CloseHandle(hReadPipe);
+
+	// write the data back to the main handling stuff and close the thread
+	pthread_mutex_lock(&dl_data_mutex);
+	downloadingMods[modname] = modfilename;
+	pthread_mutex_unlock(&dl_data_mutex);
+
+#elif OGRE_PLATFORM == OGRE_PLATFORM_LINUX
+	// TODO
+#elif OGRE_PLATFORM == OGRE_PLATFORM_APPLE
+	// TODO
+#endif
+}
+
+void Network::tryDownloadMod(Ogre::String modname)
+{
+	pthread_mutex_lock(&dl_data_mutex);
+	// do not double-download mods
+	if(downloadingMods.find(modname) != downloadingMods.end())
+		return;
+
+	downloadingMods[modname] = "";
+	pthread_mutex_unlock(&dl_data_mutex);
+	
+	
+	pthread_mutex_lock(&chat_mutex);
+	NETCHAT.addText("^9Trying to download missing mod now: " + modname);
+	pthread_mutex_unlock(&chat_mutex);
+
+	// attention: we need permanent space, so we malloc it...
+	char *modname_c = (char*)malloc(modname.size());
+	strcpy(modname_c, modname.c_str());
+	pthread_create(&downloadthread, NULL, s_downloadthreadstart, (void*)modname_c);
 }
 
 void Network::netFatalError(String errormsg, bool exitProgram)
@@ -416,6 +544,49 @@ bool Network::vehicle_to_spawn(char* name, unsigned int *uid, unsigned int *labe
 	pthread_mutex_lock(&clients_mutex);
 	for (int i=0; i<MAX_PEERS; i++)
 	{
+		String truckname = String(clients[i].truck_name);
+		pthread_mutex_lock(&dl_data_mutex);
+		String zipname = downloadingMods[truckname];
+		pthread_mutex_unlock(&dl_data_mutex);
+		if(clients[i].used && !clients[i].loaded && clients[i].invisible && !zipname.empty())
+		{
+			// we found a possible late-load candidate :D
+			if(zipname == "error" || zipname == "notfound")
+				// we leave it in there, so it wont be tried to download again
+				continue;
+			
+			String targetpath = SETTINGS.getSetting("User Path")+"packs" + SETTINGS.getSetting("dirsep") + "downloaded";
+			String targetfilename = zipname;
+			String targetfile = targetpath + SETTINGS.getSetting("dirsep") + targetfilename;
+			if(CACHE.fileExists(targetfile))
+			{
+				// yay we downloaded the mod :D
+				// now add it to the cache manually and then load it :)
+				ResourceGroupManager::getSingleton().addResourceLocation(targetpath, "FileSystem");
+				CACHE.loadSingleZip(targetfile, 1);
+				//CACHE.addFile(targetfilename, "ZipArchive", targetpath, ".zip");
+				// finally try to load the truck
+				// BUG: resource still loaded, to be fixed :-\
+				//if(CACHE.checkResourceLoaded(truckname))
+
+				pthread_mutex_lock(&chat_mutex);
+				NETCHAT.addText("^9downloaded mod successfully: " + targetfilename);
+				pthread_mutex_unlock(&chat_mutex);
+
+				{
+					// yay!
+					strcpy(name, truckname.c_str());
+					*uid=clients[i].user_id;
+					clients[i].invisible = false;
+					clients[i].loaded = true;
+					*label=i;
+					pthread_mutex_unlock(&clients_mutex);
+					return true;
+				}
+			}
+
+		}
+
 		if (clients[i].used && !clients[i].loaded && !clients[i].invisible)
 		{
 			strcpy(name, clients[i].truck_name);
@@ -767,6 +938,8 @@ void Network::receivethreadstart()
 				if(!resourceExists)
 				{
 					LogManager::getSingleton().logMessage("Network warning: truck named '"+truckname+"' not found in local installation");
+					// try to donwload then
+					tryDownloadMod(truckname);
 				}
 			}
 			//spawn vehicle query
@@ -963,6 +1136,7 @@ Network::~Network()
 	shutdown=true;
 	pthread_mutex_destroy(&chat_mutex);
 	pthread_mutex_destroy(&send_work_mutex);
+	pthread_mutex_destroy(&dl_data_mutex);
 	pthread_cond_destroy(&send_work_cv);
 }
 

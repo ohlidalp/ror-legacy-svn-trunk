@@ -246,6 +246,9 @@ public:
 
 	// this is for stats only, maybe protect it by getter later
 	int changedFiles, newFiles, deletedFiles;
+	bool fileExists(Ogre::String);
+
+	void loadSingleZip(Ogre::String zippath, int cfactor);
 
 protected:
 	CacheSystem();
@@ -300,7 +303,6 @@ protected:
 	// adds a zip to the cache
 	void loadSingleZip(Ogre::FileInfo f);
 	void loadSingleZip(Cache_Entry e);
-	void loadSingleZip(Ogre::String zippath, int cfactor);
 
 	Ogre::String detectFilesMiniType(Ogre::String filename);
 	void removeFileFromFileCache(std::vector<Cache_Entry>::iterator it);
@@ -328,7 +330,6 @@ protected:
 	char *replacesSpaces(char *str);
 	char *restoreSpaces(char *str);
 	
-	bool fileExists(Ogre::String);
 	Ogre::String fileTime(Ogre::String);
 
 	Ogre::String getRealPath(Ogre::String path);
