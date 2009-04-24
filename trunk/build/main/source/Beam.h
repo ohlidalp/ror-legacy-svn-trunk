@@ -63,6 +63,7 @@ typedef struct _collision_box collision_box_t;
 
 
 extern String debugText;
+extern int truckSteps;
 
 #define THREAD_MONO 0
 #define THREAD_HT 1
@@ -797,6 +798,9 @@ public:
 	void setMeshVisibility(bool visible);
 	bool meshesVisible;
 	inline bool isFiniteNum(float x);
+	
+	int getTruckTime() { return nettimer->getMilliseconds(); };
+	int getNetTruckTimeOffset() { return net_toffset; };
 protected:
 
 	void updateSimpleSkeleton();
