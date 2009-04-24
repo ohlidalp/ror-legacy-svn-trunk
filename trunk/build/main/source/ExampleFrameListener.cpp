@@ -250,26 +250,61 @@ void ExampleFrameListener::updateStats(void)
 		OverlayElement* guiDbg = OverlayManager::getSingleton().getOverlayElement("Core/DebugText");
 		guiDbg->setCaption(debugText);
 
-		if(mStatsOn>1)
+		if(mStatsOn>0)
 		{
 			static int framecounter = 0;
 			static int fpscount=0;
 			// we view the extended stats, so draw the FPS graph :)
 			if(!fpsLineStream)
 			{
+				MaterialPtr backMat = MaterialManager::getSingleton().create("linestream_white", ResourceGroupManager::DEFAULT_RESOURCE_GROUP_NAME);
+				TextureUnitState *t = backMat->getTechnique(0)->getPass(0)->createTextureUnitState();
+				t->setColourOperationEx(Ogre::LBX_SOURCE1, Ogre::LBS_MANUAL, Ogre::LBS_CURRENT, ColourValue::White);
+				t->setAlphaOperation(Ogre::LBX_SOURCE1, Ogre::LBS_MANUAL, Ogre::LBS_CURRENT, 0.3);
+				backMat->getTechnique(0)->getPass(0)->setSceneBlending(SBT_TRANSPARENT_ALPHA);
+				
+				backMat = MaterialManager::getSingleton().create("linestream_lines", ResourceGroupManager::DEFAULT_RESOURCE_GROUP_NAME);
+				t = backMat->getTechnique(0)->getPass(0)->createTextureUnitState();
+
 				fpsLineStream = dynamic_cast<Ogre::LineStreamOverlayElement *>(OverlayManager::getSingleton().createOverlayElement("LineStream", "FPSCurveLineStream"));
-				fpsLineStream->setMetricsMode(GMM_PIXELS);
-				fpsLineStream->setPosition(0, 460);
-				fpsLineStream->setDimensions(800, 200);
+				fpsLineStream->_setPosition(0.7f, 0.0f);
+				fpsLineStream->_setDimensions(0.3f, 0.15f);
+				fpsLineStream->setMaterialName("linestream_lines");
 				fpsLineStream->setNumberOfSamplesForTrace(400);
 				fpsLineStream->setNumberOfTraces(1);
 				fpsLineStream->setMoveMode(0);
-				fpsLineStream->defaultStyle();
 				fpsLineStream->createVertexBuffer();
+				mDebugOverlay->add2D(fpsLineStream);
+				OverlayContainer *debugLineStreamPanel = (OverlayContainer *) (OverlayManager::getSingleton().createOverlayElement("Panel","debugLineStreamPanel"));
+				debugLineStreamPanel->_setPosition(0.7f, 0.0f);
+				debugLineStreamPanel->_setDimensions(0.4f, 0.15f);
+				debugLineStreamPanel->setMaterialName("linestream_white");
+				mDebugOverlay->add2D(debugLineStreamPanel);
+
+				if(netmode)
+				{
+					netLineStream = dynamic_cast<Ogre::LineStreamOverlayElement *>(OverlayManager::getSingleton().createOverlayElement("LineStream", "NETCurveLineStream"));
+					netLineStream->_setPosition(0.7f, 0.15f);
+					netLineStream->_setDimensions(0.3f, 0.15f);
+					netLineStream->setMaterialName("linestream_lines");
+					netLineStream->setNumberOfSamplesForTrace(400);
+					netLineStream->setNumberOfTraces(2);
+					netLineStream->setMoveMode(0);
+					netLineStream->createVertexBuffer();
+					mDebugOverlay->add2D(netLineStream);
+					OverlayContainer *debugLineStreamPanel = (OverlayContainer *) (OverlayManager::getSingleton().createOverlayElement("Panel","debugLineStreamPanel2"));
+					debugLineStreamPanel->_setPosition(0.7f, 0.15f);
+					debugLineStreamPanel->_setDimensions(0.4f, 0.15f);
+					debugLineStreamPanel->setMaterialName("linestream_white");
+					mDebugOverlay->add2D(debugLineStreamPanel);
+				}
 
 				fpsLineStream->setTraceInfo(0, ColourValue::Red, "FPS");
-				//fpsLineStream->setTraceInfo(1, ColourValue::Green, "triangleCount");
-				mTimingDebugOverlay->add2D(fpsLineStream);
+				if(netmode && netLineStream)
+				{
+					netLineStream->setTraceInfo(0, ColourValue::Red, "TrafficUp");
+					netLineStream->setTraceInfo(1, ColourValue::Green, "TrafficDown");
+				}
 
 			}
 			if(!fpsLineStream)
@@ -277,7 +312,13 @@ void ExampleFrameListener::updateStats(void)
 			if(framecounter > 5)
 			{
 				fpsLineStream->setTraceValue(0, fpscount/6.0f);
-				//fpsLineStream->setTraceValue(1, stats.triangleCount);
+				if(netmode && net && netLineStream)
+				{
+					// in kB/s not B/s
+					netLineStream->setTraceValue(0, net->getSpeedUp()/1024.0f);
+					netLineStream->setTraceValue(1, net->getSpeedDown()/1024.0f);
+					netLineStream->moveForward();
+				}
 				fpsLineStream->moveForward();
 				fpscount = 0;
 				framecounter = 0;
@@ -809,6 +850,7 @@ void ExampleFrameListener::setGravity(float value)
 // Constructor takes a RenderWindow because it uses that to determine input context
 ExampleFrameListener::ExampleFrameListener(RenderWindow* win, Camera* cam, SceneManager* scm, Root* root) :  initialized(false)
 {
+	netLineStream=0;
 	fpsLineStream=0;
 	loaded_terrain=0;
 	eflsingleton=this;
@@ -1330,7 +1372,50 @@ ExampleFrameListener::ExampleFrameListener(RenderWindow* win, Camera* cam, Scene
 	useIngameEditor = false;
 
 	//network
-	netmode=(SETTINGS.getSetting("Network enable")=="Yes" || SETTINGS.getSetting("join URI") != "");
+	netmode=(SETTINGS.getSetting("Network enable")=="Yes");
+	
+	// check command line args
+	String cmd = SETTINGS.getSetting("cmdline CMD");
+	String cmdAction = "";
+	String cmdServerIP = "";
+	String modName = "";
+	long cmdServerPort = 0;
+	Vector3 spawnLocation = Vector3::ZERO;
+	if(cmd != "")
+	{
+		std::vector<String> str = StringUtil::split(cmd, "/");
+		// process args now
+		for(std::vector<String>::iterator it = str.begin(); it!=str.end(); it++)
+		{
+			String argstr = *it;
+			std::vector<String> args = StringUtil::split(argstr, ":");
+			if(args.size()<2) continue;
+			if(args[0] == "action" && args.size() == 2) cmdAction = args[1];
+			if(args[0] == "serverpass" && args.size() == 2) SETTINGS.setSetting("Server password", args[1]);
+			if(args[0] == "modname" && args.size() == 2) modName = args[1];
+			if(args[0] == "ipport" && args.size() == 3)
+			{
+				cmdServerIP = args[1];
+				cmdServerPort = StringConverter::parseLong(args[2]);
+			}
+			if(args[0] == "loc" && args.size() == 4)
+			{
+				spawnLocation = Vector3(StringConverter::parseInt(args[1]), StringConverter::parseInt(args[2]), StringConverter::parseInt(args[3]));
+				SETTINGS.setSetting("net spawn location", Ogre::StringConverter::toString(spawnLocation));
+			}
+		}
+	}
+
+	if(cmdAction == "regencache") SETTINGS.setSetting("regen-cache-only", "True");
+	if(cmdAction == "installmod")
+	{
+		// use modname!
+	}
+
+
+	// check if we enable netmode based on cmdline
+	if(!netmode && cmdAction == "joinserver")
+		netmode = true;
 	net=0;
 
 	// preselected map or truck?
@@ -1347,8 +1432,15 @@ ExampleFrameListener::ExampleFrameListener(RenderWindow* win, Camera* cam, Scene
 
 	if(netmode)
 	{
+		// cmdline overrides config
 		std::string sname = SETTINGS.getSetting("Server name").c_str();
+		if(cmdAction == "joinserver" && !cmdServerIP.empty())
+			sname = cmdServerIP;
+
 		long sport = StringConverter::parseLong(SETTINGS.getSetting("Server port"));
+		if(cmdAction == "joinserver" && cmdServerPort)
+			sport = cmdServerPort;
+
 		if (sport==0)
 		{
 #if OGRE_PLATFORM == OGRE_PLATFORM_WIN32
@@ -1392,7 +1484,6 @@ ExampleFrameListener::ExampleFrameListener(RenderWindow* win, Camera* cam, Scene
 			preselected_map = String(terrn);
 
 	}
-	//LogManager::getSingleton().logMessage("huette debug 2");
 
 	if(preselected_map != "")
 	{
@@ -2688,7 +2779,7 @@ bool ExampleFrameListener::updateEvents(float dt)
 					if (!trucks[current_truck]->replaymode && !trucks[current_truck]->parkingbrake)
 					{
 						float brake = INPUTENGINE.getEventValue("TRUCK_BRAKE");
-						trucks[current_truck]->brake = brake*trucks[current_truck]->brakeforce/(1.0+fabs(trucks[current_truck]->WheelSpeed)/10.0);
+						trucks[current_truck]->brake = brake*trucks[current_truck]->brakeforce;
 						if (trucks[current_truck]->brake > trucks[current_truck]->brakeforce/6.0)
 							ssm->trigStart(current_truck, SS_TRIG_BRAKE);
 						else
@@ -4312,6 +4403,7 @@ void ExampleFrameListener::loadTerrain(String terrainfile)
 	spl.rot = Quaternion::ZERO;
 	netSpawnPos["truck"] = spl;
 	netSpawnPos["airplane"] = spl;
+	netSpawnPos["boat"] = spl;
 	netSpawnPos["car"] = spl;
 
 	//shadows
@@ -5584,14 +5676,24 @@ void ExampleFrameListener::initTrucks(bool loadmanual, Ogre::String selected, Og
 			Quaternion spawnrot = Quaternion::ZERO;
 			if(selectedExtension.size() > 0)
 			{
-				try
+				String nsp = SETTINGS.getSetting("net spawn location");
+				if(!nsp.empty())
 				{
-					spawnpos = netSpawnPos[selectedExtension].pos;
-					spawnrot = netSpawnPos[selectedExtension].rot;
-				} catch(...)
-				{
-					spawnpos = Vector3(truckx, trucky, truckz);
+					// override-able by cmdline
+					spawnpos = Ogre::StringConverter::parseVector3(nsp);
 					spawnrot = Quaternion::ZERO;
+				} else
+				{
+					// classical, search start points
+					try
+					{
+						spawnpos = netSpawnPos[selectedExtension].pos;
+						spawnrot = netSpawnPos[selectedExtension].rot;
+					} catch(...)
+					{
+						spawnpos = Vector3(truckx, trucky, truckz);
+						spawnrot = Quaternion::ZERO;
+					}
 				}
 			}
 			trucks[free_truck]=new Beam(free_truck, mSceneMgr, mSceneMgr->getRootSceneNode(), mWindow, &mapsizex, &mapsizez, spawnpos.x, spawnpos.y, spawnpos.z, spawnrot, selectedchr, collisions, dustp, clumpp, sparksp, dripp, splashp, ripplep, hfinder, w, mCamera, mirror, false, false, netmode,0,false,flaresMode, truckconfig);

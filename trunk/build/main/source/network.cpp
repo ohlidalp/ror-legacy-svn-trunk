@@ -65,6 +65,10 @@ Network::Network(Beam **btrucks, std::string servername, long sport, ExampleFram
 	nickname = "";
 	trucks=btrucks;
 	myuid=0;
+	
+	speed_time=0;
+	speed_bytes_sent = speed_bytes_sent_tmp = speed_bytes_recv = speed_bytes_sent_tmp = 0;
+
 	rconauthed=0;
 	last_time=0;
 	send_buffer=0;
@@ -345,6 +349,7 @@ int Network::sendmessage(SWInetSocket *socket, int type, unsigned int len, char*
 	memcpy(buffer+sizeof(header_t), content, len);
 
 	int rlen=0;
+	speed_bytes_sent_tmp += msgsize;
 	while (rlen<(int)msgsize)
 	{
 		int sendnum=socket->send(buffer+rlen, msgsize-rlen, &error);
@@ -356,6 +361,7 @@ int Network::sendmessage(SWInetSocket *socket, int type, unsigned int len, char*
 		rlen+=sendnum;
 	}
 	pthread_mutex_unlock(&msgsend_mutex);
+	calcSpeed();
 	return 0;
 }
 
@@ -397,8 +403,10 @@ int Network::receivemessage(SWInetSocket *socket, int *type, int *source, unsign
 			hlen+=recvnum;
 		}
 	}
+	speed_bytes_recv_tmp += head.size + sizeof(header_t);
 
 	memcpy(content, buffer+sizeof(header_t), bufferlen);
+	calcSpeed();
 	return 0;
 }
 
@@ -440,6 +448,31 @@ int Network::vehicle_spawned(unsigned int uid, int trucknum, client_t &return_cl
 	pthread_mutex_unlock(&clients_mutex);
 	return 1;
 }
+
+int Network::getSpeedUp()
+{
+	return speed_bytes_sent;
+}
+
+int Network::getSpeedDown()
+{
+	return speed_bytes_recv;
+}
+
+void Network::calcSpeed()
+{
+	int t = timer.getMilliseconds();
+	if(t - speed_time > 1000)
+	{
+		// we measure bytes / second
+		speed_bytes_sent = speed_bytes_sent_tmp;
+		speed_bytes_sent_tmp = 0;
+		speed_bytes_recv = speed_bytes_recv_tmp;
+		speed_bytes_recv_tmp = 0;
+		speed_time = t;
+	}
+}
+
 
 //external call to trigger data sending
 //we are called once a frame!

@@ -6099,11 +6099,16 @@ float torques[MAX_WHEELS];
 			float dbrake=0.0;
 			if (wheels[i].braked==2 && hydrodirstate>0.0 && WheelSpeed<20.0) dbrake=brakeforce*hydrodirstate;
 			if (wheels[i].braked==3 && hydrodirstate<0.0 && WheelSpeed<20.0) dbrake=brakeforce*-hydrodirstate;
-			if ((brake!=0.0 || dbrake!=0.0) && wheels[i].braked && braked_wheels != 0)
-				if (wheels[i].speed<1.0)
-					total_torque-=wheels[i].speed*(brake+dbrake)*10.0/braked_wheels;
-				else
-					total_torque-=wheels[i].speed*(brake+dbrake)/braked_wheels;
+
+			if ((brake != 0.0 || dbrake != 0.0) && wheels[i].braked && braked_wheels != 0)
+			{
+				if( fabs(wheels[i].speed) > 0.00f )
+					total_torque -= (wheels[i].speed/fabs(wheels[i].speed))*(brake + dbrake);
+				// wheels are stopped
+				else if( fabs(wheels[i].speed) > 0.0f )
+					total_torque -= (wheels[i].speed/fabs(wheels[i].speed))*(brake + dbrake)*1.2;
+			}
+
 			//friction
 			total_torque-=wheels[i].speed*1.0;
 			if (wheels[i].propulsed>0)
