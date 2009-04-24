@@ -51,7 +51,7 @@ namespace Ogre {
         layers, scrolling / animated textures etc. For multiple texture layers, you have to set 
         the tiling level for each layer.
     */
-    class LineStreamOverlayElement : public BorderPanelOverlayElement
+    class LineStreamOverlayElement : public OverlayContainer
     {
     public:
         /** Constructor. */

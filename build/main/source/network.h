@@ -62,6 +62,8 @@ public:
 	virtual char *getTerrainName() = 0;
 	virtual Ogre::String getNickname(bool colour=false) = 0;
 	virtual int getRConState() = 0;
+	virtual int getSpeedUp() = 0;
+	virtual int getSpeedDown() = 0;
 };
 
 class Network : public NetworkBase
@@ -74,6 +76,8 @@ private:
 	pthread_t receivethread;
 	Timer timer;
 	int last_time;
+	int speed_time;
+	int speed_bytes_sent, speed_bytes_sent_tmp, speed_bytes_recv, speed_bytes_recv_tmp;
 	char* send_buffer;
 	int send_buffer_len;
 	oob_t send_oob;
@@ -96,6 +100,7 @@ private:
 	bool shutdown;
 	SoundScriptManager* ssm;
 	Ogre::String getUserChatName(client_t *c);
+	void calcSpeed();
 public:
 
 	Network(Beam **btrucks, std::string servername, long sport, ExampleFrameListener *efl);
@@ -124,6 +129,10 @@ public:
 	Ogre::String getNickname(bool colour=false);
 	int getRConState() { return rconauthed; };
 	int downloadMod(char* modname);
+
+
+	int getSpeedUp();
+	int getSpeedDown();
 };
 
 

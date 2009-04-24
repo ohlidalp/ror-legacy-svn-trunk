@@ -507,7 +507,6 @@ void TruckHUD::initTorqueOverlay()
 	torqueLineStream->setMoveMode(0);
 	torqueLineStream->createVertexBuffer();
 	torqueLineStream->defaultStyle();
-	torqueLineStream->setBorderSize(0);
 
 	torqueLineStream->setTraceInfo(0, ColourValue::Red, "torque");
 	torqueLineStream->setTraceInfo(1, ColourValue::Green, "");
