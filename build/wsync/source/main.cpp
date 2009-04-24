@@ -39,6 +39,19 @@ int main(int argc, char **argv)
 		else
 			printf("index created: %s\n", (local_path / INDEXFILENAME).string().c_str());
 
+	} else if(argc == 4 && (!strcmp(argv[1], "dlmod")))
+	{
+		// short version that is less verbose
+		string modname = argv[2];
+		string path = argv[3];
+		WSync *w = new WSync();
+		return w->downloadMod(modname, path, true);
+	} else if(argc == 4 && (!strcmp(argv[1], "downloadmod")))
+	{
+		string modname = argv[2];
+		string path = argv[3];
+		WSync *w = new WSync();
+		return w->downloadMod(modname, path);
 	} else if(argc == 5 && (!strcmp(argv[1], "sync") || !strcmp(argv[1], "sync2")))
 	{
 		printf("syncing...\n");

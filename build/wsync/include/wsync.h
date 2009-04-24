@@ -11,9 +11,16 @@
 #include <fstream>
 
 
-#define INDEXFILENAME "files.index"
-#define API_SERVER "api.rigsofrods.com"
-#define API_MIRROR "/getwsyncmirror/"
+#define INDEXFILENAME  "files.index"
+
+// servers
+#define API_SERVER     "api.rigsofrods.com"
+#define REPO_SERVER    "repository.rigsofrods.com"
+
+// functions
+#define API_MIRROR     "/getwsyncmirror/"
+#define API_REPOSEARCH "/reposearch/"
+#define REPO_DOWNLOAD  "/files/mirror/geoselect/"
 
 #define WMO_FULL     0x00000001
 #define WMO_NODELETE 0x00000010
@@ -58,6 +65,7 @@ public:
 	std::string generateFileHash(boost::filesystem::path file);
 	static int getTempFilename(boost::filesystem::path &tempfile);
 	int downloadConfigFile(std::string server, std::string remoteDir, std::vector< std::vector< std::string > > &list);
+	int downloadMod(std::string modname, boost::filesystem::path path, bool util=false);
 
 protected:
 	// members
@@ -76,7 +84,6 @@ protected:
 	std::string formatFilesize(boost::uintmax_t size);
 	void progressOutput(float progress, float speed=-1);
 	void progressOutputShort(float progress);
-	int getMirrorURL(std::string &server, std::string &path, std::string &type);
 	int cleanURL(std::string &url);
 	std::string findHashInHashmap(std::map<std::string, Hashentry> hashMap, std::string filename);
 };
