@@ -125,6 +125,7 @@ void CacheSystem::unloadUselessResourceGroups()
 			{
 				if(SoundScriptManager::getSingleton()->unloadResourceGroup(*it))
 					LogManager::getSingleton().logMessage("existing sound templates removed in group:" + *it);
+				ParticleSystemManager::getSingleton().removeTemplatesByResourceGroup(*it);
 				ResourceGroupManager::getSingleton().clearResourceGroup(*it);
 				ResourceGroupManager::getSingleton().unloadResourceGroup(*it);
 				ResourceGroupManager::getSingleton().destroyResourceGroup(*it);
@@ -2499,6 +2500,7 @@ void CacheSystem::loadSingleDirectory(String dirname, String group, bool already
 
 			if(SoundScriptManager::getSingleton()->unloadResourceGroup(rgname))
 				LogManager::getSingleton().logMessage("existing sound templates removed in group:" + rgname);
+			ParticleSystemManager::getSingleton().removeTemplatesByResourceGroup(rgname);
 			ResourceGroupManager::getSingleton().clearResourceGroup(rgname);
 			ResourceGroupManager::getSingleton().unloadResourceGroup(rgname);
 			ResourceGroupManager::getSingleton().removeResourceLocation(dirname, rgname);
@@ -2560,6 +2562,7 @@ void CacheSystem::loadSingleZip(String zippath, int cfactor, bool unload)
 			LogManager::getSingleton().logMessage("Unloading " + realzipPath);
 			if(SoundScriptManager::getSingleton()->unloadResourceGroup(rgname))
 				LogManager::getSingleton().logMessage("existing sound templates removed in group:" + rgname);
+			ParticleSystemManager::getSingleton().removeTemplatesByResourceGroup(rgname);
 			rgm.removeResourceLocation(realzipPath, rgname);
 			rgm.clearResourceGroup(rgname);
 			rgm.unloadResourceGroup(rgname);
