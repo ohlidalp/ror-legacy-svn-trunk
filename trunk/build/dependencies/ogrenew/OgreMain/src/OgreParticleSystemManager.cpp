@@ -248,6 +248,15 @@ namespace Ogre {
         mSystemTemplates.clear();
     }
     //-----------------------------------------------------------------------
+    void ParticleSystemManager::removeTemplatesByResourceGroup(const String& resourceGroup)
+    {
+        OGRE_LOCK_AUTO_MUTEX
+        ParticleTemplateMap::iterator itr;
+        for (itr = mSystemTemplates.begin(); itr != mSystemTemplates.end(); ++itr)
+            if(itr->second->getResourceGroupName() == resourceGroup)
+                delete itr->second;
+    }
+    //-----------------------------------------------------------------------
     ParticleSystem* ParticleSystemManager::createTemplate(const String& name, 
         const String& resourceGroup)
     {
