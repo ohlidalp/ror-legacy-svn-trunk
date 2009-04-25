@@ -2598,7 +2598,7 @@ void CacheSystem::loadAllZipsInResourceGroup(String group)
 		// update loader
 		int progress = ((float)i/(float)filecount)*100;
 		UILOADER.setProgress(progress, _L("Loading zips in group ") + group + "\n" + iterFiles->filename + "\n" + StringConverter::toString(i) + "/" + StringConverter::toString(filecount));
-		loadSingleZip((Ogre::FileInfo)*iterFiles, false);
+		loadSingleZip((Ogre::FileInfo)*iterFiles);
 		loadedZips[iterFiles->filename] = true;
 	}
 	// hide loader again
