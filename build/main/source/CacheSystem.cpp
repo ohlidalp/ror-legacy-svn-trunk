@@ -23,6 +23,7 @@ along with Rigs of Rods.  If not, see <http://www.gnu.org/licenses/>.
 #include "sha1.h"
 #include "ImprovedConfigFile.h"
 #include "skinmanager.h"
+#include "SoundScriptManager.h"
 #include "Settings.h"
 #include "gui_loader.h"
 #include "language.h"
@@ -122,7 +123,12 @@ void CacheSystem::unloadUselessResourceGroups()
 		{
 			try
 			{
+				if(SoundScriptManager::getSingleton()->unloadResourceGroup(*it))
+					LogManager::getSingleton().logMessage("existing sound templates removed in group:" + *it);
+				ResourceGroupManager::getSingleton().removeResourceLocation(realzipPath, *it);
+				ResourceGroupManager::getSingleton().clearResourceGroup(*it);
 				ResourceGroupManager::getSingleton().unloadResourceGroup(*it);
+				ResourceGroupManager::getSingleton().destroyResourceGroup(*it);
 			} catch(Ogre::Exception& e)
 			{
 				LogManager::getSingleton().logMessage("error while unloading resource groups: " + e.getFullDescription());
@@ -2453,18 +2459,18 @@ bool CacheSystem::checkResourceLoaded(Cache_Entry t)
 	return false;
 }
 
-void CacheSystem::loadSingleZip(Cache_Entry e)
+void CacheSystem::loadSingleZip(Cache_Entry e, bool unload)
 {
-	loadSingleZip(e.dirname, -1);
+	loadSingleZip(e.dirname, -1, unload);
 }
 
-void CacheSystem::loadSingleZip(Ogre::FileInfo f)
+void CacheSystem::loadSingleZip(Ogre::FileInfo f, bool unload)
 {
 	String zippath = f.archive->getName() + "/" + f.filename;
 	int cfactor = -1;
 	if(f.uncompressedSize > 0)
 		cfactor = (f.compressedSize / f.uncompressedSize) * 100.0f;
-	loadSingleZip(zippath, cfactor);
+	loadSingleZip(zippath, cfactor, unload);
 }
 
 void CacheSystem::loadSingleDirectory(String dirname, String group, bool alreadyLoaded)
@@ -2491,6 +2497,10 @@ void CacheSystem::loadSingleDirectory(String dirname, String group, bool already
 			parseKnownFilesOneRG(rgname);
 			// unload it again
 			LogManager::getSingleton().logMessage("UnLoading " + dirname);
+
+			if(SoundScriptManager::getSingleton()->unloadResourceGroup(rgname))
+				LogManager::getSingleton().logMessage("existing sound templates removed in group:" + rgname);
+			ResourceGroupManager::getSingleton().clearResourceGroup(rgname);
 			ResourceGroupManager::getSingleton().unloadResourceGroup(rgname);
 			ResourceGroupManager::getSingleton().removeResourceLocation(dirname, rgname);
 			ResourceGroupManager::getSingleton().destroyResourceGroup(rgname);
@@ -2510,7 +2520,7 @@ void CacheSystem::loadSingleDirectory(String dirname, String group, bool already
 	}
 }
 
-void CacheSystem::loadSingleZip(String zippath, int cfactor)
+void CacheSystem::loadSingleZip(String zippath, int cfactor, bool unload)
 {
 	String realzipPath = getRealPath(zippath);
 	char hash[255];
@@ -2535,17 +2545,27 @@ void CacheSystem::loadSingleZip(String zippath, int cfactor)
 
 	try
 	{
+		ResourceGroupManager &rgm = ResourceGroupManager::getSingleton();
+		
+		// load it into a new resource group
 		LogManager::getSingleton().logMessage("Loading " + realzipPath);
-		ResourceGroupManager::getSingleton().addResourceLocation(realzipPath, "Zip", rgname);
-		ResourceGroupManager::getSingleton().initialiseResourceGroup(rgname);
+		rgm.addResourceLocation(realzipPath, "Zip", rgname);
+		rgm.initialiseResourceGroup(rgname);
+		
 		// parse everything
 		parseKnownFilesOneRG(rgname);
+		
 		// unload it again
-		LogManager::getSingleton().logMessage("UnLoading " + realzipPath);
-		ResourceGroupManager::getSingleton().unloadResourceGroup(rgname);
-		ResourceGroupManager::getSingleton().removeResourceLocation(realzipPath, rgname);
-		ResourceGroupManager::getSingleton().destroyResourceGroup(rgname);
-
+		if(unload)
+		{
+			LogManager::getSingleton().logMessage("Unloading " + realzipPath);
+			if(SoundScriptManager::getSingleton()->unloadResourceGroup(rgname))
+				LogManager::getSingleton().logMessage("existing sound templates removed in group:" + rgname);
+			rgm.removeResourceLocation(realzipPath, rgname);
+			rgm.clearResourceGroup(rgname);
+			rgm.unloadResourceGroup(rgname);
+			rgm.destroyResourceGroup(rgname);
+		}
 	} catch(Ogre::Exception& e)
 	{
 		if(e.getNumber() == Ogre::Exception::ERR_DUPLICATE_ITEM)
@@ -2579,7 +2599,7 @@ void CacheSystem::loadAllZipsInResourceGroup(String group)
 		// update loader
 		int progress = ((float)i/(float)filecount)*100;
 		UILOADER.setProgress(progress, _L("Loading zips in group ") + group + "\n" + iterFiles->filename + "\n" + StringConverter::toString(i) + "/" + StringConverter::toString(filecount));
-		loadSingleZip((Ogre::FileInfo)*iterFiles);
+		loadSingleZip((Ogre::FileInfo)*iterFiles, false);
 		loadedZips[iterFiles->filename] = true;
 	}
 	// hide loader again

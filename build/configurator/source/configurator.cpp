@@ -282,6 +282,7 @@ private:
 	wxCheckBox *dismap;
 	wxCheckBox *enablexfire;
 	wxCheckBox *beamdebug;
+	wxCheckBox *autodl;
 	wxCheckBox *extcam;
 	wxCheckBox *dashboard;
 	wxCheckBox *mirror;
@@ -1705,6 +1706,9 @@ MyDialog::MyDialog(const wxString& title, MyApp *_app) : wxDialog(NULL, wxID_ANY
 	beamdebug=new wxCheckBox(advancedPanel, -1, _("Enable Visual Beam Debug"), wxPoint(320, 215));
 	beamdebug->SetToolTip(_("Displays node numbers and more info along nodes and beams."));
 
+	autodl=new wxCheckBox(advancedPanel, -1, _("Enable Auto-Downloader"), wxPoint(320, 230));
+	autodl->SetToolTip(_("This enables the automatic downloading of missing mods when using Multiplayer"));
+
 	dText = new wxStaticText(advancedPanel, -1, _("minimum visibility range in percent"), wxPoint(10,300));
 	//this makes a visual bug in macosx
 	sightrange=new wxSlider(advancedPanel, -1, 30, 20, 130, wxPoint(10, 315), wxSize(200, 40), wxSL_LABELS|wxSL_AUTOTICKS);
@@ -2018,6 +2022,7 @@ void MyDialog::SetDefaults()
 	hydrax->SetValue(false);
 	dismap->SetValue(false);
 	enablexfire->SetValue(true);
+	autodl->SetValue(true);
 	beamdebug->SetValue(false);
 	extcam->SetValue(false);
 	//wxCheckBox *dashboard;
@@ -2078,6 +2083,7 @@ void MyDialog::getSettingsControls()
 	settings["disableOverViewMap"] = (dismap->GetValue()) ? "Yes" : "No";
 	settings["DebugBeams"] = (beamdebug->GetValue()) ? "Yes" : "No";
 	settings["XFire"] = (enablexfire->GetValue()) ? "Yes" : "No";
+	settings["AutoDownload"] = (autodl->GetValue()) ? "Yes" : "No";
 	settings["External Camera Mode"] = (extcam->GetValue()) ? "Static" : "Pitching";
 	settings["Dashboard"] = (dashboard->GetValue()) ? "Yes" : "No";
 	settings["Mirrors"] = (mirror->GetValue()) ? "Yes" : "No";
@@ -2153,6 +2159,7 @@ void MyDialog::updateSettingsControls()
 	st = settings["Hydrax"]; if (st.length()>0) hydrax->SetValue(st=="Yes");
 	st = settings["disableOverViewMap"]; if (st.length()>0) dismap->SetValue(st=="Yes");
 	st = settings["External Camera Mode"]; if (st.length()>0) extcam->SetValue(st=="Static");
+	st = settings["AutoDownload"]; if (st.length()>0) autodl->SetValue(st=="Yes");
 	st = settings["DebugBeams"]; if (st.length()>0) beamdebug->SetValue(st=="Yes");
 	st = settings["XFire"]; if (st.length()>0) enablexfire->SetValue(st=="Yes");
 	st = settings["Dashboard"]; if (st.length()>0) dashboard->SetValue(st=="Yes");
@@ -2801,6 +2808,7 @@ void MyDialog::OnSimpleSliderScroll(wxScrollEvent & event)
 	// these are processor simple settings
 	// 0 (high perf) - 2 (high quality)
 	creaksound->SetValue(true); // disable creak sound
+	autodl->SetValue(true);
 	switch(val)
 	{
 		case 0:

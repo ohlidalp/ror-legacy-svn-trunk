@@ -102,8 +102,10 @@ void Network::downloadthreadstart(char *modname_c)
 	// write the data back to the main handling stuff and close the thread
 	if(modfilename == "")
 		modfilename = "error";
+	LogManager::getSingleton().logMessage("LOCK DLTHREAD in downloadthreadstart");
 	pthread_mutex_lock(&dl_data_mutex);
 	downloadingMods[modname] = modfilename;
+	LogManager::getSingleton().logMessage("UNLOCK DLTHREAD in downloadthreadstart");
 	pthread_mutex_unlock(&dl_data_mutex);
 
 #else //WSYNC
@@ -113,12 +115,14 @@ void Network::downloadthreadstart(char *modname_c)
 
 void Network::tryDownloadMod(Ogre::String modname)
 {
+	LogManager::getSingleton().logMessage("LOCK DLTHREAD in tryDownloadMod");
 	pthread_mutex_lock(&dl_data_mutex);
 	// do not double-download mods
 	if(downloadingMods.find(modname) != downloadingMods.end())
 		return;
 
 	downloadingMods[modname] = "";
+	LogManager::getSingleton().logMessage("UNLOCK DLTHREAD in tryDownloadMod");
 	pthread_mutex_unlock(&dl_data_mutex);
 	
 	
@@ -468,15 +472,27 @@ bool Network::vehicle_to_spawn(char* name, unsigned int *uid, unsigned int *labe
 	for (int i=0; i<MAX_PEERS; i++)
 	{
 		String truckname = String(clients[i].truck_name);
+		LogManager::getSingleton().logMessage("LOCK DLTHREAD in vehicle_to_spawn");
 		pthread_mutex_lock(&dl_data_mutex);
 		String zipname = downloadingMods[truckname];
+		LogManager::getSingleton().logMessage("UNLOCK DLTHREAD in vehicle_to_spawn");
 		pthread_mutex_unlock(&dl_data_mutex);
+		
 		if(clients[i].used && !clients[i].loaded && clients[i].invisible && !zipname.empty())
 		{
 			// we found a possible late-load candidate :D
 			if(zipname == "error" || zipname == "notfound")
+			{
+				pthread_mutex_lock(&chat_mutex);
+				if(zipname == "error")
+					NETCHAT.addText("^9unkown error downloading mod: " + zipname + " (player "+String(clients[i].user_name) + ")");
+				if(zipname == "notfound")
+					NETCHAT.addText("^9mod not found on repository, stays invisible: " + zipname+ " (player "+String(clients[i].user_name) + ")");
+
+				pthread_mutex_unlock(&chat_mutex);
 				// we leave it in there, so it wont be tried to download again
 				continue;
+			}
 			
 			String targetpath = SETTINGS.getSetting("User Path")+"packs" + SETTINGS.getSetting("dirsep") + "downloaded";
 			String targetfilename = zipname;
@@ -486,25 +502,25 @@ bool Network::vehicle_to_spawn(char* name, unsigned int *uid, unsigned int *labe
 				// yay we downloaded the mod :D
 				// now add it to the cache manually and then load it :)
 				ResourceGroupManager::getSingleton().addResourceLocation(targetpath, "FileSystem");
-				CACHE.loadSingleZip(targetfile, 1);
-				//CACHE.addFile(targetfilename, "ZipArchive", targetpath, ".zip");
-				// finally try to load the truck
-				// BUG: resource still loaded, to be fixed :-\
-				//if(CACHE.checkResourceLoaded(truckname))
+				// finally try to load the mod
+				CACHE.loadSingleZip(targetfile, -1);
+				if(!CACHE.checkResourceLoaded(truckname))
+					LogManager::getSingleton().logMessage("checkResourceLoaded failed for " + truckname);
 
 				pthread_mutex_lock(&chat_mutex);
-				NETCHAT.addText("^9downloaded mod successfully: " + targetfilename);
+				NETCHAT.addText("^9downloaded mod successfully, spawning: " + targetfilename+ " (player "+String(clients[i].user_name) + ")");
 				pthread_mutex_unlock(&chat_mutex);
 
-				{
-					// yay!
-					strcpy(name, truckname.c_str());
-					*uid=clients[i].user_id;
-					clients[i].invisible = false;
-					*label=i;
-					pthread_mutex_unlock(&clients_mutex);
-					return true;
-				}
+				updatePlayerList();
+				
+				// yay, spawn
+				strcpy(name, truckname.c_str());
+				*uid=clients[i].user_id;
+				clients[i].invisible = false;
+				*label=i;
+				pthread_mutex_unlock(&clients_mutex);
+				return true;
+
 			}
 
 		}
@@ -743,12 +759,36 @@ std::map<int, float> &Network::getLagData()
 	return lagDataClients;
 }
 
+void Network::updatePlayerList()
+{
+	pthread_mutex_lock(&chat_mutex);
+	for (int i=0; i<MAX_PEERS; i++)
+	{
+		if (!clients[i].used)
+			continue;
+		if(i < MAX_PLAYLIST_ENTRIES)
+		{
+			try
+			{
+				String plstr = StringConverter::toString(i) + ": " + ColoredTextAreaOverlayElement::StripColors(String(clients[i].user_name));
+				if(clients[i].invisible)
+					plstr += " (i)";
+				mefl->playerlistOverlay[i]->setCaption(plstr);
+			} catch(...)
+			{
+			}
+		}
+	}
+	pthread_mutex_unlock(&chat_mutex);
+}
+
 void Network::receivethreadstart()
 {
 	int type;
 	int source;
 	unsigned int wrotelen;
 	char *buffer=(char*)malloc(MAX_MESSAGE_LENGTH);
+	bool autoDl = (SETTINGS.getSetting("AutoDownload") == "Yes");
 	LogManager::getSingleton().logMessage("Receivethread starting");
 	// unlimited timeout, important!
 	socket.set_timeout(0,0);
@@ -859,9 +899,10 @@ void Network::receivethreadstart()
 				resourceExists = CACHE.checkResourceLoaded(truckname2);
 				if(!resourceExists)
 				{
-					LogManager::getSingleton().logMessage("Network warning: truck named '"+truckname+"' not found in local installation");
+					//LogManager::getSingleton().logMessage("Network warning: truck named '"+truckname+"' not found in local installation");
 					// try to donwload then
-					tryDownloadMod(truckname);
+					if(autoDl)
+						tryDownloadMod(truckname);
 				}
 			}
 			//spawn vehicle query
@@ -893,20 +934,6 @@ void Network::receivethreadstart()
 
 						strcpy(clients[i].user_name, tmpnickname.c_str()); //buffer+strlen(buffer)+1); //magical!  // rather hackish if you ask me ...
 
-						// update playerlist
-						if(i < MAX_PLAYLIST_ENTRIES)
-						{
-							try
-							{
-								String plstr = StringConverter::toString(i) + ": " + ColoredTextAreaOverlayElement::StripColors(String(clients[i].user_name));
-								if(!resourceExists)
-									plstr += " (i)";
-								mefl->playerlistOverlay[i]->setCaption(plstr);
-							} catch(...)
-							{
-							}
-						}
-
 						// add some chat msg
 						pthread_mutex_lock(&chat_mutex);
 
@@ -920,14 +947,17 @@ void Network::receivethreadstart()
 
 						NETCHAT.addText(getUserChatName(&clients[i]) + " ^9joined with " + truckname);
 
-						if(!resourceExists)
+						if(!resourceExists && !autoDl)
 							NETCHAT.addText("^1* " + String(clients[i].truck_name) + " not found. Player will be invisible.");
+						if(!resourceExists && autoDl)
+							NETCHAT.addText("^1* " + String(clients[i].truck_name) + " not found. Downloading mod...");
 						pthread_mutex_unlock(&chat_mutex);
 
 						break;
 					}
 				}
 			}
+			updatePlayerList();
 			pthread_mutex_unlock(&clients_mutex);
 		}
 		else if (type==MSG2_DELETE)
@@ -958,11 +988,6 @@ void Network::receivethreadstart()
 					// update all framelistener stuff
 					if(!clients[i].invisible)
 						mefl->netDisconnectTruck(clients[i].trucknum);
-					// update playerlist
-					if(i < MAX_PLAYLIST_ENTRIES)
-					{
-						mefl->playerlistOverlay[i]->setCaption("");
-					}
 
 					// add some chat msg
 					pthread_mutex_lock(&chat_mutex);
@@ -973,6 +998,7 @@ void Network::receivethreadstart()
 					break;
 				}
 			}
+			updatePlayerList();
 			pthread_mutex_unlock(&clients_mutex);
 		}
 		else if (type==MSG2_CHAT)

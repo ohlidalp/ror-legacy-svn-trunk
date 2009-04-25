@@ -106,6 +106,7 @@ private:
 	void calcSpeed();
 	std::map<int, float> lagDataClients;
 	std::map<Ogre::String, Ogre::String> downloadingMods;
+	void updatePlayerList();
 public:
 
 	Network(Beam **btrucks, std::string servername, long sport, ExampleFrameListener *efl);
