@@ -102,10 +102,8 @@ void Network::downloadthreadstart(char *modname_c)
 	// write the data back to the main handling stuff and close the thread
 	if(modfilename == "")
 		modfilename = "error";
-	LogManager::getSingleton().logMessage("LOCK DLTHREAD in downloadthreadstart");
 	pthread_mutex_lock(&dl_data_mutex);
 	downloadingMods[modname] = modfilename;
-	LogManager::getSingleton().logMessage("UNLOCK DLTHREAD in downloadthreadstart");
 	pthread_mutex_unlock(&dl_data_mutex);
 
 #else //WSYNC
@@ -115,14 +113,12 @@ void Network::downloadthreadstart(char *modname_c)
 
 void Network::tryDownloadMod(Ogre::String modname)
 {
-	LogManager::getSingleton().logMessage("LOCK DLTHREAD in tryDownloadMod");
 	pthread_mutex_lock(&dl_data_mutex);
 	// do not double-download mods
 	if(downloadingMods.find(modname) != downloadingMods.end())
 		return;
 
 	downloadingMods[modname] = "";
-	LogManager::getSingleton().logMessage("UNLOCK DLTHREAD in tryDownloadMod");
 	pthread_mutex_unlock(&dl_data_mutex);
 	
 	
@@ -472,10 +468,8 @@ bool Network::vehicle_to_spawn(char* name, unsigned int *uid, unsigned int *labe
 	for (int i=0; i<MAX_PEERS; i++)
 	{
 		String truckname = String(clients[i].truck_name);
-		LogManager::getSingleton().logMessage("LOCK DLTHREAD in vehicle_to_spawn");
 		pthread_mutex_lock(&dl_data_mutex);
 		String zipname = downloadingMods[truckname];
-		LogManager::getSingleton().logMessage("UNLOCK DLTHREAD in vehicle_to_spawn");
 		pthread_mutex_unlock(&dl_data_mutex);
 		
 		if(clients[i].used && !clients[i].loaded && clients[i].invisible && !zipname.empty())
