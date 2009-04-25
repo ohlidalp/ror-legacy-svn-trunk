@@ -490,6 +490,7 @@ typedef struct _prop
 	float bpos[4];
 	int pale;
 	int spinner;
+	Ogre::Real wheelrotdegree;
 } prop_t;
 
 typedef struct _exhaust
@@ -997,7 +998,11 @@ protected:
 	int free_soundsource;
 
 	bool disable_default_sounds;
-
+	/**
+	 * Resets the turn signal when the steering wheel is turned back.
+	 */
+	void autoBlinkReset();
+	bool blinktreshpassed;
 #ifdef TIMING
 	BeamThreadStats *statistics;
 #endif

@@ -235,6 +235,7 @@ Beam::Beam(int tnum, SceneManager *manager, SceneNode *parent, RenderWindow* win
 	smokeRef=0;
 	smoker=NULL;
 	brake=0.0;
+	blinktreshpassed=false;
 	blinkingtype=BLINK_NONE;
 	netCustomLightArray[0] = -1;
 	netCustomLightArray[1] = -1;
@@ -2456,6 +2457,7 @@ int Beam::getWheelNodeCount()
 				props[free_prop].mirror=0;
 				props[free_prop].pale=0;
 				props[free_prop].spinner=0;
+				props[free_prop].wheelrotdegree=160.0;
 				String meshnameString = String(meshname);
 				std::string::size_type loc = meshnameString.find("leftmirror", 0);
 				if( loc != std::string::npos ) props[free_prop].mirror=1;
@@ -2468,17 +2470,18 @@ int Beam::getWheelNodeCount()
 				{
 					char dirwheelmeshname[256];
 					float dwx=0, dwy=0, dwz=0;
+					Real rotdegrees=160;
 					Vector3 stdpos = Vector3(-0.67, -0.61,0.24);
 					if (!strncmp("dashboard-rh", meshname, 12))
 						stdpos=Vector3(0.67, -0.61,0.24);
 					String diwmeshname = "dirwheel.mesh";
-					int result2 = sscanf(line,"%i, %i, %i, %f, %f, %f, %f, %f, %f, %s %s %f, %f, %f", &ref, &nx, &ny, &ox, &oy, &oz, &rx, &ry, &rz, meshname, dirwheelmeshname, &dwx, &dwy, &dwz);
+					int result2 = sscanf(line,"%i, %i, %i, %f, %f, %f, %f, %f, %f, %s %s %f, %f, %f, %f", &ref, &nx, &ny, &ox, &oy, &oz, &rx, &ry, &rz, meshname, dirwheelmeshname, &dwx, &dwy, &dwz, &rotdegrees);
 					if(result2 != result && result2 >= 14)
 					{
 						stdpos = Vector3(dwx, dwy, dwz);
 						diwmeshname = String(dirwheelmeshname);
 					}
-
+					if(result2 != result && result2 >= 15) props[free_prop].wheelrotdegree=rotdegrees;
 					//create a wheel
 					char propname[256];
 					sprintf(propname, "prop-%s-%i-wheel", truckname, free_prop);
@@ -2731,6 +2734,7 @@ int Beam::getWheelNodeCount()
 							props[free_prop].offsetz=0.0;
 							props[free_prop].rot=Quaternion::IDENTITY;
 							props[free_prop].wheel=0;
+							props[free_prop].wheelrotdegree=0.0;
 							props[free_prop].mirror=0;
 							props[free_prop].pale=0;
 							props[free_prop].spinner=0;
@@ -2760,6 +2764,7 @@ int Beam::getWheelNodeCount()
 							props[free_prop].offsetz=0.0;
 							props[free_prop].rot=Quaternion::IDENTITY;
 							props[free_prop].wheel=0;
+							props[free_prop].wheelrotdegree=0.0;
 							props[free_prop].mirror=0;
 							props[free_prop].pale=0;
 							props[free_prop].spinner=0;
@@ -2795,6 +2800,7 @@ int Beam::getWheelNodeCount()
 							props[free_prop].offsetz=0.0;
 							props[free_prop].rot=Quaternion::IDENTITY;
 							props[free_prop].wheel=0;
+							props[free_prop].wheelrotdegree=0.0;
 							props[free_prop].mirror=0;
 							props[free_prop].pale=0;
 							props[free_prop].spinner=0;
@@ -2823,6 +2829,7 @@ int Beam::getWheelNodeCount()
 							props[free_prop].offsetz=0.0;
 							props[free_prop].rot=Quaternion::IDENTITY;
 							props[free_prop].wheel=0;
+							props[free_prop].wheelrotdegree=0.0;
 							props[free_prop].mirror=0;
 							props[free_prop].pale=0;
 							props[free_prop].spinner=0;
@@ -7116,6 +7123,32 @@ float torques[MAX_WHEELS];
 
 	}
 
+	void Beam::autoBlinkReset()
+	{
+		blinktype blink=getBlinkType();
+
+		if(blink == BLINK_LEFT && hydrodirstate < -0.1)
+			// passed the treshold: the turn signal gets locked
+			blinktreshpassed = true;
+		
+		if(blink == BLINK_LEFT && blinktreshpassed && hydrodirstate > -0.1)
+		{
+			// steering wheel turned back: turn signal gets autmatically unlocked 
+			setBlinkType(BLINK_NONE);
+			blinktreshpassed = false;
+		}
+
+		// same for the right turn signal
+		if(blink == BLINK_RIGHT && hydrodirstate > 0.1)
+			blinktreshpassed = true;
+
+		if(blink == BLINK_RIGHT && blinktreshpassed && hydrodirstate < 0.1)
+		{
+			setBlinkType(BLINK_NONE);
+			blinktreshpassed = false;
+		}	
+	}
+
 	void Beam::updateProps()
 	{
 		int i;
@@ -7138,7 +7171,7 @@ float torques[MAX_WHEELS];
 			{
 				//display wheel
 				Quaternion brot=Quaternion(Degree(-59.0), Vector3::UNIT_X);
-				brot=brot*Quaternion(Degree(hydrodirstate*160.0), Vector3::UNIT_Y);
+				brot=brot*Quaternion(Degree(hydrodirstate*props[i].wheelrotdegree), Vector3::UNIT_Y);
 				props[i].wheel->setPosition(mposition+normal*props[i].offsetz+orientation*props[i].wheelpos);
 				props[i].wheel->setOrientation(orientation*brot);
 			}
@@ -7177,6 +7210,7 @@ float torques[MAX_WHEELS];
 	{
 		int i;
 		Vector3 ref=Vector3(0.0,1.0,0.0);
+		autoBlinkReset();
 		//sounds too
 		updateSoundSources();
 
