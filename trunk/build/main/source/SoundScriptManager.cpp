@@ -141,24 +141,46 @@ SoundScriptTemplate* SoundScriptManager::createTemplate(String name, String grou
 {
 	//first, search if there is a template name collision
 	for (int i=0; i<free_template; i++)
+	{
+		if (!templates[i]) continue;
 		if (templates[i]->name==name) 
 		{
 			OGRE_EXCEPT(Exception::ERR_DUPLICATE_ITEM, "SoundScript with the name " + name + 
                 " already exists.", "SoundScriptManager::createTemplate");
 			return NULL;
 		}
+	}
 
 	templates[free_template]=new SoundScriptTemplate(name, groupname, filename);
 	free_template++;
 	return templates[free_template-1];
 }
 
+bool SoundScriptManager::unloadResourceGroup(String groupname)
+{
+	//first, search if there is a template name collision
+	for (int i=0; i<free_template; i++)
+	{
+		if (!templates[i]) continue;
+		if (templates[i]->groupname == groupname) 
+		{
+			// unload it
+			delete templates[i];
+			templates[i] = 0;
+			return true;
+		}
+	}
+	return false;
+}
 SoundScriptInstance* SoundScriptManager::createInstance(Ogre::String templatename, int truck, Ogre::SceneNode *toAttach)
 {
 	//first, search template
 	SoundScriptTemplate* templ=NULL;
 	for (int i=0; i<free_template; i++)
+	{
+		if (!templates[i]) continue;
 		if (templates[i]->name==templatename) templ=templates[i];
+	}
 	if (!templ) return NULL;
 	if (templ->trigger_source==SS_TRIG_NONE) return NULL; //invalid template!
 	//ok create instance

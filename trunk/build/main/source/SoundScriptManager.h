@@ -184,6 +184,7 @@ public:
     Real getLoadingOrder(void) const;
 
 	SoundScriptInstance* createInstance(String templatename, int truck, SceneNode *toAttach);
+	bool unloadResourceGroup(String groupname);
 
 	//values update
 	void trigOnce(int truck, int trig);

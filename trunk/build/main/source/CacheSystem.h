@@ -248,7 +248,7 @@ public:
 	int changedFiles, newFiles, deletedFiles;
 	bool fileExists(Ogre::String);
 
-	void loadSingleZip(Ogre::String zippath, int cfactor);
+	void loadSingleZip(Ogre::String zippath, int cfactor, bool unload=true);
 
 protected:
 	CacheSystem();
@@ -301,8 +301,8 @@ protected:
 	void writeGeneratedCache();
 	
 	// adds a zip to the cache
-	void loadSingleZip(Ogre::FileInfo f);
-	void loadSingleZip(Cache_Entry e);
+	void loadSingleZip(Ogre::FileInfo f, bool unload=true);
+	void loadSingleZip(Cache_Entry e, bool unload=true);
 
 	Ogre::String detectFilesMiniType(Ogre::String filename);
 	void removeFileFromFileCache(std::vector<Cache_Entry>::iterator it);
