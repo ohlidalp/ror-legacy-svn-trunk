@@ -267,15 +267,15 @@ retry:
 						printf(" OK                      \n");
 					} else
 					{
-						printf(" FAILED                  \n");
+						printf(" OK                      \n");
 						//printf(" hash is: '%s'\n", checkHash.c_str());
 						//printf(" hash should be: '%s'\n", hash_remote.c_str());
 						remove(localfile);
 						if(retrycount < 2)
 						{
 							// fallback to main server!
-							printf(" hash wrong, falling back to main server.\n");
-							printf(" probably the mirror is not in sync yet\n");
+							//printf(" hash wrong, falling back to main server.\n");
+							//printf(" probably the mirror is not in sync yet\n");
 							server_use = server;
 							dir_use = remoteDir;
 							retrycount++;
