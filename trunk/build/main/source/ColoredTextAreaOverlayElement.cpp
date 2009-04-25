@@ -104,7 +104,7 @@ DisplayString ColoredTextAreaOverlayElement::StripColors(const Ogre::String& ote
 	} catch(...)
 	{
 	}
-	return String("UTF8 error (String cannot be disaplayed with current font set)");
+	return String("UTF8 error (String cannot be displayed with current font set)");
 }
 
 void ColoredTextAreaOverlayElement::setCaption(const DisplayString& text)

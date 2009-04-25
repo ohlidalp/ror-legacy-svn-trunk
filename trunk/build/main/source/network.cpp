@@ -468,13 +468,19 @@ bool Network::vehicle_to_spawn(char* name, unsigned int *uid, unsigned int *labe
 	for (int i=0; i<MAX_PEERS; i++)
 	{
 		String truckname = String(clients[i].truck_name);
-		pthread_mutex_lock(&dl_data_mutex);
+		// this tends to lock forever D:
+		//pthread_mutex_lock(&dl_data_mutex);
 		String zipname = downloadingMods[truckname];
-		pthread_mutex_unlock(&dl_data_mutex);
+		//pthread_mutex_unlock(&dl_data_mutex);
 		
 		if(clients[i].used && !clients[i].loaded && clients[i].invisible && !zipname.empty())
 		{
 			// we found a possible late-load candidate :D
+			if(zipname == "error2")
+			{
+				// that thing is known to have failed, ignore it
+				continue;
+			}
 			if(zipname == "error" || zipname == "notfound")
 			{
 				pthread_mutex_lock(&chat_mutex);
@@ -483,6 +489,8 @@ bool Network::vehicle_to_spawn(char* name, unsigned int *uid, unsigned int *labe
 				if(zipname == "notfound")
 					NETCHAT.addText("^9mod not found on repository, stays invisible: " + zipname+ " (player "+String(clients[i].user_name) + ")");
 
+				// set it as something else, so we wont check again
+				downloadingMods[truckname] = "error2";
 				pthread_mutex_unlock(&chat_mutex);
 				// we leave it in there, so it wont be tried to download again
 				continue;
@@ -812,8 +820,8 @@ void Network::receivethreadstart()
 					trucks[clients[i].trucknum]->pushNetwork(buffer, wrotelen);
 
 					// hack-ish: detect LAG:
-					//oob_t *o = (oob_t *)buffer;
-					//lagDataClients[source] =  o->time - (trucks[clients[i].trucknum]->getTruckTime() + trucks[clients[i].trucknum]->getNetTruckTimeOffset());
+					oob_t *o = (oob_t *)buffer;
+					lagDataClients[source] =  o->time - (trucks[clients[i].trucknum]->getTruckTime() + trucks[clients[i].trucknum]->getNetTruckTimeOffset());
 					//LogManager::getSingleton().logMessage("Id like to push to "+StringConverter::toString(clients[i].trucknum));
 					break;
 				}
@@ -918,6 +926,7 @@ void Network::receivethreadstart()
 						clients[i].invisible      = !resourceExists;
 						clients[i].loaded         = false;
 						clients[i].user_id        = source;
+						clients[i].trucknum       = -1;
 						clients[i].user_authlevel = authstate;
 						buffer[wrotelen] = 0;
 
