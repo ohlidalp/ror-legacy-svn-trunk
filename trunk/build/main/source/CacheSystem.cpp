@@ -6,7 +6,7 @@ Copyright 2007,2008,2009 Thomas Fischer
 For more information, see http://www.rigsofrods.com/
 
 Rigs of Rods is free software: you can redistribute it and/or modify
-it under the terms of the GNU General Public License version 3, as 
+it under the terms of the GNU General Public License version 3, as
 published by the Free Software Foundation.
 
 Rigs of Rods is distributed in the hope that it will be useful,
@@ -33,7 +33,7 @@ using namespace RoR; //CSHA1
 // singleton pattern
 CacheSystem* CacheSystem::myInstance = 0;
 
-CacheSystem &CacheSystem::Instance () 
+CacheSystem &CacheSystem::Instance ()
 {
 	if (myInstance == 0)
 		myInstance = new CacheSystem;
@@ -89,7 +89,7 @@ void CacheSystem::startup(bool forcecheck)
 		LogManager::getSingleton().logMessage("cache invalid, updating ...");
 		// generate the cache
 		generateCache((valid < -1));
-		
+
 		LogManager::getSingleton().logMessage("unloading unused resource groups ...");
 		// important: unload everything again!
 		//unloadUselessResourceGroups();
@@ -125,7 +125,6 @@ void CacheSystem::unloadUselessResourceGroups()
 			{
 				if(SoundScriptManager::getSingleton()->unloadResourceGroup(*it))
 					LogManager::getSingleton().logMessage("existing sound templates removed in group:" + *it);
-				ResourceGroupManager::getSingleton().removeResourceLocation(realzipPath, *it);
 				ResourceGroupManager::getSingleton().clearResourceGroup(*it);
 				ResourceGroupManager::getSingleton().unloadResourceGroup(*it);
 				ResourceGroupManager::getSingleton().destroyResourceGroup(*it);
@@ -505,10 +504,10 @@ bool CacheSystem::loadCache()
 		LogManager::getSingleton().logMessage("unable to load config file: "+cfgfilename);
 		return false;
 	}
-	
+
 	String group = ResourceGroupManager::getSingleton().findGroupContainingResource(String(cfgfilename));
 	DataStreamPtr stream=ResourceGroupManager::getSingleton().openResource(cfgfilename, group);
-	
+
 	String line;
 	LogManager::getSingleton().logMessage("CacheSystem::loadCache2");
 
@@ -560,7 +559,7 @@ bool CacheSystem::loadCache()
 				}
 			}
 		}
-	}	
+	}
 	return true;
 }
 bool CacheSystem::fileExists(String filename)
@@ -574,7 +573,7 @@ Ogre::String CacheSystem::fileTime(String filename)
 {
 #if OGRE_PLATFORM == OGRE_PLATFORM_WIN32
 	HANDLE hFile = CreateFile(filename.c_str(), FILE_READ_ATTRIBUTES, FILE_SHARE_READ, NULL, OPEN_EXISTING, FILE_ATTRIBUTE_NORMAL, NULL);
-   
+
 	// Set the file time on the file
 	FILETIME ftCreate, ftAccess, ftWrite;
 	SYSTEMTIME st;
@@ -664,7 +663,7 @@ int CacheSystem::incrementalCacheUpdate()
 					break;
 				continue;
 			}
-			
+
 			// check file time, if that fails, fall back to sha1 (needed for platforms where filetime is not yet implemented!
 			bool check = false;
 			String ft = fileTime(fn);
@@ -673,7 +672,7 @@ int CacheSystem::incrementalCacheUpdate()
 				// slow sha1 check
 				char hash[255];
 				memset(hash, 0, 255);
-				
+
 				CSHA1 sha1;
 				sha1.HashFile(const_cast<char*>(fn.c_str()));
 				sha1.Final();
@@ -1152,7 +1151,7 @@ void CacheSystem::addFile(String filename, String archiveType, String archiveDir
 			if(e.getNumber() == Ogre::Exception::ERR_DUPLICATE_ITEM)
 			{
 				LogManager::getSingleton().logMessage(" *** error opening archive '"+filename+"': some files are duplicates of existing files. The file will be ignored.");
-			}else 
+			}else
 			{
 				LogManager::getSingleton().logMessage("error while opening resource: " + e.getFullDescription());
 				LogManager::getSingleton().logMessage("error opening archive '"+String(filename)+"'. Is it corrupt?");
@@ -1962,7 +1961,7 @@ void CacheSystem::generateFileCache(Cache_Entry &entry)
 		StringUtil::splitFilename(entry.dirname, outBasename, outPath);
 
 		String dst = location + outBasename + "_" + entry.fname + ".mini." + entry.minitype;
-		
+
 		// no path info in the cache file name ...
 		entry.filecachename = outBasename + "_" + entry.fname + ".mini." + entry.minitype;
 
@@ -2072,7 +2071,7 @@ void CacheSystem::parseKnownFilesOneRGDirectory(Ogre::String rg, Ogre::String di
 		for (FileInfoList::iterator iterFiles = files->begin(); iterFiles!= files->end(); ++iterFiles)
 		{
 			if(!iterFiles->archive) continue;
-			
+
 			String dira = iterFiles->archive->getName();
 			getVirtualPath(dira);
 
@@ -2209,7 +2208,7 @@ String CacheSystem::filenamesSHA1()
 			{
 				String name = restype[i] + "/";
 				if(iterFiles->archive) name += iterFiles->archive->getName() + "/";
-			
+
 				if(b==0)
 				{
 					// special file handling, only add important files!
@@ -2235,7 +2234,7 @@ String CacheSystem::filenamesSHA1()
 
 	//LogManager::getSingleton().logMessage("hash string: "+filenames);
 	char result[255]="";
-	
+
 	CSHA1 sha1;
 	char *data = const_cast<char*>(filenames.c_str());
 	sha1.UpdateHash((uint8_t *)data, strlen(data));
@@ -2303,7 +2302,7 @@ void CacheSystem::fillTerrainDetailInfo(Cache_Entry &entry, Ogre::DataStreamPtr 
 				LogManager::getSingleton().logMessage("Error parsing File (fileinfo) " + String(fname) +" line " + StringConverter::toString(linecounter) + ". trying to continue ...");
 				continue;
 			}
-			
+
 			if(uniqueid != "")
 			{
 				// remove trailing comma
@@ -2449,7 +2448,7 @@ bool CacheSystem::checkResourceLoaded(Cache_Entry t)
 			if(e.getNumber() == Ogre::Exception::ERR_DUPLICATE_ITEM)
 			{
 				LogManager::getSingleton().logMessage(" *** error opening archive '"+t.dirname+"': some files are duplicates of existing files. The archive will be ignored.");
-			} else 
+			} else
 			{
 				LogManager::getSingleton().logMessage("error opening archive '"+t.dirname+"'. Is it corrupt? Ignoring that archive. Error: " + e.getFullDescription());
 				LogManager::getSingleton().logMessage("trying to continue ...");
@@ -2511,7 +2510,7 @@ void CacheSystem::loadSingleDirectory(String dirname, String group, bool already
 		if(e.getNumber() == Ogre::Exception::ERR_DUPLICATE_ITEM)
 		{
 			LogManager::getSingleton().logMessage(" *** error opening directory '"+dirname+"': some files are duplicates of existing files. The directory will be ignored.");
-		} else 
+		} else
 		{
 			LogManager::getSingleton().logMessage("error while loading directory: " + e.getFullDescription());
 			LogManager::getSingleton().logMessage("error opening directory '"+dirname+"'");
@@ -2546,15 +2545,15 @@ void CacheSystem::loadSingleZip(String zippath, int cfactor, bool unload)
 	try
 	{
 		ResourceGroupManager &rgm = ResourceGroupManager::getSingleton();
-		
+
 		// load it into a new resource group
 		LogManager::getSingleton().logMessage("Loading " + realzipPath);
 		rgm.addResourceLocation(realzipPath, "Zip", rgname);
 		rgm.initialiseResourceGroup(rgname);
-		
+
 		// parse everything
 		parseKnownFilesOneRG(rgname);
-		
+
 		// unload it again
 		if(unload)
 		{
@@ -2571,7 +2570,7 @@ void CacheSystem::loadSingleZip(String zippath, int cfactor, bool unload)
 		if(e.getNumber() == Ogre::Exception::ERR_DUPLICATE_ITEM)
 		{
 			LogManager::getSingleton().logMessage(" *** error opening archive '"+realzipPath+"': some files are duplicates of existing files. The archive will be ignored.");
-		}else 
+		}else
 		{
 			LogManager::getSingleton().logMessage("error while loading single Zip: " + e.getFullDescription());
 			LogManager::getSingleton().logMessage("error opening archive '"+realzipPath+"'. Is it corrupt? Ignoring that archive ...");
