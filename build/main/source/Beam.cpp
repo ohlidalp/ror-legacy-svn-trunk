@@ -836,6 +836,13 @@ void Beam::calcNetwork()
 
 	netBrakeLight = ((flagmask&NETMASK_BRAKES)!=0);
 	netReverseLight = ((flagmask&NETMASK_REVERSE)!=0);
+	
+	if(netReverseLight)
+		ssm->trigStart(trucknum, SS_TRIG_REVERSE_GEAR);
+	else
+		ssm->trigStop(trucknum, SS_TRIG_REVERSE_GEAR);
+
+
 }
 
 void Beam::addPressure(float v)

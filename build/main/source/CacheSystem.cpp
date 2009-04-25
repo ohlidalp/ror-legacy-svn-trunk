@@ -23,10 +23,10 @@ along with Rigs of Rods.  If not, see <http://www.gnu.org/licenses/>.
 #include "sha1.h"
 #include "ImprovedConfigFile.h"
 #include "skinmanager.h"
-#include "SoundScriptManager.h"
 #include "Settings.h"
 #include "gui_loader.h"
 #include "language.h"
+#include "SoundScriptManager.h"
 
 using namespace RoR; //CSHA1
 
