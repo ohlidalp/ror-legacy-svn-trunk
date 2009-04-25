@@ -55,14 +55,9 @@ void MapTextureCreator::init()
 	v->setOverlaysEnabled(false);
 
 	mat = MaterialManager::getSingleton().create("MapRttMat"+StringConverter::toString(counter), ResourceGroupManager::DEFAULT_RESOURCE_GROUP_NAME);
-	mat->getTechnique(0)->setLightingEnabled(false);
-	mat->getTechnique(0)->setSceneBlending(SBT_TRANSPARENT_ALPHA);
-	mat->getTechnique(0)->setTextureFiltering(TFO_ANISOTROPIC);
-	mat->getTechnique(0)->setDepthCheckEnabled(true);
-	mat->getTechnique(0)->setDepthWriteEnabled(true);
-	mat->getTechnique(0)->setCullingMode(Ogre::CULL_NONE);
 
 	tex = mat->getTechnique(0)->getPass(0)->createTextureUnitState("MapRttTex"+StringConverter::toString(counter));
+
 	rttTex->addListener(this);
 	//mCamera->setProjectionType(PT_ORTHOGRAPHIC);
 
@@ -81,7 +76,7 @@ void MapTextureCreator::init()
 
 void MapTextureCreator::setTranlucency(float amount)
 {
-	tex->setAlphaOperation(LBX_MODULATE, LBS_TEXTURE, LBS_MANUAL, 1.0, amount);
+	//tex->setAlphaOperation(LBX_MODULATE, LBS_TEXTURE, LBS_MANUAL, 1.0, amount);
 }
 
 void MapTextureCreator::setCameraMode(Ogre::PolygonMode pm)
