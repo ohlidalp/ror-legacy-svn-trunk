@@ -23,7 +23,7 @@ WSync::~WSync()
 {
 }
 
-int WSync::downloadMod(std::string modname, boost::filesystem::path dir, bool util)
+int WSync::downloadMod(std::string modname, std::string &modfilename, boost::filesystem::path dir, bool util)
 {
 	ensurePathExist(dir);
 
@@ -68,6 +68,7 @@ int WSync::downloadMod(std::string modname, boost::filesystem::path dir, bool ut
 	int res = downloadFile(filepath, REPO_SERVER, REPO_DOWNLOAD + filename, !util);
 	if(!util) printf("done!                 \n");
 	if(util) printf("%s", filename.c_str());
+	modfilename = filename;
 	return res;
 }
 

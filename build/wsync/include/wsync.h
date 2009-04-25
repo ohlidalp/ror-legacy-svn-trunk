@@ -15,7 +15,11 @@
 
 // servers
 #define API_SERVER     "api.rigsofrods.com"
-#define REPO_SERVER    "repository.rigsofrods.com"
+
+#ifndef REPO_SERVER
+# define REPO_SERVER   "repository.rigsofrods.com"
+#endif //REPO_SERVER
+
 
 // functions
 #define API_MIRROR     "/getwsyncmirror/"
@@ -65,7 +69,7 @@ public:
 	std::string generateFileHash(boost::filesystem::path file);
 	static int getTempFilename(boost::filesystem::path &tempfile);
 	int downloadConfigFile(std::string server, std::string remoteDir, std::vector< std::vector< std::string > > &list);
-	int downloadMod(std::string modname, boost::filesystem::path path, bool util=false);
+	int downloadMod(std::string modname, std::string &modfilename, boost::filesystem::path path, bool util=false);
 
 protected:
 	// members

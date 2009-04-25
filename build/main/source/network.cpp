@@ -26,6 +26,10 @@ along with Rigs of Rods.  If not, see <http://www.gnu.org/licenses/>.
 #include "sha1.h"
 #include "Settings.h"
 
+#ifdef WSYNC
+#include "wsync.h"
+#endif //WSYNC
+
 using namespace RoR; //CSHA1
 
 #if OGRE_PLATFORM == OGRE_PLATFORM_APPLE
@@ -90,102 +94,21 @@ void Network::downloadthreadstart(char *modname_c)
 	//free(modname_c);
 	LogManager::getSingleton().logMessage("new downloadthread for mod " + modname);
 	// we try to call the updater here that will download the file for us hopefully
-#if OGRE_PLATFORM == OGRE_PLATFORM_WIN32
-	PROCESS_INFORMATION pi;
-	STARTUPINFO si;
-	BOOL bSuccess;  /* BOOL return code for APIs */  
-
-	HANDLE hReadPipe, hWritePipe, hWritePipe2;
-	SECURITY_ATTRIBUTES saPipe;  /* security for anonymous pipe */
-	/* set up the security attributes for the anonymous pipe */
-	saPipe.nLength = sizeof(SECURITY_ATTRIBUTES);
-	saPipe.lpSecurityDescriptor = NULL;
-	/* In order for the child to be able to write to the pipe, the handle */
-	/* must be marked as inheritable by setting this flag: */
-	saPipe.bInheritHandle = TRUE;
-
-	CreatePipe(&hReadPipe,  /* read handle */
-			   &hWritePipe,  /* write handle, used as stdout by child */
-			   &saPipe,  /* security descriptor */
-			   0);  /* pipe buffer size */
-	bSuccess = DuplicateHandle(GetCurrentProcess(), /* source process */
-								hReadPipe, /* handle to duplicate */
-								GetCurrentProcess(), /* destination process */
-								NULL, /* new handle - don't want one, change original handle */
-								0, /* new access flags - ignored since DUPLICATE_SAME_ACCESS */
-								FALSE, /* make it *not* inheritable */
-								DUPLICATE_SAME_ACCESS);
-	bSuccess = DuplicateHandle(GetCurrentProcess(), /* source process */
-								hWritePipe, /* handle to duplicate */
-								GetCurrentProcess(), /* destination process */
-								&hWritePipe2, /* new handle, used as stderr by child */
-								0, /* new access flags - ignored since DUPLICATE_SAME_ACCESS */
-								TRUE, /* it's inheritable */
-								DUPLICATE_SAME_ACCESS);
-	DWORD               dwCode  =   0;
-	ZeroMemory(&si,sizeof(STARTUPINFO));
-	si.cb           =   sizeof(STARTUPINFO);
-	si.dwFlags      =   STARTF_USESTDHANDLES|STARTF_USESHOWWINDOW;
-	si.hStdInput = hWritePipe2; /* hStdInput needs a valid handle in case it is checked by the child */
-	si.hStdOutput = hWritePipe; /* write end of the pipe */
-	si.hStdError = hWritePipe2; /* duplicate of write end of the pipe */
-	si.wShowWindow  =   SW_HIDE;
-
 	String packsPath = SETTINGS.getSetting("User Path")+"packs" + SETTINGS.getSetting("dirsep") + "downloaded";
-
-	String cmd = SETTINGS.getSetting("Program Path") + "update.exe dlmod \"" + modname + "\" \"" + packsPath + "\"";
-
-	LogManager::getSingleton().logMessage("starting update.exe: " + cmd);
-	
-	char *cmdc = const_cast<char*>(cmd.c_str());
-	bSuccess = CreateProcess(NULL,  /* filename */
-							cmdc,  /* full command line for child */
-							NULL,  /* process security descriptor */
-							NULL,  /* thread security descriptor */
-							TRUE,  /* inherit handles? Also use if STARTF_USESTDHANDLES */
-							0,  /* creation flags */
-							NULL,  /* inherited environment address */
-							NULL,  /* startup dir; NULL = start in current */
-							&si,  /* pointer to startup info (input) */
-							&pi);  /* pointer to process info (output) */
-	
-	CloseHandle(pi.hThread);
-	CloseHandle(pi.hProcess);
-	bSuccess = CloseHandle(hWritePipe);
-	bSuccess = CloseHandle(hWritePipe2);
-
-	DWORD cchReadBuffer;  /* number of bytes read or to be written */
-	char chReadBuffer[300];  /* pipe read buffer */
+#ifdef WSYNC
 	String modfilename = "";
-	for (;;)
-    {
-		bSuccess = ReadFile(hReadPipe,  /* read handle */
-							chReadBuffer,  /* buffer for incoming data */
-							sizeof(chReadBuffer),  /* number of bytes to read */
-							&cchReadBuffer,  /* number of bytes actually read */
-							NULL);  /* no overlapped reading */
-		if (!bSuccess && (GetLastError() == ERROR_BROKEN_PIPE))
-			break;  /* child has died */
-
-		modfilename = String(chReadBuffer, cchReadBuffer);
-		// break since we read all at once
-		break;
-	}
-	//String targetfile = SETTINGS.getSetting("User Path")+"packs" + SETTINGS.getSetting("dirsep") + modfilename;
-	// DO NOT USE OGRE STUFF IN HERE, its not thread safe!
-	// DO AS LESS AS POSSIBLE IN THIS THREAD!
-	CloseHandle(hReadPipe);
-
+	WSync *w = new WSync();
+	int res = w->downloadMod(modname, modfilename, packsPath, true);
 	// write the data back to the main handling stuff and close the thread
+	if(modfilename == "")
+		modfilename = "error";
 	pthread_mutex_lock(&dl_data_mutex);
 	downloadingMods[modname] = modfilename;
 	pthread_mutex_unlock(&dl_data_mutex);
 
-#elif OGRE_PLATFORM == OGRE_PLATFORM_LINUX
-	// TODO
-#elif OGRE_PLATFORM == OGRE_PLATFORM_APPLE
-	// TODO
-#endif
+#else //WSYNC
+	// well, not available for you i guess :(
+#endif //WSYNC
 }
 
 void Network::tryDownloadMod(Ogre::String modname)
@@ -578,7 +501,6 @@ bool Network::vehicle_to_spawn(char* name, unsigned int *uid, unsigned int *labe
 					strcpy(name, truckname.c_str());
 					*uid=clients[i].user_id;
 					clients[i].invisible = false;
-					clients[i].loaded = true;
 					*label=i;
 					pthread_mutex_unlock(&clients_mutex);
 					return true;
@@ -856,8 +778,8 @@ void Network::receivethreadstart()
 					trucks[clients[i].trucknum]->pushNetwork(buffer, wrotelen);
 
 					// hack-ish: detect LAG:
-					oob_t *o = (oob_t *)buffer;
-					lagDataClients[source] =  o->time - (trucks[clients[i].trucknum]->getTruckTime() + trucks[clients[i].trucknum]->getNetTruckTimeOffset());
+					//oob_t *o = (oob_t *)buffer;
+					//lagDataClients[source] =  o->time - (trucks[clients[i].trucknum]->getTruckTime() + trucks[clients[i].trucknum]->getNetTruckTimeOffset());
 					//LogManager::getSingleton().logMessage("Id like to push to "+StringConverter::toString(clients[i].trucknum));
 					break;
 				}

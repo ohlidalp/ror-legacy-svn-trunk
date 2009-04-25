@@ -135,7 +135,7 @@ public:
 	char *getTerrainName() { return terrainName; };
 	Ogre::String getNickname(bool colour=false);
 	int getRConState() { return rconauthed; };
-	int downloadMod(char* modname);
+	int downloadMod(char* modname, std::string &modfilename);
 
 
 	int getSpeedUp();
