@@ -102,9 +102,14 @@ void Network::downloadthreadstart(char *modname_c)
 	// write the data back to the main handling stuff and close the thread
 	if(modfilename == "")
 		modfilename = "error";
-	pthread_mutex_lock(&dl_data_mutex);
-	downloadingMods[modname] = modfilename;
-	pthread_mutex_unlock(&dl_data_mutex);
+
+	if(!shutdown)
+	{
+		// this prevents a crash on shutdown
+		pthread_mutex_lock(&dl_data_mutex);
+		downloadingMods[modname] = modfilename;
+		pthread_mutex_unlock(&dl_data_mutex);
+	}
 
 #else //WSYNC
 	// well, not available for you i guess :(
