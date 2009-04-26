@@ -414,8 +414,15 @@ int SoundManager::loadWAVFile(String filename, ALuint buffer)
 	if (channels==2 && bps==16)
 	{
 		format=AL_FORMAT_STEREO16;
-	} else {LogManager::getSingleton().logMessage("Invalid WAV file (wrong channels/bps): "+filename);return -1;}
-
+	} else
+	{
+		LogManager::getSingleton().logMessage("Invalid WAV file (wrong channels/bps): "+filename);
+		return -1;
+	}
+	if(channels != 1)
+	{
+		LogManager::getSingleton().logMessage("Invalid WAV file: the file needs to be mono, and nothing else. Will try to continue anyways ...");
+	}
 	//okay, creating buffer
 	void* bdata=malloc(dataSize);
 	if (!bdata) {LogManager::getSingleton().logMessage("Memory error reading file "+filename);return -1;}
