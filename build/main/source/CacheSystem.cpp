@@ -46,6 +46,7 @@ CacheSystem::CacheSystem()
 	changedFiles = 0;
 	newFiles = 0;
 	deletedFiles = 0;
+	smgr = 0;
 
 	// register the extensions
 	known_extensions.push_back("machine");
@@ -71,8 +72,10 @@ void CacheSystem::setLocation(String cachepath, String configpath)
 	configlocation=configpath;
 }
 
-void CacheSystem::startup(bool forcecheck)
+void CacheSystem::startup(SceneManager *smgr, bool forcecheck)
 {
+	this->smgr = smgr;
+
 	// read valid categories from file
 	readCategoryTitles();
 
@@ -490,6 +493,19 @@ void CacheSystem::parseModAttribute(const String& line, Cache_Entry& t)
 		if (params.size() != 2) { logBadTruckAttrib(line, t); return; } else  t.numgears = StringConverter::parseInt(params[1]);
 	else if (attrib == "enginetype")
 		if (params.size() != 2) { logBadTruckAttrib(line, t); return; } else  t.enginetype = StringConverter::parseInt(params[1]);
+	else if (attrib == "materials")
+		if (params.size() < 2)
+		{
+			logBadTruckAttrib(line, t);
+			return;
+		} 
+		else  
+		{
+			String mat = params[1];
+			std::vector < Ogre::String > ar = StringUtil::split(mat," ");
+			for(std::vector < Ogre::String >::iterator it = ar.begin(); it!=ar.end(); it++)
+				t.materials.insert(*it);
+		}
 }
 
 bool CacheSystem::loadCache()
@@ -953,6 +969,15 @@ Ogre::String CacheSystem::formatInnerEntry(int counter, Cache_Entry t)
 		if(t.driveable!=0) result += "\tdriveable="+StringConverter::toString(t.driveable)+"\n";
 		if(t.numgears!=0) result += "\tnumgears="+StringConverter::toString(t.numgears)+"\n";
 		if(t.enginetype!=0) result += "\tenginetype="+StringConverter::toString(t.enginetype)+"\n";
+		if(t.materials.size()) 
+		{
+			String matStr = "";
+			for(std::set < Ogre::String >::iterator it = t.materials.begin(); it != t.materials.end(); it++)
+			{
+				matStr += *it + " ";
+			}
+			result += "\tmaterials=" + matStr + "\n";
+		}
 
 		if(t.sectionconfigs.size() > 0)
 		{
@@ -1452,6 +1477,7 @@ void CacheSystem::fillTruckDetailInfo(Cache_Entry &entry, Ogre::DataStreamPtr ds
 			{
 				float truckmass=0, loadmass=0;
 				char texname[255];
+				memset(texname,0, 255);
 				//parse globals
 				int result = sscanf(line,"%f, %f, %s",&truckmass, &loadmass, texname);
 				if (result < 2 || result == EOF) {
@@ -1460,6 +1486,8 @@ void CacheSystem::fillTruckDetailInfo(Cache_Entry &entry, Ogre::DataStreamPtr ds
 				}
 				entry.truckmass = truckmass;
 				entry.loadmass = loadmass;
+				addUniqueString(entry.materials, texname);
+
 				continue;
 			}
 			else if (mode==8)
@@ -1593,6 +1621,20 @@ void CacheSystem::fillTruckDetailInfo(Cache_Entry &entry, Ogre::DataStreamPtr ds
 				if (result < 10 || result == EOF) {
 					LogManager::getSingleton().logMessage("Error parsing File (Prop) " + String(fname) +" line " + StringConverter::toString(linecounter) + ". trying to continue ...");
 					continue;
+				}
+				Entity *te=0;
+				String propMats="";
+				try
+				{
+					if(smgr) 
+					{
+						te = smgr->createEntity("CacheEntityMaterialTest", String(meshname));
+						addMeshMaterials(entry, te);
+						smgr->destroyEntity(te);
+					}
+				}catch(...)
+				{
+					LogManager::getSingleton().logMessage("error loading mesh: "+String(meshname));
 				}
 				entry.propscount++;
 				continue;
@@ -1814,6 +1856,20 @@ void CacheSystem::fillTruckDetailInfo(Cache_Entry &entry, Ogre::DataStreamPtr ds
 					LogManager::getSingleton().logMessage("Error parsing File (Flexbodies) " + String(fname) +" line " + StringConverter::toString(linecounter) + ". trying to continue ...");
 					continue;
 				}
+				Entity *te=0;
+				String propMats="";
+				try
+				{
+					if(smgr) 
+					{
+						te = smgr->createEntity("CacheEntityMaterialTest", String(meshname));
+						addMeshMaterials(entry, te);
+						smgr->destroyEntity(te);
+					}
+				}catch(...)
+				{
+					LogManager::getSingleton().logMessage("error loading mesh: "+String(meshname));
+				}
 				entry.flexbodiescount++;
 				continue;
 			}
@@ -1897,6 +1953,44 @@ void CacheSystem::fillTruckDetailInfo(Cache_Entry &entry, Ogre::DataStreamPtr ds
 			}
 		};
 }
+
+int CacheSystem::addUniqueString(std::set<Ogre::String> &list, Ogre::String str)
+{
+	// ignore some render texture targets
+	if(str == "mirror") return 0;
+	if(str == "renderdash") return 0;
+
+	str = stripUIDfromString(str);
+
+	if (list.find(str) == list.end())
+	{
+		list.insert(str);
+		return 1;
+	}
+	return 0;
+}
+
+Ogre::String CacheSystem::addMeshMaterials(Cache_Entry &entry, Ogre::Entity *e)
+{
+	String materials = "";
+	MeshPtr m = e->getMesh();
+	if(!m.isNull())
+	{
+		for(int n=0; n<(int)m->getNumSubMeshes();n++)
+		{
+			SubMesh *sm = m->getSubMesh(n);
+			addUniqueString(entry.materials, sm->getMaterialName());
+		}
+	}
+
+	for(int n=0; n<(int)e->getNumSubEntities();n++)
+	{
+		SubEntity *subent = e->getSubEntity(n);
+		addUniqueString(entry.materials, subent->getMaterialName());
+	}
+	return materials;
+}
+
 
 Ogre::String CacheSystem::getSkinSource(Ogre::String filename)
 {

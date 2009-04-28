@@ -112,3 +112,4 @@ void MaterialFunctionMapper::replaceMeshMaterials(Ogre::Entity *e)
 		}
 	}
 }
+

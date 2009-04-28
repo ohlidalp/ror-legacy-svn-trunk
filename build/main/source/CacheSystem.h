@@ -133,6 +133,7 @@ public:
 	int numgears;
 	char enginetype;
 	std::vector<Ogre::String> sectionconfigs;
+	std::set<Ogre::String> materials;
 
 	// default constructor resets the data.
 	Cache_Entry() : \
@@ -192,7 +193,8 @@ public:
 		rescuer(false), \
 		driveable(0), \
 		numgears(0), \
-		enginetype('t')
+		enginetype('t'),
+		materials()
 	{
 		// driveable = 0 = NOT_DRIVEABLE
 		// enginetype = t = truck is default
@@ -217,7 +219,7 @@ public:
 	void release(){};
 #endif
 
-	void startup(bool forcecheck=false);
+	void startup(SceneManager *smgr, bool forcecheck=false);
 	void loadAllZips();
 	
 	static Ogre::String stripUIDfromString(Ogre::String uidstr);
@@ -230,7 +232,7 @@ public:
 	bool checkResourceLoaded(Ogre::String &filename);
 	bool checkResourceLoaded(Ogre::String &filename, Ogre::String &group);
 	Cache_Entry getResourceInfo(Ogre::String &filename);
-
+	Ogre::String addMeshMaterials(Cache_Entry &entry, Ogre::Entity *e);
 	std::map<int, Category_Entry> *getCategories();
 	std::vector<Cache_Entry> *getEntries();
 
@@ -258,6 +260,7 @@ protected:
 	static CacheSystem* myInstance;
 	String location;
 	String configlocation;
+	Ogre::SceneManager *smgr;
 
 
 	Ogre::String currentSHA1;	// stores sha1 over the content
@@ -268,6 +271,8 @@ protected:
 
 	// the extensions we track in the cache system
 	std::vector<Ogre::String> known_extensions;
+
+	int addUniqueString(std::set<Ogre::String> &list, Ogre::String str);
 
 	// map for skins and zips
 	std::map<Ogre::String, Ogre::String> skins_map;

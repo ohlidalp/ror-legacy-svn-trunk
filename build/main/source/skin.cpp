@@ -88,7 +88,6 @@ int Skin::serialize(Ogre::String &dst)
 	std::map<Ogre::String, Ogre::String>::iterator it;
 	dst += "\tname=" + this->name + "\n";
 	dst += "\tthumbnail=" + this->thumbnail + "\n";
-	dst += "\tsource=\n";
 	for(it = replaceMaterials.begin(); it != replaceMaterials.end(); it++)
 	{
 		dst += "\treplaceMaterial=" + it->first + ", " + it->second + "\n";

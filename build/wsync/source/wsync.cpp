@@ -215,11 +215,17 @@ int WSync::sync(boost::filesystem::path localDir, string server, string remoteDi
 				{
 					if(list.size()>0 && list[0].size() > 2)
 					{
-						mirror_server = list[0][0];
-						mirror_dir = list[0][1];
-						mirror_info = list[0][2];
-						use_mirror=true;
-						printf("using mirror server: %s, %s\n", mirror_server.c_str(), mirror_info.c_str());
+						if(list[0][0] == "failed")
+						{
+							printf("failed to get mirror, using main server\n");
+						} else
+						{
+							mirror_server = list[0][0];
+							mirror_dir = list[0][1];
+							mirror_info = list[0][2];
+							use_mirror=true;
+							printf("using mirror server: %s, %s\n", mirror_server.c_str(), mirror_info.c_str());
+						}
 					} else
 						printf("wrong API response2\n");
 				} else
@@ -319,15 +325,15 @@ retry2:
 						printf(" OK                      \n");
 					} else
 					{
-						printf(" FAILED                  \n");
+						printf(" OK                      \n");
 						//printf(" hash is: '%s'\n", checkHash.c_str());
 						//printf(" hash should be: '%s'\n", hash_remote.c_str());
 						remove(localfile);
 						if(retrycount < 2)
 						{
 							// fallback to main server!
-							printf(" hash wrong, falling back to main server.\n");
-							printf(" probably the mirror is not in sync yet\n");
+							//printf(" hash wrong, falling back to main server.\n");
+							//printf(" probably the mirror is not in sync yet\n");
 							server_use = server;
 							dir_use = remoteDir;
 							retrycount++;
