@@ -1032,11 +1032,11 @@ ExampleFrameListener::ExampleFrameListener(RenderWindow* win, Camera* cam, Scene
 
 	UILOADER.setup(win);
 
-	CACHE.startup();
+	CACHE.startup(scm);
 
 	if(SETTINGS.getSetting("regen-cache-only") != "")
 	{
-		CACHE.startup(true);
+		CACHE.startup(scm, true);
 		String str = _L("Cache regeneration done.\n");
 		if(CACHE.newFiles > 0) str += StringConverter::toString(CACHE.newFiles) + " new files\n";
 		if(CACHE.changedFiles > 0) str += StringConverter::toString(CACHE.changedFiles) + " changed files\n";
