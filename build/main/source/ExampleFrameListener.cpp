@@ -3978,12 +3978,14 @@ bool ExampleFrameListener::updateEvents(float dt)
 							hideMap();
 							UILOADER.show(GUI_Loader::LT_Network);
 						}
-					} else {
+					} else
+					{
 						// init no trucks, as there were found some
 						initTrucks(false, sel->fname);
 					}
 				}
-			} else if (loading_state==TERRAIN_LOADED) {
+			} else if (loading_state==TERRAIN_LOADED)
+			{
 				Cache_Entry *selt = UILOADER.getSelection();
 				std::vector<Ogre::String> config = UILOADER.getTruckConfig();
 				std::vector<Ogre::String> *configptr = &config;
@@ -3994,8 +3996,10 @@ bool ExampleFrameListener::updateEvents(float dt)
 				if(netmode)
 					NETCHAT.setMode(this, NETCHAT_LEFT_SMALL, true);
 
-			} else if (loading_state==RELOADING) {
+			} else if (loading_state==RELOADING)
+			{
 				Cache_Entry *selt = UILOADER.getSelection();
+				SkinPtr skin = UILOADER.getSelectedSkin();
 				if(selt)
 				{
 					//we load an extra truck
@@ -4003,7 +4007,7 @@ bool ExampleFrameListener::updateEvents(float dt)
 					std::vector<Ogre::String> config = UILOADER.getTruckConfig();
 					std::vector<Ogre::String> *configptr = &config;
 					if(config.size() == 0) configptr = 0;
-					trucks[free_truck] = new Beam(free_truck, mSceneMgr, mSceneMgr->getRootSceneNode(), mWindow, &mapsizex, &mapsizez, reload_pos.x, reload_pos.y, reload_pos.z, reload_dir, selected, collisions, dustp, clumpp, sparksp, dripp, splashp, ripplep, hfinder, w, mCamera, mirror, true, false, false, reload_box, false, flaresMode, configptr);
+					trucks[free_truck] = new Beam(free_truck, mSceneMgr, mSceneMgr->getRootSceneNode(), mWindow, &mapsizex, &mapsizez, reload_pos.x, reload_pos.y, reload_pos.z, reload_dir, selected, collisions, dustp, clumpp, sparksp, dripp, splashp, ripplep, hfinder, w, mCamera, mirror, true, false, false, reload_box, false, flaresMode, configptr, skin);
 				}
 
 				if(bigMap)
@@ -4025,7 +4029,8 @@ bool ExampleFrameListener::updateEvents(float dt)
 					if (trucks[free_truck]->engine)
 						trucks[free_truck]->engine->start();
 					setCurrentTruck(free_truck);
-				} else {
+				} else 
+				{
 					// if it is a load or trailer, than stay in person mode
 					// but relocate to the new position, so we dont spawn the dialog again
 					//personode->setPosition(reload_pos);
@@ -4394,7 +4399,7 @@ void ExampleFrameListener::loadTerrain(String terrainfile)
 
 #ifdef ANGELSCRIPT
 	LogManager::getSingleton().logMessage("Loading Angelscript Script engine." );
-	ScriptEngine::getSingleton().loadTerrainScript(terrainfile+".sa");
+	ScriptEngine::getSingleton().loadTerrainScript(terrainfile+".as");
 #endif
 
 

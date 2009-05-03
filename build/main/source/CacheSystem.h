@@ -250,7 +250,8 @@ public:
 	int changedFiles, newFiles, deletedFiles;
 	bool fileExists(Ogre::String);
 
-	void loadSingleZip(Ogre::String zippath, int cfactor, bool unload=true);
+	void loadSingleZip(Ogre::String zippath, int cfactor, bool unload=true, bool ownGroup=true);
+	void loadSingleDirectory(String dirname, String group, bool alreadyLoaded=true);
 
 protected:
 	CacheSystem();
@@ -306,8 +307,8 @@ protected:
 	void writeGeneratedCache();
 	
 	// adds a zip to the cache
-	void loadSingleZip(Ogre::FileInfo f, bool unload=true);
-	void loadSingleZip(Cache_Entry e, bool unload=true);
+	void loadSingleZip(Ogre::FileInfo f, bool unload=true, bool ownGroup=true);
+	void loadSingleZip(Cache_Entry e, bool unload=true, bool ownGroup=true);
 
 	Ogre::String detectFilesMiniType(Ogre::String filename);
 	void removeFileFromFileCache(std::vector<Cache_Entry>::iterator it);
@@ -357,7 +358,6 @@ protected:
 	bool isDirectoryUsedInEntries(Ogre::String directory);
 
 	void loadAllDirectoriesInResourceGroup(String group);
-	void loadSingleDirectory(String dirname, String group, bool alreadyLoaded=true);
 
 };
 

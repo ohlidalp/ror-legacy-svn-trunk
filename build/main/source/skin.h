@@ -32,21 +32,29 @@ public:
 	/** Constructor.
 	@see Resource
 	*/
-	Skin(Ogre::ResourceManager* creator, const Ogre::String& name, Ogre::ResourceHandle handle,
-		const Ogre::String& group, bool isManual = false, Ogre::ManualResourceLoader* loader = 0);
+	Skin(Ogre::ResourceManager* creator, const Ogre::String& name, Ogre::ResourceHandle handle, const Ogre::String& group, bool isManual = false, Ogre::ManualResourceLoader* loader = 0);
 	virtual ~Skin();
 
-	Ogre::String getName();
+	// we are lazy and wont use separate get/set
+	Ogre::String name;
+	Ogre::String thumbnail;
+	Ogre::String description;
+	Ogre::String authorName;
+	Ogre::String skintype;
+	Ogre::String source;
+	Ogre::String sourcetype;
+	Ogre::String origin;
+	int authorID;
+	bool loaded;
+
 	int addMaterialReplace(Ogre::String from, Ogre::String to);
 	int hasReplacementForMaterial(Ogre::String material);
 	Ogre::String getReplacementForMaterial(Ogre::String material);
+	void replaceMeshMaterials(Ogre::Entity *e);
 
-	void setThumbnailImage(Ogre::String thumbnail);
-	Ogre::String getThumbnailImage();
 	int serialize(Ogre::String &dst);
+	bool operator==(const Skin& other) const;
 protected:
-	Ogre::String name;
-	Ogre::String thumbnail;
 	std::map<Ogre::String, Ogre::String> replaceMaterials;
 
 	void loadImpl(void);

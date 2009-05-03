@@ -126,8 +126,7 @@ void CacheSystem::unloadUselessResourceGroups()
 		{
 			try
 			{
-				if(SoundScriptManager::getSingleton()->unloadResourceGroup(*it))
-					LogManager::getSingleton().logMessage("existing sound templates removed in group:" + *it);
+				SoundScriptManager::getSingleton()->clearTemplates();
 				ParticleSystemManager::getSingleton().removeTemplatesByResourceGroup(*it);
 				ResourceGroupManager::getSingleton().clearResourceGroup(*it);
 				ResourceGroupManager::getSingleton().unloadResourceGroup(*it);
@@ -529,6 +528,7 @@ bool CacheSystem::loadCache()
 	LogManager::getSingleton().logMessage("CacheSystem::loadCache2");
 
 	Cache_Entry t;
+	SkinPtr pSkin;
 	int mode = 0;
 	while( !stream->eof() )
 	{
@@ -557,9 +557,24 @@ bool CacheSystem::loadCache()
 					// Skip to and over next {
 					stream->skipLine("{");
 				}
-				// todo: add skin support
-			}
-			else
+				if(line.substr(0,4) == "skin")
+				{
+					String sname = line.substr(5);
+					StringUtil::trim(sname);
+					// "skin" + StringConverter::toString(SkinManager::getSingleton().getSkinCount())
+					try
+					{
+						pSkin = SkinManager::getSingleton().create(sname, ResourceGroupManager::DEFAULT_RESOURCE_GROUP_NAME);
+						pSkin->_notifyOrigin(stream->getName());
+						// Skip to and over next {
+						stream->skipLine("{");
+						mode = 2;
+					} catch(...)
+					{
+						continue;
+					}
+				}
+			} else if(mode == 1)
 			{
 				// Already in mod
 				if (line == "}")
@@ -571,8 +586,20 @@ bool CacheSystem::loadCache()
 				}
 				else
 				{
-					if(mode == 1)
-						parseModAttribute(line, t);
+					parseModAttribute(line, t);
+				}
+			} else if(mode == 2)
+			{
+				// skin
+				if (line == "}")
+				{
+					// Finished
+					pSkin.setNull();
+					mode = 0;
+				}
+				else
+				{
+					SkinManager::getSingleton().parseAttribute(line, pSkin);
 				}
 			}
 		}
@@ -1022,8 +1049,8 @@ Ogre::String CacheSystem::formatSkinEntry(int counter, SkinPtr skin)
 {
 	String result = "skin\n";
 	result += "{\n";
-	result += "\tname="+skin->getName()+"\n";
-	result += "\tthumbimg="+skin->getThumbnailImage()+"\n";
+	result += "\tname="+skin->name+"\n";
+	result += "\tthumbimg="+skin->thumbnail+"\n";
 	// todo: finish implementation ...
 	result += "}\n\n";
 	return result;
@@ -2553,18 +2580,18 @@ bool CacheSystem::checkResourceLoaded(Cache_Entry t)
 	return false;
 }
 
-void CacheSystem::loadSingleZip(Cache_Entry e, bool unload)
+void CacheSystem::loadSingleZip(Cache_Entry e, bool unload, bool ownGroup)
 {
-	loadSingleZip(e.dirname, -1, unload);
+	loadSingleZip(e.dirname, -1, unload, ownGroup);
 }
 
-void CacheSystem::loadSingleZip(Ogre::FileInfo f, bool unload)
+void CacheSystem::loadSingleZip(Ogre::FileInfo f, bool unload, bool ownGroup)
 {
 	String zippath = f.archive->getName() + "/" + f.filename;
 	int cfactor = -1;
 	if(f.uncompressedSize > 0)
 		cfactor = (f.compressedSize / f.uncompressedSize) * 100.0f;
-	loadSingleZip(zippath, cfactor, unload);
+	loadSingleZip(zippath, cfactor, unload, ownGroup);
 }
 
 void CacheSystem::loadSingleDirectory(String dirname, String group, bool alreadyLoaded)
@@ -2592,8 +2619,7 @@ void CacheSystem::loadSingleDirectory(String dirname, String group, bool already
 			// unload it again
 			LogManager::getSingleton().logMessage("UnLoading " + dirname);
 
-			if(SoundScriptManager::getSingleton()->unloadResourceGroup(rgname))
-				LogManager::getSingleton().logMessage("existing sound templates removed in group:" + rgname);
+			SoundScriptManager::getSingleton()->clearTemplates();
 			ParticleSystemManager::getSingleton().removeTemplatesByResourceGroup(rgname);
 			ResourceGroupManager::getSingleton().clearResourceGroup(rgname);
 			ResourceGroupManager::getSingleton().unloadResourceGroup(rgname);
@@ -2615,7 +2641,7 @@ void CacheSystem::loadSingleDirectory(String dirname, String group, bool already
 	}
 }
 
-void CacheSystem::loadSingleZip(String zippath, int cfactor, bool unload)
+void CacheSystem::loadSingleZip(String zippath, int cfactor, bool unload, bool ownGroup)
 {
 	String realzipPath = getRealPath(zippath);
 	char hash[255];
@@ -2637,6 +2663,10 @@ void CacheSystem::loadSingleZip(String zippath, int cfactor, bool unload)
 
 	rgcounter++;
 	String rgname = "General-"+StringConverter::toString(rgcounter);
+	
+	// use general group?
+	if(!ownGroup)
+		rgname = ResourceGroupManager::DEFAULT_RESOURCE_GROUP_NAME;
 
 	try
 	{
@@ -2654,8 +2684,7 @@ void CacheSystem::loadSingleZip(String zippath, int cfactor, bool unload)
 		if(unload)
 		{
 			LogManager::getSingleton().logMessage("Unloading " + realzipPath);
-			if(SoundScriptManager::getSingleton()->unloadResourceGroup(rgname))
-				LogManager::getSingleton().logMessage("existing sound templates removed in group:" + rgname);
+			SoundScriptManager::getSingleton()->clearTemplates();
 			ParticleSystemManager::getSingleton().removeTemplatesByResourceGroup(rgname);
 			rgm.removeResourceLocation(realzipPath, rgname);
 			rgm.clearResourceGroup(rgname);
