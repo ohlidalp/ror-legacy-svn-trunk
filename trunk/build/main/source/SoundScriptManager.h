@@ -26,7 +26,6 @@ along with Rigs of Rods.  If not, see <http://www.gnu.org/licenses/>.
 #include "OgreResourceGroupManager.h"
 #include "SoundManager.h"
 
-#define MAX_TEMPLATES 1024
 #define MAX_SOUNDS_PER_SCRIPT 16
 #define MAX_INSTANCES_PER_GROUP 256
 
@@ -121,6 +120,7 @@ class SoundScriptTemplate
 public:
 	SoundScriptTemplate(String name, String groupname, String filename);
 	bool setParameter(StringVector vec);
+	~SoundScriptTemplate();
 
 //private:
 	int parseModulation(String str);
@@ -184,7 +184,8 @@ public:
     Real getLoadingOrder(void) const;
 
 	SoundScriptInstance* createInstance(String templatename, int truck, SceneNode *toAttach);
-	bool unloadResourceGroup(String groupname);
+	void unloadResourceGroup(String groupname);
+	void clearTemplates();
 
 	//values update
 	void trigOnce(int truck, int trig);
@@ -204,8 +205,7 @@ private:
     StringVector mScriptPatterns;
 	int instance_counter;
 
-	SoundScriptTemplate* templates[MAX_TEMPLATES];
-	int free_template;
+	std::map <Ogre::String, SoundScriptTemplate*> templates;
 
 	void skipToNextCloseBrace(DataStreamPtr& chunk);
 	void skipToNextOpenBrace(DataStreamPtr& chunk);

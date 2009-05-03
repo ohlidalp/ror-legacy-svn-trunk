@@ -25,6 +25,7 @@ along with Rigs of Rods.  If not, see <http://www.gnu.org/licenses/>.
 #include "CacheSystem.h"
 
 #include "language.h"
+#include "skinmanager.h"
 
 using namespace Ogre;
 
@@ -181,11 +182,38 @@ void GUI_Loader::selectionDone()
 	if(!selectedtruck || selectiondone)
 		return;
 
-	// check if the resource is loaded
-	CACHE.checkResourceLoaded(*selectedtruck);
+	if(loaderType != LT_SKIN)
+	{
+		// we show the normal loader
+		// check if the resource is loaded
+		CACHE.checkResourceLoaded(*selectedtruck);
 
-	selectiondone = true;
-	hide();
+		this->current_skins.clear();
+		int res = SkinManager::getSingleton().getUsableSkins(selectedtruck, this->current_skins);
+		if(!res && this->current_skins.size()>0)
+		{
+			// show skin selection dialog!
+			this->show(LT_SKIN);
+			selectiondone = false;
+			// just let the user select a skin as well
+		} else
+		{
+			selectedskin.setNull();
+			selectiondone = true;
+			hide();
+		}
+	} else
+	{
+		// we show the skin loader, set final skin and exit!
+		// selectedskin should be set already!
+		selectiondone = true;
+		hide();
+	}
+}
+
+SkinPtr GUI_Loader::getSelectedSkin()
+{
+	return selectedskin;
 }
 
 void GUI_Loader::event_btnOk_MouseButtonClick(MyGUI::WidgetPtr _sender)
@@ -346,7 +374,7 @@ void GUI_Loader::show(int type)
 	MyGUI::InputManager::getInstance().setKeyFocusWidget(window);
 	window->setEnabledSilent(true);
 	window->showSmooth();
-	selectedtruck = 0;
+	if(type != LT_SKIN) selectedtruck = 0; // when in skin, we still need the info
 	loaderType = type;
 	selectiondone = false;
 	getData();
@@ -372,6 +400,29 @@ void GUI_Loader::getData()
 	list->removeAllItems();
 	myEntries.clear();
 	categoryUsage.clear();
+	if(loaderType == LT_SKIN)
+	{
+		// skin specific stuff
+		combobox->setEnabled(false);
+		combobox->setCaption(_L("Skins"));
+		btnCancel->setEnabled(false);
+		combo_configs->setVisible(false);
+
+		list->removeAllItems();
+		list->addItem(_L("Default Skin"), 0);
+		int i=1;
+		for(std::vector<SkinPtr>::iterator it=current_skins.begin(); it!=current_skins.end(); it++, i++)
+		{
+			list->addItem((*it)->getName(), i);
+		}
+		list->setIndexSelected(0);
+		onEntrySelected(0);
+		return;
+	} else
+	{
+		combobox->setEnabled(true);
+		btnCancel->setEnabled(true);
+	}
 	
 	int ts = CACHE.getTimeStamp();
 
@@ -457,6 +508,7 @@ void GUI_Loader::getData()
 
 void GUI_Loader::onCategorySelected(int categoryID)
 {
+	if(loaderType == LT_SKIN) return;
 	int ts = CACHE.getTimeStamp();
 	list->removeAllItems();
 	std::vector<Cache_Entry>::iterator it;
@@ -493,9 +545,57 @@ void GUI_Loader::onCategorySelected(int categoryID)
 
 void GUI_Loader::onEntrySelected(int entryID)
 {
-	Cache_Entry *entry = CACHE.getEntry(entryID);
-	if(!entry)
+	if(loaderType == LT_SKIN)
+	{
+		// special skin handling
+		if(entryID == 0)
+		{
+			// default, default infos
+			updateControls(selectedtruck);
+			return;
+		}
+		entryID -= 1; // remove default skin :)
+		SkinPtr &skin = current_skins[entryID];
+		
+		// check if loaded
+		if(!skin->loaded && skin->sourcetype == "FileSystem")
+		{
+			try
+			{
+				ResourceGroupManager::getSingleton().addResourceLocation(skin->source, "FileSystem", ResourceGroupManager::DEFAULT_RESOURCE_GROUP_NAME);
+				ResourceGroupManager::getSingleton().initialiseResourceGroup(ResourceGroupManager::DEFAULT_RESOURCE_GROUP_NAME);
+			}catch(...)
+			{
+			}
+			skin->loaded = true;
+		} else if(!skin->loaded && skin->sourcetype == "Zip")
+		{
+			CACHE.loadSingleZip(skin->source, -1, false, false);
+			skin->loaded=true;
+		}
+
+		// set selected skin as current
+		selectedskin = skin;
+
+		setPreviewImage(current_skins[entryID]->thumbnail);
+
+		text_entry_name->setCaption(skin->name);
+
+		String descriptiontxt = skin->description + "\n";
+		descriptiontxt += _L("Author: ") + skin->authorName + "\n";
+		descriptiontxt += _L("Description: ") + skin->description + "\n";
+
+		text_entry_descr->setCaption(descriptiontxt);
 		return;
+	}
+	Cache_Entry *entry = CACHE.getEntry(entryID);
+	if(!entry) return;
+	selectedtruck = entry;
+	updateControls(selectedtruck);
+}
+
+void GUI_Loader::updateControls(Cache_Entry *entry)
+{
 	int modnumber = entry->number;
 	String minitype = entry->minitype;
 
@@ -503,22 +603,7 @@ void GUI_Loader::onEntrySelected(int entryID)
 	String outPath = "";
 	StringUtil::splitFilename(entry->filecachename, outBasename, outPath);
 	
-	String tex = outBasename; // "mod-mini-"+StringConverter::toString(modnumber) + "." + minitype;
-	if(minitype == "none" || tex == "none")
-		tex = _L("unknown.dds");
-
-	String group="";
-	try
-	{
-		group = ResourceGroupManager::getSingleton().findGroupContainingResource(tex);
-	}catch(...)
-	{
-	}
-	if(group == "")
-		tex = ("unknown.dds"); // without _T() !
-
-	image_preview->setImageTexture(tex);
-	//LogManager::getSingleton().logMessage("TEX: " + tex);
+	setPreviewImage(outBasename);
 
 	if(entry->sectionconfigs.size())
 	{
@@ -556,7 +641,7 @@ void GUI_Loader::onEntrySelected(int entryID)
 				authornames.push_back(name);
 				authorstxt+= " " + name;
 			}
-	}else
+	} else
 		authorstxt = _L("no author information available");
 	text_entry_name->setCaption(entry->dname);
 
@@ -574,6 +659,22 @@ void GUI_Loader::onEntrySelected(int entryID)
 	StringUtil::trim(descriptiontxt);
 
 	text_entry_descr->setCaption(descriptiontxt);
+}
 
-	selectedtruck = entry;
+void GUI_Loader::setPreviewImage(Ogre::String texture)
+{
+	if(texture == "" || texture == "none")
+		texture = _L("unknown.dds");
+
+	String group="";
+	try
+	{
+		group = ResourceGroupManager::getSingleton().findGroupContainingResource(texture);
+	}catch(...)
+	{
+	}
+	if(group == "")
+		texture = ("unknown.dds"); // without _T() !
+
+	image_preview->setImageTexture(texture);
 }

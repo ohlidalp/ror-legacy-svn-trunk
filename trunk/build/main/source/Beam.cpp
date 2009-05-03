@@ -66,8 +66,9 @@ class Beam;
 Beam* threadbeam[MAX_TRUCKS];
 int free_tb=0;
 
-Beam::Beam(int tnum, SceneManager *manager, SceneNode *parent, RenderWindow* win, float *_mapsizex, float *_mapsizez, Real px, Real py, Real pz, Quaternion rot, char* fname, Collisions *icollisions, DustPool *mdust, DustPool *mclump, DustPool *msparks, DustPool *mdrip, DustPool *msplash, DustPool *mripple, HeightFinder *mfinder, Water *w, Camera *pcam, Mirrors *mmirror, bool postload, bool networked, bool networking, collision_box_t *spawnbox, bool ismachine, int _flaresMode, std::vector<Ogre::String> *_truckconfig)
+Beam::Beam(int tnum, SceneManager *manager, SceneNode *parent, RenderWindow* win, float *_mapsizex, float *_mapsizez, Real px, Real py, Real pz, Quaternion rot, char* fname, Collisions *icollisions, DustPool *mdust, DustPool *mclump, DustPool *msparks, DustPool *mdrip, DustPool *msplash, DustPool *mripple, HeightFinder *mfinder, Water *w, Camera *pcam, Mirrors *mmirror, bool postload, bool networked, bool networking, collision_box_t *spawnbox, bool ismachine, int _flaresMode, std::vector<Ogre::String> *_truckconfig, SkinPtr skin)
 {
+	usedSkin = skin;
 	LogManager::getSingleton().logMessage("BEAM: loading new truck: " + String(fname));
 	trucknum=tnum;
 	currentScale=1;
@@ -1228,7 +1229,7 @@ int Beam::loadTruck(char* fname, SceneManager *manager, SceneNode *parent, Real 
 			if(!mat.isNull())
 				strncpy(default_beam_material, default_beam_material2, 256);
 			else
-				LogManager::getSingleton().logMessage("beam material " + String(default_beam_material2) + " not found!");
+				LogManager::getSingleton().logMessage("beam material '" + String(default_beam_material2) + "' not found!");
 			if (default_spring<0) default_spring=DEFAULT_SPRING;
 			if (default_damp<0) default_damp=DEFAULT_DAMP;
 			if (default_deform<0) default_deform=BEAM_DEFORM;
@@ -1800,16 +1801,10 @@ int Beam::loadTruck(char* fname, SceneManager *manager, SceneNode *parent, Real 
 
 
 			// check for skins
-			std::vector<SkinPtr> skins;
-			int res = SkinManager::getSingleton().getMaterialAlternatives(texname, skins);
-			if(!res)
+			if(!usedSkin.isNull() && usedSkin->hasReplacementForMaterial(texname))
 			{
-				// this picks the first skin available. this selection needs to be replaced by some user choice dialoge
-				if(skins.size()>0)
-				{
-					// replace the material
-					strncpy(texname, skins[0]->getReplacementForMaterial(texname).c_str(), 1024);
-				}
+				// yay, we use a skin :D
+				strncpy(texname, usedSkin->getReplacementForMaterial(texname).c_str(), 1024);
 			}
 
 			//we clone the material
@@ -2496,6 +2491,7 @@ int Beam::loadTruck(char* fname, SceneManager *manager, SceneNode *parent, Real 
 					continue;
 				}
 				if(materialFunctionMapper) materialFunctionMapper->replaceMeshMaterials(te);
+				if(!usedSkin.isNull()) usedSkin->replaceMeshMaterials(te); 
 				props[free_prop].wheel=manager->getRootSceneNode()->createChildSceneNode();
 				props[free_prop].wheel->attachObject(te);
 				props[free_prop].wheelpos=stdpos;
@@ -2512,6 +2508,7 @@ int Beam::loadTruck(char* fname, SceneManager *manager, SceneNode *parent, Real 
 				continue;
 			}
 			if(materialFunctionMapper) materialFunctionMapper->replaceMeshMaterials(te);
+			if(!usedSkin.isNull()) usedSkin->replaceMeshMaterials(te); 
 			props[free_prop].snode=manager->getRootSceneNode()->createChildSceneNode();
 			props[free_prop].snode->attachObject(te);
 			//hack for the spinprops
@@ -2701,6 +2698,7 @@ int Beam::loadTruck(char* fname, SceneManager *manager, SceneNode *parent, Real 
 				continue;
 			}
 			if(materialFunctionMapper) materialFunctionMapper->replaceMeshMaterials(ec);
+			if(!usedSkin.isNull()) usedSkin->replaceMeshMaterials(ec); 
 			wings[free_wing].cnode = manager->getRootSceneNode()->createChildSceneNode();
 			wings[free_wing].cnode->attachObject(ec);
 			//induced drag
@@ -3128,6 +3126,9 @@ int Beam::loadTruck(char* fname, SceneManager *manager, SceneNode *parent, Real 
 			sprintf(wname, "exhaust-%d-%s", exhausts.size(), truckname);
 			if(strnlen(material,50) == 0 || String(material) == "default")
 				strcpy(material, "tracks/Smoke");
+
+			if(!usedSkin.isNull()) strncpy(material, usedSkin->getReplacementForMaterial(material).c_str(), 50);
+
 			e.smoker = manager->createParticleSystem(wname, material);
 			if (!e.smoker)
 				continue;
@@ -3197,7 +3198,7 @@ int Beam::loadTruck(char* fname, SceneManager *manager, SceneNode *parent, Real 
 
 			char propname[256];
 			sprintf(propname, "turbojet-%s-%i", truckname, free_aeroengine);
-			Turbojet *tj=new Turbojet(manager, propname, free_aeroengine, trucknum, nodes, front, back, ref, drthrust, rev!=0, abthrust>0, abthrust, fdiam, bdiam, len, disable_smoke, heathaze, materialFunctionMapper);
+			Turbojet *tj=new Turbojet(manager, propname, free_aeroengine, trucknum, nodes, front, back, ref, drthrust, rev!=0, abthrust>0, abthrust, fdiam, bdiam, len, disable_smoke, heathaze, materialFunctionMapper, usedSkin);
 			aeroengines[free_aeroengine]=tj;
 			driveable=AIRPLANE;
 			if (!autopilot && state != NETWORKED)
@@ -3294,7 +3295,7 @@ int Beam::loadTruck(char* fname, SceneManager *manager, SceneNode *parent, Real 
 				LogManager::getSingleton().logMessage("flexbodies limit reached ("+StringConverter::toString(MAX_FLEXBODIES)+"): " + String(fname) +" line " + StringConverter::toString(linecounter) + ". trying to continue ...");
 				continue;
 			}
-			flexbodies[free_flexbody]=new FlexBody(manager, nodes, free_node, meshname, uname, ref, nx, ny, offset, rot, line+6, materialFunctionMapper);
+			flexbodies[free_flexbody]=new FlexBody(manager, nodes, free_node, meshname, uname, ref, nx, ny, offset, rot, line+6, materialFunctionMapper, usedSkin);
 			free_flexbody++;
 		}
 		else if (mode==44)
@@ -3896,6 +3897,7 @@ int Beam::loadTruck(char* fname, SceneManager *manager, SceneNode *parent, Real 
 			LogManager::getSingleton().logMessage("error loading mesh: "+String(wname));
 		}
 		if(materialFunctionMapper) materialFunctionMapper->replaceMeshMaterials(ec);
+		if(!usedSkin.isNull()) usedSkin->replaceMeshMaterials(ec); 
 	};
 	LogManager::getSingleton().logMessage("BEAM: cab ok");
 	//	mWindow->setDebugText("Beam number:"+ StringConverter::toString(free_beam));
@@ -4334,13 +4336,14 @@ void Beam::addWheel(SceneManager *manager, SceneNode *parent, Real radius, Real 
 	vwheels[free_wheel].meshwheel = meshwheel;
 	if (meshwheel)
 	{
-		vwheels[free_wheel].fm=new FlexMeshWheel(manager, wname, nodes, node1, node2, nodebase, rays, texf, texb, rimradius, rimreverse, materialFunctionMapper);
+		vwheels[free_wheel].fm=new FlexMeshWheel(manager, wname, nodes, node1, node2, nodebase, rays, texf, texb, rimradius, rimreverse, materialFunctionMapper, usedSkin);
 		try
 		{
 			Entity *ec = manager->createEntity(wnamei, wname);
 			vwheels[free_wheel].cnode = manager->getRootSceneNode()->createChildSceneNode();
 			vwheels[free_wheel].cnode->attachObject(ec);
 			if(materialFunctionMapper) materialFunctionMapper->replaceMeshMaterials(ec);
+			if(!usedSkin.isNull()) usedSkin->replaceMeshMaterials(ec); 
 		}catch(...)
 		{
 			LogManager::getSingleton().logMessage("error loading mesh: "+String(wname));
@@ -4353,6 +4356,7 @@ void Beam::addWheel(SceneManager *manager, SceneNode *parent, Real radius, Real 
 		{
 			Entity *ec = manager->createEntity(wnamei, wname);
 			if(materialFunctionMapper) materialFunctionMapper->replaceMeshMaterials(ec);
+			if(!usedSkin.isNull()) usedSkin->replaceMeshMaterials(ec); 
 			vwheels[free_wheel].cnode = manager->getRootSceneNode()->createChildSceneNode();
 			vwheels[free_wheel].cnode->attachObject(ec);
 		} catch(...)
@@ -4541,6 +4545,7 @@ void Beam::addWheel2(SceneManager *manager, SceneNode *parent, Real radius, Real
 	{
 		Entity *ec = manager->createEntity(wnamei, wname);
 		if(materialFunctionMapper) materialFunctionMapper->replaceMeshMaterials(ec);
+		if(!usedSkin.isNull()) usedSkin->replaceMeshMaterials(ec);
 		//	ec->setMaterialName("tracks/wheel");
 		//ec->setMaterialName("Test/ColourTest");
 		vwheels[free_wheel].cnode = manager->getRootSceneNode()->createChildSceneNode();

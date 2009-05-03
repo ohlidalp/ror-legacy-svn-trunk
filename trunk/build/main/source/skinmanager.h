@@ -25,6 +25,8 @@ along with Rigs of Rods.  If not, see <http://www.gnu.org/licenses/>.
 #include "OgreResourceManager.h"
 #include "skin.h"
 
+class Cache_Entry;
+
 /** Manages Skin resources, parsing .skin files and generally organising them.*/
 class SkinManager : public Ogre::ResourceManager, public Ogre::Singleton< SkinManager >
 {
@@ -37,10 +39,24 @@ public:
 	static SkinManager* getSingletonPtr(void);
 
 	int getMaterialAlternatives(Ogre::String materialName, std::vector<SkinPtr> &skin);
+	int getUsableSkins(Cache_Entry *e, std::vector<SkinPtr> &skins);
 
 	int getSkinCount();
 	int serialize(Ogre::String &dst);
 	int clear();
+
+	void parseAttribute(const Ogre::String& line, SkinPtr& pSkin);
+	void unload(const Ogre::String& name);
+	void unload(Ogre::ResourceHandle handle);
+	void unloadAll(bool reloadableOnly = true);
+	void unloadUnreferencedResources(bool reloadableOnly = true);
+	void remove(Ogre::ResourcePtr& r);
+	void remove(const Ogre::String& name);
+	void remove(Ogre::ResourceHandle handle);
+	void removeAll(void);
+	void reloadAll(bool reloadableOnly = true);
+	void reloadUnreferencedResources(bool reloadableOnly = true);
+	Ogre::String joinString(std::vector<Ogre::String> params, Ogre::String del=" ", int skipNo=1);
 
 protected:
 
@@ -48,7 +64,6 @@ protected:
 	Ogre::Resource* createImpl(const Ogre::String& name, Ogre::ResourceHandle handle, 
 		const Ogre::String& group, bool isManual, Ogre::ManualResourceLoader* loader, 
 		const Ogre::NameValuePairList* params);
-	void parseAttribute(const Ogre::String& line, SkinPtr& pSkin);
 
 	void logBadAttrib(const Ogre::String& line, SkinPtr& pSkin);
 

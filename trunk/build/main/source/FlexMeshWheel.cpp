@@ -20,151 +20,152 @@ along with Rigs of Rods.  If not, see <http://www.gnu.org/licenses/>.
 #include "FlexMeshWheel.h"
 #include "ResourceBuffer.h"
 
-FlexMeshWheel::FlexMeshWheel(SceneManager *manager, char* name, node_t *nds, int n1, int n2, int nstart, int nrays, char* meshname, char* texband, float rimradius, bool rimreverse, MaterialFunctionMapper *mfm)
-    {
-		rim_radius=rimradius;
-		revrim=rimreverse;
-        smanager=manager;
-		nbrays=nrays;
-		nodes=nds;
-		id0=n1;
-		id1=n2;
-		idstart=nstart;
+FlexMeshWheel::FlexMeshWheel(SceneManager *manager, char* name, node_t *nds, int n1, int n2, int nstart, int nrays, char* meshname, char* texband, float rimradius, bool rimreverse, MaterialFunctionMapper *mfm, SkinPtr usedSkin)
+{
+	rim_radius=rimradius;
+	revrim=rimreverse;
+    smanager=manager;
+	nbrays=nrays;
+	nodes=nds;
+	id0=n1;
+	id1=n2;
+	idstart=nstart;
 
-		//the rim object
-		char rimname[256];
-		sprintf(rimname, "rim-%s", name);
-		rimEnt = manager->createEntity(rimname, meshname);
-		if(mfm) mfm->replaceMeshMaterials(rimEnt);
-		rnode=manager->getRootSceneNode()->createChildSceneNode();
-		rnode->attachObject(rimEnt);
+	//the rim object
+	char rimname[256];
+	sprintf(rimname, "rim-%s", name);
+	rimEnt = manager->createEntity(rimname, meshname);
+	if(mfm) mfm->replaceMeshMaterials(rimEnt);
+	if(!usedSkin.isNull()) usedSkin->replaceMeshMaterials(rimEnt);
+	rnode=manager->getRootSceneNode()->createChildSceneNode();
+	rnode->attachObject(rimEnt);
 
-		/// Create the mesh via the MeshManager
-        msh = MeshManager::getSingleton().createManual(name, ResourceGroupManager::DEFAULT_RESOURCE_GROUP_NAME,new ResourceBuffer());
+	/// Create the mesh via the MeshManager
+    msh = MeshManager::getSingleton().createManual(name, ResourceGroupManager::DEFAULT_RESOURCE_GROUP_NAME,new ResourceBuffer());
 
-        /// Create submeshes
-        sub = msh->createSubMesh();
+    /// Create submeshes
+    sub = msh->createSubMesh();
 
-		//materials
-		sub->setMaterialName(texband);
+	//materials
+	sub->setMaterialName(texband);
 
-        /// Define the vertices 
-        nVertices = 6*(nrays+1);
-        vbufCount = (2*3+2)*nVertices;
-		vertices=(float*)malloc(vbufCount*sizeof(float));
-		//shadow
-		shadownorvertices=(float*)malloc(nVertices*(3+2)*sizeof(float));
-		shadowposvertices=(float*)malloc(nVertices*3*2*sizeof(float));
+    /// Define the vertices 
+    nVertices = 6*(nrays+1);
+    vbufCount = (2*3+2)*nVertices;
+	vertices=(float*)malloc(vbufCount*sizeof(float));
+	//shadow
+	shadownorvertices=(float*)malloc(nVertices*(3+2)*sizeof(float));
+	shadowposvertices=(float*)malloc(nVertices*3*2*sizeof(float));
 
-		int i;
-		//textures coordinates
-		for (i=0; i<nrays+1; i++)
-		{
-			covertices[i*6   ].texcoord=Vector2((float)i/(float)nrays, 0.00);
-			covertices[i*6+1 ].texcoord=Vector2((float)i/(float)nrays, 0.23);
-			covertices[i*6+2 ].texcoord=Vector2((float)i/(float)nrays, 0.27);
-			covertices[i*6+3 ].texcoord=Vector2((float)i/(float)nrays, 0.73);
-			covertices[i*6+4 ].texcoord=Vector2((float)i/(float)nrays, 0.77);
-			covertices[i*6+5 ].texcoord=Vector2((float)i/(float)nrays, 1.00);
-		}
+	int i;
+	//textures coordinates
+	for (i=0; i<nrays+1; i++)
+	{
+		covertices[i*6   ].texcoord=Vector2((float)i/(float)nrays, 0.00);
+		covertices[i*6+1 ].texcoord=Vector2((float)i/(float)nrays, 0.23);
+		covertices[i*6+2 ].texcoord=Vector2((float)i/(float)nrays, 0.27);
+		covertices[i*6+3 ].texcoord=Vector2((float)i/(float)nrays, 0.73);
+		covertices[i*6+4 ].texcoord=Vector2((float)i/(float)nrays, 0.77);
+		covertices[i*6+5 ].texcoord=Vector2((float)i/(float)nrays, 1.00);
+	}
 
-        /// Define triangles
-        /// The values in this table refer to vertices in the above table
-        ibufCount = 3*10*nrays;
-        faces=(unsigned short*)malloc(ibufCount*sizeof(unsigned short));
-		for (i=0; i<nrays; i++)
-		{
-			faces[3*(i*10  )]=i*6;   faces[3*(i*10  )+1]=i*6+1;     faces[3*(i*10  )+2]=(i+1)*6;
-			faces[3*(i*10+1)]=i*6+1; faces[3*(i*10+1)+1]=(i+1)*6+1; faces[3*(i*10+1)+2]=(i+1)*6;
+    /// Define triangles
+    /// The values in this table refer to vertices in the above table
+    ibufCount = 3*10*nrays;
+    faces=(unsigned short*)malloc(ibufCount*sizeof(unsigned short));
+	for (i=0; i<nrays; i++)
+	{
+		faces[3*(i*10  )]=i*6;   faces[3*(i*10  )+1]=i*6+1;     faces[3*(i*10  )+2]=(i+1)*6;
+		faces[3*(i*10+1)]=i*6+1; faces[3*(i*10+1)+1]=(i+1)*6+1; faces[3*(i*10+1)+2]=(i+1)*6;
 
-			faces[3*(i*10+2)]=i*6+1; faces[3*(i*10+2)+1]=i*6+2;     faces[3*(i*10+2)+2]=(i+1)*6+1;
-			faces[3*(i*10+3)]=i*6+2; faces[3*(i*10+3)+1]=(i+1)*6+2; faces[3*(i*10+3)+2]=(i+1)*6+1;
+		faces[3*(i*10+2)]=i*6+1; faces[3*(i*10+2)+1]=i*6+2;     faces[3*(i*10+2)+2]=(i+1)*6+1;
+		faces[3*(i*10+3)]=i*6+2; faces[3*(i*10+3)+1]=(i+1)*6+2; faces[3*(i*10+3)+2]=(i+1)*6+1;
 
-			faces[3*(i*10+4)]=i*6+2; faces[3*(i*10+4)+1]=i*6+3;     faces[3*(i*10+4)+2]=(i+1)*6+2;
-			faces[3*(i*10+5)]=i*6+3; faces[3*(i*10+5)+1]=(i+1)*6+3; faces[3*(i*10+5)+2]=(i+1)*6+2;
+		faces[3*(i*10+4)]=i*6+2; faces[3*(i*10+4)+1]=i*6+3;     faces[3*(i*10+4)+2]=(i+1)*6+2;
+		faces[3*(i*10+5)]=i*6+3; faces[3*(i*10+5)+1]=(i+1)*6+3; faces[3*(i*10+5)+2]=(i+1)*6+2;
 
-			faces[3*(i*10+6)]=i*6+3; faces[3*(i*10+6)+1]=i*6+4;     faces[3*(i*10+6)+2]=(i+1)*6+3;
-			faces[3*(i*10+7)]=i*6+4; faces[3*(i*10+7)+1]=(i+1)*6+4; faces[3*(i*10+7)+2]=(i+1)*6+3;
+		faces[3*(i*10+6)]=i*6+3; faces[3*(i*10+6)+1]=i*6+4;     faces[3*(i*10+6)+2]=(i+1)*6+3;
+		faces[3*(i*10+7)]=i*6+4; faces[3*(i*10+7)+1]=(i+1)*6+4; faces[3*(i*10+7)+2]=(i+1)*6+3;
 
-			faces[3*(i*10+8)]=i*6+4; faces[3*(i*10+8)+1]=i*6+5;     faces[3*(i*10+8)+2]=(i+1)*6+4;
-			faces[3*(i*10+9)]=i*6+5; faces[3*(i*10+9)+1]=(i+1)*6+5; faces[3*(i*10+9)+2]=(i+1)*6+4;
-		}
+		faces[3*(i*10+8)]=i*6+4; faces[3*(i*10+8)+1]=i*6+5;     faces[3*(i*10+8)+2]=(i+1)*6+4;
+		faces[3*(i*10+9)]=i*6+5; faces[3*(i*10+9)+1]=(i+1)*6+5; faces[3*(i*10+9)+2]=(i+1)*6+4;
+	}
 
-		normy=1.0;
-		//update coords
-		updateVertices();
-		//compute normy;
-		normy=((covertices[0].vertex-covertices[1].vertex).crossProduct(covertices[1].vertex-covertices[6+1].vertex)).length();
-		//recompute for normals
-		updateVertices();
+	normy=1.0;
+	//update coords
+	updateVertices();
+	//compute normy;
+	normy=((covertices[0].vertex-covertices[1].vertex).crossProduct(covertices[1].vertex-covertices[6+1].vertex)).length();
+	//recompute for normals
+	updateVertices();
 
-        /// Create vertex data structure for 8 vertices shared between submeshes
-        msh->sharedVertexData = new VertexData();
-        msh->sharedVertexData->vertexCount = nVertices;
+    /// Create vertex data structure for 8 vertices shared between submeshes
+    msh->sharedVertexData = new VertexData();
+    msh->sharedVertexData->vertexCount = nVertices;
 
-        /// Create declaration (memory format) of vertex data
-        decl = msh->sharedVertexData->vertexDeclaration;
-        size_t offset = 0;
-        decl->addElement(0, offset, VET_FLOAT3, VES_POSITION);
-        offset += VertexElement::getTypeSize(VET_FLOAT3);
-        decl->addElement(0, offset, VET_FLOAT3, VES_NORMAL);
-        offset += VertexElement::getTypeSize(VET_FLOAT3);
+    /// Create declaration (memory format) of vertex data
+    decl = msh->sharedVertexData->vertexDeclaration;
+    size_t offset = 0;
+    decl->addElement(0, offset, VET_FLOAT3, VES_POSITION);
+    offset += VertexElement::getTypeSize(VET_FLOAT3);
+    decl->addElement(0, offset, VET_FLOAT3, VES_NORMAL);
+    offset += VertexElement::getTypeSize(VET_FLOAT3);
 //        decl->addElement(0, offset, VET_FLOAT3, VES_DIFFUSE);
 //        offset += VertexElement::getTypeSize(VET_FLOAT3);
-        decl->addElement(0, offset, VET_FLOAT2, VES_TEXTURE_COORDINATES, 0);
-        offset += VertexElement::getTypeSize(VET_FLOAT2);
+    decl->addElement(0, offset, VET_FLOAT2, VES_TEXTURE_COORDINATES, 0);
+    offset += VertexElement::getTypeSize(VET_FLOAT2);
 
-        /// Allocate vertex buffer of the requested number of vertices (vertexCount) 
-        /// and bytes per vertex (offset)
-        vbuf = 
-          HardwareBufferManager::getSingleton().createVertexBuffer(
-              offset, msh->sharedVertexData->vertexCount, HardwareBuffer::HBU_DYNAMIC_WRITE_ONLY_DISCARDABLE);
+    /// Allocate vertex buffer of the requested number of vertices (vertexCount) 
+    /// and bytes per vertex (offset)
+    vbuf = 
+      HardwareBufferManager::getSingleton().createVertexBuffer(
+          offset, msh->sharedVertexData->vertexCount, HardwareBuffer::HBU_DYNAMIC_WRITE_ONLY_DISCARDABLE);
 
-        /// Upload the vertex data to the card
-        vbuf->writeData(0, vbuf->getSizeInBytes(), vertices, true);
+    /// Upload the vertex data to the card
+    vbuf->writeData(0, vbuf->getSizeInBytes(), vertices, true);
 
-        /// Set vertex buffer binding so buffer 0 is bound to our vertex buffer
-        VertexBufferBinding* bind = msh->sharedVertexData->vertexBufferBinding; 
-        bind->setBinding(0, vbuf);
+    /// Set vertex buffer binding so buffer 0 is bound to our vertex buffer
+    VertexBufferBinding* bind = msh->sharedVertexData->vertexBufferBinding; 
+    bind->setBinding(0, vbuf);
 
-        //for the face
-		/// Allocate index buffer of the requested number of vertices (ibufCount) 
-        HardwareIndexBufferSharedPtr ibuf = HardwareBufferManager::getSingleton().
-         createIndexBuffer(
-             HardwareIndexBuffer::IT_16BIT, 
-                ibufCount, 
-                HardwareBuffer::HBU_STATIC_WRITE_ONLY);
+    //for the face
+	/// Allocate index buffer of the requested number of vertices (ibufCount) 
+    HardwareIndexBufferSharedPtr ibuf = HardwareBufferManager::getSingleton().
+     createIndexBuffer(
+         HardwareIndexBuffer::IT_16BIT, 
+            ibufCount, 
+            HardwareBuffer::HBU_STATIC_WRITE_ONLY);
 
-        /// Upload the index data to the card
-        ibuf->writeData(0, ibuf->getSizeInBytes(), faces, true);
+    /// Upload the index data to the card
+    ibuf->writeData(0, ibuf->getSizeInBytes(), faces, true);
 
-        /// Set parameters of the submesh
-        sub->useSharedVertices = true;
-        sub->indexData->indexBuffer = ibuf;
-        sub->indexData->indexCount = ibufCount;
-        sub->indexData->indexStart = 0;
+    /// Set parameters of the submesh
+    sub->useSharedVertices = true;
+    sub->indexData->indexBuffer = ibuf;
+    sub->indexData->indexCount = ibufCount;
+    sub->indexData->indexStart = 0;
 
-        
-        /// Set bounding information (for culling)
-        msh->_setBounds(AxisAlignedBox(-1,-1,0,1,1,0), true);
-        //msh->_setBoundingSphereRadius(Math::Sqrt(1*1+1*1));
+    
+    /// Set bounding information (for culling)
+    msh->_setBounds(AxisAlignedBox(-1,-1,0,1,1,0), true);
+    //msh->_setBoundingSphereRadius(Math::Sqrt(1*1+1*1));
 
-        /// Notify Mesh object that it has been loaded
-msh->buildEdgeList();
-//msh->buildTangentVectors();
-/*unsigned short src, dest;
-if (!msh->suggestTangentVectorBuildParams(src, dest))
-{
-    msh->buildTangentVectors(src, dest);
+    /// Notify Mesh object that it has been loaded
+	msh->buildEdgeList();
+	//msh->buildTangentVectors();
+	/*unsigned short src, dest;
+	if (!msh->suggestTangentVectorBuildParams(src, dest))
+	{
+		msh->buildTangentVectors(src, dest);
+	}
+	*/
+
+	msh->load();
+	//msh->touch(); 
+	//        msh->load();
+
+			//msh->buildEdgeList();
 }
-*/
-
-msh->load();
-//msh->touch(); 
-//        msh->load();
-
-		//msh->buildEdgeList();
-    }
 
 
 Vector3 FlexMeshWheel::updateVertices()

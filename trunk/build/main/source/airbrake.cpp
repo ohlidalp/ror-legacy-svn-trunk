@@ -33,7 +33,7 @@ Airbrake::Airbrake(SceneManager *manager, char* basename, int num, node_t *ndref
 		char meshname[256];
 		sprintf(meshname, "airbrakemesh-%s-%i", basename, num);
 		/// Create the mesh via the MeshManager
-        msh = MeshManager::getSingleton().createManual(meshname, ResourceGroupManager::DEFAULT_RESOURCE_GROUP_NAME,new ResourceBuffer());
+        msh = MeshManager::getSingleton().createManual(meshname, ResourceGroupManager::DEFAULT_RESOURCE_GROUP_NAME, new ResourceBuffer());
 
 		union
 		{

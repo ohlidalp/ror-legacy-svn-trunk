@@ -29,7 +29,6 @@ SoundScriptManager::SoundScriptManager()
 {
 	singleton=this;
 	instance_counter=0;
-	free_template=0;
 	maxDistance=500.0;
 	rolloffFactor=1.0;
 	referenceDistance=7.5;
@@ -140,48 +139,40 @@ Real SoundScriptManager::getLoadingOrder(void) const
 SoundScriptTemplate* SoundScriptManager::createTemplate(String name, String groupname, String filename)
 {
 	//first, search if there is a template name collision
-	for (int i=0; i<free_template; i++)
+	if(templates.find(name) != templates.end())
 	{
-		if (!templates[i]) continue;
-		if (templates[i]->name==name) 
-		{
-			OGRE_EXCEPT(Exception::ERR_DUPLICATE_ITEM, "SoundScript with the name " + name + 
-                " already exists.", "SoundScriptManager::createTemplate");
-			return NULL;
-		}
+		OGRE_EXCEPT(Exception::ERR_DUPLICATE_ITEM, "SoundScript with the name " + name + 
+            " already exists.", "SoundScriptManager::createTemplate");
+		return NULL;
 	}
 
-	templates[free_template]=new SoundScriptTemplate(name, groupname, filename);
-	free_template++;
-	return templates[free_template-1];
+	SoundScriptTemplate *ssi = new SoundScriptTemplate(name, groupname, filename);
+	templates[name] = ssi;
+	return ssi;
 }
 
-bool SoundScriptManager::unloadResourceGroup(String groupname)
+void SoundScriptManager::unloadResourceGroup(String groupname)
 {
 	//first, search if there is a template name collision
-	for (int i=0; i<free_template; i++)
-	{
-		if (!templates[i]) continue;
-		if (templates[i]->groupname == groupname) 
-		{
-			// unload it
-			delete templates[i];
-			templates[i] = 0;
-			return true;
-		}
-	}
-	return false;
+	for(std::map<Ogre::String, SoundScriptTemplate*>::iterator it = templates.begin(); it!=templates.end(); it++) 
+		if (it->second->groupname == groupname) 
+			templates.erase(it);
 }
+
+void SoundScriptManager::clearTemplates()
+{
+	templates.clear();
+}
+
 SoundScriptInstance* SoundScriptManager::createInstance(Ogre::String templatename, int truck, Ogre::SceneNode *toAttach)
 {
 	//first, search template
 	SoundScriptTemplate* templ=NULL;
-	for (int i=0; i<free_template; i++)
-	{
-		if (!templates[i]) continue;
-		if (templates[i]->name==templatename) templ=templates[i];
-	}
-	if (!templ) return NULL;
+	
+	if(templates.find(templatename) == templates.end())
+		// no template with that name found
+		return NULL;
+	templ = templates[templatename];
 	if (templ->trigger_source==SS_TRIG_NONE) return NULL; //invalid template!
 	//ok create instance
 	SoundScriptInstance* inst=new SoundScriptInstance(truck, templ, sm, templ->filename+"-"+StringConverter::toString(truck)+"-"+StringConverter::toString(instance_counter));
@@ -310,6 +301,10 @@ SoundScriptTemplate::SoundScriptTemplate(String name, String groupname, String f
 	gain_multiplier=1;
 	gain_square=0;
 	gain_offset=0;
+}
+
+SoundScriptTemplate::~SoundScriptTemplate()
+{
 }
 
 bool SoundScriptTemplate::setParameter(Ogre::StringVector vec)

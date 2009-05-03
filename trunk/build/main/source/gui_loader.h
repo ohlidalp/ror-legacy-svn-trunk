@@ -23,6 +23,7 @@ along with Rigs of Rods.  If not, see <http://www.gnu.org/licenses/>.
 
 #include <MyGUI.h>
 #include <Ogre.h>
+#include "skin.h"
 
 #define UILOADER GUI_Loader::Instance()
 #define UI_PROGRESSBAR_AUTOTRACK -1
@@ -42,12 +43,14 @@ protected:
 	static GUI_Loader* myInstance;
 	std::vector<Cache_Entry> myEntries;
 	std::map<int, int> categoryUsage;
+	std::vector<SkinPtr> current_skins;
 	int loaderType;
 	Cache_Entry *selectedtruck;
 	bool selectiondone;
 	std::vector<Ogre::String> truck_configs;
 	Ogre::RenderWindow *rw;
 	bool frameForced;
+	SkinPtr selectedskin;
 
 	// custom functions
 	void getData();
@@ -71,6 +74,8 @@ protected:
 	void event_combobox_eventComboAccept(MyGUI::WidgetPtr _sender, size_t _index);
 	void event_combobox_eventComboChangePosition(MyGUI::WidgetPtr _sender, size_t _index);
 	void event_window_eventKeyButtonPressed(MyGUI::WidgetPtr _sender, MyGUI::KeyCode _key, MyGUI::Char _char);
+	void updateControls(Cache_Entry *entry);
+	void setPreviewImage(Ogre::String texture);
 
 	MyGUI::StaticImagePtr image_preview;
 	MyGUI::StaticTextPtr text_entry_name, text_entry, text_entry_descr;
@@ -88,7 +93,7 @@ protected:
 
 public:
 	static GUI_Loader &Instance();
-	enum loaderType {LT_Terrain, LT_Vehicle, LT_Truck, LT_Car, LT_Boat, LT_Airplane, LT_Trailer, LT_Load, LT_Extension, LT_Network, LT_NetworkWithBoat, LT_Heli};
+	enum loaderType {LT_Terrain, LT_Vehicle, LT_Truck, LT_Car, LT_Boat, LT_Airplane, LT_Trailer, LT_Load, LT_Extension, LT_Network, LT_NetworkWithBoat, LT_Heli, LT_SKIN};
 
 	bool isFinishedSelecting();
 	void show(int type);
@@ -99,6 +104,7 @@ public:
 	bool getFrameForced();
 
 	Cache_Entry *getSelection();
+	SkinPtr getSelectedSkin();
 	std::vector<Ogre::String> getTruckConfig();
 	void setEnableCancel(bool enabled);
 };

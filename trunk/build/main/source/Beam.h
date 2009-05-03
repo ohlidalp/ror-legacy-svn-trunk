@@ -51,6 +51,7 @@ using namespace Ogre;
 #include "networkinfo.h"
 #include "CacheSystem.h"
 #include "aeroengine.h"
+#include "skin.h"
 
 //#include "scriptCommands.h"
 #include <vector>
@@ -538,7 +539,7 @@ public:
 #endif
 
 	//constructor
-	Beam(int tnum, SceneManager *manager, SceneNode *parent, RenderWindow* win, float *mapsizex, float *mapsizez, Real px, Real py, Real pz, Quaternion rot, char* fname, Collisions *icollisions, DustPool *mdust, DustPool *mclump, DustPool *msparks, DustPool *mdrip, DustPool *msplash, DustPool *mripple, HeightFinder *mfinder, Water *w, Camera *pcam, Mirrors *mmirror, bool postload=false, bool networked=false, bool networking=false, collision_box_t *spawnbox=NULL, bool ismachine=false, int flareMode=0, std::vector<Ogre::String> *truckconfig=0);
+	Beam(int tnum, SceneManager *manager, SceneNode *parent, RenderWindow* win, float *mapsizex, float *mapsizez, Real px, Real py, Real pz, Quaternion rot, char* fname, Collisions *icollisions, DustPool *mdust, DustPool *mclump, DustPool *msparks, DustPool *mdrip, DustPool *msplash, DustPool *mripple, HeightFinder *mfinder, Water *w, Camera *pcam, Mirrors *mmirror, bool postload=false, bool networked=false, bool networking=false, collision_box_t *spawnbox=NULL, bool ismachine=false, int flareMode=0, std::vector<Ogre::String> *truckconfig=0, SkinPtr skin=SkinPtr());
 	void activate();
 	void desactivate();
 	void pushNetwork(char* data, int size);
@@ -627,6 +628,7 @@ public:
 	bool networking;
 	int label;
 	int trucknum;
+	SkinPtr usedSkin;
 
 	int cinecameranodepos[MAX_CAMERAS];
 	int cameranodepos[MAX_CAMERAS];

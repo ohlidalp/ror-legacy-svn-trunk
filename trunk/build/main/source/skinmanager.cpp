@@ -26,7 +26,7 @@ along with Rigs of Rods.  If not, see <http://www.gnu.org/licenses/>.
 #include "OgreStringVector.h"
 #include "OgreException.h"
 #include "OgreResourceGroupManager.h"
-#include "CacheSystem.h"\
+#include "CacheSystem.h"
 
 using namespace Ogre;
 
@@ -72,80 +72,99 @@ Resource* SkinManager::createImpl(const String& name, ResourceHandle handle,
 	const String& group, bool isManual, ManualResourceLoader* loader,
 	const NameValuePairList* params)
 {
-	return new Skin(this, name, handle, group, isManual, loader);
+	try
+	{
+		return new Skin(this, name, handle, group, isManual, loader);
+	} catch(Ogre::ItemIdentityException e)
+	{
+		return mResources[name].getPointer();
+	}
 }
 //---------------------------------------------------------------------
 void SkinManager::parseScript(DataStreamPtr& stream, const String& groupName)
 {
-	String line;
-	SkinPtr pSkin;
-	LogManager::getSingleton().logMessage("SkinManager::parseScript");
-
-	while( !stream->eof() )
+	try
 	{
-		line = stream->getLine();
-		// Ignore blanks & comments
-		if( !line.length() || line.substr( 0, 2 ) == "//" )
+		String line;
+		SkinPtr pSkin;
+		LogManager::getSingleton().logMessage("SkinManager::parseScript");
+
+		while( !stream->eof() )
 		{
-			continue;
-		}
-		else
-		{
-			if (pSkin.isNull())
+			line = stream->getLine();
+			// Ignore blanks & comments
+			if( !line.length() || line.substr( 0, 2 ) == "//" )
 			{
-				// No current skin
-				// So first valid data should be skin name
-				pSkin = create(line, groupName);
-				pSkin->_notifyOrigin(stream->getName());
-				// Skip to and over next {
-				stream->skipLine("{");
+				continue;
 			}
 			else
 			{
-				// Already in skin
-				if (line == "}")
+				if (pSkin.isNull())
 				{
-					// Finished
-					pSkin.setNull();
-					// NB skin isn't loaded until required
+					// No current skin
+					// So first valid data should be skin name
+					pSkin = create(line, groupName);
+					pSkin->_notifyOrigin(stream->getName());
+					
+					// Skip to and over next {
+					stream->skipLine("{");
 				}
 				else
 				{
-					parseAttribute(line, pSkin);
+					// Already in skin
+					if (line == "}")
+					{
+						// Finished
+						//this->addImpl((Ogre::ResourcePtr)pSkin);
+						pSkin.setNull();
+						// NB skin isn't loaded until required
+					}
+					else
+					{
+						parseAttribute(line, pSkin);
+					}
 				}
 			}
 		}
+	} catch(Ogre::ItemIdentityException e)
+	{
+		// this catches duplicates -> to be ignored
+		// this happens since we load the full skin data off the cache, so we dont need 
+		// to re-add it to the skinmanager
+		return;
 	}
 }
 
 //---------------------------------------------------------------------
+String SkinManager::joinString(std::vector<String> params, String del, int skipNo)
+{
+	String res="";
+	int i=0;
+	for(std::vector<String>::iterator it=params.begin(); it!=params.end(); it++, i++)
+	{
+		if(i < skipNo) continue;
+		res += *it;
+		if(i) res += del;
+	}
+	return res;
+}
+//---------------------------------------------------------------------
 void SkinManager::parseAttribute(const String& line, SkinPtr& pSkin)
 {
-	std::vector<String> params = StringUtil::split(line);
+	std::vector<String> params = StringUtil::split(line, "\x09\x0a\x20\x3d"); // 0x9 = tab, 0xa = \n, 0x20 = space, 0x3d = '='
 	String& attrib = params[0];
 	StringUtil::toLowerCase(attrib);
-	if (attrib == "replacematerial")
-	{
-		// Check params
-		if (params.size() != 3)
-		{
-			logBadAttrib(line, pSkin);
-			return;
-		}
-		// Set
-		pSkin->addMaterialReplace(params[1], params[2]);
-	}
-	if (attrib == "thumbnail")
-	{
-		// Check params
-		if (params.size() != 2)
-		{
-			logBadAttrib(line, pSkin);
-			return;
-		}
-		// Set
-		pSkin->setThumbnailImage(params[1]);
-	}
+	
+	if      (attrib == "replacematerial"    && params.size() == 3) pSkin->addMaterialReplace(params[1], params[2]);
+	else if (attrib == "thumbnail"          && params.size() >= 2) pSkin->thumbnail = joinString(params);
+	else if (attrib == "description"        && params.size() >= 2) pSkin->description = joinString(params);
+	else if (attrib == "authorname"         && params.size() >= 2) pSkin->authorName = joinString(params);
+	else if (attrib == "authorid"           && params.size() == 2) pSkin->authorID = StringConverter::parseInt(params[1]);
+	else if (attrib == "skintype"           && params.size() >= 2) pSkin->skintype = joinString(params);
+	else if (attrib == "name"               && params.size() >= 2) pSkin->name = joinString(params);
+	else if (attrib == "origin"             && params.size() >= 2) pSkin->origin = joinString(params);
+	else if (attrib == "source"             && params.size() >= 2) pSkin->source = joinString(params);
+	else if (attrib == "sourcetype"         && params.size() == 2) pSkin->sourcetype = params[1];
 }
 
 //---------------------------------------------------------------------
@@ -172,6 +191,36 @@ int SkinManager::getMaterialAlternatives(Ogre::String materialName, std::vector<
 }
 
 
+int SkinManager::getUsableSkins(Cache_Entry *e, std::vector<SkinPtr> &skins)
+{
+	Ogre::ResourceManager::ResourceMapIterator it = SkinManager::getSingleton().getResourceIterator();
+	while (it.hasMoreElements())
+	{
+		SkinPtr skin = it.getNext();
+		std::set < Ogre::String >::iterator mit;
+		for(mit = e->materials.begin(); mit != e->materials.end(); mit++)
+		{
+			if(skin->hasReplacementForMaterial(*mit))
+			{
+				bool found=false;
+				for(std::vector<SkinPtr>::iterator sit = skins.begin(); sit != skins.end(); sit++)
+				{
+					if(*sit == skin) // operator== implemented
+					{
+						found=true;
+						break;
+					}
+				}
+				if(found)
+					// already in there
+					continue;
+				skins.push_back(skin);
+			}
+		}
+	}
+	return 0; // no errors
+}
+
 int SkinManager::getSkinCount()
 {
 	return (int)mResourcesByHandle.size();
@@ -182,10 +231,18 @@ int SkinManager::serialize(Ogre::String &dst)
 	ResourceManager::ResourceHandleMap::iterator it;
 	for(it = mResourcesByHandle.begin(); it != mResourcesByHandle.end(); it++)
 	{
-		dst += "skin\n{\n";
+
+		String source = CACHE.getSkinSource(it->second->getOrigin());
+
+		std::string::size_type loc = source.find(".zip", 0);
+		if( loc != std::string::npos )
+			((SkinPtr)(it->second))->sourcetype = "Zip";
+		else
+			((SkinPtr)(it->second))->sourcetype = "FileSystem";
+
+		dst += "skin " + ((SkinPtr)(it->second))->name + "\n{\n";
 		int sres = ((SkinPtr)(it->second))->serialize(dst);
 		dst += "\torigin=" + it->second->getOrigin() + "\n";
-		String source = CACHE.getSkinSource(it->second->getOrigin());
 		dst += "\tsource=" + source + "\n";
 		dst += "}\n\n";
 	}
@@ -197,3 +254,15 @@ int SkinManager::clear()
 	mResourcesByHandle.clear();
 	return 0;
 }
+
+//we wont unload skins once loaded!
+void SkinManager::unload(const String& name) {}
+void SkinManager::unload(ResourceHandle handle) {}
+void SkinManager::unloadAll(bool reloadableOnly) {}
+void SkinManager::unloadUnreferencedResources(bool reloadableOnly) {}
+void SkinManager::remove(ResourcePtr& r) {}
+void SkinManager::remove(const String& name) {}
+void SkinManager::remove(ResourceHandle handle) {}
+void SkinManager::removeAll(void) {}
+void SkinManager::reloadAll(bool reloadableOnly) {}
+void SkinManager::reloadUnreferencedResources(bool reloadableOnly) {}

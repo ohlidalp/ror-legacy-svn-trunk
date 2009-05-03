@@ -19,7 +19,7 @@ along with Rigs of Rods.  If not, see <http://www.gnu.org/licenses/>.
 */
 #include "FlexBody.h"
 #include "ResourceBuffer.h"
-FlexBody::FlexBody(SceneManager *manager, node_t *nds, int numnds, char* meshname, char* uname, int ref, int nx, int ny, Vector3 offset, Quaternion rot, char* setdef, MaterialFunctionMapper *mfm)
+FlexBody::FlexBody(SceneManager *manager, node_t *nds, int numnds, char* meshname, char* uname, int ref, int nx, int ny, Vector3 offset, Quaternion rot, char* setdef, MaterialFunctionMapper *mfm, SkinPtr usedSkin)
 {
 	nodes=nds;
 	numnodes=numnds;
@@ -110,6 +110,7 @@ FlexBody::FlexBody(SceneManager *manager, node_t *nds, int numnds, char* meshnam
 	
 	Entity *ent = manager->createEntity(uname, uname_mesh);
 	if(mfm) mfm->replaceMeshMaterials(ent);
+	if(!usedSkin.isNull()) usedSkin->replaceMeshMaterials(ent);
 	LogManager::getSingleton().logMessage("FLEXBODY unique mesh created: "+String(meshname)+" -> "+String(uname_mesh));
 
 	msh=ent->getMesh();

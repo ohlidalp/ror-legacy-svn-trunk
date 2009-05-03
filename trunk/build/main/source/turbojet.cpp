@@ -19,7 +19,7 @@ along with Rigs of Rods.  If not, see <http://www.gnu.org/licenses/>.
 */
 #include "turbojet.h"
 
-Turbojet::Turbojet(SceneManager *manager, char* propname, int tnumber, int trucknum, node_t *nd, int tnodefront, int tnodeback, int tnoderef, float tmaxdrythrust, bool treversable, bool tafterburnable, float tafterburnthrust, float diskdiam, float nozdiam, float nozlength, bool disable_smoke, bool _heathaze, MaterialFunctionMapper *mfm)
+Turbojet::Turbojet(SceneManager *manager, char* propname, int tnumber, int trucknum, node_t *nd, int tnodefront, int tnodeback, int tnoderef, float tmaxdrythrust, bool treversable, bool tafterburnable, float tafterburnthrust, float diskdiam, float nozdiam, float nozlength, bool disable_smoke, bool _heathaze, MaterialFunctionMapper *mfm, SkinPtr usedSkin)
 {
 	heathaze=_heathaze;
 	nodes=nd;
@@ -61,6 +61,7 @@ Turbojet::Turbojet(SceneManager *manager, char* propname, int tnumber, int truck
 	sprintf(paname, "%s-nozzle", propname);
 	Entity *te = manager->createEntity(paname, "nozzle.mesh");
 	if(mfm) mfm->replaceMeshMaterials(te);
+	if(!usedSkin.isNull()) usedSkin->replaceMeshMaterials(te);
 	nzsnode=manager->getRootSceneNode()->createChildSceneNode();
 	nzsnode->attachObject(te);
 	nzsnode->setScale(nozlength, nozdiam, nozdiam);
@@ -69,6 +70,7 @@ Turbojet::Turbojet(SceneManager *manager, char* propname, int tnumber, int truck
 		sprintf(paname, "%s-abflame", propname);
 		Entity *te = manager->createEntity(paname, "abflame.mesh");
 		if(mfm) mfm->replaceMeshMaterials(te);
+		if(!usedSkin.isNull()) usedSkin->replaceMeshMaterials(te);
 		absnode=manager->getRootSceneNode()->createChildSceneNode();
 		absnode->attachObject(te);
 		absnode->setScale(1.0, nozdiam, nozdiam);
