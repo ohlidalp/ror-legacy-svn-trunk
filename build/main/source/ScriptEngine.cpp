@@ -6,7 +6,7 @@ Copyright 2007,2008,2009 Thomas Fischer
 For more information, see http://www.rigsofrods.com/
 
 Rigs of Rods is free software: you can redistribute it and/or modify
-it under the terms of the GNU General Public License version 3, as 
+it under the terms of the GNU General Public License version 3, as
 published by the Free Software Foundation.
 
 Rigs of Rods is distributed in the hope that it will be useful,
@@ -23,7 +23,7 @@ along with Rigs of Rods.  If not, see <http://www.gnu.org/licenses/>.
 #include "ScriptEngine.h"
 #include "Ogre.h"
 #include "ExampleFrameListener.h"
-#include "stdstring/stdstring.h" // angelscript addon
+#include "scriptstdstring/scriptstdstring.h" // angelscript addon
 #include "scriptmath/scriptmath.h" // angelscript addon
 #include "water.h"
 #include "Beam.h"
@@ -73,7 +73,7 @@ int ScriptEngine::loadTerrainScript(Ogre::String scriptname)
 
 	// Add the script to the module as a section. If desired, multiple script
 	// sections can be added to the same module. They will then be compiled
-	// together as if it was one large script. 
+	// together as if it was one large script.
 	asIScriptModule *mod = engine->GetModule("terrainScript", asGM_ALWAYS_CREATE);
 	result = mod->AddScriptSection(scriptname.c_str(), script.c_str(), script.length());
 	if( result < 0 )
@@ -102,8 +102,8 @@ int ScriptEngine::loadTerrainScript(Ogre::String scriptname)
 		LogManager::getSingleton().logMessage("SE| Unkown error while building the script");
 		return 1;
 	}
-    
-	// Find the function that is to be called. 
+
+	// Find the function that is to be called.
 	int funcId = mod->GetFunctionIdByDecl("void main()");
 	if( funcId < 0 )
 	{
@@ -119,12 +119,12 @@ int ScriptEngine::loadTerrainScript(Ogre::String scriptname)
 
 	// Create our context, prepare it, and then execute
 	context = engine->CreateContext();
-	
+
 	//context->SetLineCallback(asMETHOD(ScriptEngine,LineCallback), this, asCALL_THISCALL);
-	
+
 	// this does not work :(
 	//context->SetExceptionCallback(asMETHOD(ScriptEngine,ExceptionCallback), this, asCALL_THISCALL);
-	
+
 	context->Prepare(funcId);
 	LogManager::getSingleton().logMessage("SE| Executing main()");
 	result = context->Execute();
@@ -206,23 +206,23 @@ void ScriptEngine::PrintVariables(asIScriptContext *ctx, int stackLevel)
 	int numVars = ctx->GetVarCount(stackLevel);
 	for( int n = 0; n < numVars; n++ )
 	{
-		int typeId = ctx->GetVarTypeId(n, stackLevel); 
+		int typeId = ctx->GetVarTypeId(n, stackLevel);
 		void *varPointer = ctx->GetAddressOfVar(n, stackLevel);
 		if( typeId == engine->GetTypeIdByDecl("int") )
 		{
-			sprintf(tmp, " %s = %d", ctx->GetVarDeclaration(n, 0, stackLevel), *(int*)varPointer);
+			sprintf(tmp, " %s = %d", ctx->GetVarDeclaration(n, stackLevel), *(int*)varPointer);
 			LogManager::getSingleton().logMessage(tmp);
 		}
 		else if( typeId == engine->GetTypeIdByDecl("string") )
 		{
 			std::string *str = (std::string*)varPointer;
 			if( str )
-			{			
-				sprintf(tmp, " %s = '%s'", ctx->GetVarDeclaration(n, 0, stackLevel), str->c_str());
+			{
+				sprintf(tmp, " %s = '%s'", ctx->GetVarDeclaration(n, stackLevel), str->c_str());
 				LogManager::getSingleton().logMessage(tmp);
 			} else
 			{
-				sprintf(tmp, " %s = <null>", ctx->GetVarDeclaration(n, 0, stackLevel));
+				sprintf(tmp, " %s = <null>", ctx->GetVarDeclaration(n, stackLevel));
 				LogManager::getSingleton().logMessage(tmp);
 			}
 		LogManager::getSingleton().logMessage(tmp);
@@ -259,7 +259,7 @@ void ScriptEngine::init()
 		return;
 	}
 
-	// AngelScript doesn't have a built-in string type, as there is no definite standard 
+	// AngelScript doesn't have a built-in string type, as there is no definite standard
 	// string type for C++ applications. Every developer is free to register it's own string type.
 	// The SDK do however provide a standard add-on for registering a string type, so it's not
 	// necessary to register your own string type if you don't want to.
@@ -438,7 +438,7 @@ void ScriptEngine::init()
 	// TODO: add Cache_Entry::sectionconfigs
 
 	// todo: add Vector3 classes and other utility classes!
-	
+
 	// class GameScript
 	result = engine->RegisterObjectType("GameScriptClass", sizeof(GameScript), asOBJ_VALUE | asOBJ_POD | asOBJ_APP_CLASS); assert_net(result>=0);
 	result = engine->RegisterObjectMethod("GameScriptClass", "void log(const string &in)", asMETHOD(GameScript,log), asCALL_THISCALL); assert_net(result>=0);
@@ -502,7 +502,7 @@ void ScriptEngine::init()
 	// now the global instances
 	GameScript *gamescript = new GameScript(this, mefl);
 	result = engine->RegisterGlobalProperty("GameScriptClass game", gamescript); assert_net(result>=0);
-	
+
 	result = engine->RegisterGlobalProperty("CacheSystemClass cache", &CacheSystem::Instance()); assert_net(result>=0);
 
 	result = engine->RegisterObjectType("Vector3Class", sizeof(Ogre::Vector3), asOBJ_VALUE | asOBJ_POD | asOBJ_APP_CLASS); assert_net(result>=0);
@@ -543,7 +543,7 @@ int ScriptEngine::loadScriptFile(const char *fileName, string &script)
 	}
 	// DO NOT CLOSE THE STREAM (it closes automatically)
 	return 1;
-} 
+}
 
 int ScriptEngine::framestep(Ogre::Real dt)
 {
@@ -602,7 +602,7 @@ void ScriptEngine::triggerEvent(enum scriptEvents eventnum, int value)
 	}
 }
 
-/* class that implements the interface for the scripts */ 
+/* class that implements the interface for the scripts */
 GameScript::GameScript(ScriptEngine *se, ExampleFrameListener *efl) : mse(se), mefl(efl)
 {
 }
