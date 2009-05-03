@@ -10,6 +10,25 @@
 #ifndef SCRIPTFILE_H
 #define SCRIPTFILE_H
 
+//---------------------------
+// Compilation settings
+//
+
+// Set this flag to turn on/off write support
+//  0 = off
+//  1 = on
+
+#ifndef AS_WRITE_OPS
+#define AS_WRITE_OPS 1
+#endif
+
+
+
+
+//---------------------------
+// Declaration
+//
+
 #include <angelscript.h>
 #include <string>
 
@@ -25,36 +44,26 @@ public:
     void AddRef();
     void Release();
 
+	// TODO: Implement the "r+", "w+" and "a+" modes
 	// mode = "r" -> open the file for reading
-    int Open(const std::string &filename, const std::string &mode);
-    int Close();
-    int GetSize();
+	//        "w" -> open the file for writing (overwrites existing file)
+	//        "a" -> open the file for appending
+    int  Open(const std::string &filename, const std::string &mode);
+    int  Close();
+    int  GetSize() const;
+	bool IsEOF() const;
 
     // Reading
-    CScriptString *ReadString(unsigned int length);
-
-	// TODO: Add the following functions
-/*  bool             IsEOF();
-    asCScriptString *ReadStringUntilOneOf(const std::string &chars);
-    asINT8           ReadInt8();
-    asINT16          ReadInt16();
-    asINT32          ReadInt32();
-    asINT64          ReadInt64();
-    float            ReadFloat();
-    double           ReadDouble();*/
+    int ReadString(unsigned int length, std::string &str);
+	int ReadLine(std::string &str);
 
     // Writing
-/*  int WriteString(const std::string &str);
-    int WriteInt8(asINT8 i);
-    int WriteInt16(asINT16 i);
-    int WriteInt32(asINT32 i);
-    int WriteInt64(asINT64 i);
-    int WriteFloat(float f);
-    int WriteDouble(double d);
+    int WriteString(const std::string &str);
 
     // Cursor
+	int GetPos() const;
     int SetPos(int pos);
-    int MovePos(int delta); */
+    int MovePos(int delta);
 
 protected:
     ~CScriptFile();

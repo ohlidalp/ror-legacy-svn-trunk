@@ -1,6 +1,6 @@
 /*
    AngelCode Scripting Library
-   Copyright (c) 2003-2008 Andreas Jonsson
+   Copyright (c) 2003-2009 Andreas Jonsson
 
    This software is provided 'as-is', without any express or implied 
    warranty. In no event will the authors be held liable for any 
@@ -47,7 +47,14 @@
 #define TXT_ASSIGN_IN_GLOBAL_EXPR         "Assignments are not allowed in global expressions"
 
 #define TXT_BOTH_MUST_BE_SAME             "Both expressions must have the same type"
+#define TXT_BOTH_CONDITIONS_MUST_CALL_CONSTRUCTOR "Both conditions must call constructor"
 
+#define TXT_CANNOT_CALL_CONSTRUCTOR_IN_LOOPS "Can't call a constructor in loops"
+#define TXT_CANNOT_CALL_CONSTRUCTOR_IN_SWITCH "Can't call a constructor in switch"
+#define TXT_CANNOT_CALL_CONSTRUCTOR_TWICE "Can't call a constructor multiple times"
+#define TXT_CANNOT_INHERIT_FROM_s         "Can't inherit from '%s'"
+#define TXT_CANNOT_INHERIT_FROM_MULTIPLE_CLASSES "Can't inherit from multiple classes"
+#define TXT_CANNOT_INHERIT_FROM_SELF      "Can't inherit from itself, or another class that inherits from this class"
 #define TXT_CANT_IMPLICITLY_CONVERT_s_TO_s "Can't implicitly convert from '%s' to '%s'."
 #define TXT_CANT_RETURN_VALUE             "Can't return value when return type is 'void'"
 #define TXT_CHANGE_SIGN                   "Implicit conversion changed sign of value"
@@ -87,25 +94,25 @@
 
 #define TXT_IDENTIFIER_s_NOT_DATA_TYPE    "Identifier '%s' is not a data type"
 #define TXT_ILLEGAL_CALL                  "Illegal call"
+#define TXT_ILLEGAL_MEMBER_TYPE           "Illegal member type"
 // TODO: Should be TXT_ILLEGAL_OPERATION_ON_s
 #define TXT_ILLEGAL_OPERATION             "Illegal operation on this datatype"
 #define TXT_ILLEGAL_OPERATION_ON_s        "Illegal operation on '%s'"
-#define TXT_INC_OP_IN_GLOBAL_EXPR         "Incremental operators are not allowed in global expressions"
-#define TXT_INIT_LIST_CANNOT_BE_USED_WITH_s "Initialization lists cannot be used with '%s'"
-#define TXT_INVALID_BREAK                 "Invalid 'break'"
-#define TXT_INVALID_CONTINUE              "Invalid 'continue'"
-#define TXT_INVALID_TYPE                  "Invalid type"
-#define TXT_INTERFACE_ALREADY_IMPLEMENTED "The interface is already implemented"
-#define TXT_ILLEGAL_MEMBER_TYPE           "Illegal member type"
 #define TXT_ILLEGAL_TARGET_TYPE_FOR_REF_CAST     "Illegal target type for reference cast"
 #define TXT_ILLEGAL_VARIABLE_NAME_s       "Illegal variable name '%s'."
+#define TXT_INC_OP_IN_GLOBAL_EXPR         "Incremental operators are not allowed in global expressions"
+#define TXT_INIT_LIST_CANNOT_BE_USED_WITH_s "Initialization lists cannot be used with '%s'"
+#define TXT_INTERFACE_s_ALREADY_IMPLEMENTED "The interface '%s' is already implemented"
+#define TXT_INVALID_BREAK                 "Invalid 'break'"
+#define TXT_INVALID_CONTINUE              "Invalid 'continue'"
+#define TXT_INVALID_SCOPE                 "Invalid scope resolution"
+#define TXT_INVALID_TYPE                  "Invalid type"
 
 #define TXT_METHOD_IN_GLOBAL_EXPR                   "Object method calls are not allowed in global expressions"
 #define TXT_MISSING_IMPLEMENTATION_OF_s             "Missing implementation of '%s'"
 #define TXT_MORE_THAN_ONE_MATCHING_OP               "Found more than one matching operator"
 #define TXT_MULTIPLE_MATCHING_SIGNATURES_TO_s       "Multiple matching signatures to '%s'"
 #define TXT_MULTILINE_STRINGS_NOT_ALLOWED           "Multiline strings are not allowed in this application"
-#define TXT_MUST_BE_AN_INTERFACE                    "The identifier must be an interface"
 #define TXT_MUST_BE_OBJECT                          "Only objects have constructors"
 #define TXT_s_MUST_BE_SENT_BY_REF                   "'%s' must be sent by reference"
 #define TXT_MUST_RETURN_VALUE                       "Must return a value"

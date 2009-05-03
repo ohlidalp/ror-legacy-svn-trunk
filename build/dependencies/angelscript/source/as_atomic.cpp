@@ -68,6 +68,26 @@ asDWORD asCAtomic::atomicDec()
 	return --value;
 }
 
+#elif defined(AS_NO_ATOMIC)
+
+asDWORD asCAtomic::atomicInc()
+{
+	asDWORD v;
+	ENTERCRITICALSECTION(cs);
+	v = ++value;
+	LEAVECRITICALSECTION(cs);
+	return v;
+}
+
+asDWORD asCAtomic::atomicDec()
+{
+	asDWORD v;
+	ENTERCRITICALSECTION(cs);
+	v = --value;
+	LEAVECRITICALSECTION(cs);
+	return v;
+}
+
 #elif defined(AS_WIN)
 
 END_AS_NAMESPACE
@@ -90,19 +110,22 @@ asDWORD asCAtomic::atomicDec()
 //
 // atomic_inc_and_test() and atomic_dec_and_test() from asm/atomic.h is not meant 
 // to be used outside the Linux kernel. Instead we should use the GNUC provided 
-// __sync_fetch_and_add() and __sync_fetch_and_sub() functions.
+// __sync_add_and_fetch() and __sync_sub_and_fetch() functions.
 //
 // Reference: http://golubenco.org/blog/atomic-operations/
+//
+// These are only available in GCC 4.1 and above, so for older versions we 
+// use the critical sections, though it is a lot slower.
 // 
 
 asDWORD asCAtomic::atomicInc()
 {
-	return __sync_fetch_and_add(&value, 1);
+	return __sync_add_and_fetch(&value, 1);
 }
 
 asDWORD asCAtomic::atomicDec()
 {
-	return __sync_fetch_and_sub(&value, 1);
+	return __sync_sub_and_fetch(&value, 1);
 }
 
 #elif defined(AS_MAC)
@@ -123,23 +146,9 @@ asDWORD asCAtomic::atomicDec()
 
 #else
 
-asDWORD asCAtomic::atomicInc()
-{
-	asDWORD v;
-	ENTERCRITICALSECTION(cs);
-	v = ++value;
-	LEAVECRITICALSECTION(cs);
-	return v;
-}
-
-asDWORD asCAtomic::atomicDec()
-{
-	asDWORD v;
-	ENTERCRITICALSECTION(cs);
-	v = --value;
-	LEAVECRITICALSECTION(cs);
-	return v;
-}
+// If we get here, then the configuration in as_config.h
+//  is wrong for the compiler/platform combination. 
+int ERROR_PleaseFixTheConfig[-1];
 
 #endif
 

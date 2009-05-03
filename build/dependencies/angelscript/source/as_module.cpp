@@ -44,6 +44,7 @@
 
 BEGIN_AS_NAMESPACE
 
+// internal
 asCModule::asCModule(const char *name, int id, asCScriptEngine *engine)
 {
 	this->name     = name;
@@ -59,6 +60,7 @@ asCModule::asCModule(const char *name, int id, asCScriptEngine *engine)
 	initFunction = 0;
 }
 
+// internal
 asCModule::~asCModule()
 {
 	InternalReset();
@@ -93,9 +95,8 @@ void asCModule::SetName(const char *name)
 }
 
 // interface
-const char *asCModule::GetName(int *length)
+const char *asCModule::GetName()
 {
-	if( length ) *length = (int)name.GetLength();
 	return name.AddressOf();
 }
 
@@ -165,18 +166,19 @@ int asCModule::Build()
 
 	engine->PrepareEngine();
 
-	CallInit();
+	if( engine->ep.initGlobalVarsAfterBuild )
+		CallInit();
 
 	engine->BuildCompleted();
+
 	return r;
 }
 
 // interface
 int asCModule::ResetGlobalVars()
 {
-	if( !isGlobalVarInitialized ) return asERROR;
-
-	CallExit();
+	if( isGlobalVarInitialized ) 
+		CallExit();
 
 	CallInit();
 
@@ -192,6 +194,7 @@ int asCModule::GetFunctionIdByIndex(int index)
 	return scriptFunctions[index]->id;
 }
 
+// internal
 void asCModule::CallInit()
 {
 	if( isGlobalVarInitialized ) return;
@@ -222,6 +225,7 @@ void asCModule::CallInit()
 	isGlobalVarInitialized = true;
 }
 
+// internal
 void asCModule::CallExit()
 {
 	if( !isGlobalVarInitialized ) return;
@@ -251,11 +255,13 @@ void asCModule::CallExit()
 	isGlobalVarInitialized = false;
 }
 
+// internal
 void asCModule::Discard()
 {
 	isDiscarded = true;
 }
 
+// internal
 void asCModule::InternalReset()
 {
 	asASSERT( !IsUsed() );
@@ -276,6 +282,7 @@ void asCModule::InternalReset()
 		engine->DeleteScriptFunction(scriptFunctions[n]->id);
 	}
 	scriptFunctions.SetLength(0);
+	globalFunctions.SetLength(0);
 
 	if( initFunction )
 	{
@@ -333,6 +340,12 @@ void asCModule::InternalReset()
 	for( n = 0; n < classTypes.GetLength(); n++ )
 		classTypes[n]->Release();
 	classTypes.SetLength(0);
+	for( n = 0; n < enumTypes.GetLength(); n++ )
+		enumTypes[n]->Release();
+	enumTypes.SetLength(0);
+	for( n = 0; n < typeDefs.GetLength(); n++ )
+		typeDefs[n]->Release();
+	typeDefs.SetLength(0);
 }
 
 // interface
@@ -344,12 +357,12 @@ int asCModule::GetFunctionIdByName(const char *name)
 	// TODO: optimize: Improve linear search
 	// Find the function id
 	int id = -1;
-	for( size_t n = 0; n < scriptFunctions.GetLength(); n++ )
+	for( size_t n = 0; n < globalFunctions.GetLength(); n++ )
 	{
-		if( scriptFunctions[n]->name == name )
+		if( globalFunctions[n]->name == name )
 		{
 			if( id == -1 )
-				id = scriptFunctions[n]->id;
+				id = globalFunctions[n]->id;
 			else
 				return asMULTIPLE_FUNCTIONS;
 		}
@@ -420,7 +433,7 @@ int asCModule::GetFunctionCount()
 	if( isBuildWithoutErrors == false )
 		return asERROR;
 
-	return (int)scriptFunctions.GetLength();
+	return (int)globalFunctions.GetLength();
 }
 
 // interface
@@ -439,17 +452,17 @@ int asCModule::GetFunctionIdByDecl(const char *decl)
 	// TODO: optimize: Improve linear search
 	// Search script functions for matching interface
 	int id = -1;
-	for( size_t n = 0; n < scriptFunctions.GetLength(); ++n )
+	for( size_t n = 0; n < globalFunctions.GetLength(); ++n )
 	{
-		if( scriptFunctions[n]->objectType == 0 && 
-			func.name == scriptFunctions[n]->name && 
-			func.returnType == scriptFunctions[n]->returnType &&
-			func.parameterTypes.GetLength() == scriptFunctions[n]->parameterTypes.GetLength() )
+		if( globalFunctions[n]->objectType == 0 && 
+			func.name == globalFunctions[n]->name && 
+			func.returnType == globalFunctions[n]->returnType &&
+			func.parameterTypes.GetLength() == globalFunctions[n]->parameterTypes.GetLength() )
 		{
 			bool match = true;
 			for( size_t p = 0; p < func.parameterTypes.GetLength(); ++p )
 			{
-				if( func.parameterTypes[p] != scriptFunctions[n]->parameterTypes[p] )
+				if( func.parameterTypes[p] != globalFunctions[n]->parameterTypes[p] )
 				{
 					match = false;
 					break;
@@ -459,7 +472,7 @@ int asCModule::GetFunctionIdByDecl(const char *decl)
 			if( match )
 			{
 				if( id == -1 )
-					id = scriptFunctions[n]->id;
+					id = globalFunctions[n]->id;
 				else
 					return asMULTIPLE_FUNCTIONS;
 			}
@@ -505,10 +518,10 @@ int asCModule::GetGlobalVarIndexByName(const char *name)
 // interface
 asIScriptFunction *asCModule::GetFunctionDescriptorByIndex(int index)
 {
-	if( index < 0 || index >= (int)scriptFunctions.GetLength() )
+	if( index < 0 || index >= (int)globalFunctions.GetLength() )
 		return 0;
 
-	return scriptFunctions[index];
+	return globalFunctions[index];
 }
 
 // interface
@@ -561,7 +574,7 @@ void *asCModule::GetAddressOfGlobalVar(int index)
 }
 
 // interface
-const char *asCModule::GetGlobalVarDeclaration(int index, int *length)
+const char *asCModule::GetGlobalVarDeclaration(int index)
 {
 	if( index < 0 || index >= (int)scriptGlobals.GetLength() )
 		return 0;
@@ -573,25 +586,27 @@ const char *asCModule::GetGlobalVarDeclaration(int index, int *length)
 	*tempString = prop->type.Format();
 	*tempString += " " + prop->name;
 
-	if( length ) *length = (int)tempString->GetLength();
 	return tempString->AddressOf();
 }
 
 // interface
-const char *asCModule::GetGlobalVarName(int index, int *length)
+const char *asCModule::GetGlobalVarName(int index)
 {
 	if( index < 0 || index >= (int)scriptGlobals.GetLength() )
 		return 0;
 
-	if( length ) *length = (int)scriptGlobals[index]->name.GetLength();
 	return scriptGlobals[index]->name.AddressOf();
 }
 
 // interface
-int asCModule::GetGlobalVarTypeId(int index)
+// TODO: If the typeId ever encodes the const flag, then the isConst parameter should be removed
+int asCModule::GetGlobalVarTypeId(int index, bool *isConst)
 {
 	if( index < 0 || index >= (int)scriptGlobals.GetLength() )
 		return asINVALID_ARG;
+
+	if( isConst )
+		*isConst = scriptGlobals[index]->type.IsReadOnly();
 
 	return engine->GetTypeIdFromDataType(scriptGlobals[index]->type);
 }
@@ -623,6 +638,72 @@ int asCModule::GetTypeIdByDecl(const char *decl)
 	return engine->GetTypeIdFromDataType(dt);
 }
 
+// interface
+int asCModule::GetEnumCount()
+{
+	return (int)enumTypes.GetLength();
+}
+
+// interface
+const char *asCModule::GetEnumByIndex(asUINT index, int *enumTypeId)
+{
+	if( index >= enumTypes.GetLength() )
+		return 0;
+
+	if( enumTypeId )
+		*enumTypeId = GetTypeIdByDecl(enumTypes[index]->name.AddressOf());
+
+	return enumTypes[index]->name.AddressOf();
+}
+
+// interface
+int asCModule::GetEnumValueCount(int enumTypeId)
+{
+	const asCDataType *dt = engine->GetDataTypeFromTypeId(enumTypeId);
+	asCObjectType *t = dt->GetObjectType();
+	if( t == 0 || !(t->GetFlags() & asOBJ_ENUM) ) 
+		return asINVALID_TYPE;
+
+	return (int)t->enumValues.GetLength();
+}
+
+// interface
+const char *asCModule::GetEnumValueByIndex(int enumTypeId, asUINT index, int *outValue)
+{
+	const asCDataType *dt = engine->GetDataTypeFromTypeId(enumTypeId);
+	asCObjectType *t = dt->GetObjectType();
+	if( t == 0 || !(t->GetFlags() & asOBJ_ENUM) ) 
+		return 0;
+
+	if( index >= t->enumValues.GetLength() )
+		return 0;
+
+	if( outValue )
+		*outValue = t->enumValues[index]->value;
+
+	return t->enumValues[index]->name.AddressOf();
+}
+
+// interface
+int asCModule::GetTypedefCount()
+{
+	return (int)typeDefs.GetLength();
+}
+
+// interface
+const char *asCModule::GetTypedefByIndex(asUINT index, int *typeId)
+{
+	if( index >= typeDefs.GetLength() )
+		return 0;
+
+	if( typeId )
+		*typeId = GetTypeIdByDecl(typeDefs[index]->name.AddressOf());
+
+	return typeDefs[index]->name.AddressOf();
+}
+
+
+// internal
 int asCModule::AddConstantString(const char *str, size_t len)
 {
 	//  The str may contain null chars, so we cannot use strlen, or strcmp, or strcpy
@@ -645,22 +726,27 @@ int asCModule::AddConstantString(const char *str, size_t len)
 	return (int)stringConstants.GetLength() - 1;
 }
 
+// internal
 const asCString &asCModule::GetConstantString(int id)
 {
 	return *stringConstants[id];
 }
 
+// internal
+// TODO: this can probably be removed
 int asCModule::GetNextFunctionId()
 {
 	return engine->GetNextScriptFunctionId();
 }
 
+// internal
 int asCModule::GetNextImportedFunctionId()
 {
 	return FUNC_IMPORTED | (asUINT)importedFunctions.GetLength();
 }
 
-int asCModule::AddScriptFunction(int sectionIdx, int id, const char *name, const asCDataType &returnType, asCDataType *params, int *inOutFlags, int paramCount, bool isInterface, asCObjectType *objType, bool isConstMethod)
+// internal
+int asCModule::AddScriptFunction(int sectionIdx, int id, const char *name, const asCDataType &returnType, asCDataType *params, asETypeModifiers *inOutFlags, int paramCount, bool isInterface, asCObjectType *objType, bool isConstMethod, bool isGlobalFunction)
 {
 	asASSERT(id >= 0);
 
@@ -686,15 +772,26 @@ int asCModule::AddScriptFunction(int sectionIdx, int id, const char *name, const
 	if( objType )
 		func->ComputeSignatureId();
 
+	if( isGlobalFunction )
+		globalFunctions.PushLast(func);
+
+	return 0;
+}
+
+// internal 
+int asCModule::AddScriptFunction(asCScriptFunction *func)
+{
+	scriptFunctions.PushLast(func);
+	engine->SetScriptFunction(func);
+
 	return 0;
 }
 
 
 
 
-
-
-int asCModule::AddImportedFunction(int id, const char *name, const asCDataType &returnType, asCDataType *params, int *inOutFlags, int paramCount, int moduleNameStringID)
+// internal
+int asCModule::AddImportedFunction(int id, const char *name, const asCDataType &returnType, asCDataType *params, asETypeModifiers *inOutFlags, int paramCount, int moduleNameStringID)
 {
 	asASSERT(id >= 0);
 
@@ -721,16 +818,20 @@ int asCModule::AddImportedFunction(int id, const char *name, const asCDataType &
 	return 0;
 }
 
+// internal
+// TODO: This can probably be removed
 asCScriptFunction *asCModule::GetScriptFunction(int funcID)
 {
 	return engine->scriptFunctions[funcID & 0xFFFF];
 }
 
+// internal
 asCScriptFunction *asCModule::GetImportedFunction(int funcID)
 {
 	return importedFunctions[funcID & 0xFFFF];
 }
 
+// internal
 asCScriptFunction *asCModule::GetSpecialFunction(int funcID)
 {
 	if( funcID & FUNC_IMPORTED )
@@ -748,26 +849,31 @@ asCScriptFunction *asCModule::GetSpecialFunction(int funcID)
 	}
 }
 
+// internal
 int asCModule::AddContextRef()
 {
 	return contextCount.atomicInc();
 }
 
+// internal
 int asCModule::ReleaseContextRef()
 {
 	return contextCount.atomicDec();
 }
 
+// internal
 int asCModule::AddModuleRef()
 {
 	return moduleCount.atomicInc();
 }
 
+// internal
 int asCModule::ReleaseModuleRef()
 {
 	return moduleCount.atomicDec();
 }
 
+// internal
 bool asCModule::CanDelete()
 {
 	// Don't delete if not discarded
@@ -807,6 +913,7 @@ bool asCModule::CanDelete()
 	return true;
 }
 
+// internal
 bool asCModule::CanDeleteAllReferences(asCArray<asCModule*> &modules)
 {
 	if( !isDiscarded ) return false;
@@ -904,7 +1011,7 @@ int asCModule::UnbindImportedFunction(int index)
 }
 
 // interface
-const char *asCModule::GetImportedFunctionDeclaration(int index, int *length)
+const char *asCModule::GetImportedFunctionDeclaration(int index)
 {
 	asCScriptFunction *func = GetImportedFunction(index);
 	if( func == 0 ) return 0;
@@ -913,24 +1020,18 @@ const char *asCModule::GetImportedFunctionDeclaration(int index, int *length)
 	asCString *tempString = &threadManager->GetLocalData()->string;
 	*tempString = func->GetDeclarationStr();
 
-	if( length ) *length = (int)tempString->GetLength();
-
 	return tempString->AddressOf();
 }
 
 // interface
-const char *asCModule::GetImportedFunctionSourceModule(int index, int *length)
+const char *asCModule::GetImportedFunctionSourceModule(int index)
 {
 	if( index >= (int)bindInformations.GetLength() )
 		return 0;
 
 	index = bindInformations[index].importFrom;
 
-	const char *str = stringConstants[index]->AddressOf();
-	if( length )
-		*length = (int)stringConstants[index]->GetLength();
-
-	return str;
+	return stringConstants[index]->AddressOf();
 }
 
 // inteface
@@ -981,6 +1082,7 @@ int asCModule::UnbindAllImportedFunctions()
 	return asSUCCESS;
 }
 
+// internal
 bool asCModule::IsUsed()
 {
 	if( contextCount.get() ) return true;
@@ -989,12 +1091,23 @@ bool asCModule::IsUsed()
 	return false;
 }
 
+// internal
 asCObjectType *asCModule::GetObjectType(const char *type)
 {
+	size_t n;
+
 	// TODO: optimize: Improve linear search
-	for( size_t n = 0; n < classTypes.GetLength(); n++ )
+	for( n = 0; n < classTypes.GetLength(); n++ )
 		if( classTypes[n]->name == type )
 			return classTypes[n];
+
+	for( n = 0; n < enumTypes.GetLength(); n++ )
+		if( enumTypes[n]->name == type )
+			return enumTypes[n];
+
+	for( n = 0; n < typeDefs.GetLength(); n++ )
+		if( typeDefs[n]->name == type )
+			return typeDefs[n];
 
 	return 0;
 }
@@ -1281,6 +1394,7 @@ bool asCModule::AreInterfacesEqual(asCObjectType *a, asCObjectType *b, asCArray<
 	return match;
 }
 
+// internal
 bool asCModule::AreTypesEqual(const asCDataType &a, const asCDataType &b, asCArray<sObjectTypePair> &equals)
 {
 	if( !a.IsEqualExceptInterfaceType(b) )

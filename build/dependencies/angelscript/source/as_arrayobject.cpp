@@ -83,7 +83,7 @@ static void ArrayObjectFactory_Generic(asIScriptGeneric *gen)
 {
 	asCObjectType *ot = *(asCObjectType**)gen->GetAddressOfArg(0);
 
-	*(asCArrayObject**)gen->GetReturnPointer() = ArrayObjectFactory(ot);
+	*(asCArrayObject**)gen->GetAddressOfReturnLocation() = ArrayObjectFactory(ot);
 }
 
 static void ArrayObjectFactory2_Generic(asIScriptGeneric *gen)
@@ -91,7 +91,7 @@ static void ArrayObjectFactory2_Generic(asIScriptGeneric *gen)
 	asCObjectType *ot = *(asCObjectType**)gen->GetAddressOfArg(0);
 	asUINT length = gen->GetArgDWord(1);
 
-	*(asCArrayObject**)gen->GetReturnPointer() = ArrayObjectFactory2(ot, length);
+	*(asCArrayObject**)gen->GetAddressOfReturnLocation() = ArrayObjectFactory2(ot, length);
 }
 
 static void ArrayObjectAssignment_Generic(asIScriptGeneric *gen)
@@ -142,7 +142,7 @@ static void ArrayObject_Release_Generic(asIScriptGeneric *gen)
 static void ArrayObject_GetRefCount_Generic(asIScriptGeneric *gen)
 {
 	asCArrayObject *self = (asCArrayObject*)gen->GetObject();
-	*(int*)gen->GetReturnPointer() = self->GetRefCount();
+	*(int*)gen->GetAddressOfReturnLocation() = self->GetRefCount();
 }
 
 static void ArrayObject_SetFlag_Generic(asIScriptGeneric *gen)
@@ -154,7 +154,7 @@ static void ArrayObject_SetFlag_Generic(asIScriptGeneric *gen)
 static void ArrayObject_GetFlag_Generic(asIScriptGeneric *gen)
 {
 	asCArrayObject *self = (asCArrayObject*)gen->GetObject();
-	*(bool*)gen->GetReturnPointer() = self->GetFlag();
+	*(bool*)gen->GetAddressOfReturnLocation() = self->GetFlag();
 }
 
 static void ArrayObject_EnumReferences_Generic(asIScriptGeneric *gen)
@@ -280,7 +280,7 @@ asCArrayObject::asCArrayObject(asUINT length, asCObjectType *ot)
 	// Determine element size
 	if( objType->subType )
 	{
-		elementSize = 4;
+		elementSize = sizeof(asPWORD);
 	}
 	else
 	{
@@ -441,15 +441,15 @@ void asCArrayObject::Construct(sArrayBuffer *buf, asUINT start, asUINT end)
 		// Call the constructor on all objects
 		asCScriptEngine *engine = objType->engine;
 		asCObjectType *subType = objType->subType;
-		if( subType->flags & (asOBJ_SCRIPT_STRUCT | asOBJ_TEMPLATE) )
+		if( subType->flags & (asOBJ_SCRIPT_OBJECT | asOBJ_TEMPLATE) )
 		{
 			asDWORD **max = (asDWORD**)(buf->data + end * sizeof(void*));
 			asDWORD **d = (asDWORD**)(buf->data + start * sizeof(void*));
 
-			if( subType->flags & asOBJ_SCRIPT_STRUCT ) 
+			if( subType->flags & asOBJ_SCRIPT_OBJECT ) 
 			{
 				for( ; d < max; d++ )
-					*d = (asDWORD*)ScriptStructFactory(subType, engine);
+					*d = (asDWORD*)ScriptObjectFactory(subType, engine);
 			}
 			else if( subType->flags & asOBJ_TEMPLATE )
 			{

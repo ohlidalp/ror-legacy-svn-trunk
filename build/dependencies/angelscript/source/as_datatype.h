@@ -1,6 +1,6 @@
 /*
    AngelCode Scripting Library
-   Copyright (c) 2003-2008 Andreas Jonsson
+   Copyright (c) 2003-2009 Andreas Jonsson
 
    This software is provided 'as-is', without any express or implied 
    warranty. In no event will the authors be held liable for any 
@@ -71,7 +71,7 @@ public:
 	int MakeHandleToConst(bool b);
 
 	bool IsTemplate()       const;
-	bool IsScriptStruct()   const;
+	bool IsScriptObject()   const;
 	bool IsPrimitive()      const;
 	bool IsObject()         const;
 	bool IsReference()      const {return isReference;}
@@ -84,9 +84,7 @@ public:
 	bool IsObjectHandle()   const {return isObjectHandle;}
 	bool IsHandleToConst()  const;
 	bool IsArrayType()      const;
-	bool IsNamedType()      const;
 	bool IsEnumType()       const;
-	bool IsPseudoType()     const;
 
 	bool IsSamePrimitiveBaseType(const asCDataType &dt)    const;
 	bool IsEqualExceptRef(const asCDataType &)             const;

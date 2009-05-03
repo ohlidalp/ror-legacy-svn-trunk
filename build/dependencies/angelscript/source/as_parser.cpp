@@ -1,6 +1,6 @@
 /*
    AngelCode Scripting Library
-   Copyright (c) 2003-2008 Andreas Jonsson
+   Copyright (c) 2003-2009 Andreas Jonsson
 
    This software is provided 'as-is', without any express or implied 
    warranty. In no event will the authors be held liable for any 
@@ -1339,18 +1339,20 @@ asCScriptNode *asCParser::ParseExprValue()
 {
 	asCScriptNode *node = new(engine->memoryMgr.AllocScriptNode()) asCScriptNode(snExprValue);
 
-	sToken t1;
+	sToken t1, t2;
 	GetToken(&t1);
+	GetToken(&t2);
 	RewindTo(&t1);
 
-	if( IsDataType(t1) )
+	// TODO: namespace: Datatypes can be defined in namespaces, thus types too must allow scope prefix
+	if( IsDataType(t1) && t2.type != ttScope )
 		node->AddChildLast(ParseConstructCall());
-	else if( t1.type == ttIdentifier )
+	else if( t1.type == ttIdentifier || t1.type == ttScope )
 	{
 		if( IsFunctionCall() )
 			node->AddChildLast(ParseFunctionCall());
 		else
-			node->AddChildLast(ParseIdentifier());
+			node->AddChildLast(ParseVariableAccess());
 	}
 	else if( t1.type == ttCast )
 		node->AddChildLast(ParseCast());
@@ -1428,10 +1430,63 @@ asCScriptNode *asCParser::ParseFunctionCall()
 {
 	asCScriptNode *node = new(engine->memoryMgr.AllocScriptNode()) asCScriptNode(snFunctionCall);
 
+	// Parse scope prefix
+	sToken t1, t2;
+	GetToken(&t1);
+	if( t1.type == ttScope )
+	{
+		RewindTo(&t1);
+		node->AddChildLast(ParseToken(ttScope));
+		GetToken(&t1);
+	}
+	GetToken(&t2);
+	while( t1.type == ttIdentifier && t2.type == ttScope )
+	{
+		RewindTo(&t1);
+		node->AddChildLast(ParseIdentifier());
+		node->AddChildLast(ParseToken(ttScope));
+		GetToken(&t1);
+		GetToken(&t2);
+	}
+
+	RewindTo(&t1);
+
+	// Parse the function name followed by the argument list
 	node->AddChildLast(ParseIdentifier());
 	if( isSyntaxError ) return node;
 
 	node->AddChildLast(ParseArgList());
+
+	return node;
+}
+
+asCScriptNode *asCParser::ParseVariableAccess()
+{
+	asCScriptNode *node = new(engine->memoryMgr.AllocScriptNode()) asCScriptNode(snVariableAccess);
+
+	// Parse scope prefix
+	sToken t1, t2;
+	GetToken(&t1);
+	if( t1.type == ttScope )
+	{
+		RewindTo(&t1);
+		node->AddChildLast(ParseToken(ttScope));
+		GetToken(&t1);
+	}
+	GetToken(&t2);
+	while( t1.type == ttIdentifier && t2.type == ttScope )
+	{
+		RewindTo(&t1);
+		node->AddChildLast(ParseIdentifier());
+		node->AddChildLast(ParseToken(ttScope));
+		GetToken(&t1);
+		GetToken(&t2);
+	}
+
+	RewindTo(&t1);
+
+	// Parse the variable name
+	node->AddChildLast(ParseIdentifier());
 
 	return node;
 }
@@ -1715,23 +1770,37 @@ asCScriptNode *asCParser::ParseInitList()
 
 bool asCParser::IsFunctionCall()
 {
+	sToken s;
 	sToken t1, t2;
 
-	GetToken(&t1);
+	GetToken(&s);
+	t1 = s;
+
+	// A function call may be prefixed with scope resolution
+	if( t1.type == ttScope )
+		GetToken(&t1);
+	GetToken(&t2);
+
+	while( t1.type == ttIdentifier && t2.type == ttScope )
+	{
+		GetToken(&t1);
+		GetToken(&t2);
+	}
+
+	// A function call starts with an identifier followed by an argument list
 	if( t1.type != ttIdentifier || IsDataType(t1) )
 	{
-		RewindTo(&t1);
+		RewindTo(&s);
 		return false;
 	}
 
-	GetToken(&t2);
 	if( t2.type == ttOpenParanthesis )
 	{
-		RewindTo(&t1);
+		RewindTo(&s);
 		return true;
 	}
 
-	RewindTo(&t1);
+	RewindTo(&s);
 	return false;
 }
 
@@ -2671,82 +2740,41 @@ asCString asCParser::ExpectedOneOf(int *tokens, int count)
 	return str;
 }
 
+// TODO: typedef: Typedefs should accept complex types as well
 asCScriptNode *asCParser::ParseTypedef()
 {
-	sToken	token;
-	asCScriptNode *tmp;
+	// Create the typedef node
+	asCScriptNode *node = new(engine->memoryMgr.AllocScriptNode()) asCScriptNode(snTypedef);
 
+	sToken	token;
 
 	GetToken(&token);
-
-	//	Create the typedef node
-	asCScriptNode *node;
-	node = new(engine->memoryMgr.AllocScriptNode()) asCScriptNode(snTypedef);
-	node->SetToken(&token);
-	node->UpdateSourcePos(token.pos, token.length);
 	if( token.type != ttTypedef)
 	{
 		Error(ExpectedToken(asGetTokenDefinition(token.type)).AddressOf(), &token);
 		return node;
 	}
+	
+	node->SetToken(&token);
+	node->UpdateSourcePos(token.pos, token.length);
 
-	//	Process the base type
+	// Parse the base type
 	GetToken(&token);
-	if(ttConst == token.type) 
+	RewindTo(&token);
+
+	// Make sure it is a primitive type (except ttVoid)
+	if( !IsRealType(token.type) || token.type == ttVoid )
 	{
-		tmp = new(engine->memoryMgr.AllocScriptNode()) asCScriptNode(snConstant);
-		tmp->SetToken(&token);
-		tmp->UpdateSourcePos(token.pos, token.length);
-		node->AddChildLast(tmp);
-
-		//	Get the next token
-		GetToken(&token);
-	}
-
-	switch(token.type) 
-	{
-	case ttBool:
-	case ttInt:
-	case ttInt8:
-	case ttInt16:
-	case ttInt64:
-	case ttUInt:
-	case ttUInt8:
-	case ttUInt16:
-	case ttUInt64:
-		break;
-
-	default:
-		{
-			asCString str;
-			str.Format(TXT_UNEXPECTED_TOKEN_s, token);
-			Error(str.AddressOf(), &token);
-			RewindTo(&token);
-			return node;
-		}
-		break;
-	}
-
-	tmp = new(engine->memoryMgr.AllocScriptNode()) asCScriptNode(snDataType);
-	tmp->SetToken(&token);
-	tmp->UpdateSourcePos(token.pos, token.length);
-	node->AddChildLast(tmp);
-
-
-	//	Get the identifier
-	GetToken(&token);
-	if(ttIdentifier != token.type) 
-	{
-		Error(TXT_EXPECTED_IDENTIFIER, &token);
+		asCString str;
+		str.Format(TXT_UNEXPECTED_TOKEN_s, asGetTokenDefinition(token.type));
+		Error(str.AddressOf(), &token);
 		return node;
 	}
 
-	tmp = new(engine->memoryMgr.AllocScriptNode()) asCScriptNode(snIdentifier);
-	tmp->SetToken(&token);
-	tmp->UpdateSourcePos(token.pos, token.length);
-	node->AddChildLast(tmp);
+	node->AddChildLast(ParseRealType());
+	node->AddChildLast(ParseIdentifier());
 
-	//	check for the start of the declaration block
+	// Check for the end of the typedef
 	GetToken(&token);
 	if( token.type != ttEndStatement ) 
 	{
@@ -2754,8 +2782,6 @@ asCScriptNode *asCParser::ParseTypedef()
 		Error(ExpectedToken(asGetTokenDefinition(token.type)).AddressOf(), &token);
 	}
 
-
-	//	Parse the declarations
 	return node;
 }
 

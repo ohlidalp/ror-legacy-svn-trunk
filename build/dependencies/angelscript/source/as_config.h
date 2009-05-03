@@ -54,11 +54,9 @@
 // AS_POSIX_THREADS
 // If the library should be compiled using posix threads.
 
-// BUILD_WITHOUT_LINE_CUES
-// This flag makes the script compiler remove some extra bytecodes that is used
-// to allow the VM to call the line callback after each statement. The performance
-// is improved slightly but the scripts are only guaranteed to allow one suspension
-// per loop iteration, not one per statement.
+// AS_NO_ATOMIC
+// If the compiler/platform doesn't support atomic instructions
+// then this should be defined to use critical sections instead.
 
 // AS_DEBUG
 // This flag can be defined to make the library write some extra output when
@@ -76,13 +74,6 @@
 // AS_MAX_PORTABILITY
 // Disables all platform specific code. Only the asCALL_GENERIC calling
 // convention will be available in with this flag set.
-
-// AS_NO_USER_ALLOC
-// With this macro defined, the library will not use the overrideable memory
-// allocation functions. Some compilers may not be compatible with this yet,
-// so defining this macro may allow usage of the library on those. The macro
-// will however criple the asSetGlobalMemoryFunctions so you won't get the same
-// result.
 
 
 
@@ -385,7 +376,11 @@
 // GNU C (and MinGW on Windows)
 #if (defined(__GNUC__) && !defined(__SNC__)) || defined(EPPC) // JWC -- use this instead for Wii
 	#define GNU_STYLE_VIRTUAL_METHOD
+#if !defined( __amd64__ )
 	#define MULTI_BASE_OFFSET(x) (*((asDWORD*)(&x)+1))
+#else
+	#define MULTI_BASE_OFFSET(x) (*((asQWORD*)(&x)+1))
+#endif
 	#define CALLEE_POPS_HIDDEN_RETURN_POINTER
 	#define COMPLEX_OBJS_PASSED_BY_REF
 	#define COMPLEX_MASK (asOBJ_APP_CLASS_DESTRUCTOR)
@@ -423,14 +418,14 @@
 			#define AS_MAX_PORTABILITY
 		#endif
 		#define AS_POSIX_THREADS
-
+		
 	// Windows
 	#elif defined(WIN32)
 		// On Windows the simple classes are returned in the EAX:EDX registers
 		//#define THISCALL_RETURN_SIMPLE_IN_MEMORY
 		//#define CDECL_RETURN_SIMPLE_IN_MEMORY
 		//#define STDCALL_RETURN_SIMPLE_IN_MEMORY
-		
+
 		#if defined(i386) && !defined(__LP64__)
 			// Support native calling conventions on Intel 32bit CPU
 			#define AS_X86
@@ -453,14 +448,18 @@
 			// Support native calling conventions on Intel 32bit CPU
 			#define AS_X86
 		#else
-			// No support for native calling conventions yet
-			#define AS_MAX_PORTABILITY
+			#define AS_X64_GCC
 			// STDCALL is not available on 64bit Linux
 			#undef STDCALL
 			#define STDCALL
 		#endif
-        #define AS_LINUX
-        #define AS_POSIX_THREADS
+       	#define AS_LINUX
+       	#define AS_POSIX_THREADS
+
+		#if !( ( (__GNUC__ == 4) && (__GNUC_MINOR__ >= 1) || __GNUC__ > 4) )
+			// Only with GCC 4.1 was the atomic instructions available
+			#define AS_NO_ATOMIC
+		#endif
 
 	// Free BSD
 	#elif __FreeBSD__
@@ -570,7 +569,7 @@
 
 // If there are no current support for native calling
 // conventions, then compile with AS_MAX_PORTABILITY
-#if (!defined(AS_X86) && !defined(AS_SH4) && !defined(AS_MIPS) && !defined(AS_PPC) && !defined(AS_PPC_64) && !defined(AS_XENON))
+#if (!defined(AS_X86) && !defined(AS_SH4) && !defined(AS_MIPS) && !defined(AS_PPC) && !defined(AS_PPC_64) && !defined(AS_XENON) && !defined(AS_X64_GCC))
 	#ifndef AS_MAX_PORTABILITY
 		#define AS_MAX_PORTABILITY
 	#endif
@@ -631,5 +630,3 @@ using namespace AngelScript;
 #endif
 
 #endif
-
-

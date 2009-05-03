@@ -1,6 +1,6 @@
 /*
    AngelCode Scripting Library
-   Copyright (c) 2003-2008 Andreas Jonsson
+   Copyright (c) 2003-2009 Andreas Jonsson
 
    This software is provided 'as-is', without any express or implied
    warranty. In no event will the authors be held liable for any
@@ -70,6 +70,8 @@ public:
 
 	bool Exists(const T &element);
 	int  IndexOf(const T &element);
+	void RemoveIndex(size_t index);
+	void RemoveValue(const T &element);
 
 	bool operator==(const asCArray<T> &) const;
 	bool operator!=(const asCArray<T> &) const;
@@ -323,6 +325,31 @@ int asCArray<T>::IndexOf(const T &e)
 		if( array[n] == e ) return (int)n;
 
 	return -1;
+}
+
+template <class T>
+void asCArray<T>::RemoveIndex(size_t index)
+{
+	if( index < length )
+	{
+		for( size_t n = index; n < length-1; n++ )
+			array[n] = array[n+1];
+
+		PopLast();
+	}
+}
+
+template <class T>
+void asCArray<T>::RemoveValue(const T &e)
+{
+	for( size_t n = 0; n < length; n++ )
+	{
+		if( array[n] == e )
+		{
+			RemoveIndex(n);
+			break;
+		}
+	}
 }
 
 END_AS_NAMESPACE

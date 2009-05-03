@@ -1,6 +1,6 @@
 /*
    AngelCode Scripting Library
-   Copyright (c) 2003-2007 Andreas Jonsson
+   Copyright (c) 2003-2009 Andreas Jonsson
 
    This software is provided 'as-is', without any express or implied 
    warranty. In no event will the authors be held liable for any 
@@ -499,11 +499,6 @@ const int BCT_ClrHi     = BCTYPE_NO_ARG;
 
 // Temporary
 const int BCT_PSP       = BCTYPE_W_ARG;
-#ifndef BUILD_WITHOUT_LINE_CUES
-	const int BCT_LINE  = BCTYPE_NO_ARG;
-#else
-	const int BCT_LINE  = BCTYPE_INFO;
-#endif
 
 const int bcTypes[256] =
 {
@@ -692,14 +687,14 @@ const int bcTypes[256] =
 	0,0,0,0,0,0,       // 240-245
 	BCT_PSP, 
 	0,  
-	BCT_LINE,  
+	0,  // BC_LINE
 	0, 
 	0,  // 250
 	0,  // 251
 	0,  // 252
 	0,  // 253
 	0,  // 254
-	0,	// BC_LABEL     
+	0,	// BC_LABEL
 };
 
 const int bcStackInc[256] =
@@ -750,7 +745,7 @@ const int bcStackInc[256] =
 	0,			// BC_BSLL
 	0,			// BC_BSRL
 	0,			// BC_BSRA
-	-1,			// BC_COPY
+	-PTR_SIZE,	// BC_COPY
 	2,			// BC_SET8
 	2-PTR_SIZE,	// BC_RDS8
 	0,			// BC_SWAP8
@@ -848,7 +843,7 @@ const int bcStackInc[256] =
 	0,			// BC_iTOw
 	0,			// BC_SetV1
 	0,			// BC_SetV2
-	0,			// BC_Cast
+	-PTR_SIZE,	// BC_Cast
 	0,			// BC_i64TOi
 	0,			// BC_uTOi64
 	0,			// BC_iTOi64
@@ -901,7 +896,7 @@ const int bcStackInc[256] =
 
 struct sByteCodeName
 {
-	char *name;
+	const char *name;
 };
 
 #ifdef AS_DEBUG

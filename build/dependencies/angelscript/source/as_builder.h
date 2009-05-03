@@ -121,9 +121,9 @@ protected:
 
 	asCScriptFunction *GetFunctionDescription(int funcID);
 	void GetFunctionDescriptions(const char *name, asCArray<int> &funcs);
-	void GetObjectMethodDescriptions(const char *name, asCObjectType *objectType, asCArray<int> &methods, bool objIsConst);
+	void GetObjectMethodDescriptions(const char *name, asCObjectType *objectType, asCArray<int> &methods, bool objIsConst, const asCString &scope = "");
 
-	int RegisterScriptFunction(int funcID, asCScriptNode *node, asCScriptCode *file, asCObjectType *object = 0, bool isInterface = false);
+	int RegisterScriptFunction(int funcID, asCScriptNode *node, asCScriptCode *file, asCObjectType *object = 0, bool isInterface = false, bool isGlobalFunction = false);
 	int RegisterImportedFunction(int funcID, asCScriptNode *node, asCScriptCode *file);
 	int RegisterGlobalVar(asCScriptNode *node, asCScriptCode *file);
 	int RegisterClass(asCScriptNode *node, asCScriptCode *file);
@@ -135,6 +135,9 @@ protected:
 	bool DoesMethodExist(asCObjectType *objType, int methodId);
 
 	void AddDefaultConstructor(asCObjectType *objType, asCScriptCode *file);
+	asCObjectProperty *AddPropertyToClass(sClassDeclaration *c, const asCString &name, const asCDataType &type, asCScriptCode *file = 0, asCScriptNode *node = 0);
+	
+	int CreateVirtualFunction(asCScriptFunction *func, int idx);
 
 	asCObjectType *GetObjectType(const char *type);
 
@@ -166,7 +169,7 @@ protected:
 	asCModule *module;
 
 	asCDataType CreateDataTypeFromNode(asCScriptNode *node, asCScriptCode *file, bool acceptHandleForScope = false);
-	asCDataType ModifyDataTypeFromNode(const asCDataType &type, asCScriptNode *node, asCScriptCode *file, int *inOutFlag, bool *autoHandle);
+	asCDataType ModifyDataTypeFromNode(const asCDataType &type, asCScriptNode *node, asCScriptCode *file, asETypeModifiers *inOutFlag, bool *autoHandle);
 };
 
 END_AS_NAMESPACE

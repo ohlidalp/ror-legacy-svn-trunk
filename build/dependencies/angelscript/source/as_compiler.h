@@ -119,7 +119,7 @@ protected:
 	int  CompileExpressionPreOp(asCScriptNode *node, asSExprContext *out);
 	int  CompileExpressionPostOp(asCScriptNode *node, asSExprContext *out);
 	int  CompileExpressionValue(asCScriptNode *node, asSExprContext *out);
-	void CompileFunctionCall(asCScriptNode *node, asSExprContext *out, asCObjectType *objectType, bool objIsConst);
+	void CompileFunctionCall(asCScriptNode *node, asSExprContext *out, asCObjectType *objectType, bool objIsConst, const asCString &scope = "");
 	void CompileConstructCall(asCScriptNode *node, asSExprContext *out);
 	void CompileConversion(asCScriptNode *node, asSExprContext *out);
 	int  CompileOperator(asCScriptNode *node, asSExprContext *l, asSExprContext *r, asSExprContext *out);
@@ -135,7 +135,7 @@ protected:
 	void CallDefaultConstructor(asCDataType &type, int offset, asCByteCode *bc, bool isGlobalVar = false);
 	void CallDestructor(asCDataType &type, int offset, asCByteCode *bc);
 	int  CompileArgumentList(asCScriptNode *node, asCArray<asSExprContext *> &args);
-	void MatchFunctions(asCArray<int> &funcs, asCArray<asSExprContext*> &args, asCScriptNode *node, const char *name, asCObjectType *objectType = NULL, bool isConstMethod = false, bool silent = false, bool allowObjectConstruct = true);
+	void MatchFunctions(asCArray<int> &funcs, asCArray<asSExprContext*> &args, asCScriptNode *node, const char *name, asCObjectType *objectType = NULL, bool isConstMethod = false, bool silent = false, bool allowObjectConstruct = true, const asCString &scope = "");
 
 	// Helper functions
 	void SwapPostFixOperands(asCArray<asCScriptNode *> &postfix, asCArray<asCScriptNode *> &target);
@@ -171,6 +171,7 @@ protected:
 	void ConvertToReference(asSExprContext *ctx);
 	void PushVariableOnStack(asSExprContext *ctx, bool asReference);
 	int  TokenToBehaviour(int token);
+	asCString GetScopeFromNode(asCScriptNode *node);
 
 	void LineInstr(asCByteCode *bc, size_t pos);
 
@@ -193,6 +194,9 @@ protected:
 	asCScriptEngine *engine;
 	asCScriptCode *script;
 	asCScriptFunction *outFunc;
+
+	bool m_isConstructor;
+	bool m_isConstructorCalled;
 
 	asCArray<int> breakLabels;
 	asCArray<int> continueLabels;
