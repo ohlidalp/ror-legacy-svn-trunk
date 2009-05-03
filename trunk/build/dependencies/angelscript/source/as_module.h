@@ -73,24 +73,28 @@ struct sObjectTypePair
 };
 
 // TODO: addref/release for the module. The Module should have addref/release methods so that 
-// the application can keep its own references. If DiscardModule is called on the module from
-// the engine the module is not discarded immediately if the application holds it's own reference.
-// Only when the application releases its references is the module discarded. Discard will however
-// remove the reference from the engine's list of valid modules, so GetModule won't return it any
-// more.
+//       the application can keep its own references. If DiscardModule is called on the module from
+//       the engine the module is not discarded immediately if the application holds it's own reference.
+//       Only when the application releases its references is the module discarded. Discard will however
+//       remove the reference from the engine's list of valid modules, so GetModule won't return it any
+//       more.
 
 // TODO: global: The module represents the current scope. Global variables may be added/removed
-// from the scope through DeclareGlobalVar, UndeclareGlobalVar. Undeclaring a global variable
-// doesn't destroy it, it just means the variable is no longer visible from the module, e.g. for
-// new function compilations. Only when no more functions are accessing the global variables is
-// the variable removed.
+//               from the scope through DeclareGlobalVar, UndeclareGlobalVar. Undeclaring a global variable
+//               doesn't destroy it, it just means the variable is no longer visible from the module, e.g. for
+//               new function compilations. Only when no more functions are accessing the global variables is
+//               the variable removed.
 
 // TODO: dynamic functions: It must be possible to compile new functions dynamically within the 
-// scope of a module. The new functions can be added to the scope of the module, or it can be 
-// left outside, thus only accessible through the function id that is returned. This can be used
-// by scripts to dynamically compile new functions. It will also be possible to undeclare functions,
-// in which case the function is removed from the scope of the module. When no one else is accessing
-// the function anymore, will it be removed.
+//                          scope of a module. The new functions can be added to the scope of the module, or it can be 
+//                          left outside, thus only accessible through the function id that is returned. This can be used
+//                          by scripts to dynamically compile new functions. It will also be possible to undeclare functions,
+//                          in which case the function is removed from the scope of the module. When no one else is accessing
+//                          the function anymore, will it be removed. In order to keep track of references between functions
+//                          I need to implement reference counting, which also needs a GC for resolving cyclic references.
+
+// TODO: Remove function imports. When I have implemented function 
+//       pointers the function imports should be deprecated.
 
 class asCModule : public asIScriptModule
 {
@@ -100,7 +104,7 @@ class asCModule : public asIScriptModule
 public:
 	virtual asIScriptEngine *GetEngine();
 	virtual void             SetName(const char *name);
-	virtual const char      *GetName(int *length);
+	virtual const char      *GetName();
 
 	// Compilation
 	virtual int  AddScriptSection(const char *name, const char *code, size_t codeLength, int lineOffset);
@@ -119,9 +123,9 @@ public:
 	virtual int         GetGlobalVarCount();
 	virtual int         GetGlobalVarIndexByName(const char *name);
 	virtual int         GetGlobalVarIndexByDecl(const char *decl);
-	virtual const char *GetGlobalVarDeclaration(int index, int *length);
-	virtual const char *GetGlobalVarName(int index, int *length);
-	virtual int         GetGlobalVarTypeId(int index);
+	virtual const char *GetGlobalVarDeclaration(int index);
+	virtual const char *GetGlobalVarName(int index);
+	virtual int         GetGlobalVarTypeId(int index, bool *isConst);
 	virtual void       *GetAddressOfGlobalVar(int index);
 
 	// Type identification
@@ -129,11 +133,21 @@ public:
 	virtual asIObjectType *GetObjectTypeByIndex(asUINT index);
 	virtual int            GetTypeIdByDecl(const char *decl);
 
+	// Enums
+	virtual int         GetEnumCount();
+	virtual const char *GetEnumByIndex(asUINT index, int *enumTypeId);
+	virtual int         GetEnumValueCount(int enumTypeId);
+	virtual const char *GetEnumValueByIndex(int enumTypeId, asUINT index, int *outValue);
+
+	// Typedefs
+	virtual int         GetTypedefCount();
+	virtual const char *GetTypedefByIndex(asUINT index, int *typeId);
+
 	// Dynamic binding between modules
 	virtual int         GetImportedFunctionCount();
 	virtual int         GetImportedFunctionIndexByDecl(const char *decl);
-	virtual const char *GetImportedFunctionDeclaration(int importIndex, int *length = 0);
-	virtual const char *GetImportedFunctionSourceModule(int importIndex, int *length = 0);
+	virtual const char *GetImportedFunctionDeclaration(int importIndex);
+	virtual const char *GetImportedFunctionSourceModule(int importIndex);
 	virtual int         BindImportedFunction(int index, int sourceID);
 	virtual int         UnbindImportedFunction(int importIndex);
 	virtual int         BindAllImportedFunctions();
@@ -177,8 +191,9 @@ public:
 	const asCString &GetConstantString(int id);
 
 	int  GetNextFunctionId();
-	int  AddScriptFunction(int sectionIdx, int id, const char *name, const asCDataType &returnType, asCDataType *params, int *inOutFlags, int paramCount, bool isInterface, asCObjectType *objType = 0, bool isConstMethod = false);
-	int  AddImportedFunction(int id, const char *name, const asCDataType &returnType, asCDataType *params, int *inOutFlags, int paramCount, int moduleNameStringID);
+	int  AddScriptFunction(int sectionIdx, int id, const char *name, const asCDataType &returnType, asCDataType *params, asETypeModifiers *inOutFlags, int paramCount, bool isInterface, asCObjectType *objType = 0, bool isConstMethod = false, bool isGlobalFunction = false);
+	int  AddScriptFunction(asCScriptFunction *func);
+	int  AddImportedFunction(int id, const char *name, const asCDataType &returnType, asCDataType *params, asETypeModifiers *inOutFlags, int paramCount, int moduleNameStringID);
 
 	bool CanDeleteAllReferences(asCArray<asCModule*> &modules);
 
@@ -212,7 +227,11 @@ public:
 
 	asCScriptFunction             *initFunction;
 	asCArray<asCString *>          scriptSections;
+	// This array holds all functions, class members, factories, etc that were compiled with the module
 	asCArray<asCScriptFunction *>  scriptFunctions;
+	// This array holds global functions declared in the module
+	asCArray<asCScriptFunction *>  globalFunctions;
+	// This array holds imported functions in the module
 	asCArray<asCScriptFunction *>  importedFunctions;
 	asCArray<sBindInfo>            bindInformations;
 
@@ -224,7 +243,13 @@ public:
 	asCArray<void*>                globalVarPointers;
 
 	asCArray<asCString*>           stringConstants;
+
+	// This array holds class and interface types
 	asCArray<asCObjectType*>       classTypes;
+	// This array holds enum types
+	asCArray<asCObjectType*>       enumTypes;
+	// This array holds typedefs
+	asCArray<asCObjectType*>       typeDefs;
 };
 
 END_AS_NAMESPACE

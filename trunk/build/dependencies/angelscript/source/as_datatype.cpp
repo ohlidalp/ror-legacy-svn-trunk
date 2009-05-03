@@ -330,9 +330,9 @@ bool asCDataType::IsTemplate() const
 	return false;
 }
 
-bool asCDataType::IsScriptStruct() const
+bool asCDataType::IsScriptObject() const
 {
-	if( objectType && (objectType->flags & asOBJ_SCRIPT_STRUCT) )
+	if( objectType && (objectType->flags & asOBJ_SCRIPT_OBJECT) )
 		return true;
 
 	return false;
@@ -428,8 +428,8 @@ bool asCDataType::IsEqualExceptInterfaceType(const asCDataType &dt) const
 
 bool asCDataType::IsPrimitive() const
 {
-	//	Enumerations and Pseudo types are considered primitives
-	if( IsEnumType() || IsPseudoType() )
+	//	Enumerations are primitives
+	if( IsEnumType() )
 		return true;
 
 	// A registered object is never a primitive neither is a pointer, nor an array
@@ -502,8 +502,8 @@ bool asCDataType::IsBooleanType() const
 
 bool asCDataType::IsObject() const
 {
-	//	Enumerations and pseudo data are named objects but treated as integral.
-	if( IsEnumType() || IsPseudoType() )
+	//	Enumerations are not objects, even though they are described with an objectType.
+	if( IsEnumType() )
 		return false;
 
 	if( objectType ) return true;
@@ -567,26 +567,9 @@ asSTypeBehaviour *asCDataType::GetBehaviour() const
 	return objectType ? &objectType->beh : 0; 
 }
 
-//	Named and special data types
-bool asCDataType::IsNamedType() const
-{
-	if( objectType && (objectType->flags & asOBJ_NAMED_TYPE) )
-		return true;
-
-	return false;
-}
-
-bool asCDataType::IsPseudoType() const
-{
-	if( objectType && (objectType->flags & asOBJ_NAMED_PSEUDO) )
-		return true;
-
-	return false;
-}
-
 bool asCDataType::IsEnumType() const
 {
-	if( objectType && (objectType->flags & asOBJ_NAMED_ENUM) )
+	if( objectType && (objectType->flags & asOBJ_ENUM) )
 		return true;
 
 	return false;

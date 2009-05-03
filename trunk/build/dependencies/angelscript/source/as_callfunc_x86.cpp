@@ -215,6 +215,19 @@ const t_CallThisCallRetByRef CallThisCallFunctionRetByRef = (t_CallThisCallRetBy
 asDWORD GetReturnedFloat();
 asQWORD GetReturnedDouble();
 
+// TODO: CallSystemFunction should be split in two layers. The top layer
+//       implements the parts that are common to all system functions,
+//       e.g. the check for generic calling convention, the extraction of the
+//       object pointer, the processing of auto handles, and the pop size.
+//       Remember that the proper handling of auto handles is implemented in
+//       as_callfunc_x64_gcc.cpp as that code can handle both 32bit and 64bit pointers.
+//
+//       The lower layer implemented in CallNativeSystemFunction will then
+//       be responsible for just transforming the parameters to the native
+//       calling convention.
+//
+//       This should be done for all supported platforms.
+
 int CallSystemFunction(int id, asCContext *context, void *objectPointer)
 {
 	asCScriptEngine *engine = context->engine;
@@ -531,6 +544,10 @@ endcopy:
 
 #elif defined ASM_AT_N_T
 
+    UNUSED_VAR(args);
+    UNUSED_VAR(paramSize);
+    UNUSED_VAR(func);
+
 	asm("pushl %ecx           \n"
 
 		// Need to align the stack pointer so that it is aligned to 16 bytes when making the function call.
@@ -610,13 +627,17 @@ endcopy:
 
 #elif defined ASM_AT_N_T
 
+    UNUSED_VAR(obj);
+    UNUSED_VAR(args);
+    UNUSED_VAR(paramSize);
+    UNUSED_VAR(func);
+
 	asm("pushl %ecx           \n"
 
 		// Need to align the stack pointer so that it is aligned to 16 bytes when making the function call.
 		// It is assumed that when entering this function, the stack pointer is already aligned, so we need
 		// to calculate how much we will put on the stack during this call.
 		"movl  16(%ebp), %eax \n" // paramSize
-		// TODO: 64 bit pointer, need to add 4 more here
 		"addl  $8, %eax       \n" // counting esp that we will push on the stack
 		"movl  %esp, %ecx     \n"
 		"subl  %eax, %ecx     \n"
@@ -625,7 +646,6 @@ endcopy:
 		"subl  %ecx, %esp     \n"
 		"pushl %eax           \n" // Store the original stack pointer
 
-		// TODO: 64 bit pointer, need to push all 8 bytes on the stack here
 		"pushl 8(%ebp)        \n"
 		"movl  16(%ebp), %ecx \n" // paramSize
 		"movl  12(%ebp), %eax \n" // args
@@ -693,13 +713,17 @@ endcopy:
 
 #elif defined ASM_AT_N_T
 
+    UNUSED_VAR(obj);
+    UNUSED_VAR(args);
+    UNUSED_VAR(paramSize);
+    UNUSED_VAR(func);
+
 	asm("pushl %ecx           \n"
 
 		// Need to align the stack pointer so that it is aligned to 16 bytes when making the function call.
 		// It is assumed that when entering this function, the stack pointer is already aligned, so we need
 		// to calculate how much we will put on the stack during this call.
 		"movl  16(%ebp), %eax \n" // paramSize
-		// TODO: 64 bit pointer, need to add 4 more here
 		"addl  $8, %eax       \n" // counting esp that we will push on the stack
 		"movl  %esp, %ecx     \n"
 		"subl  %eax, %ecx     \n"
@@ -719,7 +743,6 @@ endcopy:
 		"subl  $4, %ecx       \n"
 		"jne   copyloop6      \n"
 		"endcopy6:            \n"
-		// TODO: 64 bit pointer, need to push the entire 8 byte pointer
 		"pushl 8(%ebp)        \n" // push obj
 		"call  *20(%ebp)      \n"
 		"addl  16(%ebp), %esp \n" // pop arguments
@@ -783,6 +806,12 @@ endcopy:
 	}
 
 #elif defined ASM_AT_N_T
+
+    UNUSED_VAR(obj);
+    UNUSED_VAR(args);
+    UNUSED_VAR(paramSize);
+    UNUSED_VAR(func);
+    UNUSED_VAR(retPtr);
 
 	asm("pushl %ecx           \n"
 
@@ -872,6 +901,11 @@ endcopy:
 
 #elif defined ASM_AT_N_T
 
+    UNUSED_VAR(args);
+    UNUSED_VAR(paramSize);
+    UNUSED_VAR(func);
+    UNUSED_VAR(retPtr);
+
 	asm("pushl %ecx           \n"
 
 		// Need to align the stack pointer so that it is aligned to 16 bytes when making the function call.
@@ -960,6 +994,12 @@ endcopy:
 
 #elif defined ASM_AT_N_T
 
+    UNUSED_VAR(obj);
+    UNUSED_VAR(args);
+    UNUSED_VAR(paramSize);
+    UNUSED_VAR(func);
+    UNUSED_VAR(retPtr);
+
 	asm("pushl %ecx           \n"
 
 		// Need to align the stack pointer so that it is aligned to 16 bytes when making the function call.
@@ -1039,6 +1079,10 @@ endcopy:
 	}
 
 #elif defined ASM_AT_N_T
+
+    UNUSED_VAR(args);
+    UNUSED_VAR(paramSize);
+    UNUSED_VAR(func);
 
 	asm("pushl %ecx           \n"
 
@@ -1128,6 +1172,11 @@ endcopy:
 	}
 
 #elif defined ASM_AT_N_T
+
+    UNUSED_VAR(obj);
+    UNUSED_VAR(args);
+    UNUSED_VAR(paramSize);
+    UNUSED_VAR(func);
 
 	asm("pushl %ecx           \n"
 
@@ -1223,6 +1272,12 @@ endcopy:
 	}
 
 #elif defined ASM_AT_N_T
+
+    UNUSED_VAR(obj);
+    UNUSED_VAR(args);
+    UNUSED_VAR(paramSize);
+    UNUSED_VAR(func);
+    UNUSED_VAR(retPtr);
 
 	asm("pushl %ecx           \n"
 

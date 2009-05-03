@@ -106,13 +106,11 @@ void asCConfigGroup::RemoveConfiguration(asCScriptEngine *engine)
 	// Remove global variables
 	for( n = 0; n < globalProps.GetLength(); n++ )
 	{
-		for( asUINT m = 0; m < engine->globalProps.GetLength(); m++ )
+		int index = engine->registeredGlobalProps.IndexOf(globalProps[n]);
+		if( index >= 0 )
 		{
-			if( engine->globalProps[m] == globalProps[n] )
-			{
-				asDELETE(engine->globalProps[m],asCGlobalProperty);
-				engine->globalProps[m] = 0;
-			}
+			asDELETE(engine->registeredGlobalProps[index],asCGlobalProperty);
+			engine->registeredGlobalProps[index] = 0;
 		}
 	}
 
@@ -130,27 +128,71 @@ void asCConfigGroup::RemoveConfiguration(asCScriptEngine *engine)
 	// Remove global functions
 	for( n = 0; n < scriptFunctions.GetLength(); n++ )
 	{
-		for( asUINT m = 0; m < engine->scriptFunctions.GetLength(); m++ )
+		engine->DeleteScriptFunction(scriptFunctions[n]->id);
+	}
+
+	// Remove behaviours and members of object types
+	for( n = 0; n < objTypes.GetLength(); n++ )
+	{
+		asUINT m;
+		asCObjectType *obj = objTypes[n];
+
+		// Don't remove behaviours for interface types as they are built-in
+		if( !(obj->flags & asOBJ_SCRIPT_OBJECT) )
 		{
-			if( engine->scriptFunctions[m] == scriptFunctions[n] )
+			for( m = 0; m < obj->beh.factories.GetLength(); m++ )
 			{
-				engine->DeleteScriptFunction(m);
+				engine->DeleteScriptFunction(obj->beh.factories[m]);
 			}
+
+			for( m = 0; m < obj->beh.constructors.GetLength(); m++ )
+			{
+				engine->DeleteScriptFunction(obj->beh.constructors[m]);
+			}
+
+			for( m = 1; m < obj->beh.operators.GetLength(); m += 2 )
+			{
+				engine->DeleteScriptFunction(obj->beh.operators[m]);
+			}
+
+			engine->DeleteScriptFunction(obj->beh.addref);
+			engine->DeleteScriptFunction(obj->beh.release);
+			engine->DeleteScriptFunction(obj->beh.addref);
+			engine->DeleteScriptFunction(obj->beh.gcGetRefCount);
+			engine->DeleteScriptFunction(obj->beh.gcSetFlag);
+			engine->DeleteScriptFunction(obj->beh.gcGetFlag);
+			engine->DeleteScriptFunction(obj->beh.gcEnumReferences);
+			engine->DeleteScriptFunction(obj->beh.gcReleaseAllReferences);
+		}
+
+		for( m = 0; m < obj->methods.GetLength(); m++ )
+		{
+			engine->DeleteScriptFunction(obj->methods[m]);
 		}
 	}
+
 
 	// Remove object types
 	for( n = 0; n < objTypes.GetLength(); n++ )
 	{
-		for( asUINT m = 0; m < engine->objectTypes.GetLength(); m++ )
+		asCObjectType *t = objTypes[n];
+		int idx = engine->objectTypes.IndexOf(t);
+		if( idx >= 0 )
 		{
-			if( engine->objectTypes[m] == objTypes[n] )
-			{
-				asDELETE(engine->objectTypes[m],asCObjectType);
-				engine->objectTypes[m] = engine->objectTypes[engine->objectTypes.GetLength()-1];
-				engine->objectTypes.PopLast();
-				m--;
-			}
+#ifdef AS_DEBUG
+			ValidateNoUsage(engine, t);
+#endif
+
+			engine->objectTypes.RemoveIndex(idx);
+
+			if( t->flags & asOBJ_TYPEDEF )
+				engine->registeredTypeDefs.RemoveValue(t);
+			else if( t->flags & asOBJ_ENUM )
+				engine->registeredEnums.RemoveValue(t);
+			else
+				engine->registeredObjTypes.RemoveValue(t);
+
+			asDELETE(t, asCObjectType);
 		}
 	}
 
@@ -159,6 +201,32 @@ void asCConfigGroup::RemoveConfiguration(asCScriptEngine *engine)
 		referencedConfigGroups[n]->refCount--;
 	referencedConfigGroups.SetLength(0);
 }
+
+#ifdef AS_DEBUG
+void asCConfigGroup::ValidateNoUsage(asCScriptEngine *engine, asCObjectType *type)
+{
+	for( asUINT n = 0; n < engine->scriptFunctions.GetLength(); n++ )
+	{
+		asCScriptFunction *func = engine->scriptFunctions[n];
+		if( func == 0 ) continue;
+
+		asASSERT(func->returnType.GetObjectType() != type);
+
+		for( asUINT p = 0; p < func->parameterTypes.GetLength(); p++ )
+		{
+			asASSERT(func->parameterTypes[p].GetObjectType() != type);
+		}
+	}
+
+	// TODO: Check also usage of the type in global variables 
+
+	// TODO: Check also usage of the type in local variables in script functions
+
+	// TODO: Check also usage of the type as members of classes
+
+	// TODO: Check also usage of the type as sub types in other types
+}
+#endif
 
 int asCConfigGroup::SetModuleAccess(const char *module, bool hasAccess)
 {

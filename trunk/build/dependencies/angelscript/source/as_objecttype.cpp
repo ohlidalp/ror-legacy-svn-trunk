@@ -46,9 +46,10 @@ BEGIN_AS_NAMESPACE
 
 asCObjectType::asCObjectType()
 {
-	engine   = 0; 
+	engine      = 0; 
 	refCount.set(0); 
-	subType  = 0;
+	subType     = 0;
+	derivedFrom = 0;
 }
 
 asCObjectType::asCObjectType(asCScriptEngine *engine) 
@@ -56,6 +57,7 @@ asCObjectType::asCObjectType(asCScriptEngine *engine)
 	this->engine = engine; 
 	refCount.set(0); 
 	subType      = 0;
+	derivedFrom  = 0;
 }
 
 void asCObjectType::AddRef()
@@ -78,13 +80,16 @@ asCObjectType::~asCObjectType()
 	if( subType )
 		subType->Release();
 
+	if( derivedFrom )
+		derivedFrom->Release();
+
 	asUINT n;
 	for( n = 0; n < properties.GetLength(); n++ )
 		if( properties[n] ) 
 		{
-			if( flags & asOBJ_SCRIPT_STRUCT )
+			if( flags & asOBJ_SCRIPT_OBJECT )
 			{
-				// Release the config group for script structures that are being destroyed
+				// Release the config group for script classes that are being destroyed
 				asCConfigGroup *group = engine->FindConfigGroupForObjectType(properties[n]->type.GetObjectType());
 				if( group != 0 ) group->Release();
 			}
@@ -105,7 +110,7 @@ asCObjectType::~asCObjectType()
 	enumValues.SetLength(0);
 }
 
-bool asCObjectType::Implements(const asCObjectType *objType)
+bool asCObjectType::Implements(const asCObjectType *objType) const
 {
 	if( this == objType )
 		return true;
@@ -116,16 +121,45 @@ bool asCObjectType::Implements(const asCObjectType *objType)
 	return false;
 }
 
-const char *asCObjectType::GetName(int *length) const
+bool asCObjectType::DerivesFrom(const asCObjectType *objType) const
 {
-	if( length ) *length = (int)name.GetLength();
+	if( this == objType )
+		return true;
+
+	asCObjectType *base = derivedFrom;
+	while( base )
+	{
+		if( base == objType )
+			return true;
+
+		base = base->derivedFrom;
+	}
+
+	return false;
+}
+
+const char *asCObjectType::GetName() const
+{
 	return name.AddressOf();
 }
 
+asDWORD asCObjectType::GetFlags() const
+{
+	return flags;
+}
+
+asUINT asCObjectType::GetSize() const
+{
+	return size;
+}
+
+#ifdef AS_DEPRECATED
+// deprecated since 2009-02-26, 2.16.0
 asIObjectType *asCObjectType::GetSubType() const
 {
 	return subType;
 }
+#endif
 
 int asCObjectType::GetInterfaceCount() const
 {
@@ -139,17 +173,40 @@ asIObjectType *asCObjectType::GetInterface(asUINT index) const
 	return interfaces[index];
 }
 
+// internal
+bool asCObjectType::IsInterface() const
+{
+	if( (flags & asOBJ_SCRIPT_OBJECT) && size == 0 )
+		return true;
+
+	return false;
+}
+
 asIScriptEngine *asCObjectType::GetEngine() const
 {
 	return engine;
 }
 
-bool asCObjectType::IsInterface() const
+int asCObjectType::GetFactoryCount() const
 {
-	if( (flags & asOBJ_SCRIPT_STRUCT) && size == 0 )
-		return true;
+	return (int)beh.factories.GetLength();
+}
 
-	return false;
+int asCObjectType::GetFactoryIdByIndex(int index) const
+{
+	if( index < 0 || (unsigned)index >= beh.factories.GetLength() )
+		return asINVALID_ARG;
+
+	return beh.factories[index];
+}
+
+int asCObjectType::GetFactoryIdByDecl(const char *decl) const
+{
+	if( beh.factories.GetLength() == 0 )
+		return asNO_FUNCTION;
+
+	// Let the engine parse the string and find the appropriate factory function
+	return engine->GetFactoryIdByDecl(this, decl);
 }
 
 int asCObjectType::GetMethodCount() const
@@ -194,12 +251,12 @@ int asCObjectType::GetMethodIdByDecl(const char *decl) const
 	if( mod == 0 )
 	{
 		if( engine->scriptFunctions[methods[0]]->funcType == asFUNC_INTERFACE )
-			return engine->GetMethodIDByDecl(this, decl, 0);
+			return engine->GetMethodIdByDecl(this, decl, 0);
 
 		return asNO_MODULE;
 	}
 
-	return engine->GetMethodIDByDecl(this, decl, mod);
+	return engine->GetMethodIdByDecl(this, decl, mod);
 }
 
 asIScriptFunction *asCObjectType::GetMethodDescriptorByIndex(int index) const
@@ -210,12 +267,12 @@ asIScriptFunction *asCObjectType::GetMethodDescriptorByIndex(int index) const
 	return engine->scriptFunctions[methods[index]];
 }
 
-int asCObjectType::GetPropertyCount()
+int asCObjectType::GetPropertyCount() const
 {
 	return (int)properties.GetLength();
 }
 
-int asCObjectType::GetPropertyTypeId(asUINT prop)
+int asCObjectType::GetPropertyTypeId(asUINT prop) const
 {
 	if( prop >= properties.GetLength() )
 		return asINVALID_ARG;
@@ -223,14 +280,129 @@ int asCObjectType::GetPropertyTypeId(asUINT prop)
 	return engine->GetTypeIdFromDataType(properties[prop]->type);
 }
 
-const char *asCObjectType::GetPropertyName(asUINT prop, int *length)
+const char *asCObjectType::GetPropertyName(asUINT prop) const
 {
 	if( prop >= properties.GetLength() )
 		return 0;
 
-	if( length ) *length = (int)properties[prop]->name.GetLength();
 	return properties[prop]->name.AddressOf();
 }
+
+asIObjectType *asCObjectType::GetBaseType() const
+{
+	return derivedFrom; 
+}
+
+int asCObjectType::GetPropertyOffset(asUINT prop) const
+{
+	if( prop >= properties.GetLength() )
+		return 0;
+
+	return properties[prop]->byteOffset;
+}
+
+int asCObjectType::GetBehaviourCount() const
+{
+	// Count the number of behaviours (except factory functions)
+	int count = 0;
+	
+	if( beh.destruct )               count++;
+	if( beh.addref )                 count++;
+	if( beh.release )                count++;
+	if( beh.gcGetRefCount )          count++;
+	if( beh.gcSetFlag )              count++;
+	if( beh.gcGetFlag )              count++;
+	if( beh.gcEnumReferences )       count++;
+	if( beh.gcReleaseAllReferences ) count++; 
+
+	count += (int)beh.constructors.GetLength();
+	count += (int)beh.operators.GetLength() / 2;
+
+	return count;
+}
+
+int asCObjectType::GetBehaviourByIndex(asUINT index, asEBehaviours *outBehaviour) const
+{
+	// Find the correct behaviour
+	int count = 0;
+
+	if( beh.destruct && count++ == (int)index ) // only increase count if the behaviour is registered
+	{ 
+		if( outBehaviour ) *outBehaviour = asBEHAVE_DESTRUCT;
+		return beh.destruct;
+	}
+
+	if( beh.addref && count++ == (int)index )
+	{
+		if( outBehaviour ) *outBehaviour = asBEHAVE_ADDREF;
+		return beh.addref;
+	}
+
+	if( beh.release && count++ == (int)index )
+	{
+		if( outBehaviour ) *outBehaviour = asBEHAVE_RELEASE;
+		return beh.release;
+	}
+
+	if( beh.gcGetRefCount && count++ == (int)index )
+	{
+		if( outBehaviour ) *outBehaviour = asBEHAVE_GETREFCOUNT;
+		return beh.gcGetRefCount;
+	}
+
+	if( beh.gcSetFlag && count++ == (int)index )
+	{
+		if( outBehaviour ) *outBehaviour = asBEHAVE_SETGCFLAG;
+		return beh.gcSetFlag;
+	}
+
+	if( beh.gcGetFlag && count++ == (int)index )
+	{
+		if( outBehaviour ) *outBehaviour = asBEHAVE_GETGCFLAG;
+		return beh.gcGetFlag;
+	}
+
+	if( beh.gcEnumReferences && count++ == (int)index )
+	{
+		if( outBehaviour ) *outBehaviour = asBEHAVE_ENUMREFS;
+		return beh.gcEnumReferences;
+	}
+
+	if( beh.gcReleaseAllReferences && count++ == (int)index )
+	{
+		if( outBehaviour ) *outBehaviour = asBEHAVE_RELEASEREFS;
+		return beh.gcReleaseAllReferences;
+	}
+
+	if( index - count < beh.constructors.GetLength() )
+	{
+		if( outBehaviour ) *outBehaviour = asBEHAVE_CONSTRUCT;
+		return beh.constructors[index - count];
+	}
+	else 
+		count += (int)beh.constructors.GetLength();
+
+	if( index - count < beh.operators.GetLength() / 2 )
+	{
+		index = 2*(index - count);
+
+		if( outBehaviour ) *outBehaviour = static_cast<asEBehaviours>(beh.operators[index]);
+		return beh.operators[index + 1];
+	}
+
+	return asINVALID_ARG;
+}
+
+// interface
+const char *asCObjectType::GetConfigGroup() const
+{
+	asCConfigGroup *group = engine->FindConfigGroupForObjectType(this);
+	if( group == 0 )
+		return 0;
+
+	return group->groupName.AddressOf();
+}
+
 
 END_AS_NAMESPACE
 

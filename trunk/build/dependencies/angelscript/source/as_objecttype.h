@@ -49,15 +49,24 @@
 
 BEGIN_AS_NAMESPACE
 
+// TODO: template: Need a flag to define a template subtype. asOBJ_TEMPLATE_SUB1
+
+// TODO: memory: Need to minimize used memory here, because not all types use all properties of the class
+
+// TODO: Need GetTypeId that should return the type id for this object type.
+// TODO: The type id should have flags for diferenciating between value types and reference types. It should also have a flag for differenciating interface types.
+
+// TODO: Need GetModule that should return asIScriptModule where this type is declared. Interfaces that use any type that 
+//       is specific to the module will also return the module name. Otherwise the module name will not be returned.
+
 // Additional flag to the class object type
-const asDWORD asOBJ_SCRIPT_STRUCT    = 0x10000;
 const asDWORD asOBJ_TEMPLATE         = 0x20000;
 const asDWORD asOBJ_IMPLICIT_HANDLE  = 0x40000;
-const asDWORD asOBJ_NAMED_TYPE       = 0x80000000;
-const asDWORD asOBJ_NAMED_PSEUDO     = 0x40000000 | asOBJ_NAMED_TYPE;
-const asDWORD asOBJ_NAMED_ENUM       = 0x10000000 | asOBJ_NAMED_TYPE;
+const asDWORD asOBJ_TYPEDEF          = 0x40000000;
+const asDWORD asOBJ_ENUM             = 0x10000000;
 
-// TODO: template: Need a flag to define a template subtype. asOBJ_TEMPLATE_SUB1
+
+
 
 // asOBJ_GC is used to indicate that the type can potentially 
 // form circular references, thus is garbage collected.
@@ -102,9 +111,55 @@ struct asSEnumValue
 
 class asCScriptEngine;
 
-// TODO: memory: Need to minimize used memory here, because not all types use all properties of the class
 class asCObjectType : public asIObjectType
 {
+public:
+//=====================================
+// From asIObjectType
+//=====================================
+	asIScriptEngine *GetEngine() const;
+
+	// Type info
+	const char      *GetName() const;
+	asIObjectType   *GetBaseType() const;
+	asDWORD          GetFlags() const;
+	asUINT           GetSize() const;
+	const char      *GetConfigGroup() const;
+
+	// Behaviours
+	int GetBehaviourCount() const;
+	int GetBehaviourByIndex(asUINT index, asEBehaviours *outBehaviour) const;
+
+	// Interfaces
+	int              GetInterfaceCount() const;
+	asIObjectType   *GetInterface(asUINT index) const;
+
+	// Factories
+	int                GetFactoryCount() const;
+	int                GetFactoryIdByIndex(int index) const;
+	int                GetFactoryIdByDecl(const char *decl) const;
+
+	// Methods
+	int                GetMethodCount() const;
+	int                GetMethodIdByIndex(int index) const;
+	int                GetMethodIdByName(const char *name) const;
+	int                GetMethodIdByDecl(const char *decl) const;
+	asIScriptFunction *GetMethodDescriptorByIndex(int index) const;
+
+	// Properties
+	int         GetPropertyCount() const;
+	int         GetPropertyTypeId(asUINT prop) const;
+	const char *GetPropertyName(asUINT prop) const;
+	int         GetPropertyOffset(asUINT prop) const;
+
+#ifdef AS_DEPRECATED
+	// deprecated since 2009-02-26, 2.16.0
+	asIObjectType   *GetSubType() const;
+#endif
+
+//===========================================
+// Internal
+//===========================================
 public:
 	asCObjectType(); 
 	asCObjectType(asCScriptEngine *engine);
@@ -114,25 +169,9 @@ public:
 	void Release();
 	int  GetRefCount();
 
-	asIScriptEngine *GetEngine() const;
-	const char *GetName(int *length = 0) const;
-	asIObjectType *GetSubType() const;
-	virtual int GetInterfaceCount() const;
-	asIObjectType *GetInterface(asUINT index) const;
+	bool Implements(const asCObjectType *objType) const;
+	bool DerivesFrom(const asCObjectType *objType) const;
 	bool IsInterface() const;
-	bool Implements(const asCObjectType *objType);
-
-	// Methods
-	int                      GetMethodCount() const;
-	int                      GetMethodIdByIndex(int index) const;
-	int                      GetMethodIdByName(const char *name) const;
-	int                      GetMethodIdByDecl(const char *decl) const;
-	asIScriptFunction       *GetMethodDescriptorByIndex(int index) const;
-
-	// Properties
-	int         GetPropertyCount();
-	int         GetPropertyTypeId(asUINT prop);
-	const char *GetPropertyName(asUINT prop, int *length = 0);
 
 	asCString   name;
 	eTokenType  tokenType;
@@ -142,6 +181,8 @@ public:
 	asCArray<int>                methods;
 	asCArray<asCObjectType*>     interfaces;
 	asCArray<asSEnumValue*>      enumValues;
+	asCObjectType *              derivedFrom;
+	asCArray<asCScriptFunction*> virtualFunctionTable;
 
 	asDWORD flags;
 

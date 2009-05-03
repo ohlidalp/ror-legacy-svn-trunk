@@ -581,6 +581,10 @@ int asCByteCode::Optimize()
 	// TODO: optimize: Optimize the release of script objects. Most of the time the instructions PSV and FREE are used for this.
 	//                 We could optimize this to one instruction that frees the object in a variable directly.
 	
+	// TODO: optimize: Need a bytecode BC_FreeV that can free the object stored in a variable directly
+
+	// TODO: optimize: Need a bytecode BC_AddRef so that BC_CALLSYS doesn't have to be used for this trivial call
+	
 
 	cByteInstruction *instr = first;
 	while( instr )
@@ -1061,15 +1065,18 @@ void asCByteCode::ExtractLineNumbers()
 			lineNumbers.PushLast(pos);
 			lineNumbers.PushLast(*(int*)ARG_DW(curr->arg));
 
-#ifndef BUILD_WITHOUT_LINE_CUES
-			// Transform BC_LINE into BC_SUSPEND
-			curr->op = BC_SUSPEND;
-			curr->size = SizeOfType(BCT_SUSPEND);
-			pos += curr->size;
-#else
-			// Delete the instruction
-			DeleteInstruction(curr);
-#endif
+			if( !engine->ep.buildWithoutLineCues )
+			{
+				// Transform BC_LINE into BC_SUSPEND
+				curr->op = BC_SUSPEND;
+				curr->size = SizeOfType(BCT_SUSPEND);
+				pos += curr->size;
+			}
+			else
+			{
+				// Delete the instruction
+				DeleteInstruction(curr);
+			}
 		}
 		else
 			pos += curr->size;
@@ -1217,7 +1224,12 @@ void asCByteCode::Line(int line, int column)
 		return;
 
 	last->op       = BC_LINE;
-	last->size     = SizeOfType(BCT_LINE);
+	// If the build is without line cues these instructions will be removed
+	// otherwise they will be transformed into SUSPEND instructions.
+	if( engine->ep.buildWithoutLineCues )
+		last->size = 0;
+	else
+		last->size = SizeOfType(BCT_SUSPEND);
 	last->stackInc = 0;
 	*((int*)ARG_DW(last->arg)) = (line & 0xFFFFF)|((column & 0xFFF)<<20);
 }
@@ -1672,14 +1684,22 @@ void asCByteCode::DebugOutput(const char *name, asCModule *module, asCScriptEngi
 			{
 				asCObjectType *ot = *(asCObjectType**)ARG_QW(instr->arg);
 #ifdef __GNUC__
+#ifdef AS_64BIT_PTR
+				fprintf(file, "   %-8s 0x%lx, %d             (type:%s)\n", bcName[instr->op].name, *(asINT64*)ARG_QW(instr->arg), *(int*)(ARG_DW(instr->arg)+2), ot->GetName());
+#else
 				fprintf(file, "   %-8s 0x%llx, %d             (type:%s)\n", bcName[instr->op].name, *(asINT64*)ARG_QW(instr->arg), *(int*)(ARG_DW(instr->arg)+2), ot->GetName());
+#endif
 #else
 				fprintf(file, "   %-8s 0x%I64x, %d             (type:%s)\n", bcName[instr->op].name, *(asINT64*)ARG_QW(instr->arg), *(int*)(ARG_DW(instr->arg)+2), ot->GetName());
 #endif
 			}
 			else
 #ifdef __GNUC__
+#ifdef AS_64BIT_PTR
+				fprintf(file, "   %-8s %lu, %d\n", bcName[instr->op].name, *(asINT64*)ARG_QW(instr->arg), *(int*)(ARG_DW(instr->arg)+2));
+#else
 				fprintf(file, "   %-8s %llu, %d\n", bcName[instr->op].name, *(asINT64*)ARG_QW(instr->arg), *(int*)(ARG_DW(instr->arg)+2));
+#endif
 #else
 				fprintf(file, "   %-8s %I64u, %d\n", bcName[instr->op].name, *(asINT64*)ARG_QW(instr->arg), *(int*)(ARG_DW(instr->arg)+2));
 #endif
@@ -1833,7 +1853,7 @@ int asCByteCode::InstrW_W_W(bcInstr bc, int a, int b, int c)
 int asCByteCode::InstrW_W(bcInstr bc, int a, int b)
 {
 	asASSERT(bcTypes[bc] == BCTYPE_wW_rW_ARG ||
-		   bcTypes[bc] == BCTYPE_rW_rW_ARG);
+	         bcTypes[bc] == BCTYPE_rW_rW_ARG);
 	asASSERT(bcStackInc[bc] == 0);
 
 	if( AddInstruction() < 0 )
@@ -1851,7 +1871,7 @@ int asCByteCode::InstrW_W(bcInstr bc, int a, int b)
 int asCByteCode::InstrW_DW(bcInstr bc, asWORD a, asDWORD b)
 {
 	asASSERT(bcTypes[bc] == BCTYPE_wW_DW_ARG ||
-           bcTypes[bc] == BCTYPE_rW_DW_ARG);
+             bcTypes[bc] == BCTYPE_rW_DW_ARG);
 	asASSERT(bcStackInc[bc] == 0);
 
 	if( AddInstruction() < 0 )
@@ -1869,7 +1889,7 @@ int asCByteCode::InstrW_DW(bcInstr bc, asWORD a, asDWORD b)
 int asCByteCode::InstrSHORT_B(bcInstr bc, short a, asBYTE b)
 {
 	asASSERT(bcTypes[bc] == BCTYPE_wW_DW_ARG || 
-	       bcTypes[bc] == BCTYPE_rW_DW_ARG);
+	         bcTypes[bc] == BCTYPE_rW_DW_ARG);
 	asASSERT(bcStackInc[bc] == 0);
 
 	if( AddInstruction() < 0 )
@@ -1896,7 +1916,7 @@ int asCByteCode::InstrSHORT_B(bcInstr bc, short a, asBYTE b)
 int asCByteCode::InstrSHORT_W(bcInstr bc, short a, asWORD b)
 {
 	asASSERT(bcTypes[bc] == BCTYPE_wW_DW_ARG || 
-	       bcTypes[bc] == BCTYPE_rW_DW_ARG);
+	         bcTypes[bc] == BCTYPE_rW_DW_ARG);
 	asASSERT(bcStackInc[bc] == 0);
 
 	if( AddInstruction() < 0 )
@@ -1921,7 +1941,7 @@ int asCByteCode::InstrSHORT_W(bcInstr bc, short a, asWORD b)
 int asCByteCode::InstrSHORT_DW(bcInstr bc, short a, asDWORD b)
 {
 	asASSERT(bcTypes[bc] == BCTYPE_wW_DW_ARG || 
-	       bcTypes[bc] == BCTYPE_rW_DW_ARG);
+	         bcTypes[bc] == BCTYPE_rW_DW_ARG);
 	asASSERT(bcStackInc[bc] == 0);
 
 	if( AddInstruction() < 0 )
@@ -1990,8 +2010,8 @@ int asCByteCode::InstrW_FLOAT(bcInstr bc, asWORD a, float b)
 int asCByteCode::InstrSHORT(bcInstr bc, short param)
 {
 	asASSERT(bcTypes[bc] == BCTYPE_rW_ARG || 
-		   bcTypes[bc] == BCTYPE_wW_ARG || 
-		   bcTypes[bc] == BCTYPE_W_ARG);
+	         bcTypes[bc] == BCTYPE_wW_ARG || 
+	         bcTypes[bc] == BCTYPE_W_ARG);
 	asASSERT(bcStackInc[bc] != 0xFFFF);
 
 	if( AddInstruction() < 0 )
@@ -2072,8 +2092,8 @@ int asCByteCode::InstrQWORD(bcInstr bc, asQWORD param)
 int asCByteCode::InstrWORD(bcInstr bc, asWORD param)
 {
 	asASSERT(bcTypes[bc] == BCTYPE_W_ARG  || 
-		   bcTypes[bc] == BCTYPE_rW_ARG || 
-		   bcTypes[bc] == BCTYPE_wW_ARG);
+	         bcTypes[bc] == BCTYPE_rW_ARG || 
+	         bcTypes[bc] == BCTYPE_wW_ARG);
 	asASSERT(bcStackInc[bc] != 0xFFFF);
 
 	if( AddInstruction() < 0 )

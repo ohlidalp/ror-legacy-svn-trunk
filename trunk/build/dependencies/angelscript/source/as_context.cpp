@@ -173,6 +173,7 @@ asCContext::asCContext(asCScriptEngine *engine, bool holdRef)
 	exceptionCallback = false;
 
 	doProcessSuspend = false;
+	doSuspend = false;
 
 	userData = 0;
 }
@@ -572,7 +573,7 @@ void *asCContext::GetReturnObject()
 }
 
 #ifdef AS_DEPRECATED
-// deprecated since 2008-11-11
+// deprecated since 2008-11-11, 2.15.0
 void *asCContext::GetReturnPointer()
 {
 	if( status != tsProgramFinished ) return 0;
@@ -1003,12 +1004,13 @@ int asCContext::Execute()
 
 	if( byteCode == 0 )
 	{
-		if( currentFunction->funcType == asFUNC_INTERFACE )
+		if( currentFunction->funcType == asFUNC_VIRTUAL ||
+			currentFunction->funcType == asFUNC_INTERFACE )
 		{
-			// The currentFunction is an interface method
-	
+			// The currentFunction is a virtual method
+
 			// Determine the true function from the object
-			asCScriptStruct *obj = *(asCScriptStruct**)(size_t*)stackFramePointer;
+			asCScriptObject *obj = *(asCScriptObject**)(size_t*)stackFramePointer;
 			if( obj == 0 )
 			{
 				SetInternalException(TXT_NULL_POINTER_ACCESS);
@@ -1016,38 +1018,54 @@ int asCContext::Execute()
 			else
 			{
 				asCObjectType *objType = obj->objType;
-
-				// Search the object type for a function that matches the interface function
 				asCScriptFunction *realFunc = 0;
-				for( asUINT n = 0; n < objType->methods.GetLength(); n++ )
-				{
-					asCScriptFunction *f2 = engine->scriptFunctions[objType->methods[n]];
-					if( f2->signatureId == currentFunction->signatureId )
-					{
-						realFunc = f2;
-						break;
-					}
-				}
 
-				if( realFunc == 0 )
+				if( currentFunction->funcType == asFUNC_VIRTUAL )
 				{
-					SetInternalException(TXT_NULL_POINTER_ACCESS);
+					if( objType->virtualFunctionTable.GetLength() > (asUINT)currentFunction->vfTableIdx )
+					{
+						realFunc = objType->virtualFunctionTable[currentFunction->vfTableIdx];
+					}
 				}
 				else
 				{
-					currentFunction = realFunc;
-					byteCode = currentFunction->byteCode.AddressOf();
-
-					if( module ) module->ReleaseContextRef();
-					module = currentFunction->module;
-					if( module )
-						module->AddContextRef();
-
-					// Set the local objects to 0
-					for( asUINT n = 0; n < currentFunction->objVariablePos.GetLength(); n++ )
+					// Search the object type for a function that matches the interface function
+					for( asUINT n = 0; n < objType->methods.GetLength(); n++ )
 					{
-						int pos = currentFunction->objVariablePos[n];
-						*(size_t*)&stackFramePointer[-pos] = 0;
+						asCScriptFunction *f2 = engine->scriptFunctions[objType->methods[n]];
+						if( f2->signatureId == currentFunction->signatureId )
+						{
+							if( f2->funcType == asFUNC_VIRTUAL )
+								realFunc = objType->virtualFunctionTable[f2->vfTableIdx];
+							else
+								realFunc = f2;
+							break;
+						}
+					}
+				}
+
+				if( realFunc )
+				{
+					if( realFunc->signatureId != currentFunction->signatureId )
+					{
+						SetInternalException(TXT_NULL_POINTER_ACCESS);
+					}
+					else
+					{
+						currentFunction = realFunc;
+						byteCode = currentFunction->byteCode.AddressOf();
+
+						if( module ) module->ReleaseContextRef();
+						module = currentFunction->module;
+						if( module )
+							module->AddContextRef();
+
+						// Set the local objects to 0
+						for( asUINT n = 0; n < currentFunction->objVariablePos.GetLength(); n++ )
+						{
+							int pos = currentFunction->objVariablePos[n];
+							*(size_t*)&stackFramePointer[-pos] = 0;
+						}
 					}
 				}
 			}
@@ -1267,7 +1285,7 @@ void asCContext::CallScriptFunction(asCModule *mod, asCScriptFunction *func)
 void asCContext::CallInterfaceMethod(asCModule *mod, asCScriptFunction *func)
 {
 	// Resolve the interface method using the current script type
-	asCScriptStruct *obj = *(asCScriptStruct**)(size_t*)stackPointer;
+	asCScriptObject *obj = *(asCScriptObject**)(size_t*)stackPointer;
 	if( obj == 0 )
 	{
 		SetInternalException(TXT_NULL_POINTER_ACCESS);
@@ -1283,20 +1301,30 @@ void asCContext::CallInterfaceMethod(asCModule *mod, asCScriptFunction *func)
 
 	// Search the object type for a function that matches the interface function
 	asCScriptFunction *realFunc = 0;
-	for( asUINT n = 0; n < objType->methods.GetLength(); n++ )
+	if( func->funcType == asFUNC_INTERFACE )
 	{
-		asCScriptFunction *f2 = engine->scriptFunctions[objType->methods[n]];
-		if( f2->signatureId == func->signatureId )
+		for( asUINT n = 0; n < objType->methods.GetLength(); n++ )
 		{
-			realFunc = f2;
-			break;
+			asCScriptFunction *f2 = engine->scriptFunctions[objType->methods[n]];
+			if( f2->signatureId == func->signatureId )
+			{
+				if( f2->funcType == asFUNC_VIRTUAL )
+					realFunc = objType->virtualFunctionTable[f2->vfTableIdx];
+				else
+					realFunc = f2;
+				break;
+			}
+		}
+
+		if( realFunc == 0 )
+		{
+			SetInternalException(TXT_NULL_POINTER_ACCESS);
+			return;
 		}
 	}
-
-	if( realFunc == 0 )
+	else /* if( func->funcType == asFUNC_VIRTUAL ) */
 	{
-		SetInternalException(TXT_NULL_POINTER_ACCESS);
-		return;
+		realFunc = objType->virtualFunctionTable[func->vfTableIdx];
 	}
 
 	// Then call the true script function
@@ -2112,10 +2140,13 @@ void asCContext::ExecuteNext()
 			asCObjectType *objType = (asCObjectType*)(size_t)PTRARG(l_bc);
 			int func = INTARG(l_bc+PTR_SIZE);
 
-			if( objType->flags & asOBJ_SCRIPT_STRUCT )
+			if( objType->flags & asOBJ_SCRIPT_OBJECT )
 			{
 				// Pre-allocate the memory
 				asDWORD *mem = (asDWORD*)engine->CallAlloc(objType);
+
+				// Pre-initialize the memory by calling the constructor for asCScriptObject
+				ScriptObject_Construct(objType, (asCScriptObject*)mem);
 
 				// Call the constructor to initalize the memory
 				asCScriptFunction *f = engine->scriptFunctions[func];
@@ -2883,14 +2914,17 @@ void asCContext::ExecuteNext()
 			{
 				asDWORD typeId = DWORDARG(l_bc);
 
-				asCScriptStruct *obj = (asCScriptStruct *)* a;
+				asCScriptObject *obj = (asCScriptObject *)* a;
 				asCObjectType *objType = obj->objType;
-				if( !objType->Implements(engine->GetObjectTypeFromTypeId(typeId)) )
+				asCObjectType *to = engine->GetObjectTypeFromTypeId(typeId);
+				if( objType->Implements(to) || objType->DerivesFrom(to) )
 				{
-					// The cast is not possible, set the reference on the stack to null
-					*(size_t*)l_sp = 0;
+					objectType = 0;
+					objectRegister = obj;
+					obj->AddRef();
 				}
 			}
+			l_sp += PTR_SIZE;
 		}
 		l_bc += 2;
 		break;
@@ -3434,11 +3468,9 @@ int asCContext::GetCurrentLineNumber(int *column)
 	return -1;
 }
 
-const char *asCContext::GetExceptionString(int *length)
+const char *asCContext::GetExceptionString()
 {
 	if( GetState() != asEXECUTION_EXCEPTION ) return 0;
-
-	if( length ) *length = (int)exceptionString.GetLength();
 
 	return exceptionString.AddressOf();
 }
@@ -3491,9 +3523,12 @@ int asCContext::SetLineCallback(asSFuncPtr callback, void *obj, int callConv)
 			return asINVALID_ARG;
 		}
 	}
+
 	int r = DetectCallingConvention(isObj, callback, callConv, &lineCallbackFunc);
 	if( r < 0 ) lineCallback = false;
+
 	doProcessSuspend = doSuspend || lineCallback;
+
 	return r;
 }
 
@@ -3644,7 +3679,7 @@ int asCContext::GetVarCount(int stackLevel)
 	return (int)func->variables.GetLength();
 }
 
-const char *asCContext::GetVarName(int varIndex, int *length, int stackLevel)
+const char *asCContext::GetVarName(int varIndex, int stackLevel)
 {
 	if( stackLevel < -1 || stackLevel >= GetCallstackSize() ) return 0;
 
@@ -3663,12 +3698,10 @@ const char *asCContext::GetVarName(int varIndex, int *length, int stackLevel)
 	if( varIndex < 0 || varIndex >= (signed)func->variables.GetLength() )
 		return 0;
 
-	if( length ) *length = (int)func->variables[varIndex]->name.GetLength();
-
 	return func->variables[varIndex]->name.AddressOf();
 }
 
-const char *asCContext::GetVarDeclaration(int varIndex, int *length, int stackLevel)
+const char *asCContext::GetVarDeclaration(int varIndex, int stackLevel)
 {
 	if( stackLevel < -1 || stackLevel >= GetCallstackSize() ) return 0;
 
@@ -3691,8 +3724,6 @@ const char *asCContext::GetVarDeclaration(int varIndex, int *length, int stackLe
 	asCString *tempString = &threadManager->GetLocalData()->string;
 	*tempString = func->variables[varIndex]->type.Format();
 	*tempString += " " + func->variables[varIndex]->name;
-
-	if( length ) *length = (int)tempString->GetLength();
 
 	return tempString->AddressOf();
 }
@@ -3720,7 +3751,7 @@ int asCContext::GetVarTypeId(int varIndex, int stackLevel)
 }
 
 #ifdef AS_DEPRECATED
-// deprecated since 2008-11-11
+// deprecated since 2008-11-11, 2.15.0
 void *asCContext::GetVarPointer(int varIndex, int stackLevel)
 {
 	if( stackLevel < -1 || stackLevel >= GetCallstackSize() ) return 0;
