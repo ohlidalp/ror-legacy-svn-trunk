@@ -251,14 +251,18 @@ namespace Ogre {
     void ParticleSystemManager::removeTemplatesByResourceGroup(const String& resourceGroup)
     {
         OGRE_LOCK_AUTO_MUTEX
-        ParticleTemplateMap::iterator itr;
-        for (itr = mSystemTemplates.begin(); itr != mSystemTemplates.end(); ++itr)
+
+        ParticleTemplateMap::iterator i;
+        i = mSystemTemplates.begin(); 
+        while (i != mSystemTemplates.end()) 
         {
-            if(itr->second->getResourceGroupName() == resourceGroup)
-            {
-                delete itr->second;
-                mSystemTemplates.erase(itr);
-            }
+            ParticleTemplateMap::iterator icur = i++;
+
+            if(icur->second->getResourceGroupName() == resourceGroup)
+			{
+				delete (*icur).second;
+				mSystemTemplates.erase(icur->first);
+			}
         }
     }
     //-----------------------------------------------------------------------
