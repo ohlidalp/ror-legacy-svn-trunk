@@ -81,6 +81,9 @@ ELSE(WIN32)
   set(NVIDIA_CG_DIR "")
 ENDIF(WIN32)
 
+IF(ROR_BUILD_ANGELSCRIPT)
+  add_subdirectory(scriptcompiler)
+ENDIF(ROR_BUILD_ANGELSCRIPT)
 
 
 # unused flags:
