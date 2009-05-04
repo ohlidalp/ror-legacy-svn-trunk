@@ -1,3 +1,5 @@
+
+#include "resource.h"
 #include "ScriptEngine.h"
 
 void usage(char *name)
