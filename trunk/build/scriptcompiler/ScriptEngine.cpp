@@ -55,7 +55,7 @@ int ScriptEngine::loadFileInMemory(std::string scriptname)
 
 	while(fgets(line, 4096, fd) != NULL)
 	{
-		int lpos = strnlen(line, 4096)-1;
+		int lpos = strlen(line)-1;
 		if(line[lpos] == '\n') line[lpos] = 0;
 		fileContents[i] = std::string(line);
 		std::replace(fileContents[i].begin(),fileContents[i].end(), '\t',' ');
