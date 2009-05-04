@@ -1,9 +1,10 @@
 project(RoR_ScriptCompiler)
 
-FILE(GLOB_RECURSE sc_src  *.cpp *.c *.h *.rc)
+FILE(GLOB_RECURSE sc_src  *.cpp *.c *.h)
 
 IF(WIN32)
   add_definitions("-D_CRT_SECURE_NO_WARNINGS")
+  set(sc_src ${sc_src} icon.rc)
 ELSEIF(UNIX)
 ELSEIF(APPLE)
 ENDIF(WIN32)
