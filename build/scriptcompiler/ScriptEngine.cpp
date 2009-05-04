@@ -197,10 +197,12 @@ void ScriptEngine::ExceptionCallback(asIScriptContext *ctx, void *param)
 	printf("sect: %s\n",function->GetScriptSectionName());
 	int col, line = ctx->GetExceptionLineNumber(&col);
 	printf("line: %d, %d\n", line, col);
+	printLineError(line, col);
 
 	// Print the variables in the current function
 	PrintVariables(ctx, -1);
 
+	// code below crashing, commented
 	// Show the call stack with the variables
 	printf("--- call stack ---\n");
 	for( int n = 0; n < ctx->GetCallstackSize(); n++ )
@@ -212,6 +214,9 @@ void ScriptEngine::ExceptionCallback(asIScriptContext *ctx, void *param)
 
 		PrintVariables(ctx, n);
 	}
+
+	// force exit now
+	exit(1);
 }
 
 void ScriptEngine::printLineError(int row, int col)

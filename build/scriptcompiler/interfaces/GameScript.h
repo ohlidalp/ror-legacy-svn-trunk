@@ -93,7 +93,7 @@ public:
 	 * @return integer truck number
 	 */
 	int getCurrentTruckNumber()
-	{ printf("%-30s|\n", __FUNCTION__); return 0; };
+	{ printf("%-30s|\n", __FUNCTION__); return -1; };
 	
 	/**
 	 * returns the currently set upo gravity
