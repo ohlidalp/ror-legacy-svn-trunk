@@ -1,3 +1,6 @@
+#ifndef __Gamescript_H__
+#define __Gamescript_H__
+
 /**
  *  @brief Proxy class that can be called by script functions
  */
@@ -115,6 +118,9 @@ public:
 
 	/**
 	 * shows a message to the user
+	 * @param txt text to be displayed. "" to hide the text
+	 * @param time display time in seconds. default: 1
+	 * @param charHeight in percent of the screen. use -1 for default
 	 */
 	void flashMessage(std::string &txt, float time, float charHeight)
 	{ printf("%-30s| %s, %f, %f\n", __FUNCTION__, txt.c_str(), time, charHeight); };
@@ -122,6 +128,9 @@ public:
 	/**
 	 * set direction arrow
 	 * @param text text to be displayed. "" to hide the text
+	 * @param positionx x position on terrain to point to
+	 * @param positiony y position on terrain to point to
+	 * @param positionz z position on terrain to point to
 	 */
 	void setDirectionArrow(std::string &text, float positionx, float positiony, float positionz)
 	{ printf("%-30s| %s, %f, %f, %f\n", __FUNCTION__, text.c_str(), positionx, positiony, positionz); };
@@ -141,3 +150,5 @@ public:
 	void setChatFontSize(int size)
 	{ printf("%-30s| %f\n", __FUNCTION__, size); };
 };
+
+#endif //__Gamescript_H__
