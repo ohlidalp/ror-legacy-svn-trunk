@@ -535,7 +535,9 @@ void ScriptEngine::msgCallback(const asSMessageInfo *msg)
 	else if( msg->type == asMSGTYPE_WARNING )
 		type = "Warning";
 
-	printf("* %s (%d, %d): %s = %s\n", msg->section, msg->row, msg->col, type, msg->message);
-	printLineError(msg->row, msg->col);
+	printf("* %s (Line %d, Col %d): %s : %s\n", msg->section, msg->row, msg->col, type, msg->message);
+	
+	if(msg->type == asMSGTYPE_WARNING)
+		printLineError(msg->row, msg->col);
 }
 
