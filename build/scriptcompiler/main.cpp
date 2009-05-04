@@ -1,4 +1,8 @@
 
+#ifdef WIN32
+# include <conio.h> // for getch
+#endif
+
 #include "resource.h"
 #include "ScriptEngine.h"
 
@@ -15,6 +19,11 @@ int main(int argc, char *argv[])
 		return 1;
 	}
 	ScriptEngine *se = new ScriptEngine();
-	return se->loadFile(argv[1]);
-	return 0;
+	int res = se->loadFile(argv[1]);
+#ifdef WIN32
+	// wait for key press
+	printf("Press any key to continue...\n");
+	_getch();
+#endif
+	return res;
 }
