@@ -120,8 +120,8 @@ int ScriptEngine::loadFile(std::string scriptname)
 	}
 
 	// get some other optional functions
-	//frameStepFunctionPtr = mod->GetFunctionIdByDecl("void frameStep(float)");
-	//eventCallbackFunctionPtr = mod->GetFunctionIdByDecl("void eventCallback(int event, int value)");
+	frameStepFunctionPtr = mod->GetFunctionIdByDecl("void frameStep(float)");
+	eventCallbackFunctionPtr = mod->GetFunctionIdByDecl("void eventCallback(int event, int value)");
 
 	// Create our context, prepare it, and then execute
 	context = engine->CreateContext();
@@ -131,16 +131,54 @@ int ScriptEngine::loadFile(std::string scriptname)
 	// this does not work :(
 	context->SetExceptionCallback(asMETHOD(ScriptEngine,ExceptionCallback), this, asCALL_THISCALL);
 
-	context->Prepare(funcId);
-	printf("Executing main()\n");
-	result = context->Execute();
-	if( result != asEXECUTION_FINISHED )
+	if(funcId >= 0)
 	{
-		// The execution didn't complete as expected. Determine what happened.
-		if( result == asEXECUTION_EXCEPTION )
+		printf("Executing main()\n");
+		context->Prepare(funcId);
+		result = context->Execute();
+		if( result != asEXECUTION_FINISHED )
 		{
-			// An exception occurred, let the script writer know what happened so it can be corrected.
-			printf("An exception '%s' occurred. Please correct the code in file '%s' and try again.\n", context->GetExceptionString(), scriptname);
+			// The execution didn't complete as expected. Determine what happened.
+			if( result == asEXECUTION_EXCEPTION )
+			{
+				// An exception occurred, let the script writer know what happened so it can be corrected.
+				printf("An exception '%s' occurred. Please correct the code in file '%s' and try again.\n", context->GetExceptionString(), scriptname);
+			}
+		}
+	}
+
+	if(frameStepFunctionPtr>=0)
+	{
+		printf("Executing frameStep()\n");
+		context->Prepare(frameStepFunctionPtr);
+		context->SetArgFloat(0, 0.1f);
+		result = context->Execute();
+		if( result != asEXECUTION_FINISHED )
+		{
+			// The execution didn't complete as expected. Determine what happened.
+			if( result == asEXECUTION_EXCEPTION )
+			{
+				// An exception occurred, let the script writer know what happened so it can be corrected.
+				printf("An exception '%s' occurred. Please correct the code in file '%s' and try again.\n", context->GetExceptionString(), scriptname);
+			}
+		}
+	}
+
+	if(eventCallbackFunctionPtr>=0)
+	{
+		printf("Executing eventCallback()\n");
+		context->Prepare(eventCallbackFunctionPtr);
+		context->SetArgByte(0, 0);
+		context->SetArgByte(1, 0);
+		result = context->Execute();
+		if( result != asEXECUTION_FINISHED )
+		{
+			// The execution didn't complete as expected. Determine what happened.
+			if( result == asEXECUTION_EXCEPTION )
+			{
+				// An exception occurred, let the script writer know what happened so it can be corrected.
+				printf("An exception '%s' occurred. Please correct the code in file '%s' and try again.\n", context->GetExceptionString(), scriptname);
+			}
 		}
 	}
 

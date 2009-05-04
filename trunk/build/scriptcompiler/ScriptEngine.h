@@ -19,6 +19,9 @@ public:
 protected:
     asIScriptEngine *engine;                //!< instance of the scripting engine
 	asIScriptContext *context;              //!< context in which all scripting happens
+	int frameStepFunctionPtr;               //!< script function pointer to the frameStep function
+	int eventCallbackFunctionPtr;           //!< script function pointer to the event callback function
+
 	std::map<int, std::string> fileContents;
 
     void init();

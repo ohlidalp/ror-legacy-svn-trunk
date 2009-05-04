@@ -172,7 +172,7 @@ public:
 	 * @return the blink type
 	 */
 	int getBlinkType()
-	{ printf("%-30s|\n", __FUNCTION__); };
+	{ printf("%-30s|\n", __FUNCTION__); return 0; };
 
 	/**
 	 * get on/off state of the custom particles
