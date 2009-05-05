@@ -148,7 +148,7 @@ public:
 	 * @param size font size in pixels
 	 */
 	void setChatFontSize(int size)
-	{ printf("%-30s| %f\n", __FUNCTION__, size); };
+	{ printf("%-30s| %d\n", __FUNCTION__, size); };
 };
 
 #endif //__Gamescript_H__
