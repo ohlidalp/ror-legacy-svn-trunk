@@ -6,6 +6,7 @@
 #include "angelscript.h"
 #include "scriptstdstring/scriptstdstring.h" // angelscript addon
 #include "scriptmath/scriptmath.h" // angelscript addon
+#include <string.h>
 
 class ScriptEngine
 {
