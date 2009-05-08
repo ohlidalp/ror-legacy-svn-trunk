@@ -34,25 +34,25 @@ class FlexAirfoil
 {
 private:
 	float airfoilpos[90];
-typedef struct
-{
-	Vector3 vertex;
-	Vector3 normal;
-//	Vector3 color;
-	Vector2 texcoord;
-} CoVertice_t;
+	typedef struct
+	{
+		Vector3 vertex;
+		Vector3 normal;
+	//	Vector3 color;
+		Vector2 texcoord;
+	} CoVertice_t;
 
-typedef struct
-{
-	Vector3 vertex;
-} posVertice_t;
+	typedef struct
+	{
+		Vector3 vertex;
+	} posVertice_t;
 
-typedef struct
-{
-	Vector3 normal;
-//	Vector3 color;
-	Vector2 texcoord;
-} norVertice_t;
+	typedef struct
+	{
+		Vector3 normal;
+	//	Vector3 color;
+		Vector2 texcoord;
+	} norVertice_t;
 
 	Ogre::MeshPtr msh;
 	SubMesh* subface;
@@ -69,18 +69,18 @@ typedef struct
 	//shadow
 	union
 	{
-	float *shadowposvertices;
-	posVertice_t *coshadowposvertices;
+		float *shadowposvertices;
+		posVertice_t *coshadowposvertices;
 	};
 	union
 	{
-	float *shadownorvertices;
-	norVertice_t *coshadownorvertices;
+		float *shadownorvertices;
+		norVertice_t *coshadownorvertices;
 	};
 	union
 	{
-	float *vertices;
-	CoVertice_t *covertices;
+		float *vertices;
+		CoVertice_t *covertices;
 	};
 
 
@@ -135,24 +135,22 @@ public:
 	bool broken;
 	bool breakable;
 
-char debug[256];
+	char debug[256];
 
 	FlexAirfoil(SceneManager *manager, char* name, node_t *nds, int pnfld, int pnfrd, int pnflu, int pnfru, int pnbld, int pnbrd, int pnblu, int pnbru, char* texband, Vector2 texlf, Vector2 texrf, Vector2 texlb, Vector2 texrb, char mtype, float controlratio, float mind, float maxd, char* afname, AeroEngine** tps, bool break_able);
+	~FlexAirfoil();
 
+	Vector3 updateVertices();
+	Vector3 updateShadowVertices();
+	void setControlDeflection(float val);
 
-Vector3 updateVertices();
-Vector3 updateShadowVertices();
-void setControlDeflection(float val);
+	Vector3 flexit();
 
-Vector3 flexit();
+	void enableInducedDrag(float span, float area, bool l);
 
-void enableInducedDrag(float span, float area, bool l);
+	void addwash(int propid, float ratio);
 
-void addwash(int propid, float ratio);
-
-void updateForces();
-
-
+	void updateForces();
 };
 
 

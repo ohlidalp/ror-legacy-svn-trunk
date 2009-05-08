@@ -37,6 +37,8 @@ private:
 public:
 
 	Airfoil(char* fname);
+	~Airfoil();
+
 	void getparams(float a, float cratio, float cdef, float* ocl, float* ocd, float* ocm);
 
 };
