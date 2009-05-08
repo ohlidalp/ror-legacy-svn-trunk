@@ -745,10 +745,9 @@ int WSync::downloadFile(boost::filesystem::path localFile, string server, string
 				progressOutput(percent, (float)dataspeed);
 				dataspeed=0;
 				time = std::time(0);
-			} else if (displayProgress)
-			{
-				dataspeed += data.size();
 			}
+			if (displayProgress)
+				dataspeed += data.size();
 			datacounter += data.size();
 			myfile << &data;
 		}
