@@ -20,13 +20,13 @@ along with Rigs of Rods.  If not, see <http://www.gnu.org/licenses/>.
 #include "buoyance.h"
 
 Buoyance::Buoyance(Water *water, DustPool *splash, DustPool *ripple)
-    {
-		splashp=splash;
-		ripplep=ripple;
-		w=water;
-		update=0;
-		sink=0;
-	}
+{
+	splashp=splash;
+	ripplep=ripple;
+	w=water;
+	update=0;
+	sink=0;
+}
 
 
 //compute tetrahedron volume
@@ -179,4 +179,8 @@ void Buoyance::computeNodeForce(node_t *a, node_t *b, node_t *c, int doupdate, i
 void Buoyance::setsink(int v)
 {
 	sink=v;
+}
+
+Buoyance::~Buoyance()
+{
 }

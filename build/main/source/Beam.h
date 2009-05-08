@@ -532,6 +532,9 @@ class Beam//: public FrameListener
 public:
 	Beam() {}; // for wrapper, DO NOT USE!
 
+	// destructor
+	~Beam();
+
 #ifdef ANGELSCRIPT
 	// we have to add this to be able to use the class as reference inside scripts
 	void addRef(){};
@@ -820,6 +823,7 @@ protected:
 	Light *cablight;
 
 	bool enable_wheel2;
+	bool deleting;
 
 	char truckname[256];
 	char realtruckname[256];

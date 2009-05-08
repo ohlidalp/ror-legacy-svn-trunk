@@ -369,3 +369,7 @@ Vector3 FlexObj::flexit()
 	return center;
 }
 
+FlexObj::~FlexObj()
+{
+	if(!msh.isNull()) msh->unload();
+}

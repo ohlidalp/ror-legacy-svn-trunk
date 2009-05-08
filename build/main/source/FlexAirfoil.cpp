@@ -64,351 +64,351 @@ float refairfoilpos[90]={
 	};
 
 FlexAirfoil::FlexAirfoil(SceneManager *manager, char* name, node_t *nds, int pnfld, int pnfrd, int pnflu, int pnfru, int pnbld, int pnbrd, int pnblu, int pnbru, char* texband, Vector2 texlf, Vector2 texrf, Vector2 texlb, Vector2 texrb, char mtype, float controlratio, float mind, float maxd, char* afname, AeroEngine** tps, bool break_able)
-    {
+{
 //		innan=0;
-		breakable=break_able;
-		broken=false;
-		debug[0]=0;
-		free_wash=0;
-        smanager=manager;
-		aeroengines=tps;
-		nodes=nds;
-		useInducedDrag=false;
-		nfld=pnfld;
-		nfrd=pnfrd;
-		nflu=pnflu;
-		nfru=pnfru;
-		nbld=pnbld;
-		nbrd=pnbrd;
-		nblu=pnblu;
-		nbru=pnbru;
-		mindef=mind;
-		maxdef=maxd;
-		airfoil=new Airfoil(afname);
-		//airfoil->getcl(-180.0, 0, 0);
-		//airfoil->dumpcl();
-		int i;
-		for (i=0; i<90; i++) airfoilpos[i]=refairfoilpos[i];
-		type=mtype;
-		hascontrol=(mtype!='n' && mtype!='S'&& mtype!='T' && mtype!='U'&& mtype!='V');
-		isstabilator=(mtype=='S' || mtype=='T' || mtype=='U' || mtype=='V');
-		stabilleft=(mtype=='T' || mtype=='V');
-		deflection=0.0;
-		chordratio=controlratio;
+	breakable=break_able;
+	broken=false;
+	debug[0]=0;
+	free_wash=0;
+    smanager=manager;
+	aeroengines=tps;
+	nodes=nds;
+	useInducedDrag=false;
+	nfld=pnfld;
+	nfrd=pnfrd;
+	nflu=pnflu;
+	nfru=pnfru;
+	nbld=pnbld;
+	nbrd=pnbrd;
+	nblu=pnblu;
+	nbru=pnbru;
+	mindef=mind;
+	maxdef=maxd;
+	airfoil=new Airfoil(afname);
+	//airfoil->getcl(-180.0, 0, 0);
+	//airfoil->dumpcl();
+	int i;
+	for (i=0; i<90; i++) airfoilpos[i]=refairfoilpos[i];
+	type=mtype;
+	hascontrol=(mtype!='n' && mtype!='S'&& mtype!='T' && mtype!='U'&& mtype!='V');
+	isstabilator=(mtype=='S' || mtype=='T' || mtype=='U' || mtype=='V');
+	stabilleft=(mtype=='T' || mtype=='V');
+	deflection=0.0;
+	chordratio=controlratio;
 
-		if (hascontrol)
+	if (hascontrol)
+	{
+		//setup control surface
+		airfoilpos[56]=controlratio;
+		airfoilpos[56+3]=controlratio;
+		airfoilpos[56+6]=controlratio;
+		airfoilpos[56+9]=controlratio;
+
+		airfoilpos[55]=-controlratio+1.5;
+		airfoilpos[55+3]=-controlratio+1.5;
+		airfoilpos[55+6]=controlratio-0.5;
+		airfoilpos[55+9]=controlratio-0.5;
+		for (i=0; i<12; i++) airfoilpos[54+12+i]=airfoilpos[54+i];
+	}
+	/// Create the mesh via the MeshManager
+    msh = MeshManager::getSingleton().createManual(name, ResourceGroupManager::DEFAULT_RESOURCE_GROUP_NAME, new ResourceBuffer());
+
+    /// Create submeshes
+    subface = msh->createSubMesh();
+    subband = msh->createSubMesh();
+	subcup=msh->createSubMesh();
+	subcdn=msh->createSubMesh();
+
+	//materials
+	subface->setMaterialName(texband);
+	subband->setMaterialName(texband);
+	subcup->setMaterialName(texband);
+	subcdn->setMaterialName(texband);
+
+    /// Define the vertices
+    nVertices = 24*2+4+2;
+    vbufCount = (2*3+2)*nVertices;
+	vertices=(float*)malloc(vbufCount*sizeof(float));
+	//shadow
+	shadownorvertices=(float*)malloc(nVertices*(3+2)*sizeof(float));
+	shadowposvertices=(float*)malloc(nVertices*3*2*sizeof(float));
+
+	//textures coordinates
+	covertices[0].texcoord=texlf;
+	covertices[1].texcoord=texrf;
+
+	covertices[2].texcoord=texlf+(texlb-texlf)*0.03;
+	covertices[3].texcoord=texrf+(texrb-texrf)*0.03;
+	covertices[4].texcoord=texlf+(texlb-texlf)*0.03;
+	covertices[5].texcoord=texrf+(texrb-texrf)*0.03;
+
+	covertices[6].texcoord=texlf+(texlb-texlf)*0.10;
+	covertices[7].texcoord=texrf+(texrb-texrf)*0.10;
+	covertices[8].texcoord=texlf+(texlb-texlf)*0.10;
+	covertices[9].texcoord=texrf+(texrb-texrf)*0.10;
+
+	covertices[10].texcoord=texlf+(texlb-texlf)*0.25;
+	covertices[11].texcoord=texrf+(texrb-texrf)*0.25;
+	covertices[12].texcoord=texlf+(texlb-texlf)*0.25;
+	covertices[13].texcoord=texrf+(texrb-texrf)*0.25;
+
+	covertices[14].texcoord=texlf+(texlb-texlf)*0.45;
+	covertices[15].texcoord=texrf+(texrb-texrf)*0.45;
+	covertices[16].texcoord=texlf+(texlb-texlf)*0.45;
+	covertices[17].texcoord=texrf+(texrb-texrf)*0.45;
+
+	covertices[18].texcoord=texlf+(texlb-texlf)*airfoilpos[56];
+	covertices[19].texcoord=texrf+(texrb-texrf)*airfoilpos[56];
+	covertices[20].texcoord=texlf+(texlb-texlf)*airfoilpos[56];
+	covertices[21].texcoord=texrf+(texrb-texrf)*airfoilpos[56];
+
+	covertices[22].texcoord=covertices[18].texcoord;
+	covertices[23].texcoord=covertices[19].texcoord;
+	covertices[24].texcoord=covertices[20].texcoord;
+	covertices[25].texcoord=covertices[21].texcoord;
+
+	covertices[26].texcoord=texlb;
+	covertices[27].texcoord=texrb;
+	covertices[28].texcoord=texlb;
+	covertices[29].texcoord=texrb;
+
+	for (i=0; i<24; i++) covertices[i+30].texcoord=covertices[i].texcoord;
+
+	/// Define triangles
+    /// The values in this table refer to vertices in the above table
+    bandibufCount = 3*20;
+    faceibufCount = 3*20;
+	cupibufCount=3*2;
+	cdnibufCount=3*2;
+    facefaces=(unsigned short*)malloc(faceibufCount*sizeof(unsigned short));
+    bandfaces=(unsigned short*)malloc(bandibufCount*sizeof(unsigned short));
+    cupfaces=(unsigned short*)malloc(cupibufCount*sizeof(unsigned short));
+    cdnfaces=(unsigned short*)malloc(cdnibufCount*sizeof(unsigned short));
+	
+	//attack
+	bandfaces[0]=0;
+	bandfaces[1]=2;
+	bandfaces[2]=1;
+
+	bandfaces[3]=2;
+	bandfaces[4]=3;
+	bandfaces[5]=1;
+
+	bandfaces[6]=0;
+	bandfaces[7]=1;
+	bandfaces[8]=4;
+
+	bandfaces[9]=4;
+	bandfaces[10]=1;
+	bandfaces[11]=5;
+	for (i=0; i<5; i++)
+	{
+		//band
+		int v=i*4+2;
+		if (i!=4)
 		{
-			//setup control surface
-			airfoilpos[56]=controlratio;
-			airfoilpos[56+3]=controlratio;
-			airfoilpos[56+6]=controlratio;
-			airfoilpos[56+9]=controlratio;
+			bandfaces[i*12+12]=v;
+			bandfaces[i*12+13]=v+4;
+			bandfaces[i*12+14]=v+1;
 
-			airfoilpos[55]=-controlratio+1.5;
-			airfoilpos[55+3]=-controlratio+1.5;
-			airfoilpos[55+6]=controlratio-0.5;
-			airfoilpos[55+9]=controlratio-0.5;
-			for (i=0; i<12; i++) airfoilpos[54+12+i]=airfoilpos[54+i];
+			bandfaces[i*12+15]=v+4;
+			bandfaces[i*12+16]=v+5;
+			bandfaces[i*12+17]=v+1;
+
+			bandfaces[i*12+18]=v+2;
+			bandfaces[i*12+19]=v+3;
+			bandfaces[i*12+20]=v+6;
+
+			bandfaces[i*12+21]=v+6;
+			bandfaces[i*12+22]=v+3;
+			bandfaces[i*12+23]=v+7;
 		}
-		/// Create the mesh via the MeshManager
-        msh = MeshManager::getSingleton().createManual(name, ResourceGroupManager::DEFAULT_RESOURCE_GROUP_NAME, new ResourceBuffer());
-
-        /// Create submeshes
-        subface = msh->createSubMesh();
-        subband = msh->createSubMesh();
-		subcup=msh->createSubMesh();
-		subcdn=msh->createSubMesh();
-
-		//materials
-		subface->setMaterialName(texband);
-		subband->setMaterialName(texband);
-		subcup->setMaterialName(texband);
-		subcdn->setMaterialName(texband);
-
-        /// Define the vertices
-        nVertices = 24*2+4+2;
-        vbufCount = (2*3+2)*nVertices;
-		vertices=(float*)malloc(vbufCount*sizeof(float));
-		//shadow
-		shadownorvertices=(float*)malloc(nVertices*(3+2)*sizeof(float));
-		shadowposvertices=(float*)malloc(nVertices*3*2*sizeof(float));
-
-		//textures coordinates
-		covertices[0].texcoord=texlf;
-		covertices[1].texcoord=texrf;
-
-		covertices[2].texcoord=texlf+(texlb-texlf)*0.03;
-		covertices[3].texcoord=texrf+(texrb-texrf)*0.03;
-		covertices[4].texcoord=texlf+(texlb-texlf)*0.03;
-		covertices[5].texcoord=texrf+(texrb-texrf)*0.03;
-
-		covertices[6].texcoord=texlf+(texlb-texlf)*0.10;
-		covertices[7].texcoord=texrf+(texrb-texrf)*0.10;
-		covertices[8].texcoord=texlf+(texlb-texlf)*0.10;
-		covertices[9].texcoord=texrf+(texrb-texrf)*0.10;
-
-		covertices[10].texcoord=texlf+(texlb-texlf)*0.25;
-		covertices[11].texcoord=texrf+(texrb-texrf)*0.25;
-		covertices[12].texcoord=texlf+(texlb-texlf)*0.25;
-		covertices[13].texcoord=texrf+(texrb-texrf)*0.25;
-
-		covertices[14].texcoord=texlf+(texlb-texlf)*0.45;
-		covertices[15].texcoord=texrf+(texrb-texrf)*0.45;
-		covertices[16].texcoord=texlf+(texlb-texlf)*0.45;
-		covertices[17].texcoord=texrf+(texrb-texrf)*0.45;
-
-		covertices[18].texcoord=texlf+(texlb-texlf)*airfoilpos[56];
-		covertices[19].texcoord=texrf+(texrb-texrf)*airfoilpos[56];
-		covertices[20].texcoord=texlf+(texlb-texlf)*airfoilpos[56];
-		covertices[21].texcoord=texrf+(texrb-texrf)*airfoilpos[56];
-
-		covertices[22].texcoord=covertices[18].texcoord;
-		covertices[23].texcoord=covertices[19].texcoord;
-		covertices[24].texcoord=covertices[20].texcoord;
-		covertices[25].texcoord=covertices[21].texcoord;
-
-		covertices[26].texcoord=texlb;
-		covertices[27].texcoord=texrb;
-		covertices[28].texcoord=texlb;
-		covertices[29].texcoord=texrb;
-
-		for (i=0; i<24; i++) covertices[i+30].texcoord=covertices[i].texcoord;
-
-		/// Define triangles
-        /// The values in this table refer to vertices in the above table
-        bandibufCount = 3*20;
-        faceibufCount = 3*20;
-		cupibufCount=3*2;
-		cdnibufCount=3*2;
-        facefaces=(unsigned short*)malloc(faceibufCount*sizeof(unsigned short));
-        bandfaces=(unsigned short*)malloc(bandibufCount*sizeof(unsigned short));
-        cupfaces=(unsigned short*)malloc(cupibufCount*sizeof(unsigned short));
-        cdnfaces=(unsigned short*)malloc(cdnibufCount*sizeof(unsigned short));
-		
-		//attack
-		bandfaces[0]=0;
-		bandfaces[1]=2;
-		bandfaces[2]=1;
-
-		bandfaces[3]=2;
-		bandfaces[4]=3;
-		bandfaces[5]=1;
-
-		bandfaces[6]=0;
-		bandfaces[7]=1;
-		bandfaces[8]=4;
-
-		bandfaces[9]=4;
-		bandfaces[10]=1;
-		bandfaces[11]=5;
-		for (i=0; i<5; i++)
-		{
-			//band
-			int v=i*4+2;
-			if (i!=4)
-			{
-				bandfaces[i*12+12]=v;
-				bandfaces[i*12+13]=v+4;
-				bandfaces[i*12+14]=v+1;
-
-				bandfaces[i*12+15]=v+4;
-				bandfaces[i*12+16]=v+5;
-				bandfaces[i*12+17]=v+1;
-
-				bandfaces[i*12+18]=v+2;
-				bandfaces[i*12+19]=v+3;
-				bandfaces[i*12+20]=v+6;
-
-				bandfaces[i*12+21]=v+6;
-				bandfaces[i*12+22]=v+3;
-				bandfaces[i*12+23]=v+7;
-			}
 /*			if (i==4)
-			{
-				bandfaces[i*12+20]=v+4;
-				bandfaces[i*12+21]=v+4;
-				bandfaces[i*12+23]=v+5;
-			}
+		{
+			bandfaces[i*12+20]=v+4;
+			bandfaces[i*12+21]=v+4;
+			bandfaces[i*12+23]=v+5;
+		}
 */
 
-			//sides
+		//sides
+		facefaces[i*12]=30+0;
+		facefaces[i*12+1]=30+v+4;
+		facefaces[i*12+2]=30+v;
+
+		facefaces[i*12+3]=30+0;
+		facefaces[i*12+4]=30+v+2;
+		facefaces[i*12+5]=30+v+6;
+
+		facefaces[i*12+6]=30+1;
+		facefaces[i*12+7]=30+v+1;
+		facefaces[i*12+8]=30+v+5;
+
+		facefaces[i*12+9]=30+1;
+		facefaces[i*12+10]=30+v+7;
+		facefaces[i*12+11]=30+v+3;
+		if (i==4)
+		{
+//				facefaces[i*12+5]=20+v+4;
+//				facefaces[i*12+10]=20+v+5;
 			facefaces[i*12]=30+0;
-			facefaces[i*12+1]=30+v+4;
+			facefaces[i*12+1]=30+v+2;
 			facefaces[i*12+2]=30+v;
 
-			facefaces[i*12+3]=30+0;
-			facefaces[i*12+4]=30+v+2;
-			facefaces[i*12+5]=30+v+6;
+			facefaces[i*12+3]=30+v+4;
+			facefaces[i*12+4]=30+v;
+			facefaces[i*12+5]=30+v+2;
 
 			facefaces[i*12+6]=30+1;
 			facefaces[i*12+7]=30+v+1;
-			facefaces[i*12+8]=30+v+5;
+			facefaces[i*12+8]=30+v+3;
 
-			facefaces[i*12+9]=30+1;
-			facefaces[i*12+10]=30+v+7;
-			facefaces[i*12+11]=30+v+3;
-			if (i==4)
-			{
-//				facefaces[i*12+5]=20+v+4;
-//				facefaces[i*12+10]=20+v+5;
-				facefaces[i*12]=30+0;
-				facefaces[i*12+1]=30+v+2;
-				facefaces[i*12+2]=30+v;
-
-				facefaces[i*12+3]=30+v+4;
-				facefaces[i*12+4]=30+v;
-				facefaces[i*12+5]=30+v+2;
-
-				facefaces[i*12+6]=30+1;
-				facefaces[i*12+7]=30+v+1;
-				facefaces[i*12+8]=30+v+3;
-
-				facefaces[i*12+9]=30+v+5;
-				facefaces[i*12+10]=30+v+3;
-				facefaces[i*12+11]=30+v+1;
-			}
-
+			facefaces[i*12+9]=30+v+5;
+			facefaces[i*12+10]=30+v+3;
+			facefaces[i*12+11]=30+v+1;
 		}
-		cupfaces[0]=22;
-		cupfaces[1]=26;
-		cupfaces[2]=23;
-		cupfaces[3]=26;
-		cupfaces[4]=27;
-		cupfaces[5]=23;
 
-		cdnfaces[0]=24;
-		cdnfaces[1]=25;
-		cdnfaces[2]=29;
-		cdnfaces[3]=24;
-		cdnfaces[4]=29;
-		cdnfaces[5]=28;
+	}
+	cupfaces[0]=22;
+	cupfaces[1]=26;
+	cupfaces[2]=23;
+	cupfaces[3]=26;
+	cupfaces[4]=27;
+	cupfaces[5]=23;
 
-		float tsref=2.0*(nodes[nfrd].RelPosition-nodes[nfld].RelPosition).crossProduct(nodes[nbld].RelPosition-nodes[nfld].RelPosition).length();
-		sref=2.0*(nodes[nfrd].RelPosition-nodes[nfld].RelPosition).crossProduct(nodes[nbrd].RelPosition-nodes[nfrd].RelPosition).length();
-		if (tsref>sref) sref=tsref;
-		sref=sref*sref;
+	cdnfaces[0]=24;
+	cdnfaces[1]=25;
+	cdnfaces[2]=29;
+	cdnfaces[3]=24;
+	cdnfaces[4]=29;
+	cdnfaces[5]=28;
 
-		lratio=(nodes[nfld].RelPosition-nodes[nflu].RelPosition).length()/(nodes[nfld].RelPosition-nodes[nbld].RelPosition).length();
-		rratio=(nodes[nfrd].RelPosition-nodes[nfru].RelPosition).length()/(nodes[nfrd].RelPosition-nodes[nbrd].RelPosition).length();
+	float tsref=2.0*(nodes[nfrd].RelPosition-nodes[nfld].RelPosition).crossProduct(nodes[nbld].RelPosition-nodes[nfld].RelPosition).length();
+	sref=2.0*(nodes[nfrd].RelPosition-nodes[nfld].RelPosition).crossProduct(nodes[nbrd].RelPosition-nodes[nfrd].RelPosition).length();
+	if (tsref>sref) sref=tsref;
+	sref=sref*sref;
 
-		thickness=(nodes[nfld].RelPosition-nodes[nflu].RelPosition).length();
+	lratio=(nodes[nfld].RelPosition-nodes[nflu].RelPosition).length()/(nodes[nfld].RelPosition-nodes[nbld].RelPosition).length();
+	rratio=(nodes[nfrd].RelPosition-nodes[nfru].RelPosition).length()/(nodes[nfrd].RelPosition-nodes[nbrd].RelPosition).length();
 
-		//update coords
-		updateVertices();
+	thickness=(nodes[nfld].RelPosition-nodes[nflu].RelPosition).length();
 
-		/// Create vertex data structure for 8 vertices shared between submeshes
-        msh->sharedVertexData = new VertexData();
-        msh->sharedVertexData->vertexCount = nVertices;
+	//update coords
+	updateVertices();
 
-        /// Create declaration (memory format) of vertex data
-        decl = msh->sharedVertexData->vertexDeclaration;
-        size_t offset = 0;
-        decl->addElement(0, offset, VET_FLOAT3, VES_POSITION);
-        offset += VertexElement::getTypeSize(VET_FLOAT3);
-        decl->addElement(0, offset, VET_FLOAT3, VES_NORMAL);
-        offset += VertexElement::getTypeSize(VET_FLOAT3);
+	/// Create vertex data structure for 8 vertices shared between submeshes
+    msh->sharedVertexData = new VertexData();
+    msh->sharedVertexData->vertexCount = nVertices;
+
+    /// Create declaration (memory format) of vertex data
+    decl = msh->sharedVertexData->vertexDeclaration;
+    size_t offset = 0;
+    decl->addElement(0, offset, VET_FLOAT3, VES_POSITION);
+    offset += VertexElement::getTypeSize(VET_FLOAT3);
+    decl->addElement(0, offset, VET_FLOAT3, VES_NORMAL);
+    offset += VertexElement::getTypeSize(VET_FLOAT3);
 //        decl->addElement(0, offset, VET_FLOAT3, VES_DIFFUSE);
 //        offset += VertexElement::getTypeSize(VET_FLOAT3);
-        decl->addElement(0, offset, VET_FLOAT2, VES_TEXTURE_COORDINATES, 0);
-        offset += VertexElement::getTypeSize(VET_FLOAT2);
+    decl->addElement(0, offset, VET_FLOAT2, VES_TEXTURE_COORDINATES, 0);
+    offset += VertexElement::getTypeSize(VET_FLOAT2);
 
-        /// Allocate vertex buffer of the requested number of vertices (vertexCount) 
-        /// and bytes per vertex (offset)
-        vbuf = 
-          HardwareBufferManager::getSingleton().createVertexBuffer(
-              offset, msh->sharedVertexData->vertexCount, HardwareBuffer::HBU_DYNAMIC_WRITE_ONLY_DISCARDABLE);
+    /// Allocate vertex buffer of the requested number of vertices (vertexCount) 
+    /// and bytes per vertex (offset)
+    vbuf = 
+      HardwareBufferManager::getSingleton().createVertexBuffer(
+          offset, msh->sharedVertexData->vertexCount, HardwareBuffer::HBU_DYNAMIC_WRITE_ONLY_DISCARDABLE);
 
-        /// Upload the vertex data to the card
-        vbuf->writeData(0, vbuf->getSizeInBytes(), vertices, true);
+    /// Upload the vertex data to the card
+    vbuf->writeData(0, vbuf->getSizeInBytes(), vertices, true);
 
-        /// Set vertex buffer binding so buffer 0 is bound to our vertex buffer
-        VertexBufferBinding* bind = msh->sharedVertexData->vertexBufferBinding; 
-        bind->setBinding(0, vbuf);
+    /// Set vertex buffer binding so buffer 0 is bound to our vertex buffer
+    VertexBufferBinding* bind = msh->sharedVertexData->vertexBufferBinding; 
+    bind->setBinding(0, vbuf);
 
-        //for the face
-		/// Allocate index buffer of the requested number of vertices (ibufCount) 
-        HardwareIndexBufferSharedPtr faceibuf = HardwareBufferManager::getSingleton().
-         createIndexBuffer(
-             HardwareIndexBuffer::IT_16BIT, 
-                faceibufCount, 
-                HardwareBuffer::HBU_STATIC_WRITE_ONLY);
+    //for the face
+	/// Allocate index buffer of the requested number of vertices (ibufCount) 
+    HardwareIndexBufferSharedPtr faceibuf = HardwareBufferManager::getSingleton().
+     createIndexBuffer(
+         HardwareIndexBuffer::IT_16BIT, 
+            faceibufCount, 
+            HardwareBuffer::HBU_STATIC_WRITE_ONLY);
 
-        /// Upload the index data to the card
-        faceibuf->writeData(0, faceibuf->getSizeInBytes(), facefaces, true);
+    /// Upload the index data to the card
+    faceibuf->writeData(0, faceibuf->getSizeInBytes(), facefaces, true);
 
-        /// Set parameters of the submesh
-        subface->useSharedVertices = true;
-        subface->indexData->indexBuffer = faceibuf;
-        subface->indexData->indexCount = faceibufCount;
-        subface->indexData->indexStart = 0;
+    /// Set parameters of the submesh
+    subface->useSharedVertices = true;
+    subface->indexData->indexBuffer = faceibuf;
+    subface->indexData->indexCount = faceibufCount;
+    subface->indexData->indexStart = 0;
 
-        //for the band
-		/// Allocate index buffer of the requested number of vertices (ibufCount) 
-        HardwareIndexBufferSharedPtr bandibuf = HardwareBufferManager::getSingleton().
-         createIndexBuffer(
-             HardwareIndexBuffer::IT_16BIT, 
-                bandibufCount, 
-                HardwareBuffer::HBU_STATIC_WRITE_ONLY);
+    //for the band
+	/// Allocate index buffer of the requested number of vertices (ibufCount) 
+    HardwareIndexBufferSharedPtr bandibuf = HardwareBufferManager::getSingleton().
+     createIndexBuffer(
+         HardwareIndexBuffer::IT_16BIT, 
+            bandibufCount, 
+            HardwareBuffer::HBU_STATIC_WRITE_ONLY);
 
-        /// Upload the index data to the card
-        bandibuf->writeData(0, bandibuf->getSizeInBytes(), bandfaces, true);
+    /// Upload the index data to the card
+    bandibuf->writeData(0, bandibuf->getSizeInBytes(), bandfaces, true);
 
-        /// Set parameters of the submesh
-        subband->useSharedVertices = true;
-        subband->indexData->indexBuffer = bandibuf;
-        subband->indexData->indexCount = bandibufCount;
-        subband->indexData->indexStart = 0;
+    /// Set parameters of the submesh
+    subband->useSharedVertices = true;
+    subband->indexData->indexBuffer = bandibuf;
+    subband->indexData->indexCount = bandibufCount;
+    subband->indexData->indexStart = 0;
 
-        //for the aileron up
-		/// Allocate index buffer of the requested number of vertices (ibufCount) 
-        HardwareIndexBufferSharedPtr cupibuf = HardwareBufferManager::getSingleton().
-         createIndexBuffer(
-             HardwareIndexBuffer::IT_16BIT, 
-                cupibufCount, 
-                HardwareBuffer::HBU_STATIC_WRITE_ONLY);
+    //for the aileron up
+	/// Allocate index buffer of the requested number of vertices (ibufCount) 
+    HardwareIndexBufferSharedPtr cupibuf = HardwareBufferManager::getSingleton().
+     createIndexBuffer(
+         HardwareIndexBuffer::IT_16BIT, 
+            cupibufCount, 
+            HardwareBuffer::HBU_STATIC_WRITE_ONLY);
 
-        /// Upload the index data to the card
-        cupibuf->writeData(0, cupibuf->getSizeInBytes(), cupfaces, true);
+    /// Upload the index data to the card
+    cupibuf->writeData(0, cupibuf->getSizeInBytes(), cupfaces, true);
 
-        /// Set parameters of the submesh
-        subcup->useSharedVertices = true;
-        subcup->indexData->indexBuffer = cupibuf;
-        subcup->indexData->indexCount = cupibufCount;
-        subcup->indexData->indexStart = 0;
+    /// Set parameters of the submesh
+    subcup->useSharedVertices = true;
+    subcup->indexData->indexBuffer = cupibuf;
+    subcup->indexData->indexCount = cupibufCount;
+    subcup->indexData->indexStart = 0;
 
-        //for the aileron down
-		/// Allocate index buffer of the requested number of vertices (ibufCount) 
-        HardwareIndexBufferSharedPtr cdnibuf = HardwareBufferManager::getSingleton().
-         createIndexBuffer(
-             HardwareIndexBuffer::IT_16BIT, 
-                cdnibufCount, 
-                HardwareBuffer::HBU_STATIC_WRITE_ONLY);
+    //for the aileron down
+	/// Allocate index buffer of the requested number of vertices (ibufCount) 
+    HardwareIndexBufferSharedPtr cdnibuf = HardwareBufferManager::getSingleton().
+     createIndexBuffer(
+         HardwareIndexBuffer::IT_16BIT, 
+            cdnibufCount, 
+            HardwareBuffer::HBU_STATIC_WRITE_ONLY);
 
-        /// Upload the index data to the card
-        cdnibuf->writeData(0, cdnibuf->getSizeInBytes(), cdnfaces, true);
+    /// Upload the index data to the card
+    cdnibuf->writeData(0, cdnibuf->getSizeInBytes(), cdnfaces, true);
 
-        /// Set parameters of the submesh
-        subcdn->useSharedVertices = true;
-        subcdn->indexData->indexBuffer = cdnibuf;
-        subcdn->indexData->indexCount = cdnibufCount;
-        subcdn->indexData->indexStart = 0;
-        
-        /// Set bounding information (for culling)
-        msh->_setBounds(AxisAlignedBox(-20,-20,-20,20,20,20), true);
-        //msh->_setBoundingSphereRadius(20.0);
+    /// Set parameters of the submesh
+    subcdn->useSharedVertices = true;
+    subcdn->indexData->indexBuffer = cdnibuf;
+    subcdn->indexData->indexCount = cdnibufCount;
+    subcdn->indexData->indexStart = 0;
+    
+    /// Set bounding information (for culling)
+    msh->_setBounds(AxisAlignedBox(-20,-20,-20,20,20,20), true);
+    //msh->_setBoundingSphereRadius(20.0);
 
-        /// Notify Mesh object that it has been loaded
-//MeshManager::getSingleton().setPrepareAllMeshesForShadowVolumes(false);
-msh->buildEdgeList();
-//msh->prepareForShadowVolume();
-		msh->load();
-//MeshManager::getSingleton().setPrepareAllMeshesForShadowVolumes()
-    }
+    /// Notify Mesh object that it has been loaded
+	//MeshManager::getSingleton().setPrepareAllMeshesForShadowVolumes(false);
+	msh->buildEdgeList();
+	//msh->prepareForShadowVolume();
+	msh->load();
+	//MeshManager::getSingleton().setPrepareAllMeshesForShadowVolumes()
+}
 
 
 Vector3 FlexAirfoil::updateVertices()
 {
-	 int i;
+	int i;
 	Vector3 center;
 	center=nodes[nfld].smoothpos;
 
@@ -743,6 +743,7 @@ void FlexAirfoil::addwash(int propid, float ratio)
 
 void FlexAirfoil::updateForces()
 {
+	if(!airfoil) return;
 	if (broken) return;
 //	if (innan) {LogManager::getSingleton().logMessage("STEP "+StringConverter::toString(innan)+" "+StringConverter::toString(nblu));innan++;}
 	//evaluate wind direction
@@ -862,4 +863,8 @@ void FlexAirfoil::updateForces()
 
 }
 
-
+FlexAirfoil::~FlexAirfoil()
+{
+	if(airfoil) delete airfoil; airfoil=0;
+	if(!msh.isNull()) msh->unload();
+}

@@ -66,7 +66,132 @@ class Beam;
 Beam* threadbeam[MAX_TRUCKS];
 int free_tb=0;
 
-Beam::Beam(int tnum, SceneManager *manager, SceneNode *parent, RenderWindow* win, float *_mapsizex, float *_mapsizez, Real px, Real py, Real pz, Quaternion rot, char* fname, Collisions *icollisions, DustPool *mdust, DustPool *mclump, DustPool *msparks, DustPool *mdrip, DustPool *msplash, DustPool *mripple, HeightFinder *mfinder, Water *w, Camera *pcam, Mirrors *mmirror, bool postload, bool networked, bool networking, collision_box_t *spawnbox, bool ismachine, int _flaresMode, std::vector<Ogre::String> *_truckconfig, SkinPtr skin)
+Beam::~Beam()
+{
+	deleting = true;
+
+	// hide all meshes, prevents deleting stuff while drawing
+	this->setMeshVisibility(false);
+	
+	//block until all threads done
+	if (thread_mode==THREAD_HT)
+	{
+		pthread_mutex_lock(&done_count_mutex);
+		while (done_count>0)
+			pthread_cond_wait(&done_count_cv, &done_count_mutex);
+		pthread_mutex_unlock(&done_count_mutex);
+	}
+
+	// delete all classes we might have constructed
+
+	// destruct and remove every tiny bit of stuff we created :-|
+	if(nettimer) delete nettimer; nettimer=0;
+	if(engine) delete engine; engine=0;
+	if(buoyance) delete buoyance; buoyance=0;
+	if(autopilot) delete autopilot;
+	if(fuseAirfoil) delete fuseAirfoil;
+	if(cabMesh) delete cabMesh;
+	if(materialFunctionMapper) delete materialFunctionMapper;
+	if(replay) delete replay;
+	// delete skidmarks as well?!
+
+	// delete wings
+	for(int i=0; i<free_wing;i++)
+	{
+		// flexAirfoil, airfoil
+		if(wings[i].fa) delete wings[i].fa; wings[i].fa=0;
+		if(wings[i].cnode) wings[i].cnode->removeAndDestroyAllChildren();
+	}
+
+	// delete aeroengines
+	for(int i=0; i<free_aeroengine;i++)
+	{
+		if(aeroengines[i]) delete aeroengines[i];
+	}
+
+	// delete screwprops
+	for(int i=0; i<free_screwprop;i++)
+	{
+		if(screwprops[i]) delete screwprops[i];
+	}
+
+	// delete airbrakes
+	for(int i=0; i<free_airbrake;i++)
+	{
+		if(airbrakes[i]) delete airbrakes[i];
+	}
+
+	// delete flexbodies
+	for(int i=0; i<free_flexbody;i++)
+	{
+		if(flexbodies[i]) delete flexbodies[i];
+	}
+
+
+	// delete meshwheels
+	for(int i=0; i<free_wheel;i++)
+	{
+		if(vwheels[i].fm) delete vwheels[i].fm;
+		if(vwheels[i].cnode) vwheels[i].cnode->removeAndDestroyAllChildren();
+	}
+
+	// delete props
+	for(int i=0; i<free_prop;i++)
+	{
+		if(props[i].bbsnode[0]) props[i].bbsnode[0]->removeAndDestroyAllChildren();
+		if(props[i].bbsnode[1]) props[i].bbsnode[1]->removeAndDestroyAllChildren();
+		if(props[i].bbsnode[2]) props[i].bbsnode[2]->removeAndDestroyAllChildren();
+		if(props[i].bbsnode[3]) props[i].bbsnode[3]->removeAndDestroyAllChildren();
+		if(props[i].snode) props[i].snode->removeAndDestroyAllChildren();
+		if(props[i].wheel) props[i].wheel->removeAndDestroyAllChildren();
+		if(props[i].light[0]) tsm->destroyLight(props[i].light[0]);
+		if(props[i].light[1]) tsm->destroyLight(props[i].light[1]);
+		if(props[i].light[2]) tsm->destroyLight(props[i].light[2]);
+		if(props[i].light[3]) tsm->destroyLight(props[i].light[3]);
+	}
+
+	// delete flares
+	for (int i=0; i<free_flare; i++)
+	{
+		if(flares[i].snode) flares[i].snode->removeAndDestroyAllChildren();
+		if(flares[i].light) tsm->destroyLight(flares[i].light);
+
+	}
+
+	// delete exhausts
+	for(std::vector < exhaust_t >::iterator it=exhausts.begin(); it!=exhausts.end(); it++)
+	{
+		if(it->smokeNode) it->smokeNode->removeAndDestroyAllChildren();
+		if(it->smoker)
+		{
+			it->smoker->removeAllAffectors();
+			it->smoker->removeAllEmitters();
+			tsm->destroyParticleSystem(it->smoker);
+		}
+	}
+
+	// delete cparticles
+	for (int i=0; i<free_cparticle; i++)
+	{
+		if(cparticles[free_cparticle].snode) cparticles[free_cparticle].snode->removeAndDestroyAllChildren();
+		if(cparticles[free_cparticle].psys)
+		{
+			cparticles[free_cparticle].psys->removeAllAffectors();
+			cparticles[free_cparticle].psys->removeAllEmitters();
+			tsm->destroyParticleSystem(cparticles[free_cparticle].psys);
+		}
+
+	}
+
+	// delete beams
+	for (int i=0; i<free_beam; i++)
+	{
+		if(beams[i].mSceneNode) beams[i].mSceneNode->removeAndDestroyAllChildren();
+	}
+
+}
+
+Beam::Beam(int tnum, SceneManager *manager, SceneNode *parent, RenderWindow* win, float *_mapsizex, float *_mapsizez, Real px, Real py, Real pz, Quaternion rot, char* fname, Collisions *icollisions, DustPool *mdust, DustPool *mclump, DustPool *msparks, DustPool *mdrip, DustPool *msplash, DustPool *mripple, HeightFinder *mfinder, Water *w, Camera *pcam, Mirrors *mmirror, bool postload, bool networked, bool networking, collision_box_t *spawnbox, bool ismachine, int _flaresMode, std::vector<Ogre::String> *_truckconfig, SkinPtr skin) : deleting(false)
 {
 	usedSkin = skin;
 	LogManager::getSingleton().logMessage("BEAM: loading new truck: " + String(fname));
@@ -4791,6 +4916,7 @@ void Beam::threadentry(int id)
 			int t;
 			for (t=0; t<numtrucks; t++)
 			{
+				if(!trucks[t]) continue;
 				//engine update
 				//				if (trucks[t]->engine) trucks[t]->engine->update(dt/(Real)steps, i==0);
 				if (trucks[t]->state!=SLEEPING && trucks[t]->state!=NETWORKED && trucks[t]->state!=RECYCLE)
@@ -4876,12 +5002,18 @@ bool Beam::frameStep(Real dt, Beam** trucks, int numtrucks)
 		{
 			ttdt=tdt;
 			tdt=dt;
-			for (t=0; t<numtrucks; t++) {trucks[t]->lastlastposition=trucks[t]->lastposition;trucks[t]->lastposition=trucks[t]->position;}
+			for (t=0; t<numtrucks; t++)
+			{
+				if(!trucks[t]) continue;
+				trucks[t]->lastlastposition=trucks[t]->lastposition;
+				trucks[t]->lastposition=trucks[t]->position;
+			}
 			for (i=0; i<steps; i++)
 			{
 				int t;
 				for (t=0; t<numtrucks; t++)
 				{
+					if(!trucks[t]) continue;
 					//engine update
 					//							if (trucks[t]->engine) trucks[t]->engine->update(dt/(Real)steps, i==0);
 					if (trucks[t]->state!=SLEEPING && trucks[t]->state!=NETWORKED && trucks[t]->state!=RECYCLE)
@@ -4894,6 +5026,7 @@ bool Beam::frameStep(Real dt, Beam** trucks, int numtrucks)
 			//smooth
 			for (t=0; t<numtrucks; t++)
 			{
+				if(!trucks[t]) continue;
 				if (trucks[t]->reset_requested) trucks[t]->SyncReset();
 				if (trucks[t]->state!=SLEEPING && trucks[t]->state!=NETWORKED && trucks[t]->state!=RECYCLE)
 				{
@@ -4925,11 +5058,17 @@ bool Beam::frameStep(Real dt, Beam** trucks, int numtrucks)
 				pthread_cond_wait(&done_count_cv, &done_count_mutex);
 			pthread_mutex_unlock(&done_count_mutex);
 
-			for (t=0; t<numtrucks; t++) {trucks[t]->lastlastposition=trucks[t]->lastposition;trucks[t]->lastposition=trucks[t]->position;}
+			for (t=0; t<numtrucks; t++)
+			{
+				if(!trucks[t]) continue;
+				trucks[t]->lastlastposition=trucks[t]->lastposition;
+				trucks[t]->lastposition=trucks[t]->position;
+			}
 
 			//smooth
 			for (t=0; t<numtrucks; t++)
 			{
+				if (!trucks[t]) continue;
 				if (trucks[t]->reset_requested) trucks[t]->SyncReset();
 				if (trucks[t]->state!=SLEEPING && trucks[t]->state!=NETWORKED && trucks[t]->state!=RECYCLE)
 				{
@@ -4979,6 +5118,7 @@ bool Beam::frameStep(Real dt, Beam** trucks, int numtrucks)
 		//we must take care of this
 		for (t=0; t<numtrucks; t++)
 		{
+			if(!trucks[t]) continue;
 			//synchronous sleep
 			if (trucks[t]->state==GOSLEEP) trucks[t]->state=SLEEPING;
 			if (trucks[t]->state==DESACTIVATED)
@@ -5007,6 +5147,9 @@ void Beam::prepareShutdown()
 
 void Beam::calcForcesEuler(int doUpdate, Real dt, int step, int maxstep, Beam** trucks, int numtrucks)
 {
+	// do not calc anything if we are going to get deleted
+	if(deleting) return;
+
 	int i,j;
 	if (dt==0.0) return;
 	if (reset_requested) return;
@@ -5022,7 +5165,8 @@ void Beam::calcForcesEuler(int doUpdate, Real dt, int step, int maxstep, Beam** 
 		if(statistics)
 			statistics->queryStart(BeamThreadStats::TruckEngine);
 #endif
-		engine->update(dt, doUpdate);
+		if(engine)
+			engine->update(dt, doUpdate);
 #ifdef TIMING
 		if(statistics)
 			statistics->queryStop(BeamThreadStats::TruckEngine);
@@ -5795,7 +5939,7 @@ void Beam::calcForcesEuler(int doUpdate, Real dt, int step, int maxstep, Beam** 
 #endif
 	//turboprop forces
 	for (i=0; i<free_aeroengine; i++)
-		aeroengines[i]->updateForces(dt, doUpdate);
+		if(aeroengines[i]) aeroengines[i]->updateForces(dt, doUpdate);
 #ifdef TIMING
 	if(statistics)
 		statistics->queryStop(BeamThreadStats::Turboprop);
@@ -5805,7 +5949,7 @@ void Beam::calcForcesEuler(int doUpdate, Real dt, int step, int maxstep, Beam** 
 #endif
 	//screwprop forces
 	for (i=0; i<free_screwprop; i++)
-		screwprops[i]->updateForces(doUpdate);
+		if(screwprops[i]) screwprops[i]->updateForces(doUpdate);
 #ifdef TIMING
 	if(statistics)
 		statistics->queryStop(BeamThreadStats::Screwprop);
@@ -5814,7 +5958,7 @@ void Beam::calcForcesEuler(int doUpdate, Real dt, int step, int maxstep, Beam** 
 #endif
 	//wing forces
 	for (i=0; i<free_wing; i++)
-		wings[i].fa->updateForces();
+		if(wings[i].fa) wings[i].fa->updateForces();
 #ifdef TIMING
 	if(statistics)
 		statistics->queryStop(BeamThreadStats::Wing);
@@ -5927,6 +6071,7 @@ void Beam::calcForcesEuler(int doUpdate, Real dt, int step, int maxstep, Beam** 
 				int t;
 				for (t=0; t<numtrucks; t++)
 				{
+					if(!trucks[t]) continue;
 					if (trucks[t]->state==SLEEPING || trucks[t]->state==RECYCLE) continue;
 					if (trucks[t]->state==NETWORKED)
 					{
@@ -5981,6 +6126,7 @@ void Beam::calcForcesEuler(int doUpdate, Real dt, int step, int maxstep, Beam** 
 				int colltype=0;
 				for (t=0; t<numtrucks; t++)
 				{
+					if (!trucks[t]) continue;
 					if (trucks[t]->state==SLEEPING || trucks[t]->state==RECYCLE) continue;
 					if (trucks[t]->state==NETWORKED)
 					{
@@ -6343,6 +6489,8 @@ float torques[MAX_WHEELS];
 	{
 		int i,j;
 		for (i=0; i<numtrucks; i++)
+		{
+			if(!trucks[i]) continue;
 			if (trucks[i]->state==DESACTIVATED && trucks[i]->importcommands)
 			{
 				// forward commands
@@ -6363,6 +6511,7 @@ float torques[MAX_WHEELS];
 					//	lockTruck->setCustomLight(k, getCustomLight(k));
 				}
 			}
+		}
 	}
 
 #ifdef TIMING
@@ -6820,7 +6969,10 @@ void Beam::lightsToggle(Beam** trucks, int trucksnum)
 	{
 		int i;
 		for (i=0; i<trucksnum; i++)
+		{
+			if(!trucks[i]) continue;
 			if (trucks[i]->state==DESACTIVATED && trucks[i]->importcommands) trucks[i]->lightsToggle(trucks, trucksnum);
+		}
 	}
 	lights=!lights;
 	if(cablight && cablightNode && isInside)
@@ -7757,7 +7909,10 @@ void Beam::tieToggle(Beam** trucks, int trucksnum)
 	{
 		int i;
 		for (i=0; i<trucksnum; i++)
+		{
+			if(!trucks[i]) continue;
 			if (trucks[i]->state==DESACTIVATED && trucks[i]->importcommands) trucks[i]->tieToggle(trucks, trucksnum);
+		}
 	}
 	int i;
 	if (tied)
@@ -7776,6 +7931,7 @@ void Beam::tieToggle(Beam** trucks, int trucksnum)
 			int j,t;
 			for (t=0; t<trucksnum; t++)
 			{
+				if(!trucks[t]) continue;
 				if (trucks[t]->state==SLEEPING) continue;
 				for (j=0; j<trucks[t]->free_ropable; j++)
 				{
@@ -7827,6 +7983,7 @@ void Beam::lockToggle(Beam** trucks, int trucksnum)
 				int i,t;
 				for (t=0; t<trucksnum; t++)
 				{
+					if(!trucks[t]) continue;
 					if (trucks[t]->state==SLEEPING || trucks[t]->state==RECYCLE) continue;
 					for (i=0; i<trucks[t]->free_node; i++)
 					{
@@ -7864,6 +8021,7 @@ void Beam::lockToggle(Beam** trucks, int trucksnum)
 			int i,t;
 			for (t=0; t<trucksnum; t++)
 			{
+				if(!trucks[t]) continue;
 				if (trucks[t]->state==SLEEPING) continue;
 				for (i=0; i<trucks[t]->free_node; i++)
 				{
@@ -7892,6 +8050,7 @@ void Beam::lockToggle(Beam** trucks, int trucksnum)
 			//for each truck
 			for (t=0; t<trucksnum; t++)
 			{
+				if(!trucks[t]) continue;
 				if (trucks[t]->state==SLEEPING) continue;
 				//for each ropable
 				for (j=0; j<trucks[t]->free_ropable; j++)

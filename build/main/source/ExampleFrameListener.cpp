@@ -473,6 +473,7 @@ void ExampleFrameListener::updateGUI(float dt)
 	{
 		for (int i=0; i<free_truck; i++)
 		{
+			if(!trucks[i]) continue;
 			MapEntity *e = bigMap->getEntityByName("Truck"+StringConverter::toString(i));
 			if(!e)
 				continue;
@@ -917,6 +918,7 @@ void ExampleFrameListener::setGravity(float value)
 	gravity = value;
 	for (int t=0; t<eflsingleton->free_truck; t++)
 	{
+		if(!eflsingleton->trucks[t]) continue;
 		eflsingleton->trucks[t]->recalc_masses();
 	}
 }
@@ -3394,6 +3396,22 @@ bool ExampleFrameListener::updateEvents(float dt)
 				}
 				//COMMON KEYS
 
+				if (INPUTENGINE.getEventBoolValue("COMMON_TRUCK_REMOVE") && mTimeUntilNextToggle <= 0)
+				{
+					if(current_truck != -1)
+					{
+						// whoohooo :p
+						// RoR history if that works ... :|
+						// first, exit any truck
+						int truck_to_delete = current_truck;
+						setCurrentTruck(-1);
+						// then delete the class
+						delete trucks[truck_to_delete];
+						// then set the array to zero, so it wont be used anymore
+						trucks[truck_to_delete] = 0;
+					}
+					mTimeUntilNextToggle = 0.2;
+				}
 
 				if (INPUTENGINE.getEventBoolValue("COMMON_LOCK") && mTimeUntilNextToggle <= 0)
 				{
@@ -3917,6 +3935,7 @@ bool ExampleFrameListener::updateEvents(float dt)
 				int minindex=-1;
 				for (i=0; i<free_truck; i++)
 				{
+					if (!trucks[i]) continue;
 					if (!trucks[i]->driveable)
 
 						continue;
@@ -5893,7 +5912,11 @@ void ExampleFrameListener::setCurrentTruck(int v)
 		ssm->trigStop(previous_truck, SS_TRIG_AIR);
 		ssm->trigStop(previous_truck, SS_TRIG_PUMP);
 		int t;
-		for (t=0; t<free_truck; t++) {trucks[t]->sleepcount=9;} //make trucks synchronous
+		for (t=0; t<free_truck; t++)
+		{
+			if(!trucks[t]) continue;
+			trucks[t]->sleepcount=9;
+		} //make trucks synchronous
 		//lastangle=0;
 		camRotX=0;
 		camRotY=Degree(12);
@@ -6326,6 +6349,7 @@ void ExampleFrameListener::moveCamera(float dt)
 	int i;
 	for (i=0; i<free_truck; i++)
 	{
+		if(!trucks[i]) continue;
 		trucks[i]->setDetailLevel((mCamera->getPosition()-trucks[i]->getPosition()).length()>trucks[i]->fadeDist);
 	}
 	//envmap
@@ -6664,6 +6688,7 @@ bool ExampleFrameListener::frameStarted(const FrameEvent& evt)
 	{
 		for (t=0; t<free_truck; t++)
 		{
+			if(!trucks[t]) continue;
 			if (trucks[t]->state!=SLEEPING && trucks[t]->loading_finished) trucks[t]->updateVisual(dt);
 			//trucks[t]->updateFlares();
 		}
@@ -6738,6 +6763,7 @@ bool ExampleFrameListener::frameStarted(const FrameEvent& evt)
 			//put to sleep
 			for (int t=0; t<free_truck; t++)
 			{
+				if(!trucks[t]) continue;
 				if (trucks[t]->state==MAYSLEEP)
 				{
 					bool sleepyList[MAX_TRUCKS];
@@ -6745,7 +6771,12 @@ bool ExampleFrameListener::frameStarted(const FrameEvent& evt)
 					if (!checkForActive(t, sleepyList))
 					{
 						//no active truck in the set, put everybody to sleep
-						for (int i=0; i<free_truck; i++) if (sleepyList[i]) trucks[i]->state=GOSLEEP;
+						for (int i=0; i<free_truck; i++)
+						{
+							if(!trucks[i]) continue;
+							if (sleepyList[i]) 
+								trucks[i]->state=GOSLEEP;
+						}
 					}
 				}
 			}
@@ -6755,15 +6786,28 @@ bool ExampleFrameListener::frameStarted(const FrameEvent& evt)
 		int t;
 		bool rollmode=false;
 		for (t=0; t<free_truck; t++)
+		{
+			if(!trucks[t]) continue;
 			trucks[t]->updateFlares(dt, (t==current_truck) );
-		for (t=0; t<free_truck; t++) if (trucks[t]->state!=SLEEPING) rollmode=rollmode || trucks[t]->wheel_contact_requested;
-		for (t=0; t<free_truck; t++) trucks[t]->requires_wheel_contact=rollmode;// && !trucks[t]->wheel_contact_requested;
+		}
+		for (t=0; t<free_truck; t++) 
+		{
+			if(!trucks[t]) continue;
+			if (trucks[t]->state!=SLEEPING) 
+				rollmode=rollmode || trucks[t]->wheel_contact_requested;
+		}
+		for (t=0; t<free_truck; t++) 
+		{
+			if(!trucks[t]) continue;
+			trucks[t]->requires_wheel_contact=rollmode;// && !trucks[t]->wheel_contact_requested;
+		}
 		//we simulate one truck, it will take care of the others (except networked ones)
 		//this is the big "shaker"
 		if (current_truck!=-1) trucks[current_truck]->frameStep(evt.timeSinceLastFrame, trucks, free_truck);
 		//things always on
 		for (t=0; t<free_truck; t++)
 		{
+			if(!trucks[t]) continue;
 			//networked trucks must be taken care of
 			if (trucks[t]->state==NETWORKED) trucks[t]->calcNetwork();
 			//the flares are always on
@@ -6804,6 +6848,7 @@ bool ExampleFrameListener::frameStarted(const FrameEvent& evt)
 				bool recy=false;
 				for (int t=0; t<free_truck; t++)
 				{
+					if(!trucks[t]) continue;
 					if (trucks[t]->state==RECYCLE && trucks[t]->realtruckfilename == String(name))
 					{
 						recy=true;
@@ -6882,6 +6927,7 @@ void ExampleFrameListener::recursiveActivation(int j)
 	int i;
 	for (i=0; i<free_truck; i++)
 	{
+		if(!trucks[i]) continue;
 		if ((trucks[i]->state==SLEEPING || trucks[i]->state==MAYSLEEP || trucks[i]->state==GOSLEEP ||(trucks[i]->state==DESACTIVATED && trucks[i]->sleepcount>=5)) &&
 			((trucks[j]->minx<trucks[i]->minx && trucks[i]->minx<trucks[j]->maxx) || (trucks[j]->minx<trucks[i]->maxx && trucks[i]->maxx<trucks[j]->maxx) || (trucks[i]->minx<trucks[j]->maxx && trucks[j]->maxx<trucks[i]->maxx)) &&
 			((trucks[j]->miny<trucks[i]->miny && trucks[i]->miny<trucks[j]->maxy) || (trucks[j]->miny<trucks[i]->maxy && trucks[i]->maxy<trucks[j]->maxy) || (trucks[i]->miny<trucks[j]->maxy && trucks[j]->maxy<trucks[i]->maxy)) &&
@@ -6902,6 +6948,7 @@ bool ExampleFrameListener::checkForActive(int j, bool *sleepyList)
 	sleepyList[j]=true;
 	for (i=0; i<free_truck; i++)
 	{
+		if(!trucks[i]) continue;
 		if ( !sleepyList[i] &&
 			((trucks[j]->minx<trucks[i]->minx && trucks[i]->minx<trucks[j]->maxx) || (trucks[j]->minx<trucks[i]->maxx && trucks[i]->maxx<trucks[j]->maxx) || (trucks[i]->minx<trucks[j]->maxx && trucks[j]->maxx<trucks[i]->maxx)) &&
 			((trucks[j]->miny<trucks[i]->miny && trucks[i]->miny<trucks[j]->maxy) || (trucks[j]->miny<trucks[i]->maxy && trucks[i]->maxy<trucks[j]->maxy) || (trucks[i]->miny<trucks[j]->maxy && trucks[j]->maxy<trucks[i]->maxy)) &&
@@ -6996,6 +7043,7 @@ void ExampleFrameListener::showLoad(int type, char* instance, char* box)
 	collision_box_t *spawnbox=collisions->getBox(instance, box);
 	for (int t=0; t<free_truck; t++)
 	{
+		if(!trucks[t]) continue;
 		for (int i=0; i<trucks[t]->free_node; i++)
 		{
 			if (collisions->isInside(trucks[t]->nodes[i].AbsPosition, spawnbox))

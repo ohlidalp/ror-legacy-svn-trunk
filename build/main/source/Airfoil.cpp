@@ -132,6 +132,10 @@ void Airfoil::getparams(float a, float cratio, float cdef, float* ocl, float* oc
 	*/
 }
 
+Airfoil::~Airfoil()
+{
+}
+
 /*
 void Airfoil::dumpcl()
 {

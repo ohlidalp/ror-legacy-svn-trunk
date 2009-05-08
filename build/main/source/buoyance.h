@@ -48,18 +48,20 @@ private:
 public:
 
 	Buoyance(Water *water, DustPool *splash, DustPool *ripple);
+	~Buoyance();
 
-//compute tetrahedron volume
-inline float computeVolume(Vector3 o, Vector3 a, Vector3 b, Vector3 c);
+	//compute tetrahedron volume
+	inline float computeVolume(Vector3 o, Vector3 a, Vector3 b, Vector3 c);
 
-//compute pressure and drag force on a submerged triangle
-Vector3 computePressureForceSub(Vector3 a, Vector3 b, Vector3 c, Vector3 vel, int type);
-//compute pressure and drag forces on a random triangle
-Vector3 computePressureForce(Vector3 a, Vector3 b, Vector3 c, Vector3 vel, int type);
-void computeNodeForce(node_t *a, node_t *b, node_t *c, int doupdate, int type);
+	//compute pressure and drag force on a submerged triangle
+	Vector3 computePressureForceSub(Vector3 a, Vector3 b, Vector3 c, Vector3 vel, int type);
+	
+	//compute pressure and drag forces on a random triangle
+	Vector3 computePressureForce(Vector3 a, Vector3 b, Vector3 c, Vector3 vel, int type);
+	
+	void computeNodeForce(node_t *a, node_t *b, node_t *c, int doupdate, int type);
 
-void setsink(int v);
-
+	void setsink(int v);
 };
 
 
