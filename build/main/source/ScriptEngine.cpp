@@ -271,7 +271,7 @@ void ScriptEngine::init()
 	result = engine->RegisterObjectType("BeamClass", sizeof(Beam), asOBJ_REF); assert_net(result>=0);
 	result = engine->RegisterObjectMethod("BeamClass", "void scaleTruck(float)", asMETHOD(Beam,scaleTruck), asCALL_THISCALL); assert_net(result>=0);
 	result = engine->RegisterObjectMethod("BeamClass", "string &getTruckName()", asMETHOD(Beam,getTruckName), asCALL_THISCALL); assert_net(result>=0);
-	result = engine->RegisterObjectMethod("BeamClass", "void resetPosition(float, float, float, bool, float)", asMETHOD(Beam,resetPosition), asCALL_THISCALL); assert_net(result>=0);
+	result = engine->RegisterObjectMethod("BeamClass", "void resetPosition(float, float, bool, float)", asMETHOD(Beam,resetPosition), asCALL_THISCALL); assert_net(result>=0);
 	result = engine->RegisterObjectMethod("BeamClass", "void setDetailLevel(int)", asMETHOD(Beam,setDetailLevel), asCALL_THISCALL); assert_net(result>=0);
 	result = engine->RegisterObjectMethod("BeamClass", "void showSkeleton(bool, bool)", asMETHOD(Beam,showSkeleton), asCALL_THISCALL); assert_net(result>=0);
 	result = engine->RegisterObjectMethod("BeamClass", "void hideSkeleton(bool)", asMETHOD(Beam,hideSkeleton), asCALL_THISCALL); assert_net(result>=0);
