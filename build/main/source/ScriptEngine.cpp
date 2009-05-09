@@ -29,6 +29,7 @@ along with Rigs of Rods.  If not, see <http://www.gnu.org/licenses/>.
 #include "Beam.h"
 #include "IngameConsole.h"
 #include "CacheSystem.h"
+#include "gui_loader.h"
 
 using namespace Ogre;
 using namespace std;
@@ -460,6 +461,9 @@ void ScriptEngine::init()
 	result = engine->RegisterObjectMethod("GameScriptClass", "BeamClass @getTruckByNum(int)", asMETHOD(GameScript,getTruckByNum), asCALL_THISCALL); assert_net(result>=0);
 	result = engine->RegisterObjectMethod("GameScriptClass", "int getChatFontSize()", asMETHOD(GameScript,getChatFontSize), asCALL_THISCALL); assert_net(result>=0);
 	result = engine->RegisterObjectMethod("GameScriptClass", "void setChatFontSize(int)", asMETHOD(GameScript,setChatFontSize), asCALL_THISCALL); assert_net(result>=0);
+	result = engine->RegisterObjectMethod("GameScriptClass", "void showChooser(const string &in, const string &in, const string &in)", asMETHOD(GameScript,showChooser), asCALL_THISCALL); assert_net(result>=0);
+	result = engine->RegisterObjectMethod("GameScriptClass", "void repairVehicle(const string &in, const string &in)", asMETHOD(GameScript,repairVehicle), asCALL_THISCALL); assert_net(result>=0);
+	result = engine->RegisterObjectMethod("GameScriptClass", "void spawnObject(const string &in, const string &in, float, float, float, float, float, float, const string &in)", asMETHOD(GameScript,spawnObject), asCALL_THISCALL); assert_net(result>=0);
 
 	// class CacheSystem
 	result = engine->RegisterObjectType("CacheSystemClass", sizeof(CacheSystem), asOBJ_REF | asOBJ_NOHANDLE);
@@ -712,6 +716,46 @@ int GameScript::getChatFontSize()
 void GameScript::setChatFontSize(int size)
 {
 	NETCHAT.setFontSize(size);
+}
+
+void GameScript::showChooser(string &type, string &instance, string &box)
+{
+	int ntype=-1;
+	if (type == "vehicle")   ntype = GUI_Loader::LT_Vehicle;
+	if (type == "truck")     ntype = GUI_Loader::LT_Truck;
+	if (type == "car")       ntype = GUI_Loader::LT_Truck;
+	if (type == "boat")      ntype = GUI_Loader::LT_Boat;
+	if (type == "airplane")  ntype = GUI_Loader::LT_Airplane;
+	if (type == "heli")      ntype = GUI_Loader::LT_Heli;
+	if (type == "trailer")   ntype = GUI_Loader::LT_Trailer;
+	if (type == "load")      ntype = GUI_Loader::LT_Load;
+	if (type == "extension") ntype = GUI_Loader::LT_Extension;
+	if (ntype!=-1) 
+		mefl->showLoad(ntype, const_cast<char*>(instance.c_str()), const_cast<char*>(box.c_str()));
+}
+
+void GameScript::repairVehicle(string &instance, string &box)
+{
+	mefl->repairTruck(const_cast<char*>(instance.c_str()), const_cast<char*>(box.c_str()));
+}
+
+
+void GameScript::spawnObject(const std::string &objectName, const std::string instanceName, float px, float py, float pz, float rx, float ry, float rz, const std::string &eventhandler)
+{
+	asIScriptModule *mod=0;
+	try
+	{
+		mod = mse->getEngine()->GetModule("terrainScript", asGM_ONLY_IF_EXISTS);
+	}catch(...)
+	{
+		return;
+	}
+	if(!mod) return;
+	int functionPtr = mod->GetFunctionIdByName(eventhandler.c_str());
+
+	// trying to create the new object
+	SceneNode *bakeNode=mefl->getSceneMgr()->getRootSceneNode()->createChildSceneNode();
+	mefl->loadObject(const_cast<char*>(objectName.c_str()), px, py, pz, rx, ry, rz, bakeNode, const_cast<char*>(instanceName.c_str()), true, functionPtr, const_cast<char*>(objectName.c_str()));
 }
 
 #endif //ANGELSCRIPT

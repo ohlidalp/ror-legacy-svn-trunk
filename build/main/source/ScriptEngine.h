@@ -110,6 +110,8 @@ public:
 	 */
 	void executeString(Ogre::String command);
 
+	asIScriptEngine *getEngine() { return engine; };
+
 protected:
     ExampleFrameListener *mefl;             //!< local Exampleframelistener instance, used as proxy for many functions
     asIScriptEngine *engine;                //!< instance of the scripting engine
@@ -284,6 +286,13 @@ public:
 	 * @param size font size in pixels
 	 */
 	void setChatFontSize(int size);
+
+
+	// new things, not documented yet
+	void showChooser(std::string &type, std::string &instance, std::string &box);
+	void repairVehicle(std::string &instance, std::string &box);
+	void spawnObject(const std::string &objectName, const std::string instanceName, float px, float py, float pz, float rx, float ry, float rz, const std::string &eventhandler);
+
 };
 
 #endif
