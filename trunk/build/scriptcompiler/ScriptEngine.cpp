@@ -4,6 +4,8 @@
 // interfaces
 #include "Beam.h"
 #include "GameScript.h"
+#include "Settings.h"
+#include "Cache.h"
 #include "scriptEvents.h"
 #include <algorithm> //std::replace
 
@@ -330,7 +332,7 @@ void ScriptEngine::init()
 	result = engine->RegisterObjectType("BeamClass", sizeof(Beam), asOBJ_REF); assert(result>=0);
 	result = engine->RegisterObjectMethod("BeamClass", "void scaleTruck(float)", asMETHOD(Beam,scaleTruck), asCALL_THISCALL); assert(result>=0);
 	result = engine->RegisterObjectMethod("BeamClass", "string &getTruckName()", asMETHOD(Beam,getTruckName), asCALL_THISCALL); assert(result>=0);
-	result = engine->RegisterObjectMethod("BeamClass", "void resetPosition(float, float, float, bool, float)", asMETHOD(Beam,resetPosition), asCALL_THISCALL); assert(result>=0);
+	result = engine->RegisterObjectMethod("BeamClass", "void resetPosition(float, float, bool, float)", asMETHOD(Beam,resetPosition), asCALL_THISCALL); assert(result>=0);
 	result = engine->RegisterObjectMethod("BeamClass", "void setDetailLevel(int)", asMETHOD(Beam,setDetailLevel), asCALL_THISCALL); assert(result>=0);
 	result = engine->RegisterObjectMethod("BeamClass", "void showSkeleton(bool, bool)", asMETHOD(Beam,showSkeleton), asCALL_THISCALL); assert(result>=0);
 	result = engine->RegisterObjectMethod("BeamClass", "void hideSkeleton(bool)", asMETHOD(Beam,hideSkeleton), asCALL_THISCALL); assert(result>=0);
@@ -339,6 +341,7 @@ void ScriptEngine::init()
 	result = engine->RegisterObjectMethod("BeamClass", "void setReplayMode(bool)", asMETHOD(Beam,setReplayMode), asCALL_THISCALL); assert(result>=0);
 	result = engine->RegisterObjectMethod("BeamClass", "void resetAutopilot()", asMETHOD(Beam,resetAutopilot), asCALL_THISCALL); assert(result>=0);
 	result = engine->RegisterObjectMethod("BeamClass", "void toggleCustomParticles()", asMETHOD(Beam,toggleCustomParticles), asCALL_THISCALL); assert(result>=0);
+	result = engine->RegisterObjectMethod("BeamClass", "void parkingbrakeToggle()", asMETHOD(Beam,parkingbrakeToggle), asCALL_THISCALL); assert(result>=0);
 	result = engine->RegisterObjectMethod("BeamClass", "float getDefaultDeformation()", asMETHOD(Beam,getDefaultDeformation), asCALL_THISCALL); assert(result>=0);
 	result = engine->RegisterObjectMethod("BeamClass", "int getNodeCount()", asMETHOD(Beam,getNodeCount), asCALL_THISCALL); assert(result>=0);
 	result = engine->RegisterObjectMethod("BeamClass", "float getTotalMass(bool)", asMETHOD(Beam,getTotalMass), asCALL_THISCALL); assert(result>=0);
@@ -354,7 +357,9 @@ void ScriptEngine::init()
 	result = engine->RegisterObjectMethod("BeamClass", "bool getCustomParticleMode()", asMETHOD(Beam,getCustomParticleMode), asCALL_THISCALL); assert(result>=0);
 	result = engine->RegisterObjectMethod("BeamClass", "int getLowestNode()", asMETHOD(Beam,getLowestNode), asCALL_THISCALL); assert(result>=0);
 	result = engine->RegisterObjectMethod("BeamClass", "bool setMeshVisibility(bool)", asMETHOD(Beam,setMeshVisibility), asCALL_THISCALL); assert(result>=0);
-	result = engine->RegisterObjectMethod("BeamClass", "bool getReverseLightVisible()", asMETHOD(Beam,getReverseLightVisible), asCALL_THISCALL); assert(result>=0);
+	result = engine->RegisterObjectMethod("BeamClass", "bool getCustomParticleMode()", asMETHOD(Beam,getCustomParticleMode), asCALL_THISCALL); assert(result>=0);
+	result = engine->RegisterObjectMethod("BeamClass", "bool getCustomParticleMode()", asMETHOD(Beam,getCustomParticleMode), asCALL_THISCALL); assert(result>=0);
+	result = engine->RegisterObjectMethod("BeamClass", "bool getReverseLightVisible()", asMETHOD(Beam,getCustomParticleMode), asCALL_THISCALL); assert(result>=0);
 	result = engine->RegisterObjectMethod("BeamClass", "float getHeadingDirectionAngle()", asMETHOD(Beam,getHeadingDirectionAngle), asCALL_THISCALL); assert(result>=0);
 	result = engine->RegisterObjectProperty("BeamClass", "float brake", offsetof(Beam, brake)); assert(result>=0);
 	result = engine->RegisterObjectProperty("BeamClass", "float currentScale", offsetof(Beam, currentScale)); assert(result>=0);
@@ -430,8 +435,14 @@ void ScriptEngine::init()
 	result = engine->RegisterObjectBehaviour("BeamClass", asBEHAVE_ADDREF, "void f()",asMETHOD(Beam,addRef), asCALL_THISCALL); assert(result>=0);
 	result = engine->RegisterObjectBehaviour("BeamClass", asBEHAVE_RELEASE, "void f()",asMETHOD(Beam,release), asCALL_THISCALL); assert(result>=0);
 
+	// class Settings
+	result = engine->RegisterObjectType("SettingsClass", sizeof(Settings), asOBJ_REF); assert(result>=0);
+	//getSettingScriptSafe != getSetting for docu!
+	result = engine->RegisterObjectMethod("SettingsClass", "string getSetting(const string &in)", asMETHOD(Settings,getSetting), asCALL_THISCALL); assert(result>=0);
+	result = engine->RegisterObjectBehaviour("SettingsClass", asBEHAVE_ADDREF, "void f()",asMETHOD(Settings,addRef), asCALL_THISCALL); assert(result>=0);
+	result = engine->RegisterObjectBehaviour("SettingsClass", asBEHAVE_RELEASE, "void f()",asMETHOD(Settings,release), asCALL_THISCALL); assert(result>=0);
+
 	// class Cache_Entry
-	/*
 	result = engine->RegisterObjectType("Cache_EntryClass", sizeof(Cache_Entry), asOBJ_REF); assert(result>=0);
 	result = engine->RegisterObjectProperty("Cache_EntryClass", "string minitype", offsetof(Cache_Entry, minitype)); assert(result>=0);
 	result = engine->RegisterObjectProperty("Cache_EntryClass", "string fname", offsetof(Cache_Entry, fname)); assert(result>=0);
@@ -493,7 +504,7 @@ void ScriptEngine::init()
 	result = engine->RegisterObjectBehaviour("Cache_EntryClass", asBEHAVE_ADDREF, "void f()",asMETHOD(Cache_Entry,addRef), asCALL_THISCALL); assert(result>=0);
 	result = engine->RegisterObjectBehaviour("Cache_EntryClass", asBEHAVE_RELEASE, "void f()",asMETHOD(Cache_Entry,release), asCALL_THISCALL); assert(result>=0);
 	// TODO: add Cache_Entry::sectionconfigs
-*/
+
 	// todo: add Vector3 classes and other utility classes!
 
 	// class GameScript
@@ -507,30 +518,36 @@ void ScriptEngine::init()
 	result = engine->RegisterObjectMethod("GameScriptClass", "void setWaterHeight(float)", asMETHOD(GameScript,setWaterHeight), asCALL_THISCALL); assert(result>=0);
 	result = engine->RegisterObjectMethod("GameScriptClass", "float getWaterHeight()", asMETHOD(GameScript,getWaterHeight), asCALL_THISCALL); assert(result>=0);
 	result = engine->RegisterObjectMethod("GameScriptClass", "int getCurrentTruckNumber()", asMETHOD(GameScript,getCurrentTruckNumber), asCALL_THISCALL); assert(result>=0);
-	result = engine->RegisterObjectMethod("GameScriptClass", "int getNumTrucks()", asMETHOD(GameScript,getCurrentTruckNumber), asCALL_THISCALL); assert(result>=0);
+	result = engine->RegisterObjectMethod("GameScriptClass", "int getNumTrucks()", asMETHOD(GameScript,getNumTrucks), asCALL_THISCALL); assert(result>=0);
 	result = engine->RegisterObjectMethod("GameScriptClass", "float getGravity()", asMETHOD(GameScript,getGravity), asCALL_THISCALL); assert(result>=0);
 	result = engine->RegisterObjectMethod("GameScriptClass", "void setGravity(float)", asMETHOD(GameScript,setGravity), asCALL_THISCALL); assert(result>=0);
 	result = engine->RegisterObjectMethod("GameScriptClass", "void flashMessage(const string &in, float, float)", asMETHOD(GameScript,flashMessage), asCALL_THISCALL); assert(result>=0);
 	result = engine->RegisterObjectMethod("GameScriptClass", "void setDirectionArrow(const string &in, float, float, float)", asMETHOD(GameScript,setDirectionArrow), asCALL_THISCALL); assert(result>=0);
+	result = engine->RegisterObjectMethod("GameScriptClass", "void hideDirectionArrow()", asMETHOD(GameScript,hideDirectionArrow), asCALL_THISCALL); assert(result>=0);
 	result = engine->RegisterObjectMethod("GameScriptClass", "void registerForEvent(int)", asMETHOD(GameScript,registerForEvent), asCALL_THISCALL); assert(result>=0);
 	result = engine->RegisterObjectMethod("GameScriptClass", "BeamClass @getCurrentTruck()", asMETHOD(GameScript,getCurrentTruck), asCALL_THISCALL); assert(result>=0);
 	result = engine->RegisterObjectMethod("GameScriptClass", "BeamClass @getTruckByNum(int)", asMETHOD(GameScript,getTruckByNum), asCALL_THISCALL); assert(result>=0);
 	result = engine->RegisterObjectMethod("GameScriptClass", "int getChatFontSize()", asMETHOD(GameScript,getChatFontSize), asCALL_THISCALL); assert(result>=0);
 	result = engine->RegisterObjectMethod("GameScriptClass", "void setChatFontSize(int)", asMETHOD(GameScript,setChatFontSize), asCALL_THISCALL); assert(result>=0);
+	result = engine->RegisterObjectMethod("GameScriptClass", "void showChooser(const string &in, const string &in, const string &in)", asMETHOD(GameScript,showChooser), asCALL_THISCALL); assert(result>=0);
+	result = engine->RegisterObjectMethod("GameScriptClass", "void repairVehicle(const string &in, const string &in)", asMETHOD(GameScript,repairVehicle), asCALL_THISCALL); assert(result>=0);
+	result = engine->RegisterObjectMethod("GameScriptClass", "void spawnObject(const string &in, const string &in, float, float, float, float, float, float, const string &in)", asMETHOD(GameScript,spawnObject), asCALL_THISCALL); assert(result>=0);
+	result = engine->RegisterObjectMethod("GameScriptClass", "int getNumTrucksByFlag(int)", asMETHOD(GameScript,getNumTrucksByFlag), asCALL_THISCALL); assert(result>=0);
+	result = engine->RegisterObjectMethod("GameScriptClass", "bool getCaelumAvailable()", asMETHOD(GameScript,getCaelumAvailable), asCALL_THISCALL); assert(result>=0);
 
 	// class CacheSystem
-//	result = engine->RegisterObjectType("CacheSystemClass", sizeof(CacheSystem), asOBJ_REF | asOBJ_NOHANDLE);
-//	result = engine->RegisterObjectMethod("CacheSystemClass", "bool checkResourceLoaded(string &in)", asMETHODPR(CacheSystem, checkResourceLoaded, (Ogre::String &), bool), asCALL_THISCALL); assert(result>=0);
-//	result = engine->RegisterObjectMethod("CacheSystemClass", "bool checkResourceLoaded(string &in, string &in)", asMETHODPR(CacheSystem, checkResourceLoaded, (Ogre::String &, Ogre::String &), bool), asCALL_THISCALL); assert(result>=0);
+	//result = engine->RegisterObjectType("CacheSystemClass", sizeof(CacheSystem), asOBJ_REF | asOBJ_NOHANDLE);
+	//result = engine->RegisterObjectMethod("CacheSystemClass", "bool checkResourceLoaded(string &in)", asMETHODPR(CacheSystem, checkResourceLoaded, (Ogre::String &), bool), asCALL_THISCALL); assert(result>=0);
+	//result = engine->RegisterObjectMethod("CacheSystemClass", "bool checkResourceLoaded(string &in, string &in)", asMETHODPR(CacheSystem, checkResourceLoaded, (Ogre::String &, Ogre::String &), bool), asCALL_THISCALL); assert(result>=0);
 	// unable to register the following:
 	//result = engine->RegisterObjectMethod("CacheSystemClass", "bool checkResourceLoaded(Cache_EntryClass)", asMETHODPR(CacheSystem, checkResourceLoaded, (Cache_Entry), bool), asCALL_THISCALL); assert(result>=0);
-//	result = engine->RegisterObjectMethod("CacheSystemClass", "Cache_EntryClass &getResourceInfo(string)", asMETHODPR(CacheSystem, getResourceInfo, (Cache_Entry), bool), asCALL_THISCALL); assert(result>=0);
-//	result = engine->RegisterObjectMethod("CacheSystemClass", "Cache_EntryClass &getResourceInfo(string)", asMETHODPR(CacheSystem, getResourceInfo, (Cache_Entry), bool), asCALL_THISCALL); assert(result>=0);
-//	result = engine->RegisterObjectMethod("CacheSystemClass", "Cache_EntryClass &getResourceInfo(string)", asMETHODPR(CacheSystem, getResourceInfo, (Cache_Entry), bool), asCALL_THISCALL); assert(result>=0);
+	//result = engine->RegisterObjectMethod("CacheSystemClass", "Cache_EntryClass &getResourceInfo(string)", asMETHODPR(CacheSystem, getResourceInfo, (Cache_Entry), bool), asCALL_THISCALL); assert(result>=0);
+	//result = engine->RegisterObjectMethod("CacheSystemClass", "Cache_EntryClass &getResourceInfo(string)", asMETHODPR(CacheSystem, getResourceInfo, (Cache_Entry), bool), asCALL_THISCALL); assert(result>=0);
+	//result = engine->RegisterObjectMethod("CacheSystemClass", "Cache_EntryClass &getResourceInfo(string)", asMETHODPR(CacheSystem, getResourceInfo, (Cache_Entry), bool), asCALL_THISCALL); assert(result>=0);
 	// these are static methods, special handling for them :)
-//	result = engine->RegisterGlobalFunction("string stripUIDfromString(string)", asFUNCTION(CacheSystem::stripUIDfromString), asCALL_CDECL); assert(result>=0);
-//	result = engine->RegisterGlobalFunction("string getUIDfromString(string)", asFUNCTION(CacheSystem::getUIDfromString), asCALL_CDECL); assert(result>=0);
-//	result = engine->RegisterGlobalFunction("bool stringHasUID(string)", asFUNCTION(CacheSystem::stringHasUID), asCALL_CDECL); assert(result>=0);
+	//result = engine->RegisterGlobalFunction("string stripUIDfromString(string)", asFUNCTION(CacheSystem::stripUIDfromString), asCALL_CDECL); assert(result>=0);
+	//result = engine->RegisterGlobalFunction("string getUIDfromString(string)", asFUNCTION(CacheSystem::getUIDfromString), asCALL_CDECL); assert(result>=0);
+	//result = engine->RegisterGlobalFunction("bool stringHasUID(string)", asFUNCTION(CacheSystem::stringHasUID), asCALL_CDECL); assert(result>=0);
 
 	// enum scriptEvents
 	result = engine->RegisterEnum("scriptEvents"); assert(result>=0);
@@ -556,15 +573,22 @@ void ScriptEngine::init()
 	result = engine->RegisterEnumValue("scriptEvents", "SE_GENERIC_INPUT_EVENT", SE_GENERIC_INPUT_EVENT); assert(result>=0);
 	result = engine->RegisterEnumValue("scriptEvents", "SE_GENERIC_MOUSE_BEAM_INTERACTION", SE_GENERIC_MOUSE_BEAM_INTERACTION); assert(result>=0);
 
+	result = engine->RegisterEnum("truckStates"); assert(result>=0);
+	result = engine->RegisterEnumValue("truckStates", "TS_ACTIVATED", ACTIVATED); assert(result>=0);
+	result = engine->RegisterEnumValue("truckStates", "TS_DESACTIVATED", DESACTIVATED); assert(result>=0);
+	result = engine->RegisterEnumValue("truckStates", "TS_MAYSLEEP", MAYSLEEP); assert(result>=0);
+	result = engine->RegisterEnumValue("truckStates", "TS_GOSLEEP", GOSLEEP); assert(result>=0);
+	result = engine->RegisterEnumValue("truckStates", "TS_SLEEPING", SLEEPING); assert(result>=0);
+	result = engine->RegisterEnumValue("truckStates", "TS_NETWORKED", NETWORKED); assert(result>=0);
+	result = engine->RegisterEnumValue("truckStates", "TS_RECYCLE", RECYCLE); assert(result>=0);
+	result = engine->RegisterEnumValue("truckStates", "TS_DELETED", DELETED); assert(result>=0);
+
 	// now the global instances
 	GameScript *gamescript = new GameScript();
 	result = engine->RegisterGlobalProperty("GameScriptClass game", gamescript); assert(result>=0);
-
-//	result = engine->RegisterGlobalProperty("CacheSystemClass cache", &CacheSystem::Instance()); assert(result>=0);
-
-//	result = engine->RegisterObjectType("Vector3Class", sizeof(Ogre::Vector3), asOBJ_VALUE | asOBJ_POD | asOBJ_APP_CLASS); assert(result>=0);
-	// TODO: add complete Vector3 class :(
-	//result = engine->RegisterObjectMethod("Vector3Class", "...", asMETHOD(Ogre::Vector3,...), asCALL_THISCALL);
+	//result = engine->RegisterGlobalProperty("CacheSystemClass cache", &CacheSystem::Instance()); assert(result>=0);
+	Settings *settings = new Settings();
+	result = engine->RegisterGlobalProperty("SettingsClass settings", settings); assert(result>=0);
 
 
 	//printf("Registration done\n");

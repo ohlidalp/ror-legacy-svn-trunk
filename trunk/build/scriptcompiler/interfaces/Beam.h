@@ -1,6 +1,23 @@
 #ifndef __Beam_H__
 #define __Beam_H__
 
+
+//leading truck
+#define ACTIVATED 0
+//not leading but active
+#define DESACTIVATED 1
+//active but wanting to sleep
+#define MAYSLEEP 2
+//active but ordered to sleep ASAP (synchronously)
+#define GOSLEEP 3
+//static
+#define SLEEPING 4
+//network
+#define NETWORKED 5
+#define RECYCLE 6
+#define DELETED 7 // special used when truck pointer is 0
+
+
 /**
  *  @brief Beam class that represents a truck
  */
