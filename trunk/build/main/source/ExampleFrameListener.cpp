@@ -6989,6 +6989,10 @@ void ExampleFrameListener::flashMessage(char* txt, float time, float charHeight)
 
 	if(charHeight != -1)
 		flashMessageTE->setCharHeight(charHeight);
+	else
+		// set original height
+		flashMessageTE->setCharHeight(0.05f);
+		
 	flashOverlay->show();
 	timeUntilUnflash=time;
 }

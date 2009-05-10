@@ -161,6 +161,7 @@ extern int truckSteps;
 //network
 #define NETWORKED 5
 #define RECYCLE 6
+#define DELETED 7 // special used when truck pointer is 0
 
 #define MAX_WINGS 40
 
@@ -551,7 +552,7 @@ public:
 	void calcNetwork();
 	void addPressure(float v);
 	float getPressure();
-	void calc_masses2(Real total);
+	void calc_masses2(Real total, bool reCalc=false);
 	//to load a truck file
 	int loadTruck(char* fname, SceneManager *manager, SceneNode *parent, Real px, Real py, Real pz, Quaternion rot, bool postload, collision_box_t *spawnbox);
 	void setupDefaultSoundSources();

@@ -31,10 +31,17 @@ class Settings
 public:
 	static Settings & Instance();
 	Ogre::String getSetting(Ogre::String key);
+	Ogre::String getSettingScriptSafe(Ogre::String key);
 	void setSetting(Ogre::String key, Ogre::String value);
 	bool setupPaths();
 	void loadSettings(Ogre::String configFile, bool overwrite=false);
 	void saveSettings(Ogre::String configFile);
+
+#ifdef ANGELSCRIPT
+	// we have to add this to be able to use the class as reference inside scripts
+	void addRef(){};
+	void release(){};
+#endif
 
 protected:
 	Settings();

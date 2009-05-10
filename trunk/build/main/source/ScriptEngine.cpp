@@ -27,6 +27,7 @@ along with Rigs of Rods.  If not, see <http://www.gnu.org/licenses/>.
 #include "scriptmath/scriptmath.h" // angelscript addon
 #include "water.h"
 #include "Beam.h"
+#include "Settings.h"
 #include "IngameConsole.h"
 #include "CacheSystem.h"
 #include "gui_loader.h"
@@ -375,6 +376,12 @@ void ScriptEngine::init()
 	result = engine->RegisterObjectBehaviour("BeamClass", asBEHAVE_ADDREF, "void f()",asMETHOD(Beam,addRef), asCALL_THISCALL); assert_net(result>=0);
 	result = engine->RegisterObjectBehaviour("BeamClass", asBEHAVE_RELEASE, "void f()",asMETHOD(Beam,release), asCALL_THISCALL); assert_net(result>=0);
 
+	// class Settings
+	result = engine->RegisterObjectType("SettingsClass", sizeof(Settings), asOBJ_REF); assert_net(result>=0);
+	result = engine->RegisterObjectMethod("SettingsClass", "string getSetting(const string &in)", asMETHOD(Settings,getSettingScriptSafe), asCALL_THISCALL); assert_net(result>=0);
+	result = engine->RegisterObjectBehaviour("SettingsClass", asBEHAVE_ADDREF, "void f()",asMETHOD(Settings,addRef), asCALL_THISCALL); assert_net(result>=0);
+	result = engine->RegisterObjectBehaviour("SettingsClass", asBEHAVE_RELEASE, "void f()",asMETHOD(Settings,release), asCALL_THISCALL); assert_net(result>=0);
+
 	// class Cache_Entry
 	result = engine->RegisterObjectType("Cache_EntryClass", sizeof(Cache_Entry), asOBJ_REF); assert_net(result>=0);
 	result = engine->RegisterObjectProperty("Cache_EntryClass", "string minitype", offsetof(Cache_Entry, minitype)); assert_net(result>=0);
@@ -451,11 +458,12 @@ void ScriptEngine::init()
 	result = engine->RegisterObjectMethod("GameScriptClass", "void setWaterHeight(float)", asMETHOD(GameScript,setWaterHeight), asCALL_THISCALL); assert_net(result>=0);
 	result = engine->RegisterObjectMethod("GameScriptClass", "float getWaterHeight()", asMETHOD(GameScript,getWaterHeight), asCALL_THISCALL); assert_net(result>=0);
 	result = engine->RegisterObjectMethod("GameScriptClass", "int getCurrentTruckNumber()", asMETHOD(GameScript,getCurrentTruckNumber), asCALL_THISCALL); assert_net(result>=0);
-	result = engine->RegisterObjectMethod("GameScriptClass", "int getNumTrucks()", asMETHOD(GameScript,getCurrentTruckNumber), asCALL_THISCALL); assert_net(result>=0);
+	result = engine->RegisterObjectMethod("GameScriptClass", "int getNumTrucks()", asMETHOD(GameScript,getNumTrucks), asCALL_THISCALL); assert_net(result>=0);
 	result = engine->RegisterObjectMethod("GameScriptClass", "float getGravity()", asMETHOD(GameScript,getGravity), asCALL_THISCALL); assert_net(result>=0);
 	result = engine->RegisterObjectMethod("GameScriptClass", "void setGravity(float)", asMETHOD(GameScript,setGravity), asCALL_THISCALL); assert_net(result>=0);
 	result = engine->RegisterObjectMethod("GameScriptClass", "void flashMessage(const string &in, float, float)", asMETHOD(GameScript,flashMessage), asCALL_THISCALL); assert_net(result>=0);
 	result = engine->RegisterObjectMethod("GameScriptClass", "void setDirectionArrow(const string &in, float, float, float)", asMETHOD(GameScript,setDirectionArrow), asCALL_THISCALL); assert_net(result>=0);
+	result = engine->RegisterObjectMethod("GameScriptClass", "void hideDirectionArrow()", asMETHOD(GameScript,hideDirectionArrow), asCALL_THISCALL); assert_net(result>=0);
 	result = engine->RegisterObjectMethod("GameScriptClass", "void registerForEvent(int)", asMETHOD(GameScript,registerForEvent), asCALL_THISCALL); assert_net(result>=0);
 	result = engine->RegisterObjectMethod("GameScriptClass", "BeamClass @getCurrentTruck()", asMETHOD(GameScript,getCurrentTruck), asCALL_THISCALL); assert_net(result>=0);
 	result = engine->RegisterObjectMethod("GameScriptClass", "BeamClass @getTruckByNum(int)", asMETHOD(GameScript,getTruckByNum), asCALL_THISCALL); assert_net(result>=0);
@@ -464,6 +472,8 @@ void ScriptEngine::init()
 	result = engine->RegisterObjectMethod("GameScriptClass", "void showChooser(const string &in, const string &in, const string &in)", asMETHOD(GameScript,showChooser), asCALL_THISCALL); assert_net(result>=0);
 	result = engine->RegisterObjectMethod("GameScriptClass", "void repairVehicle(const string &in, const string &in)", asMETHOD(GameScript,repairVehicle), asCALL_THISCALL); assert_net(result>=0);
 	result = engine->RegisterObjectMethod("GameScriptClass", "void spawnObject(const string &in, const string &in, float, float, float, float, float, float, const string &in)", asMETHOD(GameScript,spawnObject), asCALL_THISCALL); assert_net(result>=0);
+	result = engine->RegisterObjectMethod("GameScriptClass", "int getNumTrucksByFlag(int)", asMETHOD(GameScript,getNumTrucksByFlag), asCALL_THISCALL); assert_net(result>=0);
+	result = engine->RegisterObjectMethod("GameScriptClass", "bool getCaelumAvailable()", asMETHOD(GameScript,getCaelumAvailable), asCALL_THISCALL); assert_net(result>=0);
 
 	// class CacheSystem
 	result = engine->RegisterObjectType("CacheSystemClass", sizeof(CacheSystem), asOBJ_REF | asOBJ_NOHANDLE);
@@ -503,11 +513,21 @@ void ScriptEngine::init()
 	result = engine->RegisterEnumValue("scriptEvents", "SE_GENERIC_INPUT_EVENT", SE_GENERIC_INPUT_EVENT); assert_net(result>=0);
 	result = engine->RegisterEnumValue("scriptEvents", "SE_GENERIC_MOUSE_BEAM_INTERACTION", SE_GENERIC_MOUSE_BEAM_INTERACTION); assert_net(result>=0);
 
+	result = engine->RegisterEnum("truckStates"); assert_net(result>=0);
+	result = engine->RegisterEnumValue("truckStates", "TS_ACTIVATED", ACTIVATED); assert_net(result>=0);
+	result = engine->RegisterEnumValue("truckStates", "TS_DESACTIVATED", DESACTIVATED); assert_net(result>=0);
+	result = engine->RegisterEnumValue("truckStates", "TS_MAYSLEEP", MAYSLEEP); assert_net(result>=0);
+	result = engine->RegisterEnumValue("truckStates", "TS_GOSLEEP", GOSLEEP); assert_net(result>=0);
+	result = engine->RegisterEnumValue("truckStates", "TS_SLEEPING", SLEEPING); assert_net(result>=0);
+	result = engine->RegisterEnumValue("truckStates", "TS_NETWORKED", NETWORKED); assert_net(result>=0);
+	result = engine->RegisterEnumValue("truckStates", "TS_RECYCLE", RECYCLE); assert_net(result>=0);
+	result = engine->RegisterEnumValue("truckStates", "TS_DELETED", DELETED); assert_net(result>=0);
+
 	// now the global instances
 	GameScript *gamescript = new GameScript(this, mefl);
 	result = engine->RegisterGlobalProperty("GameScriptClass game", gamescript); assert_net(result>=0);
-
 	result = engine->RegisterGlobalProperty("CacheSystemClass cache", &CacheSystem::Instance()); assert_net(result>=0);
+	result = engine->RegisterGlobalProperty("SettingsClass settings", &SETTINGS); assert_net(result>=0);
 
 	result = engine->RegisterObjectType("Vector3Class", sizeof(Ogre::Vector3), asOBJ_VALUE | asOBJ_POD | asOBJ_APP_CLASS); assert_net(result>=0);
 	// TODO: add complete Vector3 class :(
@@ -646,6 +666,12 @@ void GameScript::setCaelumTime(float value)
 	if(mefl && mefl->mCaelumSystem) mefl->mCaelumSystem->setLocalTime(value);
 }
 
+bool GameScript::getCaelumAvailable()
+{
+	if(mefl && mefl->mCaelumSystem) return true;
+	return false;
+}
+
 void GameScript::setWaterHeight(float value)
 {
 	if(mefl && mefl->w) mefl->w->setHeight(value);
@@ -684,6 +710,21 @@ int GameScript::getNumTrucks()
 {
 	if(mefl) return mefl->getTruckCount();
 	return 0;
+}
+
+int GameScript::getNumTrucksByFlag(int flag)
+{
+	int res = 0;
+	for(int i=0; i< mefl->getTruckCount(); i++)
+	{
+		Beam *truck = mefl->getTruck(i);
+		if(!truck && !flag)
+			res++;
+		if(!truck) continue;
+		if(truck->state == flag)
+			res++;
+	}
+	return res;
 }
 
 int GameScript::getCurrentTruckNumber()
@@ -756,6 +797,11 @@ void GameScript::spawnObject(const std::string &objectName, const std::string in
 	// trying to create the new object
 	SceneNode *bakeNode=mefl->getSceneMgr()->getRootSceneNode()->createChildSceneNode();
 	mefl->loadObject(const_cast<char*>(objectName.c_str()), px, py, pz, rx, ry, rz, bakeNode, const_cast<char*>(instanceName.c_str()), true, functionPtr, const_cast<char*>(objectName.c_str()));
+}
+
+void GameScript::hideDirectionArrow()
+{
+	if(mefl) mefl->setDirectionArrow(0, Vector3::ZERO);
 }
 
 #endif //ANGELSCRIPT

@@ -292,7 +292,10 @@ public:
 	void showChooser(std::string &type, std::string &instance, std::string &box);
 	void repairVehicle(std::string &instance, std::string &box);
 	void spawnObject(const std::string &objectName, const std::string instanceName, float px, float py, float pz, float rx, float ry, float rz, const std::string &eventhandler);
-
+	int getNumTrucksByFlag(int flag);
+	bool getCaelumAvailable();
+	std::string getSetting(std::string str);
+	void hideDirectionArrow();
 };
 
 #endif
