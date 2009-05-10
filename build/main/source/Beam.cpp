@@ -989,7 +989,7 @@ float Beam::getPressure()
 	return 0;
 }
 
-void Beam::calc_masses2(Real total)
+void Beam::calc_masses2(Real total, bool reCalc)
 {
 
 	bool debugMass=(SETTINGS.getSetting("Debug Truck Mass")=="Yes");
@@ -1024,14 +1024,17 @@ void Beam::calc_masses2(Real total)
 			if (!(beams[i].p2->iswheel)) len+=newlen/2.0;
 		};
 	}
-	for (i=0; i<free_beam; i++)
+	if(!reCalc)
 	{
-		if (beams[i].type!=BEAM_VIRTUAL)
+		for (i=0; i<free_beam; i++)
 		{
-			Real mass=beams[i].L*total/len;
-			if (!(beams[i].p1->iswheel)) beams[i].p1->mass+=mass/2;
-			if (!(beams[i].p2->iswheel)) beams[i].p2->mass+=mass/2;
-		};
+			if (beams[i].type!=BEAM_VIRTUAL)
+			{
+				Real mass=beams[i].L*total/len;
+				if (!(beams[i].p1->iswheel)) beams[i].p1->mass+=mass/2;
+				if (!(beams[i].p2->iswheel)) beams[i].p2->mass+=mass/2;
+			};
+		}
 	}
 	//fix rope masses
 	for (i=0; i<free_rope; i++)
@@ -1058,7 +1061,7 @@ void Beam::calc_masses2(Real total)
 				LogManager::getSingleton().logMessage("Node " + StringConverter::toString(i) +" mass ("+StringConverter::toString(nodes[i].mass)+"kg) too light. Resetting to minimass ("+ StringConverter::toString(minimass) +"kg).");
 			nodes[i].mass=minimass;
 		}
-		nodes[i].gravimass=Vector3(0, ExampleFrameListener::getGravity() *nodes[i].mass,0);
+		nodes[i].gravimass=Vector3(0, ExampleFrameListener::getGravity() * nodes[i].mass, 0);
 	}
 	//update minendmass
 	for (i=0; i<free_beam; i++)
@@ -1105,7 +1108,7 @@ void Beam::calc_masses2(Real total)
 // this recalcs the masses, useful when the gravity was changed...
 void Beam::recalc_masses()
 {
-	this->calc_masses2(totalmass);
+	this->calc_masses2(totalmass, true);
 }
 
 float Beam::getTotalMass(bool withLocked)
