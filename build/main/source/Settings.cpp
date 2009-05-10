@@ -52,6 +52,15 @@ Ogre::String Settings::getSetting(Ogre::String key)
 	return settings[key];
 }
 
+Ogre::String Settings::getSettingScriptSafe(Ogre::String key)
+{
+	// hide certain settings for scripts
+	if(key == "User Token" || key == "Config Root" || key == "Cache Path" || key == "Log Path" || key == "Resources Path" || key == "Streams Path" || key == "Program Path")
+		return "";
+
+	return settings[key];
+}
+
 void Settings::setSetting(Ogre::String key, Ogre::String value)
 {
 	settings[key] = value;
