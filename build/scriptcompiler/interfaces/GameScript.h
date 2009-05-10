@@ -17,6 +17,11 @@ public:
 	/**
 	 * returns the time in seconds since the game was started
 	 * @return time in seconds
+	 * 
+	 * @par Example Usage:
+	 * @code
+	 * game.log("" + game.getTime())
+	 * @endcode
 	 */
 	double getTime()
 	{ printf("%-30s|\n", __FUNCTION__); return 0; };
@@ -149,6 +154,31 @@ public:
 	 */
 	void setChatFontSize(int size)
 	{ printf("%-30s| %d\n", __FUNCTION__, size); };
+
+	// new things, not documented yet
+	void showChooser(std::string &type, std::string &instance, std::string &box)
+	{ printf("%-30s|\n", __FUNCTION__); };
+
+
+	void repairVehicle(std::string &instance, std::string &box)
+	{ printf("%-30s|\n", __FUNCTION__); };
+
+	void spawnObject(const std::string &objectName, const std::string instanceName, float px, float py, float pz, float rx, float ry, float rz, const std::string &eventhandler)
+	{ printf("%-30s|\n", __FUNCTION__); };
+
+	int getNumTrucksByFlag(int flag)
+	{ printf("%-30s|\n", __FUNCTION__); return 0; };
+
+	bool getCaelumAvailable()
+	{ printf("%-30s|\n", __FUNCTION__); return false; };
+
+	std::string getSetting(std::string str)
+	{ printf("%-30s|\n", __FUNCTION__); };
+
+	void hideDirectionArrow()
+	{ printf("%-30s|\n", __FUNCTION__); };
+
+
 };
 
 #endif //__Gamescript_H__
