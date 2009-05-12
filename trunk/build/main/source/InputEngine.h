@@ -63,6 +63,250 @@ enum eventtypes
 	ET_JoystickSliderY
 };
 
+enum events
+{
+	// has to start at zero, since we iterate over it at times
+	EV_AIRPLANE_BRAKE=0, //!< normal brake for an aircraft.
+	EV_AIRPLANE_ELEVATOR_DOWN, //!< pull the elevator down in an aircraft.
+	EV_AIRPLANE_ELEVATOR_UP, //!< pull the elevator up in an aircraft.
+	EV_AIRPLANE_FLAPS_FULL, //!< full flaps in an aircraft.
+	EV_AIRPLANE_FLAPS_LESS, //!< one step less flaps.
+	EV_AIRPLANE_FLAPS_MORE, //!< one step more flaps.
+	EV_AIRPLANE_FLAPS_NONE, //!< no flaps.
+	EV_AIRPLANE_PARKING_BRAKE, //!< airplane parking brake.
+	EV_AIRPLANE_REVERSE, //!< reverse the turboprops
+	EV_AIRPLANE_RUDDER_LEFT, //!< rudder left
+	EV_AIRPLANE_RUDDER_RIGHT, //!< rudder right
+	EV_AIRPLANE_STEER_LEFT, //!< steer left
+	EV_AIRPLANE_STEER_RIGHT, //!< steer right
+	EV_AIRPLANE_THROTTLE_AXIS, //!< throttle axis. Only use this if you have fitting hardware :) (i.e. a Slider)
+	EV_AIRPLANE_THROTTLE_DOWN, //!< decreases the airplane thrust
+	EV_AIRPLANE_THROTTLE_FULL, //!< full thrust
+	EV_AIRPLANE_THROTTLE_NO, //!< no thrust
+	EV_AIRPLANE_THROTTLE_UP, //!< increase the airplane thrust
+	EV_AIRPLANE_TOGGLE_ENGINES, //!< switch all engines on / off
+	EV_BOAT_CENTER_RUDDER, //!< center the rudder
+	EV_BOAT_REVERSE, //!< no thrust
+	EV_BOAT_STEER_LEFT, //!< steer left a step
+	EV_BOAT_STEER_LEFT_AXIS, //!< steer left (analog value!)
+	EV_BOAT_STEER_RIGHT, //!< steer right a step
+	EV_BOAT_STEER_RIGHT_AXIS, //!< steer right (analog value!)
+	EV_BOAT_THROTTLE_AXIS, //!< throttle axis. Only use this if you have fitting hardware :) (i.e. a Slider)
+	EV_BOAT_THROTTLE_DOWN, //!< decrease throttle
+	EV_BOAT_THROTTLE_UP, //!< increase throttle
+	EV_CAELUM_DECREASE_TIME, //!< decrease day-time
+	EV_CAELUM_DECREASE_TIME_FAST, //!< decrease day-time a lot faster
+	EV_CAELUM_INCREASE_TIME, //!< increase day-time
+	EV_CAELUM_INCREASE_TIME_FAST, //!< increase day-time a lot faster
+	EV_CAMERA_CHANGE, //!< change camera mode
+	EV_CAMERA_LOOKBACK, //!< look back (toggles between normal and lookback)
+	EV_CAMERA_RESET, //!< reset the camera position
+	EV_CAMERA_ROTATE_DOWN, //!< rotate camera down
+	EV_CAMERA_ROTATE_LEFT, //!< rotate camera left
+	EV_CAMERA_ROTATE_RIGHT, //!< rotate camera right
+	EV_CAMERA_ROTATE_UP, //!< rotate camera up
+	EV_CAMERA_ZOOM_IN, //!< zoom camera in
+	EV_CAMERA_ZOOM_IN_FAST, //!< zoom camera in faster
+	EV_CAMERA_ZOOM_OUT, //!< zoom camera out
+	EV_CAMERA_ZOOM_OUT_FAST, //!< zoom camera out faster
+	EV_CHARACTER_BACKWARDS, //!< step backwards with the character
+	EV_CHARACTER_FORWARD, //!< step forward with the character
+	EV_CHARACTER_JUMP, //!< let the character jump
+	EV_CHARACTER_LEFT, //!< rotate character left
+	EV_CHARACTER_RIGHT, //!< rotate character right
+	EV_CHARACTER_RUN, //!< let the character run
+	EV_CHARACTER_SIDESTEP_LEFT, //!< sidestep to the left
+	EV_CHARACTER_SIDESTEP_RIGHT, //!< sidestep to the right
+	EV_COMMANDS_01, //!< Command 1
+	EV_COMMANDS_02, //!< Command 2
+	EV_COMMANDS_03, //!< Command 3
+	EV_COMMANDS_04, //!< Command 4
+	EV_COMMANDS_05, //!< Command 5
+	EV_COMMANDS_06, //!< Command 6
+	EV_COMMANDS_07, //!< Command 7
+	EV_COMMANDS_08, //!< Command 8
+	EV_COMMANDS_09, //!< Command 9
+	EV_COMMANDS_10, //!< Command 10
+	EV_COMMANDS_11, //!< Command 11
+	EV_COMMANDS_12, //!< Command 12
+	EV_COMMANDS_13, //!< Command 13
+	EV_COMMANDS_14, //!< Command 14
+	EV_COMMANDS_15, //!< Command 15
+	EV_COMMANDS_16, //!< Command 16
+	EV_COMMANDS_17, //!< Command 17
+	EV_COMMANDS_18, //!< Command 18
+	EV_COMMANDS_19, //!< Command 19
+	EV_COMMANDS_20, //!< Command 20
+	EV_COMMANDS_21, //!< Command 21
+	EV_COMMANDS_22, //!< Command 22
+	EV_COMMANDS_23, //!< Command 23
+	EV_COMMANDS_24, //!< Command 24
+	EV_COMMANDS_25, //!< Command 25
+	EV_COMMANDS_26, //!< Command 26
+	EV_COMMANDS_27, //!< Command 27
+	EV_COMMANDS_28, //!< Command 28
+	EV_COMMANDS_29, //!< Command 29
+	EV_COMMANDS_30, //!< Command 30
+	EV_COMMANDS_31, //!< Command 31
+	EV_COMMANDS_32, //!< Command 32
+	EV_COMMANDS_33, //!< Command 33
+	EV_COMMANDS_34, //!< Command 34
+	EV_COMMANDS_35, //!< Command 35
+	EV_COMMANDS_36, //!< Command 36
+	EV_COMMANDS_37, //!< Command 37
+	EV_COMMANDS_38, //!< Command 38
+	EV_COMMANDS_39, //!< Command 39
+	EV_COMMANDS_40, //!< Command 40
+	EV_COMMANDS_41, //!< Command 41
+	EV_COMMANDS_42, //!< Command 42
+	EV_COMMANDS_43, //!< Command 43
+	EV_COMMANDS_44, //!< Command 44
+	EV_COMMANDS_45, //!< Command 45
+	EV_COMMANDS_46, //!< Command 46
+	EV_COMMANDS_47, //!< Command 47
+	EV_COMMANDS_48, //!< Command 48
+	EV_COMMON_CONSOLEDISPLAY, //!< show / hide the console
+	EV_COMMON_CONSOLEMODE, //!< toggle appearance of console
+	EV_COMMON_ENTER_CHAT, //!< enter the chat
+	EV_COMMON_ENTER_OR_EXIT_TRUCK, //!< enter or exit a truck
+	EV_COMMON_HIDE_GUI, //!< hide all GUI elements
+	EV_COMMON_LOCK, //!< connect hook node to a node in close proximity
+	EV_COMMON_MAP_ALPHA, //!< toggle translucency of overview-map 
+	EV_COMMON_OUTPUT_POSITION, //!< write current position to log (you can open the logfile and reuse the position)
+	EV_COMMON_PRESSURE_LESS, //!< decrease tire pressure (note: only very few trucks support this)
+	EV_COMMON_PRESSURE_MORE, //!< increase tire pressure (note: only very few trucks support this)
+	EV_COMMON_QUIT_GAME, //!< exit the game
+	EV_COMMON_RESCUE_TRUCK, //!< teleport to rescue truck
+	EV_COMMON_RESET_TRUCK, //!< reset truck to original starting position
+	EV_COMMON_SCREENSHOT, //!< take a screenshot
+	EV_COMMON_SECURE_LOAD, //!< tie a load to the truck
+	EV_COMMON_SHOW_SKELETON, //!< toggle skeleton display mode
+	EV_COMMON_START_TRUCK_EDITOR, //!< start the old truck editor
+	EV_COMMON_TOGGLE_CUSTOM_PARTICLES, //!< toggle particle cannon
+	EV_COMMON_TOGGLE_MAT_DEBUG, //!< debug purpose - dont use
+	EV_COMMON_TOGGLE_RENDER_MODE, //!< toggle render mode (solid, wireframe and points)
+	EV_COMMON_TOGGLE_REPLAY_MODE, //!< deprecated key - without function
+	EV_COMMON_TOGGLE_STATS, //!< toggle Ogre statistics (FPS etc.)
+	EV_COMMON_TOGGLE_TRUCK_BEACONS, //!< toggle truck beacons
+	EV_COMMON_TOGGLE_TRUCK_LIGHTS, //!< toggle truck front lights
+	EV_COMMON_TRUCK_INFO, //!< toggle truck HUD
+	EV_COMMON_VIEW_MAP, //!< toggle map modes
+	EV_COMMON_FOV_LESS, //!<decreases the current FOV value
+	EV_COMMON_FOV_MORE, //!<increases the current FOV value
+	EV_GRASS_LESS, //!< EXPERIMENTAL: remove some grass
+	EV_GRASS_MORE, //!< EXPERIMENTAL: add some grass
+	EV_GRASS_MOST, //!< EXPERIMENTAL: set maximum amount of grass
+	EV_GRASS_NONE, //!< EXPERIMENTAL: remove grass completely
+	EV_GRASS_SAVE, //!< EXPERIMENTAL: save changes to the grass density image
+	EV_INGAMEEDITOR_BACKWARD, //!< move editing plane backwards
+	EV_INGAMEEDITOR_BEAM_TYPE, //!< change beam type to be placed
+	EV_INGAMEEDITOR_CHANGE_NODE_TYPE, //!< change node type to be placed
+	EV_INGAMEEDITOR_DOWN, //!< move cursor down the editing plane
+	EV_INGAMEEDITOR_FORWARD, //!< move the editing plane forewards
+	EV_INGAMEEDITOR_KEY_INFO, //!< help screen
+	EV_INGAMEEDITOR_LEFT, //!< move cursor left on the editing plane
+	EV_INGAMEEDITOR_MODE_FLARE, //!< enable flare placing mode (experimental)
+	EV_INGAMEEDITOR_MODE_GEO, //!< enable geometry mode (default)
+	EV_INGAMEEDITOR_MOVE_NODE, //!< move the selected node
+	EV_INGAMEEDITOR_PLACE_BEAM, //!< place beam
+	EV_INGAMEEDITOR_RESET, //!< reset
+	EV_INGAMEEDITOR_RIGHT, //!< move cursor to the right on the edting plane
+	EV_INGAMEEDITOR_SHOW, //!< show the ingame editor
+	EV_INGAMEEDITOR_SHOW_COORDS, //!< show coordinates in the ingame editor (very useful)
+	EV_INGAMEEDITOR_TRANS_FRONT, //!< toggle if the front of the truck should be shown or not (useful)
+	EV_INGAMEEDITOR_UP, //!< move the cursor up the editing plane
+	EV_MAP_IN, //!< zoom into the overview map in interactive mode
+	EV_MAP_INTERACTIVE_TOGGLE, //!< toggle overview map interactive mode
+	EV_MAP_OUT, //!< zoom into the overview map in interactive mode
+	EV_MENU_DOWN, //!< select next element in current category
+	EV_MENU_LEFT, //!< select previous category
+	EV_MENU_RIGHT, //!< select next category
+	EV_MENU_SELECT, //!< select focussed item and close menu
+	EV_MENU_UP, //!< select previous element in current category
+	EV_TERRAINEDITOR_BUILT, //!< place currently selected object at current position
+	EV_TERRAINEDITOR_PITCHBACKWARD, //!< pitch object backward
+	EV_TERRAINEDITOR_PITCHFOREWARD, //!< pitch object foreward
+	EV_TERRAINEDITOR_ROTATELEFT, //!< rotate object left
+	EV_TERRAINEDITOR_ROTATERIGHT, //!< rotate object right
+	EV_TERRAINEDITOR_SELECTROAD, //!< switch to road laying mode
+	EV_TERRAINEDITOR_TOGGLEOBJECT, //!< toggle between available objects
+	EV_TERRAINEDITOR_TOGGLEROADTYPE, //!< toggle between available road types
+	EV_TERRAIN_LOWER, //!< (ONLY WITH ETM, EXPERIMENTAL): lower terrain under the characters feet
+	EV_TERRAIN_PAINT, //!< EXPERIMENTAL - NOT WORKING
+	EV_TERRAIN_PAINT_SWITCH, //!< EXPERIMENTAL - NOT WORKING
+	EV_TERRAIN_RAISE, //!< (ONLY WITH ETM, EXPERIMENTAL): raise terrain under the characters feet
+	EV_TERRAIN_SAVE, //!< (ONLY WITH ETM - EXPERIMENTAL): save changes (note that this will not work with content that is inside a zip archive)
+	EV_TERRAIN_SMOOTH, //!< (ONLY WITH ETM - EXPERIMENTAL): smooth terrain around characters position
+	EV_TERRAIN_UPDATE_LIGHTMAP, //!< (ONLY WITH ETM - EXPERIMENTAL): update terrain shadows (currently not save-able)
+	EV_TRUCK_ACCELERATE, //!< accelerate the truck
+	EV_TRUCK_AUTOSHIFT_DOWN, //!< shift automatic transmission one gear down
+	EV_TRUCK_AUTOSHIFT_UP, //!< shift automatic transmission one gear up
+	EV_TRUCK_BLINK_LEFT, //!< toggle left direction indicator (blinker)
+	EV_TRUCK_BLINK_RIGHT, //!< toggle right direction indicator (blinker)
+	EV_TRUCK_BLINK_WARN, //!< toggle all direction indicators
+	EV_TRUCK_BRAKE, //!< brake
+	EV_TRUCK_HORN, //!< truck horn
+	EV_TRUCK_LIGHTTOGGLE1, //!< toggle custom light 1
+	EV_TRUCK_LIGHTTOGGLE10, //!< toggle custom light 10
+	EV_TRUCK_LIGHTTOGGLE2, //!< toggle custom light 2
+	EV_TRUCK_LIGHTTOGGLE3, //!< toggle custom light 3
+	EV_TRUCK_LIGHTTOGGLE4, //!< toggle custom light 4
+	EV_TRUCK_LIGHTTOGGLE5, //!< toggle custom light 5
+	EV_TRUCK_LIGHTTOGGLE6, //!< toggle custom light 6
+	EV_TRUCK_LIGHTTOGGLE7, //!< toggle custom light 7
+	EV_TRUCK_LIGHTTOGGLE8, //!< toggle custom light 8
+	EV_TRUCK_LIGHTTOGGLE9, //!< toggle custom light 9
+	EV_TRUCK_MANUAL_CLUTCH, //!< manual clutch (for manual transmission)
+	EV_TRUCK_PARKING_BRAKE, //!< toggle parking brake
+	EV_TRUCK_SHIFT_DOWN, //!< shift one gear down in manual transmission mode
+	EV_TRUCK_SHIFT_NEUTRAL, //!< shift to neutral gear in manual transmission mode
+	EV_TRUCK_SHIFT_UP, //!< shift one gear up in manual transmission mode
+	EV_TRUCK_STARTER, //!< hold to start the engine
+	EV_TRUCK_STEER_LEFT, //!< steer left
+	EV_TRUCK_STEER_RIGHT, //!< steer right
+	EV_TRUCK_SWITCH_SHIFT_MODES, //!< toggle between transmission modes
+	EV_TRUCK_TOGGLE_CONTACT, //!< toggle ignition
+
+	EV_COMMON_SHOWTRUCKTOOL,
+	EV_COMMON_RELOAD_ROADS,
+	EV_COMMON_FULLSCREEN_TOGGLE,
+	EV_CAMERA_FREE_MODE_FIX,
+	EV_CAMERA_FREE_MODE,
+	EV_TRUCK_LEFT_MIRROR_LEFT,
+	EV_TRUCK_LEFT_MIRROR_RIGHT,
+	EV_TRUCK_RIGHT_MIRROR_LEFT,
+	EV_TRUCK_RIGHT_MIRROR_RIGHT,
+	EV_COMMON_REPLAY_FORWARD,
+	EV_COMMON_REPLAY_BACKWARD,
+	EV_COMMON_REPLAY_FAST_FORWARD,
+	EV_COMMON_REPLAY_FAST_BACKWARD,
+	EV_AIRPLANE_AIRBRAKES_NONE,
+	EV_AIRPLANE_AIRBRAKES_FULL,
+	EV_AIRPLANE_AIRBRAKES_LESS,
+	EV_AIRPLANE_AIRBRAKES_MORE,
+
+	EV_AIRPLANE_THROTTLE,
+	EV_COMMON_TRUCK_REMOVE,
+	EV_COMMON_NETCHATDISPLAY,
+	EV_COMMON_NETCHATMODE,
+	EV_CHARACTER_ROT_UP,
+	EV_CHARACTER_ROT_DOWN,
+	EV_CHARACTER_UP,
+	EV_CHARACTER_DOWN,
+
+
+	EV_MODE_BEFORELAST,
+	EV_MODE_LAST
+};
+
+struct eventNames_t
+{
+	Ogre::String name;
+	int eventID;
+};
+
+extern eventNames_t eventNames[];
+
 typedef struct
 {
 	// general
@@ -103,15 +347,15 @@ class InputEngine : public OIS::MouseListener, public OIS::KeyListener, public O
 public:
 	static InputEngine & Instance();
 	void Capture();
-	float getEventValue(Ogre::String eventName);
-	bool getEventBoolValue(Ogre::String eventName);
+	float getEventValue(int eventID);
+	bool getEventBoolValue(int eventID);
 	static bool instanceExists() ;	
 	// we need to use hwnd here, as we are also using this in the configurator
 	bool setup(size_t hwnd, bool capture=false, bool capturemouse=false, int grabMode=0);
-	Ogre::String getKeyForCommand(Ogre::String evName);
+	Ogre::String getKeyForCommand(int eventID);
 	bool isKeyDown(OIS::KeyCode mod);
 
-	std::map<std::string, std::vector<event_trigger_t> > &getEvents() { return events; };
+	std::map<int, std::vector<event_trigger_t> > &getEvents() { return events; };
 	std::string getEventTypeName(int type);
 
 	int getCurrentKeyCombo(std::string *combo);
@@ -126,11 +370,13 @@ public:
 
 	void destroy();
 
-	Ogre::String getEventCommand(Ogre::String eventName);
+	Ogre::String getEventCommand(int eventID);
+	static int resolveEventName(Ogre::String eventName);
+	static Ogre::String eventIDToName(int eventID);
 	event_trigger_t *getEventBySUID(int suid);
 	
-	bool isEventDefined(Ogre::String eventName);
-	void addEvent(Ogre::String eventName, event_trigger_t t);
+	bool isEventDefined(int eventID);
+	void addEvent(int eventID, event_trigger_t t);
 	bool deleteEventBySUID(int suid);
 	Ogre::String getKeyLine() { return keyInput; };
 	void resetKeyLine() { keyInput=""; };
@@ -148,7 +394,7 @@ public:
 	void hideMouse(bool visible);
 	void setMousePosition(int x, int y, bool padding=true);
 
-	int getKeboardKeyForCommand(Ogre::String val);
+	int getKeboardKeyForCommand(int eventID);
 
 protected:
 	InputEngine();
@@ -185,7 +431,7 @@ protected:
 	OIS::MouseState mouseState;
 
 	// define event aliases
-	std::map<std::string, std::vector<event_trigger_t> > events;
+	std::map<int, std::vector<event_trigger_t> > events;
 
 
 	bool processLine(char *line);
@@ -199,7 +445,7 @@ protected:
 
 	float deadZone(float axis, float dz);
 	float logval(float val);
-	std::string getEventGroup(std::string eventName);
+	std::string getEventGroup(Ogre::String eventName);
 	bool mappingLoaded;
 	
 	Ogre::String keyInput;

@@ -472,53 +472,53 @@ void IngameEditor::updateInput()
 		}
 
 		// handle (mostly) keyboard
-		if(INPUTENGINE.getEventBoolValue("INGAMEEDITOR_MODE_GEO") && mTimeUntilNextToggle <= 0)
+		if(INPUTENGINE.getEventBoolValue(EV_INGAMEEDITOR_MODE_GEO) && mTimeUntilNextToggle <= 0)
 		{
 			switchmode(IE_GEOMETRY);
 			mTimeUntilNextToggle = 0.1;
 		}
-		if(INPUTENGINE.getEventBoolValue("INGAMEEDITOR_MODE_FLARE") && mTimeUntilNextToggle <= 0)
+		if(INPUTENGINE.getEventBoolValue(EV_INGAMEEDITOR_MODE_FLARE) && mTimeUntilNextToggle <= 0)
 		{
 			switchmode(IE_flares);
 			mTimeUntilNextToggle = 0.1;
 		}
-		if(INPUTENGINE.getEventBoolValue("INGAMEEDITOR_UP") && mTimeUntilNextToggle <= 0)
+		if(INPUTENGINE.getEventBoolValue(EV_INGAMEEDITOR_UP) && mTimeUntilNextToggle <= 0)
 		{
 			virtualPosition2 += Ogre::Vector3(0,stepsizey,0);
 			posChanged = true;
 			mTimeUntilNextToggle = 0.1;
 		}
-		else if(INPUTENGINE.getEventBoolValue("INGAMEEDITOR_DOWN") && mTimeUntilNextToggle <= 0)
+		else if(INPUTENGINE.getEventBoolValue(EV_INGAMEEDITOR_DOWN) && mTimeUntilNextToggle <= 0)
 		{
 			virtualPosition2 += Ogre::Vector3(0,-stepsizey,0);
 			posChanged = true;
 			mTimeUntilNextToggle = 0.1;
 		}
-		else if(INPUTENGINE.getEventBoolValue("INGAMEEDITOR_LEFT") && mTimeUntilNextToggle <= 0)
+		else if(INPUTENGINE.getEventBoolValue(EV_INGAMEEDITOR_LEFT) && mTimeUntilNextToggle <= 0)
 		{
 			virtualPosition2 += Ogre::Vector3(-stepsizex,0,0);
 			posChanged = true;
 			mTimeUntilNextToggle = 0.1;
 		}
-		else if(INPUTENGINE.getEventBoolValue("INGAMEEDITOR_RIGHT") && mTimeUntilNextToggle <= 0)
+		else if(INPUTENGINE.getEventBoolValue(EV_INGAMEEDITOR_RIGHT) && mTimeUntilNextToggle <= 0)
 		{
 			virtualPosition2 += Ogre::Vector3(stepsizex,0,0);
 			posChanged = true;
 			mTimeUntilNextToggle = 0.1;
 		}
-		else if(INPUTENGINE.getEventBoolValue("INGAMEEDITOR_BACKWARD") && mTimeUntilNextToggle <= 0)
+		else if(INPUTENGINE.getEventBoolValue(EV_INGAMEEDITOR_BACKWARD) && mTimeUntilNextToggle <= 0)
 		{
 			virtualPosition2 += Ogre::Vector3(0,0,-stepsizez);
 			posChanged = true;
 			mTimeUntilNextToggle = 0.1;
 		}
-		else if(INPUTENGINE.getEventBoolValue("INGAMEEDITOR_FORWARD") && mTimeUntilNextToggle <= 0)
+		else if(INPUTENGINE.getEventBoolValue(EV_INGAMEEDITOR_FORWARD) && mTimeUntilNextToggle <= 0)
 		{
 			virtualPosition2 += Ogre::Vector3(0,0,stepsizez);
 			posChanged = true;
 			mTimeUntilNextToggle = 0.1;
 		}
-		else if(INPUTENGINE.getEventBoolValue("INGAMEEDITOR_RESET") && mTimeUntilNextToggle <= 0)
+		else if(INPUTENGINE.getEventBoolValue(EV_INGAMEEDITOR_RESET) && mTimeUntilNextToggle <= 0)
 		{
 			virtualPosition2 = Ogre::Vector3(0,0,0);
 			baseRotation = Quaternion(Degree(0), Ogre::Vector3::UNIT_X);
@@ -527,19 +527,19 @@ void IngameEditor::updateInput()
 			mTimeUntilNextToggle = 0.2;
 		}
 
-		else if(INPUTENGINE.getEventBoolValue("INGAMEEDITOR_RESET") && mTimeUntilNextToggle <= 0)
+		else if(INPUTENGINE.getEventBoolValue(EV_INGAMEEDITOR_RESET) && mTimeUntilNextToggle <= 0)
 		{
 			virtualPosition2 = Ogre::Vector3(0,0,0);
 			posChanged = true;
 			mTimeUntilNextToggle = 0.2;
 		}
-		else if(INPUTENGINE.getEventBoolValue("INGAMEEDITOR_TRANS_FRONT") && mTimeUntilNextToggle <= 0)
+		else if(INPUTENGINE.getEventBoolValue(EV_INGAMEEDITOR_TRANS_FRONT) && mTimeUntilNextToggle <= 0)
 		{
 			hideFrontBeams = ! hideFrontBeams;
 			posChanged = true;
 			mTimeUntilNextToggle = 0.2;
 		}	
-		else if(INPUTENGINE.getEventBoolValue("INGAMEEDITOR_BEAM_TYPE") && mTimeUntilNextToggle <= 0)
+		else if(INPUTENGINE.getEventBoolValue(EV_INGAMEEDITOR_BEAM_TYPE) && mTimeUntilNextToggle <= 0)
 		{
 			beamType++;
 			if(beamType > 2)
@@ -547,12 +547,12 @@ void IngameEditor::updateInput()
 			posChanged = true;
 			mTimeUntilNextToggle = 0.2;
 		}
-		else if(INPUTENGINE.getEventBoolValue("INGAMEEDITOR_CHANGE_NODE_TYPE") && mTimeUntilNextToggle <= 0)
+		else if(INPUTENGINE.getEventBoolValue(EV_INGAMEEDITOR_CHANGE_NODE_TYPE) && mTimeUntilNextToggle <= 0)
 		{
 			// TODO: implement me
 			mTimeUntilNextToggle = 0.2;
 		}
-		else if(INPUTENGINE.getEventBoolValue("INGAMEEDITOR_SHOW_COORDS") && mTimeUntilNextToggle <= 0)
+		else if(INPUTENGINE.getEventBoolValue(EV_INGAMEEDITOR_SHOW_COORDS) && mTimeUntilNextToggle <= 0)
 		{
 			selectorText->setVisible(!selectorText->getVisible());
 			posChanged = true;
@@ -578,7 +578,7 @@ void IngameEditor::updateInput()
 	// editing functions
 	if(!rotationChanged)
 	{
-		if((INPUTENGINE.getEventBoolValue("INGAMEEDITOR_MOVE_NODE") || (mstate.buttonDown(OIS::MB_Left) && INPUTENGINE.isKeyDown(KC_LSHIFT))) && mTimeUntilNextToggle <= 0)
+		if((INPUTENGINE.getEventBoolValue(EV_INGAMEEDITOR_MOVE_NODE) || (mstate.buttonDown(OIS::MB_Left) && INPUTENGINE.isKeyDown(KC_LSHIFT))) && mTimeUntilNextToggle <= 0)
 		{
 			if(placeMode == 0 && attachNodeNumber != -1)
 			{
@@ -592,7 +592,7 @@ void IngameEditor::updateInput()
 			posChanged = true;
 			mTimeUntilNextToggle = 1;
 		}	
-		else if((INPUTENGINE.getEventBoolValue("INGAMEEDITOR_PLACE_BEAM") || mstate.buttonDown(OIS::MB_Left)) && mTimeUntilNextToggle <= 0)
+		else if((INPUTENGINE.getEventBoolValue(EV_INGAMEEDITOR_PLACE_BEAM) || mstate.buttonDown(OIS::MB_Left)) && mTimeUntilNextToggle <= 0)
 		{
 			if(placeMode == 0 && attachNodeNumber == -1)
 			{
@@ -653,7 +653,7 @@ void IngameEditor::updateInput()
 			posChanged = true;
 			mTimeUntilNextToggle = 0.5;
 		}
-		else if(INPUTENGINE.getEventBoolValue("INGAMEEDITOR_KEY_INFO") && mTimeUntilNextToggle <= 0)
+		else if(INPUTENGINE.getEventBoolValue(EV_INGAMEEDITOR_KEY_INFO) && mTimeUntilNextToggle <= 0)
 		{
 			String msg = _L("Keytable for the truck editor:\nY - exit/enter editor\nR - Reset Plane and cursors\nSPACE / Left Mouse Button - Place Beams\nG - Switch Beam type\nH - Show coordinates information\nM / Right Mouse Button - Move selected Node\nN - change node type\nMouse - move curor\nNUMPAD 4682/93/5 - rotate/zoom/reset view\nPAGE UP/DOWN - Move Editingg Plane forwards/backwards\nUP/LEFT/RIGHT/DOWN - move red cursor up/left/right/down\nPlease note that you do not drag with the mouse. Rather click twice!\n" );
 			mefl->flashMessage(const_cast<char*>(msg.c_str()), 15, 0.04);

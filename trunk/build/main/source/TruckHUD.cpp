@@ -462,9 +462,11 @@ bool TruckHUD::update(float dt, Beam *truck, SceneManager *mSceneMgr, Camera* mC
 			String keyStr="";
 
 			sprintf(commandID, "COMMANDS_%02d", i);
-			String keya = INPUTENGINE.getEventCommand(String(commandID));
+			int eventID = INPUTENGINE.resolveEventName(String(commandID));
+			String keya = INPUTENGINE.getEventCommand(eventID);
 			sprintf(commandID, "COMMANDS_%02d", i+1);
-			String keyb = INPUTENGINE.getEventCommand(String(commandID));
+			eventID = INPUTENGINE.resolveEventName(String(commandID));
+			String keyb = INPUTENGINE.getEventCommand(eventID);
 			//cut off expl
 			if(keya.size()>6 && keya.substr(0,5) == "EXPL+") keya = keya.substr(5);
 			if(keyb.size()>6 && keyb.substr(0,5) == "EXPL+") keyb = keyb.substr(5);
