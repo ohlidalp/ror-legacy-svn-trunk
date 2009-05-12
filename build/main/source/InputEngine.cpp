@@ -714,6 +714,33 @@ bool InputEngine::getEventBoolValue(int eventID)
 	return (getEventValue(eventID) > 0.5f);
 }
 
+bool InputEngine::getEventBoolValueBounce(int eventID, float time)
+{
+	if(event_times[eventID] > 0)
+		return false;
+	else
+	{
+		event_times[eventID] = time;
+		return getEventBoolValue(eventID);
+	}
+}
+
+float InputEngine::getEventBounceTime(int eventID)
+{
+	return event_times[eventID];
+}
+
+void InputEngine::updateKeyBounces(float dt)
+{
+	for(std::map<int, float>::iterator it=event_times.begin(); it!=event_times.end(); it++)
+	{
+		if(it->second > 0)
+			it->second -= dt;
+		//else
+		// erase element?	
+	}
+}
+
 float InputEngine::deadZone(float axisValue, float dz)
 {
 	// no deadzone?
