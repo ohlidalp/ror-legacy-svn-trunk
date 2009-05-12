@@ -115,7 +115,7 @@ void OgreConsole::onKeyPressed(const OIS::KeyEvent &arg)
 		return;
 
 	// hide key pressed?
-	if(arg.key == INPUTENGINE.getKeboardKeyForCommand("COMMON_CONSOLEDISPLAY"))
+	if(arg.key == INPUTENGINE.getKeboardKeyForCommand(EV_COMMON_CONSOLEDISPLAY))
 	{
 		OgreConsole::getSingleton().setVisible(false);
 		return;

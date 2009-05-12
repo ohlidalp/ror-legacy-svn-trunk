@@ -33,6 +33,242 @@ freely, subject to the following restrictions:
 #include "gui_manager.h"
 #endif
 
+
+eventNames_t eventNames[] = {
+	{"AIRPLANE_STEER_RIGHT", EV_AIRPLANE_STEER_RIGHT},
+	{"AIRPLANE_BRAKE", EV_AIRPLANE_BRAKE},
+	{"AIRPLANE_ELEVATOR_DOWN", EV_AIRPLANE_ELEVATOR_DOWN },
+	{"AIRPLANE_ELEVATOR_UP", EV_AIRPLANE_ELEVATOR_UP },
+	{"AIRPLANE_FLAPS_FULL", EV_AIRPLANE_FLAPS_FULL },
+	{"AIRPLANE_FLAPS_LESS", EV_AIRPLANE_FLAPS_LESS },
+	{"AIRPLANE_FLAPS_MORE", EV_AIRPLANE_FLAPS_MORE },
+	{"AIRPLANE_FLAPS_NONE", EV_AIRPLANE_FLAPS_NONE },
+	{"AIRPLANE_PARKING_BRAKE", EV_AIRPLANE_PARKING_BRAKE },
+	{"AIRPLANE_REVERSE", EV_AIRPLANE_REVERSE },
+	{"AIRPLANE_RUDDER_LEFT", EV_AIRPLANE_RUDDER_LEFT },
+	{"AIRPLANE_RUDDER_RIGHT", EV_AIRPLANE_RUDDER_RIGHT },
+	{"AIRPLANE_STEER_LEFT", EV_AIRPLANE_STEER_LEFT },
+	{"AIRPLANE_STEER_RIGHT", EV_AIRPLANE_STEER_RIGHT },
+	{"AIRPLANE_THROTTLE_AXIS", EV_AIRPLANE_THROTTLE_AXIS },
+	{"AIRPLANE_THROTTLE_DOWN", EV_AIRPLANE_THROTTLE_DOWN },
+	{"AIRPLANE_THROTTLE_FULL", EV_AIRPLANE_THROTTLE_FULL },
+	{"AIRPLANE_THROTTLE_NO", EV_AIRPLANE_THROTTLE_NO },
+	{"AIRPLANE_THROTTLE_UP", EV_AIRPLANE_THROTTLE_UP },
+	{"AIRPLANE_TOGGLE_ENGINES", EV_AIRPLANE_TOGGLE_ENGINES },
+	{"BOAT_CENTER_RUDDER", EV_BOAT_CENTER_RUDDER },
+	{"BOAT_REVERSE", EV_BOAT_REVERSE },
+	{"BOAT_STEER_LEFT", EV_BOAT_STEER_LEFT },
+	{"BOAT_STEER_LEFT_AXIS", EV_BOAT_STEER_LEFT_AXIS },
+	{"BOAT_STEER_RIGHT", EV_BOAT_STEER_RIGHT },
+	{"BOAT_STEER_RIGHT_AXIS", EV_BOAT_STEER_RIGHT_AXIS },
+	{"BOAT_THROTTLE_AXIS", EV_BOAT_THROTTLE_AXIS },
+	{"BOAT_THROTTLE_DOWN", EV_BOAT_THROTTLE_DOWN },
+	{"BOAT_THROTTLE_UP", EV_BOAT_THROTTLE_UP},
+	{"CAELUM_DECREASE_TIME", EV_CAELUM_DECREASE_TIME },
+	{"CAELUM_DECREASE_TIME_FAST", EV_CAELUM_DECREASE_TIME_FAST },
+	{"CAELUM_INCREASE_TIME", EV_CAELUM_INCREASE_TIME },
+	{"CAELUM_INCREASE_TIME_FAST", EV_CAELUM_INCREASE_TIME_FAST },
+	{"CAMERA_CHANGE", EV_CAMERA_CHANGE },
+	{"CAMERA_LOOKBACK", EV_CAMERA_LOOKBACK },
+	{"CAMERA_RESET", EV_CAMERA_RESET },
+	{"CAMERA_ROTATE_DOWN", EV_CAMERA_ROTATE_DOWN },
+	{"CAMERA_ROTATE_LEFT", EV_CAMERA_ROTATE_LEFT },
+	{"CAMERA_ROTATE_RIGHT", EV_CAMERA_ROTATE_RIGHT },
+	{"CAMERA_ROTATE_UP", EV_CAMERA_ROTATE_UP },
+	{"CAMERA_ZOOM_IN", EV_CAMERA_ZOOM_IN },
+	{"CAMERA_ZOOM_IN_FAST", EV_CAMERA_ZOOM_IN_FAST },
+	{"CAMERA_ZOOM_OUT", EV_CAMERA_ZOOM_OUT },
+	{"CAMERA_ZOOM_OUT_FAST", EV_CAMERA_ZOOM_OUT_FAST },
+	{"CHARACTER_BACKWARDS", EV_CHARACTER_BACKWARDS },
+	{"CHARACTER_FORWARD", EV_CHARACTER_FORWARD },
+	{"CHARACTER_JUMP", EV_CHARACTER_JUMP },
+	{"CHARACTER_LEFT", EV_CHARACTER_LEFT },
+	{"CHARACTER_RIGHT", EV_CHARACTER_RIGHT },
+	{"CHARACTER_RUN", EV_CHARACTER_RUN },
+	{"CHARACTER_SIDESTEP_LEFT", EV_CHARACTER_SIDESTEP_LEFT },
+	{"CHARACTER_SIDESTEP_RIGHT", EV_CHARACTER_SIDESTEP_RIGHT },
+	{"COMMANDS_01", EV_COMMANDS_01 },
+	{"COMMANDS_02", EV_COMMANDS_02 },
+	{"COMMANDS_03", EV_COMMANDS_03 },
+	{"COMMANDS_04", EV_COMMANDS_04 },
+	{"COMMANDS_05", EV_COMMANDS_05 },
+	{"COMMANDS_06", EV_COMMANDS_06 },
+	{"COMMANDS_07", EV_COMMANDS_07 },
+	{"COMMANDS_08", EV_COMMANDS_08 },
+	{"COMMANDS_09", EV_COMMANDS_09 },
+	{"COMMANDS_10", EV_COMMANDS_10 },
+	{"COMMANDS_11", EV_COMMANDS_11 },
+	{"COMMANDS_12", EV_COMMANDS_12 },
+	{"COMMANDS_13", EV_COMMANDS_13 },
+	{"COMMANDS_14", EV_COMMANDS_14 },
+	{"COMMANDS_15", EV_COMMANDS_15 },
+	{"COMMANDS_16", EV_COMMANDS_16 },
+	{"COMMANDS_17", EV_COMMANDS_17 },
+	{"COMMANDS_18", EV_COMMANDS_18 },
+	{"COMMANDS_19", EV_COMMANDS_19 },
+	{"COMMANDS_20", EV_COMMANDS_20 },
+	{"COMMANDS_21", EV_COMMANDS_21 },
+	{"COMMANDS_22", EV_COMMANDS_22 },
+	{"COMMANDS_23", EV_COMMANDS_23 },
+	{"COMMANDS_24", EV_COMMANDS_24 },
+	{"COMMANDS_25", EV_COMMANDS_25 },
+	{"COMMANDS_26", EV_COMMANDS_26 },
+	{"COMMANDS_27", EV_COMMANDS_27 },
+	{"COMMANDS_28", EV_COMMANDS_28 },
+	{"COMMANDS_29", EV_COMMANDS_29 },
+	{"COMMANDS_30", EV_COMMANDS_30 },
+	{"COMMANDS_31", EV_COMMANDS_31 },
+	{"COMMANDS_32", EV_COMMANDS_32 },
+	{"COMMANDS_33", EV_COMMANDS_33 },
+	{"COMMANDS_34", EV_COMMANDS_34 },
+	{"COMMANDS_35", EV_COMMANDS_35 },
+	{"COMMANDS_36", EV_COMMANDS_36 },
+	{"COMMANDS_37", EV_COMMANDS_37 },
+	{"COMMANDS_38", EV_COMMANDS_38 },
+	{"COMMANDS_39", EV_COMMANDS_39 },
+	{"COMMANDS_40", EV_COMMANDS_40 },
+	{"COMMANDS_41", EV_COMMANDS_41 },
+	{"COMMANDS_42", EV_COMMANDS_42 },
+	{"COMMANDS_43", EV_COMMANDS_43 },
+	{"COMMANDS_44", EV_COMMANDS_44 },
+	{"COMMANDS_45", EV_COMMANDS_45 },
+	{"COMMANDS_46", EV_COMMANDS_46 },
+	{"COMMANDS_47", EV_COMMANDS_47 },
+	{"COMMANDS_48", EV_COMMANDS_48 },
+	{"COMMON_CONSOLEDISPLAY", EV_COMMON_CONSOLEDISPLAY },
+	{"COMMON_CONSOLEMODE", EV_COMMON_CONSOLEMODE },
+	{"COMMON_ENTER_CHAT", EV_COMMON_ENTER_CHAT },
+	{"COMMON_ENTER_OR_EXIT_TRUCK", EV_COMMON_ENTER_OR_EXIT_TRUCK },
+	{"COMMON_HIDE_GUI", EV_COMMON_HIDE_GUI },
+	{"COMMON_LOCK", EV_COMMON_LOCK },
+	{"COMMON_MAP_ALPHA", EV_COMMON_MAP_ALPHA },
+	{"COMMON_OUTPUT_POSITION", EV_COMMON_OUTPUT_POSITION },
+	{"COMMON_PRESSURE_LESS", EV_COMMON_PRESSURE_LESS },
+	{"COMMON_PRESSURE_MORE", EV_COMMON_PRESSURE_MORE },
+	{"COMMON_QUIT_GAME", EV_COMMON_QUIT_GAME },
+	{"COMMON_RESCUE_TRUCK", EV_COMMON_RESCUE_TRUCK },
+	{"COMMON_RESET_TRUCK", EV_COMMON_RESET_TRUCK },
+	{"COMMON_SCREENSHOT", EV_COMMON_SCREENSHOT },
+	{"COMMON_SECURE_LOAD", EV_COMMON_SECURE_LOAD },
+	{"COMMON_SHOW_SKELETON", EV_COMMON_SHOW_SKELETON },
+	{"COMMON_START_TRUCK_EDITOR", EV_COMMON_START_TRUCK_EDITOR },
+	{"COMMON_TOGGLE_CUSTOM_PARTICLES", EV_COMMON_TOGGLE_CUSTOM_PARTICLES },
+	{"COMMON_TOGGLE_MAT_DEBUG", EV_COMMON_TOGGLE_MAT_DEBUG },
+	{"COMMON_TOGGLE_RENDER_MODE", EV_COMMON_TOGGLE_RENDER_MODE },
+	{"COMMON_TOGGLE_REPLAY_MODE", EV_COMMON_TOGGLE_REPLAY_MODE },
+	{"COMMON_TOGGLE_STATS", EV_COMMON_TOGGLE_STATS },
+	{"COMMON_TOGGLE_TRUCK_BEACONS", EV_COMMON_TOGGLE_TRUCK_BEACONS },
+	{"COMMON_TOGGLE_TRUCK_LIGHTS", EV_COMMON_TOGGLE_TRUCK_LIGHTS },
+	{"COMMON_TRUCK_INFO", EV_COMMON_TRUCK_INFO },
+	{"COMMON_VIEW_MAP", EV_COMMON_VIEW_MAP },
+	{"COMMON_FOV_LESS", EV_COMMON_FOV_LESS },
+	{"COMMON_FOV_MORE", EV_COMMON_FOV_MORE },
+	{"GRASS_LESS", EV_GRASS_LESS },
+	{"GRASS_MORE", EV_GRASS_MORE },
+	{"GRASS_MOST", EV_GRASS_MOST },
+	{"GRASS_NONE", EV_GRASS_NONE },
+	{"GRASS_SAVE", EV_GRASS_SAVE },
+	{"INGAMEEDITOR_BACKWARD", EV_INGAMEEDITOR_BACKWARD },
+	{"INGAMEEDITOR_BEAM_TYPE", EV_INGAMEEDITOR_BEAM_TYPE },
+	{"INGAMEEDITOR_CHANGE_NODE_TYPE", EV_INGAMEEDITOR_CHANGE_NODE_TYPE },
+	{"INGAMEEDITOR_DOWN", EV_INGAMEEDITOR_DOWN },
+	{"INGAMEEDITOR_FORWARD", EV_INGAMEEDITOR_FORWARD },
+	{"INGAMEEDITOR_KEY_INFO", EV_INGAMEEDITOR_KEY_INFO },
+	{"INGAMEEDITOR_LEFT", EV_INGAMEEDITOR_LEFT },
+	{"INGAMEEDITOR_MODE_FLARE", EV_INGAMEEDITOR_MODE_FLARE },
+	{"INGAMEEDITOR_MODE_GEO", EV_INGAMEEDITOR_MODE_GEO },
+	{"INGAMEEDITOR_MOVE_NODE", EV_INGAMEEDITOR_MOVE_NODE },
+	{"INGAMEEDITOR_PLACE_BEAM", EV_INGAMEEDITOR_PLACE_BEAM },
+	{"INGAMEEDITOR_RESET", EV_INGAMEEDITOR_RESET },
+	{"INGAMEEDITOR_RIGHT", EV_INGAMEEDITOR_RIGHT },
+	{"INGAMEEDITOR_SHOW", EV_INGAMEEDITOR_SHOW },
+	{"INGAMEEDITOR_SHOW_COORDS", EV_INGAMEEDITOR_SHOW_COORDS },
+	{"INGAMEEDITOR_TRANS_FRONT", EV_INGAMEEDITOR_TRANS_FRONT },
+	{"INGAMEEDITOR_UP", EV_INGAMEEDITOR_UP },
+	{"MAP_IN", EV_MAP_IN },
+	{"MAP_INTERACTIVE_TOGGLE", EV_MAP_INTERACTIVE_TOGGLE },
+	{"MAP_OUT", EV_MAP_OUT },
+	{"MENU_DOWN", EV_MENU_DOWN },
+	{"MENU_LEFT", EV_MENU_LEFT },
+	{"MENU_RIGHT", EV_MENU_RIGHT },
+	{"MENU_SELECT", EV_MENU_SELECT },
+	{"MENU_UP", EV_MENU_UP },
+	{"TERRAINEDITOR_BUILT", EV_TERRAINEDITOR_BUILT },
+	{"TERRAINEDITOR_PITCHBACKWARD", EV_TERRAINEDITOR_PITCHBACKWARD },
+	{"TERRAINEDITOR_PITCHFOREWARD", EV_TERRAINEDITOR_PITCHFOREWARD },
+	{"TERRAINEDITOR_ROTATELEFT", EV_TERRAINEDITOR_ROTATELEFT },
+	{"TERRAINEDITOR_ROTATERIGHT", EV_TERRAINEDITOR_ROTATERIGHT },
+	{"TERRAINEDITOR_SELECTROAD", EV_TERRAINEDITOR_SELECTROAD },
+	{"TERRAINEDITOR_TOGGLEOBJECT", EV_TERRAINEDITOR_TOGGLEOBJECT },
+	{"TERRAINEDITOR_TOGGLEROADTYPE", EV_TERRAINEDITOR_TOGGLEROADTYPE },
+	{"TERRAIN_LOWER", EV_TERRAIN_LOWER },
+	{"TERRAIN_PAINT", EV_TERRAIN_PAINT },
+	{"TERRAIN_PAINT_SWITCH", EV_TERRAIN_PAINT_SWITCH },
+	{"TERRAIN_RAISE", EV_TERRAIN_RAISE },
+	{"TERRAIN_SAVE", EV_TERRAIN_SAVE },
+	{"TERRAIN_SMOOTH", EV_TERRAIN_SMOOTH },
+	{"TERRAIN_UPDATE_LIGHTMAP", EV_TERRAIN_UPDATE_LIGHTMAP },
+	{"TRUCK_ACCELERATE", EV_TRUCK_ACCELERATE },
+	{"TRUCK_AUTOSHIFT_DOWN", EV_TRUCK_AUTOSHIFT_DOWN },
+	{"TRUCK_AUTOSHIFT_UP", EV_TRUCK_AUTOSHIFT_UP },
+	{"TRUCK_BLINK_LEFT", EV_TRUCK_BLINK_LEFT },
+	{"TRUCK_BLINK_RIGHT", EV_TRUCK_BLINK_RIGHT },
+	{"TRUCK_BLINK_WARN", EV_TRUCK_BLINK_WARN },
+	{"TRUCK_BRAKE", EV_TRUCK_BRAKE },
+	{"TRUCK_HORN", EV_TRUCK_HORN },
+	{"TRUCK_LIGHTTOGGLE1", EV_TRUCK_LIGHTTOGGLE1 },
+	{"TRUCK_LIGHTTOGGLE10", EV_TRUCK_LIGHTTOGGLE10 },
+	{"TRUCK_LIGHTTOGGLE2", EV_TRUCK_LIGHTTOGGLE2 },
+	{"TRUCK_LIGHTTOGGLE3", EV_TRUCK_LIGHTTOGGLE3 },
+	{"TRUCK_LIGHTTOGGLE4", EV_TRUCK_LIGHTTOGGLE4 },
+	{"TRUCK_LIGHTTOGGLE5", EV_TRUCK_LIGHTTOGGLE5 },
+	{"TRUCK_LIGHTTOGGLE6", EV_TRUCK_LIGHTTOGGLE6 },
+	{"TRUCK_LIGHTTOGGLE7", EV_TRUCK_LIGHTTOGGLE7 },
+	{"TRUCK_LIGHTTOGGLE8", EV_TRUCK_LIGHTTOGGLE8 },
+	{"TRUCK_LIGHTTOGGLE9", EV_TRUCK_LIGHTTOGGLE9 },
+	{"TRUCK_MANUAL_CLUTCH", EV_TRUCK_MANUAL_CLUTCH },
+	{"TRUCK_PARKING_BRAKE", EV_TRUCK_PARKING_BRAKE },
+	{"TRUCK_SHIFT_DOWN", EV_TRUCK_SHIFT_DOWN },
+	{"TRUCK_SHIFT_NEUTRAL", EV_TRUCK_SHIFT_NEUTRAL },
+	{"TRUCK_SHIFT_UP", EV_TRUCK_SHIFT_UP },
+	{"TRUCK_STARTER", EV_TRUCK_STARTER },
+	{"TRUCK_STEER_LEFT", EV_TRUCK_STEER_LEFT },
+	{"TRUCK_STEER_RIGHT", EV_TRUCK_STEER_RIGHT },
+	{"TRUCK_SWITCH_SHIFT_MODES", EV_TRUCK_SWITCH_SHIFT_MODES },
+	{"TRUCK_TOGGLE_CONTACT", EV_TRUCK_TOGGLE_CONTACT },
+
+	// "new" commands
+	{"COMMON_SHOWTRUCKTOOL", EV_COMMON_SHOWTRUCKTOOL},
+	{"COMMON_RELOAD_ROADS", EV_COMMON_RELOAD_ROADS},
+	{"COMMON_FULLSCREEN_TOGGLE", EV_COMMON_FULLSCREEN_TOGGLE},
+	{"CAMERA_FREE_MODE_FIX", EV_CAMERA_FREE_MODE_FIX},
+	{"CAMERA_FREE_MODE", EV_CAMERA_FREE_MODE},
+	{"TRUCK_LEFT_MIRROR_LEFT", EV_TRUCK_LEFT_MIRROR_LEFT},
+	{"TRUCK_LEFT_MIRROR_RIGHT", EV_TRUCK_LEFT_MIRROR_RIGHT},
+	{"TRUCK_RIGHT_MIRROR_LEFT", EV_TRUCK_RIGHT_MIRROR_LEFT},
+	{"TRUCK_RIGHT_MIRROR_RIGHT", EV_TRUCK_RIGHT_MIRROR_RIGHT},
+	{"COMMON_REPLAY_FORWARD", EV_COMMON_REPLAY_FORWARD},
+	{"COMMON_REPLAY_BACKWARD", EV_COMMON_REPLAY_BACKWARD},
+	{"COMMON_REPLAY_FAST_FORWARD", EV_COMMON_REPLAY_FAST_FORWARD},
+	{"COMMON_REPLAY_FAST_BACKWARD", EV_COMMON_REPLAY_FAST_BACKWARD},
+	{"AIRPLANE_AIRBRAKES_NONE", EV_AIRPLANE_AIRBRAKES_NONE},
+	{"AIRPLANE_AIRBRAKES_FULL", EV_AIRPLANE_AIRBRAKES_FULL},
+	{"AIRPLANE_AIRBRAKES_LESS", EV_AIRPLANE_AIRBRAKES_LESS},
+	{"AIRPLANE_AIRBRAKES_MORE", EV_AIRPLANE_AIRBRAKES_MORE},
+	{"AIRPLANE_THROTTLE", EV_AIRPLANE_THROTTLE},
+	{"COMMON_TRUCK_REMOVE", EV_COMMON_TRUCK_REMOVE},
+	{"COMMON_NETCHATDISPLAY", EV_COMMON_NETCHATDISPLAY},
+	{"COMMON_NETCHATMODE", EV_COMMON_NETCHATMODE},
+	{"CHARACTER_ROT_UP", EV_CHARACTER_ROT_UP},
+	{"CHARACTER_ROT_DOWN", EV_CHARACTER_ROT_DOWN},
+	{"CHARACTER_UP", EV_CHARACTER_UP},
+	{"CHARACTER_DOWN", EV_CHARACTER_DOWN},
+
+	{"", -1},
+	{"", -1}
+};
+
+
 #if OGRE_PLATFORM == OGRE_PLATFORM_APPLE
 #define strnlen(str,len) strlen(str)
 #endif
@@ -473,9 +709,9 @@ void InputEngine::resetKeys()
 	}
 }
 
-bool InputEngine::getEventBoolValue(String eventName)
+bool InputEngine::getEventBoolValue(int eventID)
 {
-	return (getEventValue(eventName) > 0.5);
+	return (getEventValue(eventID) > 0.5f);
 }
 
 float InputEngine::deadZone(float axisValue, float dz)
@@ -516,9 +752,9 @@ void InputEngine::smoothValue(float &ref, float value, float rate)
 		ref += rate;
 }
 
-String InputEngine::getEventCommand(String eventName)
+String InputEngine::getEventCommand(int eventID)
 {
-	std::vector<event_trigger_t> t_vec = events[eventName];
+	std::vector<event_trigger_t> t_vec = events[eventID];
 	if(t_vec.size() > 0)
 		return String(t_vec[0].configline);
 	return "";
@@ -526,7 +762,7 @@ String InputEngine::getEventCommand(String eventName)
 
 event_trigger_t *InputEngine::getEventBySUID(int suid)
 {
-	std::map<Ogre::String, std::vector<event_trigger_t> >::iterator a;
+	std::map<int, std::vector<event_trigger_t> >::iterator a;
 	std::vector<event_trigger_t>::iterator b;
 	for(a = events.begin();a != events.end(); a++)
 	{
@@ -541,7 +777,7 @@ event_trigger_t *InputEngine::getEventBySUID(int suid)
 
 bool InputEngine::deleteEventBySUID(int suid)
 {
-	std::map<Ogre::String, std::vector<event_trigger_t> >::iterator a;
+	std::map<int, std::vector<event_trigger_t> >::iterator a;
 	std::vector<event_trigger_t>::iterator b;
 	for(a = events.begin();a != events.end(); a++)
 	{
@@ -557,9 +793,9 @@ bool InputEngine::deleteEventBySUID(int suid)
 	return false;
 }
 
-bool InputEngine::isEventDefined(String eventName)
+bool InputEngine::isEventDefined(int eventID)
 {
-	std::vector<event_trigger_t> t_vec = events[eventName];
+	std::vector<event_trigger_t> t_vec = events[eventID];
 	if(t_vec.size() > 0)
 	{
 		if(t_vec[0].eventtype != ET_NONE)
@@ -568,10 +804,10 @@ bool InputEngine::isEventDefined(String eventName)
 	return false;
 }
 
-int InputEngine::getKeboardKeyForCommand(Ogre::String eventName)
+int InputEngine::getKeboardKeyForCommand(int eventID)
 {
 	float returnValue = 0;
-	std::vector<event_trigger_t> t_vec = events[eventName];
+	std::vector<event_trigger_t> t_vec = events[eventID];
 	for(std::vector<event_trigger_t>::iterator i = t_vec.begin(); i != t_vec.end(); i++)
 	{
 		event_trigger_t t = *i;
@@ -583,10 +819,10 @@ int InputEngine::getKeboardKeyForCommand(Ogre::String eventName)
 	return -1;
 }
 
-float InputEngine::getEventValue(String eventName)
+float InputEngine::getEventValue(int eventID)
 {
 	float returnValue = 0;
-	std::vector<event_trigger_t> t_vec = events[eventName];
+	std::vector<event_trigger_t> t_vec = events[eventID];
 	for(std::vector<event_trigger_t>::iterator i = t_vec.begin(); i != t_vec.end(); i++)
 	{
 		event_trigger_t t = *i;
@@ -817,12 +1053,12 @@ Ogre::String InputEngine::getEventTypeName(int type)
 	return "unkown";
 }
 
-void InputEngine::addEvent(String eventName, event_trigger_t t)
+void InputEngine::addEvent(int eventID, event_trigger_t t)
  {
     static int counter=0;
     counter++;
     t.suid = counter;
-    events[eventName].push_back(t);
+    events[eventID].push_back(t);
 }
 
 bool InputEngine::processLine(char *line)
@@ -899,6 +1135,7 @@ bool InputEngine::processLine(char *line)
 				//LogManager::getSingleton().logMessage("found key: " + string(keycode) + " = " + StringConverter::toString((int)key));
 				key = allit->second;
 			}
+			int eventID = resolveEventName(String(eventName));
 			event_trigger_t t_key;
 			//memset(&t_key, 0, sizeof(event_trigger_t));
 			t_key.eventtype = ET_Keyboard;
@@ -912,7 +1149,7 @@ bool InputEngine::processLine(char *line)
 			t_key.tmp_eventname=eventName;
 			t_key.comments = cur_comment;
 			cur_comment = "";
-			addEvent(eventName, t_key);
+			addEvent(eventID, t_key);
 			
 #ifndef NOOGRE
 			//LogManager::getSingleton().logMessage("adding: " + String(eventName) + ": "+StringConverter::toString((int)key));
@@ -927,6 +1164,7 @@ bool InputEngine::processLine(char *line)
 			sscanf(line, "%s %s %d %s", eventName, evtype, &buttonNo, tmp2);
 			event_trigger_t t_joy;
 			//memset(&t_joy, 0, sizeof(event_trigger_t));
+			int eventID = resolveEventName(String(eventName));
 			t_joy.eventtype = ET_JoystickButton;
 			t_joy.joystickNumber = joyNo;
 			t_joy.joystickButtonNumber = buttonNo;
@@ -943,7 +1181,7 @@ bool InputEngine::processLine(char *line)
 			t_joy.tmp_eventname=eventName;
 			t_joy.comments = cur_comment;
 			cur_comment = "";
-			addEvent(eventName, t_joy);
+			addEvent(eventID, t_joy);
 			return true;
 		}
 	case ET_JoystickAxisRel:
@@ -953,6 +1191,7 @@ bool InputEngine::processLine(char *line)
 			char options[250];
 			memset(options, 0, 250);
 			sscanf(line, "%s %s %d %s", eventName, evtype, &axisNo, options);
+			int eventID = resolveEventName(String(eventName));
 
 			bool half=false;
 			bool reverse=false;
@@ -1019,12 +1258,13 @@ bool InputEngine::processLine(char *line)
 			t_joy.tmp_eventname=eventName;
 			t_joy.comments = cur_comment;
 			cur_comment = "";
-			addEvent(eventName, t_joy);
+			addEvent(eventID, t_joy);
 			//LogManager::getSingleton().logMessage("added axis: " + StringConverter::toString(axisNo));
 			return true;
 		}
 	case ET_NONE:
 		{
+			int eventID = resolveEventName(String(eventName));
 			event_trigger_t t_none;
 			t_none.eventtype = eventtype;
 			t_none.configline = "";
@@ -1032,7 +1272,7 @@ bool InputEngine::processLine(char *line)
 			t_none.tmp_eventname=eventName;
 			t_none.comments = cur_comment;
 			cur_comment = "";
-			addEvent(eventName, t_none);
+			addEvent(eventID, t_none);
 			return true;
 		}
 	case ET_MouseButton:
@@ -1175,8 +1415,8 @@ bool InputEngine::updateConfigline(event_trigger_t *t)
 bool InputEngine::saveMapping(Ogre::String outfile)
 {
 	FILE *f = fopen(const_cast<char *>(outfile.c_str()),"w");
-	std::map<Ogre::String, std::vector<event_trigger_t> > controls = getEvents();
-	std::map<Ogre::String, std::vector<event_trigger_t> >::iterator mapIt;
+	std::map<int, std::vector<event_trigger_t> > controls = getEvents();
+	std::map<int, std::vector<event_trigger_t> >::iterator mapIt;
 	std::vector<event_trigger_t>::iterator vecIt;
 
 	int counter = 0;
@@ -1200,7 +1440,7 @@ bool InputEngine::saveMapping(Ogre::String outfile)
 			//	fprintf(f, "%s", vecIt->comments.c_str());
 
 			// print event name
-			fprintf(f, "%-30s ", mapIt->first.c_str());
+			fprintf(f, "%-30s ", eventIDToName(mapIt->first).c_str());
 			// print event type
 			fprintf(f, "%-20s ", getEventTypeName(vecIt->eventtype).c_str());
 
@@ -1270,6 +1510,30 @@ bool InputEngine::loadMapping(Ogre::String outfile, bool append)
 	LogManager::getSingleton().logMessage("key map successfully loaded!");
 #endif
 	return true;
+}
+
+int InputEngine::resolveEventName(Ogre::String eventName)
+{
+	int i=0;
+	while(i!=EV_MODE_LAST)
+	{
+		if(eventNames[i].name == eventName)
+			return eventNames[i].eventID;
+		i++;
+	}
+	return -1;
+}
+
+Ogre::String InputEngine::eventIDToName(int eventID)
+{
+	int i=0;
+	while(i!=EV_MODE_LAST)
+	{
+		if(eventNames[i].eventID == eventID)
+			return eventNames[i].name;
+		i++;
+	}
+	return "Unkown";
 }
 
 void InputEngine::initAllKeys()
@@ -1420,4 +1684,5 @@ void InputEngine::initAllKeys()
 	allkeys["YEN"] = KC_YEN;
 	allkeys["Z"] = KC_Z;
 }
+
 

@@ -202,14 +202,14 @@ void Character::update(float dt)
 	float tmpJoy = 0;
 	if(perso_canjump)
 	{
-		if (INPUTENGINE.getEventBoolValue("CHARACTER_JUMP"))
+		if (INPUTENGINE.getEventBoolValue(EV_CHARACTER_JUMP))
 		{
 			persovspeed = 2.0;
 			perso_canjump=false;
 		}
 	}
 
-	tmpJoy = INPUTENGINE.getEventValue("CHARACTER_RIGHT");
+	tmpJoy = INPUTENGINE.getEventValue(EV_CHARACTER_RIGHT);
 	if (tmpJoy > 0.0)
 	{
 		persoangle += dt * 2.0 * tmpJoy;
@@ -222,7 +222,7 @@ void Character::update(float dt)
 		}
 	}
 
-	tmpJoy = INPUTENGINE.getEventValue("CHARACTER_LEFT");
+	tmpJoy = INPUTENGINE.getEventValue(EV_CHARACTER_LEFT);
 	if (tmpJoy > 0.0)
 	{
 		persoangle -= dt * 2.0 * tmpJoy;
@@ -235,24 +235,24 @@ void Character::update(float dt)
 		}
 	}
 
-	tmpJoy = INPUTENGINE.getEventValue("CHARACTER_SIDESTEP_LEFT");
+	tmpJoy = INPUTENGINE.getEventValue(EV_CHARACTER_SIDESTEP_LEFT);
 	if (tmpJoy > 0.0)
 	{
 		// animation missing for that
 		position+=dt*persospeed*1.5*tmpJoy*Vector3(cos(persoangle-Math::PI/2), 0.0, sin(persoangle-Math::PI/2));
 	}
 
-	tmpJoy = INPUTENGINE.getEventValue("CHARACTER_SIDESTEP_RIGHT");
+	tmpJoy = INPUTENGINE.getEventValue(EV_CHARACTER_SIDESTEP_RIGHT);
 	if (tmpJoy > 0.0)
 	{
 		// animation missing for that
 		position+=dt*persospeed*1.5*tmpJoy*Vector3(cos(persoangle+Math::PI/2), 0.0, sin(persoangle+Math::PI/2));
 	}
 
-	tmpJoy = INPUTENGINE.getEventValue("CHARACTER_FORWARD") + INPUTENGINE.getEventValue("CHARACTER_ROT_UP");
+	tmpJoy = INPUTENGINE.getEventValue(EV_CHARACTER_FORWARD) + INPUTENGINE.getEventValue(EV_CHARACTER_ROT_UP);
 	if(tmpJoy>1) tmpJoy = 1;
-	float tmpRun = INPUTENGINE.getEventValue("CHARACTER_RUN");
-	float tmpBack  = INPUTENGINE.getEventValue("CHARACTER_BACKWARDS") + INPUTENGINE.getEventValue("CHARACTER_ROT_DOWN");
+	float tmpRun = INPUTENGINE.getEventValue(EV_CHARACTER_RUN);
+	float tmpBack  = INPUTENGINE.getEventValue(EV_CHARACTER_BACKWARDS) + INPUTENGINE.getEventValue(EV_CHARACTER_ROT_DOWN);
 	if(tmpBack>1) tmpBack = 1;
 	if (tmpJoy > 0.0 || tmpRun > 0.0)
 	{
