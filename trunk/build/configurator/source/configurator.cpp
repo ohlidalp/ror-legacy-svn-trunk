@@ -486,8 +486,8 @@ public:
 		new wxButton(this, 1, _("ok (end test)"), wxPoint(5,575), wxSize(490,20));
 		wxScrolledWindow *vwin = new wxScrolledWindow(this, wxID_ANY, wxPoint(0,20), wxSize(490,550));
 
-		std::map<std::string, std::vector<event_trigger_t> > events = INPUTENGINE.getEvents();
-		std::map<std::string, std::vector<event_trigger_t> >::iterator it;
+		std::map<int, std::vector<event_trigger_t> > events = INPUTENGINE.getEvents();
+		std::map<int, std::vector<event_trigger_t> >::iterator it;
 		std::vector<event_trigger_t>::iterator it2;
 		int counter = 0;
 		for(it = events.begin(); it!= events.end(); it++)
@@ -496,8 +496,9 @@ public:
 			{
 				if(counter >= MAX_TESTABLE_EVENTS)
 					break;
+				std::string eventName = INPUTENGINE.eventIDToName(it->first);
 				g[counter] = new wxGauge(vwin, wxID_ANY, 1000, wxPoint(210, counter*20+5), wxSize(246, 15),wxGA_SMOOTH);
-				t[counter] = new wxStaticText(vwin, wxID_ANY, conv(it->first), wxPoint(5, counter*20+5), wxSize(200, 15), wxALIGN_RIGHT|wxST_NO_AUTORESIZE);
+				t[counter] = new wxStaticText(vwin, wxID_ANY, conv(eventName), wxPoint(5, counter*20+5), wxSize(200, 15), wxALIGN_RIGHT|wxST_NO_AUTORESIZE);
 			}
 		}
 		// resize scroll window
@@ -515,8 +516,8 @@ public:
 	}
 	void update()
 	{
-		std::map<std::string, std::vector<event_trigger_t> > events = INPUTENGINE.getEvents();
-		std::map<std::string, std::vector<event_trigger_t> >::iterator it;
+		std::map<int, std::vector<event_trigger_t> > events = INPUTENGINE.getEvents();
+		std::map<int, std::vector<event_trigger_t> >::iterator it;
 		std::vector<event_trigger_t>::iterator it2;
 		int counter = 0;
 		for(it = events.begin(); it!= events.end(); it++)
@@ -1788,8 +1789,8 @@ void MyDialog::onChangeLanguageChoice(wxCommandEvent& event)
 void MyDialog::loadInputControls()
 {
 	// setup control tree
-	std::map<std::string, std::vector<event_trigger_t> > controls = INPUTENGINE.getEvents();
-	std::map<std::string, std::vector<event_trigger_t> >::iterator mapIt;
+	std::map<int, std::vector<event_trigger_t> > controls = INPUTENGINE.getEvents();
+	std::map<int, std::vector<event_trigger_t> >::iterator mapIt;
 	std::vector<event_trigger_t>::iterator vecIt;
 
 	// clear everything
@@ -1829,9 +1830,10 @@ void MyDialog::loadInputControls()
 			}
 
 			//strip category name if possible
-			wxString evName = conv(mapIt->first);
-			if(vecIt->group.size()+1 < mapIt->first.size())
-				evName = conv(mapIt->first.substr(vecIt->group.size()+1));
+			std::string evn = INPUTENGINE.eventIDToName(mapIt->first);
+			wxString evName = conv(evn);
+			if(vecIt->group.size()+1 < evName.size())
+				evName = conv(evn.substr(vecIt->group.size()+1));
 		    wxTreeItemId item = cTree->AppendItem(*curRoot, evName);
 
 			/*
@@ -2580,8 +2582,8 @@ void MyDialog::OnButAddKey(wxCommandEvent& event)
 	loadInputControls();
 
 	// find the new event now
-	std::map<std::string, std::vector<event_trigger_t> > events = INPUTENGINE.getEvents();
-	std::map<std::string, std::vector<event_trigger_t> >::iterator it;
+	std::map<int, std::vector<event_trigger_t> > events = INPUTENGINE.getEvents();
+	std::map<int, std::vector<event_trigger_t> >::iterator it;
 	std::vector<event_trigger_t>::iterator it2;
 	int counter = 0;
 	int suid = -1;
@@ -2989,6 +2991,8 @@ void MyDialog::OnNoteBookPageChange(wxNotebookEvent& event)
 						   );
 	} else if(event.GetSelection() == 5)
 	{
+		/*
+		// this is unpracticable in LAN mode, thus deactivated
 		btnUpdate->Enable(false);
 		timer1->Start(10000);
 		std::string lshort = conv(language->CanonicalName).substr(0, 2);
@@ -2997,6 +3001,7 @@ void MyDialog::OnNoteBookPageChange(wxNotebookEvent& event)
 							  wxString(wxT(RORNET_VERSION))+
 							  wxString(conv("&lang="))+
 							  conv(lshort));
+		*/
 	}
 }
 
