@@ -2368,6 +2368,7 @@ void ExampleFrameListener::repairTruck(char* inst, char* box)
 
 bool ExampleFrameListener::updateEvents(float dt)
 {
+	INPUTENGINE.updateKeyBounces(dt);
 	if(!INPUTENGINE.getInputsChanged())
 		return true;
 	bool dirty=false;
@@ -2397,13 +2398,12 @@ bool ExampleFrameListener::updateEvents(float dt)
 	}
 
 
-	if (NETCHAT.getVisible() && INPUTENGINE.getEventBoolValue(EV_COMMON_ENTER_CHAT) && mTimeUntilNextToggle <= 0 && !hidegui)
+	if (NETCHAT.getVisible() && INPUTENGINE.getEventBoolValueBounce(EV_COMMON_ENTER_CHAT, 0.5f) && !hidegui)
 	{
 		if (chatting)
 		{
 			processConsoleInput();
 			NETCHAT.setEnterText("", false);
-			mTimeUntilNextToggle = 0.5;
 			chatting=false;
 			INPUTENGINE.setRecordInput(false);
 			INPUTENGINE.resetKeyLine();
@@ -2414,7 +2414,6 @@ bool ExampleFrameListener::updateEvents(float dt)
 			INPUTENGINE.setRecordInput(true);
 			NETCHAT.setEnterText("", true, true);
 			chatting=true;
-			mTimeUntilNextToggle = 0.5;
 		}
 	}
 
@@ -2422,24 +2421,22 @@ bool ExampleFrameListener::updateEvents(float dt)
 	if(chatting)
 		return true;
 
-	if (INPUTENGINE.getEventBoolValue(EV_COMMON_SHOWTRUCKTOOL) && mTimeUntilNextToggle <= 0 && current_truck != -1)
+	if (INPUTENGINE.getEventBoolValueBounce(EV_COMMON_SHOWTRUCKTOOL, 0.5f) && current_truck != -1)
 	{
 		//if(truckToolGUI)
 		//	truckToolGUI->show();
-		mTimeUntilNextToggle = 0.5;
 	}
 
-	if (INPUTENGINE.getEventBoolValue(EV_COMMON_RELOAD_ROADS) && mTimeUntilNextToggle <= 0)
+	if (INPUTENGINE.getEventBoolValueBounce(EV_COMMON_RELOAD_ROADS, 0.5f))
 	{
 		if(proceduralManager)
 		{
 			//proceduralManager->deleteAllObjects();
 			proceduralManager->updateAllObjects();
 		}
-		mTimeUntilNextToggle = 0.5;
 	}
 
-	if (INPUTENGINE.getEventBoolValue(EV_COMMON_SCREENSHOT) && mTimeUntilNextToggle <= 0)
+	if (INPUTENGINE.getEventBoolValueBounce(EV_COMMON_SCREENSHOT, 0.5f))
 	{
 		int mNumScreenShots=0;
 		String tmp = SETTINGS.getSetting("User Path") + String("screenshot_") + StringConverter::toString(++mNumScreenShots) + String(".") + String(screenshotformat);
@@ -2452,34 +2449,31 @@ bool ExampleFrameListener::updateEvents(float dt)
 		mWindow->update();
 
 		mWindow->writeContentsToFile(tmp);
-		mTimeUntilNextToggle = 0.5;
 		char tmp1[255];
 		String ssmsg = _L("wrote screenshot:");
 		sprintf(tmp1, "%s %d", ssmsg.c_str(), mNumScreenShots);
 		flashMessage(tmp1);
 	}
 	
-	if (INPUTENGINE.getEventBoolValue(EV_COMMON_FOV_LESS) && mTimeUntilNextToggle <= 0)
+	if (INPUTENGINE.getEventBoolValueBounce(EV_COMMON_FOV_LESS))
 	{
 		int fov = mCamera->getFOVy().valueDegrees();
 		if(fov>10)
 			fov -= 2;
 		mCamera->setFOVy(Degree(fov));
 		flashMessage(_L("FOV: ") + StringConverter::toString(fov));
-		mTimeUntilNextToggle = 0.3;
 	}
 
-	if (INPUTENGINE.getEventBoolValue(EV_COMMON_FOV_MORE) && mTimeUntilNextToggle <= 0)
+	if (INPUTENGINE.getEventBoolValueBounce(EV_COMMON_FOV_MORE))
 	{
 		int fov = mCamera->getFOVy().valueDegrees();
 		if(fov<160)
 			fov += 2;
 		mCamera->setFOVy(Degree(fov));
 		flashMessage(_L("FOV: ") + StringConverter::toString(fov));
-		mTimeUntilNextToggle = 0.3;
 	}
 
-	if (INPUTENGINE.getEventBoolValue(EV_COMMON_FULLSCREEN_TOGGLE) && mTimeUntilNextToggle <= 0)
+	if (INPUTENGINE.getEventBoolValueBounce(EV_COMMON_FULLSCREEN_TOGGLE, 2.0f))
 	{
 		static int org_width = -1, org_height = -1;
 		int width = mWindow->getWidth();
@@ -2499,10 +2493,9 @@ bool ExampleFrameListener::updateEvents(float dt)
 			mWindow->setFullscreen(false, org_width, org_height);
 			LogManager::getSingleton().logMessage(" ** switched to windowed mode: ");
 		}
-		mTimeUntilNextToggle = 2;
 	}
 
-	if (INPUTENGINE.getEventBoolValue(EV_CAMERA_FREE_MODE_FIX) && mTimeUntilNextToggle <= 0)
+	if (INPUTENGINE.getEventBoolValueBounce(EV_CAMERA_FREE_MODE_FIX))
 	{
 		if(cameramode == CAMERA_FREE)
 		{
@@ -2516,9 +2509,8 @@ bool ExampleFrameListener::updateEvents(float dt)
 			LogManager::getSingleton().logMessage("switching to free camera mode from fixed mode");
 			flashMessage(_L("free camera").c_str());
 		}
-		mTimeUntilNextToggle = 0.2;
 	}
-	if (INPUTENGINE.getEventBoolValue(EV_CAMERA_FREE_MODE) && mTimeUntilNextToggle <= 0)
+	if (INPUTENGINE.getEventBoolValueBounce(EV_CAMERA_FREE_MODE))
 	{
 		static int storedcameramode = -1;
 		if(cameramode == CAMERA_FREE || cameramode == CAMERA_FREE_FIXED)
@@ -2535,12 +2527,11 @@ bool ExampleFrameListener::updateEvents(float dt)
 			LogManager::getSingleton().logMessage("entering free camera mode");
 			flashMessage(_L("free camera").c_str());
 		}
-		mTimeUntilNextToggle = 0.2;
 	}
 
 	if (loading_state==ALL_LOADED)
 	{
-		if (INPUTENGINE.getEventBoolValue(EV_INGAMEEDITOR_SHOW) && mTimeUntilNextToggle <= 0 && !netmode)
+		if (INPUTENGINE.getEventBoolValueBounce(EV_INGAMEEDITOR_SHOW, 1.0f) && !netmode)
 		{
 			useIngameEditor = ! useIngameEditor;
 			if(useIngameEditor)
@@ -2559,7 +2550,6 @@ bool ExampleFrameListener::updateEvents(float dt)
 				loading_state = ALL_LOADED;
 				INGAMEEDITOR.show(false);
 			}
-			mTimeUntilNextToggle = 1;
 		}
 		// if the ingame editor is used, no normal event handling will occur
 		bool enablegrab = true;
@@ -2571,7 +2561,7 @@ bool ExampleFrameListener::updateEvents(float dt)
 				if(person)
 					person->update(dt);
 				//camera mode
-				if (INPUTENGINE.getEventBoolValue(EV_CAMERA_CHANGE) && mTimeUntilNextToggle <= 0)
+				if (INPUTENGINE.getEventBoolValueBounce(EV_CAMERA_CHANGE))
 				{
 					if (cameramode==CAMERA_INT)
 					{
@@ -2589,7 +2579,6 @@ bool ExampleFrameListener::updateEvents(float dt)
 						camRotY=DEFAULT_INTERNAL_CAM_PITCH;
 					}
 					if (cameramode==CAMERA_END) cameramode=0;
-					mTimeUntilNextToggle = 0.2;
 				}
 			}
 			else //we are in a vehicle
@@ -2687,7 +2676,7 @@ bool ExampleFrameListener::updateEvents(float dt)
 				if (trucks[current_truck]->driveable==TRUCK)
 				{
 					//road construction stuff
-					if (INPUTENGINE.getEventBoolValue(EV_TERRAINEDITOR_SELECTROAD) && trucks[current_truck]->editorId>=0 && mTimeUntilNextToggle <= 0  && !trucks[current_truck]->replaymode)
+					if (INPUTENGINE.getEventBoolValueBounce(EV_TERRAINEDITOR_SELECTROAD, 0.5f) && trucks[current_truck]->editorId>=0 && !trucks[current_truck]->replaymode)
 					{
 						if (road)
 						{
@@ -2695,10 +2684,9 @@ bool ExampleFrameListener::updateEvents(float dt)
 						}
 						else
 							road=new Road(mSceneMgr, trucks[current_truck]->nodes[trucks[current_truck]->editorId].AbsPosition);
-						mTimeUntilNextToggle = 0.5;
 					}
 					//editor stuff
-					if (INPUTENGINE.getEventBoolValue(EV_TERRAINEDITOR_TOGGLEOBJECT) && trucks[current_truck]->editorId>=0 && mTimeUntilNextToggle <= 0  && !trucks[current_truck]->replaymode)
+					if (INPUTENGINE.getEventBoolValueBounce(EV_TERRAINEDITOR_TOGGLEOBJECT) && trucks[current_truck]->editorId>=0 && !trucks[current_truck]->replaymode)
 					{
 						if (editor)
 						{
@@ -2706,64 +2694,60 @@ bool ExampleFrameListener::updateEvents(float dt)
 						}
 						else
 							editor=new Editor(mSceneMgr, this);
-						mTimeUntilNextToggle = 0.2;
 					}
 					//this should not be there
 					if (editor && trucks[current_truck]->editorId>=0) editor->setPos(trucks[current_truck]->nodes[trucks[current_truck]->editorId].AbsPosition);
 
-					if (INPUTENGINE.getEventBoolValue(EV_TRUCK_LEFT_MIRROR_LEFT) && mTimeUntilNextToggle <= 0 && !trucks[current_truck]->replaymode)
+					if (INPUTENGINE.getEventBoolValueBounce(EV_TRUCK_LEFT_MIRROR_LEFT) && !trucks[current_truck]->replaymode)
 						trucks[current_truck]->leftMirrorAngle-=0.001;
 
-					if (INPUTENGINE.getEventBoolValue(EV_TRUCK_LEFT_MIRROR_RIGHT) && mTimeUntilNextToggle <= 0 && !trucks[current_truck]->replaymode)
+					if (INPUTENGINE.getEventBoolValueBounce(EV_TRUCK_LEFT_MIRROR_RIGHT) && !trucks[current_truck]->replaymode)
 						trucks[current_truck]->leftMirrorAngle+=0.001;
 
-					if (INPUTENGINE.getEventBoolValue(EV_TRUCK_RIGHT_MIRROR_LEFT) && mTimeUntilNextToggle <= 0 && !trucks[current_truck]->replaymode)
+					if (INPUTENGINE.getEventBoolValueBounce(EV_TRUCK_RIGHT_MIRROR_LEFT) && !trucks[current_truck]->replaymode)
 						trucks[current_truck]->rightMirrorAngle-=0.001;
 
-					if (INPUTENGINE.getEventBoolValue(EV_TRUCK_RIGHT_MIRROR_RIGHT) && mTimeUntilNextToggle <= 0 && !trucks[current_truck]->replaymode)
+					if (INPUTENGINE.getEventBoolValueBounce(EV_TRUCK_RIGHT_MIRROR_RIGHT) && !trucks[current_truck]->replaymode)
 						trucks[current_truck]->rightMirrorAngle+=0.001;
 
-					if (INPUTENGINE.getEventBoolValue(EV_TERRAINEDITOR_ROTATELEFT) && mTimeUntilNextToggle <= 0 && !trucks[current_truck]->replaymode)
+					if (INPUTENGINE.getEventBoolValueBounce(EV_TERRAINEDITOR_ROTATELEFT, 0.1f) && !trucks[current_truck]->replaymode)
 					{
 						float value = 0.5;
 						if(INPUTENGINE.isKeyDown(OIS::KC_LSHIFT) || INPUTENGINE.isKeyDown(OIS::KC_RSHIFT))
 							value = 4;
-						if (road) {road->dturn(+value);mTimeUntilNextToggle = 0.1;}
-						else if (editor) {editor->dturn(+1);mTimeUntilNextToggle = 0.1;}
+						if (road) {road->dturn(+value);}
+						else if (editor) {editor->dturn(+1);}
 					}
-					if (INPUTENGINE.getEventBoolValue(EV_TERRAINEDITOR_ROTATERIGHT) && mTimeUntilNextToggle <= 0 && !trucks[current_truck]->replaymode)
+					if (INPUTENGINE.getEventBoolValueBounce(EV_TERRAINEDITOR_ROTATERIGHT, 0.1f) && !trucks[current_truck]->replaymode)
 					{
 						float value = 0.5;
 						if(INPUTENGINE.isKeyDown(OIS::KC_LSHIFT) || INPUTENGINE.isKeyDown(OIS::KC_RSHIFT))
 							value = 4;
-						if (road) {road->dturn(-value);mTimeUntilNextToggle = 0.1;}
-						else if (editor) {editor->dturn(-1);mTimeUntilNextToggle = 0.1;}
+						if (road) {road->dturn(-value);}
+						else if (editor) {editor->dturn(-1);}
 					}
-					if (INPUTENGINE.getEventBoolValue(EV_TERRAINEDITOR_PITCHBACKWARD) && mTimeUntilNextToggle <= 0 && !trucks[current_truck]->replaymode)
+					if (INPUTENGINE.getEventBoolValueBounce(EV_TERRAINEDITOR_PITCHBACKWARD, 0.1f) && !trucks[current_truck]->replaymode)
 					{
 						float value = 0.5;
 						if(INPUTENGINE.isKeyDown(OIS::KC_LSHIFT) || INPUTENGINE.isKeyDown(OIS::KC_RSHIFT))
 							value = 4;
-						if (road) {road->dpitch(-value);mTimeUntilNextToggle = 0.1;}
-						else if (editor) {editor->dpitch(-1);mTimeUntilNextToggle = 0.1;}
+						if (road) {road->dpitch(-value);}
+						else if (editor) {editor->dpitch(-1);}
 					}
-					if (INPUTENGINE.getEventBoolValue(EV_TERRAINEDITOR_PITCHFOREWARD) && mTimeUntilNextToggle <= 0 && !trucks[current_truck]->replaymode)
+					if (INPUTENGINE.getEventBoolValueBounce(EV_TERRAINEDITOR_PITCHFOREWARD, 0.1f) && !trucks[current_truck]->replaymode)
 					{
 						float value = 0.5;
 						if(INPUTENGINE.isKeyDown(OIS::KC_LSHIFT) || INPUTENGINE.isKeyDown(OIS::KC_RSHIFT))
 							value = 4;
-						if (road) {road-> dpitch(value);mTimeUntilNextToggle = 0.1;}
-						else if (editor) {editor->dpitch(1);mTimeUntilNextToggle = 0.1;}
+						if (road) {road-> dpitch(value);}
+						else if (editor) {editor->dpitch(1);}
 					}
-					if (INPUTENGINE.getEventBoolValue(EV_TERRAINEDITOR_TOGGLEROADTYPE) && mTimeUntilNextToggle <= 0 && !trucks[current_truck]->replaymode)
+					if (INPUTENGINE.getEventBoolValueBounce(EV_TERRAINEDITOR_TOGGLEROADTYPE, 0.5f) && !trucks[current_truck]->replaymode)
 					{
 						if (road)
-						{
 							road->toggleType();
-							mTimeUntilNextToggle = 0.5;
-						}
 					}
-					if (INPUTENGINE.getEventBoolValue(EV_TERRAINEDITOR_BUILT) && mTimeUntilNextToggle <= 0 && !trucks[current_truck]->replaymode)
+					if (INPUTENGINE.getEventBoolValueBounce(EV_TERRAINEDITOR_BUILT, 0.5f) && !trucks[current_truck]->replaymode)
 					{
 						if (road)
 						{
@@ -2783,7 +2767,6 @@ bool ExampleFrameListener::updateEvents(float dt)
 								StringConverter::toString(road->rrot.z)+", "+road->curtype);
 
 							loadObject(road->curtype, road->rpos.x, road->rpos.y, road->rpos.z, road->rrot.x, road->rrot.y, road->rrot.z, 0, "generic");
-							mTimeUntilNextToggle = 0.5;
 						}
 						if (editor)
 						{
@@ -2801,7 +2784,6 @@ bool ExampleFrameListener::updateEvents(float dt)
 								StringConverter::toString(editor->pturn)+", "+
 								StringConverter::toString(editor->ppitch)+", "+editor->curtype);
 							loadObject(editor->curtype, editor->ppos.x, editor->ppos.y, editor->ppos.z, 0, editor->pturn, editor->ppitch, 0, "generic", false);
-							mTimeUntilNextToggle = 0.5;
 						}
 					}
 
@@ -2809,25 +2791,21 @@ bool ExampleFrameListener::updateEvents(float dt)
 					// replay mode
 					if (trucks[current_truck]->replaymode)
 					{
-						if (INPUTENGINE.getEventBoolValue(EV_COMMON_REPLAY_FORWARD) && mTimeUntilNextToggle <= 0 && trucks[current_truck]->replaypos<=0)
+						if (INPUTENGINE.getEventBoolValueBounce(EV_COMMON_REPLAY_FORWARD, 0.1f) && trucks[current_truck]->replaypos<=0)
 						{
 							trucks[current_truck]->replaypos++;
-							mTimeUntilNextToggle = 0.1;
 						}
-						if (INPUTENGINE.getEventBoolValue(EV_COMMON_REPLAY_BACKWARD) && mTimeUntilNextToggle <= 0 && trucks[current_truck]->replaypos > -trucks[current_truck]->replaylen)
+						if (INPUTENGINE.getEventBoolValueBounce(EV_COMMON_REPLAY_BACKWARD, 0.1f) && trucks[current_truck]->replaypos > -trucks[current_truck]->replaylen)
 						{
 							trucks[current_truck]->replaypos--;
-							mTimeUntilNextToggle = 0.1;
 						}
-						if (INPUTENGINE.getEventBoolValue(EV_COMMON_REPLAY_FAST_FORWARD) && mTimeUntilNextToggle <= 0 && trucks[current_truck]->replaypos+10<=0)
+						if (INPUTENGINE.getEventBoolValueBounce(EV_COMMON_REPLAY_FAST_FORWARD, 0.1f) && trucks[current_truck]->replaypos+10<=0)
 						{
 							trucks[current_truck]->replaypos+=10;
-							mTimeUntilNextToggle = 0.1;
 						}
-						if (INPUTENGINE.getEventBoolValue(EV_COMMON_REPLAY_FAST_BACKWARD) && mTimeUntilNextToggle <= 0 && trucks[current_truck]->replaypos-10 > -trucks[current_truck]->replaylen)
+						if (INPUTENGINE.getEventBoolValueBounce(EV_COMMON_REPLAY_FAST_BACKWARD, 0.1f) && trucks[current_truck]->replaypos-10 > -trucks[current_truck]->replaylen)
 						{
 							trucks[current_truck]->replaypos-=10;
-							mTimeUntilNextToggle = 0.1;
 						}
 					} else
 					{
@@ -2860,31 +2838,28 @@ bool ExampleFrameListener::updateEvents(float dt)
 							ssm->trigStop(current_truck, SS_TRIG_BRAKE);
 					};
 
-					if (INPUTENGINE.getEventBoolValue(EV_TRUCK_AUTOSHIFT_UP) && mTimeUntilNextToggle <= 0 && !trucks[current_truck]->replaymode)
+					if (INPUTENGINE.getEventBoolValueBounce(EV_TRUCK_AUTOSHIFT_UP) && !trucks[current_truck]->replaymode)
 					{
 						if(trucks[current_truck]->engine)
 							trucks[current_truck]->engine->autoShiftUp();
-						mTimeUntilNextToggle = 0.2;
 					}
 
-					if (INPUTENGINE.getEventBoolValue(EV_TRUCK_AUTOSHIFT_DOWN) && mTimeUntilNextToggle <= 0 && !trucks[current_truck]->replaymode)
+					if (INPUTENGINE.getEventBoolValueBounce(EV_TRUCK_AUTOSHIFT_DOWN) && !trucks[current_truck]->replaymode)
 					{
 						if(trucks[current_truck]->engine)
 							trucks[current_truck]->engine->autoShiftDown();
-						mTimeUntilNextToggle = 0.2;
 					}
 
-					if (INPUTENGINE.getEventBoolValue(EV_TRUCK_TOGGLE_CONTACT) && !trucks[current_truck]->replaymode && mTimeUntilNextToggle <= 0)
+					if (INPUTENGINE.getEventBoolValueBounce(EV_TRUCK_TOGGLE_CONTACT) && !trucks[current_truck]->replaymode)
 					{
 						// contact
 						if(trucks[current_truck]->engine)
 							trucks[current_truck]->engine->toggleContact();
-						mTimeUntilNextToggle = 0.3;
 					}
 
 					if(trucks[current_truck]->engine)
 					{
-						if (INPUTENGINE.getEventBoolValue(EV_TRUCK_STARTER) && trucks[current_truck]->engine->contact && !trucks[current_truck]->replaymode)
+						if (INPUTENGINE.getEventBoolValueBounce(EV_TRUCK_STARTER) && trucks[current_truck]->engine->contact && !trucks[current_truck]->replaymode)
 						{
 							//starter
 							trucks[current_truck]->engine->setstarter(1);
@@ -2895,14 +2870,13 @@ bool ExampleFrameListener::updateEvents(float dt)
 						}
 					}
 
-					if (INPUTENGINE.getEventBoolValue(EV_TRUCK_SWITCH_SHIFT_MODES) && mTimeUntilNextToggle <= 0 && trucks[current_truck]->engine)
+					if (INPUTENGINE.getEventBoolValueBounce(EV_TRUCK_SWITCH_SHIFT_MODES) && trucks[current_truck]->engine)
 					{
 						//Toggle Auto shift
 						trucks[current_truck]->engine->toggleAutoMode();
 						if (trucks[current_truck]->engine->getAutoMode()==AUTOMATIC) flashMessage(_L("Automatic shift"));
 						if (trucks[current_truck]->engine->getAutoMode()==SEMIAUTO) flashMessage(_L("Manual shift - Auto clutch"));
 						if (trucks[current_truck]->engine->getAutoMode()==MANUAL) flashMessage(_L("Fully Manual shift"));
-						mTimeUntilNextToggle = 0.2;
 					}
 
 					//joy clutch
@@ -2910,33 +2884,29 @@ bool ExampleFrameListener::updateEvents(float dt)
 					if(trucks[current_truck]->engine)
 						trucks[current_truck]->engine->setManualClutch(cval);
 
-					if (INPUTENGINE.getEventBoolValue(EV_TRUCK_SHIFT_UP) && mTimeUntilNextToggle <= 0 && trucks[current_truck]->engine)
+					if (INPUTENGINE.getEventBoolValueBounce(EV_TRUCK_SHIFT_UP) && trucks[current_truck]->engine)
 					{
 						//Shift up
 						trucks[current_truck]->engine->shift(1);
-						mTimeUntilNextToggle = 0.2;
 					}
 
-					if (INPUTENGINE.getEventBoolValue(EV_TRUCK_SHIFT_DOWN) && mTimeUntilNextToggle <= 0 && trucks[current_truck]->engine)
+					if (INPUTENGINE.getEventBoolValueBounce(EV_TRUCK_SHIFT_DOWN) && trucks[current_truck]->engine)
 					{
 						//Shift down
 						trucks[current_truck]->engine->shift(-1);
-						mTimeUntilNextToggle = 0.2;
 					}
 
-					if (INPUTENGINE.getEventBoolValue(EV_TRUCK_SHIFT_NEUTRAL) && mTimeUntilNextToggle <= 0 && trucks[current_truck]->engine)
+					if (INPUTENGINE.getEventBoolValueBounce(EV_TRUCK_SHIFT_NEUTRAL) && trucks[current_truck]->engine)
 					{
 						//Shift down
 						trucks[current_truck]->engine->shiftTo(0);
-						mTimeUntilNextToggle = 0.2;
 					}
 
 					if (trucks[current_truck]->ispolice)
 					{
-						if (INPUTENGINE.getEventBoolValue(EV_TRUCK_HORN) && mTimeUntilNextToggle <= 0)
+						if (INPUTENGINE.getEventBoolValueBounce(EV_TRUCK_HORN))
 						{
 							ssm->trigToggle(current_truck, SS_TRIG_HORN);
-							mTimeUntilNextToggle = 0.2;
 						}
 					}
 					else
@@ -2947,10 +2917,9 @@ bool ExampleFrameListener::updateEvents(float dt)
 						} else {ssm->trigStop(current_truck, SS_TRIG_HORN);};
 					}
 
-					if (INPUTENGINE.getEventBoolValue(EV_TRUCK_PARKING_BRAKE) && mTimeUntilNextToggle <= 0)
+					if (INPUTENGINE.getEventBoolValueBounce(EV_TRUCK_PARKING_BRAKE))
 					{
 						trucks[current_truck]->parkingbrakeToggle();
-						mTimeUntilNextToggle = 0.2;
 					}
 
 				}
@@ -3145,25 +3114,21 @@ bool ExampleFrameListener::updateEvents(float dt)
 					//turning
 					if (trucks[current_truck]->replaymode)
 					{
-						if (INPUTENGINE.getEventBoolValue(EV_COMMON_REPLAY_FORWARD) && mTimeUntilNextToggle <= 0 && trucks[current_truck]->replaypos<=0)
+						if (INPUTENGINE.getEventBoolValueBounce(EV_COMMON_REPLAY_FORWARD, 0.1f) && trucks[current_truck]->replaypos<=0)
 						{
 							trucks[current_truck]->replaypos++;
-							mTimeUntilNextToggle = 0.1;
 						}
-						if (INPUTENGINE.getEventBoolValue(EV_COMMON_REPLAY_BACKWARD) && mTimeUntilNextToggle <= 0 && trucks[current_truck]->replaypos > -trucks[current_truck]->replaylen)
+						if (INPUTENGINE.getEventBoolValueBounce(EV_COMMON_REPLAY_BACKWARD, 0.1f) && trucks[current_truck]->replaypos > -trucks[current_truck]->replaylen)
 						{
 							trucks[current_truck]->replaypos--;
-							mTimeUntilNextToggle = 0.1;
 						}
-						if (INPUTENGINE.getEventBoolValue(EV_COMMON_REPLAY_FAST_FORWARD) && mTimeUntilNextToggle <= 0 && trucks[current_truck]->replaypos+10<=0)
+						if (INPUTENGINE.getEventBoolValueBounce(EV_COMMON_REPLAY_FAST_FORWARD, 0.1f) && trucks[current_truck]->replaypos+10<=0)
 						{
 							trucks[current_truck]->replaypos+=10;
-							mTimeUntilNextToggle = 0.1;
 						}
-						if (INPUTENGINE.getEventBoolValue(EV_COMMON_REPLAY_FAST_BACKWARD) && mTimeUntilNextToggle <= 0 && trucks[current_truck]->replaypos-10 > -trucks[current_truck]->replaylen)
+						if (INPUTENGINE.getEventBoolValueBounce(EV_COMMON_REPLAY_FAST_BACKWARD, 0.1f) && trucks[current_truck]->replaypos-10 > -trucks[current_truck]->replaylen)
 						{
 							trucks[current_truck]->replaypos-=10;
-							mTimeUntilNextToggle = 0.1;
 						}
 					} else
 					{
@@ -3195,26 +3160,24 @@ bool ExampleFrameListener::updateEvents(float dt)
 							trucks[current_truck]->brake=trucks[current_truck]->brakeforce*0.66;
 						}
 					};
-					if (INPUTENGINE.getEventBoolValue(EV_AIRPLANE_PARKING_BRAKE) && mTimeUntilNextToggle <= 0)
+					if (INPUTENGINE.getEventBoolValueBounce(EV_AIRPLANE_PARKING_BRAKE))
 					{
 						trucks[current_truck]->parkingbrakeToggle();
 						if(trucks[current_truck]->parkingbrake)
 							OverlayManager::getSingleton().getOverlayElement("tracks/ap_brks_but")->setMaterialName("tracks/brks-on");
 						else
 							OverlayManager::getSingleton().getOverlayElement("tracks/ap_brks_but")->setMaterialName("tracks/brks-off");
-						mTimeUntilNextToggle = 0.2;
 					}
 					//reverse
-					if (INPUTENGINE.getEventBoolValue(EV_AIRPLANE_REVERSE) && mTimeUntilNextToggle <= 0)
+					if (INPUTENGINE.getEventBoolValueBounce(EV_AIRPLANE_REVERSE))
 					{
 						int i;
 						for (i=0; i<trucks[current_truck]->free_aeroengine; i++)
 							trucks[current_truck]->aeroengines[i]->toggleReverse();
-						mTimeUntilNextToggle = 0.2;
 					}
 
 					// toggle engines
-					if (INPUTENGINE.getEventBoolValue(EV_AIRPLANE_TOGGLE_ENGINES) && mTimeUntilNextToggle <= 0)
+					if (INPUTENGINE.getEventBoolValueBounce(EV_AIRPLANE_TOGGLE_ENGINES))
 					{
 						int i;
 						for (i=0; i<trucks[current_truck]->free_aeroengine; i++)
@@ -3222,55 +3185,47 @@ bool ExampleFrameListener::updateEvents(float dt)
 					}
 
 					//flaps
-					if (INPUTENGINE.getEventBoolValue(EV_AIRPLANE_FLAPS_NONE) && mTimeUntilNextToggle <= 0)
+					if (INPUTENGINE.getEventBoolValueBounce(EV_AIRPLANE_FLAPS_NONE))
 					{
 						if (trucks[current_truck]->flap>0)
 							trucks[current_truck]->flap=0;
-						mTimeUntilNextToggle = 0.2;
 					}
-					if (INPUTENGINE.getEventBoolValue(EV_AIRPLANE_FLAPS_FULL) && mTimeUntilNextToggle <= 0)
+					if (INPUTENGINE.getEventBoolValueBounce(EV_AIRPLANE_FLAPS_FULL))
 					{
 						if (trucks[current_truck]->flap<5)
 							trucks[current_truck]->flap=5;
-						mTimeUntilNextToggle = 0.2;
 					}
-					if (INPUTENGINE.getEventBoolValue(EV_AIRPLANE_FLAPS_LESS) && mTimeUntilNextToggle <= 0)
+					if (INPUTENGINE.getEventBoolValueBounce(EV_AIRPLANE_FLAPS_LESS))
 					{
 						if (trucks[current_truck]->flap>0)
 							trucks[current_truck]->flap=(trucks[current_truck]->flap)-1;
-						mTimeUntilNextToggle = 0.2;
 					}
-					if (INPUTENGINE.getEventBoolValue(EV_AIRPLANE_FLAPS_MORE) && mTimeUntilNextToggle <= 0)
+					if (INPUTENGINE.getEventBoolValueBounce(EV_AIRPLANE_FLAPS_MORE))
 					{
 						if (trucks[current_truck]->flap<5)
 							trucks[current_truck]->flap=(trucks[current_truck]->flap)+1;
-						mTimeUntilNextToggle = 0.2;
 					}
 
 					//airbrakes
-					if (INPUTENGINE.getEventBoolValue(EV_AIRPLANE_AIRBRAKES_NONE) && mTimeUntilNextToggle <= 0)
+					if (INPUTENGINE.getEventBoolValueBounce(EV_AIRPLANE_AIRBRAKES_NONE))
 					{
 						if (trucks[current_truck]->airbrakeval>0)
 							trucks[current_truck]->airbrakeval=0;
-						mTimeUntilNextToggle = 0.2;
 					}
-					if (INPUTENGINE.getEventBoolValue(EV_AIRPLANE_AIRBRAKES_FULL) && mTimeUntilNextToggle <= 0)
+					if (INPUTENGINE.getEventBoolValueBounce(EV_AIRPLANE_AIRBRAKES_FULL))
 					{
 						if (trucks[current_truck]->airbrakeval<5)
 							trucks[current_truck]->airbrakeval=5;
-						mTimeUntilNextToggle = 0.2;
 					}
-					if (INPUTENGINE.getEventBoolValue(EV_AIRPLANE_AIRBRAKES_LESS) && mTimeUntilNextToggle <= 0)
+					if (INPUTENGINE.getEventBoolValueBounce(EV_AIRPLANE_AIRBRAKES_LESS))
 					{
 						if (trucks[current_truck]->airbrakeval>0)
 							trucks[current_truck]->airbrakeval=(trucks[current_truck]->airbrakeval)-1;
-						mTimeUntilNextToggle = 0.2;
 					}
-					if (INPUTENGINE.getEventBoolValue(EV_AIRPLANE_AIRBRAKES_MORE) && mTimeUntilNextToggle <= 0)
+					if (INPUTENGINE.getEventBoolValueBounce(EV_AIRPLANE_AIRBRAKES_MORE))
 					{
 						if (trucks[current_truck]->airbrakeval<5)
 							trucks[current_truck]->airbrakeval=(trucks[current_truck]->airbrakeval)+1;
-						mTimeUntilNextToggle = 0.2;
 					}
 
 					//throttle
@@ -3285,38 +3240,34 @@ bool ExampleFrameListener::updateEvents(float dt)
 						for (int i=0; i<trucks[current_truck]->free_aeroengine; i++)
 							trucks[current_truck]->aeroengines[i]->setThrotle(f);
 					}
-					if (INPUTENGINE.getEventBoolValue(EV_AIRPLANE_THROTTLE_DOWN) && mTimeUntilNextToggle <= 0)
+					if (INPUTENGINE.getEventBoolValueBounce(EV_AIRPLANE_THROTTLE_DOWN, 0.1f))
 					{
 						//throtle down
 						int i;
 						for (i=0; i<trucks[current_truck]->free_aeroengine; i++)
 							trucks[current_truck]->aeroengines[i]->setThrotle(trucks[current_truck]->aeroengines[i]->getThrotle()-0.05);
-						mTimeUntilNextToggle = 0.1;
 					}
-					if (INPUTENGINE.getEventBoolValue(EV_AIRPLANE_THROTTLE_UP) && mTimeUntilNextToggle <= 0)
+					if (INPUTENGINE.getEventBoolValueBounce(EV_AIRPLANE_THROTTLE_UP, 0.1f))
 					{
 						//throtle up
 						int i;
 						for (i=0; i<trucks[current_truck]->free_aeroengine; i++)
 							trucks[current_truck]->aeroengines[i]->setThrotle(trucks[current_truck]->aeroengines[i]->getThrotle()+0.05);
-						mTimeUntilNextToggle = 0.1;
 					}
 
-					if (INPUTENGINE.getEventBoolValue(EV_AIRPLANE_THROTTLE_NO) && mTimeUntilNextToggle <= 0)
+					if (INPUTENGINE.getEventBoolValueBounce(EV_AIRPLANE_THROTTLE_NO, 0.1f))
 					{
 						// no throtle
 						int i;
 						for (i=0; i<trucks[current_truck]->free_aeroengine; i++)
 							trucks[current_truck]->aeroengines[i]->setThrotle(0);
-						mTimeUntilNextToggle = 0.1;
 					}
-					if (INPUTENGINE.getEventBoolValue(EV_AIRPLANE_THROTTLE_FULL) && mTimeUntilNextToggle <= 0)
+					if (INPUTENGINE.getEventBoolValueBounce(EV_AIRPLANE_THROTTLE_FULL, 0.1f))
 					{
 						// full throtle
 						int i;
 						for (i=0; i<trucks[current_truck]->free_aeroengine; i++)
 							trucks[current_truck]->aeroengines[i]->setThrotle(1);
-						mTimeUntilNextToggle = 0.1;
 					}
 					if (trucks[current_truck]->autopilot)
 					{
@@ -3340,34 +3291,32 @@ bool ExampleFrameListener::updateEvents(float dt)
 						for (int i=0; i<trucks[current_truck]->free_screwprop; i++)
 							trucks[current_truck]->screwprops[i]->setThrotle(-f);
 					}
-					if (INPUTENGINE.getEventBoolValue(EV_BOAT_THROTTLE_DOWN) && mTimeUntilNextToggle <= 0)
+					if (INPUTENGINE.getEventBoolValueBounce(EV_BOAT_THROTTLE_DOWN, 0.1f))
 					{
 						//throtle down
 						int i;
 						for (i=0; i<trucks[current_truck]->free_screwprop; i++)
 							trucks[current_truck]->screwprops[i]->setThrotle(trucks[current_truck]->screwprops[i]->getThrotle()-0.05);
-						mTimeUntilNextToggle = 0.1;
 					}
-					if (INPUTENGINE.getEventBoolValue(EV_BOAT_THROTTLE_UP) && mTimeUntilNextToggle <= 0)
+					if (INPUTENGINE.getEventBoolValueBounce(EV_BOAT_THROTTLE_UP, 0.1f))
 					{
 						//throtle up
 						int i;
 						for (i=0; i<trucks[current_truck]->free_screwprop; i++)
 							trucks[current_truck]->screwprops[i]->setThrotle(trucks[current_truck]->screwprops[i]->getThrotle()+0.05);
-						mTimeUntilNextToggle = 0.1;
 					}
 
 
 					// steer
 					float tmp_steer_left = INPUTENGINE.getEventValue(EV_BOAT_STEER_LEFT);
 					float tmp_steer_right = INPUTENGINE.getEventValue(EV_BOAT_STEER_RIGHT);
+					float stime = INPUTENGINE.getEventBounceTime(EV_BOAT_STEER_LEFT) + INPUTENGINE.getEventBounceTime(EV_BOAT_STEER_RIGHT);
 					float sum_steer = (tmp_steer_left - tmp_steer_right) * 0.06;
 					// do not center the rudder!
-					if(fabs(sum_steer)>0 && mTimeUntilNextToggle <= 0)
+					if(fabs(sum_steer)>0 && stime <= 0)
 					{
 						for (int i=0; i<trucks[current_truck]->free_screwprop; i++)
 							trucks[current_truck]->screwprops[i]->setRudder(trucks[current_truck]->screwprops[i]->getRudder() + sum_steer);
-						mTimeUntilNextToggle = 0.1;
 					}
 					if(INPUTENGINE.isEventDefined(EV_BOAT_STEER_LEFT_AXIS) && INPUTENGINE.isEventDefined(EV_BOAT_STEER_RIGHT_AXIS))
 					{
@@ -3377,25 +3326,23 @@ bool ExampleFrameListener::updateEvents(float dt)
 						for (int i=0; i<trucks[current_truck]->free_screwprop; i++)
 							trucks[current_truck]->screwprops[i]->setRudder(sum_steer);
 					}
-					if (INPUTENGINE.getEventBoolValue(EV_BOAT_CENTER_RUDDER) && mTimeUntilNextToggle <= 0)
+					if (INPUTENGINE.getEventBoolValueBounce(EV_BOAT_CENTER_RUDDER, 0.1f))
 					{
 						int i;
 						for (i=0; i<trucks[current_truck]->free_screwprop; i++)
 							trucks[current_truck]->screwprops[i]->setRudder(0);
-						mTimeUntilNextToggle = 0.1;
 					}
 
-					if (INPUTENGINE.getEventBoolValue(EV_BOAT_REVERSE) && mTimeUntilNextToggle <= 0)
+					if (INPUTENGINE.getEventBoolValueBounce(EV_BOAT_REVERSE))
 					{
 						int i;
 						for (i=0; i<trucks[current_truck]->free_screwprop; i++)
 							trucks[current_truck]->screwprops[i]->toggleReverse();
-						mTimeUntilNextToggle = 0.2;
 					}
 				}
 				//COMMON KEYS
 
-				if (INPUTENGINE.getEventBoolValue(EV_COMMON_TRUCK_REMOVE) && mTimeUntilNextToggle <= 0)
+				if (INPUTENGINE.getEventBoolValueBounce(EV_COMMON_TRUCK_REMOVE))
 				{
 					if(current_truck != -1)
 					{
@@ -3409,19 +3356,16 @@ bool ExampleFrameListener::updateEvents(float dt)
 						// then set the array to zero, so it wont be used anymore
 						trucks[truck_to_delete] = 0;
 					}
-					mTimeUntilNextToggle = 0.2;
 				}
 
-				if (INPUTENGINE.getEventBoolValue(EV_COMMON_LOCK) && mTimeUntilNextToggle <= 0)
+				if (INPUTENGINE.getEventBoolValueBounce(EV_COMMON_LOCK))
 				{
 					trucks[current_truck]->lockToggle(trucks, free_truck);
-					mTimeUntilNextToggle = 0.2;
 				}
 				//strap
-				if (INPUTENGINE.getEventBoolValue(EV_COMMON_SECURE_LOAD) && mTimeUntilNextToggle <= 0)
+				if (INPUTENGINE.getEventBoolValueBounce(EV_COMMON_SECURE_LOAD))
 				{
 					trucks[current_truck]->tieToggle(trucks, free_truck);
-					mTimeUntilNextToggle = 0.2;
 				}
 				if (INPUTENGINE.getEventBoolValue(EV_COMMON_RESET_TRUCK) && !trucks[current_truck]->replaymode)
 				{
@@ -3429,20 +3373,18 @@ bool ExampleFrameListener::updateEvents(float dt)
 					trucks[current_truck]->reset();
 				}
 				//replay mode
-				if (INPUTENGINE.getEventBoolValue(EV_COMMON_TOGGLE_REPLAY_MODE)  && mTimeUntilNextToggle <= 0)
+				if (INPUTENGINE.getEventBoolValueBounce(EV_COMMON_TOGGLE_REPLAY_MODE))
 				{
 					trucks[current_truck]->setReplayMode(!trucks[current_truck]->replaymode);
-					mTimeUntilNextToggle = 0.2;
 				}
 
-				if (INPUTENGINE.getEventBoolValue(EV_COMMON_TOGGLE_CUSTOM_PARTICLES)  && mTimeUntilNextToggle <= 0)
+				if (INPUTENGINE.getEventBoolValueBounce(EV_COMMON_TOGGLE_CUSTOM_PARTICLES))
 				{
 					trucks[current_truck]->toggleCustomParticles();
-					mTimeUntilNextToggle = 0.2;
 				}
 
 
-				if (INPUTENGINE.getEventBoolValue(EV_COMMON_SHOW_SKELETON) && mTimeUntilNextToggle <=0)
+				if (INPUTENGINE.getEventBoolValueBounce(EV_COMMON_SHOW_SKELETON))
 				{
 					if (trucks[current_truck]->skeleton)
 					{
@@ -3451,22 +3393,19 @@ bool ExampleFrameListener::updateEvents(float dt)
 					else
 						trucks[current_truck]->showSkeleton(true, true);
 					trucks[current_truck]->updateVisual();
-					mTimeUntilNextToggle = 0.2;
 				}
 
-				if (INPUTENGINE.getEventBoolValue(EV_COMMON_TOGGLE_TRUCK_LIGHTS) && mTimeUntilNextToggle <= 0)
+				if (INPUTENGINE.getEventBoolValueBounce(EV_COMMON_TOGGLE_TRUCK_LIGHTS))
 				{
 					trucks[current_truck]->lightsToggle(trucks, free_truck);
-					mTimeUntilNextToggle = 0.2;
 				}
 
-				if (INPUTENGINE.getEventBoolValue(EV_COMMON_TOGGLE_TRUCK_BEACONS) && mTimeUntilNextToggle <= 0)
+				if (INPUTENGINE.getEventBoolValueBounce(EV_COMMON_TOGGLE_TRUCK_BEACONS))
 				{
 					trucks[current_truck]->beaconsToggle();
-					mTimeUntilNextToggle = 0.2;
 				}
 				//camera mode
-				if (INPUTENGINE.getEventBoolValue(EV_CAMERA_CHANGE) && mTimeUntilNextToggle <= 0)
+				if (INPUTENGINE.getEventBoolValueBounce(EV_CAMERA_CHANGE))
 				{
 					if (cameramode==CAMERA_INT && trucks[current_truck]->currentcamera<trucks[current_truck]->freecinecamera-1)
 					{
@@ -3502,7 +3441,6 @@ bool ExampleFrameListener::updateEvents(float dt)
 						}
 						if (cameramode==CAMERA_END) cameramode=0;
 					}
-					mTimeUntilNextToggle = 0.2;
 				}
 				//camera mode
 				if (INPUTENGINE.getEventBoolValue(EV_COMMON_PRESSURE_LESS) && current_truck!=-1)
@@ -3685,13 +3623,12 @@ bool ExampleFrameListener::updateEvents(float dt)
 			buttonsPressed = (mstate.buttons > 0);
 		}
 
-		if (INPUTENGINE.getEventBoolValue(EV_CAMERA_LOOKBACK) && mTimeUntilNextToggle <=0)
+		if (INPUTENGINE.getEventBoolValueBounce(EV_CAMERA_LOOKBACK))
 		{
 			if(camRotX > Degree(0))
 				camRotX=Degree(0);
 			else
 				camRotX=Degree(180);
-			mTimeUntilNextToggle = 0.2;
 		}
 		if (INPUTENGINE.getEventBoolValue(EV_CAMERA_ROTATE_LEFT))
 		{
@@ -3775,7 +3712,7 @@ bool ExampleFrameListener::updateEvents(float dt)
 			if (envmap) envmap->forceUpdate(Vector3(terrainxsize/2.0, hfinder->getHeightAt(terrainxsize/2.0, terrainzsize/2.0)+50.0, terrainzsize/2.0));
 		}
 
-		if (INPUTENGINE.getEventBoolValue(EV_COMMON_TOGGLE_RENDER_MODE) && mTimeUntilNextToggle <=0)
+		if (INPUTENGINE.getEventBoolValueBounce(EV_COMMON_TOGGLE_RENDER_MODE, 0.5f))
 		{
 			mSceneDetailIndex = (mSceneDetailIndex+1)%3 ;
 			switch(mSceneDetailIndex) {
@@ -3793,10 +3730,9 @@ bool ExampleFrameListener::updateEvents(float dt)
 				mtc->update();
 
 			}
-			mTimeUntilNextToggle = 0.5;
 		}
 
-		if (INPUTENGINE.getEventBoolValue(EV_COMMON_VIEW_MAP) && mTimeUntilNextToggle <= 0)
+		if (INPUTENGINE.getEventBoolValueBounce(EV_COMMON_VIEW_MAP))
 		{
 			if(bigMap)
 			{
@@ -3834,9 +3770,8 @@ bool ExampleFrameListener::updateEvents(float dt)
 				}
 			}
 
-			mTimeUntilNextToggle = 0.2;
 		}
-		if (INPUTENGINE.getEventBoolValue(EV_COMMON_MAP_ALPHA) && mTimeUntilNextToggle <= 0)
+		if (INPUTENGINE.getEventBoolValueBounce(EV_COMMON_MAP_ALPHA))
 		{
 			if(bigMap)
 			{
@@ -3856,9 +3791,8 @@ bool ExampleFrameListener::updateEvents(float dt)
 					if(mtc) mtc->setTranlucency(1);
 				}
 			}
-			mTimeUntilNextToggle = 0.2;
 		}
-		if (INPUTENGINE.getEventBoolValue(EV_COMMON_RESCUE_TRUCK) && mTimeUntilNextToggle <=0 && !netmode && !useIngameEditor)
+		if (INPUTENGINE.getEventBoolValueBounce(EV_COMMON_RESCUE_TRUCK, 0.5f) && !netmode && !useIngameEditor)
 		{
 			//rescue!
 			//if (current_truck!=-1) setCurrentTruck(-1);
@@ -3874,58 +3808,50 @@ bool ExampleFrameListener::updateEvents(float dt)
 			{
 				setCurrentTruck(rtruck);
 			}
-			mTimeUntilNextToggle = 0.5;
 		}
 
-		if (INPUTENGINE.getEventBoolValue(EV_TRUCK_BLINK_LEFT) && mTimeUntilNextToggle <=0 && current_truck>=0)
+		if (INPUTENGINE.getEventBoolValueBounce(EV_TRUCK_BLINK_LEFT) && current_truck>=0)
 		{
 			if (trucks[current_truck]->getBlinkType() == BLINK_LEFT)
 				trucks[current_truck]->setBlinkType(BLINK_NONE);
 			else
 				trucks[current_truck]->setBlinkType(BLINK_LEFT);
-			mTimeUntilNextToggle = 0.2;
 		}
 
-		if (INPUTENGINE.getEventBoolValue(EV_TRUCK_BLINK_RIGHT) && mTimeUntilNextToggle <=0 && current_truck>=0)
+		if (INPUTENGINE.getEventBoolValueBounce(EV_TRUCK_BLINK_RIGHT) && current_truck>=0)
 		{
 			if (trucks[current_truck]->getBlinkType() == BLINK_RIGHT)
 				trucks[current_truck]->setBlinkType(BLINK_NONE);
 			else
 				trucks[current_truck]->setBlinkType(BLINK_RIGHT);
-			mTimeUntilNextToggle = 0.2;
 		}
 
-		if (INPUTENGINE.getEventBoolValue(EV_TRUCK_BLINK_WARN) && mTimeUntilNextToggle <=0 && current_truck>=0)
+		if (INPUTENGINE.getEventBoolValueBounce(EV_TRUCK_BLINK_WARN) && current_truck>=0)
 		{
 			if (trucks[current_truck]->getBlinkType() == BLINK_WARN)
 				trucks[current_truck]->setBlinkType(BLINK_NONE);
 			else
 				trucks[current_truck]->setBlinkType(BLINK_WARN);
-			mTimeUntilNextToggle = 0.2;
 		}
 
-		if (INPUTENGINE.getEventBoolValue(EV_COMMON_NETCHATDISPLAY) && mTimeUntilNextToggle <=0)
+		if (INPUTENGINE.getEventBoolValueBounce(EV_COMMON_NETCHATDISPLAY))
 		{
 			NETCHAT.toggleVisible(this);
-			mTimeUntilNextToggle = 0.2;
 		}
 
-		if (INPUTENGINE.getEventBoolValue(EV_COMMON_CONSOLEDISPLAY) && mTimeUntilNextToggle <=0)
+		if (INPUTENGINE.getEventBoolValueBounce(EV_COMMON_CONSOLEDISPLAY))
 		{
 			OgreConsole::getSingleton().setVisible(!OgreConsole::getSingleton().getVisible());
-			mTimeUntilNextToggle = 0.2;
 		}
 
-		if (INPUTENGINE.getEventBoolValue(EV_COMMON_NETCHATMODE) && mTimeUntilNextToggle <=0)
+		if (INPUTENGINE.getEventBoolValueBounce(EV_COMMON_NETCHATMODE))
 		{
 			NETCHAT.toggleMode(this);
-			mTimeUntilNextToggle = 0.2;
 		}
 
-		if (INPUTENGINE.getEventBoolValue(EV_COMMON_ENTER_OR_EXIT_TRUCK) && mTimeUntilNextToggle <= 0 && !netmode && !useIngameEditor)
+		if (INPUTENGINE.getEventBoolValueBounce(EV_COMMON_ENTER_OR_EXIT_TRUCK, 0.5f) && !netmode && !useIngameEditor)
 		{
 			//perso in/out
-			mTimeUntilNextToggle = 0.5;
 			if (current_truck==-1)
 			{
 				//find the nearest truck
@@ -3955,9 +3881,9 @@ bool ExampleFrameListener::updateEvents(float dt)
 			else if (trucks[current_truck]->nodes[trucks[current_truck]->cinecameranodepos[0]].Velocity.length()<1)
 			{
 				setCurrentTruck(-1);
-			} else {
+			} else
+			{
 				trucks[current_truck]->brake=trucks[current_truck]->brakeforce*0.66;
-				mTimeUntilNextToggle = 0.0;
 			}
 		}
 
@@ -4077,24 +4003,22 @@ bool ExampleFrameListener::updateEvents(float dt)
 	*/
 #endif
 
-	if(INPUTENGINE.getEventBoolValue(EV_COMMON_QUIT_GAME) && mTimeUntilNextToggle <= 0)
+	if(INPUTENGINE.getEventBoolValueBounce(EV_COMMON_QUIT_GAME))
 	{
 		if(!showcredits)
 			shutdown_pre();
 		else
 			shutdown_final();
-		mTimeUntilNextToggle = 0.5;
 	}
 
-	if(INPUTENGINE.getEventBoolValue(EV_COMMON_TRUCK_INFO) && !showcredits && mTimeUntilNextToggle <= 0 && current_truck != -1)
+	if(INPUTENGINE.getEventBoolValueBounce(EV_COMMON_TRUCK_INFO) && !showcredits && current_truck != -1)
 	{
 		mTruckInfoOn = ! mTruckInfoOn;
 		dirty=true;
 		TRUCKHUD.show(mTruckInfoOn);
-		mTimeUntilNextToggle = 0.2;
 	}
 
-	if(INPUTENGINE.getEventBoolValue(EV_COMMON_HIDE_GUI) && !showcredits && mTimeUntilNextToggle <= 0)
+	if(INPUTENGINE.getEventBoolValueBounce(EV_COMMON_HIDE_GUI) && !showcredits)
 	{
 		hidegui = !hidegui;
 		if(hidegui)
@@ -4120,20 +4044,17 @@ bool ExampleFrameListener::updateEvents(float dt)
 			}
 		}
 		dirty=true;
-		mTimeUntilNextToggle = 0.2;
 	}
 
 #ifdef HAS_EDITOR
-	if (INPUTENGINE.getEventBoolValue(EV_COMMON_START_TRUCK_EDITOR") && (loading_state==ALL_LOADED) && mTimeUntilNextToggle <= 0 && !useIngameEditor)
+	if (INPUTENGINE.getEventBoolValueBounce(EV_COMMON_START_TRUCK_EDITOR") && (loading_state==ALL_LOADED) && !useIngameEditor)
 	{
 		if (!trucked) trucked=new TruckEditor(truckeditorOverlay, mWindow->getWidth(), mWindow->getHeight());
 		showTruckEditorOverlay(true);
 		loading_state=EDITING;
-
-		mTimeUntilNextToggle = 0.2;
 	}
 #endif
-	if (INPUTENGINE.getEventBoolValue(EV_COMMON_TOGGLE_STATS) && mTimeUntilNextToggle <= 0)
+	if (INPUTENGINE.getEventBoolValueBounce(EV_COMMON_TOGGLE_STATS))
 	{
 		dirty=true;
 		if(mStatsOn==0)
@@ -4144,11 +4065,9 @@ bool ExampleFrameListener::updateEvents(float dt)
 			mStatsOn=0;
 
 		showDebugOverlay(mStatsOn);
-
-		mTimeUntilNextToggle = 0.2;
 	}
 
-	if (INPUTENGINE.getEventBoolValue(EV_COMMON_TOGGLE_MAT_DEBUG) && mTimeUntilNextToggle <= 0)
+	if (INPUTENGINE.getEventBoolValueBounce(EV_COMMON_TOGGLE_MAT_DEBUG))
 	{
 		if(mStatsOn==0)
 			mStatsOn=2;
@@ -4158,13 +4077,10 @@ bool ExampleFrameListener::updateEvents(float dt)
 			mStatsOn=0;
 		dirty=true;
 		showDebugOverlay(mStatsOn);
-
-		mTimeUntilNextToggle = 0.2;
 	}
 
-	// grass beta - do not use in release
 #ifdef PAGED
-	if (INPUTENGINE.getEventBoolValue(EV_GRASS_MORE) && mTimeUntilNextToggle <= 0)
+	if (INPUTENGINE.getEventBoolValueBounce(EV_GRASS_MORE))
 	{
 		Vector3 pos = Vector3::ZERO;
 		if(current_truck == -1)
@@ -4172,10 +4088,10 @@ bool ExampleFrameListener::updateEvents(float dt)
 		else
 			pos = trucks[current_truck]->getPosition();
 		setGrassDensity(pos.x, pos.z, 20, true);
-		mTimeUntilNextToggle = 0.2;
 	}
 #endif
-	if (INPUTENGINE.getEventBoolValue(EV_MAP_INTERACTIVE_TOGGLE) && mTimeUntilNextToggle <= 0 && mtc)
+
+	if (INPUTENGINE.getEventBoolValueBounce(EV_MAP_INTERACTIVE_TOGGLE, 0.5f) && mtc)
 	{
 		if(mtc && bigMap)
 		{
@@ -4195,10 +4111,9 @@ bool ExampleFrameListener::updateEvents(float dt)
 				LogManager::getSingleton().logMessage("enabled interactive Map");
 			}
 		}
-		mTimeUntilNextToggle = 0.5;
 	}
 
-	if (INPUTENGINE.getEventBoolValue(EV_MAP_IN) && mTimeUntilNextToggle <= 0 && interactivemap && mtc)
+	if (INPUTENGINE.getEventBoolValueBounce(EV_MAP_IN) && interactivemap && mtc)
 	{
 		//LogManager::getSingleton().logMessage("zoom in");
 		if(INPUTENGINE.isKeyDown(OIS::KC_LSHIFT) || INPUTENGINE.isKeyDown(OIS::KC_RSHIFT))
@@ -4207,7 +4122,7 @@ bool ExampleFrameListener::updateEvents(float dt)
 			mtc->setCamZoomRel(1);
 		mtc->update();
 	}
-	if (INPUTENGINE.getEventBoolValue(EV_MAP_OUT) && mTimeUntilNextToggle <= 0 && interactivemap && mtc)
+	if (INPUTENGINE.getEventBoolValueBounce(EV_MAP_OUT) && interactivemap && mtc)
 	{
 		//LogManager::getSingleton().logMessage("zoom out");
 		if(INPUTENGINE.isKeyDown(OIS::KC_LSHIFT) || INPUTENGINE.isKeyDown(OIS::KC_RSHIFT))
@@ -4271,7 +4186,7 @@ bool ExampleFrameListener::updateEvents(float dt)
 	}
 #endif //0
 #endif //paged
-	if (INPUTENGINE.getEventBoolValue(EV_COMMON_OUTPUT_POSITION) && mTimeUntilNextToggle <= 0 && loading_state == ALL_LOADED)
+	if (INPUTENGINE.getEventBoolValueBounce(EV_COMMON_OUTPUT_POSITION) && loading_state == ALL_LOADED)
 	{
 		Vector3 pos = Vector3::ZERO;
 		float rotz = 0;
@@ -4289,7 +4204,6 @@ bool ExampleFrameListener::updateEvents(float dt)
 		}
 		LogManager::getSingleton().logMessage("position " + StringConverter::toString(pos.x) + ", "+ StringConverter::toString(pos.y) + ", " + StringConverter::toString(pos.z) + ", 0, " + StringConverter::toString(rotz)+", 0");
 
-		mTimeUntilNextToggle = 0.2;
 	}
 
 	//update window

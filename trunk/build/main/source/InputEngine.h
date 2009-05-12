@@ -349,6 +349,8 @@ public:
 	void Capture();
 	float getEventValue(int eventID);
 	bool getEventBoolValue(int eventID);
+	bool getEventBoolValueBounce(int eventID, float time=0.2f);
+	float getEventBounceTime(int eventID);
 	static bool instanceExists() ;	
 	// we need to use hwnd here, as we are also using this in the configurator
 	bool setup(size_t hwnd, bool capture=false, bool capturemouse=false, int grabMode=0);
@@ -396,6 +398,8 @@ public:
 
 	int getKeboardKeyForCommand(int eventID);
 
+	void updateKeyBounces(float dt);
+
 protected:
 	InputEngine();
 	~InputEngine();
@@ -432,6 +436,7 @@ protected:
 
 	// define event aliases
 	std::map<int, std::vector<event_trigger_t> > events;
+	std::map<int, float > event_times;
 
 
 	bool processLine(char *line);
