@@ -720,8 +720,9 @@ bool InputEngine::getEventBoolValueBounce(int eventID, float time)
 		return false;
 	else
 	{
-		event_times[eventID] = time;
-		return getEventBoolValue(eventID);
+		bool res = getEventBoolValue(eventID);
+		if(res) event_times[eventID] = time;
+		return res;
 	}
 }
 
