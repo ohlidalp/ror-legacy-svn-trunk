@@ -97,331 +97,331 @@ eventInfo_t eventInfo[] = {
 	{
 		"AIRPLANE_REVERSE", 
 		EV_AIRPLANE_REVERSE,
-		"",
+		"Keyboard R",
 		_L("reverse the turboprops")
 	},
 	{
 		"AIRPLANE_RUDDER_LEFT", 
 		EV_AIRPLANE_RUDDER_LEFT,
-		"",
+		"Keyboard Z",
 		_L("rudder left")
 	},
 	{
 		"AIRPLANE_RUDDER_RIGHT", 
 		EV_AIRPLANE_RUDDER_RIGHT,
-		"",
+		"Keyboard X",
 		_L("rudder right")
 	},
 	{
 		"AIRPLANE_STEER_LEFT", 
 		EV_AIRPLANE_STEER_LEFT,
-		"",
+		"Keyboard LEFT",
 		_L("steer left")
 	},
 	{
 		"AIRPLANE_STEER_RIGHT", 
 		EV_AIRPLANE_STEER_RIGHT,
-		"",
+		"Keyboard RIGHT",
 		_L("steer right")
 	},
 	{
 		"AIRPLANE_THROTTLE_AXIS", 
 		EV_AIRPLANE_THROTTLE_AXIS,
-		"",
+		"None",
 		_L("throttle axis. Only use this if you have fitting hardware :) (i.e. a Slider)")
 	},
 	{
 		"AIRPLANE_THROTTLE_DOWN", 
 		EV_AIRPLANE_THROTTLE_DOWN,
-		"",
+		"Keyboard EXPL+PGDOWN",
 		_L("decreases the airplane thrust")
 	},
 	{
 		"AIRPLANE_THROTTLE_FULL", 
 		EV_AIRPLANE_THROTTLE_FULL,
-		"",
+		"Keyboard CTRL+PGUP",
 		_L("full thrust")
 	},
 	{
 		"AIRPLANE_THROTTLE_NO", 
 		EV_AIRPLANE_THROTTLE_NO,
-		"",
+		"Keyboard CTRL+PGDOWN",
 		_L("no thrust")
 	},
 	{
 		"AIRPLANE_THROTTLE_UP", 
 		EV_AIRPLANE_THROTTLE_UP,
-		"",
+		"Keyboard EXPL+PGUP",
 		_L("increase the airplane thrust")
 	},
 	{
 		"AIRPLANE_TOGGLE_ENGINES", 
 		EV_AIRPLANE_TOGGLE_ENGINES,
-		"",
+		"Keyboard CTRL+HOME",
 		_L("switch all engines on / off")
 	},
 	{
 		"BOAT_CENTER_RUDDER", 
 		EV_BOAT_CENTER_RUDDER,
-		"",
+		"Keyboard DOWN",
 		_L("center the rudder")
 	},
 	{
 		"BOAT_REVERSE", 
 		EV_BOAT_REVERSE,
-		"",
+		"Keyboard UP",
 		_L("no thrust")
 	},
 	{
 		"BOAT_STEER_LEFT", 
 		EV_BOAT_STEER_LEFT,
-		"",
+		"Keyboard LEFT",
 		_L("steer left a step")
 	},
 	{
 		"BOAT_STEER_LEFT_AXIS", 
 		EV_BOAT_STEER_LEFT_AXIS,
-		"",
+		"None",
 		_L("steer left (analog value!)")
 	},
 	{
 		"BOAT_STEER_RIGHT", 
 		EV_BOAT_STEER_RIGHT,
-		"",
+		"Keyboard RIGHT",
 		_L("steer right a step")
 	},
 	{
 		"BOAT_STEER_RIGHT_AXIS", 
 		EV_BOAT_STEER_RIGHT_AXIS,
-		"",
+		"None",
 		_L("steer right (analog value!)")
 	},
 	{
 		"BOAT_THROTTLE_AXIS", 
 		EV_BOAT_THROTTLE_AXIS,
-		"",
+		"None",
 		_L("throttle axis. Only use this if you have fitting hardware :) (i.e. a Slider)")
 	},
 	{
 		"BOAT_THROTTLE_DOWN", 
 		EV_BOAT_THROTTLE_DOWN,
-		"",
+		"Keyboard PGDOWN",
 		_L("decrease throttle")
 	},
 	{
 		"BOAT_THROTTLE_UP", 
 		EV_BOAT_THROTTLE_UP,
-		"",
+		"Keyboard PGUP",
 		_L("increase throttle")
 	},
 	{
 		"CAELUM_DECREASE_TIME", 
 		EV_CAELUM_DECREASE_TIME,
-		"",
+		"Keyboard EXPL+SUBTRACT",
 		_L("decrease day-time")
 	},
 	{
 		"CAELUM_DECREASE_TIME_FAST", 
 		EV_CAELUM_DECREASE_TIME_FAST,
-		"",
+		"Keyboard SHIFT+SUBTRACT",
 		_L("decrease day-time a lot faster")
 	},
 	{
 		"CAELUM_INCREASE_TIME", 
 		EV_CAELUM_INCREASE_TIME,
-		"",
+		"Keyboard EXPL+ADD",
 		_L("increase day-time")
 	},
 	{
 		"CAELUM_INCREASE_TIME_FAST", 
 		EV_CAELUM_INCREASE_TIME_FAST,
-		"",
+		"Keyboard SHIFT+ADD",
 		_L("increase day-time a lot faster")
 	},
 	{
 		"CAMERA_CHANGE", 
 		EV_CAMERA_CHANGE,
-		"",
+		"Keyboard EXPL+C",
 		_L("change camera mode")
 	},
 	{
 		"CAMERA_LOOKBACK", 
 		EV_CAMERA_LOOKBACK,
-		"",
+		"Keyboard NUMPAD1",
 		_L("look back (toggles between normal and lookback)")
 	},
 	{
 		"CAMERA_RESET", 
 		EV_CAMERA_RESET,
-		"",
+		"Keyboard NUMPAD5",
 		_L("reset the camera position")
 	},
 	{
 		"CAMERA_ROTATE_DOWN", 
 		EV_CAMERA_ROTATE_DOWN,
-		"",
+		"Keyboard NUMPAD2",
 		_L("rotate camera down")
 	},
 	{
 		"CAMERA_ROTATE_LEFT", 
 		EV_CAMERA_ROTATE_LEFT,
-		"",
+		"Keyboard NUMPAD4",
 		_L("rotate camera left")
 	},
 	{
 		"CAMERA_ROTATE_RIGHT", 
 		EV_CAMERA_ROTATE_RIGHT,
-		"",
+		"Keyboard NUMPAD6",
 		_L("rotate camera right")
 	},
 	{
 		"CAMERA_ROTATE_UP", 
 		EV_CAMERA_ROTATE_UP,
-		"",
+		"Keyboard NUMPAD8",
 		_L("rotate camera up")
 	},
 	{
 		"CAMERA_ZOOM_IN", 
 		EV_CAMERA_ZOOM_IN,
-		"",
+		"Keyboard EXPL+NUMPAD9",
 		_L("zoom camera in")
 	},
 	{
 		"CAMERA_ZOOM_IN_FAST", 
 		EV_CAMERA_ZOOM_IN_FAST,
-		"",
+		"Keyboard SHIFT+NUMPAD9",
 		_L("zoom camera in faster")
 	},
 	{
 		"CAMERA_ZOOM_OUT", 
 		EV_CAMERA_ZOOM_OUT,
-		"",
+		"Keyboard EXPL+NUMPAD3",
 		_L("zoom camera out")
 	},
 	{
 		"CAMERA_ZOOM_OUT_FAST", 
 		EV_CAMERA_ZOOM_OUT_FAST,
-		"",
+		"Keyboard SHIFT+NUMPAD3",
 		_L("zoom camera out faster")
 	},
 	{
 		"CHARACTER_BACKWARDS", 
 		EV_CHARACTER_BACKWARDS,
-		"",
+		"Keyboard S",
 		_L("step backwards with the character")
 	},
 	{
 		"CHARACTER_FORWARD", 
 		EV_CHARACTER_FORWARD,
-		"",
+		"Keyboard W",
 		_L("step forward with the character")
 	},
 	{
 		"CHARACTER_JUMP", 
 		EV_CHARACTER_JUMP,
-		"",
+		"Keyboard SPACE",
 		_L("let the character jump")
 	},
 	{
 		"CHARACTER_LEFT", 
 		EV_CHARACTER_LEFT,
-		"",
+		"Keyboard LEFT",
 		_L("rotate character left")
 	},
 	{
 		"CHARACTER_RIGHT", 
 		EV_CHARACTER_RIGHT,
-		"",
+		"Keyboard RIGHT",
 		_L("rotate character right")
 	},
 	{
 		"CHARACTER_RUN", 
 		EV_CHARACTER_RUN,
-		"",
+		"Keyboard SHIFT+W",
 		_L("let the character run")
 	},
 	{
 		"CHARACTER_SIDESTEP_LEFT", 
 		EV_CHARACTER_SIDESTEP_LEFT,
-		"",
+		"Keyboard A",
 		_L("sidestep to the left")
 	},
 	{
 		"CHARACTER_SIDESTEP_RIGHT", 
 		EV_CHARACTER_SIDESTEP_RIGHT,
-		"",
+		"Keyboard D",
 		_L("sidestep to the right")
 	},
 	{
 		"COMMANDS_01", 
 		EV_COMMANDS_01,
-		"",
+		"Keyboard EXPL+F1",
 		_L("Command 1")
 	},
 	{
 		"COMMANDS_02", 
 		EV_COMMANDS_02,
-		"",
+		"Keyboard EXPL+F2",
 		_L("Command 2")
 	},
 	{
 		"COMMANDS_03", 
 		EV_COMMANDS_03,
-		"",
+		"Keyboard EXPL+F3",
 		_L("Command 3")
 	},
 	{
 		"COMMANDS_04", 
 		EV_COMMANDS_04,
-		"",
+		"Keyboard EXPL+F4",
 		_L("Command 4")
 	},
 	{
 		"COMMANDS_05", 
 		EV_COMMANDS_05,
-		"",
+		"Keyboard EXPL+F5",
 		_L("Command 5")
 	},
 	{
 		"COMMANDS_06", 
 		EV_COMMANDS_06,
-		"",
+		"Keyboard EXPL+F6",
 		_L("Command 6")
 	},
 	{
 		"COMMANDS_07", 
 		EV_COMMANDS_07,
-		"",
+		"Keyboard EXPL+F7",
 		_L("Command 7")
 	},
 	{
 		"COMMANDS_08", 
 		EV_COMMANDS_08,
-		"",
+		"Keyboard EXPL+F8",
 		_L("Command 8")
 	},
 	{
 		"COMMANDS_09", 
 		EV_COMMANDS_09,
-		"",
+		"Keyboard EXPL+F9",
 		_L("Command 9")
 	},
 	{
 		"COMMANDS_10", 
 		EV_COMMANDS_10,
-		"",
+		"Keyboard EXPL+F10",
 		_L("Command 10")
 	},
 	{
 		"COMMANDS_11", 
 		EV_COMMANDS_11,
-		"",
+		"Keyboard EXPL+F11",
 		_L("Command 11")
 	},
 	{
 		"COMMANDS_12", 
 		EV_COMMANDS_12,
-		"",
+		"Keyboard EXPL+F12",
 		_L("Command 12")
 	},
 	{
