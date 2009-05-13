@@ -31,241 +31,1273 @@ freely, subject to the following restrictions:
 #ifndef NOOGRE
 #include "IngameConsole.h"
 #include "gui_manager.h"
+#include "language.h"
+#else
+#define _L(x) x
 #endif
 
 
-eventNames_t eventNames[] = {
-	{"AIRPLANE_STEER_RIGHT", EV_AIRPLANE_STEER_RIGHT},
-	{"AIRPLANE_BRAKE", EV_AIRPLANE_BRAKE},
-	{"AIRPLANE_ELEVATOR_DOWN", EV_AIRPLANE_ELEVATOR_DOWN },
-	{"AIRPLANE_ELEVATOR_UP", EV_AIRPLANE_ELEVATOR_UP },
-	{"AIRPLANE_FLAPS_FULL", EV_AIRPLANE_FLAPS_FULL },
-	{"AIRPLANE_FLAPS_LESS", EV_AIRPLANE_FLAPS_LESS },
-	{"AIRPLANE_FLAPS_MORE", EV_AIRPLANE_FLAPS_MORE },
-	{"AIRPLANE_FLAPS_NONE", EV_AIRPLANE_FLAPS_NONE },
-	{"AIRPLANE_PARKING_BRAKE", EV_AIRPLANE_PARKING_BRAKE },
-	{"AIRPLANE_REVERSE", EV_AIRPLANE_REVERSE },
-	{"AIRPLANE_RUDDER_LEFT", EV_AIRPLANE_RUDDER_LEFT },
-	{"AIRPLANE_RUDDER_RIGHT", EV_AIRPLANE_RUDDER_RIGHT },
-	{"AIRPLANE_STEER_LEFT", EV_AIRPLANE_STEER_LEFT },
-	{"AIRPLANE_STEER_RIGHT", EV_AIRPLANE_STEER_RIGHT },
-	{"AIRPLANE_THROTTLE_AXIS", EV_AIRPLANE_THROTTLE_AXIS },
-	{"AIRPLANE_THROTTLE_DOWN", EV_AIRPLANE_THROTTLE_DOWN },
-	{"AIRPLANE_THROTTLE_FULL", EV_AIRPLANE_THROTTLE_FULL },
-	{"AIRPLANE_THROTTLE_NO", EV_AIRPLANE_THROTTLE_NO },
-	{"AIRPLANE_THROTTLE_UP", EV_AIRPLANE_THROTTLE_UP },
-	{"AIRPLANE_TOGGLE_ENGINES", EV_AIRPLANE_TOGGLE_ENGINES },
-	{"BOAT_CENTER_RUDDER", EV_BOAT_CENTER_RUDDER },
-	{"BOAT_REVERSE", EV_BOAT_REVERSE },
-	{"BOAT_STEER_LEFT", EV_BOAT_STEER_LEFT },
-	{"BOAT_STEER_LEFT_AXIS", EV_BOAT_STEER_LEFT_AXIS },
-	{"BOAT_STEER_RIGHT", EV_BOAT_STEER_RIGHT },
-	{"BOAT_STEER_RIGHT_AXIS", EV_BOAT_STEER_RIGHT_AXIS },
-	{"BOAT_THROTTLE_AXIS", EV_BOAT_THROTTLE_AXIS },
-	{"BOAT_THROTTLE_DOWN", EV_BOAT_THROTTLE_DOWN },
-	{"BOAT_THROTTLE_UP", EV_BOAT_THROTTLE_UP},
-	{"CAELUM_DECREASE_TIME", EV_CAELUM_DECREASE_TIME },
-	{"CAELUM_DECREASE_TIME_FAST", EV_CAELUM_DECREASE_TIME_FAST },
-	{"CAELUM_INCREASE_TIME", EV_CAELUM_INCREASE_TIME },
-	{"CAELUM_INCREASE_TIME_FAST", EV_CAELUM_INCREASE_TIME_FAST },
-	{"CAMERA_CHANGE", EV_CAMERA_CHANGE },
-	{"CAMERA_LOOKBACK", EV_CAMERA_LOOKBACK },
-	{"CAMERA_RESET", EV_CAMERA_RESET },
-	{"CAMERA_ROTATE_DOWN", EV_CAMERA_ROTATE_DOWN },
-	{"CAMERA_ROTATE_LEFT", EV_CAMERA_ROTATE_LEFT },
-	{"CAMERA_ROTATE_RIGHT", EV_CAMERA_ROTATE_RIGHT },
-	{"CAMERA_ROTATE_UP", EV_CAMERA_ROTATE_UP },
-	{"CAMERA_ZOOM_IN", EV_CAMERA_ZOOM_IN },
-	{"CAMERA_ZOOM_IN_FAST", EV_CAMERA_ZOOM_IN_FAST },
-	{"CAMERA_ZOOM_OUT", EV_CAMERA_ZOOM_OUT },
-	{"CAMERA_ZOOM_OUT_FAST", EV_CAMERA_ZOOM_OUT_FAST },
-	{"CHARACTER_BACKWARDS", EV_CHARACTER_BACKWARDS },
-	{"CHARACTER_FORWARD", EV_CHARACTER_FORWARD },
-	{"CHARACTER_JUMP", EV_CHARACTER_JUMP },
-	{"CHARACTER_LEFT", EV_CHARACTER_LEFT },
-	{"CHARACTER_RIGHT", EV_CHARACTER_RIGHT },
-	{"CHARACTER_RUN", EV_CHARACTER_RUN },
-	{"CHARACTER_SIDESTEP_LEFT", EV_CHARACTER_SIDESTEP_LEFT },
-	{"CHARACTER_SIDESTEP_RIGHT", EV_CHARACTER_SIDESTEP_RIGHT },
-	{"COMMANDS_01", EV_COMMANDS_01 },
-	{"COMMANDS_02", EV_COMMANDS_02 },
-	{"COMMANDS_03", EV_COMMANDS_03 },
-	{"COMMANDS_04", EV_COMMANDS_04 },
-	{"COMMANDS_05", EV_COMMANDS_05 },
-	{"COMMANDS_06", EV_COMMANDS_06 },
-	{"COMMANDS_07", EV_COMMANDS_07 },
-	{"COMMANDS_08", EV_COMMANDS_08 },
-	{"COMMANDS_09", EV_COMMANDS_09 },
-	{"COMMANDS_10", EV_COMMANDS_10 },
-	{"COMMANDS_11", EV_COMMANDS_11 },
-	{"COMMANDS_12", EV_COMMANDS_12 },
-	{"COMMANDS_13", EV_COMMANDS_13 },
-	{"COMMANDS_14", EV_COMMANDS_14 },
-	{"COMMANDS_15", EV_COMMANDS_15 },
-	{"COMMANDS_16", EV_COMMANDS_16 },
-	{"COMMANDS_17", EV_COMMANDS_17 },
-	{"COMMANDS_18", EV_COMMANDS_18 },
-	{"COMMANDS_19", EV_COMMANDS_19 },
-	{"COMMANDS_20", EV_COMMANDS_20 },
-	{"COMMANDS_21", EV_COMMANDS_21 },
-	{"COMMANDS_22", EV_COMMANDS_22 },
-	{"COMMANDS_23", EV_COMMANDS_23 },
-	{"COMMANDS_24", EV_COMMANDS_24 },
-	{"COMMANDS_25", EV_COMMANDS_25 },
-	{"COMMANDS_26", EV_COMMANDS_26 },
-	{"COMMANDS_27", EV_COMMANDS_27 },
-	{"COMMANDS_28", EV_COMMANDS_28 },
-	{"COMMANDS_29", EV_COMMANDS_29 },
-	{"COMMANDS_30", EV_COMMANDS_30 },
-	{"COMMANDS_31", EV_COMMANDS_31 },
-	{"COMMANDS_32", EV_COMMANDS_32 },
-	{"COMMANDS_33", EV_COMMANDS_33 },
-	{"COMMANDS_34", EV_COMMANDS_34 },
-	{"COMMANDS_35", EV_COMMANDS_35 },
-	{"COMMANDS_36", EV_COMMANDS_36 },
-	{"COMMANDS_37", EV_COMMANDS_37 },
-	{"COMMANDS_38", EV_COMMANDS_38 },
-	{"COMMANDS_39", EV_COMMANDS_39 },
-	{"COMMANDS_40", EV_COMMANDS_40 },
-	{"COMMANDS_41", EV_COMMANDS_41 },
-	{"COMMANDS_42", EV_COMMANDS_42 },
-	{"COMMANDS_43", EV_COMMANDS_43 },
-	{"COMMANDS_44", EV_COMMANDS_44 },
-	{"COMMANDS_45", EV_COMMANDS_45 },
-	{"COMMANDS_46", EV_COMMANDS_46 },
-	{"COMMANDS_47", EV_COMMANDS_47 },
-	{"COMMANDS_48", EV_COMMANDS_48 },
-	{"COMMON_CONSOLEDISPLAY", EV_COMMON_CONSOLEDISPLAY },
-	{"COMMON_CONSOLEMODE", EV_COMMON_CONSOLEMODE },
-	{"COMMON_ENTER_CHAT", EV_COMMON_ENTER_CHAT },
-	{"COMMON_ENTER_OR_EXIT_TRUCK", EV_COMMON_ENTER_OR_EXIT_TRUCK },
-	{"COMMON_HIDE_GUI", EV_COMMON_HIDE_GUI },
-	{"COMMON_LOCK", EV_COMMON_LOCK },
-	{"COMMON_MAP_ALPHA", EV_COMMON_MAP_ALPHA },
-	{"COMMON_OUTPUT_POSITION", EV_COMMON_OUTPUT_POSITION },
-	{"COMMON_PRESSURE_LESS", EV_COMMON_PRESSURE_LESS },
-	{"COMMON_PRESSURE_MORE", EV_COMMON_PRESSURE_MORE },
-	{"COMMON_QUIT_GAME", EV_COMMON_QUIT_GAME },
-	{"COMMON_RESCUE_TRUCK", EV_COMMON_RESCUE_TRUCK },
-	{"COMMON_RESET_TRUCK", EV_COMMON_RESET_TRUCK },
-	{"COMMON_SCREENSHOT", EV_COMMON_SCREENSHOT },
-	{"COMMON_SECURE_LOAD", EV_COMMON_SECURE_LOAD },
-	{"COMMON_SHOW_SKELETON", EV_COMMON_SHOW_SKELETON },
-	{"COMMON_START_TRUCK_EDITOR", EV_COMMON_START_TRUCK_EDITOR },
-	{"COMMON_TOGGLE_CUSTOM_PARTICLES", EV_COMMON_TOGGLE_CUSTOM_PARTICLES },
-	{"COMMON_TOGGLE_MAT_DEBUG", EV_COMMON_TOGGLE_MAT_DEBUG },
-	{"COMMON_TOGGLE_RENDER_MODE", EV_COMMON_TOGGLE_RENDER_MODE },
-	{"COMMON_TOGGLE_REPLAY_MODE", EV_COMMON_TOGGLE_REPLAY_MODE },
-	{"COMMON_TOGGLE_STATS", EV_COMMON_TOGGLE_STATS },
-	{"COMMON_TOGGLE_TRUCK_BEACONS", EV_COMMON_TOGGLE_TRUCK_BEACONS },
-	{"COMMON_TOGGLE_TRUCK_LIGHTS", EV_COMMON_TOGGLE_TRUCK_LIGHTS },
-	{"COMMON_TRUCK_INFO", EV_COMMON_TRUCK_INFO },
-	{"COMMON_VIEW_MAP", EV_COMMON_VIEW_MAP },
-	{"COMMON_FOV_LESS", EV_COMMON_FOV_LESS },
-	{"COMMON_FOV_MORE", EV_COMMON_FOV_MORE },
-	{"GRASS_LESS", EV_GRASS_LESS },
-	{"GRASS_MORE", EV_GRASS_MORE },
-	{"GRASS_MOST", EV_GRASS_MOST },
-	{"GRASS_NONE", EV_GRASS_NONE },
-	{"GRASS_SAVE", EV_GRASS_SAVE },
-	{"INGAMEEDITOR_BACKWARD", EV_INGAMEEDITOR_BACKWARD },
-	{"INGAMEEDITOR_BEAM_TYPE", EV_INGAMEEDITOR_BEAM_TYPE },
-	{"INGAMEEDITOR_CHANGE_NODE_TYPE", EV_INGAMEEDITOR_CHANGE_NODE_TYPE },
-	{"INGAMEEDITOR_DOWN", EV_INGAMEEDITOR_DOWN },
-	{"INGAMEEDITOR_FORWARD", EV_INGAMEEDITOR_FORWARD },
-	{"INGAMEEDITOR_KEY_INFO", EV_INGAMEEDITOR_KEY_INFO },
-	{"INGAMEEDITOR_LEFT", EV_INGAMEEDITOR_LEFT },
-	{"INGAMEEDITOR_MODE_FLARE", EV_INGAMEEDITOR_MODE_FLARE },
-	{"INGAMEEDITOR_MODE_GEO", EV_INGAMEEDITOR_MODE_GEO },
-	{"INGAMEEDITOR_MOVE_NODE", EV_INGAMEEDITOR_MOVE_NODE },
-	{"INGAMEEDITOR_PLACE_BEAM", EV_INGAMEEDITOR_PLACE_BEAM },
-	{"INGAMEEDITOR_RESET", EV_INGAMEEDITOR_RESET },
-	{"INGAMEEDITOR_RIGHT", EV_INGAMEEDITOR_RIGHT },
-	{"INGAMEEDITOR_SHOW", EV_INGAMEEDITOR_SHOW },
-	{"INGAMEEDITOR_SHOW_COORDS", EV_INGAMEEDITOR_SHOW_COORDS },
-	{"INGAMEEDITOR_TRANS_FRONT", EV_INGAMEEDITOR_TRANS_FRONT },
-	{"INGAMEEDITOR_UP", EV_INGAMEEDITOR_UP },
-	{"MAP_IN", EV_MAP_IN },
-	{"MAP_INTERACTIVE_TOGGLE", EV_MAP_INTERACTIVE_TOGGLE },
-	{"MAP_OUT", EV_MAP_OUT },
-	{"MENU_DOWN", EV_MENU_DOWN },
-	{"MENU_LEFT", EV_MENU_LEFT },
-	{"MENU_RIGHT", EV_MENU_RIGHT },
-	{"MENU_SELECT", EV_MENU_SELECT },
-	{"MENU_UP", EV_MENU_UP },
-	{"TERRAINEDITOR_BUILT", EV_TERRAINEDITOR_BUILT },
-	{"TERRAINEDITOR_PITCHBACKWARD", EV_TERRAINEDITOR_PITCHBACKWARD },
-	{"TERRAINEDITOR_PITCHFOREWARD", EV_TERRAINEDITOR_PITCHFOREWARD },
-	{"TERRAINEDITOR_ROTATELEFT", EV_TERRAINEDITOR_ROTATELEFT },
-	{"TERRAINEDITOR_ROTATERIGHT", EV_TERRAINEDITOR_ROTATERIGHT },
-	{"TERRAINEDITOR_SELECTROAD", EV_TERRAINEDITOR_SELECTROAD },
-	{"TERRAINEDITOR_TOGGLEOBJECT", EV_TERRAINEDITOR_TOGGLEOBJECT },
-	{"TERRAINEDITOR_TOGGLEROADTYPE", EV_TERRAINEDITOR_TOGGLEROADTYPE },
-	{"TERRAIN_LOWER", EV_TERRAIN_LOWER },
-	{"TERRAIN_PAINT", EV_TERRAIN_PAINT },
-	{"TERRAIN_PAINT_SWITCH", EV_TERRAIN_PAINT_SWITCH },
-	{"TERRAIN_RAISE", EV_TERRAIN_RAISE },
-	{"TERRAIN_SAVE", EV_TERRAIN_SAVE },
-	{"TERRAIN_SMOOTH", EV_TERRAIN_SMOOTH },
-	{"TERRAIN_UPDATE_LIGHTMAP", EV_TERRAIN_UPDATE_LIGHTMAP },
-	{"TRUCK_ACCELERATE", EV_TRUCK_ACCELERATE },
-	{"TRUCK_AUTOSHIFT_DOWN", EV_TRUCK_AUTOSHIFT_DOWN },
-	{"TRUCK_AUTOSHIFT_UP", EV_TRUCK_AUTOSHIFT_UP },
-	{"TRUCK_BLINK_LEFT", EV_TRUCK_BLINK_LEFT },
-	{"TRUCK_BLINK_RIGHT", EV_TRUCK_BLINK_RIGHT },
-	{"TRUCK_BLINK_WARN", EV_TRUCK_BLINK_WARN },
-	{"TRUCK_BRAKE", EV_TRUCK_BRAKE },
-	{"TRUCK_HORN", EV_TRUCK_HORN },
-	{"TRUCK_LIGHTTOGGLE1", EV_TRUCK_LIGHTTOGGLE1 },
-	{"TRUCK_LIGHTTOGGLE10", EV_TRUCK_LIGHTTOGGLE10 },
-	{"TRUCK_LIGHTTOGGLE2", EV_TRUCK_LIGHTTOGGLE2 },
-	{"TRUCK_LIGHTTOGGLE3", EV_TRUCK_LIGHTTOGGLE3 },
-	{"TRUCK_LIGHTTOGGLE4", EV_TRUCK_LIGHTTOGGLE4 },
-	{"TRUCK_LIGHTTOGGLE5", EV_TRUCK_LIGHTTOGGLE5 },
-	{"TRUCK_LIGHTTOGGLE6", EV_TRUCK_LIGHTTOGGLE6 },
-	{"TRUCK_LIGHTTOGGLE7", EV_TRUCK_LIGHTTOGGLE7 },
-	{"TRUCK_LIGHTTOGGLE8", EV_TRUCK_LIGHTTOGGLE8 },
-	{"TRUCK_LIGHTTOGGLE9", EV_TRUCK_LIGHTTOGGLE9 },
-	{"TRUCK_MANUAL_CLUTCH", EV_TRUCK_MANUAL_CLUTCH },
-	{"TRUCK_PARKING_BRAKE", EV_TRUCK_PARKING_BRAKE },
-	{"TRUCK_SHIFT_DOWN", EV_TRUCK_SHIFT_DOWN },
-	{"TRUCK_SHIFT_NEUTRAL", EV_TRUCK_SHIFT_NEUTRAL },
-	{"TRUCK_SHIFT_UP", EV_TRUCK_SHIFT_UP },
-	{"TRUCK_STARTER", EV_TRUCK_STARTER },
-	{"TRUCK_STEER_LEFT", EV_TRUCK_STEER_LEFT },
-	{"TRUCK_STEER_RIGHT", EV_TRUCK_STEER_RIGHT },
-	{"TRUCK_SWITCH_SHIFT_MODES", EV_TRUCK_SWITCH_SHIFT_MODES },
-	{"TRUCK_TOGGLE_CONTACT", EV_TRUCK_TOGGLE_CONTACT },
+// LOOOONG list of possible events. see the struct type for the structure ;)
+eventInfo_t eventInfo[] = {
+	{
+		"AIRPLANE_STEER_RIGHT", 
+		EV_AIRPLANE_STEER_RIGHT,
+		"Keyboard RIGHT",
+		_L("steer right")
+	},
+	{
+		"AIRPLANE_BRAKE",
+		EV_AIRPLANE_BRAKE,
+		"Keyboard B",
+		_L("normal brake for an aircraft")
+	},
+	{
+		"AIRPLANE_ELEVATOR_DOWN",
+		EV_AIRPLANE_ELEVATOR_DOWN,
+		"Keyboard DOWN",
+		_L("pull the elevator down in an aircraft.")
+	},
+	{
+		"AIRPLANE_ELEVATOR_UP",
+		EV_AIRPLANE_ELEVATOR_UP,
+		"Keyboard UP",
+		_L("pull the elevator up in an aircraft.")
+	},
+	{
+		"AIRPLANE_FLAPS_FULL",
+		EV_AIRPLANE_FLAPS_FULL,
+		"Keyboard CTRL+2",
+		_L("full flaps in an aircraft.")
+	},
+	{
+		"AIRPLANE_FLAPS_LESS",
+		EV_AIRPLANE_FLAPS_LESS,
+		"Keyboard EXPL+1",
+		_L("one step less flaps.")
+	},
+	{
+		"AIRPLANE_FLAPS_MORE",
+		EV_AIRPLANE_FLAPS_MORE,
+		"Keyboard EXPL+2",
+		_L("one step more flaps.")
+	},
+	{
+		"AIRPLANE_FLAPS_NONE", 
+		EV_AIRPLANE_FLAPS_NONE,
+		"Keyboard CTRL+1",
+		_L("no flaps.")
+	},
+	{
+		"AIRPLANE_PARKING_BRAKE",
+		EV_AIRPLANE_PARKING_BRAKE,
+		"Keyboard P",
+		_L("airplane parking brake.")
+
+	},
+	{
+		"AIRPLANE_REVERSE", 
+		EV_AIRPLANE_REVERSE,
+		"",
+		_L("reverse the turboprops")
+	},
+	{
+		"AIRPLANE_RUDDER_LEFT", 
+		EV_AIRPLANE_RUDDER_LEFT,
+		"",
+		_L("rudder left")
+	},
+	{
+		"AIRPLANE_RUDDER_RIGHT", 
+		EV_AIRPLANE_RUDDER_RIGHT,
+		"",
+		_L("rudder right")
+	},
+	{
+		"AIRPLANE_STEER_LEFT", 
+		EV_AIRPLANE_STEER_LEFT,
+		"",
+		_L("steer left")
+	},
+	{
+		"AIRPLANE_STEER_RIGHT", 
+		EV_AIRPLANE_STEER_RIGHT,
+		"",
+		_L("steer right")
+	},
+	{
+		"AIRPLANE_THROTTLE_AXIS", 
+		EV_AIRPLANE_THROTTLE_AXIS,
+		"",
+		_L("throttle axis. Only use this if you have fitting hardware :) (i.e. a Slider)")
+	},
+	{
+		"AIRPLANE_THROTTLE_DOWN", 
+		EV_AIRPLANE_THROTTLE_DOWN,
+		"",
+		_L("decreases the airplane thrust")
+	},
+	{
+		"AIRPLANE_THROTTLE_FULL", 
+		EV_AIRPLANE_THROTTLE_FULL,
+		"",
+		_L("full thrust")
+	},
+	{
+		"AIRPLANE_THROTTLE_NO", 
+		EV_AIRPLANE_THROTTLE_NO,
+		"",
+		_L("no thrust")
+	},
+	{
+		"AIRPLANE_THROTTLE_UP", 
+		EV_AIRPLANE_THROTTLE_UP,
+		"",
+		_L("increase the airplane thrust")
+	},
+	{
+		"AIRPLANE_TOGGLE_ENGINES", 
+		EV_AIRPLANE_TOGGLE_ENGINES,
+		"",
+		_L("switch all engines on / off")
+	},
+	{
+		"BOAT_CENTER_RUDDER", 
+		EV_BOAT_CENTER_RUDDER,
+		"",
+		_L("center the rudder")
+	},
+	{
+		"BOAT_REVERSE", 
+		EV_BOAT_REVERSE,
+		"",
+		_L("no thrust")
+	},
+	{
+		"BOAT_STEER_LEFT", 
+		EV_BOAT_STEER_LEFT,
+		"",
+		_L("steer left a step")
+	},
+	{
+		"BOAT_STEER_LEFT_AXIS", 
+		EV_BOAT_STEER_LEFT_AXIS,
+		"",
+		_L("steer left (analog value!)")
+	},
+	{
+		"BOAT_STEER_RIGHT", 
+		EV_BOAT_STEER_RIGHT,
+		"",
+		_L("steer right a step")
+	},
+	{
+		"BOAT_STEER_RIGHT_AXIS", 
+		EV_BOAT_STEER_RIGHT_AXIS,
+		"",
+		_L("steer right (analog value!)")
+	},
+	{
+		"BOAT_THROTTLE_AXIS", 
+		EV_BOAT_THROTTLE_AXIS,
+		"",
+		_L("throttle axis. Only use this if you have fitting hardware :) (i.e. a Slider)")
+	},
+	{
+		"BOAT_THROTTLE_DOWN", 
+		EV_BOAT_THROTTLE_DOWN,
+		"",
+		_L("decrease throttle")
+	},
+	{
+		"BOAT_THROTTLE_UP", 
+		EV_BOAT_THROTTLE_UP,
+		"",
+		_L("increase throttle")
+	},
+	{
+		"CAELUM_DECREASE_TIME", 
+		EV_CAELUM_DECREASE_TIME,
+		"",
+		_L("decrease day-time")
+	},
+	{
+		"CAELUM_DECREASE_TIME_FAST", 
+		EV_CAELUM_DECREASE_TIME_FAST,
+		"",
+		_L("decrease day-time a lot faster")
+	},
+	{
+		"CAELUM_INCREASE_TIME", 
+		EV_CAELUM_INCREASE_TIME,
+		"",
+		_L("increase day-time")
+	},
+	{
+		"CAELUM_INCREASE_TIME_FAST", 
+		EV_CAELUM_INCREASE_TIME_FAST,
+		"",
+		_L("increase day-time a lot faster")
+	},
+	{
+		"CAMERA_CHANGE", 
+		EV_CAMERA_CHANGE,
+		"",
+		_L("change camera mode")
+	},
+	{
+		"CAMERA_LOOKBACK", 
+		EV_CAMERA_LOOKBACK,
+		"",
+		_L("look back (toggles between normal and lookback)")
+	},
+	{
+		"CAMERA_RESET", 
+		EV_CAMERA_RESET,
+		"",
+		_L("reset the camera position")
+	},
+	{
+		"CAMERA_ROTATE_DOWN", 
+		EV_CAMERA_ROTATE_DOWN,
+		"",
+		_L("rotate camera down")
+	},
+	{
+		"CAMERA_ROTATE_LEFT", 
+		EV_CAMERA_ROTATE_LEFT,
+		"",
+		_L("rotate camera left")
+	},
+	{
+		"CAMERA_ROTATE_RIGHT", 
+		EV_CAMERA_ROTATE_RIGHT,
+		"",
+		_L("rotate camera right")
+	},
+	{
+		"CAMERA_ROTATE_UP", 
+		EV_CAMERA_ROTATE_UP,
+		"",
+		_L("rotate camera up")
+	},
+	{
+		"CAMERA_ZOOM_IN", 
+		EV_CAMERA_ZOOM_IN,
+		"",
+		_L("zoom camera in")
+	},
+	{
+		"CAMERA_ZOOM_IN_FAST", 
+		EV_CAMERA_ZOOM_IN_FAST,
+		"",
+		_L("zoom camera in faster")
+	},
+	{
+		"CAMERA_ZOOM_OUT", 
+		EV_CAMERA_ZOOM_OUT,
+		"",
+		_L("zoom camera out")
+	},
+	{
+		"CAMERA_ZOOM_OUT_FAST", 
+		EV_CAMERA_ZOOM_OUT_FAST,
+		"",
+		_L("zoom camera out faster")
+	},
+	{
+		"CHARACTER_BACKWARDS", 
+		EV_CHARACTER_BACKWARDS,
+		"",
+		_L("step backwards with the character")
+	},
+	{
+		"CHARACTER_FORWARD", 
+		EV_CHARACTER_FORWARD,
+		"",
+		_L("step forward with the character")
+	},
+	{
+		"CHARACTER_JUMP", 
+		EV_CHARACTER_JUMP,
+		"",
+		_L("let the character jump")
+	},
+	{
+		"CHARACTER_LEFT", 
+		EV_CHARACTER_LEFT,
+		"",
+		_L("rotate character left")
+	},
+	{
+		"CHARACTER_RIGHT", 
+		EV_CHARACTER_RIGHT,
+		"",
+		_L("rotate character right")
+	},
+	{
+		"CHARACTER_RUN", 
+		EV_CHARACTER_RUN,
+		"",
+		_L("let the character run")
+	},
+	{
+		"CHARACTER_SIDESTEP_LEFT", 
+		EV_CHARACTER_SIDESTEP_LEFT,
+		"",
+		_L("sidestep to the left")
+	},
+	{
+		"CHARACTER_SIDESTEP_RIGHT", 
+		EV_CHARACTER_SIDESTEP_RIGHT,
+		"",
+		_L("sidestep to the right")
+	},
+	{
+		"COMMANDS_01", 
+		EV_COMMANDS_01,
+		"",
+		_L("Command 1")
+	},
+	{
+		"COMMANDS_02", 
+		EV_COMMANDS_02,
+		"",
+		_L("Command 2")
+	},
+	{
+		"COMMANDS_03", 
+		EV_COMMANDS_03,
+		"",
+		_L("Command 3")
+	},
+	{
+		"COMMANDS_04", 
+		EV_COMMANDS_04,
+		"",
+		_L("Command 4")
+	},
+	{
+		"COMMANDS_05", 
+		EV_COMMANDS_05,
+		"",
+		_L("Command 5")
+	},
+	{
+		"COMMANDS_06", 
+		EV_COMMANDS_06,
+		"",
+		_L("Command 6")
+	},
+	{
+		"COMMANDS_07", 
+		EV_COMMANDS_07,
+		"",
+		_L("Command 7")
+	},
+	{
+		"COMMANDS_08", 
+		EV_COMMANDS_08,
+		"",
+		_L("Command 8")
+	},
+	{
+		"COMMANDS_09", 
+		EV_COMMANDS_09,
+		"",
+		_L("Command 9")
+	},
+	{
+		"COMMANDS_10", 
+		EV_COMMANDS_10,
+		"",
+		_L("Command 10")
+	},
+	{
+		"COMMANDS_11", 
+		EV_COMMANDS_11,
+		"",
+		_L("Command 11")
+	},
+	{
+		"COMMANDS_12", 
+		EV_COMMANDS_12,
+		"",
+		_L("Command 12")
+	},
+	{
+		"COMMANDS_13", 
+		EV_COMMANDS_13,
+		"",
+		_L("Command 13")
+	},
+	{
+		"COMMANDS_14", 
+		EV_COMMANDS_14,
+		"",
+		_L("Command 14")
+	},
+	{
+		"COMMANDS_15", 
+		EV_COMMANDS_15,
+		"",
+		_L("Command 15")
+	},
+	{
+		"COMMANDS_16", 
+		EV_COMMANDS_16,
+		"",
+		_L("Command 16")
+	},
+	{
+		"COMMANDS_17", 
+		EV_COMMANDS_17,
+		"",
+		_L("Command 17")
+	},
+	{
+		"COMMANDS_18", 
+		EV_COMMANDS_18,
+		"",
+		_L("Command 18")
+	},
+	{
+		"COMMANDS_19", 
+		EV_COMMANDS_19,
+		"",
+		_L("Command 19")
+	},
+	{
+		"COMMANDS_20", 
+		EV_COMMANDS_20,
+		"",
+		_L("Command 20")
+	},
+	{
+		"COMMANDS_21", 
+		EV_COMMANDS_21,
+		"",
+		_L("Command 21")
+	},
+	{
+		"COMMANDS_22", 
+		EV_COMMANDS_22,
+		"",
+		_L("Command 22")
+	},
+	{
+		"COMMANDS_23", 
+		EV_COMMANDS_23,
+		"",
+		_L("Command 23")
+	},
+	{
+		"COMMANDS_24", 
+		EV_COMMANDS_24,
+		"",
+		_L("Command 24")
+	},
+	{
+		"COMMANDS_25", 
+		EV_COMMANDS_25,
+		"",
+		_L("Command 25")
+	},
+	{
+		"COMMANDS_26", 
+		EV_COMMANDS_26,
+		"",
+		_L("Command 26")
+	},
+	{
+		"COMMANDS_27", 
+		EV_COMMANDS_27,
+		"",
+		_L("Command 27")
+	},
+	{
+		"COMMANDS_28", 
+		EV_COMMANDS_28,
+		"",
+		_L("Command 28")
+	},
+	{
+		"COMMANDS_29", 
+		EV_COMMANDS_29,
+		"",
+		_L("Command 29")
+	},
+	{
+		"COMMANDS_30", 
+		EV_COMMANDS_30,
+		"",
+		_L("Command 30")
+	},
+	{
+		"COMMANDS_31", 
+		EV_COMMANDS_31,
+		"",
+		_L("Command 31")
+	},
+	{
+		"COMMANDS_32", 
+		EV_COMMANDS_32,
+		"",
+		_L("Command 32")
+	},
+	{
+		"COMMANDS_33", 
+		EV_COMMANDS_33,
+		"",
+		_L("Command 33")
+	},
+	{
+		"COMMANDS_34", 
+		EV_COMMANDS_34,
+		"",
+		_L("Command 34")
+	},
+	{
+		"COMMANDS_35", 
+		EV_COMMANDS_35,
+		"",
+		_L("Command 35")
+	},
+	{
+		"COMMANDS_36", 
+		EV_COMMANDS_36,
+		"",
+		_L("Command 36")
+	},
+	{
+		"COMMANDS_37", 
+		EV_COMMANDS_37,
+		"",
+		_L("Command 37")
+	},
+	{
+		"COMMANDS_38", 
+		EV_COMMANDS_38,
+		"",
+		_L("Command 38")
+	},
+	{
+		"COMMANDS_39", 
+		EV_COMMANDS_39,
+		"",
+		_L("Command 39")
+	},
+	{
+		"COMMANDS_40", 
+		EV_COMMANDS_40,
+		"",
+		_L("Command 40")
+	},
+	{
+		"COMMANDS_41", 
+		EV_COMMANDS_41,
+		"",
+		_L("Command 41")
+	},
+	{
+		"COMMANDS_42", 
+		EV_COMMANDS_42,
+		"",
+		_L("Command 42")
+	},
+	{
+		"COMMANDS_43", 
+		EV_COMMANDS_43,
+		"",
+		_L("Command 43")
+	},
+	{
+		"COMMANDS_44", 
+		EV_COMMANDS_44,
+		"",
+		_L("Command 44")
+	},
+	{
+		"COMMANDS_45",
+		EV_COMMANDS_45,
+		"",
+		_L("Command 45")
+	},
+	{
+		"COMMANDS_46", 
+		EV_COMMANDS_46,
+		"",
+		_L("Command 46")
+	},
+	{
+		"COMMANDS_47", 
+		EV_COMMANDS_47,
+		"",
+		_L("Command 47")
+	},
+	{
+		"COMMANDS_48", 
+		EV_COMMANDS_48,
+		"",
+		_L("Command 48")
+	},
+	{
+		"COMMON_CONSOLEDISPLAY", 
+		EV_COMMON_CONSOLEDISPLAY,
+		"",
+		_L("show / hide the console")
+	},
+	{
+		"COMMON_CONSOLEMODE", 
+		EV_COMMON_CONSOLEMODE,
+		"",
+		_L("toggle appearance of console")
+	},
+	{
+		"COMMON_ENTER_CHAT", 
+		EV_COMMON_ENTER_CHAT,
+		"",
+		_L("enter the chat")
+	},
+	{
+		"COMMON_ENTER_OR_EXIT_TRUCK", 
+		EV_COMMON_ENTER_OR_EXIT_TRUCK,
+		"",
+		_L("enter or exit a truck")
+	},
+	{
+		"COMMON_HIDE_GUI", 
+		EV_COMMON_HIDE_GUI,
+		"",
+		_L("hide all GUI elements")
+	},
+	{
+		"COMMON_LOCK", 
+		EV_COMMON_LOCK,
+		"",
+		_L("connect hook node to a node in close proximity")
+	},
+	{
+		"COMMON_MAP_ALPHA", 
+		EV_COMMON_MAP_ALPHA,
+		"",
+		_L("toggle translucency of overview-map")
+	},
+	{
+		"COMMON_OUTPUT_POSITION", 
+		EV_COMMON_OUTPUT_POSITION,
+		"",
+		_L("write current position to log (you can open the logfile and reuse the position)")
+	},
+	{
+		"COMMON_PRESSURE_LESS", 
+		EV_COMMON_PRESSURE_LESS,
+		"",
+		_L("decrease tire pressure (note: only very few trucks support this)")
+	},
+	{
+		"COMMON_PRESSURE_MORE", 
+		EV_COMMON_PRESSURE_MORE,
+		"",
+		_L("increase tire pressure (note: only very few trucks support this)")
+	},
+	{
+		"COMMON_QUIT_GAME", 
+		EV_COMMON_QUIT_GAME,
+		"",
+		_L("exit the game")
+	},
+	{
+		"COMMON_RESCUE_TRUCK",
+		EV_COMMON_RESCUE_TRUCK,
+		"",
+		_L("teleport to rescue truck")
+	},
+	{
+		"COMMON_RESET_TRUCK",
+		EV_COMMON_RESET_TRUCK,
+		"",
+		_L("reset truck to original starting position")
+	},
+	{
+		"COMMON_SCREENSHOT",
+		EV_COMMON_SCREENSHOT,
+		"",
+		_L("take a screenshot")
+	},
+	{
+		"COMMON_SECURE_LOAD",
+		EV_COMMON_SECURE_LOAD,
+		"",
+		_L("tie a load to the truck")
+	},
+	{
+		"COMMON_SHOW_SKELETON",
+		EV_COMMON_SHOW_SKELETON,
+		"",
+		_L("toggle skeleton display mode")
+	},
+	{
+		"COMMON_START_TRUCK_EDITOR",
+		EV_COMMON_START_TRUCK_EDITOR,
+		"",
+		_L("start the old truck editor")
+	},
+	{
+		"COMMON_TOGGLE_CUSTOM_PARTICLES",
+		EV_COMMON_TOGGLE_CUSTOM_PARTICLES,
+		"",
+		_L("toggle particle cannon")
+	},
+	{
+		"COMMON_TOGGLE_MAT_DEBUG",
+		EV_COMMON_TOGGLE_MAT_DEBUG,
+		"",
+		_L("debug purpose - dont use")
+	},
+	{
+		"COMMON_TOGGLE_RENDER_MODE",
+		EV_COMMON_TOGGLE_RENDER_MODE,
+		"",
+		_L("toggle render mode (solid, wireframe and points)")
+	},
+	{
+		"COMMON_TOGGLE_REPLAY_MODE",
+		EV_COMMON_TOGGLE_REPLAY_MODE,
+		"",
+		_L("enable of disable replay mode")
+	},
+	{
+		"COMMON_TOGGLE_STATS",
+		EV_COMMON_TOGGLE_STATS,
+		"",
+		_L("toggle Ogre statistics (FPS etc.)")
+	},
+	{
+		"COMMON_TOGGLE_TRUCK_BEACONS",
+		EV_COMMON_TOGGLE_TRUCK_BEACONS,
+		"",
+		_L("toggle truck beacons")
+	},
+	{
+		"COMMON_TOGGLE_TRUCK_LIGHTS",
+		EV_COMMON_TOGGLE_TRUCK_LIGHTS,
+		"",
+		_L("toggle truck front lights")
+	},
+	{
+		"COMMON_TRUCK_INFO",
+		EV_COMMON_TRUCK_INFO,
+		"",
+		_L("toggle truck HUD")
+	},
+	{
+		"COMMON_VIEW_MAP",
+		EV_COMMON_VIEW_MAP,
+		"",
+		_L("toggle map modes")
+	},
+	{
+		"COMMON_FOV_LESS",
+		EV_COMMON_FOV_LESS,
+		"",
+		_L("decreases the current FOV value")
+	},
+	{
+		"COMMON_FOV_MORE",
+		EV_COMMON_FOV_MORE,
+		"",
+		_L("increase the current FOV value")
+	},
+	{
+		"GRASS_LESS",
+		EV_GRASS_LESS,
+		"",
+		_L("EXPERIMENTAL: remove some grass")
+	},
+	{
+		"GRASS_MORE",
+		EV_GRASS_MORE,
+		"",
+		_L("EXPERIMENTAL: add some grass")
+	},
+	{
+		"GRASS_MOST",
+		EV_GRASS_MOST,
+		"",
+		_L("EXPERIMENTAL: set maximum amount of grass")
+	},
+	{
+		"GRASS_NONE",
+		EV_GRASS_NONE,
+		"",
+		_L("EXPERIMENTAL: remove grass completely")
+	},
+	{
+		"GRASS_SAVE",
+		EV_GRASS_SAVE,
+		"",
+		_L("EXPERIMENTAL: save changes to the grass density image")
+	},
+	{
+		"MAP_IN",
+		EV_MAP_IN,
+		"",
+		_L("zoom into the overview map in interactive mode")
+	},
+	{
+		"MAP_INTERACTIVE_TOGGLE",
+		EV_MAP_INTERACTIVE_TOGGLE,
+		"",
+		_L("toggle overview map interactive mode")
+	},
+	{
+		"MAP_OUT",
+		EV_MAP_OUT,
+		"",
+		_L("zoom into the overview map in interactive mode")
+	},
+	{
+		"MENU_DOWN",
+		EV_MENU_DOWN,
+		"",
+		_L("select next element in current category")
+	},
+	{
+		"MENU_LEFT",
+		EV_MENU_LEFT,
+		"",
+		_L("select previous category")
+	},
+	{
+		"MENU_RIGHT",
+		EV_MENU_RIGHT,
+		"",
+		_L("select next category")
+	},
+	{
+		"MENU_SELECT",
+		EV_MENU_SELECT,
+		"",
+		_L("select focussed item and close menu")
+	},
+	{
+		"MENU_UP",
+		EV_MENU_UP,
+		"",
+		_L("select previous element in current category")
+	},
+	{
+		"TERRAINEDITOR_BUILT",
+		EV_TERRAINEDITOR_BUILT,
+		"",
+		_L("place currently selected object at current position")
+	},
+	{
+		"TERRAINEDITOR_PITCHBACKWARD",
+		EV_TERRAINEDITOR_PITCHBACKWARD,
+		"",
+		_L("")
+	},
+	{
+		"TERRAINEDITOR_PITCHFOREWARD",
+		EV_TERRAINEDITOR_PITCHFOREWARD,
+		"",
+		_L("")
+	},
+	{
+		"TERRAINEDITOR_ROTATELEFT",
+		EV_TERRAINEDITOR_ROTATELEFT,
+		"",
+		_L("")
+	},
+	{
+		"TERRAINEDITOR_ROTATERIGHT",
+		EV_TERRAINEDITOR_ROTATERIGHT,
+		"",
+		_L("")
+	},
+	{
+		"TERRAINEDITOR_SELECTROAD",
+		EV_TERRAINEDITOR_SELECTROAD,
+		"",
+		_L("")
+	},
+	{
+		"TERRAINEDITOR_TOGGLEOBJECT",
+		EV_TERRAINEDITOR_TOGGLEOBJECT,
+		"",
+		_L("")
+	},
+	{
+		"TERRAINEDITOR_TOGGLEROADTYPE",
+		EV_TERRAINEDITOR_TOGGLEROADTYPE,
+		"",
+		_L("")
+	},
+	{
+		"TERRAIN_LOWER",
+		EV_TERRAIN_LOWER,
+		"",
+		_L("")
+	},
+	{
+		"TERRAIN_PAINT",
+		EV_TERRAIN_PAINT,
+		"",
+		_L("")
+	},
+	{
+		"TERRAIN_PAINT_SWITCH",
+		EV_TERRAIN_PAINT_SWITCH,
+		"",
+		_L("")
+	},
+	{
+		"TERRAIN_RAISE",
+		EV_TERRAIN_RAISE,
+		"",
+		_L("")
+	},
+	{
+		"TERRAIN_SAVE",
+		EV_TERRAIN_SAVE,
+		"",
+		_L("")
+	},
+	{
+		"TERRAIN_SMOOTH",
+		EV_TERRAIN_SMOOTH,
+		"",
+		_L("")
+	},
+	{
+		"TERRAIN_UPDATE_LIGHTMAP",
+		EV_TERRAIN_UPDATE_LIGHTMAP,
+		"",
+		_L("")
+	},
+	{
+		"TRUCK_ACCELERATE",
+		EV_TRUCK_ACCELERATE,
+		"",
+		_L("")
+	},
+	{
+		"TRUCK_AUTOSHIFT_DOWN",
+		EV_TRUCK_AUTOSHIFT_DOWN,
+		"",
+		_L("")
+	},
+	{
+		"TRUCK_AUTOSHIFT_UP",
+		EV_TRUCK_AUTOSHIFT_UP,
+		"",
+		_L("")
+	},
+	{
+		"TRUCK_BLINK_LEFT",
+		EV_TRUCK_BLINK_LEFT,
+		"",
+		_L("")
+	},
+	{
+		"TRUCK_BLINK_RIGHT",
+		EV_TRUCK_BLINK_RIGHT,
+		"",
+		_L("")
+	},
+	{
+		"TRUCK_BLINK_WARN",
+		EV_TRUCK_BLINK_WARN,
+		"",
+		_L("")
+	},
+	{
+		"TRUCK_BRAKE",
+		EV_TRUCK_BRAKE,
+		"",
+		_L("")
+	},
+	{
+		"TRUCK_HORN",
+		EV_TRUCK_HORN,
+		"",
+		_L("")
+	},
+	{
+		"TRUCK_LIGHTTOGGLE1",
+		EV_TRUCK_LIGHTTOGGLE1,
+		"",
+		_L("")
+	},
+	{
+		"TRUCK_LIGHTTOGGLE10",
+		EV_TRUCK_LIGHTTOGGLE10,
+		"",
+		_L("")
+	},
+	{
+		"TRUCK_LIGHTTOGGLE2",
+		EV_TRUCK_LIGHTTOGGLE2,
+		"",
+		_L("")
+	},
+	{
+		"TRUCK_LIGHTTOGGLE3",
+		EV_TRUCK_LIGHTTOGGLE3,
+		"",
+		_L("")
+	},
+	{
+		"TRUCK_LIGHTTOGGLE4",
+		EV_TRUCK_LIGHTTOGGLE4,
+		"",
+		_L("")
+	},
+	{
+		"TRUCK_LIGHTTOGGLE5",
+		EV_TRUCK_LIGHTTOGGLE5,
+		"",
+		_L("")
+	},
+	{
+		"TRUCK_LIGHTTOGGLE6",
+		EV_TRUCK_LIGHTTOGGLE6,
+		"",
+		_L("")
+	},
+	{
+		"TRUCK_LIGHTTOGGLE7",
+		EV_TRUCK_LIGHTTOGGLE7,
+		"",
+		_L("")
+	},
+	{
+		"TRUCK_LIGHTTOGGLE8",
+		EV_TRUCK_LIGHTTOGGLE8,
+		"",
+		_L("")
+	},
+	{
+		"TRUCK_LIGHTTOGGLE9",
+		EV_TRUCK_LIGHTTOGGLE9,
+		"",
+		_L("")
+	},
+	{
+		"TRUCK_MANUAL_CLUTCH",
+		EV_TRUCK_MANUAL_CLUTCH,
+		"",
+		_L("")
+	},
+	{
+		"TRUCK_PARKING_BRAKE",
+		EV_TRUCK_PARKING_BRAKE,
+		"",
+		_L("")
+	},
+	{
+		"TRUCK_SHIFT_DOWN",
+		EV_TRUCK_SHIFT_DOWN,
+		"",
+		_L("")
+	},
+	{
+		"TRUCK_SHIFT_NEUTRAL",
+		EV_TRUCK_SHIFT_NEUTRAL,
+		"",
+		_L("")
+	},
+	{
+		"TRUCK_SHIFT_UP",
+		EV_TRUCK_SHIFT_UP,
+		"",
+		_L("")
+	},
+	{
+		"TRUCK_STARTER",
+		EV_TRUCK_STARTER,
+		"",
+		_L("")
+	},
+	{
+		"TRUCK_STEER_LEFT",
+		EV_TRUCK_STEER_LEFT,
+		"",
+		_L("")
+	},
+	{
+		"TRUCK_STEER_RIGHT",
+		EV_TRUCK_STEER_RIGHT,
+		"",
+		_L("")
+	},
+	{
+		"TRUCK_SWITCH_SHIFT_MODES",
+		EV_TRUCK_SWITCH_SHIFT_MODES,
+		"",
+		_L("")
+	},
+	{
+		"TRUCK_TOGGLE_CONTACT",
+		EV_TRUCK_TOGGLE_CONTACT,
+		"",
+		_L("")
+	},
 
 	// "new" commands
-	{"COMMON_SHOWTRUCKTOOL", EV_COMMON_SHOWTRUCKTOOL},
-	{"COMMON_RELOAD_ROADS", EV_COMMON_RELOAD_ROADS},
-	{"COMMON_FULLSCREEN_TOGGLE", EV_COMMON_FULLSCREEN_TOGGLE},
-	{"CAMERA_FREE_MODE_FIX", EV_CAMERA_FREE_MODE_FIX},
-	{"CAMERA_FREE_MODE", EV_CAMERA_FREE_MODE},
-	{"TRUCK_LEFT_MIRROR_LEFT", EV_TRUCK_LEFT_MIRROR_LEFT},
-	{"TRUCK_LEFT_MIRROR_RIGHT", EV_TRUCK_LEFT_MIRROR_RIGHT},
-	{"TRUCK_RIGHT_MIRROR_LEFT", EV_TRUCK_RIGHT_MIRROR_LEFT},
-	{"TRUCK_RIGHT_MIRROR_RIGHT", EV_TRUCK_RIGHT_MIRROR_RIGHT},
-	{"COMMON_REPLAY_FORWARD", EV_COMMON_REPLAY_FORWARD},
-	{"COMMON_REPLAY_BACKWARD", EV_COMMON_REPLAY_BACKWARD},
-	{"COMMON_REPLAY_FAST_FORWARD", EV_COMMON_REPLAY_FAST_FORWARD},
-	{"COMMON_REPLAY_FAST_BACKWARD", EV_COMMON_REPLAY_FAST_BACKWARD},
-	{"AIRPLANE_AIRBRAKES_NONE", EV_AIRPLANE_AIRBRAKES_NONE},
-	{"AIRPLANE_AIRBRAKES_FULL", EV_AIRPLANE_AIRBRAKES_FULL},
-	{"AIRPLANE_AIRBRAKES_LESS", EV_AIRPLANE_AIRBRAKES_LESS},
-	{"AIRPLANE_AIRBRAKES_MORE", EV_AIRPLANE_AIRBRAKES_MORE},
-	{"AIRPLANE_THROTTLE", EV_AIRPLANE_THROTTLE},
-	{"COMMON_TRUCK_REMOVE", EV_COMMON_TRUCK_REMOVE},
-	{"COMMON_NETCHATDISPLAY", EV_COMMON_NETCHATDISPLAY},
-	{"COMMON_NETCHATMODE", EV_COMMON_NETCHATMODE},
-	{"CHARACTER_ROT_UP", EV_CHARACTER_ROT_UP},
-	{"CHARACTER_ROT_DOWN", EV_CHARACTER_ROT_DOWN},
-	{"CHARACTER_UP", EV_CHARACTER_UP},
-	{"CHARACTER_DOWN", EV_CHARACTER_DOWN},
+	{
+		"COMMON_SHOWTRUCKTOOL",
+		EV_COMMON_SHOWTRUCKTOOL,
+		"",
+		_L("")
+	},
+	{
+		"COMMON_RELOAD_ROADS",
+		EV_COMMON_RELOAD_ROADS,
+		"",
+		_L("")
+	},
+	{
+		"COMMON_FULLSCREEN_TOGGLE",
+		EV_COMMON_FULLSCREEN_TOGGLE,
+		"",
+		_L("")
+	},
+	{
+		"CAMERA_FREE_MODE_FIX",
+		EV_CAMERA_FREE_MODE_FIX,
+		"",
+		_L("")
+	},
+	{
+		"CAMERA_FREE_MODE",
+		EV_CAMERA_FREE_MODE,
+		"",
+		_L("")
+	},
+	{
+		"TRUCK_LEFT_MIRROR_LEFT",
+		EV_TRUCK_LEFT_MIRROR_LEFT,
+		"",
+		_L("")
+	},
+	{
+		"TRUCK_LEFT_MIRROR_RIGHT",
+		EV_TRUCK_LEFT_MIRROR_RIGHT,
+		"",
+		_L("")
+	},
+	{
+		"TRUCK_RIGHT_MIRROR_LEFT",
+		EV_TRUCK_RIGHT_MIRROR_LEFT,
+		"",
+		_L("")
+	},
+	{
+		"TRUCK_RIGHT_MIRROR_RIGHT",
+		EV_TRUCK_RIGHT_MIRROR_RIGHT,
+		"",
+		_L("")
+	},
+	{
+		"COMMON_REPLAY_FORWARD",
+		EV_COMMON_REPLAY_FORWARD,
+		"",
+		_L("")
+	},
+	{
+		"COMMON_REPLAY_BACKWARD",
+		EV_COMMON_REPLAY_BACKWARD,
+		"",
+		_L("")
+	},
+	{
+		"COMMON_REPLAY_FAST_FORWARD",
+		EV_COMMON_REPLAY_FAST_FORWARD,
+		"",
+		_L("")
+	},
+	{
+		"COMMON_REPLAY_FAST_BACKWARD",
+		EV_COMMON_REPLAY_FAST_BACKWARD,
+		"",
+		_L("")
+	},
+	{
+		"AIRPLANE_AIRBRAKES_NONE",
+		EV_AIRPLANE_AIRBRAKES_NONE,
+		"",
+		_L("")
+	},
+	{
+		"AIRPLANE_AIRBRAKES_FULL",
+		EV_AIRPLANE_AIRBRAKES_FULL,
+		"",
+		_L("")
+	},
+	{
+		"AIRPLANE_AIRBRAKES_LESS",
+		EV_AIRPLANE_AIRBRAKES_LESS,
+		"",
+		_L("")
+	},
+	{
+		"AIRPLANE_AIRBRAKES_MORE",
+		EV_AIRPLANE_AIRBRAKES_MORE,
+		"",
+		_L("")
+	},
+	{
+		"AIRPLANE_THROTTLE",
+		EV_AIRPLANE_THROTTLE,
+		"",
+		_L("")
+	},
+	{
+		"COMMON_TRUCK_REMOVE",
+		EV_COMMON_TRUCK_REMOVE,
+		"",
+		_L("")
+	},
+	{
+		"COMMON_NETCHATDISPLAY",
+		EV_COMMON_NETCHATDISPLAY,
+		"",
+		_L("")
+	},
+	{
+		"COMMON_NETCHATMODE",
+		EV_COMMON_NETCHATMODE,
+		"",
+		_L("")
+	},
+	{
+		"CHARACTER_ROT_UP",
+		EV_CHARACTER_ROT_UP,
+		"",
+		_L("")
+	},
+	{
+		"CHARACTER_ROT_DOWN",
+		EV_CHARACTER_ROT_DOWN,
+		"",
+		_L("")
+	},
+	{
+		"CHARACTER_UP",
+		EV_CHARACTER_UP,
+		"",
+		_L("")
+	},
+	{
+		"CHARACTER_DOWN",
+		EV_CHARACTER_DOWN,
+		"",
+		_L("")
+	},
 
-	{"", -1},
-	{"", -1}
+	{"", -1, "", ""},
 };
 
 
@@ -1545,8 +2577,8 @@ int InputEngine::resolveEventName(Ogre::String eventName)
 	int i=0;
 	while(i!=EV_MODE_LAST)
 	{
-		if(eventNames[i].name == eventName)
-			return eventNames[i].eventID;
+		if(eventInfo[i].name == eventName)
+			return eventInfo[i].eventID;
 		i++;
 	}
 	return -1;
@@ -1557,8 +2589,8 @@ Ogre::String InputEngine::eventIDToName(int eventID)
 	int i=0;
 	while(i!=EV_MODE_LAST)
 	{
-		if(eventNames[i].eventID == eventID)
-			return eventNames[i].name;
+		if(eventInfo[i].eventID == eventID)
+			return eventInfo[i].name;
 		i++;
 	}
 	return "Unkown";
