@@ -198,23 +198,6 @@ enum events
 	EV_GRASS_MOST, //!< EXPERIMENTAL: set maximum amount of grass
 	EV_GRASS_NONE, //!< EXPERIMENTAL: remove grass completely
 	EV_GRASS_SAVE, //!< EXPERIMENTAL: save changes to the grass density image
-	EV_INGAMEEDITOR_BACKWARD, //!< move editing plane backwards
-	EV_INGAMEEDITOR_BEAM_TYPE, //!< change beam type to be placed
-	EV_INGAMEEDITOR_CHANGE_NODE_TYPE, //!< change node type to be placed
-	EV_INGAMEEDITOR_DOWN, //!< move cursor down the editing plane
-	EV_INGAMEEDITOR_FORWARD, //!< move the editing plane forewards
-	EV_INGAMEEDITOR_KEY_INFO, //!< help screen
-	EV_INGAMEEDITOR_LEFT, //!< move cursor left on the editing plane
-	EV_INGAMEEDITOR_MODE_FLARE, //!< enable flare placing mode (experimental)
-	EV_INGAMEEDITOR_MODE_GEO, //!< enable geometry mode (default)
-	EV_INGAMEEDITOR_MOVE_NODE, //!< move the selected node
-	EV_INGAMEEDITOR_PLACE_BEAM, //!< place beam
-	EV_INGAMEEDITOR_RESET, //!< reset
-	EV_INGAMEEDITOR_RIGHT, //!< move cursor to the right on the edting plane
-	EV_INGAMEEDITOR_SHOW, //!< show the ingame editor
-	EV_INGAMEEDITOR_SHOW_COORDS, //!< show coordinates in the ingame editor (very useful)
-	EV_INGAMEEDITOR_TRANS_FRONT, //!< toggle if the front of the truck should be shown or not (useful)
-	EV_INGAMEEDITOR_UP, //!< move the cursor up the editing plane
 	EV_MAP_IN, //!< zoom into the overview map in interactive mode
 	EV_MAP_INTERACTIVE_TOGGLE, //!< toggle overview map interactive mode
 	EV_MAP_OUT, //!< zoom into the overview map in interactive mode
@@ -299,13 +282,15 @@ enum events
 	EV_MODE_LAST
 };
 
-struct eventNames_t
+struct eventInfo_t
 {
 	Ogre::String name;
 	int eventID;
+	Ogre::String defaultKey;
+	Ogre::String description;
 };
 
-extern eventNames_t eventNames[];
+extern eventInfo_t eventInfo[];
 
 typedef struct
 {

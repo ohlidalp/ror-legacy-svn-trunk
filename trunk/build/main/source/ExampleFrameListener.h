@@ -588,7 +588,6 @@ protected:
 	RenderWindow* renderwin;
 
 	char screenshotformat[255];
-	bool useIngameEditor;
 	float globalFogDensity;
 	bool useCaelumSky;
 	float farclip;

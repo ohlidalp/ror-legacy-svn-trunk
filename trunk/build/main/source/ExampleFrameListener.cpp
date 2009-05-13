@@ -69,7 +69,6 @@ along with Rigs of Rods.  If not, see <http://www.gnu.org/licenses/>.
 #endif
 
 #include "MovableText.h"
-#include "IngameEditor.h"
 #include "IngameConsole.h"
 #ifdef TIMING
 	#include "BeamStats.h"
@@ -1444,7 +1443,6 @@ ExampleFrameListener::ExampleFrameListener(RenderWindow* win, Camera* cam, Scene
 
 	objcounter=0;
 
-	useIngameEditor = false;
 
 	//network
 	netmode=(SETTINGS.getSetting("Network enable")=="Yes");
@@ -2531,29 +2529,8 @@ bool ExampleFrameListener::updateEvents(float dt)
 
 	if (loading_state==ALL_LOADED)
 	{
-		if (INPUTENGINE.getEventBoolValueBounce(EV_INGAMEEDITOR_SHOW, 1.0f) && !netmode)
-		{
-			useIngameEditor = ! useIngameEditor;
-			if(useIngameEditor)
-			{
-				if(current_truck != -1)
-				{
-					if(!INGAMEEDITOR.wasSetup())
-						INGAMEEDITOR.setup(this);
-					INGAMEEDITOR.show(true);
-					loading_state = EDITOR_PAUSE;
-					flashMessage(_L("Press Y again to exit the editor!\nPress I for help.").c_str(), 3);
-				} else {
-					useIngameEditor = false;
-				}
-			} else {
-				loading_state = ALL_LOADED;
-				INGAMEEDITOR.show(false);
-			}
-		}
-		// if the ingame editor is used, no normal event handling will occur
 		bool enablegrab = true;
-		if (!useIngameEditor && !(cameramode==CAMERA_FREE))
+		if (cameramode != CAMERA_FREE)
 		{
 			MYGUI.setCursorPosition(mouseX, mouseY);
 			if (current_truck==-1)
@@ -3792,7 +3769,7 @@ bool ExampleFrameListener::updateEvents(float dt)
 				}
 			}
 		}
-		if (INPUTENGINE.getEventBoolValueBounce(EV_COMMON_RESCUE_TRUCK, 0.5f) && !netmode && !useIngameEditor)
+		if (INPUTENGINE.getEventBoolValueBounce(EV_COMMON_RESCUE_TRUCK, 0.5f) && !netmode)
 		{
 			//rescue!
 			//if (current_truck!=-1) setCurrentTruck(-1);
@@ -3849,7 +3826,7 @@ bool ExampleFrameListener::updateEvents(float dt)
 			NETCHAT.toggleMode(this);
 		}
 
-		if (INPUTENGINE.getEventBoolValueBounce(EV_COMMON_ENTER_OR_EXIT_TRUCK, 0.5f) && !netmode && !useIngameEditor)
+		if (INPUTENGINE.getEventBoolValueBounce(EV_COMMON_ENTER_OR_EXIT_TRUCK, 0.5f) && !netmode)
 		{
 			//perso in/out
 			if (current_truck==-1)
@@ -4046,14 +4023,6 @@ bool ExampleFrameListener::updateEvents(float dt)
 		dirty=true;
 	}
 
-#ifdef HAS_EDITOR
-	if (INPUTENGINE.getEventBoolValueBounce(EV_COMMON_START_TRUCK_EDITOR") && (loading_state==ALL_LOADED) && !useIngameEditor)
-	{
-		if (!trucked) trucked=new TruckEditor(truckeditorOverlay, mWindow->getWidth(), mWindow->getHeight());
-		showTruckEditorOverlay(true);
-		loading_state=EDITING;
-	}
-#endif
 	if (INPUTENGINE.getEventBoolValueBounce(EV_COMMON_TOGGLE_STATS))
 	{
 		dirty=true;
@@ -5948,8 +5917,6 @@ void ExampleFrameListener::moveCamera(float dt)
 
 	if (isnodegrabbed) return; //freeze camera
 
-	if(useIngameEditor) return; // no movement in editor mode
-
 	bool changeCamMode = (lastcameramode != cameramode);
 	lastcameramode = cameramode;
 
@@ -6626,10 +6593,6 @@ bool ExampleFrameListener::frameStarted(const FrameEvent& evt)
 		sprintf(tmp,"%0.1f meter", distance);
 		directionArrowDistance->setCaption(tmp);
 	}
-
-	if(useIngameEditor)
-		INGAMEEDITOR.frameStep(evt);
-
 
 	// one of the input modes is immediate, so setup what is needed for immediate mouse/key movement
 	if (mTimeUntilNextToggle >= 0)
