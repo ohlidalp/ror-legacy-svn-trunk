@@ -896,253 +896,211 @@ eventInfo_t eventInfo[] = {
 		"TERRAINEDITOR_PITCHBACKWARD",
 		EV_TERRAINEDITOR_PITCHBACKWARD,
 		"",
-		_L("")
+		_L("pitch object backward")
 	},
 	{
 		"TERRAINEDITOR_PITCHFOREWARD",
 		EV_TERRAINEDITOR_PITCHFOREWARD,
 		"",
-		_L("")
+		_L("pitch object foreward")
 	},
 	{
 		"TERRAINEDITOR_ROTATELEFT",
 		EV_TERRAINEDITOR_ROTATELEFT,
 		"",
-		_L("")
+		_L("rotate object left")
 	},
 	{
 		"TERRAINEDITOR_ROTATERIGHT",
 		EV_TERRAINEDITOR_ROTATERIGHT,
 		"",
-		_L("")
+		_L("rotate object right")
 	},
 	{
 		"TERRAINEDITOR_SELECTROAD",
 		EV_TERRAINEDITOR_SELECTROAD,
 		"",
-		_L("")
+		_L("switch to road laying mode")
 	},
 	{
 		"TERRAINEDITOR_TOGGLEOBJECT",
 		EV_TERRAINEDITOR_TOGGLEOBJECT,
 		"",
-		_L("")
+		_L("toggle between available objects")
 	},
 	{
 		"TERRAINEDITOR_TOGGLEROADTYPE",
 		EV_TERRAINEDITOR_TOGGLEROADTYPE,
 		"",
-		_L("")
-	},
-	{
-		"TERRAIN_LOWER",
-		EV_TERRAIN_LOWER,
-		"",
-		_L("")
-	},
-	{
-		"TERRAIN_PAINT",
-		EV_TERRAIN_PAINT,
-		"",
-		_L("")
-	},
-	{
-		"TERRAIN_PAINT_SWITCH",
-		EV_TERRAIN_PAINT_SWITCH,
-		"",
-		_L("")
-	},
-	{
-		"TERRAIN_RAISE",
-		EV_TERRAIN_RAISE,
-		"",
-		_L("")
-	},
-	{
-		"TERRAIN_SAVE",
-		EV_TERRAIN_SAVE,
-		"",
-		_L("")
-	},
-	{
-		"TERRAIN_SMOOTH",
-		EV_TERRAIN_SMOOTH,
-		"",
-		_L("")
-	},
-	{
-		"TERRAIN_UPDATE_LIGHTMAP",
-		EV_TERRAIN_UPDATE_LIGHTMAP,
-		"",
-		_L("")
+		_L("toggle between available road types")
 	},
 	{
 		"TRUCK_ACCELERATE",
 		EV_TRUCK_ACCELERATE,
 		"",
-		_L("")
+		_L("accelerate the truck")
 	},
 	{
 		"TRUCK_AUTOSHIFT_DOWN",
 		EV_TRUCK_AUTOSHIFT_DOWN,
 		"",
-		_L("")
+		_L("shift automatic transmission one gear down")
 	},
 	{
 		"TRUCK_AUTOSHIFT_UP",
 		EV_TRUCK_AUTOSHIFT_UP,
 		"",
-		_L("")
+		_L("shift automatic transmission one gear up")
 	},
 	{
 		"TRUCK_BLINK_LEFT",
 		EV_TRUCK_BLINK_LEFT,
 		"",
-		_L("")
+		_L("toggle left direction indicator (blinker)")
 	},
 	{
 		"TRUCK_BLINK_RIGHT",
 		EV_TRUCK_BLINK_RIGHT,
 		"",
-		_L("")
+		_L("toggle right direction indicator (blinker)")
 	},
 	{
 		"TRUCK_BLINK_WARN",
 		EV_TRUCK_BLINK_WARN,
 		"",
-		_L("")
+		_L("toggle all direction indicators")
 	},
 	{
 		"TRUCK_BRAKE",
 		EV_TRUCK_BRAKE,
 		"",
-		_L("")
+		_L("brake")
 	},
 	{
 		"TRUCK_HORN",
 		EV_TRUCK_HORN,
 		"",
-		_L("")
+		_L("truck horn")
 	},
 	{
 		"TRUCK_LIGHTTOGGLE1",
 		EV_TRUCK_LIGHTTOGGLE1,
 		"",
-		_L("")
+		_L("toggle custom light 1")
 	},
 	{
 		"TRUCK_LIGHTTOGGLE10",
 		EV_TRUCK_LIGHTTOGGLE10,
 		"",
-		_L("")
+		_L("toggle custom light 10")
 	},
 	{
 		"TRUCK_LIGHTTOGGLE2",
 		EV_TRUCK_LIGHTTOGGLE2,
 		"",
-		_L("")
+		_L("toggle custom light 2")
 	},
 	{
 		"TRUCK_LIGHTTOGGLE3",
 		EV_TRUCK_LIGHTTOGGLE3,
 		"",
-		_L("")
+		_L("toggle custom light 3")
 	},
 	{
 		"TRUCK_LIGHTTOGGLE4",
 		EV_TRUCK_LIGHTTOGGLE4,
 		"",
-		_L("")
+		_L("toggle custom light 4")
 	},
 	{
 		"TRUCK_LIGHTTOGGLE5",
 		EV_TRUCK_LIGHTTOGGLE5,
 		"",
-		_L("")
+		_L("toggle custom light 5")
 	},
 	{
 		"TRUCK_LIGHTTOGGLE6",
 		EV_TRUCK_LIGHTTOGGLE6,
 		"",
-		_L("")
+		_L("toggle custom light 6")
 	},
 	{
 		"TRUCK_LIGHTTOGGLE7",
 		EV_TRUCK_LIGHTTOGGLE7,
 		"",
-		_L("")
+		_L("toggle custom light 7")
 	},
 	{
 		"TRUCK_LIGHTTOGGLE8",
 		EV_TRUCK_LIGHTTOGGLE8,
 		"",
-		_L("")
+		_L("toggle custom light 8")
 	},
 	{
 		"TRUCK_LIGHTTOGGLE9",
 		EV_TRUCK_LIGHTTOGGLE9,
 		"",
-		_L("")
+		_L("toggle custom light 9")
 	},
 	{
 		"TRUCK_MANUAL_CLUTCH",
 		EV_TRUCK_MANUAL_CLUTCH,
 		"",
-		_L("")
+		_L("manual clutch (for manual transmission)")
 	},
 	{
 		"TRUCK_PARKING_BRAKE",
 		EV_TRUCK_PARKING_BRAKE,
 		"",
-		_L("")
+		_L("toggle parking brake")
 	},
 	{
 		"TRUCK_SHIFT_DOWN",
 		EV_TRUCK_SHIFT_DOWN,
 		"",
-		_L("")
+		_L("shift one gear down in manual transmission mode")
 	},
 	{
 		"TRUCK_SHIFT_NEUTRAL",
 		EV_TRUCK_SHIFT_NEUTRAL,
 		"",
-		_L("")
+		_L("shift to neutral gear in manual transmission mode")
 	},
 	{
 		"TRUCK_SHIFT_UP",
 		EV_TRUCK_SHIFT_UP,
 		"",
-		_L("")
+		_L("shift one gear up in manual transmission mode")
 	},
 	{
 		"TRUCK_STARTER",
 		EV_TRUCK_STARTER,
 		"",
-		_L("")
+		_L("hold to start the engine")
 	},
 	{
 		"TRUCK_STEER_LEFT",
 		EV_TRUCK_STEER_LEFT,
 		"",
-		_L("")
+		_L("steer left")
 	},
 	{
 		"TRUCK_STEER_RIGHT",
 		EV_TRUCK_STEER_RIGHT,
 		"",
-		_L("")
+		_L("steer right")
 	},
 	{
 		"TRUCK_SWITCH_SHIFT_MODES",
 		EV_TRUCK_SWITCH_SHIFT_MODES,
 		"",
-		_L("")
+		_L("toggle between transmission modes")
 	},
 	{
 		"TRUCK_TOGGLE_CONTACT",
 		EV_TRUCK_TOGGLE_CONTACT,
 		"",
-		_L("")
+		_L("toggle ignition")
 	},
 
 	// "new" commands
@@ -1162,139 +1120,139 @@ eventInfo_t eventInfo[] = {
 		"COMMON_FULLSCREEN_TOGGLE",
 		EV_COMMON_FULLSCREEN_TOGGLE,
 		"",
-		_L("")
+		_L("toggle between windowed and fullscreen mode")
 	},
 	{
 		"CAMERA_FREE_MODE_FIX",
 		EV_CAMERA_FREE_MODE_FIX,
 		"",
-		_L("")
+		_L("fix the camera to a position")
 	},
 	{
 		"CAMERA_FREE_MODE",
 		EV_CAMERA_FREE_MODE,
 		"",
-		_L("")
+		_L("enable / disable free camera mode")
 	},
 	{
 		"TRUCK_LEFT_MIRROR_LEFT",
 		EV_TRUCK_LEFT_MIRROR_LEFT,
 		"",
-		_L("")
+		_L("move left mirror to the left")
 	},
 	{
 		"TRUCK_LEFT_MIRROR_RIGHT",
 		EV_TRUCK_LEFT_MIRROR_RIGHT,
 		"",
-		_L("")
+		_L("move left mirror to the right")
 	},
 	{
 		"TRUCK_RIGHT_MIRROR_LEFT",
 		EV_TRUCK_RIGHT_MIRROR_LEFT,
 		"",
-		_L("")
+		_L("more right mirror to the left")
 	},
 	{
 		"TRUCK_RIGHT_MIRROR_RIGHT",
 		EV_TRUCK_RIGHT_MIRROR_RIGHT,
 		"",
-		_L("")
+		_L("move right mirror to the right")
 	},
 	{
 		"COMMON_REPLAY_FORWARD",
 		EV_COMMON_REPLAY_FORWARD,
 		"",
-		_L("")
+		_L("more replay forward")
 	},
 	{
 		"COMMON_REPLAY_BACKWARD",
 		EV_COMMON_REPLAY_BACKWARD,
 		"",
-		_L("")
+		_L("more replay backward")
 	},
 	{
 		"COMMON_REPLAY_FAST_FORWARD",
 		EV_COMMON_REPLAY_FAST_FORWARD,
 		"",
-		_L("")
+		_L("move replay fast forward")
 	},
 	{
 		"COMMON_REPLAY_FAST_BACKWARD",
 		EV_COMMON_REPLAY_FAST_BACKWARD,
 		"",
-		_L("")
+		_L("move replay fast backward")
 	},
 	{
 		"AIRPLANE_AIRBRAKES_NONE",
 		EV_AIRPLANE_AIRBRAKES_NONE,
 		"",
-		_L("")
+		_L("no airbrakes")
 	},
 	{
 		"AIRPLANE_AIRBRAKES_FULL",
 		EV_AIRPLANE_AIRBRAKES_FULL,
 		"",
-		_L("")
+		_L("full airbrakes")
 	},
 	{
 		"AIRPLANE_AIRBRAKES_LESS",
 		EV_AIRPLANE_AIRBRAKES_LESS,
 		"",
-		_L("")
+		_L("less airbrakes")
 	},
 	{
 		"AIRPLANE_AIRBRAKES_MORE",
 		EV_AIRPLANE_AIRBRAKES_MORE,
 		"",
-		_L("")
+		_L("more airbrakes")
 	},
 	{
 		"AIRPLANE_THROTTLE",
 		EV_AIRPLANE_THROTTLE,
 		"",
-		_L("")
+		_L("airplane throttle")
 	},
 	{
 		"COMMON_TRUCK_REMOVE",
 		EV_COMMON_TRUCK_REMOVE,
 		"",
-		_L("")
+		_L("delete current truck")
 	},
 	{
 		"COMMON_NETCHATDISPLAY",
 		EV_COMMON_NETCHATDISPLAY,
 		"",
-		_L("")
+		_L("display or hide net chat")
 	},
 	{
 		"COMMON_NETCHATMODE",
 		EV_COMMON_NETCHATMODE,
 		"",
-		_L("")
+		_L("toggle between net chat display modes")
 	},
 	{
 		"CHARACTER_ROT_UP",
 		EV_CHARACTER_ROT_UP,
 		"",
-		_L("")
+		_L("rotate view up")
 	},
 	{
 		"CHARACTER_ROT_DOWN",
 		EV_CHARACTER_ROT_DOWN,
-		"",
+		"rotate view down",
 		_L("")
 	},
 	{
 		"CHARACTER_UP",
 		EV_CHARACTER_UP,
 		"",
-		_L("")
+		_L("move character up")
 	},
 	{
 		"CHARACTER_DOWN",
 		EV_CHARACTER_DOWN,
 		"",
-		_L("")
+		_L("move character down")
 	},
 
 	{"", -1, "", ""},

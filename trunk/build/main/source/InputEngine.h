@@ -214,13 +214,6 @@ enum events
 	EV_TERRAINEDITOR_SELECTROAD, //!< switch to road laying mode
 	EV_TERRAINEDITOR_TOGGLEOBJECT, //!< toggle between available objects
 	EV_TERRAINEDITOR_TOGGLEROADTYPE, //!< toggle between available road types
-	EV_TERRAIN_LOWER, //!< (ONLY WITH ETM, EXPERIMENTAL): lower terrain under the characters feet
-	EV_TERRAIN_PAINT, //!< EXPERIMENTAL - NOT WORKING
-	EV_TERRAIN_PAINT_SWITCH, //!< EXPERIMENTAL - NOT WORKING
-	EV_TERRAIN_RAISE, //!< (ONLY WITH ETM, EXPERIMENTAL): raise terrain under the characters feet
-	EV_TERRAIN_SAVE, //!< (ONLY WITH ETM - EXPERIMENTAL): save changes (note that this will not work with content that is inside a zip archive)
-	EV_TERRAIN_SMOOTH, //!< (ONLY WITH ETM - EXPERIMENTAL): smooth terrain around characters position
-	EV_TERRAIN_UPDATE_LIGHTMAP, //!< (ONLY WITH ETM - EXPERIMENTAL): update terrain shadows (currently not save-able)
 	EV_TRUCK_ACCELERATE, //!< accelerate the truck
 	EV_TRUCK_AUTOSHIFT_DOWN, //!< shift automatic transmission one gear down
 	EV_TRUCK_AUTOSHIFT_UP, //!< shift automatic transmission one gear up
