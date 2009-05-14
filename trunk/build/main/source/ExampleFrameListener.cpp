@@ -2836,12 +2836,13 @@ bool ExampleFrameListener::updateEvents(float dt)
 
 					if(trucks[current_truck]->engine)
 					{
-						if (INPUTENGINE.getEventBoolValueBounce(EV_TRUCK_STARTER) && trucks[current_truck]->engine->contact && !trucks[current_truck]->replaymode)
+						if (INPUTENGINE.getEventBoolValue(EV_TRUCK_STARTER) && trucks[current_truck]->engine->contact && !trucks[current_truck]->replaymode)
 						{
 							//starter
 							trucks[current_truck]->engine->setstarter(1);
 							ssm->trigStart(current_truck, SS_TRIG_STARTER);
-						} else {
+						} else
+						{
 							trucks[current_truck]->engine->setstarter(0);
 							ssm->trigStop(current_truck, SS_TRIG_STARTER);
 						}
