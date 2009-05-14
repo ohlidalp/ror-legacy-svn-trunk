@@ -40,7 +40,7 @@ freely, subject to the following restrictions:
 // LOOOONG list of possible events. see the struct type for the structure ;)
 eventInfo_t eventInfo[] = {
 	{
-		"AIRPLANE_STEER_RIGHT", 
+		"AIRPLANE_STEER_RIGHT",
 		EV_AIRPLANE_STEER_RIGHT,
 		"Keyboard RIGHT",
 		_L("steer right")
@@ -82,7 +82,7 @@ eventInfo_t eventInfo[] = {
 		_L("one step more flaps.")
 	},
 	{
-		"AIRPLANE_FLAPS_NONE", 
+		"AIRPLANE_FLAPS_NONE",
 		EV_AIRPLANE_FLAPS_NONE,
 		"Keyboard CTRL+1",
 		_L("no flaps.")
@@ -95,523 +95,523 @@ eventInfo_t eventInfo[] = {
 
 	},
 	{
-		"AIRPLANE_REVERSE", 
+		"AIRPLANE_REVERSE",
 		EV_AIRPLANE_REVERSE,
 		"Keyboard R",
 		_L("reverse the turboprops")
 	},
 	{
-		"AIRPLANE_RUDDER_LEFT", 
+		"AIRPLANE_RUDDER_LEFT",
 		EV_AIRPLANE_RUDDER_LEFT,
 		"Keyboard Z",
 		_L("rudder left")
 	},
 	{
-		"AIRPLANE_RUDDER_RIGHT", 
+		"AIRPLANE_RUDDER_RIGHT",
 		EV_AIRPLANE_RUDDER_RIGHT,
 		"Keyboard X",
 		_L("rudder right")
 	},
 	{
-		"AIRPLANE_STEER_LEFT", 
+		"AIRPLANE_STEER_LEFT",
 		EV_AIRPLANE_STEER_LEFT,
 		"Keyboard LEFT",
 		_L("steer left")
 	},
 	{
-		"AIRPLANE_STEER_RIGHT", 
+		"AIRPLANE_STEER_RIGHT",
 		EV_AIRPLANE_STEER_RIGHT,
 		"Keyboard RIGHT",
 		_L("steer right")
 	},
 	{
-		"AIRPLANE_THROTTLE_AXIS", 
+		"AIRPLANE_THROTTLE_AXIS",
 		EV_AIRPLANE_THROTTLE_AXIS,
 		"None",
 		_L("throttle axis. Only use this if you have fitting hardware :) (i.e. a Slider)")
 	},
 	{
-		"AIRPLANE_THROTTLE_DOWN", 
+		"AIRPLANE_THROTTLE_DOWN",
 		EV_AIRPLANE_THROTTLE_DOWN,
 		"Keyboard EXPL+PGDOWN",
 		_L("decreases the airplane thrust")
 	},
 	{
-		"AIRPLANE_THROTTLE_FULL", 
+		"AIRPLANE_THROTTLE_FULL",
 		EV_AIRPLANE_THROTTLE_FULL,
 		"Keyboard CTRL+PGUP",
 		_L("full thrust")
 	},
 	{
-		"AIRPLANE_THROTTLE_NO", 
+		"AIRPLANE_THROTTLE_NO",
 		EV_AIRPLANE_THROTTLE_NO,
 		"Keyboard CTRL+PGDOWN",
 		_L("no thrust")
 	},
 	{
-		"AIRPLANE_THROTTLE_UP", 
+		"AIRPLANE_THROTTLE_UP",
 		EV_AIRPLANE_THROTTLE_UP,
 		"Keyboard EXPL+PGUP",
 		_L("increase the airplane thrust")
 	},
 	{
-		"AIRPLANE_TOGGLE_ENGINES", 
+		"AIRPLANE_TOGGLE_ENGINES",
 		EV_AIRPLANE_TOGGLE_ENGINES,
 		"Keyboard CTRL+HOME",
 		_L("switch all engines on / off")
 	},
 	{
-		"BOAT_CENTER_RUDDER", 
+		"BOAT_CENTER_RUDDER",
 		EV_BOAT_CENTER_RUDDER,
 		"Keyboard DOWN",
 		_L("center the rudder")
 	},
 	{
-		"BOAT_REVERSE", 
+		"BOAT_REVERSE",
 		EV_BOAT_REVERSE,
 		"Keyboard UP",
 		_L("no thrust")
 	},
 	{
-		"BOAT_STEER_LEFT", 
+		"BOAT_STEER_LEFT",
 		EV_BOAT_STEER_LEFT,
 		"Keyboard LEFT",
 		_L("steer left a step")
 	},
 	{
-		"BOAT_STEER_LEFT_AXIS", 
+		"BOAT_STEER_LEFT_AXIS",
 		EV_BOAT_STEER_LEFT_AXIS,
 		"None",
 		_L("steer left (analog value!)")
 	},
 	{
-		"BOAT_STEER_RIGHT", 
+		"BOAT_STEER_RIGHT",
 		EV_BOAT_STEER_RIGHT,
 		"Keyboard RIGHT",
 		_L("steer right a step")
 	},
 	{
-		"BOAT_STEER_RIGHT_AXIS", 
+		"BOAT_STEER_RIGHT_AXIS",
 		EV_BOAT_STEER_RIGHT_AXIS,
 		"None",
 		_L("steer right (analog value!)")
 	},
 	{
-		"BOAT_THROTTLE_AXIS", 
+		"BOAT_THROTTLE_AXIS",
 		EV_BOAT_THROTTLE_AXIS,
 		"None",
 		_L("throttle axis. Only use this if you have fitting hardware :) (i.e. a Slider)")
 	},
 	{
-		"BOAT_THROTTLE_DOWN", 
+		"BOAT_THROTTLE_DOWN",
 		EV_BOAT_THROTTLE_DOWN,
 		"Keyboard PGDOWN",
 		_L("decrease throttle")
 	},
 	{
-		"BOAT_THROTTLE_UP", 
+		"BOAT_THROTTLE_UP",
 		EV_BOAT_THROTTLE_UP,
 		"Keyboard PGUP",
 		_L("increase throttle")
 	},
 	{
-		"CAELUM_DECREASE_TIME", 
+		"CAELUM_DECREASE_TIME",
 		EV_CAELUM_DECREASE_TIME,
 		"Keyboard EXPL+SUBTRACT",
 		_L("decrease day-time")
 	},
 	{
-		"CAELUM_DECREASE_TIME_FAST", 
+		"CAELUM_DECREASE_TIME_FAST",
 		EV_CAELUM_DECREASE_TIME_FAST,
 		"Keyboard SHIFT+SUBTRACT",
 		_L("decrease day-time a lot faster")
 	},
 	{
-		"CAELUM_INCREASE_TIME", 
+		"CAELUM_INCREASE_TIME",
 		EV_CAELUM_INCREASE_TIME,
 		"Keyboard EXPL+ADD",
 		_L("increase day-time")
 	},
 	{
-		"CAELUM_INCREASE_TIME_FAST", 
+		"CAELUM_INCREASE_TIME_FAST",
 		EV_CAELUM_INCREASE_TIME_FAST,
 		"Keyboard SHIFT+ADD",
 		_L("increase day-time a lot faster")
 	},
 	{
-		"CAMERA_CHANGE", 
+		"CAMERA_CHANGE",
 		EV_CAMERA_CHANGE,
 		"Keyboard EXPL+C",
 		_L("change camera mode")
 	},
 	{
-		"CAMERA_LOOKBACK", 
+		"CAMERA_LOOKBACK",
 		EV_CAMERA_LOOKBACK,
 		"Keyboard NUMPAD1",
 		_L("look back (toggles between normal and lookback)")
 	},
 	{
-		"CAMERA_RESET", 
+		"CAMERA_RESET",
 		EV_CAMERA_RESET,
 		"Keyboard NUMPAD5",
 		_L("reset the camera position")
 	},
 	{
-		"CAMERA_ROTATE_DOWN", 
+		"CAMERA_ROTATE_DOWN",
 		EV_CAMERA_ROTATE_DOWN,
 		"Keyboard NUMPAD2",
 		_L("rotate camera down")
 	},
 	{
-		"CAMERA_ROTATE_LEFT", 
+		"CAMERA_ROTATE_LEFT",
 		EV_CAMERA_ROTATE_LEFT,
 		"Keyboard NUMPAD4",
 		_L("rotate camera left")
 	},
 	{
-		"CAMERA_ROTATE_RIGHT", 
+		"CAMERA_ROTATE_RIGHT",
 		EV_CAMERA_ROTATE_RIGHT,
 		"Keyboard NUMPAD6",
 		_L("rotate camera right")
 	},
 	{
-		"CAMERA_ROTATE_UP", 
+		"CAMERA_ROTATE_UP",
 		EV_CAMERA_ROTATE_UP,
 		"Keyboard NUMPAD8",
 		_L("rotate camera up")
 	},
 	{
-		"CAMERA_ZOOM_IN", 
+		"CAMERA_ZOOM_IN",
 		EV_CAMERA_ZOOM_IN,
 		"Keyboard EXPL+NUMPAD9",
 		_L("zoom camera in")
 	},
 	{
-		"CAMERA_ZOOM_IN_FAST", 
+		"CAMERA_ZOOM_IN_FAST",
 		EV_CAMERA_ZOOM_IN_FAST,
 		"Keyboard SHIFT+NUMPAD9",
 		_L("zoom camera in faster")
 	},
 	{
-		"CAMERA_ZOOM_OUT", 
+		"CAMERA_ZOOM_OUT",
 		EV_CAMERA_ZOOM_OUT,
 		"Keyboard EXPL+NUMPAD3",
 		_L("zoom camera out")
 	},
 	{
-		"CAMERA_ZOOM_OUT_FAST", 
+		"CAMERA_ZOOM_OUT_FAST",
 		EV_CAMERA_ZOOM_OUT_FAST,
 		"Keyboard SHIFT+NUMPAD3",
 		_L("zoom camera out faster")
 	},
 	{
-		"CHARACTER_BACKWARDS", 
+		"CHARACTER_BACKWARDS",
 		EV_CHARACTER_BACKWARDS,
 		"Keyboard S",
 		_L("step backwards with the character")
 	},
 	{
-		"CHARACTER_FORWARD", 
+		"CHARACTER_FORWARD",
 		EV_CHARACTER_FORWARD,
 		"Keyboard W",
 		_L("step forward with the character")
 	},
 	{
-		"CHARACTER_JUMP", 
+		"CHARACTER_JUMP",
 		EV_CHARACTER_JUMP,
 		"Keyboard SPACE",
 		_L("let the character jump")
 	},
 	{
-		"CHARACTER_LEFT", 
+		"CHARACTER_LEFT",
 		EV_CHARACTER_LEFT,
 		"Keyboard LEFT",
 		_L("rotate character left")
 	},
 	{
-		"CHARACTER_RIGHT", 
+		"CHARACTER_RIGHT",
 		EV_CHARACTER_RIGHT,
 		"Keyboard RIGHT",
 		_L("rotate character right")
 	},
 	{
-		"CHARACTER_RUN", 
+		"CHARACTER_RUN",
 		EV_CHARACTER_RUN,
 		"Keyboard SHIFT+W",
 		_L("let the character run")
 	},
 	{
-		"CHARACTER_SIDESTEP_LEFT", 
+		"CHARACTER_SIDESTEP_LEFT",
 		EV_CHARACTER_SIDESTEP_LEFT,
 		"Keyboard A",
 		_L("sidestep to the left")
 	},
 	{
-		"CHARACTER_SIDESTEP_RIGHT", 
+		"CHARACTER_SIDESTEP_RIGHT",
 		EV_CHARACTER_SIDESTEP_RIGHT,
 		"Keyboard D",
 		_L("sidestep to the right")
 	},
 	{
-		"COMMANDS_01", 
+		"COMMANDS_01",
 		EV_COMMANDS_01,
 		"Keyboard EXPL+F1",
 		_L("Command 1")
 	},
 	{
-		"COMMANDS_02", 
+		"COMMANDS_02",
 		EV_COMMANDS_02,
 		"Keyboard EXPL+F2",
 		_L("Command 2")
 	},
 	{
-		"COMMANDS_03", 
+		"COMMANDS_03",
 		EV_COMMANDS_03,
 		"Keyboard EXPL+F3",
 		_L("Command 3")
 	},
 	{
-		"COMMANDS_04", 
+		"COMMANDS_04",
 		EV_COMMANDS_04,
 		"Keyboard EXPL+F4",
 		_L("Command 4")
 	},
 	{
-		"COMMANDS_05", 
+		"COMMANDS_05",
 		EV_COMMANDS_05,
 		"Keyboard EXPL+F5",
 		_L("Command 5")
 	},
 	{
-		"COMMANDS_06", 
+		"COMMANDS_06",
 		EV_COMMANDS_06,
 		"Keyboard EXPL+F6",
 		_L("Command 6")
 	},
 	{
-		"COMMANDS_07", 
+		"COMMANDS_07",
 		EV_COMMANDS_07,
 		"Keyboard EXPL+F7",
 		_L("Command 7")
 	},
 	{
-		"COMMANDS_08", 
+		"COMMANDS_08",
 		EV_COMMANDS_08,
 		"Keyboard EXPL+F8",
 		_L("Command 8")
 	},
 	{
-		"COMMANDS_09", 
+		"COMMANDS_09",
 		EV_COMMANDS_09,
 		"Keyboard EXPL+F9",
 		_L("Command 9")
 	},
 	{
-		"COMMANDS_10", 
+		"COMMANDS_10",
 		EV_COMMANDS_10,
 		"Keyboard EXPL+F10",
 		_L("Command 10")
 	},
 	{
-		"COMMANDS_11", 
+		"COMMANDS_11",
 		EV_COMMANDS_11,
 		"Keyboard EXPL+F11",
 		_L("Command 11")
 	},
 	{
-		"COMMANDS_12", 
+		"COMMANDS_12",
 		EV_COMMANDS_12,
 		"Keyboard EXPL+F12",
 		_L("Command 12")
 	},
 	{
-		"COMMANDS_13", 
+		"COMMANDS_13",
 		EV_COMMANDS_13,
 		"",
 		_L("Command 13")
 	},
 	{
-		"COMMANDS_14", 
+		"COMMANDS_14",
 		EV_COMMANDS_14,
 		"",
 		_L("Command 14")
 	},
 	{
-		"COMMANDS_15", 
+		"COMMANDS_15",
 		EV_COMMANDS_15,
 		"",
 		_L("Command 15")
 	},
 	{
-		"COMMANDS_16", 
+		"COMMANDS_16",
 		EV_COMMANDS_16,
 		"",
 		_L("Command 16")
 	},
 	{
-		"COMMANDS_17", 
+		"COMMANDS_17",
 		EV_COMMANDS_17,
 		"",
 		_L("Command 17")
 	},
 	{
-		"COMMANDS_18", 
+		"COMMANDS_18",
 		EV_COMMANDS_18,
 		"",
 		_L("Command 18")
 	},
 	{
-		"COMMANDS_19", 
+		"COMMANDS_19",
 		EV_COMMANDS_19,
 		"",
 		_L("Command 19")
 	},
 	{
-		"COMMANDS_20", 
+		"COMMANDS_20",
 		EV_COMMANDS_20,
 		"",
 		_L("Command 20")
 	},
 	{
-		"COMMANDS_21", 
+		"COMMANDS_21",
 		EV_COMMANDS_21,
 		"",
 		_L("Command 21")
 	},
 	{
-		"COMMANDS_22", 
+		"COMMANDS_22",
 		EV_COMMANDS_22,
 		"",
 		_L("Command 22")
 	},
 	{
-		"COMMANDS_23", 
+		"COMMANDS_23",
 		EV_COMMANDS_23,
 		"",
 		_L("Command 23")
 	},
 	{
-		"COMMANDS_24", 
+		"COMMANDS_24",
 		EV_COMMANDS_24,
 		"",
 		_L("Command 24")
 	},
 	{
-		"COMMANDS_25", 
+		"COMMANDS_25",
 		EV_COMMANDS_25,
 		"",
 		_L("Command 25")
 	},
 	{
-		"COMMANDS_26", 
+		"COMMANDS_26",
 		EV_COMMANDS_26,
 		"",
 		_L("Command 26")
 	},
 	{
-		"COMMANDS_27", 
+		"COMMANDS_27",
 		EV_COMMANDS_27,
 		"",
 		_L("Command 27")
 	},
 	{
-		"COMMANDS_28", 
+		"COMMANDS_28",
 		EV_COMMANDS_28,
 		"",
 		_L("Command 28")
 	},
 	{
-		"COMMANDS_29", 
+		"COMMANDS_29",
 		EV_COMMANDS_29,
 		"",
 		_L("Command 29")
 	},
 	{
-		"COMMANDS_30", 
+		"COMMANDS_30",
 		EV_COMMANDS_30,
 		"",
 		_L("Command 30")
 	},
 	{
-		"COMMANDS_31", 
+		"COMMANDS_31",
 		EV_COMMANDS_31,
 		"",
 		_L("Command 31")
 	},
 	{
-		"COMMANDS_32", 
+		"COMMANDS_32",
 		EV_COMMANDS_32,
 		"",
 		_L("Command 32")
 	},
 	{
-		"COMMANDS_33", 
+		"COMMANDS_33",
 		EV_COMMANDS_33,
 		"",
 		_L("Command 33")
 	},
 	{
-		"COMMANDS_34", 
+		"COMMANDS_34",
 		EV_COMMANDS_34,
 		"",
 		_L("Command 34")
 	},
 	{
-		"COMMANDS_35", 
+		"COMMANDS_35",
 		EV_COMMANDS_35,
 		"",
 		_L("Command 35")
 	},
 	{
-		"COMMANDS_36", 
+		"COMMANDS_36",
 		EV_COMMANDS_36,
 		"",
 		_L("Command 36")
 	},
 	{
-		"COMMANDS_37", 
+		"COMMANDS_37",
 		EV_COMMANDS_37,
 		"",
 		_L("Command 37")
 	},
 	{
-		"COMMANDS_38", 
+		"COMMANDS_38",
 		EV_COMMANDS_38,
 		"",
 		_L("Command 38")
 	},
 	{
-		"COMMANDS_39", 
+		"COMMANDS_39",
 		EV_COMMANDS_39,
 		"",
 		_L("Command 39")
 	},
 	{
-		"COMMANDS_40", 
+		"COMMANDS_40",
 		EV_COMMANDS_40,
 		"",
 		_L("Command 40")
 	},
 	{
-		"COMMANDS_41", 
+		"COMMANDS_41",
 		EV_COMMANDS_41,
 		"",
 		_L("Command 41")
 	},
 	{
-		"COMMANDS_42", 
+		"COMMANDS_42",
 		EV_COMMANDS_42,
 		"",
 		_L("Command 42")
 	},
 	{
-		"COMMANDS_43", 
+		"COMMANDS_43",
 		EV_COMMANDS_43,
 		"",
 		_L("Command 43")
 	},
 	{
-		"COMMANDS_44", 
+		"COMMANDS_44",
 		EV_COMMANDS_44,
 		"",
 		_L("Command 44")
@@ -623,85 +623,85 @@ eventInfo_t eventInfo[] = {
 		_L("Command 45")
 	},
 	{
-		"COMMANDS_46", 
+		"COMMANDS_46",
 		EV_COMMANDS_46,
 		"",
 		_L("Command 46")
 	},
 	{
-		"COMMANDS_47", 
+		"COMMANDS_47",
 		EV_COMMANDS_47,
 		"",
 		_L("Command 47")
 	},
 	{
-		"COMMANDS_48", 
+		"COMMANDS_48",
 		EV_COMMANDS_48,
 		"",
 		_L("Command 48")
 	},
 	{
-		"COMMON_CONSOLEDISPLAY", 
+		"COMMON_CONSOLEDISPLAY",
 		EV_COMMON_CONSOLEDISPLAY,
 		"",
 		_L("show / hide the console")
 	},
 	{
-		"COMMON_CONSOLEMODE", 
+		"COMMON_CONSOLEMODE",
 		EV_COMMON_CONSOLEMODE,
 		"",
 		_L("toggle appearance of console")
 	},
 	{
-		"COMMON_ENTER_CHAT", 
+		"COMMON_ENTER_CHAT",
 		EV_COMMON_ENTER_CHAT,
 		"",
 		_L("enter the chat")
 	},
 	{
-		"COMMON_ENTER_OR_EXIT_TRUCK", 
+		"COMMON_ENTER_OR_EXIT_TRUCK",
 		EV_COMMON_ENTER_OR_EXIT_TRUCK,
 		"",
 		_L("enter or exit a truck")
 	},
 	{
-		"COMMON_HIDE_GUI", 
+		"COMMON_HIDE_GUI",
 		EV_COMMON_HIDE_GUI,
 		"",
 		_L("hide all GUI elements")
 	},
 	{
-		"COMMON_LOCK", 
+		"COMMON_LOCK",
 		EV_COMMON_LOCK,
 		"",
 		_L("connect hook node to a node in close proximity")
 	},
 	{
-		"COMMON_MAP_ALPHA", 
+		"COMMON_MAP_ALPHA",
 		EV_COMMON_MAP_ALPHA,
 		"",
 		_L("toggle translucency of overview-map")
 	},
 	{
-		"COMMON_OUTPUT_POSITION", 
+		"COMMON_OUTPUT_POSITION",
 		EV_COMMON_OUTPUT_POSITION,
 		"",
 		_L("write current position to log (you can open the logfile and reuse the position)")
 	},
 	{
-		"COMMON_PRESSURE_LESS", 
+		"COMMON_PRESSURE_LESS",
 		EV_COMMON_PRESSURE_LESS,
 		"",
 		_L("decrease tire pressure (note: only very few trucks support this)")
 	},
 	{
-		"COMMON_PRESSURE_MORE", 
+		"COMMON_PRESSURE_MORE",
 		EV_COMMON_PRESSURE_MORE,
 		"",
 		_L("increase tire pressure (note: only very few trucks support this)")
 	},
 	{
-		"COMMON_QUIT_GAME", 
+		"COMMON_QUIT_GAME",
 		EV_COMMON_QUIT_GAME,
 		"",
 		_L("exit the game")
@@ -1288,14 +1288,14 @@ using namespace OIS;
 // singleton pattern
 InputEngine* InputEngine::myInstance = 0;
 
-InputEngine & InputEngine::Instance () 
+InputEngine & InputEngine::Instance ()
 {
 	if (myInstance == 0)
 		myInstance = new InputEngine;
 	return *myInstance;
 }
 
-bool InputEngine::instanceExists() 
+bool InputEngine::instanceExists()
 {
 	return (myInstance != 0);
 }
@@ -1377,16 +1377,16 @@ bool InputEngine::setup(size_t hwnd, bool capture, bool capturemouse, int _grabM
 #ifndef NOOGRE
 		LogManager::getSingleton().logMessage("*** OIS WINDOW: "+hwnd_str);
 #endif
-		
+
 		mInputManager = OIS::InputManager::createInputSystem(pl);
 
 		//Create all devices (We only catch joystick exceptions here, as, most people have Key/Mouse)
 		mKeyboard = static_cast<Keyboard*>(mInputManager->createInputObject( OISKeyboard, true ));
 		mKeyboard->setTextTranslation(OIS::Keyboard::Ascii);
-		
+
 		if(capturemouse)
 			mMouse = static_cast<Mouse*>(mInputManager->createInputObject( OISMouse, true ));
-		try 
+		try
 		{
 			mJoy = static_cast<JoyStick*>(mInputManager->createInputObject( OISJoyStick, true ));
 		}
@@ -1484,7 +1484,7 @@ OIS::MouseState InputEngine::getMouseState()
 		mode = 2;
 #endif
 	}
-	
+
 	OIS::MouseState m;
 	if(mMouse)
 	{
@@ -1728,7 +1728,7 @@ void InputEngine::updateKeyBounces(float dt)
 		if(it->second > 0)
 			it->second -= dt;
 		//else
-		// erase element?	
+		// erase element?
 	}
 }
 
@@ -1763,7 +1763,7 @@ void InputEngine::smoothValue(float &ref, float value, float rate)
 	if (ref > value)
 	{
 		ref -= rate;
-		if (ref < value) 
+		if (ref < value)
 			ref = value;
 	}
 	else if (ref < value)
@@ -1934,7 +1934,7 @@ float InputEngine::getEventValue(int eventID)
 						continue;
 					}
 					Axis axe = joyState.mAxes[t.joystickAxisNumber];
-					
+
 					if(t.eventtype == ET_JoystickAxisRel)
 					{
 						value = (float)axe.rel / (float)mJoy->MAX_AXIS;
@@ -2172,14 +2172,14 @@ bool InputEngine::processLine(char *line)
 			t_key.alt = alt;
 			t_key.explicite = expl;
 			t_key.keyCode = key;
-			t_key.configline = keycodes;
-			t_key.group = getEventGroup(eventName);
-			t_key.tmp_eventname=eventName;
-			
-			t_key.comments = cur_comment;
+			strcpy(t_key.configline, keycodes);
+			strcpy(t_key.group, getEventGroup(eventName).c_str());
+			strcpy(t_key.tmp_eventname, eventName);
+
+			strcpy(t_key.comments, cur_comment.c_str());
 			cur_comment = "";
 			addEvent(eventID, t_key);
-			
+
 #ifndef NOOGRE
 			//LogManager::getSingleton().logMessage("adding: " + String(eventName) + ": "+StringConverter::toString((int)key));
 #endif
@@ -2200,16 +2200,16 @@ bool InputEngine::processLine(char *line)
 			t_joy.joystickButtonNumber = buttonNo;
 			if(!strcmp(tmp2, "!NEW!"))
 			{
-				t_joy.configline = Ogre::String(tmp2);
+				strcpy(t_joy.configline, tmp2);
 			} else
 			{
 				char tmp[255];
 				sprintf(tmp, "%d", buttonNo);
-				t_joy.configline = Ogre::String(tmp);
+				strcpy(t_joy.configline, tmp);
 			}
-			t_joy.group = getEventGroup(eventName);
-			t_joy.tmp_eventname=eventName;
-			t_joy.comments = cur_comment;
+			strcpy(t_joy.group, getEventGroup(eventName).c_str());
+			strcpy(t_joy.tmp_eventname, eventName);
+			strcpy(t_joy.comments, cur_comment.c_str());
 			cur_comment = "";
 			addEvent(eventID, t_joy);
 			return true;
@@ -2284,10 +2284,10 @@ bool InputEngine::processLine(char *line)
 			t_joy.joystickAxisReverse = reverse;
 			t_joy.joystickAxisNumber = axisNo;
 			t_joy.joystickNumber = joyNo;
-			t_joy.configline = Ogre::String(options);
-			t_joy.group = getEventGroup(eventName);
-			t_joy.tmp_eventname=eventName;
-			t_joy.comments = cur_comment;
+			strcpy(t_joy.configline, options);
+			strcpy(t_joy.group, getEventGroup(eventName).c_str());
+			strcpy(t_joy.tmp_eventname, eventName);
+			strcpy(t_joy.comments, cur_comment.c_str());
 			cur_comment = "";
 			addEvent(eventID, t_joy);
 			//LogManager::getSingleton().logMessage("added axis: " + StringConverter::toString(axisNo));
@@ -2299,10 +2299,10 @@ bool InputEngine::processLine(char *line)
 			if(eventID == -1) return false;
 			event_trigger_t t_none = newEvent();
 			t_none.eventtype = eventtype;
-			t_none.configline = "";
-			t_none.group = getEventGroup(eventName);
-			t_none.tmp_eventname=eventName;
-			t_none.comments = cur_comment;
+			//t_none.configline = "";
+			strcpy(t_none.group, getEventGroup(eventName).c_str());
+			strcpy(t_none.tmp_eventname, eventName);
+			strcpy(t_none.comments, cur_comment.c_str());
 			cur_comment = "";
 			addEvent(eventID, t_none);
 			return true;
@@ -2335,29 +2335,7 @@ int InputEngine::getCurrentJoyButton()
 event_trigger_t InputEngine::newEvent()
 {
 	event_trigger_t res;
-	res.eventtype=ET_NONE;
-	res.keyCode=0;
-	res.explicite=false;
-	res.ctrl=false;
-	res.shift=false;
-	res.alt=false;
-	res.mouseButtonNumber=0;
-	res.joystickNumber=0;
-	res.joystickButtonNumber=0;
-	res.joystickAxisNumber=0;
-	res.joystickAxisDeadzone=0.0f;
-	res.joystickAxisLinearity=0.0f;
-	res.joystickAxisRegion=0;
-	res.joystickAxisReverse=false;
-	res.joystickAxisHalf=false;
-	res.joystickAxisUseDigital=false;
-	res.joystickPovNumber=0;
-	res.joystickSliderNumber=0;
-	res.configline="";
-	res.group="";
-	res.tmp_eventname="";
-	res.comments="";
-	res.suid=0;
+	memset(&res, 0, sizeof(event_trigger_t));
 	return res;
 }
 
@@ -2373,7 +2351,7 @@ int InputEngine::getCurrentKeyCombo(Ogre::String *combo)
 	std::map<int, bool>::iterator i;
 	int keyCounter = 0;
 	int modCounter = 0;
-	
+
 	// list all modificators first
 	for(i = keyState.begin();i!=keyState.end();i++)
 	{
@@ -2450,26 +2428,29 @@ bool InputEngine::updateConfigline(event_trigger_t *t)
 {
 	if(t->eventtype != ET_JoystickAxisAbs)
 		return false;
-	t->configline = "";
+	strcpy(t->configline, "");
 	if(t->joystickAxisRegion==1)
-		t->configline += "UPPER";
+		strcat(t->configline, "UPPER");
 	else if(t->joystickAxisRegion==-1)
-		t->configline += "LOWER";
-	
-	if(t->joystickAxisReverse && t->configline != "")
-		t->configline += "+REVERSE";
-	else if(t->joystickAxisReverse && t->configline == "")
-		t->configline += "REVERSE";
+		strcat(t->configline, "LOWER");
+
+	if(t->joystickAxisReverse && !strlen(t->configline))
+		strcat(t->configline, "+REVERSE");
+	else if(t->joystickAxisReverse && strlen(t->configline))
+		strcat(t->configline, "REVERSE");
 
 	if(fabs(t->joystickAxisDeadzone-0.1) > 0.0001)
 	{
 		char tmp[255]="";
 		memset(tmp, 0, 255);
 		sprintf(tmp, "DEADZONE=%0.2f", t->joystickAxisDeadzone);
-		if(t->configline != "")
-			t->configline += "+" + std::string(tmp);
+		if(strlen(t->configline))
+		{
+			strcat(t->configline, "+");
+			strcat(t->configline, tmp);
+		}
 		else
-			t->configline += std::string(tmp);
+			strcat(t->configline, tmp);
 	}
 	return true;
 }
@@ -2482,19 +2463,19 @@ bool InputEngine::saveMapping(Ogre::String outfile)
 	std::vector<event_trigger_t>::iterator vecIt;
 
 	int counter = 0;
-	
-	Ogre::String curGroup = "";
+
+	char curGroup[32] = "";
 	for(mapIt = controls.begin(); mapIt != controls.end(); mapIt++)
 	{
 		std::vector<event_trigger_t> vec = mapIt->second;
 
 		for(vecIt = vec.begin(); vecIt != vec.end(); vecIt++, counter++)
 		{
-			if(vecIt->group != curGroup)
+			if(strcmp(vecIt->group, curGroup))
 			{
-				curGroup = vecIt->group;
+				strcpy(curGroup, vecIt->group);
 				// group title:
-				fprintf(f, "\n; %s\n", curGroup.c_str());
+				fprintf(f, "\n; %s\n", curGroup);
 			}
 
 			// no user comments for now!
@@ -2508,11 +2489,11 @@ bool InputEngine::saveMapping(Ogre::String outfile)
 
 			if(vecIt->eventtype == ET_Keyboard)
 			{
-				fprintf(f, "%s ", vecIt->configline.c_str());
+				fprintf(f, "%s ", vecIt->configline);
 			} else if(vecIt->eventtype == ET_JoystickAxisAbs || vecIt->eventtype == ET_JoystickAxisRel)
 			{
 				fprintf(f, "%d ", vecIt->joystickAxisNumber);
-				fprintf(f, "%s ", vecIt->configline.c_str());
+				fprintf(f, "%s ", vecIt->configline);
 			} else if(vecIt->eventtype == ET_JoystickButton)
 			{
 				fprintf(f, "%d ", vecIt->joystickButtonNumber);
@@ -2558,7 +2539,7 @@ bool InputEngine::loadMapping(Ogre::String outfile, bool append)
 	if(!f)
 		return false;
 	while(fgets(line, 1024, f)!=NULL)
-	{ 
+	{
 		if(strnlen(line, 1024) > 5)
 			processLine(line);
 	}
@@ -2567,7 +2548,7 @@ bool InputEngine::loadMapping(Ogre::String outfile, bool append)
 #endif
 
 	mappingLoaded = true;
-	
+
 #ifndef NOOGRE
 	LogManager::getSingleton().logMessage("key map successfully loaded!");
 #endif

@@ -171,7 +171,7 @@ enum events
 	EV_COMMON_ENTER_OR_EXIT_TRUCK, //!< enter or exit a truck
 	EV_COMMON_HIDE_GUI, //!< hide all GUI elements
 	EV_COMMON_LOCK, //!< connect hook node to a node in close proximity
-	EV_COMMON_MAP_ALPHA, //!< toggle translucency of overview-map 
+	EV_COMMON_MAP_ALPHA, //!< toggle translucency of overview-map
 	EV_COMMON_OUTPUT_POSITION, //!< write current position to log (you can open the logfile and reuse the position)
 	EV_COMMON_PRESSURE_LESS, //!< decrease tire pressure (note: only very few trucks support this)
 	EV_COMMON_PRESSURE_MORE, //!< increase tire pressure (note: only very few trucks support this)
@@ -311,12 +311,12 @@ typedef struct
 	// POVs
 	int joystickPovNumber;
 	int joystickSliderNumber;
-	
+
 	//others
-	std::string configline;
-	std::string group;
-	std::string tmp_eventname;
-	std::string comments;
+	char configline[128];
+	char group[32];
+	char tmp_eventname[128];
+	char comments[128];
 	int suid; //session unique id
 } event_trigger_t;
 
@@ -329,7 +329,7 @@ public:
 	bool getEventBoolValue(int eventID);
 	bool getEventBoolValueBounce(int eventID, float time=0.2f);
 	float getEventBounceTime(int eventID);
-	static bool instanceExists() ;	
+	static bool instanceExists() ;
 	// we need to use hwnd here, as we are also using this in the configurator
 	bool setup(size_t hwnd, bool capture=false, bool capturemouse=false, int grabMode=0);
 	Ogre::String getKeyForCommand(int eventID);
@@ -354,7 +354,7 @@ public:
 	static int resolveEventName(Ogre::String eventName);
 	static Ogre::String eventIDToName(int eventID);
 	event_trigger_t *getEventBySUID(int suid);
-	
+
 	bool isEventDefined(int eventID);
 	void addEvent(int eventID, event_trigger_t t);
 	bool deleteEventBySUID(int suid);
@@ -366,7 +366,7 @@ public:
 	OIS::MouseState getMouseState();
 	// some custom methods
 	void windowResized(Ogre::RenderWindow* rw);
-	
+
 	bool reloadConfig(std::string outfile=CONFIGFILENAME);
 	bool updateConfigline(event_trigger_t *t);
 
@@ -430,7 +430,7 @@ protected:
 	float logval(float val);
 	std::string getEventGroup(Ogre::String eventName);
 	bool mappingLoaded;
-	
+
 	Ogre::String keyInput;
 	bool recordChat;
 	bool inputsChanged;

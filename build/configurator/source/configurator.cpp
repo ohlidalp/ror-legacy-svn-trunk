@@ -642,7 +642,7 @@ public:
 			int keys = INPUTENGINE.getCurrentKeyCombo(&combo);
 			if(lastCombo != combo && keys != 0)
 			{
-				t->configline = combo;
+				strcpy(t->configline, combo.c_str());
 				wxString s = conv(combo);
 				if(text2->GetLabel() != s)
 					text2->SetLabel(s);
@@ -663,7 +663,7 @@ public:
 			std::string str = conv(wxString::Format(_T("%d"), btn));
 			if(btn != lastBtn && btn >= 0)
 			{
-				t->configline = str;
+				strcpy(t->configline, str.c_str());
 				t->joystickButtonNumber = btn;
 				wxString s = conv(str);
 				if(text2->GetLabel() != s)
@@ -722,7 +722,7 @@ public:
 							(upper?std::string(" UPPER"):std::string(" LOWER")); // + " - " + wxString::Format(_T("%f"), lastJoyEventTime);
 					t->joystickAxisNumber = selectedAxis;
 					t->joystickAxisRegion = (upper?1:-1); // half axis
-					t->configline = (upper?std::string("UPPER"):std::string("LOWER"));
+					strcpy(t->configline, (upper?"UPPER":"LOWER"));
 					if(olddeta != delta)
 					{
 						olddeta = delta;
@@ -734,7 +734,7 @@ public:
 					str = std::string("Axis ") + conv(wxString::Format(_T("%d"), selectedAxis)); //+ " - " + wxString::Format(_T("%f"), lastJoyEventTime);
 					t->joystickAxisNumber = selectedAxis;
 					t->joystickAxisRegion = 0; // full axis
-					t->configline = "";
+					strcpy(t->configline, "");
 					if(olddeta != delta)
 					{
 						olddeta = delta;
@@ -1645,7 +1645,7 @@ MyDialog::MyDialog(const wxString& title, MyApp *_app) : wxDialog(NULL, wxID_ANY
 
 	btn = new wxButton(advancedPanel, clear_cache, _("Clear cache"), wxPoint(125, 180));
 	btn->SetToolTip(_("Use this to remove the whole cache and force the generation from ground up."));
-	
+
 	dText = new wxStaticText(advancedPanel, -1, _("Language:"), wxPoint(10, 230));
 
 	wxArrayString choices;
@@ -1788,12 +1788,7 @@ void MyDialog::onChangeLanguageChoice(wxCommandEvent& event)
 
 void MyDialog::loadInputControls()
 {
-	// setup control tree
-	std::map<int, std::vector<event_trigger_t> > controls = INPUTENGINE.getEvents();
-	std::map<int, std::vector<event_trigger_t> >::iterator mapIt;
-
-	// clear everything
-	controlItemCounter=0;
+	char curGroup[32] = "";
 	cTree->DeleteRoot();
 
 	if(cTree->GetColumnCount() < 4)
@@ -1808,31 +1803,48 @@ void MyDialog::loadInputControls()
 		cTree->AddColumn (_("Options"), 100);
 		cTree->SetColumnEditable (3, false);
 	}
-
-	std::string curGroup = "";
 	wxTreeItemId root = cTree->AddRoot(conv("Root"));
 	wxTreeItemId *curRoot = 0;
-	for(mapIt = controls.begin(); mapIt != controls.end(); mapIt++)
+
+	// setup control tree
+	std::map<int, std::vector<event_trigger_t> > controls = INPUTENGINE.getEvents();
+
+	/*
+	printf("--------------------------\n");
+	for(std::map < int, std::vector<event_trigger_t> >::iterator it= controls.begin(); it!=controls.end();it++)
 	{
-		for(std::vector<event_trigger_t>::iterator it2 = mapIt->second.begin(); it2 != mapIt->second.end(); it2++, controlItemCounter++)
+		printf("event map: %d\n", it->first);
+		for(std::vector<event_trigger_t>::iterator it2=it->second.begin(); it2!= it->second.end(); it2++)
+		{
+			printf(" %d\n", it2->keyCode);
+		}
+	}
+	printf("===========================\n");
+	*/
+
+	// clear everything
+	controlItemCounter=0;
+	for(std::map<int, std::vector<event_trigger_t> >::iterator it = controls.begin(); it!=controls.end(); it++)
+	{
+		for(std::vector<event_trigger_t>::iterator it2 = it->second.begin(); it2 != it->second.end(); it2++, controlItemCounter++)
 		{
 			const event_trigger_t evt = *it2;
-			if(evt.group != curGroup || curRoot == 0)
+			if(strcmp(evt.group, curGroup) || curRoot == 0)
 			{
 				//if(curRoot!=0)
 				//	cTree->ExpandAll(*curRoot);
-				curGroup = evt.group;
+				strcpy(curGroup, evt.group);
 				wxTreeItemId tmp = cTree->AppendItem(root, conv(curGroup));
 				curRoot = &tmp;
 				cTree->SetItemData(curRoot, new IDData(-1));
 			}
 
 			//strip category name if possible
-			int eventID = mapIt->first;
+			int eventID = it->first;
 			std::string evn = INPUTENGINE.eventIDToName(eventID);
 			wxString evName = conv(evn);
-			if(evt.group.size()+1 < evName.size())
-				evName = conv(evn.substr(evt.group.size()+1));
+			if(strlen(evt.group)+1 < evName.size())
+				evName = conv(evn.substr(strlen(evt.group)+1));
 		    wxTreeItemId item = cTree->AppendItem(*curRoot, evName);
 
 			/*
@@ -2590,9 +2602,9 @@ void MyDialog::OnButAddKey(wxCommandEvent& event)
 	{
 		for(it2 = it->second.begin(); it2!= it->second.end(); it2++, counter++)
 		{
-			if(it2->configline == "!NEW!")
+			if(!strcmp(it2->configline, "!NEW!"))
 			{
-				it2->configline="";
+				strcpy(it2->configline, "");
 				suid = it2->suid;
 			}
 		}
