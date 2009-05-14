@@ -2172,11 +2172,11 @@ bool InputEngine::processLine(char *line)
 			t_key.alt = alt;
 			t_key.explicite = expl;
 			t_key.keyCode = key;
-			strcpy(t_key.configline, keycodes);
-			strcpy(t_key.group, getEventGroup(eventName).c_str());
-			strcpy(t_key.tmp_eventname, eventName);
+			strncpy(t_key.configline, keycodes, 128);
+			strncpy(t_key.group, getEventGroup(eventName).c_str(), 128);
+			strncpy(t_key.tmp_eventname, eventName, 128);
 
-			strcpy(t_key.comments, cur_comment.c_str());
+			strncpy(t_key.comments, cur_comment.c_str(), 1024);
 			cur_comment = "";
 			addEvent(eventID, t_key);
 
@@ -2200,16 +2200,16 @@ bool InputEngine::processLine(char *line)
 			t_joy.joystickButtonNumber = buttonNo;
 			if(!strcmp(tmp2, "!NEW!"))
 			{
-				strcpy(t_joy.configline, tmp2);
+				strncpy(t_joy.configline, tmp2, 128);
 			} else
 			{
 				char tmp[255];
 				sprintf(tmp, "%d", buttonNo);
-				strcpy(t_joy.configline, tmp);
+				strncpy(t_joy.configline, tmp, 128);
 			}
-			strcpy(t_joy.group, getEventGroup(eventName).c_str());
-			strcpy(t_joy.tmp_eventname, eventName);
-			strcpy(t_joy.comments, cur_comment.c_str());
+			strncpy(t_joy.group, getEventGroup(eventName).c_str(), 128);
+			strncpy(t_joy.tmp_eventname, eventName, 128);
+			strncpy(t_joy.comments, cur_comment.c_str(), 1024);
 			cur_comment = "";
 			addEvent(eventID, t_joy);
 			return true;
@@ -2284,10 +2284,10 @@ bool InputEngine::processLine(char *line)
 			t_joy.joystickAxisReverse = reverse;
 			t_joy.joystickAxisNumber = axisNo;
 			t_joy.joystickNumber = joyNo;
-			strcpy(t_joy.configline, options);
-			strcpy(t_joy.group, getEventGroup(eventName).c_str());
-			strcpy(t_joy.tmp_eventname, eventName);
-			strcpy(t_joy.comments, cur_comment.c_str());
+			strncpy(t_joy.configline, options, 128);
+			strncpy(t_joy.group, getEventGroup(eventName).c_str(), 128);
+			strncpy(t_joy.tmp_eventname, eventName, 128);
+			strncpy(t_joy.comments, cur_comment.c_str(), 1024);
 			cur_comment = "";
 			addEvent(eventID, t_joy);
 			//LogManager::getSingleton().logMessage("added axis: " + StringConverter::toString(axisNo));
@@ -2300,9 +2300,9 @@ bool InputEngine::processLine(char *line)
 			event_trigger_t t_none = newEvent();
 			t_none.eventtype = eventtype;
 			//t_none.configline = "";
-			strcpy(t_none.group, getEventGroup(eventName).c_str());
-			strcpy(t_none.tmp_eventname, eventName);
-			strcpy(t_none.comments, cur_comment.c_str());
+			strncpy(t_none.group, getEventGroup(eventName).c_str(), 128);
+			strncpy(t_none.tmp_eventname, eventName, 128);
+			strncpy(t_none.comments, cur_comment.c_str(), 1024);
 			cur_comment = "";
 			addEvent(eventID, t_none);
 			return true;
@@ -2473,7 +2473,7 @@ bool InputEngine::saveMapping(Ogre::String outfile)
 		{
 			if(strcmp(vecIt->group, curGroup))
 			{
-				strcpy(curGroup, vecIt->group);
+				strncpy(curGroup, vecIt->group, 128);
 				// group title:
 				fprintf(f, "\n; %s\n", curGroup);
 			}
