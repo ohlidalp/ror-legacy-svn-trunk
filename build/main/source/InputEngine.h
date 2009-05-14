@@ -314,9 +314,9 @@ typedef struct
 
 	//others
 	char configline[128];
-	char group[32];
+	char group[128];
 	char tmp_eventname[128];
-	char comments[128];
+	char comments[1024];
 	int suid; //session unique id
 } event_trigger_t;
 
