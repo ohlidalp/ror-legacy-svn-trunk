@@ -1790,8 +1790,8 @@ void MyDialog::loadInputControls()
 {
 	// setup control tree
 	std::map<int, std::vector<event_trigger_t> > controls = INPUTENGINE.getEvents();
-	std::map<int, std::vector<event_trigger_t> >::iterator mapIt;
-	std::vector<event_trigger_t>::iterator vecIt;
+	std::map<int, std::vector<event_trigger_t> >::const_iterator mapIt;
+	
 
 	// clear everything
 	controlItemCounter=0;
@@ -1815,25 +1815,26 @@ void MyDialog::loadInputControls()
 	wxTreeItemId *curRoot = 0;
 	for(mapIt = controls.begin(); mapIt != controls.end(); mapIt++)
 	{
-		std::vector<event_trigger_t> vec = mapIt->second;
-
-		for(vecIt = vec.begin(); vecIt != vec.end(); vecIt++, controlItemCounter++)
+		int size = mapIt->second.size();
+		for(int j=0;j<size;j++, controlItemCounter++)
 		{
-			if(vecIt->group != curGroup || curRoot == 0)
+			const event_trigger_t evt = mapIt->second[j];
+			if(evt.group != curGroup || curRoot == 0)
 			{
 				//if(curRoot!=0)
 				//	cTree->ExpandAll(*curRoot);
-				curGroup = vecIt->group;
+				curGroup = evt.group;
 				wxTreeItemId tmp = cTree->AppendItem(root, conv(curGroup));
 				curRoot = &tmp;
 				cTree->SetItemData(curRoot, new IDData(-1));
 			}
 
 			//strip category name if possible
-			std::string evn = INPUTENGINE.eventIDToName(mapIt->first);
+			int eventID = mapIt->first;
+			std::string evn = INPUTENGINE.eventIDToName(eventID);
 			wxString evName = conv(evn);
-			if(vecIt->group.size()+1 < evName.size())
-				evName = conv(evn.substr(vecIt->group.size()+1));
+			if(evt.group.size()+1 < evName.size())
+				evName = conv(evn.substr(evt.group.size()+1));
 		    wxTreeItemId item = cTree->AppendItem(*curRoot, evName);
 
 			/*
@@ -1845,9 +1846,9 @@ void MyDialog::loadInputControls()
 			*/
 
 			// set some data beside the tree entry
-			cTree->SetItemData(item, new IDData(vecIt->suid));
-			updateItemText(item, (event_trigger_t *)&(*vecIt));
-			treeItems[vecIt->suid] = item;
+			cTree->SetItemData(item, new IDData(evt.suid));
+			updateItemText(item, (event_trigger_t *)&(evt));
+			treeItems[evt.suid] = item;
 
 			/*
 			cTree->SetItemText (item, 1,  wxString(INPUTENGINE.getEventTypeName(vecIt->eventtype).c_str()));
