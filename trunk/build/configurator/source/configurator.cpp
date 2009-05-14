@@ -1790,8 +1790,7 @@ void MyDialog::loadInputControls()
 {
 	// setup control tree
 	std::map<int, std::vector<event_trigger_t> > controls = INPUTENGINE.getEvents();
-	std::map<int, std::vector<event_trigger_t> >::const_iterator mapIt;
-	
+	std::map<int, std::vector<event_trigger_t> >::iterator mapIt;
 
 	// clear everything
 	controlItemCounter=0;
@@ -1815,10 +1814,9 @@ void MyDialog::loadInputControls()
 	wxTreeItemId *curRoot = 0;
 	for(mapIt = controls.begin(); mapIt != controls.end(); mapIt++)
 	{
-		int size = mapIt->second.size();
-		for(int j=0;j<size;j++, controlItemCounter++)
+		for(std::vector<event_trigger_t>::iterator it2 = mapIt->second.begin(); it2 != mapIt->second.end(); it2++, controlItemCounter++)
 		{
-			const event_trigger_t evt = mapIt->second[j];
+			const event_trigger_t evt = *it2;
 			if(evt.group != curGroup || curRoot == 0)
 			{
 				//if(curRoot!=0)
