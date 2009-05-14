@@ -2073,10 +2073,19 @@ Ogre::String InputEngine::getEventTypeName(int type)
 
 void InputEngine::addEvent(int eventID, event_trigger_t t)
  {
-    static int counter=0;
-    counter++;
-    t.suid = counter;
-    events[eventID].push_back(t);
+	static int counter=0;
+	counter++;
+	t.suid = counter;
+
+	if(eventID == -1)
+		//unkown event, discard
+		return;
+	if(events.find(eventID) == events.end())
+	{
+		events[eventID] = std::vector<event_trigger_t>();
+		events[eventID].clear();
+	}
+	events[eventID].push_back(t);
 }
 
 bool InputEngine::processLine(char *line)
@@ -2154,7 +2163,8 @@ bool InputEngine::processLine(char *line)
 				key = allit->second;
 			}
 			int eventID = resolveEventName(String(eventName));
-			event_trigger_t t_key;
+			if(eventID == -1) return false;
+			event_trigger_t t_key = newEvent();
 			//memset(&t_key, 0, sizeof(event_trigger_t));
 			t_key.eventtype = ET_Keyboard;
 			t_key.shift = shift;
@@ -2165,6 +2175,7 @@ bool InputEngine::processLine(char *line)
 			t_key.configline = keycodes;
 			t_key.group = getEventGroup(eventName);
 			t_key.tmp_eventname=eventName;
+			
 			t_key.comments = cur_comment;
 			cur_comment = "";
 			addEvent(eventID, t_key);
@@ -2180,9 +2191,10 @@ bool InputEngine::processLine(char *line)
 			char tmp2[255];
 			memset(tmp2, 0 ,255);
 			sscanf(line, "%s %s %d %s", eventName, evtype, &buttonNo, tmp2);
-			event_trigger_t t_joy;
+			event_trigger_t t_joy = newEvent();
 			//memset(&t_joy, 0, sizeof(event_trigger_t));
 			int eventID = resolveEventName(String(eventName));
+			if(eventID == -1) return false;
 			t_joy.eventtype = ET_JoystickButton;
 			t_joy.joystickNumber = joyNo;
 			t_joy.joystickButtonNumber = buttonNo;
@@ -2210,6 +2222,7 @@ bool InputEngine::processLine(char *line)
 			memset(options, 0, 250);
 			sscanf(line, "%s %s %d %s", eventName, evtype, &axisNo, options);
 			int eventID = resolveEventName(String(eventName));
+			if(eventID == -1) return false;
 
 			bool half=false;
 			bool reverse=false;
@@ -2260,7 +2273,7 @@ bool InputEngine::processLine(char *line)
 			if(relative)
 				eventtype = ET_JoystickAxisRel;
 
-			event_trigger_t t_joy;
+			event_trigger_t t_joy = newEvent();
 			//memset(&t_joy, 0, sizeof(event_trigger_t));
 			t_joy.eventtype = eventtype;
 			t_joy.joystickAxisRegion = jAxisRegion;
@@ -2283,7 +2296,8 @@ bool InputEngine::processLine(char *line)
 	case ET_NONE:
 		{
 			int eventID = resolveEventName(String(eventName));
-			event_trigger_t t_none;
+			if(eventID == -1) return false;
+			event_trigger_t t_none = newEvent();
 			t_none.eventtype = eventtype;
 			t_none.configline = "";
 			t_none.group = getEventGroup(eventName);
@@ -2317,6 +2331,36 @@ int InputEngine::getCurrentJoyButton()
 			return i;
 	return -1;
 }
+
+event_trigger_t InputEngine::newEvent()
+{
+	event_trigger_t res;
+	res.eventtype=ET_NONE;
+	res.keyCode=0;
+	res.explicite=false;
+	res.ctrl=false;
+	res.shift=false;
+	res.alt=false;
+	res.mouseButtonNumber=0;
+	res.joystickNumber=0;
+	res.joystickButtonNumber=0;
+	res.joystickAxisNumber=0;
+	res.joystickAxisDeadzone=0.0f;
+	res.joystickAxisLinearity=0.0f;
+	res.joystickAxisRegion=0;
+	res.joystickAxisReverse=false;
+	res.joystickAxisHalf=false;
+	res.joystickAxisUseDigital=false;
+	res.joystickPovNumber=0;
+	res.joystickSliderNumber=0;
+	res.configline="";
+	res.group="";
+	res.tmp_eventname="";
+	res.comments="";
+	res.suid=0;
+	return res;
+}
+
 
 JoyStickState *InputEngine::getCurrentJoyState()
 {
@@ -2539,6 +2583,9 @@ int InputEngine::resolveEventName(Ogre::String eventName)
 			return eventInfo[i].eventID;
 		i++;
 	}
+#ifndef NOOGRE
+	LogManager::getSingleton().logMessage("unkown event (ignored): " + eventName);
+#endif
 	return -1;
 }
 

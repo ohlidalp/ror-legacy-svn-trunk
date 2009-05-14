@@ -436,6 +436,8 @@ protected:
 	bool inputsChanged;
 	bool fileExists(char* filename);
 	int grabMode;
+
+	event_trigger_t newEvent();
 };
 
 #endif
