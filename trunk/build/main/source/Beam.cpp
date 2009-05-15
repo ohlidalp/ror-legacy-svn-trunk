@@ -796,7 +796,7 @@ void Beam::expireNetForce()
 
 inline bool Beam::isFiniteNum(float x)
 {
-	return (x <= FLT_MAX && x >= FLT_MIN);
+	return (x <= FLT_MAX && x >= -FLT_MAX);
 }
 
 //called by the network thread
