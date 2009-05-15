@@ -3322,18 +3322,7 @@ bool ExampleFrameListener::updateEvents(float dt)
 
 				if (INPUTENGINE.getEventBoolValueBounce(EV_COMMON_TRUCK_REMOVE))
 				{
-					if(current_truck != -1)
-					{
-						// whoohooo :p
-						// RoR history if that works ... :|
-						// first, exit any truck
-						int truck_to_delete = current_truck;
-						setCurrentTruck(-1);
-						// then delete the class
-						delete trucks[truck_to_delete];
-						// then set the array to zero, so it wont be used anymore
-						trucks[truck_to_delete] = 0;
-					}
+					removeTruck(current_truck);
 				}
 
 				if (INPUTENGINE.getEventBoolValueBounce(EV_COMMON_LOCK))
@@ -4197,6 +4186,22 @@ bool ExampleFrameListener::updateEvents(float dt)
 	}
 	// Return true to continue rendering
 	return true;
+}
+
+void ExampleFrameListener::removeTruck(int truck)
+{
+	if(truck == -1 || truck > free_truck)
+		// invalid number
+		return;
+	// whoohooo :p
+	// RoR history if that works ... :|
+	// first, exit the truck if in there
+	if(current_truck == truck)
+		setCurrentTruck(-1);
+	// then delete the class
+	delete trucks[truck];
+	// then set the array to zero, so it wont be used anymore
+	trucks[truck] = 0;
 }
 
 int ExampleFrameListener::addTruck(char *fname, Vector3 pos)
@@ -6747,8 +6752,11 @@ bool ExampleFrameListener::frameStarted(const FrameEvent& evt)
 					std::vector<Ogre::String> truckconfig;
 					truckconfig.push_back("networked");
 
+					// TODO: to check of we have other free places in the array, not only at the end
+
+					// spawn not everyone in the user's area -> lag
 					trucks[free_truck]=new Beam(free_truck, mSceneMgr, mSceneMgr->getRootSceneNode(), mWindow,
-						&mapsizex, &mapsizez, truckx, trucky, truckz, Quaternion::ZERO, name, collisions, dustp, clumpp, sparksp, dripp, splashp, ripplep, hfinder, w, mCamera, mirror, true, true,false,0,false,flaresMode, &truckconfig);
+						&mapsizex, &mapsizez, 1000000, 1000000, 1000000, Quaternion::ZERO, name, collisions, dustp, clumpp, sparksp, dripp, splashp, ripplep, hfinder, w, mCamera, mirror, true, true,false,0,false,flaresMode, &truckconfig);
 					trucks[free_truck]->label=label;
 
 					if(bigMap)
@@ -6978,6 +6986,9 @@ void ExampleFrameListener::setDirectionArrow(char *text, Vector3 position)
 
 void ExampleFrameListener::netDisconnectTruck(int number)
 {
+	// we will remove the truck completely
+	// TODO: fix that below!
+	//removeTruck(number);
 	if(bigMap)
 	{
 		MapEntity *e = bigMap->getEntityByName("Truck"+StringConverter::toString(number));

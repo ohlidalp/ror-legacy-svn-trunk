@@ -7375,6 +7375,7 @@ void Beam::updateVisual(float dt)
 	//sounds too
 	updateSoundSources();
 
+	if(deleting) return;
 	if(debugVisuals) updateDebugOverlay();
 
 	//dust
@@ -7503,7 +7504,7 @@ void Beam::updateVisual(float dt)
 		}
 		for (i=0; i<free_wheel; i++)
 		{
-			vwheels[i].cnode->setPosition(vwheels[i].fm->flexit());
+			if(vwheels[i].cnode) vwheels[i].cnode->setPosition(vwheels[i].fm->flexit());
 		}
 		if (cabMesh) cabNode->setPosition(cabMesh->flexit());
 	}
