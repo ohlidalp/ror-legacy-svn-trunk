@@ -103,6 +103,7 @@ std::string WSync::findHashInHashmap(std::map<string, Hashentry> hashMap, std::s
 int WSync::sync(boost::filesystem::path localDir, string server, string remoteDir, bool useMirror, bool deleteOk)
 {
 	// download remote currrent file first
+	int res = 0;
 	path remoteFileIndex;
 	if(getTempFilename(remoteFileIndex))
 		printf("error creating tempfile!\n");
@@ -367,12 +368,13 @@ retry2:
 		}
 
 		printf("sync complete, downloaded %s\n", formatFilesize(downloadSize).c_str());
+		res = 1;
 	} else
 		printf("sync complete (already up to date), downloaded %s\n", formatFilesize(downloadSize).c_str());
 
 	//remove temp files again
 	remove(remoteFileIndex);
-	return 0;
+	return res;
 }
 
 // util functions below
@@ -662,6 +664,7 @@ int WSync::downloadFile(boost::filesystem::path localFile, string server, string
 		std::getline(response_stream, status_message);
 		if (!response_stream || http_version.substr(0, 5) != "HTTP/")
 		{
+			socket.close();
 			std::cout << endl << "Error: Invalid response\n";
 			printf("download URL: http://%s%s\n", server.c_str(), path.c_str());
 			return 1;
@@ -669,6 +672,7 @@ int WSync::downloadFile(boost::filesystem::path localFile, string server, string
 		if (status_code == 302)
 		{
 			// catch redirects
+			socket.close();
 			boost::asio::read_until(socket, response, "\r\n\r\n");
 			std::string line="",new_url="";
 			size_t counter = 0;
@@ -764,6 +768,7 @@ int WSync::downloadFile(boost::filesystem::path localFile, string server, string
 		}
 		
 		downloadSize += fileSize;
+		socket.close();
 	}
 	catch (std::exception& e)
 	{
