@@ -377,6 +377,7 @@ public:
 	int getKeboardKeyForCommand(int eventID);
 
 	void updateKeyBounces(float dt);
+	void completeMissingEvents();
 
 protected:
 	InputEngine();
