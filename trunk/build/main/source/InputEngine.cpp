@@ -1419,8 +1419,13 @@ bool InputEngine::setup(size_t hwnd, bool capture, bool capturemouse, int _grabM
 	// we will load the mapping manually
 #else
 	if(!mappingLoaded)
+	{
 		if (!loadMapping())
-		return false;
+		{
+			return false;
+		} else
+			completeMissingEvents();
+	}
 #endif
 	return true;
 }
@@ -1569,17 +1574,19 @@ bool InputEngine::axisMoved( const OIS::JoyStickEvent &arg, int axis )
 	return true;
 }
 
-bool InputEngine::sliderMoved( const OIS::JoyStickEvent &, int )
+bool InputEngine::sliderMoved( const OIS::JoyStickEvent &arg, int )
 {
 	inputsChanged=true;
 	//LogManager::getSingleton().logMessage("*** sliderMoved");
+	joyState = arg.state;
 	return true;
 }
 
-bool InputEngine::povMoved( const OIS::JoyStickEvent &, int )
+bool InputEngine::povMoved( const OIS::JoyStickEvent &arg, int )
 {
 	inputsChanged=true;
 	//LogManager::getSingleton().logMessage("*** povMoved");
+	joyState = arg.state;
 	return true;
 }
 
@@ -2506,6 +2513,22 @@ bool InputEngine::saveMapping(Ogre::String outfile)
 	return true;
 }
 
+void InputEngine::completeMissingEvents()
+{
+	int i=0;
+	while(i!=EV_MODE_LAST)
+	{
+		if(events.find(eventInfo[i].eventID) == events.end())
+		{
+#ifndef NOOGRE
+			LogManager::getSingleton().logMessage("event mapping not existing, using default: " + eventInfo[i].name);
+#endif
+			// not existing, insert default
+			processLine(const_cast<char*>(eventInfo[i].defaultKey.c_str()));
+		}
+		i++;
+	}
+}
 
 bool InputEngine::loadMapping(Ogre::String outfile, bool append)
 {
