@@ -2471,7 +2471,7 @@ bool InputEngine::saveMapping(Ogre::String outfile)
 
 	int counter = 0;
 
-	char curGroup[32] = "";
+	char curGroup[128] = "";
 	for(mapIt = controls.begin(); mapIt != controls.end(); mapIt++)
 	{
 		std::vector<event_trigger_t> vec = mapIt->second;

@@ -9,9 +9,10 @@ IF(WIN32)
   add_definitions("-D_CRT_SECURE_NO_WARNINGS -D_WIN32_WINDOWS -D_WIN32")
   link_directories(${WSYNC_BOOST_DIR}/lib)
 ELSEIF(UNIX)
+  find_package(Boost REQUIRED COMPONENTS filesystem iostreams)
   add_definitions("-DNWIN32")
-  link_directories(/usr/lib64)
-  include_directories (/usr/include)
+  link_directories(${Boost_LIBRARY_DIRS})
+  include_directories (${Boost_INCLUDE_DIR})
 ELSEIF(APPLE)
 ENDIF(WIN32)
 
@@ -31,8 +32,7 @@ target_link_libraries(wsync libwsync)
 IF(WIN32)
 ELSEIF(UNIX)
   target_link_libraries (wsync 
-    libboost_filesystem.so
-    libboost_iostreams.so
+    ${Boost_LIBRARIES}
     pthread
   )
 ELSEIF(APPLE)

@@ -3,6 +3,7 @@
 # include <conio.h> // for getch
 #endif
 
+#include <stdio.h> // printf
 #include "resource.h"
 #include "ScriptEngine.h"
 
