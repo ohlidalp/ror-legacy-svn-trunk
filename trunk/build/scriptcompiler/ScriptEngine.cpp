@@ -1,5 +1,6 @@
 #include "ScriptEngine.h"
 #include <assert.h>  // assert()
+#include <stdio.h> // printf
 
 // interfaces
 #include "Beam.h"

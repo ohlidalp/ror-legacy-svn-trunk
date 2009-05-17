@@ -1920,8 +1920,10 @@ void MyDialog::updateRendersystems(Ogre::RenderSystem *rs)
 		{
 			if(rs && rs->getName() == (*it)->getName())
 				selection = valuecounter;
-			else if(!rs)
+			else if(!rs) {
 				rs = (*it);
+				ogreRoot->setRenderSystem(rs);
+			}
 			renderer->Append(conv((*it)->getName()));
 		}
 		renderer->SetSelection(selection);
