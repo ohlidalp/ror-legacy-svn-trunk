@@ -74,7 +74,11 @@ Resource* SkinManager::createImpl(const String& name, ResourceHandle handle,
 {
 	try
 	{
-		return new Skin(this, name, handle, group, isManual, loader);
+		bool existing = (mResources.find(name) != mResources.end());
+		if(existing)
+			return mResources[name].getPointer();
+		else
+			return new Skin(this, name, handle, group, isManual, loader);
 	} catch(Ogre::ItemIdentityException e)
 	{
 		return mResources[name].getPointer();
@@ -161,7 +165,11 @@ void SkinManager::parseAttribute(const String& line, SkinPtr& pSkin)
 	else if (attrib == "authorname"         && params.size() >= 2) pSkin->authorName = joinString(params);
 	else if (attrib == "authorid"           && params.size() == 2) pSkin->authorID = StringConverter::parseInt(params[1]);
 	else if (attrib == "skintype"           && params.size() >= 2) pSkin->skintype = joinString(params);
-	else if (attrib == "name"               && params.size() >= 2) pSkin->name = joinString(params);
+	else if (attrib == "name"               && params.size() >= 2)
+	{
+		pSkin->name = joinString(params);
+		StringUtil::trim(pSkin->name);
+	}
 	else if (attrib == "origin"             && params.size() >= 2) pSkin->origin = joinString(params);
 	else if (attrib == "source"             && params.size() >= 2) pSkin->source = joinString(params);
 	else if (attrib == "sourcetype"         && params.size() == 2) pSkin->sourcetype = params[1];
@@ -233,6 +241,7 @@ int SkinManager::serialize(Ogre::String &dst)
 	{
 
 		String source = CACHE.getSkinSource(it->second->getOrigin());
+		if(!source.size()) continue;
 
 		std::string::size_type loc = source.find(".zip", 0);
 		if( loc != std::string::npos )
