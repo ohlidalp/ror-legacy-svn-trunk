@@ -559,8 +559,12 @@ bool CacheSystem::loadCache()
 				}
 				if(line.substr(0,4) == "skin")
 				{
-					String sname = line.substr(5);
-					StringUtil::trim(sname);
+					String sname = "skin";
+					if(line.size() > 7)
+					{
+						sname = line.substr(5);
+						StringUtil::trim(sname);
+					}
 					// "skin" + StringConverter::toString(SkinManager::getSingleton().getSkinCount())
 					try
 					{

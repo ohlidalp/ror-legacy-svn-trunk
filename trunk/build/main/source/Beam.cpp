@@ -1353,11 +1353,14 @@ int Beam::loadTruck(char* fname, SceneManager *manager, SceneNode *parent, Real 
 				LogManager::getSingleton().logMessage("Error parsing File (set_beam_defaults) " + String(fname) +" line " + StringConverter::toString(linecounter) + ". trying to continue ...");
 				continue;
 			}
-			MaterialPtr mat = MaterialManager::getSingleton().getByName(String(default_beam_material2));
-			if(!mat.isNull())
-				strncpy(default_beam_material, default_beam_material2, 256);
-			else
-				LogManager::getSingleton().logMessage("beam material '" + String(default_beam_material2) + "' not found!");
+			if(strnlen(default_beam_material2, 255))
+			{
+				MaterialPtr mat = MaterialManager::getSingleton().getByName(String(default_beam_material2));
+				if(!mat.isNull())
+					strncpy(default_beam_material, default_beam_material2, 256);
+				else
+					LogManager::getSingleton().logMessage("beam material '" + String(default_beam_material2) + "' not found!");
+			}
 			if (default_spring<0) default_spring=DEFAULT_SPRING;
 			if (default_damp<0) default_damp=DEFAULT_DAMP;
 			if (default_deform<0) default_deform=BEAM_DEFORM;
@@ -1630,7 +1633,15 @@ int Beam::loadTruck(char* fname, SceneManager *manager, SceneNode *parent, Real 
 				options_pointer++;
 			}
 
-			init_beam(free_beam , &nodes[id1], &nodes[id2], manager, \
+			float beam_length = nodes[id1].AbsPosition.distance(nodes[id2].AbsPosition);
+			if(beam_length < 0.01f)
+			{
+				LogManager::getSingleton().logMessage("Error: beam "+StringConverter::toString(free_beam)+" is too short ("+StringConverter::toString(beam_length)+"m)");
+				LogManager::getSingleton().logMessage("Error: beam "+StringConverter::toString(free_beam)+" is between node "+StringConverter::toString(id1)+" and node "+StringConverter::toString(id2)+".");
+				LogManager::getSingleton().logMessage("will ignore this beam.");
+			}
+
+			init_beam(free_beam, &nodes[id1], &nodes[id2], manager, \
 					  parent, type, default_break, default_spring, \
 					  default_damp, -1, -1, -1, 1, \
 					  default_beam_diameter);
