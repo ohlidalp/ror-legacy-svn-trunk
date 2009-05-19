@@ -51,6 +51,7 @@ using namespace Ogre;
 #include "networkinfo.h"
 #include "CacheSystem.h"
 #include "aeroengine.h"
+#include "CmdKeyInertia.h"
 #include "skin.h"
 #include "approxmath.h"
 
@@ -277,6 +278,7 @@ class LuaSystem;
 class Skidmark;
 class Autopilot;
 class MaterialFunctionMapper;
+class CmdKeyInertia;
 
 typedef struct _beam
 {
@@ -661,6 +663,7 @@ public:
 	//direction
 	float hydrodircommand;
 	float hydrodirstate;
+	Real hydrodirwheeldisplay;
 	//extra airplane axises
 	float hydroaileroncommand;
 	float hydroaileronstate;
@@ -781,7 +784,7 @@ public:
 
 	static const float inverse_RAND_MAX;
 	static const int half_RAND_MAX;
-    
+
 	inline float randHalf()
 	{
 		return  ((float)(rand()-half_RAND_MAX))*inverse_RAND_MAX;
@@ -1036,6 +1039,10 @@ protected:
 	 */
 	void autoBlinkReset();
 	bool blinktreshpassed;
+
+	CmdKeyInertia *rotaInertia;
+	CmdKeyInertia *hydroInertia;
+	CmdKeyInertia *cmdInertia;
 #ifdef TIMING
 	BeamThreadStats *statistics;
 #endif
