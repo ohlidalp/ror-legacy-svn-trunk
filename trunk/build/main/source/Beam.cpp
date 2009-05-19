@@ -2264,7 +2264,7 @@ int Beam::loadTruck(char* fname, SceneManager *manager, SceneNode *parent, Real 
 			int id1;
 			float maxl, rate, shortl, longl, maxstress;
 			char option='n';
-			maxstress=12000.0;
+			maxstress=100000.0f;
 			hascommands=1;
 			int result = sscanf(line,"%i, %f, %f, %f, %f, %c, %f", &id1, &maxl, &rate, &shortl, &longl, &option, &maxstress);
 			if (result < 5 || result == EOF) {
