@@ -20,6 +20,7 @@ along with Rigs of Rods.  If not, see <http://www.gnu.org/licenses/>.
 #include "collisions.h"
 #include "Settings.h"
 #include "Landusemap.h"
+#include "approxmath.h"
 
 //these default values are overwritten by the data/ground_models.cfg file!
 ground_model_t GROUND_CONCRETE={3.0, 1.20, 0.60, 0.010, 5.0, 2.0, 0.5, 0};
@@ -801,8 +802,8 @@ bool Collisions::nodeCollision(node_t *node, bool iscinecam, int contacted, floa
 	int k;
 	//find the correct cell
 	int refx, refz;
-	refx=(int)(node->AbsPosition.x/(float)CELL_SIZE);
-	refz=(int)(node->AbsPosition.z/(float)CELL_SIZE);
+	refx=(int)(node->AbsPosition.x*inverse_CELL_SIZE);
+	refz=(int)(node->AbsPosition.z*inverse_CELL_SIZE);
 	cell_t *cell=hash_find(refx, refz);
 	//LogManager::getSingleton().logMessage("Checking cell "+StringConverter::toString(refx)+" "+StringConverter::toString(refz)+" total indexes: "+StringConverter::toString(num_cboxes_index[refp]));
 
@@ -852,10 +853,9 @@ bool Collisions::nodeCollision(node_t *node, bool iscinecam, int contacted, floa
 							smoky=true;
 							//*nso=ns;
 							//determine which side collided
-							Vector3 normal;
 							float min=Pos.z-cbox->relo_z;
 							int mincase=0; //south
-							normal=Vector3(0,0,-1);
+							Vector3 normal=Vector3(0,0,-1);
 							float t=cbox->rehi_z-Pos.z;
 							if (t<min) {min=t; mincase=2;normal=Vector3(0,0,1);}; //north
 							t=Pos.x-cbox->relo_x;
@@ -953,10 +953,9 @@ bool Collisions::nodeCollision(node_t *node, bool iscinecam, int contacted, floa
 						smoky=true;
 						//*nso=ns;
 						//determine which side collided
-						Vector3 normal;
 						float min=node->AbsPosition.z-cbox->lo_z;
 						int mincase=0; //south
-						normal=Vector3(0,0,-1);
+						Vector3 normal=Vector3(0,0,-1);
 						float t=cbox->hi_z-node->AbsPosition.z;
 						if (t<min) {min=t; mincase=2;normal=Vector3(0,0,1);}; //north
 						t=node->AbsPosition.x-cbox->lo_x;
@@ -1153,7 +1152,7 @@ bool Collisions::groundCollision(node_t *node, float dt, ground_model_t** ogm, f
 
 		//collision!
 		Vector3 normal;
-		hfinder->getNormalAt(node->AbsPosition.x, node->AbsPosition.z, &normal);
+		hfinder->getNormalAt(node->AbsPosition.x, v, node->AbsPosition.z, &normal);
 
 		/*  KEPT for FUTURE REFERENCE
 		Plane sp=Plane(normal, Vector3(node->AbsPosition.x, v, node->AbsPosition.z));
@@ -1194,6 +1193,7 @@ void Collisions::primitiveCollision(node_t *node, Vector3 normal, float dt, grou
 	//Vector3 slip=Plane(normal, 0).projectVector(node->Velocity);
 	//normalize slip vector
 	float slipv=slip.length();
+
 	if (nso) *nso=slipv;
 	if (slipv!=0.0) slip=slip/slipv; else slip=Vector3::ZERO;
 //	node->toblock=(wspeed<0.5 && wspeed>-0.5) && (slipv*node->mass<5.0) && (nvel*node->mass<0.5);

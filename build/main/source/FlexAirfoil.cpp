@@ -19,6 +19,7 @@ along with Rigs of Rods.  If not, see <http://www.gnu.org/licenses/>.
 */
 #include "FlexAirfoil.h"
 #include "ResourceBuffer.h"
+#include "approxmath.h"
 
 float refairfoilpos[90]={
 		0.00, 0.50, 0.00,
@@ -74,14 +75,14 @@ FlexAirfoil::FlexAirfoil(SceneManager *manager, char* name, node_t *nds, int pnf
 	aeroengines=tps;
 	nodes=nds;
 	useInducedDrag=false;
-	nfld=pnfld;
-	nfrd=pnfrd;
-	nflu=pnflu;
-	nfru=pnfru;
-	nbld=pnbld;
-	nbrd=pnbrd;
-	nblu=pnblu;
-	nbru=pnbru;
+	nfld=pnfld; nodes[nfld].iIsSkin=true;
+	nfrd=pnfrd; nodes[nfrd].iIsSkin=true;
+	nflu=pnflu; nodes[nflu].iIsSkin=true;
+	nfru=pnfru; nodes[nfru].iIsSkin=true;
+	nbld=pnbld; nodes[nbld].iIsSkin=true;
+	nbrd=pnbrd; nodes[nbrd].iIsSkin=true;
+	nblu=pnblu; nodes[nblu].iIsSkin=true;
+	nbru=pnbru; nodes[nbru].iIsSkin=true;
 	mindef=mind;
 	maxdef=maxd;
 	airfoil=new Airfoil(afname);
@@ -751,7 +752,7 @@ void FlexAirfoil::updateForces()
 	//add wash
 	int i;
 	for (i=0; i<free_wash; i++)
-		wind-=0.5*washpropratio[i]*aeroengines[washpropnum[i]]->getpropwash()*aeroengines[washpropnum[i]]->getAxis();
+		wind-=(0.5*washpropratio[i]*aeroengines[washpropnum[i]]->getpropwash())*aeroengines[washpropnum[i]]->getAxis();
 	float wspeed=wind.length();
 	//chord vector, front to back
 	Vector3 chordv=((nodes[nbld].RelPosition-nodes[nfld].RelPosition)+(nodes[nbrd].RelPosition-nodes[nfrd].RelPosition))/2.0;
@@ -764,10 +765,10 @@ void FlexAirfoil::updateForces()
 //if (_isnan(wind.x) || _isnan(wind.y) || _isnan(wind.z)) LogManager::getSingleton().logMessage("wind is NaN "+StringConverter::toString(nblu));
 	Vector3 liftv=spanv.crossProduct(-wind);
 //if (_isnan(liftv.x) || _isnan(liftv.y) || _isnan(liftv.z)) LogManager::getSingleton().logMessage("liftv0 is NaN "+StringConverter::toString(nblu));
-	liftv.normalise();
 //if (_isnan(liftv.x) || _isnan(liftv.y) || _isnan(liftv.z)) LogManager::getSingleton().logMessage("liftv1 is NaN "+StringConverter::toString(nblu));
 
 	//wing normal
+	float s=span*chord;
 	Vector3 normv=chordv.crossProduct(spanv);
 	normv.normalise();
 	//calculate angle of attack
@@ -791,28 +792,26 @@ void FlexAirfoil::updateForces()
 //if (_isnan(cz)) LogManager::getSingleton().logMessage("cz is NaN "+StringConverter::toString(nblu));
 	//float fs=span*(fabs(thickness*cos(raoa))+fabs(chord*sin(raoa)));
 	//float ts=span*(fabs(chord*cos(raoa))+fabs(thickness*sin(raoa)));
-	float s=span*chord;
 
 	//tropospheric model valid up to 11.000m (33.000ft)
 	float altitude=nodes[nfld].AbsPosition.y;
-	float sea_level_temperature=273.15+15.0; //in Kelvin
+	//float sea_level_temperature=273.15+15.0; //in Kelvin (not used)
 	float sea_level_pressure=101325; //in Pa
-	float airtemperature=sea_level_temperature-altitude*0.0065; //in Kelvin
-	float airpressure=sea_level_pressure*pow(1.0-0.0065*altitude/288.15, 5.24947); //in Pa
+	//float airtemperature=sea_level_temperature-altitude*0.0065; //in Kelvin (not used)
+	float airpressure=sea_level_pressure*approx_pow(1.0-0.0065*altitude/288.15, 5.24947); //in Pa
 	float airdensity=airpressure*0.0000120896;//1.225 at sea level
 
 	Vector3 wforce=Vector3::ZERO;
 	//drag
-	wforce=cx*0.5*airdensity*wspeed*s*wind;
+	wforce=(cx*0.5*airdensity*wspeed*s)*wind;
 
 //if (_isnan(wforce.x) || _isnan(wforce.y) || _isnan(wforce.z)) LogManager::getSingleton().logMessage("wforce1 is NaN "+StringConverter::toString(nblu));
 	//induced drag
 	if (useInducedDrag) 
 	{
-		Vector3 idf=(cx*cx/(3.14159*idSpan*idSpan/idArea)*0.5*airdensity*wspeed*idArea)*wind;
+		Vector3 idf=(cx*cx*0.25*airdensity*wspeed*idArea*idArea/(3.14159*idSpan*idSpan))*wind;
 //if (_isnan(idf.length())) LogManager::getSingleton().logMessage("idf is NaN "+StringConverter::toString(nblu));
-		//divide
-		idf=idf/2.0;
+
 		if (idLeft)
 		{
 			nodes[nblu].Forces+=idf;
@@ -832,7 +831,7 @@ void FlexAirfoil::updateForces()
 //if (_isnan(s)) LogManager::getSingleton().logMessage("s is NaN "+StringConverter::toString(nblu));
 //if (_isnan(liftv.x) || _isnan(liftv.y) || _isnan(liftv.z)) LogManager::getSingleton().logMessage("liftv is NaN "+StringConverter::toString(nblu));
 	//lift
-	wforce+=cz*0.5*airdensity*wspeed*wspeed*s*liftv;
+	wforce+=(cz*0.5*airdensity*wspeed*chord)*liftv;
 
 
 /*if (_isnan(wforce.x) || _isnan(wforce.y) || _isnan(wforce.z)) 
@@ -844,18 +843,19 @@ void FlexAirfoil::updateForces()
 	//moment
 	float moment=-cm*0.5*airdensity*wspeed*wspeed*s;//*chord;
 	//apply forces
-	//divide
-	wforce=wforce/4.0;
-	moment=moment/4.0;
+
+	Vector3 f1=wforce*(0.75/4.0f)+normv*(moment/(4.0f*0.25f));
+	Vector3 f2=wforce*(0.25/4.0f)-normv*(moment/(4.0f*0.75f));
+
 	//focal at 0.25 chord
-	nodes[nfld].Forces+=wforce*0.75+normv*moment/0.25;
-	nodes[nflu].Forces+=wforce*0.75+normv*moment/0.25;
-	nodes[nfrd].Forces+=wforce*0.75+normv*moment/0.25;
-	nodes[nfru].Forces+=wforce*0.75+normv*moment/0.25;
-	nodes[nbld].Forces+=wforce*0.25-normv*moment/0.75;
-	nodes[nblu].Forces+=wforce*0.25-normv*moment/0.75;
-	nodes[nbrd].Forces+=wforce*0.25-normv*moment/0.75;
-	nodes[nbru].Forces+=wforce*0.25-normv*moment/0.75;
+	nodes[nfld].Forces+=f1;
+	nodes[nflu].Forces+=f1;
+	nodes[nfrd].Forces+=f1;
+	nodes[nfru].Forces+=f1;
+	nodes[nbld].Forces+=f2;
+	nodes[nblu].Forces+=f2;
+	nodes[nbrd].Forces+=f2;
+	nodes[nbru].Forces+=f2;
 
 
 

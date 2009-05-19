@@ -23,9 +23,9 @@ FlexBody::FlexBody(SceneManager *manager, node_t *nds, int numnds, char* meshnam
 {
 	nodes=nds;
 	numnodes=numnds;
-	cref=ref;
-	cx=nx;
-	cy=ny;
+	cref=ref; nodes[cref].iIsSkin=true;
+	cx=nx; nodes[cx].iIsSkin=true;
+	cy=ny; nodes[cy].iIsSkin=true;
 	coffset=offset;
 
 	haveshadows=(manager->getShadowTechnique()==SHADOWTYPE_STENCIL_MODULATIVE || manager->getShadowTechnique()==SHADOWTYPE_STENCIL_ADDITIVE);
@@ -325,6 +325,7 @@ FlexBody::FlexBody(SceneManager *manager, node_t *nds, int numnds, char* meshnam
 		}
 		if (minnode==-1) LogManager::getSingleton().logMessage("FLEXBODY ERROR on mesh "+String(meshname)+": REF node not found");
 		locs[i].ref=minnode;
+		nodes[minnode].iIsSkin=true;
 
 //	LogManager::getSingleton().logMessage("FLEXBODY distance to "+StringConverter::toString(minnode)+" "+StringConverter::toString(mindist));
 
@@ -341,6 +342,7 @@ FlexBody::FlexBody(SceneManager *manager, node_t *nds, int numnds, char* meshnam
 		}
 		if (minnode==-1) LogManager::getSingleton().logMessage("FLEXBODY ERROR on mesh "+String(meshname)+": VX node not found");
 		locs[i].nx=minnode;
+		nodes[minnode].iIsSkin=true;
 
 		//search another close, orthogonal node as the Y vector
 		mindist=100000.0;
@@ -362,6 +364,7 @@ FlexBody::FlexBody(SceneManager *manager, node_t *nds, int numnds, char* meshnam
 		}
 		if (minnode==-1) LogManager::getSingleton().logMessage("FLEXBODY ERROR on mesh "+String(meshname)+": VY node not found");
 		locs[i].ny=minnode;
+		nodes[minnode].iIsSkin=true;
 /*
 		//search the final close, orthogonal node as the Z vector
 		mindist=100000.0;

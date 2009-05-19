@@ -43,7 +43,11 @@ TSMHeightFinder::TSMHeightFinder(char *_cfgfilename, char *fname, float defaulth
 	DataStreamPtr stream=rgm.openResource(cfgfilename, ResourceGroupManager::DEFAULT_RESOURCE_GROUP_NAME);
     config.load( stream );
     val = config.getSetting( "PageSize" );
-    if ( !val.empty() ) size=atoi(val.c_str());
+	if ( !val.empty() )
+	{
+		size=atoi(val.c_str());
+		size1 = size - 1;
+	}
     scale = Vector3::UNIT_SCALE;
 
     val = config.getSetting( "PageWorldX" );
@@ -52,14 +56,20 @@ TSMHeightFinder::TSMHeightFinder(char *_cfgfilename, char *fname, float defaulth
 
     val = config.getSetting( "MaxHeight" );
     if ( !val.empty() )
+	{
         scale.y = atof( val.c_str() );
+	}
 
     val = config.getSetting( "PageWorldZ" );
     if ( !val.empty() )
         scale.z = atof( val.c_str() );
     // Scale x/z relative to pagesize
-    scale.x /= size - 1;
-    scale.z /= size - 1;
+	scale.x /= size1;
+	scale.z /= size1;
+
+	inverse_scale.x=1.0/scale.x;
+	inverse_scale.y=scale.y/65535.0;
+	inverse_scale.z=1.0/scale.z;
 
 	data=(unsigned short*)malloc(size*size*2);
 	DataStreamPtr ds=rgm.openResource(fname, ResourceGroupManager::DEFAULT_RESOURCE_GROUP_NAME);
@@ -84,73 +94,68 @@ TSMHeightFinder::~TSMHeightFinder()
 
 float TSMHeightFinder::getHeightAt(float x, float z)
 {
-	float rx=x/scale.x;
-	float rz=z/scale.z;
-	float irx, irz;
-	float x_pct=modff(rx, &irx);
-	float z_pct=modff(rz, &irz);
-	int x_index=(int)irx;
-	int z_index=(int)irz;
-	if (irx<0 || irz<0 || irx>=size-1 || irz>=size-1) return defaulth;
+
+	if (x < 0 || z < 0) return defaulth;
+
+	float rx=x*inverse_scale.x;
+	float rz=z*inverse_scale.z;
+
+	if (rx >= size1 || rz >= size1) return defaulth;
+
+	int x_index=(int)rx;
+	int z_index=(int)rz;
 
 	//dx=irx; dz=irz;
 	float t1=0, t2=0, b1=0, b2=0;
-	if(flipped)
+	if(!flipped)
 	{
-		t1 = data[x_index+re(z_index)*size];
-		t2 = data[x_index+1+re(z_index)*size];
-		b1 = data[x_index+re(z_index+1)*size];
-		b2 = data[x_index+1+re(z_index+1)*size];
+	  	int z_i = z_index * size;
+		int z_iPlus1 = z_i + size;
+		t1 = data[x_index+z_i];
+		t2 = data[x_index+1+z_i];
+		b1 = data[x_index+z_iPlus1];
+		b2 = data[x_index+1+z_iPlus1];
 	} 
 	 else
 	{
-		t1 = data[x_index+(z_index)*size];
-		t2 = data[x_index+1+(z_index)*size];
-		b1 = data[x_index+(z_index+1)*size];
-		b2 = data[x_index+1+(z_index+1)*size];
+		int rez_i = ( size1 - z_index ) * size;
+		int rez_i1 = rez_i - size;
+		t1 = data[x_index+rez_i];
+		t2 = data[x_index+1+rez_i];
+		b1 = data[x_index+rez_i1];
+		b2 = data[x_index+1+rez_i1];
 	}
 
 	//		dx=irx; dz=x_pct;
-
-	float midpoint = (b1 + t2) / 2.0;
+	float x_pct=rx-x_index;
+	float z_pct=rz-z_index;
 
 	if (x_pct + z_pct <= 1) {
-		b2 = midpoint + (midpoint - t1);
+		b2 = b1 + t2 - t1;
 	} else {
-		t1 = midpoint + (midpoint - b2);
+		t1 = b1 + t2 - b2;
 	}
 
-	float t = ( t1 * ( 1 - x_pct ) ) + ( t2 * ( x_pct ) );
-	float b = ( b1 * ( 1 - x_pct ) ) + ( b2 * ( x_pct ) );
+	float t = t1 + x_pct * ( t2 - t1 );
+	float b = b1 + x_pct * ( b2 - b1 );
 
-	float h = (( t * ( 1 - z_pct ) ) + ( b * ( z_pct ) ))*scale.y/65535.0;
-
+	float h = (t + z_pct * ( b - t )) * inverse_scale.y;
 
 	if (h<defaulth) h=defaulth;
 	return h;
 }
 
-void TSMHeightFinder::getNormalAt(float x, float z, Vector3 *result, float precision)
+void TSMHeightFinder::getNormalAt(float x, float y, float z, Vector3 *result, float precision)
 {
-	Vector3 here, left, down;
-	here.x = x;
-	here.y = getHeightAt( x, z );
-	here.z = z;
+	Vector3 left, down;
 
-	left.x = x - precision;
-	left.y = getHeightAt( x - precision, z );
-	left.z = z;
+	left.x = -precision;
+	left.y = getHeightAt( x - precision, z ) - y;
+	left.z = 0;
 
-	down.x = x;
-	down.y = getHeightAt( x, z + precision );
-	down.z = z + precision;
-
-	left = left - here;
-
-	down = down - here;
-
-	left.normalise();
-	down.normalise();
+	down.x = 0;
+	down.y = getHeightAt( x, z + precision ) - y;
+	down.z = precision;
 
 	*result = left.crossProduct( down );
 	result -> normalise();

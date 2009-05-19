@@ -24,9 +24,9 @@ Airbrake::Airbrake(SceneManager *manager, char* basename, int num, node_t *ndref
     {
 		snode=0;
 		noderef=ndref;
-		nodex=ndx;
-		nodey=ndy;
-		nodea=nda;
+		nodex=ndx; nodex->iIsSkin=true;
+		nodey=ndy; nodey->iIsSkin=true;
+		nodea=nda; nodea->iIsSkin=true;
 		offset=pos;
 		maxangle=maxang;
 		area=width*length;

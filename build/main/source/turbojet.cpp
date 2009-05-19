@@ -38,8 +38,8 @@ Turbojet::Turbojet(SceneManager *manager, char* propname, int tnumber, int truck
 	case 7: mod_id=SS_MOD_AEROENGINE8;src_id=SS_TRIG_AEROENGINE8;thr_id=SS_MOD_THROTTLE8;ab_id=SS_TRIG_AFTERBURNER8;break;
 	default: mod_id=SS_MOD_NONE;src_id=SS_TRIG_NONE;thr_id=SS_MOD_NONE;ab_id=SS_TRIG_NONE;
 	}
-	nodeback=tnodeback;
-	nodefront=tnodefront;
+	nodeback=tnodeback; nodes[nodeback].iIsSkin=true;
+	nodefront=tnodefront; nodes[nodefront].iIsSkin=true;
 	noderef=tnoderef;
 	afterburnable=tafterburnable;
 	reversable=treversable;
