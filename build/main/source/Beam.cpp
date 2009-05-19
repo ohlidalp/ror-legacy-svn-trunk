@@ -4976,7 +4976,7 @@ bool Beam::frameStep(Real dt, Beam** trucks, int numtrucks)
 		mTimeUntilNextToggle-= dt;
 
 	abs_timer += dt;
-	if(abs_timer > 2.0f)
+	if(abs_timer > 0.5f)
 	{
 		abs_state = !abs_state;
 		abs_timer = 0.0f;
@@ -6150,18 +6150,21 @@ void Beam::calcForcesEuler(int doUpdate, Real dt, int step, int maxstep, Beam** 
 
 		// ABS system
 		/*
-		if(abs_state && fabs(wheels[i].speed) < 0.1f )
-			// remove all brake force when ABS is active and wheel speed is low enough
-			brake = 0.0f;
-		*/
-
-		if ((brake != 0.0 || dbrake != 0.0) && wheels[i].braked && braked_wheels != 0)
+		// currently not in use
+		if(abs_state && fabs(wheels[i].speed) < 1.0f )
 		{
-			if( fabs(wheels[i].speed) > 0.00f )
-				total_torque -= (wheels[i].speed/fabs(wheels[i].speed))*(brake + dbrake);
-			// wheels are stopped
-			else if( fabs(wheels[i].speed) > 0.0f)
-				total_torque -= (wheels[i].speed/fabs(wheels[i].speed))*(brake + dbrake)*1.2;
+			// remove all brake force when ABS is active and wheel speed is low enough
+		} else
+		*/
+		{
+			if ((brake != 0.0 || dbrake != 0.0) && wheels[i].braked && braked_wheels != 0)
+			{
+				if( fabs(wheels[i].speed) > 0.00f )
+					total_torque -= (wheels[i].speed/fabs(wheels[i].speed))*(brake + dbrake);
+				// wheels are stopped
+				else if( fabs(wheels[i].speed) > 0.0f)
+					total_torque -= (wheels[i].speed/fabs(wheels[i].speed))*(brake + dbrake)*1.2;
+			}
 		}
 
 		//friction
