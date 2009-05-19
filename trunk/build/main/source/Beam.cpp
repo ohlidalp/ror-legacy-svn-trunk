@@ -51,7 +51,7 @@ along with Rigs of Rods.  If not, see <http://www.gnu.org/licenses/>.
 #include "BeamStats.h"
 #endif
 #include "Skidmark.h"
-
+#include "CmdKeyInertia.h"
 #include "ColoredTextAreaOverlayElement.h"
 
 float mrtime;
@@ -207,6 +207,9 @@ Beam::Beam(int tnum, SceneManager *manager, SceneNode *parent, RenderWindow* win
 
 	ssm=SoundScriptManager::getSingleton();
 	materialFunctionMapper = new MaterialFunctionMapper();
+	cmdInertia=new CmdKeyInertia(MAX_COMMANDS);
+	hydroInertia=new CmdKeyInertia(MAX_HYDROS);
+	rotaInertia=new CmdKeyInertia(MAX_ROTATORS);
 	free_soundsource=0;
 	nodedebugstate=-1;
 	debugVisuals=0;
@@ -388,6 +391,7 @@ Beam::Beam(int tnum, SceneManager *manager, SceneNode *parent, RenderWindow* win
 	slowed=1;
 	hydrodircommand=0;
 	hydrodirstate=0;
+	hydrodirwheeldisplay=0.0;
 	hydroaileroncommand=0;
 	hydroaileronstate=0;
 	hydroruddercommand=0;
@@ -1743,8 +1747,14 @@ int Beam::loadTruck(char* fname, SceneManager *manager, SceneNode *parent, Real 
 			int id1, id2;
 			float ratio;
 			char options[50] = "n";
-			int result = sscanf(line,"%i, %i, %f, %s",&id1,&id2,&ratio, options);
-			if (result < 3 || result == EOF) {
+			Real startDelay=0;
+			Real stopDelay=0;
+			char startFunction[50]="";
+			char stopFunction[50]="";
+
+			int result = sscanf(line,"%i, %i, %f, %s %f, %f, %s %s",&id1,&id2,&ratio,options,&startDelay,&stopDelay,startFunction,stopFunction);
+			if (result < 3 || result == EOF)
+			{
 				LogManager::getSingleton().logMessage("Error parsing File (Hydro) " + String(fname) +" line " + StringConverter::toString(linecounter) + ". trying to continue ...");
 				continue;
 			}
@@ -1782,6 +1792,10 @@ int Beam::loadTruck(char* fname, SceneManager *manager, SceneNode *parent, Real 
 				continue;
 			}
 			//            printf("beam : %i %i\n", id1, id2);
+
+			if(hydroInertia)
+				hydroInertia->setCmdKeyDelay(free_hydro,startDelay,stopDelay,String (startFunction), String (stopFunction));
+
 			int pos=add_beam(&nodes[id1], &nodes[id2], manager, parent, htype, default_break, default_spring, default_damp);
 			hydro[free_hydro]=pos;free_hydro++;
 			beams[pos].Lhydro=beams[pos].L;
@@ -2037,11 +2051,15 @@ int Beam::loadTruck(char* fname, SceneManager *manager, SceneNode *parent, Real 
 			char options[250]="";
 			char descr[200] = "";
 			hascommands=1;
+			Real startDelay=0;
+			Real stopDelay=0;
+			char startFunction[50]="";
+			char stopFunction[50]="";
 			int result = 0;
 			if(mode == 12)
 			{
 				char opt='n';
-				result = sscanf(line,"%i, %i, %f, %f, %f, %i, %i, %c, %s", &id1, &id2, &rateShort, &shortl, &longl, &keys, &keyl, &opt, descr);
+				result = sscanf(line,"%i, %i, %f, %f, %f, %i, %i, %c, %s %f, %f, %s %s", &id1, &id2, &rateShort, &shortl, &longl, &keys, &keyl, &opt, descr, &startDelay, &stopDelay, startFunction, stopFunction);
 				if (result < 7 || result == EOF) {
 					LogManager::getSingleton().logMessage("Error parsing File (Command) " + String(fname) +" line " + StringConverter::toString(linecounter) + ". trying to continue ...");
 					continue;
@@ -2052,7 +2070,7 @@ int Beam::loadTruck(char* fname, SceneManager *manager, SceneNode *parent, Real 
 			}
 			else if(mode == 120)
 			{
-				result = sscanf(line,"%i, %i, %f, %f, %f, %f, %i, %i, %s %s", &id1, &id2, &rateShort, &rateLong, &shortl, &longl, &keys, &keyl, options, descr);
+				result = sscanf(line,"%i, %i, %f, %f, %f, %f, %i, %i, %s %s %f,%f,%s %s", &id1, &id2, &rateShort, &rateLong, &shortl, &longl, &keys, &keyl, options, descr, &startDelay, &stopDelay, startFunction, stopFunction);
 				if (result < 8 || result == EOF) {
 					LogManager::getSingleton().logMessage("Error parsing File (Command) " + String(fname) +" line " + StringConverter::toString(linecounter) + ". trying to continue ...");
 					continue;
@@ -2160,6 +2178,13 @@ int Beam::loadTruck(char* fname, SceneManager *manager, SceneNode *parent, Real 
 				beams[pos].centerLength = (beams[pos].commandLong-beams[pos].commandShort)/2 + beams[pos].commandShort;
 			else
 				beams[pos].centerLength = (beams[pos].commandShort-beams[pos].commandLong)/2 + beams[pos].commandLong;
+
+			if(cmdInertia)
+			{
+				cmdInertia->setCmdKeyDelay(keys,startDelay,stopDelay,String (startFunction),String (stopFunction));
+				cmdInertia->setCmdKeyDelay(keyl,startDelay,stopDelay,String (startFunction),String (stopFunction));
+			}
+
 		}
 
 		else if (mode==13)
@@ -3060,7 +3085,11 @@ int Beam::loadTruck(char* fname, SceneManager *manager, SceneNode *parent, Real 
 			int p1[4], p2[4];
 			float rate;
 			hascommands=1;
-			int result = sscanf(line,"%i, %i, %i, %i, %i, %i, %i, %i, %i, %i, %f, %i, %i", &axis1, &axis2, &p1[0], &p1[1], &p1[2], &p1[3], &p2[0], &p2[1], &p2[2], &p2[3], &rate, &keys, &keyl);
+			Real startDelay=0;
+			Real stopDelay=0;
+			char startFunction[50]="";
+			char stopFunction[50]="";
+			int result = sscanf(line,"%i, %i, %i, %i, %i, %i, %i, %i, %i, %i, %f, %i, %i, %f, %f, %s %s", &axis1, &axis2, &p1[0], &p1[1], &p1[2], &p1[3], &p2[0], &p2[1], &p2[2], &p2[3], &rate, &keys, &keyl, &startDelay, &stopDelay, startFunction, stopFunction);
 			if (result < 13 || result == EOF) {
 				LogManager::getSingleton().logMessage("Error parsing File (Rotators) " + String(fname) +" line " + StringConverter::toString(linecounter) + ". trying to continue ...");
 				continue;
@@ -3087,6 +3116,12 @@ int Beam::loadTruck(char* fname, SceneManager *manager, SceneNode *parent, Real 
 			//add long key
 			commandkey[keyl].rotators.push_back(free_rotator+1);
 			commandkey[keyl].description = "Rotate Right";
+
+			if(rotaInertia)
+			{
+				rotaInertia->setCmdKeyDelay(keys,startDelay,stopDelay,String (startFunction),String (stopFunction));
+				rotaInertia->setCmdKeyDelay(keyl,startDelay,stopDelay,String (startFunction),String (stopFunction));
+			}
 			free_rotator++;
 		}
 		else if (mode==28)
@@ -4821,6 +4856,8 @@ void Beam::SyncReset()
 	hydroaileronstate=0.0;
 	hydrorudderstate=0.0;
 	hydroelevatorstate=0.0;
+	hydrodirwheeldisplay=0.0;
+	if(hydroInertia) hydroInertia->resetCmdKeyDelay(MAX_HYDROS);
 	locked=UNLOCKED;
 	tied=false;
 	parkingbrake=0;
@@ -6323,6 +6360,12 @@ void Beam::calcForcesEuler(int doUpdate, Real dt, int step, int maxstep, Beam** 
 		if (div)
 		{
 			cstate=cstate/(float)div;
+			if(hydroInertia)
+				cstate=hydroInertia->calcCmdKeyDelay(cstate,i,dt);
+
+			if (!(beams[hydro[i]].hydroFlags & HYDRO_FLAG_SPEED))
+				hydrodirwheeldisplay=cstate;
+
 			beams[hydro[i]].L=beams[hydro[i]].Lhydro*(1.0-cstate*beams[hydro[i]].hydroRatio);
 		}
 	}
@@ -6493,6 +6536,10 @@ void Beam::calcForcesEuler(int doUpdate, Real dt, int step, int maxstep, Beam** 
 									beams[bbeam].autoMovingMode=0;
 								}
 							}
+
+							if(cmdInertia)
+								v=cmdInertia->calcCmdKeyDelay(v,i,dt);
+
 							if(beams[bbeam].autoMovingMode > 0)
 								v = 1;
 
@@ -6563,6 +6610,10 @@ void Beam::calcForcesEuler(int doUpdate, Real dt, int step, int maxstep, Beam** 
 									beams[bbeam].autoMovingMode=0;
 								}
 							}
+
+							if(cmdInertia)
+								v=cmdInertia->calcCmdKeyDelay(v,i,dt);
+
 							if(beams[bbeam].autoMovingMode < 0)
 								v = 1;
 
@@ -6604,12 +6655,26 @@ void Beam::calcForcesEuler(int doUpdate, Real dt, int step, int maxstep, Beam** 
 				if ((commandkey[i].rotators[j])>0)
 				{
 					int rota = commandkey[i].rotators[j] - 1;
-					rotators[rota].angle += rotators[rota].rate * commandkey[i].commandValue * crankfactor * dt;
+					float value=0;
+					if(rotaInertia)
+					{
+						value=rotaInertia->calcCmdKeyDelay(commandkey[i].commandValue,i,dt);
+					}
+					if(value>0.5f)
+						requestpower=true;
+					rotators[rota].angle += rotators[rota].rate * value * crankfactor * dt;
 				}
 				else
 				{
 					int rota =- (commandkey[i].rotators[j]) - 1;
-					rotators[rota].angle -= rotators[rota].rate * commandkey[i].commandValue * crankfactor * dt;
+					float value=0;
+					if(rotaInertia)
+					{
+						value=rotaInertia->calcCmdKeyDelay(commandkey[i].commandValue,i,dt);
+					}
+					if(value>0.5f)
+						requestpower=true;
+					rotators[rota].angle -= rotators[rota].rate * value * crankfactor * dt;
 				}
 			}
 			if(requestpower)
@@ -7183,7 +7248,7 @@ void Beam::updateProps()
 		{
 			//display wheel
 			Quaternion brot=Quaternion(Degree(-59.0), Vector3::UNIT_X);
-			brot=brot*Quaternion(Degree(hydrodirstate*props[i].wheelrotdegree), Vector3::UNIT_Y);
+			brot=brot*Quaternion(Degree(hydrodirwheeldisplay*props[i].wheelrotdegree), Vector3::UNIT_Y);
 			props[i].wheel->setPosition(mposition+normal*props[i].offsetz+orientation*props[i].wheelpos);
 			props[i].wheel->setOrientation(orientation*brot);
 		}
