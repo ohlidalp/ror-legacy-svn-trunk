@@ -52,6 +52,7 @@ using namespace Ogre;
 #include "CacheSystem.h"
 #include "aeroengine.h"
 #include "skin.h"
+#include "approxmath.h"
 
 //#include "scriptCommands.h"
 #include <vector>
@@ -200,6 +201,7 @@ class Beam;
 typedef struct _node
 {
 	Real mass;
+	Real inverted_mass;
 	Vector3 iPosition; //initial position, absolute
 	Vector3 AbsPosition; //absolute position in the world (shaky)
 	Vector3 RelPosition; //relative to the local physics origin (one origin per truck) (shaky)
@@ -224,6 +226,8 @@ typedef struct _node
 	float wettime;
 	bool isHot;
 	bool overrideMass;
+	bool iIsSkin;
+	bool isSkin;
 	Vector3 buoyanceForce;
 	int id;
 	float colltesttimer;
@@ -527,6 +531,15 @@ void *threadstart(void* vid);
 
 static const float flapangles[6]={0.0, -0.07, -0.17, -0.33, -0.67, -1.0};
 
+inline Ogre::Vector3 fast_normalise(Ogre::Vector3 v)
+{
+	return v*fast_invSqrt(v.squaredLength());
+}
+
+inline float fast_length(Ogre::Vector3 v)
+{
+	return fast_sqrt(v.squaredLength());
+}
 
 class Beam//: public FrameListener
 {
@@ -569,7 +582,7 @@ public:
 	void addWheel(SceneManager *manager, SceneNode *parent, Real radius, Real width, int rays, int node1, int node2, int snode, int braked, int propulsed, int torquenode, float mass, float wspring, float wdamp, char* texf, char* texb, bool meshwheel=false, float rimradius=0.0, bool rimreverse=false);
 	void addWheel2(SceneManager *manager, SceneNode *parent, Real radius, Real radius2, Real width, int rays, int node1, int node2, int snode, int braked, int propulsed, int torquenode, float mass, float wspring, float wdamp, float wspring2, float wdamp2, char* texf, char* texb);
 	void init_node(int pos, Real x, Real y, Real z, int type=NODE_NORMAL, Real m=10.0, int iswheel=0, Real friction=CHASSIS_FRICTION_COEF, int id=-1);
-	void init_beam(int pos, node_t *p1, node_t *p2, SceneManager *manager, SceneNode *parent, int type, Real strength, Real spring, Real damp, Real length=-1.0, float shortbound=-1.0, float longbound=-1.0, float precomp=1.0, float diameter=DEFAULT_BEAM_DIAMETER);
+	int add_beam(node_t *p1, node_t *p2, SceneManager *manager, SceneNode *parent, int type, Real strength, Real spring, Real damp, Real length=-1.0, float shortbound=-1.0, float longbound=-1.0, float precomp=1.0, float diameter=DEFAULT_BEAM_DIAMETER);
 	void reset(); //call this one to reset a truck from any context
 	void SyncReset(); //this one should be called only synchronously (without physics running in background)
 	//this is called by the threads
@@ -766,6 +779,14 @@ public:
 
 	bool getReverseLightVisible();
 
+	static const float inverse_RAND_MAX;
+	static const int half_RAND_MAX;
+    
+	inline float randHalf()
+	{
+		return  ((float)(rand()-half_RAND_MAX))*inverse_RAND_MAX;
+	}
+
 	inline bool getCustomLightVisible(int number)
 	{
 		if(netCustomLightArray[number] != -1)
@@ -925,6 +946,9 @@ protected:
 	float default_deform;
 	float default_spring;
 	float default_damp;
+	bool advanced_drag;
+	float advanced_node_drag;
+	float advanced_total_drag;
 	char default_beam_material[256];
 	Airfoil *fuseAirfoil;
 	node_t *fuseFront;

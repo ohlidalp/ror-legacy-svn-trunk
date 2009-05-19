@@ -40,6 +40,7 @@ using namespace Ogre;
 #define UNUSED_CELLELEMENT 0xFFFFFFFF
 //terrain size is limited to 327km x 327km:
 #define CELL_SIZE 10.0
+#define inverse_CELL_SIZE 0.1
 #define MAXIMUM_CELL 0x7FFF
 
 #define MAX_EVENTSOURCE 100

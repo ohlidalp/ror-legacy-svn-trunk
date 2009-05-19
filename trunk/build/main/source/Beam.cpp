@@ -1,3 +1,4 @@
+
 /*
 This source file is part of Rigs of Rods
 Copyright 2005,2006,2007,2008,2009 Pierre-Michel Ricordel
@@ -55,6 +56,8 @@ along with Rigs of Rods.  If not, see <http://www.gnu.org/licenses/>.
 
 float mrtime;
 
+const float Beam::inverse_RAND_MAX = 1.0/RAND_MAX;
+const int Beam::half_RAND_MAX = RAND_MAX/2;
 
 //threads and mutexes, see also at the bottom
 int thread_mode=0;
@@ -248,6 +251,7 @@ Beam::Beam(int tnum, SceneManager *manager, SceneNode *parent, RenderWindow* win
 	brakeforce=30000.0;
 	hasposlights=false;
 	disableDrag=false;
+	advanced_drag=false;
 	fuseAirfoil=0;
 	fadeDist=150.0;
 	fusedrag=Vector3::ZERO;
@@ -714,18 +718,17 @@ beam_t *Beam::addBeam(int id1, int id2)
 		if ((beams[i].p1==&nodes[id1] && beams[i].p2==&nodes[id2]) || (beams[i].p1==&nodes[id2] && beams[i].p2==&nodes[id1]))
 		{
 			LogManager::getSingleton().logMessage("Skipping duplicate beams: from node "+StringConverter::toString(id1)+" to node "+StringConverter::toString(id2));
-			continue;
+			return NULL;
 		}
 	}
 
-	init_beam(free_beam , &nodes[id1], &nodes[id2], tsm, \
+	int pos=add_beam(&nodes[id1], &nodes[id2], tsm, \
 			  beamsRoot, type, default_break, default_spring, \
 			  default_damp, -1, -1, -1, 1, \
 			  default_beam_diameter);
 
-	beams[free_beam].type=BEAM_NORMAL;
-	free_beam++;
-	return &beams[free_beam];
+	beams[pos].type=BEAM_NORMAL;
+	return &beams[pos];
 }
 
 void Beam::checkBeamMaterial()
@@ -1065,6 +1068,13 @@ void Beam::calc_masses2(Real total, bool reCalc)
 		}
 		nodes[i].gravimass=Vector3(0, ExampleFrameListener::getGravity() * nodes[i].mass, 0);
 	}
+
+    // update inverted mass cache
+	for (i=0; i<free_node; i++)
+	{
+		nodes[i].inverted_mass=1.0f/nodes[i].mass;
+    }
+
 	//update minendmass
 	for (i=0; i<free_beam; i++)
 	{
@@ -1100,7 +1110,7 @@ void Beam::calc_masses2(Real total, bool reCalc)
 		if (beams[i].p2->mass<mass) mass=beams[i].p2->mass;
 		//if (beams[i].p1->iswheel || beams[i].p2->iswheel) {beams[i].update_rate=1.0/20000.0; wunst++; continue;};
 		if (4.0*mass*beams[i].k-beams[i].d*beams[i].d<0.01) {beams[i].update_rate=1.0/20000.0; unst++; continue;}; //this is probably an unstable beam
-		float rate=4.0*3.14159*mass/(sqrt(4.0*mass*beams[i].k-beams[i].d*beams[i].d)*30.0);
+		float rate=(4.0*3.14159*mass)/(sqrt(4.0*mass*beams[i].k-beams[i].d*beams[i].d)*30.0);
 		if (rate>1.0/200.0) {rate=1.0/200.0;st++;};
 		beams[i].update_rate=rate;
 	}
@@ -1279,6 +1289,7 @@ int Beam::loadTruck(char* fname, SceneManager *manager, SceneNode *parent, Real 
 		if (!strncmp("section",line, 7) && mode!=50) {mode=51; /* NOT continue */};
 		/* 52 = reserved for ignored section */
 		if (!strcmp("torquecurve",line)) {mode=53;continue;};
+		if (!strcmp("advdrag",line)) {mode=54;continue;};
 
 		if (!strcmp("commandlist",line))
 		{
@@ -1491,6 +1502,7 @@ int Beam::loadTruck(char* fname, SceneManager *manager, SceneNode *parent, Real 
 
 			Vector3 npos = Vector3(px, py, pz) + rot * Vector3(x,y,z);
 			init_node(id, npos.x, npos.y, npos.z, NODE_NORMAL, 10, 0, 0, free_node);
+			nodes[id].iIsSkin=true;
 
 			// now 'parse' the options
 			char *options_pointer = options;
@@ -1643,7 +1655,7 @@ int Beam::loadTruck(char* fname, SceneManager *manager, SceneNode *parent, Real 
 				LogManager::getSingleton().logMessage("will ignore this beam.");
 			}
 
-			init_beam(free_beam, &nodes[id1], &nodes[id2], manager, \
+			int pos=add_beam(&nodes[id1], &nodes[id2], manager, \
 					  parent, type, default_break, default_spring, \
 					  default_damp, -1, -1, -1, 1, \
 					  default_beam_diameter);
@@ -1655,70 +1667,18 @@ int Beam::loadTruck(char* fname, SceneManager *manager, SceneNode *parent, Real 
 				switch (*options_pointer)
 				{
 					case 'i':	// invisible
-						beams[free_beam].type=BEAM_INVISIBLE;
+						beams[pos].type=BEAM_INVISIBLE;
 						break;
 					case 'v':	// visible
-						beams[free_beam].type=BEAM_NORMAL;
+						beams[pos].type=BEAM_NORMAL;
 						break;
 					case 'r':
-						beams[free_beam].isrope=true;
+						beams[pos].isrope=true;
 						break;
 				}
 				options_pointer++;
 			}
-
-			//            printf("beam : %i %i\n", id1, id2);
-			/*
-			if (visible=='r')
-			{
-			//this is a rope, add extra nodes
-			int numropeseg=5;
-			int i;
-			int lastid=id1;
-			int lastlastid=-1;
-			for (i=0; i<numropeseg-1; i++)
-			{
-			//insert a node
-			Vector3 nodep=nodes[id1].Position+(float)(i+1)*(nodes[id2].Position-nodes[id1].Position)/(float)numropeseg;
-			init_node(free_node, nodep.x, nodep.y, nodep.z,NODE_NORMAL);
-			init_beam(free_beam , &nodes[lastid], &nodes[free_node], manager, parent, type, BEAM_BREAK);
-			//beams[free_beam].isrope=true;
-			beams[free_beam].k/=100.0;
-			beams[free_beam].d/=100.0;
-			free_beam++;
-			//if (lastlastid!=-1)
-			//{
-			//extra reinforcement beams
-			//	init_beam(free_beam , &nodes[lastlastid], &nodes[free_node], manager, parent, BEAM_INVISIBLE, BEAM_BREAK);
-			//beams[free_beam].isrope=true;
-			//	beams[free_beam].k/=100.0;
-			//	beams[free_beam].d/=100.0;
-			//   free_beam++;
-			//}
-			lastlastid=lastid;
-			lastid=free_node;
-			free_node++;
 			}
-			//last segment
-			init_beam(free_beam , &nodes[lastid], &nodes[id2], manager, parent, type, BEAM_BREAK);
-			//beams[free_beam].isrope=true;
-			beams[free_beam].k/=100.0;
-			beams[free_beam].d/=100.0;
-			free_beam++;
-			//init_beam(free_beam , &nodes[lastlastid], &nodes[id2], manager, parent, BEAM_INVISIBLE, BEAM_BREAK);
-			//beams[free_beam].isrope=true;
-			//beams[free_beam].k/=100.0;
-			//beams[free_beam].d/=100.0;
-			//free_beam++;
-			}
-			else
-			{
-			init_beam(free_beam , &nodes[id1], &nodes[id2], manager, parent, type, BEAM_BREAK);
-			free_beam++;
-			}
-			*/
-			free_beam++;
-		}
 		else if (mode==4)
 		{
 			//parse shocks
@@ -1752,13 +1712,12 @@ int Beam::loadTruck(char* fname, SceneManager *manager, SceneNode *parent, Real 
 				continue;
 			}
 
-			init_beam(free_beam , &nodes[id1], &nodes[id2], manager, parent, htype, default_break*4.0, s, d, -1.0, sbound, lbound,precomp);
+			int pos=add_beam(&nodes[id1], &nodes[id2], manager, parent, htype, default_break*4.0, s, d, -1.0, sbound, lbound,precomp);
 			if (type!='n' && type!='i')
 			{
-				active_shocks[free_active_shock]=free_beam;
+				active_shocks[free_active_shock]=pos;
 				free_active_shock++;
 			};
-			free_beam++;
 		}
 		else if (mode==3)
 		{
@@ -1823,11 +1782,11 @@ int Beam::loadTruck(char* fname, SceneManager *manager, SceneNode *parent, Real 
 				continue;
 			}
 			//            printf("beam : %i %i\n", id1, id2);
-			init_beam(free_beam , &nodes[id1], &nodes[id2], manager, parent, htype, default_break, default_spring, default_damp);
-			hydro[free_hydro]=free_beam;free_hydro++;
-			beams[free_beam].Lhydro=beams[free_beam].L;
-			beams[free_beam].hydroRatio=ratio;
-			beams[free_beam].hydroFlags=0;
+			int pos=add_beam(&nodes[id1], &nodes[id2], manager, parent, htype, default_break, default_spring, default_damp);
+			hydro[free_hydro]=pos;free_hydro++;
+			beams[pos].Lhydro=beams[pos].L;
+			beams[pos].hydroRatio=ratio;
+			beams[pos].hydroFlags=0;
 
 
 			// now 'parse' the options
@@ -1837,50 +1796,49 @@ int Beam::loadTruck(char* fname, SceneManager *manager, SceneNode *parent, Real 
 				switch (*options_pointer)
 				{
 					case 'i':	// invisible
-						beams[free_beam].type = BEAM_INVISIBLE_HYDRO;
+						beams[pos].type = BEAM_INVISIBLE_HYDRO;
 						break;
 					case 'n':	// normal
-						beams[free_beam].type = BEAM_HYDRO;
-						beams[free_beam].hydroFlags |= HYDRO_FLAG_DIR;
+						beams[pos].type = BEAM_HYDRO;
+						beams[pos].hydroFlags |= HYDRO_FLAG_DIR;
 						break;
 					case 's': // speed changing hydro
-						beams[free_beam].hydroFlags |= HYDRO_FLAG_SPEED;
+						beams[pos].hydroFlags |= HYDRO_FLAG_SPEED;
 						break;
 					case 'a':
-						beams[free_beam].hydroFlags |= HYDRO_FLAG_AILERON;
+						beams[pos].hydroFlags |= HYDRO_FLAG_AILERON;
 						break;
 					case 'r':
-						beams[free_beam].hydroFlags |= HYDRO_FLAG_RUDDER;
+						beams[pos].hydroFlags |= HYDRO_FLAG_RUDDER;
 						break;
 					case 'e':
-						beams[free_beam].hydroFlags |= HYDRO_FLAG_ELEVATOR;
+						beams[pos].hydroFlags |= HYDRO_FLAG_ELEVATOR;
 						break;
 					case 'u':
-						beams[free_beam].hydroFlags |= (HYDRO_FLAG_AILERON | HYDRO_FLAG_ELEVATOR);
+						beams[pos].hydroFlags |= (HYDRO_FLAG_AILERON | HYDRO_FLAG_ELEVATOR);
 						break;
 					case 'v':
-						beams[free_beam].hydroFlags |= (HYDRO_FLAG_REV_AILERON | HYDRO_FLAG_ELEVATOR);
+						beams[pos].hydroFlags |= (HYDRO_FLAG_REV_AILERON | HYDRO_FLAG_ELEVATOR);
 						break;
 					case 'x':
-						beams[free_beam].hydroFlags |= (HYDRO_FLAG_AILERON | HYDRO_FLAG_RUDDER);
+						beams[pos].hydroFlags |= (HYDRO_FLAG_AILERON | HYDRO_FLAG_RUDDER);
 						break;
 					case 'y':
-						beams[free_beam].hydroFlags |= (HYDRO_FLAG_REV_AILERON | HYDRO_FLAG_RUDDER);
+						beams[pos].hydroFlags |= (HYDRO_FLAG_REV_AILERON | HYDRO_FLAG_RUDDER);
 						break;
 					case 'g':
-						beams[free_beam].hydroFlags |= (HYDRO_FLAG_ELEVATOR | HYDRO_FLAG_RUDDER);
+						beams[pos].hydroFlags |= (HYDRO_FLAG_ELEVATOR | HYDRO_FLAG_RUDDER);
 						break;
 					case 'h':
-						beams[free_beam].hydroFlags |= (HYDRO_FLAG_REV_ELEVATOR | HYDRO_FLAG_RUDDER);
+						beams[pos].hydroFlags |= (HYDRO_FLAG_REV_ELEVATOR | HYDRO_FLAG_RUDDER);
 						break;
 
 				}
 				options_pointer++;
 				// if you use the i flag on its own, add the direction to it
-				if(beams[free_beam].type == BEAM_INVISIBLE_HYDRO && !beams[free_beam].hydroFlags)
-					beams[free_beam].hydroFlags |= HYDRO_FLAG_DIR;
+				if(beams[pos].type == BEAM_INVISIBLE_HYDRO && !beams[pos].hydroFlags)
+					beams[pos].hydroFlags |= HYDRO_FLAG_DIR;
 			}
-			free_beam++;
 		}
 		else if (mode==6)
 		{
@@ -2120,8 +2078,7 @@ int Beam::loadTruck(char* fname, SceneManager *manager, SceneNode *parent, Real 
 				continue;
 			}
 
-			init_beam(free_beam, &nodes[id1], &nodes[id2], manager, parent, htype, default_break, default_spring, default_damp, -1, -1, -1, 1, default_beam_diameter);
-
+			int pos=add_beam(&nodes[id1], &nodes[id2], manager, parent, htype, default_break, default_spring, default_damp, -1, -1, -1, 1, default_beam_diameter);
 			// now 'parse' the options
 			options_pointer = options;
 			while (*options_pointer != 0)
@@ -2129,53 +2086,53 @@ int Beam::loadTruck(char* fname, SceneManager *manager, SceneNode *parent, Real 
 				switch (*options_pointer)
 				{
 					case 'r':
-						beams[free_beam].isrope=true;
+						beams[pos].isrope=true;
 						break;
 					case 'c':
-						if(beams[free_beam].isOnePressMode>0)
+						if(beams[pos].isOnePressMode>0)
 						{
 							LogManager::getSingleton().logMessage("Command cannot be one-pressed and self centering at the same time!" + String(fname) +" line " + StringConverter::toString(linecounter) + ". trying to continue ...");
 							break;
 						}
-						beams[free_beam].iscentering=true;
+						beams[pos].iscentering=true;
 						break;
 					case 'p':
-						if(beams[free_beam].iscentering)
+						if(beams[pos].iscentering)
 						{
 							LogManager::getSingleton().logMessage("Command cannot be one-pressed and self centering at the same time!" + String(fname) +" line " + StringConverter::toString(linecounter) + ". trying to continue ...");
 							break;
 						}
-						if(beams[free_beam].isOnePressMode>0)
+						if(beams[pos].isOnePressMode>0)
 						{
 							LogManager::getSingleton().logMessage("Command already has a one-pressed mode! All after the first are ignored!" + String(fname) +" line " + StringConverter::toString(linecounter) + ". trying to continue ...");
 							break;
 						}
-						beams[free_beam].isOnePressMode=1;
+						beams[pos].isOnePressMode=1;
 						break;
 					case 'o':
-						if(beams[free_beam].iscentering)
+						if(beams[pos].iscentering)
 						{
 							LogManager::getSingleton().logMessage("Command cannot be one-pressed and self centering at the same time!" + String(fname) +" line " + StringConverter::toString(linecounter) + ". trying to continue ...");
 							break;
 						}
-						if(beams[free_beam].isOnePressMode>0)
+						if(beams[pos].isOnePressMode>0)
 						{
 							LogManager::getSingleton().logMessage("Command already has a one-pressed mode! All after the first are ignored!" + String(fname) +" line " + StringConverter::toString(linecounter) + ". trying to continue ...");
 							break;
 						}
-						beams[free_beam].isOnePressMode=2;
+						beams[pos].isOnePressMode=2;
 						break;
 					case 'f':
-						beams[free_beam].isforcerestricted=true;
+						beams[pos].isforcerestricted=true;
 						break;
 				}
 				options_pointer++;
 			}
 
-			beams[free_beam].Lhydro=beams[free_beam].L;
+			beams[pos].Lhydro=beams[pos].L;
 
 			//add short key
-			commandkey[keys].beams.push_back(-free_beam);
+			commandkey[keys].beams.push_back(-pos);
 			char *descr_pointer = descr;
 			//replace '_' with ' '
 			while (*descr_pointer!=0) {if (*descr_pointer=='_') *descr_pointer=' ';descr_pointer++;};
@@ -2186,26 +2143,23 @@ int Beam::loadTruck(char* fname, SceneManager *manager, SceneNode *parent, Real 
 				commandkey[keys].description = "";
 
 			//add long key
-			commandkey[keyl].beams.push_back(free_beam);
+			commandkey[keyl].beams.push_back(pos);
 			if(strlen(descr) != 0)
 				commandkey[keyl].description = String(descr);
 			else if (strlen(descr) == 0 && commandkey[keyl].description.size() == 0)
 				commandkey[keyl].description = "";
 
 			LogManager::getSingleton().logMessage("added command: short=" + StringConverter::toString(keys)+ ", long=" + StringConverter::toString(keyl) + ", descr=" + (descr));
-			beams[free_beam].commandRatioShort=rateShort;
-			beams[free_beam].commandRatioLong=rateLong;
-			beams[free_beam].commandShort=shortl;
-			beams[free_beam].commandLong=longl;
+			beams[pos].commandRatioShort=rateShort;
+			beams[pos].commandRatioLong=rateLong;
+			beams[pos].commandShort=shortl;
+			beams[pos].commandLong=longl;
 
 			// set the middle of the command, so its not required to recalculate this everytime ...
-			if(beams[free_beam].commandLong > beams[free_beam].commandShort)
-				beams[free_beam].centerLength = (beams[free_beam].commandLong-beams[free_beam].commandShort)/2 + beams[free_beam].commandShort;
+			if(beams[pos].commandLong > beams[pos].commandShort)
+				beams[pos].centerLength = (beams[pos].commandLong-beams[pos].commandShort)/2 + beams[pos].commandShort;
 			else
-				beams[free_beam].centerLength = (beams[free_beam].commandShort-beams[free_beam].commandLong)/2 + beams[free_beam].commandLong;
-
-			free_beam++;
-
+				beams[pos].centerLength = (beams[pos].commandShort-beams[pos].commandLong)/2 + beams[pos].commandLong;
 		}
 
 		else if (mode==13)
@@ -2227,6 +2181,7 @@ int Beam::loadTruck(char* fname, SceneManager *manager, SceneNode *parent, Real 
 			contacters[free_contacter].nodeid=id1;
 			contacters[free_contacter].contacted=0;
 			contacters[free_contacter].opticontact=0;
+			nodes[id1].iIsSkin=true;
 			free_contacter++;;
 		}
 		else if (mode==14)
@@ -2251,12 +2206,13 @@ int Beam::loadTruck(char* fname, SceneManager *manager, SceneNode *parent, Real 
 				LogManager::getSingleton().logMessage("cannot create rope: beams limit reached ("+StringConverter::toString(MAX_BEAMS)+"): " + String(fname) +" line " + StringConverter::toString(linecounter) + ". trying to continue ...");
 				continue;
 			}
-			init_beam(free_beam , &nodes[id1], &nodes[id2], manager, parent, BEAM_NORMAL, default_break, default_spring, default_damp);
-			beams[free_beam].isrope=1;
+			int pos=add_beam(&nodes[id1], &nodes[id2], manager, parent, BEAM_NORMAL, default_break, default_spring, default_damp);
+			beams[pos].isrope=1;
 			//register rope
-			ropes[free_rope].beam=&beams[free_beam];
+			ropes[free_rope].beam=&beams[pos];
 			ropes[free_rope].lockedto=0;
-			free_beam++;
+			nodes[id1].iIsSkin=true;
+			nodes[id2].iIsSkin=true;
 			free_rope++;
 		}
 		else if (mode==15)
@@ -2274,6 +2230,7 @@ int Beam::loadTruck(char* fname, SceneManager *manager, SceneNode *parent, Real 
 				continue;
 			}
 			ropables[free_ropable]=id1;
+			nodes[id1].iIsSkin=true;
 			free_ropable++;;
 		}
 		else if (mode==16)
@@ -2298,28 +2255,26 @@ int Beam::loadTruck(char* fname, SceneManager *manager, SceneNode *parent, Real 
 
 			int htype=BEAM_HYDRO;
 			if (option=='i') htype=BEAM_INVISIBLE_HYDRO;
-			init_beam(free_beam , &nodes[id1], &nodes[0], manager, parent, htype, default_break, default_spring, default_damp);
-			beams[free_beam].L=maxl;
-			beams[free_beam].refL=maxl;
-			beams[free_beam].Lhydro=maxl;
-			beams[free_beam].isrope=1;
-			beams[free_beam].disabled=1;
-			beams[free_beam].mSceneNode->detachAllObjects();
+			int pos=add_beam(&nodes[id1], &nodes[0], manager, parent, htype, default_break, default_spring, default_damp);
+			beams[pos].L=maxl;
+			beams[pos].refL=maxl;
+			beams[pos].Lhydro=maxl;
+			beams[pos].isrope=1;
+			beams[pos].disabled=1;
+			beams[pos].mSceneNode->detachAllObjects();
 			//add short key
-			commandkey[0].beams.push_back(-free_beam);
+			commandkey[0].beams.push_back(-pos);
 			//add long key
 			//			commandkey[keyl].beams[commandkey[keyl].bfree]=free_beam;
 			//			commandkey[keyl].bfree++;
-			beams[free_beam].commandRatioShort=rate;
-			beams[free_beam].commandRatioLong=rate;
-			beams[free_beam].commandShort=shortl;
-			beams[free_beam].commandLong=longl;
-			beams[free_beam].maxtiestress=maxstress;
+			beams[pos].commandRatioShort=rate;
+			beams[pos].commandRatioLong=rate;
+			beams[pos].commandShort=shortl;
+			beams[pos].commandLong=longl;
+			beams[pos].maxtiestress=maxstress;
 			//register tie
-			ties[free_tie]=free_beam;
+			ties[free_tie]=pos;
 			free_tie++;
-			free_beam++;
-
 		}
 
 		else if (mode==17)
@@ -2362,22 +2317,14 @@ int Beam::loadTruck(char* fname, SceneManager *manager, SceneNode *parent, Real 
 			free_node++;
 
 			//add beams
-			init_beam(free_beam , &nodes[cinecameranodepos[freecinecamera]], &nodes[n1], manager, parent, BEAM_INVISIBLE, default_break, spring, damp);
-			free_beam++;
-			init_beam(free_beam , &nodes[cinecameranodepos[freecinecamera]], &nodes[n2], manager, parent, BEAM_INVISIBLE, default_break, spring, damp);
-			free_beam++;
-			init_beam(free_beam , &nodes[cinecameranodepos[freecinecamera]], &nodes[n3], manager, parent, BEAM_INVISIBLE, default_break, spring, damp);
-			free_beam++;
-			init_beam(free_beam , &nodes[cinecameranodepos[freecinecamera]], &nodes[n4], manager, parent, BEAM_INVISIBLE, default_break, spring, damp);
-			free_beam++;
-			init_beam(free_beam , &nodes[cinecameranodepos[freecinecamera]], &nodes[n5], manager, parent, BEAM_INVISIBLE, default_break, spring, damp);
-			free_beam++;
-			init_beam(free_beam , &nodes[cinecameranodepos[freecinecamera]], &nodes[n6], manager, parent, BEAM_INVISIBLE, default_break, spring, damp);
-			free_beam++;
-			init_beam(free_beam , &nodes[cinecameranodepos[freecinecamera]], &nodes[n7], manager, parent, BEAM_INVISIBLE, default_break, spring, damp);
-			free_beam++;
-			init_beam(free_beam , &nodes[cinecameranodepos[freecinecamera]], &nodes[n8], manager, parent, BEAM_INVISIBLE, default_break, spring, damp);
-			free_beam++;
+			add_beam(&nodes[cinecameranodepos[freecinecamera]], &nodes[n1], manager, parent, BEAM_INVISIBLE, default_break, spring, damp);
+			add_beam(&nodes[cinecameranodepos[freecinecamera]], &nodes[n2], manager, parent, BEAM_INVISIBLE, default_break, spring, damp);
+			add_beam(&nodes[cinecameranodepos[freecinecamera]], &nodes[n3], manager, parent, BEAM_INVISIBLE, default_break, spring, damp);
+			add_beam(&nodes[cinecameranodepos[freecinecamera]], &nodes[n4], manager, parent, BEAM_INVISIBLE, default_break, spring, damp);
+			add_beam(&nodes[cinecameranodepos[freecinecamera]], &nodes[n5], manager, parent, BEAM_INVISIBLE, default_break, spring, damp);
+			add_beam(&nodes[cinecameranodepos[freecinecamera]], &nodes[n6], manager, parent, BEAM_INVISIBLE, default_break, spring, damp);
+			add_beam(&nodes[cinecameranodepos[freecinecamera]], &nodes[n7], manager, parent, BEAM_INVISIBLE, default_break, spring, damp);
+			add_beam(&nodes[cinecameranodepos[freecinecamera]], &nodes[n8], manager, parent, BEAM_INVISIBLE, default_break, spring, damp);
 
 			if(flaresMode>=2 && !cablight)
 			{
@@ -3277,6 +3224,8 @@ int Beam::loadTruck(char* fname, SceneManager *manager, SceneNode *parent, Real 
 			e.smokeNode->setPosition(nodes[e.emitterNode].AbsPosition);
 			nodes[id1].isHot=true;
 			nodes[id2].isHot=true;
+			nodes[id1].iIsSkin=true;
+			nodes[id2].iIsSkin=true;
 			exhausts.push_back(e);
 		}
 		else if (mode==37)
@@ -3885,7 +3834,7 @@ int Beam::loadTruck(char* fname, SceneManager *manager, SceneNode *parent, Real 
 			char sectionName[10][256];
 			for(int i=0;i<10;i++) memset(sectionName, 0, 255); // clear
 			if(strnlen(line,9)<8) continue;
-			LogManager::getSingleton().logMessage(">>> "+String(line+7));
+			//LogManager::getSingleton().logMessage(">>> "+String(line+7));
 			int result = sscanf(line+7,"%d %s %s %s %s %s %s %s %s %s %s", &version, sectionName[0], sectionName[1], sectionName[2], sectionName[3], sectionName[4], sectionName[5], sectionName[6], sectionName[7], sectionName[8], sectionName[9]);
 			if (result < 2 || result == EOF) {
 				LogManager::getSingleton().logMessage("Error parsing File (section) " + String(fname) +" line " + StringConverter::toString(linecounter) + ". trying to continue ...");
@@ -3914,6 +3863,18 @@ int Beam::loadTruck(char* fname, SceneManager *manager, SceneNode *parent, Real 
 			// parse torquecurve
 			if (engine && engine->getTorqueCurve())
 				engine->getTorqueCurve()->processLine(String(line));
+		} else if (mode==54)
+		{
+			//parse advanced drag
+			float drag;
+			int result = sscanf(line,"%f", &drag);
+			if (result < 4 || result == EOF)
+			{
+				LogManager::getSingleton().logMessage("Error parsing File (advdrag) " + String(fname) +" line " + StringConverter::toString(linecounter) + ". trying to continue ...");
+				continue;
+			}
+			advanced_total_drag=drag;
+			advanced_drag=true;
 		}
 	};
 	if(!loading_finished) {
@@ -4395,17 +4356,17 @@ void Beam::addWheel(SceneManager *manager, SceneNode *parent, Real radius, Real 
 	for (i=0; i<rays; i++)
 	{
 		//bounded
-		init_beam(free_beam , &nodes[node1], &nodes[nodebase+i*2], manager, parent, BEAM_INVISIBLE, default_break, wspring, wdamp, -1.0, 0.66, 0.0);free_beam++;
+		add_beam(&nodes[node1], &nodes[nodebase+i*2], manager, parent, BEAM_INVISIBLE, default_break, wspring, wdamp, -1.0, 0.66, 0.0);
 		//bounded
-		init_beam(free_beam , &nodes[node2], &nodes[nodebase+i*2+1], manager, parent, BEAM_INVISIBLE, default_break, wspring, wdamp, -1.0, 0.66, 0.0);free_beam++;
-		init_beam(free_beam , &nodes[node2], &nodes[nodebase+i*2], manager, parent, BEAM_INVISIBLE, default_break, wspring, wdamp);free_beam++;
-		init_beam(free_beam , &nodes[node1], &nodes[nodebase+i*2+1], manager, parent, BEAM_INVISIBLE, default_break, wspring, wdamp);free_beam++;
+		add_beam(&nodes[node2], &nodes[nodebase+i*2+1], manager, parent, BEAM_INVISIBLE, default_break, wspring, wdamp, -1.0, 0.66, 0.0);
+		add_beam(&nodes[node2], &nodes[nodebase+i*2], manager, parent, BEAM_INVISIBLE, default_break, wspring, wdamp);
+		add_beam(&nodes[node1], &nodes[nodebase+i*2+1], manager, parent, BEAM_INVISIBLE, default_break, wspring, wdamp);
 		//reinforcement
-		init_beam(free_beam , &nodes[node1], &nodes[nodebase+i*2], manager, parent, BEAM_INVISIBLE, default_break, wspring, wdamp);free_beam++;
-		init_beam(free_beam , &nodes[nodebase+i*2], &nodes[nodebase+i*2+1], manager, parent, BEAM_INVISIBLE, default_break, wspring, wdamp);free_beam++;
-		init_beam(free_beam , &nodes[nodebase+i*2], &nodes[nodebase+((i+1)%rays)*2], manager, parent, BEAM_INVISIBLE, default_break, wspring, wdamp);free_beam++;
-		init_beam(free_beam , &nodes[nodebase+i*2+1], &nodes[nodebase+((i+1)%rays)*2+1], manager, parent, BEAM_INVISIBLE, default_break, wspring, wdamp);free_beam++;
-		init_beam(free_beam , &nodes[nodebase+i*2+1], &nodes[nodebase+((i+1)%rays)*2], manager, parent, BEAM_INVISIBLE, default_break, wspring, wdamp);free_beam++;
+		add_beam(&nodes[node1], &nodes[nodebase+i*2], manager, parent, BEAM_INVISIBLE, default_break, wspring, wdamp);
+		add_beam(&nodes[nodebase+i*2], &nodes[nodebase+i*2+1], manager, parent, BEAM_INVISIBLE, default_break, wspring, wdamp);
+		add_beam(&nodes[nodebase+i*2], &nodes[nodebase+((i+1)%rays)*2], manager, parent, BEAM_INVISIBLE, default_break, wspring, wdamp);
+		add_beam(&nodes[nodebase+i*2+1], &nodes[nodebase+((i+1)%rays)*2+1], manager, parent, BEAM_INVISIBLE, default_break, wspring, wdamp);
+		add_beam(&nodes[nodebase+i*2+1], &nodes[nodebase+((i+1)%rays)*2], manager, parent, BEAM_INVISIBLE, default_break, wspring, wdamp);
 		//reinforcement
 		//init_beam(free_beam , &nodes[nodebase+i*2], &nodes[nodebase+((i+1)%rays)*2+1], manager, parent, BEAM_INVISIBLE, default_break, wspring, wdamp);free_beam++;
 
@@ -4413,8 +4374,8 @@ void Beam::addWheel(SceneManager *manager, SceneNode *parent, Real radius, Real 
 		{
 			//back beams //BEAM_VIRTUAL
 
-			if (closest1) {init_beam(free_beam , &nodes[snode], &nodes[nodebase+i*2], manager, parent, BEAM_VIRTUAL, default_break, wspring, wdamp);free_beam++;}
-			else         {init_beam(free_beam , &nodes[snode], &nodes[nodebase+i*2+1], manager, parent, BEAM_VIRTUAL, default_break, wspring, wdamp);free_beam++;};
+			if (closest1) {add_beam(&nodes[snode], &nodes[nodebase+i*2], manager, parent, BEAM_VIRTUAL, default_break, wspring, wdamp);}
+			else         {add_beam(&nodes[snode], &nodes[nodebase+i*2+1], manager, parent, BEAM_VIRTUAL, default_break, wspring, wdamp);};
 			/* THIS ALMOST WORKS BUT IT IS INSTABLE AT SPEED !!!!
 			//rigidifier version
 			if(free_rigidifier >= MAX_RIGIDIFIERS)
@@ -4598,58 +4559,59 @@ void Beam::addWheel2(SceneManager *manager, SceneNode *parent, Real radius, Real
 	{
 		//rim
 		//bounded
-		init_beam(free_beam , &nodes[node1], &nodes[nodebase+i*2], manager, parent, BEAM_INVISIBLE, default_break, wspring, wdamp, -1.0, 0.66, 0.0);free_beam++;
-		init_beam(free_beam , &nodes[node2], &nodes[nodebase+i*2+1], manager, parent, BEAM_INVISIBLE, default_break, wspring, wdamp, -1.0, 0.66, 0.0);free_beam++;
-		init_beam(free_beam , &nodes[node2], &nodes[nodebase+i*2], manager, parent, BEAM_INVISIBLE, default_break, wspring, wdamp);free_beam++;
-		init_beam(free_beam , &nodes[node1], &nodes[nodebase+i*2+1], manager, parent, BEAM_INVISIBLE, default_break, wspring, wdamp);free_beam++;
+		add_beam(&nodes[node1], &nodes[nodebase+i*2], manager, parent, BEAM_INVISIBLE, default_break, wspring, wdamp, -1.0, 0.66, 0.0);
+		add_beam(&nodes[node2], &nodes[nodebase+i*2+1], manager, parent, BEAM_INVISIBLE, default_break, wspring, wdamp, -1.0, 0.66, 0.0);
+		add_beam(&nodes[node2], &nodes[nodebase+i*2], manager, parent, BEAM_INVISIBLE, default_break, wspring, wdamp);
+		add_beam(&nodes[node1], &nodes[nodebase+i*2+1], manager, parent, BEAM_INVISIBLE, default_break, wspring, wdamp);
 		//reinforcement
-		init_beam(free_beam , &nodes[node1], &nodes[nodebase+i*2], manager, parent, BEAM_INVISIBLE, default_break, wspring, wdamp);free_beam++;
-		init_beam(free_beam , &nodes[nodebase+i*2], &nodes[nodebase+i*2+1], manager, parent, BEAM_INVISIBLE, default_break, wspring, wdamp);free_beam++;
-		init_beam(free_beam , &nodes[nodebase+i*2], &nodes[nodebase+((i+1)%rays)*2], manager, parent, BEAM_INVISIBLE, default_break, wspring, wdamp);free_beam++;
-		init_beam(free_beam , &nodes[nodebase+i*2+1], &nodes[nodebase+((i+1)%rays)*2+1], manager, parent, BEAM_INVISIBLE, default_break, wspring, wdamp);free_beam++;
-		init_beam(free_beam , &nodes[nodebase+i*2], &nodes[nodebase+((i+1)%rays)*2+1], manager, parent, BEAM_INVISIBLE, default_break, wspring, wdamp);free_beam++;
+		add_beam(&nodes[node1], &nodes[nodebase+i*2], manager, parent, BEAM_INVISIBLE, default_break, wspring, wdamp);
+		add_beam(&nodes[nodebase+i*2], &nodes[nodebase+i*2+1], manager, parent, BEAM_INVISIBLE, default_break, wspring, wdamp);
+		add_beam(&nodes[nodebase+i*2], &nodes[nodebase+((i+1)%rays)*2], manager, parent, BEAM_INVISIBLE, default_break, wspring, wdamp);
+		add_beam(&nodes[nodebase+i*2+1], &nodes[nodebase+((i+1)%rays)*2+1], manager, parent, BEAM_INVISIBLE, default_break, wspring, wdamp);
+		add_beam(&nodes[nodebase+i*2], &nodes[nodebase+((i+1)%rays)*2+1], manager, parent, BEAM_INVISIBLE, default_break, wspring, wdamp);
 		//reinforcement
-		init_beam(free_beam , &nodes[nodebase+i*2+1], &nodes[nodebase+((i+1)%rays)*2], manager, parent, BEAM_INVISIBLE, default_break, wspring, wdamp);free_beam++;
+		add_beam(&nodes[nodebase+i*2+1], &nodes[nodebase+((i+1)%rays)*2], manager, parent, BEAM_INVISIBLE, default_break, wspring, wdamp);
 		if (snode!=9999)
 		{
 			//back beams
-			if (closest1) {init_beam(free_beam , &nodes[snode], &nodes[nodebase+i*2], manager, parent, BEAM_VIRTUAL, default_break, wspring, wdamp);free_beam++;}
-			else         {init_beam(free_beam , &nodes[snode], &nodes[nodebase+i*2+1], manager, parent, BEAM_VIRTUAL, default_break, wspring, wdamp);free_beam++;};
+			if (closest1) {add_beam(&nodes[snode], &nodes[nodebase+i*2], manager, parent, BEAM_VIRTUAL, default_break, wspring, wdamp);}
+			else         {add_beam(&nodes[snode], &nodes[nodebase+i*2+1], manager, parent, BEAM_VIRTUAL, default_break, wspring, wdamp);};
 		}
 		//tire
 		//band
-		//init_beam(free_beam , &nodes[nodebase+2*rays+i*2], &nodes[nodebase+2*rays+i*2+1], manager, parent, BEAM_INVISIBLE, default_break, wspring2, wdamp2);free_beam++;
+		//init_beam(free_beam , &nodes[nodebase+2*rays+i*2], &nodes[nodebase+2*rays+i*2+1], manager, parent, BEAM_INVISIBLE, default_break, wspring2, wdamp2);
 		//pressure_beams[free_pressure_beam]=free_beam-1; free_pressure_beam++;
-		init_beam(free_beam , &nodes[nodebase+2*rays+i*2], &nodes[nodebase+2*rays+((i+1)%rays)*2], manager, parent, BEAM_INVISIBLE, default_break, wspring2, wdamp2);free_beam++;
-		pressure_beams[free_pressure_beam]=free_beam-1; free_pressure_beam++;
-		init_beam(free_beam , &nodes[nodebase+2*rays+i*2], &nodes[nodebase+2*rays+((i+1)%rays)*2+1], manager, parent, BEAM_INVISIBLE, default_break, wspring2, wdamp2);free_beam++;
-		pressure_beams[free_pressure_beam]=free_beam-1; free_pressure_beam++;
-		init_beam(free_beam , &nodes[nodebase+2*rays+i*2+1], &nodes[nodebase+2*rays+((i+1)%rays)*2], manager, parent, BEAM_INVISIBLE, default_break, wspring2, wdamp2);free_beam++;
-		pressure_beams[free_pressure_beam]=free_beam-1; free_pressure_beam++;
-		init_beam(free_beam , &nodes[nodebase+2*rays+i*2+1], &nodes[nodebase+2*rays+((i+1)%rays)*2+1], manager, parent, BEAM_INVISIBLE, default_break, wspring2, wdamp2);free_beam++;
+		int pos;
+		pos=add_beam(&nodes[nodebase+2*rays+i*2], &nodes[nodebase+2*rays+((i+1)%rays)*2], manager, parent, BEAM_INVISIBLE, default_break, wspring2, wdamp2);
+		pressure_beams[free_pressure_beam]=pos; free_pressure_beam++;
+		pos=add_beam(&nodes[nodebase+2*rays+i*2], &nodes[nodebase+2*rays+((i+1)%rays)*2+1], manager, parent, BEAM_INVISIBLE, default_break, wspring2, wdamp2);
+		pressure_beams[free_pressure_beam]=pos; free_pressure_beam++;
+		pos=add_beam(&nodes[nodebase+2*rays+i*2+1], &nodes[nodebase+2*rays+((i+1)%rays)*2], manager, parent, BEAM_INVISIBLE, default_break, wspring2, wdamp2);
+		pressure_beams[free_pressure_beam]=pos; free_pressure_beam++;
+		pos=add_beam(&nodes[nodebase+2*rays+i*2+1], &nodes[nodebase+2*rays+((i+1)%rays)*2+1], manager, parent, BEAM_INVISIBLE, default_break, wspring2, wdamp2);
 		//walls
-		init_beam(free_beam , &nodes[nodebase+2*rays+i*2], &nodes[nodebase+i*2], manager, parent, BEAM_INVISIBLE, default_break, wspring2, wdamp2);free_beam++;
-		pressure_beams[free_pressure_beam]=free_beam-1; free_pressure_beam++;
-		init_beam(free_beam , &nodes[nodebase+2*rays+i*2], &nodes[nodebase+((i+1)%rays)*2], manager, parent, BEAM_INVISIBLE, default_break, wspring2, wdamp2);free_beam++;
-		pressure_beams[free_pressure_beam]=free_beam-1; free_pressure_beam++;
-		init_beam(free_beam , &nodes[nodebase+2*rays+i*2+1], &nodes[nodebase+i*2+1], manager, parent, BEAM_INVISIBLE, default_break, wspring2, wdamp2);free_beam++;
-		pressure_beams[free_pressure_beam]=free_beam-1; free_pressure_beam++;
-		init_beam(free_beam , &nodes[nodebase+2*rays+i*2+1], &nodes[nodebase+((i+1)%rays)*2+1], manager, parent, BEAM_INVISIBLE, default_break, wspring2, wdamp2);free_beam++;
-		pressure_beams[free_pressure_beam]=free_beam-1; free_pressure_beam++;
+		pos=add_beam(&nodes[nodebase+2*rays+i*2], &nodes[nodebase+i*2], manager, parent, BEAM_INVISIBLE, default_break, wspring2, wdamp2);
+		pressure_beams[free_pressure_beam]=pos; free_pressure_beam++;
+		pos=add_beam(&nodes[nodebase+2*rays+i*2], &nodes[nodebase+((i+1)%rays)*2], manager, parent, BEAM_INVISIBLE, default_break, wspring2, wdamp2);
+		pressure_beams[free_pressure_beam]=pos; free_pressure_beam++;
+		pos=add_beam(&nodes[nodebase+2*rays+i*2+1], &nodes[nodebase+i*2+1], manager, parent, BEAM_INVISIBLE, default_break, wspring2, wdamp2);
+		pressure_beams[free_pressure_beam]=pos; free_pressure_beam++;
+		pos=add_beam(&nodes[nodebase+2*rays+i*2+1], &nodes[nodebase+((i+1)%rays)*2+1], manager, parent, BEAM_INVISIBLE, default_break, wspring2, wdamp2);
+		pressure_beams[free_pressure_beam]=pos; free_pressure_beam++;
 		//reinforcement
-		init_beam(free_beam , &nodes[nodebase+2*rays+i*2], &nodes[nodebase+i*2+1], manager, parent, BEAM_INVISIBLE, default_break, wspring2, wdamp2);free_beam++;
-		pressure_beams[free_pressure_beam]=free_beam-1; free_pressure_beam++;
-		init_beam(free_beam , &nodes[nodebase+2*rays+i*2], &nodes[nodebase+((i+1)%rays)*2+1], manager, parent, BEAM_INVISIBLE, default_break, wspring2, wdamp2);free_beam++;
-		pressure_beams[free_pressure_beam]=free_beam-1; free_pressure_beam++;
-		init_beam(free_beam , &nodes[nodebase+2*rays+i*2+1], &nodes[nodebase+i*2], manager, parent, BEAM_INVISIBLE, default_break, wspring2, wdamp2);free_beam++;
-		pressure_beams[free_pressure_beam]=free_beam-1; free_pressure_beam++;
-		init_beam(free_beam , &nodes[nodebase+2*rays+i*2+1], &nodes[nodebase+((i+1)%rays)*2], manager, parent, BEAM_INVISIBLE, default_break, wspring2, wdamp2);free_beam++;
-		pressure_beams[free_pressure_beam]=free_beam-1; free_pressure_beam++;
+		pos=add_beam(&nodes[nodebase+2*rays+i*2], &nodes[nodebase+i*2+1], manager, parent, BEAM_INVISIBLE, default_break, wspring2, wdamp2);
+		pressure_beams[free_pressure_beam]=pos; free_pressure_beam++;
+		pos=add_beam(&nodes[nodebase+2*rays+i*2], &nodes[nodebase+((i+1)%rays)*2+1], manager, parent, BEAM_INVISIBLE, default_break, wspring2, wdamp2);
+		pressure_beams[free_pressure_beam]=pos; free_pressure_beam++;
+		pos=add_beam(&nodes[nodebase+2*rays+i*2+1], &nodes[nodebase+i*2], manager, parent, BEAM_INVISIBLE, default_break, wspring2, wdamp2);
+		pressure_beams[free_pressure_beam]=pos; free_pressure_beam++;
+		pos=add_beam(&nodes[nodebase+2*rays+i*2+1], &nodes[nodebase+((i+1)%rays)*2], manager, parent, BEAM_INVISIBLE, default_break, wspring2, wdamp2);
+		pressure_beams[free_pressure_beam]=pos; free_pressure_beam++;
 		//backpressure, bounded
-		init_beam(free_beam , &nodes[node1], &nodes[nodebase+2*rays+i*2], manager, parent, BEAM_INVISIBLE, default_break, wspring2, wdamp2, -1.0, radius/radius2, 0.0);free_beam++;
-		pressure_beams[free_pressure_beam]=free_beam-1; free_pressure_beam++;
-		init_beam(free_beam , &nodes[node2], &nodes[nodebase+2*rays+i*2+1], manager, parent, BEAM_INVISIBLE, default_break, wspring2, wdamp2, -1.0, radius/radius2, 0.0);free_beam++;
-		pressure_beams[free_pressure_beam]=free_beam-1; free_pressure_beam++;
+		pos=add_beam(&nodes[node1], &nodes[nodebase+2*rays+i*2], manager, parent, BEAM_INVISIBLE, default_break, wspring2, wdamp2, -1.0, radius/radius2, 0.0);
+		pressure_beams[free_pressure_beam]=pos; free_pressure_beam++;
+		pos=add_beam(&nodes[node2], &nodes[nodebase+2*rays+i*2+1], manager, parent, BEAM_INVISIBLE, default_break, wspring2, wdamp2, -1.0, radius/radius2, 0.0);
+		pressure_beams[free_pressure_beam]=pos; free_pressure_beam++;
 	}
 	//wheel object
 	wheels[free_wheel].braked=braked;
@@ -4725,12 +4687,16 @@ void Beam::init_node(int pos, Real x, Real y, Real z, int type, Real m, int iswh
 	nodes[pos].id = id;
 	nodes[pos].colltesttimer=0;
 	nodes[pos].toblock=0;
+	nodes[pos].iIsSkin=false;
+	nodes[pos].isSkin=nodes[pos].iIsSkin;
 //		nodes[pos].tsmooth=Vector3::ZERO;
 	if (type==NODE_LOADED) masscount++;
 }
 
-void Beam::init_beam(int pos, node_t *p1, node_t *p2, SceneManager *manager, SceneNode *parent, int type, Real strength, Real spring, Real damp, Real length, float shortbound, float longbound, float precomp,float diameter)
+int Beam::add_beam(node_t *p1, node_t *p2, SceneManager *manager, SceneNode *parent, int type, Real strength, Real spring, Real damp, Real length, float shortbound, float longbound, float precomp,float diameter)
 {
+	int pos=free_beam;
+
 	beams[pos].p1=p1;
 	beams[pos].p2=p2;
 	beams[pos].p2truck=0;
@@ -4811,6 +4777,9 @@ void Beam::init_beam(int pos, node_t *p1, node_t *p2, SceneManager *manager, Sce
 	}
 	else {beams[pos].mSceneNode=0;beams[pos].mEntity=0;};
 	if (beams[pos].mSceneNode && beams[pos].mEntity && !(type==BEAM_VIRTUAL || type==BEAM_INVISIBLE || type==BEAM_INVISIBLE_HYDRO)) beams[pos].mSceneNode->attachObject(beams[pos].mEntity);//beams[pos].mSceneNode->setVisible(0);
+
+	free_beam++;
+	return pos;
 }
 
 void Beam::resetAutopilot()
@@ -4867,8 +4836,10 @@ void Beam::SyncReset()
 		nodes[i].Forces=Vector3::ZERO;
 		nodes[i].lastdrag=Vector3::ZERO;
 		nodes[i].buoyanceForce=Vector3::ZERO;
+		nodes[i].lastdrag=Vector3::ZERO;
 		//this is problematic, we should also find what is locked to this, and unlock it
 		nodes[i].lockednode=0;
+		nodes[i].isSkin=nodes[i].iIsSkin;
 	}
 
 	// reset gripnodes
@@ -4890,6 +4861,7 @@ void Beam::SyncReset()
 		beams[i].lastforce=Vector3::ZERO;
 		beams[i].update_timer=1.0;
 		beams[i].stress=0.0;
+		beams[i].disabled=0;
 		if (beams[i].mSceneNode && beams[i].type!=BEAM_VIRTUAL && beams[i].type!=BEAM_INVISIBLE && beams[i].type!=BEAM_INVISIBLE_HYDRO)
 		{
 			//reattach possibly detached nodes
@@ -5178,6 +5150,9 @@ void Beam::calcForcesEuler(int doUpdate, Real dt, int step, int maxstep, Beam** 
 	if (dt==0.0) return;
 	if (reset_requested) return;
 
+	int increased_accuracy=0;
+	float inverted_dt=1.0f/dt;
+
 #ifdef TIMING
 	if(statistics)
 		statistics->queryStart(BeamThreadStats::WholeTruckCalc);
@@ -5207,34 +5182,10 @@ void Beam::calcForcesEuler(int doUpdate, Real dt, int step, int maxstep, Beam** 
 	for (i=0; i<free_beam; i++)
 	{
 		//trick for exploding stuff
-		if (beams[i].broken)
-		{
-			//we add drag to end nodes
-			node_t *node=beams[i].p1;
-			Real speed=node->Velocity.length();
-			//plus: turbulences
-			Real maxtur=DEFAULT_DRAG*speed*speed/10.0;
-			node->Forces+=-DEFAULT_DRAG*5.0*speed*node->Velocity+maxtur*Vector3(((Real)rand()/(Real)RAND_MAX)-0.5, ((Real)rand()/(Real)RAND_MAX)-0.5, ((Real)rand()/(Real)RAND_MAX)-0.5);;
-			//second node
-			node=beams[i].p2;
-			speed=node->Velocity.length();
-			//plus: turbulences
-			maxtur=DEFAULT_DRAG*speed*speed/10.0;
-			node->Forces+=-DEFAULT_DRAG*5.0*speed*node->Velocity+maxtur*Vector3(((Real)rand()/(Real)RAND_MAX)-0.5, ((Real)rand()/(Real)RAND_MAX)-0.5, ((Real)rand()/(Real)RAND_MAX)-0.5);;
-		}
 		if (!beams[i].broken && !beams[i].disabled)
 		{
-			//fast track
-			//				if (((step%2) && beams[i].stress<10000)||((step%4) && beams[i].stress<1000))
-
-/*
-			if (  ((step%2) && beams[i].stress/beams[i].minendmass<400.0)
-				||((step%4) && beams[i].stress/beams[i].minendmass<100.0)
-				//					||((step%8) && beams[i].stress/beams[i].minendmass<31.25)
-				&& !(beams[i].p1->iswheel || beams[i].p2->iswheel)
-				)*/
 			float minrate=1.0;
-			if (beams[i].stress>5) minrate=1.0/(5.0*beams[i].stress);
+			if (beams[i].stress>5) minrate=1.0f/(5.0f*beams[i].stress);
 			if (beams[i].update_rate<minrate) minrate=beams[i].update_rate;
 			if (beams[i].update_timer<minrate && !beams[i].p1->contacted && !beams[i].p2->contacted)
 			{
@@ -5250,59 +5201,26 @@ void Beam::calcForcesEuler(int doUpdate, Real dt, int step, int maxstep, Beam** 
 				Vector3 dis;
 				if (beams[i].p2truck) dis=beams[i].p1->AbsPosition-beams[i].p2->AbsPosition;
 				else dis=beams[i].p1->RelPosition-beams[i].p2->RelPosition;
-				Real dislen=dis.length();
+				Real dislen=dis.squaredLength();
+				Real inverted_dislen=fast_invSqrt(dislen);
+				dislen=dislen*inverted_dislen;
+
 				Real k=beams[i].k;
 				Real d=beams[i].d;
 				//dampers bump
+				Real difftoBeamL=dislen-beams[i].L;
 				if (beams[i].bounded)
 				{
-					Real ratio=0;
-					// fix possible zero division bug
-					if(beams[i].L == 0)
-						ratio=0.00000001;
-					else
-						ratio=(dislen-beams[i].L)/beams[i].L;
-					if (ratio>beams[i].longbound) {k=DEFAULT_SPRING;d=DEFAULT_DAMP;};
-					if (ratio<-beams[i].shortbound) {k=DEFAULT_SPRING;d=DEFAULT_DAMP;};
+					if (difftoBeamL>beams[i].longbound*beams[i].L || difftoBeamL<-beams[i].shortbound*beams[i].L) {k=DEFAULT_SPRING;d=DEFAULT_DAMP;};
 				}
 				Vector3 v=beams[i].p1->Velocity-beams[i].p2->Velocity;
-				/*Vector3 f=-(k*(dislen-beams[i].L)+d*(v.dotProduct(dis)/dislen))*(dis/dislen);
-				beams[i].lastforce=f;
-				Real flen=f.length();
-				beams[i].stress=flen;
-				beams[i].p1->Forces+=f;
-				beams[i].p2->Forces-=f;*/
 
-				/*					Real flen=-(k*(dislen-beams[i].L)+d*(v.dotProduct(dis)/dislen));
-				Vector3 f=(flen/dislen)*dis;
-				float sflen=0;
-				if (beams[i].isrope && flen>0)
-				{
-				flen=0;
-				beams[i].lastforce=Vector3(0,0,0);
-				beams[i].stress=flen;
-				}
+				float flen;
+				if (beams[i].isrope && difftoBeamL<0)
+					flen=-d*v.dotProduct(dis)*0.1f*inverted_dislen;
 				else
-				{
-				sflen=flen;
-				flen=fabs(flen);
-				beams[i].lastforce=f;
-				beams[i].stress=flen;
-				beams[i].p1->Forces+=f;
-				beams[i].p2->Forces-=f;
-				}
-				*/
-
-				// fix possible zero division bug
-				if(dislen==0)
-					dislen = 0.0000001;
-
-				Real flen;
-				if (beams[i].isrope && dislen<beams[i].L)
-					flen=-d*(v.dotProduct(dis)/dislen)/10.0;
-				else
-					flen=-(k*(dislen-beams[i].L)+d*(v.dotProduct(dis)/dislen));
-				Vector3 f=(flen/dislen)*dis;
+					flen=-k*(difftoBeamL)-d*v.dotProduct(dis)*inverted_dislen;
+				Vector3 f=(flen*inverted_dislen)*dis;
 				float sflen=flen;
 				flen=fabs(flen);
 				beams[i].lastforce=f;
@@ -5345,30 +5263,37 @@ void Beam::calcForcesEuler(int doUpdate, Real dt, int step, int maxstep, Beam** 
 							// fix possible zero division bug
 							if((beams[i].strength-beams[i].default_deform) == 0)
 								beams[i].strength += 0.0000001;
+
 							if (sflen>beams[i].maxposstress)
 							{
+								increased_accuracy=1;
 								beams[i].maxposstress=sflen;
-								float posco=(beams[i].maxposstress-beams[i].default_deform)/(beams[i].strength-beams[i].default_deform);
-								float negco=-(-beams[i].maxnegstress-beams[i].default_deform)/(beams[i].strength-beams[i].default_deform);
-								beams[i].L=beams[i].refL*(1.0-(posco+negco)*0.2);
+								beams[i].L=beams[i].refL*(1.0-0.2f*(beams[i].maxposstress+beams[i].maxnegstress)/(beams[i].strength-beams[i].default_deform));
 							}
+
 							if (sflen<beams[i].maxnegstress)
 							{
+								increased_accuracy=1;
 								beams[i].maxnegstress=sflen;
-								float posco=(beams[i].maxposstress-beams[i].default_deform)/(beams[i].strength-beams[i].default_deform);
-								float negco=-(-beams[i].maxnegstress-beams[i].default_deform)/(beams[i].strength-beams[i].default_deform);
-								beams[i].L=beams[i].refL*(1.0-(posco+negco)*0.2);
+								beams[i].L=beams[i].refL*(1.0-0.2f*(beams[i].maxposstress+beams[i].maxnegstress)/(beams[i].strength-beams[i].default_deform));
 							}
 						}
 
 						if (flen>beams[i].strength)
 						{
+							increased_accuracy=1;
 							if(beams[i].strength != 0)
 							{
 								ssm->modulate(trucknum, SS_MOD_BREAK, (flen-beams[i].strength)/(float)(beams[i].strength));
 								ssm->trigOnce(trucknum, SS_TRIG_BREAK);
 							}
 							beams[i].broken=1;
+							beams[i].disabled=1;
+							beams[i].p1->Forces-=beams[i].lastforce=f;
+							beams[i].p2->Forces+=beams[i].lastforce=f;
+							beams[i].p1->isSkin=true;
+							beams[i].p2->isSkin=true;
+
 							//something broke, check buoyant hull
 							int mk;
 							for (mk=0; mk<free_buoycab; mk++)
@@ -5402,27 +5327,31 @@ void Beam::calcForcesEuler(int doUpdate, Real dt, int step, int maxstep, Beam** 
 		//thanks to Chris Ritchey for the solution!
 		Vector3 vab=rigidifiers[i].a->RelPosition-rigidifiers[i].b->RelPosition;
 		Vector3 vcb=rigidifiers[i].c->RelPosition-rigidifiers[i].b->RelPosition;
-		float vabl=vab.length();
-		float vcbl=vcb.length();
-		vab=vab/vabl; //normalise
-		vcb=vcb/vcbl;
-		float alphap=vab.dotProduct(vcb);
-		if (alphap>1.0) alphap=1.0;
-		if (alphap<-1.0) alphap=-1.0;
+		float vablen = vab.squaredLength();
+		float vcblen = vcb.squaredLength();
+		if (vablen == 0.0f || vcblen == 0.0f) continue;
+		float inverted_vablen = fast_invSqrt(vablen);
+		float inverted_vcblen = fast_invSqrt(vcblen);
+		vablen = vablen*inverted_vablen;
+		vcblen = vcblen*inverted_vcblen;
+		vab = vab*inverted_vablen;
+		vcb = vcb*inverted_vcblen;
+		float vabdotvcb = vab.dotProduct(vcb);
+		float alphap = vabdotvcb;
+		if (alphap > 1.0f) alphap = 1.0f;
+		else if (alphap<-1.0f) alphap = -1.0f;
 		alphap=acos(alphap);
-		float forcediv=-rigidifiers[i].k*(rigidifiers[i].alpha-alphap)+rigidifiers[i].d*(alphap-rigidifiers[i].lastalpha)/dt; //force dividend
-//			float forcediv=-rigidifiers[i].k*(rigidifiers[i].alpha-alphap); //force dividend
-		Vector3 normal=(vab).crossProduct(vcb);
+		float forcediv = -rigidifiers[i].k * (rigidifiers[i].alpha - alphap) + rigidifiers[i].d * (alphap - rigidifiers[i].lastalpha) * inverted_dt; //force dividend
 		//forces at a
-		Vector3 va=normal.crossProduct(vab);
-		float na=forcediv/vabl;
-		rigidifiers[i].a->Forces+=na*va;
+		float tmp = forcediv*inverted_vablen;
+		Vector3 va = vcb * tmp - vab * (vabdotvcb * tmp);
+		rigidifiers[i].a->Forces += va;
 		//forces at c
-		Vector3 vc=-normal.crossProduct(vcb);
-		float nc=forcediv/vcbl;
-		rigidifiers[i].c->Forces+=nc*vc;
+		tmp = forcediv*inverted_vcblen;
+		Vector3 vc = vab * tmp - vcb * (vabdotvcb * tmp);
+		rigidifiers[i].c->Forces += vc;
 		//reaction at b
-		rigidifiers[i].b->Forces+=-na*va-nc*vc;
+		rigidifiers[i].b->Forces += -va - vc;
 		rigidifiers[i].lastalpha=alphap;
 	}
 #ifdef TIMING
@@ -5451,7 +5380,7 @@ void Beam::calcForcesEuler(int doUpdate, Real dt, int step, int maxstep, Beam** 
 					{
 						// prelocked
 						// check if ready for locking
-						if((gni->node->AbsPosition - gni->lockgripnode->node->AbsPosition).length() < 0.1)
+						if((gni->node->AbsPosition - gni->lockgripnode->node->AbsPosition).squaredLength() < 0.01)
 						{
 							gni->lockmode = 2;
 							gni->lockgripnode->lockmode = 2;
@@ -5469,7 +5398,7 @@ void Beam::calcForcesEuler(int doUpdate, Real dt, int step, int maxstep, Beam** 
 						// already locked, check if the forces get too high
 						Vector3 forces = gni->node->Forces - gni->lockgripnode->node->Forces;
 						//LogManager::getSingleton().logMessage("lock forces " + StringConverter::toString(forces.length()));
-						if(forces.length() > gni->ungripforce)
+						if(forces.squaredLength() > gni->ungripforce*gni->ungripforce)
 						{
 							gni->lockgripnode->node->lockednode=0;
 							gni->lockgripnode->node->lockedPosition=Vector3::ZERO;
@@ -5553,7 +5482,7 @@ void Beam::calcForcesEuler(int doUpdate, Real dt, int step, int maxstep, Beam** 
 	if (lockId && locked==PRELOCK)
 	{
 		//check for locking
-		if ((nodes[hookId].AbsPosition-lockId->AbsPosition).length()<0.001)
+		if ((nodes[hookId].AbsPosition-lockId->AbsPosition).squaredLength()<0.00001)
 		{
 			lockId->lockednode=1;
 			lockId->lockedPosition=lockId->AbsPosition;
@@ -5606,16 +5535,6 @@ void Beam::calcForcesEuler(int doUpdate, Real dt, int step, int maxstep, Beam** 
 		for (i=0; i<free_rope; i++)
 			if (ropes[i].lockedto)
 			{
-				//original code
-				//					ropes[i].beam->p2->Position=nodes[ropes[i].lockedto].Position;
-				//					ropes[i].beam->p2->Velocity=nodes[ropes[i].lockedto].Velocity;
-				//					nodes[ropes[i].lockedto].Forces=nodes[ropes[i].lockedto].Forces+ropes[i].beam->p2->Forces;
-				//					ropes[i].beam->p2->Forces=Vector3(0,0,0);
-				//this does not works
-				//					ropes[i].lockedto->lockedPosition=ropes[i].beam->p2->Position;
-				//					ropes[i].lockedto->lockedVelocity=ropes[i].beam->p2->Velocity;
-				//					ropes[i].beam->p2->Forces=ropes[i].beam->p2->Forces+ropes[i].lockedto->lockedForces;
-				//trying this
 				ropes[i].beam->p2->AbsPosition=ropes[i].lockedto->AbsPosition;
 				ropes[i].beam->p2->RelPosition=ropes[i].lockedto->AbsPosition-origin;//ropes[i].lockedtruck->origin; //we have a problem here
 				ropes[i].beam->p2->Velocity=ropes[i].lockedto->Velocity;
@@ -5635,10 +5554,6 @@ void Beam::calcForcesEuler(int doUpdate, Real dt, int step, int maxstep, Beam** 
 			nodes[mousenode].Forces+=1000000.0*dir;
 		else if(mousemovemode==1)
 			nodes[mousenode].Forces+=10000.0*dir;
-
-		//nodes[mousenode].Position=mousepos;
-		//nodes[mousenode].Velocity=Vector3::ZERO;
-		//nodes[mousenode].Forces=Vector3::ZERO;
 	}
 
 #ifdef TIMING
@@ -5678,7 +5593,7 @@ void Beam::calcForcesEuler(int doUpdate, Real dt, int step, int maxstep, Beam** 
 		if (!nodes[i].contactless)
 		{
 			nodes[i].colltesttimer+=dt;
-			if (nodes[i].contacted || nodes[i].colltesttimer>0.005 || (nodes[i].iswheel && nodes[i].colltesttimer>0.0025))
+			if (nodes[i].contacted || nodes[i].colltesttimer>0.005 || (nodes[i].iswheel && nodes[i].colltesttimer>0.0025) || increased_accuracy )
 			{
 				int contacted=0;
 				float ns=0;
@@ -5748,7 +5663,7 @@ void Beam::calcForcesEuler(int doUpdate, Real dt, int step, int maxstep, Beam** 
 		// record g forces on cameras
 		if (i==cameranodepos[0])
 		{
-			cameranodeacc+=nodes[i].Forces/nodes[i].mass;
+			cameranodeacc+=nodes[i].Forces*nodes[i].inverted_mass;
 			cameranodecount++;
 		}
 
@@ -5757,120 +5672,27 @@ void Beam::calcForcesEuler(int doUpdate, Real dt, int step, int maxstep, Beam** 
 		{
 				if (nodes[i].toblock)
 				{
-					nodes[i].Velocity=(nodes[i].Forces/nodes[i].mass)*dt;
+					nodes[i].Velocity=nodes[i].Forces*(dt*nodes[i].inverted_mass);
 					nodes[i].toblock=0;
 				} else
 				{
-					nodes[i].Velocity+=(nodes[i].Forces/nodes[i].mass)*dt;
+					nodes[i].Velocity+=nodes[i].Forces*(dt*nodes[i].inverted_mass);
 					nodes[i].RelPosition+=nodes[i].Velocity*dt;
 					nodes[i].AbsPosition=nodes[i].RelPosition+origin;
 				}
 		}
 		if (nodes[i].AbsPosition.x>tmaxx) tmaxx=nodes[i].AbsPosition.x;
-		if (nodes[i].AbsPosition.x<tminx) tminx=nodes[i].AbsPosition.x;
+		else if (nodes[i].AbsPosition.x<tminx) tminx=nodes[i].AbsPosition.x;
 		if (nodes[i].AbsPosition.y>tmaxy) tmaxy=nodes[i].AbsPosition.y;
-		if (nodes[i].AbsPosition.y<tminy) tminy=nodes[i].AbsPosition.y;
+		else if (nodes[i].AbsPosition.y<tminy) tminy=nodes[i].AbsPosition.y;
 		if (nodes[i].AbsPosition.z>tmaxz) tmaxz=nodes[i].AbsPosition.z;
-		if (nodes[i].AbsPosition.z<tminz) tminz=nodes[i].AbsPosition.z;
+		else if (nodes[i].AbsPosition.z<tminz) tminz=nodes[i].AbsPosition.z;
 
-		//smooth increment
-/*			if (nodes[i].iswheel)
-		{
-			if (step==maxstep/2) nodes[i].tsmooth=maxstep*nodes[i].Position; //freeze!
-		}
-		else nodes[i].tsmooth+=nodes[i].Position;
-*/
-		//old collision : historical code value
-/*
-		//we check collision 1/10th of the time, except for nodes that had collisionned last time
-		if (!nodes[i].contactless && ((step%10)==0 || nodes[i].contacted || (nodes[i].iswheel && (step%5)==0)))
-		{
-			//ground collision
-			int contacted=0;
-			//depth force correction factor
-			//this is used for terrain and objects collision
-			int corrf=10;
-			if (nodes[i].iswheel) corrf=5;
-			if (nodes[i].contacted) corrf=1;
-			int trailtype=0;
-#ifndef NEWGROUND
-			Real v=hfinder->getHeightAt(nodes[i].AbsPosition.x, nodes[i].AbsPosition.z);
-			//				Real v=tsm->getHeightAt(nodes[i].Position.x, nodes[i].Position.z);
-			//Real v=0;
-
-			if (v>nodes[i].AbsPosition.y)
-			{
-				contacted++;
-				//setup dust
-				if (doUpdate && dustp)
-					dustp->alloc(nodes[i].AbsPosition, nodes[i].Velocity/2.0);
-
-				//the new way
-				Vector3 normal;
-				hfinder->getNormalAt(nodes[i].AbsPosition.x, nodes[i].AbsPosition.z, &normal);
-				//find the contact point
-				float ratio=Vector3(0, 1, 0).dotProduct(normal);
-				float depth=(ratio*(v-nodes[i].AbsPosition.y));
-				nodes[i].RelPosition=nodes[i].RelPosition+depth*normal;
-				nodes[i].AbsPosition=nodes[i].RelPosition+origin;
-				//compute slip velocity vector
-				Vector3 slip=nodes[i].Velocity-nodes[i].Velocity.dotProduct(normal)*normal;
-				//remove the normal speed component
-				nodes[i].Velocity=slip;
-				float slipl=slip.length();
-				if (slipl<0.5) nodes[i].Velocity=Vector3::ZERO;
-				else
-				{
-					// corrf cannot get zero, see above
-					float loadfactor=(1.0-fabs(depth/corrf)*100.0);
-					if (loadfactor<0) loadfactor=0;
-					float slipfactor=(slipl-0.5)/6.0;
-					if (slipfactor>1) slipfactor=1;
-					nodes[i].Velocity*=loadfactor*slipfactor;
-				}
-
-				if(slipl>0.8)
-					trailtype=1;
-				else
-					trailtype=2;
-
-
-			}
-#endif
-			//object collision
-
-			// old code:
-			//if (nodes[i].AbsPosition.x>0 && nodes[i].AbsPosition.x<*mapsizex && nodes[i].AbsPosition.z>0 && nodes[i].AbsPosition.z<*mapsizez)
-
-			// always check for collision, otherwise trucks tend to explode when crossing the border
-			if(true)
-			{
-				float ns;
-				if (collisions->nodeCollision(&nodes[i], i==cinecameranodepos[currentcamera], contacted, corrf, &ns))
-				{
-					//smokey
-					if (doUpdate && dustp && nodes[i].iswheel && ns>6.0) {dustp->allocSmoke(nodes[i].AbsPosition, nodes[i].Velocity);if (audio) audio->playScreetch((ns-6.0)/6.0);}
-
-#if 0
-					// FIXME: are we hard braking/accelerating?
-					if(ns>6)
-						trailtype=3;
-					else
-						trailtype=4;
-#endif
-				}
-			}
-		}*/
-//			aposition+=nodes[i].Position;
 		//prepare next loop (optimisation)
 		//we start forces from zero
 		//start with gravity
-
-
-
-
 		nodes[i].Forces=nodes[i].gravimass;
-		//			if (driveable==AIRPLANE)
+
 		if (fuseAirfoil)
 		{
 			//aerodynamics on steroids!
@@ -5881,17 +5703,21 @@ void Beam::calcForcesEuler(int doUpdate, Real dt, int step, int maxstep, Beam** 
 			if (!disableDrag)
 			{
 				//add viscous drag (turbulent model)
-				if (step%10)
+				if (step&7 && !increased_accuracy)
 				{
 					//fasttrack drag
 					nodes[i].Forces+=nodes[i].lastdrag;
 
 				} else
 				{
-					Real speed=nodes[i].Velocity.length();//we will (not) reuse this
+					Real speed=nodes[i].Velocity.squaredLength();//we will (not) reuse this
+					speed=approx_sqrt(speed);
 					//plus: turbulences
-					Real maxtur=DEFAULT_DRAG*speed*speed/100.0;
-					nodes[i].lastdrag=-DEFAULT_DRAG*speed*nodes[i].Velocity+maxtur*Vector3(((Real)rand()/(Real)RAND_MAX)-0.5, ((Real)rand()/(Real)RAND_MAX)-0.5, ((Real)rand()/(Real)RAND_MAX)-0.5);;
+					Real defdragxspeed= DEFAULT_DRAG*speed;
+					//Real maxtur=defdragxspeed*speed*0.01f;
+					nodes[i].lastdrag=-defdragxspeed*nodes[i].Velocity;
+					Real maxtur=defdragxspeed*speed*0.01f;
+					nodes[i].lastdrag+=maxtur*Vector3(randHalf(), randHalf(), randHalf());
 					nodes[i].Forces+=nodes[i].lastdrag;
 				}
 			}
@@ -5905,10 +5731,11 @@ void Beam::calcForcesEuler(int doUpdate, Real dt, int step, int maxstep, Beam** 
 				if (nodes[i].AbsPosition.y<water->getHeightWaves(nodes[i].AbsPosition))
 				{
 					//water drag (turbulent)
-					nodes[i].Forces-=DEFAULT_WATERDRAG*nodes[i].Velocity*nodes[i].Velocity.length();
+					float velocityLength=nodes[i].Velocity.length();
+					nodes[i].Forces-=(DEFAULT_WATERDRAG*velocityLength)*nodes[i].Velocity;
 					nodes[i].Forces+=nodes[i].buoyancy*Vector3::UNIT_Y;
 					//basic splashing
-					if (splashp && water->getHeight()-nodes[i].AbsPosition.y<0.2 && nodes[i].Velocity.squaredLength()>4.0)
+					if (splashp && water->getHeight()-nodes[i].AbsPosition.y<0.2 && velocityLength>2.0)
 					{
 						splashp->allocSplash(nodes[i].AbsPosition, nodes[i].Velocity);
 						ripplep->allocRipple(nodes[i].AbsPosition, nodes[i].Velocity);
@@ -6005,21 +5832,14 @@ void Beam::calcForcesEuler(int doUpdate, Real dt, int step, int maxstep, Beam** 
 
 		//tropospheric model valid up to 11.000m (33.000ft)
 		float altitude=fuseFront->AbsPosition.y;
-		float sea_level_temperature=273.15+15.0; //in Kelvin
+		float sea_level_temperature=273.15f+15.0f; //in Kelvin
 		float sea_level_pressure=101325; //in Pa
-		float airtemperature=sea_level_temperature-altitude*0.0065; //in Kelvin
-		float airpressure=sea_level_pressure*pow(1.0-0.0065*altitude/288.15, 5.24947); //in Pa
-		float airdensity=airpressure*0.0000120896;//1.225 at sea level
+		float airtemperature=sea_level_temperature-altitude*0.0065f; //in Kelvin
+		float airpressure=sea_level_pressure*approx_pow(1.0-0.0065*altitude/288.1, 5.24947); //in Pa
+		float airdensity=airpressure*0.0000120896f;//1.225 at sea level
 
 		//fuselage as an airfoil + parasitic drag (half fuselage front surface almost as a flat plane!)
-		fusedrag=(cx*s+fuseWidth*fuseWidth*0.5)*0.5*airdensity*wspeed*wind;
-		fusedrag=fusedrag/free_node; //free_node is never null
-
-
-		//Real speed=nodes[0].Velocity.length();
-		///plus: turbulences
-		//Real maxtur=DEFAULT_DRAG*speed*speed/100.0;
-		//fusedrag=-DEFAULT_DRAG*(100.0/free_node)*speed*nodes[0].Velocity+maxtur*Vector3(((Real)rand()/(Real)RAND_MAX)-0.5, ((Real)rand()/(Real)RAND_MAX)-0.5, ((Real)rand()/(Real)RAND_MAX)-0.5);;
+		fusedrag=((cx*s+fuseWidth*fuseWidth*0.5)*0.5*airdensity*wspeed/free_node)*wind; //free_node is never null
 	}
 #ifdef TIMING
 	if(statistics)
@@ -6115,7 +5935,7 @@ void Beam::calcForcesEuler(int doUpdate, Real dt, int step, int maxstep, Beam** 
 						Vector3 bx=va-vo;
 						Vector3 by=vb-vo;
 						Vector3 bz=bx.crossProduct(by);
-						bz.normalise();
+						bz=fast_normalise(bz);
 						//coordinates change matrix
 						tritransform_t* tmpt=&(trucks[t]->transforms[trucks[t]->collcabs[i]]);
 						tmpt->reverse.SetColumn(0, bx);
@@ -6196,7 +6016,7 @@ void Beam::calcForcesEuler(int doUpdate, Real dt, int step, int maxstep, Beam** 
 					//we have a collision with index mintri of truck mintruck
 					Vector3 point=trucks[mintruck]->transforms[mintri].forward*(nodes[contacters[j].nodeid].AbsPosition-trucks[mintruck]->transforms[mintri].vo);
 					// fix possible zero division bug
-					float fl=nodes[contacters[j].nodeid].mass*(0.02-fabs(point.z))/(dt*dt);
+					float fl=nodes[contacters[j].nodeid].mass*inverted_dt*inverted_dt*(0.02-fabs(point.z));
 					// colltype = 0, default, as always
 					// colltype = 1, tripe force possible
 					// colltype = 2, no more check, no breaking
@@ -6204,16 +6024,15 @@ void Beam::calcForcesEuler(int doUpdate, Real dt, int step, int maxstep, Beam** 
 					if (colltype == 1 && fl>3000000.0) fl=3000000.0;
 					if (point.z>0) fl=-fl;
 					//friction
-					//Vector3 vrel=transforms[mintri].forward*(nodes[contacters[j].nodeid].Velocity-(nodes[cabs[mintri*3]].Velocity+nodes[cabs[mintri*3+1]].Velocity+nodes[cabs[mintri*3+2]].Velocity)/3.0);
 					float frx=0;
 					float fry=0;
 					if (contacters[j].contacted && mintri==contacters[j].cabindex && mintruck==contacters[j].trucknum)
 					{
 						Vector3 dp=point-contacters[j].lastpos;
-						frx=nodes[contacters[j].nodeid].mass*dp.x/(dt*dt);
+						frx=nodes[contacters[j].nodeid].mass*inverted_dt*inverted_dt*dp.x;
 						if (frx>100000.0) frx=100000.0;
 						if (frx<-100000.0) frx=-100000.0;
-						fry=nodes[contacters[j].nodeid].mass*dp.y/(dt*dt);
+						fry=nodes[contacters[j].nodeid].mass*inverted_dt*inverted_dt*dp.y;
 						if (fry>100000.0) fry=100000.0;
 						if (fry<-100000.0) fry=-100000.0;
 					}
@@ -6259,13 +6078,13 @@ void Beam::calcForcesEuler(int doUpdate, Real dt, int step, int maxstep, Beam** 
 	for (i=0; i<proped_wheels; i++) intertorque[i]=0.0;
 	for (i=0; i<proped_wheels/2-1; i++)
 	{
-		float speed1=(wheels[proppairs[i*2]].speed+wheels[proppairs[i*2+1]].speed)/2.0;
-		float speed2=(wheels[proppairs[(i+1)*2]].speed+wheels[proppairs[(i+1)*2+1]].speed)/2.0;
-		float torque=(speed1-speed2)*10000.0;
-		intertorque[i*2]-=torque/2.0;
-		intertorque[i*2+1]-=torque/2.0;
-		intertorque[(i+1)*2]+=torque/2.0;
-		intertorque[(i+1)*2+1]+=torque/2.0;
+		float speed1=(wheels[proppairs[i*2]].speed+wheels[proppairs[i*2+1]].speed)*0.5f;
+		float speed2=(wheels[proppairs[i*2+2]].speed+wheels[proppairs[i*2+3]].speed)*0.5f;
+		float torque=(speed1-speed2)*10000.0f;
+		intertorque[i*2]-=torque*0.5f;
+		intertorque[i*2+1]-=torque*0.5f;
+		intertorque[i*2+2]+=torque*0.5f;
+		intertorque[i*2+3]+=torque*0.5f;
 	}
 
 	float engine_torque=0.0;
@@ -6324,8 +6143,9 @@ void Beam::calcForcesEuler(int doUpdate, Real dt, int step, int maxstep, Beam** 
 		//application to wheel
 		torques[i]=total_torque;
 		Vector3 axis=wheels[i].refnode1->RelPosition-wheels[i].refnode0->RelPosition;
-		axis.normalise();
-		axis=(total_torque/(Real)(wheels[i].nbnodes))*axis;
+		float axis_precalc=total_torque/(Real)(wheels[i].nbnodes);
+		axis=fast_normalise(axis);
+
 		for (j=0; j<wheels[i].nbnodes; j++)
 		{
 			Vector3 radius;
@@ -6333,18 +6153,16 @@ void Beam::calcForcesEuler(int doUpdate, Real dt, int step, int maxstep, Beam** 
 				radius=wheels[i].nodes[j]->RelPosition-wheels[i].refnode1->RelPosition;
 			else
 				radius=wheels[i].nodes[j]->RelPosition-wheels[i].refnode0->RelPosition;
-			Real rlen=radius.length();
-			if(rlen == 0)
-				rlen = 0.001;
-			radius=radius/(rlen*rlen);
+				float inverted_rlen=fast_invSqrt(radius.squaredLength());
+
 			if (wheels[i].propulsed==2)
 				radius=-radius;
-			wheels[i].nodes[j]->Forces=wheels[i].nodes[j]->Forces+axis.crossProduct(radius);
-			Vector3 dir=(wheels[i].refnode1->RelPosition-wheels[i].refnode0->RelPosition).crossProduct(radius);
-			dir.normalise();
+
+			Vector3 dir=axis.crossProduct(radius);
+			wheels[i].nodes[j]->Forces+=dir*(axis_precalc*inverted_rlen*inverted_rlen);
 			//wheel speed
-			if (j%2) speedacc+=(wheels[i].nodes[j]->Velocity-wheels[i].refnode1->Velocity).dotProduct(dir);
-			else speedacc+=(wheels[i].nodes[j]->Velocity-wheels[i].refnode0->Velocity).dotProduct(dir);
+			if (j%2) speedacc+=(wheels[i].nodes[j]->Velocity-wheels[i].refnode1->Velocity).dotProduct(dir)*inverted_rlen;
+			else speedacc+=(wheels[i].nodes[j]->Velocity-wheels[i].refnode0->Velocity).dotProduct(dir)*inverted_rlen;
 		}
 		//wheel speed
 		newspeeds[i]=speedacc/wheels[i].nbnodes;
@@ -6353,8 +6171,6 @@ void Beam::calcForcesEuler(int doUpdate, Real dt, int step, int maxstep, Beam** 
 		//for network
 		wheels[i].rp+=(newspeeds[i]/wheels[i].radius)*dt;
 		//reaction torque
-		axis=wheels[i].refnode1->RelPosition-wheels[i].refnode0->RelPosition;
-		axis.normalise();
 		Vector3 rradius=wheels[i].arm->RelPosition-wheels[i].near_attach->RelPosition;
 		Vector3 radius=Plane(axis, wheels[i].near_attach->RelPosition).projectVector(rradius);
 		Real rlen=radius.length(); //length of the projected arm
@@ -6362,11 +6178,11 @@ void Beam::calcForcesEuler(int doUpdate, Real dt, int step, int maxstep, Beam** 
 		axis=total_torque*axis;
 		if(rlen>0.01)
 		{
-			radius=radius/(2.0*rlen*rlen);
+			radius=radius/(2.0f*rlen*rlen);
 			Vector3 cforce=axis.crossProduct(radius);
 			//modulate the force according to induced torque error
 			if (offset*2.0>rlen) cforce=Vector3::ZERO; // too much error!
-			else cforce=((rlen-offset*2.0)/rlen)*cforce; //linear modulation
+			else cforce=(1.0f-((offset*2.0f)/rlen))*cforce; //linear modulation
 			wheels[i].arm->Forces-=cforce;
 			wheels[i].near_attach->Forces+=cforce;
 		}
@@ -6822,7 +6638,8 @@ void Beam::calcForcesEuler(int doUpdate, Real dt, int step, int maxstep, Beam** 
 		{
 			//compute rotation axis
 			Vector3 axis=nodes[rotators[i].axis1].RelPosition-nodes[rotators[i].axis2].RelPosition;
-			axis.normalise();
+			//axis.normalise();
+			axis=fast_normalise(axis);
 			//find the reference plane
 			Plane pl=Plane(axis, 0);
 			//for each pair
@@ -6840,14 +6657,18 @@ void Beam::calcForcesEuler(int doUpdate, Real dt, int step, int maxstep, Beam** 
 				//exert forces
 				float rigidity=10000000.0;
 				Vector3 dir1=ref1.crossProduct(axis);
-				dir1.normalise();
+				//dir1.normalise();
+				dir1=fast_normalise(dir1);
 				Vector3 dir2=ref2.crossProduct(axis);
-				dir2.normalise();
-				nodes[rotators[i].nodes1[k]].Forces+=(aerror*ref1.length()*rigidity)*dir1;
-				nodes[rotators[i].nodes2[k]].Forces-=(aerror*ref2.length()*rigidity)*dir2;
+				//dir2.normalise();
+				dir2=fast_normalise(dir2);
+				float ref1len=ref1.length();
+				float ref2len=ref2.length();
+				nodes[rotators[i].nodes1[k]].Forces+=(aerror*ref1len*rigidity)*dir1;
+				nodes[rotators[i].nodes2[k]].Forces-=(aerror*ref2len*rigidity)*dir2;
 				//symmetric
-				nodes[rotators[i].nodes1[k+2]].Forces-=(aerror*ref1.length()*rigidity)*dir1;
-				nodes[rotators[i].nodes2[k+2]].Forces+=(aerror*ref2.length()*rigidity)*dir2;
+				nodes[rotators[i].nodes1[k+2]].Forces-=(aerror*ref1len*rigidity)*dir1;
+				nodes[rotators[i].nodes2[k+2]].Forces+=(aerror*ref2len*rigidity)*dir2;
 			}
 		}
 
@@ -6872,7 +6693,6 @@ Quaternion Beam::specialGetRotationTo(const Vector3& src, const Vector3& dest) c
 	v0.normalise();
 	v1.normalise();
 
-	Vector3 c = v0.crossProduct(v1);
 
 	// NB if the crossProduct approaches zero, we get unstable because ANY axis will do
 	// when v0 == -v1
@@ -6893,8 +6713,10 @@ Quaternion Beam::specialGetRotationTo(const Vector3& src, const Vector3& dest) c
 	}
 	else
 	{
-		Real s = Math::Sqrt( (1+d)*2 );
+		Real s = fast_sqrt( (1+d)*2 );
 		if (s==0) return Quaternion::IDENTITY;
+
+		Vector3 c = v0.crossProduct(v1);
 		Real invs = 1 / s;
 
 
@@ -7419,7 +7241,8 @@ void Beam::updateVisual(float dt)
 	{
 			Vector3 pos=nodes[cparticles[i].emitterNode].smoothpos;
 			Vector3 dir=pos-nodes[cparticles[i].directionNode].smoothpos;
-			dir.normalise();
+		//dir.normalise();
+		dir=fast_normalise(dir);
 			cparticles[i].snode->setPosition(pos);
 			for (int j=0; j<cparticles[i].psys->getNumEmitters(); j++)
 			{

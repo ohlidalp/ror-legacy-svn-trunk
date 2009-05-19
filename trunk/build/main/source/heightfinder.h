@@ -38,7 +38,7 @@ public:
 	virtual ~HeightFinder() {};
 
 	virtual float getHeightAt(float x, float z) = 0;
-	virtual void getNormalAt(float x, float z, Ogre::Vector3 *result, float precision=0.1) = 0;
+	virtual void getNormalAt(float x, float y, float z, Ogre::Vector3 *result, float precision=0.1) = 0;
 };
 
 // Scene-Manager Specific implementations
@@ -50,7 +50,9 @@ class TSMHeightFinder : public HeightFinder
 {
 protected:
 	Ogre::Vector3 scale;
+	Ogre::Vector3 inverse_scale;
 	int size;
+	int size1;
 	char cfgfilename[256];
 	unsigned short *data;
 	float defaulth;
@@ -63,9 +65,8 @@ public:
 	~TSMHeightFinder();
 
 	float getHeightAt(float x, float z);
-	void getNormalAt(float x, float z, Ogre::Vector3 *result, float precision=0.1);
+	void getNormalAt(float x, float y, float z, Ogre::Vector3 *result, float precision=0.1);
 
-	inline int re(int v) {return size-v-1;} // reversed
 };
 
 #endif
