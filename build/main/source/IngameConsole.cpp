@@ -6,7 +6,7 @@ Copyright 2007,2008,2009 Thomas Fischer
 For more information, see http://www.rigsofrods.com/
 
 Rigs of Rods is free software: you can redistribute it and/or modify
-it under the terms of the GNU General Public License version 3, as 
+it under the terms of the GNU General Public License version 3, as
 published by the Free Software Foundation.
 
 Rigs of Rods is distributed in the hope that it will be useful,
@@ -31,7 +31,7 @@ IngameConsole::IngameConsole()
 	consoleOverlay = 0;
 	displaymode=-1;
 	top=width=left=height=0;
-	lineheight = 12; //lineheight = fontheight
+	lineheight = 16; //lineheight = fontheight
 	bordersize = 10;
 	isvisible=false;
 	cursorBlink=false;
@@ -186,11 +186,11 @@ bool IngameConsole::createOverlays()
 		textArea->setPosition(bordersize, bordersize + (lineheight + linespace) * i);
 		textArea->setDimensions(width, lineheight);
 		textArea->setCharHeight(lineheight + 2);
-		textArea->setFontName("VeraMono");
+		textArea->setFontName("Cyberbit");
 		textArea->setValueBottom(0.7);
 		textArea->setValueTop(0.9);
 		textArea->setCaption("");
-		//textArea->setCaption(String("^1Line^7 ")+StringConverter::toString(i));
+		//textArea->setCaption(UTFString("^1Line^7 ")+StringConverter::toString(i));
 		textArea->show();
 		chatLines.push_back(textArea);
 		// Add the text area to the panel
@@ -220,7 +220,7 @@ bool IngameConsole::update(float dt)
 	return true;
 }
 
-bool IngameConsole::addText(String msg, bool addtime)
+bool IngameConsole::addText(UTFString msg, bool addtime)
 {
 	try {
 		chatBuffer.push_back(msg);
@@ -233,7 +233,7 @@ bool IngameConsole::addText(String msg, bool addtime)
 
 void IngameConsole::updateEnterText()
 {
-	static const String cursor = "_";
+	static const UTFString cursor = "_";
 	vector<ColoredTextAreaOverlayElement *>::reverse_iterator enterline = chatLines.rbegin();
 	try
 	{
@@ -245,14 +245,13 @@ void IngameConsole::updateEnterText()
 		{
 			(*enterline)->setCaption("^7> " + enterText);
 		}
-	}
-	catch(...)
+	} catch(Ogre::Exception& e)
 	{
-		(*enterline)->setCaption("^7> ^1CODEC ERROR");
+		(*enterline)->setCaption("^7> ^1CODEC ERROR: "+e.getFullDescription());
 	}
 }
 
-bool IngameConsole::setEnterText(String msg, bool visible, bool cursor)
+bool IngameConsole::setEnterText(UTFString msg, bool visible, bool cursor)
 {
 	enterText = msg;
 	cursorBlink = cursor;
@@ -272,7 +271,7 @@ void IngameConsole::updateDisplay()
 	if(chatLines.size() == 0 || chatBuffer.size() == 0)
 		return;
 	vector<ColoredTextAreaOverlayElement *>::reverse_iterator i;
-	vector<String>::reverse_iterator ib;
+	vector<UTFString>::reverse_iterator ib;
 	// chatLines + 1 because last line is for entering something!
 	for(i = chatLines.rbegin() + 1, ib = chatBuffer.rbegin() + (scrollOffset); i!=chatLines.rend() && ib != chatBuffer.rend(); i++, ib++)
 	{

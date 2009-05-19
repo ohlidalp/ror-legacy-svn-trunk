@@ -6,7 +6,7 @@ Copyright 2007,2008,2009 Thomas Fischer
 For more information, see http://www.rigsofrods.com/
 
 Rigs of Rods is free software: you can redistribute it and/or modify
-it under the terms of the GNU General Public License version 3, as 
+it under the terms of the GNU General Public License version 3, as
 published by the Free Software Foundation.
 
 Rigs of Rods is distributed in the hope that it will be useful,
@@ -268,7 +268,7 @@ void ExampleFrameListener::updateStats(void)
 				t->setColourOperationEx(Ogre::LBX_SOURCE1, Ogre::LBS_MANUAL, Ogre::LBS_CURRENT, ColourValue::White);
 				t->setAlphaOperation(Ogre::LBX_SOURCE1, Ogre::LBS_MANUAL, Ogre::LBS_CURRENT, 0.3);
 				backMat->getTechnique(0)->getPass(0)->setSceneBlending(SBT_TRANSPARENT_ALPHA);
-				
+
 				backMat = MaterialManager::getSingleton().create("linestream_lines", ResourceGroupManager::DEFAULT_RESOURCE_GROUP_NAME);
 				t = backMat->getTechnique(0)->getPass(0)->createTextureUnitState();
 
@@ -362,13 +362,13 @@ void ExampleFrameListener::updateStats(void)
 					netLineStream->setTraceValue(0, speedUp);
 
 					netLineStream->setTraceInfo(0, cr, "Traffic Up: "+String(tmp));
-					
+
 					float speedDown = net->getSpeedDown()/1024.0f;
 					memset(tmp, 0, 10);
 					sprintf(tmp, "%0.1fkB/s", speedDown);
 					netLineStream->setTraceValue(1, speedDown);
 					netLineStream->setTraceInfo(1, cg, "Traffic Down: "+String(tmp));
-					
+
 					netLineStream->moveForward();
 
 					std::map<int, float> &lag = net->getLagData();
@@ -1368,7 +1368,7 @@ ExampleFrameListener::ExampleFrameListener(RenderWindow* win, Camera* cam, Scene
 
 
 	debugCollisions = (SETTINGS.getSetting("Debug Collisions") == "Yes");
-    
+
     xfire_enabled = (SETTINGS.getSetting("XFire") == "Yes");
 
 	externalCameraMode = (SETTINGS.getSetting("External Camera Mode") == "Static")? 1 : 0;
@@ -1446,7 +1446,7 @@ ExampleFrameListener::ExampleFrameListener(RenderWindow* win, Camera* cam, Scene
 
 	//network
 	netmode=(SETTINGS.getSetting("Network enable")=="Yes");
-	
+
 	// check command line args
 	String cmd = SETTINGS.getSetting("cmdline CMD");
 	String cmdAction = "";
@@ -1965,7 +1965,7 @@ void ExampleFrameListener::loadObject(char* name, float px, float py, float pz, 
 			odefFound=false;
 		}
 	}
-	
+
 	//if(!CACHE.checkResourceLoaded(odefname, odefgroup))
 	if(!odefFound)
 	{
@@ -2452,7 +2452,7 @@ bool ExampleFrameListener::updateEvents(float dt)
 		sprintf(tmp1, "%s %d", ssmsg.c_str(), mNumScreenShots);
 		flashMessage(tmp1);
 	}
-	
+
 	if (INPUTENGINE.getEventBoolValueBounce(EV_COMMON_FOV_LESS))
 	{
 		int fov = mCamera->getFOVy().valueDegrees();
@@ -2728,7 +2728,7 @@ bool ExampleFrameListener::updateEvents(float dt)
 					{
 						if (road)
 						{
-							if (!editorfd) 
+							if (!editorfd)
 							{
 								String editorfn = SETTINGS.getSetting("Log Path") + "editor_out.txt";
 								editorfd = fopen(editorfn.c_str(), "a");
@@ -2747,7 +2747,7 @@ bool ExampleFrameListener::updateEvents(float dt)
 						}
 						if (editor)
 						{
-							if (!editorfd) 
+							if (!editorfd)
 							{
 								String editorfn = SETTINGS.getSetting("Log Path") + "editor_out.txt";
 								editorfd = fopen(editorfn.c_str(), "a");
@@ -3765,11 +3765,11 @@ bool ExampleFrameListener::updateEvents(float dt)
 			//if (current_truck!=-1) setCurrentTruck(-1);
 			int rtruck=-1;
 			// search a rescue truck
-			for (int i=0; i<free_truck; i++) 
-				if (trucks[i]->rescuer) 
+			for (int i=0; i<free_truck; i++)
+				if (trucks[i]->rescuer)
 					rtruck=i;
 			if(rtruck == -1)
-			{			
+			{
 				flashMessage("No rescue truck found!", 3);
 			} else
 			{
@@ -3940,7 +3940,7 @@ bool ExampleFrameListener::updateEvents(float dt)
 					if (trucks[free_truck]->engine)
 						trucks[free_truck]->engine->start();
 					setCurrentTruck(free_truck);
-				} else 
+				} else
 				{
 					// if it is a load or trailer, than stay in person mode
 					// but relocate to the new position, so we dont spawn the dialog again
@@ -4262,13 +4262,13 @@ void ExampleFrameListener::hideMap()
 
 void ExampleFrameListener::processConsoleInput()
 {
-	String chatline = INPUTENGINE.getKeyLine();
+	UTFString chatline = INPUTENGINE.getKeyLine();
 
 	if (chatline.size()==0) return;
 	if(netmode)
 	{
 		NETCHAT.addText(net->getNickname(true) + ": ^7" + ColoredTextAreaOverlayElement::StripColors(chatline), false);
-		net->sendChat(const_cast<char *>(chatline.c_str()));
+		net->sendChat( const_cast<char *>(chatline.asUTF8_c_str()));
 	} else
 		NETCHAT.addText(_L("^8 Player: ^7") + chatline);
 
@@ -5049,7 +5049,7 @@ void ExampleFrameListener::loadTerrain(String terrainfile)
 			}
 			densityMap->setFilter(Forests::MAPFILTER_BILINEAR);
 			//densityMap->setMapBounds(TRect(0, 0, mapsizex, mapsizez));
-			
+
 			paged_geometry_t paged;
 			paged.geom = new PagedGeometry();
 			//paged.geom->setTempDir(SETTINGS.getSetting("User Path") + "cache" + SETTINGS.getSetting("dirsep"));
@@ -5071,7 +5071,7 @@ void ExampleFrameListener::loadTerrain(String terrainfile)
 			paged.geom->setPageLoader(treeLoader);
 			treeLoader->setHeightFunction(&getTerrainHeight);
 			if(String(ColorMap) != "none")
-				treeLoader->setColorMap(ColorMap);			
+				treeLoader->setColorMap(ColorMap);
 
 			curTree = mSceneMgr->createEntity(String("paged_")+treemesh+StringConverter::toString(pagedGeometry.size()), treemesh);
 
@@ -5834,7 +5834,7 @@ void ExampleFrameListener::setCurrentTruck(int v)
 		}
 
 		// show minimap and put it into lower left corner
-		if(bigMap) 
+		if(bigMap)
 		{
 			bigMap->setVisibility(true);
 			bigMap->setPosition(0, 0.81, 0.14, 0.19, mWindow);
@@ -6656,7 +6656,7 @@ bool ExampleFrameListener::frameStarted(const FrameEvent& evt)
 						for (int i=0; i<free_truck; i++)
 						{
 							if(!trucks[i]) continue;
-							if (sleepyList[i]) 
+							if (sleepyList[i])
 								trucks[i]->state=GOSLEEP;
 						}
 					}
@@ -6672,13 +6672,13 @@ bool ExampleFrameListener::frameStarted(const FrameEvent& evt)
 			if(!trucks[t]) continue;
 			trucks[t]->updateFlares(dt, (t==current_truck) );
 		}
-		for (t=0; t<free_truck; t++) 
+		for (t=0; t<free_truck; t++)
 		{
 			if(!trucks[t]) continue;
-			if (trucks[t]->state!=SLEEPING) 
+			if (trucks[t]->state!=SLEEPING)
 				rollmode=rollmode || trucks[t]->wheel_contact_requested;
 		}
-		for (t=0; t<free_truck; t++) 
+		for (t=0; t<free_truck; t++)
 		{
 			if(!trucks[t]) continue;
 			trucks[t]->requires_wheel_contact=rollmode;// && !trucks[t]->wheel_contact_requested;
@@ -6788,7 +6788,7 @@ bool ExampleFrameListener::frameStarted(const FrameEvent& evt)
 				TextAreaOverlayElement *taoe=new TextAreaOverlayElement(poename);
 				taoe->setColourTop(ColourValue(0.1, 0.1, 0.1, 1.0));
 				taoe->setColourBottom(ColourValue(0.0, 0.0, 0.0, 1.0));
-				taoe->setFontName("BlueHighway");
+				taoe->setFontName("Cyberbit");
 				taoe->setCharHeight(0.02);
 				taoe->setCaption(nickname);
 				taoe->setLeft(bigMapo->getWidth()*(truckx/mapsizex)+0.01);
@@ -6877,7 +6877,7 @@ void ExampleFrameListener::flashMessage(char* txt, float time, float charHeight)
 	else
 		// set original height
 		flashMessageTE->setCharHeight(0.05f);
-		
+
 	flashOverlay->show();
 	timeUntilUnflash=time;
 }

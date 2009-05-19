@@ -6,7 +6,7 @@ Copyright 2007,2008,2009 Thomas Fischer
 For more information, see http://www.rigsofrods.com/
 
 Rigs of Rods is free software: you can redistribute it and/or modify
-it under the terms of the GNU General Public License version 3, as 
+it under the terms of the GNU General Public License version 3, as
 published by the Free Software Foundation.
 
 Rigs of Rods is distributed in the hope that it will be useful,
@@ -797,6 +797,8 @@ public:
 	int airbrakeval;
 	Vector3 cameranodeacc;
 	int cameranodecount;
+	bool abs_state;
+	float abs_timer;
 
 	Vector3 origin;
 	int free_cab;
@@ -805,7 +807,7 @@ public:
 	void setMeshVisibility(bool visible);
 	bool meshesVisible;
 	inline bool isFiniteNum(float x);
-	
+
 	int getTruckTime() { return nettimer->getMilliseconds(); };
 	int getNetTruckTimeOffset() { return net_toffset; };
 protected:
@@ -864,7 +866,7 @@ protected:
 	Vector3 texcoords[MAX_TEXCOORDS];
 	int collcabs[MAX_CABS];
 	int collcabstype[MAX_CABS];
-	
+
 	int buoycabs[MAX_CABS];
 	int buoycabtypes[MAX_CABS];
 	FlexObj *cabMesh;

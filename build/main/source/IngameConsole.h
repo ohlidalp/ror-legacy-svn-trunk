@@ -6,7 +6,7 @@ Copyright 2007,2008,2009 Thomas Fischer
 For more information, see http://www.rigsofrods.com/
 
 Rigs of Rods is free software: you can redistribute it and/or modify
-it under the terms of the GNU General Public License version 3, as 
+it under the terms of the GNU General Public License version 3, as
 published by the Free Software Foundation.
 
 Rigs of Rods is distributed in the hope that it will be useful,
@@ -44,8 +44,8 @@ public:
 	void toggleVisible(ExampleFrameListener *mefl);
 	static IngameConsole & getInstance();
 	~IngameConsole();
-	bool addText(Ogre::String msg, bool addtime=false);
-	bool setEnterText(Ogre::String msg, bool visible=true, bool cursor=false);
+	bool addText(Ogre::UTFString msg, bool addtime=false);
+	bool setEnterText(Ogre::UTFString msg, bool visible=true, bool cursor=false);
 	void resize(int left, int top, int width, int height);
 	bool getVisible() { return isvisible; };
 	void setVisible(bool visible);
@@ -53,7 +53,7 @@ public:
 	int getFontSize() { return lineheight; };
 	void setFontSize(int size);
 
-	int parseCommand(Ogre::String &msg, std::vector<Ogre::String> &arguments);
+	int parseCommand(Ogre::UTFString &msg, std::vector<Ogre::UTFString> &arguments);
 
 	void scrollPageUp();
 	void scrollPageDown();
@@ -71,9 +71,9 @@ private:
 	int lineheight, bordersize;
 	int displaymode;
 	ExampleFrameListener *mefl;
-	
+
 	// cursor stuff
-	Ogre::String enterText;
+	Ogre::UTFString enterText;
 	bool cursorBlink;
 	bool cursorBlinkState;
 	float lastCursorBlink;
@@ -89,7 +89,7 @@ private:
 
 	Ogre::OverlayContainer *consoleOverlay;
 	std::vector < ColoredTextAreaOverlayElement * > chatLines;
-	std::vector < Ogre::String > chatBuffer;
+	std::vector < Ogre::UTFString > chatBuffer;
 	void updateDisplay();
 };
 

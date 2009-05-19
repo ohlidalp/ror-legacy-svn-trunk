@@ -72,7 +72,7 @@ Beam::~Beam()
 
 	// hide all meshes, prevents deleting stuff while drawing
 	this->setMeshVisibility(false);
-	
+
 	//block until all threads done
 	if (thread_mode==THREAD_HT)
 	{
@@ -361,6 +361,8 @@ Beam::Beam(int tnum, SceneManager *manager, SceneNode *parent, RenderWindow* win
 	smokeRef=0;
 	smoker=NULL;
 	brake=0.0;
+	abs_timer=0.0;
+	abs_state=false;
 	blinktreshpassed=false;
 	blinkingtype=BLINK_NONE;
 	netCustomLightArray[0] = -1;
@@ -963,7 +965,7 @@ void Beam::calcNetwork()
 
 	netBrakeLight = ((flagmask&NETMASK_BRAKES)!=0);
 	netReverseLight = ((flagmask&NETMASK_REVERSE)!=0);
-	
+
 	if(netReverseLight)
 		ssm->trigStart(trucknum, SS_TRIG_REVERSE_GEAR);
 	else
@@ -2630,7 +2632,7 @@ int Beam::loadTruck(char* fname, SceneManager *manager, SceneNode *parent, Real 
 					continue;
 				}
 				if(materialFunctionMapper) materialFunctionMapper->replaceMeshMaterials(te);
-				if(!usedSkin.isNull()) usedSkin->replaceMeshMaterials(te); 
+				if(!usedSkin.isNull()) usedSkin->replaceMeshMaterials(te);
 				props[free_prop].wheel=manager->getRootSceneNode()->createChildSceneNode();
 				props[free_prop].wheel->attachObject(te);
 				props[free_prop].wheelpos=stdpos;
@@ -2647,7 +2649,7 @@ int Beam::loadTruck(char* fname, SceneManager *manager, SceneNode *parent, Real 
 				continue;
 			}
 			if(materialFunctionMapper) materialFunctionMapper->replaceMeshMaterials(te);
-			if(!usedSkin.isNull()) usedSkin->replaceMeshMaterials(te); 
+			if(!usedSkin.isNull()) usedSkin->replaceMeshMaterials(te);
 			props[free_prop].snode=manager->getRootSceneNode()->createChildSceneNode();
 			props[free_prop].snode->attachObject(te);
 			//hack for the spinprops
@@ -2837,7 +2839,7 @@ int Beam::loadTruck(char* fname, SceneManager *manager, SceneNode *parent, Real 
 				continue;
 			}
 			if(materialFunctionMapper) materialFunctionMapper->replaceMeshMaterials(ec);
-			if(!usedSkin.isNull()) usedSkin->replaceMeshMaterials(ec); 
+			if(!usedSkin.isNull()) usedSkin->replaceMeshMaterials(ec);
 			wings[free_wing].cnode = manager->getRootSceneNode()->createChildSceneNode();
 			wings[free_wing].cnode->attachObject(ec);
 			//induced drag
@@ -4036,7 +4038,7 @@ int Beam::loadTruck(char* fname, SceneManager *manager, SceneNode *parent, Real 
 			LogManager::getSingleton().logMessage("error loading mesh: "+String(wname));
 		}
 		if(materialFunctionMapper) materialFunctionMapper->replaceMeshMaterials(ec);
-		if(!usedSkin.isNull()) usedSkin->replaceMeshMaterials(ec); 
+		if(!usedSkin.isNull()) usedSkin->replaceMeshMaterials(ec);
 	};
 	LogManager::getSingleton().logMessage("BEAM: cab ok");
 	//	mWindow->setDebugText("Beam number:"+ StringConverter::toString(free_beam));
@@ -4482,7 +4484,7 @@ void Beam::addWheel(SceneManager *manager, SceneNode *parent, Real radius, Real 
 			vwheels[free_wheel].cnode = manager->getRootSceneNode()->createChildSceneNode();
 			vwheels[free_wheel].cnode->attachObject(ec);
 			if(materialFunctionMapper) materialFunctionMapper->replaceMeshMaterials(ec);
-			if(!usedSkin.isNull()) usedSkin->replaceMeshMaterials(ec); 
+			if(!usedSkin.isNull()) usedSkin->replaceMeshMaterials(ec);
 		}catch(...)
 		{
 			LogManager::getSingleton().logMessage("error loading mesh: "+String(wname));
@@ -4495,7 +4497,7 @@ void Beam::addWheel(SceneManager *manager, SceneNode *parent, Real radius, Real 
 		{
 			Entity *ec = manager->createEntity(wnamei, wname);
 			if(materialFunctionMapper) materialFunctionMapper->replaceMeshMaterials(ec);
-			if(!usedSkin.isNull()) usedSkin->replaceMeshMaterials(ec); 
+			if(!usedSkin.isNull()) usedSkin->replaceMeshMaterials(ec);
 			vwheels[free_wheel].cnode = manager->getRootSceneNode()->createChildSceneNode();
 			vwheels[free_wheel].cnode->attachObject(ec);
 		} catch(...)
@@ -4963,11 +4965,19 @@ bool Beam::frameStep(Real dt, Beam** trucks, int numtrucks)
 	if (dt==0) return true;
 	if(mTimeUntilNextToggle>-1)
 		mTimeUntilNextToggle-= dt;
+
+	abs_timer += dt;
+	if(abs_timer > 2.0f)
+	{
+		abs_state = !abs_state;
+		abs_timer = 0.0f;
+	}
+
 	int i;
 	//            Real dt=evt.timeSinceLastFrame;
 	int steps=100;
 	steps=(int)(2000.0*dt);
-	truckSteps = steps; // copy for the stats 
+	truckSteps = steps; // copy for the stats
 	if (steps>100) steps=100;
 	if (dt>1.0/20.0)
 	{
@@ -6263,7 +6273,7 @@ void Beam::calcForcesEuler(int doUpdate, Real dt, int step, int maxstep, Beam** 
 
 	//		if ((brake!=0.0 || engine_torque!=0.0 || doUpdate)&&free_wheel)
 	int propcounter=0;
-float torques[MAX_WHEELS];
+	float torques[MAX_WHEELS];
 	float newspeeds[MAX_WHEELS];
 	for (i=0; i<free_wheel; i++)
 	{
@@ -6276,17 +6286,25 @@ float torques[MAX_WHEELS];
 			total_torque+=engine_torque/proped_wheels;
 		//braking
 		if (parkingbrake) brake=brakeforce*2.0;
+
 		//directional braking
 		float dbrake=0.0;
 		if (wheels[i].braked==2 && hydrodirstate>0.0 && WheelSpeed<20.0) dbrake=brakeforce*hydrodirstate;
 		if (wheels[i].braked==3 && hydrodirstate<0.0 && WheelSpeed<20.0) dbrake=brakeforce*-hydrodirstate;
+
+		// ABS system
+		/*
+		if(abs_state && fabs(wheels[i].speed) < 0.1f )
+			// remove all brake force when ABS is active and wheel speed is low enough
+			brake = 0.0f;
+		*/
 
 		if ((brake != 0.0 || dbrake != 0.0) && wheels[i].braked && braked_wheels != 0)
 		{
 			if( fabs(wheels[i].speed) > 0.00f )
 				total_torque -= (wheels[i].speed/fabs(wheels[i].speed))*(brake + dbrake);
 			// wheels are stopped
-			else if( fabs(wheels[i].speed) > 0.0f )
+			else if( fabs(wheels[i].speed) > 0.0f)
 				total_torque -= (wheels[i].speed/fabs(wheels[i].speed))*(brake + dbrake)*1.2;
 		}
 
@@ -7285,7 +7303,7 @@ void Beam::updateFlares(float dt, bool isCurrent)
 
 }
 
-void Beam::setBlinkType(blinktype blink) 
+void Beam::setBlinkType(blinktype blink)
 {
 	blinkingtype = blink;
 	if(blink == BLINK_NONE)
@@ -7302,10 +7320,10 @@ void Beam::autoBlinkReset()
 	if(blink == BLINK_LEFT && hydrodirstate < -0.1)
 		// passed the treshold: the turn signal gets locked
 		blinktreshpassed = true;
-	
+
 	if(blink == BLINK_LEFT && blinktreshpassed && hydrodirstate > -0.1)
 	{
-		// steering wheel turned back: turn signal gets autmatically unlocked 
+		// steering wheel turned back: turn signal gets autmatically unlocked
 		setBlinkType(BLINK_NONE);
 		blinktreshpassed = false;
 	}
@@ -7318,7 +7336,7 @@ void Beam::autoBlinkReset()
 	{
 		setBlinkType(BLINK_NONE);
 		blinktreshpassed = false;
-	}	
+	}
 }
 
 void Beam::updateProps()
@@ -8339,7 +8357,7 @@ void Beam::setNetworkInfo(client_t netinfo)
 		netMT->showOnTop(false);
 		netMT->setCharacterHeight(2);
 		netMT->setColor(ColourValue::White);
-		
+
 		if(networkInfo.user_authlevel & AUTH_ADMIN)
 		{
 			netMT->setFontName("highcontrast_red");
