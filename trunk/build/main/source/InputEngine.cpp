@@ -1382,7 +1382,7 @@ bool InputEngine::setup(size_t hwnd, bool capture, bool capturemouse, int _grabM
 
 		//Create all devices (We only catch joystick exceptions here, as, most people have Key/Mouse)
 		mKeyboard = static_cast<Keyboard*>(mInputManager->createInputObject( OISKeyboard, true ));
-		mKeyboard->setTextTranslation(OIS::Keyboard::Ascii);
+		mKeyboard->setTextTranslation(OIS::Keyboard::Unicode);
 
 		if(capturemouse)
 			mMouse = static_cast<Mouse*>(mInputManager->createInputObject( OISMouse, true ));

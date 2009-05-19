@@ -32,6 +32,8 @@ freely, subject to the following restrictions:
 #include "OISJoyStick.h"
 //#include <OgreFrameListener.h>
 #include <OgreWindowEventUtilities.h>
+#include <OgrePrerequisites.h>
+#include <OgreUTFString.h>
 #include <map>
 
 //class ExampleFrameListener;
@@ -358,7 +360,7 @@ public:
 	bool isEventDefined(int eventID);
 	void addEvent(int eventID, event_trigger_t t);
 	bool deleteEventBySUID(int suid);
-	Ogre::String getKeyLine() { return keyInput; };
+	Ogre::UTFString getKeyLine() { return keyInput; };
 	void resetKeyLine() { keyInput=""; };
 	void setRecordInput(bool value) { recordChat=value; };
 	bool getInputsChanged() { return inputsChanged; };
@@ -432,7 +434,7 @@ protected:
 	std::string getEventGroup(Ogre::String eventName);
 	bool mappingLoaded;
 
-	Ogre::String keyInput;
+	Ogre::UTFString keyInput;
 	bool recordChat;
 	bool inputsChanged;
 	bool fileExists(char* filename);

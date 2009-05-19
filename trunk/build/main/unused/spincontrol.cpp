@@ -119,7 +119,7 @@ namespace Ogre {
 				sign=static_cast<TextAreaOverlayElement*>(OverlayManager::getSingleton().createOverlayElement ("TextArea", mName+"-signtext"));
 				sign->setCaption("+");
 				sign->setColour(ColourValue::Black);
-				sign->setFontName("BlueHighway");
+				sign->setFontName("Cyberbit");
 				sign->setCharHeight(0.018);
 				sign->setPosition(0.002,0.012);
 				sign->setWidth(0.01);
@@ -143,7 +143,7 @@ namespace Ogre {
 				taoe[i]=static_cast<TextAreaOverlayElement*>(OverlayManager::getSingleton().createOverlayElement ("TextArea", mName+"-digittext"+StringConverter::toString(i)));
 				taoe[i]->setCaption("-");
 				taoe[i]->setColour(ColourValue::Black);
-				taoe[i]->setFontName("BlueHighway");
+				taoe[i]->setFontName("Cyberbit");
 				taoe[i]->setCharHeight(0.018);
 				taoe[i]->setPosition(0.012+(float)i*0.01+dotoffset,0.012);
 				taoe[i]->setWidth(0.01);
@@ -176,7 +176,7 @@ namespace Ogre {
 				unit=static_cast<TextAreaOverlayElement*>(OverlayManager::getSingleton().createOverlayElement ("TextArea", mName+"-unittext"));
 				unit->setCaption(preunit);
 				unit->setColour(ColourValue::Black);
-				unit->setFontName("BlueHighway");
+				unit->setFontName("Cyberbit");
 				unit->setCharHeight(0.018);
 				unit->setPosition(0.012+(float)numdigits*0.01+dotoffset,0.012);
 				unit->setWidth(0.01);
@@ -202,7 +202,7 @@ namespace Ogre {
 				taoe[i]->setCaption(dtext);
 				bpoe[i]->setMaterialName("gui/active");
 			}
-			else 
+			else
 			{
 				taoe[i]->setCaption("-");
 				bpoe[i]->setMaterialName("gui/background");
@@ -577,7 +577,7 @@ namespace Ogre {
     //-----------------------------------------------------------------------
     String SpinControl::CmdUnit::doGet(const void* target) const
     {
-        return 
+        return
 			static_cast<const SpinControl*>(target)->preunit;
     }
     void SpinControl::CmdUnit::doSet(void* target, const String& val)
