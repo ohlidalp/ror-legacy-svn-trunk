@@ -94,23 +94,23 @@ int CmdKeyInertia::setCmdKeyDelay(int cmdKey,Real startDelay,Real stopDelay, Str
 {	//Delay values should always be greater than 0
 	if (startDelay>0)
 		cmdKeyInertia[cmdKey].startDelay=startDelay;
-	else
-		LogManager::getSingleton().logMessage("Start Delay should be >0");
+	//else
+	//	LogManager::getSingleton().logMessage("Inertia| Start Delay should be >0");
 
 	if (stopDelay>0)
 		cmdKeyInertia[cmdKey].stopDelay=stopDelay;
-	else
-		LogManager::getSingleton().logMessage("Stop Delay should be >0");
+	//else
+	//	LogManager::getSingleton().logMessage("Inertia| Stop Delay should be >0");
 	//if we don't find the spline, we use the "constant" one
-	if (splines.find(startFunction) == splines.end())
-		LogManager::getSingleton().logMessage("Start Function "+startFunction +" not found");
-	else
+	if (splines.find(startFunction) != splines.end())
 		cmdKeyInertia[cmdKey].startSpline=&splines.find(startFunction)->second;
+	//else
+	//	LogManager::getSingleton().logMessage("Inertia| Start Function "+startFunction +" not found");
 	
-	if (splines.find(stopFunction) == splines.end())
-		LogManager::getSingleton().logMessage("Start Function "+stopFunction +" not found");
-	else
+	if (splines.find(stopFunction) != splines.end())
 		cmdKeyInertia[cmdKey].stopSpline=&splines.find(stopFunction)->second;
+	//else
+	//	LogManager::getSingleton().logMessage("Inertia| Start Function "+stopFunction +" not found");
 
 	return 0;
 }
@@ -136,7 +136,7 @@ int CmdKeyInertia::loadDefaultInertiaModels()
 	// emit a warning if we did not found the file
 	if (group.empty())
 	{
-		LogManager::getSingleton().logMessage("inertia_models.cfg not found");
+		LogManager::getSingleton().logMessage("Inertia| inertia_models.cfg not found");
 		return 1;
 	}
 
@@ -194,4 +194,4 @@ void CmdKeyInertia::resetCmdKeyDelay(int maxCmdKeys)
 		cmdKeyInertia[i].lastOutput=0.0;
 		cmdKeyInertia[i].time=0.0;
 	}
-}
+}
