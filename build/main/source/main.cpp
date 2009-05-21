@@ -403,7 +403,7 @@ CSimpleOpt::SOption cmdline_options[] = {
 	{ OPT_WDIR,  ("-wd"),     SO_REQ_SEP },
 	{ OPT_SETUP, ("-setup"),  SO_NONE    },
 	{ OPT_CONFIG,("-config"), SO_NONE    },
-	{ OPT_TRUCKCONFIG,("-truckconfig"), SO_NONE    },
+	{ OPT_TRUCKCONFIG,("-truckconfig"), SO_REQ_SEP    },
 	{ OPT_BUILD, ("-build"),  SO_NONE    },
 	{ OPT_HELP,  ("--help"),  SO_NONE    },
 	{ OPT_CHECKCACHE,  ("-checkcache"),  SO_NONE    },
