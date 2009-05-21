@@ -612,6 +612,10 @@ void GUI_Loader::updateControls(Cache_Entry *entry)
 		for(std::vector<String>::iterator its=entry->sectionconfigs.begin();its!=entry->sectionconfigs.end(); its++)
 			combo_configs->addItem(*its, *its);
 		combo_configs->setIndexSelected(0);
+		
+		truck_configs.clear();
+		String configstr = *combo_configs->getItemDataAt<String>(0);
+		truck_configs.push_back(configstr);
 	} else
 		combo_configs->setVisible(false);
 
