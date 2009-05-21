@@ -1603,10 +1603,15 @@ ExampleFrameListener::ExampleFrameListener(RenderWindow* win, Camera* cam, Scene
 		if(preselected_truck != "")
 		{
 			loading_state=TERRAIN_LOADED;
-			std::vector<String> tconfig;
+			std::vector<String> *tconfig = 0;
 			if(!preselected_truckConfig.empty())
-				tconfig.push_back(preselected_truckConfig);
-			initTrucks(true, preselected_truck.c_str(), "", &tconfig);
+			{
+				std::vector<String> tconfig2;
+				if(!preselected_truckConfig.empty())
+					tconfig2.push_back(preselected_truckConfig);
+				tconfig = &tconfig2;
+			}
+			initTrucks(true, preselected_truck.c_str(), "", tconfig);
 		} else {
 			// no trucks loaded?
 			if (truck_preload_num == 0 || netmode)
