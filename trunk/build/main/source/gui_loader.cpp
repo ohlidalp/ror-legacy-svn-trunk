@@ -611,6 +611,7 @@ void GUI_Loader::updateControls(Cache_Entry *entry)
 		combo_configs->removeAllItems();
 		for(std::vector<String>::iterator its=entry->sectionconfigs.begin();its!=entry->sectionconfigs.end(); its++)
 			combo_configs->addItem(*its, *its);
+		combo_configs->setIndexSelected(0);
 	} else
 		combo_configs->setVisible(false);
 
