@@ -393,7 +393,7 @@ void RigsOfRods::exploreTerrains()
 #define HELPTEXT "--help (this)\n-map <map> (loads map on startup)\n-truck <truck> (loads truck on startup)\n-setup shows the ogre configurator\n-version shows the version information\n\nFor example: RoR.exe -map oahu -truck semi"
 
 // option identifiers
-enum { OPT_HELP, OPT_MAP, OPT_TRUCK, OPT_SETUP, OPT_CMD, OPT_WDIR, OPT_ETM, OPT_BUILD, OPT_CONFIG, OPT_VER, OPT_CHECKCACHE};
+enum { OPT_HELP, OPT_MAP, OPT_TRUCK, OPT_SETUP, OPT_CMD, OPT_WDIR, OPT_ETM, OPT_BUILD, OPT_CONFIG, OPT_VER, OPT_CHECKCACHE, OPT_TRUCKCONFIG};
 
 // option array
 CSimpleOpt::SOption cmdline_options[] = {
@@ -403,6 +403,7 @@ CSimpleOpt::SOption cmdline_options[] = {
 	{ OPT_WDIR,  ("-wd"),     SO_REQ_SEP },
 	{ OPT_SETUP, ("-setup"),  SO_NONE    },
 	{ OPT_CONFIG,("-config"), SO_NONE    },
+	{ OPT_TRUCKCONFIG,("-truckconfig"), SO_NONE    },
 	{ OPT_BUILD, ("-build"),  SO_NONE    },
 	{ OPT_HELP,  ("--help"),  SO_NONE    },
 	{ OPT_CHECKCACHE,  ("-checkcache"),  SO_NONE    },
@@ -493,6 +494,8 @@ int main(int argc, char *argv[])
 				return 0;
 			} else if (args.OptionId() == OPT_TRUCK) {
 				SETTINGS.setSetting("Preselected Truck", String(args.OptionArg()));
+			} else if (args.OptionId() == OPT_TRUCKCONFIG) {
+				SETTINGS.setSetting("Preselected TruckConfig", String(args.OptionArg()));
 			} else if (args.OptionId() == OPT_MAP) {
 				SETTINGS.setSetting("Preselected Map", String(args.OptionArg()));
 			} else if (args.OptionId() == OPT_CMD) {

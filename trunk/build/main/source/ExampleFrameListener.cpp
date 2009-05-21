@@ -1494,9 +1494,11 @@ ExampleFrameListener::ExampleFrameListener(RenderWindow* win, Camera* cam, Scene
 	// preselected map or truck?
 	String preselected_map = SETTINGS.getSetting("Preselected Map");
 	String preselected_truck = SETTINGS.getSetting("Preselected Truck");
+	String preselected_truckConfig = SETTINGS.getSetting("Preselected TruckConfig");
 
 	if(preselected_map != "") LogManager::getSingleton().logMessage("Preselected Map: " + (preselected_map));
 	if(preselected_truck != "") LogManager::getSingleton().logMessage("Preselected Truck: " + (preselected_truck));
+	if(preselected_truckConfig != "") LogManager::getSingleton().logMessage("Preselected Truck Config: " + (preselected_truckConfig));
 
 	//LogManager::getSingleton().logMessage("huette debug 1");
 
@@ -1601,7 +1603,10 @@ ExampleFrameListener::ExampleFrameListener(RenderWindow* win, Camera* cam, Scene
 		if(preselected_truck != "")
 		{
 			loading_state=TERRAIN_LOADED;
-			initTrucks(true, preselected_truck.c_str());
+			std::vector<String> tconfig;
+			if(!preselected_truckConfig.empty())
+				tconfig.push_back(preselected_truckConfig);
+			initTrucks(true, preselected_truck.c_str(), "", &tconfig);
 		} else {
 			// no trucks loaded?
 			if (truck_preload_num == 0 || netmode)
