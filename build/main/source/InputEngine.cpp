@@ -1108,13 +1108,13 @@ eventInfo_t eventInfo[] = {
 		"COMMON_SHOWTRUCKTOOL",
 		EV_COMMON_SHOWTRUCKTOOL,
 		"",
-		_L("")
+		_L("show truck tool")
 	},
 	{
 		"COMMON_RELOAD_ROADS",
 		EV_COMMON_RELOAD_ROADS,
 		"",
-		_L("")
+		_L("reloads the roads (experimental)")
 	},
 	{
 		"COMMON_FULLSCREEN_TOGGLE",
@@ -1240,7 +1240,7 @@ eventInfo_t eventInfo[] = {
 		"CHARACTER_ROT_DOWN",
 		EV_CHARACTER_ROT_DOWN,
 		"rotate view down",
-		_L("")
+		_L("rotate view down")
 	},
 	{
 		"CHARACTER_UP",
