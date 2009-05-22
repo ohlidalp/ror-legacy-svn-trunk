@@ -764,7 +764,7 @@ eventInfo_t eventInfo[] = {
 		"COMMON_TOGGLE_REPLAY_MODE",
 		EV_COMMON_TOGGLE_REPLAY_MODE,
 		"",
-		_L("enable of disable replay mode")
+		_L("enable or disable replay mode")
 	},
 	{
 		"COMMON_TOGGLE_STATS",
