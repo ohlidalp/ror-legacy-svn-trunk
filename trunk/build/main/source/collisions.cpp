@@ -362,6 +362,7 @@ hash_add_next_cell:
 		}
 		if(!found && cell->next)
 		{
+			// ugly recursive cell search
 			cell = (cell_t*) cell->next;
 			goto hash_add_next_cell;
 		}
@@ -377,13 +378,14 @@ hash_add_next_cell:
 			}
 			else if (cell->free >= CELL_BLOCKSIZE && !cell->next)
 			{
-				//if(debugMode)
-				//	Ogre::LogManager::getSingleton().logMessage("COLL: current cell full, should chain cell!");
-				
-				//we may have to chain another cell here!
+				// create new linked cell
+
+				// find empty cell
 				int pos2=pos;
 				while (pos2!=stop && hashtable[pos2].cellid!=UNUSED_CELLID)
 					pos2++;
+
+				// allocate that cell and link it to the current cell
 				if (hashtable[pos2].cellid==UNUSED_CELLID)
 				{
 					//create a new cell
@@ -397,8 +399,6 @@ hash_add_next_cell:
 					free_cell++;
 					cell->next = hashtable[pos2].cell;
 				}
-
-
 			}
 		}
 	}
