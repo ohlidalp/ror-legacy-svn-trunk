@@ -347,6 +347,7 @@ void Collisions::hash_add(int cell_x, int cell_z, int value)
 
 		// check for re-usable cellelements
 		bool found=false;
+hash_add_next_cell:
 		for(int i=0;i<CELL_BLOCKSIZE;i++)
 		{
 			if(cell->element[i] == UNUSED_CELLELEMENT)
@@ -359,6 +360,11 @@ void Collisions::hash_add(int cell_x, int cell_z, int value)
 				break;
 			}
 		}
+		if(!found && cell->next)
+		{
+			cell = (cell_t*) cell->next;
+			goto hash_add_next_cell;
+		}
 		if(!found)
 		{
 			// no reusable cellelement found, creating new one
@@ -369,11 +375,30 @@ void Collisions::hash_add(int cell_x, int cell_z, int value)
 				//Ogre::LogManager::getSingleton().logMessage("COLL: created new cell element!");
 				if (cell->free>largest_cellcount) largest_cellcount=cell->free;
 			}
-			else
+			else if (cell->free >= CELL_BLOCKSIZE && !cell->next)
 			{
-				if(debugMode)
-					Ogre::LogManager::getSingleton().logMessage("COLL: current cell full, should chain cell!");
+				//if(debugMode)
+				//	Ogre::LogManager::getSingleton().logMessage("COLL: current cell full, should chain cell!");
+				
 				//we may have to chain another cell here!
+				int pos2=pos;
+				while (pos2!=stop && hashtable[pos2].cellid!=UNUSED_CELLID)
+					pos2++;
+				if (hashtable[pos2].cellid==UNUSED_CELLID)
+				{
+					//create a new cell
+					hashtable[pos2].cellid=cellid;
+					hashtable[pos2].cell=&cells[free_cell];
+					cells[free_cell].free=1;
+					cells[free_cell].element[0]=value;
+					cells[free_cell].next=0;
+					if (pos!=hashfunc(cellid)) collision_count++;
+					if (cells[free_cell].free>largest_cellcount) largest_cellcount=cells[free_cell].free;
+					free_cell++;
+					cell->next = hashtable[pos2].cell;
+				}
+
+
 			}
 		}
 	}
@@ -624,26 +649,82 @@ bool Collisions::collisionCorrect(Vector3 *refpos)
 	float minctridist=100.0;
 	Vector3 minctripoint;
 
-	if (cell) for (k=0; k<cell->free; k++)
+	if (cell)
 	{
-		if (cell->element[k] != UNUSED_CELLELEMENT && cell->element[k]<MAX_COLLISION_BOXES)
+coll_corr_resume_cell:
+		for (k=0; k<cell->free; k++)
 		{
-			collision_box_t *cbox=&collision_boxes[cell->element[k]];
-			if (refpos->x>cbox->lo_x && refpos->x<cbox->hi_x && refpos->y>cbox->lo_y && refpos->y<cbox->hi_y && refpos->z>cbox->lo_z && refpos->z<cbox->hi_z)
+			if (cell->element[k] != UNUSED_CELLELEMENT && cell->element[k]<MAX_COLLISION_BOXES)
 			{
-				if (cbox->refined || cbox->selfrotated)
+				collision_box_t *cbox=&collision_boxes[cell->element[k]];
+				if (refpos->x>cbox->lo_x && refpos->x<cbox->hi_x && refpos->y>cbox->lo_y && refpos->y<cbox->hi_y && refpos->z>cbox->lo_z && refpos->z<cbox->hi_z)
 				{
-					//we may have a collision, do a change of repere
-					Vector3 Pos=*refpos-cbox->center;
-					if (cbox->refined) Pos=cbox->unrot*Pos;
-					if (cbox->selfrotated)
+					if (cbox->refined || cbox->selfrotated)
 					{
-						Pos=Pos-cbox->selfcenter;
-						Pos=cbox->selfunrot*Pos;
-						Pos=Pos+cbox->selfcenter;
-					}
-					//now test with the inner box
-					if (Pos.x>cbox->relo_x && Pos.x<cbox->rehi_x && Pos.y>cbox->relo_y && Pos.y<cbox->rehi_y && Pos.z>cbox->relo_z && Pos.z<cbox->rehi_z)
+						//we may have a collision, do a change of repere
+						Vector3 Pos=*refpos-cbox->center;
+						if (cbox->refined) Pos=cbox->unrot*Pos;
+						if (cbox->selfrotated)
+						{
+							Pos=Pos-cbox->selfcenter;
+							Pos=cbox->selfunrot*Pos;
+							Pos=Pos+cbox->selfcenter;
+						}
+						//now test with the inner box
+						if (Pos.x>cbox->relo_x && Pos.x<cbox->rehi_x && Pos.y>cbox->relo_y && Pos.y<cbox->rehi_y && Pos.z>cbox->relo_z && Pos.z<cbox->rehi_z)
+						{
+							if (cbox->eventsourcenum!=-1 && permitEvent(cbox->event_filter))
+							{
+#ifdef LUASCRIPT
+								lua->spawnEvent(cbox->eventsourcenum, &eventsources[cbox->eventsourcenum]);
+#endif
+							}
+							if (cbox->camforced && !forcecam)
+							{
+								forcecam=true;
+								forcecampos=cbox->campos;
+							}
+							if (!cbox->virt)
+							{
+								//collision, process as usual
+								//we have a collision
+								contacted=true;
+								//determine which side collided
+								//								Vector3 normal;
+								float min=Pos.z-cbox->relo_z;
+								int mincase=0; //south
+								//								normal=Vector3(0,0,-1);
+								float t=cbox->rehi_z-Pos.z;
+								if (t<min) {min=t; mincase=2;/*normal=Vector3(0,0,1);*/}; //north
+								t=Pos.x-cbox->relo_x;
+								if (t<min) {min=t; mincase=3;/*normal=Vector3(-1,0,0);*/}; //west
+								t=cbox->rehi_x-Pos.x;
+								if (t<min) {min=t; mincase=1;/*normal=Vector3(1,0,0);*/}; //east
+								t=Pos.y-cbox->relo_y;
+								if (t<min) {min=t; mincase=4;/*normal=Vector3(0,-1,0);*/}; //down
+								t=cbox->rehi_y-Pos.y;
+								if (t<min) {min=t; mincase=5;/*normal=Vector3(0,1,0);*/}; //up
+								//okay we are in case mincase
+								//fix position
+								if (mincase==0) Pos.z=cbox->relo_z;
+								if (mincase==1) Pos.x=cbox->rehi_x;
+								if (mincase==2) Pos.z=cbox->rehi_z;
+								if (mincase==3) Pos.x=cbox->relo_x;
+								if (mincase==4) Pos.y=cbox->relo_y;
+								if (mincase==5) Pos.y=cbox->rehi_y;
+								//resume repere
+								if (cbox->selfrotated)
+								{
+									Pos=Pos-cbox->selfcenter;
+									Pos=cbox->selfrot*Pos;
+									Pos=Pos+cbox->selfcenter;
+								}
+								if (cbox->refined) Pos=cbox->rot*Pos;
+								*refpos=Pos+cbox->center;
+							}
+						}
+
+					} else
 					{
 						if (cbox->eventsourcenum!=-1 && permitEvent(cbox->event_filter))
 						{
@@ -658,106 +739,60 @@ bool Collisions::collisionCorrect(Vector3 *refpos)
 						}
 						if (!cbox->virt)
 						{
-							//collision, process as usual
 							//we have a collision
 							contacted=true;
 							//determine which side collided
-							//								Vector3 normal;
-							float min=Pos.z-cbox->relo_z;
+							//							Vector3 normal;
+							float min=refpos->z-cbox->lo_z;
 							int mincase=0; //south
-							//								normal=Vector3(0,0,-1);
-							float t=cbox->rehi_z-Pos.z;
+							//							normal=Vector3(0,0,-1);
+							float t=cbox->hi_z-refpos->z;
 							if (t<min) {min=t; mincase=2;/*normal=Vector3(0,0,1);*/}; //north
-							t=Pos.x-cbox->relo_x;
+							t=refpos->x-cbox->lo_x;
 							if (t<min) {min=t; mincase=3;/*normal=Vector3(-1,0,0);*/}; //west
-							t=cbox->rehi_x-Pos.x;
+							t=cbox->hi_x-refpos->x;
 							if (t<min) {min=t; mincase=1;/*normal=Vector3(1,0,0);*/}; //east
-							t=Pos.y-cbox->relo_y;
+							t=refpos->y-cbox->lo_y;
 							if (t<min) {min=t; mincase=4;/*normal=Vector3(0,-1,0);*/}; //down
-							t=cbox->rehi_y-Pos.y;
+							t=cbox->hi_y-refpos->y;
 							if (t<min) {min=t; mincase=5;/*normal=Vector3(0,1,0);*/}; //up
 							//okay we are in case mincase
 							//fix position
-							if (mincase==0) Pos.z=cbox->relo_z;
-							if (mincase==1) Pos.x=cbox->rehi_x;
-							if (mincase==2) Pos.z=cbox->rehi_z;
-							if (mincase==3) Pos.x=cbox->relo_x;
-							if (mincase==4) Pos.y=cbox->relo_y;
-							if (mincase==5) Pos.y=cbox->rehi_y;
-							//resume repere
-							if (cbox->selfrotated)
-							{
-								Pos=Pos-cbox->selfcenter;
-								Pos=cbox->selfrot*Pos;
-								Pos=Pos+cbox->selfcenter;
-							}
-							if (cbox->refined) Pos=cbox->rot*Pos;
-							*refpos=Pos+cbox->center;
+							if (mincase==0) refpos->z=cbox->lo_z;
+							if (mincase==1) refpos->x=cbox->hi_x;
+							if (mincase==2) refpos->z=cbox->hi_z;
+							if (mincase==3) refpos->x=cbox->lo_x;
+							if (mincase==4) refpos->y=cbox->lo_y;
+							if (mincase==5) refpos->y=cbox->hi_y;
 						}
 					}
-
-				} else
+				}
+			}
+			else
+			{
+				collision_tri_t *ctri=&collision_tris[cell->element[k]-MAX_COLLISION_BOXES];
+				if(!ctri->enabled)
+					continue;
+				//check if this tri is minimal
+				//transform
+				Vector3 point=ctri->forward*(*refpos-ctri->a);
+				//test if within tri collision volume (potential cause of bug!)
+				if (point.x>=0 && point.y>=0 && (point.x+point.y)<=1.0 && point.z<0 && point.z>-0.1)
 				{
-					if (cbox->eventsourcenum!=-1 && permitEvent(cbox->event_filter))
+					if (-point.z<minctridist)
 					{
-#ifdef LUASCRIPT
-						lua->spawnEvent(cbox->eventsourcenum, &eventsources[cbox->eventsourcenum]);
-#endif
-					}
-					if (cbox->camforced && !forcecam)
-					{
-						forcecam=true;
-						forcecampos=cbox->campos;
-					}
-					if (!cbox->virt)
-					{
-						//we have a collision
-						contacted=true;
-						//determine which side collided
-						//							Vector3 normal;
-						float min=refpos->z-cbox->lo_z;
-						int mincase=0; //south
-						//							normal=Vector3(0,0,-1);
-						float t=cbox->hi_z-refpos->z;
-						if (t<min) {min=t; mincase=2;/*normal=Vector3(0,0,1);*/}; //north
-						t=refpos->x-cbox->lo_x;
-						if (t<min) {min=t; mincase=3;/*normal=Vector3(-1,0,0);*/}; //west
-						t=cbox->hi_x-refpos->x;
-						if (t<min) {min=t; mincase=1;/*normal=Vector3(1,0,0);*/}; //east
-						t=refpos->y-cbox->lo_y;
-						if (t<min) {min=t; mincase=4;/*normal=Vector3(0,-1,0);*/}; //down
-						t=cbox->hi_y-refpos->y;
-						if (t<min) {min=t; mincase=5;/*normal=Vector3(0,1,0);*/}; //up
-						//okay we are in case mincase
-						//fix position
-						if (mincase==0) refpos->z=cbox->lo_z;
-						if (mincase==1) refpos->x=cbox->hi_x;
-						if (mincase==2) refpos->z=cbox->hi_z;
-						if (mincase==3) refpos->x=cbox->lo_x;
-						if (mincase==4) refpos->y=cbox->lo_y;
-						if (mincase==5) refpos->y=cbox->hi_y;
+ 						minctridist=-point.z;
+						minctri=ctri;
+						minctripoint=point;
 					}
 				}
 			}
 		}
-		else
+		if(cell->next)
 		{
-			collision_tri_t *ctri=&collision_tris[cell->element[k]-MAX_COLLISION_BOXES];
-			if(!ctri->enabled)
-				continue;
-			//check if this tri is minimal
-			//transform
-			Vector3 point=ctri->forward*(*refpos-ctri->a);
-			//test if within tri collision volume (potential cause of bug!)
-			if (point.x>=0 && point.y>=0 && (point.x+point.y)<=1.0 && point.z<0 && point.z>-0.1)
-			{
-				if (-point.z<minctridist)
-				{
- 					minctridist=-point.z;
-					minctri=ctri;
-					minctripoint=point;
-				}
-			}
+			// continue with next cell
+			cell=(cell_t*)cell->next;
+			goto coll_corr_resume_cell;
 		}
 	}
 	//process minctri collision
@@ -811,26 +846,130 @@ bool Collisions::nodeCollision(node_t *node, bool iscinecam, int contacted, floa
 	float minctridist=100.0;
 	Vector3 minctripoint;
 
-	if (cell) for (k=0; k<cell->free; k++)
+	if (cell)
 	{
-		if (cell->element[k] != UNUSED_CELLELEMENT && cell->element[k]<MAX_COLLISION_BOXES)
+node_coll_resume_cell:
+		for (k=0; k<cell->free; k++)
 		{
-			collision_box_t *cbox=&collision_boxes[cell->element[k]];
-			if (node->AbsPosition.x>cbox->lo_x && node->AbsPosition.x<cbox->hi_x && node->AbsPosition.y>cbox->lo_y && node->AbsPosition.y<cbox->hi_y && node->AbsPosition.z>cbox->lo_z && node->AbsPosition.z<cbox->hi_z)
+			if (cell->element[k] != UNUSED_CELLELEMENT && cell->element[k]<MAX_COLLISION_BOXES)
 			{
-				if (cbox->refined || cbox->selfrotated)
+				collision_box_t *cbox=&collision_boxes[cell->element[k]];
+				if (node->AbsPosition.x>cbox->lo_x && node->AbsPosition.x<cbox->hi_x && node->AbsPosition.y>cbox->lo_y && node->AbsPosition.y<cbox->hi_y && node->AbsPosition.z>cbox->lo_z && node->AbsPosition.z<cbox->hi_z)
 				{
-					//we may have a collision, do a change of repere
-					Vector3 Pos=node->AbsPosition-cbox->center;
-					if (cbox->refined) Pos=cbox->unrot*Pos;
-					if (cbox->selfrotated)
+					if (cbox->refined || cbox->selfrotated)
 					{
-						Pos=Pos-cbox->selfcenter;
-						Pos=cbox->selfunrot*Pos;
-						Pos=Pos+cbox->selfcenter;
-					}
-					//now test with the inner box
-					if (Pos.x>cbox->relo_x && Pos.x<cbox->rehi_x && Pos.y>cbox->relo_y && Pos.y<cbox->rehi_y && Pos.z>cbox->relo_z && Pos.z<cbox->rehi_z)
+						//we may have a collision, do a change of repere
+						Vector3 Pos=node->AbsPosition-cbox->center;
+						if (cbox->refined) Pos=cbox->unrot*Pos;
+						if (cbox->selfrotated)
+						{
+							Pos=Pos-cbox->selfcenter;
+							Pos=cbox->selfunrot*Pos;
+							Pos=Pos+cbox->selfcenter;
+						}
+						//now test with the inner box
+						if (Pos.x>cbox->relo_x && Pos.x<cbox->rehi_x && Pos.y>cbox->relo_y && Pos.y<cbox->rehi_y && Pos.z>cbox->relo_z && Pos.z<cbox->rehi_z)
+						{
+							if (cbox->eventsourcenum!=-1 && permitEvent(cbox->event_filter))
+							{
+#ifdef LUASCRIPT
+								lua->spawnEvent(cbox->eventsourcenum, &eventsources[cbox->eventsourcenum]);
+#endif
+							}
+							if (cbox->camforced && !forcecam)
+							{
+								forcecam=true;
+								forcecampos=cbox->campos;
+							}
+							if (!cbox->virt)
+							{
+								//collision, process as usual
+								//we have a collision
+								contacted++;
+								//setup smoke
+								//float ns=node->Velocity.length();
+								smoky=true;
+								//*nso=ns;
+								//determine which side collided
+								float min=Pos.z-cbox->relo_z;
+								int mincase=0; //south
+								Vector3 normal=Vector3(0,0,-1);
+								float t=cbox->rehi_z-Pos.z;
+								if (t<min) {min=t; mincase=2;normal=Vector3(0,0,1);}; //north
+								t=Pos.x-cbox->relo_x;
+								if (t<min) {min=t; mincase=3;normal=Vector3(-1,0,0);}; //west
+								t=cbox->rehi_x-Pos.x;
+								if (t<min) {min=t; mincase=1;normal=Vector3(1,0,0);}; //east
+								t=Pos.y-cbox->relo_y;
+								if (t<min) {min=t; mincase=4;normal=Vector3(0,-1,0);}; //down
+								t=cbox->rehi_y-Pos.y;
+								if (t<min) {min=t; mincase=5;normal=Vector3(0,1,0);}; //up
+								//okay we are in case mincase
+								//suppress normal composant of speed
+								//								Real vscal=node->Velocity.dotProduct(normal);
+								//								if (vscal<0) node->Velocity=node->Velocity-vscal*normal;
+
+
+								//the old way
+								/*
+								//these operations are isotopic! so they don't need to be rotated
+								if (node->Velocity.length()>SPEED_STOP)
+								{
+								if (node->iswheel)
+								node->Velocity/=1.0+(node->friction*20.0); //boost grip
+								else
+								node->Velocity/=1.0+(node->friction*2.0);
+								//										if (!node->iswheel)
+								//											audio->playGrind(node->Velocity.length());
+								}
+								else
+								node->Velocity=Vector3::ZERO;
+								*/
+
+								//we need the normal, and the depth
+								//resume repere for the normal
+								if (cbox->selfrotated) normal=cbox->selfrot*normal;
+								if (cbox->refined) normal=cbox->rot*normal;
+								primitiveCollision(node, normal, dt, &GROUND_CONCRETE, nso, wspeed);
+								if (ogm) *ogm=&GROUND_CONCRETE;
+								/*
+								//fix position
+								Vector3 prevPos=Pos;
+								if (mincase==0) Pos.z=cbox->relo_z;
+								if (mincase==1) Pos.x=cbox->rehi_x;
+								if (mincase==2) Pos.z=cbox->rehi_z;
+								if (mincase==3) Pos.x=cbox->relo_x;
+								if (mincase==4) Pos.y=cbox->relo_y;
+								if (mincase==5) Pos.y=cbox->rehi_y;
+								float depth=(prevPos-Pos).length();
+								//resume repere
+								if (cbox->selfrotated)
+								{
+									Pos=Pos-cbox->selfcenter;
+									Pos=cbox->selfrot*Pos;
+									Pos=Pos+cbox->selfcenter;
+								}
+								if (cbox->refined) Pos=cbox->rot*Pos;
+								node->AbsPosition=Pos+cbox->center;
+
+								//compute slip velocity vector
+								Vector3 slip=node->Velocity-node->Velocity.dotProduct(normal)*normal;
+								//remove the normal speed component
+								node->Velocity=slip;
+								float slipl=slip.length();
+								if (slipl<0.5) node->Velocity=Vector3::ZERO;
+								else
+								{
+									float loadfactor=(1.0-fabs(depth/corrf)*120.0);
+									if (loadfactor<0) loadfactor=0;
+									float slipfactor=(slipl-0.5)/10.0;
+									if (slipfactor>1) slipfactor=1;
+									node->Velocity*=loadfactor*slipfactor;
+								}*/
+							}
+						}
+
+					} else
 					{
 						if (cbox->eventsourcenum!=-1 && permitEvent(cbox->event_filter))
 						{
@@ -845,7 +984,6 @@ bool Collisions::nodeCollision(node_t *node, bool iscinecam, int contacted, floa
 						}
 						if (!cbox->virt)
 						{
-							//collision, process as usual
 							//we have a collision
 							contacted++;
 							//setup smoke
@@ -853,66 +991,36 @@ bool Collisions::nodeCollision(node_t *node, bool iscinecam, int contacted, floa
 							smoky=true;
 							//*nso=ns;
 							//determine which side collided
-							float min=Pos.z-cbox->relo_z;
+							float min=node->AbsPosition.z-cbox->lo_z;
 							int mincase=0; //south
 							Vector3 normal=Vector3(0,0,-1);
-							float t=cbox->rehi_z-Pos.z;
+							float t=cbox->hi_z-node->AbsPosition.z;
 							if (t<min) {min=t; mincase=2;normal=Vector3(0,0,1);}; //north
-							t=Pos.x-cbox->relo_x;
+							t=node->AbsPosition.x-cbox->lo_x;
 							if (t<min) {min=t; mincase=3;normal=Vector3(-1,0,0);}; //west
-							t=cbox->rehi_x-Pos.x;
+							t=cbox->hi_x-node->AbsPosition.x;
 							if (t<min) {min=t; mincase=1;normal=Vector3(1,0,0);}; //east
-							t=Pos.y-cbox->relo_y;
+							t=node->AbsPosition.y-cbox->lo_y;
 							if (t<min) {min=t; mincase=4;normal=Vector3(0,-1,0);}; //down
-							t=cbox->rehi_y-Pos.y;
+							t=cbox->hi_y-node->AbsPosition.y;
 							if (t<min) {min=t; mincase=5;normal=Vector3(0,1,0);}; //up
-							//okay we are in case mincase
-							//suppress normal composant of speed
-							//								Real vscal=node->Velocity.dotProduct(normal);
-							//								if (vscal<0) node->Velocity=node->Velocity-vscal*normal;
-
-
-							//the old way
-							/*
-							//these operations are isotopic! so they don't need to be rotated
-							if (node->Velocity.length()>SPEED_STOP)
-							{
-							if (node->iswheel)
-							node->Velocity/=1.0+(node->friction*20.0); //boost grip
-							else
-							node->Velocity/=1.0+(node->friction*2.0);
-							//										if (!node->iswheel)
-							//											audio->playGrind(node->Velocity.length());
-							}
-							else
-							node->Velocity=Vector3::ZERO;
-							*/
-
-							//we need the normal, and the depth
+							//we need the normal
 							//resume repere for the normal
 							if (cbox->selfrotated) normal=cbox->selfrot*normal;
 							if (cbox->refined) normal=cbox->rot*normal;
+
 							primitiveCollision(node, normal, dt, &GROUND_CONCRETE, nso, wspeed);
 							if (ogm) *ogm=&GROUND_CONCRETE;
-							/*
-							//fix position
-							Vector3 prevPos=Pos;
-							if (mincase==0) Pos.z=cbox->relo_z;
-							if (mincase==1) Pos.x=cbox->rehi_x;
-							if (mincase==2) Pos.z=cbox->rehi_z;
-							if (mincase==3) Pos.x=cbox->relo_x;
-							if (mincase==4) Pos.y=cbox->relo_y;
-							if (mincase==5) Pos.y=cbox->rehi_y;
-							float depth=(prevPos-Pos).length();
-							//resume repere
-							if (cbox->selfrotated)
-							{
-								Pos=Pos-cbox->selfcenter;
-								Pos=cbox->selfrot*Pos;
-								Pos=Pos+cbox->selfcenter;
-							}
-							if (cbox->refined) Pos=cbox->rot*Pos;
-							node->AbsPosition=Pos+cbox->center;
+							/*//fix position
+							Vector3 prevPos=node->AbsPosition;
+							if (mincase==0) node->AbsPosition.z=cbox->lo_z;
+							if (mincase==1) node->AbsPosition.x=cbox->hi_x;
+							if (mincase==2) node->AbsPosition.z=cbox->hi_z;
+							if (mincase==3) node->AbsPosition.x=cbox->lo_x;
+							if (mincase==4) node->AbsPosition.y=cbox->lo_y;
+							if (mincase==5) node->AbsPosition.y=cbox->hi_y;
+							float depth=(prevPos-node->AbsPosition).length();
+
 
 							//compute slip velocity vector
 							Vector3 slip=node->Velocity-node->Velocity.dotProduct(normal)*normal;
@@ -927,99 +1035,36 @@ bool Collisions::nodeCollision(node_t *node, bool iscinecam, int contacted, floa
 								float slipfactor=(slipl-0.5)/10.0;
 								if (slipfactor>1) slipfactor=1;
 								node->Velocity*=loadfactor*slipfactor;
-							}*/
+							}
+							*/
 						}
 					}
-
-				} else
+				}
+			}
+			else
+			{
+				//tri collision
+				collision_tri_t *ctri=&collision_tris[cell->element[k]-MAX_COLLISION_BOXES];
+				//check if this tri is minimal
+				//transform
+				Vector3 point=ctri->forward*(node->AbsPosition-ctri->a);
+				//test if within tri collision volume (potential cause of bug!)
+				if (point.x>=0 && point.y>=0 && (point.x+point.y)<=1.0 && point.z<0 && point.z>-0.1)
 				{
-					if (cbox->eventsourcenum!=-1 && permitEvent(cbox->event_filter))
+					if (-point.z<minctridist)
 					{
-#ifdef LUASCRIPT
-						lua->spawnEvent(cbox->eventsourcenum, &eventsources[cbox->eventsourcenum]);
-#endif
-					}
-					if (cbox->camforced && !forcecam)
-					{
-						forcecam=true;
-						forcecampos=cbox->campos;
-					}
-					if (!cbox->virt)
-					{
-						//we have a collision
-						contacted++;
-						//setup smoke
-						//float ns=node->Velocity.length();
-						smoky=true;
-						//*nso=ns;
-						//determine which side collided
-						float min=node->AbsPosition.z-cbox->lo_z;
-						int mincase=0; //south
-						Vector3 normal=Vector3(0,0,-1);
-						float t=cbox->hi_z-node->AbsPosition.z;
-						if (t<min) {min=t; mincase=2;normal=Vector3(0,0,1);}; //north
-						t=node->AbsPosition.x-cbox->lo_x;
-						if (t<min) {min=t; mincase=3;normal=Vector3(-1,0,0);}; //west
-						t=cbox->hi_x-node->AbsPosition.x;
-						if (t<min) {min=t; mincase=1;normal=Vector3(1,0,0);}; //east
-						t=node->AbsPosition.y-cbox->lo_y;
-						if (t<min) {min=t; mincase=4;normal=Vector3(0,-1,0);}; //down
-						t=cbox->hi_y-node->AbsPosition.y;
-						if (t<min) {min=t; mincase=5;normal=Vector3(0,1,0);}; //up
-						//we need the normal
-						//resume repere for the normal
-						if (cbox->selfrotated) normal=cbox->selfrot*normal;
-						if (cbox->refined) normal=cbox->rot*normal;
-
-						primitiveCollision(node, normal, dt, &GROUND_CONCRETE, nso, wspeed);
-						if (ogm) *ogm=&GROUND_CONCRETE;
-						/*//fix position
-						Vector3 prevPos=node->AbsPosition;
-						if (mincase==0) node->AbsPosition.z=cbox->lo_z;
-						if (mincase==1) node->AbsPosition.x=cbox->hi_x;
-						if (mincase==2) node->AbsPosition.z=cbox->hi_z;
-						if (mincase==3) node->AbsPosition.x=cbox->lo_x;
-						if (mincase==4) node->AbsPosition.y=cbox->lo_y;
-						if (mincase==5) node->AbsPosition.y=cbox->hi_y;
-						float depth=(prevPos-node->AbsPosition).length();
-
-
-						//compute slip velocity vector
-						Vector3 slip=node->Velocity-node->Velocity.dotProduct(normal)*normal;
-						//remove the normal speed component
-						node->Velocity=slip;
-						float slipl=slip.length();
-						if (slipl<0.5) node->Velocity=Vector3::ZERO;
-						else
-						{
-							float loadfactor=(1.0-fabs(depth/corrf)*120.0);
-							if (loadfactor<0) loadfactor=0;
-							float slipfactor=(slipl-0.5)/10.0;
-							if (slipfactor>1) slipfactor=1;
-							node->Velocity*=loadfactor*slipfactor;
-						}
-						*/
+						minctridist=-point.z;
+						minctri=ctri;
+						minctripoint=point;
 					}
 				}
 			}
 		}
-		else
+		if(cell->next)
 		{
-			//tri collision
-			collision_tri_t *ctri=&collision_tris[cell->element[k]-MAX_COLLISION_BOXES];
-			//check if this tri is minimal
-			//transform
-			Vector3 point=ctri->forward*(node->AbsPosition-ctri->a);
-			//test if within tri collision volume (potential cause of bug!)
-			if (point.x>=0 && point.y>=0 && (point.x+point.y)<=1.0 && point.z<0 && point.z>-0.1)
-			{
-				if (-point.z<minctridist)
-				{
-					minctridist=-point.z;
-					minctri=ctri;
-					minctripoint=point;
-				}
-			}
+			// continue with next cell
+			cell=(cell_t*)cell->next;
+			goto node_coll_resume_cell;
 		}
 	}
 	//process minctri collision
@@ -1238,12 +1283,14 @@ int Collisions::createCollisionDebugVisualization()
 		p->createTextureUnitState()->setColourOperationEx(LBX_MODULATE, LBS_MANUAL, LBS_CURRENT, ColourValue(f*2.0, 2.0*(1.0-f), 0.2, 0.7));
 		p->setSceneBlending(Ogre::SBT_TRANSPARENT_ALPHA);
 		p->setLightingEnabled(false);
+		p->setDepthWriteEnabled(false);
 		p->setDepthBias(3, 3);
 		p->setCullingMode(Ogre::CULL_NONE);
 
 		Pass *p2 = mat->getTechnique(0)->createPass();
 		p2->setSceneBlending(Ogre::SBT_TRANSPARENT_ALPHA);
 		p2->setLightingEnabled(false);
+		p2->setDepthWriteEnabled(false);
 		p2->setDepthBias(3, 3);
 		p2->setCullingMode(Ogre::CULL_NONE);
 		p2->setSceneBlending(Ogre::SBT_TRANSPARENT_ALPHA);
@@ -1257,14 +1304,13 @@ int Collisions::createCollisionDebugVisualization()
 
 	for(int x=0; x<(int)(mefl->mapsizex); x+=(int)CELL_SIZE)
 	{
-    for(int z=0; z<(int)(mefl->mapsizez); z+=(int)CELL_SIZE)
+		for(int z=0; z<(int)(mefl->mapsizez); z+=(int)CELL_SIZE)
 		{
 			int cellx = (int)(x/(float)CELL_SIZE);
 			int cellz = (int)(z/(float)CELL_SIZE);
 			cell_t *cell=hash_find(cellx, cellz);
 			if(cell)
 			{
-				float percent = cell->free / (float)CELL_BLOCKSIZE;
 				float groundheight = -9999;
 				float x2 = x+CELL_SIZE;
 				float z2 = z+CELL_SIZE;
@@ -1285,7 +1331,15 @@ int Collisions::createCollisionDebugVisualization()
 				groundheight+=0.1; // 10 cm hover
 				// ground height should fit
 
-				String matName = "mat-coll-dbg-"+StringConverter::toString((int)(percent*100));
+				int deep = 0, cc=cell->free;
+				if(cell->next) { deep++; cc+=((cell_t*)cell->next)->free; };
+				if(cell->next && ((cell_t*)cell->next)->next) { deep++; cc+=((cell_t*)((cell_t*)cell->next)->next)->free; };
+				if(cell->next && ((cell_t*)cell->next)->next && ((cell_t*)((cell_t*)cell->next)->next)->next) { deep++; cc+=((cell_t*)((cell_t*)((cell_t*)cell->next)->next)->next)->free; };
+				float percent = cc / (float)CELL_BLOCKSIZE;
+
+				float percentd = percent;
+				if(percentd > 1) percentd = 1;
+				String matName = "mat-coll-dbg-"+StringConverter::toString((int)(percentd*100));
 				String cell_name="("+StringConverter::toString(cellx)+","+ StringConverter::toString(cellz)+")";
 
 				ManualObject *mo =  mSceneMgr->createManualObject("collisionDebugVisualization"+cell_name);
@@ -1318,9 +1372,10 @@ int Collisions::createCollisionDebugVisualization()
 				mo_node->attachObject(mo);
 
 
+
 				// setup the label
 				String labelName = "label_"+cell_name;
-				String labelCaption = cell_name+" "+StringConverter::toString(percent*100,2) + "% usage ("+StringConverter::toString(cell->free)+"/"+StringConverter::toString(CELL_BLOCKSIZE)+")";
+				String labelCaption = cell_name+" "+StringConverter::toString(percent*100,2) + "% usage ("+StringConverter::toString(cc)+"/"+StringConverter::toString(CELL_BLOCKSIZE)+") DEEP: " + StringConverter::toString(deep);
 				MovableText *mt = new MovableText(labelName, labelCaption);
 				mt->setFontName("highcontrast_black");
 				mt->setTextAlignment(MovableText::H_CENTER, MovableText::V_ABOVE);
