@@ -2548,7 +2548,7 @@ bool ExampleFrameListener::updateEvents(float dt)
 				if(person)
 					person->update(dt);
 				//camera mode
-				if (INPUTENGINE.getEventBoolValueBounce(EV_CAMERA_CHANGE))
+				if (INPUTENGINE.getEventBoolValueBounce(EV_CAMERA_CHANGE) && cameramode != CAMERA_FREE && cameramode != CAMERA_FREE_FIXED)
 				{
 					if (cameramode==CAMERA_INT)
 					{
@@ -3382,7 +3382,7 @@ bool ExampleFrameListener::updateEvents(float dt)
 					trucks[current_truck]->beaconsToggle();
 				}
 				//camera mode
-				if (INPUTENGINE.getEventBoolValueBounce(EV_CAMERA_CHANGE))
+				if (INPUTENGINE.getEventBoolValueBounce(EV_CAMERA_CHANGE) && cameramode != CAMERA_FREE && cameramode != CAMERA_FREE_FIXED)
 				{
 					if (cameramode==CAMERA_INT && trucks[current_truck]->currentcamera<trucks[current_truck]->freecinecamera-1)
 					{
