@@ -4721,7 +4721,8 @@ void Beam::init_node(int pos, Real x, Real y, Real z, int type, Real m, int iswh
 	nodes[pos].overrideMass=false;
 	nodes[pos].id = id;
 	nodes[pos].colltesttimer=0;
-	nodes[pos].toblock=0;
+	nodes[pos].iIsSkin=false;
+	nodes[pos].isSkin=nodes[pos].iIsSkin;
 	nodes[pos].iIsSkin=false;
 	nodes[pos].isSkin=nodes[pos].iIsSkin;
 //		nodes[pos].tsmooth=Vector3::ZERO;
@@ -5303,14 +5304,14 @@ void Beam::calcForcesEuler(int doUpdate, Real dt, int step, int maxstep, Beam** 
 
 							if (sflen>beams[i].maxposstress)
 							{
-								increased_accuracy=1;
+								if ( beams[i].p1->iswheel==0 && beams[i].p2->iswheel==0 ) increased_accuracy=1;
 								beams[i].maxposstress=sflen;
 								beams[i].L=beams[i].refL*(1.0-0.2f*(beams[i].maxposstress+beams[i].maxnegstress)/(beams[i].strength-beams[i].default_deform));
 							}
 
 							if (sflen<beams[i].maxnegstress)
 							{
-								increased_accuracy=1;
+								if ( beams[i].p1->iswheel==0 && beams[i].p2->iswheel==0 ) increased_accuracy=1;
 								beams[i].maxnegstress=sflen;
 								beams[i].L=beams[i].refL*(1.0-0.2f*(beams[i].maxposstress+beams[i].maxnegstress)/(beams[i].strength-beams[i].default_deform));
 							}
@@ -5318,12 +5319,13 @@ void Beam::calcForcesEuler(int doUpdate, Real dt, int step, int maxstep, Beam** 
 
 						if (flen>beams[i].strength)
 						{
-							increased_accuracy=1;
 							if(beams[i].strength != 0)
 							{
 								ssm->modulate(trucknum, SS_MOD_BREAK, (flen-beams[i].strength)/(float)(beams[i].strength));
 								ssm->trigOnce(trucknum, SS_TRIG_BREAK);
 							}
+							
+							if ( beams[i].p1->iswheel==0 && beams[i].p2->iswheel==0 ) increased_accuracy=1;
 							beams[i].broken=1;
 							beams[i].disabled=1;
 							beams[i].p1->Forces-=beams[i].lastforce=f;
@@ -5635,8 +5637,8 @@ void Beam::calcForcesEuler(int doUpdate, Real dt, int step, int maxstep, Beam** 
 				int contacted=0;
 				float ns=0;
 				ground_model_t *gm=&GROUND_GRAVEL;
-				if ((contacted=collisions->groundCollision(&nodes[i], nodes[i].colltesttimer, &gm, WheelSpeed)) |
-				    collisions->nodeCollision(&nodes[i], i==cinecameranodepos[currentcamera], contacted, nodes[i].colltesttimer, &ns, &gm, WheelSpeed))
+				if ((contacted=collisions->groundCollision(&nodes[i], nodes[i].colltesttimer, &gm)) |
+					collisions->nodeCollision(&nodes[i], i==cinecameranodepos[currentcamera], contacted, nodes[i].colltesttimer, &ns, &gm))
 				{
 					//FX
 					int trailtype=contacted?2:4;
@@ -5707,17 +5709,10 @@ void Beam::calcForcesEuler(int doUpdate, Real dt, int step, int maxstep, Beam** 
 		//integration
 		if (!nodes[i].locked)
 		{
-				if (nodes[i].toblock)
-				{
-					nodes[i].Velocity=nodes[i].Forces*(dt*nodes[i].inverted_mass);
-					nodes[i].toblock=0;
-				} else
-				{
 					nodes[i].Velocity+=nodes[i].Forces*(dt*nodes[i].inverted_mass);
 					nodes[i].RelPosition+=nodes[i].Velocity*dt;
 					nodes[i].AbsPosition=nodes[i].RelPosition+origin;
 				}
-		}
 		if (nodes[i].AbsPosition.x>tmaxx) tmaxx=nodes[i].AbsPosition.x;
 		else if (nodes[i].AbsPosition.x<tminx) tminx=nodes[i].AbsPosition.x;
 		if (nodes[i].AbsPosition.y>tmaxy) tmaxy=nodes[i].AbsPosition.y;

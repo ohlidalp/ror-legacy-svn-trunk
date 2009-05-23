@@ -232,7 +232,6 @@ typedef struct _node
 	Vector3 buoyanceForce;
 	int id;
 	float colltesttimer;
-	int toblock;
 //	Vector3 tsmooth;
 } node_t;
 

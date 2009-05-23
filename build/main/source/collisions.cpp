@@ -829,7 +829,7 @@ int Collisions::enableCollisionTri(int number, bool enable)
 	return 0;
 }
 
-bool Collisions::nodeCollision(node_t *node, bool iscinecam, int contacted, float dt, float* nso, ground_model_t** ogm, float wspeed)
+bool Collisions::nodeCollision(node_t *node, bool iscinecam, int contacted, float dt, float* nso, ground_model_t** ogm)
 {
 	bool smoky=false;
 	//float corrf=1.0;
@@ -904,70 +904,15 @@ node_coll_resume_cell:
 								if (t<min) {min=t; mincase=4;normal=Vector3(0,-1,0);}; //down
 								t=cbox->rehi_y-Pos.y;
 								if (t<min) {min=t; mincase=5;normal=Vector3(0,1,0);}; //up
-								//okay we are in case mincase
-								//suppress normal composant of speed
-								//								Real vscal=node->Velocity.dotProduct(normal);
-								//								if (vscal<0) node->Velocity=node->Velocity-vscal*normal;
-
-
-								//the old way
-								/*
-								//these operations are isotopic! so they don't need to be rotated
-								if (node->Velocity.length()>SPEED_STOP)
-								{
-								if (node->iswheel)
-								node->Velocity/=1.0+(node->friction*20.0); //boost grip
-								else
-								node->Velocity/=1.0+(node->friction*2.0);
-								//										if (!node->iswheel)
-								//											audio->playGrind(node->Velocity.length());
-								}
-								else
-								node->Velocity=Vector3::ZERO;
-								*/
 
 								//we need the normal, and the depth
 								//resume repere for the normal
 								if (cbox->selfrotated) normal=cbox->selfrot*normal;
 								if (cbox->refined) normal=cbox->rot*normal;
-								primitiveCollision(node, normal, dt, &GROUND_CONCRETE, nso, wspeed);
+								primitiveCollision(node, normal, dt, &GROUND_CONCRETE, nso);
 								if (ogm) *ogm=&GROUND_CONCRETE;
-								/*
-								//fix position
-								Vector3 prevPos=Pos;
-								if (mincase==0) Pos.z=cbox->relo_z;
-								if (mincase==1) Pos.x=cbox->rehi_x;
-								if (mincase==2) Pos.z=cbox->rehi_z;
-								if (mincase==3) Pos.x=cbox->relo_x;
-								if (mincase==4) Pos.y=cbox->relo_y;
-								if (mincase==5) Pos.y=cbox->rehi_y;
-								float depth=(prevPos-Pos).length();
-								//resume repere
-								if (cbox->selfrotated)
-								{
-									Pos=Pos-cbox->selfcenter;
-									Pos=cbox->selfrot*Pos;
-									Pos=Pos+cbox->selfcenter;
 								}
-								if (cbox->refined) Pos=cbox->rot*Pos;
-								node->AbsPosition=Pos+cbox->center;
-
-								//compute slip velocity vector
-								Vector3 slip=node->Velocity-node->Velocity.dotProduct(normal)*normal;
-								//remove the normal speed component
-								node->Velocity=slip;
-								float slipl=slip.length();
-								if (slipl<0.5) node->Velocity=Vector3::ZERO;
-								else
-								{
-									float loadfactor=(1.0-fabs(depth/corrf)*120.0);
-									if (loadfactor<0) loadfactor=0;
-									float slipfactor=(slipl-0.5)/10.0;
-									if (slipfactor>1) slipfactor=1;
-									node->Velocity*=loadfactor*slipfactor;
-								}*/
 							}
-						}
 
 					} else
 					{
@@ -1008,8 +953,7 @@ node_coll_resume_cell:
 							//resume repere for the normal
 							if (cbox->selfrotated) normal=cbox->selfrot*normal;
 							if (cbox->refined) normal=cbox->rot*normal;
-
-							primitiveCollision(node, normal, dt, &GROUND_CONCRETE, nso, wspeed);
+							primitiveCollision(node, normal, dt, &GROUND_CONCRETE, nso);
 							if (ogm) *ogm=&GROUND_CONCRETE;
 							/*//fix position
 							Vector3 prevPos=node->AbsPosition;
@@ -1080,7 +1024,7 @@ node_coll_resume_cell:
 		//we need the normal
 		//resume repere for the normal
 		Vector3 normal=minctri->reverse*Vector3::UNIT_Z;
-		primitiveCollision(node, normal, dt, minctri->gm, nso, wspeed);
+		primitiveCollision(node, normal, dt, minctri->gm, nso);
 		if (ogm) *ogm=minctri->gm;
 		/*
 		float depth=-minctripoint.z;
@@ -1183,7 +1127,7 @@ bool Collisions::isInside(Vector3 pos, collision_box_t *cbox, float border)
 	return false;
 }
 
-bool Collisions::groundCollision(node_t *node, float dt, ground_model_t** ogm, float wspeed)
+bool Collisions::groundCollision(node_t *node, float dt, ground_model_t** ogm)
 {
 	if (!hfinder) return false;
 	ground_model_t *gm=&GROUND_GRAVEL; //to be determined by the landuse map
@@ -1198,67 +1142,52 @@ bool Collisions::groundCollision(node_t *node, float dt, ground_model_t** ogm, f
 		//collision!
 		Vector3 normal;
 		hfinder->getNormalAt(node->AbsPosition.x, v, node->AbsPosition.z, &normal);
-
-		/*  KEPT for FUTURE REFERENCE
-		Plane sp=Plane(normal, Vector3(node->AbsPosition.x, v, node->AbsPosition.z));
-		float vlen=node->Velocity.length();
-		//back trajectory
-		Ray rt=Ray(node->AbsPosition, -(node->Velocity/vlen));
-		//Ray rt=Ray(node->AbsPosition, normal);
-		//point of penetration
-		Vector3 pp;
-		std::pair<bool, Real> rpair=rt.intersects(sp);
-		if (rpair.first && rpair.second<=vlen*dt)
-		{
-		pp=rt.getPoint(rpair.second);
-		} else
-		{
-		//wtf?
-		rt=Ray(node->AbsPosition, normal);
-		//point of surface
-		rpair=rt.intersects(sp);
-		if (rpair.first)
-		pp=rt.getPoint(rpair.second);
-		else
-		pp=Vector3(node->AbsPosition.x, v, node->AbsPosition.z);
-		}
-		Vector3 depthcorr=node->AbsPosition-pp;
-		*/
-		primitiveCollision(node, normal, dt, gm, NULL, wspeed);
+		primitiveCollision(node, normal, dt, gm, NULL);
 		return true;
 	}
 	return false;
 }
 
-void Collisions::primitiveCollision(node_t *node, Vector3 normal, float dt, ground_model_t* gm, float* nso, float wspeed)
+void Collisions::primitiveCollision(node_t *node, Vector3 normal, float dt, ground_model_t* gm, float* nso)
 {
 	//normal velocity
 	float nvel=node->Velocity.dotProduct(normal);
 	Vector3 slip=node->Velocity-nvel*normal;
-	//Vector3 slip=Plane(normal, 0).projectVector(node->Velocity);
-	//normalize slip vector
-	float slipv=slip.length();
+	float slipv=slip.squaredLength();
+	float invslipv=fast_invSqrt(slipv);
+	slipv=slipv*invslipv;
 
 	if (nso) *nso=slipv;
-	if (slipv!=0.0) slip=slip/slipv; else slip=Vector3::ZERO;
-//	node->toblock=(wspeed<0.5 && wspeed>-0.5) && (slipv*node->mass<5.0) && (nvel*node->mass<0.5);
-	node->toblock=(slipv<gm->va) && (nvel*node->mass<0.5);
+	if (slipv!=0.0) slip=slip*invslipv; else slip=Vector3::ZERO;
 	//steady force
-	float fns=-node->Forces.dotProduct(normal);
-	float fnn=fns;
+	float fns_orig=node->Forces.dotProduct(normal);
+	float fnn=-fns_orig;
 	//impact force
 	if (nvel<0)
 	{
-		fnn+=-nvel*node->mass*gm->strength/dt; //Newton's second law
-		fns+=-nvel*node->mass/dt; //Newton's second law
+		float tmp=-nvel*node->mass/dt;
+		fnn+=tmp*gm->strength; //Newton's second law
 	}
 	if (fnn<0) fnn=0;
-	if (fns<0) fns=0;
-	//Stribek model
-	float g=gm->mc+(gm->ms-gm->mc)*exp(-pow(slipv/gm->vs, gm->alpha));
-	float ff=-(g+gm->t2*slipv)*fns;
-	//add reaction force
+
+	float ff;
+	// If the velocity that we slip is lower than adhesion velocity and
+	// we have a downforce and the slip forces are lower than static friction
+	// forces then it's time to go into static friction physics mode.
+        // This code is a direct translation of textbook static friction physics
+	if ( slipv<(gm->va) && fnn>0 && fabs(node->Forces.dotProduct(slip))<=fabs((gm->ms)*fnn))
+	{
+		// Static friction model (with a little smoothing to help the integrator deal with it)
+		ff=-(gm->ms)*fnn*(1-approx_exp(-fabs(slipv/gm->va)));
+		node->Forces=(fns_orig+fnn)*normal + ff*slip;
+	}
+	else
+	{
+		//Stribek model. It also comes directly from textbooks.
+		float g=gm->mc+(gm->ms-gm->mc)*approx_exp(-approx_pow(slipv/gm->vs, gm->alpha));
+		ff=-(g+gm->t2*slipv)*fnn;
 	node->Forces+=fnn*normal+ff*slip;
+}
 }
 
 int Collisions::createCollisionDebugVisualization()
