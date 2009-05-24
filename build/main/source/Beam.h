@@ -209,6 +209,8 @@ typedef struct _node
 	Vector3 smoothpos; //absolute, per-frame smooth, must be used for visual effects only
 	Vector3 Velocity;
 	Vector3 Forces;
+	Vector3 lastNormal;
+	Vector3 lastNormal;
 	int locked;
 	int iswheel; //0=no, 1, 2=wheel1  3,4=wheel2, etc...
 //	int wheelid;

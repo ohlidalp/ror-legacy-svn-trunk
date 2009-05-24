@@ -1171,6 +1171,7 @@ void Collisions::primitiveCollision(node_t *node, Vector3 normal, float dt, grou
 		fns+=tmp;
 	}
 	if (fnn<0) fnn=0;
+	if (fns<0) fns=0;
 
 	float ff;
 	// If the velocity that we slip is lower than adhesion velocity and
