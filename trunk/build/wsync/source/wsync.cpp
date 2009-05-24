@@ -148,6 +148,13 @@ int WSync::sync(boost::filesystem::path localDir, string server, string remoteDi
 		printf("error reading remote file index!\n");
 		return -2;
 	}
+
+	if(hashMapRemote.size() == 0)
+	{
+		printf("remote file index is invalid\n");
+		printf("Connection Problems / Server down?\n");
+		return -3;
+	}
 	// remove that temp file as well
 	remove(remoteFileIndex);
 
