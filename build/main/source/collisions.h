@@ -228,7 +228,7 @@ public:
 	bool isInside(Vector3 pos, char* instance, char* box, float border=0);
 	bool isInside(Vector3 pos, collision_box_t *cbox, float border=0);
 	bool groundCollision(node_t *node, float dt, ground_model_t** gm);
-	void primitiveCollision(node_t *node, Vector3 normal, float dt, ground_model_t* gm, float* nso);
+	void primitiveCollision(node_t *node, Vector3 normal, float dt, ground_model_t* gm, float* nso, float penetration=0);
 	void setHfinder(HeightFinder *hf);
 	void printStats();
 	
