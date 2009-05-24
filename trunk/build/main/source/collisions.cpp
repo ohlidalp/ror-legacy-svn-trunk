@@ -1142,13 +1142,13 @@ bool Collisions::groundCollision(node_t *node, float dt, ground_model_t** ogm)
 		//collision!
 		Vector3 normal;
 		hfinder->getNormalAt(node->AbsPosition.x, v, node->AbsPosition.z, &normal);
-		primitiveCollision(node, normal, dt, gm, NULL);
+		primitiveCollision(node, normal, dt, gm, NULL, v-node->AbsPosition.y);
 		return true;
 	}
 	return false;
 }
 
-void Collisions::primitiveCollision(node_t *node, Vector3 normal, float dt, ground_model_t* gm, float* nso)
+void Collisions::primitiveCollision(node_t *node, Vector3 normal, float dt, ground_model_t* gm, float* nso, float penetration)
 {
 	//normal velocity
 	float nvel=node->Velocity.dotProduct(normal);
@@ -1162,11 +1162,13 @@ void Collisions::primitiveCollision(node_t *node, Vector3 normal, float dt, grou
 	//steady force
 	float fns_orig=node->Forces.dotProduct(normal);
 	float fnn=-fns_orig;
+	float fns=fnn;
 	//impact force
 	if (nvel<0)
 	{
 		float tmp=-nvel*node->mass/dt;
 		fnn+=tmp*gm->strength; //Newton's second law
+		fns+=tmp;
 	}
 	if (fnn<0) fnn=0;
 
@@ -1175,17 +1177,17 @@ void Collisions::primitiveCollision(node_t *node, Vector3 normal, float dt, grou
 	// we have a downforce and the slip forces are lower than static friction
 	// forces then it's time to go into static friction physics mode.
         // This code is a direct translation of textbook static friction physics
-	if ( slipv<(gm->va) && fnn>0 && fabs(node->Forces.dotProduct(slip))<=fabs((gm->ms)*fnn))
+	if ( slipv<(gm->va) && fns>0 && fabs(node->Forces.dotProduct(slip))<=fabs((gm->ms)*fns))
 	{
 		// Static friction model (with a little smoothing to help the integrator deal with it)
-		ff=-(gm->ms)*fnn*(1-approx_exp(-fabs(slipv/gm->va)));
+		ff=-(gm->ms)*fns*(1-approx_exp(-fabs(slipv/gm->va)));
 		node->Forces=(fns_orig+fnn)*normal + ff*slip;
 	}
 	else
 	{
 		//Stribek model. It also comes directly from textbooks.
 		float g=gm->mc+(gm->ms-gm->mc)*approx_exp(-approx_pow(slipv/gm->vs, gm->alpha));
-		ff=-(g+gm->t2*slipv)*fnn;
+		ff=-(g+gm->t2*slipv)*fns;
 	node->Forces+=fnn*normal+ff*slip;
 }
 }
