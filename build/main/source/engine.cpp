@@ -66,16 +66,22 @@ BeamEngine::BeamEngine(float iddle, float max, float torque, float rear, int num
 	type='t';
 }
 
-void BeamEngine::setOptions(float einertia, char etype)
+void BeamEngine::setOptions(float einertia, char etype, float eclutch)
 {
 	inertia=einertia;
 	type=etype;
+	clutchForce=eclutch;
 	if (etype=='c')
 	{
-		//its a car!
+		// its a car!
 		hasturbo=false;
 		hasair=false;
-		clutchForce=5000.0f;
+		// set default clutch force
+		if(clutchForce < 0) clutchForce = 5000.0f;
+	} else
+	{
+		// its a truck
+		if(clutchForce < 0) clutchForce = 10000.0f;
 	}
 
 }

@@ -95,7 +95,7 @@ public:
 	int prime;
 
 	BeamEngine(float iddle, float max, float torque, float rear, int numgears, float *gears, float diff, int trucknum);
-	void setOptions(float einertia, char etype);
+	void setOptions(float einertia, char etype, float eclutch);
 	void update(float dt, int doUpdate);
 	float getRPM();
 	void toggleAutoMode();
