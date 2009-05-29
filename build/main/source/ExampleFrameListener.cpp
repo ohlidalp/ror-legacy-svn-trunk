@@ -2873,8 +2873,14 @@ bool ExampleFrameListener::updateEvents(float dt)
 					if (INPUTENGINE.getEventBoolValueBounce(EV_TRUCK_TOGGLE_AXLE_LOCK))
 					{
 						//Toggle Auto shift
-						trucks[current_truck]->toggleAxleLock();
-						flashMessage(_L("Differentials switched to: ") + _L(trucks[current_truck]->getAxleLockName()) );
+						if(!trucks[current_truck]->getAxleLockCount())
+						{
+							flashMessage(_L("no Differential installed!"));
+						} else
+						{
+							trucks[current_truck]->toggleAxleLock();
+							flashMessage(_L("Differentials switched to: ") + _L(trucks[current_truck]->getAxleLockName()) );
+						}
 					}
 					//joy clutch
 					float cval = INPUTENGINE.getEventValue(EV_TRUCK_MANUAL_CLUTCH);

@@ -623,6 +623,7 @@ public:
 	void toggleCustomParticles();
 	void toggleAxleLock();	//! diff lock on or off
 	Ogre::String getAxleLockName();	//! get the name of the current differential model
+	int getAxleLockCount();
 
 	//total torque
 	//    Real torque;
