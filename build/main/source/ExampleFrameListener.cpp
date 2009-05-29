@@ -2861,12 +2861,21 @@ bool ExampleFrameListener::updateEvents(float dt)
 					if (INPUTENGINE.getEventBoolValueBounce(EV_TRUCK_SWITCH_SHIFT_MODES) && trucks[current_truck]->engine)
 					{
 						//Toggle Auto shift
-						trucks[current_truck]->engine->toggleAutoMode();
-						if (trucks[current_truck]->engine->getAutoMode()==AUTOMATIC) flashMessage(_L("Automatic shift"));
-						if (trucks[current_truck]->engine->getAutoMode()==SEMIAUTO) flashMessage(_L("Manual shift - Auto clutch"));
-						if (trucks[current_truck]->engine->getAutoMode()==MANUAL) flashMessage(_L("Fully Manual shift"));
+						if(trucks[current_truck]->engine)
+						{
+							trucks[current_truck]->engine->toggleAutoMode();
+							if (trucks[current_truck]->engine->getAutoMode()==AUTOMATIC) flashMessage(_L("Automatic shift"));
+							if (trucks[current_truck]->engine->getAutoMode()==SEMIAUTO) flashMessage(_L("Manual shift - Auto clutch"));
+							if (trucks[current_truck]->engine->getAutoMode()==MANUAL) flashMessage(_L("Fully Manual shift"));
+						}
 					}
 
+					if (INPUTENGINE.getEventBoolValueBounce(EV_TRUCK_TOGGLE_AXLE_LOCK))
+					{
+						//Toggle Auto shift
+						trucks[current_truck]->toggleAxleLock();
+						flashMessage(_L("Differentials switched to: ") + _L(trucks[current_truck]->getAxleLockName()) );
+					}
 					//joy clutch
 					float cval = INPUTENGINE.getEventValue(EV_TRUCK_MANUAL_CLUTCH);
 					if(trucks[current_truck]->engine)

@@ -53,6 +53,7 @@ using namespace Ogre;
 #include "aeroengine.h"
 #include "CmdKeyInertia.h"
 #include "skin.h"
+#include "Differentials.h"
 #include "approxmath.h"
 
 //#include "scriptCommands.h"
@@ -195,6 +196,7 @@ extern int truckSteps;
 enum blinktype {BLINK_NONE, BLINK_LEFT, BLINK_RIGHT, BLINK_WARN};
 
 using namespace Ogre;
+struct differential_data_t;
 
 //RaySceneQuery* nodeSceneQuery = 0;
 class Beam;
@@ -401,6 +403,7 @@ typedef struct _wheel
 	node_t* refnode1;
 	Real radius;
 	Real speed;
+	Real delta_rotation; //! difference in wheel position
 	float rp;
 	float rp1;
 	float rp2;
@@ -618,6 +621,8 @@ public:
 	void resetAutopilot();
 	void disconnectAutopilot();
 	void toggleCustomParticles();
+	void toggleAxleLock();	//! diff lock on or off
+	Ogre::String getAxleLockName();	//! get the name of the current differential model
 
 	//total torque
 	//    Real torque;
@@ -768,7 +773,9 @@ public:
 	Ogre::String realtruckfilename;
 
 	wheel_t wheels[MAX_WHEELS];
+	Axle axles[MAX_WHEELS/2];
 	int free_wheel;
+	int free_axle;
 
 
 	// this must be in the header as the network stuff is using it...

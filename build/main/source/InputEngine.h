@@ -244,6 +244,7 @@ enum events
 	EV_TRUCK_STEER_RIGHT, //!< steer right
 	EV_TRUCK_SWITCH_SHIFT_MODES, //!< toggle between transmission modes
 	EV_TRUCK_TOGGLE_CONTACT, //!< toggle ignition
+	EV_TRUCK_TOGGLE_AXLE_LOCK,
 
 	EV_COMMON_SHOWTRUCKTOOL,
 	EV_COMMON_RELOAD_ROADS,
