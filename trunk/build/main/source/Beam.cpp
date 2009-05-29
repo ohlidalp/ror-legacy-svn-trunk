@@ -4967,6 +4967,11 @@ void Beam::toggleAxleLock()
 	}
 }
 
+int Beam::getAxleLockCount()
+{
+	return free_axle;
+}
+
 Ogre::String Beam::getAxleLockName()
 {
 	return axles[0].getDiffTypeName();
