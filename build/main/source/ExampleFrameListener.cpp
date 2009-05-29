@@ -5828,6 +5828,9 @@ void ExampleFrameListener::setCurrentTruck(int v)
 		camRotX=0;
 		camRotY=Degree(12);
 		camDist=20;
+#ifdef ANGELSCRIPT
+		ScriptEngine::getSingleton().triggerEvent(ScriptEngine::SE_TRUCK_ENTER, previous_truck);
+#endif //ANGELSCRIPT
 	}
 	else
 	{
@@ -5904,6 +5907,9 @@ void ExampleFrameListener::setCurrentTruck(int v)
 			camRotY=DEFAULT_INTERNAL_CAM_PITCH;
 			if(bigMap) bigMap->setVisibility(false);
 		}
+#ifdef ANGELSCRIPT
+		ScriptEngine::getSingleton().triggerEvent(ScriptEngine::SE_TRUCK_ENTER, current_truck);
+#endif //ANGELSCRIPT
 	}
 #ifdef XFIRE
 	updateXFire();

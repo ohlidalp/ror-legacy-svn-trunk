@@ -19,8 +19,14 @@ along with Rigs of Rods.  If not, see <http://www.gnu.org/licenses/>.
 */
 #include "turboprop.h"
 
+#ifdef ANGELSCRIPT
+#include "ScriptEngine.h"
+#endif
+
 Turboprop::Turboprop(SceneManager *manager, char* propname, node_t *nd, int nr, int nb, int np1, int np2, int np3, int np4, int tqn, float power, char* propfoilname, int mnumber, int trucknum, bool disable_smoke, bool ispiston, float fpitch, bool _heathaze)
 {
+	failed=false;
+	failedold=false;
 	heathaze=_heathaze;
 	number=mnumber;
 	this->trucknum=trucknum;
@@ -182,6 +188,14 @@ void Turboprop::updateVisuals()
 			}
 		}
 	}
+
+#ifdef ANGELSCRIPT
+	if(failed != failedold)
+	{
+		ScriptEngine::getSingleton().triggerEvent(ScriptEngine::SE_TRUCK_ENGINE_FIRE, trucknum);
+		failedold = failed;
+	}
+#endif
 }
 
 void Turboprop::updateForces(float dt, int doUpdate)

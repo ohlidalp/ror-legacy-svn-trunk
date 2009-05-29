@@ -681,6 +681,9 @@ public:
 	int replaylen;
 	int replaypos;
 	int locked;
+	int lockedold;
+	int watercontact;
+	int watercontactold;
 	bool cparticle_enabled;
 	int hookId;
 	node_t *lockId;

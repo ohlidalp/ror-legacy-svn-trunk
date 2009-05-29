@@ -53,7 +53,9 @@ along with Rigs of Rods.  If not, see <http://www.gnu.org/licenses/>.
 #include "Skidmark.h"
 #include "CmdKeyInertia.h"
 #include "ColoredTextAreaOverlayElement.h"
-
+#ifdef ANGELSCRIPT
+#include "ScriptEngine.h"
+#endif
 float mrtime;
 
 const float Beam::inverse_RAND_MAX = 1.0/RAND_MAX;
@@ -402,6 +404,9 @@ Beam::Beam(int tnum, SceneManager *manager, SceneNode *parent, RenderWindow* win
 	replaymode=false;
 	replaypos=0;
 	locked=UNLOCKED;
+	lockedold=UNLOCKED;
+	watercontact=0;
+	watercontactold=0;
 	hookId=-1;
 	lockId=0;
 	lockTruck=0;
@@ -5123,6 +5128,21 @@ bool Beam::frameStep(Real dt, Beam** trucks, int numtrucks)
 //debugText="Origin: "+StringConverter::toString(origin.x)+", "+StringConverter::toString(origin.y)+", "+StringConverter::toString(origin.z);
 
 
+	// some scripting stuff:
+#ifdef ANGELSCRIPT
+	if(lockedold != locked)
+	{
+		if(locked == LOCKED) ScriptEngine::getSingleton().triggerEvent(ScriptEngine::SE_TRUCK_LOCKED, trucknum);
+		if(locked == UNLOCKED) ScriptEngine::getSingleton().triggerEvent(ScriptEngine::SE_TRUCK_UNLOCKED, trucknum);
+		lockedold=locked
+	}
+	if(watercontact != watercontactold)
+	{
+		ScriptEngine::getSingleton().triggerEvent(ScriptEngine::SE_TRUCK_TOUCHED_WATER, trucknum);
+		watercontactold = watercontact;
+	}
+#endif
+
 	fasted=1;
 	slowed=1;
 	stabsleep-=dt;
@@ -5868,6 +5888,7 @@ void Beam::calcForcesEuler(int doUpdate, Real dt, int step, int maxstep, Beam** 
 			}
 		}
 		//if in water
+		watercontact=0;
 		if (water)
 		{
 			//basic buoyance
@@ -5875,6 +5896,7 @@ void Beam::calcForcesEuler(int doUpdate, Real dt, int step, int maxstep, Beam** 
 			{
 				if (nodes[i].AbsPosition.y<water->getHeightWaves(nodes[i].AbsPosition))
 				{
+					watercontact=1;
 					//water drag (turbulent)
 					float velocityLength=nodes[i].Velocity.length();
 					nodes[i].Forces-=(DEFAULT_WATERDRAG*velocityLength)*nodes[i].Velocity;
@@ -5903,6 +5925,7 @@ void Beam::calcForcesEuler(int doUpdate, Real dt, int step, int maxstep, Beam** 
 			{
 				if (nodes[i].AbsPosition.y<water->getHeightWaves(nodes[i].AbsPosition))
 				{
+					watercontact=1;
 					//engine stall
 					if (i==cinecameranodepos[0] && engine) engine->stop();
 					//wetness
@@ -5919,11 +5942,14 @@ void Beam::calcForcesEuler(int doUpdate, Real dt, int step, int maxstep, Beam** 
 			}
 		}
 	}
+
+	// anti-explosion guard
 	if (!isFiniteNum(tminx+tmaxx+tminy+tmaxy+tminz+tmaxz))
 	{
 		reset_requested=true; // truck exploded, schedule reset
 		return; // return early to avoid propagating invalid values
 	}
+
 	// if skidmarks, rebuild bounding box
 	if(skidNode) skidNode->needUpdate();
 #ifdef TIMING
@@ -7092,6 +7118,9 @@ void Beam::lightsToggle(Beam** trucks, int trucksnum)
 			//			((Entity*)(cabNode->getAttachedObject(0)))->setMaterialName(texname);
 		}
 	};
+#ifdef ANGELSCRIPT
+	ScriptEngine::getSingleton().triggerEvent(ScriptEngine::SE_TRUCK_LIGHT_TOGGLE, trucknum);
+#endif
 
 }
 
@@ -7415,6 +7444,11 @@ void Beam::toggleCustomParticles()
 			cparticles[i].psys->getEmitter(j)->setEnabled(cparticles[i].active);
 		}
 	}
+
+#ifdef ANGELSCRIPT 
+	//ScriptEvent - Particle Toggle
+	ScriptEngine::getSingleton().triggerEvent(ScriptEngine::SE_TRUCK_CPARTICLES_TOGGLE, trucknum);
+#endif
 
 }
 
@@ -7742,6 +7776,11 @@ void Beam::showSkeleton(bool meshes, bool newMode)
 	if (lockTruck && lockTruck->getTruckName() != getTruckName())
 		lockTruck->showSkeleton();
 	lockSkeletonchange=false;
+
+#ifdef ANGELSCRIPT
+	ScriptEngine::getSingleton().triggerEvent(ScriptEngine::SE_TRUCK_SKELETON_TOGGLE, trucknum);
+#endif
+
 }
 
 void Beam::hideSkeleton(bool newMode)
@@ -8033,6 +8072,10 @@ void Beam::tieToggle(Beam** trucks, int trucksnum)
 		}
 		commandkey[0].commandValue = 1;
 	}
+#ifdef ANGELSCRIPT
+	//ScriptEvent - Tie toggle
+	ScriptEngine::getSingleton().triggerEvent(ScriptEngine::SE_TRUCK_TIE_TOGGLE, trucknum);
+#endif
 }
 void Beam::lockToggle(Beam** trucks, int trucksnum)
 {
@@ -8160,6 +8203,10 @@ void Beam::parkingbrakeToggle()
 		brake=brakeforce*2.0;
 		ssm->trigStart(trucknum, SS_TRIG_PARK);
 	} else ssm->trigStop(trucknum, SS_TRIG_PARK);
+#ifdef ANGELSCRIPT
+	//ScriptEvent - Parking Brake toggle
+	ScriptEngine::getSingleton().triggerEvent(ScriptEngine::SE_TRUCK_PARKINGBREAK_TOGGLE, trucknum);
+#endif
 }
 
 void Beam::beaconsToggle()
@@ -8192,6 +8239,11 @@ void Beam::beaconsToggle()
 			}
 		}
 	}
+
+#ifdef ANGELSCRIPT
+	//ScriptEvent - Beacon toggle
+	ScriptEngine::getSingleton().triggerEvent(ScriptEngine::SE_TRUCK_BEACONS_TOGGLE, trucknum);
+#endif
 }
 
 void Beam::setReplayMode(bool rm)
