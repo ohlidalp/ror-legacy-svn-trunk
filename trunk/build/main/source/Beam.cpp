@@ -3929,7 +3929,7 @@ int Beam::loadTruck(char* fname, SceneManager *manager, SceneNode *parent, Real 
 			if(!free_wheel)
 			{
 				LogManager::getSingleton().logMessage("AXLE ERROR: the axle section must come AFTER some wheels");
-				continue
+				continue;
 			}
 
 			int wheel_node[2][2] = {0};
