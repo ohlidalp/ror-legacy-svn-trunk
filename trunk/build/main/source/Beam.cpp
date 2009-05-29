@@ -3073,12 +3073,14 @@ int Beam::loadTruck(char* fname, SceneManager *manager, SceneNode *parent, Real 
 			//parse engoption
 			float inertia;
 			char type;
-			int result = sscanf(line,"%f, %c", &inertia, &type);
-			if (result < 1 || result == EOF) {
+			float clutch=-1.0f;
+			int result = sscanf(line,"%f, %c, %f", &inertia, &type, &clutch);
+			if (result < 1 || result == EOF)
+			{
 				LogManager::getSingleton().logMessage("Error parsing File (Engoption) " + String(fname) +" line " + StringConverter::toString(linecounter) + ". trying to continue ...");
 				continue;
 			}
-			if (engine) engine->setOptions(inertia, type);
+			if (engine) engine->setOptions(inertia, type, clutch);
 		}
 		else if (mode==26)
 		{
