@@ -3925,6 +3925,13 @@ int Beam::loadTruck(char* fname, SceneManager *manager, SceneNode *parent, Real 
 		{
 			// parse axle section
 			// search for wheel
+
+			if(!free_wheel)
+			{
+				LogManager::getSingleton().logMessage("AXLE ERROR: the axle section must come AFTER some wheels");
+				continue
+			}
+
 			int wheel_node[2][2] = {0};
 			std::vector<Ogre::String> options = Ogre::StringUtil::split(line, ",");
 			std::vector<Ogre::String>::iterator cur = options.begin();
