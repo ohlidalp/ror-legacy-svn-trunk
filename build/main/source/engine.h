@@ -111,6 +111,7 @@ public:
 	float getCrankFactor();
 	void setClutch(float clutch);
 	float getClutch();
+	float getClutchForce();
 	void toggleContact();
 	//quick start
 	void start();

@@ -667,7 +667,7 @@ void ExampleFrameListener::updateGUI(float dt)
 		if (!trucks[current_truck]->canwork) lopresso->setMaterialName("tracks/lopress-on");
 		else lopresso->setMaterialName("tracks/lopress-off");
 
-		if (fabs(trucks[current_truck]->engine->getTorque())>=100000.0) clutcho->setMaterialName("tracks/clutch-on");
+		if (fabs(trucks[current_truck]->engine->getTorque())>=trucks[current_truck]->engine->getClutchForce()*10.0f) clutcho->setMaterialName("tracks/clutch-on");
 		else clutcho->setMaterialName("tracks/clutch-off");
 
 		if (trucks[current_truck]->lights) lightso->setMaterialName("tracks/lights-on");
