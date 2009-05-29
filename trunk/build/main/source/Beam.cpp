@@ -196,6 +196,7 @@ Beam::~Beam()
 
 Beam::Beam(int tnum, SceneManager *manager, SceneNode *parent, RenderWindow* win, float *_mapsizex, float *_mapsizez, Real px, Real py, Real pz, Quaternion rot, char* fname, Collisions *icollisions, DustPool *mdust, DustPool *mclump, DustPool *msparks, DustPool *mdrip, DustPool *msplash, DustPool *mripple, HeightFinder *mfinder, Water *w, Camera *pcam, Mirrors *mmirror, bool postload, bool networked, bool networking, collision_box_t *spawnbox, bool ismachine, int _flaresMode, std::vector<Ogre::String> *_truckconfig, SkinPtr skin) : deleting(false)
 {
+	free_axle=0;
 	usedSkin = skin;
 	LogManager::getSingleton().logMessage("BEAM: loading new truck: " + String(fname));
 	trucknum=tnum;
@@ -1294,6 +1295,7 @@ int Beam::loadTruck(char* fname, SceneManager *manager, SceneNode *parent, Real 
 		/* 52 = reserved for ignored section */
 		if (!strcmp("torquecurve",line)) {mode=53;continue;};
 		if (!strcmp("advdrag",line)) {mode=54;continue;};
+		if (!strcmp("axles",line)) {mode=55;continue;};
 
 		if (!strcmp("commandlist",line))
 		{
@@ -3893,6 +3895,7 @@ int Beam::loadTruck(char* fname, SceneManager *manager, SceneNode *parent, Real 
 				// wait for end_section otherwise
 				mode=52;
 		}
+		/* mode 52 is reserved */
 		else if (mode==53)
 		{
 			// parse torquecurve
@@ -3910,6 +3913,104 @@ int Beam::loadTruck(char* fname, SceneManager *manager, SceneNode *parent, Real 
 			}
 			advanced_total_drag=drag;
 			advanced_drag=true;
+		}
+		else if (mode==55)
+		{
+			// parse axle section
+			// search for wheel
+			int wheel_node[2][2] = {0};
+			std::vector<Ogre::String> options = Ogre::StringUtil::split(line, ",");
+			std::vector<Ogre::String>::iterator cur = options.begin();
+
+			for(; cur != options.end(); ++cur)
+			{
+				Ogre::StringUtil::trim(*cur);
+
+				LogManager::getSingleton().logMessage("AXLE: Parsing property: [" + *cur + "]" );
+
+				switch(cur->at(0))
+				{
+				// wheels
+				case 'w':
+					// dirty repetitive method, could stand to be cleaned up
+					if( cur->at(1) == '1')
+					{
+						int result = sscanf(cur->c_str(), "w1(%d %d)", &wheel_node[0][0], &wheel_node[0][1]);
+
+						if (result < 2 )
+						{
+							LogManager::getSingleton().logMessage("AXLE: line did not contain enough points: " + *cur);
+							continue;
+						}
+					}
+					else if( cur->at(1) == '2')
+					{
+						int result = sscanf(cur->c_str(), "w2(%d %d)", &wheel_node[1][0], &wheel_node[1][1]);
+
+						if (result < 2 )
+						{
+							LogManager::getSingleton().logMessage("AXLE: line did not contain enough points: " + *cur);
+							continue;
+						}
+					}
+					break;
+				case 'd':
+					LogManager::getSingleton().logMessage("AXLE: differential property not yet available");
+					break;
+				case 's':
+					LogManager::getSingleton().logMessage("AXLE: selection property not yet available");
+					break;
+				case 'r':
+					LogManager::getSingleton().logMessage("AXLE: Gear ratio property not yet available");
+					break;
+				default:
+					LogManager::getSingleton().logMessage("AXLE: malformed property: " + *cur);
+					break;
+				}
+
+			}
+
+			//
+			for( int i = 0; i < free_wheel &&  (axles[free_axle].wheel_1 < 0 || axles[free_axle].wheel_2 < 0); ++i)
+			{
+				if( ( wheels[i].refnode0->id == wheel_node[0][0] || wheels[i].refnode0->id == wheel_node[0][1]) &&
+					( wheels[i].refnode1->id == wheel_node[0][0] || wheels[i].refnode1->id == wheel_node[0][1]))
+				{
+					axles[free_axle].wheel_1 = i;
+				}
+				if( ( wheels[i].refnode0->id == wheel_node[1][0] || wheels[i].refnode0->id == wheel_node[1][1]) &&
+					( wheels[i].refnode1->id == wheel_node[1][0] || wheels[i].refnode1->id == wheel_node[1][1]))
+				{
+				axles[free_axle].wheel_2 = i;
+				}
+			}
+
+
+			if( axles[free_axle].wheel_1 < 0 || axles[free_axle].wheel_2 < 0 )
+			{
+				// if one or the other is null
+				if( axles[free_axle].wheel_1 < 0)
+				{
+					LogManager::getSingleton().logMessage("AXLE: could not find wheel 1 nodes: " +
+						StringConverter::toString(wheel_node[0][0]) + " " +
+						StringConverter::toString(wheel_node[0][1]) );
+				}
+				if( axles[free_axle].wheel_2 < 0)
+				{
+					LogManager::getSingleton().logMessage("AXLE: could not find wheel 2 nodes: " +
+					StringConverter::toString(wheel_node[1][0]) + " " +
+					StringConverter::toString(wheel_node[1][1]) );
+				}
+				continue;
+			}
+			// manually setup the available differentials
+			axles[free_axle].addDiffType(OPEN_DIFF);
+			axles[free_axle].addDiffType(LOCKED_DIFF);
+
+			LogManager::getSingleton().logMessage("AXLE: Created: w1(" + StringConverter::toString(wheel_node[0][0]) + ") " +
+				StringConverter::toString(wheel_node[0][1]) + ", w2(" + StringConverter::toString(wheel_node[1][0]) + " " +
+				StringConverter::toString(wheel_node[1][1]) + ")");
+			++free_axle;
 		}
 	};
 	if(!loading_finished) {
@@ -4455,8 +4556,6 @@ void Beam::addWheel(SceneManager *manager, SceneNode *parent, Real radius, Real 
 	wheels[free_wheel].arm=&nodes[torquenode];
 	if (propulsed>0)
 	{
-		//for inter-differential locking
-		proppairs[proped_wheels]=free_wheel;
 		proped_wheels++;
 	}
 	if (braked) braked_wheels++;
@@ -4843,6 +4942,20 @@ void Beam::disconnectAutopilot()
 	OverlayManager::getSingleton().getOverlayElement("tracks/ap_alt_but")->setMaterialName("tracks/hold-off");
 	OverlayManager::getSingleton().getOverlayElement("tracks/ap_vs_but")->setMaterialName("tracks/vs-off");
 	OverlayManager::getSingleton().getOverlayElement("tracks/ap_ias_but")->setMaterialName("tracks/athr-off");
+}
+
+
+void Beam::toggleAxleLock()
+{
+	for(unsigned int i = 0; i < free_axle; ++i)
+	{
+		axles[i].toggleDiff();
+	}
+}
+
+Ogre::String Beam::getAxleLockName()
+{
+	return axles[0].getDiffTypeName();
 }
 
 void Beam::reset()
@@ -6105,36 +6218,85 @@ void Beam::calcForcesEuler(int doUpdate, Real dt, int step, int maxstep, Beam** 
 	//wheel speed
 	Real wspeed=0;
 	//wheel stuff
-	//first, evaluate torque from inter-differential locking
-	float intertorque[MAX_WHEELS];
-	for (i=0; i<proped_wheels; i++) intertorque[i]=0.0;
-	for (i=0; i<proped_wheels/2-1; i++)
-	{
-		float speed1=(wheels[proppairs[i*2]].speed+wheels[proppairs[i*2+1]].speed)*0.5f;
-		float speed2=(wheels[proppairs[i*2+2]].speed+wheels[proppairs[i*2+3]].speed)*0.5f;
-		float torque=(speed1-speed2)*10000.0f;
-		intertorque[i*2]-=torque*0.5f;
-		intertorque[i*2+1]-=torque*0.5f;
-		intertorque[i*2+2]+=torque*0.5f;
-		intertorque[i*2+3]+=torque*0.5f;
-	}
 
 	float engine_torque=0.0;
-	if (state==ACTIVATED && engine) engine_torque=engine->getTorque(); //else brake=30000;
 
-	//		if ((brake!=0.0 || engine_torque!=0.0 || doUpdate)&&free_wheel)
+	// calculate torque per wheel
+	if (state == ACTIVATED && engine && proped_wheels != 0)
+		engine_torque = engine->getTorque()/proped_wheels;
+
 	int propcounter=0;
-	float torques[MAX_WHEELS];
+	float torques[MAX_WHEELS]; // not used
 	float newspeeds[MAX_WHEELS];
+
+	float intertorque[MAX_WHEELS] = {0.0f};
+	// loop through all axles for interaxle torque, this is the torsion to keep
+	// the axles aligned with each other as if they connected by a shaft
+	for (i = 1; i < free_axle; ++i)
+	{
+		Ogre::Real axle_torques[2] = {0.0f};
+		differential_data_t diff_data =
+		{
+			{
+				(wheels[axles[i-1].wheel_1].speed + wheels[axles[i-1].wheel_2].speed) * 0.5f,
+				(wheels[axles[i].wheel_1].speed + wheels[axles[i].wheel_2].speed) * 0.5f
+			},
+			axles[i-1].delta_rotation,
+			{ axle_torques[0], axle_torques[1] },
+			0, // no input torque, just calculate forces from different axle positions
+			dt
+		};
+
+#if 0
+		// use an open diff just for fun :)
+		Axle::calcOpenDiff( diff_data );
+#else
+		// use the locked diff, most vehicles are setup this way...
+		Axle::calcLockedDiff( diff_data );
+#endif
+
+		axles[i-1].delta_rotation = diff_data.delta_rotation;
+		axles[i].delta_rotation = -diff_data.delta_rotation;
+
+		intertorque[axles[i-1].wheel_1] = diff_data.out_torque[0];
+		intertorque[axles[i-1].wheel_2] = diff_data.out_torque[0];
+		intertorque[axles[i].wheel_1] = diff_data.out_torque[1];
+		intertorque[axles[i].wheel_2] = diff_data.out_torque[1];
+	}
+
+	// loop through all the wheels
+	for (i = 0; i < free_axle; ++i)
+	{
+		Ogre::Real axle_torques[2] = {0.0f};
+		wheel_t *axle_wheels[2] = { &wheels[axles[i].wheel_1], &wheels[axles[i].wheel_2] };
+
+		differential_data_t diff_data =
+		{
+			{ axle_wheels[0]->speed, axle_wheels[1]->speed },
+			axle_wheels[0]->delta_rotation,
+			{ axle_torques[0], axle_torques[1] },
+			// twice the torque since this is for two wheels, plus extra torque from
+			// inter-axle torsion
+			2.0f * engine_torque + intertorque[axles[i].wheel_1],
+			dt
+		};
+
+		axles[i].calcTorque( diff_data );
+
+		axle_wheels[0]->delta_rotation = diff_data.delta_rotation;
+		axle_wheels[1]->delta_rotation = -diff_data.delta_rotation;
+
+		intertorque[axles[i].wheel_1] = diff_data.out_torque[0];
+		intertorque[axles[i].wheel_2] = diff_data.out_torque[1];
+	}
+
 	for (i=0; i<free_wheel; i++)
 	{
 		Real speedacc=0.0;
 
 		//total torque estimation
-		Real total_torque=0.0;
-		//propulsion
-		if (engine_torque!=0.0 && wheels[i].propulsed>0 && proped_wheels != 0)
-			total_torque+=engine_torque/proped_wheels;
+		Real total_torque = (( wheels[i].propulsed > 0 && free_axle == 0) ? engine_torque : intertorque[i]);
+
 		//braking
 		if (parkingbrake) brake=brakeforce*2.0;
 
@@ -6154,27 +6316,14 @@ void Beam::calcForcesEuler(int doUpdate, Real dt, int step, int maxstep, Beam** 
 		{
 			if ((brake != 0.0 || dbrake != 0.0) && wheels[i].braked && braked_wheels != 0)
 			{
-				if( fabs(wheels[i].speed) > 0.00f )
+				if( fabs(wheels[i].speed) > 0.1f )
 					total_torque -= (wheels[i].speed/fabs(wheels[i].speed))*(brake + dbrake);
-				// wheels are stopped
+				// wheels are stopped, really this should
 				else if( fabs(wheels[i].speed) > 0.0f)
 					total_torque -= (wheels[i].speed/fabs(wheels[i].speed))*(brake + dbrake)*1.2;
 			}
 		}
 
-		//friction
-		total_torque-=wheels[i].speed*1.0;
-		if (wheels[i].propulsed>0)
-		{
-			//differential locking
-			if (i%2)
-				total_torque-=(wheels[i].speed-wheels[i-1].speed)*10000.0;
-			else
-				total_torque-=(wheels[i].speed-wheels[i+1].speed)*10000.0;
-			//inter differential locking
-			total_torque+=intertorque[propcounter];
-			propcounter++;
-		}
 		//application to wheel
 		torques[i]=total_torque;
 		Vector3 axis=wheels[i].refnode1->RelPosition-wheels[i].refnode0->RelPosition;

@@ -1097,6 +1097,12 @@ eventInfo_t eventInfo[] = {
 		_L("toggle between transmission modes")
 	},
 	{
+		"TRUCK_TOGGLE_AXLE_LOCK",
+		EV_TRUCK_TOGGLE_AXLE_LOCK,
+		"",
+		_L("Cycle between available differental models")
+	},
+	{
 		"TRUCK_TOGGLE_CONTACT",
 		EV_TRUCK_TOGGLE_CONTACT,
 		"",
