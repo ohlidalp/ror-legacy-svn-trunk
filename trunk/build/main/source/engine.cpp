@@ -317,6 +317,11 @@ float BeamEngine::getClutch()
 	return curClutch;
 }
 
+float BeamEngine::getClutchForce()
+{
+	return clutchForce;
+}
+
 void BeamEngine::toggleContact()
 {
 	contact=!contact;
