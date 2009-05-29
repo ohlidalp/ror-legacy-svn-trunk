@@ -5134,7 +5134,7 @@ bool Beam::frameStep(Real dt, Beam** trucks, int numtrucks)
 	{
 		if(locked == LOCKED) ScriptEngine::getSingleton().triggerEvent(ScriptEngine::SE_TRUCK_LOCKED, trucknum);
 		if(locked == UNLOCKED) ScriptEngine::getSingleton().triggerEvent(ScriptEngine::SE_TRUCK_UNLOCKED, trucknum);
-		lockedold=locked
+		lockedold=locked;
 	}
 	if(watercontact != watercontactold)
 	{
