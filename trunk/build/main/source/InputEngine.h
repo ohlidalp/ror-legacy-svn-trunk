@@ -224,16 +224,16 @@ enum events
 	EV_TRUCK_BLINK_WARN, //!< toggle all direction indicators
 	EV_TRUCK_BRAKE, //!< brake
 	EV_TRUCK_HORN, //!< truck horn
-	EV_TRUCK_LIGHTTOGGLE1, //!< toggle custom light 1
+	EV_TRUCK_LIGHTTOGGLE1,  //!< toggle custom light 1
+	EV_TRUCK_LIGHTTOGGLE2,  //!< toggle custom light 2
+	EV_TRUCK_LIGHTTOGGLE3,  //!< toggle custom light 3
+	EV_TRUCK_LIGHTTOGGLE4,  //!< toggle custom light 4
+	EV_TRUCK_LIGHTTOGGLE5,  //!< toggle custom light 5
+	EV_TRUCK_LIGHTTOGGLE6,  //!< toggle custom light 6
+	EV_TRUCK_LIGHTTOGGLE7,  //!< toggle custom light 7
+	EV_TRUCK_LIGHTTOGGLE8,  //!< toggle custom light 8
+	EV_TRUCK_LIGHTTOGGLE9,  //!< toggle custom light 9
 	EV_TRUCK_LIGHTTOGGLE10, //!< toggle custom light 10
-	EV_TRUCK_LIGHTTOGGLE2, //!< toggle custom light 2
-	EV_TRUCK_LIGHTTOGGLE3, //!< toggle custom light 3
-	EV_TRUCK_LIGHTTOGGLE4, //!< toggle custom light 4
-	EV_TRUCK_LIGHTTOGGLE5, //!< toggle custom light 5
-	EV_TRUCK_LIGHTTOGGLE6, //!< toggle custom light 6
-	EV_TRUCK_LIGHTTOGGLE7, //!< toggle custom light 7
-	EV_TRUCK_LIGHTTOGGLE8, //!< toggle custom light 8
-	EV_TRUCK_LIGHTTOGGLE9, //!< toggle custom light 9
 	EV_TRUCK_MANUAL_CLUTCH, //!< manual clutch (for manual transmission)
 	EV_TRUCK_PARKING_BRAKE, //!< toggle parking brake
 	EV_TRUCK_SHIFT_DOWN, //!< shift one gear down in manual transmission mode
