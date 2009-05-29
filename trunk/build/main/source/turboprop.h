@@ -65,6 +65,7 @@ private:
 	bool ignition;
 	float radius;
 	bool failed;
+	bool failedold;
 	float rpm;
 	float throtle;
 	int noderef;

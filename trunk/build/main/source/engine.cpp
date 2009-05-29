@@ -21,6 +21,10 @@ along with Rigs of Rods.  If not, see <http://www.gnu.org/licenses/>.
 #include "SoundScriptManager.h"
 #include "TorqueCurve.h"
 
+#ifdef ANGELSCRIPT
+#include "ScriptEngine.h"
+#endif
+
 BeamEngine::BeamEngine(float iddle, float max, float torque, float rear, int numgears, float *gears, float diff, int trucknum)
 {
 	int i;
@@ -362,6 +366,10 @@ void BeamEngine::stop()
 //		curGear=0;
 //		curClutch=0;
 	running=0;
+#ifdef ANGELSCRIPT
+	//Script Event - engine death
+	ScriptEngine::getSingleton().triggerEvent(ScriptEngine::SE_TRUCK_ENGINE_DIED, trucknum);
+#endif
 	ssm->trigStop(trucknum, SS_TRIG_ENGINE);
 }
 
