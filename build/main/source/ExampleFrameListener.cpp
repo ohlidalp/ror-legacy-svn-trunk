@@ -2875,7 +2875,7 @@ bool ExampleFrameListener::updateEvents(float dt)
 						//Toggle Auto shift
 						if(!trucks[current_truck]->getAxleLockCount())
 						{
-							flashMessage(_L("no Differential installed!"));
+							flashMessage(_L("No differential installed on current vehicle!"));
 						} else
 						{
 							trucks[current_truck]->toggleAxleLock();
