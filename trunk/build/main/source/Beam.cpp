@@ -4947,7 +4947,7 @@ void Beam::disconnectAutopilot()
 
 void Beam::toggleAxleLock()
 {
-	for(unsigned int i = 0; i < free_axle; ++i)
+	for(int i = 0; i < free_axle; ++i)
 	{
 		axles[i].toggleDiff();
 	}
