@@ -1,6 +1,148 @@
 project(RoR_Main)
 
-FILE(GLOB_RECURSE ror_src  source/*.cpp source/*.c source/*.h)
+set(ror_src
+	source/aeroengine.h
+	source/airbrake.cpp
+	source/airbrake.h
+	source/Airfoil.cpp
+	source/Airfoil.h
+	source/approxmath.h
+	source/autopilot.cpp
+	source/autopilot.h
+	source/Beam.cpp
+	source/Beam.h
+	source/BeamStats.cpp
+	source/BeamStats.h
+	source/buoyance.cpp
+	source/buoyance.h
+	source/CacheSystem.cpp
+	source/CacheSystem.h
+	source/Character.cpp
+	source/Character.h
+	source/CmdKeyInertia.cpp
+	source/CmdKeyInertia.h
+	source/collisions.cpp
+	source/collisions.h
+	source/ColoredTextAreaOverlayElement.cpp
+	source/ColoredTextAreaOverlayElement.h
+	source/ColoredTextAreaOverlayElementFactory.h
+	source/COPYING
+	source/dashboard.cpp
+	source/dashboard.h
+	source/Differentials.cpp
+	source/Differentials.h
+	source/DustPool.cpp
+	source/DustPool.h
+	source/DynamicLines.cpp
+	source/DynamicLines.h
+	source/DynamicRenderable.cpp
+	source/DynamicRenderable.h
+	source/editor.cpp
+	source/editor.h
+	source/engine.cpp
+	source/engine.h
+	source/envmap.cpp
+	source/envmap.h
+	source/ExampleFrameListener.cpp
+	source/ExampleFrameListener.h
+	source/FlexAirfoil.cpp
+	source/FlexAirfoil.h
+	source/FlexBody.cpp
+	source/FlexBody.h
+	source/FlexMesh.cpp
+	source/FlexMesh.h
+	source/FlexMeshWheel.cpp
+	source/FlexMeshWheel.h
+	source/FlexObj.cpp
+	source/FlexObj.h
+	source/gui_loader.cpp
+	source/gui_loader.h
+	source/gui_manager.cpp
+	source/gui_manager.h
+	source/Heathaze.cpp
+	source/Heathaze.h
+	source/heightfinder.h
+	source/HydraxWater.cpp
+	source/HydraxWater.h
+	source/icon.rc
+	source/ImprovedConfigFile.h
+	source/IngameConsole.cpp
+	source/IngameConsole.h
+	source/InputEngine.cpp
+	source/InputEngine.h
+	source/Landusemap.cpp
+	source/Landusemap.h
+	source/language.cpp
+	source/language.h
+	source/luasystem.cpp
+	source/luasystem.h
+	source/main.cpp
+	source/main.h
+	source/MapControl.cpp
+	source/MapControl.h
+	source/materialFunctionMapper.cpp
+	source/materialFunctionMapper.h
+	source/mirrors.cpp
+	source/mirrors.h
+	source/MovableText.cpp
+	source/MovableText.h
+	source/network.cpp
+	source/network.h
+	source/networkinfo.h
+	source/ogreconsole.cpp
+	source/ogreconsole.h
+	source/OgreLineStreamOverlayElement.cpp
+	source/OgreLineStreamOverlayElement.h
+	source/ProceduralManager.cpp
+	source/ProceduralManager.h
+	source/pstdint.h
+	source/RandomTreeLoader.h
+	source/Replay.cpp
+	source/Replay.h
+	source/resource.h
+	source/ResourceBuffer.h
+	source/Road.cpp
+	source/Road.h
+	source/road2.cpp
+	source/road2.h
+	source/ror.ico
+	source/rornet.h
+	source/screwprop.cpp
+	source/screwprop.h
+	source/ScriptEngine.cpp
+	source/ScriptEngine.h
+	source/Settings.cpp
+	source/Settings.h
+	source/sha1.cpp
+	source/sha1.h
+	source/SimpleOpt.h
+	source/Skidmark.cpp
+	source/Skidmark.h
+	source/skin.cpp
+	source/skin.h
+	source/skinmanager.cpp
+	source/skinmanager.h
+	source/SoundManager.cpp
+	source/SoundManager.h
+	source/SoundScriptManager.cpp
+	source/SoundScriptManager.h
+	source/TorqueCurve.cpp
+	source/TorqueCurve.h
+	source/TruckHUD.cpp
+	source/TruckHUD.h
+	source/tsmheightfinder.cpp
+	source/turbojet.cpp
+	source/turbojet.h
+	source/turboprop.cpp
+	source/turboprop.h
+	source/water.h
+	source/WaterOld.cpp
+	source/WaterOld.h
+	source/writeTextToTexture.cpp
+	source/writeTextToTexture.h
+	source/xfiregameclient.cpp
+	source/xfiregameclient.h
+)
 
 include_directories (OgreMain/include Dependencies/include)
 include_directories (${RoR_Dependencies_SOURCE_DIR}/ogrenew/OgreMain/include)
@@ -107,7 +249,7 @@ ELSEIF(APPLE)
 ENDIF(WIN32)
 
 # main target
-add_executable(RoR ${ror_src} source/icon.rc)
+add_executable(RoR ${ror_src})
 
 # add dependencies
 add_dependencies(RoR OgreMain caelum mysocketw ois mygui mofilereader)
