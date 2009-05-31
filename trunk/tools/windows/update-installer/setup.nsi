@@ -13,7 +13,7 @@ ShowInstDetails show
 SetDateSave on
 #SetDatablockOptimize on
 CRCCheck on
-#SilentInstall normal
+SilentInstall normal
 
 ; MUI 1.67 compatible ------
 !include "MUI.nsh"
@@ -100,8 +100,8 @@ ShowInstDetails show
 Function InstallDirectX
 	InitPluginsDir
 	File /oname=$PLUGINSDIR\dxwebsetup.exe "dxwebsetup.exe"
-	Banner::show /NOUNLOAD "Installing lastest DirectX (This can take some minutes)"
-    ExecWait '"$PLUGINSDIR\dxwebsetup.exe /Q"'
+	Banner::show /NOUNLOAD "Installing lastest DirectX"
+    ExecWait '"$PLUGINSDIR\dxwebsetup.exe"'
 	Delete $PLUGINSDIR\dxwebsetup.exe
 	Banner::destroy
 FunctionEnd
@@ -109,8 +109,8 @@ FunctionEnd
 Function InstallVisualStudioRuntime
 	InitPluginsDir
 	File /oname=$PLUGINSDIR\vcredist_x86.exe "vcredist_x86.exe"
-	Banner::show /NOUNLOAD "Installing Visual Studio Runtime (This can take some minutes)"
-	ExecWait "vcredist_x86.exe /q"
+	Banner::show /NOUNLOAD "Installing Visual Studio Runtime"
+	ExecWait "vcredist_x86.exe /q /l log.txt"
 	Delete $PLUGINSDIR\vcredist_x86.exe
 	Banner::destroy
 FunctionEnd
@@ -122,9 +122,7 @@ SectionEnd
 
 Section -AdditionalIcons
 	SetOutPath $EXEDIR
-	WriteIniStr "$INSTDIR\forums.url" "InternetShortcut" "URL" "http://forum.rigsofrods.com"
 	CreateDirectory "$SMPROGRAMS\Rigs of Rods ${PRODUCT_VERSION}"
-	CreateShortCut "$SMPROGRAMS\Rigs of Rods ${PRODUCT_VERSION}\Rigs of Rods Forums.lnk" "$INSTDIR\forums.url"
 	CreateShortCut "$SMPROGRAMS\Rigs of Rods ${PRODUCT_VERSION}\Rigs of Rods.lnk" "$INSTDIR\RoR.exe"
 	CreateShortCut "$SMPROGRAMS\Rigs of Rods ${PRODUCT_VERSION}\Configurator.lnk" "$INSTDIR\RoRConfig.exe"
 	CreateShortCut "$SMPROGRAMS\Rigs of Rods ${PRODUCT_VERSION}\Key Sheet.lnk" "$INSTDIR\keysheet.pdf"
@@ -133,9 +131,8 @@ SectionEnd
 
 Section -Post
 	; add some registry info
-	WriteRegStr HKCU "Software\RigsOfRods\" "directory" "$INSTDIR"
-	WriteRegStr HKCU "Software\RigsOfRods\" "version" "${PRODUCT_VERSION}"
-
+	WriteRegStr HKCU "Software\RigsOfRods\${PRODUCT_VERSION}\" "directory" "$INSTDIR"
+	WriteRegStr HKCU "Software\RigsOfRods\${PRODUCT_VERSION}\" "version" "${PRODUCT_VERSION}"
 
 	; new protocols
 	WriteRegStr HKCR "rorserver" "" "URL:Rigs of Rods Server"
@@ -152,7 +149,6 @@ Section -Post
 	WriteRegStr HKCR ".sa" "" "Angelscript"
 	WriteRegStr HKCR ".sa\shell\open\command" "" '"$INSTDIR\script_compiler.exe" "%1"'
 	SetRebootFlag true
-
 SectionEnd
 
 
