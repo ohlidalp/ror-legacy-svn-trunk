@@ -477,7 +477,9 @@ int WSync::downloadConfigFile(std::string server, std::string path, std::vector<
 
 		// Get a list of endpoints corresponding to the server name.
 		tcp::resolver resolver(io_service);
-		tcp::resolver::query query(server, "http");
+
+		char *host = const_cast<char*>(server.c_str());
+		tcp::resolver::query query(tcp::v4(), host, "80");
 		tcp::resolver::iterator endpoint_iterator = resolver.resolve(query);
 		tcp::resolver::iterator end;
 
@@ -571,7 +573,7 @@ int WSync::downloadConfigFile(std::string server, std::string path, std::vector<
 	}
 	catch (std::exception& e)
 	{
-		std::cout << endl << "Error: " << e.what() << "\n";
+		std::cout << endl << "Error while downloading file: " << e.what() << "\n";
 		return 1;
 	}
 	for(std::vector<std::string>::iterator it=lines.begin(); it!=lines.end(); it++)
@@ -613,7 +615,7 @@ int WSync::loadHashMapFromFile(boost::filesystem::path &filename, std::map<strin
 	return 0;
 }
 
-int WSync::downloadFile(boost::filesystem::path localFile, string server, string path, bool displayProgress)
+int WSync::downloadFile(boost::filesystem::path localFile, string server, string path, bool displayProgress, bool debug)
 {
 	// remove '//' and '///' from url
 	cleanURL(path);
@@ -628,7 +630,8 @@ int WSync::downloadFile(boost::filesystem::path localFile, string server, string
 
 		// Get a list of endpoints corresponding to the server name.
 		tcp::resolver resolver(io_service);
-		tcp::resolver::query query(server, "http");
+		char *host = const_cast<char*>(server.c_str());
+		tcp::resolver::query query(tcp::v4(), host, "80");
 		tcp::resolver::iterator endpoint_iterator = resolver.resolve(query);
 		tcp::resolver::iterator end;
 

@@ -65,7 +65,7 @@ public:
 	int createIndex(boost::filesystem::path localDir, int mode);
 
 	// useful util functions
-	int downloadFile(boost::filesystem::path localFile, std::string server, std::string remoteDir, bool displayProgress=false);
+	int downloadFile(boost::filesystem::path localFile, std::string server, std::string remoteDir, bool displayProgress=false, bool debug=false);
 	std::string generateFileHash(boost::filesystem::path file);
 	static int getTempFilename(boost::filesystem::path &tempfile);
 	int downloadConfigFile(std::string server, std::string remoteDir, std::vector< std::vector< std::string > > &list);
