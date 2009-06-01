@@ -1762,6 +1762,7 @@ int Beam::loadTruck(char* fname, SceneManager *manager, SceneNode *parent, Real 
 			}
 
 			int pos=add_beam(&nodes[id1], &nodes[id2], manager, parent, htype, default_break*4.0, s, d, -1.0, sbound, lbound, precomp);
+			beams[pos].shocktype = shocktype;
 			
 			shocks[free_shock].beamid = pos;
 			shocks[free_shock].type = shocktype;
@@ -4913,6 +4914,7 @@ int Beam::add_beam(node_t *p1, node_t *p2, SceneManager *manager, SceneNode *par
 	beams[pos].autoMoveLock=false;
 	beams[pos].pressedCenterMode=false;
 	beams[pos].disabled=0;
+	beams[pos].shocktype=0;
 	beams[pos].default_deform=default_deform;
 	beams[pos].maxposstress=default_deform;
 	beams[pos].maxnegstress=-default_deform;
