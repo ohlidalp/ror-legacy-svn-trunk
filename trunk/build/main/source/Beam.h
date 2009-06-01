@@ -84,7 +84,7 @@ extern int truckSteps;
 #define MAX_SUBMESHES 500
 #define MAX_TEXCOORDS 3000
 #define MAX_CABS 3000
-#define MAX_SHOCKS 64
+#define MAX_SHOCKS MAX_BEAMS
 #define MAX_ROPES 64
 #define MAX_ROPABLES 64
 #define MAX_TIES 64
@@ -238,6 +238,12 @@ typedef struct _node
 //	Vector3 tsmooth;
 } node_t;
 
+typedef struct 
+{
+	int beamid;
+	char type;
+}shockt_t;
+
 typedef struct
 {
 	int state;
@@ -329,6 +335,7 @@ typedef struct _beam
 	float update_timer;
 	float update_rate;
 	float scale;
+	char shocktype;
 } beam_t;
 
 typedef struct
@@ -665,7 +672,8 @@ public:
 	command_t commandkey[MAX_COMMANDS + 1];
 	int skeleton;
 	float stabratio;
-	int free_active_shock;
+	int free_shock;
+	int free_active_shock; // this has no array associated with it. its just to determine if there are active shocks!
 	//direction
 	float hydrodircommand;
 	float hydrodirstate;
@@ -911,7 +919,7 @@ protected:
 	SceneNode *smokeNode;
 	int smokeRef;
 	ParticleSystem* smoker;
-	int active_shocks[MAX_SHOCKS];
+	shockt_t shocks[MAX_SHOCKS];
 	float stabsleep;
 	int proped_wheels;
 	int braked_wheels;

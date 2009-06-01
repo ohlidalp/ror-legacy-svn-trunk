@@ -1,4 +1,3 @@
-
 /*
 This source file is part of Rigs of Rods
 Copyright 2005,2006,2007,2008,2009 Pierre-Michel Ricordel
@@ -352,7 +351,7 @@ Beam::Beam(int tnum, SceneManager *manager, SceneNode *parent, RenderWindow* win
 	free_collcab=0;
 	free_buoycab=0;
 	buoyance=0;
-	free_active_shock=0;
+	free_shock=0;
 	free_ropable=0;
 	free_rope=0;
 	free_tie=0;
@@ -1689,46 +1688,84 @@ int Beam::loadTruck(char* fname, SceneManager *manager, SceneNode *parent, Real 
 				}
 				options_pointer++;
 			}
-			}
+		}
 		else if (mode==4)
 		{
 			//parse shocks
 			int id1, id2;
 			float s, d, sbound,lbound,precomp;
-			char type='n';
-			int result = sscanf(line,"%i, %i, %f, %f, %f, %f, %f, %c",&id1,&id2, &s, &d, &sbound, &lbound,&precomp,&type);
-			if (result < 7 || result == EOF) {
+			char options[50]="n";
+			int result = sscanf(line,"%i, %i, %f, %f, %f, %f, %f, %s", &id1, &id2, &s, &d, &sbound, &lbound, &precomp, options);
+			if (result < 7 || result == EOF)
+			{
 				LogManager::getSingleton().logMessage("Error parsing File (Shock) " + String(fname) +" line " + StringConverter::toString(linecounter) + ". trying to continue ...");
 				continue;
 			}
-			if (id1>=free_node || id2>=free_node)
-			{
-				LogManager::getSingleton().logMessage("Error: unknown node number in shocks section ("
-					+StringConverter::toString(id1)+","+StringConverter::toString(id2)+")");
-				exit(4);
-			};
-			//            printf("beam : %i %i\n", id1, id2);
-			//bounded beam
-			int htype=BEAM_HYDRO;
-			if (type=='i') htype=BEAM_INVISIBLE_HYDRO;
 
+			// checks ...
 			if(free_beam >= MAX_BEAMS)
 			{
 				LogManager::getSingleton().logMessage("beams limit reached ("+StringConverter::toString(MAX_BEAMS)+"): " + String(fname) +" line " + StringConverter::toString(linecounter) + ". trying to continue ...");
 				continue;
 			}
-			if(free_active_shock >= MAX_SHOCKS)
+			if(free_shock >= MAX_BEAMS)
 			{
-				LogManager::getSingleton().logMessage("active shock limit reached ("+StringConverter::toString(MAX_SHOCKS)+"): " + String(fname) +" line " + StringConverter::toString(linecounter) + ". trying to continue ...");
+				LogManager::getSingleton().logMessage("shock limit reached ("+StringConverter::toString(MAX_SHOCKS)+"): " + String(fname) +" line " + StringConverter::toString(linecounter) + ". trying to continue ...");
 				continue;
 			}
-
-			int pos=add_beam(&nodes[id1], &nodes[id2], manager, parent, htype, default_break*4.0, s, d, -1.0, sbound, lbound,precomp);
-			if (type!='n' && type!='i')
+			if (id1>=free_node || id2>=free_node)
 			{
-				active_shocks[free_active_shock]=pos;
-				free_active_shock++;
+				LogManager::getSingleton().logMessage("Error: unknown node number in shocks section ("+StringConverter::toString(id1)+","+StringConverter::toString(id2)+")");
+				exit(4);
 			};
+
+
+			// options
+			int htype=BEAM_HYDRO;
+			int shocktype = 'n';
+			
+			// now 'parse' the options
+			char *options_pointer = options;
+			while (*options_pointer != 0)
+			{
+				switch (*options_pointer)
+				{
+					case 'i':	// invisible
+						htype=BEAM_INVISIBLE_HYDRO;
+						break;
+					case 'L':
+						shocktype='L';
+						free_active_shock++; // this has no array associated with it. its just to determine if there are active shocks!
+						break;
+					case 'R':
+						shocktype='R';
+						free_active_shock++; // this has no array associated with it. its just to determine if there are active shocks!
+						break;
+					case 'P':
+						// progressive shock test
+						shocktype='P';
+						break;
+					case 'p':
+						// passive shock test
+						shocktype='p';
+						break;
+					case 'm':
+						{
+							// metric values: calculate sbound and lbound now
+							float beam_lenght = nodes[id1].AbsPosition.distance(nodes[id2].AbsPosition);
+							sbound = sbound / beam_lenght;
+							lbound = lbound / beam_lenght;
+						}
+						break;
+				}
+				options_pointer++;
+			}
+
+			int pos=add_beam(&nodes[id1], &nodes[id2], manager, parent, htype, default_break*4.0, s, d, -1.0, sbound, lbound, precomp);
+			
+			shocks[free_shock].beamid = pos;
+			shocks[free_shock].type = shocktype;
+			free_shock++;
 		}
 		else if (mode==3)
 		{
@@ -5392,19 +5429,39 @@ void Beam::calcForcesEuler(int doUpdate, Real dt, int step, int maxstep, Beam** 
 
 				Real k=beams[i].k;
 				Real d=beams[i].d;
+				
 				//dampers bump
-				Real difftoBeamL=dislen-beams[i].L;
+				Real difftoBeamL = dislen - beams[i].L;
 				if (beams[i].bounded)
 				{
-					if (difftoBeamL>beams[i].longbound*beams[i].L || difftoBeamL<-beams[i].shortbound*beams[i].L) {k=DEFAULT_SPRING;d=DEFAULT_DAMP;};
+					if(beams[i].shocktype == 'P')
+					{
+						// TOFIX: progressive shocks
+						float percentLong = difftoBeamL / (beams[i].longbound * beams[i].L);
+						float percentShort = difftoBeamL / (beams[i].shortbound * beams[i].L);
+						k = (1 - log(percentShort)) * beams[i].k;
+						d = (1 - log(percentShort)) * beams[i].d;
+
+					} else if(beams[i].shocktype == 'p')
+					{
+						// TODO: passive shocks
+					} else
+					{
+						// normal shock, normal damping
+						if (difftoBeamL > beams[i].longbound*beams[i].L || difftoBeamL < -beams[i].shortbound*beams[i].L)
+						{
+							k=DEFAULT_SPRING;
+							d=DEFAULT_DAMP;
+						}
+					}
 				}
 				Vector3 v=beams[i].p1->Velocity-beams[i].p2->Velocity;
 
 				float flen;
 				if (beams[i].isrope && difftoBeamL<0)
-					flen=-d*v.dotProduct(dis)*0.1f*inverted_dislen;
+					flen = -d*v.dotProduct(dis)*0.1f*inverted_dislen;
 				else
-					flen=-k*(difftoBeamL)-d*v.dotProduct(dis)*inverted_dislen;
+					flen = -k*(difftoBeamL)-d*v.dotProduct(dis)*inverted_dislen;
 				Vector3 f=(flen*inverted_dislen)*dis;
 				float sflen=flen;
 				flen=fabs(flen);
@@ -6434,10 +6491,13 @@ void Beam::calcForcesEuler(int doUpdate, Real dt, int step, int maxstep, Beam** 
 	{
 		if ((stabcommand==1 && stabratio<0.1) || (stabcommand==-1 && stabratio>-0.1))
 			stabratio=stabratio+(float)stabcommand*dt*STAB_RATE;
-		for (i=0; i<free_active_shock; i++)
+		for (i=0; i<free_shock; i++)
 		{
-			if (i%2) beams[active_shocks[i]].L=beams[active_shocks[i]].refL*(1.0+stabratio);
-			else beams[active_shocks[i]].L=beams[active_shocks[i]].refL*(1.0-stabratio);;
+			// active shocks now
+			if (shocks[i].type == 'L')
+				beams[shocks[i].beamid].L=beams[shocks[i].beamid].refL*(1.0+stabratio);
+			else if (shocks[i].type == 'R')
+				beams[shocks[i].beamid].L=beams[shocks[i].beamid].refL*(1.0-stabratio);
 		}
 	}
 	//auto shock adjust
