@@ -193,6 +193,18 @@ extern int truckSteps;
 #define HYDRO_FLAG_REV_RUDDER   0x00000040
 #define HYDRO_FLAG_REV_ELEVATOR 0x00000080
 
+
+#define SHOCK_FLAG_NORMAL       0x00000001
+#define SHOCK_FLAG_INVISIBLE    0x00000002
+#define SHOCK_FLAG_LACTIVE      0x00000004
+#define SHOCK_FLAG_RACTIVE      0x00000008
+#define SHOCK_FLAG_PROGRESSIVE  0x00000010
+#define SHOCK_FLAG_PASSIVE      0x00000020
+#define SHOCK_FLAG_METRIC       0x00000040
+#define SHOCK_FLAG_IBOUND       0x00000080
+#define SHOCK_FLAG_OBOUND       0x00000100
+
+
 enum blinktype {BLINK_NONE, BLINK_LEFT, BLINK_RIGHT, BLINK_WARN};
 
 using namespace Ogre;
@@ -241,8 +253,9 @@ typedef struct _node
 typedef struct 
 {
 	int beamid;
-	char type;
-}shockt_t;
+	int flags;
+	float lastpos;
+}shock_t;
 
 typedef struct
 {
@@ -335,7 +348,7 @@ typedef struct _beam
 	float update_timer;
 	float update_rate;
 	float scale;
-	char shocktype;
+	shock_t *shock;
 } beam_t;
 
 typedef struct
@@ -919,7 +932,7 @@ protected:
 	SceneNode *smokeNode;
 	int smokeRef;
 	ParticleSystem* smoker;
-	shockt_t shocks[MAX_SHOCKS];
+	shock_t shocks[MAX_SHOCKS];
 	float stabsleep;
 	int proped_wheels;
 	int braked_wheels;

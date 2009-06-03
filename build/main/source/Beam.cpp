@@ -1722,9 +1722,10 @@ int Beam::loadTruck(char* fname, SceneManager *manager, SceneNode *parent, Real 
 
 			// options
 			int htype=BEAM_HYDRO;
-			int shocktype = 'n';
+			int shockflag = SHOCK_FLAG_NORMAL;
 			
 			// now 'parse' the options
+			char shockprogression = 'n', shockbump = 'n', shockfeature= 'n';
 			char *options_pointer = options;
 			while (*options_pointer != 0)
 			{
@@ -1732,26 +1733,42 @@ int Beam::loadTruck(char* fname, SceneManager *manager, SceneNode *parent, Real 
 				{
 					case 'i':	// invisible
 						htype=BEAM_INVISIBLE_HYDRO;
+						shockflag |= SHOCK_FLAG_INVISIBLE;
 						break;
 					case 'L':
-						shocktype='L';
+						shockflag &= SHOCK_FLAG_NORMAL; // not normal anymore
+						shockflag |= SHOCK_FLAG_LACTIVE;
 						free_active_shock++; // this has no array associated with it. its just to determine if there are active shocks!
 						break;
 					case 'R':
-						shocktype='R';
+						shockflag &= SHOCK_FLAG_NORMAL; // not normal anymore
+						shockflag |= SHOCK_FLAG_RACTIVE;
 						free_active_shock++; // this has no array associated with it. its just to determine if there are active shocks!
 						break;
-					case 'P':
-						// progressive shock test
-						shocktype='P';
-						break;
 					case 'p':
+						// progressive shock test
+						shockflag &= SHOCK_FLAG_NORMAL; // not normal anymore
+						shockflag |= SHOCK_FLAG_PROGRESSIVE;
+						break;
+					case 's':
 						// passive shock test
-						shocktype='p';
+						shockflag &= SHOCK_FLAG_NORMAL; // not normal anymore
+						shockflag |= SHOCK_FLAG_PASSIVE;
+						break;
+					case 'I':
+						// Inbound only shock test
+						shockflag &= SHOCK_FLAG_NORMAL; // not normal anymore
+						shockflag |= SHOCK_FLAG_IBOUND;
+						break;
+					case 'O':
+						// Outbound only shock test
+						shockflag &= SHOCK_FLAG_NORMAL; // not normal anymore
+						shockflag |= SHOCK_FLAG_OBOUND;
 						break;
 					case 'm':
 						{
 							// metric values: calculate sbound and lbound now
+							shockflag |= SHOCK_FLAG_METRIC; // well we dont care actually, but hey ...
 							float beam_lenght = nodes[id1].AbsPosition.distance(nodes[id2].AbsPosition);
 							sbound = sbound / beam_lenght;
 							lbound = lbound / beam_lenght;
@@ -1762,10 +1779,9 @@ int Beam::loadTruck(char* fname, SceneManager *manager, SceneNode *parent, Real 
 			}
 
 			int pos=add_beam(&nodes[id1], &nodes[id2], manager, parent, htype, default_break*4.0, s, d, -1.0, sbound, lbound, precomp);
-			beams[pos].shocktype = shocktype;
-			
+			beams[pos].shock = &shocks[free_shock];
 			shocks[free_shock].beamid = pos;
-			shocks[free_shock].type = shocktype;
+			shocks[free_shock].flags = shockflag;
 			free_shock++;
 		}
 		else if (mode==3)
@@ -4222,6 +4238,42 @@ int Beam::loadTruck(char* fname, SceneManager *manager, SceneNode *parent, Real 
 	if (!disable_default_sounds) setupDefaultSoundSources();
 	//compute collision box
 	calcBox();
+
+	// print some truck memory stats
+	int mem = 0, memr = 0, tmpmem = 0;
+	LogManager::getSingleton().logMessage("BEAM: memory stats following");
+	
+	tmpmem = free_beam * sizeof(beam_t); mem += tmpmem;
+	memr += MAX_BEAMS * sizeof(beam_t);
+	LogManager::getSingleton().logMessage("BEAM: beam memory: " + StringConverter::toString(tmpmem) + " B (" + StringConverter::toString(free_beam) + " x " + StringConverter::toString(sizeof(beam_t)) + " B) / " + StringConverter::toString(MAX_BEAMS * sizeof(beam_t)));
+	
+	tmpmem = free_node * sizeof(node_t); mem += tmpmem;
+	memr += MAX_NODES * sizeof(beam_t);
+	LogManager::getSingleton().logMessage("BEAM: node memory: " + StringConverter::toString(tmpmem) + " B (" + StringConverter::toString(free_node) + " x " + StringConverter::toString(sizeof(node_t)) + " B) / " + StringConverter::toString(MAX_NODES * sizeof(node_t)));
+	
+	tmpmem = free_shock * sizeof(shock_t); mem += tmpmem;
+	memr += MAX_SHOCKS * sizeof(beam_t);
+	LogManager::getSingleton().logMessage("BEAM: shock memory: " + StringConverter::toString(tmpmem) + " B (" + StringConverter::toString(free_shock) + " x " + StringConverter::toString(sizeof(shock_t)) + " B) / " + StringConverter::toString(MAX_SHOCKS * sizeof(shock_t)));
+	
+	tmpmem = free_prop * sizeof(prop_t); mem += tmpmem;
+	memr += MAX_PROPS * sizeof(beam_t);
+	LogManager::getSingleton().logMessage("BEAM: prop memory: " + StringConverter::toString(tmpmem) + " B (" + StringConverter::toString(free_prop) + " x " + StringConverter::toString(sizeof(prop_t)) + " B) / " + StringConverter::toString(MAX_PROPS * sizeof(prop_t)));
+	
+	tmpmem = free_wheel * sizeof(wheel_t); mem += tmpmem;
+	memr += MAX_WHEELS * sizeof(beam_t);
+	LogManager::getSingleton().logMessage("BEAM: wheel memory: " + StringConverter::toString(tmpmem) + " B (" + StringConverter::toString(free_wheel) + " x " + StringConverter::toString(sizeof(wheel_t)) + " B) / " + StringConverter::toString(MAX_WHEELS * sizeof(wheel_t)));
+	
+	tmpmem = free_rigidifier * sizeof(rigidifier_t); mem += tmpmem;
+	memr += MAX_RIGIDIFIERS * sizeof(beam_t);
+	LogManager::getSingleton().logMessage("BEAM: rigidifier memory: " + StringConverter::toString(tmpmem) + " B (" + StringConverter::toString(free_rigidifier) + " x " + StringConverter::toString(sizeof(rigidifier_t)) + " B) / " + StringConverter::toString(MAX_RIGIDIFIERS * sizeof(rigidifier_t)));
+	
+	tmpmem = free_flare * sizeof(flare_t); mem += tmpmem;
+	memr += free_flare * sizeof(beam_t);
+	LogManager::getSingleton().logMessage("BEAM: flare memory: " + StringConverter::toString(tmpmem) + " B (" + StringConverter::toString(free_flare) + " x " + StringConverter::toString(sizeof(flare_t)) + " B)");
+	
+	LogManager::getSingleton().logMessage("BEAM: truck memory used: " + StringConverter::toString(mem)  + " B (" + StringConverter::toString(mem/1024)  + " kB)");
+	LogManager::getSingleton().logMessage("BEAM: truck memory allocated: " + StringConverter::toString(memr)  + " B (" + StringConverter::toString(memr/1024)  + " kB)");
+
 	return 0;
 }
 
@@ -4914,7 +4966,7 @@ int Beam::add_beam(node_t *p1, node_t *p2, SceneManager *manager, SceneNode *par
 	beams[pos].autoMoveLock=false;
 	beams[pos].pressedCenterMode=false;
 	beams[pos].disabled=0;
-	beams[pos].shocktype=0;
+	beams[pos].shock=0;
 	beams[pos].default_deform=default_deform;
 	beams[pos].maxposstress=default_deform;
 	beams[pos].maxnegstress=-default_deform;
@@ -5434,22 +5486,63 @@ void Beam::calcForcesEuler(int doUpdate, Real dt, int step, int maxstep, Beam** 
 				
 				//dampers bump
 				Real difftoBeamL = dislen - beams[i].L;
-				if (beams[i].bounded)
+				if (beams[i].bounded && beams[i].shock)
 				{
-					if(beams[i].shocktype == 'P')
+					if(beams[i].shock->flags & SHOCK_FLAG_PROGRESSIVE)
 					{
-						// TOFIX: progressive shocks
-						float percentLong = difftoBeamL / (beams[i].longbound * beams[i].L);
-						float percentShort = difftoBeamL / (beams[i].shortbound * beams[i].L);
-						k = (1 - log(percentShort)) * beams[i].k;
-						d = (1 - log(percentShort)) * beams[i].d;
+						// progressive shocks
+						if (difftoBeamL < 1 )
+						{
+							k=k+(10*k*((abs(1-difftoBeamL))*(abs(1-difftoBeamL))));
+							d=d+(5*d*((abs(1-difftoBeamL))*(abs(1-difftoBeamL))));					
+						}
+					}
+					if (beams[i].shock->flags & SHOCK_FLAG_IBOUND)
+					{
+						//reset damping/spring to 1/1 for outbound, this is an inbound-shock only
+						if (beams[i].shock->lastpos < difftoBeamL)
+						{
+							k=1;
+							d=1;
+						}
+					}	
+					if (beams[i].shock->flags & SHOCK_FLAG_OBOUND)
+					{
+						//reset damping/spring to 1/1 for inbound, this is an outbound-shock only
+						if (beams[i].shock->lastpos > difftoBeamL)
+						{
+							k=1;
+							d=1;
+						}
+					}
+					
+					// save beam postion for next sim cycle
+					beams[i].shock->lastpos=difftoBeamL;
 
-					} else if(beams[i].shocktype == 'p')
+					if(beams[i].shock->flags & SHOCK_FLAG_PASSIVE)
 					{
-						// TODO: passive shocks
-					} else
+						// soft bump shocks
+						if (difftoBeamL > beams[i].longbound*beams[i].L && beams[i].longbound > 0.01)
+						{
+								k=k+100+(100*(k*(difftoBeamL / ((beams[i].longbound * beams[i].L)+0.0001))));
+								d=2*DEFAULT_DAMP;
+
+						} else if (difftoBeamL < -beams[i].shortbound*beams[i].L && beams[i].shortbound > 0.01)
+						{
+								k=k+100+(50*(k*(difftoBeamL / (-(beams[i].shortbound * beams[i].L)+0.0001))));
+								d=2*DEFAULT_DAMP;
+						
+						} else if (difftoBeamL > beams[i].longbound*beams[i].L || difftoBeamL < -beams[i].shortbound*beams[i].L)
+						{
+								k=DEFAULT_SPRING;
+								d=DEFAULT_DAMP;
+						}
+
+					}
+						
+					if(beams[i].shock->flags & SHOCK_FLAG_NORMAL)
 					{
-						// normal shock, normal damping
+						// hard (normal) shock bump
 						if (difftoBeamL > beams[i].longbound*beams[i].L || difftoBeamL < -beams[i].shortbound*beams[i].L)
 						{
 							k=DEFAULT_SPRING;
@@ -6496,9 +6589,9 @@ void Beam::calcForcesEuler(int doUpdate, Real dt, int step, int maxstep, Beam** 
 		for (i=0; i<free_shock; i++)
 		{
 			// active shocks now
-			if (shocks[i].type == 'L')
+			if (shocks[i].flags & SHOCK_FLAG_LACTIVE)
 				beams[shocks[i].beamid].L=beams[shocks[i].beamid].refL*(1.0+stabratio);
-			else if (shocks[i].type == 'R')
+			else if (shocks[i].flags & SHOCK_FLAG_RACTIVE)
 				beams[shocks[i].beamid].L=beams[shocks[i].beamid].refL*(1.0-stabratio);
 		}
 	}
