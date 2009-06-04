@@ -1073,6 +1073,139 @@ eventInfo_t eventInfo[] = {
 		_L("shift one gear up in manual transmission mode")
 	},
 	{
+		"TRUCK_SHIFT_GEAR_REVERSE",
+		EV_TRUCK_SHIFT_GEAR_REVERSE,
+		"",
+		_L("shift directly to reverse gear")
+	},
+	{
+		"TRUCK_SHIFT_GEAR1",
+		EV_TRUCK_SHIFT_GEAR1,
+		"",
+		_L("shift directly to first gear")
+	},
+	{
+		"TRUCK_SHIFT_GEAR2",
+		EV_TRUCK_SHIFT_GEAR2,
+		"",
+		_L("shift directly to second gear")
+	},
+	{
+		"TRUCK_SHIFT_GEAR3",
+		EV_TRUCK_SHIFT_GEAR3,
+		"",
+		_L("shift directly to third gear")
+	},
+	{
+		"TRUCK_SHIFT_GEAR4",
+		EV_TRUCK_SHIFT_GEAR4,
+		"",
+		_L("shift directly to fourth gear")
+	},
+	{
+		"TRUCK_SHIFT_GEAR5",
+		EV_TRUCK_SHIFT_GEAR5,
+		"",
+		_L("shift directly to 5th gear")
+	},
+	{
+		"TRUCK_SHIFT_GEAR6",
+		EV_TRUCK_SHIFT_GEAR6,
+		"",
+		_L("shift directly to 6th gear")
+	},
+	{
+		"TRUCK_SHIFT_GEAR7",
+		EV_TRUCK_SHIFT_GEAR7,
+		"",
+		_L("shift directly to 7th gear")
+	},
+	{
+		"TRUCK_SHIFT_GEAR8",
+		EV_TRUCK_SHIFT_GEAR8,
+		"",
+		_L("shift directly to 8th gear")
+	},
+	{
+		"TRUCK_SHIFT_GEAR9",
+		EV_TRUCK_SHIFT_GEAR9,
+		"",
+		_L("shift directly to 9th gear")
+	},
+	{
+		"TRUCK_SHIFT_GEAR10",
+		EV_TRUCK_SHIFT_GEAR10,
+		"",
+		_L("shift directly to 10th gear")
+	},
+	{
+		"TRUCK_SHIFT_GEAR11",
+		EV_TRUCK_SHIFT_GEAR11,
+		"",
+		_L("shift directly to 11th gear")
+	},
+	{
+		"TRUCK_SHIFT_GEAR12",
+		EV_TRUCK_SHIFT_GEAR12,
+		"",
+		_L("shift directly to 12th gear")
+	},
+	
+	{
+		"TRUCK_SHIFT_GEAR13",
+		EV_TRUCK_SHIFT_GEAR13,
+		"",
+		_L("shift directly to 13th gear")
+	},
+	{
+		"TRUCK_SHIFT_GEAR14",
+		EV_TRUCK_SHIFT_GEAR14,
+		"",
+		_L("shift directly to 14th gear")
+	},
+	{
+		"TRUCK_SHIFT_GEAR15",
+		EV_TRUCK_SHIFT_GEAR15,
+		"",
+		_L("shift directly to 15th gear")
+	},
+	{
+		"TRUCK_SHIFT_GEAR16",
+		EV_TRUCK_SHIFT_GEAR16,
+		"",
+		_L("shift directly to 16th gear")
+	},
+	{
+		"TRUCK_SHIFT_GEAR17",
+		EV_TRUCK_SHIFT_GEAR17,
+		"",
+		_L("shift directly to 17th gear")
+	},
+	{
+		"TRUCK_SHIFT_GEAR18",
+		EV_TRUCK_SHIFT_GEAR18,
+		"",
+		_L("shift directly to 18th gear")
+	},
+	{
+		"TRUCK_SHIFT_LOWRANGE",
+		EV_TRUCK_SHIFT_LOWRANGE,
+		"",
+		_L("sets low range (1-6) for H-shaft")
+	},
+	{
+		"TRUCK_SHIFT_MIDRANGE",
+		EV_TRUCK_SHIFT_MIDRANGE,
+		"",
+		_L("sets middle range (7-12) for H-shaft")
+	},
+	{
+		"TRUCK_SHIFT_HIGHRANGE",
+		EV_TRUCK_SHIFT_HIGHRANGE,
+		"",
+		_L("sets high range (13-18) for H-shaft")
+	},
+	{
 		"TRUCK_STARTER",
 		EV_TRUCK_STARTER,
 		"",
