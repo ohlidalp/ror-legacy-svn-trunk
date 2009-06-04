@@ -2872,34 +2872,37 @@ bool ExampleFrameListener::updateEvents(float dt)
 						bool gear_changed = true;
 						int curgear  = trucks[current_truck]->engine->getGear();
 
-						if(curgear == 0) gear_changed = true;
-						else if(curgear == -1) gear_changed = INPUTENGINE.getEventBoolValue(EV_TRUCK_SHIFT_GEAR_REVERSE);
-						else if(curgear > 0 && curgear < 19) gear_changed = INPUTENGINE.getEventBoolValue(EV_TRUCK_SHIFT_GEAR1 + curgear -1);
+						if(curgear == 0)
+							gear_changed = true;
+						else if(curgear == -1)
+							gear_changed = !INPUTENGINE.getEventBoolValue(EV_TRUCK_SHIFT_GEAR_REVERSE);
+						else if(curgear > 0 && curgear < 19)
+							gear_changed = !INPUTENGINE.getEventBoolValue(EV_TRUCK_SHIFT_GEAR1 + curgear -1);
 						
 						if (gear_changed)
 						{
-							if      (INPUTENGINE.getEventBoolValue(EV_TRUCK_SHIFT_NEUTRAL)) 	trucks[current_truck]->engine->shiftTo(0);
-							else if (INPUTENGINE.getEventBoolValue(EV_TRUCK_SHIFT_UP)) 		trucks[current_truck]->engine->shift(1);
-							else if (INPUTENGINE.getEventBoolValue(EV_TRUCK_SHIFT_DOWN)) 	trucks[current_truck]->engine->shift(-1);
-							else if (INPUTENGINE.getEventBoolValue(EV_TRUCK_SHIFT_GEAR1))	trucks[current_truck]->engine->shiftTo(1);
-							else if (INPUTENGINE.getEventBoolValue(EV_TRUCK_SHIFT_GEAR2)) 	trucks[current_truck]->engine->shiftTo(2);
-							else if (INPUTENGINE.getEventBoolValue(EV_TRUCK_SHIFT_GEAR3)) 	trucks[current_truck]->engine->shiftTo(3);
-							else if (INPUTENGINE.getEventBoolValue(EV_TRUCK_SHIFT_GEAR4)) 	trucks[current_truck]->engine->shiftTo(4);
-							else if (INPUTENGINE.getEventBoolValue(EV_TRUCK_SHIFT_GEAR5)) 	trucks[current_truck]->engine->shiftTo(5);
-							else if (INPUTENGINE.getEventBoolValue(EV_TRUCK_SHIFT_GEAR6)) 	trucks[current_truck]->engine->shiftTo(6);
-							else if (INPUTENGINE.getEventBoolValue(EV_TRUCK_SHIFT_GEAR_REVERSE)) trucks[current_truck]->engine->shiftTo(-1);
-							else if (INPUTENGINE.getEventBoolValue(EV_TRUCK_SHIFT_GEAR7)) 	trucks[current_truck]->engine->shiftTo(7);
-							else if (INPUTENGINE.getEventBoolValue(EV_TRUCK_SHIFT_GEAR8)) 	trucks[current_truck]->engine->shiftTo(8);
-							else if (INPUTENGINE.getEventBoolValue(EV_TRUCK_SHIFT_GEAR9)) 	trucks[current_truck]->engine->shiftTo(9);
-							else if (INPUTENGINE.getEventBoolValue(EV_TRUCK_SHIFT_GEAR10))	trucks[current_truck]->engine->shiftTo(10);
-							else if (INPUTENGINE.getEventBoolValue(EV_TRUCK_SHIFT_GEAR11))	trucks[current_truck]->engine->shiftTo(11);
-							else if (INPUTENGINE.getEventBoolValue(EV_TRUCK_SHIFT_GEAR12)) 	trucks[current_truck]->engine->shiftTo(12);
-							else if (INPUTENGINE.getEventBoolValue(EV_TRUCK_SHIFT_GEAR13)) 	trucks[current_truck]->engine->shiftTo(12);
-							else if (INPUTENGINE.getEventBoolValue(EV_TRUCK_SHIFT_GEAR14)) 	trucks[current_truck]->engine->shiftTo(12);
-							else if (INPUTENGINE.getEventBoolValue(EV_TRUCK_SHIFT_GEAR15)) 	trucks[current_truck]->engine->shiftTo(12);
-							else if (INPUTENGINE.getEventBoolValue(EV_TRUCK_SHIFT_GEAR16)) 	trucks[current_truck]->engine->shiftTo(12);
-							else if (INPUTENGINE.getEventBoolValue(EV_TRUCK_SHIFT_GEAR17)) 	trucks[current_truck]->engine->shiftTo(12);
-							else if (INPUTENGINE.getEventBoolValue(EV_TRUCK_SHIFT_GEAR18)) 	trucks[current_truck]->engine->shiftTo(12);
+							if      (INPUTENGINE.getEventBoolValue(EV_TRUCK_SHIFT_GEAR_REVERSE)) trucks[current_truck]->engine->shiftTo(-1);
+							else if (INPUTENGINE.getEventBoolValue(EV_TRUCK_SHIFT_NEUTRAL)) trucks[current_truck]->engine->shiftTo(0);
+							else if (INPUTENGINE.getEventBoolValue(EV_TRUCK_SHIFT_UP))      trucks[current_truck]->engine->shift(1);
+							else if (INPUTENGINE.getEventBoolValue(EV_TRUCK_SHIFT_DOWN))    trucks[current_truck]->engine->shift(-1);
+							else if (INPUTENGINE.getEventBoolValue(EV_TRUCK_SHIFT_GEAR1))   trucks[current_truck]->engine->shiftTo(1);
+							else if (INPUTENGINE.getEventBoolValue(EV_TRUCK_SHIFT_GEAR2))   trucks[current_truck]->engine->shiftTo(2);
+							else if (INPUTENGINE.getEventBoolValue(EV_TRUCK_SHIFT_GEAR3))   trucks[current_truck]->engine->shiftTo(3);
+							else if (INPUTENGINE.getEventBoolValue(EV_TRUCK_SHIFT_GEAR4))   trucks[current_truck]->engine->shiftTo(4);
+							else if (INPUTENGINE.getEventBoolValue(EV_TRUCK_SHIFT_GEAR5))   trucks[current_truck]->engine->shiftTo(5);
+							else if (INPUTENGINE.getEventBoolValue(EV_TRUCK_SHIFT_GEAR6))   trucks[current_truck]->engine->shiftTo(6);
+							else if (INPUTENGINE.getEventBoolValue(EV_TRUCK_SHIFT_GEAR7))   trucks[current_truck]->engine->shiftTo(7);
+							else if (INPUTENGINE.getEventBoolValue(EV_TRUCK_SHIFT_GEAR8))   trucks[current_truck]->engine->shiftTo(8);
+							else if (INPUTENGINE.getEventBoolValue(EV_TRUCK_SHIFT_GEAR9))   trucks[current_truck]->engine->shiftTo(9);
+							else if (INPUTENGINE.getEventBoolValue(EV_TRUCK_SHIFT_GEAR10))  trucks[current_truck]->engine->shiftTo(10);
+							else if (INPUTENGINE.getEventBoolValue(EV_TRUCK_SHIFT_GEAR11))  trucks[current_truck]->engine->shiftTo(11);
+							else if (INPUTENGINE.getEventBoolValue(EV_TRUCK_SHIFT_GEAR12))  trucks[current_truck]->engine->shiftTo(12);
+							else if (INPUTENGINE.getEventBoolValue(EV_TRUCK_SHIFT_GEAR13))  trucks[current_truck]->engine->shiftTo(12);
+							else if (INPUTENGINE.getEventBoolValue(EV_TRUCK_SHIFT_GEAR14))  trucks[current_truck]->engine->shiftTo(12);
+							else if (INPUTENGINE.getEventBoolValue(EV_TRUCK_SHIFT_GEAR15))  trucks[current_truck]->engine->shiftTo(12);
+							else if (INPUTENGINE.getEventBoolValue(EV_TRUCK_SHIFT_GEAR16))  trucks[current_truck]->engine->shiftTo(12);
+							else if (INPUTENGINE.getEventBoolValue(EV_TRUCK_SHIFT_GEAR17))  trucks[current_truck]->engine->shiftTo(12);
+							else if (INPUTENGINE.getEventBoolValue(EV_TRUCK_SHIFT_GEAR18))  trucks[current_truck]->engine->shiftTo(12);
 							else if (curgear!=0) trucks[current_truck]->engine->shiftTo(0);
 						}
 					}
