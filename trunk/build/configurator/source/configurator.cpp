@@ -2267,7 +2267,12 @@ void MyDialog::SaveConfig()
 	getSettingsControls();
 
 	// then set stuff and write configs
-	INPUTENGINE.saveMapping(conv(InputMapFileName));
+	if(!INPUTENGINE.saveMapping(conv(InputMapFileName)))
+	{
+		wxMessageDialog(this, wxString(_("Could not write to input.map file")), wxString(_("Write error")),wxOK||wxICON_ERROR).ShowModal();
+		return;
+	}
+
 
 	//save Ogre stuff
 	Ogre::RenderSystem *rs = ogreRoot->getRenderSystem();
@@ -2627,7 +2632,10 @@ void MyDialog::OnButAddKey(wxCommandEvent& event)
 		cTree->EnsureVisible(treeItems[suid]);
 		cTree->SelectItem(treeItems[suid]);
 		remapControl();
-		INPUTENGINE.saveMapping(conv(InputMapFileName));
+		if(!INPUTENGINE.saveMapping(conv(InputMapFileName)))
+		{
+			wxMessageDialog(this, wxString(_("Could not write to input.map file")), wxString(_("Write error")),wxOK||wxICON_ERROR).ShowModal();
+		}
 	}
 }
 
