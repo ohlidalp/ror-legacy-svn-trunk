@@ -508,20 +508,21 @@ void ExampleFrameListener::updateGUI(float dt)
 			sprintf(type, "Object: %s", editor->curtype);
 			OverlayManager::getSingleton().getOverlayElement("tracks/EditorObject")->setCaption(type);
 		}
-		if (trucks[current_truck]->engine->getGear()>0)
+		int truck_getgear = trucks[current_truck]->engine->getGear();
+		
+		if (truck_getgear>0)
 		{
-			int gear = trucks[current_truck]->engine->getGear();
 			int numgears = trucks[current_truck]->engine->getNumGears();
-			String gearstr = StringConverter::toString(gear) + "/" + StringConverter::toString(numgears);
+			String gearstr = StringConverter::toString(truck_getgear) + "/" + StringConverter::toString(numgears);
 			guiGear->setCaption(gearstr);
 			guiGear3D->setCaption(gearstr);
 		}
-		if (trucks[current_truck]->engine->getGear()==0)
+		else if (truck_getgear==0)
 		{
 			guiGear->setCaption("N");
 			guiGear3D->setCaption("N");
 		}
-		if (trucks[current_truck]->engine->getGear()<0)
+		else
 		{
 			guiGear->setCaption("R");
 			guiGear3D->setCaption("R");
@@ -2823,25 +2824,13 @@ bool ExampleFrameListener::updateEvents(float dt)
 							ssm->trigStart(current_truck, SS_TRIG_BRAKE);
 						else
 							ssm->trigStop(current_truck, SS_TRIG_BRAKE);
-					};
-
-					if (INPUTENGINE.getEventBoolValueBounce(EV_TRUCK_AUTOSHIFT_UP) && !trucks[current_truck]->replaymode)
-					{
-						if(trucks[current_truck]->engine)
-							trucks[current_truck]->engine->autoShiftUp();
 					}
 
-					if (INPUTENGINE.getEventBoolValueBounce(EV_TRUCK_AUTOSHIFT_DOWN) && !trucks[current_truck]->replaymode)
+					if (!trucks[current_truck]->replaymode && trucks[current_truck]->engine)
 					{
-						if(trucks[current_truck]->engine)
-							trucks[current_truck]->engine->autoShiftDown();
-					}
-
-					if (INPUTENGINE.getEventBoolValueBounce(EV_TRUCK_TOGGLE_CONTACT) && !trucks[current_truck]->replaymode)
-					{
-						// contact
-						if(trucks[current_truck]->engine)
-							trucks[current_truck]->engine->toggleContact();
+						if (INPUTENGINE.getEventBoolValueBounce(EV_TRUCK_AUTOSHIFT_UP)) 	trucks[current_truck]->engine->autoShiftUp();
+						if (INPUTENGINE.getEventBoolValueBounce(EV_TRUCK_AUTOSHIFT_DOWN))	trucks[current_truck]->engine->autoShiftDown();
+						if (INPUTENGINE.getEventBoolValueBounce(EV_TRUCK_TOGGLE_CONTACT))	trucks[current_truck]->engine->toggleContact();
 					}
 
 					if(trucks[current_truck]->engine)
@@ -2851,22 +2840,67 @@ bool ExampleFrameListener::updateEvents(float dt)
 							//starter
 							trucks[current_truck]->engine->setstarter(1);
 							ssm->trigStart(current_truck, SS_TRIG_STARTER);
-						} else
+						} 
+						else
 						{
 							trucks[current_truck]->engine->setstarter(0);
 							ssm->trigStop(current_truck, SS_TRIG_STARTER);
 						}
+
+						if (INPUTENGINE.getEventBoolValueBounce(EV_TRUCK_SWITCH_SHIFT_MODES))
+						{
+							//Toggle Auto shift
+							trucks[current_truck]->engine->toggleAutoMode();
+							switch(trucks[current_truck]->engine->getAutoMode())
+							{
+								case AUTOMATIC: flashMessage(_L("Automatic shift")); break;
+								case SEMIAUTO: flashMessage(_L("Manual shift - Auto clutch")); break;
+								case MANUAL: flashMessage(_L("Fully Manual shift")); break;
+							}
+						}
 					}
 
-					if (INPUTENGINE.getEventBoolValueBounce(EV_TRUCK_SWITCH_SHIFT_MODES) && trucks[current_truck]->engine)
+					
+					//joy clutch
+					float cval = INPUTENGINE.getEventValue(EV_TRUCK_MANUAL_CLUTCH);
+					if(trucks[current_truck]->engine) trucks[current_truck]->engine->setManualClutch(cval);
+
+					/* direct shift part */
+					if (trucks[current_truck]->engine)
+					if (trucks[current_truck]->engine->getAutoMode()==MANUAL)
 					{
-						//Toggle Auto shift
-						if(trucks[current_truck]->engine)
+						bool gear_changed = true;
+						int curgear  = trucks[current_truck]->engine->getGear();
+
+						if(curgear == 0) gear_changed = true;
+						else if(curgear == -1) gear_changed = INPUTENGINE.getEventBoolValue(EV_TRUCK_SHIFT_GEAR_REVERSE);
+						else if(curgear > 0 && curgear < 19) gear_changed = INPUTENGINE.getEventBoolValue(EV_TRUCK_SHIFT_GEAR1 + curgear -1);
+						
+						if (gear_changed)
 						{
-							trucks[current_truck]->engine->toggleAutoMode();
-							if (trucks[current_truck]->engine->getAutoMode()==AUTOMATIC) flashMessage(_L("Automatic shift"));
-							if (trucks[current_truck]->engine->getAutoMode()==SEMIAUTO) flashMessage(_L("Manual shift - Auto clutch"));
-							if (trucks[current_truck]->engine->getAutoMode()==MANUAL) flashMessage(_L("Fully Manual shift"));
+							if      (INPUTENGINE.getEventBoolValue(EV_TRUCK_SHIFT_NEUTRAL)) 	trucks[current_truck]->engine->shiftTo(0);
+							else if (INPUTENGINE.getEventBoolValue(EV_TRUCK_SHIFT_UP)) 		trucks[current_truck]->engine->shift(1);
+							else if (INPUTENGINE.getEventBoolValue(EV_TRUCK_SHIFT_DOWN)) 	trucks[current_truck]->engine->shift(-1);
+							else if (INPUTENGINE.getEventBoolValue(EV_TRUCK_SHIFT_GEAR1))	trucks[current_truck]->engine->shiftTo(1);
+							else if (INPUTENGINE.getEventBoolValue(EV_TRUCK_SHIFT_GEAR2)) 	trucks[current_truck]->engine->shiftTo(2);
+							else if (INPUTENGINE.getEventBoolValue(EV_TRUCK_SHIFT_GEAR3)) 	trucks[current_truck]->engine->shiftTo(3);
+							else if (INPUTENGINE.getEventBoolValue(EV_TRUCK_SHIFT_GEAR4)) 	trucks[current_truck]->engine->shiftTo(4);
+							else if (INPUTENGINE.getEventBoolValue(EV_TRUCK_SHIFT_GEAR5)) 	trucks[current_truck]->engine->shiftTo(5);
+							else if (INPUTENGINE.getEventBoolValue(EV_TRUCK_SHIFT_GEAR6)) 	trucks[current_truck]->engine->shiftTo(6);
+							else if (INPUTENGINE.getEventBoolValue(EV_TRUCK_SHIFT_GEAR_REVERSE)) trucks[current_truck]->engine->shiftTo(-1);
+							else if (INPUTENGINE.getEventBoolValue(EV_TRUCK_SHIFT_GEAR7)) 	trucks[current_truck]->engine->shiftTo(7);
+							else if (INPUTENGINE.getEventBoolValue(EV_TRUCK_SHIFT_GEAR8)) 	trucks[current_truck]->engine->shiftTo(8);
+							else if (INPUTENGINE.getEventBoolValue(EV_TRUCK_SHIFT_GEAR9)) 	trucks[current_truck]->engine->shiftTo(9);
+							else if (INPUTENGINE.getEventBoolValue(EV_TRUCK_SHIFT_GEAR10))	trucks[current_truck]->engine->shiftTo(10);
+							else if (INPUTENGINE.getEventBoolValue(EV_TRUCK_SHIFT_GEAR11))	trucks[current_truck]->engine->shiftTo(11);
+							else if (INPUTENGINE.getEventBoolValue(EV_TRUCK_SHIFT_GEAR12)) 	trucks[current_truck]->engine->shiftTo(12);
+							else if (INPUTENGINE.getEventBoolValue(EV_TRUCK_SHIFT_GEAR13)) 	trucks[current_truck]->engine->shiftTo(12);
+							else if (INPUTENGINE.getEventBoolValue(EV_TRUCK_SHIFT_GEAR14)) 	trucks[current_truck]->engine->shiftTo(12);
+							else if (INPUTENGINE.getEventBoolValue(EV_TRUCK_SHIFT_GEAR15)) 	trucks[current_truck]->engine->shiftTo(12);
+							else if (INPUTENGINE.getEventBoolValue(EV_TRUCK_SHIFT_GEAR16)) 	trucks[current_truck]->engine->shiftTo(12);
+							else if (INPUTENGINE.getEventBoolValue(EV_TRUCK_SHIFT_GEAR17)) 	trucks[current_truck]->engine->shiftTo(12);
+							else if (INPUTENGINE.getEventBoolValue(EV_TRUCK_SHIFT_GEAR18)) 	trucks[current_truck]->engine->shiftTo(12);
+							else if (curgear!=0) trucks[current_truck]->engine->shiftTo(0);
 						}
 					}
 
@@ -2881,28 +2915,6 @@ bool ExampleFrameListener::updateEvents(float dt)
 							trucks[current_truck]->toggleAxleLock();
 							flashMessage(_L("Differentials switched to: ") + _L(trucks[current_truck]->getAxleLockName()) );
 						}
-					}
-					//joy clutch
-					float cval = INPUTENGINE.getEventValue(EV_TRUCK_MANUAL_CLUTCH);
-					if(trucks[current_truck]->engine)
-						trucks[current_truck]->engine->setManualClutch(cval);
-
-					if (INPUTENGINE.getEventBoolValueBounce(EV_TRUCK_SHIFT_UP) && trucks[current_truck]->engine)
-					{
-						//Shift up
-						trucks[current_truck]->engine->shift(1);
-					}
-
-					if (INPUTENGINE.getEventBoolValueBounce(EV_TRUCK_SHIFT_DOWN) && trucks[current_truck]->engine)
-					{
-						//Shift down
-						trucks[current_truck]->engine->shift(-1);
-					}
-
-					if (INPUTENGINE.getEventBoolValueBounce(EV_TRUCK_SHIFT_NEUTRAL) && trucks[current_truck]->engine)
-					{
-						//Shift down
-						trucks[current_truck]->engine->shiftTo(0);
 					}
 
 					if (trucks[current_truck]->ispolice)
