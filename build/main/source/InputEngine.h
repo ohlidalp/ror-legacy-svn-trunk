@@ -335,9 +335,15 @@ typedef struct
 	bool joystickAxisReverse;
 	bool joystickAxisHalf;
 	bool joystickAxisUseDigital;
+
+
 	// POVs
 	int joystickPovNumber;
+	int joystickPovDirection;
+	
+	// Sliders
 	int joystickSliderNumber;
+	int joystickSliderReverse;
 
 	//others
 	char configline[128];

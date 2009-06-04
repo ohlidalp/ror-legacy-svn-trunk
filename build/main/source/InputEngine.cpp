@@ -1402,10 +1402,6 @@ eventInfo_t eventInfo[] = {
 #define strnlen(str,len) strlen(str)
 #endif
 
-// using head for all OS's
-#define OIS_HEAD 1
-
-
 //Use this define to signify OIS will be used as a DLL
 //(so that dll import/export macros are in effect)
 #define OIS_DYNAMIC_LIB
@@ -2040,27 +2036,15 @@ float InputEngine::getEventValue(int eventID)
 						value=0;
 						continue;
 					}
-#ifdef OIS_HEAD
 					if(t.joystickButtonNumber >= (int)mJoy->getNumberOfComponents(OIS_Button))
-#else
-					if(t.joystickButtonNumber >= (int)mJoy->buttons())
-#endif
 					{
 #ifndef NOOGRE
-#ifdef OIS_HEAD
 						LogManager::getSingleton().logMessage("*** Joystick has not enough buttons for mapping: need button "+StringConverter::toString(t.joystickButtonNumber) + ", availabe buttons: "+StringConverter::toString(mJoy->getNumberOfComponents(OIS_Button)));
-#else
-						LogManager::getSingleton().logMessage("*** Joystick has not enough buttons for mapping: need button "+StringConverter::toString(t.joystickButtonNumber) + ", availabe buttons: "+StringConverter::toString(mJoy->buttons()));
-#endif
 #endif
 						value=0;
 						continue;
 					}
-#ifdef OIS_HEAD
 					value = joyState.mButtons[t.joystickButtonNumber];
-#else
-					value = joyState.buttonDown(t.joystickButtonNumber);
-#endif
 				}
 				break;
 			case ET_JoystickAxisRel:
@@ -2145,23 +2129,18 @@ float InputEngine::getEventValue(int eventID)
 						value=0;
 						continue;
 					}
-#ifdef OIS_HEAD
-					if(t.joystickButtonNumber >= (int)mJoy->getNumberOfComponents(OIS_POV))
-#else
-					if(t.joystickPovNumber >= (int)mJoy->hats())
-#endif
+					if(t.joystickPovNumber >= (int)mJoy->getNumberOfComponents(OIS_POV))
 					{
 #ifndef NOOGRE
-#ifdef OIS_HEAD
 						LogManager::getSingleton().logMessage("*** Joystick has not enough POVs for mapping: need POV "+StringConverter::toString(t.joystickPovNumber) + ", availabe POVs: "+StringConverter::toString(mJoy->getNumberOfComponents(OIS_POV)));
-#else
-						LogManager::getSingleton().logMessage("*** Joystick has not enough POVs for mapping: need POV "+StringConverter::toString(t.joystickPovNumber) + ", availabe POVs: "+StringConverter::toString(mJoy->hats()));
-#endif
 #endif
 						value=0;
 						continue;
 					}
-					value = joyState.mPOV[t.joystickPovNumber].direction;
+					if(joyState.mPOV[t.joystickPovNumber].direction & t.joystickPovDirection)
+						value = 1;
+					else
+						value = 0;
 				}
 				break;
 			case ET_JoystickSliderX:
@@ -2171,7 +2150,10 @@ float InputEngine::getEventValue(int eventID)
 						 value=0;
 						 continue;
 					}
-					value = joyState.mSliders[t.joystickSliderNumber].abX / mJoy->MAX_AXIS;
+					value = (float)joyState.mSliders[t.joystickSliderNumber].abX / (float)mJoy->MAX_AXIS;
+					value = (value + 1)/2; // full axis
+					if(t.joystickSliderReverse)
+						value = 1.0 - value; // reversed
 				}
 				break;
 			case ET_JoystickSliderY:
@@ -2181,7 +2163,10 @@ float InputEngine::getEventValue(int eventID)
 						value=0;
 						continue;
 					}
-					value = joyState.mSliders[t.joystickSliderNumber].abY / mJoy->MAX_AXIS;
+					value = (float)joyState.mSliders[t.joystickSliderNumber].abY / (float)mJoy->MAX_AXIS;
+					value = (value + 1)/2; // full axis
+					if(t.joystickSliderReverse)
+						value = 1.0 - value; // reversed
 				}
 				break;
 		}
@@ -2457,9 +2442,74 @@ bool InputEngine::processLine(char *line)
 	case ET_MouseAxisX:
 	case ET_MouseAxisY:
 	case ET_MouseAxisZ:
+		// no mouse support D:
+		return false;
 	case ET_JoystickPov:
+		{
+			int povNumber=0;
+			char dir[250];
+			memset(dir, 0, 250);
+			sscanf(line, "%s %s %d %s", eventName, evtype, &povNumber, dir);
+			int eventID = resolveEventName(String(eventName));
+			if(eventID == -1) return false;
+
+			int direction = OIS::Pov::Centered;
+			if(!strcmp(dir, "North")) direction = OIS::Pov::North;
+			if(!strcmp(dir, "South")) direction = OIS::Pov::South;
+			if(!strcmp(dir, "East")) direction = OIS::Pov::East;
+			if(!strcmp(dir, "West")) direction = OIS::Pov::West;
+			if(!strcmp(dir, "NorthEast")) direction = OIS::Pov::NorthEast;
+			if(!strcmp(dir, "SouthEast")) direction = OIS::Pov::SouthEast;
+			if(!strcmp(dir, "NorthWest")) direction = OIS::Pov::NorthWest;
+			if(!strcmp(dir, "SouthWest")) direction = OIS::Pov::SouthWest;
+
+			event_trigger_t t_pov = newEvent();
+			t_pov.eventtype = eventtype;
+			t_pov.joystickPovNumber = povNumber;
+			t_pov.joystickPovDirection = direction;
+
+			strncpy(t_pov.group, getEventGroup(eventName).c_str(), 128);
+			strncpy(t_pov.tmp_eventname, eventName, 128);
+			strncpy(t_pov.comments, cur_comment.c_str(), 1024);
+			cur_comment = "";
+			addEvent(eventID, t_pov);
+			//LogManager::getSingleton().logMessage("added axis: " + StringConverter::toString(axisNo));
+			return true;
+		}
 	case ET_JoystickSliderX:
 	case ET_JoystickSliderY:
+		{
+			int sliderNumber=0;
+			char options[250];
+			memset(options, 0, 250);
+			sscanf(line, "%s %s %d %s", eventName, evtype, &sliderNumber, options);
+			int eventID = resolveEventName(String(eventName));
+			if(eventID == -1) return false;
+
+			bool reverse=false;
+			char tmp[250] = "";
+			strncpy(tmp, options, 250);
+			char *token = strtok(tmp, delimiters);
+			while (token != NULL)
+			{
+				if (strncmp(token, "REVERSE", 7) == 0)
+					reverse=true;
+
+				token = strtok(NULL, delimiters);
+			}
+
+			event_trigger_t t_slider = newEvent();
+			t_slider.eventtype = eventtype;
+			t_slider.joystickSliderNumber = sliderNumber;
+			t_slider.joystickSliderReverse = reverse;
+			strncpy(t_slider.group, getEventGroup(eventName).c_str(), 128);
+			strncpy(t_slider.tmp_eventname, eventName, 128);
+			strncpy(t_slider.comments, cur_comment.c_str(), 1024);
+			cur_comment = "";
+			addEvent(eventID, t_slider);
+			//LogManager::getSingleton().logMessage("added axis: " + StringConverter::toString(axisNo));
+			return true;
+		}
 	default:
 		return false;
 	}
@@ -2469,12 +2519,8 @@ bool InputEngine::processLine(char *line)
 int InputEngine::getCurrentJoyButton()
 {
 	for(int i=0;i<(int)joyState.mButtons.size();i++)
-#ifdef OIS_HEAD
-		if(joyState.mButtons[i])
-#else
-		if(joyState.buttonDown(i))
-#endif
-			return i;
+	if(joyState.mButtons[i])
+		return i;
 	return -1;
 }
 

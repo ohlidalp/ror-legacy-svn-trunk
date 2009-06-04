@@ -223,9 +223,6 @@ IF(ROR_BUILD_ANGELSCRIPT)
   include_directories (${RoR_Dependencies_SOURCE_DIR}/angelscript/add_on)
 ENDIF(ROR_BUILD_ANGELSCRIPT)
 
-# general flags
-add_definitions("-DOIS_HEAD")
-
 # platform specific flags
 IF(WIN32)
   include_directories (${RoR_Dependencies_SOURCE_DIR}/pthreads/Pre-built.2/include)
