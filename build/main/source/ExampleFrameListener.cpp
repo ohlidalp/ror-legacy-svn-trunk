@@ -2878,13 +2878,16 @@ bool ExampleFrameListener::updateEvents(float dt)
 							gear_changed = !INPUTENGINE.getEventBoolValue(EV_TRUCK_SHIFT_GEAR_REVERSE);
 						else if(curgear > 0 && curgear < 19)
 							gear_changed = !INPUTENGINE.getEventBoolValue(EV_TRUCK_SHIFT_GEAR1 + curgear -1);
+
+						// we need to ask for that separately
+						if (INPUTENGINE.getEventBoolValueBounce(EV_TRUCK_SHIFT_UP))      trucks[current_truck]->engine->shift(1);
+						else if (INPUTENGINE.getEventBoolValueBounce(EV_TRUCK_SHIFT_DOWN))    trucks[current_truck]->engine->shift(-1);
 						
+						// direct to gear changes
 						if (gear_changed)
 						{
 							if      (INPUTENGINE.getEventBoolValue(EV_TRUCK_SHIFT_GEAR_REVERSE)) trucks[current_truck]->engine->shiftTo(-1);
 							else if (INPUTENGINE.getEventBoolValue(EV_TRUCK_SHIFT_NEUTRAL)) trucks[current_truck]->engine->shiftTo(0);
-							else if (INPUTENGINE.getEventBoolValue(EV_TRUCK_SHIFT_UP))      trucks[current_truck]->engine->shift(1);
-							else if (INPUTENGINE.getEventBoolValue(EV_TRUCK_SHIFT_DOWN))    trucks[current_truck]->engine->shift(-1);
 							else if (INPUTENGINE.getEventBoolValue(EV_TRUCK_SHIFT_GEAR1))   trucks[current_truck]->engine->shiftTo(1);
 							else if (INPUTENGINE.getEventBoolValue(EV_TRUCK_SHIFT_GEAR2))   trucks[current_truck]->engine->shiftTo(2);
 							else if (INPUTENGINE.getEventBoolValue(EV_TRUCK_SHIFT_GEAR3))   trucks[current_truck]->engine->shiftTo(3);
@@ -3173,10 +3176,8 @@ bool ExampleFrameListener::updateEvents(float dt)
 					if (!trucks[current_truck]->replaymode && !trucks[current_truck]->parkingbrake)
 					{
 						trucks[current_truck]->brake=0.0;
-						if (INPUTENGINE.getEventBoolValue(EV_AIRPLANE_BRAKE))
-						{
-							trucks[current_truck]->brake=trucks[current_truck]->brakeforce*0.66;
-						}
+						float brakevalue = INPUTENGINE.getEventValue(EV_AIRPLANE_BRAKE);
+						trucks[current_truck]->brake=trucks[current_truck]->brakeforce*0.66*brakevalue;
 					};
 					if (INPUTENGINE.getEventBoolValueBounce(EV_AIRPLANE_PARKING_BRAKE))
 					{
