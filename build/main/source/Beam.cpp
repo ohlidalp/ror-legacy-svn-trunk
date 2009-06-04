@@ -1746,7 +1746,6 @@ int Beam::loadTruck(char* fname, SceneManager *manager, SceneNode *parent, Real 
 						break;
 					case 'p':
 						// progressive shock
-						shockflag &= ~SHOCK_FLAG_NORMAL; // not normal anymore
 						shockflag |= SHOCK_FLAG_PROGRESSIVE;
 						break;
 					case 's':
@@ -1756,12 +1755,10 @@ int Beam::loadTruck(char* fname, SceneManager *manager, SceneNode *parent, Real 
 						break;
 					case 'I':
 						// Inbound only shock
-						shockflag &= ~SHOCK_FLAG_NORMAL; // not normal anymore
 						shockflag |= SHOCK_FLAG_IBOUND;
 						break;
 					case 'O':
 						// Outbound only shock
-						shockflag &= ~SHOCK_FLAG_NORMAL; // not normal anymore
 						shockflag |= SHOCK_FLAG_OBOUND;
 						break;
 					case 'm':
