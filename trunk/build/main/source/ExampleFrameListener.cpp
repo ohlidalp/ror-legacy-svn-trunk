@@ -2804,7 +2804,7 @@ bool ExampleFrameListener::updateEvents(float dt)
 						if(sum > 1) sum = 1;
 						//LogManager::getSingleton().logMessage("steer: "+StringConverter::toString(sum));
 						trucks[current_truck]->hydrodircommand = sum;
-						trucks[current_truck]->hydroSpeedCoupling = INPUTENGINE.isEventAnalog(EV_TRUCK_STEER_LEFT) && INPUTENGINE.isEventAnalog(EV_TRUCK_STEER_RIGHT);
+						trucks[current_truck]->hydroSpeedCoupling = !(INPUTENGINE.isEventAnalog(EV_TRUCK_STEER_LEFT) && INPUTENGINE.isEventAnalog(EV_TRUCK_STEER_RIGHT));
 					}
 
 
@@ -3159,7 +3159,7 @@ bool ExampleFrameListener::updateEvents(float dt)
 						float sum_steer = -tmp_left + tmp_right;
 						INPUTENGINE.smoothValue(trucks[current_truck]->aileron, sum_steer, dt*commandrate);
 						trucks[current_truck]->hydrodircommand = trucks[current_truck]->aileron;
-						trucks[current_truck]->hydroSpeedCoupling = INPUTENGINE.isEventAnalog(EV_AIRPLANE_STEER_LEFT) && INPUTENGINE.isEventAnalog(EV_AIRPLANE_STEER_RIGHT);
+						trucks[current_truck]->hydroSpeedCoupling = !(INPUTENGINE.isEventAnalog(EV_AIRPLANE_STEER_LEFT) && INPUTENGINE.isEventAnalog(EV_AIRPLANE_STEER_RIGHT));
 					}
 
 					//pitch
