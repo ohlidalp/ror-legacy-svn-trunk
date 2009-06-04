@@ -1725,7 +1725,6 @@ int Beam::loadTruck(char* fname, SceneManager *manager, SceneNode *parent, Real 
 			int shockflag = SHOCK_FLAG_NORMAL;
 			
 			// now 'parse' the options
-			char shockprogression = 'n', shockbump = 'n', shockfeature= 'n';
 			char *options_pointer = options;
 			while (*options_pointer != 0)
 			{
@@ -1735,34 +1734,34 @@ int Beam::loadTruck(char* fname, SceneManager *manager, SceneNode *parent, Real 
 						htype=BEAM_INVISIBLE_HYDRO;
 						shockflag |= SHOCK_FLAG_INVISIBLE;
 						break;
+					case 'l':
 					case 'L':
-						shockflag &= SHOCK_FLAG_NORMAL; // not normal anymore
 						shockflag |= SHOCK_FLAG_LACTIVE;
 						free_active_shock++; // this has no array associated with it. its just to determine if there are active shocks!
 						break;
+					case 'r':
 					case 'R':
-						shockflag &= SHOCK_FLAG_NORMAL; // not normal anymore
 						shockflag |= SHOCK_FLAG_RACTIVE;
 						free_active_shock++; // this has no array associated with it. its just to determine if there are active shocks!
 						break;
 					case 'p':
-						// progressive shock test
-						shockflag &= SHOCK_FLAG_NORMAL; // not normal anymore
+						// progressive shock
+						shockflag &= ~SHOCK_FLAG_NORMAL; // not normal anymore
 						shockflag |= SHOCK_FLAG_PROGRESSIVE;
 						break;
 					case 's':
-						// passive shock test
-						shockflag &= SHOCK_FLAG_NORMAL; // not normal anymore
+						// passive shock
+						shockflag &= ~SHOCK_FLAG_NORMAL; // not normal anymore
 						shockflag |= SHOCK_FLAG_PASSIVE;
 						break;
 					case 'I':
-						// Inbound only shock test
-						shockflag &= SHOCK_FLAG_NORMAL; // not normal anymore
+						// Inbound only shock
+						shockflag &= ~SHOCK_FLAG_NORMAL; // not normal anymore
 						shockflag |= SHOCK_FLAG_IBOUND;
 						break;
 					case 'O':
-						// Outbound only shock test
-						shockflag &= SHOCK_FLAG_NORMAL; // not normal anymore
+						// Outbound only shock
+						shockflag &= ~SHOCK_FLAG_NORMAL; // not normal anymore
 						shockflag |= SHOCK_FLAG_OBOUND;
 						break;
 					case 'm':
@@ -5486,6 +5485,7 @@ void Beam::calcForcesEuler(int doUpdate, Real dt, int step, int maxstep, Beam** 
 				
 				//dampers bump
 				Real difftoBeamL = dislen - beams[i].L;
+				bool normalShock=false;
 				if (beams[i].bounded && beams[i].shock)
 				{
 					if(beams[i].shock->flags & SHOCK_FLAG_PROGRESSIVE)
@@ -5537,17 +5537,21 @@ void Beam::calcForcesEuler(int doUpdate, Real dt, int step, int maxstep, Beam** 
 								k=DEFAULT_SPRING;
 								d=DEFAULT_DAMP;
 						}
+						if(beams[i].shock->flags & SHOCK_FLAG_NORMAL)
+							normalShock = true;
 
 					}
 						
-					if(beams[i].shock->flags & SHOCK_FLAG_NORMAL)
+				} else if (beams[i].bounded && !beams[i].shock)
+					normalShock = true;
+
+				if(normalShock)
+				{
+					// hard (normal) shock bump
+					if (difftoBeamL > beams[i].longbound*beams[i].L || difftoBeamL < -beams[i].shortbound*beams[i].L)
 					{
-						// hard (normal) shock bump
-						if (difftoBeamL > beams[i].longbound*beams[i].L || difftoBeamL < -beams[i].shortbound*beams[i].L)
-						{
-							k=DEFAULT_SPRING;
-							d=DEFAULT_DAMP;
-						}
+						k=DEFAULT_SPRING;
+						d=DEFAULT_DAMP;
 					}
 				}
 				Vector3 v=beams[i].p1->Velocity-beams[i].p2->Velocity;
@@ -6596,7 +6600,7 @@ void Beam::calcForcesEuler(int doUpdate, Real dt, int step, int maxstep, Beam** 
 		}
 	}
 	//auto shock adjust
-	if (doUpdate && free_active_shock)
+	if (free_active_shock && doUpdate)
 	{
 		Vector3 dir=nodes[cameranodepos[0]].RelPosition-nodes[cameranoderoll[0]].RelPosition;
 		dir.normalise();
