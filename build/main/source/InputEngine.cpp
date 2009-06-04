@@ -2663,6 +2663,8 @@ bool InputEngine::updateConfigline(event_trigger_t *t)
 bool InputEngine::saveMapping(Ogre::String outfile)
 {
 	FILE *f = fopen(const_cast<char *>(outfile.c_str()),"w");
+	if(!f)
+		return false;
 	std::map<int, std::vector<event_trigger_t> > controls = getEvents();
 	std::map<int, std::vector<event_trigger_t> >::iterator mapIt;
 	std::vector<event_trigger_t>::iterator vecIt;
