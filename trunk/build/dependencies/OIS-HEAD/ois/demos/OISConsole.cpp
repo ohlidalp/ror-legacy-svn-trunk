@@ -109,6 +109,11 @@ public:
 		std::cout << std::endl << arg.device->vendor() << ". Button Released # " << button;
 		return true;
 	}
+	bool sliderMoved( const JoyStickEvent &arg, int slider )
+	{
+		std::cout << std::endl << arg.device->vendor() << ". Slider # " << slider << " ValueX: " << arg.state.mSliders[slider].abX << " ValueY: " << arg.state.mSliders[slider].abY;
+		return true;
+	}
 	bool axisMoved( const JoyStickEvent &arg, int axis )
 	{
 		//Provide a little dead zone
