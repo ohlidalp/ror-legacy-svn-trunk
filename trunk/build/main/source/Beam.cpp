@@ -5490,14 +5490,14 @@ void Beam::calcForcesEuler(int doUpdate, Real dt, int step, int maxstep, Beam** 
 						// progressive shocks
 						if (difftoBeamL < 1 )
 						{
-							k=k+(10*k*((abs(1-difftoBeamL))*(abs(1-difftoBeamL))));
-							d=d+(5*d*((abs(1-difftoBeamL))*(abs(1-difftoBeamL))));					
+							k=k+(10*k*(difftoBeamL*difftoBeamL));
+							d=d+(5*d*(difftoBeamL*difftoBeamL));
 						}
 					}
 					if (beams[i].shock->flags & SHOCK_FLAG_IBOUND)
 					{
-						//reset damping/spring to 1/1 for outbound, this is an inbound-shock only
-						if (beams[i].shock->lastpos < difftoBeamL)
+						//reset damping/spring to 1/1 for outbound, this is an inbound-shock only and its NOT in the outbound bump
+						if (beams[i].shock->lastpos < difftoBeamL && difftoBeamL < (beams[i].longbound*beams[i].L*0.8))
 						{
 							k=1;
 							d=1;
@@ -5505,8 +5505,8 @@ void Beam::calcForcesEuler(int doUpdate, Real dt, int step, int maxstep, Beam** 
 					}	
 					if (beams[i].shock->flags & SHOCK_FLAG_OBOUND)
 					{
-						//reset damping/spring to 1/1 for inbound, this is an outbound-shock only
-						if (beams[i].shock->lastpos > difftoBeamL)
+						//reset damping/spring to 1/1 for inbound, this is an outbound-shock only and its NOT in the inbound bump
+						if (beams[i].shock->lastpos > difftoBeamL && difftoBeamL > -(beams[i].shortbound*beams[i].L*0.8))
 						{
 							k=1;
 							d=1;
@@ -5519,26 +5519,39 @@ void Beam::calcForcesEuler(int doUpdate, Real dt, int step, int maxstep, Beam** 
 					if(beams[i].shock->flags & SHOCK_FLAG_PASSIVE)
 					{
 						// soft bump shocks
-						if (difftoBeamL > beams[i].longbound*beams[i].L && beams[i].longbound > 0.01)
+						if (difftoBeamL > (beams[i].longbound*beams[i].L)*0.8)
 						{
-								k=k+100+(100*(k*(difftoBeamL / ((beams[i].longbound * beams[i].L)+0.0001))));
-								d=2*DEFAULT_DAMP;
+							k=k+((k+100)*40*(((difftoBeamL-((beams[i].longbound*beams[i].L)*0.8))*100)*((difftoBeamL-((beams[i].longbound*beams[i].L)*0.8))*100)));
+							d=d+((d+100)*20*(((difftoBeamL-((beams[i].longbound*beams[i].L)*0.8))*100)*((difftoBeamL-((beams[i].longbound*beams[i].L)*0.8))*100)));
 
-						} else if (difftoBeamL < -beams[i].shortbound*beams[i].L && beams[i].shortbound > 0.01)
+							//rebound mode ?= Let him go
+							if (difftoBeamL <= beams[i].longbound*beams[i].L)
+							{
+								d=beams[i].d;
+							}
+
+						} else if (difftoBeamL < -(beams[i].shortbound*beams[i].L)*0.8)
 						{
-								k=k+100+(50*(k*(difftoBeamL / (-(beams[i].shortbound * beams[i].L)+0.0001))));
-								d=2*DEFAULT_DAMP;
+							k=k+((k+100)*50*(((difftoBeamL-(-(beams[i].shortbound*beams[i].L)*0.8))*20)*((difftoBeamL-(-(beams[i].shortbound*beams[i].L)*0.8))*20)));
+							d=d+((d+100)*25*(((difftoBeamL-(-(beams[i].shortbound*beams[i].L)*0.8))*20)*((difftoBeamL-(-(beams[i].shortbound*beams[i].L)*0.8))*20)));
+
+							//rebound mode ?= Let him go
+							if (difftoBeamL >= -beams[i].shortbound*beams[i].L)
+							{
+								d=beams[i].d;
+							}
+						} 
 						
-						} else if (difftoBeamL > beams[i].longbound*beams[i].L || difftoBeamL < -beams[i].shortbound*beams[i].L)
+						if (difftoBeamL > beams[i].longbound*beams[i].L || difftoBeamL < -beams[i].shortbound*beams[i].L)
 						{
-								k=DEFAULT_SPRING;
-								d=DEFAULT_DAMP;
+								// block reached...hard bump in soft mode
+								k=DEFAULT_SPRING/2;
+								d=DEFAULT_DAMP*2;
 						}
-						if(beams[i].shock->flags & SHOCK_FLAG_NORMAL)
-							normalShock = true;
-
 					}
-						
+					if(beams[i].shock->flags & SHOCK_FLAG_NORMAL)
+							normalShock = true;
+				
 				} else if (beams[i].bounded && !beams[i].shock)
 					normalShock = true;
 
@@ -5547,6 +5560,7 @@ void Beam::calcForcesEuler(int doUpdate, Real dt, int step, int maxstep, Beam** 
 					// hard (normal) shock bump
 					if (difftoBeamL > beams[i].longbound*beams[i].L || difftoBeamL < -beams[i].shortbound*beams[i].L)
 					{
+						// hard (normal) shock bump
 						k=DEFAULT_SPRING;
 						d=DEFAULT_DAMP;
 					}
