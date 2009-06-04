@@ -6639,21 +6639,28 @@ void Beam::calcForcesEuler(int doUpdate, Real dt, int step, int maxstep, Beam** 
 	//direction
 	if (hydrodirstate!=0 || hydrodircommand!=0)
 	{
-		float rate=40.0/(10.0+fabs(wspeed/2.0));
-		// minimum rate: 20% --> enables to steer high velocity trucks
-		if(rate<1.2) rate = 1.2;
+		float rate=1;
+		if(hydroSpeedCoupling)
+		{
+			rate=40.0/(10.0+fabs(wspeed/2.0));
+
+			// minimum rate: 20% --> enables to steer high velocity trucks
+			if(rate<1.2) rate = 1.2;
+		}
 
 		if (hydrodircommand!=0)
-			if (hydrodirstate>(hydrodircommand/**rate/4.0*/)) hydrodirstate-=dt*rate;
-			else hydrodirstate+=dt*rate;
-			//if (dircommand!=0 && dirstate>-1.0 && dirstate<1.0) dirstate+=dircommand*dt*rate;
-
+		{
+			if (hydrodirstate>(hydrodircommand/**rate/4.0*/))
+			{
+				hydrodirstate-=dt*rate;
+			} else hydrodirstate+=dt*rate;
 			{
 				float dirdelta=dt;
 				if (hydrodirstate>dirdelta) hydrodirstate-=dirdelta;
 				else if (hydrodirstate<-dirdelta) hydrodirstate+=dirdelta;
 				else hydrodirstate=0;
 			}
+		}
 	}
 	//aileron
 	if (hydroaileronstate!=0 || hydroaileroncommand!=0)

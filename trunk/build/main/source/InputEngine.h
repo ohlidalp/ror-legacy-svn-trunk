@@ -360,6 +360,7 @@ public:
 	void Capture();
 	float getEventValue(int eventID);
 	bool getEventBoolValue(int eventID);
+	bool isEventAnalog(int eventID);
 	bool getEventBoolValueBounce(int eventID, float time=0.2f);
 	float getEventBounceTime(int eventID);
 	static bool instanceExists() ;
