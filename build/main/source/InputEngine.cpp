@@ -1979,6 +1979,19 @@ int InputEngine::getKeboardKeyForCommand(int eventID)
 	return -1;
 }
 
+bool InputEngine::isEventAnalog(int eventID)
+{
+	std::vector<event_trigger_t> t_vec = events[eventID];
+	if(t_vec.size() > 0)
+	{
+		if(t_vec[0].eventtype == ET_MouseAxisX || t_vec[0].eventtype == ET_MouseAxisY || t_vec[0].eventtype == ET_MouseAxisZ || t_vec[0].eventtype == ET_JoystickAxisAbs || t_vec[0].eventtype == ET_JoystickAxisRel || t_vec[0].eventtype == ET_JoystickSliderX || t_vec[0].eventtype == ET_JoystickSliderY)
+			return true;
+		else
+			return false;
+	}
+	return false;
+}
+
 float InputEngine::getEventValue(int eventID)
 {
 	float returnValue = 0;

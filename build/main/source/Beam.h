@@ -689,6 +689,7 @@ public:
 	int free_active_shock; // this has no array associated with it. its just to determine if there are active shocks!
 	//direction
 	float hydrodircommand;
+	bool hydroSpeedCoupling;
 	float hydrodirstate;
 	Real hydrodirwheeldisplay;
 	//extra airplane axises
