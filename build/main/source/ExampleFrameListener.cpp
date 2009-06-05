@@ -2802,7 +2802,7 @@ bool ExampleFrameListener::updateEvents(float dt)
 						float sum = -tmp_left + tmp_right;
 						if(sum < -1) sum = -1;
 						if(sum > 1) sum = 1;
-						//LogManager::getSingleton().logMessage("steer: "+StringConverter::toString(sum));
+
 						trucks[current_truck]->hydrodircommand = sum;
 						trucks[current_truck]->hydroSpeedCoupling = !(INPUTENGINE.isEventAnalog(EV_TRUCK_STEER_LEFT) && INPUTENGINE.isEventAnalog(EV_TRUCK_STEER_RIGHT));
 					}
@@ -2867,12 +2867,21 @@ bool ExampleFrameListener::updateEvents(float dt)
 					if(trucks[current_truck]->engine) trucks[current_truck]->engine->setManualClutch(cval);
 
 					// we need to ask for that separately
-					if (INPUTENGINE.getEventBoolValueBounce(EV_TRUCK_SHIFT_UP))      trucks[current_truck]->engine->shift(1);
-					else if (INPUTENGINE.getEventBoolValueBounce(EV_TRUCK_SHIFT_DOWN))    trucks[current_truck]->engine->shift(-1);
+					bool gear_changed_rel = false;
+					if (INPUTENGINE.getEventBoolValueBounce(EV_TRUCK_SHIFT_UP))
+					{
+						trucks[current_truck]->engine->shift(1);
+						gear_changed_rel=true;
+					}
+					else if (INPUTENGINE.getEventBoolValueBounce(EV_TRUCK_SHIFT_DOWN))
+					{
+						trucks[current_truck]->engine->shift(-1);
+						gear_changed_rel=true;
+					}
 
 					/* direct shift part */
 					if (trucks[current_truck]->engine)
-					if (trucks[current_truck]->engine->getAutoMode()==MANUAL)
+					if (trucks[current_truck]->engine->getAutoMode()==MANUAL && !gear_changed_rel)
 					{
 						bool gear_changed = true;
 						int curgear  = trucks[current_truck]->engine->getGear();

@@ -4656,6 +4656,8 @@ void Beam::addWheel(SceneManager *manager, SceneNode *parent, Real radius, Real 
 	wheels[free_wheel].arm=&nodes[torquenode];
 	if (propulsed>0)
 	{
+		//for inter-differential locking
+		proppairs[proped_wheels]=free_wheel;
 		proped_wheels++;
 	}
 	if (braked) braked_wheels++;
@@ -5540,7 +5542,7 @@ void Beam::calcForcesEuler(int doUpdate, Real dt, int step, int maxstep, Beam** 
 							{
 								d=beams[i].d;
 							}
-						} 
+						}
 						
 						if (difftoBeamL > beams[i].longbound*beams[i].L || difftoBeamL < -beams[i].shortbound*beams[i].L)
 						{
@@ -6437,6 +6439,20 @@ void Beam::calcForcesEuler(int doUpdate, Real dt, int step, int maxstep, Beam** 
 	float newspeeds[MAX_WHEELS];
 
 	float intertorque[MAX_WHEELS] = {0.0f};
+	if( free_axle == 0)
+	{
+		//first, evaluate torque from inter-differential locking
+		for (i=0; i<proped_wheels/2-1; i++)
+		{ 	
+			float speed1=(wheels[proppairs[i*2]].speed+wheels[proppairs[i*2+1]].speed)*0.5f;
+			float speed2=(wheels[proppairs[i*2+2]].speed+wheels[proppairs[i*2+3]].speed)*0.5f;
+			float torque=(speed1-speed2)*10000.0f;
+			intertorque[i*2]-=torque*0.5f;
+			intertorque[i*2+1]-=torque*0.5f;
+			intertorque[i*2+2]+=torque*0.5f;
+			intertorque[i*2+3]+=torque*0.5f;
+		}
+	}
 	// loop through all axles for interaxle torque, this is the torsion to keep
 	// the axles aligned with each other as if they connected by a shaft
 	for (i = 1; i < free_axle; ++i)
@@ -6529,6 +6545,19 @@ void Beam::calcForcesEuler(int doUpdate, Real dt, int step, int maxstep, Beam** 
 				else if( fabs(wheels[i].speed) > 0.0f)
 					total_torque -= (wheels[i].speed/fabs(wheels[i].speed))*(brake + dbrake)*1.2;
 			}
+		}
+		//friction 	
+		total_torque -= wheels[i].speed*1.0; 	
+		if ( free_axle == 0 && wheels[i].propulsed > 0) 	
+		{ 	
+			//differential locking 	
+			if (i%2) 	
+				total_torque-=(wheels[i].speed-wheels[i-1].speed)*10000.0; 	
+			else 	
+				total_torque-=(wheels[i].speed-wheels[i+1].speed)*10000.0; 	
+			//inter differential locking 	
+			total_torque+=intertorque[propcounter]; 	
+			propcounter++; 	
 		}
 
 		//application to wheel
@@ -6647,19 +6676,19 @@ void Beam::calcForcesEuler(int doUpdate, Real dt, int step, int maxstep, Beam** 
 			// minimum rate: 20% --> enables to steer high velocity trucks
 			if(rate<1.2) rate = 1.2;
 		}
-
 		if (hydrodircommand!=0)
 		{
-			if (hydrodirstate>(hydrodircommand/**rate/4.0*/))
-			{
-				hydrodirstate-=dt*rate;
-			} else hydrodirstate+=dt*rate;
-			{
-				float dirdelta=dt;
-				if (hydrodirstate>dirdelta) hydrodirstate-=dirdelta;
-				else if (hydrodirstate<-dirdelta) hydrodirstate+=dirdelta;
-				else hydrodirstate=0;
-			}
+			if (hydrodirstate > hydrodircommand)
+				hydrodirstate -= dt * rate;
+			else
+				hydrodirstate += dt * rate;
+		}
+		if(hydroSpeedCoupling)
+		{
+			float dirdelta=dt;
+			if      (hydrodirstate >  dirdelta) hydrodirstate -= dirdelta;
+			else if (hydrodirstate < -dirdelta) hydrodirstate += dirdelta;
+			else hydrodirstate=0;
 		}
 	}
 	//aileron
@@ -7636,7 +7665,7 @@ void Beam::toggleCustomParticles()
 		}
 	}
 
-#ifdef ANGELSCRIPT 
+#ifdef ANGELSCRIPT
 	//ScriptEvent - Particle Toggle
 	ScriptEngine::getSingleton().triggerEvent(ScriptEngine::SE_TRUCK_CPARTICLES_TOGGLE, trucknum);
 #endif
