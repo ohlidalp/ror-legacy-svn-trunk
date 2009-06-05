@@ -2866,6 +2866,10 @@ bool ExampleFrameListener::updateEvents(float dt)
 					float cval = INPUTENGINE.getEventValue(EV_TRUCK_MANUAL_CLUTCH);
 					if(trucks[current_truck]->engine) trucks[current_truck]->engine->setManualClutch(cval);
 
+					// we need to ask for that separately
+					if (INPUTENGINE.getEventBoolValueBounce(EV_TRUCK_SHIFT_UP))      trucks[current_truck]->engine->shift(1);
+					else if (INPUTENGINE.getEventBoolValueBounce(EV_TRUCK_SHIFT_DOWN))    trucks[current_truck]->engine->shift(-1);
+
 					/* direct shift part */
 					if (trucks[current_truck]->engine)
 					if (trucks[current_truck]->engine->getAutoMode()==MANUAL)
@@ -2879,10 +2883,6 @@ bool ExampleFrameListener::updateEvents(float dt)
 							gear_changed = !INPUTENGINE.getEventBoolValue(EV_TRUCK_SHIFT_GEAR_REVERSE);
 						else if(curgear > 0 && curgear < 19)
 							gear_changed = !INPUTENGINE.getEventBoolValue(EV_TRUCK_SHIFT_GEAR1 + curgear -1);
-
-						// we need to ask for that separately
-						if (INPUTENGINE.getEventBoolValueBounce(EV_TRUCK_SHIFT_UP))      trucks[current_truck]->engine->shift(1);
-						else if (INPUTENGINE.getEventBoolValueBounce(EV_TRUCK_SHIFT_DOWN))    trucks[current_truck]->engine->shift(-1);
 						
 						// direct to gear changes
 						if (gear_changed)
