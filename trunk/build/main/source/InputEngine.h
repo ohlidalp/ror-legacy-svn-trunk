@@ -42,6 +42,7 @@ freely, subject to the following restrictions:
 
 // config filename
 #define CONFIGFILENAME "input.map"
+#define MAX_JOYSTICKS 10
 
 enum grabtypes {
 	GRAB_ALL=0,
@@ -358,7 +359,7 @@ class InputEngine : public OIS::MouseListener, public OIS::KeyListener, public O
 public:
 	static InputEngine & Instance();
 	void Capture();
-	float getEventValue(int eventID);
+	float getEventValue(int eventID, bool pure=false);
 	bool getEventBoolValue(int eventID);
 	bool isEventAnalog(int eventID);
 	bool getEventBoolValueBounce(int eventID, float time=0.2f);
@@ -373,10 +374,10 @@ public:
 	std::string getEventTypeName(int type);
 
 	int getCurrentKeyCombo(std::string *combo);
-	int getCurrentJoyButton();
+	int getCurrentJoyButton(int &joystickNumber, int &button);
 	std::string getKeyNameForKeyCode(OIS::KeyCode keycode);
 	void resetKeys();
-	OIS::JoyStickState *getCurrentJoyState();
+	OIS::JoyStickState *getCurrentJoyState(int joystickNumber);
 	void smoothValue(float &ref, float value, float rate);
 	bool saveMapping(std::string outfile=CONFIGFILENAME);
 	bool appendLineToConfig(std::string line, std::string outfile=CONFIGFILENAME);
@@ -412,6 +413,7 @@ public:
 
 	void updateKeyBounces(float dt);
 	void completeMissingEvents();
+	int getNumJoysticks() { return free_joysticks; };
 
 protected:
 	InputEngine();
@@ -424,7 +426,8 @@ protected:
 	OIS::InputManager* mInputManager;
 	OIS::Mouse*    mMouse;
 	OIS::Keyboard* mKeyboard;
-	OIS::JoyStick* mJoy;
+	OIS::JoyStick* mJoy[MAX_JOYSTICKS];
+	int free_joysticks;
 
 	// JoyStickListener
 	bool buttonPressed( const OIS::JoyStickEvent &arg, int button );
@@ -444,7 +447,7 @@ protected:
 
 	// this stores the key/button/axis values
 	std::map<int, bool> keyState;
-	OIS::JoyStickState joyState;
+	OIS::JoyStickState joyState[MAX_JOYSTICKS];
 	OIS::MouseState mouseState;
 
 	// define event aliases
@@ -462,6 +465,8 @@ protected:
 	std::map<std::string, OIS::KeyCode>::iterator allit;
 
 	float deadZone(float axis, float dz);
+	float axisLinearity(float axisValue, float linearity);
+
 	float logval(float val);
 	std::string getEventGroup(Ogre::String eventName);
 	bool mappingLoaded;
