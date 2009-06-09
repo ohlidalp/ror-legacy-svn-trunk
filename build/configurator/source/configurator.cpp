@@ -488,6 +488,7 @@ protected:
 	wxStaticText *t[MAX_TESTABLE_EVENTS];
 	wxStaticText *notice;
 	wxTimer *timer;
+	wxScrolledWindow *vwin;
 	int num_items_visible;
 public:
 	KeyTestDialog(MyDialog *_dlg) : wxDialog(NULL, wxID_ANY, wxString(), wxDefaultPosition, wxSize(500,600), wxSTAY_ON_TOP|wxDOUBLE_BORDER|wxCLOSE_BOX), dlg(_dlg)
@@ -498,7 +499,7 @@ public:
 		new wxStaticText(this, wxID_ANY, _("Event Value (left = 0%, right = 100%)"), wxPoint(150, 0), wxSize(260, 15));
 		notice = new wxStaticText(this, wxID_ANY, _("Please use any mapped input device in order to test."), wxPoint(20, 60), wxSize(260, 15));
 		new wxButton(this, 1, _("ok (end test)"), wxPoint(5,575), wxSize(490,20));
-		wxScrolledWindow *vwin = new wxScrolledWindow(this, wxID_ANY, wxPoint(0,20), wxSize(490,550));
+		vwin = new wxScrolledWindow(this, wxID_ANY, wxPoint(0,20), wxSize(490,550));
 
 		std::map<int, std::vector<event_trigger_t> > events = INPUTENGINE.getEvents();
 		std::map<int, std::vector<event_trigger_t> >::iterator it;
@@ -517,7 +518,7 @@ public:
 			}
 		}
 		// resize scroll window
-		vwin->SetScrollbars(0, 20, 0, counter);
+		vwin->SetScrollbars(0, 20, 0, 5);
 
 		size_t hWnd = (size_t)this->GetHandle();
 		if(!INPUTENGINE.setup(hWnd, true, false))
@@ -566,6 +567,7 @@ public:
 				}
 			}
 		}
+		vwin->SetScrollbars(0, 20, 0, num_items_visible);
 		if(num_items_visible)
 			notice->Hide();
 		else
