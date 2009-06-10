@@ -2556,7 +2556,7 @@ bool InputEngine::processLine(char *line)
 			int sliderNumber=0;
 			char options[250];
 			memset(options, 0, 250);
-			sscanf(line, "%s %s %d %s", eventName, evtype, &sliderNumber, options);
+			sscanf(line, "%s %s %d %d %s", eventName, evtype, &joyNo, &sliderNumber, options);
 			int eventID = resolveEventName(String(eventName));
 			if(eventID == -1) return false;
 
@@ -2574,6 +2574,7 @@ bool InputEngine::processLine(char *line)
 
 			event_trigger_t t_slider = newEvent();
 			t_slider.eventtype = eventtype;
+			t_slider.joystickNumber = joyNo;
 			t_slider.joystickSliderNumber = sliderNumber;
 			t_slider.joystickSliderReverse = reverse;
 			strncpy(t_slider.group, getEventGroup(eventName).c_str(), 128);
@@ -2614,6 +2615,17 @@ event_trigger_t InputEngine::newEvent()
 	return res;
 }
 
+int InputEngine::getJoyComponentCount(OIS::ComponentType type, int joystickNumber)
+{
+	if(joystickNumber > free_joysticks || !mJoy[joystickNumber]) return 0;
+	return mJoy[joystickNumber]->getNumberOfComponents(type);
+}
+
+std::string InputEngine::getJoyVendor(int joystickNumber)
+{
+	if(joystickNumber > free_joysticks || !mJoy[joystickNumber]) return "unkown";
+	return mJoy[joystickNumber]->vendor();
+}
 
 JoyStickState *InputEngine::getCurrentJoyState(int joystickNumber)
 {
@@ -2702,18 +2714,28 @@ bool InputEngine::reloadConfig(std::string outfile)
 
 bool InputEngine::updateConfigline(event_trigger_t *t)
 {
-	if(t->eventtype != ET_JoystickAxisAbs)
+	if(t->eventtype != ET_JoystickAxisAbs && t->eventtype != ET_JoystickSliderX && t->eventtype != ET_JoystickSliderY)
 		return false;
+	bool isSlider = (t->eventtype == ET_JoystickSliderX || t->eventtype == ET_JoystickSliderY);
 	strcpy(t->configline, "");
-	if(t->joystickAxisRegion==1)
-		strcat(t->configline, "UPPER");
-	else if(t->joystickAxisRegion==-1)
-		strcat(t->configline, "LOWER");
 
 	if(t->joystickAxisReverse && !strlen(t->configline))
-		strcat(t->configline, "+REVERSE");
-	else if(t->joystickAxisReverse && strlen(t->configline))
 		strcat(t->configline, "REVERSE");
+	else if(t->joystickAxisReverse && strlen(t->configline))
+		strcat(t->configline, "+REVERSE");
+
+	// is this is a slider, ignore the rest
+	if(isSlider) return true;
+
+	if(t->joystickAxisRegion==1 && !strlen(t->configline))
+		strcat(t->configline, "UPPER");
+	else if(t->joystickAxisRegion==1 && strlen(t->configline))
+		strcat(t->configline, "+UPPER");
+	else if(t->joystickAxisRegion==-1 && !strlen(t->configline))
+		strcat(t->configline, "LOWER");
+	else if(t->joystickAxisRegion==-1 && strlen(t->configline))
+		strcat(t->configline, "+LOWER");
+
 
 	if(fabs(t->joystickAxisDeadzone-0.1) > 0.0001f)
 	{
@@ -2744,8 +2766,12 @@ bool InputEngine::updateConfigline(event_trigger_t *t)
 	return true;
 }
 
-bool InputEngine::saveMapping(Ogre::String outfile)
+bool InputEngine::saveMapping(Ogre::String outfile, size_t hwnd, int joyNum)
 {
+	// -10 = all
+	// -2  = keyboard
+	// -3  = mouse
+	// >0 joystick
 	FILE *f = fopen(const_cast<char *>(outfile.c_str()),"w");
 	if(!f)
 		return false;
@@ -2753,8 +2779,51 @@ bool InputEngine::saveMapping(Ogre::String outfile)
 	std::map<int, std::vector<event_trigger_t> >::iterator mapIt;
 	std::vector<event_trigger_t>::iterator vecIt;
 
-	int counter = 0;
+	bool created=false;
+	if(mInputManager && !captureMode && hwnd>0)
+	{
+		destroy();
+		setup(hwnd, true, true);
+		created=true;
+	}
+	if(!mInputManager && hwnd>0)
+	{
+		destroy();
+		setup(hwnd, true, true);
+		created=true;
+	}
+	if(mInputManager)
+	{
+		// some helpful information
+		unsigned int v = mInputManager->getVersionNumber();
+		fprintf(f, ";==== Input System Information Start\n");
+		fprintf(f, ";OIS Version: %d.%d.%d\n",(v>>16), ((v>>8) & 0x000000FF), (v & 0x000000FF));
+		fprintf(f, ";OIS Release Name: '%s'\n", mInputManager->getVersionName().c_str());
+		fprintf(f, ";OIS Manager: %s\n", mInputManager->inputSystemName().c_str());
+		fprintf(f, ";Total Keyboards: %d\n", mInputManager->getNumberOfDevices(OISKeyboard));
+		fprintf(f, ";Total Mice: %d\n", mInputManager->getNumberOfDevices(OISMouse));
+		fprintf(f, ";Total JoySticks: %d\n", mInputManager->getNumberOfDevices(OISJoyStick));
+		OIS::DeviceList list = mInputManager->listFreeDevices();
+		for(OIS::DeviceList::iterator i = list.begin(); i != list.end(); ++i )
+			fprintf(f, "; OIS Device: %s Vendor: '%s'\n",mOISDeviceType[i->first], i->second.c_str());
+		for(int i = 0; i < mInputManager->getNumberOfDevices(OISJoyStick); ++i)
+		{
+			if(joyNum != -1 && i != joyNum) continue;
+			if(!mJoy[i]) continue;
+			fprintf(f, ";*Joystick %d '%s'\n", i, mJoy[i]->vendor().c_str());
+			if(mJoy[i]->getNumberOfComponents(OIS_Axis)>0)    fprintf(f, ";**Axes: %d\n", mJoy[i]->getNumberOfComponents(OIS_Axis));
+			if(mJoy[i]->getNumberOfComponents(OIS_Slider)>0)  fprintf(f, ";**Sliders: %d\n", mJoy[i]->getNumberOfComponents(OIS_Slider));
+			if(mJoy[i]->getNumberOfComponents(OIS_POV)>0)     fprintf(f, ";**POV/HATs: %d\n", mJoy[i]->getNumberOfComponents(OIS_POV));
+			if(mJoy[i]->getNumberOfComponents(OIS_Button)>0)  fprintf(f, ";**Buttons: %d\n", mJoy[i]->getNumberOfComponents(OIS_Button));
+			if(mJoy[i]->getNumberOfComponents(OIS_Vector3)>0) fprintf(f, ";**Vector3: %d\n", mJoy[i]->getNumberOfComponents(OIS_Vector3));
+		}
+		fprintf(f, ";==== Input System Information End\n");
 
+		if(created)
+			destroy();
+	}
+
+	int counter = 0;
 	char curGroup[128] = "";
 	for(mapIt = controls.begin(); mapIt != controls.end(); mapIt++)
 	{
@@ -2762,6 +2831,11 @@ bool InputEngine::saveMapping(Ogre::String outfile)
 
 		for(vecIt = vec.begin(); vecIt != vec.end(); vecIt++, counter++)
 		{
+			// filters
+			if(vecIt->eventtype == ET_Keyboard && joyNum != -10 && joyNum != -2) continue;
+			if((vecIt->eventtype == ET_MouseAxisX || vecIt->eventtype == ET_MouseAxisY || vecIt->eventtype == ET_MouseAxisZ) && joyNum != -10 && joyNum != -3) continue;
+			if((vecIt->eventtype == ET_JoystickAxisAbs || vecIt->eventtype == ET_JoystickAxisRel || vecIt->eventtype == ET_JoystickButton || vecIt->eventtype == ET_JoystickPov || vecIt->eventtype == ET_JoystickSliderX || vecIt->eventtype == ET_JoystickSliderY) && joyNum>=0 && vecIt->joystickNumber != joyNum) continue;
+
 			if(strcmp(vecIt->group, curGroup))
 			{
 				strncpy(curGroup, vecIt->group, 128);
@@ -2785,6 +2859,11 @@ bool InputEngine::saveMapping(Ogre::String outfile)
 			{
 				fprintf(f, "%d ", vecIt->joystickNumber);
 				fprintf(f, "%d ", vecIt->joystickAxisNumber);
+				fprintf(f, "%s ", vecIt->configline);
+			} else if(vecIt->eventtype == ET_JoystickSliderX || vecIt->eventtype == ET_JoystickSliderY)
+			{
+				fprintf(f, "%d ", vecIt->joystickNumber);
+				fprintf(f, "%d ", vecIt->joystickSliderNumber);
 				fprintf(f, "%s ", vecIt->configline);
 			} else if(vecIt->eventtype == ET_JoystickButton)
 			{
