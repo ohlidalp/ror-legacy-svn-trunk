@@ -1662,7 +1662,8 @@ int Beam::loadTruck(char* fname, SceneManager *manager, SceneNode *parent, Real 
 			{
 				LogManager::getSingleton().logMessage("Error: beam "+StringConverter::toString(free_beam)+" is too short ("+StringConverter::toString(beam_length)+"m)");
 				LogManager::getSingleton().logMessage("Error: beam "+StringConverter::toString(free_beam)+" is between node "+StringConverter::toString(id1)+" and node "+StringConverter::toString(id2)+".");
-				LogManager::getSingleton().logMessage("will ignore this beam.");
+				//LogManager::getSingleton().logMessage("will ignore this beam.");
+				exit(8);
 			}
 
 			int pos=add_beam(&nodes[id1], &nodes[id2], manager, \
@@ -4986,7 +4987,8 @@ int Beam::add_beam(node_t *p1, node_t *p2, SceneManager *manager, SceneNode *par
 	{
 		LogManager::getSingleton().logMessage("Error: beam "+StringConverter::toString(pos)+" is too short ("+StringConverter::toString(beams[pos].L)+"m)");
 		LogManager::getSingleton().logMessage("Error: beam "+StringConverter::toString(pos)+" is between node "+StringConverter::toString(beams[pos].p1->id)+" and node "+StringConverter::toString(beams[pos].p2->id)+".");
-		exit(8);
+		// this causes crash to desktop in MP!
+		//exit(8);
 	};
 
 	//        if (type!=BEAM_VIRTUAL && type!=BEAM_INVISIBLE)

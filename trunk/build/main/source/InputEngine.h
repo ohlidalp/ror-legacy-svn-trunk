@@ -43,6 +43,8 @@ freely, subject to the following restrictions:
 // config filename
 #define CONFIGFILENAME "input.map"
 #define MAX_JOYSTICKS 10
+#define MAX_JOYSTICK_SLIDERS 4
+#define MAX_JOYSTICK_AXIS 32
 
 enum grabtypes {
 	GRAB_ALL=0,
@@ -378,8 +380,10 @@ public:
 	std::string getKeyNameForKeyCode(OIS::KeyCode keycode);
 	void resetKeys();
 	OIS::JoyStickState *getCurrentJoyState(int joystickNumber);
+	int getJoyComponentCount(OIS::ComponentType type, int joystickNumber);
+	std::string getJoyVendor(int joystickNumber);
 	void smoothValue(float &ref, float value, float rate);
-	bool saveMapping(std::string outfile=CONFIGFILENAME);
+	bool saveMapping(std::string outfile=CONFIGFILENAME, size_t hwnd=0, int joyNum=-10);
 	bool appendLineToConfig(std::string line, std::string outfile=CONFIGFILENAME);
 	bool loadMapping(std::string outfile=CONFIGFILENAME, bool append=false);
 
