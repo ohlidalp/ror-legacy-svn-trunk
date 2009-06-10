@@ -310,6 +310,7 @@ public:
 
     // the item will be shown in bold
     void SetItemBold (const wxTreeItemId& item, bool bold = true);
+    void SetItemSpan (const wxTreeItemId& item, bool span = true);
 
     // set the item's text colour
     void SetItemTextColour (const wxTreeItemId& item, const wxColour& colour);

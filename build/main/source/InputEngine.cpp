@@ -2254,6 +2254,30 @@ bool InputEngine::isKeyDown(OIS::KeyCode key)
 	return this->mKeyboard->isKeyDown(key);
 }
 
+Ogre::String InputEngine::getDeviceName(event_trigger_t evt)
+{
+	switch(evt.eventtype)
+	{
+	case ET_NONE:
+		return "None";
+	case ET_Keyboard:
+		return "Keyboard";
+	case ET_MouseButton:
+	case ET_MouseAxisX:
+	case ET_MouseAxisY:
+	case ET_MouseAxisZ: 
+		return "Mouse";
+	case ET_JoystickButton:
+	case ET_JoystickAxisAbs:
+	case ET_JoystickAxisRel:
+	case ET_JoystickPov:
+	case ET_JoystickSliderX:
+	case ET_JoystickSliderY:
+		return "Joystick: " + getJoyVendor(evt.joystickNumber);
+	}
+	return "unkown";	
+}
+
 Ogre::String InputEngine::getEventTypeName(int type)
 {
 	switch(type)

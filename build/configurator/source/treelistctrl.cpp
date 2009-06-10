@@ -321,6 +321,7 @@ public:
     wxColour GetItemTextColour(const wxTreeItemId& item) const;
     wxColour GetItemBackgroundColour(const wxTreeItemId& item) const;
     wxFont GetItemFont(const wxTreeItemId& item) const;
+    bool GetItemSpan(const wxTreeItemId& item) const;
 
     // modifiers
     // ---------
@@ -348,6 +349,7 @@ public:
 
     // the item will be shown in bold
     void SetItemBold(const wxTreeItemId& item, bool bold = true);
+    void SetItemSpan(const wxTreeItemId& item, bool span = true);
 
     // set the item's text colour
     void SetItemTextColour(const wxTreeItemId& item, const wxColour& colour);
@@ -802,6 +804,7 @@ public:
     void SetHasPlus(bool has = true) { m_hasPlus = has; }
 
     void SetBold(bool bold) { m_isBold = bold; }
+    void SetSpan(bool span) { m_isSpan = span; }
 
     int GetX() const { return m_x; }
     int GetY() const { return m_y; }
@@ -851,6 +854,7 @@ public:
     bool IsExpanded()  const { return !m_isCollapsed; }
     bool HasPlus()     const { return m_hasPlus || HasChildren(); }
     bool IsBold()      const { return m_isBold != 0; }
+    bool IsSpan()      const { return m_isSpan != 0; }
     bool IsVirtual()   const { return m_owner->IsVirtual(); }
 
     // attributes
@@ -913,6 +917,7 @@ private:
     int                 m_hasPlus     :1; // used for item which doesn't have
                                           // children but has a [+] button
     int                 m_isBold      :1; // render the label in bold font
+    int                 m_isSpan      :1; // render the label in bold font
     int                 m_ownsAttr    :1; // delete attribute when done
 };
 
@@ -1870,6 +1875,11 @@ wxFont wxTreeListMainWindow::GetItemFont (const wxTreeItemId& item) const {
     return pItem->Attr().GetFont();
 }
 
+bool wxTreeListMainWindow::GetItemSpan (const wxTreeItemId& item) const {
+    wxCHECK_MSG (item.IsOk(), false, _T("invalid tree item"));
+    wxTreeListItem *pItem = (wxTreeListItem*) item.m_pItem;
+	return pItem->IsSpan();
+}
 void wxTreeListMainWindow::SetItemImage (const wxTreeItemId& item, int column,
                                          int image, wxTreeItemIcon which) {
     wxCHECK_RET (item.IsOk(), _T("invalid tree item"));
@@ -1899,6 +1909,15 @@ void wxTreeListMainWindow::SetItemBold (const wxTreeItemId& item, bool bold) {
     wxTreeListItem *pItem = (wxTreeListItem*) item.m_pItem;
     if (pItem->IsBold() != bold) { // avoid redrawing if no real change
         pItem->SetBold (bold);
+        RefreshLine (pItem);
+    }
+}
+
+void wxTreeListMainWindow::SetItemSpan (const wxTreeItemId& item, bool span) {
+    wxCHECK_RET (item.IsOk(), _T("invalid tree item"));
+    wxTreeListItem *pItem = (wxTreeListItem*) item.m_pItem;
+    if (pItem->IsSpan() != span) { // avoid redrawing if no real change
+        pItem->SetSpan (span);
         RefreshLine (pItem);
     }
 }
@@ -2878,7 +2897,7 @@ void wxTreeListMainWindow::PaintItem (wxTreeListItem *item, wxDC& dc) {
 #endif
 
     int total_w = m_owner->GetHeaderWindow()->GetWidth();
-    int total_h = GetLineHeight(item);
+	int total_h = GetLineHeight(item);
     int off_h = HasFlag(wxTR_ROW_LINES) ? 1 : 0;
     wxDCClipper clipper (dc, 0, item->GetY(), total_w, total_h); // only within line
 
@@ -2931,6 +2950,9 @@ void wxTreeListMainWindow::PaintItem (wxTreeListItem *item, wxDC& dc) {
         if (!m_owner->GetHeaderWindow()->IsColumnShown(i)) continue;
 
         int col_w = m_owner->GetHeaderWindow()->GetColumnWidth(i);
+		if(item->IsSpan())
+			col_w = total_w;
+
         wxDCClipper clipper (dc, x_colstart, item->GetY(), col_w, total_h); // only within column
 
         int x = 0;
@@ -4036,6 +4058,9 @@ wxFont wxTreeListMainWindow::GetItemFont (wxTreeListItem *item) {
 int wxTreeListMainWindow::GetItemWidth (int column, wxTreeListItem *item) {
     if (!item) return 0;
 
+	if (GetItemSpan(item))
+		return this->GetRect().width;
+
     // determine item width
     int w = 0, h = 0;
     wxFont font = GetItemFont (item);
@@ -4252,6 +4277,9 @@ void wxTreeListCtrl::SetItemHasChildren(const wxTreeItemId& item, bool has)
 
 void wxTreeListCtrl::SetItemBold(const wxTreeItemId& item, bool bold)
 { m_main_win->SetItemBold(item, bold); }
+
+void wxTreeListCtrl::SetItemSpan(const wxTreeItemId& item, bool span)
+{ m_main_win->SetItemSpan(item, span); }
 
 void wxTreeListCtrl::SetItemTextColour(const wxTreeItemId& item,
                                        const wxColour& colour)

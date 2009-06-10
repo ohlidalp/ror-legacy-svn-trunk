@@ -373,6 +373,8 @@ public:
 	bool isKeyDown(OIS::KeyCode mod);
 
 	std::map<int, std::vector<event_trigger_t> > &getEvents() { return events; };
+	
+	Ogre::String getDeviceName(event_trigger_t evt);
 	std::string getEventTypeName(int type);
 
 	int getCurrentKeyCombo(std::string *combo);

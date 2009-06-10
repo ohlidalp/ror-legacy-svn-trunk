@@ -781,7 +781,7 @@ public:
 					}
 				}
 				if(cdi)
-					str += std::string(" ---- \n");
+					str += std::string(" ---- \nResult: ");
 				cd+=cdi;
 
 				// check for delta on each axis
@@ -1975,10 +1975,6 @@ void MyDialog::loadInputControls()
 		// only add them once
 		cTree->AddColumn (_("Event"), 180);
 		cTree->SetColumnEditable (0, false);
-		cTree->AddColumn (_("Type"), 75);
-		cTree->SetColumnEditable (1, false);
-		cTree->AddColumn (_("Device No."), 60);
-		cTree->SetColumnEditable (2, false);
 		cTree->AddColumn (_("Key/Axis"), 100);
 		cTree->SetColumnEditable (3, false);
 		cTree->AddColumn (_("Options"), 100);
@@ -2005,19 +2001,37 @@ void MyDialog::loadInputControls()
 
 	// clear everything
 	controlItemCounter=0;
+	std::map<std::string, std::pair<wxTreeItemId, std::map < std::string, wxTreeItemId > > > devices;
 	for(std::map<int, std::vector<event_trigger_t> >::iterator it = controls.begin(); it!=controls.end(); it++)
 	{
 		for(std::vector<event_trigger_t>::iterator it2 = it->second.begin(); it2 != it->second.end(); it2++, controlItemCounter++)
 		{
 			const event_trigger_t evt = *it2;
-			if(strcmp(evt.group, curGroup) || curRoot == 0)
-			{
-				//if(curRoot!=0)
-				//	cTree->ExpandAll(*curRoot);
+			
+			if(evt.eventtype == ET_NONE)
+				continue;
+			
+			if(strcmp(evt.group, curGroup))
 				strcpy(curGroup, evt.group);
-				wxTreeItemId tmp = cTree->AppendItem(root, conv(curGroup));
-				curRoot = &tmp;
-				cTree->SetItemData(curRoot, new IDData(-1));
+
+			std::string deviceName = INPUTENGINE.getDeviceName(evt);
+			if(devices.find(deviceName) == devices.end())
+			{
+				// device not found, create now
+				devices[deviceName] = std::pair<wxTreeItemId, std::map < std::string, wxTreeItemId > >();
+
+				devices[deviceName].first = cTree->AppendItem(root, conv(deviceName));
+				cTree->SetItemData(devices[deviceName].first, new IDData(-1));
+				cTree->SetItemBold(devices[deviceName].first);
+				cTree->SetItemSpan(devices[deviceName].first);
+			}
+			if(devices[deviceName].second.find(curGroup) == devices[deviceName].second.end())
+			{
+				// group not found, create now
+				devices[deviceName].second[curGroup] = cTree->AppendItem(devices[deviceName].first, conv(curGroup));
+				cTree->SetItemData(devices[deviceName].second[curGroup], new IDData(-1));
+				cTree->SetItemBold(devices[deviceName].second[curGroup]);
+				cTree->SetItemSpan(devices[deviceName].second[curGroup]);
 			}
 
 			//strip category name if possible
@@ -2026,7 +2040,7 @@ void MyDialog::loadInputControls()
 			wxString evName = conv(evn);
 			if(strlen(evt.group)+1 < evName.size())
 				evName = conv(evn.substr(strlen(evt.group)+1));
-		    wxTreeItemId item = cTree->AppendItem(*curRoot, evName);
+		    wxTreeItemId item = cTree->AppendItem(devices[deviceName].second[curGroup], evName);
 
 			/*
 			wxTreeItemId cItem_context = cTree->AppendItem(item, "Context");
@@ -2072,24 +2086,23 @@ void MyDialog::loadInputControls()
 
 void MyDialog::updateItemText(wxTreeItemId item, event_trigger_t *t)
 {
-	cTree->SetItemText (item, 1,  conv(INPUTENGINE.getEventTypeName(t->eventtype)));
 	if(t->eventtype == ET_Keyboard)
 	{
-		cTree->SetItemText (item, 3, conv(t->configline));
+		cTree->SetItemText (item, 1, conv(t->configline));
 	} else if(t->eventtype == ET_JoystickAxisAbs || t->eventtype == ET_JoystickAxisRel)
 	{
-		cTree->SetItemText (item, 2,  wxString::Format(_T("%d"), t->joystickNumber));
-		cTree->SetItemText (item, 3,  wxString::Format(_T("%d"), t->joystickAxisNumber));
-		cTree->SetItemText (item, 4,  conv((t->configline)));
+		cTree->SetItemText (item, 1,  wxString::Format(_T("%d"), t->joystickNumber));
+		cTree->SetItemText (item, 2,  wxString::Format(_T("%d"), t->joystickAxisNumber));
+		cTree->SetItemText (item, 3,  conv((t->configline)));
 	} else if(t->eventtype == ET_JoystickSliderX || t->eventtype == ET_JoystickSliderY)
 	{
-		cTree->SetItemText (item, 2,  wxString::Format(_T("%d"), t->joystickNumber));
-		cTree->SetItemText (item, 3,  wxString::Format(_T("%d"), t->joystickSliderNumber));
-		cTree->SetItemText (item, 4,  conv((t->configline)));
+		cTree->SetItemText (item, 1,  wxString::Format(_T("%d"), t->joystickNumber));
+		cTree->SetItemText (item, 2,  wxString::Format(_T("%d"), t->joystickSliderNumber));
+		cTree->SetItemText (item, 3,  conv((t->configline)));
 	} else if(t->eventtype == ET_JoystickButton)
 	{
-		cTree->SetItemText (item, 2,  wxString::Format(_T("%d"), t->joystickNumber));
-		cTree->SetItemText (item, 3, wxString::Format(_T("%d"), t->joystickButtonNumber));
+		cTree->SetItemText (item, 1,  wxString::Format(_T("%d"), t->joystickNumber));
+		cTree->SetItemText (item, 2, wxString::Format(_T("%d"), t->joystickButtonNumber));
 	}
 }
 void MyDialog::updateRendersystems(Ogre::RenderSystem *rs)
