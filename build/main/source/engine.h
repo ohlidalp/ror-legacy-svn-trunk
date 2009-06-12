@@ -33,11 +33,6 @@ class TorqueCurve;
 
 //#include "Ogre.h"
 //using namespace Ogre;
-
-#define CLUTCH_TIME 0.2f
-#define SHIFT_TIME 0.5f
-#define POST_SHIFT_TIME 0.2f
-
 #define AUTOMATIC 0
 #define SEMIAUTO 1
 #define MANUAL 2
@@ -47,6 +42,10 @@ enum autoswitch {REAR=0, NEUTRAL=1, DRIVE=2, TWO=3, ONE=4, MANUALMODE=5};
 class BeamEngine
 {
 protected:
+	float clutch_time;
+	float shift_time;
+	float post_shift_time;
+
 	float reverseRatio;
 	int numGears;
 	float *gearsRatio;
@@ -95,7 +94,7 @@ public:
 	int prime;
 
 	BeamEngine(float iddle, float max, float torque, float rear, int numgears, float *gears, float diff, int trucknum);
-	void setOptions(float einertia, char etype, float eclutch);
+	void setOptions(float einertia, char etype, float eclutch, float ctime, float stime, float pstime);
 	void update(float dt, int doUpdate);
 	float getRPM();
 	void toggleAutoMode();

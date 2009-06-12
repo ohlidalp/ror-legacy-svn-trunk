@@ -64,13 +64,23 @@ BeamEngine::BeamEngine(float iddle, float max, float torque, float rear, int num
 	hasturbo=true;
 	hasair=true;
 	type='t';
+
+	// set previous hardcoded clutch/shift time defaults
+	clutch_time     = 0.2f;
+	shift_time      = 0.5f;
+	post_shift_time = 0.2f;
 }
 
-void BeamEngine::setOptions(float einertia, char etype, float eclutch)
+void BeamEngine::setOptions(float einertia, char etype, float eclutch, float ctime, float stime, float pstime)
 {
 	inertia=einertia;
 	type=etype;
 	clutchForce=eclutch;
+
+	if (ctime > 0)  clutch_time=ctime;
+	if (stime > 0)  shift_time=stime;
+	if (pstime > 0) post_shift_time=pstime;
+
 	if (etype=='c')
 	{
 		// its a car!
@@ -159,11 +169,11 @@ void BeamEngine::update(float dt, int doUpdate)
 		{
 			shiftclock+=dt;
 			//clutch
-			if (shiftclock<CLUTCH_TIME) curClutch=1.0f-(shiftclock/CLUTCH_TIME);
-			else if (shiftclock>(SHIFT_TIME-CLUTCH_TIME)) curClutch=1.0f-(SHIFT_TIME-shiftclock)/CLUTCH_TIME;
+			if (shiftclock<clutch_time) curClutch=1.0f-(shiftclock/clutch_time);
+			else if (shiftclock>(shift_time-clutch_time)) curClutch=1.0f-(shift_time-shiftclock)/clutch_time;
 			else curClutch=0.0f;
 			//shift
-			if (shiftval && shiftclock>CLUTCH_TIME/2)
+			if (shiftval && shiftclock>clutch_time/2)
 			{
 				ssm->trigStart(trucknum, SS_TRIG_SHIFT);
 				curGear+=shiftval;
@@ -173,7 +183,7 @@ void BeamEngine::update(float dt, int doUpdate)
 				shiftval=0;
 			};
 			//end of shifting
-			if (shiftclock>SHIFT_TIME)
+			if (shiftclock>shift_time)
 			{
 				ssm->trigStop(trucknum, SS_TRIG_SHIFT);
 				setAcc(autocurAcc);
@@ -186,7 +196,7 @@ void BeamEngine::update(float dt, int doUpdate)
 		if (postshifting)
 		{
 			postshiftclock+=dt;
-			if (postshiftclock>POST_SHIFT_TIME) postshifting=0;
+			if (postshiftclock>post_shift_time) postshifting=0;
 		}
 
 		//auto-declutch
