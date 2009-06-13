@@ -145,7 +145,7 @@ int ScriptEngine::loadFile(std::string scriptname)
 			if( result == asEXECUTION_EXCEPTION )
 			{
 				// An exception occurred, let the script writer know what happened so it can be corrected.
-				printf("An exception '%s' occurred. Please correct the code in file '%s' and try again.\n", context->GetExceptionString(), scriptname);
+				printf("An exception '%s' occurred. Please correct the code in file '%s' and try again.\n", context->GetExceptionString(), scriptname.c_str());
 			}
 		}
 	}
@@ -162,7 +162,7 @@ int ScriptEngine::loadFile(std::string scriptname)
 			if( result == asEXECUTION_EXCEPTION )
 			{
 				// An exception occurred, let the script writer know what happened so it can be corrected.
-				printf("An exception '%s' occurred. Please correct the code in file '%s' and try again.\n", context->GetExceptionString(), scriptname);
+				printf("An exception '%s' occurred. Please correct the code in file '%s' and try again.\n", context->GetExceptionString(), scriptname.c_str());
 			}
 		}
 	}
@@ -180,7 +180,7 @@ int ScriptEngine::loadFile(std::string scriptname)
 			if( result == asEXECUTION_EXCEPTION )
 			{
 				// An exception occurred, let the script writer know what happened so it can be corrected.
-				printf("An exception '%s' occurred. Please correct the code in file '%s' and try again.\n", context->GetExceptionString(), scriptname);
+				printf("An exception '%s' occurred. Please correct the code in file '%s' and try again.\n", context->GetExceptionString(), scriptname.c_str());
 			}
 		}
 	}
