@@ -924,7 +924,7 @@ void ExampleFrameListener::setGravity(float value)
 }
 
 // Constructor takes a RenderWindow because it uses that to determine input context
-ExampleFrameListener::ExampleFrameListener(RenderWindow* win, Camera* cam, SceneManager* scm, Root* root) :  initialized(false)
+ExampleFrameListener::ExampleFrameListener(RenderWindow* win, Camera* cam, SceneManager* scm, Root* root) :  initialized(false), mCollisionTools(0)
 {
 	fpsLineStream = netLineStream = netlagLineStream = 0;
 	loaded_terrain=0;
@@ -2006,6 +2006,7 @@ void ExampleFrameListener::loadObject(char* name, float px, float py, float pz, 
 		te->setNormaliseNormals(true);
 		tenode=mSceneMgr->getRootSceneNode()->createChildSceneNode();
 	}
+	te->setQueryFlags(OBJECTS_MASK);
 	tenode->attachObject(te);
 	tenode->setScale(scx,scy,scz);
 	tenode->setPosition(px,py,pz);
@@ -4374,6 +4375,10 @@ void ExampleFrameListener::loadTerrain(String terrainfile)
   collisions=new Collisions(this, debugCollisions);
 #endif
 
+	// advanced camera collision tools
+	mCollisionTools = new MOC::CollisionTools(mSceneMgr);
+	// set how far we want the camera to be above ground
+	mCollisionTools->setHeightAdjust(0.2f);
 	//we load terrain
 	//FILE *fd;
 	char geom[1024];
@@ -6055,7 +6060,9 @@ void ExampleFrameListener::moveCamera(float dt)
 
 		mCamera->yaw(mRotX);
 		mCamera->pitch(mRotY);
-		mCamera->moveRelative(mTranslateVector);
+
+		Vector3 trans = mCamera->getOrientation() * mTranslateVector;
+		setCameraPositionWithCollision(mCamera->getPosition() + trans);
 	}
 	if (current_truck==-1)
 	{
@@ -6095,7 +6102,7 @@ void ExampleFrameListener::moveCamera(float dt)
 
 				h+=1.0;
 				if (newposition.y<h) newposition.y=h;
-				mCamera->setPosition(newposition);
+				setCameraPositionWithCollision(newposition);
 				mCamera->lookAt(person->getPosition()+Vector3(0.0,1.0,0.0));
 				if(changeCamMode)
 					mCamera->setFOVy(Degree(60));
@@ -6198,7 +6205,7 @@ void ExampleFrameListener::moveCamera(float dt)
 					h=w->getHeightWaves(newposition);
 				h+=1.0;
 				if (newposition.y<h) newposition.y=h;
-				mCamera->setPosition(newposition);
+				setCameraPositionWithCollision(newposition);
 				mCamera->lookAt(trucks[current_truck]->getPosition());
 				if(changeCamMode)
 					mCamera->setFOVy(Degree(60));
@@ -6946,7 +6953,23 @@ void ExampleFrameListener::flashMessage()
 	timeUntilUnflash=1;
 }
 
+void ExampleFrameListener::setCameraPositionWithCollision(Vector3 newPos)
+{
+#if 1
+	if(!mCollisionTools) return;
+	if(newPos == mCamera->getPosition()) return;
 
+	if(mCollisionTools->collidesWithEntity(mCamera->getPosition(), newPos, 0.5f, 0.1f, OBJECTS_MASK | TRUCKS_MASK))
+		// collides, dont move
+		return;
+	// does not collide, move
+	mCamera->setPosition(newPos);
+#else
+	// no collision of camera, normal mode
+	mCamera->setPosition(newPos);
+#endif
+}
+			
 bool ExampleFrameListener::frameEnded(const FrameEvent& evt)
 {
 	updateStats();
