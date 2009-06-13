@@ -6959,7 +6959,7 @@ void ExampleFrameListener::setCameraPositionWithCollision(Vector3 newPos)
 	if(!mCollisionTools) return;
 	if(newPos == mCamera->getPosition()) return;
 
-	if(mCollisionTools->collidesWithEntity(mCamera->getPosition(), newPos, 0.5f, 0.1f, OBJECTS_MASK | TRUCKS_MASK))
+	if(mCollisionTools->collidesWithEntity(mCamera->getPosition(), newPos, 1.0f, 0.5f, OBJECTS_MASK | TRUCKS_MASK))
 		// collides, dont move
 		return;
 	// does not collide, move
