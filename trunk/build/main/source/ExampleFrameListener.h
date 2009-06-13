@@ -39,6 +39,7 @@ along with Rigs of Rods.  If not, see <http://www.gnu.org/licenses/>.
 #include <OgrePanelOverlayElement.h>
 //#include "OgreTerrainSceneManager.h"
 #include "OgrePixelFormat.h"
+#include "CollisionTools.h"
 #include <string.h>
 #include <stdio.h>
 #include "Caelum.h"
@@ -130,6 +131,12 @@ using namespace Forests;
 #define LOCALIZER_HORIZONTAL 1
 #define LOCALIZER_NDB 2
 #define LOCALIZER_VOR 3
+
+enum QueryFlags
+{
+   OBJECTS_MASK = 1<<7,
+   TRUCKS_MASK  = 1<<8,
+};
 
 typedef struct
 {
@@ -415,6 +422,7 @@ public:
 	// Override frameStarted event to process that (don't care about frameEnded)
 	bool frameStarted(const FrameEvent& evt);
 	void recursiveActivation(int j);
+	void setCameraPositionWithCollision(Ogre::Vector3 newPos);
 	bool checkForActive(int j, bool *sleepyList);
 	void flashMessage(Ogre::String txt, float time=1, float charHeight=-1);
 	void flashMessage(char* txt, float time=1, float charHeight=-1);
@@ -542,6 +550,7 @@ protected:
 #endif
 
 	Collisions *collisions;
+	MOC::CollisionTools* mCollisionTools;
 
 	int raceStartTime;
 
