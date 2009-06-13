@@ -23,6 +23,8 @@ set(ror_src
 	source/CmdKeyInertia.h
 	source/collisions.cpp
 	source/collisions.h
+	source/CollisionTools.cpp
+	source/CollisionTools.h
 	source/ColoredTextAreaOverlayElement.cpp
 	source/ColoredTextAreaOverlayElement.h
 	source/ColoredTextAreaOverlayElementFactory.h
