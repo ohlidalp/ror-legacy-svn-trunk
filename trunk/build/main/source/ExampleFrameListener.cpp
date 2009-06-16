@@ -1498,6 +1498,7 @@ ExampleFrameListener::ExampleFrameListener(RenderWindow* win, Camera* cam, Scene
 	String preselected_map = SETTINGS.getSetting("Preselected Map");
 	String preselected_truck = SETTINGS.getSetting("Preselected Truck");
 	String preselected_truckConfig = SETTINGS.getSetting("Preselected TruckConfig");
+	bool enterTruck = (SETTINGS.getSetting("Enter Preselected Truck") == "Yes");
 
 	if(preselected_map != "") LogManager::getSingleton().logMessage("Preselected Map: " + (preselected_map));
 	if(preselected_truck != "") LogManager::getSingleton().logMessage("Preselected Truck: " + (preselected_truck));
@@ -1602,6 +1603,9 @@ ExampleFrameListener::ExampleFrameListener(RenderWindow* win, Camera* cam, Scene
 		//	tmat->getTechnique(0)->getPass(0)->getTextureUnitState(0)->setTextureName("unknown.png");
 		//}
 
+		// load guy
+ 		person=new Character(collisions, hfinder, w, bigMap, mSceneMgr);
+
 		//load preselected truck
 		if(preselected_truck != "")
 		{
@@ -1614,7 +1618,8 @@ ExampleFrameListener::ExampleFrameListener(RenderWindow* win, Camera* cam, Scene
 					tconfig2.push_back(preselected_truckConfig);
 				tconfig = &tconfig2;
 			}
-			initTrucks(true, preselected_truck.c_str(), "", tconfig);
+			initTrucks(true, preselected_truck.c_str(), "", tconfig, enterTruck);
+
 		} else {
 			// no trucks loaded?
 			if (truck_preload_num == 0 || netmode)
@@ -5681,7 +5686,7 @@ void ExampleFrameListener::saveGrassDensity()
 #endif //PAGED
 }
 
-void ExampleFrameListener::initTrucks(bool loadmanual, Ogre::String selected, Ogre::String selectedExtension, std::vector<Ogre::String> *truckconfig)
+void ExampleFrameListener::initTrucks(bool loadmanual, Ogre::String selected, Ogre::String selectedExtension, std::vector<Ogre::String> *truckconfig, bool enterTruck)
 {
 	//we load truck
 
@@ -5744,6 +5749,7 @@ void ExampleFrameListener::initTrucks(bool loadmanual, Ogre::String selected, Og
 		} else
 		{
 			trucks[free_truck]=new Beam(free_truck, mSceneMgr, mSceneMgr->getRootSceneNode(), mWindow, &mapsizex, &mapsizez, truckx, trucky, truckz, Quaternion::ZERO, selectedchr, collisions, dustp, clumpp, sparksp, dripp, splashp, ripplep, hfinder, w, mCamera, mirror, false, false, netmode,0,false,flaresMode, truckconfig);
+			if(enterTruck) setCurrentTruck(free_truck);
 		}
 
 		if(bigMap)
@@ -5760,6 +5766,8 @@ void ExampleFrameListener::initTrucks(bool loadmanual, Ogre::String selected, Og
 			net->sendVehicleType(selectedchr, trucks[free_truck]->netbuffersize);
 		free_truck++;
 	}
+
+
 	//load the rest
 	if (!netmode)
 	{
@@ -5783,9 +5791,7 @@ void ExampleFrameListener::initTrucks(bool loadmanual, Ogre::String selected, Og
 	}
 	LogManager::getSingleton().logMessage("EFL: beam instanciated");
 
- 	person=new Character(collisions, hfinder, w, bigMap, mSceneMgr);
-
-	setCurrentTruck(-1);
+	if(!enterTruck) setCurrentTruck(-1);
 	if (netmode)
 	{
 		setCurrentTruck(0);
@@ -6957,11 +6963,12 @@ void ExampleFrameListener::flashMessage()
 
 bool ExampleFrameListener::setCameraPositionWithCollision(Vector3 newPos)
 {
-#if 1
+	bool res = true;
+// put 1 here to enable camera collision
+#if 0
 	if(!mCollisionTools) return false;
 	if(newPos == mCamera->getPosition()) return false;
 
-	bool res = true;
 	if(mCollisionTools->collidesWithEntity(mCamera->getPosition(), newPos, 1.0f, -1.0f, OBJECTS_MASK | TRUCKS_MASK))
 	{
 		// collides, move back to last known stable position

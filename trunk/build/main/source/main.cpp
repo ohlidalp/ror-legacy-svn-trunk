@@ -390,15 +390,17 @@ void RigsOfRods::exploreTerrains()
 // license: MIT
 #include "SimpleOpt.h"
 
-#define HELPTEXT "--help (this)\n-map <map> (loads map on startup)\n-truck <truck> (loads truck on startup)\n-setup shows the ogre configurator\n-version shows the version information\n\nFor example: RoR.exe -map oahu -truck semi"
+#define HELPTEXT "--help (this)\n-map <map> (loads map on startup)\n-truck <truck> (loads truck on startup)\n-setup shows the ogre configurator\n-version shows the version information\n-enter enters the selected truck\n\nFor example: RoR.exe -map oahu -truck semi"
 
 // option identifiers
-enum { OPT_HELP, OPT_MAP, OPT_TRUCK, OPT_SETUP, OPT_CMD, OPT_WDIR, OPT_ETM, OPT_BUILD, OPT_CONFIG, OPT_VER, OPT_CHECKCACHE, OPT_TRUCKCONFIG};
+enum { OPT_HELP, OPT_MAP, OPT_TRUCK, OPT_SETUP, OPT_CMD, OPT_WDIR, OPT_ETM, OPT_BUILD, OPT_CONFIG, OPT_VER, OPT_CHECKCACHE, OPT_TRUCKCONFIG, OPT_ENTERTRUCK};
 
 // option array
 CSimpleOpt::SOption cmdline_options[] = {
 	{ OPT_MAP,   ("-map"),    SO_REQ_SEP },
+	{ OPT_MAP,   ("-terrain"),    SO_REQ_SEP },
 	{ OPT_TRUCK, ("-truck"),  SO_REQ_SEP },
+	{ OPT_ENTERTRUCK, ("-enter"),  SO_NONE },
 	{ OPT_CMD,   ("-cmd"),   SO_REQ_SEP },
 	{ OPT_WDIR,  ("-wd"),     SO_REQ_SEP },
 	{ OPT_SETUP, ("-setup"),  SO_NONE    },
@@ -509,6 +511,8 @@ int main(int argc, char *argv[])
 			} else if (args.OptionId() == OPT_CHECKCACHE) {
 				// just regen cache and exit
 				SETTINGS.setSetting("regen-cache-only", "True");
+			} else if (args.OptionId() == OPT_ENTERTRUCK) {
+				SETTINGS.setSetting("Enter Preselected Truck", "Yes");
 			} else if (args.OptionId() == OPT_SETUP) {
 				app.useogreconfig = true;
 			} else if (args.OptionId() == OPT_BUILD) {
