@@ -3764,7 +3764,7 @@ bool ExampleFrameListener::updateEvents(float dt)
 			if(bigMap)
 			{
 				mapMode++;
-				if(mapMode>1)
+				if(mapMode>2)
 					mapMode=0;
 
 				if(mapMode==0)
@@ -4379,8 +4379,9 @@ void ExampleFrameListener::loadTerrain(String terrainfile)
 
 	lua->loadTerrain(terrainfile);
 #else
-  collisions=new Collisions(this, debugCollisions);
+	collisions=new Collisions(this, debugCollisions);
 #endif
+	if(person) person->setCollisions(collisions);
 
 	// advanced camera collision tools
 	mCollisionTools = new MOC::CollisionTools(mSceneMgr);
@@ -4935,6 +4936,7 @@ void ExampleFrameListener::loadTerrain(String terrainfile)
 				w=new WaterOld(WATER_FULL_QUALITY, mCamera, mSceneMgr, mWindow, waterline, &mapsizex, &mapsizez, usewaves);
 		}
 	}
+	if(person) person->setWater(w);
 
 	//environment map
 	//envmap is always created!
@@ -4969,6 +4971,7 @@ void ExampleFrameListener::loadTerrain(String terrainfile)
 
 	hfinder = new TSMHeightFinder(geom, terrainmap, wheight);
 	collisions->setHfinder(hfinder);
+	if(person) person->setHFinder(hfinder);
 
 	if(bigMap)
 	{
@@ -5468,6 +5471,13 @@ void ExampleFrameListener::loadTerrain(String terrainfile)
 		collisions->createCollisionDebugVisualization();
 
 	UILOADER.setProgress(UI_PROGRESSBAR_HIDE);
+
+	if(bigMap)
+	{
+		// this has a slight offset in size, thus forces the icons to recalc their size -> correct size on screen
+		bigMap->updateRenderMetrics(mWindow);
+		bigMap->setPosition(0, 0.81, 0.14, 0.1901, mWindow);
+	}
 
 	//okay, taking a picture of the scene for the envmap
 	// SAY CHEESE!
