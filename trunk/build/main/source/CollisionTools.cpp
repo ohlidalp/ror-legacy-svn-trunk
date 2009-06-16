@@ -287,6 +287,22 @@ bool CollisionTools::raycast(const Ogre::Ray &ray, Ogre::Vector3 &result,Ogre::M
 			// static geometry
 			Ogre::MovableObject *pentity = static_cast<Ogre::MovableObject*>(query_result[qr_idx].movable);
 			Ogre::StaticGeometry::Region *rg = static_cast<Ogre::StaticGeometry::Region*>(query_result[qr_idx].movable);
+			
+			// this is a quick hack to prevent that we allocate unlimited amount of memory
+			// it clears the memory if we have more than 4 regions saved
+			if(meshInfoStorage.size() > 4)
+			{
+				// free everything
+				for(std::map<Ogre::String, mesh_info_t>::iterator it=meshInfoStorage.begin(); it!=meshInfoStorage.end(); it++)
+				{
+					// free memory before clearing map
+					free(it->second.indices);
+					free(it->second.vertices);
+				}
+				// clear map
+				meshInfoStorage.clear();
+			}
+			
 			if(meshInfoStorage.find(rg->getName()) == meshInfoStorage.end())
 			{
 				// get mesh and store it
