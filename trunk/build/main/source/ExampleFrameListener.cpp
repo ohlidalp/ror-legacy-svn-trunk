@@ -6648,7 +6648,11 @@ bool ExampleFrameListener::frameStarted(const FrameEvent& evt)
 		for (t=0; t<free_truck; t++)
 		{
 			if(!trucks[t]) continue;
-			if (trucks[t]->state!=SLEEPING && trucks[t]->loading_finished) trucks[t]->updateVisual(dt);
+			if (trucks[t]->state!=SLEEPING && trucks[t]->loading_finished)
+			{
+				trucks[t]->updateSkidmarks();
+				trucks[t]->updateVisual(dt);
+			}
 			//trucks[t]->updateFlares();
 		}
 	}

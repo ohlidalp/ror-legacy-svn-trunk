@@ -429,15 +429,10 @@ Beam::Beam(int tnum, SceneManager *manager, SceneNode *parent, RenderWindow* win
 	if (useSkidmarks)
 	{
 		for(int i=0; i<MAX_WHEELS*2; i++)
-		{
-			lastSkidPos[i] = Vector3::ZERO;
 			skidtrails[i] = 0;
-		}
-
 	}
 #endif
 
-	skidNode = 0;
 	collisions=icollisions;
 
 	dustp=mdust;
@@ -4558,7 +4553,7 @@ void Beam::addWheel(SceneManager *manager, SceneNode *parent, Real radius, Real 
 		Vector3 raypoint;
 		raypoint=nodes[node1].RelPosition+rayvec;
 		rayvec=rayrot*rayvec;
-		init_node(nodebase+i*2, raypoint.x, raypoint.y, raypoint.z, NODE_NORMAL, mass/(2.0*rays),1, WHEEL_FRICTION_COEF*width);
+		init_node(nodebase+i*2, raypoint.x, raypoint.y, raypoint.z, NODE_NORMAL, mass/(2.0*rays),1, WHEEL_FRICTION_COEF*width, -1, free_wheel);
 
 		// outer ring has wheelid%2 != 0
 		nodes[nodebase+i*2].iswheel = free_wheel*2+1;
@@ -4574,7 +4569,7 @@ void Beam::addWheel(SceneManager *manager, SceneNode *parent, Real radius, Real 
 		raypoint=nodes[node2].RelPosition+rayvec;
 
 		rayvec=rayrot*rayvec;
-		init_node(nodebase+i*2+1, raypoint.x, raypoint.y, raypoint.z, NODE_NORMAL, mass/(2.0*rays),1, WHEEL_FRICTION_COEF*width);
+		init_node(nodebase+i*2+1, raypoint.x, raypoint.y, raypoint.z, NODE_NORMAL, mass/(2.0*rays),1, WHEEL_FRICTION_COEF*width, -1, free_wheel);
 
 		// inner ring has wheelid%2 == 0
 		nodes[nodebase+i*2+1].iswheel = free_wheel*2+2;
@@ -4655,6 +4650,7 @@ void Beam::addWheel(SceneManager *manager, SceneNode *parent, Real radius, Real 
 	wheels[free_wheel].rp2=0;
 	wheels[free_wheel].rp3=0;
 	wheels[free_wheel].arm=&nodes[torquenode];
+	wheels[free_wheel].lastContact=Vector3::ZERO;
 	if (propulsed>0)
 	{
 		//for inter-differential locking
@@ -4745,12 +4741,12 @@ void Beam::addWheel2(SceneManager *manager, SceneNode *parent, Real radius, Real
 	{
 		//with propnodes
 		Vector3 raypoint=nodes[node1].RelPosition+rayvec;
-		init_node(nodebase+i*2, raypoint.x, raypoint.y, raypoint.z, NODE_NORMAL, mass/(4.0*rays),1);
+		init_node(nodebase+i*2, raypoint.x, raypoint.y, raypoint.z, NODE_NORMAL, mass/(4.0*rays),1, -1, -1, free_wheel);
 		// outer ring has wheelid%2 != 0
 		nodes[nodebase+i*2].iswheel = free_wheel*2+1;
 
 		raypoint=nodes[node2].RelPosition+rayvec;
-		init_node(nodebase+i*2+1, raypoint.x, raypoint.y, raypoint.z, NODE_NORMAL, mass/(4.0*rays),1);
+		init_node(nodebase+i*2+1, raypoint.x, raypoint.y, raypoint.z, NODE_NORMAL, mass/(4.0*rays),1, -1, -1, free_wheel);
 
 		// inner ring has wheelid%2 == 0
 		nodes[nodebase+i*2+1].iswheel = free_wheel*2+2;
@@ -4764,7 +4760,7 @@ void Beam::addWheel2(SceneManager *manager, SceneNode *parent, Real radius, Real
 	{
 		//with propnodes and variable friction
 		Vector3 raypoint=nodes[node1].RelPosition+rayvec2;
-		init_node(nodebase+2*rays+i*2, raypoint.x, raypoint.y, raypoint.z, NODE_NORMAL, 0.67*mass/(2.0*rays),1, WHEEL_FRICTION_COEF*width);
+		init_node(nodebase+2*rays+i*2, raypoint.x, raypoint.y, raypoint.z, NODE_NORMAL, 0.67*mass/(2.0*rays),1, WHEEL_FRICTION_COEF*width, -1, free_wheel);
 		// outer ring has wheelid%2 != 0
 		nodes[nodebase+2*rays+i*2].iswheel = free_wheel*2+1;
 		if (contacter_wheel)
@@ -4775,7 +4771,7 @@ void Beam::addWheel2(SceneManager *manager, SceneNode *parent, Real radius, Real
 			free_contacter++;;
 		}
 		raypoint=nodes[node2].RelPosition+rayvec2;
-		init_node(nodebase+2*rays+i*2+1, raypoint.x, raypoint.y, raypoint.z, NODE_NORMAL, 0.33*mass/(2.0*rays),1, WHEEL_FRICTION_COEF*width);
+		init_node(nodebase+2*rays+i*2+1, raypoint.x, raypoint.y, raypoint.z, NODE_NORMAL, 0.33*mass/(2.0*rays),1, WHEEL_FRICTION_COEF*width, -1,  free_wheel);
 
 		// inner ring has wheelid%2 == 0
 		nodes[nodebase+2*rays+i*2+1].iswheel = free_wheel*2+2;
@@ -4898,7 +4894,7 @@ void Beam::addWheel2(SceneManager *manager, SceneNode *parent, Real radius, Real
 	}
 }
 
-void Beam::init_node(int pos, Real x, Real y, Real z, int type, Real m, int iswheel, Real friction, int id)
+void Beam::init_node(int pos, Real x, Real y, Real z, int type, Real m, int iswheel, Real friction, int id, int wheelid)
 {
 	nodes[pos].AbsPosition=Vector3(x,y,z);
 	nodes[pos].RelPosition=Vector3(x,y,z)-origin;
@@ -4909,6 +4905,7 @@ void Beam::init_node(int pos, Real x, Real y, Real z, int type, Real m, int iswh
 	nodes[pos].locked=m<0.0;
 	nodes[pos].mass=m;
 	nodes[pos].iswheel=iswheel;
+	nodes[pos].wheelid=wheelid;
 	nodes[pos].friction=friction;
 	nodes[pos].masstype=type;
 	nodes[pos].contactless=0;
@@ -5989,33 +5986,14 @@ void Beam::calcForcesEuler(int doUpdate, Real dt, int step, int maxstep, Beam** 
 						}
 					}
 
-					// Skidmark code below
-					int wid = nodes[i].iswheel-1;
-					//LogManager::getSingleton().logMessage("updating lastpos " + StringConverter::toString(nodes[i].iswheel));
-					if (useSkidmarks && trailtype > 0 && doUpdate  && wid >= 0) //once a frame, and only for wheel nodes
-					{
-						if(skidtrails[wid] == 0)
-							skidtrails[wid] = new Skidmark(tsm, RenderOperation::OT_LINE_STRIP);
-						float di = fabs(nodes[i].AbsPosition.distance(lastSkidPos[wid]));
-						float di_other = fabs(nodes[i].AbsPosition.distance(lastSkidPos[wid-1]));
-
-						if(di > 0.5 && di < 2.0 && di_other < 2.0)
-						{
-							skidtrails[wid]->setPoint2(nodes[i].AbsPosition);
-							skidtrails[wid]->update();
-							//LogManager::getSingleton().logMessage("updating skidmark " + StringConverter::toString(wid));
-
-							lastSkidPos[wid] = nodes[i].AbsPosition;
-						}
-						else if (di >= 2.0 || di_other >= 2)
-						{
-							lastSkidPos[wid] = nodes[i].AbsPosition;
-						}
-					}
+					// register wheel contact
+					if (useSkidmarks && nodes[i].wheelid >= 0)
+						wheels[nodes[i].wheelid].lastContact = nodes[i].AbsPosition;
 				}
 				nodes[i].colltesttimer=0.0;
 			}
 		}
+
 
 		// record g forces on cameras
 		if (i==cameranodepos[0])
@@ -6135,8 +6113,6 @@ void Beam::calcForcesEuler(int doUpdate, Real dt, int step, int maxstep, Beam** 
 		return; // return early to avoid propagating invalid values
 	}
 
-	// if skidmarks, rebuild bounding box
-	if(skidNode) skidNode->needUpdate();
 #ifdef TIMING
 	if(statistics)
 		statistics->queryStop(BeamThreadStats::Nodes);
@@ -7140,6 +7116,24 @@ void Beam::calcForcesEuler(int doUpdate, Real dt, int step, int maxstep, Beam** 
 	if(statistics)
 		statistics->queryStop(BeamThreadStats::WholeTruckCalc);
 #endif
+}
+
+// call this once per frame in order to update the skidmarks
+void Beam::updateSkidmarks()
+{
+	for(int i=0;i<free_wheel;i++)
+	{
+		// ignore wheels without data
+		if(wheels[i].lastContact == Vector3::ZERO) continue;
+		// create skidmark object for wheels with data if not existing
+		if(!skidtrails[i])
+			skidtrails[i] = new Skidmark(tsm, beamsRoot, 100);
+		skidtrails[i]->setPoint(wheels[i].lastContact);
+	}
+
+	//LogManager::getSingleton().logMessage("updating skidmark visuals");
+	for(int i=0;i<free_wheel;i++)
+		if(skidtrails[i]) skidtrails[i]->update();
 }
 
 

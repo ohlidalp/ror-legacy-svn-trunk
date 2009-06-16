@@ -226,7 +226,7 @@ typedef struct _node
 	Vector3 lastNormal;
 	int locked;
 	int iswheel; //0=no, 1, 2=wheel1  3,4=wheel2, etc...
-//	int wheelid;
+	int wheelid;
 	int masstype;
 	int contactless;
 	int contacted;
@@ -428,6 +428,9 @@ typedef struct _wheel
 	float rp1;
 	float rp2;
 	float rp3;
+
+	Vector3 lastContact;
+
 } wheel_t;
 
 typedef struct _vwheel
@@ -606,12 +609,13 @@ public:
 	void addCamera(int nodepos, int nodedir, int noderoll);
 	void addWheel(SceneManager *manager, SceneNode *parent, Real radius, Real width, int rays, int node1, int node2, int snode, int braked, int propulsed, int torquenode, float mass, float wspring, float wdamp, char* texf, char* texb, bool meshwheel=false, float rimradius=0.0, bool rimreverse=false);
 	void addWheel2(SceneManager *manager, SceneNode *parent, Real radius, Real radius2, Real width, int rays, int node1, int node2, int snode, int braked, int propulsed, int torquenode, float mass, float wspring, float wdamp, float wspring2, float wdamp2, char* texf, char* texb);
-	void init_node(int pos, Real x, Real y, Real z, int type=NODE_NORMAL, Real m=10.0, int iswheel=0, Real friction=CHASSIS_FRICTION_COEF, int id=-1);
+	void init_node(int pos, Real x, Real y, Real z, int type=NODE_NORMAL, Real m=10.0, int iswheel=0, Real friction=CHASSIS_FRICTION_COEF, int id=-1, int wheelid=-1);
 	int add_beam(node_t *p1, node_t *p2, SceneManager *manager, SceneNode *parent, int type, Real strength, Real spring, Real damp, Real length=-1.0, float shortbound=-1.0, float longbound=-1.0, float precomp=1.0, float diameter=DEFAULT_BEAM_DIAMETER);
 	void reset(); //call this one to reset a truck from any context
 	void SyncReset(); //this one should be called only synchronously (without physics running in background)
 	//this is called by the threads
 	void threadentry(int id);
+	void updateSkidmarks();
 
 	//integration loop
 	//bool frameStarted(const FrameEvent& evt)
@@ -1021,9 +1025,7 @@ protected:
 	client_t networkInfo;
 
 	// skidmark stuff
-	Vector3 lastSkidPos[MAX_WHEELS*2];
 	Skidmark *skidtrails[MAX_WHEELS*2];
-	SceneNode *skidNode;
 	bool useSkidmarks;
 
 	FlexBody *flexbodies[MAX_FLEXBODIES];
