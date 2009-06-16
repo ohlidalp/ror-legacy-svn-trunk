@@ -57,6 +57,9 @@ public:
 
 	static unsigned int characterCounter;
 	void updateMapIcon();
+	void setCollisions(Collisions *c);
+	void setHFinder(HeightFinder *h);
+	void setWater(Water *w);
 
 protected:
 	Ogre::Vector3 position;

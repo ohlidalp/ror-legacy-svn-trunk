@@ -95,6 +95,20 @@ float Character::getAngle()
 	return persoangle;
 }
 
+void Character::setCollisions(Collisions *c)
+{
+	this->collisions = c;
+}
+
+void Character::setHFinder(HeightFinder *h)
+{
+	this->hfinder = h;
+}
+
+void Character::setWater(Water *w)
+{
+	this->water = w;
+}
 
 void Character::setAnimationMode(Ogre::String mode, float time)
 {
