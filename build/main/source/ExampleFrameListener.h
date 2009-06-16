@@ -407,7 +407,7 @@ public:
 	void loadObject(char* name, float px, float py, float pz, float rx, float ry, float rz, SceneNode * bakeNode, char* instancename, bool enable_collisions=true, int luahandler=-1, char *type=0);
 	void repairTruck(char* inst, char* box);
 	bool updateEvents(float dt);
-	void initTrucks(bool loadmanual, Ogre::String selected, Ogre::String selectedExtension = Ogre::String(), std::vector<Ogre::String> *truckconfig=0);
+	void initTrucks(bool loadmanual, Ogre::String selected, Ogre::String selectedExtension = Ogre::String(), std::vector<Ogre::String> *truckconfig=0, bool enterTruck=false);
 	void setCurrentTruck(int v);
 	//bool processUnbufferedMouseInput(const FrameEvent& evt);
 	void moveCamera(float dt);
