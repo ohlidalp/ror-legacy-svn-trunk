@@ -1564,6 +1564,9 @@ ExampleFrameListener::ExampleFrameListener(RenderWindow* win, Camera* cam, Scene
 
 	}
 
+	// load guy
+	person=new Character(collisions, hfinder, w, bigMap, mSceneMgr);
+
 	if(preselected_map != "")
 	{
 		char mapname_cstr[1024];
@@ -1602,9 +1605,6 @@ ExampleFrameListener::ExampleFrameListener(RenderWindow* win, Camera* cam, Scene
 		//{
 		//	tmat->getTechnique(0)->getPass(0)->getTextureUnitState(0)->setTextureName("unknown.png");
 		//}
-
-		// load guy
- 		person=new Character(collisions, hfinder, w, bigMap, mSceneMgr);
 
 		//load preselected truck
 		if(preselected_truck != "")
