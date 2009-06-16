@@ -1439,6 +1439,8 @@ ExampleFrameListener::ExampleFrameListener(RenderWindow* win, Camera* cam, Scene
 	camRotY=Degree(12);
 	camDist=20;
 	clutch=0;
+	camCollided=false;
+	camPosColl=Vector3::ZERO;
 	cameramode=0;
 	road=0;
 
@@ -6953,21 +6955,31 @@ void ExampleFrameListener::flashMessage()
 	timeUntilUnflash=1;
 }
 
-void ExampleFrameListener::setCameraPositionWithCollision(Vector3 newPos)
+bool ExampleFrameListener::setCameraPositionWithCollision(Vector3 newPos)
 {
 #if 1
-	if(!mCollisionTools) return;
-	if(newPos == mCamera->getPosition()) return;
+	if(!mCollisionTools) return false;
+	if(newPos == mCamera->getPosition()) return false;
 
-	if(mCollisionTools->collidesWithEntity(mCamera->getPosition(), newPos, 1.0f, 0.5f, OBJECTS_MASK | TRUCKS_MASK))
-		// collides, dont move
-		return;
+	bool res = true;
+	if(mCollisionTools->collidesWithEntity(mCamera->getPosition(), newPos, 1.0f, -1.0f, OBJECTS_MASK | TRUCKS_MASK))
+	{
+		// collides, move back to last known stable position
+		newPos = camPosColl;
+		res = false;
+	} else
+	{
+		// no collision, store position as stable
+		camPosColl = newPos;
+	}
+	camCollided = !res;
 	// does not collide, move
 	mCamera->setPosition(newPos);
 #else
 	// no collision of camera, normal mode
 	mCamera->setPosition(newPos);
 #endif
+	return res;
 }
 			
 bool ExampleFrameListener::frameEnded(const FrameEvent& evt)
