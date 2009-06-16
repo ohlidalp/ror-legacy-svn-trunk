@@ -422,7 +422,7 @@ public:
 	// Override frameStarted event to process that (don't care about frameEnded)
 	bool frameStarted(const FrameEvent& evt);
 	void recursiveActivation(int j);
-	void setCameraPositionWithCollision(Ogre::Vector3 newPos);
+	bool setCameraPositionWithCollision(Ogre::Vector3 newPos);
 	bool checkForActive(int j, bool *sleepyList);
 	void flashMessage(Ogre::String txt, float time=1, float charHeight=-1);
 	void flashMessage(char* txt, float time=1, float charHeight=-1);
@@ -527,6 +527,8 @@ protected:
 	//camera
 	Vector3 camIdealPosition;
 	Radian camRotX, camRotY;
+	bool camCollided;
+	Vector3 camPosColl;
 	Radian pushcamRotX, pushcamRotY;
 	Real camDist;
 	float mMoveScale;
