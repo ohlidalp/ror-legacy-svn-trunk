@@ -30,7 +30,7 @@ Skidmark::Skidmark(SceneManager *scm, wheel_t *wheel, SceneNode *snode, int _len
 {
 	if(lenght%2) lenght -= lenght%2; // round it!
 
-	minDistance = 0.2f; //std::max(0.2f, wheel->width*0.9f);
+	minDistance = 0.3f; //std::max(0.2f, wheel->width*0.9f);
 	minDistanceSquared = pow(minDistance, 2);
 	maxDistance = std::max(0.5f, wheel->width*1.1f);
 	maxDistanceSquared = pow(maxDistance, 2);
@@ -57,7 +57,9 @@ void Skidmark::addObject(Vector3 start)
 	sprintf(bname, "mat-skidmark-%d", instancecounter);
 	MaterialPtr mat=(MaterialPtr)(MaterialManager::getSingleton().create(bname, ResourceGroupManager::DEFAULT_RESOURCE_GROUP_NAME));
 	Pass *p = mat->getTechnique(0)->getPass(0);
-	p->createTextureUnitState()->setColourOperationEx(LBX_MODULATE, LBS_MANUAL, LBS_CURRENT, skid.colour);
+	TextureUnitState *tus = p->createTextureUnitState("tracks.png");
+	//tus->setColourOperationEx(LBX_MODULATE, LBS_MANUAL, LBS_CURRENT, skid.colour);
+	//tus->setTextureName();
 	p->setSceneBlending(Ogre::SBT_TRANSPARENT_ALPHA);
 	p->setLightingEnabled(false);
 	p->setDepthWriteEnabled(false);
@@ -73,6 +75,7 @@ void Skidmark::addObject(Vector3 start)
 	{
 		skid.points[i] = start;
 		skid.obj->position(start);
+		skid.obj->textureCoord(0,0);
 	}
     skid.obj->end();
 	mNode->attachObject(skid.obj);
@@ -141,6 +144,7 @@ void Skidmark::updatePoint()
 
 	skidmark_t skid = objects.back();
 
+	float overaxis = 0.2f;
 	// tactics: we always choose the latest oint and then create two points
 	Vector3 axis = wheel->refnode1->RelPosition - wheel->refnode0->RelPosition;
 	// choose node wheel by the latest added point
@@ -148,14 +152,14 @@ void Skidmark::updatePoint()
 	{
 		// choose inner
 		//LogManager::getSingleton().logMessage("inner");
-		addPoint(wheel->lastContactInner);
-		addPoint(wheel->lastContactInner - axis);
+		addPoint(wheel->lastContactInner + (axis * overaxis));
+		addPoint(wheel->lastContactInner - axis - (axis * overaxis));
 	} else
 	{
 		// choose outer
 		//LogManager::getSingleton().logMessage("outer");
-		addPoint(wheel->lastContactOuter + axis);
-		addPoint(wheel->lastContactOuter);
+		addPoint(wheel->lastContactOuter + axis + (axis * overaxis));
+		addPoint(wheel->lastContactOuter - (axis * overaxis));
 	}
 
 }
@@ -180,18 +184,33 @@ void Skidmark::update()
 	skid.obj->beginUpdate(0);
 	bool behindEnd = false;
 	Vector3 lastValid = Vector3::ZERO;
-	for(int i = 0; i < lenght; i++)
+	int to_counter=0;
+	Vector2 tex_coords[4] = {Vector2(0,0), Vector2(0,1), Vector2(1,0), Vector2(1,1)};
+	for(int i = 0; i < lenght; i++, to_counter++)
 	{
 		if(i>=skid.pos) behindEnd=true;
+		if(to_counter>3) to_counter=0;
+
+		float len = 1.0f;
+		if(!behindEnd && i>0 && skid.points[i] != Vector3::ZERO && skid.points[i-1] != Vector3::ZERO)
+		{
+			len = minDistance / (skid.points[i].distance(skid.points[i-1]));
+		}
 
 		if(behindEnd)
 		{
 			skid.obj->position(lastValid);
-			skid.obj->colour(ColourValue::Green);
+			skid.obj->textureCoord(0,0);
 		} else
 		{
 			skid.obj->position(skid.points[i]);
-			skid.obj->colour(skid.colour);
+			Vector2 tco = tex_coords[to_counter];
+
+			tco.x *= 1 - len;
+
+			skid.obj->textureCoord(tco);
+
+
 			lastValid = skid.points[i];
 		}
 		
