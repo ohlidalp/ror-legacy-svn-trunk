@@ -28,7 +28,9 @@ int Skidmark::instancecounter = 0;
 
 Skidmark::Skidmark(SceneManager *scm, wheel_t *wheel, SceneNode *snode, int _lenght, int bucketCount) : scm(scm), mNode(snode), lenght(_lenght), wheel(wheel), bucketCount(bucketCount)
 {
-	minDistance = std::max(0.2f, wheel->width*0.9f);
+	if(lenght%2) lenght -= lenght%2; // round it!
+
+	minDistance = 0.2f; //std::max(0.2f, wheel->width*0.9f);
 	minDistanceSquared = pow(minDistance, 2);
 	maxDistance = std::max(0.5f, wheel->width*1.1f);
 	maxDistanceSquared = pow(maxDistance, 2);
@@ -47,13 +49,26 @@ void Skidmark::addObject(Vector3 start)
 	skid.lastPoint=start;
 	skid.facecounter=0;
 	for(int i=0;i<3;i++) skid.face[i] = Vector3::ZERO;
-	skid.colour = ColourValue(Math::RangeRandom(0, 100)/100.0f, Math::RangeRandom(0, 100)/100.0f, Math::RangeRandom(0, 100)/100.0f);
+	skid.colour = ColourValue(Math::RangeRandom(0, 100)/100.0f, Math::RangeRandom(0, 100)/100.0f, Math::RangeRandom(0, 100)/100.0f, 0.8f);
+
+
+	// new material
+	char bname[255]="";
+	sprintf(bname, "mat-skidmark-%d", instancecounter);
+	MaterialPtr mat=(MaterialPtr)(MaterialManager::getSingleton().create(bname, ResourceGroupManager::DEFAULT_RESOURCE_GROUP_NAME));
+	Pass *p = mat->getTechnique(0)->getPass(0);
+	p->createTextureUnitState()->setColourOperationEx(LBX_MODULATE, LBS_MANUAL, LBS_CURRENT, skid.colour);
+	p->setSceneBlending(Ogre::SBT_TRANSPARENT_ALPHA);
+	p->setLightingEnabled(false);
+	p->setDepthWriteEnabled(false);
+	p->setDepthBias(3, 3);
+	p->setCullingMode(Ogre::CULL_NONE);
 
 	skid.points.resize(lenght);	
 	skid.obj = scm->createManualObject("skidmark" + StringConverter::toString(instancecounter++));
 	skid.obj->setDynamic(true);
-	skid.obj->setRenderingDistance(80000);
-	skid.obj->begin("tracks/transred", RenderOperation::OT_TRIANGLE_STRIP);
+	skid.obj->setRenderingDistance(800);
+	skid.obj->begin(bname, RenderOperation::OT_TRIANGLE_STRIP);
 	for(int i = 0; i < lenght; i++)
 	{
 		skid.points[i] = start;
@@ -108,7 +123,6 @@ void Skidmark::updatePoint()
 		// far enough for new bucket?
 		float maxDist = maxDistance;
 		if(wheel->speed > 0) maxDist *= wheel->speed;
-		//if((skid.lastPoint != Vector3::ZERO && fabs(skid.lastPoint.distance(lastPoint)) > maxDist) || skid.pos >= (int)skid.points.size())
 		if(skid.pos >= (int)skid.points.size())
 		{
 			// add connection to last bucket
@@ -116,7 +130,12 @@ void Skidmark::updatePoint()
 			Vector3 lp2 = objects.back().points[objects.back().pos-2];
 			addObject(lp1);
 			addPoint(lp2);
-
+			addPoint(lp1);
+		}
+		else if((skid.lastPoint != Vector3::ZERO && fabs(skid.lastPoint.distance(lastPoint)) > maxDist))
+		{
+			// just new bucket, no connection to last bucket
+			addObject(lastPoint);
 		}
 	}
 
@@ -143,6 +162,11 @@ void Skidmark::updatePoint()
 
 void Skidmark::addPoint(const Vector3 &value)
 {
+	if(objects.back().pos >= lenght)
+	{
+		LogManager::getSingleton().logMessage("E: boundary protection hit");
+		return;
+	}
 	setPointInt(objects.back().pos, value);
 	objects.back().pos++;
 	objects.back().lastPoint = value;
@@ -180,12 +204,15 @@ void Skidmark::update()
 	}
     skid.obj->end();
 
-	//manual->setBoundingBox(AxisAlignedBox(vaabMin, vaabMax));
+	skid.obj->setBoundingBox(AxisAlignedBox(vaabMin, vaabMax));
 	
 	// Use infinite AAB to always stay visible
+	/*
+	// for debugging only
 	AxisAlignedBox aabInf;
 	aabInf.setInfinite();
 	skid.obj->setBoundingBox(aabInf);
+	*/
 
 	mDirty = false;
 }
