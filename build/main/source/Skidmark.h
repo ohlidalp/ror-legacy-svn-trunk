@@ -23,6 +23,7 @@ along with Rigs of Rods.  If not, see <http://www.gnu.org/licenses/>.
 #include "OgrePrerequisites.h"
 #include "DynamicRenderable.h"
 #include <vector>
+#include "Beam.h"
 
 typedef struct _skidmark
 {
@@ -39,7 +40,7 @@ class Skidmark
 {
 public:
 	/// Constructor - see setOperationType() for description of argument.
-	Skidmark(Ogre::SceneManager *scm, float wheelWidth, Ogre::SceneNode *snode, int lenght=200, int bucketCount=10);
+	Skidmark(Ogre::SceneManager *scm, wheel_t *wheel, Ogre::SceneNode *snode, int lenght=200, int bucketCount=10);
 	virtual ~Skidmark();
 
 	void setPoint(const Ogre::Vector3 &value);
@@ -55,7 +56,7 @@ private:
 	bool mDirty;
 	int lenght;
 	int bucketCount;
-	float wheelWidth;
+	wheel_t *wheel;
 	float minDistance, maxDistance;
 	
 	void limitObjects();
