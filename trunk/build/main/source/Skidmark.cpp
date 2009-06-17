@@ -26,8 +26,10 @@ along with Rigs of Rods.  If not, see <http://www.gnu.org/licenses/>.
 using namespace Ogre;
 int Skidmark::instancecounter = 0;
 
-Skidmark::Skidmark(SceneManager *scm, SceneNode *snode, int _lenght) : scm(scm), mNode(snode), lenght(_lenght)
+Skidmark::Skidmark(SceneManager *scm, float wheelWidth, SceneNode *snode, int _lenght, int bucketCount) : scm(scm), mNode(snode), lenght(_lenght), wheelWidth(wheelWidth), bucketCount(bucketCount)
 {
+	minDistance = 0.005f;
+	maxDistance = std::min(0.5f, wheelWidth*1.1f);
 	mDirty = true;
 }
 
@@ -41,13 +43,15 @@ void Skidmark::addObject(Vector3 start)
 	skidmark_t skid;
 	skid.pos=0;
 	skid.lastPoint=start;
+	skid.facecounter=0;
+	for(int i=0;i<3;i++) skid.face[i] = Vector3::ZERO;
 	skid.colour = ColourValue(Math::RangeRandom(0, 100)/100.0f, Math::RangeRandom(0, 100)/100.0f, Math::RangeRandom(0, 100)/100.0f);
 
 	skid.points.resize(lenght);	
 	skid.obj = scm->createManualObject("skidmark" + StringConverter::toString(instancecounter++));
 	skid.obj->setDynamic(true);
 	skid.obj->setRenderingDistance(800);
-	skid.obj->begin("tracks/skidmark", RenderOperation::OT_LINE_STRIP); //OT_LINE_STRIP);
+	skid.obj->begin("tracks/skidmark", RenderOperation::OT_TRIANGLE_STRIP);
 	for(int i = 0; i < lenght; i++)
 	{
 		skid.points[i] = start;
@@ -64,7 +68,7 @@ void Skidmark::addObject(Vector3 start)
 
 void Skidmark::limitObjects()
 {
-	if(objects.size()>5)
+	if((int)objects.size() > bucketCount)
 	{
 		LogManager::getSingleton().logMessage("deleting first skidmarks section to keep the limits");
 		objects.front().points.clear();
@@ -81,8 +85,6 @@ void Skidmark::setPointInt(unsigned short index, const Vector3 &value)
 
 void Skidmark::setPoint(const Vector3 &value)
 {
-	float minDistance = 0.05f;
-	float maxDistance = 0.5f;
 
 
 	// far enough for new section?
@@ -96,7 +98,7 @@ void Skidmark::setPoint(const Vector3 &value)
 		if(fabs(skid.lastPoint.distance(value)) < minDistance) return;
 		
 		// far enough for new section?
-		if((skid.lastPoint != Vector3::ZERO && fabs(skid.lastPoint.distance(value)) > maxDistance) || skid.pos >= skid.points.size())
+		if((skid.lastPoint != Vector3::ZERO && fabs(skid.lastPoint.distance(value)) > maxDistance) || skid.pos >= (int)skid.points.size())
 			addObject(value);
 	}
 
@@ -111,10 +113,23 @@ void Skidmark::update()
 	Vector3 vaabMin = skid.points[0];
 	Vector3 vaabMax = skid.points[0];
 	skid.obj->beginUpdate(0);
+	bool behindEnd = false;
+	Vector3 lastValid = Vector3::ZERO;
 	for(int i = 0; i < lenght; i++)
 	{
-		skid.obj->position(skid.points[i]);
-		skid.obj->colour(skid.colour);
+		if(i>=skid.pos) behindEnd=true;
+
+		if(behindEnd)
+		{
+			skid.obj->position(lastValid);
+			skid.obj->colour(ColourValue::Green);
+		} else
+		{
+			skid.obj->position(skid.points[i]);
+			skid.obj->colour(skid.colour);
+			lastValid = skid.points[i];
+		}
+		
 		if(skid.points[i].x < vaabMin.x) vaabMin.x = skid.points[i].x;
 		if(skid.points[i].y < vaabMin.y) vaabMin.y = skid.points[i].y;
 		if(skid.points[i].z < vaabMin.z) vaabMin.z = skid.points[i].z;
