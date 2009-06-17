@@ -26,6 +26,14 @@ along with Rigs of Rods.  If not, see <http://www.gnu.org/licenses/>.
 using namespace Ogre;
 int Skidmark::instancecounter = 0;
 
+// this is a hardcoded array which we use to map ground types to a certain texture with UV/ coords
+Vector2 Skidmark::tex_coords[4][4] = {
+	{Vector2(0,0.00f), Vector2(0,0.25f), Vector2(1,0.00f), Vector2(1,0.25f)},
+	{Vector2(0,0.25f), Vector2(0,0.50f), Vector2(1,0.25f), Vector2(1,0.50f)},
+	{Vector2(0,0.50f), Vector2(0,0.75f), Vector2(1,0.50f), Vector2(1,0.75f)},
+	{Vector2(0,0.75f), Vector2(0,1.00f), Vector2(1,0.75f), Vector2(1,1.00f)},
+};
+
 Skidmark::Skidmark(SceneManager *scm, wheel_t *wheel, SceneNode *snode, int _lenght, int bucketCount) : scm(scm), mNode(snode), lenght(_lenght), wheel(wheel), bucketCount(bucketCount)
 {
 	if(lenght%2) lenght -= lenght%2; // round it!
@@ -66,7 +74,8 @@ void Skidmark::addObject(Vector3 start)
 	p->setDepthBias(3, 3);
 	p->setCullingMode(Ogre::CULL_NONE);
 
-	skid.points.resize(lenght);	
+	skid.points.resize(lenght);
+	skid.ground_model_id.resize(lenght);
 	skid.obj = scm->createManualObject("skidmark" + StringConverter::toString(instancecounter++));
 	skid.obj->setDynamic(true);
 	skid.obj->setRenderingDistance(800);
@@ -74,6 +83,7 @@ void Skidmark::addObject(Vector3 start)
 	for(int i = 0; i < lenght; i++)
 	{
 		skid.points[i] = start;
+		skid.ground_model_id[i] = 0;
 		skid.obj->position(start);
 		skid.obj->textureCoord(0,0);
 	}
@@ -100,6 +110,15 @@ void Skidmark::limitObjects()
 void Skidmark::setPointInt(unsigned short index, const Vector3 &value)
 {
 	objects.back().points[index] = value;
+	
+	int model_id = 0; // normal tire tracks
+
+	// determine ground texture
+	if(!strncmp(wheel->lastGroundModel->name, "grass", 255) || !strncmp(wheel->lastGroundModel->name, "gravel", 255)) model_id = 3;
+	if(wheel->lastSlip > 5 && model_id == 0) model_id = 1; // rough street
+	if(wheel->lastSlip > 5 && model_id == 3) model_id = 2; // rough grass/gravel
+	objects.back().ground_model_id[index] = model_id;
+
 	mDirty = true;
 }
 
@@ -116,10 +135,9 @@ void Skidmark::updatePoint()
 		skidmark_t skid = objects.back();
 
 		// too near to update?
-		if(skid.lastPoint.squaredDistance(wheel->lastContactInner) < minDistanceSquared 
-			|| skid.lastPoint.squaredDistance(wheel->lastContactOuter) < minDistanceSquared)
+		if(skid.lastPoint.squaredDistance(lastPoint) < minDistanceSquared)
 		{
-			//LogManager::getSingleton().logMessage("E: too near for update");
+			LogManager::getSingleton().logMessage("E: too near for update");
 			return;
 		}
 
@@ -185,7 +203,7 @@ void Skidmark::update()
 	bool behindEnd = false;
 	Vector3 lastValid = Vector3::ZERO;
 	int to_counter=0;
-	Vector2 tex_coords[4] = {Vector2(0,0), Vector2(0,1), Vector2(1,0), Vector2(1,1)};
+
 	for(int i = 0; i < lenght; i++, to_counter++)
 	{
 		if(i>=skid.pos) behindEnd=true;
@@ -204,7 +222,7 @@ void Skidmark::update()
 		} else
 		{
 			skid.obj->position(skid.points[i]);
-			Vector2 tco = tex_coords[to_counter];
+			Vector2 tco = tex_coords[skid.ground_model_id[i]][to_counter];
 
 			tco.x *= 1 - len;
 

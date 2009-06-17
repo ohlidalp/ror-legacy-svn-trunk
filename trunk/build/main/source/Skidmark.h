@@ -29,6 +29,7 @@ typedef struct _skidmark
 {
 	Ogre::ManualObject *obj;
 	std::vector<Ogre::Vector3> points;
+	std::vector<int> ground_model_id;
 	Ogre::Vector3 lastPoint;
 	int pos;
 	Ogre::ColourValue colour;
@@ -58,6 +59,7 @@ private:
 	int bucketCount;
 	wheel_t *wheel;
 	float minDistance, maxDistance, minDistanceSquared, maxDistanceSquared;
+	static Ogre::Vector2 tex_coords[4][4];
 	
 	void limitObjects();
 	void addObject(Ogre::Vector3 start);
