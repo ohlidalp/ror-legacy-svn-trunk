@@ -51,7 +51,7 @@ Skidmark::~Skidmark()
 
 void Skidmark::addObject(Vector3 start)
 {
-	LogManager::getSingleton().logMessage("new skidmark section");
+	//LogManager::getSingleton().logMessage("new skidmark section");
 	skidmark_t skid;
 	skid.pos=0;
 	skid.lastPoint=start;
@@ -78,7 +78,7 @@ void Skidmark::addObject(Vector3 start)
 	skid.ground_model_id.resize(lenght);
 	skid.obj = scm->createManualObject("skidmark" + StringConverter::toString(instancecounter++));
 	skid.obj->setDynamic(true);
-	skid.obj->setRenderingDistance(800);
+	skid.obj->setRenderingDistance(2000); //2km sight range
 	skid.obj->begin(bname, RenderOperation::OT_TRIANGLE_STRIP);
 	for(int i = 0; i < lenght; i++)
 	{
@@ -100,7 +100,7 @@ void Skidmark::limitObjects()
 {
 	if((int)objects.size() > bucketCount)
 	{
-		LogManager::getSingleton().logMessage("deleting first skidmarks section to keep the limits");
+		//LogManager::getSingleton().logMessage("deleting first skidmarks section to keep the limits");
 		objects.front().points.clear();
 		scm->destroyManualObject(objects.front().obj);
 		objects.pop();
@@ -137,7 +137,7 @@ void Skidmark::updatePoint()
 		// too near to update?
 		if(skid.lastPoint.squaredDistance(lastPoint) < minDistanceSquared)
 		{
-			LogManager::getSingleton().logMessage("E: too near for update");
+			//LogManager::getSingleton().logMessage("E: too near for update");
 			return;
 		}
 
@@ -186,7 +186,7 @@ void Skidmark::addPoint(const Vector3 &value)
 {
 	if(objects.back().pos >= lenght)
 	{
-		LogManager::getSingleton().logMessage("E: boundary protection hit");
+		//LogManager::getSingleton().logMessage("E: boundary protection hit");
 		return;
 	}
 	setPointInt(objects.back().pos, value);
@@ -203,11 +203,16 @@ void Skidmark::update()
 	bool behindEnd = false;
 	Vector3 lastValid = Vector3::ZERO;
 	int to_counter=0;
+	int current_gmodel=skid.ground_model_id[0];
 
 	for(int i = 0; i < lenght; i++, to_counter++)
 	{
 		if(i>=skid.pos) behindEnd=true;
-		if(to_counter>3) to_counter=0;
+		if(to_counter>3)
+		{
+			to_counter=0;
+			current_gmodel=skid.ground_model_id[i];
+		}
 
 		float len = 1.0f;
 		if(!behindEnd && i>0 && skid.points[i] != Vector3::ZERO && skid.points[i-1] != Vector3::ZERO)
@@ -222,12 +227,10 @@ void Skidmark::update()
 		} else
 		{
 			skid.obj->position(skid.points[i]);
-			Vector2 tco = tex_coords[skid.ground_model_id[i]][to_counter];
 
-			tco.x *= 1 - len;
-
+			Vector2 tco = tex_coords[current_gmodel][to_counter];
+			tco.x *= 1 - len; // scale texture according face size
 			skid.obj->textureCoord(tco);
-
 
 			lastValid = skid.points[i];
 		}
