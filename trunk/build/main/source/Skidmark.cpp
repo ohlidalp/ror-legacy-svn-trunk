@@ -26,10 +26,10 @@ along with Rigs of Rods.  If not, see <http://www.gnu.org/licenses/>.
 using namespace Ogre;
 int Skidmark::instancecounter = 0;
 
-Skidmark::Skidmark(SceneManager *scm, float wheelWidth, SceneNode *snode, int _lenght, int bucketCount) : scm(scm), mNode(snode), lenght(_lenght), wheelWidth(wheelWidth), bucketCount(bucketCount)
+Skidmark::Skidmark(SceneManager *scm, wheel_t *wheel, SceneNode *snode, int _lenght, int bucketCount) : scm(scm), mNode(snode), lenght(_lenght), wheel(wheel), bucketCount(bucketCount)
 {
 	minDistance = 0.005f;
-	maxDistance = std::min(0.5f, wheelWidth*1.1f);
+	maxDistance = std::max(0.5f, wheel->width*1.1f);
 	mDirty = true;
 }
 
@@ -50,8 +50,8 @@ void Skidmark::addObject(Vector3 start)
 	skid.points.resize(lenght);	
 	skid.obj = scm->createManualObject("skidmark" + StringConverter::toString(instancecounter++));
 	skid.obj->setDynamic(true);
-	skid.obj->setRenderingDistance(800);
-	skid.obj->begin("tracks/skidmark", RenderOperation::OT_TRIANGLE_STRIP);
+	skid.obj->setRenderingDistance(80000);
+	skid.obj->begin("tracks/transred", RenderOperation::OT_TRIANGLE_STRIP);
 	for(int i = 0; i < lenght; i++)
 	{
 		skid.points[i] = start;
@@ -85,8 +85,7 @@ void Skidmark::setPointInt(unsigned short index, const Vector3 &value)
 
 void Skidmark::setPoint(const Vector3 &value)
 {
-
-
+	float mDist = maxDistance * wheel->speed;
 	// far enough for new section?
 	if(!objects.size())
 	{
@@ -98,7 +97,7 @@ void Skidmark::setPoint(const Vector3 &value)
 		if(fabs(skid.lastPoint.distance(value)) < minDistance) return;
 		
 		// far enough for new section?
-		if((skid.lastPoint != Vector3::ZERO && fabs(skid.lastPoint.distance(value)) > maxDistance) || skid.pos >= (int)skid.points.size())
+		if((skid.lastPoint != Vector3::ZERO && fabs(skid.lastPoint.distance(value)) > mDist) || skid.pos >= (int)skid.points.size())
 			addObject(value);
 	}
 

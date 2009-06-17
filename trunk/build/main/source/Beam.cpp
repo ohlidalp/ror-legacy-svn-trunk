@@ -7129,7 +7129,7 @@ void Beam::updateSkidmarks()
 		if(wheels[i].lastContact == Vector3::ZERO) continue;
 		// create skidmark object for wheels with data if not existing
 		if(!skidtrails[i])
-			skidtrails[i] = new Skidmark(tsm, wheels[i].width, beamsRoot);
+			skidtrails[i] = new Skidmark(tsm, &wheels[i], beamsRoot);
 		skidtrails[i]->setPoint(wheels[i].lastContact);
 	}
 
