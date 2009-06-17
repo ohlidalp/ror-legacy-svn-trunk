@@ -428,6 +428,7 @@ typedef struct _wheel
 	float rp1;
 	float rp2;
 	float rp3;
+	float width;
 
 	Vector3 lastContact;
 

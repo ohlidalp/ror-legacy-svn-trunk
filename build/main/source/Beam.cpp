@@ -425,7 +425,7 @@ Beam::Beam(int tnum, SceneManager *manager, SceneNode *parent, RenderWindow* win
 
 #if 1
 	// skidmark stuff
-	useSkidmarks = false;
+	useSkidmarks = true;
 	if (useSkidmarks)
 	{
 		for(int i=0; i<MAX_WHEELS*2; i++)
@@ -4649,6 +4649,7 @@ void Beam::addWheel(SceneManager *manager, SceneNode *parent, Real radius, Real 
 	wheels[free_wheel].rp1=0;
 	wheels[free_wheel].rp2=0;
 	wheels[free_wheel].rp3=0;
+	wheels[free_wheel].width=width;
 	wheels[free_wheel].arm=&nodes[torquenode];
 	wheels[free_wheel].lastContact=Vector3::ZERO;
 	if (propulsed>0)
@@ -4854,6 +4855,7 @@ void Beam::addWheel2(SceneManager *manager, SceneNode *parent, Real radius, Real
 	wheels[free_wheel].refnode1=&nodes[node2];
 	wheels[free_wheel].radius=radius;
 	wheels[free_wheel].speed=0.0;
+	wheels[free_wheel].width=width;
 	wheels[free_wheel].rp=0;
 	wheels[free_wheel].rp1=0;
 	wheels[free_wheel].rp2=0;
@@ -7127,7 +7129,7 @@ void Beam::updateSkidmarks()
 		if(wheels[i].lastContact == Vector3::ZERO) continue;
 		// create skidmark object for wheels with data if not existing
 		if(!skidtrails[i])
-			skidtrails[i] = new Skidmark(tsm, beamsRoot, 100);
+			skidtrails[i] = new Skidmark(tsm, wheels[i]. beamsRoot, 100);
 		skidtrails[i]->setPoint(wheels[i].lastContact);
 	}
 

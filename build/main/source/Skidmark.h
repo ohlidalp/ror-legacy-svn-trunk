@@ -31,13 +31,15 @@ typedef struct _skidmark
 	Ogre::Vector3 lastPoint;
 	int pos;
 	Ogre::ColourValue colour;
+	Ogre::Vector3 face[2];
+	int facecounter;
 } skidmark_t;
 
 class Skidmark
 {
 public:
 	/// Constructor - see setOperationType() for description of argument.
-	Skidmark(Ogre::SceneManager *scm, Ogre::SceneNode *snode, int lenght=200);
+	Skidmark(Ogre::SceneManager *scm, float wheelWidth, Ogre::SceneNode *snode, int lenght=200, int bucketCount=10);
 	virtual ~Skidmark();
 
 	void setPoint(const Ogre::Vector3 &value);
@@ -52,6 +54,9 @@ private:
 	std::queue<skidmark_t> objects;
 	bool mDirty;
 	int lenght;
+	int bucketCount;
+	float wheelWidth;
+	float minDistance, maxDistance;
 	
 	void limitObjects();
 	void addObject(Ogre::Vector3 start);
