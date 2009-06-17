@@ -4651,7 +4651,8 @@ void Beam::addWheel(SceneManager *manager, SceneNode *parent, Real radius, Real 
 	wheels[free_wheel].rp3=0;
 	wheels[free_wheel].width=width;
 	wheels[free_wheel].arm=&nodes[torquenode];
-	wheels[free_wheel].lastContact=Vector3::ZERO;
+	wheels[free_wheel].lastContactInner=Vector3::ZERO;
+	wheels[free_wheel].lastContactOuter=Vector3::ZERO;
 	if (propulsed>0)
 	{
 		//for inter-differential locking
@@ -5954,11 +5955,10 @@ void Beam::calcForcesEuler(int doUpdate, Real dt, int step, int maxstep, Beam** 
 				int contacted=0;
 				float ns=0;
 				ground_model_t *gm=&GROUND_GRAVEL;
-				if ((contacted=collisions->groundCollision(&nodes[i], nodes[i].colltesttimer, &gm)) |
+				if ((contacted=collisions->groundCollision(&nodes[i], nodes[i].colltesttimer, &gm, &ns)) |
 					collisions->nodeCollision(&nodes[i], i==cinecameranodepos[currentcamera], contacted, nodes[i].colltesttimer, &ns, &gm))
 				{
 					//FX
-					int trailtype=contacted?2:4;
 					if (doUpdate && dustp)
 					{
 						if (gm->fx_type==FX_DUSTY)
@@ -5991,7 +5991,11 @@ void Beam::calcForcesEuler(int doUpdate, Real dt, int step, int maxstep, Beam** 
 					// register wheel contact
 					if (useSkidmarks && nodes[i].wheelid >= 0)
 					{
-						wheels[nodes[i].wheelid].lastContact = nodes[i].AbsPosition;
+						if (!(nodes[i].iswheel%2))
+							wheels[nodes[i].wheelid].lastContactInner = nodes[i].AbsPosition;
+						else
+							wheels[nodes[i].wheelid].lastContactOuter = nodes[i].AbsPosition;
+						wheels[nodes[i].wheelid].lastContactType = (nodes[i].iswheel%2);
 						wheels[nodes[i].wheelid].lastSlip = ns;
 						wheels[nodes[i].wheelid].lastGroundModel = gm;
 					}
@@ -7129,12 +7133,14 @@ void Beam::updateSkidmarks()
 {
 	for(int i=0;i<free_wheel;i++)
 	{
+		if(i>0) break;
 		// ignore wheels without data
-		if(wheels[i].lastContact == Vector3::ZERO) continue;
+		if(wheels[i].lastContactInner == Vector3::ZERO && wheels[i].lastContactOuter == Vector3::ZERO) continue;
 		// create skidmark object for wheels with data if not existing
 		if(!skidtrails[i])
-			skidtrails[i] = new Skidmark(tsm, &wheels[i], beamsRoot);
-		skidtrails[i]->setPoint(wheels[i].lastContact);
+			skidtrails[i] = new Skidmark(tsm, &wheels[i], beamsRoot, 10, 3);
+		
+		skidtrails[i]->updatePoint();
 	}
 
 	//LogManager::getSingleton().logMessage("updating skidmark visuals");

@@ -28,8 +28,10 @@ int Skidmark::instancecounter = 0;
 
 Skidmark::Skidmark(SceneManager *scm, wheel_t *wheel, SceneNode *snode, int _lenght, int bucketCount) : scm(scm), mNode(snode), lenght(_lenght), wheel(wheel), bucketCount(bucketCount)
 {
-	minDistance = std::max(0.05f, wheel->width*0.8f);
+	minDistance = std::max(0.2f, wheel->width*0.9f);
+	minDistanceSquared = pow(minDistance, 2);
 	maxDistance = std::max(0.5f, wheel->width*1.1f);
+	maxDistanceSquared = pow(maxDistance, 2);
 	mDirty = true;
 }
 
@@ -83,36 +85,64 @@ void Skidmark::setPointInt(unsigned short index, const Vector3 &value)
 	mDirty = true;
 }
 
-void Skidmark::setPoint(const Vector3 &value)
+void Skidmark::updatePoint()
 {
-	float maxDist = maxDistance;
-	float minDist = minDistance;
-	// we use the wheels speed to determine the max distance. But not while standing still...
-	if(wheel->speed > 0)
-		maxDist *= wheel->speed;
-
-	if(wheel->lastSlip > 10.0f && wheel->speed < 1.0f)
-	{
-		// we are slipping with locked wheels
-		// prevent that we will use all points for some stupid slides
-		minDist *= 50.0f;
-	}
-
-	// far enough for new section?
+	Vector3 lastPoint = wheel->lastContactType?wheel->lastContactOuter:wheel->lastContactInner;
 	if(!objects.size())
 	{
-		addObject(value);
+		// new bucket
+		addObject(lastPoint);
 	} else
 	{
+		// check existing buckets
 		skidmark_t skid = objects.back();
+
 		// too near to update?
-		if(fabs(skid.lastPoint.distance(value)) < minDist) return;
-		
-		// far enough for new section?
-		if((skid.lastPoint != Vector3::ZERO && fabs(skid.lastPoint.distance(value)) > maxDist) || skid.pos >= (int)skid.points.size())
-			addObject(value);
+		if(skid.lastPoint.squaredDistance(wheel->lastContactInner) < minDistanceSquared 
+			|| skid.lastPoint.squaredDistance(wheel->lastContactOuter) < minDistanceSquared)
+		{
+			//LogManager::getSingleton().logMessage("E: too near for update");
+			return;
+		}
+
+		// far enough for new bucket?
+		float maxDist = maxDistance;
+		if(wheel->speed > 0) maxDist *= wheel->speed;
+		//if((skid.lastPoint != Vector3::ZERO && fabs(skid.lastPoint.distance(lastPoint)) > maxDist) || skid.pos >= (int)skid.points.size())
+		if(skid.pos >= (int)skid.points.size())
+		{
+			// add connection to last bucket
+			Vector3 lp1 = objects.back().points[objects.back().pos-1];
+			Vector3 lp2 = objects.back().points[objects.back().pos-2];
+			addObject(lp1);
+			addPoint(lp2);
+
+		}
 	}
 
+	skidmark_t skid = objects.back();
+
+	// tactics: we always choose the latest oint and then create two points
+	Vector3 axis = wheel->refnode1->RelPosition - wheel->refnode0->RelPosition;
+	// choose node wheel by the latest added point
+	if(!wheel->lastContactType)
+	{
+		// choose inner
+		//LogManager::getSingleton().logMessage("inner");
+		addPoint(wheel->lastContactInner);
+		addPoint(wheel->lastContactInner - axis);
+	} else
+	{
+		// choose outer
+		//LogManager::getSingleton().logMessage("outer");
+		addPoint(wheel->lastContactOuter + axis);
+		addPoint(wheel->lastContactOuter);
+	}
+
+}
+
+void Skidmark::addPoint(const Vector3 &value)
+{
 	setPointInt(objects.back().pos, value);
 	objects.back().pos++;
 	objects.back().lastPoint = value;
