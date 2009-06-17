@@ -1127,7 +1127,7 @@ bool Collisions::isInside(Vector3 pos, collision_box_t *cbox, float border)
 	return false;
 }
 
-bool Collisions::groundCollision(node_t *node, float dt, ground_model_t** ogm)
+bool Collisions::groundCollision(node_t *node, float dt, ground_model_t** ogm, float *nso)
 {
 	if (!hfinder) return false;
 	ground_model_t *gm=&GROUND_GRAVEL; //to be determined by the landuse map
@@ -1142,7 +1142,7 @@ bool Collisions::groundCollision(node_t *node, float dt, ground_model_t** ogm)
 		//collision!
 		Vector3 normal;
 		hfinder->getNormalAt(node->AbsPosition.x, v, node->AbsPosition.z, &normal);
-		primitiveCollision(node, normal, dt, gm, NULL, v-node->AbsPosition.y);
+		primitiveCollision(node, normal, dt, gm, nso, v-node->AbsPosition.y);
 		return true;
 	}
 	return false;

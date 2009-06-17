@@ -43,7 +43,7 @@ public:
 	Skidmark(Ogre::SceneManager *scm, wheel_t *wheel, Ogre::SceneNode *snode, int lenght=500, int bucketCount=20);
 	virtual ~Skidmark();
 
-	void setPoint(const Ogre::Vector3 &value);
+	void updatePoint();
 
 	void update();
 
@@ -57,11 +57,12 @@ private:
 	int lenght;
 	int bucketCount;
 	wheel_t *wheel;
-	float minDistance, maxDistance;
+	float minDistance, maxDistance, minDistanceSquared, maxDistanceSquared;
 	
 	void limitObjects();
 	void addObject(Ogre::Vector3 start);
 	void setPointInt(unsigned short index, const Ogre::Vector3 &value);
+	void addPoint(const Ogre::Vector3 &value);
 };
 
 

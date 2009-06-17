@@ -446,8 +446,10 @@ typedef struct _wheel
 	float width;
 
 	// for skidmarks
-	Vector3 lastContact;
+	Vector3 lastContactInner;
+	Vector3 lastContactOuter;
 	float lastSlip;
+	int lastContactType;
 	ground_model_t *lastGroundModel;
 
 } wheel_t;
