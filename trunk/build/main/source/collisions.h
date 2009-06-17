@@ -76,19 +76,6 @@ class LuaSystem;
 #include "ExampleFrameListener.h"
 #include "heightfinder.h"
 
-typedef struct _ground_model_t
-{
-	float va; //adhesion velocity
-	float ms; //static friction coefficient
-	float mc; //sliding friction coefficient
-	float t2; //hydrodynamic friction (s/m)
-	float vs; //stribeck velocity (m/s)
-	float alpha; //steady-steady
-	float strength; //gound strength, must be below 1.0
-	int fx_type;
-	ColourValue fx_coulour;
-	char name[255];
-} ground_model_t;
 
 extern ground_model_t GROUND_CONCRETE;
 extern ground_model_t GROUND_ASPHALT;
