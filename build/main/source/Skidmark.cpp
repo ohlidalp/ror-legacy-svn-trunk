@@ -28,7 +28,7 @@ int Skidmark::instancecounter = 0;
 
 Skidmark::Skidmark(SceneManager *scm, wheel_t *wheel, SceneNode *snode, int _lenght, int bucketCount) : scm(scm), mNode(snode), lenght(_lenght), wheel(wheel), bucketCount(bucketCount)
 {
-	minDistance = 0.005f;
+	minDistance = std::max(0.05f, wheel->width*0.8f);
 	maxDistance = std::max(0.5f, wheel->width*1.1f);
 	mDirty = true;
 }
@@ -85,7 +85,19 @@ void Skidmark::setPointInt(unsigned short index, const Vector3 &value)
 
 void Skidmark::setPoint(const Vector3 &value)
 {
-	float mDist = maxDistance * wheel->speed;
+	float maxDist = maxDistance;
+	float minDist = minDistance;
+	// we use the wheels speed to determine the max distance. But not while standing still...
+	if(wheel->speed > 0)
+		maxDist *= wheel->speed;
+
+	if(wheel->lastSlip > 10.0f && wheel->speed < 1.0f)
+	{
+		// we are slipping with locked wheels
+		// prevent that we will use all points for some stupid slides
+		minDist *= 50.0f;
+	}
+
 	// far enough for new section?
 	if(!objects.size())
 	{
@@ -94,10 +106,10 @@ void Skidmark::setPoint(const Vector3 &value)
 	{
 		skidmark_t skid = objects.back();
 		// too near to update?
-		if(fabs(skid.lastPoint.distance(value)) < minDistance) return;
+		if(fabs(skid.lastPoint.distance(value)) < minDist) return;
 		
 		// far enough for new section?
-		if((skid.lastPoint != Vector3::ZERO && fabs(skid.lastPoint.distance(value)) > mDist) || skid.pos >= (int)skid.points.size())
+		if((skid.lastPoint != Vector3::ZERO && fabs(skid.lastPoint.distance(value)) > maxDist) || skid.pos >= (int)skid.points.size())
 			addObject(value);
 	}
 

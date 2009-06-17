@@ -5990,7 +5990,11 @@ void Beam::calcForcesEuler(int doUpdate, Real dt, int step, int maxstep, Beam** 
 
 					// register wheel contact
 					if (useSkidmarks && nodes[i].wheelid >= 0)
+					{
 						wheels[nodes[i].wheelid].lastContact = nodes[i].AbsPosition;
+						wheels[nodes[i].wheelid].lastSlip = ns;
+						wheels[nodes[i].wheelid].lastGroundModel = gm;
+					}
 				}
 				nodes[i].colltesttimer=0.0;
 			}

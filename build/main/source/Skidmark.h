@@ -40,7 +40,7 @@ class Skidmark
 {
 public:
 	/// Constructor - see setOperationType() for description of argument.
-	Skidmark(Ogre::SceneManager *scm, wheel_t *wheel, Ogre::SceneNode *snode, int lenght=200, int bucketCount=10);
+	Skidmark(Ogre::SceneManager *scm, wheel_t *wheel, Ogre::SceneNode *snode, int lenght=500, int bucketCount=20);
 	virtual ~Skidmark();
 
 	void setPoint(const Ogre::Vector3 &value);
