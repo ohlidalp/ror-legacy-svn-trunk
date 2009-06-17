@@ -7133,12 +7133,11 @@ void Beam::updateSkidmarks()
 {
 	for(int i=0;i<free_wheel;i++)
 	{
-		if(i>0) break;
 		// ignore wheels without data
 		if(wheels[i].lastContactInner == Vector3::ZERO && wheels[i].lastContactOuter == Vector3::ZERO) continue;
 		// create skidmark object for wheels with data if not existing
 		if(!skidtrails[i])
-			skidtrails[i] = new Skidmark(tsm, &wheels[i], beamsRoot, 10, 3);
+			skidtrails[i] = new Skidmark(tsm, &wheels[i], beamsRoot, 1000, 20);
 		
 		skidtrails[i]->updatePoint();
 	}
