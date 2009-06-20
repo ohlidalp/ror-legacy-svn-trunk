@@ -198,12 +198,8 @@ extern int truckSteps;
 #define SHOCK_FLAG_INVISIBLE    0x00000002
 #define SHOCK_FLAG_LACTIVE      0x00000004
 #define SHOCK_FLAG_RACTIVE      0x00000008
-#define SHOCK_FLAG_PROGRESSIVE  0x00000010
-#define SHOCK_FLAG_PASSIVE      0x00000020
-#define SHOCK_FLAG_METRIC       0x00000040
-#define SHOCK_FLAG_IBOUND       0x00000080
-#define SHOCK_FLAG_OBOUND       0x00000100
-
+#define SHOCK_FLAG_ISSHOCK2     0x00000010
+#define SHOCK_FLAG_SOFTBUMP     0x00000020
 
 enum blinktype {BLINK_NONE, BLINK_LEFT, BLINK_RIGHT, BLINK_WARN};
 
@@ -255,6 +251,15 @@ typedef struct
 	int beamid;
 	int flags;
 	float lastpos;
+	float springin;
+	float dampin;
+	float sprogin;
+	float dprogin;
+	float springout;
+	float dampout;
+	float sprogout;
+	float dprogout;
+
 }shock_t;
 
 typedef struct

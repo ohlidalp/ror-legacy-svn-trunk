@@ -1715,7 +1715,7 @@ void InputEngine::Capture()
 	if(mMouse) mMouse->capture();
 	if(free_joysticks) 
 		for(int i=0;i<free_joysticks;i++)
-			mJoy[i]->capture();
+			if(mJoy[i]) mJoy[i]->capture();
 }
 
 void InputEngine::windowResized(RenderWindow* rw)

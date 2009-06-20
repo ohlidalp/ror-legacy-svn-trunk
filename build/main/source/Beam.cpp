@@ -1295,6 +1295,7 @@ int Beam::loadTruck(char* fname, SceneManager *manager, SceneNode *parent, Real 
 		if (!strcmp("torquecurve",line)) {mode=53;continue;};
 		if (!strcmp("advdrag",line)) {mode=54;continue;};
 		if (!strcmp("axles",line)) {mode=55;continue;};
+		if (!strcmp("shocks2",line)) {mode=56;continue;};
 
 		if (!strcmp("commandlist",line))
 		{
@@ -1713,7 +1714,7 @@ int Beam::loadTruck(char* fname, SceneManager *manager, SceneNode *parent, Real 
 			{
 				LogManager::getSingleton().logMessage("Error: unknown node number in shocks section ("+StringConverter::toString(id1)+","+StringConverter::toString(id2)+")");
 				exit(4);
-			};
+			}
 
 
 			// options
@@ -1732,35 +1733,19 @@ int Beam::loadTruck(char* fname, SceneManager *manager, SceneNode *parent, Real 
 						break;
 					case 'l':
 					case 'L':
+						shockflag &= ~SHOCK_FLAG_NORMAL; // not normal anymore
 						shockflag |= SHOCK_FLAG_LACTIVE;
 						free_active_shock++; // this has no array associated with it. its just to determine if there are active shocks!
 						break;
 					case 'r':
 					case 'R':
+						shockflag &= ~SHOCK_FLAG_NORMAL; // not normal anymore
 						shockflag |= SHOCK_FLAG_RACTIVE;
 						free_active_shock++; // this has no array associated with it. its just to determine if there are active shocks!
-						break;
-					case 'p':
-						// progressive shock
-						shockflag |= SHOCK_FLAG_PROGRESSIVE;
-						break;
-					case 's':
-						// passive shock
-						shockflag &= ~SHOCK_FLAG_NORMAL; // not normal anymore
-						shockflag |= SHOCK_FLAG_PASSIVE;
-						break;
-					case 'I':
-						// Inbound only shock
-						shockflag |= SHOCK_FLAG_IBOUND;
-						break;
-					case 'O':
-						// Outbound only shock
-						shockflag |= SHOCK_FLAG_OBOUND;
 						break;
 					case 'm':
 						{
 							// metric values: calculate sbound and lbound now
-							shockflag |= SHOCK_FLAG_METRIC; // well we dont care actually, but hey ...
 							float beam_lenght = nodes[id1].AbsPosition.distance(nodes[id2].AbsPosition);
 							sbound = sbound / beam_lenght;
 							lbound = lbound / beam_lenght;
@@ -1769,13 +1754,114 @@ int Beam::loadTruck(char* fname, SceneManager *manager, SceneNode *parent, Real 
 				}
 				options_pointer++;
 			}
-
 			int pos=add_beam(&nodes[id1], &nodes[id2], manager, parent, htype, default_break*4.0, s, d, -1.0, sbound, lbound, precomp);
 			beams[pos].shock = &shocks[free_shock];
 			shocks[free_shock].beamid = pos;
 			shocks[free_shock].flags = shockflag;
 			free_shock++;
 		}
+		else if (mode==56)
+		{
+			//parse shocks2
+			int id1, id2;
+			float sin=-1.0f,din=-1.0f,psin=-1.0f,pdin=-1.0f,sout=-1.0f,dout=-1.0f,psout=-1.0f,pdout=-1.0f,sbound=-1.0f,lbound=-1.0f,precomp=-1.0f;
+			char options[50]="n";
+			int result = sscanf(line,"%i, %i, %f, %f, %f, %f, %f, %f, %f, %f, %f, %f, %f, %s", &id1, &id2, &sin, &din, &psin, &pdin, &sout, &dout, &psout, &pdout, &sbound, &lbound, &precomp, options);
+
+			if (result < 13 || result == EOF)
+			{
+				LogManager::getSingleton().logMessage("Error parsing File (Shock) " + String(fname) +" line " + StringConverter::toString(linecounter) + ". trying to continue ...");
+				continue;
+			}
+
+			// checks ...
+			if(free_beam >= MAX_BEAMS)
+			{
+				LogManager::getSingleton().logMessage("beams limit reached ("+StringConverter::toString(MAX_BEAMS)+"): " + String(fname) +" line " + StringConverter::toString(linecounter) + ". trying to continue ...");
+				continue;
+			}
+			if(free_shock >= MAX_BEAMS)
+			{
+				LogManager::getSingleton().logMessage("shock limit reached ("+StringConverter::toString(MAX_SHOCKS)+"): " + String(fname) +" line " + StringConverter::toString(linecounter) + ". trying to continue ...");
+				continue;
+			}
+			if (id1>=free_node || id2>=free_node)
+			{
+				LogManager::getSingleton().logMessage("Error: unknown node number in shocks2 section ("+StringConverter::toString(id1)+","+StringConverter::toString(id2)+")");
+				exit(4);
+			}
+
+			if ( sin == -1.0f || din == -1.0f || psin == -1.0f || pdin == -1.0f || sout == -1.0f || dout == -1.0f || psout == -1.0f || pdout == -1.0f || sbound == -1.0f || lbound == -1.0f || precomp == -1.0f)
+			{
+				LogManager::getSingleton().logMessage("Error: Wrong values in shocks2 section ("+StringConverter::toString(id1)+","+StringConverter::toString(id2)+")");
+				exit(123);
+			}
+
+			// options
+			int htype=BEAM_HYDRO;
+			int shockflag = SHOCK_FLAG_NORMAL | SHOCK_FLAG_ISSHOCK2;
+
+			// now 'parse' the options
+			char *options_pointer = options;
+			while (*options_pointer != 0)
+			{
+				switch (*options_pointer)
+				{
+					case 'i':
+						// invisible
+						htype=BEAM_INVISIBLE_HYDRO;
+						shockflag |= SHOCK_FLAG_INVISIBLE;
+						break;
+					case 's':
+						// passive shock
+						shockflag &= ~SHOCK_FLAG_NORMAL; // not normal anymore
+						shockflag |= SHOCK_FLAG_SOFTBUMP;
+						break;
+					case 'm':
+						{
+							// metric values: calculate sbound and lbound now
+							float beam_lenght = nodes[id1].AbsPosition.distance(nodes[id2].AbsPosition);
+							sbound = sbound / beam_lenght;
+							lbound = lbound / beam_lenght;
+						}
+					case 'M':
+						{
+							// metric values: calculate sbound and lbound now
+							float beam_lenght = nodes[id1].AbsPosition.distance(nodes[id2].AbsPosition);
+							sbound = (beam_lenght - sbound) / beam_lenght;
+							lbound = (lbound - beam_lenght) / beam_lenght;
+							
+							if (lbound < 0)
+							{
+								LogManager::getSingleton().logMessage("Error parsing File (Shocks) " + String(fname) +" line " + StringConverter::toString(linecounter) + ". Metric shock length calculation failed, longbound less then beams spawn length, reset to beams spawn length (longbound=0).");
+								lbound = 0.0f;
+							}
+							
+							if (sbound > 1)
+							{
+								LogManager::getSingleton().logMessage("Error parsing File (Shocks) " + String(fname) +" line " + StringConverter::toString(linecounter) + ". Metric shock length calculation failed, shortbound less then 0 meters, reset to 0 meters (shortbound=1).");
+								sbound = 1.0f;
+							}
+						}
+						break;
+				}
+				options_pointer++;
+			}
+			int pos=add_beam(&nodes[id1], &nodes[id2], manager, parent, htype, default_break*4.0, sin, din, -1.0, sbound, lbound, precomp);
+			beams[pos].shock = &shocks[free_shock];
+			shocks[free_shock].springin = sin;
+			shocks[free_shock].dampin = din;
+			shocks[free_shock].sprogin = psin;
+			shocks[free_shock].dprogin = pdin;
+			shocks[free_shock].springout = sout;
+			shocks[free_shock].dampout = dout;
+			shocks[free_shock].sprogout = psout;
+			shocks[free_shock].dprogout = pdout;
+			shocks[free_shock].beamid = pos;
+			shocks[free_shock].flags = shockflag;
+			free_shock++;
+		}
+
 		else if (mode==3)
 		{
 			//parse fixes
@@ -5487,78 +5573,142 @@ void Beam::calcForcesEuler(int doUpdate, Real dt, int step, int maxstep, Beam** 
 				//dampers bump
 				Real difftoBeamL = dislen - beams[i].L;
 				bool normalShock=false;
-				if (beams[i].bounded && beams[i].shock)
+				if (beams[i].bounded)
 				{
-					if(beams[i].shock->flags & SHOCK_FLAG_PROGRESSIVE)
+					// this is a shock
+					if (beams[i].shock && beams[i].shock->flags & SHOCK_FLAG_ISSHOCK2)
 					{
-						// progressive shocks
-						if (difftoBeamL < 1 )
+						float beamsLep=beams[i].L*0.8f;
+						float longboundprelimit=beams[i].longbound*beamsLep;
+						float shortboundprelimit=-beams[i].shortbound*beamsLep; 
+						// this is a shock2
+						float logafactor;
+						//shock extending since last cycle
+						if (beams[i].shock->lastpos < difftoBeamL)
 						{
-							k=k+(10*k*(difftoBeamL*difftoBeamL));
-							d=d+(5*d*(difftoBeamL*difftoBeamL));
-						}
-					}
-					if (beams[i].shock->flags & SHOCK_FLAG_IBOUND)
-					{
-						//reset damping/spring to 1/1 for outbound, this is an inbound-shock only and its NOT in the outbound bump
-						if (beams[i].shock->lastpos < difftoBeamL && difftoBeamL < (beams[i].longbound*beams[i].L*0.8))
-						{
-							k=1;
-							d=1;
-						}
-					}	
-					if (beams[i].shock->flags & SHOCK_FLAG_OBOUND)
-					{
-						//reset damping/spring to 1/1 for inbound, this is an outbound-shock only and its NOT in the inbound bump
-						if (beams[i].shock->lastpos > difftoBeamL && difftoBeamL > -(beams[i].shortbound*beams[i].L*0.8))
-						{
-							k=1;
-							d=1;
-						}
-					}
-					
-					// save beam postion for next sim cycle
-					beams[i].shock->lastpos=difftoBeamL;
-
-					if(beams[i].shock->flags & SHOCK_FLAG_PASSIVE)
-					{
-						// soft bump shocks
-						if (difftoBeamL > (beams[i].longbound*beams[i].L)*0.8)
-						{
-							k=k+((k+100)*40*(((difftoBeamL-((beams[i].longbound*beams[i].L)*0.8))*100)*((difftoBeamL-((beams[i].longbound*beams[i].L)*0.8))*100)));
-							d=d+((d+100)*20*(((difftoBeamL-((beams[i].longbound*beams[i].L)*0.8))*100)*((difftoBeamL-((beams[i].longbound*beams[i].L)*0.8))*100)));
-
-							//rebound mode ?= Let him go
-							if (difftoBeamL <= beams[i].longbound*beams[i].L)
+							//get outbound values
+							k=beams[i].shock->springout;
+							d=beams[i].shock->dampout;
+							// add progression
+							if (beams[i].longbound != 0.0f)
 							{
-								d=beams[i].d;
-							}
-
-						} else if (difftoBeamL < -(beams[i].shortbound*beams[i].L)*0.8)
-						{
-							k=k+((k+100)*50*(((difftoBeamL-(-(beams[i].shortbound*beams[i].L)*0.8))*20)*((difftoBeamL-(-(beams[i].shortbound*beams[i].L)*0.8))*20)));
-							d=d+((d+100)*25*(((difftoBeamL-(-(beams[i].shortbound*beams[i].L)*0.8))*20)*((difftoBeamL-(-(beams[i].shortbound*beams[i].L)*0.8))*20)));
-
-							//rebound mode ?= Let him go
-							if (difftoBeamL >= -beams[i].shortbound*beams[i].L)
+								logafactor=difftoBeamL/(beams[i].longbound*beams[i].L);
+								logafactor=logafactor*logafactor;
+							} else
 							{
-								d=beams[i].d;
+								logafactor = 1.0f;
+							}
+							if (logafactor > 1.0f) logafactor = 1.0f;
+							k=k+(beams[i].shock->sprogout*k*logafactor);
+							d=d+(beams[i].shock->dprogout*d*logafactor);
+						} else
+						{
+							//shock compresssing since last cycle
+							//get inbound values
+							k=beams[i].shock->springin;
+							d=beams[i].shock->dampin;
+							// add progression
+							if (beams[i].shortbound != 0.0f)
+							{
+								logafactor=difftoBeamL/(beams[i].shortbound*beams[i].L);
+								logafactor=logafactor*logafactor; 
+							} else
+							{
+								logafactor = 1.0f;
+							}
+							if (logafactor > 1.0f) logafactor = 1.0f;
+							k=k+(beams[i].shock->sprogin*k*logafactor);
+							d=d+(beams[i].shock->dprogin*d*logafactor);
+						}
+						if(beams[i].shock->flags & SHOCK_FLAG_SOFTBUMP)
+						{
+							// soft bump shocks
+							if (difftoBeamL > longboundprelimit)
+							{
+								//reset to longbound progressive values (oscillating beam workaround)
+								k=beams[i].shock->springout;
+								d=beams[i].shock->dampout;
+								// add progression
+								if (beams[i].longbound != 0.0f)
+								{
+									logafactor=difftoBeamL/(beams[i].longbound*beams[i].L);
+									logafactor=logafactor*logafactor; 
+								} else
+								{
+									logafactor = 1.0f;
+								}
+								if (logafactor > 1.0f) logafactor = 1.0f;
+								k=k+(beams[i].shock->sprogout*k*logafactor);
+								d=d+(beams[i].shock->dprogout*d*logafactor);
+								//add shortbump progression
+								if (beams[i].longbound != 0.0f)
+								{
+									logafactor=((difftoBeamL-longboundprelimit)*5.0f)/(beams[i].longbound*beams[i].L);
+									logafactor=logafactor*logafactor; 
+								} else
+								{
+									logafactor = 1.0f;
+								}
+								if (logafactor > 1.0f) logafactor = 1.0f;
+								k=k+(k+ 100.0f)* beams[i].shock->sprogout *logafactor;
+								d=d+(d+ 100.0f)* beams[i].shock->dprogout * logafactor;
+								if (beams[i].shock->lastpos > difftoBeamL)
+								// rebound mode..get new values
+								{
+									k=beams[i].shock->springin;
+									d=beams[i].shock->dampin;
+								}
+							} else if (difftoBeamL < shortboundprelimit)
+							{
+								//reset to shortbound progressive values (oscillating beam workaround)
+								k=beams[i].shock->springin;
+								d=beams[i].shock->dampin;
+								if (beams[i].shortbound != 0.0f)
+								{
+									logafactor=difftoBeamL/(beams[i].shortbound*beams[i].L);
+									logafactor=logafactor*logafactor;
+								} else
+								{
+									logafactor = 1.0f;
+								}
+								if (logafactor > 1.0f) logafactor = 1.0f;
+								k=k+(beams[i].shock->sprogin*k*logafactor);
+								d=d+(beams[i].shock->dprogin*d*logafactor);
+								//add shortbump progression
+								if (beams[i].shortbound != 0.0f)
+								{
+									logafactor=((difftoBeamL-shortboundprelimit)*5.0f)/(beams[i].shortbound*beams[i].L);
+									logafactor=logafactor*logafactor; 
+								}else
+								{
+									logafactor = 1.0f;
+								}
+								if (logafactor > 1.0f) logafactor = 1.0f;
+								k=k+(k+ 100.0f)* beams[i].shock->sprogout *logafactor;
+								d=d+(d+ 100.0f)* beams[i].shock->dprogout * logafactor;
+								if (beams[i].shock->lastpos < difftoBeamL)
+								// rebound mode..get new values
+								{
+									k=beams[i].shock->springout;
+									d=beams[i].shock->dampout;
+								}
+							}
+							if (difftoBeamL > beams[i].longbound*beams[i].L || difftoBeamL < -beams[i].shortbound*beams[i].L)
+							{
+								// block reached...hard bump in soft mode with 4x default damping
+								if (k < DEFAULT_SPRING) k=DEFAULT_SPRING;
+								if (d < DEFAULT_DAMP*4.0f) d = DEFAULT_DAMP*4.0f;
 							}
 						}
-						
-						if (difftoBeamL > beams[i].longbound*beams[i].L || difftoBeamL < -beams[i].shortbound*beams[i].L)
-						{
-								// block reached...hard bump in soft mode
-								k=DEFAULT_SPRING/2;
-								d=DEFAULT_DAMP*2;
-						}
-					}
-					if(beams[i].shock->flags & SHOCK_FLAG_NORMAL)
+						if(beams[i].shock->flags & SHOCK_FLAG_NORMAL)
 							normalShock = true;
 				
-				} else if (beams[i].bounded && !beams[i].shock)
-					normalShock = true;
-
+						// save beam postion for next sim cycle
+						beams[i].shock->lastpos=difftoBeamL;
+					} else if (!beams[i].shock)
+						// this is a shock1
+						normalShock = true;					
+				}
 				if(normalShock)
 				{
 					// hard (normal) shock bump
