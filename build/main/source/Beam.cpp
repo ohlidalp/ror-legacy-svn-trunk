@@ -803,9 +803,9 @@ void Beam::expireNetForce()
 	}
 }
 
-inline bool Beam::isFiniteNum(float x)
+inline bool Beam::inRange(float num, float min, float max)
 {
-	return (x <= FLT_MAX && x >= -FLT_MAX);
+	return (num <= max && num >= min);
 }
 
 //called by the network thread
@@ -6267,7 +6267,13 @@ void Beam::calcForcesEuler(int doUpdate, Real dt, int step, int maxstep, Beam** 
 	}
 
 	// anti-explosion guard
-	if (!isFiniteNum(tminx+tmaxx+tminy+tmaxy+tminz+tmaxz))
+	// rationale behind 1e9 number:
+	// - while 1e6 is reachable by a fast vehicle, it will be badly deformed and shaking due to loss of precision in calculations
+	// - at 1e7 any typical RoR vehicle falls apart and stops functioning
+	// - 1e9 may be reachable only by a vehicle that is 1000 times bigger than a typical RoR vehicle, and it will be a loooong trip
+	// to be able to travel such long distances will require switching physics calculations to higher precision numbers
+	// or taking a different approach to the simulation (truck-local coordinate system?)
+	if (!inRange(tminx+tmaxx+tminy+tmaxy+tminz+tmaxz, -1e9, 1e9))
 	{
 		reset_requested=true; // truck exploded, schedule reset
 		return; // return early to avoid propagating invalid values
