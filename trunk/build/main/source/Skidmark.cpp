@@ -19,6 +19,7 @@ along with Rigs of Rods.  If not, see <http://www.gnu.org/licenses/>.
 */
 
 #include "Skidmark.h"
+#include "heightfinder.h"
 #include <Ogre.h>
 #include <cassert>
 #include <cmath>
@@ -34,7 +35,7 @@ Vector2 Skidmark::tex_coords[4][4] = {
 	{Vector2(0,0.75f), Vector2(0,1.00f), Vector2(1,0.75f), Vector2(1,1.00f)},
 };
 
-Skidmark::Skidmark(SceneManager *scm, wheel_t *wheel, SceneNode *snode, int _lenght, int bucketCount) : scm(scm), mNode(snode), lenght(_lenght), wheel(wheel), bucketCount(bucketCount)
+Skidmark::Skidmark(SceneManager *scm, wheel_t *wheel, HeightFinder *hfinder, SceneNode *snode, int _lenght, int bucketCount) : scm(scm), hfinder(hfinder), mNode(snode), lenght(_lenght), wheel(wheel), bucketCount(bucketCount)
 {
 	if(lenght%2) lenght -= lenght%2; // round it!
 
@@ -164,6 +165,11 @@ void Skidmark::updatePoint()
 
 	float overaxis = 0.2f;
 	// tactics: we always choose the latest oint and then create two points
+	Vector3 groundNormal = Vector3::ZERO;
+	hfinder->getNormalAt(lastPoint.x, lastPoint.y, lastPoint.z, &groundNormal);
+
+	LogManager::getSingleton().logMessage("ground normal: "+StringConverter::toString(wheel->refnode1->RelPosition.dotProduct(groundNormal)));
+
 	Vector3 axis = wheel->refnode1->RelPosition - wheel->refnode0->RelPosition;
 	// choose node wheel by the latest added point
 	if(!wheel->lastContactType)

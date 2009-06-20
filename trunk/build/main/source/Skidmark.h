@@ -41,7 +41,7 @@ class Skidmark
 {
 public:
 	/// Constructor - see setOperationType() for description of argument.
-	Skidmark(Ogre::SceneManager *scm, wheel_t *wheel, Ogre::SceneNode *snode, int lenght=500, int bucketCount=20);
+	Skidmark(Ogre::SceneManager *scm, wheel_t *wheel, HeightFinder *hfinder, Ogre::SceneNode *snode, int lenght=500, int bucketCount=20);
 	virtual ~Skidmark();
 
 	void updatePoint();
@@ -52,6 +52,7 @@ private:
 	static int instancecounter;
 	Ogre::SceneManager *scm;
 	Ogre::SceneNode *mNode;
+	HeightFinder *hfinder;
 	
 	std::queue<skidmark_t> objects;
 	bool mDirty;
