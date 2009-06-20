@@ -893,7 +893,7 @@ public:
 	int subisback[MAX_SUBMESHES];
 	void setMeshVisibility(bool visible);
 	bool meshesVisible;
-	inline bool isFiniteNum(float x);
+	inline bool inRange(float num, float min, float max);
 
 	int getTruckTime() { return nettimer->getMilliseconds(); };
 	int getNetTruckTimeOffset() { return net_toffset; };
