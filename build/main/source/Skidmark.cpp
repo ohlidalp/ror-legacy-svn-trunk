@@ -165,10 +165,12 @@ void Skidmark::updatePoint()
 
 	float overaxis = 0.2f;
 	// tactics: we always choose the latest oint and then create two points
-	Vector3 groundNormal = Vector3::ZERO;
-	hfinder->getNormalAt(lastPoint.x, lastPoint.y, lastPoint.z, &groundNormal);
+	
+	// XXX: TO BE IMPROVED
+	//Vector3 groundNormal = Vector3::ZERO;
+	//hfinder->getNormalAt(lastPoint.x, lastPoint.y, lastPoint.z, &groundNormal);
 
-	LogManager::getSingleton().logMessage("ground normal: "+StringConverter::toString(wheel->refnode1->RelPosition.dotProduct(groundNormal)));
+	//LogManager::getSingleton().logMessage("ground normal: "+StringConverter::toString(wheel->refnode1->RelPosition.dotProduct(groundNormal)));
 
 	Vector3 axis = wheel->refnode1->RelPosition - wheel->refnode0->RelPosition;
 	// choose node wheel by the latest added point
