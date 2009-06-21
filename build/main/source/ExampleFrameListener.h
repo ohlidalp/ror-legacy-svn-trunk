@@ -32,6 +32,10 @@ along with Rigs of Rods.  If not, see <http://www.gnu.org/licenses/>.
 //#include "OISKeyboard.h"
 //#include "OISJoyStick.h"
 
+#ifdef MPLATFORM
+#include "mplatform_base.h"
+#endif
+
 #include "OgreStringConverter.h"
 #include "OgreException.h"
 #include "OgreTextAreaOverlayElement.h"
@@ -592,6 +596,10 @@ protected:
 
 //	char *preselected_map;
 //	char *preselected_truck;
+
+#ifdef MPLATFORM
+	MPlatform_Base *mplatform;
+#endif
 
 	void loadTerrain(Ogre::String terrainfile);
 	static bool fileExists(char* filename);
