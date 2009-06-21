@@ -24,6 +24,10 @@ along with Rigs of Rods.  If not, see <http://www.gnu.org/licenses/>.
 
 #include "main.h"
 
+#ifdef MPLATFORM
+#include "mplatform_fd.h"
+#endif
+
 #ifdef LUASCRIPT
 # include "luasystem.h"
 #endif
@@ -929,6 +933,12 @@ ExampleFrameListener::ExampleFrameListener(RenderWindow* win, Camera* cam, Scene
 	fpsLineStream = netLineStream = netlagLineStream = 0;
 	loaded_terrain=0;
 	eflsingleton=this;
+
+#ifdef MPLATFORM
+	mplatform = new MPlatform_FD();
+	if (mplatform) mplatform->connect();
+#endif
+
 #ifdef ANGELSCRIPT
 	new ScriptEngine(this);
 	new OgreConsole;
@@ -1695,7 +1705,13 @@ ExampleFrameListener::~ExampleFrameListener()
 #endif
 	if (net) delete (net);
 	//we should destroy OIS here
-//we could also try to destroy SoundScriptManager, but we don't care!
+	//we could also try to destroy SoundScriptManager, but we don't care!
+	#ifdef MPLATFORM
+	if (mplatform)
+	{
+		if (mplatform->disconnect()) delete(mplatform);
+	}
+	#endif
 }
 
 
@@ -2864,69 +2880,117 @@ bool ExampleFrameListener::updateEvents(float dt)
 							{
 								case AUTOMATIC: flashMessage(_L("Automatic shift")); break;
 								case SEMIAUTO: flashMessage(_L("Manual shift - Auto clutch")); break;
-								case MANUAL: flashMessage(_L("Fully Manual shift")); break;
+								case MANUAL: flashMessage(_L("Fully Manual: sequencial shift")); break;
+								case MANUAL_STICK: flashMessage(_L("Fully manual: stick shift")); break;
+								case MANUAL_RANGES: flashMessage(_L("Fully Manual: stick shift with ranges")); break;
 							}
 						}
-					}
-
 					
-					//joy clutch
-					float cval = INPUTENGINE.getEventValue(EV_TRUCK_MANUAL_CLUTCH);
-					if(trucks[current_truck]->engine) trucks[current_truck]->engine->setManualClutch(cval);
+						//joy clutch
+						float cval = INPUTENGINE.getEventValue(EV_TRUCK_MANUAL_CLUTCH);
+						if(trucks[current_truck]->engine) trucks[current_truck]->engine->setManualClutch(cval);
 
-					// we need to ask for that separately
-					bool gear_changed_rel = false;
-					if (INPUTENGINE.getEventBoolValueBounce(EV_TRUCK_SHIFT_UP))
-					{
-						trucks[current_truck]->engine->shift(1);
-						gear_changed_rel=true;
-					}
-					else if (INPUTENGINE.getEventBoolValueBounce(EV_TRUCK_SHIFT_DOWN))
-					{
-						trucks[current_truck]->engine->shift(-1);
-						gear_changed_rel=true;
-					}
+						bool gear_changed_rel = false;
+						int shiftmode = trucks[current_truck]->engine->getAutoMode();
 
-					/* direct shift part */
-					if (trucks[current_truck]->engine)
-					if (trucks[current_truck]->engine->getAutoMode()==MANUAL && !gear_changed_rel)
-					{
-						bool gear_changed = true;
-						int curgear  = trucks[current_truck]->engine->getGear();
+						if (shiftmode==MANUAL || shiftmode==SEMIAUTO) // manual sequencial shifting
+							{
+								if (INPUTENGINE.getEventBoolValueBounce(EV_TRUCK_SHIFT_UP))
+									{
+										trucks[current_truck]->engine->shift(1);
+										gear_changed_rel=true;
+									}
+								else if (INPUTENGINE.getEventBoolValueBounce(EV_TRUCK_SHIFT_DOWN))
+									{
+										trucks[current_truck]->engine->shift(-1);
+										gear_changed_rel=true;
+									}
+							}
+						else if (shiftmode>MANUAL)		// h-shift or h-shift with ranges shifting
+							{
+								bool gear_changed = true;
+								int curgear		= trucks[current_truck]->engine->getGear();
+								int curgearrange= trucks[current_truck]->engine->getGearRange();
+								int gearoffset  = curgear-curgearrange*6;
+								if (gearoffset<0) gearoffset = 0;
 
-						if(curgear == 0)
-							gear_changed = true;
-						else if(curgear == -1)
-							gear_changed = !INPUTENGINE.getEventBoolValue(EV_TRUCK_SHIFT_GEAR_REVERSE);
-						else if(curgear > 0 && curgear < 19)
-							gear_changed = !INPUTENGINE.getEventBoolValue(EV_TRUCK_SHIFT_GEAR1 + curgear -1);
-						
-						// direct to gear changes
-						if (gear_changed)
-						{
-							if      (INPUTENGINE.getEventBoolValue(EV_TRUCK_SHIFT_GEAR_REVERSE)) trucks[current_truck]->engine->shiftTo(-1);
-							else if (INPUTENGINE.getEventBoolValue(EV_TRUCK_SHIFT_NEUTRAL)) trucks[current_truck]->engine->shiftTo(0);
-							else if (INPUTENGINE.getEventBoolValue(EV_TRUCK_SHIFT_GEAR1))   trucks[current_truck]->engine->shiftTo(1);
-							else if (INPUTENGINE.getEventBoolValue(EV_TRUCK_SHIFT_GEAR2))   trucks[current_truck]->engine->shiftTo(2);
-							else if (INPUTENGINE.getEventBoolValue(EV_TRUCK_SHIFT_GEAR3))   trucks[current_truck]->engine->shiftTo(3);
-							else if (INPUTENGINE.getEventBoolValue(EV_TRUCK_SHIFT_GEAR4))   trucks[current_truck]->engine->shiftTo(4);
-							else if (INPUTENGINE.getEventBoolValue(EV_TRUCK_SHIFT_GEAR5))   trucks[current_truck]->engine->shiftTo(5);
-							else if (INPUTENGINE.getEventBoolValue(EV_TRUCK_SHIFT_GEAR6))   trucks[current_truck]->engine->shiftTo(6);
-							else if (INPUTENGINE.getEventBoolValue(EV_TRUCK_SHIFT_GEAR7))   trucks[current_truck]->engine->shiftTo(7);
-							else if (INPUTENGINE.getEventBoolValue(EV_TRUCK_SHIFT_GEAR8))   trucks[current_truck]->engine->shiftTo(8);
-							else if (INPUTENGINE.getEventBoolValue(EV_TRUCK_SHIFT_GEAR9))   trucks[current_truck]->engine->shiftTo(9);
-							else if (INPUTENGINE.getEventBoolValue(EV_TRUCK_SHIFT_GEAR10))  trucks[current_truck]->engine->shiftTo(10);
-							else if (INPUTENGINE.getEventBoolValue(EV_TRUCK_SHIFT_GEAR11))  trucks[current_truck]->engine->shiftTo(11);
-							else if (INPUTENGINE.getEventBoolValue(EV_TRUCK_SHIFT_GEAR12))  trucks[current_truck]->engine->shiftTo(12);
-							else if (INPUTENGINE.getEventBoolValue(EV_TRUCK_SHIFT_GEAR13))  trucks[current_truck]->engine->shiftTo(12);
-							else if (INPUTENGINE.getEventBoolValue(EV_TRUCK_SHIFT_GEAR14))  trucks[current_truck]->engine->shiftTo(12);
-							else if (INPUTENGINE.getEventBoolValue(EV_TRUCK_SHIFT_GEAR15))  trucks[current_truck]->engine->shiftTo(12);
-							else if (INPUTENGINE.getEventBoolValue(EV_TRUCK_SHIFT_GEAR16))  trucks[current_truck]->engine->shiftTo(12);
-							else if (INPUTENGINE.getEventBoolValue(EV_TRUCK_SHIFT_GEAR17))  trucks[current_truck]->engine->shiftTo(12);
-							else if (INPUTENGINE.getEventBoolValue(EV_TRUCK_SHIFT_GEAR18))  trucks[current_truck]->engine->shiftTo(12);
-							else if (curgear!=0) trucks[current_truck]->engine->shiftTo(0);
-						}
-					}
+								// one can select range only if in natural
+								if(curgear == 0) 
+									{
+										gear_changed = true;
+										//  maybe this should not be here, but should experiment
+										if (shiftmode==MANUAL_RANGES)
+											{
+												if		 (INPUTENGINE.getEventBoolValueBounce(EV_TRUCK_SHIFT_LOWRANGE))										
+													{ 
+														trucks[current_truck]->engine->setGearRange(0); 
+														flashMessage(_L("Low range selected")); 
+													}
+												else if  (INPUTENGINE.getEventBoolValueBounce(EV_TRUCK_SHIFT_MIDRANGE)  && trucks[current_truck]->engine->getNumGearsRanges()>1) 
+													{ 
+														trucks[current_truck]->engine->setGearRange(1); 
+														flashMessage(_L("Mid range selected")); 
+													}
+												else if  (INPUTENGINE.getEventBoolValueBounce(EV_TRUCK_SHIFT_HIGHRANGE) && trucks[current_truck]->engine->getNumGearsRanges()>2)	
+													{ 
+														trucks[current_truck]->engine->setGearRange(2); 
+														flashMessage(_L("High range selected")); 
+													}
+											}
+									}
+								else if(curgear == -1)
+									{
+										gear_changed = !INPUTENGINE.getEventBoolValue(EV_TRUCK_SHIFT_GEAR_REVERSE);
+									}
+								else if(curgear > 0 && curgear < 19)
+									{
+										if (shiftmode==MANUAL)	gear_changed = !INPUTENGINE.getEventBoolValue(EV_TRUCK_SHIFT_GEAR1 + curgear -1);
+										else					gear_changed = !INPUTENGINE.getEventBoolValue(EV_TRUCK_SHIFT_GEAR1 + gearoffset-1); // range mode
+									}
+								
+								bool found = false;
+								if (gear_changed)
+									{
+										
+										if      (INPUTENGINE.getEventBoolValue(EV_TRUCK_SHIFT_GEAR_REVERSE)) 
+											{
+												trucks[current_truck]->engine->shiftTo(-1);
+												found = true;
+											}
+										else if (INPUTENGINE.getEventBoolValue(EV_TRUCK_SHIFT_NEUTRAL))
+											{
+												trucks[current_truck]->engine->shiftTo(0);
+												found = true;
+											}
+										else
+											{
+												if (shiftmode==MANUAL_STICK)
+													{
+														for (int i=1;i<19 && !found;i++)
+															{
+																if (INPUTENGINE.getEventBoolValue(EV_TRUCK_SHIFT_GEAR1 +i - 1))  
+																	{	
+																		trucks[current_truck]->engine->shiftTo(i);
+																		found = true;
+																	}
+															}
+													}
+												else	// MANUAL_RANGES
+													{
+														for (int i=1;i<7 && !found;i++)
+															{
+																if (INPUTENGINE.getEventBoolValue(EV_TRUCK_SHIFT_GEAR1 +i - 1))  
+																	{	
+																		trucks[current_truck]->engine->shiftTo(i+curgearrange*6);
+																		found = true;
+																	}
+															}
+													}
+											}
+									} // end of if(gear_changed)
+									if (!found && curgear!=0) trucks[current_truck]->engine->shiftTo(0);
+								} // end of shitmode>MANUAL
+						} // endof ->engine
 
 					if (INPUTENGINE.getEventBoolValueBounce(EV_TRUCK_TOGGLE_AXLE_LOCK))
 					{
@@ -6302,6 +6366,11 @@ void ExampleFrameListener::moveCamera(float dt)
 			side=up.crossProduct(dir);
 			Quaternion cdir=Quaternion(camRotX, up)*Quaternion(Degree(180.0)+camRotY, side)*Quaternion(side, up, dir);
 			mCamera->setOrientation(cdir);
+
+#ifdef MPLATFORM
+			mstat_t mStatInfo;
+			mplatform->update(mCamera->getPosition(), mCamera->getOrientation(), mStatInfo);
+#endif
 
 			if (w && lastPosition.y<w->getHeightWaves(lastPosition))
 			{

@@ -39,6 +39,7 @@ BeamEngine::BeamEngine(float iddle, float max, float torque, float rear, int num
 	engineTorque-=brakingTorque;
 	reverseRatio=rear*diff;
 	numGears=numgears;
+	numGearsRanges = numGears/6+1; 
 	gearsRatio = (float*)malloc(sizeof(float)*numGears+2);
 	for (i=1; i<numGears+1; i++) gearsRatio[i]=gears[i]*diff;
 	curGear=0;
@@ -162,7 +163,7 @@ void BeamEngine::update(float dt, int doUpdate)
 
 	if (curEngineRPM<0.0f) curEngineRPM=0.0f;
 
-	if (automode!=MANUAL)
+	if (automode<MANUAL)
 	{
 		//autoshift
 		if (shifting)
@@ -253,13 +254,11 @@ float BeamEngine::getRPM() {return curEngineRPM;}
 void BeamEngine::toggleAutoMode()
 {
 	automode++;
-	if (automode>MANUAL) automode=AUTOMATIC;
+	if (automode>MANUAL_RANGES) automode=AUTOMATIC;
 
 	// this switches off all automatic symbols when in manual mode
-	if(automode!=AUTOMATIC)
-		autoselect = MANUALMODE;
-	if(automode==AUTOMATIC)
-		autoselect = NEUTRAL;
+	if(automode!=AUTOMATIC) autoselect = MANUALMODE;
+	else					autoselect = NEUTRAL; 
 }
 
 int BeamEngine::getAutoMode()
@@ -380,6 +379,10 @@ void BeamEngine::setstarter(int v)
 int BeamEngine::getGear() {return curGear;}
 void BeamEngine::setGear(int v) {curGear=v;}
 
+int BeamEngine::getGearRange() {return curGearRange;}
+void BeamEngine::setGearRange(int v) {curGearRange=v;}
+
+
 //stalling engine
 void BeamEngine::stop()
 {
@@ -405,7 +408,7 @@ void BeamEngine::autoSetAcc(float val)
 
 void BeamEngine::shift(int val)
 {
-	if (automode!=MANUAL)
+	if (automode<MANUAL)
 	{
 		ssm->trigStart(trucknum, SS_TRIG_SHIFT);
 		shiftval=val;
@@ -429,7 +432,8 @@ void BeamEngine::shift(int val)
 
 void BeamEngine::shiftTo(int val)
 {
-	if (automode!=MANUAL)
+	if (val==curGear || val>getNumGears()) return;
+	if (automode<MANUAL)
 	{
 		shiftval=val-curGear;
 		shifting=1;
@@ -491,7 +495,7 @@ int BeamEngine::getAutoShift()
 
 void BeamEngine::setManualClutch(float val)
 {
-	if (automode==MANUAL)
+	if (automode>=MANUAL)
 	{
 		if (val<0) val=0;
 		curClutch=1.0-val;

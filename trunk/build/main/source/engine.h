@@ -36,6 +36,8 @@ class TorqueCurve;
 #define AUTOMATIC 0
 #define SEMIAUTO 1
 #define MANUAL 2
+#define MANUAL_STICK 3
+#define MANUAL_RANGES 4
 
 enum autoswitch {REAR=0, NEUTRAL=1, DRIVE=2, TWO=3, ONE=4, MANUALMODE=5};
 
@@ -48,11 +50,13 @@ protected:
 
 	float reverseRatio;
 	int numGears;
+	int numGearsRanges;
 	float *gearsRatio;
 	float inertia;
 	float clutchForce;
 
 	int curGear;
+	int curGearRange;
 	float curEngineRPM;
 	float curGearboxRPM;
 	float curClutch;
@@ -118,7 +122,9 @@ public:
 	void setstarter(int v);
 	//low level gear changing
 	int getGear();
+	int getGearRange();
 	void setGear(int v);
+	void setGearRange(int v);
 	//stalling engine
 	void stop();
 	//high level controls
@@ -131,6 +137,7 @@ public:
 	int getAutoShift();
 	void setManualClutch(float val);
 	int getNumGears() { return numGears; };
+	int getNumGearsRanges() {return numGearsRanges; }
 	float getMaxRPM() { return maxRPM; };
 	TorqueCurve *getTorqueCurve() { return torqueCurve; };
 	~BeamEngine();

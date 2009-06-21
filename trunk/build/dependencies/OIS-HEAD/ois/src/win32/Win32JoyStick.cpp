@@ -162,6 +162,7 @@ BOOL CALLBACK Win32JoyStick::DIEnumDeviceObjectsCallback(LPCDIDEVICEOBJECTINSTAN
 	if(GUID_Slider == lpddoi->guidType)
 	{
 		++_this->mSliders;
+		if(lpddoi->tszName) printf(" * '%s' recognized as slider\n", lpddoi->tszName);
 
 		//Decrease Axes, since this slider shows up in a different place
 		_this->mState.mAxes.pop_back();
@@ -173,7 +174,10 @@ BOOL CALLBACK Win32JoyStick::DIEnumDeviceObjectsCallback(LPCDIDEVICEOBJECTINSTAN
 
 	//Increase for next time through
 	if(GUID_Slider != lpddoi->guidType)
+	{
 		_this->_AxisNumber += 1;
+		if(lpddoi->tszName) printf(" * '%s' recognized as axis\n", lpddoi->tszName);
+	}
 
 	//Set range
 	DIPROPRANGE diprg;

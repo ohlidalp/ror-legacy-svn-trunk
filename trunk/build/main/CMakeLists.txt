@@ -144,6 +144,11 @@ set(ror_src
 	source/writeTextToTexture.h
 	source/xfiregameclient.cpp
 	source/xfiregameclient.h
+	
+	source/mplatform_fd.cpp
+	source/mplatform_base.cpp
+	source/mplatform_fd.h
+	source/mplatform_base.h
 )
 
 include_directories (OgreMain/include Dependencies/include)
@@ -182,6 +187,10 @@ endif(ROR_BUILD_PAGED)
 if(ROR_BUILD_BEAMSTATS)
   add_definitions("-DBEAMSTATS -DTIMING")
 endif(ROR_BUILD_BEAMSTATS)
+
+if(ROR_BUILD_MOTION_PLATFORM)
+  add_definitions("-DMPLATFORM")
+endif(ROR_BUILD_MOTION_PLATFORM)
 
 if(ROR_BUILD_LUASCRIPT)
   add_definitions("-DLUASCRIPT")
