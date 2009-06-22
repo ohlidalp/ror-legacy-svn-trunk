@@ -63,6 +63,7 @@ class DustPool;
 
 class Caelum;
 class MapTextureCreator;
+class ColoredTextAreaOverlayElement;
 
 #ifdef LUASCRIPT
 class LuaSystem;
@@ -238,7 +239,7 @@ protected:
 	TextAreaOverlayElement* laptimes;
 	TextAreaOverlayElement* laptimems;
 	TextAreaOverlayElement* lasttime;
-	TextAreaOverlayElement* flashMessageTE;
+	ColoredTextAreaOverlayElement* flashMessageTE;
 
 	TextAreaOverlayElement* directionArrowText;
 	TextAreaOverlayElement* directionArrowDistance;
