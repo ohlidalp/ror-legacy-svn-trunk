@@ -1038,6 +1038,11 @@ void Network::receivethreadstart()
 			if(source!=-1)
 				// only accept game commands from the server and no one else
 				continue;
+#ifdef ANGELSCRIPT
+			// now this is serious, we need water tight security to be able to execute remote code!
+			ScriptEngine::getSingleton().executeString(String(data));
+#endif //ANGELSCRIPT
+
 		}
 		else if (type==MSG2_FORCE)
 		{
