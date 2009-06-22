@@ -22,6 +22,9 @@ along with Rigs of Rods.  If not, see <http://www.gnu.org/licenses/>.
 #include "ColoredTextAreaOverlayElement.h"
 #include "IngameConsole.h"
 #include "CacheSystem.h"
+#ifdef ANGELSCRIPT
+#include "Scriptengine.h"
+#endif //ANGELSCRIPT
 #include "turboprop.h"
 #include "sha1.h"
 #include "Settings.h"
@@ -1040,7 +1043,9 @@ void Network::receivethreadstart()
 				continue;
 #ifdef ANGELSCRIPT
 			// now this is serious, we need water tight security to be able to execute remote code!
-			ScriptEngine::getSingleton().executeString(String(data));
+			// cut buffer manually in the case of missing zero
+			if(strnlen(buffer, MAX_MESSAGE_LENGTH) > MAX_MESSAGE_LENGTH - 2) buffer[MAX_MESSAGE_LENGTH-2] = 0;
+			ScriptEngine::getSingleton().executeString(String(buffer));
 #endif //ANGELSCRIPT
 
 		}

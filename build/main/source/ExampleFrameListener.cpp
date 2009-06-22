@@ -1349,7 +1349,20 @@ ExampleFrameListener::ExampleFrameListener(RenderWindow* win, Camera* cam, Scene
 	lasttime = (TextAreaOverlayElement*)OverlayManager::getSingleton().getOverlayElement("tracks/LastTime");
 
 	flashOverlay = OverlayManager::getSingleton().getByName("tracks/FlashMessage");
-	flashMessageTE = (TextAreaOverlayElement*)OverlayManager::getSingleton().getOverlayElement("tracks/Message");
+	OverlayContainer *flashPanel = static_cast<OverlayContainer*>(OverlayManager::getSingleton().createOverlayElement("Panel", "tracks/FlashMessage/Panel"));
+
+	// create flash message
+	flashMessageTE = static_cast<ColoredTextAreaOverlayElement*>(OverlayManager::getSingleton().createOverlayElement("ColoredTextArea", "tracks/Message2"));
+	flashMessageTE->setMetricsMode(Ogre::GMM_RELATIVE);
+	flashMessageTE->setPosition(0.1f, 0.1f);
+	flashMessageTE->setDimensions(0.8f, 0.3f);
+	flashMessageTE->setFontName("Cyberbit");
+	flashMessageTE->setCharHeight(0.05f);
+	flashMessageTE->setCaption("/");
+	flashMessageTE->setColourTop(ColourValue(1.0f,0.6f, 0.0f));
+	flashMessageTE->setColourBottom(ColourValue(0.8f,0.4f, 0.0f));
+	flashPanel->addChild(flashMessageTE);
+	flashOverlay->add2D(flashPanel);
 
 	//set up player list
 	for(int i=0; i<MAX_PLAYLIST_ENTRIES;i++)

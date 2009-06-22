@@ -474,6 +474,8 @@ void ScriptEngine::init()
 	result = engine->RegisterObjectMethod("GameScriptClass", "void spawnObject(const string &in, const string &in, float, float, float, float, float, float, const string &in)", asMETHOD(GameScript,spawnObject), asCALL_THISCALL); assert_net(result>=0);
 	result = engine->RegisterObjectMethod("GameScriptClass", "int getNumTrucksByFlag(int)", asMETHOD(GameScript,getNumTrucksByFlag), asCALL_THISCALL); assert_net(result>=0);
 	result = engine->RegisterObjectMethod("GameScriptClass", "bool getCaelumAvailable()", asMETHOD(GameScript,getCaelumAvailable), asCALL_THISCALL); assert_net(result>=0);
+	result = engine->RegisterObjectMethod("GameScriptClass", "void startTimer()", asMETHOD(GameScript,startTimer), asCALL_THISCALL); assert_net(result>=0);
+	result = engine->RegisterObjectMethod("GameScriptClass", "void stopTimer()", asMETHOD(GameScript,stopTimer), asCALL_THISCALL); assert_net(result>=0);
 
 	// class CacheSystem
 	result = engine->RegisterObjectType("CacheSystemClass", sizeof(CacheSystem), asOBJ_REF | asOBJ_NOHANDLE);
@@ -586,17 +588,18 @@ int ScriptEngine::framestep(Ogre::Real dt)
 	return 0;
 }
 
-void ScriptEngine::executeString(Ogre::String command)
+int ScriptEngine::executeString(Ogre::String command)
 {
 	// TOFIX: add proper error output
-	if(!engine) return;
+	if(!engine) return 1;
 	if(!context) context = engine->CreateContext();
 
 	int result = engine->ExecuteString("terrainScript", command.c_str(), &context);
 	if(result<0)
 	{
-		LogManager::getSingleton().logMessage("error while executing string");
+		LogManager::getSingleton().logMessage("error " + StringConverter::toString(result) + " while executing string: " + command + ".");
 	}
+	return result;
 }
 
 void ScriptEngine::triggerEvent(enum scriptEvents eventnum, int value)
@@ -667,6 +670,16 @@ bool GameScript::getCaelumAvailable()
 {
 	if(mefl && mefl->mCaelumSystem) return true;
 	return false;
+}
+
+void GameScript::stopTimer()
+{
+	if(mefl) mefl->stopTimer();
+}
+
+void GameScript::startTimer()
+{
+	if(mefl) mefl->startTimer();
 }
 
 void GameScript::setWaterHeight(float value)

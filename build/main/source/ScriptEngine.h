@@ -108,7 +108,7 @@ public:
 	 * executes a string (useful for the console)
 	 * @param command string to execute
 	 */
-	void executeString(Ogre::String command);
+	int executeString(Ogre::String command);
 
 	asIScriptEngine *getEngine() { return engine; };
 
@@ -294,6 +294,8 @@ public:
 	void spawnObject(const std::string &objectName, const std::string instanceName, float px, float py, float pz, float rx, float ry, float rz, const std::string &eventhandler);
 	int getNumTrucksByFlag(int flag);
 	bool getCaelumAvailable();
+	void stopTimer();
+	void startTimer();
 	std::string getSetting(std::string str);
 	void hideDirectionArrow();
 };
