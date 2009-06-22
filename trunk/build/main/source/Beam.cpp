@@ -5572,7 +5572,7 @@ void Beam::calcForcesEuler(int doUpdate, Real dt, int step, int maxstep, Beam** 
 				
 				//dampers bump
 				Real difftoBeamL = dislen - beams[i].L;
-				bool normalShock=false;
+				bool normalShock=true; // defaults to true for shocks1
 				if (beams[i].bounded)
 				{
 					// this is a shock
@@ -5700,14 +5700,12 @@ void Beam::calcForcesEuler(int doUpdate, Real dt, int step, int maxstep, Beam** 
 								if (d < DEFAULT_DAMP*4.0f) d = DEFAULT_DAMP*4.0f;
 							}
 						}
-						if(beams[i].shock->flags & SHOCK_FLAG_NORMAL)
-							normalShock = true;
+						
+						normalShock = (beams[i].shock->flags & SHOCK_FLAG_NORMAL);
 				
 						// save beam postion for next sim cycle
 						beams[i].shock->lastpos=difftoBeamL;
-					} else if (!beams[i].shock)
-						// this is a shock1
-						normalShock = true;					
+					}
 				}
 				if(normalShock)
 				{
