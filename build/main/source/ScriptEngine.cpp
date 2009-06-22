@@ -57,7 +57,7 @@ ScriptEngine::ScriptEngine(ExampleFrameListener *efl) : mefl(efl), engine(0), co
 ScriptEngine::~ScriptEngine()
 {
 	// Clean up
-	engine->Release();
+	if(engine)  engine->Release();
 	if(context) context->Release();
 }
 
@@ -548,9 +548,6 @@ void ScriptEngine::msgCallback(const asSMessageInfo *msg)
 	char tmp[1024]="";
 	sprintf(tmp, "SE| %s (%d, %d): %s = %s", msg->section, msg->row, msg->col, type, msg->message);
 	LogManager::getSingleton().logMessage(tmp);
-
-	// AFTER HERE: CRASH!
-	// even if this whole method is empty ...
 }
 
 int ScriptEngine::loadScriptFile(const char *fileName, string &script)
