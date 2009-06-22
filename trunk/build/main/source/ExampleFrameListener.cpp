@@ -2922,6 +2922,7 @@ bool ExampleFrameListener::updateEvents(float dt)
 						else if (shiftmode>MANUAL)		// h-shift or h-shift with ranges shifting
 							{
 								bool gear_changed = true;
+								bool found = false;
 								int curgear		= trucks[current_truck]->engine->getGear();
 								int curgearrange= trucks[current_truck]->engine->getGearRange();
 								int gearoffset  = curgear-curgearrange*6;
@@ -2954,6 +2955,7 @@ bool ExampleFrameListener::updateEvents(float dt)
 								else if(curgear == -1)
 									{
 										gear_changed = !INPUTENGINE.getEventBoolValue(EV_TRUCK_SHIFT_GEAR_REVERSE);
+										if (!gear_changed) found = true;
 									}
 								else if(curgear > 0 && curgear < 19)
 									{
@@ -2961,7 +2963,6 @@ bool ExampleFrameListener::updateEvents(float dt)
 										else					gear_changed = !INPUTENGINE.getEventBoolValue(EV_TRUCK_SHIFT_GEAR1 + gearoffset-1); // range mode
 									}
 								
-								bool found = false;
 								if (gear_changed)
 									{
 										
