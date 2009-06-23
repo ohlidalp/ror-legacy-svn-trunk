@@ -51,6 +51,7 @@ protected:
 	Ogre::RenderWindow *rw;
 	bool frameForced;
 	SkinPtr selectedskin;
+	Ogre::Camera *mCamera;
 
 	// custom functions
 	void getData();
@@ -98,7 +99,7 @@ public:
 	bool isFinishedSelecting();
 	void show(int type);
 	void hide();
-	void setup(Ogre::RenderWindow *rw);
+	void setup(Ogre::RenderWindow *rw, Ogre::Camera *cam);
 
 	void setProgress(int percent, Ogre::String text="", bool updateRenderFrame=true);
 	bool getFrameForced();

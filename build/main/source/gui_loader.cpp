@@ -23,6 +23,7 @@ along with Rigs of Rods.  If not, see <http://www.gnu.org/licenses/>.
 #include "Ogre.h"
 #include "OgreWindowEventUtilities.h" // for custom window message pump (single frame rendering)
 #include "CacheSystem.h"
+#include "Settings.h"
 
 #include "language.h"
 #include "skinmanager.h"
@@ -49,8 +50,9 @@ GUI_Loader::~GUI_Loader()
 {
 }
 
-void GUI_Loader::setup(RenderWindow *_rw)
+void GUI_Loader::setup(RenderWindow *_rw, Camera *camera)
 {
+	mCamera = camera;
 	rw = _rw;
 	window = GETMYGUI->findWidget<MyGUI::Window>("loaderWindow");
 	window->setVisible(false);
@@ -365,6 +367,8 @@ void GUI_Loader::setEnableCancel(bool enabled)
 
 void GUI_Loader::show(int type)
 {
+	if (SETTINGS.getSetting("GaussianBlur") == "Yes")
+		CompositorManager::getSingleton().setCompositorEnabled(mCamera->getViewport(), "Gaussian Blur", true);
 	selectiondone=false;
 	setProgress(UI_PROGRESSBAR_HIDE);
 	// show mouse cursor
@@ -382,6 +386,8 @@ void GUI_Loader::show(int type)
 
 void GUI_Loader::hide()
 {
+	if (SETTINGS.getSetting("GaussianBlur") == "Yes")
+		CompositorManager::getSingleton().setCompositorEnabled(mCamera->getViewport(), "Gaussian Blur", false);
 	window->setVisible(false);
 	window->setEnabledSilent(false);
 	// hide cursor
