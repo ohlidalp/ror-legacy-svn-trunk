@@ -21,7 +21,7 @@ along with Rigs of Rods.  If not, see <http://www.gnu.org/licenses/>.
 
 //#include "joystick.h"
 #include "ProceduralManager.h"
-
+#include "hdrlistener.h"
 #include "main.h"
 
 #ifdef MPLATFORM
@@ -932,6 +932,7 @@ ExampleFrameListener::ExampleFrameListener(RenderWindow* win, Camera* cam, Scene
 {
 	fpsLineStream = netLineStream = netlagLineStream = 0;
 	loaded_terrain=0;
+	hdrListener=0;
 	eflsingleton=this;
 
 #ifdef MPLATFORM
@@ -3474,6 +3475,8 @@ bool ExampleFrameListener::updateEvents(float dt)
 				}
 				if (INPUTENGINE.getEventBoolValue(EV_COMMON_RESET_TRUCK) && !trucks[current_truck]->replaymode)
 				{
+					// stop any races
+					stopTimer();
 					// init
 					trucks[current_truck]->reset();
 				}
@@ -4936,10 +4939,25 @@ void ExampleFrameListener::loadTerrain(String terrainfile)
 
 
 	//hack
+	// now with extensive error checking
 	if (CompositorManager::getSingleton().hasCompositorChain(mCamera->getViewport()))
 	{
-		//CompositorManager::getSingleton().getCompositorChain(mCamera->getViewport())->getCompositor(0)->getTechnique()->getOutputTargetPass()->getPass(0)->setClearColour(fadeColour);
-		CompositorManager::getSingleton().getCompositorChain(mCamera->getViewport())->_getOriginalSceneCompositor()->getTechnique()->getOutputTargetPass()->getPass(0)->setClearColour(fadeColour);
+	//	//CompositorManager::getSingleton().getCompositorChain(mCamera->getViewport())->getCompositor(0)->getTechnique()->getOutputTargetPass()->getPass(0)->setClearColour(fadeColour);
+		CompositorInstance *co = CompositorManager::getSingleton().getCompositorChain(mCamera->getViewport())->_getOriginalSceneCompositor();
+		if(co)
+		{
+			CompositionTechnique *ct = co->getTechnique();
+			if(ct)
+			{
+				CompositionTargetPass *ctp = ct->getOutputTargetPass();
+				if(ctp)
+				{
+					CompositionPass *p = ctp->getPass(0);
+					if(p)
+						p->setClearColour(fadeColour);
+				}
+			}
+		}
 	}
 
 
@@ -5564,6 +5582,21 @@ void ExampleFrameListener::loadTerrain(String terrainfile)
 	// SAY CHEESE!
 	//no, not yet, caelum is not ready!
 	//if (envmap) envmap->update(Vector3(terrainxsize/2.0, hfinder->getHeightAt(terrainxsize/2.0, terrainzsize/2.0)+50.0, terrainzsize/2.0));
+
+	// HDR if wished
+	bool useHDR = (SETTINGS.getSetting("HDR") == "Yes");
+	if(useHDR)
+	{
+		Viewport *vp = mCamera->getViewport();
+		Ogre::CompositorInstance *instance = Ogre::CompositorManager::getSingleton().addCompositor(vp, "HDR", 0);
+		Ogre::CompositorManager::getSingleton().setCompositorEnabled(vp, "HDR", true);
+		
+		// HDR needs a special listener
+		hdrListener = new HDRListener();
+		instance->addListener(hdrListener);
+		hdrListener->notifyViewportSize(vp->getActualWidth(), vp->getActualHeight());
+		hdrListener->notifyCompositor(instance);
+	}
 }
 
 void ExampleFrameListener::updateXFire()
