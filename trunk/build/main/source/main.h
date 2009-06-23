@@ -53,10 +53,6 @@ using namespace Ogre;
 #include "Beam.h"
 #include "OgreSceneManager.h"
 
-#ifdef USE_ETM
-#include "etm.h"
-#endif
-
 #if OGRE_PLATFORM == OGRE_PLATFORM_APPLE
 //#include <CFUserNotification.h>
 #endif

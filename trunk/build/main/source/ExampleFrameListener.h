@@ -84,6 +84,7 @@ class Collisions;
 class Mirrors;
 class Beam;
 class MapControl;
+class HDRListener;
 
 //#include "dirt.h"
 
@@ -356,6 +357,7 @@ protected:
 	//bool useforce;
 	//BeamJoystick *joy;
 	bool flipflop;
+	HDRListener *hdrListener;
 
 	bool dirvisible;
 	SceneNode *dirArrowNode;
