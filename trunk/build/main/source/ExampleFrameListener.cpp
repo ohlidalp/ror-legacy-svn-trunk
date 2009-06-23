@@ -1043,7 +1043,7 @@ ExampleFrameListener::ExampleFrameListener(RenderWindow* win, Camera* cam, Scene
 	// init GUI
 	MYGUI.setup(cam, scm, win);
 
-	UILOADER.setup(win);
+	UILOADER.setup(win, cam);
 
 	CACHE.startup(scm);
 
@@ -4818,11 +4818,50 @@ void ExampleFrameListener::loadTerrain(String terrainfile)
 	//		mSceneMgr->setSkyBox(true, "tracks/skycol", 1000);
 
 	//bloom effect
+	/*
+	// replaced by HDR
 	if (SETTINGS.getSetting("Bloom")=="Yes")
 	{
 		CompositorManager::getSingleton().addCompositor(mCamera->getViewport(),"Bloom");
 		CompositorManager::getSingleton().setCompositorEnabled(mCamera->getViewport(), "Bloom", true);
+	}*/
+
+	// first compositor: HDR!
+	// HDR if wished
+	bool useHDR = (SETTINGS.getSetting("HDR") == "Yes");
+	if(useHDR)
+	{
+		Viewport *vp = mCamera->getViewport();
+		Ogre::CompositorInstance *instance = Ogre::CompositorManager::getSingleton().addCompositor(vp, "HDR", 0);
+		Ogre::CompositorManager::getSingleton().setCompositorEnabled(vp, "HDR", true);
+		
+		// HDR needs a special listener
+		hdrListener = new HDRListener();
+		instance->addListener(hdrListener);
+		hdrListener->notifyViewportSize(vp->getActualWidth(), vp->getActualHeight());
+		hdrListener->notifyCompositor(instance);
 	}
+
+	// for menu effects
+	// not working currently :(
+	if (SETTINGS.getSetting("GaussianBlur") == "Yes")
+	{
+		CompositorManager::getSingleton().addCompositor(mCamera->getViewport(),"Gaussian Blur");
+		CompositorManager::getSingleton().setCompositorEnabled(mCamera->getViewport(), "Gaussian Blur", false);
+	}
+
+	// fun stuff :D
+	if (SETTINGS.getSetting("ASCII") == "Yes")
+	{
+		CompositorManager::getSingleton().addCompositor(mCamera->getViewport(),"ASCII");
+		CompositorManager::getSingleton().setCompositorEnabled(mCamera->getViewport(), "ASCII", true);
+	}
+	if (SETTINGS.getSetting("Night Vision") == "Yes")
+	{
+		CompositorManager::getSingleton().addCompositor(mCamera->getViewport(),"Night Vision");
+		CompositorManager::getSingleton().setCompositorEnabled(mCamera->getViewport(), "Night Vision", true);
+	}
+
 	// Motion blur stuff :)
 	if (SETTINGS.getSetting("Motion blur")=="Yes")
 	{
@@ -5582,21 +5621,6 @@ void ExampleFrameListener::loadTerrain(String terrainfile)
 	// SAY CHEESE!
 	//no, not yet, caelum is not ready!
 	//if (envmap) envmap->update(Vector3(terrainxsize/2.0, hfinder->getHeightAt(terrainxsize/2.0, terrainzsize/2.0)+50.0, terrainzsize/2.0));
-
-	// HDR if wished
-	bool useHDR = (SETTINGS.getSetting("HDR") == "Yes");
-	if(useHDR)
-	{
-		Viewport *vp = mCamera->getViewport();
-		Ogre::CompositorInstance *instance = Ogre::CompositorManager::getSingleton().addCompositor(vp, "HDR", 0);
-		Ogre::CompositorManager::getSingleton().setCompositorEnabled(vp, "HDR", true);
-		
-		// HDR needs a special listener
-		hdrListener = new HDRListener();
-		instance->addListener(hdrListener);
-		hdrListener->notifyViewportSize(vp->getActualWidth(), vp->getActualHeight());
-		hdrListener->notifyCompositor(instance);
-	}
 }
 
 void ExampleFrameListener::updateXFire()
