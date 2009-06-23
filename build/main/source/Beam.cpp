@@ -6778,9 +6778,9 @@ void Beam::calcForcesEuler(int doUpdate, Real dt, int step, int maxstep, Beam** 
 		for (i=0; i<free_shock; i++)
 		{
 			// active shocks now
-			if (shocks[i].flags & SHOCK_FLAG_LACTIVE)
+			if (shocks[i].flags & SHOCK_FLAG_RACTIVE)
 				beams[shocks[i].beamid].L=beams[shocks[i].beamid].refL*(1.0+stabratio);
-			else if (shocks[i].flags & SHOCK_FLAG_RACTIVE)
+			else if (shocks[i].flags & SHOCK_FLAG_LACTIVE)
 				beams[shocks[i].beamid].L=beams[shocks[i].beamid].refL*(1.0-stabratio);
 		}
 	}
