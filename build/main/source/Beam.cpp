@@ -8609,17 +8609,23 @@ void Beam::beaconsToggle()
 			props[i].light[0]->setVisible(beacon && enableLight);
 			props[i].bbsnode[0]->setVisible(beacon);
 		}
-		if (props[i].beacontype=='R' || props[i].beacontype=='L')
+		else if (props[i].beacontype=='R' || props[i].beacontype=='L')
 		{
 			props[i].bbsnode[0]->setVisible(beacon);
 		}
-		if (props[i].beacontype=='p')
+		else if (props[i].beacontype=='p')
 		{
-			int k;
-			for (k=0; k<4; k++)
+			for (int k=0; k<4; k++)
 			{
 				props[i].light[k]->setVisible(beacon && enableLight);
 				props[i].bbsnode[k]->setVisible(beacon);
+			}
+		} else
+		{
+			for (int k=0; k<4; k++)
+			{
+				if(props[i].light[k])props[i].light[k]->setVisible(beacon && enableLight);
+				if(props[i].bbsnode[k])props[i].bbsnode[k]->setVisible(beacon);
 			}
 		}
 	}
