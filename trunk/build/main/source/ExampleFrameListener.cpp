@@ -199,7 +199,7 @@ public:
 			state=nstate;
 			char tname[100];
 			sprintf(tname, "%s-%ih.%s", pname, state, sname);
-			//				LogManager::getSingleton().logMessage("Caelum terrain loading: "+StringConverter::toString(tname));
+			LogManager::getSingleton().logMessage("Caelum terrain loading: "+String(tname));
 			terrainmaterial->getTechnique(0)->getPass(0)->getTextureUnitState(0)->setTextureName(tname);
 
 		}
@@ -3911,6 +3911,9 @@ bool ExampleFrameListener::updateEvents(float dt)
 				flashMessage("No rescue truck found!", 3);
 			} else
 			{
+				// go to person mode first
+				setCurrentTruck(-1);
+				// then to the rescue truck, this fixes overlapping interfaces
 				setCurrentTruck(rtruck);
 			}
 		}
