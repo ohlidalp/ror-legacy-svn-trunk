@@ -689,6 +689,7 @@ GrassLayer::GrassLayer(PagedGeometry *geom, GrassLoader *ldr)
 	waveCount = 0.0f;
 	animate = false;
 	blend = false;
+	lighting = false;
 	shaderNeedsUpdate = true;
 
 	densityMap = NULL;
@@ -703,6 +704,11 @@ GrassLayer::~GrassLayer()
 		densityMap->unload();
 	if (colorMap)
 		colorMap->unload();
+}
+
+void GrassLayer::setLightingEnabled(bool enabled)
+{
+	lighting = enabled;
 }
 
 void GrassLayer::setMaterialName(const String &matName)
@@ -992,6 +998,8 @@ void GrassLayer::_updateShaders()
 				tmpName << "anim_";
 			if (blend)
 				tmpName << "blend_";
+			if (lighting)
+				tmpName << "lighting_";
 			tmpName << renderTechnique << "_";
 			tmpName << fadeTechnique << "_";
 			if (fadeTechnique == FADETECH_GROW || fadeTechnique == FADETECH_ALPHAGROW)
@@ -1015,7 +1023,8 @@ void GrassLayer::_updateShaders()
 
 				//Check if the desired shader already exists (if not, compile it)
 				HighLevelGpuProgramPtr vertexShader = HighLevelGpuProgramManager::getSingleton().getByName(vsName);
-				if (vertexShader.isNull()){
+				if (vertexShader.isNull())
+				{
 					//Generate the grass shader
 					String vertexProgSource;
 					vertexProgSource = 
@@ -1027,6 +1036,11 @@ void GrassLayer::_updateShaders()
 						"	out float4 oColor : COLOR, \n"
 						"	out float2 oUV       : TEXCOORD0,	\n";
 
+					if (lighting) vertexProgSource +=
+						"   uniform float4   objSpaceLight,   \n"
+						"   uniform float4   lightDiffuse,   \n"
+						"   uniform float4   lightAmbient,   \n";
+
 					if (animate) vertexProgSource +=
 						"	uniform float time,	\n"
 						"	uniform float frequency,	\n"
@@ -1035,7 +1049,7 @@ void GrassLayer::_updateShaders()
 					if (fadeTechnique == FADETECH_GROW || fadeTechnique == FADETECH_ALPHAGROW) vertexProgSource +=
 						"	uniform float grassHeight,	\n";
 
-					if (renderTechnique == GRASSTECH_SPRITE) vertexProgSource +=
+					if (renderTechnique == GRASSTECH_SPRITE || lighting) vertexProgSource +=
 						"	float4 iNormal : NORMAL, \n";
 
 					vertexProgSource +=
@@ -1046,6 +1060,19 @@ void GrassLayer::_updateShaders()
 						"	oColor.rgb = iColor.rgb;   \n"
 						"	float4 position = iPosition;	\n"
 						"	float dist = distance(camPos.xz, position.xz);	\n";
+
+					if (lighting)
+					{
+						vertexProgSource +=
+							"   float3 light = normalize(objSpaceLight.xyz - (iPosition.xyz * objSpaceLight.w)); \n"
+							"   float diffuseFactor = max(dot(float4(0,1,0,0), light), 0); \n"
+							"   oColor = (lightAmbient + diffuseFactor * lightDiffuse) * iColor; \n";
+					}
+					else
+					{
+						vertexProgSource +=
+							"   oColor.rgb = iColor.rgb;               \n";
+					}
 
 					if (fadeTechnique == FADETECH_ALPHA || fadeTechnique == FADETECH_ALPHAGROW) vertexProgSource +=
 						//Fade out in the distance
@@ -1127,6 +1154,12 @@ void GrassLayer::_updateShaders()
 					params->setNamedAutoConstant("time", GpuProgramParameters::ACT_CUSTOM, 1);
 					params->setNamedAutoConstant("frequency", GpuProgramParameters::ACT_CUSTOM, 1);
 					params->setNamedAutoConstant("direction", GpuProgramParameters::ACT_CUSTOM, 4);
+				}
+
+				if (lighting){
+					params->setNamedAutoConstant("objSpaceLight", GpuProgramParameters::ACT_LIGHT_POSITION_OBJECT_SPACE);
+					params->setNamedAutoConstant("lightDiffuse", GpuProgramParameters::ACT_DERIVED_LIGHT_DIFFUSE_COLOUR);
+					params->setNamedAutoConstant("lightAmbient", GpuProgramParameters::ACT_DERIVED_AMBIENT_LIGHT_COLOUR);
 				}
 
 				if (fadeTechnique == FADETECH_GROW || fadeTechnique == FADETECH_ALPHAGROW){
