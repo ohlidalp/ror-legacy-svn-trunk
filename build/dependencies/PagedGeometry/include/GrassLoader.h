@@ -461,6 +461,10 @@ public:
 	*/
 	void setAnimationEnabled(bool enabled);
 
+	/** \brief Enables/disables lighting on this layer
+	 */
+	void setLightingEnabled(bool enabled);
+
 	/** \brief Sets how far grass should sway back and forth
 
 	\note Since this is measured in world units, you may have to adjust this depending on
@@ -529,7 +533,7 @@ private:
 	MapFilter colorMapFilter;
 
 	//Grass shader properties
-	bool animate, blend, shaderNeedsUpdate;
+	bool animate, blend, lighting, shaderNeedsUpdate;
 	float animMag, animSpeed, animFreq;
 
 	//Current frame of animation for this layer
