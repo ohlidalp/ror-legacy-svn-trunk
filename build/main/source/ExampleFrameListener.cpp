@@ -5340,6 +5340,7 @@ void ExampleFrameListener::loadTerrain(String terrainfile)
 
 				GrassLayer* grassLayer = grassLoader->addLayer(grassmat);
 				grassLayer->setHeightRange(minH, maxH);
+				grassLayer->setLightingEnabled(true);
 
 				grassLayer->setAnimationEnabled((SwaySpeed>0));
 				grassLayer->setSwaySpeed(SwaySpeed);
