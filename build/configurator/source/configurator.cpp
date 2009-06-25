@@ -143,6 +143,36 @@ inline const char *conv2(const std::string& s)
 	return s.c_str();
 }
 
+
+#ifdef __WXGTK__
+#include <gtk/gtk.h>
+#include <gdk/gdkx.h>
+#endif
+
+inline size_t getOISHandle(wxWindow *window)
+{
+	size_t hWnd = 0;
+#if OGRE_PLATFORM == OGRE_PLATFORM_WIN32
+	hWnd = (size_t)window->GetHandle();
+#elif OGRE_PLATFORM == OGRE_PLATFORM_LINUX
+#ifdef __WXGTK__
+	if (!window->IsShownOnScreen()) {
+		printf("getOISHandle(): Window needs to be realized before we "
+			"can get its XID. Showing the window to avoid crash!\n");
+		window->Show();
+	}
+	hWnd = (size_t)GDK_WINDOW_XID(gtk_widget_get_window(window->GetHandle()));
+#else
+	// TODO: support other WX configs ?
+#error "WX configurations other than GTK not supported yet!"
+#endif
+#elif OGRE_PLATFORM == OGRE_PLATFORM_APPLE
+	// TODO: Apple specific code ?
+#error "Apple specific code not written yet!"
+#endif
+	return hWnd;
+}
+
 // Define a new application type, each program should derive a class from wxApp
 class MyApp : public wxApp
 {
@@ -298,7 +328,7 @@ private:
 	wxCheckBox *mirror;
 	wxCheckBox *envmap;
 	wxCheckBox *sunburn;
-	wxCheckBox *bloom;
+	wxCheckBox *hdr;
 	wxCheckBox *mblur;
 	wxCheckBox *creaksound;
 	wxChoice *sound;
@@ -523,8 +553,7 @@ public:
 		// resize scroll window
 		vwin->SetScrollbars(0, 20, 0, 5);
 
-		size_t hWnd = (size_t)this->GetHandle();
-		if(!INPUTENGINE.setup(hWnd, true, false))
+		if(!INPUTENGINE.setup(getOISHandle(this), true, false))
 		{
 			logfile->AddLine(conv("Unable to open inputs!"));logfile->Write();
 		}
@@ -614,7 +643,6 @@ public:
 		selectedJoystickLast=-1;
 		selectedAxisLast=-1;
 
-		size_t hWnd = (size_t)this->GetHandle();
 		bool captureMouse = false;
 		if(t->eventtype == ET_MouseAxisX || t->eventtype == ET_MouseAxisY || t->eventtype == ET_MouseAxisZ || t->eventtype == ET_MouseButton)
 			captureMouse = true;
@@ -634,7 +662,7 @@ public:
 			}
 		}
 
-		if(!INPUTENGINE.setup(hWnd, true, captureMouse))
+		if(!INPUTENGINE.setup(getOISHandle(this), true, captureMouse))
 		{
 			logfile->AddLine(conv("Unable to open default input map!"));logfile->Write();
 		}
@@ -1464,11 +1492,10 @@ MyDialog::MyDialog(const wxString& title, MyApp *_app) : wxDialog(NULL, wxID_ANY
 	logfile->AddLine(conv("InputEngine starting"));logfile->Write();
 	wxFileName tfn=wxFileName(app->UserPath, wxEmptyString);
 	tfn.AppendDir(_T("config"));
-	size_t hWnd = (size_t)this->GetHandle();
 	logfile->AddLine(conv("Searching input.map in ")+tfn.GetPath());logfile->Write();
 	InputMapFileName=tfn.GetPath()+wxFileName::GetPathSeparator()+_T("input.map");
 	std::string path = ((tfn.GetPath()+wxFileName::GetPathSeparator()).ToUTF8().data());
-	if(!INPUTENGINE.setup(hWnd, true, false, 0))
+	if(!INPUTENGINE.setup(getOISHandle(this), true, false, 0))
 	{
 		logfile->AddLine(conv("Unable to setup inputengine!"));logfile->Write();
 	} else
@@ -1714,8 +1741,8 @@ MyDialog::MyDialog(const wxString& title, MyApp *_app) : wxDialog(NULL, wxID_ANY
 	dBox = new wxStaticBox(graphicsPanel, -1, _("Visual effects"), wxPoint(340,278), wxSize(130, 85));
 	sunburn=new wxCheckBox(graphicsPanel, -1, _("Sunburn"), wxPoint(350, 293));
 	sunburn->SetToolTip(_("Requires a recent video card. Adds a bluish blinding effect."));
-	bloom=new wxCheckBox(graphicsPanel, -1, _("Bloom"), wxPoint(350, 313));
-	bloom->SetToolTip(_("Requires a recent video card. Adds a light blurring effect."));
+	hdr=new wxCheckBox(graphicsPanel, -1, _("HDR"), wxPoint(350, 313));
+	hdr->SetToolTip(_("Requires a recent video card. Add a lightning effect that simulates the light sensitivity of the human eye."));
 	mblur=new wxCheckBox(graphicsPanel, -1, _("Motion blur"), wxPoint(350, 333));
 	mblur->SetToolTip(_("Requires a recent video card. Adds a motion blur effect."));
 
@@ -2248,8 +2275,8 @@ void MyDialog::SetDefaults()
 	envmap->SetValue(false);
 	//wxCheckBox *sunburn;
 	sunburn->SetValue(false);
-	//wxCheckBox *bloom;
-	bloom->SetValue(false);
+	//wxCheckBox *hdr;
+	hdr->SetValue(false);
 	//wxCheckBox *mblur;
 	mblur->SetValue(false);
 	creaksound->SetValue(true);
@@ -2305,7 +2332,7 @@ void MyDialog::getSettingsControls()
 	settings["Mirrors"] = (mirror->GetValue()) ? "Yes" : "No";
 	settings["Envmap"] = (envmap->GetValue()) ? "Yes" : "No";
 	settings["Sunburn"] = (sunburn->GetValue()) ? "Yes" : "No";
-	settings["Bloom"] = (bloom->GetValue()) ? "Yes" : "No";
+	settings["HDR"] = (hdr->GetValue()) ? "Yes" : "No";
 	settings["Motion blur"] = (mblur->GetValue()) ? "Yes" : "No";
 	settings["Creak Sound"] = (creaksound->GetValue()) ? "No" : "Yes";
 	settings["Enhanced wheels"] = (wheel2->GetValue()) ? "Yes" : "No";
@@ -2383,7 +2410,7 @@ void MyDialog::updateSettingsControls()
 	st = settings["Creak Sound"]; if (st.length()>0) creaksound->SetValue(st=="No");
 	st = settings["Envmap"]; if (st.length()>0) envmap->SetValue(st=="Yes");
 	st = settings["Sunburn"]; if (st.length()>0) sunburn->SetValue(st=="Yes");
-	st = settings["Bloom"]; if (st.length()>0) bloom->SetValue(st=="Yes");
+	st = settings["HDR"]; if (st.length()>0) hdr->SetValue(st=="Yes");
 	st = settings["Motion blur"]; if (st.length()>0) mblur->SetValue(st=="Yes");
 	st = settings["3D Sound renderer"]; if (st.length()>0) sound->SetStringSelection(conv(st));
 	st = settings["Threads"]; if (st.length()>0) thread->SetStringSelection(conv(st));
@@ -2458,8 +2485,7 @@ void MyDialog::SaveConfig()
 	getSettingsControls();
 
 	// then set stuff and write configs
-	size_t hWnd = (size_t)this->GetHandle();
-	if(!INPUTENGINE.saveMapping(conv(InputMapFileName), hWnd))
+	if(!INPUTENGINE.saveMapping(conv(InputMapFileName), getOISHandle(this)))
 	{
 		wxMessageDialog(this, wxString(_("Could not write to input.map file")), wxString(_("Write error")),wxOK||wxICON_ERROR).ShowModal();
 		return;
@@ -2919,8 +2945,7 @@ void MyDialog::OnButLoadKeymap(wxCommandEvent& event)
 
 void MyDialog::OnButSaveKeymap(wxCommandEvent& event)
 {
-	size_t hWnd = (size_t)this->GetHandle();
-	INPUTENGINE.setup(hWnd, true, false);
+	INPUTENGINE.setup(getOISHandle(this), true, false);
 
 	int choiceCounter = 3;
 	wxString choices[MAX_JOYSTICKS+3];
@@ -2960,8 +2985,7 @@ void MyDialog::OnButSaveKeymap(wxCommandEvent& event)
 		wxFileDialog *f = new wxFileDialog(this, _("Save Mapping to File"), wxString(), defaultFile, conv("*.map"), wxSAVE || wxOVERWRITE_PROMPT);
 		if(f->ShowModal() == wxID_OK)
 		{
-			size_t hWnd = (size_t)this->GetHandle();
-			INPUTENGINE.saveMapping(conv(f->GetPath()), hWnd, exportType);
+			INPUTENGINE.saveMapping(conv(f->GetPath()), getOISHandle(this), exportType);
 		}
 		delete f;
 	}
@@ -3206,7 +3230,7 @@ void MyDialog::OnSimpleSlider2Scroll(wxScrollEvent & event)
 			mirror->SetValue(false);
 			envmap->SetValue(false);
 			sunburn->SetValue(false);
-			bloom->SetValue(false);
+			hdr->SetValue(false);
 			mblur->SetValue(false);
 	break;
 		case 1:
@@ -3231,7 +3255,7 @@ void MyDialog::OnSimpleSlider2Scroll(wxScrollEvent & event)
 			mirror->SetValue(true);
 			envmap->SetValue(true);
 			sunburn->SetValue(false);
-			bloom->SetValue(false);
+			hdr->SetValue(false);
 			mblur->SetValue(false);
 	break;
 		case 2:
@@ -3256,7 +3280,7 @@ void MyDialog::OnSimpleSlider2Scroll(wxScrollEvent & event)
 			mirror->SetValue(true);
 			envmap->SetValue(true);
 			sunburn->SetValue(false);
-			bloom->SetValue(false);
+			hdr->SetValue(false);
 			mblur->SetValue(false);
 		break;
 	};
