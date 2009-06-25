@@ -64,6 +64,7 @@ option(ROR_USE_OPTIMIZATIONS_WINDOWS "optimize build, gives more FPS, but needs 
 
 #option(ROR_BUILD_ANGELSCRIPT "build and use the new scripting engine" FALSE)
 set(ROR_BUILD_ANGELSCRIPT TRUE)
+option(ROR_BUILD_ANGELSCRIPT_COMPILER "build the AS compiler tool." FALSE)
 option(WSYNC_BUILD_WSYNC "builds the wsync tool" FALSE)
 #set(WSYNC_BUILD_WSYNC FALSE)
 set(WSYNC_BUILD_INSTALLER FALSE)
@@ -81,7 +82,7 @@ ELSE(WIN32)
   set(NVIDIA_CG_DIR "")
 ENDIF(WIN32)
 
-IF(ROR_BUILD_ANGELSCRIPT)
+IF(ROR_BUILD_ANGELSCRIPT_COMPILER)
   add_subdirectory(scriptcompiler)
 ENDIF(ROR_BUILD_ANGELSCRIPT)
 
