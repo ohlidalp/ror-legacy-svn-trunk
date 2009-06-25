@@ -149,6 +149,8 @@ set(ror_src
 	source/mplatform_base.cpp
 	source/mplatform_fd.h
 	source/mplatform_base.h
+
+	source/hdrlistener.cpp
 )
 
 include_directories (OgreMain/include Dependencies/include)
