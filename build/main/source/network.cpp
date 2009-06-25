@@ -23,7 +23,7 @@ along with Rigs of Rods.  If not, see <http://www.gnu.org/licenses/>.
 #include "IngameConsole.h"
 #include "CacheSystem.h"
 #ifdef ANGELSCRIPT
-#include "Scriptengine.h"
+#include "ScriptEngine.h"
 #endif //ANGELSCRIPT
 #include "turboprop.h"
 #include "sha1.h"
