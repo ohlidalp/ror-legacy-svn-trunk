@@ -22,6 +22,8 @@ along with Rigs of Rods.  If not, see <http://www.gnu.org/licenses/>.
 //#include "joystick.h"
 #include "ProceduralManager.h"
 #include "hdrlistener.h"
+#include "softshadowlistener.h"
+#include "ssaolistener.h"
 #include "main.h"
 
 #ifdef MPLATFORM
@@ -4559,8 +4561,7 @@ void ExampleFrameListener::loadTerrain(String terrainfile)
 		//		mSceneMgr->setShowBoxes(true);
 		//		mSceneMgr->showBoundingBoxes(true);
 		//		mSceneMgr->setShowDebugShadows(true);
-	}
-	if (SETTINGS.getSetting("Shadow technique")=="Texture shadows")
+	} else if (SETTINGS.getSetting("Shadow technique")=="Texture shadows")
 	{
 		float scoef=0.2;
 		mSceneMgr->setShadowColour(ColourValue(0.563+scoef, 0.578+scoef, 0.625+scoef));
@@ -4577,6 +4578,9 @@ void ExampleFrameListener::loadTerrain(String terrainfile)
 
 		mSceneMgr->setShadowFarDistance(50);
 		mSceneMgr->setShadowTextureSettings(1024,1);
+	} else if (SETTINGS.getSetting("Shadow technique")=="Soft shadows")
+	{
+		initSoftShadows();
 	}
 	ColourValue fadeColour(r,g,b);
 
@@ -4830,17 +4834,12 @@ void ExampleFrameListener::loadTerrain(String terrainfile)
 	// HDR if wished
 	bool useHDR = (SETTINGS.getSetting("HDR") == "Yes");
 	if(useHDR)
-	{
-		Viewport *vp = mCamera->getViewport();
-		Ogre::CompositorInstance *instance = Ogre::CompositorManager::getSingleton().addCompositor(vp, "HDR", 0);
-		Ogre::CompositorManager::getSingleton().setCompositorEnabled(vp, "HDR", true);
-		
-		// HDR needs a special listener
-		hdrListener = new HDRListener();
-		instance->addListener(hdrListener);
-		hdrListener->notifyViewportSize(vp->getActualWidth(), vp->getActualHeight());
-		hdrListener->notifyCompositor(instance);
-	}
+		initHDR();
+
+	// SSAO?
+	bool useSSAO = (SETTINGS.getSetting("SSAO") == "Yes");
+	if(useSSAO)
+		initSSAO();
 
 	// for menu effects
 	// not working currently :(
@@ -5340,7 +5339,7 @@ void ExampleFrameListener::loadTerrain(String terrainfile)
 
 				GrassLayer* grassLayer = grassLoader->addLayer(grassmat);
 				grassLayer->setHeightRange(minH, maxH);
-				grassLayer->setLightingEnabled(true);
+				//grassLayer->setLightingEnabled(true);
 
 				grassLayer->setAnimationEnabled((SwaySpeed>0));
 				grassLayer->setSwaySpeed(SwaySpeed);
@@ -7315,3 +7314,76 @@ void ExampleFrameListener::pauseSim(bool value)
 	}
 }
 
+void ExampleFrameListener::initSoftShadows()
+{
+	// we'll be self shadowing
+	mSceneMgr->setShadowTextureSelfShadow(true);
+
+	// our caster material
+	mSceneMgr->setShadowTextureCasterMaterial("shadow_caster");
+	// note we have no "receiver".  all the "receivers" are integrated.
+
+	// get the shadow texture count from the cfg file
+	String tempData = SETTINGS.getSetting("shadowTextureCount");
+	if(tempData.empty()) tempData = "4";
+	// (each light needs a shadow texture)
+	mSceneMgr->setShadowTextureCount(Ogre::StringConverter::parseInt(tempData));
+
+	// the size, too (1024 looks good with 3x3 or more filtering)
+	tempData = SETTINGS.getSetting("shadowTextureRes");
+	if(tempData.empty()) tempData = "256";
+	mSceneMgr->setShadowTextureSize(Ogre::StringConverter::parseInt(tempData));
+
+	// float 16 here.  we need the R and G channels.
+	// float 32 works a lot better with a low/none VSM epsilon (wait till the shaders)
+	// but float 16 is good enough and supports bilinear filtering on a lot of cards
+	// (we should use _GR, but OpenGL doesn't really like it for some reason)
+	mSceneMgr->setShadowTexturePixelFormat(Ogre::PF_FLOAT16_RGB);
+
+	// big NONO to render back faces for VSM.  it doesn't need any biasing
+	// so it's worthless (and rather problematic) to use the back face hack that
+	// works so well for normal depth shadow mapping (you know, so you don't
+	// get surface acne)
+	mSceneMgr->setShadowCasterRenderBackFaces(false);
+
+	const unsigned numShadowRTTs = mSceneMgr->getShadowTextureCount();
+	for (unsigned i = 0; i < numShadowRTTs; ++i)
+	{
+		Ogre::TexturePtr tex = mSceneMgr->getShadowTexture(i);
+		Ogre::Viewport *vp = tex->getBuffer()->getRenderTarget()->getViewport(0);
+		vp->setBackgroundColour(Ogre::ColourValue(1, 1, 1, 1));
+		vp->setClearEveryFrame(true);
+	}
+
+	// enable integrated additive shadows
+	// actually, since we render the shadow map ourselves, it doesn't
+	// really matter whether they are additive or modulative
+	// as long as they are integrated v(O_o)v
+	mSceneMgr->setShadowTechnique(Ogre::SHADOWTYPE_TEXTURE_ADDITIVE_INTEGRATED);
+
+	// and add the shader listener
+	SoftShadowListener *ssl = new SoftShadowListener();
+	mSceneMgr->addShadowListener(ssl);
+}
+
+void ExampleFrameListener::initSSAO()
+{
+	Viewport *vp = mCamera->getViewport();
+    CompositorInstance *ssao = Ogre::CompositorManager::getSingleton().addCompositor(vp, "ssao");
+    ssao->setEnabled(true);
+	SSAOListener *ssaol = new SSAOListener(mSceneMgr, mCamera);
+    ssao->addListener(ssaol);
+}
+
+void ExampleFrameListener::initHDR()
+{
+	Viewport *vp = mCamera->getViewport();
+	Ogre::CompositorInstance *instance = Ogre::CompositorManager::getSingleton().addCompositor(vp, "HDR", 0);
+	Ogre::CompositorManager::getSingleton().setCompositorEnabled(vp, "HDR", true);
+
+	// HDR needs a special listener
+	hdrListener = new HDRListener();
+	instance->addListener(hdrListener);
+	hdrListener->notifyViewportSize(vp->getActualWidth(), vp->getActualHeight());
+	hdrListener->notifyCompositor(instance);
+}

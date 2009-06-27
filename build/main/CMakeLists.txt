@@ -150,7 +150,14 @@ set(ror_src
 	source/mplatform_fd.h
 	source/mplatform_base.h
 
+	source/hdrlistener.h
 	source/hdrlistener.cpp
+	
+	source/softshadowlistener.h
+	source/softshadowlistener.cpp
+
+	source/ssaolistener.h
+	source/ssaolistener.cpp
 )
 
 include_directories (OgreMain/include Dependencies/include)
