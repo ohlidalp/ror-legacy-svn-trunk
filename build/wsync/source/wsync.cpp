@@ -753,13 +753,15 @@ int WSync::downloadFile(boost::filesystem::path localFile, string server, string
 		boost::uintmax_t dataspeed=0;
 		while (boost::asio::read(socket, data, boost::asio::transfer_at_least(1), error))
 		{
-			if(displayProgress && std::time(0) - time > 1)
+			double tdiff = difftime (std::time(0), time);
+			if(displayProgress && tdiff >= 1)
 			{
 				float percent = datacounter / (float)reported_filesize;
-				progressOutput(percent, (float)dataspeed);
+				progressOutput(percent, (float)(dataspeed/tdiff));
 				dataspeed=0;
 				time = std::time(0);
 			}
+
 			if (displayProgress)
 				dataspeed += data.size();
 			datacounter += data.size();
