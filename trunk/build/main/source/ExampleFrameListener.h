@@ -392,6 +392,9 @@ protected:
 	void saveGrassDensity();
 	int changeGrassBuffer(unsigned char *data, int relchange);
 	void updateGrass(Vector3 pos);
+	void initSoftShadows();
+	void initSSAO();
+	void initHDR();
 
 	// WindowEventListener
 	void windowMoved(Ogre::RenderWindow* rw);

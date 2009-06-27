@@ -19,11 +19,13 @@ along with Rigs of Rods.  If not, see <http://www.gnu.org/licenses/>.
 */
 
 #include "materialFunctionMapper.h"
-
+#include "Settings.h"
 
 MaterialFunctionMapper::MaterialFunctionMapper()
 {
+	useSSAO = (SETTINGS.getSetting("SSAO") == "Yes");
 }
+
 MaterialFunctionMapper::~MaterialFunctionMapper()
 {
 }
@@ -79,6 +81,115 @@ void MaterialFunctionMapper::toggleFunction(int flareid, bool isvisible)
 	}		
 }
 
+MaterialPtr MaterialFunctionMapper::addSSAOToMaterial(MaterialPtr material)
+{
+	if(material.isNull())
+		return MaterialPtr();
+	
+	LogManager::getSingleton().logMessage("##addSSAOToEntity");
+	
+	if(!material->getNumTechniques()) return MaterialPtr();
+	Technique *tp = material->getTechnique(0);
+	if(!tp) return MaterialPtr();
+
+	if(!tp->getNumPasses()) return MaterialPtr();
+	Pass *pp = tp->getPass(0);
+	if(!pp) return MaterialPtr();
+
+	if(!pp->getNumTextureUnitStates()) return MaterialPtr();
+	TextureUnitState *tusp = pp->getTextureUnitState(0);
+	if(!tusp) return MaterialPtr();
+	
+	String texture1 = tusp->getTextureName();
+	if(texture1.empty()) return MaterialPtr();
+
+	String targetName = material->getName()+"PlusSSAO";
+	LogManager::getSingleton().logMessage("##addSSAOToEntity0: " + texture1);
+	
+	// check if already existing
+	if(!MaterialManager::getSingleton().getByName(targetName).isNull())
+		return MaterialManager::getSingleton().getByName(targetName);
+
+	MaterialPtr m = MaterialManager::getSingleton().create(targetName, ResourceGroupManager::DEFAULT_RESOURCE_GROUP_NAME);
+	Technique *t0 = m->createTechnique();
+	t0->setSchemeName("lighting");
+	t0->setName("lighting");
+	Pass *p0 = t0->createPass();
+	p0->setAmbient(1,1,1);
+	p0->setDiffuse(0,0,0,0);
+	p0->setSpecular(0,0,0,0);
+	p0->setSelfIllumination(0,0,0);
+	p0->setVertexProgram("ambient_vs");
+	p0->setFragmentProgram("ambient_ps");
+	p0->createTextureUnitState(texture1); // FIRST TEXTURE HERE
+	LogManager::getSingleton().logMessage("##addSSAOToEntity1: " + texture1);
+
+	Pass *p1 = t0->createPass();
+	p1->setMaxSimultaneousLights(8);
+	p1->setSceneBlending(SBT_ADD);
+	p1->setIteratePerLight(true);
+	p1->setAmbient(0,0,0);
+	p1->setDiffuse(1,1,1,0);
+	p1->setSpecular(1,1,1,128);
+	p1->setVertexProgram("diffuse_vs");
+	p1->setFragmentProgram("diffuse_ps");
+	p1->createTextureUnitState(texture1); // FIRST TEXTURE HERE
+	LogManager::getSingleton().logMessage("##addSSAOToEntity2: " + texture1);
+
+	TextureUnitState *tus = p1->createTextureUnitState();
+	tus->setContentType(TextureUnitState::CONTENT_SHADOW);
+	tus->setTextureFiltering(TFO_ANISOTROPIC);
+	tus->setTextureAnisotropy(16);
+	tus->setTextureAddressingMode(TextureUnitState::TAM_BORDER);
+	tus->setTextureBorderColour(ColourValue(1,1,1));
+	LogManager::getSingleton().logMessage("##addSSAOToEntity3: " + texture1);
+
+
+	Technique *t1 = m->createTechnique();
+	t1->setSchemeName("geom");
+	p0 = t1->createPass();
+	p0->setVertexProgram("geom_vs");
+	p0->setFragmentProgram("geom_ps");
+	LogManager::getSingleton().logMessage("##addSSAOToEntity4: " + texture1);
+
+	return m;
+}
+
+void MaterialFunctionMapper::addSSAOToEntity(Ogre::Entity *e)
+{
+	MeshPtr m = e->getMesh();
+	if(!m.isNull())
+	{
+		for(int n=0; n<(int)m->getNumSubMeshes();n++)
+		{
+			SubMesh *sm = m->getSubMesh(n);
+			MaterialPtr material = Ogre::MaterialManager::getSingleton().getByName(sm->getMaterialName());
+			if(material.isNull()) continue;
+
+			MaterialPtr new_material = addSSAOToMaterial(material);
+			if(!new_material.isNull())
+			{
+				sm->setMaterialName(new_material->getName());
+				LogManager::getSingleton().logMessage("addSSAOToEntity: replaced mesh material " + sm->getMaterialName());
+			}
+		}
+	}
+
+	for(int n=0; n<(int)e->getNumSubEntities();n++)
+	{
+		SubEntity *subent = e->getSubEntity(n);
+		MaterialPtr material = Ogre::MaterialManager::getSingleton().getByName(subent->getMaterialName());
+		if(material.isNull()) continue;
+
+		MaterialPtr new_material = addSSAOToMaterial(material);
+		if(!new_material.isNull())
+		{
+			subent->setMaterialName(new_material->getName());
+			LogManager::getSingleton().logMessage("addSSAOToEntity2: replaced mesh material " + subent->getMaterialName());
+		}
+	}
+}
+
 void MaterialFunctionMapper::replaceMeshMaterials(Ogre::Entity *e)
 {
 	// this is not nice, but required (its not so much performance relevant ...
@@ -111,5 +222,8 @@ void MaterialFunctionMapper::replaceMeshMaterials(Ogre::Entity *e)
 			}
 		}
 	}
+
+	if(useSSAO)
+		addSSAOToEntity(e);
 }
 
