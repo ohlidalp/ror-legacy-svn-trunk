@@ -39,7 +39,7 @@ Skidmark::Skidmark(SceneManager *scm, wheel_t *wheel, HeightFinder *hfinder, Sce
 {
 	if(lenght%2) lenght -= lenght%2; // round it!
 
-	minDistance = 0.3f; //std::max(0.2f, wheel->width*0.9f);
+	minDistance = 0.1f;
 	minDistanceSquared = pow(minDistance, 2);
 	maxDistance = std::max(0.5f, wheel->width*1.1f);
 	maxDistanceSquared = pow(maxDistance, 2);
@@ -55,7 +55,7 @@ void Skidmark::addObject(Vector3 start)
 	//LogManager::getSingleton().logMessage("new skidmark section");
 	skidmark_t skid;
 	skid.pos=0;
-	skid.lastPoint=start;
+	skid.lastPointAv=start;
 	skid.facecounter=0;
 	for(int i=0;i<3;i++) skid.face[i] = Vector3::ZERO;
 	skid.colour = ColourValue(Math::RangeRandom(0, 100)/100.0f, Math::RangeRandom(0, 100)/100.0f, Math::RangeRandom(0, 100)/100.0f, 0.8f);
@@ -76,6 +76,7 @@ void Skidmark::addObject(Vector3 start)
 	p->setCullingMode(Ogre::CULL_NONE);
 
 	skid.points.resize(lenght);
+	skid.facesizes.resize(lenght);
 	skid.ground_model_id.resize(lenght);
 	skid.obj = scm->createManualObject("skidmark" + StringConverter::toString(instancecounter++));
 	skid.obj->setDynamic(true);
@@ -84,6 +85,7 @@ void Skidmark::addObject(Vector3 start)
 	for(int i = 0; i < lenght; i++)
 	{
 		skid.points[i] = start;
+		skid.facesizes[i] = 0;
 		skid.ground_model_id[i] = 0;
 		skid.obj->position(start);
 		skid.obj->textureCoord(0,0);
@@ -103,21 +105,31 @@ void Skidmark::limitObjects()
 	{
 		//LogManager::getSingleton().logMessage("deleting first skidmarks section to keep the limits");
 		objects.front().points.clear();
+		objects.front().facesizes.clear();
 		scm->destroyManualObject(objects.front().obj);
 		objects.pop();
 	}
 }
 
-void Skidmark::setPointInt(unsigned short index, const Vector3 &value)
+void Skidmark::setPointInt(unsigned short index, const Vector3 &value, Real fsize)
 {
 	objects.back().points[index] = value;
+	objects.back().facesizes[index] = fsize;
 	
-	int model_id = 0; // normal tire tracks
+	int model_id = -1; // nothing
 
-	// determine ground texture
-	if(!strncmp(wheel->lastGroundModel->name, "grass", 255) || !strncmp(wheel->lastGroundModel->name, "gravel", 255)) model_id = 3;
+	// normal road texture
+	if(wheel->lastSlip > 2)
+		model_id = 0; // normal tire tracks
+
+	// grass
+	if(model_id == 0 && (!strncmp(wheel->lastGroundModel->name, "grass", 255) || !strncmp(wheel->lastGroundModel->name, "gravel", 255)))
+		model_id = 3;
+
+	// rough textures
 	if(wheel->lastSlip > 5 && model_id == 0) model_id = 1; // rough street
 	if(wheel->lastSlip > 5 && model_id == 3) model_id = 2; // rough grass/gravel
+
 	objects.back().ground_model_id[index] = model_id;
 
 	mDirty = true;
@@ -125,18 +137,23 @@ void Skidmark::setPointInt(unsigned short index, const Vector3 &value)
 
 void Skidmark::updatePoint()
 {
-	Vector3 lastPoint = wheel->lastContactType?wheel->lastContactOuter:wheel->lastContactInner;
+	Vector3 thisPoint = wheel->lastContactType?wheel->lastContactOuter:wheel->lastContactInner;
+	Vector3 axis = wheel->lastContactType?(wheel->refnode1->RelPosition - wheel->refnode0->RelPosition):(wheel->refnode0->RelPosition - wheel->refnode1->RelPosition);
+	Vector3 thisPointAV = thisPoint + axis * 0.5f;
+	Real distance = 0;
+
 	if(!objects.size())
 	{
-		// new bucket
-		addObject(lastPoint);
+		// add first bucket
+		addObject(thisPoint);
 	} else
 	{
 		// check existing buckets
 		skidmark_t skid = objects.back();
 
+		distance = skid.lastPointAv.distance(thisPointAV);
 		// too near to update?
-		if(skid.lastPoint.squaredDistance(lastPoint) < minDistanceSquared)
+		if(distance < minDistance)
 		{
 			//LogManager::getSingleton().logMessage("E: too near for update");
 			return;
@@ -147,17 +164,17 @@ void Skidmark::updatePoint()
 		if(wheel->speed > 0) maxDist *= wheel->speed;
 		if(skid.pos >= (int)skid.points.size())
 		{
-			// add connection to last bucket
+			// add new bucket with connection to last bucket
 			Vector3 lp1 = objects.back().points[objects.back().pos-1];
 			Vector3 lp2 = objects.back().points[objects.back().pos-2];
 			addObject(lp1);
-			addPoint(lp2);
-			addPoint(lp1);
+			addPoint(lp2, distance);
+			addPoint(lp1, distance);
 		}
-		else if((skid.lastPoint != Vector3::ZERO && fabs(skid.lastPoint.distance(lastPoint)) > maxDist))
+		else if(distance > maxDistance)
 		{
 			// just new bucket, no connection to last bucket
-			addObject(lastPoint);
+			addObject(thisPoint);
 		}
 	}
 
@@ -168,38 +185,47 @@ void Skidmark::updatePoint()
 	
 	// XXX: TO BE IMPROVED
 	//Vector3 groundNormal = Vector3::ZERO;
-	//hfinder->getNormalAt(lastPoint.x, lastPoint.y, lastPoint.z, &groundNormal);
+	//hfinder->getNormalAt(thisPoint.x, thisPoint.y, thisPoint.z, &groundNormal);
 
 	//LogManager::getSingleton().logMessage("ground normal: "+StringConverter::toString(wheel->refnode1->RelPosition.dotProduct(groundNormal)));
 
-	Vector3 axis = wheel->refnode1->RelPosition - wheel->refnode0->RelPosition;
 	// choose node wheel by the latest added point
 	if(!wheel->lastContactType)
 	{
 		// choose inner
 		//LogManager::getSingleton().logMessage("inner");
-		addPoint(wheel->lastContactInner + (axis * overaxis));
-		addPoint(wheel->lastContactInner - axis - (axis * overaxis));
+		addPoint(wheel->lastContactInner - (axis * overaxis), distance);
+		addPoint(wheel->lastContactInner + axis + (axis * overaxis), distance);
 	} else
 	{
 		// choose outer
 		//LogManager::getSingleton().logMessage("outer");
-		addPoint(wheel->lastContactOuter + axis + (axis * overaxis));
-		addPoint(wheel->lastContactOuter - (axis * overaxis));
+		addPoint(wheel->lastContactOuter + axis + (axis * overaxis), distance);
+		addPoint(wheel->lastContactOuter - (axis * overaxis), distance);
 	}
+
+	// save as last point (in the middle of the wheel)
+	objects.back().lastPointAv = thisPointAV;
+
+	/*
+	// debug code: adds boxes to the average point
+	SceneNode *sn = mNode->getParentSceneNode()->createChildSceneNode();
+	sn->attachObject(scm->createEntity("addPointTRACK"+StringConverter::toString(objects.back().lastPointAv) +StringConverter::toString(axis), "beam.mesh"));
+	sn->setPosition(thisPointAV);
+	sn->setScale(0.1f, 0.01f, 0.1f);
+	*/
 
 }
 
-void Skidmark::addPoint(const Vector3 &value)
+void Skidmark::addPoint(const Vector3 &value, Real fsize)
 {
 	if(objects.back().pos >= lenght)
 	{
 		//LogManager::getSingleton().logMessage("E: boundary protection hit");
 		return;
 	}
-	setPointInt(objects.back().pos, value);
+	setPointInt(objects.back().pos, value, fsize);
 	objects.back().pos++;
-	objects.back().lastPoint = value;
 }
 
 void Skidmark::update()
@@ -212,21 +238,22 @@ void Skidmark::update()
 	Vector3 lastValid = Vector3::ZERO;
 	int to_counter=0;
 	int current_gmodel=skid.ground_model_id[0];
+	float tcox_counter=0;
 
 	for(int i = 0; i < lenght; i++, to_counter++)
 	{
-		if(i>=skid.pos) behindEnd=true;
+		if(i>=skid.pos-1) behindEnd=true;
 		if(to_counter>3)
 		{
-			to_counter=0;
 			current_gmodel=skid.ground_model_id[i];
+			to_counter=0;
 		}
 
-		float len = 1.0f;
-		if(!behindEnd && i>0 && skid.points[i] != Vector3::ZERO && skid.points[i-1] != Vector3::ZERO)
-		{
-			len = minDistance / (skid.points[i].distance(skid.points[i-1]));
-		}
+		if(!behindEnd)
+			tcox_counter += skid.facesizes[i] * 0.001f;
+
+		while(tcox_counter>1)
+			tcox_counter--;
 
 		if(behindEnd)
 		{
@@ -237,7 +264,7 @@ void Skidmark::update()
 			skid.obj->position(skid.points[i]);
 
 			Vector2 tco = tex_coords[current_gmodel][to_counter];
-			tco.x *= 1 - len; // scale texture according face size
+			tco.x += tcox_counter; // scale texture according face size
 			skid.obj->textureCoord(tco);
 
 			lastValid = skid.points[i];
