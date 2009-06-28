@@ -86,7 +86,7 @@ protected:
 	// tools
 	int ensurePathExist(boost::filesystem::path &path);
 	std::string formatFilesize(boost::uintmax_t size);
-	void progressOutput(float progress, float speed=-1);
+	void progressOutput(float progress, float speed=-1, float eta=-1);
 	void progressOutputShort(float progress);
 	int cleanURL(std::string &url);
 	std::string findHashInHashmap(std::map<std::string, Hashentry> hashMap, std::string filename);

@@ -330,6 +330,7 @@ private:
 	wxCheckBox *sunburn;
 	wxCheckBox *hdr;
 	wxCheckBox *mblur;
+	wxCheckBox *skidmarks;
 	wxCheckBox *creaksound;
 	wxChoice *sound;
 	wxChoice *thread;
@@ -1738,13 +1739,15 @@ MyDialog::MyDialog(const wxString& title, MyApp *_app) : wxDialog(NULL, wxID_ANY
 	mirror=new wxCheckBox(graphicsPanel, -1, _("Mirrors"), wxPoint(350, 245));
 	mirror->SetToolTip(_("Shows the rear view mirrors in 1st person view. May cause compatibility problems for very old video cards."));
 
-	dBox = new wxStaticBox(graphicsPanel, -1, _("Visual effects"), wxPoint(340,278), wxSize(130, 85));
+	dBox = new wxStaticBox(graphicsPanel, -1, _("Visual effects"), wxPoint(340,278), wxSize(130, 115));
 	sunburn=new wxCheckBox(graphicsPanel, -1, _("Sunburn"), wxPoint(350, 293));
 	sunburn->SetToolTip(_("Requires a recent video card. Adds a bluish blinding effect."));
 	hdr=new wxCheckBox(graphicsPanel, -1, _("HDR"), wxPoint(350, 313));
 	hdr->SetToolTip(_("Requires a recent video card. Add a lightning effect that simulates the light sensitivity of the human eye."));
 	mblur=new wxCheckBox(graphicsPanel, -1, _("Motion blur"), wxPoint(350, 333));
 	mblur->SetToolTip(_("Requires a recent video card. Adds a motion blur effect."));
+	skidmarks=new wxCheckBox(graphicsPanel, -1, _("Skidmarks"), wxPoint(350, 353));
+	skidmarks->SetToolTip(_("Adds tire tracks to the ground."));
 
 	envmap=new wxCheckBox(graphicsPanel, -1, _("High quality reflective effects"), wxPoint(115, 310));
 	envmap->SetToolTip(_("Enable high quality reflective effects. Causes a slowdown."));
@@ -2279,6 +2282,7 @@ void MyDialog::SetDefaults()
 	hdr->SetValue(false);
 	//wxCheckBox *mblur;
 	mblur->SetValue(false);
+	skidmarks->SetValue(false);
 	creaksound->SetValue(true);
 	//wxChoice *sound;
 	sound->SetSelection(1);//software
@@ -2334,6 +2338,7 @@ void MyDialog::getSettingsControls()
 	settings["Sunburn"] = (sunburn->GetValue()) ? "Yes" : "No";
 	settings["HDR"] = (hdr->GetValue()) ? "Yes" : "No";
 	settings["Motion blur"] = (mblur->GetValue()) ? "Yes" : "No";
+	settings["Skidmarks"] = (skidmarks->GetValue()) ? "Yes" : "No";
 	settings["Creak Sound"] = (creaksound->GetValue()) ? "No" : "Yes";
 	settings["Enhanced wheels"] = (wheel2->GetValue()) ? "Yes" : "No";
 	settings["Fog"] = (enableFog->GetValue()) ? "Yes" : "No";
@@ -2412,6 +2417,7 @@ void MyDialog::updateSettingsControls()
 	st = settings["Sunburn"]; if (st.length()>0) sunburn->SetValue(st=="Yes");
 	st = settings["HDR"]; if (st.length()>0) hdr->SetValue(st=="Yes");
 	st = settings["Motion blur"]; if (st.length()>0) mblur->SetValue(st=="Yes");
+	st = settings["Skidmarks"]; if (st.length()>0) skidmarks->SetValue(st=="Yes");
 	st = settings["3D Sound renderer"]; if (st.length()>0) sound->SetStringSelection(conv(st));
 	st = settings["Threads"]; if (st.length()>0) thread->SetStringSelection(conv(st));
 	st = settings["Enhanced wheels"]; if (st.length()>0) wheel2->SetValue(st=="Yes");
@@ -3232,6 +3238,7 @@ void MyDialog::OnSimpleSlider2Scroll(wxScrollEvent & event)
 			sunburn->SetValue(false);
 			hdr->SetValue(false);
 			mblur->SetValue(false);
+			skidmarks->SetValue(false);
 	break;
 		case 1:
 			textfilt->SetSelection(2);
@@ -3257,6 +3264,7 @@ void MyDialog::OnSimpleSlider2Scroll(wxScrollEvent & event)
 			sunburn->SetValue(false);
 			hdr->SetValue(false);
 			mblur->SetValue(false);
+			skidmarks->SetValue(false);
 	break;
 		case 2:
 			textfilt->SetSelection(3);
@@ -3282,6 +3290,7 @@ void MyDialog::OnSimpleSlider2Scroll(wxScrollEvent & event)
 			sunburn->SetValue(false);
 			hdr->SetValue(false);
 			mblur->SetValue(false);
+			skidmarks->SetValue(false);
 		break;
 	};
 	getSettingsControls();

@@ -66,7 +66,7 @@ int WSync::downloadMod(std::string modname, std::string &modfilename, boost::fil
 	
 	if(!util) printf("downloading ...");
 	int res = downloadFile(filepath, REPO_SERVER, REPO_DOWNLOAD + filename, !util);
-	if(!util) printf("done!                 \n");
+	if(!util) printf("done!                                  \n");
 	if(util) printf("%s", filename.c_str());
 	modfilename = filename;
 	return res;
@@ -278,10 +278,10 @@ retry:
 					string hash_remote = findHashInHashmap(hashMapRemote, itf->filename);
 					if(hash_remote == checkHash)
 					{
-						printf(" OK                      \n");
+						printf(" OK                                   \n");
 					} else
 					{
-						printf(" OK                      \n");
+						printf(" OK                                   \n");
 						//printf(" hash is: '%s'\n", checkHash.c_str());
 						//printf(" hash should be: '%s'\n", hash_remote.c_str());
 						remove(localfile);
@@ -330,10 +330,10 @@ retry2:
 					string hash_remote = findHashInHashmap(hashMapRemote, itf->filename);
 					if(hash_remote == checkHash)
 					{
-						printf(" OK                      \n");
+						printf(" OK                                   \n");
 					} else
 					{
-						printf(" OK                      \n");
+						printf(" OK                                   \n");
 						//printf(" hash is: '%s'\n", checkHash.c_str());
 						//printf(" hash should be: '%s'\n", hash_remote.c_str());
 						remove(localfile);
@@ -751,13 +751,16 @@ int WSync::downloadFile(boost::filesystem::path localFile, string server, string
 		// Read until EOF, writing data to output as we go.
 		boost::uintmax_t datacounter=0;
 		boost::uintmax_t dataspeed=0;
+		boost::uintmax_t filesize_left=reported_filesize;
 		while (boost::asio::read(socket, data, boost::asio::transfer_at_least(1), error))
 		{
 			double tdiff = difftime (std::time(0), time);
 			if(displayProgress && tdiff >= 1)
 			{
 				float percent = datacounter / (float)reported_filesize;
-				progressOutput(percent, (float)(dataspeed/tdiff));
+				float dspeed = (float)(dataspeed / tdiff);
+				float eta = filesize_left / dspeed;
+				progressOutput(percent, dspeed, eta);
 				dataspeed=0;
 				time = std::time(0);
 			}
@@ -765,6 +768,7 @@ int WSync::downloadFile(boost::filesystem::path localFile, string server, string
 			if (displayProgress)
 				dataspeed += data.size();
 			datacounter += data.size();
+			filesize_left -= data.size();
 			myfile << &data;
 		}
 		if (error != boost::asio::error::eof)
@@ -808,7 +812,7 @@ void WSync::listFiles(const path &dir_path, std::vector<std::string> &files)
   }
 }
 
-void WSync::progressOutput(float progress, float speed)
+void WSync::progressOutput(float progress, float speed, float eta)
 {
 	if(speed<0)
 	{
@@ -816,8 +820,17 @@ void WSync::progressOutput(float progress, float speed)
 	} else
 	{
 		char tmp[255]="";
+		char etastr[255]="";
+		if(eta > 0 && eta < 1000000)
+		{
+			if(eta<60)
+				sprintf(etastr, ", ETA: % 4.0f seconds", eta);
+			else
+				sprintf(etastr, ", ETA: % 4.1f minutes", eta/60.0);
+		}
+
 		string speedstr = formatFilesize((int)speed) + "/s";
-		sprintf(tmp, "(% 3.0f%%, %s)   ", progress * 100, speedstr.c_str());
+		sprintf(tmp, "(% 3.0f%%, %s%s)   ", progress * 100, speedstr.c_str(), etastr);
 		int stringsize = (int)strnlen(tmp, 255);
 		for(int i=0;i<stringsize; i++)
 			strcat(tmp, "\b");
