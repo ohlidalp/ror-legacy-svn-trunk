@@ -25,15 +25,109 @@ along with Rigs of Rods.  If not, see <http://www.gnu.org/licenses/>.
 #include <cmath>
 
 using namespace Ogre;
+using namespace std;
 int Skidmark::instancecounter = 0;
 
+template<> SkidmarkManager *Ogre::Singleton<SkidmarkManager>::ms_Singleton=0;
+
+SkidmarkManager::SkidmarkManager()
+{
+	LogManager::getSingleton().logMessage("SkidmarkManager created");
+	loadDefaultModels();
+}
+
+SkidmarkManager::~SkidmarkManager()
+{
+	LogManager::getSingleton().logMessage("SkidmarkManager destroyed");
+}
+
+int SkidmarkManager::loadDefaultModels()
+{
+	LogManager::getSingleton().logMessage("SkidmarkManager loading default models");
+	// check if we have a config file
+	String group = "";
+	try
+	{
+		group = ResourceGroupManager::getSingleton().findGroupContainingResource("skidmarks.cfg");
+	} catch(...)
+	{
+	}
+	// emit a warning if we did not found the file
+	if (group.empty())
+	{
+		LogManager::getSingleton().logMessage("skidmarks| skidmarks.cfg not found");
+		return 1;
+	}
+
+	// open the file for reading
+	DataStreamPtr ds = ResourceGroupManager::getSingleton().openResource("skidmarks.cfg", group);
+	String line = "";
+	String currentModel = "";
+
+	while (!ds->eof())
+	{	
+		line=ds->getLine();
+		StringUtil::trim(line);
+		
+		if (line.empty() || line[0]==';')
+			continue;
+
+		std::vector< String > args = StringUtil::split(line, ",");
+		
+		if (args.size() == 1)
+		{
+			currentModel = line;
+			continue;
+		}
+		
+		// process the line if we got a model
+		if(!currentModel.empty())
+			processLine(args, currentModel);
+	}
+	return 0;
+}
+
+int SkidmarkManager::processLine(vector< String > args,  String modelName)
+{
+	// we only accept 4 arguments
+	if (args.size() != 4)
+		return 1;
+	
+	// parse the data
+	skidmark_config_t cfg;
+	cfg.ground = args[0];
+	StringUtil::trim(cfg.ground);
+	cfg.texture = args[1];
+	StringUtil::trim(cfg.texture);
+
+	cfg.slipFrom = StringConverter::parseReal(args[2]);
+	cfg.slipTo = StringConverter::parseReal(args[3]);
+
+	if(!models.size() || models.find(modelName) == models.end())
+		models[modelName] = std::vector<skidmark_config_t>();
+
+	models[modelName].push_back(cfg);
+	return 0;
+}
+
+int SkidmarkManager::getTexture(Ogre::String model, Ogre::String ground, float slip, Ogre::String &texture)
+{
+	if(models.find(model) == models.end()) return 1;
+	for(std::vector<skidmark_config_t>::iterator it=models[model].begin(); it!=models[model].end(); it++)
+	{
+		if(it->ground == ground && it->slipFrom <= slip && it->slipTo > slip)
+		{
+			texture = it->texture;
+			return 0;
+		}
+	}
+	return 2;
+}
+
+/////////////// Skidmark below
+
 // this is a hardcoded array which we use to map ground types to a certain texture with UV/ coords
-Vector2 Skidmark::tex_coords[4][4] = {
-	{Vector2(0,0.00f), Vector2(0,0.25f), Vector2(1,0.00f), Vector2(1,0.25f)},
-	{Vector2(0,0.25f), Vector2(0,0.50f), Vector2(1,0.25f), Vector2(1,0.50f)},
-	{Vector2(0,0.50f), Vector2(0,0.75f), Vector2(1,0.50f), Vector2(1,0.75f)},
-	{Vector2(0,0.75f), Vector2(0,1.00f), Vector2(1,0.75f), Vector2(1,1.00f)},
-};
+Vector2 Skidmark::tex_coords[4] = {Vector2(0,0), Vector2(0,1), Vector2(1,0), Vector2(1,1)};
 
 Skidmark::Skidmark(SceneManager *scm, wheel_t *wheel, HeightFinder *hfinder, SceneNode *snode, int _lenght, int bucketCount) : scm(scm), hfinder(hfinder), mNode(snode), lenght(_lenght), wheel(wheel), bucketCount(bucketCount)
 {
@@ -50,7 +144,7 @@ Skidmark::~Skidmark()
 {
 }
 
-void Skidmark::addObject(Vector3 start)
+void Skidmark::addObject(Vector3 start, String texture)
 {
 	//LogManager::getSingleton().logMessage("new skidmark section");
 	skidmark_t skid;
@@ -66,7 +160,7 @@ void Skidmark::addObject(Vector3 start)
 	sprintf(bname, "mat-skidmark-%d", instancecounter);
 	MaterialPtr mat=(MaterialPtr)(MaterialManager::getSingleton().create(bname, ResourceGroupManager::DEFAULT_RESOURCE_GROUP_NAME));
 	Pass *p = mat->getTechnique(0)->getPass(0);
-	TextureUnitState *tus = p->createTextureUnitState("tracks.png");
+	TextureUnitState *tus = p->createTextureUnitState(texture);
 	//tus->setColourOperationEx(LBX_MODULATE, LBS_MANUAL, LBS_CURRENT, skid.colour);
 	//tus->setTextureName();
 	p->setSceneBlending(Ogre::SBT_TRANSPARENT_ALPHA);
@@ -77,7 +171,7 @@ void Skidmark::addObject(Vector3 start)
 
 	skid.points.resize(lenght);
 	skid.facesizes.resize(lenght);
-	skid.ground_model_id.resize(lenght);
+	skid.ground_texture.resize(lenght);
 	skid.obj = scm->createManualObject("skidmark" + StringConverter::toString(instancecounter++));
 	skid.obj->setDynamic(true);
 	skid.obj->setRenderingDistance(2000); //2km sight range
@@ -86,7 +180,7 @@ void Skidmark::addObject(Vector3 start)
 	{
 		skid.points[i] = start;
 		skid.facesizes[i] = 0;
-		skid.ground_model_id[i] = 0;
+		skid.ground_texture[i] = "0.png";
 		skid.obj->position(start);
 		skid.obj->textureCoord(0,0);
 	}
@@ -111,26 +205,11 @@ void Skidmark::limitObjects()
 	}
 }
 
-void Skidmark::setPointInt(unsigned short index, const Vector3 &value, Real fsize)
+void Skidmark::setPointInt(unsigned short index, const Vector3 &value, Real fsize, String texture)
 {
 	objects.back().points[index] = value;
 	objects.back().facesizes[index] = fsize;
-	
-	int model_id = -1; // nothing
-
-	// normal road texture
-	if(wheel->lastSlip > 2)
-		model_id = 0; // normal tire tracks
-
-	// grass
-	if(model_id == 0 && (!strncmp(wheel->lastGroundModel->name, "grass", 255) || !strncmp(wheel->lastGroundModel->name, "gravel", 255)))
-		model_id = 3;
-
-	// rough textures
-	if(wheel->lastSlip > 5 && model_id == 0) model_id = 1; // rough street
-	if(wheel->lastSlip > 5 && model_id == 3) model_id = 2; // rough grass/gravel
-
-	objects.back().ground_model_id[index] = model_id;
+	objects.back().ground_texture[index] = texture;
 
 	mDirty = true;
 }
@@ -140,12 +219,14 @@ void Skidmark::updatePoint()
 	Vector3 thisPoint = wheel->lastContactType?wheel->lastContactOuter:wheel->lastContactInner;
 	Vector3 axis = wheel->lastContactType?(wheel->refnode1->RelPosition - wheel->refnode0->RelPosition):(wheel->refnode0->RelPosition - wheel->refnode1->RelPosition);
 	Vector3 thisPointAV = thisPoint + axis * 0.5f;
+	String texture = "0.png";
+	SkidmarkManager::getSingleton().getTexture("default", wheel->lastGroundModel->name, wheel->lastSlip, texture);
 	Real distance = 0;
 
 	if(!objects.size())
 	{
 		// add first bucket
-		addObject(thisPoint);
+		addObject(thisPoint, texture);
 	} else
 	{
 		// check existing buckets
@@ -158,23 +239,33 @@ void Skidmark::updatePoint()
 			//LogManager::getSingleton().logMessage("E: too near for update");
 			return;
 		}
+		
+		// change ground texture if required
+		if(skid.pos > 0 && skid.ground_texture[0] != texture)
+		{
+			// new object with new texture
+			addObject(thisPoint, texture);
+		} else
+		{
+			// no texture change required :D
 
-		// far enough for new bucket?
-		float maxDist = maxDistance;
-		if(wheel->speed > 0) maxDist *= wheel->speed;
-		if(skid.pos >= (int)skid.points.size())
-		{
-			// add new bucket with connection to last bucket
-			Vector3 lp1 = objects.back().points[objects.back().pos-1];
-			Vector3 lp2 = objects.back().points[objects.back().pos-2];
-			addObject(lp1);
-			addPoint(lp2, distance);
-			addPoint(lp1, distance);
-		}
-		else if(distance > maxDistance)
-		{
-			// just new bucket, no connection to last bucket
-			addObject(thisPoint);
+			// far enough for new bucket?
+			float maxDist = maxDistance;
+			if(wheel->speed > 0) maxDist *= wheel->speed;
+			if(skid.pos >= (int)skid.points.size())
+			{
+				// add new bucket with connection to last bucket
+				Vector3 lp1 = objects.back().points[objects.back().pos-1];
+				Vector3 lp2 = objects.back().points[objects.back().pos-2];
+				addObject(lp1, texture);
+				addPoint(lp2, distance, texture);
+				addPoint(lp1, distance, texture);
+			}
+			else if(distance > maxDistance)
+			{
+				// just new bucket, no connection to last bucket
+				addObject(thisPoint, texture);
+			}
 		}
 	}
 
@@ -194,14 +285,14 @@ void Skidmark::updatePoint()
 	{
 		// choose inner
 		//LogManager::getSingleton().logMessage("inner");
-		addPoint(wheel->lastContactInner - (axis * overaxis), distance);
-		addPoint(wheel->lastContactInner + axis + (axis * overaxis), distance);
+		addPoint(wheel->lastContactInner - (axis * overaxis), distance, texture);
+		addPoint(wheel->lastContactInner + axis + (axis * overaxis), distance, texture);
 	} else
 	{
 		// choose outer
 		//LogManager::getSingleton().logMessage("outer");
-		addPoint(wheel->lastContactOuter + axis + (axis * overaxis), distance);
-		addPoint(wheel->lastContactOuter - (axis * overaxis), distance);
+		addPoint(wheel->lastContactOuter + axis + (axis * overaxis), distance, texture);
+		addPoint(wheel->lastContactOuter - (axis * overaxis), distance, texture);
 	}
 
 	// save as last point (in the middle of the wheel)
@@ -217,14 +308,14 @@ void Skidmark::updatePoint()
 
 }
 
-void Skidmark::addPoint(const Vector3 &value, Real fsize)
+void Skidmark::addPoint(const Vector3 &value, Real fsize, String texture)
 {
 	if(objects.back().pos >= lenght)
 	{
 		//LogManager::getSingleton().logMessage("E: boundary protection hit");
 		return;
 	}
-	setPointInt(objects.back().pos, value, fsize);
+	setPointInt(objects.back().pos, value, fsize, texture);
 	objects.back().pos++;
 }
 
@@ -237,17 +328,14 @@ void Skidmark::update()
 	bool behindEnd = false;
 	Vector3 lastValid = Vector3::ZERO;
 	int to_counter=0;
-	int current_gmodel=skid.ground_model_id[0];
 	float tcox_counter=0;
 
 	for(int i = 0; i < lenght; i++, to_counter++)
 	{
 		if(i>=skid.pos-1) behindEnd=true;
+
 		if(to_counter>3)
-		{
-			current_gmodel=skid.ground_model_id[i];
 			to_counter=0;
-		}
 
 		if(!behindEnd)
 			tcox_counter += skid.facesizes[i] * 0.001f;
@@ -263,7 +351,7 @@ void Skidmark::update()
 		{
 			skid.obj->position(skid.points[i]);
 
-			Vector2 tco = tex_coords[current_gmodel][to_counter];
+			Vector2 tco = tex_coords[to_counter];
 			tco.x += tcox_counter; // scale texture according face size
 			skid.obj->textureCoord(tco);
 
