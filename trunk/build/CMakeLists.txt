@@ -42,10 +42,6 @@ SET(BIN_DIR ${RoR_SOURCE_DIR}/bin/${BUILD_DIR}/${PLATFORM})
 SET(LIB_DIR ${RoR_SOURCE_DIR}/build/lib)
 SET(LIBRARY_OUTPUT_DIRECTORY ${RoR_SOURCE_DIR}/build/lib)
 
-set(OGRE_INCLUDE_DIR  ${RoR_SOURCE_DIR}/dependencies/ogrenew/OgreMain/include)
-set(OGRE_LIBRARIES  "OgreMain")
-set(OGRE_LIB_DIR  "")
-
 # the changed directories break the windows build, so leave it as default
 #SET(EXECUTABLE_OUTPUT_PATH   ${BIN_DIR})
 #SET(LIBRARY_OUTPUT_PATH      ${BIN_DIR})

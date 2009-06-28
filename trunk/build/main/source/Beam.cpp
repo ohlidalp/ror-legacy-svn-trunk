@@ -423,15 +423,13 @@ Beam::Beam(int tnum, SceneManager *manager, SceneNode *parent, RenderWindow* win
 	cabFadeTimer=0;
 	cabFadeTime=0.3;
 
-#if 1
 	// skidmark stuff
-	useSkidmarks = true;
+	useSkidmarks = (SETTINGS.getSetting("Skidmarks") == "Yes");
 	if (useSkidmarks)
 	{
 		for(int i=0; i<MAX_WHEELS*2; i++)
 			skidtrails[i] = 0;
 	}
-#endif
 
 	collisions=icollisions;
 
