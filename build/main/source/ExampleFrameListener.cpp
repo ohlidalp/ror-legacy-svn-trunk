@@ -936,6 +936,9 @@ ExampleFrameListener::ExampleFrameListener(RenderWindow* win, Camera* cam, Scene
 	loaded_terrain=0;
 	hdrListener=0;
 	eflsingleton=this;
+	
+	if(SETTINGS.getSetting("Skidmarks") == "Yes")
+		new SkidmarkManager();
 
 #ifdef MPLATFORM
 	mplatform = new MPlatform_FD();

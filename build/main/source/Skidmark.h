@@ -30,13 +30,35 @@ typedef struct _skidmark
 	Ogre::ManualObject *obj;
 	std::vector<Ogre::Vector3> points;
 	std::vector<Ogre::Real> facesizes;
-	std::vector<int> ground_model_id;
+	std::vector<Ogre::String> ground_texture;
 	Ogre::Vector3 lastPointAv;
 	int pos;
 	Ogre::ColourValue colour;
 	Ogre::Vector3 face[2];
 	int facecounter;
 } skidmark_t;
+
+
+typedef struct _skidmark_config
+{
+	Ogre::String ground;
+	Ogre::String texture;
+	float slipFrom;
+	float slipTo;
+} skidmark_config_t;
+
+class SkidmarkManager : public Ogre::Singleton<SkidmarkManager>
+{
+public:
+	SkidmarkManager();
+	~SkidmarkManager();
+	
+	int getTexture(Ogre::String model, Ogre::String ground, float slip, Ogre::String &texture);
+protected:
+	int loadDefaultModels();
+	std::map <Ogre::String, std::vector<skidmark_config_t> > models;
+	int processLine(std::vector< Ogre::String > args,  Ogre::String model);
+};
 
 class Skidmark
 {
@@ -61,12 +83,12 @@ private:
 	int bucketCount;
 	wheel_t *wheel;
 	float minDistance, maxDistance, minDistanceSquared, maxDistanceSquared;
-	static Ogre::Vector2 tex_coords[4][4];
+	static Ogre::Vector2 tex_coords[4];
 	
 	void limitObjects();
-	void addObject(Ogre::Vector3 start);
-	void setPointInt(unsigned short index, const Ogre::Vector3 &value, Ogre::Real fsize);
-	void addPoint(const Ogre::Vector3 &value, Ogre::Real fsize);
+	void addObject(Ogre::Vector3 start, Ogre::String texture);
+	void setPointInt(unsigned short index, const Ogre::Vector3 &value, Ogre::Real fsize, Ogre::String texture);
+	void addPoint(const Ogre::Vector3 &value, Ogre::Real fsize, Ogre::String texture);
 };
 
 
