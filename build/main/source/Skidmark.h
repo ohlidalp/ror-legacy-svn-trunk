@@ -29,8 +29,9 @@ typedef struct _skidmark
 {
 	Ogre::ManualObject *obj;
 	std::vector<Ogre::Vector3> points;
+	std::vector<Ogre::Real> facesizes;
 	std::vector<int> ground_model_id;
-	Ogre::Vector3 lastPoint;
+	Ogre::Vector3 lastPointAv;
 	int pos;
 	Ogre::ColourValue colour;
 	Ogre::Vector3 face[2];
@@ -64,8 +65,8 @@ private:
 	
 	void limitObjects();
 	void addObject(Ogre::Vector3 start);
-	void setPointInt(unsigned short index, const Ogre::Vector3 &value);
-	void addPoint(const Ogre::Vector3 &value);
+	void setPointInt(unsigned short index, const Ogre::Vector3 &value, Ogre::Real fsize);
+	void addPoint(const Ogre::Vector3 &value, Ogre::Real fsize);
 };
 
 
