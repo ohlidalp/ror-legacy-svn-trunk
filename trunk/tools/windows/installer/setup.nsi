@@ -61,7 +61,7 @@ ${Index_RemoveFilesAndSubDirs}-done:
 
 ; HM NIS Edit Wizard helper defines
 !define PRODUCT_NAME "Rigs of Rods"
-!define PRODUCT_VERSION "0.36.1"
+!define PRODUCT_VERSION "0.36.2"
 !define PRODUCT_PUBLISHER "Pierre-Michel Ricordel"
 !define PRODUCT_WEB_SITE "http://www.rigsofrods.com"
 !define PRODUCT_UNINST_KEY "Software\Microsoft\Windows\CurrentVersion\Uninstall\${PRODUCT_NAME}"
@@ -192,8 +192,8 @@ ShowUnInstDetails show
 Function InstallDirectX
 	InitPluginsDir
 	File /oname=$PLUGINSDIR\dxwebsetup.exe "dxwebsetup.exe"
-	Banner::show /NOUNLOAD "Installing lastest DirectX (This can take some minutes)"
-    ExecWait '"$PLUGINSDIR\dxwebsetup.exe /Q"'
+	Banner::show /NOUNLOAD "Installing latest DirectX"
+    ExecWait '"$PLUGINSDIR\dxwebsetup.exe"'
 	Delete $PLUGINSDIR\dxwebsetup.exe
 	Banner::destroy
 FunctionEnd
@@ -201,7 +201,7 @@ FunctionEnd
 Function InstallVisualStudioRuntime
 	InitPluginsDir
 	File /oname=$PLUGINSDIR\vcredist_x86.exe "vcredist_x86.exe"
-	Banner::show /NOUNLOAD "Installing Visual Studio Runtime (This can take some minutes)"
+	Banner::show /NOUNLOAD "Installing Visual Studio Runtime"
 	ExecWait "vcredist_x86.exe /q"
 	Delete $PLUGINSDIR\vcredist_x86.exe
 	Banner::destroy
@@ -254,10 +254,10 @@ Section "!RoR" SEC02
 	Banner::destroy
   
 	; docs
-	File ..\..\doc\keysheet.pdf
-	File "..\..\doc\Things you can do in Rigs of Rods.pdf"
+	#File ..\..\doc\keysheet.pdf
+	#File "..\..\doc\Things you can do in Rigs of Rods.pdf"
 	; data
-	File /r /x .svn ..\..\test\current\*
+	File /r /x .svn ..\..\..\test\current\*
 
 SectionEnd
 
@@ -280,7 +280,7 @@ Section -AdditionalIcons
 	CreateShortCut "$SMPROGRAMS\Rigs of Rods ${PRODUCT_VERSION}\Rigs of Rods.lnk" "$INSTDIR\RoR.exe"
 	CreateShortCut "$SMPROGRAMS\Rigs of Rods ${PRODUCT_VERSION}\Configurator.lnk" "$INSTDIR\RoRConfig.exe"
 	CreateShortCut "$SMPROGRAMS\Rigs of Rods ${PRODUCT_VERSION}\Key Sheet.lnk" "$INSTDIR\keysheet.pdf"
-	CreateShortCut "$SMPROGRAMS\Rigs of Rods ${PRODUCT_VERSION}\Manual.lnk" "$INSTDIR\Things you can do in Rigs of Rods.pdf"
+	CreateShortCut "$SMPROGRAMS\Rigs of Rods ${PRODUCT_VERSION}\Manual.lnk" "$INSTDIR\Things_you_can_do_in_Rigs_of_Rods.pdf"
 SectionEnd
 
 Section -Post
@@ -300,7 +300,7 @@ Section -Post
 	WriteRegStr HKCR "rorserver\DefaultIcon" "" ""
 	WriteRegStr HKCR "rorserver\shell\open\command" "" '"$INSTDIR\RoR.exe" -wd="$INSTDIR" -join="%1"'
 	WriteRegStr ${PRODUCT_UNINST_ROOT_KEY} "${PRODUCT_UNINST_KEY}" "Publisher" "${PRODUCT_PUBLISHER}"
-	
+	SetRebootFlag true	
 SectionEnd
 
 
