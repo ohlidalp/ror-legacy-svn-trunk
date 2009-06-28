@@ -1739,7 +1739,7 @@ MyDialog::MyDialog(const wxString& title, MyApp *_app) : wxDialog(NULL, wxID_ANY
 	mirror=new wxCheckBox(graphicsPanel, -1, _("Mirrors"), wxPoint(350, 245));
 	mirror->SetToolTip(_("Shows the rear view mirrors in 1st person view. May cause compatibility problems for very old video cards."));
 
-	dBox = new wxStaticBox(graphicsPanel, -1, _("Visual effects"), wxPoint(340,278), wxSize(130, 115));
+	dBox = new wxStaticBox(graphicsPanel, -1, _("Visual effects"), wxPoint(340,278), wxSize(130, 100));
 	sunburn=new wxCheckBox(graphicsPanel, -1, _("Sunburn"), wxPoint(350, 293));
 	sunburn->SetToolTip(_("Requires a recent video card. Adds a bluish blinding effect."));
 	hdr=new wxCheckBox(graphicsPanel, -1, _("HDR"), wxPoint(350, 313));
