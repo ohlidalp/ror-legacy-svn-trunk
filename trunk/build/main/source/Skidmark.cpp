@@ -219,7 +219,7 @@ void Skidmark::updatePoint()
 	Vector3 thisPoint = wheel->lastContactType?wheel->lastContactOuter:wheel->lastContactInner;
 	Vector3 axis = wheel->lastContactType?(wheel->refnode1->RelPosition - wheel->refnode0->RelPosition):(wheel->refnode0->RelPosition - wheel->refnode1->RelPosition);
 	Vector3 thisPointAV = thisPoint + axis * 0.5f;
-	String texture = "0.png";
+	String texture = "tracks/trans";
 	SkidmarkManager::getSingleton().getTexture("default", wheel->lastGroundModel->name, wheel->lastSlip, texture);
 	Real distance = 0;
 
