@@ -13,6 +13,12 @@ ENDIF(NOT CMAKE_BUILD_TYPE)
 SET(RoR_Dependencies_CMAKE_DIR "${RoR_SOURCE_DIR}/dependencies/cmake")
 SET(BUILD_SHARED_LIBS ON)
 
+# setup ogre variables
+SET(OGRE_INCLUDE_DIR "${RoR_SOURCE_DIR}/dependencies/ogrenew/OgreMain/include")
+SET(OGRE_LIBRARIES "OgreMain")
+SET(OGRE_LIB_DIR "${RoR_SOURCE_DIR}/dependencies/ogrenew/lib")
+mark_as_advanced(OGRE_INCLUDE_DIR OGRE_LIBRARIES OGRE_LIB_DIR)
+
 IF(WIN32)
   SET(PLATFORM "windows")
   #add_definitions("-DWIN32 -D_WINDOWS -D__WIN32__")
@@ -56,6 +62,8 @@ endif(COMMAND cmake_policy)
 # RoR options
 option(ROR_BUILD_HYDRAX "build RoR with HYDRAX water engine support" TRUE)
 option(ROR_BUILD_PAGED "build RoR with Paged Geometry support (grass and trees)" TRUE)
+option(ROR_BUILD_PAGED_SF "use latest Paged Geometry support from SF" TRUE)
+
 option(ROR_BUILD_CONFIGURATOR "builds the RoRConfig" TRUE)
 
 # optimization things

@@ -21,7 +21,11 @@ if(ROR_BUILD_HYDRAX)
 endif(ROR_BUILD_HYDRAX)
 
 if(ROR_BUILD_PAGED)
+if(ROR_BUILD_PAGED_SF)
+  add_subdirectory("pagedgeometry_sf")
+else(ROR_BUILD_PAGED_SF)
   add_subdirectory("PagedGeometry")
+endif(ROR_BUILD_PAGED_SF)
 endif(ROR_BUILD_PAGED)
 
 IF(ROR_BUILD_ANGELSCRIPT)
