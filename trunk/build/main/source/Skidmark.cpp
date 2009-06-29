@@ -219,9 +219,15 @@ void Skidmark::updatePoint()
 	Vector3 thisPoint = wheel->lastContactType?wheel->lastContactOuter:wheel->lastContactInner;
 	Vector3 axis = wheel->lastContactType?(wheel->refnode1->RelPosition - wheel->refnode0->RelPosition):(wheel->refnode0->RelPosition - wheel->refnode1->RelPosition);
 	Vector3 thisPointAV = thisPoint + axis * 0.5f;
-	String texture = "tracks/trans";
-	SkidmarkManager::getSingleton().getTexture("default", wheel->lastGroundModel->name, wheel->lastSlip, texture);
 	Real distance = 0;
+	Real maxDist = maxDistance;
+	String texture = "none";
+	SkidmarkManager::getSingleton().getTexture("default", wheel->lastGroundModel->name, wheel->lastSlip, texture);
+	
+	// dont add points with no texture
+	if(texture == "none") return;
+
+	if(wheel->speed > 0) maxDist *= wheel->speed;
 
 	if(!objects.size())
 	{
@@ -244,15 +250,11 @@ void Skidmark::updatePoint()
 		if(skid.pos > 0 && skid.ground_texture[0] != texture)
 		{
 			// new object with new texture
-			addObject(thisPoint, texture);
-		} else
-		{
-			// no texture change required :D
-
-			// far enough for new bucket?
-			float maxDist = maxDistance;
-			if(wheel->speed > 0) maxDist *= wheel->speed;
-			if(skid.pos >= (int)skid.points.size())
+			if(distance > maxDist)
+			{
+				// to far away for connection
+				addObject(thisPoint, texture);
+			} else
 			{
 				// add new bucket with connection to last bucket
 				Vector3 lp1 = objects.back().points[objects.back().pos-1];
@@ -260,6 +262,27 @@ void Skidmark::updatePoint()
 				addObject(lp1, texture);
 				addPoint(lp2, distance, texture);
 				addPoint(lp1, distance, texture);
+			}
+		} else
+		{
+			// no texture change required :D
+
+			// far enough for new bucket?
+			if(skid.pos >= (int)skid.points.size())
+			{
+				if(distance > maxDist)
+				{
+					// to far away for connection
+					addObject(thisPoint, texture);
+				} else
+				{
+					// add new bucket with connection to last bucket
+					Vector3 lp1 = objects.back().points[objects.back().pos-1];
+					Vector3 lp2 = objects.back().points[objects.back().pos-2];
+					addObject(lp1, texture);
+					addPoint(lp2, distance, texture);
+					addPoint(lp1, distance, texture);
+				}
 			}
 			else if(distance > maxDistance)
 			{
@@ -321,6 +344,7 @@ void Skidmark::addPoint(const Vector3 &value, Real fsize, String texture)
 
 void Skidmark::update()
 {
+	if(!objects.size()) return;
 	skidmark_t skid = objects.back();
 	Vector3 vaabMin = skid.points[0];
 	Vector3 vaabMax = skid.points[0];
@@ -332,13 +356,13 @@ void Skidmark::update()
 
 	for(int i = 0; i < lenght; i++, to_counter++)
 	{
-		if(i>=skid.pos-1) behindEnd=true;
+		if(i>=skid.pos) behindEnd=true;
 
 		if(to_counter>3)
 			to_counter=0;
 
 		if(!behindEnd)
-			tcox_counter += skid.facesizes[i] * 0.001f;
+			tcox_counter += skid.facesizes[i] / minDistance;
 
 		while(tcox_counter>1)
 			tcox_counter--;
@@ -352,7 +376,7 @@ void Skidmark::update()
 			skid.obj->position(skid.points[i]);
 
 			Vector2 tco = tex_coords[to_counter];
-			tco.x += tcox_counter; // scale texture according face size
+			tco.x *= skid.facesizes[i] / minDistance; // scale texture according face size
 			skid.obj->textureCoord(tco);
 
 			lastValid = skid.points[i];
