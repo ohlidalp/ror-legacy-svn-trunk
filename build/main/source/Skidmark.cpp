@@ -227,7 +227,7 @@ void Skidmark::updatePoint()
 	// dont add points with no texture
 	if(texture == "none") return;
 
-	if(wheel->speed > 0) maxDist *= wheel->speed;
+	if(wheel->speed > 1) maxDist *= wheel->speed;
 
 	if(!objects.size())
 	{
