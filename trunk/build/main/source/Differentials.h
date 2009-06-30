@@ -2,6 +2,7 @@
 #define __DIFFERENTIALS_H__
 
 #include "OgrePrerequisites.h"
+#include <vector>
 
 #define MAX_DIFFS 3
 struct differential_data_t
@@ -16,7 +17,7 @@ struct differential_data_t
 enum DiffType
 {
 	SPLIT_DIFF = 0,
-	FLUID_DIFF,
+	VISCOUS_DIFF,
 	TC_DIFF,
 	OPEN_DIFF,
 	LOCKED_DIFF
@@ -47,14 +48,20 @@ public:
 	unsigned int axle_group;
 
 	void addDiffType(DiffType diff);
+	const std::vector<DiffType>& availableDiffs();
 	void toggleDiff();
 	void calcTorque( differential_data_t& diff_data );
 	Ogre::String getDiffTypeName();
 
+	//! a differential that always splits the torque evenly, this is the original method
     static void calcSeperatedDiff( differential_data_t& diff_data);
-    static void calcFluidDiff( differential_data_t& diff_data );
+    //! viscous coupler, the greater the difference in speed the more torque is transfered
+    static void calcViscousDiff( differential_data_t& diff_data );
+    //! initial attempt at traction controll
     static void calcTCDiff( differential_data_t& diff_data );
+    //! more power goes to the faster spining wheel
     static void calcOpenDiff( differential_data_t& diff_data );
+    //! ensures both wheels rotate at the the same speed
     static void calcLockedDiff( differential_data_t& diff_data );
 private:
 
