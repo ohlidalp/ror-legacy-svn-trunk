@@ -4099,8 +4099,23 @@ int Beam::loadTruck(char* fname, SceneManager *manager, SceneNode *parent, Real 
 					}
 					break;
 				case 'd':
-					LogManager::getSingleton().logMessage("AXLE: differential property not yet available");
+				{
+						char diffs[10] = {0};
+						int results = sscanf(cur->c_str(), "d(%9s)", diffs);
+						if(results == 0 ) break;
+						for(int i = 0; i < 10; ++i)
+						{
+							switch(diffs[i])
+							{
+							case 'l': axles[free_axle].addDiffType(LOCKED_DIFF); break; 
+							case 'o': axles[free_axle].addDiffType(OPEN_DIFF); break;
+							//case 'v': axles[free_axle].addDiffType(VISCOUS_DIFF); break;
+							case 's': axles[free_axle].addDiffType(SPLIT_DIFF); break;
+							//case 'm': axles[free_axle].addDiffType(LIMITED_SLIP_DIFF); break;
+							}
+						}
 					break;
+				}
 				case 's':
 					LogManager::getSingleton().logMessage("AXLE: selection property not yet available");
 					break;
@@ -4147,9 +4162,14 @@ int Beam::loadTruck(char* fname, SceneManager *manager, SceneNode *parent, Real 
 				}
 				continue;
 			}
-			// manually setup the available differentials
-			axles[free_axle].addDiffType(OPEN_DIFF);
-			axles[free_axle].addDiffType(LOCKED_DIFF);
+			
+			// test if any differentials have been defined
+			if( axles[free_axle].availableDiffs().empty() )
+			{
+				LogManager::getSingleton().logMessage("AXLE: nodiffs defined, defaulting to Open and Locked");
+				axles[free_axle].addDiffType(OPEN_DIFF);
+				axles[free_axle].addDiffType(LOCKED_DIFF);
+			}
 
 			LogManager::getSingleton().logMessage("AXLE: Created: w1(" + StringConverter::toString(wheel_node[0][0]) + ") " +
 				StringConverter::toString(wheel_node[0][1]) + ", w2(" + StringConverter::toString(wheel_node[1][0]) + " " +

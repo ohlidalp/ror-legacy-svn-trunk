@@ -41,6 +41,11 @@ void Axle::addDiffType(DiffType diff)
 	if(!current_callback) current_callback = getDiffEquation(diff);
 }
 
+const std::vector<DiffType>& Axle::availableDiffs()
+{
+	return available_diff_method;
+}
+
 void Axle::toggleDiff()
 {
 	which_diff++;
@@ -60,7 +65,7 @@ Ogre::String Axle::getDiffTypeName()
 	switch(available_diff_method[which_diff])
 	{
 		case SPLIT_DIFF: return "Split"; break;
-		case FLUID_DIFF: return "Fluid"; break;
+		case VISCOUS_DIFF: return "Fluid"; break;
 		case TC_DIFF: return "Traction Control"; break;
 		case OPEN_DIFF: return "Open"; break;
 		case LOCKED_DIFF: return "Locked"; break;
@@ -73,8 +78,8 @@ diff_callback Axle::getDiffEquation(DiffType type)
 	switch (type)
 	{
 		case SPLIT_DIFF: return calcSeperatedDiff;
-		case FLUID_DIFF: return calcFluidDiff;
-		case TC_DIFF: return calcFluidDiff;
+		case VISCOUS_DIFF: return calcViscousDiff;
+		case TC_DIFF: return calcViscousDiff;
 		case OPEN_DIFF: return calcOpenDiff;
 		case LOCKED_DIFF: return calcLockedDiff;
 	}
@@ -86,7 +91,7 @@ void Axle::calcSeperatedDiff( differential_data_t& diff_data)
 	diff_data.out_torque[0] = diff_data.out_torque[1] = diff_data.in_torque;
 }
 
-void Axle::calcFluidDiff( differential_data_t& diff_data )
+void Axle::calcViscousDiff( differential_data_t& diff_data )
 {
 	diff_data.out_torque[0] = diff_data.out_torque[1] = diff_data.in_torque;
 }
