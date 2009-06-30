@@ -26,6 +26,8 @@ freely, subject to the following restrictions:
 #include "language.h"
 #include "Settings.h"
 
+#include "fontTextureHelper.h"
+
 using namespace std;
 using namespace Ogre;
 using namespace moFileLib;
@@ -123,6 +125,7 @@ void LanguageEngine::setupCodeRanges(String codeRangesFilename, String codeRange
 		if(font->getType() == Ogre::FT_TRUETYPE && font->isLoaded())
 			font->reload();
 	}
-	LogManager::getSingleton().logMessage("code range changes applied!");
 
+	//fontCacheInit("Cyberbit");
+	//generateAllFontTextures();
 }
