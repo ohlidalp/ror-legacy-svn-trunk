@@ -1652,6 +1652,7 @@ int Beam::loadTruck(char* fname, SceneManager *manager, SceneNode *parent, Real 
 			}
 
 			float beam_length = nodes[id1].AbsPosition.distance(nodes[id2].AbsPosition);
+			/*
 			if(beam_length < 0.01f)
 			{
 				LogManager::getSingleton().logMessage("Error: beam "+StringConverter::toString(free_beam)+" is too short ("+StringConverter::toString(beam_length)+"m)");
@@ -1659,6 +1660,7 @@ int Beam::loadTruck(char* fname, SceneManager *manager, SceneNode *parent, Real 
 				//LogManager::getSingleton().logMessage("will ignore this beam.");
 				exit(8);
 			}
+			*/
 
 			int pos=add_beam(&nodes[id1], &nodes[id2], manager, \
 					  parent, type, default_break, default_spring, \
@@ -5087,6 +5089,7 @@ int Beam::add_beam(node_t *p1, node_t *p2, SceneManager *manager, SceneNode *par
 
 	} else beams[pos].bounded=0;
 
+	/*
 	if (beams[pos].L<0.01)
 	{
 		LogManager::getSingleton().logMessage("Error: beam "+StringConverter::toString(pos)+" is too short ("+StringConverter::toString(beams[pos].L)+"m)");
@@ -5094,6 +5097,7 @@ int Beam::add_beam(node_t *p1, node_t *p2, SceneManager *manager, SceneNode *par
 		// this causes crash to desktop in MP!
 		//exit(8);
 	};
+	*/
 
 	//        if (type!=BEAM_VIRTUAL && type!=BEAM_INVISIBLE)
 	if (type!=BEAM_VIRTUAL)
