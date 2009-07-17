@@ -2070,7 +2070,6 @@ void ExampleFrameListener::loadObject(char* name, float px, float py, float pz, 
 	tenode->pitch(Degree(-90));
 
 	String meshGroup = ResourceGroupManager::getSingleton().findGroupContainingResource(mesh);
-
 	MeshPtr mainMesh = MeshManager::getSingleton().load(String(mesh), meshGroup);
 	
 	//collision box(es)
@@ -2127,7 +2126,8 @@ void ExampleFrameListener::loadObject(char* name, float px, float py, float pz, 
 			if(res < 2) continue;
 			// manual lod now
 			String meshname = String(tmp);
-			MeshPtr lmesh = MeshManager::getSingleton().load(meshname, Ogre::ResourceGroupManager::DEFAULT_RESOURCE_GROUP_NAME);
+			String meshGroup = ResourceGroupManager::getSingleton().findGroupContainingResource(meshname);
+			MeshPtr lmesh = MeshManager::getSingleton().load(meshname, meshGroup);
 			mainMesh->createManualLodLevel(distance, lmesh->getName());
 		}
 
@@ -2293,6 +2293,9 @@ void ExampleFrameListener::loadObject(char* name, float px, float py, float pz, 
 		if (!strcmp("autogeneratelod", ptline) && !lodmode)
 		{
 			mainMesh->generateLodLevels(default_dists, ProgressiveMesh::VRQ_PROPORTIONAL, Ogre::Real(0.5));
+			Entity *teL = mSceneMgr->createEntity(String(oname)+"LOD", mainMesh->getName());
+			tenode->detachAllObjects();
+			tenode->attachObject(teL);
 			continue;
 		}
 		if (!strncmp("setMeshMaterial", ptline, 15))
