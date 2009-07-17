@@ -2027,8 +2027,16 @@ void ExampleFrameListener::loadObject(char* name, float px, float py, float pz, 
 	}
 
 	DataStreamPtr ds=ResourceGroupManager::getSingleton().openResource(odefname, odefgroup);
-	//mesh
+
+	bool usingLOD=false;
+
 	ds->readLine(mesh, 1023);
+	if(String(mesh) == "LOD")
+	{
+		//mesh
+		ds->readLine(mesh, 1023);
+		usingLOD=true;
+	}
 
 	//scale
 	ds->readLine(line, 1023);
@@ -2036,9 +2044,16 @@ void ExampleFrameListener::loadObject(char* name, float px, float py, float pz, 
 	sprintf(oname,"object%i(%s)", objcounter,name);
 	objcounter++;
 	Entity *te = mSceneMgr->createEntity(oname, mesh);
+	if(!te)
+	{
+		LogManager::getSingleton().logMessage("Error while loading Object: " + String(mesh));
+		return;
+	}
+	te->setQueryFlags(OBJECTS_MASK);
+
 	//		if (!strncmp(name, "road", 4)&&mSceneMgr->getShadowTechnique()==SHADOWTYPE_TEXTURE_MODULATIVE) te->setCastShadows(false);
 	SceneNode *tenode;
-	if (bakeNode && !ismovable) //FIXME
+	if (bakeNode && !ismovable &&!usingLOD) //FIXME
 	{
 		//add to a special node that will be baked
 		tenode=bakeNode->createChildSceneNode();
@@ -2048,20 +2063,31 @@ void ExampleFrameListener::loadObject(char* name, float px, float py, float pz, 
 		te->setNormaliseNormals(true);
 		tenode=mSceneMgr->getRootSceneNode()->createChildSceneNode();
 	}
-	te->setQueryFlags(OBJECTS_MASK);
 	tenode->attachObject(te);
 	tenode->setScale(scx,scy,scz);
 	tenode->setPosition(px,py,pz);
 	tenode->rotate(rotation);
 	tenode->pitch(Degree(-90));
+
+	String meshGroup = ResourceGroupManager::getSingleton().findGroupContainingResource(mesh);
+
+	MeshPtr mainMesh = MeshManager::getSingleton().load(String(mesh), meshGroup);
+	
 	//collision box(es)
 	bool virt=false;
 	bool rotating=false;
 	bool classic_ref=true;
 	ground_model_t *gm=&GROUND_CONCRETE;
 	ground_model_t gmi;
+	Ogre::Mesh::LodDistanceList dists;
+	Ogre::Mesh::LodDistanceList default_dists;
+	default_dists.push_back(50);
+	default_dists.push_back(300);
+	default_dists.push_back(900);
+	bool generateLod=false;
 	char eventname[256];
 	eventname[0]=0;
+	bool lodmode=false;
 	while (!ds->eof())
 	{
 		size_t ll=ds->readLine(line, 1023);
@@ -2069,6 +2095,42 @@ void ExampleFrameListener::loadObject(char* name, float px, float py, float pz, 
 		if (ll==0 || line[0]=='/' || line[0]==';') continue;
 		//trim line
 		while (*ptline==' ' || *ptline=='\t') ptline++;
+
+		if (!strcmp("endlodmesh", ptline) && lodmode)
+		{
+			if(generateLod)
+			{
+				mainMesh->generateLodLevels(dists, ProgressiveMesh::VRQ_PROPORTIONAL, Ogre::Real(0.5));
+			}
+			Entity *teL = mSceneMgr->createEntity(String(oname)+"LOD", mainMesh->getName());
+			tenode->detachAllObjects();
+			tenode->attachObject(teL);
+
+
+			lodmode=false;
+			continue;
+		}
+
+		if(lodmode)
+		{
+			// we parse a LOD line
+			float distance=0;
+			char tmp[255]="";
+			int res = sscanf(ptline, "%f, %s",&distance, tmp);
+			if(!strcmp("generate", tmp))
+			{
+				dists.push_back(distance);			
+				generateLod=true;
+				continue;
+			}
+
+			if(res < 2) continue;
+			// manual lod now
+			String meshname = String(tmp);
+			MeshPtr lmesh = MeshManager::getSingleton().load(meshname, Ogre::ResourceGroupManager::DEFAULT_RESOURCE_GROUP_NAME);
+			mainMesh->createManualLodLevel(distance, lmesh->getName());
+		}
+
 		if (!strcmp("end",ptline)) break;
 		if (!strcmp("movable", ptline)) {ismovable=true;continue;};
 		if (!strcmp("localizer-h", ptline))
@@ -2116,6 +2178,11 @@ void ExampleFrameListener::loadObject(char* name, float px, float py, float pz, 
 			gm=&GROUND_CONCRETE;
 			continue;
 		};
+		if (!strcmp("beginlodmesh", ptline))
+		{
+			lodmode=true;
+			continue;
+		}
 		if (!strncmp("boxcoords", ptline, 9))
 		{
 			sscanf(ptline, "boxcoords %f, %f, %f, %f, %f, %f",&lx,&hx,&ly, &hy,&lz, &hz);
@@ -2221,6 +2288,11 @@ void ExampleFrameListener::loadObject(char* name, float px, float py, float pz, 
 				colbakenode->setOrientation(tenode->getOrientation());
 			}
 
+			continue;
+		}
+		if (!strcmp("autogeneratelod", ptline) && !lodmode)
+		{
+			mainMesh->generateLodLevels(default_dists, ProgressiveMesh::VRQ_PROPORTIONAL, Ogre::Real(0.5));
 			continue;
 		}
 		if (!strncmp("setMeshMaterial", ptline, 15))
