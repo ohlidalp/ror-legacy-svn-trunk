@@ -442,9 +442,45 @@ FlexBody::FlexBody(SceneManager *manager, node_t *nds, int numnds, char* meshnam
 	LogManager::getSingleton().logMessage("FLEXBODY show mesh");
 	//okay, show the mesh now
 	snode=manager->getRootSceneNode()->createChildSceneNode();
-	snode->attachObject(ent);
+
+	LogManager::getSingleton().logMessage("FLEXBODY uses " + StringConverter::toString(msh->getNumLodLevels()) + " LOD levels.");
+	// enforce LOD
+	if(msh->getNumLodLevels() < 2 && vertex_count > 10000)
+	{
+		LogManager::getSingleton().logMessage("FLEXBODY uses > 10k (" + StringConverter::toString(vertex_count) + ") vertices but does not provide its own LODs, will generate some now. This can take a while. Please add LODs when exporting the mesh, this prevents the automatic generation (and the waiting time).");
+		
+		Ogre::Mesh::LodDistanceList default_dists;
+		default_dists.push_back(50);
+		default_dists.push_back(100);
+		default_dists.push_back(300);
+		msh->generateLodLevels(default_dists, ProgressiveMesh::VRQ_PROPORTIONAL, Ogre::Real(0.8));
+		
+		// custom entities for custom LODs
+		Entity *ent_lod = manager->createEntity(String(uname)+"LOD", msh->getName());
+
+		snode->attachObject(ent_lod);
+
+	} else
+		// no custom LOD's here
+		snode->attachObject(ent);
 	snode->setPosition(position);
 
+	String lodstr = "FLEXBODY LODs: ";
+	for(int i=0;i<msh->getNumLodLevels();i++)
+	{
+		if(i) lodstr += ", ";
+		lodstr += StringConverter::toString(sqrt(msh->getLodLevel(i).fromDepthSquared)) + "m";
+
+		if(msh->getLodLevel(i).edgeData)
+		{
+			lodstr += "(" + StringConverter::toString(msh->getLodLevel(i).edgeData->triangles.size()) + " triangles)";
+		} else
+		{
+			if(msh->getEdgeList(i))
+				lodstr += "(" + StringConverter::toString(msh->getEdgeList(i)->triangles.size()) +" triangles)";
+		}
+	}
+	LogManager::getSingleton().logMessage(lodstr);
 
 
 	for (int i=0; i<(int)vertex_count; i++)
