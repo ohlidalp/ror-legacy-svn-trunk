@@ -469,7 +469,7 @@ FlexBody::FlexBody(SceneManager *manager, node_t *nds, int numnds, char* meshnam
 	for(int i=0;i<msh->getNumLodLevels();i++)
 	{
 		if(i) lodstr += ", ";
-		lodstr += StringConverter::toString(sqrt(msh->getLodLevel(i).fromDepthSquared)) + "m";
+		lodstr += StringConverter::toString(Real(sqrt(msh->getLodLevel(i).fromDepthSquared))) + "m";
 
 		if(msh->getLodLevel(i).edgeData)
 		{
