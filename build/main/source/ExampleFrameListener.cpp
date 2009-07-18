@@ -25,6 +25,7 @@ along with Rigs of Rods.  If not, see <http://www.gnu.org/licenses/>.
 #include "softshadowlistener.h"
 #include "ssaolistener.h"
 #include "main.h"
+#include "ScopeLog.h"
 
 #ifdef MPLATFORM
 #include "mplatform_fd.h"
@@ -1967,6 +1968,8 @@ void ExampleFrameListener::getMeshInformation(Mesh* mesh,size_t &vertex_count,Ve
 }
 void ExampleFrameListener::loadObject(char* name, float px, float py, float pz, float rx, float ry, float rz, SceneNode * bakeNode, char* instancename, bool enable_collisions, int luahandler, char *type)
 {
+	ScopeLog log("object_"+String(name));
+
 	if(strnlen(name, 250)==0)
 		return;
 
@@ -2049,6 +2052,8 @@ void ExampleFrameListener::loadObject(char* name, float px, float py, float pz, 
 		LogManager::getSingleton().logMessage("Error while loading Object: " + String(mesh));
 		return;
 	}
+	if(te->getNumManualLodLevels()>0)
+		usingLOD=true;
 	te->setQueryFlags(OBJECTS_MASK);
 
 	//		if (!strncmp(name, "road", 4)&&mSceneMgr->getShadowTechnique()==SHADOWTYPE_TEXTURE_MODULATIVE) te->setCastShadows(false);
@@ -2129,6 +2134,7 @@ void ExampleFrameListener::loadObject(char* name, float px, float py, float pz, 
 			String meshGroup = ResourceGroupManager::getSingleton().findGroupContainingResource(meshname);
 			MeshPtr lmesh = MeshManager::getSingleton().load(meshname, meshGroup);
 			mainMesh->createManualLodLevel(distance, lmesh->getName());
+			continue;
 		}
 
 		if (!strcmp("end",ptline)) break;
@@ -4502,6 +4508,8 @@ void ExampleFrameListener::processConsoleInput()
 
 void ExampleFrameListener::loadTerrain(String terrainfile)
 {
+	ScopeLog log("terrain_"+terrainfile);
+
 	loadedTerrain = terrainfile;
 #ifdef XFIRE
 	updateXFire();

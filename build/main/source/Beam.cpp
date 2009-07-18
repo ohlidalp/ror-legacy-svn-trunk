@@ -30,6 +30,7 @@ along with Rigs of Rods.  If not, see <http://www.gnu.org/licenses/>.
 #include "Replay.h"
 #include "mirrors.h"
 #include "autopilot.h"
+#include "ScopeLog.h"
 
 #include "skinmanager.h"
 #include "FlexMesh.h"
@@ -1141,6 +1142,7 @@ int Beam::getWheelNodeCount()
 //to load a truck file
 int Beam::loadTruck(char* fname, SceneManager *manager, SceneNode *parent, Real px, Real py, Real pz, Quaternion rot, bool postload, collision_box_t *spawnbox)
 {
+	ScopeLog log("beam_"+String(fname));
 	//FILE *fd;
 	char line[1024];
 	int linecounter = 0;

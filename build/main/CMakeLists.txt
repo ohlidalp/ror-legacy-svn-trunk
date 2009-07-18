@@ -158,6 +158,9 @@ set(ror_src
 
 	source/ssaolistener.h
 	source/ssaolistener.cpp
+	
+	source/ScopeLog.cpp
+	source/ScopeLog.h
 )
 
 include_directories (OgreMain/include Dependencies/include)
