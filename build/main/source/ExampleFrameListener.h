@@ -362,6 +362,7 @@ protected:
 	bool dirvisible;
 	SceneNode *dirArrowNode;
 	Vector3 dirArrowPointed;
+	int objectCounter;
 
 	SceneNode *pointerDestination;
 
