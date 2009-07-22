@@ -2055,7 +2055,6 @@ void ExampleFrameListener::loadObject(char* name, float px, float py, float pz, 
 		ds->readLine(mesh, 1023);
 		usingLOD=true;
 	}
-	if(!enable_object_lod) usingLOD=false;
 
 	//scale
 	ds->readLine(line, 1023);
@@ -2071,6 +2070,8 @@ void ExampleFrameListener::loadObject(char* name, float px, float py, float pz, 
 	if(te->getNumManualLodLevels()>0)
 		usingLOD=true;
 	te->setQueryFlags(OBJECTS_MASK);
+
+	if(!enable_object_lod) usingLOD=false;
 
 	//		if (!strncmp(name, "road", 4)&&mSceneMgr->getShadowTechnique()==SHADOWTYPE_TEXTURE_MODULATIVE) te->setCastShadows(false);
 	SceneNode *tenode;
