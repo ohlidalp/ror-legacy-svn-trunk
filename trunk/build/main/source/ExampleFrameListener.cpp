@@ -935,6 +935,7 @@ ExampleFrameListener::ExampleFrameListener(RenderWindow* win, Camera* cam, Scene
 {
 	fpsLineStream = netLineStream = netlagLineStream = 0;
 	loaded_terrain=0;
+	objectCounter=0;
 	hdrListener=0;
 	eflsingleton=this;
 	
@@ -1969,6 +1970,18 @@ void ExampleFrameListener::getMeshInformation(Mesh* mesh,size_t &vertex_count,Ve
 void ExampleFrameListener::loadObject(char* name, float px, float py, float pz, float rx, float ry, float rz, SceneNode * bakeNode, char* instancename, bool enable_collisions, int luahandler, char *type)
 {
 	ScopeLog log("object_"+String(name));
+	if(type && !strcmp(type, "grid"))
+	{
+		// some fast grid object hacks :)
+		for(int x=0;x<500;x+=50)
+			for(int z=0;z<500;z+=50)
+				loadObject(name, px+x, py, pz+z, rx, ry, rz, bakeNode, 0, enable_collisions, luahandler, 0);
+		return;
+	}
+
+	if(abs(rx+1) < 0.001) rx = Math::RangeRandom(0, 360);
+	if(abs(ry+1) < 0.001) ry = Math::RangeRandom(0, 360);
+	if(abs(rz+1) < 0.001) rz = Math::RangeRandom(0, 360);
 
 	if(strnlen(name, 250)==0)
 		return;
@@ -1987,6 +2000,8 @@ void ExampleFrameListener::loadObject(char* name, float px, float py, float pz, 
 	char collmesh[1024];
 	Quaternion rotation;
 	bool ismovable=false;
+
+	bool enable_object_lod = (SETTINGS.getSetting("Object LOD") == "Yes");
 	int event_filter = EVENT_ALL;
 	rotation=Quaternion(Degree(rx), Vector3::UNIT_X)*Quaternion(Degree(ry), Vector3::UNIT_Y)*Quaternion(Degree(rz), Vector3::UNIT_Z);
 
@@ -2040,6 +2055,7 @@ void ExampleFrameListener::loadObject(char* name, float px, float py, float pz, 
 		ds->readLine(mesh, 1023);
 		usingLOD=true;
 	}
+	if(!enable_object_lod) usingLOD=false;
 
 	//scale
 	ds->readLine(line, 1023);
@@ -2106,7 +2122,9 @@ void ExampleFrameListener::loadObject(char* name, float px, float py, float pz, 
 			{
 				mainMesh->generateLodLevels(dists, ProgressiveMesh::VRQ_PROPORTIONAL, Ogre::Real(0.5));
 			}
-			Entity *teL = mSceneMgr->createEntity(String(oname)+"LOD", mainMesh->getName());
+			String lodName = mainMesh->getName()+"_LOD_"+StringConverter::toString(objectCounter++);
+			mainMesh->clone(lodName);
+			Entity *teL = mSceneMgr->createEntity(String(oname)+"LOD", lodName);
 			tenode->detachAllObjects();
 			tenode->attachObject(teL);
 
@@ -2118,22 +2136,25 @@ void ExampleFrameListener::loadObject(char* name, float px, float py, float pz, 
 		if(lodmode)
 		{
 			// we parse a LOD line
-			float distance=0;
-			char tmp[255]="";
-			int res = sscanf(ptline, "%f, %s",&distance, tmp);
-			if(!strcmp("generate", tmp))
+			if(enable_object_lod)
 			{
-				dists.push_back(distance);			
-				generateLod=true;
-				continue;
-			}
+				float distance=0;
+				char tmp[255]="";
+				int res = sscanf(ptline, "%f, %s",&distance, tmp);
+				if(!strcmp("generate", tmp))
+				{
+					dists.push_back(distance);			
+					generateLod=true;
+					continue;
+				}
 
-			if(res < 2) continue;
-			// manual lod now
-			String meshname = String(tmp);
-			String meshGroup = ResourceGroupManager::getSingleton().findGroupContainingResource(meshname);
-			MeshPtr lmesh = MeshManager::getSingleton().load(meshname, meshGroup);
-			mainMesh->createManualLodLevel(distance, lmesh->getName());
+				if(res < 2) continue;
+				// manual lod now
+				String meshname = String(tmp);
+				String meshGroup = ResourceGroupManager::getSingleton().findGroupContainingResource(meshname);
+				MeshPtr lmesh = MeshManager::getSingleton().load(meshname, meshGroup);
+				mainMesh->createManualLodLevel(distance, lmesh->getName());
+			}
 			continue;
 		}
 
@@ -2298,10 +2319,13 @@ void ExampleFrameListener::loadObject(char* name, float px, float py, float pz, 
 		}
 		if (!strcmp("autogeneratelod", ptline) && !lodmode)
 		{
-			mainMesh->generateLodLevels(default_dists, ProgressiveMesh::VRQ_PROPORTIONAL, Ogre::Real(0.5));
-			Entity *teL = mSceneMgr->createEntity(String(oname)+"LOD", mainMesh->getName());
-			tenode->detachAllObjects();
-			tenode->attachObject(teL);
+			if(enable_object_lod)
+			{
+				mainMesh->generateLodLevels(default_dists, ProgressiveMesh::VRQ_PROPORTIONAL, Ogre::Real(0.5));
+				Entity *teL = mSceneMgr->createEntity(String(oname)+"LOD", mainMesh->getName());
+				tenode->detachAllObjects();
+				tenode->attachObject(teL);
+			}
 			continue;
 		}
 		if (!strncmp("setMeshMaterial", ptline, 15))

@@ -19,6 +19,8 @@ along with Rigs of Rods.  If not, see <http://www.gnu.org/licenses/>.
 */
 #include "FlexBody.h"
 #include "ResourceBuffer.h"
+#include "Settings.h"
+
 FlexBody::FlexBody(SceneManager *manager, node_t *nds, int numnds, char* meshname, char* uname, int ref, int nx, int ny, Vector3 offset, Quaternion rot, char* setdef, MaterialFunctionMapper *mfm, SkinPtr usedSkin)
 {
 	nodes=nds;
@@ -443,26 +445,34 @@ FlexBody::FlexBody(SceneManager *manager, node_t *nds, int numnds, char* meshnam
 	//okay, show the mesh now
 	snode=manager->getRootSceneNode()->createChildSceneNode();
 
-	LogManager::getSingleton().logMessage("FLEXBODY uses " + StringConverter::toString(msh->getNumLodLevels()) + " LOD levels.");
-	// enforce LOD
-	if(msh->getNumLodLevels() < 2 && vertex_count > 10000)
+	bool enable_truck_lod = (SETTINGS.getSetting("Truck LOD") == "Yes");
+	if(enable_truck_lod)
 	{
-		LogManager::getSingleton().logMessage("FLEXBODY uses > 10k (" + StringConverter::toString(vertex_count) + ") vertices but does not provide its own LODs, will generate some now. This can take a while. Please add LODs when exporting the mesh, this prevents the automatic generation (and the waiting time).");
-		
-		Ogre::Mesh::LodDistanceList default_dists;
-		default_dists.push_back(50);
-		default_dists.push_back(100);
-		default_dists.push_back(300);
-		msh->generateLodLevels(default_dists, ProgressiveMesh::VRQ_PROPORTIONAL, Ogre::Real(0.8));
-		
-		// custom entities for custom LODs
-		Entity *ent_lod = manager->createEntity(String(uname)+"LOD", msh->getName());
+		LogManager::getSingleton().logMessage("FLEXBODY uses " + StringConverter::toString(msh->getNumLodLevels()) + " LOD levels.");
+		// enforce LOD
+		if(msh->getNumLodLevels() < 2 && vertex_count > 10000)
+		{
+			LogManager::getSingleton().logMessage("FLEXBODY uses > 10k (" + StringConverter::toString(vertex_count) + ") vertices but does not provide its own LODs, will generate some now. This can take a while. Please add LODs when exporting the mesh, this prevents the automatic generation (and the waiting time).");
+			
+			Ogre::Mesh::LodDistanceList default_dists;
+			default_dists.push_back(50);
+			default_dists.push_back(100);
+			default_dists.push_back(300);
+			msh->generateLodLevels(default_dists, ProgressiveMesh::VRQ_PROPORTIONAL, Ogre::Real(0.8));
+			
+			// custom entities for custom LODs
+			Entity *ent_lod = manager->createEntity(String(uname)+"LOD", msh->getName());
 
-		snode->attachObject(ent_lod);
+			snode->attachObject(ent_lod);
 
+		} else
+			// no custom LOD's here
+			snode->attachObject(ent);
 	} else
-		// no custom LOD's here
+	{
+		// no LOD's here
 		snode->attachObject(ent);
+	}
 	snode->setPosition(position);
 
 	String lodstr = "FLEXBODY LODs: ";

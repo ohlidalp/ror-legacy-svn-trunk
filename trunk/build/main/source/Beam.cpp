@@ -1153,6 +1153,8 @@ int Beam::loadTruck(char* fname, SceneManager *manager, SceneNode *parent, Real 
 	int rightlight=0;
 	float wingarea=0.0;
 	int currentScriptCommandNumber=-1;
+	bool enable_truck_lod = (SETTINGS.getSetting("Truck LOD") == "Yes");
+
 	//convert ry
 	//ry=ry*3.14159/180.0;
 	LogManager::getSingleton().logMessage("BEAM: Start of truck loading");
@@ -2756,37 +2758,44 @@ int Beam::loadTruck(char* fname, SceneManager *manager, SceneNode *parent, Real 
 			try
 			{
 				// LODs for props
-				String meshGroup = ResourceGroupManager::getSingleton().findGroupContainingResource(meshname);
-				MeshPtr mesh = MeshManager::getSingleton().load(meshname, meshGroup);
-
-				// find vertex count
-				unsigned long vertex_count = 0;
-				if(mesh->getNumLodLevels() < 2)
+				if(enable_truck_lod)
 				{
-					if (mesh->sharedVertexData) 
-						vertex_count += mesh->sharedVertexData->vertexCount;
-					for (int i=0; i<mesh->getNumSubMeshes(); i++) 
-						if (!mesh->getSubMesh(i)->useSharedVertices) 
-							vertex_count += mesh->getSubMesh(i)->vertexData->vertexCount;
-				}
+					String meshGroup = ResourceGroupManager::getSingleton().findGroupContainingResource(meshname);
+					MeshPtr mesh = MeshManager::getSingleton().load(meshname, meshGroup);
 
-				// check against some border
-				if(mesh->getNumLodLevels() < 2 && vertex_count > 10000)
-				{
-					LogManager::getSingleton().logMessage("prop uses > 10k (" + StringConverter::toString(vertex_count) + ") vertices but does not provide its own LODs, will generate some now. This can take a while. Please add LODs when exporting the mesh, this prevents the automatic generation (and the waiting time).");
-					
-					Ogre::Mesh::LodDistanceList default_dists;
-					default_dists.push_back(50);
-					default_dists.push_back(100);
-					default_dists.push_back(300);
-					mesh->generateLodLevels(default_dists, ProgressiveMesh::VRQ_PROPORTIONAL, Ogre::Real(0.8));
-					
-					// custom entities for custom LODs
-					te = manager->createEntity(String(propname)+"LOD", mesh->getName());
+					// find vertex count
+					unsigned long vertex_count = 0;
+					if(mesh->getNumLodLevels() < 2)
+					{
+						if (mesh->sharedVertexData) 
+							vertex_count += mesh->sharedVertexData->vertexCount;
+						for (int i=0; i<mesh->getNumSubMeshes(); i++) 
+							if (!mesh->getSubMesh(i)->useSharedVertices) 
+								vertex_count += mesh->getSubMesh(i)->vertexData->vertexCount;
+					}
+
+					// check against some border
+					if(mesh->getNumLodLevels() < 2 && vertex_count > 10000)
+					{
+						LogManager::getSingleton().logMessage("prop uses > 10k (" + StringConverter::toString(vertex_count) + ") vertices but does not provide its own LODs, will generate some now. This can take a while. Please add LODs when exporting the mesh, this prevents the automatic generation (and the waiting time).");
+						
+						Ogre::Mesh::LodDistanceList default_dists;
+						default_dists.push_back(50);
+						default_dists.push_back(100);
+						default_dists.push_back(300);
+						mesh->generateLodLevels(default_dists, ProgressiveMesh::VRQ_PROPORTIONAL, Ogre::Real(0.8));
+						
+						// custom entities for custom LODs
+						te = manager->createEntity(String(propname)+"LOD", mesh->getName());
+					} else
+					{
+						// no custom LOD's here
+						te = manager->createEntity(propname, meshname);
+					}
 				} else
 				{
-					// no custom LOD's here
-					te = manager->createEntity(propname, meshname);
+						// no LOD's
+						te = manager->createEntity(propname, meshname);
 				}
 			}catch(...)
 			{
