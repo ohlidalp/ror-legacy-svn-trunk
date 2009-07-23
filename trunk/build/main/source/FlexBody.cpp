@@ -468,6 +468,7 @@ FlexBody::FlexBody(SceneManager *manager, node_t *nds, int numnds, char* meshnam
 		} else
 			// no custom LOD's here
 			snode->attachObject(ent);
+		LogManager::getSingleton().logMessage("flexbody is using LODs");
 	} else
 	{
 		// no LOD's here
@@ -475,22 +476,25 @@ FlexBody::FlexBody(SceneManager *manager, node_t *nds, int numnds, char* meshnam
 	}
 	snode->setPosition(position);
 
-	String lodstr = "FLEXBODY LODs: ";
-	for(int i=0;i<msh->getNumLodLevels();i++)
+	if(enable_truck_lod)
 	{
-		if(i) lodstr += ", ";
-		lodstr += StringConverter::toString(Real(sqrt(msh->getLodLevel(i).fromDepthSquared))) + "m";
+		String lodstr = "FLEXBODY LODs: ";
+		for(int i=0;i<msh->getNumLodLevels();i++)
+		{
+			if(i) lodstr += ", ";
+			lodstr += StringConverter::toString(Real(sqrt(msh->getLodLevel(i).fromDepthSquared))) + "m";
 
-		if(msh->getLodLevel(i).edgeData)
-		{
-			lodstr += "(" + StringConverter::toString(msh->getLodLevel(i).edgeData->triangles.size()) + " triangles)";
-		} else
-		{
-			if(msh->getEdgeList(i))
-				lodstr += "(" + StringConverter::toString(msh->getEdgeList(i)->triangles.size()) +" triangles)";
+			if(msh->getLodLevel(i).edgeData)
+			{
+				lodstr += "(" + StringConverter::toString(msh->getLodLevel(i).edgeData->triangles.size()) + " triangles)";
+			} else
+			{
+				if(msh->getEdgeList(i))
+					lodstr += "(" + StringConverter::toString(msh->getEdgeList(i)->triangles.size()) +" triangles)";
+			}
 		}
+		LogManager::getSingleton().logMessage(lodstr);
 	}
-	LogManager::getSingleton().logMessage(lodstr);
 
 
 	for (int i=0; i<(int)vertex_count; i++)
