@@ -2084,6 +2084,7 @@ void ExampleFrameListener::loadObject(char* name, float px, float py, float pz, 
 	{
 		te->setNormaliseNormals(true);
 		tenode=mSceneMgr->getRootSceneNode()->createChildSceneNode();
+		LogManager::getSingleton().logMessage("Object is using LOD");
 	}
 	tenode->attachObject(te);
 	tenode->setScale(scx,scy,scz);
@@ -2123,6 +2124,7 @@ void ExampleFrameListener::loadObject(char* name, float px, float py, float pz, 
 			{
 				mainMesh->generateLodLevels(dists, ProgressiveMesh::VRQ_PROPORTIONAL, Ogre::Real(0.5));
 			}
+			LogManager::getSingleton().logMessage("cloning Object LOD");
 			String lodName = mainMesh->getName()+"_LOD_"+StringConverter::toString(objectCounter++);
 			mainMesh->clone(lodName);
 			Entity *teL = mSceneMgr->createEntity(String(oname)+"LOD", lodName);

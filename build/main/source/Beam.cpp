@@ -2797,6 +2797,7 @@ int Beam::loadTruck(char* fname, SceneManager *manager, SceneNode *parent, Real 
 						// no LOD's
 						te = manager->createEntity(propname, meshname);
 				}
+				LogManager::getSingleton().logMessage("prop is using LODs");
 			}catch(...)
 			{
 				LogManager::getSingleton().logMessage("error loading mesh: "+String(meshname));
