@@ -161,6 +161,10 @@ set(ror_src
 	
 	source/ScopeLog.cpp
 	source/ScopeLog.h
+	
+	source/AITraffic.cpp
+	source/AITraffic_Common.cpp
+	source/AITraffic_Vehicle.cpp
 )
 
 include_directories (OgreMain/include Dependencies/include)
