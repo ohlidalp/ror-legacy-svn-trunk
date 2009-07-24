@@ -191,6 +191,11 @@ if(ROR_BUILD_HYDRAX)
   include_directories (${RoR_Dependencies_SOURCE_DIR}/hydrax/)
 endif(ROR_BUILD_HYDRAX)
 
+if(ROR_BUILD_OPENSTEER)
+  add_definitions("-DPENSTEER")
+  include_directories (${RoR_Dependencies_SOURCE_DIR}/opensteer/include/)
+endif(ROR_BUILD_OPENSTEER)
+
 if(ROR_BUILD_PAGED)
  add_definitions("-DPAGED")
  if(ROR_BUILD_PAGED_SF)
@@ -362,6 +367,11 @@ if(WSYNC_BUILD_WSYNC)
   add_dependencies(RoR libwsync)
   target_link_libraries(RoR libwsync ${Boost_LIBRARIES})
 endif(WSYNC_BUILD_WSYNC)
+
+if(ROR_BUILD_OPENSTEER)
+  add_dependencies(RoR opensteer)
+  target_link_libraries(RoR opensteer)
+endif(ROR_BUILD_OPENSTEER)
 
 IF(ROR_BUILD_ANGELSCRIPT)
  add_dependencies(RoR angelscript)
