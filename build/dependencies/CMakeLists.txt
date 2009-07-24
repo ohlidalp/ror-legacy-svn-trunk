@@ -35,3 +35,7 @@ ENDIF(ROR_BUILD_ANGELSCRIPT)
 add_subdirectory("moFileReader")
 
 add_subdirectory("mygui")
+
+if(ROR_BUILD_OPENSTEER)
+add_subdirectory("opensteer")
+endif(ROR_BUILD_OPENSTEER)
