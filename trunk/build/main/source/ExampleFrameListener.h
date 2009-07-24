@@ -36,6 +36,8 @@ along with Rigs of Rods.  If not, see <http://www.gnu.org/licenses/>.
 #include "mplatform_base.h"
 #endif
 
+#include "AITraffic.h"
+
 #include "OgreStringConverter.h"
 #include "OgreException.h"
 #include "OgreTextAreaOverlayElement.h"
@@ -607,6 +609,8 @@ protected:
 #ifdef MPLATFORM
 	MPlatform_Base *mplatform;
 #endif
+
+	AITraffic *aitraffic;
 
 	void loadTerrain(Ogre::String terrainfile);
 	static bool fileExists(char* filename);

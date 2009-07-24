@@ -322,6 +322,7 @@ Beam::Beam(int tnum, SceneManager *manager, SceneNode *parent, RenderWindow* win
 	//			sleepcount=9;
 	state=SLEEPING;
 	if (networked) state=NETWORKED; //required for proper loading
+	state = TRAFFICED;
 	sleepcount=0;
 	freecinecamera=0;
 	currentcamera=0;
@@ -842,6 +843,19 @@ void Beam::pushNetwork(char* data, int size)
 	pthread_mutex_unlock(&net_mutex);
 }
 
+void Beam::calcTraffic(trafficnode_t node)
+{
+//	nodes[0].AbsPosition.x = node.x1;
+	Vector3 p1(0,0,0);
+	Vector3 p2(1,0,0);
+	for (int i=0;i<free_node;i++)
+		{
+			nodes[i].AbsPosition.x += 0.02f;
+			nodes[i].smoothpos=nodes[i].AbsPosition;
+			nodes[i].RelPosition=nodes[i].AbsPosition-origin;
+		}
+}
+
 void Beam::calcNetwork()
 {
 	Vector3 apos=Vector3::ZERO;
@@ -862,6 +876,7 @@ void Beam::calcNetwork()
 	Vector3 p2ref;
 	short *sp1=(short*)(netb1+4*3);
 	short *sp2=(short*)(netb2+4*3);
+
 	for (i=0; i<first_wheel_node; i++)
 	{
 		Vector3 p1;
@@ -3206,7 +3221,7 @@ int Beam::loadTruck(char* fname, SceneManager *manager, SceneNode *parent, Real 
 			Turboprop *tp=new Turboprop(manager, propname, nodes, ref, back,p1,p2,p3,p4, couplenode, power, propfoil, free_aeroengine, trucknum, disable_smoke, !isturboprops, pitch, heathaze);
 			aeroengines[free_aeroengine]=tp;
 			driveable=AIRPLANE;
-			if (!autopilot && state != NETWORKED)
+			if (!autopilot && state != NETWORKED && state!= TRAFFICED)
 				autopilot=new Autopilot(hfinder, water, trucknum);
 			//if (audio) audio->setupAeroengines(audiotype);
 			//setup visual
@@ -3511,7 +3526,7 @@ int Beam::loadTruck(char* fname, SceneManager *manager, SceneNode *parent, Real 
 			Turbojet *tj=new Turbojet(manager, propname, free_aeroengine, trucknum, nodes, front, back, ref, drthrust, rev!=0, abthrust>0, abthrust, fdiam, bdiam, len, disable_smoke, heathaze, materialFunctionMapper, usedSkin);
 			aeroengines[free_aeroengine]=tj;
 			driveable=AIRPLANE;
-			if (!autopilot && state != NETWORKED)
+			if (!autopilot && state != NETWORKED && state != TRAFFICED)
 				autopilot=new Autopilot(hfinder, water, trucknum);
 			//if (audio) audio->setupAeroengines(TURBOJETS);
 			free_aeroengine++;
@@ -5320,7 +5335,7 @@ void Beam::threadentry(int id)
 				if(!trucks[t]) continue;
 				//engine update
 				//				if (trucks[t]->engine) trucks[t]->engine->update(dt/(Real)steps, i==0);
-				if (trucks[t]->state!=SLEEPING && trucks[t]->state!=NETWORKED && trucks[t]->state!=RECYCLE)
+				if (trucks[t]->state!=SLEEPING && trucks[t]->state!=NETWORKED && trucks[t]->state!=RECYCLE && trucks[t]->state!=TRAFFICED)
 				{
 					trucks[t]->calcForcesEuler(i==0, dt/(Real)steps, i, steps, trucks, numtrucks);
 					//trucks[t]->position=trucks[t]->aposition;
@@ -5346,7 +5361,7 @@ bool Beam::frameStep(Real dt, Beam** trucks, int numtrucks)
 	);
 	*/
 	if (!loading_finished) return true;
-	if (state==SLEEPING || state==NETWORKED || state==RECYCLE) return true;
+	if (state==SLEEPING || state==NETWORKED || state==RECYCLE || state==TRAFFICED) return true;
 	if (dt==0) return true;
 	if(mTimeUntilNextToggle>-1)
 		mTimeUntilNextToggle-= dt;
@@ -5440,7 +5455,7 @@ bool Beam::frameStep(Real dt, Beam** trucks, int numtrucks)
 					if(!trucks[t]) continue;
 					//engine update
 					//							if (trucks[t]->engine) trucks[t]->engine->update(dt/(Real)steps, i==0);
-					if (trucks[t]->state!=SLEEPING && trucks[t]->state!=NETWORKED && trucks[t]->state!=RECYCLE)
+					if (trucks[t]->state!=SLEEPING && trucks[t]->state!=NETWORKED && trucks[t]->state!=RECYCLE && trucks[t]->state!=TRAFFICED)
 					{
 						trucks[t]->calcForcesEuler(i==0, dt/(Real)steps, i, steps, trucks, numtrucks);
 //							trucks[t]->position=trucks[t]->aposition;
@@ -5452,7 +5467,7 @@ bool Beam::frameStep(Real dt, Beam** trucks, int numtrucks)
 			{
 				if(!trucks[t]) continue;
 				if (trucks[t]->reset_requested) trucks[t]->SyncReset();
-				if (trucks[t]->state!=SLEEPING && trucks[t]->state!=NETWORKED && trucks[t]->state!=RECYCLE)
+				if (trucks[t]->state!=SLEEPING && trucks[t]->state!=NETWORKED && trucks[t]->state!=TRAFFICED && trucks[t]->state!=RECYCLE)
 				{
 					// calculate average position
 					Vector3 aposition=Vector3::ZERO;
@@ -5494,7 +5509,7 @@ bool Beam::frameStep(Real dt, Beam** trucks, int numtrucks)
 			{
 				if (!trucks[t]) continue;
 				if (trucks[t]->reset_requested) trucks[t]->SyncReset();
-				if (trucks[t]->state!=SLEEPING && trucks[t]->state!=NETWORKED && trucks[t]->state!=RECYCLE)
+				if (trucks[t]->state!=SLEEPING && trucks[t]->state!=NETWORKED && trucks[t]->state!=TRAFFICED && trucks[t]->state!=RECYCLE)
 				{
 					Vector3 aposition=Vector3::ZERO;
 					for (int n=0; n<trucks[t]->free_node; n++)
@@ -6482,13 +6497,14 @@ void Beam::calcForcesEuler(int doUpdate, Real dt, int step, int maxstep, Beam** 
 				{
 					if(!trucks[t]) continue;
 					if (trucks[t]->state==SLEEPING || trucks[t]->state==RECYCLE) continue;
-					if (trucks[t]->state==NETWORKED)
+					if (trucks[t]->state==NETWORKED )	//?trafficed
 					{
 						// check if still in spawn area
 						if(trucks[t]->nodes[0].AbsPosition.distance(trucks[t]->nodes[0].iPosition) < 20)
 							// first node is in a 20 m radius of its spawn point, ignore collisions for now!
 							continue;
 					}
+
 					for (i=0; i<trucks[t]->free_collcab; i++)
 					{
 						//for each triangle
@@ -6537,7 +6553,7 @@ void Beam::calcForcesEuler(int doUpdate, Real dt, int step, int maxstep, Beam** 
 				{
 					if (!trucks[t]) continue;
 					if (trucks[t]->state==SLEEPING || trucks[t]->state==RECYCLE) continue;
-					if (trucks[t]->state==NETWORKED)
+					if (trucks[t]->state==NETWORKED) //? trafficed
 					{
 						// check if still in spawn area
 						if(trucks[t]->nodes[0].AbsPosition.distance(trucks[t]->nodes[0].iPosition) < 20)
@@ -6608,7 +6624,8 @@ void Beam::calcForcesEuler(int doUpdate, Real dt, int step, int maxstep, Beam** 
 					{
 						// its a networked truck, we need to send the forces over the network
 
-					} else
+					} 
+					else
 					{
 						// is a local truck
 						trucks[mintruck]->nodes[trucks[mintruck]->cabs[mintri*3]].Forces+=(-point.x-point.y+1.0)*force;
