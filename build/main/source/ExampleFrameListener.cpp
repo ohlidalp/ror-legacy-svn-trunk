@@ -947,6 +947,8 @@ ExampleFrameListener::ExampleFrameListener(RenderWindow* win, Camera* cam, Scene
 	if (mplatform) mplatform->connect();
 #endif
 
+	aitraffic = new AITraffic();
+
 #ifdef ANGELSCRIPT
 	new ScriptEngine(this);
 	new OgreConsole;
@@ -1733,6 +1735,8 @@ ExampleFrameListener::~ExampleFrameListener()
 		if (mplatform->disconnect()) delete(mplatform);
 	}
 	#endif
+
+	if (aitraffic) delete(aitraffic);
 }
 
 
@@ -7014,6 +7018,15 @@ bool ExampleFrameListener::frameStarted(const FrameEvent& evt)
 		{
 			if(!trucks[t]) continue;
 			trucks[t]->updateFlares(dt, (t==current_truck) );
+			if (trucks[t]->state!=SLEEPING)	rollmode=rollmode || trucks[t]->wheel_contact_requested;
+			trucks[t]->requires_wheel_contact=rollmode;// && !trucks[t]->wheel_contact_requested;
+		}
+
+/* OLD CODE 
+		for (t=0; t<free_truck; t++)
+		{
+			if(!trucks[t]) continue;
+			trucks[t]->updateFlares(dt, (t==current_truck) );
 		}
 		for (t=0; t<free_truck; t++)
 		{
@@ -7026,6 +7039,11 @@ bool ExampleFrameListener::frameStarted(const FrameEvent& evt)
 			if(!trucks[t]) continue;
 			trucks[t]->requires_wheel_contact=rollmode;// && !trucks[t]->wheel_contact_requested;
 		}
+END OF OLD CODE */
+	
+		// Update traffic movement
+		aitraffic->frameStep(evt.timeSinceLastFrame);
+
 		//we simulate one truck, it will take care of the others (except networked ones)
 		//this is the big "shaker"
 		if (current_truck!=-1) trucks[current_truck]->frameStep(evt.timeSinceLastFrame, trucks, free_truck);
@@ -7034,6 +7052,23 @@ bool ExampleFrameListener::frameStarted(const FrameEvent& evt)
 		{
 			if(!trucks[t]) continue;
 			//networked trucks must be taken care of
+
+			switch(trucks[t]->state)
+				{
+					case TRAFFICED:
+								trucks[t]->calcTraffic(aitraffic->trafficgrid[t]);
+								break;
+					case NETWORKED:
+								trucks[t]->calcNetwork();
+								break;
+					case RECYCLE:
+								break;
+
+					default:
+								if (t!=current_truck && trucks[t]->engine) trucks[t]->engine->update(dt, 1);
+				}
+/* -- OLD CODE --
+
 			if (trucks[t]->state==NETWORKED) trucks[t]->calcNetwork();
 			//the flares are always on
 			//trucks[t]->updateFlares(dt);
@@ -7043,10 +7078,9 @@ bool ExampleFrameListener::frameStarted(const FrameEvent& evt)
 			{
 				if (trucks[t]->engine) trucks[t]->engine->update(dt, 1);
 			}
+-- END OF OLD CODE */
 		}
-
 	}
-
 
 	if (loading_state==ALL_LOADED)
 	{

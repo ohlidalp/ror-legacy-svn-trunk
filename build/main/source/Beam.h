@@ -55,6 +55,7 @@ using namespace Ogre;
 #include "skin.h"
 #include "Differentials.h"
 #include "approxmath.h"
+#include "AITraffic_Common.h"
 
 //#include "scriptCommands.h"
 #include <vector>
@@ -165,6 +166,7 @@ extern int truckSteps;
 #define NETWORKED 5
 #define RECYCLE 6
 #define DELETED 7 // special used when truck pointer is 0
+#define TRAFFICED 8
 
 #define MAX_WINGS 40
 
@@ -616,6 +618,7 @@ public:
 	void pushNetwork(char* data, int size);
 	void pushNetForce(int node_id, Vector3 force);
 	void expireNetForce();
+	void calcTraffic(trafficnode_t node);
 	void calcNetwork();
 	void addPressure(float v);
 	float getPressure();
