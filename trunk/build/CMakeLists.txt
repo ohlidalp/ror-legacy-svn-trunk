@@ -66,6 +66,8 @@ option(ROR_BUILD_PAGED_SF "use latest Paged Geometry support from SF" TRUE)
 
 option(ROR_BUILD_CONFIGURATOR "builds the RoRConfig" TRUE)
 
+option(ROR_BUILD_OPENSTEER "builds with the OpenSteer Extension (traffic)" TRUE)
+
 # optimization things
 option(ROR_BUILD_BEAMSTATS "build RoR extensive Beam engine debugging/profiling support (do not enable in release build)" FALSE)
 option(ROR_USE_OPTIMIZATIONS_WINDOWS "optimize build, gives more FPS, but needs longer to compile" TRUE)
