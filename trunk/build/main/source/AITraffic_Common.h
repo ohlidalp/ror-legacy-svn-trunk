@@ -1,3 +1,4 @@
+#ifdef OPENSTEER
 #pragma once
 #ifndef AITraffic_Common_H
 #define AITraffic_Common_H
@@ -24,3 +25,4 @@ typedef struct _trafficnode
 typedef trafficnode_t trafficgrid_t[NUM_OF_TRAFFICED_CARS];
 
 #endif
+#endif //OPENSTEER

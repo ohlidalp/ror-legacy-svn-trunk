@@ -428,6 +428,7 @@ public:
 #ifdef HAS_EDITOR
 	void showTruckEditorOverlay(bool show);
 #endif
+	Ogre::String saveTerrainMesh();
 	//void showBigMap(bool show);
 	void showPressureOverlay(bool show);
 	void showEditorOverlay(bool show);
@@ -609,8 +610,9 @@ protected:
 #ifdef MPLATFORM
 	MPlatform_Base *mplatform;
 #endif
-
+#ifdef OPENSTEER
 	AITraffic *aitraffic;
+#endif //OPENSTEER
 
 	void loadTerrain(Ogre::String terrainfile);
 	static bool fileExists(char* filename);

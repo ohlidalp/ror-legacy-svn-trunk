@@ -1,4 +1,4 @@
-#include "AITraffic_Vehicle.h"
+#ifdef OPENSTEER
 
 #include "AITraffic_Vehicle.h"
 
@@ -227,3 +227,5 @@ void AITraffic_Vehicle::update(const float currentTime, const float elapsedTime)
 		mEntityAnimState->addTime(elapsedTime * 1.0);
 */
 }
+
+#endif //OPENSTEER

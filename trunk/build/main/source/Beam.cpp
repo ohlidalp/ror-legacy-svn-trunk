@@ -843,6 +843,7 @@ void Beam::pushNetwork(char* data, int size)
 	pthread_mutex_unlock(&net_mutex);
 }
 
+#ifdef OPENSTEER
 void Beam::calcTraffic(trafficnode_t node)
 {
 //	nodes[0].AbsPosition.x = node.x1;
@@ -855,6 +856,7 @@ void Beam::calcTraffic(trafficnode_t node)
 			nodes[i].RelPosition=nodes[i].AbsPosition-origin;
 		}
 }
+#endif //OPENSTEER
 
 void Beam::calcNetwork()
 {

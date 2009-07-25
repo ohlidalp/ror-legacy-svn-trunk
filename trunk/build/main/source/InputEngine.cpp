@@ -428,385 +428,391 @@ eventInfo_t eventInfo[] = {
 	{
 		"COMMANDS_13",
 		EV_COMMANDS_13,
-		"",
+		"Keyboard EXPL+CTRL+F1",
 		_L("Command 13")
 	},
 	{
 		"COMMANDS_14",
 		EV_COMMANDS_14,
-		"",
+		"Keyboard EXPL+CTRL+F2",
 		_L("Command 14")
 	},
 	{
 		"COMMANDS_15",
 		EV_COMMANDS_15,
-		"",
+		"Keyboard EXPL+CTRL+F3",
 		_L("Command 15")
 	},
 	{
 		"COMMANDS_16",
 		EV_COMMANDS_16,
-		"",
+		"Keyboard EXPL+CTRL+F4",
 		_L("Command 16")
 	},
 	{
 		"COMMANDS_17",
 		EV_COMMANDS_17,
-		"",
+		"Keyboard EXPL+CTRL+F5",
 		_L("Command 17")
 	},
 	{
 		"COMMANDS_18",
 		EV_COMMANDS_18,
-		"",
+		"Keyboard EXPL+CTRL+F6",
 		_L("Command 18")
 	},
 	{
 		"COMMANDS_19",
 		EV_COMMANDS_19,
-		"",
+		"Keyboard EXPL+CTRL+F7",
 		_L("Command 19")
 	},
 	{
 		"COMMANDS_20",
 		EV_COMMANDS_20,
-		"",
+		"Keyboard EXPL+CTRL+F8",
 		_L("Command 20")
 	},
 	{
 		"COMMANDS_21",
 		EV_COMMANDS_21,
-		"",
+		"Keyboard EXPL+CTRL+F9",
 		_L("Command 21")
 	},
 	{
 		"COMMANDS_22",
 		EV_COMMANDS_22,
-		"",
+		"Keyboard EXPL+CTRL+F10",
 		_L("Command 22")
 	},
 	{
 		"COMMANDS_23",
 		EV_COMMANDS_23,
-		"",
+		"Keyboard EXPL+CTRL+F11",
 		_L("Command 23")
 	},
 	{
 		"COMMANDS_24",
 		EV_COMMANDS_24,
-		"",
+		"Keyboard EXPL+CTRL+F12",
 		_L("Command 24")
 	},
 	{
 		"COMMANDS_25",
 		EV_COMMANDS_25,
-		"",
+		"Keyboard EXPL+ALT+F1",
 		_L("Command 25")
 	},
 	{
 		"COMMANDS_26",
 		EV_COMMANDS_26,
-		"",
+		"Keyboard EXPL+ALT+F2",
 		_L("Command 26")
 	},
 	{
 		"COMMANDS_27",
 		EV_COMMANDS_27,
-		"",
+		"Keyboard EXPL+ALT+F3",
 		_L("Command 27")
 	},
 	{
 		"COMMANDS_28",
 		EV_COMMANDS_28,
-		"",
+		"Keyboard EXPL+ALT+F4",
 		_L("Command 28")
 	},
 	{
 		"COMMANDS_29",
 		EV_COMMANDS_29,
-		"",
+		"Keyboard EXPL+ALT+F5",
 		_L("Command 29")
 	},
 	{
 		"COMMANDS_30",
 		EV_COMMANDS_30,
-		"",
+		"Keyboard EXPL+ALT+F6",
 		_L("Command 30")
 	},
 	{
 		"COMMANDS_31",
 		EV_COMMANDS_31,
-		"",
+		"Keyboard EXPL+ALT+F7",
 		_L("Command 31")
 	},
 	{
 		"COMMANDS_32",
 		EV_COMMANDS_32,
-		"",
+		"Keyboard EXPL+ALT+F8",
 		_L("Command 32")
 	},
 	{
 		"COMMANDS_33",
 		EV_COMMANDS_33,
-		"",
+		"Keyboard EXPL+ALT+F9",
 		_L("Command 33")
 	},
 	{
 		"COMMANDS_34",
 		EV_COMMANDS_34,
-		"",
+		"Keyboard EXPL+ALT+F10",
 		_L("Command 34")
 	},
 	{
 		"COMMANDS_35",
 		EV_COMMANDS_35,
-		"",
+		"Keyboard EXPL+ALT+F11",
 		_L("Command 35")
 	},
 	{
 		"COMMANDS_36",
 		EV_COMMANDS_36,
-		"",
+		"Keyboard EXPL+ALT+F12",
 		_L("Command 36")
 	},
 	{
 		"COMMANDS_37",
 		EV_COMMANDS_37,
-		"",
+		"Keyboard EXPL+CTRL+ALT+F1",
 		_L("Command 37")
 	},
 	{
 		"COMMANDS_38",
 		EV_COMMANDS_38,
-		"",
+		"Keyboard EXPL+CTRL+ALT+F2",
 		_L("Command 38")
 	},
 	{
 		"COMMANDS_39",
 		EV_COMMANDS_39,
-		"",
+		"Keyboard EXPL+CTRL+ALT+F3",
 		_L("Command 39")
 	},
 	{
 		"COMMANDS_40",
 		EV_COMMANDS_40,
-		"",
+		"Keyboard EXPL+CTRL+ALT+F4",
 		_L("Command 40")
 	},
 	{
 		"COMMANDS_41",
 		EV_COMMANDS_41,
-		"",
+		"Keyboard EXPL+CTRL+ALT+F5",
 		_L("Command 41")
 	},
 	{
 		"COMMANDS_42",
 		EV_COMMANDS_42,
-		"",
+		"Keyboard EXPL+CTRL+ALT+F6",
 		_L("Command 42")
 	},
 	{
 		"COMMANDS_43",
 		EV_COMMANDS_43,
-		"",
+		"Keyboard EXPL+CTRL+ALT+F7",
 		_L("Command 43")
 	},
 	{
 		"COMMANDS_44",
 		EV_COMMANDS_44,
-		"",
+		"Keyboard EXPL+CTRL+ALT+F8",
 		_L("Command 44")
 	},
 	{
 		"COMMANDS_45",
 		EV_COMMANDS_45,
-		"",
+		"Keyboard EXPL+CTRL+ALT+F9",
 		_L("Command 45")
 	},
 	{
 		"COMMANDS_46",
 		EV_COMMANDS_46,
-		"",
+		"Keyboard EXPL+CTRL+ALT+F10",
 		_L("Command 46")
 	},
 	{
 		"COMMANDS_47",
 		EV_COMMANDS_47,
-		"",
+		"Keyboard EXPL+CTRL+ALT+F11",
 		_L("Command 47")
 	},
 	{
 		"COMMANDS_48",
 		EV_COMMANDS_48,
-		"",
+		"Keyboard EXPL+CTRL+ALT+F12",
 		_L("Command 48")
 	},
 	{
 		"COMMON_CONSOLEDISPLAY",
 		EV_COMMON_CONSOLEDISPLAY,
-		"",
+		"Keyboard EXPL+GRAVE",
 		_L("show / hide the console")
 	},
 	{
 		"COMMON_CONSOLEMODE",
 		EV_COMMON_CONSOLEMODE,
-		"",
+		"Keyboard EXPL+CTRL+GRAVE",
 		_L("toggle appearance of console")
 	},
 	{
 		"COMMON_ENTER_CHAT",
 		EV_COMMON_ENTER_CHAT,
-		"",
+		"Keyboard RETURN",
 		_L("enter the chat")
 	},
 	{
 		"COMMON_ENTER_OR_EXIT_TRUCK",
 		EV_COMMON_ENTER_OR_EXIT_TRUCK,
-		"",
+		"Keyboard RETURN",
 		_L("enter or exit a truck")
 	},
 	{
 		"COMMON_HIDE_GUI",
 		EV_COMMON_HIDE_GUI,
-		"",
+		"Keyboard U",
 		_L("hide all GUI elements")
 	},
 	{
 		"COMMON_LOCK",
 		EV_COMMON_LOCK,
-		"",
+		"Keyboard L",
 		_L("connect hook node to a node in close proximity")
 	},
 	{
 		"COMMON_MAP_ALPHA",
 		EV_COMMON_MAP_ALPHA,
-		"",
+		"Keyboard EXPL+CTRL+TAB",
 		_L("toggle translucency of overview-map")
 	},
 	{
 		"COMMON_OUTPUT_POSITION",
 		EV_COMMON_OUTPUT_POSITION,
-		"",
+		"Keyboard H",
 		_L("write current position to log (you can open the logfile and reuse the position)")
 	},
 	{
 		"COMMON_PRESSURE_LESS",
 		EV_COMMON_PRESSURE_LESS,
-		"",
+		"Keyboard LBRACKET",
 		_L("decrease tire pressure (note: only very few trucks support this)")
 	},
 	{
 		"COMMON_PRESSURE_MORE",
 		EV_COMMON_PRESSURE_MORE,
-		"",
+		"Keyboard RBRACKET",
 		_L("increase tire pressure (note: only very few trucks support this)")
 	},
 	{
 		"COMMON_QUIT_GAME",
 		EV_COMMON_QUIT_GAME,
-		"",
+		"Keyboard ESCAPE",
 		_L("exit the game")
 	},
 	{
 		"COMMON_RESCUE_TRUCK",
 		EV_COMMON_RESCUE_TRUCK,
-		"",
+		"Keyboard R",
 		_L("teleport to rescue truck")
 	},
 	{
 		"COMMON_RESET_TRUCK",
 		EV_COMMON_RESET_TRUCK,
-		"",
+		"Keyboard I",
 		_L("reset truck to original starting position")
 	},
 	{
 		"COMMON_SCREENSHOT",
 		EV_COMMON_SCREENSHOT,
-		"",
+		"Keyboard SYSRQ",
 		_L("take a screenshot")
+	},
+	{
+		"COMMON_SAVE_TERRAIN",
+		EV_COMMON_SAVE_TERRAIN,
+		"Keyboard EXPL+ALT+SHIF+CTRL+M",
+		_L("save the currently loaded terrain to a mesh file")
 	},
 	{
 		"COMMON_SECURE_LOAD",
 		EV_COMMON_SECURE_LOAD,
-		"",
+		"Keyboard O",
 		_L("tie a load to the truck")
 	},
 	{
 		"COMMON_SHOW_SKELETON",
 		EV_COMMON_SHOW_SKELETON,
-		"",
+		"Keyboard K",
 		_L("toggle skeleton display mode")
 	},
 	{
 		"COMMON_START_TRUCK_EDITOR",
 		EV_COMMON_START_TRUCK_EDITOR,
-		"",
+		"Keyboard EXPL+SHIFT+Y",
 		_L("start the old truck editor")
 	},
 	{
 		"COMMON_TOGGLE_CUSTOM_PARTICLES",
 		EV_COMMON_TOGGLE_CUSTOM_PARTICLES,
-		"",
+		"Keyboard G",
 		_L("toggle particle cannon")
 	},
 	{
 		"COMMON_TOGGLE_MAT_DEBUG",
 		EV_COMMON_TOGGLE_MAT_DEBUG,
-		"",
+		"Keyboard EXPL+CTRL+F",
 		_L("debug purpose - dont use")
 	},
 	{
 		"COMMON_TOGGLE_RENDER_MODE",
 		EV_COMMON_TOGGLE_RENDER_MODE,
-		"",
+		"Keyboard E",
 		_L("toggle render mode (solid, wireframe and points)")
 	},
 	{
 		"COMMON_TOGGLE_REPLAY_MODE",
 		EV_COMMON_TOGGLE_REPLAY_MODE,
-		"",
+		"Keyboard J",
 		_L("enable or disable replay mode")
 	},
 	{
 		"COMMON_TOGGLE_STATS",
 		EV_COMMON_TOGGLE_STATS,
-		"",
+		"Keyboard EXPL+F",
 		_L("toggle Ogre statistics (FPS etc.)")
 	},
 	{
 		"COMMON_TOGGLE_TRUCK_BEACONS",
 		EV_COMMON_TOGGLE_TRUCK_BEACONS,
-		"",
+		"Keyboard M",
 		_L("toggle truck beacons")
 	},
 	{
 		"COMMON_TOGGLE_TRUCK_LIGHTS",
 		EV_COMMON_TOGGLE_TRUCK_LIGHTS,
-		"",
+		"Keyboard N",
 		_L("toggle truck front lights")
 	},
 	{
 		"COMMON_TRUCK_INFO",
 		EV_COMMON_TRUCK_INFO,
-		"",
+		"Keyboard EXPL+T",
 		_L("toggle truck HUD")
 	},
 	{
 		"COMMON_VIEW_MAP",
 		EV_COMMON_VIEW_MAP,
-		"",
+		"Keyboard EXPL+TAB",
 		_L("toggle map modes")
 	},
 	{
 		"COMMON_FOV_LESS",
 		EV_COMMON_FOV_LESS,
-		"",
+		"Keyboard EXPL+NUMPAD7",
 		_L("decreases the current FOV value")
 	},
 	{
 		"COMMON_FOV_MORE",
 		EV_COMMON_FOV_MORE,
-		"",
+		"Keyboard EXPL+CTRL+NUMPAD7",
 		_L("increase the current FOV value")
 	},
 	{
@@ -842,235 +848,235 @@ eventInfo_t eventInfo[] = {
 	{
 		"MAP_IN",
 		EV_MAP_IN,
-		"",
+		"Keyboard EXPL+DIVIDE",
 		_L("zoom into the overview map in interactive mode")
 	},
 	{
 		"MAP_INTERACTIVE_TOGGLE",
 		EV_MAP_INTERACTIVE_TOGGLE,
-		"",
+		"Keyboard EXPL+CTRL+DIVIDE",
 		_L("toggle overview map interactive mode")
 	},
 	{
 		"MAP_OUT",
 		EV_MAP_OUT,
-		"",
+		"Keyboard EXPL+MULTIPLY",
 		_L("zoom into the overview map in interactive mode")
 	},
 	{
 		"MENU_DOWN",
 		EV_MENU_DOWN,
-		"",
+		"Keyboard DOWN",
 		_L("select next element in current category")
 	},
 	{
 		"MENU_LEFT",
 		EV_MENU_LEFT,
-		"",
+		"Keyboard LEFT",
 		_L("select previous category")
 	},
 	{
 		"MENU_RIGHT",
 		EV_MENU_RIGHT,
-		"",
+		"Keyboard RIGHT",
 		_L("select next category")
 	},
 	{
 		"MENU_SELECT",
 		EV_MENU_SELECT,
-		"",
+		"Keyboard EXPL+RETURN",
 		_L("select focussed item and close menu")
 	},
 	{
 		"MENU_UP",
 		EV_MENU_UP,
-		"",
+		"Keyboard UP",
 		_L("select previous element in current category")
 	},
 	{
 		"TERRAINEDITOR_BUILT",
 		EV_TERRAINEDITOR_BUILT,
-		"",
+		"Keyboard SPACE",
 		_L("place currently selected object at current position")
 	},
 	{
 		"TERRAINEDITOR_PITCHBACKWARD",
 		EV_TERRAINEDITOR_PITCHBACKWARD,
-		"",
+		"Keyboard DELETE",
 		_L("pitch object backward")
 	},
 	{
 		"TERRAINEDITOR_PITCHFOREWARD",
 		EV_TERRAINEDITOR_PITCHFOREWARD,
-		"",
+		"Keyboard END",
 		_L("pitch object foreward")
 	},
 	{
 		"TERRAINEDITOR_ROTATELEFT",
 		EV_TERRAINEDITOR_ROTATELEFT,
-		"",
+		"Keyboard INSERT",
 		_L("rotate object left")
 	},
 	{
 		"TERRAINEDITOR_ROTATERIGHT",
 		EV_TERRAINEDITOR_ROTATERIGHT,
-		"",
+		"Keyboard HOME",
 		_L("rotate object right")
 	},
 	{
 		"TERRAINEDITOR_SELECTROAD",
 		EV_TERRAINEDITOR_SELECTROAD,
-		"",
+		"Keyboard B",
 		_L("switch to road laying mode")
 	},
 	{
 		"TERRAINEDITOR_TOGGLEOBJECT",
 		EV_TERRAINEDITOR_TOGGLEOBJECT,
-		"",
+		"Keyboard V",
 		_L("toggle between available objects")
 	},
 	{
 		"TERRAINEDITOR_TOGGLEROADTYPE",
 		EV_TERRAINEDITOR_TOGGLEROADTYPE,
-		"",
+		"Keyboard EXPL+CTRL+T",
 		_L("toggle between available road types")
 	},
 	{
 		"TRUCK_ACCELERATE",
 		EV_TRUCK_ACCELERATE,
-		"",
+		"Keyboard UP",
 		_L("accelerate the truck")
 	},
 	{
 		"TRUCK_AUTOSHIFT_DOWN",
 		EV_TRUCK_AUTOSHIFT_DOWN,
-		"",
+		"Keyboard PGDOWN",
 		_L("shift automatic transmission one gear down")
 	},
 	{
 		"TRUCK_AUTOSHIFT_UP",
 		EV_TRUCK_AUTOSHIFT_UP,
-		"",
+		"Keyboard PGUP",
 		_L("shift automatic transmission one gear up")
 	},
 	{
 		"TRUCK_BLINK_LEFT",
 		EV_TRUCK_BLINK_LEFT,
-		"",
+		"Keyboard COMMA",
 		_L("toggle left direction indicator (blinker)")
 	},
 	{
 		"TRUCK_BLINK_RIGHT",
 		EV_TRUCK_BLINK_RIGHT,
-		"",
+		"Keyboard PERIOD",
 		_L("toggle right direction indicator (blinker)")
 	},
 	{
 		"TRUCK_BLINK_WARN",
 		EV_TRUCK_BLINK_WARN,
-		"",
+		"Keyboard MINUS",
 		_L("toggle all direction indicators")
 	},
 	{
 		"TRUCK_BRAKE",
 		EV_TRUCK_BRAKE,
-		"",
+		"Keyboard DOWN",
 		_L("brake")
 	},
 	{
 		"TRUCK_HORN",
 		EV_TRUCK_HORN,
-		"",
+		"Keyboard H",
 		_L("truck horn")
 	},
 	{
 		"TRUCK_LIGHTTOGGLE1",
 		EV_TRUCK_LIGHTTOGGLE1,
-		"",
+		"Keyboard EXPL+CTRL+1",
 		_L("toggle custom light 1")
-	},
-	{
-		"TRUCK_LIGHTTOGGLE10",
-		EV_TRUCK_LIGHTTOGGLE10,
-		"",
-		_L("toggle custom light 10")
 	},
 	{
 		"TRUCK_LIGHTTOGGLE2",
 		EV_TRUCK_LIGHTTOGGLE2,
-		"",
+		"Keyboard EXPL+CTRL+2",
 		_L("toggle custom light 2")
 	},
 	{
 		"TRUCK_LIGHTTOGGLE3",
 		EV_TRUCK_LIGHTTOGGLE3,
-		"",
+		"Keyboard EXPL+CTRL+3",
 		_L("toggle custom light 3")
 	},
 	{
 		"TRUCK_LIGHTTOGGLE4",
 		EV_TRUCK_LIGHTTOGGLE4,
-		"",
+		"Keyboard EXPL+CTRL+4",
 		_L("toggle custom light 4")
 	},
 	{
 		"TRUCK_LIGHTTOGGLE5",
 		EV_TRUCK_LIGHTTOGGLE5,
-		"",
+		"Keyboard EXPL+CTRL+5",
 		_L("toggle custom light 5")
 	},
 	{
 		"TRUCK_LIGHTTOGGLE6",
 		EV_TRUCK_LIGHTTOGGLE6,
-		"",
+		"Keyboard EXPL+CTRL+6",
 		_L("toggle custom light 6")
 	},
 	{
 		"TRUCK_LIGHTTOGGLE7",
 		EV_TRUCK_LIGHTTOGGLE7,
-		"",
+		"Keyboard EXPL+CTRL+7",
 		_L("toggle custom light 7")
 	},
 	{
 		"TRUCK_LIGHTTOGGLE8",
 		EV_TRUCK_LIGHTTOGGLE8,
-		"",
+		"Keyboard EXPL+CTRL+8",
 		_L("toggle custom light 8")
 	},
 	{
 		"TRUCK_LIGHTTOGGLE9",
 		EV_TRUCK_LIGHTTOGGLE9,
-		"",
+		"Keyboard EXPL+CTRL9",
 		_L("toggle custom light 9")
+	},
+	{
+		"TRUCK_LIGHTTOGGLE10",
+		EV_TRUCK_LIGHTTOGGLE10,
+		"Keyboard EXPL+CTRL+0",
+		_L("toggle custom light 10")
 	},
 	{
 		"TRUCK_MANUAL_CLUTCH",
 		EV_TRUCK_MANUAL_CLUTCH,
-		"",
+		"Keyboard LSHIFT",
 		_L("manual clutch (for manual transmission)")
 	},
 	{
 		"TRUCK_PARKING_BRAKE",
 		EV_TRUCK_PARKING_BRAKE,
-		"",
+		"Keyboard P",
 		_L("toggle parking brake")
 	},
 	{
 		"TRUCK_SHIFT_DOWN",
 		EV_TRUCK_SHIFT_DOWN,
-		"",
+		"Keyboard Z",
 		_L("shift one gear down in manual transmission mode")
 	},
 	{
 		"TRUCK_SHIFT_NEUTRAL",
 		EV_TRUCK_SHIFT_NEUTRAL,
-		"",
+		"Keyboard D",
 		_L("shift to neutral gear in manual transmission mode")
 	},
 	{
 		"TRUCK_SHIFT_UP",
 		EV_TRUCK_SHIFT_UP,
-		"",
+		"Keyboard A",
 		_L("shift one gear up in manual transmission mode")
 	},
 	{
@@ -1209,37 +1215,37 @@ eventInfo_t eventInfo[] = {
 	{
 		"TRUCK_STARTER",
 		EV_TRUCK_STARTER,
-		"",
+		"Keyboard S",
 		_L("hold to start the engine")
 	},
 	{
 		"TRUCK_STEER_LEFT",
 		EV_TRUCK_STEER_LEFT,
-		"",
+		"Keyboard LEFT",
 		_L("steer left")
 	},
 	{
 		"TRUCK_STEER_RIGHT",
 		EV_TRUCK_STEER_RIGHT,
-		"",
+		"Keyboard RIGHT",
 		_L("steer right")
 	},
 	{
 		"TRUCK_SWITCH_SHIFT_MODES",
 		EV_TRUCK_SWITCH_SHIFT_MODES,
-		"",
+		"Keyboard Q",
 		_L("toggle between transmission modes")
 	},
 	{
 		"TRUCK_TOGGLE_AXLE_LOCK",
 		EV_TRUCK_TOGGLE_AXLE_LOCK,
-		"",
+		"Keyboard W",
 		_L("Cycle between available differental models")
 	},
 	{
 		"TRUCK_TOGGLE_CONTACT",
 		EV_TRUCK_TOGGLE_CONTACT,
-		"",
+		"Keyboard X",
 		_L("toggle ignition")
 	},
 
@@ -1247,7 +1253,7 @@ eventInfo_t eventInfo[] = {
 	{
 		"COMMON_SHOWTRUCKTOOL",
 		EV_COMMON_SHOWTRUCKTOOL,
-		"",
+		"Keyboard EXPL+SHIFT+T",
 		_L("show truck tool")
 	},
 	{
@@ -1259,91 +1265,91 @@ eventInfo_t eventInfo[] = {
 	{
 		"COMMON_FULLSCREEN_TOGGLE",
 		EV_COMMON_FULLSCREEN_TOGGLE,
-		"",
+		"Keyboard EXPL+ALT+RETURN",
 		_L("toggle between windowed and fullscreen mode")
 	},
 	{
 		"CAMERA_FREE_MODE_FIX",
 		EV_CAMERA_FREE_MODE_FIX,
-		"",
+		"Keyboard EXPL+ALT+C",
 		_L("fix the camera to a position")
 	},
 	{
 		"CAMERA_FREE_MODE",
 		EV_CAMERA_FREE_MODE,
-		"",
+		"Keyboard EXPL+SHIFT+C",
 		_L("enable / disable free camera mode")
 	},
 	{
 		"TRUCK_LEFT_MIRROR_LEFT",
 		EV_TRUCK_LEFT_MIRROR_LEFT,
-		"",
+		"Keyboard EXPL+SEMICOLON",
 		_L("move left mirror to the left")
 	},
 	{
 		"TRUCK_LEFT_MIRROR_RIGHT",
 		EV_TRUCK_LEFT_MIRROR_RIGHT,
-		"",
+		"Keyboard EXPL+CTRL+SEMICOLON",
 		_L("move left mirror to the right")
 	},
 	{
 		"TRUCK_RIGHT_MIRROR_LEFT",
 		EV_TRUCK_RIGHT_MIRROR_LEFT,
-		"",
+		"Keyboard EXPL+COLON",
 		_L("more right mirror to the left")
 	},
 	{
 		"TRUCK_RIGHT_MIRROR_RIGHT",
 		EV_TRUCK_RIGHT_MIRROR_RIGHT,
-		"",
+		"Keyboard EXPL+CTRL+COLON",
 		_L("move right mirror to the right")
 	},
 	{
 		"COMMON_REPLAY_FORWARD",
 		EV_COMMON_REPLAY_FORWARD,
-		"",
+		"Keyboard EXPL+RIGHT",
 		_L("more replay forward")
 	},
 	{
 		"COMMON_REPLAY_BACKWARD",
 		EV_COMMON_REPLAY_BACKWARD,
-		"",
+		"Keyboard EXPL+LEFT",
 		_L("more replay backward")
 	},
 	{
 		"COMMON_REPLAY_FAST_FORWARD",
 		EV_COMMON_REPLAY_FAST_FORWARD,
-		"",
+		"Keyboard EXPL+SHIFT+RIGHT",
 		_L("move replay fast forward")
 	},
 	{
 		"COMMON_REPLAY_FAST_BACKWARD",
 		EV_COMMON_REPLAY_FAST_BACKWARD,
-		"",
+		"Keyboard EXPL+SHIFT+LEFT",
 		_L("move replay fast backward")
 	},
 	{
 		"AIRPLANE_AIRBRAKES_NONE",
 		EV_AIRPLANE_AIRBRAKES_NONE,
-		"",
+		"Keyboard CTRL+3",
 		_L("no airbrakes")
 	},
 	{
 		"AIRPLANE_AIRBRAKES_FULL",
 		EV_AIRPLANE_AIRBRAKES_FULL,
-		"",
+		"Keyboard CTRL+4",
 		_L("full airbrakes")
 	},
 	{
 		"AIRPLANE_AIRBRAKES_LESS",
 		EV_AIRPLANE_AIRBRAKES_LESS,
-		"",
+		"Keyboard EXPL+3",
 		_L("less airbrakes")
 	},
 	{
 		"AIRPLANE_AIRBRAKES_MORE",
 		EV_AIRPLANE_AIRBRAKES_MORE,
-		"",
+		"Keyboard EXPL+4",
 		_L("more airbrakes")
 	},
 	{
@@ -1355,13 +1361,13 @@ eventInfo_t eventInfo[] = {
 	{
 		"COMMON_TRUCK_REMOVE",
 		EV_COMMON_TRUCK_REMOVE,
-		"",
+		"Keyboard CTRL+D",
 		_L("delete current truck")
 	},
 	{
 		"COMMON_NETCHATDISPLAY",
 		EV_COMMON_NETCHATDISPLAY,
-		"",
+		"Keyboard ",
 		_L("display or hide net chat")
 	},
 	{
@@ -1373,25 +1379,25 @@ eventInfo_t eventInfo[] = {
 	{
 		"CHARACTER_ROT_UP",
 		EV_CHARACTER_ROT_UP,
-		"",
+		"Keyboard UP",
 		_L("rotate view up")
 	},
 	{
 		"CHARACTER_ROT_DOWN",
 		EV_CHARACTER_ROT_DOWN,
-		"rotate view down",
+		"Keyboard DOWN",
 		_L("rotate view down")
 	},
 	{
 		"CHARACTER_UP",
 		EV_CHARACTER_UP,
-		"",
+		"Keyboard PGUP",
 		_L("move character up")
 	},
 	{
 		"CHARACTER_DOWN",
 		EV_CHARACTER_DOWN,
-		"",
+		"Keyboard PGDOWN",
 		_L("move character down")
 	},
 
@@ -1601,10 +1607,7 @@ bool InputEngine::setup(size_t hwnd, bool capture, bool capturemouse, int _grabM
 	if(!mappingLoaded)
 	{
 		if (!loadMapping())
-		{
 			return false;
-		} else
-			completeMissingEvents();
 	}
 #endif //NOOGRE
 	return true;
@@ -2907,20 +2910,26 @@ bool InputEngine::saveMapping(Ogre::String outfile, size_t hwnd, int joyNum)
 
 void InputEngine::completeMissingEvents()
 {
-	int i=0;
+	if(!mappingLoaded) return;
+	int i=-1;
 	while(i!=EV_MODE_LAST)
 	{
+		i++;
 		if(events.find(eventInfo[i].eventID) == events.end())
 		{
+			if(eventInfo[i].defaultKey.empty()) continue;
+			if(eventInfo[i].defaultKey == "None") continue;
 #ifndef NOOGRE
 			LogManager::getSingleton().logMessage("event mapping not existing, using default: " + eventInfo[i].name);
 #endif
 			// not existing, insert default
-			processLine(const_cast<char*>(eventInfo[i].defaultKey.c_str()));
+			char tmp[255] = "";
+			sprintf(tmp, "%s %s", eventInfo[i].name.c_str(), eventInfo[i].defaultKey.c_str());
+			processLine(tmp);
 		}
-		i++;
 	}
 }
+
 
 bool InputEngine::loadMapping(Ogre::String outfile, bool append)
 {
@@ -2967,6 +2976,7 @@ bool InputEngine::loadMapping(Ogre::String outfile, bool append)
 #ifndef NOOGRE
 	LogManager::getSingleton().logMessage("key map successfully loaded!");
 #endif
+	completeMissingEvents();
 	return true;
 }
 

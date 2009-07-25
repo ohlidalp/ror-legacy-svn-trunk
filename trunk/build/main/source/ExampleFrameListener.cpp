@@ -947,7 +947,9 @@ ExampleFrameListener::ExampleFrameListener(RenderWindow* win, Camera* cam, Scene
 	if (mplatform) mplatform->connect();
 #endif
 
+#ifdef OPENSTEER
 	aitraffic = new AITraffic();
+#endif //OPENSTEER
 
 #ifdef ANGELSCRIPT
 	new ScriptEngine(this);
@@ -1736,7 +1738,9 @@ ExampleFrameListener::~ExampleFrameListener()
 	}
 	#endif
 
+#ifdef OPENSTEER
 	if (aitraffic) delete(aitraffic);
+#endif //OPENSTEER
 }
 
 
@@ -1971,6 +1975,44 @@ void ExampleFrameListener::getMeshInformation(Mesh* mesh,size_t &vertex_count,Ve
 		current_offset = next_offset;
 	}
 }
+
+String ExampleFrameListener::saveTerrainMesh()
+{
+	LogManager::getSingleton().logMessage("saving Terrain Mesh to file...");
+	ManualObject* mMan = mSceneMgr->createManualObject("Terrain");
+	mMan->begin("TerrainMaterial",RenderOperation::OT_TRIANGLE_LIST);
+	int i = 0;
+	for(int x = 1;x<mapsizex;x++)
+	{
+		for(int z = 1;z<mapsizez;z++)
+		{
+			mMan->index(i);
+			mMan->position(Vector3(x-1, hfinder->getHeightAt(x-1, z-1), z-1));
+			mMan->position(Vector3(x  , hfinder->getHeightAt(x, z)    , z));
+			mMan->position(Vector3(x-1, hfinder->getHeightAt(x-1, z)  , z));
+			i++;
+
+			mMan->index(i);
+			mMan->position(Vector3(x-1, hfinder->getHeightAt(x-1, z-1), z-1));
+			mMan->position(Vector3(x  , hfinder->getHeightAt(x, z-1)  , z-1));
+			mMan->position(Vector3(x  , hfinder->getHeightAt(x, z)    , z));
+			i++;
+		}
+	}
+	mMan->end();
+	Ogre::MeshPtr mMeshPtr = mMan->convertToMesh("TerrainMesh");
+	Ogre::Mesh* mMesh = mMeshPtr.getPointer();
+	Ogre::MeshSerializer* mMeshSeri = new Ogre::MeshSerializer();
+	//String mfilename = mFolder + "/" + mFolder + ".mesh";
+	String mfilename = loadedTerrain + ".mesh";
+	LogManager::getSingleton().logMessage("saved Terrain Mesh to file:" + mfilename);
+	mMeshSeri->exportMesh(mMesh, mfilename);
+	mSceneMgr->destroyManualObject("Terrain");
+	delete mMesh;
+	delete mMeshSeri;
+	return mfilename;
+}
+
 void ExampleFrameListener::loadObject(char* name, float px, float py, float pz, float rx, float ry, float rz, SceneNode * bakeNode, char* instancename, bool enable_collisions, int luahandler, char *type)
 {
 	ScopeLog log("object_"+String(name));
@@ -1983,9 +2025,10 @@ void ExampleFrameListener::loadObject(char* name, float px, float py, float pz, 
 		return;
 	}
 
-	if(abs(rx+1) < 0.001) rx = Math::RangeRandom(0, 360);
-	if(abs(ry+1) < 0.001) ry = Math::RangeRandom(0, 360);
-	if(abs(rz+1) < 0.001) rz = Math::RangeRandom(0, 360);
+	// nice idea, but too many random hits
+	//if(abs(rx+1) < 0.001) rx = Math::RangeRandom(0, 360);
+	//if(abs(ry+1) < 0.001) ry = Math::RangeRandom(0, 360);
+	//if(abs(rz+1) < 0.001) rz = Math::RangeRandom(0, 360);
 
 	if(strnlen(name, 250)==0)
 		return;
@@ -2598,6 +2641,15 @@ bool ExampleFrameListener::updateEvents(float dt)
 			//proceduralManager->deleteAllObjects();
 			proceduralManager->updateAllObjects();
 		}
+	}
+
+	if (INPUTENGINE.getEventBoolValueBounce(EV_COMMON_SAVE_TERRAIN, 0.5f))
+	{
+		flashMessage("saving terrain, please wait...");
+		mWindow->update();
+		String fn = saveTerrainMesh();
+		flashMessage("terrain saved to file: " + fn);
+
 	}
 
 	if (INPUTENGINE.getEventBoolValueBounce(EV_COMMON_SCREENSHOT, 0.5f))
@@ -7041,8 +7093,10 @@ bool ExampleFrameListener::frameStarted(const FrameEvent& evt)
 		}
 END OF OLD CODE */
 	
+#ifdef OPENSTEER
 		// Update traffic movement
 		aitraffic->frameStep(evt.timeSinceLastFrame);
+#endif //OPENSTEER
 
 		//we simulate one truck, it will take care of the others (except networked ones)
 		//this is the big "shaker"
@@ -7055,8 +7109,11 @@ END OF OLD CODE */
 
 			switch(trucks[t]->state)
 				{
+
 					case TRAFFICED:
+#ifdef OPENSTEER
 								trucks[t]->calcTraffic(aitraffic->trafficgrid[t]);
+#endif //OPENSTEER
 								break;
 					case NETWORKED:
 								trucks[t]->calcNetwork();
