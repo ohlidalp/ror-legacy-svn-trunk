@@ -1,6 +1,7 @@
 #ifndef AITraffic_H
 #define AITraffic_H
 
+#ifdef OPENSTEER
 #include "Ogre.h"
 #include "OgreVector3.h"
 
@@ -30,5 +31,7 @@ class AITraffic
 		int num_of_vehicles;
 		AITraffic_Vehicle *vehicles[NUM_OF_TRAFFICED_CARS];
 };
+
+#endif //OPENSTEER
 
 #endif

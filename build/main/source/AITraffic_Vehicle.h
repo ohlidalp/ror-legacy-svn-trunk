@@ -1,3 +1,5 @@
+#ifdef OPENSTEER
+
 #pragma once
 #ifndef AITRAFFIC_VEHICLE_H
 #define AITRAFFIC_VEHICLE_H
@@ -169,3 +171,5 @@ private:
 };
 
 #endif
+
+#endif //OPENSTEER

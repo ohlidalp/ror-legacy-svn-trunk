@@ -184,6 +184,7 @@ enum events
 	EV_COMMON_RESCUE_TRUCK, //!< teleport to rescue truck
 	EV_COMMON_RESET_TRUCK, //!< reset truck to original starting position
 	EV_COMMON_SCREENSHOT, //!< take a screenshot
+	EV_COMMON_SAVE_TERRAIN, //!< save terrain mesh to file
 	EV_COMMON_SECURE_LOAD, //!< tie a load to the truck
 	EV_COMMON_SHOW_SKELETON, //!< toggle skeleton display mode
 	EV_COMMON_START_TRUCK_EDITOR, //!< start the old truck editor

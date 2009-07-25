@@ -1,5 +1,7 @@
 #include "AITraffic.h"
 
+#ifdef OPENSTEER
+
 AITraffic::AITraffic()
 {
 	initialize();
@@ -89,3 +91,4 @@ void AITraffic::processOneCar(int idx, float delta)
 		trafficgrid[idx].x2 += 0.1f;
 }
 
+#endif //OPENSTEER
