@@ -902,7 +902,7 @@ eventInfo_t eventInfo[] = {
 	{
 		"TERRAINEDITOR_PITCHBACKWARD",
 		EV_TERRAINEDITOR_PITCHBACKWARD,
-		"Keyboard DELETE",
+		"Keyboard EXPL+DELETE",
 		_L("pitch object backward")
 	},
 	{
@@ -1361,7 +1361,7 @@ eventInfo_t eventInfo[] = {
 	{
 		"COMMON_TRUCK_REMOVE",
 		EV_COMMON_TRUCK_REMOVE,
-		"Keyboard CTRL+D",
+		"Keyboard EXPL+CTRL+SHIFT+DELETE",
 		_L("delete current truck")
 	},
 	{

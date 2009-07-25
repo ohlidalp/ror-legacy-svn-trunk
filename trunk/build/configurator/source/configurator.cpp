@@ -75,6 +75,8 @@ mode_t getumask(void)
 #include "ImprovedConfigFile.h"
 
 #include "InputEngine.h"
+extern eventInfo_t eventInfo[]; // defines all input events
+
 #include "treelistctrl.h"
 
 #include "OISKeyboard.h"
@@ -387,46 +389,28 @@ protected:
 	std::string selectedOption;
 	wxComboBox *cbe, *cbi;
 
-	bool loadEventListing(const char* configpath)
+	bool loadEventListing()
 	{
-		char filename[255]="";
-		char line[1025]="";
-		sprintf(filename, "%sinputevents.cfg", configpath);
-		FILE *f = fopen(filename, "r");
-		if(!f)
-			return false;
-		while(fgets(line, 1024, f)!=NULL)
+		int i=0;
+		while(i!=EV_MODE_LAST)
 		{
-			if(strnlen(line, 1024) > 5)
-				processLine(line);
+			std::string eventName = eventInfo[i].name;
+			std::string eventDescription = eventInfo[i].description + std::string("\n") + std::string("default mapping: ") + eventInfo[i].defaultKey;
+			inputevents[eventName] = eventDescription;
+			i++;
 		}
-		fclose(f);
+
 		return true;
 	}
 
-	bool processLine(char *str)
-	{
-		char tmp[255]="";
-		memset(tmp, 0, 255);
-		char *desc = strstr(str, "\t");
-		if(!desc)
-			return false;
-		strncpy(tmp, str, desc-str);
-		if(strnlen(tmp, 250) < 3 || strnlen(desc, 250) < 3)
-			return false;
-		std::string eventName = std::string(tmp);
-		std::string eventDescription = std::string(desc+1); // +1 because we strip the tab character with that
-		inputevents[eventName] = eventDescription;
-		return true;
-	}
 public:
 	KeyAddDialog(MyDialog *_dlg) : wxDialog(NULL, wxID_ANY, wxString(), wxDefaultPosition, wxSize(400,200), wxSTAY_ON_TOP|wxDOUBLE_BORDER|wxCLOSE_BOX), dlg(_dlg)
 	{
 		selectedEvent="";
 		selectedType="";
 		selectedOption="  ";
-		wxString configpath=_dlg->app->UserPath+wxFileName::GetPathSeparator()+_T("config")+wxFileName::GetPathSeparator();
-		loadEventListing(configpath.ToUTF8().data());
+		//wxString configpath=_dlg->app->UserPath+wxFileName::GetPathSeparator()+_T("config")+wxFileName::GetPathSeparator();
+		loadEventListing(); //configpath.ToUTF8().data());
 
 		wxStaticText *text = new wxStaticText(this, 4, _("Event Name: "), wxPoint(5,5), wxSize(70, 25));
 		wxString eventChoices[MAX_EVENTS];
