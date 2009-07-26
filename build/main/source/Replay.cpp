@@ -20,40 +20,40 @@ along with Rigs of Rods.  If not, see <http://www.gnu.org/licenses/>.
 #include "Replay.h"
 
 Replay::Replay(int nnodes, int nframes)
-	{
-		nodes=(Vector3*)malloc(nnodes*nframes*sizeof(Vector3));
-		times=(float*)malloc(nframes*sizeof(float));
-		writeindex=0;
-		numnodes=nnodes;
-		numframes=nframes;
-		firstrun=1;
-	}
+{
+	nodes=(Vector3*)malloc(nnodes*nframes*sizeof(Vector3));
+	times=(float*)malloc(nframes*sizeof(float));
+	writeindex=0;
+	numnodes=nnodes;
+	numframes=nframes;
+	firstrun=1;
+}
 
-	//dirty stuff, we use this to write the replay buffer
-	Vector3 *Replay::getUpdateIndex(float dt)
-	{
-		times[writeindex]=dt;
-		Vector3* index=nodes+(writeindex*numnodes);
-		writeindex++;
-		if (writeindex==numframes) {firstrun=0;writeindex=0;};
-		return index;
-	}
+//dirty stuff, we use this to write the replay buffer
+Vector3 *Replay::getUpdateIndex(float dt)
+{
+	times[writeindex]=dt;
+	Vector3* index=nodes+(writeindex*numnodes);
+	writeindex++;
+	if (writeindex==numframes) {firstrun=0;writeindex=0;};
+	return index;
+}
 
-	//we take negative offsets only
-	Vector3 *Replay::getReplayIndex(int offset)
-	{
-		if (offset>=0) offset=-1;
-		if (offset<=-numframes) offset=-numframes+1;
-		int delta=writeindex+offset;
-		if (delta<0) 
-			if (firstrun) return nodes;
-			else delta+=numframes;
-		return nodes+(delta*numnodes);
-	}
+//we take negative offsets only
+Vector3 *Replay::getReplayIndex(int offset)
+{
+	if (offset>=0) offset=-1;
+	if (offset<=-numframes) offset=-numframes+1;
+	int delta=writeindex+offset;
+	if (delta<0) 
+		if (firstrun) return nodes;
+		else delta+=numframes;
+	return nodes+(delta*numnodes);
+}
 
-	Replay::~Replay()
-	{
-		free(nodes);
-		free(times);
-	}
+Replay::~Replay()
+{
+	free(nodes);
+	free(times);
+}
 

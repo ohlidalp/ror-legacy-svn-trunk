@@ -472,6 +472,15 @@ Beam::Beam(int tnum, SceneManager *manager, SceneNode *parent, RenderWindow* win
 		}
 		replay = new Replay(free_node, replaylen);
 	}
+
+	// add storage
+	posStorage=0;
+	bool enablePosStor = (SETTINGS.getSetting("Position Storage")=="Yes");
+	if(enablePosStor)
+	{
+		posStorage = new PositionStorage(free_node, 10);
+	}
+
 	//search first_wheel_node
 	first_wheel_node=free_node;
 	for (i=0; i<free_node; i++)
@@ -4610,6 +4619,36 @@ void Beam::wash_calculator(Quaternion rot)
 			}
 		}
 	}
+}
+
+int Beam::savePosition(int indexPosition)
+{
+	if(!posStorage) return -1;
+	Vector3* nbuff = posStorage->getStorage(indexPosition);
+	if(!nbuff) return -3;
+	for (int i=0; i<free_node; i++) 
+		nbuff[i] = nodes[i].AbsPosition;
+	posStorage->setUsage(indexPosition, true);
+	return 0;
+}
+
+int Beam::loadPosition(int indexPosition)
+{
+	if(!posStorage) return -1;
+	if(!posStorage->getUsage(indexPosition)) return -2;
+
+	Vector3* nbuff = posStorage->getStorage(indexPosition);
+	if(!nbuff) return -3;
+	Vector3 pos = Vector3(0,0,0);
+	for (int i=0; i<free_node; i++)
+	{
+		nodes[i].AbsPosition = nbuff[i];
+		nodes[i].RelPosition = nbuff[i] - origin;
+		nodes[i].smoothpos = nbuff[i];
+		pos = pos + nbuff[i];
+	}
+	position = pos / (float)(free_node);
+	return 0;
 }
 
 void Beam::resetPosition(float px, float pz, bool setI, float miny)
