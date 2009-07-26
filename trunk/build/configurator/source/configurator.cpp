@@ -325,6 +325,7 @@ private:
 	wxCheckBox *enablexfire;
 	wxCheckBox *beamdebug;
 	wxCheckBox *autodl;
+	wxCheckBox *posstor;
 	wxCheckBox *extcam;
 	wxCheckBox *dashboard;
 	wxCheckBox *mirror;
@@ -1902,6 +1903,9 @@ MyDialog::MyDialog(const wxString& title, MyApp *_app) : wxDialog(NULL, wxID_ANY
 
 	autodl=new wxCheckBox(advancedPanel, -1, _("Enable Auto-Downloader"), wxPoint(320, 230));
 	autodl->SetToolTip(_("This enables the automatic downloading of missing mods when using Multiplayer"));
+	
+	posstor=new wxCheckBox(advancedPanel, -1, _("Enable Position Storage"), wxPoint(320, 245));
+	posstor->SetToolTip(_("Can be used to quick save and load positions of trucks"));
 
 	dText = new wxStaticText(advancedPanel, -1, _("minimum visibility range in percent"), wxPoint(10,300));
 	//this makes a visual bug in macosx
@@ -2253,6 +2257,7 @@ void MyDialog::SetDefaults()
 	dismap->SetValue(false);
 	enablexfire->SetValue(true);
 	autodl->SetValue(true);
+	posstor->SetValue(true);
 	beamdebug->SetValue(false);
 	extcam->SetValue(false);
 	//wxCheckBox *dashboard;
@@ -2315,6 +2320,7 @@ void MyDialog::getSettingsControls()
 	settings["DebugBeams"] = (beamdebug->GetValue()) ? "Yes" : "No";
 	settings["XFire"] = (enablexfire->GetValue()) ? "Yes" : "No";
 	settings["AutoDownload"] = (autodl->GetValue()) ? "Yes" : "No";
+	settings["Position Storage"] = (posstor->GetValue()) ? "Yes" : "No";
 	settings["External Camera Mode"] = (extcam->GetValue()) ? "Static" : "Pitching";
 	settings["Dashboard"] = (dashboard->GetValue()) ? "Yes" : "No";
 	settings["Mirrors"] = (mirror->GetValue()) ? "Yes" : "No";
@@ -2392,6 +2398,7 @@ void MyDialog::updateSettingsControls()
 	st = settings["disableOverViewMap"]; if (st.length()>0) dismap->SetValue(st=="Yes");
 	st = settings["External Camera Mode"]; if (st.length()>0) extcam->SetValue(st=="Static");
 	st = settings["AutoDownload"]; if (st.length()>0) autodl->SetValue(st=="Yes");
+	st = settings["Position Storage"]; if (st.length()>0) posstor->SetValue(st=="Yes");
 	st = settings["DebugBeams"]; if (st.length()>0) beamdebug->SetValue(st=="Yes");
 	st = settings["XFire"]; if (st.length()>0) enablexfire->SetValue(st=="Yes");
 	st = settings["Dashboard"]; if (st.length()>0) dashboard->SetValue(st=="Yes");
@@ -3164,7 +3171,8 @@ void MyDialog::OnSimpleSliderScroll(wxScrollEvent & event)
 			sound->SetSelection(1);//software
 			thread->SetSelection(1);//2 CPUs is now the norm (incl. HyperThreading)
 			wheel2->SetValue(false);
-	break;
+			posstor->SetValue(false);
+			break;
 		case 1:
 			replaymode->SetValue(true);
 			beamdebug->SetValue(false);
@@ -3175,7 +3183,8 @@ void MyDialog::OnSimpleSliderScroll(wxScrollEvent & event)
 			sound->SetSelection(1);//software
 			thread->SetSelection(1);//2 CPUs is now the norm (incl. HyperThreading)
 			wheel2->SetValue(true);
-	break;
+			posstor->SetValue(true);
+			break;
 		case 2:
 			replaymode->SetValue(true);
 			beamdebug->SetValue(false);
@@ -3186,7 +3195,8 @@ void MyDialog::OnSimpleSliderScroll(wxScrollEvent & event)
 			sound->SetSelection(2);//hardware
 			thread->SetSelection(1);//2 CPUs is now the norm (incl. HyperThreading)
 			wheel2->SetValue(true);
-	break;
+			posstor->SetValue(true);
+			break;
 	};
 	getSettingsControls();
 }
