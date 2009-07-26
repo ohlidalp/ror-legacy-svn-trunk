@@ -262,6 +262,7 @@ protected:
 	int truckgrabbed;
 	int nodegrabbed;
 	Real distgrabbed;
+	bool enablePosStor;
 
 	//GUI_Progress *gui_progress;
 

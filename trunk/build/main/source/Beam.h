@@ -56,6 +56,7 @@ using namespace Ogre;
 #include "Differentials.h"
 #include "approxmath.h"
 #include "AITraffic_Common.h"
+#include "PositionStorage.h"
 
 //#include "scriptCommands.h"
 #include <vector>
@@ -672,6 +673,8 @@ public:
 	void parkingbrakeToggle();
 	void beaconsToggle();
 	void setReplayMode(bool rm);
+	int savePosition(int position);
+	int loadPosition(int position);
 	void setNetworkInfo(client_t netinfo);
 	void resetAutopilot();
 	void disconnectAutopilot();
@@ -986,6 +989,7 @@ protected:
 	DustPool *splashp;
 	DustPool *ripplep;
 	Replay *replay;
+	PositionStorage *posStorage;
 	int ropables[MAX_ROPABLES];
 	int free_ropable;
 	rope_t ropes[MAX_ROPES];

@@ -165,6 +165,9 @@ set(ror_src
 	source/AITraffic.cpp
 	source/AITraffic_Common.cpp
 	source/AITraffic_Vehicle.cpp
+	
+	source/PositionStorage.cpp
+	source/PositionStorage.h
 )
 
 include_directories (OgreMain/include Dependencies/include)

@@ -934,6 +934,7 @@ void ExampleFrameListener::setGravity(float value)
 ExampleFrameListener::ExampleFrameListener(RenderWindow* win, Camera* cam, SceneManager* scm, Root* root) :  initialized(false), mCollisionTools(0)
 {
 	fpsLineStream = netLineStream = netlagLineStream = 0;
+	enablePosStor = (SETTINGS.getSetting("Position Storage")=="Yes");
 	loaded_terrain=0;
 	objectCounter=0;
 	hdrListener=0;
@@ -1980,24 +1981,32 @@ String ExampleFrameListener::saveTerrainMesh()
 {
 	LogManager::getSingleton().logMessage("saving Terrain Mesh to file...");
 	ManualObject* mMan = mSceneMgr->createManualObject("Terrain");
+	mMan->estimateIndexCount(mapsizex*mapsizez*3);
+	mMan->estimateVertexCount(mapsizex*mapsizez*7);
+	//mMan->setDynamic(false);
 	mMan->begin("TerrainMaterial",RenderOperation::OT_TRIANGLE_LIST);
 	int i = 0;
-	for(int x = 1;x<mapsizex;x++)
+	int step = (mapsizex / 256);
+	if(step == 0) step = 1;
+	step *= 3;
+	LogManager::getSingleton().logMessage("saving with steps: " + StringConverter::toString(step));
+	for(int x = 1;x<mapsizex;x+=step)
 	{
-		for(int z = 1;z<mapsizez;z++)
+		for(int z = 1;z<mapsizez;z+=step)
 		{
 			mMan->index(i);
-			mMan->position(Vector3(x-1, hfinder->getHeightAt(x-1, z-1), z-1));
+			mMan->position(Vector3(x-step, hfinder->getHeightAt(x-step, z-step), z-step));
 			mMan->position(Vector3(x  , hfinder->getHeightAt(x, z)    , z));
-			mMan->position(Vector3(x-1, hfinder->getHeightAt(x-1, z)  , z));
+			mMan->position(Vector3(x-step, hfinder->getHeightAt(x-step, z)  , z));
 			i++;
 
 			mMan->index(i);
-			mMan->position(Vector3(x-1, hfinder->getHeightAt(x-1, z-1), z-1));
-			mMan->position(Vector3(x  , hfinder->getHeightAt(x, z-1)  , z-1));
+			mMan->position(Vector3(x-step, hfinder->getHeightAt(x-step, z-step), z-step));
+			mMan->position(Vector3(x  , hfinder->getHeightAt(x, z-step)  , z-step));
 			mMan->position(Vector3(x  , hfinder->getHeightAt(x, z)    , z));
 			i++;
 		}
+		LogManager::getSingleton().logMessage("x: " + StringConverter::toString(x));
 	}
 	mMan->end();
 	Ogre::MeshPtr mMeshPtr = mMan->convertToMesh("TerrainMesh");
@@ -2007,7 +2016,7 @@ String ExampleFrameListener::saveTerrainMesh()
 	String mfilename = loadedTerrain + ".mesh";
 	LogManager::getSingleton().logMessage("saved Terrain Mesh to file:" + mfilename);
 	mMeshSeri->exportMesh(mMesh, mfilename);
-	mSceneMgr->destroyManualObject("Terrain");
+	mSceneMgr->destroyManualObject(mMan);
 	delete mMesh;
 	delete mMeshSeri;
 	return mfilename;
@@ -2659,7 +2668,7 @@ bool ExampleFrameListener::updateEvents(float dt)
 		while(fileExists(const_cast<char*>(tmp.c_str())))
 			tmp = SETTINGS.getSetting("User Path") + String("screenshot_") + StringConverter::toString(++mNumScreenShots) + String(".") + String(screenshotformat);
 
-		LogManager::getSingleton().logMessage("Written screenshot : " + tmp);
+		LogManager::getSingleton().logMessage("Wrote screenshot : " + tmp);
 		// hide any flash message
 		flashMessage(0);
 		mWindow->update();
@@ -2669,6 +2678,44 @@ bool ExampleFrameListener::updateEvents(float dt)
 		String ssmsg = _L("wrote screenshot:");
 		sprintf(tmp1, "%s %d", ssmsg.c_str(), mNumScreenShots);
 		flashMessage(tmp1);
+	}
+
+	// position storage
+	if(enablePosStor && current_truck != -1)
+	{
+		int res = -10, slot=-1;
+		if (INPUTENGINE.getEventBoolValueBounce(EV_TRUCK_SAVE_POS1, 0.5f)) { slot=0; res = trucks[current_truck]->savePosition(slot); };
+		if (INPUTENGINE.getEventBoolValueBounce(EV_TRUCK_SAVE_POS2, 0.5f)) { slot=1; res = trucks[current_truck]->savePosition(slot); };
+		if (INPUTENGINE.getEventBoolValueBounce(EV_TRUCK_SAVE_POS3, 0.5f)) { slot=2; res = trucks[current_truck]->savePosition(slot); };
+		if (INPUTENGINE.getEventBoolValueBounce(EV_TRUCK_SAVE_POS4, 0.5f)) { slot=3; res = trucks[current_truck]->savePosition(slot); };
+		if (INPUTENGINE.getEventBoolValueBounce(EV_TRUCK_SAVE_POS5, 0.5f)) { slot=4; res = trucks[current_truck]->savePosition(slot); };
+		if (INPUTENGINE.getEventBoolValueBounce(EV_TRUCK_SAVE_POS6, 0.5f)) { slot=5; res = trucks[current_truck]->savePosition(slot); };
+		if (INPUTENGINE.getEventBoolValueBounce(EV_TRUCK_SAVE_POS7, 0.5f)) { slot=6; res = trucks[current_truck]->savePosition(slot); };
+		if (INPUTENGINE.getEventBoolValueBounce(EV_TRUCK_SAVE_POS8, 0.5f)) { slot=7; res = trucks[current_truck]->savePosition(slot); };
+		if (INPUTENGINE.getEventBoolValueBounce(EV_TRUCK_SAVE_POS9, 0.5f)) { slot=8; res = trucks[current_truck]->savePosition(slot); };
+		if (INPUTENGINE.getEventBoolValueBounce(EV_TRUCK_SAVE_POS10, 0.5f)) { slot=9; res = trucks[current_truck]->savePosition(slot); };
+		if(slot != -1 && !res)
+			flashMessage("Position saved under slot " + StringConverter::toString(slot+1), 3);
+		else if(slot != -1 && res)
+			flashMessage("Error while saving position saved under slot " + StringConverter::toString(slot+1)+" : "+StringConverter::toString(res), 3);
+		
+		if(res == -10)
+		{
+			if (INPUTENGINE.getEventBoolValueBounce(EV_TRUCK_LOAD_POS1, 0.5f)) { slot=0; res = trucks[current_truck]->loadPosition(slot); };
+			if (INPUTENGINE.getEventBoolValueBounce(EV_TRUCK_LOAD_POS2, 0.5f)) { slot=1; res = trucks[current_truck]->loadPosition(slot); };
+			if (INPUTENGINE.getEventBoolValueBounce(EV_TRUCK_LOAD_POS3, 0.5f)) { slot=2; res = trucks[current_truck]->loadPosition(slot); };
+			if (INPUTENGINE.getEventBoolValueBounce(EV_TRUCK_LOAD_POS4, 0.5f)) { slot=3; res = trucks[current_truck]->loadPosition(slot); };
+			if (INPUTENGINE.getEventBoolValueBounce(EV_TRUCK_LOAD_POS5, 0.5f)) { slot=4; res = trucks[current_truck]->loadPosition(slot); };
+			if (INPUTENGINE.getEventBoolValueBounce(EV_TRUCK_LOAD_POS6, 0.5f)) { slot=5; res = trucks[current_truck]->loadPosition(slot); };
+			if (INPUTENGINE.getEventBoolValueBounce(EV_TRUCK_LOAD_POS7, 0.5f)) { slot=6; res = trucks[current_truck]->loadPosition(slot); };
+			if (INPUTENGINE.getEventBoolValueBounce(EV_TRUCK_LOAD_POS8, 0.5f)) { slot=7; res = trucks[current_truck]->loadPosition(slot); };
+			if (INPUTENGINE.getEventBoolValueBounce(EV_TRUCK_LOAD_POS9, 0.5f)) { slot=8; res = trucks[current_truck]->loadPosition(slot); };
+			if (INPUTENGINE.getEventBoolValueBounce(EV_TRUCK_LOAD_POS10, 0.5f)) { slot=9; res = trucks[current_truck]->loadPosition(slot); };
+			if(slot != -1 && res==0)
+				flashMessage("Loaded position from slot " + StringConverter::toString(slot+1), 3);
+			else if(slot != -1 && res!=0)
+				flashMessage("Could not load position from slot " + StringConverter::toString(slot+1) + "", 3);
+		}
 	}
 
 	if (INPUTENGINE.getEventBoolValueBounce(EV_COMMON_FOV_LESS))
