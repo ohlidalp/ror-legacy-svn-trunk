@@ -2022,7 +2022,7 @@ String ExampleFrameListener::saveTerrainMesh()
 	return mfilename;
 }
 
-void ExampleFrameListener::loadObject(char* name, float px, float py, float pz, float rx, float ry, float rz, SceneNode * bakeNode, char* instancename, bool enable_collisions, int luahandler, char *type)
+void ExampleFrameListener::loadObject(char* name, float px, float py, float pz, float rx, float ry, float rz, SceneNode * bakeNode, char* instancename, bool enable_collisions, int luahandler, char *type, bool uniquifyMaterial)
 {
 	ScopeLog log("object_"+String(name));
 	if(type && !strcmp(type, "grid"))
@@ -2147,6 +2147,18 @@ void ExampleFrameListener::loadObject(char* name, float px, float py, float pz, 
 	tenode->setPosition(px,py,pz);
 	tenode->rotate(rotation);
 	tenode->pitch(Degree(-90));
+
+	if(uniquifyMaterial && instancename)
+	{
+		for(unsigned int i = 0; i < te->getNumSubEntities(); i++)
+		{
+			String matname = te->getSubEntity(i)->getMaterialName();
+			String newmatname = matname + "/" + String(instancename);
+			//LogManager::getSingleton().logMessage("subentity " + StringConverter::toString(i) + ": "+ matname + " -> " + newmatname);
+			te->getSubEntity(i)->getMaterial()->clone(newmatname);
+			te->getSubEntity(i)->setMaterialName(newmatname);
+		}
+	}
 
 	String meshGroup = ResourceGroupManager::getSingleton().findGroupContainingResource(mesh);
 	MeshPtr mainMesh = MeshManager::getSingleton().load(String(mesh), meshGroup);

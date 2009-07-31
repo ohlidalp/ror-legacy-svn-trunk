@@ -257,7 +257,7 @@ if(ROR_BUILD_XFIRE)
 endif(ROR_BUILD_XFIRE)
 
 IF(ROR_BUILD_ANGELSCRIPT)
-  add_definitions("-DANGELSCRIPT")
+  add_definitions("-DANGELSCRIPT -DAS_USE_NAMESPACE")
   include_directories (${RoR_Dependencies_SOURCE_DIR}/angelscript/include)
   include_directories (${RoR_Dependencies_SOURCE_DIR}/angelscript/add_on)
 ENDIF(ROR_BUILD_ANGELSCRIPT)

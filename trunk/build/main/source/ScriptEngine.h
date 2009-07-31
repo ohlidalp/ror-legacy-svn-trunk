@@ -25,8 +25,10 @@ along with Rigs of Rods.  If not, see <http://www.gnu.org/licenses/>.
 
 #include <string>
 #include "angelscript.h"
+#include "scriptmath3d/scriptmath3d.h" // angelscript addon
 #include "Ogre.h"
 
+//forward decl.
 class ExampleFrameListener;
 class GameScript;
 class Beam;
@@ -110,12 +112,12 @@ public:
 	 */
 	int executeString(Ogre::String command);
 
-	asIScriptEngine *getEngine() { return engine; };
+	AngelScript::asIScriptEngine *getEngine() { return engine; };
 
 protected:
     ExampleFrameListener *mefl;             //!< local Exampleframelistener instance, used as proxy for many functions
-    asIScriptEngine *engine;                //!< instance of the scripting engine
-	asIScriptContext *context;              //!< context in which all scripting happens
+    AngelScript::asIScriptEngine *engine;                //!< instance of the scripting engine
+	AngelScript::asIScriptContext *context;              //!< context in which all scripting happens
 	int frameStepFunctionPtr;               //!< script function pointer to the frameStep function
 	int eventCallbackFunctionPtr;           //!< script function pointer to the event callback function
 
@@ -130,7 +132,7 @@ protected:
 	 * @param msg arguments that contain details about the crash
 	 * @param param unkown?
 	 */
-    void msgCallback(const asSMessageInfo *msg);
+    void msgCallback(const AngelScript::asSMessageInfo *msg);
 
 	/**
 	 * This function reads a file into the provided string.
@@ -141,9 +143,9 @@ protected:
 	int loadScriptFile(const char *fileName, std::string &script);
 
 	// undocumented debugging functions below, not working.
-	void ExceptionCallback(asIScriptContext *ctx, void *param);
-	void PrintVariables(asIScriptContext *ctx, int stackLevel);
-	void LineCallback(asIScriptContext *ctx, void *param);
+	void ExceptionCallback(AngelScript::asIScriptContext *ctx, void *param);
+	void PrintVariables(AngelScript::asIScriptContext *ctx, int stackLevel);
+	void LineCallback(AngelScript::asIScriptContext *ctx, void *param);
 };
 
 
@@ -187,7 +189,7 @@ public:
 	 * @param y Y position on the terrain
 	 * @param z Z position on the terrain
 	 */
-	void setPersonPosition(float x, float y, float z);
+	void setPersonPosition(AngelScript::Vector3 vec);
 
 	/**
 	 * moves the person relative
@@ -195,7 +197,7 @@ public:
 	 * @param y Y translation
 	 * @param z Z translation
 	 */
-	void movePerson(float x, float y, float z);
+	void movePerson(AngelScript::Vector3);
 
 	/**
 	 * gets the time of the day in seconds
@@ -272,7 +274,7 @@ public:
 	 * set direction arrow
 	 * @param text text to be displayed. "" to hide the text
 	 */
-	void setDirectionArrow(std::string &text, float positionx, float positiony, float positionz);
+	void setDirectionArrow(std::string &text, AngelScript::Vector3 vec);
 
 
 	/**
@@ -291,13 +293,20 @@ public:
 	// new things, not documented yet
 	void showChooser(std::string &type, std::string &instance, std::string &box);
 	void repairVehicle(std::string &instance, std::string &box);
-	void spawnObject(const std::string &objectName, const std::string instanceName, float px, float py, float pz, float rx, float ry, float rz, const std::string &eventhandler);
+	void spawnObject(const std::string &objectName, const std::string &instanceName, float px, float py, float pz, float rx, float ry, float rz, const std::string &eventhandler, bool uniquifyMaterials);
 	int getNumTrucksByFlag(int flag);
 	bool getCaelumAvailable();
 	void stopTimer();
 	void startTimer();
 	std::string getSetting(std::string str);
 	void hideDirectionArrow();
+	int setMaterialAmbient(const std::string &materialName, float red, float green, float blue);
+	int setMaterialDiffuse(const std::string &materialName, float red, float green, float blue, float alpha);
+	int setMaterialSpecular(const std::string &materialName, float red, float green, float blue, float alpha);
+	int setMaterialEmissive(const std::string &materialName, float red, float green, float blue);
+	
+	float rangeRandom(float from, float to);
+	AngelScript::Vector3 getPersonPosition();
 };
 
 #endif
