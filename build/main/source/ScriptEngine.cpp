@@ -34,6 +34,7 @@ along with Rigs of Rods.  If not, see <http://www.gnu.org/licenses/>.
 
 using namespace Ogre;
 using namespace std;
+using namespace AngelScript;
 
 template<> ScriptEngine *Ogre::Singleton<ScriptEngine>::ms_Singleton=0;
 
@@ -76,7 +77,7 @@ int ScriptEngine::loadTerrainScript(Ogre::String scriptname)
 	// Add the script to the module as a section. If desired, multiple script
 	// sections can be added to the same module. They will then be compiled
 	// together as if it was one large script.
-	asIScriptModule *mod = engine->GetModule("terrainScript", asGM_ALWAYS_CREATE);
+	AngelScript::asIScriptModule *mod = engine->GetModule("terrainScript", asGM_ALWAYS_CREATE);
 	result = mod->AddScriptSection(scriptname.c_str(), script.c_str(), script.length());
 	if( result < 0 )
 	{
@@ -266,7 +267,8 @@ void ScriptEngine::init()
 	// The SDK do however provide a standard add-on for registering a string type, so it's not
 	// necessary to register your own string type if you don't want to.
 	RegisterStdString(engine);
-	RegisterScriptMath_Native(engine);
+	RegisterScriptMath(engine);
+	RegisterScriptMath3D(engine);
 
 	// Register everything
 	// class Beam
@@ -451,7 +453,8 @@ void ScriptEngine::init()
 	result = engine->RegisterObjectType("GameScriptClass", sizeof(GameScript), asOBJ_VALUE | asOBJ_POD | asOBJ_APP_CLASS); assert_net(result>=0);
 	result = engine->RegisterObjectMethod("GameScriptClass", "void log(const string &in)", asMETHOD(GameScript,log), asCALL_THISCALL); assert_net(result>=0);
 	result = engine->RegisterObjectMethod("GameScriptClass", "double getTime()", asMETHOD(GameScript,getTime), asCALL_THISCALL); assert_net(result>=0);
-	result = engine->RegisterObjectMethod("GameScriptClass", "void setPersonPosition(float, float, float)", asMETHOD(GameScript,setPersonPosition), asCALL_THISCALL); assert_net(result>=0);
+	result = engine->RegisterObjectMethod("GameScriptClass", "void setPersonPosition(vector3)", asMETHOD(GameScript,setPersonPosition), asCALL_THISCALL); assert_net(result>=0);
+	result = engine->RegisterObjectMethod("GameScriptClass", "vector3 getPersonPosition()", asMETHOD(GameScript,getPersonPosition), asCALL_THISCALL); assert_net(result>=0);
 	result = engine->RegisterObjectMethod("GameScriptClass", "void movePerson(float, float, float)", asMETHOD(GameScript,movePerson), asCALL_THISCALL); assert_net(result>=0);
 	result = engine->RegisterObjectMethod("GameScriptClass", "float getCaelumTime()", asMETHOD(GameScript,getCaelumTime), asCALL_THISCALL); assert_net(result>=0);
 	result = engine->RegisterObjectMethod("GameScriptClass", "void setCaelumTime(float)", asMETHOD(GameScript,setCaelumTime), asCALL_THISCALL); assert_net(result>=0);
@@ -462,7 +465,7 @@ void ScriptEngine::init()
 	result = engine->RegisterObjectMethod("GameScriptClass", "float getGravity()", asMETHOD(GameScript,getGravity), asCALL_THISCALL); assert_net(result>=0);
 	result = engine->RegisterObjectMethod("GameScriptClass", "void setGravity(float)", asMETHOD(GameScript,setGravity), asCALL_THISCALL); assert_net(result>=0);
 	result = engine->RegisterObjectMethod("GameScriptClass", "void flashMessage(const string &in, float, float)", asMETHOD(GameScript,flashMessage), asCALL_THISCALL); assert_net(result>=0);
-	result = engine->RegisterObjectMethod("GameScriptClass", "void setDirectionArrow(const string &in, float, float, float)", asMETHOD(GameScript,setDirectionArrow), asCALL_THISCALL); assert_net(result>=0);
+	result = engine->RegisterObjectMethod("GameScriptClass", "void setDirectionArrow(const string &in, vector3)", asMETHOD(GameScript,setDirectionArrow), asCALL_THISCALL); assert_net(result>=0);
 	result = engine->RegisterObjectMethod("GameScriptClass", "void hideDirectionArrow()", asMETHOD(GameScript,hideDirectionArrow), asCALL_THISCALL); assert_net(result>=0);
 	result = engine->RegisterObjectMethod("GameScriptClass", "void registerForEvent(int)", asMETHOD(GameScript,registerForEvent), asCALL_THISCALL); assert_net(result>=0);
 	result = engine->RegisterObjectMethod("GameScriptClass", "BeamClass @getCurrentTruck()", asMETHOD(GameScript,getCurrentTruck), asCALL_THISCALL); assert_net(result>=0);
@@ -471,11 +474,16 @@ void ScriptEngine::init()
 	result = engine->RegisterObjectMethod("GameScriptClass", "void setChatFontSize(int)", asMETHOD(GameScript,setChatFontSize), asCALL_THISCALL); assert_net(result>=0);
 	result = engine->RegisterObjectMethod("GameScriptClass", "void showChooser(const string &in, const string &in, const string &in)", asMETHOD(GameScript,showChooser), asCALL_THISCALL); assert_net(result>=0);
 	result = engine->RegisterObjectMethod("GameScriptClass", "void repairVehicle(const string &in, const string &in)", asMETHOD(GameScript,repairVehicle), asCALL_THISCALL); assert_net(result>=0);
-	result = engine->RegisterObjectMethod("GameScriptClass", "void spawnObject(const string &in, const string &in, float, float, float, float, float, float, const string &in)", asMETHOD(GameScript,spawnObject), asCALL_THISCALL); assert_net(result>=0);
+	result = engine->RegisterObjectMethod("GameScriptClass", "void spawnObject(const string &in, const string &in, float, float, float, float, float, float, const string &in, bool)", asMETHOD(GameScript,spawnObject), asCALL_THISCALL); assert_net(result>=0);
+	result = engine->RegisterObjectMethod("GameScriptClass", "int setMaterialAmbient(const string &in, float, float, float)", asMETHOD(GameScript,setMaterialAmbient), asCALL_THISCALL); assert_net(result>=0);
+	result = engine->RegisterObjectMethod("GameScriptClass", "int setMaterialDiffuse(const string &in, float, float, float, float)", asMETHOD(GameScript,setMaterialDiffuse), asCALL_THISCALL); assert_net(result>=0);
+	result = engine->RegisterObjectMethod("GameScriptClass", "int setMaterialSpecular(const string &in, float, float, float, float)", asMETHOD(GameScript,setMaterialSpecular), asCALL_THISCALL); assert_net(result>=0);
+	result = engine->RegisterObjectMethod("GameScriptClass", "int setMaterialEmissive(const string &in, float, float, float)", asMETHOD(GameScript,setMaterialEmissive), asCALL_THISCALL); assert_net(result>=0);
 	result = engine->RegisterObjectMethod("GameScriptClass", "int getNumTrucksByFlag(int)", asMETHOD(GameScript,getNumTrucksByFlag), asCALL_THISCALL); assert_net(result>=0);
 	result = engine->RegisterObjectMethod("GameScriptClass", "bool getCaelumAvailable()", asMETHOD(GameScript,getCaelumAvailable), asCALL_THISCALL); assert_net(result>=0);
 	result = engine->RegisterObjectMethod("GameScriptClass", "void startTimer()", asMETHOD(GameScript,startTimer), asCALL_THISCALL); assert_net(result>=0);
 	result = engine->RegisterObjectMethod("GameScriptClass", "void stopTimer()", asMETHOD(GameScript,stopTimer), asCALL_THISCALL); assert_net(result>=0);
+	result = engine->RegisterObjectMethod("GameScriptClass", "float rangeRandom(float, float)", asMETHOD(GameScript,rangeRandom), asCALL_THISCALL); assert_net(result>=0);
 
 	// class CacheSystem
 	result = engine->RegisterObjectType("CacheSystemClass", sizeof(CacheSystem), asOBJ_REF | asOBJ_NOHANDLE);
@@ -531,7 +539,7 @@ void ScriptEngine::init()
 	result = engine->RegisterGlobalProperty("CacheSystemClass cache", &CacheSystem::Instance()); assert_net(result>=0);
 	result = engine->RegisterGlobalProperty("SettingsClass settings", &SETTINGS); assert_net(result>=0);
 
-	result = engine->RegisterObjectType("Vector3Class", sizeof(Ogre::Vector3), asOBJ_VALUE | asOBJ_POD | asOBJ_APP_CLASS); assert_net(result>=0);
+	//result = engine->RegisterObjectType("Vector3Class", sizeof(Ogre::Vector3), asOBJ_VALUE | asOBJ_POD | asOBJ_APP_CLASS); assert_net(result>=0);
 	// TODO: add complete Vector3 class :(
 	//result = engine->RegisterObjectMethod("Vector3Class", "...", asMETHOD(Ogre::Vector3,...), asCALL_THISCALL);
 
@@ -645,14 +653,24 @@ double GameScript::getTime()
 	return this->mefl->getTime();
 }
 
-void GameScript::setPersonPosition(float x, float y, float z)
+void GameScript::setPersonPosition(AngelScript::Vector3 vec)
 {
-	if(mefl && mefl->person) mefl->person->setPosition(Vector3(x, y, z));
+	if(mefl && mefl->person) mefl->person->setPosition(Ogre::Vector3(vec.x, vec.y, vec.z));
 }
 
-void GameScript::movePerson(float x, float y, float z)
+AngelScript::Vector3 GameScript::getPersonPosition()
 {
-	if(mefl && mefl->person) mefl->person->move(Vector3(x, y, z));
+	if(mefl && mefl->person)
+	{
+		Ogre::Vector3 ov = mefl->person->getPosition();
+		return AngelScript::Vector3(ov.x, ov.y, ov.z);
+	}
+	return AngelScript::Vector3();
+}
+
+void GameScript::movePerson(AngelScript::Vector3 vec)
+{
+	if(mefl && mefl->person) mefl->person->move(Ogre::Vector3(vec.x, vec.y, vec.z));
 }
 
 float GameScript::getCaelumTime()
@@ -754,9 +772,9 @@ void GameScript::flashMessage(std::string &txt, float time, float charHeight)
 	if(mefl) mefl->flashMessage(txt, time, charHeight);
 }
 
-void GameScript::setDirectionArrow(std::string &text, float positionx, float positiony, float positionz)
+void GameScript::setDirectionArrow(std::string &text, AngelScript::Vector3 vec)
 {
-	if(mefl) mefl->setDirectionArrow(const_cast<char*>(text.c_str()), Vector3(positionx, positiony, positionz));
+	if(mefl) mefl->setDirectionArrow(const_cast<char*>(text.c_str()), Ogre::Vector3(vec.x, vec.y, vec.z));
 }
 
 int GameScript::getChatFontSize()
@@ -791,7 +809,7 @@ void GameScript::repairVehicle(string &instance, string &box)
 }
 
 
-void GameScript::spawnObject(const std::string &objectName, const std::string instanceName, float px, float py, float pz, float rx, float ry, float rz, const std::string &eventhandler)
+void GameScript::spawnObject(const std::string &objectName, const std::string &instanceName, float px, float py, float pz, float rx, float ry, float rz, const std::string &eventhandler, bool uniquifyMaterials)
 {
 	asIScriptModule *mod=0;
 	try
@@ -806,12 +824,73 @@ void GameScript::spawnObject(const std::string &objectName, const std::string in
 
 	// trying to create the new object
 	SceneNode *bakeNode=mefl->getSceneMgr()->getRootSceneNode()->createChildSceneNode();
-	mefl->loadObject(const_cast<char*>(objectName.c_str()), px, py, pz, rx, ry, rz, bakeNode, const_cast<char*>(instanceName.c_str()), true, functionPtr, const_cast<char*>(objectName.c_str()));
+	mefl->loadObject(const_cast<char*>(objectName.c_str()), px, py, pz, rx, ry, rz, bakeNode, const_cast<char*>(instanceName.c_str()), true, functionPtr, const_cast<char*>(objectName.c_str()), uniquifyMaterials);
 }
 
 void GameScript::hideDirectionArrow()
 {
-	if(mefl) mefl->setDirectionArrow(0, Vector3::ZERO);
+	if(mefl) mefl->setDirectionArrow(0, Ogre::Vector3::ZERO);
+}
+
+int GameScript::setMaterialAmbient(const std::string &materialName, float red, float green, float blue)
+{
+	try
+	{
+		MaterialPtr m = MaterialManager::getSingleton().getByName(materialName);
+		if(m.isNull()) return 0;
+		m->setAmbient(red, green, blue);
+	} catch(...)
+	{
+		return 0;
+	}
+	return 1;
+}
+
+int GameScript::setMaterialDiffuse(const std::string &materialName, float red, float green, float blue, float alpha)
+{
+	try
+	{
+		MaterialPtr m = MaterialManager::getSingleton().getByName(materialName);
+		if(m.isNull()) return 0;
+		m->setDiffuse(red, green, blue, alpha);
+	} catch(...)
+	{
+		return 0;
+	}
+	return 1;
+}
+
+int GameScript::setMaterialSpecular(const std::string &materialName, float red, float green, float blue, float alpha)
+{
+	try
+	{
+		MaterialPtr m = MaterialManager::getSingleton().getByName(materialName);
+		if(m.isNull()) return 0;
+		m->setSpecular(red, green, blue, alpha);
+	} catch(...)
+	{
+		return 0;
+	}
+	return 1;
+}
+
+int GameScript::setMaterialEmissive(const std::string &materialName, float red, float green, float blue)
+{
+	try
+	{
+		MaterialPtr m = MaterialManager::getSingleton().getByName(materialName);
+		if(m.isNull()) return 0;
+		m->setSelfIllumination(red, green, blue);
+	} catch(...)
+	{
+		return 0;
+	}
+	return 1;
+}
+
+float GameScript::rangeRandom(float from, float to)
+{
+	return Ogre::Math::RangeRandom(from, to);
 }
 
 #endif //ANGELSCRIPT
