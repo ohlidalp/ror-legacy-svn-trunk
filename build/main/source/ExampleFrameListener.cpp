@@ -4533,7 +4533,7 @@ bool ExampleFrameListener::updateEvents(float dt)
 			rotz = atan2(idir.dotProduct(Vector3::UNIT_X), idir.dotProduct(-Vector3::UNIT_Z));
 			rotz = -Radian(rotz).valueDegrees();
 		}
-		LogManager::getSingleton().logMessage("position " + StringConverter::toString(pos.x) + ", "+ StringConverter::toString(pos.y) + ", " + StringConverter::toString(pos.z) + ", 0, " + StringConverter::toString(rotz)+", 0");
+		LogManager::getSingleton().logMessage("position-x " + StringConverter::toString(pos.x) + ", "+ StringConverter::toString(pos.y) + ", " + StringConverter::toString(pos.z) + ", 0, " + StringConverter::toString(rotz)+", 0");
 
 	}
 
@@ -7154,6 +7154,11 @@ END OF OLD CODE */
 	
 #ifdef OPENSTEER
 		// Update traffic movement
+		if (person)
+			{
+				aitraffic->playerpos = person->getPosition();
+				aitraffic->playerrot = person->getOrientation();
+			}
 		aitraffic->frameStep(evt.timeSinceLastFrame);
 #endif //OPENSTEER
 
