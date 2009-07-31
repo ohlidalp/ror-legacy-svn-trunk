@@ -11,14 +11,18 @@ typedef struct _trafficnode
 {
 	float speed;	// in m/s
 	Ogre::Vector3 lastpos;
+	int			  wpid;
 
 	float x1;
 	float y1;
 	float z1;
-
+/*
 	float x2;
 	float y2;
 	float z2;
+*/
+	Ogre::Vector3		position;
+	Ogre::Quaternion	rotation;
 
 } trafficnode_t;
 
