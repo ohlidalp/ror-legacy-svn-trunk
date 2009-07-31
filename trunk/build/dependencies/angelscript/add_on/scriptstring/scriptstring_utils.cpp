@@ -1,7 +1,7 @@
 #include <assert.h>
 #include "scriptstring.h"
 
-
+BEGIN_AS_NAMESPACE
 
 // This function returns a string containing the substring of the input string
 // determined by the starting index and count of characters.
@@ -366,3 +366,6 @@ void RegisterScriptStringUtils(asIScriptEngine *engine)
     r = engine->RegisterGlobalFunction("string@[]@ split(const string &in, const string &in)", asFUNCTION(StringSplit_Generic), asCALL_GENERIC); assert(r >= 0);
     r = engine->RegisterGlobalFunction("string@ join(const string@[] &in, const string &in)", asFUNCTION(StringJoin_Generic), asCALL_GENERIC); assert(r >= 0);
 }
+
+END_AS_NAMESPACE
+
