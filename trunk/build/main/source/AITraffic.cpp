@@ -52,6 +52,7 @@ void AITraffic::frameStep(Ogre::Real deltat)
 			Ogre::Vector3 pos = vehicles[i]->getPosition();
 			Ogre::LogManager::getSingleton().logMessage("Passed position: "+Ogre::StringConverter::toString(pos.x)+" "+Ogre::StringConverter::toString(pos.y)+" "+Ogre::StringConverter::toString(pos.z));
 			trafficgrid[i].position = vehicles[i]->getPosition();
+			trafficgrid[i].rotation = vehicles[i]->getOrientation();
 		}
 }
 

@@ -1642,5 +1642,12 @@ void AITraffic_Vehicle::setPosition(Ogre::Vector3 newPos)
 	static_cast<AbstractVehicle*>(this)->setPosition(OpenSteer::Vec3(newPos.x, newPos.y, newPos.z));
 }
 
+Ogre::Quaternion AITraffic_Vehicle::getOrientation()
+{
+	Vec3 fwd = forward();
+	Ogre::Vector3 v3;
+	Ogre::Quaternion retquat = v3.getRotationTo(Ogre::Vector3(fwd.x, fwd.y, fwd.z));
+	return retquat;
+}
 
 #endif //OPENSTEER
