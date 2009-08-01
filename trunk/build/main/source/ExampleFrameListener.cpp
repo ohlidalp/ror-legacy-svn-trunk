@@ -69,6 +69,10 @@ along with Rigs of Rods.  If not, see <http://www.gnu.org/licenses/>.
 #include "ResourceBuffer.h"
 #include "CacheSystem.h"
 
+#ifdef OPENSTEER
+#include "AITraffic.h"
+#endif
+
 #ifdef PAGED
 # include "PagedGeometry.h"
 # include "ImpostorPage.h"
@@ -948,9 +952,6 @@ ExampleFrameListener::ExampleFrameListener(RenderWindow* win, Camera* cam, Scene
 	if (mplatform) mplatform->connect();
 #endif
 
-#ifdef OPENSTEER
-	aitraffic = new AITraffic();
-#endif //OPENSTEER
 
 #ifdef ANGELSCRIPT
 	new ScriptEngine(this);
@@ -958,6 +959,13 @@ ExampleFrameListener::ExampleFrameListener(RenderWindow* win, Camera* cam, Scene
 	OgreConsole::getSingleton().init(root, win);
 	OgreConsole::getSingleton().setVisible(false);
 #endif
+
+#ifdef OPENSTEER
+	// we are doomed if ANGELSCRIPT is not defined
+	// since then invalid SE is passed below!
+	aitraffic = new AITraffic((ScriptEngine *)this);
+#endif //OPENSTEER
+
 	externalCameraMode=0;
 	lastcameramode=0;
 	gameStartTime = CACHE.getTimeStamp();

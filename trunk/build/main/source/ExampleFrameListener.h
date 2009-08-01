@@ -611,6 +611,7 @@ protected:
 #ifdef MPLATFORM
 	MPlatform_Base *mplatform;
 #endif
+
 #ifdef OPENSTEER
 	AITraffic *aitraffic;
 #endif //OPENSTEER
