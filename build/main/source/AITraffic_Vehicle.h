@@ -156,6 +156,7 @@ class AITraffic_Vehicle: public SimpleVehicle_2IMI
         }
 
 		Ogre::Vector3 getPosition();
+		Ogre::Quaternion getOrientation();
 		void setPosition(Ogre::Vector3 newPos);
 
         // give each vehicle a unique number

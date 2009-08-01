@@ -6,6 +6,13 @@ set(ror_src
 	source/airbrake.h
 	source/Airfoil.cpp
 	source/Airfoil.h
+
+	source/AITraffic.h
+	source/AITraffic_Common.h
+	source/AITraffic_Vehicle.h
+	source/AITraffic_TerrainMap.h
+	source/AITraffic_Route.h
+
 	source/approxmath.h
 	source/autopilot.cpp
 	source/autopilot.h
@@ -165,6 +172,8 @@ set(ror_src
 	source/AITraffic.cpp
 	source/AITraffic_Common.cpp
 	source/AITraffic_Vehicle.cpp
+	source/AITraffic_TerrainMap.cpp
+	source/AITraffic_Route.cpp
 	
 	source/PositionStorage.cpp
 	source/PositionStorage.h
