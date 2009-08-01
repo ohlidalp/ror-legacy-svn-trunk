@@ -325,9 +325,10 @@ void ScriptEngine::init()
 	// string type for C++ applications. Every developer is free to register it's own string type.
 	// The SDK do however provide a standard add-on for registering a string type, so it's not
 	// necessary to register your own string type if you don't want to.
-//tdev: the following 2 lines causes linking error. Can you check on these?
+//tdev: the following two lines	causes linking error. Can you check on these?
 //imike	RegisterStdString(engine);
-//imike	RegisterScriptMath_Native(engine);
+//imike	RegisterScriptMath_NatingelScript::RegisterScriptMath_Native(engine);
+
 
 	// Register everything
 	// class Beam
