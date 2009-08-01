@@ -855,7 +855,6 @@ void Beam::pushNetwork(char* data, int size)
 #ifdef OPENSTEER
 void Beam::calcTraffic(trafficnode_t node)
 {
-//	Quaternion q(0, 0, 1, 0);
 	Quaternion q = node.rotation;
 	q.normalise();
 

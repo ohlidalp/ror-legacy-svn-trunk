@@ -1645,8 +1645,9 @@ void AITraffic_Vehicle::setPosition(Ogre::Vector3 newPos)
 Ogre::Quaternion AITraffic_Vehicle::getOrientation()
 {
 	Vec3 fwd = forward();
-	Ogre::Vector3 v3;
-	Ogre::Quaternion retquat = v3.getRotationTo(Ogre::Vector3(fwd.x, fwd.y, fwd.z));
+	Ogre::Vector3 v1(-1, 0, 0);
+	Ogre::Vector3 v2(fwd.x, fwd.y, fwd.z);
+	Ogre::Quaternion retquat = v1.getRotationTo(v2, Ogre::Vector3::UNIT_X);
 	return retquat;
 }
 
