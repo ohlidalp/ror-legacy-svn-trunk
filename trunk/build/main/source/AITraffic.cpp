@@ -55,7 +55,7 @@ void AITraffic::frameStep(Ogre::Real deltat)
 
 	for (int i=0;i<num_of_vehicles;i++)
 		{
-			vehicles[i]->update(elapsedTime, mTotalElapsedTime);
+			vehicles[i]->updateSimple(elapsedTime, mTotalElapsedTime);
 			Ogre::Vector3 pos = vehicles[i]->getPosition();
 			Ogre::LogManager::getSingleton().logMessage("Passed position: "+Ogre::StringConverter::toString(pos.x)+" "+Ogre::StringConverter::toString(pos.y)+" "+Ogre::StringConverter::toString(pos.z));
 			trafficgrid[i].position = vehicles[i]->getPosition();
