@@ -2,8 +2,12 @@
 
 #include "AITraffic_Vehicle.h"
 
-AITraffic_Vehicle::AITraffic_Vehicle() : map (makeMap ()), path (makePath ())
+AITraffic_Vehicle::AITraffic_Vehicle()// : map (makeMap ()), path (makePath ())
 {
+	makePath();
+	reset();
+
+/* old code --
 	reset();
 	demoSelect = 2;
         // to compute mean time between collisions
@@ -40,6 +44,7 @@ AITraffic_Vehicle::AITraffic_Vehicle() : map (makeMap ()), path (makePath ())
 
         // 10 seconds with 200 points along the trail
 //        setTrailParameters (10, 200);
+*/
 }
 
 AITraffic_Vehicle::~AITraffic_Vehicle()
@@ -48,6 +53,10 @@ AITraffic_Vehicle::~AITraffic_Vehicle()
 
 void AITraffic_Vehicle::reset (void)
 {
+	wp_idx = 1;
+	wp_prev_idx = 0;
+
+/* -- old code
 	// reset LocalSpace state
 	resetLocalSpace ();
 	static_cast<AbstractVehicle*>(this)->resetLocalSpace();
@@ -125,10 +134,15 @@ void AITraffic_Vehicle::reset (void)
         // state saved for speedometer
 //      annoteMaxRelSpeed = annoteMaxRelSpeedCurve = annoteMaxRelSpeedPath = 0;
 //      annoteMaxRelSpeed = annoteMaxRelSpeedCurve = annoteMaxRelSpeedPath = 1;
+*/
 }
 
+/*
 void AITraffic_Vehicle::update (const float currentTime, const float elapsedTime)
 {
+		updateSimple(currentTime, elapsedTime);
+		return;
+
         // take note when current dt is zero (as in paused) for stat counters
         dtZero = (elapsedTime == 0);
 
@@ -161,13 +175,13 @@ void AITraffic_Vehicle::update (const float currentTime, const float elapsedTime
         else
         {
             // determine steering for obstacle avoidance (save for annotation)
-/*
+
             const Vec3 avoid = annotateAvoid = 
                 steerToAvoidObstaclesOnMap (lookAheadTimeOA (),
                                             *map,
                                             hintForObstacleAvoidance ());
             const bool needToAvoid = avoid != Vec3::zero;
-*/
+
             // any obstacles to avoid?
 //            if (needToAvoid)
             if (false)
@@ -192,7 +206,7 @@ void AITraffic_Vehicle::update (const float currentTime, const float elapsedTime
                     const Vec3 wander = steerForWander (elapsedTime);
                     const Vec3 flat = wander.setYtoZero ();
                     const Vec3 weighted = flat.truncateLength (maxForce()) * 6;
-                    const Vec3 a = position() + Vec3 (0, 0.2f, 0);
+//imike                    const Vec3 a = position() + Vec3 (0, 0.2f, 0);
 //                    annotationLine (a, a + (weighted * 0.3f), gWhite);
                     steering += weighted;
                 }
@@ -241,6 +255,7 @@ void AITraffic_Vehicle::update (const float currentTime, const float elapsedTime
                         steering += (steerTowardHeading(pathHeading) *
                                      (path->nearWaypoint (position ()) ?
                                       0.5f : 0.1f));
+
                     }
                 }
             }
@@ -273,6 +288,7 @@ void AITraffic_Vehicle::update (const float currentTime, const float elapsedTime
         // annotation
 //        perFrameAnnotation ();
 //        recordTrailVertex (currentTime, position());
+
 }
 
 
@@ -320,6 +336,7 @@ void AITraffic_Vehicle::collectReliabilityStatistics (const float currentTime, c
 
 OpenSteer::Vec3 AITraffic_Vehicle::hintForObstacleAvoidance (void)
 {
+/*
 	// are we heading roughly parallel to the current path segment?
 	const OpenSteer::Vec3 p = position ();
 	const OpenSteer::Vec3 pathHeading = path->tangentAt (p, pathFollowDirection);
@@ -369,6 +386,7 @@ OpenSteer::Vec3 AITraffic_Vehicle::hintForObstacleAvoidance (void)
             }
         }
 	// otherwise, no hint
+
 	return OpenSteer::Vec3::zero;
 }
 
@@ -388,6 +406,8 @@ OpenSteer::Vec3 AITraffic_Vehicle::steerToAvoidObstaclesOnMap (const float minTi
 															   const AITraffic_TerrainMap& map,
 																const OpenSteer::Vec3& steerHint)
 {
+	return OpenSteer::Vec3::zero;
+
 	const float spacing = map.minSpacing() / 2;
 	const float maxSide = radius();
 	const float maxForward = minTimeToCollision * speed();
@@ -779,10 +799,11 @@ float AITraffic_Vehicle::scanObstacleMap (const OpenSteer::Vec3& start,
 
 bool AITraffic_Vehicle::detectImminentCollision (void)
 {
+	bool returnFlag = false;
+
 	// QQQ  this should be integrated into steerToAvoidObstaclesOnMap
 	// QQQ  since it shares so much infrastructure
 	// QQQ  less so after changes on 3-16-04
-	bool returnFlag = false;
 	const float spacing = map->minSpacing() / 2;
 	const float maxSide = halfWidth + spacing;
 	const float minDistance = curvedSteering ? 2.0f : 2.5f; // meters
@@ -851,6 +872,7 @@ bool AITraffic_Vehicle::detectImminentCollision (void)
             // increment sideways displacement of scan line
             s += spacing;
         }
+
 	return returnFlag;
 }
 
@@ -861,8 +883,10 @@ bool AITraffic_Vehicle::detectImminentCollision (void)
 //
 // this should be const, but easier for now to ignore that
 
-OpenSteer::Vec3 AITraffic_Vehicle::predictFuturePosition (const float predictionTime) /* const */
-    {
+OpenSteer::Vec3 AITraffic_Vehicle::predictFuturePosition (const float predictionTime)
+{
+	return OpenSteer::Vec3::zero;
+
         if (curvedSteering)
         {
             // QQQ this chunk of code is repeated in far too many places,
@@ -892,6 +916,7 @@ OpenSteer::Vec3 AITraffic_Vehicle::predictFuturePosition (const float prediction
         {
             return position() + (velocity() * predictionTime);
         }
+
     }
 
 
@@ -933,6 +958,8 @@ OpenSteer::Vec3 AITraffic_Vehicle::steerToFollowPathLinear (const int direction,
                                   const float predictionTime,
                                   AITraffic_Route& path)
 {
+	return OpenSteer::Vec3::zero;
+
 	// our goal will be offset from our path distance by this amount
 	const float pathDistanceOffset = direction * predictionTime * speed();
 
@@ -1009,6 +1036,7 @@ OpenSteer::Vec3 AITraffic_Vehicle::steerToFollowPathLinear (const int direction,
             else
                 return seek;
 		}
+
 }
 
 
@@ -1022,6 +1050,8 @@ OpenSteer::Vec3 AITraffic_Vehicle::steerToFollowPathCurve (const int direction,
                                  const float predictionTime,
                                  AITraffic_Route& path)
 {
+	return OpenSteer::Vec3::zero;
+	
 	// predict our future position (based on current curvature and speed)
 	const OpenSteer::Vec3 futurePosition = predictFuturePosition (predictionTime);
 	// find the point on the path nearest the predicted future position
@@ -1083,93 +1113,15 @@ OpenSteer::Vec3 AITraffic_Vehicle::steerToFollowPathCurve (const int direction,
                 const float whichSide = (pathSide.dot(towardFP)<0)?1.0f :-1.0f;
                 return (side () * maxForce () * whichSide) + braking;
             }
-        }
+  
+ }
+
 }
 
 
 void AITraffic_Vehicle::perFrameAnnotation (void)
 {
 }
-
-// draw vehicle's body and annotation
-
-AITraffic_Route* AITraffic_Vehicle::makePath (void)
-{
-#define TRAFFIC_PATH_LENGTH 4
-
-		OpenSteer::Vec3 waypoints[TRAFFIC_PATH_LENGTH];
-		OpenSteer::Vec3 turnpoints[TRAFFIC_PATH_LENGTH];
-/*
-		waypoints[0] = OpenSteer::Vec3(29.11, 0.0288328, 22.2459); turnpoints[0] = OpenSteer::Vec3(0, 180.076, 0);
-		waypoints[1] = OpenSteer::Vec3(119.326, 0.0280612, 22.1273); turnpoints[1] = OpenSteer::Vec3( 0, 180.076, 0);
-		waypoints[2] = OpenSteer::Vec3(164.785, 0.0279655, 22.0676); turnpoints[2] = OpenSteer::Vec3( 0, 180.076, 0);
-		waypoints[3] = OpenSteer::Vec3(240.503, 0.0322976, 21.972); turnpoints[3] = OpenSteer::Vec3( 0, 180.076, 0);
-		waypoints[4] = OpenSteer::Vec3(284.359, 0.0310862, 21.9157); turnpoints[4] = OpenSteer::Vec3( 0, 180.076, 0);
-		waypoints[5] = OpenSteer::Vec3(319.277, 0.0306008, 21.8717); turnpoints[5] = OpenSteer::Vec3( 0, 180.076, 0);
-		waypoints[6] = OpenSteer::Vec3(354.443, 0.0332535, 21.8268); turnpoints[6] = OpenSteer::Vec3( 0, 180.076, 0);
-		waypoints[7] = OpenSteer::Vec3(379.58, 0.0314569, 21.7952); turnpoints[7] = OpenSteer::Vec3( 0, 180.076, 0);
-		waypoints[8] = OpenSteer::Vec3(408.577, 0.0324422, 21.758); turnpoints[8] = OpenSteer::Vec3( 0, 180.076, 0);
-		waypoints[9] = OpenSteer::Vec3(460.442, 0.0307225, 21.6927); turnpoints[9] = OpenSteer::Vec3( 0, 180.076, 0);
-		waypoints[10] = OpenSteer::Vec3(471.571, 0.0214691, 23.4584); turnpoints[10] = OpenSteer::Vec3( 0, 165.752, 0);
-		waypoints[11] = OpenSteer::Vec3(476.353, 0.024386, 26.7654); turnpoints[11] = OpenSteer::Vec3( 0, 104.331, 0);
-		waypoints[12] = OpenSteer::Vec3(477.065, 0.0199774, 34.1863); turnpoints[12] = OpenSteer::Vec3( 0, 91.8409, 0);
-		waypoints[13] = OpenSteer::Vec3(477.508, 0.0243011, 47.9581); turnpoints[13] = OpenSteer::Vec3( 0, 91.8409, 0);
-		waypoints[14] = OpenSteer::Vec3(478.086, 0.0311105, 65.9379); turnpoints[14] = OpenSteer::Vec3( 0, 91.8409, 0);
-		waypoints[15] = OpenSteer::Vec3(477.628, 0.026498, 111.12); turnpoints[15] = OpenSteer::Vec3( 0, 89.7782, 0);
-		waypoints[16] = OpenSteer::Vec3(477.35, 0.0238848, 181.284); turnpoints[16] = OpenSteer::Vec3( 0, 89.7782, 0);
-		waypoints[17] = OpenSteer::Vec3(477.172, 0.0204903, 226.762); turnpoints[17] = OpenSteer::Vec3( 0, 89.7782, 0);
-		waypoints[18] = OpenSteer::Vec3(476.984, 0.0199728, 274.551); turnpoints[18] = OpenSteer::Vec3( 0, 89.7782, 0);
-		waypoints[19] = OpenSteer::Vec3(476.673, 0.0178082, 353.52); turnpoints[19] = OpenSteer::Vec3( 0, 89.7782, 0);
-		waypoints[20] = OpenSteer::Vec3(476.991, 0.019943, 429.705); turnpoints[20] = OpenSteer::Vec3( 0, 91.3825, 0);
-		waypoints[21] = OpenSteer::Vec3(477.648, 0.0265499, 457.029); turnpoints[21] = OpenSteer::Vec3( 0, 91.3825, 0);
-		waypoints[22] = OpenSteer::Vec3(477.547, 0.0230775, 462.005); turnpoints[22] = OpenSteer::Vec3( 0, 82.5589, 0);
-		waypoints[23] = OpenSteer::Vec3(477.013, 0.0177059, 466.092); turnpoints[23] = OpenSteer::Vec3( 0, 82.5589, 0);
-		waypoints[24] = OpenSteer::Vec3(476.488, 0.0136084, 470.099); turnpoints[24] = OpenSteer::Vec3( 0, 70.8706, 0);
-		waypoints[25] = OpenSteer::Vec3(474.25, 0.0195502, 474.595); turnpoints[25] = OpenSteer::Vec3( 0, 46.2334, 0);
-		waypoints[26] = OpenSteer::Vec3(472.605, 0.0173071, 475.95); turnpoints[26] = OpenSteer::Vec3( 0, 21.9782, 0);
-		waypoints[27] = OpenSteer::Vec3(469.358, 0.0213436, 477.258); turnpoints[27] = OpenSteer::Vec3( 0, 0.434967, 0);
-		waypoints[28] = OpenSteer::Vec3(380.283, 0.0288884, 477.749); turnpoints[28] = OpenSteer::Vec3( 0, 0.415833, 0);
-		waypoints[29] = OpenSteer::Vec3(271.373, 0.0476805, 478.535); turnpoints[29] = OpenSteer::Vec3( 0, 0.415833, 0);
-		waypoints[30] = OpenSteer::Vec3(211.693, 0.0414899, 478.968); turnpoints[30] = OpenSteer::Vec3( 0, 0.415833, 0);
-		waypoints[31] = OpenSteer::Vec3(164.869, 0.0281601, 477.784); turnpoints[31] = OpenSteer::Vec3( 0, 0.339447, 0);
-		waypoints[32] = OpenSteer::Vec3(131.092, 0.0284049, 477.987); turnpoints[32] = OpenSteer::Vec3( 0, 0.816925, 0);
-		waypoints[33] = OpenSteer::Vec3(46.5514, 0.0264146, 477.449); turnpoints[33] = OpenSteer::Vec3( 0, 359.384, 0);
-		waypoints[34] = OpenSteer::Vec3(39.2347, 0.0241784, 477.37); turnpoints[34] = OpenSteer::Vec3( 0, 359.384, 0);
-		waypoints[35] = OpenSteer::Vec3(36.6758, 0.0221664, 477.341); turnpoints[35] = OpenSteer::Vec3( 0, 359.384, 0);
-		waypoints[36] = OpenSteer::Vec3(29.6755, 0.0156763, 476.621); turnpoints[36] = OpenSteer::Vec3( 0, 349.53, 0);
-		waypoints[37] = OpenSteer::Vec3(26.5159, 0.0127419, 474.853); turnpoints[37] = OpenSteer::Vec3( 0, 328.139, 0);
-		waypoints[38] = OpenSteer::Vec3(24.1312, 0.0148622, 472.168); turnpoints[38] = OpenSteer::Vec3( 0, 309.919, 0);
-		waypoints[39] = OpenSteer::Vec3(22.4007, 0.0257895, 466.697); turnpoints[39] = OpenSteer::Vec3( 0, 270.614, 0);
-		waypoints[40] = OpenSteer::Vec3(21.7869, 0.032502, 330.633); turnpoints[40] = OpenSteer::Vec3( 0, 270.271, 0);
-		waypoints[41] = OpenSteer::Vec3(21.238, 0.0378981, 212.613); turnpoints[41] = OpenSteer::Vec3( 0, 270.271, 0);
-		waypoints[42] = OpenSteer::Vec3(22.9558, 0.018684, 30.2807); turnpoints[42] = OpenSteer::Vec3( 0, 269.87, 0);
-		waypoints[43] = OpenSteer::Vec3(24.2757, 0.0279735, 25.413); turnpoints[43] = OpenSteer::Vec3( 0, 198.594, 0);
-		waypoints[44] = OpenSteer::Vec3(28.854, 0.0128751, 23.8735); turnpoints[44] = OpenSteer::Vec3( 0, 198.594, 0);
-		waypoints[45] = OpenSteer::Vec3(31.4392, 0.0140525, 23.3507); turnpoints[45] = OpenSteer::Vec3( 0, 180.144, 0);
-		waypoints[46] = OpenSteer::Vec3(124.349, 0.0269009, 22.3617); turnpoints[46] = OpenSteer::Vec3( 0, 180.259, 0);
-		waypoints[47] = OpenSteer::Vec3(244.899, 0.0299592, 22.2087); turnpoints[47] = OpenSteer::Vec3( 0, 179.915, 0);
-		waypoints[48] = OpenSteer::Vec3(328.614, 0.027036, 22.3377); turnpoints[48] = OpenSteer::Vec3( 0, 179.915, 0);
-		waypoints[49] = OpenSteer::Vec3(388.44, 0.0275825, 22.4302); turnpoints[49] = OpenSteer::Vec3( 0, 179.915, 0);
-*/
-/*
-		waypoints[0] = OpenSteer::Vec3(30.2037, 0.0932541, 15.4732);
-		waypoints[1] = OpenSteer::Vec3(144.78, 0.0972627, 14.9248);
-		waypoints[2] = OpenSteer::Vec3(144.34, 0.0919767, 89.4973);
-		waypoints[3] = OpenSteer::Vec3(15.1772, 0.0962572, 90.9755);
-*/
-		waypoints[0] = OpenSteer::Vec3(30.2037,		0,	15.4732);
-		waypoints[1] = OpenSteer::Vec3(144.78,		0,	14.9248);
-		waypoints[2] = OpenSteer::Vec3(144.34,		0,	89.4973);
-		waypoints[3] = OpenSteer::Vec3(15.1772,		0,	90.9755);
-
-        // return Path object
-        const int pathPointCount = 4;
-        const float k = 2.05f;
-        float pathRadii[4];
-		for (int i=0;i<pathPointCount;i++) pathRadii[i] = k;
-        return new AITraffic_Route (pathPointCount, waypoints, pathRadii, true);
-    }
-
 
 AITraffic_TerrainMap* AITraffic_Vehicle::makeMap (void)
 {
@@ -1181,7 +1133,7 @@ AITraffic_TerrainMap* AITraffic_Vehicle::makeMap (void)
 
 bool AITraffic_Vehicle::handleExitFromMap (void)
 {
-/*
+
 	// for path following, do wrap-around (teleport) and make new map
 	const float px = position ().x;
 	const float fx = forward ().x;
@@ -1213,7 +1165,7 @@ bool AITraffic_Vehicle::handleExitFromMap (void)
 
             return true; 
 		}
-*/
+
 	return false;
 }
 
@@ -1232,7 +1184,7 @@ float AITraffic_Vehicle::wingSlope (void)
 
 void AITraffic_Vehicle::resetStuckCycleDetection (void)
 {
-	resetSmoothedPosition (position () + (forward () * -80)); // qqq
+//	resetSmoothedPosition (position () + (forward () * -80)); // qqq
 }
 
 
@@ -1297,7 +1249,7 @@ OpenSteer::Vec3 AITraffic_Vehicle::convertLinearToCurvedSpaceGlobal (const OpenS
 	const OpenSteer::Vec3 trimmedLinear = linear.truncateLength (maxForce ());
 
 	// ---------- this block imported from steerToAvoidObstaclesOnMap
-	const float signedRadius = 1 / (nonZeroCurvatureQQQ() /*QQQ*/ * 1);
+	const float signedRadius = 1 / (nonZeroCurvatureQQQ()  * 1);
 	const OpenSteer::Vec3 localCenterOfCurvature = side () * signedRadius;
 	const OpenSteer::Vec3 center = position () + localCenterOfCurvature;
 	const float sign = signedRadius < 0 ? 1.0f : -1.0f;
@@ -1414,7 +1366,7 @@ OpenSteer::Vec3 AITraffic_Vehicle::steerTowardHeading (const OpenSteer::Vec3& de
 
 
 OpenSteer::Vec3 AITraffic_Vehicle::adjustRawSteeringForce (const Vec3& force,
-                                                  const float /* deltaTime */)
+                                                  const float )
 {
  const float maxAdjustedSpeed = 0.2f * maxSpeed ();
 
@@ -1530,7 +1482,7 @@ void AITraffic_Vehicle::applySteeringForce (const Vec3& force, const float elaps
 // parameter names commented out to prevent compiler warning from "-W"
 
 
-void AITraffic_Vehicle::regenerateLocalSpace (const Vec3& newVelocity, const float /* elapsedTime */)
+void AITraffic_Vehicle::regenerateLocalSpace (const Vec3& newVelocity, const float )
 {
     // adjust orthonormal basis vectors to be aligned with new velocity
     if (speed() > 0) regenerateOrthonormalBasisUF (newVelocity / speed());
@@ -1630,25 +1582,135 @@ OpenSteer::Vec3 AITraffic_Vehicle::predictFuturePosition (const float prediction
 
 
 // ----------------------------------------------------------------------------
+*/
+
+
+
+// -------------------------------- SIMPLE AI TRAFFIC DRIVE ------------------------------------
+
+void AITraffic_Vehicle::updateSimple(const float currentTime, const float elapsedTime)
+{
+	// are we in the path-tube?
+	// if so find the neares one
+	// for mow we assume: yes
+
+	// are we close to the next waypoint
+	// if so,update the target, means we set the 
+
+	if (closeToWayPoint(getHeadedWayPoint(),5.0f))
+		{
+			advanceToNextWayPoint();
+		}
+
+	int safe_follow		= calculateSafeFollowDistance();
+	int brake_dist		= calculateBrakeDistance();
+	int safe_distance	= objectOnTravelPath();
+
+
+
+}
+
+int	 AITraffic_Vehicle::closestWayPoint()
+{	
+	int idx = 0;
+	float dist = position.distance(waypoints[0]);
+	for (int i=1;i<num_of_waypoints;i++)
+		{
+			float d2 = position.distance(waypoints[i]);
+			if (d2<dist) { dist = d2; idx = i; }
+		}
+	return idx;
+}
+
+float AITraffic_Vehicle::calculateSafeFollowDistance()
+{
+	return 10.0;
+}
+
+float  AITraffic_Vehicle::calculateBrakeDistance()
+{
+	return 5.0;
+}
+
+int	AITraffic_Vehicle::getHeadedWayPoint()
+{
+	return wp_idx;
+}
+
+int	AITraffic_Vehicle::getLeftWayPoint()
+{
+	return wp_prev_idx;
+}
+
+int	AITraffic_Vehicle::advanceToNextWayPoint()
+{
+	// we create separate function for this, since we will implement "direction" of travel later on by these
+	wp_idx++;
+	if (wp_idx>=num_of_waypoints) wp_idx = 0;
+
+	wp_prev_idx = wp_idx-1;
+	if (wp_prev_idx<0) wp_prev_idx = num_of_waypoints-1;
+
+	return wp_idx;
+}
+
+
+bool  AITraffic_Vehicle::closeToWayPoint(int idx, float r)
+{
+	bool retbool = false;
+	if (position.distance(waypoints[idx])<=r) retbool = true;
+	return retbool;
+}
+
+void  AITraffic_Vehicle::advance()
+{
+}
+
+float  AITraffic_Vehicle::objectOnTravelPath()
+{
+	return 100.0f;
+}
 
 Ogre::Vector3 AITraffic_Vehicle::getPosition()
 {
-	OpenSteer::AbstractVehicle* vehicle = this;
-	return Ogre::Vector3(vehicle->position().x,vehicle->position().y,vehicle->position().z);
+//	OpenSteer::AbstractVehicle* vehicle = this;
+//	return Ogre::Vector3(vehicle->position().x,vehicle->position().y,vehicle->position().z);
+	return position;
 }
 
 void AITraffic_Vehicle::setPosition(Ogre::Vector3 newPos)
 {
-	static_cast<AbstractVehicle*>(this)->setPosition(OpenSteer::Vec3(newPos.x, newPos.y, newPos.z));
+//	static_cast<AbstractVehicle*>(this)->setPosition(OpenSteer::Vec3(newPos.x, newPos.y, newPos.z));
+	position = newPos;
 }
 
 Ogre::Quaternion AITraffic_Vehicle::getOrientation()
 {
-	Vec3 fwd = forward();
+//	Vec3 fwd = forward();
 	Ogre::Vector3 v1(-1, 0, 0);
-	Ogre::Vector3 v2(fwd.x, fwd.y, fwd.z);
+	Ogre::Vector3 v2(forward.x, forward.y, forward.z);
 	Ogre::Quaternion retquat = v1.getRotationTo(v2, Ogre::Vector3::UNIT_X);
 	return retquat;
 }
+
+
+
+void AITraffic_Vehicle::makePath (void)
+{
+		num_of_waypoints = 4;
+		waypoints[0] = Ogre::Vector3(30.2037,		0,	15.4732);
+		waypoints[1] = Ogre::Vector3(144.78,		0,	14.9248);
+		waypoints[2] = Ogre::Vector3(144.34,		0,	89.4973);
+		waypoints[3] = Ogre::Vector3(15.1772,		0,	90.9755);
+/*
+        // return Path object
+        const int pathPointCount = 4;
+        const float k = 2.05f;
+        float pathRadii[4];
+		for (int i=0;i<pathPointCount;i++) pathRadii[i] = k;
+        return new AITraffic_Route (pathPointCount, waypoints, pathRadii, true);
+*/
+}
+
 
 #endif //OPENSTEER

@@ -14,6 +14,7 @@
 
 using namespace OpenSteer;
 
+/*
 // SimpleVehicle_1 adds concrete LocalSpace methods to AbstractVehicle
 typedef OpenSteer::LocalSpaceMixin<AbstractVehicle> SimpleVehicle_1IMI;
 
@@ -23,7 +24,9 @@ typedef OpenSteer::SteerLibraryMixin<SimpleVehicle_1IMI> SimpleVehicle_2IMI;
 // SimpleVehicle adds concrete vehicle methods to SimpleVehicle_2
 
 //class AITraffic_Vehicle: public SimpleVehicle_2IMI
-class AITraffic_Vehicle: public SimpleVehicle_2IMI
+*/
+
+class AITraffic_Vehicle//: public SimpleVehicle_2IMI
 {
 
 	public:
@@ -33,6 +36,7 @@ class AITraffic_Vehicle: public SimpleVehicle_2IMI
 
 		/* from opensteer map demo */
 		void reset (void);
+/*
 		void update (const float currentTime, const float elapsedTime);
 		void adjustVehicleRadiusForSpeed (void);
 		void collectReliabilityStatistics (const float currentTime, const float elapsedTime);
@@ -84,7 +88,7 @@ class AITraffic_Vehicle: public SimpleVehicle_2IMI
         float setMass (float m) {return _mass = m;}
 
         // get velocity of vehicle
-        Vec3 velocity (void) const {return forward() * _speed;}
+//        Vec3 velocity (void) const {return forward() * _speed;}
 
         // get/set speed of vehicle  (may be faster than taking mag of velocity)
         float speed (void) const {return _speed;}
@@ -266,6 +270,44 @@ class AITraffic_Vehicle: public SimpleVehicle_2IMI
 
         // measure path curvature (1/turning-radius), maintain smoothed version
         void measurePathCurvature (const float elapsedTime);
+*/
+
+//-- UPDATE 2 related stuff
+
+#define MAX_TRAFFIC_PATH_LENGTH 4
+
+		void	updateSimple (const float currentTime, const float elapsedTime);	// the main updater function
+		Ogre::Vector3 getPosition();
+		void setPosition(Ogre::Vector3 newPos);
+		Ogre::Quaternion getOrientation();
+
+	private:
+		int		closestWayPoint();													// finds the closest waypoint for our position
+		int		getHeadedWayPoint();												// returns the waypoint we are heading to
+		int		getLeftWayPoint();													// returns the waypoint we are coming from
+		int		advanceToNextWayPoint();
+		bool	closeToWayPoint(int idx, float r);									// returns  true if we are within r range from the waypoint idx
+		void	advance();															// move the vehicle
+		float	objectOnTravelPath();												// returns the distance of the nearest obstacle in travel path
+		float	calculateSafeFollowDistance();									
+		float   calculateBrakeDistance();
+		void	makePath();															// create path to follow
+	
+
+
+		
+
+	private:
+		int wp_idx;					// which waypoint we are heading to
+		int wp_prev_idx;
+		int num_of_waypoints;		// how many waypoints we have
+		Ogre::Vector3 position;		// the current position
+		Ogre::Vector3 forward;		// where we are heading to
+
+		Ogre::Vector3 sspeed;			
+		Ogre::Vector3 waypoints[MAX_TRAFFIC_PATH_LENGTH];
+		
+
 
 
 };
