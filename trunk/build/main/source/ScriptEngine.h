@@ -25,7 +25,6 @@ along with Rigs of Rods.  If not, see <http://www.gnu.org/licenses/>.
 
 #include <string>
 #include "angelscript.h"
-#include "scriptmath3d/scriptmath3d.h" // angelscript addon
 #include "Ogre.h"
 
 //forward decl.
@@ -125,7 +124,7 @@ protected:
 	 * This function initialzies the engine and registeres all types
 	 */
     void init();
-    
+
 	/**
 	 * This is the callback function that gets called when script error occur.
 	 * When the script crashes, this function will provide you with more detail
@@ -189,7 +188,7 @@ public:
 	 * @param y Y position on the terrain
 	 * @param z Z position on the terrain
 	 */
-	void setPersonPosition(AngelScript::Vector3 vec);
+	void setPersonPosition(Ogre::Vector3 vec);
 
 	/**
 	 * moves the person relative
@@ -197,7 +196,7 @@ public:
 	 * @param y Y translation
 	 * @param z Z translation
 	 */
-	void movePerson(AngelScript::Vector3);
+	void movePerson(Ogre::Vector3);
 
 	/**
 	 * gets the time of the day in seconds
@@ -274,7 +273,7 @@ public:
 	 * set direction arrow
 	 * @param text text to be displayed. "" to hide the text
 	 */
-	void setDirectionArrow(std::string &text, AngelScript::Vector3 vec);
+	void setDirectionArrow(std::string &text, Ogre::Vector3 vec);
 
 
 	/**
@@ -306,7 +305,7 @@ public:
 	int setMaterialEmissive(const std::string &materialName, float red, float green, float blue);
 	
 	float rangeRandom(float from, float to);
-	AngelScript::Vector3 getPersonPosition();
+	Ogre::Vector3 getPersonPosition();
 };
 
 #endif

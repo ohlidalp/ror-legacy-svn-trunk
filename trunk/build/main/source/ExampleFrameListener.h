@@ -189,12 +189,15 @@ typedef struct
 class ExampleFrameListener: public FrameListener, public Ogre::WindowEventListener
 {
 protected:
+	void setupBenchmark();
+	void benchStep(float dt);
 	truck_prepare_t truck_preload[100];
 	int truck_preload_num;
 	localizer_t localizers[64];
 	int free_localizer;
 	int mSceneDetailIndex;
 	Real mMoveSpeed;
+	bool benchmarking;
 	//    Real dirSpeed;
 	Degree mRotateSpeed;
 	Overlay* directionOverlay;

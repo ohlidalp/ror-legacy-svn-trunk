@@ -937,6 +937,7 @@ void ExampleFrameListener::setGravity(float value)
 // Constructor takes a RenderWindow because it uses that to determine input context
 ExampleFrameListener::ExampleFrameListener(RenderWindow* win, Camera* cam, SceneManager* scm, Root* root) :  initialized(false), mCollisionTools(0)
 {
+	benchmarking=false;
 	fpsLineStream = netLineStream = netlagLineStream = 0;
 	enablePosStor = (SETTINGS.getSetting("Position Storage")=="Yes");
 	loaded_terrain=0;
@@ -1538,6 +1539,13 @@ ExampleFrameListener::ExampleFrameListener(RenderWindow* win, Camera* cam, Scene
 		netmode = true;
 	net=0;
 
+	String benchmark = SETTINGS.getSetting("Benchmark");
+	if(!benchmark.empty())
+	{
+		setupBenchmark();
+		return;
+	}
+
 	// preselected map or truck?
 	String preselected_map = SETTINGS.getSetting("Preselected Map");
 	String preselected_truck = SETTINGS.getSetting("Preselected Truck");
@@ -1609,7 +1617,8 @@ ExampleFrameListener::ExampleFrameListener(RenderWindow* win, Camera* cam, Scene
 	}
 
 	// load guy
-	person=new Character(collisions, hfinder, w, bigMap, mSceneMgr);
+	person = new Character(collisions, hfinder, w, bigMap, mSceneMgr);
+	person->setVisible(false);
 
 	if(preselected_map != "")
 	{
@@ -1693,6 +1702,9 @@ ExampleFrameListener::ExampleFrameListener(RenderWindow* win, Camera* cam, Scene
 		UILOADER.show(GUI_Loader::LT_Terrain);
 		UILOADER.setEnableCancel(false);
 	}
+
+	// show character
+	person->setVisible(true);
 
 	//LogManager::getSingleton().logMessage("ngolo1");
 
@@ -1870,6 +1882,29 @@ collisions->setDoor(tenode);
 
 }
 */
+
+void ExampleFrameListener::setupBenchmark()
+{
+	//showDebugOverlay(3);
+	String benchmark = SETTINGS.getSetting("Benchmark");
+	if(benchmark == "simple")
+	{
+		benchmarking=true;
+		UILOADER.setProgress(UI_PROGRESSBAR_HIDE);		
+	} else
+	{
+		// unkown benchmark
+#if OGRE_PLATFORM == OGRE_PLATFORM_WIN32
+		String msg = _L("Benchmark not known: ") + benchmark;
+		MessageBox( NULL, msg.c_str(), _L("Benchmark loading error").c_str(), MB_OK | MB_ICONERROR | MB_TASKMODAL);
+#elif OGRE_PLATFORM == OGRE_PLATFORM_LINUX
+		printf("\n\nBenchmark not known: %s\n\n", benchmark.c_str());
+#elif OGRE_PLATFORM == OGRE_PLATFORM_APPLE
+		printf("\n\nBenchmark not known: %s\n\n", benchmark.c_str());
+#endif
+		exit(1);
+	}
+}
 
 void ExampleFrameListener::getMeshInformation(Mesh* mesh,size_t &vertex_count,Vector3* &vertices,
 											  size_t &index_count, unsigned* &indices,
