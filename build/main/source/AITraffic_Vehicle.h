@@ -11,6 +11,7 @@
 #include "OpenSteer/Pathway.h"
 #include "AITraffic_Route.h"
 #include "AITraffic_TerrainMap.h"
+#include "AITraffic_Common.h"
 
 using namespace OpenSteer;
 
@@ -280,6 +281,7 @@ class AITraffic_Vehicle//: public SimpleVehicle_2IMI
 		Ogre::Vector3 getPosition();
 		void setPosition(Ogre::Vector3 newPos);
 		Ogre::Quaternion getOrientation();
+		AITraffic_Matrix *aimatrix;
 
 	private:
 		int		closestWayPoint();													// finds the closest waypoint for our position
@@ -287,7 +289,7 @@ class AITraffic_Vehicle//: public SimpleVehicle_2IMI
 		int		getLeftWayPoint();													// returns the waypoint we are coming from
 		int		advanceToNextWayPoint();
 		bool	closeToWayPoint(int idx, float r);									// returns  true if we are within r range from the waypoint idx
-		void	advance();															// move the vehicle
+		void	advance(float deltat);												// move the vehicle
 		float	objectOnTravelPath();												// returns the distance of the nearest obstacle in travel path
 		float	calculateSafeFollowDistance();									
 		float   calculateBrakeDistance();
@@ -304,7 +306,7 @@ class AITraffic_Vehicle//: public SimpleVehicle_2IMI
 		Ogre::Vector3 position;		// the current position
 		Ogre::Vector3 forward;		// where we are heading to
 
-		Ogre::Vector3 sspeed;			
+		float speed;				// in m/s
 		Ogre::Vector3 waypoints[MAX_TRAFFIC_PATH_LENGTH];
 		
 

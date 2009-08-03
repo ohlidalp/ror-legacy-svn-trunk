@@ -45,5 +45,13 @@ typedef trafficnode_t			trafficgrid_t[NUM_OF_TRAFFICED_CARS];
 typedef trafficlightnode_t		trafficlightgrid_t[NUM_OF_TRAFFICLIGHTS];
 typedef trafficintersection_t	trafficintersectiongrid_t[NUM_OF_INTERSECTIONS];
 
+class AITraffic_Matrix
+{
+	public:
+		AITraffic_Matrix() { trafficgrid = (trafficgrid_t*) malloc(NUM_OF_TRAFFICED_CARS *sizeof(trafficnode_t));}
+		~AITraffic_Matrix() {};
+		trafficgrid_t *trafficgrid;
+};
+
 #endif
 #endif //OPENSTEER
