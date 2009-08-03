@@ -31,6 +31,8 @@
 #ifndef AS_ARRAY_H
 #define AS_ARRAY_H
 
+BEGIN_AS_NAMESPACE
+
 #if !defined(AS_NO_MEMORY_H)
 #include <memory.h>
 #endif
@@ -39,8 +41,6 @@
 #ifdef _MSC_VER
 #pragma warning(disable:4345) // warning about a change in how the code is handled in this version
 #endif
-
-BEGIN_AS_NAMESPACE
 
 template <class T> class asCArray
 {
@@ -67,10 +67,11 @@ public:
 	T *AddressOf();
 
 	void Concatenate(const asCArray<T> &);
+	void Concatenate(T*, unsigned int count);
 
 	bool Exists(const T &element);
 	int  IndexOf(const T &element);
-	void RemoveIndex(size_t index);
+	void RemoveIndex(size_t index);     // Removes the entry without reordering the array
 	void RemoveValue(const T &element);
 
 	bool operator==(const asCArray<T> &) const;
@@ -310,6 +311,13 @@ void asCArray<T>::Concatenate(const asCArray<T> &other)
 		array[length+n] = other.array[n];
 
 	length += other.length;
+}
+
+template <class T>
+void asCArray<T>::Concatenate(T* array, unsigned int count)
+{
+	for( unsigned int c = 0; c < count; c++ )
+		PushLast(array[c]);
 }
 
 template <class T>

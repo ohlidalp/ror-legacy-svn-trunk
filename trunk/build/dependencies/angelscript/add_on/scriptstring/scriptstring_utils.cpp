@@ -1,5 +1,6 @@
 #include <assert.h>
 #include "scriptstring.h"
+#include <string.h> // strstr
 
 BEGIN_AS_NAMESPACE
 
@@ -328,7 +329,7 @@ void StringJoin_Generic(asIScriptGeneric *gen)
 //       int64    parseInt(const string &in str, int &out bytesParsed);
 //       double   parseDouble(const string &in str, int &out bytesParsed);
 //       string @ formatString(int64, const string &in format);  // should use sprintf to format the string
-//       string @ formatDouble(double, const string &in format); 
+//       string @ formatDouble(double, const string &in format);
 //
 //       int16    byteStringToInt16(const string &in str, int start);
 //       int32    byteStringToInt32(const string &in str, int start);
@@ -368,4 +369,3 @@ void RegisterScriptStringUtils(asIScriptEngine *engine)
 }
 
 END_AS_NAMESPACE
-
