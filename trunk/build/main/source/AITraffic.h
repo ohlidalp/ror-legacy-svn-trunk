@@ -28,7 +28,7 @@ class AITraffic
 		void initialize();
 		void frameStep(Ogre::Real deltat);
 
-		trafficgrid_t trafficgrid;
+		AITraffic_Matrix *aimatrix;
 
 		Ogre::Vector3		playerpos;		// we store here the player's position and rotation
 		Ogre::Quaternion	playerrot;		// used for creating interactivity layer in traffic

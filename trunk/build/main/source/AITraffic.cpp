@@ -10,6 +10,7 @@ AITraffic::AITraffic(ScriptEngine *engine)
 
 AITraffic::~AITraffic()
 {
+	if (aimatrix) delete(aimatrix);
 }
 
 void AITraffic::load()
@@ -18,30 +19,22 @@ void AITraffic::load()
 void AITraffic::initialize()
 {
 	mLampTimer = 0;
-	cnt = 0;
-	num_of_intersections = 1;
-	num_of_vehicles = 1;
-	num_of_waypoints = 50;
-
-	rs = 0.02;
-	mTotalElapsedTime = 0.0f;
-
-	for (int i=0;i<NUM_OF_TRAFFICED_CARS || i<num_of_vehicles;i++)
-		{
-			vehicles[i] = 0;
-		}
+	mLampTimer				= 0;
+	cnt						= 0;
+	num_of_intersections	= 1;
+	num_of_vehicles			= 5;
+	num_of_waypoints		= 50;
+	mTotalElapsedTime		= 0.0f;
 
 	for (int i=0;i<NUM_OF_TRAFFICED_CARS || i<num_of_vehicles;i++)
 		{
-			trafficgrid[i].position = Ogre::Vector3(30.2037,		0,	15.4732);
-/*
-			trafficgrid[i].wpid = 0;
-			trafficgrid[i].position = waypoints[trafficgrid[i].wpid];
-			trafficgrid[i].rotation = turnpoints[trafficgrid[i].wpid];
-*/
+			
+			aimatrix->trafficgrid[i]->position = Ogre::Vector3(30+i*5,		0,	15);
+//			trafficgrid
 			vehicles[i] = new AITraffic_Vehicle();
-			vehicles[i]->setPosition(trafficgrid[i].position);
-
+			vehicles[i]->aimatrix = aimatrix;
+			vehicles[i]->setPosition(aimatrix->trafficgrid[i]->position);
+			vehicles[i]->reset();
 		}
 }
 
@@ -49,18 +42,21 @@ void AITraffic::frameStep(Ogre::Real deltat)
 {
 	mLampTimer +=deltat;
 
-	deltat = deltat/1000.0f;
+//	deltat = deltat/1000.0f;
 	float elapsedTime =  deltat;
 	mTotalElapsedTime += deltat;
 
 	for (int i=0;i<num_of_vehicles;i++)
 		{
 			vehicles[i]->updateSimple(elapsedTime, mTotalElapsedTime);
-			Ogre::Vector3 pos = vehicles[i]->getPosition();
-			Ogre::LogManager::getSingleton().logMessage("Passed position: "+Ogre::StringConverter::toString(pos.x)+" "+Ogre::StringConverter::toString(pos.y)+" "+Ogre::StringConverter::toString(pos.z));
-			trafficgrid[i].position = vehicles[i]->getPosition();
-			trafficgrid[i].rotation = vehicles[i]->getOrientation();
-		}
+			aimatrix->trafficgrid[i]->position = vehicles[i]->getPosition();
+			aimatrix->trafficgrid[i]->rotation = vehicles[i]->getOrientation();
+//			aimatrix->trafficgrid[i].position = Ogre::Vector3(0+i*5, 0, 15);
+//			aimatrix->trafficgrid[i].rotation = Ogre::Quaternion(-1,0,0,0);
+//			Ogre::Vector3 pos = trafficgrid[i].position;
+//			Ogre::LogManager::getSingleton().logMessage("Passed position: "+Ogre::StringConverter::toString(i)+" "+Ogre::StringConverter::toString(pos.x)+" "+Ogre::StringConverter::toString(pos.y)+" "+Ogre::StringConverter::toString(pos.z));
+			
+	}
 	cnt ++;
 	if (cnt==1) 	
 		{

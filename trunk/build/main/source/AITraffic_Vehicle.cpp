@@ -5,7 +5,6 @@
 AITraffic_Vehicle::AITraffic_Vehicle()// : map (makeMap ()), path (makePath ())
 {
 	makePath();
-	reset();
 
 /* old code --
 	reset();
@@ -53,8 +52,9 @@ AITraffic_Vehicle::~AITraffic_Vehicle()
 
 void AITraffic_Vehicle::reset (void)
 {
-	wp_idx = 1;
-	wp_prev_idx = 0;
+	wp_idx = 0;
+	advanceToNextWayPoint();
+	speed = 30;
 
 /* -- old code
 	// reset LocalSpace state
@@ -1597,7 +1597,7 @@ void AITraffic_Vehicle::updateSimple(const float currentTime, const float elapse
 	// are we close to the next waypoint
 	// if so,update the target, means we set the 
 
-	if (closeToWayPoint(getHeadedWayPoint(),5.0f))
+	if (closeToWayPoint(getHeadedWayPoint(),1.0f))
 		{
 			advanceToNextWayPoint();
 		}
@@ -1608,6 +1608,7 @@ void AITraffic_Vehicle::updateSimple(const float currentTime, const float elapse
 
 
 
+	advance(currentTime);
 }
 
 int	 AITraffic_Vehicle::closestWayPoint()
@@ -1651,6 +1652,10 @@ int	AITraffic_Vehicle::advanceToNextWayPoint()
 	wp_prev_idx = wp_idx-1;
 	if (wp_prev_idx<0) wp_prev_idx = num_of_waypoints-1;
 
+//	forward = waypoints[wp_idx]-waypoints[wp_prev_idx];
+	forward = waypoints[wp_idx]-getPosition();
+	forward.normalise();
+	
 	return wp_idx;
 }
 
@@ -1662,8 +1667,9 @@ bool  AITraffic_Vehicle::closeToWayPoint(int idx, float r)
 	return retbool;
 }
 
-void  AITraffic_Vehicle::advance()
+void  AITraffic_Vehicle::advance(float deltat)
 {
+	position += forward * deltat * speed;
 }
 
 float  AITraffic_Vehicle::objectOnTravelPath()
@@ -1686,8 +1692,7 @@ void AITraffic_Vehicle::setPosition(Ogre::Vector3 newPos)
 
 Ogre::Quaternion AITraffic_Vehicle::getOrientation()
 {
-//	Vec3 fwd = forward();
-	Ogre::Vector3 v1(-1, 0, 0);
+	Ogre::Vector3 v1(1, 0, 0);
 	Ogre::Vector3 v2(forward.x, forward.y, forward.z);
 	Ogre::Quaternion retquat = v1.getRotationTo(v2, Ogre::Vector3::UNIT_X);
 	return retquat;
