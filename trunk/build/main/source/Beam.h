@@ -620,7 +620,7 @@ public:
 	void pushNetForce(int node_id, Vector3 force);
 	void expireNetForce();
 #ifdef OPENSTEER
-	void calcTraffic(trafficnode_t node);
+	void calcTraffic(trafficnode_t *node);
 #endif //OPENSTEER
 	void calcNetwork();
 	void addPressure(float v);
