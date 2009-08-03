@@ -62,7 +62,7 @@ endif(COMMAND cmake_policy)
 # RoR options
 option(ROR_BUILD_HYDRAX "build RoR with HYDRAX water engine support" TRUE)
 option(ROR_BUILD_PAGED "build RoR with Paged Geometry support (grass and trees)" TRUE)
-option(ROR_BUILD_PAGED_SF "use latest Paged Geometry support from SF" TRUE)
+option(ROR_BUILD_PAGED_SF "use latest Paged Geometry support from SF" FALSE)
 
 option(ROR_BUILD_CONFIGURATOR "builds the RoRConfig" TRUE)
 
