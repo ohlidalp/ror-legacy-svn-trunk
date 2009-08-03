@@ -177,6 +177,9 @@ set(ror_src
 	
 	source/PositionStorage.cpp
 	source/PositionStorage.h
+	
+	source/as_ogre.cpp
+	source/as_ogre.h
 )
 
 include_directories (OgreMain/include Dependencies/include)

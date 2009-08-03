@@ -393,23 +393,24 @@ void RigsOfRods::exploreTerrains()
 #define HELPTEXT "--help (this)\n-map <map> (loads map on startup)\n-truck <truck> (loads truck on startup)\n-setup shows the ogre configurator\n-version shows the version information\n-enter enters the selected truck\n\nFor example: RoR.exe -map oahu -truck semi"
 
 // option identifiers
-enum { OPT_HELP, OPT_MAP, OPT_TRUCK, OPT_SETUP, OPT_CMD, OPT_WDIR, OPT_ETM, OPT_BUILD, OPT_CONFIG, OPT_VER, OPT_CHECKCACHE, OPT_TRUCKCONFIG, OPT_ENTERTRUCK};
+enum { OPT_HELP, OPT_MAP, OPT_TRUCK, OPT_SETUP, OPT_CMD, OPT_WDIR, OPT_ETM, OPT_BUILD, OPT_CONFIG, OPT_VER, OPT_CHECKCACHE, OPT_TRUCKCONFIG, OPT_ENTERTRUCK, OPT_BENCH};
 
 // option array
 CSimpleOpt::SOption cmdline_options[] = {
-	{ OPT_MAP,   ("-map"),    SO_REQ_SEP },
-	{ OPT_MAP,   ("-terrain"),    SO_REQ_SEP },
-	{ OPT_TRUCK, ("-truck"),  SO_REQ_SEP },
-	{ OPT_ENTERTRUCK, ("-enter"),  SO_NONE },
-	{ OPT_CMD,   ("-cmd"),   SO_REQ_SEP },
-	{ OPT_WDIR,  ("-wd"),     SO_REQ_SEP },
-	{ OPT_SETUP, ("-setup"),  SO_NONE    },
-	{ OPT_CONFIG,("-config"), SO_NONE    },
-	{ OPT_TRUCKCONFIG,("-truckconfig"), SO_REQ_SEP    },
-	{ OPT_BUILD, ("-build"),  SO_NONE    },
-	{ OPT_HELP,  ("--help"),  SO_NONE    },
+	{ OPT_MAP,         ("-map"),         SO_REQ_SEP },
+	{ OPT_MAP,         ("-terrain"),     SO_REQ_SEP },
+	{ OPT_TRUCK,       ("-truck"),       SO_REQ_SEP },
+	{ OPT_ENTERTRUCK,  ("-enter"),       SO_NONE },
+	{ OPT_CMD,         ("-cmd"),         SO_REQ_SEP },
+	{ OPT_WDIR,        ("-wd"),          SO_REQ_SEP },
+	{ OPT_SETUP,       ("-setup"),       SO_NONE    },
+	{ OPT_CONFIG,      ("-config"),      SO_NONE    },
+	{ OPT_TRUCKCONFIG, ("-truckconfig"), SO_REQ_SEP    },
+	{ OPT_BUILD,       ("-build"),       SO_NONE    },
+	{ OPT_HELP,        ("--help"),       SO_NONE    },
 	{ OPT_CHECKCACHE,  ("-checkcache"),  SO_NONE    },
-	{ OPT_VER,   ("-version"),SO_NONE    },
+	{ OPT_VER,         ("-version"),     SO_NONE    },
+	{ OPT_BENCH,       ("-benchmark"),   SO_REQ_SEP    },
 	SO_END_OF_OPTIONS
 };
 
@@ -502,6 +503,8 @@ int main(int argc, char *argv[])
 				SETTINGS.setSetting("Preselected Map", String(args.OptionArg()));
 			} else if (args.OptionId() == OPT_CMD) {
 				SETTINGS.setSetting("cmdline CMD", String(args.OptionArg()));
+			} else if (args.OptionId() == OPT_BENCH) {
+				SETTINGS.setSetting("Benchmark", String(args.OptionArg()));
 			} else if (args.OptionId() == OPT_CONFIG) {
 				SETTINGS.setSetting("configfile", String(args.OptionArg()));
 			} else if (args.OptionId() == OPT_WDIR) {
