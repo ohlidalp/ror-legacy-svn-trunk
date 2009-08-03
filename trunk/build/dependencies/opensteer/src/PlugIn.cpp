@@ -38,7 +38,7 @@
 
 
 #include "OpenSteer/PlugIn.h"
-
+#include <string.h>
 
 // ----------------------------------------------------------------------------
 // PlugIn registry
