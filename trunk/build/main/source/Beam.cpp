@@ -4645,9 +4645,19 @@ int Beam::loadPosition(int indexPosition)
 	Vector3 pos = Vector3(0,0,0);
 	for (int i=0; i<free_node; i++)
 	{
-		nodes[i].AbsPosition = nbuff[i];
-		nodes[i].RelPosition = nbuff[i] - origin;
-		nodes[i].smoothpos = nbuff[i];
+		nodes[i].AbsPosition   = nbuff[i];
+		nodes[i].RelPosition   = nbuff[i] - origin;
+		nodes[i].smoothpos     = nbuff[i];
+
+		// reset forces
+		nodes[i].Velocity      = Vector3::ZERO;
+		nodes[i].Forces        = Vector3::ZERO;
+		nodes[i].lastdrag      = Vector3::ZERO;
+		nodes[i].buoyanceForce = Vector3::ZERO;
+		nodes[i].lastdrag      = Vector3::ZERO;
+		nodes[i].lockednode    = 0;
+		nodes[i].isSkin        = nodes[i].iIsSkin;
+
 		pos = pos + nbuff[i];
 	}
 	position = pos / (float)(free_node);
