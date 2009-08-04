@@ -668,7 +668,7 @@ eventInfo_t eventInfo[] = {
 	{
 		"COMMON_HIDE_GUI",
 		EV_COMMON_HIDE_GUI,
-		"Keyboard U",
+		"Keyboard EXPL+U",
 		_L("hide all GUI elements")
 	},
 	{
@@ -1367,13 +1367,13 @@ eventInfo_t eventInfo[] = {
 	{
 		"COMMON_NETCHATDISPLAY",
 		EV_COMMON_NETCHATDISPLAY,
-		"Keyboard ",
+		"Keyboard EXPL+U",
 		_L("display or hide net chat")
 	},
 	{
 		"COMMON_NETCHATMODE",
 		EV_COMMON_NETCHATMODE,
-		"",
+		"Keyboard EXPL+CTRL+U",
 		_L("toggle between net chat display modes")
 	},
 	{

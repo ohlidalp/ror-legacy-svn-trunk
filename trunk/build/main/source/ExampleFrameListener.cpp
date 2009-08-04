@@ -4722,8 +4722,11 @@ void ExampleFrameListener::loadTerrain(String terrainfile)
 	}
 
 #ifdef ANGELSCRIPT
-	LogManager::getSingleton().logMessage("Loading Angelscript Script engine." );
-	ScriptEngine::getSingleton().loadTerrainScript(terrainfile+".as");
+	if(!netmode)
+	{
+		LogManager::getSingleton().logMessage("Loading Angelscript Script engine." );
+		ScriptEngine::getSingleton().loadTerrainScript(terrainfile+".as");
+	}
 #endif
 
 
@@ -4734,7 +4737,8 @@ void ExampleFrameListener::loadTerrain(String terrainfile)
 	//setup collision system
 	collisions=new Collisions(lua, this, debugCollisions);
 
-	lua->loadTerrain(terrainfile);
+	if(!netmode)
+		lua->loadTerrain(terrainfile);
 #else
 	collisions=new Collisions(this, debugCollisions);
 #endif
