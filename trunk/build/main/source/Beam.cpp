@@ -5125,6 +5125,10 @@ void Beam::init_node(int pos, Real x, Real y, Real z, int type, Real m, int iswh
 	nodes[pos].RelPosition=Vector3(x,y,z)-origin;
 	nodes[pos].smoothpos=nodes[pos].AbsPosition;
 	nodes[pos].iPosition=Vector3(x,y,z);
+	if(pos != 0)
+		nodes[pos].iDistance=(nodes[0].AbsPosition - Vector3(x,y,z)).squaredLength();
+	else
+		nodes[pos].iDistance=0;
 	nodes[pos].Velocity=Vector3::ZERO;
 	nodes[pos].Forces=Vector3::ZERO;
 	nodes[pos].locked=m<0.0;
@@ -5531,8 +5535,15 @@ bool Beam::frameStep(Real dt, Beam** trucks, int numtrucks)
 					for (int n=0; n<trucks[t]->free_node; n++)
 					{
 //							trucks[t]->nodes[n].smoothpos=trucks[t]->nodes[n].tsmooth/steps;
-						trucks[t]->nodes[n].smoothpos=trucks[t]->nodes[n].AbsPosition;
-						aposition+=trucks[t]->nodes[n].smoothpos;
+							trucks[t]->nodes[n].smoothpos = trucks[t]->nodes[n].AbsPosition;
+							if((trucks[t]->nodes[n].AbsPosition - trucks[t]->nodes[0].AbsPosition).squaredLength() > trucks[t]->nodes[n].iDistance * 5)
+							{
+								// loose node, ignore ...
+							} else
+							{
+								// valid node
+								aposition += trucks[t]->nodes[n].smoothpos;
+							}
 //							trucks[t]->nodes[n].tsmooth=Vector3::ZERO;
 					}
 					trucks[t]->position=aposition/trucks[t]->free_node;

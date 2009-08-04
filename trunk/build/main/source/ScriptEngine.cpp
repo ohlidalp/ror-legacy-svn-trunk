@@ -253,8 +253,8 @@ void ScriptEngine::init()
 	// string type for C++ applications. Every developer is free to register it's own string type.
 	// The SDK do however provide a standard add-on for registering a string type, so it's not
 	// necessary to register your own string type if you don't want to.
-	RegisterStdString(engine);
-	RegisterScriptMath(engine);
+	//AngelScript::RegisterStdString(engine);
+	//RegisterScriptMath(engine);
 	//RegisterScriptMath3D(engine);
 
 	registerOgreObjects(engine);
