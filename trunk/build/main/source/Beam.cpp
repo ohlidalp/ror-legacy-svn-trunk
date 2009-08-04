@@ -198,6 +198,7 @@ Beam::~Beam()
 
 Beam::Beam(int tnum, SceneManager *manager, SceneNode *parent, RenderWindow* win, float *_mapsizex, float *_mapsizez, Real px, Real py, Real pz, Quaternion rot, char* fname, Collisions *icollisions, DustPool *mdust, DustPool *mclump, DustPool *msparks, DustPool *mdrip, DustPool *msplash, DustPool *mripple, HeightFinder *mfinder, Water *w, Camera *pcam, Mirrors *mmirror, bool postload, bool networked, bool networking, collision_box_t *spawnbox, bool ismachine, int _flaresMode, std::vector<Ogre::String> *_truckconfig, SkinPtr skin) : deleting(false)
 {
+	beambreakdebug = (SETTINGS.getSetting("Beam Break Debug") == "Yes");
 	free_axle=0;
 	usedSkin = skin;
 	LogManager::getSingleton().logMessage("BEAM: loading new truck: " + String(fname));
@@ -5531,6 +5532,7 @@ bool Beam::frameStep(Real dt, Beam** trucks, int numtrucks)
 				{
 					// calculate average position
 					Vector3 aposition=Vector3::ZERO;
+					int nodesnum=0;
 					for (int n=0; n<trucks[t]->free_node; n++)
 					{
 //							trucks[t]->nodes[n].smoothpos=trucks[t]->nodes[n].tsmooth/steps;
@@ -5542,10 +5544,11 @@ bool Beam::frameStep(Real dt, Beam** trucks, int numtrucks)
 							{
 								// valid node
 								aposition += trucks[t]->nodes[n].smoothpos;
+								nodesnum++;
 							}
 //							trucks[t]->nodes[n].tsmooth=Vector3::ZERO;
 					}
-					trucks[t]->position=aposition/trucks[t]->free_node;
+					trucks[t]->position = aposition / nodesnum;
 				}
 				if (floating_origin_enable && trucks[t]->nodes[0].RelPosition.length()>100.0)
 				{
@@ -5949,6 +5952,11 @@ void Beam::calcForcesEuler(int doUpdate, Real dt, int step, int maxstep, Beam** 
 							beams[i].p2->Forces+=beams[i].lastforce=f;
 							beams[i].p1->isSkin=true;
 							beams[i].p2->isSkin=true;
+
+							if(beambreakdebug)
+							{
+								LogManager::getSingleton().logMessage(" XXX Beam " + StringConverter::toString(i) + " just broke with force " + StringConverter::toString(flen) + " / " + StringConverter::toString(beams[i].strength) + ". It was between nodes " + StringConverter::toString(beams[i].p1->id) + " and " + StringConverter::toString(beams[i].p2->id) + ".");
+							}
 
 							//something broke, check buoyant hull
 							int mk;
