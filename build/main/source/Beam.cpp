@@ -322,7 +322,10 @@ Beam::Beam(int tnum, SceneManager *manager, SceneNode *parent, RenderWindow* win
 	//			sleepcount=9;
 	state=SLEEPING;
 	if (networked) state=NETWORKED; //required for proper loading
+#ifdef OPENSTEER
+	// this was the reason why locked objects exploded ...
 	state = TRAFFICED;
+#endif //OPENSTEER
 	sleepcount=0;
 	freecinecamera=0;
 	currentcamera=0;
