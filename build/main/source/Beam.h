@@ -841,6 +841,7 @@ public:
 	Axle axles[MAX_WHEELS/2];
 	int free_wheel;
 	int free_axle;
+	bool beambreakdebug;
 
 
 	// this must be in the header as the network stuff is using it...
