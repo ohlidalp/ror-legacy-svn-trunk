@@ -18,6 +18,14 @@ void AITraffic::load()
 
 void AITraffic::initialize()
 {
+
+	aimatrix = new AITraffic_Matrix();
+	aimatrix->trafficgrid->trafficnodes[0].position = Ogre::Vector3(30,		0,	15);
+	aimatrix->trafficgrid->trafficnodes[1].position = Ogre::Vector3(30,		0,	15);
+	aimatrix->trafficgrid->trafficnodes[2].position = Ogre::Vector3(30,		0,	15);
+	aimatrix->trafficgrid->trafficnodes[3].position = Ogre::Vector3(30,		0,	15);
+	aimatrix->trafficgrid->trafficnodes[4].position = Ogre::Vector3(30,		0,	15);
+
 	mLampTimer = 0;
 	mLampTimer				= 0;
 	cnt						= 0;
@@ -26,20 +34,21 @@ void AITraffic::initialize()
 	num_of_waypoints		= 50;
 	mTotalElapsedTime		= 0.0f;
 
+
 	for (int i=0;i<NUM_OF_TRAFFICED_CARS || i<num_of_vehicles;i++)
 		{
-			
-			aimatrix->trafficgrid[i]->position = Ogre::Vector3(30+i*5,		0,	15);
-//			trafficgrid
+			aimatrix->trafficgrid->trafficnodes[i].position = Ogre::Vector3(30+i*5,		0,	15);
 			vehicles[i] = new AITraffic_Vehicle();
+			vehicles[i]->serial = i;
 			vehicles[i]->aimatrix = aimatrix;
-			vehicles[i]->setPosition(aimatrix->trafficgrid[i]->position);
+			vehicles[i]->setPosition(aimatrix->trafficgrid->trafficnodes[i].position);
 			vehicles[i]->reset();
 		}
 }
 
 void AITraffic::frameStep(Ogre::Real deltat)
 {
+//	return;
 	mLampTimer +=deltat;
 
 //	deltat = deltat/1000.0f;
@@ -47,10 +56,11 @@ void AITraffic::frameStep(Ogre::Real deltat)
 	mTotalElapsedTime += deltat;
 
 	for (int i=0;i<num_of_vehicles;i++)
-		{
+	{
 			vehicles[i]->updateSimple(elapsedTime, mTotalElapsedTime);
-			aimatrix->trafficgrid[i]->position = vehicles[i]->getPosition();
-			aimatrix->trafficgrid[i]->rotation = vehicles[i]->getOrientation();
+			aimatrix->trafficgrid->trafficnodes[i].position = vehicles[i]->getPosition();
+//			aimatrix->trafficgrid[0]->position = Ogre::Vector3(30,		0,	15);
+			aimatrix->trafficgrid->trafficnodes[i].rotation = vehicles[i]->getOrientation();
 //			aimatrix->trafficgrid[i].position = Ogre::Vector3(0+i*5, 0, 15);
 //			aimatrix->trafficgrid[i].rotation = Ogre::Quaternion(-1,0,0,0);
 //			Ogre::Vector3 pos = trafficgrid[i].position;

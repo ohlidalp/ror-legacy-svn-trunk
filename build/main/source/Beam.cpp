@@ -858,15 +858,14 @@ void Beam::pushNetwork(char* data, int size)
 }
 
 #ifdef OPENSTEER
-void Beam::calcTraffic(trafficnode_t *node)
+void Beam::calcTraffic(trafficnode_t node)
 {
-
-	Quaternion q = node->rotation;
+	Quaternion q = node.rotation;
 	q.normalise();
 
 	for (int i=0;i<free_node;i++)
 		{
-				nodes[i].AbsPosition = node->position;
+				nodes[i].AbsPosition = node.position;
 				nodes[i].AbsPosition += q*nodes[i].RelPosition;
 				nodes[i].smoothpos = nodes[i].AbsPosition;
 		}
