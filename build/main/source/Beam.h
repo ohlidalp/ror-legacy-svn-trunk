@@ -216,7 +216,8 @@ typedef struct _node
 {
 	Real mass;
 	Real inverted_mass;
-	Vector3 iPosition; //initial position, absolute
+	Vector3 iPosition; // initial position, absolute
+	Real    iDistance; // initial distance from node0 during loading - used to check for loose parts
 	Vector3 AbsPosition; //absolute position in the world (shaky)
 	Vector3 RelPosition; //relative to the local physics origin (one origin per truck) (shaky)
 	Vector3 smoothpos; //absolute, per-frame smooth, must be used for visual effects only
