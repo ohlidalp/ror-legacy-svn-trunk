@@ -282,6 +282,7 @@ class AITraffic_Vehicle//: public SimpleVehicle_2IMI
 		void setPosition(Ogre::Vector3 newPos);
 		Ogre::Quaternion getOrientation();
 		AITraffic_Matrix *aimatrix;
+		int serial;
 
 	private:
 		int		closestWayPoint();													// finds the closest waypoint for our position

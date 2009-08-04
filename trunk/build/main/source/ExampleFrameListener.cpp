@@ -7223,7 +7223,7 @@ END OF OLD CODE */
 
 					case TRAFFICED:
 #ifdef OPENSTEER
-								trucks[t]->calcTraffic(aitraffic->aimatrix->trafficgrid[t]);
+								trucks[t]->calcTraffic(aitraffic->aimatrix->trafficgrid->trafficnodes[t]);
 #endif //OPENSTEER
 								break;
 					case NETWORKED:
