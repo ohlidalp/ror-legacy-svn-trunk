@@ -6729,10 +6729,10 @@ void Beam::calcForcesEuler(int doUpdate, Real dt, int step, int maxstep, Beam** 
 			float speed1=(wheels[proppairs[i*2]].speed+wheels[proppairs[i*2+1]].speed)*0.5f;
 			float speed2=(wheels[proppairs[i*2+2]].speed+wheels[proppairs[i*2+3]].speed)*0.5f;
 			float torque=(speed1-speed2)*10000.0f;
-			intertorque[proppairs[i*2]]-=torque*0.5f;
-			intertorque[proppairs[i*2+1]]-=torque*0.5f;
-			intertorque[proppairs[i*2+2]]+=torque*0.5f;
-			intertorque[proppairs[i*2+3]]+=torque*0.5f;
+			intertorque[i*2]-=torque*0.5f;
+			intertorque[i*2+1]-=torque*0.5f;
+			intertorque[i*2+2]+=torque*0.5f;
+			intertorque[i*2+3]+=torque*0.5f;
 		}
 	}
 	// loop through all axles for interaxle torque, this is the torsion to keep
