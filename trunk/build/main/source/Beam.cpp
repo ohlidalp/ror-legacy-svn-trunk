@@ -5582,15 +5582,27 @@ bool Beam::frameStep(Real dt, Beam** trucks, int numtrucks)
 				if (trucks[t]->reset_requested) trucks[t]->SyncReset();
 				if (trucks[t]->state!=SLEEPING && trucks[t]->state!=NETWORKED && trucks[t]->state!=TRAFFICED && trucks[t]->state!=RECYCLE)
 				{
+					// average position
 					Vector3 aposition=Vector3::ZERO;
+					int nodesnum=0;
 					for (int n=0; n<trucks[t]->free_node; n++)
 					{
-//							trucks[t]->nodes[n].smoothpos=trucks[t]->nodes[n].tsmooth/tsteps;
 						trucks[t]->nodes[n].smoothpos=trucks[t]->nodes[n].AbsPosition;
-						aposition+=trucks[t]->nodes[n].smoothpos;
+
+						if((trucks[t]->nodes[n].AbsPosition - trucks[t]->nodes[0].AbsPosition).squaredLength() > trucks[t]->nodes[n].iDistance * 5)
+						{
+							// loose node, ignore ...
+						} else
+						{
+							// valid node
+							aposition += trucks[t]->nodes[n].smoothpos;
+							nodesnum++;
+						}
+						
+//						trucks[t]->nodes[n].smoothpos=trucks[t]->nodes[n].tsmooth/tsteps;
 //							trucks[t]->nodes[n].tsmooth=Vector3::ZERO;
 					}
-					trucks[t]->position=aposition/trucks[t]->free_node;
+					trucks[t]->position = aposition / nodesnum;
 				}
 				if (floating_origin_enable && trucks[t]->nodes[0].RelPosition.length()>100.0)
 				{
