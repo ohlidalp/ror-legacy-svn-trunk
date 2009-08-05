@@ -291,7 +291,7 @@ class AITraffic_Vehicle//: public SimpleVehicle_2IMI
 		int		advanceToNextWayPoint();
 		bool	closeToWayPoint(int idx, float r);									// returns  true if we are within r range from the waypoint idx
 		void	advance(float deltat);												// move the vehicle
-		float	objectOnTravelPath();												// returns the distance of the nearest obstacle in travel path
+		float	objectsOnTravelPath();												// returns the distance of the nearest obstacle in travel path
 		float	calculateSafeFollowDistance();									
 		float   calculateBrakeDistance();
 		void	makePath();															// create path to follow

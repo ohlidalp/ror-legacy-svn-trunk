@@ -58,24 +58,22 @@ typedef trafficintersection_t	trafficintersectiongrid_t[NUM_OF_INTERSECTIONS];
 class AITraffic_Matrix
 {
 	public:
-//		AITraffic_Matrix() { trafficgrid = (trafficgrid_t*) malloc(NUM_OF_TRAFFICED_CARS *sizeof(trafficnode_t));}
-//		AITraffic_Matrix() { trafficgrid = (trafficgrid_t*) malloc(NUM_OF_TRAFFICED_CARS *sizeof(_trafficnode));}
 		AITraffic_Matrix() 
 			{ 
 				Ogre::LogManager::getSingleton().logMessage("SIZEOF trafficgrid_t: "+Ogre::StringConverter::toString(sizeof(trafficgrid_t)));
 				Ogre::LogManager::getSingleton().logMessage("SIZEOF trafficnode_t: "+Ogre::StringConverter::toString(sizeof(trafficnode_t)));
 				Ogre::LogManager::getSingleton().logMessage("SIZEOF _trafficnode: "+Ogre::StringConverter::toString(sizeof(_trafficnode)));
-//				trafficgrid = (trafficgrid_t*) malloc(100000);
 				trafficgrid = (trafficgrid_t*) malloc(sizeof(trafficgrid_t));
-//				trafficnodes = (trafficnode_t *) malloc(sizeof(trafficnode_t)*NUM_OF_TRAFFICED_CARS);
-		
+
+				num_of_objs = 6;
 			}
-//		AITraffic_Matrix() { trafficgrid = (trafficgrid_t*) malloc(sizeof(trafficgrid_t));}
-		~AITraffic_Matrix() {};
+		~AITraffic_Matrix() 
+			{
+				if (trafficgrid) free(trafficgrid);
+			};
+
 		trafficgrid_t *trafficgrid;
-
-//		trafficnode_t *trafficnodes[NUM_OF_TRAFFICED_CARS];
-
+		int num_of_objs;
 };
 
 #endif
