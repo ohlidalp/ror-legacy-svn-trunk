@@ -136,7 +136,7 @@ bool RigsOfRods::setup(void)
 	loadMainResource("scripts", ResourceGroupManager::DEFAULT_RESOURCE_GROUP_NAME);
 	loadMainResource("sounds", ResourceGroupManager::DEFAULT_RESOURCE_GROUP_NAME);
 	loadMainResource("textures", ResourceGroupManager::DEFAULT_RESOURCE_GROUP_NAME);
-	loadMainResource("hydrax", ResourceGroupManager::DEFAULT_RESOURCE_GROUP_NAME);
+	loadMainResource("hydrax", "Hydrax"); // special resourcegroup required!
 	//streams path, to be processed later by the cache system
 	LogManager::getSingleton().logMessage("Loading filesystems");
 
