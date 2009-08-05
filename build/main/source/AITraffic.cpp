@@ -18,13 +18,7 @@ void AITraffic::load()
 
 void AITraffic::initialize()
 {
-
 	aimatrix = new AITraffic_Matrix();
-	aimatrix->trafficgrid->trafficnodes[0].position = Ogre::Vector3(30,		0,	15);
-	aimatrix->trafficgrid->trafficnodes[1].position = Ogre::Vector3(30,		0,	15);
-	aimatrix->trafficgrid->trafficnodes[2].position = Ogre::Vector3(30,		0,	15);
-	aimatrix->trafficgrid->trafficnodes[3].position = Ogre::Vector3(30,		0,	15);
-	aimatrix->trafficgrid->trafficnodes[4].position = Ogre::Vector3(30,		0,	15);
 
 	mLampTimer = 0;
 	mLampTimer				= 0;
@@ -37,7 +31,7 @@ void AITraffic::initialize()
 
 	for (int i=0;i<NUM_OF_TRAFFICED_CARS || i<num_of_vehicles;i++)
 		{
-			aimatrix->trafficgrid->trafficnodes[i].position = Ogre::Vector3(30+i*5,		0,	15);
+			aimatrix->trafficgrid->trafficnodes[i].position = Ogre::Vector3(10,0,10);
 			vehicles[i] = new AITraffic_Vehicle();
 			vehicles[i]->serial = i;
 			vehicles[i]->aimatrix = aimatrix;
@@ -55,14 +49,15 @@ void AITraffic::frameStep(Ogre::Real deltat)
 	float elapsedTime =  deltat;
 	mTotalElapsedTime += deltat;
 
-	for (int i=0;i<num_of_vehicles;i++)
+	aimatrix->trafficgrid->trafficnodes[0].rotation = playerrot; 
+	aimatrix->trafficgrid->trafficnodes[0].position = playerpos; 
+
+//	for (int i=0;i<num_of_vehicles;i++)
+	for (int i=1;i<5;i++)
 	{
 			vehicles[i]->updateSimple(elapsedTime, mTotalElapsedTime);
 			aimatrix->trafficgrid->trafficnodes[i].position = vehicles[i]->getPosition();
-//			aimatrix->trafficgrid[0]->position = Ogre::Vector3(30,		0,	15);
 			aimatrix->trafficgrid->trafficnodes[i].rotation = vehicles[i]->getOrientation();
-//			aimatrix->trafficgrid[i].position = Ogre::Vector3(0+i*5, 0, 15);
-//			aimatrix->trafficgrid[i].rotation = Ogre::Quaternion(-1,0,0,0);
 //			Ogre::Vector3 pos = trafficgrid[i].position;
 //			Ogre::LogManager::getSingleton().logMessage("Passed position: "+Ogre::StringConverter::toString(i)+" "+Ogre::StringConverter::toString(pos.x)+" "+Ogre::StringConverter::toString(pos.y)+" "+Ogre::StringConverter::toString(pos.z));
 			

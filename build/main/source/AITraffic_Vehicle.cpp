@@ -1597,17 +1597,14 @@ void AITraffic_Vehicle::updateSimple(const float currentTime, const float elapse
 	// are we close to the next waypoint
 	// if so,update the target, means we set the 
 
-	if (closeToWayPoint(getHeadedWayPoint(),1.0f))
+	if (closeToWayPoint(getHeadedWayPoint(),5.0f))
 		{
 			advanceToNextWayPoint();
 		}
 
 	int safe_follow		= calculateSafeFollowDistance();
 	int brake_dist		= calculateBrakeDistance();
-	int safe_distance	= objectOnTravelPath();
-
-
-
+	int safe_distance	= objectsOnTravelPath();
 	advance(currentTime);
 }
 
@@ -1672,8 +1669,55 @@ void  AITraffic_Vehicle::advance(float deltat)
 	position += forward * deltat * speed;
 }
 
-float  AITraffic_Vehicle::objectOnTravelPath()
+// this is the main function to identify all related objects in our path
+
+float  AITraffic_Vehicle::objectsOnTravelPath()
 {
+	float r = 30.0f;		// distance we want sweep within
+	int nums = aimatrix->num_of_objs;
+	const Ogre::Vector3		pos = getPosition();
+	const Ogre::Quaternion	ori = getOrientation();
+
+	int shield[36];
+	for (int i=0;i<36;i++) shield[i] = 0;
+
+//	for (int i=0;i<nums;i++)	// not efficient if too many objects, prefilter should be used here
+	for (int i=0;i<1;i++)	// not efficient if too many objects, prefilter should be used here
+	{
+		if (i!=serial)
+			{
+				const Ogre::Vector3 target = aimatrix->trafficgrid->trafficnodes[i].position;
+
+				if (pos.distance(target)<r)	// object within distance
+					{
+						Ogre::Vector3 target_diff = target-pos;
+						Ogre::Quaternion sq = forward.getRotationTo(target_diff,Ogre::Vector3::UNIT_Y);
+						sq.normalise();
+						float yaw = sq.getYaw().valueDegrees()+180.0f;
+						int idx = (int) yaw/10.0f;
+						if (idx<0) idx = 0;
+						else if (idx>35) idx = 35;
+
+						shield[idx]++;
+					}
+			}
+	}
+
+	// we have shield info
+	// now let's calculate where to steer or speed next 
+
+	// check for -30..30 degrees ahead for object
+	bool obs = false;
+
+	for (int i=15;i<21;i++)
+		{
+			if (shield[i]) obs = true;
+		}
+
+	if (obs) speed -= 5.0;
+	else speed+=0.1;
+	if (speed>50) speed = 50;
+	if (speed<0) speed = 0;
 	return 100.0f;
 }
 
