@@ -6931,10 +6931,20 @@ void Beam::calcForcesEuler(int doUpdate, Real dt, int step, int maxstep, Beam** 
 	if (proped_wheels) wspeed/=(float)proped_wheels;
 	lastwspeed=wspeed;
 	WheelSpeed=wspeed;
+
 	if(patchEngineTorque)
-		if (engine && free_wheel) engine->setSpin(wspeed*9.549);
-	else
-		if (engine && free_wheel && wheels[0].radius != 0) engine->setSpin(wspeed*9.549/wheels[0].radius);
+	{	
+		if (engine && free_wheel)
+		{
+			engine->setSpin(wspeed*9.549);
+		}
+	} else
+	{
+		if (engine && free_wheel && wheels[0].radius != 0)
+		{
+			engine->setSpin(wspeed*9.549/wheels[0].radius);
+		}
+	}
 
 
 #ifdef TIMING
