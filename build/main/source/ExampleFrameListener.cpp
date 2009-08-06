@@ -4873,6 +4873,9 @@ void ExampleFrameListener::loadTerrain(String terrainfile)
 	float farclip = 1000;
 	terrainxsize=1000;
 	terrainzsize=1000;
+	
+	bool disableTetrrain=false;
+
 	{
 		//compute farclip from terrain size
 	    ConfigFile config;
@@ -4905,6 +4908,8 @@ void ExampleFrameListener::loadTerrain(String terrainfile)
 		if (farclip<1000.0)
 			//cap for small terrains
 			farclip=1000.0;
+		
+		disableTetrrain = (config.getSetting("disable") != "");
 	}
 
 	String fcos = SETTINGS.getSetting("Farclip");
@@ -5042,7 +5047,8 @@ void ExampleFrameListener::loadTerrain(String terrainfile)
 		if(!disableMap && bigMap)
 			bigMap->setWorldSize(mapsizex, mapsizez);
 
-		mSceneMgr -> setWorldGeometry(geom);
+		if(!disableTetrrain)
+			mSceneMgr->setWorldGeometry(geom);
 	}
 
 
