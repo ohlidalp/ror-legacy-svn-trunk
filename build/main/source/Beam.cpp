@@ -200,6 +200,7 @@ Beam::Beam(int tnum, SceneManager *manager, SceneNode *parent, RenderWindow* win
 {
 	beambreakdebug = (SETTINGS.getSetting("Beam Break Debug") == "Yes");
 	free_axle=0;
+	patchEngineTorque=false;
 	usedSkin = skin;
 	LogManager::getSingleton().logMessage("BEAM: loading new truck: " + String(fname));
 	trucknum=tnum;
@@ -1245,6 +1246,7 @@ int Beam::loadTruck(char* fname, SceneManager *manager, SceneNode *parent, Real 
 			loading_finished=1;break;
 		};
 
+		if (!strcmp("patchEngineTorque",line)) {patchEngineTorque=true;continue;};
 		if (!strcmp("end_commandlist",line) && mode == 35) {mode=0;continue;};
 		if (!strcmp("end_description",line) && mode == 29) {mode=0;continue;};
 		if (!strcmp("end_comment",line)  && mode == 30) {mode=savedmode;continue;};
@@ -6929,7 +6931,11 @@ void Beam::calcForcesEuler(int doUpdate, Real dt, int step, int maxstep, Beam** 
 	if (proped_wheels) wspeed/=(float)proped_wheels;
 	lastwspeed=wspeed;
 	WheelSpeed=wspeed;
-	if (engine && free_wheel && wheels[0].radius != 0) engine->setSpin(wspeed*9.549/wheels[0].radius);
+	if(patchEngineTorque)
+		if (engine && free_wheel) engine->setSpin(wspeed*9.549);
+	else
+		if (engine && free_wheel && wheels[0].radius != 0) engine->setSpin(wspeed*9.549/wheels[0].radius);
+
 
 #ifdef TIMING
 	if(statistics)
