@@ -1682,9 +1682,9 @@ int	AITraffic_Vehicle::advanceToNextWayPoint()
 		}
 
 	Ogre::Vector3 new_wp = aimatrix->trafficgrid->waypoints[wp_idx].position;
-	new_vp = aimatrix->trafficgrid-
+//	new_wp = aimatrix->trafficgrid
 
-	forward = -getPosition();
+	forward = new_wp-getPosition();
 	forward.normalise();
 	
 	return wp_idx;

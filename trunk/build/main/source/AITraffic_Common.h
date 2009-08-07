@@ -82,6 +82,8 @@ typedef struct _trafficnode
 	Ogre::Quaternion	rotation;		// current orientation of vehicle
 	Ogre::Vector3		aabb;			// axis aligned bounding box for the vehicle
 	Ogre::Vector3		dimensions;		// width (x), height (y), length (z) of the vehicle
+	int					type;			// register object type here (1 - vehicle, 2 - pedestrian)
+	bool				active;			// if false, it is not updated
 
 } trafficnode_t;
 

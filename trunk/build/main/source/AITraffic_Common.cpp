@@ -65,5 +65,11 @@ int AITraffic_Matrix::lane(int segment_idx, int p1, int p2, Ogre::Vector3 pos)
 	return retint;
 }
 
+Ogre::Vector3 AITraffic_Matrix::offsetByLane(int segment_idx, int lanenum, Ogre::Vector3 pos)
+{
+	Ogre::Vector3 retvector = pos;
+	return retvector;
+}
+
 
 #endif //OPENSTEER
