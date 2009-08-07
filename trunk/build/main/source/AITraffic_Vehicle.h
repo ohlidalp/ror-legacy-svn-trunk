@@ -284,6 +284,11 @@ class AITraffic_Vehicle//: public SimpleVehicle_2IMI
 		AITraffic_Matrix *aimatrix;
 		int serial;
 
+		int path_id;
+		int path_direction;
+		int ps_idx;					// current path segment idx
+		bool active;				// true if vehicle needs traffic calculation
+
 	private:
 		int		closestWayPoint();													// finds the closest waypoint for our position
 		int		getHeadedWayPoint();												// returns the waypoint we are heading to
@@ -294,21 +299,19 @@ class AITraffic_Vehicle//: public SimpleVehicle_2IMI
 		float	objectsOnTravelPath();												// returns the distance of the nearest obstacle in travel path
 		float	calculateSafeFollowDistance();									
 		float   calculateBrakeDistance();
-		void	makePath();															// create path to follow
+//		void	makePath();															// create path to follow
+
 	
-
-
-		
-
 	private:
 		int wp_idx;					// which waypoint we are heading to
 		int wp_prev_idx;
-		int num_of_waypoints;		// how many waypoints we have
+//		int num_of_waypoints;		// how many waypoints we have
 		Ogre::Vector3 position;		// the current position
 		Ogre::Vector3 forward;		// where we are heading to
 
 		float speed;				// in m/s
-		Ogre::Vector3 waypoints[MAX_TRAFFIC_PATH_LENGTH];
+//		Ogre::Vector3 waypoints[MAX_TRAFFIC_PATH_LENGTH];
+
 		
 
 
