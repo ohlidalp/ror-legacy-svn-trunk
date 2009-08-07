@@ -4,7 +4,8 @@
 
 AITraffic_Vehicle::AITraffic_Vehicle()// : map (makeMap ()), path (makePath ())
 {
-	makePath();
+	path_direction = 1;
+//	makePath();
 
 /* old code --
 	reset();
@@ -1594,6 +1595,11 @@ void AITraffic_Vehicle::updateSimple(const float currentTime, const float elapse
 	// if so find the neares one
 	// for mow we assume: yes
 
+	if (aimatrix->lane(ps_idx, wp_prev_idx, wp_idx, getPosition())==-1)
+		{
+			// out of path
+		}
+
 	// are we close to the next waypoint
 	// if so,update the target, means we set the 
 
@@ -1611,10 +1617,10 @@ void AITraffic_Vehicle::updateSimple(const float currentTime, const float elapse
 int	 AITraffic_Vehicle::closestWayPoint()
 {	
 	int idx = 0;
-	float dist = position.distance(waypoints[0]);
-	for (int i=1;i<num_of_waypoints;i++)
+	float dist = position.distance(aimatrix->trafficgrid->waypoints[0].position);
+	for (int i=1;i<aimatrix->trafficgrid->num_of_waypoints;i++)
 		{
-			float d2 = position.distance(waypoints[i]);
+			float d2 = position.distance(aimatrix->trafficgrid->waypoints[i].position);
 			if (d2<dist) { dist = d2; idx = i; }
 		}
 	return idx;
@@ -1643,14 +1649,42 @@ int	AITraffic_Vehicle::getLeftWayPoint()
 int	AITraffic_Vehicle::advanceToNextWayPoint()
 {
 	// we create separate function for this, since we will implement "direction" of travel later on by these
-	wp_idx++;
-	if (wp_idx>=num_of_waypoints) wp_idx = 0;
+	ps_idx += path_direction;
+	if (ps_idx>=aimatrix->trafficgrid->paths[path_id].num_of_segments || ps_idx<0) 
+		{
+			int tmp = ps_idx;
+			switch(aimatrix->trafficgrid->paths[path_id].path_type)
+				{
+					case 0:
+						active = false;		// this vehicle does not go anywhere anymore
+						break;
+					case 1:
+						ps_idx		= 0;
+						setPosition(aimatrix->trafficgrid->waypoints[aimatrix->trafficgrid->paths[path_id].segments[ps_idx]].position);
+						break;
+					case 2:	// not implemented yet
+						path_direction = -path_direction;
+						ps_idx += path_direction;
+						break;
+				}
+		}
 
-	wp_prev_idx = wp_idx-1;
-	if (wp_prev_idx<0) wp_prev_idx = num_of_waypoints-1;
+	int cseg = aimatrix->trafficgrid->paths[path_id].segments[ps_idx]; // current segment index
+	if (path_direction>0)	// forward on path
+		{
+			wp_prev_idx = aimatrix->trafficgrid->segments[cseg].start;
+			wp_idx		= aimatrix->trafficgrid->segments[cseg].end;
+		}
+	else					// backward on path
+		{
+			wp_prev_idx = aimatrix->trafficgrid->segments[cseg].end;
+			wp_idx		= aimatrix->trafficgrid->segments[cseg].start;
+		}
 
-//	forward = waypoints[wp_idx]-waypoints[wp_prev_idx];
-	forward = waypoints[wp_idx]-getPosition();
+	Ogre::Vector3 new_wp = aimatrix->trafficgrid->waypoints[wp_idx].position;
+	new_vp = aimatrix->trafficgrid-
+
+	forward = -getPosition();
 	forward.normalise();
 	
 	return wp_idx;
@@ -1660,7 +1694,7 @@ int	AITraffic_Vehicle::advanceToNextWayPoint()
 bool  AITraffic_Vehicle::closeToWayPoint(int idx, float r)
 {
 	bool retbool = false;
-	if (position.distance(waypoints[idx])<=r) retbool = true;
+	if (position.distance(aimatrix->trafficgrid->waypoints[idx].position)<=r) retbool = true;
 	return retbool;
 }
 
@@ -1725,7 +1759,7 @@ Ogre::Vector3 AITraffic_Vehicle::getPosition()
 {
 //	OpenSteer::AbstractVehicle* vehicle = this;
 //	return Ogre::Vector3(vehicle->position().x,vehicle->position().y,vehicle->position().z);
-	return position;
+	return position+Ogre::Vector3(0,0,-1);
 }
 
 void AITraffic_Vehicle::setPosition(Ogre::Vector3 newPos)
@@ -1743,7 +1777,7 @@ Ogre::Quaternion AITraffic_Vehicle::getOrientation()
 }
 
 
-
+/*
 void AITraffic_Vehicle::makePath (void)
 {
 		num_of_waypoints = 4;
@@ -1751,15 +1785,15 @@ void AITraffic_Vehicle::makePath (void)
 		waypoints[1] = Ogre::Vector3(144.78,		0,	14.9248);
 		waypoints[2] = Ogre::Vector3(144.34,		0,	89.4973);
 		waypoints[3] = Ogre::Vector3(15.1772,		0,	90.9755);
-/*
+
         // return Path object
         const int pathPointCount = 4;
         const float k = 2.05f;
         float pathRadii[4];
 		for (int i=0;i<pathPointCount;i++) pathRadii[i] = k;
         return new AITraffic_Route (pathPointCount, waypoints, pathRadii, true);
-*/
-}
 
+}
+*/
 
 #endif //OPENSTEER

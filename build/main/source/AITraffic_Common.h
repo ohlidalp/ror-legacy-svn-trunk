@@ -3,11 +3,18 @@
 #ifndef AITraffic_Common_H
 #define AITraffic_Common_H
 
+
+#define MAX_WAYPOINTS					100
+#define MAX_SEGMENTS					100
+#define MAX_PATHS						100
+
 #define NUM_OF_TRAFFICED_CARS			10
 #define NUM_OF_TRAFFICLIGHTS			1000
 #define NUM_OF_INTERSECTIONS			100
 #define NUM_OF_LAMPS_PER_INTERSECTION	32			// we use one bit for a lamp
 #define MAX_PROGRAM_LENGTH				16
+#define MAX_SEGMENTS_PER_PATH			1000
+#define MAX_CONNECTED_SEGMENTS			8
 
 #include "Ogre.h"
 
@@ -32,6 +39,43 @@ typedef struct _trafficintersection
 	int prg_idx;
 } trafficintersection_t;
 
+
+//---------------- Traffic Vehicle related types
+
+typedef struct _turntype
+{
+	int segment;									// index of segment that is connected to this waypoint
+	int start_lane;									// we can move to the new segment from this lane only (index)	
+	int next_lane;									// we can arrive to this lane from this lane from <start_lane>
+} turntype_t;
+
+typedef struct _waypoint							// defines a waypoint in space
+{
+	Ogre::Vector3 position;							// position of waypoint
+	int num_of_connections;							// number of segments connected to this waypoint
+	turntype_t nextsegs[MAX_CONNECTED_SEGMENTS];	// where we can go from here		
+} waypoint_t;
+
+typedef struct _segment			// defines a segment between two waypoints
+{
+	int start;					// index of waypoint the segment started from
+	int end;					// index of waypoint the segment ended at
+	float width;				// width of the segment
+	int num_of_lanes;			// how many lanes are on that segment (>=1)
+	bool turnlight;				// it is needed to use turnlight? (blinking yellow)
+
+	Ogre::Vector3 offset;		// equals end-start
+	Ogre::Vector3 dot;			// vector perpendicular to the center (used for lane cration)
+
+} segment_t;
+
+typedef struct _path					// defines an order of segments that describe a path
+{
+	int num_of_segments;					// how many segments are stored for this path
+	int segments[MAX_SEGMENTS_PER_PATH];	// array for storing segment indexes
+	int path_type;							// 0 - one way, 1 - circular, 2 ping-pong (back and forth)
+} path_t;
+
 typedef struct _trafficnode
 {
 	Ogre::Vector3		position;		// current position of vehicle
@@ -41,11 +85,17 @@ typedef struct _trafficnode
 
 } trafficnode_t;
 
-
-
 typedef struct _trafficgrid
 {
-	 trafficnode_t trafficnodes[NUM_OF_TRAFFICED_CARS];
+	int num_of_waypoints;						// max index for waypoints
+	int num_of_segments;						// max index for segments
+	int num_of_paths;							// max index for paths
+	int num_of_objects;							// max index for traffic objects
+
+	waypoint_t		waypoints[MAX_WAYPOINTS];
+	segment_t		segments[MAX_SEGMENTS];
+	path_t			paths[MAX_PATHS];
+	trafficnode_t	trafficnodes[NUM_OF_TRAFFICED_CARS];
 
 } trafficgrid_t;
 
@@ -58,19 +108,13 @@ typedef trafficintersection_t	trafficintersectiongrid_t[NUM_OF_INTERSECTIONS];
 class AITraffic_Matrix
 {
 	public:
-		AITraffic_Matrix() 
-			{ 
-				Ogre::LogManager::getSingleton().logMessage("SIZEOF trafficgrid_t: "+Ogre::StringConverter::toString(sizeof(trafficgrid_t)));
-				Ogre::LogManager::getSingleton().logMessage("SIZEOF trafficnode_t: "+Ogre::StringConverter::toString(sizeof(trafficnode_t)));
-				Ogre::LogManager::getSingleton().logMessage("SIZEOF _trafficnode: "+Ogre::StringConverter::toString(sizeof(_trafficnode)));
-				trafficgrid = (trafficgrid_t*) malloc(sizeof(trafficgrid_t));
+		AITraffic_Matrix();
+		~AITraffic_Matrix();
 
-				num_of_objs = 6;
-			}
-		~AITraffic_Matrix() 
-			{
-				if (trafficgrid) free(trafficgrid);
-			};
+		void calculateInternals();						// calculate all internal values that help calculations later
+		float distanceFromLine(Ogre::Vector3 linep1, Ogre::Vector3 linep2, Ogre::Vector3 point);
+		int lane(int segment_idx, int p1, int p2, Ogre::Vector3 pos);
+		Ogre::Vector3 offsetByLane(int segment_idx, int lanenum, Ogre::Vector3 pos);
 
 		trafficgrid_t *trafficgrid;
 		int num_of_objs;

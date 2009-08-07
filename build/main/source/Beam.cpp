@@ -864,6 +864,7 @@ void Beam::pushNetwork(char* data, int size)
 void Beam::calcTraffic(trafficnode_t node)
 {
 	Quaternion q = node.rotation;
+	if (q.getYaw()==Ogre::Radian(-180)) q = Quaternion(q.w, q.x, q.y, -q.z);
 	q.normalise();
 
 	for (int i=0;i<free_node;i++)
