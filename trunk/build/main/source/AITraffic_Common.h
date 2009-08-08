@@ -63,24 +63,26 @@ typedef struct _zone
 	Ogre::Vector3 p2;
 } zone_t;
 
-typedef struct _segment			// defines a segment between two waypoints
+typedef struct _segment							// defines a segment between two waypoints
 {
-	int start;					// index of waypoint the segment started from
-	int end;					// index of waypoint the segment ended at
-	float width;				// width of the segment
-	int num_of_lanes;			// how many lanes are on that segment (>=1)
-	bool turnlight;				// it is needed to use turnlight? (blinking yellow)
-	float length;				// length of the segment
-	Ogre::Vector3 offset;		// equals end-start
-	Ogre::Vector3 dot;			// vector perpendicular to the center (used for lane cration)
+	int start;									// index of waypoint the segment started from
+	int end;									// index of waypoint the segment ended at
+	float width;								// width of the segment
+	int num_of_lanes;							// how many lanes are on that segment (>=1)
+	bool turnlight;								// it is needed to use turnlight? (blinking yellow)
+	float length;								// length of the segment
+	Ogre::Vector3 offset;						// equals end-start
+	Ogre::Vector3 dot;							// vector perpendicular to the center (used for lane cration)
+	float start_wait;							// time object needs to wait before starting to move on path
+	float end_wait;								// time object needs to wait at the end of segment
 
 } segment_t;
 
-typedef struct _path					// defines an order of segments that describe a path
+typedef struct _path							// defines an order of segments that describe a path
 {
-	int num_of_segments;					// how many segments are stored for this path
-	int segments[MAX_SEGMENTS_PER_PATH];	// array for storing segment indexes
-	int path_type;							// 0 - one way, 1 - circular, 2 ping-pong (back and forth)
+	int num_of_segments;						// how many segments are stored for this path
+	int segments[MAX_SEGMENTS_PER_PATH];		// array for storing segment indexes
+	int path_type;								// 0 - one way, 1 - circular, 2 ping-pong (back and forth)
 } path_t;
 
 typedef struct _trafficnode
