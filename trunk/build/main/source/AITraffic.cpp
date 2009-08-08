@@ -26,16 +26,6 @@ void AITraffic::initialize()
 	num_of_intersections	= 1;
 	num_of_waypoints		= 50;
 	mTotalElapsedTime		= 0.0f;
-/*
-	Penguinville testtrack
-//	123.429, 0.00173146, 24.7226	<- this is width = 5;
-	31.2367, 0.0496842, 19.8068
-	123.445, 0.0496726, 19.8812
-	140.172, 0.0499454, 34.2714
-	140.249, 0.0507317, 72.9784
-	164.384, 0.0485949, 19.8671
-	243.265, 0.0497771, 19.8707
-*/
 
 	// setting up waypoints
 	aimatrix->trafficgrid->num_of_waypoints = 9;
@@ -139,14 +129,10 @@ void AITraffic::initialize()
 	aimatrix->trafficgrid->num_of_zones = 1;
 
 	aimatrix->trafficgrid->zones[0].p1 = Ogre::Vector3(145.007, 0.0822257, 13.4135);
-//	aimatrix->trafficgrid->zones[0].p1 = Ogre::Vector3(137.549, 0.0905831, 14.2536);
-//	aimatrix->trafficgrid->zones[0].p2 = Ogre::Vector3(124.868, 0.00840096, 24.0489);
 	aimatrix->trafficgrid->zones[0].p2 = Ogre::Vector3(123.31, 0, 24.8975);
 
-	// 123.31, 0, 24.8975
-	// 129.602, 0.00146218, 24.7492
-	// 144.272, 0.0907644, 24.3999
-	// 145.007, 0.0822257, 13.4135
+	num_of_vehicles = 3;
+	aimatrix->trafficgrid->num_of_objects = num_of_vehicles;
 
 	aimatrix->calculateInternals();
 
@@ -155,7 +141,6 @@ void AITraffic::initialize()
 	aimatrix->trafficgrid->trafficnodes[0].type = 0;
 
 	// setting up vehicles
-	num_of_vehicles = 3;
 	for (int i=1;i<NUM_OF_TRAFFICED_CARS || i<=num_of_vehicles;i++)
 		{
 			aimatrix->trafficgrid->trafficnodes[i].type = 1;
