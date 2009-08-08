@@ -4,7 +4,6 @@
 AITraffic_Matrix::AITraffic_Matrix() 
 { 
 	trafficgrid = (trafficgrid_t*) malloc(sizeof(trafficgrid_t));
-	num_of_objs = 6;
 }
 
 AITraffic_Matrix::~AITraffic_Matrix() 
@@ -105,6 +104,4 @@ int AITraffic_Matrix::getZone(Ogre::Vector3 pos)
 
 #endif //OPENSTEER
 
-//aimatrix->trafficgrid->zones[0].p1 = Ogre::Vector3(137.549, 0.0905831, 14.2536);
-//aimatrix->trafficgrid->zones[0].p2 = Ogre::Vector3(124.868, 0.00840096, 24.0489);
 

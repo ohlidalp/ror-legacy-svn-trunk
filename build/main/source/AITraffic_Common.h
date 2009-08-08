@@ -93,6 +93,7 @@ typedef struct _trafficnode
 	bool				active;			// if false, it is not updated
 	int					zone;			// what zone it is current in (-1 if no zone)
 	bool				inzone;			// used to flag procession of entrance to a zone
+	float				wait;			// set this to >0 if node should wait before progressing further
 
 } trafficnode_t;
 
@@ -132,7 +133,6 @@ class AITraffic_Matrix
 		int getZone(Ogre::Vector3 pos);
 
 		trafficgrid_t *trafficgrid;
-		int num_of_objs;
 };
 
 #endif
