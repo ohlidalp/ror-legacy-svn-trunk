@@ -22,6 +22,13 @@ void AITraffic_Vehicle::reset (void)
 
 void AITraffic_Vehicle::updateSimple(const float currentTime, const float elapsedTime)
 {
+	// are we in waiting position
+	if (aimatrix->trafficgrid->trafficnodes[serial].wait>0.001f)
+		{
+			aimatrix->trafficgrid->trafficnodes[serial].wait-=currentTime;
+			return;
+		}
+
 	// are we in the path-tube?
 	// if so find the neares one
 	// for mow we assume: yes
@@ -37,6 +44,7 @@ void AITraffic_Vehicle::updateSimple(const float currentTime, const float elapse
 	if (closeToWayPoint(getHeadedWayPoint(),5.0f))
 		{
 			advanceToNextWayPoint();
+			aimatrix->trafficgrid->trafficnodes[serial].wait = aimatrix->trafficgrid->segments[ps_idx].end_wait;
 		}
 
 	int safe_follow		= calculateSafeFollowDistance();

@@ -28,6 +28,9 @@ void AITraffic_Matrix::calculateInternals()
 			offset_n.normalise();
 			trafficgrid->segments[i].dot = Ogre::Vector3(-offset_n.z, 0, -offset_n.x);
 			trafficgrid->segments[i].length = trafficgrid->segments[i].offset.length();
+			trafficgrid->segments[i].start_wait = 0.0f;
+			trafficgrid->segments[i].end_wait = 100000.0f;
+
 		}
 }
 
