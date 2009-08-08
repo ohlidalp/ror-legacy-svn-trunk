@@ -14,12 +14,21 @@ AITraffic_Matrix::~AITraffic_Matrix()
 
 void AITraffic_Matrix::calculateInternals()
 {
+	for (int i=0;i<trafficgrid->num_of_objects;i++)
+		{
+			trafficgrid->trafficnodes[i].active = true;
+			trafficgrid->trafficnodes[i].inzone = false;
+			trafficgrid->trafficnodes[i].zone	= -1;
+			trafficgrid->trafficnodes[i].type	= 1;			// all object is a vehicle now
+		}
+
 	for (int i=0;i<trafficgrid->num_of_segments;i++)
 		{
 			trafficgrid->segments[i].offset = trafficgrid->segments[i].end-trafficgrid->segments[i].start;
 			Ogre::Vector3 offset_n = trafficgrid->segments[i].offset;
 			offset_n.normalise();
 			trafficgrid->segments[i].dot = Ogre::Vector3(-offset_n.z, 0, -offset_n.x);
+			trafficgrid->segments[i].length = trafficgrid->segments[i].offset.length();
 		}
 }
 
@@ -61,7 +70,7 @@ int AITraffic_Matrix::lane(int segment_idx, int p1, int p2, Ogre::Vector3 pos)
 		{}					// segmentline halfs the middle lane
 
 	
-	Ogre::LogManager::getSingleton().logMessage("LANE-N: "+Ogre::StringConverter::toString(retint));
+//	Ogre::LogManager::getSingleton().logMessage("LANE-N: "+Ogre::StringConverter::toString(retint));
 	return retint;
 }
 
@@ -71,5 +80,31 @@ Ogre::Vector3 AITraffic_Matrix::offsetByLane(int segment_idx, int lanenum, Ogre:
 	return retvector;
 }
 
+// we should "normalize" p1 and p2 ... so if they are given in different order,
+// this should keep working
+
+int AITraffic_Matrix::getZone(Ogre::Vector3 pos)
+{
+	int retint = -1;
+	bool found = false;
+	for (int i=0;!found && i<trafficgrid->num_of_zones;i++)
+		{
+			Ogre::Vector3 p2 = trafficgrid->zones[i].p2;
+			if (pos.x>=p2.x && pos.z<=p2.z)
+				{
+					Ogre::Vector3 p1 = trafficgrid->zones[i].p1;
+					if (pos.x<=p1.x && pos.z>=p1.z)
+						{
+							retint = i;
+							found = true;
+						}
+				}
+		}
+	return retint;
+}
 
 #endif //OPENSTEER
+
+//aimatrix->trafficgrid->zones[0].p1 = Ogre::Vector3(137.549, 0.0905831, 14.2536);
+//aimatrix->trafficgrid->zones[0].p2 = Ogre::Vector3(124.868, 0.00840096, 24.0489);
+

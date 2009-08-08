@@ -3,10 +3,11 @@
 #ifndef AITraffic_Common_H
 #define AITraffic_Common_H
 
-
 #define MAX_WAYPOINTS					100
 #define MAX_SEGMENTS					100
 #define MAX_PATHS						100
+#define MAX_LANES						8
+#define MAX_ZONES						16
 
 #define NUM_OF_TRAFFICED_CARS			10
 #define NUM_OF_TRAFFICLIGHTS			1000
@@ -56,6 +57,12 @@ typedef struct _waypoint							// defines a waypoint in space
 	turntype_t nextsegs[MAX_CONNECTED_SEGMENTS];	// where we can go from here		
 } waypoint_t;
 
+typedef struct _zone
+{
+	Ogre::Vector3 p1;
+	Ogre::Vector3 p2;
+} zone_t;
+
 typedef struct _segment			// defines a segment between two waypoints
 {
 	int start;					// index of waypoint the segment started from
@@ -63,7 +70,7 @@ typedef struct _segment			// defines a segment between two waypoints
 	float width;				// width of the segment
 	int num_of_lanes;			// how many lanes are on that segment (>=1)
 	bool turnlight;				// it is needed to use turnlight? (blinking yellow)
-
+	float length;				// length of the segment
 	Ogre::Vector3 offset;		// equals end-start
 	Ogre::Vector3 dot;			// vector perpendicular to the center (used for lane cration)
 
@@ -84,6 +91,8 @@ typedef struct _trafficnode
 	Ogre::Vector3		dimensions;		// width (x), height (y), length (z) of the vehicle
 	int					type;			// register object type here (1 - vehicle, 2 - pedestrian)
 	bool				active;			// if false, it is not updated
+	int					zone;			// what zone it is current in (-1 if no zone)
+	bool				inzone;			// used to flag procession of entrance to a zone
 
 } trafficnode_t;
 
@@ -93,11 +102,13 @@ typedef struct _trafficgrid
 	int num_of_segments;						// max index for segments
 	int num_of_paths;							// max index for paths
 	int num_of_objects;							// max index for traffic objects
+	int num_of_zones;
 
 	waypoint_t		waypoints[MAX_WAYPOINTS];
 	segment_t		segments[MAX_SEGMENTS];
 	path_t			paths[MAX_PATHS];
 	trafficnode_t	trafficnodes[NUM_OF_TRAFFICED_CARS];
+	zone_t			zones[MAX_ZONES];
 
 } trafficgrid_t;
 
@@ -117,6 +128,8 @@ class AITraffic_Matrix
 		float distanceFromLine(Ogre::Vector3 linep1, Ogre::Vector3 linep2, Ogre::Vector3 point);
 		int lane(int segment_idx, int p1, int p2, Ogre::Vector3 pos);
 		Ogre::Vector3 offsetByLane(int segment_idx, int lanenum, Ogre::Vector3 pos);
+
+		int getZone(Ogre::Vector3 pos);
 
 		trafficgrid_t *trafficgrid;
 		int num_of_objs;
