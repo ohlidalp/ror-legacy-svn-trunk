@@ -288,6 +288,7 @@ class AITraffic_Vehicle//: public SimpleVehicle_2IMI
 		int path_direction;
 		int ps_idx;					// current path segment idx
 		bool active;				// true if vehicle needs traffic calculation
+		float speed;				// in m/s
 
 	private:
 		int		closestWayPoint();													// finds the closest waypoint for our position
@@ -309,7 +310,6 @@ class AITraffic_Vehicle//: public SimpleVehicle_2IMI
 		Ogre::Vector3 position;		// the current position
 		Ogre::Vector3 forward;		// where we are heading to
 
-		float speed;				// in m/s
 //		Ogre::Vector3 waypoints[MAX_TRAFFIC_PATH_LENGTH];
 
 		

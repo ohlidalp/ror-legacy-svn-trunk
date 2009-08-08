@@ -38,16 +38,19 @@ void AITraffic::initialize()
 */
 
 	// setting up waypoints
-	aimatrix->trafficgrid->num_of_waypoints = 6;
+	aimatrix->trafficgrid->num_of_waypoints = 9;
 	aimatrix->trafficgrid->waypoints[0].position = Ogre::Vector3(31.2367, 0.0496842, 19.8068);
 	aimatrix->trafficgrid->waypoints[1].position = Ogre::Vector3(123.445, 0.0496726, 19.8812);
 	aimatrix->trafficgrid->waypoints[2].position = Ogre::Vector3(140.172, 0.0499454, 34.2714);
 	aimatrix->trafficgrid->waypoints[3].position = Ogre::Vector3(140.249, 0.0507317, 72.9784);
 	aimatrix->trafficgrid->waypoints[4].position = Ogre::Vector3(164.384, 0.0485949, 19.8671);
 	aimatrix->trafficgrid->waypoints[5].position = Ogre::Vector3(243.265, 0.0497771, 19.8707);
+	aimatrix->trafficgrid->waypoints[6].position = Ogre::Vector3(149.989, 0.0478512, 64.3177);
+	aimatrix->trafficgrid->waypoints[7].position = Ogre::Vector3(149.991, 0.0484931, 36.9028);
+	aimatrix->trafficgrid->waypoints[8].position = Ogre::Vector3(148.812, 0.0332915, 8.49526);
 
 	// setting up segments
-	aimatrix->trafficgrid->num_of_segments = 5;
+	aimatrix->trafficgrid->num_of_segments = 7;
 
 	aimatrix->trafficgrid->segments[0].start			= 0;
 	aimatrix->trafficgrid->segments[0].end				= 1;
@@ -74,6 +77,16 @@ void AITraffic::initialize()
 	aimatrix->trafficgrid->segments[4].num_of_lanes		= 2;
 	aimatrix->trafficgrid->segments[4].width			= 5;
 
+	aimatrix->trafficgrid->segments[5].start			= 6;
+	aimatrix->trafficgrid->segments[5].end				= 7;
+	aimatrix->trafficgrid->segments[5].num_of_lanes		= 2;
+	aimatrix->trafficgrid->segments[5].width			= 5;
+
+	aimatrix->trafficgrid->segments[6].start			= 7;
+	aimatrix->trafficgrid->segments[6].end				= 8;
+	aimatrix->trafficgrid->segments[6].num_of_lanes		= 2;
+	aimatrix->trafficgrid->segments[6].width			= 5;
+
 	// connect segments together
 
 	aimatrix->trafficgrid->waypoints[0].num_of_connections	= 1;
@@ -93,15 +106,22 @@ void AITraffic::initialize()
 
 	aimatrix->trafficgrid->waypoints[5].num_of_connections	= 0;
 
+	aimatrix->trafficgrid->waypoints[6].num_of_connections	= 1;
+	aimatrix->trafficgrid->waypoints[6].nextsegs[0].segment = 7;
+
+	aimatrix->trafficgrid->waypoints[7].num_of_connections	= 1;
+	aimatrix->trafficgrid->waypoints[7].nextsegs[0].segment = 8;
+
+	aimatrix->trafficgrid->waypoints[8].num_of_connections	= 0;
+
 	// creating virtual paths for traffic
 
-	aimatrix->trafficgrid->num_of_paths = 2;
+	aimatrix->trafficgrid->num_of_paths = 3;
 	aimatrix->trafficgrid->paths[0].num_of_segments = 3;
 	aimatrix->trafficgrid->paths[0].path_type	= 2;		
 	aimatrix->trafficgrid->paths[0].segments[0] = 0;
 	aimatrix->trafficgrid->paths[0].segments[1] = 1;
 	aimatrix->trafficgrid->paths[0].segments[2] = 2;
-
 
 	aimatrix->trafficgrid->paths[1].num_of_segments = 3;
 	aimatrix->trafficgrid->paths[1].path_type	= 2 ;		
@@ -109,16 +129,50 @@ void AITraffic::initialize()
 	aimatrix->trafficgrid->paths[1].segments[1] = 3;
 	aimatrix->trafficgrid->paths[1].segments[2] = 4;
 
+	aimatrix->trafficgrid->paths[2].num_of_segments = 1;
+	aimatrix->trafficgrid->paths[2].path_type	= 1;		
+	aimatrix->trafficgrid->paths[2].segments[0] = 6;
+//	aimatrix->trafficgrid->paths[2].segments[1] = 6; // 5 is errorneous?
+
+	// setting up zones
+
+	aimatrix->trafficgrid->num_of_zones = 1;
+
+	aimatrix->trafficgrid->zones[0].p1 = Ogre::Vector3(145.007, 0.0822257, 13.4135);
+//	aimatrix->trafficgrid->zones[0].p1 = Ogre::Vector3(137.549, 0.0905831, 14.2536);
+//	aimatrix->trafficgrid->zones[0].p2 = Ogre::Vector3(124.868, 0.00840096, 24.0489);
+	aimatrix->trafficgrid->zones[0].p2 = Ogre::Vector3(123.31, 0, 24.8975);
+
+	// 123.31, 0, 24.8975
+	// 129.602, 0.00146218, 24.7492
+	// 144.272, 0.0907644, 24.3999
+	// 145.007, 0.0822257, 13.4135
+
+	aimatrix->calculateInternals();
+
+	// setting up person
+
+	aimatrix->trafficgrid->trafficnodes[0].type = 0;
+
+	// setting up vehicles
 	num_of_vehicles = 3;
-	for (int i=1;i<NUM_OF_TRAFFICED_CARS || i<num_of_vehicles;i++)
+	for (int i=1;i<NUM_OF_TRAFFICED_CARS || i<=num_of_vehicles;i++)
 		{
+			aimatrix->trafficgrid->trafficnodes[i].type = 1;
 			vehicles[i] = new AITraffic_Vehicle();
 			vehicles[i]->serial = i;
 			vehicles[i]->path_id= i-1;
 			vehicles[i]->ps_idx = aimatrix->trafficgrid->paths[vehicles[i]->path_id].segments[0];
 			vehicles[i]->aimatrix = aimatrix;
-			vehicles[i]->setPosition(aimatrix->trafficgrid->trafficnodes[i].position);
+			vehicles[i]->setPosition(aimatrix->trafficgrid->waypoints[aimatrix->trafficgrid->segments[vehicles[i]->ps_idx].start].position);
 			vehicles[i]->reset();
+
+			if (i==3) 
+				{
+					aimatrix->trafficgrid->trafficnodes[i].active = false;
+					vehicles[i]->speed = 30;
+				}
+			else aimatrix->trafficgrid->trafficnodes[i].active = true;
 		}
 }
 
@@ -130,17 +184,47 @@ void AITraffic::frameStep(Ogre::Real deltat)
 	float elapsedTime =  deltat;
 	mTotalElapsedTime += deltat;
 
-	aimatrix->trafficgrid->trafficnodes[0].rotation = playerrot; 
-	aimatrix->trafficgrid->trafficnodes[0].position = playerpos; 
-
-//	for (int i=1;i<num_of_vehicles;i++)
-	for (int i=1;i<2;i++)
+	for (int i=0;i<=num_of_vehicles;i++)
 	{
-			vehicles[i]->updateSimple(elapsedTime, mTotalElapsedTime);
-			aimatrix->trafficgrid->trafficnodes[i].position = vehicles[i]->getPosition();
-			aimatrix->trafficgrid->trafficnodes[i].rotation = vehicles[i]->getOrientation();
-		
+		if (aimatrix->trafficgrid->trafficnodes[i].type == 1)	// if this node is a car
+			{
+				if (aimatrix->trafficgrid->trafficnodes[i].active)
+					{
+						vehicles[i]->updateSimple(elapsedTime, mTotalElapsedTime);
+						aimatrix->trafficgrid->trafficnodes[i].position = vehicles[i]->getPosition();
+						aimatrix->trafficgrid->trafficnodes[i].rotation = vehicles[i]->getOrientation();
+					}
+			}
+		else if (aimatrix->trafficgrid->trafficnodes[i].type==0)	// node is person
+			{
+				aimatrix->trafficgrid->trafficnodes[i].rotation = playerrot; 
+				aimatrix->trafficgrid->trafficnodes[i].position = playerpos; 
+			}
+
+		aimatrix->trafficgrid->trafficnodes[i].zone = aimatrix->getZone(aimatrix->trafficgrid->trafficnodes[i].position);
+	
+		if (aimatrix->trafficgrid->trafficnodes[i].zone!=-1)
+			{
+				if (aimatrix->trafficgrid->trafficnodes[i].inzone)
+					{
+						Ogre::LogManager::getSingleton().logMessage("Vehicle is inzone : "+Ogre::StringConverter::toString(i));
+					}	// we already in the zone ... do nothing
+				else
+					{
+						aimatrix->trafficgrid->trafficnodes[i].inzone = true;
+						for (int j=1;j<=num_of_vehicles;j++)
+							{
+								aimatrix->trafficgrid->trafficnodes[j].active = true;
+							}
+						vehicles[3]->speed = 30;
+					}
+			}
+		else
+			{
+				aimatrix->trafficgrid->trafficnodes[i].inzone = false;
+			}
 	}
+
 return;
 	cnt ++;
 	if (cnt==1) 	
@@ -186,12 +270,6 @@ return;
 
 void AITraffic::processOneCar(int idx, float delta)
 {
-
-		// is it close to the driven car?
-		
-		// now we simply update car offsets
-//		trafficgrid[idx].x1 += 0.1f;
-//		trafficgrid[idx].x2 += 0.1f;
 }
 
 /* ============================== TRAFFIC LAMP MANAGEMENT ================================= */
@@ -324,18 +402,6 @@ int AITraffic::setMaterialEmissive(const std::string &materialName, float red, f
 
 void AITraffic::spawnObject(const std::string &objectName, const std::string &instanceName, float px, float py, float pz, float rx, float ry, float rz, const std::string &eventhandler, bool uniquifyMaterials)
 {
-/*
-	asIScriptModule *mod=0;
-	try
-	{
-		mod = mse->getEngine()->GetModule("terrainScript", asGM_ONLY_IF_EXISTS);
-	}catch(...)
-	{
-		return;
-	}
-	if(!mod) return;
-	int functionPtr = mod->GetFunctionIdByName(eventhandler.c_str());
-*/
 	// trying to create the new object
 	ExampleFrameListener *mefl = (ExampleFrameListener *)scriptengine;
 	SceneNode *bakeNode=mefl->getSceneMgr()->getRootSceneNode()->createChildSceneNode();

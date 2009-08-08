@@ -55,7 +55,7 @@ void AITraffic_Vehicle::reset (void)
 {
 	wp_idx = 0;
 	advanceToNextWayPoint();
-	speed = 30;
+	speed = 0;
 
 /* -- old code
 	// reset LocalSpace state
@@ -1716,7 +1716,7 @@ float  AITraffic_Vehicle::objectsOnTravelPath()
 	for (int i=0;i<36;i++) shield[i] = 0;
 
 //	for (int i=0;i<nums;i++)	// not efficient if too many objects, prefilter should be used here
-	for (int i=0;i<1;i++)	// not efficient if too many objects, prefilter should be used here
+	for (int i=0;i<=3;i++)	// not efficient if too many objects, prefilter should be used here
 	{
 		if (i!=serial)
 			{
@@ -1737,13 +1737,14 @@ float  AITraffic_Vehicle::objectsOnTravelPath()
 			}
 	}
 
+	return 0.0f;
 	// we have shield info
 	// now let's calculate where to steer or speed next 
 
 	// check for -30..30 degrees ahead for object
 	bool obs = false;
 
-	for (int i=15;i<21;i++)
+	for (int i=17;i<19;i++)
 		{
 			if (shield[i]) obs = true;
 		}
@@ -1759,7 +1760,7 @@ Ogre::Vector3 AITraffic_Vehicle::getPosition()
 {
 //	OpenSteer::AbstractVehicle* vehicle = this;
 //	return Ogre::Vector3(vehicle->position().x,vehicle->position().y,vehicle->position().z);
-	return position+Ogre::Vector3(0,0,-1);
+	return position;
 }
 
 void AITraffic_Vehicle::setPosition(Ogre::Vector3 newPos)
@@ -1772,7 +1773,7 @@ Ogre::Quaternion AITraffic_Vehicle::getOrientation()
 {
 	Ogre::Vector3 v1(-1, 0, 0);
 	Ogre::Vector3 v2(forward.x, forward.y, forward.z);
-	Ogre::Quaternion retquat = v1.getRotationTo(v2, Ogre::Vector3::UNIT_X);
+	Ogre::Quaternion retquat = v1.getRotationTo(v2, Ogre::Vector3::UNIT_Y);
 	return retquat;
 }
 
