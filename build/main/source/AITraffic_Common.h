@@ -9,7 +9,7 @@
 #define MAX_LANES						8
 #define MAX_ZONES						16
 
-#define NUM_OF_TRAFFICED_CARS			10
+#define NUM_OF_TRAFFICED_CARS			30
 #define NUM_OF_TRAFFICLIGHTS			1000
 #define NUM_OF_INTERSECTIONS			100
 #define NUM_OF_LAMPS_PER_INTERSECTION	32			// we use one bit for a lamp

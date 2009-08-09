@@ -24,13 +24,11 @@ void AITraffic_Vehicle::updateSimple(const float currentTime, const float elapse
 {
 	// are we in waiting position
 
-/* too effective, why?
 	if (aimatrix->trafficgrid->trafficnodes[serial].wait>0.01f)
 		{
 			aimatrix->trafficgrid->trafficnodes[serial].wait-=currentTime;
 			return;
 		}
-*/
 
 	// are we in the path-tube?
 	// if so find the neares one
@@ -184,7 +182,7 @@ float  AITraffic_Vehicle::objectsOnTravelPath()
 	// check for -10..10 degrees ahead for object
 	bool obs = false;
 
-	for (int i=18;i<19;i++)
+	for (int i=15;i<21;i++)
 		{
 			if (shield[i]) obs = true;
 		}
