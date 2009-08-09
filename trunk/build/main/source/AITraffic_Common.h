@@ -96,6 +96,9 @@ typedef struct _trafficnode
 	int					zone;			// what zone it is current in (-1 if no zone)
 	bool				inzone;			// used to flag procession of entrance to a zone
 	float				wait;			// set this to >0 if node should wait before progressing further
+	float				steer;			// steering hydro command
+	float				accel;			// acceleration hydro command
+	float				brake;			// brake hydro command
 
 } trafficnode_t;
 
