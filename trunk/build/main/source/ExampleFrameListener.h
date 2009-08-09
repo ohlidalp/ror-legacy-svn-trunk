@@ -80,7 +80,7 @@ class Dashboard;
 #ifdef HAS_EDITOR
 class TruckEditor;
 #endif
-class NetworkBase;
+class Network;
 //class BeamJoystick;
 class Collisions;
 class Mirrors;
@@ -597,7 +597,7 @@ protected:
 
 	Envmap *envmap;
 
-	NetworkBase *net;
+	Network *net;
 	ProceduralManager *proceduralManager;
 
 	

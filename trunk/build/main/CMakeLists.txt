@@ -180,6 +180,12 @@ set(ror_src
 	
 	source/as_ogre.cpp
 	source/as_ogre.h
+
+	source/Streamable.cpp
+	source/Streamable.h
+
+	source/utils.cpp
+	source/utils.h
 )
 
 include_directories (OgreMain/include Dependencies/include)

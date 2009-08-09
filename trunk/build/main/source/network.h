@@ -30,44 +30,9 @@ using namespace Ogre;
 #include "SoundScriptManager.h"
 #include "networkinfo.h"
 
-
 class ExampleFrameListener;
 
-
-class ExampleFrameListener;
-
-class NetworkBase
-{
-public:
-	NetworkBase(Beam **btrucks, Ogre::String servername, long sport, ExampleFrameListener *efl) {};
-	~NetworkBase() {};
-
-	//external call to check if a vehicle is to be spawned
-	virtual bool vehicle_to_spawn(char* name, unsigned int *uid, unsigned int *label) = 0;
-	virtual int vehicle_spawned(unsigned int uid, int trucknum, client_t &client) = 0;
-	
-	//external call to set vehicle type
-	virtual void sendVehicleType(char* name, int numnodes) = 0;
-	
-	//external call to send vehicle data
-	virtual void sendData(Beam* truck) = 0;
-	virtual void sendChat(char* line) = 0;
-	virtual bool connect() = 0;
-	virtual void disconnect() = 0;
-	virtual int rconlogin(char* rconpasswd) = 0;
-	virtual int rconcommand(char* rconcmd) = 0;
-
-	virtual int getConnectedClientCount() = 0;
-
-	virtual char *getTerrainName() = 0;
-	virtual Ogre::String getNickname(bool colour=false) = 0;
-	virtual int getRConState() = 0;
-	virtual int getSpeedUp() = 0;
-	virtual int getSpeedDown() = 0;
-	virtual std::map<int, float> &getLagData() = 0;
-};
-
-class Network : public NetworkBase
+class Network
 {
 private:
 	SWInetSocket socket;
@@ -76,7 +41,7 @@ private:
 	pthread_t sendthread;
 	pthread_t receivethread;
 	pthread_t downloadthread;
-	Timer timer;
+	static Timer timer;
 	int last_time;
 	int speed_time;
 	int speed_bytes_sent, speed_bytes_sent_tmp, speed_bytes_recv, speed_bytes_recv_tmp;
@@ -110,10 +75,13 @@ private:
 public:
 
 	Network(Beam **btrucks, std::string servername, long sport, ExampleFrameListener *efl);
+	int sendMessageRaw(SWInetSocket *socket, char *content, unsigned int msgsize);
 	int sendmessage(SWInetSocket *socket, int type, unsigned int len, char* content);
 	int receivemessage(SWInetSocket *socket, int *type, int *source, unsigned int *wrotelen, char* content, unsigned int bufferlen);
 	void sendthreadstart();
 	void receivethreadstart();
+	unsigned int getUserID() { return myuid; };
+	static unsigned long getNetTime();
 	void downloadthreadstart(char *modname);
 	void tryDownloadMod(Ogre::String modname);
 	//external call to check if a vehicle is to be spawned
