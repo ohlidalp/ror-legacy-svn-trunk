@@ -28,6 +28,7 @@ along with Rigs of Rods.  If not, see <http://www.gnu.org/licenses/>.
 #include "turboprop.h"
 #include "sha1.h"
 #include "Settings.h"
+#include "utils.h"
 
 #ifdef WSYNC
 #include "wsync.h"
@@ -59,7 +60,9 @@ void *s_downloadthreadstart(void* vid)
 	return NULL;
 }
 
-Network::Network(Beam **btrucks, std::string servername, long sport, ExampleFrameListener *efl) : NetworkBase(btrucks, servername, sport, efl), lagDataClients()
+Timer Network::timer = Ogre::Timer();
+
+Network::Network(Beam **btrucks, std::string servername, long sport, ExampleFrameListener *efl): lagDataClients()
 {
 	shutdown=false;
 	ssm=SoundScriptManager::getSingleton();
@@ -389,6 +392,29 @@ Ogre::String Network::getNickname(bool colour)
 	return nick;
 }
 
+
+int Network::sendMessageRaw(SWInetSocket *socket, char *buffer, unsigned int msgsize)
+{
+	//LogManager::getSingleton().logMessage("* sending raw message: " + StringConverter::toString(msgsize));
+
+	pthread_mutex_lock(&msgsend_mutex); //we use a mutex because a chat message can be sent asynchronously
+	SWBaseSocket::SWBaseError error;
+	
+	int rlen=0;
+	while (rlen<(int)msgsize)
+	{
+		int sendnum=socket->send(buffer+rlen, msgsize-rlen, &error);
+		if (sendnum<0)
+		{
+			LogManager::getSingleton().logMessage("NET send error: " + StringConverter::toString(sendnum));
+			return -1;
+		}
+		rlen+=sendnum;
+	}
+	pthread_mutex_unlock(&msgsend_mutex);
+	return 0;
+}
+
 int Network::sendmessage(SWInetSocket *socket, int type, unsigned int len, char* content)
 {
 	pthread_mutex_lock(&msgsend_mutex); //we use a mutex because a chat message can be sent asynchronously
@@ -600,7 +626,6 @@ void Network::sendData(Beam* truck)
 	int t=timer.getMilliseconds();
 	if (t-last_time>100)
 	{
-		memset(send_buffer,0,send_buffer_len);
 		last_time=t;
 		//copy data in send_buffer, send_buffer_len
 		if (send_buffer==0)
@@ -608,8 +633,9 @@ void Network::sendData(Beam* truck)
 			//boy, thats soo bad
 			return;
 		}
+		memset(send_buffer,0,send_buffer_len);
 		int i;
-		Vector3 refpos=truck->nodes[0].AbsPosition;
+		Vector3 refpos = truck->nodes[0].AbsPosition;
 		((float*)send_buffer)[0]=refpos.x;
 		((float*)send_buffer)[1]=refpos.y;
 		((float*)send_buffer)[2]=refpos.z;
@@ -693,64 +719,9 @@ void Network::sendthreadstart()
 	LogManager::getSingleton().logMessage("Sendthread starting");
 	while (!shutdown)
 	{
-		//wait signal
-		pthread_mutex_lock(&send_work_mutex);
-		pthread_cond_wait(&send_work_cv, &send_work_mutex);
-		pthread_mutex_unlock(&send_work_mutex);
-		//send data
-		if (send_buffer)
-		{
-			int blen = send_buffer_len+sizeof(oob_t);
-			//LogManager::getSingleton().logMessage("sending data: " + StringConverter::toString(blen));
-			memcpy(sendthreadstart_buffer, (char*)&send_oob, sizeof(oob_t));
-			memcpy(sendthreadstart_buffer+sizeof(oob_t), (char*)send_buffer, send_buffer_len);
-			int etype=sendmessage(&socket, MSG2_VEHICLE_DATA, blen, sendthreadstart_buffer);
-			if (etype)
-			{
-				char emsg[256];
-				sprintf(emsg, "Error %i while sending data packet", etype);
-				netFatalError(emsg);
-				return;
-			}
-			if (netlock.state==LOCKED)
-			{
-				netforce_t msg;
-				int uid=-1;
-				//find uid
-				if (netlock.remote_truck==0)
-				{
-					uid=myuid;
-				}
-				else
-				{
-					for (int i=0; i<MAX_PEERS; i++)
-					{
-						if (clients[i].used && !clients[i].invisible && clients[i].trucknum==netlock.remote_truck)
-						{
-							uid=clients[i].user_id;
-							break;
-						}
-					}
-				}
-				if (uid!=-1)
-				{
-					msg.target_uid=uid;
-					msg.node_id=netlock.remote_node;
-					msg.fx=netlock.toSendForce.x;
-					msg.fy=netlock.toSendForce.y;
-					msg.fz=netlock.toSendForce.z;
+		// wait for data...
+		NetworkStreamManager::getSingleton().sendStreams(this, &socket);
 
-					int etype=sendmessage(&socket, MSG2_FORCE, sizeof(netforce_t), (char*)&msg);
-					if (etype)
-					{
-						char emsg[256];
-						sprintf(emsg, "Error %i while sending netlock packet", etype);
-						netFatalError(emsg);
-						return;
-					}
-				}
-			}
-		}
 	}
 }
 
@@ -792,6 +763,11 @@ void Network::updatePlayerList()
 	pthread_mutex_unlock(&chat_mutex);
 }
 
+unsigned long Network::getNetTime()
+{
+	return timer.getMilliseconds();
+}
+
 void Network::receivethreadstart()
 {
 	int type;
@@ -806,6 +782,7 @@ void Network::receivethreadstart()
 	{
 		//get one message
 		int err=receivemessage(&socket, &type, &source, &wrotelen, buffer, MAX_MESSAGE_LENGTH);
+		//LogManager::getSingleton().logMessage("received data: " + StringConverter::toString(type) + ", source: "+StringConverter::toString(source) + ", size: "+StringConverter::toString(wrotelen));
 		if (err)
 		{
 			//this is an error!
@@ -816,9 +793,27 @@ void Network::receivethreadstart()
 		}
 		else if (type==MSG2_VEHICLE_DATA)
 		{
+
 			//we must update a vehicle
 			//find which vehicle it is
 			//then call pushNetwork(buffer, wrotelen)
+
+			/*
+			String content_hex = hexdump(buffer, wrotelen);
+			LogManager::getSingleton().logMessage("R|content: " + content_hex);
+			*/
+
+			/*
+			char hash[255] = "";
+			RoR::CSHA1 sha1;
+			sha1.UpdateHash((uint8_t *)buffer, wrotelen);
+			sha1.Final();
+			sha1.ReportHash(hash, RoR::CSHA1::REPORT_HEX_SHORT);
+			LogManager::getSingleton().logMessage("R|HASH: " + String(hash));
+			*/
+			
+			//exit(1);
+
 			pthread_mutex_lock(&clients_mutex);
 			for (int i=0; i<MAX_PEERS; i++)
 			{

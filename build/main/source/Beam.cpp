@@ -31,6 +31,7 @@ along with Rigs of Rods.  If not, see <http://www.gnu.org/licenses/>.
 #include "mirrors.h"
 #include "autopilot.h"
 #include "ScopeLog.h"
+#include "network.h"
 
 #include "skinmanager.h"
 #include "FlexMesh.h"
@@ -47,6 +48,7 @@ along with Rigs of Rods.  If not, see <http://www.gnu.org/licenses/>.
 #include "materialFunctionMapper.h"
 #include "TorqueCurve.h"
 #include "Settings.h"
+#include "network.h"
 #ifdef TIMING
 #include "BeamStats.h"
 #endif
@@ -196,10 +198,12 @@ Beam::~Beam()
 
 }
 
-Beam::Beam(int tnum, SceneManager *manager, SceneNode *parent, RenderWindow* win, float *_mapsizex, float *_mapsizez, Real px, Real py, Real pz, Quaternion rot, char* fname, Collisions *icollisions, DustPool *mdust, DustPool *mclump, DustPool *msparks, DustPool *mdrip, DustPool *msplash, DustPool *mripple, HeightFinder *mfinder, Water *w, Camera *pcam, Mirrors *mmirror, bool postload, bool networked, bool networking, collision_box_t *spawnbox, bool ismachine, int _flaresMode, std::vector<Ogre::String> *_truckconfig, SkinPtr skin) : deleting(false)
+Beam::Beam(int tnum, SceneManager *manager, SceneNode *parent, RenderWindow* win, Network *_net, float *_mapsizex, float *_mapsizez, Real px, Real py, Real pz, Quaternion rot, char* fname, Collisions *icollisions, DustPool *mdust, DustPool *mclump, DustPool *msparks, DustPool *mdrip, DustPool *msplash, DustPool *mripple, HeightFinder *mfinder, Water *w, Camera *pcam, Mirrors *mmirror, bool postload, bool networked, bool networking, collision_box_t *spawnbox, bool ismachine, int _flaresMode, std::vector<Ogre::String> *_truckconfig, SkinPtr skin) : deleting(false)
 {
+	net=_net;
 	beambreakdebug = (SETTINGS.getSetting("Beam Break Debug") == "Yes");
 	free_axle=0;
+	last_net_time=0;
 	patchEngineTorque=false;
 	usedSkin = skin;
 	LogManager::getSingleton().logMessage("BEAM: loading new truck: " + String(fname));
@@ -835,7 +839,12 @@ void Beam::pushNetwork(char* data, int size)
 		memcpy((char*)netb3, data+sizeof(oob_t), nodebuffersize);
 		//take care of the wheels
 		for (int i=0; i<free_wheel; i++) wheels[i].rp3=*(float*)(data+sizeof(oob_t)+nodebuffersize+i*4);
-	} else {state=SLEEPING; return;};
+	} else
+	{
+		LogManager::getSingleton().logMessage("WRONG network size: we expected " + StringConverter::toString(netbuffersize+sizeof(oob_t)) + " but got " + StringConverter::toString(size) + " for vehicle " + String(truckname));
+		state=SLEEPING;
+		return;
+	};
 	//okay, the big switch
 	pthread_mutex_lock(&net_mutex);
 	oob_t *ot;
@@ -892,6 +901,7 @@ void Beam::calcNetwork()
 	//if we receive last data from the past, we must correct the offset
 	if (oob2->time<rnow) {net_toffset=oob2->time-tnow; rnow=tnow+net_toffset;}
 	float tratio=(float)(rnow-oob1->time)/(float)(oob2->time-oob1->time);
+	//LogManager::getSingleton().logMessage(" network time diff: "+ StringConverter::toString(net_toffset));
 	Vector3 p1ref;
 	Vector3 p2ref;
 	short *sp1=(short*)(netb1+4*3);
@@ -5480,6 +5490,11 @@ bool Beam::frameStep(Real dt, Beam** trucks, int numtrucks)
 	}
 #endif
 
+	// send data via network?
+	if(networking)
+		sendStreamData();
+
+
 	fasted=1;
 	slowed=1;
 	stabsleep-=dt;
@@ -5668,6 +5683,93 @@ void Beam::prepareShutdown()
 		pthread_mutex_unlock(&done_count_mutex);
 	};
 
+}
+
+void Beam::sendStreamData()
+{
+	int t = netTimer.getMilliseconds();
+	if (t-last_net_time < 100)
+		return;
+
+	last_net_time = t;
+
+	char send_buffer[maxPacketLen];
+	memset(send_buffer, 0, maxPacketLen);
+
+	unsigned int packet_len = 0;
+	
+	// oob_t is at the beginning of the buffer
+	{
+		oob_t *send_oob = (oob_t *)send_buffer;
+		packet_len += sizeof(oob_t);
+
+		send_oob->time = Network::getNetTime();
+		if (engine)
+		{
+			send_oob->engine_speed=engine->getRPM();
+			send_oob->engine_force=engine->getAcc();
+		}
+		if(free_aeroengine>0)
+		{
+			float rpm =aeroengines[0]->getRPM();
+			send_oob->engine_speed=rpm;
+		}
+
+		send_oob->flagmask = 0;
+
+		blinktype b = getBlinkType();
+		if (b == BLINK_LEFT)            send_oob->flagmask+=NETMASK_BLINK_LEFT;
+		else if (b == BLINK_RIGHT)      send_oob->flagmask+=NETMASK_BLINK_RIGHT;
+		else if (b == BLINK_WARN)       send_oob->flagmask+=NETMASK_BLINK_WARN;
+
+		if (lights)                     send_oob->flagmask+=NETMASK_LIGHTS;
+		if (getCustomLightVisible(0))   send_oob->flagmask+=NETMASK_CLIGHT1;
+		if (getCustomLightVisible(1))   send_oob->flagmask+=NETMASK_CLIGHT2;
+		if (getCustomLightVisible(2))   send_oob->flagmask+=NETMASK_CLIGHT3;
+		if (getCustomLightVisible(3))   send_oob->flagmask+=NETMASK_CLIGHT4;
+
+		if (getBrakeLightVisible())		send_oob->flagmask+=NETMASK_BRAKES;
+		if (getReverseLightVisible())	send_oob->flagmask+=NETMASK_REVERSE;
+		if (getBeaconMode())			send_oob->flagmask+=NETMASK_BEACONS;
+		if (getCustomParticleMode())    send_oob->flagmask+=NETMASK_PARTICLE;
+		if (ssm->getTrigState(trucknum, SS_TRIG_HORN)) send_oob->flagmask+=NETMASK_HORN;
+	}
+
+
+	// then process the contents
+	{
+		float *send_nodes = (float *)(send_buffer + sizeof(oob_t));
+		packet_len += netbuffersize;
+		
+		// copy data into the buffer
+		int i;
+		Vector3 refpos = nodes[0].AbsPosition;
+		((float*)send_nodes)[0]=refpos.x;
+		((float*)send_nodes)[1]=refpos.y;
+		((float*)send_nodes)[2]=refpos.z;
+		short *sbuf=(short*)(send_buffer + sizeof(oob_t)+4*3); // plus 3 floats from above
+		for (i=1; i<first_wheel_node; i++)
+		{
+			Vector3 relpos=nodes[i].AbsPosition-refpos;
+			sbuf[(i-1)*3]   = (short int)(relpos.x*300.0);
+			sbuf[(i-1)*3+1] = (short int)(relpos.y*300.0);
+			sbuf[(i-1)*3+2] = (short int)(relpos.z*300.0);
+		}
+		float *wfbuf=(float*)(send_nodes+nodebuffersize);
+		for (i=0; i<free_wheel; i++)
+		{
+			wfbuf[i]=wheels[i].rp;
+		}
+	}
+
+	//memcpy(send_buffer+sizeof(oob_t), (char*)send_buffer, send_buffer_len);
+	this->addPacket(MSG2_VEHICLE_DATA, net->getUserID(), packet_len, send_buffer);
+}
+
+void Beam::receiveStreamData(char *buffer, int &type, int &source, unsigned int &wrotelen)
+{
+	// TODO!
+	// networked
 }
 
 void Beam::calcForcesEuler(int doUpdate, Real dt, int step, int maxstep, Beam** trucks, int numtrucks)

@@ -57,6 +57,7 @@ using namespace Ogre;
 #include "approxmath.h"
 #include "AITraffic_Common.h"
 #include "PositionStorage.h"
+#include "Streamable.h"
 
 //#include "scriptCommands.h"
 #include <vector>
@@ -300,6 +301,7 @@ class Mirrors;
 class Turboprop;
 class Replay;
 class Airfoil;
+class Network;
 
 #ifdef LUASCRIPT
 class LuaSystem;
@@ -599,7 +601,7 @@ inline float fast_length(Ogre::Vector3 v)
 	return fast_sqrt(v.squaredLength());
 }
 
-class Beam//: public FrameListener
+class Beam : public Streamable
 {
 public:
 	Beam() {}; // for wrapper, DO NOT USE!
@@ -614,7 +616,7 @@ public:
 #endif
 
 	//constructor
-	Beam(int tnum, SceneManager *manager, SceneNode *parent, RenderWindow* win, float *mapsizex, float *mapsizez, Real px, Real py, Real pz, Quaternion rot, char* fname, Collisions *icollisions, DustPool *mdust, DustPool *mclump, DustPool *msparks, DustPool *mdrip, DustPool *msplash, DustPool *mripple, HeightFinder *mfinder, Water *w, Camera *pcam, Mirrors *mmirror, bool postload=false, bool networked=false, bool networking=false, collision_box_t *spawnbox=NULL, bool ismachine=false, int flareMode=0, std::vector<Ogre::String> *truckconfig=0, SkinPtr skin=SkinPtr());
+	Beam(int tnum, SceneManager *manager, SceneNode *parent, RenderWindow* win, Network *net, float *mapsizex, float *mapsizez, Real px, Real py, Real pz, Quaternion rot, char* fname, Collisions *icollisions, DustPool *mdust, DustPool *mclump, DustPool *msparks, DustPool *mdrip, DustPool *msplash, DustPool *mripple, HeightFinder *mfinder, Water *w, Camera *pcam, Mirrors *mmirror, bool postload=false, bool networked=false, bool networking=false, collision_box_t *spawnbox=NULL, bool ismachine=false, int flareMode=0, std::vector<Ogre::String> *truckconfig=0, SkinPtr skin=SkinPtr());
 	void activate();
 	void desactivate();
 	void pushNetwork(char* data, int size);
@@ -919,6 +921,8 @@ protected:
 	Vector3 lastlastposition;
 	MaterialFunctionMapper *materialFunctionMapper;
 
+	Network *net;
+
 	// this is for managing the blinkers on the truck:
 	blinktype blinkingtype;
 	Light *cablight;
@@ -1119,6 +1123,13 @@ protected:
 #ifdef TIMING
 	BeamThreadStats *statistics;
 #endif
+
+
+	// overloaded from Streamable:
+	Timer netTimer;
+	int last_net_time;
+	void sendStreamData();
+	void receiveStreamData(char *buffer, int &type, int &source, unsigned int &wrotelen);
 
 };
 
