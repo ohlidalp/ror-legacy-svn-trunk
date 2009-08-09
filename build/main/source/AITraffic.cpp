@@ -28,19 +28,27 @@ void AITraffic::initialize()
 	mTotalElapsedTime		= 0.0f;
 
 	// setting up waypoints
-	aimatrix->trafficgrid->num_of_waypoints = 9;
-	aimatrix->trafficgrid->waypoints[0].position = Ogre::Vector3(31.2367, 0.0496842, 19.8068);
-	aimatrix->trafficgrid->waypoints[1].position = Ogre::Vector3(123.445, 0.0496726, 19.8812);
-	aimatrix->trafficgrid->waypoints[2].position = Ogre::Vector3(140.172, 0.0499454, 34.2714);
-	aimatrix->trafficgrid->waypoints[3].position = Ogre::Vector3(140.249, 0.0507317, 72.9784);
-	aimatrix->trafficgrid->waypoints[4].position = Ogre::Vector3(164.384, 0.0485949, 19.8671);
-	aimatrix->trafficgrid->waypoints[5].position = Ogre::Vector3(243.265, 0.0497771, 19.8707);
-	aimatrix->trafficgrid->waypoints[6].position = Ogre::Vector3(149.989, 0.0478512, 64.3177);
-	aimatrix->trafficgrid->waypoints[7].position = Ogre::Vector3(149.991, 0.0484931, 36.9028);
-	aimatrix->trafficgrid->waypoints[8].position = Ogre::Vector3(148.812, 0.0332915, 8.49526);
+	aimatrix->trafficgrid->num_of_waypoints = 14;
+	aimatrix->trafficgrid->waypoints[0].position = Ogre::Vector3(30.9446, 0.0489268, 19.8821);
+	aimatrix->trafficgrid->waypoints[1].position = Ogre::Vector3(122.746, 0.050382, 19.8096);
+	aimatrix->trafficgrid->waypoints[2].position = Ogre::Vector3(164.037, 0.0483047, 19.8957);
+	aimatrix->trafficgrid->waypoints[3].position = Ogre::Vector3(243.493, 0.0479039, 20.0598);
+	aimatrix->trafficgrid->waypoints[4].position = Ogre::Vector3(260.141, 0.0496448, 33.8395);
+	aimatrix->trafficgrid->waypoints[5].position = Ogre::Vector3(260.19, 0.050381, 72.7011);
+	aimatrix->trafficgrid->waypoints[6].position = Ogre::Vector3(246.288, 0.0481501, 87.535);
+	aimatrix->trafficgrid->waypoints[7].position = Ogre::Vector3(165.071, 0.0466857, 87.4356);
+	aimatrix->trafficgrid->waypoints[8].position = Ogre::Vector3(126.147, 0.0462679, 87.4419);
+	aimatrix->trafficgrid->waypoints[9].position = Ogre::Vector3(34.419, 0.04701, 87.4518);
+	aimatrix->trafficgrid->waypoints[10].position = Ogre::Vector3(19.8215, 0.0500146, 75.8752);
+	aimatrix->trafficgrid->waypoints[11].position = Ogre::Vector3(19.9578, 0.0481654, 30.3277);
+// zoned car
+
+	aimatrix->trafficgrid->waypoints[12].position = Ogre::Vector3(149.997, 0.0477668, 67.8343);
+	aimatrix->trafficgrid->waypoints[13].position = Ogre::Vector3(149.518, 0.00510367, 5.66228);
+
 
 	// setting up segments
-	aimatrix->trafficgrid->num_of_segments = 7;
+	aimatrix->trafficgrid->num_of_segments = 13;
 
 	aimatrix->trafficgrid->segments[0].start			= 0;
 	aimatrix->trafficgrid->segments[0].end				= 1;
@@ -57,7 +65,7 @@ void AITraffic::initialize()
 	aimatrix->trafficgrid->segments[2].num_of_lanes		= 2;
 	aimatrix->trafficgrid->segments[2].width			= 5;
 
-	aimatrix->trafficgrid->segments[3].start			= 1;
+	aimatrix->trafficgrid->segments[3].start			= 3;
 	aimatrix->trafficgrid->segments[3].end				= 4;
 	aimatrix->trafficgrid->segments[3].num_of_lanes		= 2;
 	aimatrix->trafficgrid->segments[3].width			= 5;
@@ -67,62 +75,71 @@ void AITraffic::initialize()
 	aimatrix->trafficgrid->segments[4].num_of_lanes		= 2;
 	aimatrix->trafficgrid->segments[4].width			= 5;
 
-	aimatrix->trafficgrid->segments[5].start			= 6;
-	aimatrix->trafficgrid->segments[5].end				= 7;
+	aimatrix->trafficgrid->segments[5].start			= 5;
+	aimatrix->trafficgrid->segments[5].end				= 6;
 	aimatrix->trafficgrid->segments[5].num_of_lanes		= 2;
 	aimatrix->trafficgrid->segments[5].width			= 5;
 
-	aimatrix->trafficgrid->segments[6].start			= 7;
-	aimatrix->trafficgrid->segments[6].end				= 8;
-	aimatrix->trafficgrid->segments[6].num_of_lanes		= 2;
+	aimatrix->trafficgrid->segments[6].start			= 6;
+	aimatrix->trafficgrid->segments[6].end				= 7;
+	aimatrix->trafficgrid->segments[6].num_of_lanes		= 1;
 	aimatrix->trafficgrid->segments[6].width			= 5;
 
-	// connect segments together
+	aimatrix->trafficgrid->segments[7].start			= 7;
+	aimatrix->trafficgrid->segments[7].end				= 8;
+	aimatrix->trafficgrid->segments[7].num_of_lanes		= 1;
+	aimatrix->trafficgrid->segments[7].width			= 5;
 
-	aimatrix->trafficgrid->waypoints[0].num_of_connections	= 1;
-	aimatrix->trafficgrid->waypoints[0].nextsegs[0].segment = 0;
+	aimatrix->trafficgrid->segments[8].start			= 8;
+	aimatrix->trafficgrid->segments[8].end				= 9;
+	aimatrix->trafficgrid->segments[8].num_of_lanes		= 1;
+	aimatrix->trafficgrid->segments[8].width			= 5;
 
-	aimatrix->trafficgrid->waypoints[1].num_of_connections	= 2;
-	aimatrix->trafficgrid->waypoints[1].nextsegs[0].segment = 1;
-	aimatrix->trafficgrid->waypoints[1].nextsegs[1].segment = 3;
+	aimatrix->trafficgrid->segments[9].start			= 9;
+	aimatrix->trafficgrid->segments[9].end				= 10;
+	aimatrix->trafficgrid->segments[9].num_of_lanes		= 1;
+	aimatrix->trafficgrid->segments[9].width			= 5;
 
-	aimatrix->trafficgrid->waypoints[2].num_of_connections	= 1;
-	aimatrix->trafficgrid->waypoints[2].nextsegs[0].segment = 2;
+	aimatrix->trafficgrid->segments[10].start			= 10;
+	aimatrix->trafficgrid->segments[10].end				= 11;
+	aimatrix->trafficgrid->segments[10].num_of_lanes	= 2;
+	aimatrix->trafficgrid->segments[10].width			= 5;
 
-	aimatrix->trafficgrid->waypoints[3].num_of_connections	= 0;
+	aimatrix->trafficgrid->segments[11].start			= 11;
+	aimatrix->trafficgrid->segments[11].end				= 0;
+	aimatrix->trafficgrid->segments[11].num_of_lanes	= 2;
+	aimatrix->trafficgrid->segments[11].width			= 5;
 
-	aimatrix->trafficgrid->waypoints[4].num_of_connections	= 1;
-	aimatrix->trafficgrid->waypoints[4].nextsegs[0].segment = 4;
+	aimatrix->trafficgrid->segments[12].start			= 12;
+	aimatrix->trafficgrid->segments[12].end				= 13;
+	aimatrix->trafficgrid->segments[12].num_of_lanes	= 2;
+	aimatrix->trafficgrid->segments[12].width			= 5;
 
-	aimatrix->trafficgrid->waypoints[5].num_of_connections	= 0;
+	for (int z=0;z<13;z++)
+		{
+			aimatrix->trafficgrid->waypoints[z].num_of_connections	= 1;
+			aimatrix->trafficgrid->waypoints[z].nextsegs[0].segment = z;
+			aimatrix->trafficgrid->segments[z].start_wait = 0.0f;
+			aimatrix->trafficgrid->segments[z].end_wait = 0.0f;
+		}
 
-	aimatrix->trafficgrid->waypoints[6].num_of_connections	= 1;
-	aimatrix->trafficgrid->waypoints[6].nextsegs[0].segment = 7;
-
-	aimatrix->trafficgrid->waypoints[7].num_of_connections	= 1;
-	aimatrix->trafficgrid->waypoints[7].nextsegs[0].segment = 8;
-
-	aimatrix->trafficgrid->waypoints[8].num_of_connections	= 0;
+	// waypoints path for zoned car
+	
+	aimatrix->trafficgrid->waypoints[13].num_of_connections	= 0;
+	aimatrix->trafficgrid->segments[13].start_wait = 0.0f;
+	aimatrix->trafficgrid->segments[13].end_wait = 0.0f;
 
 	// creating virtual paths for traffic
 
-	aimatrix->trafficgrid->num_of_paths = 3;
-	aimatrix->trafficgrid->paths[0].num_of_segments = 3;
-	aimatrix->trafficgrid->paths[0].path_type	= 2;		
-	aimatrix->trafficgrid->paths[0].segments[0] = 0;
-	aimatrix->trafficgrid->paths[0].segments[1] = 1;
-	aimatrix->trafficgrid->paths[0].segments[2] = 2;
+	aimatrix->trafficgrid->num_of_paths = 2;
 
-	aimatrix->trafficgrid->paths[1].num_of_segments = 3;
+	aimatrix->trafficgrid->paths[0].num_of_segments = 12;			// normal circular traffic
+	aimatrix->trafficgrid->paths[0].path_type	= 1;		
+	for (int z=0;z<12;z++) aimatrix->trafficgrid->paths[0].segments[z] = z;
+
+	aimatrix->trafficgrid->paths[1].num_of_segments = 1;			// zoned car one segment
 	aimatrix->trafficgrid->paths[1].path_type	= 2 ;		
-	aimatrix->trafficgrid->paths[1].segments[0] = 0;
-	aimatrix->trafficgrid->paths[1].segments[1] = 3;
-	aimatrix->trafficgrid->paths[1].segments[2] = 4;
-
-	aimatrix->trafficgrid->paths[2].num_of_segments = 1;
-	aimatrix->trafficgrid->paths[2].path_type	= 1;		
-	aimatrix->trafficgrid->paths[2].segments[0] = 6;
-//	aimatrix->trafficgrid->paths[2].segments[1] = 6; // 5 is errorneous?
+	aimatrix->trafficgrid->paths[1].segments[0] = 12;
 
 	// setting up zones
 
@@ -131,7 +148,7 @@ void AITraffic::initialize()
 	aimatrix->trafficgrid->zones[0].p1 = Ogre::Vector3(145.007, 0.0822257, 13.4135);
 	aimatrix->trafficgrid->zones[0].p2 = Ogre::Vector3(123.31, 0, 24.8975);
 
-	num_of_vehicles = 3;
+	num_of_vehicles = 1;
 	aimatrix->trafficgrid->num_of_objects = num_of_vehicles;
 
 	aimatrix->calculateInternals();
@@ -144,9 +161,11 @@ void AITraffic::initialize()
 	for (int i=1;i<NUM_OF_TRAFFICED_CARS || i<=num_of_vehicles;i++)
 		{
 			aimatrix->trafficgrid->trafficnodes[i].type = 1;
+			aimatrix->trafficgrid->trafficnodes[i].wait = 0.0f;
 			vehicles[i] = new AITraffic_Vehicle();
 			vehicles[i]->serial = i;
-			vehicles[i]->path_id= i-1;
+			vehicles[i]->path_id= 0;
+			if (i==3) vehicles[i]->path_id = 1;		// zoned car
 			vehicles[i]->ps_idx = aimatrix->trafficgrid->paths[vehicles[i]->path_id].segments[0];
 			vehicles[i]->aimatrix = aimatrix;
 			vehicles[i]->setPosition(aimatrix->trafficgrid->waypoints[aimatrix->trafficgrid->segments[vehicles[i]->ps_idx].start].position);

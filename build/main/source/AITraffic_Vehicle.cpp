@@ -23,11 +23,14 @@ void AITraffic_Vehicle::reset (void)
 void AITraffic_Vehicle::updateSimple(const float currentTime, const float elapsedTime)
 {
 	// are we in waiting position
-	if (aimatrix->trafficgrid->trafficnodes[serial].wait>0.001f)
+
+/* too effective, why?
+	if (aimatrix->trafficgrid->trafficnodes[serial].wait>0.01f)
 		{
 			aimatrix->trafficgrid->trafficnodes[serial].wait-=currentTime;
 			return;
 		}
+*/
 
 	// are we in the path-tube?
 	// if so find the neares one
@@ -41,7 +44,7 @@ void AITraffic_Vehicle::updateSimple(const float currentTime, const float elapse
 	// are we close to the next waypoint
 	// if so,update the target, means we set the 
 
-	if (closeToWayPoint(getHeadedWayPoint(),5.0f))
+	if (closeToWayPoint(getHeadedWayPoint(),3.0f))
 		{
 			advanceToNextWayPoint();
 			aimatrix->trafficgrid->trafficnodes[serial].wait = aimatrix->trafficgrid->segments[ps_idx].end_wait;
@@ -174,14 +177,14 @@ float  AITraffic_Vehicle::objectsOnTravelPath()
 			}
 	}
 
-	return 0.0f;
+//	return 0.0f;
 	// we have shield info
 	// now let's calculate where to steer or speed next 
 
 	// check for -10..10 degrees ahead for object
 	bool obs = false;
 
-	for (int i=17;i<19;i++)
+	for (int i=18;i<19;i++)
 		{
 			if (shield[i]) obs = true;
 		}
