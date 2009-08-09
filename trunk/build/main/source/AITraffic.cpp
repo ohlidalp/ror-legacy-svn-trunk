@@ -126,8 +126,6 @@ void AITraffic::initialize()
 	// waypoints path for zoned car
 	
 	aimatrix->trafficgrid->waypoints[13].num_of_connections	= 0;
-	aimatrix->trafficgrid->segments[13].start_wait = 0.0f;
-	aimatrix->trafficgrid->segments[13].end_wait = 0.0f;
 
 	// creating virtual paths for traffic
 
@@ -138,7 +136,7 @@ void AITraffic::initialize()
 	for (int z=0;z<12;z++) aimatrix->trafficgrid->paths[0].segments[z] = z;
 
 	aimatrix->trafficgrid->paths[1].num_of_segments = 1;			// zoned car one segment
-	aimatrix->trafficgrid->paths[1].path_type	= 2 ;		
+	aimatrix->trafficgrid->paths[1].path_type	= 1 ;		
 	aimatrix->trafficgrid->paths[1].segments[0] = 12;
 
 	// setting up zones
@@ -148,10 +146,13 @@ void AITraffic::initialize()
 	aimatrix->trafficgrid->zones[0].p1 = Ogre::Vector3(145.007, 0.0822257, 13.4135);
 	aimatrix->trafficgrid->zones[0].p2 = Ogre::Vector3(123.31, 0, 24.8975);
 
-	num_of_vehicles = 1;
+	num_of_vehicles = 14;
 	aimatrix->trafficgrid->num_of_objects = num_of_vehicles;
 
 	aimatrix->calculateInternals();
+
+	aimatrix->trafficgrid->segments[12].start_wait = 0.0f;
+	aimatrix->trafficgrid->segments[12].end_wait = 100000.0f;
 
 	// setting up person
 
@@ -168,7 +169,7 @@ void AITraffic::initialize()
 			if (i==3) vehicles[i]->path_id = 1;		// zoned car
 			vehicles[i]->ps_idx = aimatrix->trafficgrid->paths[vehicles[i]->path_id].segments[0];
 			vehicles[i]->aimatrix = aimatrix;
-			vehicles[i]->setPosition(aimatrix->trafficgrid->waypoints[aimatrix->trafficgrid->segments[vehicles[i]->ps_idx].start].position);
+			vehicles[i]->setPosition(Ogre::Vector3(i*5,0,0) + aimatrix->trafficgrid->waypoints[aimatrix->trafficgrid->segments[vehicles[i]->ps_idx].start].position);
 			vehicles[i]->reset();
 
 			if (i==3) 
@@ -215,12 +216,15 @@ void AITraffic::frameStep(Ogre::Real deltat)
 					}	// we already in the zone ... do nothing
 				else
 					{
-						aimatrix->trafficgrid->trafficnodes[i].inzone = true;
-						for (int j=1;j<=num_of_vehicles;j++)
+						if (i==0)	// only person should trigger
 							{
-								aimatrix->trafficgrid->trafficnodes[j].active = true;
+								aimatrix->trafficgrid->trafficnodes[i].inzone = true;
+								for (int j=1;j<=num_of_vehicles;j++)
+									{
+										aimatrix->trafficgrid->trafficnodes[j].active = true;
+									}
+								vehicles[3]->speed = 30;
 							}
-						vehicles[3]->speed = 30;
 					}
 			}
 		else
