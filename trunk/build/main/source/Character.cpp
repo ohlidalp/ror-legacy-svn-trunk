@@ -383,6 +383,7 @@ void Character::sendStreamSetup()
 	{
 		LogManager::getSingleton().logMessage("new remote character: " + StringConverter::toString(source) + ":"+ StringConverter::toString(streamid));
 		NetworkStreamManager::getSingleton().addStream(this, source, streamid);
+		setVisible(true);
 	}else
 	{
 		NetworkStreamManager::getSingleton().addStream(this);
