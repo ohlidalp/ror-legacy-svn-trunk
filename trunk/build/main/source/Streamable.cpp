@@ -31,6 +31,7 @@ using namespace Ogre;
 
 NetworkStreamManager::NetworkStreamManager()
 {
+	streamid=10;
 	pthread_mutex_init(&send_work_mutex, NULL);
 	pthread_cond_init(&send_work_cv, NULL);
 }
@@ -49,9 +50,24 @@ NetworkStreamManager& NetworkStreamManager::getSingleton(void)
 	assert( ms_Singleton );  return ( *ms_Singleton );
 }
 
-void NetworkStreamManager::addStream(Streamable *stream)
+void NetworkStreamManager::addStream(Streamable *stream, int osource, int ostreamid)
 {
-	streams.push_back(stream);
+	if(ostreamid==-1)
+	{
+		// for own streams: count stream id up ...
+		osource = net->getUserID();
+		stream->streamid = streamid;
+		if(streams.find(osource) == streams.end())
+			streams[osource] = std::map < unsigned int, Streamable *>();
+		streams[osource][streamid] = stream;
+		LogManager::getSingleton().logMessage("adding local stream: " + StringConverter::toString(osource) + ":"+ StringConverter::toString(streamid));
+		streamid++;
+	} else
+	{
+		stream->streamid = ostreamid;
+		streams[osource][ostreamid] = stream;
+		LogManager::getSingleton().logMessage("adding remote stream: " + StringConverter::toString(osource) + ":"+ StringConverter::toString(ostreamid));
+	}
 }
 
 void NetworkStreamManager::removeStream(Streamable *stream)
@@ -64,6 +80,18 @@ void NetworkStreamManager::pauseStream(Streamable *stream)
 
 void NetworkStreamManager::resumeStream(Streamable *stream)
 {
+}
+
+void NetworkStreamManager::pushReceivedStreamMessage(unsigned int &type, int &source, unsigned int &streamid, unsigned int &wrotelen, char *buffer)
+{
+	if(streams.find(source) == streams.end())
+		// no such stream?!
+		return;
+	if(streams.find(source)->second.find(streamid) == streams.find(source)->second.end())
+		// no such stream?!
+		return;
+
+	streams[source][streamid]->receiveStreamData(type, source, streamid, buffer, wrotelen);
 }
 
 void NetworkStreamManager::triggerSend()
@@ -82,28 +110,32 @@ void NetworkStreamManager::sendStreams(Network *net, SWInetSocket *socket)
 	char *buffer = 0;
 	int bufferSize=0;
 
-	std::vector<Streamable *>::iterator it;
+	std::map < int, std::map < unsigned int, Streamable *> >::iterator it;
 	for(it=streams.begin(); it!=streams.end(); it++)
 	{
-		std::queue <bufferedPacket_t> *packets = (*it)->getPacketQueue();
-
-		if(packets->empty())
-			continue;
-
-		// remove oldest packet in queue
-		bufferedPacket_t packet = packets->front();
-
-		// handle always one packet
-		int etype = net->sendMessageRaw(socket, packet.packetBuffer, packet.size);
-	
-		packets->pop();
-
-		if (etype)
+		std::map<unsigned int,Streamable *>::iterator it2;
+		for(it2=it->second.begin(); it2!=it->second.end(); it2++)
 		{
-			char emsg[256];
-			sprintf(emsg, "Error %i while sending data packet", etype);
-			net->netFatalError(emsg);
-			return;
+			std::queue <bufferedPacket_t> *packets = it2->second->getPacketQueue();
+
+			if(packets->empty())
+				continue;
+
+			// remove oldest packet in queue
+			bufferedPacket_t packet = packets->front();
+
+			// handle always one packet
+			int etype = net->sendMessageRaw(socket, packet.packetBuffer, packet.size);
+		
+			packets->pop();
+
+			if (etype)
+			{
+				char emsg[256];
+				sprintf(emsg, "Error %i while sending data packet", etype);
+				net->netFatalError(emsg);
+				return;
+			}
 		}
 	}
 }
@@ -112,7 +144,7 @@ void NetworkStreamManager::sendStreams(Network *net, SWInetSocket *socket)
 /// Streamable
 Streamable::Streamable()
 {
-	NetworkStreamManager::getSingleton().addStream(this);
+	//NetworkStreamManager::getSingleton().addStream(this);
 }
 
 std::queue < bufferedPacket_t > *Streamable::getPacketQueue()
@@ -120,7 +152,7 @@ std::queue < bufferedPacket_t > *Streamable::getPacketQueue()
 	return &packets;
 }
 
-void Streamable::addPacket(int type, int uid, unsigned int len, char* content)
+void Streamable::addPacket(int type, int uid, unsigned int streamid, unsigned int len, char* content)
 {
 	if(packets.size() > packetBufferSize)
 		// buffer full, packet discarded
@@ -136,9 +168,10 @@ void Streamable::addPacket(int type, int uid, unsigned int len, char* content)
 
 	// write header in buffer
 	header_t *head = (header_t *)buffer;
-	head->command = type;
-	head->source  = uid;
-	head->size    = len;
+	head->command  = type;
+	head->source   = uid;
+	head->size     = len;
+	head->streamid = streamid;
 
 	// then copy the contents
 	char *bufferContent = (char *)(buffer + sizeof(header_t));
@@ -175,7 +208,7 @@ void Streamable::sendStreamData()
 {
 }
 
-void Streamable::receiveStreamData(char *buffer, int &type, int &source, unsigned int &wrotelen)
+void Streamable::receiveStreamData(unsigned int &type, int &source, unsigned int &streamid, char *buffer, unsigned int &len)
 {
 }
 

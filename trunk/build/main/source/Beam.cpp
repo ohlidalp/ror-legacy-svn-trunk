@@ -201,6 +201,8 @@ Beam::~Beam()
 Beam::Beam(int tnum, SceneManager *manager, SceneNode *parent, RenderWindow* win, Network *_net, float *_mapsizex, float *_mapsizez, Real px, Real py, Real pz, Quaternion rot, char* fname, Collisions *icollisions, DustPool *mdust, DustPool *mclump, DustPool *msparks, DustPool *mdrip, DustPool *msplash, DustPool *mripple, HeightFinder *mfinder, Water *w, Camera *pcam, Mirrors *mmirror, bool postload, bool networked, bool networking, collision_box_t *spawnbox, bool ismachine, int _flaresMode, std::vector<Ogre::String> *_truckconfig, SkinPtr skin) : deleting(false)
 {
 	net=_net;
+	if(net && !networking) networking = true; // enable networking if some network class is existing
+
 	beambreakdebug = (SETTINGS.getSetting("Beam Break Debug") == "Yes");
 	free_axle=0;
 	last_net_time=0;
@@ -565,6 +567,9 @@ Beam::Beam(int tnum, SceneManager *manager, SceneNode *parent, RenderWindow* win
 		pthread_mutex_init(&net_mutex, NULL);
 		if (engine) engine->start();
 	}
+
+	if(networking)
+		sendStreamSetup();
 
 	//updateDebugOverlay();
 }
@@ -5685,6 +5690,21 @@ void Beam::prepareShutdown()
 
 }
 
+void Beam::sendStreamSetup()
+{
+	if(networking)
+		NetworkStreamManager::getSingleton().addStream(this);
+	//else if(networked)
+	//	NetworkStreamManager::getSingleton().addStream(this); // TOFIX!
+
+
+	// send the vehicle name
+	this->addPacket(MSG2_USE_VEHICLE, net->getUserID(), streamid, realtruckfilename.size(), const_cast<char*>(realtruckfilename.c_str()));
+	
+	// send vehicle buffer size
+	this->addPacket(MSG2_BUFFER_SIZE, net->getUserID(), streamid, 4, (char*)&netbuffersize);
+}
+
 void Beam::sendStreamData()
 {
 	int t = netTimer.getMilliseconds();
@@ -5763,10 +5783,10 @@ void Beam::sendStreamData()
 	}
 
 	//memcpy(send_buffer+sizeof(oob_t), (char*)send_buffer, send_buffer_len);
-	this->addPacket(MSG2_VEHICLE_DATA, net->getUserID(), packet_len, send_buffer);
+	this->addPacket(MSG2_VEHICLE_DATA, net->getUserID(), streamid, packet_len, send_buffer);
 }
 
-void Beam::receiveStreamData(char *buffer, int &type, int &source, unsigned int &wrotelen)
+void Beam::receiveStreamData(unsigned int &type, int &source, unsigned int &streamid, char *buffer, unsigned int &len)
 {
 	// TODO!
 	// networked

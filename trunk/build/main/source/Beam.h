@@ -1128,8 +1128,9 @@ protected:
 	// overloaded from Streamable:
 	Timer netTimer;
 	int last_net_time;
+	void sendStreamSetup();
 	void sendStreamData();
-	void receiveStreamData(char *buffer, int &type, int &source, unsigned int &wrotelen);
+	void receiveStreamData(unsigned int &type, int &source, unsigned int &streamid, char *buffer, unsigned int &len);
 
 };
 

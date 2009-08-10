@@ -1561,6 +1561,9 @@ ExampleFrameListener::ExampleFrameListener(RenderWindow* win, Camera* cam, Scene
 	// hide console when not in netmode
 	NETCHAT.setMode(this, NETCHAT_LEFT_SMALL, false);
 
+	// you always need that, even if you are not using the network
+	new NetworkStreamManager();
+
 	if(netmode)
 	{
 		// cmdline overrides config
@@ -1616,11 +1619,8 @@ ExampleFrameListener::ExampleFrameListener(RenderWindow* win, Camera* cam, Scene
 
 	}
 
-	// you always need that, even if you are not using the network
-	new NetworkStreamManager();
-
 	// load guy
-	person = new Character(collisions, hfinder, w, bigMap, mSceneMgr);
+	person = new Character(collisions, net, hfinder, w, bigMap, mSceneMgr);
 	person->setVisible(false);
 
 	if(preselected_map != "")
@@ -1678,7 +1678,7 @@ ExampleFrameListener::ExampleFrameListener(RenderWindow* win, Camera* cam, Scene
 
 		} else {
 			// no trucks loaded?
-			if (truck_preload_num == 0 || netmode)
+			if (truck_preload_num == 0 && !netmode)
 			{
 				// show truck selector
 				UILOADER.setEnableCancel(false);
@@ -1767,6 +1767,11 @@ ExampleFrameListener::~ExampleFrameListener()
 #endif //OPENSTEER
 }
 
+void ExampleFrameListener::newCharacter(int source, unsigned int streamid)
+{
+	LogManager::getSingleton().logMessage(" new character for " + StringConverter::toString(source) + ":" + StringConverter::toString(streamid));
+	new Character(collisions, net, hfinder, w, bigMap, mSceneMgr, source, streamid);
+}
 
 void ExampleFrameListener::loadNetTerrain(char *preselected_map)
 {
@@ -4234,7 +4239,7 @@ bool ExampleFrameListener::updateEvents(float dt)
 			NETCHAT.toggleMode(this);
 		}
 
-		if (INPUTENGINE.getEventBoolValueBounce(EV_COMMON_ENTER_OR_EXIT_TRUCK, 0.5f) && !netmode)
+		if (INPUTENGINE.getEventBoolValueBounce(EV_COMMON_ENTER_OR_EXIT_TRUCK, 0.5f))
 		{
 			//perso in/out
 			if (current_truck==-1)
@@ -4294,7 +4299,7 @@ bool ExampleFrameListener::updateEvents(float dt)
 					//					if (collisions->hasbuildbox && !netmode) FIXME
 
 					// no trucks loaded?
-					if (truck_preload_num == 0 || netmode)
+					if (truck_preload_num == 0)
 					{
 						// show truck selector
 						if(w)
@@ -6194,13 +6199,12 @@ void ExampleFrameListener::initTrucks(bool loadmanual, Ogre::String selected, Og
 		}
 
 		if (trucks[free_truck]->engine) trucks[free_truck]->engine->start();
-		if (netmode && net)
-			net->sendVehicleType(selectedchr, trucks[free_truck]->netbuffersize);
 		free_truck++;
 	}
 
 
-	//load the rest
+	// load the rest in SP
+	// in netmode, dont load other trucks!
 	if (!netmode)
 	{
 		int i;
@@ -6224,10 +6228,7 @@ void ExampleFrameListener::initTrucks(bool loadmanual, Ogre::String selected, Og
 	LogManager::getSingleton().logMessage("EFL: beam instanciated");
 
 	if(!enterTruck) setCurrentTruck(-1);
-	if (netmode)
-	{
-		setCurrentTruck(0);
-	}
+	
 	//force perso start
 	if (persostart!=Vector3(0,0,0)) person->setPosition(persostart);
 	//bigMap->getEntityByName("person")->onTop();
@@ -7270,7 +7271,8 @@ END OF OLD CODE */
 		if (netmode && net)
 		{
 			//send player's truck data
-			net->sendData(trucks[0]);
+			
+			//OLD: net->sendData(trucks[0]);
 			//also take care of this
 			//trucks[0]->expireNetForce();
 			//check for chat

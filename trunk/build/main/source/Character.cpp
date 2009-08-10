@@ -25,18 +25,24 @@ along with Rigs of Rods.  If not, see <http://www.gnu.org/licenses/>.
 #include "heightfinder.h"
 #include "MapControl.h"
 #include "InputEngine.h"
+#include "network.h"
 
 using namespace Ogre;
 
 unsigned int Character::characterCounter=0;
 
-Character::Character(Collisions *c, HeightFinder *h, Water *w, MapControl *m, Ogre::SceneManager *scm)
+Character::Character(Collisions *c, Network *net, HeightFinder *h, Water *w, MapControl *m, Ogre::SceneManager *scm, int source, unsigned int streamid)
 {
+	this->net=net;
 	this->collisions=c;
 	this->hfinder=h;
 	this->water=w;
 	this->map=m;
 	this->scm=scm;
+	this->source=source;
+	this->streamid=streamid;
+	remote = (source != -1);
+	last_net_time=0;
 	
 	myNumber = characterCounter++;
 	myName = "character"+Ogre::StringConverter::toString(myNumber);
@@ -63,6 +69,11 @@ Character::Character(Collisions *c, HeightFinder *h, Water *w, MapControl *m, Og
 		e->setVisibility(true);
 		e->setPosition(personode->getPosition());
 		e->setRotation(personode->getOrientation());
+	}
+
+	if(net)
+	{
+		sendStreamSetup();
 	}
 	
 }
@@ -142,6 +153,8 @@ void Character::setAnimationMode(Ogre::String mode, float time)
 
 void Character::update(float dt)
 {
+	if(remote) return;
+
 	//mode perso
 	Vector3 position=personode->getPosition();
 	//gravity force is always on
@@ -339,6 +352,10 @@ void Character::update(float dt)
 	*/
 	personode->setPosition(position);
 	updateMapIcon();
+
+	if(net)
+		sendStreamData();
+
 }
 
 void Character::updateMapIcon()
@@ -358,4 +375,52 @@ void Character::move(Ogre::Vector3 v)
 Ogre::SceneNode *Character::getSceneNode()
 {
 	return personode;
+}
+
+void Character::sendStreamSetup()
+{
+	if(remote)
+	{
+		LogManager::getSingleton().logMessage("new remote character: " + StringConverter::toString(source) + ":"+ StringConverter::toString(streamid));
+		NetworkStreamManager::getSingleton().addStream(this, source, streamid);
+	}else
+	{
+		NetworkStreamManager::getSingleton().addStream(this);
+
+		stream_register_t reg;
+		reg.sid = this->streamid;
+		reg.status = 1;
+		strcpy(reg.name, "default");
+		reg.type = 1;
+		this->addPacket(MSG2_STREAM_REGISTER, net->getUserID(), streamid, sizeof(stream_register_t), (char*)&reg);
+	}
+}
+
+void Character::sendStreamData()
+{
+	int t = netTimer.getMilliseconds();
+	if (t-last_net_time < 100)
+		return;
+
+	last_net_time = t;
+
+	netdata_t data;
+	data.pos = personode->getPosition();
+	data.rot = personode->getOrientation();
+
+	LogManager::getSingleton().logMessage("sending character stream data: " + StringConverter::toString(net->getUserID()) + ":"+ StringConverter::toString(streamid));
+	this->addPacket(MSG2_STREAM_DATA, net->getUserID(), streamid, sizeof(netdata_t), (char*)&data);
+}
+
+void Character::receiveStreamData(unsigned int &type, int &source, unsigned int &streamid, char *buffer, unsigned int &len)
+{
+	if(type == MSG2_STREAM_DATA && this->source == source && this->streamid == streamid)
+	{
+		netdata_t *data = (netdata_t *)buffer;
+		LogManager::getSingleton().logMessage("character stream data correct: " + StringConverter::toString(source) + ":"+ StringConverter::toString(streamid) + ": "+ StringConverter::toString(data->pos));
+		personode->setPosition(data->pos);
+		personode->setOrientation(data->rot);
+	}else
+		LogManager::getSingleton().logMessage("character stream data wrong: " + StringConverter::toString(source) + ":"+ StringConverter::toString(streamid));
+
 }
