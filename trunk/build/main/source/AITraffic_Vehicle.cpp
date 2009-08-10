@@ -147,7 +147,7 @@ void  AITraffic_Vehicle::advance(float deltat)
 
 float  AITraffic_Vehicle::objectsOnTravelPath()
 {
-	float r = 30.0f;		// distance we want sweep within
+	float r = 5.0f;		// distance we want sweep within
 	const Ogre::Vector3		pos = getPosition();
 	const Ogre::Quaternion	ori = getOrientation();
 
@@ -182,7 +182,7 @@ float  AITraffic_Vehicle::objectsOnTravelPath()
 	// check for -10..10 degrees ahead for object
 	bool obs = false;
 
-	for (int i=15;i<21;i++)
+	for (int i=17;i<21;i++)		// 17..21
 		{
 			if (shield[i]) obs = true;
 		}
