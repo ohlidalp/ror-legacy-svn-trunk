@@ -54,7 +54,7 @@ protected:
 	static const int maxPacketLen = MAX_PACKET_LEN;
 	
 	void sendStreamData();
-	void receiveStreamData(unsigned int &type, int &source, unsigned int &streamid, char *buffer, unsigned int &len);
+	virtual void receiveStreamData(unsigned int &type, int &source, unsigned int &streamid, char *buffer, unsigned int &len) = 0;
 
 	void addPacket(int type, int uid, unsigned int streamid, unsigned int len, char* content);
 	std::queue < bufferedPacket_t > *getPacketQueue();

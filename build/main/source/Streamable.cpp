@@ -207,8 +207,3 @@ void Streamable::addPacket(int type, int uid, unsigned int streamid, unsigned in
 void Streamable::sendStreamData()
 {
 }
-
-void Streamable::receiveStreamData(unsigned int &type, int &source, unsigned int &streamid, char *buffer, unsigned int &len)
-{
-}
-
