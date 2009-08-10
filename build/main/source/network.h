@@ -76,8 +76,8 @@ public:
 
 	Network(Beam **btrucks, std::string servername, long sport, ExampleFrameListener *efl);
 	int sendMessageRaw(SWInetSocket *socket, char *content, unsigned int msgsize);
-	int sendmessage(SWInetSocket *socket, int type, unsigned int len, char* content);
-	int receivemessage(SWInetSocket *socket, int *type, int *source, unsigned int *wrotelen, char* content, unsigned int bufferlen);
+	int sendmessage(SWInetSocket *socket, int type, unsigned int streamid, unsigned int len, char* content);
+	int receivemessage(SWInetSocket *socket, header_t *header, char* content, unsigned int bufferlen);
 	void sendthreadstart();
 	void receivethreadstart();
 	unsigned int getUserID() { return myuid; };
@@ -88,7 +88,7 @@ public:
 	bool vehicle_to_spawn(char* name, unsigned int *uid, unsigned int *label);
 	int vehicle_spawned(unsigned int uid, int trucknum, client_t &client);
 	//external call to set vehicle type
-	void sendVehicleType(char* name, int numnodes);
+
 	//external call to send vehicle data
 	void sendData(Beam* truck);
 	void sendChat(char* line);

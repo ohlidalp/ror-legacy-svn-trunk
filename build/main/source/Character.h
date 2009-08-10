@@ -23,16 +23,18 @@ along with Rigs of Rods.  If not, see <http://www.gnu.org/licenses/>.
 
 #include <Ogre.h>
 #include <OgreVector3.h>
+#include "Streamable.h"
 
 class Water;
 class Collisions;
 class HeightFinder;
 class MapControl;
+class Network;
 
-class Character
+class Character : public Streamable
 {
 public:
-	Character(Collisions *c, HeightFinder *h, Water *w, MapControl *m, Ogre::SceneManager *scm);
+	Character(Collisions *c, Network *net, HeightFinder *h, Water *w, MapControl *m, Ogre::SceneManager *scm, int source=-1, unsigned int streamid=0);
 	~Character();
 	
 	void setVisible(bool v);
@@ -68,6 +70,10 @@ protected:
 	Water *water;
 	MapControl *map;
 	Ogre::SceneManager *scm;
+	Network *net;
+	int source;
+	unsigned int streamid;
+	bool remote;
 	
 	Ogre::SceneNode *personode;
 	Ogre::AnimationStateSet *persoanim;
@@ -79,6 +85,20 @@ protected:
 	bool perso_canjump;
 	Ogre::Vector3 lastpersopos;
 	void setAnimationMode(Ogre::String mode, float time=0);
+
+
+	typedef struct netdata_
+	{
+		Ogre::Vector3 pos;
+		Ogre::Quaternion rot;
+	} netdata_t;
+
+	// overloaded from Streamable:
+	Ogre::Timer netTimer;
+	int last_net_time;
+	void sendStreamSetup();
+	void sendStreamData();
+	void receiveStreamData(unsigned int &type, int &source, unsigned int &streamid, char *buffer, unsigned int &len);
 };
 
 #endif

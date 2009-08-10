@@ -473,7 +473,7 @@ public:
 	int getLoadingState() { return loading_state; };
 	void pauseSim(bool value);
 	void loadNetTerrain(char *preselected_map);
-
+	void newCharacter(int source, unsigned int streamid);
 	float mapsizex, mapsizez;
 
 	float stopTimer();

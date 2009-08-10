@@ -28,7 +28,7 @@ along with Rigs of Rods.  If not, see <http://www.gnu.org/licenses/>.
 #include "pthread.h"
 #include "SocketW.h"
 
-#include <vector>
+#include <map>
 
 #define MAX_PACKET_LEN 8192
 
@@ -54,25 +54,27 @@ protected:
 	static const int maxPacketLen = MAX_PACKET_LEN;
 	
 	void sendStreamData();
-	void receiveStreamData(char *buffer, int &type, int &source, unsigned int &wrotelen);
+	void receiveStreamData(unsigned int &type, int &source, unsigned int &streamid, char *buffer, unsigned int &len);
 
-	void addPacket(int type, int uid, unsigned int len, char* content);
+	void addPacket(int type, int uid, unsigned int streamid, unsigned int len, char* content);
 	std::queue < bufferedPacket_t > *getPacketQueue();
 
 	std::queue < bufferedPacket_t > packets;
 
+	unsigned int streamid;
 };
 
 
 class NetworkStreamManager : public Ogre::Singleton< NetworkStreamManager >
 {
+	friend class Network;
 public:
 	NetworkStreamManager();
 	~NetworkStreamManager();
 	static NetworkStreamManager& getSingleton(void);
 	static NetworkStreamManager* getSingletonPtr(void);
 	
-	void addStream(Streamable *stream);
+	void addStream(Streamable *stream, int source=-1, int streamid=-1);
 	void removeStream(Streamable *stream);
 	void pauseStream(Streamable *stream);
 	void resumeStream(Streamable *stream);
@@ -83,8 +85,12 @@ public:
 protected:
 	pthread_mutex_t send_work_mutex;
 	pthread_cond_t send_work_cv;
+	Network *net;
 
-	std::vector<Streamable *> streams;
+	std::map < int, std::map < unsigned int, Streamable *> > streams;
+	unsigned int streamid;
+
+	void pushReceivedStreamMessage(unsigned int &type, int &source, unsigned int &streamid, unsigned int &wrotelen, char *buffer);
 };
 
 

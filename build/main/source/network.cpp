@@ -64,6 +64,7 @@ Timer Network::timer = Ogre::Timer();
 
 Network::Network(Beam **btrucks, std::string servername, long sport, ExampleFrameListener *efl): lagDataClients()
 {
+	NetworkStreamManager::getSingleton().net = this;
 	shutdown=false;
 	ssm=SoundScriptManager::getSingleton();
 	mySname = servername;
@@ -183,18 +184,17 @@ bool Network::connect()
 		return false;
 	}
 	//say hello to the server
-	if (sendmessage(&socket, MSG2_HELLO, (unsigned int)strlen(RORNET_VERSION), RORNET_VERSION))
+	if (sendmessage(&socket, MSG2_HELLO, 0, (unsigned int)strlen(RORNET_VERSION), RORNET_VERSION))
 	{
 		//this is an error!
 		netFatalError("Establishing network session: error sending hello", false);
 		return false;
 	}
-	int type;
-	int source;
-	unsigned int wrotelen;
+
+	header_t header;
 	char buffer[256];
 	//get server version
-	if (receivemessage(&socket, &type, &source, &wrotelen, buffer, 255))
+	if (receivemessage(&socket, &header, buffer, 255))
 	{
 		//this is an error!
 		netFatalError("Establishing network session: error getting server version", false);
@@ -207,18 +207,18 @@ bool Network::connect()
 		return false;
 	}
 	// receive terrain name
-	if (receivemessage(&socket, &type, &source, &wrotelen, buffer, 255))
+	if (receivemessage(&socket, &header, buffer, 255))
 	{
 		netFatalError("Establishing network session: error getting server terrain");
 		return false;
 	}
-	if (type!=MSG2_TERRAIN_RESP)
+	if (header.command != MSG2_TERRAIN_RESP)
 	{
 		netFatalError("Establishing network session: error getting server terrain response");
 		return false;
 	}
-	strncpy(terrainName, buffer, wrotelen);
-	terrainName[wrotelen]=0;
+	strncpy(terrainName, buffer, header.size);
+	terrainName[header.size]=0;
 
 	// first handshake done, increase the timeout, important!
 	socket.set_timeout(0, 0);
@@ -253,32 +253,32 @@ bool Network::connect()
 	strncpy(c.password, sha1pwresult, 40);
 	strncpy(c.uniqueid, usertoken.c_str(), 40);
 
-	if (sendmessage(&socket, MSG2_USER_CREDENTIALS, sizeof(user_credentials_t), (char*)&c))
+	if (sendmessage(&socket, MSG2_USER_CREDENTIALS, 0, sizeof(user_credentials_t), (char*)&c))
 	{
 		//this is an error!
 		netFatalError("Establishing network session: error sending hello", false);
 		return false;
 	}
 	//now this is important, getting authorization
-	if (receivemessage(&socket, &type, &source, &wrotelen, buffer, 255))
+	if (receivemessage(&socket, &header, buffer, 255))
 	{
 		//this is an error!
 		netFatalError("Establishing network session: error getting server authorization", false);
 		return false;
 	}
-	if (type==MSG2_FULL)
+	if (header.command==MSG2_FULL)
 	{
 		//this is an error!
 		netFatalError("Establishing network session: sorry, server has too many players", false);
 		return false;
 	}
-	if (type==MSG2_BANNED)
+	if (header.command==MSG2_BANNED)
 	{
 		char tmp[512];
 		memset(tmp, 0, 512);
 		if(buffer && strnlen(buffer, 20)>0)
 		{
-			buffer[wrotelen]=0;
+			buffer[header.size]=0;
 			sprintf(tmp, "Establishing network session: sorry, you are banned:\n%s", buffer);
 			netFatalError(tmp);
 		} else
@@ -288,91 +288,26 @@ bool Network::connect()
 
 		return false;
 	}
-	if (type==MSG2_WRONG_PW)
+	if (header.command==MSG2_WRONG_PW)
 	{
 		//this is an error!
 		netFatalError("Establishing network session: sorry, wrong password!", false);
 		return false;
 	}
-	if (type!=MSG2_WELCOME)
+	if (header.command!=MSG2_WELCOME)
 	{
 		//this is an error!
 		netFatalError("Establishing network session: sorry, unknown server response", false);
 		return false;
 	}
 	//okay keep our uid
-	myuid=source;
+	myuid = header.source;
 
-	return true;
-}
-
-int Network::rconlogin(char* rconpasswd)
-{
-	int type=0;
-	unsigned int source=0;
-	unsigned int wrotelen=0;
-
-	char buffer[250];
-	memset(buffer, 0, 250);
-	strncpy(buffer, rconpasswd, 40);
-	buffer[40]=0;
-
-	char result[250];
-	memset(result, 0, 250);
-	if(strnlen(rconpasswd, 40)>0)
-	{
-		CSHA1 sha1;
-		sha1.UpdateHash((uint8_t *)buffer, strnlen(buffer, 250));
-		sha1.Final();
-		sha1.ReportHash(result, CSHA1::REPORT_HEX_SHORT);
-	} else
-		return -2;
-
-	//LogManager::getSingleton().logMessage("SHA1('"+String(rconpasswd)+"') = '"+String(result)+"'");
-	//lets send the request
-	if (sendmessage(&socket, MSG2_RCON_LOGIN, (unsigned int)strnlen(result, 40), result))
-	{
-		//this is an error!
-		netFatalError("Establishing network session: error sending rcon password");
-		return -3;
-	}
-	return 0;
-}
-
-int Network::rconcommand(char* rconcmd)
-{
-	if(!rconauthed)
-		return -1;
-	if (sendmessage(&socket, MSG2_RCON_COMMAND, (unsigned int)strnlen(rconcmd, 250), rconcmd))
-	{
-		netFatalError("Establishing network session: error sending rcon command");
-		return -2;
-	}
-	return 0;
-}
-
-void Network::sendVehicleType(char* name, int buffersize)
-{
-	//lets send our vehicle name
-	if (sendmessage(&socket, MSG2_USE_VEHICLE, (unsigned int)strlen(name), name))
-	{
-		//this is an error!
-		netFatalError("Establishing network session: error sending vehicle name");
-		return;
-	}
-	//send the buffer size
-	send_buffer_len=buffersize;
-	unsigned int bsize=sizeof(oob_t)+send_buffer_len;
-	send_buffer=(char*)malloc(send_buffer_len);
-	if (sendmessage(&socket, MSG2_BUFFER_SIZE, 4, (char*)(&bsize)))
-	{
-		//this is an error!
-		netFatalError("Establishing network session: error sending vehicle data size");
-		return;
-	}
 	//start the handling threads
 	pthread_create(&sendthread, NULL, s_sendthreadstart, (void*)(0));
 	pthread_create(&receivethread, NULL, s_receivethreadstart, (void*)(0));
+
+	return true;
 }
 
 Ogre::String Network::getNickname(bool colour)
@@ -391,7 +326,6 @@ Ogre::String Network::getNickname(bool colour)
 	
 	return nick;
 }
-
 
 int Network::sendMessageRaw(SWInetSocket *socket, char *buffer, unsigned int msgsize)
 {
@@ -415,7 +349,7 @@ int Network::sendMessageRaw(SWInetSocket *socket, char *buffer, unsigned int msg
 	return 0;
 }
 
-int Network::sendmessage(SWInetSocket *socket, int type, unsigned int len, char* content)
+int Network::sendmessage(SWInetSocket *socket, int type, unsigned int streamid, unsigned int len, char* content)
 {
 	pthread_mutex_lock(&msgsend_mutex); //we use a mutex because a chat message can be sent asynchronously
 	SWBaseSocket::SWBaseError error;
@@ -424,6 +358,7 @@ int Network::sendmessage(SWInetSocket *socket, int type, unsigned int len, char*
 	head.command=type;
 	head.source=myuid;
 	head.size=len;
+	head.streamid=streamid;
 	int hlen=0;
 
 	// construct buffer
@@ -450,7 +385,7 @@ int Network::sendmessage(SWInetSocket *socket, int type, unsigned int len, char*
 	return 0;
 }
 
-int Network::receivemessage(SWInetSocket *socket, int *type, int *source, unsigned int *wrotelen, char* content, unsigned int bufferlen)
+int Network::receivemessage(SWInetSocket *socket, header_t *head, char* content, unsigned int bufferlen)
 {
 	SWBaseSocket::SWBaseError error;
 
@@ -469,17 +404,15 @@ int Network::receivemessage(SWInetSocket *socket, int *type, int *source, unsign
 		}
 		hlen+=recvnum;
 	}
-	header_t head;
-	memcpy(&head, buffer, sizeof(header_t));
-	*type=head.command;
-	*source=head.source;
-	*wrotelen=head.size;
-	if(head.size>0)
+	
+	memcpy(head, buffer, sizeof(header_t));
+
+	if(head->size>0)
 	{
 		//read the rest
-		while (hlen<(int)sizeof(header_t)+(int)head.size)
+		while (hlen<(int)sizeof(header_t)+(int)head->size)
 		{
-			int recvnum=socket->recv(buffer+hlen, (head.size+sizeof(header_t))-hlen,&error);
+			int recvnum=socket->recv(buffer+hlen, (head->size+sizeof(header_t))-hlen,&error);
 			if (recvnum<0)
 			{
 				LogManager::getSingleton().logMessage("NET receive error 2: "+ StringConverter::toString(recvnum));
@@ -488,7 +421,7 @@ int Network::receivemessage(SWInetSocket *socket, int *type, int *source, unsign
 			hlen+=recvnum;
 		}
 	}
-	speed_bytes_recv_tmp += head.size + sizeof(header_t);
+	speed_bytes_recv_tmp += head->size + sizeof(header_t);
 
 	memcpy(content, buffer+sizeof(header_t), bufferlen);
 	calcSpeed();
@@ -728,7 +661,7 @@ void Network::sendthreadstart()
 void Network::disconnect()
 {
 	shutdown=true;
-	sendmessage(&socket, MSG2_DELETE, 0, 0);
+	sendmessage(&socket, MSG2_DELETE, 0, 0, 0);
 	SWBaseSocket::SWBaseError error;
 	socket.set_timeout(1, 1000);
 	socket.disconnect(&error);
@@ -770,9 +703,8 @@ unsigned long Network::getNetTime()
 
 void Network::receivethreadstart()
 {
-	int type;
-	int source;
-	unsigned int wrotelen;
+	header_t header;
+
 	char *buffer=(char*)malloc(MAX_MESSAGE_LENGTH);
 	bool autoDl = (SETTINGS.getSetting("AutoDownload") == "Yes");
 	LogManager::getSingleton().logMessage("Receivethread starting");
@@ -781,8 +713,8 @@ void Network::receivethreadstart()
 	while (!shutdown)
 	{
 		//get one message
-		int err=receivemessage(&socket, &type, &source, &wrotelen, buffer, MAX_MESSAGE_LENGTH);
-		//LogManager::getSingleton().logMessage("received data: " + StringConverter::toString(type) + ", source: "+StringConverter::toString(source) + ", size: "+StringConverter::toString(wrotelen));
+		int err=receivemessage(&socket, &header, buffer, MAX_MESSAGE_LENGTH);
+		LogManager::getSingleton().logMessage("received data: " + StringConverter::toString(header.command) + ", source: "+StringConverter::toString(header.source) + ":"+StringConverter::toString(header.streamid) + ", size: "+StringConverter::toString(header.size));
 		if (err)
 		{
 			//this is an error!
@@ -791,267 +723,25 @@ void Network::receivethreadstart()
 			netFatalError(errmsg);
 			return;
 		}
-		else if (type==MSG2_VEHICLE_DATA)
+
+		// TODO: produce new streamable classes when required 
+		if(header.command == MSG2_STREAM_REGISTER)
 		{
-
-			//we must update a vehicle
-			//find which vehicle it is
-			//then call pushNetwork(buffer, wrotelen)
-
-			/*
-			String content_hex = hexdump(buffer, wrotelen);
-			LogManager::getSingleton().logMessage("R|content: " + content_hex);
-			*/
-
-			/*
-			char hash[255] = "";
-			RoR::CSHA1 sha1;
-			sha1.UpdateHash((uint8_t *)buffer, wrotelen);
-			sha1.Final();
-			sha1.ReportHash(hash, RoR::CSHA1::REPORT_HEX_SHORT);
-			LogManager::getSingleton().logMessage("R|HASH: " + String(hash));
-			*/
-			
-			//exit(1);
-
-			pthread_mutex_lock(&clients_mutex);
-			for (int i=0; i<MAX_PEERS; i++)
+			stream_register_t *reg = (stream_register_t *)buffer;
+			LogManager::getSingleton().logMessage(" * received stream registration: " + StringConverter::toString(header.source) + ": "+StringConverter::toString(reg->sid) + ", type: "+StringConverter::toString(reg->type));
+			if(reg->type == 0)
 			{
-				if (clients[i].used && !clients[i].invisible && clients[i].user_id==source && clients[i].loaded)
-				{
-					//okay
-					trucks[clients[i].trucknum]->pushNetwork(buffer, wrotelen);
-
-					// hack-ish: detect LAG:
-					oob_t *o = (oob_t *)buffer;
-					lagDataClients[source] =  o->time - (trucks[clients[i].trucknum]->getTruckTime() + trucks[clients[i].trucknum]->getNetTruckTimeOffset());
-					//LogManager::getSingleton().logMessage("Id like to push to "+StringConverter::toString(clients[i].trucknum));
-					break;
-				}
+				// truck
+			} else if (reg->type == 1)
+			{
+				// person
+				this->mefl->newCharacter(header.source, reg->sid);
 			}
-			pthread_mutex_unlock(&clients_mutex);
+			continue;
+				
 		}
-		else if (type==MSG2_USE_VEHICLE || type == MSG2_USE_VEHICLE2)
-		{
-			//LogManager::getSingleton().logMessage("I got a vehicle");
-			//we want first to check if the vehicle name is valid before committing to anything
-			bool newformat = (type == MSG2_USE_VEHICLE2);
-			String truckname = "";
-			String tmpnickname = "";
-			int authstate = AUTH_NONE;
 
-			if(!newformat)
-			{
-				// old format does not support auth info
-				truckname = buffer;
-				tmpnickname  = buffer+strlen(buffer)+1;
-				authstate = AUTH_NONE;
-			} else
-			{
-				// yay, new format :D
-				// version = 1 for now, be prepared to recognize more in the future
-				client_info_on_join *info = (client_info_on_join *)buffer;
-				tmpnickname = String(info->nickname);
-				truckname = String(info->vehiclename);
-				authstate = info->authstatus;
-			}
-			if(source == myuid)
-			{
-				// we found ourself :D
-				// update local data
-				if(nickname != tmpnickname)
-				{
-					pthread_mutex_lock(&chat_mutex);
-					NETCHAT.addText("^9You are now known as " + tmpnickname);
-					pthread_mutex_unlock(&chat_mutex);
-				}
-				nickname = tmpnickname;
-
-				// tell the user the new infos
-				if(myauthlevel != authstate)
-				{
-					String msg = "";
-					if(!(myauthlevel & AUTH_BOT) && (authstate & AUTH_BOT))
-						msg = "Bot";
-					if(!(myauthlevel & AUTH_RANKED) && (authstate & AUTH_RANKED))
-						msg = "Ranked Member";
-					if(!(myauthlevel & AUTH_MOD) && (authstate & AUTH_MOD))
-						msg = "Server Moderator";
-					if(!(myauthlevel & AUTH_ADMIN) && (authstate & AUTH_ADMIN))
-						msg = "Server Admin";
-					
-					if(!msg.empty())
-					{
-						pthread_mutex_lock(&chat_mutex);
-						NETCHAT.addText("^9You are now authorized as " + msg);
-						pthread_mutex_unlock(&chat_mutex);
-					}
-				}
-				myauthlevel = authstate;
-				// and discard the rest, we dont want to create a clone of us...
-				continue;
-			}
-			
-			// WARNING: THIS PRODUCES LAGS!
-			// we need to background load this ...
-			//possible load from cache system
-			bool resourceExists = CACHE.checkResourceLoaded(truckname);
-			// check if found
-			if(!resourceExists)
-			{
-				// check for different UID
-				String truckname2 = CACHE.stripUIDfromString(truckname);
-				resourceExists = CACHE.checkResourceLoaded(truckname2);
-				if(!resourceExists)
-				{
-					//LogManager::getSingleton().logMessage("Network warning: truck named '"+truckname+"' not found in local installation");
-					// try to donwload then
-					if(autoDl)
-						tryDownloadMod(truckname);
-				}
-			}
-			//spawn vehicle query
-			pthread_mutex_lock(&clients_mutex);
-			//first check if its not already known
-			bool known=false;
-			for (int i=0; i<MAX_PEERS; i++)
-			{
-				if (clients[i].used && clients[i].user_id==source) known=true;
-			}
-			if (!known)
-			{
-				for (int i=0; i<MAX_PEERS; i++)
-				{
-					if (!clients[i].used)
-					{
-						//LogManager::getSingleton().logMessage("Registering as client "+StringConverter::toString(i));
-						clients[i].used           = true;
-						clients[i].invisible      = !resourceExists;
-						clients[i].loaded         = false;
-						clients[i].user_id        = source;
-						clients[i].trucknum       = -1;
-						clients[i].user_authlevel = authstate;
-						buffer[wrotelen] = 0;
-
-						//strcpy(clients[i].vehicle, truckname.c_str());
-						// fix for MP, important to support the same vehicle with different UID's
-						String vehicle_without_uid = CACHE.stripUIDfromString(truckname);
-						strcpy(clients[i].truck_name, vehicle_without_uid.c_str());
-
-						strcpy(clients[i].user_name, tmpnickname.c_str()); //buffer+strlen(buffer)+1); //magical!  // rather hackish if you ask me ...
-
-						// add some chat msg
-						pthread_mutex_lock(&chat_mutex);
-
-						// if we know the truck, use its name rather then the full UID thing
-						String truckname = clients[i].truck_name;
-						if(resourceExists)
-						{
-							Cache_Entry entry = CACHE.getResourceInfo(truckname);
-							truckname = entry.dname;
-						}
-
-						NETCHAT.addText(getUserChatName(&clients[i]) + " ^9joined with " + truckname);
-
-						if(!resourceExists && !autoDl)
-							NETCHAT.addText("^1* " + String(clients[i].truck_name) + " not found. Player will be invisible.");
-						if(!resourceExists && autoDl)
-							NETCHAT.addText("^1* " + String(clients[i].truck_name) + " not found. Downloading mod...");
-						pthread_mutex_unlock(&chat_mutex);
-
-						break;
-					}
-				}
-			}
-			updatePlayerList();
-			pthread_mutex_unlock(&clients_mutex);
-		}
-		else if (type==MSG2_DELETE)
-		{
-			pthread_mutex_lock(&clients_mutex);
-			if(source == myuid)
-			{
-				// we got deleted D:
-				netFatalError(String(buffer));
-			}
-
-			// remove key from lag stats
-			if(lagDataClients.find(source) != lagDataClients.end()) lagDataClients.erase(source);
-
-			for (int i=0; i<MAX_PEERS; i++)
-			{
-				if (clients[i].used && clients[i].user_id==source && (clients[i].loaded || clients[i].invisible))
-				{
-					// pass event to the truck itself
-					if(!clients[i].invisible)
-						trucks[clients[i].trucknum]->deleteNetTruck();
-
-					//delete network info
-					clients[i].used=false;
-					clients[i].invisible=false;
-
-
-					// update all framelistener stuff
-					if(!clients[i].invisible)
-						mefl->netDisconnectTruck(clients[i].trucknum);
-
-					// add some chat msg
-					pthread_mutex_lock(&chat_mutex);
-					
-					NETCHAT.addText(getUserChatName(&clients[i]) + " ^9disconnected: " + String(buffer));
-					pthread_mutex_unlock(&chat_mutex);
-
-					break;
-				}
-			}
-			updatePlayerList();
-			pthread_mutex_unlock(&clients_mutex);
-		}
-		else if (type==MSG2_CHAT)
-		{
-			if(source>=0)
-			{
-				for (int i=0; i<MAX_PEERS; i++)
-				{
-					if (clients[i].user_id==source)
-					{
-						buffer[wrotelen]=0;
-						pthread_mutex_lock(&chat_mutex);
-						
-						NETCHAT.addText(getUserChatName(&clients[i]) + ": ^7" + ColoredTextAreaOverlayElement::StripColors(String(buffer)));
-						pthread_mutex_unlock(&chat_mutex);
-						break;
-					}
-				}
-			} else if(source == -1)
-			{
-				// server msg
-				pthread_mutex_lock(&chat_mutex);
-				NETCHAT.addText(String(buffer));
-				pthread_mutex_unlock(&chat_mutex);
-			}
-		}
-		else if (type==MSG2_GAME_CMD)
-		{
-			if(source!=-1)
-				// only accept game commands from the server and no one else
-				continue;
-#ifdef ANGELSCRIPT
-			// now this is serious, we need water tight security to be able to execute remote code!
-			// cut buffer manually in the case of missing zero
-			if(strnlen(buffer, MAX_MESSAGE_LENGTH) > MAX_MESSAGE_LENGTH - 2) buffer[MAX_MESSAGE_LENGTH-2] = 0;
-			ScriptEngine::getSingleton().executeString(String(buffer));
-#endif //ANGELSCRIPT
-
-		}
-		else if (type==MSG2_FORCE)
-		{
-			netforce_t* msg=(netforce_t*)buffer;
-			if (msg->target_uid==myuid)
-			{
-				trucks[0]->pushNetForce(msg->node_id, Vector3(msg->fx,msg->fy,msg->fz));
-			}
-		}
+		NetworkStreamManager::getSingleton().pushReceivedStreamMessage(header.command, header.source, header.streamid, header.size, buffer);
 	}
 }
 
@@ -1073,7 +763,7 @@ Ogre::String Network::getUserChatName(client_t *c)
 
 void Network::sendChat(char *line)
 {
-	int etype=sendmessage(&socket, MSG2_CHAT, (int)strlen(line), line);
+	int etype=sendmessage(&socket, MSG2_CHAT, 1, (int)strlen(line), line);
 	if (etype)
 	{
 		char emsg[256];
