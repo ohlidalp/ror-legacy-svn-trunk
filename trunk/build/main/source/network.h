@@ -66,6 +66,7 @@ private:
 	Ogre::String nickname;
 	int rconauthed;
 	bool shutdown;
+	client_info_on_join userdata;
 	SoundScriptManager* ssm;
 	Ogre::String getUserChatName(client_t *c);
 	void calcSpeed();
@@ -75,41 +76,29 @@ private:
 public:
 
 	Network(Beam **btrucks, std::string servername, long sport, ExampleFrameListener *efl);
+	~Network();
+
+	// messaging functions
 	int sendMessageRaw(SWInetSocket *socket, char *content, unsigned int msgsize);
 	int sendmessage(SWInetSocket *socket, int type, unsigned int streamid, unsigned int len, char* content);
 	int receivemessage(SWInetSocket *socket, header_t *header, char* content, unsigned int bufferlen);
-	void sendthreadstart();
-	void receivethreadstart();
-	unsigned int getUserID() { return myuid; };
-	static unsigned long getNetTime();
-	void downloadthreadstart(char *modname);
-	void tryDownloadMod(Ogre::String modname);
-	//external call to check if a vehicle is to be spawned
-	bool vehicle_to_spawn(char* name, unsigned int *uid, unsigned int *label);
-	int vehicle_spawned(unsigned int uid, int trucknum, client_t &client);
-	//external call to set vehicle type
 
-	//external call to send vehicle data
-	void sendData(Beam* truck);
-	void sendChat(char* line);
-	void netFatalError(String error, bool exit=true);
-	~Network();
+	// methods
 	bool connect();
 	void disconnect();
-	int rconlogin(char* rconpasswd);
-	int rconcommand(char* rconcmd);
+	void netFatalError(String error, bool exit=true);
 
-	int getConnectedClientCount();
+	void sendthreadstart();
+	void receivethreadstart();
 
 	char *getTerrainName() { return terrainName; };
 	Ogre::String getNickname(bool colour=false);
-	int getRConState() { return rconauthed; };
-	int downloadMod(char* modname, std::string &modfilename);
-
+	unsigned int getUserID() { return myuid; };
+	static unsigned long getNetTime();
+	client_t *getClientInfo(unsigned int uid);
 
 	int getSpeedUp();
 	int getSpeedDown();
-	std::map<int, float> &getLagData();
 };
 
 

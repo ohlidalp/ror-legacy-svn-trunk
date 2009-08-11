@@ -382,6 +382,8 @@ void ExampleFrameListener::updateStats(void)
 
 					netLineStream->moveForward();
 
+					/*
+					// TODO: fix lag data
 					std::map<int, float> &lag = net->getLagData();
 					int c=0;
 					float sum=0;
@@ -402,6 +404,7 @@ void ExampleFrameListener::updateStats(void)
 
 					netlagLineStream->setTraceInfo(0, cr, "Average:" + String(tmp));
 					netlagLineStream->moveForward();
+					*/
 				}
 				fpsLineStream->moveForward();
 				fpscount = 0;
@@ -1617,11 +1620,14 @@ ExampleFrameListener::ExampleFrameListener(RenderWindow* win, Camera* cam, Scene
 		else
 			preselected_map = String(terrn);
 
+		// show chat in MP
+		NETCHAT.setMode(this, NETCHAT_LEFT_SMALL, true);
 	}
 
 	// load guy
 	person = new Character(collisions, net, hfinder, w, bigMap, mSceneMgr);
 	person->setVisible(false);
+	characters.push_back(person);
 
 	if(preselected_map != "")
 	{
@@ -1770,7 +1776,21 @@ ExampleFrameListener::~ExampleFrameListener()
 void ExampleFrameListener::newCharacter(int source, unsigned int streamid, int slotid)
 {
 	LogManager::getSingleton().logMessage(" new character for " + StringConverter::toString(source) + ":" + StringConverter::toString(streamid));
-	new Character(collisions, net, hfinder, w, bigMap, mSceneMgr, source, streamid, slotid);
+	Character *c = new Character(collisions, net, hfinder, w, bigMap, mSceneMgr, source, streamid, slotid);
+	characters.push_back(c);
+}
+
+void ExampleFrameListener::netUserAttributesChanged(int source)
+{
+	// update player labels
+	for(std::vector<Character*>::iterator it=characters.begin(); it!=characters.end();it++)
+	{
+		if((*it)->getUID() == source)
+		{
+			(*it)->updateNetLabel();
+			break;
+		}
+	}
 }
 
 void ExampleFrameListener::loadNetTerrain(char *preselected_map)
@@ -4691,7 +4711,7 @@ void ExampleFrameListener::processConsoleInput()
 	if(netmode)
 	{
 		NETCHAT.addText(net->getNickname(true) + ": ^7" + ColoredTextAreaOverlayElement::StripColors(chatline), false);
-		net->sendChat( const_cast<char *>(chatline.asUTF8_c_str()));
+		//net->sendChat( const_cast<char *>(chatline.asUTF8_c_str()));
 	} else
 		NETCHAT.addText(_L("^8 Player: ^7") + chatline);
 
@@ -5971,7 +5991,7 @@ void ExampleFrameListener::updateXFire()
 		serverport=StringConverter::parseLong(SETTINGS.getSetting("Server port"));
 	}
 	int players = 0;
-	if(net) players = net->getConnectedClientCount();
+	//if(net) players = net->getConnectedClientCount();
 
 	char serverString[100]="";
 	if(netmode)
@@ -6260,6 +6280,7 @@ void ExampleFrameListener::setCurrentTruck(int v)
 	if (current_truck==-1)
 	{
 		if(bigMap) bigMap->setVisibility(false);
+		if(netmode && NETCHAT.getVisible()) NETCHAT.setMode(this, NETCHAT_LEFT_FULL, true);
 
 		// hide truckhud
 		TRUCKHUD.show(false);
@@ -6314,6 +6335,7 @@ void ExampleFrameListener::setCurrentTruck(int v)
 	else
 	{
 		//getting inside
+		if(netmode && NETCHAT.getVisible()) NETCHAT.setMode(this, NETCHAT_LEFT_SMALL, true);
 		mouseOverlay->show();
 		person->setVisible(false);
 		if(!hidegui)
@@ -7268,6 +7290,7 @@ END OF OLD CODE */
 		updateGUI(dt);
 		if (raceStartTime > 0)
 			updateRacingGUI();
+#if 0
 		if (netmode && net)
 		{
 			//send player's truck data
@@ -7353,6 +7376,7 @@ END OF OLD CODE */
 				*/
 			}
 		}
+#endif // 0
 	}
 
 

@@ -54,12 +54,6 @@ void *s_receivethreadstart(void* vid)
 	return NULL;
 }
 
-void *s_downloadthreadstart(void* vid)
-{
-	net_instance->downloadthreadstart((char*)vid);
-	return NULL;
-}
-
 Timer Network::timer = Ogre::Timer();
 
 Network::Network(Beam **btrucks, std::string servername, long sport, ExampleFrameListener *efl): lagDataClients()
@@ -88,60 +82,19 @@ Network::Network(Beam **btrucks, std::string servername, long sport, ExampleFram
 	pthread_mutex_init(&dl_data_mutex, NULL);
 	pthread_cond_init(&send_work_cv, NULL);
 	for (int i=0; i<MAX_PEERS; i++) clients[i].used=false;
+	
+	// direct start, no vehicle required
 	pthread_mutex_init(&clients_mutex, NULL);
 	pthread_mutex_init(&chat_mutex, NULL);
-	//delayed start, we do nothing until we know the vehicle name
 }
 
-
-void Network::downloadthreadstart(char *modname_c)
+Network::~Network()
 {
-	String modname = String(modname_c);
-	// appearently we cannot free here D:
-	//free(modname_c);
-	LogManager::getSingleton().logMessage("new downloadthread for mod " + modname);
-	// we try to call the updater here that will download the file for us hopefully
-	String packsPath = SETTINGS.getSetting("User Path")+"packs" + SETTINGS.getSetting("dirsep") + "downloaded";
-#ifdef WSYNC
-	String modfilename = "";
-	WSync *w = new WSync();
-	int res = w->downloadMod(modname, modfilename, packsPath, true);
-	// write the data back to the main handling stuff and close the thread
-	if(modfilename == "")
-		modfilename = "error";
-
-	if(!shutdown)
-	{
-		// this prevents a crash on shutdown
-		pthread_mutex_lock(&dl_data_mutex);
-		downloadingMods[modname] = modfilename;
-		pthread_mutex_unlock(&dl_data_mutex);
-	}
-
-#else //WSYNC
-	// well, not available for you i guess :(
-#endif //WSYNC
-}
-
-void Network::tryDownloadMod(Ogre::String modname)
-{
-	pthread_mutex_lock(&dl_data_mutex);
-	// do not double-download mods
-	if(downloadingMods.find(modname) != downloadingMods.end())
-		return;
-
-	downloadingMods[modname] = "";
-	pthread_mutex_unlock(&dl_data_mutex);
-	
-	
-	pthread_mutex_lock(&chat_mutex);
-	NETCHAT.addText("^9Trying to download missing mod now: " + modname);
-	pthread_mutex_unlock(&chat_mutex);
-
-	// attention: we need permanent space, so we malloc it...
-	char *modname_c = (char*)malloc(modname.size());
-	strcpy(modname_c, modname.c_str());
-	pthread_create(&downloadthread, NULL, s_downloadthreadstart, (void*)modname_c);
+	shutdown=true;
+	pthread_mutex_destroy(&chat_mutex);
+	pthread_mutex_destroy(&send_work_mutex);
+	pthread_mutex_destroy(&dl_data_mutex);
+	pthread_cond_destroy(&send_work_cv);
 }
 
 void Network::netFatalError(String errormsg, bool exitProgram)
@@ -428,104 +381,6 @@ int Network::receivemessage(SWInetSocket *socket, header_t *head, char* content,
 	return 0;
 }
 
-//this is called at each frame to check if a new vehicle must be spawn
-bool Network::vehicle_to_spawn(char* name, unsigned int *uid, unsigned int *label)
-{
-	pthread_mutex_lock(&clients_mutex);
-	for (int i=0; i<MAX_PEERS; i++)
-	{
-		String truckname = String(clients[i].truck_name);
-		// this tends to lock forever D:
-		//pthread_mutex_lock(&dl_data_mutex);
-		String zipname = downloadingMods[truckname];
-		//pthread_mutex_unlock(&dl_data_mutex);
-		
-		if(clients[i].used && !clients[i].loaded && clients[i].invisible && !zipname.empty())
-		{
-			// we found a possible late-load candidate :D
-			if(zipname == "error2")
-			{
-				// that thing is known to have failed, ignore it
-				continue;
-			}
-			if(zipname == "error" || zipname == "notfound")
-			{
-				pthread_mutex_lock(&chat_mutex);
-				if(zipname == "error")
-					NETCHAT.addText("^9unkown error downloading mod: " + zipname + " (player "+String(clients[i].user_name) + ")");
-				if(zipname == "notfound")
-					NETCHAT.addText("^9mod not found on repository, stays invisible: " + zipname+ " (player "+String(clients[i].user_name) + ")");
-
-				// set it as something else, so we wont check again
-				downloadingMods[truckname] = "error2";
-				pthread_mutex_unlock(&chat_mutex);
-				// we leave it in there, so it wont be tried to download again
-				continue;
-			}
-			
-			String targetpath = SETTINGS.getSetting("User Path")+"packs" + SETTINGS.getSetting("dirsep") + "downloaded";
-			String targetfilename = zipname;
-			String targetfile = targetpath + SETTINGS.getSetting("dirsep") + targetfilename;
-			if(CACHE.fileExists(targetfile))
-			{
-				// yay we downloaded the mod :D
-				// now add it to the cache manually and then load it :)
-				ResourceGroupManager::getSingleton().addResourceLocation(targetpath, "FileSystem");
-				// finally try to load the mod
-				CACHE.loadSingleZip(targetfile, -1);
-				if(!CACHE.checkResourceLoaded(truckname))
-					LogManager::getSingleton().logMessage("checkResourceLoaded failed for " + truckname);
-
-				pthread_mutex_lock(&chat_mutex);
-				NETCHAT.addText("^9downloaded mod successfully, spawning: " + targetfilename+ " (player "+String(clients[i].user_name) + ")");
-				pthread_mutex_unlock(&chat_mutex);
-
-				updatePlayerList();
-				
-				// yay, spawn
-				strcpy(name, truckname.c_str());
-				*uid=clients[i].user_id;
-				clients[i].invisible = false;
-				*label=i;
-				pthread_mutex_unlock(&clients_mutex);
-				return true;
-
-			}
-
-		}
-
-		if (clients[i].used && !clients[i].loaded && !clients[i].invisible)
-		{
-			strcpy(name, clients[i].truck_name);
-			*uid=clients[i].user_id;
-			*label=i;
-			pthread_mutex_unlock(&clients_mutex);
-			return true;
-		}
-	}
-	pthread_mutex_unlock(&clients_mutex);
-	return false;
-}
-
-//this is called to confirm a truck is loaded - must be called within the same frame as vehicle_to_spawn
-int Network::vehicle_spawned(unsigned int uid, int trucknum, client_t &return_client)
-{
-	pthread_mutex_lock(&clients_mutex);
-	for (int i=0; i<MAX_PEERS; i++)
-	{
-		if (clients[i].user_id==uid)
-		{
-			clients[i].loaded=true;
-			clients[i].trucknum=trucknum;
-			//ret=clients[i].nickname;
-			return_client = clients[i];
-			pthread_mutex_unlock(&clients_mutex);
-			return 0;
-		}
-	}
-	pthread_mutex_unlock(&clients_mutex);
-	return 1;
-}
 
 int Network::getSpeedUp()
 {
@@ -551,102 +406,6 @@ void Network::calcSpeed()
 	}
 }
 
-
-//external call to trigger data sending
-//we are called once a frame!
-void Network::sendData(Beam* truck)
-{
-	int t=timer.getMilliseconds();
-	if (t-last_time>100)
-	{
-		last_time=t;
-		//copy data in send_buffer, send_buffer_len
-		if (send_buffer==0)
-		{
-			//boy, thats soo bad
-			return;
-		}
-		memset(send_buffer,0,send_buffer_len);
-		int i;
-		Vector3 refpos = truck->nodes[0].AbsPosition;
-		((float*)send_buffer)[0]=refpos.x;
-		((float*)send_buffer)[1]=refpos.y;
-		((float*)send_buffer)[2]=refpos.z;
-		short *sbuf=(short*)(send_buffer+4*3);
-		for (i=1; i<truck->first_wheel_node; i++)
-		{
-			Vector3 relpos=truck->nodes[i].AbsPosition-refpos;
-			sbuf[(i-1)*3]   = (short int)(relpos.x*300.0);
-			sbuf[(i-1)*3+1] = (short int)(relpos.y*300.0);
-			sbuf[(i-1)*3+2] = (short int)(relpos.z*300.0);
-		}
-		float *wfbuf=(float*)(send_buffer+truck->nodebuffersize);
-		for (i=0; i<truck->free_wheel; i++)
-		{
-			wfbuf[i]=truck->wheels[i].rp;
-		}
-		send_oob.time=t;
-		if (truck->engine)
-		{
-			send_oob.engine_speed=truck->engine->getRPM();
-			send_oob.engine_force=truck->engine->getAcc();
-		}
-		if(truck->free_aeroengine>0)
-		{
-			float rpm = truck->aeroengines[0]->getRPM();
-			send_oob.engine_speed=rpm;
-		}
-
-		send_oob.flagmask=0;
-		// update horn
-		if (ssm->getTrigState(truck->trucknum, SS_TRIG_HORN))
-			send_oob.flagmask+=NETMASK_HORN;
-
-		// update particle mode
-		if (truck->getCustomParticleMode())
-			send_oob.flagmask+=NETMASK_PARTICLE;
-
-		// update lights and flares and such
-		if (truck->lights)
-			send_oob.flagmask+=NETMASK_LIGHTS;
-
-		blinktype b = truck->getBlinkType();
-		if (b==BLINK_LEFT)
-			send_oob.flagmask+=NETMASK_BLINK_LEFT;
-		else if (b==BLINK_RIGHT)
-			send_oob.flagmask+=NETMASK_BLINK_RIGHT;
-		else if (b==BLINK_WARN)
-			send_oob.flagmask+=NETMASK_BLINK_WARN;
-
-		if (truck->getCustomLightVisible(0))
-			send_oob.flagmask+=NETMASK_CLIGHT1;
-		if (truck->getCustomLightVisible(1))
-			send_oob.flagmask+=NETMASK_CLIGHT2;
-		if (truck->getCustomLightVisible(2))
-			send_oob.flagmask+=NETMASK_CLIGHT3;
-		if (truck->getCustomLightVisible(3))
-			send_oob.flagmask+=NETMASK_CLIGHT4;
-
-		if (truck->getBrakeLightVisible())
-			send_oob.flagmask+=NETMASK_BRAKES;
-		if (truck->getReverseLightVisible())
-			send_oob.flagmask+=NETMASK_REVERSE;
-		if (truck->getBeaconMode())
-			send_oob.flagmask+=NETMASK_BEACONS;
-
-//		if (truck->ispolice && truck->audio->getPoliceState())
-//			send_oob.flagmask+=NETMASK_POLICEAUDIO;
-
-		netlock=truck->netlock;
-//LogManager::getSingleton().logMessage("Sending data");
-		//unleash the gang
-		pthread_mutex_lock(&send_work_mutex);
-		pthread_cond_broadcast(&send_work_cv);
-		pthread_mutex_unlock(&send_work_mutex);
-	}
-}
-
-
 void Network::sendthreadstart()
 {
 	LogManager::getSingleton().logMessage("Sendthread starting");
@@ -666,11 +425,6 @@ void Network::disconnect()
 	socket.set_timeout(1, 1000);
 	socket.disconnect(&error);
 	LogManager::getSingleton().logMessage("Network error while disconnecting: ");
-}
-
-std::map<int, float> &Network::getLagData()
-{
-	return lagDataClients;
 }
 
 void Network::updatePlayerList()
@@ -753,56 +507,79 @@ void Network::receivethreadstart()
 			continue;
 				
 		}
+		else if(header.command == MSG2_USER_LEAVE)
+		{
+			// remove all things that belong to that user
+			pthread_mutex_lock(&clients_mutex);
+			for (int i=0; i<MAX_PEERS; i++)
+			{
+				if (clients[i].used && clients[i].user_id == header.source)
+				{
+					// TODO: remove user stuff
+					clients[i].used = false;
+					break;
+				}
+			}
+			pthread_mutex_unlock(&clients_mutex);
+		}
+		else if(header.command == MSG2_USER_INFO || header.command == MSG2_USER_JOIN)
+		{
+			// this function syncs the user data in the network
+			if(header.source == myuid)
+			{
+				// we got data about ourself!
+				memcpy(&userdata, buffer, sizeof(client_info_on_join));
+				mefl->netUserAttributesChanged(myuid);
+			} else
+			{
+				client_info_on_join *cinfo = (client_info_on_join*) buffer;
+				// data about someone else, try to update the array
+				bool found = false; // whether to add a new client
+				pthread_mutex_lock(&clients_mutex);
+				for (int i=0; i<MAX_PEERS; i++)
+				{
+					if (clients[i].user_id == header.source)
+					{
+						clients[i].user_authlevel = cinfo->authstatus;
+						clients[i].slotnum = cinfo->slotnum;
+						strncpy(clients[i].user_name,cinfo->nickname, 20);
+						found=true;
+						mefl->netUserAttributesChanged(clients[i].user_id);
+						break;
+					}
+				}
+				if(!found)
+				{
+					// find a free entry
+					for (int i=0; i<MAX_PEERS; i++)
+					{
+						if (clients[i].used)
+							continue;
+						clients[i].used = true;
+						clients[i].user_id = header.source;
+						clients[i].user_authlevel = cinfo->authstatus;
+						clients[i].slotnum = cinfo->slotnum;
+						mefl->netUserAttributesChanged(clients[i].user_id);
+						strncpy(clients[i].user_name,cinfo->nickname, 20);
+						break;
+					}
+				}
+				pthread_mutex_unlock(&clients_mutex);
+			}
+		}
 
 		NetworkStreamManager::getSingleton().pushReceivedStreamMessage(header.command, header.source, header.streamid, header.size, buffer);
 	}
 }
 
-Ogre::String Network::getUserChatName(client_t *c)
+client_t *Network::getClientInfo(unsigned int uid)
 {
-	// returns coloured nickname
-	int nickColour = 8;
-	if(c->user_authlevel & AUTH_NONE)   nickColour = 8; // grey
-	if(c->user_authlevel & AUTH_BOT )   nickColour = 4; // blue
-	if(c->user_authlevel & AUTH_RANKED) nickColour = 2; // green
-	if(c->user_authlevel & AUTH_MOD)    nickColour = 1; // red
-	if(c->user_authlevel & AUTH_ADMIN)  nickColour = 1; // red
-
-	String nickname = ColoredTextAreaOverlayElement::StripColors(c->user_name);
-	if(c->invisible)
-		nickname += "^7 (i)";
-	return String("^") + StringConverter::toString(nickColour) + nickname + String("^7");
-}
-
-void Network::sendChat(char *line)
-{
-	int etype=sendmessage(&socket, MSG2_CHAT, 1, (int)strlen(line), line);
-	if (etype)
-	{
-		char emsg[256];
-		sprintf(emsg, "Error %i while sending chat packet", etype);
-		netFatalError(emsg);
-		return;
-	}
-}
-
-int Network::getConnectedClientCount()
-{
-	int count=0;
 	for (int i=0; i<MAX_PEERS; i++)
-		if (clients[i].used)
-			count++;
-	return count;
+	{
+		if (clients[i].user_id == uid)
+			return &clients[i];
+	}
+	return 0;
 }
-
-Network::~Network()
-{
-	shutdown=true;
-	pthread_mutex_destroy(&chat_mutex);
-	pthread_mutex_destroy(&send_work_mutex);
-	pthread_mutex_destroy(&dl_data_mutex);
-	pthread_cond_destroy(&send_work_cv);
-}
-
 
 
