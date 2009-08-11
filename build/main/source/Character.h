@@ -24,6 +24,7 @@ along with Rigs of Rods.  If not, see <http://www.gnu.org/licenses/>.
 #include <Ogre.h>
 #include <OgreVector3.h>
 #include "Streamable.h"
+#include "MovableText.h"
 
 class Water;
 class Collisions;
@@ -50,6 +51,9 @@ public:
 	void setPosition(Ogre::Vector3 pos);
 	float getAngle();
 	
+	void updateNetLabel();
+	void updateCharacterColour();
+	
 	void move(Ogre::Vector3 v);
 	
 	void update(float dt);
@@ -62,6 +66,7 @@ public:
 	void setCollisions(Collisions *c);
 	void setHFinder(HeightFinder *h);
 	void setWater(Water *w);
+	int getUID() { return source; };
 
 protected:
 	Ogre::Vector3 position;
@@ -75,6 +80,7 @@ protected:
 	unsigned int streamid;
 	bool remote;
 	int slotid;
+	Ogre::MovableText *netMT;
 	
 	Ogre::SceneNode *personode;
 	Ogre::AnimationStateSet *persoanim;

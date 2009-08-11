@@ -26,10 +26,45 @@ along with Rigs of Rods.  If not, see <http://www.gnu.org/licenses/>.
 #include "MapControl.h"
 #include "InputEngine.h"
 #include "network.h"
+#include "ColoredTextAreaOverlayElement.h"
 
 using namespace Ogre;
 
 unsigned int Character::characterCounter=0;
+
+// some colours with a good contrast inbetween
+ColourValue cvals[] = 
+{
+	ColourValue(0.0,0.8,0.0),
+	ColourValue(0.0,0.4,0.701960784314),
+	ColourValue(1.0,0.501960784314,0.0),
+	ColourValue(1.0,0.8,0.0),
+	ColourValue(0.2,0.0,0.6),
+	ColourValue(0.6,0.0,0.6),
+	ColourValue(0.8,1.0,0.0),
+	ColourValue(1.0,0.0,0.0),
+	ColourValue(0.501960784314,0.501960784314,0.501960784314),
+	ColourValue(0.0,0.560784313725,0.0),
+	ColourValue(0.0,0.282352941176,0.490196078431),
+	ColourValue(0.701960784314,0.352941176471,0.0),
+	ColourValue(0.701960784314,0.560784313725,0.0),
+	ColourValue(0.419607843137,0.0,0.419607843137),
+	ColourValue(0.560784313725,0.701960784314,0.0),
+	ColourValue(0.701960784314,0.0,0.0),
+	ColourValue(0.745098039216,0.745098039216,0.745098039216),
+	ColourValue(0.501960784314,1.0,0.501960784314),
+	ColourValue(0.501960784314,0.788235294118,1.0),
+	ColourValue(1.0,0.752941176471,0.501960784314),
+	ColourValue(1.0,0.901960784314,0.501960784314),
+	ColourValue(0.666666666667,0.501960784314,1.0),
+	ColourValue(0.933333333333,0.0,0.8),
+	ColourValue(1.0,0.501960784314,0.501960784314),
+	ColourValue(0.4,0.4,0.0),
+	ColourValue(1.0,0.749019607843,1.0),
+	ColourValue(0.0,1.0,0.8),
+	ColourValue(0.8,0.4,0.6),
+	ColourValue(0.6,0.6,0.0),
+};
 
 Character::Character(Collisions *c, Network *net, HeightFinder *h, Water *w, MapControl *m, Ogre::SceneManager *scm, int source, unsigned int streamid, int slotid)
 {
@@ -44,6 +79,7 @@ Character::Character(Collisions *c, Network *net, HeightFinder *h, Water *w, Map
 	this->slotid=slotid;
 	remote = (source != -1);
 	last_net_time=0;
+	netMT=0;
 	
 	myNumber = characterCounter++;
 	myName = "character"+Ogre::StringConverter::toString(myNumber);
@@ -57,6 +93,12 @@ Character::Character(Collisions *c, Network *net, HeightFinder *h, Water *w, Map
 
 	Entity *ent = scm->createEntity(myName+"_mesh", "character.mesh");
 	ent->setNormaliseNormals(true);
+
+	// fix disappearing mesh
+	Ogre::AxisAlignedBox aabb;
+	aabb.setInfinite();
+	ent->getMesh()->_setBounds(aabb);
+
 	// Add entity to the scene node
 	personode=scm->getRootSceneNode()->createChildSceneNode();
 	personode->attachObject(ent);
@@ -80,52 +122,63 @@ Character::Character(Collisions *c, Network *net, HeightFinder *h, Water *w, Map
 	// setup colour
 	MaterialPtr mat = MaterialManager::getSingleton().getByName("tracks/character");
 	MaterialPtr mat2 = mat->clone("tracks/"+myName);
+	ent->setMaterialName("tracks/"+myName);
 
-	// some colours with a good contrast inbetween
-	ColourValue cvals[] = 
-	{
-		ColourValue(0.0,0.8,0.0),
-		ColourValue(0.0,0.4,0.701960784314),
-		ColourValue(1.0,0.501960784314,0.0),
-		ColourValue(1.0,0.8,0.0),
-		ColourValue(0.2,0.0,0.6),
-		ColourValue(0.6,0.0,0.6),
-		ColourValue(0.8,1.0,0.0),
-		ColourValue(1.0,0.0,0.0),
-		ColourValue(0.501960784314,0.501960784314,0.501960784314),
-		ColourValue(0.0,0.560784313725,0.0),
-		ColourValue(0.0,0.282352941176,0.490196078431),
-		ColourValue(0.701960784314,0.352941176471,0.0),
-		ColourValue(0.701960784314,0.560784313725,0.0),
-		ColourValue(0.419607843137,0.0,0.419607843137),
-		ColourValue(0.560784313725,0.701960784314,0.0),
-		ColourValue(0.701960784314,0.0,0.0),
-		ColourValue(0.745098039216,0.745098039216,0.745098039216),
-		ColourValue(0.501960784314,1.0,0.501960784314),
-		ColourValue(0.501960784314,0.788235294118,1.0),
-		ColourValue(1.0,0.752941176471,0.501960784314),
-		ColourValue(1.0,0.901960784314,0.501960784314),
-		ColourValue(0.666666666667,0.501960784314,1.0),
-		ColourValue(0.933333333333,0.0,0.8),
-		ColourValue(1.0,0.501960784314,0.501960784314),
-		ColourValue(0.4,0.4,0.0),
-		ColourValue(1.0,0.749019607843,1.0),
-		ColourValue(0.0,1.0,0.8),
-		ColourValue(0.8,0.4,0.6),
-		ColourValue(0.6,0.6,0.0),
-	};
-	
-	ColourValue cval = ColourValue::Green;
+	updateCharacterColour();
+	updateNetLabel();
+
+}
+
+void Character::updateCharacterColour()
+{
+	ColourValue cval = ColourValue::Black;
 	if(remote && slotid>=0 && slotid < 28)
 		cval = cvals[slotid];
-	else if(!remote)
-		cval = cvals[(int)Math::RangeRandom(0,28)];
+	//else if(!remote)
+	//	cval = cvals[(int)Math::RangeRandom(0,28)];
 
-	mat2->getTechnique(0)->getPass(0)->getTextureUnitState(2)->setAlphaOperation(LBX_BLEND_CURRENT_ALPHA , LBS_MANUAL, LBS_CURRENT, 0.8);
-	mat2->getTechnique(0)->getPass(0)->getTextureUnitState(2)->setColourOperationEx(LBX_BLEND_CURRENT_ALPHA , LBS_MANUAL, LBS_CURRENT, cval, cval, 1);
+	MaterialPtr mat = MaterialManager::getSingleton().getByName("tracks/"+myName);
+	if(mat->getNumTechniques()>0 && mat->getTechnique(0)->getNumPasses()>0 && mat->getTechnique(0)->getPass(0)->getNumTextureUnitStates() == 3)
+	{
+		// check prevents segfault with old contents
+		mat->getTechnique(0)->getPass(0)->getTextureUnitState(2)->setAlphaOperation(LBX_BLEND_CURRENT_ALPHA , LBS_MANUAL, LBS_CURRENT, 0.8);
+		mat->getTechnique(0)->getPass(0)->getTextureUnitState(2)->setColourOperationEx(LBX_BLEND_CURRENT_ALPHA , LBS_MANUAL, LBS_CURRENT, cval, cval, 1);
+	}
+}
 
-	ent->setMaterialName("tracks/"+myName);
-	
+void Character::updateNetLabel()
+{
+	// label above head
+	client_t *info = net->getClientInfo(this->source);
+	if(!info) return;
+	if(!strlen(info->user_name)) return;
+
+	if(!netMT)
+	{
+		netMT = new MovableText("netlabel-"+myName, ColoredTextAreaOverlayElement::StripColors(info->user_name));
+		personode->attachObject(netMT);
+		netMT->setFontName("highcontrast_black");
+		netMT->setTextAlignment(MovableText::H_CENTER, MovableText::V_ABOVE);
+		netMT->setAdditionalHeight(2);
+		netMT->showOnTop(false);
+		netMT->setCharacterHeight(8);
+		netMT->setColor(ColourValue::White);
+	}
+
+	netMT->setCaption(ColoredTextAreaOverlayElement::StripColors(info->user_name));
+	if(info->user_authlevel & AUTH_ADMIN)
+	{
+		netMT->setFontName("highcontrast_red");
+	} else if(info->user_authlevel & AUTH_RANKED)
+	{
+		netMT->setFontName("highcontrast_green");
+	} else
+	{
+		netMT->setFontName("highcontrast_black");
+	}
+
+	// update character colour
+	updateCharacterColour();
 }
 
 void Character::setPosition(Ogre::Vector3 pos)
@@ -405,7 +458,6 @@ void Character::update(float dt)
 
 	if(net)
 		sendStreamData();
-
 }
 
 void Character::updateMapIcon()
@@ -459,7 +511,7 @@ void Character::sendStreamData()
 	data.pos = personode->getPosition();
 	data.rot = personode->getOrientation();
 	
-	LogManager::getSingleton().logMessage("sending character stream data: " + StringConverter::toString(net->getUserID()) + ":"+ StringConverter::toString(streamid));
+	//LogManager::getSingleton().logMessage("sending character stream data: " + StringConverter::toString(net->getUserID()) + ":"+ StringConverter::toString(streamid));
 	this->addPacket(MSG2_STREAM_DATA, net->getUserID(), streamid, sizeof(netdata_t), (char*)&data);
 }
 
@@ -468,10 +520,11 @@ void Character::receiveStreamData(unsigned int &type, int &source, unsigned int 
 	if(type == MSG2_STREAM_DATA && this->source == source && this->streamid == streamid)
 	{
 		netdata_t *data = (netdata_t *)buffer;
-		LogManager::getSingleton().logMessage("character stream data correct: " + StringConverter::toString(source) + ":"+ StringConverter::toString(streamid) + ": "+ StringConverter::toString(data->pos));
+		//LogManager::getSingleton().logMessage("character stream data correct: " + StringConverter::toString(source) + ":"+ StringConverter::toString(streamid) + ": "+ StringConverter::toString(data->pos));
 		personode->setPosition(data->pos);
 		personode->setOrientation(data->rot);
-	}else
-		LogManager::getSingleton().logMessage("character stream data wrong: " + StringConverter::toString(source) + ":"+ StringConverter::toString(streamid));
+	}
+	//else
+	//	LogManager::getSingleton().logMessage("character stream data wrong: " + StringConverter::toString(source) + ":"+ StringConverter::toString(streamid));
 
 }
