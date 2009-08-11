@@ -31,7 +31,7 @@ using namespace Ogre;
 
 unsigned int Character::characterCounter=0;
 
-Character::Character(Collisions *c, Network *net, HeightFinder *h, Water *w, MapControl *m, Ogre::SceneManager *scm, int source, unsigned int streamid)
+Character::Character(Collisions *c, Network *net, HeightFinder *h, Water *w, MapControl *m, Ogre::SceneManager *scm, int source, unsigned int streamid, int slotid)
 {
 	this->net=net;
 	this->collisions=c;
@@ -41,6 +41,7 @@ Character::Character(Collisions *c, Network *net, HeightFinder *h, Water *w, Map
 	this->scm=scm;
 	this->source=source;
 	this->streamid=streamid;
+	this->slotid=slotid;
 	remote = (source != -1);
 	last_net_time=0;
 	
@@ -75,6 +76,55 @@ Character::Character(Collisions *c, Network *net, HeightFinder *h, Water *w, Map
 	{
 		sendStreamSetup();
 	}
+
+	// setup colour
+	MaterialPtr mat = MaterialManager::getSingleton().getByName("tracks/character");
+	MaterialPtr mat2 = mat->clone("tracks/"+myName);
+
+	// some colours with a good contrast inbetween
+	ColourValue cvals[] = 
+	{
+		ColourValue(0.0,0.8,0.0),
+		ColourValue(0.0,0.4,0.701960784314),
+		ColourValue(1.0,0.501960784314,0.0),
+		ColourValue(1.0,0.8,0.0),
+		ColourValue(0.2,0.0,0.6),
+		ColourValue(0.6,0.0,0.6),
+		ColourValue(0.8,1.0,0.0),
+		ColourValue(1.0,0.0,0.0),
+		ColourValue(0.501960784314,0.501960784314,0.501960784314),
+		ColourValue(0.0,0.560784313725,0.0),
+		ColourValue(0.0,0.282352941176,0.490196078431),
+		ColourValue(0.701960784314,0.352941176471,0.0),
+		ColourValue(0.701960784314,0.560784313725,0.0),
+		ColourValue(0.419607843137,0.0,0.419607843137),
+		ColourValue(0.560784313725,0.701960784314,0.0),
+		ColourValue(0.701960784314,0.0,0.0),
+		ColourValue(0.745098039216,0.745098039216,0.745098039216),
+		ColourValue(0.501960784314,1.0,0.501960784314),
+		ColourValue(0.501960784314,0.788235294118,1.0),
+		ColourValue(1.0,0.752941176471,0.501960784314),
+		ColourValue(1.0,0.901960784314,0.501960784314),
+		ColourValue(0.666666666667,0.501960784314,1.0),
+		ColourValue(0.933333333333,0.0,0.8),
+		ColourValue(1.0,0.501960784314,0.501960784314),
+		ColourValue(0.4,0.4,0.0),
+		ColourValue(1.0,0.749019607843,1.0),
+		ColourValue(0.0,1.0,0.8),
+		ColourValue(0.8,0.4,0.6),
+		ColourValue(0.6,0.6,0.0),
+	};
+	
+	ColourValue cval = ColourValue::Green;
+	if(remote && slotid>=0 && slotid < 28)
+		cval = cvals[slotid];
+	else if(!remote)
+		cval = cvals[(int)Math::RangeRandom(0,28)];
+
+	mat2->getTechnique(0)->getPass(0)->getTextureUnitState(2)->setAlphaOperation(LBX_BLEND_CURRENT_ALPHA , LBS_MANUAL, LBS_CURRENT, 0.8);
+	mat2->getTechnique(0)->getPass(0)->getTextureUnitState(2)->setColourOperationEx(LBX_BLEND_CURRENT_ALPHA , LBS_MANUAL, LBS_CURRENT, cval, cval, 1);
+
+	ent->setMaterialName("tracks/"+myName);
 	
 }
 
@@ -408,7 +458,7 @@ void Character::sendStreamData()
 	netdata_t data;
 	data.pos = personode->getPosition();
 	data.rot = personode->getOrientation();
-
+	
 	LogManager::getSingleton().logMessage("sending character stream data: " + StringConverter::toString(net->getUserID()) + ":"+ StringConverter::toString(streamid));
 	this->addPacket(MSG2_STREAM_DATA, net->getUserID(), streamid, sizeof(netdata_t), (char*)&data);
 }

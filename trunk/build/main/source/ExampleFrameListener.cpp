@@ -1767,10 +1767,10 @@ ExampleFrameListener::~ExampleFrameListener()
 #endif //OPENSTEER
 }
 
-void ExampleFrameListener::newCharacter(int source, unsigned int streamid)
+void ExampleFrameListener::newCharacter(int source, unsigned int streamid, int slotid)
 {
 	LogManager::getSingleton().logMessage(" new character for " + StringConverter::toString(source) + ":" + StringConverter::toString(streamid));
-	new Character(collisions, net, hfinder, w, bigMap, mSceneMgr, source, streamid);
+	new Character(collisions, net, hfinder, w, bigMap, mSceneMgr, source, streamid, slotid);
 }
 
 void ExampleFrameListener::loadNetTerrain(char *preselected_map)
