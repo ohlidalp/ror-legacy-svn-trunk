@@ -34,7 +34,7 @@ class Network;
 class Character : public Streamable
 {
 public:
-	Character(Collisions *c, Network *net, HeightFinder *h, Water *w, MapControl *m, Ogre::SceneManager *scm, int source=-1, unsigned int streamid=0);
+	Character(Collisions *c, Network *net, HeightFinder *h, Water *w, MapControl *m, Ogre::SceneManager *scm, int source=-1, unsigned int streamid=0, int slotid=0);
 	~Character();
 	
 	void setVisible(bool v);
@@ -74,6 +74,7 @@ protected:
 	int source;
 	unsigned int streamid;
 	bool remote;
+	int slotid;
 	
 	Ogre::SceneNode *personode;
 	Ogre::AnimationStateSet *persoanim;

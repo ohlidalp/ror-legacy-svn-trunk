@@ -735,7 +735,20 @@ void Network::receivethreadstart()
 			} else if (reg->type == 1)
 			{
 				// person
-				this->mefl->newCharacter(header.source, reg->sid);
+				// find slotid
+				int slot = 0;
+				pthread_mutex_lock(&clients_mutex);
+				for (int i=0; i<MAX_PEERS; i++)
+				{
+					if (clients[i].user_id == header.source)
+					{
+						slot=i;
+						break;
+					}
+				}
+				pthread_mutex_unlock(&clients_mutex);
+
+				this->mefl->newCharacter(header.source, reg->sid, slot);
 			}
 			continue;
 				
