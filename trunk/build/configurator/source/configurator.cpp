@@ -326,6 +326,8 @@ private:
 	wxCheckBox *beamdebug;
 	wxCheckBox *autodl;
 	wxCheckBox *posstor;
+	wxCheckBox *trucklod;
+	wxCheckBox *objlod;
 	wxCheckBox *extcam;
 	wxCheckBox *dashboard;
 	wxCheckBox *mirror;
@@ -1907,6 +1909,12 @@ MyDialog::MyDialog(const wxString& title, MyApp *_app) : wxDialog(NULL, wxID_ANY
 	posstor=new wxCheckBox(advancedPanel, -1, _("Enable Position Storage"), wxPoint(320, 245));
 	posstor->SetToolTip(_("Can be used to quick save and load positions of trucks"));
 
+	trucklod=new wxCheckBox(advancedPanel, -1, _("Enable Truck LODs"), wxPoint(320, 260));
+	trucklod->SetToolTip(_("Enables a technique for multiple level of detail meshes. Only disable if you experience problems with it."));
+
+	objlod=new wxCheckBox(advancedPanel, -1, _("Enable Object LODs"), wxPoint(320, 275));
+	objlod->SetToolTip(_("Enables a technique for multiple level of detail meshes. Only disable if you experience problems with it."));
+
 	dText = new wxStaticText(advancedPanel, -1, _("minimum visibility range in percent"), wxPoint(10,300));
 	//this makes a visual bug in macosx
 	sightrange=new wxSlider(advancedPanel, -1, 30, 20, 130, wxPoint(10, 315), wxSize(200, 40), wxSL_LABELS|wxSL_AUTOTICKS);
@@ -2258,6 +2266,8 @@ void MyDialog::SetDefaults()
 	enablexfire->SetValue(true);
 	autodl->SetValue(true);
 	posstor->SetValue(true);
+	trucklod->SetValue(true);
+	objlod->SetValue(true);
 	beamdebug->SetValue(false);
 	extcam->SetValue(false);
 	//wxCheckBox *dashboard;
@@ -2321,6 +2331,8 @@ void MyDialog::getSettingsControls()
 	settings["XFire"] = (enablexfire->GetValue()) ? "Yes" : "No";
 	settings["AutoDownload"] = (autodl->GetValue()) ? "Yes" : "No";
 	settings["Position Storage"] = (posstor->GetValue()) ? "Yes" : "No";
+	settings["Truck LOD"] = (trucklod->GetValue()) ? "Yes" : "No";
+	settings["Object LOD"] = (objlod->GetValue()) ? "Yes" : "No";
 	settings["External Camera Mode"] = (extcam->GetValue()) ? "Static" : "Pitching";
 	settings["Dashboard"] = (dashboard->GetValue()) ? "Yes" : "No";
 	settings["Mirrors"] = (mirror->GetValue()) ? "Yes" : "No";
@@ -2399,6 +2411,8 @@ void MyDialog::updateSettingsControls()
 	st = settings["External Camera Mode"]; if (st.length()>0) extcam->SetValue(st=="Static");
 	st = settings["AutoDownload"]; if (st.length()>0) autodl->SetValue(st=="Yes");
 	st = settings["Position Storage"]; if (st.length()>0) posstor->SetValue(st=="Yes");
+	st = settings["Truck LOD"]; if (st.length()>0) trucklod->SetValue(st=="Yes");
+	st = settings["Object LOD"]; if (st.length()>0) objlod->SetValue(st=="Yes");
 	st = settings["DebugBeams"]; if (st.length()>0) beamdebug->SetValue(st=="Yes");
 	st = settings["XFire"]; if (st.length()>0) enablexfire->SetValue(st=="Yes");
 	st = settings["Dashboard"]; if (st.length()>0) dashboard->SetValue(st=="Yes");
@@ -3158,6 +3172,8 @@ void MyDialog::OnSimpleSliderScroll(wxScrollEvent & event)
 	// 0 (high perf) - 2 (high quality)
 	creaksound->SetValue(true); // disable creak sound
 	autodl->SetValue(true);
+	trucklod->SetValue(false);
+	objlod->SetValue(false);
 	switch(val)
 	{
 		case 0:
