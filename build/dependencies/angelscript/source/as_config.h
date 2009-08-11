@@ -129,6 +129,9 @@
 
 // AS_USE_NAMESPACE
 // Adds the AngelScript namespace on the declarations.
+#ifndef AS_USE_NAMESPACE
+#define AS_USE_NAMESPACE
+#endif
 
 // AS_NO_MEMORY_H
 // Some compilers don't come with the memory.h header file.
