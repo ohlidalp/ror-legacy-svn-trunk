@@ -32,7 +32,7 @@ along with Rigs of Rods.  If not, see <http://www.gnu.org/licenses/>.
 #include "autopilot.h"
 #include "ScopeLog.h"
 #include "network.h"
-
+#include "NetworkStreamManager.h"
 #include "skinmanager.h"
 #include "FlexMesh.h"
 #include "FlexMeshWheel.h"

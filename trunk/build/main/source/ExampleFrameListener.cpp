@@ -55,6 +55,7 @@ along with Rigs of Rods.  If not, see <http://www.gnu.org/licenses/>.
 #include "truckeditor.h"
 #endif
 #include "network.h"
+#include "NetworkStreamManager.h"
 #include "engine.h"
 #include "turboprop.h"
 #include "screwprop.h"
