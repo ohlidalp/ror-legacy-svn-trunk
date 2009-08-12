@@ -150,6 +150,7 @@ void Character::updateCharacterColour()
 void Character::updateNetLabel()
 {
 	// label above head
+	if(!net) return;
 	client_t *info = net->getClientInfo(this->source);
 	if(!info) return;
 	if(!strlen(info->user_name)) return;
