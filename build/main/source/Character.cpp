@@ -26,6 +26,7 @@ along with Rigs of Rods.  If not, see <http://www.gnu.org/licenses/>.
 #include "MapControl.h"
 #include "InputEngine.h"
 #include "network.h"
+#include "NetworkStreamManager.h"
 #include "ColoredTextAreaOverlayElement.h"
 
 using namespace Ogre;

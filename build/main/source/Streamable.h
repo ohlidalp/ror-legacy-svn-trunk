@@ -24,21 +24,10 @@ along with Rigs of Rods.  If not, see <http://www.gnu.org/licenses/>.
 #define STREAMABLE_H__
 
 #include "OgrePrerequisites.h"
-#include "OgreSingleton.h"
-#include "pthread.h"
-#include "SocketW.h"
-
 #include <map>
 
-#define MAX_PACKET_LEN 8192
-
 class Network;
-
-typedef struct _bufferedPacket
-{
-	char packetBuffer[MAX_PACKET_LEN];
-	unsigned int size;
-} bufferedPacket_t;
+class NetworkStreamManager;
 
 /**
  * This class defines a standart interface and a buffer between the actual network code and the class that handles it.
@@ -47,52 +36,33 @@ typedef struct _bufferedPacket
 class Streamable
 {
 	friend class NetworkStreamManager;
-public:
-	Streamable();
 protected:
+	// constructor/destructor are protected, so you cannot create instances without using the factory
+	Streamable();
+	~Streamable();
+
+	// static const members
 	static const int packetBufferSize = 10;
-	static const int maxPacketLen = MAX_PACKET_LEN;
+	static const int maxPacketLen     = 8192;
+
+	// custom types
+	typedef struct _bufferedPacket
+	{
+		char packetBuffer[maxPacketLen];
+		unsigned int size;
+	} bufferedPacket_t;
 	
-	void sendStreamData();
+	// normal members
+	std::queue < bufferedPacket_t > packets;
+	unsigned int streamid;
+	
+	// virtual interface methods
+	virtual void sendStreamData() = 0;
 	virtual void receiveStreamData(unsigned int &type, int &source, unsigned int &streamid, char *buffer, unsigned int &len) = 0;
 
+	// base class methods
 	void addPacket(int type, int uid, unsigned int streamid, unsigned int len, char* content);
 	std::queue < bufferedPacket_t > *getPacketQueue();
-
-	std::queue < bufferedPacket_t > packets;
-
-	unsigned int streamid;
 };
-
-
-class NetworkStreamManager : public Ogre::Singleton< NetworkStreamManager >
-{
-	friend class Network;
-public:
-	NetworkStreamManager();
-	~NetworkStreamManager();
-	static NetworkStreamManager& getSingleton(void);
-	static NetworkStreamManager* getSingletonPtr(void);
-	
-	void addStream(Streamable *stream, int source=-1, int streamid=-1);
-	void removeStream(Streamable *stream);
-	void pauseStream(Streamable *stream);
-	void resumeStream(Streamable *stream);
-	
-	void triggerSend();
-	void sendStreams(Network *net, SWInetSocket *socket);
-
-protected:
-	pthread_mutex_t send_work_mutex;
-	pthread_cond_t send_work_cv;
-	Network *net;
-
-	std::map < int, std::map < unsigned int, Streamable *> > streams;
-	unsigned int streamid;
-
-	void pushReceivedStreamMessage(unsigned int &type, int &source, unsigned int &streamid, unsigned int &wrotelen, char *buffer);
-};
-
-
 
 #endif //STREAMABLE_H__
