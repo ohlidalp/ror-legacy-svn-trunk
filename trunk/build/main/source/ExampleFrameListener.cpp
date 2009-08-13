@@ -63,6 +63,7 @@ along with Rigs of Rods.  If not, see <http://www.gnu.org/licenses/>.
 
 #include "gui_manager.h"
 #include "gui_loader.h"
+#include "gui_menu.h"
 
 #include "mirrors.h"
 #include "TruckHUD.h"
@@ -1069,6 +1070,9 @@ ExampleFrameListener::ExampleFrameListener(RenderWindow* win, Camera* cam, Scene
 	MYGUI.setup(cam, scm, win);
 
 	UILOADER.setup(win, cam);
+
+	// create main menu :D
+	new GUI_MainMenu();
 
 	CACHE.startup(scm);
 
