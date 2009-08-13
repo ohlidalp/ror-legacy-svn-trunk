@@ -6560,7 +6560,7 @@ void ExampleFrameListener::moveCamera(float dt)
 				//if (delta.length()>0.01) angle=atan2(delta.x,delta.z); else angle=lastangle;
 
 				// fix camera distance a bit
-				if(camdist < 2) camdist = 2.0f;
+				if(camDist < 2) camDist = 2.0f;
 
 				camIdealPosition=camDist/2.0*Vector3(sin(angle+camRotX.valueRadians())*cos(camRotY.valueRadians()),sin(camRotY.valueRadians()),cos(angle+camRotX.valueRadians())*cos(camRotY.valueRadians()));
 
@@ -6657,7 +6657,7 @@ void ExampleFrameListener::moveCamera(float dt)
 				angle=-atan2(dir.dotProduct(Vector3::UNIT_X), dir.dotProduct(-Vector3::UNIT_Z));
 
 				Real truckmindist = trucks[current_truck]->getMinimalCameraRadius();
-				if(camdist < truckmindist) camdist = truckmindist;
+				if(camDist < truckmindist) camDist = truckmindist;
 
 				if(externalCameraMode==0)
 				{
