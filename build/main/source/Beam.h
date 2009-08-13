@@ -910,6 +910,8 @@ public:
 
 	int getTruckTime() { return nettimer->getMilliseconds(); };
 	int getNetTruckTimeOffset() { return net_toffset; };
+
+	Real getMinimalCameraRadius() { return minCameraRadius; };
 protected:
 
 	void updateSimpleSkeleton();
@@ -919,6 +921,7 @@ protected:
 	Vector3 position;
 	Vector3 lastposition;
 	Vector3 lastlastposition;
+	Real minCameraRadius;
 	MaterialFunctionMapper *materialFunctionMapper;
 
 	Network *net;
