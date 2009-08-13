@@ -439,11 +439,9 @@ Beam::Beam(int tnum, SceneManager *manager, SceneNode *parent, RenderWindow* win
 
 	// skidmark stuff
 	useSkidmarks = (SETTINGS.getSetting("Skidmarks") == "Yes");
-	if (useSkidmarks)
-	{
-		for(int i=0; i<MAX_WHEELS*2; i++)
-			skidtrails[i] = 0;
-	}
+	
+	// always init skidmarks with 0
+	for(int i=0; i<MAX_WHEELS*2; i++) skidtrails[i] = 0;
 
 	collisions=icollisions;
 
