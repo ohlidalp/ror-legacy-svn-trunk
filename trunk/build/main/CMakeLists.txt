@@ -192,6 +192,9 @@ set(ror_src
 
 	source/utils.cpp
 	source/utils.h
+	
+	source/gui_menu.cpp
+	source/gui_menu.h
 )
 
 include_directories (OgreMain/include Dependencies/include)

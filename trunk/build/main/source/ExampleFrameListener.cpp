@@ -6558,6 +6558,10 @@ void ExampleFrameListener::moveCamera(float dt)
 				float angle=-person->getAngle()-(3.14159/2.0);
 				//			float angle2;
 				//if (delta.length()>0.01) angle=atan2(delta.x,delta.z); else angle=lastangle;
+
+				// fix camera distance a bit
+				if(camdist < 2) camdist = 2.0f;
+
 				camIdealPosition=camDist/2.0*Vector3(sin(angle+camRotX.valueRadians())*cos(camRotY.valueRadians()),sin(camRotY.valueRadians()),cos(angle+camRotX.valueRadians())*cos(camRotY.valueRadians()));
 
 
@@ -6651,6 +6655,10 @@ void ExampleFrameListener::moveCamera(float dt)
 				Vector3 dir=trucks[current_truck]->nodes[trucks[current_truck]->cameranodepos[0]].smoothpos-trucks[current_truck]->nodes[trucks[current_truck]->cameranodedir[0]].smoothpos;
 				dir.normalise();
 				angle=-atan2(dir.dotProduct(Vector3::UNIT_X), dir.dotProduct(-Vector3::UNIT_Z));
+
+				Real truckmindist = trucks[current_truck]->getMinimalCameraRadius();
+				if(camdist < truckmindist) camdist = truckmindist;
+
 				if(externalCameraMode==0)
 				{
 					float pitch=-asin(dir.dotProduct(Vector3::UNIT_Y));
