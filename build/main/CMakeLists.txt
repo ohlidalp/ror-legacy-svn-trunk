@@ -183,6 +183,12 @@ set(ror_src
 
 	source/Streamable.cpp
 	source/Streamable.h
+	
+	source/NetworkStreamManager.cpp
+	source/NetworkStreamManager.h
+	
+	source/StreamableFactory.cpp
+	source/StreamableFactory.h
 
 	source/utils.cpp
 	source/utils.h
