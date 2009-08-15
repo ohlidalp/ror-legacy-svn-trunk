@@ -6560,7 +6560,7 @@ void ExampleFrameListener::moveCamera(float dt)
 				//if (delta.length()>0.01) angle=atan2(delta.x,delta.z); else angle=lastangle;
 
 				// fix camera distance a bit
-				if(camDist < 2) camDist = 2.0f;
+				if(camDist < 3) camDist = 3.0f;
 
 				camIdealPosition=camDist/2.0*Vector3(sin(angle+camRotX.valueRadians())*cos(camRotY.valueRadians()),sin(camRotY.valueRadians()),cos(angle+camRotX.valueRadians())*cos(camRotY.valueRadians()));
 
@@ -6575,7 +6575,7 @@ void ExampleFrameListener::moveCamera(float dt)
 				h+=1.0;
 				if (newposition.y<h) newposition.y=h;
 				setCameraPositionWithCollision(newposition);
-				mCamera->lookAt(person->getPosition()+Vector3(0.0,1.0,0.0));
+				mCamera->lookAt(person->getPosition()+Vector3(0.0,1.1f,0.0));
 				if(changeCamMode)
 					mCamera->setFOVy(Degree(60));
 
