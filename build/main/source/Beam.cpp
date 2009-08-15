@@ -4748,7 +4748,7 @@ void Beam::resetPosition(float px, float pz, bool setI, float miny)
 				minCameraRadius = dist;
 			}
 		}
-		minCameraRadius += 1; // one meter buffer
+		minCameraRadius *= 1.2f; // ten percent buffer
 	}
 
 	//if (netLabelNode) netLabelNode->setPosition(nodes[0].Position);
