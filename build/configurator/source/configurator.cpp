@@ -88,6 +88,8 @@ extern eventInfo_t eventInfo[]; // defines all input events
 
 #if __WIN32__
 #include <direct.h> // for getcwd
+#include <windows.h>
+#include <shellapi.h>
 #endif
 
 // xpm images
@@ -3064,14 +3066,8 @@ void MyDialog::OnButRestore(wxCommandEvent& event)
 void MyDialog::OnButUpdateRoR(wxCommandEvent& event)
 {
 #if OGRE_PLATFORM == OGRE_PLATFORM_WIN32
-	PROCESS_INFORMATION pi;
-	STARTUPINFO si;
-	DWORD               dwCode  =   0;
-	ZeroMemory(&si,sizeof(STARTUPINFO));
-	si.cb           =   sizeof(STARTUPINFO);
-	si.dwFlags      =   STARTF_USESHOWWINDOW;
-	si.wShowWindow  =   SW_SHOWNORMAL;
 
+	// get paths to update.exe
 	char path[2048];
 	getcwd(path, 2048);
 	strcat(path, "\\update.exe");
@@ -3080,8 +3076,25 @@ void MyDialog::OnButUpdateRoR(wxCommandEvent& event)
 	int buffSize = (int)strlen(path) + 1;
 	LPWSTR wpath = new wchar_t[buffSize];
 	MultiByteToWideChar(CP_ACP, 0, path, buffSize, wpath, buffSize);
+	
+	getcwd(path, 2048);
+	buffSize = (int)strlen(path) + 1;
+	LPWSTR cwpath = new wchar_t[buffSize];
+	MultiByteToWideChar(CP_ACP, 0, path, buffSize, cwpath, buffSize);
 
-	CreateProcess(NULL, wpath, NULL, NULL, false, NORMAL_PRIORITY_CLASS, NULL, NULL, &si, &pi);
+	// now construct struct that has the required starting info
+    SHELLEXECUTEINFO sei = { sizeof(sei) };
+	sei.cbSize = sizeof(SHELLEXECUTEINFOA);
+	sei.fMask = 0;
+	sei.hwnd = NULL;
+	sei.lpVerb = _T("runas");
+	sei.lpFile = wpath;
+	sei.lpParameters = _T("");
+	sei.lpDirectory = cwpath;
+	sei.nShow = SW_NORMAL;
+
+	ShellExecuteEx(&sei);
+
 	// we want to exit to be able to update the configurator!
 	exit(0);
 #else
