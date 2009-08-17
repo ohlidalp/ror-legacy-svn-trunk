@@ -27,6 +27,8 @@ along with Rigs of Rods.  If not, see <http://www.gnu.org/licenses/>.
 #include "main.h"
 #include "ScopeLog.h"
 
+#include "CharacterFactory.h"
+
 #ifdef MPLATFORM
 #include "mplatform_fd.h"
 #endif
@@ -1630,9 +1632,15 @@ ExampleFrameListener::ExampleFrameListener(RenderWindow* win, Camera* cam, Scene
 	}
 
 	// load guy
-	person = new Character(collisions, net, hfinder, w, bigMap, mSceneMgr);
+	int source=-1;
+	if(net)
+		source = net->getUserID();
+
+	new CharacterFactory(collisions, net, hfinder, w, bigMap, mSceneMgr);
+
+	person = (Character *)CharacterFactory::getSingleton().createLocal();
+	person->setRemote(false);
 	person->setVisible(false);
-	characters.push_back(person);
 
 	if(preselected_map != "")
 	{
@@ -1776,26 +1784,6 @@ ExampleFrameListener::~ExampleFrameListener()
 #ifdef OPENSTEER
 	if (aitraffic) delete(aitraffic);
 #endif //OPENSTEER
-}
-
-void ExampleFrameListener::newCharacter(int source, unsigned int streamid, int slotid)
-{
-	LogManager::getSingleton().logMessage(" new character for " + StringConverter::toString(source) + ":" + StringConverter::toString(streamid));
-	Character *c = new Character(collisions, net, hfinder, w, bigMap, mSceneMgr, source, streamid, slotid);
-	characters.push_back(c);
-}
-
-void ExampleFrameListener::netUserAttributesChanged(int source)
-{
-	// update player labels
-	for(std::vector<Character*>::iterator it=characters.begin(); it!=characters.end();it++)
-	{
-		if((*it)->getUID() == source)
-		{
-			(*it)->updateNetLabel();
-			break;
-		}
-	}
 }
 
 void ExampleFrameListener::loadNetTerrain(char *preselected_map)
