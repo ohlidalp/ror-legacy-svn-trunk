@@ -2720,10 +2720,17 @@ bool ExampleFrameListener::updateEvents(float dt)
 			chatting=true;
 		}
 	}
+	
+	if(INPUTENGINE.getEventBoolValueBounce(EV_COMMON_SHOW_MENU))
+	{
+		GUI_MainMenu::getSingleton().setVisible(!GUI_MainMenu::getSingleton().getVisible());
+	}
 
-	// nno evnet handling during chatting!
+	// no event handling during chatting!
 	if(chatting)
 		return true;
+
+	if(GUI_MainMenu::getSingleton().getVisible()) return true; // disable input events in menu mode
 
 	if (INPUTENGINE.getEventBoolValueBounce(EV_COMMON_SHOWTRUCKTOOL, 0.5f) && current_truck != -1)
 	{
@@ -6448,10 +6455,11 @@ bool ExampleFrameListener::processUnbufferedMouseInput(const FrameEvent& evt)
 
 void ExampleFrameListener::moveCamera(float dt)
 {
-	if(!hfinder)
-		return;
+	if(!hfinder) return;
 	if (loading_state!=ALL_LOADED && loading_state != EDITOR_PAUSE) return;
 
+	if(GUI_MainMenu::getSingleton().getVisible()) return; // disable camera movement in menu mode
+	
 	if (isnodegrabbed) return; //freeze camera
 
 	bool changeCamMode = (lastcameramode != cameramode);
