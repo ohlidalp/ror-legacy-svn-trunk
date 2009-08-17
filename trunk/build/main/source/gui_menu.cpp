@@ -43,14 +43,15 @@ GUI_MainMenu& GUI_MainMenu::getSingleton(void)
 GUI_MainMenu::GUI_MainMenu()
 {
 	//MyGUI::WidgetPtr back = createWidget<MyGUI::Widget>("Panel", 0, 0, 912, 652,MyGUI::Align::Default, "Back");
-	MyGUI::MenuBarPtr mainmenu = MyGUI::Gui::getInstance().createWidget<MyGUI::MenuBar>("MenuBar", 0, 0, 300, 26,  MyGUI::Align::HStretch | MyGUI::Align::Top, "Back"); 
+	mainmenu = MyGUI::Gui::getInstance().createWidget<MyGUI::MenuBar>("MenuBar", 0, 0, 300, 26,  MyGUI::Align::HStretch | MyGUI::Align::Top, "Back"); 
 	mainmenu->setRealCoord(0,0,100,0.001);
 	
+	// File menu
 	MyGUI::MenuItemPtr mi = mainmenu->createWidget<MyGUI::MenuItem>("MenuBarButton", 0, 0, 60, 22,  MyGUI::Align::Default); 
+	MyGUI::PopupMenuPtr pop = mi->createWidget<MyGUI::PopupMenu>(MyGUI::WidgetStyle::Popup, "PopupMenu",MyGUI::IntCoord(0,0,88,68),MyGUI::Align::Default, "Popup");
 	mi->setItemType(MyGUI::MenuItemType::Popup);
 	mi->setCaption("File");
 
-	MyGUI::PopupMenuPtr pop = mi->createWidget<MyGUI::PopupMenu>(MyGUI::WidgetStyle::Popup, "PopupMenu",MyGUI::IntCoord(0,0,88,68),MyGUI::Align::Default, "Popup");
 
 	pop->addItem("entry1", MyGUI::MenuItemType::Normal, "entry1");
 	pop->addItem("entry2", MyGUI::MenuItemType::Normal, "entry2");
@@ -59,15 +60,29 @@ GUI_MainMenu::GUI_MainMenu()
 	pop->addItem("exit", MyGUI::MenuItemType::Normal, "exit");
 
 
+	// view menu
+	mi = mainmenu->createWidget<MyGUI::MenuItem>("MenuBarButton", 0, 0, 60, 22,  MyGUI::Align::Default); 
+	pop = mi->createWidget<MyGUI::PopupMenu>(MyGUI::WidgetStyle::Popup, "PopupMenu",MyGUI::IntCoord(0,0,88,68),MyGUI::Align::Default, "Popup");
+	mi->setItemType(MyGUI::MenuItemType::Popup);
+	mi->setCaption("View");
+
+
+	MyGUI::MenuItemPtr mi2 = pop->addItem("Camera Mode", MyGUI::MenuItemType::Normal, "cm");
+	MyGUI::PopupMenuPtr pop2 = mi2->createWidget<MyGUI::PopupMenu>(MyGUI::WidgetStyle::Popup, "PopupMenu",MyGUI::IntCoord(0,0,88,68),MyGUI::Align::Default, "Popup");
+
+	pop2->createWidget<MyGUI::Button>("CheckBox",MyGUI::IntCoord(0,0,88,68),MyGUI::Align::Default, "Internal Camera");
+	pop2->createWidget<MyGUI::Button>("CheckBox",MyGUI::IntCoord(0,0,88,68),MyGUI::Align::Default, "External Camera");
 
 
 
 
 	pop->eventMenuCtrlAccept = MyGUI::newDelegate(this, &GUI_MainMenu::onMenuBtn);
+	pop2->eventMenuCtrlAccept = MyGUI::newDelegate(this, &GUI_MainMenu::onMenuBtn);
 	//window->eventWindowButtonPressed = MyGUI::newDelegate(this, &DemoKeeper::notifyWindowPressed);	
 	MyGUI::PointerManager::getInstance().setVisible(true);
 
 	UILOADER.setProgress(UI_PROGRESSBAR_HIDE);
+	setVisible(false);
 }
 
 GUI_MainMenu::~GUI_MainMenu()
@@ -77,4 +92,15 @@ GUI_MainMenu::~GUI_MainMenu()
 void GUI_MainMenu::onMenuBtn(MyGUI::MenuCtrlPtr _sender, MyGUI::MenuItemPtr _item)
 {
 	LogManager::getSingleton().logMessage(" menu button pressed: " + _item->getCaption());
+}
+
+void GUI_MainMenu::setVisible(bool value)
+{
+	mainmenu->setVisible(value);
+	MyGUI::PointerManager::getInstance().setVisible(value);
+}
+
+bool GUI_MainMenu::getVisible()
+{
+	return mainmenu->isVisible();
 }

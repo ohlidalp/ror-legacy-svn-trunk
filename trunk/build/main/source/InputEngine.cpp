@@ -704,7 +704,13 @@ eventInfo_t eventInfo[] = {
 	{
 		"COMMON_QUIT_GAME",
 		EV_COMMON_QUIT_GAME,
-		"Keyboard ESCAPE",
+		"Keyboard EXPL+ESCAPE",
+		_L("exit the game")
+	},
+	{
+		"COMMON_SHOW_MENU",
+		EV_COMMON_SHOW_MENU,
+		"Keyboard EXPL+SHIFT+ESCAPE",
 		_L("exit the game")
 	},
 	{

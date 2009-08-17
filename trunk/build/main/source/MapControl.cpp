@@ -472,7 +472,17 @@ void MapEntity::update()
 		TextureUnitState *tu = p->getTextureUnitState(0);
 		if(!tu)
 			return;
-		std::pair<size_t,size_t> d = tu->getTextureDimensions();
+		if(tu->getTextureName().empty())
+			return;
+		std::pair<size_t,size_t> d;
+		try
+		{
+			d = tu->getTextureDimensions();
+		} catch(...)
+		{
+			// this happens if the texture was not found
+			return;
+		}
 		mapCtrl->setEntityPosition(x*scale, z*scale, (float)d.first*scale, (float)d.second*scale, minsize, container);
 		taoe->setLeft(0);
 

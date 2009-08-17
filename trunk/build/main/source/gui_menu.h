@@ -34,7 +34,11 @@ public:
 	~GUI_MainMenu();
 	static GUI_MainMenu& getSingleton(void);
 	static GUI_MainMenu* getSingletonPtr(void);
+
+	bool getVisible();
+	void setVisible(bool value);
 protected:
+	MyGUI::MenuBarPtr mainmenu;
 	void onMenuBtn(MyGUI::MenuCtrlPtr _sender, MyGUI::MenuItemPtr _item);
 };
 
