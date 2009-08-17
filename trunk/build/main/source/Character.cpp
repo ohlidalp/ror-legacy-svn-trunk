@@ -78,7 +78,7 @@ Character::Character(Collisions *c, Network *net, HeightFinder *h, Water *w, Map
 	this->source=source;
 	this->streamid=streamid;
 	this->slotid=slotid;
-	remote = (source != -1);
+	remote = true;
 	last_net_time=0;
 	netMT=0;
 	
@@ -133,7 +133,7 @@ Character::Character(Collisions *c, Network *net, HeightFinder *h, Water *w, Map
 void Character::updateCharacterColour()
 {
 	ColourValue cval = ColourValue::Black;
-	if(remote && slotid>=0 && slotid < 28)
+	if(this->net && slotid>=0 && slotid < 28)
 		cval = cvals[slotid];
 	//else if(!remote)
 	//	cval = cvals[(int)Math::RangeRandom(0,28)];
@@ -147,6 +147,11 @@ void Character::updateCharacterColour()
 	}
 }
 
+void Character::setRemote(bool value)
+{
+	remote = value;
+}
+
 void Character::updateNetLabel()
 {
 	// label above head
@@ -155,6 +160,7 @@ void Character::updateNetLabel()
 	if(!info) return;
 	if(!strlen(info->user_name)) return;
 
+	LogManager::getSingleton().logMessage(" * updateNetLabel : " + StringConverter::toString(this->source) + " / "+ StringConverter::toString(info->slotnum));
 	if(!netMT)
 	{
 		netMT = new MovableText("netlabel-"+myName, ColoredTextAreaOverlayElement::StripColors(info->user_name));

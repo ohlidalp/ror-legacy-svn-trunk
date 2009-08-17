@@ -18,39 +18,44 @@ You should have received a copy of the GNU General Public License
 along with Rigs of Rods.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-// created by Thomas Fischer thomas{AT}thomasfischer{DOT}biz, 12th of August 2009
+// created by Thomas Fischer thomas{AT}thomasfischer{DOT}biz, 17th of August 2009
 
-#ifndef STREAMABLEFACTORY_H__
-#define STREAMABLEFACTORY_H__
+#ifndef CHARACTERFACTORY_H__
+#define CHARACTERFACTORY_H__
 
 #include "OgrePrerequisites.h"
-#include "OgreSingleton.h"
-#include "pthread.h"
-#include "SocketW.h"
-#include "rornet.h"
+#include "StreamableFactory.h"
 #include <map>
 
+class Collisions;
 class Network;
-class Streamable;
+class HeightFinder;
+class Water;
+class MapControl;
+class Character;
 
-class StreamableFactory : public Ogre::Singleton< StreamableFactory >
+class CharacterFactory : public StreamableFactory
 {
-	friend class Network;
 public:
-	StreamableFactory();
-	~StreamableFactory();
-	static StreamableFactory& getSingleton(void);
-	static StreamableFactory* getSingletonPtr(void);
+	CharacterFactory(Collisions *c, Network *net, HeightFinder *h, Water *w, MapControl *m, Ogre::SceneManager *scm);
+	~CharacterFactory();
 	
-	//virtual Streamable *createLocal() = 0;
-	//virtual Streamable *createRemote(int sourceid, stream_register_t *reg) = 0;
-	virtual void netUserAttributesChanged(int source, int streamid) = 0;
+	static CharacterFactory& getSingleton(void);
 
-	//void remove(Streamable *stream);
+	Character *createLocal();
+	Character *createRemote(int sourceid, stream_register_t *reg, int slotid);
+	void netUserAttributesChanged(int source, int streamid);
+	
+	void remove(Character *stream);
 	void removeUser(int userid);
 
 protected:
-	std::map < int, std::map < unsigned int, Streamable *> > streamables;
+	Collisions *c;
+	Network *net;
+	HeightFinder *h;
+	Water *w;
+	MapControl *m;
+	Ogre::SceneManager *scm;
 };
 
 

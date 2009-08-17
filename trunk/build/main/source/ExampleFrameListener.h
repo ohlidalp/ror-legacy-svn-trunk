@@ -473,10 +473,7 @@ public:
 	int getLoadingState() { return loading_state; };
 	void pauseSim(bool value);
 	void loadNetTerrain(char *preselected_map);
-	void newCharacter(int source, unsigned int streamid, int slotid);
 	float mapsizex, mapsizez;
-	std::vector<Character*> characters;
-	void netUserAttributesChanged(int source);
 
 	float stopTimer();
 	void startTimer();

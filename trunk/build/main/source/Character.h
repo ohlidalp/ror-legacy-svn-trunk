@@ -53,6 +53,8 @@ public:
 	
 	void updateNetLabel();
 	void updateCharacterColour();
+
+	void setRemote(bool value); 
 	
 	void move(Ogre::Vector3 v);
 	

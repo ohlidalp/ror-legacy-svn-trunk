@@ -23,6 +23,7 @@ along with Rigs of Rods.  If not, see <http://www.gnu.org/licenses/>.
 #include "ColoredTextAreaOverlayElement.h"
 #include "IngameConsole.h"
 #include "CacheSystem.h"
+#include "CharacterFactory.h"
 #ifdef ANGELSCRIPT
 #include "ScriptEngine.h"
 #endif //ANGELSCRIPT
@@ -503,7 +504,7 @@ void Network::receivethreadstart()
 				}
 				pthread_mutex_unlock(&clients_mutex);
 
-				this->mefl->newCharacter(header.source, reg->sid, slot);
+				CharacterFactory::getSingleton().createRemote(header.source, reg, slot);
 			}
 			continue;
 				
@@ -526,11 +527,20 @@ void Network::receivethreadstart()
 		else if(header.command == MSG2_USER_INFO || header.command == MSG2_USER_JOIN)
 		{
 			// this function syncs the user data in the network
+			{
+				// debug stuff
+				LogManager::getSingleton().logMessage(" > received user info:" + StringConverter::toString(header.source) + " (we are " + StringConverter::toString(myuid) + ")");
+				client_info_on_join *cinfo = (client_info_on_join*) buffer;
+				LogManager::getSingleton().logMessage(" * version : " + StringConverter::toString(cinfo->version));
+				LogManager::getSingleton().logMessage(" * nickname: " + String(cinfo->nickname));
+				LogManager::getSingleton().logMessage(" * auth    : " + StringConverter::toString(cinfo->authstatus));
+				LogManager::getSingleton().logMessage(" * slotnum : " + StringConverter::toString(cinfo->slotnum));
+			}
 			if(header.source == myuid)
 			{
 				// we got data about ourself!
 				memcpy(&userdata, buffer, sizeof(client_info_on_join));
-				mefl->netUserAttributesChanged(myuid);
+				CharacterFactory::getSingleton().netUserAttributesChanged(myuid, -1);
 			} else
 			{
 				client_info_on_join *cinfo = (client_info_on_join*) buffer;
@@ -545,7 +555,7 @@ void Network::receivethreadstart()
 						clients[i].slotnum = cinfo->slotnum;
 						strncpy(clients[i].user_name,cinfo->nickname, 20);
 						found=true;
-						mefl->netUserAttributesChanged(clients[i].user_id);
+						CharacterFactory::getSingleton().netUserAttributesChanged(header.source, -1);
 						break;
 					}
 				}
@@ -560,7 +570,7 @@ void Network::receivethreadstart()
 						clients[i].user_id = header.source;
 						clients[i].user_authlevel = cinfo->authstatus;
 						clients[i].slotnum = cinfo->slotnum;
-						mefl->netUserAttributesChanged(clients[i].user_id);
+						CharacterFactory::getSingleton().netUserAttributesChanged(header.source, -1);
 						strncpy(clients[i].user_name,cinfo->nickname, 20);
 						break;
 					}
