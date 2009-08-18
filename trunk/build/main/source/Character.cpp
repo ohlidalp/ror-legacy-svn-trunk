@@ -108,11 +108,11 @@ Character::Character(Collisions *c, Network *net, HeightFinder *h, Water *w, Map
 	
 	if(map)
 	{
-		MapEntity *e = map->createNamedMapEntity(myName, "person");
-		e->setState(0);
-		e->setVisibility(true);
-		e->setPosition(personode->getPosition());
-		e->setRotation(personode->getOrientation());
+		mapEnt = map->createNamedMapEntity(myName, "person");
+		mapEnt->setState(0);
+		mapEnt->setVisibility(true);
+		mapEnt->setPosition(personode->getPosition());
+		mapEnt->setRotation(personode->getOrientation());
 	}
 
 	if(net)
@@ -128,6 +128,22 @@ Character::Character(Collisions *c, Network *net, HeightFinder *h, Water *w, Map
 	updateCharacterColour();
 	updateNetLabel();
 
+}
+
+Character::~Character()
+{
+	setVisible(false);
+	if(netMT) delete netMT;
+	if(personode) personode->detachAllObjects();
+	if(map && mapEnt) map->deleteMapEntity(mapEnt);
+
+	// try to unload some materials
+	try
+	{
+		MaterialManager::getSingleton().unload("tracks/"+myName);
+	} catch(...)
+	{
+	}
 }
 
 void Character::updateCharacterColour()
@@ -150,6 +166,11 @@ void Character::updateCharacterColour()
 void Character::setRemote(bool value)
 {
 	remote = value;
+}
+
+void Character::setUID(int uid)
+{
+	this->source = uid;
 }
 
 void Character::updateNetLabel()

@@ -97,6 +97,7 @@ public:
 	void update();
 	void setDescription(Ogre::String s);
 	Ogre::String getDescription();
+	int getUID() { return this->uid; };
 
 protected:
 	Ogre::OverlayContainer *container;
@@ -123,7 +124,7 @@ public:
 	MapEntity *createNamedMapEntity(Ogre::String name, Ogre::String type);
 	MapEntity *createMapEntity(Ogre::String type);
 	MapEntity *getEntityByName(Ogre::String name);
-	void deleteMapEntity(MapEntity *);
+	void deleteMapEntity(MapEntity *ent);
 	bool getVisibility();
 	void setVisibility(bool value);
 	void setBackground(Ogre::String texName);

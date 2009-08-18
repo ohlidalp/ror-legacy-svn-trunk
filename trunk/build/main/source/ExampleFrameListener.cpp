@@ -2744,7 +2744,32 @@ bool ExampleFrameListener::updateEvents(float dt)
 
 	}
 
-	if (INPUTENGINE.getEventBoolValueBounce(EV_COMMON_SCREENSHOT, 0.5f))
+	bool taking_ss = false;
+	if (INPUTENGINE.getEventBoolValueBounce(EV_COMMON_SCREENSHOT_BIG, 0.5f))
+	{
+		int mNumScreenShots=0;
+		String path = SETTINGS.getSetting("User Path");
+		String tmp = SETTINGS.getSetting("User Path") + String("screenshot_big_") + StringConverter::toString(++mNumScreenShots) + String(".") + String(screenshotformat);
+		while(fileExists(const_cast<char*>(tmp.c_str())))
+			tmp = SETTINGS.getSetting("User Path") + String("screenshot_big_") + StringConverter::toString(++mNumScreenShots) + String(".") + String(screenshotformat);
+		
+		tmp = String("screenshot_big_") + StringConverter::toString(++mNumScreenShots)+ "_";
+
+		// hide flash messages
+		flashMessage(0);
+		mWindow->update();
+
+		hideGUI(false);
+
+		gridScreenshots(mWindow, mCamera, 3, path, tmp, "."+String(screenshotformat), true);
+
+		hideGUI(true);
+		
+		LogManager::getSingleton().logMessage("Wrote big screenshot : " + tmp);
+		taking_ss=true;
+	}
+
+	if (!taking_ss && INPUTENGINE.getEventBoolValueBounce(EV_COMMON_SCREENSHOT, 0.5f))
 	{
 		int mNumScreenShots=0;
 		String tmp = SETTINGS.getSetting("User Path") + String("screenshot_") + StringConverter::toString(++mNumScreenShots) + String(".") + String(screenshotformat);
@@ -3193,7 +3218,7 @@ bool ExampleFrameListener::updateEvents(float dt)
 							{
 								case AUTOMATIC: flashMessage(_L("Automatic shift")); break;
 								case SEMIAUTO: flashMessage(_L("Manual shift - Auto clutch")); break;
-								case MANUAL: flashMessage(_L("Fully Manual: sequencial shift")); break;
+								case MANUAL: flashMessage(_L("Fully Manual: sequential shift")); break;
 								case MANUAL_STICK: flashMessage(_L("Fully manual: stick shift")); break;
 								case MANUAL_RANGES: flashMessage(_L("Fully Manual: stick shift with ranges")); break;
 							}
@@ -4431,28 +4456,7 @@ bool ExampleFrameListener::updateEvents(float dt)
 	if(INPUTENGINE.getEventBoolValueBounce(EV_COMMON_HIDE_GUI) && !showcredits)
 	{
 		hidegui = !hidegui;
-		if(hidegui)
-		{
-			mouseOverlay->hide();
-			if (netmode && NETCHAT.getVisible())
-				NETCHAT.toggleVisible(this);
-
-			showDashboardOverlays(false,0);
-			showEditorOverlay(false);
-			TRUCKHUD.show(false);
-			if(bigMap) bigMap->setVisibility(false);
-		}
-		else
-		{
-			if (netmode && !NETCHAT.getVisible())
-				NETCHAT.toggleVisible(this);
-			if(current_truck != -1 && cameramode!=CAMERA_INT)
-			{
-				mouseOverlay->show();
-				showDashboardOverlays(true, trucks[current_truck]->driveable);
-				if(bigMap) bigMap->setVisibility(true);
-			}
-		}
+		hideGUI(hidegui);
 		dirty=true;
 	}
 
@@ -7746,3 +7750,161 @@ void ExampleFrameListener::initHDR()
 	hdrListener->notifyViewportSize(vp->getActualWidth(), vp->getActualHeight());
 	hdrListener->notifyCompositor(instance);
 }
+
+void ExampleFrameListener::hideGUI(bool visible)
+{
+	if(visible)
+	{
+		mouseOverlay->hide();
+		if (netmode && NETCHAT.getVisible())
+			NETCHAT.toggleVisible(this);
+
+		showDashboardOverlays(false,0);
+		showEditorOverlay(false);
+		TRUCKHUD.show(false);
+		if(bigMap) bigMap->setVisibility(false);
+	}
+	else
+	{
+		if (netmode && !NETCHAT.getVisible())
+			NETCHAT.toggleVisible(this);
+		if(current_truck != -1 && cameramode!=CAMERA_INT)
+		{
+			mouseOverlay->show();
+			showDashboardOverlays(true, trucks[current_truck]->driveable);
+			if(bigMap) bigMap->setVisibility(true);
+		}
+	}
+}
+
+// from http://www.ogre3d.org/wiki/index.php/High_resolution_screenshots
+void ExampleFrameListener::gridScreenshots(Ogre::RenderWindow* pRenderWindow, Ogre::Camera* pCamera, const int& pGridSize, const Ogre::String& path, const Ogre::String& pFileName, const Ogre::String& pFileExtention, const bool& pStitchGridImages)
+{
+  /* Parameters:
+   *  pRenderWindow:    Pointer to the render window.  This could be "mWindow" from the ExampleApplication,
+   *              the window automatically created obtained when calling
+   *              Ogre::Root::getSingletonPtr()->initialise(false) and retrieved by calling
+   *              "Ogre::Root::getSingletonPtr()->getAutoCreatedWindow()", or the manually created
+   *              window from calling "mRoot->createRenderWindow()".
+   *  pCamera:      Pointer to the camera "looking at" the scene of interest
+   *  pGridSize:      The magnification factor.  A 2 will create a 2x2 grid, doubling the size of the
+                screenshot.  A 3 will create a 3x3 grid, tripling the size of the screenshot.
+   *  pFileName:      The filename to generate, without an extention.  To generate "MyScreenshot.png" this
+   *              parameter would contain the value "MyScreenshot".
+   *  pFileExtention:    The extention of the screenshot file name, hence the type of graphics file to generate.
+   *              To generate "MyScreenshot.pnh" this parameter would contain ".png".
+   *  pStitchGridImages:  Determines whether the grid screenshots are (true) automatically stitched into a single
+   *              image (and discarded) or whether they should (false) remain in their unstitched
+   *              form.  In that case they are sequentially numbered from 0 to
+   *              pGridSize * pGridSize - 1 (if pGridSize is 3 then from 0 to 8).
+   *              
+  */
+  Ogre::String gridFilename;
+  Ogre::Matrix4 orgmat = pCamera->getProjectionMatrix();
+  
+  // hack: add path to resource
+  ResourceGroupManager::getSingleton().addResourceLocation(path, "FileSystem");
+
+  if(pGridSize <= 1)
+  {
+    // Simple case where the contents of the screen are taken directly
+    // Also used when an invalid value is passed within pGridSize (zero or negative grid size)
+    gridFilename = pFileName + pFileExtention;
+
+    pRenderWindow->writeContentsToFile(path + gridFilename);
+  }
+  else
+  {
+    // Generate a grid of screenshots
+    pCamera->setCustomProjectionMatrix(false); // reset projection matrix
+    Ogre::Matrix4 standard = pCamera->getProjectionMatrix();
+    double nearDist = pCamera->getNearClipDistance();
+    double nearWidth = (pCamera->getWorldSpaceCorners()[0] - pCamera->getWorldSpaceCorners()[1]).length();
+    double nearHeight = (pCamera->getWorldSpaceCorners()[1] - pCamera->getWorldSpaceCorners()[2]).length();
+    Ogre::Image sourceImage;
+    Ogre::uchar* stitchedImageData;
+
+    // Process each grid
+    for (int nbScreenshots = 0; nbScreenshots < pGridSize * pGridSize; nbScreenshots++) 
+    { 
+      // Use asymmetrical perspective projection. For more explanations check out:
+      // http://www.cs.kuleuven.ac.be/cwis/research/graphics/INFOTEC/viewing-in-3d/node8.html 
+      int y = nbScreenshots / pGridSize; 
+      int x = nbScreenshots - y * pGridSize; 
+      Ogre::Matrix4 shearing( 
+        1, 0,(x - (pGridSize - 1) * 0.5) * nearWidth / nearDist, 0, 
+        0, 1, -(y - (pGridSize - 1) * 0.5) * nearHeight / nearDist, 0, 
+        0, 0, 1, 0, 
+        0, 0, 0, 1); 
+      Ogre::Matrix4 scale( 
+        pGridSize, 0, 0, 0, 
+        0, pGridSize, 0, 0, 
+        0, 0, 1, 0, 
+        0, 0, 0, 1); 
+      pCamera->setCustomProjectionMatrix(true, standard * shearing * scale);
+      Ogre::Root::getSingletonPtr()->renderOneFrame();
+      gridFilename = pFileName + Ogre::StringConverter::toString(nbScreenshots) + pFileExtention;
+
+
+      // Screenshot of the current grid
+      pRenderWindow->writeContentsToFile(path + gridFilename);
+
+      if(pStitchGridImages)
+      {
+        // Automatically stitch the grid screenshots
+		if(!ResourceGroupManager::getSingleton().resourceExistsInAllGroups(gridFilename))
+		{
+			LogManager::getSingleton().logMessage("Unable to stich image. Image not found: "+gridFilename);
+			return ;
+		}
+
+		String group = ResourceGroupManager::getSingleton().findGroupContainingResource(gridFilename);
+
+        sourceImage.load(gridFilename, group);
+        int sourceWidth = (int) sourceImage.getWidth();
+        int sourceHeight = (int) sourceImage.getHeight();
+        Ogre::ColourValue colourValue;
+        int stitchedX, stitchedY, stitchedIndex;
+
+        // Allocate memory for the stitched image when processing the screenshot of the first grid
+        if(nbScreenshots == 0)
+          stitchedImageData = new Ogre::uchar[(sourceImage.getWidth() * pGridSize) * (sourceImage.getHeight() * pGridSize) * 3]; // 3 colors per pixel
+
+        // Copy each pixel within the grid screenshot to the proper position within the stitched image
+        for(int rawY = 0; rawY < sourceHeight; rawY++)
+        {
+          for(int rawX = 0; rawX < sourceWidth; rawX++)
+          {
+            colourValue = sourceImage.getColourAt(rawX, rawY, 0);
+            stitchedX = x * sourceWidth + rawX;
+            stitchedY = y * sourceHeight + rawY;
+            stitchedIndex = stitchedY * sourceWidth * pGridSize + stitchedX;
+            Ogre::PixelUtil::packColour(colourValue,
+                          Ogre::PF_R8G8B8,
+                          (void*) &stitchedImageData[stitchedIndex * 3]);
+          }
+        }
+        // The screenshot of the grid is no longer needed
+        remove(gridFilename.c_str());
+      }
+    } 
+    pCamera->setCustomProjectionMatrix(false); // reset projection matrix 
+
+    if(pStitchGridImages)
+    {
+      // Save the stitched image to a file
+      Ogre::Image targetImage;
+      targetImage.loadDynamicImage(stitchedImageData,
+                    sourceImage.getWidth() * pGridSize,
+                    sourceImage.getHeight() * pGridSize,
+                    1, // depth
+                    Ogre::PF_R8G8B8,
+                    false);
+      targetImage.save(path + pFileName + pFileExtention);
+      delete[] stitchedImageData;
+    }
+  }
+  
+  pCamera->setCustomProjectionMatrix(true, orgmat);
+}
+

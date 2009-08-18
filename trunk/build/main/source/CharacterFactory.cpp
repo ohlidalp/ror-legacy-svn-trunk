@@ -53,7 +53,7 @@ Character *CharacterFactory::createRemote(int sourceid, stream_register_t *reg, 
 {
 	LogManager::getSingleton().logMessage(" new character for " + StringConverter::toString(sourceid) + ":" + StringConverter::toString(reg->sid));
 	Character *ch = new Character(c, net, h, w, m, scm, sourceid, reg->sid, slotid);
-	streamables[-1][0] = ch;
+	streamables[sourceid][reg->sid] = ch;
 	return ch;
 }
 
@@ -63,6 +63,33 @@ void CharacterFactory::remove(Character *stream)
 
 void CharacterFactory::removeUser(int userid)
 {
+	std::map < int, std::map < unsigned int, Streamable *> >::iterator it1;
+	std::map < unsigned int, Streamable *>::iterator it2;
+
+	for(it1=streamables.begin(); it1!=streamables.end();it1++)
+	{
+		if(it1->first != userid) continue;
+
+		for(it2=it1->second.begin(); it2!=it1->second.end();it2++)
+		{
+			Character *c = dynamic_cast<Character*>(it2->second);
+			delete c;
+		}
+		break;
+	}
+}
+
+void CharacterFactory::localUserAttributesChanged(int newid)
+{
+	std::map < int, std::map < unsigned int, Streamable *> >::iterator it1;
+	std::map < unsigned int, Streamable *>::iterator it2;
+
+	if(streamables.find(-1) == streamables.end()) return;
+
+	Character *c = dynamic_cast<Character*>(streamables[-1][0]);
+	streamables[newid][0] = streamables[-1][0]; // add alias :)
+	c->setUID(newid);
+	c->updateNetLabel();
 }
 
 void CharacterFactory::netUserAttributesChanged(int source, int streamid)
