@@ -36,6 +36,7 @@ class Character;
 
 class CharacterFactory : public StreamableFactory
 {
+	friend class Network;
 public:
 	CharacterFactory(Collisions *c, Network *net, HeightFinder *h, Water *w, MapControl *m, Ogre::SceneManager *scm);
 	~CharacterFactory();
@@ -44,7 +45,6 @@ public:
 
 	Character *createLocal();
 	Character *createRemote(int sourceid, stream_register_t *reg, int slotid);
-	void netUserAttributesChanged(int source, int streamid);
 	
 	void remove(Character *stream);
 	void removeUser(int userid);
@@ -56,6 +56,10 @@ protected:
 	Water *w;
 	MapControl *m;
 	Ogre::SceneManager *scm;
+	
+	// functions used by friends
+	void netUserAttributesChanged(int source, int streamid);
+	void localUserAttributesChanged(int newid);
 };
 
 

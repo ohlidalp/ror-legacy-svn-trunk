@@ -540,7 +540,7 @@ void Network::receivethreadstart()
 			{
 				// we got data about ourself!
 				memcpy(&userdata, buffer, sizeof(client_info_on_join));
-				CharacterFactory::getSingleton().netUserAttributesChanged(myuid, -1);
+				CharacterFactory::getSingleton().localUserAttributesChanged(myuid);
 			} else
 			{
 				client_info_on_join *cinfo = (client_info_on_join*) buffer;

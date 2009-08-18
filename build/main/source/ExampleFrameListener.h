@@ -415,6 +415,8 @@ protected:
 	ManualObject *pickLine;
 	SceneNode *pickLineNode;
 	bool updateTruckMirrors(float dt);
+	void gridScreenshots(Ogre::RenderWindow* pRenderWindow, Ogre::Camera* pCamera, const int& pGridSize, const Ogre::String& path, const Ogre::String& pFileName, const Ogre::String& pFileExtention, const bool& pStitchGridImages);
+
 public:
 	// Constructor takes a RenderWindow because it uses that to determine input context
 	ExampleFrameListener(RenderWindow* win, Camera* cam, SceneManager* scm, Root* root);
@@ -429,6 +431,7 @@ public:
 	//bool processUnbufferedMouseInput(const FrameEvent& evt);
 	void moveCamera(float dt);
 	void showDebugOverlay(int mode);
+	void hideGUI(bool visible);
 #ifdef HAS_EDITOR
 	void showTruckEditorOverlay(bool show);
 #endif

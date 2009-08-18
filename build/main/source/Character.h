@@ -31,21 +31,19 @@ class Collisions;
 class HeightFinder;
 class MapControl;
 class Network;
+class MapEntity;
 
 class Character : public Streamable
 {
+	friend class CharacterFactory;
+	friend class Network;
 public:
 	Character(Collisions *c, Network *net, HeightFinder *h, Water *w, MapControl *m, Ogre::SceneManager *scm, int source=-1, unsigned int streamid=0, int slotid=0);
 	~Character();
 	
 	void setVisible(bool v);
 	bool getVisible();
-	
 
-	// these two function are here for chacters in MP :) (placeholders only)
-	void pushNetwork();
-	void PullNetwork();
-	
 	Ogre::Quaternion getOrientation();
 	Ogre::Vector3 getPosition();
 	void setPosition(Ogre::Vector3 pos);
@@ -83,6 +81,7 @@ protected:
 	bool remote;
 	int slotid;
 	Ogre::MovableText *netMT;
+	MapEntity *mapEnt;
 	
 	Ogre::SceneNode *personode;
 	Ogre::AnimationStateSet *persoanim;
@@ -108,6 +107,7 @@ protected:
 	void sendStreamSetup();
 	void sendStreamData();
 	void receiveStreamData(unsigned int &type, int &source, unsigned int &streamid, char *buffer, unsigned int &len);
+	void setUID(int uid); 
 };
 
 #endif

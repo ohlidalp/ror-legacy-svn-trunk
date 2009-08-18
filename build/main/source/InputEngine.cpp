@@ -728,8 +728,14 @@ eventInfo_t eventInfo[] = {
 	{
 		"COMMON_SCREENSHOT",
 		EV_COMMON_SCREENSHOT,
-		"Keyboard SYSRQ",
+		"Keyboard EXPL+SYSRQ",
 		_L("take a screenshot")
+	},
+	{
+		"COMMON_SCREENSHOT_BIG",
+		EV_COMMON_SCREENSHOT_BIG,
+		"Keyboard EXPL+CTRL+SYSRQ",
+		_L("take a big screenshot (3 times the screen size)")
 	},
 	{
 		"COMMON_SAVE_TERRAIN",
@@ -1373,7 +1379,7 @@ eventInfo_t eventInfo[] = {
 	{
 		"COMMON_NETCHATDISPLAY",
 		EV_COMMON_NETCHATDISPLAY,
-		"Keyboard EXPL+U",
+		"Keyboard EXPL+SHIFT+U",
 		_L("display or hide net chat")
 	},
 	{

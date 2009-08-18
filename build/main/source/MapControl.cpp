@@ -588,8 +588,19 @@ Ogre::String MapControl::getTypeByDriveable(int driveable)
 	return "unkown";
 }
 
-void MapControl::deleteMapEntity(MapEntity *)
+void MapControl::deleteMapEntity(MapEntity *ent)
 {
+	std::vector<MapEntity *>::iterator it;
+	for(it=mapEntities.begin(); it!= mapEntities.end(); it++)
+	{
+		if((*it)->getUID() == ent->getUID())
+		{
+			// found it, erase!
+			delete *it;
+			mapEntities.erase(it);
+			return;
+		}
+	}
 }
 
 bool MapControl::getVisibility()
