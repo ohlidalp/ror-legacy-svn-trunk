@@ -195,6 +195,9 @@ set(ror_src
 	
 	source/gui_menu.cpp
 	source/gui_menu.h
+
+	source/CharacterFactory.cpp
+	source/CharacterFactory.h
 )
 
 include_directories (OgreMain/include Dependencies/include)
