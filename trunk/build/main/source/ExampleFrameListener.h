@@ -36,7 +36,9 @@ along with Rigs of Rods.  If not, see <http://www.gnu.org/licenses/>.
 #include "mplatform_base.h"
 #endif
 
+#ifdef OPENSTEER
 #include "AITraffic.h"
+#endif //OPENSTEER 
 
 #include "OgreStringConverter.h"
 #include "OgreException.h"

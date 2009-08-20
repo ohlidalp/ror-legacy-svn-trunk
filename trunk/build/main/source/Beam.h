@@ -34,11 +34,13 @@ along with Rigs of Rods.  If not, see <http://www.gnu.org/licenses/>.
 #define strnlen(str,len) strlen(str)
 #endif
 
-
 using namespace Ogre;
 
 #define MAX_TRUCKS 64
 
+#ifdef OPENSTEER
+#include "AITraffic_Common.h"
+#endif
 
 #include <pthread.h>
 #include <string>
@@ -55,7 +57,6 @@ using namespace Ogre;
 #include "skin.h"
 #include "Differentials.h"
 #include "approxmath.h"
-#include "AITraffic_Common.h"
 #include "PositionStorage.h"
 #include "Streamable.h"
 
