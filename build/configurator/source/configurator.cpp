@@ -111,17 +111,6 @@ std::vector<wxLanguageInfo*> avLanguages;
 std::map<std::string, std::string> settings;
 
 
-bool fileExists(char* filename)
-{
-	FILE* f = fopen(filename, "rb");
-	if(f != NULL) {
-		fclose(f);
-		return true;
-	}
-	return false;
-}
-
-
 inline wxString conv(const char *s)
 {
 	return wxString(s, wxConvUTF8);

@@ -55,16 +55,6 @@ void RigsOfRods::go(void)
 	//destroyScene(); we don't!
 }
 
-bool RigsOfRods::fileExists(char* filename)
-{
-	FILE* f = fopen(filename, "rb");
-	if(f != NULL) {
-		fclose(f);
-		return true;
-	}
-	return false;
-}
-
 void RigsOfRods::loadMainResource(String name, String group)
 {
 	String dirsep="/";

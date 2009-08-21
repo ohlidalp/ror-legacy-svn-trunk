@@ -49,7 +49,7 @@ private:
 	std::vector<String> framestepCallbacks;
 	std::map<String, int> beamMap;
 	int BeamExists(char *instance_name);
-	bool fileExists(char *filename);
+	bool fileExists(const char *filename);
 
 public:
 	LuaSystem(ExampleFrameListener *efl);

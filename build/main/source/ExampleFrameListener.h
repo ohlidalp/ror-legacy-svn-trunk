@@ -624,7 +624,7 @@ protected:
 #endif //OPENSTEER
 
 	void loadTerrain(Ogre::String terrainfile);
-	static bool fileExists(char* filename);
+	static bool fileExists(const char* filename);
 	void processConsoleInput();
 
 	RenderWindow* renderwin;

@@ -1722,16 +1722,6 @@ OIS::MouseState InputEngine::getMouseState()
 	return m;
 }
 
-bool InputEngine::fileExists(char* filename)
-{
-	FILE* f = fopen(filename, "rb");
-	if(f != NULL) {
-		fclose(f);
-		return true;
-	}
-	return false;
-}
-
 Ogre::String InputEngine::getKeyNameForKeyCode(OIS::KeyCode keycode)
 {
 	if(keycode == KC_LSHIFT || keycode == KC_RSHIFT)

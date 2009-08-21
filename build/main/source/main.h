@@ -100,9 +100,6 @@ protected:
 	SpinControlOverlayElementFactory* spinfact;
 #endif
 
-	//simple file utilities
-	bool fileExists(char* filename);
-
 	void loadMainResource(String name, String group);
 
 	//creates Ogre Root

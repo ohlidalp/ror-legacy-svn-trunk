@@ -507,7 +507,6 @@ protected:
 	Ogre::UTFString keyInput;
 	bool recordChat;
 	bool inputsChanged;
-	bool fileExists(char* filename);
 	int grabMode;
 
 	event_trigger_t newEvent();
