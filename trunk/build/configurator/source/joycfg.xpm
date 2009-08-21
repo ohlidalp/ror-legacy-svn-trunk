@@ -1,5 +1,5 @@
 /* XPM */
-static char * joycfg_xpm[] = {
+static const char * joycfg_xpm[] = {
 "200 200 551 2",
 "  	c #FFFFFF",
 ". 	c #FBFBFB",
