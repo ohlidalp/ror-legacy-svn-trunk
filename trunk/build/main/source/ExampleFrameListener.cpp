@@ -2747,7 +2747,7 @@ bool ExampleFrameListener::updateEvents(float dt)
 		int mNumScreenShots=0;
 		String path = SETTINGS.getSetting("User Path");
 		String tmp = SETTINGS.getSetting("User Path") + String("screenshot_big_") + StringConverter::toString(++mNumScreenShots) + String(".") + String(screenshotformat);
-		while(fileExists(const_cast<char*>(tmp.c_str())))
+		while(fileExists(tmp.c_str()))
 			tmp = SETTINGS.getSetting("User Path") + String("screenshot_big_") + StringConverter::toString(++mNumScreenShots) + String(".") + String(screenshotformat);
 		
 		tmp = String("screenshot_big_") + StringConverter::toString(++mNumScreenShots)+ "_";
@@ -2770,7 +2770,7 @@ bool ExampleFrameListener::updateEvents(float dt)
 	{
 		int mNumScreenShots=0;
 		String tmp = SETTINGS.getSetting("User Path") + String("screenshot_") + StringConverter::toString(++mNumScreenShots) + String(".") + String(screenshotformat);
-		while(fileExists(const_cast<char*>(tmp.c_str())))
+		while(fileExists(tmp.c_str()))
 			tmp = SETTINGS.getSetting("User Path") + String("screenshot_") + StringConverter::toString(++mNumScreenShots) + String(".") + String(screenshotformat);
 
 		LogManager::getSingleton().logMessage("Wrote screenshot : " + tmp);
@@ -7608,7 +7608,7 @@ void ExampleFrameListener::showLoad(int type, char* instance, char* box)
 	UILOADER.show(type);
 }
 
-bool ExampleFrameListener::fileExists(char* filename)
+bool ExampleFrameListener::fileExists(const char* filename)
 {
 	FILE* f = fopen(filename, "rb");
 	if(f != NULL) {

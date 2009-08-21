@@ -118,7 +118,7 @@ LuaSystem::LuaSystem(ExampleFrameListener *efl)
 		lua_run(L, "base.lua");
 }
 
-bool LuaSystem::fileExists(char *filename)
+bool LuaSystem::fileExists(const char *filename)
 {
 	try
 	{
