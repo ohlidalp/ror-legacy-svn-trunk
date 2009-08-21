@@ -6894,8 +6894,9 @@ void Beam::calcForcesEuler(int doUpdate, Real dt, int step, int maxstep, Beam** 
 	float torques[MAX_WHEELS]; // not used
 	float newspeeds[MAX_WHEELS];
 
-	float intertorque[MAX_WHEELS] = {0.0f};
-	if( free_axle == 0)
+	float intertorque[MAX_WHEELS] = {0.0f}; //bad initialization
+	//old-style viscous code
+	if( free_axle == 0) 
 	{
 		//first, evaluate torque from inter-differential locking
 		for (i=0; i<proped_wheels/2-1; i++)
@@ -6909,11 +6910,12 @@ void Beam::calcForcesEuler(int doUpdate, Real dt, int step, int maxstep, Beam** 
 			intertorque[i*2+3]+=torque*0.5f;
 		}
 	}
+	// new-style Axles
 	// loop through all axles for interaxle torque, this is the torsion to keep
 	// the axles aligned with each other as if they connected by a shaft
 	for (i = 1; i < free_axle; ++i)
 	{
-		Ogre::Real axle_torques[2] = {0.0f};
+		Ogre::Real axle_torques[2] = {0.0f, 0.0f};
 		differential_data_t diff_data =
 		{
 			{
@@ -6943,10 +6945,10 @@ void Beam::calcForcesEuler(int doUpdate, Real dt, int step, int maxstep, Beam** 
 		intertorque[axles[i].wheel_2] = diff_data.out_torque[1];
 	}
 
-	// loop through all the wheels
+	// loop through all the wheels (new style again)
 	for (i = 0; i < free_axle; ++i)
 	{
-		Ogre::Real axle_torques[2] = {0.0f};
+		Ogre::Real axle_torques[2] = {0.0f, 0.0f};
 		wheel_t *axle_wheels[2] = { &wheels[axles[i].wheel_1], &wheels[axles[i].wheel_2] };
 
 		differential_data_t diff_data =
@@ -6974,7 +6976,9 @@ void Beam::calcForcesEuler(int doUpdate, Real dt, int step, int maxstep, Beam** 
 		Real speedacc=0.0;
 
 		//total torque estimation
-		Real total_torque = (( wheels[i].propulsed > 0 && free_axle == 0) ? engine_torque : intertorque[i]);
+		Real total_torque = 0.0;
+		if (wheels[i].propulsed > 0)
+			total_torque=((free_axle == 0) ? engine_torque : intertorque[i]);
 
 		//braking
 		if (parkingbrake) brake=brakeforce*2.0;
@@ -7004,6 +7008,7 @@ void Beam::calcForcesEuler(int doUpdate, Real dt, int step, int maxstep, Beam** 
 		}
 		//friction 	
 		total_torque -= wheels[i].speed*1.0; 	
+		// old-style
 		if ( free_axle == 0 && wheels[i].propulsed > 0) 	
 		{ 	
 			//differential locking 	
