@@ -1,5 +1,5 @@
 /* XPM */
-static char * keyboardcfg_xpm[] = {
+static const char * keyboardcfg_xpm[] = {
 "200 200 189 2",
 "  	g #FFFFFF",
 ". 	g #F6F6F6",

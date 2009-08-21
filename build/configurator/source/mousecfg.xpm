@@ -1,5 +1,5 @@
 /* XPM */
-static char * mousecfg_xpm[] = {
+static const char * mousecfg_xpm[] = {
 "200 200 464 2",
 "  	c #FFFFFF",
 ". 	c #F7F7F7",
