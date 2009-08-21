@@ -165,7 +165,13 @@ inline size_t getOISHandle(wxWindow *window)
 			"can get its XID. Showing the window to avoid crash!\n");
 		window->Show();
 	}
+#if GTK_CHECK_VERSION(2,14,0)
+	// GTK 2.14 includes gtk_widget_get_window()
 	hWnd = (size_t)GDK_WINDOW_XID(gtk_widget_get_window(window->GetHandle()));
+#else
+	// but we can't use that if GTK is too old...
+	hWnd = (size_t)GDK_WINDOW_XID(window->GetHandle()->window);
+#endif
 #else
 	// TODO: support other WX configs ?
 #error "WX configurations other than GTK not supported yet!"
@@ -816,7 +822,7 @@ public:
 					}
 				}
 			}
-				
+
 			if(!cd) str = conv(_("(Please move an Axis)\n"));
 			if(selectedJoystick>=0 && selectedAxis >= 0)
 			{
@@ -873,11 +879,11 @@ public:
 
 				std::vector<OIS::Slider>::iterator it;
 				int counter = 0;
-				
+
 				for(int s=0;s<slidercount;s++)
 				{
 					float value = ((t->eventtype == ET_JoystickSliderX)?j->mSliders[s].abX:j->mSliders[s].abY);
-					
+
 					value = 100*(value/(float)OIS::JoyStick::MAX_AXIS);
 					if(value < joySliderMinState[i][counter]) joySliderMinState[i][counter] = value;
 					if(value > joySliderMaxState[i][counter]) joySliderMaxState[i][counter] = value;
@@ -1907,7 +1913,7 @@ MyDialog::MyDialog(const wxString& title, MyApp *_app) : wxDialog(NULL, wxID_ANY
 
 	autodl=new wxCheckBox(advancedPanel, -1, _("Enable Auto-Downloader"), wxPoint(320, 230));
 	autodl->SetToolTip(_("This enables the automatic downloading of missing mods when using Multiplayer"));
-	
+
 	posstor=new wxCheckBox(advancedPanel, -1, _("Enable Position Storage"), wxPoint(320, 245));
 	posstor->SetToolTip(_("Can be used to quick save and load positions of trucks"));
 
@@ -1964,6 +1970,7 @@ MyDialog::MyDialog(const wxString& title, MyApp *_app) : wxDialog(NULL, wxID_ANY
 		const char *pluginsfile="plugins.cfg";
 #endif
 
+    printf(">> If it crashes after here, check your plugins.cfg and remove the DirectX entry if under linux!\n");
 	ogreRoot = new Ogre::Root(Ogre::String(progdirPrefix.ToUTF8().data())+pluginsfile,
 									Ogre::String(confdirPrefix.ToUTF8().data())+"ogre.cfg",
 									Ogre::String(logsdirPrefix.ToUTF8().data())+"RoR.log");
@@ -2035,10 +2042,10 @@ void MyDialog::loadInputControls()
 		for(std::vector<event_trigger_t>::iterator it2 = it->second.begin(); it2 != it->second.end(); it2++, controlItemCounter++)
 		{
 			const event_trigger_t evt = *it2;
-			
+
 			if(evt.eventtype == ET_NONE)
 				continue;
-			
+
 			if(strcmp(evt.group, curGroup))
 				strcpy(curGroup, evt.group);
 
@@ -2843,7 +2850,7 @@ void MyDialog::OnMenuJoystickOptionsClick(wxCommandEvent& ev)
 			t->joystickAxisRegion = -1;
 			break;
 		}
-	
+
 		// linearity settings below
 	case 50: t->joystickAxisLinearity = 1.3f; break;
 	case 51: t->joystickAxisLinearity = 1.25f; break;
@@ -2965,7 +2972,7 @@ void MyDialog::OnButSaveKeymap(wxCommandEvent& event)
 	choices[0] = wxT("All");
 	choices[1] = wxT("Keyboard");
 	choices[2] = wxT("Mouse");
-	
+
 	int joyNums = INPUTENGINE.getNumJoysticks();
 	if(joyNums>0)
 	{
@@ -3076,7 +3083,7 @@ void MyDialog::OnButUpdateRoR(wxCommandEvent& event)
 	int buffSize = (int)strlen(path) + 1;
 	LPWSTR wpath = new wchar_t[buffSize];
 	MultiByteToWideChar(CP_ACP, 0, path, buffSize, wpath, buffSize);
-	
+
 	getcwd(path, 2048);
 	buffSize = (int)strlen(path) + 1;
 	LPWSTR cwpath = new wchar_t[buffSize];
