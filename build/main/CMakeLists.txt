@@ -6,6 +6,11 @@ set(ror_src
 	source/airbrake.h
 	source/Airfoil.cpp
 	source/Airfoil.h
+	
+	source/AITraffic_Common.h
+	source/AITraffic_Common.cpp
+	source/AITraffic.h
+	source/AITraffic.cpp
 
 	source/approxmath.h
 	source/autopilot.cpp
