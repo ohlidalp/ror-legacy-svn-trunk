@@ -41,12 +41,26 @@ SoundManager::SoundManager()
 
 	if (SETTINGS.getSetting("3D Sound renderer") == "No sound") return;
 
-	device=alcOpenDevice("");
-	if (!device)
+	//we loop alcOpenDevice() because there is a potential race condition with the asynchronous DSound enumeration callback
+	for (int i=0; i<100; i++)
 	{
-		ALint error;
-		error=alGetError();
-		LogManager::getSingleton().logMessage("Could not create OpenAL device, error code: "+StringConverter::toString(error));
+		device=alcOpenDevice("");
+		if (device) break; //all right we got it
+		else
+		{
+			ALint error;
+			error=alGetError();
+			if (error!=ALC_INVALID_VALUE)
+			{
+				//this is unexpected error
+				LogManager::getSingleton().logMessage("Could not create OpenAL device, error code: "+StringConverter::toString(error));
+				return;
+			} //else just loop
+		}
+	}
+	if (!device) //we looped and we got nothing
+	{
+		LogManager::getSingleton().logMessage("Could not create OpenAL device after many tries.");
 		return;
 	}
 	context=alcCreateContext(device, NULL);
