@@ -1,5 +1,5 @@
 /* XPM */
-static char * licence_xpm[] = {
+static const char * licence_xpm[] = {
 "120 360 10890 3",
 "   	c #A9E5FF",
 ".  	c #A8E4FE",

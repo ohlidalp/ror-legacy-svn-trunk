@@ -1,5 +1,5 @@
 /* XPM */
-static char * finished_xpm[] = {
+static const char * finished_xpm[] = {
 "120 360 11918 3",
 "   	c #8C7168",
 ".  	c #8F726A",

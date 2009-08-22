@@ -1,5 +1,5 @@
 /* XPM */
-static char * extrapack_xpm[] = {
+static const char * extrapack_xpm[] = {
 "50 50 1609 2",
 "  	c #A6E1FF",
 ". 	c #A8E4FF",
