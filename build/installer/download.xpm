@@ -1,5 +1,5 @@
 /* XPM */
-static char * download_xpm[] = {
+static const char * download_xpm[] = {
 "120 360 17649 3",
 "   	c #ECDBC1",
 ".  	c #EFD9C2",

@@ -1,5 +1,5 @@
 /* XPM */
-static char * mainpack_xpm[] = {
+static const char * mainpack_xpm[] = {
 "50 50 1616 2",
 "  	c #EDDBC1",
 ". 	c #EFDBC1",

@@ -1,5 +1,5 @@
 /* XPM */
-static char * welcome_xpm[] = {
+static const char * welcome_xpm[] = {
 "120 360 12252 3",
 "   	c #B8EDFF",
 ".  	c #BAEDFF",

@@ -1,5 +1,5 @@
 /* XPM */
-static char * streams_xpm[] = {
+static const char * streams_xpm[] = {
 "120 360 6252 2",
 "  	c #90CAF8",
 ". 	c #8FC9F7",
