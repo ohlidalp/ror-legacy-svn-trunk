@@ -19,7 +19,10 @@ along with Rigs of Rods.  If not, see <http://www.gnu.org/licenses/>.
 */
 #include "ConfigManager.h"
 
-#include "winsock2.h"
+#ifdef WIN32
+# include "winsock2.h"
+#endif //WIN32
+
 #include "boost/filesystem.hpp"
 #include "boost/asio.hpp"
 

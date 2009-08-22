@@ -75,9 +75,9 @@ option(ROR_USE_OPTIMIZATIONS_WINDOWS "optimize build, gives more FPS, but needs 
 #option(ROR_BUILD_ANGELSCRIPT "build and use the new scripting engine" FALSE)
 set(ROR_BUILD_ANGELSCRIPT TRUE)
 option(ROR_BUILD_ANGELSCRIPT_COMPILER "build the AS compiler tool." FALSE)
-option(WSYNC_BUILD_WSYNC "builds the wsync tool" FALSE)
+option(WSYNC_BUILD_WSYNC "builds the wsync tool" TRUE)
 #set(WSYNC_BUILD_WSYNC FALSE)
-set(WSYNC_BUILD_INSTALLER FALSE)
+option(WSYNC_BUILD_INSTALLER "builds the wsync-installer tool" TRUE)
 #option(ROR_BUILD_LUASCRIPT "adds the LUA Scripting engine" TRUE)
 set(ROR_BUILD_LUASCRIPT TRUE)
 
@@ -115,10 +115,3 @@ ENDIF(WSYNC_BUILD_WSYNC)
 IF(WSYNC_BUILD_INSTALLER)
   add_subdirectory(installer)
 ENDIF(WSYNC_BUILD_INSTALLER)
-
-message(STATUS "==== RoR Configuration =======")
-message(STATUS " * HYDRAX water:          ${ROR_BUILD_HYDRAX}")
-message(STATUS " * paged geometry:        ${ROR_BUILD_PAGED}")
-message(STATUS " * Profiling (Beamstats): ${ROR_BUILD_BEAMSTATS}")
-message(STATUS "==============================")
-

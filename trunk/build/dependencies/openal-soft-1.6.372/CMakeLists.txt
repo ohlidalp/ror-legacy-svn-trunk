@@ -388,10 +388,10 @@ IF(EXAMPLES)
 
 ENDIF()
 
-MESSAGE(STATUS "")
-MESSAGE(STATUS "Building OpenAL with support for the following backends:")
-MESSAGE(STATUS "    ${BACKENDS}")
-MESSAGE(STATUS "")
+#MESSAGE(STATUS "")
+#MESSAGE(STATUS "Building OpenAL with support for the following backends:")
+#MESSAGE(STATUS "    ${BACKENDS}")
+#MESSAGE(STATUS "")
 
 IF(WIN32 OR XCOMPILEWIN32)
     IF(NOT HAVE_DSOUND)
