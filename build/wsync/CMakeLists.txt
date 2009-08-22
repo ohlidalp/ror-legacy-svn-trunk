@@ -1,5 +1,6 @@
 project(WSync)
 
+
 cmake_minimum_required(VERSION 2.5)
 include_directories (include)
 
@@ -10,7 +11,7 @@ IF(WIN32)
   link_directories(${WSYNC_BOOST_DIR}/lib)
 ELSEIF(UNIX)
   find_package(Boost REQUIRED COMPONENTS filesystem iostreams)
-  add_definitions("-DNWIN32")
+  add_definitions("")
   link_directories(${Boost_LIBRARY_DIRS})
   include_directories (${Boost_INCLUDE_DIR})
 ELSEIF(APPLE)
@@ -27,6 +28,9 @@ IF(WIN32)
   SET_TARGET_PROPERTIES(wsync PROPERTIES LINK_FLAGS /MANIFESTUAC:"level='highestAvailable'")
 
 ELSEIF(UNIX)
+if(COMMAND cmake_policy)
+  cmake_policy(SET CMP0003 NEW)
+endif(COMMAND cmake_policy)
   add_executable(wsync source/main)
 ELSEIF(APPLE)
 ENDIF(WIN32)
