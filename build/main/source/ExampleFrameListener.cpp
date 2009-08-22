@@ -527,7 +527,7 @@ void ExampleFrameListener::updateGUI(float dt)
 			OverlayManager::getSingleton().getOverlayElement("tracks/EditorObject")->setCaption(type);
 		}
 		int truck_getgear = trucks[current_truck]->engine->getGear();
-		
+
 		if (truck_getgear>0)
 		{
 			int numgears = trucks[current_truck]->engine->getNumGears();
@@ -951,7 +951,7 @@ ExampleFrameListener::ExampleFrameListener(RenderWindow* win, Camera* cam, Scene
 	objectCounter=0;
 	hdrListener=0;
 	eflsingleton=this;
-	
+
 	if(SETTINGS.getSetting("Skidmarks") == "Yes")
 		new SkidmarkManager();
 
@@ -1911,7 +1911,7 @@ void ExampleFrameListener::setupBenchmark()
 	if(benchmark == "simple")
 	{
 		benchmarking=true;
-		UILOADER.setProgress(UI_PROGRESSBAR_HIDE);		
+		UILOADER.setProgress(UI_PROGRESSBAR_HIDE);
 	} else
 	{
 		// unkown benchmark
@@ -2226,7 +2226,7 @@ void ExampleFrameListener::loadObject(char* name, float px, float py, float pz, 
 
 	String meshGroup = ResourceGroupManager::getSingleton().findGroupContainingResource(mesh);
 	MeshPtr mainMesh = MeshManager::getSingleton().load(String(mesh), meshGroup);
-	
+
 	//collision box(es)
 	bool virt=false;
 	bool rotating=false;
@@ -2278,7 +2278,7 @@ void ExampleFrameListener::loadObject(char* name, float px, float py, float pz, 
 				int res = sscanf(ptline, "%f, %s",&distance, tmp);
 				if(!strcmp("generate", tmp))
 				{
-					dists.push_back(distance);			
+					dists.push_back(distance);
 					generateLod=true;
 					continue;
 				}
@@ -2703,7 +2703,7 @@ bool ExampleFrameListener::updateEvents(float dt)
 			chatting=true;
 		}
 	}
-	
+
 	if(INPUTENGINE.getEventBoolValueBounce(EV_COMMON_SHOW_MENU))
 	{
 		GUI_MainMenu::getSingleton().setVisible(!GUI_MainMenu::getSingleton().getVisible());
@@ -2717,7 +2717,7 @@ bool ExampleFrameListener::updateEvents(float dt)
 
 /* -- disabled for now ... why we should check for this if it does not call anything?
    -- enable this again when truckToolGUI is available again
-   
+
 	if (INPUTENGINE.getEventBoolValueBounce(EV_COMMON_SHOWTRUCKTOOL, 0.5f) && current_truck != -1)
 	{
 		//if(truckToolGUI)
@@ -2749,7 +2749,7 @@ bool ExampleFrameListener::updateEvents(float dt)
 		String tmp = SETTINGS.getSetting("User Path") + String("screenshot_big_") + StringConverter::toString(++mNumScreenShots) + String(".") + String(screenshotformat);
 		while(fileExists(tmp.c_str()))
 			tmp = SETTINGS.getSetting("User Path") + String("screenshot_big_") + StringConverter::toString(++mNumScreenShots) + String(".") + String(screenshotformat);
-		
+
 		tmp = String("screenshot_big_") + StringConverter::toString(++mNumScreenShots)+ "_";
 
 		// hide flash messages
@@ -2761,7 +2761,7 @@ bool ExampleFrameListener::updateEvents(float dt)
 		gridScreenshots(mWindow, mCamera, 3, path, tmp, "."+String(screenshotformat), true);
 
 		hideGUI(true);
-		
+
 		LogManager::getSingleton().logMessage("Wrote big screenshot : " + tmp);
 		taking_ss=true;
 	}
@@ -2803,7 +2803,7 @@ bool ExampleFrameListener::updateEvents(float dt)
 			flashMessage("Position saved under slot " + StringConverter::toString(slot+1), 3);
 		else if(slot != -1 && res)
 			flashMessage("Error while saving position saved under slot " + StringConverter::toString(slot+1)+" : "+StringConverter::toString(res), 3);
-		
+
 		if(res == -10)
 		{
 			if (INPUTENGINE.getEventBoolValueBounce(EV_TRUCK_LOAD_POS1, 0.5f)) { slot=0; res = trucks[current_truck]->loadPosition(slot); };
@@ -3037,7 +3037,7 @@ bool ExampleFrameListener::updateEvents(float dt)
 						else
 							road=new Road(mSceneMgr, trucks[current_truck]->nodes[trucks[current_truck]->editorId].AbsPosition);
 					}
-					
+
 					//editor stuff
 					if (INPUTENGINE.getEventBoolValueBounce(EV_TERRAINEDITOR_TOGGLEOBJECT) && trucks[current_truck]->editorId>=0 && !trucks[current_truck]->replaymode)
 					{
@@ -3127,7 +3127,7 @@ bool ExampleFrameListener::updateEvents(float dt)
 
 										loadObject(road->curtype, road->rpos.x, road->rpos.y, road->rpos.z, road->rrot.x, road->rrot.y, road->rrot.z, 0, "generic");
 									}
-						
+
 								if (editor)
 									{
 										if (!editorfd)
@@ -3136,7 +3136,7 @@ bool ExampleFrameListener::updateEvents(float dt)
 												editorfd = fopen(editorfn.c_str(), "a");
 												fprintf(editorfd, " ==== new session\n");
 											}
-							
+
 										fprintf(editorfd, "%f, %f, %f, %f, %f, %f, %s\n", editor->ppos.x, editor->ppos.y, editor->ppos.z, 0.0, editor->pturn, editor->ppitch, editor->curtype);
 										LogManager::getSingleton().logMessage(StringConverter::toString(editor->ppos.x)+", "+
 										StringConverter::toString(editor->ppos.y)+", "+
@@ -3169,7 +3169,7 @@ bool ExampleFrameListener::updateEvents(float dt)
 						{
 							trucks[current_truck]->replaypos-=10;
 						}
-					} 
+					}
 					else	// this else part is called when we are NOT in replaymode
 					{
 						// steering
@@ -3185,7 +3185,7 @@ bool ExampleFrameListener::updateEvents(float dt)
 						//accelerate
 						float accval = INPUTENGINE.getEventValue(EV_TRUCK_ACCELERATE);
 						if(trucks[current_truck]->engine) trucks[current_truck]->engine->autoSetAcc(accval);
-					
+
 						//brake
 						if (!trucks[current_truck]->parkingbrake)
 							{
@@ -3204,13 +3204,13 @@ bool ExampleFrameListener::updateEvents(float dt)
 								if (INPUTENGINE.getEventBoolValueBounce(EV_TRUCK_AUTOSHIFT_UP)) 	trucks[current_truck]->engine->autoShiftUp();
 								if (INPUTENGINE.getEventBoolValueBounce(EV_TRUCK_AUTOSHIFT_DOWN))	trucks[current_truck]->engine->autoShiftDown();
 								if (INPUTENGINE.getEventBoolValueBounce(EV_TRUCK_TOGGLE_CONTACT))	trucks[current_truck]->engine->toggleContact();
-						
+
 								if (INPUTENGINE.getEventBoolValue(EV_TRUCK_STARTER) && trucks[current_truck]->engine->contact && !trucks[current_truck]->replaymode)
 									{
 										//starter
 										trucks[current_truck]->engine->setstarter(1);
 										ssm->trigStart(current_truck, SS_TRIG_STARTER);
-									} 
+									}
 								else
 									{
 										trucks[current_truck]->engine->setstarter(0);
@@ -3230,7 +3230,7 @@ bool ExampleFrameListener::updateEvents(float dt)
 												case MANUAL_RANGES: flashMessage(_L("Fully Manual: stick shift with ranges")); break;
 											}
 									}
-					
+
 								//joy clutch
 								float cval = INPUTENGINE.getEventValue(EV_TRUCK_MANUAL_CLUTCH);
 								if(trucks[current_truck]->engine) trucks[current_truck]->engine->setManualClutch(cval);
@@ -3261,26 +3261,26 @@ bool ExampleFrameListener::updateEvents(float dt)
 										if (gearoffset<0) gearoffset = 0;
 
 										// one can select range only if in natural
-										if(curgear == 0) 
+										if(curgear == 0)
 											{
 												gear_changed = true;
 												//  maybe this should not be here, but should experiment
 												if (shiftmode==MANUAL_RANGES)
 													{
-														if		 (INPUTENGINE.getEventBoolValueBounce(EV_TRUCK_SHIFT_LOWRANGE))										
-															{ 
-																trucks[current_truck]->engine->setGearRange(0); 
-																flashMessage(_L("Low range selected")); 
+														if		 (INPUTENGINE.getEventBoolValueBounce(EV_TRUCK_SHIFT_LOWRANGE))
+															{
+																trucks[current_truck]->engine->setGearRange(0);
+																flashMessage(_L("Low range selected"));
 															}
-														else if  (INPUTENGINE.getEventBoolValueBounce(EV_TRUCK_SHIFT_MIDRANGE)  && trucks[current_truck]->engine->getNumGearsRanges()>1) 
-															{ 
-																trucks[current_truck]->engine->setGearRange(1); 
-																flashMessage(_L("Mid range selected")); 
+														else if  (INPUTENGINE.getEventBoolValueBounce(EV_TRUCK_SHIFT_MIDRANGE)  && trucks[current_truck]->engine->getNumGearsRanges()>1)
+															{
+																trucks[current_truck]->engine->setGearRange(1);
+																flashMessage(_L("Mid range selected"));
 															}
-														else if  (INPUTENGINE.getEventBoolValueBounce(EV_TRUCK_SHIFT_HIGHRANGE) && trucks[current_truck]->engine->getNumGearsRanges()>2)	
-															{ 
-																trucks[current_truck]->engine->setGearRange(2); 
-																flashMessage(_L("High range selected")); 
+														else if  (INPUTENGINE.getEventBoolValueBounce(EV_TRUCK_SHIFT_HIGHRANGE) && trucks[current_truck]->engine->getNumGearsRanges()>2)
+															{
+																trucks[current_truck]->engine->setGearRange(2);
+																flashMessage(_L("High range selected"));
 															}
 													}
 											}
@@ -3294,10 +3294,10 @@ bool ExampleFrameListener::updateEvents(float dt)
 												if (shiftmode==MANUAL)	gear_changed = !INPUTENGINE.getEventBoolValue(EV_TRUCK_SHIFT_GEAR1 + curgear -1);
 												else					gear_changed = !INPUTENGINE.getEventBoolValue(EV_TRUCK_SHIFT_GEAR1 + gearoffset-1); // range mode
 											}
-								
+
 										if (gear_changed)
 											{
-												if      (INPUTENGINE.getEventBoolValue(EV_TRUCK_SHIFT_GEAR_REVERSE)) 
+												if      (INPUTENGINE.getEventBoolValue(EV_TRUCK_SHIFT_GEAR_REVERSE))
 													{
 														trucks[current_truck]->engine->shiftTo(-1);
 														found = true;
@@ -3313,8 +3313,8 @@ bool ExampleFrameListener::updateEvents(float dt)
 															{
 																for (int i=1;i<19 && !found;i++)
 																	{
-																		if (INPUTENGINE.getEventBoolValue(EV_TRUCK_SHIFT_GEAR1 +i - 1))  
-																			{	
+																		if (INPUTENGINE.getEventBoolValue(EV_TRUCK_SHIFT_GEAR1 +i - 1))
+																			{
 																				trucks[current_truck]->engine->shiftTo(i);
 																				found = true;
 																			}
@@ -3324,8 +3324,8 @@ bool ExampleFrameListener::updateEvents(float dt)
 															{
 																for (int i=1;i<7 && !found;i++)
 																	{
-																		if (INPUTENGINE.getEventBoolValue(EV_TRUCK_SHIFT_GEAR1 +i - 1))  
-																			{	
+																		if (INPUTENGINE.getEventBoolValue(EV_TRUCK_SHIFT_GEAR1 +i - 1))
+																			{
 																				trucks[current_truck]->engine->shiftTo(i+curgearrange*6);
 																				found = true;
 																			}
@@ -4231,7 +4231,7 @@ bool ExampleFrameListener::updateEvents(float dt)
 				}
 			}
 		}
-		if (INPUTENGINE.getEventBoolValueBounce(EV_COMMON_RESCUE_TRUCK, 0.5f) && !netmode)
+		if (INPUTENGINE.getEventBoolValueBounce(EV_COMMON_RESCUE_TRUCK, 0.5f) && !netmode && trucks[current_truck]->driveable != AIRPLANE)
 		{
 			//rescue!
 			//if (current_truck!=-1) setCurrentTruck(-1);
@@ -4912,7 +4912,7 @@ void ExampleFrameListener::loadTerrain(String terrainfile)
 	float farclip = 1000;
 	terrainxsize=1000;
 	terrainzsize=1000;
-	
+
 	bool disableTetrrain=false;
 
 	{
@@ -4947,7 +4947,7 @@ void ExampleFrameListener::loadTerrain(String terrainfile)
 		if (farclip<1000.0)
 			//cap for small terrains
 			farclip=1000.0;
-		
+
 		disableTetrrain = (config.getSetting("disable") != "");
 	}
 
@@ -6241,7 +6241,7 @@ void ExampleFrameListener::initTrucks(bool loadmanual, Ogre::String selected, Og
 		int i;
 		for (i=0; i<truck_preload_num; i++)
 		{
-			trucks[free_truck]=new Beam(free_truck, mSceneMgr, mSceneMgr->getRootSceneNode(), mWindow, net, 
+			trucks[free_truck]=new Beam(free_truck, mSceneMgr, mSceneMgr->getRootSceneNode(), mWindow, net,
 				&mapsizex, &mapsizez, truck_preload[i].px, truck_preload[i].py, truck_preload[i].pz, truck_preload[i].rotation, truck_preload[i].name, collisions, dustp, clumpp, sparksp, dripp, splashp, ripplep, hfinder, w, mCamera, mirror,false,false,false,0,truck_preload[i].ismachine,flaresMode, truckconfig);
 			if(bigMap)
 			{
@@ -6259,7 +6259,7 @@ void ExampleFrameListener::initTrucks(bool loadmanual, Ogre::String selected, Og
 	LogManager::getSingleton().logMessage("EFL: beam instanciated");
 
 	if(!enterTruck) setCurrentTruck(-1);
-	
+
 	//force perso start
 	if (persostart!=Vector3(0,0,0)) person->setPosition(persostart);
 	//bigMap->getEntityByName("person")->onTop();
@@ -6458,7 +6458,7 @@ void ExampleFrameListener::moveCamera(float dt)
 	if (loading_state!=ALL_LOADED && loading_state != EDITOR_PAUSE) return;
 
 	if(GUI_MainMenu::getSingleton().getVisible()) return; // disable camera movement in menu mode
-	
+
 	if (isnodegrabbed) return; //freeze camera
 
 	bool changeCamMode = (lastcameramode != cameramode);
@@ -6770,7 +6770,7 @@ void ExampleFrameListener::moveCamera(float dt)
 
 #ifdef MPLATFORM
 			mstat_t mStatInfo;
-			
+
 			// roll
 			dir = trucks[current_truck]->nodes[trucks[current_truck]->cameranodepos[0]].RelPosition-trucks[current_truck]->nodes[trucks[current_truck]->cameranoderoll[0]].RelPosition;
 			dir.normalise();
@@ -6784,7 +6784,7 @@ void ExampleFrameListener::moveCamera(float dt)
 			//pitch
 			dir=trucks[current_truck]->nodes[trucks[current_truck]->cameranodepos[0]].RelPosition-trucks[current_truck]->nodes[trucks[current_truck]->cameranodedir[0]].RelPosition;
 			dir.normalise();
-		
+
 			angle=asin(dir.dotProduct(Vector3::UNIT_Y));
 			if (angle<-1) angle=-1;
 			if (angle>1) angle=1;
@@ -6798,7 +6798,7 @@ void ExampleFrameListener::moveCamera(float dt)
 			mStatInfo.gear	   = trucks[current_truck]->engine->getGear();
 			mStatInfo.brake	   = INPUTENGINE.getEventValue(EV_TRUCK_BRAKE);
 			mStatInfo.steer	   = trucks[current_truck]->hydrodircommand;
-		
+
 
 			mplatform->update(mCamera->getPosition(), mCamera->getOrientation(), mStatInfo);
 #endif
@@ -7262,7 +7262,7 @@ bool ExampleFrameListener::frameStarted(const FrameEvent& evt)
 			trucks[t]->requires_wheel_contact=rollmode;// && !trucks[t]->wheel_contact_requested;
 		}
 
-/* OLD CODE 
+/* OLD CODE
 		for (t=0; t<free_truck; t++)
 		{
 			if(!trucks[t]) continue;
@@ -7280,7 +7280,7 @@ bool ExampleFrameListener::frameStarted(const FrameEvent& evt)
 			trucks[t]->requires_wheel_contact=rollmode;// && !trucks[t]->wheel_contact_requested;
 		}
 END OF OLD CODE */
-	
+
 #ifdef OPENSTEER
 		// Update traffic movement
 		if (person)
@@ -7344,7 +7344,7 @@ END OF OLD CODE */
 		if (netmode && net)
 		{
 			//send player's truck data
-			
+
 			//OLD: net->sendData(trucks[0]);
 			//also take care of this
 			//trucks[0]->expireNetForce();
@@ -7384,7 +7384,7 @@ END OF OLD CODE */
 					// TODO: to check of we have other free places in the array, not only at the end
 
 					// spawn not everyone in the user's area -> lag
-					trucks[free_truck]=new Beam(free_truck, mSceneMgr, mSceneMgr->getRootSceneNode(), mWindow, net, 
+					trucks[free_truck]=new Beam(free_truck, mSceneMgr, mSceneMgr->getRootSceneNode(), mWindow, net,
 						&mapsizex, &mapsizez, truckx, trucky, truckz, Quaternion::ZERO, name, collisions, dustp, clumpp, sparksp, dripp, splashp, ripplep, hfinder, w, mCamera, mirror, true, true,false,0,false,flaresMode, &truckconfig);
 					trucks[free_truck]->label=label;
 
@@ -7545,7 +7545,7 @@ bool ExampleFrameListener::setCameraPositionWithCollision(Vector3 newPos)
 #endif
 	return res;
 }
-			
+
 bool ExampleFrameListener::frameEnded(const FrameEvent& evt)
 {
 	updateStats();
@@ -7834,11 +7834,11 @@ void ExampleFrameListener::gridScreenshots(Ogre::RenderWindow* pRenderWindow, Og
    *              image (and discarded) or whether they should (false) remain in their unstitched
    *              form.  In that case they are sequentially numbered from 0 to
    *              pGridSize * pGridSize - 1 (if pGridSize is 3 then from 0 to 8).
-   *              
+   *
   */
   Ogre::String gridFilename;
   Ogre::Matrix4 orgmat = pCamera->getProjectionMatrix();
-  
+
   // hack: add path to resource
   ResourceGroupManager::getSingleton().addResourceLocation(path, "FileSystem");
 
@@ -7862,22 +7862,22 @@ void ExampleFrameListener::gridScreenshots(Ogre::RenderWindow* pRenderWindow, Og
     Ogre::uchar* stitchedImageData;
 
     // Process each grid
-    for (int nbScreenshots = 0; nbScreenshots < pGridSize * pGridSize; nbScreenshots++) 
-    { 
+    for (int nbScreenshots = 0; nbScreenshots < pGridSize * pGridSize; nbScreenshots++)
+    {
       // Use asymmetrical perspective projection. For more explanations check out:
-      // http://www.cs.kuleuven.ac.be/cwis/research/graphics/INFOTEC/viewing-in-3d/node8.html 
-      int y = nbScreenshots / pGridSize; 
-      int x = nbScreenshots - y * pGridSize; 
-      Ogre::Matrix4 shearing( 
-        1, 0,(x - (pGridSize - 1) * 0.5) * nearWidth / nearDist, 0, 
-        0, 1, -(y - (pGridSize - 1) * 0.5) * nearHeight / nearDist, 0, 
-        0, 0, 1, 0, 
-        0, 0, 0, 1); 
-      Ogre::Matrix4 scale( 
-        pGridSize, 0, 0, 0, 
-        0, pGridSize, 0, 0, 
-        0, 0, 1, 0, 
-        0, 0, 0, 1); 
+      // http://www.cs.kuleuven.ac.be/cwis/research/graphics/INFOTEC/viewing-in-3d/node8.html
+      int y = nbScreenshots / pGridSize;
+      int x = nbScreenshots - y * pGridSize;
+      Ogre::Matrix4 shearing(
+        1, 0,(x - (pGridSize - 1) * 0.5) * nearWidth / nearDist, 0,
+        0, 1, -(y - (pGridSize - 1) * 0.5) * nearHeight / nearDist, 0,
+        0, 0, 1, 0,
+        0, 0, 0, 1);
+      Ogre::Matrix4 scale(
+        pGridSize, 0, 0, 0,
+        0, pGridSize, 0, 0,
+        0, 0, 1, 0,
+        0, 0, 0, 1);
       pCamera->setCustomProjectionMatrix(true, standard * shearing * scale);
       Ogre::Root::getSingletonPtr()->renderOneFrame();
       gridFilename = pFileName + Ogre::StringConverter::toString(nbScreenshots) + pFileExtention;
@@ -7924,8 +7924,8 @@ void ExampleFrameListener::gridScreenshots(Ogre::RenderWindow* pRenderWindow, Og
         // The screenshot of the grid is no longer needed
         remove(gridFilename.c_str());
       }
-    } 
-    pCamera->setCustomProjectionMatrix(false); // reset projection matrix 
+    }
+    pCamera->setCustomProjectionMatrix(false); // reset projection matrix
 
     if(pStitchGridImages)
     {
@@ -7941,7 +7941,7 @@ void ExampleFrameListener::gridScreenshots(Ogre::RenderWindow* pRenderWindow, Og
       delete[] stitchedImageData;
     }
   }
-  
+
   pCamera->setCustomProjectionMatrix(true, orgmat);
 }
 
