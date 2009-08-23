@@ -53,5 +53,9 @@ AITraffic *AITrafficFactory::createRemote(int sourceid, stream_register_t *reg, 
 	return traffic;
 }
 
+void AITrafficFactory::removeUser(int userid)
+{
+
+}
 
 #endif //AITRAFFIC

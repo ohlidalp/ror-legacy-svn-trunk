@@ -23,7 +23,7 @@ class AITraffic : public Streamable
 		AITraffic(int sourceid, int id, int slotid);
 		~AITraffic();
 
-		void AITraffic::sendStreamData();
+		void sendStreamData();
 		void receiveStreamData(unsigned int &type, int &source, unsigned int &streamid, char *buffer, unsigned int &len);
 };
 
