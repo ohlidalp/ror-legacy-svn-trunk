@@ -28,6 +28,12 @@ THE SOFTWARE.
 #include "OgreLogManager.h"
 #include "OgreStringConverter.h"
 
+// some gcc fixes
+#if OGRE_PLATFORM == OGRE_PLATFORM_LINUX
+#pragma GCC diagnostic ignored "-Wfloat-equal"
+#endif //OGRE_PLATFORM_LINUX
+
+
 namespace MOC {
 
 #ifdef ETM_TERRAIN
@@ -184,7 +190,7 @@ void CollisionTools::calculateY(Ogre::SceneNode *n, const bool doTerrainCheck, c
 			n->setPosition(x,terrY+_heightAdjust,z);
 		}
 	} else {
-		if (!doTerrainCheck && fabs(colY+99999.0f) <0.0001f) colY = y;
+		if (!doTerrainCheck && colY == -99999) colY = y;
 		n->setPosition(x,colY+_heightAdjust,z);
 	}
 }

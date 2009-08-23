@@ -22,6 +22,12 @@ along with Rigs of Rods.  If not, see <http://www.gnu.org/licenses/>.
 #include "Settings.h"
 #include "pstdint.h"
 
+// some gcc fixes
+#if OGRE_PLATFORM == OGRE_PLATFORM_LINUX
+#pragma GCC diagnostic ignored "-Wfloat-equal"
+#endif //OGRE_PLATFORM_LINUX
+
+
 using namespace Ogre;
 
 SoundManager::SoundManager()
@@ -268,7 +274,7 @@ void SoundManager::recomputeSource(int input_index, int reason, float vfl, Vecto
 
 	//something has changed in a source
 	input_sources[input_index]->computeAudibility(cameraPosition);
-	if (fabs(input_sources[input_index]->audibility) < 0.000001f)
+	if (input_sources[input_index]->audibility==0)
 	{
 		//this is an extinct source, retire if currently playing
 		if (input_sources[input_index]->hardware_index!=-1) retire(input_index);
@@ -498,7 +504,7 @@ void Sound::computeAudibility(Vector3 from)
 		if (value!=AL_PLAYING) should_play=false;
 	}
 	if (!should_play) {audibility=0.0; return;}
-	if (fabs(gain) < 0.00001f) {audibility=0.0; return;}
+	if (gain==0.0) {audibility=0.0; return;}
 	float distance=(from-position).length();
 	if (distance>sm->maxDistance) {audibility=0.0; return;}
 	if (distance<sm->referenceDistance) {audibility=gain; return;}

@@ -2501,7 +2501,7 @@ void ExampleFrameListener::loadObject(const char* name, float px, float py, floa
 				ao.node = tenode;
 				ao.ent = te;
 				ao.speedfactor = speedfactorMin;
-				if(fabs(speedfactorMin - speedfactorMax) > 0.000001f)
+				if(speedfactorMin != speedfactorMax)
 					ao.speedfactor = Math::RangeRandom(speedfactorMin, speedfactorMax);
 				ao.anim = 0;
 				try
@@ -2669,7 +2669,7 @@ void ExampleFrameListener::repairTruck(char* inst, char* box)
 
 bool ExampleFrameListener::updateEvents(float dt)
 {
-	if (fabs(dt) < 0.000001f)return true;
+	if (dt==0.0f) return true;
 
 	INPUTENGINE.updateKeyBounces(dt);
 	if(!INPUTENGINE.getInputsChanged()) return true;
@@ -7015,7 +7015,7 @@ bool ExampleFrameListener::updateAnimatedObjects(float dt)
 	std::vector<animated_object_t>::iterator it;
 	for(it=animatedObjects.begin(); it!=animatedObjects.end(); it++)
 	{
-		if(it->anim && fabs(it->speedfactor) > 0.00001f)
+		if(it->anim && it->speedfactor != 0)
 		{
 			Real time = dt * it->speedfactor;
 			it->anim->addTime(time);
@@ -7119,7 +7119,7 @@ bool ExampleFrameListener::updateTruckMirrors(float dt)
 bool ExampleFrameListener::frameStarted(const FrameEvent& evt)
 {
 	float dt=evt.timeSinceLastFrame;
-	if (fabs(dt) < 0.0000001f) return true;
+	if (dt==0) return true;
 	if (dt>1.0/20.0) dt=1.0/20.0;
 	rtime+=dt; //real time
 	if(mWindow->isClosed())
@@ -7201,7 +7201,7 @@ bool ExampleFrameListener::frameStarted(const FrameEvent& evt)
 		mTimeUntilNextToggle -= evt.timeSinceLastFrame;
 
 	// If this is the first frame, pick a speed
-	if (fabs(evt.timeSinceLastFrame) < 0.000001f)
+	if (evt.timeSinceLastFrame == 0)
 	{
 		mMoveScale = 1;
 		mRotScale = 0.1;
@@ -7512,7 +7512,7 @@ void ExampleFrameListener::flashMessage(const char* txt, float time, float charH
 	{
 	}
 
-	if(fabs(charHeight + 1) > 0.000001f)
+	if(charHeight != -1)
 		flashMessageTE->setCharHeight(charHeight);
 	else
 		// set original height
