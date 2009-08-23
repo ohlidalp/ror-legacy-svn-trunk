@@ -1574,6 +1574,7 @@ ExampleFrameListener::ExampleFrameListener(RenderWindow* win, Camera* cam, Scene
 	// since then invalid SE is passed below!
 	if (netmode)
 		{
+			new AITrafficFactory(net, mSceneMgr);
 //			aitraffic = new AITraffic();
 //			NetworkStreamManager::getSingleton().addStream(aitraffic, 2, 0);
 		}

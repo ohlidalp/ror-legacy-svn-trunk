@@ -5,6 +5,9 @@
 #include "OgrePrerequisites.h"
 #include "StreamableFactory.h"
 #include "AITraffic.h"
+#include "NetworkStreamManager.h"
+class Network;
+
 
 class AITrafficFactory  : public StreamableFactory
 {
