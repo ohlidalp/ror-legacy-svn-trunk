@@ -1,4 +1,4 @@
-/* 
+/*
  * File:   approxmath.h
  * Author: estama
  *
@@ -113,7 +113,7 @@ inline float fast_sqrt(const float x)
 
 inline float sign(const float x)
 {
-    return (x == 0.0f) ? 0.0f : (x<0.0f ? -1.0f : 1.0f);
+	return (x > 0.0f) ? 1.0f : (x < 0.0f) ? -1.0f : 0.0f;
 }
 
 

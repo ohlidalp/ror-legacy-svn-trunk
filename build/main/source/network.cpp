@@ -146,7 +146,7 @@ bool Network::connect()
 		return false;
 	}
 	//say hello to the server
-	if (sendmessage(&socket, MSG2_HELLO, 0, (unsigned int)strlen(RORNET_VERSION), RORNET_VERSION))
+	if (sendmessage(&socket, MSG2_HELLO, 0, (unsigned int)strlen(RORNET_VERSION), (char *)RORNET_VERSION))
 	{
 		//this is an error!
 		netFatalError("Establishing network session: error sending hello", false);
@@ -207,13 +207,22 @@ bool Network::connect()
 	}
 
 	String usertoken = SETTINGS.getSetting("User Token");
+	char usertokensha1result[250];
+	memset(usertokensha1result, 0, 250);
+	if(usertoken.size()>0)
+	{
+		CSHA1 sha1;
+		sha1.UpdateHash((uint8_t *)usertoken.c_str(), usertoken.size());
+		sha1.Final();
+		sha1.ReportHash(usertokensha1result, CSHA1::REPORT_HEX_SHORT);
+	}
 
 	// construct user credentials
 	user_credentials_t c;
 	memset(&c, 0, sizeof(user_credentials_t));
 	strncpy(c.username, nickname.c_str(), 20);
 	strncpy(c.password, sha1pwresult, 40);
-	strncpy(c.uniqueid, usertoken.c_str(), 40);
+	strncpy(c.uniqueid, usertokensha1result, 40);
 
 	if (sendmessage(&socket, MSG2_USER_CREDENTIALS, 0, sizeof(user_credentials_t), (char*)&c))
 	{
@@ -537,7 +546,7 @@ void Network::receivethreadstart()
 				LogManager::getSingleton().logMessage(" * auth    : " + StringConverter::toString(cinfo->authstatus));
 				LogManager::getSingleton().logMessage(" * slotnum : " + StringConverter::toString(cinfo->slotnum));
 			}
-			if(header.source == myuid)
+			if(header.source == (int)myuid)
 			{
 				// we got data about ourself!
 				memcpy(&userdata, buffer, sizeof(client_info_on_join));
