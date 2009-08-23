@@ -6,7 +6,7 @@ set(ror_src
 	source/airbrake.h
 	source/Airfoil.cpp
 	source/Airfoil.h
-	
+
 	source/AITraffic_Common.h
 	source/AITraffic_Common.cpp
 	source/AITraffic.h
@@ -152,7 +152,7 @@ set(ror_src
 	source/writeTextToTexture.h
 	source/xfiregameclient.cpp
 	source/xfiregameclient.h
-	
+
 	source/mplatform_fd.cpp
 	source/mplatform_base.cpp
 	source/mplatform_fd.h
@@ -160,34 +160,34 @@ set(ror_src
 
 	source/hdrlistener.h
 	source/hdrlistener.cpp
-	
+
 	source/softshadowlistener.h
 	source/softshadowlistener.cpp
 
 	source/ssaolistener.h
 	source/ssaolistener.cpp
-	
+
 	source/ScopeLog.cpp
 	source/ScopeLog.h
-	
+
 	source/PositionStorage.cpp
 	source/PositionStorage.h
-	
+
 	source/as_ogre.cpp
 	source/as_ogre.h
 
 	source/Streamable.cpp
 	source/Streamable.h
-	
+
 	source/NetworkStreamManager.cpp
 	source/NetworkStreamManager.h
-	
+
 	source/StreamableFactory.cpp
 	source/StreamableFactory.h
 
 	source/utils.cpp
 	source/utils.h
-	
+
 	source/gui_menu.cpp
 	source/gui_menu.h
 
@@ -266,12 +266,14 @@ if(WSYNC_BUILD_WSYNC)
   ELSEIF(UNIX)
     set(Boost_USE_STATIC_LIBS   ON)
     set(Boost_USE_MULTITHREADED ON)
+
     find_package( Boost 1.3 COMPONENTS date_time filesystem system )
 
     if(Boost_FOUND)
     else()
       message(" !!! boost not found!")
     endif()
+    link_directories(${Boost_LIBRARY_DIRS})
     include_directories (${Boost_INCLUDE_DIRS})
   ELSEIF(APPLE)
   ENDIF(WIN32)
@@ -402,6 +404,7 @@ endif(ROR_BUILD_LUASCRIPT)
 if(WSYNC_BUILD_WSYNC)
   add_dependencies(RoR libwsync)
   target_link_libraries(RoR libwsync ${Boost_LIBRARIES})
+  target_link_libraries(RoR boost_filesystem-s boost_system-s boost_date_time-s)
 endif(WSYNC_BUILD_WSYNC)
 
 if(ROR_BUILD_OPENSTEER)

@@ -6,7 +6,7 @@ Copyright 2007,2008,2009 Thomas Fischer
 For more information, see http://www.rigsofrods.com/
 
 Rigs of Rods is free software: you can redistribute it and/or modify
-it under the terms of the GNU General Public License version 3, as 
+it under the terms of the GNU General Public License version 3, as
 published by the Free Software Foundation.
 
 Rigs of Rods is distributed in the hope that it will be useful,
@@ -73,27 +73,33 @@ Network::Network(Beam **btrucks, std::string servername, long sport, ExampleFram
 	nickname = "";
 	trucks=btrucks;
 	myuid=0;
-	
+
 	speed_time=0;
 	speed_bytes_sent = speed_bytes_sent_tmp = speed_bytes_recv = speed_bytes_sent_tmp = 0;
 
 	rconauthed=0;
 	last_time=0;
 	send_buffer=0;
+	pthread_cond_init(&send_work_cv, NULL);
 	pthread_mutex_init(&msgsend_mutex, NULL);
 	pthread_mutex_init(&send_work_mutex, NULL);
 	pthread_mutex_init(&dl_data_mutex, NULL);
-	pthread_cond_init(&send_work_cv, NULL);
-	for (int i=0; i<MAX_PEERS; i++) clients[i].used=false;
-	
-	// direct start, no vehicle required
 	pthread_mutex_init(&clients_mutex, NULL);
 	pthread_mutex_init(&chat_mutex, NULL);
+
+	// reset client list
+	pthread_mutex_lock(&clients_mutex);
+	for (int i=0; i<MAX_PEERS; i++)
+		clients[i].used=false;
+	pthread_mutex_unlock(&clients_mutex);
+
+	// direct start, no vehicle required
 }
 
 Network::~Network()
 {
 	shutdown=true;
+	pthread_mutex_destroy(&clients_mutex);
 	pthread_mutex_destroy(&chat_mutex);
 	pthread_mutex_destroy(&send_work_mutex);
 	pthread_mutex_destroy(&dl_data_mutex);
@@ -279,7 +285,7 @@ Ogre::String Network::getNickname(bool colour)
 	String nick = ColoredTextAreaOverlayElement::StripColors(nickname);
 	if(colour)
 		return String("^") + StringConverter::toString(nickColour) + nick + String("^7");
-	
+
 	return nick;
 }
 
@@ -289,7 +295,7 @@ int Network::sendMessageRaw(SWInetSocket *socket, char *buffer, unsigned int msg
 
 	pthread_mutex_lock(&msgsend_mutex); //we use a mutex because a chat message can be sent asynchronously
 	SWBaseSocket::SWBaseError error;
-	
+
 	int rlen=0;
 	while (rlen<(int)msgsize)
 	{
@@ -360,7 +366,7 @@ int Network::receivemessage(SWInetSocket *socket, header_t *head, char* content,
 		}
 		hlen+=recvnum;
 	}
-	
+
 	memcpy(head, buffer, sizeof(header_t));
 
 	if(head->size>0)
@@ -481,53 +487,43 @@ void Network::receivethreadstart()
 			return;
 		}
 
-		// TODO: produce new streamable classes when required 
+		// TODO: produce new streamable classes when required
 		if(header.command == MSG2_STREAM_REGISTER)
 		{
 			stream_register_t *reg = (stream_register_t *)buffer;
+			client_t *client = getClientInfo(header.source);
+			int slotid = -1;
+			if(client) slotid = client->slotnum;
 			LogManager::getSingleton().logMessage(" * received stream registration: " + StringConverter::toString(header.source) + ": "+StringConverter::toString(reg->sid) + ", type: "+StringConverter::toString(reg->type));
+
 			if(reg->type == 0)
 			{
 				// truck
 			} else if (reg->type == 1)
 			{
 				// person
-				// find slotid
-				int slot = 0;
-				pthread_mutex_lock(&clients_mutex);
-				for (int i=0; i<MAX_PEERS; i++)
-				{
-					if (clients[i].user_id == header.source)
-					{
-						slot=i;
-						break;
-					}
-				}
-				pthread_mutex_unlock(&clients_mutex);
-
-				CharacterFactory::getSingleton().createRemote(header.source, reg, slot);
+				CharacterFactory::getSingleton().createRemote(header.source, reg, slotid);
+#ifdef AITRAFFIC
+			} else if (reg->type == 2)
+			{
+				// traffic communication
+				AITrafficFactory::getSingleton().createRemote(header.source, reg, slotid);
+#endif //AITRAFFIC
 			}
-			else if (reg->type==2)	// traffic communication
-				{
-					AITrafficFactory::getSingleton().createRemote(header.source, reg, 0);
-				}
 			continue;
-				
 		}
 		else if(header.command == MSG2_USER_LEAVE)
 		{
 			// remove all things that belong to that user
-			pthread_mutex_lock(&clients_mutex);
-			for (int i=0; i<MAX_PEERS; i++)
-			{
-				if (clients[i].used && clients[i].user_id == header.source)
-				{
-					// TODO: remove user stuff
-					clients[i].used = false;
-					break;
-				}
-			}
-			pthread_mutex_unlock(&clients_mutex);
+			client_t *client = getClientInfo(header.source);
+			if(client)
+				client->used = false;
+
+			// now remove all possible streams
+#ifdef AITRAFFIC
+			AITrafficFactory::getSingleton().removeUser(header.source);
+#endif //AITRAFFIC
+			CharacterFactory::getSingleton().removeUser(header.source);
 		}
 		else if(header.command == MSG2_USER_INFO || header.command == MSG2_USER_JOIN)
 		{
@@ -551,22 +547,19 @@ void Network::receivethreadstart()
 				client_info_on_join *cinfo = (client_info_on_join*) buffer;
 				// data about someone else, try to update the array
 				bool found = false; // whether to add a new client
-				pthread_mutex_lock(&clients_mutex);
-				for (int i=0; i<MAX_PEERS; i++)
+				client_t *client = getClientInfo(header.source);
+				if(client)
 				{
-					if (clients[i].user_id == header.source)
-					{
-						clients[i].user_authlevel = cinfo->authstatus;
-						clients[i].slotnum = cinfo->slotnum;
-						strncpy(clients[i].user_name,cinfo->nickname, 20);
-						found=true;
-						CharacterFactory::getSingleton().netUserAttributesChanged(header.source, -1);
-						break;
-					}
-				}
-				if(!found)
+					client->user_authlevel = cinfo->authstatus;
+					client->slotnum = cinfo->slotnum;
+					strncpy(client->user_name, cinfo->nickname, 20);
+					// inform the streamfactories of a attribute change
+					CharacterFactory::getSingleton().netUserAttributesChanged(header.source, -1);
+					found = true;
+				} else
 				{
 					// find a free entry
+					pthread_mutex_lock(&clients_mutex);
 					for (int i=0; i<MAX_PEERS; i++)
 					{
 						if (clients[i].used)
@@ -579,8 +572,8 @@ void Network::receivethreadstart()
 						strncpy(clients[i].user_name,cinfo->nickname, 20);
 						break;
 					}
+					pthread_mutex_unlock(&clients_mutex);
 				}
-				pthread_mutex_unlock(&clients_mutex);
 			}
 		}
 
@@ -588,14 +581,17 @@ void Network::receivethreadstart()
 	}
 }
 
+
 client_t *Network::getClientInfo(unsigned int uid)
 {
+	pthread_mutex_lock(&clients_mutex);
 	for (int i=0; i<MAX_PEERS; i++)
 	{
 		if (clients[i].user_id == uid)
 			return &clients[i];
 	}
 	return 0;
+	pthread_mutex_unlock(&clients_mutex);
 }
 
 
