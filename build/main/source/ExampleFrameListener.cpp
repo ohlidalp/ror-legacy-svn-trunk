@@ -1634,11 +1634,10 @@ ExampleFrameListener::ExampleFrameListener(RenderWindow* win, Camera* cam, Scene
 		source = net->getUserID();
 
 #ifdef AITRAFFIC
-//	if (netmode)
-//		{
-			AITrafficFactory *aifactory = new AITrafficFactory(net, mSceneMgr);
-			aifactory->test();
-//		}
+	if (netmode)
+	{
+		new AITrafficFactory(net, mSceneMgr);
+	}
 #endif //AITRAFFIC
 
 

@@ -33,24 +33,43 @@ along with Rigs of Rods.  If not, see <http://www.gnu.org/licenses/>.
 class Network;
 class Streamable;
 
-class StreamableFactory : public Ogre::Singleton< StreamableFactory >
+template<class T, class X> class StreamableFactory
 {
 	friend class Network;
 public:
-	StreamableFactory();
-	~StreamableFactory();
-	static StreamableFactory& getSingleton(void);
-	static StreamableFactory* getSingletonPtr(void);
-	
-	//virtual Streamable *createLocal() = 0;
-	//virtual Streamable *createRemote(int sourceid, stream_register_t *reg) = 0;
-	virtual void netUserAttributesChanged(int source, int streamid) = 0;
+	// constructor, destructor and singleton
+	StreamableFactory( void )
+	{
+		assert( !ms_Singleton );
+		ms_Singleton = static_cast< T* >( this );
+	}
+	~StreamableFactory( void )
+	{
+		assert( ms_Singleton );
+		ms_Singleton = 0;
+	}
 
-	//void remove(Streamable *stream);
-	void removeUser(int userid);
+	static T& getSingleton( void )
+	{
+		assert( ms_Singleton );
+		return ( *ms_Singleton );
+	}
+
+	static T* getSingletonPtr( void )
+	{
+		return ms_Singleton;
+	}
+
+	// useful functions
+	virtual X *createLocal() = 0;
+	virtual X *createRemote(int sourceid, stream_register_t *reg, int slotid) = 0;
+	virtual void netUserAttributesChanged(int source, int streamid) = 0;
+	virtual void remove(X *stream) = 0;
+	virtual void removeUser(int userid) = 0;
 
 protected:
-	std::map < int, std::map < unsigned int, Streamable *> > streamables;
+	static T* ms_Singleton;
+	std::map < int, std::map < unsigned int, X *> > streamables;
 };
 
 
