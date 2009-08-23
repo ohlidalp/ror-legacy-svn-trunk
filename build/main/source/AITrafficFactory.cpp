@@ -25,7 +25,11 @@ AITraffic *AITrafficFactory::createRemote(int sourceid, stream_register_t *reg, 
 {
 	Ogre::LogManager::getSingleton().logMessage(" new Traffic management for " + Ogre::StringConverter::toString(sourceid) + ":" + Ogre::StringConverter::toString(reg->sid));
 	AITraffic *traffic = new AITraffic(sourceid, reg->sid, slotid);
+	NetworkStreamManager::getSingleton().addStream(traffic, sourceid, reg->sid);
+
+	Ogre::LogManager::getSingleton().logMessage(" CP-1");
 	streamables[sourceid][reg->sid] = traffic;
+	Ogre::LogManager::getSingleton().logMessage(" Traffic registration is done");
 	return traffic;
 }
 
