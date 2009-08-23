@@ -32,6 +32,8 @@ class Network;
 
 class AITrafficFactory  : public StreamableFactory
 {
+	friend class Network;
+
 	public:
 		AITrafficFactory(Network *net, Ogre::SceneManager *scm);
 		~AITrafficFactory();
@@ -44,6 +46,8 @@ class AITrafficFactory  : public StreamableFactory
 	protected:
 		Network *net;
 		Ogre::SceneManager *scm;
+
+		void removeUser(int userid);
 
 		// functions used by friends
 		void netUserAttributesChanged(int source, int streamid);
