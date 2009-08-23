@@ -17,14 +17,16 @@ GNU General Public License for more details.
 You should have received a copy of the GNU General Public License
 along with Rigs of Rods.  If not, see <http://www.gnu.org/licenses/>.
 */
-#include "ConfigManager.h"
-
 #ifdef WIN32
-# include "winsock2.h"
+#define WIN32_LEAN_AND_MEAN
+//#include "winsock2.h"
 #endif //WIN32
 
-#include "boost/filesystem.hpp"
+#include "ConfigManager.h"
+
+
 #include "boost/asio.hpp"
+#include "boost/filesystem.hpp"
 
 //icons must be 50x50
 #include "unknown.xpm"

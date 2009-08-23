@@ -9,7 +9,7 @@ SET(wxWidgets_USE_UNICODE ON)
 
 set(Boost_USE_STATIC_LIBS   ON)
 set(Boost_USE_MULTITHREADED ON)
-find_package( Boost 1.3 COMPONENTS date_time filesystem system )
+find_package( Boost 1.3 COMPONENTS date_time filesystem system regex )
 
 if(Boost_FOUND)
 else()
@@ -50,7 +50,7 @@ IF(wxWidgets_FOUND)
   TARGET_LINK_LIBRARIES(installer ${wxWidgets_LIBRARIES} )
 
   IF(WIN32)
-    SET_TARGET_PROPERTIES(installer PROPERTIES COMPILE_FLAGS "")
+    SET_TARGET_PROPERTIES(installer PROPERTIES COMPILE_FLAGS "/bigobj")
     SET_TARGET_PROPERTIES(installer PROPERTIES LINK_FLAGS    "/SUBSYSTEM:WINDOWS")
   ENDIF(WIN32)
 
