@@ -28,7 +28,10 @@ along with Rigs of Rods.  If not, see <http://www.gnu.org/licenses/>.
 #include "ScopeLog.h"
 
 #include "CharacterFactory.h"
+
+#ifdef AITRAFFIC
 #include "AITrafficFactory.h"
+#endif
 
 #ifdef MPLATFORM
 #include "mplatform_fd.h"
@@ -1568,31 +1571,6 @@ ExampleFrameListener::ExampleFrameListener(RenderWindow* win, Camera* cam, Scene
 	// you always need that, even if you are not using the network
 	new NetworkStreamManager();
 
-#ifdef AITRAFFIC
-	// we are doomed if ANGELSCRIPT is not defined
-	// since then invalid SE is passed below!
-	if (netmode)
-		{
-			new AITrafficFactory(net, mSceneMgr);
-//			aitraffic = new AITraffic();
-//			NetworkStreamManager::getSingleton().addStream(aitraffic, 2, 0);
-		}
-/*
-// for local
-
-		NetworkStreamManager::getSingleton().addStream(this);
-
-		stream_register_t reg;
-		reg.sid = this->streamid;
-		reg.status = 1;
-		strcpy(reg.name, "default");
-		reg.type = 1;
-		this->addPacket(MSG2_STREAM_REGISTER, net->getUserID(), streamid, sizeof(stream_register_t), (char*)&reg);
-*/
-#endif //AITRAFFIC
-
-
-
 	if(netmode)
 	{
 		// cmdline overrides config
@@ -1654,6 +1632,15 @@ ExampleFrameListener::ExampleFrameListener(RenderWindow* win, Camera* cam, Scene
 	int source=-1;
 	if(net)
 		source = net->getUserID();
+
+#ifdef AITRAFFIC
+//	if (netmode)
+//		{
+			AITrafficFactory *aifactory = new AITrafficFactory(net, mSceneMgr);
+			aifactory->test();
+//		}
+#endif //AITRAFFIC
+
 
 	new CharacterFactory(collisions, net, hfinder, w, bigMap, mSceneMgr);
 	person = (Character *)CharacterFactory::getSingleton().createLocal();

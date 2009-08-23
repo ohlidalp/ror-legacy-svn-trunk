@@ -40,6 +40,8 @@ class AITrafficFactory  : public StreamableFactory
 
 		static AITrafficFactory& getSingleton(void);
 
+		void test();
+
 //		AITraffic *createLocal();	// RoR player cannot create traffic on its own, only traffic client is allowed to do that
 		AITraffic *createRemote(int sourceid, stream_register_t *reg, int slotid);
 
