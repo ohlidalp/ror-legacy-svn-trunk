@@ -20,7 +20,7 @@ IF(WIN32)
   add_executable(wsync source/main source/icon.rc)
 
   # UAC vista things to request admin access for the update
-  SET_TARGET_PROPERTIES(wsync PROPERTIES LINK_FLAGS /MANIFESTUAC:"level='highestAvailable'")
+  SET_TARGET_PROPERTIES(wsync PROPERTIES LINK_FLAGS /MANIFESTUAC:"level='requireAdministrator' uiAccess='false'")
 
 ELSEIF(UNIX)
 if(COMMAND cmake_policy)
