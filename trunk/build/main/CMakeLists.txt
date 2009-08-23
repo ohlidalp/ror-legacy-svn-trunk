@@ -217,8 +217,6 @@ ELSEIF(UNIX)
 ELSEIF(APPLE)
 ENDIF(WIN32)
 
-  add_definitions("-DAITRAFFIC")
-
 # optional features
 if(ROR_BUILD_HYDRAX)
   add_definitions("-DHYDRAX")
@@ -411,11 +409,6 @@ if(WSYNC_BUILD_WSYNC)
   target_link_libraries(RoR libwsync ${Boost_LIBRARIES})
   target_link_libraries(RoR boost_filesystem-s boost_system-s boost_date_time-s)
 endif(WSYNC_BUILD_WSYNC)
-
-if(ROR_BUILD_OPENSTEER)
-  add_dependencies(RoR opensteer)
-  target_link_libraries(RoR opensteer)
-endif(ROR_BUILD_OPENSTEER)
 
 IF(ROR_BUILD_ANGELSCRIPT)
  add_dependencies(RoR angelscript)

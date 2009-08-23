@@ -343,7 +343,7 @@ void MapEntity::init()
 void MapEntity::setPosition(Vector3 pos)
 {
 	bool needUpdate=false;
-	if(fabs(x-pos.x) > 0.00001f || fabs(z - pos.z) > 0.00001f)
+	if(fabs(x - pos.x) > 0.00001f || fabs(z - pos.z) > 0.00001f)
 		needUpdate=true;
 	x=pos.x;
 	z=pos.z;
@@ -354,7 +354,7 @@ void MapEntity::setPosition(Vector3 pos)
 void MapEntity::setPosition(float _x, float _z)
 {
 	bool needUpdate=false;
-	if(fabs(_x-x) > 0.00001f || fabs(_z - z) > 0.00001f)
+	if(fabs(_x - x) > 0.00001f || fabs(_z - z) > 0.00001f)
 		needUpdate=true;
 	x=_x;
 	z=_z;
@@ -670,7 +670,7 @@ void MapControl::setPosition(float _x, float _y, float _w, float _h, Ogre::Rende
 		nw=_w*rWinWidth;
 		nh=_h*rWinHeight;
 	}
-	if(fabs(nw-w) > 0.00001f || fabs(nh - h) > 0.00001f)
+	if(fabs(nw - w) > 0.00001f || fabs(nh - h) > 0.00001f)
 		changedSize=true;
 
 	h=nh;
@@ -693,7 +693,7 @@ void MapControl::setPosition(float _x, float _y, float _w, Ogre::RenderWindow* r
 	y=_y;
 	nw=_w*rWinWidth;
 	nh=nw;
-	if(fabs(nw-w) > 0.00001f || fabs(nh - h) > 0.00001f)
+	if(fabs(nw - w) > 0.00001f || fabs(nh - h) > 0.00001f)
 		changedSize=true;
 
 	h=nh;
