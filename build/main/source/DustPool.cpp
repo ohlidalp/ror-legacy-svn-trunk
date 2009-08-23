@@ -20,7 +20,9 @@ along with Rigs of Rods.  If not, see <http://www.gnu.org/licenses/>.
 #include "DustPool.h"
 #include "water.h"
 
+#if OGRE_PLATFORM == OGRE_PLATFORM_LINUX
 #pragma GCC diagnostic ignored "-Wfloat-equal"
+#endif //OGRE_PLATFORM_LINUX
 
 DustPool::DustPool(const char* dname, int dsize, SceneNode *parent, SceneManager *smgr, Water *mw)
 	{
