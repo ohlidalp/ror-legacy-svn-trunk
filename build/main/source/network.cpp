@@ -24,6 +24,7 @@ along with Rigs of Rods.  If not, see <http://www.gnu.org/licenses/>.
 #include "IngameConsole.h"
 #include "CacheSystem.h"
 #include "CharacterFactory.h"
+#include "AITrafficFactory.h"
 #ifdef ANGELSCRIPT
 #include "ScriptEngine.h"
 #endif //ANGELSCRIPT
@@ -506,6 +507,10 @@ void Network::receivethreadstart()
 
 				CharacterFactory::getSingleton().createRemote(header.source, reg, slot);
 			}
+			else if (reg->type==2)	// traffic communication
+				{
+					AITrafficFactory::getSingleton().createRemote(header.source, reg, 0);
+				}
 			continue;
 				
 		}

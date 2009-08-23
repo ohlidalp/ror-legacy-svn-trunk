@@ -21,4 +21,13 @@ void AITrafficFactory::netUserAttributesChanged(int source, int streamid)
 void AITrafficFactory::localUserAttributesChanged(int newid)
 {}
 
+AITraffic *AITrafficFactory::createRemote(int sourceid, stream_register_t *reg, int slotid)
+{
+	Ogre::LogManager::getSingleton().logMessage(" new Traffic management for " + Ogre::StringConverter::toString(sourceid) + ":" + Ogre::StringConverter::toString(reg->sid));
+	AITraffic *traffic = new AITraffic(sourceid, reg->sid, slotid);
+	streamables[sourceid][reg->sid] = traffic;
+	return traffic;
+}
+
+
 #endif AITRAFFIC
