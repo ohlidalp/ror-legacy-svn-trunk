@@ -6,7 +6,7 @@ Copyright 2007,2008,2009 Thomas Fischer
 For more information, see http://www.rigsofrods.com/
 
 Rigs of Rods is free software: you can redistribute it and/or modify
-it under the terms of the GNU General Public License version 3, as 
+it under the terms of the GNU General Public License version 3, as
 published by the Free Software Foundation.
 
 Rigs of Rods is distributed in the hope that it will be useful,
@@ -77,7 +77,7 @@ SoundManager::SoundManager()
 			LogManager::getSingleton().logMessage("Warning: invalid sound device configuration, I will use the default sound source. Run configurator!");
 	}
 	context=alcCreateContext(device, NULL);
-	if (!context) 
+	if (!context)
 	{
 		ALint error;
 		error=alGetError();
@@ -268,7 +268,7 @@ void SoundManager::recomputeSource(int input_index, int reason, float vfl, Vecto
 
 	//something has changed in a source
 	input_sources[input_index]->computeAudibility(cameraPosition);
-	if (input_sources[input_index]->audibility==0.0)
+	if (fabs(input_sources[input_index]->audibility) < 0.000001f)
 	{
 		//this is an extinct source, retire if currently playing
 		if (input_sources[input_index]->hardware_index!=-1) retire(input_index);
@@ -498,7 +498,7 @@ void Sound::computeAudibility(Vector3 from)
 		if (value!=AL_PLAYING) should_play=false;
 	}
 	if (!should_play) {audibility=0.0; return;}
-	if (gain==0.0) {audibility=0.0; return;}
+	if (fabs(gain) < 0.00001f) {audibility=0.0; return;}
 	float distance=(from-position).length();
 	if (distance>sm->maxDistance) {audibility=0.0; return;}
 	if (distance<sm->referenceDistance) {audibility=gain; return;}

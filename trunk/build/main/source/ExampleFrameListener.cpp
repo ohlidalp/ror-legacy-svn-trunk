@@ -7502,10 +7502,10 @@ bool ExampleFrameListener::checkForActive(int j, bool *sleepyList)
 
 void ExampleFrameListener::flashMessage(Ogre::String txt, float time, float charHeight)
 {
-	flashMessage(const_cast<char*>(txt.c_str()), time, charHeight);
+	flashMessage(txt.c_str(), time, charHeight);
 }
 
-void ExampleFrameListener::flashMessage(char* txt, float time, float charHeight)
+void ExampleFrameListener::flashMessage(const char* txt, float time, float charHeight)
 {
 	if(!txt || time < 0)
 	{

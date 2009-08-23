@@ -6,7 +6,7 @@ Copyright 2007,2008,2009 Thomas Fischer
 For more information, see http://www.rigsofrods.com/
 
 Rigs of Rods is free software: you can redistribute it and/or modify
-it under the terms of the GNU General Public License version 3, as 
+it under the terms of the GNU General Public License version 3, as
 published by the Free Software Foundation.
 
 Rigs of Rods is distributed in the hope that it will be useful,
@@ -22,6 +22,9 @@ along with Rigs of Rods.  If not, see <http://www.gnu.org/licenses/>.
 #include "luasystem.h"
 #include "gui_loader.h"
 #include "Settings.h"
+
+// some gcc fixes
+#pragma GCC diagnostic ignored "-Wfloat-equal"
 
 LuaSystem *luaInstance=0;
 
@@ -94,7 +97,7 @@ int lua_run(lua_State *L, String filename)
 				Ogre::LogManager::getSingleton().logMessage("LUA original error: " + String(lua_tostring (L, -1)));
 			return s;
 		}
-		//error("terrain lua", s);	
+		//error("terrain lua", s);
 	}
 	return s;
 }
@@ -196,7 +199,7 @@ void LuaSystem::framestep()
 			if(evt->luahandler == -1)
 			{
 				// use default handler
-				lua_getfield(L, LUA_GLOBALSINDEX, "eventHandler"); 
+				lua_getfield(L, LUA_GLOBALSINDEX, "eventHandler");
 			} else
 			{
 				// use the sepcified handler
@@ -289,7 +292,7 @@ int LuaSystem::unregisterCallBack(lua_State *lua)
 				framestepCallbacks.erase(c);
 				return 0;
 			}
-		
+
 	return 0;
 }
 
@@ -357,7 +360,7 @@ int LuaSystem::showChooser(lua_State *lua)
 	if (!strcmp("trailer", type))   ntype = GUI_Loader::LT_Trailer;
 	if (!strcmp("load", type))      ntype = GUI_Loader::LT_Load;
 	if (!strcmp("extension", type)) ntype = GUI_Loader::LT_Extension;
-	if (ntype!=-1) 
+	if (ntype!=-1)
 		mefl->showLoad(ntype, (char*)inst, (char*)box);
 	return 0;
 }

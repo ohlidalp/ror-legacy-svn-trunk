@@ -6,7 +6,7 @@ Copyright 2007,2008,2009 Thomas Fischer
 For more information, see http://www.rigsofrods.com/
 
 Rigs of Rods is free software: you can redistribute it and/or modify
-it under the terms of the GNU General Public License version 3, as 
+it under the terms of the GNU General Public License version 3, as
 published by the Free Software Foundation.
 
 Rigs of Rods is distributed in the hope that it will be useful,
@@ -20,6 +20,9 @@ along with Rigs of Rods.  If not, see <http://www.gnu.org/licenses/>.
 #include "Ogre.h"
 #include "SoundScriptManager.h"
 #include "Settings.h"
+
+// some gcc fixes
+#pragma GCC diagnostic ignored "-Wfloat-equal"
 
 using namespace Ogre;
 
@@ -141,7 +144,7 @@ SoundScriptTemplate* SoundScriptManager::createTemplate(String name, String grou
 	//first, search if there is a template name collision
 	if(templates.find(name) != templates.end())
 	{
-		OGRE_EXCEPT(Exception::ERR_DUPLICATE_ITEM, "SoundScript with the name " + name + 
+		OGRE_EXCEPT(Exception::ERR_DUPLICATE_ITEM, "SoundScript with the name " + name +
             " already exists.", "SoundScriptManager::createTemplate");
 		return NULL;
 	}
@@ -154,8 +157,8 @@ SoundScriptTemplate* SoundScriptManager::createTemplate(String name, String grou
 void SoundScriptManager::unloadResourceGroup(String groupname)
 {
 	//first, search if there is a template name collision
-	for(std::map<Ogre::String, SoundScriptTemplate*>::iterator it = templates.begin(); it!=templates.end(); it++) 
-		if (it->second->groupname == groupname) 
+	for(std::map<Ogre::String, SoundScriptTemplate*>::iterator it = templates.begin(); it!=templates.end(); it++)
+		if (it->second->groupname == groupname)
 			templates.erase(it);
 }
 
@@ -168,7 +171,7 @@ SoundScriptInstance* SoundScriptManager::createInstance(Ogre::String templatenam
 {
 	//first, search template
 	SoundScriptTemplate* templ=NULL;
-	
+
 	if(templates.find(templatename) == templates.end())
 		// no template with that name found
 		return NULL;
@@ -235,7 +238,7 @@ void SoundScriptManager::parseScript(DataStreamPtr& stream, const String& groupN
 					// Finished ss
 					sst = 0;
 				}
-				else 
+				else
 				{
 					// Attribute
 					// Split params on space
@@ -273,7 +276,7 @@ void SoundScriptManager::skipToNextOpenBrace(DataStreamPtr& stream)
 
 void SoundScriptManager::soundEnable(bool state)
 {
-	if (state) 
+	if (state)
 		sm->resumeAllSounds();
 	else
 		sm->pauseAllSounds();
@@ -464,9 +467,9 @@ SoundScriptInstance::SoundScriptInstance(int truck, SoundScriptTemplate *templ, 
 	startSound=NULL;
 	stopSound=NULL;
 	//create sounds
-	if (templ->has_start_sound) 
+	if (templ->has_start_sound)
 		startSound=sm->createSound(templ->start_sound_name);
-	if (templ->has_stop_sound) 
+	if (templ->has_stop_sound)
 		stopSound=sm->createSound(templ->stop_sound_name);
 	for (int i=0; i<templ->free_sound; i++)
 		sounds[i]=sm->createSound(templ->sound_names[i]);
@@ -611,7 +614,7 @@ void SoundScriptInstance::setGain(float value)
 
 void SoundScriptInstance::setPosition(Vector3 pos, Vector3 velocity)
 {
-	if (startSound) 
+	if (startSound)
 	{
 		startSound->setPosition(pos);
 		startSound->setVelocity(velocity);
@@ -624,7 +627,7 @@ void SoundScriptInstance::setPosition(Vector3 pos, Vector3 velocity)
 			sounds[i]->setVelocity(velocity);
 		}
 	}
-	if (stopSound) 
+	if (stopSound)
 	{
 		stopSound->setPosition(pos);
 		stopSound->setVelocity(velocity);
@@ -633,7 +636,7 @@ void SoundScriptInstance::setPosition(Vector3 pos, Vector3 velocity)
 
 void SoundScriptInstance::runOnce()
 {
-	if (startSound) 
+	if (startSound)
 	{
 		if (startSound->isPlaying()) return;
 		startSound->play();
@@ -647,7 +650,7 @@ void SoundScriptInstance::runOnce()
 			sounds[i]->play();
 		}
 	}
-	if (stopSound) 
+	if (stopSound)
 	{
 		if (stopSound->isPlaying()) return;
 		stopSound->play();
@@ -656,7 +659,7 @@ void SoundScriptInstance::runOnce()
 
 void SoundScriptInstance::start()
 {
-	if (startSound) 
+	if (startSound)
 	{
 		startSound->stop();
 		startSound->play();
@@ -677,7 +680,7 @@ void SoundScriptInstance::stop()
 	{
 		if (sounds[i]) sounds[i]->stop();
 	}
-	if (stopSound) 
+	if (stopSound)
 	{
 		stopSound->stop();
 		stopSound->play();

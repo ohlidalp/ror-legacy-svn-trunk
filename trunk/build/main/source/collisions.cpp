@@ -23,17 +23,26 @@ along with Rigs of Rods.  If not, see <http://www.gnu.org/licenses/>.
 #include "approxmath.h"
 
 //these default values are overwritten by the data/ground_models.cfg file!
-ground_model_t GROUND_CONCRETE={3.0, 1.20, 0.60, 0.010, 5.0, 2.0, 0.5, 0};
-ground_model_t GROUND_ASPHALT={ 3.0, 1.10, 0.55, 0.010, 5.0, 2.0, 0.5, 0};
-ground_model_t GROUND_GRAVEL={  3.0, 0.85, 0.50, 0.010, 4.0, 2.0, 0.5, 0};
-ground_model_t GROUND_ROCK={    3.0, 0.75, 0.40, 0.010, 5.0, 2.0, 0.5, 0};
-ground_model_t GROUND_ICE={     3.0, 0.25, 0.15, 0.0001,4.0, 2.0, 0.5, 0};
-ground_model_t GROUND_SNOW={    3.0, 0.55, 0.30, 0.005, 6.0, 3.0, 0.5, 0};
-ground_model_t GROUND_METAL={   3.0, 0.40, 0.20, 0.001, 4.0, 2.0, 0.5, 0};
-ground_model_t GROUND_GRASS={   3.0, 0.50, 0.25, 0.005, 8.0, 2.0, 0.5, 0};
-ground_model_t GROUND_SAND={    3.0, 0.40, 0.20, 0.0001,9.0, 2.0, 0.5, 0};
+ground_model_t GROUND_CONCRETE={3.0, 1.20, 0.60, 0.010, 5.0, 2.0, 0.5, 0, ColourValue(), "concrete"};
+ground_model_t GROUND_ASPHALT={ 3.0, 1.10, 0.55, 0.010, 5.0, 2.0, 0.5, 0, ColourValue(), "asphalt"};
+ground_model_t GROUND_GRAVEL={  3.0, 0.85, 0.50, 0.010, 4.0, 2.0, 0.5, 0, ColourValue(), "gravel"};
+ground_model_t GROUND_ROCK={    3.0, 0.75, 0.40, 0.010, 5.0, 2.0, 0.5, 0, ColourValue(), "rock"};
+ground_model_t GROUND_ICE={     3.0, 0.25, 0.15, 0.0001,4.0, 2.0, 0.5, 0, ColourValue(), "ice"};
+ground_model_t GROUND_SNOW={    3.0, 0.55, 0.30, 0.005, 6.0, 3.0, 0.5, 0, ColourValue(), "snow"};
+ground_model_t GROUND_METAL={   3.0, 0.40, 0.20, 0.001, 4.0, 2.0, 0.5, 0, ColourValue(), "metal"};
+ground_model_t GROUND_GRASS={   3.0, 0.50, 0.25, 0.005, 8.0, 2.0, 0.5, 0, ColourValue(), "grass"};
+ground_model_t GROUND_SAND={    3.0, 0.40, 0.20, 0.0001,9.0, 2.0, 0.5, 0, ColourValue(), "sand"};
 
-extern ground_model_t *ground_models[9] = {&GROUND_CONCRETE, &GROUND_ASPHALT, &GROUND_GRAVEL, &GROUND_ROCK, &GROUND_ICE, &GROUND_SNOW, &GROUND_METAL, &GROUND_GRASS, &GROUND_SAND};
+ground_model_t *ground_models[9] = {
+	&GROUND_CONCRETE,
+	&GROUND_ASPHALT,
+	&GROUND_GRAVEL,
+	&GROUND_ROCK,
+	&GROUND_ICE,
+	&GROUND_SNOW,
+	&GROUND_GRASS,
+	&GROUND_SAND
+};
 
 //hash function SBOX
 //from http://home.comcast.net/~bretm/hash/10.html
@@ -350,7 +359,7 @@ void Collisions::hash_add(int cell_x, int cell_z, int value)
 hash_add_next_cell:
 		for(int i=0;i<CELL_BLOCKSIZE;i++)
 		{
-			if(cell->element[i] == UNUSED_CELLELEMENT)
+			if(cell->element[i] == (int)UNUSED_CELLELEMENT)
 			{
 				// found free cellelement, using it!
 				cell->element[i]=value;
@@ -382,7 +391,7 @@ hash_add_next_cell:
 
 				// find empty cell
 				int pos2=pos;
-				while (pos2!=stop && hashtable[pos2].cellid!=UNUSED_CELLID)
+				while (pos2!=(int)stop && hashtable[pos2].cellid!=(unsigned int)UNUSED_CELLID)
 					pos2++;
 
 				// allocate that cell and link it to the current cell
@@ -479,7 +488,7 @@ void Collisions::addCollisionBox(SceneNode *tenode, bool rotating, bool virt, fl
 	}
 
 	//next, global rotate
-	if (rx==0.0 && ry==0.0 && rz==0.0)
+	if (fabs(rx)<0.0001f && fabs(ry)<0.0001f && fabs(rz)<0.0001f)
 	{
 		//unrefined box
 		collision_boxes[free_collision_box].refined=false;
@@ -654,7 +663,7 @@ bool Collisions::collisionCorrect(Vector3 *refpos)
 coll_corr_resume_cell:
 		for (k=0; k<cell->free; k++)
 		{
-			if (cell->element[k] != UNUSED_CELLELEMENT && cell->element[k]<MAX_COLLISION_BOXES)
+			if (cell->element[k] != (int)UNUSED_CELLELEMENT && cell->element[k]<MAX_COLLISION_BOXES)
 			{
 				collision_box_t *cbox=&collision_boxes[cell->element[k]];
 				if (refpos->x>cbox->lo_x && refpos->x<cbox->hi_x && refpos->y>cbox->lo_y && refpos->y<cbox->hi_y && refpos->z>cbox->lo_z && refpos->z<cbox->hi_z)
@@ -851,7 +860,7 @@ bool Collisions::nodeCollision(node_t *node, bool iscinecam, int contacted, floa
 node_coll_resume_cell:
 		for (k=0; k<cell->free; k++)
 		{
-			if (cell->element[k] != UNUSED_CELLELEMENT && cell->element[k]<MAX_COLLISION_BOXES)
+			if (cell->element[k] != (int)UNUSED_CELLELEMENT && cell->element[k]<MAX_COLLISION_BOXES)
 			{
 				collision_box_t *cbox=&collision_boxes[cell->element[k]];
 				if (node->AbsPosition.x>cbox->lo_x && node->AbsPosition.x<cbox->hi_x && node->AbsPosition.y>cbox->lo_y && node->AbsPosition.y<cbox->hi_y && node->AbsPosition.z>cbox->lo_z && node->AbsPosition.z<cbox->hi_z)
@@ -1158,7 +1167,7 @@ void Collisions::primitiveCollision(node_t *node, Vector3 normal, float dt, grou
 	slipv=slipv*invslipv;
 
 	if (nso) *nso=slipv;
-	if (slipv!=0.0) slip=slip*invslipv; else slip=Vector3::ZERO;
+	if (fabs(slipv) > 0.00001f) slip=slip*invslipv; else slip=Vector3::ZERO;
 	//steady force
 	float fns_orig=node->Forces.dotProduct(normal);
 	float fnn=-fns_orig;

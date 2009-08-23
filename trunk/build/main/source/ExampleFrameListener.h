@@ -6,7 +6,7 @@ Copyright 2007,2008,2009 Thomas Fischer
 For more information, see http://www.rigsofrods.com/
 
 Rigs of Rods is free software: you can redistribute it and/or modify
-it under the terms of the GNU General Public License version 3, as 
+it under the terms of the GNU General Public License version 3, as
 published by the Free Software Foundation.
 
 Rigs of Rods is distributed in the hope that it will be useful,
@@ -449,7 +449,7 @@ public:
 	bool setCameraPositionWithCollision(Ogre::Vector3 newPos);
 	bool checkForActive(int j, bool *sleepyList);
 	void flashMessage(Ogre::String txt, float time=1, float charHeight=-1);
-	void flashMessage(char* txt, float time=1, float charHeight=-1);
+	void flashMessage(const char* txt, float time=1, float charHeight=-1);
 	void flashMessage();
 	int getFogMode() { return fogmode; };
 	float getFogDensity() { return fogdensity; };
@@ -499,11 +499,11 @@ public:
 
 	static float getGravity() { return gravity; };
 	static void setGravity(float value);
-	
+
 	Ogre::Ray getMouseRay();
 	void shutdown_pre();
 	void shutdown_final();
-	
+
 	// Caelum system
 	caelum::CaelumSystem *mCaelumSystem;
 	// Caelum model
@@ -605,7 +605,7 @@ protected:
 	Network *net;
 	ProceduralManager *proceduralManager;
 
-	
+
 	void updateXFire();
 	int gameStartTime;
 
@@ -640,7 +640,7 @@ protected:
 //	GUI_MainMenu *mainmenu;
 
 	Ogre::String loadedTerrain;
-	
+
 	std::vector<animated_object_t> animatedObjects;
 	bool updateAnimatedObjects(float dt);
 };

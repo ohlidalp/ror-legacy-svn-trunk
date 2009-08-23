@@ -6,7 +6,7 @@ Copyright 2007,2008,2009 Thomas Fischer
 For more information, see http://www.rigsofrods.com/
 
 Rigs of Rods is free software: you can redistribute it and/or modify
-it under the terms of the GNU General Public License version 3, as 
+it under the terms of the GNU General Public License version 3, as
 published by the Free Software Foundation.
 
 Rigs of Rods is distributed in the hope that it will be useful,
@@ -26,6 +26,7 @@ along with Rigs of Rods.  If not, see <http://www.gnu.org/licenses/>.
 using namespace Ogre;
 
 // this is the Height-Finder for the standart ogre Terrain Manager
+extern ground_model_t *ground_models[9];
 
 Landusemap::Landusemap(String cfgfilename, Collisions *c, Real _mapsizex, Real _mapsizez)
 {
@@ -108,18 +109,18 @@ void Landusemap::loadSettings()
 			String use = args[1];
 			usemap[color] = use;
 		}
-        
+
 	}
 	Forests::ColorMap *colourMap = Forests::ColorMap::load(textureFilename, CHANNEL_COLOR);
 	colourMap->setFilter(Forests::MAPFILTER_NONE);
 	Ogre::TRect<Ogre::Real> bounds = TBounds(0, 0, mapsizex, mapsizez);
-	
+
 	/*
 	// debug things below
 	printf("found ground use definitions:\n");
 	for(std::map < uint32, String >::iterator it=usemap.begin(); it!=usemap.end(); it++)
 	{
-		printf(" 0x%Lx : %s\n", it->first, it->second.c_str());	
+		printf(" 0x%Lx : %s\n", it->first, it->second.c_str());
 	}
 	*/
 
@@ -139,7 +140,7 @@ void Landusemap::loadSettings()
 			ptr++;
 		}
 	}
-	
+
 	/*
 	// debug things below
 	printf("used ground models:\n");
@@ -148,7 +149,7 @@ void Landusemap::loadSettings()
 		printf(" %s : %d\n", it->first.c_str(), it->second);
 	}
 	*/
-	
+
 }
 
 Landusemap::~Landusemap()
