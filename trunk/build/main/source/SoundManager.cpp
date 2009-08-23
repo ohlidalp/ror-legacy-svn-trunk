@@ -41,10 +41,16 @@ SoundManager::SoundManager()
 
 	if (SETTINGS.getSetting("3D Sound renderer") == "No sound") return;
 
+    char str[256];
+	if (SETTINGS.getSetting("3D Sound renderer") == "Default") str[0]=0;
+	else sprintf(str, "DirectSound Software on %s", SETTINGS.getSetting("3D Sound renderer").c_str());
+
+	LogManager::getSingleton().logMessage("Opening Device: '"+String(str)+"'");
+
 	//we loop alcOpenDevice() because there is a potential race condition with the asynchronous DSound enumeration callback
 	for (int i=0; i<100; i++)
 	{
-		device=alcOpenDevice("");
+		device=alcOpenDevice(str);
 		if (device) break; //all right we got it
 		else
 		{
@@ -60,8 +66,15 @@ SoundManager::SoundManager()
 	}
 	if (!device) //we looped and we got nothing
 	{
-		LogManager::getSingleton().logMessage("Could not create OpenAL device after many tries.");
-		return;
+		//last ditch attempt with the default sound device, in case the user has a messed-up config file
+		device=alcOpenDevice("");
+		if (!device)
+		{
+			LogManager::getSingleton().logMessage("Could not create OpenAL device after many tries.");
+			return;
+		}
+		else
+			LogManager::getSingleton().logMessage("Warning: invalid sound device configuration, I will use the default sound source. Run configurator!");
 	}
 	context=alcCreateContext(device, NULL);
 	if (!context) 

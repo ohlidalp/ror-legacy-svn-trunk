@@ -290,6 +290,7 @@ public:
 	void OnNoteBookPageChange(wxNotebookEvent& event);
 
 	void updateItemText(wxTreeItemId item, event_trigger_t *t);
+	void DSoundEnumerate(wxChoice* wxc);
 //	void checkLinuxPaths();
 	MyApp *app;
 private:
@@ -1737,12 +1738,15 @@ MyDialog::MyDialog(const wxString& title, MyApp *_app) : wxDialog(NULL, wxID_ANY
 	envmap->SetToolTip(_("Enable high quality reflective effects. Causes a slowdown."));
 
 	//sounds panel
-	dText = new wxStaticText(soundsPanel, -1, _("Sound rendering:"), wxPoint(20,28));
+	dText = new wxStaticText(soundsPanel, -1, _("Sound source:"), wxPoint(20,28));
 	sound=new wxChoice(soundsPanel, -1, wxPoint(150, 25), wxSize(200, -1), 0);
 	sound->Append(conv("No sound"));
-	sound->Append(conv("Software (stereo)"));
-	sound->Append(conv("Hardware (3D)"));
-	sound->SetToolTip(_("Software sound is stereo only.\nHardware sound will uses all your speakers, but this mode is buggy with some sound card drivers."));
+	sound->Append(conv("Default"));
+	sound->SetToolTip(_("Select the appropriate sound source.\nLeaving to Default should work most of the time."));
+#if OGRE_PLATFORM == OGRE_PLATFORM_WIN32
+	//add the rest
+	DSoundEnumerate(sound);
+#endif
 
 	// creak sound?
 	creaksound=new wxCheckBox(soundsPanel, -1, _("disable creak sound"), wxPoint(150, 70));
@@ -2282,7 +2286,7 @@ void MyDialog::SetDefaults()
 	skidmarks->SetValue(false);
 	creaksound->SetValue(true);
 	//wxChoice *sound;
-	sound->SetSelection(1);//software
+	sound->SetSelection(1);//default
 	//wxChoice *thread;
 	thread->SetSelection(1);//2 CPUs is now the norm (incl. HyperThreading)
 	wheel2->SetValue(true);
@@ -3193,7 +3197,7 @@ void MyDialog::OnSimpleSliderScroll(wxScrollEvent & event)
 			dcm->SetValue(false); //debug collision meshes
 			enablexfire->SetValue(false);
 			extcam->SetValue(false);
-			sound->SetSelection(1);//software
+			sound->SetSelection(1);//default
 			thread->SetSelection(1);//2 CPUs is now the norm (incl. HyperThreading)
 			wheel2->SetValue(false);
 			posstor->SetValue(false);
@@ -3205,7 +3209,7 @@ void MyDialog::OnSimpleSliderScroll(wxScrollEvent & event)
 			dcm->SetValue(false); //debug collision meshes
 			enablexfire->SetValue(true);
 			extcam->SetValue(false);
-			sound->SetSelection(1);//software
+			sound->SetSelection(1);//default
 			thread->SetSelection(1);//2 CPUs is now the norm (incl. HyperThreading)
 			wheel2->SetValue(true);
 			posstor->SetValue(true);
@@ -3217,7 +3221,7 @@ void MyDialog::OnSimpleSliderScroll(wxScrollEvent & event)
 			dcm->SetValue(false); //debug collision meshes
 			enablexfire->SetValue(true);
 			extcam->SetValue(false);
-			sound->SetSelection(2);//hardware
+			sound->SetSelection(1);//default
 			thread->SetSelection(1);//2 CPUs is now the norm (incl. HyperThreading)
 			wheel2->SetValue(true);
 			posstor->SetValue(true);
@@ -3471,3 +3475,61 @@ void MyDialog::OnTestNet(wxCommandEvent& event)
 	*/
 #endif
 }
+
+#if OGRE_PLATFORM == OGRE_PLATFORM_WIN32
+
+//DirectSound Enumeration
+
+//Callback, yay!
+static BOOL CALLBACK DSoundEnumDevices(LPGUID guid, LPCSTR desc, LPCSTR drvname, LPVOID data)
+{
+	wxChoice* wxc=(wxChoice*)data;
+	if (guid && desc)
+	{
+		//sometimes you get weird strings here
+		wxString wxdesc=conv(desc);
+//		logfile->AddLine(conv("DirectSound Callback with source '")+conv(desc)+conv("'"));logfile->Write();
+		if (wxdesc.Length()>0) wxc->Append(wxdesc);
+	}
+    return TRUE;
+}
+
+typedef BOOL (CALLBACK *LPDSENUMCALLBACKA)(LPGUID, LPCSTR, LPCSTR, LPVOID);
+
+static HRESULT (WINAPI *pDirectSoundEnumerateA)(LPDSENUMCALLBACKA pDSEnumCallback, LPVOID pContext);
+
+
+void MyDialog::DSoundEnumerate(wxChoice *wxc)
+{
+    size_t iter = 1;
+    HRESULT hr;
+
+	HMODULE ds_handle;
+
+    ds_handle = LoadLibraryA("dsound.dll");
+    if(ds_handle == NULL)
+    {
+        //AL_PRINT("Failed to load dsound.dll\n");
+        return;
+    }
+//pure uglyness
+//what you are seeing here is a function type inside a function type casting inside a define
+#define LOAD_FUNC(f) do { \
+    p##f = (HRESULT (__stdcall *)(LPDSENUMCALLBACKA,LPVOID))GetProcAddress((HMODULE)ds_handle, #f); \
+    if(p##f == NULL) \
+    { \
+        FreeLibrary(ds_handle); \
+        ds_handle = NULL; \
+        return; \
+    } \
+} while(0)
+
+LOAD_FUNC(DirectSoundEnumerateA);
+#undef LOAD_FUNC
+
+    hr = pDirectSoundEnumerateA(DSoundEnumDevices, wxc);
+//    if(FAILED(hr))
+//        AL_PRINT("Error enumerating DirectSound devices (%#x)!\n", (unsigned int)hr);
+
+}
+#endif
