@@ -37,6 +37,7 @@ class Character : public Streamable
 {
 	friend class CharacterFactory;
 	friend class Network;
+
 public:
 	Character(Collisions *c, Network *net, HeightFinder *h, Water *w, MapControl *m, Ogre::SceneManager *scm, int source=-1, unsigned int streamid=0, int slotid=0);
 	~Character();
