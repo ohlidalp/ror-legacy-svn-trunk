@@ -594,13 +594,14 @@ void Network::receivethreadstart()
 client_t *Network::getClientInfo(unsigned int uid)
 {
 	pthread_mutex_lock(&clients_mutex);
+	client_t *c = 0;
 	for (int i=0; i<MAX_PEERS; i++)
 	{
 		if (clients[i].user_id == uid)
-			return &clients[i];
+			c = &clients[i];
 	}
-	return 0;
 	pthread_mutex_unlock(&clients_mutex);
+	return c;
 }
 
 
