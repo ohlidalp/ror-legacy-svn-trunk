@@ -17,8 +17,16 @@ GNU General Public License for more details.
 You should have received a copy of the GNU General Public License
 along with Rigs of Rods.  If not, see <http://www.gnu.org/licenses/>.
 */
+
 #include "FlexObj.h"
 #include "ResourceBuffer.h"
+
+// some gcc fixes
+#if OGRE_PLATFORM == OGRE_PLATFORM_LINUX
+#pragma GCC diagnostic ignored "-Wfloat-equal"
+#endif //OGRE_PLATFORM_LINUX
+
+
 FlexObj::FlexObj(SceneManager *manager, node_t *nds, int numtexcoords, Vector3* texcoords, int numtriangles, int* triangles, int numsubmeshes, int* subtexindex, int* subtriindex, char* texname, char* name, int* subisback, char* backtexname, char* transtexname)
 {
 	unsigned int i;
@@ -271,7 +279,7 @@ Vector3 FlexObj::updateVertices()
 			covertices[faces[i*3+2]].vertex=covertices[faces[i*3]].vertex+Vector3(0,0,0.1);
 		}
 		//v1.normalise();
-		if(fabs(s) < 0.00001f)
+		if(s == 0)
 			continue;
 		v1=v1/s;
 		covertices[faces[i*3]].normal+=v1;
@@ -318,7 +326,7 @@ Vector3 FlexObj::updateShadowVertices()
 			coshadowposvertices[faces[i*3+2]+nVertices].vertex=coshadowposvertices[faces[i*3+2]].vertex;
 		}
 		//v1.normalise();
-		if(fabs(s) < 0.00001f)
+		if(s == 0)
 			continue;
 		v1=v1/s;
 

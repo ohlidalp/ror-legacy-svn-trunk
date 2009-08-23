@@ -22,6 +22,12 @@ freely, subject to the following restrictions:
 */
 #include "InputEngine.h"
 
+// some gcc fixes
+#if OGRE_PLATFORM == OGRE_PLATFORM_LINUX
+#pragma GCC diagnostic ignored "-Wfloat-equal"
+#endif //OGRE_PLATFORM_LINUX
+
+
 #include <Ogre.h>
 #include <OgreStringConverter.h>
 #include <OgreException.h>
@@ -1701,7 +1707,7 @@ OIS::MouseState InputEngine::getMouseState()
 		LogManager::getSingleton().logMessage("Mouse X sens: " + StringConverter::toString((Real)mX));
 		LogManager::getSingleton().logMessage("Mouse Y sens: " + StringConverter::toString((Real)mY));
 		mode = 1;
-		if(fabs(mX) < 0.000001f || fabs(mY) < 0.000001f)
+		if(mX == 0 || mY ==0)
 			mode = 2;
 #else
 		// no scaling without ogre
@@ -1979,7 +1985,7 @@ float InputEngine::axisLinearity(float axisValue, float linearity)
 float InputEngine::logval(float val)
 {
 	if (val>0) return log10(1.0/(1.1-val))/1.0;
-	if (fabs(val) < 0.00001f) return 0;
+	if (val==0) return 0;
 	return -log10(1.0/(1.1+val))/1.0;
 }
 

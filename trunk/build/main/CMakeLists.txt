@@ -212,7 +212,8 @@ include_directories (${RoR_Dependencies_SOURCE_DIR}/mygui/include)
 
 IF(WIN32)
   add_definitions("-D_CRT_SECURE_NO_WARNINGS")
-ELSEIF(UNIX)
+ELSEIF(LINUX)
+  add_definitions("-Wno-float-equal -Wall")
 ELSEIF(APPLE)
 ENDIF(WIN32)
 
