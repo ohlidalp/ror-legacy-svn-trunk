@@ -42,8 +42,8 @@ protected:
 	~Streamable();
 
 	// static const members
-	static const int packetBufferSize = 10;
-	static const int maxPacketLen     = 8192;
+	static const unsigned int packetBufferSize = 10;
+	static const unsigned int maxPacketLen     = 8192;
 
 	// custom types
 	typedef struct _bufferedPacket
@@ -51,11 +51,11 @@ protected:
 		char packetBuffer[maxPacketLen];
 		unsigned int size;
 	} bufferedPacket_t;
-	
+
 	// normal members
 	std::queue < bufferedPacket_t > packets;
 	unsigned int streamid;
-	
+
 	// virtual interface methods
 	virtual void sendStreamData() = 0;
 	virtual void receiveStreamData(unsigned int &type, int &source, unsigned int &streamid, char *buffer, unsigned int &len) = 0;
