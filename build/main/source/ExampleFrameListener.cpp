@@ -678,7 +678,7 @@ void ExampleFrameListener::updateGUI(float dt)
 		else lockedo->setMaterialName("tracks/locked-off");
 		if (trucks[current_truck]->tied)
 		{
-			if (fabs(trucks[current_truck]->commandkey[0].commandValue) < 0.000001f)
+			if (fabs(trucks[current_truck]->commandkey[0].commandValue) > 0.000001f)
 			{
 				flipflop=!flipflop;
 				if (flipflop) securedo->setMaterialName("tracks/secured-on");
