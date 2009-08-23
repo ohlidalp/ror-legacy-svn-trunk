@@ -44,7 +44,7 @@ namespace Ogre {
     String LineStreamOverlayElement::msTypeName = "LineStream";
     //---------------------------------------------------------------------
     LineStreamOverlayElement::LineStreamOverlayElement(const String& name)
-		: OverlayContainer(name), 
+		: OverlayContainer(name),
 		mNumberOfTraces(1),
 		mNumberOfSamplesForTrace(100),
 		mPosInStream(0),
@@ -165,12 +165,12 @@ namespace Ogre {
 			mRenderOp.vertexData->vertexStart = 0;
 			// No indexes & issue as a strip
 			mRenderOp.useIndexes = false;
-			mRenderOp.operationType = RenderOperation::OT_LINE_LIST;	
+			mRenderOp.operationType = RenderOperation::OT_LINE_LIST;
 
 
 			mTraceSamples.resize(numberOfVertexs / 2);
 			mTraceInfo.resize(mNumberOfTraces);
-	
+
 			mRenderOp.vertexData->vertexCount = numberOfVertexs;
 
 			// Vertex buffer #1
@@ -238,7 +238,7 @@ namespace Ogre {
 			}
 		}
 
-		if (maxValue == 0.0f)
+		if (fabs(maxValue) < 0.000001f)
 		{
 			return;
 		}
@@ -250,7 +250,7 @@ namespace Ogre {
 		top = -((_getDerivedTop() * 2) - 1) - mHeight * 0.4f; // this creates a border at the top and bottom
 		bottom =  top -  (gHeight * 2);
 
-		fTraceVertex * currentVtxBufferData = 
+		fTraceVertex * currentVtxBufferData =
 			static_cast<fTraceVertex *>(mCurrentVtxBuffer->lock(HardwareBuffer::HBL_DISCARD));
 
 		// write vertexes
@@ -274,7 +274,7 @@ namespace Ogre {
 				lineStartVtx.color = mTraceInfo[trace].colour.getAsARGB();
 				lineEndVtx.color = mTraceInfo[trace].colour.getAsARGB();
 			}
-			
+
 		}
 		mCurrentVtxBuffer->unlock();
 
@@ -340,7 +340,7 @@ namespace Ogre {
 		mTraceInfo[traceIndex].legendText->setColour(traceColour);
 		mTraceInfo[traceIndex].colour = traceColour;
 		mTraceInfo[traceIndex].name = name;
-		
+
 		if(!legendTop && !legendBottom)
 		{
 			legendTop = (TextAreaOverlayElement*)OverlayManager::getSingleton().createOverlayElement("TextArea", elName+"Top");

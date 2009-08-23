@@ -22,7 +22,7 @@ along with Rigs of Rods.  If not, see <http://www.gnu.org/licenses/>.
 
 #pragma GCC diagnostic ignored "-Wfloat-equal"
 
-DustPool::DustPool(char* dname, int dsize, SceneNode *parent, SceneManager *smgr, Water *mw)
+DustPool::DustPool(const char* dname, int dsize, SceneNode *parent, SceneManager *smgr, Water *mw)
 	{
 		w=mw;
 		size=dsize;

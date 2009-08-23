@@ -6,7 +6,7 @@ Copyright 2007,2008,2009 Thomas Fischer
 For more information, see http://www.rigsofrods.com/
 
 Rigs of Rods is free software: you can redistribute it and/or modify
-it under the terms of the GNU General Public License version 3, as 
+it under the terms of the GNU General Public License version 3, as
 published by the Free Software Foundation.
 
 Rigs of Rods is distributed in the hope that it will be useful,
@@ -66,7 +66,7 @@ protected:
 public:
 	Road(SceneManager *scm, Vector3 start);
 	void reset(Vector3 start);
-	void addRoadType(char* name);
+	void addRoadType(const char* name);
 	void toggleType();
 	void dpitch(float v);
 	void dturn(float v);

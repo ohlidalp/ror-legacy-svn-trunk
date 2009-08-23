@@ -308,7 +308,9 @@ ELSEIF(UNIX)
   add_definitions("
     -isystem ${RoR_Dependencies_SOURCE_DIR}/ogrenew/OgreMain/include
     -isystem ${RoR_Dependencies_SOURCE_DIR}/mygui/include
-    -isystem ${RoR_Dependencies_SOURCE_DIR}/hydrax/Hydrax/
+    -isystem ${RoR_Dependencies_SOURCE_DIR}/hydrax
+    -isystem ${RoR_Dependencies_SOURCE_DIR}/PagedGeometry/include/
+    -isystem ${RoR_Dependencies_SOURCE_DIR}/pagedGeometry_sf/include/
   ")
 
   EXEC_PROGRAM(pkg-config ARGS "--cflags gtk+" OUTPUT_VARIABLE CFLAGS_GTK)
