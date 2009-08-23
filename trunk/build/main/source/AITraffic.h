@@ -11,8 +11,6 @@
 #include "Streamable.h"
 #include "rornet.h"
 
-class ExampleFrameListener;
-
 class AITraffic : public Streamable
 {
 
@@ -25,6 +23,16 @@ class AITraffic : public Streamable
 
 		void sendStreamData();
 		void receiveStreamData(unsigned int &type, int &source, unsigned int &streamid, char *buffer, unsigned int &len);
+
+	protected:
+		void sendStreamSetup();
+
+	private:
+		bool remote;
+		int source;
+		unsigned int streamid;
+		int slotid;
+
 };
 
 #endif
