@@ -5816,9 +5816,6 @@ void Beam::receiveStreamData(unsigned int &type, int &source, unsigned int &stre
 
 void Beam::calcForcesEuler(int doUpdate, Real dt, int step, int maxstep, Beam** trucks, int numtrucks)
 {
-//IMI
-	return;
-//
 	// do not calc anything if we are going to get deleted
 	if(deleting) return;
 
@@ -8218,9 +8215,6 @@ void Beam::toggleCustomParticles()
 
 void Beam::updateSoundSources()
 {
-//IMI
-	return;
-//
 	for (int i=0; i<free_soundsource; i++)
 	{
 		soundsources[i].ssi->setPosition(nodes[soundsources[i].nodenum].AbsPosition, nodes[soundsources[i].nodenum].Velocity);
