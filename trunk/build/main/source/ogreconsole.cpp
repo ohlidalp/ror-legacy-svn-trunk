@@ -24,7 +24,7 @@ OgreConsole::OgreConsole()
 
 OgreConsole::~OgreConsole()
 {
-   
+
 }
 
 void OgreConsole::init(Ogre::Root *root, Ogre::RenderWindow *win)
@@ -36,7 +36,7 @@ void OgreConsole::init(Ogre::Root *root, Ogre::RenderWindow *win)
 
 	//we have a monospaced font!
 	FontPtr font = FontManager::getSingleton().getByName(font_name);
-	
+
 	float char_height_percent = 0.025f;
 	float char_width_percent = char_height_percent * font->getGlyphAspectRatio('X');
 	float char_height = char_height_percent * win->getHeight();
@@ -92,7 +92,7 @@ void OgreConsole::init(Ogre::Root *root, Ogre::RenderWindow *win)
 	promptbox->setParameter("char_height", StringConverter::toString(char_height_percent));
 	promptbox->hide();
 
-	overlay=OverlayManager::getSingleton().create("Console");   
+	overlay=OverlayManager::getSingleton().create("Console");
 	overlay->add2D((OverlayContainer*)textbox);
 	overlay->add2D((OverlayContainer*)promptbox);
 	overlay->show();
@@ -147,10 +147,10 @@ void OgreConsole::onKeyPressed(const OIS::KeyEvent &arg)
 		history.push_back(""); // new, empty last entry
 		history_pos = history.size() - 1; // switch to the new line
 		break;
-	
+
 	case OIS::KC_BACK:
 		// if you try to edit the history, rather make a new copy and edit that then :)
-		if(history_pos != history.size() - 1)
+		if((unsigned int)history_pos != history.size() - 1)
 		{
 			// add the edited element to the back
 			history.push_back(history[history_pos]);
@@ -163,10 +163,10 @@ void OgreConsole::onKeyPressed(const OIS::KeyEvent &arg)
 			cursor_position--;
 		}
 		break;
-	
+
 	case OIS::KC_DELETE:
 		// if you try to edit the history, rather make a new copy and edit that then :)
-		if(history_pos != history.size() - 1)
+		if((unsigned int)history_pos != history.size() - 1)
 		{
 			// add the edited element to the back
 			history.push_back(history[history_pos]);
@@ -219,27 +219,27 @@ void OgreConsole::onKeyPressed(const OIS::KeyEvent &arg)
 		if(start_line<(int)lines.size())
 			start_line++;
 		break;
-	
+
 	default:
 		char legalchars[]="ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz1234567890+!\"#'%&/()=?[]\\*-_.:,;<> ";
-		for(int c=0;c<sizeof(legalchars)-1;c++)
+		for(unsigned int c=0;c<sizeof(legalchars)-1;c++)
 		{
-			if(legalchars[c]==arg.text)
+			if(legalchars[c]==(char)arg.text)
 			{
 				// if you try to edit the history, rather make a new copy and edit that then :)
-				if(history_pos != history.size() - 1)
+				if((unsigned int)history_pos != history.size() - 1)
 				{
 					// add the edited element to the back
 					history.push_back(history[history_pos]);
 					history_pos = history.size() - 1;
 				}
-				if(cursor_position == history[history_pos].size())
+				if((unsigned int)cursor_position == history[history_pos].size())
 					history[history_pos] += arg.text;
 				else if(insertmode)
 					history[history_pos] = history[history_pos].substr(0,cursor_position) + arg.text + history[history_pos].substr(cursor_position);
 				else if(!insertmode)
 					history[history_pos] = history[history_pos].substr(0,cursor_position) + arg.text + history[history_pos].substr(cursor_position+1);
-				
+
 				cursor_position++;
 				break;
 			}
@@ -251,8 +251,8 @@ void OgreConsole::onKeyPressed(const OIS::KeyEvent &arg)
 bool OgreConsole::frameStarted(const Ogre::FrameEvent &evt)
 {
 	if(!visible && !promptbox->isVisible()) return true;
-	
-	blinkdelay += evt.timeSinceLastFrame;	
+
+	blinkdelay += evt.timeSinceLastFrame;
 	if(visible && blinkdelay > 0.2f)
 	{
 		if(promptbox->isVisible())
@@ -262,7 +262,7 @@ bool OgreConsole::frameStarted(const Ogre::FrameEvent &evt)
 
 		blinkdelay = 0;
 	}
-	
+
 	if(visible&&height<1)
 	{
 		height+=evt.timeSinceLastFrame*2;
@@ -318,7 +318,7 @@ bool OgreConsole::frameStarted(const Ogre::FrameEvent &evt)
 		text += "] " + entry;
 		if(cursor_position > (int)entry.size())
 			cursor_position = entry.size();
-		
+
 		String blank = "";
 		for(int i=0;i<cursor_position;i++)
 			blank+=" ";

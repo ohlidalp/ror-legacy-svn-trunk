@@ -6,7 +6,7 @@ Copyright 2007,2008,2009 Thomas Fischer
 For more information, see http://www.rigsofrods.com/
 
 Rigs of Rods is free software: you can redistribute it and/or modify
-it under the terms of the GNU General Public License version 3, as 
+it under the terms of the GNU General Public License version 3, as
 published by the Free Software Foundation.
 
 Rigs of Rods is distributed in the hope that it will be useful,
@@ -343,7 +343,7 @@ void MapEntity::init()
 void MapEntity::setPosition(Vector3 pos)
 {
 	bool needUpdate=false;
-	if(x != pos.x || z != pos.z)
+	if(fabs(x-pos.x) > 0.00001f || fabs(z - pos.z) > 0.00001f)
 		needUpdate=true;
 	x=pos.x;
 	z=pos.z;
@@ -354,7 +354,7 @@ void MapEntity::setPosition(Vector3 pos)
 void MapEntity::setPosition(float _x, float _z)
 {
 	bool needUpdate=false;
-	if(_x != x || _z != z)
+	if(fabs(_x-x) > 0.00001f || fabs(_z - z) > 0.00001f)
 		needUpdate=true;
 	x=_x;
 	z=_z;
@@ -670,7 +670,7 @@ void MapControl::setPosition(float _x, float _y, float _w, float _h, Ogre::Rende
 		nw=_w*rWinWidth;
 		nh=_h*rWinHeight;
 	}
-	if(nw != w || nh != h)
+	if(fabs(nw-w) > 0.00001f || fabs(nh - h) > 0.00001f)
 		changedSize=true;
 
 	h=nh;
@@ -693,7 +693,7 @@ void MapControl::setPosition(float _x, float _y, float _w, Ogre::RenderWindow* r
 	y=_y;
 	nw=_w*rWinWidth;
 	nh=nw;
-	if(nw != w || nh != h)
+	if(fabs(nw-w) > 0.00001f || fabs(nh - h) > 0.00001f)
 		changedSize=true;
 
 	h=nh;

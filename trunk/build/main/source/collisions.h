@@ -6,7 +6,7 @@ Copyright 2007,2008,2009 Thomas Fischer
 For more information, see http://www.rigsofrods.com/
 
 Rigs of Rods is free software: you can redistribute it and/or modify
-it under the terms of the GNU General Public License version 3, as 
+it under the terms of the GNU General Public License version 3, as
 published by the Free Software Foundation.
 
 Rigs of Rods is distributed in the hope that it will be useful,
@@ -199,13 +199,13 @@ public:
     ExampleFrameListener *efl, bool debugMode);
 
 	void loadDefaultModels();
-	void parseGroundModel(ground_model_t* gm, char* line, char *name);
+	void parseGroundModel(ground_model_t* gm, const char* line, const char *name);
 	void loadGroundModelLine(char *line);
 	ground_model_t *getGroundModelByString(char *stdf);
 	ground_model_t *last_used_ground_model;
 	void setupLandUse(char *configfile);
 	int getGroundModelNumberByString(char *stdf);
-	void addCollisionBox(SceneNode *tenode, bool rotating, bool virt, float px, float py, float pz, float rx, float ry, float rz, float lx,float hx,float ly,float hy,float lz,float hz,float srx,float sry,float srz, char* eventname, char* instancename, bool forcecam, Vector3 campos, float scx=1.0, float scy=1.0, float scz=1.0, float drx=0.0, float dry=0.0, float drz=0.0, int event_filter=EVENT_ALL, int luahandler=-1);
+	void addCollisionBox(SceneNode *tenode, bool rotating, bool virt, float px, float py, float pz, float rx, float ry, float rz, float lx,float hx,float ly,float hy,float lz,float hz,float srx,float sry,float srz, const char* eventname, const char* instancename, bool forcecam, Vector3 campos, float scx=1.0, float scy=1.0, float scz=1.0, float drx=0.0, float dry=0.0, float drz=0.0, int event_filter=EVENT_ALL, int luahandler=-1);
 	int addCollisionTri(Vector3 p1, Vector3 p2, Vector3 p3, ground_model_t* gm);
 	bool collisionCorrect(Vector3 *refpos);
 	bool nodeCollision(node_t *node, bool iscinecam, int contacted, float dt, float* nso, ground_model_t** ogm);
@@ -218,7 +218,7 @@ public:
 	void primitiveCollision(node_t *node, Vector3 normal, float dt, ground_model_t* gm, float* nso, float penetration=0);
 	void setHfinder(HeightFinder *hf);
 	void printStats();
-	
+
 	int enableCollisionTri(int number, bool enable);
 	int removeCollisionTri(int number);
 

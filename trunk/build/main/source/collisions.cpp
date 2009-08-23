@@ -40,6 +40,7 @@ ground_model_t *ground_models[9] = {
 	&GROUND_ROCK,
 	&GROUND_ICE,
 	&GROUND_SNOW,
+	&GROUND_METAL,
 	&GROUND_GRASS,
 	&GROUND_SAND
 };
@@ -205,7 +206,7 @@ void Collisions::loadGroundModelLine(char *line)
 	}
 }
 
-void Collisions::parseGroundModel(ground_model_t* gm, char* line, char *name)
+void Collisions::parseGroundModel(ground_model_t* gm, const char* line, const char *name)
 {
 	float va, ms, mc, t2, vs, alpha, strength;
 	char fxt[256];
@@ -437,7 +438,7 @@ cell_t *Collisions::hash_find(int cell_x, int cell_z)
 }
 
 
-void Collisions::addCollisionBox(SceneNode *tenode, bool rotating, bool virt, float px, float py, float pz, float rx, float ry, float rz, float lx,float hx,float ly,float hy,float lz,float hz,float srx,float sry,float srz, char* eventname, char* instancename, bool forcecam, Vector3 campos, float scx, float scy, float scz, float drx, float dry, float drz, int event_filter, int luahandler)
+void Collisions::addCollisionBox(SceneNode *tenode, bool rotating, bool virt, float px, float py, float pz, float rx, float ry, float rz, float lx,float hx,float ly,float hy,float lz,float hz,float srx,float sry,float srz, const char* eventname, const char* instancename, bool forcecam, Vector3 campos, float scx, float scy, float scz, float drx, float dry, float drz, int event_filter, int luahandler)
 {
 	Quaternion 	rotation=Quaternion(Degree(rx), Vector3::UNIT_X)*Quaternion(Degree(ry), Vector3::UNIT_Y)*Quaternion(Degree(rz), Vector3::UNIT_Z);
 	Quaternion 	direction=Quaternion(Degree(drx), Vector3::UNIT_X)*Quaternion(Degree(dry), Vector3::UNIT_Y)*Quaternion(Degree(drz), Vector3::UNIT_Z);

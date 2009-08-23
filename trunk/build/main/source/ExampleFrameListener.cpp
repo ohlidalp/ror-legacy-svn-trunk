@@ -675,7 +675,7 @@ void ExampleFrameListener::updateGUI(float dt)
 		else lockedo->setMaterialName("tracks/locked-off");
 		if (trucks[current_truck]->tied)
 		{
-			if (trucks[current_truck]->commandkey[0].commandValue)
+			if (fabs(trucks[current_truck]->commandkey[0].commandValue) < 0.000001f)
 			{
 				flipflop=!flipflop;
 				if (flipflop) securedo->setMaterialName("tracks/secured-on");
@@ -948,7 +948,6 @@ ExampleFrameListener::ExampleFrameListener(RenderWindow* win, Camera* cam, Scene
 	benchmarking=false;
 	fpsLineStream = netLineStream = netlagLineStream = 0;
 	enablePosStor = (SETTINGS.getSetting("Position Storage")=="Yes");
-	loaded_terrain=0;
 	objectCounter=0;
 	hdrListener=0;
 	eflsingleton=this;
@@ -1681,7 +1680,7 @@ ExampleFrameListener::ExampleFrameListener(RenderWindow* win, Camera* cam, Scene
 		}
 
 		// set the terrain cache entry
-		loaded_terrain = &CACHE.getResourceInfo(mapname);
+		loaded_terrain = CACHE.getResourceInfo(mapname);
 
 		loadTerrain(mapname);
 		//miniature map stuff
@@ -1785,7 +1784,7 @@ ExampleFrameListener::~ExampleFrameListener()
 		}
 		if(it->loader)
 		{
-			delete(it->loader);
+			delete((TreeLoader2D *)it->loader);
 			it->loader=0;
 		}
 	}
@@ -2035,8 +2034,8 @@ void ExampleFrameListener::getMeshInformation(Mesh* mesh,size_t &vertex_count,Ve
 		Ogre::IndexData* index_data = submesh->indexData;
 
 		size_t numTris = index_data->indexCount / 3;
-		unsigned short* pShort;
-		unsigned int* pInt;
+		unsigned short* pShort = 0;
+		unsigned int* pInt = 0;
 		Ogre::HardwareIndexBufferSharedPtr ibuf = index_data->indexBuffer;
 		bool use32bitindexes = (ibuf->getType() == Ogre::HardwareIndexBuffer::IT_32BIT);
 		if (use32bitindexes) pInt = static_cast<unsigned int*>(ibuf->lock(Ogre::HardwareBuffer::HBL_READ_ONLY));
@@ -2105,7 +2104,7 @@ String ExampleFrameListener::saveTerrainMesh()
 	return mfilename;
 }
 
-void ExampleFrameListener::loadObject(char* name, float px, float py, float pz, float rx, float ry, float rz, SceneNode * bakeNode, char* instancename, bool enable_collisions, int luahandler, char *type, bool uniquifyMaterial)
+void ExampleFrameListener::loadObject(const char* name, float px, float py, float pz, float rx, float ry, float rz, SceneNode * bakeNode, const char* instancename, bool enable_collisions, int luahandler, const char *type, bool uniquifyMaterial)
 {
 	ScopeLog log("object_"+String(name));
 	if(type && !strcmp(type, "grid"))
@@ -2511,7 +2510,7 @@ void ExampleFrameListener::loadObject(char* name, float px, float py, float pz, 
 				ao.node = tenode;
 				ao.ent = te;
 				ao.speedfactor = speedfactorMin;
-				if(speedfactorMin != speedfactorMax)
+				if(fabs(speedfactorMin - speedfactorMax) > 0.000001f)
 					ao.speedfactor = Math::RangeRandom(speedfactorMin, speedfactorMax);
 				ao.anim = 0;
 				try
@@ -2679,7 +2678,7 @@ void ExampleFrameListener::repairTruck(char* inst, char* box)
 
 bool ExampleFrameListener::updateEvents(float dt)
 {
-	if (dt==0.0) return true;
+	if (fabs(dt) < 0.000001f)return true;
 
 	INPUTENGINE.updateKeyBounces(dt);
 	if(!INPUTENGINE.getInputsChanged()) return true;
@@ -4837,7 +4836,7 @@ void ExampleFrameListener::loadTerrain(String terrainfile)
 	}
 
 	// set the terrain cache entry
-	loaded_terrain = &CACHE.getResourceInfo(terrainfile);
+	loaded_terrain = CACHE.getResourceInfo(terrainfile);
 
 	DataStreamPtr ds=ResourceGroupManager::getSingleton().openResource(terrainfile, group);
 	ds->readLine(line, 1023);
@@ -4950,7 +4949,7 @@ void ExampleFrameListener::loadTerrain(String terrainfile)
 		DataStreamPtr stream=rgm.openResource(geom, group);
 		config.load( stream );
 	    String val;
-		float fval;
+		float fval=0.0f;
 		val = config.getSetting("PageWorldX");
 		if ( !val.empty() )
 			fval = atof( val.c_str() );
@@ -5380,7 +5379,7 @@ void ExampleFrameListener::loadTerrain(String terrainfile)
 	bool useHydrax = (SETTINGS.getSetting("Hydrax") == "Yes");
 	String hydraxConfig = "hydrax_default.hdx";
 
-	if (waterline!=-9999)
+	if (fabs(waterline + 9999) < 0.00001f)
 	{
 		bool usewaves=(SETTINGS.getSetting("Waves")=="Yes");
 
@@ -7025,7 +7024,7 @@ bool ExampleFrameListener::updateAnimatedObjects(float dt)
 	std::vector<animated_object_t>::iterator it;
 	for(it=animatedObjects.begin(); it!=animatedObjects.end(); it++)
 	{
-		if(it->anim && it->speedfactor != 0)
+		if(it->anim && fabs(it->speedfactor) > 0.00001f)
 		{
 			Real time = dt * it->speedfactor;
 			it->anim->addTime(time);
@@ -7129,7 +7128,7 @@ bool ExampleFrameListener::updateTruckMirrors(float dt)
 bool ExampleFrameListener::frameStarted(const FrameEvent& evt)
 {
 	float dt=evt.timeSinceLastFrame;
-	if (dt==0) return true;
+	if (fabs(dt) < 0.0000001f) return true;
 	if (dt>1.0/20.0) dt=1.0/20.0;
 	rtime+=dt; //real time
 	if(mWindow->isClosed())
@@ -7211,7 +7210,7 @@ bool ExampleFrameListener::frameStarted(const FrameEvent& evt)
 		mTimeUntilNextToggle -= evt.timeSinceLastFrame;
 
 	// If this is the first frame, pick a speed
-	if (evt.timeSinceLastFrame == 0)
+	if (fabs(evt.timeSinceLastFrame) < 0.000001f)
 	{
 		mMoveScale = 1;
 		mRotScale = 0.1;
@@ -7522,7 +7521,7 @@ void ExampleFrameListener::flashMessage(const char* txt, float time, float charH
 	{
 	}
 
-	if(charHeight != -1)
+	if(fabs(charHeight + 1) > 0.000001f)
 		flashMessageTE->setCharHeight(charHeight);
 	else
 		// set original height
@@ -7879,7 +7878,7 @@ void ExampleFrameListener::gridScreenshots(Ogre::RenderWindow* pRenderWindow, Og
     double nearWidth = (pCamera->getWorldSpaceCorners()[0] - pCamera->getWorldSpaceCorners()[1]).length();
     double nearHeight = (pCamera->getWorldSpaceCorners()[1] - pCamera->getWorldSpaceCorners()[2]).length();
     Ogre::Image sourceImage;
-    Ogre::uchar* stitchedImageData;
+    Ogre::uchar* stitchedImageData = 0;
 
     // Process each grid
     for (int nbScreenshots = 0; nbScreenshots < pGridSize * pGridSize; nbScreenshots++)

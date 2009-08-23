@@ -6,7 +6,7 @@ Copyright 2007,2008,2009 Thomas Fischer
 For more information, see http://www.rigsofrods.com/
 
 Rigs of Rods is free software: you can redistribute it and/or modify
-it under the terms of the GNU General Public License version 3, as 
+it under the terms of the GNU General Public License version 3, as
 published by the Free Software Foundation.
 
 Rigs of Rods is distributed in the hope that it will be useful,
@@ -56,7 +56,7 @@ protected:
 	Water* w;
 
 public:
-	DustPool(char* dname, int dsize, SceneNode *parent, SceneManager *smgr, Water *mw);
+	DustPool(const char* dname, int dsize, SceneNode *parent, SceneManager *smgr, Water *mw);
 
 	void setVisible(bool s);
 	//Dust
