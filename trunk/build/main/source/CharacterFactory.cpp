@@ -32,13 +32,10 @@ along with Rigs of Rods.  If not, see <http://www.gnu.org/licenses/>.
 
 using namespace Ogre;
 
-CharacterFactory& CharacterFactory::getSingleton(void)
-{
-	assert( ms_Singleton );  return ( *(dynamic_cast<CharacterFactory*>(ms_Singleton)) );
-}
 
+template<> CharacterFactory *StreamableFactory < CharacterFactory, Character >::ms_Singleton = 0;
 
-CharacterFactory::CharacterFactory(Collisions *c, Network *net, HeightFinder *h, Water *w, MapControl *m, Ogre::SceneManager *scm) : c(c), net(net), h(h), w(w), m(m), scm(scm), StreamableFactory()
+CharacterFactory::CharacterFactory(Collisions *c, Network *net, HeightFinder *h, Water *w, MapControl *m, Ogre::SceneManager *scm) : c(c), net(net), h(h), w(w), m(m), scm(scm)
 {
 }
 
@@ -63,8 +60,8 @@ void CharacterFactory::remove(Character *stream)
 
 void CharacterFactory::removeUser(int userid)
 {
-	std::map < int, std::map < unsigned int, Streamable *> >::iterator it1;
-	std::map < unsigned int, Streamable *>::iterator it2;
+	std::map < int, std::map < unsigned int, Character *> >::iterator it1;
+	std::map < unsigned int, Character *>::iterator it2;
 
 	for(it1=streamables.begin(); it1!=streamables.end();it1++)
 	{
@@ -72,8 +69,8 @@ void CharacterFactory::removeUser(int userid)
 
 		for(it2=it1->second.begin(); it2!=it1->second.end();it2++)
 		{
-			Character *c = dynamic_cast<Character*>(it2->second);
-			delete c;
+			delete it2->second;
+			it2->second = 0;
 		}
 		break;
 	}
@@ -94,8 +91,8 @@ void CharacterFactory::localUserAttributesChanged(int newid)
 
 void CharacterFactory::netUserAttributesChanged(int source, int streamid)
 {
-	std::map < int, std::map < unsigned int, Streamable *> >::iterator it1;
-	std::map < unsigned int, Streamable *>::iterator it2;
+	std::map < int, std::map < unsigned int, Character *> >::iterator it1;
+	std::map < unsigned int, Character *>::iterator it2;
 
 	for(it1=streamables.begin(); it1!=streamables.end();it1++)
 	{

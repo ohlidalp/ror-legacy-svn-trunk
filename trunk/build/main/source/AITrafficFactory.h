@@ -30,7 +30,7 @@ along with Rigs of Rods.  If not, see <http://www.gnu.org/licenses/>.
 class Network;
 
 
-class AITrafficFactory  : public StreamableFactory
+class AITrafficFactory  : public StreamableFactory < AITrafficFactory, AITraffic >
 {
 	friend class Network;
 
@@ -38,17 +38,15 @@ class AITrafficFactory  : public StreamableFactory
 		AITrafficFactory(Network *net, Ogre::SceneManager *scm);
 		~AITrafficFactory();
 
-		static AITrafficFactory& getSingleton(void);
-
-		void test();
-
-//		AITraffic *createLocal();	// RoR player cannot create traffic on its own, only traffic client is allowed to do that
+		// RoR player cannot create traffic on its own, only traffic client is allowed to do that
+		AITraffic *createLocal();
 		AITraffic *createRemote(int sourceid, stream_register_t *reg, int slotid);
 
 	protected:
 		Network *net;
 		Ogre::SceneManager *scm;
 
+		void remove(AITraffic *t);
 		void removeUser(int userid);
 
 		// functions used by friends

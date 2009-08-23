@@ -25,12 +25,9 @@ along with Rigs of Rods.  If not, see <http://www.gnu.org/licenses/>.
 
 using namespace Ogre;
 
-AITrafficFactory& AITrafficFactory::getSingleton(void)
-{
-	assert( ms_Singleton );  return ( *(dynamic_cast<AITrafficFactory*>(ms_Singleton)) );
-}
+template<> AITrafficFactory *StreamableFactory < AITrafficFactory, AITraffic >::ms_Singleton = 0;
 
-AITrafficFactory::AITrafficFactory(Network *net, Ogre::SceneManager *scm) : net(net), scm(scm), StreamableFactory()
+AITrafficFactory::AITrafficFactory(Network *net, Ogre::SceneManager *scm) : net(net), scm(scm)
 {
 }
 
@@ -43,6 +40,12 @@ void AITrafficFactory::netUserAttributesChanged(int source, int streamid)
 
 void AITrafficFactory::localUserAttributesChanged(int newid)
 {}
+
+AITraffic *AITrafficFactory::createLocal()
+{
+	// never ever create a local aitraffic instance...
+	assert(false);
+}
 
 AITraffic *AITrafficFactory::createRemote(int sourceid, stream_register_t *reg, int slotid)
 {
@@ -61,11 +64,8 @@ void AITrafficFactory::removeUser(int userid)
 {
 }
 
-void AITrafficFactory::test()
+void AITrafficFactory::remove(AITraffic *t)
 {
-
-	//NetworkStreamManager::getSingleton().addStream(
-	streamables[10][10] = NULL;
 }
 
 #endif //AITRAFFIC

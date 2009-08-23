@@ -182,7 +182,6 @@ set(ror_src
 	source/NetworkStreamManager.cpp
 	source/NetworkStreamManager.h
 
-	source/StreamableFactory.cpp
 	source/StreamableFactory.h
 
 	source/utils.cpp
