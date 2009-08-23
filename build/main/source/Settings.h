@@ -55,7 +55,7 @@ protected:
 
 	// methods
 	void path_descend(char* path);
-	void path_add(char* path, char* dirname);
+	void path_add(char* path, const char* dirname);
 
 };
 #endif

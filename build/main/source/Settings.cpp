@@ -6,7 +6,7 @@ Copyright 2007,2008,2009 Thomas Fischer
 For more information, see http://www.rigsofrods.com/
 
 Rigs of Rods is free software: you can redistribute it and/or modify
-it under the terms of the GNU General Public License version 3, as 
+it under the terms of the GNU General Public License version 3, as
 published by the Free Software Foundation.
 
 Rigs of Rods is distributed in the hope that it will be useful,
@@ -32,7 +32,7 @@ using namespace Ogre;
 // singleton pattern
 Settings* Settings::myInstance = 0;
 
-Settings & Settings::Instance () 
+Settings & Settings::Instance ()
 {
 	if (myInstance == 0)
 		myInstance = new Settings;
@@ -234,7 +234,7 @@ bool Settings::setupPaths()
 
 #if OGRE_PLATFORM == OGRE_PLATFORM_WIN32
 	// XXX maybe use StringUtil::standardisePath here?
-	// windows is case insensitive, so norm here	
+	// windows is case insensitive, so norm here
 	StringUtil::toLowerCase(settings["Config Root"]);
 	StringUtil::toLowerCase(settings["Cache Path"]);
 	StringUtil::toLowerCase(settings["Log Path"]);
@@ -274,7 +274,7 @@ void Settings::path_descend(char* path)
 	if (pt>=path) *(pt+1)=0;
 }
 
-void Settings::path_add(char* path, char* dirname)
+void Settings::path_add(char* path, const char* dirname)
 {
 	char dirsep='/';
 #if OGRE_PLATFORM == OGRE_PLATFORM_WIN32

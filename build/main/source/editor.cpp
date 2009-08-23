@@ -6,7 +6,7 @@ Copyright 2007,2008,2009 Thomas Fischer
 For more information, see http://www.rigsofrods.com/
 
 Rigs of Rods is free software: you can redistribute it and/or modify
-it under the terms of the GNU General Public License version 3, as 
+it under the terms of the GNU General Public License version 3, as
 published by the Free Software Foundation.
 
 Rigs of Rods is distributed in the hope that it will be useful,
@@ -31,10 +31,10 @@ Editor::Editor(SceneManager *scm, ExampleFrameListener *efl)
 	FILE *fd;
 	String editorcfg = SETTINGS.getSetting("Config Root")+"editor.cfg";
 	fd=fopen(editorcfg.c_str(), "r");
-	if (!fd) 
+	if (!fd)
 	{
 		LogManager::getSingleton().logMessage("Can not open editr.cfg file: "+editorcfg);
-		efl->flashMessage("Can not find editor.cfg", 3);
+		efl->flashMessage((char *)"Can not find editor.cfg", 3);
 		return;
 	};
 	while (!feof(fd))

@@ -1169,7 +1169,7 @@ eventInfo_t eventInfo[] = {
 		"",
 		_L("shift directly to 12th gear")
 	},
-	
+
 	{
 		"TRUCK_SHIFT_GEAR13",
 		EV_TRUCK_SHIFT_GEAR13,
@@ -1424,7 +1424,7 @@ eventInfo_t eventInfo[] = {
 	{ "TRUCK_SAVE_POS8", EV_TRUCK_SAVE_POS8, "Keyboard EXPL+ALT+CTRL+8", _L("save position as slot 8") },
 	{ "TRUCK_SAVE_POS9", EV_TRUCK_SAVE_POS9, "Keyboard EXPL+ALT+CTRL+9", _L("save position as slot 9") },
 	{ "TRUCK_SAVE_POS10", EV_TRUCK_SAVE_POS10, "Keyboard EXPL+ALT+CTRL+0", _L("save position as slot 10") },
-	
+
 	{ "TRUCK_LOAD_POS1", EV_TRUCK_LOAD_POS1, "Keyboard EXPL+ALT+1", _L("load position under slot 1") },
 	{ "TRUCK_LOAD_POS2", EV_TRUCK_LOAD_POS2, "Keyboard EXPL+ALT+2", _L("load position under slot 2") },
 	{ "TRUCK_LOAD_POS3", EV_TRUCK_LOAD_POS3, "Keyboard EXPL+ALT+3", _L("load position under slot 3") },
@@ -1626,7 +1626,7 @@ bool InputEngine::setup(size_t hwnd, bool capture, bool capturemouse, int _grabM
 		mKeyboard->setEventCallback(this);
 		if(capturemouse)
 			mMouse->setEventCallback(this);
-		
+
 		// init states (not required for keyboard)
 		if(capturemouse)
 			mouseState = mMouse->getMouseState();
@@ -1701,7 +1701,7 @@ OIS::MouseState InputEngine::getMouseState()
 		LogManager::getSingleton().logMessage("Mouse X sens: " + StringConverter::toString((Real)mX));
 		LogManager::getSingleton().logMessage("Mouse Y sens: " + StringConverter::toString((Real)mY));
 		mode = 1;
-		if(mX == 0 || mY ==0)
+		if(fabs(mX) < 0.000001f || fabs(mY) < 0.000001f)
 			mode = 2;
 #else
 		// no scaling without ogre
@@ -1742,7 +1742,7 @@ void InputEngine::Capture()
 {
 	if(mKeyboard) mKeyboard->capture();
 	if(mMouse) mMouse->capture();
-	if(free_joysticks) 
+	if(free_joysticks)
 		for(int i=0;i<free_joysticks;i++)
 			if(mJoy[i]) mJoy[i]->capture();
 }
@@ -1979,7 +1979,7 @@ float InputEngine::axisLinearity(float axisValue, float linearity)
 float InputEngine::logval(float val)
 {
 	if (val>0) return log10(1.0/(1.1-val))/1.0;
-	if (val==0) return 0;
+	if (fabs(val) < 0.00001f) return 0;
 	return -log10(1.0/(1.1+val))/1.0;
 }
 
@@ -2294,7 +2294,7 @@ Ogre::String InputEngine::getDeviceName(event_trigger_t evt)
 	case ET_MouseButton:
 	case ET_MouseAxisX:
 	case ET_MouseAxisY:
-	case ET_MouseAxisZ: 
+	case ET_MouseAxisZ:
 		return "Mouse";
 	case ET_JoystickButton:
 	case ET_JoystickAxisAbs:
@@ -2304,7 +2304,7 @@ Ogre::String InputEngine::getDeviceName(event_trigger_t evt)
 	case ET_JoystickSliderY:
 		return "Joystick: " + getJoyVendor(evt.joystickNumber);
 	}
-	return "unkown";	
+	return "unkown";
 }
 
 Ogre::String InputEngine::getEventTypeName(int type)

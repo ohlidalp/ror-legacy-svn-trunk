@@ -58,6 +58,11 @@ along with Rigs of Rods.  If not, see <http://www.gnu.org/licenses/>.
 #ifdef ANGELSCRIPT
 #include "ScriptEngine.h"
 #endif
+
+// some gcc fixes
+#pragma GCC diagnostic ignored "-Wfloat-equal"
+
+
 float mrtime;
 
 const float Beam::inverse_RAND_MAX = 1.0/RAND_MAX;
@@ -333,7 +338,7 @@ Beam::Beam(int tnum, SceneManager *manager, SceneNode *parent, RenderWindow* win
 	if (networked) state=NETWORKED; //required for proper loading
 #ifdef AITRAFFIC
 	// this was the reason why locked objects exploded ...
-	// 
+	//
 	state = TRAFFICED;
 #endif //AITRAFFIC
 	sleepcount=0;
@@ -440,7 +445,7 @@ Beam::Beam(int tnum, SceneManager *manager, SceneNode *parent, RenderWindow* win
 
 	// skidmark stuff
 	useSkidmarks = (SETTINGS.getSetting("Skidmarks") == "Yes");
-	
+
 	// always init skidmarks with 0
 	for(int i=0; i<MAX_WHEELS*2; i++) skidtrails[i] = 0;
 
@@ -837,7 +842,7 @@ inline bool Beam::inRange(float num, float min, float max)
 void Beam::pushNetwork(char* data, int size)
 {
 	// todo: fix crash that occurs here!
-	if (size==(netbuffersize+sizeof(oob_t)))
+	if ((unsigned int)size==(netbuffersize+sizeof(oob_t)))
 	{
 		memcpy((char*)oob3, data, sizeof(oob_t));
 		memcpy((char*)netb3, data+sizeof(oob_t), nodebuffersize);
@@ -1774,7 +1779,7 @@ int Beam::loadTruck(char* fname, SceneManager *manager, SceneNode *parent, Real 
 			// options
 			int htype=BEAM_HYDRO;
 			int shockflag = SHOCK_FLAG_NORMAL;
-			
+
 			// now 'parse' the options
 			char *options_pointer = options;
 			while (*options_pointer != 0)
@@ -1884,13 +1889,13 @@ int Beam::loadTruck(char* fname, SceneManager *manager, SceneNode *parent, Real 
 							float beam_lenght = nodes[id1].AbsPosition.distance(nodes[id2].AbsPosition);
 							sbound = (beam_lenght - sbound) / beam_lenght;
 							lbound = (lbound - beam_lenght) / beam_lenght;
-							
+
 							if (lbound < 0)
 							{
 								LogManager::getSingleton().logMessage("Error parsing File (Shocks) " + String(fname) +" line " + StringConverter::toString(linecounter) + ". Metric shock length calculation failed, longbound less then beams spawn length, reset to beams spawn length (longbound=0).");
 								lbound = 0.0f;
 							}
-							
+
 							if (sbound > 1)
 							{
 								LogManager::getSingleton().logMessage("Error parsing File (Shocks) " + String(fname) +" line " + StringConverter::toString(linecounter) + ". Metric shock length calculation failed, shortbound less then 0 meters, reset to 0 meters (shortbound=1).");
@@ -2817,10 +2822,10 @@ int Beam::loadTruck(char* fname, SceneManager *manager, SceneNode *parent, Real 
 					unsigned long vertex_count = 0;
 					if(mesh->getNumLodLevels() < 2)
 					{
-						if (mesh->sharedVertexData) 
+						if (mesh->sharedVertexData)
 							vertex_count += mesh->sharedVertexData->vertexCount;
-						for (int i=0; i<mesh->getNumSubMeshes(); i++) 
-							if (!mesh->getSubMesh(i)->useSharedVertices) 
+						for (int i=0; i<mesh->getNumSubMeshes(); i++)
+							if (!mesh->getSubMesh(i)->useSharedVertices)
 								vertex_count += mesh->getSubMesh(i)->vertexData->vertexCount;
 					}
 
@@ -2828,13 +2833,13 @@ int Beam::loadTruck(char* fname, SceneManager *manager, SceneNode *parent, Real 
 					if(mesh->getNumLodLevels() < 2 && vertex_count > 10000)
 					{
 						LogManager::getSingleton().logMessage("prop uses > 10k (" + StringConverter::toString(vertex_count) + ") vertices but does not provide its own LODs, will generate some now. This can take a while. Please add LODs when exporting the mesh, this prevents the automatic generation (and the waiting time).");
-						
+
 						Ogre::Mesh::LodDistanceList default_dists;
 						default_dists.push_back(50);
 						default_dists.push_back(100);
 						default_dists.push_back(300);
 						mesh->generateLodLevels(default_dists, ProgressiveMesh::VRQ_PROPORTIONAL, Ogre::Real(0.8));
-						
+
 						// custom entities for custom LODs
 						te = manager->createEntity(String(propname)+"LOD", mesh->getName());
 					} else
@@ -4203,7 +4208,7 @@ int Beam::loadTruck(char* fname, SceneManager *manager, SceneNode *parent, Real 
 						{
 							switch(diffs[i])
 							{
-							case 'l': axles[free_axle].addDiffType(LOCKED_DIFF); break; 
+							case 'l': axles[free_axle].addDiffType(LOCKED_DIFF); break;
 							case 'o': axles[free_axle].addDiffType(OPEN_DIFF); break;
 							//case 'v': axles[free_axle].addDiffType(VISCOUS_DIFF); break;
 							case 's': axles[free_axle].addDiffType(SPLIT_DIFF); break;
@@ -4258,7 +4263,7 @@ int Beam::loadTruck(char* fname, SceneManager *manager, SceneNode *parent, Real 
 				}
 				continue;
 			}
-			
+
 			// test if any differentials have been defined
 			if( axles[free_axle].availableDiffs().empty() )
 			{
@@ -4434,35 +4439,35 @@ int Beam::loadTruck(char* fname, SceneManager *manager, SceneNode *parent, Real 
 	// print some truck memory stats
 	int mem = 0, memr = 0, tmpmem = 0;
 	LogManager::getSingleton().logMessage("BEAM: memory stats following");
-	
+
 	tmpmem = free_beam * sizeof(beam_t); mem += tmpmem;
 	memr += MAX_BEAMS * sizeof(beam_t);
 	LogManager::getSingleton().logMessage("BEAM: beam memory: " + StringConverter::toString(tmpmem) + " B (" + StringConverter::toString(free_beam) + " x " + StringConverter::toString(sizeof(beam_t)) + " B) / " + StringConverter::toString(MAX_BEAMS * sizeof(beam_t)));
-	
+
 	tmpmem = free_node * sizeof(node_t); mem += tmpmem;
 	memr += MAX_NODES * sizeof(beam_t);
 	LogManager::getSingleton().logMessage("BEAM: node memory: " + StringConverter::toString(tmpmem) + " B (" + StringConverter::toString(free_node) + " x " + StringConverter::toString(sizeof(node_t)) + " B) / " + StringConverter::toString(MAX_NODES * sizeof(node_t)));
-	
+
 	tmpmem = free_shock * sizeof(shock_t); mem += tmpmem;
 	memr += MAX_SHOCKS * sizeof(beam_t);
 	LogManager::getSingleton().logMessage("BEAM: shock memory: " + StringConverter::toString(tmpmem) + " B (" + StringConverter::toString(free_shock) + " x " + StringConverter::toString(sizeof(shock_t)) + " B) / " + StringConverter::toString(MAX_SHOCKS * sizeof(shock_t)));
-	
+
 	tmpmem = free_prop * sizeof(prop_t); mem += tmpmem;
 	memr += MAX_PROPS * sizeof(beam_t);
 	LogManager::getSingleton().logMessage("BEAM: prop memory: " + StringConverter::toString(tmpmem) + " B (" + StringConverter::toString(free_prop) + " x " + StringConverter::toString(sizeof(prop_t)) + " B) / " + StringConverter::toString(MAX_PROPS * sizeof(prop_t)));
-	
+
 	tmpmem = free_wheel * sizeof(wheel_t); mem += tmpmem;
 	memr += MAX_WHEELS * sizeof(beam_t);
 	LogManager::getSingleton().logMessage("BEAM: wheel memory: " + StringConverter::toString(tmpmem) + " B (" + StringConverter::toString(free_wheel) + " x " + StringConverter::toString(sizeof(wheel_t)) + " B) / " + StringConverter::toString(MAX_WHEELS * sizeof(wheel_t)));
-	
+
 	tmpmem = free_rigidifier * sizeof(rigidifier_t); mem += tmpmem;
 	memr += MAX_RIGIDIFIERS * sizeof(beam_t);
 	LogManager::getSingleton().logMessage("BEAM: rigidifier memory: " + StringConverter::toString(tmpmem) + " B (" + StringConverter::toString(free_rigidifier) + " x " + StringConverter::toString(sizeof(rigidifier_t)) + " B) / " + StringConverter::toString(MAX_RIGIDIFIERS * sizeof(rigidifier_t)));
-	
+
 	tmpmem = free_flare * sizeof(flare_t); mem += tmpmem;
 	memr += free_flare * sizeof(beam_t);
 	LogManager::getSingleton().logMessage("BEAM: flare memory: " + StringConverter::toString(tmpmem) + " B (" + StringConverter::toString(free_flare) + " x " + StringConverter::toString(sizeof(flare_t)) + " B)");
-	
+
 	LogManager::getSingleton().logMessage("BEAM: truck memory used: " + StringConverter::toString(mem)  + " B (" + StringConverter::toString(mem/1024)  + " kB)");
 	LogManager::getSingleton().logMessage("BEAM: truck memory allocated: " + StringConverter::toString(memr)  + " B (" + StringConverter::toString(memr/1024)  + " kB)");
 
@@ -4650,7 +4655,7 @@ int Beam::savePosition(int indexPosition)
 	if(!posStorage) return -1;
 	Vector3* nbuff = posStorage->getStorage(indexPosition);
 	if(!nbuff) return -3;
-	for (int i=0; i<free_node; i++) 
+	for (int i=0; i<free_node; i++)
 		nbuff[i] = nodes[i].AbsPosition;
 	posStorage->setUsage(indexPosition, true);
 	return 0;
@@ -5636,7 +5641,7 @@ bool Beam::frameStep(Real dt, Beam** trucks, int numtrucks)
 							aposition += trucks[t]->nodes[n].smoothpos;
 							nodesnum++;
 						}
-						
+
 //						trucks[t]->nodes[n].smoothpos=trucks[t]->nodes[n].tsmooth/tsteps;
 //							trucks[t]->nodes[n].tsmooth=Vector3::ZERO;
 					}
@@ -5715,7 +5720,7 @@ void Beam::sendStreamSetup()
 
 	// send the vehicle name
 	this->addPacket(MSG2_USE_VEHICLE, net->getUserID(), streamid, realtruckfilename.size(), const_cast<char*>(realtruckfilename.c_str()));
-	
+
 	// send vehicle buffer size
 	this->addPacket(MSG2_BUFFER_SIZE, net->getUserID(), streamid, 4, (char*)&netbuffersize);
 }
@@ -5732,7 +5737,7 @@ void Beam::sendStreamData()
 	memset(send_buffer, 0, maxPacketLen);
 
 	unsigned int packet_len = 0;
-	
+
 	// oob_t is at the beginning of the buffer
 	{
 		oob_t *send_oob = (oob_t *)send_buffer;
@@ -5775,7 +5780,7 @@ void Beam::sendStreamData()
 	{
 		float *send_nodes = (float *)(send_buffer + sizeof(oob_t));
 		packet_len += netbuffersize;
-		
+
 		// copy data into the buffer
 		int i;
 		Vector3 refpos = nodes[0].AbsPosition;
@@ -5847,7 +5852,7 @@ void Beam::calcForcesEuler(int doUpdate, Real dt, int step, int maxstep, Beam** 
 	if(statistics)
 		statistics->queryStart(BeamThreadStats::Beams);
 #endif
-	
+
 #ifdef OPENCL
 	//springs
 
@@ -5914,7 +5919,7 @@ void Beam::calcForcesEuler(int doUpdate, Real dt, int step, int maxstep, Beam** 
 
 				Real k=beams[i].k;
 				Real d=beams[i].d;
-				
+
 				//dampers bump
 				Real difftoBeamL = dislen - beams[i].L;
 				bool normalShock=false;
@@ -5925,7 +5930,7 @@ void Beam::calcForcesEuler(int doUpdate, Real dt, int step, int maxstep, Beam** 
 					{
 						float beamsLep=beams[i].L*0.8f;
 						float longboundprelimit=beams[i].longbound*beamsLep;
-						float shortboundprelimit=-beams[i].shortbound*beamsLep; 
+						float shortboundprelimit=-beams[i].shortbound*beamsLep;
 						// this is a shock2
 						float logafactor;
 						//shock extending since last cycle
@@ -5956,7 +5961,7 @@ void Beam::calcForcesEuler(int doUpdate, Real dt, int step, int maxstep, Beam** 
 							if (beams[i].shortbound != 0.0f)
 							{
 								logafactor=difftoBeamL/(beams[i].shortbound*beams[i].L);
-								logafactor=logafactor*logafactor; 
+								logafactor=logafactor*logafactor;
 							} else
 							{
 								logafactor = 1.0f;
@@ -5977,7 +5982,7 @@ void Beam::calcForcesEuler(int doUpdate, Real dt, int step, int maxstep, Beam** 
 								if (beams[i].longbound != 0.0f)
 								{
 									logafactor=difftoBeamL/(beams[i].longbound*beams[i].L);
-									logafactor=logafactor*logafactor; 
+									logafactor=logafactor*logafactor;
 								} else
 								{
 									logafactor = 1.0f;
@@ -5989,7 +5994,7 @@ void Beam::calcForcesEuler(int doUpdate, Real dt, int step, int maxstep, Beam** 
 								if (beams[i].longbound != 0.0f)
 								{
 									logafactor=((difftoBeamL-longboundprelimit)*5.0f)/(beams[i].longbound*beams[i].L);
-									logafactor=logafactor*logafactor; 
+									logafactor=logafactor*logafactor;
 								} else
 								{
 									logafactor = 1.0f;
@@ -6023,7 +6028,7 @@ void Beam::calcForcesEuler(int doUpdate, Real dt, int step, int maxstep, Beam** 
 								if (beams[i].shortbound != 0.0f)
 								{
 									logafactor=((difftoBeamL-shortboundprelimit)*5.0f)/(beams[i].shortbound*beams[i].L);
-									logafactor=logafactor*logafactor; 
+									logafactor=logafactor*logafactor;
 								}else
 								{
 									logafactor = 1.0f;
@@ -6045,10 +6050,10 @@ void Beam::calcForcesEuler(int doUpdate, Real dt, int step, int maxstep, Beam** 
 								if (d < DEFAULT_DAMP*4.0f) d = DEFAULT_DAMP*4.0f;
 							}
 						}
-						
+
 						if(beams[i].shock->flags & SHOCK_FLAG_NORMAL)
 							normalShock = true;
-				
+
 						// save beam postion for next sim cycle
 						beams[i].shock->lastpos=difftoBeamL;
 					} else
@@ -6138,7 +6143,7 @@ void Beam::calcForcesEuler(int doUpdate, Real dt, int step, int maxstep, Beam** 
 								ssm->modulate(trucknum, SS_MOD_BREAK, (flen-beams[i].strength)/(float)(beams[i].strength));
 								ssm->trigOnce(trucknum, SS_TRIG_BREAK);
 							}
-							
+
 							if ( beams[i].p1->iswheel==0 && beams[i].p2->iswheel==0 ) increased_accuracy=1;
 							beams[i].broken=1;
 							beams[i].disabled=1;
@@ -6895,7 +6900,7 @@ void Beam::calcForcesEuler(int doUpdate, Real dt, int step, int maxstep, Beam** 
 					{
 						// its a networked truck, we need to send the forces over the network
 
-					} 
+					}
 					else
 					{
 						// is a local truck
@@ -6939,11 +6944,11 @@ void Beam::calcForcesEuler(int doUpdate, Real dt, int step, int maxstep, Beam** 
 
 	float intertorque[MAX_WHEELS] = {0.0f}; //bad initialization
 	//old-style viscous code
-	if( free_axle == 0) 
+	if( free_axle == 0)
 	{
 		//first, evaluate torque from inter-differential locking
 		for (i=0; i<proped_wheels/2-1; i++)
-		{ 	
+		{
 			float speed1=(wheels[proppairs[i*2]].speed+wheels[proppairs[i*2+1]].speed)*0.5f;
 			float speed2=(wheels[proppairs[i*2+2]].speed+wheels[proppairs[i*2+3]].speed)*0.5f;
 			float torque=(speed1-speed2)*10000.0f;
@@ -7049,19 +7054,19 @@ void Beam::calcForcesEuler(int doUpdate, Real dt, int step, int maxstep, Beam** 
 					total_torque -= (wheels[i].speed/fabs(wheels[i].speed))*(brake + dbrake)*1.2;
 			}
 		}
-		//friction 	
-		total_torque -= wheels[i].speed*1.0; 	
+		//friction
+		total_torque -= wheels[i].speed*1.0;
 		// old-style
-		if ( free_axle == 0 && wheels[i].propulsed > 0) 	
-		{ 	
-			//differential locking 	
-			if (i%2) 	
-				total_torque-=(wheels[i].speed-wheels[i-1].speed)*10000.0; 	
-			else 	
-				total_torque-=(wheels[i].speed-wheels[i+1].speed)*10000.0; 	
-			//inter differential locking 	
-			total_torque+=intertorque[propcounter]; 	
-			propcounter++; 	
+		if ( free_axle == 0 && wheels[i].propulsed > 0)
+		{
+			//differential locking
+			if (i%2)
+				total_torque-=(wheels[i].speed-wheels[i-1].speed)*10000.0;
+			else
+				total_torque-=(wheels[i].speed-wheels[i+1].speed)*10000.0;
+			//inter differential locking
+			total_torque+=intertorque[propcounter];
+			propcounter++;
 		}
 
 		//application to wheel
@@ -7119,7 +7124,7 @@ void Beam::calcForcesEuler(int doUpdate, Real dt, int step, int maxstep, Beam** 
 	WheelSpeed=wspeed;
 
 	if(patchEngineTorque)
-	{	
+	{
 		if (engine && free_wheel)
 		{
 			engine->setSpin(wspeed*9.549);
@@ -7668,7 +7673,7 @@ void Beam::updateSkidmarks()
 		// create skidmark object for wheels with data if not existing
 		if(!skidtrails[i])
 			skidtrails[i] = new Skidmark(tsm, &wheels[i], hfinder, beamsRoot, 300, 200);
-		
+
 		skidtrails[i]->updatePoint();
 	}
 
@@ -8211,7 +8216,7 @@ void Beam::toggleCustomParticles()
 
 void Beam::updateSoundSources()
 {
-//IMI 
+//IMI
 	return;
 //
 	for (int i=0; i<free_soundsource; i++)

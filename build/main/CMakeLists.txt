@@ -217,16 +217,17 @@ ELSEIF(UNIX)
 ELSEIF(APPLE)
 ENDIF(WIN32)
 
+  add_definitions("-DAITRAFFIC")
+
 # optional features
 if(ROR_BUILD_HYDRAX)
   add_definitions("-DHYDRAX")
   include_directories (${RoR_Dependencies_SOURCE_DIR}/hydrax/)
 endif(ROR_BUILD_HYDRAX)
 
-if(ROR_BUILD_OPENSTEER)
-  add_definitions("-DPENSTEER")
-  include_directories (${RoR_Dependencies_SOURCE_DIR}/opensteer/include/)
-endif(ROR_BUILD_OPENSTEER)
+if(ROR_BUILD_TRAFFIC_SUPPORT)
+  add_definitions("-DAITRAFFIC")
+endif(ROR_BUILD_TRAFFIC_SUPPORT)
 
 if(ROR_BUILD_PAGED)
  add_definitions("-DPAGED")
@@ -306,6 +307,8 @@ ELSEIF(UNIX)
   # ignore warnings that are generated from the libs we use, just warn about RoR code
   add_definitions("
     -isystem ${RoR_Dependencies_SOURCE_DIR}/ogrenew/OgreMain/include
+    -isystem ${RoR_Dependencies_SOURCE_DIR}/mygui/include
+    -isystem ${RoR_Dependencies_SOURCE_DIR}/hydrax/Hydrax/
   ")
 
   EXEC_PROGRAM(pkg-config ARGS "--cflags gtk+" OUTPUT_VARIABLE CFLAGS_GTK)

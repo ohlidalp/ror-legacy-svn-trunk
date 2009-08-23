@@ -6,7 +6,7 @@ Copyright 2007,2008,2009 Thomas Fischer
 For more information, see http://www.rigsofrods.com/
 
 Rigs of Rods is free software: you can redistribute it and/or modify
-it under the terms of the GNU General Public License version 3, as 
+it under the terms of the GNU General Public License version 3, as
 published by the Free Software Foundation.
 
 Rigs of Rods is distributed in the hope that it will be useful,
@@ -158,9 +158,9 @@ FlexObj::FlexObj(SceneManager *manager, node_t *nds, int numtexcoords, Vector3* 
     offset += VertexElement::getTypeSize(VET_FLOAT2);
 
 
-    /// Allocate vertex buffer of the requested number of vertices (vertexCount) 
+    /// Allocate vertex buffer of the requested number of vertices (vertexCount)
     /// and bytes per vertex (offset)
-    vbuf = 
+    vbuf =
       HardwareBufferManager::getSingleton().createVertexBuffer(
           offset, msh->sharedVertexData->vertexCount, HardwareBuffer::HBU_DYNAMIC_WRITE_ONLY_DISCARDABLE);
 
@@ -169,7 +169,7 @@ FlexObj::FlexObj(SceneManager *manager, node_t *nds, int numtexcoords, Vector3* 
 
 
     /// Set vertex buffer binding so buffer 0 is bound to our vertex buffer
-    VertexBufferBinding* bind = msh->sharedVertexData->vertexBufferBinding; 
+    VertexBufferBinding* bind = msh->sharedVertexData->vertexBufferBinding;
     bind->setBinding(0, vbuf);
 
 
@@ -180,11 +180,11 @@ FlexObj::FlexObj(SceneManager *manager, node_t *nds, int numtexcoords, Vector3* 
 	{
 		int smcount=3*(subtriindex[j+1]-subtriindex[j]);
         subs[j]->useSharedVertices = true;
-		/// Allocate index buffer of the requested number of vertices (ibufCount) 
+		/// Allocate index buffer of the requested number of vertices (ibufCount)
 		HardwareIndexBufferSharedPtr ibuf = HardwareBufferManager::getSingleton().
 		 createIndexBuffer(
-			 HardwareIndexBuffer::IT_16BIT, 
-				smcount, 
+			 HardwareIndexBuffer::IT_16BIT,
+				smcount,
 				HardwareBuffer::HBU_STATIC_WRITE_ONLY);
 
 		/// Upload the index data to the card
@@ -265,13 +265,13 @@ Vector3 FlexObj::updateVertices()
 		v1=v1.crossProduct(v2);
 		float s=v1.length();
 		//avoid large tris
-		if (s>sref[i]) 
+		if (s>sref[i])
 		{
 			covertices[faces[i*3+1]].vertex=covertices[faces[i*3]].vertex+Vector3(0.1,0,0);
 			covertices[faces[i*3+2]].vertex=covertices[faces[i*3]].vertex+Vector3(0,0,0.1);
 		}
 		//v1.normalise();
-		if(s == 0)
+		if(fabs(s) < 0.00001f)
 			continue;
 		v1=v1/s;
 		covertices[faces[i*3]].normal+=v1;
@@ -310,7 +310,7 @@ Vector3 FlexObj::updateShadowVertices()
 		v1=v1.crossProduct(v2);
 		float s=v1.length();
 		//avoid large tris
-		if (s>sref[i]) 
+		if (s>sref[i])
 		{
 			coshadowposvertices[faces[i*3+1]].vertex=coshadowposvertices[faces[i*3]].vertex+Vector3(0.1,0,0);
 			coshadowposvertices[faces[i*3+2]].vertex=coshadowposvertices[faces[i*3]].vertex+Vector3(0,0,0.1);
@@ -318,7 +318,7 @@ Vector3 FlexObj::updateShadowVertices()
 			coshadowposvertices[faces[i*3+2]+nVertices].vertex=coshadowposvertices[faces[i*3+2]].vertex;
 		}
 		//v1.normalise();
-		if(s == 0)
+		if(fabs(s) < 0.00001f)
 			continue;
 		v1=v1/s;
 

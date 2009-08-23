@@ -6,7 +6,7 @@ Copyright 2007,2008,2009 Thomas Fischer
 For more information, see http://www.rigsofrods.com/
 
 Rigs of Rods is free software: you can redistribute it and/or modify
-it under the terms of the GNU General Public License version 3, as 
+it under the terms of the GNU General Public License version 3, as
 published by the Free Software Foundation.
 
 Rigs of Rods is distributed in the hope that it will be useful,
@@ -318,7 +318,7 @@ void RigsOfRods::exploreStreams()
 		if (iterFiles->filename==String(".svn")) continue;
 		String filename = SETTINGS.getSetting("Streams Path") + (*iterFiles).filename;
 		rgm.addResourceLocation(filename, "FileSystem", "Packs");
-		
+
 		// HACK: add subfolders
 		rgm.addResourceLocation(filename+dirsep+"vehicles", "FileSystem", "VehicleFolders");
 		rgm.addResourceLocation(filename+dirsep+"terrains", "FileSystem", "TerrainFolders");
@@ -387,21 +387,21 @@ enum { OPT_HELP, OPT_MAP, OPT_TRUCK, OPT_SETUP, OPT_CMD, OPT_WDIR, OPT_ETM, OPT_
 
 // option array
 CSimpleOpt::SOption cmdline_options[] = {
-	{ OPT_MAP,         ("-map"),         SO_REQ_SEP },
-	{ OPT_MAP,         ("-terrain"),     SO_REQ_SEP },
-	{ OPT_TRUCK,       ("-truck"),       SO_REQ_SEP },
-	{ OPT_ENTERTRUCK,  ("-enter"),       SO_NONE },
-	{ OPT_CMD,         ("-cmd"),         SO_REQ_SEP },
-	{ OPT_WDIR,        ("-wd"),          SO_REQ_SEP },
-	{ OPT_SETUP,       ("-setup"),       SO_NONE    },
-	{ OPT_CONFIG,      ("-config"),      SO_NONE    },
-	{ OPT_TRUCKCONFIG, ("-truckconfig"), SO_REQ_SEP    },
-	{ OPT_BUILD,       ("-build"),       SO_NONE    },
-	{ OPT_HELP,        ("--help"),       SO_NONE    },
-	{ OPT_CHECKCACHE,  ("-checkcache"),  SO_NONE    },
-	{ OPT_VER,         ("-version"),     SO_NONE    },
-	{ OPT_BENCH,       ("-benchmark"),   SO_REQ_SEP    },
-	SO_END_OF_OPTIONS
+	{ OPT_MAP,         ((char *)"-map"),         SO_REQ_SEP },
+	{ OPT_MAP,         ((char *)"-terrain"),     SO_REQ_SEP },
+	{ OPT_TRUCK,       ((char *)"-truck"),       SO_REQ_SEP },
+	{ OPT_ENTERTRUCK,  ((char *)"-enter"),       SO_NONE },
+	{ OPT_CMD,         ((char *)"-cmd"),         SO_REQ_SEP },
+	{ OPT_WDIR,        ((char *)"-wd"),          SO_REQ_SEP },
+	{ OPT_SETUP,       ((char *)"-setup"),       SO_NONE    },
+	{ OPT_CONFIG,      ((char *)"-config"),      SO_NONE    },
+	{ OPT_TRUCKCONFIG, ((char *)"-truckconfig"), SO_REQ_SEP    },
+	{ OPT_BUILD,       ((char *)"-build"),       SO_NONE    },
+	{ OPT_HELP,        ((char *)"--help"),       SO_NONE    },
+	{ OPT_CHECKCACHE,  ((char *)"-checkcache"),  SO_NONE    },
+	{ OPT_VER,         ((char *)"-version"),     SO_NONE    },
+	{ OPT_BENCH,       ((char *)"-benchmark"),   SO_REQ_SEP    },
+SO_END_OF_OPTIONS
 };
 
 #if OGRE_PLATFORM == OGRE_PLATFORM_WIN32
@@ -420,7 +420,7 @@ static void setupExceptionHandler()
     BT_SetFlags(BTF_DETAILEDMODE | BTF_EDITMAIL);
     //BT_SetSupportServer("localhost", 9999);
     BT_SetSupportURL("http://forum.rigsofrods.com");
-	
+
 	// catch c++ exceptions:
 	BT_SetTerminate();
 }

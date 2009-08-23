@@ -6,7 +6,7 @@ Copyright 2007,2008,2009 Thomas Fischer
 For more information, see http://www.rigsofrods.com/
 
 Rigs of Rods is free software: you can redistribute it and/or modify
-it under the terms of the GNU General Public License version 3, as 
+it under the terms of the GNU General Public License version 3, as
 published by the Free Software Foundation.
 
 Rigs of Rods is distributed in the hope that it will be useful,
@@ -20,6 +20,8 @@ along with Rigs of Rods.  If not, see <http://www.gnu.org/licenses/>.
 #include "DustPool.h"
 #include "water.h"
 
+#pragma GCC diagnostic ignored "-Wfloat-equal"
+
 DustPool::DustPool(char* dname, int dsize, SceneNode *parent, SceneManager *smgr, Water *mw)
 	{
 		w=mw;
@@ -32,7 +34,7 @@ DustPool::DustPool(char* dname, int dsize, SceneNode *parent, SceneManager *smgr
 			sprintf(dename,"Dust %s %i", dname, i);
 			sns[i]=parent->createChildSceneNode();
 			pss[i]=smgr->createParticleSystem(dename, dname);
-			if (pss[i]) 
+			if (pss[i])
 			{
 				sns[i]->attachObject(pss[i]);
 				pss[i]->setCastShadows(false);
@@ -46,7 +48,7 @@ DustPool::DustPool(char* dname, int dsize, SceneNode *parent, SceneManager *smgr
 	void DustPool::setVisible(bool s)
 	{
 		int i;
-		for (i=0; i<size; i++) 
+		for (i=0; i<size; i++)
 		{
 			pss[i]->setVisible(s ^ (types[i]==DUST_RIPPLE));
 		}
