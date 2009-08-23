@@ -2,8 +2,9 @@
 #include "AITraffic.h"
 #include "ExampleFrameListener.h"
 
-AITraffic::AITraffic()
+AITraffic::AITraffic(int sourceid, int id, int slotid)
 {
+	Ogre::LogManager::getSingleton().logMessage("TRAFFIC - Created");
 }
 
 AITraffic::~AITraffic()
