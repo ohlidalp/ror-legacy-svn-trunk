@@ -112,6 +112,11 @@ along with Rigs of Rods.  If not, see <http://www.gnu.org/licenses/>.
 # endif //XFIRE
 #endif
 
+// some gcc fixes
+#if OGRE_PLATFORM == OGRE_PLATFORM_LINUX
+#pragma GCC diagnostic ignored "-Wfloat-equal"
+#endif //OGRE_PLATFORM_LINUX
+
 #include "OISKeyboard.h"
 
 //#include "OgreTerrainSceneManager.h" // = ILLEGAL to link to a plugin!
@@ -5365,7 +5370,7 @@ void ExampleFrameListener::loadTerrain(String terrainfile)
 	bool useHydrax = (SETTINGS.getSetting("Hydrax") == "Yes");
 	String hydraxConfig = "hydrax_default.hdx";
 
-	if (fabs(waterline + 9999) < 0.00001f)
+	if (waterline != -9999)
 	{
 		bool usewaves=(SETTINGS.getSetting("Waves")=="Yes");
 

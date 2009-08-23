@@ -24,7 +24,6 @@ along with Rigs of Rods.  If not, see <http://www.gnu.org/licenses/>.
 #define STREAMABLEFACTORY_H__
 
 #include "OgrePrerequisites.h"
-#include "OgreSingleton.h"
 #include "pthread.h"
 #include "SocketW.h"
 #include "rornet.h"
