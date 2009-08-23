@@ -38,9 +38,9 @@ using namespace Ogre;
 
 #define MAX_TRUCKS 64
 
-#ifdef OPENSTEER
+#ifdef AITRAFFIC
 #include "AITraffic_Common.h"
-#endif
+#endif //AIT
 
 #include <pthread.h>
 #include <string>
@@ -623,9 +623,9 @@ public:
 	void pushNetwork(char* data, int size);
 	void pushNetForce(int node_id, Vector3 force);
 	void expireNetForce();
-#ifdef OPENSTEER
+#ifdef AITRAFFIC
 	void calcTraffic(trafficnode_t node);
-#endif //OPENSTEER
+#endif //AITRAFFIC
 	void calcNetwork();
 	void addPressure(float v);
 	float getPressure();

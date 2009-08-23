@@ -11,6 +11,8 @@ set(ror_src
 	source/AITraffic_Common.cpp
 	source/AITraffic.h
 	source/AITraffic.cpp
+	source/AITrafficFactory.h
+	source/AITrafficFactory.cpp
 
 	source/approxmath.h
 	source/autopilot.cpp

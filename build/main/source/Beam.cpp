@@ -331,11 +331,11 @@ Beam::Beam(int tnum, SceneManager *manager, SceneNode *parent, RenderWindow* win
 	//			sleepcount=9;
 	state=SLEEPING;
 	if (networked) state=NETWORKED; //required for proper loading
-#ifdef OPENSTEER
+#ifdef AITRAFFIC
 	// this was the reason why locked objects exploded ...
 	// 
 	state = TRAFFICED;
-#endif //OPENSTEER
+#endif //AITRAFFIC
 	sleepcount=0;
 	freecinecamera=0;
 	currentcamera=0;
@@ -873,7 +873,7 @@ void Beam::pushNetwork(char* data, int size)
 	pthread_mutex_unlock(&net_mutex);
 }
 
-#ifdef OPENSTEER
+#ifdef AITRAFFIC
 void Beam::calcTraffic(trafficnode_t node)
 {
 	Quaternion q = node.rotation;
@@ -887,7 +887,7 @@ void Beam::calcTraffic(trafficnode_t node)
 				nodes[i].smoothpos = nodes[i].AbsPosition;
 		}
 }
-#endif //OPENSTEER
+#endif //AITRAFFIC
 
 void Beam::calcNetwork()
 {
@@ -5809,6 +5809,9 @@ void Beam::receiveStreamData(unsigned int &type, int &source, unsigned int &stre
 
 void Beam::calcForcesEuler(int doUpdate, Real dt, int step, int maxstep, Beam** trucks, int numtrucks)
 {
+//IMI
+	return;
+//
 	// do not calc anything if we are going to get deleted
 	if(deleting) return;
 
@@ -5844,7 +5847,45 @@ void Beam::calcForcesEuler(int doUpdate, Real dt, int step, int maxstep, Beam** 
 	if(statistics)
 		statistics->queryStart(BeamThreadStats::Beams);
 #endif
+	
+#ifdef OPENCL
 	//springs
+
+	for (i=0; i<free_beam; i++)
+		{
+			Ogre::Vector3 dis;
+			if (beams[i].p2truck) dis=beams[i].p1->AbsPosition-beams[i].p2->AbsPosition;
+			else dis=beams[i].p1->RelPosition-beams[i].p2->RelPosition;
+			Real dislen=dis.squaredLength();
+			Real inverted_dislen=fast_invSqrt(dislen);
+			dislen=dislen*inverted_dislen;
+
+			Real k=beams[i].k;
+			Real d=beams[i].d;
+
+			Real difftoBeamL = dislen - beams[i].L;
+
+			Vector3 v=beams[i].p1->Velocity-beams[i].p2->Velocity;
+			float flen;
+			if (beams[i].isrope && difftoBeamL<0)
+				flen = -d*v.dotProduct(dis)*0.1f*inverted_dislen;
+			else
+				flen = -k*(difftoBeamL)-d*v.dotProduct(dis)*inverted_dislen;
+
+			Vector3 f=(flen*inverted_dislen)*dis;
+
+			float sflen=flen;
+
+			flen=fabs(flen);
+			beams[i].lastforce=f;
+			beams[i].stress=flen;
+			beams[i].p1->Forces+=f;
+			beams[i].p2->Forces-=f;
+		}
+#endif
+
+#ifndef OPENCL
+//springs
 	for (i=0; i<free_beam; i++)
 	{
 		//trick for exploding stuff
@@ -6129,6 +6170,8 @@ void Beam::calcForcesEuler(int doUpdate, Real dt, int step, int maxstep, Beam** 
 			}
 		}
 	}
+#endif // !OPENCL
+
 #ifdef TIMING
 	if(statistics)
 		statistics->queryStop(BeamThreadStats::Beams);
@@ -8168,6 +8211,9 @@ void Beam::toggleCustomParticles()
 
 void Beam::updateSoundSources()
 {
+//IMI 
+	return;
+//
 	for (int i=0; i<free_soundsource; i++)
 	{
 		soundsources[i].ssi->setPosition(nodes[soundsources[i].nodenum].AbsPosition, nodes[soundsources[i].nodenum].Velocity);

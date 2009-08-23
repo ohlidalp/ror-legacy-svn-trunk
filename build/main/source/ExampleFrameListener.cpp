@@ -28,6 +28,7 @@ along with Rigs of Rods.  If not, see <http://www.gnu.org/licenses/>.
 #include "ScopeLog.h"
 
 #include "CharacterFactory.h"
+#include "AITrafficFactory.h"
 
 #ifdef MPLATFORM
 #include "mplatform_fd.h"
@@ -73,7 +74,7 @@ along with Rigs of Rods.  If not, see <http://www.gnu.org/licenses/>.
 #include "ResourceBuffer.h"
 #include "CacheSystem.h"
 
-#ifdef OPENSTEER
+#ifdef AITRAFFIC
 #include "AITraffic.h"
 #endif
 
@@ -968,12 +969,6 @@ ExampleFrameListener::ExampleFrameListener(RenderWindow* win, Camera* cam, Scene
 	OgreConsole::getSingleton().setVisible(false);
 #endif
 
-#ifdef OPENSTEER
-	// we are doomed if ANGELSCRIPT is not defined
-	// since then invalid SE is passed below!
-	aitraffic = new AITraffic((ScriptEngine *)this);
-#endif //OPENSTEER
-
 	externalCameraMode=0;
 	lastcameramode=0;
 	gameStartTime = CACHE.getTimeStamp();
@@ -1574,6 +1569,30 @@ ExampleFrameListener::ExampleFrameListener(RenderWindow* win, Camera* cam, Scene
 	// you always need that, even if you are not using the network
 	new NetworkStreamManager();
 
+#ifdef AITRAFFIC
+	// we are doomed if ANGELSCRIPT is not defined
+	// since then invalid SE is passed below!
+	if (netmode)
+		{
+			aitraffic = new AITraffic();
+			NetworkStreamManager::getSingleton().addStream(aitraffic, 2, 0);
+		}
+/*
+// for local
+
+		NetworkStreamManager::getSingleton().addStream(this);
+
+		stream_register_t reg;
+		reg.sid = this->streamid;
+		reg.status = 1;
+		strcpy(reg.name, "default");
+		reg.type = 1;
+		this->addPacket(MSG2_STREAM_REGISTER, net->getUserID(), streamid, sizeof(stream_register_t), (char*)&reg);
+*/
+#endif //AITRAFFIC
+
+
+
 	if(netmode)
 	{
 		// cmdline overrides config
@@ -1637,7 +1656,6 @@ ExampleFrameListener::ExampleFrameListener(RenderWindow* win, Camera* cam, Scene
 		source = net->getUserID();
 
 	new CharacterFactory(collisions, net, hfinder, w, bigMap, mSceneMgr);
-
 	person = (Character *)CharacterFactory::getSingleton().createLocal();
 	person->setRemote(false);
 	person->setVisible(false);
@@ -1781,9 +1799,9 @@ ExampleFrameListener::~ExampleFrameListener()
 	}
 	#endif
 
-#ifdef OPENSTEER
+#ifdef AITRAFFIC
 	if (aitraffic) delete(aitraffic);
-#endif //OPENSTEER
+#endif //AITRAFFIC
 }
 
 void ExampleFrameListener::loadNetTerrain(char *preselected_map)
@@ -7281,15 +7299,16 @@ bool ExampleFrameListener::frameStarted(const FrameEvent& evt)
 		}
 END OF OLD CODE */
 
-#ifdef OPENSTEER
+#ifdef AITRAFFIC
 		// Update traffic movement
-		if (person)
+/*		if (person)
 			{
 				aitraffic->playerpos = person->getPosition();
 				aitraffic->playerrot = person->getOrientation();
 			}
 		aitraffic->frameStep(evt.timeSinceLastFrame);
-#endif //OPENSTEER
+*/
+#endif //AITRAFFIC
 
 		//we simulate one truck, it will take care of the others (except networked ones)
 		//this is the big "shaker"
@@ -7304,9 +7323,9 @@ END OF OLD CODE */
 				{
 
 					case TRAFFICED:
-#ifdef OPENSTEER
-								if (t>0) trucks[t]->calcTraffic(aitraffic->aimatrix->trafficgrid->trafficnodes[t]);
-#endif //OPENSTEER
+#ifdef AITRAFFIC
+//								if (t>0) trucks[t]->calcTraffic(aitraffic->aimatrix->trafficgrid->trafficnodes[t]);
+#endif //AITRAFFIC
 								break;
 					case NETWORKED:
 								trucks[t]->calcNetwork();
