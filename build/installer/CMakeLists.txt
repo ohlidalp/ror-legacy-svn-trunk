@@ -51,7 +51,7 @@ IF(wxWidgets_FOUND)
 
   IF(WIN32)
     SET_TARGET_PROPERTIES(installer PROPERTIES COMPILE_FLAGS "/bigobj")
-    SET_TARGET_PROPERTIES(installer PROPERTIES LINK_FLAGS    "/SUBSYSTEM:WINDOWS")
+    SET_TARGET_PROPERTIES(installer PROPERTIES LINK_FLAGS    "/MANIFESTUAC:\"level='requireAdministrator' uiAccess='false'\" /SUBSYSTEM:WINDOWS")
   ENDIF(WIN32)
 
   install(TARGETS installer
