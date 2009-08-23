@@ -17,7 +17,7 @@ else()
 endif()
 
 
-FIND_PACKAGE(wxWidgets COMPONENTS base core html net)
+FIND_PACKAGE(wxWidgets COMPONENTS base core html adv)
 IF(wxWidgets_FOUND)
   include_directories(${wxWidgets_INCLUDE_DIRS})
   add_definitions(${wxWidgets_DEFINITIONS} ${wxWidgets_CXX_FLAGS})
@@ -46,19 +46,19 @@ IF(wxWidgets_FOUND)
 
 
   add_executable(installer ${source_files} ${include_files} ${resource_files})
-  target_link_libraries(installer ${Boost_LIBRARIES})
+  target_link_libraries(installer libwsync ${Boost_LIBRARIES})
   TARGET_LINK_LIBRARIES(installer ${wxWidgets_LIBRARIES} )
 
   IF(WIN32)
     SET_TARGET_PROPERTIES(installer PROPERTIES COMPILE_FLAGS "")
-    SET_TARGET_PROPERTIES(installer PROPERTIES LINK_FLAGS    "/SUBSYSTEM:WINDOWS")  
+    SET_TARGET_PROPERTIES(installer PROPERTIES LINK_FLAGS    "/SUBSYSTEM:WINDOWS")
   ENDIF(WIN32)
 
   install(TARGETS installer
           RUNTIME DESTINATION ${BIN_DIR}
           LIBRARY DESTINATION ${BIN_DIR}
           ARCHIVE DESTINATION ${LIB_DIR})
-            
+
   # already in correct path, no need to install at all!
   #install(TARGETS rorconfig DESTINATION ${BIN_DIR})
 

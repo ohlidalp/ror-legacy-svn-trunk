@@ -23,7 +23,7 @@ add_library(libwsync STATIC source/SHA1.cpp source/wsync.cpp include/wsync.h)
 IF(WIN32)
   add_definitions("-D_CRT_SECURE_NO_WARNINGS")
   add_executable(wsync source/main source/icon.rc)
-  
+
   # UAC vista things to request admin access for the update
   SET_TARGET_PROPERTIES(wsync PROPERTIES LINK_FLAGS /MANIFESTUAC:"level='highestAvailable'")
 
@@ -39,10 +39,14 @@ target_link_libraries(wsync libwsync)
 
 IF(WIN32)
 ELSEIF(UNIX)
-  target_link_libraries (wsync 
+  target_link_libraries (wsync
     ${Boost_LIBRARIES}
     pthread
+    boost_filesystem-s
+    boost_system-s
+    boost_date_time-s
   )
+
 ELSEIF(APPLE)
 ENDIF(WIN32)
 
