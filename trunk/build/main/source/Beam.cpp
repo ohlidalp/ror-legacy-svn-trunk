@@ -205,7 +205,7 @@ Beam::~Beam()
 
 }
 
-Beam::Beam(int tnum, SceneManager *manager, SceneNode *parent, RenderWindow* win, Network *_net, float *_mapsizex, float *_mapsizez, Real px, Real py, Real pz, Quaternion rot, char* fname, Collisions *icollisions, DustPool *mdust, DustPool *mclump, DustPool *msparks, DustPool *mdrip, DustPool *msplash, DustPool *mripple, HeightFinder *mfinder, Water *w, Camera *pcam, Mirrors *mmirror, bool postload, bool networked, bool networking, collision_box_t *spawnbox, bool ismachine, int _flaresMode, std::vector<Ogre::String> *_truckconfig, SkinPtr skin) : deleting(false)
+Beam::Beam(int tnum, SceneManager *manager, SceneNode *parent, RenderWindow* win, Network *_net, float *_mapsizex, float *_mapsizez, Real px, Real py, Real pz, Quaternion rot, const char* fname, Collisions *icollisions, DustPool *mdust, DustPool *mclump, DustPool *msparks, DustPool *mdrip, DustPool *msplash, DustPool *mripple, HeightFinder *mfinder, Water *w, Camera *pcam, Mirrors *mmirror, bool postload, bool networked, bool networking, collision_box_t *spawnbox, bool ismachine, int _flaresMode, std::vector<Ogre::String> *_truckconfig, SkinPtr skin) : deleting(false)
 {
 	net=_net;
 	if(net && !networking) networking = true; // enable networking if some network class is existing
@@ -1196,7 +1196,7 @@ int Beam::getWheelNodeCount()
 }
 
 //to load a truck file
-int Beam::loadTruck(char* fname, SceneManager *manager, SceneNode *parent, Real px, Real py, Real pz, Quaternion rot, bool postload, collision_box_t *spawnbox)
+int Beam::loadTruck(const char* fname, SceneManager *manager, SceneNode *parent, Real px, Real py, Real pz, Quaternion rot, bool postload, collision_box_t *spawnbox)
 {
 	ScopeLog log("beam_"+String(fname));
 	//FILE *fd;

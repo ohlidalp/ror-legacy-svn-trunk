@@ -191,6 +191,7 @@ typedef struct
 
 class ExampleFrameListener: public FrameListener, public Ogre::WindowEventListener
 {
+	friend class BeamFactory;
 protected:
 	void setupBenchmark();
 	void benchStep(float dt);
@@ -419,7 +420,7 @@ protected:
 	SceneNode *pickLineNode;
 	bool updateTruckMirrors(float dt);
 	void gridScreenshots(Ogre::RenderWindow* pRenderWindow, Ogre::Camera* pCamera, const int& pGridSize, const Ogre::String& path, const Ogre::String& pFileName, const Ogre::String& pFileExtention, const bool& pStitchGridImages);
-
+	void initDust();
 public:
 	// Constructor takes a RenderWindow because it uses that to determine input context
 	ExampleFrameListener(RenderWindow* win, Camera* cam, SceneManager* scm, Root* root);

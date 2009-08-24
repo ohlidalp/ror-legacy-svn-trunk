@@ -28,6 +28,7 @@ along with Rigs of Rods.  If not, see <http://www.gnu.org/licenses/>.
 #include "ScopeLog.h"
 
 #include "CharacterFactory.h"
+#include "BeamFactory.h"
 
 #ifdef AITRAFFIC
 #include "AITrafficFactory.h"
@@ -1646,11 +1647,21 @@ ExampleFrameListener::ExampleFrameListener(RenderWindow* win, Camera* cam, Scene
 #endif //AITRAFFIC
 
 
+	// new factory for characters
 	new CharacterFactory(collisions, net, hfinder, w, bigMap, mSceneMgr);
 	person = (Character *)CharacterFactory::getSingleton().createLocal();
 	person->setRemote(false);
 	person->setVisible(false);
 
+
+	// we need dust before we start the beam factory
+	initDust();
+
+	// new beam factory
+	new BeamFactory(this, trucks, mSceneMgr, mSceneMgr->getRootSceneNode(), mWindow, net, &mapsizex, &mapsizez, collisions, dustp, clumpp, sparksp, dripp, splashp, ripplep, hfinder, w, mCamera, mirror);
+
+
+	// now continue to load everything...
 	if(preselected_map != "")
 	{
 		char mapname_cstr[1024];
@@ -4240,7 +4251,7 @@ bool ExampleFrameListener::updateEvents(float dt)
 				}
 			}
 		}
-		if (INPUTENGINE.getEventBoolValueBounce(EV_COMMON_RESCUE_TRUCK, 0.5f) && !netmode && trucks[current_truck]->driveable != AIRPLANE)
+		if (INPUTENGINE.getEventBoolValueBounce(EV_COMMON_RESCUE_TRUCK, 0.5f) && current_truck>=0 && trucks[current_truck] && !netmode && trucks[current_truck]->driveable != AIRPLANE)
 		{
 			//rescue!
 			//if (current_truck!=-1) setCurrentTruck(-1);
@@ -4398,11 +4409,13 @@ bool ExampleFrameListener::updateEvents(float dt)
 				if(selt)
 				{
 					//we load an extra truck
-					char *selected = const_cast<char *>(selt->fname.c_str());
+					String selected = selt->fname;
 					std::vector<Ogre::String> config = UILOADER.getTruckConfig();
 					std::vector<Ogre::String> *configptr = &config;
 					if(config.size() == 0) configptr = 0;
-					trucks[free_truck] = new Beam(free_truck, mSceneMgr, mSceneMgr->getRootSceneNode(), mWindow, net, &mapsizex, &mapsizez, reload_pos.x, reload_pos.y, reload_pos.z, reload_dir, selected, collisions, dustp, clumpp, sparksp, dripp, splashp, ripplep, hfinder, w, mCamera, mirror, true, false, false, reload_box, false, flaresMode, configptr, skin);
+
+					BeamFactory::getSingleton().createLocal(reload_pos, reload_dir, selected, reload_box, false, flaresMode, configptr, skin);
+					//trucks[free_truck] = new Beam(free_truck, mSceneMgr, mSceneMgr->getRootSceneNode(), mWindow, net, &mapsizex, &mapsizez, reload_pos.x, reload_pos.y, reload_pos.z, reload_dir, selected, collisions, dustp, clumpp, sparksp, dripp, splashp, ripplep, hfinder, w, mCamera, mirror, true, false, false, reload_box, false, flaresMode, configptr, skin);
 				}
 
 				if(bigMap)
@@ -4669,7 +4682,7 @@ void ExampleFrameListener::removeTruck(int truck)
 
 int ExampleFrameListener::addTruck(char *fname, Vector3 pos)
 {
-	trucks[free_truck] = new Beam(free_truck, mSceneMgr, mSceneMgr->getRootSceneNode(), mWindow, net, &mapsizex, &mapsizez, pos.x, pos.y, pos.z, Quaternion::ZERO, fname, collisions, dustp, clumpp, sparksp, dripp, splashp, ripplep, hfinder, w, mCamera, mirror, true,false,false,0,false,flaresMode);
+	BeamFactory::getSingleton().createLocal(pos, Quaternion::ZERO, fname, 0, false, flaresMode);
 
 	if(bigMap)
 	{
@@ -4784,6 +4797,8 @@ void ExampleFrameListener::loadTerrain(String terrainfile)
 	lua=new LuaSystem(this);
 	//setup collision system
 	collisions=new Collisions(lua, this, debugCollisions);
+	// update icollisions instance in factory
+	BeamFactory::getSingleton().icollisions = collisions;
 
 	if(!netmode)
 		lua->loadTerrain(terrainfile);
@@ -5438,6 +5453,9 @@ void ExampleFrameListener::loadTerrain(String terrainfile)
 	hfinder = new TSMHeightFinder(geom, terrainmap, wheight);
 	collisions->setHfinder(hfinder);
 	if(person) person->setHFinder(hfinder);
+
+	// update hfinder instance in factory
+	BeamFactory::getSingleton().mfinder = hfinder;
 
 	if(bigMap)
 	{
@@ -6163,10 +6181,8 @@ void ExampleFrameListener::saveGrassDensity()
 #endif //PAGED
 }
 
-void ExampleFrameListener::initTrucks(bool loadmanual, Ogre::String selected, Ogre::String selectedExtension, std::vector<Ogre::String> *truckconfig, bool enterTruck)
+void ExampleFrameListener::initDust()
 {
-	//we load truck
-
 	//we create dust
 	dustp=0;
 	dripp=0;
@@ -6192,7 +6208,11 @@ void ExampleFrameListener::initTrucks(bool loadmanual, Ogre::String selected, Og
 		ripplep=new DustPool("tracks/Ripple", 20, mSceneMgr->getRootSceneNode(), mSceneMgr, w);
 		if (w) w->registerDust(ripplep);
 	}
+}
 
+void ExampleFrameListener::initTrucks(bool loadmanual, Ogre::String selected, Ogre::String selectedExtension, std::vector<Ogre::String> *truckconfig, bool enterTruck)
+{
+	//we load truck
 	char *selectedchr = const_cast<char *>(selected.c_str());
 	if (loadmanual)
 	{
@@ -6222,10 +6242,13 @@ void ExampleFrameListener::initTrucks(bool loadmanual, Ogre::String selected, Og
 					}
 				}
 			}
-			trucks[free_truck]=new Beam(free_truck, mSceneMgr, mSceneMgr->getRootSceneNode(), mWindow, net, &mapsizex, &mapsizez, spawnpos.x, spawnpos.y, spawnpos.z, spawnrot, selectedchr, collisions, dustp, clumpp, sparksp, dripp, splashp, ripplep, hfinder, w, mCamera, mirror, false, false, netmode,0,false,flaresMode, truckconfig);
+			//trucks[free_truck]=new Beam(free_truck, mSceneMgr, mSceneMgr->getRootSceneNode(), mWindow, net, &mapsizex, &mapsizez, spawnpos.x, spawnpos.y, spawnpos.z, spawnrot, selectedchr, collisions, dustp, clumpp, sparksp, dripp, splashp, ripplep, hfinder, w, mCamera, mirror, false, false, netmode,0,false,flaresMode, truckconfig);
+			BeamFactory::getSingleton().createLocal(spawnpos, spawnrot, selectedchr, 0, false, flaresMode, truckconfig);
+
 		} else
 		{
-			trucks[free_truck]=new Beam(free_truck, mSceneMgr, mSceneMgr->getRootSceneNode(), mWindow, net, &mapsizex, &mapsizez, truckx, trucky, truckz, Quaternion::ZERO, selectedchr, collisions, dustp, clumpp, sparksp, dripp, splashp, ripplep, hfinder, w, mCamera, mirror, false, false, netmode,0,false,flaresMode, truckconfig);
+			BeamFactory::getSingleton().createLocal(Vector3(truckx, trucky, truckz), Quaternion::ZERO, selectedchr, 0, false, flaresMode, truckconfig);
+			//trucks[free_truck]=new Beam(free_truck, mSceneMgr, mSceneMgr->getRootSceneNode(), mWindow, net, &mapsizex, &mapsizez, truckx, trucky, truckz, Quaternion::ZERO, selectedchr, collisions, dustp, clumpp, sparksp, dripp, splashp, ripplep, hfinder, w, mCamera, mirror, false, false, netmode,0,false,flaresMode, truckconfig);
 			if(enterTruck) setCurrentTruck(free_truck);
 		}
 
@@ -6250,8 +6273,10 @@ void ExampleFrameListener::initTrucks(bool loadmanual, Ogre::String selected, Og
 		int i;
 		for (i=0; i<truck_preload_num; i++)
 		{
-			trucks[free_truck]=new Beam(free_truck, mSceneMgr, mSceneMgr->getRootSceneNode(), mWindow, net,
-				&mapsizex, &mapsizez, truck_preload[i].px, truck_preload[i].py, truck_preload[i].pz, truck_preload[i].rotation, truck_preload[i].name, collisions, dustp, clumpp, sparksp, dripp, splashp, ripplep, hfinder, w, mCamera, mirror,false,false,false,0,truck_preload[i].ismachine,flaresMode, truckconfig);
+			BeamFactory::getSingleton().createLocal(Vector3(truck_preload[i].px, truck_preload[i].py, truck_preload[i].pz), truck_preload[i].rotation, truck_preload[i].name, 0, truck_preload[i].ismachine, flaresMode, truckconfig);
+
+			//trucks[free_truck]=new Beam(free_truck, mSceneMgr, mSceneMgr->getRootSceneNode(), mWindow, net,
+			//	&mapsizex, &mapsizez, truck_preload[i].px, truck_preload[i].py, truck_preload[i].pz, truck_preload[i].rotation, truck_preload[i].name, collisions, dustp, clumpp, sparksp, dripp, splashp, ripplep, hfinder, w, mCamera, mirror,false,false,false,0,truck_preload[i].ismachine,flaresMode, truckconfig);
 			if(bigMap)
 			{
 				MapEntity *e = bigMap->createNamedMapEntity("Truck"+StringConverter::toString(free_truck), MapControl::getTypeByDriveable(trucks[free_truck]->driveable));

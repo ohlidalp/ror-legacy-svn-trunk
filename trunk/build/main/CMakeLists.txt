@@ -184,6 +184,9 @@ set(ror_src
 
 	source/StreamableFactory.h
 
+	source/BeamFactory.cpp
+	source/BeamFactory.h
+
 	source/utils.cpp
 	source/utils.h
 
@@ -213,7 +216,7 @@ include_directories (${RoR_Dependencies_SOURCE_DIR}/mygui/include)
 IF(WIN32)
   add_definitions("-D_CRT_SECURE_NO_WARNINGS")
 ELSEIF(LINUX)
-  add_definitions("-Wno-float-equal -Wall")
+  add_definitions("-Wno-float-equal")
 ELSEIF(APPLE)
 ENDIF(WIN32)
 
