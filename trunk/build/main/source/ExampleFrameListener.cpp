@@ -5418,6 +5418,7 @@ void ExampleFrameListener::loadTerrain(String terrainfile)
 		}
 	}
 	if(person) person->setWater(w);
+	BeamFactory::getSingleton().w = w;
 
 	//environment map
 	//envmap is always created!
@@ -5425,12 +5426,15 @@ void ExampleFrameListener::loadTerrain(String terrainfile)
 	{
 		envmap=new Envmap(mSceneMgr, mWindow, mCamera, SETTINGS.getSetting("Envmap")=="Yes");
 	}
+	BeamFactory::getSingleton().w = w;
 
 	//mirrors!
 	if(SETTINGS.getSetting("Mirrors")=="Yes")
 	{
 		mirror = new Mirrors(mSceneMgr, mWindow, mCamera);
 	}
+	BeamFactory::getSingleton().mmirror0 = mirror;
+
 	//dashboard
 	if(SETTINGS.getSetting("Dashboard")=="Yes")
 	{

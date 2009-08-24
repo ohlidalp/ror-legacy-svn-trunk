@@ -42,16 +42,49 @@ BeamFactory::BeamFactory(ExampleFrameListener *efl, Beam **trucks, SceneManager 
 
 Beam *BeamFactory::createLocal()
 {
+	// do not use this ...
 	return 0;
 }
 
 Beam *BeamFactory::createLocal(Ogre::Vector3 pos, Ogre::Quaternion rot, Ogre::String fname, collision_box_t *spawnbox, bool ismachine, int flareMode, std::vector<Ogre::String> *truckconfig, SkinPtr skin)
 {
-	// TODO: fix boolean values and netmode
-	Beam *b = new Beam(efl->free_truck, manager, manager->getRootSceneNode(), win, net, mapsizex, mapsizez, pos.x, pos.y, pos.z, rot, fname.c_str(), icollisions, mdust, mclump, msparks, mdrip, msplash, mripple, mfinder, w, pcam, mmirror0, true, false, false, spawnbox, ismachine, flareMode, truckconfig, skin);
+	bool networked=false, networking=false;
+	if(net) networking = true;
+
+	Beam *b = new Beam(efl->free_truck,
+		manager,
+		manager->getRootSceneNode(),
+		win,
+		net,
+		mapsizex,
+		mapsizez,
+		pos.x,
+		pos.y,
+		pos.z,
+		rot,
+		fname.c_str(),
+		icollisions,
+		mdust,
+		mclump,
+		msparks,
+		mdrip,
+		msplash,
+		mripple,
+		mfinder,
+		w,
+		pcam,
+		mmirror0,
+		networked,
+		networking,
+		spawnbox,
+		ismachine,
+		flareMode,
+		truckconfig,
+		skin);
+
 	efl->trucks[efl->free_truck] = b;
 
-	streamables[-1][10+efl->free_truck] = b; // 10 streams offset
+	streamables[-1][10 + efl->free_truck] = b; // 10 streams offset
 	//efl->free_truck++;
 	return b;
 }
@@ -59,12 +92,57 @@ Beam *BeamFactory::createLocal(Ogre::Vector3 pos, Ogre::Quaternion rot, Ogre::St
 Beam *BeamFactory::createRemote(int sourceid, stream_register_t *reg, int slotid)
 {
 	LogManager::getSingleton().logMessage(" new beam truck for " + StringConverter::toString(sourceid) + ":" + StringConverter::toString(reg->sid));
-	return 0;
+
+	bool networked=true, networking=false;
+	if(net) networking = true;
+
+	// spawn the truck far off anywhere
+	Vector3 pos = Vector3(99999,99999,99999);
+
+	Beam *b = new Beam(efl->free_truck,
+		manager,
+		manager->getRootSceneNode(),
+		win,
+		net,
+		mapsizex,
+		mapsizez,
+		pos.x,
+		pos.y,
+		pos.z,
+		Quaternion::ZERO,
+		reg->name,
+		icollisions,
+		mdust,
+		mclump,
+		msparks,
+		mdrip,
+		msplash,
+		mripple,
+		mfinder,
+		w,
+		pcam,
+		mmirror0,
+		networked,
+		networking,
+		0,
+		false,
+		0,
+		0,
+		SkinPtr());
+
+	efl->trucks[efl->free_truck] = b;
+	efl->free_truck++;
+
+	streamables[sourceid][reg->sid] = b;
+
+	return b;
 }
 
 void BeamFactory::remove(Beam *stream)
 {
-	// TODO: to implement
+	delete stream;
+	stream = 0;
+	// TODO: find stream in streamables and remove it there ...
 }
 
 void BeamFactory::removeUser(int userid)

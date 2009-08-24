@@ -205,7 +205,7 @@ Beam::~Beam()
 
 }
 
-Beam::Beam(int tnum, SceneManager *manager, SceneNode *parent, RenderWindow* win, Network *_net, float *_mapsizex, float *_mapsizez, Real px, Real py, Real pz, Quaternion rot, const char* fname, Collisions *icollisions, DustPool *mdust, DustPool *mclump, DustPool *msparks, DustPool *mdrip, DustPool *msplash, DustPool *mripple, HeightFinder *mfinder, Water *w, Camera *pcam, Mirrors *mmirror, bool postload, bool networked, bool networking, collision_box_t *spawnbox, bool ismachine, int _flaresMode, std::vector<Ogre::String> *_truckconfig, SkinPtr skin) : deleting(false)
+Beam::Beam(int tnum, SceneManager *manager, SceneNode *parent, RenderWindow* win, Network *_net, float *_mapsizex, float *_mapsizez, Real px, Real py, Real pz, Quaternion rot, const char* fname, Collisions *icollisions, DustPool *mdust, DustPool *mclump, DustPool *msparks, DustPool *mdrip, DustPool *msplash, DustPool *mripple, HeightFinder *mfinder, Water *w, Camera *pcam, Mirrors *mmirror, bool networked, bool networking, collision_box_t *spawnbox, bool ismachine, int _flaresMode, std::vector<Ogre::String> *_truckconfig, SkinPtr skin) : deleting(false)
 {
 	net=_net;
 	if(net && !networking) networking = true; // enable networking if some network class is existing
@@ -473,7 +473,7 @@ Beam::Beam(int tnum, SceneManager *manager, SceneNode *parent, RenderWindow* win
 
 	cparticle_enabled=(SETTINGS.getSetting("Custom Particles")=="Yes");
 	if(strnlen(fname,200) > 0)
-		if(loadTruck(fname, manager, parent, px, py, pz, rot, postload, spawnbox))
+		if(loadTruck(fname, manager, parent, px, py, pz, rot, spawnbox))
 			return;
 
 	//            printf("%i nodes, %i beams\n", free_node, free_beam);
@@ -1196,7 +1196,7 @@ int Beam::getWheelNodeCount()
 }
 
 //to load a truck file
-int Beam::loadTruck(const char* fname, SceneManager *manager, SceneNode *parent, Real px, Real py, Real pz, Quaternion rot, bool postload, collision_box_t *spawnbox)
+int Beam::loadTruck(const char* fname, SceneManager *manager, SceneNode *parent, Real px, Real py, Real pz, Quaternion rot, collision_box_t *spawnbox)
 {
 	ScopeLog log("beam_"+String(fname));
 	//FILE *fd;
@@ -5714,17 +5714,26 @@ void Beam::prepareShutdown()
 
 void Beam::sendStreamSetup()
 {
-	if(networking)
+	// only init stream if its local.
+	// the stream is local when networkign=true and networked=false
+	if(net && state != NETWORKED )
+	{
 		NetworkStreamManager::getSingleton().addStream(this);
-	//else if(networked)
-	//	NetworkStreamManager::getSingleton().addStream(this); // TOFIX!
 
+		// register the stream
+		stream_register_t reg;
+		reg.sid = this->streamid;
+		reg.status = 0;
+		strcpy(reg.name, "default");
+		reg.type = 1;
+		this->addPacket(MSG2_STREAM_REGISTER, net->getUserID(), streamid, sizeof(stream_register_t), (char*)&reg);
 
-	// send the vehicle name
-	this->addPacket(MSG2_USE_VEHICLE, net->getUserID(), streamid, realtruckfilename.size(), const_cast<char*>(realtruckfilename.c_str()));
+		// send the vehicle name
+		this->addPacket(MSG2_USE_VEHICLE, net->getUserID(), streamid, realtruckfilename.size(), const_cast<char*>(realtruckfilename.c_str()));
 
-	// send vehicle buffer size
-	this->addPacket(MSG2_BUFFER_SIZE, net->getUserID(), streamid, 4, (char*)&netbuffersize);
+		// send vehicle buffer size
+		this->addPacket(MSG2_BUFFER_SIZE, net->getUserID(), streamid, 4, (char*)&netbuffersize);
+	}
 }
 
 void Beam::sendStreamData()
@@ -5805,13 +5814,19 @@ void Beam::sendStreamData()
 	}
 
 	//memcpy(send_buffer+sizeof(oob_t), (char*)send_buffer, send_buffer_len);
-	this->addPacket(MSG2_VEHICLE_DATA, net->getUserID(), streamid, packet_len, send_buffer);
+	this->addPacket(MSG2_STREAM_DATA, net->getUserID(), streamid, packet_len, send_buffer);
 }
 
 void Beam::receiveStreamData(unsigned int &type, int &source, unsigned int &streamid, char *buffer, unsigned int &len)
 {
-	// TODO!
-	// networked
+	if(state!=NETWORKED) return; // this should not happen
+	// TODO: FIX
+	//if(this->source != source || this->streamid != streamid) return; // data not for us
+
+	if(type == MSG2_STREAM_DATA)
+	{
+		pushNetwork(buffer, len);
+	}
 }
 
 void Beam::calcForcesEuler(int doUpdate, Real dt, int step, int maxstep, Beam** trucks, int numtrucks)
