@@ -240,12 +240,12 @@ typedef struct			// struct is used for motion platforms
 
 	float	steer;		// user inputs
 	float	throttle;
-	float	brake;	
+	float	brake;
 	float	clutch;
 
 	float	speed;		// different stats
 	float	rpm;
-	int		gear; 
+	int		gear;
 	float	avg_friction;
 } mstat_t;
 
@@ -258,7 +258,7 @@ typedef struct			// struct is used for motion platforms
 #define NEWS_HTML_PAGE "http://api.rigsofrods.com/news/"
 
 //debugging
-//#define REFLECT_DEBUG 
+//#define REFLECT_DEBUG
 
 // strnlen is nto a std function, this macro can be used in place.
 #ifdef NO_STRNLEN
