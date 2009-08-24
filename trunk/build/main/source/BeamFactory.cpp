@@ -47,8 +47,11 @@ Beam *BeamFactory::createLocal()
 
 Beam *BeamFactory::createLocal(Ogre::Vector3 pos, Ogre::Quaternion rot, Ogre::String fname, collision_box_t *spawnbox, bool ismachine, int flareMode, std::vector<Ogre::String> *truckconfig, SkinPtr skin)
 {
+	// TODO: fix boolean values and netmode
 	Beam *b = new Beam(efl->free_truck, manager, manager->getRootSceneNode(), win, net, mapsizex, mapsizez, pos.x, pos.y, pos.z, rot, fname.c_str(), icollisions, mdust, mclump, msparks, mdrip, msplash, mripple, mfinder, w, pcam, mmirror0, true, false, false, spawnbox, ismachine, flareMode, truckconfig, skin);
 	efl->trucks[efl->free_truck] = b;
+
+	streamables[-1][10+efl->free_truck] = b; // 10 streams offset
 	//efl->free_truck++;
 	return b;
 }
@@ -61,6 +64,7 @@ Beam *BeamFactory::createRemote(int sourceid, stream_register_t *reg, int slotid
 
 void BeamFactory::remove(Beam *stream)
 {
+	// TODO: to implement
 }
 
 void BeamFactory::removeUser(int userid)
