@@ -64,4 +64,4 @@ protected:
 
 
 
-#endif //STREAMABLEFACTORY_H__
+#endif //CHARACTERFACTORY_H__

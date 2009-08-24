@@ -78,12 +78,12 @@ void CharacterFactory::removeUser(int userid)
 
 void CharacterFactory::localUserAttributesChanged(int newid)
 {
-	std::map < int, std::map < unsigned int, Streamable *> >::iterator it1;
-	std::map < unsigned int, Streamable *>::iterator it2;
+	std::map < int, std::map < unsigned int, Character *> >::iterator it1;
+	std::map < unsigned int, Character *>::iterator it2;
 
 	if(streamables.find(-1) == streamables.end()) return;
 
-	Character *c = dynamic_cast<Character*>(streamables[-1][0]);
+	Character *c = streamables[-1][0];
 	streamables[newid][0] = streamables[-1][0]; // add alias :)
 	c->setUID(newid);
 	c->updateNetLabel();
