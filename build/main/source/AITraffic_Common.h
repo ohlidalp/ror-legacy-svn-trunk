@@ -40,6 +40,17 @@ typedef struct _trafficintersection
 	int prg_idx;
 } trafficintersection_t;
 
+typedef struct _netobj
+{
+	Ogre::Vector3	 pos;
+	Ogre::Quaternion dir;
+} netobj_t;
+
+typedef struct _nettraffic
+{
+	int num_of_objs;
+	netobj_t objs[100];
+} nettraffic_t;
 
 //---------------- Traffic Vehicle related types
 

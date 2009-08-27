@@ -31,7 +31,6 @@ AITrafficFactory::AITrafficFactory(Network *net, Ogre::SceneManager *scm) : net(
 {
 }
 
-
 AITrafficFactory::~AITrafficFactory()
 {}
 
@@ -43,18 +42,15 @@ void AITrafficFactory::localUserAttributesChanged(int newid)
 
 AITraffic *AITrafficFactory::createLocal()
 {
-	// never ever create a local aitraffic instance...
 	assert(false);
+	return NULL;
 }
 
 AITraffic *AITrafficFactory::createRemote(int sourceid, stream_register_t *reg, int slotid)
 {
 	Ogre::LogManager::getSingleton().logMessage(" new Traffic management for " + Ogre::StringConverter::toString(sourceid) + ":" + Ogre::StringConverter::toString(reg->sid));
-	AITraffic *traffic = new AITraffic(sourceid, reg->sid, slotid);
-//	NetworkStreamManager::getSingleton().addStream(traffic, sourceid, reg->sid);
-
-	Ogre::LogManager::getSingleton().logMessage(" CP-1");
-//	streamables[sourceid][reg->sid] = traffic;
+	AITraffic *traffic = new AITraffic(this->net, sourceid, reg->sid, slotid);
+	NetworkStreamManager::getSingleton().addStream(traffic, sourceid, reg->sid);
 	this->streamables[sourceid][reg->sid] = traffic;
 	Ogre::LogManager::getSingleton().logMessage(" Traffic registration is done");
 	return traffic;

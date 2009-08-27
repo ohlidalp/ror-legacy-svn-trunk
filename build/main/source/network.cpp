@@ -593,14 +593,15 @@ void Network::receivethreadstart()
 
 client_t *Network::getClientInfo(unsigned int uid)
 {
-	pthread_mutex_lock(&clients_mutex);
+// this is a deadlock here
+//	pthread_mutex_lock(&clients_mutex);
 	client_t *c = 0;
 	for (int i=0; i<MAX_PEERS; i++)
 	{
 		if (clients[i].user_id == uid)
 			c = &clients[i];
 	}
-	pthread_mutex_unlock(&clients_mutex);
+//	pthread_mutex_unlock(&clients_mutex);
 	return c;
 }
 
