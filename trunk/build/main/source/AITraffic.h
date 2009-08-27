@@ -11,6 +11,8 @@
 #include "Streamable.h"
 #include "rornet.h"
 
+class Network;
+
 class AITraffic : public Streamable
 {
 
@@ -18,7 +20,7 @@ class AITraffic : public Streamable
 	friend class Network;
 
 	public:
-		AITraffic(int sourceid, int id, int slotid);
+		AITraffic(Network *net, int sourceid, int id, int slotid);
 		~AITraffic();
 
 		void sendStreamData();
@@ -32,6 +34,7 @@ class AITraffic : public Streamable
 		int source;
 		unsigned int streamid;
 		int slotid;
+		Network *net;
 
 };
 

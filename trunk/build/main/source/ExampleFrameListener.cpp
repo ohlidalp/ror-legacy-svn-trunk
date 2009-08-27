@@ -6248,6 +6248,12 @@ void ExampleFrameListener::initTrucks(bool loadmanual, Ogre::String selected, Og
 			}
 			//trucks[free_truck]=new Beam(free_truck, mSceneMgr, mSceneMgr->getRootSceneNode(), mWindow, net, &mapsizex, &mapsizez, spawnpos.x, spawnpos.y, spawnpos.z, spawnrot, selectedchr, collisions, dustp, clumpp, sparksp, dripp, splashp, ripplep, hfinder, w, mCamera, mirror, false, false, netmode,0,false,flaresMode, truckconfig);
 			BeamFactory::getSingleton().createLocal(spawnpos, spawnrot, selectedchr, 0, false, flaresMode, truckconfig);
+//IMI - on network mode we should be directly jump in
+			if (enterTruck)
+				{
+					cameramode = CAMERA_INT;
+					setCurrentTruck(free_truck);
+				}
 
 		} else
 		{

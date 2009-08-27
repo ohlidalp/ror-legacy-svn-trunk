@@ -1,8 +1,9 @@
 #ifdef AITRAFFIC
+#include "network.h"
 #include "AITraffic.h"
 #include "ExampleFrameListener.h"
 
-AITraffic::AITraffic(int sourceid, int id, int slotid)
+AITraffic::AITraffic(Network *net, int sourceid, int id, int slotid)
 {
 	Ogre::LogManager::getSingleton().logMessage("TRAFFIC - Created");
 	this->source	= source;
@@ -26,19 +27,34 @@ void AITraffic::sendStreamData()
 		return;
 
 	last_net_time = t;
-
-	netdata_t data;
-	data.pos = personode->getPosition();
-	data.rot = personode->getOrientation();
-	
-	//LogManager::getSingleton().logMessage("sending character stream data: " + StringConverter::toString(net->getUserID()) + ":"+ StringConverter::toString(streamid));
-	this->addPacket(MSG2_STREAM_DATA, net->getUserID(), streamid, sizeof(netdata_t), (char*)&data);
 */
+//	netdata_t data;
+//	data.pos = personode->getPosition();
+//	data.rot = personode->getOrientation();
+
+	nettraffic_t nettraffic;
+	nettraffic.num_of_objs = 3;
+	nettraffic.objs[0].pos.x = 987.0f;
+	nettraffic.objs[1].pos.x = 654.0f;
+	nettraffic.objs[2].pos.x = 321.0f;
+
+	
+//	LogManager::getSingleton().logMessage("sending character stream data: " + StringConverter::toString(net->getUserID()) + ":"+ StringConverter::toString(streamid));
+	this->addPacket(MSG2_STREAM_DATA, 123, 2, sizeof(nettraffic_t), (char *)&nettraffic);
+//	this->addPacket(MSG2_STREAM_DATA, 11, 2, 0, NULL);
 }
 
 void AITraffic::receiveStreamData(unsigned int &type, int &source, unsigned int &streamid, char *buffer, unsigned int &len)
 {
 	Ogre::LogManager::getSingleton().logMessage("TRAFFIC - receiveStreamData");
+	sendStreamData();
+
+	nettraffic_t nettraffic;
+	memcpy(&nettraffic, buffer, sizeof(nettraffic_t));
+
+	int a;
+	a++;
+
 /*
 	if(type == MSG2_STREAM_DATA && this->source == source && this->streamid == streamid)
 	{
