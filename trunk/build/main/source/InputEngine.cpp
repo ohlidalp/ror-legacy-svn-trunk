@@ -1772,6 +1772,7 @@ bool InputEngine::buttonPressed( const OIS::JoyStickEvent &arg, int button )
 	inputsChanged=true;
 	//LogManager::getSingleton().logMessage("*** buttonPressed " + StringConverter::toString(button));
 	int i = arg.device->getID();
+	if (i < 0 || i >= MAX_JOYSTICKS) i = 0;
 	joyState[i] = arg.state;
 	return true;
 }
@@ -1781,6 +1782,7 @@ bool InputEngine::buttonReleased( const OIS::JoyStickEvent &arg, int button )
 	inputsChanged=true;
 	//LogManager::getSingleton().logMessage("*** buttonReleased " + StringConverter::toString(button));
 	int i = arg.device->getID();
+	if (i < 0 || i >= MAX_JOYSTICKS) i = 0;
 	joyState[i] = arg.state;
 	return true;
 }
@@ -1790,6 +1792,7 @@ bool InputEngine::axisMoved( const OIS::JoyStickEvent &arg, int axis )
 	inputsChanged=true;
 	//LogManager::getSingleton().logMessage("*** axisMoved " + StringConverter::toString(axis) + " / " + StringConverter::toString((int)(arg.state.mAxes[axis].abs / (float)(mJoy->MAX_AXIS/100))));
 	int i = arg.device->getID();
+	if (i < 0 || i >= MAX_JOYSTICKS) i = 0;
 	joyState[i] = arg.state;
 	return true;
 }
@@ -1799,6 +1802,7 @@ bool InputEngine::sliderMoved( const OIS::JoyStickEvent &arg, int )
 	inputsChanged=true;
 	//LogManager::getSingleton().logMessage("*** sliderMoved");
 	int i = arg.device->getID();
+	if (i < 0 || i >= MAX_JOYSTICKS) i = 0;
 	joyState[i] = arg.state;
 	return true;
 }
@@ -1808,6 +1812,7 @@ bool InputEngine::povMoved( const OIS::JoyStickEvent &arg, int )
 	inputsChanged=true;
 	//LogManager::getSingleton().logMessage("*** povMoved");
 	int i = arg.device->getID();
+	if (i < 0 || i >= MAX_JOYSTICKS) i = 0;
 	joyState[i] = arg.state;
 	return true;
 }
