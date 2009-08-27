@@ -6278,8 +6278,10 @@ void ExampleFrameListener::initTrucks(bool loadmanual, Ogre::String selected, Og
 
 	// load the rest in SP
 	// in netmode, dont load other trucks!
+#ifndef AITRAFFIC // - we spawn the trafficed trucks this way until we cannot command it via AITRAFFIC module
 	if (!netmode)
 	{
+#endif
 		int i;
 		for (i=0; i<truck_preload_num; i++)
 		{
@@ -6299,7 +6301,9 @@ void ExampleFrameListener::initTrucks(bool loadmanual, Ogre::String selected, Og
 			free_truck++;
 			//trucks[free_truck-1]->setNetworkName(truck_preload[i].name);
 		}
+#ifndef AITRAFFIC
 	}
+#endif
 	LogManager::getSingleton().logMessage("EFL: beam instanciated");
 
 	if(!enterTruck) setCurrentTruck(-1);
