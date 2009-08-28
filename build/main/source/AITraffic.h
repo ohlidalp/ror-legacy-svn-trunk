@@ -26,6 +26,8 @@ class AITraffic : public Streamable
 		void sendStreamData();
 		void receiveStreamData(unsigned int &type, int &source, unsigned int &streamid, char *buffer, unsigned int &len);
 
+		nettraffic_t nettraffic;
+
 	protected:
 		void sendStreamSetup();
 

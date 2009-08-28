@@ -881,15 +881,15 @@ void Beam::pushNetwork(char* data, int size)
 }
 
 #ifdef AITRAFFIC
-void Beam::calcTraffic(trafficnode_t node)
+void Beam::calcTraffic(netobj_t node)
 {
-	Quaternion q = node.rotation;
+	Quaternion q = node.dir;
 	if (q.getYaw()==Ogre::Radian(-180)) q = Quaternion(q.w, q.x, q.y, -q.z);
 	q.normalise();
 
 	for (int i=0;i<free_node;i++)
 		{
-				nodes[i].AbsPosition = node.position;
+				nodes[i].AbsPosition = node.pos;
 				nodes[i].AbsPosition += q*nodes[i].RelPosition;
 				nodes[i].smoothpos = nodes[i].AbsPosition;
 		}

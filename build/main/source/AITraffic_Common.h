@@ -49,6 +49,8 @@ typedef struct _netobj
 typedef struct _nettraffic
 {
 	int num_of_objs;
+	Ogre::Vector3		playerpos;
+	Ogre::Quaternion	playerdir;
 	netobj_t objs[100];
 } nettraffic_t;
 
