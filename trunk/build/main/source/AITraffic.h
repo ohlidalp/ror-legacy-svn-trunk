@@ -31,6 +31,15 @@ class AITraffic : public Streamable
 	protected:
 		void sendStreamSetup();
 
+		void ping				(char *buffer, unsigned int &len);
+		void setupVehicles		(char *buffer, unsigned int &len);
+		void setPositionData	(char *buffer, unsigned int &len);
+		void setupLamps			(char *buffer, unsigned int &len);
+		void setupSigns			(char *buffer, unsigned int &len);
+		void setupZones			(char *buffer, unsigned int &len);
+		void setupPortals		(char *buffer, unsigned int &len);
+		void updateLampPrograms	(char *buffer, unsigned int &len);
+
 	private:
 		bool remote;
 		int source;
