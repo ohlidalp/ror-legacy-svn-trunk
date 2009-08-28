@@ -38,7 +38,7 @@ void AITraffic::sendStreamData()
 	nettraffic.objs[1].pos.x = 654.0f;
 	nettraffic.objs[2].pos.x = 321.0f;
 
-	
+
 //	LogManager::getSingleton().logMessage("sending character stream data: " + StringConverter::toString(net->getUserID()) + ":"+ StringConverter::toString(streamid));
 	this->addPacket(MSG2_STREAM_DATA, 123, 2, sizeof(nettraffic_t), (char *)&nettraffic);
 //	this->addPacket(MSG2_STREAM_DATA, 11, 2, 0, NULL);
@@ -52,7 +52,7 @@ void AITraffic::receiveStreamData(unsigned int &type, int &source, unsigned int 
 	nettraffic_t nettraffic;
 	memcpy(&nettraffic, buffer, sizeof(nettraffic_t));
 
-	int a;
+	int a=0;
 	a++;
 
 /*
