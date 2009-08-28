@@ -29,6 +29,7 @@ template<> AITrafficFactory *StreamableFactory < AITrafficFactory, AITraffic >::
 
 AITrafficFactory::AITrafficFactory(Network *net, Ogre::SceneManager *scm) : net(net), scm(scm)
 {
+	traffic = NULL;
 }
 
 AITrafficFactory::~AITrafficFactory()
@@ -49,7 +50,7 @@ AITraffic *AITrafficFactory::createLocal()
 AITraffic *AITrafficFactory::createRemote(int sourceid, stream_register_t *reg, int slotid)
 {
 	Ogre::LogManager::getSingleton().logMessage(" new Traffic management for " + Ogre::StringConverter::toString(sourceid) + ":" + Ogre::StringConverter::toString(reg->sid));
-	AITraffic *traffic = new AITraffic(this->net, sourceid, reg->sid, slotid);
+	traffic = new AITraffic(this->net, sourceid, reg->sid, slotid);
 	NetworkStreamManager::getSingleton().addStream(traffic, sourceid, reg->sid);
 	this->streamables[sourceid][reg->sid] = traffic;
 	Ogre::LogManager::getSingleton().logMessage(" Traffic registration is done");
@@ -62,6 +63,11 @@ void AITrafficFactory::removeUser(int userid)
 
 void AITrafficFactory::remove(AITraffic *t)
 {
+}
+
+AITraffic* AITrafficFactory::getTraffic()
+{
+	return traffic;
 }
 
 #endif //AITRAFFIC

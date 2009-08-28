@@ -624,7 +624,7 @@ public:
 	void pushNetForce(int node_id, Vector3 force);
 	void expireNetForce();
 #ifdef AITRAFFIC
-	void calcTraffic(trafficnode_t node);
+	void calcTraffic(netobj_t node);
 #endif //AITRAFFIC
 	void calcNetwork();
 	void addPressure(float v);

@@ -1801,9 +1801,9 @@ ExampleFrameListener::~ExampleFrameListener()
 	}
 	#endif
 
-#ifdef AITRAFFIC
-	if (aitraffic) delete(aitraffic);
-#endif //AITRAFFIC
+//#ifdef AITRAFFIC
+//	if (aitraffic) delete(aitraffic);
+//#endif //AITRAFFIC
 }
 
 void ExampleFrameListener::loadNetTerrain(char *preselected_map)
@@ -6473,6 +6473,14 @@ void ExampleFrameListener::setCurrentTruck(int v)
 	}
 #ifdef XFIRE
 	updateXFire();
+
+#ifdef AITRAFFIC
+	for (int i=0;i<free_truck;i++)
+		{
+			if (i!=current_truck) trucks[i]->state = TRAFFICED;
+		}
+#endif
+
 #endif
 }
 
@@ -7331,13 +7339,32 @@ END OF OLD CODE */
 
 #ifdef AITRAFFIC
 		// Update traffic movement
-/*		if (person)
+		AITraffic *aitraffic = AITrafficFactory::getSingleton().getTraffic();
+		if (aitraffic)
 			{
-				aitraffic->playerpos = person->getPosition();
-				aitraffic->playerrot = person->getOrientation();
+				AITraffic *aitraffic = AITrafficFactory::getSingleton().getTraffic();
+				if (person)
+					{
+						aitraffic->nettraffic.playerpos = person->getPosition();
+						aitraffic->nettraffic.playerdir = person->getOrientation();
+					}
+				else
+					{
+						if (current_truck!=-1)
+							{
+								aitraffic->nettraffic.playerpos = trucks[current_truck]->getPosition();
+								// how to add orientation?
+							}
+						else
+							{
+								// that's impossible ... we are not with truck and not a person ... how?
+								aitraffic->nettraffic.playerpos = Ogre::Vector3(0,0,0);
+							}
+					}
 			}
-		aitraffic->frameStep(evt.timeSinceLastFrame);
-*/
+//		aitraffic->frameStep(evt.timeSinceLastFrame);		// we calculate this in VTC from this on
+
+
 #endif //AITRAFFIC
 
 		//we simulate one truck, it will take care of the others (except networked ones)
@@ -7354,7 +7381,7 @@ END OF OLD CODE */
 
 					case TRAFFICED:
 #ifdef AITRAFFIC
-//								if (t>0) trucks[t]->calcTraffic(aitraffic->aimatrix->trafficgrid->trafficnodes[t]);
+								if (aitraffic) trucks[t]->calcTraffic(aitraffic->nettraffic.objs[t]);
 #endif //AITRAFFIC
 								break;
 					case NETWORKED:
@@ -7597,6 +7624,13 @@ bool ExampleFrameListener::setCameraPositionWithCollision(Vector3 newPos)
 
 bool ExampleFrameListener::frameEnded(const FrameEvent& evt)
 {
+#ifdef AITRAFFIC	// send vehicle new positions
+	AITraffic *aitraffic = AITrafficFactory::getSingleton().getTraffic();
+	if (aitraffic)
+		{
+			aitraffic->sendStreamData();
+		}
+#endif
 	updateStats();
 
 #if OGRE_PLATFORM == OGRE_PLATFORM_WIN32

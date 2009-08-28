@@ -621,9 +621,9 @@ protected:
 	MPlatform_Base *mplatform;
 #endif
 
-#ifdef AITRAFFIC
-	AITraffic *aitraffic;
-#endif //AITRAFFIC
+//#ifdef AITRAFFIC
+//	AITraffic *aitraffic;
+//#endif //AITRAFFIC
 
 	void loadTerrain(Ogre::String terrainfile);
 	static bool fileExists(const char* filename);

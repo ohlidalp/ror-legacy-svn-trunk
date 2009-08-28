@@ -42,7 +42,10 @@ class AITrafficFactory  : public StreamableFactory < AITrafficFactory, AITraffic
 		AITraffic *createLocal();
 		AITraffic *createRemote(int sourceid, stream_register_t *reg, int slotid);
 
+		AITraffic *getTraffic();
+
 	protected:
+		AITraffic *traffic;
 		Network *net;
 		Ogre::SceneManager *scm;
 
