@@ -3271,6 +3271,10 @@ bool ExampleFrameListener::updateEvents(float dt)
 												trucks[current_truck]->engine->shift(-1);
 												gear_changed_rel=true;
 											}
+										else if (INPUTENGINE.getEventBoolValueBounce(EV_TRUCK_SHIFT_NEUTRAL))
+											{
+												trucks[current_truck]->engine->shiftTo(0);
+											}
 									}
 								else // if (shiftmode>MANUAL)		// h-shift or h-shift with ranges shifting
 									{
