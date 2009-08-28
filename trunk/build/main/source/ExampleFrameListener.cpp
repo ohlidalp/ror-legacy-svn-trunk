@@ -3258,7 +3258,8 @@ bool ExampleFrameListener::updateEvents(float dt)
 								bool gear_changed_rel = false;
 								int shiftmode = trucks[current_truck]->engine->getAutoMode();
 
-								if (shiftmode==SEMIAUTO || shiftmode==MANUAL) // manual sequencial shifting
+//								if (shiftmode==SEMIAUTO || shiftmode==MANUAL) // manual sequencial shifting
+								if (shiftmode<=MANUAL) // manual sequencial shifting, semi auto shifting, auto shifting
 									{
 										if (INPUTENGINE.getEventBoolValueBounce(EV_TRUCK_SHIFT_UP))
 											{
@@ -3271,7 +3272,7 @@ bool ExampleFrameListener::updateEvents(float dt)
 												gear_changed_rel=true;
 											}
 									}
-								else if (shiftmode>MANUAL)		// h-shift or h-shift with ranges shifting
+								else // if (shiftmode>MANUAL)		// h-shift or h-shift with ranges shifting
 									{
 										bool gear_changed	= false;
 										bool found			= false;
