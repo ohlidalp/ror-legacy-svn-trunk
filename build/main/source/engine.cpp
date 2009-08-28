@@ -259,6 +259,12 @@ void BeamEngine::toggleAutoMode()
 	// this switches off all automatic symbols when in manual mode
 	if(automode!=AUTOMATIC) autoselect = MANUALMODE;
 	else					autoselect = NEUTRAL; 
+
+	if (automode==MANUAL_RANGES)
+		{
+			this->setGearRange(0);
+			this->setGear(0);
+		}
 }
 
 int BeamEngine::getAutoMode()

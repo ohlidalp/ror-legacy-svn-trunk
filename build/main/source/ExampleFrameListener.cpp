@@ -3253,12 +3253,12 @@ bool ExampleFrameListener::updateEvents(float dt)
 
 								//joy clutch
 								float cval = INPUTENGINE.getEventValue(EV_TRUCK_MANUAL_CLUTCH);
-								if(trucks[current_truck]->engine) trucks[current_truck]->engine->setManualClutch(cval);
+								trucks[current_truck]->engine->setManualClutch(cval);
 
 								bool gear_changed_rel = false;
 								int shiftmode = trucks[current_truck]->engine->getAutoMode();
 
-								if (shiftmode==MANUAL || shiftmode==SEMIAUTO) // manual sequencial shifting
+								if (shiftmode==SEMIAUTO || shiftmode==MANUAL) // manual sequencial shifting
 									{
 										if (INPUTENGINE.getEventBoolValueBounce(EV_TRUCK_SHIFT_UP))
 											{
@@ -3273,41 +3273,39 @@ bool ExampleFrameListener::updateEvents(float dt)
 									}
 								else if (shiftmode>MANUAL)		// h-shift or h-shift with ranges shifting
 									{
-										bool gear_changed = true;
-										bool found = false;
+										bool gear_changed	= false;
+										bool found			= false;
 										int curgear		= trucks[current_truck]->engine->getGear();
 										int curgearrange= trucks[current_truck]->engine->getGearRange();
 										int gearoffset  = curgear-curgearrange*6;
 										if (gearoffset<0) gearoffset = 0;
-
 										// one can select range only if in natural
-										if(curgear == 0)
+										if(shiftmode==MANUAL_RANGES && curgear == 0)
 											{
-												gear_changed = true;
 												//  maybe this should not be here, but should experiment
-												if (shiftmode==MANUAL_RANGES)
+												if		 (INPUTENGINE.getEventBoolValueBounce(EV_TRUCK_SHIFT_LOWRANGE) && curgearrange!=0)
 													{
-														if		 (INPUTENGINE.getEventBoolValueBounce(EV_TRUCK_SHIFT_LOWRANGE))
-															{
-																trucks[current_truck]->engine->setGearRange(0);
-																flashMessage(_L("Low range selected"));
-															}
-														else if  (INPUTENGINE.getEventBoolValueBounce(EV_TRUCK_SHIFT_MIDRANGE)  && trucks[current_truck]->engine->getNumGearsRanges()>1)
-															{
-																trucks[current_truck]->engine->setGearRange(1);
-																flashMessage(_L("Mid range selected"));
-															}
-														else if  (INPUTENGINE.getEventBoolValueBounce(EV_TRUCK_SHIFT_HIGHRANGE) && trucks[current_truck]->engine->getNumGearsRanges()>2)
-															{
-																trucks[current_truck]->engine->setGearRange(2);
-																flashMessage(_L("High range selected"));
-															}
+														trucks[current_truck]->engine->setGearRange(0);
+														gear_changed = true;
+														flashMessage(_L("Low range selected"));
+													}
+												else if  (INPUTENGINE.getEventBoolValueBounce(EV_TRUCK_SHIFT_MIDRANGE)  && curgearrange !=1 && trucks[current_truck]->engine->getNumGearsRanges()>1)
+													{
+														trucks[current_truck]->engine->setGearRange(1);
+														gear_changed = true;
+														flashMessage(_L("Mid range selected"));
+													}
+												else if  (INPUTENGINE.getEventBoolValueBounce(EV_TRUCK_SHIFT_HIGHRANGE) && curgearrange!=2 && trucks[current_truck]->engine->getNumGearsRanges()>2)
+													{
+														trucks[current_truck]->engine->setGearRange(2);
+														gear_changed = true;
+														flashMessage(_L("High range selected"));
 													}
 											}
-										else if(curgear == -1)
+//zaxxon
+										if(curgear == -1)
 											{
 												gear_changed = !INPUTENGINE.getEventBoolValue(EV_TRUCK_SHIFT_GEAR_REVERSE);
-												if (!gear_changed) found = true;
 											}
 										else if(curgear > 0 && curgear < 19)
 											{
@@ -3315,7 +3313,7 @@ bool ExampleFrameListener::updateEvents(float dt)
 												else					gear_changed = !INPUTENGINE.getEventBoolValue(EV_TRUCK_SHIFT_GEAR1 + gearoffset-1); // range mode
 											}
 
-										if (gear_changed)
+										if (gear_changed || curgear==0)
 											{
 												if      (INPUTENGINE.getEventBoolValue(EV_TRUCK_SHIFT_GEAR_REVERSE))
 													{
@@ -3352,8 +3350,9 @@ bool ExampleFrameListener::updateEvents(float dt)
 																	}
 															}
 													}
+												if (!found) trucks[current_truck]->engine->shiftTo(0);
 											} // end of if(gear_changed)
-										if (!found && curgear!=0) trucks[current_truck]->engine->shiftTo(0);
+//										if (!found && curgear!=0) trucks[current_truck]->engine->shiftTo(0);
 									} // end of shitmode>MANUAL
 							} // endof ->engine
 						} // endof ->replaymode
