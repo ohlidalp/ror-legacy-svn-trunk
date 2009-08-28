@@ -48,19 +48,19 @@ def copyAll(src, dst):
         errors.extend((src, dst, str(why)))
     if errors:
         raise Error, errors
-  
+
 def deleteAll(dir):
   if os.path.isdir(dir):
     #print "delete %s" % (dir)
     shutil.rmtree(dir, True)
-  
+
 def mkdir(dir):
   if not os.path.isdir(dir):
     os.mkdir(dir)
 
 def main():
   ts = time.time()
-  
+
   #cleanup
   print "cleanup"
   deleteAll(TARGET)
@@ -87,7 +87,7 @@ def main():
   #copyAll(os.path.join(SOURCE, 'languages'), CFT)
   #copy built-in game resources
   print "please download latest language files from: http://translate.rigsofrods.com/ror/?action=downloadproject"
-  print "please download and unpack the content pack from SF to the test/current directory"
+  print "please download and unpack the content pack from SF (https://sourceforge.net/projects/rigsofrods/files/) to the test/current directory"
   #REST=os.path.join(CURRENT, 'resources')
   #mkdir(REST)
   #copyAll(os.path.join(SOURCE, 'contents', 'release'), REST)
@@ -102,7 +102,7 @@ def main():
   #mkdir(STT)
   #copyAll(STREAMS, STT)
   #updater will be copied later...
-  
+
   print "done with all. processed in %0.2f seconds." % (time.time()-ts)
   wait=True
   if len(sys.argv) > 1 and sys.argv[1] == 'nowait':
