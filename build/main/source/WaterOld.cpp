@@ -19,6 +19,7 @@ along with Rigs of Rods.  If not, see <http://www.gnu.org/licenses/>.
 */
 #include "WaterOld.h"
 #include "Settings.h"
+#include "ExampleFrameListener.h"
 
 //Camera* theCam;
 Entity* pPlaneEnt;
@@ -31,11 +32,6 @@ Plane reflectionPlane;
 Plane refractionPlane;
 SceneManager *waterSceneMgr;
 
-int numdust=0;
-DustPool* dusts[10];
-
-void showspray(bool s);
-
 class RefractionTextureListener : public RenderTargetListener
 {
 public:
@@ -45,7 +41,7 @@ public:
 		// Hide plane
 		pPlaneEnt->setVisible(false);
 		//hide WaterOld spray
-		showspray(false);
+		if (eflsingleton) eflsingleton->showspray(false);
 	}
 	void postRenderTargetUpdate(const RenderTargetEvent& evt)
 	{
@@ -53,7 +49,7 @@ public:
 		pPlaneEnt->setVisible(true);
 		waterSceneMgr->getRenderQueue()->getQueueGroup(RENDER_QUEUE_MAIN)->setShadowsEnabled(true);
 		//restore WaterOld spray
-		showspray(true);
+		if (eflsingleton) eflsingleton->showspray(true);
 	}
 
 };
@@ -309,11 +305,6 @@ void WaterOld::setFadeColour(ColourValue ambient)
 	if(vRtt2) vRtt2->setBackgroundColour(ambient);
 }
 
-void WaterOld::registerDust(DustPool* dp)
-{
-	dusts[numdust]=dp;
-	numdust++;
-}
 
 void WaterOld::moveTo(Camera *cam, float centerheight)
 {

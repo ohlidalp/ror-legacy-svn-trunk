@@ -126,10 +126,6 @@ int HydraxWater::loadConfig(Ogre::String configfile)
 	return 0;
 }
 
-void HydraxWater::registerDust(DustPool* dp)
-{
-}
-
 void HydraxWater::moveTo(Camera *cam, float centerheight)
 {
 }
