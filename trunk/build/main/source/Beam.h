@@ -854,7 +854,8 @@ public:
 		if(state==NETWORKED)
 			return netBrakeLight;
 
-		return (brake > 0.15 && !parkingbrake);
+//		return (brake > 0.15 && !parkingbrake);
+		return (brake > 0.15);
 	}
 
 	bool getReverseLightVisible();

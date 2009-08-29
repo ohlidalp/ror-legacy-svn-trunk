@@ -20,6 +20,7 @@ along with Rigs of Rods.  If not, see <http://www.gnu.org/licenses/>.
 */
 
 #ifdef AITRAFFIC
+#include "ExampleFrameListener.h"
 #include "AITrafficFactory.h"
 #include "Ogre.h"
 
@@ -27,8 +28,9 @@ using namespace Ogre;
 
 template<> AITrafficFactory *StreamableFactory < AITrafficFactory, AITraffic >::ms_Singleton = 0;
 
-AITrafficFactory::AITrafficFactory(Network *net, Ogre::SceneManager *scm) : net(net), scm(scm)
+AITrafficFactory::AITrafficFactory(ExampleFrameListener *efl, Network *net, Ogre::SceneManager *scm) : net(net), scm(scm)
 {
+	mefl = efl;
 	traffic = NULL;
 }
 
@@ -50,7 +52,7 @@ AITraffic *AITrafficFactory::createLocal()
 AITraffic *AITrafficFactory::createRemote(int sourceid, stream_register_t *reg, int slotid)
 {
 	Ogre::LogManager::getSingleton().logMessage(" new Traffic management for " + Ogre::StringConverter::toString(sourceid) + ":" + Ogre::StringConverter::toString(reg->sid));
-	traffic = new AITraffic(this->net, sourceid, reg->sid, slotid);
+	traffic = new AITraffic(mefl, this->net, sourceid, reg->sid, slotid);
 	NetworkStreamManager::getSingleton().addStream(traffic, sourceid, reg->sid);
 	this->streamables[sourceid][reg->sid] = traffic;
 	Ogre::LogManager::getSingleton().logMessage(" Traffic registration is done");

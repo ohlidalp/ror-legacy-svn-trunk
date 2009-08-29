@@ -12,6 +12,7 @@
 #include "rornet.h"
 
 class Network;
+class ExampleFrameListener;
 
 class AITraffic : public Streamable
 {
@@ -20,7 +21,7 @@ class AITraffic : public Streamable
 	friend class Network;
 
 	public:
-		AITraffic(Network *net, int sourceid, int id, int slotid);
+		AITraffic(ExampleFrameListener *efl, Network *net, int sourceid, int id, int slotid);
 		~AITraffic();
 
 		void sendStreamData();
@@ -34,11 +35,20 @@ class AITraffic : public Streamable
 		void ping				(char *buffer, unsigned int &len);
 		void setupVehicles		(char *buffer, unsigned int &len);
 		void setPositionData	(char *buffer, unsigned int &len);
-		void setupLamps			(char *buffer, unsigned int &len);
+		void setupLamps			(char *buffer);
 		void setupSigns			(char *buffer, unsigned int &len);
 		void setupZones			(char *buffer, unsigned int &len);
 		void setupPortals		(char *buffer, unsigned int &len);
 		void updateLampPrograms	(char *buffer, unsigned int &len);
+
+		void AITraffic::spawnObject(const std::string &objectName, const std::string &instanceName, Ogre::Vector3 pos, Ogre::Vector3 rot, bool uniquifyMaterials);
+		void AITraffic::setSignalState(Ogre::String instance, int state);
+
+		// duplicated from AS for performance issues
+		int setMaterialAmbient(const std::string &materialName, float red, float green, float blue);
+		int setMaterialDiffuse(const std::string &materialName, float red, float green, float blue, float alpha);
+		int setMaterialSpecular(const std::string &materialName, float red, float green, float blue, float alpha);
+		int setMaterialEmissive(const std::string &materialName, float red, float green, float blue);
 
 	private:
 		bool remote;
@@ -46,6 +56,7 @@ class AITraffic : public Streamable
 		unsigned int streamid;
 		int slotid;
 		Network *net;
+		ExampleFrameListener *mefl;
 
 };
 

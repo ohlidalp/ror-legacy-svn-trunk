@@ -39,9 +39,6 @@ typedef struct _setuplamps
 } setuplamps_t;
 
 
-
-
-
 typedef struct _trafficlightnode
 {
 	int index;
