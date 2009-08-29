@@ -27,15 +27,16 @@ along with Rigs of Rods.  If not, see <http://www.gnu.org/licenses/>.
 #include "StreamableFactory.h"
 #include "AITraffic.h"
 #include "NetworkStreamManager.h"
-class Network;
 
+class Network;
+class ExampleFrameListener;
 
 class AITrafficFactory  : public StreamableFactory < AITrafficFactory, AITraffic >
 {
 	friend class Network;
 
 	public:
-		AITrafficFactory(Network *net, Ogre::SceneManager *scm);
+		AITrafficFactory(ExampleFrameListener *efl, Network *net, Ogre::SceneManager *scm);
 		~AITrafficFactory();
 
 		// RoR player cannot create traffic on its own, only traffic client is allowed to do that
@@ -55,6 +56,9 @@ class AITrafficFactory  : public StreamableFactory < AITrafficFactory, AITraffic
 		// functions used by friends
 		void netUserAttributesChanged(int source, int streamid);
 		void localUserAttributesChanged(int newid);
+
+	private:
+		ExampleFrameListener *mefl;
 };
 
 #endif //AITRAFFICFACTORY_H
