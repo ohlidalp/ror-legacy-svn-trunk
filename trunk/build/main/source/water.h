@@ -38,7 +38,6 @@ public:
 	virtual ~Water() {};
 	
 	bool visible;
-	virtual void registerDust(DustPool *dp)= 0;
 	virtual void moveTo(Camera *cam, float centerheight)= 0;
 	virtual void showWave(Vector3 refpos) = 0;
 	virtual void update()= 0;

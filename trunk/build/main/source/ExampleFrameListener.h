@@ -189,6 +189,10 @@ typedef struct
 	float speedfactor;
 } animated_object_t;
 
+class ExampleFrameListener;
+extern ExampleFrameListener *eflsingleton;
+
+
 class ExampleFrameListener: public FrameListener, public Ogre::WindowEventListener
 {
 	friend class BeamFactory;
@@ -460,6 +464,7 @@ public:
 			size_t &index_count, unsigned* &indices,
 			const Vector3 &position = Vector3::ZERO,
 			const Quaternion &orient = Quaternion::IDENTITY,const Vector3 &scale = Vector3::UNIT_SCALE);
+	void showspray(bool s);
 
 	Character *person;
 	bool getSwitchButtons() { return switchMouseButtons; };

@@ -5424,6 +5424,7 @@ void ExampleFrameListener::loadTerrain(String terrainfile)
 	}
 	if(person) person->setWater(w);
 	BeamFactory::getSingleton().w = w;
+	ripplep->setWater(w);//note: only ripples need w so far
 
 	//environment map
 	//envmap is always created!
@@ -5431,7 +5432,6 @@ void ExampleFrameListener::loadTerrain(String terrainfile)
 	{
 		envmap=new Envmap(mSceneMgr, mWindow, mCamera, SETTINGS.getSetting("Envmap")=="Yes");
 	}
-	BeamFactory::getSingleton().w = w;
 
 	//mirrors!
 	if(SETTINGS.getSetting("Mirrors")=="Yes")
@@ -6201,21 +6201,15 @@ void ExampleFrameListener::initDust()
 	clumpp=0;
 	if (SETTINGS.getSetting("Dust")=="Yes")
 	{
-		dustp=new DustPool("tracks/Dust", 20, mSceneMgr->getRootSceneNode(), mSceneMgr, w);
-		if (w) w->registerDust(dustp);
-		clumpp=new DustPool("tracks/Clump", 20, mSceneMgr->getRootSceneNode(), mSceneMgr, w);
-		if (w) w->registerDust(clumpp);
-		sparksp=new DustPool("tracks/Sparks", 10, mSceneMgr->getRootSceneNode(), mSceneMgr, w);
-		if (w) w->registerDust(sparksp);
+		dustp=new DustPool("tracks/Dust", 20, mSceneMgr->getRootSceneNode(), mSceneMgr);
+		clumpp=new DustPool("tracks/Clump", 20, mSceneMgr->getRootSceneNode(), mSceneMgr);
+		sparksp=new DustPool("tracks/Sparks", 10, mSceneMgr->getRootSceneNode(), mSceneMgr);
 	}
 	if (SETTINGS.getSetting("Spray")=="Yes")
 	{
-		dripp=new DustPool("tracks/Drip", 50, mSceneMgr->getRootSceneNode(), mSceneMgr, w);
-		if (w) w->registerDust(dripp);
-		splashp=new DustPool("tracks/Splash", 20, mSceneMgr->getRootSceneNode(), mSceneMgr, w);
-		if (w) w->registerDust(splashp);
-		ripplep=new DustPool("tracks/Ripple", 20, mSceneMgr->getRootSceneNode(), mSceneMgr, w);
-		if (w) w->registerDust(ripplep);
+		dripp=new DustPool("tracks/Drip", 50, mSceneMgr->getRootSceneNode(), mSceneMgr);
+		splashp=new DustPool("tracks/Splash", 20, mSceneMgr->getRootSceneNode(), mSceneMgr);
+		ripplep=new DustPool("tracks/Ripple", 20, mSceneMgr->getRootSceneNode(), mSceneMgr);
 	}
 }
 
@@ -8032,4 +8026,16 @@ void ExampleFrameListener::gridScreenshots(Ogre::RenderWindow* pRenderWindow, Og
 
   pCamera->setCustomProjectionMatrix(true, orgmat);
 }
+
+//show/hide all dusts
+void ExampleFrameListener::showspray(bool s)
+{
+	if (dustp) dustp->setVisible(s);
+	if (dripp) dripp->setVisible(s);
+	if (clumpp) clumpp->setVisible(s);
+	if (sparksp) sparksp->setVisible(s);
+	if (splashp) splashp->setVisible(s);
+	if (ripplep) ripplep->setVisible(s);
+}
+
 

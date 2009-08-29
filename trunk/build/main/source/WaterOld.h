@@ -72,7 +72,6 @@ private:
 public:
 	WaterOld();
 	WaterOld(int type, Camera *camera, SceneManager *mSceneMgr, RenderWindow *mWindow, float wheight, float *mapsizex, float *mapsizez, bool usewaves);
-	void registerDust(DustPool* dp);
 	void moveTo(Camera *cam, float centerheight);
 	void showWave(Vector3 refpos);
 	void update();

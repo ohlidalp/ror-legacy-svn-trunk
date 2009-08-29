@@ -56,7 +56,9 @@ protected:
 	Water* w;
 
 public:
-	DustPool(const char* dname, int dsize, SceneNode *parent, SceneManager *smgr, Water *mw);
+	DustPool(const char* dname, int dsize, SceneNode *parent, SceneManager *smgr, Water *mw=NULL);
+
+	void setWater(Water *mw);
 
 	void setVisible(bool s);
 	//Dust

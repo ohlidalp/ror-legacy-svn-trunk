@@ -48,6 +48,11 @@ DustPool::DustPool(const char* dname, int dsize, SceneNode *parent, SceneManager
 
 	};
 
+	void DustPool::setWater(Water *mw)
+	{
+		w=mw;
+	}
+
 	void DustPool::setVisible(bool s)
 	{
 		int i;
@@ -270,7 +275,7 @@ DustPool::DustPool(const char* dname, int dsize, SceneNode *parent, SceneManager
 				ParticleEmitter *emit=pss[i]->getEmitter(0);
 				Real vel=velocities[i].length();
 				emit->setEnabled(true);
-				positions[i].y=w->getHeight()-0.02;
+				if (w) positions[i].y=w->getHeight()-0.02;
 				sns[i]->setPosition(positions[i]);
 				emit->setColour(ColourValue(0.9, 0.9, 0.9,vel*0.04));
 				emit->setTimeToLive(vel*0.04/0.1);
@@ -280,17 +285,9 @@ DustPool::DustPool(const char* dname, int dsize, SceneNode *parent, SceneManager
 		allocated=0;
 	}
 
-
 	DustPool::~DustPool()
 	{
 	}
-
-//KESAKO???
-void showspray(bool s)
-{
-		int i;
-		for (i=0; i<numdust; i++) dusts[i]->setVisible(s);
-}
 
 
 
