@@ -14,6 +14,9 @@ set(ror_src
 	source/AITrafficFactory.h
 	source/AITrafficFactory.cpp
 
+	source/opencl_beam.h
+	source/opencl_beam.cpp
+
 	source/approxmath.h
 	source/autopilot.cpp
 	source/autopilot.h
@@ -229,6 +232,10 @@ endif(ROR_BUILD_HYDRAX)
 if(ROR_BUILD_TRAFFIC_SUPPORT)
   add_definitions("-DAITRAFFIC")
 endif(ROR_BUILD_TRAFFIC_SUPPORT)
+
+if(ROR_BUILD_OPENCL_SUPPORT)
+  add_definitions("-DOPENCL")
+endif(ROR_BUILD_OPENCL_SUPPORT)
 
 if(ROR_BUILD_PAGED)
  add_definitions("-DPAGED")
