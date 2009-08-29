@@ -141,10 +141,6 @@ DustPool::DustPool(const char* dname, int dsize, SceneNode *parent, SceneManager
 
 	void DustPool::update(float gspeed)
 	{
-//IMI - this one brakes when launching in network mode
-//		I apply a return here while solution is deliveredF
-//			LogManager::getSingleton().logMessage("Dust "+ StringConverter::toString(allocated));
-		return;
 		int i;
 		gspeed=fabs(gspeed);
 		for (i=0; i<allocated; i++)
