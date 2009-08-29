@@ -40,7 +40,8 @@ DustPool::DustPool(const char* dname, int dsize, SceneNode *parent, SceneManager
 			{
 				sns[i]->attachObject(pss[i]);
 				pss[i]->setCastShadows(false);
-				//can't do this
+				pss[i]->getEmitter(0)->setEnabled(false);
+//can't do this
 //				if (w) ((DeflectorPlaneAffector*)(pss[i]->getAffector(0)))->setPlanePoint(Vector3(0, w->getHeight(), 0));
 			}
 		}
@@ -142,6 +143,7 @@ DustPool::DustPool(const char* dname, int dsize, SceneNode *parent, SceneManager
 	{
 //IMI - this one brakes when launching in network mode
 //		I apply a return here while solution is deliveredF
+//			LogManager::getSingleton().logMessage("Dust "+ StringConverter::toString(allocated));
 		return;
 		int i;
 		gspeed=fabs(gspeed);
