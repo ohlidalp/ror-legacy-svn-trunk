@@ -7076,8 +7076,8 @@ void Beam::calcForcesEuler(int doUpdate, Real dt, int step, int maxstep, Beam** 
 //TOMMYLOMMY modification ends
 			}
 		}
-		//friction
-		//total_torque -= wheels[i].speed*1.0; // by TOMMYLOMMY
+		//bearings friction
+		total_torque -= wheels[i].speed*1.0; //it is important to keep some wheel friction to avoid numerical instabilities
 		// old-style
 		if ( free_axle == 0 && wheels[i].propulsed > 0)
 		{
