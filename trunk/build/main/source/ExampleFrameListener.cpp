@@ -3207,16 +3207,15 @@ bool ExampleFrameListener::updateEvents(float dt)
 						if(trucks[current_truck]->engine) trucks[current_truck]->engine->autoSetAcc(accval);
 
 						//brake
-						//TOMMYLOMMY
-						//if (!trucks[current_truck]->parkingbrake)
-						//	{
+						if (!trucks[current_truck]->parkingbrake)
+						{
 								float brake = INPUTENGINE.getEventValue(EV_TRUCK_BRAKE);
 								trucks[current_truck]->brake = brake*trucks[current_truck]->brakeforce;
 								if (trucks[current_truck]->brake > trucks[current_truck]->brakeforce/6.0)
 									ssm->trigStart(current_truck, SS_TRIG_BRAKE);
 								else
 									ssm->trigStop(current_truck, SS_TRIG_BRAKE);
-						//	}
+						}
 
 						//IMI
 						// gear management -- it might should be transferred to a standalone function of Beam or ExampleFrameListener
