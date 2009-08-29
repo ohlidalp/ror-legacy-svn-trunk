@@ -7043,41 +7043,34 @@ void Beam::calcForcesEuler(int doUpdate, Real dt, int step, int maxstep, Beam** 
 			total_torque=((free_axle == 0) ? engine_torque : intertorque[i]);
 
 		//braking
-//TOMMYLOMMY modification starts 
-		if (wheels[i].braked != 0)
-		{
-			//directional braking
-			float dbrake=0.0;
-			if (wheels[i].braked==2 && hydrodirstate>0.0 && WheelSpeed<20.0) dbrake=brakeforce*hydrodirstate;
-			if (wheels[i].braked==3 && hydrodirstate<0.0 && WheelSpeed<20.0) dbrake=brakeforce*-hydrodirstate;
-			//handbrake
-			float hbrake = 0.0;
-			if (parkingbrake && wheels[i].braked != 4) hbrake = brakeforce*2.0;
+		if (parkingbrake) brake=brakeforce*2.0;
 
-			// ABS system
-			/*
-			// currently not in use
-			if(abs_state && fabs(wheels[i].speed) < 1.0f )
-			{
+		//directional braking
+		float dbrake=0.0;
+		if (wheels[i].braked==2 && hydrodirstate>0.0 && WheelSpeed<20.0) dbrake=brakeforce*hydrodirstate;
+		if (wheels[i].braked==3 && hydrodirstate<0.0 && WheelSpeed<20.0) dbrake=brakeforce*-hydrodirstate;
+
+		// ABS system
+		/*
+		// currently not in use
+		if(abs_state && fabs(wheels[i].speed) < 1.0f )
+		{
 			// remove all brake force when ABS is active and wheel speed is low enough
-			} else
-			*/
-			if (brake != 0.0 || dbrake != 0.0 || hbrake != 0.0)
+		} else
+		*/
+		{
+			if ((brake != 0.0 || dbrake != 0.0) && wheels[i].braked && braked_wheels != 0)
 			{
-				//if( fabs(wheels[i].speed) > 0.1f )
-				//{
-				total_torque -= (wheels[i].speed/fabs(wheels[i].speed))*(brake + dbrake + hbrake);
-				//}
+				if( fabs(wheels[i].speed) > 0.1f )
+					total_torque -= (wheels[i].speed/fabs(wheels[i].speed))*(brake + dbrake);
 				// wheels are stopped, really this should
-				//else if( fabs(wheels[i].speed) > 0.0f)
-				//{
-				//	total_torque -= (wheels[i].speed/fabs(wheels[i].speed))*(brake + dbrake +  hbrake)*1.2;
-				//}
-//TOMMYLOMMY modification ends
+				else if( fabs(wheels[i].speed) > 0.0f)
+					total_torque -= (wheels[i].speed/fabs(wheels[i].speed))*(brake + dbrake)*1.2;
 			}
 		}
-		//bearings friction
+		//friction
 		total_torque -= wheels[i].speed*1.0; //it is important to keep some wheel friction to avoid numerical instabilities
+
 		// old-style
 		if ( free_axle == 0 && wheels[i].propulsed > 0)
 		{
@@ -8984,8 +8977,7 @@ void Beam::parkingbrakeToggle()
 	parkingbrake=!parkingbrake;
 	if (parkingbrake)
 	{
-		//TOMMYLOMMY
-		//brake=brakeforce*2.0;
+		brake=brakeforce*2.0;
 		ssm->trigStart(trucknum, SS_TRIG_PARK);
 	} else ssm->trigStop(trucknum, SS_TRIG_PARK);
 #ifdef ANGELSCRIPT
