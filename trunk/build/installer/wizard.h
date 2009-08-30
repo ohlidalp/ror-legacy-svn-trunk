@@ -83,6 +83,8 @@ along with Rigs of Rods.  If not, see <http://www.gnu.org/licenses/>.
 
 
 #define ID_BROWSE 1
+#define ID_WIZARD 2
+#define ID_TIMER  3
 
 // essential string conversion methods. helps to convert wxString<-->std::string<-->char string
 inline wxString conv(const char *s)
@@ -124,17 +126,27 @@ public:
     MyWizard(wxFrame *frame, bool useSizer = true);
 
     wxWizardPage *GetFirstPage() const { return m_page1; }
+	
+	void OnPageChanging(wxWizardEvent& event);
 
 private:
     wxWizardPageSimple *m_page1;
 	ConfigManager* cm;
+    DECLARE_EVENT_TABLE()
 };
 
 // ----------------------------------------------------------------------------
 // pages for our wizard
 // ----------------------------------------------------------------------------
 
-class PresentationPage : public wxWizardPageSimple
+class EnterLeavePage
+{
+public:
+	virtual bool OnEnter(bool forward) {return true;}
+	virtual bool OnLeave(bool forward) {return true;}
+};
+
+class PresentationPage : public wxWizardPageSimple, public EnterLeavePage
 {
 public:
     PresentationPage(wxWizard *parent) : wxWizardPageSimple(parent)
@@ -163,7 +175,7 @@ public:
     }
 };
 
-class LicencePage : public wxWizardPageSimple
+class LicencePage : public wxWizardPageSimple, public EnterLeavePage
 {
 public:
     LicencePage(wxWizard *parent) : wxWizardPageSimple(parent)
@@ -194,7 +206,7 @@ public:
     }
 };
 
-class ActionPage : public wxWizardPage
+class ActionPage : public wxWizardPage, public EnterLeavePage
 {
 public:
     ActionPage(wxWizard *parent, ConfigManager* cm, wxWizardPage* prev, wxWizardPage* fselect, wxWizardPage* download) : wxWizardPage(parent)
@@ -245,9 +257,9 @@ public:
         if (arb->GetSelection()==0) return m_fselect; else return m_download;
     }
 	//output validation
-    virtual bool TransferDataFromWindow()
+	bool OnLeave(bool forward)
     {
-		m_cm->setAction(arb->GetSelection());
+		if (forward) m_cm->setAction(arb->GetSelection());
         return true;
     }
 private:
@@ -256,7 +268,7 @@ private:
 	ConfigManager* m_cm;
 };
 
-class PathPage : public wxWizardPageSimple
+class PathPage : public wxWizardPageSimple, public EnterLeavePage
 {
 public:
     PathPage(wxWizard *parent, ConfigManager* cm) : wxWizardPageSimple(parent)
@@ -273,12 +285,13 @@ public:
 		tst->Wrap(TXTWRAP);
 		mainSizer->Add(tst=new wxStaticText(this, wxID_ANY, _T("Download from:")), 0, wxALL, 5);
 		tst->Wrap(TXTWRAP);
-		wxString choices[3];
+		wxString choices[4];
 		choices[0]=_T("Automatic mirrors selection");
 		choices[1]=_T("European Mirrors");
-		choices[2]=_T("North American Mirrors");
+		choices[2]=_T("American Mirrors");
+		choices[3]=_T("Asian Mirrors");
 
-		mainSizer->Add(src=new wxChoice(this, wxID_ANY, wxDefaultPosition, wxDefaultSize, 3, choices), 0, wxBOTTOM|wxLEFT|wxRIGHT, 5);
+		mainSizer->Add(src=new wxChoice(this, wxID_ANY, wxDefaultPosition, wxDefaultSize, 4, choices), 0, wxBOTTOM|wxLEFT|wxRIGHT, 5);
 		src->SetSelection(0);
 		mainSizer->Add(tst=new wxStaticText(this, wxID_ANY, _T("\nChoose the installation directory:")), 0, wxTOP|wxLEFT|wxRIGHT, 5);
 		tst->Wrap(TXTWRAP);
@@ -327,23 +340,27 @@ public:
 		if (res==wxID_OK) sel->SetValue(dirdial->GetPath());
 	}
 	//output validation
-    virtual bool TransferDataFromWindow()
+    //virtual bool TransferDataFromWindow()
+	bool OnLeave(bool forward)
     {
-		wxString path=sel->GetValue();
-		if (!wxFileName(path).IsAbsolute()) //relative paths are dangerous!
+		if (forward)
 		{
-			wxMessageBox(_T("This path is invalid"), _T("Invalid path"), wxICON_ERROR | wxOK, this);
-			return false;
-		}
-		if (!wxDir::Exists(path))
-		{
-			if (!wxFileName::Mkdir(path))
+			wxString path=sel->GetValue();
+			if (!wxFileName(path).IsAbsolute()) //relative paths are dangerous!
 			{
-				wxMessageBox(_T("This path could not be created"), _T("Invalid path"), wxICON_ERROR | wxOK, this);
+				wxMessageBox(_T("This path is invalid"), _T("Invalid path"), wxICON_ERROR | wxOK, this);
 				return false;
 			}
+			if (!wxDir::Exists(path))
+			{
+				if (!wxFileName::Mkdir(path))
+				{
+					wxMessageBox(_T("This path could not be created"), _T("Invalid path"), wxICON_ERROR | wxOK, this);
+					return false;
+				}
+			}
+			m_cm->setPath(path);
 		}
-		m_cm->setPath(path);
         return true;
     }
 
@@ -356,19 +373,15 @@ private:
     DECLARE_EVENT_TABLE()
 };
 
-class StreamsPage : public wxWizardPageSimple
+class StreamsPage : public wxWizardPageSimple, public EnterLeavePage
 {
 public:
     StreamsPage(wxWizard *parent, ConfigManager* cm) : wxWizardPageSimple(parent)
     {
+		streamset=false;
 		m_cm=cm;
         wxBoxSizer *mainSizer = new wxBoxSizer(wxVERTICAL);
   		wxStaticText *tst;
-		int res = m_cm->getOnlineStreams();
-		if(res)
-		{
-	        mainSizer->Add(tst=new wxStaticText(this, wxID_ANY, _T("ERROR downloading streams!\n")), 0, wxALL, 5);
-		}
         m_bitmap = wxBitmap(streams_xpm);
         mainSizer->Add(tst=new wxStaticText(this, wxID_ANY, _T("Streams selection\n")), 0, wxALL, 5);
 		wxFont dfont=tst->GetFont();
@@ -392,6 +405,16 @@ public:
 		//scrwsz->Fit(scrw);
 		mainSizer->Fit(this);
 		
+    }
+	bool OnEnter(bool forward)
+	{
+		if (streamset) return true; //reloading streams do not work for the moment (GUI problem)
+		int res = m_cm->getOnlineStreams();
+		if(res)
+		{
+			wxMessageBox(_T("The program could not connect to the central Streams server.\nThe service may be temporarily unavailable, or you have no network connection."), _T("Network error"), wxICON_ERROR | wxOK, this);
+		}
+		scrwsz->Clear(true);
 		//add the streams
 		stream_desc_t* strd=m_cm->getStreamset();
 		while (strd)
@@ -400,16 +423,32 @@ public:
 			scrwsz->Add(wst, 0, wxALL|wxEXPAND,0);
 			strd=strd->next;
 		}
+		streamset=true;
+		return true;
+	}
 
-    }
-
+	bool OnLeave(bool forward)
+	{
+		if (forward)
+		{
+			//store the user settings
+			int i=0;
+			while (wxStrel *wst=dynamic_cast<wxStrel*>(scrwsz->GetItem(i)))
+			{
+				m_cm->setStreamSelection(wst->getDesc(), wst->getSelection());
+				i++;
+			}
+		}
+		return true;
+	}
 private:
 	ConfigManager* m_cm;
 	wxScrolledWindow *scrw;
 	wxSizer *scrwsz;
+	bool streamset;
 };
 
-class DownloadPage : public wxWizardPageSimple
+class DownloadPage : public wxWizardPageSimple, public EnterLeavePage
 {
 public:
     DownloadPage(wxWizard *parent) : wxWizardPageSimple(parent)
@@ -432,15 +471,15 @@ public:
         SetSizer(mainSizer);
         mainSizer->Fit(this);
 		
-		timer = new wxTimer(this, 1);
+		timer = new wxTimer(this, ID_TIMER);
 	}
 	
-	// TODO: call these functions when we enter the dialog page
-	void OnEnter(wxString operation, wxString url)
+	bool OnEnter(bool forward)
+	//void OnEnter(wxString operation, wxString url)
 	{
-#ifdef LIBWSYNC
-		// todo: only start the timer if we enter the page and stop it again as we are leaving!
+		forfun=0;
 		timer->Start(250); // 250 ms
+#ifdef LIBWSYNC
 		
 		// create wsync object
 		BlockFile bf;
@@ -451,8 +490,9 @@ public:
 			bf.updateDirectoryFromURL(conv(url));
 		}
 #endif
+		return true;
 	}
-	void OnLeave()
+	bool OnLeave(bool forward)
 	{
 		// stop timer and cancel all running operations
 		timer->Stop();
@@ -463,18 +503,22 @@ public:
 			bf = 0;
 		}
 #endif
+		return true;
 	}	
 
 private:
 	wxGauge *progress;
 	wxTimer *timer;
 	wxStaticText *statusText;
+	int forfun;
 #ifdef LIBWSYNC
 	BlockFile *bf;
 #endif
 
 	void OnTimer(wxTimerEvent& event)
 	{
+		forfun++;
+		progress->SetValue(forfun);
 #ifdef LIBWSYNC
 		if(!bf)
 			return;
@@ -496,7 +540,7 @@ private:
 	DECLARE_EVENT_TABLE()
 };
 
-class LastPage : public wxWizardPageSimple
+class LastPage : public wxWizardPageSimple, public EnterLeavePage
 {
 public:
     LastPage(wxWizard *parent) : wxWizardPageSimple(parent)

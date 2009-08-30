@@ -58,9 +58,11 @@ public:
 	void setPath(wxString pth);
 	int getOnlineStreams();
 	stream_desc_t* getStreamset();
+	void setStreamSelection(stream_desc_t* desc, bool selection);
 
 private:
 	stream_desc_t *streamset;
+	void clearStreamset();
 	void appendStream(wxString title, wxString desc, wxBitmap icon, bool checked, bool disabled);
 };
 

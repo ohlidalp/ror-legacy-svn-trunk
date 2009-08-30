@@ -54,16 +54,19 @@ inline std::string conv(const wxString& s)
 ConfigManager::ConfigManager()
 {
 	streamset=0;
-	//add default streams
-	//appendStream(_T("Base game"), _T("The minimum you need to run the game."), wxBitmap(mainpack_xpm), true, true);
-	//appendStream(_T("Standard media pack"), _T("The best terrains and vehicles, highly recommended!"), wxBitmap(extrapack_xpm), true, false);
-	//for (int i=0; i<5; i++) 
-	//	appendStream(_T("Test pack"), _T("This is a test"), wxBitmap(unknown_xpm), false, false);
 }
 
 int ConfigManager::getOnlineStreams()
 {
-	// assume the linked list is empty
+	//clear list
+	clearStreamset();
+	//add default streams
+	appendStream(_T("Base game"), _T("The minimum you need to run the game."), wxBitmap(mainpack_xpm), true, true);
+	appendStream(_T("Standard media pack"), _T("The best terrains and vehicles, highly recommended!"), wxBitmap(extrapack_xpm), true, false);
+	for (int i=0; i<5; i++) 
+		appendStream(_T("Test pack"), _T("This is a test"), wxBitmap(unknown_xpm), false, false);
+
+	//add online streams
 	//FILE *f2 = fopen("log.txt", "w");
 	WSync *w = new WSync();
 	boost::filesystem::path tempfile;
@@ -130,6 +133,33 @@ void ConfigManager::setPath(wxString pth)
 stream_desc_t* ConfigManager::getStreamset()
 {
 	return streamset;
+}
+
+void ConfigManager::clearStreamset()
+{
+	stream_desc_t** spt=&streamset;
+	while (*spt) 
+	{
+		stream_desc_t* todel=*spt;
+		spt=&((*spt)->next);
+		delete todel;
+	}
+	streamset=0;
+}
+
+void ConfigManager::setStreamSelection(stream_desc_t* desc, bool selection)
+{
+	stream_desc_t** spt=&streamset;
+	while (*spt) 
+	{
+		if (*spt==desc)
+		{
+			if (!(*spt)->disabled) (*spt)->checked=selection;
+			return;
+		}
+		spt=&((*spt)->next);
+	}
+	//if we are here, an invalid desc has been provided! better safe than sorry.
 }
 
 void ConfigManager::appendStream(wxString title, wxString desc, wxBitmap icon, bool checked, bool disabled)
