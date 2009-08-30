@@ -24,7 +24,11 @@ BEGIN_EVENT_TABLE(PathPage, wxWizardPageSimple)
 END_EVENT_TABLE()
 
 BEGIN_EVENT_TABLE(DownloadPage, wxWizardPageSimple)
-	EVT_TIMER(1, DownloadPage::OnTimer)
+	EVT_TIMER(ID_TIMER, DownloadPage::OnTimer)
+END_EVENT_TABLE()
+
+BEGIN_EVENT_TABLE(MyWizard, wxWizard)
+	EVT_WIZARD_PAGE_CHANGING(ID_WIZARD, MyWizard::OnPageChanging)
 END_EVENT_TABLE()
 
 
@@ -49,7 +53,7 @@ bool MyApp::OnInit()
 // ----------------------------------------------------------------------------
 
 MyWizard::MyWizard(wxFrame *frame, bool useSizer)
-        : wxWizard(frame,wxID_ANY,_T("Rigs of Rods Installation Assistant"),
+        : wxWizard(frame,ID_WIZARD,_T("Rigs of Rods Installation Assistant"),
                    wxBitmap(licence_xpm),wxDefaultPosition,
                    wxDEFAULT_DIALOG_STYLE | wxRESIZE_BORDER)
 {
@@ -86,3 +90,37 @@ MyWizard::MyWizard(wxFrame *frame, bool useSizer)
     }
 }
 
+void MyWizard::OnPageChanging(wxWizardEvent &event)
+{
+	wxWizardPage *wp=event.GetPage();
+	EnterLeavePage *elp=dynamic_cast<EnterLeavePage*>(wp);
+	if (elp)
+	{
+		if (event.GetDirection())
+		{
+			//forward
+			bool b=elp->OnLeave(true);
+			if (!b) {event.Veto();return;}
+			wxWizardPage *nwp=wp->GetNext();
+			EnterLeavePage *nelp=dynamic_cast<EnterLeavePage*>(nwp);
+			if (nelp)
+			{
+				bool b=nelp->OnEnter(true);
+				if (!b) event.Veto();
+			}
+		}
+		else
+		{
+			//backward
+			bool b=elp->OnLeave(false);
+			if (!b) {event.Veto();return;}
+			wxWizardPage *nwp=wp->GetPrev();
+			EnterLeavePage *nelp=dynamic_cast<EnterLeavePage*>(nwp);
+			if (nelp)
+			{
+				bool b=nelp->OnEnter(false);
+				if (!b) event.Veto();
+			}
+		}
+	}
+}

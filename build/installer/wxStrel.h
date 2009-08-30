@@ -45,6 +45,7 @@ class wxStrel : public wxPanel
 public:
     wxStrel(wxWindow *parent, stream_desc_t* desc) : wxPanel(parent, wxID_ANY, wxDefaultPosition, wxSize(-1, STREL_HEIGHT), wxBORDER_SIMPLE)
 	{
+		this->desc=desc;
 		SetBackgroundColour(*wxWHITE);
         wxBoxSizer *mainSizer = new wxBoxSizer(wxHORIZONTAL);
 		SetSizer(mainSizer);
@@ -65,8 +66,12 @@ public:
 		mainSizer->Add(textSizer, 1, wxALL|wxEXPAND , 5);
 		//mainSizer->Fit(this);
 	}
+	stream_desc_t *getDesc() {return desc;}
+	bool getSelection() {return chk->GetValue();}
+
 private:
 	wxCheckBox *chk;
+	stream_desc_t *desc;
 };
 
 #endif
