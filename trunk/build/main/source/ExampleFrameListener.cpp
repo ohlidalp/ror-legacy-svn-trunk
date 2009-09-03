@@ -5441,7 +5441,7 @@ void ExampleFrameListener::loadTerrain(String terrainfile)
 	}
 	if(person) person->setWater(w);
 	BeamFactory::getSingleton().w = w;
-	ripplep->setWater(w);//note: only ripples need w so far
+	if(ripplep) ripplep->setWater(w); //note: only ripples need w so far
 
 	//environment map
 	//envmap is always created!
