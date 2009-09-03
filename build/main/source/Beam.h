@@ -914,6 +914,8 @@ public:
 	int getNetTruckTimeOffset() { return net_toffset; };
 
 	Real getMinimalCameraRadius() { return minCameraRadius; };
+
+	Replay *getReplay() { return replay; };
 protected:
 
 	void updateSimpleSkeleton();
@@ -925,6 +927,7 @@ protected:
 	Vector3 lastlastposition;
 	Real minCameraRadius;
 	MaterialFunctionMapper *materialFunctionMapper;
+	Real replayTimer;
 
 	Network *net;
 

@@ -212,6 +212,7 @@ Beam::Beam(int tnum, SceneManager *manager, SceneNode *parent, RenderWindow* win
 
 	beambreakdebug = (SETTINGS.getSetting("Beam Break Debug") == "Yes");
 	free_axle=0;
+	replayTimer=0;
 	minCameraRadius=0;
 	last_net_time=0;
 	patchEngineTorque=false;
@@ -5671,12 +5672,6 @@ bool Beam::frameStep(Real dt, Beam** trucks, int numtrucks)
 			pthread_mutex_unlock(&work_mutex);
 
 		}
-		//we also store a new replay frame
-		if(replay)
-		{
-			Vector3* rbuff=replay->getUpdateIndex(dt);
-			for (i=0; i<free_node; i++) rbuff[i]=nodes[i].AbsPosition;
-		}
 
 #ifdef TIMING
 		if(statistics)
@@ -7676,6 +7671,19 @@ void Beam::calcForcesEuler(int doUpdate, Real dt, int step, int maxstep, Beam** 
 	if(statistics)
 		statistics->queryStop(BeamThreadStats::WholeTruckCalc);
 #endif
+
+	//we also store a new replay frame
+	if(replay)
+	{
+		replayTimer += dt;
+		if(replayTimer > 0.001f)
+		{
+			Vector3* rbuff=replay->getUpdateIndex(dt);
+			for (i=0; i<free_node; i++) rbuff[i]=nodes[i].AbsPosition;
+			replayTimer=0.0f;
+		}
+	}
+
 }
 
 // call this once per frame in order to update the skidmarks

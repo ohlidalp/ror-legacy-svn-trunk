@@ -6,7 +6,7 @@ Copyright 2007,2008,2009 Thomas Fischer
 For more information, see http://www.rigsofrods.com/
 
 Rigs of Rods is free software: you can redistribute it and/or modify
-it under the terms of the GNU General Public License version 3, as 
+it under the terms of the GNU General Public License version 3, as
 published by the Free Software Foundation.
 
 Rigs of Rods is distributed in the hope that it will be useful,
@@ -19,32 +19,35 @@ along with Rigs of Rods.  If not, see <http://www.gnu.org/licenses/>.
 */
 #ifndef __Replay_H__
 #define __Replay_H__
-#include "Ogre.h"
-using namespace Ogre;
 
-//typedef struct _replaynodes
-//{
-//} replaynodes_t;
+#include "OgrePrerequisites.h"
+
+class ExampleFrameListener;
 
 class Replay
 {
 public:
-	Vector3 *nodes;
+	Replay(int nnodes, int nframes);
+	~Replay();
+
+
+	Ogre::Vector3 *nodes;
 	float *times;
+	float sum;
 	int writeindex;
 	int numnodes;
 	int numframes;
 	int firstrun;
 
-	Replay(int nnodes, int nframes);
-
 	//dirty stuff, we use this to write the replay buffer
-	Vector3 *getUpdateIndex(float dt);
+	Ogre::Vector3 *getUpdateIndex(float dt);
 
 	//we take negative offsets only
-	Vector3 *getReplayIndex(int offset);
+	Ogre::Vector3 *getReplayIndex(int offset);
 
-	~Replay();
+	float getReplayTime(int offset);
 
+protected:
+	Ogre::Timer *replayTimer;
 };
 #endif
