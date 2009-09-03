@@ -51,6 +51,7 @@ along with Rigs of Rods.  If not, see <http://www.gnu.org/licenses/>.
 #include "editor.h"
 #include "water.h"
 #include "WaterOld.h"
+#include "Replay.h"
 
 #ifdef HYDRAX
 # include "HydraxWater.h"
@@ -3189,6 +3190,22 @@ bool ExampleFrameListener::updateEvents(float dt)
 						{
 							trucks[current_truck]->replaypos-=10;
 						}
+
+						trucks[current_truck]->replaypos += mstate.X.rel;
+
+						//float repltime = trucks[current_truck]->getReplay()->getReplayTime(trucks[current_truck]->replaypos);
+						// update raceing gui if required
+						//LogManager::getSingleton().logMessage("replay time: " + StringConverter::toString(repltime));
+
+						/*
+						sprintf(txt, "%.4i", ((int)(repltime/100.0f))%100);
+						laptimems->setCaption(txt);
+						sprintf(txt, "%.2i", ((int)(repltime/10000.0f))%60);
+						laptimes->setCaption(txt);
+						sprintf(txt, "%.2i'", ((int)(repltime/10000.0f))/60);
+						laptimemin->setCaption(txt);
+						*/
+
 					}
 					else	// this else part is called when we are NOT in replaymode
 					{
@@ -3838,6 +3855,7 @@ bool ExampleFrameListener::updateEvents(float dt)
 				//replay mode
 				if (INPUTENGINE.getEventBoolValueBounce(EV_COMMON_TOGGLE_REPLAY_MODE))
 				{
+					stopTimer();
 					trucks[current_truck]->setReplayMode(!trucks[current_truck]->replaymode);
 				}
 
