@@ -53,61 +53,48 @@ inline std::string conv(const wxString& s)
 
 ConfigManager::ConfigManager()
 {
-	streamset=0;
+	streams.clear();
 }
 
 int ConfigManager::getOnlineStreams()
 {
 	//clear list
 	clearStreamset();
-	//add default streams
-	appendStream(_T("Base game"), _T("The minimum you need to run the game."), wxBitmap(mainpack_xpm), true, true);
-	appendStream(_T("Standard media pack"), _T("The best terrains and vehicles, highly recommended!"), wxBitmap(extrapack_xpm), true, false);
-	for (int i=0; i<5; i++) 
-		appendStream(_T("Test pack"), _T("This is a test"), wxBitmap(unknown_xpm), false, false);
-
-	//add online streams
-	//FILE *f2 = fopen("log.txt", "w");
+	
+	// now get the available streams list
 	WSync *w = new WSync();
-	boost::filesystem::path tempfile;
-	w->getTempFilename(tempfile);
-	int res = w->downloadFile(tempfile, "wsync.rigsofrods.com", "/streams.index");
-	if(res)
+
+	std::vector< std::map< std::string, std::string > > olist;
+	if(!w->downloadAdvancedConfigFile("wsync.rigsofrods.com", "/streams.index", olist))
 	{
-		//fprintf(f2, "error downloading file: error code %d\n", res);
-		//fclose(f2);
-		// error
-		return 1;
+		if(olist.size() > 0)
+		{
+			for(int i=0;i<(int)olist.size();i++)
+			{
+				stream_desc_t s;
+				s.title     = conv(olist[i]["title"]);
+				s.desc      = conv(olist[i]["description"]);
+				s.icon      = (olist[i]["type"]=="0")?wxBitmap(mainpack_xpm):wxBitmap(extrapack_xpm);
+				s.checked   = (olist[i]["checked"] == "1");
+				s.disabled  = (olist[i]["checked"] == "1");
+				s.beta      = (olist[i]["beta"] == "1");
+				s.del       = (olist[i]["delete"] == "1");
+				s.overwrite = (olist[i]["overwrite"] == "1");
+				streams.push_back(s);
+			}
+
+		} else
+			return 1;
 	}
-	//fprintf(f2, "file '%s'\n", tempfile.string().c_str());
-	FILE *f = fopen(tempfile.string().c_str(), "r");
-	if (!f)
-	{
-		//fprintf(f2, "error opening file '%s'\n", tempfile.string().c_str());
-		//fclose(f2);
-		return -1;
-	}
-	while(!feof(f))
-	{
-		char name[256]="";
-		char version[20]="";
-		char description[4096]="";
-		int type=0, checked=0, disabled=0;
-		int res = fscanf(f, "%d %d %d %s %s %s\n", &type, &checked, &disabled, name, version, description);
-		//fprintf(f2, "### 8 : %d\n", res);
-		if(res < 6)
-			break;
-		// convert underscores back
-		char *p2=name;
-		while(*p2){ p2++; if(*p2=='_') *p2=' '; }
-		p2=description;
-		while(*p2){ p2++; if(*p2=='_') *p2=' '; }
-		appendStream(conv(name), conv(description), ((type==0)?wxBitmap(mainpack_xpm):wxBitmap(extrapack_xpm)), checked!=0, disabled!=0);
-		//fprintf(f2, "appending stream...\n");
-	}
-	fclose (f);
-	//if(f2) fclose (f2);
-	boost::filesystem::remove(tempfile);
+	
+
+	
+	//add default streams
+	//appendStream(_T("Base game"), _T("The minimum you need to run the game."), wxBitmap(mainpack_xpm), true, true);
+	//appendStream(_T("Standard media pack"), _T("The best terrains and vehicles, highly recommended!"), wxBitmap(extrapack_xpm), true, false);
+	//for (int i=0; i<5; i++) 
+	//	appendStream(_T("Test pack"), _T("This is a test"), wxBitmap(unknown_xpm), false, false);
+
 	return 0;
 
 }
@@ -130,49 +117,26 @@ void ConfigManager::setPath(wxString pth)
 {
 }
 
-stream_desc_t* ConfigManager::getStreamset()
+std::vector < stream_desc_t > *ConfigManager::getStreamset()
 {
-	return streamset;
+	return &streams;
 }
 
 void ConfigManager::clearStreamset()
 {
-	stream_desc_t** spt=&streamset;
-	while (*spt) 
-	{
-		stream_desc_t* todel=*spt;
-		spt=&((*spt)->next);
-		delete todel;
-	}
-	streamset=0;
+	streams.clear();
 }
 
 void ConfigManager::setStreamSelection(stream_desc_t* desc, bool selection)
 {
-	stream_desc_t** spt=&streamset;
-	while (*spt) 
+	for(std::vector < stream_desc_t >::iterator it=streams.begin(); it!=streams.end(); it++)
 	{
-		if (*spt==desc)
+		// we use the path, since it is unique
+		if(it->path == desc->path)
 		{
-			if (!(*spt)->disabled) (*spt)->checked=selection;
+			if (!it->disabled) it->checked=selection;
 			return;
 		}
-		spt=&((*spt)->next);
 	}
 	//if we are here, an invalid desc has been provided! better safe than sorry.
-}
-
-void ConfigManager::appendStream(wxString title, wxString desc, wxBitmap icon, bool checked, bool disabled)
-{
-	stream_desc_t** spt=&streamset;
-	//go to the end
-	while (*spt) spt=&((*spt)->next);
-	//allocate
-	*spt=new stream_desc_t;
-	(*spt)->title=title;
-	(*spt)->desc=desc;
-	(*spt)->icon=icon;
-	(*spt)->checked=checked;
-	(*spt)->disabled=disabled;
-	(*spt)->next=NULL;
 }

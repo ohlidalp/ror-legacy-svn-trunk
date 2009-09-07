@@ -22,6 +22,7 @@ along with Rigs of Rods.  If not, see <http://www.gnu.org/licenses/>.
 
 // For compilers that support precompilation, includes "wx/wx.h".
 #include "wx/wxprec.h"
+#include <vector>
 
 #ifdef __BORLANDC__
     #pragma hdrstop
@@ -41,11 +42,14 @@ along with Rigs of Rods.  If not, see <http://www.gnu.org/licenses/>.
 typedef struct stream_desc_t_
 {
 	wxString title;
+	wxString path;
 	wxString desc;
 	wxBitmap icon;
 	bool checked;
 	bool disabled;
-	stream_desc_t_* next;
+	bool del;
+	bool beta;
+	bool overwrite;
 } stream_desc_t;
 
 class ConfigManager
@@ -57,13 +61,12 @@ public:
 	void setAction(int ac);
 	void setPath(wxString pth);
 	int getOnlineStreams();
-	stream_desc_t* getStreamset();
+	std::vector < stream_desc_t > *getStreamset();
 	void setStreamSelection(stream_desc_t* desc, bool selection);
 
 private:
-	stream_desc_t *streamset;
+	std::vector < stream_desc_t > streams;
 	void clearStreamset();
-	void appendStream(wxString title, wxString desc, wxBitmap icon, bool checked, bool disabled);
 };
 
 #endif

@@ -46,16 +46,22 @@ public:
     wxStrel(wxWindow *parent, stream_desc_t* desc) : wxPanel(parent, wxID_ANY, wxDefaultPosition, wxSize(-1, STREL_HEIGHT), wxBORDER_SIMPLE)
 	{
 		this->desc=desc;
-		SetBackgroundColour(*wxWHITE);
-        wxBoxSizer *mainSizer = new wxBoxSizer(wxHORIZONTAL);
+		if(desc->beta)
+			SetBackgroundColour(wxColour(255,200,200,255));
+		else
+			SetBackgroundColour(*wxWHITE);
+        
+		wxBoxSizer *mainSizer = new wxBoxSizer(wxHORIZONTAL);
 		SetSizer(mainSizer);
 		mainSizer->Add(chk=new wxCheckBox(this, wxID_ANY, _T("")), 0, wxALL|wxALIGN_CENTER, 5);
 		chk->SetValue(desc->checked);
 		chk->Enable(!desc->disabled);
+		
 		mainSizer->Add(new wxStaticBitmap(this, wxID_ANY, desc->icon), 0, wxALL, 5);
         wxBoxSizer *textSizer = new wxBoxSizer(wxVERTICAL);
 		wxStaticText *tst;
-        textSizer->Add(tst=new wxStaticText(this, wxID_ANY, desc->title), 0, wxALL, 5);
+        
+		textSizer->Add(tst=new wxStaticText(this, wxID_ANY, desc->title), 0, wxALL, 5);
 		wxFont dfont=tst->GetFont();
 		dfont.SetWeight(wxFONTWEIGHT_BOLD);
 		dfont.SetPointSize(dfont.GetPointSize()+3);
@@ -63,6 +69,7 @@ public:
 		tst->Wrap(300);
         textSizer->Add(tst=new wxStaticText(this, wxID_ANY, desc->desc), 0, wxALL, 5);
 		tst->Wrap(300);
+		
 		mainSizer->Add(textSizer, 1, wxALL|wxEXPAND , 5);
 		//mainSizer->Fit(this);
 	}
