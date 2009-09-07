@@ -196,6 +196,9 @@ set(ror_src
 	source/gui_menu.cpp
 	source/gui_menu.h
 
+	source/gui_friction.cpp
+	source/gui_friction.h
+
 	source/CharacterFactory.cpp
 	source/CharacterFactory.h
 )

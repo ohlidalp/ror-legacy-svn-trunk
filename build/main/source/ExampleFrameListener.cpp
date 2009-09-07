@@ -72,6 +72,7 @@ along with Rigs of Rods.  If not, see <http://www.gnu.org/licenses/>.
 #include "gui_manager.h"
 #include "gui_loader.h"
 #include "gui_menu.h"
+#include "gui_friction.h"
 
 #include "mirrors.h"
 #include "TruckHUD.h"
@@ -1079,6 +1080,7 @@ ExampleFrameListener::ExampleFrameListener(RenderWindow* win, Camera* cam, Scene
 
 	// create main menu :D
 	new GUI_MainMenu();
+	new GUI_Friction();
 
 	CACHE.startup(scm);
 
