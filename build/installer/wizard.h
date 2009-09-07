@@ -416,12 +416,11 @@ public:
 		}
 		scrwsz->Clear(true);
 		//add the streams
-		stream_desc_t* strd=m_cm->getStreamset();
-		while (strd)
+		std::vector < stream_desc_t > *streams = m_cm->getStreamset();
+		for(std::vector < stream_desc_t >::iterator it=streams->begin(); it!=streams->end(); it++)
 		{
-			wxStrel *wst=new wxStrel(scrw, strd);
+			wxStrel *wst=new wxStrel(scrw, &(*it));
 			scrwsz->Add(wst, 0, wxALL|wxEXPAND,0);
-			strd=strd->next;
 		}
 		streamset=true;
 		return true;
