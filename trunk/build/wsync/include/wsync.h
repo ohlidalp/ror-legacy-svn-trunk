@@ -68,9 +68,11 @@ public:
 	int downloadFile(boost::filesystem::path localFile, std::string server, std::string remoteDir, bool displayProgress=false, bool debug=false);
 	std::string generateFileHash(boost::filesystem::path file);
 	static int getTempFilename(boost::filesystem::path &tempfile);
-	int downloadConfigFile(std::string server, std::string remoteDir, std::vector< std::vector< std::string > > &list);
-	int downloadMod(std::string modname, std::string &modfilename, boost::filesystem::path path, bool util=false);
 
+	int downloadMod(std::string modname, std::string &modfilename, boost::filesystem::path path, bool util=false);
+	
+	int downloadConfigFile(std::string server, std::string remoteDir, std::vector< std::vector< std::string > > &list);
+	int downloadAdvancedConfigFile(std::string server, std::string path, std::vector< std::map< std::string, std::string > > &list);
 protected:
 	// members
 	boost::uintmax_t downloadSize;

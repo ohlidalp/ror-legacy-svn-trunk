@@ -10,6 +10,8 @@
 #include <conio.h> // for getch
 #endif
 
+#include <boost/algorithm/string.hpp>
+
 using namespace boost::asio;
 using namespace boost::asio::ip;
 using namespace boost::filesystem; 
@@ -585,6 +587,139 @@ int WSync::downloadConfigFile(std::string server, std::string path, std::vector<
 	return 0;
 }
 
+int WSync::downloadAdvancedConfigFile(std::string server, std::string path, std::vector< std::map< std::string, std::string > > &list)
+{
+	std::vector<std::string> lines;
+	try
+	{
+		boost::asio::io_service io_service;
+
+		// Get a list of endpoints corresponding to the server name.
+		tcp::resolver resolver(io_service);
+
+		char *host = const_cast<char*>(server.c_str());
+		tcp::resolver::query query(tcp::v4(), host, "80");
+		tcp::resolver::iterator endpoint_iterator = resolver.resolve(query);
+		tcp::resolver::iterator end;
+
+		// Try each endpoint until we successfully establish a connection.
+		tcp::socket socket(io_service);
+		boost::system::error_code error = boost::asio::error::host_not_found;
+		while (error && endpoint_iterator != end)
+		{
+			socket.close();
+			socket.connect(*endpoint_iterator++, error);
+		}
+		if (error)
+			throw boost::system::system_error(error);
+
+		// Form the request. We specify the "Connection: close" header so that the
+		// server will close the socket after transmitting the response. This will
+		// allow us to treat all data up until the EOF as the content.
+		boost::asio::streambuf request;
+		std::ostream request_stream(&request);
+		request_stream << "GET " << path << " HTTP/1.0\r\n";
+		request_stream << "Host: " << server << "\r\n";
+		request_stream << "Accept: */*\r\n";
+		request_stream << "Connection: close\r\n\r\n";
+
+		// Send the request.
+		boost::asio::write(socket, request);
+
+		// Read the response status line.
+		boost::asio::streambuf response;
+		boost::asio::streambuf data;
+		boost::asio::read_until(socket, response, "\r\n");
+
+		// Check that response is OK.
+		std::istream response_stream(&response);
+		std::string http_version;
+		response_stream >> http_version;
+		unsigned int status_code;
+		response_stream >> status_code;
+		std::string status_message;
+		std::getline(response_stream, status_message);
+		if (!response_stream || http_version.substr(0, 5) != "HTTP/")
+		{
+			std::cout << endl << "Error: Invalid response\n";
+			return 1;
+		}
+		if (status_code != 200)
+		{
+			std::cout << endl << "Error: Response returned with status code " << status_code << "\n";
+		}
+
+		// Read the response headers, which are terminated by a blank line.
+		boost::asio::read_until(socket, response, "\r\n\r\n");
+
+		// Process the response headers.
+		std::string line;
+		size_t counter = 0;
+		size_t reported_filesize = 0;
+		{
+			while (std::getline(response_stream, line) && line != "\r")
+			{
+				if(line.substr(0, 15) == "Content-Length:")
+					reported_filesize = atoi(line.substr(16).c_str());
+			}
+		}
+		//printf("filesize: %d bytes\n", reported_filesize);
+
+		// Write whatever content we already have to output.
+		if (response.size() > 0)
+		{
+			string line;
+			while(getline(response_stream, line))
+				lines.push_back(line);
+			//cout << &response;
+		}
+
+		// Read until EOF, writing data to output as we go.
+		boost::uintmax_t datacounter=0;
+		while (boost::asio::read(socket, data, boost::asio::transfer_at_least(1), error))
+		{
+			string line;
+			std::istream data_stream(&data);
+			while(getline(data_stream, line))
+				lines.push_back(line);
+
+			datacounter += data.size();
+		}
+		if (error != boost::asio::error::eof)
+			throw boost::system::system_error(error);
+
+		downloadSize += reported_filesize;
+	}
+	catch (std::exception& e)
+	{
+		std::cout << endl << "Error while downloading file: " << e.what() << "\n";
+		return 1;
+	}
+
+	std::map < std::string, std::string > obj;
+	for(std::vector<std::string>::iterator it=lines.begin(); it!=lines.end(); it++)
+	{
+		if(!it->size()) continue;
+		if((*it)[0] == '#') continue;
+		if((*it)[0] == '=')
+		{
+			// new stream
+			if(obj.size() > 0)
+				list.push_back(obj);
+			obj.clear();
+			continue;
+		}
+		std::vector<std::string> args = tokenize_str(*it, "=");
+		if(args.size() == 2)
+		{
+			boost::trim(args[0]);
+			boost::trim(args[1]);
+			obj[args[0]] = args[1];
+		}
+	}
+		
+	return 0;
+}
 int WSync::loadHashMapFromFile(boost::filesystem::path &filename, std::map<string, Hashentry> &hashMap, int &mode)
 {
 	FILE *f = fopen(filename.string().c_str(), "r");
