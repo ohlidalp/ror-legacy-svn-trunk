@@ -442,6 +442,13 @@ INSTALL(TARGETS ${LIBNAME}
 #INSTALL(FILES "${OpenAL_BINARY_DIR}/admin/pkgconfig/openal.pc"
 #        DESTINATION "${LIB_INSTALL_DIR}/pkgconfig")
 
+# Add an install target here
+INSTALL(TARGETS ${LIBNAME}
+        RUNTIME DESTINATION ${BIN_DIR}
+        LIBRARY DESTINATION ${BIN_DIR}
+        ARCHIVE DESTINATION ${LIB_DIR}
+)
+
 # Install alsoft.conf configuration file
 IF(ALSOFT_CONFIG)
     INSTALL(FILES alsoftrc.sample
