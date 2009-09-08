@@ -373,6 +373,21 @@ typedef struct _ground_model_t
 	float vs; //stribeck velocity (m/s)
 	float alpha; //steady-steady
 	float strength; //gound strength, must be below 1.0
+
+	float fluid_density;	// Density of liquid
+	float flow_consistency_index;// general drag coefficient
+
+	// if flow_behavior_index<1 then liquid is Pseudoplastic (ketchup, whipped cream, paint)
+	// if =1 then liquid is Newtonian fluid
+	// if >1 then liquid is Dilatant fluid (less common)
+	float flow_behavior_index;
+
+	// how deep the solid ground is
+	float solid_ground_level;
+
+	// Upwards/Downwards drag anisotropy
+	float drag_anisotropy;
+
 	int fx_type;
 	ColourValue fx_coulour;
 	char name[255];
@@ -652,6 +667,7 @@ public:
 	//this is called by the threads
 	void threadentry(int id);
 	void updateSkidmarks();
+	ground_model_t *getLastFuzzyGroundModel() { return lastFuzzyGroundModel; };
 
 	//integration loop
 	//bool frameStarted(const FrameEvent& evt)
@@ -930,6 +946,7 @@ protected:
 	Real replayTimer;
 
 	Network *net;
+	ground_model_t *lastFuzzyGroundModel;
 
 	// this is for managing the blinkers on the truck:
 	blinktype blinkingtype;

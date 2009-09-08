@@ -215,6 +215,7 @@ Beam::Beam(int tnum, SceneManager *manager, SceneNode *parent, RenderWindow* win
 	replayTimer=0;
 	minCameraRadius=0;
 	last_net_time=0;
+	lastFuzzyGroundModel=0;
 	patchEngineTorque=false;
 	usedSkin = skin;
 	LogManager::getSingleton().logMessage("BEAM: loading new truck: " + String(fname));
@@ -6517,6 +6518,7 @@ void Beam::calcForcesEuler(int doUpdate, Real dt, int step, int maxstep, Beam** 
 						wheels[nodes[i].wheelid].lastContactType = (nodes[i].iswheel%2);
 						wheels[nodes[i].wheelid].lastSlip = ns;
 						wheels[nodes[i].wheelid].lastGroundModel = gm;
+						lastFuzzyGroundModel = gm;
 					}
 				}
 				nodes[i].colltesttimer=0.0;
