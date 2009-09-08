@@ -2754,6 +2754,8 @@ int Beam::loadTruck(const char* fname, SceneManager *manager, SceneNode *parent,
 				LogManager::getSingleton().logMessage("props limit reached ("+StringConverter::toString(MAX_PROPS)+"): " + String(fname) +" line " + StringConverter::toString(linecounter) + ". trying to continue ...");
 				continue;
 			}
+			/* Initialize prop memory to avoid invalid pointers. */
+			memset(&props[free_prop], 0, sizeof props[free_prop]);
 			props[free_prop].noderef=ref;
 			props[free_prop].nodex=nx;
 			props[free_prop].nodey=ny;
