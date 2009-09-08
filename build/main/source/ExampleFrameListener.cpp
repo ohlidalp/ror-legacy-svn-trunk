@@ -2711,7 +2711,9 @@ bool ExampleFrameListener::updateEvents(float dt)
 	if(GUI_Friction::getSingleton().getVisible() && current_truck >= 0 && trucks[current_truck])
 	{
 		// friction GUI active
-		GUI_Friction::getSingleton().setActiveCol(trucks[current_truck]->getLastFuzzyGroundModel());
+		ground_model_t *gm = trucks[current_truck]->getLastFuzzyGroundModel();
+		if(gm)
+			GUI_Friction::getSingleton().setActiveCol(gm);
 	}
 
 	if (NETCHAT.getVisible() && INPUTENGINE.getEventBoolValueBounce(EV_COMMON_ENTER_CHAT, 0.5f) && !hidegui)

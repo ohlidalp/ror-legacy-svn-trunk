@@ -6518,8 +6518,10 @@ void Beam::calcForcesEuler(int doUpdate, Real dt, int step, int maxstep, Beam** 
 						wheels[nodes[i].wheelid].lastContactType = (nodes[i].iswheel%2);
 						wheels[nodes[i].wheelid].lastSlip = ns;
 						wheels[nodes[i].wheelid].lastGroundModel = gm;
-						lastFuzzyGroundModel = gm;
 					}
+
+					// note last ground model
+					lastFuzzyGroundModel = gm;
 				}
 				nodes[i].colltesttimer=0.0;
 			}
