@@ -19,6 +19,8 @@ using namespace std;
 
 WSync::WSync() : downloadSize(0)
 {
+	memset(statusText, 0, 1024);
+	statusPercent=0;
 }
 
 WSync::~WSync()
@@ -30,7 +32,7 @@ int WSync::downloadMod(std::string modname, std::string &modfilename, boost::fil
 	ensurePathExist(dir);
 
 	// 1) ask repo api for file
-	if(!util) printf("searching mod on repository...\n");
+	if(!util) sprintf(statusText, "searching mod on repository...\n");
 	string filename="";
 	std::vector< std::vector< std::string > > list;		
 	if(!downloadConfigFile(API_SERVER, API_REPOSEARCH + string("?id=") + modname, list))
@@ -39,36 +41,36 @@ int WSync::downloadMod(std::string modname, std::string &modfilename, boost::fil
 		{
 			filename = list[0][0];
 			if(!util)
-				printf("found mod on repo: %s\n", filename.c_str());
+				sprintf(statusText, "found mod on repo: %s\n", filename.c_str());
 		} else
 		{	if(!util)
-				printf("wrong repo response2\n");
+				sprintf(statusText, "wrong repo response2\n");
 			else
-				printf("error\n");
+				sprintf(statusText, "error\n");
 			return 2;
 		}
 	} else
 	{
 		if(!util)
-			printf("wrong repo response\n");
+			sprintf(statusText, "wrong repo response\n");
 		else
-			printf("error\n");
+			sprintf(statusText, "error\n");
 		return 1;
 	}
 	
 	// do not download non-existing files
 	if(filename == "notfound")
 	{	
-		if(util) printf("%s", filename.c_str());
+		if(util) sprintf(statusText, "%s", filename.c_str());
 		return 3;
 	}
 
 	// 2) download the file
 	path filepath = dir / filename;
 	
-	if(!util) printf("downloading ...");
+	if(!util) sprintf(statusText, "downloading ...");
 	int res = downloadFile(filepath, REPO_SERVER, REPO_DOWNLOAD + filename, !util);
-	if(!util) printf("done!                                  \n");
+	if(!util) sprintf(statusText, "downloading done!\n");
 	if(util) printf("%s", filename.c_str());
 	modfilename = filename;
 	return res;
@@ -108,12 +110,12 @@ int WSync::sync(boost::filesystem::path localDir, string server, string remoteDi
 	int res = 0;
 	path remoteFileIndex;
 	if(getTempFilename(remoteFileIndex))
-		printf("error creating tempfile!\n");
+		sprintf(statusText, "error creating tempfile!\n");
 
 	string url = "/" + remoteDir + "/" + INDEXFILENAME;
 	if(downloadFile(remoteFileIndex.string(), server, url))
 	{
-		printf("error downloading file index\n");
+		sprintf(statusText, "error downloading file index from %s\n", url.c_str());
 		return -1;
 	}
 	//printf("downloaded FileIndex\n");
@@ -123,7 +125,7 @@ int WSync::sync(boost::filesystem::path localDir, string server, string remoteDi
 
 	std::map<string, Hashentry> hashMapLocal;
 	if(buildFileIndex(myFileIndex, localDir, localDir, hashMapLocal, true, 1))
-		printf("error while generating local FileIndex\n");
+		sprintf(statusText, "error while generating local FileIndex\n");
 	//printf("#1: %s\n", myFileIndex.string().c_str());
 	//printf("#2: %s\n", remoteFileIndex.string().c_str());
 
@@ -138,7 +140,7 @@ int WSync::sync(boost::filesystem::path localDir, string server, string remoteDi
 	remove(INDEXFILENAME);
 	if(hashMyFileIndex == hashRemoteFileIndex)
 	{
-		printf("Files are up to date, no sync needed\n");
+		sprintf(statusText, "Files are up to date, no sync needed\n");
 		return 0;
 	}
 
@@ -147,14 +149,13 @@ int WSync::sync(boost::filesystem::path localDir, string server, string remoteDi
 	int modeNumber = 0;
 	if(loadHashMapFromFile(remoteFileIndex, hashMapRemote, modeNumber))
 	{
-		printf("error reading remote file index!\n");
+		sprintf(statusText, "error reading remote file index!\n");
 		return -2;
 	}
 
 	if(hashMapRemote.size() == 0)
 	{
-		printf("remote file index is invalid\n");
-		printf("Connection Problems / Server down?\n");
+		sprintf(statusText, "remote file index is invalid\nConnection Problems / Server down?\n");
 		return -3;
 	}
 	// remove that temp file as well
@@ -198,12 +199,11 @@ int WSync::sync(boost::filesystem::path localDir, string server, string remoteDi
 	// security check in order not to delete the entire harddrive
 	if(deletedFiles.size() > 1000)
 	{
-		printf("are you sure you have placed the application in the correct directory?\n");
-		printf("It will delete over 1000 files! Aborting ...\n");
+		sprintf(statusText, "are you sure you have placed the application in the correct directory?\nIt will delete over 1000 files! Aborting ...\n");
 #ifdef WIN32
-		printf("Press any key to continue...\n");
-		_getch();
-		exit(0);
+		//printf("Press any key to continue...\n");
+		//_getch();
+		//exit(0);
 #endif
 	}
 
@@ -213,13 +213,13 @@ int WSync::sync(boost::filesystem::path localDir, string server, string remoteDi
 		bool use_mirror = false;
 		if(filesToDownload)
 		{
-			printf("downloading %d files now (%s) ..\n", filesToDownload, formatFilesize(predDownloadSize).c_str());
+			sprintf(statusText, "downloading %d files now (%s) ..\n", filesToDownload, formatFilesize(predDownloadSize).c_str());
 
 			// now find a suitable mirror
 			string mirror_server="", mirror_dir="", mirror_info="";
 			if(useMirror)
 			{
-				printf("searching for suitable mirror...\n");
+				sprintf(statusText, "searching for suitable mirror...\n");
 				std::vector< std::vector< std::string > > list;		
 				if(!downloadConfigFile(API_SERVER, API_MIRROR, list))
 				{
@@ -227,19 +227,19 @@ int WSync::sync(boost::filesystem::path localDir, string server, string remoteDi
 					{
 						if(list[0][0] == "failed")
 						{
-							printf("failed to get mirror, using main server\n");
+							sprintf(statusText, "failed to get mirror, using main server\n");
 						} else
 						{
 							mirror_server = list[0][0];
 							mirror_dir = list[0][1];
 							mirror_info = list[0][2];
 							use_mirror=true;
-							printf("using mirror server: %s, %s\n", mirror_server.c_str(), mirror_info.c_str());
+							sprintf(statusText, "using mirror server: %s, %s\n", mirror_server.c_str(), mirror_info.c_str());
 						}
 					} else
-						printf("wrong API response2\n");
+						sprintf(statusText, "wrong API response2\n");
 				} else
-					printf("wrong API response\n");
+					sprintf(statusText, "wrong API response\n");
 			}
 
 			if(use_mirror)
@@ -258,14 +258,14 @@ int WSync::sync(boost::filesystem::path localDir, string server, string remoteDi
 // ARGHHHH GOTO D:
 retry:
 				progressOutputShort(float(changeCounter)/float(changeMax));
-				printf(" A  %s (%s) ", itf->filename.c_str(), formatFilesize(itf->filesize).c_str());
+				sprintf(statusText, " A  %s (%s) ", itf->filename.c_str(), formatFilesize(itf->filesize).c_str());
 				path localfile = localDir / itf->filename;
 				string url = "/" + dir_use + "/" + itf->filename;
 				int stat = downloadFile(localfile, server_use, url, true);
 				if(stat == -404 && retrycount < 2)
 				{
 					// fallback to main server!
-					printf("falling back to main server.\n");
+					sprintf(statusText, "falling back to main server.\n");
 					server_use = server;
 					dir_use = remoteDir;
 					retrycount++;
@@ -273,17 +273,17 @@ retry:
 				}
 				if(stat)
 				{
-					printf("\nunable to create file: %s\n", itf->filename.c_str());
+					sprintf(statusText, "\nunable to create file: %s\n", itf->filename.c_str());
 				} else
 				{
 					string checkHash = generateFileHash(localfile);
 					string hash_remote = findHashInHashmap(hashMapRemote, itf->filename);
 					if(hash_remote == checkHash)
 					{
-						printf(" OK                                   \n");
+						sprintf(statusText, " OK\n");
 					} else
 					{
-						printf(" OK                                   \n");
+						sprintf(statusText, " OK\n");
 						//printf(" hash is: '%s'\n", checkHash.c_str());
 						//printf(" hash should be: '%s'\n", hash_remote.c_str());
 						remove(localfile);
@@ -310,14 +310,14 @@ retry:
 // ARGHHHH GOTO D:
 retry2:
 				progressOutputShort(float(changeCounter)/float(changeMax));
-				printf(" U  %s (%s) ", itf->filename.c_str(), formatFilesize(itf->filesize).c_str());
+				sprintf(statusText, " U  %s (%s) ", itf->filename.c_str(), formatFilesize(itf->filesize).c_str());
 				path localfile = localDir / itf->filename;
 				string url = "/" + dir_use + "/" + itf->filename;
 				int stat = downloadFile(localfile, server_use, url, true);
 				if(stat == -404 && retrycount < 2)
 				{
 					// fallback to main server!
-					printf("falling back to main server.\n");
+					sprintf(statusText, "falling back to main server.\n");
 					server_use = server;
 					dir_use = remoteDir;
 					retrycount++;
@@ -325,17 +325,17 @@ retry2:
 				}
 				if(stat)
 				{
-					printf("\nunable to update file: %s\n", itf->filename.c_str());
+					sprintf(statusText, "\nunable to update file: %s\n", itf->filename.c_str());
 				} else
 				{
 					string checkHash = generateFileHash(localfile);
 					string hash_remote = findHashInHashmap(hashMapRemote, itf->filename);
 					if(hash_remote == checkHash)
 					{
-						printf(" OK                                   \n");
+						sprintf(statusText, " OK\n");
 					} else
 					{
-						printf(" OK                                   \n");
+						sprintf(statusText, " OK\n");
 						//printf(" hash is: '%s'\n", checkHash.c_str());
 						//printf(" hash should be: '%s'\n", hash_remote.c_str());
 						remove(localfile);
@@ -359,27 +359,27 @@ retry2:
 			for(itf=deletedFiles.begin();itf!=deletedFiles.end();itf++, changeCounter++)
 			{
 				progressOutputShort(float(changeCounter)/float(changeMax));
-				printf(" D  %s (%s)\n", itf->filename.c_str(), formatFilesize(itf->filesize).c_str());
+				sprintf(statusText, " D  %s (%s)\n", itf->filename.c_str(), formatFilesize(itf->filesize).c_str());
 				path localfile = localDir / itf->filename;
 				try
 				{
 					boost::filesystem::remove(localfile);
 					if(exists(localfile))
-						printf("unable to delete file: %s\n", localfile.string().c_str());
+						sprintf(statusText, "unable to delete file: %s\n", localfile.string().c_str());
 				} catch(...)
 				{
-					printf("unable to delete file: %s\n", localfile.string().c_str());
+					sprintf(statusText, "unable to delete file: %s\n", localfile.string().c_str());
 				}
 			}
 		} else if (!deleteOk && deletedFiles.size())
 		{
-			printf("wont delete any files, since safety conditions are not met.\n");
+			sprintf(statusText, "wont delete any files, since safety conditions are not met.\n");
 		}
 
-		printf("sync complete, downloaded %s\n", formatFilesize(downloadSize).c_str());
+		sprintf(statusText, "sync complete, downloaded %s\n", formatFilesize(downloadSize).c_str());
 		res = 1;
 	} else
-		printf("sync complete (already up to date), downloaded %s\n", formatFilesize(downloadSize).c_str());
+		sprintf(statusText, "sync complete (already up to date), downloaded %s\n", formatFilesize(downloadSize).c_str());
 
 	//remove temp files again
 	remove(remoteFileIndex);
@@ -975,7 +975,8 @@ void WSync::progressOutput(float progress, float speed, float eta)
 
 void WSync::progressOutputShort(float progress)
 {
-	printf("% 3.0f%%|", progress * 100);
+	sprintf(statusText, "% 3.0f%%|", progress * 100);
+	statusPercent = (int)(progress * 100);
 }
 
 int WSync::getTempFilename(path &tempfile)
@@ -1021,4 +1022,11 @@ string WSync::formatFilesize(boost::uintmax_t size)
 	else
 		sprintf(tmp, "%0.2f MB", (size/1024.0f/1024.0f));
 	return string(tmp);
+}
+
+int WSync::getStatus(int &percent, std::string &message)
+{
+	message = std::string(statusText);
+	percent = statusPercent;
+	return 0;
 }

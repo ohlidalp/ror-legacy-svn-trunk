@@ -389,6 +389,7 @@ public:
 		mainSizer->Add(tst=new wxStaticText(this, wxID_ANY, _T("Choose which feature packs you want to download:\n")), 0, wxALL, 5);
 		tst->Wrap(TXTWRAP);
 
+		// TODO: fix width of control: size is hidden ...
 		mainSizer->Add(scrw=new wxScrolledWindow(this, wxID_ANY, wxDefaultPosition, wxDefaultSize, wxVSCROLL), 1, wxALL|wxEXPAND, 5);
 		scrwsz=new wxBoxSizer(wxVERTICAL);
 		scrw->SetSizer(scrwsz);
