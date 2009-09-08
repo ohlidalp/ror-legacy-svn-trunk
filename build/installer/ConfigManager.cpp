@@ -85,6 +85,9 @@ int ConfigManager::getOnlineStreams()
 				s.overwrite = (olist[i]["overwrite"] == "1");
 				s.overwrite = (olist[i]["overwrite"] == "1");
 				conv(olist[i]["size"]).ToULong(&s.size);
+
+				if(!s.title.size()) continue;
+
 				streams.push_back(s);
 			}
 

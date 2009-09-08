@@ -73,8 +73,12 @@ public:
 	
 	int downloadConfigFile(std::string server, std::string remoteDir, std::vector< std::vector< std::string > > &list);
 	int downloadAdvancedConfigFile(std::string server, std::string path, std::vector< std::map< std::string, std::string > > &list);
+
+	int getStatus(int &percent, std::string &message);
 protected:
 	// members
+	char statusText[1025];
+	int statusPercent;
 	boost::uintmax_t downloadSize;
 
 	// functions
