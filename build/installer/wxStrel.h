@@ -71,6 +71,11 @@ public:
 		tst->Wrap(300);
 		
 		mainSizer->Add(textSizer, 1, wxALL|wxEXPAND , 5);
+
+		char tmp[255]="";
+		sprintf(tmp, "%0.2f MB", desc->size/1024.0f);
+		mainSizer->Add(tst=new wxStaticText(this, wxID_ANY, wxString(tmp, wxConvUTF8)), 0, wxALL, 5);
+
 		//mainSizer->Fit(this);
 	}
 	stream_desc_t *getDesc() {return desc;}

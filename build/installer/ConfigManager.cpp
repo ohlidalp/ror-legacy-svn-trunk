@@ -75,6 +75,7 @@ int ConfigManager::getOnlineStreams()
 				s.title     = conv(olist[i]["title"]);
 				s.desc      = conv(olist[i]["description"]);
 				s.group     = conv(olist[i]["group"]);
+				s.path      = conv(olist[i]["path"]);
 
 				s.icon      = (olist[i]["type"]=="0")?wxBitmap(mainpack_xpm):wxBitmap(extrapack_xpm);
 				s.checked   = (olist[i]["checked"] == "1");
@@ -82,6 +83,8 @@ int ConfigManager::getOnlineStreams()
 				s.beta      = (olist[i]["beta"] == "1");
 				s.del       = (olist[i]["delete"] == "1");
 				s.overwrite = (olist[i]["overwrite"] == "1");
+				s.overwrite = (olist[i]["overwrite"] == "1");
+				conv(olist[i]["size"]).ToULong(&s.size);
 				streams.push_back(s);
 			}
 
@@ -115,8 +118,14 @@ void ConfigManager::setAction(int ac)
 {
 }
 
-void ConfigManager::setPath(wxString pth)
+void ConfigManager::setInstallPath(wxString pth)
 {
+	installPath=pth;
+}
+
+wxString ConfigManager::getInstallPath()
+{
+	return installPath;
 }
 
 std::vector < stream_desc_t > *ConfigManager::getStreamset()

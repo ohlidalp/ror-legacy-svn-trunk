@@ -51,6 +51,7 @@ typedef struct stream_desc_t_
 	bool del;
 	bool beta;
 	bool overwrite;
+	unsigned long size;
 } stream_desc_t;
 
 class ConfigManager
@@ -60,12 +61,15 @@ public:
 	bool isFirstInstall();
 	bool isLicenceAccepted();
 	void setAction(int ac);
-	void setPath(wxString pth);
 	int getOnlineStreams();
 	std::vector < stream_desc_t > *getStreamset();
 	void setStreamSelection(stream_desc_t* desc, bool selection);
 
+	void setInstallPath(wxString pth);
+	wxString getInstallPath();
+
 private:
+	wxString installPath;
 	std::vector < stream_desc_t > streams;
 	void clearStreamset();
 };

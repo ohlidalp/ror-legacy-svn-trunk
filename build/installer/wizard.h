@@ -23,6 +23,8 @@ along with Rigs of Rods.  If not, see <http://www.gnu.org/licenses/>.
 #include <wx/filename.h>
 #include <wx/dir.h>
 
+#include "wsync.h"
+
 #ifdef __BORLANDC__
     #pragma hdrstop
 #endif
@@ -74,12 +76,7 @@ along with Rigs of Rods.  If not, see <http://www.gnu.org/licenses/>.
 #define PLATFORM PLATFORM_WINDOWS
 #endif
 
-#ifdef LIBWSYNC
- #include "libwsync/BlockFile.h"
- using namespace libwsync;
-#else
-// #warning compiled without wsync support!
-#endif
+
 
 
 #define ID_BROWSE 1
@@ -359,7 +356,7 @@ public:
 					return false;
 				}
 			}
-			m_cm->setPath(path);
+			m_cm->setInstallPath(path);
 		}
         return true;
     }
@@ -450,7 +447,7 @@ private:
 class DownloadPage : public wxWizardPageSimple, public EnterLeavePage
 {
 public:
-    DownloadPage(wxWizard *parent) : wxWizardPageSimple(parent)
+    DownloadPage(wxWizard *parent, ConfigManager* cm) : wxWizardPageSimple(parent), m_cm(cm)
     {		
         m_bitmap = wxBitmap(download_xpm);
         wxBoxSizer *mainSizer = new wxBoxSizer(wxVERTICAL);
@@ -471,37 +468,32 @@ public:
         mainSizer->Fit(this);
 		
 		timer = new wxTimer(this, ID_TIMER);
+
+		w = new WSync();
 	}
 	
 	bool OnEnter(bool forward)
 	//void OnEnter(wxString operation, wxString url)
 	{
-		forfun=0;
 		timer->Start(250); // 250 ms
-#ifdef LIBWSYNC
-		
-		// create wsync object
-		BlockFile bf;
-		
-		if(operation == wxT("updir"))
+
+		std::vector < stream_desc_t > *streams = m_cm->getStreamset();
+
+		for(std::vector < stream_desc_t >::iterator it=streams->begin(); it!=streams->end(); it++)
 		{
-			// start operation in current working directory
-			bf.updateDirectoryFromURL(conv(url));
+			// TODO: put this in separate thread, class is NOT thread safe yet
+			std::string ipath = conv(m_cm->getInstallPath());
+			std::string spath = conv(it->path);
+			w->sync(ipath, "wsync.rigsofrods.com", spath, true, it->del);
 		}
-#endif
+
 		return true;
 	}
 	bool OnLeave(bool forward)
 	{
 		// stop timer and cancel all running operations
 		timer->Stop();
-#ifdef LIBWSYNC
-		if(bf)
-		{
-			bf->cancelAll();
-			bf = 0;
-		}
-#endif
+
 		return true;
 	}	
 
@@ -509,32 +501,19 @@ private:
 	wxGauge *progress;
 	wxTimer *timer;
 	wxStaticText *statusText;
-	int forfun;
-#ifdef LIBWSYNC
-	BlockFile *bf;
-#endif
+	ConfigManager* m_cm;
+	WSync *w;
+	//pthread_t syncThread;
 
 	void OnTimer(wxTimerEvent& event)
 	{
-		forfun++;
-		progress->SetValue(forfun);
-#ifdef LIBWSYNC
-		if(!bf)
-			return;
-		WorkStatus ws;
-		int res = bf->getStatus(ws);
-		if(res)
-		{
-			statusText->SetLabel(_("Error getting status"));
-			progress->SetValue(0);
-		} else
-		{
-			statusText->SetLabel(conv(ws.status_brief));
-			progress->SetValue((int)(ws.progress * 100.0f));
-		}
-#endif
+		wxYield();
+		int percent=0;
+		std::string message;
+		w->getStatus(percent, message);
+		statusText->SetLabel(conv(message));
+		progress->SetValue(percent);
 	}
-
 	
 	DECLARE_EVENT_TABLE()
 };

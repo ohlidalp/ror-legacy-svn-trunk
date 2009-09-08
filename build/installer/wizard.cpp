@@ -17,6 +17,9 @@ GNU General Public License for more details.
 You should have received a copy of the GNU General Public License
 along with Rigs of Rods.  If not, see <http://www.gnu.org/licenses/>.
 */
+
+#define WIN32_LEAN_AND_MEAN // fix include file bug under windows
+
 #include "wizard.h"
 
 BEGIN_EVENT_TABLE(PathPage, wxWizardPageSimple)
@@ -63,7 +66,7 @@ MyWizard::MyWizard(wxFrame *frame, bool useSizer)
 	PathPage *path = new PathPage(this, cm);
 	StreamsPage *streams = new StreamsPage(this, cm);
     ActionPage *action = new ActionPage(this, cm, licence, path, streams);
-	DownloadPage *download = new DownloadPage(this);
+	DownloadPage *download = new DownloadPage(this, cm);
 	LastPage *last = new LastPage(this);
 
 	m_page1=presentation;
