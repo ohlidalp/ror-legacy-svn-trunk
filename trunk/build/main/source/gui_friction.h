@@ -26,6 +26,9 @@ along with Rigs of Rods.  If not, see <http://www.gnu.org/licenses/>.
 #include <MyGUI.h>
 #include "OgreSingleton.h"
 #include "OgrePrerequisites.h"
+#include "Beam.h"
+
+class Collisions;
 
 class GUI_Friction : public Ogre::Singleton< GUI_Friction >
 {
@@ -37,8 +40,12 @@ public:
 
 	bool getVisible();
 	void setVisible(bool value);
+	
+	void setCollisions(Collisions *_col) { col = _col; };
+	void setActiveCol(ground_model_t *gm);
 protected:
 	MyGUI::WindowPtr win;
+	Collisions *col;
 };
 
 #endif //GUI_FRICTION_H__

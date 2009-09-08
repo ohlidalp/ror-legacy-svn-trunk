@@ -2708,6 +2708,12 @@ bool ExampleFrameListener::updateEvents(float dt)
 	if (timeUntilUnflash>0)	timeUntilUnflash-=dt;
 	else if (flashOverlay->isVisible()) flashOverlay->hide();
 
+	if(GUI_Friction::getSingleton().getVisible() && current_truck >= 0 && trucks[current_truck])
+	{
+		// friction GUI active
+		GUI_Friction::getSingleton().setActiveCol(trucks[current_truck]->getLastFuzzyGroundModel());
+	}
+
 	if (NETCHAT.getVisible() && INPUTENGINE.getEventBoolValueBounce(EV_COMMON_ENTER_CHAT, 0.5f) && !hidegui)
 	{
 		if (chatting)
@@ -4821,6 +4827,7 @@ void ExampleFrameListener::loadTerrain(String terrainfile)
 	lua=new LuaSystem(this);
 	//setup collision system
 	collisions=new Collisions(lua, this, debugCollisions);
+
 	// update icollisions instance in factory
 	BeamFactory::getSingleton().icollisions = collisions;
 
@@ -4830,6 +4837,7 @@ void ExampleFrameListener::loadTerrain(String terrainfile)
 	collisions=new Collisions(this, debugCollisions);
 #endif
 	if(person) person->setCollisions(collisions);
+	GUI_Friction::getSingleton().setCollisions(collisions);
 
 	// advanced camera collision tools
 	mCollisionTools = new MOC::CollisionTools(mSceneMgr);

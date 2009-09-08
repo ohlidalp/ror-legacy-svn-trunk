@@ -23,15 +23,15 @@ along with Rigs of Rods.  If not, see <http://www.gnu.org/licenses/>.
 #include "approxmath.h"
 
 //these default values are overwritten by the data/ground_models.cfg file!
-ground_model_t GROUND_CONCRETE={3.0, 1.20, 0.60, 0.010, 5.0, 2.0, 0.5, 0, ColourValue(), "concrete"};
-ground_model_t GROUND_ASPHALT={ 3.0, 1.10, 0.55, 0.010, 5.0, 2.0, 0.5, 0, ColourValue(), "asphalt"};
-ground_model_t GROUND_GRAVEL={  3.0, 0.85, 0.50, 0.010, 4.0, 2.0, 0.5, 0, ColourValue(), "gravel"};
-ground_model_t GROUND_ROCK={    3.0, 0.75, 0.40, 0.010, 5.0, 2.0, 0.5, 0, ColourValue(), "rock"};
-ground_model_t GROUND_ICE={     3.0, 0.25, 0.15, 0.0001,4.0, 2.0, 0.5, 0, ColourValue(), "ice"};
-ground_model_t GROUND_SNOW={    3.0, 0.55, 0.30, 0.005, 6.0, 3.0, 0.5, 0, ColourValue(), "snow"};
-ground_model_t GROUND_METAL={   3.0, 0.40, 0.20, 0.001, 4.0, 2.0, 0.5, 0, ColourValue(), "metal"};
-ground_model_t GROUND_GRASS={   3.0, 0.50, 0.25, 0.005, 8.0, 2.0, 0.5, 0, ColourValue(), "grass"};
-ground_model_t GROUND_SAND={    3.0, 0.40, 0.20, 0.0001,9.0, 2.0, 0.5, 0, ColourValue(), "sand"};
+ground_model_t GROUND_CONCRETE={3.0, 1.20, 0.60, 0.010, 5.0, 2.0, 0.5, 200, 10000, 0.5, 100, 0.1, 0, ColourValue(), "concrete"};
+ground_model_t GROUND_ASPHALT={ 3.0, 1.10, 0.55, 0.010, 5.0, 2.0, 0.5, 200, 10000, 0.5, 100, 0.1, 0, ColourValue(), "asphalt"};
+ground_model_t GROUND_GRAVEL={  3.0, 0.85, 0.50, 0.010, 4.0, 2.0, 0.5, 200, 10000, 0.5, 100, 0.1, 0, ColourValue(), "gravel"};
+ground_model_t GROUND_ROCK={    3.0, 0.75, 0.40, 0.010, 5.0, 2.0, 0.5, 200, 10000, 0.5, 100, 0.1, 0, ColourValue(), "rock"};
+ground_model_t GROUND_ICE={     3.0, 0.25, 0.15, 0.0001,4.0, 2.0, 0.5, 200, 10000, 0.5, 100, 0.1, 0, ColourValue(), "ice"};
+ground_model_t GROUND_SNOW={    3.0, 0.55, 0.30, 0.005, 6.0, 3.0, 0.5, 200, 10000, 0.5, 100, 0.1, 0, ColourValue(), "snow"};
+ground_model_t GROUND_METAL={   3.0, 0.40, 0.20, 0.001, 4.0, 2.0, 0.5, 200, 10000, 0.5, 100, 0.1, 0, ColourValue(), "metal"};
+ground_model_t GROUND_GRASS={   3.0, 0.50, 0.25, 0.005, 8.0, 2.0, 0.5, 200, 10000, 0.5, 100, 0.1, 0, ColourValue(), "grass"};
+ground_model_t GROUND_SAND={    3.0, 0.40, 0.20, 0.0001,9.0, 2.0, 0.5, 200, 10000, 0.5, 100, 0.1, 0, ColourValue(), "sand"};
 
 ground_model_t *ground_models[9] = {
 	&GROUND_CONCRETE,
@@ -1160,47 +1160,93 @@ bool Collisions::groundCollision(node_t *node, float dt, ground_model_t** ogm, f
 
 void Collisions::primitiveCollision(node_t *node, Vector3 normal, float dt, ground_model_t* gm, float* nso, float penetration)
 {
+
+
 	//normal velocity
-	float nvel=node->Velocity.dotProduct(normal);
-	Vector3 slip=node->Velocity-nvel*normal;
-	float slipv=slip.squaredLength();
-	float invslipv=fast_invSqrt(slipv);
-	slipv=slipv*invslipv;
+	float Vnormal=node->Velocity.dotProduct(normal);
 
-	if (nso) *nso=slipv;
-	if (fabs(slipv) > 0.00001f) slip=slip*invslipv; else slip=Vector3::ZERO;
-	//steady force
-	float fns_orig=node->Forces.dotProduct(normal);
-	float fnn=-fns_orig;
-	float fns=fnn;
-	//impact force
-	if (nvel<0)
+	// if we are inside the fluid (solid ground is below us)
+	if (gm->solid_ground_level!=0.0f && penetration>=0)
 	{
-		float tmp=-nvel*node->mass/dt;
-		fnn+=tmp*gm->strength; //Newton's second law
-		fns+=tmp;
-	}
-	if (fnn<0) fnn=0;
-	if (fns<0) fns=0;
 
-	float ff;
-	// If the velocity that we slip is lower than adhesion velocity and
-	// we have a downforce and the slip forces are lower than static friction
-	// forces then it's time to go into static friction physics mode.
-        // This code is a direct translation of textbook static friction physics
-	if ( slipv<(gm->va) && fns>0 && fabs(node->Forces.dotProduct(slip))<=fabs((gm->ms)*fns))
-	{
-		// Static friction model (with a little smoothing to help the integrator deal with it)
-		ff=-(gm->ms)*fns*(1-approx_exp(-fabs(slipv/gm->va)));
-		node->Forces=(fns_orig+fnn)*normal + ff*slip;
+		if (nso) *nso=0.0f;
+		float Vlength=node->Velocity.length();
+		// First of all calculate power law fluid viscosity
+		float m = gm->flow_consistency_index*approx_pow(Vlength, gm->flow_behavior_index-1.0f);
+
+		//Then calculate drag based on above. We'are using a simplified Stokes' drag.
+		Vector3 Fdrag;
+
+		Fdrag=node->Velocity*(-m);
+
+		//If we have anisotropic drag
+		if (gm->drag_anisotropy<1.0f && Vnormal>0)
+			Fdrag+=(Vnormal*m*(1.0f-gm->drag_anisotropy))*normal;
+		node->Forces+=Fdrag;
+
+		//Now calculate upwards force based on a simplified boyancy equation;
+		//If the fluid is pseudoplastic then boyancy is constrained to only "stopping" a node from going downwards
+
+		float Fboyancy = gm->fluid_density * penetration * (-DEFAULT_GRAVITY);
+		if (gm->flow_behavior_index<1.0f && Vnormal>=0.0f)
+		{
+			float Fnormal=node->Forces.dotProduct(normal);
+			if (Fnormal<0 && Fboyancy>-Fnormal)
+			{
+				Fboyancy=-Fnormal;
+			}
+		}
+		node->Forces+=Fboyancy*normal;
 	}
-	else
+
+	// if we are inside or touching the solid ground
+	if (penetration>=gm->solid_ground_level)
 	{
-		//Stribek model. It also comes directly from textbooks.
-		float g=gm->mc+(gm->ms-gm->mc)*approx_exp(-approx_pow(slipv/gm->vs, gm->alpha));
-		ff=-(g+gm->t2*slipv)*fns;
-	node->Forces+=fnn*normal+ff*slip;
-}
+		Vector3 slip=node->Velocity-Vnormal*normal;
+		float slipv=slip.squaredLength();
+		if (fabs(slipv) > 0.000000001f)
+		{
+			float invslipv=fast_invSqrt(slipv);
+			slip=slip*invslipv;
+			slipv=slipv*invslipv;
+		}
+		else
+		{
+			slip=Vector3::ZERO;
+			slipv=0.0f;
+		}
+
+		if (nso && gm->solid_ground_level==0.0f) *nso=slipv;
+
+		//steady force
+		float Fnormal=node->Forces.dotProduct(normal);
+		float Freaction=-Fnormal;
+		//impact force
+		if (Vnormal<0)
+		{
+			Freaction+=-Vnormal*node->mass/dt; //Newton's second law
+		}
+		if (Freaction<0) Freaction=0;
+
+		float ff;
+		// If the velocity that we slip is lower than adhesion velocity and
+		// we have a downforce and the slip forces are lower than static friction
+		// forces then it's time to go into static friction physics mode.
+		// This code is a direct translation of textbook static friction physics
+		if ( slipv<(gm->va) && Freaction>0 && fabs(node->Forces.dotProduct(slip))<=fabs((gm->ms)*Freaction))
+		{
+			// Static friction model (with a little smoothing to help the integrator deal with it)
+			ff=-(gm->ms)*(1-approx_exp(-fabs(slipv/gm->va)))*Freaction*gm->strength;
+			node->Forces=(Fnormal+Freaction)*normal + ff*slip;
+		}
+		else
+		{
+			//Stribek model. It also comes directly from textbooks.
+			float g=gm->mc+(gm->ms-gm->mc)*approx_exp(-approx_pow(slipv/gm->vs, gm->alpha));
+			ff=-(g+gm->t2*slipv)*Freaction*gm->strength;
+			node->Forces+=Freaction*normal + ff*slip;
+		}
+	}
 }
 
 int Collisions::createCollisionDebugVisualization()
