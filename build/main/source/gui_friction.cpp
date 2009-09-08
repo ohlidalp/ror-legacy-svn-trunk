@@ -44,19 +44,21 @@ GUI_Friction& GUI_Friction::getSingleton(void)
 
 GUI_Friction::GUI_Friction() : col(0)
 {
-	int x=0, xb=0, y=0;
+	int x=0, y=0, by=0;
+	MyGUI::EditPtr e;
+	MyGUI::HScrollPtr h;
+	MyGUI::ButtonPtr b;
+
 	win = MyGUI::Gui::getInstance().createWidget<MyGUI::Window>("WindowCSX", 0, 0, 400, 500,  MyGUI::Align::Center, "Back");
 	win->setCaption(_L("Friction Settings"));
 
 	// Fluid parameters
-	xb = 10; y = 10;
-
-	x=10;
-	MyGUI::StaticTextPtr t = win->createWidget<MyGUI::StaticText>("StaticText", xb + x, y, 170, 20,  MyGUI::Align::Default); x+=175;
+	x=10, y=10;
+	MyGUI::StaticTextPtr t = win->createWidget<MyGUI::StaticText>("StaticText", x, y, 170, 20,  MyGUI::Align::Default); x+=175;
 	t->setCaption(_L("active Ground Type:"));
 	t->setTextAlign(MyGUI::Align::Right);
 
-	MyGUI::ComboBoxPtr cb = win->createWidget<MyGUI::ComboBox>("ComboBox", xb + x, y, 115, 20,  MyGUI::Align::Default, "combo_grounds");
+	MyGUI::ComboBoxPtr cb = win->createWidget<MyGUI::ComboBox>("ComboBox", x, y, 115, 20,  MyGUI::Align::Default, "combo_grounds");
 	cb->addItem("concrete");
 	cb->addItem("asphalt");
 	cb->addItem("gravel");
@@ -70,135 +72,171 @@ GUI_Friction::GUI_Friction() : col(0)
 	cb->setIndexSelected(0);
 
 
-	x=0; y+=40; 
-	t = win->createWidget<MyGUI::StaticText>("StaticText", xb + x, y, 170, 20,  MyGUI::Align::Default); x+=175;
-	t->setCaption(_L("Fluid Settings"));
-
-	xb += 10;
-
-	x=0; y+=20; 
-	t = win->createWidget<MyGUI::StaticText>("StaticText", xb + x, y, 170, 20,  MyGUI::Align::Default); x+=175;
-	t->setCaption(_L("Fluid Density:"));
-	t->setTextAlign(MyGUI::Align::Right);
-	MyGUI::EditPtr e = win->createWidget<MyGUI::Edit>("Edit", xb+x, y, 50, 20,  MyGUI::Align::Default, "fluid_density"); x+=55;
-	MyGUI::HScrollPtr h = win->createWidget<MyGUI::HScroll>("HScroll", xb+x, y, 60, 20,  MyGUI::Align::Default, "fluid_density_scroll"); x+=60;
-
-
-	x=0; y+=20; 
-	t = win->createWidget<MyGUI::StaticText>("StaticText", xb + x, y, 170, 20,  MyGUI::Align::Default); x+=175;
-	t->setCaption(_L("flow consistency index:"));
-	t->setTextAlign(MyGUI::Align::Right);
-	e = win->createWidget<MyGUI::Edit>("Edit", xb+x, y, 50, 20,  MyGUI::Align::Default, "fluid_flowcon"); x+=55;
-	h = win->createWidget<MyGUI::HScroll>("HScroll", xb+x, y, 60, 20,  MyGUI::Align::Default, "fluid_flowcon_scroll"); x+=60;
-	
-	x=0; y+=20; 
-	t = win->createWidget<MyGUI::StaticText>("StaticText", xb + x, y, 170, 20,  MyGUI::Align::Default); x+=175;
-	t->setCaption(_L("flow_behavior_index:"));
-	t->setTextAlign(MyGUI::Align::Right);
-	e = win->createWidget<MyGUI::Edit>("Edit", xb+x, y, 50, 20,  MyGUI::Align::Default, "fluid_flowbeh"); x+=55;
-	h = win->createWidget<MyGUI::HScroll>("HScroll", xb+x, y, 60, 20,  MyGUI::Align::Default, "fluid_flowbeh_scroll"); x+=60;
-
-	x=0; y+=20; 
-	t = win->createWidget<MyGUI::StaticText>("StaticText", xb + x, y, 170, 20,  MyGUI::Align::Default); x+=175;
-	t->setCaption(_L("solid_ground_level:"));
-	t->setTextAlign(MyGUI::Align::Right);
-	e = win->createWidget<MyGUI::Edit>("Edit", xb+x, y, 50, 20,  MyGUI::Align::Default, "fluid_solidlevel"); x+=55;
-	h = win->createWidget<MyGUI::HScroll>("HScroll", xb+x, y, 60, 20,  MyGUI::Align::Default, "fluid_solidlevel_scroll"); x+=60;
-
-	x=0; y+=20; 
-	t = win->createWidget<MyGUI::StaticText>("StaticText", xb + x, y, 170, 20,  MyGUI::Align::Default); x+=175;
-	t->setCaption(_L("drag_anisotropy:"));
-	t->setTextAlign(MyGUI::Align::Right);
-	e = win->createWidget<MyGUI::Edit>("Edit", xb+x, y, 50, 20,  MyGUI::Align::Default, "fluid_drag_anisotropy"); x+=55;
-	h = win->createWidget<MyGUI::HScroll>("HScroll", xb+x, y, 60, 20,  MyGUI::Align::Default, "fluid_drag_anisotropy_scroll"); x+=60;
-
-	
-	xb -= 10;
-	x=0; y+=20; 
-	t = win->createWidget<MyGUI::StaticText>("StaticText", xb + x, y, 170, 20,  MyGUI::Align::Default); x+=175;
+	x=10; y+=40; 
+	t = win->createWidget<MyGUI::StaticText>("StaticText", x, y, 170, 20,  MyGUI::Align::Default); x+=175;
 	t->setCaption(_L("Solid Ground Settings"));
 	
+	// adding panel for solid ground
+	x=10; by = y + 20; // set box start now
+	MyGUI::WidgetPtr p = win->createWidget<MyGUI::Widget>("Panel", x, by, 350, 25,  MyGUI::Align::Default);
+	{
+		int lx=0, ly=5; // local coordinate system
+		t = p->createWidget<MyGUI::StaticText>("StaticText", lx, ly, 170, 20,  MyGUI::Align::Default); lx+=175;
+		t->setCaption(_L("Adhesion Velocity:"));
+		t->setTextAlign(MyGUI::Align::Right);
+		e = p->createWidget<MyGUI::Edit>("Edit", lx, ly, 80, 20,  MyGUI::Align::Default, "solid_adhension_velo"); lx+=85;
+		h = p->createWidget<MyGUI::HScroll>("HScroll", lx, ly, 60, 20,  MyGUI::Align::Default, "solid_adhension_velo_scroll"); lx+=65;
+		b = p->createWidget<MyGUI::Button>("Button", lx, ly, 20, 20,  MyGUI::Align::Default, "solid_adhension_velo_help"); lx+=20;
+		b->setCaption("?");
+
+		lx=0; ly+=20; 
+		t = p->createWidget<MyGUI::StaticText>("StaticText", lx, ly, 170, 20,  MyGUI::Align::Default); lx+=175;
+		t->setCaption(_L("static friction coef:"));
+		t->setTextAlign(MyGUI::Align::Right);
+		e = p->createWidget<MyGUI::Edit>("Edit", lx, ly, 80, 20,  MyGUI::Align::Default, "solid_static_friction"); lx+=85;
+		h = p->createWidget<MyGUI::HScroll>("HScroll", lx, ly, 60, 20,  MyGUI::Align::Default, "solid_static_friction_scroll"); lx+=65;
+		b = p->createWidget<MyGUI::Button>("Button", lx, ly, 20, 20,  MyGUI::Align::Default, "solid_static_friction_help"); lx+=20;
+		b->setCaption("?");
+
+		lx=0; ly+=20; 
+		t = p->createWidget<MyGUI::StaticText>("StaticText", lx, ly, 170, 20,  MyGUI::Align::Default); lx+=175;
+		t->setCaption(_L("dynamic friction coef:"));
+		t->setTextAlign(MyGUI::Align::Right);
+		e = p->createWidget<MyGUI::Edit>("Edit", lx, ly, 80, 20,  MyGUI::Align::Default, "solid_dynamic_friction"); lx+=85;
+		h = p->createWidget<MyGUI::HScroll>("HScroll", lx, ly, 60, 20,  MyGUI::Align::Default, "solid_dynamic_friction_scroll"); lx+=65;
+		b = p->createWidget<MyGUI::Button>("Button", lx, ly, 20, 20,  MyGUI::Align::Default, "solid_dynamic_friction_help"); lx+=20;
+		b->setCaption("?");
+
+		lx=0; ly+=20; 
+		t = p->createWidget<MyGUI::StaticText>("StaticText", lx, ly, 170, 20,  MyGUI::Align::Default); lx+=175;
+		t->setCaption(_L("hydrodynamic coef:"));
+		t->setTextAlign(MyGUI::Align::Right);
+		e = p->createWidget<MyGUI::Edit>("Edit", lx, ly, 80, 20,  MyGUI::Align::Default, "solid_hydrodynamic"); lx+=85;
+		h = p->createWidget<MyGUI::HScroll>("HScroll", lx, ly, 60, 20,  MyGUI::Align::Default, "solid_hydrodynamic_scroll"); lx+=65;
+		b = p->createWidget<MyGUI::Button>("Button", lx, ly, 20, 20,  MyGUI::Align::Default, "solid_hydrodynamic_help"); lx+=25;
+		b->setCaption("?");
+
+		lx=0; ly+=20; 
+		t = p->createWidget<MyGUI::StaticText>("StaticText", lx, ly, 170, 20,  MyGUI::Align::Default); lx+=175;
+		t->setCaption(_L("Stribeck velocity:"));
+		t->setTextAlign(MyGUI::Align::Right);
+		e = p->createWidget<MyGUI::Edit>("Edit", lx, ly, 80, 20,  MyGUI::Align::Default, "solid_stribeck"); lx+=85;
+		h = p->createWidget<MyGUI::HScroll>("HScroll", lx, ly, 60, 20,  MyGUI::Align::Default, "solid_stribeck_scroll"); lx+=65;
+		b = p->createWidget<MyGUI::Button>("Button", lx, ly, 20, 20,  MyGUI::Align::Default, "solid_stribeck_help"); lx+=25;
+		b->setCaption("?");
+
+		lx=0; ly+=20; 
+		t = p->createWidget<MyGUI::StaticText>("StaticText", lx, ly, 170, 20,  MyGUI::Align::Default); lx+=175;
+		t->setCaption(_L("alpha:"));
+		t->setTextAlign(MyGUI::Align::Right);
+		e = p->createWidget<MyGUI::Edit>("Edit", lx, ly, 80, 20,  MyGUI::Align::Default, "solid_alpha"); lx+=85;
+		h = p->createWidget<MyGUI::HScroll>("HScroll", lx, ly, 60, 20,  MyGUI::Align::Default, "solid_alpha_scroll"); lx+=65;
+		b = p->createWidget<MyGUI::Button>("Button", lx, ly, 20, 20,  MyGUI::Align::Default, "solid_alpha_help"); lx+=25;
+		b->setCaption("?");
+
+		lx=0; ly+=20; 
+		t = p->createWidget<MyGUI::StaticText>("StaticText", lx, ly, 170, 20,  MyGUI::Align::Default); lx+=175;
+		t->setCaption(_L("strength:"));
+		t->setTextAlign(MyGUI::Align::Right);
+		e = p->createWidget<MyGUI::Edit>("Edit", lx, ly, 80, 20,  MyGUI::Align::Default, "solid_strength"); lx+=85;
+		h = p->createWidget<MyGUI::HScroll>("HScroll", lx, ly, 60, 20,  MyGUI::Align::Default, "solid_strength_scroll"); lx+=65;
+		b = p->createWidget<MyGUI::Button>("Button", lx, ly, 20, 20,  MyGUI::Align::Default, "solid_strength_help"); lx+=25;
+		b->setCaption("?");
+
+		lx=0; ly+=20; 
+		t = p->createWidget<MyGUI::StaticText>("StaticText", lx, ly, 170, 20,  MyGUI::Align::Default); lx+=175;
+		t->setCaption(_L("fx_type:"));
+		t->setTextAlign(MyGUI::Align::Right);
+		cb = p->createWidget<MyGUI::ComboBox>("ComboBox", lx, ly, 115, 20,  MyGUI::Align::Default, "combo_fx_type"); lx+=120;
+		cb->addItem("dusty");
+		cb->addItem("hard");
+		cb->addItem("clumpy");
+		cb->setEditStatic(true);
+		cb->setIndexSelected(0);
+		b = p->createWidget<MyGUI::Button>("Button", lx, ly, 20, 20,  MyGUI::Align::Default, "combo_fx_help"); lx+=25;
+		b->setCaption("?");
+
+		lx=0; ly+=20; 		
+		t = p->createWidget<MyGUI::StaticText>("StaticText", lx, ly, 170, 20,  MyGUI::Align::Default); lx+=175;
+		t->setCaption(_L("fx_color:"));
+		t->setTextAlign(MyGUI::Align::Right);
+		b = p->createWidget<MyGUI::Button>("Button", lx, ly, 20, 20,  MyGUI::Align::Default, "fx_color_help"); lx+=25;
+		b->setCaption("?");
+		// TO BE DONE
+
+		lx=0; ly+=20; 		
+		// add height to global height
+		y += ly;
+	}
+	p->setSize(350, y-by+25);
+
+	x=10; y+=40; 
+	t = win->createWidget<MyGUI::StaticText>("StaticText", x, y, 170, 20,  MyGUI::Align::Default); x+=175;
+	t->setCaption(_L("Fluid Settings"));
+	
+	// adding panel for solid ground
+	x=10; by = y + 20; // set box start now
+	p = win->createWidget<MyGUI::Widget>("Panel", x, by, 350, 25,  MyGUI::Align::Default);
+	{
+		int lx=0, ly=5; // local coordinate system
+
+		t = p->createWidget<MyGUI::StaticText>("StaticText", lx, ly, 170, 20,  MyGUI::Align::Default); lx+=175;
+		t->setCaption(_L("Fluid Density:"));
+		t->setTextAlign(MyGUI::Align::Right);
+		e = p->createWidget<MyGUI::Edit>("Edit", lx, ly, 80, 20,  MyGUI::Align::Default, "fluid_density"); lx+=85;
+		h = p->createWidget<MyGUI::HScroll>("HScroll", lx, ly, 60, 20,  MyGUI::Align::Default, "fluid_density_scroll"); lx+=65;
+		b = p->createWidget<MyGUI::Button>("Button", lx, ly, 20, 20,  MyGUI::Align::Default, "fluid_density_help"); lx+=25;
+		b->setCaption("?");
 
 
-	xb += 10;
-	x=0; y+=20; 
-	t = win->createWidget<MyGUI::StaticText>("StaticText", xb + x, y, 170, 20,  MyGUI::Align::Default); x+=175;
-	t->setCaption(_L("Adhesion Velocity:"));
-	t->setTextAlign(MyGUI::Align::Right);
-	e = win->createWidget<MyGUI::Edit>("Edit", xb+x, y, 50, 20,  MyGUI::Align::Default, "solid_adhension_velo"); x+=55;
-	h = win->createWidget<MyGUI::HScroll>("HScroll", xb+x, y, 60, 20,  MyGUI::Align::Default, "solid_adhension_velo_scroll"); x+=60;
+		lx=0; ly+=20; 
+		t = p->createWidget<MyGUI::StaticText>("StaticText", lx, ly, 170, 20,  MyGUI::Align::Default); lx+=175;
+		t->setCaption(_L("flow consistency index:"));
+		t->setTextAlign(MyGUI::Align::Right);
+		e = p->createWidget<MyGUI::Edit>("Edit", lx, ly, 80, 20,  MyGUI::Align::Default, "fluid_flowcon"); lx+=85;
+		h = p->createWidget<MyGUI::HScroll>("HScroll", lx, ly, 60, 20,  MyGUI::Align::Default, "fluid_flowcon_scroll"); lx+=65;
+		b = p->createWidget<MyGUI::Button>("Button", lx, ly, 20, 20,  MyGUI::Align::Default, "fluid_flowcon_help"); lx+=25;
+		b->setCaption("?");
+		
+		lx=0; ly+=20; 
+		t = p->createWidget<MyGUI::StaticText>("StaticText", lx, ly, 170, 20,  MyGUI::Align::Default); lx+=175;
+		t->setCaption(_L("flow_behavior_index:"));
+		t->setTextAlign(MyGUI::Align::Right);
+		e = p->createWidget<MyGUI::Edit>("Edit", lx, ly, 80, 20,  MyGUI::Align::Default, "fluid_flowbeh"); lx+=85;
+		h = p->createWidget<MyGUI::HScroll>("HScroll", lx, ly, 60, 20,  MyGUI::Align::Default, "fluid_flowbeh_scroll"); lx+=65;
+		b = p->createWidget<MyGUI::Button>("Button", lx, ly, 20, 20,  MyGUI::Align::Default, "fluid_flowbeh_help"); lx+=25;
+		b->setCaption("?");
 
-	x=0; y+=20; 
-	t = win->createWidget<MyGUI::StaticText>("StaticText", xb + x, y, 170, 20,  MyGUI::Align::Default); x+=175;
-	t->setCaption(_L("static friction coef:"));
-	t->setTextAlign(MyGUI::Align::Right);
-	e = win->createWidget<MyGUI::Edit>("Edit", xb+x, y, 50, 20,  MyGUI::Align::Default, "solid_static_friction"); x+=55;
-	h = win->createWidget<MyGUI::HScroll>("HScroll", xb+x, y, 60, 20,  MyGUI::Align::Default, "solid_static_friction_scroll"); x+=60;
+		lx=0; ly+=20; 
+		t = p->createWidget<MyGUI::StaticText>("StaticText", lx, ly, 170, 20,  MyGUI::Align::Default); lx+=175;
+		t->setCaption(_L("solid_ground_level:"));
+		t->setTextAlign(MyGUI::Align::Right);
+		e = p->createWidget<MyGUI::Edit>("Edit", lx, ly, 80, 20,  MyGUI::Align::Default, "fluid_solidlevel"); lx+=85;
+		h = p->createWidget<MyGUI::HScroll>("HScroll", lx, ly, 60, 20,  MyGUI::Align::Default, "fluid_solidlevel_scroll"); lx+=65;
+		b = p->createWidget<MyGUI::Button>("Button", lx, ly, 20, 20,  MyGUI::Align::Default, "fluid_solidlevel_help"); lx+=25;
+		b->setCaption("?");
 
-	x=0; y+=20; 
-	t = win->createWidget<MyGUI::StaticText>("StaticText", xb + x, y, 170, 20,  MyGUI::Align::Default); x+=175;
-	t->setCaption(_L("dynamic friction coef:"));
-	t->setTextAlign(MyGUI::Align::Right);
-	e = win->createWidget<MyGUI::Edit>("Edit", xb+x, y, 50, 20,  MyGUI::Align::Default, "solid_dynamic_friction"); x+=55;
-	h = win->createWidget<MyGUI::HScroll>("HScroll", xb+x, y, 60, 20,  MyGUI::Align::Default, "solid_dynamic_friction_scroll"); x+=60;
-
-	x=0; y+=20; 
-	t = win->createWidget<MyGUI::StaticText>("StaticText", xb + x, y, 170, 20,  MyGUI::Align::Default); x+=175;
-	t->setCaption(_L("hydrodynamic coef:"));
-	t->setTextAlign(MyGUI::Align::Right);
-	e = win->createWidget<MyGUI::Edit>("Edit", xb+x, y, 50, 20,  MyGUI::Align::Default, "solid_hydrodynamic"); x+=55;
-	h = win->createWidget<MyGUI::HScroll>("HScroll", xb+x, y, 60, 20,  MyGUI::Align::Default, "solid_hydrodynamic_scroll"); x+=60;
-
-	x=0; y+=20; 
-	t = win->createWidget<MyGUI::StaticText>("StaticText", xb + x, y, 170, 20,  MyGUI::Align::Default); x+=175;
-	t->setCaption(_L("Stribeck velocity:"));
-	t->setTextAlign(MyGUI::Align::Right);
-	e = win->createWidget<MyGUI::Edit>("Edit", xb+x, y, 50, 20,  MyGUI::Align::Default, "solid_stribeck"); x+=55;
-	h = win->createWidget<MyGUI::HScroll>("HScroll", xb+x, y, 60, 20,  MyGUI::Align::Default, "solid_stribeck_scroll"); x+=60;
-
-	x=0; y+=20; 
-	t = win->createWidget<MyGUI::StaticText>("StaticText", xb + x, y, 170, 20,  MyGUI::Align::Default); x+=175;
-	t->setCaption(_L("alpha:"));
-	t->setTextAlign(MyGUI::Align::Right);
-	e = win->createWidget<MyGUI::Edit>("Edit", xb+x, y, 50, 20,  MyGUI::Align::Default, "solid_alpha"); x+=55;
-	h = win->createWidget<MyGUI::HScroll>("HScroll", xb+x, y, 60, 20,  MyGUI::Align::Default, "solid_alpha_scroll"); x+=60;
-
-	x=0; y+=20; 
-	t = win->createWidget<MyGUI::StaticText>("StaticText", xb + x, y, 170, 20,  MyGUI::Align::Default); x+=175;
-	t->setCaption(_L("strength:"));
-	t->setTextAlign(MyGUI::Align::Right);
-	e = win->createWidget<MyGUI::Edit>("Edit", xb+x, y, 50, 20,  MyGUI::Align::Default, "solid_strength"); x+=55;
-	h = win->createWidget<MyGUI::HScroll>("HScroll", xb+x, y, 60, 20,  MyGUI::Align::Default, "solid_strength_scroll"); x+=60;
-
-	x=0; y+=20; 
-	t = win->createWidget<MyGUI::StaticText>("StaticText", xb + x, y, 170, 20,  MyGUI::Align::Default); x+=175;
-	t->setCaption(_L("fx_type:"));
-	t->setTextAlign(MyGUI::Align::Right);
-	cb = win->createWidget<MyGUI::ComboBox>("ComboBox", xb + x, y, 115, 20,  MyGUI::Align::Default, "combo_fx_type");
-	cb->addItem("dusty");
-	cb->addItem("hard");
-	cb->addItem("clumpy");
-	cb->setEditStatic(true);
-	cb->setIndexSelected(0);
-
-	// TO BE DONE
-
-	x=0; y+=20; 
-	t = win->createWidget<MyGUI::StaticText>("StaticText", xb + x, y, 170, 20,  MyGUI::Align::Default); x+=175;
-	t->setCaption(_L("fx_color:"));
-	t->setTextAlign(MyGUI::Align::Right);
-	// TO BE DONE
-
-
-	xb -= 10;
-	x=0; y+=20; 
-	t = win->createWidget<MyGUI::StaticText>("StaticText", xb + x, y, 170, 20,  MyGUI::Align::Default); x+=175;
+		lx=0; ly+=20; 
+		t = p->createWidget<MyGUI::StaticText>("StaticText", lx, ly, 170, 20,  MyGUI::Align::Default); lx+=175;
+		t->setCaption(_L("drag_anisotropy:"));
+		t->setTextAlign(MyGUI::Align::Right);
+		e = p->createWidget<MyGUI::Edit>("Edit", lx, ly, 80, 20,  MyGUI::Align::Default, "fluid_drag_anisotropy"); lx+=85;
+		h = p->createWidget<MyGUI::HScroll>("HScroll", lx, ly, 60, 20,  MyGUI::Align::Default, "fluid_drag_anisotropy_scroll"); lx+=65;
+		b = p->createWidget<MyGUI::Button>("Button", lx, ly, 20, 20,  MyGUI::Align::Default, "fluid_drag_anisotropy_help"); lx+=25;
+		b->setCaption("?");
+		
+		lx=0; ly+=20; 		
+		// add height to global height
+		y += ly;
+	}
+	p->setSize(350, y-by+25);
+	
+	x=10; y+=20; 
+	t = win->createWidget<MyGUI::StaticText>("StaticText",  x, y, 170, 20,  MyGUI::Align::Default); x+=175;
 	t->setCaption(_L("Ground Debug"));
 	
-
-	xb += 10;
-	x=0; y+=60; 
-	t = win->createWidget<MyGUI::StaticText>("StaticText", xb + x, y, 350, 20,  MyGUI::Align::Default, "current_ground"); x+=350;
+	x=10; y+=60; 
+	t = win->createWidget<MyGUI::StaticText>("StaticText", x, y, 350, 20,  MyGUI::Align::Default, "current_ground"); x+=350;
 	t->setCaption(_L("current ground: N/A"));
 
 	win->setVisible(true);
