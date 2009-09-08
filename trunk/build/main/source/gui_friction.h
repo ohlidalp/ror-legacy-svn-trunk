@@ -46,6 +46,8 @@ public:
 protected:
 	MyGUI::WindowPtr win;
 	Collisions *col;
+
+	void updateControls(ground_model_t *gm);
 };
 
 #endif //GUI_FRICTION_H__
