@@ -44,6 +44,7 @@ typedef struct stream_desc_t_
 	wxString title;
 	wxString path;
 	wxString desc;
+	wxString group;
 	wxBitmap icon;
 	bool checked;
 	bool disabled;

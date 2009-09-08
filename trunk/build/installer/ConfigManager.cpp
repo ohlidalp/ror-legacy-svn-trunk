@@ -74,6 +74,8 @@ int ConfigManager::getOnlineStreams()
 				stream_desc_t s;
 				s.title     = conv(olist[i]["title"]);
 				s.desc      = conv(olist[i]["description"]);
+				s.group     = conv(olist[i]["group"]);
+
 				s.icon      = (olist[i]["type"]=="0")?wxBitmap(mainpack_xpm):wxBitmap(extrapack_xpm);
 				s.checked   = (olist[i]["checked"] == "1");
 				s.disabled  = (olist[i]["checked"] == "1");
