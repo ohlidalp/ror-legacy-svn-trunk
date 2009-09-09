@@ -5587,7 +5587,7 @@ bool Beam::frameStep(Real dt, Beam** trucks, int numtrucks)
 					{
 //							trucks[t]->nodes[n].smoothpos=trucks[t]->nodes[n].tsmooth/steps;
 							trucks[t]->nodes[n].smoothpos = trucks[t]->nodes[n].AbsPosition;
-							if((trucks[t]->nodes[n].AbsPosition - trucks[t]->nodes[0].AbsPosition).squaredLength() > trucks[t]->nodes[n].iDistance * 5)
+							if((trucks[t]->nodes[n].AbsPosition - trucks[t]->nodes[0].AbsPosition).squaredLength() > trucks[t]->nodes[n].iDistance * 25)
 							{
 								// loose node, ignore ...
 							} else
@@ -5638,7 +5638,7 @@ bool Beam::frameStep(Real dt, Beam** trucks, int numtrucks)
 					{
 						trucks[t]->nodes[n].smoothpos=trucks[t]->nodes[n].AbsPosition;
 
-						if((trucks[t]->nodes[n].AbsPosition - trucks[t]->nodes[0].AbsPosition).squaredLength() > trucks[t]->nodes[n].iDistance * 5)
+						if((trucks[t]->nodes[n].AbsPosition - trucks[t]->nodes[0].AbsPosition).squaredLength() > trucks[t]->nodes[n].iDistance * 25)
 						{
 							// loose node, ignore ...
 						} else
