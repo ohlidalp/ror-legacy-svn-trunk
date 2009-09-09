@@ -21,33 +21,41 @@ along with Rigs of Rods.  If not, see <http://www.gnu.org/licenses/>.
 #define __Replay_H__
 
 #include "OgrePrerequisites.h"
+#include "Beam.h"
 
 class ExampleFrameListener;
+
+typedef struct node_simple_ {
+	Ogre::Vector3 pos;
+} node_simple_t;
+
+typedef struct beam_simple_ {
+	float scale;
+	bool broken;
+} beam_simple_t;
 
 class Replay
 {
 public:
-	Replay(int nnodes, int nframes);
+	Replay(Beam *b, int nframes);
 	~Replay();
 
-
-	Ogre::Vector3 *nodes;
-	float *times;
-	float sum;
-	int writeindex;
-	int numnodes;
-	int numframes;
-	int firstrun;
-
-	//dirty stuff, we use this to write the replay buffer
-	Ogre::Vector3 *getUpdateIndex(float dt);
-
-	//we take negative offsets only
-	Ogre::Vector3 *getReplayIndex(int offset);
-
+	void *getWriteBuffer(float dt, int type);
+	void *getReadBuffer(int offset, int type);
 	float getReplayTime(int offset);
+	void writeDone();
 
 protected:
 	Ogre::Timer *replayTimer;
+	int numNodes;
+	int numBeams;
+	int numFrames;
+
+	int writeIndex;
+	int firstRun;
+	// malloc'ed
+	node_simple_t *nodes;
+	beam_simple_t *beams;
+	float *times;
 };
 #endif

@@ -3210,7 +3210,8 @@ bool ExampleFrameListener::updateEvents(float dt)
 							trucks[current_truck]->replaypos-=10;
 						}
 
-						trucks[current_truck]->replaypos += mstate.X.rel;
+						if(INPUTENGINE.isKeyDown(OIS::KC_LMENU))
+							trucks[current_truck]->replaypos += mstate.X.rel;
 
 						//float repltime = trucks[current_truck]->getReplay()->getReplayTime(trucks[current_truck]->replaypos);
 						// update raceing gui if required
