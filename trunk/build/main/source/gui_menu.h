@@ -27,10 +27,12 @@ along with Rigs of Rods.  If not, see <http://www.gnu.org/licenses/>.
 #include "OgreSingleton.h"
 #include "OgrePrerequisites.h"
 
+class ExampleFrameListener;
+
 class GUI_MainMenu : public Ogre::Singleton< GUI_MainMenu >
 {
 public:
-	GUI_MainMenu();
+	GUI_MainMenu(ExampleFrameListener *efl);
 	~GUI_MainMenu();
 	static GUI_MainMenu& getSingleton(void);
 	static GUI_MainMenu* getSingletonPtr(void);
@@ -38,6 +40,7 @@ public:
 	bool getVisible();
 	void setVisible(bool value);
 protected:
+	ExampleFrameListener *mefl;
 	MyGUI::MenuBarPtr mainmenu;
 	void onMenuBtn(MyGUI::MenuCtrlPtr _sender, MyGUI::MenuItemPtr _item);
 };

@@ -716,8 +716,8 @@ eventInfo_t eventInfo[] = {
 	{
 		"COMMON_SHOW_MENU",
 		EV_COMMON_SHOW_MENU,
-		"Keyboard EXPL+SHIFT+ESCAPE",
-		_L("exit the game")
+		"Keyboard EXPL+ALT+M",
+		_L("show the main menu")
 	},
 	{
 		"COMMON_RESCUE_TRUCK",
@@ -1440,7 +1440,7 @@ eventInfo_t eventInfo[] = {
 	{ "TRUCK_LOAD_POS7", EV_TRUCK_LOAD_POS7, "Keyboard EXPL+ALT+7", _L("load position under slot 7") },
 	{ "TRUCK_LOAD_POS8", EV_TRUCK_LOAD_POS8, "Keyboard EXPL+ALT+8", _L("load position under slot 8") },
 	{ "TRUCK_LOAD_POS9", EV_TRUCK_LOAD_POS9, "Keyboard EXPL+ALT+9", _L("load position under slot 9") },
-	{ "TRUCK_LOAD_POS10", EV_TRUCK_LOAD_POS10, "Keyboard EXPL+ALT+10", _L("load position under slot 10") },
+	{ "TRUCK_LOAD_POS10", EV_TRUCK_LOAD_POS10, "Keyboard EXPL+ALT+0", _L("load position under slot 10") },
 
 	// the end, DO NOT MODIFY
 	{"", -1, "", ""},

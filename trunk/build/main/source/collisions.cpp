@@ -23,15 +23,15 @@ along with Rigs of Rods.  If not, see <http://www.gnu.org/licenses/>.
 #include "approxmath.h"
 
 //these default values are overwritten by the data/ground_models.cfg file!
-ground_model_t GROUND_CONCRETE={3.0, 1.20, 0.60, 0.010, 5.0, 2.0, 0.5, 200, 10000, 0.5, 100, 0.1, 0, ColourValue(), "concrete"};
-ground_model_t GROUND_ASPHALT={ 3.0, 1.10, 0.55, 0.010, 5.0, 2.0, 0.5, 200, 10000, 0.5, 100, 0.1, 0, ColourValue(), "asphalt"};
-ground_model_t GROUND_GRAVEL={  3.0, 0.85, 0.50, 0.010, 4.0, 2.0, 0.5, 200, 10000, 0.5, 100, 0.1, 0, ColourValue(), "gravel"};
-ground_model_t GROUND_ROCK={    3.0, 0.75, 0.40, 0.010, 5.0, 2.0, 0.5, 200, 10000, 0.5, 100, 0.1, 0, ColourValue(), "rock"};
-ground_model_t GROUND_ICE={     3.0, 0.25, 0.15, 0.0001,4.0, 2.0, 0.5, 200, 10000, 0.5, 100, 0.1, 0, ColourValue(), "ice"};
-ground_model_t GROUND_SNOW={    3.0, 0.55, 0.30, 0.005, 6.0, 3.0, 0.5, 200, 10000, 0.5, 100, 0.1, 0, ColourValue(), "snow"};
-ground_model_t GROUND_METAL={   3.0, 0.40, 0.20, 0.001, 4.0, 2.0, 0.5, 200, 10000, 0.5, 100, 0.1, 0, ColourValue(), "metal"};
-ground_model_t GROUND_GRASS={   3.0, 0.50, 0.25, 0.005, 8.0, 2.0, 0.5, 200, 10000, 0.5, 100, 0.1, 0, ColourValue(), "grass"};
-ground_model_t GROUND_SAND={    3.0, 0.40, 0.20, 0.0001,9.0, 2.0, 0.5, 200, 10000, 0.5, 100, 0.1, 0, ColourValue(), "sand"};
+ground_model_t GROUND_CONCRETE={3.0, 1.20, 0.60, 0.010, 5.0, 2.0, 0.5, 200, 10000, 0.5, 0, 0.1, 0, ColourValue(), "concrete"};
+ground_model_t GROUND_ASPHALT={ 3.0, 1.10, 0.55, 0.010, 5.0, 2.0, 0.5, 200, 10000, 0.5, 0, 0.1, 0, ColourValue(), "asphalt"};
+ground_model_t GROUND_GRAVEL={  3.0, 0.85, 0.50, 0.010, 4.0, 2.0, 0.5, 200, 10000, 0.5, 0, 0.1, 0, ColourValue(), "gravel"};
+ground_model_t GROUND_ROCK={    3.0, 0.75, 0.40, 0.010, 5.0, 2.0, 0.5, 200, 10000, 0.5, 0, 0.1, 0, ColourValue(), "rock"};
+ground_model_t GROUND_ICE={     3.0, 0.25, 0.15, 0.0001,4.0, 2.0, 0.5, 200, 10000, 0.5, 0, 0.1, 0, ColourValue(), "ice"};
+ground_model_t GROUND_SNOW={    3.0, 0.55, 0.30, 0.005, 6.0, 3.0, 0.5, 200, 10000, 0.5, 0, 0.1, 0, ColourValue(), "snow"};
+ground_model_t GROUND_METAL={   3.0, 0.40, 0.20, 0.001, 4.0, 2.0, 0.5, 200, 10000, 0.5, 0, 0.1, 0, ColourValue(), "metal"};
+ground_model_t GROUND_GRASS={   3.0, 0.50, 0.25, 0.005, 8.0, 2.0, 0.5, 200, 10000, 0.5, 0, 0.1, 0, ColourValue(), "grass"};
+ground_model_t GROUND_SAND={    3.0, 0.40, 0.20, 0.0001,9.0, 2.0, 0.5, 200, 10000, 0.5, 0, 0.1, 0, ColourValue(), "sand"};
 
 ground_model_t *ground_models[9] = {
 	&GROUND_CONCRETE,
@@ -160,6 +160,20 @@ void Collisions::setupLandUse(char *configfile)
 {
 	if(landuse) return;
 	landuse = new Landusemap(configfile, this, mefl->mapsizex, mefl->mapsizez);
+}
+
+ground_model_t *Collisions::getGroundModelByString(UTFString str)
+{
+	if (str == "concrete") return &GROUND_CONCRETE;
+	if (str == "asphalt") return &GROUND_ASPHALT;
+	if (str == "gravel") return &GROUND_GRAVEL;
+	if (str == "rock") return &GROUND_ROCK;
+	if (str == "ice") return &GROUND_ICE;
+	if (str == "snow") return &GROUND_SNOW;
+	if (str == "metal") return &GROUND_METAL;
+	if (str == "grass") return &GROUND_GRASS;
+	if (str == "sand") return &GROUND_SAND;
+	return 0; // default
 }
 
 ground_model_t *Collisions::getGroundModelByString(char *stdf)
@@ -1160,28 +1174,31 @@ bool Collisions::groundCollision(node_t *node, float dt, ground_model_t** ogm, f
 
 void Collisions::primitiveCollision(node_t *node, Vector3 normal, float dt, ground_model_t* gm, float* nso, float penetration)
 {
-
-
 	//normal velocity
 	float Vnormal=node->Velocity.dotProduct(normal);
 
 	// if we are inside the fluid (solid ground is below us)
 	if (gm->solid_ground_level!=0.0f && penetration>=0)
 	{
-
 		if (nso) *nso=0.0f;
-		float Vlength=node->Velocity.length();
+
+		float Vsquared=node->Velocity.squaredLength();
 		// First of all calculate power law fluid viscosity
-		float m = gm->flow_consistency_index*approx_pow(Vlength, gm->flow_behavior_index-1.0f);
+		float m = gm->flow_consistency_index*approx_pow(Vsquared, (gm->flow_behavior_index-1.0f)*0.5f);
 
 		//Then calculate drag based on above. We'are using a simplified Stokes' drag.
-		Vector3 Fdrag;
-
-		Fdrag=node->Velocity*(-m);
+		Vector3 Fdrag=node->Velocity*(-m);
 
 		//If we have anisotropic drag
 		if (gm->drag_anisotropy<1.0f && Vnormal>0)
-			Fdrag+=(Vnormal*m*(1.0f-gm->drag_anisotropy))*normal;
+		{
+			float da_factor;
+			if (Vsquared>gm->va*gm->va)
+				da_factor=1.0;
+			else
+				da_factor=Vsquared/(gm->va*gm->va);
+			Fdrag+=(Vnormal*m*(1.0f-gm->drag_anisotropy)*da_factor)*normal;
+		}
 		node->Forces+=Fdrag;
 
 		//Now calculate upwards force based on a simplified boyancy equation;
