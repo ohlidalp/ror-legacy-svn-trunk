@@ -202,6 +202,7 @@ public:
 	void parseGroundModel(ground_model_t* gm, const char* line, const char *name);
 	void loadGroundModelLine(char *line);
 	ground_model_t *getGroundModelByString(char *stdf);
+	ground_model_t *getGroundModelByString(Ogre::UTFString str);
 	ground_model_t *last_used_ground_model;
 	void setupLandUse(char *configfile);
 	int getGroundModelNumberByString(char *stdf);

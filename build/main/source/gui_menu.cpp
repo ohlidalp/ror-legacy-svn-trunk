@@ -22,7 +22,9 @@ along with Rigs of Rods.  If not, see <http://www.gnu.org/licenses/>.
 
 #include "gui_menu.h"
 #include "gui_loader.h"
+#include "gui_friction.h"
 #include "gui_manager.h"
+#include "ExampleFrameListener.h"
 #include "Ogre.h"
 #include "Settings.h"
 
@@ -40,7 +42,7 @@ GUI_MainMenu& GUI_MainMenu::getSingleton(void)
 	assert( ms_Singleton );  return ( *ms_Singleton );
 }
 
-GUI_MainMenu::GUI_MainMenu()
+GUI_MainMenu::GUI_MainMenu(ExampleFrameListener *efl) : mefl(efl)
 {
 	//MyGUI::WidgetPtr back = createWidget<MyGUI::Widget>("Panel", 0, 0, 912, 652,MyGUI::Align::Default, "Back");
 	mainmenu = MyGUI::Gui::getInstance().createWidget<MyGUI::MenuBar>("MenuBar", 0, 0, 300, 26,  MyGUI::Align::HStretch | MyGUI::Align::Top, "Back"); 
@@ -52,36 +54,25 @@ GUI_MainMenu::GUI_MainMenu()
 	mi->setItemType(MyGUI::MenuItemType::Popup);
 	mi->setCaption("File");
 
-
-	pop->addItem("entry1", MyGUI::MenuItemType::Normal, "entry1");
-	pop->addItem("entry2", MyGUI::MenuItemType::Normal, "entry2");
-	pop->addItem("entry3", MyGUI::MenuItemType::Normal, "entry3");
+	pop->addItem("Hide Menu", MyGUI::MenuItemType::Normal);
+	pop->addItem("entry3", MyGUI::MenuItemType::Normal);
 	pop->addItem("-", MyGUI::MenuItemType::Separator);
-	pop->addItem("exit", MyGUI::MenuItemType::Normal, "exit");
+	pop->addItem("Exit Game", MyGUI::MenuItemType::Normal);
 
-
-	// view menu
+	// windows
 	mi = mainmenu->createWidget<MyGUI::MenuItem>("MenuBarButton", 0, 0, 60, 22,  MyGUI::Align::Default); 
 	pop = mi->createWidget<MyGUI::PopupMenu>(MyGUI::WidgetStyle::Popup, "PopupMenu",MyGUI::IntCoord(0,0,88,68),MyGUI::Align::Default, "Popup");
 	mi->setItemType(MyGUI::MenuItemType::Popup);
-	mi->setCaption("View");
-
-
-	MyGUI::MenuItemPtr mi2 = pop->addItem("Camera Mode", MyGUI::MenuItemType::Normal, "cm");
-	MyGUI::PopupMenuPtr pop2 = mi2->createWidget<MyGUI::PopupMenu>(MyGUI::WidgetStyle::Popup, "PopupMenu",MyGUI::IntCoord(0,0,88,68),MyGUI::Align::Default, "Popup");
-
-	pop2->createWidget<MyGUI::Button>("CheckBox",MyGUI::IntCoord(0,0,88,68),MyGUI::Align::Default, "Internal Camera");
-	pop2->createWidget<MyGUI::Button>("CheckBox",MyGUI::IntCoord(0,0,88,68),MyGUI::Align::Default, "External Camera");
+	mi->setCaption("Windows");
+	pop->addItem("Camera Control", MyGUI::MenuItemType::Normal, "cameratool");
+	pop->addItem("Friction Settings", MyGUI::MenuItemType::Normal, "frictiongui");
+	
+	mainmenu->eventMenuCtrlAccept = MyGUI::newDelegate(this, &GUI_MainMenu::onMenuBtn);
 
 
 
-
-	pop->eventMenuCtrlAccept = MyGUI::newDelegate(this, &GUI_MainMenu::onMenuBtn);
-	pop2->eventMenuCtrlAccept = MyGUI::newDelegate(this, &GUI_MainMenu::onMenuBtn);
-	//window->eventWindowButtonPressed = MyGUI::newDelegate(this, &DemoKeeper::notifyWindowPressed);	
-	MyGUI::PointerManager::getInstance().setVisible(true);
-
-	UILOADER.setProgress(UI_PROGRESSBAR_HIDE);
+	//MyGUI::PointerManager::getInstance().setVisible(true);
+	//UILOADER.setProgress(UI_PROGRESSBAR_HIDE);
 	setVisible(false);
 }
 
@@ -91,7 +82,19 @@ GUI_MainMenu::~GUI_MainMenu()
 
 void GUI_MainMenu::onMenuBtn(MyGUI::MenuCtrlPtr _sender, MyGUI::MenuItemPtr _item)
 {
-	LogManager::getSingleton().logMessage(" menu button pressed: " + _item->getCaption());
+	String miname = _item->getCaption();
+	if(miname == "Hide Menu")
+	{
+		setVisible(false);
+	} else if(miname == "Friction Settings")
+	{
+		GUI_Friction::getSingleton().setVisible(true);
+	} else if(miname == "Exit Game")
+	{
+		mefl->shutdown_pre();
+	}
+
+	//LogManager::getSingleton().logMessage(" menu button pressed: " + _item->getCaption());
 }
 
 void GUI_MainMenu::setVisible(bool value)

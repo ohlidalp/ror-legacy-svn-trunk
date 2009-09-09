@@ -1079,7 +1079,7 @@ ExampleFrameListener::ExampleFrameListener(RenderWindow* win, Camera* cam, Scene
 	UILOADER.setup(win, cam);
 
 	// create main menu :D
-	new GUI_MainMenu();
+	new GUI_MainMenu(this);
 	new GUI_Friction();
 
 	CACHE.startup(scm);
@@ -2735,15 +2735,24 @@ bool ExampleFrameListener::updateEvents(float dt)
 		}
 	}
 
+	// no event handling during chatting!
+	if(chatting)
+		return true;
+
 	if(INPUTENGINE.getEventBoolValueBounce(EV_COMMON_SHOW_MENU))
 	{
 		GUI_MainMenu::getSingleton().setVisible(!GUI_MainMenu::getSingleton().getVisible());
 	}
 
-	// no event handling during chatting!
-	if(chatting)
-		return true;
-
+	if(INPUTENGINE.getEventBoolValueBounce(EV_COMMON_QUIT_GAME))
+	{
+		{
+			if(!showcredits)
+				shutdown_pre();
+			else
+				shutdown_final();
+		}
+	}
 	if(GUI_MainMenu::getSingleton().getVisible()) return true; // disable input events in menu mode
 
 /* -- disabled for now ... why we should check for this if it does not call anything?
@@ -4499,13 +4508,6 @@ bool ExampleFrameListener::updateEvents(float dt)
 	*/
 #endif
 
-	if(INPUTENGINE.getEventBoolValueBounce(EV_COMMON_QUIT_GAME))
-	{
-		if(!showcredits)
-			shutdown_pre();
-		else
-			shutdown_final();
-	}
 
 	if(INPUTENGINE.getEventBoolValueBounce(EV_COMMON_TRUCK_INFO) && !showcredits && current_truck != -1)
 	{

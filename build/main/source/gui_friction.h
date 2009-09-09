@@ -46,8 +46,16 @@ public:
 protected:
 	MyGUI::WindowPtr win;
 	Collisions *col;
+	ground_model_t *active_gm;
+	ground_model_t *selected_gm;
+	std::map < Ogre::String , Ogre::Real > scrollFactors;
 
-	void updateControls(ground_model_t *gm);
+	void updateControls(ground_model_t *gm, bool setCombo=true);
+	
+	void event_combo_grounds_eventComboAccept(MyGUI::WidgetPtr _sender, size_t _index);
+	void event_btn_MouseButtonClick(MyGUI::WidgetPtr _sender);
+	void event_scroll_value(MyGUI::WidgetPtr _sender, size_t _value);
+	void applyChanges();
 };
 
 #endif //GUI_FRICTION_H__
