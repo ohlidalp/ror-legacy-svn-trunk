@@ -3065,6 +3065,31 @@ bool ExampleFrameListener::updateEvents(float dt)
 						trucks[current_truck]->commandkey[i].commandValue = tmp;
 				}
 
+// replay mode
+				if (trucks[current_truck]->replaymode)
+				{
+					if (INPUTENGINE.getEventBoolValueBounce(EV_COMMON_REPLAY_FORWARD, 0.1f) && trucks[current_truck]->replaypos<=0)
+					{
+						trucks[current_truck]->replaypos++;
+					}
+					if (INPUTENGINE.getEventBoolValueBounce(EV_COMMON_REPLAY_BACKWARD, 0.1f) && trucks[current_truck]->replaypos > -trucks[current_truck]->replaylen)
+					{
+						trucks[current_truck]->replaypos--;
+					}
+					if (INPUTENGINE.getEventBoolValueBounce(EV_COMMON_REPLAY_FAST_FORWARD, 0.1f) && trucks[current_truck]->replaypos+10<=0)
+					{
+						trucks[current_truck]->replaypos+=10;
+					}
+					if (INPUTENGINE.getEventBoolValueBounce(EV_COMMON_REPLAY_FAST_BACKWARD, 0.1f) && trucks[current_truck]->replaypos-10 > -trucks[current_truck]->replaylen)
+					{
+						trucks[current_truck]->replaypos-=10;
+					}
+
+					if(INPUTENGINE.isKeyDown(OIS::KC_LMENU))
+						trucks[current_truck]->replaypos += mstate.X.rel;
+
+				}
+
 				if (trucks[current_truck]->driveable==TRUCK)
 				{
 					//road construction stuff
@@ -3193,39 +3218,6 @@ bool ExampleFrameListener::updateEvents(float dt)
 					// replay mode
 					if (trucks[current_truck]->replaymode)
 					{
-						if (INPUTENGINE.getEventBoolValueBounce(EV_COMMON_REPLAY_FORWARD, 0.1f) && trucks[current_truck]->replaypos<=0)
-						{
-							trucks[current_truck]->replaypos++;
-						}
-						if (INPUTENGINE.getEventBoolValueBounce(EV_COMMON_REPLAY_BACKWARD, 0.1f) && trucks[current_truck]->replaypos > -trucks[current_truck]->replaylen)
-						{
-							trucks[current_truck]->replaypos--;
-						}
-						if (INPUTENGINE.getEventBoolValueBounce(EV_COMMON_REPLAY_FAST_FORWARD, 0.1f) && trucks[current_truck]->replaypos+10<=0)
-						{
-							trucks[current_truck]->replaypos+=10;
-						}
-						if (INPUTENGINE.getEventBoolValueBounce(EV_COMMON_REPLAY_FAST_BACKWARD, 0.1f) && trucks[current_truck]->replaypos-10 > -trucks[current_truck]->replaylen)
-						{
-							trucks[current_truck]->replaypos-=10;
-						}
-
-						if(INPUTENGINE.isKeyDown(OIS::KC_LMENU))
-							trucks[current_truck]->replaypos += mstate.X.rel;
-
-						//float repltime = trucks[current_truck]->getReplay()->getReplayTime(trucks[current_truck]->replaypos);
-						// update raceing gui if required
-						//LogManager::getSingleton().logMessage("replay time: " + StringConverter::toString(repltime));
-
-						/*
-						sprintf(txt, "%.4i", ((int)(repltime/100.0f))%100);
-						laptimems->setCaption(txt);
-						sprintf(txt, "%.2i", ((int)(repltime/10000.0f))%60);
-						laptimes->setCaption(txt);
-						sprintf(txt, "%.2i'", ((int)(repltime/10000.0f))/60);
-						laptimemin->setCaption(txt);
-						*/
-
 					}
 					else	// this else part is called when we are NOT in replaymode
 					{

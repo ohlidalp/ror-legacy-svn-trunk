@@ -32,6 +32,7 @@ typedef struct node_simple_ {
 typedef struct beam_simple_ {
 	float scale;
 	bool broken;
+	bool disabled;
 } beam_simple_t;
 
 class Replay
