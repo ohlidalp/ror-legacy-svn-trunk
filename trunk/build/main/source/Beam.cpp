@@ -483,14 +483,14 @@ Beam::Beam(int tnum, SceneManager *manager, SceneNode *parent, RenderWindow* win
 	// setup replay mode
 	bool enablereplay = (SETTINGS.getSetting("Replay mode")=="Yes");
 	replay=0;
-	replaylen = 1000;
+	replaylen = 10000;
 	if(enablereplay && state != NETWORKED && !networking)
 	{
 		String rpl = SETTINGS.getSetting("Replay length");
 		if (rpl != String("")) {
 			replaylen = atoi(rpl.c_str());
 		}
-		replay = new Replay(free_node, replaylen);
+		replay = new Replay(this, replaylen);
 	}
 
 	// add storage
@@ -5532,16 +5532,23 @@ bool Beam::frameStep(Real dt, Beam** trucks, int numtrucks)
 	if (replaymode && replay)
 	{
 		//replay update
-		Vector3* rbuff=replay->getReplayIndex(replaypos);
-		Vector3 pos=Vector3(0,0,0);
+		node_simple_t *nbuff = (node_simple_t *)replay->getReadBuffer(replaypos, 0);
+		Vector3 pos = Vector3::ZERO;
 		for (i=0; i<free_node; i++)
 		{
-			nodes[i].AbsPosition=rbuff[i];
-			nodes[i].RelPosition=rbuff[i]-origin;
-			nodes[i].smoothpos=rbuff[i];
-			pos=pos+rbuff[i];
+			nodes[i].AbsPosition = nbuff[i].pos;
+			nodes[i].RelPosition = nbuff[i].pos - origin;
+			nodes[i].smoothpos = nbuff[i].pos;
+			pos = pos + nbuff[i].pos;
 		}
 		position=pos/(float)(free_node);
+		// now beams
+		beam_simple_t *bbuff = (beam_simple_t *)replay->getReadBuffer(replaypos, 1);
+		for (i=0; i<free_beam; i++)
+		{
+			beams[i].scale = bbuff[i].scale;
+			beams[i].broken = bbuff[i].broken;
+		}
 	}
 	else
 	{
@@ -6098,7 +6105,7 @@ void Beam::calcForcesEuler(int doUpdate, Real dt, int step, int maxstep, Beam** 
 				beams[i].p2->Forces-=f;
 
 				//skeleton colouring
-				if (doUpdate && skeleton == 2 && beams[i].mSceneNode && !beams[i].broken && !beams[i].disabled && beams[i].mEntity)
+				if (((doUpdate && skeleton == 2) || replay) && beams[i].mSceneNode && !beams[i].broken && !beams[i].disabled && beams[i].mEntity)
 				{
 					beams[i].scale = (sflen/BEAM_CREAK);
 				}
@@ -7682,11 +7689,23 @@ void Beam::calcForcesEuler(int doUpdate, Real dt, int step, int maxstep, Beam** 
 	if(replay)
 	{
 		replayTimer += dt;
-		if(replayTimer > 0.001f)
+		if(replayTimer > 0.0001f)
 		{
-			Vector3* rbuff=replay->getUpdateIndex(dt);
-			for (i=0; i<free_node; i++) rbuff[i]=nodes[i].AbsPosition;
-			replayTimer=0.0f;
+			// store nodes
+			node_simple_t *nbuff = (node_simple_t *)replay->getWriteBuffer(dt, 0);
+			for (i=0; i<free_node; i++)
+				nbuff[i].pos = nodes[i].AbsPosition;
+			
+			// store beams
+			beam_simple_t *bbuff = (beam_simple_t *)replay->getWriteBuffer(dt, 1);
+			for (i=0; i<free_beam; i++)
+			{
+				bbuff[i].scale = beams[i].scale;
+				bbuff[i].broken = beams[i].broken;
+			}
+
+			replay->writeDone();
+			replayTimer = 0.0f;
 		}
 	}
 
@@ -9047,19 +9066,8 @@ void Beam::setReplayMode(bool rm)
 {
 	if (!replay) return;
 	if (replaymode && !rm)
-	{
-		int i;
-		//we return to the first replay
-		Vector3* rbuff=replay->getReplayIndex(0);
-		for (i=0; i<free_node; i++)
-		{
-			nodes[i].AbsPosition=rbuff[i];
-			nodes[i].RelPosition=rbuff[i]-origin;
-			nodes[i].smoothpos=rbuff[i];
-		}
 		replaypos=0;
 
-	}
 	replaymode=rm;
 }
 

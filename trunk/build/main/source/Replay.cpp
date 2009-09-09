@@ -23,48 +23,79 @@ along with Rigs of Rods.  If not, see <http://www.gnu.org/licenses/>.
 
 using namespace Ogre;
 
-Replay::Replay(int nnodes, int nframes)
+Replay::Replay(Beam *b, int _numFrames)
 {
-	nodes=(Vector3*)malloc(nnodes*nframes*sizeof(Vector3));
-	times=(float*)malloc(nframes*sizeof(float));
-	memset(times, 0, nframes*sizeof(float));
+	numNodes = b->getNodeCount();
+	numBeams = b->getBeamCount();
+	numFrames = _numFrames;
 
-	writeindex=0;
-	numnodes=nnodes;
-	numframes=nframes;
-	firstrun=1;
-	sum=0.0f;
 	replayTimer = new Timer();
+
+	// get memory
+	nodes = (node_simple_t*)calloc(numNodes * numFrames, sizeof(node_simple_t));
+	beams = (beam_simple_t*)calloc(numBeams * numFrames, sizeof(beam_simple_t));	
+	times = (float*)calloc(numFrames, sizeof(float));
+
+	unsigned long bsize = (numNodes * numFrames * sizeof(node_simple_t) + numBeams * numFrames * sizeof(beam_simple_t) + numFrames * sizeof(float)) / 1024.0f;
+	LogManager::getSingleton().logMessage("replay buffer: " + StringConverter::toString(bsize) + " kB");
+
+	writeIndex = 0;
+	firstRun = 1;
 }
 
 //dirty stuff, we use this to write the replay buffer
-Vector3 *Replay::getUpdateIndex(float dt)
+void *Replay::getWriteBuffer(float dt, int type)
 {
-	// dt is not used anymore, we rather use our own timer
-	sum += dt;
-	times[writeindex] = sum;
-	LogManager::getSingleton().logMessage("record time: " + StringConverter::toString(sum));
-	Vector3* index=nodes+(writeindex*numnodes);
-	writeindex++;
-	if (writeindex==numframes) {firstrun=0;writeindex=0;};
-	return index;
+	void *ptr = 0;
+	times[writeIndex] = dt;
+	if(type == 0)
+	{
+		// nodes
+		ptr = (void *)(nodes + (writeIndex * numNodes));
+	}else if(type == 1)
+	{
+		// beams
+		ptr = (void *)(beams + (writeIndex * numBeams));
+	}
+	return ptr;
+}
+
+void Replay::writeDone()
+{
+	writeIndex++;
+	if(writeIndex == numFrames)
+	{
+		firstRun = 0;
+		writeIndex = 0;
+	}
 }
 
 //we take negative offsets only
-Vector3 *Replay::getReplayIndex(int offset)
+void *Replay::getReadBuffer(int offset, int type)
 {
-	if (offset>=0) offset=-1;
-	if (offset<=-numframes) offset=-numframes+1;
-	LogManager::getSingleton().logMessage("replay time: " + StringConverter::toString(times[offset]));
-	int delta=writeindex+offset;
-	if (delta<0)
-		if (firstrun) return nodes;
-		else delta+=numframes;
-	return nodes+(delta*numnodes);
+	if (offset >= 0) offset=-1;
+	if (offset <= -numFrames) offset = -numFrames + 1;
+	//LogManager::getSingleton().logMessage("replay time: " + StringConverter::toString(times[offset]));
+	
+	int delta = writeIndex + offset;
+	if (delta < 0)
+		if (firstRun && type == 0)
+			return (void *)(nodes);
+		else if (firstRun && type == 1)
+			return (void *)(beams);
+		else
+			delta += numFrames;
+	if(type == 0)
+		return (void *)(nodes + delta * numNodes);
+	else if(type == 1)
+		return (void *)(beams + delta * numBeams);
+	return 0;
 }
 
 float  Replay::getReplayTime(int offset)
 {
+	if (offset >= 0) offset=-1;
+	if (offset <= -numFrames) offset = -numFrames + 1;
 	return times[offset];
 }
 
