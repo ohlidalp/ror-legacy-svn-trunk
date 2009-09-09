@@ -5548,6 +5548,7 @@ bool Beam::frameStep(Real dt, Beam** trucks, int numtrucks)
 		{
 			beams[i].scale = bbuff[i].scale;
 			beams[i].broken = bbuff[i].broken;
+			beams[i].disabled = bbuff[i].disabled;
 		}
 	}
 	else
@@ -7702,6 +7703,7 @@ void Beam::calcForcesEuler(int doUpdate, Real dt, int step, int maxstep, Beam** 
 			{
 				bbuff[i].scale = beams[i].scale;
 				bbuff[i].broken = beams[i].broken;
+				bbuff[i].disabled = beams[i].disabled;
 			}
 
 			replay->writeDone();
