@@ -22,6 +22,7 @@ along with Rigs of Rods.  If not, see <http://www.gnu.org/licenses/>.
 
 #include "OgrePrerequisites.h"
 #include "Beam.h"
+#include <MyGUI.h>
 
 class ExampleFrameListener;
 
@@ -41,10 +42,13 @@ public:
 	Replay(Beam *b, int nframes);
 	~Replay();
 
-	void *getWriteBuffer(float dt, int type);
-	void *getReadBuffer(int offset, int type);
-	float getReplayTime(int offset);
+	void *getWriteBuffer(int type);
+	void *getReadBuffer(int offset, int type, unsigned long &time);
+	unsigned long getLastReadTime();
 	void writeDone();
+
+	void setVisible(bool value);
+	bool getVisible();
 
 protected:
 	Ogre::Timer *replayTimer;
@@ -52,11 +56,24 @@ protected:
 	int numBeams;
 	int numFrames;
 
+
 	int writeIndex;
 	int firstRun;
+	unsigned long curFrameTime;
+	int curOffset;
+
 	// malloc'ed
 	node_simple_t *nodes;
 	beam_simple_t *beams;
-	float *times;
+	unsigned long *times;
+
+	// windowing
+	MyGUI::WidgetPtr panel;
+	MyGUI::StaticTextPtr txt;
+	MyGUI::ProgressPtr pr;
+
+	void updateGUI();
+
+
 };
 #endif
