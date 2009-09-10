@@ -3065,7 +3065,7 @@ bool ExampleFrameListener::updateEvents(float dt)
 						trucks[current_truck]->commandkey[i].commandValue = tmp;
 				}
 
-// replay mode
+				// replay mode
 				if (trucks[current_truck]->replaymode)
 				{
 					if (INPUTENGINE.getEventBoolValueBounce(EV_COMMON_REPLAY_FORWARD, 0.1f) && trucks[current_truck]->replaypos<=0)

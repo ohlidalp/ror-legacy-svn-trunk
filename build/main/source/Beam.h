@@ -762,6 +762,7 @@ public:
 	bool replaymode;
 	int replaylen;
 	int replaypos;
+	int oldreplaypos;
 	int locked;
 	int lockedold;
 	int watercontact;

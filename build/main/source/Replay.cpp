@@ -20,6 +20,8 @@ along with Rigs of Rods.  If not, see <http://www.gnu.org/licenses/>.
 #include "Replay.h"
 
 #include "Ogre.h"
+#include "gui_manager.h"
+#include "language.h"
 
 using namespace Ogre;
 
@@ -34,20 +36,46 @@ Replay::Replay(Beam *b, int _numFrames)
 	// get memory
 	nodes = (node_simple_t*)calloc(numNodes * numFrames, sizeof(node_simple_t));
 	beams = (beam_simple_t*)calloc(numBeams * numFrames, sizeof(beam_simple_t));	
-	times = (float*)calloc(numFrames, sizeof(float));
+	times = (unsigned long*)calloc(numFrames, sizeof(unsigned long));
 
-	unsigned long bsize = (numNodes * numFrames * sizeof(node_simple_t) + numBeams * numFrames * sizeof(beam_simple_t) + numFrames * sizeof(float)) / 1024.0f;
+	unsigned long bsize = (numNodes * numFrames * sizeof(node_simple_t) + numBeams * numFrames * sizeof(beam_simple_t) + numFrames * sizeof(unsigned long)) / 1024.0f;
 	LogManager::getSingleton().logMessage("replay buffer: " + StringConverter::toString(bsize) + " kB");
 
 	writeIndex = 0;
 	firstRun = 1;
+
+	// windowing
+	int width = 300;
+	int height = 60;
+	int x = (MyGUI::Gui::getInstance().getViewWidth() - width) / 2;
+	int y = 0;
+
+	panel = MyGUI::Gui::getInstance().createWidget<MyGUI::Widget>("Panel", x, y, width, height,  MyGUI::Align::Center, "Back");
+	panel->setCaption(_L("Replay"));
+	panel->setAlpha(0.8);
+
+	pr = panel->createWidget<MyGUI::Progress>("Progress", 10, 10, 280, 20,  MyGUI::Align::Default);
+	pr->setProgressRange(_numFrames);
+	pr->setProgressPosition(0);
+
+
+	txt = panel->createWidget<MyGUI::StaticText>("StaticText", 10, 30, 280, 20,  MyGUI::Align::Default);
+	txt->setCaption(_L("Position:"));
+
+	panel->setVisible(false);
 }
 
-//dirty stuff, we use this to write the replay buffer
-void *Replay::getWriteBuffer(float dt, int type)
+Replay::~Replay()
+{
+	free(nodes);
+	free(times);
+	delete replayTimer;
+}
+
+void *Replay::getWriteBuffer(int type)
 {
 	void *ptr = 0;
-	times[writeIndex] = dt;
+	times[writeIndex] = replayTimer->getMicroseconds();
 	if(type == 0)
 	{
 		// nodes
@@ -71,11 +99,10 @@ void Replay::writeDone()
 }
 
 //we take negative offsets only
-void *Replay::getReadBuffer(int offset, int type)
+void *Replay::getReadBuffer(int offset, int type, unsigned long &time)
 {
 	if (offset >= 0) offset=-1;
 	if (offset <= -numFrames) offset = -numFrames + 1;
-	//LogManager::getSingleton().logMessage("replay time: " + StringConverter::toString(times[offset]));
 	
 	int delta = writeIndex + offset;
 	if (delta < 0)
@@ -85,6 +112,14 @@ void *Replay::getReadBuffer(int offset, int type)
 			return (void *)(beams);
 		else
 			delta += numFrames;
+	
+	// set the time
+	time = times[delta];
+	curFrameTime = time;
+	curOffset = offset;
+	updateGUI();
+	
+	// return buffer pointer
 	if(type == 0)
 		return (void *)(nodes + delta * numNodes);
 	else if(type == 1)
@@ -92,17 +127,29 @@ void *Replay::getReadBuffer(int offset, int type)
 	return 0;
 }
 
-float  Replay::getReplayTime(int offset)
+void Replay::updateGUI()
 {
-	if (offset >= 0) offset=-1;
-	if (offset <= -numFrames) offset = -numFrames + 1;
-	return times[offset];
+	char tmp[128]="";
+	unsigned long t = curFrameTime;
+	sprintf(tmp, "Position: %0.6f s", ((float)t)/1000000.0f);
+	txt->setCaption(String(tmp));
+	LogManager::getSingleton().logMessage(">>>2>"+StringConverter::toString(times[writeIndex]) + " /3> "+StringConverter::toString(curFrameTime));
+	pr->setProgressPosition(abs(curOffset));
 }
 
-Replay::~Replay()
+unsigned long Replay::getLastReadTime()
 {
-	free(nodes);
-	free(times);
-	delete replayTimer;
+	return curFrameTime;
 }
 
+void Replay::setVisible(bool value)
+{
+	panel->setVisible(value);
+	// we need no mouse yet
+	//MyGUI::PointerManager::getInstance().setVisible(value);
+}
+
+bool Replay::getVisible()
+{
+	return panel->isVisible();
+}

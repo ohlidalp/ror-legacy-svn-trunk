@@ -426,6 +426,7 @@ Beam::Beam(int tnum, SceneManager *manager, SceneNode *parent, RenderWindow* win
 	hydroelevatorstate=0;
 	replaymode=false;
 	replaypos=0;
+	oldreplaypos=-1;
 	locked=UNLOCKED;
 	lockedold=UNLOCKED;
 	watercontact=0;
@@ -5531,24 +5532,31 @@ bool Beam::frameStep(Real dt, Beam** trucks, int numtrucks)
 	stabsleep-=dt;
 	if (replaymode && replay)
 	{
-		//replay update
-		node_simple_t *nbuff = (node_simple_t *)replay->getReadBuffer(replaypos, 0);
-		Vector3 pos = Vector3::ZERO;
-		for (i=0; i<free_node; i++)
+		// no replay update needed if position was not changed
+		if(replaypos != oldreplaypos)
 		{
-			nodes[i].AbsPosition = nbuff[i].pos;
-			nodes[i].RelPosition = nbuff[i].pos - origin;
-			nodes[i].smoothpos = nbuff[i].pos;
-			pos = pos + nbuff[i].pos;
-		}
-		position=pos/(float)(free_node);
-		// now beams
-		beam_simple_t *bbuff = (beam_simple_t *)replay->getReadBuffer(replaypos, 1);
-		for (i=0; i<free_beam; i++)
-		{
-			beams[i].scale = bbuff[i].scale;
-			beams[i].broken = bbuff[i].broken;
-			beams[i].disabled = bbuff[i].disabled;
+			unsigned long time=0;
+			//replay update
+			node_simple_t *nbuff = (node_simple_t *)replay->getReadBuffer(replaypos, 0, time);
+			Vector3 pos = Vector3::ZERO;
+			for (i=0; i<free_node; i++)
+			{
+				nodes[i].AbsPosition = nbuff[i].pos;
+				nodes[i].RelPosition = nbuff[i].pos - origin;
+				nodes[i].smoothpos = nbuff[i].pos;
+				pos = pos + nbuff[i].pos;
+			}
+			position=pos/(float)(free_node);
+			// now beams
+			beam_simple_t *bbuff = (beam_simple_t *)replay->getReadBuffer(replaypos, 1, time);
+			for (i=0; i<free_beam; i++)
+			{
+				beams[i].scale = bbuff[i].scale;
+				beams[i].broken = bbuff[i].broken;
+				beams[i].disabled = bbuff[i].disabled;
+			}
+			//LogManager::getSingleton().logMessage("replay: " + StringConverter::toString(time));
+			oldreplaypos = replaypos;
 		}
 	}
 	else
@@ -7690,20 +7698,20 @@ void Beam::calcForcesEuler(int doUpdate, Real dt, int step, int maxstep, Beam** 
 	if(replay)
 	{
 		replayTimer += dt;
-		if(replayTimer > 0.0001f)
+		if(true) //replayTimer > 0.0001f)
 		{
 			// store nodes
-			node_simple_t *nbuff = (node_simple_t *)replay->getWriteBuffer(dt, 0);
+			node_simple_t *nbuff = (node_simple_t *)replay->getWriteBuffer(0);
 			for (i=0; i<free_node; i++)
 				nbuff[i].pos = nodes[i].AbsPosition;
 			
 			// store beams
-			beam_simple_t *bbuff = (beam_simple_t *)replay->getWriteBuffer(dt, 1);
+			beam_simple_t *bbuff = (beam_simple_t *)replay->getWriteBuffer(1);
 			for (i=0; i<free_beam; i++)
 			{
 				bbuff[i].scale = beams[i].scale;
-				bbuff[i].broken = beams[i].broken;
-				bbuff[i].disabled = beams[i].disabled;
+				bbuff[i].broken = (bool)beams[i].broken;
+				bbuff[i].disabled = (bool)beams[i].disabled;
 			}
 
 			replay->writeDone();
@@ -9068,9 +9076,13 @@ void Beam::setReplayMode(bool rm)
 {
 	if (!replay) return;
 	if (replaymode && !rm)
+	{
 		replaypos=0;
+		oldreplaypos=-1;
+	}
 
-	replaymode=rm;
+	replaymode = rm;
+	replay->setVisible(replaymode);
 }
 
 
