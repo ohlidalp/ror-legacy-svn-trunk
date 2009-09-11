@@ -26,6 +26,7 @@ along with Rigs of Rods.  If not, see <http://www.gnu.org/licenses/>.
 #include <Ogre.h>
 #include "OgreTextAreaOverlayElement.h"
 #include <vector>
+#include <MyGUI.h>
 
 #define MAX_MAP_ENTITYSTATES 4
 
@@ -50,6 +51,7 @@ public:
 	void setCamZoom(float newzoom);
 	void setCamZoomRel(float zoomdelta);
 	void setTranlucency(float amount);
+	Ogre::Camera *getCamera() { return mainCam; };
 protected:
 	void preRenderTargetUpdate(const Ogre::RenderTargetEvent& evt);
     void postRenderTargetUpdate(const Ogre::RenderTargetEvent& evt);
@@ -73,7 +75,7 @@ protected:
 class MapEntity
 {
 public:
-	MapEntity(MapControl *ctrl, int uid, Ogre::String type, Ogre::OverlayContainer* parent);
+	MapEntity(MapControl *ctrl, int uid, Ogre::String type, MyGUI::RenderBoxPtr parent);
 	~MapEntity();
 	void setPosition(Ogre::Vector3 pos);
 	void setPosition(float x, float z);
@@ -100,13 +102,14 @@ public:
 	int getUID() { return this->uid; };
 
 protected:
-	Ogre::OverlayContainer *container;
-	Ogre::TextAreaOverlayElement *taoe;
-	Ogre::OverlayContainer *parent;
+	MyGUI::RenderBoxPtr parent;
+	MyGUI::StaticTextPtr txt;
+	MyGUI::StaticImagePtr icon;
 	Ogre::String myType;
 	Ogre::String myDescription;
 	Ogre::MaterialPtr myMaterials[MAX_MAP_ENTITYSTATES];
-	Ogre::Real x, z, r;
+	Ogre::Real x, z, tw, th, r;
+	int mapsizex, mapsizez;
 	MapControl *mapCtrl;
 	int uid;
 	int myState;
@@ -127,37 +130,39 @@ public:
 	void deleteMapEntity(MapEntity *ent);
 	bool getVisibility();
 	void setVisibility(bool value);
-	void setBackground(Ogre::String texName);
-	void setBackgroundMaterial(Ogre::String matName);
 
 	void setPosition(float x, float y, float w, float h, Ogre::RenderWindow* rw=0);
 	void setPosition(float x, float y, float w, Ogre::RenderWindow* rw=0);
 	void resizeToScreenRatio(Ogre::RenderWindow* win);
 
 	void updateRenderMetrics(Ogre::RenderWindow* win);
-	// DO NOT USE THIS DIRECTLY!
-	void setEntityPosition(float x, float y, float w, float h, float minsize, Ogre::OverlayContainer *e);
+
 	static Ogre::String getTypeByDriveable(int driveable);
 	float getAlpha() { return alpha; };
 	void setAlpha(float value);
 	void setEntityVisibility(bool value);
 	void setWorldSize(int x, int z);
+	void setMTC(MapTextureCreator *mtc);
+	Ogre::Vector2 getMapSize(){ return Ogre::Vector2(mapsizex, mapsizez);};
+	float getWindowScale() { return myScale; };
 protected:
 	int uniqueCounter;
 	bool bgInitiated;
 	Ogre::MaterialPtr bgMat;
 	static int mapcounter;
-	Ogre::Overlay *mainOverlay;
-	Ogre::OverlayContainer *container;
 	std::vector<MapEntity *> mapEntities;
 	std::map<Ogre::String, MapEntity *> namedEntities;
 	int mapsizex, mapsizez;
-	float x,y,w,h;
+	float x,y,w,h, myScale;
 	float alpha;
 	unsigned int rWinWidth, rWinHeight, rWinDepth;
 	int rWinLeft, rWinTop;
 
 	void updateEntityPositions();
+	MapTextureCreator *mtc;
+
+	// windowing
+	MyGUI::RenderBoxPtr rb;
 };
 
 

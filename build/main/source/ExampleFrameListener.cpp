@@ -2638,20 +2638,23 @@ void ExampleFrameListener::loadObject(const char* name, float px, float py, floa
 		if(typestr != String("") && typestr != String("road") && typestr != String("sign"))
 		{
 			MapEntity *e = bigMap->createMapEntity(typestr);
-			e->setVisibility(true);
-			e->setPosition(px, pz);
-			e->setRotation(ry);
-			if(typestr == String("road")) //how can this be possible ?!?
+			if(e)
 			{
-				e->setScale(0.5);
-				e->setMinSize(5);
-			} else
-			{
-				e->setScale(1);
-				e->setMinSize(10);
+				e->setVisibility(true);
+				e->setPosition(px, pz);
+				e->setRotation(ry);
+				if(typestr == String("road")) //how can this be possible ?!?
+				{
+					e->setScale(0.5);
+					e->setMinSize(5);
+				} else
+				{
+					e->setScale(1);
+					e->setMinSize(10);
+				}
+				if(String(name) != String(""))
+					e->setDescription(String(instancename));
 			}
-			if(String(name) != String(""))
-				e->setDescription(String(instancename));
 		}
 	}
 }
@@ -4455,12 +4458,15 @@ bool ExampleFrameListener::updateEvents(float dt)
 				if(bigMap)
 				{
 					MapEntity *e = bigMap->createNamedMapEntity("Truck"+StringConverter::toString(free_truck), MapControl::getTypeByDriveable(trucks[free_truck]->driveable));
-					e->setState(DESACTIVATED);
-					e->setVisibility(true);
-					e->setPosition(reload_pos);
-					e->setRotation(-Radian(trucks[free_truck]->getHeadingDirectionAngle()));
-					// create a map icon
-					//createNamedMapEntity();
+					if(e)
+					{
+						e->setState(DESACTIVATED);
+						e->setVisibility(true);
+						e->setPosition(reload_pos);
+						e->setRotation(-Radian(trucks[free_truck]->getHeadingDirectionAngle()));
+						// create a map icon
+						//createNamedMapEntity();
+					}
 				}
 
 				UILOADER.hide();
@@ -4714,10 +4720,13 @@ int ExampleFrameListener::addTruck(char *fname, Vector3 pos)
 	if(bigMap)
 	{
 		MapEntity *e = bigMap->createNamedMapEntity("Truck"+StringConverter::toString(free_truck), MapControl::getTypeByDriveable(trucks[free_truck]->driveable));
-		e->setState(DESACTIVATED);
-		e->setVisibility(true);
-		e->setPosition(reload_pos);
-		e->setRotation(-Radian(trucks[free_truck]->getHeadingDirectionAngle()));
+		if(e)
+		{
+			e->setState(DESACTIVATED);
+			e->setVisibility(true);
+			e->setPosition(reload_pos);
+			e->setRotation(-Radian(trucks[free_truck]->getHeadingDirectionAngle()));
+		}
 	}
 
 	int num = free_truck;
@@ -4788,7 +4797,7 @@ void ExampleFrameListener::loadTerrain(String terrainfile)
 	updateXFire();
 #endif
 
-	UILOADER.setProgress(60, _L("Loading Terrain"), true);
+	UILOADER.setProgress(0, _L("Loading Terrain"), true);
 	bool disableMap = (SETTINGS.getSetting("disableOverViewMap") == "Yes");
 
 	// map must be loaded before lua!
@@ -4869,6 +4878,7 @@ void ExampleFrameListener::loadTerrain(String terrainfile)
 #endif
 		exit(123);
 	}
+
 
 	// set the terrain cache entry
 	loaded_terrain = CACHE.getResourceInfo(terrainfile);
@@ -5144,7 +5154,6 @@ void ExampleFrameListener::loadTerrain(String terrainfile)
 	}
 
 
-
 	// get vegetation mode
 	int pagedMode = 0; //None
 	float pagedDetailFactor = 0;
@@ -5404,9 +5413,9 @@ void ExampleFrameListener::loadTerrain(String terrainfile)
 
 	//set terrain map
 	//MaterialPtr mat=(MaterialPtr)(MaterialManager::getSingleton().getByName("tracks/BigMap"));
-	if(terrainmaterial && bigMap)
+	//if(terrainmaterial && bigMap)
 	//mat->getTechnique(0)->getPass(0)->getTextureUnitState(0)->setTextureName(terrainmaterial->getTechnique(0)->getPass(0)->getTextureUnitState(0)->getTextureName());
-		bigMap->setBackground(terrainmaterial->getTechnique(0)->getPass(0)->getTextureUnitState(0)->getTextureName());
+	//	bigMap->setBackground(terrainmaterial->getTechnique(0)->getPass(0)->getTextureUnitState(0)->getTextureName());
 
 	mCamera->setPosition(Vector3(cx,cy,cz));
 
@@ -5490,6 +5499,12 @@ void ExampleFrameListener::loadTerrain(String terrainfile)
 	// update hfinder instance in factory
 	BeamFactory::getSingleton().mfinder = hfinder;
 
+	// set camera to some nice spot, overviewing the terrain, showing the loading progress
+	{
+		mCamera->setPosition(spl.pos);
+		mCamera->setOrientation(spl.rot);
+	}
+
 	if(bigMap)
 	{
 		mtc = new MapTextureCreator(mScene, mCamera, this);
@@ -5498,7 +5513,7 @@ void ExampleFrameListener::loadTerrain(String terrainfile)
 		mtc->setCamPosition(Vector3(mapsizex/2, hfinder->getHeightAt(mapsizex/2, mapsizez/2) , mapsizez/2), Quaternion(Degree(0), Vector3::UNIT_X));
 		mtc->setAutoUpdated(false); // important!
 		bigMap->setVisibility(false);
-		bigMap->setBackgroundMaterial(mtc->getMaterialName());
+		bigMap->setMTC(mtc);
 	}
 
 	// fix the person starting position
@@ -5533,8 +5548,16 @@ void ExampleFrameListener::loadTerrain(String terrainfile)
 	po.loadingState = -1;
 	int r2oldmode=0;
 
+	int lastprogress = -1;
 	while (!ds->eof())
 	{
+		int progress = ((float)(ds->tell()) / (float)(ds->size())) * 100.0f;
+		if(progress-lastprogress > 20)
+		{
+			UILOADER.setProgress(progress, _L("Loading Terrain"));
+			lastprogress = progress;
+		}
+
 		char oname[1024];
 		char type[256];
 		char name[256];
@@ -6288,10 +6311,13 @@ void ExampleFrameListener::initTrucks(bool loadmanual, Ogre::String selected, Og
 		if(bigMap)
 		{
 			MapEntity *e = bigMap->createNamedMapEntity("Truck"+StringConverter::toString(free_truck), MapControl::getTypeByDriveable(trucks[free_truck]->driveable));
-			e->setState(DESACTIVATED);
-			e->setVisibility(true);
-			e->setPosition(truckx, truckz);
-			e->setRotation(-Radian(trucks[free_truck]->getHeadingDirectionAngle()));
+			if(e)
+			{
+				e->setState(DESACTIVATED);
+				e->setVisibility(true);
+				e->setPosition(truckx, truckz);
+				e->setRotation(-Radian(trucks[free_truck]->getHeadingDirectionAngle()));
+			}
 		}
 
 		if (trucks[free_truck]->engine) trucks[free_truck]->engine->start();
@@ -6315,10 +6341,13 @@ void ExampleFrameListener::initTrucks(bool loadmanual, Ogre::String selected, Og
 			if(bigMap)
 			{
 				MapEntity *e = bigMap->createNamedMapEntity("Truck"+StringConverter::toString(free_truck), MapControl::getTypeByDriveable(trucks[free_truck]->driveable));
-				e->setState(DESACTIVATED);
-				e->setVisibility(true);
-				e->setPosition(truck_preload[free_truck].px, truck_preload[i].pz);
-				e->setRotation(-Radian(trucks[free_truck]->getHeadingDirectionAngle()));
+				if(e)
+				{
+					e->setState(DESACTIVATED);
+					e->setVisibility(true);
+					e->setPosition(truck_preload[free_truck].px, truck_preload[i].pz);
+					e->setRotation(-Radian(trucks[free_truck]->getHeadingDirectionAngle()));
+				}
 			}
 
 			free_truck++;
@@ -7490,10 +7519,13 @@ END OF OLD CODE */
 					if(bigMap)
 					{
 						MapEntity *e = bigMap->createNamedMapEntity("Truck"+StringConverter::toString(free_truck), MapControl::getTypeByDriveable(trucks[free_truck]->driveable));
-						e->setState(DESACTIVATED);
-						e->setVisibility(true);
-						e->setPosition(truckx, truckz);
-						e->setRotation(-Radian(trucks[free_truck]->getHeadingDirectionAngle()));
+						if(e)
+						{
+							e->setState(DESACTIVATED);
+							e->setVisibility(true);
+							e->setPosition(truckx, truckz);
+							e->setRotation(-Radian(trucks[free_truck]->getHeadingDirectionAngle()));
+						}
 					}
 
 					free_truck++;
