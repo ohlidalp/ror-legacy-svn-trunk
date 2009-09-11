@@ -22,8 +22,11 @@ along with Rigs of Rods.  If not, see <http://www.gnu.org/licenses/>.
 #include <wx/wxprec.h>
 #include <wx/filename.h>
 #include <wx/dir.h>
+#include <wx/thread.h>
+#include <wx/event.h>
 
 #include "wsync.h"
+#include "wthread.h"
 
 #ifdef __BORLANDC__
     #pragma hdrstop
@@ -392,6 +395,8 @@ private:
     DECLARE_EVENT_TABLE()
 };
 
+
+
 class StreamsPage : public wxWizardPageSimple, public EnterLeavePage
 {
 public:
@@ -426,6 +431,21 @@ public:
 		mainSizer->Fit(this);
 		
     }
+
+
+	/*
+    void OnThreadCompletion(wxThreadEvent&)
+    {
+        wxMessageOutputDebug().Printf("MYFRAME: MyThread exited!\n");
+    }
+
+    void OnThreadUpdate(wxThreadEvent&)
+    {
+        wxMessageOutputDebug().Printf("MYFRAME: MyThread update...\n");
+    }
+	*/
+
+
 	bool OnEnter(bool forward)
 	{
 		if (streamset) return true; //reloading streams do not work for the moment (GUI problem)
@@ -458,6 +478,7 @@ public:
 				i++;
 			}
 		}
+
 		return true;
 	}
     
@@ -479,10 +500,13 @@ private:
 	wxSizer *scrwsz;
 	wxWizardPage* fpath, *faction;
 	bool streamset;
+
 };
+
 
 class DownloadPage : public wxWizardPageSimple, public EnterLeavePage
 {
+	friend class WsyncThread;
 public:
     DownloadPage(wxWizard *parent, ConfigManager* cm) : wxWizardPageSimple(parent), m_cm(cm)
     {		
@@ -508,7 +532,33 @@ public:
 
 		w = new WSync();
 	}
+
 	
+    void DoStartThread()
+    {
+        m_pThread = new WsyncThread(this);
+
+        if ( m_pThread->Create(wxT("wsync.rigsofrods.com"), wxT("/")) != wxTHREAD_NO_ERROR )
+        {
+            wxLogError(wxT("Can't create the thread!"));
+            delete m_pThread;
+            m_pThread = NULL;
+        }
+        else
+        {
+            if (m_pThread->Run() != wxTHREAD_NO_ERROR )
+            {
+                wxLogError(wxT("Can't create the thread!"));
+                delete m_pThread;
+                m_pThread = NULL;
+            }
+
+            // after the call to wxThread::Run(), the m_pThread pointer is "unsafe":
+            // at any moment the thread may cease to exist (because it completes its work).
+            // To avoid dangling pointers OnThreadExit() will set m_pThread
+            // to NULL when the thread dies.
+        }
+    }
 	bool OnEnter(bool forward)
 	//void OnEnter(wxString operation, wxString url)
 	{
@@ -531,6 +581,30 @@ public:
 		// stop timer and cancel all running operations
 		timer->Stop();
 
+        {
+            wxCriticalSectionLocker enter(m_pThreadCS);
+
+            if (m_pThread)         // does the thread still exist?
+            {
+               // m_out.Printf("MYFRAME: deleting thread");
+
+                if (m_pThread->Delete() != wxTHREAD_NO_ERROR )
+                    wxLogError(wxT("Can't delete the thread!"));
+            }
+        }       // exit from the critical section to give the thread
+                // the possibility to enter its destructor
+                // (which is guarded with m_pThreadCS critical section!)
+
+        while (1)
+        {
+            { // was the ~MyThread() function executed?
+                wxCriticalSectionLocker enter(m_pThreadCS);
+                if (!m_pThread) break;
+            }
+
+            // wait for thread completion
+            wxThread::This()->Sleep(1);
+        }
 		return true;
 	}	
 
@@ -540,6 +614,8 @@ private:
 	wxStaticText *statusText;
 	ConfigManager* m_cm;
 	WSync *w;
+    WsyncThread *m_pThread;
+    wxCriticalSection m_pThreadCS;    // protects the m_pThread pointer
 	//pthread_t syncThread;
 
 	void OnTimer(wxTimerEvent& event)
