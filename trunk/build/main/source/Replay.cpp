@@ -131,9 +131,9 @@ void Replay::updateGUI()
 {
 	char tmp[128]="";
 	unsigned long t = curFrameTime;
-	sprintf(tmp, "Position: %0.6f s", ((float)t)/1000000.0f);
+	sprintf(tmp, "Position: %0.6f s, frame %i / %i", ((float)t)/1000000.0f, curOffset, numFrames);
 	txt->setCaption(String(tmp));
-	LogManager::getSingleton().logMessage(">>>2>"+StringConverter::toString(times[writeIndex]) + " /3> "+StringConverter::toString(curFrameTime));
+	//LogManager::getSingleton().logMessage(">>>2>"+StringConverter::toString(times[writeIndex]) + " /3> "+StringConverter::toString(curFrameTime));
 	pr->setProgressPosition(abs(curOffset));
 }
 
