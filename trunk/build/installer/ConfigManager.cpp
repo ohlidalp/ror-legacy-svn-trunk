@@ -19,6 +19,11 @@ along with Rigs of Rods.  If not, see <http://www.gnu.org/licenses/>.
 */
 #ifdef WIN32
 #define WIN32_LEAN_AND_MEAN
+#include "wx/msw/private.h"
+#include "wx/msw/registry.h"
+#include <shellapi.h> // needed for SHELLEXECUTEINFO
+
+
 //#include "winsock2.h"
 #endif //WIN32
 
@@ -107,9 +112,32 @@ int ConfigManager::getOnlineStreams()
 
 }
 
+wxString ConfigManager::getInstallationPath()
+{
+#ifdef WIN32
+	wxString path;
+	wxRegKey *pRegKey = new wxRegKey(wxT("HKEY_LOCAL_MACHINE\\Software\\RigsOfRods"));
+	if(!pRegKey->Exists())
+		return wxString();
+	
+	pRegKey->QueryValue(wxT("InstallPath"), path);
+	return path + wxT("\\");
+	// see http://docs.wxwidgets.org/stable/wx_wxregkey.html
+	//wxMessageBox(path,wxT("Registry Value"),0);
+#else
+	return wxString();
+#endif //WIN32
+
+}
+
 bool ConfigManager::isFirstInstall()
 {
-	return true;
+	wxString path = getInstallationPath();
+#ifdef WIN32
+	if(path.empty())
+		return true;
+#endif //WIN32
+	return !wxFileExists(path + wxT("RoR.exe"));
 }
 
 bool ConfigManager::isLicenceAccepted()
@@ -119,6 +147,12 @@ bool ConfigManager::isLicenceAccepted()
 
 void ConfigManager::setAction(int ac)
 {
+	installeraction = ac;
+}
+
+int ConfigManager::getAction()
+{
+	return installeraction;
 }
 
 void ConfigManager::setInstallPath(wxString pth)
