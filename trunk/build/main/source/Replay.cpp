@@ -33,13 +33,13 @@ Replay::Replay(Beam *b, int _numFrames)
 
 	replayTimer = new Timer();
 
-	// get memory
-	nodes = (node_simple_t*)calloc(numNodes * numFrames, sizeof(node_simple_t));
-	beams = (beam_simple_t*)calloc(numBeams * numFrames, sizeof(beam_simple_t));	
-	times = (unsigned long*)calloc(numFrames, sizeof(unsigned long));
+	// DO NOT get memory here, get memory when we use it first time!
+	nodes = 0;
+	beams = 0;
+	times = 0;
 
 	unsigned long bsize = (numNodes * numFrames * sizeof(node_simple_t) + numBeams * numFrames * sizeof(beam_simple_t) + numFrames * sizeof(unsigned long)) / 1024.0f;
-	LogManager::getSingleton().logMessage("replay buffer: " + StringConverter::toString(bsize) + " kB");
+	LogManager::getSingleton().logMessage("replay buffer size: " + StringConverter::toString(bsize) + " kB");
 
 	writeIndex = 0;
 	firstRun = 1;
@@ -52,7 +52,7 @@ Replay::Replay(Beam *b, int _numFrames)
 
 	panel = MyGUI::Gui::getInstance().createWidget<MyGUI::Widget>("Panel", x, y, width, height,  MyGUI::Align::Center, "Back");
 	panel->setCaption(_L("Replay"));
-	panel->setAlpha(0.8);
+	panel->setAlpha(0.6);
 
 	pr = panel->createWidget<MyGUI::Progress>("Progress", 10, 10, 280, 20,  MyGUI::Align::Default);
 	pr->setProgressRange(_numFrames);
@@ -67,13 +67,24 @@ Replay::Replay(Beam *b, int _numFrames)
 
 Replay::~Replay()
 {
-	free(nodes);
-	free(times);
+	if(nodes)
+	{
+		free(nodes); nodes=0;
+		free(beams); beams=0;
+		free(times); times=0;
+	}
 	delete replayTimer;
 }
 
 void *Replay::getWriteBuffer(int type)
 {
+	if(!nodes)
+	{
+		// get memory
+		nodes = (node_simple_t*)calloc(numNodes * numFrames, sizeof(node_simple_t));
+		beams = (beam_simple_t*)calloc(numBeams * numFrames, sizeof(beam_simple_t));	
+		times = (unsigned long*)calloc(numFrames, sizeof(unsigned long));
+	}
 	void *ptr = 0;
 	times[writeIndex] = replayTimer->getMicroseconds();
 	if(type == 0)

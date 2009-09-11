@@ -222,16 +222,17 @@ void MapTextureCreator::postRenderTargetUpdate(const RenderTargetEvent& evt)
 
 Ogre::String MapEntity::entityStates[MAX_MAP_ENTITYSTATES] = {"activated", "deactivated", "sleeping", "networked"};
 
-MapEntity::MapEntity(MapControl *ctrl, int _uid, String type, OverlayContainer* _parent)
+MapEntity::MapEntity(MapControl *ctrl, int _uid, String type, MyGUI::RenderBoxPtr _parent)
 {
 	mapCtrl=ctrl;
-	container=0;
 	parent=_parent;
 	myType=type;
 	uid=_uid;
 	x=0;
 	z=0;
 	r=0;
+	tw=0;
+	th=0;
 	myState=0;
 	init();
 }
@@ -242,55 +243,21 @@ MapEntity::~MapEntity()
 
 void MapEntity::init()
 {
-	//add the container first
-	String ovName = "tracks/mapEntity"+StringConverter::toString(uid);
-	container = (OverlayContainer*)OverlayManager::getSingleton().createOverlayElement("Panel", ovName+"Container");
-	container->setMetricsMode(Ogre::GMM_PIXELS);
-	parent->addChild(container);
-
-	// add description container first
-	taoe=new TextAreaOverlayElement(ovName+"Text");
-	taoe->setColourTop(ColourValue(0.1, 0.1, 0.1, 1.0));
-	taoe->setColourBottom(ColourValue(0.0, 0.0, 0.0, 1.0));
-	taoe->setFontName("highcontrast_black");
-	taoe->setCharHeight(0.02);
-	taoe->setCaption("");
-	taoe->setTop(0.001);
-	taoe->setLeft(30);
+	icon = parent->createWidget<MyGUI::StaticImage>("StaticImage", 10, 10, 200, 10, MyGUI::Align::Default);
+	txt = parent->createWidget<MyGUI::StaticText>("StaticText", 10, 10, 200, 40, MyGUI::Align::Default);
+	txt->setFontHeight(12);
 
 	// check if static only icon
 	String staticImgFile = "icon_"+myType+".dds";
-	String staticMatName = "tracks/map/icons/"+myType;
 	String group=ResourceGroupManager::DEFAULT_RESOURCE_GROUP_NAME;
-	/*
-	// we use a different method here to remove all the error warnings in the log files
-	if(group == "")
-	{
-		try
-		{
-			group = ResourceGroupManager::getSingleton().findGroupContainingResource(staticImgFile);
-		}catch(...)
-		{
-		}
-	}
-	if(group != "")
-	*/
 	if(ResourceGroupManager::getSingleton().resourceExists(group, staticImgFile))
 	{
 		LogManager::getSingleton().logMessage("static map icon found: "+ staticImgFile);
 		// this icon is static!
-		MaterialPtr m;
-		if(MaterialManager::getSingleton().resourceExists(staticMatName))
-		{
-			m = MaterialManager::getSingleton().getByName(staticMatName);
-		} else
-		{
-			m = MaterialManager::getSingleton().create(staticMatName, ResourceGroupManager::DEFAULT_RESOURCE_GROUP_NAME);
-			m->getTechnique(0)->getPass(0)->createTextureUnitState(staticImgFile);
-			m->getTechnique(0)->getPass(0)->setSceneBlending(Ogre::SBT_TRANSPARENT_ALPHA);
-		}
-		// we need to clone them, so we can rotate them individuelly
-		myMaterials[0] = m->clone(staticMatName+"_|_"+StringConverter::toString(uid));
+		icon->setImageTexture(staticImgFile);
+		Ogre::TexturePtr t = (Ogre::TexturePtr)(TextureManager::getSingleton().getByName(staticImgFile));
+		tw = t->getWidth();
+		th = t->getHeight();
 		isStatic=true;
 	} else
 	{
@@ -299,7 +266,6 @@ void MapEntity::init()
 		for(int i=0;i<MAX_MAP_ENTITYSTATES;i++)
 		{
 			String imgFile = "icon_"+myType+"_"+entityStates[i]+".dds";
-			String matName = "tracks/map/icons/"+myType+"/"+entityStates[i];
 			String group2 = "";
 			if(group2 == "")
 			{
@@ -312,31 +278,29 @@ void MapEntity::init()
 			}
 			if(group2 != "")
 			{
-				MaterialPtr m;
-				if(MaterialManager::getSingleton().resourceExists(matName))
-				{
-					m = MaterialManager::getSingleton().getByName(matName);
-				} else
-				{
-					m = MaterialManager::getSingleton().create(matName, "General");
-					m->getTechnique(0)->getPass(0)->createTextureUnitState(imgFile);
-					m->getTechnique(0)->getPass(0)->setSceneBlending(Ogre::SBT_TRANSPARENT_ALPHA);
-				}
-				// we need to clone them, so we can rotate them individuelly
-				myMaterials[i] = m->clone(matName+"_|_"+StringConverter::toString(uid));
+				icon->setImageTexture(imgFile);
+				Ogre::TexturePtr t = (Ogre::TexturePtr)(TextureManager::getSingleton().getByName(imgFile));
+				tw = t->getWidth();
+				th = t->getHeight();
 			} else
 			{
-				MaterialPtr m = MaterialManager::getSingleton().getByName("tracks/map/icons/missing");
-				if(m.getPointer() != 0)
-					myMaterials[i] = m->clone(matName+"_|_"+StringConverter::toString(uid));
-
+				icon->setImageTexture("icon_missing.dds");
+				Ogre::TexturePtr t = (Ogre::TexturePtr)(TextureManager::getSingleton().getByName("icon_missing.dds"));
+				tw = t->getWidth();
+				th = t->getHeight();
 			}
 		}
 		isStatic=false;
 	}
+
+	//hard wire texture sizes:
+	//tw = 32;
+	//th = 32;
+
 	scale = 1;
 	minsize = 16;
 	setVisibility(false);
+
 	update();
 }
 
@@ -401,17 +365,12 @@ void MapEntity::onTop()
 
 bool MapEntity::getVisibility()
 {
-	if(container)
-		return container->isVisible();
-	return false;
+	return icon->isVisible();
 }
 
 void MapEntity::setVisibility(bool value)
 {
-	if(container && value)
-		return container->show();
-	if(container && !value)
-		return container->hide();
+	icon->setVisible(value);
 }
 
 void MapEntity::setState(int truckstate)
@@ -447,51 +406,20 @@ int MapEntity::getState()
 
 void MapEntity::update()
 {
-	try
-	{
-		taoe->setCaption(myDescription);
-	} catch(...)
-	{
-	}
-	// some extensive error checking to be more more modding friendly
-	MaterialPtr mat = myMaterials[myState];
-	if(!mat.isNull())
-	{
-		if(mat->getNumTechniques() == 0)
-			return;
-		Technique *t = mat->getTechnique(0);
-		if(!t)
-			return;
-		if(t->getNumPasses() == 0)
-			return;
-		Pass *p = t->getPass(0);
-		if(!p)
-			return;
-		if(p->getNumTextureUnitStates() == 0)
-			return;
-		TextureUnitState *tu = p->getTextureUnitState(0);
-		if(!tu)
-			return;
-		if(tu->getTextureName().empty())
-			return;
-		std::pair<size_t,size_t> d;
-		try
-		{
-			d = tu->getTextureDimensions();
-		} catch(...)
-		{
-			// this happens if the texture was not found
-			return;
-		}
-		mapCtrl->setEntityPosition(x*scale, z*scale, (float)d.first*scale, (float)d.second*scale, minsize, container);
-		taoe->setLeft(0);
+	float wscale = mapCtrl->getWindowScale();
 
-		container->setMaterialName(mat->getName());
-		tu->setTextureRotate(Ogre::Degree(r));
-	} else
-	{
-		container->setMaterialName("tracks/map/icons/missing");
-	}
+	txt->setCaption(myDescription);
+	txt->setVisible(wscale > 0.5f);
+
+	Vector2 s = mapCtrl->getMapSize();
+	txt->setPosition((x/((float)s.x))*parent->getWidth() + (tw * wscale) * 0.6f,
+					 (z/((float)s.y))*parent->getHeight() - (th * wscale) * 0.3f);
+	icon->setCoord(
+			(x/((float)s.x))*parent->getWidth() - (tw * wscale) * 0.5f,
+			(z/((float)s.y))*parent->getHeight() - (th * wscale) * 0.5f, 
+			tw * wscale,
+			th * wscale);
+	icon->setVisible(true);
 }
 
 void MapEntity::setDescription(Ogre::String s)
@@ -510,7 +438,7 @@ Ogre::String MapEntity::getDescription()
 
 int MapControl::mapcounter=0;
 
-MapControl::MapControl(int _mapsizex, int _mapsizez) : container(0), bgInitiated(false), uniqueCounter(0),x(0),y(0),w(100),h(100)
+MapControl::MapControl(int _mapsizex, int _mapsizez) : bgInitiated(false), uniqueCounter(0),x(0),y(0),w(100),h(100)
 {
 	mapsizex=_mapsizex;
 	mapsizez=_mapsizez;
@@ -518,22 +446,23 @@ MapControl::MapControl(int _mapsizex, int _mapsizez) : container(0), bgInitiated
 	rWinWidth=1;
 	rWinHeight=1;
 	alpha=1;
-	// create overlay
-	String ovName = "tracks/map"+StringConverter::toString(mapcounter);
-	mainOverlay = OverlayManager::getSingleton().create(ovName+"Overlay");
+	mtc=0;
 
-	container = (OverlayContainer*)OverlayManager::getSingleton().createOverlayElement("Panel", ovName+"Container");
-	container->setMetricsMode(Ogre::GMM_PIXELS);
-	mainOverlay->add2D(container);
-
-	String matName = ovName+"_bgmat";
-	bgMat=MaterialManager::getSingleton().create(matName, ResourceGroupManager::DEFAULT_RESOURCE_GROUP_NAME);
-	container->setMaterialName(matName);
+	// create window
+	rb = MyGUI::Gui::getInstance().createWidget<MyGUI::RenderBox>("RenderBox", 10, 10, 300, 300, MyGUI::Align::Default, "Modal", "render_map");
 }
 
 MapControl::~MapControl()
 {
 }
+
+void MapControl::setMTC(MapTextureCreator *mtc)
+{
+	this->mtc = mtc;
+	rb->_setTextureName(mtc->getRTName());
+
+}
+
 
 void MapControl::setWorldSize(int x, int z)
 {
@@ -541,15 +470,10 @@ void MapControl::setWorldSize(int x, int z)
 	this->mapsizez = z;
 }
 
-void MapControl::setBackgroundMaterial(Ogre::String matName)
-{
-	container->setMaterialName(matName);
-}
-
 MapEntity *MapControl::createMapEntity(String type)
 {
 	uniqueCounter++;
-	MapEntity *m = new MapEntity(this, uniqueCounter, type, container);
+	MapEntity *m = new MapEntity(this, uniqueCounter, type, rb);
 	if(m!=0)
 		mapEntities.push_back(m);
 	return m;
@@ -605,106 +529,26 @@ void MapControl::deleteMapEntity(MapEntity *ent)
 
 bool MapControl::getVisibility()
 {
-	if(mainOverlay)
-		return mainOverlay->isVisible();
-	return false;
+	return rb->isVisible();
 }
 
 void MapControl::setVisibility(bool value)
 {
-	if(mainOverlay && value)
-		return mainOverlay->show();
-	if(mainOverlay && !value)
-		return mainOverlay->hide();
-}
-
-void MapControl::setBackground(String texName)
-{
-	if(!mainOverlay)
-		return;
-	if(!bgInitiated)
-	{
-		bgMat->getTechnique(0)->getPass(0)->createTextureUnitState(texName);
-		bgInitiated=true;
-	}
-	else
-	{
-		bgMat->getTechnique(0)->getPass(0)->getTextureUnitState(0)->setTextureName(texName);
-	}
-	bgMat->getTechnique(0)->getPass(0)->setSceneBlending(SBT_TRANSPARENT_ALPHA);
-	bgMat->getTechnique(0)->getPass(0)->getTextureUnitState(0)->setAlphaOperation(LBX_MODULATE, LBS_TEXTURE, LBS_MANUAL, 1.0, alpha);
+	rb->setVisible(value);
 }
 
 void MapControl::setAlpha(float value)
 {
-	alpha = value;
-	if(bgMat.isNull())
-		return;
-	if(bgMat->getNumTechniques() == 0)
-		return;
-	Technique *t = bgMat->getTechnique(0);
-	if(t->getNumPasses() == 0)
-		return;
-	Pass *p = t->getPass(0);
-	if(p->getNumTextureUnitStates() == 0)
-		return;
-	p->getTextureUnitState(0)->setAlphaOperation(LBX_MODULATE, LBS_TEXTURE, LBS_MANUAL, 1.0, alpha);
+	rb->setAlpha(value);
 }
 
 void MapControl::setPosition(float _x, float _y, float _w, float _h, Ogre::RenderWindow* rw)
 {
-	float nw=0, nh=0;
-	bool changedSize=false;
-	if(!container)
-		return;
-	if(!rw)
-	{
-		x=_x;
-		y=_y;
-		nw=_w;
-		nh=_h;
-	} else
-	{
-		x=_x*rWinWidth;
-		y=_y*rWinHeight;
-		nw=_w*rWinWidth;
-		nh=_h*rWinHeight;
-	}
-	if(fabs(nw - w) > 0.00001f || fabs(nh - h) > 0.00001f)
-		changedSize=true;
-
-	h=nh;
-	w=nw;
-	container->setLeft(x);
-	container->setTop(y);
-	container->setWidth(w);
-	container->setHeight(h);
-	if(changedSize)
-		updateEntityPositions();
+	rb->setCoord(_x*rWinWidth, _y*rWinHeight, _w*rWinWidth, _h*rWinHeight);
+	myScale = _w;
+	updateEntityPositions();
 }
 
-void MapControl::setPosition(float _x, float _y, float _w, Ogre::RenderWindow* rw)
-{
-	float nw=0, nh=0;
-	bool changedSize=false;
-	if(!container||!rw)
-		return;
-	x=_x;
-	y=_y;
-	nw=_w*rWinWidth;
-	nh=nw;
-	if(fabs(nw - w) > 0.00001f || fabs(nh - h) > 0.00001f)
-		changedSize=true;
-
-	h=nh;
-	w=nw;
-	container->setLeft(x);
-	container->setTop(y);
-	container->setWidth(w);
-	container->setHeight(h);
-	if(changedSize)
-		updateEntityPositions();
-}
 
 void MapControl::updateEntityPositions()
 {
@@ -724,33 +568,10 @@ void MapControl::setEntityVisibility(bool value)
 	}
 }
 
-void MapControl::resizeToScreenRatio(Ogre::RenderWindow* win)
+void MapControl::resizeToScreenRatio(Ogre::RenderWindow* rw)
 {
-	if(!container)
-		return;
-	container->setHeight(container->getHeight()*(Real)win->getWidth()/(Real)win->getHeight());
-	container->setTop(container->getTop()*(Real)win->getWidth()/(Real)win->getHeight());
-}
-
-void MapControl::setEntityPosition(float xE, float yE, float wE, float hE, float minsize, Ogre::OverlayContainer *e)
-{
-	if(!e)
-		return;
-
-	float newWidth = (w/(rWinWidth*0.8)) * wE;
-	float newHeight = (h/(rWinHeight*0.8)) * hE;
-	// enforce minimum size
-	if(newWidth < minsize)
-		newWidth = minsize;
-	if(newHeight < minsize)
-		newHeight = minsize;
-	e->setWidth(newWidth);
-	e->setHeight(newHeight);
-	float x = xE/float(MapControl::mapsizex);
-	float y = yE/float(MapControl::mapsizez);
-
-	e->setLeft( x * w - newWidth/2);
-	e->setTop( y * h - newHeight/2);
+	//win->setRealPosition(
+	// TODO
 }
 
 void MapControl::updateRenderMetrics(Ogre::RenderWindow* win)
