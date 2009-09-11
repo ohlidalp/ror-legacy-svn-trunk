@@ -59,6 +59,36 @@ GUI_MainMenu::GUI_MainMenu(ExampleFrameListener *efl) : mefl(efl)
 	pop->addItem("-", MyGUI::MenuItemType::Separator);
 	pop->addItem("Exit Game", MyGUI::MenuItemType::Normal);
 
+	// view
+	mi = mainmenu->createWidget<MyGUI::MenuItem>("MenuBarButton", 0, 0, 60, 22,  MyGUI::Align::Default); 
+	pop = mi->createWidget<MyGUI::PopupMenu>(MyGUI::WidgetStyle::Popup, "PopupMenu",MyGUI::IntCoord(0,0,88,68),MyGUI::Align::Default, "Popup");
+	mi->setItemType(MyGUI::MenuItemType::Popup);
+	mi->setCaption("View");
+
+	MyGUI::MenuItemPtr mi2 = pop->createWidget<MyGUI::MenuItem>("MenuBarButton", 0, 0, 60, 22,  MyGUI::Align::Default); 
+	mi2->setItemType(MyGUI::MenuItemType::Popup);
+	mi2->setCaption("Camera Mode");
+
+	MyGUI::PopupMenuPtr pop2 = mi2->createWidget<MyGUI::PopupMenu>(MyGUI::WidgetStyle::Popup, "PopupMenu",MyGUI::IntCoord(0,0,88,68),MyGUI::Align::Default, "Popup");
+	pop2->addItem("First Person", MyGUI::MenuItemType::Normal, "camera_first_person");
+	pop2->addItem("External", MyGUI::MenuItemType::Normal, "camera_external");
+	pop2->addItem("Free Mode", MyGUI::MenuItemType::Normal, "camera_free");
+	pop2->addItem("Free fixed mode", MyGUI::MenuItemType::Normal, "camera_freefixed");
+
+	pop->addItem("-", MyGUI::MenuItemType::Separator);
+
+	mi2 = pop->createWidget<MyGUI::MenuItem>("MenuBarButton", 0, 0, 60, 22,  MyGUI::Align::Default); 
+	mi2->setItemType(MyGUI::MenuItemType::Popup);
+	mi2->setCaption("Truck Camera");
+
+	pop2 = mi2->createWidget<MyGUI::PopupMenu>(MyGUI::WidgetStyle::Popup, "PopupMenu",MyGUI::IntCoord(0,0,88,68),MyGUI::Align::Default, "Popup");
+	pop2->addItem("1. Camera", MyGUI::MenuItemType::Normal, "camera_truck_1");
+	pop2->addItem("2. Camera", MyGUI::MenuItemType::Normal, "camera_truck_2");
+	pop2->addItem("3. Camera", MyGUI::MenuItemType::Normal, "camera_truck_3");
+
+	
+
+
 	// windows
 	mi = mainmenu->createWidget<MyGUI::MenuItem>("MenuBarButton", 0, 0, 60, 22,  MyGUI::Align::Default); 
 	pop = mi->createWidget<MyGUI::PopupMenu>(MyGUI::WidgetStyle::Popup, "PopupMenu",MyGUI::IntCoord(0,0,88,68),MyGUI::Align::Default, "Popup");
