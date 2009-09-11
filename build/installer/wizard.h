@@ -212,6 +212,7 @@ public:
 		m_fselect=fselect;
 		m_download=download;
 		m_cm=cm;
+		bool firstInstall = cm->isFirstInstall();
         m_bitmap = wxBitmap(action_xpm);
         wxBoxSizer *mainSizer = new wxBoxSizer(wxVERTICAL);
 		wxStaticText *tst;
@@ -221,18 +222,34 @@ public:
 		dfont.SetPointSize(dfont.GetPointSize()+4);
 		tst->SetFont(dfont);
 		tst->Wrap(TXTWRAP);
-		mainSizer->Add(tst=new wxStaticText(this, wxID_ANY, _T("The first time you install Rigs of Rods, choose \"Install\" to download all the files of the game.\n")), 0, wxALL, 5);
-		tst->Wrap(TXTWRAP);
-		mainSizer->Add(tst=new wxStaticText(this, wxID_ANY, _T("If you have already installed the game, choose \"Update\" to update Rigs of Rods to the latest version with faster download time.\n")), 0, wxALL, 5);
-		tst->Wrap(TXTWRAP);
-		mainSizer->Add(tst=new wxStaticText(this, wxID_ANY, _T("If you choose \"Uninstall\", Rigs of Rods will be deleted from your disk.\n")), 0, wxALL, 5);
-		tst->Wrap(TXTWRAP);
+		if(firstInstall)
+		{
+			mainSizer->Add(tst=new wxStaticText(this, wxID_ANY, _T("This is the first time you install Rigs of Rods, choose \"Install\" to download all the files of the game.\n")), 0, wxALL, 5);
+			tst->Wrap(TXTWRAP);
+		} else
+		{
+			wxString installPath = cm->getInstallationPath();
+			mainSizer->Add(tst=new wxStaticText(this, wxID_ANY, _T("You have already installed the game installed in:\n")), 0, wxALL, 5);
+			tst->Wrap(TXTWRAP);
+			
+			mainSizer->Add(tst=new wxStaticText(this, wxID_ANY, installPath), 0, wxALL, 10);
+			tst->Wrap(TXTWRAP);
+			wxFont dfont=tst->GetFont();
+			dfont.SetWeight(wxFONTWEIGHT_BOLD);
+			dfont.SetPointSize(dfont.GetPointSize()+2);
+			tst->SetFont(dfont);
+			
+			mainSizer->Add(tst=new wxStaticText(this, wxID_ANY, _T("Choose \"Update\" to update Rigs of Rods to the latest version with faster download time.\n")), 0, wxALL, 5);
+			tst->Wrap(TXTWRAP);
+			mainSizer->Add(tst=new wxStaticText(this, wxID_ANY, _T("If you choose \"Uninstall\", Rigs of Rods will be deleted from your disk.\n")), 0, wxALL, 5);
+			tst->Wrap(TXTWRAP);
+		}
 		wxString choices[3];
 		choices[0]=_T("Install");
 		choices[1]=_T("Update");
 		choices[2]=_T("Uninstall");
 		arb=new wxRadioBox(this, wxID_ANY, _T("Actions"), wxDefaultPosition, wxDefaultSize, 3, choices, 1, wxRA_SPECIFY_COLS);
-		if (cm->isFirstInstall())
+		if (firstInstall)
 		{
 			arb->Enable(1, false);
 			arb->Enable(2, false);
@@ -240,6 +257,7 @@ public:
 		}
 		else
 		{
+			arb->Enable(0, false);
 			arb->SetSelection(1);
 		}
 		mainSizer->Add(arb, 0, wxALL, 5);
@@ -251,7 +269,10 @@ public:
     virtual wxWizardPage *GetPrev() const { return m_prev; }
     virtual wxWizardPage *GetNext() const
     {
-        if (arb->GetSelection()==0) return m_fselect; else return m_download;
+        if (arb->GetSelection()==0)
+			return m_fselect;
+		else
+			return m_download;
     }
 	//output validation
 	bool OnLeave(bool forward)
@@ -361,6 +382,7 @@ public:
         return true;
     }
 
+
 private:
 	ConfigManager* m_cm;
 	wxTextCtrl* sel;
@@ -438,10 +460,24 @@ public:
 		}
 		return true;
 	}
+    
+	virtual wxWizardPage *GetPrev() const
+	{
+		if(m_cm->getAction() == 0)
+			return fpath;
+		return faction;
+	}
+
+	void setPages(wxWizardPage* _fpath, wxWizardPage* _faction)
+	{
+		fpath=_fpath;
+		faction=_faction;
+	}
 private:
 	ConfigManager* m_cm;
 	wxScrolledWindow *scrw;
 	wxSizer *scrwsz;
+	wxWizardPage* fpath, *faction;
 	bool streamset;
 };
 

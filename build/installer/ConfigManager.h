@@ -60,7 +60,9 @@ public:
 	ConfigManager();
 	bool isFirstInstall();
 	bool isLicenceAccepted();
+	wxString getInstallationPath();
 	void setAction(int ac);
+	int getAction();
 	int getOnlineStreams();
 	std::vector < stream_desc_t > *getStreamset();
 	void setStreamSelection(stream_desc_t* desc, bool selection);
@@ -70,6 +72,7 @@ public:
 
 private:
 	wxString installPath;
+	int installeraction;
 	std::vector < stream_desc_t > streams;
 	void clearStreamset();
 };

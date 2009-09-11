@@ -68,6 +68,7 @@ MyWizard::MyWizard(wxFrame *frame, bool useSizer)
     ActionPage *action = new ActionPage(this, cm, licence, path, streams);
 	DownloadPage *download = new DownloadPage(this, cm);
 	LastPage *last = new LastPage(this);
+	streams->setPages(path, action);
 
 	m_page1=presentation;
     if (!cm->isLicenceAccepted())
