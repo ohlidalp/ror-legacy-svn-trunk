@@ -156,7 +156,7 @@ void Collisions::loadDefaultModels()
 	fclose(fd);
 }
 
-void Collisions::setupLandUse(char *configfile)
+void Collisions::setupLandUse(const char *configfile)
 {
 	if(landuse) return;
 	landuse = new Landusemap(configfile, this, mefl->mapsizex, mefl->mapsizez);
@@ -176,7 +176,7 @@ ground_model_t *Collisions::getGroundModelByString(UTFString str)
 	return 0; // default
 }
 
-ground_model_t *Collisions::getGroundModelByString(char *stdf)
+ground_model_t *Collisions::getGroundModelByString(const char *stdf)
 {
 	if (!strcmp("concrete", stdf)) return &GROUND_CONCRETE;
 	if (!strcmp("asphalt", stdf)) return &GROUND_ASPHALT;
@@ -190,7 +190,7 @@ ground_model_t *Collisions::getGroundModelByString(char *stdf)
 	return &GROUND_GRAVEL; // default
 }
 
-int Collisions::getGroundModelNumberByString(char *stdf)
+int Collisions::getGroundModelNumberByString(const char *stdf)
 {
 	if (!strcmp("concrete", stdf)) return 0;
 	if (!strcmp("asphalt", stdf)) return 1;
@@ -205,7 +205,7 @@ int Collisions::getGroundModelNumberByString(char *stdf)
 }
 
 
-void Collisions::loadGroundModelLine(char *line)
+void Collisions::loadGroundModelLine(const char *line)
 {
 	char stdf[256];
 	ground_model_t *gm=0;
