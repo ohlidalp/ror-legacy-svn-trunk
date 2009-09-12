@@ -6,13 +6,19 @@
 #include "wthread.h"
 #include "wizard.h"
 
+
+DEFINE_EVENT_TYPE(WsyncThreadUpdate)
+DEFINE_EVENT_TYPE(WsyncThreadDone)
+
+
 WsyncThread::ExitCode WsyncThread::Entry()
 {
 	while (!TestDestroy())
 	{
 		// ... do a bit of work...
 
-		//wxQueueEvent(m_pHandler, new wxEvent(wxEVT_COMMAND_MYTHREAD_UPDATE));
+		wxCommandEvent ev( WsyncThreadUpdate, 1 ); 
+		wxPostEvent(m_pHandler, ev);
 	}
 
 	// signal the event handler that this thread is going to be destroyed
