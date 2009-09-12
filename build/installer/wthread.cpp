@@ -10,12 +10,16 @@
 DEFINE_EVENT_TYPE(WsyncThreadUpdate)
 DEFINE_EVENT_TYPE(WsyncThreadDone)
 
+//TODO: add custom event that transmit a status message and some progress bar values
 
 WsyncThread::ExitCode WsyncThread::Entry()
 {
 	while (!TestDestroy())
 	{
 		// ... do a bit of work...
+
+		// TODO: put actual wsync code in here
+
 
 		wxCommandEvent ev( WsyncThreadUpdate, 1 ); 
 		wxPostEvent(m_pHandler, ev);
