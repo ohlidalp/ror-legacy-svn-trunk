@@ -6,6 +6,10 @@
 
 class DownloadPage;
 
+DECLARE_EVENT_TYPE ( WsyncThreadUpdate, -1 )
+DECLARE_EVENT_TYPE ( WsyncThreadDone, -1 )
+
+
 class WsyncThread : public wxThread
 {
 public:
