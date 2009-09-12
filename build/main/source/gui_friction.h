@@ -48,7 +48,9 @@ protected:
 	Collisions *col;
 	ground_model_t *active_gm;
 	ground_model_t *selected_gm;
-	std::map < Ogre::String , Ogre::Real > scrollFactors;
+
+	std::map < Ogre::String , std::pair < Ogre::String , Ogre::String > > helpTexts;
+	std::map < Ogre::String , std::pair < Ogre::Real , Ogre::Real > > minMaxs;
 
 	void updateControls(ground_model_t *gm, bool setCombo=true);
 	
