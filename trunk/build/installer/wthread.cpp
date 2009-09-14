@@ -4,45 +4,35 @@
 #endif //WIN32
 
 #include "wthread.h"
+#include "wsync.h"
 #include "wizard.h"
+#include "cevent.h"
 
-
-DEFINE_EVENT_TYPE(WsyncThreadUpdate)
-DEFINE_EVENT_TYPE(WsyncThreadDone)
-
-//TODO: add custom event that transmit a status message and some progress bar values
-
-WsyncThread::ExitCode WsyncThread::Entry()
+WsyncThread::WsyncThread(DownloadPage *_handler, wxString _ipath, wxString _url, wxString _rpath, bool _del) : wxThread(wxTHREAD_DETACHED), handler(_handler), ipath(_ipath), url(_url), rpath(_rpath), del(_del)
 {
-	while (!TestDestroy())
-	{
-		// ... do a bit of work...
-
-		// TODO: put actual wsync code in here
-
-
-		wxCommandEvent ev( WsyncThreadUpdate, 1 ); 
-		wxPostEvent(m_pHandler, ev);
-	}
-
-	// signal the event handler that this thread is going to be destroyed
-	// NOTE: here we assume that using the m_pHandler pointer is safe,
-	//       (in this case this is assured by the MyFrame destructor)
-	//wxQueueEvent(m_pHandler, new wxThreadEvent(wxEVT_COMMAND_MYTHREAD_COMPLETED));
-
-	return (WsyncThread::ExitCode)0;     // success
+	// initialization
 }
-wxThreadError WsyncThread::Create(wxString _url, wxString _rpath)
-{
-	url = _url;
-	rpath = _rpath;
-	return wxThread::Create();
-}
+
 
 WsyncThread::~WsyncThread()
 {
-	wxCriticalSectionLocker enter(m_pHandler->m_pThreadCS);
+	wxCriticalSectionLocker enter(handler->m_pThreadCS);
 
 	// the thread is being destroyed; make sure not to leave dangling pointers around
-	m_pHandler->m_pThread = NULL;
+	handler->m_pThread = NULL;
+}
+
+
+WsyncThread::ExitCode WsyncThread::Entry()
+{
+	//WSync *w = new WSync();
+	//w->sync(conv(ipath), "wsync.rigsofrods.com", conv(rpath), true, del);
+	//delete w;
+
+	// send event
+	MyStatusEvent ev( MyStatusCommandEvent, SE_STARTING);
+	ev.SetText(wxT("This is a Foo_DoFirstThing event"));
+	handler->AddPendingEvent(ev);
+
+	return (WsyncThread::ExitCode)0;     // success
 }

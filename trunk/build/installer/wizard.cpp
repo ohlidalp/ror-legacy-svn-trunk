@@ -21,6 +21,7 @@ along with Rigs of Rods.  If not, see <http://www.gnu.org/licenses/>.
 #define WIN32_LEAN_AND_MEAN // fix include file bug under windows
 
 #include "wizard.h"
+#include "cevent.h"
 
 BEGIN_EVENT_TABLE(PathPage, wxWizardPageSimple)
     EVT_BUTTON(ID_BROWSE, PathPage::OnBrowse)
@@ -28,6 +29,7 @@ END_EVENT_TABLE()
 
 BEGIN_EVENT_TABLE(DownloadPage, wxWizardPageSimple)
 	EVT_TIMER(ID_TIMER, DownloadPage::OnTimer)
+	EVT_MYSTATUS(wxID_ANY, DownloadPage::OnStatusUpdate )
 END_EVENT_TABLE()
 
 BEGIN_EVENT_TABLE(MyWizard, wxWizard)
