@@ -3,6 +3,8 @@
 
 #include <wx/thread.h>
 #include <wx/event.h>
+#include "wsync.h"
+#include <string.h>
 
 enum { CMD_THREAD_DONE };
 
@@ -19,5 +21,11 @@ protected:
 	DownloadPage *handler;
 	wxString ipath, url, rpath;
 	bool del;
+
+	// helper to construct event
+	void updateCallback(int type, std::string txt = std::string(), float percent1=-1, float percent2=-1);
+	
+	// special sync with visual event feedback
+	int sync(boost::filesystem::path localDir, std::string server, std::string remoteDir, bool useMirror, bool deleteOk);
 };
 #endif //WTHREAD_H__

@@ -83,7 +83,7 @@ along with Rigs of Rods.  If not, see <http://www.gnu.org/licenses/>.
 
 #define ID_BROWSE 1
 #define ID_WIZARD 2
-#define ID_TIMER  3
+//#define ID_TIMER  3
 
 // essential string conversion methods. helps to convert wxString<-->std::string<-->char string
 inline wxString conv(const char *s)
@@ -521,13 +521,13 @@ public:
 		statusText=new wxStaticText(this, wxID_ANY, _T("Please wait for the download to finish\n"));
 		mainSizer->Add(statusText, 0, wxALL, 5);
 		tst->Wrap(TXTWRAP);
-		progress=new wxGauge(this, wxID_ANY, 100, wxDefaultPosition, wxDefaultSize, wxGA_HORIZONTAL|wxGA_SMOOTH);
+		progress=new wxGauge(this, wxID_ANY, 1000, wxDefaultPosition, wxDefaultSize, wxGA_HORIZONTAL|wxGA_SMOOTH);
 		mainSizer->Add(progress, 0, wxALL|wxEXPAND, 5);
 
 		SetSizer(mainSizer);
 		mainSizer->Fit(this);
 		
-		timer = new wxTimer(this, ID_TIMER);
+		//timer = new wxTimer(this, ID_TIMER);
 
 	}
 
@@ -559,11 +559,12 @@ public:
 	bool OnEnter(bool forward)
 	//void OnEnter(wxString operation, wxString url)
 	{
-		timer->Start(250); // 250 ms
+		//timer->Start(250); // 250 ms
 
 		std::vector < stream_desc_t > *streams = m_cm->getStreamset();
 
-		startThread(streams->begin()->path, streams->begin()->del);
+		sit = streams->begin();
+		startThread(sit->path, sit->del);
 		//for(std::vector < stream_desc_t >::iterator it=streams->begin(); it!=streams->end(); it++)
 		//{
 		//	startThread
@@ -571,11 +572,10 @@ public:
 
 		return true;
 	}
+
 	bool OnLeave(bool forward)
 	{
-		// stop timer and cancel all running operations
-		timer->Stop();
-
+		/*
 		{
 			wxCriticalSectionLocker enter(m_pThreadCS);
 
@@ -600,6 +600,7 @@ public:
 			// wait for thread completion
 			wxThread::This()->Sleep(1);
 		}
+		*/
 		return true;
 	}	
 
@@ -609,9 +610,11 @@ private:
 	wxStaticText *statusText;
 	ConfigManager* m_cm;
 	WsyncThread *m_pThread;
+	std::vector < stream_desc_t >::iterator sit;
 	wxCriticalSection m_pThreadCS;    // protects the m_pThread pointer
 	//pthread_t syncThread;
 
+	/*
 	void OnTimer(wxTimerEvent& event)
 	{
 		wxYield();
@@ -620,16 +623,40 @@ private:
 		statusText->SetLabel(conv(message));
 		progress->SetValue(percent);
 	}
+	*/
 	
 	void OnStatusUpdate(MyStatusEvent &ev)
 	{
 		switch(ev.GetId())
 		{
-		case SE_STARTING:
-			wxMessageBox(ev.GetText(), _T("got STARTING event"), wxICON_INFORMATION | wxOK, this);
+		case MSE_STARTING:
+			statusText->SetLabel(_("Starting ..."));
+			progress->SetValue(0);
 			break;
-		case SE_UPDATING:
-			wxMessageBox(ev.GetText(), _T("got UPDATING event"), wxICON_INFORMATION | wxOK, this);
+		case MSE_UPDATING:
+			statusText->SetLabel(ev.getText());
+			progress->SetValue(ev.getProgress(0) * 1000.0f);
+			//wxMessageBox(ev.getText(), _T("got UPDATING event"), wxICON_INFORMATION | wxOK, this);
+			break;
+		case MSE_ERROR:
+			statusText->SetLabel(_("error: ") + ev.getText());
+			progress->SetValue(1000);
+			wxMessageBox(ev.getText(), _("Error"), wxICON_ERROR | wxOK, this);
+			break;
+		case MSE_DONE:
+			// download next stream
+			std::vector < stream_desc_t > *streams = m_cm->getStreamset();
+
+			if(sit == streams->end())
+			{
+				// normal end
+				statusText->SetLabel(ev.getText());
+				progress->SetValue(ev.getProgress(0) * 1000.0f);
+			} else
+			{
+				sit++;
+				startThread(sit->path, sit->del);
+			}
 			break;
 		}
 	}
