@@ -4,27 +4,20 @@
 #include <wx/thread.h>
 #include <wx/event.h>
 
+enum { CMD_THREAD_DONE };
+
 class DownloadPage;
-
-DECLARE_EVENT_TYPE ( WsyncThreadUpdate, -1 )
-DECLARE_EVENT_TYPE ( WsyncThreadDone, -1 )
-
 
 class WsyncThread : public wxThread
 {
 public:
-	WsyncThread(DownloadPage *handler) : wxThread(wxTHREAD_DETACHED), m_pHandler(handler)
-	{
-	}
-
+	WsyncThread(DownloadPage *handler, wxString ipath, wxString url, wxString rpath, bool del);
 	~WsyncThread();
-
-
-	wxThreadError Create(wxString _url, wxString _rpath);
 
 protected:
 	virtual ExitCode Entry();
-	DownloadPage *m_pHandler;
-	wxString url, rpath;
+	DownloadPage *handler;
+	wxString ipath, url, rpath;
+	bool del;
 };
 #endif //WTHREAD_H__

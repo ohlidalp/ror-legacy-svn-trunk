@@ -24,26 +24,25 @@ along with Rigs of Rods.  If not, see <http://www.gnu.org/licenses/>.
 #include <wx/dir.h>
 #include <wx/thread.h>
 #include <wx/event.h>
-
-#include "wsync.h"
 #include "wthread.h"
+#include "cevent.h"
 
 #ifdef __BORLANDC__
-    #pragma hdrstop
+	#pragma hdrstop
 #endif
 
 // for all others, include the necessary headers
 #ifndef WX_PRECOMP
-    #include "wx/frame.h"
-    #include "wx/stattext.h"
-    #include "wx/log.h"
-    #include "wx/app.h"
-    #include "wx/checkbox.h"
-    #include "wx/checklst.h"
-    #include "wx/msgdlg.h"
-    #include "wx/radiobox.h"
-    #include "wx/menu.h"
-    #include "wx/sizer.h"
+	#include "wx/frame.h"
+	#include "wx/stattext.h"
+	#include "wx/log.h"
+	#include "wx/app.h"
+	#include "wx/checkbox.h"
+	#include "wx/checklst.h"
+	#include "wx/msgdlg.h"
+	#include "wx/radiobox.h"
+	#include "wx/menu.h"
+	#include "wx/sizer.h"
 	#include "wx/textctrl.h"
 	#include "wx/button.h"
 	#include "wx/dirdlg.h"
@@ -112,8 +111,8 @@ inline std::string conv(const wxString& s)
 class MyApp : public wxApp
 {
 public:
-    // override base class virtuals
-    virtual bool OnInit();
+	// override base class virtuals
+	virtual bool OnInit();
 };
 
 // ----------------------------------------------------------------------------
@@ -123,16 +122,16 @@ public:
 class MyWizard : public wxWizard
 {
 public:
-    MyWizard(wxFrame *frame, bool useSizer = true);
+	MyWizard(wxFrame *frame, bool useSizer = true);
 
-    wxWizardPage *GetFirstPage() const { return m_page1; }
+	wxWizardPage *GetFirstPage() const { return m_page1; }
 	
 	void OnPageChanging(wxWizardEvent& event);
 
 private:
-    wxWizardPageSimple *m_page1;
+	wxWizardPageSimple *m_page1;
 	ConfigManager* cm;
-    DECLARE_EVENT_TABLE()
+	DECLARE_EVENT_TABLE()
 };
 
 // ----------------------------------------------------------------------------
@@ -149,41 +148,41 @@ public:
 class PresentationPage : public wxWizardPageSimple, public EnterLeavePage
 {
 public:
-    PresentationPage(wxWizard *parent) : wxWizardPageSimple(parent)
-    {
-        m_bitmap = wxBitmap(welcome_xpm);
-        wxBoxSizer *mainSizer = new wxBoxSizer(wxVERTICAL);
+	PresentationPage(wxWizard *parent) : wxWizardPageSimple(parent)
+	{
+		m_bitmap = wxBitmap(welcome_xpm);
+		wxBoxSizer *mainSizer = new wxBoxSizer(wxVERTICAL);
 		wxStaticText *tst;
 		//GetParent()->SetBackgroundColour(*wxWHITE);
-        mainSizer->Add(tst=new wxStaticText(this, wxID_ANY, _T("Welcome to the online installer of Rigs of Rods\n")), 0, wxALL, 5);
+		mainSizer->Add(tst=new wxStaticText(this, wxID_ANY, _T("Welcome to the online installer of Rigs of Rods\n")), 0, wxALL, 5);
 		wxFont dfont=tst->GetFont();
 		dfont.SetWeight(wxFONTWEIGHT_BOLD);
 		dfont.SetPointSize(dfont.GetPointSize()+4);
 		tst->SetFont(dfont);
 		tst->Wrap(TXTWRAP);
-        mainSizer->Add(tst=new wxStaticText(this, wxID_ANY, _T("This program will help you install or update Rigs of Rods on your computer.\n")), 0, wxALL, 5);
+		mainSizer->Add(tst=new wxStaticText(this, wxID_ANY, _T("This program will help you install or update Rigs of Rods on your computer.\n")), 0, wxALL, 5);
 		tst->Wrap(TXTWRAP);
-        mainSizer->Add(tst=new wxStaticText(this, wxID_ANY, _T("Before installing, make sure Rigs of Rods is not running, and that your internet connection is available.\n")), 0, wxALL, 5);
+		mainSizer->Add(tst=new wxStaticText(this, wxID_ANY, _T("Before installing, make sure Rigs of Rods is not running, and that your internet connection is available.\n")), 0, wxALL, 5);
 		tst->Wrap(TXTWRAP);
-        mainSizer->Add(tst=new wxStaticText(this, wxID_ANY, _T("If you use a firewall, please allow this program to access to Internet.\n")), 0, wxALL, 5);
+		mainSizer->Add(tst=new wxStaticText(this, wxID_ANY, _T("If you use a firewall, please allow this program to access to Internet.\n")), 0, wxALL, 5);
 		tst->Wrap(TXTWRAP);
-        mainSizer->Add(tst=new wxStaticText(this, wxID_ANY, _T("Click on Next to continue.\n")), 0, wxALL, 5);
+		mainSizer->Add(tst=new wxStaticText(this, wxID_ANY, _T("Click on Next to continue.\n")), 0, wxALL, 5);
 		tst->Wrap(TXTWRAP);
 
-        SetSizer(mainSizer);
-        mainSizer->Fit(this);
-    }
+		SetSizer(mainSizer);
+		mainSizer->Fit(this);
+	}
 };
 
 class LicencePage : public wxWizardPageSimple, public EnterLeavePage
 {
 public:
-    LicencePage(wxWizard *parent) : wxWizardPageSimple(parent)
-    {
-        m_bitmap = wxBitmap(licence_xpm);
-        wxBoxSizer *mainSizer = new wxBoxSizer(wxVERTICAL);
+	LicencePage(wxWizard *parent) : wxWizardPageSimple(parent)
+	{
+		m_bitmap = wxBitmap(licence_xpm);
+		wxBoxSizer *mainSizer = new wxBoxSizer(wxVERTICAL);
 		wxStaticText *tst;
-        mainSizer->Add(tst=new wxStaticText(this, wxID_ANY, _T("Licence\n")), 0, wxALL, 5);
+		mainSizer->Add(tst=new wxStaticText(this, wxID_ANY, _T("Licence\n")), 0, wxALL, 5);
 		wxFont dfont=tst->GetFont();
 		dfont.SetWeight(wxFONTWEIGHT_BOLD);
 		dfont.SetPointSize(dfont.GetPointSize()+4);
@@ -198,28 +197,28 @@ public:
 														_T("By using this program, you agree that in the case you create and publish a content for it (for example a vehicle), you accept that the author can include it in the official distribution, however you still retain the copyright of your work.")
 														,wxDefaultPosition,wxDefaultSize,wxTE_MULTILINE|wxTE_READONLY)
 														, 1, wxALL|wxEXPAND , 5);
-        mainSizer->Add(tst=new wxStaticText(this, wxID_ANY, _T("If you agree to this licence, click Next. If you do not agree, you cannot install Rigs of Rods.\n")), 0, wxALL, 5);
+		mainSizer->Add(tst=new wxStaticText(this, wxID_ANY, _T("If you agree to this licence, click Next. If you do not agree, you cannot install Rigs of Rods.\n")), 0, wxALL, 5);
 		tst->Wrap(TXTWRAP);
 
-        SetSizer(mainSizer);
-        mainSizer->Fit(this);
-    }
+		SetSizer(mainSizer);
+		mainSizer->Fit(this);
+	}
 };
 
 class ActionPage : public wxWizardPage, public EnterLeavePage
 {
 public:
-    ActionPage(wxWizard *parent, ConfigManager* cm, wxWizardPage* prev, wxWizardPage* fselect, wxWizardPage* download) : wxWizardPage(parent)
-    {
+	ActionPage(wxWizard *parent, ConfigManager* cm, wxWizardPage* prev, wxWizardPage* fselect, wxWizardPage* download) : wxWizardPage(parent)
+	{
 		m_prev=prev;
 		m_fselect=fselect;
 		m_download=download;
 		m_cm=cm;
 		bool firstInstall = cm->isFirstInstall();
-        m_bitmap = wxBitmap(action_xpm);
-        wxBoxSizer *mainSizer = new wxBoxSizer(wxVERTICAL);
+		m_bitmap = wxBitmap(action_xpm);
+		wxBoxSizer *mainSizer = new wxBoxSizer(wxVERTICAL);
 		wxStaticText *tst;
-        mainSizer->Add(tst=new wxStaticText(this, wxID_ANY, _T("What do you want to do?\n")), 0, wxALL, 5);
+		mainSizer->Add(tst=new wxStaticText(this, wxID_ANY, _T("What do you want to do?\n")), 0, wxALL, 5);
 		wxFont dfont=tst->GetFont();
 		dfont.SetWeight(wxFONTWEIGHT_BOLD);
 		dfont.SetPointSize(dfont.GetPointSize()+4);
@@ -265,24 +264,24 @@ public:
 		}
 		mainSizer->Add(arb, 0, wxALL, 5);
 
-        SetSizer(mainSizer);
-        mainSizer->Fit(this);
-    }
+		SetSizer(mainSizer);
+		mainSizer->Fit(this);
+	}
 	void SetPrev(wxWizardPage *prev) {m_prev=prev;}
-    virtual wxWizardPage *GetPrev() const { return m_prev; }
-    virtual wxWizardPage *GetNext() const
-    {
-        if (arb->GetSelection()==0)
+	virtual wxWizardPage *GetPrev() const { return m_prev; }
+	virtual wxWizardPage *GetNext() const
+	{
+		if (arb->GetSelection()==0)
 			return m_fselect;
 		else
 			return m_download;
-    }
+	}
 	//output validation
 	bool OnLeave(bool forward)
-    {
+	{
 		if (forward) m_cm->setAction(arb->GetSelection());
-        return true;
-    }
+		return true;
+	}
 private:
 	wxRadioBox* arb;
 	wxWizardPage *m_prev, *m_fselect, *m_download;
@@ -292,13 +291,13 @@ private:
 class PathPage : public wxWizardPageSimple, public EnterLeavePage
 {
 public:
-    PathPage(wxWizard *parent, ConfigManager* cm) : wxWizardPageSimple(parent)
-    {
+	PathPage(wxWizard *parent, ConfigManager* cm) : wxWizardPageSimple(parent)
+	{
 		m_cm=cm;
-        m_bitmap = wxBitmap(dest_xpm);
-        wxBoxSizer *mainSizer = new wxBoxSizer(wxVERTICAL);
+		m_bitmap = wxBitmap(dest_xpm);
+		wxBoxSizer *mainSizer = new wxBoxSizer(wxVERTICAL);
 		wxStaticText *tst;
-        mainSizer->Add(tst=new wxStaticText(this, wxID_ANY, _T("Source and Destination\n")), 0, wxALL, 5);
+		mainSizer->Add(tst=new wxStaticText(this, wxID_ANY, _T("Source and Destination\n")), 0, wxALL, 5);
 		wxFont dfont=tst->GetFont();
 		dfont.SetWeight(wxFONTWEIGHT_BOLD);
 		dfont.SetPointSize(dfont.GetPointSize()+4);
@@ -351,9 +350,9 @@ public:
 
 		dirdial=new wxDirDialog(this, _T("Choose a directory"), sel->GetValue());
 
-        SetSizer(mainSizer);
-        mainSizer->Fit(this);
-    }
+		SetSizer(mainSizer);
+		mainSizer->Fit(this);
+	}
 	void OnBrowse(wxCommandEvent&WXUNUSED(evt))
 	{
 		dirdial->SetPath(sel->GetValue());
@@ -361,9 +360,9 @@ public:
 		if (res==wxID_OK) sel->SetValue(dirdial->GetPath());
 	}
 	//output validation
-    //virtual bool TransferDataFromWindow()
+	//virtual bool TransferDataFromWindow()
 	bool OnLeave(bool forward)
-    {
+	{
 		if (forward)
 		{
 			wxString path=sel->GetValue();
@@ -382,8 +381,8 @@ public:
 			}
 			m_cm->setInstallPath(path);
 		}
-        return true;
-    }
+		return true;
+	}
 
 
 private:
@@ -392,7 +391,7 @@ private:
 	wxChoice* src;
 	wxButton* brobut;
 	wxDirDialog *dirdial;
-    DECLARE_EVENT_TABLE()
+	DECLARE_EVENT_TABLE()
 };
 
 
@@ -400,14 +399,14 @@ private:
 class StreamsPage : public wxWizardPageSimple, public EnterLeavePage
 {
 public:
-    StreamsPage(wxWizard *parent, ConfigManager* cm) : wxWizardPageSimple(parent)
-    {
+	StreamsPage(wxWizard *parent, ConfigManager* cm) : wxWizardPageSimple(parent)
+	{
 		streamset=false;
 		m_cm=cm;
-        wxBoxSizer *mainSizer = new wxBoxSizer(wxVERTICAL);
-  		wxStaticText *tst;
-        m_bitmap = wxBitmap(streams_xpm);
-        mainSizer->Add(tst=new wxStaticText(this, wxID_ANY, _T("Streams selection\n")), 0, wxALL, 5);
+		wxBoxSizer *mainSizer = new wxBoxSizer(wxVERTICAL);
+		wxStaticText *tst;
+		m_bitmap = wxBitmap(streams_xpm);
+		mainSizer->Add(tst=new wxStaticText(this, wxID_ANY, _T("Streams selection\n")), 0, wxALL, 5);
 		wxFont dfont=tst->GetFont();
 		dfont.SetWeight(wxFONTWEIGHT_BOLD);
 		dfont.SetPointSize(dfont.GetPointSize()+4);
@@ -426,23 +425,23 @@ public:
 		mainSizer->Add(tst=new wxStaticText(this, wxID_ANY, _T("Click Next to begin the download.")), 0, wxALL, 5);
 		tst->Wrap(TXTWRAP);
 
-        SetSizer(mainSizer);
+		SetSizer(mainSizer);
 		//scrwsz->Fit(scrw);
 		mainSizer->Fit(this);
 		
-    }
+	}
 
 
 	/*
-    void OnThreadCompletion(wxThreadEvent&)
-    {
-        wxMessageOutputDebug().Printf("MYFRAME: MyThread exited!\n");
-    }
+	void OnThreadCompletion(wxThreadEvent&)
+	{
+		wxMessageOutputDebug().Printf("MYFRAME: MyThread exited!\n");
+	}
 
-    void OnThreadUpdate(wxThreadEvent&)
-    {
-        wxMessageOutputDebug().Printf("MYFRAME: MyThread update...\n");
-    }
+	void OnThreadUpdate(wxThreadEvent&)
+	{
+		wxMessageOutputDebug().Printf("MYFRAME: MyThread update...\n");
+	}
 	*/
 
 
@@ -508,12 +507,12 @@ class DownloadPage : public wxWizardPageSimple, public EnterLeavePage
 {
 	friend class WsyncThread;
 public:
-    DownloadPage(wxWizard *parent, ConfigManager* cm) : wxWizardPageSimple(parent), m_cm(cm)
-    {		
-        m_bitmap = wxBitmap(download_xpm);
-        wxBoxSizer *mainSizer = new wxBoxSizer(wxVERTICAL);
+	DownloadPage(wxWizard *parent, ConfigManager* cm) : wxWizardPageSimple(parent), m_cm(cm)
+	{		
+		m_bitmap = wxBitmap(download_xpm);
+		wxBoxSizer *mainSizer = new wxBoxSizer(wxVERTICAL);
 		wxStaticText *tst;
-        mainSizer->Add(tst=new wxStaticText(this, wxID_ANY, _T("Downloading\n")), 0, wxALL, 5);
+		mainSizer->Add(tst=new wxStaticText(this, wxID_ANY, _T("Downloading\n")), 0, wxALL, 5);
 		wxFont dfont=tst->GetFont();
 		dfont.SetWeight(wxFONTWEIGHT_BOLD);
 		dfont.SetPointSize(dfont.GetPointSize()+4);
@@ -525,40 +524,38 @@ public:
 		progress=new wxGauge(this, wxID_ANY, 100, wxDefaultPosition, wxDefaultSize, wxGA_HORIZONTAL|wxGA_SMOOTH);
 		mainSizer->Add(progress, 0, wxALL|wxEXPAND, 5);
 
-        SetSizer(mainSizer);
-        mainSizer->Fit(this);
+		SetSizer(mainSizer);
+		mainSizer->Fit(this);
 		
 		timer = new wxTimer(this, ID_TIMER);
 
-		w = new WSync();
 	}
 
 	
-    void DoStartThread()
-    {
-        m_pThread = new WsyncThread(this);
+	void startThread(wxString spath, bool del)
+	{
+		m_pThread = new WsyncThread(this, m_cm->getInstallPath(), wxT("wsync.rigsofrods.com"), spath, del);
+		if ( m_pThread->Create() != wxTHREAD_NO_ERROR )
+		{
+			wxLogError(wxT("Can't create the thread!"));
+			delete m_pThread;
+			m_pThread = NULL;
+		}
+		else
+		{
+			if (m_pThread->Run() != wxTHREAD_NO_ERROR )
+			{
+				wxLogError(wxT("Can't create the thread!"));
+				delete m_pThread;
+				m_pThread = NULL;
+			}
 
-        if ( m_pThread->Create(wxT("wsync.rigsofrods.com"), wxT("/")) != wxTHREAD_NO_ERROR )
-        {
-            wxLogError(wxT("Can't create the thread!"));
-            delete m_pThread;
-            m_pThread = NULL;
-        }
-        else
-        {
-            if (m_pThread->Run() != wxTHREAD_NO_ERROR )
-            {
-                wxLogError(wxT("Can't create the thread!"));
-                delete m_pThread;
-                m_pThread = NULL;
-            }
-
-            // after the call to wxThread::Run(), the m_pThread pointer is "unsafe":
-            // at any moment the thread may cease to exist (because it completes its work).
-            // To avoid dangling pointers OnThreadExit() will set m_pThread
-            // to NULL when the thread dies.
-        }
-    }
+			// after the call to wxThread::Run(), the m_pThread pointer is "unsafe":
+			// at any moment the thread may cease to exist (because it completes its work).
+			// To avoid dangling pointers OnThreadExit() will set m_pThread
+			// to NULL when the thread dies.
+		}
+	}
 	bool OnEnter(bool forward)
 	//void OnEnter(wxString operation, wxString url)
 	{
@@ -566,13 +563,11 @@ public:
 
 		std::vector < stream_desc_t > *streams = m_cm->getStreamset();
 
-		for(std::vector < stream_desc_t >::iterator it=streams->begin(); it!=streams->end(); it++)
-		{
-			// TODO: put this in separate thread, class is NOT thread safe yet
-			std::string ipath = conv(m_cm->getInstallPath());
-			std::string spath = conv(it->path);
-			w->sync(ipath, "wsync.rigsofrods.com", spath, true, it->del);
-		}
+		startThread(streams->begin()->path, streams->begin()->del);
+		//for(std::vector < stream_desc_t >::iterator it=streams->begin(); it!=streams->end(); it++)
+		//{
+		//	startThread
+		//}
 
 		return true;
 	}
@@ -581,30 +576,30 @@ public:
 		// stop timer and cancel all running operations
 		timer->Stop();
 
-        {
-            wxCriticalSectionLocker enter(m_pThreadCS);
+		{
+			wxCriticalSectionLocker enter(m_pThreadCS);
 
-            if (m_pThread)         // does the thread still exist?
-            {
-               // m_out.Printf("MYFRAME: deleting thread");
+			if (m_pThread)         // does the thread still exist?
+			{
+			   // m_out.Printf("MYFRAME: deleting thread");
 
-                if (m_pThread->Delete() != wxTHREAD_NO_ERROR )
-                    wxLogError(wxT("Can't delete the thread!"));
-            }
-        }       // exit from the critical section to give the thread
-                // the possibility to enter its destructor
-                // (which is guarded with m_pThreadCS critical section!)
+				if (m_pThread->Delete() != wxTHREAD_NO_ERROR )
+					wxLogError(wxT("Can't delete the thread!"));
+			}
+		}       // exit from the critical section to give the thread
+				// the possibility to enter its destructor
+				// (which is guarded with m_pThreadCS critical section!)
 
-        while (1)
-        {
-            { // was the ~MyThread() function executed?
-                wxCriticalSectionLocker enter(m_pThreadCS);
-                if (!m_pThread) break;
-            }
+		while (1)
+		{
+			{ // was the ~MyThread() function executed?
+				wxCriticalSectionLocker enter(m_pThreadCS);
+				if (!m_pThread) break;
+			}
 
-            // wait for thread completion
-            wxThread::This()->Sleep(1);
-        }
+			// wait for thread completion
+			wxThread::This()->Sleep(1);
+		}
 		return true;
 	}	
 
@@ -613,9 +608,8 @@ private:
 	wxTimer *timer;
 	wxStaticText *statusText;
 	ConfigManager* m_cm;
-	WSync *w;
-    WsyncThread *m_pThread;
-    wxCriticalSection m_pThreadCS;    // protects the m_pThread pointer
+	WsyncThread *m_pThread;
+	wxCriticalSection m_pThreadCS;    // protects the m_pThread pointer
 	//pthread_t syncThread;
 
 	void OnTimer(wxTimerEvent& event)
@@ -623,33 +617,44 @@ private:
 		wxYield();
 		int percent=0;
 		std::string message;
-		w->getStatus(percent, message);
 		statusText->SetLabel(conv(message));
 		progress->SetValue(percent);
 	}
 	
+	void OnStatusUpdate(MyStatusEvent &ev)
+	{
+		switch(ev.GetId())
+		{
+		case SE_STARTING:
+			wxMessageBox(ev.GetText(), _T("got STARTING event"), wxICON_INFORMATION | wxOK, this);
+			break;
+		case SE_UPDATING:
+			wxMessageBox(ev.GetText(), _T("got UPDATING event"), wxICON_INFORMATION | wxOK, this);
+			break;
+		}
+	}
 	DECLARE_EVENT_TABLE()
 };
 
 class LastPage : public wxWizardPageSimple, public EnterLeavePage
 {
 public:
-    LastPage(wxWizard *parent) : wxWizardPageSimple(parent)
-    {
-        m_bitmap = wxBitmap(finished_xpm);
-        wxBoxSizer *mainSizer = new wxBoxSizer(wxVERTICAL);
+	LastPage(wxWizard *parent) : wxWizardPageSimple(parent)
+	{
+		m_bitmap = wxBitmap(finished_xpm);
+		wxBoxSizer *mainSizer = new wxBoxSizer(wxVERTICAL);
 		wxStaticText *tst;
 		//GetParent()->SetBackgroundColour(*wxWHITE);
-        mainSizer->Add(tst=new wxStaticText(this, wxID_ANY, _T("Finished\n")), 0, wxALL, 5);
+		mainSizer->Add(tst=new wxStaticText(this, wxID_ANY, _T("Finished\n")), 0, wxALL, 5);
 		wxFont dfont=tst->GetFont();
 		dfont.SetWeight(wxFONTWEIGHT_BOLD);
 		dfont.SetPointSize(dfont.GetPointSize()+4);
 		tst->SetFont(dfont);
 		tst->Wrap(TXTWRAP);
-        mainSizer->Add(tst=new wxStaticText(this, wxID_ANY, _T("Thank you for downloading Rigs of Rods.\n")), 0, wxALL, 5);
+		mainSizer->Add(tst=new wxStaticText(this, wxID_ANY, _T("Thank you for downloading Rigs of Rods.\n")), 0, wxALL, 5);
 		tst->Wrap(TXTWRAP);
 
-        SetSizer(mainSizer);
-        mainSizer->Fit(this);
-    }
+		SetSizer(mainSizer);
+		mainSizer->Fit(this);
+	}
 };
