@@ -28,7 +28,7 @@ BEGIN_EVENT_TABLE(PathPage, wxWizardPageSimple)
 END_EVENT_TABLE()
 
 BEGIN_EVENT_TABLE(DownloadPage, wxWizardPageSimple)
-	EVT_TIMER(ID_TIMER, DownloadPage::OnTimer)
+	//EVT_TIMER(ID_TIMER, DownloadPage::OnTimer)
 	EVT_MYSTATUS(wxID_ANY, DownloadPage::OnStatusUpdate )
 END_EVENT_TABLE()
 

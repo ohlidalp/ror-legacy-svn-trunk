@@ -12,21 +12,35 @@ DECLARE_EVENT_TYPE(MyStatusCommandEvent, ID_ANY)
 class MyStatusEvent: public wxCommandEvent
 {
 public:
-	MyStatusEvent( wxEventType commandType = MyStatusCommandEvent, int id = 0 )
-	:  wxCommandEvent(commandType, id) { }
+	MyStatusEvent(wxEventType commandType = MyStatusCommandEvent, int id = 0) :  wxCommandEvent(commandType, id)
+	{
+	}
  
 	// You *must* copy here the data to be transported
-	MyStatusEvent( const MyStatusEvent &event )
-	:  wxCommandEvent(event) { this->SetText( event.GetText() ); }
+	MyStatusEvent(const MyStatusEvent &event) : wxCommandEvent(event)
+	{
+		this->setText(event.getText());
+		this->setProgress(0, event.getProgress(0));
+		this->setProgress(1, event.getProgress(1));
+	}
  
 	// Required for sending with wxPostEvent()
-	wxEvent* Clone() const { return new MyStatusEvent(*this); }
+	wxEvent* Clone() const
+	{
+		return new MyStatusEvent(*this);
+	}
  
-	wxString GetText() const { return m_Text; }
-	void SetText( const wxString& text ) { m_Text = text; }
+	// data getter/setter
+	wxString getText() const { return m_text; }
+	void setText( const wxString& text ) { m_text = text; }
+	
+	float getProgress(int num) const { assert(num<2); return m_progress[num]; }
+	void setProgress(int num, float value) { assert(num<2); m_progress[num] = value; }
  
 private:
-	wxString m_Text;
+	// data members
+	float m_progress[2];
+	wxString m_text;
 };
  
 typedef void (wxEvtHandler::*MyStatusEventFunction)(MyStatusEvent &);
@@ -52,6 +66,8 @@ typedef void (wxEvtHandler::*MyStatusEventFunction)(MyStatusEvent &);
 // If you want to use the custom event to send more than one sort
 // of data, or to more than one place, make it easier by providing
 // named IDs in an enumeration.
-enum { SE_STARTING, SE_UPDATING, SE_DONE, SE_ERROR };
+
+// MSE = my status event ;)
+enum { MSE_STARTING, MSE_UPDATING, MSE_DONE, MSE_ERROR };
 
 #endif //CEVENT_H__
