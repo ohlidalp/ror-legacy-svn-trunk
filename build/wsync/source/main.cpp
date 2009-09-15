@@ -77,6 +77,37 @@ int main(int argc, char **argv)
 		//printf("cmdline2: '%s'\n", path);
 		CreateProcess(NULL, path, NULL, NULL, TRUE, 0, NULL, NULL, &si, &pi);
 		exit(0);
+	} else if(argc == 2 && !strcmp(argv[1], "sync3"))
+	{
+		printf("syncing...\n");
+		WSync *w = new WSync();
+		printf(" === SYNCING content/base ===\n");
+		w->sync(".", "wsync.rigsofrods.com", "content/base", true, false);
+		printf(" === SYNCING content/default ===\n");
+		w->sync(".", "wsync.rigsofrods.com", "content/default", true, false);
+		printf(" === SYNCING binary/win32/beta ===\n");
+		w->sync(".", "wsync.rigsofrods.com", "binary/win32/beta", true, false);
+
+		path exe_path = system_complete("update.exe");
+		PROCESS_INFORMATION pi;
+		STARTUPINFO si;
+		DWORD               dwCode  =   0;
+		memset(&si, 0, sizeof(STARTUPINFO));
+		memset(&pi, 0, sizeof(PROCESS_INFORMATION));
+		si.cb           = sizeof(STARTUPINFO);
+		si.dwFlags      = STARTF_USESHOWWINDOW | STARTF_USESTDHANDLES;
+		si.hStdInput    = GetStdHandle(STD_INPUT_HANDLE);
+		si.hStdOutput   = GetStdHandle(STD_OUTPUT_HANDLE);
+		si.hStdError    = GetStdHandle(STD_ERROR_HANDLE);
+		si.lpTitle      = "sync";
+		si.wShowWindow  = SW_SHOW;
+
+		char path[2048];
+		sprintf(path, "%s postsync", exe_path.file_string().c_str());
+
+		//printf("cmdline2: '%s'\n", path);
+		CreateProcess(NULL, path, NULL, NULL, TRUE, 0, NULL, NULL, &si, &pi);
+		exit(0);
 	} else if(argc == 2 && !strcmp(argv[1], "postsync"))
 	{
 		Sleep(100);
@@ -138,7 +169,7 @@ int main(int argc, char **argv)
 
 
 		char path[2048];
-		sprintf(path, "%s sync2 \"%s\" wsync.rigsofrods.com /", exe_temp.file_string().c_str(), local_path.file_string().c_str());
+		sprintf(path, "%s sync3", exe_temp.file_string().c_str(), local_path.file_string().c_str());
 
 		//printf("cmdline1: '%s'\n", path);
 		CreateProcess(NULL, path, NULL, NULL, TRUE, 0, NULL, NULL, &si, &pi);
