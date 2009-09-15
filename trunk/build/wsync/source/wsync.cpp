@@ -104,18 +104,33 @@ std::string WSync::findHashInHashmap(std::map<string, Hashentry> hashMap, std::s
 	return "";
 }
 
+std::string WSync::findHashInHashmap(std::map<std::string, std::map<std::string, Hashentry>> hashMap, std::string filename)
+{
+	std::map<string, Hashentry>::iterator it;
+	std::map<std::string, std::map<std::string, Hashentry>>::iterator itm;
+	for(itm = hashMap.begin(); itm != hashMap.end(); itm++)
+	{
+		for(it = itm->second.begin(); it != itm->second.end(); it++)
+		{
+			if(it->first == filename)
+				return it->second.hash;
+		}
+	}
+	return "";
+}
+
 int WSync::sync(boost::filesystem::path localDir, string server, string remoteDir, bool useMirror, bool deleteOk)
 {
 	// download remote currrent file first
 	int res = 0;
 	path remoteFileIndex;
 	if(getTempFilename(remoteFileIndex))
-		sprintf(statusText, "error creating tempfile!\n");
+		printf("error creating tempfile!\n");
 
 	string url = "/" + remoteDir + "/" + INDEXFILENAME;
 	if(downloadFile(remoteFileIndex.string(), server, url))
 	{
-		sprintf(statusText, "error downloading file index from %s\n", url.c_str());
+		printf("error downloading file index from %s\n", url.c_str());
 		return -1;
 	}
 	//printf("downloaded FileIndex\n");
@@ -125,7 +140,7 @@ int WSync::sync(boost::filesystem::path localDir, string server, string remoteDi
 
 	std::map<string, Hashentry> hashMapLocal;
 	if(buildFileIndex(myFileIndex, localDir, localDir, hashMapLocal, true, 1))
-		sprintf(statusText, "error while generating local FileIndex\n");
+		printf("error while generating local FileIndex\n");
 	//printf("#1: %s\n", myFileIndex.string().c_str());
 	//printf("#2: %s\n", remoteFileIndex.string().c_str());
 
@@ -140,7 +155,7 @@ int WSync::sync(boost::filesystem::path localDir, string server, string remoteDi
 	remove(INDEXFILENAME);
 	if(hashMyFileIndex == hashRemoteFileIndex)
 	{
-		sprintf(statusText, "Files are up to date, no sync needed\n");
+		printf("Files are up to date, no sync needed\n");
 		return 0;
 	}
 
@@ -149,13 +164,13 @@ int WSync::sync(boost::filesystem::path localDir, string server, string remoteDi
 	int modeNumber = 0;
 	if(loadHashMapFromFile(remoteFileIndex, hashMapRemote, modeNumber))
 	{
-		sprintf(statusText, "error reading remote file index!\n");
+		printf("error reading remote file index!\n");
 		return -2;
 	}
 
 	if(hashMapRemote.size() == 0)
 	{
-		sprintf(statusText, "remote file index is invalid\nConnection Problems / Server down?\n");
+		printf("remote file index is invalid\nConnection Problems / Server down?\n");
 		return -3;
 	}
 	// remove that temp file as well
@@ -171,18 +186,22 @@ int WSync::sync(boost::filesystem::path localDir, string server, string remoteDi
 	{
 		if(it->first == string("/update.temp.exe"))
 			continue;
+		if(it->first == string("/stream.info")) continue;
+		if(it->first == string("/version")) continue;
 		//if(hashMapRemote[it->first] == it->second)
 			//printf("same: %s %s==%s\n", it->first.c_str(), hashMapRemote[it->first].c_str(), it->second.c_str());
 		if(hashMapRemote.find(it->first) == hashMapRemote.end())
-			deletedFiles.push_back(Fileentry(it->first, it->second.filesize));
+			deletedFiles.push_back(Fileentry("",it->first, it->second.filesize));
 		else if(hashMapRemote[it->first].hash != it->second.hash)
-			changedFiles.push_back(Fileentry(it->first, hashMapRemote[it->first].filesize));
+			changedFiles.push_back(Fileentry("",it->first, hashMapRemote[it->first].filesize));
 	}
 	// second, detect new files
 	for(it = hashMapRemote.begin(); it != hashMapRemote.end(); it++)
 	{
+		if(it->first == string("/stream.info")) continue;
+		if(it->first == string("/version")) continue;
 		if(hashMapLocal.find(it->first) == hashMapLocal.end())
-			newFiles.push_back(Fileentry(it->first, it->second.filesize));
+			newFiles.push_back(Fileentry("", it->first, it->second.filesize));
 	}
 	// done comparing
 
@@ -199,7 +218,7 @@ int WSync::sync(boost::filesystem::path localDir, string server, string remoteDi
 	// security check in order not to delete the entire harddrive
 	if(deletedFiles.size() > 1000)
 	{
-		sprintf(statusText, "are you sure you have placed the application in the correct directory?\nIt will delete over 1000 files! Aborting ...\n");
+		printf("are you sure you have placed the application in the correct directory?\nIt will delete over 1000 files! Aborting ...\n");
 #ifdef WIN32
 		//printf("Press any key to continue...\n");
 		//_getch();
@@ -213,13 +232,13 @@ int WSync::sync(boost::filesystem::path localDir, string server, string remoteDi
 		bool use_mirror = false;
 		if(filesToDownload)
 		{
-			sprintf(statusText, "downloading %d files now (%s) ..\n", filesToDownload, formatFilesize(predDownloadSize).c_str());
+			printf("downloading %d files now (%s) ..\n", filesToDownload, formatFilesize(predDownloadSize).c_str());
 
 			// now find a suitable mirror
 			string mirror_server="", mirror_dir="", mirror_info="";
 			if(useMirror)
 			{
-				sprintf(statusText, "searching for suitable mirror...\n");
+				printf("searching for suitable mirror...\n");
 				std::vector< std::vector< std::string > > list;		
 				if(!downloadConfigFile(API_SERVER, API_MIRROR, list))
 				{
@@ -227,19 +246,19 @@ int WSync::sync(boost::filesystem::path localDir, string server, string remoteDi
 					{
 						if(list[0][0] == "failed")
 						{
-							sprintf(statusText, "failed to get mirror, using main server\n");
+							printf("failed to get mirror, using main server\n");
 						} else
 						{
 							mirror_server = list[0][0];
 							mirror_dir = list[0][1];
 							mirror_info = list[0][2];
 							use_mirror=true;
-							sprintf(statusText, "using mirror server: %s, %s\n", mirror_server.c_str(), mirror_info.c_str());
+							printf("using mirror server: %s, %s\n", mirror_server.c_str(), mirror_info.c_str());
 						}
 					} else
-						sprintf(statusText, "wrong API response2\n");
+						printf("wrong API response2\n");
 				} else
-					sprintf(statusText, "wrong API response\n");
+					printf("wrong API response\n");
 			}
 
 			if(use_mirror)
@@ -258,14 +277,14 @@ int WSync::sync(boost::filesystem::path localDir, string server, string remoteDi
 // ARGHHHH GOTO D:
 retry:
 				progressOutputShort(float(changeCounter)/float(changeMax));
-				sprintf(statusText, " A  %s (%s) ", itf->filename.c_str(), formatFilesize(itf->filesize).c_str());
+				printf(" A  %s (%s) ", itf->filename.c_str(), formatFilesize(itf->filesize).c_str());
 				path localfile = localDir / itf->filename;
 				string url = "/" + dir_use + "/" + itf->filename;
 				int stat = downloadFile(localfile, server_use, url, true);
 				if(stat == -404 && retrycount < 2)
 				{
 					// fallback to main server!
-					sprintf(statusText, "falling back to main server.\n");
+					printf("falling back to main server.\n");
 					server_use = server;
 					dir_use = remoteDir;
 					retrycount++;
@@ -273,17 +292,17 @@ retry:
 				}
 				if(stat)
 				{
-					sprintf(statusText, "\nunable to create file: %s\n", itf->filename.c_str());
+					printf("\nunable to create file: %s\n", itf->filename.c_str());
 				} else
 				{
 					string checkHash = generateFileHash(localfile);
 					string hash_remote = findHashInHashmap(hashMapRemote, itf->filename);
 					if(hash_remote == checkHash)
 					{
-						sprintf(statusText, " OK\n");
+						printf(" OK                                             \n");
 					} else
 					{
-						sprintf(statusText, " OK\n");
+						printf(" OK                                             \n");
 						//printf(" hash is: '%s'\n", checkHash.c_str());
 						//printf(" hash should be: '%s'\n", hash_remote.c_str());
 						remove(localfile);
@@ -310,14 +329,14 @@ retry:
 // ARGHHHH GOTO D:
 retry2:
 				progressOutputShort(float(changeCounter)/float(changeMax));
-				sprintf(statusText, " U  %s (%s) ", itf->filename.c_str(), formatFilesize(itf->filesize).c_str());
+				printf(" U  %s (%s) ", itf->filename.c_str(), formatFilesize(itf->filesize).c_str());
 				path localfile = localDir / itf->filename;
 				string url = "/" + dir_use + "/" + itf->filename;
 				int stat = downloadFile(localfile, server_use, url, true);
 				if(stat == -404 && retrycount < 2)
 				{
 					// fallback to main server!
-					sprintf(statusText, "falling back to main server.\n");
+					printf("falling back to main server.\n");
 					server_use = server;
 					dir_use = remoteDir;
 					retrycount++;
@@ -325,17 +344,17 @@ retry2:
 				}
 				if(stat)
 				{
-					sprintf(statusText, "\nunable to update file: %s\n", itf->filename.c_str());
+					printf("\nunable to update file: %s\n", itf->filename.c_str());
 				} else
 				{
 					string checkHash = generateFileHash(localfile);
 					string hash_remote = findHashInHashmap(hashMapRemote, itf->filename);
 					if(hash_remote == checkHash)
 					{
-						sprintf(statusText, " OK\n");
+						printf(" OK                                             \n");
 					} else
 					{
-						sprintf(statusText, " OK\n");
+						printf(" OK                                             \n");
 						//printf(" hash is: '%s'\n", checkHash.c_str());
 						//printf(" hash should be: '%s'\n", hash_remote.c_str());
 						remove(localfile);
@@ -359,27 +378,27 @@ retry2:
 			for(itf=deletedFiles.begin();itf!=deletedFiles.end();itf++, changeCounter++)
 			{
 				progressOutputShort(float(changeCounter)/float(changeMax));
-				sprintf(statusText, " D  %s (%s)\n", itf->filename.c_str(), formatFilesize(itf->filesize).c_str());
+				printf(" D  %s (%s)\n", itf->filename.c_str(), formatFilesize(itf->filesize).c_str());
 				path localfile = localDir / itf->filename;
 				try
 				{
 					boost::filesystem::remove(localfile);
 					if(exists(localfile))
-						sprintf(statusText, "unable to delete file: %s\n", localfile.string().c_str());
+						printf("unable to delete file: %s\n", localfile.string().c_str());
 				} catch(...)
 				{
-					sprintf(statusText, "unable to delete file: %s\n", localfile.string().c_str());
+					printf("unable to delete file: %s\n", localfile.string().c_str());
 				}
 			}
 		} else if (!deleteOk && deletedFiles.size())
 		{
-			sprintf(statusText, "wont delete any files, since safety conditions are not met.\n");
+			printf("wont delete any files during this run\n");
 		}
 
-		sprintf(statusText, "sync complete, downloaded %s\n", formatFilesize(downloadSize).c_str());
+		printf("sync complete, downloaded %s\n", formatFilesize(downloadSize).c_str());
 		res = 1;
 	} else
-		sprintf(statusText, "sync complete (already up to date), downloaded %s\n", formatFilesize(downloadSize).c_str());
+		printf("sync complete (already up to date), downloaded %s\n", formatFilesize(downloadSize).c_str());
 
 	//remove temp files again
 	remove(remoteFileIndex);

@@ -46,11 +46,12 @@ class Fileentry
 {
 public:
 	std::string filename;
+	std::string stream_path;
 	boost::uintmax_t filesize;
 	Fileentry()
 	{
 	}
-	Fileentry(std::string filename, boost::uintmax_t filesize) : filename(filename), filesize(filesize)
+	Fileentry(std::string stream_path, std::string filename, boost::uintmax_t filesize) : filename(filename), stream_path(stream_path), filesize(filesize)
 	{
 	}
 };
@@ -75,11 +76,7 @@ public:
 	int downloadAdvancedConfigFile(std::string server, std::string path, std::vector< std::map< std::string, std::string > > &list);
 
 	int getStatus(int &percent, std::string &message);
-protected:
-	// members
-	char statusText[1025];
-	int statusPercent;
-	boost::uintmax_t downloadSize;
+	static std::string formatFilesize(boost::uintmax_t size);
 
 	// functions
 	void listFiles(const boost::filesystem::path &dir_path, std::vector<std::string> &files);
@@ -90,11 +87,19 @@ protected:
 	int loadHashMapFromFile(boost::filesystem::path &filename, std::map<std::string, Hashentry> &hashMap, int &mode);
 
 	// tools
-	int ensurePathExist(boost::filesystem::path &path);
-	std::string formatFilesize(boost::uintmax_t size);
+	static int ensurePathExist(boost::filesystem::path &path);
 	void progressOutput(float progress, float speed=-1, float eta=-1);
 	void progressOutputShort(float progress);
-	int cleanURL(std::string &url);
+	static int cleanURL(std::string &url);
+	boost::uintmax_t getDownloadSize() { return downloadSize; };
 	std::string findHashInHashmap(std::map<std::string, Hashentry> hashMap, std::string filename);
+	std::string findHashInHashmap(std::map<std::string, std::map<std::string, Hashentry>> hashMap, std::string filename);
+
+	void increaseDownloadSize(unsigned int size){downloadSize+=size;};
+protected:
+	// members
+	char statusText[1025];
+	int statusPercent;
+	boost::uintmax_t downloadSize;
 };
 #endif
