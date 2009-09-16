@@ -133,6 +133,7 @@ wxString ConfigManager::getInstallationPath()
 bool ConfigManager::isFirstInstall()
 {
 	wxString path = getInstallationPath();
+	setInstallPath(path);
 #ifdef WIN32
 	if(path.empty())
 		return true;

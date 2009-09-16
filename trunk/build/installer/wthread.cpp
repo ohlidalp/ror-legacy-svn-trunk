@@ -16,7 +16,7 @@ WsyncThread::WsyncThread(DownloadPage *_handler, wxString _ipath, std::vector < 
 {
 	// main server
 	mainserver = server = "wsync.rigsofrods.com";
-	mainserverdir = serverdir = "";
+	mainserverdir = serverdir = "/";
 }
 
 WsyncThread::~WsyncThread()
@@ -26,6 +26,9 @@ WsyncThread::~WsyncThread()
 
 WsyncThread::ExitCode WsyncThread::Entry()
 {
+	// update path target
+	updateCallback(MSE_UPDATE_PATH, ipath.string());
+
 	findMirror();
 	getSyncData();
 	sync();
@@ -57,6 +60,9 @@ int WsyncThread::getSyncData()
 	// now fetch remote file-indexes
 	for(std::vector < stream_desc_t >::iterator it = streams.begin(); it!=streams.end(); it++)
 	{
+		// only use selected streams
+		if(!it->checked) continue;
+
 		path remoteFileIndex;
 		if(WSync::getTempFilename(remoteFileIndex))
 		{
@@ -64,7 +70,7 @@ int WsyncThread::getSyncData()
 			return -1;
 		}
 
-		updateCallback(MSE_UPDATE1, "downloading file list...");
+		updateCallback(MSE_UPDATE_TEXT, "downloading file list...");
 		string url = "/" + conv(it->path) + "/" + INDEXFILENAME;
 		if(this->downloadFile(w, remoteFileIndex.string(), mainserver, url))
 		{
@@ -122,6 +128,7 @@ int WsyncThread::sync()
 
 	std::map<string, Hashentry>::iterator it;
 	std::map<string, std::map<string, Hashentry> >::iterator itr;
+	
 	// walk all remote hashmaps
 	for(itr = hashMapRemote.begin(); itr != hashMapRemote.end(); itr++)
 	{
@@ -136,8 +143,11 @@ int WsyncThread::sync()
 
 			//if(hashMapRemote[it->first] == it->second)
 				//printf("same: %s %s==%s\n", it->first.c_str(), hashMapRemote[it->first].c_str(), it->second.c_str());
+			
+			// TODO: implement deleted files differently
 			if(itr->second.find(it->first) == itr->second.end())
 				deletedFiles.push_back(Fileentry(itr->first, it->first, it->second.filesize));
+			
 			else if(itr->second[it->first].hash != it->second.hash)
 				changedFiles.push_back(Fileentry(itr->first, it->first, itr->second[it->first].filesize));
 		}
@@ -154,21 +164,36 @@ int WsyncThread::sync()
 		}
 	}
 
+	//TODO: FIX DELETED FILES
+	deletedFiles.clear();
+
 	// done comparing, now summarize the changes
 	std::vector<Fileentry>::iterator itf;
 	int changeCounter = 0, changeMax = changedFiles.size() + newFiles.size() + deletedFiles.size();
 	int filesToDownload = newFiles.size() + changedFiles.size();
 	
 	predDownloadSize = 0; // predicted download size
+	// XXX DEBUG
+	//FILE *f=fopen("log.txt", "w");
 	for(itf=newFiles.begin(); itf!=newFiles.end(); itf++)
+	{
 		predDownloadSize += (int)itf->filesize;
+		// DEBUG
+		//fprintf(f, "> A path:%s, file: %s, size:%d\n", itf->stream_path.c_str(), itf->filename.c_str(), itf->filesize);
+	}
+	
 	for(itf=changedFiles.begin(); itf!=changedFiles.end(); itf++)
+	{
 		predDownloadSize += (int)itf->filesize;
+		//fprintf(f, "> U path:%s, file: %s, size:%d\n", itf->stream_path.c_str(), itf->filename.c_str(), itf->filesize);
+	}
+	// XXX DEBUG
+	//fclose(f);
 
 	// security check in order not to delete the entire harddrive
 	if(deletedFiles.size() > 1000)
 	{
-		updateCallback(MSE_ERROR, "error: would delete more than 1000 files, aborting");
+		updateCallback(MSE_ERROR, "would delete more than 1000 files, aborting");
 		return -1;
 	}
 
@@ -187,9 +212,9 @@ int WsyncThread::sync()
 retry:
 				//progressOutputShort(float(changeCounter)/float(changeMax));
 				sprintf(tmp, "downloading new file: %s (%s) ", itf->filename.c_str(), WSync::formatFilesize(itf->filesize).c_str());
-				updateCallback(MSE_UPDATE2, string(tmp), float(w->getDownloadSize())/float(predDownloadSize));
+				updateCallback(MSE_UPDATE_TEXT, string(tmp));
 				path localfile = ipath / itf->filename;
-				string url = "/" + dir_use + "/" + itf->filename;
+				string url = dir_use + itf->stream_path + itf->filename;
 				int stat = this->downloadFile(w, localfile, server_use, url);
 				if(stat == -404 && retrycount < 2)
 				{
@@ -240,9 +265,9 @@ retry:
 retry2:
 				//progressOutputShort(float(changeCounter)/float(changeMax));
 				sprintf(tmp, "updating changed file: %s (%s) ", itf->filename.c_str(), WSync::formatFilesize(itf->filesize).c_str());
-				updateCallback(MSE_UPDATE2, string(tmp), float(w->getDownloadSize())/float(predDownloadSize));
+				updateCallback(MSE_UPDATE_TEXT, string(tmp));
 				path localfile = ipath / itf->filename;
-				string url = "/" + dir_use + "/" + itf->filename;
+				string url = dir_use + itf->stream_path + itf->filename;
 				int stat = this->downloadFile(w, localfile, server_use, url);
 				if(stat == -404 && retrycount < 2)
 				{
@@ -290,7 +315,7 @@ retry2:
 			{
 				//progressOutputShort(float(changeCounter)/float(changeMax));
 				sprintf(tmp, "deleting file: %s (%s)\n", itf->filename.c_str(), WSync::formatFilesize(itf->filesize).c_str());
-				updateCallback(MSE_UPDATE2, string(tmp), float(w->getDownloadSize())/float(predDownloadSize));
+				updateCallback(MSE_UPDATE_TEXT, string(tmp));
 				path localfile = ipath / itf->filename;
 				try
 				{
@@ -459,6 +484,7 @@ int WsyncThread::downloadFile(WSync *w, boost::filesystem::path localFile, strin
 		boost::uintmax_t datacounter=0;
 		boost::uintmax_t dataspeed=0;
 		boost::uintmax_t filesize_left=reported_filesize;
+		//boost::uintmax_t datacounter_before = w->getDownloadSize();
 		while (boost::asio::read(socket, data, boost::asio::transfer_at_least(1), error))
 		{
 			double tdiff = difftime (std::time(0), time);
@@ -475,6 +501,11 @@ int WsyncThread::downloadFile(WSync *w, boost::filesystem::path localFile, strin
 			filesize_left -= data.size();
 			myfile << &data;
 		}
+
+		// dont loose some last bytes
+		if(dataspeed>0)
+			w->increaseDownloadSize(dataspeed);
+
 		if (error != boost::asio::error::eof)
 			throw boost::system::system_error(error);
 
@@ -485,9 +516,10 @@ int WsyncThread::downloadFile(WSync *w, boost::filesystem::path localFile, strin
 			printf("\nError: file size is different: should be %d, is %d. removing file.\n", reported_filesize, fileSize);
 			printf("download URL: http://%s%s\n", server.c_str(), path.c_str());
 			remove(localFile);
+			// remove file data transfer again
+			//setDownloadSize(datacounter_before);
 		}
 		
-		w->increaseDownloadSize(fileSize);
 		socket.close();
 	}
 	catch (std::exception& e)
@@ -499,8 +531,22 @@ int WsyncThread::downloadFile(WSync *w, boost::filesystem::path localFile, strin
 	return 0;
 }
 
+std::string WsyncThread::formatSeconds(int seconds)
+{
+	char tmp[255]="";
+	if(seconds > 0 && seconds < 1000000)
+	{
+		if(seconds<60)
+			sprintf(tmp, "%d seconds", seconds);
+		else
+			sprintf(tmp, "%d minutes, %d seconds", seconds/60, seconds - (((int)(seconds/60)) * 60));
+	}
+	return std::string(tmp);
+}
+
 void WsyncThread::downloadProgress(WSync *w)
 {
+	// this function will format and send some info to the gui
 	unsigned int size_left = predDownloadSize - w->getDownloadSize();
 	unsigned int size_done = w->getDownloadSize();
 	double tdiff = difftime (std::time(0), dlStartTime);
@@ -508,25 +554,30 @@ void WsyncThread::downloadProgress(WSync *w)
 	float eta = size_left / speed;
 	float progress = ((float)w->getDownloadSize()) /((float)predDownloadSize);
 	char tmp[255]="";
-	char etastr[255]="";
-	if(eta > 0 && eta < 1000000)
-	{
-		if(eta<60)
-			sprintf(etastr, ", ETA: % 4.0f seconds", eta);
-		else
-			sprintf(etastr, ", ETA: % 4.1f minutes", eta/60.0);
-	}
+
+	// update the progress bar
+	updateCallback(MSE_UPDATE_PROGRESS, "", progress);
 
 	string sizeDone = WSync::formatFilesize(size_done);
 	string sizePredicted = WSync::formatFilesize(predDownloadSize);
 	
+	string timestr = formatSeconds(tdiff);
+	updateCallback(MSE_UPDATE_TIME, timestr);
+	
+	timestr = formatSeconds(eta);
+	updateCallback(MSE_UPDATE_TIME_LEFT, timestr);
+
 	string speedstr = WSync::formatFilesize((int)speed) + "/s";
-	sprintf(tmp, "%s / %s (% 3.0f%%) %s%s", sizeDone.c_str(), sizePredicted.c_str(), progress * 100, speedstr.c_str(), etastr);
-	updateCallback(MSE_UPDATE3, string(tmp), progress);
+	updateCallback(MSE_UPDATE_SPEED, speedstr);
+	
+	char trafstr[256] = "";
+	sprintf(trafstr, "%s / %s (%0.0f%%)", sizeDone.c_str(), sizePredicted.c_str(), progress * 100);
+	updateCallback(MSE_UPDATE_TRAFFIC, string(trafstr));
 }
 
 void WsyncThread::findMirror(bool probeForBest)
 {
+	// disabled for now - testing
 	if(!probeForBest)
 	{
 		// just collect a best fitting server by geolocating this client's IP
@@ -550,5 +601,8 @@ void WsyncThread::findMirror(bool probeForBest)
 		// probe servers :D
 
 	}
+
+	string stxt = server + serverdir;
+	updateCallback(MSE_UPDATE_SERVER, stxt);
 
 }

@@ -96,6 +96,7 @@ public:
 	std::string findHashInHashmap(std::map<std::string, std::map<std::string, Hashentry>> hashMap, std::string filename);
 
 	void increaseDownloadSize(unsigned int size){downloadSize+=size;};
+	void setDownloadSize(unsigned int size){downloadSize=size;};
 protected:
 	// members
 	char statusText[1025];

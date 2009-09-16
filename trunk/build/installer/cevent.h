@@ -68,6 +68,6 @@ typedef void (wxEvtHandler::*MyStatusEventFunction)(MyStatusEvent &);
 // named IDs in an enumeration.
 
 // MSE = my status event ;)
-enum { MSE_STARTING, MSE_UPDATE1, MSE_UPDATE2, MSE_UPDATE3, MSE_DONE, MSE_ERROR };
+enum { MSE_STARTING, MSE_UPDATE_TEXT, MSE_UPDATE_PROGRESS, MSE_DONE, MSE_ERROR, MSE_UPDATE_TIME, MSE_UPDATE_SPEED, MSE_UPDATE_TRAFFIC, MSE_UPDATE_PATH, MSE_UPDATE_SERVER, MSE_UPDATE_TIME_LEFT};
 
 #endif //CEVENT_H__
