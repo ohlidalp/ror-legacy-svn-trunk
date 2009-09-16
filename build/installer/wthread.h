@@ -38,6 +38,7 @@ protected:
 	// wsync related functions
 	int getSyncData();
 	void findMirror(bool probeForBest=false);
+	std::string formatSeconds(int seconds);
 
 	WSync *w;
 	std::map < std::string, Hashentry> hashMapLocal;

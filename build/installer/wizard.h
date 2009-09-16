@@ -508,7 +508,9 @@ class DownloadPage : public wxWizardPageSimple, public EnterLeavePage
 	friend class WsyncThread;
 public:
 	DownloadPage(wxWizard *parent, ConfigManager* cm) : wxWizardPageSimple(parent), m_cm(cm)
-	{		
+	{
+		threadStarted=false;
+		isDone=false;
 		m_bitmap = wxBitmap(download_xpm);
 		wxBoxSizer *mainSizer = new wxBoxSizer(wxVERTICAL);
 		wxStaticText *tst;
@@ -519,40 +521,68 @@ public:
 		tst->SetFont(dfont);
 		tst->Wrap(TXTWRAP);
 
-		// 1
-		statusText1=new wxStaticText(this, wxID_ANY, _T("Please wait for the download to finish\n"));
-		mainSizer->Add(statusText1, 0, wxALL, 2);
+		// status text and progress bar
+		statusText=new wxStaticText(this, wxID_ANY, _T("Please wait for the download to finish\n"));
+		mainSizer->Add(statusText, 0, wxALL, 2);
 		tst->Wrap(TXTWRAP);
-		progress1=new wxGauge(this, wxID_ANY, 1000, wxDefaultPosition, wxDefaultSize, wxGA_HORIZONTAL|wxGA_SMOOTH);
-		mainSizer->Add(progress1, 0, wxALL|wxEXPAND, 0);
-
-		// 2
-		statusText2=new wxStaticText(this, wxID_ANY, _T("Please wait for the download to finish\n"));
-		mainSizer->Add(statusText2, 0, wxALL, 2);
-		tst->Wrap(TXTWRAP);
-		progress2=new wxGauge(this, wxID_ANY, 1000, wxDefaultPosition, wxDefaultSize, wxGA_HORIZONTAL|wxGA_SMOOTH);
-		mainSizer->Add(progress2, 0, wxALL|wxEXPAND, 0);
-
-		// 3
-		mainSizer->Add(new wxStaticText(this, wxID_ANY, _T("Overall Download Progress:")));
-
-		statusText3=new wxStaticText(this, wxID_ANY, _T("Please wait for the download to finish\n"));
-		mainSizer->Add(statusText3, 0, wxALL, 2);
-		tst->Wrap(TXTWRAP);
-		progress3=new wxGauge(this, wxID_ANY, 1000, wxDefaultPosition, wxDefaultSize, wxGA_HORIZONTAL|wxGA_SMOOTH);
-		mainSizer->Add(progress3, 0, wxALL|wxEXPAND, 0);
+		progress=new wxGauge(this, wxID_ANY, 1000, wxDefaultPosition, wxDefaultSize, wxGA_HORIZONTAL|wxGA_SMOOTH);
+		mainSizer->Add(progress, 0, wxALL|wxEXPAND, 0);
 
 
+		// now the information thingy
+		wxGridSizer *wxg = new wxGridSizer(3, 2, 5, 5);
+
+		// download time
+		wxStaticText *txt = new wxStaticText(this, wxID_ANY, _T("Download time: "));
+		wxg->Add(txt, 0, wxALL|wxEXPAND, 5);
+		txt_dltime = new wxStaticText(this, wxID_ANY, _T("n/a"));
+		wxg->Add(txt_dltime, 0, wxALL|wxEXPAND, 5);
+
+		// download time
+		txt = new wxStaticText(this, wxID_ANY, _T("Remaining time: "));
+		wxg->Add(txt, 0, wxALL|wxEXPAND, 5);
+		txt_remaintime = new wxStaticText(this, wxID_ANY, _T("n/a"));
+		wxg->Add(txt_remaintime, 0, wxALL|wxEXPAND, 5);
+
+		// traffic
+		txt = new wxStaticText(this, wxID_ANY, _T("Data transferred: "));
+		wxg->Add(txt, 0, wxALL|wxEXPAND, 5);
+		txt_traf = new wxStaticText(this, wxID_ANY, _T("n/a"));
+		wxg->Add(txt_traf, 0, wxALL|wxEXPAND, 5);
+
+		// speed
+		txt = new wxStaticText(this, wxID_ANY, _T("Speed: "));
+		wxg->Add(txt, 0, wxALL|wxEXPAND, 5);
+		txt_speed = new wxStaticText(this, wxID_ANY, _T("n/a"));
+		wxg->Add(txt_speed, 0, wxALL|wxEXPAND, 5);
+
+		// Local Path
+		txt = new wxStaticText(this, wxID_ANY, _T("Sync Path: "));
+		wxg->Add(txt, 0, wxALL|wxEXPAND, 5);
+		txt_localpath = new wxStaticText(this, wxID_ANY, _T("n/a"));
+		wxg->Add(txt_localpath, 0, wxALL|wxEXPAND, 5);
+
+		// Server used
+		txt = new wxStaticText(this, wxID_ANY, _T("Server used: "));
+		wxg->Add(txt, 0, wxALL|wxEXPAND, 5);
+		txt_server = new wxStaticText(this, wxID_ANY, _T("n/a"));
+		wxg->Add(txt_server, 0, wxALL|wxEXPAND, 5);
+
+		mainSizer->Add(wxg, 0, wxALL|wxEXPAND, 5);
 		SetSizer(mainSizer);
 		mainSizer->Fit(this);
 		
 		//timer = new wxTimer(this, ID_TIMER);
-
+		
+		//disable forward button
+		//FindWindow(wxID_FORWARD)->Disable();
 	}
 
 	
 	void startThread()
 	{
+		if(threadStarted) return;
+		threadStarted=true;
 		m_pThread = new WsyncThread(this, m_cm->getInstallPath(), *(m_cm->getStreamset()));
 		if ( m_pThread->Create() != wxTHREAD_NO_ERROR )
 		{
@@ -591,19 +621,16 @@ public:
 
 	bool OnLeave(bool forward)
 	{
-		return true;
+		return isDone;
 	}	
 
 private:
-	wxStaticText *statusText1;
-	wxGauge *progress1;
+	wxStaticText *txt_dltime, *txt_speed, *txt_traf, *txt_localpath, *txt_server, *txt_remaintime;
+	wxStaticText *statusText;
+	wxGauge *progress;
+	bool threadStarted;
+	bool isDone;
 	
-	wxStaticText *statusText2;
-	wxGauge *progress2;
-
-	wxStaticText *statusText3;
-	wxGauge *progress3;
-
 	ConfigManager* m_cm;
 	WsyncThread *m_pThread;
 	
@@ -612,36 +639,45 @@ private:
 		switch(ev.GetId())
 		{
 		case MSE_STARTING:
-			statusText2->SetLabel(_(""));
-			progress2->SetValue(0);
-			statusText3->SetLabel(_(""));
-			progress3->SetValue(0);
 			break;
-		case MSE_UPDATE2:
-			statusText2->SetLabel(ev.text);
-			progress2->SetValue(ev.progress * 1000.0f);
+		case MSE_UPDATE_TEXT:
+			statusText->SetLabel(ev.text);
 			break;
-		case MSE_UPDATE3:
-			statusText3->SetLabel(ev.text);
-			progress3->SetValue(ev.progress * 1000.0f);
+		case MSE_UPDATE_PROGRESS:
+			progress->SetValue(ev.progress * 1000.0f);
 			break;
 		case MSE_ERROR:
-			statusText1->SetLabel(_("error: ") + ev.text);
-			progress1->SetValue(1000);
-			statusText2->SetLabel(_(""));
-			progress2->SetValue(0);
-			statusText3->SetLabel(_(""));
-			progress3->SetValue(0);
+			statusText->SetLabel(_("error: ") + ev.text);
+			progress->SetValue(1000);
 			wxMessageBox(ev.text, _("Error"), wxICON_ERROR | wxOK, this);
 			break;
+		case MSE_UPDATE_TIME:
+			txt_dltime->SetLabel(ev.text);
+			break;
+		case MSE_UPDATE_TIME_LEFT:
+			txt_remaintime->SetLabel(ev.text);
+			break;
+		case MSE_UPDATE_SPEED:
+			txt_speed->SetLabel(ev.text);
+			break;
+		case MSE_UPDATE_TRAFFIC:
+			txt_traf->SetLabel(ev.text);
+			break;
+		case MSE_UPDATE_PATH:
+			txt_localpath->SetLabel(ev.text);
+			break;
+		case MSE_UPDATE_SERVER:
+			txt_server->SetLabel(ev.text);
+			break;
+
+
 		case MSE_DONE:
 			// normal end
-			statusText1->SetLabel(_("All streams processed"));
-			progress1->SetValue(1000);
-			statusText2->SetLabel(ev.text);
-			progress2->SetValue(ev.progress * 1000.0f);
-			statusText3->SetLabel(_(""));
-			progress3->SetValue(1000);
+			statusText->SetLabel(_("All streams processed"));
+			progress->SetValue(1000);
+			isDone=true;
+			// enableforward button
+			//FindWindow(wxID_FORWARD)->Enable();
 			break;
 		}
 	}
