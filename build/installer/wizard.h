@@ -262,7 +262,7 @@ public:
 		{
 			arb->Enable(0, false);
 			arb->Enable(1, false);
-			arb->SetSelection(1);
+			arb->SetSelection(2);
 		}
 		mainSizer->Add(arb, 0, wxALL, 5);
 
