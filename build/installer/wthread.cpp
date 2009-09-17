@@ -12,7 +12,7 @@ using namespace boost::asio::ip;
 using namespace boost::filesystem; 
 using namespace std; 
 
-WsyncThread::WsyncThread(DownloadPage *_handler, wxString _ipath, std::vector < stream_desc_t > _streams) : wxThread(wxTHREAD_DETACHED), handler(_handler), ipath(conv(_ipath)), streams(_streams), predDownloadSize(0), dlStartTime(), dlStarted(false), w(new WSync())
+WsyncThread::WsyncThread(DownloadPage *_handler, wxString _ipath, std::vector < stream_desc_t > _streams) : wxThread(wxTHREAD_DETACHED), handler(_handler), ipath(conv(_ipath)), streams(_streams), predDownloadSize(0), dlStartTime(std::time(0)), dlStarted(false), w(new WSync())
 {
 	// main server
 	mainserver = server = "wsync.rigsofrods.com";
@@ -32,6 +32,7 @@ WsyncThread::ExitCode WsyncThread::Entry()
 	findMirror();
 	getSyncData();
 	sync();
+	recordDataUsage();
 
 	return (WsyncThread::ExitCode)0;     // success
 }
@@ -335,6 +336,9 @@ retry2:
 		sprintf(tmp, "sync complete (already up to date), downloaded %s\n", WSync::formatFilesize(w->getDownloadSize()).c_str());
 	}
 
+	// update progress for the last time
+	downloadProgress(w);
+	// user may proceed
 	updateCallback(MSE_DONE, string(tmp), 1);
 	return res;
 }
@@ -511,16 +515,22 @@ int WsyncThread::downloadFile(WSync *w, boost::filesystem::path localFile, strin
 
 		myfile.close();
 		boost::uintmax_t fileSize = file_size(localFile);
+		socket.close();
 		if(reported_filesize != 0 && fileSize != reported_filesize)
 		{
 			printf("\nError: file size is different: should be %d, is %d. removing file.\n", reported_filesize, fileSize);
 			printf("download URL: http://%s%s\n", server.c_str(), path.c_str());
 			remove(localFile);
+			return 1;
 			// remove file data transfer again
 			//setDownloadSize(datacounter_before);
 		}
 		
-		socket.close();
+		// traffic stats tracking
+		if(traffic_stats.find(server) == traffic_stats.end())
+			traffic_stats[server] = 0;
+		// add filesize to traffic stats
+		traffic_stats[server] += fileSize;
 	}
 	catch (std::exception& e)
 	{
@@ -564,15 +574,48 @@ void WsyncThread::downloadProgress(WSync *w)
 	string timestr = formatSeconds(tdiff);
 	updateCallback(MSE_UPDATE_TIME, timestr);
 	
-	timestr = formatSeconds(eta);
-	updateCallback(MSE_UPDATE_TIME_LEFT, timestr);
+	if(eta > 10)
+	{
+		timestr = formatSeconds(eta);
+		updateCallback(MSE_UPDATE_TIME_LEFT, timestr);
+	} else
+	{
+		timestr = conv(_("less than 10 seconds"));
+		updateCallback(MSE_UPDATE_TIME_LEFT, timestr);
+	}
 
-	string speedstr = WSync::formatFilesize((int)speed) + "/s";
-	updateCallback(MSE_UPDATE_SPEED, speedstr);
+	if(tdiff > 10)
+	{
+		// only show speed if download duration was longer than 10 seconds
+		string speedstr = WSync::formatFilesize((int)speed) + "/s";
+		updateCallback(MSE_UPDATE_SPEED, speedstr);
+	}
 	
-	char trafstr[256] = "";
-	sprintf(trafstr, "%s / %s (%0.0f%%)", sizeDone.c_str(), sizePredicted.c_str(), progress * 100);
-	updateCallback(MSE_UPDATE_TRAFFIC, string(trafstr));
+	if(progress<1.0f)
+	{
+		char trafstr[256] = "";
+		sprintf(trafstr, "%s / %s (%0.0f%%)", sizeDone.c_str(), sizePredicted.c_str(), progress * 100);
+		updateCallback(MSE_UPDATE_TRAFFIC, string(trafstr));
+	} else
+	{
+		string sizeOverhead = WSync::formatFilesize(size_done-predDownloadSize);
+		char trafstr[256] = "";
+		sprintf(trafstr, "%s (%s overhead)", sizeDone.c_str(), sizeOverhead.c_str());
+		updateCallback(MSE_UPDATE_TRAFFIC, string(trafstr));
+	}
+}
+
+void WsyncThread::recordDataUsage()
+{
+	if(traffic_stats.size() == 0) return;
+	std::map < std::string, unsigned int >::iterator itt;
+	for(itt=traffic_stats.begin();itt!=traffic_stats.end(); itt++)
+	{
+		std::vector< std::vector< std::string > > list;
+		char tmp[256]="";
+		sprintf(tmp, API_RECORDTRAFFIC, itt->first.c_str(), itt->second);
+		w->responseLessRequest(API_SERVER, string(tmp));
+	}
 }
 
 void WsyncThread::findMirror(bool probeForBest)

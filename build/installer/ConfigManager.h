@@ -75,6 +75,7 @@ private:
 	int installeraction;
 	std::vector < stream_desc_t > streams;
 	void clearStreamset();
+	void setInstallationPath();
 };
 
 #endif

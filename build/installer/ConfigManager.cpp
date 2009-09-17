@@ -127,13 +127,25 @@ wxString ConfigManager::getInstallationPath()
 #else
 	return wxString();
 #endif //WIN32
+}
 
+
+void ConfigManager::setInstallationPath()
+{
+#ifdef WIN32
+	wxRegKey *pRegKey = new wxRegKey(wxT("HKEY_LOCAL_MACHINE\\Software\\RigsOfRods"));
+	if(!pRegKey->Exists())
+		pRegKey->Create();
+	pRegKey->SetValue(wxT("InstallPath"), installPath);
+#else
+	// TODO: implement
+#endif //WIN32
 }
 
 bool ConfigManager::isFirstInstall()
 {
 	wxString path = getInstallationPath();
-	setInstallPath(path);
+	installPath = path; //dont use setter, because it would write into the registry again
 #ifdef WIN32
 	if(path.empty())
 		return true;
@@ -159,6 +171,7 @@ int ConfigManager::getAction()
 void ConfigManager::setInstallPath(wxString pth)
 {
 	installPath=pth;
+	setInstallationPath();
 }
 
 wxString ConfigManager::getInstallPath()
@@ -183,7 +196,8 @@ void ConfigManager::setStreamSelection(stream_desc_t* desc, bool selection)
 		// we use the path, since it is unique
 		if(it->path == desc->path)
 		{
-			if (!it->disabled) it->checked=selection;
+			if (!it->disabled)
+				it->checked=selection;
 			return;
 		}
 	}

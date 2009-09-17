@@ -769,6 +769,13 @@ int WSync::loadHashMapFromFile(boost::filesystem::path &filename, std::map<strin
 	return 0;
 }
 
+
+int WSync::responseLessRequest(std::string server, std::string uri)
+{
+	std::vector< std::vector< std::string > > list;
+	return downloadConfigFile(server, uri, list);
+}
+
 int WSync::downloadFile(boost::filesystem::path localFile, string server, string path, bool displayProgress, bool debug)
 {
 	// remove '//' and '///' from url
