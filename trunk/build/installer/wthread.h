@@ -24,6 +24,7 @@ protected:
 	boost::filesystem::path ipath; // installation path, what we work on
 	std::vector < stream_desc_t > streams;
 	boost::uintmax_t predDownloadSize;
+	std::map < std::string, unsigned int > traffic_stats;
 	time_t dlStartTime;
 	bool dlStarted;
 
@@ -37,6 +38,7 @@ protected:
 
 	// wsync related functions
 	int getSyncData();
+	void recordDataUsage();
 	void findMirror(bool probeForBest=false);
 	std::string formatSeconds(int seconds);
 

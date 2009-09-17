@@ -248,18 +248,20 @@ public:
 		}
 		wxString choices[3];
 		choices[0]=_T("Install");
-		choices[1]=_T("Update");
-		choices[2]=_T("Uninstall");
-		arb=new wxRadioBox(this, wxID_ANY, _T("Actions"), wxDefaultPosition, wxDefaultSize, 3, choices, 1, wxRA_SPECIFY_COLS);
+		choices[1]=_T("Upgrade older Installation");
+		choices[2]=_T("Update");
+		choices[3]=_T("Uninstall");
+		arb=new wxRadioBox(this, wxID_ANY, _T("Actions"), wxDefaultPosition, wxDefaultSize, 4, choices, 1, wxRA_SPECIFY_COLS);
 		if (firstInstall)
 		{
-			arb->Enable(1, false);
 			arb->Enable(2, false);
+			arb->Enable(3, false);
 			arb->SetSelection(0);
 		}
 		else
 		{
 			arb->Enable(0, false);
+			arb->Enable(1, false);
 			arb->SetSelection(1);
 		}
 		mainSizer->Add(arb, 0, wxALL, 5);
@@ -332,6 +334,7 @@ public:
 		mainSizer->Add(brobut=new wxButton(this, ID_BROWSE, _T("Browse...")), 0, wxBOTTOM|wxLEFT|wxRIGHT , 5);
         
 
+		/*
 		mainSizer->Add(tst=new wxStaticText(this, wxID_ANY, _T("\nChoose the user directory:")), 0, wxTOP|wxLEFT|wxRIGHT, 5);
 		wxString choices2[2];
 #if PLATFORM == PLATFORM_WINDOWS
@@ -344,7 +347,8 @@ public:
 		choices2[1]=_T("Custom (specify later)");
 		wxRadioBox *arb2=new wxRadioBox(this, wxID_ANY, _T("User directory"), wxDefaultPosition, wxDefaultSize, 2, choices2, 1, wxRA_SPECIFY_COLS);
 		mainSizer->Add(arb2, 0, wxTOP|wxLEFT|wxRIGHT, 5);
-		
+		*/
+
 		//mainSizer->Add(tst=new wxStaticText(this, wxID_ANY, _T("You should have at least 100MB of free disk space on this drive to install Rigs of Rods.\n")), 0, wxALL, 5);
 		tst->Wrap(TXTWRAP);
 
@@ -430,20 +434,6 @@ public:
 		mainSizer->Fit(this);
 		
 	}
-
-
-	/*
-	void OnThreadCompletion(wxThreadEvent&)
-	{
-		wxMessageOutputDebug().Printf("MYFRAME: MyThread exited!\n");
-	}
-
-	void OnThreadUpdate(wxThreadEvent&)
-	{
-		wxMessageOutputDebug().Printf("MYFRAME: MyThread update...\n");
-	}
-	*/
-
 
 	bool OnEnter(bool forward)
 	{
@@ -551,7 +541,7 @@ public:
 		wxg->Add(txt_traf, 0, wxALL|wxEXPAND, 5);
 
 		// speed
-		txt = new wxStaticText(this, wxID_ANY, _T("Speed: "));
+		txt = new wxStaticText(this, wxID_ANY, _T("Average Download Speed: "));
 		wxg->Add(txt, 0, wxALL|wxEXPAND, 5);
 		txt_speed = new wxStaticText(this, wxID_ANY, _T("n/a"));
 		wxg->Add(txt_speed, 0, wxALL|wxEXPAND, 5);
@@ -673,8 +663,9 @@ private:
 
 		case MSE_DONE:
 			// normal end
-			statusText->SetLabel(_("All streams processed"));
+			statusText->SetLabel(ev.text);
 			progress->SetValue(1000);
+			txt_remaintime->SetLabel(wxT(""));
 			isDone=true;
 			// enableforward button
 			//FindWindow(wxID_FORWARD)->Enable();

@@ -23,6 +23,7 @@
 
 // functions
 #define API_MIRROR     "/getwsyncmirror/"
+#define API_RECORDTRAFFIC "/reporttraffic/?mirror=%s&bytes=%d"
 #define API_REPOSEARCH "/reposearch/"
 #define REPO_DOWNLOAD  "/files/mirror/geoselect/"
 
@@ -71,6 +72,8 @@ public:
 	static int getTempFilename(boost::filesystem::path &tempfile);
 
 	int downloadMod(std::string modname, std::string &modfilename, boost::filesystem::path path, bool util=false);
+	
+	int responseLessRequest(std::string server, std::string uri);
 	
 	int downloadConfigFile(std::string server, std::string remoteDir, std::vector< std::vector< std::string > > &list);
 	int downloadAdvancedConfigFile(std::string server, std::string path, std::vector< std::map< std::string, std::string > > &list);
