@@ -243,6 +243,7 @@ void GLXProc( const XEvent &event )
 
 	//Now that we have the correct RenderWindow for the generated Event, get an iterator for the listeners
 	WindowEventUtilities::WindowEventListeners::iterator 
+		index,
 		start = WindowEventUtilities::_msListeners.lower_bound(win),
 		end   = WindowEventUtilities::_msListeners.upper_bound(win);
 
@@ -263,22 +264,25 @@ void GLXProc( const XEvent &event )
 		break;
 	}
 	case ConfigureNotify:	//Moving or Resizing
-		unsigned int width, height, depth;
-		int left, top;
-		win->getMetrics(width, height, depth, left, top);
+		unsigned int oldWidth, oldHeight, oldDepth;
+		int oldLeft, oldTop;
+		win->getMetrics(oldWidth, oldHeight, oldDepth, oldLeft, oldTop);
+		win->windowMovedOrResized();
 
-		//determine if moving or sizing:
-		if( left == event.xconfigure.x && top == event.xconfigure.y )
-		{	//Resize width, height
-			win->windowMovedOrResized();
-			for( ; start != end; ++start )
-				(start->second)->windowResized(win);
+		unsigned int newWidth, newHeight, newDepth;
+		int newLeft, newTop;
+		win->getMetrics(newWidth, newHeight, newDepth, newLeft, newTop);
+
+		if (newLeft != oldLeft || newTop != oldTop)
+		{
+            for(index = start ; index != end; ++index)
+                (index->second)->windowMoved(win);
 		}
-		else if( width == event.xconfigure.width && height == event.xconfigure.height )
-		{	//Moving x, y
-			win->windowMovedOrResized();
-			for( ; start != end; ++start )
-				(start->second)->windowMoved(win);
+
+		if (newWidth != oldWidth || newHeight != oldHeight)
+		{
+            for(index = start ; index != end; ++index)
+                (index->second)->windowResized(win);
 		}
 		break;
 	case MapNotify:   //Restored
