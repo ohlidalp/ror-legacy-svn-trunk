@@ -332,7 +332,8 @@ GUI_Friction::GUI_Friction() : col(0), active_gm(0), selected_gm(0)
 	t = win->createWidget<MyGUI::StaticText>("StaticText",  x, y, 170, 20,  MyGUI::Align::Default); x+=175;
 	t->setCaption(_L("Ground Debug"));
 	*/
-	
+
+	win->eventWindowButtonPressed = MyGUI::newDelegate(this, &GUI_Friction::notifyWindowButtonPressed);
 	win->setVisible(false);
 
 	// set initial values
@@ -582,4 +583,10 @@ void GUI_Friction::applyChanges()
 	else if(cb->getIndexSelected() == 2)
 		selected_gm->fx_type = FX_CLUMPY;
 
+}
+
+void GUI_Friction::notifyWindowButtonPressed(MyGUI::WidgetPtr _sender, const std::string& _name)
+{
+	if (_name == "close")
+		setVisible(false);
 }
