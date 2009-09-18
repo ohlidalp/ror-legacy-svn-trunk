@@ -7807,6 +7807,13 @@ void ExampleFrameListener::windowResized(RenderWindow* rw)
 			mCamera->setAspectRatio(Real(vp->getActualWidth()) / Real(vp->getActualHeight()));
 	}
 
+	// Update mouse screen width/height
+	unsigned int width, height, depth;
+	int left, top;
+	rw->getMetrics(width, height, depth, left, top);
+	screenWidth = width;
+	screenHeight = height;
+
 	// update GUI area
 	MYGUI.windowResized(rw);
 
