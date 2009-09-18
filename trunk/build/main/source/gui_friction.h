@@ -57,6 +57,7 @@ protected:
 	void event_combo_grounds_eventComboAccept(MyGUI::WidgetPtr _sender, size_t _index);
 	void event_btn_MouseButtonClick(MyGUI::WidgetPtr _sender);
 	void event_scroll_value(MyGUI::WidgetPtr _sender, size_t _value);
+	void notifyWindowButtonPressed(MyGUI::WidgetPtr _sender, const std::string& _name);
 	void applyChanges();
 };
 
