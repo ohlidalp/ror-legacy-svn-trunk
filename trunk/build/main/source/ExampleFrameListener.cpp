@@ -4762,7 +4762,7 @@ void ExampleFrameListener::shutdown_pre()
 	if (net) net->disconnect();
 	showcredits=1;
 	loading_state=EXITING;
-	OverlayManager::getSingleton().getByName(_L("tracks/CreditsOverlay"))->show();
+	OverlayManager::getSingleton().getByName("tracks/CreditsOverlay")->show();
 	ssm->soundEnable(false);
 }
 

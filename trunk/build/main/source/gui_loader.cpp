@@ -685,7 +685,7 @@ void GUI_Loader::setPreviewImage(Ogre::String texture)
 	{
 	}
 	if(group == "")
-		texture = ("unknown.dds"); // without _T() !
+		texture = ("unknown.dds"); // without _L() !
 
 	image_preview->setImageTexture(texture);
 }
