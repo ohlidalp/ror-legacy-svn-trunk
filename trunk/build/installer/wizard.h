@@ -67,6 +67,7 @@ along with Rigs of Rods.  If not, see <http://www.gnu.org/licenses/>.
 #include "download.xpm"
 #include "finished.xpm"
 
+
 #define TXTWRAP 400
 
 // platform tools
@@ -80,10 +81,8 @@ along with Rigs of Rods.  If not, see <http://www.gnu.org/licenses/>.
 
 
 #if PLATFORM == PLATFORM_WINDOWS
-#include <WinBase.h>
 #include <shlobj.h> // for the special path functions
-//#include <objbase.h>
-//#include <shlguid.h>
+#include "symlink.h"
 #endif//win
 
 
@@ -500,12 +499,15 @@ public:
 		if (forward)
 		{
 			//store the user settings
-			int i=0;
-			while (wxStrel *wst=dynamic_cast<wxStrel*>(scrwsz->GetItem(i)))
+			// XXX: TODO: fix this!
+			/*
+			wxSizerItemList list = scrwsz->GetChildren();
+			for(wxSizerItemList::iterator it=list.begin(); it!=list.end(); it++)
 			{
+				wxStrel *wst = dynamic_cast<wxStrel*>(*it);
 				m_cm->setStreamSelection(wst->getDesc(), wst->getSelection());
-				i++;
 			}
+			*/
 		}
 
 		return true;
@@ -813,13 +815,13 @@ public:
 
 		wxString linkTarget = m_cm->getInstallPath() + wxT("RoR.exe");
 		wxString linkFile = startmenuDir + wxT("\\Rigs of Rods.lnk");
+		wxString linkDescription = wxT("start Rigs of Rods");
 
 		if(wxFileExists(linkFile))
 			wxRemoveFile(linkFile);
 
 		//wxMessageBox(_T("link dirs: \n")+linkTarget+wxT("\n")+linkFile, _T("INFO"), wxICON_INFORMATION | wxOK);
-		//CreateSymbolicLink(wxStringBuffer(linkFile, MAX_PATH), wxStringBuffer(linkTarget, MAX_PATH), 0);
-
+		int res = createLink(conv(linkTarget), conv(linkFile), conv(linkDescription));
 #endif //PLATFORM_WINDOWS
 	}
 
