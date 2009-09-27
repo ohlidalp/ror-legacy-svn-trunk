@@ -236,7 +236,7 @@ public:
 		} else
 		{
 			wxString installPath = cm->getInstallationPath();
-			mainSizer->Add(tst=new wxStaticText(this, wxID_ANY, _T("You have already installed the game installed in:\n")), 0, wxALL, 5);
+			mainSizer->Add(tst=new wxStaticText(this, wxID_ANY, _T("The game is currently installed in:\n")), 0, wxALL, 5);
 			tst->Wrap(TXTWRAP);
 			
 			mainSizer->Add(tst=new wxStaticText(this, wxID_ANY, installPath), 0, wxALL, 10);
@@ -736,7 +736,7 @@ public:
 		dfont.SetPointSize(dfont.GetPointSize()+4);
 		tst->SetFont(dfont);
 		tst->Wrap(TXTWRAP);
-		mainSizer->Add(tst=new wxStaticText(this, wxID_ANY, _T("Thank you for downloading Rigs of Rods.\n")), 0, wxALL, 5);
+		mainSizer->Add(tst=new wxStaticText(this, wxID_ANY, _T("Thank you for downloading Rigs of Rods.\nThe Start menu and Desktop shortcuts were created.")), 0, wxALL, 5);
 		tst->Wrap(TXTWRAP);
 
 		SetSizer(mainSizer);
@@ -792,36 +792,44 @@ public:
 	}
 	*/
 
+	// small wrapper that converts wxString to std::string and remvoes the file if already existing
+	int createWindowsShortcut(wxString linkTarget, wxString workingDirectory, wxString linkFile, wxString linkDescription)
+	{
+		if(wxFileExists(linkFile)) wxRemoveFile(linkFile);
+		return createLink(conv(linkTarget), conv(workingDirectory), conv(linkFile), conv(linkDescription));
+	}
 
 	void createProgramLinks()
 	{
-		// XXX: TODO: FIX ME!
+		// XXX: TODO: ADD LINUX code!
 		// create shortcuts
 #if PLATFORM == PLATFORM_WINDOWS
+		wxString startmenuDir, desktopDir, workingDirectory;
 
 		// XXX: ADD PROPER ERROR HANDLING
-		wxString startmenuDir;
-		if(!SHGetSpecialFolderPath(0, wxStringBuffer(startmenuDir, MAX_PATH), CSIDL_PROGRAMS, FALSE))
+		// CSIDL_COMMON_PROGRAMS = start menu for all users
+		// CSIDL_PROGRAMS = start menu for current user only
+		if(!SHGetSpecialFolderPath(0, wxStringBuffer(startmenuDir, MAX_PATH), CSIDL_COMMON_PROGRAMS, FALSE))
 			return;
 		
-		wxString desktopDir;
+		// same with CSIDL_COMMON_DESKTOPDIRECTORY and CSIDL_DESKTOP
 		if(!SHGetSpecialFolderPath(0, wxStringBuffer(desktopDir, MAX_PATH), CSIDL_DESKTOP, FALSE))
 			return;
 
+		workingDirectory = m_cm->getInstallPath();
+		// ensure our directory in the start menu exists
 		startmenuDir += wxT("\\Rigs of Rods");
+		if (!wxDir::Exists(startmenuDir)) wxFileName::Mkdir(startmenuDir);
 
-		if (!wxDir::Exists(startmenuDir))
-			wxFileName::Mkdir(startmenuDir);
+		// the actual linking
+		createWindowsShortcut(workingDirectory + wxT("rorconfig.exe"), workingDirectory, desktopDir + wxT("\\Rigs of Rods.lnk"), wxT("start Rigs of Rods"));
+		createWindowsShortcut(workingDirectory + wxT("RoR.exe"), workingDirectory, startmenuDir + wxT("\\Rigs of Rods.lnk"), wxT("start Rigs of Rods"));
+		createWindowsShortcut(workingDirectory + wxT("rorconfig.exe"), workingDirectory, startmenuDir + wxT("\\Configurator.lnk"), wxT("start Rigs of Rods Configuration Program (required upon first start)"));
+		createWindowsShortcut(workingDirectory + wxT("servergui.exe"), workingDirectory, startmenuDir + wxT("\\Multiplayer Server.lnk"), wxT("start Rigs of Rods multiplayer server"));
+		createWindowsShortcut(workingDirectory + wxT("Things_you_can_do_in_Rigs_of_Rods.pdf"), workingDirectory, startmenuDir + wxT("\\Manual.lnk"), wxT("open the RoR Manual"));
+		createWindowsShortcut(workingDirectory + wxT("keysheet.pdf"), workingDirectory, startmenuDir + wxT("\\Keysheet.lnk"), wxT("open the RoR Key Overview"));
+		createWindowsShortcut(workingDirectory + wxT("installer.exe"), workingDirectory, startmenuDir + wxT("\\Installer (update or uninstall).lnk"), wxT("open the Installer with which you can update or uninstall RoR."));
 
-		wxString linkTarget = m_cm->getInstallPath() + wxT("RoR.exe");
-		wxString linkFile = startmenuDir + wxT("\\Rigs of Rods.lnk");
-		wxString linkDescription = wxT("start Rigs of Rods");
-
-		if(wxFileExists(linkFile))
-			wxRemoveFile(linkFile);
-
-		//wxMessageBox(_T("link dirs: \n")+linkTarget+wxT("\n")+linkFile, _T("INFO"), wxICON_INFORMATION | wxOK);
-		int res = createLink(conv(linkTarget), conv(linkFile), conv(linkDescription));
 #endif //PLATFORM_WINDOWS
 	}
 

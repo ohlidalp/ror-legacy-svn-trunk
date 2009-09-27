@@ -31,10 +31,10 @@
 //                Shell link is to be stored. 
 // lpszDesc     - address of a buffer containing the description of the 
 //                Shell link. 
-HRESULT createLink2(LPCWSTR lpszPathObj, LPCWSTR lpszPathLink, LPCWSTR lpszDesc);
+HRESULT createLink2(LPCWSTR lpszPathObj, LPCWSTR lpszWorkingDir, LPCWSTR lpszPathLink, LPCWSTR lpszDesc);
 
 // small wxwidgets wrapper
-int createLink(std::string target_str, std::string filename_str, std::string description_str);
+int createLink(std::string target, std::string workingdir, std::string filename, std::string description);
 
 #endif //MAKELINK_H__
 
