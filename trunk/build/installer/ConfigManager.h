@@ -70,6 +70,8 @@ public:
 	void setInstallPath(wxString pth);
 	wxString getInstallPath();
 
+	int uninstall();
+
 private:
 	wxString installPath;
 	int installeraction;

@@ -57,26 +57,26 @@ public:
 		chk->SetValue(desc->checked);
 		chk->Enable(!desc->disabled);
 		
-		mainSizer->Add(new wxStaticBitmap(this, wxID_ANY, desc->icon), 0, wxALL, 2);
+		mainSizer->Add(new wxStaticBitmap(this, wxID_ANY, desc->icon), 0, wxALL, 1);
         wxBoxSizer *textSizer = new wxBoxSizer(wxVERTICAL);
 		wxStaticText *tst;
         
-		textSizer->Add(tst=new wxStaticText(this, wxID_ANY, desc->title), 0, wxALL, 2);
+		textSizer->Add(tst=new wxStaticText(this, wxID_ANY, desc->title), 0, wxALL, 1);
 		wxFont dfont=tst->GetFont();
 		dfont.SetWeight(wxFONTWEIGHT_BOLD);
 		dfont.SetPointSize(dfont.GetPointSize()+3);
 		tst->SetFont(dfont);
 		tst->Wrap(300);
-        textSizer->Add(tst=new wxStaticText(this, wxID_ANY, desc->desc), 0, wxALL, 2);
+        textSizer->Add(tst=new wxStaticText(this, wxID_ANY, desc->desc), 0, wxALL, 1);
 		tst->Wrap(300);
 
 		char tmp[255]="";
 		sprintf(tmp, "%0.2f MB", desc->size/1024.0f);
-		textSizer->Add(tst=new wxStaticText(this, wxID_ANY, _("Total size: ") + wxString(tmp, wxConvUTF8)), 0, wxALL, 2);
+		textSizer->Add(tst=new wxStaticText(this, wxID_ANY, _("Total size: ") + wxString(tmp, wxConvUTF8)), 0, wxALL, 1);
 		tst->Wrap(300);
 
 		
-		mainSizer->Add(textSizer, 1, wxALL|wxEXPAND , 5);
+		mainSizer->Add(textSizer, 1, wxALL|wxEXPAND , 2);
 
 		//mainSizer->Fit(this);
 	}

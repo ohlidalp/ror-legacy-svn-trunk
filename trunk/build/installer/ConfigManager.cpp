@@ -121,7 +121,13 @@ wxString ConfigManager::getInstallationPath()
 		return wxString();
 	
 	pRegKey->QueryValue(wxT("InstallPath"), path);
-	return path + wxT("\\");
+	path += wxT("\\");
+	// check if RoR.exe exists
+	bool exists = wxFileExists(path+wxT("RoR.exe"));
+	if(!exists)
+		return wxString();
+	// existing, everything correct.
+	return path;
 	// see http://docs.wxwidgets.org/stable/wx_wxregkey.html
 	//wxMessageBox(path,wxT("Registry Value"),0);
 #else
@@ -129,6 +135,20 @@ wxString ConfigManager::getInstallationPath()
 #endif //WIN32
 }
 
+int ConfigManager::uninstall()
+{
+	// this is called upon uninstall to clean the system from meta things
+
+#ifdef WIN32
+	wxString path;
+	wxRegKey *pRegKey = new wxRegKey(wxT("HKEY_LOCAL_MACHINE\\Software\\RigsOfRods"));
+	if(pRegKey->Exists())
+		pRegKey->DeleteSelf();
+#else
+	return wxString();
+#endif //WIN32
+	return 0;
+}
 
 void ConfigManager::setInstallationPath()
 {
@@ -196,8 +216,8 @@ void ConfigManager::setStreamSelection(stream_desc_t* desc, bool selection)
 		// we use the path, since it is unique
 		if(it->path == desc->path)
 		{
-			if (!it->disabled)
-				it->checked=selection;
+			//if (!it->disabled)
+			it->checked=selection;
 			return;
 		}
 	}

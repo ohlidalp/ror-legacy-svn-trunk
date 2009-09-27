@@ -69,7 +69,7 @@ MyWizard::MyWizard(wxFrame *frame, bool useSizer)
 	StreamsPage *streams = new StreamsPage(this, cm);
     ActionPage *action = new ActionPage(this, cm, licence, path, streams);
 	DownloadPage *download = new DownloadPage(this, cm);
-	LastPage *last = new LastPage(this);
+	LastPage *last = new LastPage(this, cm);
 	streams->setPages(path, action);
 
 	m_page1=presentation;

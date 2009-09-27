@@ -79,6 +79,12 @@ along with Rigs of Rods.  If not, see <http://www.gnu.org/licenses/>.
 #endif
 
 
+#if PLATFORM == PLATFORM_WINDOWS
+#include <WinBase.h>
+#include <shlobj.h> // for the special path functions
+//#include <objbase.h>
+//#include <shlguid.h>
+#endif//win
 
 
 #define ID_BROWSE 1
@@ -270,17 +276,48 @@ public:
 		mainSizer->Fit(this);
 	}
 	void SetPrev(wxWizardPage *prev) {m_prev=prev;}
+
 	virtual wxWizardPage *GetPrev() const { return m_prev; }
 	virtual wxWizardPage *GetNext() const
 	{
 		if (arb->GetSelection()==0)
+		{
 			return m_fselect;
-		else
+		} else if (arb->GetSelection()==1)
+		{
+			return m_fselect;
+		} else if (arb->GetSelection()==3)
+		{
+			// uninstall
+			// XXX: TODO FIX ME
+			wxString path = m_cm->getInstallPath();
+			wxFileName *f = new wxFileName(path);
+			f->Rmdir();
+
+			int res = wxMessageBox(_T("Do you really want to remove the directory (and thus uninstall Rigs of Rods)?") + path, _T("Uninstall?"), wxICON_QUESTION | wxYES_NO);
+			if(res == wxYES)
+			{
+				m_cm->uninstall();
+				wxMessageBox(_T("Rigs of Rods was uninstalled successfully. Thanks for using!"), _T("Uninstalled!"), wxICON_INFORMATION | wxOK);
+				exit(0);
+				// really delete
+			}
+			wxMessageBox(_T("Uninstall aborted!"), _T("uninstall?"), wxICON_ERROR | wxOK);
+			exit(0);
+
+			// we should never be here
+			return m_fselect;
+		} else
+		{
 			return m_download;
+		}
 	}
 	//output validation
 	bool OnLeave(bool forward)
 	{
+		if (forward && arb->GetSelection()==1)
+			wxMessageBox(_T("Please select the old installation directory."), _T("Upgrade installation"), wxICON_INFORMATION | wxOK);
+		
 		if (forward) m_cm->setAction(arb->GetSelection());
 		return true;
 	}
@@ -320,7 +357,11 @@ public:
 		
 		wxString path = wxT("");
 #if PLATFORM == PLATFORM_WINDOWS
-		path = _T("C:\\Program Files\\Rigs of Rods");
+		wxString dir;
+		if (SHGetSpecialFolderPath(0, wxStringBuffer(dir, MAX_PATH), CSIDL_PROGRAM_FILES, FALSE))
+		{
+			path = dir + wxT("\\Rigs of Rods");
+		}
 #elif PLATFORM == PLATFORM_LINUX
 		char homedir[255] = "";
 		strncpy(homedir, getenv ("HOME"), 250);
@@ -419,8 +460,7 @@ public:
 		mainSizer->Add(tst=new wxStaticText(this, wxID_ANY, _T("Choose which feature packs you want to download:\n")), 0, wxALL, 5);
 		tst->Wrap(TXTWRAP);
 
-		// TODO: fix width of control: size is hidden ...
-		mainSizer->Add(scrw=new wxScrolledWindow(this, wxID_ANY, wxDefaultPosition, wxDefaultSize, wxVSCROLL), 1, wxALL|wxEXPAND, 5);
+		mainSizer->Add(scrw=new wxScrolledWindow(this, wxID_ANY, wxDefaultPosition, wxDefaultSize, wxVSCROLL), 1, wxGROW, 5);
 		scrwsz=new wxBoxSizer(wxVERTICAL);
 		scrw->SetSizer(scrwsz);
 		//scrw->SetBackgroundColour(*wxWHITE);
@@ -473,7 +513,7 @@ public:
     
 	virtual wxWizardPage *GetPrev() const
 	{
-		if(m_cm->getAction() == 0)
+		if(m_cm->getAction() == 0 || m_cm->getAction() == 1)
 			return fpath;
 		return faction;
 	}
@@ -517,6 +557,7 @@ public:
 		tst->Wrap(TXTWRAP);
 		progress=new wxGauge(this, wxID_ANY, 1000, wxDefaultPosition, wxDefaultSize, wxGA_HORIZONTAL|wxGA_SMOOTH);
 		mainSizer->Add(progress, 0, wxALL|wxEXPAND, 0);
+		progress->Pulse();
 
 
 		// now the information thingy
@@ -611,6 +652,7 @@ public:
 
 	bool OnLeave(bool forward)
 	{
+		if(isDone && !forward) return false; //when done, only allow to go forward
 		return isDone;
 	}	
 
@@ -677,8 +719,10 @@ private:
 
 class LastPage : public wxWizardPageSimple, public EnterLeavePage
 {
+protected:
+	ConfigManager* m_cm;
 public:
-	LastPage(wxWizard *parent) : wxWizardPageSimple(parent)
+	LastPage(wxWizard *parent, ConfigManager* cm) : wxWizardPageSimple(parent), m_cm(cm)
 	{
 		m_bitmap = wxBitmap(finished_xpm);
 		wxBoxSizer *mainSizer = new wxBoxSizer(wxVERTICAL);
@@ -695,5 +739,88 @@ public:
 
 		SetSizer(mainSizer);
 		mainSizer->Fit(this);
+
 	}
+	
+	bool OnEnter(bool forward)
+	{
+		createProgramLinks();
+		return true;
+	}
+
+	/*
+	void createShortcut(const char *ExePath, const char *LinkFilename, const char *WorkingDirectory, const char *Description, int nFolder)
+	{
+		// Must have called CoInitalize before this function is called!
+
+		IShellLink* psl; 
+		const char *PathLink = GetSpecialFolderLocation(nFolder) + "\\" + LinkFilename;
+		
+		// Get a pointer to the IShellLink interface. 
+		HRESULT hres = CoCreateInstance(CLSID_ShellLink, NULL, CLSCTX_INPROC_SERVER, 
+										IID_IShellLink, (PVOID *) &psl); 
+		
+		if (SUCCEEDED(hres)) 
+		{ 
+			IPersistFile* ppf; 
+			
+			// Set the path to the shortcut target and add the 
+			// description. 
+			psl->SetPath((LPCSTR) ExePath); 
+			psl->SetWorkingDirectory((LPCSTR) WorkingDirectory);
+			psl->SetDescription((LPCSTR) Description); 
+			
+			// Query IShellLink for the IPersistFile interface for saving the 
+			// shortcut in persistent storage. 
+			hres = psl->QueryInterface(IID_IPersistFile, (PVOID *) &ppf); 
+			
+			if (SUCCEEDED(hres)) 
+			{ 
+				WORD wsz[MAX_PATH]; 
+				
+				// Ensure that the string is ANSI. 
+				MultiByteToWideChar(CP_ACP, 0, (LPCSTR) PathLink, -1, wsz, MAX_PATH); 
+				
+				// Save the link by calling IPersistFile::Save. 
+				hres = ppf->Save(wsz, TRUE); 
+				ppf->Release(); 
+			} 
+			psl->Release(); 
+		} 
+	}
+	*/
+
+
+	void createProgramLinks()
+	{
+		// XXX: TODO: FIX ME!
+		// create shortcuts
+#if PLATFORM == PLATFORM_WINDOWS
+
+		// XXX: ADD PROPER ERROR HANDLING
+		wxString startmenuDir;
+		if(!SHGetSpecialFolderPath(0, wxStringBuffer(startmenuDir, MAX_PATH), CSIDL_PROGRAMS, FALSE))
+			return;
+		
+		wxString desktopDir;
+		if(!SHGetSpecialFolderPath(0, wxStringBuffer(desktopDir, MAX_PATH), CSIDL_DESKTOP, FALSE))
+			return;
+
+		startmenuDir += wxT("\\Rigs of Rods");
+
+		if (!wxDir::Exists(startmenuDir))
+			wxFileName::Mkdir(startmenuDir);
+
+		wxString linkTarget = m_cm->getInstallPath() + wxT("RoR.exe");
+		wxString linkFile = startmenuDir + wxT("\\Rigs of Rods.lnk");
+
+		if(wxFileExists(linkFile))
+			wxRemoveFile(linkFile);
+
+		//wxMessageBox(_T("link dirs: \n")+linkTarget+wxT("\n")+linkFile, _T("INFO"), wxICON_INFORMATION | wxOK);
+		//CreateSymbolicLink(wxStringBuffer(linkFile, MAX_PATH), wxStringBuffer(linkTarget, MAX_PATH), 0);
+
+#endif //PLATFORM_WINDOWS
+	}
+
 };
