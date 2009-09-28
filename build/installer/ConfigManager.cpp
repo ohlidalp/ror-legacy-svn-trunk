@@ -84,11 +84,11 @@ int ConfigManager::getOnlineStreams()
 
 				s.icon      = (olist[i]["type"]=="0")?wxBitmap(mainpack_xpm):wxBitmap(extrapack_xpm);
 				s.checked   = (olist[i]["checked"] == "1");
-				s.disabled  = (olist[i]["checked"] == "1");
+				s.disabled  = (olist[i]["disabled"] == "1");
 				s.beta      = (olist[i]["beta"] == "1");
 				s.del       = (olist[i]["delete"] == "1");
 				s.overwrite = (olist[i]["overwrite"] == "1");
-				s.overwrite = (olist[i]["overwrite"] == "1");
+				//s.overwrite = (olist[i]["overwrite"] == "1");
 				conv(olist[i]["size"]).ToULong(&s.size);
 
 				if(!s.title.size()) continue;

@@ -86,6 +86,11 @@ public:
 private:
 	wxCheckBox *chk;
 	stream_desc_t *desc;
+
+	// RTTI things
+	DECLARE_ABSTRACT_CLASS(wxStrel)
+	//DECLARE_NO_COPY_CLASS(wxStrel)
+	//DECLARE_EVENT_TABLE()
 };
 
 #endif
