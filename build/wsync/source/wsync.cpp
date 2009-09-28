@@ -609,6 +609,7 @@ int WSync::downloadConfigFile(std::string server, std::string path, std::vector<
 int WSync::downloadAdvancedConfigFile(std::string server, std::string path, std::vector< std::map< std::string, std::string > > &list)
 {
 	std::vector<std::string> lines;
+	std::string buffer;
 	try
 	{
 		boost::asio::io_service io_service;
@@ -684,12 +685,16 @@ int WSync::downloadAdvancedConfigFile(std::string server, std::string path, std:
 		}
 		//printf("filesize: %d bytes\n", reported_filesize);
 
+		std::string lastline = "";
 		// Write whatever content we already have to output.
 		if (response.size() > 0)
 		{
 			string line;
 			while(getline(response_stream, line))
+			{
 				lines.push_back(line);
+				lastline = line;
+			}
 			//cout << &response;
 		}
 
@@ -700,7 +705,14 @@ int WSync::downloadAdvancedConfigFile(std::string server, std::string path, std:
 			string line;
 			std::istream data_stream(&data);
 			while(getline(data_stream, line))
-				lines.push_back(line);
+			{
+				if(line.size() && lastline.size())
+				{
+					lines.push_back(lastline+line);
+					lastline="";
+				} else
+					lines.push_back(line);
+			}
 
 			datacounter += data.size();
 		}

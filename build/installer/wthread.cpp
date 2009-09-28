@@ -50,6 +50,7 @@ int WsyncThread::getSyncData()
 {
 	// generating local FileIndex
 	path myFileIndex = ipath / INDEXFILENAME;
+	updateCallback(MSE_STARTING, "indexing files ...");
 
 	hashMapLocal.clear();
 	if(w->buildFileIndex(myFileIndex, ipath, ipath, hashMapLocal, true, 1))
@@ -147,9 +148,10 @@ int WsyncThread::sync()
 				//printf("same: %s %s==%s\n", it->first.c_str(), hashMapRemote[it->first].c_str(), it->second.c_str());
 			
 			// old deletion method
-			//if(itr->second.find(it->first) == itr->second.end())
-			//	deletedFiles.push_back(Fileentry(itr->first, it->first, it->second.filesize));
-			
+			if(itr->second.find(it->first) == itr->second.end())
+				// this file is not in this stream, ignore it for now
+				//deletedFiles.push_back(Fileentry(itr->first, it->first, it->second.filesize));
+				continue;
 			else if(itr->second[it->first].hash != it->second.hash)
 				changedFiles.push_back(Fileentry(itr->first, it->first, itr->second[it->first].filesize));
 		}
@@ -620,7 +622,7 @@ void WsyncThread::recordDataUsage()
 
 void WsyncThread::findMirror(bool probeForBest)
 {
-	// disabled for now - testing
+	updateCallback(MSE_STARTING, "finding suitable mirror ...");
 	if(!probeForBest)
 	{
 		// just collect a best fitting server by geolocating this client's IP

@@ -107,6 +107,14 @@ inline std::string conv(const wxString& s)
 }
 
 
+// utils for the wizard
+inline void setControlEnable(int id, bool state)
+{
+	return;
+	wxWindow *win = wxWindow::FindWindowById(id);
+	if(win && state)       win->Enable();
+	else if(win && !state) win->Disable();
+}
 
 // ----------------------------------------------------------------------------
 // private classes
@@ -500,25 +508,15 @@ public:
 		if (forward)
 		{
 			//store the user settings
-			// XXX: TODO: fix this!
-			wxString enabledStreamsStr;
-
-			//store the user settings
 			wxSizerItemList::compatibility_iterator node = scrwsz->GetChildren().GetFirst();
 			while (node)
 			{
 				wxSizerItem *item = node->GetData();
-
 				wxStrel *wst = (wxStrel *)item->GetUserData();
 				if(!wst) continue;
-
-				if(wst->getSelection())
-					enabledStreamsStr += wst->getDesc()->path + wxT("\n");
 				m_cm->setStreamSelection(wst->getDesc(), wst->getSelection());
 				node = node->GetNext();
 			}
-
-			wxMessageBox(wxT("enabled streams: \n") + enabledStreamsStr, _("info"), wxICON_INFORMATION | wxOK, this);
 		}
 
 		return true;
@@ -617,9 +615,6 @@ public:
 		mainSizer->Fit(this);
 		
 		//timer = new wxTimer(this, ID_TIMER);
-		
-		//disable forward button
-		//FindWindow(wxID_FORWARD)->Disable();
 	}
 
 	
@@ -650,13 +645,16 @@ public:
 		}
 	}
 	bool OnEnter(bool forward)
-	//void OnEnter(wxString operation, wxString url)
 	{
+		//disable forward and backward buttons
+		setControlEnable(wxID_FORWARD, false);
+		setControlEnable(wxID_BACKWARD, false);
 
 		std::vector < stream_desc_t > *streams = m_cm->getStreamset();
 		if(!streams->size())
 		{
 			// TODO: handle this case, go back?
+			return false;
 		}
 		
 		startThread();
@@ -684,7 +682,6 @@ private:
 		switch(ev.GetId())
 		{
 		case MSE_STARTING:
-			break;
 		case MSE_UPDATE_TEXT:
 			statusText->SetLabel(ev.text);
 			break;
@@ -723,7 +720,7 @@ private:
 			txt_remaintime->SetLabel(wxT(""));
 			isDone=true;
 			// enableforward button
-			//FindWindow(wxID_FORWARD)->Enable();
+			setControlEnable(wxID_FORWARD, true);
 			break;
 		}
 	}
