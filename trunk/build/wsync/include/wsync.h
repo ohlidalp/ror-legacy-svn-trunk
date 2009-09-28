@@ -100,6 +100,7 @@ public:
 
 	void increaseDownloadSize(unsigned int size){downloadSize+=size;};
 	void setDownloadSize(unsigned int size){downloadSize=size;};
+
 protected:
 	// members
 	char statusText[1025];
