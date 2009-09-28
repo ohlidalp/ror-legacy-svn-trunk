@@ -251,7 +251,7 @@ public:
 			mainSizer->Add(tst=new wxStaticText(this, wxID_ANY, _T("If you choose \"Uninstall\", Rigs of Rods will be deleted from your disk.\n")), 0, wxALL, 5);
 			tst->Wrap(TXTWRAP);
 		}
-		wxString choices[3];
+		wxString choices[4];
 		choices[0]=_T("Install");
 		choices[1]=_T("Upgrade older Installation");
 		choices[2]=_T("Update");
@@ -488,7 +488,8 @@ public:
 		for(std::vector < stream_desc_t >::iterator it=streams->begin(); it!=streams->end(); it++)
 		{
 			wxStrel *wst=new wxStrel(scrw, &(*it));
-			scrwsz->Add(wst, 0, wxALL|wxEXPAND,0);
+			wxSizerItem *si = scrwsz->Add(wst, 0, wxALL|wxEXPAND,0);
+			si->SetUserData((wxObject *)wst);
 		}
 		streamset=true;
 		return true;
@@ -500,14 +501,24 @@ public:
 		{
 			//store the user settings
 			// XXX: TODO: fix this!
-			/*
-			wxSizerItemList list = scrwsz->GetChildren();
-			for(wxSizerItemList::iterator it=list.begin(); it!=list.end(); it++)
+			wxString enabledStreamsStr;
+
+			//store the user settings
+			wxSizerItemList::compatibility_iterator node = scrwsz->GetChildren().GetFirst();
+			while (node)
 			{
-				wxStrel *wst = dynamic_cast<wxStrel*>(*it);
+				wxSizerItem *item = node->GetData();
+
+				wxStrel *wst = (wxStrel *)item->GetUserData();
+				if(!wst) continue;
+
+				if(wst->getSelection())
+					enabledStreamsStr += wst->getDesc()->path + wxT("\n");
 				m_cm->setStreamSelection(wst->getDesc(), wst->getSelection());
+				node = node->GetNext();
 			}
-			*/
+
+			wxMessageBox(wxT("enabled streams: \n") + enabledStreamsStr, _("info"), wxICON_INFORMATION | wxOK, this);
 		}
 
 		return true;

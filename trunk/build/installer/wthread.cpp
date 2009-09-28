@@ -95,7 +95,7 @@ int WsyncThread::getSyncData()
 
 		// now read in the remote index
 		std::map<string, Hashentry> temp_hashMapRemote;
-		int modeNumber = 0;
+		int modeNumber = 0; // pseudo, not used, to be improved
 		int res = w->loadHashMapFromFile(remoteFileIndex, temp_hashMapRemote, modeNumber);
 		// remove that temp file
 		remove(remoteFileIndex);
@@ -130,6 +130,7 @@ int WsyncThread::sync()
 	std::map<string, Hashentry>::iterator it;
 	std::map<string, std::map<string, Hashentry> >::iterator itr;
 	
+	std::string deletedKeyword = "._deleted_";
 	// walk all remote hashmaps
 	for(itr = hashMapRemote.begin(); itr != hashMapRemote.end(); itr++)
 	{
@@ -145,9 +146,9 @@ int WsyncThread::sync()
 			//if(hashMapRemote[it->first] == it->second)
 				//printf("same: %s %s==%s\n", it->first.c_str(), hashMapRemote[it->first].c_str(), it->second.c_str());
 			
-			// TODO: implement deleted files differently
-			if(itr->second.find(it->first) == itr->second.end())
-				deletedFiles.push_back(Fileentry(itr->first, it->first, it->second.filesize));
+			// old deletion method
+			//if(itr->second.find(it->first) == itr->second.end())
+			//	deletedFiles.push_back(Fileentry(itr->first, it->first, it->second.filesize));
 			
 			else if(itr->second[it->first].hash != it->second.hash)
 				changedFiles.push_back(Fileentry(itr->first, it->first, itr->second[it->first].filesize));
@@ -159,14 +160,13 @@ int WsyncThread::sync()
 			if(it->first == string("/stream.info")) continue;
 			if(it->first == string("/version")) continue;
 			
+			if(it->first.size() > deletedKeyword.size() && it->first.substr(it->first.size()-deletedKeyword.size(), deletedKeyword.size()) == deletedKeyword)
+				deletedFiles.push_back(Fileentry(itr->first, it->first, it->second.filesize));
 			
 			if(hashMapLocal.find(it->first) == hashMapLocal.end())
 				newFiles.push_back(Fileentry(itr->first, it->first, it->second.filesize));
 		}
 	}
-
-	//TODO: FIX DELETED FILES
-	deletedFiles.clear();
 
 	// done comparing, now summarize the changes
 	std::vector<Fileentry>::iterator itf;
@@ -310,7 +310,7 @@ retry2:
 			}
 		}
 		
-		if(deletedFiles.size()) // && !(modeNumber & WMO_NODELETE))
+		if(deletedFiles.size())
 		{
 			for(itf=deletedFiles.begin();itf!=deletedFiles.end();itf++, changeCounter++)
 			{
