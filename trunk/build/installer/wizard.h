@@ -804,6 +804,7 @@ public:
 	int createWindowsShortcut(wxString linkTarget, wxString workingDirectory, wxString linkFile, wxString linkDescription)
 	{
 		if(wxFileExists(linkFile)) wxRemoveFile(linkFile);
+		if(!wxFileExists(linkTarget)) return 1;
 		return createLink(conv(linkTarget), conv(workingDirectory), conv(linkFile), conv(linkDescription));
 	}
 
@@ -825,6 +826,10 @@ public:
 			return;
 
 		workingDirectory = m_cm->getInstallPath();
+		if(workingDirectory.size() > 3 && workingDirectory.substr(workingDirectory.size()-1,1) != wxT("\\"))
+		{
+			workingDirectory += wxT("\\");
+		}
 		// ensure our directory in the start menu exists
 		startmenuDir += wxT("\\Rigs of Rods");
 		if (!wxDir::Exists(startmenuDir)) wxFileName::Mkdir(startmenuDir);
