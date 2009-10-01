@@ -222,13 +222,13 @@ void Collisions::loadGroundModelLine(const char *line)
 
 void Collisions::parseGroundModel(ground_model_t* gm, const char* line, const char *name)
 {
-	float va, ms, mc, t2, vs, alpha, strength;
+	float va, ms, mc, t2, vs, alpha, strength, fluid_density, flow_consistency_index, flow_behavior_index, solid_ground_level, drag_anisotropy;
 	char fxt[256];
 	strcpy(fxt, "none");
 	float fxr=0.83;
 	float fxg=0.71;
 	float fxb=0.64;
-	int nbe=sscanf(line,"%f, %f, %f, %f, %f, %f, %f, %s %f, %f, %f",&va, &ms,&mc,&t2,&vs,&alpha,&strength, fxt, &fxr, &fxg, &fxb);
+	int nbe=sscanf(line,"%f, %f, %f, %f, %f, %f, %f, %f, %f,%f, %f, %f, %s %f, %f, %f",&va, &ms,&mc,&t2,&vs,&alpha,&strength,&fluid_density,&flow_consistency_index,&flow_behavior_index,&solid_ground_level,&drag_anisotropy, fxt, &fxr, &fxg, &fxb);
 	if (nbe<8) Ogre::LogManager::getSingleton().logMessage("COLL: ERROR too few parameters while parsing ground model");
 	gm->va=va;
 	gm->ms=ms;
@@ -238,6 +238,11 @@ void Collisions::parseGroundModel(ground_model_t* gm, const char* line, const ch
 	gm->vs=vs;
 	gm->alpha=alpha;
 	gm->strength=strength;
+	gm->fluid_density=fluid_density;
+	gm->flow_consistency_index=flow_consistency_index;
+	gm->flow_behavior_index=flow_behavior_index;
+	gm->solid_ground_level=solid_ground_level;
+	gm->drag_anisotropy=drag_anisotropy;
 	int fxtn=-1;
 	if (!strcmp("none", fxt)) fxtn=FX_NONE;
 	if (!strcmp("hard", fxt)) fxtn=FX_HARD;
@@ -1250,17 +1255,18 @@ void Collisions::primitiveCollision(node_t *node, Vector3 normal, float dt, grou
 		// we have a downforce and the slip forces are lower than static friction
 		// forces then it's time to go into static friction physics mode.
 		// This code is a direct translation of textbook static friction physics
-		if ( slipv<(gm->va) && Freaction>0 && fabs(node->Forces.dotProduct(slip))<=fabs((gm->ms)*Freaction))
+		float Greaction=Freaction*gm->strength; //General moderated reaction
+		if ( slipv<(gm->va) && Freaction>0 && fabs(node->Forces.dotProduct(slip))<=fabs((gm->ms)*Greaction))
 		{
 			// Static friction model (with a little smoothing to help the integrator deal with it)
-			ff=-(gm->ms)*(1-approx_exp(-fabs(slipv/gm->va)))*Freaction*gm->strength;
+			ff=-(gm->ms)*(1-approx_exp(-fabs(slipv/gm->va)))*Greaction;
 			node->Forces=(Fnormal+Freaction)*normal + ff*slip;
 		}
 		else
 		{
 			//Stribek model. It also comes directly from textbooks.
 			float g=gm->mc+(gm->ms-gm->mc)*approx_exp(-approx_pow(slipv/gm->vs, gm->alpha));
-			ff=-(g+gm->t2*slipv)*Freaction*gm->strength;
+			ff=-(g+gm->t2*slipv)*Greaction;
 			node->Forces+=Freaction*normal + ff*slip;
 		}
 	}
