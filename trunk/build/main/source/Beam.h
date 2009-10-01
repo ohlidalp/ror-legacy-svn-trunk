@@ -136,7 +136,7 @@ extern int truckSteps;
 #define BEAM_DEFORM 400000.0
 #define BEAM_CREAK  100000.0
 #define WHEEL_FRICTION_COEF 2.0
-#define CHASSIS_FRICTION_COEF 0.05
+#define CHASSIS_FRICTION_COEF 0.5 //Chassis has 1/4 the friction of wheels.
 #define SPEED_STOP 0.2
 
 #define MAX_PRESSURE_BEAMS 4000
