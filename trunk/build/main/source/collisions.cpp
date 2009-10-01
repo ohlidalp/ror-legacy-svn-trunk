@@ -146,14 +146,24 @@ void Collisions::loadDefaultModels()
 	FILE *fd;
 	char line[1024];
 	fd=fopen((SETTINGS.getSetting("Config Root")+"ground_models.cfg").c_str(), "r");
+	bool versionCorrect = false;
 	while (!feof(fd))
 	{
 		fscanf(fd," %[^\n\r]",line);
 		if (line[0]==';')
 			continue;
+		if(!strcmp(line, "version2"))
+		{
+			versionCorrect=true;
+			continue;
+		}
 		loadGroundModelLine(line);
 	}
 	fclose(fd);
+	if(!versionCorrect)
+	{
+		// TODO: fatal message box
+	}
 }
 
 void Collisions::setupLandUse(const char *configfile)
@@ -228,7 +238,7 @@ void Collisions::parseGroundModel(ground_model_t* gm, const char* line, const ch
 	float fxr=0.83;
 	float fxg=0.71;
 	float fxb=0.64;
-	int nbe=sscanf(line,"%f, %f, %f, %f, %f, %f, %f, %f, %f,%f, %f, %f, %s %f, %f, %f",&va, &ms,&mc,&t2,&vs,&alpha,&strength,&fluid_density,&flow_consistency_index,&flow_behavior_index,&solid_ground_level,&drag_anisotropy, fxt, &fxr, &fxg, &fxb);
+	int nbe=sscanf(line,"%f, %f, %f, %f, %f, %f, %f, %f, %f, %f, %f, %f, %s %f, %f, %f",&va, &ms,&mc,&t2,&vs,&alpha,&strength,&fluid_density,&flow_consistency_index,&flow_behavior_index,&solid_ground_level,&drag_anisotropy, fxt, &fxr, &fxg, &fxb);
 	if (nbe<8) Ogre::LogManager::getSingleton().logMessage("COLL: ERROR too few parameters while parsing ground model");
 	gm->va=va;
 	gm->ms=ms;
