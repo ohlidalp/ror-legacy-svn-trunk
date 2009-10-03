@@ -40,7 +40,7 @@ BeamEngine::BeamEngine(float iddle, float max, float torque, float rear, int num
 	reverseRatio=rear*diff;
 	numGears=numgears;
 	numGearsRanges = numGears/6+1; 
-	gearsRatio = (float*)malloc(sizeof(float)*numGears+2);
+	gearsRatio = new float[numGears + 1];
 	for (i=1; i<numGears+1; i++) gearsRatio[i]=gears[i]*diff;
 	curGear=0;
 	curEngineRPM=0;
@@ -510,8 +510,7 @@ void BeamEngine::setManualClutch(float val)
 
 BeamEngine::~BeamEngine()
 {
-	// TODO: fix crash upon delete:
-	//if(gearsRatio) free(gearsRatio); gearsRatio=0;
-	
-	if(torqueCurve) delete torqueCurve; torqueCurve=0;
+	// delete NULL is safe
+	delete gearsRatio; gearsRatio = NULL;
+	delete torqueCurve; torqueCurve = NULL;
 }
