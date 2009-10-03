@@ -105,6 +105,7 @@ along with Rigs of Rods.  If not, see <http://www.gnu.org/licenses/>.
 #include "MapControl.h"
 #include <OgreFontManager.h>
 #include "language.h"
+#include "errorutils.h"
 
 
 #if OGRE_PLATFORM == OGRE_PLATFORM_WIN32
@@ -1093,11 +1094,7 @@ ExampleFrameListener::ExampleFrameListener(RenderWindow* win, Camera* cam, Scene
 		if(CACHE.deletedFiles > 0) str += StringConverter::toString(CACHE.deletedFiles) + " deleted files\n";
 		if(CACHE.newFiles + CACHE.changedFiles + CACHE.deletedFiles == 0) str += "no changes";
 		str += _L("\n(These stats can be imprecise)");
-#if OGRE_PLATFORM == OGRE_PLATFORM_WIN32
-		MessageBox( NULL, str.c_str(), "Cache regeneration done", MB_OK | MB_ICONINFORMATION | MB_TOPMOST);
-#else
-		printf("Cache regeneration done: \n%s", str.c_str());
-#endif
+		showError(_L("Cache regeneration done"), str.c_str());
 		exit(0);
 	}
 
@@ -1593,15 +1590,7 @@ ExampleFrameListener::ExampleFrameListener(RenderWindow* win, Camera* cam, Scene
 
 		if (sport==0)
 		{
-#if OGRE_PLATFORM == OGRE_PLATFORM_WIN32
-			MessageBox( NULL, _L("Bad server port").c_str(), _L("A network error occured").c_str(), MB_OK | MB_ICONERROR | MB_TOPMOST);
-#elif OGRE_PLATFORM == OGRE_PLATFORM_LINUX
-			printf("\n\nBad server port\n\n");
-#elif OGRE_PLATFORM == OGRE_PLATFORM_APPLE
-			printf("\n\nBad server port\n\n");
-			//CFOptionFlags flgs;
-			//CFUserNotificationDisplayAlert(0, kCFUserNotificationStopAlertLevel, NULL, NULL, NULL, T("A network error occured"), T("Bad server port."), NULL, NULL, NULL, &flgs);
-#endif
+			showError(_L("A network error occured"), _L("Bad server port"));
 			exit(123);
 			return;
 		}
@@ -1618,11 +1607,7 @@ ExampleFrameListener::ExampleFrameListener(RenderWindow* win, Camera* cam, Scene
 		if(!connres)
 		{
 			LogManager::getSingleton().logMessage("connection failed. server down?");
-#if OGRE_PLATFORM == OGRE_PLATFORM_WIN32
-			String err = _L("Unable to connect to the server. It is certainly down or you have network problems.");
-			String title = _L("Unable to connect to server");
-			MessageBox( NULL, err.c_str(), title.c_str(), MB_OK | MB_ICONERROR | MB_TOPMOST);
-#endif
+			showError(_L("Unable to connect to server"), _L("Unable to connect to the server. It is certainly down or you have network problems."));
 			//fatal
 			exit(1);
 		}
@@ -1673,14 +1658,7 @@ ExampleFrameListener::ExampleFrameListener(RenderWindow* win, Camera* cam, Scene
 		if(!CACHE.checkResourceLoaded(mapname))
 		{
 			LogManager::getSingleton().logMessage("Terrain not found: " + mapname);
-#if OGRE_PLATFORM == OGRE_PLATFORM_WIN32
-			String msg = String(_L("Terrain not found: ")) + mapname;
-			MessageBox( NULL, msg.c_str(), _L("Terrain loading error").c_str(), MB_OK | MB_ICONERROR | MB_TASKMODAL);
-#elif OGRE_PLATFORM == OGRE_PLATFORM_LINUX
-			printf("\n\nTerrain not found: %s\n\n", mapname.c_str());
-#elif OGRE_PLATFORM == OGRE_PLATFORM_APPLE
-			printf("\n\nTerrain not found: %s\n\n", mapname.c_str());
-#endif
+			showError(_L("Terrain loading error"), _L("Terrain not found: ") + mapname);
 			exit(123);
 		}
 
@@ -1938,14 +1916,7 @@ void ExampleFrameListener::setupBenchmark()
 	} else
 	{
 		// unkown benchmark
-#if OGRE_PLATFORM == OGRE_PLATFORM_WIN32
-		String msg = _L("Benchmark not known: ") + benchmark;
-		MessageBox( NULL, msg.c_str(), _L("Benchmark loading error").c_str(), MB_OK | MB_ICONERROR | MB_TASKMODAL);
-#elif OGRE_PLATFORM == OGRE_PLATFORM_LINUX
-		printf("\n\nBenchmark not known: %s\n\n", benchmark.c_str());
-#elif OGRE_PLATFORM == OGRE_PLATFORM_APPLE
-		printf("\n\nBenchmark not known: %s\n\n", benchmark.c_str());
-#endif
+		showError(_L("Benchmark loading error"), _L("Benchmark not known: ") + benchmark);
 		exit(1);
 	}
 }
@@ -4876,15 +4847,8 @@ void ExampleFrameListener::loadTerrain(String terrainfile)
 	{
 		// we need to do a bit more here, since this can also happen on joining a MP server, in that case the user should get a better error message ...
 		LogManager::getSingleton().logMessage("Terrain not found: " + String(terrainfile));
-#if OGRE_PLATFORM == OGRE_PLATFORM_WIN32
-		String msg = _L("Terrain not found: ") + terrainfile;
-		MessageBox( NULL, msg.c_str(), _L("Terrain loading error").c_str(), MB_OK | MB_ICONERROR | MB_TASKMODAL);
-#elif OGRE_PLATFORM == OGRE_PLATFORM_LINUX
-		printf("\n\nTerrain not found: %s\n\n", terrainfile.c_str());
-#elif OGRE_PLATFORM == OGRE_PLATFORM_APPLE
-		printf("\n\nTerrain not found: %s\n\n", terrainfile.c_str());
-#endif
-		exit(123);
+		showError(_L("Terrain loading error"), _L("Terrain not found: ") + terrainfile);
+		exit(125);
 	}
 
 
