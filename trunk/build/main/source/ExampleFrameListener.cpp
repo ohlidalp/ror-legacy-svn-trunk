@@ -2763,32 +2763,29 @@ bool ExampleFrameListener::updateEvents(float dt)
 		flashMessage("terrain saved to file: " + fn);
 	}
 
-	bool taking_ss = false;
 	if (INPUTENGINE.getEventBoolValueBounce(EV_COMMON_SCREENSHOT_BIG, 0.5f))
 	{
 		int mNumScreenShots=0;
 		String path = SETTINGS.getSetting("User Path");
-		String tmp = SETTINGS.getSetting("User Path") + String("screenshot_big_") + StringConverter::toString(++mNumScreenShots) + String(".") + String(screenshotformat);
+		String tmp = path + String("screenshot_big_") + StringConverter::toString(++mNumScreenShots) + String(".") + String(screenshotformat);
 		while(fileExists(tmp.c_str()))
-			tmp = SETTINGS.getSetting("User Path") + String("screenshot_big_") + StringConverter::toString(++mNumScreenShots) + String(".") + String(screenshotformat);
+			tmp = path + String("screenshot_big_") + StringConverter::toString(++mNumScreenShots) + String(".") + String(screenshotformat);
 
-		tmp = String("screenshot_big_") + StringConverter::toString(++mNumScreenShots)+ "_";
+		tmp = String("screenshot_big_") + StringConverter::toString(++mNumScreenShots);
 
 		// hide flash messages
 		flashMessage(0);
-		mWindow->update();
-
-		hideGUI(false);
-
-		gridScreenshots(mWindow, mCamera, 3, path, tmp, "."+String(screenshotformat), true);
 
 		hideGUI(true);
 
-		LogManager::getSingleton().logMessage("Wrote big screenshot : " + tmp);
-		taking_ss=true;
-	}
+		gridScreenshots(mWindow, mCamera, 6, path, tmp, "."+String(screenshotformat), true);
 
-	if (!taking_ss && INPUTENGINE.getEventBoolValueBounce(EV_COMMON_SCREENSHOT, 0.5f))
+		hideGUI(false);
+
+		LogManager::getSingleton().logMessage("Wrote big screenshot : " + tmp);
+		flashMessage(String("Wrote big screenshot : ") + tmp);
+
+	} else if (INPUTENGINE.getEventBoolValueBounce(EV_COMMON_SCREENSHOT, 0.5f))
 	{
 		int mNumScreenShots=0;
 		String tmp = SETTINGS.getSetting("User Path") + String("screenshot_") + StringConverter::toString(++mNumScreenShots) + String(".") + String(screenshotformat);
@@ -7593,6 +7590,7 @@ void ExampleFrameListener::flashMessage(const char* txt, float time, float charH
 	if(!txt || time < 0)
 	{
 		// hide
+		flashMessageTE->setCaption("");
 		flashOverlay->hide();
 		timeUntilUnflash=0;
 		return;
@@ -8039,7 +8037,7 @@ void ExampleFrameListener::gridScreenshots(Ogre::RenderWindow* pRenderWindow, Og
           }
         }
         // The screenshot of the grid is no longer needed
-        remove(gridFilename.c_str());
+        remove((path + gridFilename).c_str());
       }
     }
     pCamera->setCustomProjectionMatrix(false); // reset projection matrix
