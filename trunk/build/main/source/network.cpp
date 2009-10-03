@@ -32,6 +32,8 @@ along with Rigs of Rods.  If not, see <http://www.gnu.org/licenses/>.
 #include "sha1.h"
 #include "Settings.h"
 #include "utils.h"
+#include "language.h"
+#include "errorutils.h"
 
 #ifdef WSYNC
 #include "wsync.h"
@@ -114,18 +116,7 @@ void Network::netFatalError(String errormsg, bool exitProgram)
 	SWBaseSocket::SWBaseError error;
 	socket.set_timeout(1, 1000);
 	socket.disconnect(&error);
-#if OGRE_PLATFORM == OGRE_PLATFORM_WIN32
-	String err = "Network fatal error: "+errormsg;
-	MessageBox( NULL, err.c_str(), "Network Connection Problem", MB_OK | MB_ICONERROR | MB_TOPMOST);
-#endif
-#if OGRE_PLATFORM == OGRE_PLATFORM_LINUX
-#endif
-#if OGRE_PLATFORM == OGRE_PLATFORM_APPLE
-	//CFOptionFlags flgs;
-	//CFUserNotificationDisplayAlert(0, kCFUserNotificationStopAlertLevel, NULL, NULL, NULL, "A network error occured", errormsg.c_str(), NULL, NULL, NULL, &flgs);
-#endif
-
-	LogManager::getSingleton().logMessage("NET FATAL ERROR: " + errormsg);
+	showError(_L("Network Connection Problem"), _L("Network fatal error: ")+errormsg);
 	if(exitProgram)
 		exit(124);
 }

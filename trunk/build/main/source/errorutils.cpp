@@ -34,8 +34,21 @@ using namespace Ogre;
 
 int showError(Ogre::String title, Ogre::String err)
 {
+	return showMsgBox(title, err, 0);
+}
+
+int showInfo(Ogre::String title, Ogre::String err)
+{
+	return showMsgBox(title, err, 1);
+}
+
+int showMsgBox(Ogre::String title, Ogre::String err, int type)
+{
+	Ogre::LogManager::getSingleton().logMessage("message box: " + title + ": " + err);
 #if OGRE_PLATFORM == OGRE_PLATFORM_WIN32
-	MessageBox( NULL, err.c_str(), title.c_str(), MB_OK | MB_ICONERROR | MB_TOPMOST);
+	int mtype = MB_ICONERROR;
+	if(type == 1) mtype = MB_ICONINFORMATION;
+	MessageBox( NULL, err.c_str(), title.c_str(), MB_OK | mtype | MB_TOPMOST);
 #elif OGRE_PLATFORM == OGRE_PLATFORM_LINUX
 	printf("\n\n%s: %s\n\n", title.c_str(), err.c_str());
 #elif OGRE_PLATFORM == OGRE_PLATFORM_APPLE
@@ -48,6 +61,7 @@ int showError(Ogre::String title, Ogre::String err)
 
 int showWebError(Ogre::String title, Ogre::String err, Ogre::String url)
 {
+	Ogre::LogManager::getSingleton().logMessage("web message box: " + title + ": " + err + " / url: " + url);
 #if OGRE_PLATFORM == OGRE_PLATFORM_WIN32
 	Ogre::String additional = _L("\n\nYou can eventually get help here:\n\n") + url + _L("\n\nDo you want to open that address in your default browser now?");
 	err += additional;

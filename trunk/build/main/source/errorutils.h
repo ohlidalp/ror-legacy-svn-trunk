@@ -32,6 +32,23 @@ along with Rigs of Rods.  If not, see <http://www.gnu.org/licenses/>.
 int showError(Ogre::String title, Ogre::String message);
 
 /**
+ * shows a simple info message box
+ * @param title very short summar of the error
+ * @param msg error text
+ * @return 0 on success, everything else on error
+ */
+int showInfo(Ogre::String title, Ogre::String message);
+
+/**
+ * shows a generic message box
+ * @param title very short summar of the error
+ * @param msg error text
+ * @param type 0 for error, 1 for info
+ * @return 0 on success, everything else on error
+ */
+int showMsgBox(Ogre::String title, Ogre::String err, int type);
+
+/**
  * shows a simple error message box, and allows the user to open a website to help further.
  * May not be implemented so that the browers opens for all platforms.
  * @param title very short summar of the error

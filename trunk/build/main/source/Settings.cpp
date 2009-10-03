@@ -25,6 +25,7 @@ along with Rigs of Rods.  If not, see <http://www.gnu.org/licenses/>.
 #include <shlobj.h>
 #endif
 #include "language.h"
+#include "errorutils.h"
 
 using namespace std;
 using namespace Ogre;
@@ -113,7 +114,7 @@ bool Settings::setupPaths()
 #if OGRE_PLATFORM == OGRE_PLATFORM_WIN32
 	if (!GetModuleFileName(NULL, program_path, 512))
 	{
-		MessageBox( NULL, _L("Error while retrieving program space path").c_str(), _L("Startup error").c_str(), MB_OK | MB_ICONERROR | MB_TASKMODAL);
+		showError(_L("Startup error"), _L("Error while retrieving program space path"));
 		return false;
 	}
 	GetShortPathName(program_path, program_path, 512); //this is legal
@@ -121,13 +122,12 @@ bool Settings::setupPaths()
 
 	if (SHGetFolderPath(NULL, CSIDL_PERSONAL, NULL, SHGFP_TYPE_CURRENT, user_path)!=S_OK)
 	{
-		MessageBox( NULL, _L("Error while retrieving user space path").c_str(), _L("Startup error").c_str(), MB_OK | MB_ICONERROR | MB_TASKMODAL);
+		showError(_L("Startup error"), _L("Error while retrieving user space path"));
 		return false;
 	}
 	GetShortPathName(user_path, user_path, 512); //this is legal
 	sprintf(user_path, "%s\\Rigs of Rods\\", user_path);
-//MessageBox( NULL, program_path, "Program root", MB_OK | MB_ICONERROR | MB_TASKMODAL);
-//MessageBox( NULL, user_path, "User root", MB_OK | MB_ICONERROR | MB_TASKMODAL);
+
 #elif OGRE_PLATFORM == OGRE_PLATFORM_LINUX
 	//true program path is impossible to get from POSIX functions
 	//lets hack!

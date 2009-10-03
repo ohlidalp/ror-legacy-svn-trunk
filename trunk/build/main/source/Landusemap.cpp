@@ -22,6 +22,8 @@ along with Rigs of Rods.  If not, see <http://www.gnu.org/licenses/>.
 #include <OgreConfigFile.h>
 #include <OgreLogManager.h>
 #include <OgreStringConverter.h>
+#include "language.h"
+#include "errorutils.h"
 
 using namespace Ogre;
 
@@ -65,13 +67,8 @@ void Landusemap::loadSettings()
 			if(version != LATEST_GROUND_MODEL_VERSION)
 			{
 				// warning
-#if OGRE_PLATFORM == OGRE_PLATFORM_WIN32
-				MessageBox( NULL, "This map's ground model config is too old, please update it. Will use defaults!", "Configuration error", MB_OK | MB_ICONERROR | MB_TASKMODAL);
-#elif OGRE_PLATFORM == OGRE_PLATFORM_LINUX
-				printf("\n\nConfiguration error: This map's ground model config is too old, please update it. Will use defaults!\n\n");
-#elif OGRE_PLATFORM == OGRE_PLATFORM_APPLE
-				printf("\n\nConfiguration error: This map's ground model config is too old, please update it. Will use defaults!\n\n");
-#endif
+				showError(_L("Configuration error"), _L("This map's ground model config is too old, please update it. Will use defaults!"));
+				// we ignore the section
 				section=-1;
 			} else
 			{

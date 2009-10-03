@@ -289,17 +289,7 @@ bool RigsOfRods::configure(void)
 	}
 	else
 	{
-#if OGRE_PLATFORM == OGRE_PLATFORM_WIN32
-MessageBox( NULL, "Run the RoRconfig program first.", "Configuration error", MB_OK | MB_ICONERROR | MB_TASKMODAL);
-#endif
-#if OGRE_PLATFORM == OGRE_PLATFORM_LINUX
-printf("\n\nConfiguration error: Run the RoRconfig program first.\n\n");
-#endif
-#if OGRE_PLATFORM == OGRE_PLATFORM_APPLE
-printf("\n\nConfiguration error: Run the RoRconfig program first.\n\n");
-//CFOptionFlags flgs;
-//CFUserNotificationDisplayAlert(0, kCFUserNotificationStopAlertLevel, NULL, NULL, NULL, "Configuration error", "Run the RoRconfig program first.", NULL, NULL, NULL, &flgs);
-#endif
+		showError(_L("Configuration error"), _L("Run the RoRconfig program first."));
 		return false;
 	}
 }
@@ -436,22 +426,14 @@ extern "C" {
 
 void showUsage()
 {
-#if OGRE_PLATFORM == OGRE_PLATFORM_WIN32
-	MessageBox( NULL, HELPTEXT, "Command Line Arguments", MB_OK | MB_ICONINFORMATION | MB_TASKMODAL);
-#else
-	std::cerr << HELPTEXT << std::endl;
-#endif
+	showInfo(_L("Command Line Arguments"), HELPTEXT);
 }
 
 void showVersion()
 {
 	char tmp[1024] = "";
 	sprintf(tmp, "Rigs of Rods version %s\n%s\n%s\n", ROR_VERSION_STRING, SVN_REVISION, SVN_ID);
-#if OGRE_PLATFORM == OGRE_PLATFORM_WIN32
-	MessageBox( NULL, tmp, "Version Information", MB_OK | MB_ICONINFORMATION | MB_TASKMODAL);
-#else
-	std::cerr << tmp << std::endl;
-#endif
+	showInfo(_L("Version Information"), String(tmp));
 }
 
 int main(int argc, char *argv[])
