@@ -2397,8 +2397,16 @@ void ExampleFrameListener::loadObject(const char* name, float px, float py, floa
 		}
 		if (!strncmp("friction", ptline, 8))
 		{
-			collisions->parseGroundModel(&gmi, ptline+9, "custom");
+			collisions->parseGroundModel(0, &gmi, ptline+9, "custom");
 //				sscanf(ptline, "friction %f, %f, %f, %f, %f",&gmi.ms, &gmi.mc, &gmi.t2, &gmi.vs, &gmi.alpha);
+			gm=&gmi;
+			continue;
+		}
+		if (!strncmp("friction2", ptline, 9))
+		{
+			int version=0;
+			if(sscanf(ptline, "friction2 %d", &version)>0)
+				collisions->parseGroundModel(-1, &gmi, ptline+10, "custom");
 			gm=&gmi;
 			continue;
 		}

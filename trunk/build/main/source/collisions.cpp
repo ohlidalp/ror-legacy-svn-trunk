@@ -21,6 +21,7 @@ along with Rigs of Rods.  If not, see <http://www.gnu.org/licenses/>.
 #include "Settings.h"
 #include "Landusemap.h"
 #include "approxmath.h"
+#include "errorutils.h"
 
 //these default values are overwritten by the data/ground_models.cfg file!
 ground_model_t GROUND_CONCRETE={3.0, 1.20, 0.60, 0.010, 5.0, 2.0, 1, 200, 10000, 0.5, 0, 0.1, 0, ColourValue(), "concrete"};
@@ -146,23 +147,27 @@ void Collisions::loadDefaultModels()
 	FILE *fd;
 	char line[1024];
 	fd=fopen((SETTINGS.getSetting("Config Root")+"ground_models.cfg").c_str(), "r");
-	bool versionCorrect = false;
+	int version = 0;
 	while (!feof(fd))
 	{
 		fscanf(fd," %[^\n\r]",line);
 		if (line[0]==';')
 			continue;
-		if(!strcmp(line, "version2"))
+		if(strnlen(line,255) > 7 && !strncmp(line, "version", 7))
 		{
-			versionCorrect=true;
+			version = atoi(line+7);
 			continue;
 		}
-		loadGroundModelLine(line);
+		
+		loadGroundModelLine(line, version);
 	}
 	fclose(fd);
-	if(!versionCorrect)
+	if(version != LATEST_GROUND_MODEL_VERSION)
 	{
-		// TODO: fatal message box
+		// message box
+		String url = "http://wiki.rigsofrods.com/index.php?title=Error_Old_ground_model#"+StringConverter::toString(version)+"to"+StringConverter::toString(LATEST_GROUND_MODEL_VERSION);
+		showError(_L("Configuration error"), _L("Your ground configuration is too old, please copy skeleton/config/ground_models.cfg to My Documents/Rigs of Rods/config"), url
+		exit(124);
 	}
 }
 
@@ -215,7 +220,7 @@ int Collisions::getGroundModelNumberByString(const char *stdf)
 }
 
 
-void Collisions::loadGroundModelLine(const char *line)
+void Collisions::loadGroundModelLine(const char *line, int version)
 {
 	char stdf[256];
 	ground_model_t *gm=0;
@@ -224,13 +229,13 @@ void Collisions::loadGroundModelLine(const char *line)
 	if (gm)
 	{
 		Ogre::LogManager::getSingleton().logMessage("COLL: parsing default model for '"+String(stdf)+"'");
-		parseGroundModel(gm, line+strlen(stdf)+1, stdf);
+		parseGroundModel(version, gm, line+strlen(stdf)+1, stdf);
 //		Ogre::LogManager::getSingleton().logMessage("COLL: this model has "+Ogre::StringConverter::toString((unsigned int)gm)+" "+Ogre::StringConverter::toString(gm->fx_type));
 
 	}
 }
 
-void Collisions::parseGroundModel(ground_model_t* gm, const char* line, const char *name)
+void Collisions::parseGroundModel(int version, ground_model_t* gm, const char* line, const char *name)
 {
 	float va, ms, mc, t2, vs, alpha, strength, fluid_density, flow_consistency_index, flow_behavior_index, solid_ground_level, drag_anisotropy;
 	char fxt[256];
@@ -238,21 +243,37 @@ void Collisions::parseGroundModel(ground_model_t* gm, const char* line, const ch
 	float fxr=0.83;
 	float fxg=0.71;
 	float fxb=0.64;
-	int nbe=sscanf(line,"%f, %f, %f, %f, %f, %f, %f, %f, %f, %f, %f, %f, %s %f, %f, %f",&va, &ms,&mc,&t2,&vs,&alpha,&strength,&fluid_density,&flow_consistency_index,&flow_behavior_index,&solid_ground_level,&drag_anisotropy, fxt, &fxr, &fxg, &fxb);
-	if (nbe<8) Ogre::LogManager::getSingleton().logMessage("COLL: ERROR too few parameters while parsing ground model");
-	gm->va=va;
-	gm->ms=ms;
-	strncpy(gm->name, name, 255);
-	gm->mc=mc;
-	gm->t2=t2;
-	gm->vs=vs;
-	gm->alpha=alpha;
-	gm->strength=strength;
-	gm->fluid_density=fluid_density;
-	gm->flow_consistency_index=flow_consistency_index;
-	gm->flow_behavior_index=flow_behavior_index;
-	gm->solid_ground_level=solid_ground_level;
-	gm->drag_anisotropy=drag_anisotropy;
+	int nbe = 0;
+	if(version == 0)
+	{
+		nbe=sscanf(line,"%f, %f, %f, %f, %f, %f, %f, %s %f, %f, %f",&va, &ms,&mc,&t2,&vs,&alpha,&strength, fxt, &fxr, &fxg, &fxb);
+		if (nbe<8) Ogre::LogManager::getSingleton().logMessage("COLL: ERROR too few parameters while parsing ground model");
+		gm->va=va;
+		gm->ms=ms;
+		strncpy(gm->name, name, 255);
+		gm->mc=mc;
+		gm->t2=t2;
+		gm->vs=vs;
+		gm->alpha=alpha;
+		gm->strength=strength;
+	} else if(version == 2)
+	{
+		nbe=sscanf(line,"%f, %f, %f, %f, %f, %f, %f, %f, %f, %f, %f, %f, %s %f, %f, %f",&va, &ms,&mc,&t2,&vs,&alpha,&strength,&fluid_density,&flow_consistency_index,&flow_behavior_index,&solid_ground_level,&drag_anisotropy, fxt, &fxr, &fxg, &fxb);
+		if (nbe<8) Ogre::LogManager::getSingleton().logMessage("COLL: ERROR too few parameters while parsing ground model");
+		gm->va=va;
+		gm->ms=ms;
+		strncpy(gm->name, name, 255);
+		gm->mc=mc;
+		gm->t2=t2;
+		gm->vs=vs;
+		gm->alpha=alpha;
+		gm->strength=strength;
+		gm->fluid_density=fluid_density;
+		gm->flow_consistency_index=flow_consistency_index;
+		gm->flow_behavior_index=flow_behavior_index;
+		gm->solid_ground_level=solid_ground_level;
+		gm->drag_anisotropy=drag_anisotropy;
+	}
 	int fxtn=-1;
 	if (!strcmp("none", fxt)) fxtn=FX_NONE;
 	if (!strcmp("hard", fxt)) fxtn=FX_HARD;
