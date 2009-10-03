@@ -137,6 +137,8 @@ void Landusemap::loadSettings()
 	}
 	*/
 
+	bool bgr = colourMap->getPixelBox().format == PF_A8B8G8R8;
+
 	// now allocate the data buffer
 	data=(unsigned char*)malloc(mapsizex*mapsizez*sizeof(unsigned char));
 	unsigned char *ptr=data;
@@ -146,6 +148,14 @@ void Landusemap::loadSettings()
 		for(int x=0; x<mapsizex; x++)
 		{
 			uint32 col = colourMap->getColorAt(x, z, bounds);
+			if (bgr)
+			{
+				// Swap red and blue values
+				uint32 cols = col & 0xFF00FF00;
+				cols |= (col & 0xFF) << 16;
+				cols |= (col & 0xFF0000) >> 16;
+				col = cols;
+			}
 			String use = usemap[col];
 			//if(use!="")
 			//	counters[use]++;
