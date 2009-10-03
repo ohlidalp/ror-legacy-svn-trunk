@@ -201,6 +201,9 @@ set(ror_src
 
 	source/CharacterFactory.cpp
 	source/CharacterFactory.h
+	
+	source/errorutils.h
+	source/errorutils.cpp
 )
 
 include_directories (OgreMain/include Dependencies/include)
