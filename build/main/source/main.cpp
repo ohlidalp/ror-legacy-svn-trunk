@@ -20,6 +20,7 @@ along with Rigs of Rods.  If not, see <http://www.gnu.org/licenses/>.
 #include "main.h"
 #include "OgreLineStreamOverlayElement.h"
 #include "language.h"
+#include "errorutils.h"
 
 RigsOfRods::RigsOfRods()
 {
@@ -530,32 +531,7 @@ int main(int argc, char *argv[])
 			INPUTENGINE.prepareShutdown();
 
 		String url = "http://wiki.rigsofrods.com/index.php?title=Error_" + StringConverter::toString(e.getNumber())+"#"+e.getSource();
-#if OGRE_PLATFORM == OGRE_PLATFORM_WIN32
-		String err = e.getFullDescription() + "\n\n" + "You can eventually get help here:\n\n" + url + "\n\nDo you want to open that address in your default browser now?";
-		int Response = MessageBox( NULL, err.c_str(), "An exception has occured!", MB_YESNO | MB_ICONERROR | MB_TOPMOST);
-		// 6 = yes, 7 = no
-		if(Response == 6)
-		{
-			// Microsoft conversion hell follows :|
-			char tmp[255], tmp2[255];
-			wchar_t ws1[255], ws2[255];
-			strncpy(tmp, "open", 255);
-			mbstowcs(ws1, tmp, 255);
-			strncpy(tmp2, url.c_str(), 255);
-			mbstowcs(ws2, tmp2, 255);
-			ShellExecuteW(NULL, ws1, ws2, NULL, NULL, SW_SHOWNORMAL);
-		}
-#endif
-#if OGRE_PLATFORM == OGRE_PLATFORM_LINUX
-		String err = "\n####################\n" + e.getFullDescription() + "\n\n" + "You can eventually get help here:\n\n" + url + "\n\n(copy that into the address field of your browser)\n####################\n";
-		std::cerr << "An exception has occured: " << err.c_str() << std::endl;
-#endif
-#if OGRE_PLATFORM == OGRE_PLATFORM_APPLE
-	String err = e.getFullDescription();
-	std::cerr << "An exception has occured: " << err.c_str() << std::endl;
-	//CFOptionFlags flgs;
-	//CFUserNotificationDisplayAlert(0, kCFUserNotificationStopAlertLevel, NULL, NULL, NULL, "An exception has occured!", err.c_str(), NULL, NULL, NULL, &flgs);
-#endif
+		showWebError("An exception has occured!", e.getFullDescription(), url);
 		return 1;
 	}
 

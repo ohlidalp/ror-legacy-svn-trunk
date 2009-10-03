@@ -28,7 +28,7 @@ using namespace Ogre;
 // this is the Height-Finder for the standart ogre Terrain Manager
 extern ground_model_t *ground_models[9];
 
-Landusemap::Landusemap(String cfgfilename, Collisions *c, Real _mapsizex, Real _mapsizez)
+Landusemap::Landusemap(String cfgfilename, Collisions *c, Real _mapsizex, Real _mapsizez) : version(0)
 {
 	configFilename = cfgfilename;
 	coll = c;
@@ -62,7 +62,21 @@ void Landusemap::loadSettings()
 			continue;
 		} else if(!strcmp(line, "use-map"))
 		{
-			section=3;
+			if(version != LATEST_GROUND_MODEL_VERSION)
+			{
+				// warning
+#if OGRE_PLATFORM == OGRE_PLATFORM_WIN32
+				MessageBox( NULL, "This map's ground model config is too old, please update it. Will use defaults!", "Configuration error", MB_OK | MB_ICONERROR | MB_TASKMODAL);
+#elif OGRE_PLATFORM == OGRE_PLATFORM_LINUX
+				printf("\n\nConfiguration error: This map's ground model config is too old, please update it. Will use defaults!\n\n");
+#elif OGRE_PLATFORM == OGRE_PLATFORM_APPLE
+				printf("\n\nConfiguration error: This map's ground model config is too old, please update it. Will use defaults!\n\n");
+#endif
+				section=-1;
+			} else
+			{
+				section=3;
+			}
 			continue;
 		}
 		if(section == 1)
@@ -84,11 +98,13 @@ void Landusemap::loadSettings()
 				textureFilename = value;
 			else if(key == "defaultuse")
 				defaultUse = coll->getGroundModelNumberByString(const_cast<char*>(value.c_str()));
+			else if(key == "version")
+				version = StringConverter::parseInt(value);
 
 		} else if(section == 2)
 		{
 			// ground models
-			if(coll) coll->loadGroundModelLine(line);
+			if(coll) coll->loadGroundModelLine(line, version);
 		} else if(section == 3)
 		{
 			// use map

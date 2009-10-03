@@ -45,6 +45,8 @@ using namespace Ogre;
 
 #define MAX_EVENTSOURCE 100
 
+#define LATEST_GROUND_MODEL_VERSION 1
+
 //nothing (e.g. ice)
 #define FX_NONE 0
 
@@ -199,8 +201,8 @@ public:
     ExampleFrameListener *efl, bool debugMode);
 
 	void loadDefaultModels();
-	void parseGroundModel(ground_model_t* gm, const char* line, const char *name);
-	void loadGroundModelLine(const char *line);
+	void parseGroundModel(int version, ground_model_t* gm, const char* line, const char *name);
+	void loadGroundModelLine(const char *line, int version);
 	ground_model_t *getGroundModelByString(const char *stdf);
 	ground_model_t *getGroundModelByString(Ogre::UTFString str);
 	ground_model_t *last_used_ground_model;
