@@ -79,11 +79,9 @@ int showWebError(Ogre::String title, Ogre::String err, Ogre::String url)
 		ShellExecuteW(NULL, ws1, ws2, NULL, NULL, SW_SHOWNORMAL);
 	}
 #elif OGRE_PLATFORM == OGRE_PLATFORM_LINUX
-	String err = "\n####################\n" + e.getFullDescription() + "\n\n" + "You can eventually get help here:\n\n" + url + "\n\n(copy that into the address field of your browser)\n####################\n";
-	std::cerr << "An exception has occured: " << err.c_str() << std::endl;
+	printf("\n\n%s: %s / url: %s\n\n", title.c_str(), err.c_str(), url.c_str());
 #elif OGRE_PLATFORM == OGRE_PLATFORM_APPLE
-	String err = e.getFullDescription();
-	std::cerr << "An exception has occured: " << err.c_str() << std::endl;
+	printf("\n\n%s: %s / url: %s\n\n", title.c_str(), err.c_str(), url.c_str());
 	//CFOptionFlags flgs;
 	//CFUserNotificationDisplayAlert(0, kCFUserNotificationStopAlertLevel, NULL, NULL, NULL, "An exception has occured!", err.c_str(), NULL, NULL, NULL, &flgs);
 #endif
