@@ -60,25 +60,36 @@ def mkdir(dir):
 
 def main():
   ts = time.time()
-
-  #cleanup
-  print "cleanup"
-  deleteAll(TARGET)
-  #creating base dirs
-  print "copying"
-  mkdir(TARGET)
   CURRENT=os.path.join(TARGET, 'current')
-  mkdir(CURRENT)
   UPDATER=os.path.join(TARGET, 'updater')
-  mkdir(UPDATER)
+  #check if it's not a fresh new build
+  rorbinary = ''
+  if sys.platform.startswith('linux'):
+	rorbinary = os.path.join(CURRENT, "RoR")
+  if sys.platform.startswith('win32'):
+	rorbinary = os.path.join(CURRENT, "RoR.exe")
+  if sys.platform.startswith('mac'):
+	# XXX TODO: fix macos binary
+	rorbinary = os.path.join(CURRENT, "RoR")
+
+  isFresh = rorbinary != '' and not os.path.exists(rorbinary)
+  #cleanup
+  if isFresh:
+	print "cleanup"
+	deleteAll(TARGET)
+	#creating base dirs
+	print "copying"
+	mkdir(TARGET)
+	mkdir(CURRENT)
+	mkdir(UPDATER)
   print "copying programs"
   #copy program files
   if sys.platform.startswith('linux'):
-  	PSOURCE=os.path.join(SOURCE, 'bin', 'release', 'linux')
+	PSOURCE=os.path.join(SOURCE, 'bin', 'release', 'linux')
   if sys.platform.startswith('win32'):
-  	PSOURCE=os.path.join(SOURCE, 'bin', 'release', 'windows')
+	PSOURCE=os.path.join(SOURCE, 'bin', 'release', 'windows')
   if sys.platform.startswith('mac'):
-  	PSOURCE=os.path.join(SOURCE, 'bin', 'release', 'macos')
+	PSOURCE=os.path.join(SOURCE, 'bin', 'release', 'macos')
   copyAll(PSOURCE, CURRENT)
   #copy configurator files
   #print "copying configurator data"
@@ -86,8 +97,9 @@ def main():
   #mkdir(CFT)
   #copyAll(os.path.join(SOURCE, 'languages'), CFT)
   #copy built-in game resources
-  print "please download latest language files from: http://translate.rigsofrods.com/ror/?action=downloadproject"
-  print "please download and unpack the content pack from SF (https://sourceforge.net/projects/rigsofrods/files/) to the test/current directory"
+  if isFresh:
+	print "please download latest language files from: http://translate.rigsofrods.com/ror/?action=downloadproject"
+	print "please download and unpack the content pack from SF (https://sourceforge.net/projects/rigsofrods/files/) to the test/current directory"
   #REST=os.path.join(CURRENT, 'resources')
   #mkdir(REST)
   #copyAll(os.path.join(SOURCE, 'contents', 'release'), REST)
@@ -106,9 +118,9 @@ def main():
   print "done with all. processed in %0.2f seconds." % (time.time()-ts)
   wait=True
   if len(sys.argv) > 1 and sys.argv[1] == 'nowait':
-    wait=False
+	wait=False
   if wait:
-    raw_input("Press enter to continue.")
+	raw_input("Press enter to continue.")
 
 if __name__ == '__main__':
   main()
