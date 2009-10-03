@@ -39,10 +39,6 @@ along with Rigs of Rods.  If not, see <http://www.gnu.org/licenses/>.
 #include "skinmanager.h"
 #include "Settings.h"
 
-#if OGRE_PLATFORM == OGRE_PLATFORM_WIN32
-#include <windows.h>
-#include <shlobj.h>
-#endif
 using namespace Ogre;
 
 #if OGRE_PLATFORM == OGRE_PLATFORM_LINUX

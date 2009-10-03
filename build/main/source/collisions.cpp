@@ -22,6 +22,7 @@ along with Rigs of Rods.  If not, see <http://www.gnu.org/licenses/>.
 #include "Landusemap.h"
 #include "approxmath.h"
 #include "errorutils.h"
+#include "language.h"
 
 //these default values are overwritten by the data/ground_models.cfg file!
 ground_model_t GROUND_CONCRETE={3.0, 1.20, 0.60, 0.010, 5.0, 2.0, 1, 200, 10000, 0.5, 0, 0.1, 0, ColourValue(), "concrete"};
@@ -166,7 +167,7 @@ void Collisions::loadDefaultModels()
 	{
 		// message box
 		String url = "http://wiki.rigsofrods.com/index.php?title=Error_Old_ground_model#"+StringConverter::toString(version)+"to"+StringConverter::toString(LATEST_GROUND_MODEL_VERSION);
-		showError(_L("Configuration error"), _L("Your ground configuration is too old, please copy skeleton/config/ground_models.cfg to My Documents/Rigs of Rods/config"), url
+		showWebError(_L("Configuration error"), _L("Your ground configuration is too old, please copy skeleton/config/ground_models.cfg to My Documents/Rigs of Rods/config"), url);
 		exit(124);
 	}
 }
