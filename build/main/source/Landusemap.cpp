@@ -18,6 +18,7 @@ You should have received a copy of the GNU General Public License
 along with Rigs of Rods.  If not, see <http://www.gnu.org/licenses/>.
 */
 #include "Landusemap.h"
+#include "collisions.h"
 #include <Ogre.h>
 #include <OgreConfigFile.h>
 #include <OgreLogManager.h>
@@ -28,7 +29,6 @@ along with Rigs of Rods.  If not, see <http://www.gnu.org/licenses/>.
 using namespace Ogre;
 
 // this is the Height-Finder for the standart ogre Terrain Manager
-extern ground_model_t *ground_models[9];
 
 Landusemap::Landusemap(String cfgfilename, Collisions *c, Real _mapsizex, Real _mapsizez) : version(0)
 {

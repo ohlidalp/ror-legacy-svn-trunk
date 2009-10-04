@@ -485,7 +485,7 @@ void GUI_Friction::event_combo_grounds_eventComboAccept(MyGUI::WidgetPtr _sender
 	if(!win->isVisible()) return;
 	MyGUI::ComboBoxPtr cb = (MyGUI::ComboBoxPtr)win->findWidget("combo_grounds");
 	if(!cb) return;
-	ground_model_t *gm = col->getGroundModelByString(cb->getItemNameAt(_index));
+	ground_model_t *gm = col->getGroundModelByString(cb->getItemNameAt(_index).asUTF8_c_str());
 	if(gm)
 		updateControls(gm, false);
 	selected_gm = gm;

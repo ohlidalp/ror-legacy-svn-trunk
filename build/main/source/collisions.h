@@ -89,7 +89,8 @@ extern ground_model_t GROUND_METAL;
 extern ground_model_t GROUND_GRASS;
 extern ground_model_t GROUND_SAND;
 
-extern ground_model_t *ground_models[9];
+const int NUM_GROUND_MODELS = 256;
+extern ground_model_t *ground_models[NUM_GROUND_MODELS];
 
 typedef struct _collision_box
 {
@@ -204,7 +205,6 @@ public:
 	void parseGroundModel(int version, ground_model_t* gm, const char* line, const char *name);
 	void loadGroundModelLine(const char *line, int version);
 	ground_model_t *getGroundModelByString(const char *stdf);
-	ground_model_t *getGroundModelByString(Ogre::UTFString str);
 	ground_model_t *last_used_ground_model;
 	void setupLandUse(const char *configfile);
 	int getGroundModelNumberByString(const char *stdf);

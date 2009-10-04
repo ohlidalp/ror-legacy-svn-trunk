@@ -35,17 +35,7 @@ ground_model_t GROUND_METAL={   3.0, 0.40, 0.20, 0.001, 4.0, 2.0, 1, 200, 10000,
 ground_model_t GROUND_GRASS={   3.0, 0.50, 0.25, 0.005, 8.0, 2.0, 1, 200, 10000, 0.5, 0, 0.1, 0, ColourValue(), "grass"};
 ground_model_t GROUND_SAND={    3.0, 0.40, 0.20, 0.0001,9.0, 2.0, 1, 200, 10000, 0.5, 0, 0.1, 0, ColourValue(), "sand"};
 
-ground_model_t *ground_models[9] = {
-	&GROUND_CONCRETE,
-	&GROUND_ASPHALT,
-	&GROUND_GRAVEL,
-	&GROUND_ROCK,
-	&GROUND_ICE,
-	&GROUND_SNOW,
-	&GROUND_METAL,
-	&GROUND_GRASS,
-	&GROUND_SAND
-};
+ground_model_t *ground_models[NUM_GROUND_MODELS];
 
 //hash function SBOX
 //from http://home.comcast.net/~bretm/hash/10.html
@@ -123,6 +113,19 @@ Collisions::Collisions(
 #endif
   ExampleFrameListener *efl, bool _debugMode) : mefl(efl)
 {
+	// init ground_models
+	memset(ground_models, NULL, sizeof(ground_model_t) * NUM_GROUND_MODELS);
+	ground_models[0] = &GROUND_CONCRETE;
+	ground_models[1] = &GROUND_ASPHALT;
+	ground_models[2] = &GROUND_GRAVEL;
+	ground_models[3] = &GROUND_ROCK;
+	ground_models[4] = &GROUND_ICE;
+	ground_models[5] = &GROUND_SNOW;
+	ground_models[6] = &GROUND_METAL;
+	ground_models[7] = &GROUND_GRASS;
+	ground_models[8] = &GROUND_SAND;
+	// done initating ground models
+
 	landuse=0;
 	debugMode=_debugMode;
 	last_used_ground_model=&GROUND_GRAVEL;
@@ -178,46 +181,22 @@ void Collisions::setupLandUse(const char *configfile)
 	landuse = new Landusemap(configfile, this, mefl->mapsizex, mefl->mapsizez);
 }
 
-ground_model_t *Collisions::getGroundModelByString(UTFString str)
-{
-	if (str == "concrete") return &GROUND_CONCRETE;
-	if (str == "asphalt") return &GROUND_ASPHALT;
-	if (str == "gravel") return &GROUND_GRAVEL;
-	if (str == "rock") return &GROUND_ROCK;
-	if (str == "ice") return &GROUND_ICE;
-	if (str == "snow") return &GROUND_SNOW;
-	if (str == "metal") return &GROUND_METAL;
-	if (str == "grass") return &GROUND_GRASS;
-	if (str == "sand") return &GROUND_SAND;
-	return 0; // default
-}
-
 ground_model_t *Collisions::getGroundModelByString(const char *stdf)
 {
-	if (!strcmp("concrete", stdf)) return &GROUND_CONCRETE;
-	if (!strcmp("asphalt", stdf)) return &GROUND_ASPHALT;
-	if (!strcmp("gravel", stdf)) return &GROUND_GRAVEL;
-	if (!strcmp("rock", stdf)) return &GROUND_ROCK;
-	if (!strcmp("ice", stdf)) return &GROUND_ICE;
-	if (!strcmp("snow", stdf)) return &GROUND_SNOW;
-	if (!strcmp("metal", stdf)) return &GROUND_METAL;
-	if (!strcmp("grass", stdf)) return &GROUND_GRASS;
-	if (!strcmp("sand", stdf)) return &GROUND_SAND;
-	return &GROUND_GRAVEL; // default
+	for (int i = 0; i < NUM_GROUND_MODELS; i++)
+	{
+		if (ground_models[i] != NULL && !strcmp(ground_models[i]->name, stdf)) return ground_models[i];
+	}
+	return NULL;
 }
 
 int Collisions::getGroundModelNumberByString(const char *stdf)
 {
-	if (!strcmp("concrete", stdf)) return 0;
-	if (!strcmp("asphalt", stdf)) return 1;
-	if (!strcmp("gravel", stdf)) return 2;
-	if (!strcmp("rock", stdf)) return 3;
-	if (!strcmp("ice", stdf)) return 4;
-	if (!strcmp("snow", stdf)) return 5;
-	if (!strcmp("metal", stdf)) return 6;
-	if (!strcmp("grass", stdf)) return 7;
-	if (!strcmp("sand", stdf)) return 8;
-	return 2; // default
+	for (int i = 0; i < NUM_GROUND_MODELS; i++)
+	{
+		if (ground_models[i] != NULL && !strcmp(ground_models[i]->name, stdf)) return i;
+	}
+	return 2; // default ground model to use
 }
 
 
@@ -227,6 +206,20 @@ void Collisions::loadGroundModelLine(const char *line, int version)
 	ground_model_t *gm=0;
 	sscanf(line,"%s ",stdf);
 	gm = getGroundModelByString(stdf);
+	if (gm == NULL)
+	{
+		// Allocate a new ground model
+		for (int i = 0; i < NUM_GROUND_MODELS; i++) 
+		{
+			if (ground_models[i] == NULL)
+			{
+				gm = new ground_model_t();
+				strncpy(gm->name, stdf, sizeof gm->name);
+				ground_models[i] = gm;
+				break;
+			}
+		}
+	}
 	if (gm)
 	{
 		Ogre::LogManager::getSingleton().logMessage("COLL: parsing default model for '"+String(stdf)+"'");

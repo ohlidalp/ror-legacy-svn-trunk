@@ -2385,15 +2385,7 @@ void ExampleFrameListener::loadObject(const char* name, float px, float py, floa
 		{
 			char stdf[256];
 			sscanf(ptline, "stdfriction %s",stdf);
-			if (!strcmp("concrete", stdf)) gm=&GROUND_CONCRETE;
-			if (!strcmp("asphalt", stdf)) gm=&GROUND_ASPHALT;
-			if (!strcmp("gravel", stdf)) gm=&GROUND_GRAVEL;
-			if (!strcmp("rock", stdf)) gm=&GROUND_ROCK;
-			if (!strcmp("ice", stdf)) gm=&GROUND_ICE;
-			if (!strcmp("snow", stdf)) gm=&GROUND_SNOW;
-			if (!strcmp("metal", stdf)) gm=&GROUND_METAL;
-			if (!strcmp("grass", stdf)) gm=&GROUND_GRASS;
-			if (!strcmp("sand", stdf)) gm=&GROUND_SAND;
+			gm = collisions->getGroundModelByString(stdf);
 			continue;
 		}
 		if (!strcmp("virtual", ptline)) {virt=true;continue;};
