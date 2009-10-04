@@ -273,6 +273,7 @@ Beam::Beam(int tnum, SceneManager *manager, SceneNode *parent, RenderWindow* win
 	cablight=0;
 	cablightNode=0;
 	brakeforce=30000.0;
+	hbrakeforce = 2*brakeforce;
 	hasposlights=false;
 	disableDrag=false;
 	advanced_drag=false;
@@ -3322,8 +3323,11 @@ int Beam::loadTruck(const char* fname, SceneManager *manager, SceneNode *parent,
 		}
 		else if (mode==26)
 		{
-			//parse brakes
-			sscanf(line,"%f", &brakeforce);
+			// parse brakes
+			int result = sscanf(line,"%f, %f", &brakeforce, &hbrakeforce);
+			// Read in footbrake force and handbrake force. If handbrakeforce is not present, set it to the default value 2*footbrake force to preserve older functionality
+			if (result == 1)
+				hbrakeforce = 2.0f * brakeforce;
 		}
 		else if (mode==27)
 		{
@@ -7060,29 +7064,25 @@ void Beam::calcForcesEuler(int doUpdate, Real dt, int step, int maxstep, Beam** 
 			total_torque=((free_axle == 0) ? engine_torque : intertorque[i]);
 
 		//braking
-		if (parkingbrake) brake=brakeforce*2.0;
+		//ignore all braking code if the current wheel is not braked...
+		if (wheels[i].braked)
+		{	
+			//handbrake
+			float hbrake = 0.0f;
+			if (parkingbrake && wheels[i].braked != 4)
+				hbrake = hbrakeforce;
+			//directional braking
+			float dbrake=0.0;
+			if (wheels[i].braked==2 && hydrodirstate>0.0 && WheelSpeed<20.0) dbrake=brakeforce*hydrodirstate;
+			if (wheels[i].braked==3 && hydrodirstate<0.0 && WheelSpeed<20.0) dbrake=brakeforce*-hydrodirstate;
 
-		//directional braking
-		float dbrake=0.0;
-		if (wheels[i].braked==2 && hydrodirstate>0.0 && WheelSpeed<20.0) dbrake=brakeforce*hydrodirstate;
-		if (wheels[i].braked==3 && hydrodirstate<0.0 && WheelSpeed<20.0) dbrake=brakeforce*-hydrodirstate;
-
-		// ABS system
-		/*
-		// currently not in use
-		if(abs_state && fabs(wheels[i].speed) < 1.0f )
-		{
-			// remove all brake force when ABS is active and wheel speed is low enough
-		} else
-		*/
-		{
-			if ((brake != 0.0 || dbrake != 0.0) && wheels[i].braked && braked_wheels != 0)
+			if ((brake != 0.0 || dbrake != 0.0 || hbrake != 0.0) && braked_wheels != 0)
 			{
 				if( fabs(wheels[i].speed) > 0.1f )
-					total_torque -= (wheels[i].speed/fabs(wheels[i].speed))*(brake + dbrake);
+					total_torque -= (wheels[i].speed/fabs(wheels[i].speed))*(brake + dbrake + hbrake);
 				// wheels are stopped, really this should
 				else if( fabs(wheels[i].speed) > 0.0f)
-					total_torque -= (wheels[i].speed/fabs(wheels[i].speed))*(brake + dbrake)*1.2;
+					total_torque -= (wheels[i].speed/fabs(wheels[i].speed))*(brake + dbrake + hbrake)*1.2;
 			}
 		}
 		//friction
@@ -9020,7 +9020,6 @@ void Beam::parkingbrakeToggle()
 	parkingbrake=!parkingbrake;
 	if (parkingbrake)
 	{
-		brake=brakeforce*2.0;
 		ssm->trigStart(trucknum, SS_TRIG_PARK);
 	} else ssm->trigStop(trucknum, SS_TRIG_PARK);
 #ifdef ANGELSCRIPT
