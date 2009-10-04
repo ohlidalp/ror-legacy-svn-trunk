@@ -114,7 +114,7 @@ Collisions::Collisions(
   ExampleFrameListener *efl, bool _debugMode) : mefl(efl)
 {
 	// init ground_models
-	memset(ground_models, NULL, sizeof(ground_model_t) * NUM_GROUND_MODELS);
+	memset(ground_models, 0, sizeof ground_models);
 	ground_models[0] = &GROUND_CONCRETE;
 	ground_models[1] = &GROUND_ASPHALT;
 	ground_models[2] = &GROUND_GRAVEL;
