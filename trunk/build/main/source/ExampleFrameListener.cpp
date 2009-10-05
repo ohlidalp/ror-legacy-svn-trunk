@@ -2715,7 +2715,9 @@ bool ExampleFrameListener::updateEvents(float dt)
 
 	if(INPUTENGINE.getEventBoolValueBounce(EV_COMMON_SHOW_MENU))
 	{
-		GUI_MainMenu::getSingleton().setVisible(!GUI_MainMenu::getSingleton().getVisible());
+		bool newvalue = !GUI_MainMenu::getSingleton().getVisible();
+		GUI_MainMenu::getSingleton().setVisible(newvalue);
+		GUI_Friction::getSingleton().setShaded(newvalue);
 	}
 
 	if(INPUTENGINE.getEventBoolValueBounce(EV_COMMON_QUIT_GAME))
