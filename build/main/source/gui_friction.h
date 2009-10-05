@@ -40,6 +40,8 @@ public:
 
 	bool getVisible();
 	void setVisible(bool value);
+
+	void setShaded(bool value);
 	
 	void setCollisions(Collisions *_col) { col = _col; };
 	void setActiveCol(ground_model_t *gm);

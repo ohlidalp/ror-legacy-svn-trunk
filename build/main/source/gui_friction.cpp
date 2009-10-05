@@ -28,6 +28,8 @@ along with Rigs of Rods.  If not, see <http://www.gnu.org/licenses/>.
 #include "collisions.h"
 #include "Beam.h"
 
+#include "MyGUI_ControllerFadeAlpha.h"
+
 #include "language.h"
 
 extern ground_model_t *ground_models[NUM_GROUND_MODELS];
@@ -44,7 +46,7 @@ GUI_Friction& GUI_Friction::getSingleton(void)
 	assert( ms_Singleton );  return ( *ms_Singleton );
 }
 
-GUI_Friction::GUI_Friction() : col(0), active_gm(0), selected_gm(0)
+GUI_Friction::GUI_Friction() : col(0), active_gm(0), selected_gm(0), win(0)
 {
 	int x=0, y=0, by=0;
 	MyGUI::EditPtr e;
@@ -82,7 +84,7 @@ GUI_Friction::GUI_Friction() : col(0), active_gm(0), selected_gm(0)
 	
 	// adding panel for solid ground
 	x=10; by = y + 20; // set box start now
-	MyGUI::WidgetPtr p = win->createWidget<MyGUI::Widget>("Panel", x, by, 350, 25,  MyGUI::Align::Default);
+	MyGUI::WidgetPtr p = win->createWidget<MyGUI::Widget>("Panel", x, by, 370, 25,  MyGUI::Align::Default);
 	{
 		// solid_level
 		int lx=0, ly=5; // local coordinate system
@@ -90,6 +92,7 @@ GUI_Friction::GUI_Friction() : col(0), active_gm(0), selected_gm(0)
 		t->setCaption(_L("Solid ground level:"));
 		t->setTextAlign(MyGUI::Align::Right);
 		e = p->createWidget<MyGUI::Edit>("Edit", lx, ly, 80, 20,  MyGUI::Align::Default, "solid_level"); lx+=85;
+		t = p->createWidget<MyGUI::StaticText>("StaticText", lx, ly, 20, 20,  MyGUI::Align::Default, "solid_level_edited"); lx+=20;
 		h = p->createWidget<MyGUI::HScroll>("HScroll", lx, ly, 60, 20,  MyGUI::Align::Default, "solid_level_scroll"); lx+=65;
 		h->eventScrollChangePosition = MyGUI::newDelegate(this, &GUI_Friction::event_scroll_value);
 		h->setScrollRange(1000);
@@ -105,6 +108,7 @@ GUI_Friction::GUI_Friction() : col(0), active_gm(0), selected_gm(0)
 		t->setCaption(_L("Strength:"));
 		t->setTextAlign(MyGUI::Align::Right);
 		e = p->createWidget<MyGUI::Edit>("Edit", lx, ly, 80, 20,  MyGUI::Align::Default, "solid_strength"); lx+=85;
+		t = p->createWidget<MyGUI::StaticText>("StaticText", lx, ly, 20, 20,  MyGUI::Align::Default, "solid_strength_edited"); lx+=20;
 		h = p->createWidget<MyGUI::HScroll>("HScroll", lx, ly, 60, 20,  MyGUI::Align::Default, "solid_strength_scroll"); lx+=65;
 		h->eventScrollChangePosition = MyGUI::newDelegate(this, &GUI_Friction::event_scroll_value);
 		h->setScrollRange(1000);
@@ -120,6 +124,7 @@ GUI_Friction::GUI_Friction() : col(0), active_gm(0), selected_gm(0)
 		t->setCaption(_L("Static friction coef:"));
 		t->setTextAlign(MyGUI::Align::Right);
 		e = p->createWidget<MyGUI::Edit>("Edit", lx, ly, 80, 20,  MyGUI::Align::Default, "solid_static_friction"); lx+=85;
+		t = p->createWidget<MyGUI::StaticText>("StaticText", lx, ly, 20, 20,  MyGUI::Align::Default, "solid_static_friction_edited"); lx+=20;
 		h = p->createWidget<MyGUI::HScroll>("HScroll", lx, ly, 60, 20,  MyGUI::Align::Default, "solid_static_friction_scroll"); lx+=65;
 		h->eventScrollChangePosition = MyGUI::newDelegate(this, &GUI_Friction::event_scroll_value);
 		h->setScrollRange(1000);
@@ -135,6 +140,7 @@ GUI_Friction::GUI_Friction() : col(0), active_gm(0), selected_gm(0)
 		t->setCaption(_L("Adhesion velocity:"));
 		t->setTextAlign(MyGUI::Align::Right);
 		e = p->createWidget<MyGUI::Edit>("Edit", lx, ly, 80, 20,  MyGUI::Align::Default, "solid_adhension_velo"); lx+=85;
+		t = p->createWidget<MyGUI::StaticText>("StaticText", lx, ly, 20, 20,  MyGUI::Align::Default, "solid_adhension_velo_edited"); lx+=20;
 		h = p->createWidget<MyGUI::HScroll>("HScroll", lx, ly, 60, 20,  MyGUI::Align::Default, "solid_adhension_velo_scroll"); lx+=65;
 		h->eventScrollChangePosition = MyGUI::newDelegate(this, &GUI_Friction::event_scroll_value);
 		h->setScrollRange(1000);
@@ -150,6 +156,7 @@ GUI_Friction::GUI_Friction() : col(0), active_gm(0), selected_gm(0)
 		t->setCaption(_L("Dynamic friction coef:"));
 		t->setTextAlign(MyGUI::Align::Right);
 		e = p->createWidget<MyGUI::Edit>("Edit", lx, ly, 80, 20,  MyGUI::Align::Default, "solid_dynamic_friction"); lx+=85;
+		t = p->createWidget<MyGUI::StaticText>("StaticText", lx, ly, 20, 20,  MyGUI::Align::Default, "solid_dynamic_friction_edited"); lx+=20;
 		h = p->createWidget<MyGUI::HScroll>("HScroll", lx, ly, 60, 20,  MyGUI::Align::Default, "solid_dynamic_friction_scroll"); lx+=65;
 		h->eventScrollChangePosition = MyGUI::newDelegate(this, &GUI_Friction::event_scroll_value);
 		h->setScrollRange(1000);
@@ -165,6 +172,7 @@ GUI_Friction::GUI_Friction() : col(0), active_gm(0), selected_gm(0)
 		t->setCaption(_L("Hydrodynamic friction coef:"));
 		t->setTextAlign(MyGUI::Align::Right);
 		e = p->createWidget<MyGUI::Edit>("Edit", lx, ly, 80, 20,  MyGUI::Align::Default, "solid_hydrodynamic"); lx+=85;
+		t = p->createWidget<MyGUI::StaticText>("StaticText", lx, ly, 20, 20,  MyGUI::Align::Default, "solid_hydrodynamic_edited"); lx+=20;
 		h = p->createWidget<MyGUI::HScroll>("HScroll", lx, ly, 60, 20,  MyGUI::Align::Default, "solid_hydrodynamic_scroll"); lx+=65;
 		h->eventScrollChangePosition = MyGUI::newDelegate(this, &GUI_Friction::event_scroll_value);
 		h->setScrollRange(1000);
@@ -180,6 +188,7 @@ GUI_Friction::GUI_Friction() : col(0), active_gm(0), selected_gm(0)
 		t->setCaption(_L("Stribeck velocity:"));
 		t->setTextAlign(MyGUI::Align::Right);
 		e = p->createWidget<MyGUI::Edit>("Edit", lx, ly, 80, 20,  MyGUI::Align::Default, "solid_stribeck"); lx+=85;
+		t = p->createWidget<MyGUI::StaticText>("StaticText", lx, ly, 20, 20,  MyGUI::Align::Default, "solid_stribeck_edited"); lx+=20;
 		h = p->createWidget<MyGUI::HScroll>("HScroll", lx, ly, 60, 20,  MyGUI::Align::Default, "solid_stribeck_scroll"); lx+=65;
 		helpTexts["solid_stribeck"] = std::pair<String,String>("Stribeck velocity", "You'll either find stribeck velocity in the net, or the inverse (1/stribeck velocity) of it described as 'stribeck coef'. It defines the shape of the dynamic friction curve. Lets leave it at that. Just find some nice values for it from the net.");
 		minMaxs["solid_stribeck"] = std::pair<Real,Real>(0, 1000);
@@ -195,6 +204,7 @@ GUI_Friction::GUI_Friction() : col(0), active_gm(0), selected_gm(0)
 		t->setCaption(_L("alpha:"));
 		t->setTextAlign(MyGUI::Align::Right);
 		e = p->createWidget<MyGUI::Edit>("Edit", lx, ly, 80, 20,  MyGUI::Align::Default, "solid_alpha"); lx+=85;
+		t = p->createWidget<MyGUI::StaticText>("StaticText", lx, ly, 20, 20,  MyGUI::Align::Default, "solid_alpha_edited"); lx+=20;
 		h = p->createWidget<MyGUI::HScroll>("HScroll", lx, ly, 60, 20,  MyGUI::Align::Default, "solid_alpha_scroll"); lx+=65;
 		h->eventScrollChangePosition = MyGUI::newDelegate(this, &GUI_Friction::event_scroll_value);
 		h->setScrollRange(1000);
@@ -215,6 +225,7 @@ GUI_Friction::GUI_Friction() : col(0), active_gm(0), selected_gm(0)
 		cb->addItem("clumpy");
 		cb->setEditStatic(true);
 		cb->setIndexSelected(0);
+		t = p->createWidget<MyGUI::StaticText>("StaticText", lx, ly, 20, 20,  MyGUI::Align::Default, "combo_fx_type_edited"); lx+=20;
 		helpTexts["combo_fx"] = std::pair<String,String>("FX Type", "The type of special effects that RoR will use to give the appearance of a surface. It doesn't affect the physics at all");
 		minMaxs["combo_fx"] = std::pair<Real,Real>(0, 0);
 		b = p->createWidget<MyGUI::Button>("Button", lx, ly, 20, 20,  MyGUI::Align::Default, "combo_fx_help"); lx+=25;
@@ -229,6 +240,7 @@ GUI_Friction::GUI_Friction() : col(0), active_gm(0), selected_gm(0)
 		t = p->createWidget<MyGUI::StaticText>("StaticText", lx, ly, 140, 20,  MyGUI::Align::Default, "fx_color_text"); lx+=145;
 		t->setCaption("");
 		t->setTextAlign(MyGUI::Align::Left);
+		t = p->createWidget<MyGUI::StaticText>("StaticText", lx, ly, 20, 20,  MyGUI::Align::Default, "fx_color_text_edited"); lx+=20;
 		b = p->createWidget<MyGUI::Button>("Button", lx, ly, 20, 20,  MyGUI::Align::Default, "fx_color_help"); lx+=25;
 		b->eventMouseButtonClick = MyGUI::newDelegate(this, &GUI_Friction::event_btn_MouseButtonClick);
 		b->setCaption("?");
@@ -240,7 +252,7 @@ GUI_Friction::GUI_Friction() : col(0), active_gm(0), selected_gm(0)
 		// add height to global height
 		y += ly;
 	}
-	p->setSize(350, y-by+25);
+	p->setSize(370, y-by+25);
 
 	x=10; y+=40; 
 	t = win->createWidget<MyGUI::StaticText>("StaticText", x, y, 170, 20,  MyGUI::Align::Default); x+=175;
@@ -248,7 +260,7 @@ GUI_Friction::GUI_Friction() : col(0), active_gm(0), selected_gm(0)
 	
 	// adding panel for solid ground
 	x=10; by = y + 20; // set box start now
-	p = win->createWidget<MyGUI::Widget>("Panel", x, by, 350, 25,  MyGUI::Align::Default);
+	p = win->createWidget<MyGUI::Widget>("Panel", x, by, 370, 25,  MyGUI::Align::Default);
 	{
 		int lx=0, ly=5; // local coordinate system
 
@@ -257,6 +269,7 @@ GUI_Friction::GUI_Friction() : col(0), active_gm(0), selected_gm(0)
 		t->setCaption(_L("Flow behavior index:"));
 		t->setTextAlign(MyGUI::Align::Right);
 		e = p->createWidget<MyGUI::Edit>("Edit", lx, ly, 80, 20,  MyGUI::Align::Default, "fluid_flowbeh"); lx+=85;
+		t = p->createWidget<MyGUI::StaticText>("StaticText", lx, ly, 20, 20,  MyGUI::Align::Default, "fluid_flowbeh_edited"); lx+=20;
 		h = p->createWidget<MyGUI::HScroll>("HScroll", lx, ly, 60, 20,  MyGUI::Align::Default, "fluid_flowbeh_scroll"); lx+=65;
 		h->eventScrollChangePosition = MyGUI::newDelegate(this, &GUI_Friction::event_scroll_value);
 		h->setScrollRange(1000);
@@ -272,6 +285,7 @@ GUI_Friction::GUI_Friction() : col(0), active_gm(0), selected_gm(0)
 		t->setCaption(_L("Flow consistency:"));
 		t->setTextAlign(MyGUI::Align::Right);
 		e = p->createWidget<MyGUI::Edit>("Edit", lx, ly, 80, 20,  MyGUI::Align::Default, "fluid_flowcon"); lx+=85;
+		t = p->createWidget<MyGUI::StaticText>("StaticText", lx, ly, 20, 20,  MyGUI::Align::Default, "fluid_flowcon_edited"); lx+=20;
 		h = p->createWidget<MyGUI::HScroll>("HScroll", lx, ly, 60, 20,  MyGUI::Align::Default, "fluid_flowcon_scroll"); lx+=65;
 		h->eventScrollChangePosition = MyGUI::newDelegate(this, &GUI_Friction::event_scroll_value);
 		h->setScrollRange(1000);
@@ -287,6 +301,7 @@ GUI_Friction::GUI_Friction() : col(0), active_gm(0), selected_gm(0)
 		t->setCaption(_L("Fluid density:"));
 		t->setTextAlign(MyGUI::Align::Right);
 		e = p->createWidget<MyGUI::Edit>("Edit", lx, ly, 80, 20,  MyGUI::Align::Default, "fluid_density"); lx+=85;
+		t = p->createWidget<MyGUI::StaticText>("StaticText", lx, ly, 20, 20,  MyGUI::Align::Default, "fluid_density_edited"); lx+=20;
 		h = p->createWidget<MyGUI::HScroll>("HScroll", lx, ly, 60, 20,  MyGUI::Align::Default, "fluid_density_scroll"); lx+=65;
 		h->eventScrollChangePosition = MyGUI::newDelegate(this, &GUI_Friction::event_scroll_value);
 		h->setScrollRange(1000);
@@ -302,6 +317,7 @@ GUI_Friction::GUI_Friction() : col(0), active_gm(0), selected_gm(0)
 		t->setCaption(_L("Drag anisotropy:"));
 		t->setTextAlign(MyGUI::Align::Right);
 		e = p->createWidget<MyGUI::Edit>("Edit", lx, ly, 80, 20,  MyGUI::Align::Default, "fluid_drag_anisotropy"); lx+=85;
+		t = p->createWidget<MyGUI::StaticText>("StaticText", lx, ly, 20, 20,  MyGUI::Align::Default, "fluid_drag_anisotropy_edited"); lx+=20;
 		h = p->createWidget<MyGUI::HScroll>("HScroll", lx, ly, 60, 20,  MyGUI::Align::Default, "fluid_drag_anisotropy_scroll"); lx+=65;
 		h->eventScrollChangePosition = MyGUI::newDelegate(this, &GUI_Friction::event_scroll_value);
 		h->setScrollRange(1000);
@@ -315,7 +331,7 @@ GUI_Friction::GUI_Friction() : col(0), active_gm(0), selected_gm(0)
 		// add height to global height
 		y += ly;
 	}
-	p->setSize(350, y-by+25);
+	p->setSize(370, y-by+25);
 	
 	x=10; y+=40; 
 	b = win->createWidget<MyGUI::Button>("Button", x, y, 350, 30,  MyGUI::Align::Default, "apply_changes"); x+=25;
@@ -337,6 +353,20 @@ GUI_Friction::GUI_Friction() : col(0), active_gm(0), selected_gm(0)
 	selected_gm = gm;
 }
 
+void GUI_Friction::setShaded(bool value)
+{
+	if(!win || !win->isVisible()) return;
+	if(value)
+	{
+		MyGUI::ControllerFadeAlpha * controller = new MyGUI::ControllerFadeAlpha(0.9f, 3.0f, false);
+		MyGUI::ControllerManager::getInstance().addItem(win, controller);
+	} else
+	{
+		MyGUI::ControllerFadeAlpha * controller = new MyGUI::ControllerFadeAlpha(0.2f, 3.0f, false);
+		MyGUI::ControllerManager::getInstance().addItem(win, controller);
+	}
+}
+
 void GUI_Friction::setVisible(bool value)
 {
 	if(value)
@@ -350,9 +380,17 @@ void GUI_Friction::setVisible(bool value)
 			cb->addItem(ground_models[i]->name);
 		}
 		cb->setEditStatic(true);
-		cb->setIndexSelected(0);		
+		cb->setIndexSelected(0);
+		ground_model_t *gm = col->getGroundModelByString(cb->getItemNameAt(0).asUTF8_c_str());
+		if(gm)
+			updateControls(gm, false);
+
 	}
-	win->setVisible(value);
+	if(value)
+		win->showSmooth();
+	else
+		win->hideSmooth();
+	//win->setVisible(value);
 	MyGUI::PointerManager::getInstance().setVisible(value);
 }
 
@@ -396,6 +434,7 @@ void GUI_Friction::updateControls(ground_model_t *gm, bool setCombo)
 	MyGUI::EditPtr e = (MyGUI::EditPtr)win->findWidget("solid_adhension_velo");
 	if(e) e->setCaption(StringConverter::toString(gm->va));
 	MyGUI::HScrollPtr h = (MyGUI::HScrollPtr)win->findWidget("solid_adhension_velo_scroll");
+	MyGUI::StaticTextPtr edt = (MyGUI::StaticTextPtr)win->findWidget("solid_adhension_velo_edited"); if(edt) edt->setCaption("");
 	std::pair<Real,Real> f = minMaxs["solid_adhension_velo"];
 	size_t fa = ((gm->va + f.first) / (f.second - f.first)) * h->getScrollRange();
 	if(h) h->setScrollPosition(fa);
@@ -403,6 +442,7 @@ void GUI_Friction::updateControls(ground_model_t *gm, bool setCombo)
 	e = (MyGUI::EditPtr)win->findWidget("solid_level");
 	if(e) e->setCaption(StringConverter::toString(gm->solid_ground_level));
 	h = (MyGUI::HScrollPtr)win->findWidget("solid_adhension_velo_scroll");
+	edt = (MyGUI::StaticTextPtr)win->findWidget("solid_level_edited"); if(edt) edt->setCaption("");
 	f = minMaxs["solid_level"];
 	fa = ((gm->solid_ground_level + f.first) / (f.second - f.first)) * h->getScrollRange();
 	if(h) h->setScrollPosition(fa);
@@ -410,6 +450,7 @@ void GUI_Friction::updateControls(ground_model_t *gm, bool setCombo)
 	e = (MyGUI::EditPtr)win->findWidget("solid_static_friction");
 	if(e) e->setCaption(StringConverter::toString(gm->ms));
 	h = (MyGUI::HScrollPtr)win->findWidget("solid_static_friction_scroll");
+	edt = (MyGUI::StaticTextPtr)win->findWidget("solid_static_friction_edited"); if(edt) edt->setCaption("");
 	f = minMaxs["solid_static_friction"];
 	fa = ((gm->ms + f.first) / (f.second - f.first)) * h->getScrollRange();
 	if(h) h->setScrollPosition(fa);
@@ -417,6 +458,7 @@ void GUI_Friction::updateControls(ground_model_t *gm, bool setCombo)
 	e = (MyGUI::EditPtr)win->findWidget("solid_dynamic_friction");
 	if(e) e->setCaption(StringConverter::toString(gm->mc));
 	h = (MyGUI::HScrollPtr)win->findWidget("solid_dynamic_friction_scroll");
+	edt = (MyGUI::StaticTextPtr)win->findWidget("solid_dynamic_friction_edited"); if(edt) edt->setCaption("");
 	f = minMaxs["solid_dynamic_friction"];
 	fa = ((gm->mc + f.first) / (f.second - f.first)) * h->getScrollRange();
 	if(h) h->setScrollPosition(fa);
@@ -424,6 +466,7 @@ void GUI_Friction::updateControls(ground_model_t *gm, bool setCombo)
 	e = (MyGUI::EditPtr)win->findWidget("solid_hydrodynamic");
 	if(e) e->setCaption(StringConverter::toString(gm->t2));
 	h = (MyGUI::HScrollPtr)win->findWidget("solid_hydrodynamic_scroll");
+	edt = (MyGUI::StaticTextPtr)win->findWidget("solid_hydrodynamic_edited"); if(edt) edt->setCaption("");
 	f = minMaxs["solid_hydrodynamic"];
 	fa = ((gm->t2 + f.first) / (f.second - f.first)) * h->getScrollRange();
 	if(h) h->setScrollPosition(fa);
@@ -431,6 +474,7 @@ void GUI_Friction::updateControls(ground_model_t *gm, bool setCombo)
 	e = (MyGUI::EditPtr)win->findWidget("solid_stribeck");
 	if(e) e->setCaption(StringConverter::toString(gm->vs));
 	h = (MyGUI::HScrollPtr)win->findWidget("solid_stribeck_scroll");
+	edt = (MyGUI::StaticTextPtr)win->findWidget("solid_stribeck_edited"); if(edt) edt->setCaption("");
 	f = minMaxs["solid_stribeck"];
 	fa = ((gm->vs + f.first) / (f.second - f.first)) * h->getScrollRange();
 	if(h) h->setScrollPosition(fa);
@@ -438,6 +482,7 @@ void GUI_Friction::updateControls(ground_model_t *gm, bool setCombo)
 	e = (MyGUI::EditPtr)win->findWidget("solid_alpha");
 	if(e) e->setCaption(StringConverter::toString(gm->alpha));
 	h = (MyGUI::HScrollPtr)win->findWidget("solid_alpha_scroll");
+	edt = (MyGUI::StaticTextPtr)win->findWidget("solid_alpha_edited"); if(edt) edt->setCaption("");
 	f = minMaxs["solid_alpha"];
 	fa = ((gm->alpha + f.first) / (f.second - f.first)) * h->getScrollRange();
 	if(h) h->setScrollPosition(fa);
@@ -445,6 +490,7 @@ void GUI_Friction::updateControls(ground_model_t *gm, bool setCombo)
 	e = (MyGUI::EditPtr)win->findWidget("solid_strength");
 	if(e) e->setCaption(StringConverter::toString(gm->strength));
 	h = (MyGUI::HScrollPtr)win->findWidget("solid_strength_scroll");
+	edt = (MyGUI::StaticTextPtr)win->findWidget("solid_strength_edited"); if(edt) edt->setCaption("");
 	f = minMaxs["solid_strength"];
 	fa = ((gm->strength + f.first) / (f.second - f.first)) * h->getScrollRange();
 	if(h) h->setScrollPosition(fa);
@@ -453,6 +499,7 @@ void GUI_Friction::updateControls(ground_model_t *gm, bool setCombo)
 	e = (MyGUI::EditPtr)win->findWidget("fluid_flowbeh");
 	if(e) e->setCaption(StringConverter::toString(gm->flow_behavior_index));
 	h = (MyGUI::HScrollPtr)win->findWidget("fluid_flowbeh_scroll");
+	edt = (MyGUI::StaticTextPtr)win->findWidget("fluid_flowbeh_edited"); if(edt) edt->setCaption("");
 	f = minMaxs["fluid_flowbeh"];
 	fa = ((gm->flow_behavior_index + f.first) / (f.second - f.first)) * h->getScrollRange();
 	if(h) h->setScrollPosition(fa);
@@ -460,6 +507,7 @@ void GUI_Friction::updateControls(ground_model_t *gm, bool setCombo)
 	e = (MyGUI::EditPtr)win->findWidget("fluid_flowcon");
 	if(e) e->setCaption(StringConverter::toString(gm->flow_consistency_index));
 	h = (MyGUI::HScrollPtr)win->findWidget("fluid_flowcon_scroll");
+	edt = (MyGUI::StaticTextPtr)win->findWidget("fluid_flowcon_edited"); if(edt) edt->setCaption("");
 	f = minMaxs["fluid_flowcon"];
 	fa = ((gm->flow_consistency_index + f.first) / (f.second - f.first)) * h->getScrollRange();
 	if(h) h->setScrollPosition(fa);
@@ -467,6 +515,7 @@ void GUI_Friction::updateControls(ground_model_t *gm, bool setCombo)
 	e = (MyGUI::EditPtr)win->findWidget("fluid_density");
 	if(e) e->setCaption(StringConverter::toString(gm->fluid_density));
 	h = (MyGUI::HScrollPtr)win->findWidget("fluid_density_scroll");
+	edt = (MyGUI::StaticTextPtr)win->findWidget("fluid_density_edited"); if(edt) edt->setCaption("");
 	f = minMaxs["fluid_density"];
 	fa = ((gm->fluid_density + f.first) / (f.second - f.first)) * h->getScrollRange();
 	if(h) h->setScrollPosition(fa);
@@ -474,6 +523,7 @@ void GUI_Friction::updateControls(ground_model_t *gm, bool setCombo)
 	e = (MyGUI::EditPtr)win->findWidget("fluid_drag_anisotropy");
 	if(e) e->setCaption(StringConverter::toString(gm->drag_anisotropy));
 	h = (MyGUI::HScrollPtr)win->findWidget("fluid_drag_anisotropy_scroll");
+	edt = (MyGUI::StaticTextPtr)win->findWidget("fluid_drag_anisotropy_edited"); if(edt) edt->setCaption("");
 	f = minMaxs["fluid_drag_anisotropy"];
 	fa = ((gm->drag_anisotropy + f.first) / (f.second - f.first)) * h->getScrollRange();
 	if(h) h->setScrollPosition(fa);
@@ -482,9 +532,11 @@ void GUI_Friction::updateControls(ground_model_t *gm, bool setCombo)
 	if(gm->fx_type == FX_DUSTY)  cb->setIndexSelected(0);
 	if(gm->fx_type == FX_HARD)  cb->setIndexSelected(1);
 	if(gm->fx_type == FX_CLUMPY)  cb->setIndexSelected(2);
+	edt = (MyGUI::StaticTextPtr)win->findWidget("combo_fx_type_edited"); if(edt) edt->setCaption("");
 
 	MyGUI::StaticTextPtr t = (MyGUI::StaticTextPtr)win->findWidget("fx_color_text");
 	if(t) t->setCaption(StringConverter::toString(gm->fx_coulour));
+	edt = (MyGUI::StaticTextPtr)win->findWidget("fx_color_text_edited"); if(edt) edt->setCaption("");
 
 }
 
@@ -541,48 +593,67 @@ void GUI_Friction::event_scroll_value(MyGUI::WidgetPtr _sender, size_t _value)
 		Real rvalue = ((((float)_value) / (float)(h->getScrollRange())) * (f.second - f.first)) + f.first;
 		if(e)
 			e->setCaption(StringConverter::toString(rvalue));
+		
+		MyGUI::StaticTextPtr edt = (MyGUI::StaticTextPtr)win->findWidget(wName + "_edited");
+		if(edt)
+			edt->setCaption("X");
+
 	}
 
 }
 
 void GUI_Friction::applyChanges()
 {
+	MyGUI::StaticTextPtr edt;
+
 	MyGUI::EditPtr e = (MyGUI::EditPtr)win->findWidget("solid_adhension_velo");
 	selected_gm->va = StringConverter::parseReal(e->getCaption());
+	edt = (MyGUI::StaticTextPtr)win->findWidget("solid_adhension_velo_edited"); if(edt) edt->setCaption("");
 	
 	e = (MyGUI::EditPtr)win->findWidget("solid_level");
 	selected_gm->solid_ground_level = StringConverter::parseReal(e->getCaption());
+	edt = (MyGUI::StaticTextPtr)win->findWidget("solid_level_edited"); if(edt) edt->setCaption("");
 
 	e = (MyGUI::EditPtr)win->findWidget("solid_static_friction");
 	selected_gm->ms = StringConverter::parseReal(e->getCaption());
+	edt = (MyGUI::StaticTextPtr)win->findWidget("solid_static_friction_edited"); if(edt) edt->setCaption("");
 
 	e = (MyGUI::EditPtr)win->findWidget("solid_dynamic_friction");
 	selected_gm->mc = StringConverter::parseReal(e->getCaption());
+	edt = (MyGUI::StaticTextPtr)win->findWidget("solid_dynamic_friction_edited"); if(edt) edt->setCaption("");
 
 	e = (MyGUI::EditPtr)win->findWidget("solid_hydrodynamic");
 	selected_gm->t2 = StringConverter::parseReal(e->getCaption());
+	edt = (MyGUI::StaticTextPtr)win->findWidget("solid_hydrodynamic_edited"); if(edt) edt->setCaption("");
 
 	e = (MyGUI::EditPtr)win->findWidget("solid_stribeck");
 	selected_gm->vs = StringConverter::parseReal(e->getCaption());
+	edt = (MyGUI::StaticTextPtr)win->findWidget("solid_stribeck_edited"); if(edt) edt->setCaption("");
 
 	e = (MyGUI::EditPtr)win->findWidget("solid_alpha");
 	selected_gm->alpha = StringConverter::parseReal(e->getCaption());
+	edt = (MyGUI::StaticTextPtr)win->findWidget("solid_alpha_edited"); if(edt) edt->setCaption("");
 
 	e = (MyGUI::EditPtr)win->findWidget("solid_strength");
 	selected_gm->strength = StringConverter::parseReal(e->getCaption());
+	edt = (MyGUI::StaticTextPtr)win->findWidget("solid_strength_edited"); if(edt) edt->setCaption("");
 
 	// fluid
 	e = (MyGUI::EditPtr)win->findWidget("fluid_flowbeh");
 	selected_gm->flow_behavior_index = StringConverter::parseReal(e->getCaption());
+	edt = (MyGUI::StaticTextPtr)win->findWidget("fluid_flowbeh_edited"); if(edt) edt->setCaption("");
 
 	e = (MyGUI::EditPtr)win->findWidget("fluid_flowcon");
 	selected_gm->flow_consistency_index = StringConverter::parseReal(e->getCaption());
+	edt = (MyGUI::StaticTextPtr)win->findWidget("fluid_flowcon_edited"); if(edt) edt->setCaption("");
 
 	e = (MyGUI::EditPtr)win->findWidget("fluid_density");
 	selected_gm->fluid_density = StringConverter::parseReal(e->getCaption());
+	edt = (MyGUI::StaticTextPtr)win->findWidget("fluid_density_edited"); if(edt) edt->setCaption("");
 
 	e = (MyGUI::EditPtr)win->findWidget("fluid_drag_anisotropy");
 	selected_gm->drag_anisotropy = StringConverter::parseReal(e->getCaption());
+	edt = (MyGUI::StaticTextPtr)win->findWidget("fluid_drag_anisotropy_edited"); if(edt) edt->setCaption("");
 
 	MyGUI::ComboBoxPtr cb = (MyGUI::ComboBoxPtr)win->findWidget("combo_fx_type");
 	if(cb->getIndexSelected() == 0)
@@ -591,12 +662,13 @@ void GUI_Friction::applyChanges()
 		selected_gm->fx_type = FX_HARD;
 	else if(cb->getIndexSelected() == 2)
 		selected_gm->fx_type = FX_CLUMPY;
+	edt = (MyGUI::StaticTextPtr)win->findWidget("combo_fx_type_edited"); if(edt) edt->setCaption("");
 
 }
 
 void GUI_Friction::notifyWindowButtonPressed(MyGUI::WidgetPtr _sender, const std::string& _name)
 {
-	LogManager::getSingleton().logMessage("notifyWindowButtonPressed: " + String(_name));
+	//LogManager::getSingleton().logMessage("notifyWindowButtonPressed: " + String(_name));
 	if (_name == "close")
 		setVisible(false);
 }
