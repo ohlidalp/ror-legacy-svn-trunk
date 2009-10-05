@@ -30,6 +30,8 @@ along with Rigs of Rods.  If not, see <http://www.gnu.org/licenses/>.
 
 #include "language.h"
 
+extern ground_model_t *ground_models[NUM_GROUND_MODELS];
+
 using namespace Ogre;
 
 template<> GUI_Friction * Singleton< GUI_Friction >::ms_Singleton = 0;
@@ -48,39 +50,32 @@ GUI_Friction::GUI_Friction() : col(0), active_gm(0), selected_gm(0)
 	MyGUI::EditPtr e;
 	MyGUI::HScrollPtr h;
 	MyGUI::ButtonPtr b;
+	MyGUI::StaticTextPtr t;
 
 	win = MyGUI::Gui::getInstance().createWidget<MyGUI::Window>("WindowCSX", 0, 0, 400, 500,  MyGUI::Align::Center, "Back");
 	win->setCaption(_L("Friction Settings"));
 
-	// Fluid parameters
+	// active ground
 	x=10, y=10;
-	MyGUI::StaticTextPtr t = win->createWidget<MyGUI::StaticText>("StaticText", x, y, 170, 20,  MyGUI::Align::Default); x+=175;
+	t = win->createWidget<MyGUI::StaticText>("StaticText", x, y, 270, 20,  MyGUI::Align::Default, "text_current_ground"); x+=275;
+	t->setCaption("Current active Ground: n/a");
+	t->setFontHeight(18);
+	b = win->createWidget<MyGUI::Button>("Button", x, y, 70, 20,  MyGUI::Align::Default, "select_current_ground"); x+=75;
+	b->setCaption("select");
+	b->eventMouseButtonClick = MyGUI::newDelegate(this, &GUI_Friction::event_btn_MouseButtonClick);
+
+	// combo box
+	x=20; y+=20;
+	t = win->createWidget<MyGUI::StaticText>("StaticText", x, y, 170, 20,  MyGUI::Align::Default); x+=175;
 	t->setCaption(_L("selected Ground Type:"));
 	t->setTextAlign(MyGUI::Align::Right);
 
 	MyGUI::ComboBoxPtr cb = win->createWidget<MyGUI::ComboBox>("ComboBox", x, y, 115, 20,  MyGUI::Align::Default, "combo_grounds");
 	cb->eventComboAccept = MyGUI::newDelegate(this, &GUI_Friction::event_combo_grounds_eventComboAccept);
 	cb->eventComboChangePosition = MyGUI::newDelegate(this, &GUI_Friction::event_combo_grounds_eventComboAccept);
-	cb->addItem("concrete");
-	cb->addItem("asphalt");
-	cb->addItem("gravel");
-	cb->addItem("rock");
-	cb->addItem("ice");
-	cb->addItem("snow");
-	cb->addItem("metal");
-	cb->addItem("grass");
-	cb->addItem("sand");
 	cb->setEditStatic(true);
-	cb->setIndexSelected(0);
+	// ground models are not loaded here yet, so we will add them once we show the dialog
 	
-	
-	x=20; y+=20;
-	t = win->createWidget<MyGUI::StaticText>("StaticText", x, y, 270, 20,  MyGUI::Align::Default, "text_current_ground"); x+=275;
-	t->setCaption("Current active Ground: n/a");
-	b = win->createWidget<MyGUI::Button>("Button", x, y, 70, 20,  MyGUI::Align::Default, "select_current_ground"); x+=75;
-	b->setCaption("select");
-	b->eventMouseButtonClick = MyGUI::newDelegate(this, &GUI_Friction::event_btn_MouseButtonClick);
-
 	x=10; y+=30; 
 	t = win->createWidget<MyGUI::StaticText>("StaticText", x, y, 170, 20,  MyGUI::Align::Default); x+=175;
 	t->setCaption(_L("Solid ground settings"));
@@ -344,6 +339,19 @@ GUI_Friction::GUI_Friction() : col(0), active_gm(0), selected_gm(0)
 
 void GUI_Friction::setVisible(bool value)
 {
+	if(value)
+	{
+		// upon show, refresh list
+		MyGUI::ComboBoxPtr cb = (MyGUI::ComboBoxPtr)win->findWidget("combo_grounds");
+		cb->removeAllItems();
+		for(int i=0;i<NUM_GROUND_MODELS;i++)
+		{
+			if(!ground_models[i]) break;
+			cb->addItem(ground_models[i]->name);
+		}
+		cb->setEditStatic(true);
+		cb->setIndexSelected(0);		
+	}
 	win->setVisible(value);
 	MyGUI::PointerManager::getInstance().setVisible(value);
 }
@@ -356,6 +364,7 @@ bool GUI_Friction::getVisible()
 void GUI_Friction::setActiveCol(ground_model_t *gm)
 {
 	if(!gm) return;
+	if(active_gm == gm) return; //only set once
 	active_gm = gm;
 
 	MyGUI::StaticTextPtr t = (MyGUI::StaticTextPtr)win->findWidget("text_current_ground");
@@ -587,6 +596,7 @@ void GUI_Friction::applyChanges()
 
 void GUI_Friction::notifyWindowButtonPressed(MyGUI::WidgetPtr _sender, const std::string& _name)
 {
+	LogManager::getSingleton().logMessage("notifyWindowButtonPressed: " + String(_name));
 	if (_name == "close")
 		setVisible(false);
 }
