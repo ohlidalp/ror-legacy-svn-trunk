@@ -1064,7 +1064,7 @@ eventInfo_t eventInfo[] = {
 	{
 		"TRUCK_LIGHTTOGGLE9",
 		EV_TRUCK_LIGHTTOGGLE9,
-		"Keyboard EXPL+CTRL9",
+		"Keyboard EXPL+CTRL+9",
 		_L("toggle custom light 9")
 	},
 	{
