@@ -54,6 +54,16 @@ GUI_Friction::GUI_Friction() : col(0), active_gm(0), selected_gm(0), win(0)
 	MyGUI::ButtonPtr b;
 	MyGUI::StaticTextPtr t;
 
+	msgwin = MyGUI::Gui::getInstance().createWidget<MyGUI::Window>("WindowCSX", 0, 0, 400, 300,  MyGUI::Align::Center, "Back");
+	msgwin->setCaption(_L("Friction Help"));
+	msgwin->eventWindowButtonPressed = MyGUI::newDelegate(this, &GUI_Friction::notifyHelpWindowButtonPressed);
+	e = msgwin->createWidget<MyGUI::Edit>("EditStretch", 0, 0, 400, 300,  MyGUI::Align::Default, "helptext");
+	e->setCaption("");
+	e->setEditWordWrap(true);
+	e->setEditStatic(true);
+	msgwin->setVisible(false);
+
+
 	win = MyGUI::Gui::getInstance().createWidget<MyGUI::Window>("WindowCSX", 0, 0, 400, 500,  MyGUI::Align::Center, "Back");
 	win->setCaption(_L("Friction Settings"));
 
@@ -587,7 +597,9 @@ void GUI_Friction::event_btn_MouseButtonClick(MyGUI::WidgetPtr _sender)
 		String mTxt = hText.second;
 		if(minmax.first != minmax.second)
 			mTxt += "\nParameter range: " + StringConverter::toString(minmax.first) + " to " + StringConverter::toString(minmax.second) + "";
-		MyGUI::MessagePtr msg = MyGUI::Message::createMessage(mTitle, mTxt, true, MyGUI::Message::IconInfo | MyGUI::Message::Ok);
+		MyGUI::IntPoint p = _sender->getAbsolutePosition();
+		MyGUI::IntSize s = _sender->getSize();
+		showHelp(mTitle, mTxt, p.left + s.width, p.top + s.height*0.5f);
 		return;
 	}
 
@@ -693,3 +705,18 @@ void GUI_Friction::notifyWindowButtonPressed(MyGUI::WidgetPtr _sender, const std
 	if (_name == "close")
 		setVisible(false);
 }
+
+void GUI_Friction::notifyHelpWindowButtonPressed(MyGUI::WidgetPtr _sender, const std::string& _name)
+{
+	if (_name == "close") msgwin->hideSmooth();
+}
+
+void GUI_Friction::showHelp(String title, String msg, int x, int y)
+{
+	MyGUI::EditPtr e = (MyGUI::EditPtr)msgwin->findWidget("helptext");
+	e->setCaption(msg);
+	msgwin->setCaption(_L("Friction Help: ") + title);
+	msgwin->setPosition(x + 20, y - 150);
+	msgwin->showSmooth();
+}
+
