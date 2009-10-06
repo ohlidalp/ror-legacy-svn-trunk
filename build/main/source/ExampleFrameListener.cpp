@@ -3834,6 +3834,11 @@ bool ExampleFrameListener::updateEvents(float dt)
 					// init
 					trucks[current_truck]->reset();
 				}
+				if (INPUTENGINE.getEventBoolValue(EV_COMMON_REPAIR_TRUCK))
+				{
+					ssm->trigOnce(current_truck, SS_TRIG_REPAIR);
+					trucks[current_truck]->reset(true);
+				}
 				//replay mode
 				if (INPUTENGINE.getEventBoolValueBounce(EV_COMMON_TOGGLE_REPLAY_MODE))
 				{

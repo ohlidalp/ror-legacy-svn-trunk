@@ -720,6 +720,12 @@ eventInfo_t eventInfo[] = {
 		_L("show the main menu")
 	},
 	{
+		"COMMON_REPAIR_TRUCK",
+		EV_COMMON_REPAIR_TRUCK,
+		"Keyboard BACK",
+		_L("repair truck")
+	},
+	{
 		"COMMON_RESCUE_TRUCK",
 		EV_COMMON_RESCUE_TRUCK,
 		"Keyboard R",
