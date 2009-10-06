@@ -47,6 +47,7 @@ public:
 	void setActiveCol(ground_model_t *gm);
 protected:
 	MyGUI::WindowPtr win;
+	MyGUI::WindowPtr msgwin;
 	Collisions *col;
 	ground_model_t *active_gm;
 	ground_model_t *selected_gm;
@@ -61,7 +62,9 @@ protected:
 	void event_edit_TextChange(MyGUI::WidgetPtr _sender);
 	void event_scroll_value(MyGUI::WidgetPtr _sender, size_t _value);
 	void notifyWindowButtonPressed(MyGUI::WidgetPtr _sender, const std::string& _name);
+	void notifyHelpWindowButtonPressed(MyGUI::WidgetPtr _sender, const std::string& _name);
 	void applyChanges();
+	void showHelp(String title, String msg, int x, int y);
 };
 
 #endif //GUI_FRICTION_H__
