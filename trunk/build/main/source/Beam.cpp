@@ -254,7 +254,7 @@ Beam::Beam(int tnum, SceneManager *manager, SceneNode *parent, RenderWindow* win
 	mapsizez = _mapsizez;
 	floating_origin_enable=true;
 	lockSkeletonchange=false;
-	reset_requested=false;
+	reset_requested=0;
 	mrtime=0.0;
 	free_flexbody=0;
 	netLabelNode=0;
@@ -4701,6 +4701,27 @@ int Beam::loadPosition(int indexPosition)
 	return 0;
 }
 
+void Beam::resetAngle(float rot)
+{
+	// Set origin of rotation to camera node
+	Vector3 origin = nodes[cameranodepos[0]].AbsPosition;
+
+	// Set up matrix for yaw rotation
+	Matrix3 matrix;
+	matrix.FromEulerAnglesXYZ(Radian(0), Radian(-rot - PI/2), Radian(0));
+
+	for (int i = 0; i < free_node; i++)
+	{
+		// Move node back to origin, apply rotation matrix, and move node back
+		nodes[i].AbsPosition -= origin;
+		nodes[i].AbsPosition  = matrix * nodes[i].AbsPosition;
+		nodes[i].AbsPosition += origin;
+		// Update related values
+		nodes[i].RelPosition  = nodes[i].AbsPosition;
+		nodes[i].smoothpos    = nodes[i].AbsPosition;
+	}
+}
+
 void Beam::resetPosition(float px, float pz, bool setI, float miny)
 {
 	if(!hfinder)
@@ -5346,9 +5367,9 @@ Ogre::String Beam::getAxleLockName()
 	return axles[0].getDiffTypeName();
 }
 
-void Beam::reset()
+void Beam::reset(bool keepPosition)
 {
-reset_requested=true;
+	reset_requested = keepPosition ? 2 : 1;
 }
 
 void Beam::SyncReset()
@@ -5365,6 +5386,11 @@ void Beam::SyncReset()
 	parkingbrake=0;
 	fusedrag=Vector3::ZERO;
 	origin=Vector3::ZERO; //to fix
+
+	Vector3 cur_position = nodes[0].AbsPosition;
+	Vector3 cur_dir = nodes[cameranodepos[0]].RelPosition - nodes[cameranodedir[0]].RelPosition;
+	float cur_rot = atan2(cur_dir.dotProduct(Vector3::UNIT_X), cur_dir.dotProduct(-Vector3::UNIT_Z));
+
 	if (engine) engine->start();
 	for (i=0; i<free_node; i++)
 	{
@@ -5422,7 +5448,14 @@ void Beam::SyncReset()
 	addPressure(0);
 	if (autopilot) resetAutopilot();
 	for (i=0; i<free_flexbody; i++) flexbodies[i]->reset();
-	reset_requested=false;
+
+	if (reset_requested == 2)
+	{
+		resetAngle(cur_rot);
+		resetPosition(cur_position.x, cur_position.z, false);
+	}
+
+	reset_requested=0;
 }
 
 //this is called by the threads
@@ -6668,7 +6701,7 @@ void Beam::calcForcesEuler(int doUpdate, Real dt, int step, int maxstep, Beam** 
 	// or taking a different approach to the simulation (truck-local coordinate system?)
 	if (!inRange(tminx+tmaxx+tminy+tmaxy+tminz+tmaxz, -1e9, 1e9))
 	{
-		reset_requested=true; // truck exploded, schedule reset
+		reset_requested=1; // truck exploded, schedule reset
 		return; // return early to avoid propagating invalid values
 	}
 
