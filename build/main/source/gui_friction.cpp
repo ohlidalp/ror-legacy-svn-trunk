@@ -54,7 +54,10 @@ GUI_Friction::GUI_Friction() : col(0), active_gm(0), selected_gm(0), win(0)
 	MyGUI::ButtonPtr b;
 	MyGUI::StaticTextPtr t;
 
-	msgwin = MyGUI::Gui::getInstance().createWidget<MyGUI::Window>("WindowCSX", 0, 0, 400, 300,  MyGUI::Align::Center, "Back");
+	MyGUI::CanvasPtr can = MyGUI::Gui::getInstance().createWidget<MyGUI::Canvas>("Canvas", 0, 0, 400, 300,  MyGUI::Align::Center, "Back");
+	can->createTexture(MyGUI::Canvas::TRM_PT_VIEW_ALL);
+
+	msgwin = can->createWidget<MyGUI::Window>("WindowCSX", 0, 0, 400, 300,  MyGUI::Align::Center, "Back");
 	msgwin->setCaption(_L("Friction Help"));
 	msgwin->eventWindowButtonPressed = MyGUI::newDelegate(this, &GUI_Friction::notifyHelpWindowButtonPressed);
 	e = msgwin->createWidget<MyGUI::Edit>("EditStretch", 0, 0, 400, 300,  MyGUI::Align::Default, "helptext");
@@ -373,6 +376,15 @@ GUI_Friction::GUI_Friction() : col(0), active_gm(0), selected_gm(0), win(0)
 	ground_model_t *gm = col->getGroundModelByString("gravel");
 	if(gm) updateControls(gm);
 	selected_gm = gm;
+
+	TexturePtr tp = Ogre::TextureManager::getSingleton().getByName(can->getTextureName());
+	if(!tp.isNull())
+	{
+		RenderTexture* pRenderTexture = tp->getBuffer()->getRenderTarget();
+		pRenderTexture->update();
+		pRenderTexture->writeContentsToFile("bake.png");
+	}
+
 }
 
 void GUI_Friction::setShaded(bool value)
@@ -409,10 +421,7 @@ void GUI_Friction::setVisible(bool value)
 			updateControls(gm, false);
 
 	}
-	if(value)
-		win->showSmooth();
-	else
-		win->hideSmooth();
+	win->setVisibleSmooth(value);
 	//win->setVisible(value);
 	MyGUI::PointerManager::getInstance().setVisible(value);
 }
@@ -563,7 +572,7 @@ void GUI_Friction::updateControls(ground_model_t *gm, bool setCombo)
 
 }
 
-void GUI_Friction::event_combo_grounds_eventComboAccept(MyGUI::WidgetPtr _sender, size_t _index)
+void GUI_Friction::event_combo_grounds_eventComboAccept(MyGUI::ComboBoxPtr _sender, size_t _index)
 {
 	if(!col) return;
 	if(!win->isVisible()) return;
@@ -575,7 +584,7 @@ void GUI_Friction::event_combo_grounds_eventComboAccept(MyGUI::WidgetPtr _sender
 	selected_gm = gm;
 }
 
-void GUI_Friction::event_edit_TextChange(MyGUI::WidgetPtr _sender)
+void GUI_Friction::event_edit_TextChange(MyGUI::EditPtr _sender)
 {
 	String name = _sender->getName();
 	MyGUI::StaticTextPtr edt = (MyGUI::StaticTextPtr)win->findWidget(name + "_edited");
@@ -614,7 +623,7 @@ void GUI_Friction::event_btn_MouseButtonClick(MyGUI::WidgetPtr _sender)
 	LogManager::getSingleton().logMessage(" Friction GUI button pressed: " + _sender->getCaption());
 }
 
-void GUI_Friction::event_scroll_value(MyGUI::WidgetPtr _sender, size_t _value)
+void GUI_Friction::event_scroll_value(MyGUI::VScrollPtr _sender, size_t _value)
 {
 	String name = _sender->getName();
 	if(name.size() > 7  && name.substr(name.size() - 7, 7) == "_scroll")
@@ -699,16 +708,16 @@ void GUI_Friction::applyChanges()
 
 }
 
-void GUI_Friction::notifyWindowButtonPressed(MyGUI::WidgetPtr _sender, const std::string& _name)
+void GUI_Friction::notifyWindowButtonPressed(MyGUI::WindowPtr _sender, const std::string& _name)
 {
 	//LogManager::getSingleton().logMessage("notifyWindowButtonPressed: " + String(_name));
 	if (_name == "close")
 		setVisible(false);
 }
 
-void GUI_Friction::notifyHelpWindowButtonPressed(MyGUI::WidgetPtr _sender, const std::string& _name)
+void GUI_Friction::notifyHelpWindowButtonPressed(MyGUI::WindowPtr _sender, const std::string& _name)
 {
-	if (_name == "close") msgwin->hideSmooth();
+	if (_name == "close") msgwin->setVisibleSmooth(false);
 }
 
 void GUI_Friction::showHelp(String title, String msg, int x, int y)
@@ -717,6 +726,6 @@ void GUI_Friction::showHelp(String title, String msg, int x, int y)
 	e->setCaption(msg);
 	msgwin->setCaption(_L("Friction Help: ") + title);
 	msgwin->setPosition(x + 20, y - 150);
-	msgwin->showSmooth();
+	msgwin->setVisibleSmooth(true);
 }
 

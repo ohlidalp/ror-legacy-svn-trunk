@@ -3,6 +3,21 @@
 	@author		Albert Semenov
 	@date		11/2007
 	@module
+*//*
+	This file is part of MyGUI.
+	
+	MyGUI is free software: you can redistribute it and/or modify
+	it under the terms of the GNU Lesser General Public License as published by
+	the Free Software Foundation, either version 3 of the License, or
+	(at your option) any later version.
+	
+	MyGUI is distributed in the hope that it will be useful,
+	but WITHOUT ANY WARRANTY; without even the implied warranty of
+	MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+	GNU Lesser General Public License for more details.
+	
+	You should have received a copy of the GNU Lesser General Public License
+	along with MyGUI.  If not, see <http://www.gnu.org/licenses/>.
 */
 #include "MyGUI_Precompiled.h"
 #include "MyGUI_Common.h"
@@ -160,7 +175,7 @@ namespace MyGUI
 			root_focus->onMouseChangeRootFocus(false);
 			WidgetManager::getInstance().removeWidgetFromUnlink(root_focus);
 
-			if (root_focus) 
+			if (root_focus)
 				root_focus = root_focus->getParent();
 		};
 		//-------------------------------------------------------------------------------------//
@@ -406,18 +421,19 @@ namespace MyGUI
 		if ( GetKeyboardState(keyState) == 0 )
 			return 0;
 
-		unsigned int vk = MapVirtualKeyEx((UINT)kc.toValue(), 3, layout);
+		int code = *((int*)&kc);
+		unsigned int vk = MapVirtualKeyEx((UINT)code, 3, layout);
 		if ( vk == 0 )
 			return 0;
 
 		WCHAR buff[3] = {0, 0, 0};
-		int ascii = ToUnicodeEx(vk, (UINT)kc.toValue(), keyState, buff, 3, 0, layout);
+		int ascii = ToUnicodeEx(vk, (UINT)code, keyState, buff, 3, 0, layout);
 		if (ascii == 1 && deadKey != '\0' ) {
 			// A dead key is stored and we have just converted a character key
 			// Combine the two into a single character
 			WCHAR wcBuff[3] = { buff[0], deadKey, '\0' };
 			WCHAR out[3];
-			
+
 			deadKey = '\0';
 			if(FoldStringW(MAP_PRECOMPOSED, (LPWSTR)wcBuff, 3, (LPWSTR)out, 3))
 				return out[0];
@@ -457,9 +473,10 @@ namespace MyGUI
 	{
 		Char result = 0;
 #ifndef MYGUI_NO_OIS
+		int code = *((int*)&_key);
 		// нумлок транслейтим ручками
-		if (_key.toValue() > 70 && _key.toValue() < 84) {
-			result = mNums[_key.toValue()-71];
+		if (code > 70 && code < 84) {
+			result = mNums[code-71];
 		}
 		else if (_key == KeyCode::Divide) {
 			result = '/';
@@ -476,14 +493,14 @@ namespace MyGUI
 		}
 #else
 		if (_key.toValue() < 58) {
-			result = mCurrentLanguage->second[_key.toValue() + (mIsShiftPressed ? 58 : 0)];
+			result = mCurrentLanguage->second[code + (mIsShiftPressed ? 58 : 0)];
 		}
-		else if (_key.toValue() < 84) {
-			if (_key.toValue() > 70) {
-				result = mNums[_key.toValue()-71];
+		else if (code < 84) {
+			if (code > 70) {
+				result = mNums[code-71];
 			}
 		}
-		else if (_key.toValue() == KeyCode::Divide) {
+		else if (_key == KeyCode::Divide) {
 			result = mCurrentLanguage->second[KeyCode::Slash + (mIsShiftPressed ? 58 : 0)];
 		}
 		//else if (_key == KeyCode::OEM_102) {

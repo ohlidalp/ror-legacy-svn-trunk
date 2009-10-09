@@ -3,6 +3,21 @@
 	@author		Albert Semenov
 	@date		01/2008
 	@module
+*//*
+	This file is part of MyGUI.
+	
+	MyGUI is free software: you can redistribute it and/or modify
+	it under the terms of the GNU Lesser General Public License as published by
+	the Free Software Foundation, either version 3 of the License, or
+	(at your option) any later version.
+	
+	MyGUI is distributed in the hope that it will be useful,
+	but WITHOUT ANY WARRANTY; without even the implied warranty of
+	MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+	GNU Lesser General Public License for more details.
+	
+	You should have received a copy of the GNU Lesser General Public License
+	along with MyGUI.  If not, see <http://www.gnu.org/licenses/>.
 */
 #include "MyGUI_Precompiled.h"
 #include "MyGUI_Tab.h"
@@ -19,7 +34,7 @@ namespace MyGUI
 	const float TAB_SPEED_FADE_COEF = 5.0f;
 
 	Tab::Tab(WidgetStyle _style, const IntCoord& _coord, Align _align, const WidgetSkinInfoPtr _info, WidgetPtr _parent, ICroppedRectangle * _croppedParent, IWidgetCreator * _creator, const std::string & _name) :
-		Widget(_style, _coord, _align, _info, _parent, _croppedParent, _creator, _name),
+		Base(_style, _coord, _align, _info, _parent, _croppedParent, _creator, _name),
 		mOffsetTab(0),
 		mButtonShow(false),
 		mWidthBar(0),
@@ -47,7 +62,7 @@ namespace MyGUI
 	void Tab::baseChangeWidgetSkin(WidgetSkinInfoPtr _info)
 	{
 		shutdownWidgetSkin();
-		Widget::baseChangeWidgetSkin(_info);
+		Base::baseChangeWidgetSkin(_info);
 		initialiseWidgetSkin(_info);
 	}
 
@@ -130,19 +145,19 @@ namespace MyGUI
 	{
 		if ((TabItem::getClassTypeName() == _type) || ("Sheet" == _type)) {
 
-			TabItemPtr sheet = static_cast<TabItemPtr>(Widget::baseCreateWidget(_style, TabItem::getClassTypeName(), "Default", mItemTemplate->getCoord(), mItemTemplate->getAlign(), "", ""));
+			TabItemPtr sheet = static_cast<TabItemPtr>(Base::baseCreateWidget(_style, TabItem::getClassTypeName(), "Default", mItemTemplate->getCoord(), mItemTemplate->getAlign(), "", _name));
 			_insertItem(ITEM_NONE, _name, sheet, Any::Null);
 
 			return sheet;
 		}
-		return Widget::baseCreateWidget(_style, _type, _skin, _coord, _align, _layer, _name);
+		return Base::baseCreateWidget(_style, _type, _skin, _coord, _align, _layer, _name);
 	}
 
 	TabItemPtr Tab::insertItemAt(size_t _index, const Ogre::UTFString & _name, Any _data)
 	{
 		MYGUI_ASSERT_RANGE_INSERT(_index, mItemsInfo.size(), "Tab::insertItem");
 
-		TabItemPtr sheet = static_cast<TabItemPtr>(Widget::baseCreateWidget(WidgetStyle::Child, TabItem::getClassTypeName(), "Default", mItemTemplate->getCoord(), mItemTemplate->getAlign(), "", ""));
+		TabItemPtr sheet = static_cast<TabItemPtr>(Base::baseCreateWidget(WidgetStyle::Child, TabItem::getClassTypeName(), "Default", mItemTemplate->getCoord(), mItemTemplate->getAlign(), "", ""));
 		_insertItem(_index, _name, sheet, _data);
 
 		return sheet;
@@ -150,19 +165,22 @@ namespace MyGUI
 
 	void Tab::setPosition(const IntPoint & _point)
 	{
-		Widget::setPosition(_point);
+		Base::setPosition(_point);
+
 		updateBar();
 	}
 
 	void Tab::setSize(const IntSize& _size)
 	{
-		Widget::setSize(_size);
+		Base::setSize(_size);
+
 		updateBar();
 	}
 
 	void Tab::setCoord(const IntCoord & _coord)
 	{
-		Widget::setCoord(_coord);
+		Base::setCoord(_coord);
+
 		updateBar();
 	}
 
@@ -475,8 +493,9 @@ namespace MyGUI
 		Ogre::UTFString save = mItemButton[0]->getCaption();
 		mItemButton[0]->setCaption(_text);
 
-		IntSize size = mItemButton[0]->getTextSize();
-		IntCoord coord = mItemButton[0]->getTextCoord();
+		ISubWidgetText* text = mItemButton[0]->getSubWidgetText();
+		const IntSize& size = text ? text->getTextSize() : IntSize();
+		const IntCoord& coord = text ? text->getCoord() : IntCoord();
 
 		mItemButton[0]->setCaption(save);
 

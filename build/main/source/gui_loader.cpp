@@ -230,7 +230,7 @@ void GUI_Loader::event_btnCancel_MouseButtonClick(MyGUI::WidgetPtr _sender)
 	//btnCancel->setCaption("Cancel");
 }
 
-void GUI_Loader::event_combo_configs_eventComboAccept(MyGUI::WidgetPtr _sender, size_t _index)
+void GUI_Loader::event_combo_configs_eventComboAccept(MyGUI::ComboBoxPtr _sender, size_t _index)
 {
 	if(!window->isVisible()) return;
 	try
@@ -243,7 +243,7 @@ void GUI_Loader::event_combo_configs_eventComboAccept(MyGUI::WidgetPtr _sender, 
 	}
 }
 
-void GUI_Loader::event_combobox_eventComboAccept(MyGUI::WidgetPtr _sender, size_t _index)
+void GUI_Loader::event_combobox_eventComboAccept(MyGUI::ComboBoxPtr _sender, size_t _index)
 {
 	if(!window->isVisible()) return;
 	try
@@ -255,7 +255,7 @@ void GUI_Loader::event_combobox_eventComboAccept(MyGUI::WidgetPtr _sender, size_
 	}
 }
 
-void GUI_Loader::event_combobox_eventComboChangePosition(MyGUI::WidgetPtr _sender, size_t _index)
+void GUI_Loader::event_combobox_eventComboChangePosition(MyGUI::ComboBoxPtr _sender, size_t _index)
 {
 	if(!window->isVisible()) return;
 	try
@@ -267,7 +267,7 @@ void GUI_Loader::event_combobox_eventComboChangePosition(MyGUI::WidgetPtr _sende
 	}
 }
 
-void GUI_Loader::event_list_eventListChangePosition(MyGUI::WidgetPtr _sender, size_t _index)
+void GUI_Loader::event_list_eventListChangePosition(MyGUI::ListPtr _sender, size_t _index)
 {
 	if(!window->isVisible()) return;
 	try
@@ -377,7 +377,7 @@ void GUI_Loader::show(int type)
 	truck_configs.clear();
 	MyGUI::InputManager::getInstance().setKeyFocusWidget(window);
 	window->setEnabledSilent(true);
-	window->showSmooth();
+	window->setVisibleSmooth(true);
 	if(type != LT_SKIN) selectedtruck = 0; // when in skin, we still need the info
 	loaderType = type;
 	selectiondone = false;

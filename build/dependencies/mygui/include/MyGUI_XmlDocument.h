@@ -3,6 +3,21 @@
 	@author		Albert Semenov
 	@date		11/2007
 	@module
+*//*
+	This file is part of MyGUI.
+	
+	MyGUI is free software: you can redistribute it and/or modify
+	it under the terms of the GNU Lesser General Public License as published by
+	the Free Software Foundation, either version 3 of the License, or
+	(at your option) any later version.
+	
+	MyGUI is distributed in the hope that it will be useful,
+	but WITHOUT ANY WARRANTY; without even the implied warranty of
+	MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+	GNU Lesser General Public License for more details.
+	
+	You should have received a copy of the GNU Lesser General Public License
+	along with MyGUI.  If not, see <http://www.gnu.org/licenses/>.
 */
 #ifndef __MYGUI_XML_DOCUMENT_H__
 #define __MYGUI_XML_DOCUMENT_H__
@@ -136,7 +151,8 @@ namespace MyGUI
 		public:
 			ElementPtr createChild(const std::string & _name, const std::string & _content = "");
 
-			template <typename T> MYGUI_OBSOLETE("use : template <typename T> void Element::addAttribute(const std::string &_key, const T& _value)")
+			template <typename T>
+			MYGUI_OBSOLETE("use : template <typename T> void Element::addAttribute(const std::string &_key, const T& _value)")
 			void addAttributes(const std::string &_key, const T& _value) { addAttribute<T>(_key, _value); }
 			MYGUI_OBSOLETE("use : void Element::addAttribute(const std::string & _key, const std::string & _value)")
 			void addAttributes(const std::string & _key, const std::string & _value) { addAttribute(_key, _value); }
@@ -199,11 +215,13 @@ namespace MyGUI
 				mContent = _content;
 			}
 
-			template <typename T> MYGUI_OBSOLETE("use : template <typename T> void Element::addContent(const T& _content)")
+			template <typename T>
+			MYGUI_OBSOLETE("use : template <typename T> void Element::addContent(const T& _content)")
 			void addBody(const T& _content) { addContent<T>(_content); }
 			MYGUI_OBSOLETE("use : void Element::addContent(const std::string & _content)")
 			void addBody(const std::string & _content) { addContent(_content); }
-			template <typename T>MYGUI_OBSOLETE("use : template <typename T> void Element::setContent(const T& _content)")
+			template <typename T>
+			MYGUI_OBSOLETE("use : template <typename T> void Element::setContent(const T& _content)")
 			void setBody(const T& _content) { setContent<T>(_content); }
 			MYGUI_OBSOLETE("use : void Element::setContent(const std::string & _content)")
 			void setBody(const std::string & _content) { setContent(_content); }

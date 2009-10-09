@@ -3,6 +3,21 @@
 	@author		Albert Semenov
 	@date		04/2008
 	@module
+*//*
+	This file is part of MyGUI.
+	
+	MyGUI is free software: you can redistribute it and/or modify
+	it under the terms of the GNU Lesser General Public License as published by
+	the Free Software Foundation, either version 3 of the License, or
+	(at your option) any later version.
+	
+	MyGUI is distributed in the hope that it will be useful,
+	but WITHOUT ANY WARRANTY; without even the implied warranty of
+	MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+	GNU Lesser General Public License for more details.
+	
+	You should have received a copy of the GNU Lesser General Public License
+	along with MyGUI.  If not, see <http://www.gnu.org/licenses/>.
 */
 #include "MyGUI_Precompiled.h"
 #include "MyGUI_MultiList.h"
@@ -17,31 +32,32 @@ namespace MyGUI
 {
 
 	MultiList::MultiList(WidgetStyle _style, const IntCoord& _coord, Align _align, const WidgetSkinInfoPtr _info, WidgetPtr _parent, ICroppedRectangle * _croppedParent, IWidgetCreator * _creator, const std::string & _name) :
-		Widget(_style, _coord, _align, _info, _parent, _croppedParent, _creator, _name),
+		Base(_style, _coord, _align, _info, _parent, _croppedParent, _creator, _name),
 		mHeightButton(0),
 		mWidthBar(0),
 		mButtonMain(nullptr),
 		mLastMouseFocusIndex(ITEM_NONE),
 		mSortUp(true),
 		mSortColumnIndex(ITEM_NONE),
-		mIsDirtySort(false),
 		mWidthSeparator(0),
 		mOffsetButtonSeparator(2),
-		mItemSelected(ITEM_NONE)
+		mItemSelected(ITEM_NONE),
+		mFrameAdvise(false),
+		mClient(nullptr)
 	{
 		initialiseWidgetSkin(_info);
 	}
 
 	MultiList::~MultiList()
 	{
-		Gui::getInstance().eventFrameStart -= newDelegate(this, &MultiList::frameEntered);
+		frameAdvise(false);
 		shutdownWidgetSkin();
 	}
 
 	void MultiList::baseChangeWidgetSkin(WidgetSkinInfoPtr _info)
 	{
 		shutdownWidgetSkin();
-		Widget::baseChangeWidgetSkin(_info);
+		Base::baseChangeWidgetSkin(_info);
 		initialiseWidgetSkin(_info);
 	}
 
@@ -61,8 +77,8 @@ namespace MyGUI
 
 			iter = properties.find("SkinButtonEmpty");
 			if (iter != properties.end()) {
-				mButtonMain = mWidgetClient->createWidget<Button>(iter->second,
-					IntCoord(0, 0, mWidgetClient->getWidth(), mHeightButton), Align::Default);
+				mButtonMain = mClient->createWidget<Button>(iter->second,
+					IntCoord(0, 0, mClient->getWidth(), mHeightButton), Align::Default);
 			}
 
 			iter = properties.find("WidthSeparator");
@@ -73,17 +89,19 @@ namespace MyGUI
 
 		for (VectorWidgetPtr::iterator iter=mWidgetChildSkin.begin(); iter!=mWidgetChildSkin.end(); ++iter) {
 			if (*(*iter)->_getInternalData<std::string>() == "Client") {
-				MYGUI_DEBUG_ASSERT( ! mWidgetClient, "widget already assigned");
-				mWidgetClient = (*iter);
+				MYGUI_DEBUG_ASSERT( ! mClient, "widget already assigned");
+				mClient = (*iter);
+				mWidgetClient = (*iter); // чтобы размер возвращался клиентской зоны
 			}
 		}
 		// мона и без клиента
-		if (nullptr == mWidgetClient) mWidgetClient = this;
+		if (nullptr == mClient) mClient = this;
 	}
 
 	void MultiList::shutdownWidgetSkin()
 	{
 		mWidgetClient = nullptr;
+		mClient = nullptr;
 	}
 
 	//----------------------------------------------------------------------------------//
@@ -101,13 +119,13 @@ namespace MyGUI
 		ColumnInfo column;
 		column.width = _width < 0 ? 0 : _width;
 
-		column.list = mWidgetClient->createWidget<List>(mSkinList, IntCoord(), Align::Left | Align::VStretch);
+		column.list = mClient->createWidget<List>(mSkinList, IntCoord(), Align::Left | Align::VStretch);
 		column.list->eventListChangePosition = newDelegate(this, &MultiList::notifyListChangePosition);
 		column.list->eventListMouseItemFocus = newDelegate(this, &MultiList::notifyListChangeFocus);
 		column.list->eventListChangeScroll = newDelegate(this, &MultiList::notifyListChangeScrollPosition);
 		column.list->eventListSelectAccept = newDelegate(this, &MultiList::notifyListSelectAccept);
 
-		column.button = mWidgetClient->createWidget<Button>(mSkinButton, IntCoord(), Align::Default);
+		column.button = mClient->createWidget<Button>(mSkinButton, IntCoord(), Align::Default);
 		column.button->eventMouseButtonClick = newDelegate(this, &MultiList::notifyButtonClick);
 		column.name = _name;
 		column.data = _data;
@@ -200,7 +218,7 @@ namespace MyGUI
 			mSortUp = !mSortUp;
 			redrawButtons();
 			// если было недосортированно то сортируем
-			if (mIsDirtySort) sortList();
+			if (mFrameAdvise) sortList();
 
 			flipList();
 		}
@@ -269,7 +287,7 @@ namespace MyGUI
 		mVectorColumnInfo[_column].list->setItemNameAt(index, _name);
 
 		// если мы попортили список с активным сортом, надо пересчитывать
-		if (_column == mSortColumnIndex) setDirtySort();
+		if (_column == mSortColumnIndex) frameAdvise(true);
 	}
 
 	const Ogre::UTFString & MultiList::getSubItemNameAt(size_t _column, size_t _index)
@@ -294,17 +312,17 @@ namespace MyGUI
 	{
 		if (nullptr == mButtonMain) return;
 		// кнопка, для заполнения пустоты
-		if (mWidthBar >= mWidgetClient->getWidth()) mButtonMain->setVisible(false);
+		if (mWidthBar >= mClient->getWidth()) mButtonMain->setVisible(false);
 		else {
-			mButtonMain->setCoord(mWidthBar, 0, mWidgetClient->getWidth()-mWidthBar, mHeightButton);
+			mButtonMain->setCoord(mWidthBar, 0, mClient->getWidth()-mWidthBar, mHeightButton);
 			mButtonMain->setVisible(true);
 		}
 	}
 
-	void MultiList::notifyListChangePosition(MyGUI::WidgetPtr _widget, size_t _position)
+	void MultiList::notifyListChangePosition(ListPtr _sender, size_t _position)
 	{
 		for (VectorColumnInfo::iterator iter=mVectorColumnInfo.begin(); iter!=mVectorColumnInfo.end(); ++iter) {
-			if (_widget != (*iter).list) (*iter).list->setIndexSelected(_position);
+			if (_sender != (*iter).list) (*iter).list->setIndexSelected(_position);
 		}
 
 		updateBackSelected(_position);
@@ -315,16 +333,16 @@ namespace MyGUI
 		eventListChangePosition(this, mItemSelected);
 	}
 
-	void MultiList::notifyListSelectAccept(MyGUI::WidgetPtr _widget, size_t _position)
+	void MultiList::notifyListSelectAccept(ListPtr _sender, size_t _position)
 	{
 		// наш евент
 		eventListSelectAccept(this, BiIndexBase::convertToFace(_position));
 	}
 
-	void MultiList::notifyListChangeFocus(MyGUI::WidgetPtr _widget, size_t _position)
+	void MultiList::notifyListChangeFocus(ListPtr _sender, size_t _position)
 	{
 		for (VectorColumnInfo::iterator iter=mVectorColumnInfo.begin(); iter!=mVectorColumnInfo.end(); ++iter) {
-			if (_widget != (*iter).list) {
+			if (_sender != (*iter).list) {
 				if (ITEM_NONE != mLastMouseFocusIndex) (*iter).list->_setItemFocus(mLastMouseFocusIndex, false);
 				if (ITEM_NONE != _position) (*iter).list->_setItemFocus(_position, true);
 			}
@@ -332,17 +350,17 @@ namespace MyGUI
 		mLastMouseFocusIndex = _position;
 	}
 
-	void MultiList::notifyListChangeScrollPosition(MyGUI::WidgetPtr _widget, size_t _position)
+	void MultiList::notifyListChangeScrollPosition(ListPtr _sender, size_t _position)
 	{
 		for (VectorColumnInfo::iterator iter=mVectorColumnInfo.begin(); iter!=mVectorColumnInfo.end(); ++iter) {
-			if (_widget != (*iter).list)
+			if (_sender != (*iter).list)
 				(*iter).list->setScrollPosition(_position);
 		}
 	}
 
-	void MultiList::notifyButtonClick(MyGUI::WidgetPtr _widget)
+	void MultiList::notifyButtonClick(MyGUI::WidgetPtr _sender)
 	{
-		size_t index = *_widget->_getInternalData<size_t>();
+		size_t index = *_sender->_getInternalData<size_t>();
 		sortByColumn(index, index == mSortColumnIndex);
 	}
 
@@ -375,20 +393,29 @@ namespace MyGUI
 		}
 	}
 
-	void MultiList::setDirtySort()
-	{
-		if (mIsDirtySort) return;
-		Gui::getInstance().eventFrameStart += newDelegate(this, &MultiList::frameEntered);
-		mIsDirtySort = true;
-	}
-
 	void MultiList::frameEntered(float _frame)
 	{
-		if (false == mIsDirtySort) {
-			Gui::getInstance().eventFrameStart -= newDelegate(this, &MultiList::frameEntered);
-			return;
-		}
 		sortList();
+	}
+
+	void MultiList::frameAdvise(bool _advise)
+	{
+		if( _advise )
+		{
+			if( ! mFrameAdvise )
+			{
+				MyGUI::Gui::getInstance().eventFrameStart += MyGUI::newDelegate( this, &MultiList::frameEntered );
+				mFrameAdvise = true;
+			}
+		}
+		else
+		{
+			if( mFrameAdvise )
+			{
+				MyGUI::Gui::getInstance().eventFrameStart -= MyGUI::newDelegate( this, &MultiList::frameEntered );
+				mFrameAdvise = false;
+			}
+		}
 	}
 
 	WidgetPtr MultiList::getSeparator(size_t _index)
@@ -398,7 +425,7 @@ namespace MyGUI
 		if (_index == mVectorColumnInfo.size()-1) return nullptr;
 
 		while (_index >= mSeparators.size()) {
-			WidgetPtr separator = mWidgetClient->createWidget<Widget>(mSkinSeparator, IntCoord(), Align::Default);
+			WidgetPtr separator = mClient->createWidget<Widget>(mSkinSeparator, IntCoord(), Align::Default);
 			mSeparators.push_back(separator);
 		}
 
@@ -410,7 +437,7 @@ namespace MyGUI
 		mWidthBar = 0;
 		size_t index = 0;
 		for (VectorColumnInfo::iterator iter=mVectorColumnInfo.begin(); iter!=mVectorColumnInfo.end(); ++iter) {
-			(*iter).list->setCoord(mWidthBar, mHeightButton, (*iter).width, mWidgetClient->getHeight() - mHeightButton);
+			(*iter).list->setCoord(mWidthBar, mHeightButton, (*iter).width, mClient->getHeight() - mHeightButton);
 			(*iter).button->setCoord(mWidthBar, 0, (*iter).width, mHeightButton);
 			(*iter).button->_setInternalData(index);
 
@@ -419,7 +446,7 @@ namespace MyGUI
 			// промежуток между листами
 			WidgetPtr separator = getSeparator(index);
 			if (separator) {
-				separator->setCoord(mWidthBar, 0, mWidthSeparator, mWidgetClient->getHeight());
+				separator->setCoord(mWidthBar, 0, mWidthSeparator, mClient->getHeight());
 			}
 
 			mWidthBar += mWidthSeparator;
@@ -455,10 +482,10 @@ namespace MyGUI
 
 	bool MultiList::compare(ListPtr _list, size_t _left, size_t _right)
 	{
-		bool result;
+		bool result = false;
 		if(mSortUp) std::swap(_left, _right);
-		if (operatorLess.empty()) result = _list->getItemNameAt(_left) < _list->getItemNameAt(_right);
-		else operatorLess(this, mSortColumnIndex, _list->getItemNameAt(_left), _list->getItemNameAt(_right), result);
+		if (requestOperatorLess.empty()) result = _list->getItemNameAt(_left) < _list->getItemNameAt(_right);
+		else requestOperatorLess(this, mSortColumnIndex, _list->getItemNameAt(_left), _list->getItemNameAt(_right), result);
 		return result;
 	}
 
@@ -492,8 +519,7 @@ namespace MyGUI
 			}
 		}
 
-
-		mIsDirtySort = false;
+		frameAdvise(false);
 
 		updateBackSelected(BiIndexBase::convertToBack(mItemSelected));
 	}
@@ -517,7 +543,7 @@ namespace MyGUI
 		mVectorColumnInfo.front().list->setItemNameAt(index, _name);
 		mVectorColumnInfo.front().list->setItemDataAt(index, _data);
 
-		setDirtySort();
+		frameAdvise(true);
 	}
 
 	void MultiList::removeItemAt(size_t _index)

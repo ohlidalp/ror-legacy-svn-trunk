@@ -3,6 +3,21 @@
 	@author		Albert Semenov
 	@date		11/2007
 	@module
+*//*
+	This file is part of MyGUI.
+	
+	MyGUI is free software: you can redistribute it and/or modify
+	it under the terms of the GNU Lesser General Public License as published by
+	the Free Software Foundation, either version 3 of the License, or
+	(at your option) any later version.
+	
+	MyGUI is distributed in the hope that it will be useful,
+	but WITHOUT ANY WARRANTY; without even the implied warranty of
+	MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+	GNU Lesser General Public License for more details.
+	
+	You should have received a copy of the GNU Lesser General Public License
+	along with MyGUI.  If not, see <http://www.gnu.org/licenses/>.
 */
 #ifndef __MYGUI_FONT_H__
 #define __MYGUI_FONT_H__
@@ -47,32 +62,22 @@ namespace MyGUI
 		{
 			Char codePoint;
 			FloatRect uvRect;
-			float aspectRatio;
+			int width;
 
 			GlyphInfo() :
 				codePoint(0),
-				aspectRatio(1)
+				width(0)
 			{
 			}
-
-			GlyphInfo(Char _code, const FloatRect& _rect, float _aspect) :
-				codePoint(_code),
-				uvRect(_rect),
-				aspectRatio(_aspect)
-			{
-			}
-
 		};
 
 		typedef std::vector<GlyphInfo> VectorGlyphInfo;
 
 		// инфомация о диапазоне символов
-		struct RangeInfo
+		class RangeInfo
 		{
-		private:
-			RangeInfo() { }
-
 		public:
+			RangeInfo() : first(0), last(0) { }
 			RangeInfo(Char _first, Char _last) :
 				first(_first),
 				last(_last)
@@ -84,7 +89,8 @@ namespace MyGUI
 			bool isExist(Char _code) { return _code >= first && _code <= last; }
 
 			// возвращает указатель на глиф, или 0, если код не входит в диапазон
-			GlyphInfo * getInfo(Char _code) { return isExist(_code) ? &range[_code - first] : nullptr; }
+			GlyphInfo* getInfo(Char _code) { return isExist(_code) ? &range[_code - first] : nullptr; }
+			void setInfo(Char _code, GlyphInfo* _value) { if (isExist(_code)) range[_code - first] = *_value; }
 
 		public:
 			Char first;
@@ -110,20 +116,7 @@ namespace MyGUI
 
 		typedef std::vector<PairCodeCoord> VectorPairCodeCoord;
 
-		enum constCodePoints
-		{
-			FONT_CODE_SELECT = 0,
-			FONT_CODE_TAB = 0x0009,
-			FONT_CODE_LF = 0x000A,
-			FONT_CODE_CR = 0x000D,
-			FONT_CODE_SPACE = 0x0020,
-			FONT_CODE_LATIN_START = 0x0021,
-			FONT_CODE_NEL = 0x0085,
-			FONT_CODE_LATIN_END = 0x00A6,
-		};
-
 	protected:
-
         /// Source of the font (either an image name or a truetype font)
 		Ogre::String mSource;
         /// Size of the truetype font, in points
@@ -137,7 +130,7 @@ namespace MyGUI
 		int mCursorWidth;
 		int mOffsetHeight;
 		int mDefaultHeight;
-		int mHeightPix;
+		//int mHeightPix;
 
 		// отдельная информация о символах
 		GlyphInfo mSpaceGlyphInfo, mTabGlyphInfo, mSelectGlyphInfo, mSelectDeactiveGlyphInfo, mCursorGlyphInfo;
@@ -179,12 +172,6 @@ namespace MyGUI
 		Font(Ogre::ResourceManager* creator, const Ogre::String& name, Ogre::ResourceHandle handle, const Ogre::String& group, bool isManual = false, Ogre::ManualResourceLoader* loader = 0);
         virtual ~Font();
 
-		GlyphInfo * getSpaceGlyphInfo() { return & mSpaceGlyphInfo; }
-		GlyphInfo * getTabGlyphInfo() { return & mTabGlyphInfo; }
-		GlyphInfo * getSelectGlyphInfo() { return & mSelectGlyphInfo; }
-		GlyphInfo * getSelectDeactiveGlyphInfo() { return & mSelectDeactiveGlyphInfo; }
-		GlyphInfo * getCursorGlyphInfo() { return & mCursorGlyphInfo; }
-
 		void setSource(const Ogre::String& source) { mSource = source; }
 		const Ogre::String& getSource() const { return mSource; }
 
@@ -194,7 +181,7 @@ namespace MyGUI
 		void setTrueTypeResolution(Ogre::uint ttfResolution) { mTtfResolution = ttfResolution; }
 		Ogre::uint getTrueTypeResolution() const { return mTtfResolution; }
 
-		GlyphInfo * getGlyphInfo(Char _id);
+		GlyphInfo* getGlyphInfo(Char _id);
 
 		void addCodePointRange(Ogre::Real _first, Ogre::Real _second)
 		{
@@ -231,7 +218,7 @@ namespace MyGUI
 		int getDefaultHeight() const { return mDefaultHeight; }
 		void setDefaultHeight(int _height) { mDefaultHeight = _height; }
 
-		unsigned int getHeightPix() { return uint(mHeightPix); }
+		//unsigned int getHeightPix() { return uint(mHeightPix); }
 
 		/** Implementation of ManualResourceLoader::loadResource, called
 			when the Texture that this font creates needs to (re)load. */
@@ -257,7 +244,7 @@ namespace MyGUI
 		int getOffsetHeight() { return mOffsetHeight; }
 		void setOffsetHeight(int _pix) { mOffsetHeight = _pix; }
 
-		void addGlyph(uint _index, const IntCoord& _coord);
+		void addGlyph(Char _index, const IntCoord& _coord);
 
 		bool isTrueType() { return mTtfResolution != 0; }
 

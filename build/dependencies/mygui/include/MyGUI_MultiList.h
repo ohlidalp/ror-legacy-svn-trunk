@@ -3,6 +3,21 @@
 	@author		Albert Semenov
 	@date		04/2008
 	@module
+*//*
+	This file is part of MyGUI.
+	
+	MyGUI is free software: you can redistribute it and/or modify
+	it under the terms of the GNU Lesser General Public License as published by
+	the Free Software Foundation, either version 3 of the License, or
+	(at your option) any later version.
+	
+	MyGUI is distributed in the hope that it will be useful,
+	but WITHOUT ANY WARRANTY; without even the implied warranty of
+	MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+	GNU Lesser General Public License for more details.
+	
+	You should have received a copy of the GNU Lesser General Public License
+	along with MyGUI.  If not, see <http://www.gnu.org/licenses/>.
 */
 #ifndef __MYGUI_MULTI_LIST_H__
 #define __MYGUI_MULTI_LIST_H__
@@ -12,11 +27,16 @@
 #include "MyGUI_List.h"
 #include "MyGUI_Any.h"
 #include "MyGUI_BiIndexBase.h"
+#include "MyGUI_EventPair.h"
 
 namespace MyGUI
 {
 
-	typedef delegates::CDelegate5<WidgetPtr, size_t, const Ogre::UTFString &, const Ogre::UTFString &, bool &> EventInfo_WidgetIntUTFStringUTFStringBool;
+	//OBSOLETE
+	typedef delegates::CDelegate5<WidgetPtr, size_t, const Ogre::UTFString &, const Ogre::UTFString &, bool &> EventHandle_WidgetIntUTFStringUTFStringBool;
+
+	typedef delegates::CDelegate5<MultiListPtr, size_t, const Ogre::UTFString &, const Ogre::UTFString &, bool &> EventHandle_MultiListPtrSizeTCUTFStringRefCUTFStringRefBoolRef;
+	typedef delegates::CDelegate2<MultiListPtr, size_t> EventHandle_MultiListPtrSizeT;
 
 	class MYGUI_EXPORT MultiList : public Widget, public BiIndexBase
 	{
@@ -102,8 +122,9 @@ namespace MyGUI
 		//------------------------------------------------------------------------------//
 		// Methods for work with lines (RU:методы для работы со строками)
 		/** @note
-      	All indexes used here is indexes of unsorted Multilist. Even if you sorted
-			it - all items indexes will be same as before sort.*/
+		All indexes used here is indexes of unsorted Multilist. Even if you sorted
+			it - all items indexes will be same as before sort.
+		*/
 
 		//------------------------------------------------------------------------------//
 		// манипуляции айтемами
@@ -117,20 +138,23 @@ namespace MyGUI
 		/** Add new item at the end */
 		void addItem(const Ogre::UTFString & _name, Any _data = Any::Null) { insertItemAt(ITEM_NONE, _name, _data); }
 
+		//! Remove item at a specified position
 		void removeItemAt(size_t _index);
 
 		/** Delete all items */
 		void removeAllItems();
 
+		//! Swap items at a specified positions
 		void swapItemsAt(size_t _index1, size_t _index2);
 
 
 		//------------------------------------------------------------------------------//
 		// манипуляции отображением
 
-		/** Set item string */
+		//! Replace an item name
 		void setItemNameAt(size_t _index, const Ogre::UTFString & _name) { setSubItemNameAt(0, _index, _name); }
 
+		//! Get item name from specified position
 		const Ogre::UTFString & getItemNameAt(size_t _index) { return getSubItemNameAt(0, _index); }
 
 
@@ -146,13 +170,6 @@ namespace MyGUI
 		/** Clear item selection */
 		void clearIndexSelected() { setIndexSelected(ITEM_NONE); }
 
-
-		MYGUI_OBSOLETE("use : size_t MultiList::getIndexSelected()")
-		size_t getItemIndexSelected() { return getIndexSelected(); }
-		MYGUI_OBSOLETE("use : void MultiList::setIndexSelected(size_t _index)")
-		void setItemSelectedAt(size_t _index) { setIndexSelected(_index); }
-		MYGUI_OBSOLETE("use : void MultiList::clearIndexSelected()")
-		void clearItemSelected() { clearIndexSelected(); }
 
 		//------------------------------------------------------------------------------//
 		// манипуляции данными
@@ -217,90 +234,81 @@ namespace MyGUI
 		}
 
 
-		// #ifdef MYGUI_USING_OBSOLETE
-
-		MYGUI_OBSOLETE("use : size_t MultiList::findSubItemWith(size_t _column, const Ogre::UTFString & _name)")
-		size_t findItem(size_t _column, const Ogre::UTFString & _name) { return findSubItemWith(_column, _name); }
-
-		MYGUI_OBSOLETE("use : const Ogre::UTFString & MultiList::getSubItemNameAt(size_t _column, size_t _index)")
-		const Ogre::UTFString & getSubItem(size_t _column, size_t _index) { return getSubItemNameAt(_column, _index); }
-
-		MYGUI_OBSOLETE("use : void MultiList::setSubItemNameAt(size_t _column, size_t _index, const Ogre::UTFString & _name)")
-		void setSubItem(size_t _column, size_t _index, const Ogre::UTFString & _name) { setSubItemNameAt(_column, _index, _name); }
-
-		MYGUI_OBSOLETE("use : void MultiList::removeColumnAt(size_t _column)")
-		void deleteColumn(size_t _column) { removeColumnAt(_column); }
-
-		MYGUI_OBSOLETE("use : void MultiList::removeAllColumns()")
-		void deleteAllColumns() { removeAllColumns(); }
-
-		MYGUI_OBSOLETE("use : int MultiList::getColumnWidthAt(size_t _column)")
-		int getColumnWidth(size_t _column) { return getColumnWidthAt(_column); }
-
-		MYGUI_OBSOLETE("use : const Ogre::UTFString & MultiList::getColumnNameAt(size_t _column)")
-		const Ogre::UTFString & getColumnName(size_t _column) { return getColumnNameAt(_column); }
-
-		MYGUI_OBSOLETE("use : void MultiList::setColumnWidthAt(size_t _column, int _width)")
-		void setColumnWidth(size_t _column, int _width) { setColumnWidthAt(_column, _width); }
-
-		MYGUI_OBSOLETE("use : void MultiList::addColumn(const Ogre::UTFString & _name, int _width, Any _data)")
-		void addColumn(int _width, const Ogre::UTFString & _name) { addColumn(_name, _width); }
-
-		MYGUI_OBSOLETE("use : void MultiList::setColumnNameAt(size_t _column, const Ogre::UTFString & _name)")
-		void setColumnName(size_t _column, const Ogre::UTFString & _name) { setColumnNameAt(_column, _name); }
-
-		MYGUI_OBSOLETE("use : void MultiList::insertColumnAt(size_t _column, const Ogre::UTFString & _name, int _width, Any _data)")
-		void insertColumn(size_t _column, int _width, const Ogre::UTFString & _name) { insertColumnAt(_column, _name, _width); }
-
-		MYGUI_OBSOLETE("use : size_t MultiList::getIndexSelected()")
-		size_t getItemSelect() { return getIndexSelected(); }
-
-		MYGUI_OBSOLETE("use : void MultiList::clearIndexSelected()")
-		void resetItemSelect() { clearIndexSelected(); }
-
-		MYGUI_OBSOLETE("use : void MultiList::setIndexSelected(size_t _index)")
-		void setItemSelect(size_t _index) { setIndexSelected(_index); }
-
-		MYGUI_OBSOLETE("use : void MultiList::insertItemAt(size_t _index, const Ogre::UTFString & _name, Any _data)")
-		void insertItem(size_t _index, const Ogre::UTFString & _name) { insertItemAt(_index, _name); }
-
-		MYGUI_OBSOLETE("use : void MultiList::setItemNameAt(size_t _index, const Ogre::UTFString & _name)")
-		void setItem(size_t _index, const Ogre::UTFString & _name) { setItemNameAt(_index, _name); }
-
-		MYGUI_OBSOLETE("use : const Ogre::UTFString & MultiList::getItemNameAt(size_t _index)")
-		const Ogre::UTFString & getItem(size_t _index) { return getItemNameAt(_index); }
-
-		MYGUI_OBSOLETE("use : void MultiList::removeItemAt(size_t _index)")
-		void deleteItem(size_t _index) { removeItemAt(_index); }
-
-		MYGUI_OBSOLETE("use : void MultiList::removeAllItems()")
-		void deleteAllItems() { removeAllItems(); }
-
-		// #endif // MYGUI_USING_OBSOLETE
-
-
+	/*event:*/
 		/** Event : Enter pressed or double click.\n
-			signature : void method(MyGUI::WidgetPtr _sender, size_t _index)\n
+			signature : void method(MyGUI::MultiListPtr _sender, size_t _index)\n
 			@param _sender widget that called this event
 			@param _index of selected item
 		*/
-		EventInfo_WidgetSizeT eventListSelectAccept;
+		EventPair<EventHandle_WidgetSizeT, EventHandle_MultiListPtrSizeT> eventListSelectAccept;
 
 		/** Event : Selected item position changed.\n
-			signature : void method(MyGUI::WidgetPtr _sender, size_t _index)\n
+			signature : void method(MyGUI::MultiListPtr _sender, size_t _index)\n
 			@param _sender widget that called this event
 			@param _index of new item
 		*/
-		EventInfo_WidgetSizeT eventListChangePosition;
+		EventPair<EventHandle_WidgetSizeT, EventHandle_MultiListPtrSizeT> eventListChangePosition;
 
 		/** Event : Less than operator for sort multilist by columns.\n
-			signature : void method(MyGUI::WidgetPtr _sender, size_t _column, const Ogre::UTFString & _firstItem, const Ogre::UTFString & _secondItem, bool & _less)\n
+			signature : void method(MyGUI::MultiListPtr _sender, size_t _column, const Ogre::UTFString & _firstItem, const Ogre::UTFString & _secondItem, bool & _less)\n
 			@param _sender widget that called this event
 			@param _column Index of column
-			@param _firstItem, _secondItem Strings for compare
+			@param _firstItem Strings for compare
+			@param _secondItem Strings for compare
 			@param _less Comparsion result (write your value here)
 		*/
-		EventInfo_WidgetIntUTFStringUTFStringBool operatorLess;
+		EventHandle_MultiListPtrSizeTCUTFStringRefCUTFStringRefBoolRef requestOperatorLess;
+
+	/*obsolete:*/
+#ifndef MYGUI_DONT_USE_OBSOLETE
+
+		MYGUI_OBSOLETE("use : size_t MultiList::getIndexSelected()")
+		size_t getItemIndexSelected() { return getIndexSelected(); }
+		MYGUI_OBSOLETE("use : void MultiList::setIndexSelected(size_t _index)")
+		void setItemSelectedAt(size_t _index) { setIndexSelected(_index); }
+		MYGUI_OBSOLETE("use : void MultiList::clearIndexSelected()")
+		void clearItemSelected() { clearIndexSelected(); }
+
+		MYGUI_OBSOLETE("use : size_t MultiList::findSubItemWith(size_t _column, const Ogre::UTFString & _name)")
+		size_t findItem(size_t _column, const Ogre::UTFString & _name) { return findSubItemWith(_column, _name); }
+		MYGUI_OBSOLETE("use : const Ogre::UTFString & MultiList::getSubItemNameAt(size_t _column, size_t _index)")
+		const Ogre::UTFString & getSubItem(size_t _column, size_t _index) { return getSubItemNameAt(_column, _index); }
+		MYGUI_OBSOLETE("use : void MultiList::setSubItemNameAt(size_t _column, size_t _index, const Ogre::UTFString & _name)")
+		void setSubItem(size_t _column, size_t _index, const Ogre::UTFString & _name) { setSubItemNameAt(_column, _index, _name); }
+		MYGUI_OBSOLETE("use : void MultiList::removeColumnAt(size_t _column)")
+		void deleteColumn(size_t _column) { removeColumnAt(_column); }
+		MYGUI_OBSOLETE("use : void MultiList::removeAllColumns()")
+		void deleteAllColumns() { removeAllColumns(); }
+		MYGUI_OBSOLETE("use : int MultiList::getColumnWidthAt(size_t _column)")
+		int getColumnWidth(size_t _column) { return getColumnWidthAt(_column); }
+		MYGUI_OBSOLETE("use : const Ogre::UTFString & MultiList::getColumnNameAt(size_t _column)")
+		const Ogre::UTFString & getColumnName(size_t _column) { return getColumnNameAt(_column); }
+		MYGUI_OBSOLETE("use : void MultiList::setColumnWidthAt(size_t _column, int _width)")
+		void setColumnWidth(size_t _column, int _width) { setColumnWidthAt(_column, _width); }
+		MYGUI_OBSOLETE("use : void MultiList::addColumn(const Ogre::UTFString & _name, int _width, Any _data)")
+		void addColumn(int _width, const Ogre::UTFString & _name) { addColumn(_name, _width); }
+		MYGUI_OBSOLETE("use : void MultiList::setColumnNameAt(size_t _column, const Ogre::UTFString & _name)")
+		void setColumnName(size_t _column, const Ogre::UTFString & _name) { setColumnNameAt(_column, _name); }
+		MYGUI_OBSOLETE("use : void MultiList::insertColumnAt(size_t _column, const Ogre::UTFString & _name, int _width, Any _data)")
+		void insertColumn(size_t _column, int _width, const Ogre::UTFString & _name) { insertColumnAt(_column, _name, _width); }
+		MYGUI_OBSOLETE("use : size_t MultiList::getIndexSelected()")
+		size_t getItemSelect() { return getIndexSelected(); }
+		MYGUI_OBSOLETE("use : void MultiList::clearIndexSelected()")
+		void resetItemSelect() { clearIndexSelected(); }
+		MYGUI_OBSOLETE("use : void MultiList::setIndexSelected(size_t _index)")
+		void setItemSelect(size_t _index) { setIndexSelected(_index); }
+		MYGUI_OBSOLETE("use : void MultiList::insertItemAt(size_t _index, const Ogre::UTFString & _name, Any _data)")
+		void insertItem(size_t _index, const Ogre::UTFString & _name) { insertItemAt(_index, _name); }
+		MYGUI_OBSOLETE("use : void MultiList::setItemNameAt(size_t _index, const Ogre::UTFString & _name)")
+		void setItem(size_t _index, const Ogre::UTFString & _name) { setItemNameAt(_index, _name); }
+		MYGUI_OBSOLETE("use : const Ogre::UTFString & MultiList::getItemNameAt(size_t _index)")
+		const Ogre::UTFString & getItem(size_t _index) { return getItemNameAt(_index); }
+		MYGUI_OBSOLETE("use : void MultiList::removeItemAt(size_t _index)")
+		void deleteItem(size_t _index) { removeItemAt(_index); }
+		MYGUI_OBSOLETE("use : void MultiList::removeAllItems()")
+		void deleteAllItems() { removeAllItems(); }
+
+#endif // MYGUI_DONT_USE_OBSOLETE
 
 	protected:
 		MultiList(WidgetStyle _style, const IntCoord& _coord, Align _align, const WidgetSkinInfoPtr _info, WidgetPtr _parent, ICroppedRectangle * _croppedParent, IWidgetCreator * _creator, const std::string & _name);
@@ -308,11 +316,11 @@ namespace MyGUI
 
 		void baseChangeWidgetSkin(WidgetSkinInfoPtr _info);
 
-		void notifyListChangePosition(MyGUI::WidgetPtr _widget, size_t _position);
-		void notifyListChangeFocus(MyGUI::WidgetPtr _widget, size_t _position);
-		void notifyListChangeScrollPosition(MyGUI::WidgetPtr _widget, size_t _position);
-		void notifyButtonClick(MyGUI::WidgetPtr _widget);
-		void notifyListSelectAccept(MyGUI::WidgetPtr _widget, size_t _position);
+		void notifyListChangePosition(ListPtr _sender, size_t _position);
+		void notifyListChangeFocus(ListPtr _sender, size_t _position);
+		void notifyListChangeScrollPosition(ListPtr _sender, size_t _position);
+		void notifyButtonClick(WidgetPtr _sender);
+		void notifyListSelectAccept(ListPtr _sender, size_t _position);
 
 		void updateColumns();
 		void redrawButtons();
@@ -321,8 +329,6 @@ namespace MyGUI
 		bool compare(ListPtr _list, size_t _left, size_t _right);
 		void sortList();
 		void flipList();
-
-		void setDirtySort();
 
 		WidgetPtr getSeparator(size_t _index);
 
@@ -335,6 +341,8 @@ namespace MyGUI
 		void shutdownWidgetSkin();
 
 		void frameEntered(float _frame);
+
+		void frameAdvise(bool _advise);
 
 	private:
 		struct ColumnInfo
@@ -378,6 +386,8 @@ namespace MyGUI
 
 		size_t mItemSelected;
 
+		bool mFrameAdvise;
+		WidgetPtr mClient;
 	};
 
 } // namespace MyGUI

@@ -69,11 +69,11 @@ protected:
 	MyGUI::WindowPtr window, windowp;
 
 	MyGUI::ListPtr list;
-	void event_list_eventListChangePosition(MyGUI::WidgetPtr _sender, size_t _index);
+	void event_list_eventListChangePosition(MyGUI::ListPtr _sender, size_t _index);
 
 	MyGUI::ComboBoxPtr combobox;
-	void event_combobox_eventComboAccept(MyGUI::WidgetPtr _sender, size_t _index);
-	void event_combobox_eventComboChangePosition(MyGUI::WidgetPtr _sender, size_t _index);
+	void event_combobox_eventComboAccept(MyGUI::ComboBoxPtr _sender, size_t _index);
+	void event_combobox_eventComboChangePosition(MyGUI::ComboBoxPtr _sender, size_t _index);
 	void event_window_eventKeyButtonPressed(MyGUI::WidgetPtr _sender, MyGUI::KeyCode _key, MyGUI::Char _char);
 	void updateControls(Cache_Entry *entry);
 	void setPreviewImage(Ogre::String texture);
@@ -86,7 +86,7 @@ protected:
 
 
 	MyGUI::ComboBoxPtr combo_configs;
-	void event_combo_configs_eventComboAccept(MyGUI::WidgetPtr _sender, size_t _index);
+	void event_combo_configs_eventComboAccept(MyGUI::ComboBoxPtr _sender, size_t _index);
 	
 	// progress window things
 	MyGUI::ProgressPtr prog;

@@ -3,6 +3,21 @@
 	@author		Albert Semenov
 	@date		01/2008
 	@module
+*//*
+	This file is part of MyGUI.
+	
+	MyGUI is free software: you can redistribute it and/or modify
+	it under the terms of the GNU Lesser General Public License as published by
+	the Free Software Foundation, either version 3 of the License, or
+	(at your option) any later version.
+	
+	MyGUI is distributed in the hope that it will be useful,
+	but WITHOUT ANY WARRANTY; without even the implied warranty of
+	MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+	GNU Lesser General Public License for more details.
+	
+	You should have received a copy of the GNU Lesser General Public License
+	along with MyGUI.  If not, see <http://www.gnu.org/licenses/>.
 */
 #ifndef __MYGUI_ENUM_CHAR_INFO_H__
 #define __MYGUI_ENUM_CHAR_INFO_H__
@@ -13,8 +28,34 @@
 namespace MyGUI
 {
 
+	struct MYGUI_EXPORT FontCodeType
+	{
+		enum Enum
+		{
+			Selected = 6,
+			SelectedBack = 7,
+			Cursor = 8,
+			Tab = 9,
+			LF = 0x000A,
+			CR = 0x000D,
+			Space = 0x0020,
+			LatinStart = 0x0021,
+			NEL = 0x0085,
+			LatinEnd = 0x00A6,
+			MAX
+		};
+
+		FontCodeType(Enum _value = MAX) : value(_value) { }
+
+		friend bool operator == (FontCodeType const& a, FontCodeType const& b) { return a.value == b.value; }
+		friend bool operator != (FontCodeType const& a, FontCodeType const& b) { return a.value != b.value; }
+
+	private:
+		Enum value;
+	};
+
 	// вспомогательный класс для хранения информации о символе
-	class EnumCharInfo
+	/*class EnumCharInfo
 	{
 	public:
 		EnumCharInfo() : mData(0) {}
@@ -53,14 +94,17 @@ namespace MyGUI
 			real_length = _real_length;
 		}
 
+		// колличество символов, без учета цвета
 		size_t count;
+		// длинна строки в пикселях
 		size_t length;
+		// длинна строки в реальных координатах
 		float real_length;
 	};
 
 	typedef std::vector<EnumCharInfo> VectorCharInfo;
 	typedef std::pair<LineInfo, VectorCharInfo> PairVectorCharInfo;
-	typedef std::vector<PairVectorCharInfo> VectorLineInfo;
+	typedef std::vector<PairVectorCharInfo> VectorLineInfo;*/
 
 } // namespace MyGUI
 

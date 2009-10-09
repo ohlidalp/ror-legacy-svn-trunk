@@ -3,12 +3,28 @@
 	@author		Albert Semenov
 	@date		11/2007
 	@module
+*//*
+	This file is part of MyGUI.
+	
+	MyGUI is free software: you can redistribute it and/or modify
+	it under the terms of the GNU Lesser General Public License as published by
+	the Free Software Foundation, either version 3 of the License, or
+	(at your option) any later version.
+	
+	MyGUI is distributed in the hope that it will be useful,
+	but WITHOUT ANY WARRANTY; without even the implied warranty of
+	MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+	GNU Lesser General Public License for more details.
+	
+	You should have received a copy of the GNU Lesser General Public License
+	along with MyGUI.  If not, see <http://www.gnu.org/licenses/>.
 */
 #include "MyGUI_Precompiled.h"
 #include "MyGUI_Common.h"
 #include "MyGUI_Font.h"
 #include "MyGUI_FontManager.h"
 #include "MyGUI_XmlDocument.h"
+#include "MyGUI_EnumCharInfo.h"
 
 #include <OgreImageCodec.h>
 #include <OgreFont.h>
@@ -71,9 +87,12 @@ namespace MyGUI
 			pFont->_notifyOrigin(_file);
 			pFont->setSource(source);
 
-			if (!size.empty()) pFont->setTrueTypeSize(utility::parseFloat(size));
-			if (!resolution.empty()) pFont->setTrueTypeResolution(utility::parseUInt(resolution));
-			pFont->setDefaultHeight(utility::parseInt(font->findAttribute("default_height")));
+			if (!size.empty())
+				pFont->setTrueTypeSize(utility::parseFloat(size));
+			if (!resolution.empty())
+				pFont->setTrueTypeResolution(utility::parseUInt(resolution));
+			if (font->findAttribute("default_height") != "")
+				pFont->setDefaultHeight(utility::parseInt(font->findAttribute("default_height")));
 
 			if (false == antialias.empty()) pFont->setAntialiasColour(utility::parseBool(antialias));
 			if (false == space.empty()) pFont->setSpaceWidth(utility::parseInt(space));
@@ -106,8 +125,20 @@ namespace MyGUI
 					}
 				}
 				// описане глифов
-				else if (range->findAttribute("index", range_value)) {
-					pFont->addGlyph(utility::parseUInt(range_value), utility::parseValue<IntCoord>(range->findAttribute("coord")));
+				else if (range->findAttribute("index", range_value))
+				{
+					Char id = 0;
+					if (range_value == "cursor")
+						id = FontCodeType::Cursor;
+					else if (range_value == "selected")
+						id = FontCodeType::Selected;
+					else if (range_value == "selected_back")
+						id = FontCodeType::SelectedBack;
+					else
+						id = utility::parseUInt(range_value);
+
+					pFont->addGlyph(id, utility::parseValue<IntCoord>(range->findAttribute("coord")));
+					//pFont->addGlyph(utility::parseUInt(range_value), utility::parseValue<IntCoord>(range->findAttribute("coord")));
 				}
 
 			};
