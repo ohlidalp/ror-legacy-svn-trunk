@@ -8,7 +8,8 @@ include_directories (${RoR_Dependencies_SOURCE_DIR}/ogrenew/Dependencies/include
 include_directories (${RoR_Dependencies_SOURCE_DIR}/OIS-HEAD/ois/includes)
 
 # -DHYDRAX_LIB will  give us the correct dllspec export setting
-add_definitions("-D_USRDLL -DMYGUI_BUILD")
+add_definitions("-DWIN32 -DNDEBUG -D_WINDOWS -D_USRDLL -DMYGUI_BUILD")
+
 
 # the final lib
 add_library(mygui SHARED ${mygui_src} ${mygui_headers})
@@ -24,6 +25,7 @@ ELSEIF(UNIX)
 #  )
 ELSEIF(APPLE)
 ENDIF(WIN32)
+
 
 install(TARGETS mygui
       RUNTIME DESTINATION ${BIN_DIR}

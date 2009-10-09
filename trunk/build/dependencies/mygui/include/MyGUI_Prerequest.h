@@ -4,15 +4,32 @@
 	@author		Georgiy Evmenov
 	@author		Ну и я чуть чуть =)
 	@date		09/2007
+*//*
+	This file is part of MyGUI.
+	
+	MyGUI is free software: you can redistribute it and/or modify
+	it under the terms of the GNU Lesser General Public License as published by
+	the Free Software Foundation, either version 3 of the License, or
+	(at your option) any later version.
+	
+	MyGUI is distributed in the hope that it will be useful,
+	but WITHOUT ANY WARRANTY; without even the implied warranty of
+	MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+	GNU Lesser General Public License for more details.
+	
+	You should have received a copy of the GNU Lesser General Public License
+	along with MyGUI.  If not, see <http://www.gnu.org/licenses/>.
 */
+
+#include "MyGUI_Platform.h"
 
 #ifndef __MYGUI_PREREQUEST_H__
 #define __MYGUI_PREREQUEST_H__
 
 #if MYGUI_COMPILER == MYGUI_COMPILER_MSVC
-# ifndef _CRT_SECURE_NO_WARNINGS
-#  define _CRT_SECURE_NO_WARNINGS
-# endif
+#	ifndef _CRT_SECURE_NO_WARNINGS
+#		define _CRT_SECURE_NO_WARNINGS
+#	endif
 #endif
 
 #define MYGUI_DEFINE_VERSION(major, minor, patch) ((major << 16) | (minor << 8) | patch)
@@ -26,8 +43,6 @@
 		#define nullptr 0
 	#endif
 #endif
-
-#include "MyGUI_Platform.h"
 
 #include <OgrePrerequisites.h> // for OGRE_VERSION
 
@@ -45,7 +60,7 @@
       #define OGRE_MALLOC(bytes, category) new unsigned char[bytes]
       #define OGRE_ALLOC_T(T, count, category) new T[count]
       #define OGRE_FREE(ptr, category) { delete[] ptr; ptr=0; }
- 
+
       #define OGRE_NEW_T(T, category) new T
       #define OGRE_NEW_ARRAY_T(T, count, category) new T[count]
       #define OGRE_DELETE_T(ptr, T, category) { delete ptr; ptr=0; }
@@ -95,17 +110,17 @@ namespace MyGUI
 	class LayoutManager;
 	class PluginManager;
 	class DynLibManager;
-	class DelegateManager;
 	class LanguageManager;
 	class ResourceManager;
-	
+
 	class IWidgetFactory;
 
 	class DynLib;
 
 	namespace factory
 	{
-		template <typename T> class BaseWidgetFactory;
+		template <typename T>
+		class BaseWidgetFactory;
 
 		class WidgetFactory;
 		class ButtonFactory;
@@ -129,7 +144,7 @@ namespace MyGUI
 		class MenuBarFactory;
 		class ScrollViewFactory;
 		class DDContainerFactory;
-		class GridCtrlFactory;
+		class CanvasFactory;
 	}
 
 	class Widget;
@@ -155,46 +170,9 @@ namespace MyGUI
 	class MenuBar;
 	class ScrollView;
 	class DDContainer;
-	class GridCtrl;
+	class Canvas;
 
-/*#if MYGUI_DEBUG_MODE == 1
-	struct WidgetPtr
-	{
-	private:
-		WidgetPtr() { }
-
-	public:
-		WidgetPtr(Widget * _widget) : widget(_widget) {}
-
-		Widget * operator -> ()
-		{
-			return widget;
-		}
-
-		friend bool operator == (const Widget* & a, const Widget* & b) { return a == b; }
-		friend bool operator != (const Widget* & a, const Widget* & b) { return !(a == b); }
-
-		//friend bool operator == (const WidgetPtr & a, int b) { return int(a.widget) == b; }
-		//friend bool operator != (const WidgetPtr & a, int b) { return !(a == b); }
-
-		//friend bool operator == (int a, const WidgetPtr & b) { return b == a; }
-		//friend bool operator != (int a, const WidgetPtr & b) { return !(b == a); }
-
-		//friend bool operator == (const Widget* & a, const WidgetPtr & b) { return b == a; }
-		//friend bool operator != (const Widget* & a, const WidgetPtr & b) { return !(b == a); }
-
-		//friend bool operator == (const WidgetPtr & a, const WidgetPtr & b) { return a.widget == b.widget; }
-		//friend bool operator != (const WidgetPtr & a, const WidgetPtr & b) { return !(a == b); }
-
-		operator Widget * () { return widget; }
-
-	private:
-		Widget * widget;
-	};
-#else*/
 	typedef Widget * WidgetPtr;
-//#endif
-
 	typedef Button * ButtonPtr;
 	typedef Window * WindowPtr;
 	typedef List * ListPtr;
@@ -217,15 +195,15 @@ namespace MyGUI
 	typedef MenuBar * MenuBarPtr;
 	typedef ScrollView * ScrollViewPtr;
 	typedef DDContainer * DDContainerPtr;
-	typedef GridCtrl * GridCtrlPtr;
+	typedef Canvas * CanvasPtr;
 
 	typedef TabItem Sheet; // OBSOLETE
 	typedef TabItem * SheetPtr; // OBSOLETE
 
 	// Define version
     #define MYGUI_VERSION_MAJOR 2
-    #define MYGUI_VERSION_MINOR 3
-    #define MYGUI_VERSION_PATCH 0
+    #define MYGUI_VERSION_MINOR 2
+    #define MYGUI_VERSION_PATCH 3
 
     #define MYGUI_VERSION    MYGUI_DEFINE_VERSION(MYGUI_VERSION_MAJOR, MYGUI_VERSION_MINOR, MYGUI_VERSION_PATCH)
 
@@ -270,3 +248,4 @@ namespace MyGUI
 } // namespace MyGUI
 
 #endif // __MYGUI_PREREQUEST_H__
+

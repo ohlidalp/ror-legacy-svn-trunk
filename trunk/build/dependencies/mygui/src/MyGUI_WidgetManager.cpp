@@ -3,6 +3,21 @@
 	@author		Albert Semenov
 	@date		11/2007
 	@module
+*//*
+	This file is part of MyGUI.
+	
+	MyGUI is free software: you can redistribute it and/or modify
+	it under the terms of the GNU Lesser General Public License as published by
+	the Free Software Foundation, either version 3 of the License, or
+	(at your option) any later version.
+	
+	MyGUI is distributed in the hope that it will be useful,
+	but WITHOUT ANY WARRANTY; without even the implied warranty of
+	MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+	GNU Lesser General Public License for more details.
+	
+	You should have received a copy of the GNU Lesser General Public License
+	along with MyGUI.  If not, see <http://www.gnu.org/licenses/>.
 */
 #include "MyGUI_Precompiled.h"
 #include "MyGUI_Gui.h"
@@ -34,7 +49,7 @@
 #include "MyGUI_MenuBarFactory.h"
 #include "MyGUI_ScrollViewFactory.h"
 #include "MyGUI_DDContainerFactory.h"
-#include "MyGUI_GridCtrlFactory.h"
+#include "MyGUI_CanvasFactory.h"
 
 namespace MyGUI
 {
@@ -73,7 +88,7 @@ namespace MyGUI
 		mIntegratedFactoryList.insert(new factory::MenuBarFactory());
 		mIntegratedFactoryList.insert(new factory::ScrollViewFactory());
 		mIntegratedFactoryList.insert(new factory::DDContainerFactory());
-		mIntegratedFactoryList.insert(new factory::GridCtrlFactory());
+		mIntegratedFactoryList.insert(new factory::CanvasFactory());
 
 		MYGUI_LOG(Info, INSTANCE_TYPE_NAME << " successfully initialized");
 		mIsInitialise = true;
@@ -202,11 +217,6 @@ namespace MyGUI
 			widgets.push_back(_widgets.current());
 		};
 		destroyWidgets(widgets);
-	}
-
-	void WidgetManager::destroyAllWidget()
-	{
-		//Gui::getInstance()._destroyAllChildWidget();
 	}
 
 	void WidgetManager::registerUnlinker(IUnlinkWidget * _unlink)

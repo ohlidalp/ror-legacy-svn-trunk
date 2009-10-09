@@ -3,15 +3,33 @@
 	@author		Albert Semenov
 	@date		11/2007
 	@module
+*//*
+	This file is part of MyGUI.
+	
+	MyGUI is free software: you can redistribute it and/or modify
+	it under the terms of the GNU Lesser General Public License as published by
+	the Free Software Foundation, either version 3 of the License, or
+	(at your option) any later version.
+	
+	MyGUI is distributed in the hope that it will be useful,
+	but WITHOUT ANY WARRANTY; without even the implied warranty of
+	MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+	GNU Lesser General Public License for more details.
+	
+	You should have received a copy of the GNU Lesser General Public License
+	along with MyGUI.  If not, see <http://www.gnu.org/licenses/>.
 */
 #ifndef __MYGUI_VSCROLL_H__
 #define __MYGUI_VSCROLL_H__
 
 #include "MyGUI_Prerequest.h"
 #include "MyGUI_Widget.h"
+#include "MyGUI_EventPair.h"
 
 namespace MyGUI
 {
+
+	typedef delegates::CDelegate2<VScrollPtr, size_t> EventHandle_VScrollPtrSizeT;
 
 	class MYGUI_EXPORT VScroll : public Widget
 	{
@@ -26,20 +44,20 @@ namespace MyGUI
 		/** Get scroll range */
 		size_t getScrollRange() {return mScrollRange;}
 
-		/** Set scroll position */
+		/** Set scroll position (value from 0 to range - 1) */
 		void setScrollPosition(size_t _position);
-		/** Get scroll position */
+		/** Get scroll position (value from 0 to range - 1) */
 		size_t getScrollPosition() {return mScrollPosition;}
 
 		/** Set scroll page
-			page - tracker step when buttons pressed
+			@param _page Tracker step when buttons pressed
 		*/
 		void setScrollPage(size_t _page = 1) {mScrollPage = _page;}
 		/** Get scroll page */
 		size_t getScrollPage() {return mScrollPage;}
 
 		/** Set scroll view page
-			view page - tracker step when pressed on scroll line
+			@param _viewPage Tracker step when pressed on scroll line
 		*/
 		void setScrollViewPage(size_t _viewPage = 1) {mScrollViewPage = _viewPage;}
 		/** Get scroll view page */
@@ -60,6 +78,14 @@ namespace MyGUI
 		/** Get minimal track size */
 		int getMinTrackSize() {return mMinTrackSize;}
 
+		/** Enable or disable move to click mode.
+			Move to click mode: Tracker moves to cursor when pressed on scroll line.\n
+			Disabled (false) by default.
+		*/
+		void setMoveToClick(bool _begin) { mMoveToClick = _begin; }
+		/** Get move to click mode flag */
+		bool getMoveToClick() { return mMoveToClick; }
+
 		//! @copydoc Widget::setPosition(const IntPoint & _point)
 		virtual void setPosition(const IntPoint & _point);
 		//! @copydoc Widget::setSize(const IntSize& _size)
@@ -74,17 +100,25 @@ namespace MyGUI
 		/** @copydoc Widget::setCoord(int _left, int _top, int _width, int _height) */
 		void setCoord(int _left, int _top, int _width, int _height) { setCoord(IntCoord(_left, _top, _width, _height)); }
 
+
+	/*event:*/
+		/** Event : scroll tracker position changed.\n
+			signature : void method(MyGUI::VScrollPtr _sender, size_t _position)\n
+			@param _sender widget that called this event
+			@param _position - new tracker position
+		*/
+		EventPair<EventHandle_WidgetSizeT, EventHandle_VScrollPtrSizeT> eventScrollChangePosition;
+
+
+	/*obsolete:*/
+#ifndef MYGUI_DONT_USE_OBSOLETE
+
 		MYGUI_OBSOLETE("use : void Widget::setCoord(const IntCoord& _coord)")
 		void setPosition(const IntCoord & _coord) { setCoord(_coord); }
 		MYGUI_OBSOLETE("use : void Widget::setCoord(int _left, int _top, int _width, int _height)")
 		void setPosition(int _left, int _top, int _width, int _height) { setCoord(_left, _top, _width, _height); }
 
-		/** Event : scroll tracker position changed.\n
-			signature : void method(MyGUI::WidgetPtr _sender, size_t _position)\n
-			@param _sender widget that called this event
-			@param _position - new tracker position
-		*/
-		EventInfo_WidgetSizeT eventScrollChangePosition;
+#endif // MYGUI_DONT_USE_OBSOLETE
 
 	protected:
 		VScroll(WidgetStyle _style, const IntCoord& _coord, Align _align, const WidgetSkinInfoPtr _info, WidgetPtr _parent, ICroppedRectangle * _croppedParent, IWidgetCreator * _creator, const std::string & _name);
@@ -115,8 +149,8 @@ namespace MyGUI
 		ButtonPtr mWidgetFirstPart;
 		ButtonPtr mWidgetSecondPart;
 
-		// размеры окна перед началом его изменений
-		IntRect mPreActionRect;
+		// смещение внутри окна
+		IntPoint mPreActionOffset;
 
 		// диапазон на который трек может двигаться
 		size_t mSkinRangeStart;
@@ -128,6 +162,7 @@ namespace MyGUI
 		size_t mScrollViewPage; // на сколько перещелкивать, при щелчке по полосе
 
 		int mMinTrackSize;
+		bool mMoveToClick;
 
 	}; // class VScroll : public Widget
 

@@ -4,6 +4,21 @@
 	@author		Georgiy Evmenov
 	@date		09/2007
 	@module
+*//*
+	This file is part of MyGUI.
+	
+	MyGUI is free software: you can redistribute it and/or modify
+	it under the terms of the GNU Lesser General Public License as published by
+	the Free Software Foundation, either version 3 of the License, or
+	(at your option) any later version.
+	
+	MyGUI is distributed in the hope that it will be useful,
+	but WITHOUT ANY WARRANTY; without even the implied warranty of
+	MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+	GNU Lesser General Public License for more details.
+	
+	You should have received a copy of the GNU Lesser General Public License
+	along with MyGUI.  If not, see <http://www.gnu.org/licenses/>.
 */
 
 #ifndef __MYGUI_DYNLIB_H__
@@ -71,7 +86,7 @@ namespace MyGUI
 				strName The name of the symbol to search for
 			@returns
 				If the function succeeds, the returned value is a handle to the symbol.
-				If the function fails, the returned value is <b>NULL</b>.
+				If the function fails, the returned value is <b>nullptr</b>.
 		*/
 		void* getSymbol( const std::string& strName ) const throw();
 
@@ -83,7 +98,7 @@ namespace MyGUI
 	protected:
 		//!	Name of library
 		std::string mName;
-		
+
 		//! Handle to the loaded library.
 		MYGUI_DYNLIB_HANDLE mInstance;
 	};

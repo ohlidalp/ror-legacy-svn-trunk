@@ -3,6 +3,21 @@
 	@author		Albert Semenov
 	@date		08/2008
 	@module
+*//*
+	This file is part of MyGUI.
+	
+	MyGUI is free software: you can redistribute it and/or modify
+	it under the terms of the GNU Lesser General Public License as published by
+	the Free Software Foundation, either version 3 of the License, or
+	(at your option) any later version.
+	
+	MyGUI is distributed in the hope that it will be useful,
+	but WITHOUT ANY WARRANTY; without even the implied warranty of
+	MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+	GNU Lesser General Public License for more details.
+	
+	You should have received a copy of the GNU Lesser General Public License
+	along with MyGUI.  If not, see <http://www.gnu.org/licenses/>.
 */
 #include "MyGUI_Precompiled.h"
 #include "MyGUI_ScrollView.h"
@@ -18,7 +33,7 @@ namespace MyGUI
 	const int SCROLL_VIEW_SCROLL_PAGE = 16; // колличество пикселей для кнопок скрола
 
 	ScrollView::ScrollView(WidgetStyle _style, const IntCoord& _coord, Align _align, const WidgetSkinInfoPtr _info, WidgetPtr _parent, ICroppedRectangle * _croppedParent, IWidgetCreator * _creator, const std::string & _name) :
-		Widget(_style, _coord, _align, _info, _parent, _croppedParent, _creator, _name),
+		Base(_style, _coord, _align, _info, _parent, _croppedParent, _creator, _name),
 		mIsFocus(false),
 		mIsPressed(false),
 		mVScroll(nullptr),
@@ -41,7 +56,7 @@ namespace MyGUI
 	void ScrollView::baseChangeWidgetSkin(WidgetSkinInfoPtr _info)
 	{
 		shutdownWidgetSkin();
-		Widget::baseChangeWidgetSkin(_info);
+		Base::baseChangeWidgetSkin(_info);
 		initialiseWidgetSkin(_info);
 	}
 
@@ -109,8 +124,8 @@ namespace MyGUI
 			mIsPressed = true;
 			updateScrollViewState();
 		}
-		// !!! ОБЯЗАТЕЛЬНО вызывать в конце метода
-		Widget::onKeySetFocus(_old);
+
+		Base::onKeySetFocus(_old);
 	}
 
 	void ScrollView::onKeyLostFocus(WidgetPtr _new)
@@ -119,8 +134,8 @@ namespace MyGUI
 			mIsPressed = false;
 			updateScrollViewState();
 		}
-		// !!! ОБЯЗАТЕЛЬНО вызывать в конце метода
-		Widget::onKeyLostFocus(_new);
+
+		Base::onKeyLostFocus(_new);
 	}
 
 	void ScrollView::updateScrollViewState()
@@ -136,25 +151,20 @@ namespace MyGUI
 
 	void ScrollView::setPosition(const IntPoint & _point)
 	{
-		Widget::setPosition(_point);
+		Base::setPosition(_point);
 	}
 
 	void ScrollView::setSize(const IntSize& _size)
 	{
-		Widget::setSize(_size);
+		Base::setSize(_size);
+
 		updateView();
 	}
 
 	void ScrollView::setCoord(const IntCoord & _coord)
 	{
-		Widget::setCoord(_coord);
-		updateView();
-	}
+		Base::setCoord(_coord);
 
-	void ScrollView::setTextAlign(Align _align)
-	{
-		Widget::setTextAlign(_align);
-		// так как мы сами рулим смещениями
 		updateView();
 	}
 
@@ -356,7 +366,7 @@ namespace MyGUI
 
 	}
 
-	void ScrollView::notifyScrollChangePosition(WidgetPtr _sender, size_t _position)
+	void ScrollView::notifyScrollChangePosition(VScrollPtr _sender, size_t _position)
 	{
 		if (_sender == mVScroll) {
 			IntPoint point = mWidgetClient->getPosition();
@@ -412,5 +422,12 @@ namespace MyGUI
 	{
 		return mWidgetClient->createWidgetT(_style, _type, _skin, _coord, _align, _layer, _name);
 	}
+
+	/*void ScrollView::setAlign(Align _align)
+	{
+		Base::setAlign(_align);
+		// так как мы сами рулим смещениями
+		updateView();
+	}*/
 
 } // namespace MyGUI

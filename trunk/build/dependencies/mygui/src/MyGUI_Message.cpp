@@ -3,6 +3,21 @@
 	@author		Albert Semenov
 	@date		01/2008
 	@module
+*//*
+	This file is part of MyGUI.
+	
+	MyGUI is free software: you can redistribute it and/or modify
+	it under the terms of the GNU Lesser General Public License as published by
+	the Free Software Foundation, either version 3 of the License, or
+	(at your option) any later version.
+	
+	MyGUI is distributed in the hope that it will be useful,
+	but WITHOUT ANY WARRANTY; without even the implied warranty of
+	MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+	GNU Lesser General Public License for more details.
+	
+	You should have received a copy of the GNU Lesser General Public License
+	along with MyGUI.  If not, see <http://www.gnu.org/licenses/>.
 */
 #include "MyGUI_Precompiled.h"
 #include "MyGUI_Message.h"
@@ -26,10 +41,10 @@ namespace MyGUI
 	const float MESSAGE_SPEED_COEF = 3.0f;
 
 	Message::Message(WidgetStyle _style, const IntCoord& _coord, Align _align, const WidgetSkinInfoPtr _info, WidgetPtr _parent, ICroppedRectangle * _croppedParent, IWidgetCreator * _creator, const std::string & _name) :
-		Window(_style, _coord, _align, _info, _parent, _croppedParent, _creator, _name),
+		Base(_style, _coord, _align, _info, _parent, _croppedParent, _creator, _name),
 		mWidgetText(nullptr),
-		mInfoOk(None), mInfoCancel(None),
-		mButton1Index(0),
+		mInfoOk(MessageBoxStyle::None),
+		mInfoCancel(MessageBoxStyle::None),
 		mSmoothShow(false),
 		mWidgetFade(nullptr),
 		mIcon(nullptr),
@@ -47,20 +62,12 @@ namespace MyGUI
 	void Message::baseChangeWidgetSkin(WidgetSkinInfoPtr _info)
 	{
 		shutdownWidgetSkin();
-		Window::baseChangeWidgetSkin(_info);
+		Base::baseChangeWidgetSkin(_info);
 		initialiseWidgetSkin(_info);
 	}
 
 	void Message::initialiseWidgetSkin(WidgetSkinInfoPtr _info)
 	{
-		// ищем индекс первой кнопки
-		size_t but1 = (size_t)Button1;
-		but1 >>= 1;
-		while (0 != but1) {
-			but1 >>= 1;
-			mButton1Index++;
-		}
-
 		// парсим виджет для текста
 		for (VectorWidgetPtr::iterator iter=mWidgetChildSkin.begin(); iter!=mWidgetChildSkin.end(); ++iter) {
 			if (*(*iter)->_getInternalData<std::string>() == "Text") {
@@ -97,11 +104,6 @@ namespace MyGUI
 			if (iter != properties.end()) mFadeSkin = iter->second;
 			iter = properties.find("FadeLayer");
 			if (iter != properties.end()) mFadeLayer = iter->second;
-			//iter = properties.find("ResourceIcons");
-			//if (iter != properties.end()) {
-				//ResourcePtr icons = ResourceManager::getInstance().getResource(Guid::parse(iter->second));
-				//mResourceIcons = icons->castType<ResourceImageSet>();
-			//}
 		}
 
 	}
@@ -112,20 +114,21 @@ namespace MyGUI
 		mIcon = nullptr;
 	}
 
-	void Message::setMessage(const Ogre::UTFString & _message)
+	void Message::setMessageText(const Ogre::UTFString & _message)
 	{
 		mWidgetText->setCaption(_message);
 		updateSize();
 	}
 
-	Message::ViewInfo Message::addButtonName(const Ogre::UTFString & _name)
+	MessageBoxStyle Message::addButtonName(const Ogre::UTFString & _name)
 	{
-		if (mVectorButton.size() >= 4) {
+		//FIXME
+		if (mVectorButton.size() >= MessageBoxStyle::_CountUserButtons) {
 			MYGUI_LOG(Warning, "Too many buttons in message box, ignored");
-			return None;
+			return MessageBoxStyle::None;
 		}
 		// бит, номер кнопки + смещение до Button1
-		ViewInfo info = (ViewInfo)(MYGUI_FLAG(mVectorButton.size() + mButton1Index));
+		MessageBoxStyle info = MessageBoxStyle(MessageBoxStyle::Enum(MYGUI_FLAG(mVectorButton.size() + MessageBoxStyle::_IndexUserButton1)));
 
 		// запоминаем кнопки для отмены и подтверждения
 		if (mVectorButton.empty()) mInfoOk = info;
@@ -141,36 +144,54 @@ namespace MyGUI
 		return info;
 	}
 
-	void Message::setButton(ViewInfo _info)
+	void Message::setMessageIcon(MessageBoxStyle _icon)
 	{
-		clearButton();
-		size_t current = 0;
-		size_t info = (size_t)_info;
-
-		while ((0 != info) && (current < mButton1Index)) {
-			if (0 != (info & 1)) {
-
-				// корректируем ее номер
-				ViewInfo info = (ViewInfo)MYGUI_FLAG(current);
-
-				// если бит есть то ставим кнопку
-				addButtonName(factory::MessageFactory::_getButtonName(current));
-
-				// внутри адд сбрасывается
-				mVectorButton.back()->_setInternalData(info);
-				if (mVectorButton.size() == 1) mInfoOk = info;
-				mInfoCancel = info;
-			}
-			info >>= 1;
-			current ++;
+		if (nullptr == mIcon) return;
+		if (mIcon->getItemResource() != nullptr) {
+			mIcon->setItemName( getIconName(_icon.getIconIndex()) );
+		}
+		else {
+			mIcon->setImageIndex(_icon.getIconIndex());
 		}
 
 		updateSize();
 	}
 
+	void Message::setMessageButton(MessageBoxStyle _info)
+	{
+		clearButton();
+
+		std::vector<MessageBoxStyle> buttons = _info.getButtons();
+
+		for (size_t index=0; index<buttons.size(); ++index)
+		{
+			// корректируем ее номер
+			MessageBoxStyle info = buttons[index];
+
+			// если бит есть то ставим кнопку
+			addButtonName(factory::MessageFactory::getButtonName(info));
+
+			// внутри адд сбрасывается
+			mVectorButton.back()->_setInternalData(info);
+
+			// первая кнопка
+			if (mVectorButton.size() == 1) mInfoOk = info;
+			// последняя кнопка
+			mInfoCancel = info;
+		}
+
+		updateSize();
+	}
+
+	void Message::setMessageStyle(MessageBoxStyle _style)
+	{
+		setMessageButton(_style);
+		setMessageIcon(_style);
+	}
+
 	void Message::notifyButtonClick(MyGUI::WidgetPtr _sender)
 	{
-		_destroyMessage(*_sender->_getInternalData<ViewInfo>());
+		_destroyMessage(*_sender->_getInternalData<MessageBoxStyle>());
 	}
 
 	void Message::clearButton()
@@ -183,14 +204,14 @@ namespace MyGUI
 
 	void Message::onKeyButtonPressed(KeyCode _key, Char _char)
 	{
-		Window::onKeyButtonPressed(_key, _char);
+		Base::onKeyButtonPressed(_key, _char);
 		if ((_key == KeyCode::Return) || (_key == KeyCode::NumpadEnter)) _destroyMessage(mInfoOk);
 		else if (_key == KeyCode::Escape) _destroyMessage(mInfoCancel);
 	}
 
-	void Message::_destroyMessage(ViewInfo _result)
+	void Message::_destroyMessage(MessageBoxStyle _result)
 	{
-		eventMessageBoxEnd(this, _result);
+		eventMessageBoxResult(this, _result);
 		if (nullptr != mWidgetFade) {
 			if (mSmoothShow) {
 				ControllerFadeAlpha * controller = new ControllerFadeAlpha(MESSAGE_ALPHA_MIN, MESSAGE_SPEED_COEF, false);
@@ -206,7 +227,12 @@ namespace MyGUI
 	void Message::setSmoothShow(bool _smooth)
 	{
 		mSmoothShow = _smooth;
-		if (mSmoothShow) showSmooth(true);
+		if (mSmoothShow)
+		{
+			setAlpha(ALPHA_MIN);
+			setVisible(true);
+			setVisibleSmooth(true);
+		}
 	}
 
 	void Message::setWindowFade(bool _fade)
@@ -233,63 +259,35 @@ namespace MyGUI
 		}
 	}
 
-	void Message::setMessageImage(size_t _image)
-	{
-		if (nullptr == mIcon) return;
-		if (mIcon->getItemResource() != nullptr) {
-			mIcon->setItemName(getIconName(_image));
-		}
-		else {
-			mIcon->setImageIndex(_image);
-		}
-	}
-
 	const char * Message::getIconName(size_t _index)
 	{
 		static const size_t CountIcons = 4;
-		static const char * IconNames[CountIcons + 1] = {"Info", "Quest", "Error", "Warning", ""};
+		static const char * IconNames[CountIcons + 1] = { "Info", "Quest", "Error", "Warning", "" };
 		if (_index >= CountIcons) return IconNames[CountIcons];
 		return IconNames[_index];
 	}
 
-	MyGUI::MessagePtr Message::_createMessage(
+	MyGUI::MessagePtr Message::createMessageBox(
+		const std::string & _skin,
 		const Ogre::UTFString & _caption,
 		const Ogre::UTFString & _message,
-		const std::string & _skin,
-		const std::string & _layer, bool _modal,
-		HandleEvent::IDelegate * _delegate,
-		ViewInfo _info,
+		MessageBoxStyle _style,
+		const std::string & _layer,
+		bool _modal,
 		const std::string & _button1,
 		const std::string & _button2,
 		const std::string & _button3,
 		const std::string & _button4)
 	{
-		Gui * gui = Gui::getInstancePtr();
-		if (nullptr == gui) return nullptr;
+		MessagePtr mess = Gui::getInstance().createWidget<Message>(_skin, IntCoord(), Align::Default, _layer);
 
-		// ищем индекс первой иконки
-		size_t image = (size_t)_info;
-		size_t tmp = (size_t)Icon1;
-		while (true) {
-			tmp >>= 1;
-			if (tmp == 0) break;
-			image >>= 1;
-		}
-		tmp = 0;
-		while (0 != image) {
-			image >>= 1;
-			tmp++;
-		}
-		image = tmp == 0 ? ITEM_NONE : tmp - 1;
-
-		MessagePtr mess = gui->createWidget<Message>(_skin.empty() ? factory::MessageFactory::_getDefaultSkin() : _skin, IntCoord(), Align::Default, _layer);
-		mess->setMessageImage(image);
-		mess->setSmoothShow(true);
 		mess->setCaption(_caption);
-		mess->setMessage(_message);
+		mess->setMessageText(_message);
+
+		mess->setSmoothShow(true);
 		if (_modal) mess->setWindowFade(true);
-		if (nullptr != _delegate) mess->eventMessageBoxEnd = _delegate;
-		if (None != _info) mess->setButton(_info);
+
+		mess->setMessageStyle(_style);
 
 		if (false == _button1.empty()) {
 			mess->addButtonName(_button1);
@@ -309,7 +307,8 @@ namespace MyGUI
 
 	void Message::updateSize()
 	{
-		IntSize size = mWidgetText->getTextSize();
+		ISubWidgetText* text = mWidgetText->getSubWidgetText();
+		IntSize size = text ? text->getTextSize() : IntSize();
 		// минимум высота иконки
 		if ((nullptr != mIcon) && (mIcon->getImageIndex() != ITEM_NONE)) {
 			if (size.height < mIcon->getHeight()) size.height = mIcon->getHeight();

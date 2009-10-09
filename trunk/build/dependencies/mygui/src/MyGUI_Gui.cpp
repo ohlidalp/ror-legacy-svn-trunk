@@ -3,6 +3,21 @@
 	@author		Albert Semenov
 	@date		11/2007
 	@module
+*//*
+	This file is part of MyGUI.
+	
+	MyGUI is free software: you can redistribute it and/or modify
+	it under the terms of the GNU Lesser General Public License as published by
+	the Free Software Foundation, either version 3 of the License, or
+	(at your option) any later version.
+	
+	MyGUI is distributed in the hope that it will be useful,
+	but WITHOUT ANY WARRANTY; without even the implied warranty of
+	MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+	GNU Lesser General Public License for more details.
+	
+	You should have received a copy of the GNU Lesser General Public License
+	along with MyGUI.  If not, see <http://www.gnu.org/licenses/>.
 */
 #include "MyGUI_Precompiled.h"
 #include "MyGUI_Gui.h"
@@ -21,7 +36,6 @@
 #include "MyGUI_LayoutManager.h"
 #include "MyGUI_PluginManager.h"
 #include "MyGUI_DynLibManager.h"
-#include "MyGUI_DelegateManager.h"
 #include "MyGUI_LanguageManager.h"
 #include "MyGUI_ResourceManager.h"
 
@@ -30,10 +44,10 @@ namespace MyGUI
 
 	MYGUI_INSTANCE_IMPLEMENT(Gui);
 
-	void Gui::initialise(Ogre::RenderWindow* _window, const std::string& _core, const Ogre::String & _group, const Ogre::String logfilename)
+	void Gui::initialise(Ogre::RenderWindow* _window, const std::string& _core, const Ogre::String & _group, Ogre::String _logFileName)
 	{
 		// самый первый лог
-		LogManager::registerSection(MYGUI_LOG_SECTION, logfilename);
+		LogManager::registerSection(MYGUI_LOG_SECTION, _logFileName);
 
 		MYGUI_ASSERT(false == mIsInitialise, INSTANCE_TYPE_NAME << " initialised twice");
 
@@ -67,7 +81,6 @@ namespace MyGUI
 		mLayoutManager = new LayoutManager();
 		mDynLibManager = new DynLibManager();
 		mPluginManager = new PluginManager();
-		mDelegateManager = new DelegateManager();
 		mLanguageManager = new LanguageManager();
 
 		mResourceManager->initialise(_group);
@@ -83,7 +96,6 @@ namespace MyGUI
 		mLayoutManager->initialise();
 		mDynLibManager->initialise();
 		mPluginManager->initialise();
-		mDelegateManager->initialise();
 		mLanguageManager->initialise();
 
 		WidgetManager::getInstance().registerUnlinker(this);
@@ -109,15 +121,13 @@ namespace MyGUI
 		// скрываем сразу дебагеры
 		mInputManager->setShowFocus(false);
 
-		// сразу отписываемся
-		Ogre::WindowEventUtilities::removeWindowEventListener(mWindow, this);
-		WidgetManager::getInstance().unregisterUnlinker(this);
-
 		_destroyAllChildWidget();
+
+		// отписываемся
+		Ogre::WindowEventUtilities::removeWindowEventListener(mWindow, this);
 
 		// деинициализируем и удаляем синглтоны
 		mPointerManager->shutdown();
-		mWidgetManager->shutdown();
 		mInputManager->shutdown();
 		mSkinManager->shutdown();
 		mSubWidgetManager->shutdown();
@@ -128,9 +138,11 @@ namespace MyGUI
 		mLayoutManager->shutdown();
 		mPluginManager->shutdown();
 		mDynLibManager->shutdown();
-		mDelegateManager->shutdown();
 		mLanguageManager->shutdown();
 		mResourceManager->shutdown();
+
+		WidgetManager::getInstance().unregisterUnlinker(this);
+		mWidgetManager->shutdown();
 
 		delete mPointerManager;
 		delete mWidgetManager;
@@ -144,7 +156,6 @@ namespace MyGUI
 		delete mLayoutManager;
 		delete mDynLibManager;
 		delete mPluginManager;
-		delete mDelegateManager;
 		delete mLanguageManager;
 		delete mResourceManager;
 

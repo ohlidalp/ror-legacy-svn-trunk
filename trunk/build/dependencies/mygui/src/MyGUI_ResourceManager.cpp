@@ -3,6 +3,21 @@
 	@author		Albert Semenov
 	@date		09/2008
 	@module
+*//*
+	This file is part of MyGUI.
+	
+	MyGUI is free software: you can redistribute it and/or modify
+	it under the terms of the GNU Lesser General Public License as published by
+	the Free Software Foundation, either version 3 of the License, or
+	(at your option) any later version.
+	
+	MyGUI is distributed in the hope that it will be useful,
+	but WITHOUT ANY WARRANTY; without even the implied warranty of
+	MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+	GNU Lesser General Public License for more details.
+	
+	You should have received a copy of the GNU Lesser General Public License
+	along with MyGUI.  If not, see <http://www.gnu.org/licenses/>.
 */
 #include "MyGUI_Precompiled.h"
 #include "MyGUI_ResourceManager.h"
@@ -64,6 +79,7 @@ namespace MyGUI
 
 	void ResourceManager::_load(xml::ElementPtr _node, const std::string & _file, Version _version)
 	{
+		VectorGuid vector_guid;
 		// берем детей и крутимся, основной цикл
 		xml::ElementEnumerator root = _node->getElementEnumerator();
 		while (root.next(XML_TYPE)) {
@@ -86,6 +102,8 @@ namespace MyGUI
 					MYGUI_ASSERT(mResources.find(guid) == mResources.end(), "dublicate resource id " << guid.print());
 					MYGUI_ASSERT(mResourceNames.find(name) == mResourceNames.end(), "dublicate resource name '" << name << "'");
 
+					vector_guid.push_back(guid);
+
 					IResourcePtr resource = nullptr;
 					iter->second(resource, root, _version);
 
@@ -95,6 +113,27 @@ namespace MyGUI
 			}
 
 		};
+
+		if (!vector_guid.empty())
+		{
+			mListFileGuid[_file] = vector_guid;
+		}
+
+	}
+
+	std::string ResourceManager::getFileNameByID(const Guid& _id)
+	{
+		for (MapVectorString::iterator item=mListFileGuid.begin(); item!=mListFileGuid.end(); ++item)
+		{
+			for (VectorGuid::iterator item2=item->second.begin(); item2!=item->second.end(); ++item2)
+			{
+				if (*item2 == _id)
+				{
+					return item->first;
+				}
+			}
+		}
+		return "";
 	}
 
 	void ResourceManager::_loadLocation(xml::ElementPtr _node, const std::string & _file, Version _version)
@@ -211,4 +250,4 @@ namespace MyGUI
 		return true;
 	}
 
-} // namespace MyGUI	
+} // namespace MyGUI

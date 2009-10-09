@@ -3,6 +3,21 @@
 	@author		Albert Semenov
 	@date		02/2008
 	@module
+*//*
+	This file is part of MyGUI.
+	
+	MyGUI is free software: you can redistribute it and/or modify
+	it under the terms of the GNU Lesser General Public License as published by
+	the Free Software Foundation, either version 3 of the License, or
+	(at your option) any later version.
+	
+	MyGUI is distributed in the hope that it will be useful,
+	but WITHOUT ANY WARRANTY; without even the implied warranty of
+	MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+	GNU Lesser General Public License for more details.
+	
+	You should have received a copy of the GNU Lesser General Public License
+	along with MyGUI.  If not, see <http://www.gnu.org/licenses/>.
 */
 #include "MyGUI_Precompiled.h"
 #include "MyGUI_SimpleText.h"
@@ -19,7 +34,8 @@ namespace MyGUI
 	SimpleText::SimpleText(const SubWidgetInfo &_info, ICroppedRectangle * _parent) :
 		EditText(_info, _parent)
 	{
-		mManualView = false;
+		mIsAddCursorWidth = false;
+		//mManualView = false;
 	}
 
 	SimpleText::~SimpleText()
@@ -30,7 +46,35 @@ namespace MyGUI
 	{
 	}
 
-	void SimpleText::updateRawData()
+	size_t SimpleText::_drawItem(Vertex* _vertex, bool _update)
+	{
+		if (_update) mTextOutDate = true;
+
+		if (mpFont.isNull()) return 0;
+		if (!mVisible || mEmptyView) return 0;
+
+		if (mTextOutDate) updateRawData();
+
+		const IntSize& size = mTextView.getViewSize();
+
+		if (mTextAlign.isRight())
+			mViewOffset.left = - (mCoord.width - size.width);
+		else if (mTextAlign.isHCenter())
+			mViewOffset.left = - ((mCoord.width - size.width) / 2);
+		else
+			mViewOffset.left = 0;
+
+		if (mTextAlign.isBottom())
+			mViewOffset.top = - (mCoord.height - size.height);
+		else if (mTextAlign.isVCenter())
+			mViewOffset.top = - ((mCoord.height - size.height) / 2);
+		else
+			mViewOffset.top = 0;
+
+		return EditText::_drawItem(_vertex, _update);
+	}
+
+	/*void SimpleText::updateRawData()
 	{
 		if (mpFont.isNull()) return;
 		// сбрасывам флаги
@@ -148,7 +192,7 @@ namespace MyGUI
 		// устанавливаем размер текста
 		mContextSize.set(int(width), mLinesInfo.size() * mFontHeight);
 		mContextRealSize.set(mContextSize.width * mManager->getPixScaleX() * 2.0f, mContextSize.height  * mManager->getPixScaleY() * 2.0f);
-	}
+	}*/
 
 	StateInfo * SimpleText::createStateData(xml::ElementPtr _node, xml::ElementPtr _root, Version _version)
 	{

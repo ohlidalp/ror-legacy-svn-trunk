@@ -12,7 +12,7 @@
 namespace MyGUI
 {
 
-	enum MYGUI_OBSOLETE_START("use : DropItemState")
+	enum MYGUI_OBSOLETE_START("use DropItemState")
 	{
 		//use DropItemState::None
 		DROP_NONE,
@@ -52,9 +52,9 @@ namespace MyGUI
 	struct MYGUI_EXPORT ItemDropInfo
 	{
 		ItemDropInfo() :
-			sender(nullptr),
+			sender(null),
 			sender_index(ITEM_NONE),
-			reseiver(nullptr),
+			reseiver(null),
 			reseiver_index(ITEM_NONE)
 		{
 		}
@@ -77,9 +77,9 @@ namespace MyGUI
 
 		void reset()
 		{
-			reseiver = nullptr;
+			reseiver = null;
 			reseiver_index = ITEM_NONE;
-			sender = nullptr;
+			sender = null;
 			sender_index = ITEM_NONE;
 		}
 

@@ -57,12 +57,12 @@ protected:
 
 	void updateControls(ground_model_t *gm, bool setCombo=true);
 	
-	void event_combo_grounds_eventComboAccept(MyGUI::WidgetPtr _sender, size_t _index);
+	void event_combo_grounds_eventComboAccept(MyGUI::ComboBoxPtr _sender, size_t _index);
 	void event_btn_MouseButtonClick(MyGUI::WidgetPtr _sender);
-	void event_edit_TextChange(MyGUI::WidgetPtr _sender);
-	void event_scroll_value(MyGUI::WidgetPtr _sender, size_t _value);
-	void notifyWindowButtonPressed(MyGUI::WidgetPtr _sender, const std::string& _name);
-	void notifyHelpWindowButtonPressed(MyGUI::WidgetPtr _sender, const std::string& _name);
+	void event_edit_TextChange(MyGUI::EditPtr _sender);
+	void event_scroll_value(MyGUI::VScrollPtr _sender, size_t _value);
+	void notifyWindowButtonPressed(MyGUI::WindowPtr _sender, const std::string& _name);
+	void notifyHelpWindowButtonPressed(MyGUI::WindowPtr _sender, const std::string& _name);
 	void applyChanges();
 	void showHelp(String title, String msg, int x, int y);
 };
