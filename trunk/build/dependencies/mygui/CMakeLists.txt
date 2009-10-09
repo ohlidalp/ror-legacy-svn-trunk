@@ -20,9 +20,7 @@ target_link_libraries(mygui OgreMain)
 
 IF(WIN32)
 ELSEIF(UNIX)
-#  target_link_libraries(mygui 
-#/usr/lib/libossp-uuid_dce.so
-#  )
+	target_link_libraries(mygui uuid)
 ELSEIF(APPLE)
 ENDIF(WIN32)
 
