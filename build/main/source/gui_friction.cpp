@@ -54,10 +54,7 @@ GUI_Friction::GUI_Friction() : col(0), active_gm(0), selected_gm(0), win(0)
 	MyGUI::ButtonPtr b;
 	MyGUI::StaticTextPtr t;
 
-	MyGUI::CanvasPtr can = MyGUI::Gui::getInstance().createWidget<MyGUI::Canvas>("Canvas", 0, 0, 400, 300,  MyGUI::Align::Center, "Back");
-	can->createTexture(MyGUI::Canvas::TRM_PT_VIEW_ALL);
-
-	msgwin = can->createWidget<MyGUI::Window>("WindowCSX", 0, 0, 400, 300,  MyGUI::Align::Center, "Back");
+	msgwin = MyGUI::Gui::getInstance().createWidget<MyGUI::Window>("WindowCSX", 0, 0, 400, 300,  MyGUI::Align::Center, "Back");
 	msgwin->setCaption(_L("Friction Help"));
 	msgwin->eventWindowButtonPressed = MyGUI::newDelegate(this, &GUI_Friction::notifyHelpWindowButtonPressed);
 	e = msgwin->createWidget<MyGUI::Edit>("EditStretch", 0, 0, 400, 300,  MyGUI::Align::Default, "helptext");
@@ -376,15 +373,6 @@ GUI_Friction::GUI_Friction() : col(0), active_gm(0), selected_gm(0), win(0)
 	ground_model_t *gm = col->getGroundModelByString("gravel");
 	if(gm) updateControls(gm);
 	selected_gm = gm;
-
-	TexturePtr tp = Ogre::TextureManager::getSingleton().getByName(can->getTextureName());
-	if(!tp.isNull())
-	{
-		RenderTexture* pRenderTexture = tp->getBuffer()->getRenderTarget();
-		pRenderTexture->update();
-		pRenderTexture->writeContentsToFile("bake.png");
-	}
-
 }
 
 void GUI_Friction::setShaded(bool value)
