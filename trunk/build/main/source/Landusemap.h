@@ -28,13 +28,13 @@ along with Rigs of Rods.  If not, see <http://www.gnu.org/licenses/>.
 class Landusemap
 {
 protected:
-	unsigned char *data;
+	unsigned long long *data;
 	void loadSettings();
 	void loadTerrainSettings();
 	Ogre::String configFilename;
 	Ogre::String TSMconfigFilename;
 	Ogre::String textureFilename;
-	char defaultUse;
+	ground_model_t *default_ground_model;
 	int version;
 	Collisions *coll;
 	Ogre::Real mapsizex, mapsizez;
