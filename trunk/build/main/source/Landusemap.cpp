@@ -60,7 +60,8 @@ void Landusemap::loadSettings()
 			continue;
 		} else if(!strcmp(line, "ground-models"))
 		{
-			section=2;
+			section=-1;
+			// this section is obsolete
 			continue;
 		} else if(!strcmp(line, "use-map"))
 		{
@@ -93,15 +94,16 @@ void Landusemap::loadSettings()
 
 			if(key == "texture")
 				textureFilename = value;
+			else if(key == "frictionconfig")
+				coll->loadGroundModelsConfigFile(value);
 			else if(key == "defaultuse")
-				defaultUse = coll->getGroundModelNumberByString(const_cast<char*>(value.c_str()));
+				default_ground_model = coll->getGroundModelByString(value);
 			else if(key == "version")
 				version = StringConverter::parseInt(value);
 
 		} else if(section == 2)
 		{
-			// ground models
-			if(coll) coll->loadGroundModelLine(line, version);
+			// obsolete section, replaced with config value "frictionconfig"
 		} else if(section == 3)
 		{
 			// use map
@@ -139,9 +141,9 @@ void Landusemap::loadSettings()
 
 	bool bgr = colourMap->getPixelBox().format == PF_A8B8G8R8;
 
-	// now allocate the data buffer
-	data=(unsigned char*)malloc(mapsizex*mapsizez*sizeof(unsigned char));
-	unsigned char *ptr=data;
+	// now allocate the data buffer to hold pointers to ground models
+	data=(unsigned long long*)malloc(mapsizex*mapsizez*sizeof(unsigned long long));
+	unsigned long long *ptr = data;
 	//std::map < String, int > counters;
 	for(int z=0; z<mapsizez; z++)
 	{
@@ -159,7 +161,9 @@ void Landusemap::loadSettings()
 			String use = usemap[col];
 			//if(use!="")
 			//	counters[use]++;
-			*ptr = (unsigned char)coll->getGroundModelNumberByString(const_cast<char*>(use.c_str()));
+
+			// store the pointer to the ground model in the data slot
+			*ptr = (unsigned long long)coll->getGroundModelByString(use);
 			ptr++;
 		}
 	}
@@ -182,8 +186,10 @@ Landusemap::~Landusemap()
 
 ground_model_t *Landusemap::getGroundModelAt(int x, int z)
 {
+	// we return the default ground model if we are not anymore in this map
 	if(x<0 || x > mapsizex || z<0 || z>mapsizez)
-		return ground_models[defaultUse];
-	return ground_models[*(data + x + z * (int)mapsizex)];
+		return default_ground_model;
+
+	return (ground_model_t *)(data + x + z * (int)mapsizex);
 }
 

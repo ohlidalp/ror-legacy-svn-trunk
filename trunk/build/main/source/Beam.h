@@ -372,7 +372,7 @@ typedef struct _ground_model_t
 	float t2; //hydrodynamic friction (s/m)
 	float vs; //stribeck velocity (m/s)
 	float alpha; //steady-steady
-	float strength; //gound strength, must be below 1.0
+	float strength; //ground strength
 
 	float fluid_density;	// Density of liquid
 	float flow_consistency_index;// general drag coefficient
@@ -389,8 +389,9 @@ typedef struct _ground_model_t
 	float drag_anisotropy;
 
 	int fx_type;
-	ColourValue fx_coulour;
+	ColourValue fx_colour;
 	char name[255];
+	char particle_name[255];
 } ground_model_t;
 
 typedef struct
