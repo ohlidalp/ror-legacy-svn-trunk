@@ -175,6 +175,9 @@ int Collisions::loadGroundModelsConfigFile(Ogre::String filename)
 					ground_models[secName] = ground_model_t();
 					// clear it
 					memset(&ground_models[secName], 0, sizeof ground_model_t);
+					// set some default values
+					ground_models[secName].alpha = 2.0f;
+					ground_models[secName].strength = 1.0f;
 				}
 				if(kname == "adhesion velocity") ground_models[secName].va = StringConverter::parseReal(kvalue);
 				else if(kname == "static friction coefficient") ground_models[secName].ms = StringConverter::parseReal(kvalue);
