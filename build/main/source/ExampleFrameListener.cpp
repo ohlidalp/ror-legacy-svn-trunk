@@ -2225,7 +2225,8 @@ void ExampleFrameListener::loadObject(const char* name, float px, float py, floa
 	bool virt=false;
 	bool rotating=false;
 	bool classic_ref=true;
-	ground_model_t *gm=&GROUND_CONCRETE;
+	// everything is of concrete by default
+	ground_model_t *gm = collisions->getGroundModelByString("concrete");
 	ground_model_t gmi;
 	Ogre::Mesh::LodDistanceList dists;
 	Ogre::Mesh::LodDistanceList default_dists;
@@ -2331,7 +2332,7 @@ void ExampleFrameListener::loadObject(const char* name, float px, float py, floa
 			event_filter=EVENT_ALL;
 			eventname[0]=0;
 			collmesh[0]=0;
-			gm=&GROUND_CONCRETE;
+			gm = collisions->getGroundModelByString("concrete");
 			continue;
 		};
 		if (!strcmp("beginlodmesh", ptline))
@@ -2366,26 +2367,17 @@ void ExampleFrameListener::loadObject(const char* name, float px, float py, floa
 			sscanf(ptline, "direction %f, %f, %f",&drx, &dry, &drz);
 			continue;
 		}
-		if (!strncmp("friction", ptline, 8))
+		if (!strncmp("frictionconfig", ptline, 14) && strlen(ptline) > 15)
 		{
-			collisions->parseGroundModel(0, &gmi, ptline+9, "custom");
-//				sscanf(ptline, "friction %f, %f, %f, %f, %f",&gmi.ms, &gmi.mc, &gmi.t2, &gmi.vs, &gmi.alpha);
+			// load a custom friction config
+			collisions->loadGroundModelsConfigFile(String(ptline + 15));
 			gm=&gmi;
 			continue;
 		}
-		if (!strncmp("friction2", ptline, 9))
+		if (!strncmp("stdfriction", ptline, 11) || !strncmp("usefriction", ptline, 11) && strlen(ptline) > 12)
 		{
-			int version=0;
-			if(sscanf(ptline, "friction2 %d", &version)>0)
-				collisions->parseGroundModel(-1, &gmi, ptline+10, "custom");
-			gm=&gmi;
-			continue;
-		}
-		if (!strncmp("stdfriction", ptline, 11))
-		{
-			char stdf[256];
-			sscanf(ptline, "stdfriction %s",stdf);
-			gm = collisions->getGroundModelByString(stdf);
+			String modelName = String(ptline + 12);
+			gm = collisions->getGroundModelByString(modelName);
 			continue;
 		}
 		if (!strcmp("virtual", ptline)) {virt=true;continue;};

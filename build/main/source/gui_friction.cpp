@@ -32,8 +32,6 @@ along with Rigs of Rods.  If not, see <http://www.gnu.org/licenses/>.
 
 #include "language.h"
 
-extern ground_model_t *ground_models[NUM_GROUND_MODELS];
-
 using namespace Ogre;
 
 template<> GUI_Friction * Singleton< GUI_Friction >::ms_Singleton = 0;
@@ -396,14 +394,16 @@ void GUI_Friction::setVisible(bool value)
 		// upon show, refresh list
 		MyGUI::ComboBoxPtr cb = (MyGUI::ComboBoxPtr)win->findWidget("combo_grounds");
 		cb->removeAllItems();
-		for(int i=0;i<NUM_GROUND_MODELS;i++)
+
+		std::map<Ogre::String, ground_model_t>::iterator it;
+		std::map<Ogre::String, ground_model_t> *gmm = col->getGroundModels();
+		for(it=gmm->begin(); it!=gmm->end(); it++)
 		{
-			if(!ground_models[i]) break;
-			cb->addItem(ground_models[i]->name);
+			cb->addItem((*it).second.name);
 		}
 		cb->setEditStatic(true);
 		cb->setIndexSelected(0);
-		ground_model_t *gm = col->getGroundModelByString(cb->getItemNameAt(0).asUTF8_c_str());
+		ground_model_t *gm = col->getGroundModelByString(cb->getItemNameAt(0));
 		selected_gm = gm;
 		if(gm)
 			updateControls(gm, false);
@@ -555,7 +555,7 @@ void GUI_Friction::updateControls(ground_model_t *gm, bool setCombo)
 	edt = (MyGUI::StaticTextPtr)win->findWidget("combo_fx_type_edited"); if(edt) edt->setCaption("");
 
 	MyGUI::StaticTextPtr t = (MyGUI::StaticTextPtr)win->findWidget("fx_color_text");
-	if(t) t->setCaption(StringConverter::toString(gm->fx_coulour));
+	if(t) t->setCaption(StringConverter::toString(gm->fx_colour));
 	edt = (MyGUI::StaticTextPtr)win->findWidget("fx_color_text_edited"); if(edt) edt->setCaption("");
 
 }

@@ -371,9 +371,9 @@ void Road2::addQuad(Vector3 p1, Vector3 p2, Vector3 p3, Vector3 p4, int texfit, 
 	}
 	if (collision)
 	{
-		ground_model_t *gm=&GROUND_CONCRETE;
+		ground_model_t *gm = coll->getGroundModelByString("concrete");
 		if (texfit==TEXFIT_ROAD || texfit==TEXFIT_ROADS1 || texfit==TEXFIT_ROADS2 || texfit==TEXFIT_ROADS3 || texfit==TEXFIT_ROADS4)
-			gm=&GROUND_ASPHALT;
+			gm = coll->getGroundModelByString("asphalt");
 		addCollisionQuad(p1, p2, p3, p4, gm, flip);
 	}
 	tricount+=2;

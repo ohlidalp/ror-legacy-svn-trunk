@@ -51,6 +51,7 @@ using namespace Ogre;
 #define FX_NONE 0
 
 //hard surface: rubber burning and sparks
+#define FX_PARTICLE 1
 #define FX_HARD 1
 
 //dusty surface (with dust colour)
@@ -77,20 +78,6 @@ class LuaSystem;
 #include "Beam.h"
 #include "ExampleFrameListener.h"
 #include "heightfinder.h"
-
-
-extern ground_model_t GROUND_CONCRETE;
-extern ground_model_t GROUND_ASPHALT;
-extern ground_model_t GROUND_GRAVEL;
-extern ground_model_t GROUND_ROCK;
-extern ground_model_t GROUND_ICE;
-extern ground_model_t GROUND_SNOW;
-extern ground_model_t GROUND_METAL;
-extern ground_model_t GROUND_GRASS;
-extern ground_model_t GROUND_SAND;
-
-const int NUM_GROUND_MODELS = 256;
-extern ground_model_t *ground_models[NUM_GROUND_MODELS];
 
 typedef struct _collision_box
 {
@@ -188,6 +175,8 @@ private:
 	void hash_free(int cell_x, int cell_z, int value);
 	cell_t *hash_find(int cell_x, int cell_z);
 	unsigned int hashfunc(unsigned int cellid);
+	int collisionVersion;
+	std::map<Ogre::String, ground_model_t> ground_models;
 
 public:
 	bool forcecam;
@@ -201,13 +190,6 @@ public:
 #endif
     ExampleFrameListener *efl, bool debugMode);
 
-	void loadDefaultModels();
-	void parseGroundModel(int version, ground_model_t* gm, const char* line, const char *name);
-	void loadGroundModelLine(const char *line, int version);
-	ground_model_t *getGroundModelByString(const char *stdf);
-	ground_model_t *last_used_ground_model;
-	void setupLandUse(const char *configfile);
-	int getGroundModelNumberByString(const char *stdf);
 	void addCollisionBox(SceneNode *tenode, bool rotating, bool virt, float px, float py, float pz, float rx, float ry, float rz, float lx,float hx,float ly,float hy,float lz,float hz,float srx,float sry,float srz, const char* eventname, const char* instancename, bool forcecam, Vector3 campos, float scx=1.0, float scy=1.0, float scz=1.0, float drx=0.0, float dry=0.0, float drz=0.0, int event_filter=EVENT_ALL, int luahandler=-1);
 	int addCollisionTri(Vector3 p1, Vector3 p2, Vector3 p3, ground_model_t* gm);
 	bool collisionCorrect(Vector3 *refpos);
@@ -226,6 +208,15 @@ public:
 	int removeCollisionTri(int number);
 
 	int createCollisionDebugVisualization();
+
+
+	// ground models things
+	int loadDefaultModels();
+	int loadGroundModelsConfigFile(Ogre::String filename);
+	std::map<Ogre::String, ground_model_t> *getGroundModels() { return &ground_models; };
+	void setupLandUse(const char *configfile);
+	ground_model_t *getGroundModelByString(const Ogre::String name);
+	ground_model_t *last_used_ground_model;
 };
 
 

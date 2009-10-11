@@ -6527,7 +6527,7 @@ void Beam::calcForcesEuler(int doUpdate, Real dt, int step, int maxstep, Beam** 
 			{
 				int contacted=0;
 				float ns=0;
-				ground_model_t *gm=&GROUND_GRAVEL;
+				ground_model_t *gm = collisions->getGroundModelByString("gravel");
 				if ((contacted=collisions->groundCollision(&nodes[i], nodes[i].colltesttimer, &gm, &ns)) |
 					collisions->nodeCollision(&nodes[i], i==cinecameranodepos[currentcamera], contacted, nodes[i].colltesttimer, &ns, &gm))
 				{
@@ -6536,7 +6536,7 @@ void Beam::calcForcesEuler(int doUpdate, Real dt, int step, int maxstep, Beam** 
 					{
 						if (gm->fx_type==FX_DUSTY)
 						{
-							dustp->alloc(nodes[i].AbsPosition, nodes[i].Velocity/2.0, gm->fx_coulour);
+							dustp->alloc(nodes[i].AbsPosition, nodes[i].Velocity/2.0, gm->fx_colour);
 						}
 						else if (gm->fx_type==FX_HARD)
 						{
@@ -6556,8 +6556,9 @@ void Beam::calcForcesEuler(int doUpdate, Real dt, int step, int maxstep, Beam** 
 						else
 						if (gm->fx_type==FX_CLUMPY)
 						{
-//								dustp->alloc(nodes[i].AbsPosition, nodes[i].Velocity/2.0, gm->fx_coulour);
-							if (nodes[i].Velocity.squaredLength()>1.0) clumpp->allocClump(nodes[i].AbsPosition, nodes[i].Velocity/2.0, gm->fx_coulour);
+//								dustp->alloc(nodes[i].AbsPosition, nodes[i].Velocity/2.0, gm->fx_colour);
+							if (nodes[i].Velocity.squaredLength()>1.0)
+								clumpp->allocClump(nodes[i].AbsPosition, nodes[i].Velocity/2.0, gm->fx_colour);
 						}
 					}
 

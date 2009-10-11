@@ -35,8 +35,6 @@ ground_model_t GROUND_METAL={   3.0, 0.40, 0.20, 0.001, 4.0, 2.0, 1, 200, 10000,
 ground_model_t GROUND_GRASS={   3.0, 0.50, 0.25, 0.005, 8.0, 2.0, 1, 200, 10000, 0.5, 0, 0.1, 0, ColourValue(), "grass"};
 ground_model_t GROUND_SAND={    3.0, 0.40, 0.20, 0.0001,9.0, 2.0, 1, 200, 10000, 0.5, 0, 0.1, 0, ColourValue(), "sand"};
 
-ground_model_t *ground_models[NUM_GROUND_MODELS];
-
 //hash function SBOX
 //from http://home.comcast.net/~bretm/hash/10.html
 unsigned int sbox[] =
@@ -111,21 +109,8 @@ Collisions::Collisions(
 #ifdef LUASCRIPT
   LuaSystem *mlua,
 #endif
-  ExampleFrameListener *efl, bool _debugMode) : mefl(efl)
+  ExampleFrameListener *efl, bool _debugMode) : mefl(efl), ground_models()
 {
-	// init ground_models
-	memset(ground_models, 0, sizeof ground_models);
-	ground_models[0] = &GROUND_CONCRETE;
-	ground_models[1] = &GROUND_ASPHALT;
-	ground_models[2] = &GROUND_GRAVEL;
-	ground_models[3] = &GROUND_ROCK;
-	ground_models[4] = &GROUND_ICE;
-	ground_models[5] = &GROUND_SNOW;
-	ground_models[6] = &GROUND_METAL;
-	ground_models[7] = &GROUND_GRASS;
-	ground_models[8] = &GROUND_SAND;
-	// done initating ground models
-
 	landuse=0;
 	debugMode=_debugMode;
 	last_used_ground_model=&GROUND_GRAVEL;
@@ -146,33 +131,84 @@ Collisions::Collisions(
 	loadDefaultModels();
 }
 
-void Collisions::loadDefaultModels()
+int Collisions::loadDefaultModels()
 {
-	FILE *fd;
-	char line[1024];
-	fd=fopen((SETTINGS.getSetting("Config Root")+"ground_models.cfg").c_str(), "r");
-	int version = 0;
-	while (!feof(fd))
+	return loadGroundModelsConfigFile(SETTINGS.getSetting("Config Root")+"ground_models.cfg");
+}
+
+int Collisions::loadGroundModelsConfigFile(Ogre::String filename)
+{
+	Ogre::ConfigFile cf;
+	try
 	{
-		fscanf(fd," %[^\n\r]",line);
-		if (line[0]==';')
-			continue;
-		if(strnlen(line,255) > 7 && !strncmp(line, "version", 7))
-		{
-			version = atoi(line+7);
-			continue;
-		}
-		
-		loadGroundModelLine(line, version);
+		cf.load(filename);
+	} catch(Ogre::Exception& e)
+	{
+		showError("Error while loading ground model", e.getFullDescription());
+		return 1;
 	}
-	fclose(fd);
-	if(version != LATEST_GROUND_MODEL_VERSION)
+
+	// Go through all sections & settings in the file
+	Ogre::ConfigFile::SectionIterator seci = cf.getSectionIterator();
+
+	Ogre::String secName, kname, kvalue;
+	while (seci.hasMoreElements())
+	{
+		secName = seci.peekNextKey();
+		Ogre::ConfigFile::SettingsMultiMap *settings = seci.getNext();
+		Ogre::ConfigFile::SettingsMultiMap::iterator i;
+		for (i = settings->begin(); i != settings->end(); ++i)
+		{
+			kname = i->first;
+			kvalue = i->second;
+			// we got all the data available now, processing now
+			if(secName == "general")
+			{
+				// set some class properties accoring to the information in this section
+				if(kname == "version") this->collisionVersion = StringConverter::parseInt(kvalue);
+			} else
+			{
+				// we assume that all other sections are separate ground types!
+				if(ground_models.find(secName) == ground_models.end())
+				{
+					// ground models not known yet, init it!
+					ground_models[secName] = ground_model_t();
+					// clear it
+					memset(&ground_models[secName], 0, sizeof ground_model_t);
+				}
+				if(kname == "adhesion velocity") ground_models[secName].va = StringConverter::parseReal(kvalue);
+				else if(kname == "static friction coefficient") ground_models[secName].ms = StringConverter::parseReal(kvalue);
+				else if(kname == "sliding friction coefficient") ground_models[secName].mc = StringConverter::parseReal(kvalue);
+				else if(kname == "hydrodynamic friction") ground_models[secName].t2 = StringConverter::parseReal(kvalue);
+				else if(kname == "stribeck velocity") ground_models[secName].vs = StringConverter::parseReal(kvalue);
+				else if(kname == "alpha") ground_models[secName].alpha = StringConverter::parseReal(kvalue);
+				else if(kname == "strength") ground_models[secName].strength = StringConverter::parseReal(kvalue);
+				else if(kname == "fx_type")
+				{
+					if(kvalue == "PARTICLE")
+						ground_models[secName].fx_type = FX_PARTICLE;
+				}
+				else if(kname == "fx_particle_name") strncpy(ground_models[secName].particle_name, kvalue.c_str(), 256);
+				else if(kname == "fx_colour") ground_models[secName].fx_colour = StringConverter::parseColourValue(kvalue);
+
+				else if(kname == "fluid density") ground_models[secName].fluid_density = StringConverter::parseReal(kvalue);
+				else if(kname == "flow consistency index") ground_models[secName].flow_consistency_index = StringConverter::parseReal(kvalue);
+				else if(kname == "flow behavior index") ground_models[secName].flow_behavior_index = StringConverter::parseReal(kvalue);
+				else if(kname == "solid ground level") ground_models[secName].solid_ground_level = StringConverter::parseReal(kvalue);
+				else if(kname == "drag anisotropy") ground_models[secName].drag_anisotropy = StringConverter::parseReal(kvalue);
+				
+			}
+
+		}
+	}
+	if(this->collisionVersion != LATEST_GROUND_MODEL_VERSION)
 	{
 		// message box
-		String url = "http://wiki.rigsofrods.com/index.php?title=Error_Old_ground_model#"+StringConverter::toString(version)+"to"+StringConverter::toString(LATEST_GROUND_MODEL_VERSION);
+		String url = "http://wiki.rigsofrods.com/index.php?title=Error_Old_ground_model#"+StringConverter::toString(this->collisionVersion)+"to"+StringConverter::toString(LATEST_GROUND_MODEL_VERSION);
 		showWebError(_L("Configuration error"), _L("Your ground configuration is too old, please copy skeleton/config/ground_models.cfg to My Documents/Rigs of Rods/config"), url);
 		exit(124);
 	}
+	return 0;
 }
 
 void Collisions::setupLandUse(const char *configfile)
@@ -181,107 +217,13 @@ void Collisions::setupLandUse(const char *configfile)
 	landuse = new Landusemap(configfile, this, mefl->mapsizex, mefl->mapsizez);
 }
 
-ground_model_t *Collisions::getGroundModelByString(const char *stdf)
+ground_model_t *Collisions::getGroundModelByString(const String name)
 {
-	for (int i = 0; i < NUM_GROUND_MODELS; i++)
-	{
-		if (ground_models[i] != NULL && !strcmp(ground_models[i]->name, stdf)) return ground_models[i];
-	}
-	return NULL;
+	if(!ground_models.size() || ground_models.find(name) == ground_models.end())
+		return 0;
+
+	return &ground_models[name];
 }
-
-int Collisions::getGroundModelNumberByString(const char *stdf)
-{
-	for (int i = 0; i < NUM_GROUND_MODELS; i++)
-	{
-		if (ground_models[i] != NULL && !strcmp(ground_models[i]->name, stdf)) return i;
-	}
-	return 2; // default ground model to use
-}
-
-
-void Collisions::loadGroundModelLine(const char *line, int version)
-{
-	char stdf[256];
-	ground_model_t *gm=0;
-	sscanf(line,"%s ",stdf);
-	gm = getGroundModelByString(stdf);
-	if (gm == NULL)
-	{
-		// Allocate a new ground model
-		for (int i = 0; i < NUM_GROUND_MODELS; i++) 
-		{
-			if (ground_models[i] == NULL)
-			{
-				gm = new ground_model_t();
-				strncpy(gm->name, stdf, sizeof gm->name);
-				ground_models[i] = gm;
-				break;
-			}
-		}
-	}
-	if (gm)
-	{
-		Ogre::LogManager::getSingleton().logMessage("COLL: parsing default model for '"+String(stdf)+"'");
-		parseGroundModel(version, gm, line+strlen(stdf)+1, stdf);
-//		Ogre::LogManager::getSingleton().logMessage("COLL: this model has "+Ogre::StringConverter::toString((unsigned int)gm)+" "+Ogre::StringConverter::toString(gm->fx_type));
-
-	}
-}
-
-void Collisions::parseGroundModel(int version, ground_model_t* gm, const char* line, const char *name)
-{
-	float va, ms, mc, t2, vs, alpha, strength, fluid_density, flow_consistency_index, flow_behavior_index, solid_ground_level, drag_anisotropy;
-	char fxt[256];
-	strcpy(fxt, "none");
-	float fxr=0.83;
-	float fxg=0.71;
-	float fxb=0.64;
-	int nbe = 0;
-	if(version == 0)
-	{
-		nbe=sscanf(line,"%f, %f, %f, %f, %f, %f, %f, %s %f, %f, %f",&va, &ms,&mc,&t2,&vs,&alpha,&strength, fxt, &fxr, &fxg, &fxb);
-		if (nbe<8) Ogre::LogManager::getSingleton().logMessage("COLL: ERROR too few parameters while parsing ground model");
-		gm->va=va;
-		gm->ms=ms;
-		strncpy(gm->name, name, 255);
-		gm->mc=mc;
-		gm->t2=t2;
-		gm->vs=vs;
-		gm->alpha=alpha;
-		gm->strength=strength;
-	} else if(version == 2)
-	{
-		nbe=sscanf(line,"%f, %f, %f, %f, %f, %f, %f, %f, %f, %f, %f, %f, %s %f, %f, %f",&va, &ms,&mc,&t2,&vs,&alpha,&strength,&fluid_density,&flow_consistency_index,&flow_behavior_index,&solid_ground_level,&drag_anisotropy, fxt, &fxr, &fxg, &fxb);
-		if (nbe<8) Ogre::LogManager::getSingleton().logMessage("COLL: ERROR too few parameters while parsing ground model");
-		gm->va=va;
-		gm->ms=ms;
-		strncpy(gm->name, name, 255);
-		gm->mc=mc;
-		gm->t2=t2;
-		gm->vs=vs;
-		gm->alpha=alpha;
-		gm->strength=strength;
-		gm->fluid_density=fluid_density;
-		gm->flow_consistency_index=flow_consistency_index;
-		gm->flow_behavior_index=flow_behavior_index;
-		gm->solid_ground_level=solid_ground_level;
-		gm->drag_anisotropy=drag_anisotropy;
-	}
-	int fxtn=-1;
-	if (!strcmp("none", fxt)) fxtn=FX_NONE;
-	if (!strcmp("hard", fxt)) fxtn=FX_HARD;
-	if (!strcmp("dusty", fxt)) fxtn=FX_DUSTY;
-	if (!strcmp("clumpy", fxt)) fxtn=FX_CLUMPY;
-	if (fxtn==-1)
-	{
-		Ogre::LogManager::getSingleton().logMessage("COLL: ERROR bad FX name ('"+String(fxt)+"')");
-		fxtn=FX_NONE;
-	}
-	gm->fx_type=fxtn;
-	gm->fx_coulour=ColourValue(fxr, fxg, fxb, 1.0);
-}
-
 
 void Collisions::setHfinder(HeightFinder *hfi)
 {
