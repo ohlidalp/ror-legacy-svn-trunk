@@ -45,7 +45,7 @@ using namespace Ogre;
 
 #define MAX_EVENTSOURCE 100
 
-#define LATEST_GROUND_MODEL_VERSION 2
+#define LATEST_GROUND_MODEL_VERSION 3
 
 //nothing (e.g. ice)
 #define FX_NONE 0
