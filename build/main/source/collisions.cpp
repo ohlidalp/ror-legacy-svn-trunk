@@ -174,7 +174,7 @@ int Collisions::loadGroundModelsConfigFile(Ogre::String filename)
 					// ground models not known yet, init it!
 					ground_models[secName] = ground_model_t();
 					// clear it
-					memset(&ground_models[secName], 0, sizeof ground_model_t);
+					memset(&ground_models[secName], 0, sizeof(ground_model_t));
 					// set some default values
 					ground_models[secName].alpha = 2.0f;
 					ground_models[secName].strength = 1.0f;
