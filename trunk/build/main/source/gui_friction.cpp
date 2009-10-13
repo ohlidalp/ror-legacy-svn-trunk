@@ -366,11 +366,6 @@ GUI_Friction::GUI_Friction() : col(0), active_gm(0), selected_gm(0), win(0)
 
 	win->eventWindowButtonPressed = MyGUI::newDelegate(this, &GUI_Friction::notifyWindowButtonPressed);
 	win->setVisible(false);
-
-	// set initial values
-	ground_model_t *gm = col->getGroundModelByString("gravel");
-	if(gm) updateControls(gm);
-	selected_gm = gm;
 }
 
 void GUI_Friction::setShaded(bool value)
@@ -389,6 +384,7 @@ void GUI_Friction::setShaded(bool value)
 
 void GUI_Friction::setVisible(bool value)
 {
+	if(!col) return;
 	if(value)
 	{
 		// upon show, refresh list
