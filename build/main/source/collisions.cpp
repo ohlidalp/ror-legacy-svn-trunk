@@ -24,17 +24,6 @@ along with Rigs of Rods.  If not, see <http://www.gnu.org/licenses/>.
 #include "errorutils.h"
 #include "language.h"
 
-//these default values are overwritten by the data/ground_models.cfg file!
-ground_model_t GROUND_CONCRETE={3.0, 1.20, 0.60, 0.010, 5.0, 2.0, 1, 200, 10000, 0.5, 0, 0.1, 0, ColourValue(), "concrete"};
-ground_model_t GROUND_ASPHALT={ 3.0, 1.10, 0.55, 0.010, 5.0, 2.0, 1, 200, 10000, 0.5, 0, 0.1, 0, ColourValue(), "asphalt"};
-ground_model_t GROUND_GRAVEL={  3.0, 0.85, 0.50, 0.010, 4.0, 2.0, 1, 200, 10000, 0.5, 0, 0.1, 0, ColourValue(), "gravel"};
-ground_model_t GROUND_ROCK={    3.0, 0.75, 0.40, 0.010, 5.0, 2.0, 1, 200, 10000, 0.5, 0, 0.1, 0, ColourValue(), "rock"};
-ground_model_t GROUND_ICE={     3.0, 0.25, 0.15, 0.0001,4.0, 2.0, 1, 200, 10000, 0.5, 0, 0.1, 0, ColourValue(), "ice"};
-ground_model_t GROUND_SNOW={    3.0, 0.55, 0.30, 0.005, 6.0, 3.0, 1, 200, 10000, 0.5, 0, 0.1, 0, ColourValue(), "snow"};
-ground_model_t GROUND_METAL={   3.0, 0.40, 0.20, 0.001, 4.0, 2.0, 1, 200, 10000, 0.5, 0, 0.1, 0, ColourValue(), "metal"};
-ground_model_t GROUND_GRASS={   3.0, 0.50, 0.25, 0.005, 8.0, 2.0, 1, 200, 10000, 0.5, 0, 0.1, 0, ColourValue(), "grass"};
-ground_model_t GROUND_SAND={    3.0, 0.40, 0.20, 0.0001,9.0, 2.0, 1, 200, 10000, 0.5, 0, 0.1, 0, ColourValue(), "sand"};
-
 //hash function SBOX
 //from http://home.comcast.net/~bretm/hash/10.html
 unsigned int sbox[] =
@@ -113,7 +102,7 @@ Collisions::Collisions(
 {
 	landuse=0;
 	debugMode=_debugMode;
-	last_used_ground_model=&GROUND_GRAVEL;
+	last_used_ground_model=0;
 #ifdef LUASCRIPT
 	lua=mlua;
 #endif
@@ -129,6 +118,8 @@ Collisions::Collisions(
 	for (int i=0; i<HASH_SIZE; i++) {hashmask=hashmask<<1; hashmask++;};
 	for (int i=0; i<(1<<HASH_SIZE); i++) hashtable[i].cellid=UNUSED_CELLID;
 	loadDefaultModels();
+	defaultgm = getGroundModelByString("concrete");
+	defaultgroundgm = getGroundModelByString("gravel");
 }
 
 int Collisions::loadDefaultModels()
@@ -908,8 +899,10 @@ node_coll_resume_cell:
 								//resume repere for the normal
 								if (cbox->selfrotated) normal=cbox->selfrot*normal;
 								if (cbox->refined) normal=cbox->rot*normal;
-								primitiveCollision(node, normal, dt, &GROUND_CONCRETE, nso);
-								if (ogm) *ogm=&GROUND_CONCRETE;
+
+								// collision boxes are always out of concrete as it seems
+								primitiveCollision(node, normal, dt, defaultgm, nso);
+								if (ogm) *ogm=defaultgm;
 								}
 							}
 
@@ -952,8 +945,8 @@ node_coll_resume_cell:
 							//resume repere for the normal
 							if (cbox->selfrotated) normal=cbox->selfrot*normal;
 							if (cbox->refined) normal=cbox->rot*normal;
-							primitiveCollision(node, normal, dt, &GROUND_CONCRETE, nso);
-							if (ogm) *ogm=&GROUND_CONCRETE;
+							primitiveCollision(node, normal, dt, defaultgm, nso);
+							if (ogm) *ogm=defaultgm;
 							/*//fix position
 							Vector3 prevPos=node->AbsPosition;
 							if (mincase==0) node->AbsPosition.z=cbox->lo_z;
@@ -1129,10 +1122,11 @@ bool Collisions::isInside(Vector3 pos, collision_box_t *cbox, float border)
 bool Collisions::groundCollision(node_t *node, float dt, ground_model_t** ogm, float *nso)
 {
 	if (!hfinder) return false;
-	ground_model_t *gm=&GROUND_GRAVEL; //to be determined by the landuse map
-	if(landuse) gm = landuse->getGroundModelAt(node->AbsPosition.x, node->AbsPosition.z);
-	last_used_ground_model = gm;
-	if (ogm) *ogm=gm; //write that info to the caller
+	if(landuse) *ogm = landuse->getGroundModelAt(node->AbsPosition.x, node->AbsPosition.z);
+	// we landuse fails or we dont have it, use the default value
+	if(!*ogm) *ogm = defaultgroundgm;
+	last_used_ground_model = *ogm;
+
 	//new ground collision code
 	Real v=hfinder->getHeightAt(node->AbsPosition.x, node->AbsPosition.z);
 	if (v>node->AbsPosition.y)
@@ -1141,7 +1135,7 @@ bool Collisions::groundCollision(node_t *node, float dt, ground_model_t** ogm, f
 		//collision!
 		Vector3 normal;
 		hfinder->getNormalAt(node->AbsPosition.x, v, node->AbsPosition.z, &normal);
-		primitiveCollision(node, normal, dt, gm, nso, v-node->AbsPosition.y);
+		primitiveCollision(node, normal, dt, *ogm, nso, v-node->AbsPosition.y);
 		return true;
 	}
 	return false;

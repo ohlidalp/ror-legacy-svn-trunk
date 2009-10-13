@@ -2227,7 +2227,6 @@ void ExampleFrameListener::loadObject(const char* name, float px, float py, floa
 	bool classic_ref=true;
 	// everything is of concrete by default
 	ground_model_t *gm = collisions->getGroundModelByString("concrete");
-	ground_model_t gmi;
 	Ogre::Mesh::LodDistanceList dists;
 	Ogre::Mesh::LodDistanceList default_dists;
 	default_dists.push_back(50);
@@ -2371,7 +2370,6 @@ void ExampleFrameListener::loadObject(const char* name, float px, float py, floa
 		{
 			// load a custom friction config
 			collisions->loadGroundModelsConfigFile(String(ptline + 15));
-			gm=&gmi;
 			continue;
 		}
 		if (!strncmp("stdfriction", ptline, 11) || !strncmp("usefriction", ptline, 11) && strlen(ptline) > 12)
