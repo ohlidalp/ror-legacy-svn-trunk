@@ -169,6 +169,7 @@ private:
 	int largest_cellcount;
 	bool debugMode;
 	Landusemap *landuse;
+	ground_model_t *defaultgm, *defaultgroundgm;
 
 private:
 	void hash_add(int cell_x, int cell_z, int value);

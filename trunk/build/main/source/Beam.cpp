@@ -6527,12 +6527,12 @@ void Beam::calcForcesEuler(int doUpdate, Real dt, int step, int maxstep, Beam** 
 			{
 				int contacted=0;
 				float ns=0;
-				ground_model_t *gm = collisions->getGroundModelByString("gravel");
+				ground_model_t *gm = 0; // this is used as result storage, so we can use it later on
 				if ((contacted=collisions->groundCollision(&nodes[i], nodes[i].colltesttimer, &gm, &ns)) |
 					collisions->nodeCollision(&nodes[i], i==cinecameranodepos[currentcamera], contacted, nodes[i].colltesttimer, &ns, &gm))
 				{
 					//FX
-					if (doUpdate && dustp)
+					if (gm && doUpdate && dustp)
 					{
 						if (gm->fx_type==FX_DUSTY)
 						{
@@ -6563,7 +6563,7 @@ void Beam::calcForcesEuler(int doUpdate, Real dt, int step, int maxstep, Beam** 
 					}
 
 					// register wheel contact
-					if (useSkidmarks && nodes[i].wheelid >= 0)
+					if (gm && useSkidmarks && nodes[i].wheelid >= 0)
 					{
 						if (!(nodes[i].iswheel%2))
 							wheels[nodes[i].wheelid].lastContactInner = nodes[i].AbsPosition;
