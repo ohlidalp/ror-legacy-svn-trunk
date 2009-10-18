@@ -403,7 +403,6 @@ void GUI_Friction::setVisible(bool value)
 		selected_gm = gm;
 		if(gm)
 			updateControls(gm, false);
-
 	}
 	win->setVisibleSmooth(value);
 	//win->setVisible(value);
@@ -543,7 +542,7 @@ void GUI_Friction::updateControls(ground_model_t *gm, bool setCombo)
 	f = minMaxs["fluid_drag_anisotropy"];
 	fa = ((gm->drag_anisotropy + f.first) / (f.second - f.first)) * h->getScrollRange();
 	if(h) h->setScrollPosition(fa);
-
+/*
 	MyGUI::ComboBoxPtr cb = (MyGUI::ComboBoxPtr)win->findWidget("combo_fx_type");
 	if(gm->fx_type == FX_DUSTY)  cb->setIndexSelected(0);
 	if(gm->fx_type == FX_HARD)  cb->setIndexSelected(1);
@@ -553,6 +552,7 @@ void GUI_Friction::updateControls(ground_model_t *gm, bool setCombo)
 	MyGUI::StaticTextPtr t = (MyGUI::StaticTextPtr)win->findWidget("fx_color_text");
 	if(t) t->setCaption(StringConverter::toString(gm->fx_colour));
 	edt = (MyGUI::StaticTextPtr)win->findWidget("fx_color_text_edited"); if(edt) edt->setCaption("");
+*/
 
 }
 
@@ -681,6 +681,7 @@ void GUI_Friction::applyChanges()
 	selected_gm->drag_anisotropy = StringConverter::parseReal(e->getCaption());
 	edt = (MyGUI::StaticTextPtr)win->findWidget("fluid_drag_anisotropy_edited"); if(edt) edt->setCaption("");
 
+	/*
 	MyGUI::ComboBoxPtr cb = (MyGUI::ComboBoxPtr)win->findWidget("combo_fx_type");
 	if(cb->getIndexSelected() == 0)
 		selected_gm->fx_type = FX_DUSTY;
@@ -689,6 +690,7 @@ void GUI_Friction::applyChanges()
 	else if(cb->getIndexSelected() == 2)
 		selected_gm->fx_type = FX_CLUMPY;
 	edt = (MyGUI::StaticTextPtr)win->findWidget("combo_fx_type_edited"); if(edt) edt->setCaption("");
+	*/
 
 }
 

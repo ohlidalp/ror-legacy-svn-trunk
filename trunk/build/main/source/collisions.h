@@ -47,18 +47,8 @@ using namespace Ogre;
 
 #define LATEST_GROUND_MODEL_VERSION 3
 
-//nothing (e.g. ice)
 #define FX_NONE 0
-
-//hard surface: rubber burning and sparks
 #define FX_PARTICLE 1
-#define FX_HARD 1
-
-//dusty surface (with dust colour)
-#define FX_DUSTY 2
-
-//throws clumps (e.g. snow, grass) with colour
-#define FX_CLUMPY 3
 
 typedef struct _eventsource
 {
@@ -178,6 +168,7 @@ private:
 	unsigned int hashfunc(unsigned int cellid);
 	int collisionVersion;
 	std::map<Ogre::String, ground_model_t> ground_models;
+	void parseGroundConfig(Ogre::ConfigFile *cfg, Ogre::String groundModel=Ogre::String());
 
 public:
 	bool forcecam;

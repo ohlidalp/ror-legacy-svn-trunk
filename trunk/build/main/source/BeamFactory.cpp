@@ -28,7 +28,6 @@ along with Rigs of Rods.  If not, see <http://www.gnu.org/licenses/>.
 #include "sha1.h"
 #include "pthread.h"
 #include "ExampleFrameListener.h"
-#include "DustPool.h"
 #include "mirrors.h"
 
 using namespace Ogre;
@@ -36,7 +35,7 @@ using namespace Ogre;
 
 template<> BeamFactory *StreamableFactory < BeamFactory, Beam >::ms_Singleton = 0;
 
-BeamFactory::BeamFactory(ExampleFrameListener *efl, Beam **trucks, SceneManager *manager, SceneNode *parent, RenderWindow* win, Network *net, float *mapsizex, float *mapsizez, Collisions *icollisions, DustPool *mdust, DustPool *mclump, DustPool *msparks, DustPool *mdrip, DustPool *msplash, DustPool *mripple, HeightFinder *mfinder, Water *w, Camera *pcam, Mirrors *mmirror0) : efl(efl), trucks(trucks), manager(manager), parent(parent), win(win), net(net), mapsizex(mapsizex), mapsizez(mapsizez), icollisions(icollisions), mdust(mdust), mclump(mclump), msparks(msparks), mdrip(mdrip), msplash(msplash), mripple(mripple), mfinder(mfinder), pcam(pcam), mmirror0(mmirror0)
+BeamFactory::BeamFactory(ExampleFrameListener *efl, Beam **trucks, SceneManager *manager, SceneNode *parent, RenderWindow* win, Network *net, float *mapsizex, float *mapsizez, Collisions *icollisions, HeightFinder *mfinder, Water *w, Camera *pcam, Mirrors *mmirror0) : efl(efl), trucks(trucks), manager(manager), parent(parent), win(win), net(net), mapsizex(mapsizex), mapsizez(mapsizez), icollisions(icollisions), mfinder(mfinder), pcam(pcam), mmirror0(mmirror0)
 {
 }
 
@@ -64,12 +63,6 @@ Beam *BeamFactory::createLocal(Ogre::Vector3 pos, Ogre::Quaternion rot, Ogre::St
 		rot,
 		fname.c_str(),
 		icollisions,
-		mdust,
-		mclump,
-		msparks,
-		mdrip,
-		msplash,
-		mripple,
 		mfinder,
 		w,
 		pcam,
@@ -112,12 +105,6 @@ Beam *BeamFactory::createRemote(int sourceid, stream_register_t *reg, int slotid
 		Quaternion::ZERO,
 		reg->name,
 		icollisions,
-		mdust,
-		mclump,
-		msparks,
-		mdrip,
-		msplash,
-		mripple,
 		mfinder,
 		w,
 		pcam,

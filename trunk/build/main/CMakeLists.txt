@@ -204,6 +204,10 @@ set(ror_src
 	
 	source/errorutils.h
 	source/errorutils.cpp
+	
+	source/DustManager.h
+	source/DustManager.cpp
+	source/groundmodel.h
 )
 
 include_directories (OgreMain/include Dependencies/include)

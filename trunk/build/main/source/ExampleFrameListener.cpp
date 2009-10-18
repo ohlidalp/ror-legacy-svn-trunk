@@ -106,6 +106,7 @@ along with Rigs of Rods.  If not, see <http://www.gnu.org/licenses/>.
 #include <OgreFontManager.h>
 #include "language.h"
 #include "errorutils.h"
+#include "DustManager.h"
 
 
 #if OGRE_PLATFORM == OGRE_PLATFORM_WIN32
@@ -1079,6 +1080,9 @@ ExampleFrameListener::ExampleFrameListener(RenderWindow* win, Camera* cam, Scene
 
 	UILOADER.setup(win, cam);
 
+	// setup particle manager
+	new DustManager(mSceneMgr);
+
 	// create main menu :D
 	new GUI_MainMenu(this);
 	new GUI_Friction();
@@ -1646,7 +1650,7 @@ ExampleFrameListener::ExampleFrameListener(RenderWindow* win, Camera* cam, Scene
 	initDust();
 
 	// new beam factory
-	new BeamFactory(this, trucks, mSceneMgr, mSceneMgr->getRootSceneNode(), mWindow, net, &mapsizex, &mapsizez, collisions, dustp, clumpp, sparksp, dripp, splashp, ripplep, hfinder, w, mCamera, mirror);
+	new BeamFactory(this, trucks, mSceneMgr, mSceneMgr->getRootSceneNode(), mWindow, net, &mapsizex, &mapsizez, collisions, hfinder, w, mCamera, mirror);
 
 
 	// now continue to load everything...
@@ -5412,7 +5416,7 @@ void ExampleFrameListener::loadTerrain(String terrainfile)
 	}
 	if(person) person->setWater(w);
 	BeamFactory::getSingleton().w = w;
-	if(ripplep) ripplep->setWater(w); //note: only ripples need w so far
+	DustManager::getSingleton().setWater(w);
 
 	//environment map
 	//envmap is always created!
@@ -6194,6 +6198,8 @@ void ExampleFrameListener::saveGrassDensity()
 
 void ExampleFrameListener::initDust()
 {
+	// fancy new dustmanager takes over the work of manually creating the dustpool classes
+	/*
 	//we create dust
 	dustp=0;
 	dripp=0;
@@ -6213,6 +6219,7 @@ void ExampleFrameListener::initDust()
 		splashp=new DustPool("tracks/Splash", 20, mSceneMgr->getRootSceneNode(), mSceneMgr);
 		ripplep=new DustPool("tracks/Ripple", 20, mSceneMgr->getRootSceneNode(), mSceneMgr);
 	}
+	*/
 }
 
 void ExampleFrameListener::initTrucks(bool loadmanual, Ogre::String selected, Ogre::String selectedExtension, std::vector<Ogre::String> *truckconfig, bool enterTruck)
@@ -8046,15 +8053,10 @@ void ExampleFrameListener::gridScreenshots(Ogre::RenderWindow* pRenderWindow, Og
   pCamera->setCustomProjectionMatrix(true, orgmat);
 }
 
-//show/hide all dusts
+// show/hide all particle systems
 void ExampleFrameListener::showspray(bool s)
 {
-	if (dustp) dustp->setVisible(s);
-	if (dripp) dripp->setVisible(s);
-	if (clumpp) clumpp->setVisible(s);
-	if (sparksp) sparksp->setVisible(s);
-	if (splashp) splashp->setVisible(s);
-	if (ripplep) ripplep->setVisible(s);
+	DustManager::getSingleton().setVisible(s);
 }
 
 

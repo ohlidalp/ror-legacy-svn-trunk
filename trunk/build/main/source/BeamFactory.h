@@ -42,7 +42,7 @@ class BeamFactory : public StreamableFactory < BeamFactory, Beam >
 	friend class Network;
 	friend class ExampleFrameListener;
 	public:
-	BeamFactory(ExampleFrameListener *efl, Beam **trucks, SceneManager *manager, SceneNode *parent, RenderWindow* win, Network *net, float *mapsizex, float *mapsizez, Collisions *icollisions, DustPool *mdust, DustPool *mclump, DustPool *msparks, DustPool *mdrip, DustPool *msplash, DustPool *mripple, HeightFinder *mfinder, Water *w, Camera *pcam, Mirrors *mmirror0);
+	BeamFactory(ExampleFrameListener *efl, Beam **trucks, SceneManager *manager, SceneNode *parent, RenderWindow* win, Network *net, float *mapsizex, float *mapsizez, Collisions *icollisions, HeightFinder *mfinder, Water *w, Camera *pcam, Mirrors *mmirror0);
 	~BeamFactory();
 
 	Beam *createLocal();
@@ -60,7 +60,6 @@ protected:
 	Network *net;
 	float *mapsizex, *mapsizez;
 	Collisions *icollisions;
-	DustPool *mdust, *mclump, *msparks, *mdrip, *msplash, *mripple;
 	HeightFinder *mfinder;
 	Water *w;
 	Ogre::Camera *pcam;

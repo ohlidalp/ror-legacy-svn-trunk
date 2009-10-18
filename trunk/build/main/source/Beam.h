@@ -59,6 +59,7 @@ using namespace Ogre;
 #include "approxmath.h"
 #include "PositionStorage.h"
 #include "Streamable.h"
+#include "groundmodel.h"
 
 //#include "scriptCommands.h"
 #include <vector>
@@ -363,37 +364,6 @@ typedef struct _beam
 	shock_t *shock;
 } beam_t;
 
-
-typedef struct _ground_model_t
-{
-	float va; //adhesion velocity
-	float ms; //static friction coefficient
-	float mc; //sliding friction coefficient
-	float t2; //hydrodynamic friction (s/m)
-	float vs; //stribeck velocity (m/s)
-	float alpha; //steady-steady
-	float strength; //ground strength
-
-	float fluid_density;	// Density of liquid
-	float flow_consistency_index;// general drag coefficient
-
-	// if flow_behavior_index<1 then liquid is Pseudoplastic (ketchup, whipped cream, paint)
-	// if =1 then liquid is Newtonian fluid
-	// if >1 then liquid is Dilatant fluid (less common)
-	float flow_behavior_index;
-
-	// how deep the solid ground is
-	float solid_ground_level;
-
-	// Upwards/Downwards drag anisotropy
-	float drag_anisotropy;
-
-	int fx_type;
-	ColourValue fx_colour;
-	char name[255];
-	char particle_name[255];
-} ground_model_t;
-
 typedef struct
 {
 	node_t *p1;
@@ -642,7 +612,7 @@ public:
 #endif
 
 	//constructor
-	Beam(int tnum, SceneManager *manager, SceneNode *parent, RenderWindow* win, Network *net, float *mapsizex, float *mapsizez, Real px, Real py, Real pz, Quaternion rot, const char* fname, Collisions *icollisions, DustPool *mdust, DustPool *mclump, DustPool *msparks, DustPool *mdrip, DustPool *msplash, DustPool *mripple, HeightFinder *mfinder, Water *w, Camera *pcam, Mirrors *mmirror, bool networked=false, bool networking=false, collision_box_t *spawnbox=NULL, bool ismachine=false, int flareMode=0, std::vector<Ogre::String> *truckconfig=0, SkinPtr skin=SkinPtr());
+	Beam(int tnum, SceneManager *manager, SceneNode *parent, RenderWindow* win, Network *net, float *mapsizex, float *mapsizez, Real px, Real py, Real pz, Quaternion rot, const char* fname, Collisions *icollisions, HeightFinder *mfinder, Water *w, Camera *pcam, Mirrors *mmirror, bool networked=false, bool networking=false, collision_box_t *spawnbox=NULL, bool ismachine=false, int flareMode=0, std::vector<Ogre::String> *truckconfig=0, SkinPtr skin=SkinPtr());
 	void activate();
 	void desactivate();
 	void pushNetwork(char* data, int size);
@@ -1027,12 +997,6 @@ protected:
 	HeightFinder *hfinder;
 	int fasted;
 	int slowed;
-	DustPool *dustp;
-	DustPool *dripp;
-	DustPool *sparksp;
-	DustPool *clumpp;
-	DustPool *splashp;
-	DustPool *ripplep;
 	Replay *replay;
 	PositionStorage *posStorage;
 	int ropables[MAX_ROPABLES];

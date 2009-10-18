@@ -1,0 +1,116 @@
+/*
+This source file is part of Rigs of Rods
+Copyright 2005,2006,2007,2008,2009 Pierre-Michel Ricordel
+Copyright 2007,2008,2009 Thomas Fischer
+
+For more information, see http://www.rigsofrods.com/
+
+Rigs of Rods is free software: you can redistribute it and/or modify
+it under the terms of the GNU General Public License version 3, as 
+published by the Free Software Foundation.
+
+Rigs of Rods is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+GNU General Public License for more details.
+
+You should have received a copy of the GNU General Public License
+along with Rigs of Rods.  If not, see <http://www.gnu.org/licenses/>.
+*/
+
+// created by Thomas Fischer thomas{AT}thomasfischer{DOT}biz, 12th of October 2009
+
+#include "DustManager.h"
+#include "Ogre.h"
+#include "DustPool.h"
+#include "Settings.h"
+#include "collisions.h"
+
+#include "language.h"
+
+using namespace Ogre;
+
+template<> DustManager * Singleton< DustManager >::ms_Singleton = 0;
+DustManager* DustManager::getSingletonPtr(void)
+{
+	return ms_Singleton;
+}
+DustManager& DustManager::getSingleton(void)
+{
+	assert( ms_Singleton );  return ( *ms_Singleton );
+}
+
+DustManager::DustManager(Ogre::SceneManager *mSceneMgr) : mSceneMgr(mSceneMgr)
+{
+}
+
+DustManager::~DustManager()
+{
+	// delete all created dustpools and remove them
+	std::map < Ogre::String , DustPool * >::iterator it;
+	for(it=dustpools.begin(); it!=dustpools.end();it++)
+	{
+		delete(it->second);
+		it->second = 0;
+		dustpools.erase(it);
+	}
+}
+
+DustPool *DustManager::getGroundModelDustPool(ground_model_t *g)
+{
+	// if we have a non particle type, then return 0
+	if(g->fx_type != FX_PARTICLE) return 0;
+
+	String pname = String(g->particle_name);
+	if(!dustpools.size() || dustpools.find(pname) == dustpools.end())
+	{
+		addNewDustPool(g);
+	}
+	// return the entry we have
+	return dustpools[pname];
+}
+
+void DustManager::addNewDustPool(ground_model_t *g)
+{
+	// simple and clean addition of a new dustpool class instance
+	String pname = String(g->particle_name);
+	DustPool *dp = new DustPool(pname,
+								g->fx_particle_amount,
+								g->fx_particle_min_velo,
+								g->fx_particle_max_velo,
+								g->fx_particle_fade,
+								g->fx_particle_timedelta,
+								g->fx_particle_velo_factor,
+								g->fx_particle_ttl,
+								mSceneMgr->getRootSceneNode(),
+								mSceneMgr);
+	dustpools[pname] = dp;
+}
+
+void DustManager::update(float wspeed)
+{
+	std::map < Ogre::String , DustPool * >::iterator it;
+	for(it=dustpools.begin(); it!=dustpools.end();it++)
+	{
+		it->second->update(wspeed);
+	}
+}
+
+void DustManager::setWater(Water *w)
+{
+	this->w = w;
+	std::map < Ogre::String , DustPool * >::iterator it;
+	for(it=dustpools.begin(); it!=dustpools.end();it++)
+	{
+		it->second->setWater(w);
+	}
+}
+
+void DustManager::setVisible(bool visible)
+{
+	std::map < Ogre::String , DustPool * >::iterator it;
+	for(it=dustpools.begin(); it!=dustpools.end();it++)
+	{
+		it->second->setVisible(visible);
+	}
+}

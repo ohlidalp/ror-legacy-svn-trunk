@@ -19,10 +19,8 @@ along with Rigs of Rods.  If not, see <http://www.gnu.org/licenses/>.
 */
 #include "buoyance.h"
 
-Buoyance::Buoyance(Water *water, DustPool *splash, DustPool *ripple)
+Buoyance::Buoyance(Water *water)
 {
-	splashp=splash;
-	ripplep=ripple;
 	w=water;
 	update=0;
 	sink=0;
@@ -78,6 +76,8 @@ Vector3 Buoyance::computePressureForceSub(Vector3 a, Vector3 b, Vector3 c, Vecto
 	//		drg=(-500.0*surf*vell*cosaoa)*vel;
 			drg=(-500.0*surf*vell*vell*cosaoa)*normal;
 			if (normal.dotProduct(vel/vell)<0) drg=-drg;
+			/*
+			// TODO: FIX SPLASH!
 			if (update && splashp)
 			{
 				float fxl=vell*cosaoa*surf;
@@ -85,11 +85,12 @@ Vector3 Buoyance::computePressureForceSub(Vector3 a, Vector3 b, Vector3 c, Vecto
 				{
 					Vector3 fxdir=fxl*normal;
 					if (fxdir.y<0) fxdir.y=-fxdir.y;
-					if (w->getHeightWaves(a)-a.y<0.1) splashp->allocSplash(a, fxdir);
-					else if (w->getHeightWaves(b)-b.y<0.1) splashp->allocSplash(b, fxdir);
-					else if (w->getHeightWaves(c)-c.y<0.1) splashp->allocSplash(c, fxdir);
+					if (w->getHeightWaves(a)-a.y<0.1) splashp->alloc(a, fxdir);
+					else if (w->getHeightWaves(b)-b.y<0.1) splashp->alloc(b, fxdir);
+					else if (w->getHeightWaves(c)-c.y<0.1) splashp->alloc(c, fxdir);
 				}
 			}
+			*/
 		}
 	}
 	//okay

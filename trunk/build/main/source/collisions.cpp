@@ -129,24 +129,59 @@ int Collisions::loadDefaultModels()
 
 int Collisions::loadGroundModelsConfigFile(Ogre::String filename)
 {
-	Ogre::ConfigFile cf;
+	Ogre::ConfigFile cfg;
 	try
 	{
-		cf.load(filename);
+		cfg.load(filename);
 	} catch(Ogre::Exception& e)
 	{
 		showError("Error while loading ground model", e.getFullDescription());
 		return 1;
 	}
 
-	// Go through all sections & settings in the file
-	Ogre::ConfigFile::SectionIterator seci = cf.getSectionIterator();
+	// parse the whole config
+	parseGroundConfig(&cfg);
+
+	// after it was parsed, resolve the dependencies
+	std::map<Ogre::String, ground_model_t>::iterator it;
+	for(it=ground_models.begin(); it!=ground_models.end(); it++)
+	{
+		if(!it->second.basename) continue; // no base, normal material
+		String bname = String(it->second.basename);
+		if(ground_models.find(bname) == ground_models.end()) continue; // base not found!
+		// copy the values from the base if not set otherwise
+		ground_model_t *thisgm = &(it->second);
+		ground_model_t *basegm = &ground_models[bname];
+		memcpy(thisgm, basegm, sizeof(ground_model_t));
+		// re-set the name
+		strncpy(thisgm->name, it->first.c_str(), 255);
+		// after that we need to reload the config to overwrite settings of the base
+		parseGroundConfig(&cfg, it->first);
+	}
+	// check the version
+	if(this->collisionVersion != LATEST_GROUND_MODEL_VERSION)
+	{
+		// message box
+		String url = "http://wiki.rigsofrods.com/index.php?title=Error_Old_ground_model#"+StringConverter::toString(this->collisionVersion)+"to"+StringConverter::toString(LATEST_GROUND_MODEL_VERSION);
+		showWebError(_L("Configuration error"), _L("Your ground configuration is too old, please copy skeleton/config/ground_models.cfg to My Documents/Rigs of Rods/config"), url);
+		exit(124);
+	}
+	return 0;
+}
+
+
+void Collisions::parseGroundConfig(Ogre::ConfigFile *cfg, String groundModel)
+{
+	Ogre::ConfigFile::SectionIterator seci = cfg->getSectionIterator();
 
 	Ogre::String secName, kname, kvalue;
 	while (seci.hasMoreElements())
 	{
 		secName = seci.peekNextKey();
 		Ogre::ConfigFile::SettingsMultiMap *settings = seci.getNext();
+
+		if(!groundModel.empty() && secName != groundModel) continue;
+		
 		Ogre::ConfigFile::SettingsMultiMap::iterator i;
 		for (i = settings->begin(); i != settings->end(); ++i)
 		{
@@ -169,6 +204,8 @@ int Collisions::loadGroundModelsConfigFile(Ogre::String filename)
 					// set some default values
 					ground_models[secName].alpha = 2.0f;
 					ground_models[secName].strength = 1.0f;
+					strncpy(ground_models[secName].name, secName.c_str(), 255);
+
 				}
 				if(kname == "adhesion velocity") ground_models[secName].va = StringConverter::parseReal(kvalue);
 				else if(kname == "static friction coefficient") ground_models[secName].ms = StringConverter::parseReal(kvalue);
@@ -177,13 +214,22 @@ int Collisions::loadGroundModelsConfigFile(Ogre::String filename)
 				else if(kname == "stribeck velocity") ground_models[secName].vs = StringConverter::parseReal(kvalue);
 				else if(kname == "alpha") ground_models[secName].alpha = StringConverter::parseReal(kvalue);
 				else if(kname == "strength") ground_models[secName].strength = StringConverter::parseReal(kvalue);
+				else if(kname == "base") strncpy(ground_models[secName].basename, kvalue.c_str(), 255);
 				else if(kname == "fx_type")
 				{
 					if(kvalue == "PARTICLE")
 						ground_models[secName].fx_type = FX_PARTICLE;
 				}
-				else if(kname == "fx_particle_name") strncpy(ground_models[secName].particle_name, kvalue.c_str(), 256);
+				else if(kname == "fx_particle_name") strncpy(ground_models[secName].particle_name, kvalue.c_str(), 255);
 				else if(kname == "fx_colour") ground_models[secName].fx_colour = StringConverter::parseColourValue(kvalue);
+				else if(kname == "fx_particle_amount") ground_models[secName].fx_particle_amount = StringConverter::parseInt(kvalue);
+				else if(kname == "fx_particle_min_velo") ground_models[secName].fx_particle_min_velo = StringConverter::parseReal(kvalue);
+				else if(kname == "fx_particle_max_velo") ground_models[secName].fx_particle_max_velo = StringConverter::parseReal(kvalue);
+				else if(kname == "fx_particle_fade") ground_models[secName].fx_particle_fade = StringConverter::parseReal(kvalue);
+				else if(kname == "fx_particle_timedelta") ground_models[secName].fx_particle_timedelta = StringConverter::parseReal(kvalue);
+				else if(kname == "fx_particle_velo_factor") ground_models[secName].fx_particle_velo_factor = StringConverter::parseReal(kvalue);
+				else if(kname == "fx_particle_ttl") ground_models[secName].fx_particle_ttl = StringConverter::parseReal(kvalue);
+
 
 				else if(kname == "fluid density") ground_models[secName].fluid_density = StringConverter::parseReal(kvalue);
 				else if(kname == "flow consistency index") ground_models[secName].flow_consistency_index = StringConverter::parseReal(kvalue);
@@ -192,17 +238,10 @@ int Collisions::loadGroundModelsConfigFile(Ogre::String filename)
 				else if(kname == "drag anisotropy") ground_models[secName].drag_anisotropy = StringConverter::parseReal(kvalue);
 				
 			}
-
 		}
+		
+		if(!groundModel.empty()) break; // we dont need to go through the other sections
 	}
-	if(this->collisionVersion != LATEST_GROUND_MODEL_VERSION)
-	{
-		// message box
-		String url = "http://wiki.rigsofrods.com/index.php?title=Error_Old_ground_model#"+StringConverter::toString(this->collisionVersion)+"to"+StringConverter::toString(LATEST_GROUND_MODEL_VERSION);
-		showWebError(_L("Configuration error"), _L("Your ground configuration is too old, please copy skeleton/config/ground_models.cfg to My Documents/Rigs of Rods/config"), url);
-		exit(124);
-	}
-	return 0;
 }
 
 void Collisions::setupLandUse(const char *configfile)

@@ -35,8 +35,6 @@ private:
 	int nodeup;
 	float fullpower; //in HP
 	Water* water;
-	DustPool *splashp;
-	DustPool *ripplep;
 	int trucknum;
 
 public:
@@ -46,7 +44,7 @@ public:
 	float throtle;
 	float rudder;
 
-	Screwprop(node_t *nd, int nr, int nb, int nu, float power, Water* w, DustPool *splash, DustPool *ripple, int trucknum);
+	Screwprop(node_t *nd, int nr, int nb, int nu, float power, Water* w, int trucknum);
 	void updateForces(int update);
 	void setThrotle(float val);
 	void setRudder(float val);

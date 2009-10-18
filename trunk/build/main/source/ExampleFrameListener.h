@@ -64,8 +64,6 @@ along with Rigs of Rods.  If not, see <http://www.gnu.org/licenses/>.
 # include "TreeLoader2D.h"
 #endif
 
-class DustPool;
-
 class Caelum;
 class MapTextureCreator;
 class ColoredTextAreaOverlayElement;
@@ -541,13 +539,6 @@ protected:
 	bool mTruckInfoOn;
 	int mapMode;
 	unsigned int mNumScreenShots;
-
-	DustPool *dustp;
-	DustPool *dripp;
-	DustPool *clumpp;
-	DustPool *sparksp;
-	DustPool *splashp;
-	DustPool *ripplep;
 	// just to stop toggles flipping too fast
 	Real mTimeUntilNextToggle ;
 	bool pressure_pressed;
