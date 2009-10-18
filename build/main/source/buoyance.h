@@ -27,7 +27,7 @@ along with Rigs of Rods.  If not, see <http://www.gnu.org/licenses/>.
 #include <math.h>
 #include <stdio.h>
 #include "water.h"
-#include "DustPool.h"
+//#include "DustPool.h"
 #include "Beam.h"
 
 #define PI 3.1415926535897932384626433832795
@@ -41,13 +41,11 @@ class Buoyance
 {
 private:
 	Water *w;
-	DustPool *splashp;
-	DustPool *ripplep;
 	int update;
 	int sink;
 public:
 
-	Buoyance(Water *water, DustPool *splash, DustPool *ripple);
+	Buoyance(Water *water);
 	~Buoyance();
 
 	//compute tetrahedron volume

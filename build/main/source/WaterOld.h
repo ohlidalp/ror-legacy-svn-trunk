@@ -31,10 +31,10 @@ along with Rigs of Rods.  If not, see <http://www.gnu.org/licenses/>.
 
 #include "water.h"
 #include "Ogre.h"
-#include "DustPool.h"
+//#include "DustPool.h"
 using namespace Ogre;
 
-class DustPool;
+//class DustPool;
 
 extern float mrtime;
 

@@ -25,6 +25,7 @@ along with Rigs of Rods.  If not, see <http://www.gnu.org/licenses/>.
 #include "engine.h"
 #include "SoundScriptManager.h"
 #include "heightfinder.h"
+#include "DustManager.h"
 #include "water.h"
 #include "DustPool.h"
 #include "Replay.h"
@@ -205,7 +206,7 @@ Beam::~Beam()
 
 }
 
-Beam::Beam(int tnum, SceneManager *manager, SceneNode *parent, RenderWindow* win, Network *_net, float *_mapsizex, float *_mapsizez, Real px, Real py, Real pz, Quaternion rot, const char* fname, Collisions *icollisions, DustPool *mdust, DustPool *mclump, DustPool *msparks, DustPool *mdrip, DustPool *msplash, DustPool *mripple, HeightFinder *mfinder, Water *w, Camera *pcam, Mirrors *mmirror, bool networked, bool networking, collision_box_t *spawnbox, bool ismachine, int _flaresMode, std::vector<Ogre::String> *_truckconfig, SkinPtr skin) : deleting(false)
+Beam::Beam(int tnum, SceneManager *manager, SceneNode *parent, RenderWindow* win, Network *_net, float *_mapsizex, float *_mapsizez, Real px, Real py, Real pz, Quaternion rot, const char* fname, Collisions *icollisions, HeightFinder *mfinder, Water *w, Camera *pcam, Mirrors *mmirror, bool networked, bool networking, collision_box_t *spawnbox, bool ismachine, int _flaresMode, std::vector<Ogre::String> *_truckconfig, SkinPtr skin) : deleting(false)
 {
 	net=_net;
 	if(net && !networking) networking = true; // enable networking if some network class is existing
@@ -456,13 +457,6 @@ Beam::Beam(int tnum, SceneManager *manager, SceneNode *parent, RenderWindow* win
 	for(int i=0; i<MAX_WHEELS*2; i++) skidtrails[i] = 0;
 
 	collisions=icollisions;
-
-	dustp=mdust;
-	sparksp=msparks;
-	clumpp=mclump;
-	dripp=mdrip;
-	splashp=msplash;
-	ripplep=mripple;
 
 	disable_smoke=(SETTINGS.getSetting("Engine smoke")=="No");
 	heathaze=(SETTINGS.getSetting("HeatHaze")=="Yes");
@@ -2226,9 +2220,9 @@ int Beam::loadTruck(const char* fname, SceneManager *manager, SceneNode *parent,
 			if (type=='c') {collcabs[free_collcab]=free_cab; collcabstype[free_collcab]=0; free_collcab++;};
 			if (type=='p') {collcabs[free_collcab]=free_cab; collcabstype[free_collcab]=1; free_collcab++;};
 			if (type=='u') {collcabs[free_collcab]=free_cab; collcabstype[free_collcab]=2; free_collcab++;};
-			if (type=='b') {buoycabs[free_buoycab]=free_cab; collcabstype[free_collcab]=0; buoycabtypes[free_buoycab]=BUOY_NORMAL; free_buoycab++; if (!buoyance) buoyance=new Buoyance(water, splashp, ripplep);};
-			if (type=='r') {buoycabs[free_buoycab]=free_cab; collcabstype[free_collcab]=0; buoycabtypes[free_buoycab]=BUOY_DRAGONLY; free_buoycab++; if (!buoyance) buoyance=new Buoyance(water, splashp, ripplep);};
-			if (type=='s') {buoycabs[free_buoycab]=free_cab; collcabstype[free_collcab]=0; buoycabtypes[free_buoycab]=BUOY_DRAGLESS; free_buoycab++; if (!buoyance) buoyance=new Buoyance(water, splashp, ripplep);};
+			if (type=='b') {buoycabs[free_buoycab]=free_cab; collcabstype[free_collcab]=0; buoycabtypes[free_buoycab]=BUOY_NORMAL; free_buoycab++; if (!buoyance) buoyance=new Buoyance(water);};
+			if (type=='r') {buoycabs[free_buoycab]=free_cab; collcabstype[free_collcab]=0; buoycabtypes[free_buoycab]=BUOY_DRAGONLY; free_buoycab++; if (!buoyance) buoyance=new Buoyance(water);};
+			if (type=='s') {buoycabs[free_buoycab]=free_cab; collcabstype[free_collcab]=0; buoycabtypes[free_buoycab]=BUOY_DRAGLESS; free_buoycab++; if (!buoyance) buoyance=new Buoyance(water);};
 			if (type=='D' || type == 'F' || type == 'S')
 			{
 
@@ -2242,7 +2236,7 @@ int Beam::loadTruck(const char* fname, SceneManager *manager, SceneNode *parent,
 				if(type == 'F') collcabstype[free_collcab]=1;
 				if(type == 'S') collcabstype[free_collcab]=2;
 				free_collcab++;
-				buoycabs[free_buoycab]=free_cab; buoycabtypes[free_buoycab]=BUOY_NORMAL; free_buoycab++; if (!buoyance) buoyance=new Buoyance(water, splashp, ripplep);
+				buoycabs[free_buoycab]=free_cab; buoycabtypes[free_buoycab]=BUOY_NORMAL; free_buoycab++; if (!buoyance) buoyance=new Buoyance(water);
 			}
 			free_cab++;
 		}
@@ -3393,7 +3387,7 @@ int Beam::loadTruck(const char* fname, SceneManager *manager, SceneNode *parent,
 				continue;
 			}
 
-			screwprops[free_screwprop]=new Screwprop(nodes, ref, back, up, power, water, splashp, ripplep, trucknum);
+			screwprops[free_screwprop]=new Screwprop(nodes, ref, back, up, power, water, trucknum);
 			driveable=BOAT;
 			free_screwprop++;
 		}
@@ -6504,10 +6498,10 @@ void Beam::calcForcesEuler(int doUpdate, Real dt, int step, int maxstep, Beam** 
 		if (nodes[i].wetstate==DRIPPING && !nodes[i].contactless)
 		{
 			nodes[i].wettime+=dt;
-			if (nodes[i].wettime>5.0) nodes[i].wetstate=DRY; //dry!
-			if (!nodes[i].iswheel && dripp) dripp->allocDrip(nodes[i].smoothpos, nodes[i].Velocity, nodes[i].wettime);
+			//if (nodes[i].wettime>5.0) nodes[i].wetstate=DRY; //dry!
+			//if (!nodes[i].iswheel && dripp) dripp->alloc(nodes[i].smoothpos, nodes[i].Velocity, ColourValue::ZERO, nodes[i].wettime);
 			//also for hot engine
-			if (nodes[i].isHot && dustp) dustp->allocVapour(nodes[i].smoothpos, nodes[i].Velocity, nodes[i].wettime);
+			//if (nodes[i].isHot && dustp) dustp->alloc(nodes[i].smoothpos, nodes[i].Velocity, ColourValue::ZERO, nodes[i].wettime);
 		}
 		//locked nodes
 		if (nodes[i].lockednode)
@@ -6532,12 +6526,14 @@ void Beam::calcForcesEuler(int doUpdate, Real dt, int step, int maxstep, Beam** 
 					collisions->nodeCollision(&nodes[i], i==cinecameranodepos[currentcamera], contacted, nodes[i].colltesttimer, &ns, &gm))
 				{
 					//FX
-					if (gm && doUpdate && dustp)
+					if (gm && doUpdate)
 					{
-						if (gm->fx_type==FX_DUSTY)
+						DustPool *dp = DustManager::getSingleton().getGroundModelDustPool(gm);
+						if(dp)
 						{
-							dustp->alloc(nodes[i].AbsPosition, nodes[i].Velocity/2.0, gm->fx_colour);
+							dp->alloc(nodes[i].AbsPosition, nodes[i].Velocity, gm->fx_colour);
 						}
+						/*
 						else if (gm->fx_type==FX_HARD)
 						{
 							float thresold=10.0;
@@ -6560,6 +6556,7 @@ void Beam::calcForcesEuler(int doUpdate, Real dt, int step, int maxstep, Beam** 
 							if (nodes[i].Velocity.squaredLength()>1.0)
 								clumpp->allocClump(nodes[i].AbsPosition, nodes[i].Velocity/2.0, gm->fx_colour);
 						}
+						*/
 					}
 
 					// register wheel contact
@@ -6652,11 +6649,14 @@ void Beam::calcForcesEuler(int doUpdate, Real dt, int step, int maxstep, Beam** 
 					nodes[i].Forces-=(DEFAULT_WATERDRAG*velocityLength)*nodes[i].Velocity;
 					nodes[i].Forces+=nodes[i].buoyancy*Vector3::UNIT_Y;
 					//basic splashing
+					// TODO: FIX SPLASH!
+					/*
 					if (splashp && water->getHeight()-nodes[i].AbsPosition.y<0.2 && velocityLength>2.0)
 					{
-						splashp->allocSplash(nodes[i].AbsPosition, nodes[i].Velocity);
-						ripplep->allocRipple(nodes[i].AbsPosition, nodes[i].Velocity);
+						splashp->alloc(nodes[i].AbsPosition, nodes[i].Velocity);
+						ripplep->alloc(nodes[i].AbsPosition, nodes[i].Velocity);
 					}
+					*/
 					//engine stall
 					if (i==cinecameranodepos[0] && engine) engine->stop();
 					//wetness
@@ -8330,12 +8330,15 @@ void Beam::updateVisual(float dt)
 	if(debugVisuals) updateDebugOverlay();
 
 	//dust
+	DustManager::getSingleton().update(WheelSpeed);
+	/*
 	if (dustp && state==ACTIVATED) dustp->update(WheelSpeed);
 	if (dripp) dripp->update(WheelSpeed);
 	if (splashp) splashp->update(WheelSpeed);
 	if (ripplep) ripplep->update(WheelSpeed);
 	if (sparksp) sparksp->update(WheelSpeed);
 	if (clumpp) clumpp->update(WheelSpeed);
+	*/
 	//update custom particle systems
 	for (int i=0; i<free_cparticle; i++)
 	{

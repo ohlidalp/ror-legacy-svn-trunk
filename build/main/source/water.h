@@ -21,7 +21,7 @@ along with Rigs of Rods.  If not, see <http://www.gnu.org/licenses/>.
 #define __Water_H__
 
 #include "Ogre.h"
-#include "DustPool.h"
+//#include "DustPool.h"
 using namespace Ogre;
 
 // interface only
