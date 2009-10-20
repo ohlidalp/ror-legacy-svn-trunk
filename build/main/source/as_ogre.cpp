@@ -18,6 +18,7 @@ You should have received a copy of the GNU General Public License
 along with Rigs of Rods.  If not, see <http://www.gnu.org/licenses/>.
 */
 // created on 31th of July 2009 by Thomas Fischer
+#ifdef ANGELSCRIPT
 
 #include "as_ogre.h"
 
@@ -107,5 +108,6 @@ void registerOgreObjects(AngelScript::asIScriptEngine *engine)
 	// Register the object methods
 	r = engine->RegisterObjectMethod("Vector3", "float length() const", asMETHOD(Vector3,length), asCALL_THISCALL); assert( r >= 0 );
 	r = engine->RegisterObjectMethod("Vector3", "float squaredLength() const", asMETHOD(Vector3,squaredLength), asCALL_THISCALL); assert( r >= 0 );
-#endif
+#endif //0
 }
+#endif //ANGELSCRIPT
