@@ -28,20 +28,14 @@ along with Rigs of Rods.  If not, see <http://www.gnu.org/licenses/>.
 class Landusemap
 {
 protected:
-	unsigned long long *data;
-	void loadSettings();
-	void loadTerrainSettings();
-	Ogre::String configFilename;
-	Ogre::String TSMconfigFilename;
-	Ogre::String textureFilename;
+	ground_model_t **data;
+	int mapsizex;
+	int mapsizez;
 	ground_model_t *default_ground_model;
-	int version;
 	Collisions *coll;
-	Ogre::Real mapsizex, mapsizez;
-	std::map < Ogre::uint32, Ogre::String > usemap;
 
 public:
-	Landusemap(Ogre::String cfgfilename, Collisions *c, Ogre::Real mapsizex, Ogre::Real mapsizez);
+	Landusemap(Ogre::String cfgfilename, Collisions *c, int mapsizex, int mapsizez);
 	~Landusemap();
 
 	ground_model_t *getGroundModelAt(int x, int z);
