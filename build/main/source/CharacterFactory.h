@@ -40,7 +40,7 @@ class CharacterFactory : public StreamableFactory < CharacterFactory, Character 
 {
 	friend class Network;
 public:
-	CharacterFactory(Collisions *c, Network *net, HeightFinder *h, Water *w, MapControl *m, Ogre::SceneManager *scm);
+	CharacterFactory(Collisions *c, HeightFinder *h, Water *w, MapControl *m, Ogre::SceneManager *scm);
 	~CharacterFactory();
 
 	Character *createLocal();

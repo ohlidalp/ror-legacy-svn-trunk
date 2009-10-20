@@ -64,6 +64,7 @@ Timer Network::timer = Ogre::Timer();
 Network::Network(Beam **btrucks, std::string servername, long sport, ExampleFrameListener *efl): lagDataClients()
 {
 	NetworkStreamManager::getSingleton().net = this;
+	CharacterFactory::getSingleton().net = this;
 	shutdown=false;
 	ssm=SoundScriptManager::getSingleton();
 	mySname = servername;
