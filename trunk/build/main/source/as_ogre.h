@@ -19,6 +19,12 @@ along with Rigs of Rods.  If not, see <http://www.gnu.org/licenses/>.
 */
 // created on 31th of July 2009 by Thomas Fischer
 
+#ifdef ANGELSCRIPT
+
+#ifndef AS_USE_NAMESPACE
+#define AS_USE_NAMESPACE
+#endif //AS_USE_NAMESPACE
+
 #ifndef AS_OGRE_H_
 #define AS_OGRE_H_
 
@@ -28,4 +34,5 @@ along with Rigs of Rods.  If not, see <http://www.gnu.org/licenses/>.
 void registerOgreObjects(AngelScript::asIScriptEngine *engine);
 
 #endif //AS_OGRE_H_
+#endif //ANGELSCRIPT
 
