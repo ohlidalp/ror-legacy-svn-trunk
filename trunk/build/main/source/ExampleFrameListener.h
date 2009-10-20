@@ -375,6 +375,7 @@ protected:
 	SceneNode *dirArrowNode;
 	Vector3 dirArrowPointed;
 	int objectCounter;
+	float mouseGrabForce;
 
 	SceneNode *pointerDestination;
 

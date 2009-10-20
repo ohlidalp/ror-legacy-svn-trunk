@@ -637,7 +637,7 @@ public:
 	void wash_calculator(Quaternion rot);
 	void resetAngle(float rot);
 	void resetPosition(float px, float pz, bool setI, float miny=-9999.0);
-	void mouseMove(int node, Vector3 pos, int mode);
+	void mouseMove(int node, Vector3 pos, float force);
 	void addCamera(int nodepos, int nodedir, int noderoll);
 	void addWheel(SceneManager *manager, SceneNode *parent, Real radius, Real width, int rays, int node1, int node2, int snode, int braked, int propulsed, int torquenode, float mass, float wspring, float wdamp, char* texf, char* texb, bool meshwheel=false, float rimradius=0.0, bool rimreverse=false);
 	void addWheel2(SceneManager *manager, SceneNode *parent, Real radius, Real radius2, Real width, int rays, int node1, int node2, int snode, int braked, int propulsed, int torquenode, float mass, float wspring, float wdamp, float wspring2, float wdamp2, char* texf, char* texb);
@@ -1041,7 +1041,7 @@ protected:
 	bool hasposlights;
 	int mousenode;
 	Vector3 mousepos;
-	int mousemovemode;
+	float mousemoveforce;
 	int reset_requested;
 
 	int free_airbrake;
