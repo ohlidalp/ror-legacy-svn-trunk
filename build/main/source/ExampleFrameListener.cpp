@@ -963,6 +963,7 @@ ExampleFrameListener::ExampleFrameListener(RenderWindow* win, Camera* cam, Scene
 	enablePosStor = (SETTINGS.getSetting("Position Storage")=="Yes");
 	objectCounter=0;
 	hdrListener=0;
+	mouseGrabForce=100000.0f;
 	eflsingleton=this;
 
 	if(SETTINGS.getSetting("Skidmarks") == "Yes")
@@ -3942,6 +3943,19 @@ bool ExampleFrameListener::updateEvents(float dt)
 
 						if (click==0)
 						{
+							// allow the grab force to change
+							if(fabs(mstate.Z.rel) > 0.01)
+							{
+								if(INPUTENGINE.isKeyDown(OIS::KC_LSHIFT) || INPUTENGINE.isKeyDown(OIS::KC_RSHIFT))
+									mouseGrabForce += mstate.Z.rel * 100.0f;
+								else
+									mouseGrabForce += mstate.Z.rel * 10.0f;
+								// do not allow negative forces, looks weird
+								if(mouseGrabForce < 0.0f)
+									mouseGrabForce = 0.0f;
+
+								//LogManager::getSingleton().logMessage("mouse force: " + StringConverter::toString(mouseGrabForce));
+							}
 							//exert forces
 							//find pointed position
 							Ray mouseRay=mCamera->getCameraToViewportRay((float)mouseX/(float)screenWidth, (float)mouseY/(float)screenHeight);
@@ -3954,10 +3968,8 @@ bool ExampleFrameListener::updateEvents(float dt)
 							pickLine->end();
 
 							// add forces
-							if (ctrldown)
-								trucks[truckgrabbed]->mouseMove(nodegrabbed,pos, 0);
-							else
-								trucks[truckgrabbed]->mouseMove(nodegrabbed,pos, 1);
+
+							trucks[truckgrabbed]->mouseMove(nodegrabbed,pos, mouseGrabForce);
 						}
 						else
 						{

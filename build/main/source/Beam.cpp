@@ -268,7 +268,7 @@ Beam::Beam(int tnum, SceneManager *manager, SceneNode *parent, RenderWindow* win
 	cparticle_mode=false;
 	cparticle_enabled=false;
 	mousenode=-1;
-	mousemovemode=0;
+	mousemoveforce=0.0f;
 	mousepos=Vector3::ZERO;
 	ispolice=false;
 	cablight=0;
@@ -4785,11 +4785,11 @@ void Beam::resetPosition(float px, float pz, bool setI, float miny)
 	//if (netLabelNode) netLabelNode->setPosition(nodes[0].Position);
 }
 
-void Beam::mouseMove(int node, Vector3 pos, int mode)
+void Beam::mouseMove(int node, Vector3 pos, float force)
 {
-	mousenode=node;
-	mousemovemode=mode;
-	mousepos=pos;
+	mousenode = node;
+	mousemoveforce = force;
+	mousepos = pos;
 }
 
 void Beam::addCamera(int nodepos, int nodedir, int noderoll)
@@ -6474,10 +6474,7 @@ void Beam::calcForcesEuler(int doUpdate, Real dt, int step, int maxstep, Beam** 
 	if (mousenode!=-1)
 	{
 		Vector3 dir=mousepos-nodes[mousenode].AbsPosition;
-		if(mousemovemode==0)
-			nodes[mousenode].Forces+=1000000.0*dir;
-		else if(mousemovemode==1)
-			nodes[mousenode].Forces+=10000.0*dir;
+		nodes[mousenode].Forces += mousemoveforce * dir;
 	}
 
 #ifdef TIMING
@@ -7100,7 +7097,7 @@ void Beam::calcForcesEuler(int doUpdate, Real dt, int step, int maxstep, Beam** 
 		//braking
 		//ignore all braking code if the current wheel is not braked...
 		if (wheels[i].braked)
-		{	
+		{
 			//handbrake
 			float hbrake = 0.0f;
 			if (parkingbrake && wheels[i].braked != 4)
@@ -7738,7 +7735,7 @@ void Beam::calcForcesEuler(int doUpdate, Real dt, int step, int maxstep, Beam** 
 			node_simple_t *nbuff = (node_simple_t *)replay->getWriteBuffer(0);
 			for (i=0; i<free_node; i++)
 				nbuff[i].pos = nodes[i].AbsPosition;
-			
+
 			// store beams
 			beam_simple_t *bbuff = (beam_simple_t *)replay->getWriteBuffer(1);
 			for (i=0; i<free_beam; i++)
