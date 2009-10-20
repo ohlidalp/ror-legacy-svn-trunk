@@ -30,24 +30,19 @@ using namespace Ogre;
 
 // this is the Height-Finder for the standart ogre Terrain Manager
 
-Landusemap::Landusemap(String cfgfilename, Collisions *c, Real _mapsizex, Real _mapsizez) : version(0)
-{
-	configFilename = cfgfilename;
-	coll = c;
-	mapsizex=_mapsizex;
-	mapsizez=_mapsizez;
-	loadSettings();
-}
-
-void Landusemap::loadSettings()
+Landusemap::Landusemap(String configFilename, Collisions *c, int _mapsizex, int _mapsizez) :
+	coll(c), mapsizex(_mapsizex), mapsizez(_mapsizez)
 {
 	DataStreamPtr ds = ResourceGroupManager::getSingleton().openResource(configFilename, ResourceGroupManager::DEFAULT_RESOURCE_GROUP_NAME);
 	int linecounter = -1;
 	char line[1024]="";
-	usemap.clear();
 
 	LogManager::getSingleton().logMessage("Parsing '"+configFilename+"'");
 	int section=-1;
+	int version = 0;
+	String textureFilename = "";
+	std::map<uint32, String> usemap;
+
 	while (!ds->eof())
 	{
 		linecounter++;
@@ -142,8 +137,8 @@ void Landusemap::loadSettings()
 	bool bgr = colourMap->getPixelBox().format == PF_A8B8G8R8;
 
 	// now allocate the data buffer to hold pointers to ground models
-	data=(unsigned long long*)malloc(mapsizex*mapsizez*sizeof(unsigned long long));
-	unsigned long long *ptr = data;
+	data = new ground_model_t*[mapsizex * mapsizez];
+	ground_model_t **ptr = data;
 	//std::map < String, int > counters;
 	for(int z=0; z<mapsizez; z++)
 	{
@@ -163,7 +158,7 @@ void Landusemap::loadSettings()
 			//	counters[use]++;
 
 			// store the pointer to the ground model in the data slot
-			*ptr = (unsigned long long)coll->getGroundModelByString(use);
+			*ptr = coll->getGroundModelByString(use);
 			ptr++;
 		}
 	}
@@ -181,15 +176,15 @@ void Landusemap::loadSettings()
 
 Landusemap::~Landusemap()
 {
-	if (data) free(data);
+	delete data;
 }
 
 ground_model_t *Landusemap::getGroundModelAt(int x, int z)
 {
 	// we return the default ground model if we are not anymore in this map
-	if(x<0 || x > mapsizex || z<0 || z>mapsizez)
+	if (x < 0 || x >= mapsizex || z < 0 || z >= mapsizez)
 		return default_ground_model;
 
-	return (ground_model_t *)(data + x + z * (int)mapsizex);
+	return data[x + z * mapsizex];
 }
 
