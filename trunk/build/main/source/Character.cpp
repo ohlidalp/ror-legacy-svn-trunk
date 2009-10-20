@@ -6,7 +6,7 @@ Copyright 2007,2008,2009 Thomas Fischer
 For more information, see http://www.rigsofrods.com/
 
 Rigs of Rods is free software: you can redistribute it and/or modify
-it under the terms of the GNU General Public License version 3, as 
+it under the terms of the GNU General Public License version 3, as
 published by the Free Software Foundation.
 
 Rigs of Rods is distributed in the hope that it will be useful,
@@ -34,7 +34,7 @@ using namespace Ogre;
 unsigned int Character::characterCounter=0;
 
 // some colours with a good contrast inbetween
-ColourValue cvals[] = 
+ColourValue cvals[] =
 {
 	ColourValue(0.0,0.8,0.0),
 	ColourValue(0.0,0.4,0.701960784314),
@@ -81,7 +81,7 @@ Character::Character(Collisions *c, Network *net, HeightFinder *h, Water *w, Map
 	remote = true;
 	last_net_time=0;
 	netMT=0;
-	
+
 	myNumber = characterCounter++;
 	myName = "character"+Ogre::StringConverter::toString(myNumber);
 	persoangle=0;
@@ -105,7 +105,7 @@ Character::Character(Collisions *c, Network *net, HeightFinder *h, Water *w, Map
 	personode->attachObject(ent);
 	personode->setScale(0.02,0.02,0.02);
 	persoanim=ent->getAllAnimationStates();
-	
+
 	if(map)
 	{
 		mapEnt = map->createNamedMapEntity(myName, "person");
@@ -184,6 +184,7 @@ void Character::updateNetLabel()
 	LogManager::getSingleton().logMessage(" * updateNetLabel : " + StringConverter::toString(this->source) + " / "+ StringConverter::toString(info->slotnum));
 	if(!netMT)
 	{
+		LogManager::getSingleton().logMessage(" *NEW NETLABEL*");
 		netMT = new MovableText("netlabel-"+myName, ColoredTextAreaOverlayElement::StripColors(info->user_name));
 		personode->attachObject(netMT);
 		netMT->setFontName("highcontrast_black");
@@ -194,6 +195,8 @@ void Character::updateNetLabel()
 		netMT->setColor(ColourValue::White);
 	}
 
+	LogManager::getSingleton().logMessage(" *label caption: " + String(info->user_name));
+	LogManager::getSingleton().logMessage(" *label caption: " + ColoredTextAreaOverlayElement::StripColors(info->user_name));
 	netMT->setCaption(ColoredTextAreaOverlayElement::StripColors(info->user_name));
 	if(info->user_authlevel & AUTH_ADMIN)
 	{
@@ -346,7 +349,7 @@ void Character::update(float dt)
 	if (water)
 	{
 		wheight=water->getHeightWaves(position);
-		if (position.y<wheight-1.8) 
+		if (position.y<wheight-1.8)
 		{
 			position.y=wheight-1.8;
 			persovspeed=0.0;
@@ -417,7 +420,7 @@ void Character::update(float dt)
 	{
 		float accel = 1.0 * tmpJoy;
 		float time = dt*accel*persospeed;
-		if (tmpRun > 0) 
+		if (tmpRun > 0)
 			accel = 3.0 * tmpRun;
 		if(isswimming)
 		{
@@ -425,7 +428,7 @@ void Character::update(float dt)
 			idleanim=false;
 		} else
 		{
-			if (tmpRun > 0) 
+			if (tmpRun > 0)
 			{
 				setAnimationMode("Run", time);
 				idleanim=false;
@@ -438,7 +441,7 @@ void Character::update(float dt)
 		// 0.005f fixes character getting stuck on meshes
 		position+=dt*persospeed*1.5*accel*Vector3(cos(persoangle), 0.01f, sin(persoangle));
 	} else if (tmpBack > 0.0)
-	{	
+	{
 		float time = -dt*persospeed;
 		if(isswimming)
 		{
@@ -460,7 +463,7 @@ void Character::update(float dt)
 		else
 			setAnimationMode("Idle_sway", dt * 0.05);
 	}
-	
+
 	/*
 	//object contact
 	int numstep=100;
@@ -539,7 +542,7 @@ void Character::sendStreamData()
 	netdata_t data;
 	data.pos = personode->getPosition();
 	data.rot = personode->getOrientation();
-	
+
 	//LogManager::getSingleton().logMessage("sending character stream data: " + StringConverter::toString(net->getUserID()) + ":"+ StringConverter::toString(streamid));
 	this->addPacket(MSG2_STREAM_DATA, net->getUserID(), streamid, sizeof(netdata_t), (char*)&data);
 }

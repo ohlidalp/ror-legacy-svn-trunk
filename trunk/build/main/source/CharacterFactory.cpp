@@ -35,7 +35,7 @@ using namespace Ogre;
 
 template<> CharacterFactory *StreamableFactory < CharacterFactory, Character >::ms_Singleton = 0;
 
-CharacterFactory::CharacterFactory(Collisions *c, Network *net, HeightFinder *h, Water *w, MapControl *m, Ogre::SceneManager *scm) : c(c), net(net), h(h), w(w), m(m), scm(scm)
+CharacterFactory::CharacterFactory(Collisions *c, HeightFinder *h, Water *w, MapControl *m, Ogre::SceneManager *scm) : c(c), net(0), h(h), w(w), m(m), scm(scm)
 {
 }
 

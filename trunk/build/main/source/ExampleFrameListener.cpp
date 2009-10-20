@@ -1581,6 +1581,12 @@ ExampleFrameListener::ExampleFrameListener(RenderWindow* win, Camera* cam, Scene
 	// you always need that, even if you are not using the network
 	new NetworkStreamManager();
 
+	// new factory for characters
+	new CharacterFactory(collisions, hfinder, w, bigMap, mSceneMgr);
+	person = (Character *)CharacterFactory::getSingleton().createLocal();
+	person->setRemote(false);
+	person->setVisible(false);
+
 	if(netmode)
 	{
 		// cmdline overrides config
@@ -1637,14 +1643,6 @@ ExampleFrameListener::ExampleFrameListener(RenderWindow* win, Camera* cam, Scene
 		new AITrafficFactory(this, net, mSceneMgr);
 	}
 #endif //AITRAFFIC
-
-
-	// new factory for characters
-	new CharacterFactory(collisions, net, hfinder, w, bigMap, mSceneMgr);
-	person = (Character *)CharacterFactory::getSingleton().createLocal();
-	person->setRemote(false);
-	person->setVisible(false);
-
 
 	// we need dust before we start the beam factory
 	initDust();
