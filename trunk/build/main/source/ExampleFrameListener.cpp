@@ -4800,14 +4800,15 @@ void ExampleFrameListener::loadTerrain(String terrainfile)
 	//setup collision system
 	collisions=new Collisions(lua, this, debugCollisions);
 
-	// update icollisions instance in factory
-	BeamFactory::getSingleton().icollisions = collisions;
-
 	if(!netmode)
 		lua->loadTerrain(terrainfile);
 #else
 	collisions=new Collisions(this, debugCollisions);
 #endif
+
+	// update icollisions instance in factory
+	BeamFactory::getSingleton().icollisions = collisions;
+
 	if(person) person->setCollisions(collisions);
 	GUI_Friction::getSingleton().setCollisions(collisions);
 
