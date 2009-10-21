@@ -135,7 +135,7 @@ extern int truckSteps;
 #define IRON_DENSITY 7874.0
 #define BEAM_BREAK 1000000.0
 #define BEAM_DEFORM 400000.0
-#define BEAM_CREAK  100000.0
+#define BEAM_CREAK_DEFAULT  100000.0
 #define WHEEL_FRICTION_COEF 2.0
 #define CHASSIS_FRICTION_COEF 0.5 //Chassis has 1/4 the friction of wheels.
 #define SPEED_STOP 0.2
@@ -808,6 +808,8 @@ public:
 	float brakeforce;
 	float hbrakeforce;
 	bool ispolice;
+	bool enable_advanced_deformation;
+	float beam_creak;
 	int loading_finished;
 	int freecamera;
 	int first_wheel_node;
@@ -915,6 +917,8 @@ public:
 	Real getMinimalCameraRadius() { return minCameraRadius; };
 
 	Replay *getReplay() { return replay; };
+
+	float getBeamCreak() { return beam_creak; };
 protected:
 
 	void updateSimpleSkeleton();
