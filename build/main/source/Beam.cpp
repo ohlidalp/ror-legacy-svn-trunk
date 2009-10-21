@@ -236,6 +236,8 @@ Beam::Beam(int tnum, SceneManager *manager, SceneNode *parent, RenderWindow* win
 	nodedebugstate=-1;
 	debugVisuals=0;
 	netMT = 0;
+	enable_advanced_deformation = false;
+	beam_creak=BEAM_CREAK_DEFAULT;
 	dynamicMapMode=0;
 	meshesVisible=true;
 	disable_default_sounds=false;
@@ -1245,8 +1247,6 @@ int Beam::loadTruck(const char* fname, SceneManager *manager, SceneNode *parent,
 	ds->readLine(line, 1023);
 	// read in truckname for real
 	strncpy(realtruckname, line, 255);
-
-//		while (!feof(fd))
 	while (!ds->eof())
 	{
 		size_t ll=ds->readLine(line, 1023);
@@ -1353,7 +1353,23 @@ int Beam::loadTruck(const char* fname, SceneManager *manager, SceneNode *parent,
 		if (!strcmp("advdrag",line)) {mode=54;continue;};
 		if (!strcmp("axles",line)) {mode=55;continue;};
 		if (!strcmp("shocks2",line)) {mode=56;continue;};
+		if (!strncmp("enable_advanced_deformation", line, 27))
+		{
+			enable_advanced_deformation = true;
 
+			// parse the optional threshold value
+			float tempval = 0.0f;
+			int result = sscanf(line,"enable_advanced_deformation %f", &tempval);
+			if (result == 1 && tempval > 0.0f)
+			{
+				beam_creak = tempval;
+				LogManager::getSingleton().logMessage("Advanced deformation beam physics enabled with custom threshold value: "+ StringConverter::toString(beam_creak));
+			} else
+			{
+				LogManager::getSingleton().logMessage("Advanced deformation beam physics enabled with default threshold value.");
+			}
+			continue;
+		}
 		if (!strcmp("commandlist",line))
 		{
 			int result = sscanf(line,"commandlist %d", &currentScriptCommandNumber);
@@ -6147,7 +6163,7 @@ void Beam::calcForcesEuler(int doUpdate, Real dt, int step, int maxstep, Beam** 
 				//skeleton colouring
 				if (((doUpdate && skeleton == 2) || replay) && beams[i].mSceneNode && !beams[i].broken && !beams[i].disabled && beams[i].mEntity)
 				{
-					beams[i].scale = (sflen/BEAM_CREAK);
+					beams[i].scale = (sflen/beam_creak);
 				}
 				if (doUpdate && skeleton == 1 && beams[i].mSceneNode && !beams[i].broken && !beams[i].disabled && beams[i].mEntity)
 				{
@@ -6162,18 +6178,24 @@ void Beam::calcForcesEuler(int doUpdate, Real dt, int step, int maxstep, Beam** 
 				{
 					beams[i].mSceneNode->detachAllObjects();
 				}
-				if (flen>BEAM_CREAK)
+
+
+				float deformvalue = enable_advanced_deformation ? beams[i].default_deform*0.5f : BEAM_CREAK_DEFAULT;
+				if (flen > deformvalue)
 				{
-					if((beams[i].strength-BEAM_CREAK) != 0)
+					if((beams[i].strength-beam_creak) != 0)
 					{
 						if (!beams[i].p1->iswheel && !beams[i].p2->iswheel)
 						{
-							ssm->modulate(trucknum, SS_MOD_CREAK, (flen-BEAM_CREAK)/(float)(beams[i].strength-BEAM_CREAK));
+							ssm->modulate(trucknum, SS_MOD_CREAK, (flen-beam_creak)/(float)(beams[i].strength-beam_creak));
 							ssm->trigOnce(trucknum, SS_TRIG_CREAK);
 						}
 					}
-					if (flen>beams[i].default_deform)
+
+					bool deform_state=false;
+					if (!enable_advanced_deformation && flen > beams[i].default_deform)
 					{
+						// classical deformation
 						if (beams[i].type==BEAM_NORMAL || beams[i].type==BEAM_INVISIBLE)
 						{
 							// fix possible zero division bug
@@ -6193,9 +6215,21 @@ void Beam::calcForcesEuler(int doUpdate, Real dt, int step, int maxstep, Beam** 
 								beams[i].maxnegstress=sflen;
 								beams[i].L=beams[i].refL*(1.0-0.2f*(beams[i].maxposstress+beams[i].maxnegstress)/(beams[i].strength-beams[i].default_deform));
 							}
+							deform_state = true;
+						}
+					} else if (enable_advanced_deformation && flen>beams[i].default_deform && flen > beam_creak)
+					{
+						// new deformation code
+						if (beams[i].type == BEAM_NORMAL || beams[i].type == BEAM_INVISIBLE)
+						{
+							if (beams[i].p1->iswheel == 0 && beams[i].p2->iswheel == 0)
+								increased_accuracy = 1;
+							beams[i].L = dislen;
+							deform_state = true;
+						}
 						}
 
-						if (flen>beams[i].strength)
+					if (deform_state && flen > beams[i].strength)
 						{
 							if(beams[i].strength != 0)
 							{
@@ -6233,7 +6267,6 @@ void Beam::calcForcesEuler(int doUpdate, Real dt, int step, int maxstep, Beam** 
 				}
 			}
 		}
-	}
 #endif // !OPENCL
 
 #ifdef TIMING
