@@ -3944,7 +3944,7 @@ bool ExampleFrameListener::updateEvents(float dt)
 						if (click==0)
 						{
 							// allow the grab force to change
-							if(fabs(mstate.Z.rel) > 0.01)
+							if(fabs((float)(mstate.Z.rel)) > 0.01)
 							{
 								if(INPUTENGINE.isKeyDown(OIS::KC_LSHIFT) || INPUTENGINE.isKeyDown(OIS::KC_RSHIFT))
 									mouseGrabForce += mstate.Z.rel * 100.0f;
