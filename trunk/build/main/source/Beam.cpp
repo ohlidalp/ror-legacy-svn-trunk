@@ -2499,7 +2499,7 @@ int Beam::loadTruck(const char* fname, SceneManager *manager, SceneNode *parent,
 			beams[pos].refL=maxl;
 			beams[pos].Lhydro=maxl;
 			beams[pos].isrope=1;
-			beams[pos].disabled=1;
+			beams[pos].disabled=true;
 			beams[pos].mSceneNode->detachAllObjects();
 			//add short key
 			commandkey[0].beams.push_back(-pos);
@@ -5271,7 +5271,7 @@ int Beam::add_beam(node_t *p1, node_t *p2, SceneManager *manager, SceneNode *par
 	beams[pos].autoMovingMode=0;
 	beams[pos].autoMoveLock=false;
 	beams[pos].pressedCenterMode=false;
-	beams[pos].disabled=0;
+	beams[pos].disabled=false;
 	beams[pos].shock=0;
 	beams[pos].default_deform=default_deform;
 	beams[pos].maxposstress=default_deform;
@@ -5436,7 +5436,7 @@ void Beam::SyncReset()
 		beams[i].lastforce=Vector3::ZERO;
 		beams[i].update_timer=1.0;
 		beams[i].stress=0.0;
-		beams[i].disabled=0;
+		beams[i].disabled=false;
 		if (beams[i].mSceneNode && beams[i].type!=BEAM_VIRTUAL && beams[i].type!=BEAM_INVISIBLE && beams[i].type!=BEAM_INVISIBLE_HYDRO)
 		{
 			//reattach possibly detached nodes
@@ -5447,7 +5447,7 @@ void Beam::SyncReset()
 	netlock.state=UNLOCKED;
 	for (i=0; i<free_contacter; i++) contacters[i].contacted=0;
 	for (i=0; i<free_rope; i++) ropes[i].lockedto=0;
-	for (i=0; i<free_tie; i++) {beams[ties[i]].disabled=1;beams[ties[i]].mSceneNode->detachAllObjects();};
+	for (i=0; i<free_tie; i++) {beams[ties[i]].disabled=true;beams[ties[i]].mSceneNode->detachAllObjects();};
 	for (i=0; i<free_aeroengine; i++) aeroengines[i]->reset();
 	for (i=0; i<free_screwprop; i++) screwprops[i]->reset();
 	for (i=0; i<free_rotator; i++) rotators[i].angle=0;
@@ -6239,7 +6239,7 @@ void Beam::calcForcesEuler(int doUpdate, Real dt, int step, int maxstep, Beam** 
 
 							if ( beams[i].p1->iswheel==0 && beams[i].p2->iswheel==0 ) increased_accuracy=1;
 							beams[i].broken=1;
-							beams[i].disabled=1;
+							beams[i].disabled=true;
 							beams[i].p1->Forces-=beams[i].lastforce=f;
 							beams[i].p2->Forces+=beams[i].lastforce=f;
 							beams[i].p1->isSkin=true;
@@ -7774,8 +7774,8 @@ void Beam::calcForcesEuler(int doUpdate, Real dt, int step, int maxstep, Beam** 
 			for (i=0; i<free_beam; i++)
 			{
 				bbuff[i].scale = beams[i].scale;
-				bbuff[i].broken = (bool)beams[i].broken;
-				bbuff[i].disabled = (bool)beams[i].disabled;
+				bbuff[i].broken = beams[i].broken;
+				bbuff[i].disabled = beams[i].disabled;
 			}
 
 			replay->writeDone();

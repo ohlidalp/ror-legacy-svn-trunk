@@ -329,7 +329,7 @@ typedef struct _beam
 	SceneNode *mSceneNode; //visual
 	Entity *mEntity; //visual
 	int type;
-	int broken;
+	bool broken;
 	int bounded;
 	Real shortbound;
 	Real longbound;
@@ -356,7 +356,7 @@ typedef struct _beam
 
 	float centerLength;
 
-	int disabled;
+	bool disabled;
 	float minendmass;
 	float update_timer;
 	float update_rate;
