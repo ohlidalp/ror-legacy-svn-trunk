@@ -129,10 +129,23 @@ int Collisions::loadDefaultModels()
 
 int Collisions::loadGroundModelsConfigFile(Ogre::String filename)
 {
+	String group = "";
+	try
+	{
+		group = ResourceGroupManager::getSingleton().findGroupContainingResource(filename);
+	}catch(...)
+	{
+		// we wont catch anything, since the path could be absolute as well, then the group is not found
+	}
+
 	Ogre::ConfigFile cfg;
 	try
 	{
-		cfg.load(filename);
+		// try to load directly otherwise via resource group
+		if(group == "")
+			cfg.load(filename);
+		else
+			cfg.load(filename, group, "\x09:=", true);
 	} catch(Ogre::Exception& e)
 	{
 		showError("Error while loading ground model", e.getFullDescription());
