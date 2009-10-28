@@ -33,94 +33,94 @@ using namespace Ogre;
 Landusemap::Landusemap(String configFilename, Collisions *c, int _mapsizex, int _mapsizez) :
 	coll(c), mapsizex(_mapsizex), mapsizez(_mapsizez)
 {
-	DataStreamPtr ds = ResourceGroupManager::getSingleton().openResource(configFilename, ResourceGroupManager::DEFAULT_RESOURCE_GROUP_NAME);
-	int linecounter = -1;
-	char line[1024]="";
+	loadConfig(configFilename);
+}
 
-	LogManager::getSingleton().logMessage("Parsing '"+configFilename+"'");
-	int section=-1;
-	int version = 0;
-	String textureFilename = "";
+Landusemap::~Landusemap()
+{
+	delete data;
+}
+
+ground_model_t *Landusemap::getGroundModelAt(int x, int z)
+{
+	// we return the default ground model if we are not anymore in this map
+	if (x < 0 || x >= mapsizex || z < 0 || z >= mapsizez)
+		return default_ground_model;
+
+	return data[x + z * mapsizex];
+}
+
+
+int Landusemap::loadConfig(Ogre::String filename)
+{
 	std::map<uint32, String> usemap;
+	int version = 1;
+	String textureFilename = "";
 
-	while (!ds->eof())
+	LogManager::getSingleton().logMessage("Parsing landuse config: '"+filename+"'");
+
+	String group = "";
+	try
 	{
-		linecounter++;
-		size_t ll=ds->readLine(line, 1023);
-		if (!line || ll==0 || line[0]==';' || line[0]=='/' || !strnlen(line, 255))
-			continue;
-		if(!strcmp(line, "config"))
-		{
-			section=1;
-			continue;
-		} else if(!strcmp(line, "ground-models"))
-		{
-			section=-1;
-			// this section is obsolete
-			continue;
-		} else if(!strcmp(line, "use-map"))
-		{
-			if(version != LATEST_GROUND_MODEL_VERSION)
-			{
-				// warning
-				showError(_L("Configuration error"), _L("This map's ground model config is too old, please update it. Will use defaults!"));
-				// we ignore the section
-				section=-1;
-			} else
-			{
-				section=3;
-			}
-			continue;
-		}
-		if(section == 1)
-		{
-			// config section
-			std::vector<Ogre::String> args = StringUtil::split(String(line), "=");
-			if(args.size() != 2)
-			{
-				LogManager::getSingleton().logMessage("invalid config line in " + configFilename + " line " + StringConverter::toString(linecounter));
-				continue;
-			}
-			String key = args[0];
-			String value = args[1];
-			StringUtil::toLowerCase(key);
-			StringUtil::trim(key);
-			StringUtil::trim(value);
-
-			if(key == "texture")
-				textureFilename = value;
-			else if(key == "frictionconfig")
-				coll->loadGroundModelsConfigFile(value);
-			else if(key == "defaultuse")
-				default_ground_model = coll->getGroundModelByString(value);
-			else if(key == "version")
-				version = StringConverter::parseInt(value);
-
-		} else if(section == 2)
-		{
-			// obsolete section, replaced with config value "frictionconfig"
-		} else if(section == 3)
-		{
-			// use map
-			std::vector<Ogre::String> args = StringUtil::split(String(line));
-			if(args.size() != 2)
-			{
-				LogManager::getSingleton().logMessage("invalid use line in " + configFilename + " line " + StringConverter::toString(linecounter));
-				continue;
-			}
-			if(args[0][0] != '#')
-			{
-				LogManager::getSingleton().logMessage("invalid use line in " + configFilename + " line " + StringConverter::toString(linecounter));
-				continue;
-			}
-			char *ptr;
-			String fmt = "0xff"+args[0].substr(1);
-			uint32 color = strtoul(fmt.c_str(), &ptr, 16);
-			String use = args[1];
-			usemap[color] = use;
-		}
-
+		group = ResourceGroupManager::getSingleton().findGroupContainingResource(filename);
+	}catch(...)
+	{
+		// we wont catch anything, since the path could be absolute as well, then the group is not found
 	}
+
+	Ogre::ConfigFile cfg;
+	try
+	{
+		// try to load directly otherwise via resource group
+		if(group == "")
+			cfg.load(filename);
+		else
+			cfg.load(filename, group, "\x09:=", true);
+	} catch(Ogre::Exception& e)
+	{
+		showError("Error while loading landuse config", e.getFullDescription());
+		return 1;
+	}
+
+	Ogre::ConfigFile::SectionIterator seci = cfg.getSectionIterator();
+	Ogre::String secName, kname, kvalue;
+	while (seci.hasMoreElements())
+	{
+		secName = seci.peekNextKey();
+		Ogre::ConfigFile::SettingsMultiMap *settings = seci.getNext();
+		Ogre::ConfigFile::SettingsMultiMap::iterator i;
+		for (i = settings->begin(); i != settings->end(); ++i)
+		{
+			kname = i->first;
+			kvalue = i->second;
+			// we got all the data available now, processing now
+			if(secName == "general" || secName == "config")
+			{
+				// set some class properties accoring to the information in this section
+				if(kname == "texture")
+					textureFilename = kvalue;
+				else if(kname == "frictionconfig" || kname == "loadGroundModelsConfig")
+					coll->loadGroundModelsConfigFile(kvalue);
+				else if(kname == "defaultuse")
+					default_ground_model = coll->getGroundModelByString(kvalue);
+				else if(kname == "version")
+					version = StringConverter::parseInt(kvalue);
+
+			} else if(secName == "use-map")
+			{
+				if(kname.size() != 10)
+				{
+					LogManager::getSingleton().logMessage("invalid color in landuse line in " + filename);
+					continue;
+				}
+				char *ptr; //not used
+				uint32 color = strtoul(kname.c_str(), &ptr, 16);
+				usemap[color] = kvalue;
+			}
+		}
+	}
+
+	// process the config data and load the buffers finally
 	Forests::ColorMap *colourMap = Forests::ColorMap::load(textureFilename, CHANNEL_COLOR);
 	colourMap->setFilter(Forests::MAPFILTER_NONE);
 	Ogre::TRect<Ogre::Real> bounds = TBounds(0, 0, mapsizex, mapsizez);
@@ -162,29 +162,5 @@ Landusemap::Landusemap(String configFilename, Collisions *c, int _mapsizex, int 
 			ptr++;
 		}
 	}
-
-	/*
-	// debug things below
-	printf("used ground models:\n");
-	for(std::map < String, int >::iterator it=counters.begin(); it!=counters.end(); it++)
-	{
-		printf(" %s : %d\n", it->first.c_str(), it->second);
-	}
-	*/
-
+	return 0;
 }
-
-Landusemap::~Landusemap()
-{
-	delete data;
-}
-
-ground_model_t *Landusemap::getGroundModelAt(int x, int z)
-{
-	// we return the default ground model if we are not anymore in this map
-	if (x < 0 || x >= mapsizex || z < 0 || z >= mapsizez)
-		return default_ground_model;
-
-	return data[x + z * mapsizex];
-}
-

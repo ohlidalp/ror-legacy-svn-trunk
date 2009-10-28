@@ -5543,9 +5543,9 @@ void ExampleFrameListener::loadTerrain(String terrainfile)
 		{
 			sscanf(line, "sandstormcubemap %s", sandstormcubemap);
 		};
-		if (!strncmp("ground-model", line, 12))
+		if (!strncmp("landuse-config", line, 14))
 		{
-			collisions->setupLandUse(line+13);
+			collisions->setupLandUse(line+15);
 			continue;
 		}
 
