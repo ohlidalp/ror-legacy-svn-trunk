@@ -70,6 +70,8 @@ public:
 	int downloadFile(boost::filesystem::path localFile, std::string server, std::string remoteDir, bool displayProgress=false, bool debug=false);
 	std::string generateFileHash(boost::filesystem::path file);
 	static int getTempFilename(boost::filesystem::path &tempfile);
+	
+	static void tryRemoveFile(boost::filesystem::path filename);
 
 	int downloadMod(std::string modname, std::string &modfilename, boost::filesystem::path path, bool util=false);
 	

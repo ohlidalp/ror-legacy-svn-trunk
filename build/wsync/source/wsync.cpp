@@ -152,7 +152,7 @@ int WSync::sync(boost::filesystem::path localDir, string server, string remoteDi
 	//printf("#4: %s = %s\n", remoteFileIndex.string().c_str(), hashRemoteFileIndex.c_str());
 
 	// remove temp file again
-	remove(INDEXFILENAME);
+	tryRemoveFile(INDEXFILENAME);
 	if(hashMyFileIndex == hashRemoteFileIndex)
 	{
 		printf("Files are up to date, no sync needed\n");
@@ -174,7 +174,7 @@ int WSync::sync(boost::filesystem::path localDir, string server, string remoteDi
 		return -3;
 	}
 	// remove that temp file as well
-	remove(remoteFileIndex);
+	tryRemoveFile(remoteFileIndex);
 
 	std::vector<Fileentry> deletedFiles;
 	std::vector<Fileentry> changedFiles;
@@ -305,7 +305,7 @@ retry:
 						printf(" OK                                             \n");
 						//printf(" hash is: '%s'\n", checkHash.c_str());
 						//printf(" hash should be: '%s'\n", hash_remote.c_str());
-						remove(localfile);
+						tryRemoveFile(localfile);
 						if(retrycount < 2)
 						{
 							// fallback to main server!
@@ -357,7 +357,7 @@ retry2:
 						printf(" OK                                             \n");
 						//printf(" hash is: '%s'\n", checkHash.c_str());
 						//printf(" hash should be: '%s'\n", hash_remote.c_str());
-						remove(localfile);
+						tryRemoveFile(localfile);
 						if(retrycount < 2)
 						{
 							// fallback to main server!
@@ -382,7 +382,7 @@ retry2:
 				path localfile = localDir / itf->filename;
 				try
 				{
-					boost::filesystem::remove(localfile);
+					tryRemoveFile(localfile);
 					if(exists(localfile))
 						printf("unable to delete file: %s\n", localfile.string().c_str());
 				} catch(...)
@@ -401,7 +401,7 @@ retry2:
 		printf("sync complete (already up to date), downloaded %s\n", formatFilesize(downloadSize).c_str());
 
 	//remove temp files again
-	remove(remoteFileIndex);
+	tryRemoveFile(remoteFileIndex);
 	return res;
 }
 
@@ -489,250 +489,64 @@ int WSync::saveHashMapToFile(boost::filesystem::path &filename, std::map<string,
 	return 0;
 }
 
-int WSync::downloadConfigFile(std::string server, std::string path, std::vector< std::vector< std::string > > &list)
+int WSync::downloadConfigFile(std::string server, std::string url, std::vector< std::vector< std::string > > &list)
 {
-	std::vector<std::string> lines;
-	try
+	path tempfile;
+	if(getTempFilename(tempfile))
 	{
-		boost::asio::io_service io_service;
-
-		// Get a list of endpoints corresponding to the server name.
-		tcp::resolver resolver(io_service);
-
-		char *host = const_cast<char*>(server.c_str());
-		tcp::resolver::query query(tcp::v4(), host, "80");
-		tcp::resolver::iterator endpoint_iterator = resolver.resolve(query);
-		tcp::resolver::iterator end;
-
-		// Try each endpoint until we successfully establish a connection.
-		tcp::socket socket(io_service);
-		boost::system::error_code error = boost::asio::error::host_not_found;
-		while (error && endpoint_iterator != end)
-		{
-			socket.close();
-			socket.connect(*endpoint_iterator++, error);
-		}
-		if (error)
-			throw boost::system::system_error(error);
-
-		// Form the request. We specify the "Connection: close" header so that the
-		// server will close the socket after transmitting the response. This will
-		// allow us to treat all data up until the EOF as the content.
-		boost::asio::streambuf request;
-		std::ostream request_stream(&request);
-		request_stream << "GET " << path << " HTTP/1.0\r\n";
-		request_stream << "Host: " << server << "\r\n";
-		request_stream << "Accept: */*\r\n";
-		request_stream << "Connection: close\r\n\r\n";
-
-		// Send the request.
-		boost::asio::write(socket, request);
-
-		// Read the response status line.
-		boost::asio::streambuf response;
-		boost::asio::streambuf data;
-		boost::asio::read_until(socket, response, "\r\n");
-
-		// Check that response is OK.
-		std::istream response_stream(&response);
-		std::string http_version;
-		response_stream >> http_version;
-		unsigned int status_code;
-		response_stream >> status_code;
-		std::string status_message;
-		std::getline(response_stream, status_message);
-		if (!response_stream || http_version.substr(0, 5) != "HTTP/")
-		{
-			std::cout << endl << "Error: Invalid response\n";
-			return 1;
-		}
-		if (status_code != 200)
-		{
-			std::cout << endl << "Error: Response returned with status code " << status_code << "\n";
-		}
-
-		// Read the response headers, which are terminated by a blank line.
-		boost::asio::read_until(socket, response, "\r\n\r\n");
-
-		// Process the response headers.
-		std::string line;
-		size_t counter = 0;
-		size_t reported_filesize = 0;
-		{
-			while (std::getline(response_stream, line) && line != "\r")
-			{
-				if(line.substr(0, 15) == "Content-Length:")
-					reported_filesize = atoi(line.substr(16).c_str());
-			}
-		}
-		//printf("filesize: %d bytes\n", reported_filesize);
-
-		// Write whatever content we already have to output.
-		if (response.size() > 0)
-		{
-			string line;
-			while(getline(response_stream, line))
-				lines.push_back(line);
-			//cout << &response;
-		}
-
-		// Read until EOF, writing data to output as we go.
-		boost::uintmax_t datacounter=0;
-		while (boost::asio::read(socket, data, boost::asio::transfer_at_least(1), error))
-		{
-			string line;
-			std::istream data_stream(&data);
-			while(getline(data_stream, line))
-				lines.push_back(line);
-
-			datacounter += data.size();
-		}
-		if (error != boost::asio::error::eof)
-			throw boost::system::system_error(error);
-
-		downloadSize += reported_filesize;
+		printf("error creating tempfile!\n");
+		return -1;
 	}
-	catch (std::exception& e)
+
+	if(downloadFile(tempfile, server, url))
 	{
-		std::cout << endl << "Error while downloading file: " << e.what() << "\n";
-		return 1;
+		printf("error downloading file from %s, %s\n", server.c_str(), url.c_str());
+		return -1;
 	}
-	for(std::vector<std::string>::iterator it=lines.begin(); it!=lines.end(); it++)
+	ifstream fin(tempfile.string().c_str());
+	if (fin.is_open() == false)
 	{
-		std::vector<std::string> args = tokenize_str(*it, " ");
+		printf("unable to open file for reading: %s\n", tempfile.string().c_str());
+		return -1;
+	}
+	string line = string();
+	while(getline(fin, line))
+	{
+		std::vector<std::string> args = tokenize_str(line, " ");
 		list.push_back(args);
 	}
-		
+	fin.close();
+	tryRemoveFile(tempfile);
 	return 0;
 }
 
-int WSync::downloadAdvancedConfigFile(std::string server, std::string path, std::vector< std::map< std::string, std::string > > &list)
+int WSync::downloadAdvancedConfigFile(std::string server, std::string url, std::vector< std::map< std::string, std::string > > &list)
 {
-	std::vector<std::string> lines;
-	std::string buffer;
-	try
+	path tempfile;
+	if(getTempFilename(tempfile))
 	{
-		boost::asio::io_service io_service;
-
-		// Get a list of endpoints corresponding to the server name.
-		tcp::resolver resolver(io_service);
-
-		char *host = const_cast<char*>(server.c_str());
-		tcp::resolver::query query(tcp::v4(), host, "80");
-		tcp::resolver::iterator endpoint_iterator = resolver.resolve(query);
-		tcp::resolver::iterator end;
-
-		// Try each endpoint until we successfully establish a connection.
-		tcp::socket socket(io_service);
-		boost::system::error_code error = boost::asio::error::host_not_found;
-		while (error && endpoint_iterator != end)
-		{
-			socket.close();
-			socket.connect(*endpoint_iterator++, error);
-		}
-		if (error)
-			throw boost::system::system_error(error);
-
-		// Form the request. We specify the "Connection: close" header so that the
-		// server will close the socket after transmitting the response. This will
-		// allow us to treat all data up until the EOF as the content.
-		boost::asio::streambuf request;
-		std::ostream request_stream(&request);
-		request_stream << "GET " << path << " HTTP/1.0\r\n";
-		request_stream << "Host: " << server << "\r\n";
-		request_stream << "Accept: */*\r\n";
-		request_stream << "Connection: close\r\n\r\n";
-
-		// Send the request.
-		boost::asio::write(socket, request);
-
-		// Read the response status line.
-		boost::asio::streambuf response;
-		boost::asio::streambuf data;
-		boost::asio::read_until(socket, response, "\r\n");
-
-		// Check that response is OK.
-		std::istream response_stream(&response);
-		std::string http_version;
-		response_stream >> http_version;
-		unsigned int status_code;
-		response_stream >> status_code;
-		std::string status_message;
-		std::getline(response_stream, status_message);
-		if (!response_stream || http_version.substr(0, 5) != "HTTP/")
-		{
-			std::cout << endl << "Error: Invalid response\n";
-			return 1;
-		}
-		if (status_code != 200)
-		{
-			std::cout << endl << "Error: Response returned with status code " << status_code << "\n";
-		}
-
-		// Read the response headers, which are terminated by a blank line.
-		boost::asio::read_until(socket, response, "\r\n\r\n");
-
-		// Process the response headers.
-		std::string line;
-		size_t counter = 0;
-		size_t reported_filesize = 0;
-		{
-			while (std::getline(response_stream, line) && line != "\r")
-			{
-				if(line.substr(0, 15) == "Content-Length:")
-					reported_filesize = atoi(line.substr(16).c_str());
-			}
-		}
-		//printf("filesize: %d bytes\n", reported_filesize);
-
-		std::string lastline = "";
-		// Write whatever content we already have to output.
-		if (response.size() > 0)
-		{
-			string line;
-			while(getline(response_stream, line))
-			{
-				lines.push_back(line);
-				lastline = line;
-			}
-			//cout << &response;
-		}
-
-		// Read until EOF, writing data to output as we go.
-		boost::uintmax_t datacounter=0;
-		while (boost::asio::read(socket, data, boost::asio::transfer_at_least(1), error))
-		{
-			string line;
-			std::istream data_stream(&data);
-			while(getline(data_stream, line))
-			{
-				if(line.size() && lastline.size())
-				{
-					lines.push_back(lastline+line);
-					lastline="";
-				} else
-					lines.push_back(line);
-			}
-
-			datacounter += data.size();
-		}
-		if (error != boost::asio::error::eof)
-			throw boost::system::system_error(error);
-
-		downloadSize += reported_filesize;
-	}
-	catch (std::exception& e)
-	{
-		std::cout << endl << "Error while downloading file: " << e.what() << "\n";
-		return 1;
+		printf("error creating tempfile!\n");
+		return -1;
 	}
 
+	if(downloadFile(tempfile, server, url))
+	{
+		printf("error downloading file from %s, %s\n", server.c_str(), url.c_str());
+		return -1;
+	}
+	ifstream fin(tempfile.string().c_str());
+	if (fin.is_open() == false)
+	{
+		printf("unable to open file for reading: %s\n", tempfile.string().c_str());
+		return -1;
+	}
+	string line = string();
 	std::map < std::string, std::string > obj;
-	for(std::vector<std::string>::iterator it=lines.begin(); it!=lines.end(); it++)
+	while(getline(fin, line))
 	{
-		if(!it->size()) continue;
-		if((*it)[0] == '#') continue;
-		if((*it)[0] == '=')
+		if(!line.size()) continue;
+		if(line[0] == '#') continue;
+		if(line[0] == '=')
 		{
 			// new stream
 			if(obj.size() > 0)
@@ -740,7 +554,7 @@ int WSync::downloadAdvancedConfigFile(std::string server, std::string path, std:
 			obj.clear();
 			continue;
 		}
-		std::vector<std::string> args = tokenize_str(*it, "=");
+		std::vector<std::string> args = tokenize_str(line, "=");
 		if(args.size() == 2)
 		{
 			boost::trim(args[0]);
@@ -748,8 +562,19 @@ int WSync::downloadAdvancedConfigFile(std::string server, std::string path, std:
 			obj[args[0]] = args[1];
 		}
 	}
-		
+	fin.close();
+	tryRemoveFile(tempfile);
 	return 0;
+}
+
+void WSync::tryRemoveFile(boost::filesystem::path filename)
+{
+	try
+	{
+		remove(filename);
+	} catch(...)
+	{
+	}
 }
 int WSync::loadHashMapFromFile(boost::filesystem::path &filename, std::map<string, Hashentry> &hashMap, int &mode)
 {
@@ -953,7 +778,7 @@ int WSync::downloadFile(boost::filesystem::path localFile, string server, string
 		{
 			printf("\nError: file size is different: should be %d, is %d. removing file.\n", reported_filesize, fileSize);
 			printf("download URL: http://%s%s\n", server.c_str(), path.c_str());
-			remove(localFile);
+			tryRemoveFile(localFile);
 		}
 		
 		downloadSize += fileSize;
