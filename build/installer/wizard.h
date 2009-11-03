@@ -758,12 +758,12 @@ public:
 		dfont.SetPointSize(dfont.GetPointSize()+4);
 		tst->SetFont(dfont);
 		tst->Wrap(TXTWRAP);
-		mainSizer->Add(tst=new wxStaticText(this, wxID_ANY, _T("Thank you for downloading Rigs of Rods.\nThe Start menu and Desktop shortcuts were created.")), 0, wxALL, 5);
+		mainSizer->Add(tst=new wxStaticText(this, wxID_ANY, _T("Thank you for downloading Rigs of Rods.\nWhat do you want to do now?")), 0, wxALL, 5);
 		tst->Wrap(TXTWRAP);
 
 		bool firstInstall = cm->isFirstInstall();
 		
-		chk_runtime = new wxCheckBox(this, wxID_ANY, _T("Install required runtime now"));
+		chk_runtime = new wxCheckBox(this, wxID_ANY, _T("Install required runtime libraries now"));
 		mainSizer->Add(chk_runtime, 0, wxALL|wxALIGN_LEFT, 5);
 		chk_runtime->SetValue(firstInstall);
 		if(firstInstall) chk_runtime->Disable();
