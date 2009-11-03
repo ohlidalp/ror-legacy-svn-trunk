@@ -351,6 +351,8 @@ public:
 		tst->Wrap(TXTWRAP);
 		mainSizer->Add(tst=new wxStaticText(this, wxID_ANY, _T("Download from:")), 0, wxALL, 5);
 		tst->Wrap(TXTWRAP);
+		
+		/*
 		wxString choices[4];
 		choices[0]=_T("Automatic mirrors selection");
 		choices[1]=_T("European Mirrors");
@@ -359,6 +361,8 @@ public:
 
 		mainSizer->Add(src=new wxChoice(this, wxID_ANY, wxDefaultPosition, wxDefaultSize, 4, choices), 0, wxBOTTOM|wxLEFT|wxRIGHT, 5);
 		src->SetSelection(0);
+		*/
+
 		mainSizer->Add(tst=new wxStaticText(this, wxID_ANY, _T("\nChoose the installation directory:")), 0, wxTOP|wxLEFT|wxRIGHT, 5);
 		tst->Wrap(TXTWRAP);
 		

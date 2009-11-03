@@ -201,7 +201,7 @@ void Collisions::parseGroundConfig(Ogre::ConfigFile *cfg, String groundModel)
 			kname = i->first;
 			kvalue = i->second;
 			// we got all the data available now, processing now
-			if(secName == "general")
+			if(secName == "general" || secName == "config")
 			{
 				// set some class properties accoring to the information in this section
 				if(kname == "version") this->collisionVersion = StringConverter::parseInt(kvalue);
