@@ -26,6 +26,7 @@ IF(wxWidgets_FOUND)
   IF(WIN32)
     include_directories(${wxWidgets_INCLUDE_DIRS}/msvc)
     add_definitions("-D__WIN32__")
+    link_directories ("C:\\Program Files\\boost\\boost_1_39\\lib")
   ENDIF(WIN32)
   IF(UNIX)
     FIND_PACKAGE(PkgConfig REQUIRED)
@@ -43,15 +44,15 @@ IF(wxWidgets_FOUND)
   add_definitions("-DNDEBUG")
 
   #add_definitions("${CMAKE_WXWINDOWS_CXX_FLAGS}")
-
-
+       
   add_executable(installer ${source_files} ${include_files} ${resource_files})
-  target_link_libraries(installer libwsync ${Boost_LIBRARIES})
-  TARGET_LINK_LIBRARIES(installer ${wxWidgets_LIBRARIES} )
-
+  # we dont need to add ${Boost_LIBRARIES} here, could be wrong as well ...
+  target_link_libraries(installer libwsync-static)
+  TARGET_LINK_LIBRARIES(installer ${wxWidgets_LIBRARIES})
+  
   IF(WIN32)
-    SET_TARGET_PROPERTIES(installer PROPERTIES COMPILE_FLAGS "/bigobj")
-    SET_TARGET_PROPERTIES(installer PROPERTIES LINK_FLAGS    "/MANIFESTUAC:\"level='requireAdministrator' uiAccess='false'\" /SUBSYSTEM:WINDOWS")
+    SET_TARGET_PROPERTIES(installer PROPERTIES COMPILE_FLAGS "/bigobj /MT")
+    SET_TARGET_PROPERTIES(installer PROPERTIES LINK_FLAGS    "/MANIFESTUAC:\"level='requireAdministrator' uiAccess='false'\" /SUBSYSTEM:WINDOWS /NODEFAULTLIB:\"msvcprt.lib\" /NODEFAULTLIB:\"MSVCRT.lib\"")
   ENDIF(WIN32)
 
   install(TARGETS installer
