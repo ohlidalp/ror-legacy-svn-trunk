@@ -29,7 +29,6 @@ WsyncThread::ExitCode WsyncThread::Entry()
 	// update path target
 	updateCallback(MSE_UPDATE_PATH, ipath.string());
 
-	findMirror();
 	getSyncData();
 	sync();
 	recordDataUsage();
@@ -193,6 +192,16 @@ int WsyncThread::sync()
 	// XXX DEBUG
 	//fclose(f);
 
+	if(predDownloadSize > 0)
+	{
+		bool measureMirrorSpeed = (predDownloadSize > 10485760); // 10 MB
+		if(findMirror(measureMirrorSpeed) && measureMirrorSpeed)
+		{
+			// try to find a mirror without measuring the speed
+			findMirror();
+		}
+	}
+
 	// security check in order not to delete the entire harddrive
 	if(deletedFiles.size() > 1000)
 	{
@@ -353,13 +362,13 @@ int WsyncThread::downloadFile(WSync *w, boost::filesystem::path localFile, strin
 	if(!dlStarted)
 	{
 		dlStarted=1;
-		dlStartTime = std::time(0);
+		dlStartTime = clock();
 	}
 	// remove '//' and '///' from url
 	WSync::cleanURL(path);
 	try
 	{
-		time_t time = std::time(0);
+		clock_t time = clock();
 
 		std::ofstream myfile;
 		WSync::ensurePathExist(localFile);
@@ -493,13 +502,13 @@ int WsyncThread::downloadFile(WSync *w, boost::filesystem::path localFile, strin
 		//boost::uintmax_t datacounter_before = w->getDownloadSize();
 		while (boost::asio::read(socket, data, boost::asio::transfer_at_least(1), error))
 		{
-			double tdiff = difftime (std::time(0), time);
+			double tdiff = (double(clock())-double(time))/CLOCKS_PER_SEC;
 			if(tdiff >= 1)
 			{
 				w->increaseDownloadSize(dataspeed);
 				downloadProgress(w);
 				dataspeed=0;
-				time = std::time(0);
+				time = clock();
 			}
 
 			dataspeed += data.size();
@@ -561,7 +570,7 @@ void WsyncThread::downloadProgress(WSync *w)
 	// this function will format and send some info to the gui
 	unsigned int size_left = predDownloadSize - w->getDownloadSize();
 	unsigned int size_done = w->getDownloadSize();
-	double tdiff = difftime (std::time(0), dlStartTime);
+	double tdiff = (double(clock())-double(dlStartTime))/CLOCKS_PER_SEC;
 	float speed = (float)(size_done / tdiff);
 	float eta = size_left / speed;
 	float progress = ((float)w->getDownloadSize()) /((float)predDownloadSize);
@@ -620,20 +629,21 @@ void WsyncThread::recordDataUsage()
 	}
 }
 
-void WsyncThread::findMirror(bool probeForBest)
+int WsyncThread::findMirror(bool probeForBest)
 {
+	std::vector< std::vector< std::string > > list;		
 	updateCallback(MSE_STARTING, "finding suitable mirror ...");
 	if(!probeForBest)
 	{
 		// just collect a best fitting server by geolocating this client's IP
-		std::vector< std::vector< std::string > > list;		
-		if(!w->downloadConfigFile(API_SERVER, API_MIRROR, list))
+		if(!w->downloadConfigFile(API_SERVER, API_MIRROR, &list))
 		{
 			if(list.size()>0 && list[0].size() > 2)
 			{
 				if(list[0][0] == "failed")
 				{
 					//printf("failed to get mirror, using main server\n");
+					return -1;
 				} else
 				{
 					server = list[0][0];
@@ -641,13 +651,43 @@ void WsyncThread::findMirror(bool probeForBest)
 				}
 			}
 		}
+		return 0;
 	} else
 	{
 		// probe servers :D
+		// get some random servers and test their speeds
+		if(!w->downloadConfigFile(API_SERVER, API_MIRROR_NOGEO, &list))
+		{
+			if(list.size() > 0)
+			{
+				if(list[0][0] == "failed")
+					return -1;
+
+				double bestTime = 99999;
+				int bestServer = -1;
+				for(int i=0; i<(int)list.size(); i++)
+				{
+					double tdiff = w->measureDownloadSpeed(list[i][0], list[i][1]+"/speedtest.bin");
+					if(tdiff >=0 && tdiff < bestTime)
+					{
+						bestTime = tdiff;
+						bestServer = i;
+					}
+
+				}
+				if(bestServer != -1)
+				{
+					server = list[bestServer][0];
+					serverdir = list[bestServer][1];
+					updateCallback(MSE_STARTING, "found fastest server: " + server);
+				} else
+					return -1;
+			}
+		}
 
 	}
 
 	string stxt = server + serverdir;
 	updateCallback(MSE_UPDATE_SERVER, stxt);
-
+	return 0;
 }

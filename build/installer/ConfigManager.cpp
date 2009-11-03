@@ -59,6 +59,7 @@ inline std::string conv(const wxString& s)
 ConfigManager::ConfigManager()
 {
 	streams.clear();
+	dlerror=0;
 }
 
 int ConfigManager::getOnlineStreams()
@@ -100,6 +101,12 @@ int ConfigManager::getOnlineStreams()
 			return 1;
 	}
 	
+	if(!streams.size() && dlerror < 3)
+	{
+		// try to download three times...
+		dlerror++;
+		return getOnlineStreams();
+	}
 
 	
 	//add default streams
@@ -107,6 +114,8 @@ int ConfigManager::getOnlineStreams()
 	//appendStream(_T("Standard media pack"), _T("The best terrains and vehicles, highly recommended!"), wxBitmap(extrapack_xpm), true, false);
 	//for (int i=0; i<5; i++) 
 	//	appendStream(_T("Test pack"), _T("This is a test"), wxBitmap(unknown_xpm), false, false);
+
+	loadStreamSubscription();
 
 	return 0;
 
@@ -148,6 +157,44 @@ int ConfigManager::uninstall()
 	return wxString();
 #endif //WIN32
 	return 0;
+}
+
+void ConfigManager::saveStreamSubscription()
+{
+	if(!streams.size()) return;
+	for(std::vector < stream_desc_t >::iterator it=streams.begin(); it!=streams.end(); it++)
+	{
+#ifdef WIN32
+		wxRegKey *pRegKey = new wxRegKey(wxT("HKEY_LOCAL_MACHINE\\Software\\RigsOfRods\\streams"));
+		if(!pRegKey->Exists())
+			pRegKey->Create();
+		pRegKey->SetValue(it->path, it->checked?wxT("yes"):wxT("no"));
+#else
+	// TODO: implement
+#endif //WIN32
+	}
+}
+
+void ConfigManager::loadStreamSubscription()
+{
+	if(!streams.size()) return;
+	for(std::vector < stream_desc_t >::iterator it=streams.begin(); it!=streams.end(); it++)
+	{
+#ifdef WIN32
+	wxRegKey *pRegKey = new wxRegKey(wxT("HKEY_LOCAL_MACHINE\\Software\\RigsOfRods\\streams"));
+	if(!pRegKey->Exists())
+		return;
+	
+	wxString enabled;
+	pRegKey->QueryValue(it->path, enabled);
+	if(enabled == wxT("yes"))
+		it->checked = true;
+	else if(enabled == wxT("no"))
+		it->checked = false;
+#else
+	// TODO: implement
+#endif //WIN32
+	}
 }
 
 void ConfigManager::setInstallationPath()

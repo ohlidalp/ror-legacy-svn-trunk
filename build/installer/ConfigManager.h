@@ -63,18 +63,23 @@ public:
 	wxString getInstallationPath();
 	void setAction(int ac);
 	int getAction();
-	int getOnlineStreams();
-	std::vector < stream_desc_t > *getStreamset();
-	void setStreamSelection(stream_desc_t* desc, bool selection);
 
 	void setInstallPath(wxString pth);
 	wxString getInstallPath();
 
 	int uninstall();
 
+	// stream things
+	std::vector < stream_desc_t > *getStreamset();
+	int getOnlineStreams();
+	void setStreamSelection(stream_desc_t* desc, bool selection);
+	void loadStreamSubscription();
+	void saveStreamSubscription();
+
 private:
 	wxString installPath;
 	int installeraction;
+	int dlerror;
 	std::vector < stream_desc_t > streams;
 	void clearStreamset();
 	void setInstallationPath();

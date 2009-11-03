@@ -23,6 +23,7 @@
 
 // functions
 #define API_MIRROR     "/getwsyncmirror/"
+#define API_MIRROR_NOGEO     "/getwsyncmirror/?ignoregeo"
 #define API_RECORDTRAFFIC "/reporttraffic/?mirror=%s&bytes=%d"
 #define API_REPOSEARCH "/reposearch/"
 #define REPO_DOWNLOAD  "/files/mirror/geoselect/"
@@ -77,7 +78,9 @@ public:
 	
 	int responseLessRequest(std::string server, std::string uri);
 	
-	int downloadConfigFile(std::string server, std::string remoteDir, std::vector< std::vector< std::string > > &list);
+	double measureDownloadSpeed(std::string server, std::string remoteDir);
+
+	int downloadConfigFile(std::string server, std::string remoteDir, std::vector< std::vector< std::string > > *list);
 	int downloadAdvancedConfigFile(std::string server, std::string path, std::vector< std::map< std::string, std::string > > &list);
 
 	int getStatus(int &percent, std::string &message);
@@ -107,6 +110,7 @@ protected:
 	// members
 	char statusText[1025];
 	int statusPercent;
+	int dlerror;
 	boost::uintmax_t downloadSize;
 };
 #endif

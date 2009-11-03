@@ -21,6 +21,7 @@ WSync::WSync() : downloadSize(0)
 {
 	memset(statusText, 0, 1024);
 	statusPercent=0;
+	dlerror=0;
 }
 
 WSync::~WSync()
@@ -35,7 +36,7 @@ int WSync::downloadMod(std::string modname, std::string &modfilename, boost::fil
 	if(!util) sprintf(statusText, "searching mod on repository...\n");
 	string filename="";
 	std::vector< std::vector< std::string > > list;		
-	if(!downloadConfigFile(API_SERVER, API_REPOSEARCH + string("?id=") + modname, list))
+	if(!downloadConfigFile(API_SERVER, API_REPOSEARCH + string("?id=") + modname, &list))
 	{
 		if(list.size()>0 && list[0].size() > 0)
 		{
@@ -240,7 +241,7 @@ int WSync::sync(boost::filesystem::path localDir, string server, string remoteDi
 			{
 				printf("searching for suitable mirror...\n");
 				std::vector< std::vector< std::string > > list;		
-				if(!downloadConfigFile(API_SERVER, API_MIRROR, list))
+				if(!downloadConfigFile(API_SERVER, API_MIRROR, &list))
 				{
 					if(list.size()>0 && list[0].size() > 2)
 					{
@@ -489,8 +490,29 @@ int WSync::saveHashMapToFile(boost::filesystem::path &filename, std::map<string,
 	return 0;
 }
 
-int WSync::downloadConfigFile(std::string server, std::string url, std::vector< std::vector< std::string > > &list)
+double WSync::measureDownloadSpeed(std::string server, std::string url)
 {
+	path tempfile;
+	if(getTempFilename(tempfile))
+	{
+		printf("error creating tempfile!\n");
+		return -1;
+	}
+
+	clock_t start = clock();
+	if(downloadFile(tempfile, server, url))
+	{
+		return -1;
+	}
+	clock_t finish = clock();
+	double tdiff = (double(finish)-double(start))/CLOCKS_PER_SEC;
+	tryRemoveFile(tempfile);
+	return tdiff;
+}
+
+int WSync::downloadConfigFile(std::string server, std::string url, std::vector< std::vector< std::string > > *list)
+{
+	if(!list) return -1;
 	path tempfile;
 	if(getTempFilename(tempfile))
 	{
@@ -513,7 +535,7 @@ int WSync::downloadConfigFile(std::string server, std::string url, std::vector< 
 	while(getline(fin, line))
 	{
 		std::vector<std::string> args = tokenize_str(line, " ");
-		list.push_back(args);
+		list->push_back(args);
 	}
 	fin.close();
 	tryRemoveFile(tempfile);
@@ -540,11 +562,17 @@ int WSync::downloadAdvancedConfigFile(std::string server, std::string url, std::
 		printf("unable to open file for reading: %s\n", tempfile.string().c_str());
 		return -1;
 	}
+	bool complete = false;
 	string line = string();
 	std::map < std::string, std::string > obj;
 	while(getline(fin, line))
 	{
 		if(!line.size()) continue;
+		if(line == "#end")
+		{
+			complete = true;
+			continue;
+		}
 		if(line[0] == '#') continue;
 		if(line[0] == '=')
 		{
@@ -564,6 +592,20 @@ int WSync::downloadAdvancedConfigFile(std::string server, std::string url, std::
 	}
 	fin.close();
 	tryRemoveFile(tempfile);
+
+	if(!complete)
+	{
+		dlerror++;
+		if(dlerror < 3)
+		{
+			// three retries
+			return downloadAdvancedConfigFile(server, url, list);
+		} else
+		{
+			printf("error downloading file from %s, %s\n", server.c_str(), url.c_str());
+			return -1;
+		}
+	}
 	return 0;
 }
 
@@ -610,7 +652,7 @@ int WSync::loadHashMapFromFile(boost::filesystem::path &filename, std::map<strin
 int WSync::responseLessRequest(std::string server, std::string uri)
 {
 	std::vector< std::vector< std::string > > list;
-	return downloadConfigFile(server, uri, list);
+	return downloadConfigFile(server, uri, &list);
 }
 
 int WSync::downloadFile(boost::filesystem::path localFile, string server, string path, bool displayProgress, bool debug)
@@ -619,7 +661,7 @@ int WSync::downloadFile(boost::filesystem::path localFile, string server, string
 	cleanURL(path);
 	try
 	{
-		time_t time = std::time(0);
+		clock_t time = clock();
 
 		std::ofstream myfile;
 		ensurePathExist(localFile);
@@ -752,7 +794,7 @@ int WSync::downloadFile(boost::filesystem::path localFile, string server, string
 		boost::uintmax_t filesize_left=reported_filesize;
 		while (boost::asio::read(socket, data, boost::asio::transfer_at_least(1), error))
 		{
-			double tdiff = difftime (std::time(0), time);
+			double tdiff = (double(clock())-double(time))/CLOCKS_PER_SEC;
 			if(displayProgress && tdiff >= 1)
 			{
 				float percent = datacounter / (float)reported_filesize;
@@ -760,7 +802,7 @@ int WSync::downloadFile(boost::filesystem::path localFile, string server, string
 				float eta = filesize_left / dspeed;
 				progressOutput(percent, dspeed, eta);
 				dataspeed=0;
-				time = std::time(0);
+				time = clock();
 			}
 
 			if (displayProgress)
@@ -779,6 +821,9 @@ int WSync::downloadFile(boost::filesystem::path localFile, string server, string
 			printf("\nError: file size is different: should be %d, is %d. removing file.\n", reported_filesize, fileSize);
 			printf("download URL: http://%s%s\n", server.c_str(), path.c_str());
 			tryRemoveFile(localFile);
+			downloadSize += fileSize;
+			socket.close();
+			return 2;
 		}
 		
 		downloadSize += fileSize;

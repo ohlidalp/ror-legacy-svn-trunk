@@ -37,8 +37,11 @@ along with Rigs of Rods.  If not, see <http://www.gnu.org/licenses/>.
 #endif
 
 #include "ConfigManager.h"
+#include "utils.h"
 
 #define STREL_HEIGHT 60
+
+
 
 class wxStrel : public wxPanel
 {
@@ -57,7 +60,9 @@ public:
 		chk->SetValue(desc->checked);
 		chk->Enable(!desc->disabled);
 		
-		mainSizer->Add(new wxStaticBitmap(this, wxID_ANY, desc->icon), 0, wxALL, 1);
+
+		bmp = new myClickBitmap(this, this, wxID_ANY, desc->icon);
+		mainSizer->Add((wxWindow*)bmp, 0, wxALL, 1);
         wxBoxSizer *textSizer = new wxBoxSizer(wxVERTICAL);
 		wxStaticText *tst;
         
@@ -83,9 +88,24 @@ public:
 	stream_desc_t *getDesc() {return desc;}
 	bool getSelection() {return chk->GetValue();}
 
+	void toggle()
+	{
+		if(chk->IsChecked())
+			chk->SetValue(false);
+		else
+			chk->SetValue(true);
+	}
+	
+	void clickEvent(wxMouseEvent &event)
+	{
+		toggle();
+	}
+protected:
+	DECLARE_EVENT_TABLE()
 private:
 	wxCheckBox *chk;
 	stream_desc_t *desc;
+	myClickBitmap *bmp;
 
 	// RTTI things
 	DECLARE_ABSTRACT_CLASS(wxStrel)

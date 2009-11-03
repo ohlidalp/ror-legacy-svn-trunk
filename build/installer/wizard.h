@@ -462,22 +462,22 @@ public:
 		wxBoxSizer *mainSizer = new wxBoxSizer(wxVERTICAL);
 		wxStaticText *tst;
 		m_bitmap = wxBitmap(streams_xpm);
-		mainSizer->Add(tst=new wxStaticText(this, wxID_ANY, _T("Streams selection\n")), 0, wxALL, 5);
+		mainSizer->Add(tst=new wxStaticText(this, wxID_ANY, _T("Streams selection\n")), 0, wxALL, 0);
 		wxFont dfont=tst->GetFont();
 		dfont.SetWeight(wxFONTWEIGHT_BOLD);
 		dfont.SetPointSize(dfont.GetPointSize()+4);
 		tst->SetFont(dfont);
 		tst->Wrap(TXTWRAP);
-		mainSizer->Add(tst=new wxStaticText(this, wxID_ANY, _T("Choose which feature packs you want to download:\n")), 0, wxALL, 5);
+		mainSizer->Add(tst=new wxStaticText(this, wxID_ANY, _T("Choose which feature packs you want to download:\n")), 0, wxALL, 0);
 		tst->Wrap(TXTWRAP);
 
-		mainSizer->Add(scrw=new wxScrolledWindow(this, wxID_ANY, wxDefaultPosition, wxDefaultSize, wxVSCROLL), 1, wxGROW, 5);
+		mainSizer->Add(scrw=new wxScrolledWindow(this, wxID_ANY, wxDefaultPosition, wxDefaultSize, wxVSCROLL), 1, wxGROW, 0);
 		scrwsz=new wxBoxSizer(wxVERTICAL);
 		scrw->SetSizer(scrwsz);
 		//scrw->SetBackgroundColour(*wxWHITE);
 		scrw->SetScrollbars(0, STREL_HEIGHT+3, 100, 30);
 
-		mainSizer->Add(tst=new wxStaticText(this, wxID_ANY, _T("Click Next to begin the download.")), 0, wxALL, 5);
+		mainSizer->Add(tst=new wxStaticText(this, wxID_ANY, _T("Click Next to begin the download.")), 0, wxALL, 0);
 		tst->Wrap(TXTWRAP);
 
 		SetSizer(mainSizer);
@@ -521,6 +521,8 @@ public:
 				m_cm->setStreamSelection(wst->getDesc(), wst->getSelection());
 				node = node->GetNext();
 			}
+			// save the selection in the registry for the next time.
+			m_cm->saveStreamSubscription();
 		}
 
 		return true;

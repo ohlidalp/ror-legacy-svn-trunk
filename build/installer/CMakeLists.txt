@@ -25,7 +25,7 @@ IF(wxWidgets_FOUND)
 
   IF(WIN32)
     include_directories(${wxWidgets_INCLUDE_DIRS}/msvc)
-    add_definitions("-D__WIN32__")
+    add_definitions("-D__WIN32__ -D_CRT_SECURE_NO_WARNINGS")
     link_directories ("C:\\Program Files\\boost\\boost_1_39\\lib")
   ENDIF(WIN32)
   IF(UNIX)
