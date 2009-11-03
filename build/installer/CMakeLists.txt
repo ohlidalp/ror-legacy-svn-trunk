@@ -1,8 +1,8 @@
 project(RoR_Installer)
 
 set(resource_files download.xpm action.xpm dest.xpm extrapack.xpm finished.xpm licence.xpm mainpack.xpm streams.xpm unknown.xpm welcome.xpm icon.rc)
-set(source_files ConfigManager.cpp wizard.cpp wthread.cpp cevent.cpp symlink.cpp wxStrel.cpp)
-set(include_files ConfigManager.h wizard.h wxStrel.h wthread.h cevent.h symlink.h)
+set(source_files ConfigManager.cpp wizard.cpp wthread.cpp cevent.cpp symlink.cpp wxStrel.cpp utils.cpp)
+set(include_files ConfigManager.h wizard.h wxStrel.h wthread.h cevent.h symlink.h utils.h)
 
 SET(wxWidgets_USE_UNICODE ON)
 #SET(wxWidgets_USE_STATIC ON)

@@ -25,12 +25,29 @@ along with Rigs of Rods.  If not, see <http://www.gnu.org/licenses/>.
 
 class wxStrel;
 
-class myClickBitmap : wxStaticBitmap
+class myClickBitmap : public wxStaticBitmap
 {
 public:
 	myClickBitmap(wxStrel *_s, wxWindow *parent,
                    wxWindowID id,
                    const wxGDIImage& label,
+                   const wxPoint& pos = wxDefaultPosition,
+                   const wxSize& size = wxDefaultSize,
+                   long style = 0,
+				   const wxString& name = wxStaticBitmapNameStr);
+
+    void click(wxMouseEvent &evt);
+    DECLARE_EVENT_TABLE();
+protected:
+	wxStrel *s;
+};
+
+class myClickText : public wxStaticText
+{
+public:
+	myClickText(wxStrel *_s, wxWindow *parent,
+                   wxWindowID id,
+                   const wxString& label,
                    const wxPoint& pos = wxDefaultPosition,
                    const wxSize& size = wxDefaultSize,
                    long style = 0,
