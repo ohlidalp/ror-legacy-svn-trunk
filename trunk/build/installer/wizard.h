@@ -83,6 +83,7 @@ along with Rigs of Rods.  If not, see <http://www.gnu.org/licenses/>.
 #if PLATFORM == PLATFORM_WINDOWS
 #include <shlobj.h> // for the special path functions
 #include "symlink.h"
+#include <shellapi.h> // for executing the binaries
 #endif//win
 
 
@@ -497,6 +498,12 @@ public:
 		scrwsz->Clear(true);
 		//add the streams
 		std::vector < stream_desc_t > *streams = m_cm->getStreamset();
+		if(!streams->size())
+		{
+			wxMessageDialog *dlg = new wxMessageDialog(this, wxT("Error while downloading the streams index. Please retry later."), wxT("Error"),wxOK|wxICON_ERROR);
+			dlg->ShowModal();
+			exit(1);
+		}
 		for(std::vector < stream_desc_t >::iterator it=streams->begin(); it!=streams->end(); it++)
 		{
 			wxStrel *wst=new wxStrel(scrw, &(*it));
@@ -736,9 +743,10 @@ private:
 class LastPage : public wxWizardPageSimple, public EnterLeavePage
 {
 protected:
-	ConfigManager* m_cm;
+	ConfigManager* cm;
+	wxCheckBox *chk_runtime, *chk_configurator, *chk_desktop, *chk_startmenu, *chk_viewmanual;
 public:
-	LastPage(wxWizard *parent, ConfigManager* cm) : wxWizardPageSimple(parent), m_cm(cm)
+	LastPage(wxWizard *parent, ConfigManager* _cm) : wxWizardPageSimple(parent), cm(_cm)
 	{
 		m_bitmap = wxBitmap(finished_xpm);
 		wxBoxSizer *mainSizer = new wxBoxSizer(wxVERTICAL);
@@ -753,6 +761,35 @@ public:
 		mainSizer->Add(tst=new wxStaticText(this, wxID_ANY, _T("Thank you for downloading Rigs of Rods.\nThe Start menu and Desktop shortcuts were created.")), 0, wxALL, 5);
 		tst->Wrap(TXTWRAP);
 
+		bool firstInstall = cm->isFirstInstall();
+		
+		chk_runtime = new wxCheckBox(this, wxID_ANY, _T("Install required runtime now"));
+		mainSizer->Add(chk_runtime, 0, wxALL|wxALIGN_LEFT, 5);
+		chk_runtime->SetValue(firstInstall);
+		if(firstInstall) chk_runtime->Disable();
+		
+		chk_desktop = new wxCheckBox(this, wxID_ANY, _T("Create Desktop shortcuts"));
+		mainSizer->Add(chk_desktop, 0, wxALL|wxALIGN_LEFT, 5);
+		chk_desktop->SetValue(true);
+		if(cm->getPersistentConfig(wxT("installer.create_desktop_shortcuts")) == wxT("no"))
+			chk_desktop->SetValue(false);
+
+		chk_startmenu = new wxCheckBox(this, wxID_ANY, _T("Create Start menu shortcuts"));
+		mainSizer->Add(chk_startmenu, 0, wxALL|wxALIGN_LEFT, 5);
+		chk_startmenu->SetValue(true);
+		if(cm->getPersistentConfig(wxT("installer.create_start_menu_shortcuts")) == wxT("no"))
+			chk_startmenu->SetValue(false);
+
+		chk_viewmanual = new wxCheckBox(this, wxID_ANY, _T("View manual"));
+		mainSizer->Add(chk_viewmanual, 0, wxALL|wxALIGN_LEFT, 5);
+		chk_viewmanual->SetValue(firstInstall);
+
+		chk_configurator = new wxCheckBox(this, wxID_ANY, _T("Run the Configurator"));
+		mainSizer->Add(chk_configurator, 0, wxALL|wxALIGN_LEFT, 5);
+		chk_configurator->SetValue(true);
+		if(cm->getPersistentConfig(wxT("installer.run_configurator")) == wxT("no"))
+			chk_configurator->SetValue(false);
+
 		SetSizer(mainSizer);
 		mainSizer->Fit(this);
 
@@ -760,51 +797,31 @@ public:
 	
 	bool OnEnter(bool forward)
 	{
-		createProgramLinks();
 		return true;
 	}
 
-	/*
-	void createShortcut(const char *ExePath, const char *LinkFilename, const char *WorkingDirectory, const char *Description, int nFolder)
+	bool OnLeave(bool forward)
 	{
-		// Must have called CoInitalize before this function is called!
+		if(!forward) return false;
+		// do last things
+		cm->setPersistentConfig(wxT("installer.create_desktop_shortcuts"), chk_desktop->IsChecked()?wxT("yes"):wxT("no"));
+		cm->setPersistentConfig(wxT("installer.create_start_menu_shortcuts"), chk_startmenu->IsChecked()?wxT("yes"):wxT("no"));
+		cm->setPersistentConfig(wxT("installer.run_configurator"), chk_configurator->IsChecked()?wxT("yes"):wxT("no"));
 
-		IShellLink* psl; 
-		const char *PathLink = GetSpecialFolderLocation(nFolder) + "\\" + LinkFilename;
+		if(chk_desktop->IsChecked() || chk_startmenu->IsChecked())
+			createProgramLinks();
+
+		if(chk_runtime->IsChecked())
+			installRuntime();
 		
-		// Get a pointer to the IShellLink interface. 
-		HRESULT hres = CoCreateInstance(CLSID_ShellLink, NULL, CLSCTX_INPROC_SERVER, 
-										IID_IShellLink, (PVOID *) &psl); 
+		if(chk_configurator->IsChecked())
+			startConfigurator();
+
+		if(chk_viewmanual->IsChecked())
+			viewManual();
 		
-		if (SUCCEEDED(hres)) 
-		{ 
-			IPersistFile* ppf; 
-			
-			// Set the path to the shortcut target and add the 
-			// description. 
-			psl->SetPath((LPCSTR) ExePath); 
-			psl->SetWorkingDirectory((LPCSTR) WorkingDirectory);
-			psl->SetDescription((LPCSTR) Description); 
-			
-			// Query IShellLink for the IPersistFile interface for saving the 
-			// shortcut in persistent storage. 
-			hres = psl->QueryInterface(IID_IPersistFile, (PVOID *) &ppf); 
-			
-			if (SUCCEEDED(hres)) 
-			{ 
-				WORD wsz[MAX_PATH]; 
-				
-				// Ensure that the string is ANSI. 
-				MultiByteToWideChar(CP_ACP, 0, (LPCSTR) PathLink, -1, wsz, MAX_PATH); 
-				
-				// Save the link by calling IPersistFile::Save. 
-				hres = ppf->Save(wsz, TRUE); 
-				ppf->Release(); 
-			} 
-			psl->Release(); 
-		} 
+		return true;
 	}
-	*/
 
 	// small wrapper that converts wxString to std::string and remvoes the file if already existing
 	int createWindowsShortcut(wxString linkTarget, wxString workingDirectory, wxString linkFile, wxString linkDescription)
@@ -812,6 +829,54 @@ public:
 		if(wxFileExists(linkFile)) wxRemoveFile(linkFile);
 		if(!wxFileExists(linkTarget)) return 1;
 		return createLink(conv(linkTarget), conv(workingDirectory), conv(linkFile), conv(linkDescription));
+	}
+
+	void installRuntime()
+	{
+		executeBinary(wxT("vcredist_x86.exe"));
+		executeBinary(wxT("dxwebsetup.exe"));
+	}
+
+	void startConfigurator()
+	{
+		executeBinary(wxT("rorconfig.exe"));
+	}
+
+	void viewManual()
+	{
+		executeBinary(wxT("Things_you_can_do_in_Rigs_of_Rods.pdf"), wxT("open"));
+		executeBinary(wxT("keysheet.pdf"), wxT("open"));
+	}
+
+	void executeBinary(wxString filename, wxString action = wxT("runas"))
+	{
+#if PLATFORM == PLATFORM_WINDOWS
+		char path[2048]= "";
+		strncpy(path, conv(cm->getInstallPath()).c_str(), 2048);
+
+		int buffSize = (int)strlen(path) + 1;
+		LPWSTR cwpath = new wchar_t[buffSize];
+		MultiByteToWideChar(CP_ACP, 0, path, buffSize, cwpath, buffSize);
+
+		strcat(path, "\\");
+		strcat(path, conv(filename).c_str());
+		buffSize = (int)strlen(path) + 1;
+		LPWSTR wpath = new wchar_t[buffSize];
+		MultiByteToWideChar(CP_ACP, 0, path, buffSize, wpath, buffSize);
+
+
+		// now construct struct that has the required starting info
+		SHELLEXECUTEINFO sei = { sizeof(sei) };
+		sei.cbSize = sizeof(SHELLEXECUTEINFOA);
+		sei.fMask = 0;
+		sei.hwnd = NULL;
+		sei.lpVerb = action;
+		sei.lpFile = wpath;
+		sei.lpParameters = wxT("");
+		sei.lpDirectory = cwpath;
+		sei.nShow = SW_NORMAL;
+		ShellExecuteEx(&sei);
+#endif //PLATFORM
 	}
 
 	void createProgramLinks()
@@ -831,7 +896,7 @@ public:
 		if(!SHGetSpecialFolderPath(0, wxStringBuffer(desktopDir, MAX_PATH), CSIDL_DESKTOP, FALSE))
 			return;
 
-		workingDirectory = m_cm->getInstallPath();
+		workingDirectory = cm->getInstallPath();
 		if(workingDirectory.size() > 3 && workingDirectory.substr(workingDirectory.size()-1,1) != wxT("\\"))
 		{
 			workingDirectory += wxT("\\");
@@ -841,13 +906,18 @@ public:
 		if (!wxDir::Exists(startmenuDir)) wxFileName::Mkdir(startmenuDir);
 
 		// the actual linking
-		createWindowsShortcut(workingDirectory + wxT("rorconfig.exe"), workingDirectory, desktopDir + wxT("\\Rigs of Rods.lnk"), wxT("start Rigs of Rods"));
-		createWindowsShortcut(workingDirectory + wxT("RoR.exe"), workingDirectory, startmenuDir + wxT("\\Rigs of Rods.lnk"), wxT("start Rigs of Rods"));
-		createWindowsShortcut(workingDirectory + wxT("rorconfig.exe"), workingDirectory, startmenuDir + wxT("\\Configurator.lnk"), wxT("start Rigs of Rods Configuration Program (required upon first start)"));
-		createWindowsShortcut(workingDirectory + wxT("servergui.exe"), workingDirectory, startmenuDir + wxT("\\Multiplayer Server.lnk"), wxT("start Rigs of Rods multiplayer server"));
-		createWindowsShortcut(workingDirectory + wxT("Things_you_can_do_in_Rigs_of_Rods.pdf"), workingDirectory, startmenuDir + wxT("\\Manual.lnk"), wxT("open the RoR Manual"));
-		createWindowsShortcut(workingDirectory + wxT("keysheet.pdf"), workingDirectory, startmenuDir + wxT("\\Keysheet.lnk"), wxT("open the RoR Key Overview"));
-		createWindowsShortcut(workingDirectory + wxT("installer.exe"), workingDirectory, startmenuDir + wxT("\\Installer (update or uninstall).lnk"), wxT("open the Installer with which you can update or uninstall RoR."));
+		if(chk_desktop->IsChecked())
+			createWindowsShortcut(workingDirectory + wxT("rorconfig.exe"), workingDirectory, desktopDir + wxT("\\Rigs of Rods.lnk"), wxT("start Rigs of Rods"));
+
+		if(chk_startmenu->IsChecked())
+		{
+			createWindowsShortcut(workingDirectory + wxT("RoR.exe"), workingDirectory, startmenuDir + wxT("\\Rigs of Rods.lnk"), wxT("start Rigs of Rods"));
+			createWindowsShortcut(workingDirectory + wxT("rorconfig.exe"), workingDirectory, startmenuDir + wxT("\\Configurator.lnk"), wxT("start Rigs of Rods Configuration Program (required upon first start)"));
+			createWindowsShortcut(workingDirectory + wxT("servergui.exe"), workingDirectory, startmenuDir + wxT("\\Multiplayer Server.lnk"), wxT("start Rigs of Rods multiplayer server"));
+			createWindowsShortcut(workingDirectory + wxT("Things_you_can_do_in_Rigs_of_Rods.pdf"), workingDirectory, startmenuDir + wxT("\\Manual.lnk"), wxT("open the RoR Manual"));
+			createWindowsShortcut(workingDirectory + wxT("keysheet.pdf"), workingDirectory, startmenuDir + wxT("\\Keysheet.lnk"), wxT("open the RoR Key Overview"));
+			createWindowsShortcut(workingDirectory + wxT("installer.exe"), workingDirectory, startmenuDir + wxT("\\Installer (update or uninstall).lnk"), wxT("open the Installer with which you can update or uninstall RoR."));
+		}
 
 #endif //PLATFORM_WINDOWS
 	}
