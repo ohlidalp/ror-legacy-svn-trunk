@@ -833,8 +833,10 @@ public:
 
 	void installRuntime()
 	{
-		executeBinary(wxT("vcredist_x86.exe"));
+		wxMessageBox(wxT("Will now install DirectX. Please click ok to continue"), _T("vcredit_x86.exe!"), wxICON_INFORMATION | wxOK);
 		executeBinary(wxT("dxwebsetup.exe"));
+		wxMessageBox(wxT("Will now install the Visual Studio runtime. Please click ok to continue."), _T("vcredit_x86.exe!"), wxICON_INFORMATION | wxOK);
+		executeBinary(wxT("vcredist_x86.exe"));
 	}
 
 	void startConfigurator()
