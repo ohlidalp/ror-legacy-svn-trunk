@@ -80,6 +80,7 @@ int ConfigManager::getOnlineStreams()
 				stream_desc_t s;
 				s.title     = conv(olist[i]["title"]);
 				s.desc      = conv(olist[i]["description"]);
+				s.conflict  = conv(olist[i]["conflict"]);
 				s.group     = conv(olist[i]["group"]);
 				s.path      = conv(olist[i]["path"]);
 
@@ -197,6 +198,33 @@ void ConfigManager::loadStreamSubscription()
 	}
 }
 
+
+void ConfigManager::setPersistentConfig(wxString name, wxString value)
+{
+#ifdef WIN32
+	wxRegKey *pRegKey = new wxRegKey(wxT("HKEY_LOCAL_MACHINE\\Software\\RigsOfRods\\config"));
+	if(!pRegKey->Exists())
+		pRegKey->Create();
+	pRegKey->SetValue(name, value);
+#else
+	// TODO: implement
+#endif //WIN32
+}
+
+wxString ConfigManager::getPersistentConfig(wxString name)
+{
+#ifdef WIN32
+	wxRegKey *pRegKey = new wxRegKey(wxT("HKEY_LOCAL_MACHINE\\Software\\RigsOfRods\\config"));
+	if(!pRegKey->Exists())
+		return wxT("");
+	
+	wxString result;
+	pRegKey->QueryValue(name, result);
+	return result;
+#else
+	// TODO: implement
+#endif //WIN32
+}
 void ConfigManager::setInstallationPath()
 {
 #ifdef WIN32

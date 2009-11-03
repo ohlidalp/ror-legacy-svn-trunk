@@ -43,6 +43,7 @@ typedef struct stream_desc_t_
 {
 	wxString title;
 	wxString path;
+	wxString conflict;
 	wxString desc;
 	wxString group;
 	wxBitmap icon;
@@ -60,12 +61,10 @@ public:
 	ConfigManager();
 	bool isFirstInstall();
 	bool isLicenceAccepted();
-	wxString getInstallationPath();
+
 	void setAction(int ac);
 	int getAction();
 
-	void setInstallPath(wxString pth);
-	wxString getInstallPath();
 
 	int uninstall();
 
@@ -75,6 +74,13 @@ public:
 	void setStreamSelection(stream_desc_t* desc, bool selection);
 	void loadStreamSubscription();
 	void saveStreamSubscription();
+
+	// registry things
+	wxString getPersistentConfig(wxString name);
+	void setPersistentConfig(wxString name, wxString value);
+	void setInstallPath(wxString pth);
+	wxString getInstallationPath();
+	wxString getInstallPath();
 
 private:
 	wxString installPath;
