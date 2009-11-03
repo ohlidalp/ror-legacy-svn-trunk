@@ -64,20 +64,23 @@ public:
 		bmp = new myClickBitmap(this, this, wxID_ANY, desc->icon);
 		mainSizer->Add((wxWindow*)bmp, 0, wxALL, 1);
         wxBoxSizer *textSizer = new wxBoxSizer(wxVERTICAL);
-		wxStaticText *tst;
+		myClickText *tst;
         
-		textSizer->Add(tst=new wxStaticText(this, wxID_ANY, desc->title), 0, wxALL, 1);
+		tst=new myClickText(this, this, wxID_ANY, desc->title);
+		textSizer->Add((wxWindow *)tst, 0, wxALL, 1);
 		wxFont dfont=tst->GetFont();
 		dfont.SetWeight(wxFONTWEIGHT_BOLD);
 		dfont.SetPointSize(dfont.GetPointSize()+3);
 		tst->SetFont(dfont);
 		tst->Wrap(300);
-        textSizer->Add(tst=new wxStaticText(this, wxID_ANY, desc->desc), 0, wxALL, 1);
+		tst=new myClickText(this, this, wxID_ANY, desc->desc);
+        textSizer->Add((wxWindow *)tst, 0, wxALL, 1);
 		tst->Wrap(300);
 
 		char tmp[255]="";
 		sprintf(tmp, "%0.2f MB", desc->size/1024.0f);
-		textSizer->Add(tst=new wxStaticText(this, wxID_ANY, _("Total size: ") + wxString(tmp, wxConvUTF8)), 0, wxALL, 1);
+		tst=new myClickText(this, this, wxID_ANY, _("Total size: ") + wxString(tmp, wxConvUTF8));
+		textSizer->Add((wxWindow *)tst, 0, wxALL, 1);
 		tst->Wrap(300);
 
 		
@@ -90,6 +93,7 @@ public:
 
 	void toggle()
 	{
+		if(!chk->IsEnabled()) return;
 		if(chk->IsChecked())
 			chk->SetValue(false);
 		else
