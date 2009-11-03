@@ -25,7 +25,7 @@ protected:
 	std::vector < stream_desc_t > streams;
 	boost::uintmax_t predDownloadSize;
 	std::map < std::string, unsigned int > traffic_stats;
-	time_t dlStartTime;
+	clock_t dlStartTime;
 	bool dlStarted;
 
 	// helper to construct event
@@ -39,7 +39,7 @@ protected:
 	// wsync related functions
 	int getSyncData();
 	void recordDataUsage();
-	void findMirror(bool probeForBest=false);
+	int findMirror(bool probeForBest=false);
 	std::string formatSeconds(int seconds);
 
 	WSync *w;
