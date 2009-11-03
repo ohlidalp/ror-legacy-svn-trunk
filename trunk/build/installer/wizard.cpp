@@ -46,12 +46,16 @@ IMPLEMENT_APP(MyApp)
 // `Main program' equivalent: the program execution "starts" here
 bool MyApp::OnInit()
 {
-    MyWizard wizard(NULL);
+	MyWizard wizard(NULL);
 
-    wizard.RunWizard(wizard.GetFirstPage());
+	wizard.RunWizard(wizard.GetFirstPage());
 
 	// we're done
-    return false;
+	// forecfully end this, otherwise: CRASH when we used ASIO :(
+	exit(0);
+
+	// this crashes the app:
+	return true;
 }
 // ----------------------------------------------------------------------------
 // MyWizard
