@@ -651,6 +651,8 @@ int WsyncThread::findMirror(bool probeForBest)
 				}
 			}
 		}
+		string stxt = server + serverdir + " (random)";
+		updateCallback(MSE_UPDATE_SERVER, stxt);
 		return 0;
 	} else
 	{
@@ -679,15 +681,13 @@ int WsyncThread::findMirror(bool probeForBest)
 				{
 					server = list[bestServer][0];
 					serverdir = list[bestServer][1];
-					updateCallback(MSE_STARTING, "found fastest server: " + server);
+					string stxt = server + serverdir + " (fastest)";
+					updateCallback(MSE_UPDATE_SERVER, stxt);
 				} else
 					return -1;
 			}
 		}
 
 	}
-
-	string stxt = server + serverdir;
-	updateCallback(MSE_UPDATE_SERVER, stxt);
 	return 0;
 }
