@@ -86,6 +86,8 @@ int ConfigManager::getOnlineStreams()
 
 				s.icon      = (olist[i]["type"]=="0")?wxBitmap(mainpack_xpm):wxBitmap(extrapack_xpm);
 				s.checked   = (olist[i]["checked"] == "1");
+				s.forcecheck= (olist[i]["forcecheck"] == "1");
+				s.hidden    = (olist[i]["hidden"] == "1");
 				s.disabled  = (olist[i]["disabled"] == "1");
 				s.beta      = (olist[i]["beta"] == "1");
 				s.del       = (olist[i]["delete"] == "1");
@@ -182,18 +184,19 @@ void ConfigManager::loadStreamSubscription()
 	for(std::vector < stream_desc_t >::iterator it=streams.begin(); it!=streams.end(); it++)
 	{
 #ifdef WIN32
-	wxRegKey *pRegKey = new wxRegKey(wxT("HKEY_LOCAL_MACHINE\\Software\\RigsOfRods\\streams"));
-	if(!pRegKey->Exists())
-		return;
-	
-	wxString enabled;
-	pRegKey->QueryValue(it->path, enabled);
-	if(enabled == wxT("yes"))
-		it->checked = true;
-	else if(enabled == wxT("no"))
-		it->checked = false;
+		if(it->forcecheck) continue; // we enforce the value of this
+		wxRegKey *pRegKey = new wxRegKey(wxT("HKEY_LOCAL_MACHINE\\Software\\RigsOfRods\\streams"));
+		if(!pRegKey->Exists())
+			return;
+		
+		wxString enabled;
+		pRegKey->QueryValue(it->path, enabled);
+		if(enabled == wxT("yes"))
+			it->checked = true;
+		else if(enabled == wxT("no"))
+			it->checked = false;
 #else
-	// TODO: implement
+		// TODO: implement
 #endif //WIN32
 	}
 }

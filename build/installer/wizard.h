@@ -506,6 +506,7 @@ public:
 		}
 		for(std::vector < stream_desc_t >::iterator it=streams->begin(); it!=streams->end(); it++)
 		{
+			if(it->hidden) continue; // hide hidden entries ;)
 			wxStrel *wst=new wxStrel(scrw, &(*it));
 			wxSizerItem *si = scrwsz->Add(wst, 0, wxALL|wxEXPAND,0);
 			si->SetUserData((wxObject *)wst);

@@ -48,6 +48,8 @@ typedef struct stream_desc_t_
 	wxString group;
 	wxBitmap icon;
 	bool checked;
+	bool forcecheck;
+	bool hidden;
 	bool disabled;
 	bool del;
 	bool beta;
