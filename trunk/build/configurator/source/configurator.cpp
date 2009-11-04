@@ -1625,8 +1625,9 @@ MyDialog::MyDialog(const wxString& title, MyApp *_app) : wxDialog(NULL, wxID_ANY
 	nbook->AddPage(advancedPanel, _("Advanced"), false);
 
 #if OGRE_PLATFORM == OGRE_PLATFORM_WIN32
-	wxPanel *updatePanel=new wxPanel(nbook, -1);
-	nbook->AddPage(updatePanel, _("Updates"), false);
+	// this is removed for now
+	//wxPanel *updatePanel=new wxPanel(nbook, -1);
+	//nbook->AddPage(updatePanel, _("Updates"), false);
 #endif
 //	wxPanel *aboutPanel=new wxPanel(nbook, -1);
 //	nbook->AddPage(aboutPanel, "About", false);
@@ -1925,6 +1926,8 @@ MyDialog::MyDialog(const wxString& title, MyApp *_app) : wxDialog(NULL, wxID_ANY
 	sightrange->SetLineSize(100);
 
 #if OGRE_PLATFORM == OGRE_PLATFORM_WIN32
+	/*
+	// this is removed for now
 	wxSizer *sizer_updates = new wxBoxSizer(wxVERTICAL);
 	helphtmw = new HtmlWindow(updatePanel, help_html, wxPoint(0, 0), wxSize(480, 380));
 	helphtmw->SetPage(_("... loading ... (maybe you should check your internet connection)"));
@@ -1936,6 +1939,7 @@ MyDialog::MyDialog(const wxString& title, MyApp *_app) : wxDialog(NULL, wxID_ANY
 	sizer_updates->Add(btnu, 0, wxGROW);
 
 	updatePanel->SetSizer(sizer_updates);
+	*/
 #endif
 
 
