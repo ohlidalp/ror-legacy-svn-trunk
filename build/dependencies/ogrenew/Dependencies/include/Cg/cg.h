@@ -57,7 +57,7 @@
 /*** CG Run-Time Library API                                          ***/
 /*************************************************************************/
 
-#define CG_VERSION_NUM                1502
+#define CG_VERSION_NUM                2000
 
 #ifdef _WIN32
 # ifndef APIENTRY /* From Win32's <windef.h> */
@@ -683,6 +683,8 @@ CG_API void CGENTRY cgUnmapBuffer(CGbuffer buffer);
 CG_API void CGENTRY cgDestroyBuffer(CGbuffer buffer);
 CG_API CGbuffer CGENTRY cgGetProgramBuffer(CGprogram, int bufferIndex);
 CG_API int CGENTRY cgGetBufferSize(CGbuffer);
+CG_API int CGENTRY cgGetProgramBufferMaxSize(CGprofile profile);
+CG_API int CGENTRY cgGetProgramBufferMaxIndex(CGprofile profile);
 
 #endif
 
