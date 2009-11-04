@@ -41,8 +41,8 @@ class AITraffic : public Streamable
 		void setupPortals		(char *buffer, unsigned int &len);
 		void updateLampPrograms	(char *buffer, unsigned int &len);
 
-		void AITraffic::spawnObject(const std::string &objectName, const std::string &instanceName, Ogre::Vector3 pos, Ogre::Vector3 rot, bool uniquifyMaterials);
-		void AITraffic::setSignalState(Ogre::String instance, int state);
+		void spawnObject(const std::string &objectName, const std::string &instanceName, Ogre::Vector3 pos, Ogre::Vector3 rot, bool uniquifyMaterials);
+		void setSignalState(Ogre::String instance, int state);
 
 		// duplicated from AS for performance issues
 		int setMaterialAmbient(const std::string &materialName, float red, float green, float blue);
