@@ -84,7 +84,11 @@ public:
 	wxString getInstallationPath();
 	wxString getInstallPath();
 
+	void setStartupMode(int val) { this->statupMode = val; };
+	int getStartupMode() { return this->statupMode; };
+
 private:
+	int statupMode;
 	wxString installPath;
 	int installeraction;
 	int dlerror;

@@ -132,6 +132,9 @@ wxString ConfigManager::getInstallationPath()
 	if(!pRegKey->Exists())
 		return wxString();
 	
+	if(!pRegKey->HasValue(wxT("InstallPath")))
+		return wxString();
+
 	pRegKey->QueryValue(wxT("InstallPath"), path);
 	path += wxT("\\");
 	// check if RoR.exe exists
@@ -190,6 +193,7 @@ void ConfigManager::loadStreamSubscription()
 			return;
 		
 		wxString enabled;
+		if(!pRegKey->HasValue(it->path)) continue;
 		pRegKey->QueryValue(it->path, enabled);
 		if(enabled == wxT("yes"))
 			it->checked = true;
@@ -219,6 +223,9 @@ wxString ConfigManager::getPersistentConfig(wxString name)
 #ifdef WIN32
 	wxRegKey *pRegKey = new wxRegKey(wxT("HKEY_LOCAL_MACHINE\\Software\\RigsOfRods\\config"));
 	if(!pRegKey->Exists())
+		return wxT("");
+	
+	if(!pRegKey->HasValue(name))
 		return wxT("");
 	
 	wxString result;
