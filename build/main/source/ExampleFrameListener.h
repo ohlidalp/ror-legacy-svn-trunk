@@ -128,7 +128,7 @@ class HDRListener;
 // $Rev$
 #define SVN_REVISION "$Rev$"
 #define SVN_ID "$Id$"
-#define ROR_VERSION_STRING "0.36.1"
+#define ROR_VERSION_STRING "0.36.3"
 
 using namespace Ogre;
 

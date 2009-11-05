@@ -32,17 +32,7 @@ RigsOfRods::RigsOfRods()
 
 RigsOfRods::~RigsOfRods()
 {
-	if (mFrameListener)
-		delete mFrameListener;
-	if (mRoot)
-	{
-		if (mWindow) mRoot->detachRenderTarget(mWindow);
-		try {
-			mRoot->shutdown();
-			if(mRoot)
-				delete mRoot;
-		} catch(...){}
-	}
+	this->shutdown();
 }
 
 void RigsOfRods::go(void)
@@ -56,6 +46,20 @@ void RigsOfRods::go(void)
 	//destroyScene(); we don't!
 }
 
+void RigsOfRods::shutdown(void)
+{
+	if (mFrameListener)
+		delete mFrameListener;
+	if (mRoot)
+	{
+		if (mWindow) mRoot->detachRenderTarget(mWindow);
+		try {
+			mRoot->shutdown();
+			if(mRoot)
+				delete mRoot;
+		} catch(...){}
+	}
+}
 void RigsOfRods::loadMainResource(String name, String group)
 {
 	String dirsep="/";
@@ -504,10 +508,14 @@ int main(int argc, char *argv[])
 	}
 #endif
 
-	try {
+	try
+	{
 		app.go();
 	} catch(Ogre::Exception& e)
 	{
+		// try to destory ogre, so the screen will get normal again before we display the error message
+		app.shutdown();
+
 		// try to shutdown input system upon an error
 		if(InputEngine::instanceExists()) // this prevents the creating of it, if not existing
 			INPUTENGINE.prepareShutdown();
