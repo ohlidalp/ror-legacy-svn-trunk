@@ -44,7 +44,8 @@ int showInfo(Ogre::String title, Ogre::String err)
 
 int showMsgBox(Ogre::String title, Ogre::String err, int type)
 {
-	Ogre::LogManager::getSingleton().logMessage("message box: " + title + ": " + err);
+	// we might call the showMsgBox without having ogre created yet!
+	//Ogre::LogManager::getSingleton().logMessage("message box: " + title + ": " + err);
 #if OGRE_PLATFORM == OGRE_PLATFORM_WIN32
 	int mtype = MB_ICONERROR;
 	if(type == 1) mtype = MB_ICONINFORMATION;

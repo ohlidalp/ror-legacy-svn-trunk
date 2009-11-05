@@ -79,6 +79,7 @@ public:
 	~RigsOfRods();
 	//startup game
 	void go(void);
+	void shutdown(void);
 
 	bool useogreconfig;
 	bool buildmode;
