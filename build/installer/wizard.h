@@ -21,6 +21,7 @@ along with Rigs of Rods.  If not, see <http://www.gnu.org/licenses/>.
 // For compilers that support precompilation, includes "wx/wx.h".
 #include <wx/wxprec.h>
 #include <wx/filename.h>
+#include <wx/cmdline.h>
 #include <wx/dir.h>
 #include <wx/thread.h>
 #include <wx/event.h>
@@ -127,6 +128,21 @@ class MyApp : public wxApp
 public:
 	// override base class virtuals
 	virtual bool OnInit();
+	virtual void OnInitCmdLine(wxCmdLineParser& parser);
+    virtual bool OnCmdLineParsed(wxCmdLineParser& parser);
+protected:
+	int startupMode;
+};
+
+static const enum {IMODE_NONE=0, IMODE_UPDATE, IMODE_INSTALL, IMODE_UNINSTALL, IMODE_UPGRADE};
+static const wxCmdLineEntryDesc g_cmdLineDesc [] =
+{
+     { wxCMD_LINE_SWITCH, wxT("h"), wxT("help"),      wxT("displays help on the command line parameters"), wxCMD_LINE_VAL_NONE, wxCMD_LINE_OPTION_HELP },
+     { wxCMD_LINE_SWITCH, wxT("u"), wxT("update"),    wxT("update mode"), wxCMD_LINE_VAL_NONE },
+     { wxCMD_LINE_SWITCH, wxT("r"), wxT("uninstall"), wxT("uninstall mode"), wxCMD_LINE_VAL_NONE },
+     { wxCMD_LINE_SWITCH, wxT("i"), wxT("install"),   wxT("install mode"), wxCMD_LINE_VAL_NONE  },
+     { wxCMD_LINE_SWITCH, wxT("g"), wxT("upgrade"),   wxT("upgrade mode"), wxCMD_LINE_VAL_NONE  },
+     { wxCMD_LINE_NONE }
 };
 
 // ----------------------------------------------------------------------------
@@ -136,7 +152,7 @@ public:
 class MyWizard : public wxWizard
 {
 public:
-	MyWizard(wxFrame *frame, bool useSizer = true);
+	MyWizard(int startupMode, wxFrame *frame, bool useSizer = true);
 
 	wxWizardPage *GetFirstPage() const { return m_page1; }
 	
@@ -145,6 +161,7 @@ public:
 private:
 	wxWizardPageSimple *m_page1;
 	ConfigManager* cm;
+	int startupMode;
 	DECLARE_EVENT_TABLE()
 };
 
@@ -219,10 +236,10 @@ public:
 	}
 };
 
-class ActionPage : public wxWizardPage, public EnterLeavePage
+class ActionPage : public wxWizardPageSimple, public EnterLeavePage
 {
 public:
-	ActionPage(wxWizard *parent, ConfigManager* cm, wxWizardPage* prev, wxWizardPage* fselect, wxWizardPage* download) : wxWizardPage(parent)
+	ActionPage(wxWizard *parent, ConfigManager* cm, wxWizardPage* prev, wxWizardPage* fselect, wxWizardPage* download) : wxWizardPageSimple(parent)
 	{
 		m_prev=prev;
 		m_fselect=fselect;
@@ -271,17 +288,22 @@ public:
 			arb->Enable(2, false);
 			arb->Enable(3, false);
 			arb->SetSelection(0);
+			if(cm->getStartupMode() == IMODE_UPGRADE)
+				arb->SetSelection(1);
 		}
 		else
 		{
 			arb->Enable(0, false);
 			arb->Enable(1, false);
 			arb->SetSelection(2);
+			if(cm->getStartupMode() == IMODE_UNINSTALL)
+				arb->SetSelection(3);
 		}
 		mainSizer->Add(arb, 0, wxALL, 5);
 
 		SetSizer(mainSizer);
 		mainSizer->Fit(this);
+		
 	}
 	void SetPrev(wxWizardPage *prev) {m_prev=prev;}
 

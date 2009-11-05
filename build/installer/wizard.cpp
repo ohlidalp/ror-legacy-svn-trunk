@@ -46,7 +46,10 @@ IMPLEMENT_APP(MyApp)
 // `Main program' equivalent: the program execution "starts" here
 bool MyApp::OnInit()
 {
-	MyWizard wizard(NULL);
+    // call default behaviour (mandatory)
+    if (!wxApp::OnInit())
+        return false;
+	MyWizard wizard(startupMode, NULL);
 
 	wizard.RunWizard(wizard.GetFirstPage());
 
@@ -57,16 +60,36 @@ bool MyApp::OnInit()
 	// this crashes the app:
 	return true;
 }
+
+void MyApp::OnInitCmdLine(wxCmdLineParser& parser)
+{
+    parser.SetDesc (g_cmdLineDesc);
+    // must refuse '/' as parameter starter or cannot use "/path" style paths
+    parser.SetSwitchChars (wxT("-"));
+}
+ 
+bool MyApp::OnCmdLineParsed(wxCmdLineParser& parser)
+{
+	startupMode = IMODE_NONE;
+    if(parser.Found(wxT("u"))) startupMode = IMODE_UPDATE;
+    if(parser.Found(wxT("r"))) startupMode = IMODE_UNINSTALL;
+    if(parser.Found(wxT("i"))) startupMode = IMODE_INSTALL;
+    if(parser.Found(wxT("g"))) startupMode = IMODE_UPGRADE;
+    return true;
+}
+
+
 // ----------------------------------------------------------------------------
 // MyWizard
 // ----------------------------------------------------------------------------
 
-MyWizard::MyWizard(wxFrame *frame, bool useSizer)
+MyWizard::MyWizard(int startupMode, wxFrame *frame, bool useSizer)
         : wxWizard(frame,ID_WIZARD,_T("Rigs of Rods Installation Assistant"),
                    wxBitmap(licence_xpm),wxDefaultPosition,
-                   wxDEFAULT_DIALOG_STYLE | wxRESIZE_BORDER)
+                   wxDEFAULT_DIALOG_STYLE | wxRESIZE_BORDER), startupMode(startupMode)
 {
 	cm=new ConfigManager();
+	cm->setStartupMode(startupMode);
     PresentationPage *presentation = new PresentationPage(this);
 	LicencePage *licence = new LicencePage(this);
 	PathPage *path = new PathPage(this, cm);
@@ -76,7 +99,7 @@ MyWizard::MyWizard(wxFrame *frame, bool useSizer)
 	LastPage *last = new LastPage(this, cm);
 	streams->setPages(path, action);
 
-	m_page1=presentation;
+	m_page1 = presentation;
     if (!cm->isLicenceAccepted())
 	{
 		wxWizardPageSimple::Chain(presentation, licence);
