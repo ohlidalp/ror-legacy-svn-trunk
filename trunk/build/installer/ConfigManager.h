@@ -68,7 +68,7 @@ public:
 	int getAction();
 
 
-	int uninstall();
+	int uninstall(bool deleteUserFolder=false);
 
 	// stream things
 	std::vector < stream_desc_t > *getStreamset();
