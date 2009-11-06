@@ -199,8 +199,8 @@ public:
 
 static const wxCmdLineEntryDesc g_cmdLineDesc [] =
 {
-	{ wxCMD_LINE_SWITCH, wxT("postinstall"), wxT("postinstall"), wxT("do not use this")},
-	{ wxCMD_LINE_SWITCH, wxT("buildmode"), wxT("buildmode"), wxT("do not use this")},
+	{ wxCMD_LINE_SWITCH, ("postinstall"), ("postinstall"), ("do not use this")},
+	{ wxCMD_LINE_SWITCH, ("buildmode"), ("buildmode"), ("do not use this")},
 	{ wxCMD_LINE_NONE }
 };
 
@@ -1465,7 +1465,7 @@ bool MyApp::OnCmdLineParsed(wxCmdLineParser& parser)
 // ----------------------------------------------------------------------------
 
 // frame constructor
-MyDialog::MyDialog(const wxString& title, MyApp *_app) : wxDialog(NULL, wxID_ANY, title,  wxPoint(100, 100), wxSize(500, 580), wxDEFAULT_DIALOG_STYLE|wxRESIZE_BORDER|wxRESIZE_BOX)
+MyDialog::MyDialog(const wxString& title, MyApp *_app) : wxDialog(NULL, wxID_ANY, title,  wxPoint(100, 100), wxSize(500, 580), wxDEFAULT_DIALOG_STYLE|wxRESIZE_BORDER)
 {
 	app=_app;
 
@@ -2951,7 +2951,7 @@ void MyDialog::OnButDeleteKey(wxCommandEvent& event)
 
 void MyDialog::OnButLoadKeymap(wxCommandEvent& event)
 {
-	wxFileDialog *f = new wxFileDialog(this, _("Choose a file"), wxString(), wxString(), conv("*.map"), wxOPEN || wxFILE_MUST_EXIST);
+	wxFileDialog *f = new wxFileDialog(this, _("Choose a file"), wxString(), wxString(), conv("*.map"), wxFD_OPEN || wxFD_FILE_MUST_EXIST);
 	if(f->ShowModal() == wxID_OK)
 	{
 		INPUTENGINE.loadMapping(conv(f->GetPath()));
@@ -2999,7 +2999,7 @@ void MyDialog::OnButSaveKeymap(wxCommandEvent& event)
 		defaultFile.Replace(wxT("__"), wxT("_"));
 		defaultFile.Replace(wxT("__"), wxT("_"));
 		defaultFile.Replace(wxT("_.map"), wxT(".map"));
-		wxFileDialog *f = new wxFileDialog(this, _("Save Mapping to File"), wxString(), defaultFile, conv("*.map"), wxSAVE || wxOVERWRITE_PROMPT);
+		wxFileDialog *f = new wxFileDialog(this, _("Save Mapping to File"), wxString(), defaultFile, conv("*.map"), wxFD_SAVE || wxFD_OVERWRITE_PROMPT);
 		if(f->ShowModal() == wxID_OK)
 		{
 			INPUTENGINE.saveMapping(conv(f->GetPath()), getOISHandle(this), exportType);
