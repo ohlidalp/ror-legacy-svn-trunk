@@ -358,7 +358,7 @@ retry2:
 		res = 1;
 	} else
 	{
-		sprintf(tmp, "sync complete (already up to date), downloaded %s\n", WSync::formatFilesize(w->getDownloadSize()).c_str());
+		sprintf(tmp, "sync complete (already up to date)\n");
 	}
 
 	// update progress for the last time
@@ -686,18 +686,20 @@ int WsyncThread::findMirror(bool probeForBest)
 				for(int i=0; i<(int)list.size(); i++)
 				{
 					updateCallback(MSE_STARTING, "testing speed of mirror: " + list[i][0]);
+					updateCallback(MSE_UPDATE_PROGRESS, "", float(i)/float(list.size()));
+					
 					double tdiff = w->measureDownloadSpeed(list[i][0], list[i][1]+"../speedtest.bin");
 					if(tdiff >=0 && tdiff < bestTime)
 					{
 						bestTime = tdiff;
 						bestServer = i;
 					}
-					/*
+					
 					char tmp[255]="";
-					sprintf(tmp, "%6.2f kB/s", (10240.0f / tdiff) / 1024.0f);
+					sprintf(tmp, "%6.2f: kB/s", (10240.0f / tdiff) / 1024.0f);
 					updateCallback(MSE_STARTING, "speed of " + list[i][0] + std::string(tmp));
-					Sleep(1000);
-					*/
+					//Sleep(10000);
+					
 				}
 				if(bestServer != -1)
 				{
