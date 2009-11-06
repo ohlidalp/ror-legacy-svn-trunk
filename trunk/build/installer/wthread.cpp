@@ -142,14 +142,21 @@ int WsyncThread::sync()
 			if(it->first == string("/stream.info")) continue;
 			if(it->first == string("/version")) continue;
 
-
+			if(it->first.find(deletedKeyword) != string::npos)
+			{
+				// check if the file is deleted already
+				path localfile = ipath / it->first;
+				if(exists(localfile))
+					deletedFiles.push_back(Fileentry(itr->first, it->first, it->second.filesize));
+				continue;
+			}
+			
 			//if(hashMapRemote[it->first] == it->second)
 				//printf("same: %s %s==%s\n", it->first.c_str(), hashMapRemote[it->first].c_str(), it->second.c_str());
 			
 			// old deletion method
 			if(itr->second.find(it->first) == itr->second.end())
 				// this file is not in this stream, ignore it for now
-				//deletedFiles.push_back(Fileentry(itr->first, it->first, it->second.filesize));
 				continue;
 			else if(itr->second[it->first].hash != it->second.hash)
 				changedFiles.push_back(Fileentry(itr->first, it->first, itr->second[it->first].filesize));
@@ -160,10 +167,17 @@ int WsyncThread::sync()
 			// filter some files
 			if(it->first == string("/stream.info")) continue;
 			if(it->first == string("/version")) continue;
-			
-			if(it->first.size() > deletedKeyword.size() && it->first.substr(it->first.size()-deletedKeyword.size(), deletedKeyword.size()) == deletedKeyword)
-				deletedFiles.push_back(Fileentry(itr->first, it->first, it->second.filesize));
-			
+					
+			// add deleted files if they still exist
+			if(it->first.find(deletedKeyword) != string::npos)
+			{
+				// check if the file is deleted already
+				path localfile = ipath / it->first;
+				if(exists(localfile))
+					deletedFiles.push_back(Fileentry(itr->first, it->first, it->second.filesize));
+				continue;
+			}
+
 			if(hashMapLocal.find(it->first) == hashMapLocal.end())
 				newFiles.push_back(Fileentry(itr->first, it->first, it->second.filesize));
 		}
@@ -552,15 +566,19 @@ int WsyncThread::downloadFile(WSync *w, boost::filesystem::path localFile, strin
 	return 0;
 }
 
-std::string WsyncThread::formatSeconds(int seconds)
+std::string WsyncThread::formatSeconds(float seconds)
 {
 	char tmp[255]="";
-	if(seconds > 0 && seconds < 1000000)
+	if(seconds > 0 && seconds < 1)
+	{
+		sprintf(tmp, "%.0f milli seconds", (seconds*1000.0f));
+	}
+	else if(seconds >= 1 && seconds < 1000000)
 	{
 		if(seconds<60)
-			sprintf(tmp, "%d seconds", seconds);
+			sprintf(tmp, "%.0f seconds", seconds);
 		else
-			sprintf(tmp, "%d minutes, %d seconds", seconds/60, seconds - (((int)(seconds/60)) * 60));
+			sprintf(tmp, "%.0f minutes, %.0f seconds", seconds/60, seconds - (((int)(seconds/60)) * 60));
 	}
 	return std::string(tmp);
 }
@@ -573,6 +591,7 @@ void WsyncThread::downloadProgress(WSync *w)
 	double tdiff = (double(clock())-double(dlStartTime))/CLOCKS_PER_SEC;
 	float speed = (float)(size_done / tdiff);
 	float eta = size_left / speed;
+	if(predDownloadSize == 0) eta = 0;
 	float progress = ((float)w->getDownloadSize()) /((float)predDownloadSize);
 	char tmp[255]="";
 
@@ -589,18 +608,14 @@ void WsyncThread::downloadProgress(WSync *w)
 	{
 		timestr = formatSeconds(eta);
 		updateCallback(MSE_UPDATE_TIME_LEFT, timestr);
-	} else
+	} else if (eta != 0)
 	{
 		timestr = conv(_("less than 10 seconds"));
 		updateCallback(MSE_UPDATE_TIME_LEFT, timestr);
 	}
 
-	if(tdiff > 10)
-	{
-		// only show speed if download duration was longer than 10 seconds
-		string speedstr = WSync::formatFilesize((int)speed) + "/s";
-		updateCallback(MSE_UPDATE_SPEED, speedstr);
-	}
+	string speedstr = WSync::formatFilesize((int)speed) + "/s";
+	updateCallback(MSE_UPDATE_SPEED, speedstr);
 	
 	if(progress<1.0f)
 	{
