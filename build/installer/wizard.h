@@ -638,10 +638,22 @@ public:
 		// Server used
 		txt = new wxStaticText(this, wxID_ANY, _T("Server used: "));
 		wxg->Add(txt, 0, wxALL|wxEXPAND, 5);
-		txt_server = new wxStaticText(this, wxID_ANY, _T("n/a"));
+		txt_server = new wxStaticText(this, wxID_ANY, _T("only main server"));
 		wxg->Add(txt_server, 0, wxALL|wxEXPAND, 5);
 
+		// grid end
 		mainSizer->Add(wxg, 0, wxALL|wxEXPAND, 5);
+
+
+		// FINISHED text
+		txtFinish = new wxStaticText(this, wxID_ANY, _T("Finished downloading, please continue by pressing next."));
+		dfont=txtFinish->GetFont();
+		dfont.SetWeight(wxFONTWEIGHT_BOLD);
+		dfont.SetPointSize(dfont.GetPointSize()+2);
+		txtFinish->SetFont(dfont);
+		//txtFinish->Wrap(TXTWRAP);
+		mainSizer->Add(txtFinish, 0, wxALL|wxEXPAND, 0);
+
 		SetSizer(mainSizer);
 		mainSizer->Fit(this);
 		
@@ -677,6 +689,7 @@ public:
 	}
 	bool OnEnter(bool forward)
 	{
+		txtFinish->Hide();
 		//disable forward and backward buttons
 		setControlEnable(wizard, wxID_FORWARD, false);
 		setControlEnable(wizard, wxID_BACKWARD, false);
@@ -700,7 +713,7 @@ public:
 
 private:
 	wxStaticText *txt_dltime, *txt_speed, *txt_traf, *txt_localpath, *txt_server, *txt_remaintime;
-	wxStaticText *statusText;
+	wxStaticText *statusText, *txtFinish;
 	wxGauge *progress;
 	bool threadStarted;
 	bool isDone;
@@ -749,9 +762,10 @@ private:
 			// normal end
 			statusText->SetLabel(ev.text);
 			progress->SetValue(1000);
-			txt_remaintime->SetLabel(wxT(""));
+			txt_remaintime->SetLabel(wxT("finished!"));
 			isDone=true;
 			// enableforward button
+			txtFinish->Show();
 			setControlEnable(wizard, wxID_FORWARD, true);
 			break;
 		}

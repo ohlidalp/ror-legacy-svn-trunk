@@ -40,7 +40,7 @@ protected:
 	int getSyncData();
 	void recordDataUsage();
 	int findMirror(bool probeForBest=false);
-	std::string formatSeconds(int seconds);
+	std::string formatSeconds(float seconds);
 
 	WSync *w;
 	std::map < std::string, Hashentry> hashMapLocal;
