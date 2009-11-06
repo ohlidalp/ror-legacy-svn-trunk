@@ -635,6 +635,7 @@ int WsyncThread::findMirror(bool probeForBest)
 	updateCallback(MSE_STARTING, "finding suitable mirror ...");
 	if(!probeForBest)
 	{
+		updateCallback(MSE_STARTING, "getting random mirror ...");
 		// just collect a best fitting server by geolocating this client's IP
 		if(!w->downloadConfigFile(API_SERVER, API_MIRROR, &list))
 		{
@@ -669,13 +670,19 @@ int WsyncThread::findMirror(bool probeForBest)
 				int bestServer = -1;
 				for(int i=0; i<(int)list.size(); i++)
 				{
-					double tdiff = w->measureDownloadSpeed(list[i][0], list[i][1]+"/speedtest.bin");
+					updateCallback(MSE_STARTING, "testing speed of mirror: " + list[i][0]);
+					double tdiff = w->measureDownloadSpeed(list[i][0], list[i][1]+"../speedtest.bin");
 					if(tdiff >=0 && tdiff < bestTime)
 					{
 						bestTime = tdiff;
 						bestServer = i;
 					}
-
+					/*
+					char tmp[255]="";
+					sprintf(tmp, "%6.2f kB/s", (10240.0f / tdiff) / 1024.0f);
+					updateCallback(MSE_STARTING, "speed of " + list[i][0] + std::string(tmp));
+					Sleep(1000);
+					*/
 				}
 				if(bestServer != -1)
 				{

@@ -22,10 +22,37 @@ along with Rigs of Rods.  If not, see <http://www.gnu.org/licenses/>.
 #include "wx/msw/private.h"
 #include "wx/msw/registry.h"
 #include <shellapi.h> // needed for SHELLEXECUTEINFO
+#include <shlobj.h>
 
+
+std::string wstrtostr(const std::wstring &wstr)
+{
+    // Convert a Unicode string to an ASCII string
+    std::string strTo;
+    char *szTo = new char[wstr.length() + 1];
+    szTo[wstr.size()] = '\0';
+    WideCharToMultiByte(CP_ACP, 0, wstr.c_str(), -1, szTo, (int)wstr.length(), NULL, NULL);
+    strTo = szTo;
+    delete[] szTo;
+    return strTo;
+}
+
+std::wstring strtowstr(const std::string &str)
+{
+    // Convert an ASCII string to a Unicode String
+    std::wstring wstrTo;
+    wchar_t *wszTo = new wchar_t[str.length() + 1];
+    wszTo[str.size()] = L'\0';
+    MultiByteToWideChar(CP_ACP, 0, str.c_str(), -1, wszTo, (int)str.length());
+    wstrTo = wszTo;
+    delete[] wszTo;
+    return wstrTo;
+}
 
 //#include "winsock2.h"
 #endif //WIN32
+#include <wx/filename.h>
+#include <wx/dir.h>
 
 #include "ConfigManager.h"
 
@@ -150,18 +177,96 @@ wxString ConfigManager::getInstallationPath()
 #endif //WIN32
 }
 
-int ConfigManager::uninstall()
+int ConfigManager::uninstall(bool deleteUserFolder)
 {
-	// this is called upon uninstall to clean the system from meta things
+	wxString ipath = getInstallPath();
+	if(ipath.empty())
+		return 1;
 
-#ifdef WIN32
-	wxString path;
+	wxString mtxt = _T("Will now:\n\n");
+	mtxt += wxT("remove the main installation directory recursivly:\n") + ipath + wxT("\n\n");
+
+	wxString userPath;
+	if(deleteUserFolder)
+	{
+#if PLATFORM == PLATFORM_WINDOWS
+		LPWSTR wuser_path = new wchar_t[1024];
+		if (SHGetFolderPath(NULL, CSIDL_PERSONAL, NULL, SHGFP_TYPE_CURRENT, wuser_path)!=S_OK)
+			return 3;
+		GetShortPathName(wuser_path, wuser_path, 512); //this is legal
+		std::string user_path_str = wstrtostr(std::wstring(wuser_path));
+		user_path_str += "\\Rigs of Rods\\";
+		userPath = conv(user_path_str);
+#endif //PLATFORM_WINDOWS
+		mtxt += wxT("remove the Rigs of Rods user content directory recursivly:\n") + userPath + wxT("\n\n");
+	}
+
+
+	// remove shortcuts
+#if PLATFORM == PLATFORM_WINDOWS
+	wxString startmenuDir, desktopDir, workingDirectory = ipath, desktopLink;
+	if(!SHGetSpecialFolderPath(0, wxStringBuffer(startmenuDir, MAX_PATH), CSIDL_COMMON_PROGRAMS, FALSE))
+		return 8;
+	if(!SHGetSpecialFolderPath(0, wxStringBuffer(desktopDir, MAX_PATH), CSIDL_DESKTOP, FALSE))
+		return 9;
+
+	if(workingDirectory.size() > 3 && workingDirectory.substr(workingDirectory.size()-1,1) != wxT("\\"))
+		workingDirectory += wxT("\\");
+
+	startmenuDir += wxT("\\Rigs of Rods");
+	if (!wxDir::Exists(startmenuDir))
+		startmenuDir = wxString();
+
+	desktopLink = desktopDir + wxT("\\Rigs of Rods.lnk");
+	if(!wxFileName::FileExists(desktopLink))
+		desktopLink = wxString();
+#endif //PLATFORM_WINDOWS
+
+	if(!startmenuDir.empty())
+		mtxt += wxT("remove the Rigs of Rods start menu directory:\n") + startmenuDir + wxT("\n\n");
+	if(!desktopLink.empty())
+		mtxt += wxT("remove the Rigs of Rods Desktop Link:\n") + desktopLink + wxT("\n");
+
+	mtxt += wxT("remove the Rigs of Rods Registry entry:\nHKEY_LOCAL_MACHINE\\Software\\RigsOfRods \n\n");
+	mtxt += wxT("do you want to continue?");
+	int res = wxMessageBox(mtxt, _T("Uninstall?"), wxICON_QUESTION | wxYES_NO);
+	if(res != wxYES)
+	{
+		return 10;
+	}
+
+	// this is called upon uninstall to clean the system from meta things
+	wxFileName *f = new wxFileName(ipath);
+	// wxPATH_RMDIR_RECURSIVE is available in wxWidgets >= 2.9.0
+	bool rmres = f->Rmdir(wxPATH_RMDIR_RECURSIVE);
+	if(!rmres)
+		return 2;
+
+#if PLATFORM == PLATFORM_WINDOWS
+	if(deleteUserFolder && !userPath.empty())
+	{
+		wxFileName *f = new wxFileName(userPath);
+		bool res = f->Rmdir(wxPATH_RMDIR_RECURSIVE);
+		if(!res)
+			return 4;
+	}
+	// remove registry keys
 	wxRegKey *pRegKey = new wxRegKey(wxT("HKEY_LOCAL_MACHINE\\Software\\RigsOfRods"));
 	if(pRegKey->Exists())
 		pRegKey->DeleteSelf();
-#else
+#else //PLATFORM_WINDOWS
 	return wxString();
-#endif //WIN32
+#endif //PLATFORM_WINDOWS
+
+	// remove shortcuts
+#if PLATFORM == PLATFORM_WINDOWS
+	if(!startmenuDir.empty())
+		wxFileName::Rmdir(startmenuDir, wxPATH_RMDIR_RECURSIVE);
+
+	if(!desktopLink.empty())
+		wxRemoveFile(desktopLink);
+#endif //PLATFORM_WINDOWS
+
 	return 0;
 }
 

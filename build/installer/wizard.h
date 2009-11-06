@@ -110,12 +110,10 @@ inline std::string conv(const wxString& s)
 
 
 // utils for the wizard
-inline void setControlEnable(int id, bool state)
+inline void setControlEnable(wxWizard *wiz, int id, bool enable)
 {
-	return;
-	wxWindow *win = wxWindow::FindWindowById(id);
-	if(win && state)       win->Enable();
-	else if(win && !state) win->Disable();
+	wxWindow *win = wiz->FindWindowById(id);
+	if(win) win->Enable(enable);
 }
 
 // ----------------------------------------------------------------------------
@@ -137,11 +135,11 @@ protected:
 static const enum {IMODE_NONE=0, IMODE_UPDATE, IMODE_INSTALL, IMODE_UNINSTALL, IMODE_UPGRADE};
 static const wxCmdLineEntryDesc g_cmdLineDesc [] =
 {
-     { wxCMD_LINE_SWITCH, wxT("h"), wxT("help"),      wxT("displays help on the command line parameters"), wxCMD_LINE_VAL_NONE, wxCMD_LINE_OPTION_HELP },
-     { wxCMD_LINE_SWITCH, wxT("u"), wxT("update"),    wxT("update mode"), wxCMD_LINE_VAL_NONE },
-     { wxCMD_LINE_SWITCH, wxT("r"), wxT("uninstall"), wxT("uninstall mode"), wxCMD_LINE_VAL_NONE },
-     { wxCMD_LINE_SWITCH, wxT("i"), wxT("install"),   wxT("install mode"), wxCMD_LINE_VAL_NONE  },
-     { wxCMD_LINE_SWITCH, wxT("g"), wxT("upgrade"),   wxT("upgrade mode"), wxCMD_LINE_VAL_NONE  },
+     { wxCMD_LINE_SWITCH, ("h"), ("help"),      ("displays help on the command line parameters"), wxCMD_LINE_VAL_NONE, wxCMD_LINE_OPTION_HELP },
+     { wxCMD_LINE_SWITCH, ("u"), ("update"),    ("update mode"), wxCMD_LINE_VAL_NONE },
+     { wxCMD_LINE_SWITCH, ("r"), ("uninstall"), ("uninstall mode"), wxCMD_LINE_VAL_NONE },
+     { wxCMD_LINE_SWITCH, ("i"), ("install"),   ("install mode"), wxCMD_LINE_VAL_NONE  },
+     { wxCMD_LINE_SWITCH, ("g"), ("upgrade"),   ("upgrade mode"), wxCMD_LINE_VAL_NONE  },
      { wxCMD_LINE_NONE }
 };
 
@@ -318,19 +316,16 @@ public:
 			return m_fselect;
 		} else if (arb->GetSelection()==3)
 		{
-			// uninstall
-			// XXX: TODO FIX ME
-			wxString path = m_cm->getInstallPath();
-			wxFileName *f = new wxFileName(path);
-			f->Rmdir();
-
-			int res = wxMessageBox(_T("Do you really want to remove the directory (and thus uninstall Rigs of Rods)?") + path, _T("Uninstall?"), wxICON_QUESTION | wxYES_NO);
+			int res = wxMessageBox(_T("Do you really want to uninstall Rigs of Rods?"), _T("Uninstall?"), wxICON_QUESTION | wxYES_NO);
 			if(res == wxYES)
 			{
-				m_cm->uninstall();
-				wxMessageBox(_T("Rigs of Rods was uninstalled successfully. Thanks for using!"), _T("Uninstalled!"), wxICON_INFORMATION | wxOK);
-				exit(0);
-				// really delete
+				res = wxMessageBox(_T("Do you want to remove all Rigs of Rods content in the User Folder (all downloaded mods, etc)?"), _T("Uninstall User Content?"), wxICON_QUESTION | wxYES_NO);
+				res = m_cm->uninstall((res == wxYES));
+				if(!res)
+				{
+					wxMessageBox(_T("Rigs of Rods was uninstalled successfully. Thanks for using!"), _T("Uninstalled!"), wxICON_INFORMATION | wxOK);
+					exit(0);
+				}
 			}
 			wxMessageBox(_T("Uninstall aborted!"), _T("uninstall?"), wxICON_ERROR | wxOK);
 			exit(0);
@@ -584,7 +579,7 @@ class DownloadPage : public wxWizardPageSimple, public EnterLeavePage
 {
 	friend class WsyncThread;
 public:
-	DownloadPage(wxWizard *parent, ConfigManager* cm) : wxWizardPageSimple(parent), m_cm(cm)
+	DownloadPage(wxWizard *parent, ConfigManager* cm) : wxWizardPageSimple(parent), m_cm(cm), wizard(parent)
 	{
 		threadStarted=false;
 		isDone=false;
@@ -683,8 +678,8 @@ public:
 	bool OnEnter(bool forward)
 	{
 		//disable forward and backward buttons
-		setControlEnable(wxID_FORWARD, false);
-		setControlEnable(wxID_BACKWARD, false);
+		setControlEnable(wizard, wxID_FORWARD, false);
+		setControlEnable(wizard, wxID_BACKWARD, false);
 
 		std::vector < stream_desc_t > *streams = m_cm->getStreamset();
 		if(!streams->size())
@@ -709,6 +704,7 @@ private:
 	wxGauge *progress;
 	bool threadStarted;
 	bool isDone;
+	wxWizard *wizard;
 	
 	ConfigManager* m_cm;
 	WsyncThread *m_pThread;
@@ -756,7 +752,7 @@ private:
 			txt_remaintime->SetLabel(wxT(""));
 			isDone=true;
 			// enableforward button
-			setControlEnable(wxID_FORWARD, true);
+			setControlEnable(wizard, wxID_FORWARD, true);
 			break;
 		}
 	}
@@ -767,9 +763,10 @@ class LastPage : public wxWizardPageSimple, public EnterLeavePage
 {
 protected:
 	ConfigManager* cm;
+	wxWizard *wizard;
 	wxCheckBox *chk_runtime, *chk_configurator, *chk_desktop, *chk_startmenu, *chk_viewmanual;
 public:
-	LastPage(wxWizard *parent, ConfigManager* _cm) : wxWizardPageSimple(parent), cm(_cm)
+	LastPage(wxWizard *parent, ConfigManager* _cm) : wxWizardPageSimple(parent), cm(_cm), wizard(parent)
 	{
 		m_bitmap = wxBitmap(finished_xpm);
 		wxBoxSizer *mainSizer = new wxBoxSizer(wxVERTICAL);
@@ -820,6 +817,8 @@ public:
 	
 	bool OnEnter(bool forward)
 	{
+		setControlEnable(wizard, wxID_BACKWARD, false);
+		setControlEnable(wizard, wxID_CANCEL, false);
 		return true;
 	}
 
