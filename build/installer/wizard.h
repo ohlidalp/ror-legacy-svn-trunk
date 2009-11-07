@@ -135,12 +135,20 @@ protected:
 static const enum {IMODE_NONE=0, IMODE_UPDATE, IMODE_INSTALL, IMODE_UNINSTALL, IMODE_UPGRADE};
 static const wxCmdLineEntryDesc g_cmdLineDesc [] =
 {
+#if wxCHECK_VERSION(2, 9, 0)
      { wxCMD_LINE_SWITCH, ("h"), ("help"),      ("displays help on the command line parameters"), wxCMD_LINE_VAL_NONE, wxCMD_LINE_OPTION_HELP },
      { wxCMD_LINE_SWITCH, ("u"), ("update"),    ("update mode"), wxCMD_LINE_VAL_NONE },
      { wxCMD_LINE_SWITCH, ("r"), ("uninstall"), ("uninstall mode"), wxCMD_LINE_VAL_NONE },
      { wxCMD_LINE_SWITCH, ("i"), ("install"),   ("install mode"), wxCMD_LINE_VAL_NONE  },
      { wxCMD_LINE_SWITCH, ("g"), ("upgrade"),   ("upgrade mode"), wxCMD_LINE_VAL_NONE  },
-     { wxCMD_LINE_NONE }
+#else
+     { wxCMD_LINE_SWITCH, wxT("h"), wxT("help"),      wxT("displays help on the command line parameters"), wxCMD_LINE_VAL_NONE, wxCMD_LINE_OPTION_HELP },
+     { wxCMD_LINE_SWITCH, wxT("u"), wxT("update"),    wxT("update mode"), wxCMD_LINE_VAL_NONE },
+     { wxCMD_LINE_SWITCH, wxT("r"), wxT("uninstall"), wxT("uninstall mode"), wxCMD_LINE_VAL_NONE },
+     { wxCMD_LINE_SWITCH, wxT("i"), wxT("install"),   wxT("install mode"), wxCMD_LINE_VAL_NONE  },
+     { wxCMD_LINE_SWITCH, wxT("g"), wxT("upgrade"),   wxT("upgrade mode"), wxCMD_LINE_VAL_NONE  },
+#endif //wxCHECK_VERSION
+	 { wxCMD_LINE_NONE }
 };
 
 // ----------------------------------------------------------------------------
