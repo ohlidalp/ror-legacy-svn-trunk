@@ -69,6 +69,7 @@ mode_t getumask(void)
 #include "statpict.h"
 #include <wx/log.h>
 #include <wx/timer.h>
+#include <wx/version.h>
 //#include "joysticks.h"
 
 
@@ -199,8 +200,13 @@ public:
 
 static const wxCmdLineEntryDesc g_cmdLineDesc [] =
 {
+#if wxCHECK_VERSION(2, 9, 0)
 	{ wxCMD_LINE_SWITCH, ("postinstall"), ("postinstall"), ("do not use this")},
 	{ wxCMD_LINE_SWITCH, ("buildmode"), ("buildmode"), ("do not use this")},
+#else // old wxWidgets support
+	{ wxCMD_LINE_SWITCH, wxT("postinstall"), wxT("postinstall"), wxT("do not use this")},
+	{ wxCMD_LINE_SWITCH, wxT("buildmode"), wxT("buildmode"), wxT("do not use this")},
+#endif
 	{ wxCMD_LINE_NONE }
 };
 
