@@ -145,7 +145,8 @@ int WsyncThread::sync()
 			if(it->first.find(deletedKeyword) != string::npos)
 			{
 				// check if the file is deleted already
-				path localfile = ipath / it->first;
+				std::string realfn = it->first.substr(0, it->first.size() - deletedKeyword.size());
+				path localfile = ipath / realfn;
 				if(exists(localfile))
 					deletedFiles.push_back(Fileentry(itr->first, it->first, it->second.filesize));
 				continue;
@@ -172,7 +173,8 @@ int WsyncThread::sync()
 			if(it->first.find(deletedKeyword) != string::npos)
 			{
 				// check if the file is deleted already
-				path localfile = ipath / it->first;
+				std::string realfn = it->first.substr(0, it->first.size() - deletedKeyword.size());
+				path localfile = ipath / realfn;
 				if(exists(localfile))
 					deletedFiles.push_back(Fileentry(itr->first, it->first, it->second.filesize));
 				continue;
@@ -339,10 +341,17 @@ retry2:
 		{
 			for(itf=deletedFiles.begin();itf!=deletedFiles.end();itf++, changeCounter++)
 			{
+				string filename = itf->filename;
+				if(filename.find(deletedKeyword) != string::npos)
+				{
+					// check if the file is deleted already
+					filename = filename.substr(0, filename.size() - deletedKeyword.size());
+				}
+
 				//progressOutputShort(float(changeCounter)/float(changeMax));
-				sprintf(tmp, "deleting file: %s (%s)\n", itf->filename.c_str(), WSync::formatFilesize(itf->filesize).c_str());
+				sprintf(tmp, "deleting file: %s\n", filename.c_str()); //, WSync::formatFilesize(itf->filesize).c_str());
 				updateCallback(MSE_UPDATE_TEXT, string(tmp));
-				path localfile = ipath / itf->filename;
+				path localfile = ipath / filename;
 				try
 				{
 					boost::filesystem::remove(localfile);
