@@ -238,7 +238,11 @@ int ConfigManager::uninstall(bool deleteUserFolder)
 	// this is called upon uninstall to clean the system from meta things
 	wxFileName *f = new wxFileName(ipath);
 	// wxPATH_RMDIR_RECURSIVE is available in wxWidgets >= 2.9.0
+#if wxCHECK_VERSION(2, 9, 0)
 	bool rmres = f->Rmdir(wxPATH_RMDIR_RECURSIVE);
+#else
+	#error You need at least wxWidgets version 2.9.0 in order to compile the installer correctly!
+#endif
 	if(!rmres)
 		return 2;
 
@@ -246,7 +250,11 @@ int ConfigManager::uninstall(bool deleteUserFolder)
 	if(deleteUserFolder && !userPath.empty())
 	{
 		wxFileName *f = new wxFileName(userPath);
+#if wxCHECK_VERSION(2, 9, 0)
 		bool res = f->Rmdir(wxPATH_RMDIR_RECURSIVE);
+#else
+		#error You need at least wxWidgets version 2.9.0 in order to compile the installer correctly!
+#endif
 		if(!res)
 			return 4;
 	}
@@ -261,7 +269,11 @@ int ConfigManager::uninstall(bool deleteUserFolder)
 	// remove shortcuts
 #if PLATFORM == PLATFORM_WINDOWS
 	if(!startmenuDir.empty())
+#if wxCHECK_VERSION(2, 9, 0)
 		wxFileName::Rmdir(startmenuDir, wxPATH_RMDIR_RECURSIVE);
+#else
+		#error You need at least wxWidgets version 2.9.0 in order to compile the installer correctly!
+#endif
 
 	if(!desktopLink.empty())
 		wxRemoveFile(desktopLink);
