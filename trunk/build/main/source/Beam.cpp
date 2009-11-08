@@ -430,6 +430,7 @@ Beam::Beam(int tnum, SceneManager *manager, SceneNode *parent, RenderWindow* win
 	hydroelevatorstate=0;
 	replaymode=false;
 	replaypos=0;
+	replayPrecision=0;
 	oldreplaypos=-1;
 	locked=UNLOCKED;
 	lockedold=UNLOCKED;
@@ -485,10 +486,18 @@ Beam::Beam(int tnum, SceneManager *manager, SceneNode *parent, RenderWindow* win
 	if(enablereplay && state != NETWORKED && !networking)
 	{
 		String rpl = SETTINGS.getSetting("Replay length");
-		if (rpl != String("")) {
-			replaylen = atoi(rpl.c_str());
-		}
+		if(!rpl.empty())
+			replaylen = StringConverter::parseInt(rpl);
 		replay = new Replay(this, replaylen);
+
+		rpl = SETTINGS.getSetting("Replay Steps per second");
+		int steps = 0;
+		if(!rpl.empty())
+			steps = StringConverter::parseInt(rpl);
+		if(steps == -1)
+			replayPrecision = 0.0f;
+		else
+			replayPrecision = 1.0f / ((float)steps);
 	}
 
 	// add storage
@@ -7762,7 +7771,7 @@ void Beam::calcForcesEuler(int doUpdate, Real dt, int step, int maxstep, Beam** 
 	if(replay)
 	{
 		replayTimer += dt;
-		if(true) //replayTimer > 0.0001f)
+		if(replayTimer > replayPrecision)
 		{
 			// store nodes
 			node_simple_t *nbuff = (node_simple_t *)replay->getWriteBuffer(0);

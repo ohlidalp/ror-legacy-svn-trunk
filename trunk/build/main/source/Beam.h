@@ -931,6 +931,7 @@ protected:
 	Real minCameraRadius;
 	MaterialFunctionMapper *materialFunctionMapper;
 	Real replayTimer;
+	Real replayPrecision;
 
 	Network *net;
 	ground_model_t *lastFuzzyGroundModel;
