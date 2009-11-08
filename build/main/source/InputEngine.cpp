@@ -2845,9 +2845,6 @@ bool InputEngine::saveMapping(Ogre::String outfile, size_t hwnd, int joyNum)
 	FILE *f = fopen(const_cast<char *>(outfile.c_str()),"w");
 	if(!f)
 		return false;
-	std::map<int, std::vector<event_trigger_t> > controls = getEvents();
-	std::map<int, std::vector<event_trigger_t> >::iterator mapIt;
-	std::vector<event_trigger_t>::iterator vecIt;
 
 	bool created=false;
 	if(mInputManager && !captureMode && hwnd>0)
@@ -2862,6 +2859,8 @@ bool InputEngine::saveMapping(Ogre::String outfile, size_t hwnd, int joyNum)
 		setup(hwnd, true, true);
 		created=true;
 	}
+	/*
+	// heap problems below, removed
 	if(mInputManager)
 	{
 		// some helpful information
@@ -2892,9 +2891,13 @@ bool InputEngine::saveMapping(Ogre::String outfile, size_t hwnd, int joyNum)
 		if(created)
 			destroy();
 	}
+	*/
 
 	int counter = 0;
 	char curGroup[128] = "";
+	std::map<int, std::vector<event_trigger_t> > controls = getEvents();
+	std::map<int, std::vector<event_trigger_t> >::iterator mapIt;
+	std::vector<event_trigger_t>::iterator vecIt;
 	for(mapIt = controls.begin(); mapIt != controls.end(); mapIt++)
 	{
 		std::vector<event_trigger_t> vec = mapIt->second;
