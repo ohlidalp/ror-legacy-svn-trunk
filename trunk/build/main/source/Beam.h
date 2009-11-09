@@ -190,6 +190,11 @@ extern int truckSteps;
 #define DRIPPING 1
 #define WET 2
 
+#define NODE_FRICTION_COEF_DEFAULT   1.0f
+#define NODE_VOLUME_COEF_DEFAULT     1.0f
+#define NODE_SURFACE_COEF_DEFAULT    1.0f
+#define NODE_LOADWEIGHT_DEFAULT     -1.0f
+
 #define HYDRO_FLAG_SPEED        0x00000001
 #define HYDRO_FLAG_DIR          0x00000002
 #define HYDRO_FLAG_AILERON      0x00000004
@@ -233,8 +238,10 @@ typedef struct _node
 	int masstype;
 	int contactless;
 	int contacted;
-	Real friction;
+	Real friction_coef;
 	Real buoyancy;
+	Real volume_coef;
+	Real surface_coef;
 	Vector3 lastdrag;
 	Vector3 gravimass;
 	int lockednode;
@@ -247,6 +254,7 @@ typedef struct _node
 	bool overrideMass;
 	bool iIsSkin;
 	bool isSkin;
+	bool disable_particles;
 	Vector3 buoyanceForce;
 	int id;
 	float colltesttimer;
@@ -648,7 +656,7 @@ public:
 	void addCamera(int nodepos, int nodedir, int noderoll);
 	void addWheel(SceneManager *manager, SceneNode *parent, Real radius, Real width, int rays, int node1, int node2, int snode, int braked, int propulsed, int torquenode, float mass, float wspring, float wdamp, char* texf, char* texb, bool meshwheel=false, float rimradius=0.0, bool rimreverse=false);
 	void addWheel2(SceneManager *manager, SceneNode *parent, Real radius, Real radius2, Real width, int rays, int node1, int node2, int snode, int braked, int propulsed, int torquenode, float mass, float wspring, float wdamp, float wspring2, float wdamp2, char* texf, char* texb);
-	void init_node(int pos, Real x, Real y, Real z, int type=NODE_NORMAL, Real m=10.0, int iswheel=0, Real friction=CHASSIS_FRICTION_COEF, int id=-1, int wheelid=-1);
+	void init_node(int pos, Real x, Real y, Real z, int type=NODE_NORMAL, Real m=10.0, int iswheel=0, Real friction=CHASSIS_FRICTION_COEF, int id=-1, int wheelid=-1, Real nfriction=NODE_FRICTION_COEF_DEFAULT, Real nvolume=NODE_VOLUME_COEF_DEFAULT, Real nsurface=NODE_SURFACE_COEF_DEFAULT, Real nloadweight=NODE_LOADWEIGHT_DEFAULT);
 	int add_beam(node_t *p1, node_t *p2, SceneManager *manager, SceneNode *parent, int type, Real strength, Real spring, Real damp, Real length=-1.0, float shortbound=-1.0, float longbound=-1.0, float precomp=1.0, float diameter=DEFAULT_BEAM_DIAMETER);
 	void reset(bool keepPosition = false); //call this one to reset a truck from any context
 	void SyncReset(); //this one should be called only synchronously (without physics running in background)
@@ -951,6 +959,7 @@ protected:
 	bool enable_wheel2;
 	bool deleting;
 
+	char default_node_options[50];
 	char truckname[256];
 	char realtruckname[256];
 	std::vector<AuthorInfo> authors;
@@ -1038,7 +1047,10 @@ protected:
 	bool beacon;
 	bool driversseatfound;
 	float totalmass;
-
+	float default_node_friction;
+	float default_node_volume;
+	float default_node_surface;
+	float default_node_loadweight;
 	float default_break;
 	float default_deform;
 	float default_spring;

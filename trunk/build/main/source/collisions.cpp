@@ -1208,7 +1208,8 @@ void Collisions::primitiveCollision(node_t *node, Vector3 normal, float dt, grou
 		float m = gm->flow_consistency_index*approx_pow(Vsquared, (gm->flow_behavior_index-1.0f)*0.5f);
 
 		//Then calculate drag based on above. We'are using a simplified Stokes' drag.
-		Vector3 Fdrag=node->Velocity*(-m);
+		// Per node fluid drag surface coefficient set by node property applies here
+		Vector3 Fdrag=node->Velocity*(-m * node->surface_coef);
 
 		//If we have anisotropic drag
 		if (gm->drag_anisotropy<1.0f && Vnormal>0)
@@ -1224,8 +1225,8 @@ void Collisions::primitiveCollision(node_t *node, Vector3 normal, float dt, grou
 
 		//Now calculate upwards force based on a simplified boyancy equation;
 		//If the fluid is pseudoplastic then boyancy is constrained to only "stopping" a node from going downwards
-
-		float Fboyancy = gm->fluid_density * penetration * (-DEFAULT_GRAVITY);
+		//Buoyancy per node volume coefficient set by node property applies here
+		float Fboyancy = gm->fluid_density * penetration * (-DEFAULT_GRAVITY) * node->volume_coef;
 		if (gm->flow_behavior_index<1.0f && Vnormal>=0.0f)
 		{
 			float Fnormal=node->Forces.dotProduct(normal);
@@ -1271,7 +1272,7 @@ void Collisions::primitiveCollision(node_t *node, Vector3 normal, float dt, grou
 		// we have a downforce and the slip forces are lower than static friction
 		// forces then it's time to go into static friction physics mode.
 		// This code is a direct translation of textbook static friction physics
-		float Greaction=Freaction*gm->strength; //General moderated reaction
+		float Greaction=(Freaction * gm->strength * node->friction_coef); //General moderated reaction, node property sets friction_coef as a pernodefriction setting
 		if ( slipv<(gm->va) && Freaction>0 && fabs(node->Forces.dotProduct(slip))<=fabs((gm->ms)*Greaction))
 		{
 			// Static friction model (with a little smoothing to help the integrator deal with it)
