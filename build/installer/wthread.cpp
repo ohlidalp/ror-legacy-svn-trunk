@@ -185,6 +185,29 @@ int WsyncThread::sync()
 		}
 	}
 
+	// rename the installer if required:
+#ifdef WIN32
+	//specific things to rename the installer on the fly in order to allow its update
+	bool updateInstaller = false;
+	for(std::vector<Fileentry>::iterator itf=changedFiles.begin();itf!=changedFiles.end();itf++)
+	{	
+		if(itf->filename == "/installer.exe")
+		{
+			updateInstaller=true;
+			break;
+		}
+	}
+	if(updateInstaller)
+	{
+		path installer_from = ipath / "installer.exe";
+		path installer_to = ipath / "installer.exe.old";
+		if(exists(installer_from))
+		{
+			boost::filesystem::rename(installer_from, installer_to);
+		}
+	}
+#endif //WIN32
+
 	// done comparing, now summarize the changes
 	std::vector<Fileentry>::iterator itf;
 	int changeCounter = 0, changeMax = changedFiles.size() + newFiles.size() + deletedFiles.size();

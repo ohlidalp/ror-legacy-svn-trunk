@@ -88,6 +88,10 @@ MyWizard::MyWizard(int startupMode, wxFrame *frame, bool useSizer)
                    wxBitmap(licence_xpm),wxDefaultPosition,
                    wxDEFAULT_DIALOG_STYLE | wxRESIZE_BORDER), startupMode(startupMode)
 {
+	// first thing to do: remove old installer file if possible
+	if(boost::filesystem::exists("installer.exe.old"))
+		boost::filesystem::remove("installer.exe.old");
+	// now continue with normal startup
 	cm=new ConfigManager();
 	cm->setStartupMode(startupMode);
     PresentationPage *presentation = new PresentationPage(this);
