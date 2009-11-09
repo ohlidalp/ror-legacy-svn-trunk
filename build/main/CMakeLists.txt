@@ -21,6 +21,7 @@ set(ror_src
 	source/autopilot.cpp
 	source/autopilot.h
 	source/Beam.cpp
+    source/BeamSlideNode.cpp
 	source/Beam.h
 	source/BeamStats.cpp
 	source/BeamStats.h
@@ -122,6 +123,8 @@ set(ror_src
 	source/rornet.h
 	source/screwprop.cpp
 	source/screwprop.h
+	source/SlideNode.cpp
+	source/SlideNode.h
 	source/ScriptEngine.cpp
 	source/ScriptEngine.h
 	source/Settings.cpp
