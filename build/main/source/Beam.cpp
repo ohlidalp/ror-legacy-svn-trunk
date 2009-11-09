@@ -1641,7 +1641,7 @@ int Beam::loadTruck(const char* fname, SceneManager *manager, SceneNode *parent,
 				switch (*options_pointer)
 				{
 					case 'l':	// load node
-						if(mass != 0 && mass >= default_node_loadweight)
+						if(mass != 0)
 						{
 							nodes[id].masstype=NODE_LOADED;
 							nodes[id].overrideMass=true;
