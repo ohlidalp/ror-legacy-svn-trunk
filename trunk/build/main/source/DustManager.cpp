@@ -50,10 +50,12 @@ DustManager::~DustManager()
 	std::map < Ogre::String , DustPool * >::iterator it;
 	for(it=dustpools.begin(); it!=dustpools.end();it++)
 	{
+		// delete the DustPool instance
 		delete(it->second);
 		it->second = 0;
-		dustpools.erase(it);
 	}
+	// then clear the vector
+	dustpools.clear();
 }
 
 DustPool *DustManager::getGroundModelDustPool(ground_model_t *g)
