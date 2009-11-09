@@ -204,6 +204,14 @@ Beam::~Beam()
 		if(beams[i].mSceneNode) beams[i].mSceneNode->removeAndDestroyAllChildren();
 	}
 
+	// delete Rails
+	for(std::vector< RailGroup* >::iterator it = mRailGroups.begin(); it != mRailGroups.end(); it++)
+	{
+		// signal to the Rail that 
+		(*it)->cleanUp();
+		delete (*it);
+	}
+	
 }
 
 Beam::Beam(int tnum, SceneManager *manager, SceneNode *parent, RenderWindow* win, Network *_net, float *_mapsizex, float *_mapsizez, Real px, Real py, Real pz, Quaternion rot, const char* fname, Collisions *icollisions, HeightFinder *mfinder, Water *w, Camera *pcam, Mirrors *mmirror, bool networked, bool networking, collision_box_t *spawnbox, bool ismachine, int _flaresMode, std::vector<Ogre::String> *_truckconfig, SkinPtr skin) : deleting(false)
@@ -627,6 +635,8 @@ void Beam::scaleTruck(float value)
 		nodes[i].lockedForces *= value;
 		nodes[i].mass *= value;
 	}
+	updateSlideNodePositions();
+	
 	// props and stuff
 	// TOFIX: care about prop positions as well!
 	for(int i=0;i<free_prop;i++)
@@ -1362,6 +1372,8 @@ int Beam::loadTruck(const char* fname, SceneManager *manager, SceneNode *parent,
 		if (!strcmp("advdrag",line)) {mode=54;continue;};
 		if (!strcmp("axles",line)) {mode=55;continue;};
 		if (!strcmp("shocks2",line)) {mode=56;continue;};
+		if (!strcmp("railgroups",line)) {mode=63;continue;}
+		if (!strcmp("slidenodes",line)) {mode=64;continue;}
 		if (!strncmp("enable_advanced_deformation", line, 27))
 		{
 			enable_advanced_deformation = true;
@@ -4307,6 +4319,10 @@ int Beam::loadTruck(const char* fname, SceneManager *manager, SceneNode *parent,
 				StringConverter::toString(wheel_node[1][1]) + ")");
 			++free_axle;
 		}
+
+		else if (mode==63) parseRailGroupLine(line);
+		else if (mode==64) parseSlideNodeLine(line);
+		
 	};
 	if(!loading_finished) {
 		LogManager::getSingleton().logMessage("Reached end of file "+ String(fname)+ ". No 'end' was found! Did you forgot it? Trying to continue...");
@@ -4717,6 +4733,9 @@ int Beam::loadPosition(int indexPosition)
 		pos = pos + nbuff[i];
 	}
 	position = pos / (float)(free_node);
+	
+	resetSlideNodes();
+	
 	return 0;
 }
 
@@ -4739,6 +4758,8 @@ void Beam::resetAngle(float rot)
 		nodes[i].RelPosition  = nodes[i].AbsPosition;
 		nodes[i].smoothpos    = nodes[i].AbsPosition;
 	}
+
+	resetSlideNodePositions();
 }
 
 void Beam::resetPosition(float px, float pz, bool setI, float miny)
@@ -4808,6 +4829,9 @@ void Beam::resetPosition(float px, float pz, bool setI, float miny)
 	}
 
 	//if (netLabelNode) netLabelNode->setPosition(nodes[0].Position);
+
+	resetSlideNodePositions();
+
 }
 
 void Beam::mouseMove(int node, Vector3 pos, float force)
@@ -5474,6 +5498,7 @@ void Beam::SyncReset()
 		resetPosition(cur_position.x, cur_position.z, false);
 	}
 
+	resetSlideNodes();
 	reset_requested=0;
 }
 
@@ -5602,6 +5627,8 @@ bool Beam::frameStep(Real dt, Beam** trucks, int numtrucks)
 				nodes[i].smoothpos = nbuff[i].pos;
 				pos = pos + nbuff[i].pos;
 			}
+			updateSlideNodePositions();
+			
 			position=pos/(float)(free_node);
 			// now beams
 			beam_simple_t *bbuff = (beam_simple_t *)replay->getReadBuffer(replaypos, 1, time);
@@ -6256,7 +6283,8 @@ void Beam::calcForcesEuler(int doUpdate, Real dt, int step, int maxstep, Beam** 
 
 							if(beambreakdebug)
 							{
-								LogManager::getSingleton().logMessage(" XXX Beam " + StringConverter::toString(i) + " just broke with force " + StringConverter::toString(flen) + " / " + StringConverter::toString(beams[i].strength) + ". It was between nodes " + StringConverter::toString(beams[i].p1->id) + " and " + StringConverter::toString(beams[i].p2->id) + ".");
+								LogManager::getSingleton().logMessage(" XXX Beam " + StringConverter::toString(i) + " just broke with force " + StringConverter::toString(flen) + " / " + StringConverter::toString(beams[i].strength) + ". It was between nodes " +
+										StringConverter::toString(beams[i].p1->id) + "@<" + StringConverter::toString( beams[i].p1->RelPosition ) + "> and " + StringConverter::toString(beams[i].p2->id) + "@<" + StringConverter::toString( beams[i].p2->RelPosition ) + ">.");
 							}
 
 							//something broke, check buoyant hull
@@ -6519,6 +6547,12 @@ void Beam::calcForcesEuler(int doUpdate, Real dt, int step, int maxstep, Beam** 
 		nodes[mousenode].Forces += mousemoveforce * dir;
 	}
 
+
+	// START Slidenode section /////////////////////////////////////////////////
+	// these must be done before the integrator, or else the forces are not calculated properly
+	updateSlideNodeForces(dt);
+	// END Slidenode section   /////////////////////////////////////////////////
+	
 #ifdef TIMING
 	if(statistics)
 		statistics->queryStart(BeamThreadStats::Nodes);
@@ -7876,7 +7910,7 @@ void Beam::prepareInside(bool inside)
 		}
 
 		//disabling shadow
-		if (cabNode) ((Entity*)(cabNode->getAttachedObject(0)))->setCastShadows(false);
+		if (cabNode && cabNode->getAttachedObject(0)) ((Entity*)(cabNode->getAttachedObject(0)))->setCastShadows(false);
 		int i;
 		for (i=0; i<free_prop; i++)
 		{
@@ -7914,7 +7948,7 @@ void Beam::prepareInside(bool inside)
 		}
 
 		//enabling shadow
-		if (cabNode) ((Entity*)(cabNode->getAttachedObject(0)))->setCastShadows(true);
+		if (cabNode && cabNode->getAttachedObject(0)) ((Entity*)(cabNode->getAttachedObject(0)))->setCastShadows(true);
 		int i;
 		for (i=0; i<free_prop; i++)
 		{
@@ -9410,4 +9444,33 @@ bool Beam::getReverseLightVisible()
 		return netReverseLight;
 	if (!engine) return 0;
 	return (engine->getGear() < 0);
+}
+
+// Utility functions ///////////////////////////////////////////////////////////
+beam_t* Beam::getBeam(unsigned int node1ID, unsigned int node2ID)
+{
+
+	for(unsigned  int j = 0; j < (unsigned  int)free_beam; ++j)
+		if( (beams[j].p1->id == node1ID && beams[j].p2->id == node2ID) ||
+			(beams[j].p2->id == node1ID && beams[j].p1->id == node2ID) )
+			return &beams[j];
+	
+	return NULL;
+}
+
+beam_t* Beam::getBeam(node_t* node1, node_t* node2)
+{
+	// check for nulls
+	if( !node1 || !node2 ) return NULL;
+	return getBeam( node1->id, node2->id);
+}
+
+node_t* Beam::getNode(unsigned int id)
+{
+	for( unsigned int i = 0 ; i < (unsigned  int)free_node; ++i)
+		if( nodes[i].id == id )
+			return &nodes[i];
+
+	// node not found
+	return NULL;
 }

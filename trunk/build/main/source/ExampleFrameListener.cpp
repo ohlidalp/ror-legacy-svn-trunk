@@ -3814,6 +3814,8 @@ bool ExampleFrameListener::updateEvents(float dt)
 				if (INPUTENGINE.getEventBoolValueBounce(EV_COMMON_LOCK))
 				{
 					trucks[current_truck]->lockToggle(trucks, free_truck);
+					//SlideNodeLock
+					trucks[current_truck]->toggleSlideNodeLock(trucks, free_truck, current_truck);
 				}
 				//strap
 				if (INPUTENGINE.getEventBoolValueBounce(EV_COMMON_SECURE_LOAD))
