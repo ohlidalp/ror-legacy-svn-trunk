@@ -307,6 +307,10 @@ Beam::Beam(int tnum, SceneManager *manager, SceneNode *parent, RenderWindow* win
 	skeleton_beam_diameter=BEAM_SKELETON_DIAMETER;
 	default_spring=DEFAULT_SPRING;
 	default_damp=DEFAULT_DAMP;
+	default_node_friction=NODE_FRICTION_COEF_DEFAULT;
+	default_node_volume=NODE_VOLUME_COEF_DEFAULT;
+	default_node_surface=NODE_SURFACE_COEF_DEFAULT;
+	default_node_loadweight=NODE_LOADWEIGHT_DEFAULT;
 	strcpy(default_beam_material, "tracks/beam");
 	driversseatfound=false;
 	mirror=mmirror;
@@ -1482,6 +1486,22 @@ int Beam::loadTruck(const char* fname, SceneManager *manager, SceneNode *parent,
 			continue;
 		}
 
+		if (!strncmp("set_node_defaults", line, 17))
+		{
+			int result = sscanf(line,"set_node_defaults %f, %f, %f, %f, %s", &default_node_loadweight, &default_node_friction, &default_node_volume, &default_node_surface, default_node_options);
+			if (result < 1 || result == EOF) 
+			{
+				LogManager::getSingleton().logMessage("Error parsing File (set_node_defaults) " + String(fname) +" line " + StringConverter::toString(linecounter) + ". trying to continue ...");
+				continue;
+			}
+			if (default_node_friction < 0)   default_node_friction=NODE_FRICTION_COEF_DEFAULT;
+			if (default_node_volume < 0)     default_node_volume=NODE_VOLUME_COEF_DEFAULT;
+			if (default_node_surface < 0)    default_node_surface=NODE_SURFACE_COEF_DEFAULT;
+			if (default_node_loadweight < 0) default_node_loadweight=NODE_LOADWEIGHT_DEFAULT;
+			if (result <= 4) memset(default_node_options, 0, sizeof default_node_options);
+			continue;
+		}
+
 		if (!strncmp("set_skeleton_settings", line, 21))
 		{
 			int result = sscanf(line,"set_skeleton_settings %f, %f", &fadeDist, &skeleton_beam_diameter);
@@ -1579,7 +1599,7 @@ int Beam::loadTruck(const char* fname, SceneManager *manager, SceneNode *parent,
 			//parse nodes
 			int id=0;
 			float x=0, y=0, z=0, mass=0;
-			char options[50] = "n";
+			char options[255] = "n";
 			int result = sscanf(line,"%i, %f, %f, %f, %s %f",&id,&x,&y,&z,options, &mass);
 			// catch some errors
 			if (result < 4 || result == EOF) {
@@ -1601,8 +1621,18 @@ int Beam::loadTruck(const char* fname, SceneManager *manager, SceneNode *parent,
 			}
 
 			Vector3 npos = Vector3(px, py, pz) + rot * Vector3(x,y,z);
-			init_node(id, npos.x, npos.y, npos.z, NODE_NORMAL, 10, 0, 0, free_node);
+			init_node(id, npos.x, npos.y, npos.z, NODE_NORMAL, 10, 0, 0, free_node, -1, default_node_friction, default_node_volume, default_node_surface, default_node_loadweight);
 			nodes[id].iIsSkin=true;
+
+			if 	(default_node_loadweight >= 0.0f)
+			{
+				nodes[id].masstype=NODE_LOADED;
+				nodes[id].overrideMass=true;
+				nodes[id].mass=default_node_loadweight;
+			}
+
+			// merge options and default_node_options
+			strncpy(options, ((String(default_node_options) + String(options)).c_str()), 250);
 
 			// now 'parse' the options
 			char *options_pointer = options;
@@ -1611,7 +1641,7 @@ int Beam::loadTruck(const char* fname, SceneManager *manager, SceneNode *parent,
 				switch (*options_pointer)
 				{
 					case 'l':	// load node
-						if(mass != 0)
+						if(mass != 0 && mass >= default_node_loadweight)
 						{
 							nodes[id].masstype=NODE_LOADED;
 							nodes[id].overrideMass=true;
@@ -1622,9 +1652,6 @@ int Beam::loadTruck(const char* fname, SceneManager *manager, SceneNode *parent,
 							nodes[id].masstype=NODE_LOADED;
 							masscount++;
 						}
-						break;
-					case 'f':	//friction
-						nodes[id].friction=100.0;
 						break;
 					case 'x':	//exhaust
 						if (disable_smoke)
@@ -1693,8 +1720,14 @@ int Beam::loadTruck(const char* fname, SceneManager *manager, SceneNode *parent,
 							editorId=id;
 						break;
 					case 'b':	//buoy
-						nodes[id].buoyancy=10000.0;
+						nodes[id].buoyancy=10000.0f;
 						break;
+					case 'p':	//diasble particles
+						nodes[id].disable_particles=true;
+					break;
+					case 'L':	//Log data:
+						LogManager::getSingleton().logMessage("Node " + StringConverter::toString(id) + "  settings. Node load mass: " + StringConverter::toString(nodes[id].mass) + ", friction coefficient: " + StringConverter::toString(default_node_friction) + " and buoyancy volume coefficient: " + StringConverter::toString(default_node_volume) + " Fluid drag surface coefficient: " + StringConverter::toString(default_node_surface)+ " Particle mode: " + StringConverter::toString(nodes[id].disable_particles));
+					break;
 				}
 				options_pointer++;
 			}
@@ -4889,7 +4922,7 @@ void Beam::addWheel(SceneManager *manager, SceneNode *parent, Real radius, Real 
 		Vector3 raypoint;
 		raypoint=nodes[node1].RelPosition+rayvec;
 		rayvec=rayrot*rayvec;
-		init_node(nodebase+i*2, raypoint.x, raypoint.y, raypoint.z, NODE_NORMAL, mass/(2.0*rays),1, WHEEL_FRICTION_COEF*width, -1, free_wheel);
+		init_node(nodebase+i*2, raypoint.x, raypoint.y, raypoint.z, NODE_NORMAL, mass/(2.0*rays),1, WHEEL_FRICTION_COEF*width, -1, free_wheel, default_node_friction, default_node_volume, default_node_surface, NODE_LOADWEIGHT_DEFAULT);
 
 		// outer ring has wheelid%2 != 0
 		nodes[nodebase+i*2].iswheel = free_wheel*2+1;
@@ -4905,7 +4938,7 @@ void Beam::addWheel(SceneManager *manager, SceneNode *parent, Real radius, Real 
 		raypoint=nodes[node2].RelPosition+rayvec;
 
 		rayvec=rayrot*rayvec;
-		init_node(nodebase+i*2+1, raypoint.x, raypoint.y, raypoint.z, NODE_NORMAL, mass/(2.0*rays),1, WHEEL_FRICTION_COEF*width, -1, free_wheel);
+		init_node(nodebase+i*2+1, raypoint.x, raypoint.y, raypoint.z, NODE_NORMAL, mass/(2.0*rays),1, WHEEL_FRICTION_COEF*width, -1, free_wheel, default_node_friction, default_node_volume, default_node_surface, NODE_LOADWEIGHT_DEFAULT);
 
 		// inner ring has wheelid%2 == 0
 		nodes[nodebase+i*2+1].iswheel = free_wheel*2+2;
@@ -5079,12 +5112,12 @@ void Beam::addWheel2(SceneManager *manager, SceneNode *parent, Real radius, Real
 	{
 		//with propnodes
 		Vector3 raypoint=nodes[node1].RelPosition+rayvec;
-		init_node(nodebase+i*2, raypoint.x, raypoint.y, raypoint.z, NODE_NORMAL, mass/(4.0*rays),1, -1, -1, free_wheel);
+		init_node(nodebase+i*2, raypoint.x, raypoint.y, raypoint.z, NODE_NORMAL, mass/(4.0*rays),1, -1, -1, free_wheel, default_node_friction, default_node_volume, default_node_surface, NODE_LOADWEIGHT_DEFAULT);
 		// outer ring has wheelid%2 != 0
 		nodes[nodebase+i*2].iswheel = free_wheel*2+1;
 
 		raypoint=nodes[node2].RelPosition+rayvec;
-		init_node(nodebase+i*2+1, raypoint.x, raypoint.y, raypoint.z, NODE_NORMAL, mass/(4.0*rays),1, -1, -1, free_wheel);
+		init_node(nodebase+i*2+1, raypoint.x, raypoint.y, raypoint.z, NODE_NORMAL, mass/(4.0*rays),1, -1, -1, free_wheel, default_node_friction, default_node_volume, default_node_surface, NODE_LOADWEIGHT_DEFAULT);
 
 		// inner ring has wheelid%2 == 0
 		nodes[nodebase+i*2+1].iswheel = free_wheel*2+2;
@@ -5098,7 +5131,7 @@ void Beam::addWheel2(SceneManager *manager, SceneNode *parent, Real radius, Real
 	{
 		//with propnodes and variable friction
 		Vector3 raypoint=nodes[node1].RelPosition+rayvec2;
-		init_node(nodebase+2*rays+i*2, raypoint.x, raypoint.y, raypoint.z, NODE_NORMAL, 0.67*mass/(2.0*rays),1, WHEEL_FRICTION_COEF*width, -1, free_wheel);
+		init_node(nodebase+2*rays+i*2, raypoint.x, raypoint.y, raypoint.z, NODE_NORMAL, 0.67*mass/(2.0*rays),1, WHEEL_FRICTION_COEF*width, -1, free_wheel, default_node_friction, default_node_volume, default_node_surface);
 		// outer ring has wheelid%2 != 0
 		nodes[nodebase+2*rays+i*2].iswheel = free_wheel*2+1;
 		if (contacter_wheel)
@@ -5109,7 +5142,7 @@ void Beam::addWheel2(SceneManager *manager, SceneNode *parent, Real radius, Real
 			free_contacter++;;
 		}
 		raypoint=nodes[node2].RelPosition+rayvec2;
-		init_node(nodebase+2*rays+i*2+1, raypoint.x, raypoint.y, raypoint.z, NODE_NORMAL, 0.33*mass/(2.0*rays),1, WHEEL_FRICTION_COEF*width, -1,  free_wheel);
+		init_node(nodebase+2*rays+i*2+1, raypoint.x, raypoint.y, raypoint.z, NODE_NORMAL, 0.33*mass/(2.0*rays),1, WHEEL_FRICTION_COEF*width, -1,  free_wheel, default_node_friction, default_node_volume, default_node_surface);
 
 		// inner ring has wheelid%2 == 0
 		nodes[nodebase+2*rays+i*2+1].iswheel = free_wheel*2+2;
@@ -5233,7 +5266,7 @@ void Beam::addWheel2(SceneManager *manager, SceneNode *parent, Real radius, Real
 	}
 }
 
-void Beam::init_node(int pos, Real x, Real y, Real z, int type, Real m, int iswheel, Real friction, int id, int wheelid)
+void Beam::init_node(int pos, Real x, Real y, Real z, int type, Real m, int iswheel, Real friction, int id, int wheelid, Real nfriction, Real nvolume, Real nsurface, Real nloadweight)
 {
 	nodes[pos].AbsPosition=Vector3(x,y,z);
 	nodes[pos].RelPosition=Vector3(x,y,z)-origin;
@@ -5249,7 +5282,16 @@ void Beam::init_node(int pos, Real x, Real y, Real z, int type, Real m, int iswh
 	nodes[pos].mass=m;
 	nodes[pos].iswheel=iswheel;
 	nodes[pos].wheelid=wheelid;
-	nodes[pos].friction=friction;
+	nodes[pos].friction_coef=nfriction;
+	nodes[pos].volume_coef=nvolume;
+	nodes[pos].surface_coef=nsurface;
+	if (nloadweight >=0.0f)
+	{
+		nodes[pos].masstype=NODE_LOADED;
+		nodes[pos].overrideMass=true;
+		nodes[pos].mass=nloadweight;
+	}
+	nodes[pos].disable_particles=false;
 	nodes[pos].masstype=type;
 	nodes[pos].contactless=0;
 	nodes[pos].contacted=0;
@@ -6599,7 +6641,7 @@ void Beam::calcForcesEuler(int doUpdate, Real dt, int step, int maxstep, Beam** 
 					collisions->nodeCollision(&nodes[i], i==cinecameranodepos[currentcamera], contacted, nodes[i].colltesttimer, &ns, &gm))
 				{
 					//FX
-					if (gm && doUpdate)
+					if (gm && doUpdate && !nodes[i].disable_particles)
 					{
 						DustPool *dp = DustManager::getSingleton().getGroundModelDustPool(gm);
 						if(dp)
