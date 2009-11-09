@@ -201,7 +201,7 @@ public:
 		tst->Wrap(TXTWRAP);
 		mainSizer->Add(tst=new wxStaticText(this, wxID_ANY, _T("Before installing, make sure Rigs of Rods is not running, and that your internet connection is available.\n")), 0, wxALL, 5);
 		tst->Wrap(TXTWRAP);
-		mainSizer->Add(tst=new wxStaticText(this, wxID_ANY, _T("If you use a firewall, please allow this program to access to Internet.\n")), 0, wxALL, 5);
+		mainSizer->Add(tst=new wxStaticText(this, wxID_ANY, _T("If you are using a firewall, please allow this program to access the Internet.\n")), 0, wxALL, 5);
 		tst->Wrap(TXTWRAP);
 		mainSizer->Add(tst=new wxStaticText(this, wxID_ANY, _T("Click on Next to continue.\n")), 0, wxALL, 5);
 		tst->Wrap(TXTWRAP);
@@ -278,9 +278,9 @@ public:
 			dfont.SetPointSize(dfont.GetPointSize()+2);
 			tst->SetFont(dfont);
 			
-			mainSizer->Add(tst=new wxStaticText(this, wxID_ANY, _T("Choose \"Update\" to update Rigs of Rods to the latest version with faster download time.\n")), 0, wxALL, 5);
+			mainSizer->Add(tst=new wxStaticText(this, wxID_ANY, _T("Choose \"Update\" to update Rigs of Rods to the latest version with faster download time than downloading the entire game.\n")), 0, wxALL, 5);
 			tst->Wrap(TXTWRAP);
-			mainSizer->Add(tst=new wxStaticText(this, wxID_ANY, _T("If you choose \"Uninstall\", Rigs of Rods will be deleted from your disk.\n")), 0, wxALL, 5);
+			mainSizer->Add(tst=new wxStaticText(this, wxID_ANY, _T("If you choose \"Uninstall\", Rigs of Rods will be deleted from your hard drive.\n")), 0, wxALL, 5);
 			tst->Wrap(TXTWRAP);
 		}
 		wxString choices[4];
