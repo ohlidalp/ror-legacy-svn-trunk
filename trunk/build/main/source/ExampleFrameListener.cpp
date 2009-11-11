@@ -965,8 +965,8 @@ ExampleFrameListener::ExampleFrameListener(RenderWindow* win, Camera* cam, Scene
 	enablePosStor = (SETTINGS.getSetting("Position Storage")=="Yes");
 	objectCounter=0;
 	hdrListener=0;
-	mLens=0;
-	mDepthOfFieldEffect=0;
+	mDOF=0;
+	mDOFDebug=false;
 	mouseGrabForce=100000.0f;
 	eflsingleton=this;
 
@@ -2728,6 +2728,43 @@ bool ExampleFrameListener::updateEvents(float dt)
 	}
 	if(GUI_MainMenu::getSingleton().getVisible()) return true; // disable input events in menu mode
 
+
+	if (INPUTENGINE.getEventBoolValueBounce(EV_DOF_DEBUG, 0.5f) && mDOF)
+	{
+		mDOFDebug = !mDOFDebug;
+		mDOF->setDebugEnabled(mDOFDebug);
+	}
+	
+	// special keys for the debug mode
+	if(mDOF && mDOFDebug)
+	{
+		if(INPUTENGINE.getEventBoolValueBounce(EV_DOF_DEBUG_TOGGLE_FOCUS_MODE, 1.0f))
+			mDOF->toggleFocusMode();
+		
+		// zoom
+		if(INPUTENGINE.getEventBoolValue(EV_DOF_DEBUG_ZOOM_IN))
+			mDOF->zoomView(-dt);
+		else if(INPUTENGINE.getEventBoolValue(EV_DOF_DEBUG_ZOOM_OUT))
+			mDOF->zoomView(dt);
+		
+		// aperture
+		if(INPUTENGINE.getEventBoolValue(EV_DOF_DEBUG_APERTURE_MORE))
+			mDOF->setAperture(-5*dt);
+		else if(INPUTENGINE.getEventBoolValue(EV_DOF_DEBUG_APERTURE_LESS))
+			mDOF->setAperture(5*dt);
+		
+		// focus
+		const OIS::MouseState mstate = INPUTENGINE.getMouseState();
+		Real offset = 0.05f * mstate.Z.rel;
+		if(INPUTENGINE.getEventBoolValue(EV_DOF_DEBUG_FOCUS_IN))
+			offset -= 120.0 * dt;
+		else if(INPUTENGINE.getEventBoolValue(EV_DOF_DEBUG_FOCUS_OUT))
+			offset += 120.0 * dt;
+		mDOF->moveFocus(offset);
+		
+		// if in DOF debug, we wont process any other events
+		return true;
+	}
 /* -- disabled for now ... why we should check for this if it does not call anything?
    -- enable this again when truckToolGUI is available again
 
@@ -5203,14 +5240,10 @@ void ExampleFrameListener::loadTerrain(String terrainfile)
 	bool useDOF = (SETTINGS.getSetting("DOF") == "Yes");
 	if(useDOF)
 	{
-		mDepthOfFieldEffect = new DepthOfFieldEffect(mCamera->getViewport());
-		mLens = new Lens(mCamera->getFOVy(), 1.5);
-		mLens->setFocalDistance(171.5);
-		mDepthOfFieldEffect->setEnabled(true);
-		
-		// set material debug to DOF debug
-		OverlayManager::getSingleton().getOverlayElement("tracks/DebugBeamTiming/MaterialDebug1")->setMaterialName("DoF_DepthDebug");
-		((TextAreaOverlayElement *)OverlayManager::getSingleton().getOverlayElement("tracks/DebugBeamTiming/MaterialDebugText1"))->setCaption("Depth of Field debug");
+		mDOF = new DOFManager(mRoot, mCamera, mSceneMgr);
+		mDOF->setEnabled(true);
+		// debug enabled via event
+		mDOF->setDebugEnabled(false);
 	}
 
 
@@ -6948,47 +6981,6 @@ void ExampleFrameListener::moveCamera(float dt)
 		else
 			w->moveTo(mCamera, w->getHeight());
 	}
-
-	// update DOF
-	if(mDepthOfFieldEffect)
-	{
-		Real currentFocalDistance = mLens->getFocalDistance();
-		Real targetFocalDistance = currentFocalDistance;
-
-		// Ryan Booker's (eyevee99) ray scene query auto focus
-		Ray focusRay;
-		focusRay.setOrigin(mCamera->getDerivedPosition());
-		focusRay.setDirection(mCamera->getDerivedDirection());
-
-		RaySceneQuery* query = 0;
-		query = mScene->createRayQuery(focusRay);
-		query->setRay(focusRay);
-		RaySceneQueryResult& queryResult = query->execute();
-		RaySceneQueryResult::iterator i = queryResult.begin();
-		if (i != queryResult.end())
-			targetFocalDistance = i->distance;
-		//else
-		//	mLens->setFocalDistance(Math::POS_INFINITY);
-		mScene->destroyQuery(query);
-
-		// Slowly adjust the focal distance (emulate auto focus motor)
-		if (currentFocalDistance < targetFocalDistance)
-		{
-			mLens->setFocalDistance(
-				std::min<Real>(currentFocalDistance + 240.0 * dt, targetFocalDistance));
-		}
-		else if (currentFocalDistance > targetFocalDistance)
-		{
-			mLens->setFocalDistance(
-				std::max<Real>(currentFocalDistance - 240.0 * dt, targetFocalDistance));
-		}
-		
-		float nearDepth, focalDepth, farDepth;
-		mLens->recalculateDepthOfField(nearDepth, focalDepth, farDepth);
-		mDepthOfFieldEffect->setFocalDepths(nearDepth, focalDepth, farDepth);
-		mDepthOfFieldEffect->setEnabled(true);
-	}
-
 }
 
 

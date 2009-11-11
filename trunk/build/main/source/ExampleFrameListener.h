@@ -188,8 +188,8 @@ typedef struct
 } animated_object_t;
 
 class ExampleFrameListener;
-class DepthOfFieldEffect;
-class Lens;
+class DOFManager;
+
 extern ExampleFrameListener *eflsingleton;
 
 
@@ -206,8 +206,6 @@ protected:
 	int mSceneDetailIndex;
 	Real mMoveSpeed;
 	bool benchmarking;
-	DepthOfFieldEffect *mDepthOfFieldEffect;
-	Lens *mLens;
 	//    Real dirSpeed;
 	Degree mRotateSpeed;
 	Overlay* directionOverlay;
@@ -263,6 +261,8 @@ protected:
 	TextAreaOverlayElement* alt_value_taoe;
 	TextAreaOverlayElement* boat_depth_value_taoe;
 
+	DOFManager *mDOF;
+	bool mDOFDebug;
 	OverlayElement* mouseElement;
 	int mouseX;
 	int mouseY;
