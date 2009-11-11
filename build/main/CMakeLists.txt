@@ -211,6 +211,12 @@ set(ror_src
 	source/DustManager.h
 	source/DustManager.cpp
 	source/groundmodel.h
+	
+	source/DepthOfFieldEffect.h
+	source/DepthOfFieldEffect.cpp
+	source/Lens.h
+	source/Lens.cpp
+
 )
 
 include_directories (OgreMain/include Dependencies/include)
