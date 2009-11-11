@@ -5,6 +5,7 @@
 
 #include "DepthOfFieldEffect.h"
 #include "Ogre.h"
+#include "Lens.h"
 
 using namespace Ogre;
 
@@ -83,8 +84,8 @@ void DepthOfFieldEffect::createDepthRenderTexture()
     depthViewport->setRenderQueueInvocationSequenceName("DoF_Depth");
 
 	// update debug texture
-	//MaterialPtr mat = MaterialManager::getSingleton().getByName("DoF_DepthDebug");
-	//mat->getTechnique(0)->getPass(0)->getTextureUnitState(0)->setTextureName("DoF_Depth");
+	MaterialPtr mat = MaterialManager::getSingleton().getByName("DoF_DepthDebug");
+	mat->getTechnique(0)->getPass(0)->getTextureUnitState(0)->setTextureName("DoF_Depth");
 
 }
 
@@ -237,4 +238,201 @@ bool DepthOfFieldEffect::renderableQueued(Renderable* rend, Ogre::uint8 groupID,
 	// Replace the technique of all renderables
 	*ppTech = mDepthTechnique;
 	return true;
+}
+
+/////////////////////////////////////////////////////////////////////////////////////
+// DOFManager below
+const char* DOFManager::FOCUS_MODES[3] = {"auto", "manual", "pinhole"};
+
+DOFManager::DOFManager(Ogre::Root *mRoot, Camera* camera, SceneManager* sceneManager) : mSceneManager(sceneManager), mFocusMode(Manual), mRoot(mRoot), debugEnabled(false), mCamera(camera)
+{
+	mDepthOfFieldEffect = new DepthOfFieldEffect(mCamera->getViewport());
+	mLens = new Lens(mCamera->getFOVy(), 1.5);
+	mLens->setFocalDistance(171.5);
+	mDepthOfFieldEffect->setEnabled(false);
+
+	// Do not Show overlays - only crash if the overlays are missing ;)
+	OverlayManager::getSingleton().getByName("DoF_SettingsOverlay")->hide();
+	OverlayManager::getSingleton().getByName("DoF_FocusAreaOverlay")->hide();
+	OverlayManager::getSingleton().getByName("DoF_DepthDebugOverlay")->hide();
+
+	// Initialise and show debug depth overlay
+	MaterialPtr material = MaterialManager::getSingleton().getByName("DoF_DepthDebug");
+	material->getTechnique(0)->getPass(0)->getTextureUnitState(0)->setTextureName("DoF_Depth");
+	
+	// debug overlays
+	OverlayManager& om = OverlayManager::getSingleton();
+	mFocalLengthText = om.getOverlayElement("DoF_FocalLength");
+	mFStopKey = om.getOverlayElement("DoF_FStopKey");
+	mFStopText = om.getOverlayElement("DoF_FStop");
+	mFocusModeText = om.getOverlayElement("DoF_FocusMode");
+	mFocalDistanceKey = om.getOverlayElement("DoF_FocalDistanceKey");
+	mFocalDistanceText = om.getOverlayElement("DoF_FocalDistance");
+}
+
+void DOFManager::setEnabled(bool enabled)
+{
+	if(enabled && !mDepthOfFieldEffect->getEnabled())
+	{
+		// turn on
+		mDepthOfFieldEffect->setEnabled(true);
+		mRoot->addFrameListener(this);
+	} else if(!enabled && mDepthOfFieldEffect->getEnabled())
+	{
+		// turn off
+		mDepthOfFieldEffect->setEnabled(false);
+		mRoot->removeFrameListener(this);
+	}
+}
+
+void DOFManager::setDebugEnabled(bool enabled)
+{
+	debugEnabled = enabled;
+	if(debugEnabled)
+	{
+		OverlayManager::getSingleton().getByName("DoF_SettingsOverlay")->show();
+		OverlayManager::getSingleton().getByName("DoF_FocusAreaOverlay")->show();
+		OverlayManager::getSingleton().getByName("DoF_DepthDebugOverlay")->show();
+	} else
+	{
+		OverlayManager::getSingleton().getByName("DoF_SettingsOverlay")->hide();
+		OverlayManager::getSingleton().getByName("DoF_FocusAreaOverlay")->hide();
+		OverlayManager::getSingleton().getByName("DoF_DepthDebugOverlay")->hide();
+	}
+}
+
+bool DOFManager::getDebugEnabled()
+{
+	return debugEnabled;
+}
+
+bool DOFManager::getEnabled()
+{
+	return mDepthOfFieldEffect->getEnabled();
+}
+
+void DOFManager::toggleFocusMode()
+{
+	mFocusMode = static_cast<FocusMode>((mFocusMode + 1) % 3);
+}
+
+void DOFManager::zoomView(float delta)
+{
+	Real fieldOfView = mLens->getFieldOfView().valueRadians();
+	fieldOfView += delta;
+	fieldOfView = std::max<Real>(0.1, std::min<Real>(fieldOfView, 2.0));
+	mLens->setFieldOfView(Radian(fieldOfView));
+	mCamera->setFOVy(Radian(fieldOfView));
+}
+
+void DOFManager::setAperture(float delta)
+{
+	if (mFocusMode == Pinhole)
+		return;
+	Real fStop = mLens->getFStop();
+	fStop += delta;
+	fStop = std::max<Real>(0.5, std::min<Real>(fStop, 12.0));
+	mLens->setFStop(fStop);
+}
+
+void DOFManager::moveFocus(float delta)
+{
+	mLens->setFocalDistance(mLens->getFocalDistance() + delta);
+}
+
+bool DOFManager::frameStarted(const FrameEvent& evt)
+{
+	// Focusing
+	switch (mFocusMode)
+	{
+		case Auto:
+		{
+			// TODO: Replace with accurate ray/triangle collision detection
+
+			// TODO: Continous AF / triggered
+
+			Real currentFocalDistance = mLens->getFocalDistance();
+			Real targetFocalDistance = currentFocalDistance;
+
+			// Ryan Booker's (eyevee99) ray scene query auto focus
+			Ray focusRay;
+			focusRay.setOrigin(mCamera->getDerivedPosition());
+			focusRay.setDirection(mCamera->getDerivedDirection());
+
+			RaySceneQuery* query = 0;
+			query = mSceneManager->createRayQuery(focusRay);
+			query->setRay(focusRay);
+			RaySceneQueryResult& queryResult = query->execute();
+			RaySceneQueryResult::iterator i = queryResult.begin();
+			if (i != queryResult.end())
+				targetFocalDistance = i->distance;
+			//else
+			//	mLens->setFocalDistance(Math::POS_INFINITY);
+			mSceneManager->destroyQuery(query);
+
+			// Slowly adjust the focal distance (emulate auto focus motor)
+			if (currentFocalDistance < targetFocalDistance)
+			{
+				mLens->setFocalDistance(
+					std::min<Real>(currentFocalDistance + 240.0 * evt.timeSinceLastFrame, targetFocalDistance));
+			}
+			else if (currentFocalDistance > targetFocalDistance)
+			{
+				mLens->setFocalDistance(
+					std::max<Real>(currentFocalDistance - 240.0 * evt.timeSinceLastFrame, targetFocalDistance));
+			}
+
+			break;
+		}
+
+		case Manual:
+			//we set the values elsewhere
+			break;
+	}
+
+	// Update Depth of Field effect
+	if (mFocusMode != Pinhole)
+	{
+		mDepthOfFieldEffect->setEnabled(true);
+
+		// Calculate and set depth of field using lens
+		float nearDepth, focalDepth, farDepth;
+		mLens->recalculateDepthOfField(nearDepth, focalDepth, farDepth);
+		mDepthOfFieldEffect->setFocalDepths(nearDepth, focalDepth, farDepth);
+	}
+	else
+	{
+		mDepthOfFieldEffect->setEnabled(false);
+	}
+
+	// Update overlay
+	updateOverlay();
+
+	return true;
+}
+
+void DOFManager::updateOverlay()
+{
+	mFocalLengthText->setCaption(
+		StringConverter::toString(mLens->getFocalLength(), 1, 0, 32, std::ios::fixed) + " (" +
+		StringConverter::toString(mLens->getFieldOfView().valueDegrees(), 1, 0, 32, std::ios::fixed) + ")");
+	mFocusModeText->setCaption(FOCUS_MODES[mFocusMode]);
+
+	if (mFocusMode != Pinhole)
+	{
+		mFStopKey->setCaption("[1,2]");
+		mFStopText->setCaption(StringConverter::toString(mLens->getFStop(), 1, 0, 32, std::ios::fixed));
+		if (mFocusMode == Manual)
+			mFocalDistanceKey->setCaption("[Wheel]");
+		else
+			mFocalDistanceKey->setCaption("[]");
+		mFocalDistanceText->setCaption(StringConverter::toString(mLens->getFocalDistance(), 1, 0, 32, std::ios::fixed));
+	}
+	else
+	{
+		mFStopKey->setCaption("[]");
+		mFStopText->setCaption("N/A");
+		mFocalDistanceKey->setCaption("[]");
+		mFocalDistanceText->setCaption("N/A");
+	}
 }

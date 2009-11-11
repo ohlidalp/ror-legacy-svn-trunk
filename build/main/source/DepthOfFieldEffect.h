@@ -9,7 +9,10 @@
 #include "OgrePrerequisites.h"
 #include "OgreCompositorInstance.h"
 #include "OgreRenderTargetListener.h"
+#include "OgreFrameListener.h"
 #include "OgreRenderQueue.h"
+
+class Lens;
 
 class DepthOfFieldEffect : public Ogre::CompositorInstance::Listener,
 						   public Ogre::RenderTargetListener,
@@ -63,6 +66,44 @@ private:
 	// Implementation of Ogre::RenderQueue::RenderableListener
 	virtual bool renderableQueued(Ogre::Renderable* rend, Ogre::uint8 groupID,
 		Ogre::ushort priority, Ogre::Technique** ppTech);
+};
+
+class DOFManager : public Ogre::FrameListener
+{
+public:
+	DOFManager(Ogre::Root *mRoot, Ogre::Camera* camera, Ogre::SceneManager* sceneManager);
+
+	void setEnabled(bool enabled);
+	bool getEnabled();
+
+	void setDebugEnabled(bool enabled);
+	bool getDebugEnabled();
+
+	// controls
+	void toggleFocusMode();
+	void zoomView(float delta);
+	void setAperture(float delta);
+	void DOFManager::moveFocus(float delta);
+
+protected:
+	Ogre::Root *mRoot;
+	Ogre::SceneManager* mSceneManager;
+	Ogre::Camera *mCamera;
+	DepthOfFieldEffect* mDepthOfFieldEffect;
+	Lens* mLens;
+	bool debugEnabled;
+	enum FocusMode {Auto, Manual, Pinhole};
+	static const char* FOCUS_MODES[3];
+	FocusMode mFocusMode;
+	Ogre::OverlayElement* mFocalLengthText;
+	Ogre::OverlayElement* mFStopKey;
+	Ogre::OverlayElement* mFStopText;
+	Ogre::OverlayElement* mFocusModeText;
+	Ogre::OverlayElement* mFocalDistanceKey;
+	Ogre::OverlayElement* mFocalDistanceText;
+
+	virtual bool frameStarted(const Ogre::FrameEvent& evt);
+	void updateOverlay();
 };
 
 #endif // __DepthOfFieldEffect_H__

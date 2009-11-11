@@ -1447,6 +1447,15 @@ eventInfo_t eventInfo[] = {
 	{ "TRUCK_LOAD_POS8", EV_TRUCK_LOAD_POS8, "Keyboard EXPL+ALT+8", _L("load position under slot 8") },
 	{ "TRUCK_LOAD_POS9", EV_TRUCK_LOAD_POS9, "Keyboard EXPL+ALT+9", _L("load position under slot 9") },
 	{ "TRUCK_LOAD_POS10", EV_TRUCK_LOAD_POS10, "Keyboard EXPL+ALT+0", _L("load position under slot 10") },
+	
+	{ "DOF_DEBUG", EV_DOF_DEBUG, "Keyboard EXPL+ALT+D", _L("turn on the Depth of field debug view") },
+	{ "DOF_DEBUG_TOGGLE_FOCUS_MODE", EV_DOF_DEBUG_TOGGLE_FOCUS_MODE, "Keyboard EXPL+SPACE", _L("toggle the DOF focus mode") },
+	{ "DOF_DEBUG_ZOOM_IN", EV_DOF_DEBUG_ZOOM_IN, "Keyboard EXPL+Q", _L("zoom in") },
+	{ "DOF_DEBUG_ZOOM_OUT", EV_DOF_DEBUG_ZOOM_OUT, "Keyboard EXPL+Z", _L("zoom in") },
+	{ "DOF_DEBUG_APERTURE_MORE", EV_DOF_DEBUG_APERTURE_MORE, "Keyboard EXPL+1", _L("more aperture") },
+	{ "DOF_DEBUG_APERTURE_LESS", EV_DOF_DEBUG_APERTURE_LESS, "Keyboard EXPL+2", _L("less aperture") },
+	{ "DOF_DEBUG_FOCUS_IN", EV_DOF_DEBUG_FOCUS_IN, "Keyboard EXPL+3", _L("move focus in") },
+	{ "DOF_DEBUG_FOCUS_OUT", EV_DOF_DEBUG_FOCUS_OUT, "Keyboard EXPL+4", _L("move focus out") },
 
 	// the end, DO NOT MODIFY
 	{"", -1, "", ""},
