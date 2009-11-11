@@ -83,7 +83,7 @@ public:
 	void toggleFocusMode();
 	void zoomView(float delta);
 	void setAperture(float delta);
-	void DOFManager::moveFocus(float delta);
+	void moveFocus(float delta);
 
 protected:
 	Ogre::Root *mRoot;
