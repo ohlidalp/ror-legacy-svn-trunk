@@ -506,7 +506,7 @@ Beam::Beam(int tnum, SceneManager *manager, SceneNode *parent, RenderWindow* win
 		int steps = 0;
 		if(!rpl.empty())
 			steps = StringConverter::parseInt(rpl);
-		if(steps == -1)
+		if(steps <= 0)
 			replayPrecision = 0.0f;
 		else
 			replayPrecision = 1.0f / ((float)steps);
