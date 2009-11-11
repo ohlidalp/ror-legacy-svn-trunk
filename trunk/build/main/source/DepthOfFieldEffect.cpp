@@ -91,7 +91,7 @@ void DepthOfFieldEffect::createDepthRenderTexture()
 
 void DepthOfFieldEffect::destroyDepthRenderTexture()
 {
-	// TODO
+	TextureManager::getSingleton().remove("DoF_Depth");
 }
 
 void DepthOfFieldEffect::createCompositor()
@@ -152,7 +152,7 @@ void DepthOfFieldEffect::createCompositor()
 
 void DepthOfFieldEffect::destroyCompositor()
 {
-	// TODO
+	CompositorManager::getSingleton().remove("DoF_Compositor");
 }
 
 void DepthOfFieldEffect::addCompositor()
@@ -167,7 +167,7 @@ void DepthOfFieldEffect::addCompositor()
 
 void DepthOfFieldEffect::removeCompositor()
 {
-	// TODO
+	CompositorManager::getSingleton().removeCompositor(mViewport, "DoF_Compositor_test");
 }
 
 void DepthOfFieldEffect::notifyMaterialSetup(uint32 passId, MaterialPtr& material)
@@ -249,7 +249,9 @@ DOFManager::DOFManager(Ogre::Root *mRoot, Camera* camera, SceneManager* sceneMan
 	mDepthOfFieldEffect = new DepthOfFieldEffect(mCamera->getViewport());
 	mLens = new Lens(mCamera->getFOVy(), 1.5);
 	mLens->setFocalDistance(171.5);
+	//mLens->setFStop(3);
 	mDepthOfFieldEffect->setEnabled(false);
+	mRoot->addFrameListener(this);
 
 	// Do not Show overlays - only crash if the overlays are missing ;)
 	OverlayManager::getSingleton().getByName("DoF_SettingsOverlay")->hide();
@@ -272,6 +274,9 @@ DOFManager::DOFManager(Ogre::Root *mRoot, Camera* camera, SceneManager* sceneMan
 
 void DOFManager::setEnabled(bool enabled)
 {
+	mDepthOfFieldEffect->setEnabled(enabled);
+	/*
+	// crashes for some reason
 	if(enabled && !mDepthOfFieldEffect->getEnabled())
 	{
 		// turn on
@@ -283,6 +288,7 @@ void DOFManager::setEnabled(bool enabled)
 		mDepthOfFieldEffect->setEnabled(false);
 		mRoot->removeFrameListener(this);
 	}
+	*/
 }
 
 void DOFManager::setDebugEnabled(bool enabled)
@@ -413,6 +419,8 @@ bool DOFManager::frameStarted(const FrameEvent& evt)
 
 void DOFManager::updateOverlay()
 {
+	if(!debugEnabled) return;
+
 	mFocalLengthText->setCaption(
 		StringConverter::toString(mLens->getFocalLength(), 1, 0, 32, std::ios::fixed) + " (" +
 		StringConverter::toString(mLens->getFieldOfView().valueDegrees(), 1, 0, 32, std::ios::fixed) + ")");

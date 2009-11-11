@@ -2729,10 +2729,62 @@ bool ExampleFrameListener::updateEvents(float dt)
 	if(GUI_MainMenu::getSingleton().getVisible()) return true; // disable input events in menu mode
 
 
+	
+	if (INPUTENGINE.getEventBoolValueBounce(EV_DOF_TOGGLE, 0.5f) && mDOF)
+	{
+		bool enabled = !mDOF->getEnabled();
+		if(!enabled && mDOFDebug)
+		{
+			// turn off debug if on
+			mDOFDebug = false;
+			mDOF->setDebugEnabled(mDOFDebug);
+		}
+		mDOF->setEnabled(enabled);
+	}
 	if (INPUTENGINE.getEventBoolValueBounce(EV_DOF_DEBUG, 0.5f) && mDOF)
 	{
 		mDOFDebug = !mDOFDebug;
 		mDOF->setDebugEnabled(mDOFDebug);
+	}
+	if (INPUTENGINE.getEventBoolValueBounce(EV_COMMON_SCREENSHOT_BIG, 0.5f))
+	{
+		int mNumScreenShots=0;
+		String path = SETTINGS.getSetting("User Path");
+		String tmp = path + String("screenshot_big_") + StringConverter::toString(++mNumScreenShots) + String(".") + String(screenshotformat);
+		while(fileExists(tmp.c_str()))
+			tmp = path + String("screenshot_big_") + StringConverter::toString(++mNumScreenShots) + String(".") + String(screenshotformat);
+
+		tmp = String("screenshot_big_") + StringConverter::toString(++mNumScreenShots);
+
+		// hide flash messages
+		flashMessage(0);
+
+		hideGUI(true);
+
+		gridScreenshots(mWindow, mCamera, 6, path, tmp, "."+String(screenshotformat), true);
+
+		hideGUI(false);
+
+		LogManager::getSingleton().logMessage("Wrote big screenshot : " + tmp);
+		flashMessage(String("Wrote big screenshot : ") + tmp);
+
+	} else if (INPUTENGINE.getEventBoolValueBounce(EV_COMMON_SCREENSHOT, 0.5f))
+	{
+		int mNumScreenShots=0;
+		String tmp = SETTINGS.getSetting("User Path") + String("screenshot_") + StringConverter::toString(++mNumScreenShots) + String(".") + String(screenshotformat);
+		while(fileExists(tmp.c_str()))
+			tmp = SETTINGS.getSetting("User Path") + String("screenshot_") + StringConverter::toString(++mNumScreenShots) + String(".") + String(screenshotformat);
+
+		LogManager::getSingleton().logMessage("Wrote screenshot : " + tmp);
+		// hide any flash message
+		flashMessage(0);
+		mWindow->update();
+
+		mWindow->writeContentsToFile(tmp);
+		char tmp1[255];
+		String ssmsg = _L("wrote screenshot:");
+		sprintf(tmp1, "%s %d", ssmsg.c_str(), mNumScreenShots);
+		flashMessage(tmp1);
 	}
 	
 	// special keys for the debug mode
@@ -2789,47 +2841,6 @@ bool ExampleFrameListener::updateEvents(float dt)
 		mWindow->update();
 		String fn = saveTerrainMesh();
 		flashMessage("terrain saved to file: " + fn);
-	}
-
-	if (INPUTENGINE.getEventBoolValueBounce(EV_COMMON_SCREENSHOT_BIG, 0.5f))
-	{
-		int mNumScreenShots=0;
-		String path = SETTINGS.getSetting("User Path");
-		String tmp = path + String("screenshot_big_") + StringConverter::toString(++mNumScreenShots) + String(".") + String(screenshotformat);
-		while(fileExists(tmp.c_str()))
-			tmp = path + String("screenshot_big_") + StringConverter::toString(++mNumScreenShots) + String(".") + String(screenshotformat);
-
-		tmp = String("screenshot_big_") + StringConverter::toString(++mNumScreenShots);
-
-		// hide flash messages
-		flashMessage(0);
-
-		hideGUI(true);
-
-		gridScreenshots(mWindow, mCamera, 6, path, tmp, "."+String(screenshotformat), true);
-
-		hideGUI(false);
-
-		LogManager::getSingleton().logMessage("Wrote big screenshot : " + tmp);
-		flashMessage(String("Wrote big screenshot : ") + tmp);
-
-	} else if (INPUTENGINE.getEventBoolValueBounce(EV_COMMON_SCREENSHOT, 0.5f))
-	{
-		int mNumScreenShots=0;
-		String tmp = SETTINGS.getSetting("User Path") + String("screenshot_") + StringConverter::toString(++mNumScreenShots) + String(".") + String(screenshotformat);
-		while(fileExists(tmp.c_str()))
-			tmp = SETTINGS.getSetting("User Path") + String("screenshot_") + StringConverter::toString(++mNumScreenShots) + String(".") + String(screenshotformat);
-
-		LogManager::getSingleton().logMessage("Wrote screenshot : " + tmp);
-		// hide any flash message
-		flashMessage(0);
-		mWindow->update();
-
-		mWindow->writeContentsToFile(tmp);
-		char tmp1[255];
-		String ssmsg = _L("wrote screenshot:");
-		sprintf(tmp1, "%s %d", ssmsg.c_str(), mNumScreenShots);
-		flashMessage(tmp1);
 	}
 
 	// position storage

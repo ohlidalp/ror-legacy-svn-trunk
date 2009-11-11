@@ -1448,6 +1448,8 @@ eventInfo_t eventInfo[] = {
 	{ "TRUCK_LOAD_POS9", EV_TRUCK_LOAD_POS9, "Keyboard EXPL+ALT+9", _L("load position under slot 9") },
 	{ "TRUCK_LOAD_POS10", EV_TRUCK_LOAD_POS10, "Keyboard EXPL+ALT+0", _L("load position under slot 10") },
 	
+	
+	{ "DOF_TOGGLE", EV_DOF_TOGGLE, "Keyboard EXPL+CTRL+D", _L("turn on Depth of Field on or off") },
 	{ "DOF_DEBUG", EV_DOF_DEBUG, "Keyboard EXPL+ALT+D", _L("turn on the Depth of field debug view") },
 	{ "DOF_DEBUG_TOGGLE_FOCUS_MODE", EV_DOF_DEBUG_TOGGLE_FOCUS_MODE, "Keyboard EXPL+SPACE", _L("toggle the DOF focus mode") },
 	{ "DOF_DEBUG_ZOOM_IN", EV_DOF_DEBUG_ZOOM_IN, "Keyboard EXPL+Q", _L("zoom in") },
