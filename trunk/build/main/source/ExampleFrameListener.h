@@ -188,6 +188,8 @@ typedef struct
 } animated_object_t;
 
 class ExampleFrameListener;
+class DepthOfFieldEffect;
+class Lens;
 extern ExampleFrameListener *eflsingleton;
 
 
@@ -204,6 +206,8 @@ protected:
 	int mSceneDetailIndex;
 	Real mMoveSpeed;
 	bool benchmarking;
+	DepthOfFieldEffect *mDepthOfFieldEffect;
+	Lens *mLens;
 	//    Real dirSpeed;
 	Degree mRotateSpeed;
 	Overlay* directionOverlay;
