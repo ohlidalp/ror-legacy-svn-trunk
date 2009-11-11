@@ -26,6 +26,8 @@ along with Rigs of Rods.  If not, see <http://www.gnu.org/licenses/>.
 #include "ssaolistener.h"
 #include "main.h"
 #include "ScopeLog.h"
+#include "DepthOfFieldEffect.h"
+#include "Lens.h"
 
 #include "CharacterFactory.h"
 #include "BeamFactory.h"
@@ -963,6 +965,8 @@ ExampleFrameListener::ExampleFrameListener(RenderWindow* win, Camera* cam, Scene
 	enablePosStor = (SETTINGS.getSetting("Position Storage")=="Yes");
 	objectCounter=0;
 	hdrListener=0;
+	mLens=0;
+	mDepthOfFieldEffect=0;
 	mouseGrabForce=100000.0f;
 	eflsingleton=this;
 
@@ -5195,6 +5199,22 @@ void ExampleFrameListener::loadTerrain(String terrainfile)
 	if(useSSAO)
 		initSSAO();
 
+	// DOF?
+	bool useDOF = (SETTINGS.getSetting("DFO") == "Yes");
+	if(useDOF)
+	{
+		mDepthOfFieldEffect = new DepthOfFieldEffect(mCamera->getViewport());
+		mDepthOfFieldEffect->setFocalDepths(0.1f, 2.0f, 10.0f);
+		mLens = new Lens(mCamera->getFOVy(), 1.5);
+		mLens->setFocalDistance(171.5);
+		mDepthOfFieldEffect->setEnabled(true);
+		
+		// set material debug to DOF debug
+		OverlayManager::getSingleton().getOverlayElement("tracks/DebugBeamTiming/MaterialDebug1")->setMaterialName("DoF_DepthDebug");
+		((TextAreaOverlayElement *)OverlayManager::getSingleton().getOverlayElement("tracks/DebugBeamTiming/MaterialDebugText1"))->setCaption("Depth of Field debug");
+	}
+
+
 	// for menu effects
 	// not working currently :(
 	if (SETTINGS.getSetting("GaussianBlur") == "Yes")
@@ -6929,6 +6949,47 @@ void ExampleFrameListener::moveCamera(float dt)
 		else
 			w->moveTo(mCamera, w->getHeight());
 	}
+
+	// update DOF
+	if(mDepthOfFieldEffect)
+	{
+		Real currentFocalDistance = mLens->getFocalDistance();
+		Real targetFocalDistance = currentFocalDistance;
+
+		// Ryan Booker's (eyevee99) ray scene query auto focus
+		Ray focusRay;
+		focusRay.setOrigin(mCamera->getDerivedPosition());
+		focusRay.setDirection(mCamera->getDerivedDirection());
+
+		RaySceneQuery* query = 0;
+		query = mScene->createRayQuery(focusRay);
+		query->setRay(focusRay);
+		RaySceneQueryResult& queryResult = query->execute();
+		RaySceneQueryResult::iterator i = queryResult.begin();
+		if (i != queryResult.end())
+			targetFocalDistance = i->distance;
+		//else
+		//	mLens->setFocalDistance(Math::POS_INFINITY);
+		mScene->destroyQuery(query);
+
+		// Slowly adjust the focal distance (emulate auto focus motor)
+		if (currentFocalDistance < targetFocalDistance)
+		{
+			mLens->setFocalDistance(
+				std::min<Real>(currentFocalDistance + 240.0 * dt, targetFocalDistance));
+		}
+		else if (currentFocalDistance > targetFocalDistance)
+		{
+			mLens->setFocalDistance(
+				std::max<Real>(currentFocalDistance - 240.0 * dt, targetFocalDistance));
+		}
+		
+		float nearDepth, focalDepth, farDepth;
+		mLens->recalculateDepthOfField(nearDepth, focalDepth, farDepth);
+		mDepthOfFieldEffect->setFocalDepths(nearDepth, focalDepth, farDepth);
+		mDepthOfFieldEffect->setEnabled(true);
+	}
+
 }
 
 
