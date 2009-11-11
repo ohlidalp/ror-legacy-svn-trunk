@@ -5200,11 +5200,10 @@ void ExampleFrameListener::loadTerrain(String terrainfile)
 		initSSAO();
 
 	// DOF?
-	bool useDOF = (SETTINGS.getSetting("DFO") == "Yes");
+	bool useDOF = (SETTINGS.getSetting("DOF") == "Yes");
 	if(useDOF)
 	{
 		mDepthOfFieldEffect = new DepthOfFieldEffect(mCamera->getViewport());
-		mDepthOfFieldEffect->setFocalDepths(0.1f, 2.0f, 10.0f);
 		mLens = new Lens(mCamera->getFOVy(), 1.5);
 		mLens->setFocalDistance(171.5);
 		mDepthOfFieldEffect->setEnabled(true);
