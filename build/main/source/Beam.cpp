@@ -2907,8 +2907,8 @@ int Beam::loadTruck(const char* fname, SceneManager *manager, SceneNode *parent,
 						LogManager::getSingleton().logMessage("prop uses > 10k (" + StringConverter::toString(vertex_count) + ") vertices but does not provide its own LODs, will generate some now. This can take a while. Please add LODs when exporting the mesh, this prevents the automatic generation (and the waiting time).");
 
 						Ogre::Mesh::LodDistanceList default_dists;
-						default_dists.push_back(50);
-						default_dists.push_back(100);
+						//default_dists.push_back(50);
+						//default_dists.push_back(100);
 						default_dists.push_back(300);
 						mesh->generateLodLevels(default_dists, ProgressiveMesh::VRQ_PROPORTIONAL, Ogre::Real(0.8));
 
