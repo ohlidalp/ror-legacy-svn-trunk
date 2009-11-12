@@ -2236,9 +2236,9 @@ void ExampleFrameListener::loadObject(const char* name, float px, float py, floa
 	ground_model_t *gm = collisions->getGroundModelByString("concrete");
 	Ogre::Mesh::LodDistanceList dists;
 	Ogre::Mesh::LodDistanceList default_dists;
-	default_dists.push_back(50);
+	//default_dists.push_back(50);
 	default_dists.push_back(300);
-	default_dists.push_back(900);
+	//default_dists.push_back(900);
 	bool generateLod=false;
 	char eventname[256];
 	eventname[0]=0;
@@ -2255,7 +2255,7 @@ void ExampleFrameListener::loadObject(const char* name, float px, float py, floa
 		{
 			if(generateLod)
 			{
-				mainMesh->generateLodLevels(dists, ProgressiveMesh::VRQ_PROPORTIONAL, Ogre::Real(0.5));
+				mainMesh->generateLodLevels(dists, ProgressiveMesh::VRQ_PROPORTIONAL, Ogre::Real(0.8));
 			}
 			LogManager::getSingleton().logMessage("cloning Object LOD");
 			String lodName = mainMesh->getName()+"_LOD_"+StringConverter::toString(objectCounter++);
@@ -2447,7 +2447,7 @@ void ExampleFrameListener::loadObject(const char* name, float px, float py, floa
 		{
 			if(enable_object_lod)
 			{
-				mainMesh->generateLodLevels(default_dists, ProgressiveMesh::VRQ_PROPORTIONAL, Ogre::Real(0.5));
+				mainMesh->generateLodLevels(default_dists, ProgressiveMesh::VRQ_PROPORTIONAL, Ogre::Real(0.8));
 				Entity *teL = mSceneMgr->createEntity(String(oname)+"LOD", mainMesh->getName());
 				tenode->detachAllObjects();
 				tenode->attachObject(teL);
