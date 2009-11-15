@@ -163,6 +163,7 @@ typedef struct
 	Quaternion rotation;
 	char name[256];
 	bool ismachine;
+	bool freePosition;
 } truck_prepare_t;
 
 typedef struct
