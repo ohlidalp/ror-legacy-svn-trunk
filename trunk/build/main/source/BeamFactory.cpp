@@ -45,7 +45,7 @@ Beam *BeamFactory::createLocal()
 	return 0;
 }
 
-Beam *BeamFactory::createLocal(Ogre::Vector3 pos, Ogre::Quaternion rot, Ogre::String fname, collision_box_t *spawnbox, bool ismachine, int flareMode, std::vector<Ogre::String> *truckconfig, SkinPtr skin)
+Beam *BeamFactory::createLocal(Ogre::Vector3 pos, Ogre::Quaternion rot, Ogre::String fname, collision_box_t *spawnbox, bool ismachine, int flareMode, std::vector<Ogre::String> *truckconfig, SkinPtr skin, bool freePosition)
 {
 	bool networked=false, networking=false;
 	if(net) networking = true;
@@ -73,7 +73,12 @@ Beam *BeamFactory::createLocal(Ogre::Vector3 pos, Ogre::Quaternion rot, Ogre::St
 		ismachine,
 		flareMode,
 		truckconfig,
-		skin);
+		skin,
+		freePosition);
+
+	// lock slidenodes after spawning the truck?
+	if(b->getSlideNodesLockInstant())
+		b->toggleSlideNodeLock(efl->trucks, efl->free_truck, efl->free_truck);
 
 	efl->trucks[efl->free_truck] = b;
 

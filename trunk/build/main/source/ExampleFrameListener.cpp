@@ -5893,8 +5893,10 @@ void ExampleFrameListener::loadTerrain(String terrainfile)
 		r=sscanf(line, "%f, %f, %f, %f, %f, %f, %s %s %s",&ox,&oy,&oz, &rx, &ry, &rz, oname, type, name);
 		if(r<6)
 			continue;
-		if((!strcmp(oname, "truck")) || (!strcmp(oname, "load") || (!strcmp(oname, "machine")) || (!strcmp(oname, "boat")) ))
+		if((!strcmp(oname, "truck")) || (!strcmp(oname, "load") || (!strcmp(oname, "machine")) || (!strcmp(oname, "boat")) || (!strcmp(oname, "truck2")) ))
 		{
+			bool newFormat = (!strcmp(oname, "truck2"));
+
 			if(!strcmp(oname, "boat") && !w)
 				// no water so do not load boats!
 				continue;
@@ -5909,6 +5911,7 @@ void ExampleFrameListener::loadTerrain(String terrainfile)
 			truck_preload[truck_preload_num].px=ox;
 			truck_preload[truck_preload_num].py=oy;
 			truck_preload[truck_preload_num].pz=oz;
+			truck_preload[truck_preload_num].freePosition = newFormat;
 			truck_preload[truck_preload_num].ismachine=(!strcmp(oname, "machine"));
 			truck_preload[truck_preload_num].rotation=Quaternion(Degree(rx), Vector3::UNIT_X)*Quaternion(Degree(ry), Vector3::UNIT_Y)*Quaternion(Degree(rz), Vector3::UNIT_Z);
 			//truck_preload[truck_preload_num].ry=ry;
@@ -6334,10 +6337,10 @@ void ExampleFrameListener::initTrucks(bool loadmanual, Ogre::String selected, Og
 			BeamFactory::getSingleton().createLocal(spawnpos, spawnrot, selectedchr, 0, false, flaresMode, truckconfig);
 //IMI - on network mode we should be directly jump in
 			if (enterTruck)
-				{
+			{
 					cameramode = CAMERA_INT;
 					setCurrentTruck(free_truck);
-				}
+			}
 
 		} else
 		{
@@ -6372,7 +6375,7 @@ void ExampleFrameListener::initTrucks(bool loadmanual, Ogre::String selected, Og
 		int i;
 		for (i=0; i<truck_preload_num; i++)
 		{
-			BeamFactory::getSingleton().createLocal(Vector3(truck_preload[i].px, truck_preload[i].py, truck_preload[i].pz), truck_preload[i].rotation, truck_preload[i].name, 0, truck_preload[i].ismachine, flaresMode, truckconfig);
+			BeamFactory::getSingleton().createLocal(Vector3(truck_preload[i].px, truck_preload[i].py, truck_preload[i].pz), truck_preload[i].rotation, truck_preload[i].name, 0, truck_preload[i].ismachine, flaresMode, truckconfig, SkinPtr(), truck_preload[i].freePosition);
 
 			//trucks[free_truck]=new Beam(free_truck, mSceneMgr, mSceneMgr->getRootSceneNode(), mWindow, net,
 			//	&mapsizex, &mapsizez, truck_preload[i].px, truck_preload[i].py, truck_preload[i].pz, truck_preload[i].rotation, truck_preload[i].name, collisions, dustp, clumpp, sparksp, dripp, splashp, ripplep, hfinder, w, mCamera, mirror,false,false,false,0,truck_preload[i].ismachine,flaresMode, truckconfig);

@@ -627,7 +627,7 @@ public:
 #endif
 
 	//constructor
-	Beam(int tnum, SceneManager *manager, SceneNode *parent, RenderWindow* win, Network *net, float *mapsizex, float *mapsizez, Real px, Real py, Real pz, Quaternion rot, const char* fname, Collisions *icollisions, HeightFinder *mfinder, Water *w, Camera *pcam, Mirrors *mmirror, bool networked=false, bool networking=false, collision_box_t *spawnbox=NULL, bool ismachine=false, int flareMode=0, std::vector<Ogre::String> *truckconfig=0, SkinPtr skin=SkinPtr());
+	Beam(int tnum, SceneManager *manager, SceneNode *parent, RenderWindow* win, Network *net, float *mapsizex, float *mapsizez, Real px, Real py, Real pz, Quaternion rot, const char* fname, Collisions *icollisions, HeightFinder *mfinder, Water *w, Camera *pcam, Mirrors *mmirror, bool networked=false, bool networking=false, collision_box_t *spawnbox=NULL, bool ismachine=false, int flareMode=0, std::vector<Ogre::String> *truckconfig=0, SkinPtr skin=SkinPtr(), bool freeposition=false);
 	void activate();
 	void desactivate();
 	void pushNetwork(char* data, int size);
@@ -651,7 +651,8 @@ public:
 	float warea(Vector3 ref, Vector3 x, Vector3 y, Vector3 aref);
 	void wash_calculator(Quaternion rot);
 	void resetAngle(float rot);
-	void resetPosition(float px, float pz, bool setI, float miny=-9999.0);
+	void resetPosition(float px, float pz, bool setInitPosition, float miny=-9999.0);
+	void resetPosition(Ogre::Vector3 translation, bool setInitPosition);
 	void mouseMove(int node, Vector3 pos, float force);
 	void addCamera(int nodepos, int nodedir, int noderoll);
 	void addWheel(SceneManager *manager, SceneNode *parent, Real radius, Real width, int rays, int node1, int node2, int snode, int braked, int propulsed, int torquenode, float mass, float wspring, float wdamp, char* texf, char* texb, bool meshwheel=false, float rimradius=0.0, bool rimreverse=false);
@@ -725,6 +726,7 @@ public:
 	SceneManager *tsm;
 
 	BeamEngine *engine;
+	bool freePositioned;
 
 	bool networking;
 	int label;
@@ -935,6 +937,8 @@ public:
 	Replay *getReplay() { return replay; };
 
 	float getBeamCreak() { return beam_creak; };
+	bool getSlideNodesLockInstant() { 	return slideNodesConnectInstantly; };
+
 protected:
 
 	void updateSimpleSkeleton();
@@ -1165,6 +1169,9 @@ protected:
 	std::vector< SlideNode > mSlideNodes;
 	//! true if SlideNodes are locked, false if not
 	bool SlideNodesLocked;
+
+	//! try to connect slidenodes direclty after spawning
+	bool slideNodesConnectInstantly;
 
 	/**
 	 * @param line line in configuration file

@@ -214,13 +214,15 @@ Beam::~Beam()
 	
 }
 
-Beam::Beam(int tnum, SceneManager *manager, SceneNode *parent, RenderWindow* win, Network *_net, float *_mapsizex, float *_mapsizez, Real px, Real py, Real pz, Quaternion rot, const char* fname, Collisions *icollisions, HeightFinder *mfinder, Water *w, Camera *pcam, Mirrors *mmirror, bool networked, bool networking, collision_box_t *spawnbox, bool ismachine, int _flaresMode, std::vector<Ogre::String> *_truckconfig, SkinPtr skin) : deleting(false)
+Beam::Beam(int tnum, SceneManager *manager, SceneNode *parent, RenderWindow* win, Network *_net, float *_mapsizex, float *_mapsizez, Real px, Real py, Real pz, Quaternion rot, const char* fname, Collisions *icollisions, HeightFinder *mfinder, Water *w, Camera *pcam, Mirrors *mmirror, bool networked, bool networking, collision_box_t *spawnbox, bool ismachine, int _flaresMode, std::vector<Ogre::String> *_truckconfig, SkinPtr skin, bool freeposition) : deleting(false)
 {
 	net=_net;
 	if(net && !networking) networking = true; // enable networking if some network class is existing
 
 	beambreakdebug = (SETTINGS.getSetting("Beam Break Debug") == "Yes");
+	freePositioned = freeposition;
 	free_axle=0;
+	slideNodesConnectInstantly=false;
 	replayTimer=0;
 	minCameraRadius=0;
 	last_net_time=0;
@@ -1461,6 +1463,8 @@ int Beam::loadTruck(const char* fname, SceneManager *manager, SceneNode *parent,
 			continue;
 		}
 
+		if(!strcmp("slidenode_connect_instantly", line))
+			slideNodesConnectInstantly=true;
 
 		if (!strncmp("set_beam_defaults", line, 17))
 		{
@@ -4495,7 +4499,11 @@ int Beam::loadTruck(const char* fname, SceneManager *manager, SceneNode *parent,
 		pz-=(maxz+minz)/2.0-pz;
 		float miny=-9999.0;
 		if (spawnbox) miny=spawnbox->relo_y+spawnbox->center.y+0.01;
-		resetPosition(px, pz, true, miny);
+		if(freePositioned)
+			resetPosition(Vector3(px, py, pz), true);
+		else
+			resetPosition(px, pz, true, miny);
+		
 		if (spawnbox)
 		{
 			bool inside=true;
@@ -4549,7 +4557,6 @@ int Beam::loadTruck(const char* fname, SceneManager *manager, SceneNode *parent,
 
 	LogManager::getSingleton().logMessage("BEAM: truck memory used: " + StringConverter::toString(mem)  + " B (" + StringConverter::toString(mem/1024)  + " kB)");
 	LogManager::getSingleton().logMessage("BEAM: truck memory allocated: " + StringConverter::toString(memr)  + " B (" + StringConverter::toString(memr/1024)  + " kB)");
-
 	return 0;
 }
 
@@ -4848,6 +4855,49 @@ void Beam::resetPosition(float px, float pz, bool setI, float miny)
 
 	// calculate min camera radius for truck
 	if(minCameraRadius<0.01)
+	{
+		// recalc
+		for (i=0; i<free_node; i++)
+		{
+			Real dist = nodes[i].AbsPosition.distance(position);
+			if(dist > minCameraRadius)
+			{
+				minCameraRadius = dist;
+			}
+		}
+		minCameraRadius *= 1.2f; // ten percent buffer
+	}
+
+	//if (netLabelNode) netLabelNode->setPosition(nodes[0].Position);
+
+	resetSlideNodePositions();
+}
+
+void Beam::resetPosition(Ogre::Vector3 translation, bool setInitPosition)
+{
+	int i;
+	// total displacement
+	if(translation != Vector3::ZERO)
+	{
+		Vector3 offset = translation - nodes[0].AbsPosition;
+		for (i=0; i<free_node; i++)
+			nodes[i].AbsPosition += offset;
+	}
+	
+	// calculate average position
+	Vector3 apos=Vector3::ZERO;
+	for (i=0; i<free_node; i++)
+	{
+		if (setInitPosition)
+			nodes[i].iPosition=nodes[i].AbsPosition;
+		nodes[i].smoothpos = nodes[i].AbsPosition;
+		nodes[i].RelPosition = nodes[i].AbsPosition-origin;
+		apos += nodes[i].AbsPosition;
+	}
+	position = apos / free_node;
+
+	// calculate min camera radius for truck
+	if(minCameraRadius < 0.01f)
 	{
 		// recalc
 		for (i=0; i<free_node; i++)
@@ -6325,7 +6375,7 @@ void Beam::calcForcesEuler(int doUpdate, Real dt, int step, int maxstep, Beam** 
 
 							if(beambreakdebug)
 							{
-								LogManager::getSingleton().logMessage(" XXX Beam " + StringConverter::toString(i) + " just broke with force " + StringConverter::toString(flen) + " / " + StringConverter::toString(beams[i].strength) + ". It was between nodes " +
+								LogManager::getSingleton().logMessage("Debug Truck: XXX Beam " + StringConverter::toString(i) + " just broke with force " + StringConverter::toString(flen) + " / " + StringConverter::toString(beams[i].strength) + ". It was between nodes " +
 										StringConverter::toString(beams[i].p1->id) + "@<" + StringConverter::toString( beams[i].p1->RelPosition ) + "> and " + StringConverter::toString(beams[i].p2->id) + "@<" + StringConverter::toString( beams[i].p2->RelPosition ) + ">.");
 							}
 
