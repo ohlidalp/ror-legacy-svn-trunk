@@ -212,6 +212,9 @@ extern int truckSteps;
 #define SHOCK_FLAG_ISSHOCK2     0x00000010
 #define SHOCK_FLAG_SOFTBUMP     0x00000020
 
+#define SHOCK1  1
+#define SHOCK2  2
+
 enum blinktype {BLINK_NONE, BLINK_LEFT, BLINK_RIGHT, BLINK_WARN};
 
 using namespace Ogre;
@@ -220,23 +223,29 @@ struct differential_data_t;
 //RaySceneQuery* nodeSceneQuery = 0;
 class Beam;
 
+// RoR's performance is very sensitive to the ordering of the parameters in this
+// structure (due to cache reasons). You can easily destroy RoR's performance if you put
+// something in the wrong place. Unless you know what you are doing (do you come armed
+// with a cache usage tracker?), add what you wish to the bottom of the structure.
 typedef struct _node
 {
-	Real mass;
-	Real inverted_mass;
-	Vector3 iPosition; // initial position, absolute
-	Real    iDistance; // initial distance from node0 during loading - used to check for loose parts
-	Vector3 AbsPosition; //absolute position in the world (shaky)
 	Vector3 RelPosition; //relative to the local physics origin (one origin per truck) (shaky)
-	Vector3 smoothpos; //absolute, per-frame smooth, must be used for visual effects only
+	Vector3 AbsPosition; //absolute position in the world (shaky)
 	Vector3 Velocity;
 	Vector3 Forces;
+	Real inverted_mass;
+	Real mass;
 	Vector3 lastNormal;
 	int locked;
 	int iswheel; //0=no, 1, 2=wheel1  3,4=wheel2, etc...
 	int wheelid;
 	int masstype;
+	int wetstate;
 	int contactless;
+	int lockednode;
+	Vector3 lockedPosition; //absolute
+	Vector3 lockedForces;
+	Vector3 lockedVelocity;
 	int contacted;
 	Real friction_coef;
 	Real buoyancy;
@@ -244,21 +253,18 @@ typedef struct _node
 	Real surface_coef;
 	Vector3 lastdrag;
 	Vector3 gravimass;
-	int lockednode;
-	Vector3 lockedPosition; //absolute
-	Vector3 lockedVelocity;
-	Vector3 lockedForces;
-	int wetstate;
 	float wettime;
 	bool isHot;
 	bool overrideMass;
-	bool iIsSkin;
-	bool isSkin;
 	bool disable_particles;
 	Vector3 buoyanceForce;
 	int id;
 	float colltesttimer;
-//	Vector3 tsmooth;
+	Vector3 iPosition; // initial position, absolute
+	Real    iDistance; // initial distance from node0 during loading - used to check for loose parts
+	Vector3 smoothpos; //absolute, per-frame smooth, must be used for visual effects only
+	bool iIsSkin;
+	bool isSkin;
 } node_t;
 
 typedef struct
@@ -325,6 +331,11 @@ class Autopilot;
 class MaterialFunctionMapper;
 class CmdKeyInertia;
 
+
+// RoR's performance is very sensitive to the ordering of the parameters in this
+// structure (due to cache reasons). You can easily destroy RoR's performance if you put
+// something in the wrong place. Unless you know what you are doing (do you come armed
+// with a cache usage tracker?), add what you wish to the bottom of the structure.
 typedef struct _beam
 {
 	node_t *p1;
@@ -333,44 +344,43 @@ typedef struct _beam
 	Real k; //tensile spring
 	Real d; //damping factor
 	Real L; //length
+	Real minmaxposnegstress;
+	int type;
+	Real maxposstress;
+	Real maxnegstress;
+	Real shortbound;
+	Real longbound;
+	Real strength;
+	Real stress;
+	int bounded;
+	bool disabled;
+	bool isrope;
+	bool broken;
+	Real plastic_coef;
+	SceneNode *mSceneNode; //visual
+	Entity *mEntity; //visual
 	Real refL; //reference length
 	Real Lhydro;//hydro reference len
 	Real hydroRatio;//hydro rotation ratio
 	int hydroFlags;
-	SceneNode *mSceneNode; //visual
-	Entity *mEntity; //visual
-	int type;
-	bool broken;
-	int bounded;
-	Real shortbound;
-	Real longbound;
 	Real commandRatioLong;
 	Real commandRatioShort;
 	Real commandShort;
 	Real commandLong;
 	Real maxtiestress;
-	Real stress;
-	Real maxposstress;
-	Real maxnegstress;
-	Real default_deform;
-	Real strength;
 	Real diameter;
 	Vector3 lastforce;
-	bool isrope;
 	bool iscentering;
 	int isOnePressMode;
 	bool isforcerestricted;
-
+	float iStrength; //initial strength
+	Real default_deform;
+	Real default_plastic_coef;
 	int autoMovingMode;
 	bool autoMoveLock;
 	bool pressedCenterMode;
-
 	float centerLength;
-
-	bool disabled;
 	float minendmass;
-	float update_timer;
-	float update_rate;
 	float scale;
 	shock_t *shock;
 } beam_t;
@@ -449,11 +459,11 @@ typedef struct _wheel
 	 * - 4 = yes footbrake, no  handbrake, no  direction control -- wheel has footbrake only, such as with the front wheels of a normal car
 	 **/
 	int braked;
-	int propulsed;
 	node_t* arm;
 	node_t* near_attach;
 	node_t* refnode0;
 	node_t* refnode1;
+	int propulsed;
 	Real radius;
 	Real speed;
 	Real delta_rotation; //! difference in wheel position
@@ -469,7 +479,6 @@ typedef struct _wheel
 	float lastSlip;
 	int lastContactType;
 	ground_model_t *lastGroundModel;
-
 } wheel_t;
 
 typedef struct _vwheel
@@ -673,6 +682,7 @@ public:
 	bool frameStep(Real dt, Beam** trucks, int numtrucks);
 	void prepareShutdown();
 	void calcForcesEuler(int doUpdate, Real dt, int step, int maxsteps, Beam** trucks, int numtrucks);
+	void calcShocks2(int beam_i, Real difftoBeamL, Real &k, Real &d);
 	Quaternion specialGetRotationTo(const Vector3& src, const Vector3& dest) const;
 	void prepareInside(bool inside);
 	void lightsToggle(Beam** trucks, int trucksnum);
@@ -805,6 +815,7 @@ public:
 	prop_t props[MAX_PROPS];
 	int free_prop;
 	float default_beam_diameter;
+	float default_plastic_coef;
 	float skeleton_beam_diameter;
 	int free_aeroengine;
 	AeroEngine *aeroengines[MAX_AEROENGINES];
@@ -826,7 +837,6 @@ public:
 	float brakeforce;
 	float hbrakeforce;
 	bool ispolice;
-	bool enable_advanced_deformation;
 	float beam_creak;
 	int loading_finished;
 	int freecamera;
@@ -936,7 +946,6 @@ public:
 
 	Replay *getReplay() { return replay; };
 
-	float getBeamCreak() { return beam_creak; };
 	bool getSlideNodesLockInstant() { 	return slideNodesConnectInstantly; };
 
 protected:

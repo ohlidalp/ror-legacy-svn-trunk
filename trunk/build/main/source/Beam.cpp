@@ -246,7 +246,6 @@ Beam::Beam(int tnum, SceneManager *manager, SceneNode *parent, RenderWindow* win
 	nodedebugstate=-1;
 	debugVisuals=0;
 	netMT = 0;
-	enable_advanced_deformation = false;
 	beam_creak=BEAM_CREAK_DEFAULT;
 	dynamicMapMode=0;
 	meshesVisible=true;
@@ -313,6 +312,7 @@ Beam::Beam(int tnum, SceneManager *manager, SceneNode *parent, RenderWindow* win
 	default_node_volume=NODE_VOLUME_COEF_DEFAULT;
 	default_node_surface=NODE_SURFACE_COEF_DEFAULT;
 	default_node_loadweight=NODE_LOADWEIGHT_DEFAULT;
+	default_plastic_coef=0.0f;
 	strcpy(default_beam_material, "tracks/beam");
 	driversseatfound=false;
 	mirror=mmirror;
@@ -603,6 +603,8 @@ Beam::Beam(int tnum, SceneManager *manager, SceneNode *parent, RenderWindow* win
 	//updateDebugOverlay();
 }
 
+// This method scales trucks. Stresses should *NOT* be scaled, they describe
+// the material type and they do not depend on length or scale.
 void Beam::scaleTruck(float value)
 {
 	if(value<0) return;
@@ -618,11 +620,7 @@ void Beam::scaleTruck(float value)
 		beams[i].hydroRatio *= value;
 
 		beams[i].diameter *= value;
-		beams[i].stress *= value;
 		beams[i].lastforce *= value;
-		beams[i].maxposstress *= value;
-		beams[i].maxnegstress *= value;
-
 	}
 	// scale nodes
 	Vector3 refpos = nodes[0].AbsPosition;
@@ -1192,11 +1190,6 @@ void Beam::calc_masses2(Real total, bool reCalc)
 	{
 		float mass=beams[i].p1->mass;
 		if (beams[i].p2->mass<mass) mass=beams[i].p2->mass;
-		//if (beams[i].p1->iswheel || beams[i].p2->iswheel) {beams[i].update_rate=1.0/20000.0; wunst++; continue;};
-		if (4.0*mass*beams[i].k-beams[i].d*beams[i].d<0.01) {beams[i].update_rate=1.0/20000.0; unst++; continue;}; //this is probably an unstable beam
-		float rate=(4.0*3.14159*mass)/(sqrt(4.0*mass*beams[i].k-beams[i].d*beams[i].d)*30.0);
-		if (rate>1.0/200.0) {rate=1.0/200.0;st++;};
-		beams[i].update_rate=rate;
 	}
 	LogManager::getSingleton().logMessage("Beams status: unstable:"+StringConverter::toString(unst)+" wheel:"+StringConverter::toString(wunst)+" normal:"+StringConverter::toString(free_beam-unst-wunst-st)+" superstable:"+StringConverter::toString(st));
 }
@@ -1382,19 +1375,9 @@ int Beam::loadTruck(const char* fname, SceneManager *manager, SceneNode *parent,
 		if (!strcmp("slidenodes",line)) {mode=64;continue;}
 		if (!strncmp("enable_advanced_deformation", line, 27))
 		{
-			enable_advanced_deformation = true;
-
 			// parse the optional threshold value
-			float tempval = 0.0f;
-			int result = sscanf(line,"enable_advanced_deformation %f", &tempval);
-			if (result == 1 && tempval > 0.0f)
-			{
-				beam_creak = tempval;
-				LogManager::getSingleton().logMessage("Advanced deformation beam physics enabled with custom threshold value: "+ StringConverter::toString(beam_creak));
-			} else
-			{
-				LogManager::getSingleton().logMessage("Advanced deformation beam physics enabled with default threshold value.");
-			}
+			beam_creak = 0.0f;
+			LogManager::getSingleton().logMessage("Advanced deformation beam physics enabled");
 			continue;
 		}
 		if (!strcmp("commandlist",line))
@@ -1438,9 +1421,9 @@ int Beam::loadTruck(const char* fname, SceneManager *manager, SceneNode *parent,
 			char authorname[255], authoremail[255], authortype[255];
 			AuthorInfo author;
 			author.id = -1;
-			author.email = "unkown";
-			author.name = "unkown";
-			author.type = "unkown";
+			author.email = "unknown";
+			author.name = "unknown";
+			author.type = "unknown";
 
 			int result = sscanf(line,"author %s %i %s %s", authortype, &authorid, authorname, authoremail);
 			if (result < 1 || result == EOF) {
@@ -1469,7 +1452,8 @@ int Beam::loadTruck(const char* fname, SceneManager *manager, SceneNode *parent,
 		if (!strncmp("set_beam_defaults", line, 17))
 		{
 			char default_beam_material2[256]="";
-			int result = sscanf(line,"set_beam_defaults %f, %f, %f, %f, %f, %s", &default_spring, &default_damp, &default_deform,&default_break,&default_beam_diameter, default_beam_material2);
+			float tmpdefault_plastic_coef=-1.0f;
+			int result = sscanf(line,"set_beam_defaults %f, %f, %f, %f, %f, %s, %f", &default_spring, &default_damp, &default_deform,&default_break,&default_beam_diameter, default_beam_material2, &tmpdefault_plastic_coef);
 			if (result < 1 || result == EOF) {
 				LogManager::getSingleton().logMessage("Error parsing File (set_beam_defaults) " + String(fname) +" line " + StringConverter::toString(linecounter) + ". trying to continue ...");
 				continue;
@@ -1487,6 +1471,11 @@ int Beam::loadTruck(const char* fname, SceneManager *manager, SceneNode *parent,
 			if (default_deform<0) default_deform=BEAM_DEFORM;
 			if (default_break<0) default_break=BEAM_BREAK;
 			if (default_beam_diameter<0) default_beam_diameter=DEFAULT_BEAM_DIAMETER;
+			if (tmpdefault_plastic_coef>=0.0f)
+			{
+				beam_creak=0.0f;
+				default_plastic_coef=tmpdefault_plastic_coef;
+			}
 			continue;
 		}
 
@@ -1879,9 +1868,9 @@ int Beam::loadTruck(const char* fname, SceneManager *manager, SceneNode *parent,
 					case 'm':
 						{
 							// metric values: calculate sbound and lbound now
-							float beam_lenght = nodes[id1].AbsPosition.distance(nodes[id2].AbsPosition);
-							sbound = sbound / beam_lenght;
-							lbound = lbound / beam_lenght;
+							float beam_length = nodes[id1].AbsPosition.distance(nodes[id2].AbsPosition);
+							sbound = sbound / beam_length;
+							lbound = lbound / beam_length;
 						}
 						break;
 				}
@@ -1953,16 +1942,16 @@ int Beam::loadTruck(const char* fname, SceneManager *manager, SceneNode *parent,
 					case 'm':
 						{
 							// metric values: calculate sbound and lbound now
-							float beam_lenght = nodes[id1].AbsPosition.distance(nodes[id2].AbsPosition);
-							sbound = sbound / beam_lenght;
-							lbound = lbound / beam_lenght;
+							float beam_length = nodes[id1].AbsPosition.distance(nodes[id2].AbsPosition);
+							sbound = sbound / beam_length;
+							lbound = lbound / beam_length;
 						}
 					case 'M':
 						{
 							// metric values: calculate sbound and lbound now
-							float beam_lenght = nodes[id1].AbsPosition.distance(nodes[id2].AbsPosition);
-							sbound = (beam_lenght - sbound) / beam_lenght;
-							lbound = (lbound - beam_lenght) / beam_lenght;
+							float beam_length = nodes[id1].AbsPosition.distance(nodes[id2].AbsPosition);
+							sbound = (beam_length - sbound) / beam_length;
+							lbound = (lbound - beam_length) / beam_length;
 
 							if (lbound < 0)
 							{
@@ -1981,6 +1970,7 @@ int Beam::loadTruck(const char* fname, SceneManager *manager, SceneNode *parent,
 				options_pointer++;
 			}
 			int pos=add_beam(&nodes[id1], &nodes[id2], manager, parent, htype, default_break*4.0, sin, din, -1.0, sbound, lbound, precomp);
+			beams[pos].bounded=SHOCK2;
 			beams[pos].shock = &shocks[free_shock];
 			shocks[free_shock].springin = sin;
 			shocks[free_shock].dampin = din;
@@ -5387,7 +5377,6 @@ int Beam::add_beam(node_t *p1, node_t *p2, SceneManager *manager, SceneNode *par
 	beams[pos].hydroRatio=0.0;
 	beams[pos].hydroFlags=0;
 	beams[pos].stress=0.0;
-	beams[pos].strength=strength;
 	beams[pos].lastforce=Vector3(0,0,0);
 	beams[pos].isrope=0;
 	beams[pos].iscentering=false;
@@ -5398,14 +5387,18 @@ int Beam::add_beam(node_t *p1, node_t *p2, SceneManager *manager, SceneNode *par
 	beams[pos].pressedCenterMode=false;
 	beams[pos].disabled=false;
 	beams[pos].shock=0;
+	if (default_deform<beam_creak) default_deform=beam_creak;
 	beams[pos].default_deform=default_deform;
+	beams[pos].minmaxposnegstress=default_deform;
 	beams[pos].maxposstress=default_deform;
 	beams[pos].maxnegstress=-default_deform;
+	beams[pos].plastic_coef=default_plastic_coef;
+	beams[pos].default_plastic_coef=default_plastic_coef;
+	beams[pos].strength=strength;
+	beams[pos].iStrength=strength;
 	beams[pos].diameter=default_beam_diameter;
 	beams[pos].minendmass=1.0;
 	beams[pos].diameter = diameter;
-	beams[pos].update_timer=1.0;
-	beams[pos].update_rate=1.0/2000.0;
 	beams[pos].scale=0.0;
 	if (shortbound!=-1.0)
 	{
@@ -5557,9 +5550,11 @@ void Beam::SyncReset()
 		beams[i].broken=0;
 		beams[i].maxposstress=beams[i].default_deform;
 		beams[i].maxnegstress=-beams[i].default_deform;
+		beams[i].minmaxposnegstress=beams[i].default_deform;
+		beams[i].strength=beams[i].iStrength;
+		beams[i].plastic_coef=beams[i].default_plastic_coef;
 		beams[i].L=beams[i].refL;
 		beams[i].lastforce=Vector3::ZERO;
-		beams[i].update_timer=1.0;
 		beams[i].stress=0.0;
 		beams[i].disabled=false;
 		if (beams[i].mSceneNode && beams[i].type!=BEAM_VIRTUAL && beams[i].type!=BEAM_INVISIBLE && beams[i].type!=BEAM_INVISIBLE_HYDRO)
@@ -6018,6 +6013,146 @@ void Beam::receiveStreamData(unsigned int &type, int &source, unsigned int &stre
 	}
 }
 
+void Beam::calcShocks2(int beam_i, Real difftoBeamL, Real &k, Real &d)
+{
+	int i=beam_i;
+	float beamsLep=beams[i].L*0.8f;
+	float longboundprelimit=beams[i].longbound*beamsLep;
+	float shortboundprelimit=-beams[i].shortbound*beamsLep;
+	// this is a shock2
+	float logafactor;
+	//shock extending since last cycle
+	if (beams[i].shock->lastpos < difftoBeamL)
+	{
+		//get outbound values
+		k=beams[i].shock->springout;
+		d=beams[i].shock->dampout;
+		// add progression
+		if (beams[i].longbound != 0.0f)
+		{
+			logafactor=difftoBeamL/(beams[i].longbound*beams[i].L);
+			logafactor=logafactor*logafactor;
+		} else
+		{
+			logafactor = 1.0f;
+		}
+		if (logafactor > 1.0f) logafactor = 1.0f;
+		k=k+(beams[i].shock->sprogout*k*logafactor);
+		d=d+(beams[i].shock->dprogout*d*logafactor);
+	} else
+	{
+		//shock compresssing since last cycle
+		//get inbound values
+		k=beams[i].shock->springin;
+		d=beams[i].shock->dampin;
+		// add progression
+		if (beams[i].shortbound != 0.0f)
+		{
+			logafactor=difftoBeamL/(beams[i].shortbound*beams[i].L);
+			logafactor=logafactor*logafactor;
+		} else
+		{
+			logafactor = 1.0f;
+		}
+		if (logafactor > 1.0f) logafactor = 1.0f;
+		k=k+(beams[i].shock->sprogin*k*logafactor);
+		d=d+(beams[i].shock->dprogin*d*logafactor);
+	}
+	if(beams[i].shock->flags & SHOCK_FLAG_SOFTBUMP)
+	{
+		// soft bump shocks
+		if (difftoBeamL > longboundprelimit)
+		{
+			//reset to longbound progressive values (oscillating beam workaround)
+			k=beams[i].shock->springout;
+			d=beams[i].shock->dampout;
+			// add progression
+			if (beams[i].longbound != 0.0f)
+			{
+				logafactor=difftoBeamL/(beams[i].longbound*beams[i].L);
+				logafactor=logafactor*logafactor;
+			} else
+			{
+				logafactor = 1.0f;
+			}
+			if (logafactor > 1.0f) logafactor = 1.0f;
+			k=k+(beams[i].shock->sprogout*k*logafactor);
+			d=d+(beams[i].shock->dprogout*d*logafactor);
+			//add shortbump progression
+			if (beams[i].longbound != 0.0f)
+			{
+				logafactor=((difftoBeamL-longboundprelimit)*5.0f)/(beams[i].longbound*beams[i].L);
+				logafactor=logafactor*logafactor;
+			} else
+			{
+				logafactor = 1.0f;
+			}
+			if (logafactor > 1.0f) logafactor = 1.0f;
+			k=k+(k+ 100.0f)* beams[i].shock->sprogout *logafactor;
+			d=d+(d+ 100.0f)* beams[i].shock->dprogout * logafactor;
+			if (beams[i].shock->lastpos > difftoBeamL)
+			// rebound mode..get new values
+			{
+				k=beams[i].shock->springin;
+				d=beams[i].shock->dampin;
+			}
+		} else if (difftoBeamL < shortboundprelimit)
+		{
+			//reset to shortbound progressive values (oscillating beam workaround)
+			k=beams[i].shock->springin;
+			d=beams[i].shock->dampin;
+			if (beams[i].shortbound != 0.0f)
+			{
+				logafactor=difftoBeamL/(beams[i].shortbound*beams[i].L);
+				logafactor=logafactor*logafactor;
+			} else
+			{
+				logafactor = 1.0f;
+			}
+			if (logafactor > 1.0f) logafactor = 1.0f;
+			k=k+(beams[i].shock->sprogin*k*logafactor);
+			d=d+(beams[i].shock->dprogin*d*logafactor);
+			//add shortbump progression
+			if (beams[i].shortbound != 0.0f)
+			{
+				logafactor=((difftoBeamL-shortboundprelimit)*5.0f)/(beams[i].shortbound*beams[i].L);
+				logafactor=logafactor*logafactor;
+			}else
+			{
+				logafactor = 1.0f;
+			}
+			if (logafactor > 1.0f) logafactor = 1.0f;
+			k=k+(k+ 100.0f)* beams[i].shock->sprogout *logafactor;
+			d=d+(d+ 100.0f)* beams[i].shock->dprogout * logafactor;
+			if (beams[i].shock->lastpos < difftoBeamL)
+			// rebound mode..get new values
+			{
+				k=beams[i].shock->springout;
+				d=beams[i].shock->dampout;
+			}
+		}
+		if (difftoBeamL > beams[i].longbound*beams[i].L || difftoBeamL < -beams[i].shortbound*beams[i].L)
+		{
+			// block reached...hard bump in soft mode with 4x default damping
+			if (k < DEFAULT_SPRING) k=DEFAULT_SPRING;
+			if (d < DEFAULT_DAMP*4.0f) d = DEFAULT_DAMP*4.0f;
+		}
+	}
+
+	if(beams[i].shock->flags & SHOCK_FLAG_NORMAL)
+	{
+		if (difftoBeamL > beams[i].longbound*beams[i].L || difftoBeamL < -beams[i].shortbound*beams[i].L)
+		{
+			// hard (normal) shock bump
+			k=DEFAULT_SPRING;
+			d=DEFAULT_DAMP;
+		}
+	}
+
+	// save beam position for next sim cycle
+	beams[i].shock->lastpos=difftoBeamL;
+}
+
 void Beam::calcForcesEuler(int doUpdate, Real dt, int step, int maxstep, Beam** trucks, int numtrucks)
 {
 	// do not calc anything if we are going to get deleted
@@ -6097,203 +6232,157 @@ void Beam::calcForcesEuler(int doUpdate, Real dt, int step, int maxstep, Beam** 
 	for (i=0; i<free_beam; i++)
 	{
 		//trick for exploding stuff
-		if (!beams[i].broken && !beams[i].disabled)
+		if (!beams[i].disabled)
 		{
-			float minrate=1.0;
-			if (beams[i].stress>5) minrate=1.0f/(5.0f*beams[i].stress);
-			if (beams[i].update_rate<minrate) minrate=beams[i].update_rate;
-			if (beams[i].update_timer<minrate && !beams[i].p1->contacted && !beams[i].p2->contacted)
+			Vector3 dis;
+			//Calculate beam length
+			if (!beams[i].p2truck) dis=beams[i].p1->RelPosition-beams[i].p2->RelPosition;
+			else dis=beams[i].p1->AbsPosition-beams[i].p2->AbsPosition;
+			Real dislen=dis.squaredLength();
+			Real inverted_dislen=fast_invSqrt(dislen);
+			dislen=dislen*inverted_dislen;
+
+			//Calculate beam's deviation from normal
+			Real difftoBeamL = dislen - beams[i].L;
+
+			Real k=beams[i].k;
+			Real d=beams[i].d;
+
+			//dampers bump
+			if (beams[i].bounded)
 			{
-				fasted++;
-				beams[i].update_timer+=dt;
-				beams[i].p1->Forces+=beams[i].lastforce;
-				beams[i].p2->Forces-=beams[i].lastforce;
-			}
-			else
-			{
-				beams[i].update_timer=dt;
-				slowed++;
-				Vector3 dis;
-				if (beams[i].p2truck) dis=beams[i].p1->AbsPosition-beams[i].p2->AbsPosition;
-				else dis=beams[i].p1->RelPosition-beams[i].p2->RelPosition;
-				Real dislen=dis.squaredLength();
-				Real inverted_dislen=fast_invSqrt(dislen);
-				dislen=dislen*inverted_dislen;
-
-				Real k=beams[i].k;
-				Real d=beams[i].d;
-
-				//dampers bump
-				Real difftoBeamL = dislen - beams[i].L;
-				bool normalShock=false;
-				if (beams[i].bounded)
-				{
-					// this is a shock
-					if (beams[i].shock && beams[i].shock->flags & SHOCK_FLAG_ISSHOCK2)
-					{
-						float beamsLep=beams[i].L*0.8f;
-						float longboundprelimit=beams[i].longbound*beamsLep;
-						float shortboundprelimit=-beams[i].shortbound*beamsLep;
-						// this is a shock2
-						float logafactor;
-						//shock extending since last cycle
-						if (beams[i].shock->lastpos < difftoBeamL)
-						{
-							//get outbound values
-							k=beams[i].shock->springout;
-							d=beams[i].shock->dampout;
-							// add progression
-							if (beams[i].longbound != 0.0f)
-							{
-								logafactor=difftoBeamL/(beams[i].longbound*beams[i].L);
-								logafactor=logafactor*logafactor;
-							} else
-							{
-								logafactor = 1.0f;
-							}
-							if (logafactor > 1.0f) logafactor = 1.0f;
-							k=k+(beams[i].shock->sprogout*k*logafactor);
-							d=d+(beams[i].shock->dprogout*d*logafactor);
-						} else
-						{
-							//shock compresssing since last cycle
-							//get inbound values
-							k=beams[i].shock->springin;
-							d=beams[i].shock->dampin;
-							// add progression
-							if (beams[i].shortbound != 0.0f)
-							{
-								logafactor=difftoBeamL/(beams[i].shortbound*beams[i].L);
-								logafactor=logafactor*logafactor;
-							} else
-							{
-								logafactor = 1.0f;
-							}
-							if (logafactor > 1.0f) logafactor = 1.0f;
-							k=k+(beams[i].shock->sprogin*k*logafactor);
-							d=d+(beams[i].shock->dprogin*d*logafactor);
-						}
-						if(beams[i].shock->flags & SHOCK_FLAG_SOFTBUMP)
-						{
-							// soft bump shocks
-							if (difftoBeamL > longboundprelimit)
-							{
-								//reset to longbound progressive values (oscillating beam workaround)
-								k=beams[i].shock->springout;
-								d=beams[i].shock->dampout;
-								// add progression
-								if (beams[i].longbound != 0.0f)
-								{
-									logafactor=difftoBeamL/(beams[i].longbound*beams[i].L);
-									logafactor=logafactor*logafactor;
-								} else
-								{
-									logafactor = 1.0f;
-								}
-								if (logafactor > 1.0f) logafactor = 1.0f;
-								k=k+(beams[i].shock->sprogout*k*logafactor);
-								d=d+(beams[i].shock->dprogout*d*logafactor);
-								//add shortbump progression
-								if (beams[i].longbound != 0.0f)
-								{
-									logafactor=((difftoBeamL-longboundprelimit)*5.0f)/(beams[i].longbound*beams[i].L);
-									logafactor=logafactor*logafactor;
-								} else
-								{
-									logafactor = 1.0f;
-								}
-								if (logafactor > 1.0f) logafactor = 1.0f;
-								k=k+(k+ 100.0f)* beams[i].shock->sprogout *logafactor;
-								d=d+(d+ 100.0f)* beams[i].shock->dprogout * logafactor;
-								if (beams[i].shock->lastpos > difftoBeamL)
-								// rebound mode..get new values
-								{
-									k=beams[i].shock->springin;
-									d=beams[i].shock->dampin;
-								}
-							} else if (difftoBeamL < shortboundprelimit)
-							{
-								//reset to shortbound progressive values (oscillating beam workaround)
-								k=beams[i].shock->springin;
-								d=beams[i].shock->dampin;
-								if (beams[i].shortbound != 0.0f)
-								{
-									logafactor=difftoBeamL/(beams[i].shortbound*beams[i].L);
-									logafactor=logafactor*logafactor;
-								} else
-								{
-									logafactor = 1.0f;
-								}
-								if (logafactor > 1.0f) logafactor = 1.0f;
-								k=k+(beams[i].shock->sprogin*k*logafactor);
-								d=d+(beams[i].shock->dprogin*d*logafactor);
-								//add shortbump progression
-								if (beams[i].shortbound != 0.0f)
-								{
-									logafactor=((difftoBeamL-shortboundprelimit)*5.0f)/(beams[i].shortbound*beams[i].L);
-									logafactor=logafactor*logafactor;
-								}else
-								{
-									logafactor = 1.0f;
-								}
-								if (logafactor > 1.0f) logafactor = 1.0f;
-								k=k+(k+ 100.0f)* beams[i].shock->sprogout *logafactor;
-								d=d+(d+ 100.0f)* beams[i].shock->dprogout * logafactor;
-								if (beams[i].shock->lastpos < difftoBeamL)
-								// rebound mode..get new values
-								{
-									k=beams[i].shock->springout;
-									d=beams[i].shock->dampout;
-								}
-							}
-							if (difftoBeamL > beams[i].longbound*beams[i].L || difftoBeamL < -beams[i].shortbound*beams[i].L)
-							{
-								// block reached...hard bump in soft mode with 4x default damping
-								if (k < DEFAULT_SPRING) k=DEFAULT_SPRING;
-								if (d < DEFAULT_DAMP*4.0f) d = DEFAULT_DAMP*4.0f;
-							}
-						}
-
-						if(beams[i].shock->flags & SHOCK_FLAG_NORMAL)
-							normalShock = true;
-
-						// save beam postion for next sim cycle
-						beams[i].shock->lastpos=difftoBeamL;
-					} else
-						// shock1
-						normalShock=true;
-				}
-				if(normalShock)
-				{
-					// hard (normal) shock bump
+				// hard (normal) shock bump
+				if (beams[i].bounded==SHOCK1)
+				{				
 					if (difftoBeamL > beams[i].longbound*beams[i].L || difftoBeamL < -beams[i].shortbound*beams[i].L)
 					{
 						// hard (normal) shock bump
 						k=DEFAULT_SPRING;
 						d=DEFAULT_DAMP;
 					}
-				}
-				Vector3 v=beams[i].p1->Velocity-beams[i].p2->Velocity;
+				} else calcShocks2(i, difftoBeamL, k, d);
+			}
 
-				float flen;
-				if (beams[i].isrope && difftoBeamL<0)
-					flen = -d*v.dotProduct(dis)*0.1f*inverted_dislen;
-				else
-					flen = -k*(difftoBeamL)-d*v.dotProduct(dis)*inverted_dislen;
-				Vector3 f=(flen*inverted_dislen)*dis;
-				float sflen=flen;
-				flen=fabs(flen);
-				beams[i].lastforce=f;
-				beams[i].stress=flen;
-				beams[i].p1->Forces+=f;
-				beams[i].p2->Forces-=f;
+			//Calculate beam's rate of change
+			Vector3 v=beams[i].p1->Velocity-beams[i].p2->Velocity;
+			float flen;
+			if (beams[i].isrope && difftoBeamL<0)
+				flen = -d*v.dotProduct(dis)*0.1f*inverted_dislen;
+			else
+				flen = -k*(difftoBeamL)-d*v.dotProduct(dis)*inverted_dislen;
+			float sflen=flen;
+			beams[i].stress=flen;
+			flen=fabs(flen);
 
-				//skeleton colouring
-				if (((doUpdate && skeleton == 2) || replay) && beams[i].mSceneNode && !beams[i].broken && !beams[i].disabled && beams[i].mEntity)
+
+			// Fast test for deformation
+			if (flen > beams[i].minmaxposnegstress)
+			{
+				if (beams[i].type==BEAM_NORMAL || beams[i].type==BEAM_INVISIBLE)
 				{
-					beams[i].scale = (sflen/beam_creak);
+					// Actual deformation tests
+					// For compression
+					if (sflen>beams[i].maxposstress)
+					{
+
+						increased_accuracy=1;
+						Real yield_length=beams[i].maxposstress/k;
+						Real deform=difftoBeamL+yield_length*(1.0f-beams[i].plastic_coef);
+						Real Lold=beams[i].L;
+						beams[i].L+=deform;
+						sflen=sflen-(sflen-beams[i].maxposstress)*0.5f;
+						flen=sflen;
+						beams[i].maxposstress*=Lold/beams[i].L;
+
+						//For the compression case we only remove half the energy (0.5f) from
+						//beam's strength. This is completely adhoc but serves to keep
+						//the trucks in one piece when crashing. Nevertheless
+						//you can play with it.
+						beams[i].strength=beams[i].strength+deform*k*0.5f;
+
+						//Sound effect
+						//Sound volume depends on the energy lost due to deformation (which gets converted to sound (and thermal) energy)
+						/*ssm->modulate(trucknum, SS_MOD_CREAK, deform*k*(difftoBeamL+deform*0.5f));
+						ssm->trigOnce(trucknum, SS_TRIG_CREAK);*/
+
+						beams[i].minmaxposnegstress=std::min(beams[i].maxposstress, -beams[i].maxnegstress);
+						beams[i].minmaxposnegstress=std::min(beams[i].minmaxposnegstress, beams[i].strength);
+
+					} else	// For expansion
+					if (sflen<beams[i].maxnegstress)
+					{
+						increased_accuracy=1;
+						Real yield_length=beams[i].maxnegstress/k;
+						Real deform=difftoBeamL+yield_length*(1.0f-beams[i].plastic_coef);
+						Real Lold=beams[i].L;
+						beams[i].L+=deform;
+						sflen=sflen-(sflen-beams[i].maxnegstress)*0.5f;
+						flen=-sflen;
+						beams[i].maxnegstress*=beams[i].L/Lold;
+						beams[i].strength=beams[i].strength-deform*k;
+
+						//Sound effect
+						//Sound volume depends on the energy lost due to deformation (which gets converted to sound (and thermal) energy)
+						/*ssm->modulate(trucknum, SS_MOD_CREAK, deform*k*(difftoBeamL+deform*0.5f));
+						ssm->trigOnce(trucknum, SS_TRIG_CREAK);*/
+
+						beams[i].minmaxposnegstress=std::min(beams[i].maxposstress, -beams[i].maxnegstress);
+						beams[i].minmaxposnegstress=std::min(beams[i].minmaxposnegstress, beams[i].strength);
+					}
 				}
-				if (doUpdate && skeleton == 1 && beams[i].mSceneNode && !beams[i].broken && !beams[i].disabled && beams[i].mEntity)
+
+				// Test if the beam should be breaked
+				if (flen > beams[i].strength)
+				{
+					// Sound effect.
+					// Sound volume depends on spring's stored energy
+					ssm->modulate(trucknum, SS_MOD_BREAK, 0.5*k*difftoBeamL*difftoBeamL);
+					ssm->trigOnce(trucknum, SS_TRIG_BREAK);
+
+					increased_accuracy=1;
+					beams[i].broken=1;
+					beams[i].disabled=true;
+					sflen=0.0f;
+					beams[i].p1->isSkin=true;
+					beams[i].p2->isSkin=true;
+
+					if(beambreakdebug)
+					{
+						LogManager::getSingleton().logMessage(" XXX Beam " + StringConverter::toString(i) + " just broke with force " + StringConverter::toString(flen) + " / " + StringConverter::toString(beams[i].strength) + ". It was between nodes " + StringConverter::toString(beams[i].p1->id) + " and " + StringConverter::toString(beams[i].p2->id) + ".");
+					}
+
+					//something broke, check buoyant hull
+					int mk;
+					for (mk=0; mk<free_buoycab; mk++)
+					{
+						int tmpv=buoycabs[mk]*3;
+						if (buoycabtypes[mk]==BUOY_DRAGONLY) continue;
+						if ((beams[i].p1==&nodes[cabs[tmpv]] || beams[i].p1==&nodes[cabs[tmpv+1]] || beams[i].p1==&nodes[cabs[tmpv+2]])
+							&&(beams[i].p2==&nodes[cabs[tmpv]] || beams[i].p2==&nodes[cabs[tmpv+1]] || beams[i].p2==&nodes[cabs[tmpv+2]]))
+							buoyance->setsink(1);
+					}
+				}
+			}
+
+			// At last update the beam forces
+			Vector3 f=(sflen*inverted_dislen)*dis;
+			beams[i].p1->Forces+=f;
+			beams[i].p2->Forces-=f;
+		}
+	}
+
+	//skeleton colouring
+	if (((skeleton && doUpdate) || replay) )
+	{
+		for (i=0; i<free_beam; i++)
+		{
+			if (!beams[i].disabled)
+			{
+				if (((doUpdate && skeleton == 2) || replay) && !beams[i].broken && beams[i].mEntity && beams[i].mSceneNode)
+				{
+					beams[i].scale = (beams[i].stress/beams[i].minmaxposnegstress);
+				}
+				if (doUpdate && skeleton == 1 && !beams[i].broken && beams[i].mEntity && beams[i].mSceneNode)
 				{
 					int scale=(int)beams[i].scale * 100;
 					if(scale>100) scale=100;
@@ -6302,100 +6391,14 @@ void Beam::calcForcesEuler(int doUpdate, Real dt, int step, int maxstep, Beam** 
 					sprintf(bname, "mat-beam-%d", scale);
 					beams[i].mEntity->setMaterialName(bname);
 				}
-				else if(doUpdate && skeleton && beams[i].mSceneNode && (beams[i].broken || beams[i].disabled))
+				else if(doUpdate && skeleton && beams[i].mSceneNode && (beams[i].broken || beams[i].disabled) && beams[i].mSceneNode)
 				{
 					beams[i].mSceneNode->detachAllObjects();
 				}
-
-
-				float deformvalue = enable_advanced_deformation ? beams[i].default_deform*0.5f : BEAM_CREAK_DEFAULT;
-				if (flen > deformvalue)
-				{
-					if((beams[i].strength-beam_creak) != 0)
-					{
-						if (!beams[i].p1->iswheel && !beams[i].p2->iswheel)
-						{
-							ssm->modulate(trucknum, SS_MOD_CREAK, (flen-beam_creak)/(float)(beams[i].strength-beam_creak));
-							ssm->trigOnce(trucknum, SS_TRIG_CREAK);
-						}
-					}
-
-					bool deform_state=false;
-					if (!enable_advanced_deformation && flen > beams[i].default_deform)
-					{
-						// classical deformation
-						if (beams[i].type==BEAM_NORMAL || beams[i].type==BEAM_INVISIBLE)
-						{
-							// fix possible zero division bug
-							if((beams[i].strength-beams[i].default_deform) == 0)
-								beams[i].strength += 0.0000001;
-
-							if (sflen>beams[i].maxposstress)
-							{
-								if ( beams[i].p1->iswheel==0 && beams[i].p2->iswheel==0 ) increased_accuracy=1;
-								beams[i].maxposstress=sflen;
-								beams[i].L=beams[i].refL*(1.0-0.2f*(beams[i].maxposstress+beams[i].maxnegstress)/(beams[i].strength-beams[i].default_deform));
-							}
-
-							if (sflen<beams[i].maxnegstress)
-							{
-								if ( beams[i].p1->iswheel==0 && beams[i].p2->iswheel==0 ) increased_accuracy=1;
-								beams[i].maxnegstress=sflen;
-								beams[i].L=beams[i].refL*(1.0-0.2f*(beams[i].maxposstress+beams[i].maxnegstress)/(beams[i].strength-beams[i].default_deform));
-							}
-							deform_state = true;
-						}
-					} else if (enable_advanced_deformation && flen>beams[i].default_deform && flen > beam_creak)
-					{
-						// new deformation code
-						if (beams[i].type == BEAM_NORMAL || beams[i].type == BEAM_INVISIBLE)
-						{
-							if (beams[i].p1->iswheel == 0 && beams[i].p2->iswheel == 0)
-								increased_accuracy = 1;
-							beams[i].L = dislen;
-							deform_state = true;
-						}
-						}
-
-					if (deform_state && flen > beams[i].strength)
-						{
-							if(beams[i].strength != 0)
-							{
-								ssm->modulate(trucknum, SS_MOD_BREAK, (flen-beams[i].strength)/(float)(beams[i].strength));
-								ssm->trigOnce(trucknum, SS_TRIG_BREAK);
-							}
-
-							if ( beams[i].p1->iswheel==0 && beams[i].p2->iswheel==0 ) increased_accuracy=1;
-							beams[i].broken=1;
-							beams[i].disabled=true;
-							beams[i].p1->Forces-=beams[i].lastforce=f;
-							beams[i].p2->Forces+=beams[i].lastforce=f;
-							beams[i].p1->isSkin=true;
-							beams[i].p2->isSkin=true;
-
-							if(beambreakdebug)
-							{
-								LogManager::getSingleton().logMessage("Debug Truck: XXX Beam " + StringConverter::toString(i) + " just broke with force " + StringConverter::toString(flen) + " / " + StringConverter::toString(beams[i].strength) + ". It was between nodes " +
-										StringConverter::toString(beams[i].p1->id) + "@<" + StringConverter::toString( beams[i].p1->RelPosition ) + "> and " + StringConverter::toString(beams[i].p2->id) + "@<" + StringConverter::toString( beams[i].p2->RelPosition ) + ">.");
-							}
-
-							//something broke, check buoyant hull
-							int mk;
-							for (mk=0; mk<free_buoycab; mk++)
-							{
-								int tmpv=buoycabs[mk]*3;
-								if (buoycabtypes[mk]==BUOY_DRAGONLY) continue;
-								if ((beams[i].p1==&nodes[cabs[tmpv]] || beams[i].p1==&nodes[cabs[tmpv+1]] || beams[i].p1==&nodes[cabs[tmpv+2]])
-									&&(beams[i].p2==&nodes[cabs[tmpv]] || beams[i].p2==&nodes[cabs[tmpv+1]] || beams[i].p2==&nodes[cabs[tmpv+2]]))
-									buoyance->setsink(1);
-							}
-
-							//								if (beams[i].mSceneNode) beams[i].mSceneNode->detachAllObjects();
-						};
-					}
-				}
 			}
 		}
+	}
+
 #endif // !OPENCL
 
 #ifdef TIMING
@@ -6698,30 +6701,6 @@ void Beam::calcForcesEuler(int doUpdate, Real dt, int step, int maxstep, Beam** 
 						{
 							dp->alloc(nodes[i].AbsPosition, nodes[i].Velocity, gm->fx_colour);
 						}
-						/*
-						else if (gm->fx_type==FX_HARD)
-						{
-							float thresold=10.0;
-							//smokey
-							if (nodes[i].iswheel && ns>thresold)
-							{
-								dustp->allocSmoke(nodes[i].AbsPosition, nodes[i].Velocity);
-								ssm->modulate(trucknum, SS_MOD_SCREETCH, (ns-thresold)/thresold);
-								ssm->trigOnce(trucknum, SS_TRIG_SCREETCH);
-							}
-							//sparks
-							if (!nodes[i].iswheel && ns>1.0 && nodes[i].friction < 10)
-								// friction < 10 will remove the 'f' nodes from the spark generation nodes
-								sparksp->allocSparks(nodes[i].AbsPosition, nodes[i].Velocity);
-						}
-						else
-						if (gm->fx_type==FX_CLUMPY)
-						{
-//								dustp->alloc(nodes[i].AbsPosition, nodes[i].Velocity/2.0, gm->fx_colour);
-							if (nodes[i].Velocity.squaredLength()>1.0)
-								clumpp->allocClump(nodes[i].AbsPosition, nodes[i].Velocity/2.0, gm->fx_colour);
-						}
-						*/
 					}
 
 					// register wheel contact
@@ -6754,10 +6733,10 @@ void Beam::calcForcesEuler(int doUpdate, Real dt, int step, int maxstep, Beam** 
 		//integration
 		if (!nodes[i].locked)
 		{
-					nodes[i].Velocity+=nodes[i].Forces*(dt*nodes[i].inverted_mass);
-					nodes[i].RelPosition+=nodes[i].Velocity*dt;
-					nodes[i].AbsPosition=nodes[i].RelPosition+origin;
-				}
+			nodes[i].Velocity+=nodes[i].Forces*(dt*nodes[i].inverted_mass);
+			nodes[i].RelPosition+=nodes[i].Velocity*dt;
+			nodes[i].AbsPosition=nodes[i].RelPosition+origin;
+		}
 		if (nodes[i].AbsPosition.x>tmaxx) tmaxx=nodes[i].AbsPosition.x;
 		else if (nodes[i].AbsPosition.x<tminx) tminx=nodes[i].AbsPosition.x;
 		if (nodes[i].AbsPosition.y>tmaxy) tmaxy=nodes[i].AbsPosition.y;
@@ -7701,7 +7680,7 @@ void Beam::calcForcesEuler(int doUpdate, Real dt, int step, int maxstep, Beam** 
 							if(v>0.5)
 							{
 								active++;
-								work+=beams[bbeam].stress*dl;
+								work+=fabs(beams[bbeam].stress)*dl;
 							}
 						} else
 						{
@@ -7776,7 +7755,7 @@ void Beam::calcForcesEuler(int doUpdate, Real dt, int step, int maxstep, Beam** 
 							{
 								requestpower=true;
 								active++;
-								work+=beams[bbeam].stress*dl;
+								work+=fabs(beams[bbeam].stress)*dl;
 							}
 						} else
 						{
@@ -7791,7 +7770,7 @@ void Beam::calcForcesEuler(int doUpdate, Real dt, int step, int maxstep, Beam** 
 							}
 						}
 
-						if (i==0 && beams[bbeam].stress > beams[bbeam].maxtiestress)
+						if (i==0 && fabs(beams[bbeam].stress) > beams[bbeam].maxtiestress)
 							commandkey[0].commandValue=0;
 					};
 				}
@@ -9404,7 +9383,7 @@ void Beam::updateDebugOverlay()
 		for(std::vector<debugtext_t>::iterator it=beams_debug.begin(); it!=beams_debug.end();it++)
 		{
 			it->node->setPosition(beams[it->id].p1->smoothpos - (beams[it->id].p1->smoothpos - beams[it->id].p2->smoothpos)/2);
-			it->txt->setCaption(StringConverter::toString(beams[it->id].stress));
+			it->txt->setCaption(StringConverter::toString((float) fabs(beams[it->id].stress)));
 		}
 		break;
 	case 9: // beam-strength
