@@ -180,12 +180,13 @@ bool Beam::parseSlideNodeLine(const Ogre::String& line)
 // ug... BAD PERFORMNCE, BAD!! 
 void Beam::toggleSlideNodeLock( Beam** trucks, int trucksnum, unsigned int curTruck )
 {
-	std::pair<RailGroup*, Ogre::Real> closest(NULL, std::numeric_limits<Ogre::Real>::infinity());
-	std::pair<RailGroup*, Ogre::Real> current(NULL, std::numeric_limits<Ogre::Real>::infinity());
 	
 	// for every slide node on this truck
 	for(std::vector< SlideNode >::iterator itNode = mSlideNodes.begin(); itNode != mSlideNodes.end(); itNode++)
 	{
+		std::pair<RailGroup*, Ogre::Real> closest(NULL, std::numeric_limits<Ogre::Real>::infinity());
+		std::pair<RailGroup*, Ogre::Real> current(NULL, std::numeric_limits<Ogre::Real>::infinity());
+		
 		// if neither foreign, nor self attach is set then we cannot change the
 		// Rail attachments
 		if( !itNode->getAttachRule( ATTACH_ALL ) ) continue;
