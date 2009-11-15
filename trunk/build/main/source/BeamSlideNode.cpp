@@ -190,7 +190,7 @@ void Beam::toggleSlideNodeLock( Beam** trucks, int trucksnum, unsigned int curTr
 		// if neither foreign, nor self attach is set then we cannot change the
 		// Rail attachments
 		if( !itNode->getAttachRule( ATTACH_ALL ) ) continue;
-		if( !SlideNodesLocked )
+		if( SlideNodesLocked )
 		{
 			itNode->attachToRail( NULL );
 			continue;
@@ -228,11 +228,13 @@ std::pair<RailGroup*, Ogre::Real> Beam::getClosestRailOnTruck( Beam* truck, cons
 	{
 		// find the rail closest to the Node
 		curRail = SlideNode::getClosestRailAll( (*itGroup), node.getNodePosition() );
-		lenToCurRail = node.getLenTo( (*itGroup) );
+		lenToCurRail = node.getLenTo( curRail );
+#if 0
 		// if this rail closer than the previous one keep, also check that this
 		// slide node is not already attached to this rail, now how to do that
 		// without looping through the entire slide node array AGAIN...
-
+		// Only for use with a single slide node attaching to multiple rails,
+		// which currently is not implemented
 		// oh well git'r done... :P
 		for(std::vector< SlideNode >::iterator itNode = mSlideNodes.begin(); itNode != mSlideNodes.end(); itNode++)
 		{
@@ -241,6 +243,7 @@ std::pair<RailGroup*, Ogre::Real> Beam::getClosestRailOnTruck( Beam* truck, cons
 				node.getRailID() == (*itGroup)->getID() )
 				continue;
 		}
+#endif
 		if( lenToCurRail < node.getAttachmentDistance() && lenToCurRail < closest.second )
 		{
 			closest.first = (*itGroup);
