@@ -1,0 +1,2 @@
+stripped ogre 1.6.4
+https://sourceforge.net/projects/ogre/files/ogre/1.6.4/ogre-v1-6-4.zip/download

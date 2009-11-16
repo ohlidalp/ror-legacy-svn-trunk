@@ -1,0 +1,18 @@
+TODO
+====
+
+R OgreConfig.h in BINARY not SOURCE
+R Well, nothing built in SOURCE. In fact, nothing at all should be changed under CMAKE_SOURCE_DIR; only under BINARY
+  * Proably resolved?
+* Put versions into OgrePrerequisites.h via CMake
+* Put Demos under BINARY/Samples and copy the libs there on windows
+  R This might need a plugins.cfg (or whatever it's called) to work properly
+  * All the demos are built in the right places but plugins.cfg isn't quite accurate
+  * Almost certainly doesn't work on Windows
+  * Use InstallRequiredSystemLibraries to install runtime libraries on Windows?
+R PkgConfig file libOgreMain.pc or whatever
+* CPack
+  * Started work on this
+R Dependencies on Windows:
+  * Should I use an environment variable or a CMake variable?
+  * RESOLVED with a variable OGRE_DEPENDENCIES_DIR

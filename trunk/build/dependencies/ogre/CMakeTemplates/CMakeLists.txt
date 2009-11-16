@@ -1,0 +1,71 @@
+# Configure the OgreConfig.h header
+
+if (OGRE_CONFIG_PROFILING)
+  set(OGRE_SET_PROFILING 1)
+else ()
+  set(OGRE_SET_PROFILING 0)
+endif()
+set (OGRE_SET_ASSERTMODE ${OGRE_CONFIG_ASSERTMODE})
+if (OGRE_CONFIG_DOUBLE)
+  set(OGRE_SET_DOUBLE 1)
+else ()
+  set(OGRE_SET_DOUBLE 0)
+endif()
+if (OGRE_CONFIG_MEMTRACK_DEBUG)
+  set(OGRE_SET_MEMTRACK_DEBUG 1)
+else()
+  set(OGRE_SET_MEMTRACK_DEBUG 0)
+endif()
+if (OGRE_CONFIG_MEMTRACK_RELEASE)
+  set(OGRE_SET_MEMTRACK_RELEASE 1)
+else()
+  set(OGRE_SET_MEMTRACK_RELEASE 0)
+endif()
+set(OGRE_SET_THREADS ${OGRE_CONFIG_THREADS})
+if (OGRE_CONFIG_DISABLE_FREEIMAGE)
+  set(OGRE_SET_DISABLE_FREEIMAGE 1)
+else()
+  set(OGRE_SET_DISABLE_FREEIMAGE 0)
+endif()
+if (OGRE_CONFIG_DISABLE_DDS)
+  set(OGRE_SET_DISABLE_DDS 1)
+else()
+  set(OGRE_SET_DISABLE_DDS 0)
+endif()
+if(OGRE_CONFIG_NEW_COMPILERS)
+  set(OGRE_SET_NEW_COMPILERS 1)
+else()
+  set(OGRE_SET_NEW_COMPILERS 0)
+endif()
+if (OGRE_STATIC)
+  set(OGRE_STATIC_LIB 1)
+endif()
+
+configure_file(OgreConfig.h.in ${CMAKE_CURRENT_BINARY_DIR}/OgreConfig.h)
+#install(FILES ${CMAKE_CURRENT_BINARY_DIR}/OgreConfig.h DESTINATION include/OGRE)
+
+#Set up OGREConfig.cmake
+if(WIN32)
+	set(CONFIG_FILE_DIR "CMake")
+else(WIN32)
+	set(CONFIG_FILE_DIR "lib/OGRE/CMake")
+endif(WIN32)
+
+configure_file(${OGRE3D_SOURCE_DIR}/CMakeTemplates/OGREConfig.cmake.in ${CMAKE_CURRENT_BINARY_DIR}/OGREConfig.cmake @ONLY)
+configure_file(${OGRE3D_SOURCE_DIR}/CMakeTemplates/OGREConfigVersion.cmake.in ${CMAKE_CURRENT_BINARY_DIR}/OGREConfigVersion.cmake @ONLY)
+#install(FILES
+#	${CMAKE_CURRENT_BINARY_DIR}/OGREConfig.cmake
+#	${CMAKE_CURRENT_BINARY_DIR}/OGREConfigVersion.cmake
+#	DESTINATION ${CONFIG_FILE_DIR}
+#)
+
+set(prefix ${CMAKE_INSTALL_PREFIX})
+set(libdir ${CMAKE_INSTALL_PREFIX}/lib)
+set(includedir ${CMAKE_INSTALL_PREFIX}/include)
+set(PACKAGE "OGRE")
+set(VERSION ${OGRE_VERSION})
+set(OGRE_CFLAGS ) #TODO
+set(OGRE_THREAD_LIBS ) #TODO
+set(exec_prefix ${CMAKE_INSTALL_PREFIX})
+configure_file(${OGRE3D_SOURCE_DIR}/OGRE.pc.in ${CMAKE_CURRENT_BINARY_DIR}/OGRE.pc @ONLY)
+#install(FILES ${CMAKE_CURRENT_BINARY_DIR}/OGRE.pc DESTINATION lib/pkgconfig)
