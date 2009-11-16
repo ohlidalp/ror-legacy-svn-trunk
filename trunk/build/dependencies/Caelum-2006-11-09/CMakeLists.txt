@@ -1,6 +1,6 @@
 FILE(GLOB_RECURSE caelum_src src/*.cpp include/*.h)
 
-include_directories (include ${RoR_Dependencies_SOURCE_DIR}/ogrenew/OgreMain/include)
+include_directories (include ${OGRE_INCLUDE_DIR})
 
 # the final lib
 add_library(caelum SHARED ${caelum_src})

@@ -3,8 +3,8 @@ FILE(GLOB_RECURSE mygui_headers  include/*.h)
 
 include_directories (include)
 
-include_directories (${RoR_Dependencies_SOURCE_DIR}/ogrenew/OgreMain/include)
-include_directories (${RoR_Dependencies_SOURCE_DIR}/ogrenew/Dependencies/include) # for freetype
+include_directories (${OGRE_INCLUDE_DIR})
+include_directories (${OGRE_INCLUDE_DEPENDENCIES_DIR}) # for freetype
 include_directories (${RoR_Dependencies_SOURCE_DIR}/OIS-HEAD/ois/includes)
 
 # -DHYDRAX_LIB will  give us the correct dllspec export setting
