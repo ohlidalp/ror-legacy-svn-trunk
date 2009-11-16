@@ -1,0 +1,2 @@
++ OIS: OIS is needed to build the samples <http://>
++ NVidia Cg: Gc is needed for the optional Cg plugin <http://>
