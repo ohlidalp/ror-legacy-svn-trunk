@@ -30,9 +30,17 @@ ELSEIF(APPLE)
   add_definitions("-DNWINDOWS")
 ENDIF(WIN32)
 
-SET(OGRE_DIR "ogre")
+option(ROR_OGRE_NEWER "use Ogre 1.6.x instead of 1.4.3 (Highly Experimental!)" FALSE)
+if(ROR_OGRE_NEWER)
+ #ogre 1.6 resides in ogre directory
+ SET(OGRE_DIR "ogre")
+ELSE(ROR_OGRE_NEWER)
+ #ogre 1.4 resides in ogrenew directory
+ SET(OGRE_DIR "ogrenew")
+ENDIF(ROR_OGRE_NEWER)
 SET(OGRE_INCLUDE_DIR ${RoR_SOURCE_DIR}/dependencies/${OGRE_DIR}/OgreMain/include)
 SET(OGRE_INCLUDE_DEPENDENCIES_DIR ${RoR_SOURCE_DIR}/dependencies/${OGRE_DIR}/Dependencies/include)
+
 
 # build types
 IF (CMAKE_BUILD_TYPE MATCHES "Debug")
