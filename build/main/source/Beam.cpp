@@ -6380,7 +6380,8 @@ void Beam::calcForcesEuler(int doUpdate, Real dt, int step, int maxstep, Beam** 
 			{
 				if (((doUpdate && skeleton == 2) || replay) && !beams[i].broken && beams[i].mEntity && beams[i].mSceneNode)
 				{
-					beams[i].scale = (beams[i].stress/beams[i].minmaxposnegstress);
+					float tmp=beams[i].stress/beams[i].minmaxposnegstress;
+					beams[i].scale = (tmp*tmp*tmp*tmp)*100.0f*sign(tmp);
 				}
 				if (doUpdate && skeleton == 1 && !beams[i].broken && beams[i].mEntity && beams[i].mSceneNode)
 				{
