@@ -12,7 +12,7 @@ add_subdirectory("OIS-HEAD")
 add_subdirectory("openal-soft-1.8.466")
 
 set(OGRE_SET_DISABLE_FREEIMAGE 1)
-add_subdirectory("ogrenew")
+add_subdirectory(${OGRE_DIR})
 
 # OGRE dependent
 add_subdirectory("Caelum-2006-11-09")

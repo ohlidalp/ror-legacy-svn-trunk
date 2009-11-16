@@ -84,6 +84,24 @@ namespace Hydrax
 			BitsPerChannel BitsPerChannel_;
 		};
 
+		/** Rtt Listener class
+		 */
+		class DllExport RttListener
+		{
+		public:
+			/** Funtion that is called before the Rtt will render
+			    @param Rtt Rtt type
+			    @remarks We've to override it
+			 */
+			virtual void preRenderTargetUpdate(const RttType& Rtt){};
+
+			/** Funtion that is called after the Rtt will render
+				@param Rtt Rtt type
+				@remarks We've to override it
+			*/
+			virtual void postRenderTargetUpdate(const RttType& Rtt){};
+		};
+
 		/** Constructor
 		    @param h Hydrax parent pointer
 	     */
@@ -226,7 +244,7 @@ namespace Hydrax
 		}
 
 		/** Set reflection displacement error
-		    @param ReflectionDisplacementError Range [0.05, ~2], increase when if you experiment
+		    @param ReflectionDisplacementError Range [0.05, ~2], increase if you experiment
 			       reflection issues when the camera is near to the water.
 	     */
 		void setReflectionDisplacementError(const Ogre::Real& ReflectionDisplacementError)
@@ -241,6 +259,41 @@ namespace Hydrax
 		{
 			return mReflectionDisplacementError;
 		}
+
+		/** Set disable reflection custom near clip plane render queues
+		    @param DisableReflectionCustomNearClipPlaneRenderQueues Disable reflection custom near clip plane render queues
+		 */
+		inline void setDisableReflectionCustomNearCliplPlaneRenderQueues(const std::vector<Ogre::RenderQueueGroupID>& DisableReflectionCustomNearClipPlaneRenderQueues)
+		{
+			mDisableReflectionCustomNearClipPlaneRenderQueues = DisableReflectionCustomNearClipPlaneRenderQueues;
+		}
+
+		/** Get disable reflection custom near clip plane render queues
+		    @return Disable reflection custom near clip plane render queues
+		 */
+		inline const std::vector<Ogre::RenderQueueGroupID>& getDisableReflectionCustomNearClipPlaneRenderQueues()
+		{
+			return mDisableReflectionCustomNearClipPlaneRenderQueues;
+		}
+
+		/** Add Rtt listener
+		    @param l Rtt listener
+		 */
+		inline void addRttListener(RttListener *l)
+		{
+			mRttListeners.push_back(l);
+		}
+
+		/** Remove Rtt listener
+		    @param l Rtt listener to be removed
+			@param releaseMemory delete Rtt listener pointer?
+		 */
+		void removeRttListener(RttListener *l, const bool& releaseMemory = true);
+
+		/** Remove all Rtt listeners
+			@param releaseMemory delete Rtt listeners pointers?
+		 */
+		void removeAllRttListeners(const bool& releaseMemory = true);
 
 	private:
 		/** RttManager::CRefractionListener class
@@ -406,6 +459,30 @@ namespace Hydrax
 							Ogre::RenderTargetListener* RTListener,    const Ogre::String& MaterialScheme = "",
 							const bool& ShadowsEnabled = true);
 
+		/** Find a render queue in a render queue list
+		    @param l Render queue list
+			@param rq Render queue to find
+		    @return true If the render queue to find is in the list, false if not
+		 */
+		inline const bool _isRenderQueueInList(const std::vector<Ogre::RenderQueueGroupID>& l, const Ogre::RenderQueueGroupID& rq)
+		{
+			for (std::vector<Ogre::RenderQueueGroupID>::const_iterator i = l.begin(); i != l.end(); i++)
+			{
+				if ((*i) == rq)
+				{
+					return true;
+				}
+			}
+
+			return false;
+		}
+
+		/** Invoke Rtt Listeners 
+		    @param Rtt Rtt type
+			@param pre true for Pre render target update, false for Post render target update
+		*/
+		void _invokeRttListeners(const RttType& Rtt, const bool& pre);
+
 		/// Hydrax parent pointer
 		Hydrax *mHydrax;
 
@@ -426,7 +503,12 @@ namespace Hydrax
 		CDepthReflectionListener mDepthReflectionListener;
 		CGPUNormalMapListener    mGPUNormalMapListener;
 
-		// Reflection displacement error, range [0.01, ~2]
+		/// Render queues to exclude of the reflection custom near clip plane
+		std::vector<Ogre::RenderQueueGroupID> mDisableReflectionCustomNearClipPlaneRenderQueues;
+		/// Rtt listeners
+		std::vector<RttListener*> mRttListeners;
+
+		/// Reflection displacement error, range [0.01, ~2]
 		Ogre::Real mReflectionDisplacementError;
 	};
 };

@@ -30,6 +30,10 @@ ELSEIF(APPLE)
   add_definitions("-DNWINDOWS")
 ENDIF(WIN32)
 
+SET(OGRE_DIR "ogre")
+SET(OGRE_INCLUDE_DIR ${RoR_SOURCE_DIR}/dependencies/${OGRE_DIR}/OgreMain/include)
+SET(OGRE_INCLUDE_DEPENDENCIES_DIR ${RoR_SOURCE_DIR}/dependencies/${OGRE_DIR}/Dependencies/include)
+
 # build types
 IF (CMAKE_BUILD_TYPE MATCHES "Debug")
   add_definitions("-D_DEBUG")

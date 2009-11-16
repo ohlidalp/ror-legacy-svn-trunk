@@ -1,7 +1,7 @@
 FILE(GLOB_RECURSE paged_src  source/*.cpp include/*.h)
 
 include_directories (include)
-include_directories (${RoR_Dependencies_SOURCE_DIR}/ogrenew/OgreMain/include)
+include_directories (${OGRE_INCLUDE_DIR})
 
 # general flags
 add_definitions("-D_LIB")

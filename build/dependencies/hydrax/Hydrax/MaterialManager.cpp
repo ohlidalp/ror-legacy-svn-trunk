@@ -34,6 +34,9 @@ http://www.gnu.org/copyleft/lesser.txt.
 #define _def_Depth_Shader_VP_Name "_Hydrax_Depth_VP"
 #define _def_Depth_Shader_FP_Name "_Hydrax_Depth_FP"
 
+#define _def_DepthTexture_Shader_VP_Name "_Hydrax_DepthTexture_VP"
+#define _def_DepthTexture_Shader_FP_Name "_Hydrax_DepthTexture_FP"
+
 #define _def_Underwater_Material_Name  "_Hydrax_Underwater_Material"
 #define _def_Underwater_Shader_VP_Name "_Hydrax_Underwater_Shader_VP"
 #define _def_Underwater_Shader_FP_Name "_Hydrax_Underwater_Shader_FP"
@@ -115,6 +118,20 @@ namespace Hydrax
 			Ogre::MaterialManager::getSingleton().remove(_def_Simple_Black_Material_Name);
 		}
 
+		Ogre::String AlphaChannels[] = {"x","y","z","w",
+		                                "r","g","b","a"};
+
+		for (int k = 0; k<8; k++)
+		{
+			if (Ogre::HighLevelGpuProgramManager::getSingleton().resourceExists(_def_DepthTexture_Shader_VP_Name + AlphaChannels[k]))
+			{
+				Ogre::HighLevelGpuProgramManager::getSingleton().unload(_def_DepthTexture_Shader_VP_Name + AlphaChannels[k]);
+				Ogre::HighLevelGpuProgramManager::getSingleton().unload(_def_DepthTexture_Shader_FP_Name + AlphaChannels[k]);
+			    Ogre::HighLevelGpuProgramManager::getSingleton().remove(_def_DepthTexture_Shader_VP_Name + AlphaChannels[k]);
+				Ogre::HighLevelGpuProgramManager::getSingleton().remove(_def_DepthTexture_Shader_FP_Name + AlphaChannels[k]);
+			}
+		}
+
 		removeCompositor();
 
 		mCreated = false;
@@ -125,8 +142,10 @@ namespace Hydrax
 		if (Ogre::MaterialManager::getSingleton().resourceExists(_def_Underwater_Compositor_Material_Name))
 		{
 			setCompositorEnable(COMP_UNDERWATER, false);
-			Ogre::CompositorManager::getSingleton().remove(_def_Underwater_Compositor_Name);
 
+			Ogre::CompositorManager::getSingleton().removeCompositor(mHydrax->getViewport(), _def_Underwater_Compositor_Name);
+			Ogre::CompositorManager::getSingleton().remove(_def_Underwater_Compositor_Name);
+	
 			Ogre::MaterialManager::getSingleton().remove(_def_Underwater_Compositor_Material_Name);
 
 			Ogre::HighLevelGpuProgramManager::getSingleton().unload(_def_Underwater_Compositor_Shader_VP_Name);
@@ -191,7 +210,22 @@ namespace Hydrax
 				continue;
 			}
 
-			addDepthTechnique((*TechIt), false);
+			bool isTextureDepthTechnique = 
+				((*TechIt)->getName() == "_Hydrax_Depth_Technique") ? false : true;
+
+			if (isTextureDepthTechnique)
+			{
+				Ogre::String DepthTextureName = 
+					((*TechIt)->getPass(0)->getTextureUnitState(0)->getName() == "_DetphTexture_Hydrax") ?
+					    (*TechIt)->getPass(0)->getTextureUnitState(0)->getTextureName() : (*TechIt)->getPass(0)->getTextureUnitState(1)->getTextureName();
+
+				                                                      // Alpha channel will be stored in pass 0 name
+				addDepthTextureTechnique((*TechIt), DepthTextureName, (*TechIt)->getPass(0)->getName() , false);
+			}
+			else
+			{
+				addDepthTechnique((*TechIt), false);
+			}
 		}
 
 		return true;
@@ -642,8 +676,8 @@ namespace Hydrax
 								"fresnel-=uGlobalTransparency;\n" +
                                 "fresnel=saturate(fresnel);\n" +
 								// Get the reflection/refraction pixels. Make sure to disturb the texcoords by pixelnormal
-								"float4 reflection=tex2D(uReflectionMap,ProjectionCoord.xy+pixelNormalModified);\n" +
-								"float4 refraction=tex2D(uRefractionMap,ProjectionCoord.xy-pixelNormalModified);\n";
+								"float3 reflection=tex2D(uReflectionMap,ProjectionCoord.xy+pixelNormalModified);\n" +
+								"float3 refraction=tex2D(uRefractionMap,ProjectionCoord.xy-pixelNormalModified);\n";
 
 						if (cDepth)
 						{
@@ -652,18 +686,18 @@ namespace Hydrax
 								FragmentProgramData += Ogre::String(
 								"float2 depth = tex2D(uDepthMap,ProjectionCoord.xy-pixelNormalModified).rg;\n") +
 								"refraction *= 1+depth.y*uCausticsPower;\n" +
-								"refraction = lerp(float4(uWaterColor,1),refraction,depth.x);\n";
+								"refraction = lerp(uWaterColor,refraction,depth.x);\n";
 						    }
 							else
 							{
 								FragmentProgramData += Ogre::String(
 								"float depth = tex2D(uDepthMap,ProjectionCoord.xy-pixelNormalModified).r;\n") +
-								"refraction = lerp(float4(uWaterColor,1),refraction,depth);\n";
+								"refraction = lerp(uWaterColor,refraction,depth);\n";
 							}
 						}
 
 						FragmentProgramData += 
-								"oColor = lerp(refraction,reflection,fresnel);\n";
+								"oColor = float4(lerp(refraction,reflection,fresnel),1);\n";
 
 						if (cSun)
 						{
@@ -681,7 +715,7 @@ namespace Hydrax
 								"float2 foamTex=iWorldPosition.xz*uFoamScale+pixelNormalModified;\n" +
 								"float foam=tex2D(uFoamMap,foamTex).r;\n" +
 								"float foamTransparency=saturate(hmap-uFoamStart)*uFoamTransparency;\n" +
-								"oColor=lerp(oColor,float4(1,1,1,1),foamTransparency*foam);\n";
+								"oColor.xyz=lerp(oColor.xyz,1,foamTransparency*foam);\n";
 						}
 
 						if (cSmooth)
@@ -775,11 +809,11 @@ namespace Hydrax
 			WM_Technique0_Pass0->createTextureUnitState("HydraxDepthMap")->setTextureAddressingMode(Ogre::TextureUnitState::TAM_CLAMP);
 		}
 
-		WM_Technique0_Pass0->createTextureUnitState("Fresnel.dds")->setTextureAddressingMode(Ogre::TextureUnitState::TAM_CLAMP);
+		WM_Technique0_Pass0->createTextureUnitState("Fresnel.bmp")->setTextureAddressingMode(Ogre::TextureUnitState::TAM_CLAMP);
 
 		if (cFoam)
 		{
-			WM_Technique0_Pass0->createTextureUnitState("Foam.dds")->setTextureAddressingMode(Ogre::TextureUnitState::TAM_WRAP);
+			WM_Technique0_Pass0->createTextureUnitState("Foam.png")->setTextureAddressingMode(Ogre::TextureUnitState::TAM_WRAP);
 		}
 
 		WaterMaterial->setReceiveShadows(false);
@@ -936,14 +970,157 @@ namespace Hydrax
 			FP_Parameters->setNamedConstant("uCausticsScale", mHydrax->getCausticsScale());
 			FP_Parameters->setNamedConstant("uCausticsEnd",   mHydrax->getCausticsEnd());
 
-			Ogre::TextureUnitState *TUS_Caustics = DM_Technique0_Pass0->createTextureUnitState("Caustics.dds");
+			Ogre::TextureUnitState *TUS_Caustics = DM_Technique0_Pass0->createTextureUnitState("Caustics.bmp");
 			TUS_Caustics->setTextureAddressingMode(Ogre::TextureUnitState::TAM_WRAP);
-			TUS_Caustics->setAnimatedTextureName("Caustics.dds", 32, 1.5);
+			TUS_Caustics->setAnimatedTextureName("Caustics.bmp", 32, 1.5);
 		}
 
 		DepthMaterial->setReceiveShadows(false);
 		DepthMaterial->load();
 
+		return true;
+	}
+
+	bool MaterialManager::_createDepthTextureGPUPrograms(const HydraxComponent &Components, const Options &Options, const Ogre::String& AlphaChannel)
+	{
+		const bool cCaustics   = _isComponent(Components, HYDRAX_COMPONENT_CAUSTICS);
+
+		Ogre::String VertexProgramData, FragmentProgramData;
+
+		// Vertex program
+
+		switch (Options.SM)
+		{
+		    case SM_HLSL: case SM_CG:
+			{
+				// No caustics
+				if (!cCaustics)
+				{
+				    VertexProgramData += 
+					    Ogre::String(
+					    "void main_vp(\n") +
+					        // IN
+					        "float4 iPosition         : POSITION,\n" +
+							"float2 iUV               : TEXCOORD0,\n" +
+						    // OUT 
+						    "out float4 oPosition     : POSITION,\n" +
+						    "out float3 oPosition_UV  : TEXCOORD0,\n" +
+						    // UNIFORM
+						    "uniform float            uPlaneYPos,\n" +
+                            "uniform float4x4         uWorld,\n" +
+                            "uniform float4x4         uWorldViewProj)\n" +
+					    "{\n" +
+					       "oPosition = mul(uWorldViewProj, iPosition);\n" +
+						   "oPosition_UV.x = mul(uWorld, iPosition).y;\n" +
+						   "oPosition_UV.x-=uPlaneYPos;\n" +
+						   "oPosition_UV.yz = iUV;\n" +
+						"}\n";
+				}
+				else // Caustics
+				{
+					VertexProgramData += 
+					    Ogre::String(
+					    "void main_vp(\n") +
+					        // IN
+					        "float4 iPosition         : POSITION,\n" +
+							"float2 iUV               : TEXCOORD0,\n" +
+						    // OUT 
+						    "out float4 oPosition     : POSITION,\n" +
+						    "out float3 oPosition_UV  : TEXCOORD0,\n" +
+							"out float2 oUvWorld      : TEXCOORD1,\n" +
+						    // UNIFORM
+						    "uniform float            uPlaneYPos,\n" +
+                            "uniform float4x4         uWorld,\n" +
+                            "uniform float4x4         uWorldViewProj)\n" +
+					    "{\n" +
+					       "oPosition = mul(uWorldViewProj, iPosition);\n" +
+						   "float3 wPos = mul(uWorld, iPosition);\n" +
+						   "oPosition_UV.x = wPos.y;\n" +
+						   "oPosition_UV.x-=uPlaneYPos;\n" +
+						   "oPosition_UV.yz = iUV;\n" +
+						   "oUvWorld = wPos.xz;\n" +
+						"}\n";
+				}
+			}
+			break;
+
+			case SM_GLSL:
+			{}
+			break;
+		}
+
+		// Fragment program
+
+		switch (Options.SM)
+		{
+		    case SM_HLSL: case SM_CG:
+			{
+				// No caustics
+				if (!cCaustics)
+				{
+					FragmentProgramData += 
+						Ogre::String(
+						"void main_fp(\n") +
+						    // IN
+						    "float3 iPosition_UV  : TEXCOORD0,\n" +
+							// OUT
+							"out float4 oColor    : COLOR,\n" +
+							// UNIFORM
+							"uniform float        uDepthLimit,\n" +
+							"uniform sampler2D    uAlphaTex : register(s0))\n" +
+						"{\n" +
+						    "float pixelYDepth = (iPosition_UV.x*uDepthLimit+1);\n" +
+							"pixelYDepth = saturate(pixelYDepth);\n" +
+							"oColor = float4(pixelYDepth,0,0,0);\n" +
+							"oColor.a = tex2D(uAlphaTex, iPosition_UV.yz)."+AlphaChannel+";" +
+						"}\n";
+				}
+				else // Caustics
+				{
+					FragmentProgramData += 
+						Ogre::String(
+						"void main_fp(\n") +
+						    // IN
+						    "float3 iPosition_UV  : TEXCOORD0,\n" +
+                            "float2 iUvWorld      : TEXCOORD1,\n" +
+							// OUT
+							"out float4 oColor    : COLOR,\n" +
+							// UNIFORM
+							"uniform float        uDepthLimit,\n" +
+							"uniform float        uCausticsScale,\n" +
+	                        "uniform float        uCausticsEnd,\n" +
+							"uniform sampler2D    uCaustics : register(s0),\n" +
+							"uniform sampler2D    uAlphaTex : register(s1))\n" +
+						"{\n" +
+						    "float pixelYDepth = (iPosition_UV.x*uDepthLimit+1);\n" +
+							"pixelYDepth = saturate(pixelYDepth);\n" +
+							"oColor = float4(pixelYDepth,0,0,0);\n" +
+							"oColor.g = saturate(uCausticsEnd-pixelYDepth)*tex2D(uCaustics, iUvWorld/uCausticsScale).r;\n" +
+							"oColor.a = tex2D(uAlphaTex, iPosition_UV.yz)."+AlphaChannel+";" +
+						"}\n";
+				}
+			}
+			break;
+
+			case SM_GLSL:
+			{}
+			break;
+		}
+
+		Ogre::String GpuProgramsData[2] = {VertexProgramData, FragmentProgramData};
+		Ogre::String GpuProgramNames[2] = {_def_DepthTexture_Shader_VP_Name+AlphaChannel, _def_DepthTexture_Shader_FP_Name+AlphaChannel};
+		Ogre::String EntryPoints[2]     = {"main_vp", "main_fp"};
+
+		GpuProgram GpuPrograms[2] = {GPUP_VERTEX, GPUP_FRAGMENT};
+
+		for (int k = 0; k < 2; k++)
+		{
+			 if (!createGpuProgram(GpuProgramNames[k], Options.SM, GpuPrograms[k], EntryPoints[k], GpuProgramsData[k]))
+			 {
+				 return false;
+			 }
+		}
+		
 		return true;
 	}
 
@@ -1292,16 +1469,16 @@ namespace Hydrax
 								"fresnel-=uGlobalTransparency;\n" +
                                 "fresnel=saturate(fresnel);\n" +
 								// Get the reflection/refraction pixels. Make sure to disturb the texcoords by pixelnormal
-								"float4 refraction=tex2D(uRefractionMap,ProjectionCoord.xy-pixelNormalModified);\n";
+								"float3 refraction=tex2D(uRefractionMap,ProjectionCoord.xy-pixelNormalModified);\n";
 						if (cUReflections)
 						{
 							FragmentProgramData +=
-								"float4 reflection=tex2D(uReflectionMap,ProjectionCoord.xy+pixelNormalModified);\n";
+								"float3 reflection=tex2D(uReflectionMap,ProjectionCoord.xy+pixelNormalModified);\n";
 						}
 						else
 						{
 							FragmentProgramData +=
-								"float4 reflection=float4(uWaterColor,1);\n";
+								"float3 reflection=uWaterColor;\n";
 						}
 
 						if (cDepth && cUReflections)
@@ -1311,18 +1488,18 @@ namespace Hydrax
 								FragmentProgramData += Ogre::String(
 								"float2 depth = tex2D(uDepthReflectionMap,ProjectionCoord.xy+pixelNormalModified).rg;\n") +
 								"reflection *= 1+depth.y*uCausticsPower;\n" +
-								"reflection = lerp(float4(uWaterColor,1),reflection,depth.x);\n";
+								"reflection = lerp(uWaterColor,reflection,depth.x);\n";
 						    }
 							else
 							{
 								FragmentProgramData += Ogre::String(
 								"float depth = tex2D(uDepthReflectionMap,ProjectionCoord.xy-pixelNormalModified).r;\n") +
-								"reflection = lerp(float4(uWaterColor,1),reflection,depth);\n";
+								"reflection = lerp(uWaterColor,reflection,depth);\n";
 							}
 						}
 
 						FragmentProgramData += 
-								"oColor = lerp(refraction,reflection,fresnel);\n";
+								"oColor = float4(lerp(refraction,reflection,fresnel),1);\n";
 
 						if (cSun)
 						{
@@ -1342,7 +1519,7 @@ namespace Hydrax
 								"float2 foamTex=iWorldPosition.xz*uFoamScale+pixelNormalModified;\n" +
 								"float foam=tex2D(uFoamMap,foamTex).r;\n" +
 								"float foamTransparency=saturate(hmap-uFoamStart)*uFoamTransparency;\n" +
-								"oColor=lerp(oColor,float4(1,1,1,1),foamTransparency*foam);\n";
+								"oColor.xyz=lerp(oColor.xyz,1,foamTransparency*foam);\n";
 						}
 
 						FragmentProgramData +=
@@ -1427,14 +1604,14 @@ namespace Hydrax
 
 		if (cDepth && cUReflections)
 		{
-			UM_Technique0_Pass0->createTextureUnitState()->setTextureAddressingMode(Ogre::TextureUnitState::TAM_CLAMP);
+			UM_Technique0_Pass0->createTextureUnitState("HydraxDepthReflectionMap")->setTextureAddressingMode(Ogre::TextureUnitState::TAM_CLAMP);
 		}
 
-		UM_Technique0_Pass0->createTextureUnitState("Fresnel.dds")->setTextureAddressingMode(Ogre::TextureUnitState::TAM_CLAMP);
+		UM_Technique0_Pass0->createTextureUnitState("Fresnel.bmp")->setTextureAddressingMode(Ogre::TextureUnitState::TAM_CLAMP);
 
 		if (cFoam)
 		{
-			UM_Technique0_Pass0->createTextureUnitState("Foam.dds")->setTextureAddressingMode(Ogre::TextureUnitState::TAM_WRAP);
+			UM_Technique0_Pass0->createTextureUnitState("Foam.png")->setTextureAddressingMode(Ogre::TextureUnitState::TAM_WRAP);
 		}
 
 		UnderwaterMaterial->setReceiveShadows(false);
@@ -1548,13 +1725,13 @@ namespace Hydrax
 					FragmentProgramData +=
 						Ogre::String
 					(")\n{\n") +
-					    "float2 distortUV = ((tex2D(uDistortMap, float2(iUV.x + uTime, iUV.y + uTime)).xy - 0.5))/50;\n";
+					    "float2 distortUV = (tex2D(uDistortMap, float2(iUV.x + uTime, iUV.y + uTime)).xy - 0.5)/50;\n";
 					if (cCaustics) // Depth, caustics
 					{
 					FragmentProgramData += 
 						Ogre::String(
 						"float2 depth = tex2D(uDepthMap, iUV+distortUV).xy;\n") +
-						"oColor = lerp(float4(uWaterColor,1),tex2D(uOriginalMap, iUV+distortUV)*(1+depth.y*uCausticsPower), depth.x);\n";
+						"oColor = float4(lerp(uWaterColor,tex2D(uOriginalMap, iUV+distortUV)*(1+depth.y*uCausticsPower), depth.x),1);\n";
 						if (cGodRays)
 						{
 						FragmentProgramData +=
@@ -1571,7 +1748,7 @@ namespace Hydrax
 					else if (cDepth) // Depth, no caustics
 					{
 				    FragmentProgramData += 
-						"oColor = lerp(float4(uWaterColor,1),tex2D(uOriginalMap, iUV+distortUV),tex2D(uDepthMap, iUV+distortUV).r);\n";
+						"oColor = float4(lerp(uWaterColor,tex2D(uOriginalMap, iUV+distortUV).xyz,tex2D(uDepthMap, iUV+distortUV).r),1);\n";
 					    if (cGodRays)
 						{
 						FragmentProgramData +=
@@ -1647,7 +1824,7 @@ namespace Hydrax
 
 		// From compositor, original scene
 		DM_Technique0_Pass0->createTextureUnitState()->setTextureAddressingMode(Ogre::TextureUnitState::TAM_CLAMP);
-		DM_Technique0_Pass0->createTextureUnitState("UnderwaterDistortion.dds")->setTextureAddressingMode(Ogre::TextureUnitState::TAM_WRAP);
+		DM_Technique0_Pass0->createTextureUnitState("UnderwaterDistortion.jpg")->setTextureAddressingMode(Ogre::TextureUnitState::TAM_WRAP);
 		if (cDepth)
 		{
 		    DM_Technique0_Pass0->createTextureUnitState("HydraxDepthMap")->setTextureAddressingMode(Ogre::TextureUnitState::TAM_CLAMP);
@@ -1666,7 +1843,10 @@ namespace Hydrax
 		Ogre::CompositionTechnique::TextureDefinition* TDef = UnderWaterComp_Technique->createTextureDefinition("OriginalScene");
         TDef->width = 0; 
         TDef->height = 0; 
-    TDef->format = Ogre::PF_A8R8G8B8;
+		Ogre::PixelFormatList l;
+		l.push_back(Ogre::PF_A8R8G8B8);
+		TDef->formatList = l;    
+
 		// Render the original scene
         Ogre::CompositionTargetPass* CTPass = UnderWaterComp_Technique->createTargetPass();
 		CTPass->setInputMode(Ogre::CompositionTargetPass::IM_NONE);
@@ -1934,6 +2114,7 @@ namespace Hydrax
 
 		Technique->removeAllPasses();
 		Technique->createPass();
+		Technique->setName("_Hydrax_Depth_Technique");
 		Technique->setSchemeName("HydraxDepth");
 
 		Ogre::Pass *DM_Technique_Pass0 = Technique->getPass(0);
@@ -1955,10 +2136,65 @@ namespace Hydrax
 			FP_Parameters->setNamedConstant("uCausticsScale", mHydrax->getCausticsScale());
 			FP_Parameters->setNamedConstant("uCausticsEnd",   mHydrax->getCausticsEnd());
 
-			Ogre::TextureUnitState *TUS_Caustics = DM_Technique_Pass0->createTextureUnitState("Caustics.dds");
+			Ogre::TextureUnitState *TUS_Caustics = DM_Technique_Pass0->createTextureUnitState("Caustics.bmp");
+			TUS_Caustics->setName("Caustics");
 			TUS_Caustics->setTextureAddressingMode(Ogre::TextureUnitState::TAM_WRAP);
-			TUS_Caustics->setAnimatedTextureName("Caustics.dds", 32, 1.5);
+			TUS_Caustics->setAnimatedTextureName("Caustics.bmp", 32, 1.5);
 		}
+
+		if (AutoUpdate)
+		{
+		    mDepthTechniques.push_back(Technique);
+		}
+	}
+
+	void MaterialManager::addDepthTextureTechnique(Ogre::Technique *Technique, const Ogre::String& TextureName, const Ogre::String& AlphaChannel, const bool& AutoUpdate)
+	{
+		if (!Ogre::HighLevelGpuProgramManager::getSingleton().resourceExists(_def_DepthTexture_Shader_VP_Name+AlphaChannel))
+		{
+			_createDepthTextureGPUPrograms(mComponents, mOptions, AlphaChannel);
+		}
+
+		Technique->removeAllPasses();
+		Technique->createPass();
+		Technique->setName("_Hydrax_DepthTexture_Technique");
+		Technique->setSchemeName("HydraxDepth");
+
+		Ogre::Pass *DM_Technique_Pass0 = Technique->getPass(0);
+
+		// Alpha channel will be stored in pass 0 name:
+		DM_Technique_Pass0->setName(AlphaChannel);
+
+		DM_Technique_Pass0->setVertexProgram(_def_DepthTexture_Shader_VP_Name+AlphaChannel);
+		DM_Technique_Pass0->setFragmentProgram(_def_DepthTexture_Shader_FP_Name+AlphaChannel);
+
+		DM_Technique_Pass0->setSceneBlending(Ogre::SBT_TRANSPARENT_ALPHA);
+		DM_Technique_Pass0->setDepthCheckEnabled(true);
+		DM_Technique_Pass0->setDepthWriteEnabled(false);
+
+		Ogre::GpuProgramParametersSharedPtr VP_Parameters = DM_Technique_Pass0->getVertexProgramParameters();
+		Ogre::GpuProgramParametersSharedPtr FP_Parameters = DM_Technique_Pass0->getFragmentProgramParameters();
+
+		VP_Parameters->setNamedAutoConstant("uWorldViewProj", Ogre::GpuProgramParameters::ACT_WORLDVIEWPROJ_MATRIX);
+		VP_Parameters->setNamedAutoConstant("uWorld", Ogre::GpuProgramParameters::ACT_WORLD_MATRIX);
+		VP_Parameters->setNamedConstant("uPlaneYPos", mHydrax->getPosition().y);
+		
+		FP_Parameters->setNamedConstant("uDepthLimit", 1/mHydrax->getDepthLimit());
+
+		if (_isComponent(mComponents, HYDRAX_COMPONENT_CAUSTICS))
+		{
+			FP_Parameters->setNamedConstant("uCausticsScale", mHydrax->getCausticsScale());
+			FP_Parameters->setNamedConstant("uCausticsEnd",   mHydrax->getCausticsEnd());
+
+			Ogre::TextureUnitState *TUS_Caustics = DM_Technique_Pass0->createTextureUnitState("Caustics.bmp");
+			TUS_Caustics->setName("Caustics");
+			TUS_Caustics->setTextureAddressingMode(Ogre::TextureUnitState::TAM_WRAP);
+			TUS_Caustics->setAnimatedTextureName("Caustics.bmp", 32, 1.5);
+		}
+
+		Ogre::TextureUnitState *TUS_AlphaTex = DM_Technique_Pass0->createTextureUnitState(TextureName);
+		TUS_AlphaTex->setName("_DetphTexture_Hydrax");
+		TUS_AlphaTex->setTextureAddressingMode(Ogre::TextureUnitState::TAM_CLAMP);
 
 		if (AutoUpdate)
 		{
@@ -2177,6 +2413,11 @@ namespace Hydrax
 
 	void MaterialManager::UnderwaterCompositorListener::notifyMaterialSetup(Ogre::uint32 pass_id, Ogre::MaterialPtr &mat)
 	{
+		if (mMaterialManager->_isComponent(mMaterialManager->mComponents, HYDRAX_COMPONENT_DEPTH))
+	    {
+			Ogre::Pass* DM_Technique0_Pass0 = mat->getTechnique(0)->getPass(0);
+			DM_Technique0_Pass0->getTextureUnitState(2)->setTextureName("HydraxDepthMap");
+	    }
 	}
 
 	void MaterialManager::UnderwaterCompositorListener::notifyMaterialRender(Ogre::uint32 pass_id, Ogre::MaterialPtr &mat)
@@ -2227,10 +2468,9 @@ namespace Hydrax
 
 		if (mMaterialManager->mCompositorsNeedToBeReloaded[COMP_UNDERWATER])
 		{
-			Ogre::Pass* DM_Technique0_Pass0 = mat->getTechnique(0)->getPass(0);
-
 			if (mMaterialManager->_isComponent(mMaterialManager->mComponents, HYDRAX_COMPONENT_DEPTH))
 		    {
+				Ogre::Pass* DM_Technique0_Pass0 = mat->getTechnique(0)->getPass(0);
 				DM_Technique0_Pass0->getTextureUnitState(2)->setTextureName("HydraxDepthMap");
 		    }
 
