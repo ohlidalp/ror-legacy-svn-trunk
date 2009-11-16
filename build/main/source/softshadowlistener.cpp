@@ -1,8 +1,13 @@
 #include "softshadowlistener.h"
 #include "Ogre.h"
+#include "OgreCommon.h"
 
 // this is a callback we'll be using to set up our shadow camera
+#if OGRE_VERSION>0x010602
+void SoftShadowListener::shadowTextureCasterPreViewProj(Ogre::Light *light, Ogre::Camera *cam, size_t iteration)
+#else
 void SoftShadowListener::shadowTextureCasterPreViewProj(Ogre::Light *light, Ogre::Camera *cam)
+#endif //OGRE_VERSION
 {
 	// basically, here we do some forceful camera near/far clip attenuation
 	// yeah.  simplistic, but it works nicely.  this is the function I was talking
@@ -16,10 +21,12 @@ void SoftShadowListener::shadowTextureCasterPreViewProj(Ogre::Light *light, Ogre
 	// shadow 15 units - the rest of it should be attenuated away, and not rendered)
 }
 
-// these are pure virtual but we don't need them...  so just make them empty
-// otherwise we get "cannot declare of type Mgr due to missing abstract
-// functions" and so on
-void SoftShadowListener::shadowTexturesUpdated(size_t) {}
-void SoftShadowListener::shadowTextureReceiverPreViewProj(Ogre::Light*, Ogre::Frustum*) {}
-void SoftShadowListener::preFindVisibleObjects(Ogre::SceneManager*, Ogre::SceneManager::IlluminationRenderStage, Ogre::Viewport*) {}
-void SoftShadowListener::postFindVisibleObjects(Ogre::SceneManager*, Ogre::SceneManager::IlluminationRenderStage, Ogre::Viewport*) {}
+
+//unused stubs
+void SoftShadowListener::shadowTexturesUpdated(size_t) {};
+void SoftShadowListener::shadowTextureReceiverPreViewProj(Ogre::Light*, Ogre::Frustum*) {};
+void SoftShadowListener::preFindVisibleObjects(Ogre::SceneManager*, Ogre::SceneManager::IlluminationRenderStage, Ogre::Viewport*) {};
+void SoftShadowListener::postFindVisibleObjects(Ogre::SceneManager*, Ogre::SceneManager::IlluminationRenderStage, Ogre::Viewport*) {};
+#if OGRE_VERSION>0x010602
+bool SoftShadowListener::sortLightsAffectingFrustum(Ogre::LightList& lightList) {return false;};
+#endif

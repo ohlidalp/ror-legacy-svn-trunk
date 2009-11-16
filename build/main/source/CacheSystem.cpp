@@ -127,7 +127,8 @@ void CacheSystem::unloadUselessResourceGroups()
 			try
 			{
 				SoundScriptManager::getSingleton()->clearTemplates();
-				ParticleSystemManager::getSingleton().removeTemplatesByResourceGroup(*it);
+				// we cannot fix this problem below Ogre version 1.7
+				//ParticleSystemManager::getSingleton().removeTemplatesByResourceGroup(*it);
 				ResourceGroupManager::getSingleton().clearResourceGroup(*it);
 				ResourceGroupManager::getSingleton().unloadResourceGroup(*it);
 				ResourceGroupManager::getSingleton().destroyResourceGroup(*it);
@@ -147,12 +148,29 @@ String CacheSystem::getCacheConfigFilename(bool full)
 	return String(CACHE_FILE);
 }
 
+// we implement this on our own, since we cannot reply on the ogre version
+bool CacheSystem::resourceExistsInAllGroups(Ogre::String filename)
+{
+	String group;
+	bool exists=true;
+	try
+	{
+		group = ResourceGroupManager::getSingleton().findGroupContainingResource(filename);
+	}catch(...)
+	{
+		exists=false;
+	}
+	if(group.empty())
+		exists = false;
+	return exists;
+}
+
 int CacheSystem::isCacheValid()
 {
 	String cfgfilename = getCacheConfigFilename(false);
 	ImprovedConfigFile cfg;
 	ConfigFile ff;
-	if(!ResourceGroupManager::getSingleton().resourceExistsInAllGroups(cfgfilename))
+	if(!resourceExistsInAllGroups(cfgfilename))
 	{
 		LogManager::getSingleton().logMessage("unable to load config file: "+cfgfilename);
 		return -2;
@@ -515,7 +533,7 @@ bool CacheSystem::loadCache()
 	String cfgfilename = getCacheConfigFilename(false);
 	ImprovedConfigFile cfg;
 
-	if(!ResourceGroupManager::getSingleton().resourceExistsInAllGroups(cfgfilename))
+	if(!resourceExistsInAllGroups(cfgfilename))
 	{
 		LogManager::getSingleton().logMessage("unable to load config file: "+cfgfilename);
 		return false;
@@ -1161,7 +1179,7 @@ void CacheSystem::addFile(String filename, String archiveType, String archiveDir
 	}
 	//read first line
 	Cache_Entry entry;
-	if(!ResourceGroupManager::getSingleton().resourceExistsInAllGroups(filename))
+	if(!resourceExistsInAllGroups(filename))
 		return;
 
 	String group = ResourceGroupManager::getSingleton().findGroupContainingResource(filename);
@@ -2043,9 +2061,9 @@ void CacheSystem::deleteFileCache(char *filename)
 Ogre::String CacheSystem::detectFilesMiniType(String filename)
 {
 	//search if mini picture exists
-	if(!ResourceGroupManager::getSingleton().resourceExistsInAllGroups(filename+".dds"))
+	if(!resourceExistsInAllGroups(filename+".dds"))
 	{
-		if(!ResourceGroupManager::getSingleton().resourceExistsInAllGroups(filename+".png"))
+		if(!resourceExistsInAllGroups(filename+".png"))
 			return "none";
 		else
 			return "png";
@@ -2624,7 +2642,7 @@ void CacheSystem::loadSingleDirectory(String dirname, String group, bool already
 			LogManager::getSingleton().logMessage("UnLoading " + dirname);
 
 			SoundScriptManager::getSingleton()->clearTemplates();
-			ParticleSystemManager::getSingleton().removeTemplatesByResourceGroup(rgname);
+			//ParticleSystemManager::getSingleton().removeTemplatesByResourceGroup(rgname);
 			ResourceGroupManager::getSingleton().clearResourceGroup(rgname);
 			ResourceGroupManager::getSingleton().unloadResourceGroup(rgname);
 			ResourceGroupManager::getSingleton().removeResourceLocation(dirname, rgname);
@@ -2689,7 +2707,7 @@ void CacheSystem::loadSingleZip(String zippath, int cfactor, bool unload, bool o
 		{
 			LogManager::getSingleton().logMessage("Unloading " + realzipPath);
 			SoundScriptManager::getSingleton()->clearTemplates();
-			ParticleSystemManager::getSingleton().removeTemplatesByResourceGroup(rgname);
+			//ParticleSystemManager::getSingleton().removeTemplatesByResourceGroup(rgname);
 			rgm.removeResourceLocation(realzipPath, rgname);
 			rgm.clearResourceGroup(rgname);
 			rgm.unloadResourceGroup(rgname);

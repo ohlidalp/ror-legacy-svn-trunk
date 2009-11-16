@@ -18,6 +18,7 @@ You should have received a copy of the GNU General Public License
 along with Rigs of Rods.  If not, see <http://www.gnu.org/licenses/>.
 */
 #include "Heathaze.h"
+#include "ResourceBuffer.h"
 
 using namespace Ogre;
 
@@ -42,7 +43,8 @@ void HeatHazeListener::postRenderTargetUpdate(const RenderTargetEvent& evt)
 
 HeatHaze::HeatHaze(SceneManager *sceneMgr, RenderWindow *mWindow, Ogre::Camera *cam) : mSceneMgr(sceneMgr), rttTex(0), listener(0)
 {
-	rttTex = Root::getSingleton().getRenderSystem()->createRenderTexture("heathaze_rtt", 512, 512);
+	TexturePtr rttTexPtr = TextureManager::getSingleton().createManual("heathaze_rtt", ResourceGroupManager::DEFAULT_RESOURCE_GROUP_NAME, TEX_TYPE_2D, 512, 512, 0, PF_R8G8B8, TU_RENDERTARGET, new ResourceBuffer());
+	rttTex = rttTexPtr->getBuffer()->getRenderTarget();
 	{
 		/*
 		// we use the main camera now

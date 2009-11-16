@@ -1040,7 +1040,9 @@ ExampleFrameListener::ExampleFrameListener(RenderWindow* win, Camera* cam, Scene
 	directionArrowText = (TextAreaOverlayElement*)OverlayManager::getSingleton().getOverlayElement("tracks/DirectionArrow/Text");
 	directionArrowDistance = (TextAreaOverlayElement*)OverlayManager::getSingleton().getOverlayElement("tracks/DirectionArrow/Distance");
 	Entity *arrent = mSceneMgr->createEntity("dirArrowEntity", "arrow2.mesh");
+#if OGRE_VERSION<0x010602
 	arrent->setNormaliseNormals(true);
+#endif //OGRE_VERSION
 	// Add entity to the scene node
 	dirArrowNode= new SceneNode(mSceneMgr);
 	dirArrowNode->attachObject(arrent);
@@ -1830,88 +1832,6 @@ void ExampleFrameListener::loadNetTerrain(char *preselected_map)
 }
 
 
-
-/*	void ExampleFrameListener::loadObject(char* name, float px, float py, float pz, float rx, float ry, float rz, SceneNode * bakeNode, bool enable_collisions=true)
-{
-//FILE *fd;
-char fname[1024];
-char oname[1024];
-char mesh[1024];
-char line[1024];
-float scx, scy, scz;
-float lx, hx, ly, hy, lz, hz;
-float srx, sry, srz;
-Quaternion rotation;
-bool isdoor=false;
-rotation=Quaternion(Degree(rx), Vector3::UNIT_X)*Quaternion(Degree(ry), Vector3::UNIT_Y)*Quaternion(Degree(rz), Vector3::UNIT_Z);
-
-sprintf(fname,"%s.odef", name);
-//fd=fopen(fname, "r");
-ResourceGroupManager& rgm = ResourceGroupManager::getSingleton();
-DataStreamPtr ds=rgm.openResource(fname, DEFAULT_RESOURCE_GROUP_NAME);
-//mesh
-//fscanf(fd," %[^\n\r]",mesh);
-ds->readLine(mesh, 1023);
-
-//scale
-//fscanf(fd," %[^\n\r]",line);
-ds->readLine(line, 1023);
-sscanf(line, "%f, %f, %f",&scx,&scy,&scz);
-//race stuff
-if (!strncmp(name, "chp-start", 9))
-{
-//a new race!
-collisions->newRace();
-}
-//collision box(es)
-if (enable_collisions)
-{
-//while (!feof(fd))
-while (!ds->eof())
-{
-int resp;
-char type='n';
-//				fscanf(fd," %[^\n\r]",line);
-size_t ll=ds->readLine(line, 1023);
-if (ll==0) continue;
-if (!strcmp("end",line)) break;
-resp=sscanf(line, "%f, %f, %f, %f, %f, %f, %f, %f, %f, %c",&lx,&hx,&ly, &hy,&lz, &hz, &srx, &sry, &srz,&type);
-collisions->addCollisionBox(resp,px,py,pz,rx,ry,rz,lx,hx,ly,hy,lz,hz,srx,sry,srz,type, scx, scy, scz);
-if (type=='d') isdoor=true;
-}
-}
-//fclose(fd);
-//ds->close();
-
-sprintf(oname,"object%i(%s)", objcounter,name);
-objcounter++;
-Entity *te = mSceneMgr->createEntity(oname, mesh);
-//		if (!strncmp(name, "road", 4)&&mSceneMgr->getShadowTechnique()==SHADOWTYPE_TEXTURE_MODULATIVE) te->setCastShadows(false);
-SceneNode *tenode;
-if (bakeNode && !isdoor)
-{
-//this is a road, add to a special node that will be baked
-tenode=bakeNode->createChildSceneNode();
-}
-else
-{
-te->setNormaliseNormals(true);
-tenode=mSceneMgr->getRootSceneNode()->createChildSceneNode();
-}
-tenode->attachObject(te);
-tenode->setScale(scx,scy,scz);
-tenode->setPosition(px,py,pz);
-tenode->rotate(rotation);
-tenode->pitch(Degree(-90));
-//door
-if (isdoor)
-{
-collisions->setDoor(tenode);
-}
-
-}
-*/
-
 void ExampleFrameListener::setupBenchmark()
 {
 	//showDebugOverlay(3);
@@ -2203,7 +2123,9 @@ void ExampleFrameListener::loadObject(const char* name, float px, float py, floa
 	}
 	else
 	{
+#if OGRE_VERSION<0x010602
 		te->setNormaliseNormals(true);
+#endif //OGRE_VERSION
 		tenode=mSceneMgr->getRootSceneNode()->createChildSceneNode();
 		LogManager::getSingleton().logMessage("Object is using LOD");
 	}
@@ -5291,19 +5213,31 @@ void ExampleFrameListener::loadTerrain(String terrainfile)
 				CompositionTechnique::TextureDefinition *def = t->createTextureDefinition("scene");
 				def->width = 0;
 				def->height = 0;
+#if OGRE_VERSION>0x010602
+				def->formatList.push_back(PF_R8G8B8);
+#else
 				def->format = PF_R8G8B8;
+#endif //OGRE_VERSION
 			}
 			{
 				CompositionTechnique::TextureDefinition *def = t->createTextureDefinition("sum");
 				def->width = 0;
 				def->height = 0;
+#if OGRE_VERSION>0x010602
+				def->formatList.push_back(PF_R8G8B8);
+#else
 				def->format = PF_R8G8B8;
+#endif //OGRE_VERSION
 			}
 			{
 				CompositionTechnique::TextureDefinition *def = t->createTextureDefinition("temp");
 				def->width = 0;
 				def->height = 0;
+#if OGRE_VERSION>0x010602
+				def->formatList.push_back(PF_R8G8B8);
+#else
 				def->format = PF_R8G8B8;
+#endif //OGRE_VERSION
 			}
 			/// Render scene
 			{
@@ -7950,7 +7884,11 @@ void ExampleFrameListener::initSoftShadows()
 
 	// and add the shader listener
 	SoftShadowListener *ssl = new SoftShadowListener();
+#if OGRE_VERSION<0x010602
 	mSceneMgr->addShadowListener(ssl);
+#else
+	mSceneMgr->addListener(ssl);
+#endif //OGRE_VERSION
 }
 
 void ExampleFrameListener::initSSAO()
@@ -8076,7 +8014,7 @@ void ExampleFrameListener::gridScreenshots(Ogre::RenderWindow* pRenderWindow, Og
       if(pStitchGridImages)
       {
         // Automatically stitch the grid screenshots
-		if(!ResourceGroupManager::getSingleton().resourceExistsInAllGroups(gridFilename))
+		if(!CacheSystem::resourceExistsInAllGroups(gridFilename))
 		{
 			LogManager::getSingleton().logMessage("Unable to stich image. Image not found: "+gridFilename);
 			return ;

@@ -313,8 +313,13 @@ bool CollisionTools::raycast(const Ogre::Ray &ray, Ogre::Vector3 &result,Ogre::M
 			{
 				// get mesh and store it
 				getStaticGeometry(rg->getParent(), rg, meshInfo.vertex_count, meshInfo.vertices, meshInfo.index_count, meshInfo.indices,
+#if OGRE_VERSION>0x010602
+								rg->getParentNode()->_getDerivedPosition(),
+								rg->getParentNode()->_getDerivedOrientation(),
+#else
 								rg->getParentNode()->getWorldPosition(),
 								rg->getParentNode()->getWorldOrientation(),
+#endif //OGRE_VERSION
 								rg->getParentNode()->getScale());
 				meshInfo.store = true;
 				meshInfoStorage[rg->getName()] = meshInfo;

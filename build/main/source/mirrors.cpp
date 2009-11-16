@@ -18,6 +18,7 @@ You should have received a copy of the GNU General Public License
 along with Rigs of Rods.  If not, see <http://www.gnu.org/licenses/>.
 */
 #include "mirrors.h"
+#include "ResourceBuffer.h"
 
 Camera *mloCamera;
 
@@ -38,15 +39,13 @@ public:
 MirrorsListener mMirrorsListener;
 
 Mirrors::Mirrors(SceneManager *mSceneMgr, RenderWindow *mWindow, Camera *camera)
-	{
+{
 	/*	Entity *teo = mSceneMgr->createEntity("mirroro", "beam.mesh");
-		teo->setNormaliseNormals(true);
 		tnodeo=mSceneMgr->getRootSceneNode()->createChildSceneNode();
 		tnodeo->attachObject(teo);
 		tnodeo->setScale(0.001, 0.001, 0.001);
 
 		Entity *tei = mSceneMgr->createEntity("mirrori", "beam.mesh");
-		tei->setNormaliseNormals(true);
 		tei->setMaterialName("tracks/beam");
 		tnoden=mSceneMgr->getRootSceneNode()->createChildSceneNode();
 		tnoden->attachObject(tei);
@@ -57,7 +56,8 @@ Mirrors::Mirrors(SceneManager *mSceneMgr, RenderWindow *mWindow, Camera *camera)
 		mloCamera=camera;
 		mCamera=camera;
 
-		rttTex = Root::getSingleton().getRenderSystem()->createRenderTexture( "mirrortexture", 128, 256);
+		TexturePtr rttTexPtr = TextureManager::getSingleton().createManual("mirrortexture", ResourceGroupManager::DEFAULT_RESOURCE_GROUP_NAME, TEX_TYPE_2D, 128, 256, 0, PF_R8G8B8, TU_RENDERTARGET, new ResourceBuffer());
+		rttTex = rttTexPtr->getBuffer()->getRenderTarget();
 		{
 			mMirrorCam = mSceneMgr->createCamera("MirrorCam");
 			mMirrorCam->setNearClipDistance(0.2);

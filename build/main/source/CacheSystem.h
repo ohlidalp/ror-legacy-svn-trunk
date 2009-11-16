@@ -253,6 +253,7 @@ public:
 	void loadSingleZip(Ogre::String zippath, int cfactor, bool unload=true, bool ownGroup=true);
 	void loadSingleDirectory(String dirname, String group, bool alreadyLoaded=true);
 
+	static bool resourceExistsInAllGroups(Ogre::String filename);
 protected:
 	CacheSystem();
 	~CacheSystem();

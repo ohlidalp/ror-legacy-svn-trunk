@@ -20,7 +20,12 @@ along with Rigs of Rods.  If not, see <http://www.gnu.org/licenses/>.
 
 #ifdef WIN32
 #ifdef XFIRE
+#ifndef WIN32_LEAN_AND_MEAN
 #define WIN32_LEAN_AND_MEAN
+#endif //WIN32_LEAN_AND_MEAN
+#ifndef NOMINMAX
+#define NOMINMAX // required to stop windows.h messing up std::min
+#endif //NOMINMAX
 #include <windows.h>
 #include <tlhelp32.h>
 

@@ -3,18 +3,22 @@
 
 #include "Ogre.h"
 
-class SoftShadowListener : public Ogre::ShadowListener
+class SoftShadowListener : public Ogre::SceneManager::Listener
 {
     // this is a callback we'll be using to set up our shadow camera
+#if OGRE_VERSION>0x010602
+	void shadowTextureCasterPreViewProj(Ogre::Light* light, Ogre::Camera* camera, size_t iteration);
+#else
     void shadowTextureCasterPreViewProj(Ogre::Light *light, Ogre::Camera *cam);
-
-    // these are pure virtual but we don't need them...  so just make them empty
-    // otherwise we get "cannot declare of type Mgr due to missing abstract
-    // functions" and so on
-    void shadowTexturesUpdated(size_t);
-    void shadowTextureReceiverPreViewProj(Ogre::Light*, Ogre::Frustum*);
-    void preFindVisibleObjects(Ogre::SceneManager*, Ogre::SceneManager::IlluminationRenderStage, Ogre::Viewport*);
-    void postFindVisibleObjects(Ogre::SceneManager*, Ogre::SceneManager::IlluminationRenderStage, Ogre::Viewport*);
+#endif //OGRE_VERSION
+    
+	virtual void shadowTexturesUpdated(size_t);
+	virtual void shadowTextureReceiverPreViewProj(Ogre::Light*, Ogre::Frustum*);
+    virtual void preFindVisibleObjects(Ogre::SceneManager*, Ogre::SceneManager::IlluminationRenderStage, Ogre::Viewport*);
+    virtual void postFindVisibleObjects(Ogre::SceneManager*, Ogre::SceneManager::IlluminationRenderStage, Ogre::Viewport*);
+#if OGRE_VERSION>0x010602
+	virtual bool sortLightsAffectingFrustum(Ogre::LightList& lightList);
+#endif
 };
 
 #endif //SHADOWLISTENER_H__

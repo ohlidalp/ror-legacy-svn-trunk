@@ -20,6 +20,7 @@ along with Rigs of Rods.  If not, see <http://www.gnu.org/licenses/>.
 #include "WaterOld.h"
 #include "Settings.h"
 #include "ExampleFrameListener.h"
+#include "ResourceBuffer.h"
 
 //Camera* theCam;
 Entity* pPlaneEnt;
@@ -167,7 +168,8 @@ WaterOld::WaterOld(int type, Camera *camera, SceneManager *mSceneMgr, RenderWind
 
 		if (mType==WATER_FULL_QUALITY || mType==WATER_FULL_SPEED)
 		{
-			rttTex1 = Root::getSingleton().getRenderSystem()->createRenderTexture( "Refraction", 512, 512);
+			TexturePtr rttTex1Ptr = TextureManager::getSingleton().createManual("Refraction", ResourceGroupManager::DEFAULT_RESOURCE_GROUP_NAME, TEX_TYPE_2D, 512, 512, 0, PF_R8G8B8, TU_RENDERTARGET, new ResourceBuffer());
+			rttTex1 = rttTex1Ptr->getBuffer()->getRenderTarget();
 			{
 				mRefractCam = mSceneMgr->createCamera("RefractCam");
 				mRefractCam->setNearClipDistance(mCamera->getNearClipDistance());
@@ -197,7 +199,8 @@ WaterOld::WaterOld(int type, Camera *camera, SceneManager *mSceneMgr, RenderWind
 			}
 		}
 
-		rttTex2 = Root::getSingleton().getRenderSystem()->createRenderTexture( "Reflection", 512, 512);
+		TexturePtr rttTex2Ptr = TextureManager::getSingleton().createManual("Reflection", ResourceGroupManager::DEFAULT_RESOURCE_GROUP_NAME, TEX_TYPE_2D, 512, 512, 0, PF_R8G8B8, TU_RENDERTARGET, new ResourceBuffer());
+		rttTex2 = rttTex2Ptr->getBuffer()->getRenderTarget();
 		{
 			mReflectCam = mSceneMgr->createCamera("ReflectCam");
 			mReflectCam->setNearClipDistance(mCamera->getNearClipDistance());
