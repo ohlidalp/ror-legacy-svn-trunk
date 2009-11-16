@@ -220,7 +220,7 @@ set(ror_src
 )
 
 include_directories (OgreMain/include Dependencies/include)
-include_directories (${RoR_Dependencies_SOURCE_DIR}/ogrenew/OgreMain/include)
+include_directories (${OGRE_INCLUDE_DIR})
 include_directories (${RoR_Dependencies_SOURCE_DIR}/mysocketw/)
 
 if(CAELUM_BUILD_NEW)
@@ -236,7 +236,7 @@ include_directories (${RoR_Dependencies_SOURCE_DIR}/moFileReader/include)
 include_directories (${RoR_Dependencies_SOURCE_DIR}/mygui/include)
 
 IF(WIN32)
-  add_definitions("-D_CRT_SECURE_NO_WARNINGS")
+  add_definitions("-DWIN32_LEAN_AND_MEAN -DNOMINMAX -D_CRT_SECURE_NO_WARNINGS")
 ELSEIF(LINUX)
   add_definitions("-Wno-float-equal")
 ELSEIF(APPLE)
@@ -324,7 +324,7 @@ ELSEIF(UNIX)
 
   # ignore warnings that are generated from the libs we use, just warn about RoR code
   add_definitions("
-    -isystem ${RoR_Dependencies_SOURCE_DIR}/ogrenew/OgreMain/include
+    -isystem ${RoR_Dependencies_SOURCE_DIR}/ogre/OgreMain/include
     -isystem ${RoR_Dependencies_SOURCE_DIR}/mygui/include
     -isystem ${RoR_Dependencies_SOURCE_DIR}/hydrax
     -isystem ${RoR_Dependencies_SOURCE_DIR}/PagedGeometry/include/

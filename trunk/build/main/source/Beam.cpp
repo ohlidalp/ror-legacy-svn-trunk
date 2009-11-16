@@ -1358,7 +1358,6 @@ int Beam::loadTruck(const char* fname, SceneManager *manager, SceneNode *parent,
 		if (!strcmp("meshwheels",line)) {mode=42;continue;};
 		if (!strcmp("flexbodies",line)) {mode=43;continue;};
 		if (!strncmp("hookgroup",line, 9)) {mode=44; /* NOT continue */;};
-		if (!strncmp("gripnodes",line, 9)) {mode=45; continue;};
 		if (!strncmp("materialflarebindings",line, 21)) {mode=46; continue;};
 		if (!strcmp("disabledefaultsounds",line)) {disable_default_sounds=true;continue;};
 		if (!strcmp("soundsources",line)) {mode=47;continue;};
@@ -3748,83 +3747,6 @@ int Beam::loadTruck(const char* fname, SceneManager *manager, SceneNode *parent,
 			}
 
 		}
-		else if (mode==45)
-		{
-			//parse gripnodes
-			char nodestr[255]="";
-			memset(nodestr, 0, 255);
-			int gripmode=0;
-			int gripgroup=0;
-			float gripforce=5000;
-			float ungripforce=50000;
-			float gripdistance=0.01;
-			int result = sscanf(line,"%s %i %i %f %f", nodestr, &gripmode, &gripgroup, &gripforce, &ungripforce, &gripdistance);
-			/*
-			if (result < 2 || result == EOF) {
-				LogManager::getSingleton().logMessage("Error parsing File (gripnodes) " + String(fname) +" line " + StringConverter::toString(linecounter) + ". trying to continue ...");
-				continue;
-			}
-			*/
-
-
-			// gripmode:
-			// 0 = no grip for that node
-			// 1 = node that grips for nodes
-			// 2 = node that can get gripped by other nodes
-			// 3 = node that can grip and get gripped, but not self
-
-			//parsing set definition
-			std::vector< std::pair<int, int> > intervals;
-			std::vector< String > args = StringUtil::split(nodestr, ",");
-			std::vector< String >::iterator ita;
-			for(ita = args.begin(); ita != args.end(); ita++)
-			{
-				String range = *ita;
-				std::vector< String > args2 = StringUtil::split(range, "-");
-				if(args2.size() == 1)
-				{
-					std::pair<int, int> p;
-					p.first = StringConverter::parseInt(args2[0]);
-					p.second = StringConverter::parseInt(args2[0]);
-					intervals.push_back(p);
-				} else if(args2.size() == 2)
-				{
-					std::pair<int, int> p;
-					p.first = StringConverter::parseInt(args2[0]);
-					p.second = StringConverter::parseInt(args2[1]);
-					intervals.push_back(p);
-				}
-
-			}
-			for(std::vector< std::pair<int, int> >::iterator it=intervals.begin(); it!=intervals.end(); it++)
-				LogManager::getSingleton().logMessage("gripnode group parsed: "+StringConverter::toString(it->first)+" to "+StringConverter::toString(it->second));
-
-			std::vector< std::pair<int, int> >::iterator it;
-			for(it=intervals.begin(); it!=intervals.end(); it++)
-			{
-				//LogManager::getSingleton().logMessage("adding gripnode group from node "+StringConverter::toString(it->first)+" to "+StringConverter::toString(it->second));
-				for(int i=it->first;i<=it->second;i++)
-				{
-					if (i>=free_node)
-					{
-						LogManager::getSingleton().logMessage("Error: unknown node number in gripnodes section ("+StringConverter::toString(i)+"). ignoring that node.");
-						continue;
-					};
-					//printf("creating %d\n", i);
-					//printf("gripmmode: %d\n", gripmode);
-					grip_node_t gn;
-					gn.nodeid = i;
-					gn.node = &nodes[i];
-					gn.gripmode = gripmode;
-					gn.gripforce = gripforce;
-					gn.ungripforce = ungripforce;
-					gn.gripdistance = gripdistance;
-					gn.lockmode = 0;
-					gn.lockgripnode = 0;
-					grip_nodes.push_back(gn);
-				}
-			}
-		}
 		else if (mode==46)
 		{
 			// parse materialflarebindings
@@ -5535,16 +5457,6 @@ void Beam::SyncReset()
 		nodes[i].isSkin=nodes[i].iIsSkin;
 	}
 
-	// reset gripnodes
-	std::vector<grip_node_t>::iterator gni;
-	for(gni=grip_nodes.begin(); gni!=grip_nodes.end(); gni++)
-	{
-		gni->lockmode = 0;
-		if(gni->lockgripnode)
-			gni->lockgripnode->lockmode = 0;
-		gni->lockgripnode = 0;
-	}
-
 	for (i=0; i<free_beam; i++)
 	{
 		beams[i].broken=0;
@@ -6448,112 +6360,6 @@ void Beam::calcForcesEuler(int doUpdate, Real dt, int step, int maxstep, Beam** 
 	if(statistics)
 		statistics->queryStop(BeamThreadStats::Rigidifiers);
 #endif
-
-	float gnsleeptime = 0.1;
-	// process gripnodes
-	if (state==ACTIVATED)
-	{
-		std::vector<grip_node_t>::iterator gni;
-		for(gni=grip_nodes.begin(); gni!=grip_nodes.end(); gni++)
-		{
-			//printf("GN: %d : %d, %d\n", gni->nodeid, gni->gripmode, gni->lockmode);
-			if(gni->gripmode == 1)
-			{
-				// first, conrol the state of the node, and chance if needed
-				if(gni->sleeptimer > 0)
-					gni->sleeptimer-= dt;
-
-				// node that actively grips, only precessing state changes, if the node is not sleeping
-				if(gni->sleeptimer <= 0)
-				{
-					if(gni->lockmode == 1)
-					{
-						// prelocked
-						// check if ready for locking
-						if((gni->node->AbsPosition - gni->lockgripnode->node->AbsPosition).squaredLength() < 0.01)
-						{
-							gni->lockmode = 2;
-							gni->lockgripnode->lockmode = 2;
-
-							gni->lockgripnode->node->lockednode=1;
-							gni->lockgripnode->node->lockedPosition=gni->lockgripnode->node->AbsPosition;
-							gni->lockgripnode->node->lockedVelocity=gni->lockgripnode->node->Velocity;
-							gni->lockgripnode->node->lockedForces=gni->lockgripnode->node->Forces;
-
-							LogManager::getSingleton().logMessage("gripnode: prelock -> lock " + StringConverter::toString(gni->nodeid) + " to " + StringConverter::toString(gni->lockgripnode->nodeid));
-						}
-					} else if(gni->lockmode == 2)
-					{
-						// fully locked
-						// already locked, check if the forces get too high
-						Vector3 forces = gni->node->Forces - gni->lockgripnode->node->Forces;
-						//LogManager::getSingleton().logMessage("lock forces " + StringConverter::toString(forces.length()));
-						if(forces.squaredLength() > gni->ungripforce*gni->ungripforce)
-						{
-							gni->lockgripnode->node->lockednode=0;
-							gni->lockgripnode->node->lockedPosition=Vector3::ZERO;
-							gni->lockgripnode->node->lockedVelocity=Vector3::ZERO;
-							gni->lockgripnode->node->lockedForces=Vector3::ZERO;
-
-							gni->lockmode = 0;
-							gni->lockgripnode->lockmode = 0;
-							gni->lockgripnode = 0;
-							gni->sleeptimer = gnsleeptime;
-							LogManager::getSingleton().logMessage("unlocking "+StringConverter::toString(gni->nodeid)+" at force " + StringConverter::toString(forces.length()) + " / grip:" + StringConverter::toString(gni->gripforce) + " / ungrip:" + StringConverter::toString(gni->ungripforce) );
-						}
-					} else if(gni->lockmode == 0)
-					{
-						// not locked, check if any valid nodes are around that could be locked
-						float neardist = gni->gripdistance;
-						grip_node_t *ngnic = 0;
-						std::vector<grip_node_t>::iterator gnic;
-						// find nearest lock-able node
-						for(gnic=grip_nodes.begin(); gnic!=grip_nodes.end(); gnic++)
-						{
-							if(gnic->gripmode != 2 || gnic->lockmode != 0 || !gnic->node)
-								continue;
-							float dist = gni->node->AbsPosition.distance(gnic->node->AbsPosition);
-							if(dist < neardist)
-							{
-								neardist = dist;
-								ngnic = (grip_node_t *)&*gnic;
-							}
-						}
-						if(ngnic != 0)
-						{
-							// found valid locking partner!
-							gni->lockmode = 1;
-							gni->lockgripnode = ngnic;
-							gni->lockgripnode->lockmode = 1;
-							LogManager::getSingleton().logMessage("gripnode: pre-locking node " + StringConverter::toString(gni->nodeid) + " to " + StringConverter::toString(gni->lockgripnode->nodeid));
-						}
-					}
-				}
-
-				// simulate the forces
-				if(gni->lockmode == 1)
-				{
-					// PRE-LOCKED MODE
-					//printf("prelock %d\n", gni->nodeid);
-					//add attraction forces
-					Vector3 f = gni->node->AbsPosition - gni->lockgripnode->node->AbsPosition;
-					f.normalise();
-					gni->lockgripnode->node->Forces += gni->gripforce * f;
-				}
-				if(gni->lockmode == 2)
-				{
-					// LOCKED MODE
-					gni->lockgripnode->node->lockedPosition = gni->node->AbsPosition;
-					gni->lockgripnode->node->lockedVelocity = gni->node->Velocity;
-					gni->node->Forces = gni->node->Forces + gni->lockgripnode->node->lockedForces;
-				}
-			}
-			else if(gni->gripmode == 2)
-			{
-				// node that get gripped
-			}
-		}
-	}
 
 	//aposition=Vector3::ZERO;
 	if (state==ACTIVATED)

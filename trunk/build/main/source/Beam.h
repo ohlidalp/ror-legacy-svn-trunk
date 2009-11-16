@@ -400,21 +400,6 @@ typedef struct
 	int nodenum;
 } soundsource_t;
 
-typedef struct grip_node
-{
-	int nodeid;
-	node_t *node;
-	int gripmode;
-	int gripgroup;
-	float gripforce;
-	float ungripforce;
-	float gripdistance;
-	float sleeptimer;
-
-	int lockmode; // 0 = not locked, 1 = pre lock, 2 = locked
-	struct grip_node *lockgripnode;
-} grip_node_t;
-
 typedef struct
 {
 	int nodeid;
@@ -730,8 +715,6 @@ public:
 	void updateDebugOverlay();
 	int nodedebugstate;
 	int debugVisuals;
-
-	std::vector<grip_node_t> grip_nodes;
 
 	SceneManager *tsm;
 

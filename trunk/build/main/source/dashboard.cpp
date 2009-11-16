@@ -20,6 +20,7 @@ along with Rigs of Rods.  If not, see <http://www.gnu.org/licenses/>.
 #include "dashboard.h"
 #include "TruckHUD.h"
 #include "IngameConsole.h"
+#include "ResourceBuffer.h"
 
 SceneManager* mScene;
 Overlay* dashOverlay;
@@ -98,7 +99,8 @@ Dashboard::Dashboard(SceneManager *mSceneMgr, RenderWindow *mWindow)
 		mScene=mSceneMgr;
 		rttTex=0;
 
-		rttTex = Root::getSingleton().getRenderSystem()->createRenderTexture( "dashtexture", 1024, 512);
+		TexturePtr rttTexPtr = TextureManager::getSingleton().createManual("dashtexture", ResourceGroupManager::DEFAULT_RESOURCE_GROUP_NAME, TEX_TYPE_2D, 1024, 512, 0, PF_R8G8B8, TU_RENDERTARGET, new ResourceBuffer());
+		rttTex = rttTexPtr->getBuffer()->getRenderTarget();
 		{
 			mDashCam = mSceneMgr->createCamera("DashCam");
 			mDashCam->setNearClipDistance(1.0);

@@ -469,12 +469,10 @@ const Quaternion& MovableText::getWorldOrientation(void) const
 }
 
 // Add to build on Shoggoth:
-/*
-void MoveableText::visitRenderables(Ogre::Renderable::Visitor* visitor,
-		bool debugRenderables)
-{
-}
-*/
+#if OGRE_VERSION>0x010602
+void MovableText::visitRenderables(Ogre::Renderable::Visitor* visitor, bool debugRenderables) {};
+#endif //OGRE_VERSION
+
 
 const Vector3& MovableText::getWorldPosition(void) const
 {

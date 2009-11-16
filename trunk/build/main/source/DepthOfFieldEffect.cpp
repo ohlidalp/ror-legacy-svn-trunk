@@ -107,14 +107,22 @@ void DepthOfFieldEffect::createCompositor()
 			CompositionTechnique::TextureDefinition* definition = technique->createTextureDefinition("scene");
 			definition->width = 0;  // target width
 			definition->height = 0; // target height
+#if OGRE_VERSION>0x010602
+			definition->formatList.push_back(PF_X8R8G8B8);
+#else
 			definition->format = PF_X8R8G8B8;
+#endif //OGRE_VERSION
 		}
 		{
 			// Create texture definition 'blur'
 			CompositionTechnique::TextureDefinition* definition = technique->createTextureDefinition("blur");
 			definition->width = mViewport->getActualWidth() / BLUR_DIVISOR;
 			definition->height = mViewport->getActualHeight() / BLUR_DIVISOR;
+#if OGRE_VERSION>0x010602
+			definition->formatList.push_back(PF_X8R8G8B8);
+#else
 			definition->format = PF_X8R8G8B8;
+#endif //OGRE_VERSION
 		}
 		{
 			// Create target pass 'scene'
@@ -233,7 +241,11 @@ void DepthOfFieldEffect::postViewportUpdate(const Ogre::RenderTargetViewportEven
 	queue->setRenderableListener(0);
 }
 
+#if OGRE_VERSION>0x010602
+bool DepthOfFieldEffect::renderableQueued(Renderable* rend, Ogre::uint8 groupID, Ogre::ushort priority, Technique** ppTech, Ogre::RenderQueue* pQueue)
+#else
 bool DepthOfFieldEffect::renderableQueued(Renderable* rend, Ogre::uint8 groupID, Ogre::ushort priority, Technique** ppTech)
+#endif //OGRE_VERSION
 {
 	// Replace the technique of all renderables
 	*ppTech = mDepthTechnique;

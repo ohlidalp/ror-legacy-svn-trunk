@@ -93,7 +93,9 @@ Character::Character(Collisions *c, Network *net, HeightFinder *h, Water *w, Map
 	persoanim=0;
 
 	Entity *ent = scm->createEntity(myName+"_mesh", "character.mesh");
+#if OGRE_VERSION<0x010602
 	ent->setNormaliseNormals(true);
+#endif //OGRE_VERSION
 
 	// fix disappearing mesh
 	Ogre::AxisAlignedBox aabb;

@@ -64,8 +64,12 @@ private:
 	virtual void postViewportUpdate(const Ogre::RenderTargetViewportEvent& evt);
 
 	// Implementation of Ogre::RenderQueue::RenderableListener
-	virtual bool renderableQueued(Ogre::Renderable* rend, Ogre::uint8 groupID,
-		Ogre::ushort priority, Ogre::Technique** ppTech);
+#if OGRE_VERSION>0x010602
+	virtual bool renderableQueued(Ogre::Renderable* rend, Ogre::uint8 groupID, Ogre::ushort priority, Ogre::Technique** ppTech, Ogre::RenderQueue* pQueue);
+#else
+	virtual bool renderableQueued(Ogre::Renderable* rend, Ogre::uint8 groupID, Ogre::ushort priority, Ogre::Technique** ppTech);
+#endif //OGRE_VERSION
+
 };
 
 class DOFManager : public Ogre::FrameListener
