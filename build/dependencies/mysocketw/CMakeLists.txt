@@ -7,6 +7,10 @@ add_definitions("-DMYSOCKETW_EXPORTS -D_USRDLL")
 # the final lib
 add_library(mysocketw SHARED ${socketw_src} ${socketw_headers})
 
+IF(WIN32)
+  SET_TARGET_PROPERTIES(mysocketw PROPERTIES COMPILE_FLAGS "/MP")
+ENDIF(WIN32)
+
 # libraries
 IF(WIN32)
 	target_link_libraries(mysocketw Ws2_32.lib)

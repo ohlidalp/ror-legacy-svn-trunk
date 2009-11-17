@@ -16,6 +16,9 @@ include_directories (${RoR_Dependencies_SOURCE_DIR}/angelscript/add_on)
 
 # main target
 add_executable(as_compiler ${sc_src})
+IF(WIN32)
+  SET_TARGET_PROPERTIES(as_compiler PROPERTIES COMPILE_FLAGS "/MP")
+ENDIF(WIN32)
 
 # add dependencies
 add_dependencies(as_compiler angelscript)

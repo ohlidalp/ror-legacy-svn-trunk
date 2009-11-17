@@ -14,6 +14,10 @@ add_definitions("-DWIN32 -DNDEBUG -D_WINDOWS -D_USRDLL -DMYGUI_BUILD")
 # the final lib
 add_library(mygui SHARED ${mygui_src} ${mygui_headers})
 
+IF(WIN32)
+  SET_TARGET_PROPERTIES(mygui PROPERTIES COMPILE_FLAGS "/MP")
+ENDIF(WIN32)
+
 # this is for windows only, since windows is stupid ...
 add_dependencies(mygui OgreMain)
 target_link_libraries(mygui OgreMain)

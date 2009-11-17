@@ -51,7 +51,7 @@ IF(wxWidgets_FOUND)
   TARGET_LINK_LIBRARIES(installer ${wxWidgets_LIBRARIES})
   
   IF(WIN32)
-    SET_TARGET_PROPERTIES(installer PROPERTIES COMPILE_FLAGS "/bigobj /MT")
+    SET_TARGET_PROPERTIES(installer PROPERTIES COMPILE_FLAGS "/bigobj /MT /MP")
     SET_TARGET_PROPERTIES(installer PROPERTIES LINK_FLAGS    "/MANIFESTUAC:\"level='requireAdministrator' uiAccess='false'\" /SUBSYSTEM:WINDOWS /NODEFAULTLIB:\"msvcprt.lib\" /NODEFAULTLIB:\"MSVCRT.lib\"")
   ENDIF(WIN32)
 

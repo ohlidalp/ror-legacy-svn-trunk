@@ -11,3 +11,7 @@ include_directories (include)
 add_definitions("-D_CRT_SECURE_NO_WARNINGS -DANGELSCRIPT_EXPORT -D_LIB -DAS_USE_NAMESPACE")
 
 add_library(angelscript STATIC ${angelscript_src} ${angelscript_include} ${angelscript_add_on_dict} ${angelscript_add_on_math} ${angelscript_add_on_math3d} ${angelscript_add_on_string} ${angelscript_add_on_stdstring})
+
+IF(WIN32)
+  SET_TARGET_PROPERTIES(angelscript PROPERTIES COMPILE_FLAGS "/MP")
+ENDIF(WIN32)
