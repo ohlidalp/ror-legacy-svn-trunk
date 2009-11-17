@@ -155,7 +155,6 @@ elseif (UNIX)
     src/GLX/OgreGLXGLSupport.cpp
     src/GLX/OgreGLXRenderTexture.cpp
     src/GLX/OgreGLXWindow.cpp
-    src/GLX/OgreGLXUtils.cpp
   )
   include_directories(src/GLX include/GLX)
 elseif (APPLE)
