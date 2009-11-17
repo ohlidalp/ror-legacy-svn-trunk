@@ -1843,9 +1843,12 @@ namespace Hydrax
 		Ogre::CompositionTechnique::TextureDefinition* TDef = UnderWaterComp_Technique->createTextureDefinition("OriginalScene");
         TDef->width = 0; 
         TDef->height = 0; 
-		Ogre::PixelFormatList l;
-		l.push_back(Ogre::PF_A8R8G8B8);
-		TDef->formatList = l;    
+#if OGRE_VERSION>0x010602
+		TDef->formatList.push_back(Ogre::PF_A8R8G8B8);
+#else
+		TDef->format = Ogre::PF_A8R8G8B8;
+#endif //OGRE_VERSION
+
 
 		// Render the original scene
         Ogre::CompositionTargetPass* CTPass = UnderWaterComp_Technique->createTargetPass();
