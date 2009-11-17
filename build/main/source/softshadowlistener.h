@@ -3,7 +3,11 @@
 
 #include "Ogre.h"
 
+#if OGRE_VERSION>0x010602
 class SoftShadowListener : public Ogre::SceneManager::Listener
+#else
+class SoftShadowListener : public Ogre::ShadowListener
+#endif //OGRE_VERSION
 {
     // this is a callback we'll be using to set up our shadow camera
 #if OGRE_VERSION>0x010602
