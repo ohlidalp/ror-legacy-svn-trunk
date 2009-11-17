@@ -4865,6 +4865,10 @@ void ExampleFrameListener::loadTerrain(String terrainfile)
 	netSpawnPos["boat"] = spl;
 	netSpawnPos["car"] = spl;
 
+#if OGRE_VERSION>0x010602
+	Vector4 splitPoints;
+#endif
+
 	//shadows
 	if (SETTINGS.getSetting("Shadow technique")=="Stencil shadows (best looking)")
 	{
@@ -4904,6 +4908,80 @@ void ExampleFrameListener::loadTerrain(String terrainfile)
 	} else if (SETTINGS.getSetting("Shadow technique")=="Soft shadows")
 	{
 		initSoftShadows();
+	} else if (SETTINGS.getSetting("Shadow technique")=="Parallel-split Shadow Maps")
+	{
+#if OGRE_VERSION>0x010602
+		mSceneMgr->setShadowTechnique(SHADOWTYPE_TEXTURE_ADDITIVE_INTEGRATED);
+
+		// 3 textures per directional light
+		mSceneMgr->setShadowTextureCountPerLightType(Ogre::Light::LT_DIRECTIONAL, 3);
+		mSceneMgr->setShadowTextureSettings(2048, 3, PF_FLOAT32_R);
+		mSceneMgr->setShadowTextureSelfShadow(true);
+		// Set up caster material - this is just a standard depth/shadow map caster
+		mSceneMgr->setShadowTextureCasterMaterial("PSSM/shadow_caster");
+
+		// shadow camera setup
+		PSSMShadowCameraSetup* pssmSetup = new PSSMShadowCameraSetup();
+		pssmSetup->calculateSplitPoints(3, mCamera->getNearClipDistance(), mCamera->getFarClipDistance());
+		pssmSetup->setUseSimpleOptimalAdjust(true);
+		//pssmSetup->setSplitPadding(10);
+		//pssmSetup->setOptimalAdjustFactor(0, 2);
+		//pssmSetup->setOptimalAdjustFactor(1, 1);
+		//pssmSetup->setOptimalAdjustFactor(2, 0.5);
+
+		mSceneMgr->setShadowCameraSetup(ShadowCameraSetupPtr(pssmSetup));
+
+
+		/*
+		// we have caelum, no need for another light
+		mSceneMgr->setAmbientLight(ColourValue(0.3, 0.3, 0.3));
+		Light* l = mSceneMgr->createLight("Dir");
+		l->setType(Light::LT_DIRECTIONAL);
+		Vector3 dir(0.3, -1, 0.2);
+		dir.normalise();
+		l->setDirection(dir);
+		*/
+
+		// Create a basic plane to have something in the scene to look at
+		/*
+		Plane plane;
+		plane.normal = Vector3::UNIT_Y;
+		plane.d = 100;
+		MeshPtr msh = MeshManager::getSingleton().createPlane("Myplane",
+			ResourceGroupManager::DEFAULT_RESOURCE_GROUP_NAME, plane,
+			4500,4500,100,100,true,1,40,40,Vector3::UNIT_Z);
+		msh->buildTangentVectors(VES_TANGENT);
+		Entity* pPlaneEnt;
+		pPlaneEnt = mSceneMgr->createEntity( "plane", "Myplane" );
+		pPlaneEnt->setMaterialName("PSSM/Plane");
+		mSceneMgr->getRootSceneNode()->createChildSceneNode()->attachObject(pPlaneEnt);
+
+		mCamera->setPosition(-50, 500, 1000);
+		mCamera->lookAt(Vector3(-50,-100,0));
+
+		*/
+		//Entity* ent = mSceneMgr->createEntity("knot", "knot.mesh");
+		//ent->setMaterialName("PSSM/Knot");
+		//mSceneMgr->getRootSceneNode()->createChildSceneNode(Vector3(0,0,0))->attachObject(ent);
+		//createRandomEntityClones(ent, 20, Vector3(-1000,0,-1000), Vector3(1000,0,1000));
+
+		const PSSMShadowCameraSetup::SplitPointList& splitPointList = pssmSetup->getSplitPoints();
+		for (int i = 0; i < 3; ++i)
+		{
+			splitPoints[i] = splitPointList[i];
+		}
+		//MaterialPtr mat = MaterialManager::getSingleton().getByName("PSSM/Plane");
+		//mat->getTechnique(0)->getPass(0)->getFragmentProgramParameters()->setNamedConstant("pssmSplitPoints", splitPoints);
+		
+		//mat = MaterialManager::getSingleton().getByName("PSSM/Plane2");
+		//mat->getTechnique(0)->getPass(0)->getFragmentProgramParameters()->setNamedConstant("pssmSplitPoints", splitPoints);
+		
+		//mat = MaterialManager::getSingleton().getByName("PSSM/Knot");
+		//mat->getTechnique(0)->getPass(0)->getFragmentProgramParameters()->setNamedConstant("pssmSplitPoints", splitPoints);
+#else
+		showError("Parallel-split Shadow Maps as shadow technique is only available when you build with Ogre 1.6 support.");
+		exit(1);
+#endif //OGRE_VERSION
 	}
 	ColourValue fadeColour(r,g,b);
 
@@ -5996,6 +6074,22 @@ void ExampleFrameListener::loadTerrain(String terrainfile)
 	// SAY CHEESE!
 	//no, not yet, caelum is not ready!
 	//if (envmap) envmap->update(Vector3(terrainxsize/2.0, hfinder->getHeightAt(terrainxsize/2.0, terrainzsize/2.0)+50.0, terrainzsize/2.0));
+
+#if OGRE_VERSION>0x010602
+	if (SETTINGS.getSetting("Shadow technique")=="Parallel-split Shadow Maps")
+	{
+		Ogre::ResourceManager::ResourceMapIterator RI = Ogre::MaterialManager::getSingleton().getResourceIterator();
+		while (RI.hasMoreElements())
+		{
+			Ogre::MaterialPtr mat = RI.getNext();
+			if(mat.isNull()) continue;
+			if(!mat->getNumTechniques()) continue;
+			if (mat->getTechnique(0)->getPass("SkyLight") != NULL)
+				mat->getTechnique(0)->getPass("SkyLight")->getFragmentProgramParameters()->setNamedConstant("pssmSplitPoints", splitPoints);
+		}
+	}
+#endif //OGRE_VERSION
+
 }
 
 void ExampleFrameListener::updateXFire()

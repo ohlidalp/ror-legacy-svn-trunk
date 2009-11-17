@@ -1693,6 +1693,9 @@ MyDialog::MyDialog(const wxString& title, MyApp *_app) : wxDialog(NULL, wxID_ANY
 	shadow->Append(conv("No shadows (fastest)"));
 	shadow->Append(conv("Texture shadows"));
 	shadow->Append(conv("Stencil shadows (best looking)"));
+#if OGRE_VERSION>0x010602
+	shadow->Append(conv("Parallel-split Shadow Maps"));
+#endif //OGRE_VERSION
 	shadow->SetToolTip(_("Texture shadows are fast but limited: jagged edges, no object self-shadowing, limited shadow distance.\nStencil shadows are slow but gives perfect shadows."));
 
 	dText = new wxStaticText(graphicsPanel, -1, _("Water type:"), wxPoint(10,203));
