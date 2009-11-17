@@ -45,6 +45,10 @@ ENDIF(WIN32)
 
 add_library(lua STATIC ${lua_sources} ${lua_headers})
 
+IF(WIN32)
+  SET_TARGET_PROPERTIES(lua PROPERTIES COMPILE_FLAGS "/MP")
+ENDIF(WIN32)
+
 install(TARGETS lua
       RUNTIME DESTINATION ${BIN_DIR}
       LIBRARY DESTINATION ${BIN_DIR}

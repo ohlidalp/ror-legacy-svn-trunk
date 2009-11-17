@@ -8,6 +8,9 @@ add_definitions("-D_LIB")
 
 # the final lib
 add_library(paged STATIC ${paged_src})
+IF(WIN32)
+  SET_TARGET_PROPERTIES(paged PROPERTIES COMPILE_FLAGS "/MP")
+ENDIF(WIN32)
 
 # this is for windows only, since windows is stupid ...
 add_dependencies(paged OgreMain)

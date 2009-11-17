@@ -40,7 +40,9 @@ add_library(ois SHARED ${ois_src} ${ois_headers})
 #IF(WIN32)
 #    SET_TARGET_PROPERTIES(${LIBNAME} PROPERTIES PREFIX "")
 #ENDIF()
-
+IF(WIN32)
+  SET_TARGET_PROPERTIES(ois PROPERTIES COMPILE_FLAGS "/MP")
+ENDIF(WIN32)
 # platform - libs
 IF(WIN32)
   target_link_libraries(ois "dxguid.lib dinput8.lib")
