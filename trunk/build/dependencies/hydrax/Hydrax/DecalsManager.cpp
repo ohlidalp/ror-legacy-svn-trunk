@@ -103,7 +103,10 @@ namespace Hydrax
 		// This method is only available in the CVS HEAD,
 		// if you have problems compiling, just comment the
 		// following line:
+#if OGRE_VERSION>0x010602
 		mProjector->setOrthoWindow(Size.x, Size.y);
+#endif //OGRE_VERSION
+
 	}
 
 	void Decal::setOrientation(const Ogre::Radian& Orientation)
