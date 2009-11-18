@@ -96,13 +96,14 @@ WaterOld::WaterOld(int type, Camera *camera, SceneManager *mSceneMgr, RenderWind
 	{
 		while (!feof(fd))
 		{
-			fscanf(fd," %[^\n\r]",line);
+			int res = fscanf(fd," %[^\n\r]",line);
 			if (line[0]==';')
 			{
 				continue;
 			};
 			float wl,amp,mx,dir;
-			sscanf(line,"%f, %f, %f, %f",&wl,&amp,&mx,&dir);
+			res = sscanf(line,"%f, %f, %f, %f",&wl,&amp,&mx,&dir);
+			if(res < 4) continue;
 			wavetrains[free_wavetrain].wavelength=wl;
 			wavetrains[free_wavetrain].amplitude=amp;
 			wavetrains[free_wavetrain].maxheight=mx;
