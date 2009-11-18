@@ -86,6 +86,7 @@ void Settings::saveSettings(Ogre::String configFile)
 
 void Settings::loadSettings(Ogre::String configFile, bool overwrite)
 {
+	//printf("trying to load configfile: %s...\n", configFile.c_str());
 	Ogre::ConfigFile cfg;
 	cfg.load(configFile, "=:\t", false);
 
@@ -141,8 +142,9 @@ bool Settings::setupPaths()
 		path_descend(program_path);
 	} else return false;
 	//user path is easy
-	strncpy(user_path, getenv ("HOME"), 240);
-	sprintf(user_path, "%s/RigsOfRods/", user_path);
+	char home_path[255];
+	strncpy(home_path, getenv ("HOME"), 240);
+	sprintf(user_path, "%s/RigsOfRods/", home_path);
 #elif OGRE_PLATFORM == OGRE_PLATFORM_APPLE
 	//found this code, will look later
 	std::string path = "./";
@@ -203,14 +205,17 @@ bool Settings::setupPaths()
 	char plugins_fname[1024];
 	strcpy(plugins_fname, program_path);
 	strcat(plugins_fname, "plugins.cfg");
+
 	char ogreconf_fname[1024];
 	strcpy(ogreconf_fname, user_path);
 	path_add(ogreconf_fname, "config");
 	strcpy(config_root, ogreconf_fname); //setting the config root here
 	strcat(ogreconf_fname, "ogre.cfg");
+
 	char ogrelog_fname[1024];
 	strcpy(ogrelog_fname, user_path);
 	path_add(ogrelog_fname, "logs");
+
 	char ogrelog_path[1024];
 	strcpy(ogrelog_path, ogrelog_fname);
 	strcat(ogrelog_fname, "RoR.log");
@@ -252,6 +257,7 @@ bool Settings::setupPaths()
 	{
 	}
 
+	printf(" * config path:      %s\n", settings["Config Root"].c_str());
 	printf(" * user path:        %s\n", settings["User Path"].c_str());
 	printf(" * program path:     %s\n", settings["Program Path"].c_str());
 	printf(" * used plugins.cfg: %s\n", settings["plugins.cfg"].c_str());
@@ -276,9 +282,11 @@ void Settings::path_descend(char* path)
 
 void Settings::path_add(char* path, const char* dirname)
 {
+	char tmp[1024];
 	char dirsep='/';
 #if OGRE_PLATFORM == OGRE_PLATFORM_WIN32
 	dirsep='\\';
 #endif
-	sprintf(path, "%s%s%c", path, dirname, dirsep);
+	sprintf(tmp, "%s%s%c", path, dirname, dirsep);
+	strcpy(path, tmp);
 }
