@@ -41,10 +41,6 @@ along with Rigs of Rods.  If not, see <http://www.gnu.org/licenses/>.
 
 using namespace Ogre;
 
-#if OGRE_PLATFORM == OGRE_PLATFORM_LINUX
-#define OGRE_ASSERT_MODE 0
-#endif
-
 //#include "FlexMesh.h"
 #include "Beam.h"
 #include "OgreSceneManager.h"

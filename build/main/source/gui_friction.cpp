@@ -588,7 +588,7 @@ void GUI_Friction::event_btn_MouseButtonClick(MyGUI::WidgetPtr _sender)
 
 		String mTitle = hText.first;
 		String mTxt = hText.second;
-		if(minmax.first != minmax.second)
+		if(fabs(minmax.first - minmax.second) > 0.001f)
 			mTxt += "\nParameter range: " + StringConverter::toString(minmax.first) + " to " + StringConverter::toString(minmax.second) + "";
 		MyGUI::IntPoint p = _sender->getAbsolutePosition();
 		MyGUI::IntSize s = _sender->getSize();

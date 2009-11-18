@@ -9329,8 +9329,8 @@ beam_t* Beam::getBeam(unsigned int node1ID, unsigned int node2ID)
 {
 
 	for(unsigned  int j = 0; j < (unsigned  int)free_beam; ++j)
-		if( (beams[j].p1->id == node1ID && beams[j].p2->id == node2ID) ||
-			(beams[j].p2->id == node1ID && beams[j].p1->id == node2ID) )
+		if( (beams[j].p1->id == (int)node1ID && beams[j].p2->id == (int)node2ID) ||
+			(beams[j].p2->id == (int)node1ID && beams[j].p1->id == (int)node2ID) )
 			return &beams[j];
 	
 	return NULL;
@@ -9346,7 +9346,7 @@ beam_t* Beam::getBeam(node_t* node1, node_t* node2)
 node_t* Beam::getNode(unsigned int id)
 {
 	for( unsigned int i = 0 ; i < (unsigned  int)free_node; ++i)
-		if( nodes[i].id == id )
+		if( nodes[i].id == (int)id )
 			return &nodes[i];
 
 	// node not found
