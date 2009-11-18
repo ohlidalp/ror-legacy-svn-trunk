@@ -70,7 +70,7 @@ namespace Ogre {
     {
 		destroyAllOverlayElements(false);
 		destroyAllOverlayElements(true);
-        destroyAll();
+        //destroyAll(); // This crashes, thus removed!
 
         // Unregister with resource group manager
 		ResourceGroupManager::getSingleton()._unregisterScriptLoader(this);

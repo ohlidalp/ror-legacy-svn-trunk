@@ -148,7 +148,7 @@ namespace Ogre {
     {
         m2DElements.remove(cont);
 		cont->_notifyParent(0, 0);
-		assignZOrders();
+		//assignZOrders(); // THIS CRASHES, thus removed!
     }
     //---------------------------------------------------------------------
     void Overlay::add3D(SceneNode* node)
