@@ -62,7 +62,8 @@ int showMsgBox(Ogre::String title, Ogre::String err, int type)
 
 int showWebError(Ogre::String title, Ogre::String err, Ogre::String url)
 {
-	Ogre::LogManager::getSingleton().logMessage("web message box: " + title + ": " + err + " / url: " + url);
+	// NO logmanager use, because it could be that its not initialized yet!
+	//Ogre::LogManager::getSingleton().logMessage("web message box: " + title + ": " + err + " / url: " + url);
 #if OGRE_PLATFORM == OGRE_PLATFORM_WIN32
 	Ogre::String additional = _L("\n\nYou can eventually get help here:\n\n") + url + _L("\n\nDo you want to open that address in your default browser now?");
 	err += additional;
