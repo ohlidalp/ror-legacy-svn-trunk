@@ -515,8 +515,8 @@ void CacheSystem::parseModAttribute(const String& line, Cache_Entry& t)
 		{
 			logBadTruckAttrib(line, t);
 			return;
-		} 
-		else  
+		}
+		else
 		{
 			String mat = params[1];
 			std::vector < Ogre::String > ar = StringUtil::split(mat," ");
@@ -1018,7 +1018,7 @@ Ogre::String CacheSystem::formatInnerEntry(int counter, Cache_Entry t)
 		if(t.driveable!=0) result += "\tdriveable="+StringConverter::toString(t.driveable)+"\n";
 		if(t.numgears!=0) result += "\tnumgears="+StringConverter::toString(t.numgears)+"\n";
 		if(t.enginetype!=0) result += "\tenginetype="+StringConverter::toString(t.enginetype)+"\n";
-		if(t.materials.size()) 
+		if(t.materials.size())
 		{
 			String matStr = "";
 			for(std::set < Ogre::String >::iterator it = t.materials.begin(); it != t.materials.end(); it++)
@@ -1675,7 +1675,7 @@ void CacheSystem::fillTruckDetailInfo(Cache_Entry &entry, Ogre::DataStreamPtr ds
 				String propMats="";
 				try
 				{
-					if(smgr) 
+					if(smgr)
 					{
 						te = smgr->createEntity("CacheEntityMaterialTest", String(meshname));
 						addMeshMaterials(entry, te);
@@ -1909,7 +1909,7 @@ void CacheSystem::fillTruckDetailInfo(Cache_Entry &entry, Ogre::DataStreamPtr ds
 				String propMats="";
 				try
 				{
-					if(smgr) 
+					if(smgr)
 					{
 						te = smgr->createEntity("CacheEntityMaterialTest", String(meshname));
 						addMeshMaterials(entry, te);
@@ -2485,7 +2485,7 @@ void CacheSystem::readCategoryTitles()
 	}
 	while (!feof(fd))
 	{
-		fscanf(fd," %[^\n\r]",line);
+		int res = fscanf(fd," %[^\n\r]",line);
 		if (line[0]==';')
 		{
 			continue;
@@ -2685,7 +2685,7 @@ void CacheSystem::loadSingleZip(String zippath, int cfactor, bool unload, bool o
 
 	rgcounter++;
 	String rgname = "General-"+StringConverter::toString(rgcounter);
-	
+
 	// use general group?
 	if(!ownGroup)
 		rgname = ResourceGroupManager::DEFAULT_RESOURCE_GROUP_NAME;

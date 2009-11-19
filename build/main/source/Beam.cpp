@@ -207,11 +207,11 @@ Beam::~Beam()
 	// delete Rails
 	for(std::vector< RailGroup* >::iterator it = mRailGroups.begin(); it != mRailGroups.end(); it++)
 	{
-		// signal to the Rail that 
+		// signal to the Rail that
 		(*it)->cleanUp();
 		delete (*it);
 	}
-	
+
 }
 
 Beam::Beam(int tnum, SceneManager *manager, SceneNode *parent, RenderWindow* win, Network *_net, float *_mapsizex, float *_mapsizez, Real px, Real py, Real pz, Quaternion rot, const char* fname, Collisions *icollisions, HeightFinder *mfinder, Water *w, Camera *pcam, Mirrors *mmirror, bool networked, bool networking, collision_box_t *spawnbox, bool ismachine, int _flaresMode, std::vector<Ogre::String> *_truckconfig, SkinPtr skin, bool freeposition) : deleting(false)
@@ -640,7 +640,7 @@ void Beam::scaleTruck(float value)
 		nodes[i].mass *= value;
 	}
 	updateSlideNodePositions();
-	
+
 	// props and stuff
 	// TOFIX: care about prop positions as well!
 	for(int i=0;i<free_prop;i++)
@@ -936,8 +936,8 @@ void Beam::calcNetwork()
 	if (oob2->time<rnow) {net_toffset=oob2->time-tnow; rnow=tnow+net_toffset;}
 	float tratio=(float)(rnow-oob1->time)/(float)(oob2->time-oob1->time);
 	//LogManager::getSingleton().logMessage(" network time diff: "+ StringConverter::toString(net_toffset));
-	Vector3 p1ref;
-	Vector3 p2ref;
+	Vector3 p1ref = Vector3::ZERO;
+	Vector3 p2ref = Vector3::ZERO;
 	short *sp1=(short*)(netb1+4*3);
 	short *sp2=(short*)(netb2+4*3);
 
@@ -1481,7 +1481,7 @@ int Beam::loadTruck(const char* fname, SceneManager *manager, SceneNode *parent,
 		if (!strncmp("set_node_defaults", line, 17))
 		{
 			int result = sscanf(line,"set_node_defaults %f, %f, %f, %f, %s", &default_node_loadweight, &default_node_friction, &default_node_volume, &default_node_surface, default_node_options);
-			if (result < 1 || result == EOF) 
+			if (result < 1 || result == EOF)
 			{
 				LogManager::getSingleton().logMessage("Error parsing File (set_node_defaults) " + String(fname) +" line " + StringConverter::toString(linecounter) + ". trying to continue ...");
 				continue;
@@ -4271,7 +4271,7 @@ int Beam::loadTruck(const char* fname, SceneManager *manager, SceneNode *parent,
 
 		else if (mode==63) parseRailGroupLine(line);
 		else if (mode==64) parseSlideNodeLine(line);
-		
+
 	};
 	if(!loading_finished) {
 		LogManager::getSingleton().logMessage("Reached end of file "+ String(fname)+ ". No 'end' was found! Did you forgot it? Trying to continue...");
@@ -4415,7 +4415,7 @@ int Beam::loadTruck(const char* fname, SceneManager *manager, SceneNode *parent,
 			resetPosition(Vector3(px, py, pz), true);
 		else
 			resetPosition(px, pz, true, miny);
-		
+
 		if (spawnbox)
 		{
 			bool inside=true;
@@ -4685,9 +4685,9 @@ int Beam::loadPosition(int indexPosition)
 		pos = pos + nbuff[i];
 	}
 	position = pos / (float)(free_node);
-	
+
 	resetSlideNodes();
-	
+
 	return 0;
 }
 
@@ -4795,7 +4795,7 @@ void Beam::resetPosition(Ogre::Vector3 translation, bool setInitPosition)
 		for (i=0; i<free_node; i++)
 			nodes[i].AbsPosition += offset;
 	}
-	
+
 	// calculate average position
 	Vector3 apos=Vector3::ZERO;
 	for (i=0; i<free_node; i++)
@@ -5627,7 +5627,7 @@ bool Beam::frameStep(Real dt, Beam** trucks, int numtrucks)
 				pos = pos + nbuff[i].pos;
 			}
 			updateSlideNodePositions();
-			
+
 			position=pos/(float)(free_node);
 			// now beams
 			beam_simple_t *bbuff = (beam_simple_t *)replay->getReadBuffer(replaypos, 1, time);
@@ -6165,7 +6165,7 @@ void Beam::calcForcesEuler(int doUpdate, Real dt, int step, int maxstep, Beam** 
 			{
 				// hard (normal) shock bump
 				if (beams[i].bounded==SHOCK1)
-				{				
+				{
 					if (difftoBeamL > beams[i].longbound*beams[i].L || difftoBeamL < -beams[i].shortbound*beams[i].L)
 					{
 						// hard (normal) shock bump
@@ -6454,7 +6454,7 @@ void Beam::calcForcesEuler(int doUpdate, Real dt, int step, int maxstep, Beam** 
 	// these must be done before the integrator, or else the forces are not calculated properly
 	updateSlideNodeForces(dt);
 	// END Slidenode section   /////////////////////////////////////////////////
-	
+
 #ifdef TIMING
 	if(statistics)
 		statistics->queryStart(BeamThreadStats::Nodes);
@@ -9332,7 +9332,7 @@ beam_t* Beam::getBeam(unsigned int node1ID, unsigned int node2ID)
 		if( (beams[j].p1->id == (int)node1ID && beams[j].p2->id == (int)node2ID) ||
 			(beams[j].p2->id == (int)node1ID && beams[j].p1->id == (int)node2ID) )
 			return &beams[j];
-	
+
 	return NULL;
 }
 

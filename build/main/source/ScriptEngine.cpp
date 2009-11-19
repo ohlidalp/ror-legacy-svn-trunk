@@ -192,7 +192,7 @@ void ScriptEngine::PrintVariables(asIScriptContext *ctx, int stackLevel)
 	void *varPointer = ctx->GetThisPointer(stackLevel);
 	if( typeId )
 	{
-		sprintf(tmp," this = 0x%x", varPointer);
+		sprintf(tmp," this = 0x%x", (unsigned int)varPointer);
 		LogManager::getSingleton().logMessage(tmp);
 	}
 
@@ -294,6 +294,8 @@ void ScriptEngine::init()
 	result = engine->RegisterObjectMethod("BeamClass", "bool getCustomParticleMode()", asMETHOD(Beam,getCustomParticleMode), asCALL_THISCALL); assert(result>=0);
 	result = engine->RegisterObjectMethod("BeamClass", "bool getReverseLightVisible()", asMETHOD(Beam,getCustomParticleMode), asCALL_THISCALL); assert(result>=0);
 	result = engine->RegisterObjectMethod("BeamClass", "float getHeadingDirectionAngle()", asMETHOD(Beam,getHeadingDirectionAngle), asCALL_THISCALL); assert(result>=0);
+	/*
+	// offsetof invalid for classes?
 	result = engine->RegisterObjectProperty("BeamClass", "float brake", offsetof(Beam, brake)); assert(result>=0);
 	result = engine->RegisterObjectProperty("BeamClass", "float currentScale", offsetof(Beam, currentScale)); assert(result>=0);
 	result = engine->RegisterObjectProperty("BeamClass", "int nodedebugstate", offsetof(Beam, nodedebugstate)); assert(result>=0);
@@ -367,6 +369,7 @@ void ScriptEngine::init()
 	result = engine->RegisterObjectProperty("BeamClass", "bool meshesVisible", offsetof(Beam, meshesVisible)); assert(result>=0);
 	result = engine->RegisterObjectBehaviour("BeamClass", asBEHAVE_ADDREF, "void f()",asMETHOD(Beam,addRef), asCALL_THISCALL); assert(result>=0);
 	result = engine->RegisterObjectBehaviour("BeamClass", asBEHAVE_RELEASE, "void f()",asMETHOD(Beam,release), asCALL_THISCALL); assert(result>=0);
+	*/
 
 	// class Settings
 	result = engine->RegisterObjectType("SettingsClass", sizeof(Settings), asOBJ_REF); assert(result>=0);
@@ -376,6 +379,7 @@ void ScriptEngine::init()
 
 	// class Cache_Entry
 	result = engine->RegisterObjectType("Cache_EntryClass", sizeof(Cache_Entry), asOBJ_REF); assert(result>=0);
+	/*
 	result = engine->RegisterObjectProperty("Cache_EntryClass", "string minitype", offsetof(Cache_Entry, minitype)); assert(result>=0);
 	result = engine->RegisterObjectProperty("Cache_EntryClass", "string fname", offsetof(Cache_Entry, fname)); assert(result>=0);
 	result = engine->RegisterObjectProperty("Cache_EntryClass", "string fname_without_uid", offsetof(Cache_Entry, fname_without_uid)); assert(result>=0);
@@ -436,6 +440,7 @@ void ScriptEngine::init()
 	result = engine->RegisterObjectBehaviour("Cache_EntryClass", asBEHAVE_ADDREF, "void f()",asMETHOD(Cache_Entry,addRef), asCALL_THISCALL); assert(result>=0);
 	result = engine->RegisterObjectBehaviour("Cache_EntryClass", asBEHAVE_RELEASE, "void f()",asMETHOD(Cache_Entry,release), asCALL_THISCALL); assert(result>=0);
 	// TODO: add Cache_Entry::sectionconfigs
+	*/
 
 	// todo: add Vector3 classes and other utility classes!
 
@@ -791,7 +796,7 @@ void GameScript::showChooser(string &type, string &instance, string &box)
 	if (type == "trailer")   ntype = GUI_Loader::LT_Trailer;
 	if (type == "load")      ntype = GUI_Loader::LT_Load;
 	if (type == "extension") ntype = GUI_Loader::LT_Extension;
-	if (ntype!=-1) 
+	if (ntype!=-1)
 		mefl->showLoad(ntype, const_cast<char*>(instance.c_str()), const_cast<char*>(box.c_str()));
 }
 

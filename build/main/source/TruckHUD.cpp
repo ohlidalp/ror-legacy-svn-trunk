@@ -6,7 +6,7 @@ Copyright 2007,2008,2009 Thomas Fischer
 For more information, see http://www.rigsofrods.com/
 
 Rigs of Rods is free software: you can redistribute it and/or modify
-it under the terms of the GNU General Public License version 3, as 
+it under the terms of the GNU General Public License version 3, as
 published by the Free Software Foundation.
 
 Rigs of Rods is distributed in the hope that it will be useful,
@@ -124,7 +124,7 @@ bool TruckHUD::update(float dt, Beam *truck, SceneManager *mSceneMgr, Camera* mC
 		OverlayElement* oTruckname = OverlayManager::getSingleton().getOverlayElement("tracks/TruckInfoBox/Truckname");
 		oTruckname->setCaption(truck->getTruckName());
 		checkOverflow(oTruckname);
-		
+
 		OverlayElement* oTruckauthor = OverlayManager::getSingleton().getOverlayElement("tracks/TruckInfoBox/Truckauthor");
 		std::vector<AuthorInfo> file_authors = truck->getAuthors();
 		if(file_authors.size() > 0)
@@ -169,7 +169,7 @@ bool TruckHUD::update(float dt, Beam *truck, SceneManager *mSceneMgr, Camera* mC
 		float average_deformation = 0;
 		float current_deformation = 0;
 		float mass = truck->getTotalMass();
-		
+
 		for(int i=0; i<beamCount; i++, beam++)
 		{
 			if(beam->broken != 0)
@@ -260,7 +260,7 @@ bool TruckHUD::update(float dt, Beam *truck, SceneManager *mSceneMgr, Camera* mC
 		descl->setCaption(geesstr);
 		checkOverflow(descl);
 	}
-	
+
 	Vector3 hdir = Vector3::ZERO;
 	if(truck->cameranodepos[0]>=0)
 		hdir = truck->nodes[truck->cameranodepos[0]].RelPosition-truck->nodes[truck->cameranodedir[0]].RelPosition;
@@ -269,7 +269,7 @@ bool TruckHUD::update(float dt, Beam *truck, SceneManager *mSceneMgr, Camera* mC
 
 	//LogManager::getSingleton().logMessage("ffforce: " + StringConverter::toString(truck->ffforce.x) + ", " + StringConverter::toString(truck->ffforce.y) + ", " + StringConverter::toString(truck->ffforce.z) + " / direction: " + StringConverter::toString(hdir.x) + ", " + StringConverter::toString(hdir.y) + ", " + StringConverter::toString(hdir.z));
 
-	
+
 	// TODO: FIX THIS!
 	//char rpmstring[255];
 	//sprintf(rpmstring, "current GForces: %2.2f", g_along_hdir);
@@ -310,7 +310,7 @@ bool TruckHUD::update(float dt, Beam *truck, SceneManager *mSceneMgr, Camera* mC
 			// now proceed
 			// reset old ratio:
 			torqueLineStream->setExactValue(1, lastTorqueRatio * 1000.0f, 0);
-			
+
 			// no overflow
 			if(ratio <= 1 && usedSpline)
 			{
@@ -326,7 +326,7 @@ bool TruckHUD::update(float dt, Beam *truck, SceneManager *mSceneMgr, Camera* mC
 		}
 	} else if (truck->driveable == AIRPLANE){
 		char rpmstring[255];
-		
+
 		if(truck->aeroengines[0] && truck->aeroengines[1] && truck->aeroengines[2] && truck->aeroengines[3])
 			sprintf(rpmstring, "%s %.0f / %.0f / %.0f / %.0f", rpmsstr.c_str(), truck->aeroengines[0]->getRPM(), truck->aeroengines[1]->getRPM(), truck->aeroengines[2]->getRPM(), truck->aeroengines[3]->getRPM());
 		else if(truck->aeroengines[0] && truck->aeroengines[1] && truck->aeroengines[2] && !truck->aeroengines[3])
@@ -374,12 +374,12 @@ bool TruckHUD::update(float dt, Beam *truck, SceneManager *mSceneMgr, Camera* mC
 		checkOverflow(descl);
 		descl = OverlayManager::getSingleton().getOverlayElement("tracks/TruckInfoBox/AverageVelocity");
 		descl->setCaption("");
-	} 
+	}
 		else if(truck->driveable == AIRPLANE)
 	{
 		char velostring[255];
 		float velocity = truck->nodes[0].Velocity.length()*1.9438;
-		
+
 		if(velocity > maxVelos[truck->driveable])
 			maxVelos[truck->driveable] = velocity;
 		if(velocity < minVelos[truck->driveable])
@@ -455,7 +455,7 @@ bool TruckHUD::update(float dt, Beam *truck, SceneManager *mSceneMgr, Camera* mC
 		{
 			if (truck->commandkey[i].description.size() == 0)
 				continue;
-			
+
 			j++;
 			char commandID[255];
 			String keyStr="";
@@ -478,7 +478,7 @@ bool TruckHUD::update(float dt, Beam *truck, SceneManager *mSceneMgr, Camera* mC
 			descl->setCaption(keyStr + ": " + truck->commandkey[i].description);
 			checkOverflow(descl);
 		}
-		
+
 		// hide command section title if no commands
 		if(j == 0)
 		{
@@ -489,7 +489,7 @@ bool TruckHUD::update(float dt, Beam *truck, SceneManager *mSceneMgr, Camera* mC
 			descl->setCaption(_L("Commands:"));
 			checkOverflow(descl);
 		}
-			
+
 
 	}
 	return true;
