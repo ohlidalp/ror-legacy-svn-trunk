@@ -1129,7 +1129,7 @@ int getAvLang(wxString dir, std::vector<wxLanguageInfo*> &files)
 	wxDir dp(dir);
 	if (!dp.IsOpened())
 	{
-		printf("error opening %s\n", dir.c_str());
+		printf("error opening %s\n", conv(dir).c_str());
 		return -1;
 	}
 	wxString name;
@@ -1220,7 +1220,7 @@ void initLanguage(wxString languagePath, wxString userpath)
 	printf("preferred language: %s\n", conv(language->Description).c_str());
 	wxString lshort = language->CanonicalName.substr(0, 2);
 	wxString tmp = basedir + dirsep + lshort + dirsep + langfile + _T(".mo");
-	printf("lang file: %s\n", tmp.c_str());
+	printf("lang file: %s\n", conv(tmp).c_str());
 	logfile->AddLine(wxString(_T("lang file: "))+tmp);logfile->Write();
 	if(wxFileName::FileExists(tmp))
 	{
@@ -3366,11 +3366,11 @@ void MyDialog::OnNoteBookPageChange(wxNotebookEvent& event)
 		if(f)
 		{
 			char line[10];
-			fgets(line, 10, f);
+			char *res = fgets(line, 10, f);
 			fclose(f);
 			int vernum = 0;
-			int res = sscanf(line, "%d", &vernum);
-			if(res>0)
+			int resn = sscanf(line, "%d", &vernum);
+			if(resn>0)
 			{
 				ver = Ogre::StringConverter::toString(vernum);
 			}

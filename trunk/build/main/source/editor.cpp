@@ -39,7 +39,7 @@ Editor::Editor(SceneManager *scm, ExampleFrameListener *efl)
 	};
 	while (!feof(fd))
 	{
-		fscanf(fd," %[^\n]",line);
+		int res = fscanf(fd," %[^\n]",line);
 		if (line[0]==';')
 		{
 			continue;

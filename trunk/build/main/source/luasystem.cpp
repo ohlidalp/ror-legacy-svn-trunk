@@ -137,7 +137,7 @@ bool LuaSystem::fileExists(const char *filename)
 
 void LuaSystem::loadTerrain(Ogre::String terrainname)
 {
-	char trrn[255];
+	char trrn[255]="";
 	strncpy(trrn,terrainname.c_str(), 240);
 	strcat(trrn,".lua");
 	if(!fileExists(trrn))
