@@ -4979,7 +4979,7 @@ void ExampleFrameListener::loadTerrain(String terrainfile)
 		//mat = MaterialManager::getSingleton().getByName("PSSM/Knot");
 		//mat->getTechnique(0)->getPass(0)->getFragmentProgramParameters()->setNamedConstant("pssmSplitPoints", splitPoints);
 #else
-		showError("Parallel-split Shadow Maps as shadow technique is only available when you build with Ogre 1.6 support.");
+		showError("Parallel-split Shadow Maps as shadow technique is only available when you build with Ogre 1.6 support.", "PSSM error");
 		exit(1);
 #endif //OGRE_VERSION
 	}
