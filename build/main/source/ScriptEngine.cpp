@@ -192,7 +192,7 @@ void ScriptEngine::PrintVariables(asIScriptContext *ctx, int stackLevel)
 	void *varPointer = ctx->GetThisPointer(stackLevel);
 	if( typeId )
 	{
-		sprintf(tmp," this = 0x%x", (unsigned int)varPointer);
+		sprintf(tmp," this = %p", varPointer);
 		LogManager::getSingleton().logMessage(tmp);
 	}
 
