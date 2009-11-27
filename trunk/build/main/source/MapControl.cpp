@@ -256,8 +256,11 @@ void MapEntity::init()
 		// this icon is static!
 		icon->setImageTexture(staticImgFile);
 		Ogre::TexturePtr t = (Ogre::TexturePtr)(TextureManager::getSingleton().getByName(staticImgFile));
-		tw = t->getWidth();
-		th = t->getHeight();
+		if(!t.isNull())
+		{
+			tw = t->getWidth();
+			th = t->getHeight();
+		}
 		isStatic=true;
 	} else
 	{

@@ -26,6 +26,9 @@ freely, subject to the following restrictions:
 #include "language.h"
 #include "Settings.h"
 
+//#include "MyGUI_Font.h"
+//#include "MyGUI_FontManager.h"
+
 #include "fontTextureHelper.h"
 
 using namespace std;
@@ -58,11 +61,11 @@ void LanguageEngine::setup()
 	String language_short = SETTINGS.getSetting("Language Short").substr(0, 2); // only first two characters are important
 
 	// Load a .mo-File.
-	LogManager::getSingleton().logMessage("*** Loading Language ***");
+	Ogre::LogManager::getSingleton().logMessage("*** Loading Language ***");
 	String langfile = "languages/" + language_short + String("/") + String(MOFILENAME) + String(".mo");
 	if (reader->ReadFile(langfile.c_str()) != moFileLib::moFileReader::EC_SUCCESS )
 	{
-			LogManager::getSingleton().logMessage("* error loading language file " + langfile);
+			Ogre::LogManager::getSingleton().logMessage("* error loading language file " + langfile);
 			return;
 	}
 	working=true;
@@ -74,7 +77,7 @@ void LanguageEngine::setup()
 	// be aware, that this approach only works if we load just one language, and not multiple
 	setupCodeRanges("codes.txt", "LanguageRanges");
 
-	LogManager::getSingleton().logMessage("* Language successfully loaded");
+	Ogre::LogManager::getSingleton().logMessage("* Language successfully loaded");
 }
 
 Ogre::String LanguageEngine::lookUp(Ogre::String name)
@@ -89,10 +92,10 @@ void LanguageEngine::setupCodeRanges(String codeRangesFilename, String codeRange
 	DataStreamPtr ds = ResourceGroupManager::getSingleton().openResource(codeRangesFilename, codeRangesGroupname);
 	if(ds.isNull())
 	{
-		LogManager::getSingleton().logMessage("unable to load language code points file: " + codeRangesFilename);
+		Ogre::LogManager::getSingleton().logMessage("unable to load language code points file: " + codeRangesFilename);
 		return;
 	}
-	LogManager::getSingleton().logMessage("loading code_range file: " + codeRangesFilename);
+	Ogre::LogManager::getSingleton().logMessage("loading code_range file: " + codeRangesFilename);
 
 	char line[1024] = "";
 	while (!ds->eof())
@@ -113,6 +116,13 @@ void LanguageEngine::setupCodeRanges(String codeRangesFilename, String codeRange
 			ResourceManager::ResourceMapIterator itf = FontManager::getSingleton().getResourceIterator();
 			while (itf.hasMoreElements())
 				((FontPtr)itf.getNext())->addCodePointRange(range);
+
+			// add code points to all MyGUI fonts
+			// XXX: TOFIX: CRASH!
+			//MyGUI::FontPtr fp = MyGUI::FontManager::getInstance().getByName("Default");
+			//if(!fp.isNull()) fp->addCodePointRange(range.first, range.second);
+			//fp = MyGUI::FontManager::getInstance().getByName("DefaultBig");
+			//if(!fp.isNull()) fp->addCodePointRange(range.first, range.second);
 		}
 	}
 
