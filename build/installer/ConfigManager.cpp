@@ -110,6 +110,7 @@ int ConfigManager::getOnlineStreams()
 				s.desc      = conv(olist[i]["description"]);
 				s.conflict  = conv(olist[i]["conflict"]);
 				s.group     = conv(olist[i]["group"]);
+				s.platform  = conv(olist[i]["platform"]);
 				s.path      = conv(olist[i]["path"]);
 
 				s.icon      = (olist[i]["type"]=="0")?wxBitmap(mainpack_xpm):wxBitmap(extrapack_xpm);
@@ -124,6 +125,15 @@ int ConfigManager::getOnlineStreams()
 				conv(olist[i]["size"]).ToULong(&s.size);
 
 				if(!s.title.size()) continue;
+
+				// check for platform
+				if(!s.platform.empty() && s.platform != wxT("all") && s.platform != wxT("ALL"))
+				{
+					// there is a platform restriction, so check it
+					if(s.platform != wxT(INSTALLER_PLATFORM))
+						// platform does not fit, ignore this stream
+						continue;
+				}
 
 				streams.push_back(s);
 			}
