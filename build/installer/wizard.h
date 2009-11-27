@@ -6,7 +6,7 @@ Copyright 2007,2008,2009 Thomas Fischer
 For more information, see http://www.rigsofrods.com/
 
 Rigs of Rods is free software: you can redistribute it and/or modify
-it under the terms of the GNU General Public License version 3, as 
+it under the terms of the GNU General Public License version 3, as
 published by the Free Software Foundation.
 
 Rigs of Rods is distributed in the hope that it will be useful,
@@ -27,10 +27,6 @@ along with Rigs of Rods.  If not, see <http://www.gnu.org/licenses/>.
 #include <wx/event.h>
 #include "wthread.h"
 #include "cevent.h"
-
-#ifdef __BORLANDC__
-	#pragma hdrstop
-#endif
 
 // for all others, include the necessary headers
 #ifndef WX_PRECOMP
@@ -76,10 +72,6 @@ along with Rigs of Rods.  If not, see <http://www.gnu.org/licenses/>.
 #define PLATFORM_LINUX 2
 #define PLATFORM_APPLE 3
 // default platform is windows
-#ifndef PLATFORM
-#define PLATFORM PLATFORM_WINDOWS
-#endif
-
 
 #if PLATFORM == PLATFORM_WINDOWS
 #include <shlobj.h> // for the special path functions
@@ -132,7 +124,8 @@ protected:
 	int startupMode;
 };
 
-static const enum {IMODE_NONE=0, IMODE_UPDATE, IMODE_INSTALL, IMODE_UNINSTALL, IMODE_UPGRADE};
+enum {IMODE_NONE=0, IMODE_UPDATE, IMODE_INSTALL, IMODE_UNINSTALL, IMODE_UPGRADE};
+
 static const wxCmdLineEntryDesc g_cmdLineDesc [] =
 {
 #if wxCHECK_VERSION(2, 9, 0)
@@ -161,7 +154,7 @@ public:
 	MyWizard(int startupMode, wxFrame *frame, bool useSizer = true);
 
 	wxWizardPage *GetFirstPage() const { return m_page1; }
-	
+
 	void OnPageChanging(wxWizardEvent& event);
 
 private:
@@ -270,14 +263,14 @@ public:
 			wxString installPath = cm->getInstallationPath();
 			mainSizer->Add(tst=new wxStaticText(this, wxID_ANY, _T("The game is currently installed in:\n")), 0, wxALL, 5);
 			tst->Wrap(TXTWRAP);
-			
+
 			mainSizer->Add(tst=new wxStaticText(this, wxID_ANY, installPath), 0, wxALL, 10);
 			tst->Wrap(TXTWRAP);
 			wxFont dfont=tst->GetFont();
 			dfont.SetWeight(wxFONTWEIGHT_BOLD);
 			dfont.SetPointSize(dfont.GetPointSize()+2);
 			tst->SetFont(dfont);
-			
+
 			mainSizer->Add(tst=new wxStaticText(this, wxID_ANY, _T("Choose \"Update\" to update Rigs of Rods to the latest version with faster download time than downloading the entire game.\n")), 0, wxALL, 5);
 			tst->Wrap(TXTWRAP);
 			mainSizer->Add(tst=new wxStaticText(this, wxID_ANY, _T("If you choose \"Uninstall\", Rigs of Rods will be deleted from your hard drive.\n")), 0, wxALL, 5);
@@ -309,7 +302,7 @@ public:
 
 		SetSizer(mainSizer);
 		mainSizer->Fit(this);
-		
+
 	}
 	void SetPrev(wxWizardPage *prev) {m_prev=prev;}
 
@@ -350,7 +343,7 @@ public:
 	{
 		if (forward && arb->GetSelection()==1)
 			wxMessageBox(_T("Please select the old installation directory."), _T("Upgrade installation"), wxICON_INFORMATION | wxOK);
-		
+
 		if (forward) m_cm->setAction(arb->GetSelection());
 		return true;
 	}
@@ -377,7 +370,7 @@ public:
 		tst->Wrap(TXTWRAP);
 		mainSizer->Add(tst=new wxStaticText(this, wxID_ANY, _T("Download from:")), 0, wxALL, 5);
 		tst->Wrap(TXTWRAP);
-		
+
 		/*
 		wxString choices[4];
 		choices[0]=_T("Automatic mirrors selection");
@@ -391,7 +384,7 @@ public:
 
 		mainSizer->Add(tst=new wxStaticText(this, wxID_ANY, _T("\nChoose the installation directory:")), 0, wxTOP|wxLEFT|wxRIGHT, 5);
 		tst->Wrap(TXTWRAP);
-		
+
 		wxString path = wxT("");
 #if PLATFORM == PLATFORM_WINDOWS
 		wxString dir;
@@ -407,10 +400,10 @@ public:
 		path = conv(tmp);
 #elif PLATFORM == PLATFORM_APPLE
 		path = _T("/opt/games/rigsofrods/");
-#endif		
+#endif
 		mainSizer->Add(sel=new wxTextCtrl(this, wxID_ANY, path, wxDefaultPosition,wxDefaultSize, 0) , 0, wxALL|wxEXPAND , 5);
 		mainSizer->Add(brobut=new wxButton(this, ID_BROWSE, _T("Browse...")), 0, wxBOTTOM|wxLEFT|wxRIGHT , 5);
-        
+
 
 		/*
 		mainSizer->Add(tst=new wxStaticText(this, wxID_ANY, _T("\nChoose the user directory:")), 0, wxTOP|wxLEFT|wxRIGHT, 5);
@@ -421,7 +414,7 @@ public:
 		choices2[0]=_T("Default (~/Rigs of Rods)");
 #elif PLATFORM == PLATFORM_APPLE
 		choices2[0]=_T("Default");
-#endif	
+#endif
 		choices2[1]=_T("Custom (specify later)");
 		wxRadioBox *arb2=new wxRadioBox(this, wxID_ANY, _T("User directory"), wxDefaultPosition, wxDefaultSize, 2, choices2, 1, wxRA_SPECIFY_COLS);
 		mainSizer->Add(arb2, 0, wxTOP|wxLEFT|wxRIGHT, 5);
@@ -509,7 +502,7 @@ public:
 		SetSizer(mainSizer);
 		//scrwsz->Fit(scrw);
 		mainSizer->Fit(this);
-		
+
 	}
 
 	bool OnEnter(bool forward)
@@ -560,7 +553,7 @@ public:
 
 		return true;
 	}
-    
+
 	virtual wxWizardPage *GetPrev() const
 	{
 		if(m_cm->getAction() == 0 || m_cm->getAction() == 1)
@@ -664,11 +657,11 @@ public:
 
 		SetSizer(mainSizer);
 		mainSizer->Fit(this);
-		
+
 		//timer = new wxTimer(this, ID_TIMER);
 	}
 
-	
+
 	void startThread()
 	{
 		if(threadStarted) return;
@@ -708,7 +701,7 @@ public:
 			// TODO: handle this case, go back?
 			return false;
 		}
-		
+
 		startThread();
 		return true;
 	}
@@ -717,7 +710,7 @@ public:
 	{
 		if(isDone && !forward) return false; //when done, only allow to go forward
 		return isDone;
-	}	
+	}
 
 private:
 	wxStaticText *txt_dltime, *txt_speed, *txt_traf, *txt_localpath, *txt_server, *txt_remaintime;
@@ -726,10 +719,10 @@ private:
 	bool threadStarted;
 	bool isDone;
 	wxWizard *wizard;
-	
+
 	ConfigManager* m_cm;
 	WsyncThread *m_pThread;
-	
+
 	void OnStatusUpdate(MyStatusEvent &ev)
 	{
 		switch(ev.GetId())
@@ -804,12 +797,12 @@ public:
 		tst->Wrap(TXTWRAP);
 
 		bool firstInstall = cm->isFirstInstall();
-		
+
 		chk_runtime = new wxCheckBox(this, wxID_ANY, _T("Install required runtime libraries now"));
 		mainSizer->Add(chk_runtime, 0, wxALL|wxALIGN_LEFT, 5);
 		chk_runtime->SetValue(firstInstall);
 		if(firstInstall) chk_runtime->Disable();
-		
+
 		chk_desktop = new wxCheckBox(this, wxID_ANY, _T("Create Desktop shortcuts"));
 		mainSizer->Add(chk_desktop, 0, wxALL|wxALIGN_LEFT, 5);
 		chk_desktop->SetValue(true);
@@ -836,7 +829,7 @@ public:
 		mainSizer->Fit(this);
 
 	}
-	
+
 	bool OnEnter(bool forward)
 	{
 		setControlEnable(wizard, wxID_BACKWARD, false);
@@ -857,22 +850,26 @@ public:
 
 		if(chk_runtime->IsChecked())
 			installRuntime();
-		
+
 		if(chk_configurator->IsChecked())
 			startConfigurator();
 
 		if(chk_viewmanual->IsChecked())
 			viewManual();
-		
+
 		return true;
 	}
 
 	// small wrapper that converts wxString to std::string and remvoes the file if already existing
 	int createWindowsShortcut(wxString linkTarget, wxString workingDirectory, wxString linkFile, wxString linkDescription)
 	{
+#if PLATFORM == PLATFORM_WINDOWS
 		if(wxFileExists(linkFile)) wxRemoveFile(linkFile);
 		if(!wxFileExists(linkTarget)) return 1;
 		return createLink(conv(linkTarget), conv(workingDirectory), conv(linkFile), conv(linkDescription));
+#else
+		return 0;
+#endif //PLATFORM
 	}
 
 	void installRuntime()
@@ -937,7 +934,7 @@ public:
 		// CSIDL_PROGRAMS = start menu for current user only
 		if(!SHGetSpecialFolderPath(0, wxStringBuffer(startmenuDir, MAX_PATH), CSIDL_COMMON_PROGRAMS, FALSE))
 			return;
-		
+
 		// same with CSIDL_COMMON_DESKTOPDIRECTORY and CSIDL_DESKTOP
 		if(!SHGetSpecialFolderPath(0, wxStringBuffer(desktopDir, MAX_PATH), CSIDL_DESKTOP, FALSE))
 			return;

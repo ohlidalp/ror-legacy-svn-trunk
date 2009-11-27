@@ -6,7 +6,7 @@ Copyright 2007,2008,2009 Thomas Fischer
 For more information, see http://www.rigsofrods.com/
 
 Rigs of Rods is free software: you can redistribute it and/or modify
-it under the terms of the GNU General Public License version 3, as 
+it under the terms of the GNU General Public License version 3, as
 published by the Free Software Foundation.
 
 Rigs of Rods is distributed in the hope that it will be useful,
@@ -17,10 +17,11 @@ GNU General Public License for more details.
 You should have received a copy of the GNU General Public License
 along with Rigs of Rods.  If not, see <http://www.gnu.org/licenses/>.
 */
-#ifdef WIN32
+#if PLATFORM == PLATFORM_WINDOWS
 #define WIN32_LEAN_AND_MEAN
 #include "wx/msw/private.h"
 #include "wx/msw/registry.h"
+#include <wx/msgdlg.h>
 #include <shellapi.h> // needed for SHELLEXECUTEINFO
 #include <shlobj.h>
 
@@ -50,7 +51,7 @@ std::wstring strtowstr(const std::string &str)
 }
 
 //#include "winsock2.h"
-#endif //WIN32
+#endif //WINDOWS
 #include <wx/filename.h>
 #include <wx/dir.h>
 
@@ -93,7 +94,7 @@ int ConfigManager::getOnlineStreams()
 {
 	//clear list
 	clearStreamset();
-	
+
 	// now get the available streams list
 	WSync *w = new WSync();
 
@@ -130,7 +131,7 @@ int ConfigManager::getOnlineStreams()
 		} else
 			return 1;
 	}
-	
+
 	if(!streams.size() && dlerror < 3)
 	{
 		// try to download three times...
@@ -138,11 +139,11 @@ int ConfigManager::getOnlineStreams()
 		return getOnlineStreams();
 	}
 
-	
+
 	//add default streams
 	//appendStream(_T("Base game"), _T("The minimum you need to run the game."), wxBitmap(mainpack_xpm), true, true);
 	//appendStream(_T("Standard media pack"), _T("The best terrains and vehicles, highly recommended!"), wxBitmap(extrapack_xpm), true, false);
-	//for (int i=0; i<5; i++) 
+	//for (int i=0; i<5; i++)
 	//	appendStream(_T("Test pack"), _T("This is a test"), wxBitmap(unknown_xpm), false, false);
 
 	loadStreamSubscription();
@@ -153,12 +154,12 @@ int ConfigManager::getOnlineStreams()
 
 wxString ConfigManager::getInstallationPath()
 {
-#ifdef WIN32
+#if PLATFORM == PLATFORM_WINDOWS
 	wxString path;
 	wxRegKey *pRegKey = new wxRegKey(wxT("HKEY_LOCAL_MACHINE\\Software\\RigsOfRods"));
 	if(!pRegKey->Exists())
 		return wxString();
-	
+
 	if(!pRegKey->HasValue(wxT("InstallPath")))
 		return wxString();
 
@@ -179,6 +180,8 @@ wxString ConfigManager::getInstallationPath()
 
 int ConfigManager::uninstall(bool deleteUserFolder)
 {
+	// TODO: implement uninstall for non-windows versions!
+#if WIN32
 	wxString ipath = getInstallPath();
 	if(ipath.empty())
 		return 1;
@@ -189,7 +192,6 @@ int ConfigManager::uninstall(bool deleteUserFolder)
 	wxString userPath;
 	if(deleteUserFolder)
 	{
-#if PLATFORM == PLATFORM_WINDOWS
 		LPWSTR wuser_path = new wchar_t[1024];
 		if (SHGetFolderPath(NULL, CSIDL_PERSONAL, NULL, SHGFP_TYPE_CURRENT, wuser_path)!=S_OK)
 			return 3;
@@ -197,13 +199,11 @@ int ConfigManager::uninstall(bool deleteUserFolder)
 		std::string user_path_str = wstrtostr(std::wstring(wuser_path));
 		user_path_str += "\\Rigs of Rods\\";
 		userPath = conv(user_path_str);
-#endif //PLATFORM_WINDOWS
 		mtxt += wxT("remove the Rigs of Rods user content directory recursivly:\n") + userPath + wxT("\n\n");
 	}
 
 
 	// remove shortcuts
-#if PLATFORM == PLATFORM_WINDOWS
 	wxString startmenuDir, desktopDir, workingDirectory = ipath, desktopLink;
 	if(!SHGetSpecialFolderPath(0, wxStringBuffer(startmenuDir, MAX_PATH), CSIDL_COMMON_PROGRAMS, FALSE))
 		return 8;
@@ -220,7 +220,6 @@ int ConfigManager::uninstall(bool deleteUserFolder)
 	desktopLink = desktopDir + wxT("\\Rigs of Rods.lnk");
 	if(!wxFileName::FileExists(desktopLink))
 		desktopLink = wxString();
-#endif //PLATFORM_WINDOWS
 
 	if(!startmenuDir.empty())
 		mtxt += wxT("remove the Rigs of Rods start menu directory:\n") + startmenuDir + wxT("\n\n");
@@ -246,7 +245,6 @@ int ConfigManager::uninstall(bool deleteUserFolder)
 	if(!rmres)
 		return 2;
 
-#if PLATFORM == PLATFORM_WINDOWS
 	if(deleteUserFolder && !userPath.empty())
 	{
 		wxFileName *f = new wxFileName(userPath);
@@ -262,12 +260,8 @@ int ConfigManager::uninstall(bool deleteUserFolder)
 	wxRegKey *pRegKey = new wxRegKey(wxT("HKEY_LOCAL_MACHINE\\Software\\RigsOfRods"));
 	if(pRegKey->Exists())
 		pRegKey->DeleteSelf();
-#else //PLATFORM_WINDOWS
-	return wxString();
-#endif //PLATFORM_WINDOWS
 
 	// remove shortcuts
-#if PLATFORM == PLATFORM_WINDOWS
 	if(!startmenuDir.empty())
 #if wxCHECK_VERSION(2, 9, 0)
 		wxFileName::Rmdir(startmenuDir, wxPATH_RMDIR_RECURSIVE);
@@ -277,8 +271,7 @@ int ConfigManager::uninstall(bool deleteUserFolder)
 
 	if(!desktopLink.empty())
 		wxRemoveFile(desktopLink);
-#endif //PLATFORM_WINDOWS
-
+#endif // WIN32
 	return 0;
 }
 
@@ -287,7 +280,7 @@ void ConfigManager::saveStreamSubscription()
 	if(!streams.size()) return;
 	for(std::vector < stream_desc_t >::iterator it=streams.begin(); it!=streams.end(); it++)
 	{
-#ifdef WIN32
+#if PLATFORM == PLATFORM_WINDOWS
 		wxRegKey *pRegKey = new wxRegKey(wxT("HKEY_LOCAL_MACHINE\\Software\\RigsOfRods\\streams"));
 		if(!pRegKey->Exists())
 			pRegKey->Create();
@@ -303,12 +296,12 @@ void ConfigManager::loadStreamSubscription()
 	if(!streams.size()) return;
 	for(std::vector < stream_desc_t >::iterator it=streams.begin(); it!=streams.end(); it++)
 	{
-#ifdef WIN32
+#if PLATFORM == PLATFORM_WINDOWS
 		if(it->forcecheck) continue; // we enforce the value of this
 		wxRegKey *pRegKey = new wxRegKey(wxT("HKEY_LOCAL_MACHINE\\Software\\RigsOfRods\\streams"));
 		if(!pRegKey->Exists())
 			return;
-		
+
 		wxString enabled;
 		if(!pRegKey->HasValue(it->path)) continue;
 		pRegKey->QueryValue(it->path, enabled);
@@ -325,7 +318,7 @@ void ConfigManager::loadStreamSubscription()
 
 void ConfigManager::setPersistentConfig(wxString name, wxString value)
 {
-#ifdef WIN32
+#if PLATFORM == PLATFORM_WINDOWS
 	wxRegKey *pRegKey = new wxRegKey(wxT("HKEY_LOCAL_MACHINE\\Software\\RigsOfRods\\config"));
 	if(!pRegKey->Exists())
 		pRegKey->Create();
@@ -337,14 +330,14 @@ void ConfigManager::setPersistentConfig(wxString name, wxString value)
 
 wxString ConfigManager::getPersistentConfig(wxString name)
 {
-#ifdef WIN32
+#if PLATFORM == PLATFORM_WINDOWS
 	wxRegKey *pRegKey = new wxRegKey(wxT("HKEY_LOCAL_MACHINE\\Software\\RigsOfRods\\config"));
 	if(!pRegKey->Exists())
 		return wxT("");
-	
+
 	if(!pRegKey->HasValue(name))
 		return wxT("");
-	
+
 	wxString result;
 	pRegKey->QueryValue(name, result);
 	return result;
@@ -354,7 +347,7 @@ wxString ConfigManager::getPersistentConfig(wxString name)
 }
 void ConfigManager::setInstallationPath()
 {
-#ifdef WIN32
+#if PLATFORM == PLATFORM_WINDOWS
 	wxRegKey *pRegKey = new wxRegKey(wxT("HKEY_LOCAL_MACHINE\\Software\\RigsOfRods"));
 	if(!pRegKey->Exists())
 		pRegKey->Create();
@@ -368,7 +361,7 @@ bool ConfigManager::isFirstInstall()
 {
 	wxString path = getInstallationPath();
 	installPath = path; //dont use setter, because it would write into the registry again
-#ifdef WIN32
+#if PLATFORM == PLATFORM_WINDOWS
 	if(path.empty())
 		return true;
 #endif //WIN32

@@ -9,8 +9,8 @@
 
 using namespace boost::asio;
 using namespace boost::asio::ip;
-using namespace boost::filesystem; 
-using namespace std; 
+using namespace boost::filesystem;
+using namespace std;
 
 WsyncThread::WsyncThread(DownloadPage *_handler, wxString _ipath, std::vector < stream_desc_t > _streams) : wxThread(wxTHREAD_DETACHED), handler(_handler), ipath(conv(_ipath)), streams(_streams), predDownloadSize(0), dlStartTime(std::time(0)), dlStarted(false), w(new WSync())
 {
@@ -83,7 +83,7 @@ int WsyncThread::getSyncData()
 		// this is not usable with overlaying streams anymore :(
 		string hashMyFileIndex = w->generateFileHash(myFileIndex);
 		string hashRemoteFileIndex = w->generateFileHash(remoteFileIndex);
-		
+
 		remove(INDEXFILENAME);
 		if(hashMyFileIndex == hashRemoteFileIndex)
 		{
@@ -129,7 +129,7 @@ int WsyncThread::sync()
 
 	std::map<string, Hashentry>::iterator it;
 	std::map<string, std::map<string, Hashentry> >::iterator itr;
-	
+
 	std::string deletedKeyword = "._deleted_";
 	// walk all remote hashmaps
 	for(itr = hashMapRemote.begin(); itr != hashMapRemote.end(); itr++)
@@ -151,10 +151,10 @@ int WsyncThread::sync()
 					deletedFiles.push_back(Fileentry(itr->first, it->first, it->second.filesize));
 				continue;
 			}
-			
+
 			//if(hashMapRemote[it->first] == it->second)
 				//printf("same: %s %s==%s\n", it->first.c_str(), hashMapRemote[it->first].c_str(), it->second.c_str());
-			
+
 			// old deletion method
 			if(itr->second.find(it->first) == itr->second.end())
 				// this file is not in this stream, ignore it for now
@@ -168,7 +168,7 @@ int WsyncThread::sync()
 			// filter some files
 			if(it->first == string("/stream.info")) continue;
 			if(it->first == string("/version")) continue;
-					
+
 			// add deleted files if they still exist
 			if(it->first.find(deletedKeyword) != string::npos)
 			{
@@ -190,7 +190,7 @@ int WsyncThread::sync()
 	//specific things to rename the installer on the fly in order to allow its update
 	bool updateInstaller = false;
 	for(std::vector<Fileentry>::iterator itf=changedFiles.begin();itf!=changedFiles.end();itf++)
-	{	
+	{
 		if(itf->filename == "/installer.exe")
 		{
 			updateInstaller=true;
@@ -212,7 +212,7 @@ int WsyncThread::sync()
 	std::vector<Fileentry>::iterator itf;
 	int changeCounter = 0, changeMax = changedFiles.size() + newFiles.size() + deletedFiles.size();
 	int filesToDownload = newFiles.size() + changedFiles.size();
-	
+
 	predDownloadSize = 0; // predicted download size
 	// XXX DEBUG
 	//FILE *f=fopen("log.txt", "w");
@@ -222,7 +222,7 @@ int WsyncThread::sync()
 		// DEBUG
 		//fprintf(f, "> A path:%s, file: %s, size:%d\n", itf->stream_path.c_str(), itf->filename.c_str(), itf->filesize);
 	}
-	
+
 	for(itf=changedFiles.begin(); itf!=changedFiles.end(); itf++)
 	{
 		predDownloadSize += (int)itf->filesize;
@@ -253,7 +253,7 @@ int WsyncThread::sync()
 	{
 		string server_use = server, dir_use = serverdir;
 
-		// do things now!	
+		// do things now!
 		if(newFiles.size())
 		{
 			for(itf=newFiles.begin();itf!=newFiles.end();itf++, changeCounter++)
@@ -359,7 +359,7 @@ retry2:
 				}
 			}
 		}
-		
+
 		if(deletedFiles.size())
 		{
 			for(itf=deletedFiles.begin();itf!=deletedFiles.end();itf++, changeCounter++)
@@ -575,14 +575,14 @@ int WsyncThread::downloadFile(WSync *w, boost::filesystem::path localFile, strin
 		socket.close();
 		if(reported_filesize != 0 && fileSize != reported_filesize)
 		{
-			printf("\nError: file size is different: should be %d, is %d. removing file.\n", reported_filesize, fileSize);
+			printf("\nError: file size is different: should be %d, is %d. removing file.\n", reported_filesize, (int)fileSize);
 			printf("download URL: http://%s%s\n", server.c_str(), path.c_str());
 			remove(localFile);
 			return 1;
 			// remove file data transfer again
 			//setDownloadSize(datacounter_before);
 		}
-		
+
 		// traffic stats tracking
 		if(traffic_stats.find(server) == traffic_stats.end())
 			traffic_stats[server] = 0;
@@ -632,10 +632,10 @@ void WsyncThread::downloadProgress(WSync *w)
 
 	string sizeDone = WSync::formatFilesize(size_done);
 	string sizePredicted = WSync::formatFilesize(predDownloadSize);
-	
+
 	string timestr = formatSeconds(tdiff);
 	updateCallback(MSE_UPDATE_TIME, timestr);
-	
+
 	if(eta > 10)
 	{
 		timestr = formatSeconds(eta);
@@ -648,7 +648,7 @@ void WsyncThread::downloadProgress(WSync *w)
 
 	string speedstr = WSync::formatFilesize((int)speed) + "/s";
 	updateCallback(MSE_UPDATE_SPEED, speedstr);
-	
+
 	if(progress<1.0f)
 	{
 		char trafstr[256] = "";
@@ -678,7 +678,7 @@ void WsyncThread::recordDataUsage()
 
 int WsyncThread::findMirror(bool probeForBest)
 {
-	std::vector< std::vector< std::string > > list;		
+	std::vector< std::vector< std::string > > list;
 	updateCallback(MSE_STARTING, "finding suitable mirror ...");
 	if(!probeForBest)
 	{
@@ -719,19 +719,19 @@ int WsyncThread::findMirror(bool probeForBest)
 				{
 					updateCallback(MSE_STARTING, "testing speed of mirror: " + list[i][0]);
 					updateCallback(MSE_UPDATE_PROGRESS, "", float(i)/float(list.size()));
-					
+
 					double tdiff = w->measureDownloadSpeed(list[i][0], list[i][1]+"../speedtest.bin");
 					if(tdiff >=0 && tdiff < bestTime)
 					{
 						bestTime = tdiff;
 						bestServer = i;
 					}
-					
+
 					char tmp[255]="";
 					sprintf(tmp, "%6.2f: kB/s", (10240.0f / tdiff) / 1024.0f);
 					updateCallback(MSE_STARTING, "speed of " + list[i][0] + std::string(tmp));
 					//Sleep(10000);
-					
+
 				}
 				if(bestServer != -1)
 				{
