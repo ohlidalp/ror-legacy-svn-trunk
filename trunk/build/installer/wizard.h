@@ -797,7 +797,7 @@ public:
 		tst->Wrap(TXTWRAP);
 
 		bool firstInstall = cm->isFirstInstall();
-
+#if PLATFORM == PLATFORM_WINDOWS
 		chk_runtime = new wxCheckBox(this, wxID_ANY, _T("Install required runtime libraries now"));
 		mainSizer->Add(chk_runtime, 0, wxALL|wxALIGN_LEFT, 5);
 		chk_runtime->SetValue(firstInstall);
@@ -805,26 +805,16 @@ public:
 
 		chk_desktop = new wxCheckBox(this, wxID_ANY, _T("Create Desktop shortcuts"));
 		mainSizer->Add(chk_desktop, 0, wxALL|wxALIGN_LEFT, 5);
-		chk_desktop->SetValue(true);
-		if(cm->getPersistentConfig(wxT("installer.create_desktop_shortcuts")) == wxT("no"))
-			chk_desktop->SetValue(false);
 
 		chk_startmenu = new wxCheckBox(this, wxID_ANY, _T("Create Start menu shortcuts"));
 		mainSizer->Add(chk_startmenu, 0, wxALL|wxALIGN_LEFT, 5);
-		chk_startmenu->SetValue(true);
-		if(cm->getPersistentConfig(wxT("installer.create_start_menu_shortcuts")) == wxT("no"))
-			chk_startmenu->SetValue(false);
 
 		chk_viewmanual = new wxCheckBox(this, wxID_ANY, _T("View manual"));
 		mainSizer->Add(chk_viewmanual, 0, wxALL|wxALIGN_LEFT, 5);
-		chk_viewmanual->SetValue(firstInstall);
 
 		chk_configurator = new wxCheckBox(this, wxID_ANY, _T("Run the Configurator"));
 		mainSizer->Add(chk_configurator, 0, wxALL|wxALIGN_LEFT, 5);
-		chk_configurator->SetValue(true);
-		if(cm->getPersistentConfig(wxT("installer.run_configurator")) == wxT("no"))
-			chk_configurator->SetValue(false);
-
+#endif // PLATFORM
 		SetSizer(mainSizer);
 		mainSizer->Fit(this);
 
@@ -834,6 +824,24 @@ public:
 	{
 		setControlEnable(wizard, wxID_BACKWARD, false);
 		setControlEnable(wizard, wxID_CANCEL, false);
+#if PLATFORM == PLATFORM_WINDOWS
+		{
+			bool firstInstall = cm->isFirstInstall();
+			chk_desktop->SetValue(true);
+			if(cm->getPersistentConfig(wxT("installer.create_desktop_shortcuts")) == wxT("no"))
+				chk_desktop->SetValue(false);
+
+			chk_startmenu->SetValue(true);
+			if(cm->getPersistentConfig(wxT("installer.create_start_menu_shortcuts")) == wxT("no"))
+				chk_startmenu->SetValue(false);
+
+			chk_viewmanual->SetValue(firstInstall);
+
+			chk_configurator->SetValue(true);
+			if(cm->getPersistentConfig(wxT("installer.run_configurator")) == wxT("no"))
+				chk_configurator->SetValue(false);
+		}
+#endif // PLATFORM
 		return true;
 	}
 
