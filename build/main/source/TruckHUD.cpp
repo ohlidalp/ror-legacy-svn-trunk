@@ -176,7 +176,7 @@ bool TruckHUD::update(float dt, Beam *truck, SceneManager *mSceneMgr, Camera* mC
 				beambroken++;
 			beamstress += beam->stress;
 			current_deformation = fabs(beam->L-beam->refL);
-			if (current_deformation!=0.0f) beamdeformed++;
+			if (fabs(current_deformation) > 0.0001f) beamdeformed++;
 			average_deformation += current_deformation;
 		}
 

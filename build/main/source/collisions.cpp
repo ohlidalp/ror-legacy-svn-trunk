@@ -24,6 +24,11 @@ along with Rigs of Rods.  If not, see <http://www.gnu.org/licenses/>.
 #include "errorutils.h"
 #include "language.h"
 
+// some gcc fixes
+#if OGRE_PLATFORM == OGRE_PLATFORM_LINUX
+#pragma GCC diagnostic ignored "-Wfloat-equal"
+#endif //OGRE_PLATFORM_LINUX
+
 //hash function SBOX
 //from http://home.comcast.net/~bretm/hash/10.html
 unsigned int sbox[] =
@@ -194,7 +199,7 @@ void Collisions::parseGroundConfig(Ogre::ConfigFile *cfg, String groundModel)
 		Ogre::ConfigFile::SettingsMultiMap *settings = seci.getNext();
 
 		if(!groundModel.empty() && secName != groundModel) continue;
-		
+
 		Ogre::ConfigFile::SettingsMultiMap::iterator i;
 		for (i = settings->begin(); i != settings->end(); ++i)
 		{
@@ -249,10 +254,10 @@ void Collisions::parseGroundConfig(Ogre::ConfigFile *cfg, String groundModel)
 				else if(kname == "flow behavior index") ground_models[secName].flow_behavior_index = StringConverter::parseReal(kvalue);
 				else if(kname == "solid ground level") ground_models[secName].solid_ground_level = StringConverter::parseReal(kvalue);
 				else if(kname == "drag anisotropy") ground_models[secName].drag_anisotropy = StringConverter::parseReal(kvalue);
-				
+
 			}
 		}
-		
+
 		if(!groundModel.empty()) break; // we dont need to go through the other sections
 	}
 }
