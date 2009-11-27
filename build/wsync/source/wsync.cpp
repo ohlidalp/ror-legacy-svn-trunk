@@ -14,8 +14,8 @@
 
 using namespace boost::asio;
 using namespace boost::asio::ip;
-using namespace boost::filesystem; 
-using namespace std; 
+using namespace boost::filesystem;
+using namespace std;
 
 WSync::WSync() : downloadSize(0)
 {
@@ -35,7 +35,7 @@ int WSync::downloadMod(std::string modname, std::string &modfilename, boost::fil
 	// 1) ask repo api for file
 	if(!util) sprintf(statusText, "searching mod on repository...\n");
 	string filename="";
-	std::vector< std::vector< std::string > > list;		
+	std::vector< std::vector< std::string > > list;
 	if(!downloadConfigFile(API_SERVER, API_REPOSEARCH + string("?id=") + modname, &list))
 	{
 		if(list.size()>0 && list[0].size() > 0)
@@ -58,17 +58,17 @@ int WSync::downloadMod(std::string modname, std::string &modfilename, boost::fil
 			sprintf(statusText, "error\n");
 		return 1;
 	}
-	
+
 	// do not download non-existing files
 	if(filename == "notfound")
-	{	
+	{
 		if(util) sprintf(statusText, "%s", filename.c_str());
 		return 3;
 	}
 
 	// 2) download the file
 	path filepath = dir / filename;
-	
+
 	if(!util) sprintf(statusText, "downloading ...");
 	int res = downloadFile(filepath, REPO_SERVER, REPO_DOWNLOAD + filename, !util);
 	if(!util) sprintf(statusText, "downloading done!\n");
@@ -84,13 +84,13 @@ int WSync::cleanURL(string &url)
 	{
 		url.replace(position, 2, "/" );
 		position = url.find( "//", position + 1 );
-	} 
+	}
 	position = url.find("//");
 	while (position != string::npos)
 	{
 		url.replace(position, 2, "/" );
 		position = url.find( "//", position + 1 );
-	} 
+	}
 	return 0;
 }
 
@@ -105,10 +105,10 @@ std::string WSync::findHashInHashmap(std::map<string, Hashentry> hashMap, std::s
 	return "";
 }
 
-std::string WSync::findHashInHashmap(std::map<std::string, std::map<std::string, Hashentry>> hashMap, std::string filename)
+std::string WSync::findHashInHashmap(std::map < std::string, std::map < std::string, Hashentry > > hashMap, std::string filename)
 {
 	std::map<string, Hashentry>::iterator it;
-	std::map<std::string, std::map<std::string, Hashentry>>::iterator itm;
+	std::map<std::string, std::map<std::string, Hashentry > >::iterator itm;
 	for(itm = hashMap.begin(); itm != hashMap.end(); itm++)
 	{
 		for(it = itm->second.begin(); it != itm->second.end(); it++)
@@ -240,7 +240,7 @@ int WSync::sync(boost::filesystem::path localDir, string server, string remoteDi
 			if(useMirror)
 			{
 				printf("searching for suitable mirror...\n");
-				std::vector< std::vector< std::string > > list;		
+				std::vector< std::vector< std::string > > list;
 				if(!downloadConfigFile(API_SERVER, API_MIRROR, &list))
 				{
 					if(list.size()>0 && list[0].size() > 2)
@@ -269,7 +269,7 @@ int WSync::sync(boost::filesystem::path localDir, string server, string remoteDi
 			}
 		}
 
-		// do things now!	
+		// do things now!
 		if(newFiles.size())
 		{
 			for(itf=newFiles.begin();itf!=newFiles.end();itf++, changeCounter++)
@@ -373,7 +373,7 @@ retry2:
 				}
 			}
 		}
-		
+
 		if(deleteOk && deletedFiles.size() && !(modeNumber & WMO_NODELETE))
 		{
 			for(itf=deletedFiles.begin();itf!=deletedFiles.end();itf++, changeCounter++)
@@ -630,10 +630,12 @@ int WSync::loadHashMapFromFile(boost::filesystem::path &filename, std::map<strin
 	{
 		char file[2048]="";
 		char filehash[256]="";
+		int scansize=0;
 		boost::uintmax_t filesize = 0;
-		int res = fscanf(f, "%s : %d : %s\n", file, &filesize, filehash);
+		int res = fscanf(f, "%s : %d : %s\n", file, &scansize, filehash);
 		if(res < 2)
 			continue;
+		filesize = scansize;
 		if(file[0] == '|')
 		{
 			// its actually an option
@@ -818,14 +820,14 @@ int WSync::downloadFile(boost::filesystem::path localFile, string server, string
 		boost::uintmax_t fileSize = file_size(localFile);
 		if(reported_filesize != 0 && fileSize != reported_filesize)
 		{
-			printf("\nError: file size is different: should be %d, is %d. removing file.\n", reported_filesize, fileSize);
+			printf("\nError: file size is different: should be %d, is %d. removing file.\n", (int)reported_filesize, (int)fileSize);
 			printf("download URL: http://%s%s\n", server.c_str(), path.c_str());
 			tryRemoveFile(localFile);
 			downloadSize += fileSize;
 			socket.close();
 			return 2;
 		}
-		
+
 		downloadSize += fileSize;
 		socket.close();
 	}
@@ -903,11 +905,13 @@ int WSync::getTempFilename(path &tempfile)
 	return 0;
 #else
 	char tempBuffer[] = "/tmp/wsync_tmp_XXXXXX";
-	mkstemp(tempBuffer);
+	int res = mkstemp(tempBuffer);
+	if(res)
+		return -4;
 	tempfile = path(tempBuffer);
 	return 0;
 #endif
-} 
+}
 
 int WSync::ensurePathExist(boost::filesystem::path &path)
 {
@@ -924,7 +928,7 @@ string WSync::formatFilesize(boost::uintmax_t size)
 {
 	char tmp[256] = "";
 	if(size < 1024)
-		sprintf(tmp, "%d B", (size));
+		sprintf(tmp, "%d B", (int)(size));
 	else if(size/1024 < 1024)
 		sprintf(tmp, "%0.2f kB", (size/1024.0f));
 	else

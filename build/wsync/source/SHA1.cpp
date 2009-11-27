@@ -185,13 +185,13 @@ bool CSHA1::HashFile(char *szFileName)
 
 	for(i = 0; i < ulBlocks; i++)
 	{
-		fread(uData, 1, SHA1_MAX_FILE_BUFFER, fIn);
+		int res = fread(uData, 1, SHA1_MAX_FILE_BUFFER, fIn);
 		Update((UINT_8 *)uData, SHA1_MAX_FILE_BUFFER);
 	}
 
 	if(ulRest != 0)
 	{
-		fread(uData, 1, ulRest, fIn);
+		int res = fread(uData, 1, ulRest, fIn);
 		Update((UINT_8 *)uData, ulRest);
 	}
 
