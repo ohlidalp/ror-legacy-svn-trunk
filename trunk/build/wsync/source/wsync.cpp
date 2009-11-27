@@ -833,7 +833,7 @@ int WSync::downloadFile(boost::filesystem::path localFile, string server, string
 
 		downloadSize += fileSize;
 		if(fileSizeArg)
-			*fileSizeArg = fileSize;
+			*fileSizeArg = (int)fileSize;
 	}
 	catch (std::exception& e)
 	{
