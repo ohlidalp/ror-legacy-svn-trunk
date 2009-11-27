@@ -131,8 +131,12 @@ int ConfigManager::getOnlineStreams()
 				{
 					// there is a platform restriction, so check it
 					if(s.platform != wxT(INSTALLER_PLATFORM))
+					{
+						printf("discarding stream '%s' because of wrong platform: %s [%s]\n", conv(s.title).c_str(), conv(s.platform).c_str(), INSTALLER_PLATFORM);
 						// platform does not fit, ignore this stream
+
 						continue;
+					}
 				}
 
 				streams.push_back(s);
