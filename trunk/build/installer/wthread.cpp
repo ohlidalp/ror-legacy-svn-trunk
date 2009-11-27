@@ -1,8 +1,3 @@
-
-#ifdef WIN32
-#define WIN32_LEAN_AND_MEAN
-#endif //WIN32
-
 #include "wthread.h"
 #include "wizard.h"
 #include "cevent.h"

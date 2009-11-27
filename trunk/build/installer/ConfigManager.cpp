@@ -17,13 +17,19 @@ GNU General Public License for more details.
 You should have received a copy of the GNU General Public License
 along with Rigs of Rods.  If not, see <http://www.gnu.org/licenses/>.
 */
+
+// platform tools
+#define PLATFORM_WINDOWS 1
+#define PLATFORM_LINUX 2
+#define PLATFORM_APPLE 3
+
 #if PLATFORM == PLATFORM_WINDOWS
-#define WIN32_LEAN_AND_MEAN
 #include "wx/msw/private.h"
 #include "wx/msw/registry.h"
 #include <wx/msgdlg.h>
 #include <shellapi.h> // needed for SHELLEXECUTEINFO
 #include <shlobj.h>
+#include <Shfolder.h>
 
 
 std::string wstrtostr(const std::wstring &wstr)
@@ -56,7 +62,6 @@ std::wstring strtowstr(const std::string &str)
 #include <wx/dir.h>
 
 #include "ConfigManager.h"
-
 
 #include "boost/asio.hpp"
 #include "boost/filesystem.hpp"
@@ -189,13 +194,13 @@ wxString ConfigManager::getInstallationPath()
 	//wxMessageBox(path,wxT("Registry Value"),0);
 #else
 	return wxString();
-#endif //WIN32
+#endif //PLATFORM
 }
 
 int ConfigManager::uninstall(bool deleteUserFolder)
 {
 	// TODO: implement uninstall for non-windows versions!
-#if WIN32
+#if PLATFORM == PLATFORM_WINDOWS
 	wxString ipath = getInstallPath();
 	if(ipath.empty())
 		return 1;
@@ -285,7 +290,7 @@ int ConfigManager::uninstall(bool deleteUserFolder)
 
 	if(!desktopLink.empty())
 		wxRemoveFile(desktopLink);
-#endif // WIN32
+#endif // PLATFORM
 	return 0;
 }
 
@@ -301,7 +306,7 @@ void ConfigManager::saveStreamSubscription()
 		pRegKey->SetValue(it->path, it->checked?wxT("yes"):wxT("no"));
 #else
 	// TODO: implement
-#endif //WIN32
+#endif //PLATFORM
 	}
 }
 
@@ -325,7 +330,7 @@ void ConfigManager::loadStreamSubscription()
 			it->checked = false;
 #else
 		// TODO: implement
-#endif //WIN32
+#endif //PLATFORM
 	}
 }
 
@@ -339,7 +344,7 @@ void ConfigManager::setPersistentConfig(wxString name, wxString value)
 	pRegKey->SetValue(name, value);
 #else
 	// TODO: implement
-#endif //WIN32
+#endif //PLATFORM
 }
 
 wxString ConfigManager::getPersistentConfig(wxString name)
@@ -357,7 +362,8 @@ wxString ConfigManager::getPersistentConfig(wxString name)
 	return result;
 #else
 	// TODO: implement
-#endif //WIN32
+	return wxT();
+#endif //PLATFORM
 }
 void ConfigManager::setInstallationPath()
 {
@@ -368,7 +374,7 @@ void ConfigManager::setInstallationPath()
 	pRegKey->SetValue(wxT("InstallPath"), installPath);
 #else
 	// TODO: implement
-#endif //WIN32
+#endif //PLATFORM
 }
 
 bool ConfigManager::isFirstInstall()
@@ -378,7 +384,7 @@ bool ConfigManager::isFirstInstall()
 #if PLATFORM == PLATFORM_WINDOWS
 	if(path.empty())
 		return true;
-#endif //WIN32
+#endif //PLATFORM
 	return !wxFileExists(path + wxT("RoR.exe"));
 }
 

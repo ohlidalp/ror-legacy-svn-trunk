@@ -1,15 +1,15 @@
+// platform tools
+#define PLATFORM_WINDOWS 1
+#define PLATFORM_LINUX 2
+#define PLATFORM_APPLE 3
+
 #if PLATFORM == PLATFORM_WINDOWS
 
 // from http://msdn.microsoft.com/en-us/library/bb776891(VS.85).aspx
-#ifndef SYMLINK_H__
-#define SYMLINK_H__
+#ifndef SYMLINK__H__
+#define SYMLINK__H__
 
 /* Windows headers come first */
-#ifndef STRICT
-#define STRICT
-#endif
-#include <windows.h>
-
 /* C run time library headers */
 #include <stdlib.h>
 #include <stdio.h>
