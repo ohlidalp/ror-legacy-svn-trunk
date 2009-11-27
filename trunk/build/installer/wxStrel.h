@@ -6,7 +6,7 @@ Copyright 2007,2008,2009 Thomas Fischer
 For more information, see http://www.rigsofrods.com/
 
 Rigs of Rods is free software: you can redistribute it and/or modify
-it under the terms of the GNU General Public License version 3, as 
+it under the terms of the GNU General Public License version 3, as
 published by the Free Software Foundation.
 
 Rigs of Rods is distributed in the hope that it will be useful,
@@ -34,6 +34,7 @@ along with Rigs of Rods.  If not, see <http://www.gnu.org/licenses/>.
     #include "wx/stattext.h"
     #include "wx/sizer.h"
 	#include "wx/statbmp.h"
+	#include <wx/checkbox.h>
 #endif
 
 #include "ConfigManager.h"
@@ -53,19 +54,19 @@ public:
 			SetBackgroundColour(wxColour(255,200,200,255));
 		else
 			SetBackgroundColour(*wxWHITE);
-        
+
 		wxBoxSizer *mainSizer = new wxBoxSizer(wxHORIZONTAL);
 		SetSizer(mainSizer);
 		mainSizer->Add(chk=new wxCheckBox(this, wxID_ANY, _T("")), 0, wxALL|wxALIGN_CENTER, 5);
 		chk->SetValue(desc->checked);
 		chk->Enable(!desc->disabled);
-		
+
 
 		bmp = new myClickBitmap(this, this, wxID_ANY, desc->icon);
 		mainSizer->Add((wxWindow*)bmp, 0, wxALL, 1);
         wxBoxSizer *textSizer = new wxBoxSizer(wxVERTICAL);
 		myClickText *tst;
-        
+
 		tst=new myClickText(this, this, wxID_ANY, desc->title);
 		textSizer->Add((wxWindow *)tst, 0, wxALL, 1);
 		wxFont dfont=tst->GetFont();
@@ -83,7 +84,7 @@ public:
 		textSizer->Add((wxWindow *)tst, 0, wxALL, 1);
 		tst->Wrap(300);
 
-		
+
 		mainSizer->Add(textSizer, 1, wxALL|wxEXPAND , 2);
 
 		//mainSizer->Fit(this);
@@ -99,7 +100,7 @@ public:
 		else
 			chk->SetValue(true);
 	}
-	
+
 	void clickEvent(wxMouseEvent &event)
 	{
 		toggle();

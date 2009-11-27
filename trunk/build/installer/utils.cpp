@@ -11,7 +11,7 @@ END_EVENT_TABLE()
 
 myClickBitmap::myClickBitmap(wxStrel *_s, wxWindow *parent,
                  wxWindowID id,
-                 const wxGDIImage& label,
+                 const  wxBitmap& label,
                  const wxPoint& pos,
                  const wxSize& size,
                  long style,
