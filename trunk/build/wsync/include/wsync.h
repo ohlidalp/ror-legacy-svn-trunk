@@ -100,8 +100,8 @@ public:
 	void progressOutputShort(float progress);
 	static int cleanURL(std::string &url);
 	boost::uintmax_t getDownloadSize() { return downloadSize; };
-	std::string findHashInHashmap(std::map<std::string, Hashentry> hashMap, std::string filename);
-	std::string findHashInHashmap(std::map<std::string, std::map<std::string, Hashentry>> hashMap, std::string filename);
+	std::string findHashInHashmap(std::map < std::string, Hashentry > hashMap, std::string filename);
+	std::string findHashInHashmap(std::map < std::string, std::map < std::string, Hashentry > >  hashMap, std::string filename);
 
 	void increaseDownloadSize(unsigned int size){downloadSize+=size;};
 	void setDownloadSize(unsigned int size){downloadSize=size;};
