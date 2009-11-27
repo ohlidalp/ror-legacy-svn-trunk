@@ -30,7 +30,7 @@ ELSEIF(APPLE)
   add_definitions("-DNWINDOWS")
 ENDIF(WIN32)
 
-option(ROR_OGRE_NEWER "use Ogre 1.6.x instead of 1.4.3 (Highly Experimental!)" FALSE)
+option(ROR_OGRE_NEWER "use Ogre 1.6.x instead of 1.4.3 (recommeneded)" TRUE)
 if(ROR_OGRE_NEWER)
  #ogre 1.6 resides in ogre directory
  SET(OGRE_DIR "ogre")
