@@ -18,8 +18,6 @@ You should have received a copy of the GNU General Public License
 along with Rigs of Rods.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-#define WIN32_LEAN_AND_MEAN // fix include file bug under windows
-
 #include "wizard.h"
 #include "cevent.h"
 

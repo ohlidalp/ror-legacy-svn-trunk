@@ -1,6 +1,5 @@
-#if PLATFORM == PLATFORM_WINDOWS
-
 #include "symlink.h"
+#if PLATFORM == PLATFORM_WINDOWS
 
 HRESULT createLink2(LPCWSTR lpszPathObj, LPCWSTR lpszWorkingDir, LPCWSTR lpszPathLink, LPCWSTR lpszDesc) 
 { 

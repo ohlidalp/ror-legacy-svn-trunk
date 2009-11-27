@@ -71,7 +71,6 @@ along with Rigs of Rods.  If not, see <http://www.gnu.org/licenses/>.
 #define PLATFORM_WINDOWS 1
 #define PLATFORM_LINUX 2
 #define PLATFORM_APPLE 3
-// default platform is windows
 
 #if PLATFORM == PLATFORM_WINDOWS
 #include <shlobj.h> // for the special path functions
@@ -875,17 +874,15 @@ public:
 		return true;
 	}
 
+#if PLATFORM == PLATFORM_WINDOWS
 	// small wrapper that converts wxString to std::string and remvoes the file if already existing
 	int createWindowsShortcut(wxString linkTarget, wxString workingDirectory, wxString linkFile, wxString linkDescription)
 	{
-#if PLATFORM == PLATFORM_WINDOWS
 		if(wxFileExists(linkFile)) wxRemoveFile(linkFile);
 		if(!wxFileExists(linkTarget)) return 1;
 		return createLink(conv(linkTarget), conv(workingDirectory), conv(linkFile), conv(linkDescription));
-#else
-		return 0;
-#endif //PLATFORM
 	}
+#endif //PLATFORM
 
 	void installRuntime()
 	{
