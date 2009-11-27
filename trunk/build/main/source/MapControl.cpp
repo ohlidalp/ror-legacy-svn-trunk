@@ -267,7 +267,7 @@ void MapEntity::init()
 		{
 			String imgFile = "icon_"+myType+"_"+entityStates[i]+".dds";
 			String group2 = "";
-			if(group2 == "")
+			if(group2.empty())
 			{
 				try
 				{
@@ -276,18 +276,24 @@ void MapEntity::init()
 				{
 				}
 			}
-			if(group2 != "")
+			if(!group2.empty())
 			{
 				icon->setImageTexture(imgFile);
 				Ogre::TexturePtr t = (Ogre::TexturePtr)(TextureManager::getSingleton().getByName(imgFile));
-				tw = t->getWidth();
-				th = t->getHeight();
+				if(!t.isNull())
+				{
+					tw = t->getWidth();
+					th = t->getHeight();
+				}
 			} else
 			{
 				icon->setImageTexture("icon_missing.dds");
 				Ogre::TexturePtr t = (Ogre::TexturePtr)(TextureManager::getSingleton().getByName("icon_missing.dds"));
-				tw = t->getWidth();
-				th = t->getHeight();
+				if(!t.isNull())
+				{
+					tw = t->getWidth();
+					th = t->getHeight();
+				}
 			}
 		}
 		isStatic=false;
