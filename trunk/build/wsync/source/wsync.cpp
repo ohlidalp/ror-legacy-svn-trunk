@@ -499,13 +499,14 @@ double WSync::measureDownloadSpeed(std::string server, std::string url)
 		return -1;
 	}
 
+	int filesize=0;
 	Timer timer = Timer();
-	if(downloadFile(tempfile, server, url))
+	if(downloadFile(tempfile, server, url, false, false, &filesize))
 	{
 		return -1;
 	}
 	double tdiff = timer.elapsed();
-	//printf("mirror time: %s = %f\n", server.c_str(), tdiff);
+	printf("mirror speed: %s : %dkB in %0.2f seconds = %0.2f kB/s\n", server.c_str(), (int)(filesize/1024.0f), tdiff, (filesize/1024.0f)/(float)tdiff);
 	tryRemoveFile(tempfile);
 	return tdiff;
 }
@@ -657,7 +658,7 @@ int WSync::responseLessRequest(std::string server, std::string uri)
 	return downloadConfigFile(server, uri, &list);
 }
 
-int WSync::downloadFile(boost::filesystem::path localFile, string server, string path, bool displayProgress, bool debug)
+int WSync::downloadFile(boost::filesystem::path localFile, string server, string path, bool displayProgress, bool debug, int *fileSizeArg)
 {
 	// remove '//' and '///' from url
 	cleanURL(path);
@@ -828,9 +829,11 @@ int WSync::downloadFile(boost::filesystem::path localFile, string server, string
 			socket.close();
 			return 2;
 		}
+		socket.close();
 
 		downloadSize += fileSize;
-		socket.close();
+		if(fileSizeArg)
+			*fileSizeArg = fileSize;
 	}
 	catch (std::exception& e)
 	{

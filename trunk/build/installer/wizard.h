@@ -793,11 +793,12 @@ public:
 		dfont.SetPointSize(dfont.GetPointSize()+4);
 		tst->SetFont(dfont);
 		tst->Wrap(TXTWRAP);
+		bool firstInstall = cm->isFirstInstall();
+
+#if PLATFORM == PLATFORM_WINDOWS
 		mainSizer->Add(tst=new wxStaticText(this, wxID_ANY, _T("Thank you for downloading Rigs of Rods.\nWhat do you want to do now?")), 0, wxALL, 5);
 		tst->Wrap(TXTWRAP);
 
-		bool firstInstall = cm->isFirstInstall();
-#if PLATFORM == PLATFORM_WINDOWS
 		chk_runtime = new wxCheckBox(this, wxID_ANY, _T("Install required runtime libraries now"));
 		mainSizer->Add(chk_runtime, 0, wxALL|wxALIGN_LEFT, 5);
 		chk_runtime->SetValue(firstInstall);
@@ -814,6 +815,10 @@ public:
 
 		chk_configurator = new wxCheckBox(this, wxID_ANY, _T("Run the Configurator"));
 		mainSizer->Add(chk_configurator, 0, wxALL|wxALIGN_LEFT, 5);
+#else
+		// TODO: add linux options
+		mainSizer->Add(tst=new wxStaticText(this, wxID_ANY, _T("Thank you for downloading Rigs of Rods.\n")), 0, wxALL, 5);
+		tst->Wrap(TXTWRAP);
 #endif // PLATFORM
 		SetSizer(mainSizer);
 		mainSizer->Fit(this);
@@ -848,6 +853,7 @@ public:
 	bool OnLeave(bool forward)
 	{
 		if(!forward) return false;
+#if PLATFORM == PLATFORM_WINDOWS
 		// do last things
 		cm->setPersistentConfig(wxT("installer.create_desktop_shortcuts"), chk_desktop->IsChecked()?wxT("yes"):wxT("no"));
 		cm->setPersistentConfig(wxT("installer.create_start_menu_shortcuts"), chk_startmenu->IsChecked()?wxT("yes"):wxT("no"));
@@ -865,6 +871,7 @@ public:
 		if(chk_viewmanual->IsChecked())
 			viewManual();
 
+#endif // PLATFORM
 		return true;
 	}
 
