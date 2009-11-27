@@ -9,7 +9,7 @@
 #include <windows.h>
 #include <conio.h> // for getch
 #endif
-
+#include "Timer.h"
 #include <boost/algorithm/string.hpp>
 
 using namespace boost::asio;
@@ -499,13 +499,13 @@ double WSync::measureDownloadSpeed(std::string server, std::string url)
 		return -1;
 	}
 
-	clock_t start = clock();
+	Timer timer = Timer();
 	if(downloadFile(tempfile, server, url))
 	{
 		return -1;
 	}
-	clock_t finish = clock();
-	double tdiff = (double(finish)-double(start))/CLOCKS_PER_SEC;
+	double tdiff = timer.elapsed();
+	//printf("mirror time: %s = %f\n", server.c_str(), tdiff);
 	tryRemoveFile(tempfile);
 	return tdiff;
 }
@@ -661,9 +661,10 @@ int WSync::downloadFile(boost::filesystem::path localFile, string server, string
 {
 	// remove '//' and '///' from url
 	cleanURL(path);
+	double lastTime=-1;
 	try
 	{
-		clock_t time = clock();
+		Timer time = Timer();
 
 		std::ofstream myfile;
 		ensurePathExist(localFile);
@@ -796,15 +797,15 @@ int WSync::downloadFile(boost::filesystem::path localFile, string server, string
 		boost::uintmax_t filesize_left=reported_filesize;
 		while (boost::asio::read(socket, data, boost::asio::transfer_at_least(1), error))
 		{
-			double tdiff = (double(clock())-double(time))/CLOCKS_PER_SEC;
-			if(displayProgress && tdiff >= 1)
+			double tdiff = (time.elapsed() - lastTime);
+			if(displayProgress && tdiff >= 0.5f)
 			{
 				float percent = datacounter / (float)reported_filesize;
 				float dspeed = (float)(dataspeed / tdiff);
 				float eta = filesize_left / dspeed;
 				progressOutput(percent, dspeed, eta);
 				dataspeed=0;
-				time = clock();
+				lastTime = time.elapsed();
 			}
 
 			if (displayProgress)
@@ -906,7 +907,7 @@ int WSync::getTempFilename(path &tempfile)
 #else
 	char tempBuffer[] = "/tmp/wsync_tmp_XXXXXX";
 	int res = mkstemp(tempBuffer);
-	if(res)
+	if(res == -1)
 		return -4;
 	tempfile = path(tempBuffer);
 	return 0;

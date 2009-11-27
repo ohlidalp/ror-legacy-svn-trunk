@@ -7,12 +7,13 @@
 #include "wizard.h"
 #include "cevent.h"
 
+
 using namespace boost::asio;
 using namespace boost::asio::ip;
 using namespace boost::filesystem;
 using namespace std;
 
-WsyncThread::WsyncThread(DownloadPage *_handler, wxString _ipath, std::vector < stream_desc_t > _streams) : wxThread(wxTHREAD_DETACHED), handler(_handler), ipath(conv(_ipath)), streams(_streams), predDownloadSize(0), dlStartTime(std::time(0)), dlStarted(false), w(new WSync())
+WsyncThread::WsyncThread(DownloadPage *_handler, wxString _ipath, std::vector < stream_desc_t > _streams) : wxThread(wxTHREAD_DETACHED), handler(_handler), ipath(conv(_ipath)), streams(_streams), predDownloadSize(0), dlStartTime(), dlStarted(false), w(new WSync())
 {
 	// main server
 	mainserver = server = "wsync.rigsofrods.com";
@@ -408,13 +409,14 @@ int WsyncThread::downloadFile(WSync *w, boost::filesystem::path localFile, strin
 	if(!dlStarted)
 	{
 		dlStarted=1;
-		dlStartTime = clock();
+		dlStartTime = Timer();
 	}
 	// remove '//' and '///' from url
 	WSync::cleanURL(path);
+	double lastTime=-1;
 	try
 	{
-		clock_t time = clock();
+		Timer time = Timer();
 
 		std::ofstream myfile;
 		WSync::ensurePathExist(localFile);
@@ -548,13 +550,13 @@ int WsyncThread::downloadFile(WSync *w, boost::filesystem::path localFile, strin
 		//boost::uintmax_t datacounter_before = w->getDownloadSize();
 		while (boost::asio::read(socket, data, boost::asio::transfer_at_least(1), error))
 		{
-			double tdiff = (double(clock())-double(time))/CLOCKS_PER_SEC;
-			if(tdiff >= 1)
+			double tdiff = (time.elapsed() - lastTime);
+			if(tdiff >= 0.5f)
 			{
 				w->increaseDownloadSize(dataspeed);
 				downloadProgress(w);
 				dataspeed=0;
-				time = clock();
+				lastTime=time.elapsed();
 			}
 
 			dataspeed += data.size();
@@ -620,7 +622,7 @@ void WsyncThread::downloadProgress(WSync *w)
 	// this function will format and send some info to the gui
 	unsigned int size_left = predDownloadSize - w->getDownloadSize();
 	unsigned int size_done = w->getDownloadSize();
-	double tdiff = (double(clock())-double(dlStartTime))/CLOCKS_PER_SEC;
+	double tdiff = dlStartTime.elapsed();
 	float speed = (float)(size_done / tdiff);
 	float eta = size_left / speed;
 	if(predDownloadSize == 0) eta = 0;

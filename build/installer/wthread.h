@@ -5,6 +5,7 @@
 #include <wx/event.h>
 #include "wsync.h"
 #include <string.h>
+#include "Timer.h"
 #include "ConfigManager.h" //only use for stream_desc_t, dont use functions, as its not thread safe!
 
 enum { CMD_THREAD_DONE };
@@ -25,12 +26,12 @@ protected:
 	std::vector < stream_desc_t > streams;
 	boost::uintmax_t predDownloadSize;
 	std::map < std::string, unsigned int > traffic_stats;
-	clock_t dlStartTime;
+	Timer dlStartTime;
 	bool dlStarted;
 
 	// helper to construct event
 	void updateCallback(int type, std::string txt = std::string(), float percent=-1);
-	
+
 	// special sync with visual event feedback
 	int sync();
 	int downloadFile(WSync *w, boost::filesystem::path localFile, std::string server, std::string path);
