@@ -1801,7 +1801,7 @@ int Beam::loadTruck(const char* fname, SceneManager *manager, SceneNode *parent,
 						beams[pos].type=BEAM_NORMAL;
 						break;
 					case 'r':
-						beams[pos].isrope=true;
+						beams[pos].bounded=ROPE;
 						break;
 				}
 				options_pointer++;
@@ -2365,7 +2365,7 @@ int Beam::loadTruck(const char* fname, SceneManager *manager, SceneNode *parent,
 				switch (*options_pointer)
 				{
 					case 'r':
-						beams[pos].isrope=true;
+						beams[pos].bounded=ROPE;
 						break;
 					case 'c':
 						if(beams[pos].isOnePressMode>0)
@@ -2493,7 +2493,7 @@ int Beam::loadTruck(const char* fname, SceneManager *manager, SceneNode *parent,
 				continue;
 			}
 			int pos=add_beam(&nodes[id1], &nodes[id2], manager, parent, BEAM_NORMAL, default_break, default_spring, default_damp);
-			beams[pos].isrope=1;
+			beams[pos].bounded=ROPE;
 			//register rope
 			ropes[free_rope].beam=&beams[pos];
 			ropes[free_rope].lockedto=0;
@@ -2545,7 +2545,7 @@ int Beam::loadTruck(const char* fname, SceneManager *manager, SceneNode *parent,
 			beams[pos].L=maxl;
 			beams[pos].refL=maxl;
 			beams[pos].Lhydro=maxl;
-			beams[pos].isrope=1;
+			beams[pos].bounded=ROPE;
 			beams[pos].disabled=true;
 			beams[pos].mSceneNode->detachAllObjects();
 			//add short key
@@ -5300,7 +5300,6 @@ int Beam::add_beam(node_t *p1, node_t *p2, SceneManager *manager, SceneNode *par
 	beams[pos].hydroFlags=0;
 	beams[pos].stress=0.0;
 	beams[pos].lastforce=Vector3(0,0,0);
-	beams[pos].isrope=0;
 	beams[pos].iscentering=false;
 	beams[pos].isOnePressMode=0;
 	beams[pos].isforcerestricted=false;
@@ -6172,16 +6171,22 @@ void Beam::calcForcesEuler(int doUpdate, Real dt, int step, int maxstep, Beam** 
 						k=DEFAULT_SPRING;
 						d=DEFAULT_DAMP;
 					}
-				} else calcShocks2(i, difftoBeamL, k, d);
+				}
+				else if (beams[i].bounded==SHOCK2)
+				{
+					calcShocks2(i, difftoBeamL, k, d);
+				}
+				else if (beams[i].bounded==ROPE && difftoBeamL<0)
+				{
+					k=0.0f;
+					d=d*0.1f;
+				}
 			}
 
 			//Calculate beam's rate of change
 			Vector3 v=beams[i].p1->Velocity-beams[i].p2->Velocity;
 			float flen;
-			if (beams[i].isrope && difftoBeamL<0)
-				flen = -d*v.dotProduct(dis)*0.1f*inverted_dislen;
-			else
-				flen = -k*(difftoBeamL)-d*v.dotProduct(dis)*inverted_dislen;
+			flen = -k*(difftoBeamL)-d*v.dotProduct(dis)*inverted_dislen;
 			float sflen=flen;
 			beams[i].stress=flen;
 			flen=fabs(flen);
@@ -6190,7 +6195,7 @@ void Beam::calcForcesEuler(int doUpdate, Real dt, int step, int maxstep, Beam** 
 			// Fast test for deformation
 			if (flen > beams[i].minmaxposnegstress)
 			{
-				if (beams[i].type==BEAM_NORMAL || beams[i].type==BEAM_INVISIBLE)
+				if ((beams[i].type==BEAM_NORMAL || beams[i].type==BEAM_INVISIBLE) && k!=0.0f)
 				{
 					// Actual deformation tests
 					// For compression
@@ -6293,7 +6298,8 @@ void Beam::calcForcesEuler(int doUpdate, Real dt, int step, int maxstep, Beam** 
 				if (((doUpdate && skeleton == 2) || replay) && !beams[i].broken && beams[i].mEntity && beams[i].mSceneNode)
 				{
 					float tmp=beams[i].stress/beams[i].minmaxposnegstress;
-					beams[i].scale = (tmp*tmp*tmp*tmp)*100.0f*sign(tmp);
+					float sqtmp=tmp*tmp;
+					beams[i].scale = (sqtmp*sqtmp)*100.0f*sign(tmp);
 				}
 				if (doUpdate && skeleton == 1 && !beams[i].broken && beams[i].mEntity && beams[i].mSceneNode)
 				{

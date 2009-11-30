@@ -212,8 +212,9 @@ extern int truckSteps;
 #define SHOCK_FLAG_ISSHOCK2     0x00000010
 #define SHOCK_FLAG_SOFTBUMP     0x00000020
 
-#define SHOCK1  1
-#define SHOCK2  2
+#define SHOCK1	1
+#define SHOCK2	2
+#define ROPE	4
 
 enum blinktype {BLINK_NONE, BLINK_LEFT, BLINK_RIGHT, BLINK_WARN};
 
@@ -341,6 +342,7 @@ typedef struct _beam
 	node_t *p1;
 	node_t *p2;
 	Beam *p2truck; //in case p2 is on another truck
+	bool disabled;
 	Real k; //tensile spring
 	Real d; //damping factor
 	Real L; //length
@@ -353,8 +355,6 @@ typedef struct _beam
 	Real strength;
 	Real stress;
 	int bounded;
-	bool disabled;
-	bool isrope;
 	bool broken;
 	Real plastic_coef;
 	SceneNode *mSceneNode; //visual
