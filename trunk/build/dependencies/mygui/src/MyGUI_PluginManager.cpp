@@ -3,7 +3,8 @@
 	@author		Denis Koronchik
 	@date		09/2007
 	@module
-*//*
+*/
+/*
 	This file is part of MyGUI.
 	
 	MyGUI is free software: you can redistribute it and/or modify
@@ -32,7 +33,7 @@ namespace MyGUI
 
 	void PluginManager::initialise()
 	{
-		MYGUI_ASSERT(false == mIsInitialise, INSTANCE_TYPE_NAME << " initialised twice");
+		MYGUI_ASSERT(!mIsInitialise, INSTANCE_TYPE_NAME << " initialised twice");
 		MYGUI_LOG(Info, "* Initialise: " << INSTANCE_TYPE_NAME);
 
 		ResourceManager::getInstance().registerLoadXmlDelegate(XML_TYPE) = newDelegate(this, &PluginManager::_load);
@@ -43,7 +44,7 @@ namespace MyGUI
 
 	void PluginManager::shutdown()
 	{
-		if (false == mIsInitialise) return;
+		if (!mIsInitialise) return;
 		MYGUI_LOG(Info, "* Shutdown: " << INSTANCE_TYPE_NAME);
 
 		unloadAllPlugins();
@@ -53,25 +54,34 @@ namespace MyGUI
 		mIsInitialise = false;
 	}
 
-	void PluginManager::loadPlugin(const std::string& _file)
+	bool PluginManager::loadPlugin(const std::string& _file)
 	{
 		// check initialise
 		MYGUI_ASSERT(mIsInitialise, INSTANCE_TYPE_NAME << "used but not initialised");
+
 		// Load plugin library
-		DynLib* lib = DynLibManager::getInstance().load( _file );
-		// Store for later unload
-		mLibs[_file] = lib;
+		DynLib* lib = DynLibManager::getInstance().load(_file);
+		if (!lib)
+		{
+			MYGUI_LOG(Error, "Plugin '" << _file << "' not found");
+			return false;
+		}
 
 		// Call startup function
 		DLL_START_PLUGIN pFunc = (DLL_START_PLUGIN)lib->getSymbol("dllStartPlugin");
+		if (!pFunc)
+		{
+			MYGUI_LOG(Error, "Cannot find symbol 'dllStartPlugin' in library " << _file);
+			return false;
+		}
 
-		/*Assert(pFunc, Exception::ERR_ITEM_NOT_FOUND, "Cannot find symbol dllStartPlugin in library " + fileName,
-			"PluginManager::loadPlugin");*/
-
-		MYGUI_ASSERT(nullptr != pFunc, INSTANCE_TYPE_NAME << "Cannot find symbol 'dllStartPlugin' in library " << _file);
+		// Store for later unload
+		mLibs[_file] = lib;
 
 		// This must call installPlugin
 		pFunc();
+
+		return true;
 	}
 
 	void PluginManager::unloadPlugin(const std::string& _file)
@@ -80,7 +90,8 @@ namespace MyGUI
 		MYGUI_ASSERT(mIsInitialise, INSTANCE_TYPE_NAME << "used but not initialised");
 
 		DynLibList::iterator it = mLibs.find(_file);
-		if (it != mLibs.end()) {
+		if (it != mLibs.end())
+		{
 			// Call plugin shutdown
 			DLL_STOP_PLUGIN pFunc = (DLL_STOP_PLUGIN)(*it).second->getSymbol("dllStopPlugin");
 
@@ -94,17 +105,43 @@ namespace MyGUI
 		}
 	}
 
-	bool PluginManager::load(const std::string& _file, const std::string & _group)
+	bool PluginManager::load(const std::string& _file)
 	{
-		return ResourceManager::getInstance()._loadImplement(_file, _group, true, XML_TYPE, INSTANCE_TYPE_NAME);
+		return ResourceManager::getInstance()._loadImplement(_file, true, XML_TYPE, INSTANCE_TYPE_NAME);
 	}
 
-	void PluginManager::_load(xml::ElementPtr _node, const std::string & _file, Version _version)
+	void PluginManager::_load(xml::ElementPtr _node, const std::string& _file, Version _version)
 	{
 		xml::ElementEnumerator node = _node->getElementEnumerator();
-		std::string source;
-		while (node.next("path")) {
-			if (node->findAttribute("source", source)) loadPlugin(source);
+		while (node.next())
+		{
+			if (node->getName() == "path")
+			{
+				std::string source;
+				if (node->findAttribute("source", source))
+					loadPlugin(source);
+			}
+			else if (node->getName() == "Plugin")
+			{
+				std::string source, source_debug;
+
+				xml::ElementEnumerator source_node = node->getElementEnumerator();
+				while (source_node.next("Source"))
+				{
+					std::string build = source_node->findAttribute("build");
+					if (build == "Debug")
+						source_debug = source_node->getContent();
+					else
+						source = source_node->getContent();
+				}
+#if MYGUI_DEBUG_MODE == 0
+				if (!source.empty())
+					loadPlugin(source);
+#else
+				if (!source_debug.empty())
+					loadPlugin(source_debug);
+#endif
+			}
 		}
 	}
 
@@ -141,7 +178,7 @@ namespace MyGUI
 
 	void PluginManager::unloadAllPlugins()
 	{
-		while (false == mLibs.empty())
+		while (!mLibs.empty())
 			unloadPlugin((*mLibs.begin()).first);
 	}
 

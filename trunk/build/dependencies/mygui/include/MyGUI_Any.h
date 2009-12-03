@@ -3,7 +3,8 @@
 	@author		Albert Semenov
 	@date		10/2008
 	@module
-*//*
+*/
+/*
 	This file is part of MyGUI.
 	
 	MyGUI is free software: you can redistribute it and/or modify
@@ -91,17 +92,17 @@ namespace MyGUI
 		{
 		}
 
-		template<typename ValueType> Any(const ValueType & value) :
+		template<typename ValueType> Any(const ValueType& value) :
 			mContent(new Holder<ValueType>(value))
 		{
 		}
 
-		Any(const Any::AnyEmpty & value) :
+		Any(const Any::AnyEmpty& value) :
 			mContent(nullptr)
 		{
 		}
 
-		Any(const Any & other) :
+		Any(const Any& other) :
 			mContent(other.mContent ? other.mContent->clone() : nullptr)
 		{
 		}
@@ -111,26 +112,26 @@ namespace MyGUI
 			delete mContent;
 		}
 
-		Any & swap(Any & rhs)
+		Any& swap(Any& rhs)
 		{
 			std::swap(mContent, rhs.mContent);
 			return *this;
 		}
 
-		template<typename ValueType> Any & operator = (const ValueType & rhs)
+		template<typename ValueType> Any& operator = (const ValueType& rhs)
 		{
 			Any(rhs).swap(*this);
 			return *this;
 		}
 
-		Any & operator = (const Any::AnyEmpty & rhs)
+		Any& operator = (const Any::AnyEmpty& rhs)
 		{
 			delete mContent;
 			mContent = nullptr;
 			return *this;
 		}
 
-		Any & operator = (const Any & rhs)
+		Any& operator = (const Any& rhs)
 		{
 			Any(rhs).swap(*this);
 			return *this;
@@ -141,7 +142,7 @@ namespace MyGUI
 			return !mContent;
 		}
 
-		const std::type_info & getType() const
+		const std::type_info& getType() const
 		{
 			return mContent ? mContent->getType() : typeid(void);
 		}
@@ -149,8 +150,9 @@ namespace MyGUI
 		template<typename ValueType>
 		ValueType * castType(bool _throw = true) const
 		{
-			if (this->getType() == typeid(ValueType)) {
-				return & static_cast<Any::Holder<ValueType> *>(this->mContent)->held;
+			if (this->getType() == typeid(ValueType))
+			{
+				return &static_cast<Any::Holder<ValueType> *>(this->mContent)->held;
 			}
 			MYGUI_ASSERT(!_throw, "Bad cast from type '" << getType().name() << "' to '" << typeid(ValueType).name() << "'");
 			return nullptr;
@@ -168,7 +170,7 @@ namespace MyGUI
 			virtual ~Placeholder() { }
 
 		public:
-			virtual const std::type_info & getType() const = 0;
+			virtual const std::type_info& getType() const = 0;
 			virtual Placeholder * clone() const = 0;
 
 		};
@@ -176,13 +178,13 @@ namespace MyGUI
 		template<typename ValueType> class Holder : public Placeholder
 		{
 		public:
-			Holder(const ValueType & value) :
+			Holder(const ValueType& value) :
 				held(value)
 			{
 			}
 
 		public:
-			virtual const std::type_info & getType() const
+			virtual const std::type_info& getType() const
 			{
 				return typeid(ValueType);
 			}
@@ -196,7 +198,7 @@ namespace MyGUI
 			ValueType held;
 
 		private:
-			Holder & operator=(const Holder &);
+			Holder& operator=(const Holder &);
 
 		};
 

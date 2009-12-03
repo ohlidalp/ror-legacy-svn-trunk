@@ -3,7 +3,8 @@
 	@author		Albert Semenov
 	@date		12/2008
 	@module
-*//*
+*/
+/*
 	This file is part of MyGUI.
 	
 	MyGUI is free software: you can redistribute it and/or modify
@@ -29,28 +30,30 @@
 namespace MyGUI
 {
 
-	struct MYGUI_EXPORT Version
+	class MYGUI_EXPORT Version
 	{
-
+	public:
 		Version() : value(0) { }
 		Version(uint8 _major, uint8 _minor, uint16 _patch) : value((uint32(_major) << 24) + (uint32(_minor) << 16) + uint32(_patch)) { }
 		Version(uint8 _major, uint8 _minor) : value((uint32(_major) << 24) + (uint32(_minor) << 16)) { }
-		explicit Version(const std::string & _value) : value(parse(_value).value) { }
+		explicit Version(const std::string& _value) : value(parse(_value).value) { }
 
-		friend bool operator < (Version const & a, Version const & b) { return a.getPoorVersion() < b.getPoorVersion(); }
-		friend bool operator >= (Version const & a, Version const & b) { return !(a < b); }
-		friend bool operator > (Version const & a, Version const & b) { return (b < a); }
-		friend bool operator <= (Version const & a, Version const & b) { return !(a > b); }
+		friend bool operator < (Version const& a, Version const& b) { return a.getPoorVersion() < b.getPoorVersion(); }
+		friend bool operator >= (Version const& a, Version const& b) { return !(a < b); }
+		friend bool operator > (Version const& a, Version const& b) { return (b < a); }
+		friend bool operator <= (Version const& a, Version const& b) { return !(a > b); }
 
-		friend bool operator == (Version const & a, Version const & b) { return !(a < b) && !(a > b); }
-		friend bool operator != (Version const & a, Version const & b) { return !(a == b); }
+		friend bool operator == (Version const& a, Version const& b) { return !(a < b) && !(a > b); }
+		friend bool operator != (Version const& a, Version const& b) { return !(a == b); }
 
-		friend std::ostream& operator << ( std::ostream& _stream, const Version &  _value ) {
+		friend std::ostream& operator << ( std::ostream& _stream, const Version&  _value )
+		{
 			_stream << _value.print();
 			return _stream;
 		}
 
-		friend std::istream& operator >> ( std::istream& _stream, Version &  _value ) {
+		friend std::istream& operator >> ( std::istream& _stream, Version&  _value )
+		{
 			std::string value;
 			_stream >> value;
 			_value = Version::parse(value);
@@ -70,18 +73,22 @@ namespace MyGUI
 			return utility::toString(getMajor(), ".", getMinor(), ".", getPatch());
 		}
 
-		static Version parse(const std::string & _value)
+		static Version parse(const std::string& _value)
 		{
-			const std::vector<std::string> & vec = utility::split(_value, ".");
+			const std::vector<std::string>& vec = utility::split(_value, ".");
 			if (vec.empty()) return Version();
-			uint8 major = utility::parseValue<uint8>(vec[0]);
-			uint8 minor = vec.size() > 1 ? utility::parseValue<uint8>(vec[1]) : uint8(0);
-			uint16 patch = vec.size() > 2 ? utility::parseValue<uint16>(vec[2]) : uint16(0);
+			uint8 major = (uint8)utility::parseValue<int>(vec[0]);
+			uint8 minor = vec.size() > 1 ? (uint8)utility::parseValue<int>(vec[1]) : uint8(0);
+			uint16 patch = vec.size() > 2 ? (uint16)utility::parseValue<int>(vec[2]) : uint16(0);
 			return Version(major, minor, patch);
 		}
 
 	private:
-		uint32 value;
+		union
+		{
+			uint32 value;
+			uint8 value_data[4];
+		};
 	};
 
 } // namespace MyGUI

@@ -3,7 +3,8 @@
 	@author		Albert Semenov
 	@date		11/2007
 	@module
-*//*
+*/
+/*
 	This file is part of MyGUI.
 	
 	MyGUI is free software: you can redistribute it and/or modify
@@ -35,18 +36,18 @@ namespace MyGUI
 		UserData() { }
 		virtual ~UserData() { }
 
-		// пользовательские данные виджета строки
 		/** Set user string */
-		void setUserString(const std::string & _key, const std::string & _value)
+		void setUserString(const std::string& _key, const std::string& _value)
 		{
 			mMapUserString[_key] = _value;
 		}
 
 		/** Get user string or "" if not found */
-		const std::string & getUserString(const std::string & _key)
+		const std::string& getUserString(const std::string& _key)
 		{
 			MapString::iterator iter = mMapUserString.find(_key);
-			if (iter == mMapUserString.end()) {
+			if (iter == mMapUserString.end())
+			{
 				static std::string empty;
 				return empty;
 			}
@@ -54,10 +55,11 @@ namespace MyGUI
 		}
 
 		/** Delete user string */
-		bool clearUserString(const std::string & _key)
+		bool clearUserString(const std::string& _key)
 		{
 			MapString::iterator iter = mMapUserString.find(_key);
-			if (iter != mMapUserString.end()) {
+			if (iter != mMapUserString.end())
+			{
 				mMapUserString.erase(iter);
 				return true;
 			}
@@ -65,7 +67,7 @@ namespace MyGUI
 		}
 
 		/** Return true if user string with such key exist */
-		bool isUserString(const std::string & _key)
+		bool isUserString(const std::string& _key)
 		{
 			return mMapUserString.find(_key) != mMapUserString.end();
 		}
@@ -86,12 +88,7 @@ namespace MyGUI
 			return mUserData.castType<ValueType>(_throw);
 		}
 
-		MYGUI_OBSOLETE("use : template <typename ValueType> ValueType * UserData::getUserData(bool _throw)")
-		void * getUserData()
-		{
-			return mUserData.castUnsafe();
-		}
-
+	/*internal:*/
 		void _setInternalData(Any _data) { mInternalData = _data; }
 
 		template <typename ValueType>
@@ -100,6 +97,16 @@ namespace MyGUI
 			return mInternalData.castType<ValueType>(_throw);
 		}
 
+	/*obsolete:*/
+#ifndef MYGUI_DONT_USE_OBSOLETE
+
+		MYGUI_OBSOLETE("use : template <typename ValueType> ValueType * UserData::getUserData(bool _throw)")
+		void * getUserData()
+		{
+			return mUserData.castUnsafe();
+		}
+
+#endif // MYGUI_DONT_USE_OBSOLETE
 
 	private:
 		// пользовательские данные

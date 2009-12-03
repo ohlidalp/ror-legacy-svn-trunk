@@ -3,7 +3,8 @@
 	@author		Albert Semenov
 	@date		08/2008
 	@module
-*//*
+*/
+/*
 	This file is part of MyGUI.
 	
 	MyGUI is free software: you can redistribute it and/or modify
@@ -28,28 +29,6 @@
 namespace MyGUI
 {
 
-	/** Old aligns */
-	typedef enum /*MYGUI_OBSOLETE_START("use : Align")*/
-	{
-		ALIGN_HCENTER = MYGUI_FLAG_NONE,
-		ALIGN_VCENTER = MYGUI_FLAG_NONE,
-		ALIGN_CENTER = ALIGN_HCENTER | ALIGN_VCENTER,
-		ALIGN_LEFT = MYGUI_FLAG(1),
-		ALIGN_RIGHT = MYGUI_FLAG(2),
-		ALIGN_HSTRETCH = ALIGN_LEFT | ALIGN_RIGHT,
-		ALIGN_TOP = MYGUI_FLAG(3),
-		ALIGN_BOTTOM = MYGUI_FLAG(4),
-		ALIGN_VSTRETCH = ALIGN_TOP | ALIGN_BOTTOM,
-		ALIGN_STRETCH = ALIGN_HSTRETCH | ALIGN_VSTRETCH,
-		ALIGN_DEFAULT = ALIGN_LEFT | ALIGN_TOP,
-		ALIGN_LEFT_TOP = ALIGN_LEFT | ALIGN_TOP,
-		ALIGN_RIGHT_TOP = ALIGN_RIGHT | ALIGN_TOP,
-		ALIGN_RIGHT_BOTTOM = ALIGN_RIGHT | ALIGN_BOTTOM,
-		ALIGN_LEFT_BOTTOM = ALIGN_LEFT | ALIGN_BOTTOM
-	} /*MYGUI_OBSOLETE_END*/ ALIGN_TYPE_OBSOLETE;
-
-	inline ALIGN_TYPE_OBSOLETE operator | (ALIGN_TYPE_OBSOLETE const & a, ALIGN_TYPE_OBSOLETE const & b) { return ALIGN_TYPE_OBSOLETE((int)a | (int)b); }
-
 	struct MYGUI_EXPORT Align
 	{
 		enum Enum
@@ -67,44 +46,59 @@ namespace MyGUI
 			VStretch = Top | Bottom, /**< stretch vertically proportionate to parent window (and center horizontally) */
 
 			Stretch = HStretch | VStretch, /**< stretch proportionate to parent window */
-			Default = Left | Top /**< default value (value from left and top) */
+			Default = Left | Top, /**< default value (value from left and top) */
+
+			HRelative = MYGUI_FLAG(5),
+			VRelative = MYGUI_FLAG(6),
+			Relative = HRelative | VRelative
 		};
 
 		Align(Enum _value = Default) : value(_value) { }
-		Align(ALIGN_TYPE_OBSOLETE _value) : value((Enum)_value) { }
 
-		bool isHCenter() { return HCenter == (value & HStretch); }
-		bool isVCenter() { return VCenter == (value & VStretch); }
-		bool isCenter() { return Center == (value & Stretch); }
+		bool isHCenter() { return HCenter == (value & ((int)HStretch | (int)HRelative)); }
+		bool isVCenter() { return VCenter == (value & ((int)VStretch | (int)VRelative)); }
+		bool isCenter() { return Center == (value & ((int)Stretch | (int)Relative)); }
 
-		bool isLeft() { return Left == (value & HStretch); }
-		bool isRight() { return Right == (value & HStretch); }
-		bool isHStretch() { return HStretch == (value & HStretch); }
+		bool isLeft() { return Left == (value & ((int)HStretch | (int)HRelative)); }
+		bool isRight() { return Right == (value & ((int)HStretch | (int)HRelative)); }
+		bool isHStretch() { return HStretch == (value & ((int)HStretch | (int)HRelative)); }
 
-		bool isTop() { return Top == (value & VStretch); }
-		bool isBottom() { return (Bottom == (value & VStretch)); }
-		bool isVStretch() { return (VStretch == (value & VStretch)); }
+		bool isTop() { return Top == (value & ((int)VStretch | (int)VRelative)); }
+		bool isBottom() { return (Bottom == (value & ((int)VStretch | (int)VRelative))); }
+		bool isVStretch() { return (VStretch == (value & ((int)VStretch | (int)VRelative))); }
 
-		bool isStretch() { return (Stretch == (value & Stretch)); }
-		bool isDefault() { return (Default == (value & Stretch)); }
+		bool isStretch() { return (Stretch == (value & ((int)Stretch | (int)Relative))); }
+		bool isDefault() { return (Default == (value & ((int)Stretch | (int)Relative))); }
 
-		Align & operator |= (Align const& _other) { value = Enum(int(value) | int(_other.value)); return *this; }
-		friend Align operator | (Enum const & a, Enum const & b) { return Align(Enum(int(a) | int(b))); }
+		bool isHRelative() { return HRelative == (value & (int)HRelative); }
+		bool isVRelative() { return VRelative == (value & (int)VRelative); }
+		bool isRelative() { return Relative == (value & (int)Relative); }
 
-		friend bool operator == (Align const & a, Align const & b) { return a.value == b.value; }
-		friend bool operator != (Align const & a, Align const & b) { return a.value != b.value; }
+		Align& operator |= (Align const& _other) { value = Enum(int(value) | int(_other.value)); return *this; }
+		friend Align operator | (Enum const& a, Enum const& b) { return Align(Enum(int(a) | int(b))); }
+		friend Align operator | (Align const& a, Align const& b) { return Align(Enum(int(a.value) | int(b.value))); }
+
+		friend bool operator == (Align const& a, Align const& b) { return a.value == b.value; }
+		friend bool operator != (Align const& a, Align const& b) { return a.value != b.value; }
 
 		typedef std::map<std::string, int> MapAlign;
 
-		static Align parse(const std::string & _value)
+		static Align parse(const std::string& _value)
 		{
 			Align result(Enum(0));
-			const MapAlign & map_names = result.getValueNames();
-			const std::vector<std::string> & vec = utility::split(_value);
-			for (size_t pos=0; pos<vec.size(); pos++) {
+			const MapAlign& map_names = result.getValueNames();
+			const std::vector<std::string>& vec = utility::split(_value);
+			for (size_t pos=0; pos<vec.size(); pos++)
+			{
 				MapAlign::const_iterator iter = map_names.find(vec[pos]);
-				if (iter != map_names.end()) result.value = Enum(int(result.value) | int(iter->second));
-				else { MYGUI_LOG(Warning, "Cannot parse type '" << vec[pos] << "'"); }
+				if (iter != map_names.end())
+				{
+					result.value = Enum(int(result.value) | int(iter->second));
+				}
+				else
+				{
+					MYGUI_LOG(Warning, "Cannot parse type '" << vec[pos] << "'");
+				}
 			}
 			return result;
 		}
@@ -113,14 +107,18 @@ namespace MyGUI
 		{
 			std::string result;
 
-			if (value & Left) {
+			if (value & HRelative) result = "HRelative";
+			else if (value & Left)
+			{
 				if (value & Right) result = "HStretch";
 				else result = "Left";
 			}
 			else if (value & Right) result = "Right";
 			else result = "HCenter";
 
-			if (value & Top) {
+			if (value & VRelative) result = "VRelative";
+			else if (value & Top)
+			{
 				if (value & Bottom) result += " VStretch";
 				else result += " Top";
 			}
@@ -130,24 +128,43 @@ namespace MyGUI
 			return result;
 		}
 
-		friend std::ostream& operator << ( std::ostream& _stream, const Align &  _value ) {
+		friend std::ostream& operator << ( std::ostream& _stream, const Align&  _value )
+		{
 			_stream << _value.print();
 			return _stream;
 		}
 
-		friend std::istream& operator >> ( std::istream& _stream, Align &  _value ) {
+		friend std::istream& operator >> ( std::istream& _stream, Align&  _value )
+		{
+			_value.value = Enum(0);
 			std::string value;
 			_stream >> value;
-			_value = Align::parse(value);
+
+			const MapAlign& map_names = _value.getValueNames();
+			MapAlign::const_iterator iter = map_names.find(value);
+			if (iter != map_names.end())
+				_value.value = Enum(int(_value.value) | int(iter->second));
+
+			
+			if (!_stream.eof())
+			{
+				std::string value2;
+				_stream >> value2;
+				iter = map_names.find(value2);
+				if (iter != map_names.end())
+					_value.value = Enum(int(_value.value) | int(iter->second));
+			}
+
 			return _stream;
 		}
 
 	private:
-		const MapAlign & getValueNames()
+		const MapAlign& getValueNames()
 		{
 			static MapAlign map_names;
 
-			if (map_names.empty()) {
+			if (map_names.empty())
+			{
 				// OBSOLETE
 				map_names["ALIGN_HCENTER"] = HCenter;
 				map_names["ALIGN_VCENTER"] = VCenter;
@@ -172,6 +189,9 @@ namespace MyGUI
 				MYGUI_REGISTER_VALUE(map_names, VStretch);
 				MYGUI_REGISTER_VALUE(map_names, Stretch);
 				MYGUI_REGISTER_VALUE(map_names, Default);
+				MYGUI_REGISTER_VALUE(map_names, HRelative);
+				MYGUI_REGISTER_VALUE(map_names, VRelative);
+				MYGUI_REGISTER_VALUE(map_names, Relative);
 			}
 
 			return map_names;

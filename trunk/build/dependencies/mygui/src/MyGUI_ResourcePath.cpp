@@ -139,14 +139,16 @@ namespace MyGUI
 
 			// только уникальный
 			if (_unique) {
+				/*
+				// XXX HACK: we dont care!
 				if (pFileInfo->size() > 1) {
 					MYGUI_LOG(Error, "helper::getFilePath : filename '" << _filename << "' a lot of concurrences.");
 					for (Ogre::FileInfoList::iterator fi = pFileInfo->begin(); fi != pFileInfo->end(); ++fi ) {
 						MYGUI_LOG(Error, "  * helper::getFilePath : found [" << (fi -  pFileInfo->begin()) << "] file : '" << fi->archive->getName() << "/" << fi->filename << "'");
 					}
 					return result;
-				}
-				else if (pFileInfo->size() == 0) {
+				}*/
+				if (pFileInfo->size() == 0) {
 					MYGUI_LOG(Error, "helper::getFilePath : filename '" << _filename << "' not found.");
 					return result;
 				}

@@ -23,6 +23,7 @@
 #include "MyGUI_WidgetFactory.h"
 #include "MyGUI_WidgetManager.h"
 #include "MyGUI_LanguageManager.h"
+#include "Ogre.h"
 
 #define FACTORY_WIDGET_EVENT_DELEGATE(eventName) \
 		void WidgetFactory::Widget_##eventName(WidgetPtr _widget, const std::string &_key, const std::string &_value) \

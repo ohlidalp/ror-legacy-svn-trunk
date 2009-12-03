@@ -3,7 +3,8 @@
 	@author		Albert Semenov
 	@date		08/2008
 	@module
-*//*
+*/
+/*
 	This file is part of MyGUI.
 	
 	MyGUI is free software: you can redistribute it and/or modify
@@ -39,9 +40,10 @@ namespace MyGUI
 		vec.push_back("value");
 		//EnumeratorVectorString enum_vec(vec.begin(), vec.end());
 		EnumeratorVectorString enum_vec(vec);
-		while (enum_vec.next()) {
+		while (enum_vec.next())
+		{
 			std::string value = enum_vec.current();
-		};
+		}
 
 		typedef std::pair<std::string, std::string> PairString;
 		typedef std::map<PairString> MapString;
@@ -50,10 +52,11 @@ namespace MyGUI
 		map["key"] = "value";
 		//EnumeratorMapString enum_map(map.begin(), map.end());
 		EnumeratorMapString enum_map(map);
-		while (enum_map.next()) {
+		while (enum_map.next())
+		{
 			std::string key = enum_map.current().first;
 			std::string value = enum_map.current().second;
-		};
+		}
 	@endcode
 	*/
 
@@ -64,7 +67,7 @@ namespace MyGUI
 		Enumerator() { }
 
 	public:
-		explicit Enumerator(const T & _container) :
+		explicit Enumerator(const T& _container) :
 			m_first(true),
 			m_current(_container.begin()),
 			m_end(_container.end())
@@ -81,7 +84,8 @@ namespace MyGUI
 		bool next()
 		{
 			if (m_current == m_end) return false;
-			else if (m_first) {
+			else if (m_first)
+			{
 				m_first = false;
 				return true;
 			}

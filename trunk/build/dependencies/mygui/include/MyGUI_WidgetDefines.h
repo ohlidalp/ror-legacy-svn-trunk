@@ -3,7 +3,8 @@
 	@author		Albert Semenov
 	@date		11/2007
 	@module
-*//*
+*/
+/*
 	This file is part of MyGUI.
 	
 	MyGUI is free software: you can redistribute it and/or modify
@@ -29,7 +30,6 @@ namespace MyGUI
 {
 
 	class Widget;
-	//typedef Widget * WidgetPtr;
 	typedef std::vector<WidgetPtr> VectorWidgetPtr;
 	typedef std::map<std::string, WidgetPtr> MapWidgetPtr;
 	typedef Enumerator<VectorWidgetPtr> EnumeratorWidgetPtr;

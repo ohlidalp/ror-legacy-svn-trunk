@@ -3,7 +3,8 @@
 	@author		Albert Semenov
 	@date		09/2008
 	@module
-*//*
+*/
+/*
 	This file is part of MyGUI.
 	
 	MyGUI is free software: you can redistribute it and/or modify
@@ -29,14 +30,6 @@
 namespace MyGUI
 {
 
-	typedef std::vector<std::string> VectorString;
-	typedef std::map<std::string, VectorString> MapListString;
-	typedef std::map<std::string, std::string> MapString;
-	typedef std::map<Ogre::UTFString, Ogre::UTFString> MapLanguageString;
-
-	// делегат для смены оповещения смены языков
-	typedef delegates::CMultiDelegate1<const std::string &> MultiDelegate_String;
-
 	class MYGUI_EXPORT LanguageManager
 	{
 		MYGUI_INSTANCE_HEADER(LanguageManager);
@@ -45,52 +38,56 @@ namespace MyGUI
 		void initialise();
 		void shutdown();
 
-	public:
-
 		/** Load additional MyGUI *_language.xml file */
-		bool load(const std::string & _file, const std::string & _group = MyGUI::ResourceManager::GUIResourceGroupName);
+		bool load(const std::string& _file);
 
-		void _load(xml::ElementPtr _node, const std::string & _file, Version _version);
+		void _load(xml::ElementPtr _node, const std::string& _file, Version _version);
 
-		/** Return true if language _name exist */
-		bool isLanguageExist(const std::string & _name) { return mMapFile.find(_name) != mMapFile.end(); }
 		/** Set current language for replacing #{} tags */
-		bool setCurrentLanguage(const std::string & _name);
+		void setCurrentLanguage(const std::string& _name);
 		/** Get current language */
-		std::string getCurrentLanguage() { return mCurrentLanguage != mMapFile.end() ? mCurrentLanguage->first : ""; }
+		const std::string& getCurrentLanguage();
 
 		/** Replace all tags #{tagname} in _line with appropriate string dependent
 		on current language or keep #{tagname} if 'tagname' not found found */
-		Ogre::UTFString replaceTags(const Ogre::UTFString & _line);
+		UString replaceTags(const UString& _line);
 
 		/** Get tag value */
-		Ogre::UTFString getTag(const Ogre::UTFString & _tag);
+		UString getTag(const UString& _tag);
 
 		/** Add user tag */
-		void addUserTag(const Ogre::UTFString & _tag, const Ogre::UTFString & _replace) { mUserMapLanguage[_tag] = _replace; }
+		void addUserTag(const UString& _tag, const UString& _replace);
 
 		/** Delete all user tags */
-		void clearUserTags() { mUserMapLanguage.clear(); }
+		void clearUserTags();
+
+		bool loadUserTags(const std::string& _file);
 
 		/** Event : Change current language.\n
-			signature : void method(const std::string & _language);
+			signature : void method(const std::string& _language);
 			@param _language Current language.
 		*/
-		MultiDelegate_String eventChangeLanguage;
+		delegates::CMultiDelegate1<const std::string &> eventChangeLanguage;
 
 	private:
-		void loadLanguage(const VectorString & _list, const std::string & _group);
-		bool loadLanguage(const std::string & _file, const std::string & _group, bool _user = false);
-		void _loadLanguage(std::ifstream & _stream, bool _user);
-		void _loadLanguage(const Ogre::DataStreamPtr& stream, bool _user);
-
+		//bool loadResourceLanguage(const std::string& _name);
+		bool loadLanguage(const std::string& _file, bool _user = false);
+		void _loadLanguage(IDataStream* _stream, bool _user);
+		void _loadLanguageXML(IDataStream* _stream, bool _user);
+		//void _loadSource(xml::ElementPtr _node, const std::string& _file, Version _version);
 
 	private:
-		MapListString mMapFile;
-		MapListString::const_iterator mCurrentLanguage;
+		typedef std::map<UString, UString> MapLanguageString;
 
 		MapLanguageString mMapLanguage;
 		MapLanguageString mUserMapLanguage;
+
+		std::string mCurrentLanguageName;
+
+		typedef std::vector<std::string> VectorString;
+		typedef std::map<std::string, VectorString> MapListString;
+		MapListString mMapFile;
+
 	};
 
 } // namespace MyGUI

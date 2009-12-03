@@ -3,7 +3,8 @@
 	@author		Albert Semenov
 	@date		02/2008
 	@module
-*//*
+*/
+/*
 	This file is part of MyGUI.
 	
 	MyGUI is free software: you can redistribute it and/or modify
@@ -23,24 +24,26 @@
 #include "MyGUI_MainSkin.h"
 #include "MyGUI_RenderItem.h"
 #include "MyGUI_LayerManager.h"
+#include "MyGUI_CommonStateInfo.h"
 
 namespace MyGUI
 {
 
-	MainSkin::MainSkin(const SubWidgetInfo &_info, ICroppedRectangle * _parent) :
-		SubSkin(_info, _parent)
+	MainSkin::MainSkin() :
+		SubSkin()
 	{
-		mAlign = Align::Stretch;
-		setCoord(IntCoord(0, 0, _parent->getWidth(), _parent->getHeight()));
 	}
 
 	MainSkin::~MainSkin()
 	{
 	}
 
-	StateInfo * MainSkin::createStateData(xml::ElementPtr _node, xml::ElementPtr _root, Version _version)
+	void MainSkin::_setAlign(const IntSize& _oldsize, bool _update)
 	{
-		return SubSkin::createStateData(_node, _root, _version);
+		mCurrentCoord.set(0, 0, mCroppedParent->getWidth(), mCroppedParent->getHeight());
+		mAlign = Align::Stretch;
+
+		Base::_setAlign(_oldsize, _update);
 	}
 
 } // namespace MyGUI

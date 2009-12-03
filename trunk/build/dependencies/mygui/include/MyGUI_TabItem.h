@@ -3,7 +3,8 @@
 	@author		Albert Semenov
 	@date		01/2008
 	@module
-*//*
+*/
+/*
 	This file is part of MyGUI.
 	
 	MyGUI is free software: you can redistribute it and/or modify
@@ -29,37 +30,31 @@
 namespace MyGUI
 {
 
-	//OBSOLETE
-	namespace factory { class SheetFactory; }
-
-	class MYGUI_EXPORT TabItem : public Widget
+	class MYGUI_EXPORT TabItem :
+		public Widget
 	{
-		// для вызова закрытого конструктора
-		friend class factory::BaseWidgetFactory<TabItem>;
-		friend class factory::SheetFactory;
-
-		MYGUI_RTTI_CHILD_HEADER( TabItem, Widget );
+		MYGUI_RTTI_DERIVED( TabItem );
 
 	public:
+		TabItem();
+
 		/** Set item caption */
-		virtual void setCaption(const Ogre::UTFString & _caption) { mOwner->setItemName(this, _caption); }
+		virtual void setCaption(const UString& _value);
 		/** Get item caption */
-		virtual const Ogre::UTFString & getCaption() { return mOwner->getItemName(this); }
+		virtual const UString& getCaption();
 
 		//! Set button width
-		void setButtonWidth(int _width = DEFAULT) { mOwner->setButtonWidth(this, _width); }
-
+		void setButtonWidth(int _value = DEFAULT);
 		//! Get button width
-		int getButtonWidth() { return mOwner->getButtonWidth(this); }
+		int getButtonWidth();
 
+		//! Replace an item name
+		void setItemName(const UString& _value);
 		//! Get item name
-		const Ogre::UTFString & getItemName() { return mOwner->getItemName(this); }
+		const UString& getItemName();
 
 		//! Replace an item name
-		void setItemName(const Ogre::UTFString & _name) { mOwner->setItemName(this, _name); }
-
-		//! Replace an item name
-		void setItemData(Any _data) { mOwner->setItemData(this, _data); }
+		void setItemData(Any _value);
 
 		//! Get item data
 		template <typename ValueType>
@@ -69,14 +64,21 @@ namespace MyGUI
 		}
 
 		//! Select sheet
-		void setItemSelected() { mOwner->setItemSelected(this); }
+		void setItemSelected();
 
 		//! Remove item
-		void removeItem() { mOwner->removeItem(this); }
+		void removeItem();
+
+		/** @copydoc Widget::setProperty(const std::string& _key, const std::string& _value) */
+		virtual void setProperty(const std::string& _key, const std::string& _value);
+
+	/*internal*/
+		virtual void _initialise(WidgetStyle _style, const IntCoord& _coord, Align _align, ResourceSkin* _info, WidgetPtr _parent, ICroppedRectangle * _croppedParent, IWidgetCreator * _creator, const std::string& _name);
 
 	protected:
-		TabItem(WidgetStyle _style, const IntCoord& _coord, Align _align, const WidgetSkinInfoPtr _info, WidgetPtr _parent, ICroppedRectangle * _croppedParent, IWidgetCreator * _creator, const std::string & _name);
 		virtual ~TabItem();
+
+		void setSelected(bool _value);
 
 	private:
 		TabPtr mOwner;

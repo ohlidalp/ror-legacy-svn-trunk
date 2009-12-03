@@ -3,7 +3,8 @@
 	@author		Albert Semenov
 	@date		08/2008
 	@module
-*//*
+*/
+/*
 	This file is part of MyGUI.
 	
 	MyGUI is free software: you can redistribute it and/or modify
@@ -74,12 +75,26 @@ namespace MyGUI
 
 		MessageBoxStyle(Enum _value = None) : value(_value) { }
 
-		MessageBoxStyle & operator |= (MessageBoxStyle const& _other) { value = Enum(int(value) | int(_other.value)); return *this; }
-		friend MessageBoxStyle operator | (Enum const & a, Enum const & b) { return MessageBoxStyle(Enum(int(a) | int(b))); }
-		MessageBoxStyle operator | (Enum const & a) { return MessageBoxStyle(Enum(int(value) | int(a))); }
+		MessageBoxStyle& operator |= (MessageBoxStyle const& _other) { value = Enum(int(value) | int(_other.value)); return *this; }
+		friend MessageBoxStyle operator | (Enum const& a, Enum const& b) { return MessageBoxStyle(Enum(int(a) | int(b))); }
+		MessageBoxStyle operator | (Enum const& a) { return MessageBoxStyle(Enum(int(value) | int(a))); }
 
-		friend bool operator == (MessageBoxStyle const & a, MessageBoxStyle const & b) { return a.value == b.value; }
-		friend bool operator != (MessageBoxStyle const & a, MessageBoxStyle const & b) { return a.value != b.value; }
+		friend bool operator == (MessageBoxStyle const& a, MessageBoxStyle const& b) { return a.value == b.value; }
+		friend bool operator != (MessageBoxStyle const& a, MessageBoxStyle const& b) { return a.value != b.value; }
+
+		friend std::ostream& operator << ( std::ostream& _stream, const MessageBoxStyle&  _value )
+		{
+			//_stream << _value.print();
+			return _stream;
+		}
+
+		friend std::istream& operator >> ( std::istream& _stream, MessageBoxStyle&  _value )
+		{
+			std::string value;
+			_stream >> value;
+			_value = MessageBoxStyle::parse(value);
+			return _stream;
+		}
 
 		// возвращает индекс иконки
 		size_t getIconIndex()
@@ -138,25 +153,33 @@ namespace MyGUI
 
 		typedef std::map<std::string, int> MapAlign;
 
-		static MessageBoxStyle parse(const std::string & _value)
+		static MessageBoxStyle parse(const std::string& _value)
 		{
 			MessageBoxStyle result(MessageBoxStyle::Enum(0));
-			const MapAlign & map_names = result.getValueNames();
-			const std::vector<std::string> & vec = utility::split(_value);
-			for (size_t pos=0; pos<vec.size(); pos++) {
+			const MapAlign& map_names = result.getValueNames();
+			const std::vector<std::string>& vec = utility::split(_value);
+			for (size_t pos=0; pos<vec.size(); pos++)
+			{
 				MapAlign::const_iterator iter = map_names.find(vec[pos]);
-				if (iter != map_names.end()) result.value = Enum(int(result.value) | int(iter->second));
-				else { MYGUI_LOG(Warning, "Cannot parse type '" << vec[pos] << "'"); }
+				if (iter != map_names.end())
+				{
+					result.value = Enum(int(result.value) | int(iter->second));
+				}
+				else
+				{
+					MYGUI_LOG(Warning, "Cannot parse type '" << vec[pos] << "'");
+				}
 			}
 			return result;
 		}
 
 	private:
-		const MapAlign & getValueNames()
+		const MapAlign& getValueNames()
 		{
 			static MapAlign map_names;
 
-			if (map_names.empty()) {
+			if (map_names.empty())
+			{
 				MYGUI_REGISTER_VALUE(map_names, None);
 				MYGUI_REGISTER_VALUE(map_names, Ok);
 				MYGUI_REGISTER_VALUE(map_names, Yes);

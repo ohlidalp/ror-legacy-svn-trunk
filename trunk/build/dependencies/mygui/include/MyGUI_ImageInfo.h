@@ -3,7 +3,8 @@
 	@author		Albert Semenov
 	@date		09/2008
 	@module
-*//*
+*/
+/*
 	This file is part of MyGUI.
 	
 	MyGUI is free software: you can redistribute it and/or modify
@@ -30,7 +31,7 @@ namespace MyGUI
 
 	struct ImageItem
 	{
-		ImageItem() : frame_rate(0) {}
+		ImageItem() : frame_rate(0) { }
 
 		float frame_rate;
 		std::vector<FloatRect> images;
@@ -41,10 +42,10 @@ namespace MyGUI
 	struct ImageIndexInfo
 	{
 		ImageIndexInfo(
-			const std::string & _texture,
-			const IntSize & _size,
+			const std::string& _texture,
+			const IntSize& _size,
 			const float _rate,
-			const std::vector<IntPoint> & _frames
+			const std::vector<IntPoint>& _frames
 			) :
 			texture(_texture),
 			size(_size),
@@ -53,10 +54,10 @@ namespace MyGUI
 		{
 		}
 
-		const std::string & texture;
-		const IntSize & size;
+		const std::string& texture;
+		const IntSize& size;
 		const float rate;
-		const std::vector<IntPoint> & frames;
+		const std::vector<IntPoint>& frames;
 	};
 
 } // namespace MyGUI

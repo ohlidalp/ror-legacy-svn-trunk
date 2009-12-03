@@ -3,7 +3,8 @@
 	@author		Albert Semenov
 	@date		11/2007
 	@module
-*//*
+*/
+/*
 	This file is part of MyGUI.
 	
 	MyGUI is free software: you can redistribute it and/or modify
@@ -25,61 +26,63 @@
 #include "MyGUI_Prerequest.h"
 #include "MyGUI_Widget.h"
 #include "MyGUI_EventPair.h"
+#include "MyGUI_ControllerFadeAlpha.h"
 
 namespace MyGUI
 {
 
-	// OBSOLETE
-	typedef delegates::CDelegate2<WidgetPtr, const std::string&> EventHandle_WidgetString;
-
-	typedef delegates::CDelegate2<WindowPtr, const std::string&> EventHandle_WindowPtrCStringRef;
-	typedef delegates::CDelegate1<WindowPtr> EventHandle_WindowPtr;
-
-	class MYGUI_EXPORT Window : public Widget
+	class MYGUI_EXPORT Window :
+		public Widget
 	{
-		// для вызова закрытого конструктора
-		friend class factory::BaseWidgetFactory<Window>;
-
-		MYGUI_RTTI_CHILD_HEADER( Window, Widget );
+		MYGUI_RTTI_DERIVED( Window );
 
 	public:
+		// OBSOLETE
+		typedef delegates::CDelegate2<WidgetPtr, const std::string&> EventHandle_WidgetString;
+		typedef delegates::CDelegate2<WindowPtr, const std::string&> EventHandle_WindowPtrCStringRef;
+		typedef delegates::CDelegate1<WindowPtr> EventHandle_WindowPtr;
+
+	public:
+		Window();
+
 		/** @copydoc Widget::setVisible */
-		virtual void setVisible(bool _visible);
-		/** Hide or show Menu smooth */
-		void setVisibleSmooth(bool _visible);
+		virtual void setVisible(bool _value);
+
+		/** Hide or show window smooth */
+		void setVisibleSmooth(bool _value);
 		/** Hide window smooth and then destroy it */
 		void destroySmooth();
 
-		/** Get auto alpha mode flag */
-		bool getAutoAlpha() {return mIsAutoAlpha;}
 		/** Enable or disable auto alpha mode */
-		void setAutoAlpha(bool _auto);
+		void setAutoAlpha(bool _value);
+		/** Get auto alpha mode flag */
+		bool getAutoAlpha() { return mIsAutoAlpha; }
 
 		/** Set window caption */
-		virtual void setCaption(const Ogre::UTFString & _caption);
+		virtual void setCaption(const UString& _value);
 		/** Get window caption */
-		virtual const Ogre::UTFString & getCaption();
+		virtual const UString& getCaption();
 
 		/** Set minimal possible window size */
-		void setMinSize(const IntSize & _size) { mMinmax.left = _size.width; mMinmax.top = _size.height; }
+		void setMinSize(const IntSize& _value);
 		/** Set minimal possible window size */
-		void setMinSize(int _width, int _height) { mMinmax.left = _width; mMinmax.top = _height; }
+		void setMinSize(int _width, int _height) { setMinSize(IntSize(_width, _height)); }
 		/** Get minimal possible window size */
-		IntSize getMinSize() { return IntSize(mMinmax.left, mMinmax.top); }
+		IntSize getMinSize();
 
 		/** Set maximal possible window size */
-		void setMaxSize(const IntSize & _size) { mMinmax.right = _size.width; mMinmax.bottom = _size.height; }
+		void setMaxSize(const IntSize& _value);
 		/** Set maximal possible window size */
-		void setMaxSize(int _width, int _height) { mMinmax.right = _width; mMinmax.bottom = _height; }
+		void setMaxSize(int _width, int _height) { setMaxSize(IntSize(_width, _height)); }
 		/** Get maximal possible window size */
-		IntSize getMaxSize() { return IntSize(mMinmax.right, mMinmax.bottom); }
+		IntSize getMaxSize();
 
-		//! @copydoc Widget::setPosition(const IntPoint & _point)
-		virtual void setPosition(const IntPoint & _point);
-		//! @copydoc Widget::setSize(const IntSize& _size)
-		virtual void setSize(const IntSize & _size);
-		//! @copydoc Widget::setCoord(const IntCoord & _coord)
-		virtual void setCoord(const IntCoord & _coord);
+		//! @copydoc Widget::setPosition(const IntPoint& _value)
+		virtual void setPosition(const IntPoint& _value);
+		//! @copydoc Widget::setSize(const IntSize& _value)
+		virtual void setSize(const IntSize& _value);
+		//! @copydoc Widget::setCoord(const IntCoord& _value)
+		virtual void setCoord(const IntCoord& _value);
 
 		/** @copydoc Widget::setPosition(int _left, int _top) */
 		void setPosition(int _left, int _top) { setPosition(IntPoint(_left, _top)); }
@@ -91,10 +94,12 @@ namespace MyGUI
 		/** Get snap to borders mode flag */
 		bool getSnap() { return mSnap; }
 		/** Enable or disable snap to borders mode */
-		void setSnap(bool _snap) { mSnap = _snap; }
+		void setSnap(bool _value) { mSnap = _value; }
 
+		/** @copydoc Widget::setProperty(const std::string& _key, const std::string& _value) */
+		virtual void setProperty(const std::string& _key, const std::string& _value);
 
-		/*event:*/
+	/*event:*/
 		/** Event : Window button pressed.\n
 			signature : void method(MyGUI::WindowPtr _sender, const std::string& _name)
 			@param _sender widget that called this event
@@ -108,12 +113,14 @@ namespace MyGUI
 		*/
 		EventPair<EventHandle_WidgetVoid, EventHandle_WindowPtr> eventWindowChangeCoord;
 
+	/*internal:*/
+		virtual void _initialise(WidgetStyle _style, const IntCoord& _coord, Align _align, ResourceSkin* _info, WidgetPtr _parent, ICroppedRectangle * _croppedParent, IWidgetCreator * _creator, const std::string& _name);
 
 	/*obsolete:*/
 #ifndef MYGUI_DONT_USE_OBSOLETE
 
 		MYGUI_OBSOLETE("use : void Widget::setCoord(const IntCoord& _coord)")
-		void setPosition(const IntCoord & _coord) { setCoord(_coord); }
+		void setPosition(const IntCoord& _coord) { setCoord(_coord); }
 		MYGUI_OBSOLETE("use : void Widget::setCoord(int _left, int _top, int _width, int _height)")
 		void setPosition(int _left, int _top, int _width, int _height) { setCoord(_left, _top, _width, _height); }
 		MYGUI_OBSOLETE("use : void setVisibleSmooth(bool _visible)")
@@ -121,7 +128,7 @@ namespace MyGUI
 		MYGUI_OBSOLETE("use : void setVisibleSmooth(bool _visible)")
 		void hideSmooth() { setVisibleSmooth(false); }
 		MYGUI_OBSOLETE("use : void setMinSize(const IntSize& _min) , void setMaxSize(const IntSize& _min)")
-		void setMinMax(const IntRect & _minmax) { setMinSize(_minmax.left, _minmax.top); setMaxSize(_minmax.right, _minmax.bottom); }
+		void setMinMax(const IntRect& _minmax) { setMinSize(_minmax.left, _minmax.top); setMaxSize(_minmax.right, _minmax.bottom); }
 		MYGUI_OBSOLETE("use : void setMinSize(const IntSize& _min) , void setMaxSize(const IntSize& _min)")
 		void setMinMax(int _min_w, int _min_h, int _max_w, int _max_h) { setMinSize(_min_w, _min_h); setMaxSize(_max_w, _max_h); }
 		MYGUI_OBSOLETE("use : IntSize getMinSize() , IntSize getMaxSize()")
@@ -130,13 +137,12 @@ namespace MyGUI
 #endif // MYGUI_DONT_USE_OBSOLETE
 
 	protected:
-		Window(WidgetStyle _style, const IntCoord& _coord, Align _align, const WidgetSkinInfoPtr _info, WidgetPtr _parent, ICroppedRectangle * _croppedParent, IWidgetCreator * _creator, const std::string & _name);
 		virtual ~Window();
 
-		void baseChangeWidgetSkin(WidgetSkinInfoPtr _info);
+		void baseChangeWidgetSkin(ResourceSkin* _info);
 
 		// переопределяем для присвоению клиенту
-		virtual WidgetPtr baseCreateWidget(WidgetStyle _style, const std::string & _type, const std::string & _skin, const IntCoord& _coord, Align _align, const std::string & _layer, const std::string & _name);
+		virtual WidgetPtr baseCreateWidget(WidgetStyle _style, const std::string& _type, const std::string& _skin, const IntCoord& _coord, Align _align, const std::string& _layer, const std::string& _name);
 
 		void onMouseChangeRootFocus(bool _focus);
 		void onKeyChangeRootFocus(bool _focus);
@@ -153,10 +159,12 @@ namespace MyGUI
 		void animateStop(WidgetPtr _widget);
 
 	private:
-		void initialiseWidgetSkin(WidgetSkinInfoPtr _info);
+		void initialiseWidgetSkin(ResourceSkin* _info);
 		void shutdownWidgetSkin();
 
 		float getAlphaVisible();
+
+		ControllerFadeAlpha* createControllerFadeAlpha(float _alpha, float _coef, bool _enable);
 
 	private:
 		WidgetPtr mWidgetCaption;

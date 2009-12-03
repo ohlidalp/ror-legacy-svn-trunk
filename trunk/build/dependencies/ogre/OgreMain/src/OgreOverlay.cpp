@@ -81,6 +81,7 @@ namespace Ogre {
         iend = m2DElements.end();
         for (i = m2DElements.begin(); i != iend; ++i)
         {
+			if(!*i) continue;
             zorder = (*i)->_notifyZOrder(zorder);
         }
 	}

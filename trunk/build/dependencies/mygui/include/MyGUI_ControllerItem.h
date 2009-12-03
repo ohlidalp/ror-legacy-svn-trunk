@@ -3,7 +3,8 @@
 	@author		Albert Semenov
 	@date		01/2008
 	@module
-*//*
+*/
+/*
 	This file is part of MyGUI.
 	
 	MyGUI is free software: you can redistribute it and/or modify
@@ -25,38 +26,46 @@
 #include "MyGUI_Prerequest.h"
 #include "MyGUI_Common.h"
 #include "MyGUI_WidgetDefines.h"
+#include "MyGUI_RTTI.h"
+#include "MyGUI_IObject.h"
 
 namespace MyGUI
 {
 
 	/** Base interface for controllers */
-	class MYGUI_EXPORT ControllerItem
+	class MYGUI_EXPORT ControllerItem :
+		public IObject
 	{
+		MYGUI_RTTI_DERIVED( ControllerItem );
+
 	public:
-		virtual ~ControllerItem() {};
+		virtual ~ControllerItem() { }
 
 		virtual void prepareItem(WidgetPtr _widget) = 0;
-		//virtual void replaseItem(WidgetPtr _widget, ControllerItem * _item) = 0;
 		virtual bool addTime(WidgetPtr _widget, float _time) = 0;
-		virtual const std::string & getType() = 0;
+
+		virtual void setProperty(const std::string& _key, const std::string& _value) { }
 
 		/** Event : Before controller started working.\n
 			signature : void method(MyGUI::WidgetPtr _sender)\n
 			@param _sender widget under control
 		*/
-		delegates::CDelegate1<WidgetPtr> eventPreAction;
+		delegates::CDelegate1<WidgetPtr>
+			eventPreAction;
 
 		/** Event : Controller updated (called every frame).\n
 			signature : void method(MyGUI::WidgetPtr _sender)\n
 			@param _sender widget under control
 		*/
-		delegates::CDelegate1<WidgetPtr> eventUpdateAction;
+		delegates::CDelegate1<WidgetPtr>
+			eventUpdateAction;
 
 		/** Event : After controller finished working.\n
 			signature : void method(MyGUI::WidgetPtr _sender)\n
 			@param _sender widget under control
 		*/
-		delegates::CDelegate1<WidgetPtr> eventPostAction;
+		delegates::CDelegate1<WidgetPtr>
+			eventPostAction;
 
 	};
 

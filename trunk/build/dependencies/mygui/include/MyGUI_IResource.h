@@ -3,7 +3,8 @@
 	@author		Albert Semenov
 	@date		09/2008
 	@module
-*//*
+*/
+/*
 	This file is part of MyGUI.
 	
 	MyGUI is free software: you can redistribute it and/or modify
@@ -23,11 +24,13 @@
 #define __MYGUI_I_RESOURCE_H__
 
 #include "MyGUI_Prerequest.h"
-#include "MyGUI_Rtti.h"
+#include "MyGUI_RTTI.h"
 #include "MyGUI_XmlDocument.h"
 #include "MyGUI_Guid.h"
 #include "MyGUI_Common.h"
 #include "MyGUI_Version.h"
+#include "MyGUI_ISerializable.h"
+#include "MyGUI_ResourceHolder.h"
 
 namespace MyGUI
 {
@@ -37,24 +40,26 @@ namespace MyGUI
 
 	class ResourceManager;
 
-	class MYGUI_EXPORT IResource
+	class MYGUI_EXPORT IResource : public ISerializable
 	{
-		// для удаления
+		// для серелизации
 		friend class ResourceManager;
+		// для удаления
+		friend class ResourceHolder<IResource>;
 
-		MYGUI_RTTI_BASE_HEADER( IResource );
+		MYGUI_RTTI_DERIVED( IResource );
 
 	public:
-		const std::string & getResourceName() { return mResourceName; }
-		const Guid & getResourceID() { return mResourceID; }
-
-	private:
-		IResource() { }
-		IResource(IResource const &) { }
-		IResource & operator = (IResource const &) { return *this; }
+		const std::string& getResourceName() { return mResourceName; }
+		const Guid& getResourceID() { return mResourceID; }
 
 	protected:
-		IResource(xml::ElementEnumerator _node, Version _version)
+		IResource() { }
+		IResource(IResource const &) { }
+		IResource& operator = (IResource const &) { return *this; }
+
+	protected:
+		virtual void deserialization(xml::ElementPtr _node, Version _version)
 		{
 			mResourceID = Guid::parse(_node->findAttribute("id"));
 			mResourceName = _node->findAttribute("name");
@@ -66,15 +71,6 @@ namespace MyGUI
 		std::string mResourceName;
 		Guid mResourceID;
 	};
-
-
-	#define MYGUI_RESOURCE_HEADER( T , BT ) \
-		MYGUI_RTTI_CHILD_HEADER(T, BT); \
-		private: \
-			 static void createResource(MyGUI::IResourcePtr & _resource, MyGUI::xml::ElementEnumerator _node, MyGUI::Version _version) { _resource = new T(_node, _version); } \
-		public: \
-			static void registryType() { MyGUI::ResourceManager::getInstance().registerType(T::getClassTypeName(), MyGUI::newDelegate(T::createResource)); } \
-			static void unregistryType() { MyGUI::ResourceManager::getInstance().unregisterType(T::getClassTypeName()); }
 
 } // namespace MyGUI
 

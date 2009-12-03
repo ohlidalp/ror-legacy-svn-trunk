@@ -3,7 +3,8 @@
 	@author		Albert Semenov
 	@date		11/2007
 	@module
-*//*
+*/
+/*
 	This file is part of MyGUI.
 	
 	MyGUI is free software: you can redistribute it and/or modify
@@ -41,24 +42,24 @@ namespace MyGUI
 			@param _type of data (for example "Text")
 			@param _data
 		*/
-		void SetClipboardData(const std::string& _type, const std::string& _data);
+		void setClipboardData(const std::string& _type, const std::string& _data);
 		/** Clear specific type data
 			@param _type of data to delete (for example "Text")
 		*/
-		void ClearClipboardData(const std::string& _type);
+		void clearClipboardData(const std::string& _type);
 		/** Get specific type data
 			@param _type of data to get (for example "Text")
 		*/
-		std::string GetClipboardData(const std::string& _type);
+		std::string getClipboardData(const std::string& _type);
 
 	private:
 		MapString mClipboardData;
 
-#if OGRE_PLATFORM == OGRE_PLATFORM_WIN32
+#if MYGUI_PLATFORM == MYGUI_PLATFORM_WIN32
 	// дискриптор нашего главного окна
 	size_t mHwnd;
 	// строка, которую мы положили в буфер обмена винды
-	Ogre::DisplayString mPutTextInClipboard;
+	UString mPutTextInClipboard;
 #endif
 
 	};

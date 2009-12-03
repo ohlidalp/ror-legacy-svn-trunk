@@ -3,19 +3,20 @@
 	@author		Denis Koronchik
 	@date		09/2007
 	@module
-*//*
+*/
+/*
 	This file is part of MyGUI.
-	
+
 	MyGUI is free software: you can redistribute it and/or modify
 	it under the terms of the GNU Lesser General Public License as published by
 	the Free Software Foundation, either version 3 of the License, or
 	(at your option) any later version.
-	
+
 	MyGUI is distributed in the hope that it will be useful,
 	but WITHOUT ANY WARRANTY; without even the implied warranty of
 	MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 	GNU Lesser General Public License for more details.
-	
+
 	You should have received a copy of the GNU Lesser General Public License
 	along with MyGUI.  If not, see <http://www.gnu.org/licenses/>.
 */
@@ -30,7 +31,7 @@ namespace MyGUI
 
 	void DynLibManager::initialise()
 	{
-		MYGUI_ASSERT(false == mIsInitialise, INSTANCE_TYPE_NAME << " initialised twice");
+		MYGUI_ASSERT(!mIsInitialise, INSTANCE_TYPE_NAME << " initialised twice");
 		MYGUI_LOG(Info, "* Initialise: " << INSTANCE_TYPE_NAME);
 
 		MYGUI_LOG(Info, INSTANCE_TYPE_NAME << " successfully initialized");
@@ -39,7 +40,7 @@ namespace MyGUI
 
 	void DynLibManager::shutdown()
 	{
-		if (false == mIsInitialise) return;
+		if (!mIsInitialise) return;
 		MYGUI_LOG(Info, "* Shutdown: " << INSTANCE_TYPE_NAME);
 
 		StringDynLibMap::iterator it;
@@ -63,16 +64,19 @@ namespace MyGUI
 		StringDynLibMap::iterator it = mLibsMap.find(fileName);
 
 		if (it != mLibsMap.end())
+		{
 			return it->second;
-		else
-			{
-				DynLib *pLib = new DynLib(fileName);
-				pLib->load();
-				mLibsMap[fileName] = pLib;
-				return pLib;
-			}
+		}
 
-		return 0;
+		DynLib *pLib = new DynLib(fileName);
+		if (!pLib->load())
+		{
+			delete pLib;
+			return 0;
+		}
+
+		mLibsMap[fileName] = pLib;
+		return pLib;
 	}
 
 	void DynLibManager::unload(DynLib *library)

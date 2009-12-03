@@ -3,38 +3,45 @@
 	@author		Albert Semenov
 	@date		11/2007
 	@module
-*//*
+*/
+/*
 	This file is part of MyGUI.
-	
+
 	MyGUI is free software: you can redistribute it and/or modify
 	it under the terms of the GNU Lesser General Public License as published by
 	the Free Software Foundation, either version 3 of the License, or
 	(at your option) any later version.
-	
+
 	MyGUI is distributed in the hope that it will be useful,
 	but WITHOUT ANY WARRANTY; without even the implied warranty of
 	MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 	GNU Lesser General Public License for more details.
-	
+
 	You should have received a copy of the GNU Lesser General Public License
 	along with MyGUI.  If not, see <http://www.gnu.org/licenses/>.
 */
 #include "MyGUI_Precompiled.h"
 #include "MyGUI_Button.h"
-#include "MyGUI_WidgetSkinInfo.h"
+#include "MyGUI_ResourceSkin.h"
 #include "MyGUI_StaticImage.h"
 #include "MyGUI_InputManager.h"
 
 namespace MyGUI
 {
 
-	Button::Button(WidgetStyle _style, const IntCoord& _coord, Align _align, const WidgetSkinInfoPtr _info, WidgetPtr _parent, ICroppedRectangle * _croppedParent, IWidgetCreator * _creator, const std::string & _name) :
-		Base(_style, _coord, _align, _info, _parent, _croppedParent, _creator, _name),
+	Button::Button() :
 		mIsMousePressed(false),
 		mIsMouseFocus(false),
 		mIsStateCheck(false),
-		mImage(nullptr)
+		mImage(nullptr),
+		mModeImage(false)
 	{
+	}
+
+	void Button::_initialise(WidgetStyle _style, const IntCoord& _coord, Align _align, ResourceSkin* _info, WidgetPtr _parent, ICroppedRectangle * _croppedParent, IWidgetCreator * _creator, const std::string& _name)
+	{
+		Base::_initialise(_style, _coord, _align, _info, _parent, _croppedParent, _creator, _name);
+
 		initialiseWidgetSkin(_info);
 	}
 
@@ -43,23 +50,25 @@ namespace MyGUI
 		shutdownWidgetSkin();
 	}
 
-	void Button::baseChangeWidgetSkin(WidgetSkinInfoPtr _info)
+	void Button::baseChangeWidgetSkin(ResourceSkin* _info)
 	{
 		shutdownWidgetSkin();
 		Base::baseChangeWidgetSkin(_info);
 		initialiseWidgetSkin(_info);
 	}
 
-	void Button::initialiseWidgetSkin(WidgetSkinInfoPtr _info)
+	void Button::initialiseWidgetSkin(ResourceSkin* _info)
 	{
 		// парсим свойства
-		const MapString & properties = _info->getProperties();
+		const MapString& properties = _info->getProperties();
 		if (!properties.empty())
 		{
 			MapString::const_iterator iter = properties.find("ButtonPressed");
-			if (iter != properties.end()) setButtonPressed(utility::parseBool(iter->second));
+			if (iter != properties.end()) setButtonPressed(utility::parseValue<bool>(iter->second));
 			iter = properties.find("StateCheck");
-			if (iter != properties.end()) setStateCheck(utility::parseBool(iter->second));
+			if (iter != properties.end()) setStateCheck(utility::parseValue<bool>(iter->second));
+			iter = properties.find("ModeImage");
+			if (iter != properties.end()) setModeImage(utility::parseValue<bool>(iter->second));
 		}
 
 		for (VectorWidgetPtr::iterator iter=mWidgetChildSkin.begin(); iter!=mWidgetChildSkin.end(); ++iter)
@@ -128,18 +137,40 @@ namespace MyGUI
 	{
 		if (mIsStateCheck)
 		{
-			if (!mEnabled) { if (!setState("disabled_checked")) setState("disabled"); }
-			else if (mIsMousePressed) { if (!setState("pushed_checked")) setState("pushed"); }
-			else if (mIsMouseFocus) { if (!setState("highlighted_checked")) setState("pushed"); }
-			else setState("normal_checked");
+			if (!mEnabled) { if (!_setState("disabled_checked")) _setState("disabled"); }
+			else if (mIsMousePressed) { if (!_setState("pushed_checked")) _setState("pushed"); }
+			else if (mIsMouseFocus) { if (!_setState("highlighted_checked")) _setState("pushed"); }
+			else _setState("normal_checked");
 		}
 		else
 		{
-			if (!mEnabled) setState("disabled");
-			else if (mIsMousePressed) setState("pushed");
-			else if (mIsMouseFocus) setState("highlighted");
-			else setState("normal");
+			if (!mEnabled) _setState("disabled");
+			else if (mIsMousePressed) _setState("pushed");
+			else if (mIsMouseFocus) _setState("highlighted");
+			else _setState("normal");
 		}
+	}
+
+	void Button::setStateCheck(bool _check)
+	{
+		if (mIsStateCheck == _check) return;
+		mIsStateCheck = _check;
+		updateButtonState();
+	}
+
+	void Button::_setMouseFocus(bool _focus)
+	{
+		mIsMouseFocus = _focus;
+		updateButtonState();
+	}
+
+	void Button::setProperty(const std::string& _key, const std::string& _value)
+	{
+		/// @wproperty{Button, Button_Pressed, bool} Set pressed state.
+		if (_key == "Button_Pressed") setButtonPressed(utility::parseValue<bool>(_value));
+		else if (_key == "Button_ModeImage") setModeImage(utility::parseValue<bool>(_value));
+		else if (_key == "Button_ImageResource") setImageResource(_value);
+		else Base::setProperty(_key, _value);
 	}
 
 	void Button::baseUpdateEnable()
@@ -151,17 +182,30 @@ namespace MyGUI
 		}
 	}
 
-	void Button::_setMouseFocus(bool _focus)
+	void Button::setModeImage(bool _value)
 	{
-		mIsMouseFocus = _focus;
+		mModeImage = _value;
 		updateButtonState();
 	}
 
-	void Button::setStateCheck(bool _check)
+	bool Button::_setState(const std::string& _value)
 	{
-		if (mIsStateCheck == _check)
-			return;
-		mIsStateCheck = _check;
+		if (mModeImage)
+		{
+			if (mImage)
+				mImage->setItemName(_value);
+
+			setState(_value);
+			return true;
+		}
+
+		return setState(_value);
+	}
+
+	void Button::setImageResource(const std::string& _name)
+	{
+		if (mImage)
+			mImage->setItemResource(_name);
 		updateButtonState();
 	}
 

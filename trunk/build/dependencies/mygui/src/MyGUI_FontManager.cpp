@@ -3,7 +3,8 @@
 	@author		Albert Semenov
 	@date		11/2007
 	@module
-*//*
+*/
+/*
 	This file is part of MyGUI.
 	
 	MyGUI is free software: you can redistribute it and/or modify
@@ -21,29 +22,33 @@
 */
 #include "MyGUI_Precompiled.h"
 #include "MyGUI_Common.h"
-#include "MyGUI_Font.h"
+#include "MyGUI_FactoryManager.h"
 #include "MyGUI_FontManager.h"
 #include "MyGUI_XmlDocument.h"
-#include "MyGUI_EnumCharInfo.h"
 
-#include <OgreImageCodec.h>
-#include <OgreFont.h>
-
-#include "MyGUI_LastHeader.h"
+#include "MyGUI_ResourceManualFont.h"
+#include "MyGUI_ResourceTrueTypeFont.h"
 
 namespace MyGUI
 {
 	const std::string XML_TYPE("Font");
-	const std::string MYGUI_DEFAULT_FONT_NAME = "Default";
+	const std::string XML_TYPE_RESOURCE("Resource");
+	const std::string XML_TYPE_PROPERTY("Property");
+	const std::string RESOURCE_DEFAULT_NAME("Default");
 
 	MYGUI_INSTANCE_IMPLEMENT(FontManager);
 
 	void FontManager::initialise()
 	{
-		MYGUI_ASSERT(false == mIsInitialise, INSTANCE_TYPE_NAME << " initialised twice");
+		MYGUI_ASSERT(!mIsInitialise, INSTANCE_TYPE_NAME << " initialised twice");
 		MYGUI_LOG(Info, "* Initialise: " << INSTANCE_TYPE_NAME);
 
-		MyGUI::ResourceManager::getInstance().registerLoadXmlDelegate(XML_TYPE) = newDelegate(this, &FontManager::_load);
+		ResourceManager::getInstance().registerLoadXmlDelegate(XML_TYPE) = newDelegate(this, &FontManager::_load);
+
+		FactoryManager::getInstance().registryFactory<ResourceManualFont>(XML_TYPE_RESOURCE);
+		FactoryManager::getInstance().registryFactory<ResourceTrueTypeFont>(XML_TYPE_RESOURCE);
+
+		mDefaultName = "Default";
 
 		MYGUI_LOG(Info, INSTANCE_TYPE_NAME << " successfully initialized");
 		mIsInitialise = true;
@@ -51,145 +56,165 @@ namespace MyGUI
 
 	void FontManager::shutdown()
 	{
-		if (false == mIsInitialise) return;
+		if (!mIsInitialise) return;
 		MYGUI_LOG(Info, "* Shutdown: " << INSTANCE_TYPE_NAME);
 
 		MyGUI::ResourceManager::getInstance().unregisterLoadXmlDelegate(XML_TYPE);
+
+		FactoryManager::getInstance().unregistryFactory<ResourceManualFont>(XML_TYPE_RESOURCE);
+		FactoryManager::getInstance().unregistryFactory<ResourceTrueTypeFont>(XML_TYPE_RESOURCE);
 
 		MYGUI_LOG(Info, INSTANCE_TYPE_NAME << " successfully shutdown");
 		mIsInitialise = false;
 	}
 
-	bool FontManager::load(const std::string & _file, const std::string & _group)
+	bool FontManager::load(const std::string& _file)
 	{
-		return MyGUI::ResourceManager::getInstance()._loadImplement(_file, _group, true, XML_TYPE, INSTANCE_TYPE_NAME);
+		return MyGUI::ResourceManager::getInstance()._loadImplement(_file, true, XML_TYPE, INSTANCE_TYPE_NAME);
 	}
 
-	void FontManager::_load(xml::ElementPtr _node, const std::string & _file, Version _version)
+	void FontManager::_load(xml::ElementPtr _node, const std::string& _file, Version _version)
 	{
 		xml::ElementEnumerator font = _node->getElementEnumerator();
-		while (font.next(XML_TYPE)) {
+		while (font.next())
+		{
+			if (font->getName() == XML_TYPE)
+			{
+				std::string name;
+				if (!font->findAttribute("name", name)) continue;
 
-			std::string source, name, size, resolution, antialias, space, tab, distance, cursor, offsetH;
-			if (false == font->findAttribute("name", name)) continue;
-			if (false == font->findAttribute("source", source)) continue;
-
-			font->findAttribute("size", size);
-			font->findAttribute("resolution", resolution);
-			font->findAttribute("antialias_colour", antialias);
-			font->findAttribute("space_width", space);
-			font->findAttribute("tab_width", tab);
-			font->findAttribute("cursor_width", cursor);
-			font->findAttribute("distance", distance);
-			font->findAttribute("offset_height", offsetH);
-
-			FontPtr pFont = create(name, MyGUI::ResourceManager::getInstance().getResourceGroup());
-			pFont->_notifyOrigin(_file);
-			pFont->setSource(source);
-
-			if (!size.empty())
-				pFont->setTrueTypeSize(utility::parseFloat(size));
-			if (!resolution.empty())
-				pFont->setTrueTypeResolution(utility::parseUInt(resolution));
-			if (font->findAttribute("default_height") != "")
-				pFont->setDefaultHeight(utility::parseInt(font->findAttribute("default_height")));
-
-			if (false == antialias.empty()) pFont->setAntialiasColour(utility::parseBool(antialias));
-			if (false == space.empty()) pFont->setSpaceWidth(utility::parseInt(space));
-			if (false == tab.empty()) pFont->setTabWidth(utility::parseInt(tab));
-			if (false == cursor.empty()) pFont->setCursorWidth(utility::parseInt(cursor));
-			if (false == distance.empty()) pFont->setDistance(utility::parseInt(distance));
-			if (false == offsetH.empty()) pFont->setOffsetHeight(utility::parseInt(offsetH));
-
-			xml::ElementEnumerator range = font->getElementEnumerator();
-
-			while (range.next("Code")) {
-				std::string range_value;
-				std::vector<std::string> parse_range;
-				// Ð´Ð¸Ð°Ð¿Ð°Ð·Ð¾Ð½ Ð²ÐºÐ»ÑŽÑ‡ÐµÐ½Ð¸Ð¹
-				if (range->findAttribute("range", range_value)) {
-					parse_range = utility::split(range_value);
-					if (!parse_range.empty()) {
-						int first = utility::parseInt(parse_range[0]);
-						int last = parse_range.size() > 1 ? utility::parseInt(parse_range[1]) : first;
-						pFont->addCodePointRange(first, last);
-					}
-				}
-				// Ð´Ð¸Ð°Ð¿Ð°Ð·Ð¾Ð½ Ð¸ÑÐºÐ»ÑŽÑ‡ÐµÐ½Ð¸Ð¹
-				else if (range->findAttribute("hide", range_value)) {
-					parse_range = utility::split(range_value);
-					if (!parse_range.empty()) {
-						int first = utility::parseInt(parse_range[0]);
-						int last = parse_range.size() > 1 ? utility::parseInt(parse_range[1]) : first;
-						pFont->addHideCodePointRange(first, last);
-					}
-				}
-				// Ð¾Ð¿Ð¸ÑÐ°Ð½Ðµ Ð³Ð»Ð¸Ñ„Ð¾Ð²
-				else if (range->findAttribute("index", range_value))
+				std::string type;
+				if (type.empty())
 				{
-					Char id = 0;
-					if (range_value == "cursor")
-						id = FontCodeType::Cursor;
-					else if (range_value == "selected")
-						id = FontCodeType::Selected;
-					else if (range_value == "selected_back")
-						id = FontCodeType::SelectedBack;
-					else
-						id = utility::parseUInt(range_value);
-
-					pFont->addGlyph(id, utility::parseValue<IntCoord>(range->findAttribute("coord")));
-					//pFont->addGlyph(utility::parseUInt(range_value), utility::parseValue<IntCoord>(range->findAttribute("coord")));
+					if (font->findAttribute("resolution").empty()) type = "ResourceManualFont";
+					else type = "ResourceTrueTypeFont";
 				}
 
-			};
+				xml::Document doc;
+				xml::ElementPtr root = doc.createRoot("MyGUI");
+				xml::ElementPtr node = root->createChild("Resource");
+				node->addAttribute("type", type);
+				node->addAttribute("name", name);
 
-			// Ð¸Ð½Ð¸Ñ†Ð¸Ð°Ð»Ð¸Ð·Ð¸Ñ€ÑƒÐµÐ¼
-			pFont->initialise();
+				std::string tmp;
+				if (font->findAttribute("source", tmp))
+				{
+					xml::ElementPtr prop = node->createChild("Property");
+					prop->addAttribute("key", "Source");
+					prop->addAttribute("value", tmp);
+				}
+				
+				if (font->findAttribute("size", tmp))
+				{
+					xml::ElementPtr prop = node->createChild("Property");
+					prop->addAttribute("key", "Size");
+					prop->addAttribute("value", tmp);
+				}
 
-		};
-	}
+				if (font->findAttribute("resolution", tmp))
+				{
+					xml::ElementPtr prop = node->createChild("Property");
+					prop->addAttribute("key", "Resolution");
+					prop->addAttribute("value", tmp);
+				}
 
-	Ogre::Resource* FontManager::createImpl(const Ogre::String& name, Ogre::ResourceHandle handle,
-		const Ogre::String& group, bool isManual, Ogre::ManualResourceLoader* loader,
-        const Ogre::NameValuePairList* params)
-	{
-		return new Font(this, name, handle, group, isManual, loader);
-	}
+				if (font->findAttribute("antialias_colour", tmp))
+				{
+					xml::ElementPtr prop = node->createChild("Property");
+					prop->addAttribute("key", "Antialias");
+					prop->addAttribute("value", tmp);
+				}
 
-	void FontManager::saveFontTexture(const std::string & _font, const std::string & _file)
-	{
-		FontPtr font = getByName( _font );
-		MYGUI_ASSERT( ! font.isNull(), "Could not find font '" << _font << "'");
+				if (font->findAttribute("space_width", tmp))
+				{
+					xml::ElementPtr prop = node->createChild("Property");
+					prop->addAttribute("key", "SpaceWidth");
+					prop->addAttribute("value", tmp);
+				}
 
-		font->load();
-		Ogre::TexturePtr texture = font->getTextureFont();
+				if (font->findAttribute("tab_width", tmp))
+				{
+					xml::ElementPtr prop = node->createChild("Property");
+					prop->addAttribute("key", "TabWidth");
+					prop->addAttribute("value", tmp);
+				}
 
-		Ogre::HardwarePixelBufferSharedPtr readbuffer;
-		readbuffer = texture->getBuffer(0, 0);
-		readbuffer->lock(Ogre::HardwareBuffer::HBL_NORMAL );
-		const Ogre::PixelBox &readrefpb = readbuffer->getCurrentLock();
-		Ogre::uchar *readrefdata = static_cast<Ogre::uchar*>(readrefpb.data);
+				if (font->findAttribute("cursor_width", tmp))
+				{
+					xml::ElementPtr prop = node->createChild("Property");
+					prop->addAttribute("key", "CursorWidth");
+					prop->addAttribute("value", tmp);
+				}
 
-		Ogre::Image img;
-		img = img.loadDynamicImage(readrefdata, texture->getWidth(), texture->getHeight(), texture->getFormat());
-		img.save(_file);
+				if (font->findAttribute("distance", tmp))
+				{
+					xml::ElementPtr prop = node->createChild("Property");
+					prop->addAttribute("key", "Distance");
+					prop->addAttribute("value", tmp);
+				}
 
-		readbuffer->unlock();
-	}
+				if (font->findAttribute("offset_height", tmp))
+				{
+					xml::ElementPtr prop = node->createChild("Property");
+					prop->addAttribute("key", "OffsetHeight");
+					prop->addAttribute("value", tmp);
+				}
 
-	Ogre::ResourcePtr FontManager::getByName(const Ogre::String & _name)
-	{
-		Ogre::ResourcePtr font = Ogre::ResourceManager::getByName( _name );
-		if (font.isNull()) {
-			MYGUI_LOG(Error, "Could not find font '" << _name << "', replaced with font '" << MYGUI_DEFAULT_FONT_NAME << "'");
-			return Ogre::ResourceManager::getByName( MYGUI_DEFAULT_FONT_NAME );
+				if (font->findAttribute("default_height", tmp))
+				{
+					xml::ElementPtr prop = node->createChild("Property");
+					prop->addAttribute("key", "DefaultHeight");
+					prop->addAttribute("value", tmp);
+				}
+
+				xml::ElementPtr codes = node->createChild("Codes");
+
+				xml::ElementEnumerator codeold = font->getElementEnumerator();
+				while (codeold.next("Code"))
+				{
+					xml::ElementPtr codenew = codes->createChild("Code");
+
+					if (codeold->findAttribute("range", tmp))
+						codenew->addAttribute("range", tmp);
+
+					if (codeold->findAttribute("hide", tmp))
+						codenew->addAttribute("hide", tmp);
+
+					if (codeold->findAttribute("index", tmp))
+						codenew->addAttribute("index", tmp);
+
+					if (codeold->findAttribute("coord", tmp))
+						codenew->addAttribute("coord", tmp);
+				}
+
+				ResourceManager::getInstance()._load(root, _file, _version);
+			}
+			else if (font->getName() == XML_TYPE_PROPERTY)
+			{
+				const std::string& key = font->findAttribute("key");
+				const std::string& value = font->findAttribute("value");
+				if (key == "Default")
+					mDefaultName = value;
+			}
 		}
-		return font;
 	}
 
-	bool FontManager::resourceExists(const Ogre::String & _name)
+	void FontManager::setDefaultFont(const std::string& _value)
 	{
-		return !Ogre::ResourceManager::getByName(_name).isNull();
+		mDefaultName = _value;
+	}
+
+	IFont* FontManager::getByName(const std::string& _name)
+	{
+		IResource* result = nullptr;
+		//FIXME äëÿ ñîâìåñòèìîñòè øðèôò ìîæåò èìåòü èìÿ Default
+		if (!_name.empty() && _name != RESOURCE_DEFAULT_NAME)
+			result = ResourceManager::getInstance().getByName(_name, false);
+
+		if (result == nullptr)
+			result = ResourceManager::getInstance().getByName(mDefaultName, false);
+
+		return result ? result->castType<IFont>(false) : nullptr;
 	}
 
 } // namespace MyGUI

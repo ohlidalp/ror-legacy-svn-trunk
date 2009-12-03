@@ -3,7 +3,8 @@
 	@author		Albert Semenov
 	@date		05/2008
 	@module
-*//*
+*/
+/*
 	This file is part of MyGUI.
 	
 	MyGUI is free software: you can redistribute it and/or modify
@@ -28,21 +29,24 @@
 namespace MyGUI
 {
 
-	class MYGUI_EXPORT MenuBar : public MenuCtrl
+	class MYGUI_EXPORT MenuBar :
+		public MenuCtrl
 	{
-		// для вызова закрытого конструктора
-		friend class factory::BaseWidgetFactory<MenuBar>;
+		MYGUI_RTTI_DERIVED( MenuBar );
 
-		MYGUI_RTTI_CHILD_HEADER( MenuBar, MenuCtrl );
+	public:
+		MenuBar();
+
+	/*internal:*/
+		virtual void _initialise(WidgetStyle _style, const IntCoord& _coord, Align _align, ResourceSkin* _info, WidgetPtr _parent, ICroppedRectangle * _croppedParent, IWidgetCreator * _creator, const std::string& _name);
 
 	protected:
-		MenuBar(WidgetStyle _style, const IntCoord& _coord, Align _align, const WidgetSkinInfoPtr _info, WidgetPtr _parent, ICroppedRectangle * _croppedParent, IWidgetCreator * _creator, const std::string & _name);
 		virtual ~MenuBar();
 
-		void baseChangeWidgetSkin(WidgetSkinInfoPtr _info);
+		void baseChangeWidgetSkin(ResourceSkin* _info);
 
 	private:
-		void initialiseWidgetSkin(WidgetSkinInfoPtr _info);
+		void initialiseWidgetSkin(ResourceSkin* _info);
 		void shutdownWidgetSkin();
 
 	};

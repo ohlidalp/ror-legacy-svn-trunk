@@ -3,7 +3,8 @@
 	@author		Denis Koronchik
 	@date		08/2007
 	@module		libEngine
-*//*
+*/
+/*
 	This file is part of MyGUI.
 	
 	MyGUI is free software: you can redistribute it and/or modify
@@ -28,6 +29,7 @@
 
 namespace MyGUI
 {
+
 	/*!	\brief Manager of dynamic libraries
 	*/
 	class MYGUI_EXPORT DynLibManager
@@ -42,6 +44,7 @@ namespace MyGUI
 		DynLib* load(const std::string &fileName);
 		//!	Unload library
 		void unload(DynLib *library);
+
 	private:
 		//! Dynamic libraries map
 		typedef std::map <std::string, DynLib*> StringDynLibMap;

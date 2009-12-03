@@ -1,9 +1,10 @@
 /*!
 	@file
 	@author		Albert Semenov
-	@date		02/2008
+	@date		09/2009
 	@module
-*//*
+*/
+/*
 	This file is part of MyGUI.
 	
 	MyGUI is free software: you can redistribute it and/or modify
@@ -26,10 +27,9 @@
 #include "MyGUI_XmlDocument.h"
 #include "MyGUI_Types.h"
 #include "MyGUI_ISubWidgetText.h"
-#include "MyGUI_DrawItem.h"
-#include "MyGUI_Font.h"
-#include "MyGUI_EnumCharInfo.h"
-#include "MyGUI_WidgetSkinInfo.h"
+#include "MyGUI_IFont.h"
+#include "MyGUI_ResourceSkin.h"
+#include "MyGUI_RenderFormat.h"
 #include "MyGUI_TextView.h"
 
 namespace MyGUI
@@ -39,121 +39,120 @@ namespace MyGUI
 
 	class MYGUI_EXPORT EditText : public ISubWidgetText
 	{
-		MYGUI_RTTI_CHILD_HEADER(EditText, ISubWidgetText);
+		MYGUI_RTTI_DERIVED( EditText );
 
 	public:
-		EditText(const SubWidgetInfo &_info, ICroppedRectangle * _parent);
+		EditText();
 		virtual ~EditText();
 
-		virtual void setVisible(bool _visible);
+		virtual void setVisible(bool _value);
 
 		// обновляет все данные связанные с тектом
 		virtual void updateRawData();
 
 		// метод для отрисовки себя
-		virtual size_t _drawItem(Vertex * _vertex, bool _update);
+		virtual void doRender();
 
-		void _updateView();
-		void _correctView();
+		void setCaption(const UString& _value);
+		const UString& getCaption();
 
-		void _setAlign(const IntSize& _size, bool _update);
-		void _setAlign(const IntCoord& _coord, bool _update);
-
-		void setCaption(const Ogre::UTFString & _caption);
-		const Ogre::UTFString & getCaption();
-
-		void setTextColour(const Colour& _colour);
+		void setTextColour(const Colour& _value);
 		const Colour& getTextColour();
 
-		void setAlpha(float _alpha);
+		void setAlpha(float _value);
 		float getAlpha();
 
-		virtual void setFontName(const std::string & _font);
-		virtual const std::string & getFontName();
+		virtual void setFontName(const std::string& _value);
+		virtual const std::string& getFontName();
 
-		virtual void setFontHeight(uint _height);
-		virtual uint getFontHeight();
+		virtual void setFontHeight(int _value);
+		virtual int getFontHeight();
 
-		virtual void _createDrawItem(LayerItemKeeper * _keeper, RenderItem * _item);
-		virtual void _destroyDrawItem();
+		virtual void createDrawItem(ITexture* _texture, ILayerNode * _node);
+		virtual void destroyDrawItem();
 
-		virtual void setTextAlign(Align _align);
+		virtual void setTextAlign(Align _value);
 		virtual Align getTextAlign();
 
-		virtual size_t getSelectStart();
-		virtual size_t getSelectEnd();
-		virtual void setTextSelect(size_t _start, size_t _end);
+		virtual size_t getTextSelectionStart();
+		virtual size_t getTextSelectionEnd();
+		virtual void setTextSelection(size_t _start, size_t _end);
 
 		virtual bool getSelectBackground();
 		virtual void setSelectBackground(bool _normal);
 
-		virtual bool isCursorShow();
-		virtual void setShowCursor(bool _show);
+		virtual bool isVisibleCursor();
+		virtual void setVisibleCursor(bool _value);
+
+		virtual bool getInvertSelected() { return mInvertSelect; }
+		virtual void setInvertSelected(bool _value);
 
 		virtual size_t getCursorPosition();
-		virtual void setCursorPosition(size_t _pos);
+		virtual void setCursorPosition(size_t _index);
 
 		virtual IntSize getTextSize();
 
 		// устанавливает смещение текста в пикселях
-		virtual void setViewOffset(IntPoint _point);
+		virtual void setViewOffset(const IntPoint& _point);
 		virtual IntPoint getViewOffset();
 
 		// возвращает положение курсора по произвольному положению
-		virtual size_t getCursorPosition(const IntPoint & _point);
+		virtual size_t getCursorPosition(const IntPoint& _point);
 
 		// возвращает положение курсора в обсолютных координатах
 		virtual IntCoord getCursorCoord(size_t _position);
 
 		void setShiftText(bool _shift);
 
-		void setBreakLine(bool _break);
+		void setWordWrap(bool _value);
 
-		virtual void _setStateData(StateInfo * _data);
+		virtual void setStateData(IStateInfo * _data);
 
-		// метод для генерации данных из описания xml
-		static StateInfo * createStateData(xml::ElementPtr _node, xml::ElementPtr _root, Version _version);
+		void _updateView();
+		void _correctView();
+
+	/*internal:*/
+		void _setAlign(const IntSize& _oldsize, bool _update);
+		void _setAlign(const IntCoord& _oldcoord, bool _update);
 
 	protected:
-
 		bool mEmptyView;
 		uint32 mCurrentColour;
 		uint32 mInverseColour;
 		uint32 mCurrentAlpha;
 		IntCoord mCurrentCoord;
 
-		Ogre::UTFString mCaption;
+		UString mCaption;
 		bool mTextOutDate;
 		Align mTextAlign;
 
 		Colour mColour;
 		float mAlpha;
-		bool mRenderGL;
+		VertexColourType mVertexFormat;
 
-		FontPtr mpFont;
-		Ogre::TexturePtr mpTexture;
-		uint mFontHeight;
+		IFont* mFont;
+		ITexture* mTexture;
+		int mFontHeight;
 
 		bool mBackgroundNormal;
 		size_t mStartSelect;
 		size_t mEndSelect;
 		size_t mCursorPosition;
-		bool mShowCursor;
+		bool mVisibleCursor;
+		bool mInvertSelect;
 
 		IntPoint mViewOffset; // смещение текста
 
-		LayerItemKeeper * mItemKeeper;
-		RenderItem * mRenderItem;
+		ILayerNode* mNode;
+		RenderItem* mRenderItem;
 		size_t mCountVertex;
-
-		LayerManager * mManager;
+		bool mIsAddCursorWidth;
 
 		bool mShiftText;
-		bool mBreakLine;
+		bool mWordWrap;
 		int mOldWidth;
 
 		TextView mTextView;
-		bool mIsAddCursorWidth;
 	};
 
 } // namespace MyGUI

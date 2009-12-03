@@ -3,7 +3,8 @@
 	@author		Albert Semenov
 	@date		11/2007
 	@module
-*//*
+*/
+/*
 	This file is part of MyGUI.
 	
 	MyGUI is free software: you can redistribute it and/or modify
@@ -33,18 +34,21 @@
 
 namespace MyGUI
 {
+
+	//OBSOLETE
 	class MYGUI_EXPORT IWidgetFactory
 	{
 	public:
 		virtual ~IWidgetFactory() { }
 
-		virtual const std::string & getTypeName() = 0;
+		virtual const std::string& getTypeName() = 0;
 		virtual WidgetPtr createWidget(WidgetStyle _style, const std::string& _skin, const IntCoord& _coord, Align _align, WidgetPtr _parent, ICroppedRectangle * _croppedParent, IWidgetCreator * _creator, const std::string& _name) = 0;
 	};
 
 	namespace factory
 	{
 
+		//OBSOLETE
 		template <typename T>
 		class MYGUI_EXPORT BaseWidgetFactory : public IWidgetFactory
 		{
@@ -52,30 +56,32 @@ namespace MyGUI
 			BaseWidgetFactory()
 			{
 				// регестрируем себя
-				MyGUI::WidgetManager & manager = MyGUI::WidgetManager::getInstance();
+				MyGUI::WidgetManager& manager = MyGUI::WidgetManager::getInstance();
 				manager.registerFactory(this);
 			}
 
 			~BaseWidgetFactory()
 			{
 				// удаляем себя
-				MyGUI::WidgetManager & manager = MyGUI::WidgetManager::getInstance();
+				MyGUI::WidgetManager& manager = MyGUI::WidgetManager::getInstance();
 				manager.unregisterFactory(this);
 			}
 
-			const std::string & getTypeName()
+			const std::string& getTypeName()
 			{
 				return T::getClassTypeName();
 			}
 
 			WidgetPtr createWidget(WidgetStyle _style, const std::string& _skin, const IntCoord& _coord, Align _align, WidgetPtr _parent, ICroppedRectangle * _croppedParent, IWidgetCreator * _creator, const std::string& _name)
 			{
-				return new T(_style, _coord, _align, SkinManager::getInstance().getSkin(_skin), _parent, _croppedParent, _creator, _name);
+				T* instance = new T(_style, _coord, _align, SkinManager::getInstance().getByName(_skin), _parent, _croppedParent, _creator, _name);
+				return instance;
 			}
 
 			bool isFalseType(WidgetPtr _ptr, const std::string &_key)
 			{
-				if (!_ptr->isType<T>()) {
+				if (!_ptr->isType<T>())
+				{
 					MYGUI_LOG(Error, "Property '" << _key << "' is not supported by '" << _ptr->getTypeName() << "' widget");
 					return true;
 				}
@@ -85,7 +91,5 @@ namespace MyGUI
 
 	} // namespace factory
 } // namespace MyGUI
-
-//#include "MyGUI_IWidgetFactory.cpp"
 
 #endif // __MYGUI_I_WIDGET_FACTORY_H__

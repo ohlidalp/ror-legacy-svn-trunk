@@ -3,7 +3,8 @@
 	@author		Albert Semenov
 	@date		01/2008
 	@module
-*//*
+*/
+/*
 	This file is part of MyGUI.
 	
 	MyGUI is free software: you can redistribute it and/or modify
@@ -29,47 +30,42 @@
 namespace MyGUI
 {
 
-	class MYGUI_EXPORT Progress : public Widget
+	class MYGUI_EXPORT Progress :
+		public Widget
 	{
-		// для вызова закрытого конструктора
-		friend class factory::BaseWidgetFactory<Progress>;
-
-		MYGUI_RTTI_CHILD_HEADER( Progress, Widget );
+		MYGUI_RTTI_DERIVED( Progress );
 
 	public:
+		Progress();
+
 		/** Set progress range */
-		void setProgressRange(size_t _range);
+		void setProgressRange(size_t _value);
 		/** Get progress range */
 		size_t getProgressRange() { return mRange; }
 
 		/** Set progress position */
-		void setProgressPosition(size_t _pos);
+		void setProgressPosition(size_t _value);
 		/** Get progress position */
 		size_t getProgressPosition() { return mEndPosition; }
 
-		/** FIXME что оно делает? почему нет в фактори метода? */
-		void setProgressFillTrack(bool _fill);
-		/** Get progress fill track flag */
-		bool getProgressFillTrack() { return mFillTrack; }
-
 		/** Enable or disable progress auto tracking */
-		void setProgressAutoTrack(bool _auto);
+		void setProgressAutoTrack(bool _value);
 		/** Get progress auto tracking flag */
 		bool getProgressAutoTrack() { return mAutoTrack; }
 
 		/** Set progress start point
 			For example with Align::Top if will be filled from top to bottom.
 		*/
-		void setProgressStartPoint(Align _align = Align::Left);
+		void setProgressStartPoint(Align _value);
 		/** Get progress start point */
 		Align getProgressStartPoint() { return mStartPoint; }
 
-		//! @copydoc Widget::setPosition(const IntPoint & _point)
-		virtual void setPosition(const IntPoint & _point);
-		//! @copydoc Widget::setSize(const IntSize& _size)
-		virtual void setSize(const IntSize & _size);
-		//! @copydoc Widget::setCoord(const IntCoord & _coord)
-		virtual void setCoord(const IntCoord & _coord);
+		//! @copydoc Widget::setPosition(const IntPoint& _value)
+		virtual void setPosition(const IntPoint& _value);
+		//! @copydoc Widget::setSize(const IntSize& _value)
+		virtual void setSize(const IntSize& _value);
+		//! @copydoc Widget::setCoord(const IntCoord& _value)
+		virtual void setCoord(const IntCoord& _value);
 
 		/** @copydoc Widget::setPosition(int _left, int _top) */
 		void setPosition(int _left, int _top) { setPosition(IntPoint(_left, _top)); }
@@ -78,31 +74,36 @@ namespace MyGUI
 		/** @copydoc Widget::setCoord(int _left, int _top, int _width, int _height) */
 		void setCoord(int _left, int _top, int _width, int _height) { setCoord(IntCoord(_left, _top, _width, _height)); }
 
+		/** @copydoc Widget::setProperty(const std::string& _key, const std::string& _value) */
+		virtual void setProperty(const std::string& _key, const std::string& _value);
+
 	/*obsolete:*/
 #ifndef MYGUI_DONT_USE_OBSOLETE
 
 		MYGUI_OBSOLETE("use : void Widget::setCoord(const IntCoord& _coord)")
-		void setPosition(const IntCoord & _coord) { setCoord(_coord); }
+		void setPosition(const IntCoord& _coord) { setCoord(_coord); }
 		MYGUI_OBSOLETE("use : void Widget::setCoord(int _left, int _top, int _width, int _height)")
 		void setPosition(int _left, int _top, int _width, int _height) { setCoord(_left, _top, _width, _height); }
 
 #endif // MYGUI_DONT_USE_OBSOLETE
 
+	/*internal:*/
+		virtual void _initialise(WidgetStyle _style, const IntCoord& _coord, Align _align, ResourceSkin* _info, WidgetPtr _parent, ICroppedRectangle * _croppedParent, IWidgetCreator * _creator, const std::string& _name);
+
 	protected:
-		Progress(WidgetStyle _style, const IntCoord& _coord, Align _align, const WidgetSkinInfoPtr _info, WidgetPtr _parent, ICroppedRectangle * _croppedParent, IWidgetCreator * _creator, const std::string & _name);
 		virtual ~Progress();
 
-		void baseChangeWidgetSkin(WidgetSkinInfoPtr _info);
+		void baseChangeWidgetSkin(ResourceSkin* _info);
 
 	private:
-		void initialiseWidgetSkin(WidgetSkinInfoPtr _info);
+		void initialiseWidgetSkin(ResourceSkin* _info);
 		void shutdownWidgetSkin();
 
 		void frameEntered(float _time);
 		void updateTrack();
 
-		int getClientWidth() {return ((mStartPoint.isLeft()) || (mStartPoint.isRight())) ? mClient->getWidth() : mClient->getHeight();}
-		int getClientHeight() {return ((mStartPoint.isLeft()) || (mStartPoint.isRight())) ? mClient->getHeight() : mClient->getWidth();}
+		int getClientWidth() { return ((mStartPoint.isLeft()) || (mStartPoint.isRight())) ? mClient->getWidth() : mClient->getHeight(); }
+		int getClientHeight() { return ((mStartPoint.isLeft()) || (mStartPoint.isRight())) ? mClient->getHeight() : mClient->getWidth(); }
 
 		void setTrackPosition(WidgetPtr _widget, int _left, int _top, int _width, int _height);
 

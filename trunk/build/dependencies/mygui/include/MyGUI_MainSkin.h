@@ -3,7 +3,8 @@
 	@author		Albert Semenov
 	@date		02/2008
 	@module
-*//*
+*/
+/*
 	This file is part of MyGUI.
 	
 	MyGUI is free software: you can redistribute it and/or modify
@@ -23,28 +24,21 @@
 #define __MYGUI_MAIN_SKIN_H__
 
 #include "MyGUI_Prerequest.h"
-#include "MyGUI_XmlDocument.h"
-#include "MyGUI_Types.h"
-#include "MyGUI_ICroppedRectangle.h"
-#include "MyGUI_DrawItem.h"
 #include "MyGUI_SubSkin.h"
 
 namespace MyGUI
 {
 
-	class RenderItem;
-
 	class MYGUI_EXPORT MainSkin : public SubSkin
 	{
-		MYGUI_RTTI_CHILD_HEADER(MainSkin, SubSkin);
+		MYGUI_RTTI_DERIVED( MainSkin );
 
 	public:
-		MainSkin(const SubWidgetInfo &_info, ICroppedRectangle * _parent);
+		MainSkin();
 		virtual ~MainSkin();
 
-		// метод для генерации данных из описания xml
-		static StateInfo * createStateData(xml::ElementPtr _node, xml::ElementPtr _root, Version _version);
-
+	/*internal:*/
+		void _setAlign(const IntSize& _oldsize, bool _update);
 	};
 
 } // namespace MyGUI

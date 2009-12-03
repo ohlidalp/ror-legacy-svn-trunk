@@ -3,7 +3,8 @@
 	@author		Albert Semenov
 	@date		11/2007
 	@module
-*//*
+*/
+/*
 	This file is part of MyGUI.
 	
 	MyGUI is free software: you can redistribute it and/or modify
@@ -28,36 +29,38 @@
 namespace MyGUI
 {
 
-	class MYGUI_EXPORT HScroll : public VScroll
+	class MYGUI_EXPORT HScroll :
+		public VScroll
 	{
-		// для вызова закрытого конструктора
-		friend class factory::BaseWidgetFactory<HScroll>;
-
-		MYGUI_RTTI_CHILD_HEADER( HScroll, VScroll );
+		MYGUI_RTTI_DERIVED( HScroll );
 
 	public:
+		HScroll();
+
 		//! @copydoc VScroll::getLineSize()
 		virtual int getLineSize();
 
-		//! @copydoc VScroll::setTrackSize(int _size)
-		virtual void setTrackSize(int _size);
+		//! @copydoc VScroll::setTrackSize(int _value)
+		virtual void setTrackSize(int _value);
 		//! @copydoc VScroll::getTrackSize()
 		virtual int getTrackSize();
 
+	/*internal:*/
+		virtual void _initialise(WidgetStyle _style, const IntCoord& _coord, Align _align, ResourceSkin* _info, WidgetPtr _parent, ICroppedRectangle * _croppedParent, IWidgetCreator * _creator, const std::string& _name);
+
 	protected:
-		HScroll(WidgetStyle _style, const IntCoord& _coord, Align _align, const WidgetSkinInfoPtr _info, WidgetPtr _parent, ICroppedRectangle * _croppedParent, IWidgetCreator * _creator, const std::string & _name);
 		virtual ~HScroll();
 
-		void baseChangeWidgetSkin(WidgetSkinInfoPtr _info);
+		void baseChangeWidgetSkin(ResourceSkin* _info);
 
 	private:
-		void initialiseWidgetSkin(WidgetSkinInfoPtr _info);
+		void initialiseWidgetSkin(ResourceSkin* _info);
 		void shutdownWidgetSkin();
 
 		void TrackMove(int _left, int _top);
 		void updateTrack();
 
-	}; // class HScroll : public VScroll
+	};
 
 } // namespace MyGUI
 

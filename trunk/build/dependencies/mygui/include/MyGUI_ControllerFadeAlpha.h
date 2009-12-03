@@ -3,7 +3,8 @@
 	@author		Albert Semenov
 	@date		01/2008
 	@module
-*//*
+*/
+/*
 	This file is part of MyGUI.
 	
 	MyGUI is free software: you can redistribute it and/or modify
@@ -30,26 +31,39 @@ namespace MyGUI
 {
 
 	/** This controller used for smooth changing alpha of widget in time */
-	class MYGUI_EXPORT ControllerFadeAlpha : public ControllerItem
+	class MYGUI_EXPORT ControllerFadeAlpha :
+		public ControllerItem
 	{
-	public:
-		/**
-			@param _alpha that will be as result of changing
-			@param _coef of alpha changing speed (1. mean that alpha will change from 0 to 1 at 1 second)
-			@param _enabled if true then widget will be inactive after start of alpha changing
-		*/
-		ControllerFadeAlpha(float _alpha, float _coef, bool _enabled);
+		MYGUI_RTTI_DERIVED( ControllerFadeAlpha );
 
-	private:
+	public:
 		ControllerFadeAlpha();
 
-		const std::string & getType();
+		/**
+			@param _alpha that will be as result of changing
+		*/
+		void setAlpha(float _value) { mAlpha = _value; }
+
+		/**
+			@param _coef of alpha changing speed (1. mean that alpha will change from 0 to 1 at 1 second)
+		*/
+		void setCoef(float _value) { mCoef = _value; }
+
+		/**
+			@param _enabled if true then widget will be inactive after start of alpha changing
+		*/
+		void setEnabled(bool _value) { mEnabled = _value; }
+
+
+		virtual void setProperty(const std::string& _key, const std::string& _value);
+
+	private:
 		bool addTime(WidgetPtr _widget, float _time);
 		void prepareItem(WidgetPtr _widget);
 
-		bool getEnabled() {return mEnabled;}
-		float getAlpha() {return mAlpha;}
-		float getCoef() {return mCoef;}
+		bool getEnabled() { return mEnabled; }
+		float getAlpha() { return mAlpha; }
+		float getCoef() { return mCoef; }
 
 	private:
 		float mAlpha;

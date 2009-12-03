@@ -3,7 +3,8 @@
 	@author		Albert Semenov
 	@date		09/2008
 	@module
-*//*
+*/
+/*
 	This file is part of MyGUI.
 	
 	MyGUI is free software: you can redistribute it and/or modify
@@ -24,22 +25,20 @@
 
 #include "MyGUI_Prerequest.h"
 #include "MyGUI_ISubWidget.h"
+#include "MyGUI_Colour.h"
 
 namespace MyGUI
 {
 
 	class MYGUI_EXPORT ISubWidgetRect : public ISubWidget
 	{
-		MYGUI_RTTI_CHILD_HEADER( ISubWidgetRect, ISubWidget );
+		MYGUI_RTTI_DERIVED( ISubWidgetRect );
 
 	public:
-		ISubWidgetRect(const IntCoord & _coord, Align _align, ICroppedRectangle * _parent) :
-			ISubWidget(_coord, _align, _parent) { }
 		virtual ~ISubWidgetRect() { }
 
 		virtual void _setUVSet(const FloatRect& _rect) { }
-
-		virtual bool firstQueue() { return true; }
+		virtual void _setColour(const Colour& _value) { }
 
 	};
 

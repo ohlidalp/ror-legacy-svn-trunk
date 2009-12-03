@@ -3,7 +3,8 @@
 	@author		Albert Semenov
 	@date		11/2007
 	@module
-*//*
+*/
+/*
 	This file is part of MyGUI.
 	
 	MyGUI is free software: you can redistribute it and/or modify
@@ -28,53 +29,64 @@
 namespace MyGUI
 {
 
-	class MYGUI_EXPORT Button : public StaticText
+	class MYGUI_EXPORT Button :
+		public StaticText
 	{
-		// для вызова закрытого конструктора
-		friend class factory::BaseWidgetFactory<Button>;
-
-		MYGUI_RTTI_CHILD_HEADER( Button, StaticText );
+		MYGUI_RTTI_DERIVED( Button );
 
 	public:
+		Button();
+
 		//! OLD Set button check state
-		void setButtonPressed(bool _check) { setStateCheck(_check); }
+		void setButtonPressed(bool _value) { setStateCheck(_value); }
 		//! OLD Get buton check
 		bool getButtonPressed() { return getStateCheck(); }
 
 		//! Set button check state
-		void setStateCheck(bool _check);
+		void setStateCheck(bool _value);
 
 		//! Get buton check
 		bool getStateCheck() { return mIsStateCheck; }
 
 		//! Set image index (image should be defined in skin)
-		void setImageIndex(size_t _index);
+		void setImageIndex(size_t _value);
 		//! Get image index
 		size_t getImageIndex();
+
+		void setModeImage(bool _value);
+		bool getModeImage() { return mModeImage; }
 
 		/** Get pointer to glyph image for this button (if it exist in button skin) */
 		StaticImagePtr getStaticImage() { return mImage; }
 
+		/** @copydoc Widget::setProperty(const std::string& _key, const std::string& _value) */
+		virtual void setProperty(const std::string& _key, const std::string& _value);
+
 	/*internal:*/
+		virtual void _initialise(WidgetStyle _style, const IntCoord& _coord, Align _align, ResourceSkin* _info, WidgetPtr _parent, ICroppedRectangle * _croppedParent, IWidgetCreator * _creator, const std::string& _name);
+
 		void _setMouseFocus(bool _focus);
 
 	protected:
-		Button(WidgetStyle _style, const IntCoord& _coord, Align _align, const WidgetSkinInfoPtr _info, WidgetPtr _parent, ICroppedRectangle * _croppedParent, IWidgetCreator * _creator, const std::string & _name);
 		virtual ~Button();
 
-		virtual void baseChangeWidgetSkin(WidgetSkinInfoPtr _info);
-		virtual void baseUpdateEnable();
+		virtual void baseChangeWidgetSkin(ResourceSkin* _info);
 
 		virtual void onMouseLostFocus(WidgetPtr _new);
 		virtual void onMouseSetFocus(WidgetPtr _old);
 		virtual void onMouseButtonPressed(int _left, int _top, MouseButton _id);
 		virtual void onMouseButtonReleased(int _left, int _top, MouseButton _id);
 
+		virtual void baseUpdateEnable();
+
+		bool _setState(const std::string& _value);
+		void setImageResource(const std::string& _name);
+
 	private:
 		void updateButtonState();
 
 		void shutdownWidgetSkin();
-		void initialiseWidgetSkin(WidgetSkinInfoPtr _info);
+		void initialiseWidgetSkin(ResourceSkin* _info);
 
 	private:
 		// нажата ли кнопка
@@ -85,8 +97,9 @@ namespace MyGUI
 		bool mIsStateCheck;
 
 		StaticImagePtr mImage;
+		bool mModeImage;
 
-	}; // class Button : public Widget
+	};
 
 } // namespace MyGUI
 

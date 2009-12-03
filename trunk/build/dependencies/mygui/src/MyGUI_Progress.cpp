@@ -3,7 +3,8 @@
 	@author		Albert Semenov
 	@date		01/2008
 	@module
-*//*
+*/
+/*
 	This file is part of MyGUI.
 	
 	MyGUI is free software: you can redistribute it and/or modify
@@ -21,7 +22,7 @@
 */
 #include "MyGUI_Precompiled.h"
 #include "MyGUI_Progress.h"
-#include "MyGUI_WidgetSkinInfo.h"
+#include "MyGUI_ResourceSkin.h"
 #include "MyGUI_Widget.h"
 #include "MyGUI_Gui.h"
 #include "MyGUI_SkinManager.h"
@@ -33,18 +34,24 @@ namespace MyGUI
 	const size_t PROGRESS_AUTO_RANGE = 1000;
 	const float PROGRESS_AUTO_COEF = 400;
 
-	Progress::Progress(WidgetStyle _style, const IntCoord& _coord, Align _align, const WidgetSkinInfoPtr _info, WidgetPtr _parent, ICroppedRectangle * _croppedParent, IWidgetCreator * _creator, const std::string & _name) :
-		Base(_style, _coord, _align, _info, _parent, _croppedParent, _creator, _name),
+	Progress::Progress() :
 		mTrackWidth(1),
 		mTrackStep(0),
 		mTrackMin(0),
 		mRange(0),
-		mStartPosition(0),mEndPosition(0),
+		mStartPosition(0),
+		mEndPosition(0),
 		mAutoTrack(false),
 		mFillTrack(false),
 		mStartPoint(Align::Left),
 		mClient(nullptr)
 	{
+	}
+
+	void Progress::_initialise(WidgetStyle _style, const IntCoord& _coord, Align _align, ResourceSkin* _info, WidgetPtr _parent, ICroppedRectangle * _croppedParent, IWidgetCreator * _creator, const std::string& _name)
+	{
+		Base::_initialise(_style, _coord, _align, _info, _parent, _croppedParent, _creator, _name);
+
 		initialiseWidgetSkin(_info);
 	}
 
@@ -53,24 +60,26 @@ namespace MyGUI
 		shutdownWidgetSkin();
 	}
 
-	void Progress::baseChangeWidgetSkin(WidgetSkinInfoPtr _info)
+	void Progress::baseChangeWidgetSkin(ResourceSkin* _info)
 	{
 		shutdownWidgetSkin();
 		Base::baseChangeWidgetSkin(_info);
 		initialiseWidgetSkin(_info);
 	}
 
-	void Progress::initialiseWidgetSkin(WidgetSkinInfoPtr _info)
+	void Progress::initialiseWidgetSkin(ResourceSkin* _info)
 	{
-		for (VectorWidgetPtr::iterator iter=mWidgetChildSkin.begin(); iter!=mWidgetChildSkin.end(); ++iter) {
-			if (*(*iter)->_getInternalData<std::string>() == "Client") {
+		for (VectorWidgetPtr::iterator iter=mWidgetChildSkin.begin(); iter!=mWidgetChildSkin.end(); ++iter)
+		{
+			if (*(*iter)->_getInternalData<std::string>() == "Client")
+			{
 				MYGUI_DEBUG_ASSERT( ! mClient, "widget already assigned");
 				mClient = (*iter);
 			}
 		}
 		if (nullptr == mClient) mClient = this;
 
-		const MapString & properties = _info->getProperties();
+		const MapString& properties = _info->getProperties();
 		MapString::const_iterator iterS = properties.find("TrackSkin");
 		if (iterS != properties.end()) mTrackSkin = iterS->second;
 		iterS = properties.find("TrackWidth");
@@ -115,13 +124,15 @@ namespace MyGUI
 		if (mAutoTrack == _auto) return;
 		mAutoTrack = _auto;
 
-		if (mAutoTrack) {
+		if (mAutoTrack)
+		{
 			Gui::getInstance().eventFrameStart += newDelegate(this, &Progress::frameEntered);
 			mRange = PROGRESS_AUTO_RANGE;
 			mEndPosition = mStartPosition = 0;
 			mAutoPosition = 0.0f;
 		}
-		else {
+		else
+		{
 			Gui::getInstance().eventFrameStart -= newDelegate(this, &Progress::frameEntered);
 			mRange = mEndPosition = mStartPosition = 0;
 		}
@@ -130,7 +141,7 @@ namespace MyGUI
 
 	void Progress::frameEntered(float _time)
 	{
-		if (false == mAutoTrack) return;
+		if (!mAutoTrack) return;
 		mAutoPosition += (PROGRESS_AUTO_COEF * _time);
 		size_t pos = (size_t)mAutoPosition;
 
@@ -145,7 +156,7 @@ namespace MyGUI
 		updateTrack();
 	}
 
-	void Progress::setPosition(const IntPoint & _point)
+	void Progress::setPosition(const IntPoint& _point)
 	{
 		Base::setPosition(_point);
 	}
@@ -157,37 +168,35 @@ namespace MyGUI
 		Base::setSize(_size);
 	}
 
-	void Progress::setCoord(const IntCoord & _coord)
+	void Progress::setCoord(const IntCoord& _coord)
 	{
 		updateTrack();
 
 		Base::setCoord(_coord);
 	}
 
-	void Progress::setProgressFillTrack(bool _fill)
-	{
-		mFillTrack = _fill;
-		updateTrack();
-	}
-
 	void Progress::updateTrack()
 	{
 		// все скрыто
-		if ((0 == mRange) || (0 == mEndPosition)) {
-			for (VectorWidgetPtr::iterator iter=mVectorTrack.begin(); iter!=mVectorTrack.end(); ++iter) {
+		if ((0 == mRange) || (0 == mEndPosition))
+		{
+			for (VectorWidgetPtr::iterator iter=mVectorTrack.begin(); iter!=mVectorTrack.end(); ++iter)
+			{
 				(*iter)->setVisible(false);
 			}
 			return;
 		}
 
 		// тут попроще расчеты
-		if (mFillTrack) {
-
-			if (mVectorTrack.empty()) {
+		if (mFillTrack)
+		{
+			if (mVectorTrack.empty())
+			{
 				WidgetPtr widget = mClient->createWidget<Widget>(mTrackSkin, IntCoord(), Align::Left | Align::VStretch);
 				mVectorTrack.push_back(widget);
 			}
-			else {
+			else
+			{
 				// первый показываем и ставим норм альфу
 				VectorWidgetPtr::iterator iter=mVectorTrack.begin();
 				(*iter)->setVisible(true);
@@ -195,7 +204,8 @@ namespace MyGUI
 
 				// все начиная со второго скрываем
 				++iter;
-				for (; iter!=mVectorTrack.end(); ++iter) {
+				for (; iter!=mVectorTrack.end(); ++iter)
+				{
 					(*iter)->setVisible(false);
 				}
 			}
@@ -203,11 +213,13 @@ namespace MyGUI
 			WidgetPtr wid = mVectorTrack.front();
 
 			// полностью виден
-			if ((0 == mStartPosition) && (mRange == mEndPosition)) {
+			if ((0 == mStartPosition) && (mRange == mEndPosition))
+			{
 				setTrackPosition(wid, 0, 0, getClientWidth(), getClientHeight());
 			}
 			// эх
-			else {
+			else
+			{
 				int pos = (int)mStartPosition * (getClientWidth() - mTrackMin) / (int)mRange;
 				setTrackPosition(wid, pos, 0, ((int)mEndPosition * (getClientWidth() - mTrackMin) / (int)mRange) - pos + mTrackMin, getClientHeight());
 			}
@@ -219,21 +231,25 @@ namespace MyGUI
 		int width = getClientWidth() - mTrackWidth + mTrackStep;
 		int count = width / mTrackStep;
 		int ost = (width % mTrackStep);
-		if (ost > 0) {
+		if (ost > 0)
+		{
 			width += mTrackStep - ost;
 			count ++;
 		}
 
-		while ((int)mVectorTrack.size() < count) {
+		while ((int)mVectorTrack.size() < count)
+		{
 			WidgetPtr widget = mClient->createWidget<Widget>(mTrackSkin, IntCoord(/*(int)mVectorTrack.size() * mTrackStep, 0, mTrackWidth, getClientHeight()*/), Align::Left | Align::VStretch);
 			widget->setVisible(false);
 			mVectorTrack.push_back(widget);
 		}
 
 		// все видно
-		if ((0 == mStartPosition) && (mRange == mEndPosition)) {
+		if ((0 == mStartPosition) && (mRange == mEndPosition))
+		{
 			int pos = 0;
-			for (VectorWidgetPtr::iterator iter=mVectorTrack.begin(); iter!=mVectorTrack.end(); ++iter) {
+			for (VectorWidgetPtr::iterator iter=mVectorTrack.begin(); iter!=mVectorTrack.end(); ++iter)
+			{
 				(*iter)->setAlpha(ALPHA_MAX);
 				(*iter)->setVisible(true);
 				setTrackPosition(*iter, pos * mTrackStep, 0, mTrackWidth, getClientHeight());
@@ -241,7 +257,8 @@ namespace MyGUI
 			}
 		}
 		// эх, придется считать
-		else {
+		else
+		{
 			// сколько не видно
 			int hide_pix = (width * (int)mStartPosition / (int)mRange);
 			int hide = hide_pix / mTrackStep;
@@ -250,25 +267,32 @@ namespace MyGUI
 			int show = show_pix / mTrackStep;
 
 			int pos = 0;
-			for (VectorWidgetPtr::iterator iter=mVectorTrack.begin(); iter!=mVectorTrack.end(); ++iter) {
-				if (0 > show) {
+			for (VectorWidgetPtr::iterator iter=mVectorTrack.begin(); iter!=mVectorTrack.end(); ++iter)
+			{
+				if (0 > show)
+				{
 					(*iter)->setVisible(false);
 				}
-				else if (0 == show) {
+				else if (0 == show)
+				{
 					(*iter)->setAlpha((float)(show_pix % mTrackStep) / (float)mTrackStep);
 					(*iter)->setVisible(true);
 					setTrackPosition(*iter, pos * mTrackStep, 0, mTrackWidth, getClientHeight());
 				}
-				else {
-					if (0 < hide) {
+				else
+				{
+					if (0 < hide)
+					{
 						(*iter)->setVisible(false);
 					}
-					else if (0 == hide) {
+					else if (0 == hide)
+					{
 						(*iter)->setAlpha(1.0f - ((float)(hide_pix % mTrackStep) / (float)mTrackStep));
 						(*iter)->setVisible(true);
 						setTrackPosition(*iter, pos * mTrackStep, 0, mTrackWidth, getClientHeight());
 					}
-					else {
+					else
+					{
 						(*iter)->setAlpha(ALPHA_MAX);
 						(*iter)->setVisible(true);
 						setTrackPosition(*iter, pos * mTrackStep, 0, mTrackWidth, getClientHeight());
@@ -291,14 +315,25 @@ namespace MyGUI
 
 	void Progress::setProgressStartPoint(Align _align)
 	{
-		if ((_align == Align::Left) || (_align == Align::Right) || (_align == Align::Top) || (_align == Align::Bottom)) {
+		if ((_align == Align::Left) || (_align == Align::Right) || (_align == Align::Top) || (_align == Align::Bottom))
+		{
 			mStartPoint = _align;
 		}
-		else {
+		else
+		{
 			mStartPoint = Align::Left;
 			MYGUI_LOG(Warning, "Progress bar support only Left, Right, Top or Bottom align values");
 		}
 		updateTrack();
+	}
+
+	void Progress::setProperty(const std::string& _key, const std::string& _value)
+	{
+		if (_key == "Progress_Range") setProgressRange(utility::parseValue<size_t>(_value));
+		else if (_key == "Progress_Position") setProgressPosition(utility::parseValue<size_t>(_value));
+		else if (_key == "Progress_AutoTrack") setProgressAutoTrack(utility::parseValue<bool>(_value));
+		else if (_key == "Progress_StartPoint") setProgressStartPoint(utility::parseValue<Align>(_value));
+		else Base::setProperty(_key, _value);
 	}
 
 } // namespace MyGUI

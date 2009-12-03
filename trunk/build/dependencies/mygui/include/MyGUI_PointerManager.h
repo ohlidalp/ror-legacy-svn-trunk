@@ -3,7 +3,8 @@
 	@author		Albert Semenov
 	@date		11/2007
 	@module
-*//*
+*/
+/*
 	This file is part of MyGUI.
 	
 	MyGUI is free software: you can redistribute it and/or modify
@@ -24,15 +25,17 @@
 
 #include "MyGUI_Prerequest.h"
 #include "MyGUI_Instance.h"
-#include "MyGUI_PointerInfo.h"
 #include "MyGUI_IUnlinkWidget.h"
 #include "MyGUI_IWidgetCreator.h"
 #include "MyGUI_StaticImage.h"
+#include "MyGUI_IPointer.h"
 
 namespace MyGUI
 {
 
-	class MYGUI_EXPORT PointerManager : public IUnlinkWidget, public IWidgetCreator
+	class MYGUI_EXPORT PointerManager :
+		public IUnlinkWidget,
+		public IWidgetCreator
 	{
 		MYGUI_INSTANCE_HEADER(PointerManager);
 
@@ -41,16 +44,44 @@ namespace MyGUI
 		void shutdown();
 
 	public:
-
 		/** Load additional MyGUI *_pointer.xml file */
-		bool load(const std::string & _file, const std::string & _group = MyGUI::ResourceManager::GUIResourceGroupName);
+		bool load(const std::string& _file);
 
-		void _load(xml::ElementPtr _node, const std::string & _file, Version _version);
+		void _load(xml::ElementPtr _node, const std::string& _file, Version _version);
 
 		/** Show or hide mouse pointer */
 		void setVisible(bool _visible);
 		/** Is mouse pointer visible */
-		bool isVisible() { return mShow; }
+		bool isVisible() { return mVisible; }
+
+		/** Set pointer that will be shown
+			@param _name of pointer
+		*/
+		void setPointer(const std::string& _name);
+		/** Reset to default pointer */
+		void resetToDefaultPointer();
+
+		/** Get default pointer */
+		const std::string& getDefaultPointer() { return mDefaultName; }
+		/** Set default pointer */
+		void setDeafultPointer(const std::string& _value);
+
+		const std::string& getLayerName() { return mLayerName; }
+		void setLayerName(const std::string& _value);
+
+		/** Get pointer resource */
+		IPointer* getByName(const std::string& _name);
+
+	/*event:*/
+		/** Event : Mouse pointer has been changed.\n
+			signature : void method(const std::string& _pointerName)\n
+			@param _pointerName Name of current mouse pointer
+		*/
+		delegates::CMultiDelegate1<const std::string &>
+			eventChangeMousePointer;
+
+	/*obsolete:*/
+#ifndef MYGUI_DONT_USE_OBSOLETE
 
 		MYGUI_OBSOLETE("use : void PointerManager::setVisible(bool _visible)")
 		void show() { setVisible(true); }
@@ -59,26 +90,13 @@ namespace MyGUI
 		MYGUI_OBSOLETE("use : bool PointerManager::isVisible()")
 		bool isShow() { return isVisible(); }
 
-		/** Set pointer position */
-		void setPosition(const IntPoint& _pos);
-		/** Set pointer that will be shown
-			@param _name of pointer
-			@param _owner If _owner widget destroyed - pointer returned to default
-		*/
-		void setPointer(const std::string & _name, WidgetPtr _owner);
-		/** Set default pointer */
-		void setDefaultPointer() {if (false == mDefaultPointer.empty()) setPointer(mDefaultPointer, nullptr); }
-
-		void _unlinkWidget(WidgetPtr _widget);
-
-		/** Get default pointer */
-		const std::string & getDefaultPointer() { return mDefaultPointer; }
+#endif // MYGUI_DONT_USE_OBSOLETE
 
 	private:
+		void _unlinkWidget(WidgetPtr _widget);
 
-		void clear();
 		// создает виджет
-		virtual WidgetPtr baseCreateWidget(WidgetStyle _style, const std::string & _type, const std::string & _skin, const IntCoord& _coord, Align _align, const std::string & _layer, const std::string & _name);
+		virtual WidgetPtr baseCreateWidget(WidgetStyle _style, const std::string& _type, const std::string& _skin, const IntCoord& _coord, Align _align, const std::string& _layer, const std::string& _name);
 
 		// удяляет неудачника
 		virtual void _destroyChildWidget(WidgetPtr _widget);
@@ -86,22 +104,27 @@ namespace MyGUI
 		// удаляет всех детей
 		virtual void _destroyAllChildWidget();
 
+		void Update();
+		
+		void notifyFrameStart(float _time);
+		void notifyChangeMouseFocus(WidgetPtr _widget);
+		void setPointer(const std::string& _name, WidgetPtr _owner);
+
 	private:
 		// вектор всех детей виджетов
 		VectorWidgetPtr mWidgetChild;
 
-		std::string mDefaultPointer;
-		std::string mTexture;
+		std::string mDefaultName;
 		IntPoint mPoint;
-		bool mShow;
-
-		MapPointerInfo mMapPointers;
+		bool mVisible;
+		std::string mLayerName;
+		std::string mSkinName;
 
 		WidgetPtr mWidgetOwner;
 		StaticImagePtr mMousePointer;
-
-
-	}; // class PointerManager
+		IPointer* mPointer;
+		std::string mCurrentMousePointer;
+	};
 
 } // namespace MyGUI
 

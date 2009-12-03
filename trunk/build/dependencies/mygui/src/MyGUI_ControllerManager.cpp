@@ -3,7 +3,8 @@
 	@author		Albert Semenov
 	@date		01/2008
 	@module
-*//*
+*/
+/*
 	This file is part of MyGUI.
 	
 	MyGUI is free software: you can redistribute it and/or modify
@@ -24,6 +25,11 @@
 #include "MyGUI_ControllerManager.h"
 #include "MyGUI_WidgetManager.h"
 #include "MyGUI_Common.h"
+#include "MyGUI_FactoryManager.h"
+
+#include "MyGUI_ControllerEdgeHide.h"
+#include "MyGUI_ControllerFadeAlpha.h"
+#include "MyGUI_ControllerPosition.h"
 
 namespace MyGUI
 {
@@ -32,10 +38,16 @@ namespace MyGUI
 
 	void ControllerManager::initialise()
 	{
-		MYGUI_ASSERT(false == mIsInitialise, INSTANCE_TYPE_NAME << " initialised twice");
+		MYGUI_ASSERT(!mIsInitialise, INSTANCE_TYPE_NAME << " initialised twice");
 		MYGUI_LOG(Info, "* Initialise: " << INSTANCE_TYPE_NAME);
 
 		WidgetManager::getInstance().registerUnlinker(this);
+
+		const std::string factory_type = "Controller";
+
+		FactoryManager::getInstance().registryFactory<ControllerEdgeHide>(factory_type);
+		FactoryManager::getInstance().registryFactory<ControllerFadeAlpha>(factory_type);
+		FactoryManager::getInstance().registryFactory<ControllerPosition>(factory_type);
 
 		MYGUI_LOG(Info, INSTANCE_TYPE_NAME << " successfully initialized");
 		mIsInitialise = true;
@@ -43,8 +55,14 @@ namespace MyGUI
 
 	void ControllerManager::shutdown()
 	{
-		if (false == mIsInitialise) return;
+		if (!mIsInitialise) return;
 		MYGUI_LOG(Info, "* Shutdown: " << INSTANCE_TYPE_NAME);
+
+		const std::string factory_type = "Controller";
+
+		FactoryManager::getInstance().unregistryFactory<ControllerEdgeHide>(factory_type);
+		FactoryManager::getInstance().unregistryFactory<ControllerFadeAlpha>(factory_type);
+		FactoryManager::getInstance().unregistryFactory<ControllerPosition>(factory_type);
 
 		WidgetManager::getInstance().unregisterUnlinker(this);
 		clear();
@@ -55,30 +73,36 @@ namespace MyGUI
 
 	void ControllerManager::clear()
 	{
-		for (ListControllerItem::iterator iter=mListItem.begin(); iter!=mListItem.end(); ++iter) {
+		for (ListControllerItem::iterator iter=mListItem.begin(); iter!=mListItem.end(); ++iter)
+		{
 			delete (*iter).second;
 		}
 		mListItem.clear();
 	}
 
+	ControllerItem* ControllerManager::createItem(const std::string& _type)
+	{
+		IObject* object = FactoryManager::getInstance().createObject("Controller", _type);
+		return object->castType<ControllerItem>();
+	}
+
 	void ControllerManager::addItem(WidgetPtr _widget, ControllerItem * _item)
 	{
 		// если виджет первый, то подписываемся на кадры
-		//if (0 == mListItem.size()) Gui::getInstance().addFrameListener(newDelegate(this, &ControllerManager::frameEntered), nullptr);
 		if (0 == mListItem.size()) Gui::getInstance().eventFrameStart += newDelegate(this, &ControllerManager::frameEntered);
 
 		// подготавливаем
 		_item->prepareItem(_widget);
 
-		for (ListControllerItem::iterator iter=mListItem.begin(); iter!=mListItem.end(); ++iter) {
-
+		for (ListControllerItem::iterator iter=mListItem.begin(); iter!=mListItem.end(); ++iter)
+		{
 			// такой уже в списке есть
-			if ((*iter).first == _widget) {
-				if ((*iter).second->getType() == _item->getType()) {
+			if ((*iter).first == _widget)
+			{
+				if ((*iter).second->getTypeName() == _item->getTypeName())
+				{
 					delete (*iter).second;
 					(*iter).second = _item;
-					//(*iter).second->replaseItem((*iter).first, _item);
-					//delete _item;
 					return;
 				}
 			}
@@ -91,7 +115,8 @@ namespace MyGUI
 	void ControllerManager::removeItem(WidgetPtr _widget)
 	{
 		// не удаляем из списка, а обнуляем, в цикле он будет удален
-		for (ListControllerItem::iterator iter=mListItem.begin(); iter!=mListItem.end(); ++iter) {
+		for (ListControllerItem::iterator iter=mListItem.begin(); iter!=mListItem.end(); ++iter)
+		{
 			if ((*iter).first == _widget) (*iter).first = nullptr;
 		}
 	}
@@ -103,16 +128,18 @@ namespace MyGUI
 
 	void ControllerManager::frameEntered(float _time)
 	{
-		for (ListControllerItem::iterator iter=mListItem.begin(); iter!=mListItem.end(); /*added in body*/) {
-
-			if (nullptr == (*iter).first) {
+		for (ListControllerItem::iterator iter=mListItem.begin(); iter!=mListItem.end(); /*added in body*/)
+		{
+			if (nullptr == (*iter).first)
+			{
 				delete (*iter).second;
 				// удаляем из списка, итератор не увеличиваем и на новый круг
 				iter = mListItem.erase(iter);
 				continue;
 			}
 
-			if ((*iter).second->addTime((*iter).first, _time)) {
+			if ((*iter).second->addTime((*iter).first, _time))
+			{
 				++iter;
 				continue;
 			}
@@ -121,7 +148,6 @@ namespace MyGUI
 			(*iter).first = nullptr;
 		}
 
-		//if (0 == mListItem.size()) Gui::getInstance().removeFrameListener(newDelegate(this, &ControllerManager::frameEntered));
 		if (0 == mListItem.size()) Gui::getInstance().eventFrameStart -= newDelegate(this, &ControllerManager::frameEntered);
 	}
 

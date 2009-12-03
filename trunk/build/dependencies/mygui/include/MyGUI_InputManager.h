@@ -3,7 +3,8 @@
 	@author		Albert Semenov
 	@date		11/2007
 	@module
-*//*
+*/
+/*
 	This file is part of MyGUI.
 	
 	MyGUI is free software: you can redistribute it and/or modify
@@ -31,23 +32,18 @@
 #include "MyGUI_WidgetDefines.h"
 #include "MyGUI_XmlDocument.h"
 #include "MyGUI_InputDefine.h"
+#include "MyGUI_Timer.h"
 
 namespace MyGUI
 {
-
-	typedef delegates::CDelegate1<const std::string &> EventHandle_String;
 
 	class MYGUI_EXPORT InputManager : public IUnlinkWidget
 	{
 		MYGUI_INSTANCE_HEADER(InputManager);
 
-		typedef std::vector<Char> LangInfo;
-
 	public:
 		void initialise();
 		void shutdown();
-
-	public:
 
 		/** Inject MouseMove event
 			@return true if event has been processed by GUI
@@ -81,7 +77,7 @@ namespace MyGUI
 		/** Set key focus for _widget */
 		void setKeyFocusWidget(WidgetPtr _widget);
 		/** Drop key focus for _widget */
-		void resetKeyFocusWidget(WidgetPtr _widget) { if (mWidgetKeyFocus == _widget) setKeyFocusWidget(nullptr); }
+		void resetKeyFocusWidget(WidgetPtr _widget);
 		/** Drop any key focus */
 		void resetKeyFocusWidget() { setKeyFocusWidget(nullptr); }
 
@@ -90,23 +86,15 @@ namespace MyGUI
 		/** Get key focused widget */
 		WidgetPtr getKeyFocusWidget() { return mWidgetKeyFocus; }
 		/** Get position of last left mouse button press */
-		const IntPoint & getLastLeftPressed() { return mLastLeftPressed; }
+		const IntPoint& getLastLeftPressed() { return mLastLeftPressed; }
 		/** Get current mouse position */
-		const IntPoint & getMousePosition() { return mMousePosition; }
+		const IntPoint& getMousePosition() { return mMousePosition; }
+
+		IntPoint getMousePositionByLayer();
 
 		// тестовый вариант, очистка фокуса мыши
 		/** Drop any mouse focus */
 		void resetMouseFocusWidget();
-
-		// удаляем данный виджет из всех возможных мест
-		void _unlinkWidget(WidgetPtr _widget);
-
-		// событие смены курсора
-		/** Event : Mouse pointer has been changed.\n
-			signature : void method(const std::string & _pointerName)\n
-			@param _pointerName Name of current mouse pointer
-		*/
-		EventHandle_String eventChangeMousePointer;
 
 		// работа с модальными окнами
 		/** Add modal widget - all other widgets inaccessible while modal widget exist */
@@ -127,14 +115,29 @@ namespace MyGUI
 		*/
 		void resetMouseCaptureWidget() { mIsWidgetMouseCapture = false; }
 
+		void unlinkWidget(WidgetPtr _widget) { _unlinkWidget(_widget); }
+
+		/** Event :\n
+			signature : void method(MyGUI::WidgetPtr _widget)\n
+			@param _widget
+		*/
+		delegates::CMultiDelegate1<WidgetPtr>
+			eventChangeMouseFocus;
+
+		/** Event :\n
+			signature : void method(MyGUI::WidgetPtr _widget)\n
+			@param _widget
+		*/
+		delegates::CMultiDelegate1<WidgetPtr>
+			eventChangeKeyFocus;
+
 	private:
+		// удаляем данный виджет из всех возможных мест
+		void _unlinkWidget(WidgetPtr _widget);
+
 		void frameEntered(float _frame);
 
 		void firstEncoding(KeyCode _key, bool bIsKeyPressed);
-		Char getKeyChar(KeyCode keyEvent, Char _text); // возвращает символ по его скан коду
-
-		// создает латинскую раскладку
-		void createDefaultCharSet();
 
 		// запоминает клавишу для поддержки повторения
 		void storeKey(KeyCode _key, Char _text);
@@ -142,72 +145,20 @@ namespace MyGUI
 		// сбрасывает клавишу повторения
 		void resetKey();
 
-	public:
-		void _load(xml::ElementPtr _node, const std::string & _file, Version _version);
-
-#ifdef MYGUI_NO_OIS
-
-	public:
-		typedef std::map<std::string, LangInfo> MapLang;
-
-		/** Load additional MyGUI *_lang.xml file */
-		bool load(const std::string & _file, const std::string & _group = MyGUI::ResourceManager::GUIResourceGroupName);
-
-		// событие смены языков
-		/** Event : Language has been changed.\n
-			signature : void method(const std::string & _languageName)\n
-			@param _languageName name of current language
-		*/
-		EventHandle_String eventChangeLanguage;
-
-		/** Get current language */
-		const std::string & getCurrentLanguage() { return mCurrentLanguage->first; }
-		/** Set current language */
-		void setCurrentLanguage(const std::string & _lang);
-
 	private:
-		// сменяет язык на следующий
-		void changeLanguage()
-		{
-			mCurrentLanguage++;
-			if (mCurrentLanguage == mMapLanguages.end())
-				mCurrentLanguage = mMapLanguages.begin();
-			// послать событие
-			eventChangeLanguage(mCurrentLanguage->first);
-		}
-
-#endif
-
-	public:
-		void setShowFocus(bool _show);
-		bool getShowFocus() { return m_showHelpers; }
-
-	private:
-		void updateFocusWidgetHelpers();
-
-	private:
-
 		// виджеты которым принадлежит фокус
 		WidgetPtr mWidgetMouseFocus;
 		WidgetPtr mWidgetKeyFocus;
+		ILayer* mLayerMouseFocus;
 		// захватил ли мышь активный виджет
 		bool mIsWidgetMouseCapture;
 		// таймер для двойного клика
-	    Ogre::Timer mTime; //used for double click timing
-
-#ifdef MYGUI_NO_OIS
-		// карта языков
-		MapLang mMapLanguages;
-		// текущий язык
-		MapLang::iterator mCurrentLanguage;
-#endif
+	    Timer mTimer; //used for double click timing
 
 		// нажат ли шифт
 		bool mIsShiftPressed;
 		// нажат ли контрол
 		bool mIsControlPressed;
-		// массив для нумлока
-		LangInfo mNums;
 		// там где была последний раз нажата левая кнопка
 		IntPoint mLastLeftPressed;
 		IntPoint mMousePosition;
@@ -218,15 +169,8 @@ namespace MyGUI
 		float mTimerKey;
 		int mOldAbsZ;
 
-		// текущий отображаемый указатель
-		std::string mPointer;
-
 		// список виджетов с модальным режимом
 		VectorWidgetPtr mVectorModalRootWidget;
-
-		bool m_showHelpers;
-		WidgetPtr m_mouseHelper;
-		WidgetPtr m_keyHelper;
 
 	};
 
