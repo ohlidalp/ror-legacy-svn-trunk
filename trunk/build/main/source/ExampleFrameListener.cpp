@@ -1083,7 +1083,7 @@ ExampleFrameListener::ExampleFrameListener(RenderWindow* win, Camera* cam, Scene
 	INPUTENGINE.setup(hWnd, true, true, inputGrabMode);
 
 	// init GUI
-	MYGUI.setup(cam, scm, win);
+	new GUIManager(root, scm, win);
 
 	UILOADER.setup(win, cam);
 
@@ -2885,7 +2885,7 @@ bool ExampleFrameListener::updateEvents(float dt)
 		bool enablegrab = true;
 		if (cameramode != CAMERA_FREE)
 		{
-			MYGUI.setCursorPosition(mouseX, mouseY);
+			//MYGUI.setCursorPosition(mouseX, mouseY);
 			if (current_truck==-1)
 			{
 				if(person)
@@ -4710,7 +4710,7 @@ void ExampleFrameListener::shutdown_final()
 void ExampleFrameListener::shutdown_pre()
 {
 	LogManager::getSingleton().logMessage(" ** Shutdown preparation");
-	MYGUI.shutdown();
+	//MYGUI.shutdown();
 	if (net) net->disconnect();
 	showcredits=1;
 	loading_state=EXITING;
@@ -7296,7 +7296,6 @@ bool ExampleFrameListener::frameStarted(const FrameEvent& evt)
 
 	// update GUI
 	INPUTENGINE.Capture();
-	MYGUI.frameStarted(evt);
 
 	//if(collisions) 	printf("> ground model used: %s\n", collisions->last_used_ground_model->name);
 
@@ -7884,9 +7883,6 @@ void ExampleFrameListener::windowResized(RenderWindow* rw)
 	rw->getMetrics(width, height, depth, left, top);
 	screenWidth = width;
 	screenHeight = height;
-
-	// update GUI area
-	MYGUI.windowResized(rw);
 
 	//update mouse area
 	INPUTENGINE.windowResized(rw);

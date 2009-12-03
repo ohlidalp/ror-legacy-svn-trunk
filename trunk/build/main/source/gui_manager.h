@@ -17,76 +17,59 @@ GNU General Public License for more details.
 You should have received a copy of the GNU General Public License
 along with Rigs of Rods.  If not, see <http://www.gnu.org/licenses/>.
 */
-#ifndef __GUI_MAIN_H__
-#define __GUI_MAIN_H__
+#ifndef GUI_MANAGER_H__
+#define GUI_MANAGER_H__
 
-// thomas fischer, thomas@thomasfischer.biz, 3rd June 2008
+#include <Ogre.h>
+#include <MyGUI.h>
+#include "gui_inputmanager.h"
 
-#include "Ogre.h"
+#define MYGUI GUIManager::getSingleton()
+#define GETMYGUI GUIManager::getSingleton().getGUI()
 
-#include <vector>
-#include <map>
-//#include <pthread.h>
+namespace MyGUI { class OgrePlatform; }
 
-#include "OISEvents.h"
-#include "OISInputManager.h"
-#include "OISMouse.h"
-#include "OISKeyboard.h"
-#include "OISJoyStick.h"
-
-#include "MyGUI.h"
-
-//forward declarations
-namespace MyGUI { class Gui; };
-
-#define MYGUI GUIManager::Instance()
-#define GETMYGUI GUIManager::Instance().getGUI()
-
-class GUIManager
+class GUIManager : public GUIInputManager, public Ogre::FrameListener, public Ogre::WindowEventListener, public Ogre::Singleton<GUIManager>
 {
-protected:
-	MyGUI::Gui *mGUI;
-
-	GUIManager();
-	~GUIManager();
-	GUIManager(const GUIManager&);
-	GUIManager& operator= (const GUIManager&);
-	static GUIManager* myInstance;
-	bool initialized;
-	bool enabled;
-
 public:
-	static GUIManager &Instance();
-	
-	void setup(Ogre::Camera *cam, Ogre::SceneManager *scm, Ogre::RenderWindow *mWindow);
-	
+	static GUIManager& getSingleton(void);
+	static GUIManager* getSingletonPtr(void);
 
-	void shutdown();
+	GUIManager(Ogre::Root *root, Ogre::SceneManager *mgr, Ogre::RenderWindow *win);
+	virtual ~GUIManager();
 
-	void activate();
-	void desactivate();
-	
-	void setCursorPosition(float x, float y);
-	void setCamera(Ogre::Camera *mCamera);
-	
-	// window events
-	void windowResized(Ogre::RenderWindow *rw);
-	void windowMoved(Ogre::RenderWindow *rw);
+	void destroy();
 
-	// engine / input events
-	bool frameStarted(const Ogre::FrameEvent& evt);
-	bool frameEnded(const Ogre::FrameEvent& evt);
-	bool mouseMoved( const OIS::MouseEvent &arg );
-	bool mousePressed( const OIS::MouseEvent &arg, OIS::MouseButtonID id );
-	bool mouseReleased( const OIS::MouseEvent &arg, OIS::MouseButtonID id );
-	bool keyPressed( const OIS::KeyEvent &arg );
-	bool keyReleased( const OIS::KeyEvent &arg );
+	MyGUI::Gui* getGUI() { return mGUI; }
 
+protected:
+	virtual void injectMouseMove(int _absx, int _absy, int _absz);
+	virtual void injectMousePress(int _absx, int _absy, MyGUI::MouseButton _id);
+	virtual void injectMouseRelease(int _absx, int _absy, MyGUI::MouseButton _id);
+	virtual void injectKeyPress(MyGUI::KeyCode _key, MyGUI::Char _text);
+	virtual void injectKeyRelease(MyGUI::KeyCode _key);
 
-	// new user functions
-	MyGUI::Gui *getGUI() { return mGUI; };
-	void loadLayout(Ogre::String name);
+private:
+	bool create();
+	void createGui();
+	void destroyGui();
+
+	virtual bool frameStarted(const Ogre::FrameEvent& _evt);
+	virtual bool frameEnded(const Ogre::FrameEvent& _evt);
+	virtual void windowResized(Ogre::RenderWindow* _rw);
+	virtual void windowClosed(Ogre::RenderWindow* _rw);
+
+private:
+	MyGUI::Gui* mGUI;
+	MyGUI::OgrePlatform* mPlatform;
+
+	Ogre::Root *mRoot;
+	Ogre::SceneManager* mSceneManager;
+	Ogre::RenderWindow* mWindow;
+
+	bool mExit;
+
+	Ogre::String mResourceFileName;
 };
 
-
-#endif
+#endif // GUI_MANAGER_H__

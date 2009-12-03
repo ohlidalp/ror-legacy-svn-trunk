@@ -1875,11 +1875,6 @@ bool InputEngine::keyPressed( const OIS::KeyEvent &arg )
 			}
 		}
 	}
-
-#ifndef NOOGRE
-	MYGUI.keyPressed(arg);
-#endif
-
 	return true;
 }
 
@@ -1889,9 +1884,6 @@ bool InputEngine::keyReleased( const OIS::KeyEvent &arg )
 	if(keyState[arg.key] != 0)
 		inputsChanged=true;
 	keyState[arg.key] = 0;
-#ifndef NOOGRE
-	MYGUI.keyReleased(arg);
-#endif
 	return true;
 }
 
@@ -1902,9 +1894,6 @@ bool InputEngine::mouseMoved( const OIS::MouseEvent &arg )
 	//LogManager::getSingleton().logMessage("*** mouseMoved");
 	inputsChanged=true;
 	mouseState = arg.state;
-#ifndef NOOGRE
-	MYGUI.mouseMoved(arg);
-#endif
 	return true;
 }
 
@@ -1914,9 +1903,6 @@ bool InputEngine::mousePressed( const OIS::MouseEvent &arg, OIS::MouseButtonID i
 	//LogManager::getSingleton().logMessage("*** mousePressed");
 	inputsChanged=true;
 	mouseState = arg.state;
-#ifndef NOOGRE
-	MYGUI.mousePressed(arg, id);
-#endif
 	return true;
 }
 
@@ -1926,9 +1912,6 @@ bool InputEngine::mouseReleased( const OIS::MouseEvent &arg, OIS::MouseButtonID 
 	//LogManager::getSingleton().logMessage("*** mouseReleased");
 	inputsChanged=true;
 	mouseState = arg.state;
-#ifndef NOOGRE
-	MYGUI.mouseReleased(arg, id);
-#endif
 	return true;
 }
 
