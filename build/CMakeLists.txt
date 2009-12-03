@@ -81,6 +81,8 @@ option(ROR_BUILD_CONFIGURATOR "builds the RoRConfig" TRUE)
 option(ROR_BUILD_TRAFFIC_SUPPORT "adds AI traffic support to RoR" FALSE)
 option(ROR_BUILD_OPENCL_SUPPORT "adds OpenCL support to ROR" FALSE)
 
+option(ROR_BUILD_LAYOUTEDITOR "builds a tool to construct GUI layouts" FALSE)
+
 # optimization things
 option(ROR_BUILD_BEAMSTATS "build RoR extensive Beam engine debugging/profiling support (do not enable in release build)" FALSE)
 option(ROR_USE_OPTIMIZATIONS_WINDOWS "optimize build, gives more FPS, but needs longer to compile" TRUE)
@@ -132,3 +134,9 @@ IF(WSYNC_BUILD_INSTALLER)
     message("to build the installer, you need to build wsync as well. Disabling the installer.")
   endif(WSYNC_BUILD_WSYNC)
 ENDIF(WSYNC_BUILD_INSTALLER)
+
+
+#always build the layout editor
+IF(ROR_BUILD_LAYOUTEDITOR)
+add_subdirectory(LayoutEditor)
+ENDIF(ROR_BUILD_LAYOUTEDITOR)
