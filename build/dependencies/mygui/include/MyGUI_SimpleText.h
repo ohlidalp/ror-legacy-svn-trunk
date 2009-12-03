@@ -3,7 +3,8 @@
 	@author		Albert Semenov
 	@date		02/2008
 	@module
-*//*
+*/
+/*
 	This file is part of MyGUI.
 	
 	MyGUI is free software: you can redistribute it and/or modify
@@ -26,32 +27,22 @@
 #include "MyGUI_XmlDocument.h"
 #include "MyGUI_Types.h"
 #include "MyGUI_ISubWidgetText.h"
-#include "MyGUI_DrawItem.h"
-#include "MyGUI_Font.h"
-#include "MyGUI_EnumCharInfo.h"
 #include "MyGUI_EditText.h"
 
 namespace MyGUI
 {
 
-	class RenderItem;
-
 	class MYGUI_EXPORT SimpleText : public EditText
 	{
-		MYGUI_RTTI_CHILD_HEADER(SimpleText, EditText);
+		MYGUI_RTTI_DERIVED( SimpleText );
 
 	public:
-		SimpleText(const SubWidgetInfo &_info, ICroppedRectangle * _parent);
+		SimpleText();
 		virtual ~SimpleText();
 
-		virtual void setViewOffset(IntPoint _point);
+		virtual void setViewOffset(const IntPoint& _point);
 
-		// обновляет все данные связанные с тектом
-		//virtual void updateRawData();
-		size_t _drawItem(Vertex* _vertex, bool _update);
-
-		// метод для генерации данных из описания xml
-		static StateInfo * createStateData(xml::ElementPtr _node, xml::ElementPtr _root, Version _version);
+		virtual void doRender();
 
 	};
 

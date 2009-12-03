@@ -3,7 +3,8 @@
 	@author		Albert Semenov
 	@date		01/2008
 	@module
-*//*
+*/
+/*
 	This file is part of MyGUI.
 	
 	MyGUI is free software: you can redistribute it and/or modify
@@ -34,10 +35,6 @@ namespace MyGUI
 		<< MyGUI::LogManager::info(__FILE__, __LINE__) \
 		<< MyGUI::LogManager::end()
 
-	class LogStream;
-	struct LogStreamEnd;
-	typedef std::map<std::string, LogStream*> MapLogStream;
-
 	class MYGUI_EXPORT LogManager
 	{
 
@@ -61,7 +58,7 @@ namespace MyGUI
 		static LogStream& out(const std::string& _section, LogLevel _level);
 		static const std::string& info(const char * _file /* = __FILE__*/, int _line /* = __LINE__*/);
 
-		static const LogStreamEnd& end();
+		static const LogStream::LogStreamEnd& end();
 
 		// set logging enabled on std output device
 		static void setSTDOutputEnabled(bool _enable);
@@ -75,11 +72,12 @@ namespace MyGUI
 		static const std::string General;
 		static const std::string separator;
 
-		static LogStreamEnd endl;
+		static LogStream::LogStreamEnd endl;
 		static const std::string LevelsName[EndLogLevel];
 
 	private:
 		static LogManager * msInstance;
+		typedef std::map<std::string, LogStream*>  MapLogStream;
 		MapLogStream mMapSectionFileName;
 		bool mSTDOut;
 	};

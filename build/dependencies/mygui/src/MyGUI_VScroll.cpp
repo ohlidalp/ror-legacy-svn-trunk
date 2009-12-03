@@ -3,7 +3,8 @@
 	@author		Albert Semenov
 	@date		11/2007
 	@module
-*//*
+*/
+/*
 	This file is part of MyGUI.
 	
 	MyGUI is free software: you can redistribute it and/or modify
@@ -23,15 +24,14 @@
 #include "MyGUI_VScroll.h"
 #include "MyGUI_InputManager.h"
 #include "MyGUI_Button.h"
-#include "MyGUI_WidgetSkinInfo.h"
+#include "MyGUI_ResourceSkin.h"
 
 namespace MyGUI
 {
 
 	const int SCROLL_MOUSE_WHEEL = 50; // колличество пикселей для колеса мыши
 
-	VScroll::VScroll(WidgetStyle _style, const IntCoord& _coord, Align _align, const WidgetSkinInfoPtr _info, WidgetPtr _parent, ICroppedRectangle * _croppedParent, IWidgetCreator * _creator, const std::string & _name) :
-		Base(_style, _coord, _align, _info, _parent, _croppedParent, _creator, _name),
+	VScroll::VScroll() :
 		mWidgetStart(nullptr),
 		mWidgetEnd(nullptr),
 		mWidgetTrack(nullptr),
@@ -46,6 +46,12 @@ namespace MyGUI
 		mMinTrackSize(0),
 		mMoveToClick(false)
 	{
+	}
+
+	void VScroll::_initialise(WidgetStyle _style, const IntCoord& _coord, Align _align, ResourceSkin* _info, WidgetPtr _parent, ICroppedRectangle * _croppedParent, IWidgetCreator * _creator, const std::string& _name)
+	{
+		Base::_initialise(_style, _coord, _align, _info, _parent, _croppedParent, _creator, _name);
+
 		initialiseWidgetSkin(_info);
 	}
 
@@ -54,14 +60,14 @@ namespace MyGUI
 		shutdownWidgetSkin();
 	}
 
-	void VScroll::baseChangeWidgetSkin(WidgetSkinInfoPtr _info)
+	void VScroll::baseChangeWidgetSkin(ResourceSkin* _info)
 	{
 		shutdownWidgetSkin();
 		Base::baseChangeWidgetSkin(_info);
 		initialiseWidgetSkin(_info);
 	}
 
-	void VScroll::initialiseWidgetSkin(WidgetSkinInfoPtr _info)
+	void VScroll::initialiseWidgetSkin(ResourceSkin* _info)
 	{
 		// при нуле, будет игнорировать кнопки
 		mScrollPage = 1;
@@ -113,7 +119,7 @@ namespace MyGUI
 		MYGUI_ASSERT(nullptr != mWidgetTrack, "Child Button Track not found in skin (Scroll must have Track)");
 
 		// парсим свойства
-		const MapString & properties = _info->getProperties();
+		const MapString& properties = _info->getProperties();
 		MapString::const_iterator iter = properties.find("TrackRangeMargins");
 		if (iter != properties.end())
 		{
@@ -150,14 +156,15 @@ namespace MyGUI
 		int pos = getLineSize();
 
 		// скрываем если диапазан маленький или места мало
-		if ((mScrollRange < 2) || (pos <= mWidgetTrack->getHeight())) {
+		if ((mScrollRange < 2) || (pos <= mWidgetTrack->getHeight()))
+		{
 			mWidgetTrack->setVisible(false);
 			if ( nullptr != mWidgetFirstPart ) mWidgetFirstPart->setSize(mWidgetFirstPart->getWidth(), pos/2);
 			if ( nullptr != mWidgetSecondPart ) mWidgetSecondPart->setCoord(mWidgetSecondPart->getLeft(), pos/2 + (int)mSkinRangeStart, mWidgetSecondPart->getWidth(), pos - pos/2);
 			return;
 		}
 		// если скрыт то покажем
-		if (false == mWidgetTrack->isVisible())
+		if (!mWidgetTrack->isVisible())
 		{
 			mWidgetTrack->setVisible(true);
 		}
@@ -181,7 +188,7 @@ namespace MyGUI
 
 	void VScroll::TrackMove(int _left, int _top)
 	{
-		const IntPoint & point = InputManager::getInstance().getLastLeftPressed();
+		const IntPoint& point = InputManager::getInstance().getLastLeftPressed();
 
 		// расчитываем позицию виджета
 		int start = mPreActionOffset.top + (_top - point.top);
@@ -215,7 +222,7 @@ namespace MyGUI
 		if (mMoveToClick && mWidgetTrack != _sender)
 		{
 			mPreActionOffset = InputManager::getInstance().getLastLeftPressed();
-			const IntPoint & point = InputManager::getInstance().getMousePosition() - getAbsolutePosition();
+			const IntPoint& point = InputManager::getInstance().getMousePositionByLayer() - getAbsolutePosition();
 
 			TrackMove(point.left, point.top);
 
@@ -309,7 +316,7 @@ namespace MyGUI
 		updateTrack();
 	}
 
-	void VScroll::setPosition(const IntPoint & _point)
+	void VScroll::setPosition(const IntPoint& _point)
 	{
 		Base::setPosition(_point);
 	}
@@ -321,7 +328,7 @@ namespace MyGUI
 		updateTrack();
 	}
 
-	void VScroll::setCoord(const IntCoord & _coord)
+	void VScroll::setCoord(const IntCoord& _coord)
 	{
 		Base::setCoord(_coord);
 		// обновляем трек
@@ -362,12 +369,23 @@ namespace MyGUI
 		if (offset < 0) offset = 0;
 		else if (offset > (int)(mScrollRange - 1)) offset = mScrollRange - 1;
 
-		if ((size_t)offset != mScrollPosition) {
+		if ((size_t)offset != mScrollPosition)
+		{
 			mScrollPosition = offset;
 			// оповещаем
 			eventScrollChangePosition(this, (int)mScrollPosition);
 			updateTrack();
 		}
+	}
+
+	void VScroll::setProperty(const std::string& _key, const std::string& _value)
+	{
+		if (_key == "Scroll_Range") setScrollRange(utility::parseValue<size_t>(_value));
+		else if (_key == "Scroll_Position") setScrollPosition(utility::parseValue<size_t>(_value));
+		else if (_key == "Scroll_Page") setScrollPage(utility::parseValue<size_t>(_value));
+		else if (_key == "Scroll_ViewPage") setScrollViewPage(utility::parseValue<size_t>(_value));
+		else if (_key == "Scroll_MoveToClick") setMoveToClick(utility::parseValue<bool>(_value));
+		else Base::setProperty(_key, _value);
 	}
 
 } // namespace MyGUI

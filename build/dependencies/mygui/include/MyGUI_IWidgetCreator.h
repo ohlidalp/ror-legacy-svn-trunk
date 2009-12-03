@@ -3,7 +3,8 @@
 	@author		Albert Semenov
 	@date		03/2008
 	@module
-*//*
+*/
+/*
 	This file is part of MyGUI.
 	
 	MyGUI is free software: you can redistribute it and/or modify
@@ -37,7 +38,7 @@ namespace MyGUI
 		virtual ~IWidgetCreator() { }
 
 	protected:
-		virtual WidgetPtr baseCreateWidget(WidgetStyle _style, const std::string & _type, const std::string & _skin, const IntCoord& _coord, Align _align, const std::string & _layer, const std::string & _name) = 0;
+		virtual WidgetPtr baseCreateWidget(WidgetStyle _style, const std::string& _type, const std::string& _skin, const IntCoord& _coord, Align _align, const std::string& _layer, const std::string& _name) = 0;
 
 		// удяляет неудачника
 		virtual void _destroyChildWidget(WidgetPtr _widget) = 0;

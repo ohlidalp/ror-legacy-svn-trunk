@@ -3,7 +3,8 @@
 	@author		Albert Semenov
 	@date		11/2007
 	@module
-*//*
+*/
+/*
 	This file is part of MyGUI.
 	
 	MyGUI is free software: you can redistribute it and/or modify
@@ -23,14 +24,19 @@
 #include "MyGUI_HScroll.h"
 #include "MyGUI_InputManager.h"
 #include "MyGUI_Button.h"
-#include "MyGUI_WidgetSkinInfo.h"
+#include "MyGUI_ResourceSkin.h"
 
 namespace MyGUI
 {
 
-	HScroll::HScroll(WidgetStyle _style, const IntCoord& _coord, Align _align, const WidgetSkinInfoPtr _info, WidgetPtr _parent, ICroppedRectangle * _croppedParent, IWidgetCreator * _creator, const std::string & _name) :
-		Base(_style, _coord, _align, _info, _parent, _croppedParent, _creator, _name)
+	HScroll::HScroll()
 	{
+	}
+
+	void HScroll::_initialise(WidgetStyle _style, const IntCoord& _coord, Align _align, ResourceSkin* _info, WidgetPtr _parent, ICroppedRectangle * _croppedParent, IWidgetCreator * _creator, const std::string& _name)
+	{
+		Base::_initialise(_style, _coord, _align, _info, _parent, _croppedParent, _creator, _name);
+
 		initialiseWidgetSkin(_info);
 	}
 
@@ -39,14 +45,14 @@ namespace MyGUI
 		shutdownWidgetSkin();
 	}
 
-	void HScroll::baseChangeWidgetSkin(WidgetSkinInfoPtr _info)
+	void HScroll::baseChangeWidgetSkin(ResourceSkin* _info)
 	{
 		shutdownWidgetSkin();
 		Base::baseChangeWidgetSkin(_info);
 		initialiseWidgetSkin(_info);
 	}
 
-	void HScroll::initialiseWidgetSkin(WidgetSkinInfoPtr _info)
+	void HScroll::initialiseWidgetSkin(ResourceSkin* _info)
 	{
 	}
 
@@ -61,14 +67,15 @@ namespace MyGUI
 		int pos = getLineSize();
 
 		// скрываем если диапазан маленький или места мало
-		if ((mScrollRange < 2) || (pos <= mWidgetTrack->getWidth())) {
+		if ((mScrollRange < 2) || (pos <= mWidgetTrack->getWidth()))
+		{
 			mWidgetTrack->setVisible(false);
 			if ( nullptr != mWidgetFirstPart ) mWidgetFirstPart->setSize(pos/2, mWidgetFirstPart->getHeight());
 			if ( nullptr != mWidgetSecondPart ) mWidgetSecondPart->setCoord(pos/2 + mSkinRangeStart, mWidgetSecondPart->getTop(), pos - pos/2, mWidgetSecondPart->getHeight());
 			return;
 		}
 		// если скрыт то покажем
-		if (false == mWidgetTrack->isVisible())
+		if (!mWidgetTrack->isVisible())
 		{
 			mWidgetTrack->setVisible(true);
 		}
@@ -92,7 +99,7 @@ namespace MyGUI
 
 	void HScroll::TrackMove(int _left, int _top)
 	{
-		const IntPoint & point = InputManager::getInstance().getLastLeftPressed();
+		const IntPoint& point = InputManager::getInstance().getLastLeftPressed();
 
 		// расчитываем позицию виджета
 		int start = mPreActionOffset.left + (_left - point.left);

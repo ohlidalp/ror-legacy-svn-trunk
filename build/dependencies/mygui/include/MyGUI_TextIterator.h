@@ -3,7 +3,8 @@
 	@author		Albert Semenov
 	@date		12/2007
 	@module
-*//*
+*/
+/*
 	This file is part of MyGUI.
 	
 	MyGUI is free software: you can redistribute it and/or modify
@@ -25,7 +26,7 @@
 #include "MyGUI_Prerequest.h"
 #include "MyGUI_Colour.h"
 #include "MyGUI_TextChangeHistory.h"
-#include "MyGUI_Font.h"
+#include "MyGUI_IFont.h"
 
 namespace MyGUI
 {
@@ -36,40 +37,40 @@ namespace MyGUI
 		TextIterator();
 
 	public:
-		TextIterator(const Ogre::UTFString & _text, VectorChangeInfo * _history = nullptr);
+		TextIterator(const UString& _text, VectorChangeInfo * _history = nullptr);
 
 		bool moveNext();
 
 		// возвращает цвет
-		Ogre::UTFString getTagColour(bool _clear = false);
+		UString getTagColour(bool _clear = false);
 
 		// возвращает цвет
-		bool getTagColour(Ogre::UTFString & _colour);
+		bool getTagColour(UString& _colour);
 
 		// удаляет цвет
 		void clearTagColour() { getTagColour(true); }
 
 		bool setTagColour(const Colour& _colour);
 
-		bool setTagColour(Ogre::UTFString _colour);
+		bool setTagColour(UString _colour);
 
 		// сохраняет текущий итератор
 		bool saveStartPoint();
 
 		// возвращает строку от сохраненного итератора до текущего
-		Ogre::UTFString getFromStart();
+		UString getFromStart();
 
 		// удаляет от запомненной точки до текущей
 		bool eraseFromStart();
 
 		// возвращает текущую псевдо позицию
-		size_t getPosition() {return mPosition;}
+		size_t getPosition() { return mPosition; }
 
-		const Ogre::UTFString & getText() {return mText;}
+		const UString& getText() { return mText; }
 
-		void insertText(const Ogre::UTFString & _insert, bool _multiLine);
+		void insertText(const UString& _insert, bool _multiLine);
 
-		void clearNewLine(Ogre::UTFString & _text);
+		void clearNewLine(UString& _text);
 
 		//очищает весь текст
 		void clearText() { clear(); }
@@ -77,38 +78,38 @@ namespace MyGUI
 		// возвращает размер строки
 		size_t getSize();
 
-		void setText(const Ogre::UTFString & _text, bool _multiLine);
+		void setText(const UString& _text, bool _multiLine);
 
 		void cutMaxLength(size_t _max);
 
 		void cutMaxLengthFromBeginning(size_t _max);
 
 		// возвращает текст без тегов
-		static Ogre::UTFString getOnlyText(const Ogre::UTFString& _text);
+		static UString getOnlyText(const UString& _text);
 
-		static Ogre::UTFString getTextNewLine() { return L"\n"; }
+		static UString getTextNewLine() { return L"\n"; }
 
-		static Ogre::UTFString getTextCharInfo(Char _char);
+		static UString getTextCharInfo(Char _char);
 
 		// просто конвертируем цвет в строку
-		static Ogre::UTFString convertTagColour(const Colour& _colour);
+		static UString convertTagColour(const Colour& _colour);
 
-		static Ogre::UTFString toTagsString(const Ogre::UTFString& _text);
+		static UString toTagsString(const UString& _text);
 
 	private:
 
 		// возвращает цвет
-		bool getTagColour(Ogre::UTFString & _colour, Ogre::UTFString::iterator & _iter);
+		bool getTagColour(UString& _colour, UString::iterator& _iter);
 
-		void insert(Ogre::UTFString::iterator & _start, Ogre::UTFString & _insert);
+		void insert(UString::iterator& _start, UString& _insert);
 
-		Ogre::UTFString::iterator erase(Ogre::UTFString::iterator _start, Ogre::UTFString::iterator _end);
+		UString::iterator erase(UString::iterator _start, UString::iterator _end);
 
 		void clear();
 
 	private:
-		Ogre::UTFString mText;
-		Ogre::UTFString::iterator mCurrent, mEnd, mSave;
+		UString mText;
+		UString::iterator mCurrent, mEnd, mSave;
 
 		// позиция и размер
 		size_t mPosition, mSize;
@@ -116,7 +117,7 @@ namespace MyGUI
 
 		VectorChangeInfo * mHistory;
 
-	}; // class MYGUI_EXPORT TextIterator
+	};
 
 } // namespace MyGUI
 

@@ -3,19 +3,20 @@
 	@author		Albert Semenov
 	@date		10/2008
 	@module
-*//*
+*/
+/*
 	This file is part of MyGUI.
-	
+
 	MyGUI is free software: you can redistribute it and/or modify
 	it under the terms of the GNU Lesser General Public License as published by
 	the Free Software Foundation, either version 3 of the License, or
 	(at your option) any later version.
-	
+
 	MyGUI is distributed in the hope that it will be useful,
 	but WITHOUT ANY WARRANTY; without even the implied warranty of
 	MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 	GNU Lesser General Public License for more details.
-	
+
 	You should have received a copy of the GNU Lesser General Public License
 	along with MyGUI.  If not, see <http://www.gnu.org/licenses/>.
 */
@@ -30,6 +31,8 @@ namespace MyGUI
 
 	class BiIndexBase
 	{
+	public:
+		virtual ~BiIndexBase() { }
 	protected:
 
 		size_t getIndexCount() { return mIndexFace.size(); }
@@ -45,26 +48,30 @@ namespace MyGUI
 
 			size_t index;
 
-			if (_index == mIndexFace.size()) {
+			if (_index == mIndexFace.size())
+			{
 				// для вставки айтема
 				index = mIndexFace.size();
 
 				mIndexFace.push_back(_index);
 				mIndexBack.push_back(_index);
 			}
-			else {
+			else
+			{
 				// для вставки айтема
 				index = mIndexFace[_index];
 
 				size_t count = mIndexFace.size();
-				for (size_t pos=0; pos<count; ++pos) {
+				for (size_t pos=0; pos<count; ++pos)
+				{
 					if (mIndexFace[pos] >= index) mIndexFace[pos]++;
 				}
 				mIndexFace.insert(mIndexFace.begin() + _index, index);
 
 				count ++;
 				mIndexBack.push_back(0);
-				for (size_t pos=0; pos<count; ++pos) {
+				for (size_t pos=0; pos<count; ++pos)
+				{
 					mIndexBack[mIndexFace[pos]] = pos;
 				}
 			}
@@ -90,7 +97,8 @@ namespace MyGUI
 			mIndexBack.pop_back();
 
 			size_t count = mIndexFace.size();
-			for (size_t pos=0; pos<count; ++pos) {
+			for (size_t pos=0; pos<count; ++pos)
+			{
 				if (mIndexFace[pos] > index) mIndexFace[pos]--;
 				mIndexBack[mIndexFace[pos]] = pos;
 			}
@@ -163,8 +171,8 @@ namespace MyGUI
 			vec.reserve(count);
 			for (size_t pos=0; pos<count; ++pos) vec.push_back(false);
 
-			for (size_t pos=0; pos<count; ++pos) {
-
+			for (size_t pos=0; pos<count; ++pos)
+			{
 				// максимум
 				size_t index = mIndexBack[pos];
 				if (index >= count) throw new std::exception();
@@ -177,12 +185,14 @@ namespace MyGUI
 				vec[index] = true;
 			}
 
-			for (size_t pos=0; pos<count; ++pos) {
+			for (size_t pos=0; pos<count; ++pos)
+			{
 				if (!vec[pos]) throw new std::exception();
 			}
 
 			// проверяем на взаимоссылаемость индексов
-			for (size_t pos=0; pos<count; ++pos) {
+			for (size_t pos=0; pos<count; ++pos)
+			{
 				size_t index = mIndexFace[pos];
 				if (mIndexBack[index] != pos) throw new std::exception();
 			}

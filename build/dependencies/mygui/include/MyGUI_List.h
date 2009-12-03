@@ -3,7 +3,8 @@
 	@author		Albert Semenov
 	@date		11/2007
 	@module
-*//*
+*/
+/*
 	This file is part of MyGUI.
 	
 	MyGUI is free software: you can redistribute it and/or modify
@@ -32,14 +33,13 @@ namespace MyGUI
 
 	typedef delegates::CDelegate2<ListPtr, size_t> EventHandle_ListPtrSizeT;
 
-	class MYGUI_EXPORT List : public Widget
+	class MYGUI_EXPORT List :
+		public Widget
 	{
-		// для вызова закрытого конструктора
-		friend class factory::BaseWidgetFactory<List>;
-
-		MYGUI_RTTI_CHILD_HEADER( List, Widget );
+		MYGUI_RTTI_DERIVED( List );
 
 	public:
+		List();
 
 		//------------------------------------------------------------------------------//
 		// манипуляции айтемами
@@ -48,10 +48,10 @@ namespace MyGUI
 		size_t getItemCount() { return mItemsInfo.size(); }
 
 		//! Insert an item into a array at a specified position
-		void insertItemAt(size_t _index, const Ogre::UTFString & _name, Any _data = Any::Null);
+		void insertItemAt(size_t _index, const UString& _name, Any _data = Any::Null);
 
 		//! Add an item to the end of a array
-		void addItem(const Ogre::UTFString & _name, Any _data = Any::Null) { insertItemAt(ITEM_NONE, _name, _data); }
+		void addItem(const UString& _name, Any _data = Any::Null) { insertItemAt(ITEM_NONE, _name, _data); }
 
 		//! Remove item at a specified position
 		void removeItemAt(size_t _index);
@@ -64,13 +64,7 @@ namespace MyGUI
 
 
 		//! Search item, returns the position of the first occurrence in array or ITEM_NONE if item not found
-		size_t findItemIndexWith(const Ogre::UTFString & _name)
-		{
-			for (size_t pos=0; pos<mItemsInfo.size(); pos++) {
-				if (mItemsInfo[pos].first == _name) return pos;
-			}
-			return ITEM_NONE;
-		}
+		size_t findItemIndexWith(const UString& _name);
 
 
 		//------------------------------------------------------------------------------//
@@ -108,10 +102,10 @@ namespace MyGUI
 		// манипуляции отображением
 
 		//! Replace an item name at a specified position
-		void setItemNameAt(size_t _index, const Ogre::UTFString & _name);
+		void setItemNameAt(size_t _index, const UString& _name);
 
 		//! Get item name from specified position
-		const Ogre::UTFString & getItemNameAt(size_t _index);
+		const UString& getItemNameAt(size_t _index);
 
 
 		//------------------------------------------------------------------------------//
@@ -151,12 +145,12 @@ namespace MyGUI
 
 		//------------------------------------------------------------------------------------//
 
-		//! @copydoc Widget::setPosition(const IntPoint & _point)
-		virtual void setPosition(const IntPoint & _point);
-		//! @copydoc Widget::setSize(const IntSize& _size)
-		virtual void setSize(const IntSize & _size);
-		//! @copydoc Widget::setCoord(const IntCoord & _coord)
-		virtual void setCoord(const IntCoord & _coord);
+		//! @copydoc Widget::setPosition(const IntPoint& _value)
+		virtual void setPosition(const IntPoint& _value);
+		//! @copydoc Widget::setSize(const IntSize& _value)
+		virtual void setSize(const IntSize& _value);
+		//! @copydoc Widget::setCoord(const IntCoord& _value)
+		virtual void setCoord(const IntCoord& _value);
 
 		/** @copydoc Widget::setPosition(int _left, int _top) */
 		void setPosition(int _left, int _top) { setPosition(IntPoint(_left, _top)); }
@@ -167,8 +161,10 @@ namespace MyGUI
 
 		// возвращает максимальную высоту вмещающую все строки и родительский бордюр
 		//! Return optimal height to fit all items in List
-		size_t getOptimalHeight() { return (mCoord.height - mWidgetClient->getHeight()) + (mItemsInfo.size() * mHeightLine); }
+		size_t getOptimalHeight();
 
+		/** @copydoc Widget::setProperty(const std::string& _key, const std::string& _value) */
+		virtual void setProperty(const std::string& _key, const std::string& _value);
 
 	/*event:*/
 		/** Event : Enter pressed or double click.\n
@@ -214,11 +210,13 @@ namespace MyGUI
 		void _setItemFocus(size_t _position, bool _focus);
 		void _sendEventChangeScroll(size_t _position);
 
+		virtual void _initialise(WidgetStyle _style, const IntCoord& _coord, Align _align, ResourceSkin* _info, WidgetPtr _parent, ICroppedRectangle * _croppedParent, IWidgetCreator * _creator, const std::string& _name);
+
 	/*obsolete:*/
 #ifndef MYGUI_DONT_USE_OBSOLETE
 
 		MYGUI_OBSOLETE("use : void Widget::setCoord(const IntCoord& _coord)")
-		void setPosition(const IntCoord & _coord) { setCoord(_coord); }
+		void setPosition(const IntCoord& _coord) { setCoord(_coord); }
 		MYGUI_OBSOLETE("use : void Widget::setCoord(int _left, int _top, int _width, int _height)")
 		void setPosition(int _left, int _top, int _width, int _height) { setCoord(_left, _top, _width, _height); }
 
@@ -229,18 +227,18 @@ namespace MyGUI
 		MYGUI_OBSOLETE("use : void List::clearIndexSelected()")
 		void clearItemSelected() { clearIndexSelected(); }
 
-		MYGUI_OBSOLETE("use : void List::insertItemAt(size_t _index, const Ogre::UTFString & _name)")
-		void insertItem(size_t _index, const Ogre::UTFString & _item) { insertItemAt(_index, _item); }
-		MYGUI_OBSOLETE("use : void List::setItemNameAt(size_t _index, const Ogre::UTFString & _name)")
-		void setItem(size_t _index, const Ogre::UTFString & _item) { setItemNameAt(_index, _item); }
-		MYGUI_OBSOLETE("use : const Ogre::UTFString & List::getItemNameAt(size_t _index)")
-		const Ogre::UTFString & getItem(size_t _index) { return getItemNameAt(_index); }
+		MYGUI_OBSOLETE("use : void List::insertItemAt(size_t _index, const UString& _name)")
+		void insertItem(size_t _index, const UString& _item) { insertItemAt(_index, _item); }
+		MYGUI_OBSOLETE("use : void List::setItemNameAt(size_t _index, const UString& _name)")
+		void setItem(size_t _index, const UString& _item) { setItemNameAt(_index, _item); }
+		MYGUI_OBSOLETE("use : const UString& List::getItemNameAt(size_t _index)")
+		const UString& getItem(size_t _index) { return getItemNameAt(_index); }
 		MYGUI_OBSOLETE("use : void List::removeItemAt(size_t _index)")
 		void deleteItem(size_t _index) { removeItemAt(_index); }
 		MYGUI_OBSOLETE("use : void List::removeAllItems()")
 		void deleteAllItems() { removeAllItems(); }
-		MYGUI_OBSOLETE("use : size_t List::findItemIndexWith(const Ogre::UTFString & _name)")
-		size_t findItem(const Ogre::UTFString & _item) { return findItemIndexWith(_item); }
+		MYGUI_OBSOLETE("use : size_t List::findItemIndexWith(const UString& _name)")
+		size_t findItem(const UString& _item) { return findItemIndexWith(_item); }
 		MYGUI_OBSOLETE("use : size_t List::getIndexSelected()")
 		size_t getItemSelect() { return getIndexSelected(); }
 		MYGUI_OBSOLETE("use : void List::clearIndexSelected()")
@@ -263,10 +261,9 @@ namespace MyGUI
 #endif // MYGUI_DONT_USE_OBSOLETE
 
 	protected:
-		List(WidgetStyle _style, const IntCoord& _coord, Align _align, const WidgetSkinInfoPtr _info, WidgetPtr _parent, ICroppedRectangle * _croppedParent, IWidgetCreator * _creator, const std::string & _name);
 		virtual ~List();
 
-		void baseChangeWidgetSkin(WidgetSkinInfoPtr _info);
+		void baseChangeWidgetSkin(ResourceSkin* _info);
 
 		void onMouseWheel(int _rel);
 		void onKeyLostFocus(WidgetPtr _new);
@@ -296,7 +293,7 @@ namespace MyGUI
 		void _updateState() { setState(mIsFocus ? "pushed" : "normal"); }
 
 	private:
-		void initialiseWidgetSkin(WidgetSkinInfoPtr _info);
+		void initialiseWidgetSkin(ResourceSkin* _info);
 		void shutdownWidgetSkin();
 		void _checkMapping(const std::string& _owner);
 
@@ -316,7 +313,7 @@ namespace MyGUI
 		size_t mIndexSelect; // текущий выделенный элемент или ITEM_NONE
 		size_t mLineActive; // текущий виджет над которым мыша
 
-		typedef std::pair<Ogre::UTFString, Any> PairItem;
+		typedef std::pair<UString, Any> PairItem;
 		typedef std::vector<PairItem> VectorItemInfo;
 		VectorItemInfo mItemsInfo;
 

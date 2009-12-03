@@ -3,7 +3,8 @@
 	@author		Albert Semenov
 	@date		12/2007
 	@module
-*//*
+*/
+/*
 	This file is part of MyGUI.
 	
 	MyGUI is free software: you can redistribute it and/or modify
@@ -32,38 +33,39 @@ namespace MyGUI
 
 	class MYGUI_EXPORT ISubWidgetText : public ISubWidget
 	{
-		MYGUI_RTTI_CHILD_HEADER( ISubWidgetText, ISubWidget );
+		MYGUI_RTTI_DERIVED( ISubWidgetText );
 
 	public:
-		ISubWidgetText(const IntCoord& _coord, Align _align, ICroppedRectangle * _parent) :
-			ISubWidget(_coord, _align, _parent) { }
 		virtual ~ISubWidgetText()  { }
 
-		virtual bool firstQueue() { return false; }
-
 		/** Get index of start of selection */
-		virtual size_t getSelectStart() { return 0; }
+		virtual size_t getTextSelectionStart() { return 0; }
 		/** Get index of end of selection */
-		virtual size_t getSelectEnd() { return 0; }
+		virtual size_t getTextSelectionEnd() { return 0; }
 		/** Set text selection */
-		virtual void setTextSelect(size_t _start, size_t _end) { }
+		virtual void setTextSelection(size_t _start, size_t _end) { }
 
 		// интенсивность выделенного текста
 		virtual bool getSelectBackground() { return true; }
 		virtual void setSelectBackground(bool _normal) { }
 
+		// нужно ли инвертировать выделение
+		virtual bool getInvertSelected() { return true; }
+		virtual void setInvertSelected(bool _value) { }
+
 		// управление видимостью курсора
-		virtual bool isCursorShow() { return false; }
-		virtual void setShowCursor(bool _show) { }
+		virtual bool isVisibleCursor() { return false; }
+		virtual void setVisibleCursor(bool _value) { }
 
 		// управление положением курсора
 		virtual size_t getCursorPosition() { return 0; }
-		virtual void setCursorPosition(size_t _pos) { }
+		virtual void setCursorPosition(size_t _index) { }
 
-		virtual void setBreakLine(bool _break) { }
+		virtual void setWordWrap(bool _value) { }
 
 		// возвращает положение курсора по произвольному положению
-		virtual size_t getCursorPosition(const IntPoint & _point) { return 0; }
+		// позиция абсолютная, без учета смещений
+		virtual size_t getCursorPosition(const IntPoint& _point) { return 0; }
 
 		// возвращает положение курсора в обсолютных координатах
 		virtual IntCoord getCursorCoord(size_t _position) { return IntCoord(); }
@@ -71,14 +73,14 @@ namespace MyGUI
 		// возвращает положение курсора в обсолютных координатах
 		IntPoint getCursorPoint(size_t _position)
 		{
-			const IntCoord & coord = getCursorCoord(_position);
+			const IntCoord& coord = getCursorCoord(_position);
 			return IntPoint(coord.left + coord.width / 2, coord.top + coord.height / 2);
 		}
 
 		// возвращает положение курсора в обсолютных координатах
 		IntRect getCursorRect(size_t _position)
 		{
-			const IntCoord & coord = getCursorCoord(_position);
+			const IntCoord& coord = getCursorCoord(_position);
 			return IntRect(coord.left, coord.top, coord.left + coord.width, coord.top + coord.height);
 		}
 
@@ -86,25 +88,25 @@ namespace MyGUI
 		virtual IntSize getTextSize() { return IntSize(); }
 
 		// устанавливает смещение текста в пикселях
-		virtual void setViewOffset(IntPoint _point) { }
+		virtual void setViewOffset(const IntPoint& _point) { }
 		virtual IntPoint getViewOffset() { return IntPoint(); }
 
-		virtual void setCaption(const Ogre::UTFString & _caption) { }
-		virtual const Ogre::UTFString & getCaption() { static Ogre::UTFString caption; return caption; }
+		virtual void setCaption(const UString& _value) { }
+		virtual const UString& getCaption() { static UString caption; return caption; }
 
-		virtual void setTextColour(const Colour& _colour) { }
+		virtual void setTextColour(const Colour& _value) { }
 		virtual const Colour& getTextColour() { return Colour::Zero; }
 
-		virtual void setFontName(const Ogre::String & _font) { }
-		virtual const Ogre::String & getFontName() { static Ogre::String name; return name; }
+		virtual void setFontName(const std::string& _value) { }
+		virtual const std::string& getFontName() { static std::string name; return name; }
 
-		virtual void setFontHeight(uint _height) { }
-		virtual uint getFontHeight() { return 0; }
+		virtual void setFontHeight(int _value) { }
+		virtual int getFontHeight() { return 0; }
 
-		virtual void setTextAlign(Align _align) { }
+		virtual void setTextAlign(Align _value) { }
 		virtual Align getTextAlign() { return Align::Default; }
 
-		virtual void setShiftText(bool _shift) { }
+		virtual void setShiftText(bool _value) { }
 
 	};
 

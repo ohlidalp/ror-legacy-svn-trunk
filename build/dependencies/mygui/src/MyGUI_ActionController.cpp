@@ -3,7 +3,8 @@
 	@author		Albert Semenov
 	@date		03/2008
 	@module
-*//*
+*/
+/*
 	This file is part of MyGUI.
 	
 	MyGUI is free software: you can redistribute it and/or modify
@@ -46,7 +47,7 @@ namespace MyGUI
 			WidgetManager::getInstance().destroyWidget(_widget);
 		}
 
-		void linearMoveFunction(const IntCoord & _startRect, const IntCoord & _destRect, IntCoord & _result, float _k)
+		void linearMoveFunction(const IntCoord& _startRect, const IntCoord& _destRect, IntCoord& _result, float _k)
 		{
 			_result.set(_startRect.left   - int( float(_startRect.left   - _destRect.left)   * _k ),
 			            _startRect.top    - int( float(_startRect.top    - _destRect.top)    * _k ),
@@ -55,7 +56,7 @@ namespace MyGUI
 			           );
 		}
 
-		void inertionalMoveFunction(const IntCoord & _startRect, const IntCoord & _destRect, IntCoord & _result, float _current_time)
+		void inertionalMoveFunction(const IntCoord& _startRect, const IntCoord& _destRect, IntCoord& _result, float _current_time)
 		{
 #ifndef M_PI
 			const float M_PI = 3.141593;

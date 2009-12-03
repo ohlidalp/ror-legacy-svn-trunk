@@ -3,7 +3,8 @@
 	@author		Albert Semenov
 	@date		12/2007
 	@module
-*//*
+*/
+/*
 	This file is part of MyGUI.
 	
 	MyGUI is free software: you can redistribute it and/or modify
@@ -25,9 +26,14 @@
 namespace MyGUI
 {
 
-	StaticText::StaticText(WidgetStyle _style, const IntCoord& _coord, Align _align, const WidgetSkinInfoPtr _info, WidgetPtr _parent, ICroppedRectangle * _croppedParent, IWidgetCreator * _creator, const std::string & _name) :
-		Base(_style, _coord, _align, _info, _parent, _croppedParent, _creator, _name)
+	StaticText::StaticText()
 	{
+	}
+
+	void StaticText::_initialise(WidgetStyle _style, const IntCoord& _coord, Align _align, ResourceSkin* _info, WidgetPtr _parent, ICroppedRectangle * _croppedParent, IWidgetCreator * _creator, const std::string& _name)
+	{
+		Base::_initialise(_style, _coord, _align, _info, _parent, _croppedParent, _creator, _name);
+
 		initialiseWidgetSkin(_info);
 	}
 
@@ -36,22 +42,22 @@ namespace MyGUI
 		shutdownWidgetSkin();
 	}
 
-	void StaticText::baseChangeWidgetSkin(WidgetSkinInfoPtr _info)
+	void StaticText::baseChangeWidgetSkin(ResourceSkin* _info)
 	{
 		shutdownWidgetSkin();
 		Base::baseChangeWidgetSkin(_info);
 		initialiseWidgetSkin(_info);
 	}
 
-	void StaticText::initialiseWidgetSkin(WidgetSkinInfoPtr _info)
+	void StaticText::initialiseWidgetSkin(ResourceSkin* _info)
 	{
 		// парсим свойства
-		const MapString & properties = _info->getProperties();
-		if (false == properties.empty())
+		const MapString& properties = _info->getProperties();
+		if (!properties.empty())
 		{
 			MapString::const_iterator iter = properties.end();
 			if ((iter = properties.find("FontName")) != properties.end()) setFontName(iter->second);
-			if ((iter = properties.find("FontHeight")) != properties.end()) setFontHeight(utility::parseUInt(iter->second));
+			if ((iter = properties.find("FontHeight")) != properties.end()) setFontHeight(utility::parseInt(iter->second));
 			if ((iter = properties.find("TextAlign")) != properties.end()) setTextAlign(Align::parse(iter->second));
 			if ((iter = properties.find("TextColour")) != properties.end()) setTextColour(Colour::parse(iter->second));
 		}
@@ -92,28 +98,38 @@ namespace MyGUI
 		return (nullptr == mText) ? Colour::Zero : mText->getTextColour();
 	}
 
-	void StaticText::setFontName(const Ogre::String & _font)
+	void StaticText::setFontName(const std::string& _font)
 	{
 		if (nullptr != mText) mText->setFontName(_font);
 	}
 
-	const std::string & StaticText::getFontName()
+	const std::string& StaticText::getFontName()
 	{
-		if (nullptr == mText) {
+		if (nullptr == mText)
+		{
 			static std::string empty;
 			return empty;
 		}
 		return mText->getFontName();
 	}
 
-	void StaticText::setFontHeight(uint _height)
+	void StaticText::setFontHeight(int _height)
 	{
 		if (nullptr != mText) mText->setFontHeight(_height);
 	}
 
-	uint StaticText::getFontHeight()
+	int StaticText::getFontHeight()
 	{
 		return (nullptr == mText) ? 0 : mText->getFontHeight();
+	}
+
+	void StaticText::setProperty(const std::string& _key, const std::string& _value)
+	{
+		if (_key == "Text_TextColour") setTextColour(utility::parseValue<Colour>(_value));
+		else if (_key == "Text_TextAlign") setTextAlign(utility::parseValue<Align>(_value));
+		else if (_key == "Text_FontName") setFontName(_value);
+		else if (_key == "Text_FontHeight") setFontHeight(utility::parseValue<int>(_value));
+		else Base::setProperty(_key, _value);
 	}
 
 } // namespace MyGUI

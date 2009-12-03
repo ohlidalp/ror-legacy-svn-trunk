@@ -4,7 +4,8 @@
 	@author		Georgiy Evmenov
 	@author		Albert Semenov
 	@date		09/2007
-*//*
+*/
+/*
 	This file is part of MyGUI.
 	
 	MyGUI is free software: you can redistribute it and/or modify
@@ -113,6 +114,12 @@
 #       define MYGUI_EXPORT  __attribute__ ((visibility("default")))
 #   else
 #       define MYGUI_EXPORT
+#   endif
+
+#   if __GNUC__ >= 4
+#       define MYGUI_EXPORT_DLL  __attribute__ ((visibility("default")))
+#   else
+#       define MYGUI_EXPORT_DLL
 #   endif
 
 // A quick define to overcome different names for the same function

@@ -3,7 +3,8 @@
 	@author		Georgiy Evmenov
 	@date		11/2007
 	@module
-*//*
+*/
+/*
 	This file is part of MyGUI.
 	
 	MyGUI is free software: you can redistribute it and/or modify
@@ -31,37 +32,36 @@ namespace MyGUI
 
 	class MYGUI_EXPORT ICroppedRectangle
 	{
-
 	public:
-		ICroppedRectangle(const IntCoord & _coord, Align _align, ICroppedRectangle * _croppedParent) :
+		ICroppedRectangle() :
 			mIsMargin(false),
-			mCoord(_coord),
-			mCroppedParent(_croppedParent),
+			mCroppedParent(nullptr),
 			mVisible(true),
-			mAlign (_align)
+			mAlign(Align::Default)
 		{ }
+
 		virtual ~ICroppedRectangle() { }
 
 		/** Get parent ICroppedRectangle */
 		ICroppedRectangle * getCroppedParent() { return mCroppedParent; }
 
 		/** Set coordinates (position and size) */
-		virtual void setCoord(const IntCoord& _coord) { mCoord = _coord; }
+		virtual void setCoord(const IntCoord& _value) { mCoord = _value; }
 		/** Get coordinates (position and size) */
 		const IntCoord& getCoord() { return mCoord; }
 
 		/** Set position */
-		virtual void setPosition(const IntPoint& _pos) { mCoord.left = _pos.left; mCoord.top = _pos.top; }
+		virtual void setPosition(const IntPoint& _value) { mCoord.left = _value.left; mCoord.top = _value.top; }
 		/** Get position */
 		IntPoint getPosition() { return mCoord.point(); }
 
 		/** Set size */
-		virtual void setSize(const IntSize& _size) { mCoord.width = _size.width; mCoord.height = _size.height; }
+		virtual void setSize(const IntSize& _value) { mCoord.width = _value.width; mCoord.height = _value.height; }
 		/** Get size */
 		IntSize getSize() { return mCoord.size(); }
 
 		/** Hide or show */
-		virtual void setVisible(bool _visible) { mVisible = _visible; }
+		virtual void setVisible(bool _value) { mVisible = _value; }
 		/** Return true if visible */
 		bool isVisible() { return mVisible; }
 
@@ -78,7 +78,7 @@ namespace MyGUI
 		int getAbsoluteTop() { return mAbsolutePosition.top; }
 
 		/** Set align */
-		void setAlign(Align _align) { mAlign = _align; }
+		virtual void setAlign(Align _value) { mAlign = _value; }
 		/** Get align */
 		Align getAlign() { return mAlign; }
 
@@ -110,9 +110,16 @@ namespace MyGUI
 
 		virtual void _updateView() { }
 		virtual void _correctView() { }
-		virtual void _setAlign(const IntSize& _size, bool _update)  { }
-		virtual void _setAlign(const IntCoord& _coord, bool _update) { }
+		virtual void _setAlign(const IntSize& _oldsize, bool _update)  { }
+		virtual void _setAlign(const IntCoord& _oldcoord, bool _update) { }
 
+		void _setCroppedParent(ICroppedRectangle* _parent) { mCroppedParent = _parent; }
+
+		const IntRect& _getMargin() { return mMargin; }
+		int _getMarginLeft() { return mMargin.left; }
+		int _getMarginRight() { return mMargin.right; }
+		int _getMarginTop() { return mMargin.top; }
+		int _getMarginBottom() { return mMargin.bottom; }
 
 	/*obsolete:*/
 #ifndef MYGUI_DONT_USE_OBSOLETE
@@ -127,53 +134,55 @@ namespace MyGUI
 #endif // MYGUI_DONT_USE_OBSOLETE
 
 	protected:
-		const IntRect& _getMargin() { return mMargin; }
-		int _getMarginLeft() { return mMargin.left; }
-		int _getMarginRight() { return mMargin.right; }
-		int _getMarginTop() { return mMargin.top; }
-		int _getMarginBottom() { return mMargin.bottom; }
-
 		bool _checkPoint(int _left, int _top)
 		{
-			return ! ((_getViewLeft() > _left ) || (_getViewTop() > _top) || (_getViewRight() < _left) || (_getViewBottom() < _top) );
+			return ! ((_getViewLeft() > _left) || (_getViewTop() > _top) || (_getViewRight() < _left) || (_getViewBottom() < _top));
 		}
 
 		bool _checkMargin()
 		{
 			bool margin = false;
 			//вылезли ли налево
-			if (getLeft() < mCroppedParent->mMargin.left) {
+			if (getLeft() < mCroppedParent->mMargin.left)
+			{
 				mMargin.left = mCroppedParent->mMargin.left - getLeft();
 				margin = true;
 			}
-			else {
+			else
+			{
 				mMargin.left = 0;
 			}
 
 			//вылезли ли направо
-			if (getRight() > mCroppedParent->getWidth() - mCroppedParent->mMargin.right) {
+			if (getRight() > mCroppedParent->getWidth() - mCroppedParent->mMargin.right)
+			{
 				mMargin.right = getRight() - (mCroppedParent->getWidth() - mCroppedParent->mMargin.right);
 				margin = true;
 			}
-			else {
+			else
+			{
 				mMargin.right = 0;
 			}
 
 			//вылезли ли вверх
-			if (getTop() < mCroppedParent->mMargin.top) {
+			if (getTop() < mCroppedParent->mMargin.top)
+			{
 				mMargin.top = mCroppedParent->mMargin.top - getTop();
 				margin = true;
 			}
-			else {
+			else
+			{
 				mMargin.top = 0;
 			}
 
 			//вылезли ли вниз
-			if (getBottom() > mCroppedParent->getHeight() - mCroppedParent->mMargin.bottom) {
+			if (getBottom() > mCroppedParent->getHeight() - mCroppedParent->mMargin.bottom)
+			{
 				mMargin.bottom = getBottom() - (mCroppedParent->getHeight() - mCroppedParent->mMargin.bottom);
 				margin = true;
 			}
-			else {
+			else
+			{
 				mMargin.bottom = 0;
 			}
 

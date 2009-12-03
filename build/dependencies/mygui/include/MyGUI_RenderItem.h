@@ -3,7 +3,8 @@
 	@author		Albert Semenov
 	@date		02/2008
 	@module
-*//*
+*/
+/*
 	This file is part of MyGUI.
 	
 	MyGUI is free software: you can redistribute it and/or modify
@@ -24,112 +25,63 @@
 
 #include "MyGUI_Prerequest.h"
 #include "MyGUI_Common.h"
-
-#include <OgreHardwareBufferManager.h>
-#include <OgreHardwareVertexBuffer.h>
-#include <OgrePrerequisites.h>
-#include <OgreRenderOperation.h>
-#include <OgreRenderSystem.h>
-#include <OgreTextureManager.h>
-#include <OgreTextureUnitState.h>
-
-#include "MyGUI_LastHeader.h"
+#include "MyGUI_IVertexBuffer.h"
+#include "MyGUI_VertexData.h"
+#include "MyGUI_IRenderTarget.h"
 
 namespace MyGUI
 {
 
-	enum {VERTEX_IN_QUAD = 6};
-
-	class LayerItemKeeper;
-	class DrawItem;
-	typedef std::pair<DrawItem *, size_t> DrawItemInfo;
+	typedef std::pair<ISubWidget*, size_t> DrawItemInfo;
 	typedef std::vector<DrawItemInfo> VectorDrawItem;
-
 
 	class MYGUI_EXPORT RenderItem
 	{
 	public:
-		RenderItem(const std::string& _texture, LayerItemKeeper * _parent);
-		~RenderItem();
+		RenderItem();
+		virtual ~RenderItem();
 
-		void _render(bool _update);
+		void renderToTarget(IRenderTarget* _target, bool _update);
 
-		const std::string& getTextureName() { return mTextureName; }
+		void setTexture(ITexture* _value);
+		ITexture* getTexture();
 
-		void addDrawItem(DrawItem * _item, size_t _count)
-		{
-
-// –ø—Ä–æ–≤–µ—Ä—è–µ–º —Ç–æ–ª—å–∫–æ –≤ –¥–µ–±–∞–≥–µ
-#if MYGUI_DEBUG_MODE == 1
-			for (VectorDrawItem::iterator iter=mDrawItems.begin(); iter!=mDrawItems.end(); ++iter) {
-				MYGUI_ASSERT((*iter).first != _item, "DrawItem exist");
-			}
-#endif
-
-			mDrawItems.push_back(DrawItemInfo(_item, _count));
-			mNeedVertexCount += _count;
-			mOutDate = true;
-		}
-
-		void removeDrawItem(DrawItem * _item);
-
-		void reallockDrawItem(DrawItem * _item, size_t _count)
-		{
-			for (VectorDrawItem::iterator iter=mDrawItems.begin(); iter!=mDrawItems.end(); ++iter) {
-				if ((*iter).first == _item) {
-					// –µ—Å–ª–∏ –Ω—É–∂–Ω–æ –º–µ–Ω—å—à–µ, —Ç–æ –Ω–∏—á–µ –Ω–µ –¥–µ–ª–∞–µ–º
-					if ((*iter).second < _count) {
-						mNeedVertexCount -= (*iter).second;
-						mNeedVertexCount += _count;
-						(*iter).second = _count;
-					}
-					return;
-				}
-			}
-			MYGUI_EXCEPT("DrawItem not found");
-		}
-
-		void setTextureName(const std::string& _texture)
-		{
-			MYGUI_DEBUG_ASSERT(mNeedVertexCount == 0, "change texture only empty buffer");
-			mTextureName = _texture;
-		}
+		void addDrawItem(ISubWidget* _item, size_t _count);
+		void removeDrawItem(ISubWidget* _item);
+		void reallockDrawItem(ISubWidget* _item, size_t _count);
 
 		void outOfDate() { mOutDate = true; }
 
-		size_t getVertexCount() {return mVertexCount;}
-		size_t getNeedVertexCount() {return mNeedVertexCount;}
+		size_t getNeedVertexCount() { return mNeedVertexCount; }
+
+		bool getCurrentUpdate() { return mCurrentUpdate; }
+		Vertex* getCurrentVertextBuffer() { return mCurrentVertext; }
+
+		void setLastVertexCount(size_t _count) { mLastVertextCount = _count; }
+
+		IRenderTarget* getRenderTarget() { return mRenderTarget; }
 
 	private:
-		void initRenderState();
-
-		void createVertexBuffer();
-		void destroyVertexBuffer();
-
-		void resizeVertexBuffer();
-
-	private:
+#if MYGUI_DEBUG_MODE == 1
 		std::string mTextureName;
+#endif
+
+		ITexture* mTexture;
 
 		size_t mNeedVertexCount;
-		size_t mVertexCount;
 
 		bool mOutDate;
 		VectorDrawItem mDrawItems;
 
-		Ogre::RenderSystem* mRenderSystem;
-		Ogre::TextureManager* mTextureManager;
-
-		Ogre::RenderOperation mRenderOperation;
-		Ogre::HardwareVertexBufferSharedPtr mVertexBuffer;
-
-		Ogre::TextureUnitState::UVWAddressingMode mTextureAddressMode;
-		Ogre::LayerBlendModeEx mColorBlendMode, mAlphaBlendMode;
-
-		LayerItemKeeper * mParent;
-		LayerManager * mLayerManager;
-
+		// ÍÓÎÎË˜ÂÒÚ‚Ó ÓÚÂÌ‰ÂÌÌ˚ı Â‡Î¸ÌÓ ‚Â¯ËÌ
 		size_t mCountVertex;
+
+		bool mCurrentUpdate;
+		Vertex* mCurrentVertext;
+		size_t mLastVertextCount;
+
+		IVertexBuffer* mVertexBuffer;
+		IRenderTarget* mRenderTarget;
 
 	};
 

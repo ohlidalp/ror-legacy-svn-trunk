@@ -3,19 +3,20 @@
 	@author		Albert Semenov
 	@date		01/2008
 	@module
-*//*
+*/
+/*
 	This file is part of MyGUI.
-	
+
 	MyGUI is free software: you can redistribute it and/or modify
 	it under the terms of the GNU Lesser General Public License as published by
 	the Free Software Foundation, either version 3 of the License, or
 	(at your option) any later version.
-	
+
 	MyGUI is distributed in the hope that it will be useful,
 	but WITHOUT ANY WARRANTY; without even the implied warranty of
 	MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 	GNU Lesser General Public License for more details.
-	
+
 	You should have received a copy of the GNU Lesser General Public License
 	along with MyGUI.  If not, see <http://www.gnu.org/licenses/>.
 */
@@ -32,9 +33,6 @@
 namespace MyGUI
 {
 
-	typedef std::pair<WidgetPtr, ControllerItem *> PairControllerItem;
-	typedef std::list<PairControllerItem> ListControllerItem;
-
 	class MYGUI_EXPORT ControllerManager : public IUnlinkWidget
 	{
 		MYGUI_INSTANCE_HEADER(ControllerManager);
@@ -43,6 +41,9 @@ namespace MyGUI
 		void initialise();
 		void shutdown();
 
+		// создает контроллер
+		ControllerItem* createItem(const std::string& _type);
+
 		/** Add controlled widget
 			@param _widget to be controlled
 			@param _item controller with some actions (for example ControllerFadeAlpha or your own)
@@ -50,18 +51,20 @@ namespace MyGUI
 				(if not removed by removeItem(WidgetPtr _widget) before)
 		*/
 		void addItem(WidgetPtr _widget, ControllerItem * _item);
+
 		/** Stop the control over a widget
 			@param _widget to be removed
 		*/
 		void removeItem(WidgetPtr _widget);
 
-		void _unlinkWidget(WidgetPtr _widget);
-
 	private:
+		void _unlinkWidget(WidgetPtr _widget);
 		void frameEntered(float _time);
 		void clear();
 
 	private:
+		typedef std::pair<WidgetPtr, ControllerItem *> PairControllerItem;
+		typedef std::list<PairControllerItem> ListControllerItem;
 		ListControllerItem mListItem;
 
 	};

@@ -3,19 +3,20 @@
 	@author		Alexander Ptakhin
 	@date		01/2009
 	@module
-*//*
+*/
+/*
 	This file is part of MyGUI.
-	
+
 	MyGUI is free software: you can redistribute it and/or modify
 	it under the terms of the GNU Lesser General Public License as published by
 	the Free Software Foundation, either version 3 of the License, or
 	(at your option) any later version.
-	
+
 	MyGUI is distributed in the hope that it will be useful,
 	but WITHOUT ANY WARRANTY; without even the implied warranty of
 	MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 	GNU Lesser General Public License for more details.
-	
+
 	You should have received a copy of the GNU Lesser General Public License
 	along with MyGUI.  If not, see <http://www.gnu.org/licenses/>.
 */
@@ -23,18 +24,25 @@
 #include "MyGUI_Canvas.h"
 #include "MyGUI_ResourceManager.h"
 #include "MyGUI_Gui.h"
+#include "MyGUI_RenderManager.h"
+#include "MyGUI_Bitwise.h"
 
 namespace MyGUI
 {
 
-	Canvas::Canvas( WidgetStyle _style, const IntCoord& _coord, Align _align, const WidgetSkinInfoPtr _info, WidgetPtr _parent, ICroppedRectangle * _croppedParent, IWidgetCreator * _creator, const std::string & _name )
-		:	Base( _style, _coord, _align, _info, _parent, _croppedParent, _creator, _name ),
-			mTexResizeMode( TRM_PT_CONST_SIZE ),
-			mTexData( 0 ),
-			mTexManaged( true ),
-			mFrameAdvise( false )
+	Canvas::Canvas() :
+		mTexture( nullptr ),
+		mTexResizeMode( TRM_PT_CONST_SIZE ),
+		mTexData( 0 ),
+		mTexManaged( true ),
+		mFrameAdvise( false )
 	{
 		mGenTexName = utility::toString( this, "_Canvas" );
+	}
+
+	void Canvas::_initialise(WidgetStyle _style, const IntCoord& _coord, Align _align, ResourceSkin* _info, WidgetPtr _parent, ICroppedRectangle * _croppedParent, IWidgetCreator * _creator, const std::string& _name)
+	{
+		Base::_initialise(_style, _coord, _align, _info, _parent, _croppedParent, _creator, _name);
 	}
 
 	Canvas::~Canvas()
@@ -42,14 +50,14 @@ namespace MyGUI
 		_destroyTexture( false );
 	}
 
-	void Canvas::createTexture( TextureResizeMode _resizeMode, Ogre::TextureUsage _usage, Ogre::PixelFormat _format )
+	void Canvas::createTexture( TextureResizeMode _resizeMode, TextureUsage _usage, PixelFormat _format )
 	{
 		createTexture( getSize(), _resizeMode, _usage, _format );
 	}
 
-	void Canvas::createTexture( const IntSize & _size, TextureResizeMode _resizeMode, Ogre::TextureUsage _usage, Ogre::PixelFormat _format )
+	void Canvas::createTexture( const IntSize& _size, TextureResizeMode _resizeMode, TextureUsage _usage, PixelFormat _format )
 	{
-		if( _size.width <= 0 || _size.height <= 0 )
+		if ( _size.width <= 0 || _size.height <= 0 )
 		{
 			MYGUI_ASSERT( 0, "At least one of dimensions isn't positive!" );
 			return;
@@ -58,28 +66,26 @@ namespace MyGUI
 		createTexture( _size.width, _size.height, _resizeMode, _usage, _format );
 	}
 
-	void Canvas::createExactTexture( int _width, int _height, Ogre::TextureUsage _usage, Ogre::PixelFormat _format )
+	void Canvas::createExactTexture( int _width, int _height, TextureUsage _usage, PixelFormat _format )
 	{
 		MYGUI_ASSERT( _width >= 0 && _height >= 0, "negative size" );
 
 		destroyTexture();
 
-		mTexPtr = Ogre::TextureManager::getSingleton().createManual(
-			mGenTexName,
-			ResourceManager::getInstance().getResourceGroup(),
-			Ogre::TEX_TYPE_2D,
-			_width, _height,
-			0, _format,
-			_usage, this );
-
-		mTexPtr->load();
+		mTexture = RenderManager::getInstance().createTexture(mGenTexName);
+		mTexture->setInvalidateListener(this);
+		mTexture->createManual( _width, _height, _usage, _format );
 
 		mTexManaged = true;
+
+		_setTextureName( mGenTexName );
+		correctUV();
+		requestUpdateCanvas( this, Event( true, true, false ) );
 	}
 
-	void Canvas::resize( const IntSize & _size )
+	void Canvas::resize( const IntSize& _size )
 	{
-		if( _size.width <= 0 || _size.height <= 0 || ! mTexManaged )
+		if ( _size.width <= 0 || _size.height <= 0 || ! mTexManaged )
 			return;
 
 		mReqTexSize = _size;
@@ -87,49 +93,36 @@ namespace MyGUI
 		frameAdvise( true );
 	}
 
-	void Canvas::createTexture( int _width, int _height, TextureResizeMode _resizeMode, Ogre::TextureUsage _usage, Ogre::PixelFormat _format )
+	void Canvas::createTexture( int _width, int _height, TextureResizeMode _resizeMode, TextureUsage _usage, PixelFormat _format )
 	{
 		MYGUI_ASSERT( _width >= 0 && _height >= 0, "negative size" );
 
-		if( mReqTexSize.empty() )
+		if ( mReqTexSize.empty() )
 			mReqTexSize = IntSize( _width, _height );
 
 		mTexResizeMode = _resizeMode;
 
 		bool create = checkCreate( _width, _height );
 
-		validateSize( _width, _height );
+		_width = Bitwise::firstPO2From(_width);
+		_height = Bitwise::firstPO2From(_height);
 
-		if( create )
+		if ( create )
 			createExactTexture( _width, _height, _usage, _format );
 	}
 
-	void Canvas::setSize( const IntSize & _size )
+	void Canvas::setSize( const IntSize& _size )
 	{
 		resize( _size );
 
 		Base::setSize( _size );
 	}
 
-	void Canvas::setCoord( const IntCoord & _coord )
+	void Canvas::setCoord( const IntCoord& _coord )
 	{
 		resize( _coord.size() );
 
 		Base::setCoord( _coord );
-	}
-
-	void Canvas::loadResource( Ogre::Resource* _resource )
-	{
-		if( mTexPtr.get() == _resource )
-		{
-			mTexPtr->createInternalResources();
-
-			_setTextureName( mGenTexName );
-
-			correctUV();
-
-			requestUpdateCanvas( this, Event( true, true, false ) );
-		}
 	}
 
 	void Canvas::updateTexture()
@@ -139,38 +132,28 @@ namespace MyGUI
 
 	bool Canvas::checkCreate( int _width, int _height ) const
 	{
-		if( mTexPtr.isNull() )
+		if ( mTexture == nullptr )
 			return true;
 
-		if( mTexPtr->getWidth() >= size_t(_width) && mTexPtr->getHeight() >= size_t(_height) )
+		if ( mTexture->getWidth() >= _width && mTexture->getHeight() >= _height )
 			return false;
 
 		return true;
 	}
 
-	void Canvas::validateSize( int & _width, int & _height ) const
+	void Canvas::validate( int& _width, int& _height, TextureUsage& _usage, PixelFormat& _format ) const
 	{
-		if( mTexResizeMode == TRM_PT_CONST_SIZE
-		 || mTexResizeMode == TRM_PT_VIEW_REQUESTED
-		 || mTexResizeMode == TRM_PT_VIEW_ALL )
-		{
-			_width = nextPowerOf2( _width );
-			_height = nextPowerOf2( _height );
-		}
-	}
-
-	void Canvas::validate( int & _width, int & _height, Ogre::TextureUsage & _usage, Ogre::PixelFormat & _format ) const
-	{
-		validateSize( _width, _height );
+		_width = Bitwise::firstPO2From(_width);
+		_height = Bitwise::firstPO2From(_height);
 
 		// restore usage and format
-		if( ! mTexPtr.isNull() )
+		if ( mTexture != nullptr )
 		{
-			if( _usage == getDefaultTextureUsage() )
-				_usage = (Ogre::TextureUsage) mTexPtr->getUsage();
+			if ( _usage == getDefaultTextureUsage() )
+				_usage = mTexture->getUsage();
 
-			if( _format == getDefaultTextureFormat() )
-				_format = mTexPtr->getFormat();
+			if ( _format == getDefaultTextureFormat() )
+				_format = mTexture->getFormat();
 		}
 	}
 
@@ -181,41 +164,38 @@ namespace MyGUI
 
 	void Canvas::_destroyTexture( bool _sendEvent )
 	{
-		if( ! mTexPtr.isNull() )
+		if ( mTexture != nullptr )
 		{
-			if( _sendEvent )
+			if ( _sendEvent )
+			{
 				eventPreTextureChanges( this );
+			}
 
-			mTexPtr->freeInternalResources();
-			mTexPtr->unload();
-
-			// delete from resource manager
-			Ogre::ResourceManager* parentResourceManager = mTexPtr->getCreator();
-			parentResourceManager->remove( mTexPtr->getHandle() );
-
-			mTexPtr.setNull();
+			RenderManager::getInstance().destroyTexture( mTexture );
+			mTexture = nullptr;
 		}
+
 	}
 
 	void Canvas::correctUV()
 	{
-		if( mTexResizeMode == TRM_PT_VIEW_REQUESTED )
+		if ( mTexResizeMode == TRM_PT_VIEW_REQUESTED )
 		{
 			_setUVSet( FloatRect( 0, 0,
-				(Ogre::Real) mReqTexSize.width  / (Ogre::Real) getTextureRealWidth(),
-				(Ogre::Real) mReqTexSize.height / (Ogre::Real) getTextureRealHeight()
+				(float) mReqTexSize.width  / (float) getTextureRealWidth(),
+				(float) mReqTexSize.height / (float) getTextureRealHeight()
 				) );
 		}
 
-		if( mTexResizeMode == TRM_PT_CONST_SIZE || mTexResizeMode == TRM_PT_VIEW_ALL )
+		if ( mTexResizeMode == TRM_PT_CONST_SIZE || mTexResizeMode == TRM_PT_VIEW_ALL )
 		{
 			_setUVSet( FloatRect( 0, 0, 1, 1 ) );
 		}
 	}
 
-	void* Canvas::lock()
+	void* Canvas::lock(TextureUsage _usage)
 	{
-		void* data = getBuffer()->lock( Ogre::HardwareBuffer::HBL_DISCARD );
+		void* data = mTexture->lock(_usage);
 
 		mTexData = reinterpret_cast< uint8* >( data );
 
@@ -224,53 +204,15 @@ namespace MyGUI
 
 	void Canvas::unlock()
 	{
-		mTexPtr->getBuffer()->unlock();
+		mTexture->unlock();
 	}
 
-	void* Canvas::pointPixel( int _x, int _y )
-	{
-		MYGUI_ASSERT( _x >= 0 && _x < getTextureRealWidth() && _y >= 0 && _y < getTextureRealHeight(),
-			"Access to non-exists pixel! Check real dimensions of texture!" );
-
-		MYGUI_ASSERT( isLocked(), "Must lock MyGUI::Canvas before point pixel!" );
-
-		size_t _pixelDataSize = Ogre::PixelUtil::getNumElemBytes( mTexPtr->getFormat() );
-
-		MYGUI_ASSERT( _pixelDataSize, "Unknown texture format!" );
-
-		return mTexData + ( _y * getTextureRealWidth() + _x ) * _pixelDataSize;
-	}
-
-	void Canvas::setPixel( int _x, int _y, const Ogre::ColourValue & value )
-	{
-		MYGUI_ASSERT( _x >= 0 && _x < getTextureRealWidth() && _y >= 0 && _y < getTextureRealHeight(),
-			"Access to non-exists pixel! Check real dimensions of texture!" );
-
-		MYGUI_ASSERT( isLocked(), "Must lock MyGUI::Canvas before set pixel!" );
-
-		Ogre::PixelUtil::packColour( value, getTextureFormat(), pointPixel( _x, _y ) );
-	}
-
-	Ogre::ColourValue Canvas::getPixel( int _x, int _y )
-	{
-		MYGUI_ASSERT( _x >= 0 && _x < getTextureRealWidth() && _y >= 0 && _y < getTextureRealHeight(),
-			"Access to non-exists pixel! Check real dimensions of texture!" );
-
-		MYGUI_ASSERT( isLocked(), "Must lock MyGUI::Canvas before set pixel!" );
-
-		Ogre::ColourValue result;
-
-		Ogre::PixelUtil::unpackColour( & result, getTextureFormat(), pointPixel( _x, _y ) );
-
-		return result;
-	}
-
-	void Canvas::baseChangeWidgetSkin( WidgetSkinInfoPtr _info )
+	void Canvas::baseChangeWidgetSkin( ResourceSkin* _info )
 	{
 		Base::baseChangeWidgetSkin( _info );
 	}
 
-	void Canvas::initialiseWidgetSkin( WidgetSkinInfoPtr _info )
+	void Canvas::initialiseWidgetSkin( ResourceSkin* _info )
 	{
 	}
 
@@ -283,32 +225,11 @@ namespace MyGUI
 		return getTextureSrcSize() == getTextureRealSize();
 	}
 
-	void Canvas::loadTexture( Ogre::TexturePtr texture, bool manageMode )
-	{
-		destroyTexture();
-
-		mTexPtr = texture;
-
-		mTexManaged = manageMode;
-	}
-
-	// I'm too lazy to write binary search :)
-	size_t Canvas::nextPowerOf2( size_t num )
-	{
-		size_t cur = 1;
-		for( int iter = 1; iter < 32; ++iter, cur *= 2 )
-		{
-			if( num <= cur )
-				break;
-		}
-		return cur;
-	}
-
 	void Canvas::frameAdvise( bool _advise )
 	{
-		if( _advise )
+		if ( _advise )
 		{
-			if( ! mFrameAdvise )
+			if ( ! mFrameAdvise )
 			{
 				MyGUI::Gui::getInstance().eventFrameStart += MyGUI::newDelegate( this, &Canvas::frameEntered );
 				mFrameAdvise = true;
@@ -316,7 +237,7 @@ namespace MyGUI
 		}
 		else
 		{
-			if( mFrameAdvise )
+			if ( mFrameAdvise )
 			{
 				MyGUI::Gui::getInstance().eventFrameStart -= MyGUI::newDelegate( this, &Canvas::frameEntered );
 				mFrameAdvise = false;
@@ -328,17 +249,17 @@ namespace MyGUI
 	{
 		int width = mReqTexSize.width;
 		int height = mReqTexSize.height;
-		Ogre::TextureUsage usage = getDefaultTextureUsage();
-		Ogre::PixelFormat format = getDefaultTextureFormat();
+		TextureUsage usage = getDefaultTextureUsage();
+		PixelFormat format = getDefaultTextureFormat();
 
 		validate( width, height, usage, format );
 
 		bool create = checkCreate( width, height );
 
-		if( mTexResizeMode == TRM_PT_CONST_SIZE )
+		if ( mTexResizeMode == TRM_PT_CONST_SIZE )
 			create = false;
 
-		if( create )
+		if ( create )
 		{
 			createExactTexture( width, height, usage, format );
 			correctUV();
@@ -350,6 +271,11 @@ namespace MyGUI
 		}
 
 		frameAdvise( false );
+	}
+
+	void Canvas::textureInvalidate(ITexture* _texture)
+	{
+		updateTexture();
 	}
 
 } // namespace MyGUI

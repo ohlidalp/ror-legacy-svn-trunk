@@ -3,7 +3,8 @@
 	@author		Albert Semenov
 	@date		10/2008
 	@module
-*//*
+*/
+/*
 	This file is part of MyGUI.
 	
 	MyGUI is free software: you can redistribute it and/or modify
@@ -21,7 +22,6 @@
 */
 
 #include "MyGUI_Precompiled.h"
-#include "MyGUI_Prerequest.h"
 #include "MyGUI_Any.h"
 
 namespace MyGUI
@@ -106,7 +106,7 @@ namespace MyGUI
 			ItemType getItemSelected() { return getIndexSelected() != ITEM_NONE ? getItemAt(getIndexSelected()) : nullptr; }
 
 			//! Select specified _index
-			void setIndexSelected(size_t _index) { }
+			void setIndexSelected(size_t _value) { }
 
 			//! Select item
 			void setItemSelected(ItemType _item) { setIndexSelected(getItemIndex(_item)); }

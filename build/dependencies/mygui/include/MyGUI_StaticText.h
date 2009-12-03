@@ -3,7 +3,8 @@
 	@author		Albert Semenov
 	@date		12/2007
 	@module
-*//*
+*/
+/*
 	This file is part of MyGUI.
 	
 	MyGUI is free software: you can redistribute it and/or modify
@@ -28,12 +29,13 @@
 namespace MyGUI
 {
 
-	class MYGUI_EXPORT StaticText : public Widget
+	class MYGUI_EXPORT StaticText :
+		public Widget
 	{
-		// для вызова закрытого конструктора
-		friend class factory::BaseWidgetFactory<StaticText>;
+		MYGUI_RTTI_DERIVED( StaticText );
 
-		MYGUI_RTTI_CHILD_HEADER( StaticText, Widget );
+	public:
+		StaticText();
 
 		/** Get text region coordinate */
 		IntCoord getTextRegion();
@@ -42,33 +44,38 @@ namespace MyGUI
 		IntSize getTextSize();
 
 		/** Set widget text font */
-		virtual void setFontName(const std::string & _font);
+		virtual void setFontName(const std::string& _value);
 		/** Get widget text font name */
-		const std::string & getFontName();
+		const std::string& getFontName();
 
 		/** Set widget text font height */
-		virtual void setFontHeight(uint _height);
+		virtual void setFontHeight(int _value);
 		/** Get widget text font height */
-		uint getFontHeight();
+		int getFontHeight();
 
 		/** Set widget text align */
-		virtual void setTextAlign(Align _align);
+		virtual void setTextAlign(Align _value);
 		/** Get widget text align */
 		Align getTextAlign();
 
 		/** Set widget text colour */
-		virtual void setTextColour(const Colour& _colour);
+		virtual void setTextColour(const Colour& _value);
 		/** Get widget text colour */
 		const Colour& getTextColour();
 
+		/** @copydoc Widget::setProperty(const std::string& _key, const std::string& _value) */
+		virtual void setProperty(const std::string& _key, const std::string& _value);
+
+	/*internal:*/
+		virtual void _initialise(WidgetStyle _style, const IntCoord& _coord, Align _align, ResourceSkin* _info, WidgetPtr _parent, ICroppedRectangle * _croppedParent, IWidgetCreator * _creator, const std::string& _name);
+
 	protected:
-		StaticText(WidgetStyle _style, const IntCoord& _coord, Align _align, const WidgetSkinInfoPtr _info, WidgetPtr _parent, ICroppedRectangle * _croppedParent, IWidgetCreator * _creator, const std::string & _name);
 		virtual ~StaticText();
 
-		void baseChangeWidgetSkin(WidgetSkinInfoPtr _info);
+		void baseChangeWidgetSkin(ResourceSkin* _info);
 
 	private:
-		void initialiseWidgetSkin(WidgetSkinInfoPtr _info);
+		void initialiseWidgetSkin(ResourceSkin* _info);
 		void shutdownWidgetSkin();
 
 	};

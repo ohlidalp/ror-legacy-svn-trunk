@@ -3,7 +3,8 @@
 	@author		Albert Semenov
 	@date		01/2008
 	@module
-*//*
+*/
+/*
 	This file is part of MyGUI.
 	
 	MyGUI is free software: you can redistribute it and/or modify
@@ -41,8 +42,8 @@ namespace MyGUI
 
 		DDItemState(Enum _value = None) : value(_value) { }
 
-		friend bool operator == (DDItemState const & a, DDItemState const & b) { return a.value == b.value; }
-		friend bool operator != (DDItemState const & a, DDItemState const & b) { return a.value != b.value; }
+		friend bool operator == (DDItemState const& a, DDItemState const& b) { return a.value == b.value; }
+		friend bool operator != (DDItemState const& a, DDItemState const& b) { return a.value != b.value; }
 
 	private:
 		Enum value;

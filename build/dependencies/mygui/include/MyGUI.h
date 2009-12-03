@@ -3,7 +3,8 @@
 	@author		Georgiy Evmenov
 	@date		01/2008
 	@module
-*//*
+*/
+/*
 	This file is part of MyGUI.
 	
 	MyGUI is free software: you can redistribute it and/or modify
@@ -37,7 +38,6 @@
 #include "MyGUI_Window.h"
 #include "MyGUI_Progress.h"
 #include "MyGUI_Message.h"
-#include "MyGUI_RenderBox.h"
 #include "MyGUI_ItemBox.h"
 #include "MyGUI_MultiList.h"
 #include "MyGUI_MenuCtrl.h"
@@ -47,6 +47,8 @@
 #include "MyGUI_ScrollView.h"
 #include "MyGUI_DDContainer.h"
 #include "MyGUI_Canvas.h"
+#include "MyGUI_ListCtrl.h"
+#include "MyGUI_ListBox.h"
 
 #include "MyGUI_InputManager.h"
 #include "MyGUI_SubWidgetManager.h"
@@ -61,22 +63,29 @@
 #include "MyGUI_PluginManager.h"
 #include "MyGUI_DynLibManager.h"
 #include "MyGUI_ControllerManager.h"
+#include "MyGUI_DelegateManager.h"
 #include "MyGUI_LanguageManager.h"
 #include "MyGUI_ResourceManager.h"
+#include "MyGUI_RenderManager.h"
+#include "MyGUI_DataManager.h"
+#include "MyGUI_FactoryManager.h"
 
 #include "MyGUI_ActionController.h"
 #include "MyGUI_ControllerEdgeHide.h"
 #include "MyGUI_ControllerFadeAlpha.h"
 #include "MyGUI_ControllerPosition.h"
+#include "MyGUI_CoordConverter.h"
 #include "MyGUI_IResource.h"
 #include "MyGUI_CastWidget.h"
 #include "MyGUI_Any.h"
-#include "MyGUI_Convert.h"
 #include "MyGUI_MenuItemType.h"
 #include "MyGUI_Version.h"
 #include "MyGUI_XmlDocument.h"
 #include "MyGUI_WidgetStyle.h"
+#include "MyGUI_IObject.h"
+#include "MyGUI_ISerializable.h"
 
-#include "MyGUI_LastHeader.h"
+#include "MyGUI_RawRect.h"
+#include "MyGUI_TextureUtility.h"
 
 #endif // __MYGUI_H__

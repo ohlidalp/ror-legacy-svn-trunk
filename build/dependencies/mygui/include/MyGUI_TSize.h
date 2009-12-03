@@ -3,7 +3,8 @@
 	@author		Albert Semenov
 	@date		11/2007
 	@module
-*//*
+*/
+/*
 	This file is part of MyGUI.
 	
 	MyGUI is free software: you can redistribute it and/or modify
@@ -34,34 +35,34 @@ namespace MyGUI
 			T width, height;
 
 			TSize() : width( 0 ), height( 0 ) { }
-			TSize( T const & w, T const & h) : width( w ), height( h ) { }
-			TSize( TSize const & o ) : width( o.width ), height( o.height ) { }
+			TSize( T const& w, T const& h) : width( w ), height( h ) { }
+			TSize( TSize const& o ) : width( o.width ), height( o.height ) { }
 
-			TSize & operator-=( TSize const & o )
+			TSize& operator-=( TSize const& o )
 			{
 				width -= o.width;
 				height -= o.height;
 				return *this;
 			}
 
-			TSize & operator+=( TSize const & o )
+			TSize& operator+=( TSize const& o )
 			{
 				width += o.width;
 				height += o.height;
 				return *this;
 			}
 
-			TSize operator-( TSize const & o ) const
+			TSize operator-( TSize const& o ) const
 			{
 				return TSize(width - o.width, height - o.height);
 			}
 
-			TSize operator+( TSize const & o ) const
+			TSize operator+( TSize const& o ) const
 			{
 				return TSize(width + o.width, height + o.height);
 			}
 
-			TSize & operator=( TSize const & o )
+			TSize& operator=( TSize const& o )
 			{
 				width = o.width;
 				height = o.height;
@@ -69,19 +70,19 @@ namespace MyGUI
 			}
 
 			template< typename U >
-			TSize & operator=( TSize<U> const & o )
+			TSize& operator=( TSize<U> const& o )
 			{
 				width = o.width;
 				height = o.height;
 				return *this;
 			}
 
-			bool operator==( TSize const & o ) const
+			bool operator==( TSize const& o ) const
 			{
 				return ((width == o.width) && (height == o.height));
 			}
 
-			bool operator!=( TSize const & o ) const
+			bool operator!=( TSize const& o ) const
 			{
 				return ! ((width == o.width) && (height == o.height));
 			}
@@ -91,7 +92,7 @@ namespace MyGUI
 				width = height = 0;
 			}
 
-			void set( T const & w, T const & h)
+			void set( T const& w, T const& h)
 			{
 				width = w;
 				height = h;
@@ -122,12 +123,14 @@ namespace MyGUI
 				std::istringstream stream(_value);
 				stream >> result.width >> result.height;
 				if (stream.fail()) return TSize<T>();
-				else {
+				else
+				{
 					int item = stream.get();
-					while (item != -1) {
+					while (item != -1)
+					{
 						if (item != ' ' && item != '\t') return TSize<T>();
 						item = stream.get();
-					};
+					}
 				}
 				return result;
 			}

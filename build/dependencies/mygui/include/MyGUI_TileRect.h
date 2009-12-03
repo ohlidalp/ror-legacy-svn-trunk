@@ -3,7 +3,8 @@
 	@author		Albert Semenov
 	@date		05/2008
 	@module
-*//*
+*/
+/*
 	This file is part of MyGUI.
 	
 	MyGUI is free software: you can redistribute it and/or modify
@@ -26,7 +27,7 @@
 #include "MyGUI_XmlDocument.h"
 #include "MyGUI_Types.h"
 #include "MyGUI_ISubWidgetRect.h"
-#include "MyGUI_WidgetSkinInfo.h"
+#include "MyGUI_ResourceSkin.h"
 
 namespace MyGUI
 {
@@ -35,51 +36,45 @@ namespace MyGUI
 
 	class MYGUI_EXPORT TileRect : public ISubWidgetRect
 	{
-		MYGUI_RTTI_CHILD_HEADER(TileRect, ISubWidgetRect);
+		MYGUI_RTTI_DERIVED( TileRect );
 
 	public:
-		TileRect(const SubWidgetInfo &_info, ICroppedRectangle * _parent);
+		TileRect();
 		virtual ~TileRect();
 
 		void setAlpha(float _alpha);
 
 		virtual void setVisible(bool _visible);
 
+		virtual void createDrawItem(ITexture* _texture, ILayerNode * _node);
+		virtual void destroyDrawItem();
+
+		// метод для отрисовки себя
+		virtual void doRender();
+
+		virtual void setStateData(IStateInfo * _data);
+
+	/*internal:*/
 		void _updateView();
 		void _correctView();
 
-		void _setAlign(const IntSize& _size, bool _update);
-		void _setAlign(const IntCoord& _coord, bool _update);
+		void _setAlign(const IntSize& _oldsize, bool _update);
+		void _setAlign(const IntCoord& _oldcoord, bool _update);
 
-		void _setUVSet(const FloatRect& _rect);
-
-		virtual void _createDrawItem(LayerItemKeeper * _keeper, RenderItem * _item);
-		virtual void _destroyDrawItem();
-
-		// метод для отрисовки себя
-		virtual size_t _drawItem(Vertex * _vertex, bool _update);
-
-		virtual void _setStateData(StateInfo * _data);
-
-		// метод для генерации данных из описания xml
-		static StateInfo * createStateData(xml::ElementPtr _node, xml::ElementPtr _root, Version _version);
-
-	private:
-		void updateTextureData();
+		virtual void _setUVSet(const FloatRect& _rect);
+		virtual void _setColour(const Colour& _value);
 
 	protected:
-
 		FloatRect mRectTexture;
 		bool mEmptyView;
 
-		uint32 mCurrentAlpha;
+		uint32 mCurrentColour;
 
 		FloatRect mCurrentTexture;
 		IntCoord mCurrentCoord;
 
-		RenderItem * mRenderItem;
-
-		LayerManager * mManager;
+		ILayerNode* mNode;
+		RenderItem* mRenderItem;
 
 		IntSize mTileSize;
 		size_t mCountVertex;
@@ -92,7 +87,6 @@ namespace MyGUI
 
 		bool mTileH;
 		bool mTileV;
-
 	};
 
 } // namespace MyGUI

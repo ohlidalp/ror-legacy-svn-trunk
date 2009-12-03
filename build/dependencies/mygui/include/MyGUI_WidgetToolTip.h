@@ -3,7 +3,8 @@
 	@author		Albert Semenov
 	@date		07/2008
 	@module
-*//*
+*/
+/*
 	This file is part of MyGUI.
 	
 	MyGUI is free software: you can redistribute it and/or modify
@@ -41,7 +42,7 @@ namespace MyGUI
 		ToolTipInfo(ToolTipType _type) :
 			type(_type), index(ITEM_NONE) { }
 
-		ToolTipInfo(ToolTipType _type, size_t _index, const IntPoint & _point) :
+		ToolTipInfo(ToolTipType _type, size_t _index, const IntPoint& _point) :
 			type(_type), index(_index), point(_point) { }
 
 		ToolTipType type;

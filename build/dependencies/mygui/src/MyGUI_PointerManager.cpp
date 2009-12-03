@@ -3,7 +3,8 @@
 	@author		Albert Semenov
 	@date		11/2007
 	@module
-*//*
+*/
+/*
 	This file is part of MyGUI.
 	
 	MyGUI is free software: you can redistribute it and/or modify
@@ -23,29 +24,47 @@
 #include "MyGUI_ResourceManager.h"
 #include "MyGUI_LayerManager.h"
 #include "MyGUI_PointerManager.h"
-#include "MyGUI_SkinManager.h"
+#include "MyGUI_CoordConverter.h"
 #include "MyGUI_WidgetManager.h"
 #include "MyGUI_XmlDocument.h"
 #include "MyGUI_Widget.h"
+#include "MyGUI_FactoryManager.h"
+#include "MyGUI_InputManager.h"
+#include "MyGUI_Gui.h"
+
+#include "MyGUI_ResourceManualPointer.h"
+#include "MyGUI_ResourceImageSetPointer.h"
 
 namespace MyGUI
 {
 
 	const std::string XML_TYPE("Pointer");
+	const std::string XML_TYPE_RESOURCE("Resource");
+	const std::string XML_TYPE_PROPERTY("Property");
+	const std::string RESOURCE_DEFAULT_NAME("Default");
 
 	MYGUI_INSTANCE_IMPLEMENT(PointerManager);
 
 	void PointerManager::initialise()
 	{
-		MYGUI_ASSERT(false == mIsInitialise, INSTANCE_TYPE_NAME << " initialised twice");
+		MYGUI_ASSERT(!mIsInitialise, INSTANCE_TYPE_NAME << " initialised twice");
 		MYGUI_LOG(Info, "* Initialise: " << INSTANCE_TYPE_NAME);
 
+		Gui::getInstance().eventFrameStart += newDelegate(this, &PointerManager::notifyFrameStart);
+		InputManager::getInstance().eventChangeMouseFocus += newDelegate(this, &PointerManager::notifyChangeMouseFocus);
 		WidgetManager::getInstance().registerUnlinker(this);
+
 		ResourceManager::getInstance().registerLoadXmlDelegate(XML_TYPE) = newDelegate(this, &PointerManager::_load);
 
+		FactoryManager::getInstance().registryFactory<ResourceManualPointer>(XML_TYPE_RESOURCE);
+		FactoryManager::getInstance().registryFactory<ResourceImageSetPointer>(XML_TYPE_RESOURCE);
+
+		mPointer = nullptr;
 		mMousePointer = nullptr;
 		mWidgetOwner = nullptr;
-		mShow = false;
+		mVisible = true;
+
+		mSkinName = "StaticImage";
 
 		MYGUI_LOG(Info, INSTANCE_TYPE_NAME << " successfully initialized");
 		mIsInitialise = true;
@@ -53,13 +72,19 @@ namespace MyGUI
 
 	void PointerManager::shutdown()
 	{
-		if (false == mIsInitialise) return;
+		if (!mIsInitialise) return;
 		MYGUI_LOG(Info, "* Shutdown: " << INSTANCE_TYPE_NAME);
+
+		InputManager::getInstance().eventChangeMouseFocus -= newDelegate(this, &PointerManager::notifyChangeMouseFocus);
+		Gui::getInstance().eventFrameStart -= newDelegate(this, &PointerManager::notifyFrameStart);
+
+		FactoryManager::getInstance().unregistryFactory<ResourceManualPointer>(XML_TYPE_RESOURCE);
+		FactoryManager::getInstance().unregistryFactory<ResourceImageSetPointer>(XML_TYPE_RESOURCE);
 
 		// удаляем все виджеты
 		_destroyAllChildWidget();
 
-		clear();
+		mWidgetOwner = nullptr;
 
 		WidgetManager::getInstance().unregisterUnlinker(this);
 		ResourceManager::getInstance().unregisterLoadXmlDelegate(XML_TYPE);
@@ -68,161 +93,158 @@ namespace MyGUI
 		mIsInitialise = false;
 	}
 
-	bool PointerManager::load(const std::string & _file, const std::string & _group)
+	bool PointerManager::load(const std::string& _file)
 	{
-		return ResourceManager::getInstance()._loadImplement(_file, _group, true, XML_TYPE, INSTANCE_TYPE_NAME);
+		return ResourceManager::getInstance()._loadImplement(_file, true, XML_TYPE, INSTANCE_TYPE_NAME);
 	}
 
-	void PointerManager::_load(xml::ElementPtr _node, const std::string & _file, Version _version)
+	void PointerManager::_load(xml::ElementPtr _node, const std::string& _file, Version _version)
 	{
-		std::string layer, def, text;
+		std::string pointer;
+		std::string layer;
 
-		// берем детей и крутимся, основной цикл
-		xml::ElementEnumerator pointer = _node->getElementEnumerator();
-		while (pointer.next(XML_TYPE)) {
+		xml::ElementEnumerator node = _node->getElementEnumerator();
+		while (node.next())
+		{
+			if (node->getName() == XML_TYPE)
+			{
+				layer = node->findAttribute("layer");
+				pointer = node->findAttribute("default");
 
-			// парсим атрибуты
-			pointer->findAttribute("layer", layer);
-			pointer->findAttribute("default", def);
+				// сохраняем
+				std::string shared_text = node->findAttribute("texture");
 
-			// сохраняем
-			text = pointer->findAttribute("texture");
+				// берем детей и крутимся, основной цикл
+				xml::ElementEnumerator info = node->getElementEnumerator();
+				while (info.next("Info"))
+				{
+					std::string name = info->findAttribute("name");
+					if (name.empty()) continue;
 
-			IntSize textureSize = SkinManager::getTextureSize(text);
+					std::string texture = info->findAttribute("texture");
 
-			// берем детей и крутимся, основной цикл
-			xml::ElementEnumerator info = pointer->getElementEnumerator();
-			while (info.next("Info")) {
+					std::string type = (shared_text.empty() && texture.empty()) ? "ResourceImageSetPointer" : "ResourceManualPointer";
 
-				std::string name(info->findAttribute("name"));
-				if (mMapPointers.find(name) != mMapPointers.end()) {
-					MYGUI_LOG(Warning, "pointer '" << name << "' exist, erase old data");
-				}
+					xml::Document doc;
+					xml::ElementPtr root = doc.createRoot("MyGUI");
+					xml::ElementPtr newnode = root->createChild("Resource");
+					newnode->addAttribute("type", type);
+					newnode->addAttribute("name", name);
 
-				std::string resource = info->findAttribute("resource");
-				IntSize size = IntSize::parse(info->findAttribute("size"));
-				IntPoint point = IntPoint::parse(info->findAttribute("point"));
-
-				//новый вариант курсоров
-				if ( ! resource.empty() ) {
-					ResourceImageSetPtr image = ResourceManager::getInstance().getResource(resource)->castType<ResourceImageSet>();
-					mMapPointers[name] = PointerInfo(point, size, image);
-
-				}
-				//старый  вариант курсоров
-				else {
-					// значения параметров
-					FloatRect offset(0, 0, 1, 1);
-
-					// парсим атрибуты
-					std::string texture(info->findAttribute("texture"));
-					std::string offset_str(info->findAttribute("offset"));
-					if (false == offset_str.empty()) {
-						if (texture.empty()) offset = SkinManager::convertTextureCoord(FloatRect::parse(offset_str), textureSize);
-						else offset = SkinManager::convertTextureCoord(FloatRect::parse(offset_str), SkinManager::getTextureSize(texture));
+					std::string tmp;
+					if (info->findAttribute("point", tmp))
+					{
+						xml::ElementPtr prop = newnode->createChild("Property");
+						prop->addAttribute("key", "Point");
+						prop->addAttribute("value", tmp);
 					}
-
-					mMapPointers[name] = PointerInfo(offset, point, size, texture);
+				
+					if (info->findAttribute("size", tmp))
+					{
+						xml::ElementPtr prop = newnode->createChild("Property");
+						prop->addAttribute("key", "Size");
+						prop->addAttribute("value", tmp);
+					}
+				
+					if (info->findAttribute("resource", tmp))
+					{
+						xml::ElementPtr prop = newnode->createChild("Property");
+						prop->addAttribute("key", "Resource");
+						prop->addAttribute("value", tmp);
+					}
+				
+					if (info->findAttribute("offset", tmp))
+					{
+						xml::ElementPtr prop = newnode->createChild("Property");
+						prop->addAttribute("key", "Coord");
+						prop->addAttribute("value", tmp);
+					}
+				
+					if (!shared_text.empty() || !texture.empty())
+					{
+						xml::ElementPtr prop = newnode->createChild("Property");
+						prop->addAttribute("key", "Texture");
+						prop->addAttribute("value",  shared_text.empty() ? texture : shared_text);
+					}
+				
+					ResourceManager::getInstance()._load(root, _file, _version);
 				}
 
-			};
-		};
-
-		// если есть левел, то пересоеденяем, если нет виджета, то создаем
-		if (false == layer.empty()) {
-			if (nullptr == mMousePointer) {
-				mMousePointer = static_cast<StaticImagePtr>(baseCreateWidget(WidgetStyle::Overlapped, StaticImage::getClassTypeName(), "StaticImage", IntCoord(), Align::Default, "", ""));
 			}
-			LayerManager::getInstance().attachToLayerKeeper(layer, mMousePointer);
+			else if (node->getName() == XML_TYPE_PROPERTY)
+			{
+				const std::string& key = node->findAttribute("key");
+				const std::string& value = node->findAttribute("value");
+				if (key == "Default")
+					setDeafultPointer(value);
+				else if (key == "Layer")
+					setLayerName(value);
+				else if (key == "Skin")
+					mSkinName = value;
+			}
 		}
 
-		// если есть дефолтный курсор то меняем
-		if (false == def.empty()) mDefaultPointer = def;
-		if (false == text.empty()) mTexture = text;
+		if (!layer.empty())
+			setLayerName(layer);
 
-		// если дефолтного нет, то пробуем первый из списка
-		if (mDefaultPointer.empty() && !mMapPointers.empty()) mDefaultPointer = mMapPointers.begin()->first;
+		if (!pointer.empty())
+			setDeafultPointer(pointer);
 
-		// ставим дефолтный указатель
-		setPointer(mDefaultPointer, nullptr);
 	}
 
-	void PointerManager::clear()
+	void PointerManager::notifyFrameStart(float _time)
 	{
-		mWidgetOwner = nullptr;
-		mDefaultPointer.clear();
-		mTexture.clear();
-		mMapPointers.clear();
+		mPoint = InputManager::getInstance().getMousePosition();
+		if (nullptr != mMousePointer && mPointer != nullptr)
+			mPointer->setPosition(mMousePointer, mPoint);
 	}
 
 	void PointerManager::setVisible(bool _visible)
 	{
 		if (nullptr != mMousePointer) mMousePointer->setVisible(_visible);
-		mShow = _visible;
+		mVisible = _visible;
 	}
 
-	void PointerManager::setPosition(const IntPoint& _pos)
+	void PointerManager::setPointer(const std::string& _name, WidgetPtr _owner)
 	{
-		if (nullptr != mMousePointer) mMousePointer->setPosition(_pos - mPoint);
-	}
+		if (nullptr == mMousePointer)
+			return;
 
-	void PointerManager::setPointer(const std::string & _name, WidgetPtr _owner)
-	{
-		if (nullptr == mMousePointer) return;
-
-		MapPointerInfo::iterator iter = mMapPointers.find(_name);
-		if (iter == mMapPointers.end()) return;
-
-		// новый вид курсоров через ресурсы
-		if (iter->second.resource != nullptr) {
-			if (mMousePointer->getItemResource() != iter->second.resource) {
-				mMousePointer->setItemResourceInfo(iter->second.resource->getIndexInfo(0, 0));
-			}
+		IResource* result = getByName(_name);
+		if (result == nullptr)
+		{
+			mPointer = nullptr;
+			mMousePointer->setVisible(false);
+			return;
 		}
 
-		// старый вид курсоров
-		else {
-			// если курсор имеет свой материал
-			if (false == iter->second.texture.empty()) {
-				if (mMousePointer->_getTextureName() != iter->second.texture) {
-					mMousePointer->_setTextureName(iter->second.texture);
-				}
-				mMousePointer->deleteAllItems();
-				mMousePointer->_setUVSet(iter->second.offset);
-			}
-			else if (false == mTexture.empty()) {
-				mMousePointer->deleteAllItems();
-				mMousePointer->_setUVSet(iter->second.offset);
-				if (mMousePointer->_getTextureName() != mTexture) {
-					mMousePointer->_setTextureName(mTexture);
-				}
-			}
-		}
+		mMousePointer->setVisible(mVisible);
+		mPointer = result->castType<IPointer>();
+		mPointer->setImage(mMousePointer);
+		mPointer->setPosition(mMousePointer, mPoint);
 
-		// сдвигаем с учетом нового и старого смещения
-		mMousePointer->setCoord(
-			mMousePointer->getLeft() + mPoint.left - iter->second.point.left,
-			mMousePointer->getTop() + mPoint.top - iter->second.point.top,
-			iter->second.size.width, iter->second.size.height);
-
-		// и сохраняем новое смещение
-		mPoint = iter->second.point;
 		mWidgetOwner = _owner;
 	}
 
 	void PointerManager::_unlinkWidget(WidgetPtr _widget)
 	{
-		if (_widget == mWidgetOwner) setPointer(mDefaultPointer, nullptr);
+		if (_widget == mWidgetOwner) setPointer(mDefaultName, nullptr);
 		else if (_widget == mMousePointer) mMousePointer = nullptr;
 	}
 
+	void PointerManager::resetToDefaultPointer()
+	{
+		setPointer(mDefaultName, nullptr);
+	}
+
 	// создает виджет
-	WidgetPtr PointerManager::baseCreateWidget(WidgetStyle _style, const std::string & _type, const std::string & _skin, const IntCoord& _coord, Align _align, const std::string & _layer, const std::string & _name)
+	WidgetPtr PointerManager::baseCreateWidget(WidgetStyle _style, const std::string& _type, const std::string& _skin, const IntCoord& _coord, Align _align, const std::string& _layer, const std::string& _name)
 	{
 		WidgetPtr widget = WidgetManager::getInstance().createWidget(_style, _type, _skin, _coord, _align, nullptr, nullptr, this, _name);
 		mWidgetChild.push_back(widget);
 		// присоединяем виджет с уровню
-		if (false == _layer.empty()) LayerManager::getInstance().attachToLayerKeeper(_layer, widget);
+		if (!_layer.empty())
+			LayerManager::getInstance().attachToLayerNode(_layer, widget);
 		return widget;
 	}
 
@@ -232,8 +254,8 @@ namespace MyGUI
 		MYGUI_ASSERT(nullptr != _widget, "invalid widget pointer");
 
 		VectorWidgetPtr::iterator iter = std::find(mWidgetChild.begin(), mWidgetChild.end(), _widget);
-		if (iter != mWidgetChild.end()) {
-
+		if (iter != mWidgetChild.end())
+		{
 			// сохраняем указатель
 			MyGUI::WidgetPtr widget = *iter;
 
@@ -247,15 +269,18 @@ namespace MyGUI
 			// непосредственное удаление
 			_deleteWidget(widget);
 		}
-		else MYGUI_EXCEPT("Widget '" << _widget->getName() << "' not found");
+		else
+		{
+			MYGUI_EXCEPT("Widget '" << _widget->getName() << "' not found");
+		}
 	}
 
 	// удаляет всех детей
 	void PointerManager::_destroyAllChildWidget()
 	{
-		WidgetManager & manager = WidgetManager::getInstance();
-		while (false == mWidgetChild.empty()) {
-
+		WidgetManager& manager = WidgetManager::getInstance();
+		while (!mWidgetChild.empty())
+		{
 			// сразу себя отписывем, иначе вложенной удаление убивает все
 			WidgetPtr widget = mWidgetChild.back();
 			mWidgetChild.pop_back();
@@ -266,6 +291,65 @@ namespace MyGUI
 			// и сами удалим, так как его больше в списке нет
 			_deleteWidget(widget);
 		}
+	}
+
+	void PointerManager::setDeafultPointer(const std::string& _value)
+	{
+		Update();
+
+		mDefaultName = _value;
+		setPointer(mDefaultName, nullptr);
+	}
+
+	void PointerManager::setLayerName(const std::string& _value)
+	{
+		Update();
+
+		mLayerName = _value;
+		if (LayerManager::getInstance().isExist(_value))
+			LayerManager::getInstance().attachToLayerNode(mLayerName, mMousePointer);
+	}
+
+	void PointerManager::Update()
+	{
+		if (mMousePointer == nullptr)
+			mMousePointer = static_cast<StaticImagePtr>(baseCreateWidget(WidgetStyle::Overlapped, StaticImage::getClassTypeName(), mSkinName, IntCoord(), Align::Default, "", ""));
+	}
+
+	IPointer* PointerManager::getByName(const std::string& _name)
+	{
+		IResource* result = nullptr;
+		if (!_name.empty() && _name != RESOURCE_DEFAULT_NAME)
+			result = ResourceManager::getInstance().getByName(_name, false);
+
+		if (result == nullptr)
+			result = ResourceManager::getInstance().getByName(mDefaultName, false);
+
+		return result ? result->castType<IPointer>(false) : nullptr;
+	}
+
+	void PointerManager::notifyChangeMouseFocus(WidgetPtr _widget)
+	{
+		std::string pointer = _widget == nullptr ? "" : _widget->getPointer();
+		if (pointer != mCurrentMousePointer)
+		{
+			mCurrentMousePointer = pointer;
+			if (mCurrentMousePointer.empty())
+			{
+				resetToDefaultPointer();
+				eventChangeMousePointer(mDefaultName);
+			}
+			else
+			{
+				setPointer(mCurrentMousePointer, _widget);
+				eventChangeMousePointer(mCurrentMousePointer);
+			}
+		}
+	}
+
+	void PointerManager::setPointer(const std::string& _name)
+	{
+		setPointer(_name, nullptr);
 	}
 
 } // namespace MyGUI

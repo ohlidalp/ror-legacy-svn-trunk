@@ -3,7 +3,8 @@
 	@author		Albert Semenov
 	@date		10/2008
 	@module
-*//*
+*/
+/*
 	This file is part of MyGUI.
 	
 	MyGUI is free software: you can redistribute it and/or modify
@@ -27,8 +28,7 @@
 namespace MyGUI
 {
 
-	DDContainer::DDContainer(WidgetStyle _style, const IntCoord& _coord, Align _align, const WidgetSkinInfoPtr _info, WidgetPtr _parent, ICroppedRectangle * _croppedParent, IWidgetCreator * _creator, const std::string & _name) :
-		Base(_style, _coord, _align, _info, _parent, _croppedParent, _creator, _name),
+	DDContainer::DDContainer() :
 		mDropResult(false),
 		mNeedDrop(false),
 		mStartDrop(false),
@@ -39,6 +39,12 @@ namespace MyGUI
 		mNeedDragDrop(false),
 		mReseiverContainer(nullptr)
 	{
+	}
+
+	void DDContainer::_initialise(WidgetStyle _style, const IntCoord& _coord, Align _align, ResourceSkin* _info, WidgetPtr _parent, ICroppedRectangle * _croppedParent, IWidgetCreator * _creator, const std::string& _name)
+	{
+		Base::_initialise(_style, _coord, _align, _info, _parent, _croppedParent, _creator, _name);
+
 		initialiseWidgetSkin(_info);
 	}
 
@@ -47,14 +53,14 @@ namespace MyGUI
 		shutdownWidgetSkin();
 	}
 
-	void DDContainer::baseChangeWidgetSkin(WidgetSkinInfoPtr _info)
+	void DDContainer::baseChangeWidgetSkin(ResourceSkin* _info)
 	{
 		shutdownWidgetSkin();
 		Base::baseChangeWidgetSkin(_info);
 		initialiseWidgetSkin(_info);
 	}
 
-	void DDContainer::initialiseWidgetSkin(WidgetSkinInfoPtr _info)
+	void DDContainer::initialiseWidgetSkin(ResourceSkin* _info)
 	{
 	}
 
@@ -88,7 +94,8 @@ namespace MyGUI
 
 	void DDContainer::mouseButtonPressed(MouseButton _id)
 	{
-		if (MouseButton::Left == _id) {
+		if (MouseButton::Left == _id)
+		{
 			// сбрасываем инфу для дропа
 			mDropResult = false;
 			mOldDrop = nullptr;
@@ -101,14 +108,16 @@ namespace MyGUI
 
 		}
 		// если нажата другая клавиша и был дроп то сбрасываем
-		else {
+		else
+		{
 			endDrop(true);
 		}
 	}
 
 	void DDContainer::mouseButtonReleased(MouseButton _id)
 	{
-		if (MouseButton::Left == _id) {
+		if (MouseButton::Left == _id)
+		{
 			endDrop(false);
 		}
 	}
@@ -119,7 +128,8 @@ namespace MyGUI
 		bool update = false;
 
 		// первый раз дропаем елемент
-		if (false == mStartDrop) {
+		if (!mStartDrop && mDropSenderIndex != ITEM_NONE)
+		{
 			mStartDrop = true;
 			mNeedDrop = false;
 			update = true;
@@ -129,23 +139,26 @@ namespace MyGUI
 
 			eventStartDrag(this, mDropInfo, mNeedDrop);
 
-			if (mNeedDrop) {
+			if (mNeedDrop)
+			{
 				eventChangeDDState(this, DDItemState::Start);
 				setEnableToolTip(false);
 			}
-			else {
+			else
+			{
 				// сбрасываем фокус мыши (не обязательно)
 				InputManager::getInstance().resetMouseCaptureWidget();
 			}
 		}
 
 		// дроп не нужен
-		if (false == mNeedDrop) {
+		if (!mNeedDrop)
+		{
 			return;
 		}
 
 		// делаем запрос, над кем наша мыша
-		const IntPoint & point = InputManager::getInstance().getMousePosition();
+		const IntPoint& point = InputManager::getInstance().getMousePosition();
 		WidgetPtr item = LayerManager::getInstance().getWidgetFromPoint(point.left, point.top);
 
 		updateDropItems();
@@ -162,11 +175,13 @@ namespace MyGUI
 		WidgetPtr receiver = nullptr;
 		size_t receiver_index = ITEM_NONE;
 		// есть виджет под нами
-		if (item) {
+		if (item)
+		{
 			// делаем запрос на индекс по произвольному виджету
 			item->_getContainer(receiver, receiver_index);
 			// работаем только с контейнерами
-			if (receiver && receiver->isType<DDContainer>()) {
+			if (receiver && receiver->isType<DDContainer>())
+			{
 				// подписываемся на информацию о валидности дропа
 				mReseiverContainer = static_cast<DDContainerPtr>(receiver);
 				mReseiverContainer->_eventInvalideContainer = newDelegate(this, &DDContainer::notifyInvalideDrop);
@@ -179,12 +194,14 @@ namespace MyGUI
 				// устанавливаем новую подсветку
 				mReseiverContainer->_setContainerItemInfo(mDropInfo.receiver_index, true, mDropResult);
 			}
-			else {
+			else
+			{
 				mDropInfo.set(this, mDropSenderIndex, nullptr, ITEM_NONE);
 			}
 		}
 		// нет виджета под нами
-		else {
+		else
+		{
 			mDropInfo.set(this, mDropSenderIndex, nullptr, ITEM_NONE);
 		}
 
@@ -193,17 +210,20 @@ namespace MyGUI
 		DDWidgetState data(mDropSenderIndex);
 		data.update = update;
 
-		if (receiver == nullptr) {
+		if (receiver == nullptr)
+		{
 			data.accept = false;
 			data.refuse = false;
 			state = DDItemState::Miss;
 		}
-		else if (mDropResult) {
+		else if (mDropResult)
+		{
 			data.accept = true;
 			data.refuse = false;
 			state = DDItemState::Accept;
 		}
-		else {
+		else
+		{
 			data.accept = false;
 			data.refuse = true;
 			state = DDItemState::Refuse;
@@ -216,7 +236,8 @@ namespace MyGUI
 
 	void DDContainer::endDrop(bool _reset)
 	{
-		if (mStartDrop) {
+		if (mStartDrop)
+		{
 			removeDropItems();
 
 			// сбрасываем старую подсветку
@@ -230,6 +251,7 @@ namespace MyGUI
 			// сбрасываем инфу для дропа
 			mStartDrop = false;
 			mDropResult = false;
+			mNeedDrop = false;
 			mOldDrop = nullptr;
 			mDropInfo.reset();
 			mReseiverContainer = nullptr;
@@ -245,11 +267,12 @@ namespace MyGUI
 	void DDContainer::updateDropItems()
 	{
 
-		if (mDropItem == nullptr) {
+		if (mDropItem == nullptr)
+		{
 			requestDragWidgetInfo(this, mDropItem, mDropDimension);
 		}
 
-		const IntPoint & point = InputManager::getInstance().getMousePosition();
+		const IntPoint& point = InputManager::getInstance().getMousePositionByLayer();
 
 		if (mDropItem)
 		{
@@ -258,7 +281,7 @@ namespace MyGUI
 		}
 	}
 
-	void DDContainer::updateDropItemsState(const DDWidgetState & _state)
+	void DDContainer::updateDropItemsState(const DDWidgetState& _state)
 	{
 		eventUpdateDropState(this, mDropItem, _state);
 	}
@@ -268,10 +291,16 @@ namespace MyGUI
 		mouseDrag();
 	}
 
-	void DDContainer::_getContainer(WidgetPtr & _container, size_t & _index)
+	void DDContainer::_getContainer(WidgetPtr& _container, size_t& _index)
 	{
 		_container = this;
 		_index = ITEM_NONE;
+	}
+
+	void DDContainer::setProperty(const std::string& _key, const std::string& _value)
+	{
+		if (_key == "DDContainer_NeedDragDrop") setNeedDragDrop(utility::parseValue<bool>(_value));
+		else Base::setProperty(_key, _value);
 	}
 
 } // namespace MyGUI

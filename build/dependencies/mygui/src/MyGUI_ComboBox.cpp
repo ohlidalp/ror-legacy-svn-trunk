@@ -3,19 +3,20 @@
 	@author		Albert Semenov
 	@date		12/2007
 	@module
-*//*
+*/
+/*
 	This file is part of MyGUI.
-	
+
 	MyGUI is free software: you can redistribute it and/or modify
 	it under the terms of the GNU Lesser General Public License as published by
 	the Free Software Foundation, either version 3 of the License, or
 	(at your option) any later version.
-	
+
 	MyGUI is distributed in the hope that it will be useful,
 	but WITHOUT ANY WARRANTY; without even the implied warranty of
 	MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 	GNU Lesser General Public License for more details.
-	
+
 	You should have received a copy of the GNU Lesser General Public License
 	along with MyGUI.  If not, see <http://www.gnu.org/licenses/>.
 */
@@ -25,10 +26,9 @@
 #include "MyGUI_InputManager.h"
 #include "MyGUI_WidgetManager.h"
 #include "MyGUI_Gui.h"
-#include "MyGUI_ControllerFadeAlpha.h"
 #include "MyGUI_List.h"
 #include "MyGUI_Button.h"
-#include "MyGUI_WidgetSkinInfo.h"
+#include "MyGUI_ResourceSkin.h"
 #include "MyGUI_LayerManager.h"
 
 namespace MyGUI
@@ -38,8 +38,7 @@ namespace MyGUI
 	const float COMBO_ALPHA_MIN  = ALPHA_MIN;
 	const float COMBO_ALPHA_COEF = 4.0f;
 
-	ComboBox::ComboBox(WidgetStyle _style, const IntCoord& _coord, Align _align, const WidgetSkinInfoPtr _info, WidgetPtr _parent, ICroppedRectangle * _croppedParent, IWidgetCreator * _creator, const std::string & _name) :
-		Base(_style, _coord, _align, _info, _parent, _croppedParent, _creator, _name),
+	ComboBox::ComboBox() :
 		mButton(nullptr),
 		mList(nullptr),
 		mListShow(false),
@@ -49,6 +48,12 @@ namespace MyGUI
 		mDropMouse(false),
 		mShowSmooth(false)
 	{
+	}
+
+	void ComboBox::_initialise(WidgetStyle _style, const IntCoord& _coord, Align _align, ResourceSkin* _info, WidgetPtr _parent, ICroppedRectangle * _croppedParent, IWidgetCreator * _creator, const std::string& _name)
+	{
+		Base::_initialise(_style, _coord, _align, _info, _parent, _croppedParent, _creator, _name);
+
 		initialiseWidgetSkin(_info);
 	}
 
@@ -57,31 +62,37 @@ namespace MyGUI
 		shutdownWidgetSkin();
 	}
 
-	void ComboBox::baseChangeWidgetSkin(WidgetSkinInfoPtr _info)
+	void ComboBox::baseChangeWidgetSkin(ResourceSkin* _info)
 	{
 		shutdownWidgetSkin();
 		Base::baseChangeWidgetSkin(_info);
 		initialiseWidgetSkin(_info);
 	}
 
-	void ComboBox::initialiseWidgetSkin(WidgetSkinInfoPtr _info)
+	void ComboBox::initialiseWidgetSkin(ResourceSkin* _info)
 	{
 		// парсим свойства
-		const MapString & properties = _info->getProperties();
-		MapString::const_iterator iter = properties.find("HeightList");
-		if (iter != properties.end()) mMaxHeight = utility::parseSizeT(iter->second);
+		const MapString& properties = _info->getProperties();
+		if (!properties.empty())
+		{
+			MapString::const_iterator iter = properties.find("HeightList");
+			if (iter != properties.end()) mMaxHeight = utility::parseSizeT(iter->second);
 
-		iter = properties.find("ListSmoothShow");
-		if (iter != properties.end()) setSmoothShow(utility::parseBool(iter->second));
+			iter = properties.find("ListSmoothShow");
+			if (iter != properties.end()) setSmoothShow(utility::parseBool(iter->second));
+		}
 
 		// парсим кнопку
-		for (VectorWidgetPtr::iterator iter=mWidgetChildSkin.begin(); iter!=mWidgetChildSkin.end(); ++iter) {
-			if (*(*iter)->_getInternalData<std::string>() == "Button") {
+		for (VectorWidgetPtr::iterator iter=mWidgetChildSkin.begin(); iter!=mWidgetChildSkin.end(); ++iter)
+		{
+			if (*(*iter)->_getInternalData<std::string>() == "Button")
+			{
 				MYGUI_DEBUG_ASSERT( ! mButton, "widget already assigned");
 				mButton = (*iter)->castType<Button>();
 				mButton->eventMouseButtonPressed = newDelegate(this, &ComboBox::notifyButtonPressed);
 			}
-			else if (*(*iter)->_getInternalData<std::string>() == "List") {
+			else if (*(*iter)->_getInternalData<std::string>() == "List")
+			{
 				MYGUI_DEBUG_ASSERT( ! mList, "widget already assigned");
 				mList = (*iter)->castType<List>();
 				mList->setVisible(false);
@@ -100,7 +111,7 @@ namespace MyGUI
 		if (mList == nullptr)
 		{
 			std::string list_skin;
-			iter = properties.find("ListSkin");
+			MapString::const_iterator iter = properties.find("ListSkin");
 			if (iter != properties.end()) list_skin = iter->second;
 			std::string list_layer;
 			iter = properties.find("ListLayer");
@@ -150,7 +161,8 @@ namespace MyGUI
 
 	void ComboBox::notifyListLostFocus(WidgetPtr _sender, WidgetPtr _new)
 	{
-		if (mDropMouse) {
+		if (mDropMouse)
+		{
 			mDropMouse = false;
 			WidgetPtr focus = InputManager::getInstance().getMouseFocusWidget();
 			// кнопка сама уберет список
@@ -170,7 +182,8 @@ namespace MyGUI
 		mDropMouse = false;
 		InputManager::getInstance().setKeyFocusWidget(this);
 
-		if (mModeDrop) {
+		if (mModeDrop)
+		{
 			eventComboAccept.m_eventObsolete(this);
 			eventComboAccept.m_event(this, mItemIndex);
 		}
@@ -187,14 +200,17 @@ namespace MyGUI
 		Base::onKeyButtonPressed(_key, _char);
 
 		// при нажатии вниз, показываем лист
-		if (_key == KeyCode::ArrowDown) {
+		if (_key == KeyCode::ArrowDown)
+		{
 			// выкидываем список только если мыша свободна
-			if (false == InputManager::getInstance().isCaptureMouse()) {
+			if (!InputManager::getInstance().isCaptureMouse())
+			{
 				showList();
 			}
 		}
 		// нажат ввод в окне редиктирования
-		else if ((_key == KeyCode::Return) || (_key == KeyCode::NumpadEnter)) {
+		else if ((_key == KeyCode::Return) || (_key == KeyCode::NumpadEnter))
+		{
 			eventComboAccept.m_eventObsolete(this);
 			eventComboAccept.m_event(this, mItemIndex);
 		}
@@ -208,7 +224,8 @@ namespace MyGUI
 
 		InputManager::getInstance().setKeyFocusWidget(this);
 
-		if (mModeDrop) {
+		if (mModeDrop)
+		{
 			eventComboAccept.m_eventObsolete(this);
 			eventComboAccept.m_event(this, mItemIndex);
 		}
@@ -220,8 +237,10 @@ namespace MyGUI
 		if (InputManager::getInstance().getKeyFocusWidget() != this) return;
 		if (InputManager::getInstance().isCaptureMouse()) return;
 
-		if (_rel > 0) {
-			if (mItemIndex != 0) {
+		if (_rel > 0)
+		{
+			if (mItemIndex != 0)
+			{
 				if (mItemIndex == ITEM_NONE) mItemIndex = 0;
 				else mItemIndex --;
 				Base::setCaption(mList->getItemNameAt(mItemIndex));
@@ -230,8 +249,10 @@ namespace MyGUI
 				eventComboChangePosition(this, mItemIndex);
 			}
 		}
-		else if (_rel < 0) {
-			if ((mItemIndex+1) < mList->getItemCount()) {
+		else if (_rel < 0)
+		{
+			if ((mItemIndex+1) < mList->getItemCount())
+			{
 				if (mItemIndex == ITEM_NONE) mItemIndex = 0;
 				else mItemIndex ++;
 				Base::setCaption(mList->getItemNameAt(mItemIndex));
@@ -256,7 +277,8 @@ namespace MyGUI
 	void ComboBox::notifyEditTextChange(EditPtr _sender)
 	{
 		// сбрасываем выделенный элемент
-		if (ITEM_NONE != mItemIndex) {
+		if (ITEM_NONE != mItemIndex)
+		{
 			mItemIndex = ITEM_NONE;
 			mList->setIndexSelected(mItemIndex);
 			mList->beginToItemFirst();
@@ -278,19 +300,22 @@ namespace MyGUI
 		IntCoord coord = this->getAbsoluteCoord();
 
 		//показываем список вверх
-		if ((coord.top + coord.height + height) > (size_t)Gui::getInstance().getViewHeight()) {
-			coord.height = height;
+		if ((coord.top + coord.height + height) > (size_t)Gui::getInstance().getViewSize().height)
+		{
+			coord.height = (int)height;
 			coord.top -= coord.height;
 		}
 		// показываем список вниз
-		else {
+		else
+		{
 			coord.top += coord.height;
-			coord.height = height;
+			coord.height = (int)height;
 		}
 		mList->setCoord(coord);
 
-		if (mShowSmooth) {
-			ControllerFadeAlpha * controller = new ControllerFadeAlpha(COMBO_ALPHA_MAX, COMBO_ALPHA_COEF, true);
+		if (mShowSmooth)
+		{
+			ControllerFadeAlpha* controller = createControllerFadeAlpha(COMBO_ALPHA_MAX, COMBO_ALPHA_COEF, true);
 			ControllerManager::getInstance().addItem(mList, controller);
 		}
 		else
@@ -311,8 +336,9 @@ namespace MyGUI
 	{
 		mListShow = false;
 
-		if (mShowSmooth) {
-			ControllerFadeAlpha * controller = new ControllerFadeAlpha(COMBO_ALPHA_MIN, COMBO_ALPHA_COEF, false);
+		if (mShowSmooth)
+		{
+			ControllerFadeAlpha* controller = createControllerFadeAlpha(COMBO_ALPHA_MIN, COMBO_ALPHA_COEF, false);
 			controller->eventPostAction = newDelegate(this, &ComboBox::actionWidgetHide);
 			ControllerManager::getInstance().addItem(mList, controller);
 		}
@@ -336,7 +362,7 @@ namespace MyGUI
 		Base::updateView(); // hook for update
 	}
 
-	void ComboBox::setItemNameAt(size_t _index, const Ogre::UTFString & _name)
+	void ComboBox::setItemNameAt(size_t _index, const UString& _name)
 	{
 		mList->setItemNameAt(_index, _name);
 		mItemIndex = ITEM_NONE;//FIXME
@@ -350,7 +376,7 @@ namespace MyGUI
 		mList->setIndexSelected(mItemIndex);//FIXME
 	}
 
-	void ComboBox::insertItemAt(size_t _index, const Ogre::UTFString & _item, Any _data)
+	void ComboBox::insertItemAt(size_t _index, const UString& _item, Any _data)
 	{
 		mList->insertItemAt(_index, _item, _data);
 		mItemIndex = ITEM_NONE;//FIXME
@@ -374,6 +400,30 @@ namespace MyGUI
 	{
 		mModeDrop = _drop;
 		setEditStatic(mModeDrop);
+	}
+
+	ControllerFadeAlpha* ComboBox::createControllerFadeAlpha(float _alpha, float _coef, bool _enable)
+	{
+		ControllerItem* item = ControllerManager::getInstance().createItem(ControllerFadeAlpha::getClassTypeName());
+		ControllerFadeAlpha* controller = item->castType<ControllerFadeAlpha>();
+
+		controller->setAlpha(_alpha);
+		controller->setCoef(_coef);
+		controller->setEnabled(_enable);
+
+		return controller;
+	}
+
+	size_t ComboBox::findItemIndexWith(const UString& _name)
+	{
+		return mList->findItemIndexWith(_name);
+	}
+
+	void ComboBox::setProperty(const std::string& _key, const std::string& _value)
+	{
+		if (_key == "ComboBox_ModeDrop") setComboModeDrop(utility::parseValue<bool>(_value));
+		else if (_key == "ComboBox_AddItem") addItem(_value);
+		else Base::setProperty(_key, _value);
 	}
 
 } // namespace MyGUI

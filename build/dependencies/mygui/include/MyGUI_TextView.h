@@ -8,7 +8,7 @@
 #define __MYGUI_TEXT_VIEW_H__
 
 #include "MyGUI_Prerequest.h"
-#include "MyGUI_Font.h"
+#include "MyGUI_TextureUtility.h"
 
 namespace MyGUI
 {
@@ -34,7 +34,7 @@ namespace MyGUI
 
 	struct LineInfo
 	{
-		LineInfo() : width(0), count(0), offset(0) { }
+		LineInfo() : width(0), offset(0), count(0) { }
 		void clear() { width = 0; count = 0; simbols.clear(); offset = 0; }
 		int width;
 		int offset;
@@ -56,7 +56,7 @@ namespace MyGUI
 
 		void set(
 			size_t _position,
-			Ogre::UTFString::const_iterator& _space_point,
+			UString::const_iterator& _space_point,
 			size_t _count,
 			int _length
 		)
@@ -73,21 +73,15 @@ namespace MyGUI
 		int getLenght() { MYGUI_DEBUG_ASSERT(rollback, "rollback point not valid"); return lenght; }
 		size_t getCount() { MYGUI_DEBUG_ASSERT(rollback, "rollback point not valid"); return count; }
 		size_t getPosition() { MYGUI_DEBUG_ASSERT(rollback, "rollback point not valid"); return position; }
-		Ogre::UTFString::const_iterator getTextIter() { MYGUI_DEBUG_ASSERT(rollback, "rollback point not valid"); return space_point; }
+		UString::const_iterator getTextIter() { MYGUI_DEBUG_ASSERT(rollback, "rollback point not valid"); return space_point; }
 
 	private:
 		size_t position;
-		Ogre::UTFString::const_iterator space_point;
+		UString::const_iterator space_point;
 		size_t count;
 		int lenght;
 		bool rollback;
 	};
-
-	MYGUI_FORCEINLINE void ConvertColour(uint32& _colour, bool _gl)
-	{
-		if (_gl)
-			_colour = ((_colour & 0x00FF0000) >> 16) | ((_colour & 0x000000FF) << 16) | (_colour & 0xFF00FF00);
-	}
 
 	class TextView
 	{
@@ -98,7 +92,7 @@ namespace MyGUI
 		{
 		}
 
-		void update(const Ogre::UTFString& _text, FontPtr _font, int _height, Align _align, bool _gl, int _maxheight = -1)
+		void update(const UString& _text, IFont* _font, int _height, Align _align, VertexColourType _format, int _maxheight = -1)
 		{
 			mFontHeight = _height;
 
@@ -116,8 +110,8 @@ namespace MyGUI
 			LineInfo line_info;
 			int font_height = _font->getDefaultHeight();
 
-			Ogre::UTFString::const_iterator end = _text.end();
-			Ogre::UTFString::const_iterator index = _text.begin();
+			UString::const_iterator end = _text.end();
+			UString::const_iterator index = _text.begin();
 
 			/*if (index == end)
 				return;*/
@@ -135,7 +129,7 @@ namespace MyGUI
 				{
 					if (character == FontCodeType::CR)
 					{
-						Ogre::UTFString::const_iterator peeki = index;
+						UString::const_iterator peeki = index;
 						peeki ++;
 						if ((peeki != end) && (*peeki == FontCodeType::LF))
 							index = peeki; // skip both as one newline
@@ -183,7 +177,7 @@ namespace MyGUI
 						}
 
 						// если нужно, то меняем красный и синий компоненты
-						ConvertColour(colour, _gl);
+						texture_utility::convertColour(colour, _format);
 
 						line_info.simbols.push_back( CharInfo(colour) );
 
@@ -191,7 +185,7 @@ namespace MyGUI
 					}
 				}
 
-				Font::GlyphInfo* info = _font->getGlyphInfo(character);
+				GlyphInfo* info = _font->getGlyphInfo(character);
 				if (FontCodeType::Space == character)
 				{
 					roll_back.set(line_info.simbols.size(), index, count, width);

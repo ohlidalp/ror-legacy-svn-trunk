@@ -3,7 +3,8 @@
 	@author		Albert Semenov
 	@date		12/2008
 	@module
-*//*
+*/
+/*
 	This file is part of MyGUI.
 	
 	MyGUI is free software: you can redistribute it and/or modify
@@ -21,7 +22,6 @@
 */
 
 #include "MyGUI_Precompiled.h"
-#include "MyGUI_Prerequest.h"
 #include "MyGUI_Common.h"
 
 namespace MyGUI
@@ -43,7 +43,7 @@ namespace MyGUI
 				MAX
 			};
 
-			static StateType parse(const std::string & _value)
+			static StateType parse(const std::string& _value)
 			{
 				StateType type;
 				int value = 0;
@@ -52,23 +52,23 @@ namespace MyGUI
 					const char * name = type.getValueName(value);
 					if (strcmp(name, "") == 0 || name == _value) break;
 					value++;
-				};
+				}
 				type.value = Enum(value);
 				return type;
 			}
 
 			StateType(Enum _value = MAX) : value(_value) { }
 
-			friend bool operator == (StateType const & a, StateType const & b) { return a.value == b.value; }
-			friend bool operator != (StateType const & a, StateType const & b) { return a.value != b.value; }
+			friend bool operator == (StateType const& a, StateType const& b) { return a.value == b.value; }
+			friend bool operator != (StateType const& a, StateType const& b) { return a.value != b.value; }
 
-			friend std::ostream& operator << ( std::ostream& _stream, const StateType &  _value )
+			friend std::ostream& operator << ( std::ostream& _stream, const StateType&  _value )
 			{
 				_stream << _value.getValueName(_value.value);
 				return _stream;
 			}
 
-			friend std::istream& operator >> ( std::istream& _stream, StateType &  _value )
+			friend std::istream& operator >> ( std::istream& _stream, StateType&  _value )
 			{
 				std::string value;
 				_stream >> value;

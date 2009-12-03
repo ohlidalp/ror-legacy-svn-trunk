@@ -4,7 +4,8 @@
 	@author		Georgiy Evmenov
 	@date		09/2007
 	@module
-*//*
+*/
+/*
 	This file is part of MyGUI.
 	
 	MyGUI is free software: you can redistribute it and/or modify
@@ -71,7 +72,7 @@ namespace MyGUI
 
 		/*! Load the library
 		*/
-		void load();
+		bool load();
 
 		/*! Unload the library
 		*/

@@ -3,7 +3,8 @@
 	@author		Albert Semenov
 	@date		05/2008
 	@module
-*//*
+*/
+/*
 	This file is part of MyGUI.
 	
 	MyGUI is free software: you can redistribute it and/or modify
@@ -57,9 +58,10 @@ namespace MyGUI
 		_vert ? _widget->setCoord(_left, _top, _width, _height) : _widget->setCoord(_top, _left, _height, _width);
 	}
 
-	inline void convertWidgetCoord(IntCoord & _coord, bool _vert)
+	inline void convertWidgetCoord(IntCoord& _coord, bool _vert)
 	{
-		if ( ! _vert ) {
+		if ( ! _vert )
+		{
 			std::swap(_coord.left, _coord.top);
 			std::swap(_coord.width, _coord.height);
 		}

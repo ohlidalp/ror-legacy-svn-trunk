@@ -3,24 +3,24 @@
 	@author		Evmenov Georgiy
 	@date		03/2008
 	@module
-*//*
+*/
+/*
 	This file is part of MyGUI.
-	
+
 	MyGUI is free software: you can redistribute it and/or modify
 	it under the terms of the GNU Lesser General Public License as published by
 	the Free Software Foundation, either version 3 of the License, or
 	(at your option) any later version.
-	
+
 	MyGUI is distributed in the hope that it will be useful,
 	but WITHOUT ANY WARRANTY; without even the implied warranty of
 	MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 	GNU Lesser General Public License for more details.
-	
+
 	You should have received a copy of the GNU Lesser General Public License
 	along with MyGUI.  If not, see <http://www.gnu.org/licenses/>.
 */
 #include "MyGUI_Precompiled.h"
-#include "MyGUI_Prerequest.h"
 #include "MyGUI_ControllerEdgeHide.h"
 #include "MyGUI_Gui.h"
 #include "MyGUI_InputManager.h"
@@ -29,38 +29,36 @@
 
 namespace MyGUI
 {
-	ControllerEdgeHide::ControllerEdgeHide(float _time, int _remainPixels, int _shadowSize ):
-		mTime(_time), mRemainPixels(_remainPixels), mShadowSize(_shadowSize)
-	{
-	}
 
-	const std::string & ControllerEdgeHide::getType()
+	ControllerEdgeHide::ControllerEdgeHide() :
+		mTime(0),
+		mRemainPixels(0),
+		mShadowSize(0)
 	{
-		static std::string type("ControllerEdgeHide");
-		return type;
 	}
 
 	void ControllerEdgeHide::prepareItem(WidgetPtr _widget)
 	{
 		MYGUI_DEBUG_ASSERT(mTime > 0, "Time must be > 0");
 
-		float k;
-		MyGUI::IntCoord coord = _widget->getCoord();
-		if ((coord.left <= 0) && !(coord.right() >= (int)MyGUI::Gui::getInstance().getViewWidth()))
+		float k = 0;
+		const MyGUI::IntCoord& coord = _widget->getCoord();
+		const MyGUI::IntSize& view_size = Gui::getInstance().getViewSize();
+		if ((coord.left <= 0) && !(coord.right() >= view_size.width))
 		{
-			k = - coord.left / (coord.width - mRemainPixels - mShadowSize);
+			k = - (float) coord.left / (coord.width - mRemainPixels - mShadowSize);
 		}
-		if ((coord.top <= 0) && !(coord.bottom() >= (int)MyGUI::Gui::getInstance().getViewHeight()))
+		if ((coord.top <= 0) && !(coord.bottom() >= view_size.height))
 		{
-			k = - coord.top / (coord.height - mRemainPixels - mShadowSize);
+			k = - (float)coord.top / (coord.height - mRemainPixels - mShadowSize);
 		}
-		if ((coord.right() >= (int)MyGUI::Gui::getInstance().getViewWidth()) && !(coord.left <= 0))
+		if ((coord.right() >= view_size.width) && !(coord.left <= 0))
 		{
-			k = 1 + (coord.left - MyGUI::Gui::getInstance().getViewWidth() - mRemainPixels) / coord.width;
+			k = 1.f + (coord.left - view_size.width - mRemainPixels) / coord.width;
 		}
-		if ((coord.bottom() >= (int)MyGUI::Gui::getInstance().getViewHeight()) && !(coord.top <= 0))
+		if ((coord.bottom() >= view_size.height) && !(coord.top <= 0))
 		{
-			k = 1 + (coord.top - MyGUI::Gui::getInstance().getViewHeight() - mRemainPixels) / coord.height;
+			k = 1.f + (coord.top - view_size.height - mRemainPixels) / coord.height;
 		}
 
 		mElapsedTime = (asin(k) + 1./2) * mTime;
@@ -103,26 +101,27 @@ namespace MyGUI
 		else k = (pow((k), (float)0.7) + 1)/2;
 
 		MyGUI::IntCoord coord = _widget->getCoord();
+		const MyGUI::IntSize& view_size = MyGUI::Gui::getInstance().getViewSize();
 		bool nearBorder = false;
 
-		if ((coord.left <= 0) && !(coord.right() >= (int)MyGUI::Gui::getInstance().getViewWidth()))
+		if ((coord.left <= 0) && !(coord.right() >= view_size.width))
 		{
 			coord.left = - int( float(coord.width - mRemainPixels - mShadowSize) * k);
 			nearBorder = true;
 		}
-		if ((coord.top <= 0) && !(coord.bottom() >= (int)MyGUI::Gui::getInstance().getViewHeight()))
+		if ((coord.top <= 0) && !(coord.bottom() >= view_size.height))
 		{
 			coord.top = - int( float(coord.height - mRemainPixels - mShadowSize) * k);
 			nearBorder = true;
 		}
-		if ((coord.right() >= (int)MyGUI::Gui::getInstance().getViewWidth()) && !(coord.left <= 0))
+		if ((coord.right() >= view_size.width) && !(coord.left <= 0))
 		{
-			coord.left = int(MyGUI::Gui::getInstance().getViewWidth() - float(mRemainPixels) - float(coord.width) * (float(1) - k));
+			coord.left = int(float(view_size.width) - float(mRemainPixels) - float(coord.width) * (float(1) - k));
 			nearBorder = true;
 		}
-		if ((coord.bottom() >= (int)MyGUI::Gui::getInstance().getViewHeight()) && !(coord.top <= 0))
+		if ((coord.bottom() >= view_size.height) && !(coord.top <= 0))
 		{
-			coord.top = int(MyGUI::Gui::getInstance().getViewHeight() - float(mRemainPixels) - float(coord.height) * (float(1) - k));
+			coord.top = int(float(view_size.height) - float(mRemainPixels) - float(coord.height) * (float(1) - k));
 			nearBorder = true;
 		}
 
@@ -133,6 +132,13 @@ namespace MyGUI
 		eventUpdateAction(_widget);
 
 		return true;
+	}
+
+	void ControllerEdgeHide::setProperty(const std::string& _key, const std::string& _value)
+	{
+		if (_key == "Time") setTime(utility::parseValue<float>(_value));
+		else if (_key == "RemainPixels") setRemainPixels(utility::parseValue<int>(_value));
+		else if (_key == "ShadowSize") setShadowSize(utility::parseValue<int>(_value));
 	}
 
 } // namespace MyGUI

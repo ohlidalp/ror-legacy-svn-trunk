@@ -3,7 +3,8 @@
 	@author		Evmenov Georgiy
 	@date		04/2008
 	@module
-*//*
+*/
+/*
 	This file is part of MyGUI.
 	
 	MyGUI is free software: you can redistribute it and/or modify
@@ -35,18 +36,32 @@ namespace MyGUI
 		till only small part of widget be visible. Widget will move
 		inside screen if it have any focus.
 	*/
-	class MYGUI_EXPORT ControllerEdgeHide : public ControllerItem
+	class MYGUI_EXPORT ControllerEdgeHide :
+		public ControllerItem
 	{
+		MYGUI_RTTI_DERIVED( ControllerEdgeHide );
+
 	public:
+		ControllerEdgeHide();
+
 		/**
-			@param _time in which widget will be hidden or shown
+			@param _value in which widget will be hidden or shown
+		*/
+		void setTime(float _value) { mTime = _value; }
+
+		/**
 			@param _remainPixels how many pixels you will see afterr full hide
+		*/
+		void setRemainPixels(int _value) { mRemainPixels = _value; }
+
+		/**
 			@param _shadowSize adds to _remainPixels when hiding left or top (for example used for windows with shadows)
 		*/
-		ControllerEdgeHide(float _time, int _remainPixels = 0, int _shadowSize = 0);
+		void setShadowSize(int _value) { mShadowSize = _value; }
+
+		virtual void setProperty(const std::string& _key, const std::string& _value);
 
 	private:
-		const std::string & getType();
 		bool addTime(WidgetPtr _widget, float _time);
 		void prepareItem(WidgetPtr _widget);
 
