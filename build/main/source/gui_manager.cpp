@@ -17,167 +17,142 @@ GNU General Public License for more details.
 You should have received a copy of the GNU General Public License
 along with Rigs of Rods.  If not, see <http://www.gnu.org/licenses/>.
 */
-#include "InputEngine.h"
+// based on the basemanager code from mygui common
+
 #include "gui_manager.h"
+#include "settings.h"
+#include <MyGUI_OgrePlatform.h>
 
-#include "MyGUI.h"
-#include "Ogre.h"
-#include "Settings.h"
-
-// thomas fischer, thomas@thomasfischer.biz, 3rd June 2008
+#if MYGUI_PLATFORM == MYGUI_PLATFORM_WIN32
+#	include <windows.h>
+#endif
 
 using namespace Ogre;
 
-// singleton pattern
-GUIManager* GUIManager::myInstance = 0;
+template<> GUIManager * Singleton< GUIManager >::ms_Singleton = 0;
 
-GUIManager &GUIManager::Instance () 
+GUIManager* GUIManager::getSingletonPtr(void)
 {
-	if (myInstance == 0)
-		myInstance = new GUIManager;
-	return *myInstance;
+	return ms_Singleton;
+}
+GUIManager& GUIManager::getSingleton(void)
+{
+	assert( ms_Singleton );  return ( *ms_Singleton );
 }
 
-GUIManager::GUIManager()
+GUIManager::GUIManager(Ogre::Root *root, Ogre::SceneManager *mgr, Ogre::RenderWindow *win) :
+	mGUI(nullptr),
+	mPlatform(nullptr),
+	mRoot(root),
+	mSceneManager(mgr),
+	mWindow(win),
+	mExit(false),
+	mResourceFileName("core.xml")
 {
-	initialized=false;
-	enabled=false;
-	mGUI = 0;
+	create();
 }
 
 GUIManager::~GUIManager()
+{
+}
+
+bool GUIManager::create()
+{
+	mRoot->addFrameListener(this);
+	Ogre::WindowEventUtilities::addWindowEventListener(mWindow, this);
+
+	size_t handle = 0;
+	mWindow->getCustomAttribute("WINDOW", &handle);
+	createInput(handle);
+	windowResized(mWindow);
+	createGui();
+	return true;
+}
+
+void GUIManager::destroy()
+{
+	destroyGui();
+	destroyInput();
+}
+
+void GUIManager::createGui()
+{
+	String gui_logfilename = SETTINGS.getSetting("Log Path") + "mygui.log";
+	mPlatform = new MyGUI::OgrePlatform();
+	mPlatform->initialise(mWindow, mSceneManager, ResourceGroupManager::DEFAULT_RESOURCE_GROUP_NAME, gui_logfilename);
+	mGUI = new MyGUI::Gui();
+	mGUI->initialise(mResourceFileName, gui_logfilename);
+}
+
+void GUIManager::destroyGui()
 {
 	if (mGUI)
 	{
 		mGUI->shutdown();
 		delete mGUI;
-		mGUI = 0;
+		mGUI = nullptr;
+	}
+
+	if (mPlatform)
+	{
+		mPlatform->shutdown();
+		delete mPlatform;
+		mPlatform = nullptr;
 	}
 }
 
-void GUIManager::setup(Ogre::Camera *cam, Ogre::SceneManager *scm, Ogre::RenderWindow *mWindow)
+bool GUIManager::frameStarted(const Ogre::FrameEvent& evt)
 {
-	LogManager::getSingleton().logMessage("loading GUI...");
-	mGUI = new MyGUI::Gui();
-	String gui_logfilename = SETTINGS.getSetting("Log Path") + "mygui.log";
-	String gui_core = "core.xml";
-	if(SETTINGS.getSetting("GUI Core") != "")
-		gui_core = SETTINGS.getSetting("GUI Core");
-	mGUI->initialise(mWindow, gui_core, ResourceGroupManager::DEFAULT_RESOURCE_GROUP_NAME, gui_logfilename);
-	initialized=true;
-	enabled=true;
-
-	// load all layouts
-	loadLayout("loader.layout");
-	MyGUI::WindowPtr window = mGUI->findWidget<MyGUI::Window>("loaderWindow");
-	window->setVisible(false);
-
-	loadLayout("progress.layout");
-	window = mGUI->findWidget<MyGUI::Window>("loaderWindow");
-	window->setVisible(false);
-
-	// hide mouse
-	MyGUI::PointerManager::getInstance().setVisible(false);
-
-	//MyGUI::StaticImagePtr image = mGUI->createWidget<MyGUI::StaticImage>("StaticImage", MyGUI::IntCoord(MyGUI::IntPoint(), mGUI->getViewSize()), MyGUI::Align::Stretch, "Back");
-	//image->setImageTexture("grid1.png");
-
-	// update the screen size, important
-	windowResized(mWindow);
-	LogManager::getSingleton().logMessage("GUI loaded!");
-}
-
-void GUIManager::loadLayout(Ogre::String name)
-{
-	MyGUI::LayoutManager::getInstance().load(name);
-}
-
-void GUIManager::windowResized(Ogre::RenderWindow *rw)
-{
-	LogManager::getSingleton().logMessage("GUI windowResized()");
-	if(mGUI)
-		mGUI->windowResized(rw);
-}
-
-void GUIManager::windowMoved(Ogre::RenderWindow *rw)
-{
-	LogManager::getSingleton().logMessage("GUI windowMoved()");
-	if(mGUI)
-		mGUI->windowMoved(rw);
-}
-
-
-bool GUIManager::frameStarted(const FrameEvent& evt)
-{
-	if(mGUI && enabled)
-		mGUI->injectFrameEntered(evt.timeSinceLastFrame);
+	if (mExit) return false;
+	if (!mGUI) return true;
+	captureInput();
 	return true;
 }
 
-bool GUIManager::frameEnded(const FrameEvent& evt)
+bool GUIManager::frameEnded(const Ogre::FrameEvent& evt)
 {
 	return true;
+};
+
+void GUIManager::windowResized(Ogre::RenderWindow* _rw)
+{
+	int width = (int)_rw->getWidth();
+	int height = (int)_rw->getHeight();
+	setInputViewSize(width, height);
 }
 
-void GUIManager::setCamera(Ogre::Camera *mCamera)
+void GUIManager::windowClosed(Ogre::RenderWindow* _rw)
 {
-	mGUI->setSceneManager(mCamera->getSceneManager());
+	mExit = true;
+	destroyInput();
 }
 
-
-
-void GUIManager::shutdown()
+void GUIManager::injectMouseMove(int _absx, int _absy, int _absz)
 {
-	LogManager::getSingleton().logMessage("GUI shutdown");
+	if (!mGUI) return;
+	mGUI->injectMouseMove(_absx, _absy, _absz);
 }
 
-void GUIManager::activate()
+void GUIManager::injectMousePress(int _absx, int _absy, MyGUI::MouseButton _id)
 {
-	LogManager::getSingleton().logMessage("GUI activated");
-	enabled = true;
+	if (!mGUI) return;
+	mGUI->injectMousePress(_absx, _absy, _id);
 }
 
-void GUIManager::desactivate()
+void GUIManager::injectMouseRelease(int _absx, int _absy, MyGUI::MouseButton _id)
 {
-	LogManager::getSingleton().logMessage("GUI desactivated");
-	enabled = false;
+	if (!mGUI) return;
+	mGUI->injectMouseRelease(_absx, _absy, _id);
 }
 
-void GUIManager::setCursorPosition(float x, float y)
+void GUIManager::injectKeyPress(MyGUI::KeyCode _key, MyGUI::Char _text)
 {
+	if (!mGUI) return;
+	mGUI->injectKeyPress(_key, _text);
 }
 
-bool GUIManager::mouseMoved( const OIS::MouseEvent &arg )
+void GUIManager::injectKeyRelease(MyGUI::KeyCode _key)
 {
-	if (enabled && mGUI)
-		mGUI->injectMouseMove(arg);
-	return true;
-}
-
-bool GUIManager::mousePressed( const OIS::MouseEvent &arg, OIS::MouseButtonID id )
-{
-	if (enabled && mGUI)
-		mGUI->injectMousePress(arg, id);
-	return true;
-}
-
-bool GUIManager::mouseReleased( const OIS::MouseEvent &arg, OIS::MouseButtonID id )
-{
-	if (enabled && mGUI)
-		mGUI->injectMouseRelease(arg, id);
-	return true;
-}
-
-bool GUIManager::keyPressed( const OIS::KeyEvent &arg )
-{
-	if (enabled && mGUI)
-		mGUI->injectKeyPress(arg);
-	return true;
-}
-
-bool GUIManager::keyReleased( const OIS::KeyEvent &arg )
-{
-	if (enabled && mGUI)
-		mGUI->injectKeyRelease(arg);
-	return true;
+	if (!mGUI) return;
+	mGUI->injectKeyRelease(_key);
 }

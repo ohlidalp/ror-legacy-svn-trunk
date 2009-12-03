@@ -73,6 +73,8 @@ set(ror_src
 	source/gui_loader.h
 	source/gui_manager.cpp
 	source/gui_manager.h
+	source/gui_inputmanager.cpp
+	source/gui_inputmanager.h
 	source/Heathaze.cpp
 	source/Heathaze.h
 	source/heightfinder.h

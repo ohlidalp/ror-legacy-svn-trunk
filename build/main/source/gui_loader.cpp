@@ -44,6 +44,10 @@ GUI_Loader::GUI_Loader()
 {
 	selectedtruck = 0;
 	frameForced=false;
+	GETMYGUI->load("loader.layout");
+	GETMYGUI->load("progress.layout");
+	//MyGUI::VectorWidgetPtr& root = MyGUI::LayoutManager::getInstance().load("BackHelp.layout");
+	//root.at(0)->findWidget("Text")->setCaption("Sample colour picker implementation. Select text in Edit and then select colour to colour selected part of text.");
 }
 
 GUI_Loader::~GUI_Loader()
@@ -117,7 +121,7 @@ void GUI_Loader::setup(RenderWindow *_rw, Camera *camera)
 	windowp->setVisible(true);
 	int pwidth=580, pheight=200;
 	windowp->setMinSize(pwidth, pheight);
-	windowp->setAlign(MyGUI::ALIGN_CENTER);
+	windowp->setAlign(MyGUI::Align::Center);
 	windowp->setCoord(rw->getWidth()/2-pwidth/2, rw->getHeight()/2-pheight/2, pwidth, pheight);
 
 	// fix window coordinates for inner parts
@@ -286,7 +290,7 @@ void GUI_Loader::event_window_eventKeyButtonPressed(MyGUI::WidgetPtr _sender, My
 	int iid = list->getIndexSelected();
 
 	// category
-	if(_key == MyGUI::KC_LEFT)
+	if(_key == MyGUI::KeyCode::ArrowLeft)
 	{
 		int newitem = cid - 1;
 		if(cid == 0)
@@ -301,7 +305,7 @@ void GUI_Loader::event_window_eventKeyButtonPressed(MyGUI::WidgetPtr _sender, My
 		}
 		event_combobox_eventComboChangePosition(combobox, newitem);
 
-	} else if(_key == MyGUI::KC_RIGHT)
+	} else if(_key == MyGUI::KeyCode::ArrowRight)
 	{
 		int newitem = cid + 1;
 		if(cid == (int)combobox->getItemCount() - 1)
@@ -318,7 +322,7 @@ void GUI_Loader::event_window_eventKeyButtonPressed(MyGUI::WidgetPtr _sender, My
 	}
 
 	// items
-	else if(_key == MyGUI::KC_UP)
+	else if(_key == MyGUI::KeyCode::ArrowUp)
 	{
 		int newitem = iid - 1;
 		if(iid == 0)
@@ -332,7 +336,7 @@ void GUI_Loader::event_window_eventKeyButtonPressed(MyGUI::WidgetPtr _sender, My
 			return;
 		}
 		event_list_eventListChangePosition(list, newitem);
-	} else if(_key == MyGUI::KC_DOWN)
+	} else if(_key == MyGUI::KeyCode::ArrowDown)
 	{
 		int newitem = iid + 1;
 		if(iid == (int)list->getItemCount() - 1)
@@ -349,7 +353,7 @@ void GUI_Loader::event_window_eventKeyButtonPressed(MyGUI::WidgetPtr _sender, My
 	}
 
 	// select key
-	else if(_key == MyGUI::KC_RETURN && selectedtruck)
+	else if(_key == MyGUI::KeyCode::Return && selectedtruck)
 		selectionDone();
 
 

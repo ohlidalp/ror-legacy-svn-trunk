@@ -373,11 +373,19 @@ void GUI_Friction::setShaded(bool value)
 	if(!win || !win->isVisible()) return;
 	if(value)
 	{
-		MyGUI::ControllerFadeAlpha * controller = new MyGUI::ControllerFadeAlpha(0.9f, 3.0f, true);
+		MyGUI::ControllerItem* item = MyGUI::ControllerManager::getInstance().createItem(MyGUI::ControllerFadeAlpha::getClassTypeName());
+		MyGUI::ControllerFadeAlpha* controller = item->castType<MyGUI::ControllerFadeAlpha>();
+		controller->setAlpha(0.9f);
+		controller->setCoef(3.0f);
+		controller->setEnabled(true);
 		MyGUI::ControllerManager::getInstance().addItem(win, controller);
 	} else
 	{
-		MyGUI::ControllerFadeAlpha * controller = new MyGUI::ControllerFadeAlpha(0.2f, 3.0f, true);
+		MyGUI::ControllerItem* item = MyGUI::ControllerManager::getInstance().createItem(MyGUI::ControllerFadeAlpha::getClassTypeName());
+		MyGUI::ControllerFadeAlpha* controller = item->castType<MyGUI::ControllerFadeAlpha>();
+		controller->setAlpha(0.2f);
+		controller->setCoef(3.0f);
+		controller->setEnabled(true);
 		MyGUI::ControllerManager::getInstance().addItem(win, controller);
 	}
 }
@@ -437,7 +445,7 @@ void GUI_Friction::updateControls(ground_model_t *gm, bool setCombo)
 
 		for(int i=0;i<(int)cb->getItemCount();i++)
 		{
-			if(cb->getItemNameAt(i) == UTFString(gm->name))
+			if(cb->getItemNameAt(i) == MyGUI::UString(gm->name))
 			{
 				cb->setIndexSelected(i);
 				selected_gm = gm;

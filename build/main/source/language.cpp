@@ -119,10 +119,10 @@ void LanguageEngine::setupCodeRanges(String codeRangesFilename, String codeRange
 
 			// add code points to all MyGUI fonts
 			// XXX: TOFIX: CRASH!
-			//MyGUI::FontPtr fp = MyGUI::FontManager::getInstance().getByName("Default");
-			//if(!fp.isNull()) fp->addCodePointRange(range.first, range.second);
-			//fp = MyGUI::FontManager::getInstance().getByName("DefaultBig");
-			//if(!fp.isNull()) fp->addCodePointRange(range.first, range.second);
+			//MyGUI::Font *fp = (MyGUI::Font *)MyGUI::FontManager::getInstance().getByName("Default");
+			//if(fp) fp->addCodePointRange(range.first, range.second);
+			//fp = (MyGUI::Font *)MyGUI::FontManager::getInstance().getByName("DefaultBig");
+			//if(fp) fp->addCodePointRange(range.first, range.second);
 		}
 	}
 
