@@ -304,6 +304,8 @@ private:
 	//bool postinstall;
 	Ogre::Root *ogreRoot;
 	wxPanel *graphicsPanel;
+	wxPanel *settingsPanel;
+	wxPanel *rsPanel;
 	wxChoice *renderer;
 	std::vector<wxStaticText *> renderer_text;
 	std::vector<wxChoice *> renderer_choice;
@@ -554,6 +556,15 @@ public:
 		timer->Start(50);
 
 	}
+	~KeyTestDialog()
+	{
+		timer->Stop();
+		delete timer;
+		timer = 0;
+		INPUTENGINE.destroy();
+		EndModal(0);
+	}
+
 	void update()
 	{
 		num_items_visible=0;
@@ -984,7 +995,8 @@ enum
 	SCROLL2,
 	EVT_CHANGE_RENDERER,
 	RENDERER_OPTION=990,
-	mynotebook
+	mynotebook,
+	mynotebook2
 };
 
 // ----------------------------------------------------------------------------
@@ -1013,6 +1025,7 @@ BEGIN_EVENT_TABLE(MyDialog, wxDialog)
 	//EVT_BUTTON(BTN_REMAP, MyDialog::OnButRemap)
 
 	EVT_NOTEBOOK_PAGE_CHANGED(mynotebook, MyDialog::OnNoteBookPageChange)
+	EVT_NOTEBOOK_PAGE_CHANGED(mynotebook2, MyDialog::OnNoteBookPageChange)
 
 	EVT_TREE_SEL_CHANGING (CTREE_ID, MyDialog::onTreeSelChange)
 	EVT_TREE_ITEM_ACTIVATED(CTREE_ID, MyDialog::onActivateItem)
@@ -1479,7 +1492,7 @@ MyDialog::MyDialog(const wxString& title, MyApp *_app) : wxDialog(NULL, wxID_ANY
 	SetWindowVariant(wxWINDOW_VARIANT_MINI); //smaller texts for macOS
 #endif
 	SetWindowStyle(wxRESIZE_BORDER | wxCAPTION);
-	SetMinSize(wxSize(300,300));
+	//SetMinSize(wxSize(300,300));
 
 	logfile->AddLine(conv("InputEngine starting"));logfile->Write();
 	wxFileName tfn=wxFileName(app->UserPath, wxEmptyString);
@@ -1524,7 +1537,7 @@ MyDialog::MyDialog(const wxString& title, MyApp *_app) : wxDialog(NULL, wxID_ANY
 
 	//notebook
 	wxNotebook *nbook=new wxNotebook(this, mynotebook, wxPoint(3, 100), wxSize(490, 415));
-	mainsizer->Add(nbook, 2, wxGROW);
+	mainsizer->Add(nbook, 1, wxGROW);
 
 	wxSizer *btnsizer = new wxBoxSizer(wxHORIZONTAL);
 	//buttons
@@ -1558,14 +1571,27 @@ MyDialog::MyDialog(const wxString& title, MyApp *_app) : wxDialog(NULL, wxID_ANY
 	wxPanel *simpleSettingsPanel=new wxPanel(nbook, -1);
 	nbook->AddPage(simpleSettingsPanel, _("Simple Settings"), true);
 
-	graphicsPanel=new wxPanel(nbook, -1);
-	nbook->AddPage(graphicsPanel, _("Graphics"), true);
+	// settings
+	settingsPanel=new wxPanel(nbook, -1);
+	nbook->AddPage(settingsPanel, _("Settings"), true);
+	wxSizer *settingsSizer = new wxBoxSizer(wxVERTICAL);
+	//settingsSizer->SetSizeHints(this);
+	settingsPanel->SetSizer(settingsSizer);
+	wxNotebook *snbook=new wxNotebook(settingsPanel, mynotebook2, wxPoint(0, 0), wxSize(100,250));
+	settingsSizer->Add(snbook, 1, wxGROW);
 
-	wxPanel *soundsPanel=new wxPanel(nbook, -1);
-	nbook->AddPage(soundsPanel, _("Sounds"), false);
 
-	wxPanel *cpuPanel=new wxPanel(nbook, -1);
-	nbook->AddPage(cpuPanel, _("CPU"), false);
+	rsPanel=new wxPanel(snbook, -1);
+	snbook->AddPage(rsPanel, _("Render System"), true);
+
+	graphicsPanel=new wxPanel(snbook, -1);
+	snbook->AddPage(graphicsPanel, _("Graphics"), true);
+
+	wxPanel *soundsPanel=new wxPanel(snbook, -1);
+	snbook->AddPage(soundsPanel, _("Sounds"), false);
+
+	wxPanel *cpuPanel=new wxPanel(snbook, -1);
+	snbook->AddPage(cpuPanel, _("CPU"), false);
 
 	wxPanel *controlsPanel=new wxPanel(nbook, -1);
 	nbook->AddPage(controlsPanel, _("Controls"), false);
@@ -1627,8 +1653,8 @@ MyDialog::MyDialog(const wxString& title, MyApp *_app) : wxDialog(NULL, wxID_ANY
 	wxPanel *netPanel=new wxPanel(nbook, -1);
 	nbook->AddPage(netPanel, _("Network"), false);
 #endif
-	wxPanel *advancedPanel=new wxPanel(nbook, -1);
-	nbook->AddPage(advancedPanel, _("Advanced"), false);
+	wxPanel *advancedPanel=new wxPanel(snbook, -1);
+	snbook->AddPage(advancedPanel, _("Advanced"), false);
 
 #if OGRE_PLATFORM == OGRE_PLATFORM_WIN32
 	// this is removed for now
@@ -1661,35 +1687,30 @@ MyDialog::MyDialog(const wxString& title, MyApp *_app) : wxDialog(NULL, wxID_ANY
 	dText = new wxStaticText(simpleSettingsPanel, -1, _("Balanced"), wxPoint(220,300));
 	dText = new wxStaticText(simpleSettingsPanel, -1, _("High Quality"), wxPoint(400,300));
 
-	// TODO: add code behind the slider ...
-
-	//graphics panel
-	wxStaticBox *dBox = new wxStaticBox(graphicsPanel, -1, _("Screen configuration"), wxPoint(5,5), wxSize(470, 125));
-
 	// clear the renderer settings and fill them later
-	dText = new wxStaticText(graphicsPanel, -1, _("Render System"), wxPoint(10, 28));
-	renderer = new wxChoice(graphicsPanel, EVT_CHANGE_RENDERER, wxPoint(110, 25), wxSize(120, -1), 0);
+	dText = new wxStaticText(rsPanel, -1, _("Render System"), wxPoint(10, 28));
+	renderer = new wxChoice(rsPanel, EVT_CHANGE_RENDERER, wxPoint(220, 25), wxSize(220, -1), 0);
 
 	// renderer options done, do the rest
-	dText = new wxStaticText(graphicsPanel, -1, _("Texture filtering:"), wxPoint(10,333));
-	textfilt=new wxChoice(graphicsPanel, -1, wxPoint(115, 330), wxSize(200, -1), 0);
+	int y = 10;
+	dText = new wxStaticText(graphicsPanel, -1, _("Texture filtering:"), wxPoint(10,y+3));
+	textfilt=new wxChoice(graphicsPanel, -1, wxPoint(115, y), wxSize(200, -1), 0);
 	textfilt->Append(conv("None (fastest)"));
 	textfilt->Append(conv("Bilinear"));
 	textfilt->Append(conv("Trilinear"));
 	textfilt->Append(conv("Anisotropic (best looking)"));
 	textfilt->SetToolTip(_("Most recent hardware can do Anisotropic filtering without significant slowdown.\nUse lower settings only on old or poor video chipsets."));
+	y+=25;
 
-
-	dBox = new wxStaticBox(graphicsPanel, -1, _("Special effects"), wxPoint(5,130), wxSize(470, 250));
-
-	dText = new wxStaticText(graphicsPanel, -1, _("Sky type:"), wxPoint(10,153));
-	sky=new wxChoice(graphicsPanel, -1, wxPoint(115, 150), wxSize(200, -1), 0);
+	dText = new wxStaticText(graphicsPanel, -1, _("Sky type:"), wxPoint(10,y+3));
+	sky=new wxChoice(graphicsPanel, -1, wxPoint(115, y), wxSize(200, -1), 0);
 	sky->Append(conv("Sandstorm (fastest)"));
 	sky->Append(conv("Caelum (best looking, slower)"));
 	sky->SetToolTip(_("Caelum sky is nice but quite slow unless you have a high-powered GPU."));
+	y+=25;
 
-	dText = new wxStaticText(graphicsPanel, -1, _("Shadow type:"), wxPoint(10,178));
-	shadow=new wxChoice(graphicsPanel, -1, wxPoint(115, 175), wxSize(200, -1), 0);
+	dText = new wxStaticText(graphicsPanel, -1, _("Shadow type:"), wxPoint(10,y+3));
+	shadow=new wxChoice(graphicsPanel, -1, wxPoint(115, y), wxSize(200, -1), 0);
 	shadow->Append(conv("No shadows (fastest)"));
 	shadow->Append(conv("Texture shadows"));
 	shadow->Append(conv("Stencil shadows (best looking)"));
@@ -1697,59 +1718,76 @@ MyDialog::MyDialog(const wxString& title, MyApp *_app) : wxDialog(NULL, wxID_ANY
 	shadow->Append(conv("Parallel-split Shadow Maps"));
 #endif //OGRE_VERSION
 	shadow->SetToolTip(_("Texture shadows are fast but limited: jagged edges, no object self-shadowing, limited shadow distance.\nStencil shadows are slow but gives perfect shadows."));
+	y+=25;
 
-	dText = new wxStaticText(graphicsPanel, -1, _("Water type:"), wxPoint(10,203));
-	water=new wxChoice(graphicsPanel, -1, wxPoint(115, 200), wxSize(200, -1), 0);
+	dText = new wxStaticText(graphicsPanel, -1, _("Water type:"), wxPoint(10,y+3));
+	water=new wxChoice(graphicsPanel, -1, wxPoint(115, y), wxSize(200, -1), 0);
 //	water->Append(wxString("None")); //we don't want that!
 	water->Append(conv("Basic (fastest)"));
 	water->Append(conv("Reflection"));
 	water->Append(conv("Reflection + refraction (speed optimized)"));
 	water->Append(conv("Reflection + refraction (quality optimized)"));
 	water->SetToolTip(_("Water reflection is slower, and requires a good GPU. In speed optimized mode you may experience excessive camera shaking."));
+	y+=25;
 
-	waves=new wxCheckBox(graphicsPanel, -1, _("Enable waves"), wxPoint(115, 229));
+	waves=new wxCheckBox(graphicsPanel, -1, _("Enable waves"), wxPoint(115, y+3));
 	waves->SetToolTip(_("Enabling waves adds a lot of fun in boats, but can have a big performance impact on some specific hardwares."));
-
-	spray=new wxCheckBox(graphicsPanel, -1, _("Water spray"), wxPoint(115, 253));
+	spray=new wxCheckBox(graphicsPanel, -1, _("Water spray"), wxPoint(250, y+3));
 	spray->SetToolTip(_("No effect unless you mess with water, looks pretty good also."));
+	y+=25;
 
-	dText = new wxStaticText(graphicsPanel, -1, _("Vegetation:"), wxPoint(10, 281));
-	vegetationMode=new wxChoice(graphicsPanel, -1, wxPoint(115, 278), wxSize(200, -1), 0);
+	dText = new wxStaticText(graphicsPanel, -1, _("Vegetation:"), wxPoint(10, y+3));
+	vegetationMode=new wxChoice(graphicsPanel, -1, wxPoint(115, y), wxSize(200, -1), 0);
 	vegetationMode->Append(conv("None (fastest)"));
 	vegetationMode->Append(conv("20%"));
 	vegetationMode->Append(conv("50%"));
 	vegetationMode->Append(conv("Full (best looking, slower)"));
 	vegetationMode->SetToolTip(_("This determines how much grass and how many trees (and such objects) should get displayed."));
+	y+=25;
 
-
-	dBox = new wxStaticBox(graphicsPanel, -1, _("Particle systems"), wxPoint(340,140), wxSize(130, 60));
-	dust=new wxCheckBox(graphicsPanel, -1, _("Dust"), wxPoint(350, 160));
+	dText = new wxStaticText(graphicsPanel, -1, _("Particle systems:"), wxPoint(10, y));
+	dust=new wxCheckBox(graphicsPanel, -1, _("Dust"), wxPoint(115, y));
 	dust->SetToolTip(_("This may hurt framerate a bit on old systems, but it looks pretty good."));
-
-	heathaze=new wxCheckBox(graphicsPanel, -1, _("HeatHaze"), wxPoint(350, 180));
+	heathaze=new wxCheckBox(graphicsPanel, -1, _("HeatHaze"), wxPoint(250, y));
 	heathaze->SetToolTip(_("Heat Haze from engines, major slowdown. (only activate with recent hardware)"));
+	y+=15;
+	smoke=new wxCheckBox(graphicsPanel, -1, _("Engine smoke"), wxPoint(115, y));
+	smoke->SetToolTip(_("Not much impact on speed."));
+	cpart=new wxCheckBox(graphicsPanel, -1, _("Custom Particles"), wxPoint(250, y));
+	cpart->SetToolTip(_("Particles like water cannons or plain trails. Can be over-used in Multiplayer."));
+	y+=25;
 
-
-	dBox = new wxStaticBox(graphicsPanel, -1, _("Cockpit options"), wxPoint(340,225), wxSize(130, 45));
-	mirror=new wxCheckBox(graphicsPanel, -1, _("Mirrors"), wxPoint(350, 245));
+	dText = new wxStaticText(graphicsPanel, -1, _("Cockpit options:"), wxPoint(10, y));
+	mirror=new wxCheckBox(graphicsPanel, -1, _("Mirrors"), wxPoint(115, y));
 	mirror->SetToolTip(_("Shows the rear view mirrors in 1st person view. May cause compatibility problems for very old video cards."));
+	dashboard=new wxCheckBox(graphicsPanel, -1, _("Dashboard"), wxPoint(250, y));
+	dashboard->SetToolTip(_("Shows the dynamic dashboard in 1st person view. May cause compatibility problems for very old video cards."));
+	y+=25;
 
-	dBox = new wxStaticBox(graphicsPanel, -1, _("Visual effects"), wxPoint(340,278), wxSize(130, 100));
-	sunburn=new wxCheckBox(graphicsPanel, -1, _("Sunburn"), wxPoint(350, 293));
+	dText = new wxStaticText(graphicsPanel, -1, _("Visual effects:"), wxPoint(10, y));
+	sunburn=new wxCheckBox(graphicsPanel, -1, _("Sunburn"), wxPoint(115, y));
 	sunburn->SetToolTip(_("Requires a recent video card. Adds a bluish blinding effect."));
-	hdr=new wxCheckBox(graphicsPanel, -1, _("HDR"), wxPoint(350, 313));
+	hdr=new wxCheckBox(graphicsPanel, -1, _("HDR"), wxPoint(250, y));
 	hdr->SetToolTip(_("Requires a recent video card. Add a lightning effect that simulates the light sensitivity of the human eye."));
-	mblur=new wxCheckBox(graphicsPanel, -1, _("Motion blur"), wxPoint(350, 333));
+	y+=15;
+	mblur=new wxCheckBox(graphicsPanel, -1, _("Motion blur"), wxPoint(115, y));
 	mblur->SetToolTip(_("Requires a recent video card. Adds a motion blur effect."));
-	skidmarks=new wxCheckBox(graphicsPanel, -1, _("Skidmarks"), wxPoint(350, 353));
+	skidmarks=new wxCheckBox(graphicsPanel, -1, _("Skidmarks"), wxPoint(250, y));
 	skidmarks->SetToolTip(_("Adds tire tracks to the ground."));
-
-	envmap=new wxCheckBox(graphicsPanel, -1, _("High quality reflective effects"), wxPoint(115, 310));
+	y+=15;
+	envmap=new wxCheckBox(graphicsPanel, -1, _("High quality reflective effects"), wxPoint(115, y));
 	envmap->SetToolTip(_("Enable high quality reflective effects. Causes a slowdown."));
+	y+=25;
+
+	dText = new wxStaticText(graphicsPanel, -1, _("Screenshot Format:"), wxPoint(10, y));
+	screenShotFormat =new wxChoice(graphicsPanel, -1, wxPoint(115, y), wxSize(200, -1), 0);
+	screenShotFormat->Append(conv("jpg (smaller, default)"));
+	screenShotFormat->Append(conv("png (bigger, no quality loss)"));
+	screenShotFormat->SetToolTip(_("In what Format should screenshots be saved?"));
 
 	//sounds panel
 	dText = new wxStaticText(soundsPanel, -1, _("Sound source:"), wxPoint(20,28));
-	sound=new wxChoice(soundsPanel, -1, wxPoint(150, 25), wxSize(200, -1), 0);
+	sound=new wxChoice(soundsPanel, -1, wxPoint(150, 25), wxSize(-1, -1), 0);
 	sound->Append(conv("No sound"));
 	sound->Append(conv("Default"));
 	sound->SetToolTip(_("Select the appropriate sound source.\nLeaving to Default should work most of the time."));
@@ -1827,34 +1865,22 @@ MyDialog::MyDialog(const wxString& title, MyApp *_app) : wxDialog(NULL, wxID_ANY
 #endif
 
 	//advanced panel
-	dText = new wxStaticText(advancedPanel, -1, _("You do not need to change these settings unless you experience problems"), wxPoint(10, 18));
+	y = 10;
+	dText = new wxStaticText(advancedPanel, -1, _("You do not need to change these settings unless you experience problems"), wxPoint(10, y));
+	y+=20;
 
-	dText = new wxStaticText(advancedPanel, -1, _("Screenshot Format:"), wxPoint(10, 49));
-	screenShotFormat =new wxChoice(advancedPanel, -1, wxPoint(115, 50), wxSize(200, -1), 0);
-	screenShotFormat->Append(conv("jpg (smaller, default)"));
-	screenShotFormat->Append(conv("png (bigger, no quality loss)"));
-	screenShotFormat->SetToolTip(_("In what Format should screenshots be saved?"));
 
-	dText = new wxStaticText(advancedPanel, -1, _("Light source effects:"), wxPoint(10, 78));
-	flaresMode=new wxChoice(advancedPanel, -1, wxPoint(115, 75), wxSize(200, -1), 0);
+	dText = new wxStaticText(advancedPanel, -1, _("Light source effects:"), wxPoint(10, y));
+	flaresMode=new wxChoice(advancedPanel, -1, wxPoint(115, y), wxSize(200, -1), 0);
 //	flaresMode->Append(_("None (fastest)")); //this creates a bug in the autopilot
 	flaresMode->Append(conv("No light sources"));
 	flaresMode->Append(conv("Only current vehicle, main lights"));
 	flaresMode->Append(conv("All vehicles, main lights"));
 	flaresMode->Append(conv("All vehicles, all lights"));
 	flaresMode->SetToolTip(_("Determines which lights will project light on the environment.\nThe more light sources are used, the slowest it will be."));
+	y+=25;
 
-	dText = new wxStaticText(advancedPanel, -1, _("In case the mods cache becomes corrupted, \npress this button to clear the cache. \nIt will be regenerated\nthe next time you launch the game:"), wxPoint(10, 110));
-	//wxButton *clearcachebut=
-	wxButton *btn;
-	btn = new wxButton(advancedPanel, regen_cache, _("Regen cache"), wxPoint(15, 180));
-	btn->SetToolTip(_("Use this to regenerate the cache outside of RoR. If this does not work, use the clear cache button."));
-
-	btn = new wxButton(advancedPanel, clear_cache, _("Clear cache"), wxPoint(125, 180));
-	btn->SetToolTip(_("Use this to remove the whole cache and force the generation from ground up."));
-
-	dText = new wxStaticText(advancedPanel, -1, _("Language:"), wxPoint(10, 230));
-
+	dText = new wxStaticText(advancedPanel, -1, _("Language:"), wxPoint(10, y));
 	wxArrayString choices;
 	int sel = 0;
 	if(avLanguages.size() > 0)
@@ -1871,68 +1897,72 @@ MyDialog::MyDialog(const wxString& title, MyApp *_app) : wxDialog(NULL, wxID_ANY
 	{
 		choices.Add(_("(No Languages found)"));
 	}
-
-	languageMode=new wxChoice(advancedPanel, EVC_LANG, wxPoint(115, 230), wxSize(200, -1), choices, wxCB_READONLY);
-//	flaresMode->Append(_("None (fastest)")); //this creates a bug in the autopilot
+	languageMode=new wxChoice(advancedPanel, EVC_LANG, wxPoint(115, y), wxSize(200, -1), choices, wxCB_READONLY);
 	languageMode->SetSelection(sel);
-
 	languageMode->SetToolTip(_("This setting overrides the system's default language. You need to restart the configurator to apply the changes."));
+	y+=25;
 
-	enableFog=new wxCheckBox(advancedPanel, -1, _("Fog"), wxPoint(320, 50));
-	enableFog->SetToolTip(_("Uncheck in case you have a fog problem"));
+	dText = new wxStaticText(advancedPanel, -1, _("In case the mods cache becomes corrupted, \nuse these buttons to fix the cache."), wxPoint(10, y));
+	y+=40;
+	wxButton *btn = new wxButton(advancedPanel, regen_cache, _("Regen cache"), wxPoint(35, y));
+	btn->SetToolTip(_("Use this to regenerate the cache outside of RoR. If this does not work, use the clear cache button."));
+	btn = new wxButton(advancedPanel, clear_cache, _("Clear cache"), wxPoint(145, y));
+	btn->SetToolTip(_("Use this to remove the whole cache and force the generation from ground up."));
+	y+=30;
 
-	smoke=new wxCheckBox(advancedPanel, -1, _("Engine smoke"), wxPoint(320, 65));
-	smoke->SetToolTip(_("Not much impact on speed."));
-
-	cpart=new wxCheckBox(advancedPanel, -1, _("Custom Particles"), wxPoint(320, 80));
-	cpart->SetToolTip(_("Particles like water cannons or plain trails. Can be over-used in Multiplayer."));
-
-	dashboard=new wxCheckBox(advancedPanel, -1, _("Dashboard"), wxPoint(320, 95));
-	dashboard->SetToolTip(_("Shows the dynamic dashboard in 1st person view. May cause compatibility problems for very old video cards."));
-
-	replaymode=new wxCheckBox(advancedPanel, -1, _("Replay Mode"), wxPoint(320, 110));
-	replaymode->SetToolTip(_("Replay mode. (Can affect your frame rate)"));
-
-	dtm=new wxCheckBox(advancedPanel, -1, _("Debug Truck Mass"), wxPoint(320, 125));
-	dtm->SetToolTip(_("Prints all node masses to the RoR.log. Only use for truck debugging!"));
-
-	dcm=new wxCheckBox(advancedPanel, -1, _("Debug Collision Meshes"), wxPoint(320, 140));
-	dcm->SetToolTip(_("Shows all Collision meshes in Red to be able to position them correctly. Only use for debugging!"));
-
-	hydrax=new wxCheckBox(advancedPanel, -1, _("Hydrax Water System"), wxPoint(320, 155));
-	hydrax->SetToolTip(_("Enables the new water rendering system. EXPERIMENTAL. Overrides any water settings."));
-
-	dismap=new wxCheckBox(advancedPanel, -1, _("Disable Overview Map"), wxPoint(320, 170));
-	dismap->SetToolTip(_("Disabled the map. This is for testing purposes only, you should not gain any FPS with that."));
-
-	extcam=new wxCheckBox(advancedPanel, -1, _("Disable Camera Pitching"), wxPoint(320, 185));
-	extcam->SetToolTip(_("If you dislike the pitching external vehicle camera, you can disable it here."));
-
-	enablexfire=new wxCheckBox(advancedPanel, -1, _("Enable XFire Extension"), wxPoint(320, 200));
-	enablexfire->SetToolTip(_("If you use XFire, you can switch on this option to generate a more detailed game info."));
-
-	beamdebug=new wxCheckBox(advancedPanel, -1, _("Enable Visual Beam Debug"), wxPoint(320, 215));
-	beamdebug->SetToolTip(_("Displays node numbers and more info along nodes and beams."));
-
-	autodl=new wxCheckBox(advancedPanel, -1, _("Enable Auto-Downloader"), wxPoint(320, 230));
-	autodl->SetToolTip(_("This enables the automatic downloading of missing mods when using Multiplayer"));
-
-	posstor=new wxCheckBox(advancedPanel, -1, _("Enable Position Storage"), wxPoint(320, 245));
-	posstor->SetToolTip(_("Can be used to quick save and load positions of trucks"));
-
-	trucklod=new wxCheckBox(advancedPanel, -1, _("Enable Truck LODs"), wxPoint(320, 260));
-	trucklod->SetToolTip(_("Enables a technique for multiple level of detail meshes. Only disable if you experience problems with it."));
-
-	objlod=new wxCheckBox(advancedPanel, -1, _("Enable Object LODs"), wxPoint(320, 275));
-	objlod->SetToolTip(_("Enables a technique for multiple level of detail meshes. Only disable if you experience problems with it."));
-
-	dText = new wxStaticText(advancedPanel, -1, _("minimum visibility range in percent"), wxPoint(10,300));
+	dText = new wxStaticText(advancedPanel, -1, _("minimum visibility range in percent"), wxPoint(10,y));
+	y+=20;
 	//this makes a visual bug in macosx
-	sightrange=new wxSlider(advancedPanel, -1, 30, 20, 130, wxPoint(10, 315), wxSize(200, 40), wxSL_LABELS|wxSL_AUTOTICKS);
+	sightrange=new wxSlider(advancedPanel, -1, 30, 20, 130, wxPoint(30, y), wxSize(200, 40), wxSL_LABELS|wxSL_AUTOTICKS);
 	sightrange->SetToolTip(_("This sets the minimum sight range Setting. It determines how far the terrain should be drawn. \n100% means you can view the whole terrain. \nWith 130% you can view everything across the diagonal Axis."));
 	sightrange->SetTickFreq(10, 0);
 	sightrange->SetPageSize(10);
 	sightrange->SetLineSize(100);
+	y+=50;
+
+
+	// second column
+	y=30;
+	extcam=new wxCheckBox(advancedPanel, -1, _("Disable Camera Pitching"), wxPoint(320, y));
+	extcam->SetToolTip(_("If you dislike the pitching external vehicle camera, you can disable it here."));
+	y+=15;
+	enableFog=new wxCheckBox(advancedPanel, -1, _("Fog"), wxPoint(320, y));
+	enableFog->SetToolTip(_("If you dont want fog, uncheck this."));
+	y+=15;
+	replaymode=new wxCheckBox(advancedPanel, -1, _("Replay Mode"), wxPoint(320, y));
+	replaymode->SetToolTip(_("Replay mode. (Can affect your frame rate)"));
+	y+=15;
+	trucklod=new wxCheckBox(advancedPanel, -1, _("Enable Truck LODs"), wxPoint(320, y));
+	trucklod->SetToolTip(_("Enables a technique for multiple level of detail meshes. Only disable if you experience problems with it."));
+	y+=15;
+	objlod=new wxCheckBox(advancedPanel, -1, _("Enable Object LODs"), wxPoint(320, y));
+	objlod->SetToolTip(_("Enables a technique for multiple level of detail meshes. Only disable if you experience problems with it."));
+	y+=15;
+	posstor=new wxCheckBox(advancedPanel, -1, _("Enable Position Storage"), wxPoint(320, y));
+	posstor->SetToolTip(_("Can be used to quick save and load positions of trucks"));
+	y+=15;
+	autodl=new wxCheckBox(advancedPanel, -1, _("Enable Auto-Downloader"), wxPoint(320, y));
+	autodl->SetToolTip(_("This enables the automatic downloading of missing mods when using Multiplayer"));
+	y+=15;
+	enablexfire=new wxCheckBox(advancedPanel, -1, _("Enable XFire Extension"), wxPoint(320, y));
+	enablexfire->SetToolTip(_("If you use XFire, you can switch on this option to generate a more detailed game info."));
+	y+=15;
+	hydrax=new wxCheckBox(advancedPanel, -1, _("Hydrax Water System"), wxPoint(320, y));
+	hydrax->SetToolTip(_("Enables the new water rendering system. EXPERIMENTAL. Overrides any water settings."));
+	y+=30;
+	dtm=new wxCheckBox(advancedPanel, -1, _("Debug Truck Mass"), wxPoint(320, y));
+	dtm->SetToolTip(_("Prints all node masses to the RoR.log. Only use for truck debugging!"));
+	y+=15;
+	dcm=new wxCheckBox(advancedPanel, -1, _("Debug Collision Meshes"), wxPoint(320, y));
+	dcm->SetToolTip(_("Shows all Collision meshes in Red to be able to position them correctly. Only use for debugging!"));
+	y+=15;
+	beamdebug=new wxCheckBox(advancedPanel, -1, _("Enable Visual Beam Debug"), wxPoint(320, y));
+	beamdebug->SetToolTip(_("Displays node numbers and more info along nodes and beams."));
+	y+=15;
+	dismap=new wxCheckBox(advancedPanel, -1, _("Disable Overview Map"), wxPoint(320, y));
+	dismap->SetToolTip(_("Disabled the map. This is for testing purposes only, you should not gain any FPS with that."));
+	y+=15;
+
 
 #if OGRE_PLATFORM == OGRE_PLATFORM_WIN32
 	/*
@@ -2148,6 +2178,7 @@ void MyDialog::updateItemText(wxTreeItemId item, event_trigger_t *t)
 }
 void MyDialog::updateRendersystems(Ogre::RenderSystem *rs)
 {
+	if(!rs) return;
 	std::map<Ogre::String, bool> filterOptions;
 	filterOptions["Allow NVPerfHUD"]=true;
 	filterOptions["Floating-point mode"]=true;
@@ -2189,8 +2220,8 @@ void MyDialog::updateRendersystems(Ogre::RenderSystem *rs)
 			renderer_text.resize(counter + 1);
 			renderer_choice.resize(counter + 1);
 
-			renderer_text[counter] = new wxStaticText(graphicsPanel, wxID_ANY, conv("."), wxPoint(x, y+3), wxSize(110, 25));
-			renderer_choice[counter] = new wxChoice(graphicsPanel, RENDERER_OPTION + counter, wxPoint(x + 100, y), wxSize(120, -1), 0);
+			renderer_text[counter] = new wxStaticText(rsPanel, wxID_ANY, conv("."), wxPoint(x, y+3), wxSize(210, 25));
+			renderer_choice[counter] = new wxChoice(rsPanel, RENDERER_OPTION + counter, wxPoint(x + 220, y), wxSize(220, -1), 0);
 		} else
 		{
 			//existing, remove all elements
@@ -2217,22 +2248,15 @@ void MyDialog::updateRendersystems(Ogre::RenderSystem *rs)
 
 		// layouting stuff
 		y += 25;
-		if(y> 25 * 4)
+		/*
+		if(y> 25 * 5)
 		{
 			// use next column
 			y = 25;
 			x += 230;
 		}
-		counter++;
-		/*
-		// this is not needed!
-		if(graphicsPanel->GetSize().GetWidth() < x + 100)
-		{
-			wxSize size = graphicsPanel->GetSize();
-			size.SetWidth(x + 100);
-			graphicsPanel->SetSize(size);
-		}
 		*/
+		counter++;
 	}
 	// hide non-used controls
 	if(counter<(int)renderer_text.size())
@@ -3200,10 +3224,10 @@ void MyDialog::OnSimpleSliderScroll(wxScrollEvent & event)
 	autodl->SetValue(true);
 	trucklod->SetValue(false);
 	objlod->SetValue(false);
+	replaymode->SetValue(false);
 	switch(val)
 	{
 		case 0:
-			replaymode->SetValue(false);
 			beamdebug->SetValue(false);
 
 			dtm->SetValue(false); // debug truck mass
@@ -3216,7 +3240,6 @@ void MyDialog::OnSimpleSliderScroll(wxScrollEvent & event)
 			posstor->SetValue(false);
 			break;
 		case 1:
-			replaymode->SetValue(true);
 			beamdebug->SetValue(false);
 			dtm->SetValue(false); // debug truck mass
 			dcm->SetValue(false); //debug collision meshes
@@ -3228,7 +3251,6 @@ void MyDialog::OnSimpleSliderScroll(wxScrollEvent & event)
 			posstor->SetValue(true);
 			break;
 		case 2:
-			replaymode->SetValue(true);
 			beamdebug->SetValue(false);
 			dtm->SetValue(false); // debug truck mass
 			dcm->SetValue(false); //debug collision meshes
@@ -3248,6 +3270,7 @@ void MyDialog::OnSimpleSlider2Scroll(wxScrollEvent & event)
 	int val = simpleSlider2->GetValue();
 	// these are graphics simple settings
 	// 0 (high perf) - 2 (high quality)
+	heathaze->SetValue(false);
 	switch(val)
 	{
 		case 0:
@@ -3265,7 +3288,6 @@ void MyDialog::OnSimpleSlider2Scroll(wxScrollEvent & event)
 			dust->SetValue(false);
 			spray->SetValue(false);
 			cpart->SetValue(false);
-			heathaze->SetValue(false);
 			hydrax->SetValue(false);
 			dismap->SetValue(false);
 			dashboard->SetValue(false);
@@ -3291,7 +3313,6 @@ void MyDialog::OnSimpleSlider2Scroll(wxScrollEvent & event)
 			dust->SetValue(true);
 			spray->SetValue(true);
 			cpart->SetValue(true);
-			heathaze->SetValue(false);
 			hydrax->SetValue(false);
 			dismap->SetValue(false);
 			dashboard->SetValue(true);
@@ -3317,14 +3338,13 @@ void MyDialog::OnSimpleSlider2Scroll(wxScrollEvent & event)
 			dust->SetValue(true);
 			spray->SetValue(true);
 			cpart->SetValue(true);
-			heathaze->SetValue(true);
-			hydrax->SetValue(true);
+			hydrax->SetValue(false);
 			dismap->SetValue(false);
 			dashboard->SetValue(true);
 			mirror->SetValue(true);
 			envmap->SetValue(true);
 			sunburn->SetValue(false);
-			hdr->SetValue(false);
+			hdr->SetValue(true);
 			mblur->SetValue(false);
 			skidmarks->SetValue(false);
 		break;
@@ -3358,6 +3378,7 @@ void MyDialog::OnLinkClicked(wxHtmlLinkEvent& event)
 
 void MyDialog::OnNoteBookPageChange(wxNotebookEvent& event)
 {
+#if 0
 	if(event.GetSelection() == 7) // updates page
 	{
 		// try to find our version
@@ -3384,10 +3405,10 @@ void MyDialog::OnNoteBookPageChange(wxNotebookEvent& event)
 						   wxString(conv("&lang="))+
 						   conv(conv(language->CanonicalName))
 						   );
-	} else if(event.GetSelection() == 5)
+	} else if(event.GetSelection() == 6)
 	{
-		/*
 		// this is unpracticable in LAN mode, thus deactivated
+		/*
 		btnUpdate->Enable(false);
 		timer1->Start(10000);
 		std::string lshort = conv(language->CanonicalName).substr(0, 2);
@@ -3398,6 +3419,7 @@ void MyDialog::OnNoteBookPageChange(wxNotebookEvent& event)
 							  conv(lshort));
 		*/
 	}
+#endif
 }
 
 void MyDialog::OnTimerReset(wxTimerEvent& event)
