@@ -50,8 +50,8 @@ IF(wxWidgets_FOUND)
   target_link_libraries(rorconfig OgreMain ois)
 
   IF(WIN32)
-    SET_TARGET_PROPERTIES(rorconfig PROPERTIES COMPILE_FLAGS "/bigobj /MT /MP")
-    SET_TARGET_PROPERTIES(rorconfig PROPERTIES LINK_FLAGS    "/SUBSYSTEM:WINDOWS /NODEFAULTLIB:\"msvcprt.lib\" /NODEFAULTLIB:\"MSVCRT.lib\"")  
+    SET_TARGET_PROPERTIES(rorconfig PROPERTIES COMPILE_FLAGS "/bigobj /MP")
+    SET_TARGET_PROPERTIES(rorconfig PROPERTIES LINK_FLAGS    "/SUBSYSTEM:WINDOWS")  
   ENDIF(WIN32)
 
   install(TARGETS rorconfig
