@@ -1694,7 +1694,7 @@ MyDialog::MyDialog(const wxString& title, MyApp *_app) : wxDialog(NULL, wxID_ANY
 	// renderer options done, do the rest
 	int y = 10;
 	dText = new wxStaticText(graphicsPanel, -1, _("Texture filtering:"), wxPoint(10,y+3));
-	textfilt=new wxChoice(graphicsPanel, -1, wxPoint(115, y), wxSize(200, -1), 0);
+	textfilt=new wxChoice(graphicsPanel, -1, wxPoint(130, y), wxSize(200, -1), 0);
 	textfilt->Append(conv("None (fastest)"));
 	textfilt->Append(conv("Bilinear"));
 	textfilt->Append(conv("Trilinear"));
@@ -1703,14 +1703,14 @@ MyDialog::MyDialog(const wxString& title, MyApp *_app) : wxDialog(NULL, wxID_ANY
 	y+=25;
 
 	dText = new wxStaticText(graphicsPanel, -1, _("Sky type:"), wxPoint(10,y+3));
-	sky=new wxChoice(graphicsPanel, -1, wxPoint(115, y), wxSize(200, -1), 0);
+	sky=new wxChoice(graphicsPanel, -1, wxPoint(130, y), wxSize(200, -1), 0);
 	sky->Append(conv("Sandstorm (fastest)"));
 	sky->Append(conv("Caelum (best looking, slower)"));
 	sky->SetToolTip(_("Caelum sky is nice but quite slow unless you have a high-powered GPU."));
 	y+=25;
 
 	dText = new wxStaticText(graphicsPanel, -1, _("Shadow type:"), wxPoint(10,y+3));
-	shadow=new wxChoice(graphicsPanel, -1, wxPoint(115, y), wxSize(200, -1), 0);
+	shadow=new wxChoice(graphicsPanel, -1, wxPoint(130, y), wxSize(200, -1), 0);
 	shadow->Append(conv("No shadows (fastest)"));
 	shadow->Append(conv("Texture shadows"));
 	shadow->Append(conv("Stencil shadows (best looking)"));
@@ -1721,7 +1721,7 @@ MyDialog::MyDialog(const wxString& title, MyApp *_app) : wxDialog(NULL, wxID_ANY
 	y+=25;
 
 	dText = new wxStaticText(graphicsPanel, -1, _("Water type:"), wxPoint(10,y+3));
-	water=new wxChoice(graphicsPanel, -1, wxPoint(115, y), wxSize(200, -1), 0);
+	water=new wxChoice(graphicsPanel, -1, wxPoint(130, y), wxSize(200, -1), 0);
 //	water->Append(wxString("None")); //we don't want that!
 	water->Append(conv("Basic (fastest)"));
 	water->Append(conv("Reflection"));
@@ -1730,14 +1730,14 @@ MyDialog::MyDialog(const wxString& title, MyApp *_app) : wxDialog(NULL, wxID_ANY
 	water->SetToolTip(_("Water reflection is slower, and requires a good GPU. In speed optimized mode you may experience excessive camera shaking."));
 	y+=25;
 
-	waves=new wxCheckBox(graphicsPanel, -1, _("Enable waves"), wxPoint(115, y+3));
+	waves=new wxCheckBox(graphicsPanel, -1, _("Enable waves"), wxPoint(130, y+3));
 	waves->SetToolTip(_("Enabling waves adds a lot of fun in boats, but can have a big performance impact on some specific hardwares."));
-	spray=new wxCheckBox(graphicsPanel, -1, _("Water spray"), wxPoint(250, y+3));
+	spray=new wxCheckBox(graphicsPanel, -1, _("Water spray"), wxPoint(280, y+3));
 	spray->SetToolTip(_("No effect unless you mess with water, looks pretty good also."));
 	y+=25;
 
 	dText = new wxStaticText(graphicsPanel, -1, _("Vegetation:"), wxPoint(10, y+3));
-	vegetationMode=new wxChoice(graphicsPanel, -1, wxPoint(115, y), wxSize(200, -1), 0);
+	vegetationMode=new wxChoice(graphicsPanel, -1, wxPoint(130, y), wxSize(200, -1), 0);
 	vegetationMode->Append(conv("None (fastest)"));
 	vegetationMode->Append(conv("20%"));
 	vegetationMode->Append(conv("50%"));
@@ -1746,41 +1746,41 @@ MyDialog::MyDialog(const wxString& title, MyApp *_app) : wxDialog(NULL, wxID_ANY
 	y+=25;
 
 	dText = new wxStaticText(graphicsPanel, -1, _("Particle systems:"), wxPoint(10, y));
-	dust=new wxCheckBox(graphicsPanel, -1, _("Dust"), wxPoint(115, y));
+	dust=new wxCheckBox(graphicsPanel, -1, _("Dust"), wxPoint(130, y));
 	dust->SetToolTip(_("This may hurt framerate a bit on old systems, but it looks pretty good."));
-	heathaze=new wxCheckBox(graphicsPanel, -1, _("HeatHaze"), wxPoint(250, y));
+	heathaze=new wxCheckBox(graphicsPanel, -1, _("HeatHaze"), wxPoint(280, y));
 	heathaze->SetToolTip(_("Heat Haze from engines, major slowdown. (only activate with recent hardware)"));
 	y+=15;
-	smoke=new wxCheckBox(graphicsPanel, -1, _("Engine smoke"), wxPoint(115, y));
+	smoke=new wxCheckBox(graphicsPanel, -1, _("Engine smoke"), wxPoint(130, y));
 	smoke->SetToolTip(_("Not much impact on speed."));
-	cpart=new wxCheckBox(graphicsPanel, -1, _("Custom Particles"), wxPoint(250, y));
+	cpart=new wxCheckBox(graphicsPanel, -1, _("Custom Particles"), wxPoint(280, y));
 	cpart->SetToolTip(_("Particles like water cannons or plain trails. Can be over-used in Multiplayer."));
 	y+=25;
 
 	dText = new wxStaticText(graphicsPanel, -1, _("Cockpit options:"), wxPoint(10, y));
-	mirror=new wxCheckBox(graphicsPanel, -1, _("Mirrors"), wxPoint(115, y));
+	mirror=new wxCheckBox(graphicsPanel, -1, _("Mirrors"), wxPoint(130, y));
 	mirror->SetToolTip(_("Shows the rear view mirrors in 1st person view. May cause compatibility problems for very old video cards."));
-	dashboard=new wxCheckBox(graphicsPanel, -1, _("Dashboard"), wxPoint(250, y));
+	dashboard=new wxCheckBox(graphicsPanel, -1, _("Dashboard"), wxPoint(280, y));
 	dashboard->SetToolTip(_("Shows the dynamic dashboard in 1st person view. May cause compatibility problems for very old video cards."));
 	y+=25;
 
 	dText = new wxStaticText(graphicsPanel, -1, _("Visual effects:"), wxPoint(10, y));
-	sunburn=new wxCheckBox(graphicsPanel, -1, _("Sunburn"), wxPoint(115, y));
+	sunburn=new wxCheckBox(graphicsPanel, -1, _("Sunburn"), wxPoint(130, y));
 	sunburn->SetToolTip(_("Requires a recent video card. Adds a bluish blinding effect."));
-	hdr=new wxCheckBox(graphicsPanel, -1, _("HDR"), wxPoint(250, y));
+	hdr=new wxCheckBox(graphicsPanel, -1, _("HDR"), wxPoint(280, y));
 	hdr->SetToolTip(_("Requires a recent video card. Add a lightning effect that simulates the light sensitivity of the human eye."));
 	y+=15;
-	mblur=new wxCheckBox(graphicsPanel, -1, _("Motion blur"), wxPoint(115, y));
+	mblur=new wxCheckBox(graphicsPanel, -1, _("Motion blur"), wxPoint(130, y));
 	mblur->SetToolTip(_("Requires a recent video card. Adds a motion blur effect."));
-	skidmarks=new wxCheckBox(graphicsPanel, -1, _("Skidmarks"), wxPoint(250, y));
+	skidmarks=new wxCheckBox(graphicsPanel, -1, _("Skidmarks"), wxPoint(280, y));
 	skidmarks->SetToolTip(_("Adds tire tracks to the ground."));
 	y+=15;
-	envmap=new wxCheckBox(graphicsPanel, -1, _("High quality reflective effects"), wxPoint(115, y));
+	envmap=new wxCheckBox(graphicsPanel, -1, _("High quality reflective effects"), wxPoint(130, y));
 	envmap->SetToolTip(_("Enable high quality reflective effects. Causes a slowdown."));
 	y+=25;
 
 	dText = new wxStaticText(graphicsPanel, -1, _("Screenshot Format:"), wxPoint(10, y));
-	screenShotFormat =new wxChoice(graphicsPanel, -1, wxPoint(115, y), wxSize(200, -1), 0);
+	screenShotFormat =new wxChoice(graphicsPanel, -1, wxPoint(130, y), wxSize(200, -1), 0);
 	screenShotFormat->Append(conv("jpg (smaller, default)"));
 	screenShotFormat->Append(conv("png (bigger, no quality loss)"));
 	screenShotFormat->SetToolTip(_("In what Format should screenshots be saved?"));
