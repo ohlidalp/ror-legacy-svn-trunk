@@ -27,6 +27,7 @@ along with Rigs of Rods.  If not, see <http://www.gnu.org/licenses/>.
 // ----------------------------------------------------------------------------
 #include "rornet.h"
 #include "Ogre.h"
+#include "joywizard.h"
 #if OGRE_PLATFORM == OGRE_PLATFORM_WIN32
 //#include "crashrpt.h"
 #include <shlobj.h>
@@ -71,6 +72,7 @@ mode_t getumask(void)
 #include <wx/timer.h>
 #include <wx/version.h>
 //#include "joysticks.h"
+#include "utils.h"
 
 
 #include "ImprovedConfigFile.h"
@@ -112,66 +114,12 @@ std::vector<wxLanguageInfo*> avLanguages;
 std::map<std::string, std::string> settings;
 
 
-inline wxString conv(const char *s)
-{
-	return wxString(s, wxConvUTF8);
-}
-
-inline wxString conv(const std::string& s)
-{
-	return wxString(s.c_str(), wxConvUTF8);
-}
-
-inline std::string conv(const wxString& s)
-{
-	return std::string(s.mb_str(wxConvUTF8));
-}
-
-inline const char *conv2(const wxString& s)
-{
-	return std::string(s.mb_str(wxConvUTF8)).c_str();
-}
-
-inline const char *conv2(const std::string& s)
-{
-	return s.c_str();
-}
 
 
 #ifdef __WXGTK__
 #include <gtk/gtk.h>
 #include <gdk/gdkx.h>
 #endif
-
-inline size_t getOISHandle(wxWindow *window)
-{
-	size_t hWnd = 0;
-#if OGRE_PLATFORM == OGRE_PLATFORM_WIN32
-	hWnd = (size_t)window->GetHandle();
-#elif OGRE_PLATFORM == OGRE_PLATFORM_LINUX
-#ifdef __WXGTK__
-	if (!window->IsShownOnScreen()) {
-		printf("getOISHandle(): Window needs to be realized before we "
-			"can get its XID. Showing the window to avoid crash!\n");
-		window->Show();
-	}
-#if GTK_CHECK_VERSION(2,14,0)
-	// GTK 2.14 includes gtk_widget_get_window()
-	hWnd = (size_t)GDK_WINDOW_XID(gtk_widget_get_window(window->GetHandle()));
-#else
-	// but we can't use that if GTK is too old...
-	hWnd = (size_t)GDK_WINDOW_XID(window->GetHandle()->window);
-#endif
-#else
-	// TODO: support other WX configs ?
-#error "WX configurations other than GTK not supported yet!"
-#endif
-#elif OGRE_PLATFORM == OGRE_PLATFORM_APPLE
-	// TODO: Apple specific code ?
-#error "Apple specific code not written yet!"
-#endif
-	return hWnd;
-}
 
 // Define a new application type, each program should derive a class from wxApp
 class MyApp : public wxApp
@@ -286,6 +234,7 @@ public:
 	//void OnMenuEditEventNameClick(wxCommandEvent& event);
 	//void OnMenuCheckDoublesClick(wxCommandEvent& event);
 	void OnButTestEvents(wxCommandEvent& event);
+	void OnButJoyWizard(wxCommandEvent& event);
 	void OnButAddKey(wxCommandEvent& event);
 	void OnButDeleteKey(wxCommandEvent& event);
 	void OnButRegenCache(wxCommandEvent& event);
@@ -510,6 +459,7 @@ protected:
 	wxGauge *g[MAX_TESTABLE_EVENTS];
 	wxGauge *gp[MAX_TESTABLE_EVENTS];
 	wxStaticText *t[MAX_TESTABLE_EVENTS];
+	wxStaticText *tv[MAX_TESTABLE_EVENTS];
 	wxStaticText *notice;
 	wxTimer *timer;
 	wxScrolledWindow *vwin;
@@ -520,7 +470,7 @@ public:
 		// fixed unsed variable warning
 		//wxStaticText *lt = new wxStaticText(this, wxID_ANY, _("Event Name"), wxPoint(5, 0), wxSize(200, 15));
 		new wxStaticText(this, wxID_ANY, _("Event Name"), wxPoint(5, 0), wxSize(200, 15));
-		new wxStaticText(this, wxID_ANY, _("Event Value (left = 0%, right = 100%)"), wxPoint(150, 0), wxSize(260, 15));
+		new wxStaticText(this, wxID_ANY, _("Event Value (first: result, second: raw input)"), wxPoint(150, 0), wxSize(260, 15));
 		notice = new wxStaticText(this, wxID_ANY, _("Please use any mapped input device in order to test."), wxPoint(20, 60), wxSize(260, 15));
 		new wxButton(this, 1, _("ok (end test)"), wxPoint(5,575), wxSize(490,20));
 		vwin = new wxScrolledWindow(this, wxID_ANY, wxPoint(0,20), wxSize(490,550));
@@ -536,12 +486,14 @@ public:
 				if(counter >= MAX_TESTABLE_EVENTS)
 					break;
 				std::string eventName = INPUTENGINE.eventIDToName(it->first);
-				g[counter] = new wxGauge(vwin, wxID_ANY, 1000, wxPoint(210, counter*20+5), wxSize(246, 7),wxGA_SMOOTH|wxBORDER_NONE);
+				g[counter] = new wxGauge(vwin, wxID_ANY, 1000, wxPoint(280, counter*20+5), wxSize(200, 7),wxGA_HORIZONTAL|wxBORDER_NONE);
 				g[counter]->Hide();
-				gp[counter] = new wxGauge(vwin, wxID_ANY, 1000, wxPoint(210, counter*20+5+7), wxSize(246, 7),wxGA_SMOOTH|wxBORDER_NONE);
+				gp[counter] = new wxGauge(vwin, wxID_ANY, 1000, wxPoint(280, counter*20+5+7), wxSize(200, 7),wxGA_HORIZONTAL|wxBORDER_NONE);
 				gp[counter]->Hide();
 				t[counter] = new wxStaticText(vwin, wxID_ANY, conv(eventName), wxPoint(5, counter*20+5), wxSize(200, 15), wxALIGN_RIGHT|wxST_NO_AUTORESIZE);
 				t[counter]->Hide();
+				tv[counter] = new wxStaticText(vwin, wxID_ANY, conv(eventName), wxPoint(210, counter*20+5), wxSize(60, 15), wxALIGN_RIGHT|wxST_NO_AUTORESIZE);
+				tv[counter]->Hide();
 			}
 		}
 		// resize scroll window
@@ -586,11 +538,14 @@ public:
 				{
 					t[counter]->SetPosition(wxPoint(5, num_items_visible*20+5));
 					t[counter]->Show();
+					tv[counter]->SetPosition(wxPoint(210, num_items_visible*20+5));
+					tv[counter]->Show();
+					tv[counter]->SetLabel(wxString::Format(wxT("(%03.0f / %03.0f)"),v*0.1f, vp * 0.1f));
 					g[counter]->Show();
-					g[counter]->SetPosition(wxPoint(210, num_items_visible*20+5));
+					g[counter]->SetPosition(wxPoint(280, num_items_visible*20+5));
 					g[counter]->SetValue((int)v);
 					gp[counter]->Show();
-					gp[counter]->SetPosition(wxPoint(210, num_items_visible*20+5+7));
+					gp[counter]->SetPosition(wxPoint(280, num_items_visible*20+5+7));
 					gp[counter]->SetValue((int)vp);
 					num_items_visible++;
 					events_shown[it->first]=1;
@@ -599,6 +554,7 @@ public:
 					g[counter]->Hide();
 					gp[counter]->Hide();
 					t[counter]->Hide();
+					tv[counter]->Hide();
 				}
 			}
 		}
@@ -722,6 +678,7 @@ public:
 		{
 			// done!
 			closeWindow();
+			return;
 		}
 		if(INPUTENGINE.isKeyDown(OIS::KC_C))
 		{
@@ -996,7 +953,8 @@ enum
 	EVT_CHANGE_RENDERER,
 	RENDERER_OPTION=990,
 	mynotebook,
-	mynotebook2
+	mynotebook2,
+	command_joywizard,
 };
 
 // ----------------------------------------------------------------------------
@@ -1033,7 +991,8 @@ BEGIN_EVENT_TABLE(MyDialog, wxDialog)
 
 	EVT_BUTTON(command_load_keymap, MyDialog::OnButLoadKeymap)
 	EVT_BUTTON(command_save_keymap, MyDialog::OnButSaveKeymap)
-
+	
+	EVT_BUTTON(command_joywizard, MyDialog::OnButJoyWizard)
 	EVT_BUTTON(command_add_key, MyDialog::OnButAddKey)
 	EVT_BUTTON(command_delete_key, MyDialog::OnButDeleteKey)
 	EVT_BUTTON(command_testevents, MyDialog::OnButTestEvents)
@@ -1500,7 +1459,7 @@ MyDialog::MyDialog(const wxString& title, MyApp *_app) : wxDialog(NULL, wxID_ANY
 	logfile->AddLine(conv("Searching input.map in ")+tfn.GetPath());logfile->Write();
 	InputMapFileName=tfn.GetPath()+wxFileName::GetPathSeparator()+_T("input.map");
 	std::string path = ((tfn.GetPath()+wxFileName::GetPathSeparator()).ToUTF8().data());
-	if(!INPUTENGINE.setup(getOISHandle(this), true, false, 0))
+	if(!INPUTENGINE.setup(getOISHandle(this), false, false, 0))
 	{
 		logfile->AddLine(conv("Unable to setup inputengine!"));logfile->Write();
 	} else
@@ -1633,8 +1592,12 @@ MyDialog::MyDialog(const wxString& title, MyApp *_app) : wxDialog(NULL, wxID_ANY
 	*/
 	//ctrlTypeCombo = new wxComboBox(controlsInfoPanel, EVCB_BOX, "Keyboard", wxPoint(5,25), wxSize(150, 20), 11, typeChoices, wxCB_READONLY);
 
-	btnAddKey = new wxButton(controlsInfoPanel, command_add_key, _("Add"), wxPoint(5,5), wxSize(120, 50));
-	btnDeleteKey = new wxButton(controlsInfoPanel, command_delete_key, _("Delete selected"), wxPoint(130,5), wxSize(120, 50));
+	wxButton *wizBtn = new wxButton(controlsInfoPanel, command_joywizard, _("Wizard"), wxPoint(5,5), wxSize(80, 50));
+	// XXX TOFIX: disable until fixed!
+	wizBtn->Disable();
+
+	btnAddKey = new wxButton(controlsInfoPanel, command_add_key, _("Add"), wxPoint(90,5), wxSize(80, 50));
+	btnDeleteKey = new wxButton(controlsInfoPanel, command_delete_key, _("Delete selected"), wxPoint(175,5), wxSize(80, 50));
 	btnDeleteKey->Enable(false);
 
 	//wxButton *btnLoadKeyMap =
@@ -2920,6 +2883,12 @@ void MyDialog::OnMenuCheckDoublesClick(wxCommandEvent& event)
 {
 }
 */
+void MyDialog::OnButJoyWizard(wxCommandEvent& event)
+{
+	JoystickWizard wizard(NULL);
+	wizard.RunWizard(wizard.GetFirstPage());
+}
+
 void MyDialog::OnButAddKey(wxCommandEvent& event)
 {
 	KeyAddDialog *ka = new KeyAddDialog(this);
