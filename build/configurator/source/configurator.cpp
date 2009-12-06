@@ -1598,7 +1598,7 @@ MyDialog::MyDialog(const wxString& title, MyApp *_app) : wxDialog(NULL, wxID_ANY
 
 	wxButton *wizBtn = new wxButton(controlsInfoPanel, command_joywizard, _("Wizard"), wxPoint(5,5), wxSize(80, 50));
 	// XXX TOFIX: disable until fixed!
-	//wizBtn->Disable();
+	wizBtn->Disable();
 
 	btnAddKey = new wxButton(controlsInfoPanel, command_add_key, _("Add"), wxPoint(90,5), wxSize(80, 50));
 	btnDeleteKey = new wxButton(controlsInfoPanel, command_delete_key, _("Delete selected"), wxPoint(175,5), wxSize(80, 50));
