@@ -35,15 +35,16 @@ BEGIN_EVENT_TABLE(AxisPage, wxWizardPageSimple)
 	EVT_BUTTON(ID_BTN_RESET, AxisPage::OnButReset)
 END_EVENT_TABLE()
 
-JoystickWizard::JoystickWizard(wxWindow *parent)
+JoystickWizard::JoystickWizard(size_t ihandle, wxWindow *parent)
         : wxWizard(parent,ID_WIZARD,_T("Rigs of Rods Joystick Assistant"),
                    wxBitmap(joywiz_xpm),wxDefaultPosition,
-                   wxDEFAULT_DIALOG_STYLE | wxRESIZE_BORDER)
+                   wxDEFAULT_DIALOG_STYLE | wxRESIZE_BORDER), ihandle(ihandle)
 {
     PresentationPage *presentation = new PresentationPage(this);
-	AxisPage *axis = new AxisPage(ID_EVUP, this);
+	AxisPage *axis = new AxisPage(ihandle, ID_EVUP, this);
     wxWizardPageSimple::Chain(presentation, axis);
 	this->m_page1 = presentation;
+	//ihandle = getOISHandle(this);
 
     // allow the wizard to size itself around the pages
     GetPageAreaSizer()->Add(presentation);

@@ -28,6 +28,28 @@ along with Rigs of Rods.  If not, see <http://www.gnu.org/licenses/>.
 #include "wx/button.h"
 #include "wx/stattext.h"
 #include <wx/timer.h>
+#include <wx/wx.h>
+#include <wx/notebook.h>
+#include <wx/choice.h>
+#include <wx/combobox.h>
+#include <wx/gauge.h>
+#include <wx/scrolbar.h>
+#include <wx/grid.h>
+#include <wx/treectrl.h>
+#include <wx/tooltip.h>
+#include <wx/mediactrl.h>
+#include <wx/intl.h>
+#include <wx/textfile.h>
+#include <wx/cmdline.h>
+#include <wx/html/htmlwin.h>
+#include <wx/uri.h>
+#include <wx/dir.h>
+#include <wx/fs_inet.h>
+#include <wx/scrolwin.h>
+#include "statpict.h"
+#include <wx/log.h>
+#include <wx/timer.h>
+#include <wx/version.h>
 #include "Ogre.h"
 #include "InputEngine.h"
 #include "utils.h"
@@ -68,11 +90,12 @@ inline void setControlEnable(wxWizard *wiz, int id, bool enable)
 class JoystickWizard : public wxWizard
 {
 public:
-	JoystickWizard(wxWindow *parent);
+	JoystickWizard(size_t ihandle, wxWindow *parent);
 	wxWizardPage *GetFirstPage() const { return m_page1; }
 
 	void OnPageChanging(wxWizardEvent& event);
 private:
+	size_t ihandle;
 	wxWizardPageSimple *m_page1;
 	DECLARE_EVENT_TABLE()
 };
@@ -125,13 +148,14 @@ protected:
 	int lastBtn, lastJoy;
 	event_trigger_t t;
 	int eventType;
+	size_t ihandle;
 	int selectedJoystickLast, selectedAxisLast;
 	float joyMinState[MAX_JOYSTICKS][MAX_JOYSTICK_AXIS];
 	float joyMaxState[MAX_JOYSTICKS][MAX_JOYSTICK_AXIS];
 	float joySliderMinState[MAX_JOYSTICKS][MAX_JOYSTICK_SLIDERS];
 	float joySliderMaxState[MAX_JOYSTICKS][MAX_JOYSTICK_SLIDERS];
 public:
-	AxisPage(int eventType, wxWizard *parent) : wxWizardPageSimple(parent), eventType(eventType)
+	AxisPage(size_t ihandle, int eventType, wxWizard *parent) : wxWizardPageSimple(parent), eventType(eventType), ihandle(ihandle)
     {
 		timer = new wxTimer(this, ID_TIMER0);
 
@@ -149,10 +173,17 @@ public:
 	{
 		reset();
 		bool captureMouse = false;
-		INPUTENGINE.destroy();
-		if(!INPUTENGINE.setup(getOISHandle(this), true, captureMouse, 0))
+		try
 		{
-			//logfile->AddLine(conv("Unable to open default input map!"));logfile->Write();
+			//if(!INPUTENGINE.setup((size_t)this->GetHandle(), true, false))
+			if(!INPUTENGINE.setup(ihandle, true, false))
+			{
+				//wxMessageDialog(this, wxString(_("Could not write to input.map file")), wxString(_("Write error")), wxOK||wxICON_ERROR).ShowModal();
+				wxMessageDialog(this, wxT("Could not create input system."), wxT("error while creating input system"), wxOK||wxICON_ERROR).ShowModal();
+			}
+		} catch (std::exception& e)
+		{
+			wxMessageDialog(this, conv(e.what()), wxT("exception while creating input system"), wxOK||wxICON_ERROR, wxDefaultPosition).ShowModal();;
 		}
 		timer->Start(50);
 
@@ -233,7 +264,7 @@ public:
 					if(value < joyMinState[i][counter]) joyMinState[i][counter] = value;
 					if(value > joyMaxState[i][counter]) joyMaxState[i][counter] = value;
 					float delta = fabs((float)(joyMaxState[i][counter]-joyMinState[i][counter]));
-					if(value > 10 || delta > 10)
+					//if(value > 10 || delta > 10)
 					{
 						str += std::string("Joystick ") + conv(wxString::Format(_T("%d"), i)) + std::string(", Axis ") + conv(wxString::Format(_T("%02d"), counter)) + std::string(": ") + conv(wxString::Format(_T("%03d"), (int)value)) + std::string(" (DELTA:") + conv(wxString::Format(_T("%0.2f"), delta))+ std::string(")\n");
 						cdi++;
@@ -380,7 +411,13 @@ public:
 
 	void OnTimer(wxTimerEvent& event)
 	{
-		INPUTENGINE.Capture();
+		try
+		{
+			INPUTENGINE.Capture();
+		} catch (std::exception& e)
+		{
+			//wxMessageDialog(this, conv(e.what()), wxT("exception while updating input system"), wxOK||wxICON_ERROR, wxDefaultPosition).ShowModal();;
+		}
 		update();
 	}
 
