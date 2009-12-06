@@ -197,6 +197,7 @@ class MyDialog : public wxDialog
 public:
 	// ctor(s)
 	MyDialog(const wxString& title, MyApp *_app);
+	void loadOgre();
 	void updateRendersystems(Ogre::RenderSystem *rs);
 	void SetDefaults();
 	bool LoadConfig();
@@ -243,6 +244,7 @@ public:
 	void OnSimpleSliderScroll(wxScrollEvent& event);
 	void OnSimpleSlider2Scroll(wxScrollEvent& event);
 	void OnNoteBookPageChange(wxNotebookEvent& event);
+	void OnNoteBook2PageChange(wxNotebookEvent& event);
 
 	void updateItemText(wxTreeItemId item, event_trigger_t *t);
 	void DSoundEnumerate(wxChoice* wxc);
@@ -720,6 +722,7 @@ public:
 			} else if(keys > 0)
 			{
 				closeWindow();
+				return;
 			}
 		} else if(t->eventtype == ET_JoystickButton)
 		{
@@ -745,6 +748,7 @@ public:
 			} else if(joyBtn >= 0 && joyNum >= 0)
 			{
 				closeWindow();
+				return;
 			}
 		} else if(t->eventtype == ET_JoystickAxisAbs || t->eventtype == ET_JoystickAxisRel)
 		{
@@ -983,7 +987,7 @@ BEGIN_EVENT_TABLE(MyDialog, wxDialog)
 	//EVT_BUTTON(BTN_REMAP, MyDialog::OnButRemap)
 
 	EVT_NOTEBOOK_PAGE_CHANGED(mynotebook, MyDialog::OnNoteBookPageChange)
-	EVT_NOTEBOOK_PAGE_CHANGED(mynotebook2, MyDialog::OnNoteBookPageChange)
+	EVT_NOTEBOOK_PAGE_CHANGED(mynotebook2, MyDialog::OnNoteBook2PageChange)
 
 	EVT_TREE_SEL_CHANGING (CTREE_ID, MyDialog::onTreeSelChange)
 	EVT_TREE_ITEM_ACTIVATED(CTREE_ID, MyDialog::onActivateItem)
@@ -1594,7 +1598,7 @@ MyDialog::MyDialog(const wxString& title, MyApp *_app) : wxDialog(NULL, wxID_ANY
 
 	wxButton *wizBtn = new wxButton(controlsInfoPanel, command_joywizard, _("Wizard"), wxPoint(5,5), wxSize(80, 50));
 	// XXX TOFIX: disable until fixed!
-	wizBtn->Disable();
+	//wizBtn->Disable();
 
 	btnAddKey = new wxButton(controlsInfoPanel, command_add_key, _("Add"), wxPoint(90,5), wxSize(80, 50));
 	btnDeleteKey = new wxButton(controlsInfoPanel, command_delete_key, _("Delete selected"), wxPoint(175,5), wxSize(80, 50));
@@ -1948,10 +1952,25 @@ MyDialog::MyDialog(const wxString& title, MyApp *_app) : wxDialog(NULL, wxID_ANY
 	//	controlstimer=new wxTimer(this, CONTROLS_TIMER_ID);
 	timer1=new wxTimer(this, UPDATE_RESET_TIMER_ID);
 
-	//controlstimer->Start(100); //in ms
+	// inititalize ogre only when we really need it due to long startup times
+	ogreRoot = 0;
+
+	logfile->AddLine(conv("Setting default values"));logfile->Write();
+	SetDefaults();
+	logfile->AddLine(conv("Loading config"));logfile->Write();
+	LoadConfig();
+
+	// centers dialog window on the screen
+	SetSize(500,600);
+	Centre();
+}
+
+
+void MyDialog::loadOgre()
+{
+	if(ogreRoot) return;
 	logfile->AddLine(conv("Creating Ogre root"));logfile->Write();
 	//we must do this once
-
 	wxFileName tcfn=wxFileName(app->UserPath, wxEmptyString);
 	tcfn.AppendDir(_T("config"));
 	wxString confdirPrefix=tcfn.GetPath()+wxFileName::GetPathSeparator();
@@ -1961,15 +1980,8 @@ MyDialog::MyDialog(const wxString& title, MyApp *_app) : wxDialog(NULL, wxID_ANY
 	wxString logsdirPrefix=tlfn.GetPath()+wxFileName::GetPathSeparator();
 
 	wxString progdirPrefix=app->ProgramPath+wxFileName::GetPathSeparator();
-
-
-#if OGRE_PLATFORM == OGRE_PLATFORM_APPLE
-		const char *pluginsfile="plugins_apple_rorcfg.cfg";
-#else
-		const char *pluginsfile="plugins.cfg";
-#endif
-
-    printf(">> If it crashes after here, check your plugins.cfg and remove the DirectX entry if under linux!\n");
+	const char *pluginsfile="plugins.cfg";
+	printf(">> If it crashes after here, check your plugins.cfg and remove the DirectX entry if under linux!\n");
 	ogreRoot = new Ogre::Root(Ogre::String(progdirPrefix.ToUTF8().data())+pluginsfile,
 									Ogre::String(confdirPrefix.ToUTF8().data())+"ogre.cfg",
 									Ogre::String(logsdirPrefix.ToUTF8().data())+"RoR.log");
@@ -1977,18 +1989,7 @@ MyDialog::MyDialog(const wxString& title, MyApp *_app) : wxDialog(NULL, wxID_ANY
 	logfile->AddLine(conv("Root restore config"));logfile->Write();
 	ogreRoot->restoreConfig();
 	updateRendersystems(ogreRoot->getRenderSystem());
-
-
-	logfile->AddLine(conv("Setting default values"));logfile->Write();
-	SetDefaults();
-	logfile->AddLine(conv("Loading config"));logfile->Write();
-	LoadConfig();
-
-	// centers dialog window on the screen
-	SetSize(500,580);
-	Centre();
 }
-
 void MyDialog::onChangeLanguageChoice(wxCommandEvent& event)
 {
 	wxString warning = _("You must save and restart the program to activate the new language!");
@@ -2505,21 +2506,24 @@ void MyDialog::SaveConfig()
 	}
 
 
-	//save Ogre stuff
-	Ogre::RenderSystem *rs = ogreRoot->getRenderSystem();
-	for(int i=0;i<(int)renderer_text.size();i++)
+	//save Ogre stuff if we loaded ogre in the first place
+	if(ogreRoot)
 	{
-		if(!renderer_text[i]->IsShown())
-			break;
-		rs->setConfigOption(conv(renderer_text[i]->GetLabel()), conv(renderer_choice[i]->GetStringSelection()));
+		Ogre::RenderSystem *rs = ogreRoot->getRenderSystem();
+		for(int i=0;i<(int)renderer_text.size();i++)
+		{
+			if(!renderer_text[i]->IsShown())
+				break;
+			rs->setConfigOption(conv(renderer_text[i]->GetLabel()), conv(renderer_choice[i]->GetStringSelection()));
+		}
+		Ogre::String err = rs->validateConfigOptions();
+		if (err.length() > 0)
+		{
+			wxMessageDialog(this, conv(err), _("Ogre config validation error"),wxOK||wxICON_ERROR).ShowModal();
+		}
+		else
+			Ogre::Root::getSingleton().saveConfig();
 	}
-	Ogre::String err = rs->validateConfigOptions();
-	if (err.length() > 0)
-	{
-		wxMessageDialog(this, conv(err), _("Ogre config validation error"),wxOK||wxICON_ERROR).ShowModal();
-	}
-	else
-		Ogre::Root::getSingleton().saveConfig();
 
 	//save my stuff
 	FILE *fd;
@@ -2766,6 +2770,7 @@ void MyDialog::OnQuit(wxCloseEvent& WXUNUSED(event))
 
 void MyDialog::OnChangeRenderer(wxCommandEvent& ev)
 {
+	if(!ogreRoot) return;
 	try
 	{
 		Ogre::RenderSystem *rs = ogreRoot->getRenderSystemByName(conv(renderer->GetStringSelection()));
@@ -2885,7 +2890,8 @@ void MyDialog::OnMenuCheckDoublesClick(wxCommandEvent& event)
 */
 void MyDialog::OnButJoyWizard(wxCommandEvent& event)
 {
-	JoystickWizard wizard(NULL);
+	size_t handle = getOISHandle(this);
+	JoystickWizard wizard(handle, this);
 	wizard.RunWizard(wizard.GetFirstPage());
 }
 
@@ -3343,6 +3349,16 @@ void MyDialog::OnLinkClicked(wxHtmlLinkEvent& event)
 		networkhtmw->OnLinkClicked(linkinfo);
 //	wxMessageDialog *res=new wxMessageDialog(this, href, "Success", wxOK | wxICON_INFORMATION );
 //	res->ShowModal();
+}
+
+void MyDialog::OnNoteBook2PageChange(wxNotebookEvent& event)
+{
+	// settings notebook page change
+	if(event.GetSelection() == 0)
+	{
+		// render settings, load ogre!
+		loadOgre();
+	}
 }
 
 void MyDialog::OnNoteBookPageChange(wxNotebookEvent& event)
