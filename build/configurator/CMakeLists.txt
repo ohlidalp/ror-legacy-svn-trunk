@@ -1,7 +1,7 @@
 project(RoR_Configurator)
 
-set(config_source source/configurator.cpp source/statpict.cpp source/treelistctrl.cpp)
-set(config_headers source/ImprovedConfigFile.h source/statpict.h source/treelistctrl.h source/joysticks.h)
+set(config_source source/configurator.cpp source/statpict.cpp source/treelistctrl.cpp source/joywizard.cpp)
+set(config_headers source/ImprovedConfigFile.h source/statpict.h source/treelistctrl.h source/joysticks.h source/joywizard.h source/utils.h)
 set(config_res source/config.xpm source/icon.rc source/joycfg.xpm source/keyboardcfg.xpm source/mousecfg.xpm source/resource.h)
 
 SET(wxWidgets_USE_UNICODE ON)
@@ -10,7 +10,7 @@ IF(WIN32)
  SET(wxWidgets_USE_STATIC ON)
 ENDIF(WIN32)
 
-FIND_PACKAGE(wxWidgets COMPONENTS base core html net)
+FIND_PACKAGE(wxWidgets COMPONENTS base core html net adv)
 IF(wxWidgets_FOUND)
   include_directories(${wxWidgets_INCLUDE_DIRS})
   add_definitions(${wxWidgets_DEFINITIONS} ${wxWidgets_CXX_FLAGS})
