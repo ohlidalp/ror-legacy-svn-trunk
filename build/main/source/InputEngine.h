@@ -407,7 +407,7 @@ public:
 	float getEventBounceTime(int eventID);
 	static bool instanceExists() ;
 	// we need to use hwnd here, as we are also using this in the configurator
-	bool setup(size_t hwnd, bool capture=false, bool capturemouse=false, int grabMode=0);
+	bool setup(size_t hwnd, bool capture=false, bool capturemouse=false, int grabMode=0, bool captureKbd=true);
 	Ogre::String getKeyForCommand(int eventID);
 	bool isKeyDown(OIS::KeyCode mod);
 
