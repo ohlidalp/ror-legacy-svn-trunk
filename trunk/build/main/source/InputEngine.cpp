@@ -1551,7 +1551,7 @@ void InputEngine::destroy()
 }
 
 
-bool InputEngine::setup(size_t hwnd, bool capture, bool capturemouse, int _grabMode)
+bool InputEngine::setup(size_t hwnd, bool capture, bool capturemouse, int _grabMode, bool captureKbd)
 {
 	grabMode = _grabMode;
 #ifndef NOOGRE
@@ -1603,8 +1603,12 @@ bool InputEngine::setup(size_t hwnd, bool capture, bool capturemouse, int _grabM
 #endif //NOOGRE
 
 		//Create all devices (We only catch joystick exceptions here, as, most people have Key/Mouse)
-		mKeyboard = static_cast<Keyboard*>(mInputManager->createInputObject( OISKeyboard, true ));
-		mKeyboard->setTextTranslation(OIS::Keyboard::Unicode);
+		mKeyboard=0;
+		if(captureKbd)
+		{
+			mKeyboard = static_cast<Keyboard*>(mInputManager->createInputObject( OISKeyboard, true ));
+			mKeyboard->setTextTranslation(OIS::Keyboard::Unicode);
+		}
 
 
 		try
@@ -1646,7 +1650,8 @@ bool InputEngine::setup(size_t hwnd, bool capture, bool capturemouse, int _grabM
 		//windowResized(win);
 
 		// set Callbacks
-		mKeyboard->setEventCallback(this);
+		if(mKeyboard)
+			mKeyboard->setEventCallback(this);
 		if(capturemouse)
 			mMouse->setEventCallback(this);
 
@@ -2297,6 +2302,7 @@ float InputEngine::getEventValue(int eventID, bool pure)
 
 bool InputEngine::isKeyDown(OIS::KeyCode key)
 {
+	if(!mKeyboard) return false;
 	return this->mKeyboard->isKeyDown(key);
 }
 
