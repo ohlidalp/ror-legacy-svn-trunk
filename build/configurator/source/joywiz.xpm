@@ -1,5 +1,5 @@
 /* XPM */
-static char * joywiz_xpm[] = {
+static const char * joywiz_xpm[] = {
 "120 360 11286 3",
 "   	c None",
 ".  	c #88C1EC",
