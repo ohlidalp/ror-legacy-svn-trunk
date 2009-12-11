@@ -1,6 +1,13 @@
 #ifndef UTILS_H__
 #define UTILS_H__
 
+#if OGRE_PLATFORM == OGRE_PLATFORM_LINUX
+# ifdef __WXGTK__
+#  include <gtk/gtk.h>
+#  include <gdk/gdkx.h>
+# endif //__WXGTK__
+#endif //OGRE_PLATFORM_LINUX
+
 inline wxString conv(const char *s)
 {
 	return wxString(s, wxConvUTF8);
@@ -38,7 +45,7 @@ inline size_t getOISHandle(wxWindow *window)
 			"can get its XID. Showing the window to avoid crash!\n");
 		window->Show();
 	}
-#if GTK_CHECK_VERSION(2,14,0)
+#if GTK_CHECK_VERSION (2,14,0)
 	// GTK 2.14 includes gtk_widget_get_window()
 	hWnd = (size_t)GDK_WINDOW_XID(gtk_widget_get_window(window->GetHandle()));
 #else
