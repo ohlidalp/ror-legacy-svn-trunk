@@ -995,7 +995,7 @@ BEGIN_EVENT_TABLE(MyDialog, wxDialog)
 
 	EVT_BUTTON(command_load_keymap, MyDialog::OnButLoadKeymap)
 	EVT_BUTTON(command_save_keymap, MyDialog::OnButSaveKeymap)
-	
+
 	EVT_BUTTON(command_joywizard, MyDialog::OnButJoyWizard)
 	EVT_BUTTON(command_add_key, MyDialog::OnButAddKey)
 	EVT_BUTTON(command_delete_key, MyDialog::OnButDeleteKey)
@@ -2520,9 +2520,10 @@ void MyDialog::SaveConfig()
 		if (err.length() > 0)
 		{
 			wxMessageDialog(this, conv(err), _("Ogre config validation error"),wxOK||wxICON_ERROR).ShowModal();
-		}
-		else
+		} else
+		{
 			Ogre::Root::getSingleton().saveConfig();
+		}
 	}
 
 	//save my stuff
