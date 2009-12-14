@@ -2100,6 +2100,23 @@ int InputEngine::getKeboardKeyForCommand(int eventID)
 bool InputEngine::isEventAnalog(int eventID)
 {
 	std::vector<event_trigger_t> t_vec = events[eventID];
+	if(t_vec.size() > 0)
+	{
+		if(t_vec[0].eventtype == ET_MouseAxisX \
+			|| t_vec[0].eventtype == ET_MouseAxisY \
+			|| t_vec[0].eventtype == ET_MouseAxisZ \
+			|| t_vec[0].eventtype == ET_JoystickAxisAbs \
+			|| t_vec[0].eventtype == ET_JoystickAxisRel \
+			|| t_vec[0].eventtype == ET_JoystickSliderX \
+			|| t_vec[0].eventtype == ET_JoystickSliderY)
+			return true;
+		else
+			return false;
+	}
+	return false;
+#if 0
+	// XXX : TODO fix this problem properly
+	std::vector<event_trigger_t> t_vec = events[eventID];
 	for(std::vector<event_trigger_t>::iterator i = t_vec.begin(); i != t_vec.end(); i++)
 	{
 		event_trigger_t t = *i;
@@ -2114,6 +2131,7 @@ bool InputEngine::isEventAnalog(int eventID)
 			return true;
 	}
 	return false;
+#endif //0
 }
 
 float InputEngine::getEventValue(int eventID, bool pure)
