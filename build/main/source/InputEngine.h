@@ -265,11 +265,11 @@ enum events
 	EV_TRUCK_SHIFT_GEAR16,//!< shift directly into this gear
 	EV_TRUCK_SHIFT_GEAR17,//!< shift directly into this gear
 	EV_TRUCK_SHIFT_GEAR18,//!< shift directly into this gear
-	
-	EV_TRUCK_SHIFT_LOWRANGE, //!< select low range (1-6) for H-shaft 
+
+	EV_TRUCK_SHIFT_LOWRANGE, //!< select low range (1-6) for H-shaft
 	EV_TRUCK_SHIFT_MIDRANGE, //!< select middle range (7-12) for H-shaft
 	EV_TRUCK_SHIFT_HIGHRANGE, //!< select high range (13-18) for H-shaft
-	
+
 	EV_TRUCK_STARTER, //!< hold to start the engine
 	EV_TRUCK_STEER_LEFT, //!< steer left
 	EV_TRUCK_STEER_RIGHT, //!< steer right
@@ -382,7 +382,7 @@ typedef struct
 	// POVs
 	int joystickPovNumber;
 	int joystickPovDirection;
-	
+
 	// Sliders
 	int joystickSliderNumber;
 	int joystickSliderReverse;
@@ -412,7 +412,7 @@ public:
 	bool isKeyDown(OIS::KeyCode mod);
 
 	std::map<int, std::vector<event_trigger_t> > &getEvents() { return events; };
-	
+
 	Ogre::String getDeviceName(event_trigger_t evt);
 	std::string getEventTypeName(int type);
 

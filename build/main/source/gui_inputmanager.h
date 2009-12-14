@@ -6,7 +6,7 @@ Copyright 2007,2008,2009 Thomas Fischer
 For more information, see http://www.rigsofrods.com/
 
 Rigs of Rods is free software: you can redistribute it and/or modify
-it under the terms of the GNU General Public License version 3, as 
+it under the terms of the GNU General Public License version 3, as
 published by the Free Software Foundation.
 
 Rigs of Rods is distributed in the hope that it will be useful,
@@ -23,9 +23,14 @@ along with Rigs of Rods.  If not, see <http://www.gnu.org/licenses/>.
 
 #include <MyGUI.h>
 #include <OIS.h>
+class InputEngine;
 
-class GUIInputManager : public OIS::MouseListener, public OIS::KeyListener
+class GUIInputManager
+// DO NOT use the listeners here, it will conflict with the real listeners in the inputmanager!
+// rather forward the events from the inputmanager
+//: public OIS::MouseListener, public OIS::KeyListener
 {
+	friend class InputEngine;
 public:
     GUIInputManager();
     virtual ~GUIInputManager();
@@ -44,7 +49,7 @@ public:
     void setMousePosition(int _x, int _y);
     void updateCursorPosition();
 
-private:
+protected:
     virtual bool mouseMoved(const OIS::MouseEvent& _arg);
     virtual bool mousePressed(const OIS::MouseEvent& _arg, OIS::MouseButtonID _id);
     virtual bool mouseReleased(const OIS::MouseEvent& _arg, OIS::MouseButtonID _id);
@@ -54,12 +59,11 @@ private:
     void checkPosition();
 
 private:
-    OIS::InputManager* mInputManager;
-    OIS::Keyboard* mKeyboard;
-    OIS::Mouse* mMouse;
+    //OIS::InputManager* mInputManager;
+    //OIS::Keyboard* mKeyboard;
+    //OIS::Mouse* mMouse;
 
-    int mCursorX;
-    int mCursorY;
+    int mCursorX, mCursorY, width, height;
 };
 
 #endif // GUI_INPUTMANAGER_H__

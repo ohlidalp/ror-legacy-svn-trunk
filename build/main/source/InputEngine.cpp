@@ -1644,7 +1644,10 @@ bool InputEngine::setup(size_t hwnd, bool capture, bool capturemouse, int _grabM
 #endif //NOOGRE
 
 		if(capturemouse)
+		{
+			printf(">>> MOUSE ADDED\n");
 			mMouse = static_cast<Mouse*>(mInputManager->createInputObject( OISMouse, true ));
+		}
 
 		//Set initial mouse clipping size
 		//windowResized(win);
@@ -1786,6 +1789,9 @@ void InputEngine::windowResized(RenderWindow* rw)
 	const OIS::MouseState &ms = mMouse->getMouseState();
 	ms.width = width;
 	ms.height = height;
+#ifndef NOOGRE
+	MYGUI.setInputViewSize(width, height);
+#endif
 }
 
 /* --- Joystik Events ------------------------------------------ */
@@ -1850,6 +1856,7 @@ bool InputEngine::keyPressed( const OIS::KeyEvent &arg )
 		return true;
 	}
 # endif
+	MYGUI.keyPressed(arg);
 #endif
 
 	//LogManager::getSingleton().logMessage("*** keyPressed");
@@ -1885,6 +1892,9 @@ bool InputEngine::keyPressed( const OIS::KeyEvent &arg )
 
 bool InputEngine::keyReleased( const OIS::KeyEvent &arg )
 {
+#ifndef NOOGRE
+	MYGUI.keyReleased(arg);
+#endif
 	//LogManager::getSingleton().logMessage("*** keyReleased");
 	if(keyState[arg.key] != 0)
 		inputsChanged=true;
@@ -1895,7 +1905,9 @@ bool InputEngine::keyReleased( const OIS::KeyEvent &arg )
 /* --- Mouse Events ------------------------------------------ */
 bool InputEngine::mouseMoved( const OIS::MouseEvent &arg )
 {
-	//APP.mGUISystem->injectOISMouseMove(arg);
+#ifndef NOOGRE
+	MYGUI.mouseMoved(arg);
+#endif
 	//LogManager::getSingleton().logMessage("*** mouseMoved");
 	inputsChanged=true;
 	mouseState = arg.state;
@@ -1904,7 +1916,9 @@ bool InputEngine::mouseMoved( const OIS::MouseEvent &arg )
 
 bool InputEngine::mousePressed( const OIS::MouseEvent &arg, OIS::MouseButtonID id )
 {
-	//APP.mGUISystem->injectOISMouseButtonDown(id);
+#ifndef NOOGRE
+	MYGUI.mousePressed(arg, id);
+#endif
 	//LogManager::getSingleton().logMessage("*** mousePressed");
 	inputsChanged=true;
 	mouseState = arg.state;
@@ -1913,7 +1927,9 @@ bool InputEngine::mousePressed( const OIS::MouseEvent &arg, OIS::MouseButtonID i
 
 bool InputEngine::mouseReleased( const OIS::MouseEvent &arg, OIS::MouseButtonID id )
 {
-	//APP.mGUISystem->injectOISMouseButtonUp(id);
+#ifndef NOOGRE
+	MYGUI.mouseReleased(arg, id);
+#endif
 	//LogManager::getSingleton().logMessage("*** mouseReleased");
 	inputsChanged=true;
 	mouseState = arg.state;

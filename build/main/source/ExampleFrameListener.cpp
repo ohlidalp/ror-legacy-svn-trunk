@@ -2651,7 +2651,7 @@ bool ExampleFrameListener::updateEvents(float dt)
 	if(GUI_MainMenu::getSingleton().getVisible()) return true; // disable input events in menu mode
 
 
-	
+
 	if (INPUTENGINE.getEventBoolValueBounce(EV_DOF_TOGGLE, 0.5f) && mDOF)
 	{
 		bool enabled = !mDOF->getEnabled();
@@ -2708,25 +2708,25 @@ bool ExampleFrameListener::updateEvents(float dt)
 		sprintf(tmp1, "%s %d", ssmsg.c_str(), mNumScreenShots);
 		flashMessage(tmp1);
 	}
-	
+
 	// special keys for the debug mode
 	if(mDOF && mDOFDebug)
 	{
 		if(INPUTENGINE.getEventBoolValueBounce(EV_DOF_DEBUG_TOGGLE_FOCUS_MODE, 1.0f))
 			mDOF->toggleFocusMode();
-		
+
 		// zoom
 		if(INPUTENGINE.getEventBoolValue(EV_DOF_DEBUG_ZOOM_IN))
 			mDOF->zoomView(-dt);
 		else if(INPUTENGINE.getEventBoolValue(EV_DOF_DEBUG_ZOOM_OUT))
 			mDOF->zoomView(dt);
-		
+
 		// aperture
 		if(INPUTENGINE.getEventBoolValue(EV_DOF_DEBUG_APERTURE_MORE))
 			mDOF->setAperture(-5*dt);
 		else if(INPUTENGINE.getEventBoolValue(EV_DOF_DEBUG_APERTURE_LESS))
 			mDOF->setAperture(5*dt);
-		
+
 		// focus
 		const OIS::MouseState mstate = INPUTENGINE.getMouseState();
 		Real offset = 0.05f * mstate.Z.rel;
@@ -2735,7 +2735,7 @@ bool ExampleFrameListener::updateEvents(float dt)
 		else if(INPUTENGINE.getEventBoolValue(EV_DOF_DEBUG_FOCUS_OUT))
 			offset += 120.0 * dt;
 		mDOF->moveFocus(offset);
-		
+
 		// if in DOF debug, we wont process any other events
 		return true;
 	}
@@ -4972,10 +4972,10 @@ void ExampleFrameListener::loadTerrain(String terrainfile)
 		}
 		//MaterialPtr mat = MaterialManager::getSingleton().getByName("PSSM/Plane");
 		//mat->getTechnique(0)->getPass(0)->getFragmentProgramParameters()->setNamedConstant("pssmSplitPoints", splitPoints);
-		
+
 		//mat = MaterialManager::getSingleton().getByName("PSSM/Plane2");
 		//mat->getTechnique(0)->getPass(0)->getFragmentProgramParameters()->setNamedConstant("pssmSplitPoints", splitPoints);
-		
+
 		//mat = MaterialManager::getSingleton().getByName("PSSM/Knot");
 		//mat->getTechnique(0)->getPass(0)->getFragmentProgramParameters()->setNamedConstant("pssmSplitPoints", splitPoints);
 #else
