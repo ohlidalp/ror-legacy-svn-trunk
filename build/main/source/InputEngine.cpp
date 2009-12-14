@@ -1447,8 +1447,8 @@ eventInfo_t eventInfo[] = {
 	{ "TRUCK_LOAD_POS8", EV_TRUCK_LOAD_POS8, "Keyboard EXPL+ALT+8", _L("load position under slot 8") },
 	{ "TRUCK_LOAD_POS9", EV_TRUCK_LOAD_POS9, "Keyboard EXPL+ALT+9", _L("load position under slot 9") },
 	{ "TRUCK_LOAD_POS10", EV_TRUCK_LOAD_POS10, "Keyboard EXPL+ALT+0", _L("load position under slot 10") },
-	
-	
+
+
 	{ "DOF_TOGGLE", EV_DOF_TOGGLE, "Keyboard EXPL+CTRL+D", _L("turn on Depth of Field on or off") },
 	{ "DOF_DEBUG", EV_DOF_DEBUG, "Keyboard EXPL+ALT+D", _L("turn on the Depth of field debug view") },
 	{ "DOF_DEBUG_TOGGLE_FOCUS_MODE", EV_DOF_DEBUG_TOGGLE_FOCUS_MODE, "Keyboard EXPL+SPACE", _L("toggle the DOF focus mode") },
@@ -2853,16 +2853,19 @@ bool InputEngine::saveMapping(Ogre::String outfile, size_t hwnd, int joyNum)
 		return false;
 
 	bool created=false;
+	/*
+	// we dont need to capture the mouse anymore
 	if(mInputManager && !captureMode && hwnd>0)
 	{
 		destroy();
 		setup(hwnd, true, true);
 		created=true;
 	}
+	*/
 	if(!mInputManager && hwnd>0)
 	{
 		destroy();
-		setup(hwnd, true, true);
+		setup(hwnd, false, false);
 		created=true;
 	}
 	/*
