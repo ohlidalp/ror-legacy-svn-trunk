@@ -6,7 +6,7 @@ Copyright 2007,2008,2009 Thomas Fischer
 For more information, see http://www.rigsofrods.com/
 
 Rigs of Rods is free software: you can redistribute it and/or modify
-it under the terms of the GNU General Public License version 3, as 
+it under the terms of the GNU General Public License version 3, as
 published by the Free Software Foundation.
 
 Rigs of Rods is distributed in the hope that it will be useful,
@@ -64,15 +64,15 @@ MyGUI::Char translateWin32Text(MyGUI::KeyCode kc)
         // Combining versions range from 0x300 to 0x36F; only 5 (for French) have been mapped below
         // http://www.fileformat.info/info/unicode/block/combining_diacritical_marks/images.htm
         switch(buff[0])	{
-        case 0x5E: // Circumflex accent: â
+        case 0x5E: // Circumflex accent: ï¿½
             deadKey = 0x302; break;
-        case 0x60: // Grave accent: à
+        case 0x60: // Grave accent: ï¿½
             deadKey = 0x300; break;
-        case 0xA8: // Diaeresis: ü
+        case 0xA8: // Diaeresis: ï¿½
             deadKey = 0x308; break;
-        case 0xB4: // Acute accent: é
+        case 0xB4: // Acute accent: ï¿½
             deadKey = 0x301; break;
-        case 0xB8: // Cedilla: ç
+        case 0xB8: // Cedilla: ï¿½
             deadKey = 0x327; break;
         default:
             deadKey = buff[0]; break;
@@ -84,11 +84,13 @@ MyGUI::Char translateWin32Text(MyGUI::KeyCode kc)
 #endif
 
 GUIInputManager::GUIInputManager() :
-    mInputManager(0),
-    mKeyboard(0),
-    mMouse(0),
+    //mInputManager(0),
+    //mKeyboard(0),
+    //mMouse(0),
     mCursorX(0),
-    mCursorY(0)
+    mCursorY(0),
+    width(0),
+    height(0)
 {
 }
 
@@ -98,6 +100,8 @@ GUIInputManager::~GUIInputManager()
 
 void GUIInputManager::createInput(size_t _handle)
 {
+#if 0
+    // we dont use this code anymore, rather forward the events from the inputmanager
     std::ostringstream windowHndStr;
     windowHndStr << _handle;
 
@@ -111,10 +115,12 @@ void GUIInputManager::createInput(size_t _handle)
 
     mMouse = static_cast<OIS::Mouse*>(mInputManager->createInputObject( OIS::OISMouse, true ));
     mMouse->setEventCallback(this);
+#endif //0
 }
 
 void GUIInputManager::destroyInput()
 {
+#if 0
     if (mInputManager)
     {
         if (mMouse)
@@ -130,6 +136,7 @@ void GUIInputManager::destroyInput()
         OIS::InputManager::destroyInputSystem(mInputManager);
         mInputManager = nullptr;
     }
+#endif //0
 }
 
 bool GUIInputManager::mouseMoved(const OIS::MouseEvent& _arg)
@@ -189,25 +196,20 @@ bool GUIInputManager::keyReleased(const OIS::KeyEvent& _arg)
 
 void GUIInputManager::captureInput()
 {
-    if (mMouse) mMouse->capture();
-    mKeyboard->capture();
+    //if (mMouse) mMouse->capture();
+    //if (mKeyboard) mKeyboard->capture();
 }
 
 void GUIInputManager::setInputViewSize(int _width, int _height)
 {
-    if (mMouse)
-    {
-        const OIS::MouseState &ms = mMouse->getMouseState();
-        ms.width = _width;
-        ms.height = _height;
+    this->width = _width;
+    this->height = _height;
 
-        checkPosition();
-    }
+    checkPosition();
 }
 
 void GUIInputManager::setMousePosition(int _x, int _y)
 {
-    const OIS::MouseState &ms = mMouse->getMouseState();
     mCursorX = _x;
     mCursorY = _y;
 
@@ -216,21 +218,20 @@ void GUIInputManager::setMousePosition(int _x, int _y)
 
 void GUIInputManager::checkPosition()
 {
-    const OIS::MouseState &ms = mMouse->getMouseState();
-
     if (mCursorX < 0)
         mCursorX = 0;
-    else if (mCursorX >= ms.width)
-        mCursorX = ms.width - 1;
+    else if (mCursorX >= this->width)
+        mCursorX = this->width - 1;
 
     if (mCursorY < 0)
         mCursorY = 0;
-    else if (mCursorY >= ms.height)
-        mCursorY = ms.height - 1;
+    else if (mCursorY >= this->height)
+        mCursorY = this->height - 1;
 }
 
 void GUIInputManager::updateCursorPosition()
 {
-    const OIS::MouseState &ms = mMouse->getMouseState();
-    injectMouseMove(mCursorX, mCursorY, ms.Z.abs);
+    //if(!mMouse) return;
+    //const OIS::MouseState &ms = mMouse->getMouseState();
+    //injectMouseMove(mCursorX, mCursorY, ms.Z.abs);
 }
