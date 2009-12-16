@@ -28,6 +28,7 @@ along with Rigs of Rods.  If not, see <http://www.gnu.org/licenses/>.
 #include "ScopeLog.h"
 #include "DepthOfFieldEffect.h"
 #include "Lens.h"
+#include "GlowMaterialListener.h"
 
 #include "CharacterFactory.h"
 #include "BeamFactory.h"
@@ -5257,6 +5258,14 @@ void ExampleFrameListener::loadTerrain(String terrainfile)
 		mDOF->setDebugEnabled(false);
 	}
 
+
+	if (SETTINGS.getSetting("Glow") == "Yes")
+	{
+		CompositorManager::getSingleton().addCompositor(mCamera->getViewport(), "Glow");
+		CompositorManager::getSingleton().setCompositorEnabled(mCamera->getViewport(), "Glow", true);
+		GlowMaterialListener *gml = new GlowMaterialListener();
+		Ogre::MaterialManager::getSingleton().addListener(gml);
+	}
 
 	// for menu effects
 	// not working currently :(
