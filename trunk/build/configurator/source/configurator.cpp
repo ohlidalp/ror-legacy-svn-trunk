@@ -769,7 +769,7 @@ public:
 					float delta = fabs((float)(joyMaxState[i][counter]-joyMinState[i][counter]));
 					if(value > 10 || delta > 10)
 					{
-						str += std::string("Joystick ") + conv(wxString::Format(_T("%d"), i)) + std::string(", Axis ") + conv(wxString::Format(_T("%02d"), counter)) + std::string(": ") + conv(wxString::Format(_T("%03d"), (int)value)) + std::string(" (DELTA:") + conv(wxString::Format(_T("%0.2f"), delta))+ std::string(")\n");
+						str += std::string("Joystick ") + conv(wxString::Format(wxT("%d"), i)) + std::string(", Axis ") + conv(wxString::Format(wxT("%02d"), counter)) + std::string(": ") + conv(wxString::Format(wxT("%03d"), (int)value)) + std::string(" (DELTA:") + conv(wxString::Format(wxT("%0.2f"), delta))+ std::string(")\n");
 						cdi++;
 					}
 				}
@@ -1145,11 +1145,11 @@ void initLanguage(wxString languagePath, wxString userpath)
 	// this prevents error messages
 	wxLogNull noLog;
 	// Initialize the catalogs we'll be using
-	wxString langfile = _T("ror");
-	wxString dirsep = _T("/");
+	wxString langfile = wxT("ror");
+	wxString dirsep = wxT("/");
 	wxString basedir = languagePath;
 #if OGRE_PLATFORM == OGRE_PLATFORM_WIN32
-	dirsep = _T("\\");
+	dirsep = wxT("\\");
 #endif
 	//basedir = basedir + dirsep + _T("languages");
 	wxLocale::AddCatalogLookupPathPrefix(languagePath);
@@ -1196,9 +1196,9 @@ void initLanguage(wxString languagePath, wxString userpath)
 	logfile->AddLine(conv("preferred language: "+conv(language->Description)));logfile->Write();
 	printf("preferred language: %s\n", conv(language->Description).c_str());
 	wxString lshort = language->CanonicalName.substr(0, 2);
-	wxString tmp = basedir + dirsep + lshort + dirsep + langfile + _T(".mo");
+	wxString tmp = basedir + dirsep + lshort + dirsep + langfile + wxT(".mo");
 	printf("lang file: %s\n", conv(tmp).c_str());
-	logfile->AddLine(wxString(_T("lang file: "))+tmp);logfile->Write();
+	logfile->AddLine(wxString(wxT("lang file: "))+tmp);logfile->Write();
 	if(wxFileName::FileExists(tmp))
 	{
 		printf("language existing, using it!\n");
@@ -1288,7 +1288,7 @@ bool MyApp::filesystemBootstrap()
 	}
 	GetShortPathName(Wuser_path, Wuser_path, 512); //this is legal
 	wxFileName tfn=wxFileName(Wuser_path, wxEmptyString);
-	tfn.AppendDir(_T("Rigs of Rods"));
+	tfn.AppendDir(wxT("Rigs of Rods"));
 	UserPath=tfn.GetPath();
 #endif
 #if OGRE_PLATFORM == OGRE_PLATFORM_LINUX
@@ -1345,10 +1345,10 @@ bool MyApp::filesystemBootstrap()
 #endif
 	//skeleton
 	wxFileName tsk=wxFileName(ProgramPath, wxEmptyString);
-	tsk.AppendDir(_T("skeleton"));
+	tsk.AppendDir(wxT("skeleton"));
 	SkeletonPath=tsk.GetPath();
 	tsk=wxFileName(ProgramPath, wxEmptyString);
-	tsk.AppendDir(_T("languages"));
+	tsk.AppendDir(wxT("languages"));
 	languagePath=tsk.GetPath();
 	//buildmode
 	if (buildmode)
@@ -1359,15 +1359,15 @@ bool MyApp::filesystemBootstrap()
 		tfn.RemoveLastDir(); // RoRdev\build\bin
 		tfn.RemoveLastDir(); // RoRdev\build
 		wxFileName ttfn=tfn;
-		ttfn.AppendDir(_T("configurator"));
+		ttfn.AppendDir(wxT("configurator"));
 //		ProgramPath=ttfn.GetPath();
-		ttfn.AppendDir(_T("confdata"));
+		ttfn.AppendDir(wxT("confdata"));
 		languagePath=ttfn.GetPath();
 		ttfn=tfn;
-		ttfn.AppendDir(_T("skeleton"));
+		ttfn.AppendDir(wxT("skeleton"));
 		SkeletonPath=ttfn.GetPath();
 		ttfn=tfn;
-		ttfn.AppendDir(_T("userspace"));
+		ttfn.AppendDir(wxT("userspace"));
 		UserPath=ttfn.GetPath();
 	}
 	//okay
@@ -1388,13 +1388,13 @@ bool MyApp::filesystemBootstrap()
 bool MyApp::OnInit()
 {
 	buildmode=false;
-	if (argc==2 && wxString(argv[1])==_T("/buildmode")) buildmode=true;
+	if (argc==2 && wxString(argv[1])==wxT("/buildmode")) buildmode=true;
 	//setup the user filesystem
 	if (!filesystemBootstrap()) return false;
 	// open logfile
 	wxFileName clfn=wxFileName(UserPath, wxEmptyString);
-	clfn.AppendDir(_T("logs"));
-	clfn.SetFullName(_T("configlog.txt"));
+	clfn.AppendDir(wxT("logs"));
+	clfn.SetFullName(wxT("configlog.txt"));
 	logfile=new wxTextFile(clfn.GetFullPath());
 	if (logfile->Exists()) {logfile->Open();logfile->Clear();} else logfile->Create();
 	logfile->AddLine(conv("Log created"));logfile->Write();
@@ -1966,8 +1966,12 @@ MyDialog::MyDialog(const wxString& title, MyApp *_app) : wxDialog(NULL, wxID_ANY
 	LoadConfig();
 
 	// centers dialog window on the screen
+	Show();
 	SetSize(500,600);
 	Centre();
+	
+	// important: show before we load ogre, since ogre loading can take some time
+	loadOgre();
 }
 
 
@@ -3110,7 +3114,7 @@ void MyDialog::OnButUpdateRoR(wxCommandEvent& event)
 	sei.hwnd = NULL;
 	sei.lpVerb = _T("runas");
 	sei.lpFile = wpath;
-	sei.lpParameters = _T("");
+	sei.lpParameters = wxT("");
 	sei.lpDirectory = cwpath;
 	sei.nShow = SW_NORMAL;
 
@@ -3366,7 +3370,7 @@ void MyDialog::OnNoteBook2PageChange(wxNotebookEvent& event)
 	if(event.GetSelection() == 0)
 	{
 		// render settings, load ogre!
-		loadOgre();
+		//loadOgre();
 	}
 }
 
