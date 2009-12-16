@@ -6,7 +6,7 @@ Copyright 2007,2008,2009 Thomas Fischer
 For more information, see http://www.rigsofrods.com/
 
 Rigs of Rods is free software: you can redistribute it and/or modify
-it under the terms of the GNU General Public License version 3, as 
+it under the terms of the GNU General Public License version 3, as
 published by the Free Software Foundation.
 
 Rigs of Rods is distributed in the hope that it will be useful,
@@ -29,7 +29,7 @@ MaterialFunctionMapper::MaterialFunctionMapper()
 MaterialFunctionMapper::~MaterialFunctionMapper()
 {
 }
-	
+
 void MaterialFunctionMapper::addMaterial(int flareid, materialmapping_t t)
 {
 	MaterialPtr m = Ogre::MaterialManager::getSingleton().getByName(t.material);
@@ -58,36 +58,61 @@ void MaterialFunctionMapper::toggleFunction(int flareid, bool isvisible)
 		MaterialPtr m = Ogre::MaterialManager::getSingleton().getByName(it->material);
 		if(m.isNull()) continue;
 
-		Technique *tech = m->getTechnique(0);
-		if(!tech) continue;
+		for(int i=0;i<m->getNumTechniques();i++)
+		{
+			Technique *tech = m->getTechnique(i);
+			if(!tech) continue;
 
-		Pass *p = tech->getPass(0);
-		if(!p) continue;
+			if(tech->getSchemeName() == "glow")
+			{
+				// glowing technique
+				// set the ambient value as glow amount
+				Pass *p = tech->getPass(0);
+				if(!p) continue;
 
-		TextureUnitState *tus = p->getTextureUnitState(0);
-		if(!tus) continue;
+				if(isvisible)
+				{
+					p->setSelfIllumination(it->emissiveColour);
+					p->setAmbient(ColourValue::White);
+					p->setDiffuse(ColourValue::White);
+				} else
+				{
+					p->setSelfIllumination(ColourValue::ZERO);
+					p->setAmbient(ColourValue::Black);
+					p->setDiffuse(ColourValue::Black);
+				}
+			} else
+			{
+				// normal technique
+				Pass *p = tech->getPass(0);
+				if(!p) continue;
 
-		if(tus->getNumFrames() < 2)
-			continue;
+				TextureUnitState *tus = p->getTextureUnitState(0);
+				if(!tus) continue;
 
-		int frame = isvisible?1:0;
+				if(tus->getNumFrames() < 2)
+					continue;
 
-		tus->setCurrentFrame(frame);
+				int frame = isvisible?1:0;
 
-		if(isvisible)
-			p->setSelfIllumination(it->emissiveColour);
-		else
-			p->setSelfIllumination(ColourValue::ZERO);
-	}		
+				tus->setCurrentFrame(frame);
+
+				if(isvisible)
+					p->setSelfIllumination(it->emissiveColour);
+				else
+					p->setSelfIllumination(ColourValue::ZERO);
+			}
+		}
+	}
 }
 
 MaterialPtr MaterialFunctionMapper::addSSAOToMaterial(MaterialPtr material)
 {
 	if(material.isNull())
 		return MaterialPtr();
-	
+
 	LogManager::getSingleton().logMessage("##addSSAOToEntity");
-	
+
 	if(!material->getNumTechniques()) return MaterialPtr();
 	Technique *tp = material->getTechnique(0);
 	if(!tp) return MaterialPtr();
@@ -99,13 +124,13 @@ MaterialPtr MaterialFunctionMapper::addSSAOToMaterial(MaterialPtr material)
 	if(!pp->getNumTextureUnitStates()) return MaterialPtr();
 	TextureUnitState *tusp = pp->getTextureUnitState(0);
 	if(!tusp) return MaterialPtr();
-	
+
 	String texture1 = tusp->getTextureName();
 	if(texture1.empty()) return MaterialPtr();
 
 	String targetName = material->getName()+"PlusSSAO";
 	LogManager::getSingleton().logMessage("##addSSAOToEntity0: " + texture1);
-	
+
 	// check if already existing
 	if(!MaterialManager::getSingleton().getByName(targetName).isNull())
 		return MaterialManager::getSingleton().getByName(targetName);
