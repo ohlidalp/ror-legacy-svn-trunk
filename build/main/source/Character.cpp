@@ -67,7 +67,7 @@ ColourValue cvals[] =
 	ColourValue(0.6,0.6,0.0),
 };
 
-Character::Character(Collisions *c, Network *net, HeightFinder *h, Water *w, MapControl *m, Ogre::SceneManager *scm, int source, unsigned int streamid, int slotid)
+Character::Character(Collisions *c, Network *net, HeightFinder *h, Water *w, MapControl *m, Ogre::SceneManager *scm, int source, unsigned int streamid, int slotid, bool remote)
 {
 	this->net=net;
 	this->collisions=c;
@@ -78,7 +78,8 @@ Character::Character(Collisions *c, Network *net, HeightFinder *h, Water *w, Map
 	this->source=source;
 	this->streamid=streamid;
 	this->slotid=slotid;
-	remote = true;
+	this->remote=remote;
+	//remote = true;
 	last_net_time=0;
 	netMT=0;
 
@@ -163,11 +164,6 @@ void Character::updateCharacterColour()
 		mat->getTechnique(0)->getPass(0)->getTextureUnitState(2)->setAlphaOperation(LBX_BLEND_CURRENT_ALPHA , LBS_MANUAL, LBS_CURRENT, 0.8);
 		mat->getTechnique(0)->getPass(0)->getTextureUnitState(2)->setColourOperationEx(LBX_BLEND_CURRENT_ALPHA , LBS_MANUAL, LBS_CURRENT, cval, cval, 1);
 	}
-}
-
-void Character::setRemote(bool value)
-{
-	remote = value;
 }
 
 void Character::setUID(int uid)

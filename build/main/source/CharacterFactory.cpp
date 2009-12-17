@@ -35,13 +35,13 @@ using namespace Ogre;
 
 template<> CharacterFactory *StreamableFactory < CharacterFactory, Character >::ms_Singleton = 0;
 
-CharacterFactory::CharacterFactory(Collisions *c, HeightFinder *h, Water *w, MapControl *m, Ogre::SceneManager *scm) : c(c), net(0), h(h), w(w), m(m), scm(scm)
+CharacterFactory::CharacterFactory(Network *net, Collisions *c, HeightFinder *h, Water *w, MapControl *m, Ogre::SceneManager *scm) : c(c), net(net), h(h), w(w), m(m), scm(scm)
 {
 }
 
-Character *CharacterFactory::createLocal()
+Character *CharacterFactory::createLocal(int slotid)
 {
-	Character *ch = new Character(c, net, h, w, m, scm, -1);
+	Character *ch = new Character(c, net, h, w, m, scm, -1, 0, slotid, false);
 	streamables[-1][0] = ch;
 	return ch;
 }
@@ -49,7 +49,7 @@ Character *CharacterFactory::createLocal()
 Character *CharacterFactory::createRemote(int sourceid, stream_register_t *reg, int slotid)
 {
 	LogManager::getSingleton().logMessage(" new character for " + StringConverter::toString(sourceid) + ":" + StringConverter::toString(reg->sid));
-	Character *ch = new Character(c, net, h, w, m, scm, sourceid, reg->sid, slotid);
+	Character *ch = new Character(c, net, h, w, m, scm, sourceid, reg->sid, slotid, true);
 	streamables[sourceid][reg->sid] = ch;
 	return ch;
 }
@@ -86,7 +86,13 @@ void CharacterFactory::localUserAttributesChanged(int newid)
 	Character *c = streamables[-1][0];
 	streamables[newid][0] = streamables[-1][0]; // add alias :)
 	c->setUID(newid);
+	if(net)
+	{
+		int slotid = net->getLocalUserData()->slotnum;
+		c->setSlotID(slotid);
+	}
 	c->updateNetLabel();
+	c->updateCharacterColour();
 }
 
 void CharacterFactory::netUserAttributesChanged(int source, int streamid)
@@ -99,7 +105,7 @@ void CharacterFactory::netUserAttributesChanged(int source, int streamid)
 		for(it2=it1->second.begin(); it2!=it1->second.end();it2++)
 		{
 			Character *c = dynamic_cast<Character*>(it2->second);
-			c->updateNetLabel();
+			if(c) c->updateNetLabel();
 		}
 	}
 }

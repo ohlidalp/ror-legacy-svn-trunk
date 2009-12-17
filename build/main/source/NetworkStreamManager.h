@@ -49,6 +49,8 @@ public:
 	void triggerSend();
 	void sendStreams(Network *net, SWInetSocket *socket);
 
+	void removeUser(int sourceID);
+
 protected:
 	pthread_mutex_t send_work_mutex;
 	pthread_cond_t send_work_cv;

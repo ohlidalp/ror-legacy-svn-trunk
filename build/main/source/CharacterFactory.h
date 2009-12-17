@@ -40,15 +40,16 @@ class CharacterFactory : public StreamableFactory < CharacterFactory, Character 
 {
 	friend class Network;
 public:
-	CharacterFactory(Collisions *c, HeightFinder *h, Water *w, MapControl *m, Ogre::SceneManager *scm);
+	CharacterFactory(Network *net, Collisions *c, HeightFinder *h, Water *w, MapControl *m, Ogre::SceneManager *scm);
 	~CharacterFactory();
 
-	Character *createLocal();
+	Character *createLocal(int slotid);
 	Character *createRemote(int sourceid, stream_register_t *reg, int slotid);
 
 	void remove(Character *stream);
 	void removeUser(int userid);
 
+	void setNetwork(Network *net) { this->net = net; };
 protected:
 	Collisions *c;
 	Network *net;

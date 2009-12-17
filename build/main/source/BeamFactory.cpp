@@ -39,7 +39,7 @@ BeamFactory::BeamFactory(ExampleFrameListener *efl, Beam **trucks, SceneManager 
 {
 }
 
-Beam *BeamFactory::createLocal()
+Beam *BeamFactory::createLocal(int slotid)
 {
 	// do not use this ...
 	return 0;
