@@ -83,6 +83,15 @@ void NetworkStreamManager::resumeStream(Streamable *stream)
 {
 }
 
+void NetworkStreamManager::removeUser(int sourceID)
+{
+	if(streams.find(sourceID) == streams.end())
+		// no such stream?!
+		return;
+	// found and deleted
+	streams.erase(streams.find(sourceID));
+}
+
 void NetworkStreamManager::pushReceivedStreamMessage(unsigned int &type, int &source, unsigned int &streamid, unsigned int &wrotelen, char *buffer)
 {
 	if(streams.find(source) == streams.end())

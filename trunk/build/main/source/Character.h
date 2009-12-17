@@ -39,7 +39,7 @@ class Character : public Streamable
 	friend class Network;
 
 public:
-	Character(Collisions *c, Network *net, HeightFinder *h, Water *w, MapControl *m, Ogre::SceneManager *scm, int source=-1, unsigned int streamid=0, int slotid=0);
+	Character(Collisions *c, Network *net, HeightFinder *h, Water *w, MapControl *m, Ogre::SceneManager *scm, int source=-1, unsigned int streamid=0, int slotid=0, bool remote=true);
 	~Character();
 	
 	void setVisible(bool v);
@@ -53,14 +53,13 @@ public:
 	void updateNetLabel();
 	void updateCharacterColour();
 
-	void setRemote(bool value); 
-	
 	void move(Ogre::Vector3 v);
 	
 	void update(float dt);
 	Ogre::SceneNode *getSceneNode();
 
 	void setAngle(float angle) { persoangle = angle; };
+	void setSlotID(int slotid) { this->slotid = slotid; };
 
 	static unsigned int characterCounter;
 	void updateMapIcon();

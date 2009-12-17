@@ -1568,6 +1568,8 @@ bool InputEngine::setup(size_t hwnd, bool capture, bool capturemouse, int _grabM
 		ParamList pl;
 		String hwnd_str = Ogre::StringConverter::toString(hwnd);
 		pl.insert(OIS::ParamList::value_type("WINDOW", hwnd_str));
+        //pl.insert(std::make_pair(std::string("w32_keyboard"), std::string("DISCL_FOREGROUND") ));
+        //pl.insert(std::make_pair(std::string("w32_keyboard"), std::string("DISCL_NONEXCLUSIVE") ));
 
 		if(grabMode == GRAB_ALL)
 		{

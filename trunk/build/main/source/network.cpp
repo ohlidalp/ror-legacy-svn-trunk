@@ -64,7 +64,7 @@ Timer Network::timer = Ogre::Timer();
 Network::Network(Beam **btrucks, std::string servername, long sport, ExampleFrameListener *efl): lagDataClients()
 {
 	NetworkStreamManager::getSingleton().net = this;
-	CharacterFactory::getSingleton().net = this;
+	CharacterFactory::getSingleton().setNetwork(this);
 	shutdown=false;
 	ssm=SoundScriptManager::getSingleton();
 	mySname = servername;
@@ -76,6 +76,7 @@ Network::Network(Beam **btrucks, std::string servername, long sport, ExampleFram
 	nickname = "";
 	trucks=btrucks;
 	myuid=0;
+	mySlotID=-1;
 
 	speed_time=0;
 	speed_bytes_sent = speed_bytes_sent_tmp = speed_bytes_recv = speed_bytes_sent_tmp = 0;
@@ -265,6 +266,7 @@ bool Network::connect()
 	}
 	//okay keep our uid
 	myuid = header.source;
+	mySlotID = *((int *)buffer);
 
 	//start the handling threads
 	pthread_create(&sendthread, NULL, s_sendthreadstart, (void*)(0));
@@ -513,7 +515,7 @@ void Network::receivethreadstart()
 			}
 			continue;
 		}
-		else if(header.command == MSG2_USER_LEAVE)
+		else if(header.command == MSG2_USER_LEAVE || header.command == MSG2_DELETE)
 		{
 			// remove all things that belong to that user
 			client_t *client = getClientInfo(header.source);
@@ -521,6 +523,7 @@ void Network::receivethreadstart()
 				client->used = false;
 
 			// now remove all possible streams
+			NetworkStreamManager::getSingleton().removeUser(header.source);
 #ifdef AITRAFFIC
 			AITrafficFactory::getSingleton().removeUser(header.source);
 #endif //AITRAFFIC

@@ -1590,10 +1590,7 @@ ExampleFrameListener::ExampleFrameListener(RenderWindow* win, Camera* cam, Scene
 	new NetworkStreamManager();
 
 	// new factory for characters
-	new CharacterFactory(collisions, hfinder, w, bigMap, mSceneMgr);
-	person = (Character *)CharacterFactory::getSingleton().createLocal();
-	person->setRemote(false);
-	person->setVisible(false);
+	new CharacterFactory(net, collisions, hfinder, w, bigMap, mSceneMgr);
 
 	if(netmode)
 	{
@@ -1638,7 +1635,16 @@ ExampleFrameListener::ExampleFrameListener(RenderWindow* win, Camera* cam, Scene
 
 		// show chat in MP
 		NETCHAT.setMode(this, NETCHAT_LEFT_SMALL, true);
+
+		// create person _AFTER_ network, important
+		person = (Character *)CharacterFactory::getSingleton().createLocal(net->getSlotID());
+	} else
+	{
+		// no network
+		person = (Character *)CharacterFactory::getSingleton().createLocal(-1);
 	}
+
+	person->setVisible(false);
 
 	// load guy
 	int source=-1;
