@@ -40,6 +40,7 @@ typedef struct
 	char          user_name[20];        //!< the users nickname
 	unsigned int  user_id;              //!< the users id, set by the server
 	unsigned int  user_authlevel;       //!< the users authorization level.
+	int  colournum;                        //!< the users authorization colour
 } client_t;
 
 #endif

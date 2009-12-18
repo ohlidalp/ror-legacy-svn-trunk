@@ -63,6 +63,7 @@ Timer Network::timer = Ogre::Timer();
 
 Network::Network(Beam **btrucks, std::string servername, long sport, ExampleFrameListener *efl): lagDataClients()
 {
+	memset(&userdata, 0, sizeof(client_info_on_join));
 	NetworkStreamManager::getSingleton().net = this;
 	CharacterFactory::getSingleton().setNetwork(this);
 	shutdown=false;
@@ -76,7 +77,6 @@ Network::Network(Beam **btrucks, std::string servername, long sport, ExampleFram
 	nickname = "";
 	trucks=btrucks;
 	myuid=0;
-	mySlotID=-1;
 
 	speed_time=0;
 	speed_bytes_sent = speed_bytes_sent_tmp = speed_bytes_recv = speed_bytes_sent_tmp = 0;
@@ -266,7 +266,8 @@ bool Network::connect()
 	}
 	//okay keep our uid
 	myuid = header.source;
-	mySlotID = *((int *)buffer);
+	// set player colour
+	userdata.colournum = *((int *)buffer);
 
 	//start the handling threads
 	pthread_create(&sendthread, NULL, s_sendthreadstart, (void*)(0));
@@ -493,10 +494,13 @@ void Network::receivethreadstart()
 		// TODO: produce new streamable classes when required
 		if(header.command == MSG2_STREAM_REGISTER)
 		{
+			if(header.source == (int)myuid)
+				// our own stream, ignore
+				continue;
 			stream_register_t *reg = (stream_register_t *)buffer;
 			client_t *client = getClientInfo(header.source);
-			int slotid = -1;
-			if(client) slotid = client->slotnum;
+			int playerColour = 0;
+			if(client) playerColour = client->colournum;
 			LogManager::getSingleton().logMessage(" * received stream registration: " + StringConverter::toString(header.source) + ": "+StringConverter::toString(reg->sid) + ", type: "+StringConverter::toString(reg->type));
 
 			if(reg->type == 0)
@@ -505,7 +509,7 @@ void Network::receivethreadstart()
 			} else if (reg->type == 1)
 			{
 				// person
-				CharacterFactory::getSingleton().createRemote(header.source, reg, slotid);
+				CharacterFactory::getSingleton().createRemote(header.source, reg, playerColour);
 #ifdef AITRAFFIC
 			} else if (reg->type == 2)
 			{
@@ -556,6 +560,7 @@ void Network::receivethreadstart()
 				{
 					client->user_authlevel = cinfo->authstatus;
 					client->slotnum = cinfo->slotnum;
+					client->colournum= cinfo->colournum;
 					strncpy(client->user_name, cinfo->nickname, 20);
 					// inform the streamfactories of a attribute change
 					CharacterFactory::getSingleton().netUserAttributesChanged(header.source, -1);
@@ -572,6 +577,7 @@ void Network::receivethreadstart()
 						clients[i].user_id = header.source;
 						clients[i].user_authlevel = cinfo->authstatus;
 						clients[i].slotnum = cinfo->slotnum;
+						clients[i].colournum = cinfo->colournum;
 						CharacterFactory::getSingleton().netUserAttributesChanged(header.source, -1);
 						strncpy(clients[i].user_name,cinfo->nickname, 20);
 						break;

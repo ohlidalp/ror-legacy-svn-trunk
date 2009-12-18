@@ -39,17 +39,17 @@ CharacterFactory::CharacterFactory(Network *net, Collisions *c, HeightFinder *h,
 {
 }
 
-Character *CharacterFactory::createLocal(int slotid)
+Character *CharacterFactory::createLocal(int playerColour)
 {
-	Character *ch = new Character(c, net, h, w, m, scm, -1, 0, slotid, false);
+	Character *ch = new Character(c, net, h, w, m, scm, -1, 0, playerColour, false);
 	streamables[-1][0] = ch;
 	return ch;
 }
 
-Character *CharacterFactory::createRemote(int sourceid, stream_register_t *reg, int slotid)
+Character *CharacterFactory::createRemote(int sourceid, stream_register_t *reg, int playerColour)
 {
-	LogManager::getSingleton().logMessage(" new character for " + StringConverter::toString(sourceid) + ":" + StringConverter::toString(reg->sid));
-	Character *ch = new Character(c, net, h, w, m, scm, sourceid, reg->sid, slotid, true);
+	LogManager::getSingleton().logMessage(" new character for " + StringConverter::toString(sourceid) + ":" + StringConverter::toString(reg->sid) + ", colour: " + StringConverter::toString(playerColour));
+	Character *ch = new Character(c, net, h, w, m, scm, sourceid, reg->sid, playerColour, true);
 	streamables[sourceid][reg->sid] = ch;
 	return ch;
 }
@@ -88,8 +88,8 @@ void CharacterFactory::localUserAttributesChanged(int newid)
 	c->setUID(newid);
 	if(net)
 	{
-		int slotid = net->getLocalUserData()->slotnum;
-		c->setSlotID(slotid);
+		int colour = net->getLocalUserData()->colournum;
+		c->setColour(colour);
 	}
 	c->updateNetLabel();
 	c->updateCharacterColour();

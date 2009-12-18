@@ -43,8 +43,8 @@ public:
 	CharacterFactory(Network *net, Collisions *c, HeightFinder *h, Water *w, MapControl *m, Ogre::SceneManager *scm);
 	~CharacterFactory();
 
-	Character *createLocal(int slotid);
-	Character *createRemote(int sourceid, stream_register_t *reg, int slotid);
+	Character *createLocal(int playerColour);
+	Character *createRemote(int sourceid, stream_register_t *reg, int playerColour);
 
 	void remove(Character *stream);
 	void removeUser(int userid);

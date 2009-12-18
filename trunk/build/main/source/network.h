@@ -37,7 +37,6 @@ class Network
 private:
 	SWInetSocket socket;
 	unsigned int myuid;
-	int mySlotID;
 	int myauthlevel;
 	pthread_t sendthread;
 	pthread_t receivethread;
@@ -93,7 +92,6 @@ public:
 	void receivethreadstart();
 
 	char *getTerrainName() { return terrainName; };
-	int getSlotID() { return mySlotID; };
 	Ogre::String getNickname(bool colour=false);
 	unsigned int getUserID() { return myuid; };
 	static unsigned long getNetTime();
