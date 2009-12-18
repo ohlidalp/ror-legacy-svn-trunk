@@ -150,7 +150,7 @@ Character::~Character()
 void Character::updateCharacterColour()
 {
 	ColourValue cval = ColourValue::Black;
-	if(this->net && colourNumber>=0 && colourNumber < 28)
+	if(colourNumber>=0 && colourNumber < 28)
 		cval = cvals[colourNumber];
 	//else if(!remote)
 	//	cval = cvals[(int)Math::RangeRandom(0,28)];
