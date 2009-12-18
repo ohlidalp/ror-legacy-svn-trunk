@@ -39,7 +39,7 @@ class Character : public Streamable
 	friend class Network;
 
 public:
-	Character(Collisions *c, Network *net, HeightFinder *h, Water *w, MapControl *m, Ogre::SceneManager *scm, int source=-1, unsigned int streamid=0, int slotid=0, bool remote=true);
+	Character(Collisions *c, Network *net, HeightFinder *h, Water *w, MapControl *m, Ogre::SceneManager *scm, int source=-1, unsigned int streamid=0, int colourNumber=0, bool remote=true);
 	~Character();
 	
 	void setVisible(bool v);
@@ -59,7 +59,7 @@ public:
 	Ogre::SceneNode *getSceneNode();
 
 	void setAngle(float angle) { persoangle = angle; };
-	void setSlotID(int slotid) { this->slotid = slotid; };
+	void setColour(int number) { this->colourNumber = number; };
 
 	static unsigned int characterCounter;
 	void updateMapIcon();
@@ -79,7 +79,7 @@ protected:
 	int source;
 	unsigned int streamid;
 	bool remote;
-	int slotid;
+	int colourNumber;
 	Ogre::MovableText *netMT;
 	MapEntity *mapEnt;
 	

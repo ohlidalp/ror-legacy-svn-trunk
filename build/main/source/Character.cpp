@@ -67,7 +67,7 @@ ColourValue cvals[] =
 	ColourValue(0.6,0.6,0.0),
 };
 
-Character::Character(Collisions *c, Network *net, HeightFinder *h, Water *w, MapControl *m, Ogre::SceneManager *scm, int source, unsigned int streamid, int slotid, bool remote)
+Character::Character(Collisions *c, Network *net, HeightFinder *h, Water *w, MapControl *m, Ogre::SceneManager *scm, int source, unsigned int streamid, int colourNumber, bool remote)
 {
 	this->net=net;
 	this->collisions=c;
@@ -77,7 +77,7 @@ Character::Character(Collisions *c, Network *net, HeightFinder *h, Water *w, Map
 	this->scm=scm;
 	this->source=source;
 	this->streamid=streamid;
-	this->slotid=slotid;
+	this->colourNumber=colourNumber;
 	this->remote=remote;
 	//remote = true;
 	last_net_time=0;
@@ -128,9 +128,7 @@ Character::Character(Collisions *c, Network *net, HeightFinder *h, Water *w, Map
 	MaterialPtr mat2 = mat->clone("tracks/"+myName);
 	ent->setMaterialName("tracks/"+myName);
 
-	updateCharacterColour();
 	updateNetLabel();
-
 }
 
 Character::~Character()
@@ -152,8 +150,8 @@ Character::~Character()
 void Character::updateCharacterColour()
 {
 	ColourValue cval = ColourValue::Black;
-	if(this->net && slotid>=0 && slotid < 28)
-		cval = cvals[slotid];
+	if(this->net && colourNumber>=0 && colourNumber < 28)
+		cval = cvals[colourNumber];
 	//else if(!remote)
 	//	cval = cvals[(int)Math::RangeRandom(0,28)];
 

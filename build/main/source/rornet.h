@@ -117,6 +117,7 @@ typedef struct
 	char nickname[20];
 	int authstatus;
 	int slotnum;
+	int colournum;
 } client_info_on_join;
 
 // structure to control flow of a stream, send in both directions

@@ -1637,7 +1637,9 @@ ExampleFrameListener::ExampleFrameListener(RenderWindow* win, Camera* cam, Scene
 		NETCHAT.setMode(this, NETCHAT_LEFT_SMALL, true);
 
 		// create person _AFTER_ network, important
-		person = (Character *)CharacterFactory::getSingleton().createLocal(net->getSlotID());
+		int colourNum = 0;
+		if(net->getLocalUserData()) colourNum = net->getLocalUserData()->colournum;
+		person = (Character *)CharacterFactory::getSingleton().createLocal(colourNum);
 	} else
 	{
 		// no network
