@@ -123,6 +123,17 @@ void Network::netFatalError(String errormsg, bool exitProgram)
 		exit(124);
 }
 
+bool Network::sendChat(Ogre::UTFString chatline)
+{
+	if (sendmessage(&socket, MSG2_CHAT, 1, chatline.size(), const_cast<char *>(chatline.asUTF8_c_str())))
+	{
+		//this is an error!
+		netFatalError("error sending chat message", false);
+		return false;
+	}
+	return true;
+}
+
 bool Network::connect()
 {
 	//here we go
@@ -489,6 +500,26 @@ void Network::receivethreadstart()
 			sprintf(errmsg, "Error %i while receiving data", err);
 			netFatalError(errmsg);
 			return;
+		}
+		else if(header.command == MSG2_CHAT)
+		{
+			// some chat code
+			if(header.source == -1)
+			{
+				// server said something
+				pthread_mutex_lock(&chat_mutex);
+				NETCHAT.addText(String(buffer));
+				pthread_mutex_unlock(&chat_mutex);
+			} else
+			{
+				// client said something
+				client_t *client = getClientInfo(header.source);
+				if(!client) continue;
+				pthread_mutex_lock(&chat_mutex);
+				NETCHAT.addText(String(client->user_name) + ": " + String(buffer));
+				pthread_mutex_unlock(&chat_mutex);
+			}
+			continue;
 		}
 
 		// TODO: produce new streamable classes when required
