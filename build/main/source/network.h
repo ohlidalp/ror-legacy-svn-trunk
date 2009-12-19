@@ -102,6 +102,8 @@ public:
 
 	client_info_on_join *getLocalUserData() { return &userdata; };
 
+	bool sendChat(Ogre::UTFString chat);
+
 protected:
 };
 

@@ -4741,6 +4741,7 @@ void ExampleFrameListener::processConsoleInput()
 	if(netmode)
 	{
 		NETCHAT.addText(net->getNickname(true) + ": ^7" + ColoredTextAreaOverlayElement::StripColors(chatline), false);
+		net->sendChat(chatline);
 		//net->sendChat( const_cast<char *>(chatline.asUTF8_c_str()));
 	} else
 		NETCHAT.addText(_L("^8 Player: ^7") + chatline);
