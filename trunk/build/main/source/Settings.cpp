@@ -161,20 +161,37 @@ bool Settings::setupPaths()
 	pinfo.processName = NULL;
 	pinfo.processAppSpec = &pspec;
 	/* grab the vrefnum and directory */
+	
+	//path = "~/RigsOfRods/";
+	//strcpy(user_path, path.c_str());
+	
 	err = GetProcessInformation(&PSN, &pinfo);
 	if (! err ) {
-	char c_path[2048];
-	FSSpec fss2;
-	int tocopy;
-	err = FSMakeFSSpec(pspec.vRefNum, pspec.parID, 0, &fss2);
-	if ( ! err ) {
-	err = FSpMakeFSRef(&fss2, &fsr);
-	if ( ! err ) {
-	char c_path[2049];
-	err = (OSErr)FSRefMakePath(&fsr, (UInt8*)c_path, 2048);
-	if (! err ) {
-	path = c_path;
-	}
+		char c_path[2048];
+		FSSpec fss2;
+		int tocopy;
+		err = FSMakeFSSpec(pspec.vRefNum, pspec.parID, 0, &fss2);
+		if ( ! err ) {
+			err = FSpMakeFSRef(&fss2, &fsr);
+			if ( ! err ) {
+				err = (OSErr)FSRefMakePath(&fsr, (UInt8*)c_path, 2048);
+				if (! err ) {
+					path = c_path;
+					path += "/";
+					strcpy(program_path, path.c_str());
+				}
+				
+				err = FSFindFolder(kOnAppropriateDisk, kDocumentsFolderType, kDontCreateFolder, &fsr);
+				if (! err ) {
+					FSRefMakePath(&fsr, (UInt8*)c_path, 2048);
+					if (! err ) {
+						path = c_path;
+						path += "/Rigs\ of\ Rods/";
+						strcpy(user_path, path.c_str());
+					}
+				}
+			}
+		}
 	}
 #endif
 	//NEXT, derive the resources and stream paths from the base paths (depends on configuration)

@@ -178,7 +178,7 @@ void DepthOfFieldEffect::removeCompositor()
 	CompositorManager::getSingleton().removeCompositor(mViewport, "DoF_Compositor_test");
 }
 
-void DepthOfFieldEffect::notifyMaterialSetup(uint32 passId, MaterialPtr& material)
+void DepthOfFieldEffect::notifyMaterialSetup(unsigned int passId, MaterialPtr& material)
 {
 	switch (passId)
 	{

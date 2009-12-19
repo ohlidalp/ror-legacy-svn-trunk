@@ -68,14 +68,14 @@ void WriteToTexture(const String &str, TexturePtr destTexture, Image::Box destRe
         
 		// create a buffer
 		size_t nBuffSize = fontBuffer->getSizeInBytes();
-		uint8* buffer = (uint8*)calloc(nBuffSize, sizeof(uint8)); 
+		unsigned char* buffer = (unsigned char*)calloc(nBuffSize, sizeof(unsigned char)); 
         
 		// create pixel box using the copy of the buffer
 		PixelBox fontPb(fontBuffer->getWidth(), fontBuffer->getHeight(),fontBuffer->getDepth(), fontBuffer->getFormat(), buffer);          
 		fontBuffer->blitToMemory(fontPb);
 
-	uint8* fontData = static_cast<uint8*>( fontPb.data );
-	uint8* destData = static_cast<uint8*>( destPb.data );
+	unsigned char* fontData = static_cast<unsigned char*>( fontPb.data );
+	unsigned char* destData = static_cast<unsigned char*>( destPb.data );
 
 	const size_t fontPixelSize = PixelUtil::getNumElemBytes(fontPb.format);
 	const size_t destPixelSize = PixelUtil::getNumElemBytes(destPb.format);

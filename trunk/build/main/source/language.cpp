@@ -35,6 +35,10 @@ using namespace std;
 using namespace Ogre;
 using namespace moFileLib;
 
+#if OGRE_PLATFORM == OGRE_PLATFORM_APPLE
+#define strnlen(str,len) strlen(str)
+#endif
+
 // singleton pattern
 LanguageEngine* LanguageEngine::myInstance = 0;
 
@@ -62,7 +66,7 @@ void LanguageEngine::setup()
 
 	// Load a .mo-File.
 	Ogre::LogManager::getSingleton().logMessage("*** Loading Language ***");
-	String langfile = "languages/" + language_short + String("/") + String(MOFILENAME) + String(".mo");
+	String langfile = SETTINGS.getSetting("Program Path") + String("/languages/") + language_short + String("/") + String(MOFILENAME) + String(".mo");
 	if (reader->ReadFile(langfile.c_str()) != moFileLib::moFileReader::EC_SUCCESS )
 	{
 			Ogre::LogManager::getSingleton().logMessage("* error loading language file " + langfile);

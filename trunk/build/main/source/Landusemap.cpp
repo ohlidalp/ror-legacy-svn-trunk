@@ -26,6 +26,9 @@ along with Rigs of Rods.  If not, see <http://www.gnu.org/licenses/>.
 #include "language.h"
 #include "errorutils.h"
 
+#include "PropertyMaps.h"
+#include "PagedGeometry.h"
+
 using namespace Ogre;
 
 // this is the Height-Finder for the standart ogre Terrain Manager
@@ -53,7 +56,7 @@ ground_model_t *Landusemap::getGroundModelAt(int x, int z)
 
 int Landusemap::loadConfig(Ogre::String filename)
 {
-	std::map<uint32, String> usemap;
+	std::map<unsigned int, String> usemap;
 	int version = 1;
 	String textureFilename = "";
 
@@ -114,16 +117,16 @@ int Landusemap::loadConfig(Ogre::String filename)
 					continue;
 				}
 				char *ptr; //not used
-				uint32 color = strtoul(kname.c_str(), &ptr, 16);
+				unsigned int color = strtoul(kname.c_str(), &ptr, 16);
 				usemap[color] = kvalue;
 			}
 		}
 	}
 
 	// process the config data and load the buffers finally
-	Forests::ColorMap *colourMap = Forests::ColorMap::load(textureFilename, CHANNEL_COLOR);
+	Forests::ColorMap *colourMap = Forests::ColorMap::load(textureFilename, Forests::CHANNEL_COLOR);
 	colourMap->setFilter(Forests::MAPFILTER_NONE);
-	Ogre::TRect<Ogre::Real> bounds = TBounds(0, 0, mapsizex, mapsizez);
+	Ogre::TRect<Ogre::Real> bounds = Forests::TBounds(0, 0, mapsizex, mapsizez);
 
 	/*
 	// debug things below
@@ -144,11 +147,11 @@ int Landusemap::loadConfig(Ogre::String filename)
 	{
 		for(int x=0; x<mapsizex; x++)
 		{
-			uint32 col = colourMap->getColorAt(x, z, bounds);
+			unsigned int col = colourMap->getColorAt(x, z, bounds);
 			if (bgr)
 			{
 				// Swap red and blue values
-				uint32 cols = col & 0xFF00FF00;
+				unsigned int cols = col & 0xFF00FF00;
 				cols |= (col & 0xFF) << 16;
 				cols |= (col & 0xFF0000) >> 16;
 				col = cols;
