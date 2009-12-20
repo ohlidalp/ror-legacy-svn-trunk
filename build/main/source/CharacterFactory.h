@@ -44,7 +44,7 @@ public:
 	~CharacterFactory();
 
 	Character *createLocal(int playerColour);
-	Character *createRemote(int sourceid, stream_register_t *reg, int playerColour);
+	Character *createRemote(int sourceid, int streamid, stream_register_t *reg, int playerColour);
 
 	void remove(Character *stream);
 	void removeUser(int userid);

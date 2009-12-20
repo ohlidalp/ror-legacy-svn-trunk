@@ -27,6 +27,7 @@ along with Rigs of Rods.  If not, see <http://www.gnu.org/licenses/>.
 #include "OgreSingleton.h"
 #include "pthread.h"
 #include "SocketW.h"
+#include "rornet.h"
 #include <map>
 
 class Network;
@@ -41,7 +42,8 @@ public:
 	static NetworkStreamManager& getSingleton(void);
 	static NetworkStreamManager* getSingletonPtr(void);
 	
-	void addStream(Streamable *stream, int source=-1, int streamid=-1);
+	void addLocalStream(Streamable *stream, stream_register_t *reg);
+	void addRemoteStream(Streamable *stream, int source=-1, int streamid=-1);
 	void removeStream(Streamable *stream);
 	void pauseStream(Streamable *stream);
 	void resumeStream(Streamable *stream);

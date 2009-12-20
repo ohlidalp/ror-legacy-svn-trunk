@@ -23,7 +23,9 @@ along with Rigs of Rods.  If not, see <http://www.gnu.org/licenses/>.
 #include "ColoredTextAreaOverlayElement.h"
 #include "IngameConsole.h"
 #include "CacheSystem.h"
+#include "BeamFactory.h"
 #include "CharacterFactory.h"
+#include "ChatSystem.h"
 #include "AITrafficFactory.h"
 #ifdef ANGELSCRIPT
 #include "ScriptEngine.h"
@@ -60,12 +62,18 @@ void *s_receivethreadstart(void* vid)
 }
 
 Timer Network::timer = Ogre::Timer();
+unsigned int Network::myuid=0;
 
 Network::Network(Beam **btrucks, std::string servername, long sport, ExampleFrameListener *efl): lagDataClients()
 {
-	memset(&userdata, 0, sizeof(client_info_on_join));
+	// update factories network objects
+
 	NetworkStreamManager::getSingleton().net = this;
 	CharacterFactory::getSingleton().setNetwork(this);
+	ChatSystemFactory::getSingleton().setNetwork(this);
+	
+	//
+	memset(&userdata, 0, sizeof(client_info_on_join));
 	shutdown=false;
 	ssm=SoundScriptManager::getSingleton();
 	mySname = servername;
@@ -89,7 +97,6 @@ Network::Network(Beam **btrucks, std::string servername, long sport, ExampleFram
 	pthread_mutex_init(&send_work_mutex, NULL);
 	pthread_mutex_init(&dl_data_mutex, NULL);
 	pthread_mutex_init(&clients_mutex, NULL);
-	pthread_mutex_init(&chat_mutex, NULL);
 
 	// reset client list
 	pthread_mutex_lock(&clients_mutex);
@@ -104,7 +111,6 @@ Network::~Network()
 {
 	shutdown=true;
 	pthread_mutex_destroy(&clients_mutex);
-	pthread_mutex_destroy(&chat_mutex);
 	pthread_mutex_destroy(&send_work_mutex);
 	pthread_mutex_destroy(&dl_data_mutex);
 	pthread_cond_destroy(&send_work_cv);
@@ -121,17 +127,6 @@ void Network::netFatalError(String errormsg, bool exitProgram)
 	showError(_L("Network Connection Problem"), _L("Network fatal error: ")+errormsg);
 	if(exitProgram)
 		exit(124);
-}
-
-bool Network::sendChat(Ogre::UTFString chatline)
-{
-	if (sendmessage(&socket, MSG2_CHAT, 1, chatline.size(), const_cast<char *>(chatline.asUTF8_c_str())))
-	{
-		//this is an error!
-		netFatalError("error sending chat message", false);
-		return false;
-	}
-	return true;
 }
 
 bool Network::connect()
@@ -451,28 +446,6 @@ void Network::disconnect()
 	LogManager::getSingleton().logMessage("Network error while disconnecting: ");
 }
 
-void Network::updatePlayerList()
-{
-	pthread_mutex_lock(&chat_mutex);
-	for (int i=0; i<MAX_PEERS; i++)
-	{
-		if (!clients[i].used)
-			continue;
-		if(i < MAX_PLAYLIST_ENTRIES)
-		{
-			try
-			{
-				String plstr = StringConverter::toString(i) + ": " + ColoredTextAreaOverlayElement::StripColors(String(clients[i].user_name));
-				if(clients[i].invisible)
-					plstr += " (i)";
-				mefl->playerlistOverlay[i]->setCaption(plstr);
-			} catch(...)
-			{
-			}
-		}
-	}
-	pthread_mutex_unlock(&chat_mutex);
-}
 
 unsigned long Network::getNetTime()
 {
@@ -501,26 +474,7 @@ void Network::receivethreadstart()
 			netFatalError(errmsg);
 			return;
 		}
-		else if(header.command == MSG2_CHAT)
-		{
-			// some chat code
-			if(header.source == -1)
-			{
-				// server said something
-				pthread_mutex_lock(&chat_mutex);
-				NETCHAT.addText(String(buffer));
-				pthread_mutex_unlock(&chat_mutex);
-			} else
-			{
-				// client said something
-				client_t *client = getClientInfo(header.source);
-				if(!client) continue;
-				pthread_mutex_lock(&chat_mutex);
-				NETCHAT.addText(String(client->user_name) + ": " + String(buffer));
-				pthread_mutex_unlock(&chat_mutex);
-			}
-			continue;
-		}
+
 
 		// TODO: produce new streamable classes when required
 		if(header.command == MSG2_STREAM_REGISTER)
@@ -532,21 +486,35 @@ void Network::receivethreadstart()
 			client_t *client = getClientInfo(header.source);
 			int playerColour = 0;
 			if(client) playerColour = client->colournum;
-			LogManager::getSingleton().logMessage(" * received stream registration: " + StringConverter::toString(header.source) + ": "+StringConverter::toString(reg->sid) + ", type: "+StringConverter::toString(reg->type));
+
+			String typeStr = "unkown";
+			switch(reg->type)
+			{
+			case 0: typeStr="truck"; break; 
+			case 1: typeStr="character"; break; 
+			case 2: typeStr="aitraffic"; break; 
+			case 3: typeStr="chat"; break; 
+			};
+			LogManager::getSingleton().logMessage(" * received stream registration: " + StringConverter::toString(header.source) + ": "+StringConverter::toString(header.streamid) + ", type: "+typeStr);
 
 			if(reg->type == 0)
 			{
 				// truck
+				BeamFactory::getSingleton().createRemote(header.source, header.streamid, reg, playerColour);
 			} else if (reg->type == 1)
 			{
 				// person
-				CharacterFactory::getSingleton().createRemote(header.source, reg, playerColour);
+				CharacterFactory::getSingleton().createRemote(header.source, header.streamid, reg, playerColour);
 #ifdef AITRAFFIC
 			} else if (reg->type == 2)
 			{
 				// traffic communication
-				AITrafficFactory::getSingleton().createRemote(header.source, reg, slotid);
+				AITrafficFactory::getSingleton().createRemote(header.source, header.streamid, reg, slotid);
 #endif //AITRAFFIC
+			} else if (reg->type == 3)
+			{
+				// chat stream
+				ChatSystemFactory::getSingleton().createRemote(header.source, header.streamid, reg, playerColour);
 			}
 			continue;
 		}
@@ -563,6 +531,7 @@ void Network::receivethreadstart()
 			AITrafficFactory::getSingleton().removeUser(header.source);
 #endif //AITRAFFIC
 			CharacterFactory::getSingleton().removeUser(header.source);
+			ChatSystemFactory::getSingleton().removeUser(header.source);
 		}
 		else if(header.command == MSG2_USER_INFO || header.command == MSG2_USER_JOIN)
 		{

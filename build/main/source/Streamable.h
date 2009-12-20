@@ -55,13 +55,14 @@ protected:
 	// normal members
 	std::queue < bufferedPacket_t > packets;
 	unsigned int streamid;
+	void setStreamID(unsigned int id) { this->streamid=id; };
 
 	// virtual interface methods
 	virtual void sendStreamData() = 0;
 	virtual void receiveStreamData(unsigned int &type, int &source, unsigned int &streamid, char *buffer, unsigned int &len) = 0;
 
 	// base class methods
-	void addPacket(int type, int uid, unsigned int streamid, unsigned int len, char* content);
+	void addPacket(int type, unsigned int len, char *content);
 	std::queue < bufferedPacket_t > *getPacketQueue();
 };
 
