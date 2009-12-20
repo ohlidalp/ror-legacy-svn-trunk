@@ -216,9 +216,13 @@ set(ror_src
 	
 	source/DepthOfFieldEffect.h
 	source/DepthOfFieldEffect.cpp
+
 	source/Lens.h
 	source/Lens.cpp
 
+	source/ChatSystem.h
+	source/ChatSystem.cpp
+    
 )
 
 include_directories (OgreMain/include Dependencies/include)
