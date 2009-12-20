@@ -42,7 +42,7 @@ public:
 	static NetworkStreamManager& getSingleton(void);
 	static NetworkStreamManager* getSingletonPtr(void);
 	
-	void addLocalStream(Streamable *stream, stream_register_t *reg);
+	void addLocalStream(Streamable *stream, stream_register_t *reg, unsigned int size=0);
 	void addRemoteStream(Streamable *stream, int source=-1, int streamid=-1);
 	void removeStream(Streamable *stream);
 	void pauseStream(Streamable *stream);
