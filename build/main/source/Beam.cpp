@@ -5604,8 +5604,8 @@ bool Beam::frameStep(Real dt, Beam** trucks, int numtrucks)
 #endif
 
 	// send data via network?
-	if(networking)
-		sendStreamData();
+	//if(networking)
+	//	sendStreamData();
 
 
 	fasted=1;
