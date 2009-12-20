@@ -688,7 +688,7 @@ public:
 	void setReplayMode(bool rm);
 	int savePosition(int position);
 	int loadPosition(int position);
-	void setNetworkInfo(client_t netinfo);
+	void updateNetworkInfo();
 	void resetAutopilot();
 	void disconnectAutopilot();
 	void toggleCustomParticles();
@@ -1090,7 +1090,10 @@ protected:
 	int netcounter;
 	MovableText *netMT; //, *netDist;
 	float minimass;
-	client_t networkInfo;
+	
+	// network properties
+	String networkUsername;
+	int networkAuthlevel;
 
 	// skidmark stuff
 	Skidmark *skidtrails[MAX_WHEELS*2];

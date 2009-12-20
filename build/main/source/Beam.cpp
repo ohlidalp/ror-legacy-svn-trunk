@@ -219,6 +219,8 @@ Beam::Beam(int tnum, SceneManager *manager, SceneNode *parent, RenderWindow* win
 	net=_net;
 	if(net && !networking) networking = true; // enable networking if some network class is existing
 
+	networkUsername = String();
+	networkAuthlevel = 0;
 	beambreakdebug = (SETTINGS.getSetting("Beam Break Debug") == "Yes");
 	freePositioned = freeposition;
 	free_axle=0;
@@ -600,7 +602,9 @@ Beam::Beam(int tnum, SceneManager *manager, SceneNode *parent, RenderWindow* win
 	}
 
 	if(networking)
+	{
 		sendStreamSetup();
+	}
 
 	//updateDebugOverlay();
 }
@@ -8470,11 +8474,11 @@ void Beam::updateVisual(float dt)
 			h=0.6;
 		netMT->setCharacterHeight(h);
 		if(vlen>1000)
-			netMT->setCaption(String(networkInfo.user_name) + "  (" + StringConverter::toString( (float)(ceil(vlen/100)/10.0) )+ " km)");
+			netMT->setCaption(networkUsername + "  (" + StringConverter::toString( (float)(ceil(vlen/100)/10.0) )+ " km)");
 		else if (vlen>20 && vlen <= 1000)
-			netMT->setCaption(String(networkInfo.user_name) + "  (" + StringConverter::toString((int)vlen)+ " m)");
+			netMT->setCaption(networkUsername + "  (" + StringConverter::toString((int)vlen)+ " m)");
 		else
-			netMT->setCaption(String(networkInfo.user_name));
+			netMT->setCaption(networkUsername);
 
 		//netMT->setAdditionalHeight((maxy-miny)+h+0.1);
 		netMT->setVisible(true);
@@ -9241,18 +9245,33 @@ void Beam::updateDebugOverlay()
 	}
 }
 
-void Beam::setNetworkInfo(client_t netinfo)
+void Beam::updateNetworkInfo()
 {
-	networkInfo = netinfo;
-	if (netLabelNode && netMT)
+	if(!net) return;
+	bool remote = (state == NETWORKED);
+	if(remote)
+	{
+		client_t *c = net->getClientInfo(source);
+		if(!c) return;
+		networkUsername = String(c->user_name);
+		networkAuthlevel = c->user_authlevel;
+	} else
+	{
+		client_info_on_join *info = net->getLocalUserData();
+		if(!info) return;
+		if(!strlen(info->nickname)) return;
+		networkUsername = String(info->nickname);
+		networkAuthlevel = info->authstatus;
+	}
 
+	if (netLabelNode && netMT)
 	{
 		// ha, this caused the empty caption bug, but fixed now since we change the caption if its empty:
-		netMT->setCaption(networkInfo.user_name);
-		if(networkInfo.user_authlevel & AUTH_ADMIN)
+		netMT->setCaption(networkUsername);
+		if(networkAuthlevel & AUTH_ADMIN)
 		{
 			netMT->setFontName("highcontrast_red");
-		} else if(networkInfo.user_authlevel & AUTH_RANKED)
+		} else if(networkAuthlevel & AUTH_RANKED)
 		{
 			netMT->setFontName("highcontrast_green");
 		} else
@@ -9265,7 +9284,7 @@ void Beam::setNetworkInfo(client_t netinfo)
 	{
 		char wname[256];
 		sprintf(wname, "netlabel-%s",truckname);
-		netMT = new MovableText(wname, ColoredTextAreaOverlayElement::StripColors(networkInfo.user_name));
+		netMT = new MovableText(wname, ColoredTextAreaOverlayElement::StripColors(networkUsername));
 		netMT->setFontName("highcontrast_black");
 		netMT->setTextAlignment(MovableText::H_CENTER, MovableText::V_ABOVE);
 		//netMT->setAdditionalHeight(2);
@@ -9273,10 +9292,10 @@ void Beam::setNetworkInfo(client_t netinfo)
 		netMT->setCharacterHeight(2);
 		netMT->setColor(ColourValue::White);
 
-		if(networkInfo.user_authlevel & AUTH_ADMIN)
+		if(networkAuthlevel & AUTH_ADMIN)
 		{
 			netMT->setFontName("highcontrast_red");
-		} else if(networkInfo.user_authlevel & AUTH_RANKED)
+		} else if(networkAuthlevel & AUTH_RANKED)
 		{
 			netMT->setFontName("highcontrast_green");
 		} else

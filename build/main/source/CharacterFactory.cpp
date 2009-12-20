@@ -35,13 +35,13 @@ using namespace Ogre;
 
 template<> CharacterFactory *StreamableFactory < CharacterFactory, Character >::ms_Singleton = 0;
 
-CharacterFactory::CharacterFactory(Network *net, Collisions *c, HeightFinder *h, Water *w, MapControl *m, Ogre::SceneManager *scm) : c(c), net(net), h(h), w(w), m(m), scm(scm)
+CharacterFactory::CharacterFactory(Camera *cam, Network *net, Collisions *c, HeightFinder *h, Water *w, MapControl *m, Ogre::SceneManager *scm) : cam(cam), c(c), net(net), h(h), w(w), m(m), scm(scm)
 {
 }
 
 Character *CharacterFactory::createLocal(int playerColour)
 {
-	Character *ch = new Character(c, net, h, w, m, scm, -1, 0, playerColour, false);
+	Character *ch = new Character(cam, c, net, h, w, m, scm, -1, 0, playerColour, false);
 	streamables[-1][0] = ch;
 	return ch;
 }
@@ -49,7 +49,7 @@ Character *CharacterFactory::createLocal(int playerColour)
 Character *CharacterFactory::createRemote(int sourceid, int streamid, stream_register_t *reg, int playerColour)
 {
 	LogManager::getSingleton().logMessage(" new character for " + StringConverter::toString(sourceid) + ":" + StringConverter::toString(streamid) + ", colour: " + StringConverter::toString(playerColour));
-	Character *ch = new Character(c, net, h, w, m, scm, sourceid, streamid, playerColour, true);
+	Character *ch = new Character(cam, c, net, h, w, m, scm, sourceid, streamid, playerColour, true);
 	streamables[sourceid][streamid] = ch;
 	return ch;
 }
@@ -86,13 +86,7 @@ void CharacterFactory::localUserAttributesChanged(int newid)
 	Character *c = streamables[-1][0];
 	streamables[newid][0] = streamables[-1][0]; // add alias :)
 	c->setUID(newid);
-	if(net)
-	{
-		int colour = net->getLocalUserData()->colournum;
-		c->setColour(colour);
-	}
 	c->updateNetLabel();
-	c->updateCharacterColour();
 }
 
 void CharacterFactory::netUserAttributesChanged(int source, int streamid)
@@ -106,6 +100,21 @@ void CharacterFactory::netUserAttributesChanged(int source, int streamid)
 		{
 			Character *c = dynamic_cast<Character*>(it2->second);
 			if(c) c->updateNetLabel();
+		}
+	}
+}
+
+void CharacterFactory::updateLabels()
+{
+	std::map < int, std::map < unsigned int, Character *> >::iterator it1;
+	std::map < unsigned int, Character *>::iterator it2;
+
+	for(it1=streamables.begin(); it1!=streamables.end();it1++)
+	{
+		for(it2=it1->second.begin(); it2!=it1->second.end();it2++)
+		{
+			Character *c = dynamic_cast<Character*>(it2->second);
+			if(c) c->updateNetLabelSize();
 		}
 	}
 }

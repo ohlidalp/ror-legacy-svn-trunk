@@ -39,7 +39,7 @@ class Character : public Streamable
 	friend class Network;
 
 public:
-	Character(Collisions *c, Network *net, HeightFinder *h, Water *w, MapControl *m, Ogre::SceneManager *scm, int source=-1, unsigned int streamid=0, int colourNumber=0, bool remote=true);
+	Character(Ogre::Camera *cam, Collisions *c, Network *net, HeightFinder *h, Water *w, MapControl *m, Ogre::SceneManager *scm, int source=-1, unsigned int streamid=0, int colourNumber=0, bool remote=true);
 	~Character();
 	
 	void setVisible(bool v);
@@ -72,6 +72,7 @@ protected:
 	Ogre::Vector3 position;
 	Collisions *collisions;
 	HeightFinder *hfinder;
+	Ogre::Camera *mCamera;
 	Water *water;
 	MapControl *map;
 	Ogre::SceneManager *scm;
@@ -82,6 +83,8 @@ protected:
 	int colourNumber;
 	Ogre::MovableText *netMT;
 	MapEntity *mapEnt;
+	Ogre::String networkUsername;
+	int networkAuthLevel;
 	
 	Ogre::SceneNode *personode;
 	Ogre::AnimationStateSet *persoanim;
@@ -108,6 +111,8 @@ protected:
 	void sendStreamData();
 	void receiveStreamData(unsigned int &type, int &source, unsigned int &streamid, char *buffer, unsigned int &len);
 	void setUID(int uid); 
+
+	void updateNetLabelSize();
 };
 
 #endif

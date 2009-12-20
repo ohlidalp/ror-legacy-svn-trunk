@@ -1592,7 +1592,7 @@ ExampleFrameListener::ExampleFrameListener(RenderWindow* win, Camera* cam, Scene
 	new NetworkStreamManager();
 
 	// new factory for characters, net is INVALID, will be set later
-	new CharacterFactory(0, collisions, hfinder, w, bigMap, mSceneMgr);
+	new CharacterFactory(cam, 0, collisions, hfinder, w, bigMap, mSceneMgr);
 	new ChatSystemFactory(0);
 
 	// notice: all factories must be available before starting the network!
@@ -7670,6 +7670,12 @@ END OF OLD CODE */
 #ifdef ANGELSCRIPT
 	ScriptEngine::getSingleton().framestep(dt);
 #endif
+
+	// update network labels
+	if(net)
+	{
+		CharacterFactory::getSingleton().updateLabels();
+	}
 
 	return true;
 }

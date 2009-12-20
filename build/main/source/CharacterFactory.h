@@ -40,7 +40,7 @@ class CharacterFactory : public StreamableFactory < CharacterFactory, Character 
 {
 	friend class Network;
 public:
-	CharacterFactory(Network *net, Collisions *c, HeightFinder *h, Water *w, MapControl *m, Ogre::SceneManager *scm);
+	CharacterFactory(Ogre::Camera *cam, Network *net, Collisions *c, HeightFinder *h, Water *w, MapControl *m, Ogre::SceneManager *scm);
 	~CharacterFactory();
 
 	Character *createLocal(int playerColour);
@@ -50,7 +50,10 @@ public:
 	void removeUser(int userid);
 
 	void setNetwork(Network *net) { this->net = net; };
+
+	void updateLabels();
 protected:
+	Ogre::Camera *cam;
 	Collisions *c;
 	Network *net;
 	HeightFinder *h;
