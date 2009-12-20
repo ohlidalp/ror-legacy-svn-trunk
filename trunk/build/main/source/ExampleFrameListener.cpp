@@ -7515,7 +7515,9 @@ END OF OLD CODE */
 
 		//we simulate one truck, it will take care of the others (except networked ones)
 		//this is the big "shaker"
-		if (current_truck!=-1) trucks[current_truck]->frameStep(evt.timeSinceLastFrame, trucks, free_truck);
+		if (current_truck!=-1)
+			trucks[current_truck]->frameStep(evt.timeSinceLastFrame, trucks, free_truck);
+		
 		//things always on
 		for (t=0; t<free_truck; t++)
 		{
@@ -7523,22 +7525,32 @@ END OF OLD CODE */
 			//networked trucks must be taken care of
 
 			switch(trucks[t]->state)
+			{
+
+				case TRAFFICED:
 				{
-
-					case TRAFFICED:
 #ifdef AITRAFFIC
-								if (aitraffic) trucks[t]->calcTraffic(aitraffic->nettraffic.objs[t]);
+					if (aitraffic) trucks[t]->calcTraffic(aitraffic->nettraffic.objs[t]);
 #endif //AITRAFFIC
-								break;
-					case NETWORKED:
-								trucks[t]->calcNetwork();
-								break;
-					case RECYCLE:
-								break;
-
-					default:
-								if (t!=current_truck && trucks[t]->engine) trucks[t]->engine->update(dt, 1);
+					break;
 				}
+				case NETWORKED:
+				{
+					trucks[t]->calcNetwork();
+					break;
+				}
+				case RECYCLE:
+				{
+					break;
+				}
+				default:
+				{
+					if (t!=current_truck && trucks[t]->engine)
+						trucks[t]->engine->update(dt, 1);
+					if(trucks[t]->networking)
+						trucks[t]->sendStreamData();
+				}
+			}
 /* -- OLD CODE --
 
 			if (trucks[t]->state==NETWORKED) trucks[t]->calcNetwork();

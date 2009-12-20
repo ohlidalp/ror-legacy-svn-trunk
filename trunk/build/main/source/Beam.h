@@ -931,6 +931,7 @@ public:
 
 	bool getSlideNodesLockInstant() { 	return slideNodesConnectInstantly; };
 	void setNetworkProperties(int source, unsigned int streamid);
+	void sendStreamData();
 
 protected:
 
@@ -1154,7 +1155,6 @@ protected:
 	Timer netTimer;
 	int last_net_time;
 	void sendStreamSetup();
-	void sendStreamData();
 	void receiveStreamData(unsigned int &type, int &source, unsigned int &streamid, char *buffer, unsigned int &len);
 
 
