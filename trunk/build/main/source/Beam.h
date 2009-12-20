@@ -930,9 +930,11 @@ public:
 	Replay *getReplay() { return replay; };
 
 	bool getSlideNodesLockInstant() { 	return slideNodesConnectInstantly; };
+	void setNetworkProperties(int source, unsigned int streamid);
 
 protected:
 
+	int source, streamid;
 	void updateSimpleSkeleton();
 	SceneNode *simpleSkeletonNode;
 	std::vector<Ogre::String> truckconfig;

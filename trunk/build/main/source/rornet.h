@@ -134,7 +134,17 @@ typedef struct
 	char name[128];           //!< the truck filename
 	int type;                 //!< stream type
 	int status;               //!< initial stream status
+	char data[8000];
 } stream_register_t;
+
+typedef struct
+{
+	char name[128];           //!< the truck filename
+	int type;                 //!< stream type
+	int status;               //!< initial stream status
+	int bufferSize;               //!< initial stream status
+} stream_register_trucks_t;
+
 
 // structure to control flow of a stream, send in both directions
 typedef struct

@@ -224,6 +224,8 @@ Beam::Beam(int tnum, SceneManager *manager, SceneNode *parent, RenderWindow* win
 	free_axle=0;
 	slideNodesConnectInstantly=false;
 	replayTimer=0;
+	source=0;
+	streamid=0;
 	minCameraRadius=0;
 	last_net_time=0;
 	lastFuzzyGroundModel=0;
@@ -5807,25 +5809,37 @@ void Beam::prepareShutdown()
 
 }
 
+void Beam::setNetworkProperties(int source, unsigned int streamid)
+{
+	bool reg = (this->source == 0 && this->streamid == 0);
+	this->source=source;
+	this->streamid=streamid;
+	if(reg)
+		sendStreamSetup();
+}
+
 void Beam::sendStreamSetup()
 {
 	// only init stream if its local.
 	// the stream is local when networkign=true and networked=false
 	if(net && state != NETWORKED )
 	{
-		// register the stream
-		stream_register_t reg;
+		// register the local stream
+		stream_register_trucks_t reg;
 		reg.status = 0;
-		strcpy(reg.name, "default");
 		reg.type = 0; // 0 = truck
-		// XXX: TODO: put all required info in the stream registration message!
-		// send the vehicle name
-		//this->addPacket(MSG2_USE_VEHICLE, net->getUserID(), streamid, realtruckfilename.size(), const_cast<char*>(realtruckfilename.c_str()));
+		reg.bufferSize = netbuffersize;
+		strcpy(reg.name, realtruckfilename.c_str());
 
-		// send vehicle buffer size
-		//this->addPacket(MSG2_BUFFER_SIZE, net->getUserID(), streamid, 4, (char*)&netbuffersize);
-
-		NetworkStreamManager::getSingleton().addLocalStream(this, &reg);
+		NetworkStreamManager::getSingleton().addLocalStream(this, (stream_register_t *)&reg, sizeof(reg));
+	} else if(net && state == NETWORKED)
+	{
+		// remote
+		if(!(source == 0 && streamid == 0)) 
+		{
+			LogManager::getSingleton().logMessage("new remote beam vehicle: " + StringConverter::toString(source) + ":"+ StringConverter::toString(streamid));
+			NetworkStreamManager::getSingleton().addRemoteStream(this, source, streamid);
+		}
 	}
 }
 
@@ -8892,6 +8906,8 @@ void Beam::tieToggle(Beam** trucks, int trucksnum)
 void Beam::lockToggle(Beam** trucks, int trucksnum)
 {
 	int i;
+#if 0
+	// todo: fix remote truck locks
 	if (networking)
 	{
 		if (netlock.state==LOCKED)
@@ -8925,6 +8941,8 @@ void Beam::lockToggle(Beam** trucks, int trucksnum)
 		}
 		return;
 	}
+#endif //0
+
 	if (locked==LOCKED || locked==PRELOCK)
 	{
 		locked=UNLOCKED;

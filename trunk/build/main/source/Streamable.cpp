@@ -51,6 +51,9 @@ void Streamable::addPacket(int type, unsigned int len, char* content)
 	if(packets.size() > packetBufferSize)
 		// buffer full, packet discarded
 		return;
+	if(len > maxPacketLen)
+		// packet too big, discarded
+		return;
 
 	int uid = Network::getUID();
 	unsigned int streamid = this->streamid; //we stored the streamid upon stream registration in this class

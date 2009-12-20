@@ -122,6 +122,8 @@ Beam *BeamFactory::createRemote(int sourceid, int streamid, stream_register_t *r
 		0,
 		SkinPtr());
 
+	b->setNetworkProperties(sourceid, streamid);
+	
 	efl->trucks[efl->free_truck] = b;
 	efl->free_truck++;
 

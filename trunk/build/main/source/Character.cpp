@@ -518,6 +518,7 @@ void Character::sendStreamSetup()
 	{
 		// new local stream
 		stream_register_t reg;
+		memset(&reg, 0, sizeof(reg));
 		reg.status = 1;
 		strcpy(reg.name, "default");
 		reg.type = 1;

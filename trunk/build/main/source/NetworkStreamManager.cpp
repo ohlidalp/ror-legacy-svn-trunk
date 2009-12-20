@@ -51,7 +51,7 @@ NetworkStreamManager& NetworkStreamManager::getSingleton(void)
 	assert( ms_Singleton );  return ( *ms_Singleton );
 }
 
-void NetworkStreamManager::addLocalStream(Streamable *stream, stream_register_t *reg)
+void NetworkStreamManager::addLocalStream(Streamable *stream, stream_register_t *reg, unsigned int size)
 {
 	// for own streams: count stream id up ...
 	int mysourceid = net->getUserID();
@@ -66,7 +66,8 @@ void NetworkStreamManager::addLocalStream(Streamable *stream, stream_register_t 
 	streams[mysourceid][streamid] = stream;
 	LogManager::getSingleton().logMessage("adding local stream: " + StringConverter::toString(mysourceid) + ":"+ StringConverter::toString(streamid) + ", type: " + StringConverter::toString(reg->type));
 	// send stream setup notice to server
-	stream->addPacket(MSG2_STREAM_REGISTER, sizeof(stream_register_t), (char*)reg);
+	if(size == 0) size = sizeof(stream_register_t);
+	stream->addPacket(MSG2_STREAM_REGISTER, size, (char*)reg);
 
 	// increase stream counter
 	streamid++;
