@@ -129,6 +129,8 @@ Beam *BeamFactory::createRemote(int sourceid, int streamid, stream_register_t *r
 
 	streamables[sourceid][streamid] = b;
 
+	b->updateNetworkInfo();
+
 	return b;
 }
 
@@ -179,8 +181,11 @@ void BeamFactory::netUserAttributesChanged(int source, int streamid)
 	{
 		for(it2=it1->second.begin(); it2!=it1->second.end();it2++)
 		{
-			Beam *b = it2->second;
-			//b->updateNetLabel();
+			if(it1->first == source)
+			{
+				Beam *b = it2->second;
+				if(b) b->updateNetworkInfo();
+			}
 		}
 	}
 }

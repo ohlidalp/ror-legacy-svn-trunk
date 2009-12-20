@@ -67,8 +67,9 @@ ColourValue cvals[] =
 	ColourValue(0.6,0.6,0.0),
 };
 
-Character::Character(Collisions *c, Network *net, HeightFinder *h, Water *w, MapControl *m, Ogre::SceneManager *scm, int source, unsigned int streamid, int colourNumber, bool remote)
+Character::Character(Camera *cam,Collisions *c, Network *net, HeightFinder *h, Water *w, MapControl *m, Ogre::SceneManager *scm, int source, unsigned int streamid, int colourNumber, bool remote)
 {
+	this->mCamera=cam;
 	this->net=net;
 	this->collisions=c;
 	this->hfinder=h;
@@ -82,6 +83,9 @@ Character::Character(Collisions *c, Network *net, HeightFinder *h, Water *w, Map
 	//remote = true;
 	last_net_time=0;
 	netMT=0;
+	networkUsername = String();
+	networkAuthLevel = 0;
+
 
 	myNumber = characterCounter++;
 	myName = "character"+Ogre::StringConverter::toString(myNumber);
@@ -173,15 +177,31 @@ void Character::updateNetLabel()
 {
 	// label above head
 	if(!net) return;
-	client_t *info = net->getClientInfo(this->source);
-	if(!info) return;
-	if(!strlen(info->user_name)) return;
+	if(remote)
+	{
+		client_t *info = net->getClientInfo(this->source);
+		if(!info) return;
+		if(!strlen(info->user_name)) return;
+		// update colour
+		this->colourNumber = info->colournum;
+		networkUsername = info->user_name;
+		networkAuthLevel = info->user_authlevel;
+	} else
+	{
+		client_info_on_join *info = net->getLocalUserData();
+		if(!info) return;
+		if(!strlen(info->nickname)) return;
+		// update colour
+		this->colourNumber = info->colournum;
+		networkUsername = String(info->nickname);
+		networkAuthLevel = info->authstatus;
+	}
 
-	LogManager::getSingleton().logMessage(" * updateNetLabel : " + StringConverter::toString(this->source) + " / "+ StringConverter::toString(info->slotnum));
+	LogManager::getSingleton().logMessage(" * updateNetLabel : " + StringConverter::toString(this->source));
 	if(!netMT)
 	{
 		LogManager::getSingleton().logMessage(" *NEW NETLABEL*");
-		netMT = new MovableText("netlabel-"+myName, ColoredTextAreaOverlayElement::StripColors(info->user_name));
+		netMT = new MovableText("netlabel-"+myName, ColoredTextAreaOverlayElement::StripColors(networkUsername));
 		personode->attachObject(netMT);
 		netMT->setFontName("highcontrast_black");
 		netMT->setTextAlignment(MovableText::H_CENTER, MovableText::V_ABOVE);
@@ -191,13 +211,13 @@ void Character::updateNetLabel()
 		netMT->setColor(ColourValue::White);
 	}
 
-	LogManager::getSingleton().logMessage(" *label caption: " + String(info->user_name));
-	LogManager::getSingleton().logMessage(" *label caption: " + ColoredTextAreaOverlayElement::StripColors(info->user_name));
-	netMT->setCaption(ColoredTextAreaOverlayElement::StripColors(info->user_name));
-	if(info->user_authlevel & AUTH_ADMIN)
+	LogManager::getSingleton().logMessage(" *label caption: " + String(networkUsername));
+	LogManager::getSingleton().logMessage(" *label caption: " + ColoredTextAreaOverlayElement::StripColors(networkUsername));
+	netMT->setCaption(ColoredTextAreaOverlayElement::StripColors(networkUsername));
+	if(networkAuthLevel & AUTH_ADMIN)
 	{
 		netMT->setFontName("highcontrast_red");
-	} else if(info->user_authlevel & AUTH_RANKED)
+	} else if(networkAuthLevel & AUTH_RANKED)
 	{
 		netMT->setFontName("highcontrast_green");
 	} else
@@ -554,5 +574,25 @@ void Character::receiveStreamData(unsigned int &type, int &source, unsigned int 
 	}
 	//else
 	//	LogManager::getSingleton().logMessage("character stream data wrong: " + StringConverter::toString(source) + ":"+ StringConverter::toString(streamid));
+}
 
+void Character::updateNetLabelSize()
+{
+	if (!net || !netMT || !netMT->isVisible()) return;
+
+	Vector3 vdir = personode->getPosition() - mCamera->getPosition();
+	float vlen=vdir.length();
+	float h = vlen * 1.2f;
+	if(h<9)
+		h=9;
+	netMT->setCharacterHeight(h);
+	if(vlen>1000)
+		netMT->setCaption(networkUsername + "  (" + StringConverter::toString( (float)(ceil(vlen/100)/10.0) )+ " km)");
+	else if (vlen>20 && vlen <= 1000)
+		netMT->setCaption(networkUsername + "  (" + StringConverter::toString((int)vlen)+ " m)");
+	else
+		netMT->setCaption(networkUsername);
+
+	//netMT->setAdditionalHeight((maxy-miny)+h+0.1);
+	netMT->setVisible(true);
 }

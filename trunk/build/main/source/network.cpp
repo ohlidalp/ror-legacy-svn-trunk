@@ -564,6 +564,7 @@ void Network::receivethreadstart()
 					strncpy(client->user_name, cinfo->nickname, 20);
 					// inform the streamfactories of a attribute change
 					CharacterFactory::getSingleton().netUserAttributesChanged(header.source, -1);
+					BeamFactory::getSingleton().netUserAttributesChanged(header.source, -1);
 					found = true;
 				} else
 				{
@@ -579,6 +580,7 @@ void Network::receivethreadstart()
 						clients[i].slotnum = cinfo->slotnum;
 						clients[i].colournum = cinfo->colournum;
 						CharacterFactory::getSingleton().netUserAttributesChanged(header.source, -1);
+						BeamFactory::getSingleton().netUserAttributesChanged(header.source, -1);
 						strncpy(clients[i].user_name,cinfo->nickname, 20);
 						break;
 					}
