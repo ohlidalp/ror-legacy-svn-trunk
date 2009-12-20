@@ -2627,23 +2627,22 @@ bool ExampleFrameListener::updateEvents(float dt)
 			GUI_Friction::getSingleton().setActiveCol(gm);
 	}
 
-	if (NETCHAT.getVisible() && INPUTENGINE.getEventBoolValueBounce(EV_COMMON_ENTER_CHAT, 0.5f) && !hidegui)
+	if (NETCHAT.getVisible() && INPUTENGINE.getEventBoolValueBounce(EV_COMMON_ENTER_CHAT, 0.5f) && !chatting && !hidegui)
 	{
-		if (chatting)
-		{
-			processConsoleInput();
-			NETCHAT.setEnterText("", false);
-			chatting=false;
-			INPUTENGINE.setRecordInput(false);
-			INPUTENGINE.resetKeyLine();
-		}
-		else
-		{
-			INPUTENGINE.resetKeyLine();
-			INPUTENGINE.setRecordInput(true);
-			NETCHAT.setEnterText("", true, true);
-			chatting=true;
-		}
+		// enter chat mode
+		INPUTENGINE.resetKeyLine();
+		INPUTENGINE.setRecordInput(true);
+		NETCHAT.setEnterText("", true, true);
+		chatting=true;
+	}
+
+	if (NETCHAT.getVisible() && INPUTENGINE.getEventBoolValueBounce(EV_COMMON_SEND_CHAT, 0.5f) && chatting && !hidegui)
+	{
+		processConsoleInput();
+		NETCHAT.setEnterText("", false);
+		chatting=false;
+		INPUTENGINE.setRecordInput(false);
+		INPUTENGINE.resetKeyLine();
 	}
 
 	// no event handling during chatting!
