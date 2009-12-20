@@ -36,7 +36,7 @@ class Network
 {
 private:
 	SWInetSocket socket;
-	unsigned int myuid;
+	static unsigned int myuid;
 	int myauthlevel;
 	pthread_t sendthread;
 	pthread_t receivethread;
@@ -53,7 +53,6 @@ private:
 	pthread_cond_t send_work_cv;
 	client_t clients[MAX_PEERS];
 	pthread_mutex_t clients_mutex;
-	pthread_mutex_t chat_mutex;
 	Beam** trucks;
 	netlock_t netlock;
 	std::string mySname;
@@ -102,8 +101,7 @@ public:
 
 	client_info_on_join *getLocalUserData() { return &userdata; };
 
-	bool sendChat(Ogre::UTFString chat);
-
+	static unsigned int getUID() { return myuid; };
 protected:
 };
 

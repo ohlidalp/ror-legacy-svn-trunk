@@ -55,6 +55,7 @@ along with Rigs of Rods.  If not, see <http://www.gnu.org/licenses/>.
 #include "InputEngine.h"
 #include "turbojet.h"
 #include "Character.h"
+#include "ChatSystem.h"
 #include "AITraffic.h"
 #include "envmap.h"
 
@@ -471,6 +472,7 @@ public:
 	void showspray(bool s);
 
 	Character *person;
+	ChatSystem *netChat;
 	bool getSwitchButtons() { return switchMouseButtons; };
 	static HeightFinder *hfinder;
 	double getTime() {return rtime;};

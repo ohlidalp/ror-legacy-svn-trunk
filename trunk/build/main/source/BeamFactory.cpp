@@ -87,9 +87,9 @@ Beam *BeamFactory::createLocal(Ogre::Vector3 pos, Ogre::Quaternion rot, Ogre::St
 	return b;
 }
 
-Beam *BeamFactory::createRemote(int sourceid, stream_register_t *reg, int slotid)
+Beam *BeamFactory::createRemote(int sourceid, int streamid, stream_register_t *reg, int colour)
 {
-	LogManager::getSingleton().logMessage(" new beam truck for " + StringConverter::toString(sourceid) + ":" + StringConverter::toString(reg->sid));
+	LogManager::getSingleton().logMessage(" new beam truck for " + StringConverter::toString(sourceid) + ":" + StringConverter::toString(streamid));
 
 	bool networked=true, networking=false;
 	if(net) networking = true;
@@ -125,7 +125,7 @@ Beam *BeamFactory::createRemote(int sourceid, stream_register_t *reg, int slotid
 	efl->trucks[efl->free_truck] = b;
 	efl->free_truck++;
 
-	streamables[sourceid][reg->sid] = b;
+	streamables[sourceid][streamid] = b;
 
 	return b;
 }

@@ -512,18 +512,17 @@ void Character::sendStreamSetup()
 	if(remote)
 	{
 		LogManager::getSingleton().logMessage("new remote character: " + StringConverter::toString(source) + ":"+ StringConverter::toString(streamid));
-		NetworkStreamManager::getSingleton().addStream(this, source, streamid);
+		NetworkStreamManager::getSingleton().addRemoteStream(this, source, streamid);
 		setVisible(true);
 	}else
 	{
-		NetworkStreamManager::getSingleton().addStream(this);
-
+		// new local stream
 		stream_register_t reg;
-		reg.sid = this->streamid;
 		reg.status = 1;
 		strcpy(reg.name, "default");
 		reg.type = 1;
-		this->addPacket(MSG2_STREAM_REGISTER, net->getUserID(), streamid, sizeof(stream_register_t), (char*)&reg);
+
+		NetworkStreamManager::getSingleton().addLocalStream(this, &reg);
 	}
 }
 
@@ -540,7 +539,7 @@ void Character::sendStreamData()
 	data.rot = personode->getOrientation();
 
 	//LogManager::getSingleton().logMessage("sending character stream data: " + StringConverter::toString(net->getUserID()) + ":"+ StringConverter::toString(streamid));
-	this->addPacket(MSG2_STREAM_DATA, net->getUserID(), streamid, sizeof(netdata_t), (char*)&data);
+	this->addPacket(MSG2_STREAM_DATA, sizeof(netdata_t), (char*)&data);
 }
 
 void Character::receiveStreamData(unsigned int &type, int &source, unsigned int &streamid, char *buffer, unsigned int &len)

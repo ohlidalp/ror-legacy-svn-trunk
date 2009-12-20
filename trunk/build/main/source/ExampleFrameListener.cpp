@@ -28,6 +28,7 @@ along with Rigs of Rods.  If not, see <http://www.gnu.org/licenses/>.
 #include "ScopeLog.h"
 #include "DepthOfFieldEffect.h"
 #include "Lens.h"
+#include "ChatSystem.h"
 #include "GlowMaterialListener.h"
 
 #include "CharacterFactory.h"
@@ -1012,6 +1013,7 @@ ExampleFrameListener::ExampleFrameListener(RenderWindow* win, Camera* cam, Scene
 	mScene=scm;
 	persostart=Vector3(0,0,0);
 	person=0;
+	netChat=0;
 	reload_pos=Vector3::ZERO;
 	win->addListener(&disableListener);
 	free_truck=0;
@@ -1589,8 +1591,11 @@ ExampleFrameListener::ExampleFrameListener(RenderWindow* win, Camera* cam, Scene
 	// you always need that, even if you are not using the network
 	new NetworkStreamManager();
 
-	// new factory for characters
-	new CharacterFactory(net, collisions, hfinder, w, bigMap, mSceneMgr);
+	// new factory for characters, net is INVALID, will be set later
+	new CharacterFactory(0, collisions, hfinder, w, bigMap, mSceneMgr);
+	new ChatSystemFactory(0);
+
+	// notice: all factories must be available before starting the network!
 
 	if(netmode)
 	{
@@ -1640,6 +1645,10 @@ ExampleFrameListener::ExampleFrameListener(RenderWindow* win, Camera* cam, Scene
 		int colourNum = 0;
 		if(net->getLocalUserData()) colourNum = net->getLocalUserData()->colournum;
 		person = (Character *)CharacterFactory::getSingleton().createLocal(colourNum);
+
+		// network chat stuff
+		netChat = ChatSystemFactory::getSingleton().createLocal(colourNum);
+
 	} else
 	{
 		// no network
@@ -4741,8 +4750,7 @@ void ExampleFrameListener::processConsoleInput()
 	if(netmode)
 	{
 		NETCHAT.addText(net->getNickname(true) + ": ^7" + ColoredTextAreaOverlayElement::StripColors(chatline), false);
-		net->sendChat(chatline);
-		//net->sendChat( const_cast<char *>(chatline.asUTF8_c_str()));
+		if(netChat) netChat->sendChat(chatline);
 	} else
 		NETCHAT.addText(_L("^8 Player: ^7") + chatline);
 

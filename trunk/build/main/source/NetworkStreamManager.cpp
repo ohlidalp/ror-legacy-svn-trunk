@@ -51,24 +51,32 @@ NetworkStreamManager& NetworkStreamManager::getSingleton(void)
 	assert( ms_Singleton );  return ( *ms_Singleton );
 }
 
-void NetworkStreamManager::addStream(Streamable *stream, int osource, int ostreamid)
+void NetworkStreamManager::addLocalStream(Streamable *stream, stream_register_t *reg)
 {
-	if(ostreamid==-1)
-	{
-		// for own streams: count stream id up ...
-		osource = net->getUserID();
-		stream->streamid = streamid;
-		if(streams.find(osource) == streams.end())
-			streams[osource] = std::map < unsigned int, Streamable *>();
-		streams[osource][streamid] = stream;
-		LogManager::getSingleton().logMessage("adding local stream: " + StringConverter::toString(osource) + ":"+ StringConverter::toString(streamid));
-		streamid++;
-	} else
-	{
-		stream->streamid = ostreamid;
-		streams[osource][ostreamid] = stream;
-		LogManager::getSingleton().logMessage("adding remote stream: " + StringConverter::toString(osource) + ":"+ StringConverter::toString(ostreamid));
-	}
+	// for own streams: count stream id up ...
+	int mysourceid = net->getUserID();
+	
+	// use counting streamid
+	stream->setStreamID(streamid);
+	
+	// add new stream map to the streams map
+	if(streams.find(mysourceid) == streams.end())
+		streams[mysourceid] = std::map < unsigned int, Streamable *>();
+	// map the stream
+	streams[mysourceid][streamid] = stream;
+	LogManager::getSingleton().logMessage("adding local stream: " + StringConverter::toString(mysourceid) + ":"+ StringConverter::toString(streamid) + ", type: " + StringConverter::toString(reg->type));
+	// send stream setup notice to server
+	stream->addPacket(MSG2_STREAM_REGISTER, sizeof(stream_register_t), (char*)reg);
+
+	// increase stream counter
+	streamid++;
+}
+
+void NetworkStreamManager::addRemoteStream(Streamable *stream, int rsource, int rstreamid)
+{
+	stream->streamid = rstreamid;
+	streams[rsource][rstreamid] = stream;
+	LogManager::getSingleton().logMessage("adding remote stream: " + StringConverter::toString(rsource) + ":"+ StringConverter::toString(rstreamid));
 }
 
 void NetworkStreamManager::removeStream(Streamable *stream)

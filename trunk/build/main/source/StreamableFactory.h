@@ -60,8 +60,8 @@ public:
 	}
 
 	// useful functions
-	virtual X *createLocal(int slotid) = 0;
-	virtual X *createRemote(int sourceid, stream_register_t *reg, int slotid) = 0;
+	virtual X *createLocal(int colour) = 0;
+	virtual X *createRemote(int sourceid, int streamid, stream_register_t *reg, int colour) = 0;
 	virtual void netUserAttributesChanged(int source, int streamid) = 0;
 	virtual void remove(X *stream) = 0;
 	virtual void removeUser(int userid) = 0;

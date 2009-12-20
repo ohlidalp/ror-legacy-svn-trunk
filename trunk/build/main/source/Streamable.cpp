@@ -28,6 +28,7 @@ along with Rigs of Rods.  If not, see <http://www.gnu.org/licenses/>.
 #include "utils.h"
 #include "sha1.h"
 #include "pthread.h"
+#include "network.h"
 
 using namespace Ogre;
 
@@ -45,11 +46,14 @@ std::queue < Streamable::bufferedPacket_t > *Streamable::getPacketQueue()
 	return &packets;
 }
 
-void Streamable::addPacket(int type, int uid, unsigned int streamid, unsigned int len, char* content)
+void Streamable::addPacket(int type, unsigned int len, char* content)
 {
 	if(packets.size() > packetBufferSize)
 		// buffer full, packet discarded
 		return;
+
+	int uid = Network::getUID();
+	unsigned int streamid = this->streamid; //we stored the streamid upon stream registration in this class
 
 	bufferedPacket_t packet;
 	memset(&packet, 0, sizeof(bufferedPacket_t));

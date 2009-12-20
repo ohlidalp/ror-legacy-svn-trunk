@@ -46,11 +46,11 @@ Character *CharacterFactory::createLocal(int playerColour)
 	return ch;
 }
 
-Character *CharacterFactory::createRemote(int sourceid, stream_register_t *reg, int playerColour)
+Character *CharacterFactory::createRemote(int sourceid, int streamid, stream_register_t *reg, int playerColour)
 {
-	LogManager::getSingleton().logMessage(" new character for " + StringConverter::toString(sourceid) + ":" + StringConverter::toString(reg->sid) + ", colour: " + StringConverter::toString(playerColour));
-	Character *ch = new Character(c, net, h, w, m, scm, sourceid, reg->sid, playerColour, true);
-	streamables[sourceid][reg->sid] = ch;
+	LogManager::getSingleton().logMessage(" new character for " + StringConverter::toString(sourceid) + ":" + StringConverter::toString(streamid) + ", colour: " + StringConverter::toString(playerColour));
+	Character *ch = new Character(c, net, h, w, m, scm, sourceid, streamid, playerColour, true);
+	streamables[sourceid][streamid] = ch;
 	return ch;
 }
 

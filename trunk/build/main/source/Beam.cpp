@@ -5813,21 +5813,19 @@ void Beam::sendStreamSetup()
 	// the stream is local when networkign=true and networked=false
 	if(net && state != NETWORKED )
 	{
-		NetworkStreamManager::getSingleton().addStream(this);
-
 		// register the stream
 		stream_register_t reg;
-		reg.sid = this->streamid;
 		reg.status = 0;
 		strcpy(reg.name, "default");
-		reg.type = 1;
-		this->addPacket(MSG2_STREAM_REGISTER, net->getUserID(), streamid, sizeof(stream_register_t), (char*)&reg);
-
+		reg.type = 0; // 0 = truck
+		// XXX: TODO: put all required info in the stream registration message!
 		// send the vehicle name
-		this->addPacket(MSG2_USE_VEHICLE, net->getUserID(), streamid, realtruckfilename.size(), const_cast<char*>(realtruckfilename.c_str()));
+		//this->addPacket(MSG2_USE_VEHICLE, net->getUserID(), streamid, realtruckfilename.size(), const_cast<char*>(realtruckfilename.c_str()));
 
 		// send vehicle buffer size
-		this->addPacket(MSG2_BUFFER_SIZE, net->getUserID(), streamid, 4, (char*)&netbuffersize);
+		//this->addPacket(MSG2_BUFFER_SIZE, net->getUserID(), streamid, 4, (char*)&netbuffersize);
+
+		NetworkStreamManager::getSingleton().addLocalStream(this, &reg);
 	}
 }
 
@@ -5909,7 +5907,7 @@ void Beam::sendStreamData()
 	}
 
 	//memcpy(send_buffer+sizeof(oob_t), (char*)send_buffer, send_buffer_len);
-	this->addPacket(MSG2_STREAM_DATA, net->getUserID(), streamid, packet_len, send_buffer);
+	this->addPacket(MSG2_STREAM_DATA, packet_len, send_buffer);
 }
 
 void Beam::receiveStreamData(unsigned int &type, int &source, unsigned int &streamid, char *buffer, unsigned int &len)
