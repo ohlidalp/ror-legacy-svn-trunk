@@ -662,8 +662,14 @@ eventInfo_t eventInfo[] = {
 	{
 		"COMMON_ENTER_CHAT",
 		EV_COMMON_ENTER_CHAT,
-		"Keyboard RETURN",
+		"Keyboard Y",
 		_L("enter the chat")
+	},
+	{
+		"COMMON_SEND_CHAT",
+		EV_COMMON_SEND_CHAT,
+		"Keyboard RETURN",
+		_L("sends the entered text")
 	},
 	{
 		"COMMON_ENTER_OR_EXIT_TRUCK",

@@ -172,7 +172,8 @@ enum events
 	EV_COMMANDS_48, //!< Command 48
 	EV_COMMON_CONSOLEDISPLAY, //!< show / hide the console
 	EV_COMMON_CONSOLEMODE, //!< toggle appearance of console
-	EV_COMMON_ENTER_CHAT, //!< enter the chat
+	EV_COMMON_ENTER_CHAT, //!< enter the chat mode
+	EV_COMMON_SEND_CHAT, //!< send the chat text
 	EV_COMMON_ENTER_OR_EXIT_TRUCK, //!< enter or exit a truck
 	EV_COMMON_HIDE_GUI, //!< hide all GUI elements
 	EV_COMMON_LOCK, //!< connect hook node to a node in close proximity
