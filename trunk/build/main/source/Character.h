@@ -45,6 +45,7 @@ public:
 	void setVisible(bool v);
 	bool getVisible();
 
+	void setOrientation(Ogre::Quaternion);
 	Ogre::Quaternion getOrientation();
 	Ogre::Vector3 getPosition();
 	void setPosition(Ogre::Vector3 pos);
@@ -68,6 +69,9 @@ public:
 	void setWater(Water *w);
 	int getUID() { return source; };
 
+	bool getPhysicsEnabled() { return physicsEnabled; };
+	void setPhysicsEnabled(bool val) { physicsEnabled=val; };
+
 protected:
 	Ogre::Vector3 position;
 	Collisions *collisions;
@@ -80,6 +84,7 @@ protected:
 	int source;
 	unsigned int streamid;
 	bool remote;
+	bool physicsEnabled;
 	int colourNumber;
 	Ogre::MovableText *netMT;
 	MapEntity *mapEnt;

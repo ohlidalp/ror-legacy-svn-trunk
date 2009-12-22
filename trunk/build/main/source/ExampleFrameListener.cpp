@@ -2899,6 +2899,25 @@ bool ExampleFrameListener::updateEvents(float dt)
 
 	if (loading_state==ALL_LOADED)
 	{
+ 		if(net && person)
+		{
+			// always position the person in network mode
+			if(current_truck != -1 && trucks[current_truck] && trucks[current_truck]->driverSeat)
+			{
+				person->setPhysicsEnabled(false);
+				Vector3 pos;
+				Quaternion rot;
+				int res = trucks[current_truck]->calculateDriverPos(pos, rot);
+				if(!res)
+				{
+					person->setPosition(pos + Vector3(0,-0.5f,0));
+					person->setOrientation(-rot);
+				}
+			}
+			// call update after positioning, so position is send over the net
+			person->update(dt);
+		}
+
 		bool enablegrab = true;
 		if (cameramode != CAMERA_FREE)
 		{
@@ -2906,7 +2925,10 @@ bool ExampleFrameListener::updateEvents(float dt)
 			if (current_truck==-1)
 			{
 				if(person)
+				{
+					person->setPhysicsEnabled(true);
 					person->update(dt);
+				}
 				//camera mode
 				if (INPUTENGINE.getEventBoolValueBounce(EV_CAMERA_CHANGE) && cameramode != CAMERA_FREE && cameramode != CAMERA_FREE_FIXED)
 				{
@@ -7821,6 +7843,12 @@ bool ExampleFrameListener::frameEnded(const FrameEvent& evt)
 
 	if(heathaze)
 		heathaze->update();
+
+	if(net)
+	{
+		// process all packets received
+		NetworkStreamManager::getSingleton().receiveStreams();
+	}
 	return true;
 }
 

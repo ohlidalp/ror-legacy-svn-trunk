@@ -50,6 +50,7 @@ public:
 	
 	void triggerSend();
 	void sendStreams(Network *net, SWInetSocket *socket);
+	void receiveStreams();
 
 	void removeUser(int sourceID);
 
@@ -61,7 +62,7 @@ protected:
 	std::map < int, std::map < unsigned int, Streamable *> > streams;
 	unsigned int streamid;
 
-	void pushReceivedStreamMessage(unsigned int &type, int &source, unsigned int &streamid, unsigned int &wrotelen, char *buffer);
+	void pushReceivedStreamMessage(header_t header, char *buffer);
 };
 
 

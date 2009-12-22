@@ -101,16 +101,16 @@ void NetworkStreamManager::removeUser(int sourceID)
 	streams.erase(streams.find(sourceID));
 }
 
-void NetworkStreamManager::pushReceivedStreamMessage(unsigned int &type, int &source, unsigned int &streamid, unsigned int &wrotelen, char *buffer)
+void NetworkStreamManager::pushReceivedStreamMessage(header_t header, char *buffer)
 {
-	if(streams.find(source) == streams.end())
+	if(streams.find(header.source) == streams.end())
 		// no such stream?!
 		return;
-	if(streams.find(source)->second.find(streamid) == streams.find(source)->second.end())
+	if(streams.find(header.source)->second.find(header.streamid) == streams.find(header.source)->second.end())
 		// no such stream?!
 		return;
 
-	streams[source][streamid]->receiveStreamData(type, source, streamid, buffer, wrotelen);
+	streams[header.source][header.streamid]->addReceivedPacket(header, buffer);
 }
 
 void NetworkStreamManager::triggerSend()
@@ -155,6 +155,38 @@ void NetworkStreamManager::sendStreams(Network *net, SWInetSocket *socket)
 				net->netFatalError(emsg);
 				return;
 			}
+		}
+	}
+}
+
+void NetworkStreamManager::receiveStreams()
+{
+	char *buffer = 0;
+	int bufferSize=0;
+
+	std::map < int, std::map < unsigned int, Streamable *> >::iterator it;
+	for(it=streams.begin(); it!=streams.end(); it++)
+	{
+		std::map<unsigned int,Streamable *>::iterator it2;
+		for(it2=it->second.begin(); it2!=it->second.end(); it2++)
+		{
+			it2->second->lockReceiveQueue();
+			std::queue <recvPacket_t> *packets = it2->second->getReceivePacketQueue();
+
+			if(packets->empty())
+			{
+				it2->second->unlockReceiveQueue();
+				continue;
+			}
+
+			// remove oldest packet in queue
+			recvPacket_t packet = packets->front();
+
+			// handle always one packet
+			it2->second->receiveStreamData(packet.header.command, packet.header.source, packet.header.streamid, (char*)packet.buffer, packet.header.size);
+		
+			packets->pop();
+			it2->second->unlockReceiveQueue();
 		}
 	}
 }

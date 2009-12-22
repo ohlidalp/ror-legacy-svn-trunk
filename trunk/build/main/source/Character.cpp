@@ -80,6 +80,7 @@ Character::Character(Camera *cam,Collisions *c, Network *net, HeightFinder *h, W
 	this->streamid=streamid;
 	this->colourNumber=colourNumber;
 	this->remote=remote;
+	this->physicsEnabled=true;
 	//remote = true;
 	last_net_time=0;
 	netMT=0;
@@ -245,11 +246,22 @@ Quaternion Character::getOrientation()
 {
 	return personode->getOrientation();
 }
+
+void Character::setOrientation(Quaternion rot)
+{
+	return personode->setOrientation(rot);
+}
+
 void Character::setVisible(bool v)
 {
 	personode->setVisible(v);
 	if(map)
 		map->getEntityByName(myName)->setVisibility(v);
+}
+
+bool Character::getVisible()
+{
+	return personode->getAttachedObject(0)->getVisible();
 }
 
 float Character::getAngle()
@@ -306,203 +318,207 @@ void Character::update(float dt)
 {
 	if(remote) return;
 
-	//mode perso
-	Vector3 position=personode->getPosition();
-	//gravity force is always on
-	position.y+=persovspeed*dt;
-	persovspeed+=dt*-9.8;
-	bool idleanim=true;
-	//object contact
-	Vector3 position2=position+Vector3(0, 0.075, 0);
-	Vector3 position3=position+Vector3(0, 0.25, 0);
-	if (collisions->collisionCorrect(&position))
+	if(physicsEnabled)
 	{
-		if (persovspeed<0) persovspeed=0.0;
-		if (collisions->collisionCorrect(&position2) && !collisions->collisionCorrect(&position3)) persovspeed=2.0; //autojump
-		else perso_canjump=true;
-	}
-	else
-	{
-		//double check
-		if ((position-lastpersopos).length()<5.0)
+		// small hack: if not visible do not apply physics
+		//mode perso
+		Vector3 position=personode->getPosition();
+		//gravity force is always on
+		position.y+=persovspeed*dt;
+		persovspeed+=dt*-9.8;
+		bool idleanim=true;
+		//object contact
+		Vector3 position2=position+Vector3(0, 0.075, 0);
+		Vector3 position3=position+Vector3(0, 0.25, 0);
+		if (collisions->collisionCorrect(&position))
 		{
-			int numstep=100;
-			Vector3 dvec=(position-lastpersopos);
-			Vector3 iposition=lastpersopos;
-			Vector3 cposition;
-			for (int i=0; i<numstep; i++)
+			if (persovspeed<0) persovspeed=0.0;
+			if (collisions->collisionCorrect(&position2) && !collisions->collisionCorrect(&position3)) persovspeed=2.0; //autojump
+			else perso_canjump=true;
+		}
+		else
+		{
+			//double check
+			if ((position-lastpersopos).length()<5.0)
 			{
-				cposition=iposition+dvec*((float)(i+1)/numstep);
-				//Vector3 cposition2=cposition+Vector3(0, 0.075, 0);
-				if (collisions->collisionCorrect(&cposition))
+				int numstep=100;
+				Vector3 dvec=(position-lastpersopos);
+				Vector3 iposition=lastpersopos;
+				Vector3 cposition;
+				for (int i=0; i<numstep; i++)
 				{
-					position=cposition;
-					if (persovspeed<0) persovspeed=0.0;
-					perso_canjump=true;
-					/*if (collisions->collisionCorrect(&cposition2))
+					cposition=iposition+dvec*((float)(i+1)/numstep);
+					//Vector3 cposition2=cposition+Vector3(0, 0.075, 0);
+					if (collisions->collisionCorrect(&cposition))
 					{
-					position=cposition2-Vector3(0, 0.075, 0);
-					}*/
-					break;
+						position=cposition;
+						if (persovspeed<0) persovspeed=0.0;
+						perso_canjump=true;
+						/*if (collisions->collisionCorrect(&cposition2))
+						{
+						position=cposition2-Vector3(0, 0.075, 0);
+						}*/
+						break;
+					}
 				}
+			}
+
+		}
+		lastpersopos=position;
+
+		//ground contact
+		float pheight = hfinder->getHeightAt(position.x,position.z);
+		float wheight = -99999;
+		if (position.y<pheight)
+		{
+			position.y=pheight;
+			persovspeed=0.0;
+			perso_canjump=true;
+		}
+		//water stuff
+		bool isswimming=false;
+		if (water)
+		{
+			wheight=water->getHeightWaves(position);
+			if (position.y<wheight-1.8)
+			{
+				position.y=wheight-1.8;
+				persovspeed=0.0;
+			};
+		}
+
+		// 0.1 due to 'jumping' from waves -> not nice looking
+		if(water && wheight - pheight > 1.8 && position.y + 0.1 <= wheight)
+			isswimming=true;
+
+
+		float tmpJoy = 0;
+		if(perso_canjump)
+		{
+			if (INPUTENGINE.getEventBoolValue(EV_CHARACTER_JUMP))
+			{
+				persovspeed = 2.0;
+				perso_canjump=false;
 			}
 		}
 
-	}
-	lastpersopos=position;
-
-	//ground contact
-	float pheight = hfinder->getHeightAt(position.x,position.z);
-	float wheight = -99999;
-	if (position.y<pheight)
-	{
-		position.y=pheight;
-		persovspeed=0.0;
-		perso_canjump=true;
-	}
-	//water stuff
-	bool isswimming=false;
-	if (water)
-	{
-		wheight=water->getHeightWaves(position);
-		if (position.y<wheight-1.8)
+		tmpJoy = INPUTENGINE.getEventValue(EV_CHARACTER_RIGHT);
+		if (tmpJoy > 0.0)
 		{
-			position.y=wheight-1.8;
-			persovspeed=0.0;
-		};
-	}
-
-	// 0.1 due to 'jumping' from waves -> not nice looking
-	if(water && wheight - pheight > 1.8 && position.y + 0.1 <= wheight)
-		isswimming=true;
-
-
-	float tmpJoy = 0;
-	if(perso_canjump)
-	{
-		if (INPUTENGINE.getEventBoolValue(EV_CHARACTER_JUMP))
-		{
-			persovspeed = 2.0;
-			perso_canjump=false;
-		}
-	}
-
-	tmpJoy = INPUTENGINE.getEventValue(EV_CHARACTER_RIGHT);
-	if (tmpJoy > 0.0)
-	{
-		persoangle += dt * 2.0 * tmpJoy;
-		personode->resetOrientation();
-		personode->yaw(-Radian(persoangle));
-		if(!isswimming)
-		{
-			setAnimationMode("Turn", -dt);
-			idleanim=false;
-		}
-	}
-
-	tmpJoy = INPUTENGINE.getEventValue(EV_CHARACTER_LEFT);
-	if (tmpJoy > 0.0)
-	{
-		persoangle -= dt * 2.0 * tmpJoy;
-		personode->resetOrientation();
-		personode->yaw(-Radian(persoangle));
-		if(!isswimming)
-		{
-			setAnimationMode("Turn", dt);
-			idleanim=false;
-		}
-	}
-
-	tmpJoy = INPUTENGINE.getEventValue(EV_CHARACTER_SIDESTEP_LEFT);
-	if (tmpJoy > 0.0)
-	{
-		// animation missing for that
-		position+=dt*persospeed*1.5*tmpJoy*Vector3(cos(persoangle-Math::PI/2), 0.0, sin(persoangle-Math::PI/2));
-	}
-
-	tmpJoy = INPUTENGINE.getEventValue(EV_CHARACTER_SIDESTEP_RIGHT);
-	if (tmpJoy > 0.0)
-	{
-		// animation missing for that
-		position+=dt*persospeed*1.5*tmpJoy*Vector3(cos(persoangle+Math::PI/2), 0.0, sin(persoangle+Math::PI/2));
-	}
-
-	tmpJoy = INPUTENGINE.getEventValue(EV_CHARACTER_FORWARD) + INPUTENGINE.getEventValue(EV_CHARACTER_ROT_UP);
-	if(tmpJoy>1) tmpJoy = 1;
-	float tmpRun = INPUTENGINE.getEventValue(EV_CHARACTER_RUN);
-	float tmpBack  = INPUTENGINE.getEventValue(EV_CHARACTER_BACKWARDS) + INPUTENGINE.getEventValue(EV_CHARACTER_ROT_DOWN);
-	if(tmpBack>1) tmpBack = 1;
-	if (tmpJoy > 0.0 || tmpRun > 0.0)
-	{
-		float accel = 1.0 * tmpJoy;
-		float time = dt*accel*persospeed;
-		if (tmpRun > 0)
-			accel = 3.0 * tmpRun;
-		if(isswimming)
-		{
-			setAnimationMode("Swim_loop", time);
-			idleanim=false;
-		} else
-		{
-			if (tmpRun > 0)
+			persoangle += dt * 2.0 * tmpJoy;
+			personode->resetOrientation();
+			personode->yaw(-Radian(persoangle));
+			if(!isswimming)
 			{
-				setAnimationMode("Run", time);
+				setAnimationMode("Turn", -dt);
+				idleanim=false;
+			}
+		}
+
+		tmpJoy = INPUTENGINE.getEventValue(EV_CHARACTER_LEFT);
+		if (tmpJoy > 0.0)
+		{
+			persoangle -= dt * 2.0 * tmpJoy;
+			personode->resetOrientation();
+			personode->yaw(-Radian(persoangle));
+			if(!isswimming)
+			{
+				setAnimationMode("Turn", dt);
+				idleanim=false;
+			}
+		}
+
+		tmpJoy = INPUTENGINE.getEventValue(EV_CHARACTER_SIDESTEP_LEFT);
+		if (tmpJoy > 0.0)
+		{
+			// animation missing for that
+			position+=dt*persospeed*1.5*tmpJoy*Vector3(cos(persoangle-Math::PI/2), 0.0, sin(persoangle-Math::PI/2));
+		}
+
+		tmpJoy = INPUTENGINE.getEventValue(EV_CHARACTER_SIDESTEP_RIGHT);
+		if (tmpJoy > 0.0)
+		{
+			// animation missing for that
+			position+=dt*persospeed*1.5*tmpJoy*Vector3(cos(persoangle+Math::PI/2), 0.0, sin(persoangle+Math::PI/2));
+		}
+
+		tmpJoy = INPUTENGINE.getEventValue(EV_CHARACTER_FORWARD) + INPUTENGINE.getEventValue(EV_CHARACTER_ROT_UP);
+		if(tmpJoy>1) tmpJoy = 1;
+		float tmpRun = INPUTENGINE.getEventValue(EV_CHARACTER_RUN);
+		float tmpBack  = INPUTENGINE.getEventValue(EV_CHARACTER_BACKWARDS) + INPUTENGINE.getEventValue(EV_CHARACTER_ROT_DOWN);
+		if(tmpBack>1) tmpBack = 1;
+		if (tmpJoy > 0.0 || tmpRun > 0.0)
+		{
+			float accel = 1.0 * tmpJoy;
+			float time = dt*accel*persospeed;
+			if (tmpRun > 0)
+				accel = 3.0 * tmpRun;
+			if(isswimming)
+			{
+				setAnimationMode("Swim_loop", time);
+				idleanim=false;
+			} else
+			{
+				if (tmpRun > 0)
+				{
+					setAnimationMode("Run", time);
+					idleanim=false;
+				} else
+				{
+					setAnimationMode("Walk", time);
+					idleanim=false;
+				}
+			}
+			// 0.005f fixes character getting stuck on meshes
+			position+=dt*persospeed*1.5*accel*Vector3(cos(persoangle), 0.01f, sin(persoangle));
+		} else if (tmpBack > 0.0)
+		{
+			float time = -dt*persospeed;
+			if(isswimming)
+			{
+				setAnimationMode("Spot_swim", time);
 				idleanim=false;
 			} else
 			{
 				setAnimationMode("Walk", time);
 				idleanim=false;
 			}
+			// 0.005f fixes character getting stuck on meshes
+			position-=dt*persospeed*tmpBack*Vector3(cos(persoangle), 0.01f, sin(persoangle));
 		}
-		// 0.005f fixes character getting stuck on meshes
-		position+=dt*persospeed*1.5*accel*Vector3(cos(persoangle), 0.01f, sin(persoangle));
-	} else if (tmpBack > 0.0)
-	{
-		float time = -dt*persospeed;
-		if(isswimming)
+
+		if(idleanim)
 		{
-			setAnimationMode("Spot_swim", time);
-			idleanim=false;
-		} else
-		{
-			setAnimationMode("Walk", time);
-			idleanim=false;
+			if(isswimming)
+				setAnimationMode("Spot_swim", dt * 0.5);
+			else
+				setAnimationMode("Idle_sway", dt * 0.05);
 		}
-		// 0.005f fixes character getting stuck on meshes
-		position-=dt*persospeed*tmpBack*Vector3(cos(persoangle), 0.01f, sin(persoangle));
-	}
 
-	if(idleanim)
-	{
-		if(isswimming)
-			setAnimationMode("Spot_swim", dt * 0.5);
-		else
-			setAnimationMode("Idle_sway", dt * 0.05);
+		/*
+		//object contact
+		int numstep=100;
+		Vector3 dvec=(position-personode->getPosition());
+		Vector3 iposition=personode->getPosition();
+		for (int i=0; i<numstep; i++)
+		{
+		position=iposition+dvec*((float)(i+1)/numstep);
+		Vector3 position2=position+Vector3(0, 0.01, 0);
+		Vector3 position3=position+Vector3(0, 0.25, 0);
+		Vector3 rposition=position;
+		if (collisions->collisionCorrect(&position) || collisions->collisionCorrect(&position2))
+		{
+		if (persovspeed<0) persovspeed=0.0;
+		Vector3 corr=rposition-position; corr.y=0;
+		if (corr.squaredLength()>0 && !collisions->collisionCorrect(&position3)) persovspeed=2.0; //autojump
+		perso_canjump=true;
+		break;
+		}
+		}
+		*/
+		personode->setPosition(position);
+		updateMapIcon();
 	}
-
-	/*
-	//object contact
-	int numstep=100;
-	Vector3 dvec=(position-personode->getPosition());
-	Vector3 iposition=personode->getPosition();
-	for (int i=0; i<numstep; i++)
-	{
-	position=iposition+dvec*((float)(i+1)/numstep);
-	Vector3 position2=position+Vector3(0, 0.01, 0);
-	Vector3 position3=position+Vector3(0, 0.25, 0);
-	Vector3 rposition=position;
-	if (collisions->collisionCorrect(&position) || collisions->collisionCorrect(&position2))
-	{
-	if (persovspeed<0) persovspeed=0.0;
-	Vector3 corr=rposition-position; corr.y=0;
-	if (corr.squaredLength()>0 && !collisions->collisionCorrect(&position3)) persovspeed=2.0; //autojump
-	perso_canjump=true;
-	break;
-	}
-	}
-	*/
-	personode->setPosition(position);
-	updateMapIcon();
 
 	if(net)
 		sendStreamData();

@@ -796,6 +796,8 @@ public:
 	pthread_cond_t done_count_cv;
 	int done_count;
 	prop_t props[MAX_PROPS];
+	prop_t *driverSeat;
+	int calculateDriverPos(Vector3 &pos, Quaternion &rot);
 	int free_prop;
 	float default_beam_diameter;
 	float default_plastic_coef;
