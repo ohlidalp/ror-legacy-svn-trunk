@@ -2911,7 +2911,7 @@ bool ExampleFrameListener::updateEvents(float dt)
 				if(!res)
 				{
 					person->setPosition(pos + Vector3(0,-0.5f,0));
-					person->setOrientation(-rot);
+					person->setOrientation(rot * Quaternion(Degree(180), Vector3::UNIT_Y));
 				}
 			}
 			// call update after positioning, so position is send over the net
