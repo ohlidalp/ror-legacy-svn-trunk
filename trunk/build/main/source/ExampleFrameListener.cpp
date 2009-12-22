@@ -7044,7 +7044,7 @@ void ExampleFrameListener::moveCamera(float dt)
 	for (i=0; i<free_truck; i++)
 	{
 		if(!trucks[i]) continue;
-		trucks[i]->setDetailLevel((mCamera->getPosition()-trucks[i]->getPosition()).length()>trucks[i]->fadeDist);
+		//trucks[i]->setDetailLevel((mCamera->getPosition()-trucks[i]->getPosition()).length()>trucks[i]->fadeDist);
 	}
 	//envmap
 	if (envmap)
@@ -7700,6 +7700,19 @@ END OF OLD CODE */
 	}
 
 	return true;
+}
+
+void ExampleFrameListener::removeBeam(Beam *b)
+{
+	int i;
+	for (i=0; i<free_truck; i++)
+	{
+		if(trucks[i] == b)
+		{
+			trucks[i] = 0;
+			break;
+		}
+	}
 }
 
 void ExampleFrameListener::recursiveActivation(int j)

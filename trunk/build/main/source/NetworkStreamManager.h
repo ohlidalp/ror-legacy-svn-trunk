@@ -60,6 +60,7 @@ public:
 	void addFactory(StreamableFactoryInterface *factory);
 
 protected:
+	pthread_mutex_t stream_mutex;
 	pthread_mutex_t send_work_mutex;
 	pthread_cond_t send_work_cv;
 	Network *net;

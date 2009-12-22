@@ -118,6 +118,7 @@ void Streamable::addReceivedPacket(header_t header, char *buffer)
 	
 	// construct the data holding struct
 	recvPacket_t packet;
+	memset(&packet, 0, sizeof(packet)); // we need to do this, since we use String(buffer) at some point which will crash otherwise
 	packet.header = header;
 	memcpy(packet.buffer, buffer, header.size);
 
