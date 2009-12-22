@@ -44,11 +44,8 @@ public:
 	~CharacterFactory();
 
 	Character *createLocal(int playerColour);
-	Character *createRemote(int sourceid, int streamid, stream_register_t *reg, int playerColour);
 
-	void remove(Character *stream);
-	void removeUser(int userid);
-
+	void createRemoteInstance(stream_reg_t *reg);
 	void setNetwork(Network *net) { this->net = net; };
 
 	void updateLabels();

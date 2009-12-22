@@ -52,34 +52,11 @@ ChatSystem *ChatSystemFactory::createLocal(int playerColour)
 	return ch;
 }
 
-ChatSystem *ChatSystemFactory::createRemote(int sourceid, int streamid, stream_register_t *reg, int playerColour)
+void ChatSystemFactory::createRemoteInstance(stream_reg_t *reg)
 {
-	LogManager::getSingleton().logMessage(" new chat system for " + StringConverter::toString(sourceid) + ":" + StringConverter::toString(streamid) + ", colour: " + StringConverter::toString(playerColour));
-	ChatSystem *ch = new ChatSystem(net, sourceid, streamid, playerColour, true);
-	streamables[sourceid][streamid] = ch;
-	return ch;
-}
-
-void ChatSystemFactory::remove(ChatSystem *stream)
-{
-}
-
-void ChatSystemFactory::removeUser(int userid)
-{
-	std::map < int, std::map < unsigned int, ChatSystem *> >::iterator it1;
-	std::map < unsigned int, ChatSystem *>::iterator it2;
-
-	for(it1=streamables.begin(); it1!=streamables.end();it1++)
-	{
-		if(it1->first != userid) continue;
-
-		for(it2=it1->second.begin(); it2!=it1->second.end();it2++)
-		{
-			delete it2->second;
-			it2->second = 0;
-		}
-		break;
-	}
+	LogManager::getSingleton().logMessage(" new chat system for " + StringConverter::toString(reg->sourceid) + ":" + StringConverter::toString(reg->streamid) + ", colour: " + StringConverter::toString(reg->colour));
+	ChatSystem *ch = new ChatSystem(net, reg->sourceid, reg->streamid, reg->colour, true);
+	streamables[reg->sourceid][reg->streamid] = ch;
 }
 
 #if 0

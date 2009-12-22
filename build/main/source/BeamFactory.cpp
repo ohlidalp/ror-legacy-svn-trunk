@@ -87,9 +87,9 @@ Beam *BeamFactory::createLocal(Ogre::Vector3 pos, Ogre::Quaternion rot, Ogre::St
 	return b;
 }
 
-Beam *BeamFactory::createRemote(int sourceid, int streamid, stream_register_t *reg, int colour)
+void BeamFactory::createRemoteInstance(stream_reg_t *reg)
 {
-	LogManager::getSingleton().logMessage(" new beam truck for " + StringConverter::toString(sourceid) + ":" + StringConverter::toString(streamid));
+	LogManager::getSingleton().logMessage(" new beam truck for " + StringConverter::toString(reg->sourceid) + ":" + StringConverter::toString(reg->streamid));
 
 	bool networked=true, networking=false;
 	if(net) networking = true;
@@ -108,7 +108,7 @@ Beam *BeamFactory::createRemote(int sourceid, int streamid, stream_register_t *r
 		pos.y,
 		pos.z,
 		Quaternion::ZERO,
-		reg->name,
+		reg->reg.name,
 		icollisions,
 		mfinder,
 		w,
@@ -122,41 +122,14 @@ Beam *BeamFactory::createRemote(int sourceid, int streamid, stream_register_t *r
 		0,
 		SkinPtr());
 
-	b->setNetworkProperties(sourceid, streamid);
+	b->setNetworkProperties(reg->sourceid, reg->streamid);
 	
 	efl->trucks[efl->free_truck] = b;
 	efl->free_truck++;
 
-	streamables[sourceid][streamid] = b;
+	streamables[reg->sourceid][reg->streamid] = b;
 
 	b->updateNetworkInfo();
-
-	return b;
-}
-
-void BeamFactory::remove(Beam *stream)
-{
-	delete stream;
-	stream = 0;
-	// TODO: find stream in streamables and remove it there ...
-}
-
-void BeamFactory::removeUser(int userid)
-{
-	std::map < int, std::map < unsigned int, Beam *> >::iterator it1;
-	std::map < unsigned int, Beam *>::iterator it2;
-
-	for(it1=streamables.begin(); it1!=streamables.end();it1++)
-	{
-		if(it1->first != userid) continue;
-
-		for(it2=it1->second.begin(); it2!=it1->second.end();it2++)
-		{
-			delete it2->second;
-			it2->second = 0;
-		}
-		break;
-	}
 }
 
 void BeamFactory::localUserAttributesChanged(int newid)

@@ -63,10 +63,7 @@ public:
 	~ChatSystemFactory();
 
 	ChatSystem *createLocal(int playerColour);
-	ChatSystem *createRemote(int sourceid, int streamid, stream_register_t *reg, int playerColour);
-
-	void remove(ChatSystem *stream);
-	void removeUser(int userid);
+	void createRemoteInstance(stream_reg_t *reg);
 
 	void setNetwork(Network *net) { this->net = net; };
 

@@ -46,34 +46,11 @@ Character *CharacterFactory::createLocal(int playerColour)
 	return ch;
 }
 
-Character *CharacterFactory::createRemote(int sourceid, int streamid, stream_register_t *reg, int playerColour)
+void CharacterFactory::createRemoteInstance(stream_reg_t *reg)
 {
-	LogManager::getSingleton().logMessage(" new character for " + StringConverter::toString(sourceid) + ":" + StringConverter::toString(streamid) + ", colour: " + StringConverter::toString(playerColour));
-	Character *ch = new Character(cam, c, net, h, w, m, scm, sourceid, streamid, playerColour, true);
-	streamables[sourceid][streamid] = ch;
-	return ch;
-}
-
-void CharacterFactory::remove(Character *stream)
-{
-}
-
-void CharacterFactory::removeUser(int userid)
-{
-	std::map < int, std::map < unsigned int, Character *> >::iterator it1;
-	std::map < unsigned int, Character *>::iterator it2;
-
-	for(it1=streamables.begin(); it1!=streamables.end();it1++)
-	{
-		if(it1->first != userid) continue;
-
-		for(it2=it1->second.begin(); it2!=it1->second.end();it2++)
-		{
-			delete it2->second;
-			it2->second = 0;
-		}
-		break;
-	}
+	LogManager::getSingleton().logMessage(" new character for " + StringConverter::toString(reg->sourceid) + ":" + StringConverter::toString(reg->streamid) + ", colour: " + StringConverter::toString(reg->colour));
+	Character *ch = new Character(cam, c, net, h, w, m, scm, reg->sourceid, reg->streamid, reg->colour, true);
+	streamables[reg->sourceid][reg->streamid] = ch;
 }
 
 void CharacterFactory::localUserAttributesChanged(int newid)

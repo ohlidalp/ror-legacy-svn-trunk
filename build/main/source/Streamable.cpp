@@ -42,12 +42,12 @@ Streamable::~Streamable()
 {
 }
 
-std::queue < Streamable::bufferedPacket_t > *Streamable::getPacketQueue()
+std::deque < Streamable::bufferedPacket_t > *Streamable::getPacketQueue()
 {
 	return &packets;
 }
 
-std::queue < recvPacket_t > *Streamable::getReceivePacketQueue()
+std::deque < recvPacket_t > *Streamable::getReceivePacketQueue()
 {
 	return &receivedPackets;
 }
@@ -103,7 +103,7 @@ void Streamable::addPacket(int type, unsigned int len, char* content)
 	LogManager::getSingleton().logMessage("S|HASH: " + String(hash));
 	*/
 
-	packets.push(packet);
+	packets.push_back(packet);
 
 	// trigger buffer clearing
 	NetworkStreamManager::getSingleton().triggerSend();
@@ -111,7 +111,7 @@ void Streamable::addPacket(int type, unsigned int len, char* content)
 
 void Streamable::addReceivedPacket(header_t header, char *buffer)
 {
-	if(packets.size() > packetBufferSize)
+	if(receivedPackets.size() > packetBufferSize)
 		// buffer full, packet discarded
 		return;
 	pthread_mutex_lock(&recv_work_mutex);
@@ -121,7 +121,7 @@ void Streamable::addReceivedPacket(header_t header, char *buffer)
 	packet.header = header;
 	memcpy(packet.buffer, buffer, header.size);
 
-	receivedPackets.push(packet);
+	receivedPackets.push_back(packet);
 	pthread_mutex_unlock(&recv_work_mutex);
 }
 

@@ -30,6 +30,8 @@ along with Rigs of Rods.  If not, see <http://www.gnu.org/licenses/>.
 #include "rornet.h"
 #include <map>
 
+#include "StreamableFactoryInterface.h"
+
 class Network;
 class Streamable;
 
@@ -50,9 +52,12 @@ public:
 	
 	void triggerSend();
 	void sendStreams(Network *net, SWInetSocket *socket);
-	void receiveStreams();
+
+	void update();
 
 	void removeUser(int sourceID);
+
+	void addFactory(StreamableFactoryInterface *factory);
 
 protected:
 	pthread_mutex_t send_work_mutex;
@@ -60,9 +65,14 @@ protected:
 	Network *net;
 
 	std::map < int, std::map < unsigned int, Streamable *> > streams;
+	std::vector < StreamableFactoryInterface * > factories;
+
 	unsigned int streamid;
 
 	void pushReceivedStreamMessage(header_t header, char *buffer);
+
+	void syncRemoteStreams();
+	void receiveStreams();
 };
 
 
