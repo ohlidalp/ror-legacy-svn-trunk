@@ -223,6 +223,7 @@ Beam::Beam(int tnum, SceneManager *manager, SceneNode *parent, RenderWindow* win
 	networkAuthlevel = 0;
 	beambreakdebug = (SETTINGS.getSetting("Beam Break Debug") == "Yes");
 	freePositioned = freeposition;
+	driverSeat=0;
 	free_axle=0;
 	slideNodesConnectInstantly=false;
 	replayTimer=0;
@@ -2949,6 +2950,7 @@ int Beam::loadTruck(const char* fname, SceneManager *manager, SceneNode *parent,
 			{
 				driversseatfound=true;
 				te->setMaterialName("driversseat");
+				driverSeat = &props[free_prop];
 			}
 			props[free_prop].beacontype='n';
 			if (!strncmp("beacon", meshname, 6) && flaresMode>0)
@@ -4848,6 +4850,23 @@ void Beam::addCamera(int nodepos, int nodedir, int noderoll)
 	cameranodedir[freecamera]=nodedir;
 	cameranoderoll[freecamera]=noderoll;
 	freecamera++;
+}
+
+int Beam::calculateDriverPos(Vector3 &pos, Quaternion &rot)
+{
+	if(!driverSeat) return 1;
+	Vector3 normal=(nodes[driverSeat->nodey].smoothpos-nodes[driverSeat->noderef].smoothpos).crossProduct(nodes[driverSeat->nodex].smoothpos-nodes[driverSeat->noderef].smoothpos);
+	normal.normalise();
+	//position
+	Vector3 mposition=nodes[driverSeat->noderef].smoothpos+driverSeat->offsetx*(nodes[driverSeat->nodex].smoothpos-nodes[driverSeat->noderef].smoothpos)+driverSeat->offsety*(nodes[driverSeat->nodey].smoothpos-nodes[driverSeat->noderef].smoothpos);
+	pos = mposition+normal*driverSeat->offsetz;
+
+	//orientation
+	Vector3 refx=nodes[driverSeat->nodex].smoothpos-nodes[driverSeat->noderef].smoothpos;
+	refx.normalise();
+	Vector3 refy=refx.crossProduct(normal);
+	rot = Quaternion(refx, normal, refy) * driverSeat->rot;
+	return 0;
 }
 
 void Beam::addWheel(SceneManager *manager, SceneNode *parent, Real radius, Real width, int rays, int node1, int node2, int snode, int braked, int propulsed, int torquenode, float mass, float wspring, float wdamp, char* texf, char* texb, bool meshwheel, float rimradius, bool rimreverse)

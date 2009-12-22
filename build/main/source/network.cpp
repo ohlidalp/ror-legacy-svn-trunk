@@ -589,7 +589,7 @@ void Network::receivethreadstart()
 			}
 		}
 
-		NetworkStreamManager::getSingleton().pushReceivedStreamMessage(header.command, header.source, header.streamid, header.size, buffer);
+		NetworkStreamManager::getSingleton().pushReceivedStreamMessage(header, buffer);
 	}
 }
 

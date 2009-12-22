@@ -35,6 +35,7 @@ using namespace Ogre;
 Streamable::Streamable()
 {
 	//NetworkStreamManager::getSingleton().addStream(this);
+	pthread_mutex_init(&recv_work_mutex, NULL);
 }
 
 Streamable::~Streamable()
@@ -44,6 +45,11 @@ Streamable::~Streamable()
 std::queue < Streamable::bufferedPacket_t > *Streamable::getPacketQueue()
 {
 	return &packets;
+}
+
+std::queue < recvPacket_t > *Streamable::getReceivePacketQueue()
+{
+	return &receivedPackets;
 }
 
 void Streamable::addPacket(int type, unsigned int len, char* content)
@@ -103,3 +109,28 @@ void Streamable::addPacket(int type, unsigned int len, char* content)
 	NetworkStreamManager::getSingleton().triggerSend();
 }
 
+void Streamable::addReceivedPacket(header_t header, char *buffer)
+{
+	if(packets.size() > packetBufferSize)
+		// buffer full, packet discarded
+		return;
+	pthread_mutex_lock(&recv_work_mutex);
+	
+	// construct the data holding struct
+	recvPacket_t packet;
+	packet.header = header;
+	memcpy(packet.buffer, buffer, header.size);
+
+	receivedPackets.push(packet);
+	pthread_mutex_unlock(&recv_work_mutex);
+}
+
+void Streamable::lockReceiveQueue()
+{
+	pthread_mutex_lock(&recv_work_mutex);
+}
+
+void Streamable::unlockReceiveQueue()
+{
+	pthread_mutex_unlock(&recv_work_mutex);
+}
