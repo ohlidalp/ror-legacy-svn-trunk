@@ -99,6 +99,13 @@ void NetworkStreamManager::removeUser(int sourceID)
 		return;
 	// found and deleted
 	streams.erase(streams.find(sourceID));
+
+	// now iterate over all factories and remove their instances
+	std::vector < StreamableFactoryInterface * >::iterator it;
+	for(it=factories.begin(); it!=factories.end(); it++)
+	{
+		(*it)->deleteRemote(sourceID, -1); // -1 = all streams
+	}
 }
 
 void NetworkStreamManager::pushReceivedStreamMessage(header_t header, char *buffer)
@@ -135,7 +142,7 @@ void NetworkStreamManager::sendStreams(Network *net, SWInetSocket *socket)
 		std::map<unsigned int,Streamable *>::iterator it2;
 		for(it2=it->second.begin(); it2!=it->second.end(); it2++)
 		{
-			std::queue <Streamable::bufferedPacket_t> *packets = it2->second->getPacketQueue();
+			std::deque <Streamable::bufferedPacket_t> *packets = it2->second->getPacketQueue();
 
 			if(packets->empty())
 				continue;
@@ -146,7 +153,7 @@ void NetworkStreamManager::sendStreams(Network *net, SWInetSocket *socket)
 			// handle always one packet
 			int etype = net->sendMessageRaw(socket, packet.packetBuffer, packet.size);
 		
-			packets->pop();
+			packets->pop_front();
 
 			if (etype)
 			{
@@ -156,6 +163,22 @@ void NetworkStreamManager::sendStreams(Network *net, SWInetSocket *socket)
 				return;
 			}
 		}
+	}
+}
+
+void NetworkStreamManager::update()
+{
+	syncRemoteStreams();
+	receiveStreams();
+}
+
+void NetworkStreamManager::syncRemoteStreams()
+{
+	// iterate over all factories
+	std::vector < StreamableFactoryInterface * >::iterator it;
+	for(it=factories.begin(); it!=factories.end(); it++)
+	{
+		(*it)->syncRemoteStreams();
 	}
 }
 
@@ -171,7 +194,7 @@ void NetworkStreamManager::receiveStreams()
 		for(it2=it->second.begin(); it2!=it->second.end(); it2++)
 		{
 			it2->second->lockReceiveQueue();
-			std::queue <recvPacket_t> *packets = it2->second->getReceivePacketQueue();
+			std::deque <recvPacket_t> *packets = it2->second->getReceivePacketQueue();
 
 			if(packets->empty())
 			{
@@ -182,11 +205,19 @@ void NetworkStreamManager::receiveStreams()
 			// remove oldest packet in queue
 			recvPacket_t packet = packets->front();
 
+			Network::debugPacket("receive-2", &packet.header, (char *)packet.buffer);
+
 			// handle always one packet
 			it2->second->receiveStreamData(packet.header.command, packet.header.source, packet.header.streamid, (char*)packet.buffer, packet.header.size);
 		
-			packets->pop();
+			packets->pop_front();
 			it2->second->unlockReceiveQueue();
 		}
 	}
 }
+
+void NetworkStreamManager::addFactory(StreamableFactoryInterface *factory)
+{
+	this->factories.push_back(factory);
+}
+

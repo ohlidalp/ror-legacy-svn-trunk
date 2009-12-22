@@ -527,11 +527,6 @@ void Network::receivethreadstart()
 
 			// now remove all possible streams
 			NetworkStreamManager::getSingleton().removeUser(header.source);
-#ifdef AITRAFFIC
-			AITrafficFactory::getSingleton().removeUser(header.source);
-#endif //AITRAFFIC
-			CharacterFactory::getSingleton().removeUser(header.source);
-			ChatSystemFactory::getSingleton().removeUser(header.source);
 		}
 		else if(header.command == MSG2_USER_INFO || header.command == MSG2_USER_JOIN)
 		{
@@ -588,7 +583,7 @@ void Network::receivethreadstart()
 				}
 			}
 		}
-
+		debugPacket("receive-1", &header, buffer);
 		NetworkStreamManager::getSingleton().pushReceivedStreamMessage(header, buffer);
 	}
 }
@@ -608,4 +603,22 @@ client_t *Network::getClientInfo(unsigned int uid)
 	return c;
 }
 
+void Network::debugPacket(const char *name, header_t *header, char *buffer)
+{
+	char sha1result[250];
+	memset(sha1result, 0, 250);
+	if(buffer)
+	{
+		CSHA1 sha1;
+		sha1.UpdateHash((uint8_t *)buffer, header->size);
+		sha1.Final();
+		sha1.ReportHash(sha1result, CSHA1::REPORT_HEX_SHORT);
+	}
+
+	char tmp[256]="";
+	sprintf(tmp, "++ %s: %d:%d, %d, %d, hash: %s", name, header->source, header->streamid, header->command, header->size, sha1result);
+	LogManager::getSingleton().logMessage(tmp);
+	//String hex = hexdump(buffer, header->size);
+	//LogManager::getSingleton().logMessage(hex);
+}
 

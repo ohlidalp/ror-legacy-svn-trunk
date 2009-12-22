@@ -270,8 +270,9 @@ typedef struct			// struct is used for motion platforms
 //debugging
 //#define REFLECT_DEBUG
 
-// strnlen is nto a std function, this macro can be used in place.
+// strnlen is not a std function, this macro can be used in place.
 #ifdef NO_STRNLEN
 #define strnlen(a, b) strlen(a)
 #endif
+
 #endif

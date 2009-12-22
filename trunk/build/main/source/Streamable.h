@@ -62,8 +62,8 @@ protected:
 	} bufferedPacket_t;
 
 	// normal members
-	std::queue < bufferedPacket_t > packets;
-	std::queue < recvPacket_t > receivedPackets;
+	std::deque < bufferedPacket_t > packets;
+	std::deque < recvPacket_t > receivedPackets;
 	unsigned int streamid;
 	void setStreamID(unsigned int id) { this->streamid=id; };
 
@@ -75,8 +75,8 @@ protected:
 	void addPacket(int type, unsigned int len, char *content);
 	void addReceivedPacket(header_t header, char *buffer);
 
-	std::queue < bufferedPacket_t > *getPacketQueue();
-	std::queue < recvPacket_t > *getReceivePacketQueue();
+	std::deque < bufferedPacket_t > *getPacketQueue();
+	std::deque < recvPacket_t > *getReceivePacketQueue();
 	pthread_mutex_t recv_work_mutex;
 
 	void lockReceiveQueue();

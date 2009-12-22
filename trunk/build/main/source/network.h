@@ -102,6 +102,9 @@ public:
 	client_info_on_join *getLocalUserData() { return &userdata; };
 
 	static unsigned int getUID() { return myuid; };
+
+	
+	static void debugPacket(const char *name, header_t *header, char *buffer);
 protected:
 };
 

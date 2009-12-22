@@ -47,10 +47,8 @@ class BeamFactory : public StreamableFactory < BeamFactory, Beam >
 
 	Beam *createLocal(int slotid);
 	Beam *createLocal(Ogre::Vector3 pos, Ogre::Quaternion rot, Ogre::String fname, collision_box_t *spawnbox=NULL, bool ismachine=false, int flareMode=0, std::vector<Ogre::String> *truckconfig=0, SkinPtr skin=SkinPtr(), bool freePosition=false);
-	Beam *createRemote(int sourceid, int streamid, stream_register_t *reg, int colour);
-
-	void remove(Beam *stream);
-	void removeUser(int userid);
+	
+	void createRemoteInstance(stream_reg_t *reg);
 
 protected:
 	ExampleFrameListener *efl;

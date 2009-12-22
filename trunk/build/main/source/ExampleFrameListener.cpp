@@ -7846,8 +7846,8 @@ bool ExampleFrameListener::frameEnded(const FrameEvent& evt)
 
 	if(net)
 	{
-		// process all packets received
-		NetworkStreamManager::getSingleton().receiveStreams();
+		// process all packets and streams received
+		NetworkStreamManager::getSingleton().update();
 	}
 	return true;
 }
