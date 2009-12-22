@@ -2151,7 +2151,7 @@ void MyDialog::updateItemText(wxTreeItemId item, event_trigger_t *t)
 }
 void MyDialog::updateRendersystems(Ogre::RenderSystem *rs)
 {
-	if(!rs) return;
+	// beware: rs may be null if no config file is present (this is normal)
 	std::map<Ogre::String, bool> filterOptions;
 	filterOptions["Allow NVPerfHUD"]=true;
 	filterOptions["Floating-point mode"]=true;
