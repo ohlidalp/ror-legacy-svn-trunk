@@ -660,8 +660,8 @@ eventInfo_t eventInfo[] = {
 		_L("toggle appearance of console")
 	},
 	{
-		"COMMON_ENTER_CHAT",
-		EV_COMMON_ENTER_CHAT,
+		"COMMON_ENTER_CHATMODE",
+		EV_COMMON_ENTER_CHATMODE,
 		"Keyboard Y",
 		_L("enter the chat")
 	},

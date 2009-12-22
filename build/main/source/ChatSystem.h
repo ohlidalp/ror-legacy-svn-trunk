@@ -48,11 +48,11 @@ protected:
 	int streamid;
 	int colourNumber;
 	bool remote;
-	Ogre::String username;
+	Ogre::UTFString username;
 	void sendStreamSetup();
 	void sendStreamData();
 	void receiveStreamData(unsigned int &type, int &source, unsigned int &streamid, char *buffer, unsigned int &len);
-
+	Ogre::UTFString tryConvertUTF8(char *buffer);
 };
 
 class ChatSystemFactory : public StreamableFactory < ChatSystemFactory, ChatSystem >

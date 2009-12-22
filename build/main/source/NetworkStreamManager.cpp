@@ -171,25 +171,24 @@ void NetworkStreamManager::sendStreams(Network *net, SWInetSocket *socket)
 		{
 			std::deque <Streamable::bufferedPacket_t> *packets = it2->second->getPacketQueue();
 
-			if(packets->empty())
-				continue;
-
-			// remove oldest packet in queue
-			Streamable::bufferedPacket_t packet = packets->front();
-
-			// handle always one packet
-			int etype = net->sendMessageRaw(socket, packet.packetBuffer, packet.size);
-		
-			packets->pop_front();
-
-			if (etype)
+			while (!packets->empty())
 			{
-				char emsg[256];
-				sprintf(emsg, "Error %i while sending data packet", etype);
-				net->netFatalError(emsg);
-				pthread_mutex_unlock(&stream_mutex);
-				return;
+				// remove oldest packet in queue
+				Streamable::bufferedPacket_t packet = packets->front();
+
+				int etype = net->sendMessageRaw(socket, packet.packetBuffer, packet.size);
+				if (etype)
+				{
+					char emsg[256];
+					sprintf(emsg, "Error %i while sending data packet", etype);
+					net->netFatalError(emsg);
+					pthread_mutex_unlock(&stream_mutex);
+					return;
+				}
+			
+				packets->pop_front();
 			}
+
 		}
 	}
 	pthread_mutex_unlock(&stream_mutex);
@@ -231,22 +230,17 @@ void NetworkStreamManager::receiveStreams()
 			it2->second->lockReceiveQueue();
 			std::deque <recvPacket_t> *packets = it2->second->getReceivePacketQueue();
 
-			if(packets->empty())
+			while (!packets->empty())
 			{
-				it2->second->unlockReceiveQueue();
-				continue;
+				// remove oldest packet in queue
+				recvPacket_t packet = packets->front();
+
+				//Network::debugPacket("receive-2", &packet.header, (char *)packet.buffer);
+
+				if(it2->second) it2->second->receiveStreamData(packet.header.command, packet.header.source, packet.header.streamid, (char*)packet.buffer, packet.header.size);
+			
+				packets->pop_front();
 			}
-
-			// remove oldest packet in queue
-			recvPacket_t packet = packets->front();
-
-			//Network::debugPacket("receive-2", &packet.header, (char *)packet.buffer);
-
-			// handle always one packet
-			if(it2->second)
-				it2->second->receiveStreamData(packet.header.command, packet.header.source, packet.header.streamid, (char*)packet.buffer, packet.header.size);
-		
-			packets->pop_front();
 			it2->second->unlockReceiveQueue();
 		}
 	}
