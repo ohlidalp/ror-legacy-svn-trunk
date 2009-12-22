@@ -465,7 +465,7 @@ void Network::receivethreadstart()
 	{
 		//get one message
 		int err=receivemessage(&socket, &header, buffer, MAX_MESSAGE_LENGTH);
-		LogManager::getSingleton().logMessage("received data: " + StringConverter::toString(header.command) + ", source: "+StringConverter::toString(header.source) + ":"+StringConverter::toString(header.streamid) + ", size: "+StringConverter::toString(header.size));
+		//LogManager::getSingleton().logMessage("received data: " + StringConverter::toString(header.command) + ", source: "+StringConverter::toString(header.source) + ":"+StringConverter::toString(header.streamid) + ", size: "+StringConverter::toString(header.size));
 		if (err)
 		{
 			//this is an error!

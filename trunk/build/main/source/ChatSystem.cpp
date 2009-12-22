@@ -97,7 +97,13 @@ ChatSystem::ChatSystem(Network *net, int source, unsigned int streamid, int colo
 	if(remote)
 	{
 		client_t *c = net->getClientInfo(source);
-		if(c) username = String(c->user_name);
+		if(c)
+		{
+			username = tryConvertUTF8(c->user_name);
+			if(username.empty())
+				username = UTFString("(conversion error)");
+		}
+
 		//NETCHAT.addText(username + _L(" joined the chat with language ") + String(c->user_language));
 		NETCHAT.addText(username + _L(" joined the chat"));
 	}
@@ -109,6 +115,18 @@ ChatSystem::~ChatSystem()
 	{
 		NETCHAT.addText(username + _L(" left the chat"));
 	}
+}
+
+UTFString ChatSystem::tryConvertUTF8(char *buffer)
+{
+	try
+	{
+		return UTFString(buffer);
+	} catch(...)
+	{
+		return UTFString();
+	}
+	return UTFString();
 }
 
 void ChatSystem::sendStreamSetup()
@@ -143,7 +161,9 @@ void ChatSystem::receiveStreamData(unsigned int &type, int &source, unsigned int
 			NETCHAT.addText(String(buffer));
 		} else if(this->source == source && this->streamid == streamid)
 		{
-			NETCHAT.addText(username + ": " + String(buffer));
+			UTFString text = tryConvertUTF8(buffer);
+			if(text.empty()) text = "(conversion error)";
+			NETCHAT.addText(username + ": " + text);
 		}
 	}
 }

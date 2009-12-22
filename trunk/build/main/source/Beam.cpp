@@ -205,6 +205,7 @@ Beam::~Beam()
 	// delete beams
 	for (int i=0; i<free_beam; i++)
 	{
+		if(beams[i].mEntity)    beams[i].mEntity->setVisible(false);
 		if(beams[i].mSceneNode) beams[i].mSceneNode->removeAndDestroyAllChildren();
 	}
 
@@ -214,6 +215,13 @@ Beam::~Beam()
 		// signal to the Rail that
 		(*it)->cleanUp();
 		delete (*it);
+	}
+
+	if(netMT)
+	{
+		netMT->setVisible(false);
+		delete netMT;
+		netMT = 0;
 	}
 
 }

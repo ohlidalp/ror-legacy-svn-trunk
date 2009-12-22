@@ -2627,7 +2627,7 @@ bool ExampleFrameListener::updateEvents(float dt)
 			GUI_Friction::getSingleton().setActiveCol(gm);
 	}
 
-	if (NETCHAT.getVisible() && INPUTENGINE.getEventBoolValueBounce(EV_COMMON_ENTER_CHAT, 0.5f) && !chatting && !hidegui)
+	if (NETCHAT.getVisible() && INPUTENGINE.getEventBoolValueBounce(EV_COMMON_ENTER_CHATMODE, 0.5f) && !chatting && !hidegui)
 	{
 		// enter chat mode
 		INPUTENGINE.resetKeyLine();
@@ -6502,7 +6502,8 @@ void ExampleFrameListener::setCurrentTruck(int v)
 	if (cameramode==CAMERA_FREE) return;
 	if (v==current_truck) return;
 	int previous_truck=current_truck;
-	if ( current_truck!=-1 && current_truck<free_truck) trucks[current_truck]->desactivate();
+	if (trucks[current_truck] && current_truck!=-1 && current_truck<free_truck)
+		trucks[current_truck]->desactivate();
 	current_truck=v;
 
 	if (current_truck==-1)
@@ -6523,24 +6524,27 @@ void ExampleFrameListener::setCurrentTruck(int v)
 
 		//getting outside
 		mouseOverlay->hide();
-		trucks[previous_truck]->prepareInside(false);
+		Vector3 position = Vector3::ZERO;
+		if(trucks[previous_truck])
+		{	
+			trucks[previous_truck]->prepareInside(false);
 
-		Vector3 position;
-		// this workaround enables trucks to spawn that have no cinecam. required for cmdline options
-		if(trucks[previous_truck]->cinecameranodepos[0] != -1)
-		{
-			// truck has a cinecam
-			position=trucks[previous_truck]->nodes[trucks[previous_truck]->cinecameranodepos[0]].AbsPosition;
-			position+=-2.0*((trucks[previous_truck]->nodes[trucks[previous_truck]->cameranodepos[0]].RelPosition-trucks[previous_truck]->nodes[trucks[previous_truck]->cameranoderoll[0]].RelPosition).normalisedCopy());
-			position+=Vector3(0.0, -1.0, 0.0);
-		}
-		else
-		{
-			// truck has no cinecam
-			position=trucks[previous_truck]->nodes[0].AbsPosition;
+			// this workaround enables trucks to spawn that have no cinecam. required for cmdline options
+			if(trucks[previous_truck]->cinecameranodepos[0] != -1)
+			{
+				// truck has a cinecam
+				position=trucks[previous_truck]->nodes[trucks[previous_truck]->cinecameranodepos[0]].AbsPosition;
+				position+=-2.0*((trucks[previous_truck]->nodes[trucks[previous_truck]->cameranodepos[0]].RelPosition-trucks[previous_truck]->nodes[trucks[previous_truck]->cameranoderoll[0]].RelPosition).normalisedCopy());
+				position+=Vector3(0.0, -1.0, 0.0);
+			}
+			else
+			{
+				// truck has no cinecam
+				position=trucks[previous_truck]->nodes[0].AbsPosition;
+			}
 		}
 		//			position.y=hfinder->getHeightAt(position.x,position.z);
-		person->setPosition(position);
+		if(position != Vector3::ZERO) person->setPosition(position);
 		person->setVisible(true);
 		showDashboardOverlays(false,0);
 		showEditorOverlay(false);
@@ -7362,6 +7366,10 @@ bool ExampleFrameListener::frameStarted(const FrameEvent& evt)
 
 	if(shutdownall) // shortcut: press ESC in credits
 		return false;
+
+	// the truck we use got deleted D:
+	if(current_truck != -1 && trucks[current_truck] == 0)
+		setCurrentTruck(-1);
 
 	// update animated objects
 	updateAnimatedObjects(dt);
