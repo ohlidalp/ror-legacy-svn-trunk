@@ -435,6 +435,7 @@ public:
 	ExampleFrameListener(RenderWindow* win, Camera* cam, SceneManager* scm, Root* root);
 	virtual ~ExampleFrameListener();
 
+	void removeBeam(Beam *);
 	void removeTruck(int truck);
 	void loadObject(const char* name, float px, float py, float pz, float rx, float ry, float rz, SceneNode * bakeNode, const char* instancename, bool enable_collisions=true, int luahandler=-1, const char *type=0, bool uniquifyMaterial=false);
 	void repairTruck(char* inst, char* box);

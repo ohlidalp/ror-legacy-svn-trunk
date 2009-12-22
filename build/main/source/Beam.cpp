@@ -84,6 +84,10 @@ int free_tb=0;
 Beam::~Beam()
 {
 	deleting = true;
+	
+	// Very Important: remove this truck out of the trucks array, otherwise segfault
+	if (eflsingleton) eflsingleton->removeBeam(this);
+	
 
 	// hide all meshes, prevents deleting stuff while drawing
 	this->setMeshVisibility(false);

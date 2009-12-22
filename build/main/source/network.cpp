@@ -583,7 +583,7 @@ void Network::receivethreadstart()
 				}
 			}
 		}
-		debugPacket("receive-1", &header, buffer);
+		//debugPacket("receive-1", &header, buffer);
 		NetworkStreamManager::getSingleton().pushReceivedStreamMessage(header, buffer);
 	}
 }
