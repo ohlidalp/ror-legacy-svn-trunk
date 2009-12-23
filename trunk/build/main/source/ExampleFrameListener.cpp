@@ -2574,6 +2574,7 @@ void ExampleFrameListener::repairTruck(char* inst, char* box)
 	int rtruck=-1;
 	for (t=0; t<free_truck; t++)
 	{
+		if(!trucks[t]) continue;
 		if (collisions->isInside(trucks[t]->nodes[0].AbsPosition, inst, box))
 		{
 			//we found one
@@ -4005,6 +4006,7 @@ bool ExampleFrameListener::updateEvents(float dt)
 							int minnode=-1;
 							for (t=0; t<free_truck; t++)
 							{
+								if(!trucks[t]) continue;
 								int i;
 								for (i=0; i<trucks[t]->free_node; i++)
 								{
@@ -4286,8 +4288,11 @@ bool ExampleFrameListener::updateEvents(float dt)
 			int rtruck=-1;
 			// search a rescue truck
 			for (int i=0; i<free_truck; i++)
+			{
+				if(!trucks[i]) continue;
 				if (trucks[i]->rescuer)
 					rtruck=i;
+			}
 			if(rtruck == -1)
 			{
 				flashMessage("No rescue truck found!", 3);
@@ -7044,12 +7049,15 @@ void ExampleFrameListener::moveCamera(float dt)
 	}
 
 	//set LOD per truck
+	/*
+	// TODO: XXX: fix below
 	int i;
 	for (i=0; i<free_truck; i++)
 	{
 		if(!trucks[i]) continue;
-		//trucks[i]->setDetailLevel((mCamera->getPosition()-trucks[i]->getPosition()).length()>trucks[i]->fadeDist);
+		trucks[i]->setDetailLevel((mCamera->getPosition()-trucks[i]->getPosition()).length()>trucks[i]->fadeDist);
 	}
+	*/
 	//envmap
 	if (envmap)
 	{
