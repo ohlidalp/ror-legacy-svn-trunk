@@ -122,8 +122,8 @@ public:
 
 	void removeInstance(stream_del_t *del)
 	{
-		std::map < int, std::map < unsigned int, X *> >::iterator it1;
-		std::map < unsigned int, X *>::iterator it2;
+		typename std::map < int, std::map < unsigned int, X *> >::iterator it1;
+		typename std::map < unsigned int, X *>::iterator it2;
 
 		for(it1=streamables.begin(); it1!=streamables.end();it1++)
 		{
