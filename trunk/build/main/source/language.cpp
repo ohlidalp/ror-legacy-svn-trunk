@@ -66,7 +66,7 @@ void LanguageEngine::setup()
 
 	// Load a .mo-File.
 	Ogre::LogManager::getSingleton().logMessage("*** Loading Language ***");
-	String langfile = SETTINGS.getSetting("Program Path") + String("/languages/") + language_short + String("/") + String(MOFILENAME) + String(".mo");
+	String langfile = SETTINGS.getSetting("Program Path") + String("languages/") + language_short + String("/") + String(MOFILENAME) + String(".mo");
 	if (reader->ReadFile(langfile.c_str()) != moFileLib::moFileReader::EC_SUCCESS )
 	{
 			Ogre::LogManager::getSingleton().logMessage("* error loading language file " + langfile);
@@ -75,7 +75,7 @@ void LanguageEngine::setup()
 	working=true;
 
 	// add resource path
-	ResourceGroupManager::getSingleton().addResourceLocation("languages/" + language_short, "FileSystem", "LanguageRanges");
+	ResourceGroupManager::getSingleton().addResourceLocation(SETTINGS.getSetting("Program Path") + "languages/" + language_short, "FileSystem", "LanguageRanges");
 
 	// now load the code ranges
 	// be aware, that this approach only works if we load just one language, and not multiple
