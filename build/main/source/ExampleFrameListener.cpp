@@ -33,6 +33,7 @@ along with Rigs of Rods.  If not, see <http://www.gnu.org/licenses/>.
 
 #include "CharacterFactory.h"
 #include "BeamFactory.h"
+#include "PlayerColours.h"
 
 #ifdef AITRAFFIC
 #include "AITrafficFactory.h"
@@ -1413,16 +1414,6 @@ ExampleFrameListener::ExampleFrameListener(RenderWindow* win, Camera* cam, Scene
 	flashPanel->addChild(flashMessageTE);
 	flashOverlay->add2D(flashPanel);
 
-	//set up player list
-	for(int i=0; i<MAX_PLAYLIST_ENTRIES;i++)
-	{
-		char tmp[255]="";
-		sprintf(tmp, "tracks/MPPlayerList/Player%d", i);
-		playerlistOverlay[i] = (TextAreaOverlayElement*)OverlayManager::getSingleton().getOverlayElement(tmp);
-		playerlistOverlay[i]->setCaption("");
-	}
-
-
 	/*
 	//OIS CONFIGURE
 	OIS::ParamList pl;
@@ -1584,6 +1575,9 @@ ExampleFrameListener::ExampleFrameListener(RenderWindow* win, Camera* cam, Scene
 	if(preselected_truckConfig != "") LogManager::getSingleton().logMessage("Preselected Truck Config: " + (preselected_truckConfig));
 
 	//LogManager::getSingleton().logMessage("huette debug 1");
+
+	// initiate player colours
+	new PlayerColours();
 
 	// hide console when not in netmode
 	NETCHAT.setMode(this, NETCHAT_LEFT_SMALL, false);
@@ -2644,6 +2638,7 @@ bool ExampleFrameListener::updateEvents(float dt)
 		chatting=false;
 		INPUTENGINE.setRecordInput(false);
 		INPUTENGINE.resetKeyLine();
+		return true;
 	}
 
 	// no event handling during chatting!
@@ -4249,6 +4244,7 @@ bool ExampleFrameListener::updateEvents(float dt)
 					// make it big
 					bigMap->updateRenderMetrics(mWindow);
 					bigMap->setPosition(0.2, 0, 0.8, 0.8, mWindow);
+					NETCHAT.setMode(this, NETCHAT_MAP, true);
 					if(net)
 						playerListOverlay->show();
 				} else
@@ -4344,7 +4340,7 @@ bool ExampleFrameListener::updateEvents(float dt)
 			NETCHAT.toggleMode(this);
 		}
 
-		if (INPUTENGINE.getEventBoolValueBounce(EV_COMMON_ENTER_OR_EXIT_TRUCK, 0.5f))
+		if (INPUTENGINE.getEventBoolValueBounce(EV_COMMON_ENTER_OR_EXIT_TRUCK, 0.5f) && !chatting)
 		{
 			//perso in/out
 			if (current_truck==-1)

@@ -52,7 +52,6 @@ protected:
 	void sendStreamSetup();
 	void sendStreamData();
 	void receiveStreamData(unsigned int &type, int &source, unsigned int &streamid, char *buffer, unsigned int &len);
-	Ogre::UTFString tryConvertUTF8(char *buffer);
 };
 
 class ChatSystemFactory : public StreamableFactory < ChatSystemFactory, ChatSystem >
@@ -72,6 +71,10 @@ protected:
 	// functions used by friends
 	void netUserAttributesChanged(int source, int streamid) {};
 	void localUserAttributesChanged(int newid) {};
+
+	void syncRemoteStreams();
+
+	void updatePlayerList();
 };
 
 #endif

@@ -104,8 +104,13 @@ void IngameConsole::setMode(ExampleFrameListener *efl, int mode, bool visible)
 	}
 	else if (mode == NETCHAT_TOP) // 2
 	{
-    resize((int)(((float)screenWidth)*0.5) - 300, 0, 600, 115);
+		resize((int)(((float)screenWidth)*0.5) - 300, 0, 600, 115);
 	}
+	else if (mode == NETCHAT_MAP) // 3
+	{
+		resize(200, screenHeight-300, screenWidth-200, 300);
+	}
+	
 	//LogManager::getSingleton().logMessage("CONSOLE mode set.");
 }
 

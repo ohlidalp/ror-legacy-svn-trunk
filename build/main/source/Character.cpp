@@ -28,44 +28,12 @@ along with Rigs of Rods.  If not, see <http://www.gnu.org/licenses/>.
 #include "network.h"
 #include "NetworkStreamManager.h"
 #include "ColoredTextAreaOverlayElement.h"
+#include "PlayerColours.h"
 
 using namespace Ogre;
 
 unsigned int Character::characterCounter=0;
 
-// some colours with a good contrast inbetween
-ColourValue cvals[] =
-{
-	ColourValue(0.0,0.8,0.0),
-	ColourValue(0.0,0.4,0.701960784314),
-	ColourValue(1.0,0.501960784314,0.0),
-	ColourValue(1.0,0.8,0.0),
-	ColourValue(0.2,0.0,0.6),
-	ColourValue(0.6,0.0,0.6),
-	ColourValue(0.8,1.0,0.0),
-	ColourValue(1.0,0.0,0.0),
-	ColourValue(0.501960784314,0.501960784314,0.501960784314),
-	ColourValue(0.0,0.560784313725,0.0),
-	ColourValue(0.0,0.282352941176,0.490196078431),
-	ColourValue(0.701960784314,0.352941176471,0.0),
-	ColourValue(0.701960784314,0.560784313725,0.0),
-	ColourValue(0.419607843137,0.0,0.419607843137),
-	ColourValue(0.560784313725,0.701960784314,0.0),
-	ColourValue(0.701960784314,0.0,0.0),
-	ColourValue(0.745098039216,0.745098039216,0.745098039216),
-	ColourValue(0.501960784314,1.0,0.501960784314),
-	ColourValue(0.501960784314,0.788235294118,1.0),
-	ColourValue(1.0,0.752941176471,0.501960784314),
-	ColourValue(1.0,0.901960784314,0.501960784314),
-	ColourValue(0.666666666667,0.501960784314,1.0),
-	ColourValue(0.933333333333,0.0,0.8),
-	ColourValue(1.0,0.501960784314,0.501960784314),
-	ColourValue(0.4,0.4,0.0),
-	ColourValue(1.0,0.749019607843,1.0),
-	ColourValue(0.0,1.0,0.8),
-	ColourValue(0.8,0.4,0.6),
-	ColourValue(0.6,0.6,0.0),
-};
 
 Character::Character(Camera *cam,Collisions *c, Network *net, HeightFinder *h, Water *w, MapControl *m, Ogre::SceneManager *scm, int source, unsigned int streamid, int colourNumber, bool remote)
 {
@@ -154,19 +122,8 @@ Character::~Character()
 
 void Character::updateCharacterColour()
 {
-	ColourValue cval = ColourValue::Black;
-	if(colourNumber>=0 && colourNumber < 28)
-		cval = cvals[colourNumber];
-	//else if(!remote)
-	//	cval = cvals[(int)Math::RangeRandom(0,28)];
-
-	MaterialPtr mat = MaterialManager::getSingleton().getByName("tracks/"+myName);
-	if(mat->getNumTechniques()>0 && mat->getTechnique(0)->getNumPasses()>0 && mat->getTechnique(0)->getPass(0)->getNumTextureUnitStates() == 3)
-	{
-		// check prevents segfault with old contents
-		mat->getTechnique(0)->getPass(0)->getTextureUnitState(2)->setAlphaOperation(LBX_BLEND_CURRENT_ALPHA , LBS_MANUAL, LBS_CURRENT, 0.8);
-		mat->getTechnique(0)->getPass(0)->getTextureUnitState(2)->setColourOperationEx(LBX_BLEND_CURRENT_ALPHA , LBS_MANUAL, LBS_CURRENT, cval, cval, 1);
-	}
+	String matName = "tracks/" + myName;
+	PlayerColours::getSingleton().updateMaterial(colourNumber, matName, 2);
 }
 
 void Character::setUID(int uid)
@@ -198,10 +155,9 @@ void Character::updateNetLabel()
 		networkAuthLevel = info->authstatus;
 	}
 
-	LogManager::getSingleton().logMessage(" * updateNetLabel : " + StringConverter::toString(this->source));
+	//LogManager::getSingleton().logMessage(" * updateNetLabel : " + StringConverter::toString(this->source));
 	if(!netMT)
 	{
-		LogManager::getSingleton().logMessage(" *NEW NETLABEL*");
 		netMT = new MovableText("netlabel-"+myName, ColoredTextAreaOverlayElement::StripColors(networkUsername));
 		personode->attachObject(netMT);
 		netMT->setFontName("highcontrast_black");
@@ -212,8 +168,8 @@ void Character::updateNetLabel()
 		netMT->setColor(ColourValue::White);
 	}
 
-	LogManager::getSingleton().logMessage(" *label caption: " + String(networkUsername));
-	LogManager::getSingleton().logMessage(" *label caption: " + ColoredTextAreaOverlayElement::StripColors(networkUsername));
+	//LogManager::getSingleton().logMessage(" *label caption: " + String(networkUsername));
+	//LogManager::getSingleton().logMessage(" *label caption: " + ColoredTextAreaOverlayElement::StripColors(networkUsername));
 	netMT->setCaption(ColoredTextAreaOverlayElement::StripColors(networkUsername));
 	if(networkAuthLevel & AUTH_ADMIN)
 	{

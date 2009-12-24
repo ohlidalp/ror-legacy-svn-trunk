@@ -21,11 +21,14 @@ along with Rigs of Rods.  If not, see <http://www.gnu.org/licenses/>.
 // created by Thomas Fischer thomas{AT}thomasfischer{DOT}biz, 9th of August 2009
 
 #include "OgrePrerequisites.h"
+#include "OgreUTFString.h"
 
 #ifndef UTILS_H_
 #define UTILS_H_
 
 // from http://stahlforce.com/dev/index.php?tool=csc01
 Ogre::String hexdump(void *pAddressIn, long  lSize);
+
+Ogre::UTFString tryConvertUTF(char *buffer);
 
 #endif //UTILS_H_

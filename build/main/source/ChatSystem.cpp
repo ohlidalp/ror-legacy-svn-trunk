@@ -29,6 +29,8 @@ along with Rigs of Rods.  If not, see <http://www.gnu.org/licenses/>.
 #include "NetworkStreamManager.h"
 #include "ColoredTextAreaOverlayElement.h"
 #include "language.h"
+#include "utils.h"
+#include "PlayerColours.h"
 
 using namespace Ogre;
 
@@ -59,28 +61,90 @@ void ChatSystemFactory::createRemoteInstance(stream_reg_t *reg)
 	streamables[reg->sourceid][reg->streamid] = ch;
 }
 
-#if 0
+void ChatSystemFactory::syncRemoteStreams()
+{
+	StreamableFactory::syncRemoteStreams();
+
+	// now add the update for the player list here
+	updatePlayerList();
+}
+
 void ChatSystemFactory::updatePlayerList()
 {
-	for (int i=0; i<MAX_PEERS; i++)
+	if(!net) return;
+
+	lockStreams();
+
+	std::map < int, std::map < unsigned int, ChatSystem *> >::iterator it1;
+
+	// the player itself
+	String oname = "tracks/MPPlayerList/Player0";
+	String colname = "tracks/MPPlayerList/Player0/Colour";
+	TextAreaOverlayElement *te = (TextAreaOverlayElement*)OverlayManager::getSingleton().getOverlayElement(oname);
+	TextAreaOverlayElement *tec = (TextAreaOverlayElement*)OverlayManager::getSingleton().getOverlayElement(colname);
+	if(te && tec)
 	{
-		if (!clients[i].used)
-			continue;
-		if(i < MAX_PLAYLIST_ENTRIES)
+		client_info_on_join *c = net->getLocalUserData();
+		if(c)
 		{
 			try
 			{
-				String plstr = StringConverter::toString(i) + ": " + ColoredTextAreaOverlayElement::StripColors(String(clients[i].user_name));
-				if(clients[i].invisible)
-					plstr += " (i)";
-				mefl->playerlistOverlay[i]->setCaption(plstr);
+				UTFString username = tryConvertUTF(c->nickname);
+				te->setCaption(username);
+				
+				String matName = PlayerColours::getSingleton().getColourMaterial(c->colournum);
+				tec->setMaterialName(matName);
+				if(c->authstatus & AUTH_ADMIN)
+					te->setColour(ColourValue(1,0,0));
+				else if(c->authstatus & AUTH_RANKED)
+					te->setColour(ColourValue(0,1,0));
+				else
+					te->setColour(ColourValue::Black);
+
+				
 			} catch(...)
 			{
 			}
 		}
 	}
+
+	int num=1;
+	for(it1=streamables.begin(); it1!=streamables.end();it1++)
+	{
+		if(it1->second.size() == 0) continue;
+
+		client_t *c = net->getClientInfo(it1->first);
+		if(!c) continue;
+
+		try
+		{
+			UTFString username = tryConvertUTF(c->user_name);
+
+			String plstr = StringConverter::toString(num) + ": " + ColoredTextAreaOverlayElement::StripColors(username);
+
+			String oname = "tracks/MPPlayerList/Player" + StringConverter::toString(num);
+			String colname = "tracks/MPPlayerList/Player"+ StringConverter::toString(num)+"/Colour";
+			te = (TextAreaOverlayElement*)OverlayManager::getSingleton().getOverlayElement(oname);
+			tec = (TextAreaOverlayElement*)OverlayManager::getSingleton().getOverlayElement(colname);
+			if(!te || !tec) break;
+			te->setCaption(plstr);
+			String matName = PlayerColours::getSingleton().getColourMaterial(c->colournum);
+			tec->setMaterialName(matName);
+			if(c->user_authlevel & AUTH_ADMIN)
+				te->setColour(ColourValue(1,0,0));
+			else if(c->user_authlevel & AUTH_RANKED)
+				te->setColour(ColourValue(0,1,0));
+			else
+				te->setColour(ColourValue::Black);
+
+		} catch(...)
+		{
+		}
+
+		num++;
+	}
+	unlockStreams();
 }
-#endif //0
 
 ///////////////////////////////////
 // ChatSystem
@@ -99,9 +163,7 @@ ChatSystem::ChatSystem(Network *net, int source, unsigned int streamid, int colo
 		client_t *c = net->getClientInfo(source);
 		if(c)
 		{
-			username = tryConvertUTF8(c->user_name);
-			if(username.empty())
-				username = UTFString("(conversion error)");
+			username = tryConvertUTF(c->user_name);
 		}
 
 		//NETCHAT.addText(username + _L(" joined the chat with language ") + String(c->user_language));
@@ -115,18 +177,6 @@ ChatSystem::~ChatSystem()
 	{
 		NETCHAT.addText(username + _L(" left the chat"));
 	}
-}
-
-UTFString ChatSystem::tryConvertUTF8(char *buffer)
-{
-	try
-	{
-		return UTFString(buffer);
-	} catch(...)
-	{
-		return UTFString();
-	}
-	return UTFString();
 }
 
 void ChatSystem::sendStreamSetup()
@@ -161,8 +211,7 @@ void ChatSystem::receiveStreamData(unsigned int &type, int &source, unsigned int
 			NETCHAT.addText(String(buffer));
 		} else if(this->source == source && this->streamid == streamid)
 		{
-			UTFString text = tryConvertUTF8(buffer);
-			if(text.empty()) text = "(conversion error)";
+			UTFString text = tryConvertUTF(buffer);
 			NETCHAT.addText(username + ": " + text);
 		}
 	}
