@@ -56,6 +56,9 @@ int BeamFactory::removeBeam(Beam *b)
 		{
 			if(it2->second  == b)
 			{
+				if(net)
+					NetworkStreamManager::getSingleton().removeStream(it2->second);
+
 				delete it2->second;
 				it2->second = 0;
 				return 0;
