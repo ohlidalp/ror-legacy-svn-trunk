@@ -78,3 +78,19 @@ String hexdump(void *pAddressIn, long  lSize)
 	}
 	return result;
 }
+
+UTFString tryConvertUTF(char *buffer)
+{
+	try
+	{
+		UTFString s = UTFString(buffer);
+		if(s.empty())
+			s = UTFString("(conversion error)");
+		return s;
+
+	} catch(...)
+	{
+		return UTFString();
+	}
+	return UTFString();
+}

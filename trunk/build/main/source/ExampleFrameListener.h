@@ -498,8 +498,6 @@ public:
 	void startTimer();
 	void updateRacingGUI();
 
-	TextAreaOverlayElement *playerlistOverlay[MAX_PLAYLIST_ENTRIES];
-
 	int cameramode, lastcameramode;
 	void setCameraRotation(Ogre::Radian x, Ogre::Radian y, Ogre::Real distance) { camRotX=x; camRotY=y; camDist=distance;};
 	void hideMap();
