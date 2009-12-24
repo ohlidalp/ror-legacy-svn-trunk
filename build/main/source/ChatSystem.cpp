@@ -63,7 +63,7 @@ void ChatSystemFactory::createRemoteInstance(stream_reg_t *reg)
 
 void ChatSystemFactory::syncRemoteStreams()
 {
-	StreamableFactory::syncRemoteStreams();
+	StreamableFactory <ChatSystemFactory, ChatSystem>::syncRemoteStreams();
 
 	// now add the update for the player list here
 	updatePlayerList();
