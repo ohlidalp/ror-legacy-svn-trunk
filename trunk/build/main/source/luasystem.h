@@ -66,6 +66,7 @@ public:
 	int log(lua_State *lua);
 	int showChooser(lua_State *lua);
 	int repairVehicle(lua_State *lua);
+	int removeVehicle(lua_State *lua);
 	int getTime(lua_State *lua);
 	int registerCallBack(lua_State *lua);
 	int unregisterCallBack(lua_State *lua);

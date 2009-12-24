@@ -865,6 +865,8 @@ bool Collisions::permitEvent(int filter)
 		return true;
 	else if(filter == EVENT_AIRPLANE && mefl->getCurrentTruckNumber() != -1 && mefl->getCurrentTruck()->driveable == AIRPLANE)
 		return true;
+	else if(filter == EVENT_DELETE && mefl->getCurrentTruckNumber() == -1)
+		return true;
 	return false;
 }
 
