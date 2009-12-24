@@ -169,6 +169,7 @@ void NetworkStreamManager::sendStreams(Network *net, SWInetSocket *socket)
 		std::map<unsigned int,Streamable *>::iterator it2;
 		for(it2=it->second.begin(); it2!=it->second.end(); it2++)
 		{
+			if(!it2->second) continue;
 			std::deque <Streamable::bufferedPacket_t> *packets = it2->second->getPacketQueue();
 
 			while (!packets->empty())
@@ -227,6 +228,7 @@ void NetworkStreamManager::receiveStreams()
 		std::map<unsigned int,Streamable *>::iterator it2;
 		for(it2=it->second.begin(); it2!=it->second.end(); it2++)
 		{
+			if(!it2->second) continue;
 			it2->second->lockReceiveQueue();
 			std::deque <recvPacket_t> *packets = it2->second->getReceivePacketQueue();
 
