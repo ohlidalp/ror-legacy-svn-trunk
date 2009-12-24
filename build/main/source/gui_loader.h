@@ -94,7 +94,7 @@ protected:
 
 public:
 	static GUI_Loader &Instance();
-	enum loaderType {LT_Terrain, LT_Vehicle, LT_Truck, LT_Car, LT_Boat, LT_Airplane, LT_Trailer, LT_Load, LT_Extension, LT_Network, LT_NetworkWithBoat, LT_Heli, LT_SKIN};
+	enum loaderType {LT_Terrain, LT_Vehicle, LT_Truck, LT_Car, LT_Boat, LT_Airplane, LT_Trailer, LT_Load, LT_Extension, LT_Network, LT_NetworkWithBoat, LT_Heli, LT_SKIN, LT_AllBeam};
 
 	bool isFinishedSelecting();
 	void show(int type);

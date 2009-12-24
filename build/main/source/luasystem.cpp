@@ -36,6 +36,7 @@ static int SLUAflashMessage (lua_State *lua) {return luaInstance->flashMessage(l
 static int SLUAlog (lua_State *lua) {return luaInstance->log(lua);}
 static int SLUAshowChooser (lua_State *lua) {return luaInstance->showChooser(lua);}
 static int SLUArepairVehicle (lua_State *lua) {return luaInstance->repairVehicle(lua);}
+static int SLUAremoveVehicle (lua_State *lua) {return luaInstance->removeVehicle(lua);}
 static int SLUAgetTime (lua_State *lua) {return luaInstance->getTime(lua);}
 static int SLUAregisterCallBack(lua_State *lua) {return luaInstance->registerCallBack(lua);}
 static int SLUAunregisterCallBack(lua_State *lua) {return luaInstance->unregisterCallBack(lua);}
@@ -245,6 +246,8 @@ void LuaSystem::registerFunctions()
 	lua_setglobal (L, "showChooser");
 	lua_pushcclosure (L, SLUArepairVehicle, 0);
 	lua_setglobal (L, "repairVehicle");
+	lua_pushcclosure (L, SLUAremoveVehicle, 0);
+	lua_setglobal (L, "removeVehicle");
 	lua_pushcclosure (L, SLUAgetTime, 0);
 	lua_setglobal (L, "getTime");
 	lua_pushcclosure (L, SLUAregisterCallBack, 0);
@@ -361,6 +364,7 @@ int LuaSystem::showChooser(lua_State *lua)
 	if (!strcmp("heli", type))      ntype = GUI_Loader::LT_Heli;
 	if (!strcmp("trailer", type))   ntype = GUI_Loader::LT_Trailer;
 	if (!strcmp("load", type))      ntype = GUI_Loader::LT_Load;
+	if (!strcmp("allbeam", type))   ntype = GUI_Loader::LT_AllBeam;
 	if (!strcmp("extension", type)) ntype = GUI_Loader::LT_Extension;
 	if (ntype!=-1)
 		mefl->showLoad(ntype, (char*)inst, (char*)box);
@@ -372,6 +376,14 @@ int LuaSystem::repairVehicle(lua_State *lua)
 	const char *inst = lua_tostring (lua, 1);
 	const char *box = lua_tostring (lua, 2);
 	mefl->repairTruck((char*)inst, (char*)box);
+	return 0;
+}
+
+int LuaSystem::removeVehicle(lua_State *lua)
+{
+	const char *inst = lua_tostring (lua, 1);
+	const char *box = lua_tostring (lua, 2);
+	mefl->removeTruck((char*)inst, (char*)box);
 	return 0;
 }
 

@@ -459,6 +459,9 @@ void GUI_Loader::getData()
 			add = (loaderType == LT_Trailer || loaderType == LT_Extension);
 		else if(it->fext=="load")
 			add = (loaderType == LT_Load || loaderType == LT_Extension);
+		
+		if(loaderType == LT_AllBeam && (it->fext == "truck" || it->fext == "car" ||  it->fext == "airplane" ||  it->fext == "trailer" ||  it->fext == "boat" || it->fext == "load"))
+			add = true;
 
 		if(!add)
 			continue;

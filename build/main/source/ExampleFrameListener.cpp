@@ -2331,6 +2331,8 @@ void ExampleFrameListener::loadObject(const char* name, float px, float py, floa
 				event_filter=EVENT_TRUCK;
 			else if(!strncmp(ts, "airplane", 8))
 				event_filter=EVENT_AIRPLANE;
+			else if(!strncmp(ts, "delete", 8))
+				event_filter=EVENT_DELETE;
 			continue;
 		}
 		//resp=sscanf(ptline, "%f, %f, %f, %f, %f, %f, %f, %f, %f, %c",&lx,&hx,&ly, &hy,&lz, &hz, &srx, &sry, &srz,&type);
@@ -2584,6 +2586,28 @@ void ExampleFrameListener::repairTruck(char* inst, char* box)
 		trucks[rtruck]->reset();
 		trucks[rtruck]->resetPosition(ipos.x, ipos.z, false);
 		trucks[rtruck]->updateVisual();
+	}
+}
+
+void ExampleFrameListener::removeTruck(char* inst, char* box)
+{
+	//find the right truck (the one in the box)
+	int t;
+	int rtruck=-1;
+	for (t=0; t<free_truck; t++)
+	{
+		if(!trucks[t]) continue;
+		if (collisions->isInside(trucks[t]->nodes[0].AbsPosition, inst, box))
+		{
+			//we found one
+			if (rtruck==-1) rtruck=t;
+			else rtruck=-2; //too much trucks!
+		}
+	}
+	if (rtruck>=0)
+	{
+		// remove it
+		removeTruck(rtruck);
 	}
 }
 
@@ -4694,15 +4718,17 @@ void ExampleFrameListener::removeTruck(int truck)
 	if(truck == -1 || truck > free_truck)
 		// invalid number
 		return;
-	// whoohooo :p
-	// RoR history if that works ... :|
-	// first, exit the truck if in there
 	if(current_truck == truck)
 		setCurrentTruck(-1);
-	// then delete the class
-	delete trucks[truck];
-	// then set the array to zero, so it wont be used anymore
-	trucks[truck] = 0;
+
+	if(BeamFactory::getSingleton().removeBeam(trucks[truck]))
+	{
+		// deletion over beamfactory failed, delete by hand
+		// then delete the class
+		delete trucks[truck];
+		// then set the array to zero, so it wont be used anymore
+		trucks[truck] = 0;
+	}
 }
 
 int ExampleFrameListener::addTruck(char *fname, Vector3 pos)

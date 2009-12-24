@@ -45,6 +45,26 @@ Beam *BeamFactory::createLocal(int slotid)
 	return 0;
 }
 
+int BeamFactory::removeBeam(Beam *b)
+{
+	std::map < int, std::map < unsigned int, Beam *> >::iterator it1;
+	std::map < unsigned int, Beam *>::iterator it2;
+
+	for(it1=streamables.begin(); it1!=streamables.end();it1++)
+	{
+		for(it2=it1->second.begin(); it2!=it1->second.end();it2++)
+		{
+			if(it2->second  == b)
+			{
+				delete it2->second;
+				it2->second = 0;
+				return 0;
+			}
+		}
+	}
+	return 1;
+}
+
 Beam *BeamFactory::createLocal(Ogre::Vector3 pos, Ogre::Quaternion rot, Ogre::String fname, collision_box_t *spawnbox, bool ismachine, int flareMode, std::vector<Ogre::String> *truckconfig, SkinPtr skin, bool freePosition)
 {
 	bool networked=false, networking=false;
