@@ -223,6 +223,9 @@ set(ror_src
 	source/ChatSystem.h
 	source/ChatSystem.cpp
     
+	source/PlayerColours.h
+	source/PlayerColours.cpp
+    
 )
 
 include_directories (OgreMain/include Dependencies/include)
