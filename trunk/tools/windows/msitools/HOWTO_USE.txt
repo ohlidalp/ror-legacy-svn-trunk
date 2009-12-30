@@ -31,7 +31,7 @@ you can safely ignore all the warnings (see: http://blogs.msdn.com/astebner/arch
 VCCRT.msi  : 8.0.50727.42 ?(Express 2005 RTL)          20/04/2006 pricorde
 VCCRT2.msi : 8.0.50727.762 (Express 2005 SP1)          28/04/2007 pricorde
 VCCRT3.msi : 9.0.30729.1   (Express 2008 SP1)          07/11/2009 pricorde
-VCCRT4.msi : 9.0.21022.08  (VS Professional, no SP)    30/12/2009 thomas
+VCCRT4.msi : 9.0.30729.01  (VS Professional, SP1)      30/12/2009 thomas
 
 
 
