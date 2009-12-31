@@ -51,6 +51,7 @@ class BeamFactory : public StreamableFactory < BeamFactory, Beam >
 
 	void createRemoteInstance(stream_reg_t *reg);
 
+	Beam *getBeam(int source, int streamid); // used by character
 protected:
 	ExampleFrameListener *efl;
 	Ogre::SceneManager *manager;
@@ -69,6 +70,7 @@ protected:
 	// functions used by friends
 	void netUserAttributesChanged(int source, int streamid);
 	void localUserAttributesChanged(int newid);
+
 };
 
 

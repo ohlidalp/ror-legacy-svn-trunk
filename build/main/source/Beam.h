@@ -798,6 +798,7 @@ public:
 	prop_t props[MAX_PROPS];
 	prop_t *driverSeat;
 	int calculateDriverPos(Vector3 &pos, Quaternion &rot);
+	float getSteeringAngle() { return hydrodircommand; };
 	int free_prop;
 	float default_beam_diameter;
 	float default_plastic_coef;
@@ -937,7 +938,6 @@ public:
 
 protected:
 
-	int source, streamid;
 	void updateSimpleSkeleton();
 	SceneNode *simpleSkeletonNode;
 	std::vector<Ogre::String> truckconfig;

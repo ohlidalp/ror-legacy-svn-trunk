@@ -60,6 +60,7 @@ void NetworkStreamManager::addLocalStream(Streamable *stream, stream_register_t 
 	int mysourceid = net->getUserID();
 	
 	// use counting streamid
+	stream->setSourceID(mysourceid);
 	stream->setStreamID(streamid);
 	
 	// add new stream map to the streams map

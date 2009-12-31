@@ -83,6 +83,8 @@ int free_tb=0;
 
 Beam::~Beam()
 {
+	// TODO: IMPROVE below: delete/destroy prop entities, etc
+
 	deleting = true;
 	
 	// Very Important: remove this truck out of the trucks array, otherwise segfault
@@ -112,6 +114,28 @@ Beam::~Beam()
 	if(cabMesh) delete cabMesh;
 	if(materialFunctionMapper) delete materialFunctionMapper;
 	if(replay) delete replay;
+	if(simpleSkeletonNode)
+	{
+		simpleSkeletonNode->removeAndDestroyAllChildren();
+		tsm->destroySceneNode(simpleSkeletonNode);
+	}
+	if(netLabelNode)
+	{
+		netLabelNode->removeAndDestroyAllChildren();
+		tsm->destroySceneNode(netLabelNode);
+	}
+
+	if(beamsRoot)
+	{
+		beamsRoot->removeAndDestroyAllChildren();
+		tsm->destroySceneNode(beamsRoot);
+	}
+
+	if(cablightNode)
+	{
+		cablightNode->removeAndDestroyAllChildren();
+		tsm->destroySceneNode(cablightNode);
+	}
 	// delete skidmarks as well?!
 
 	// delete wings
@@ -119,7 +143,11 @@ Beam::~Beam()
 	{
 		// flexAirfoil, airfoil
 		if(wings[i].fa) delete wings[i].fa; wings[i].fa=0;
-		if(wings[i].cnode) wings[i].cnode->removeAndDestroyAllChildren();
+		if(wings[i].cnode)
+		{
+			wings[i].cnode->removeAndDestroyAllChildren();
+			tsm->destroySceneNode(wings[i].cnode);
+		}
 	}
 
 	// delete aeroengines
@@ -151,18 +179,46 @@ Beam::~Beam()
 	for(int i=0; i<free_wheel;i++)
 	{
 		if(vwheels[i].fm) delete vwheels[i].fm;
-		if(vwheels[i].cnode) vwheels[i].cnode->removeAndDestroyAllChildren();
+		if(vwheels[i].cnode)
+		{
+			vwheels[i].cnode->removeAndDestroyAllChildren();
+			tsm->destroySceneNode(vwheels[i].cnode);
+		}
 	}
 
 	// delete props
 	for(int i=0; i<free_prop;i++)
 	{
-		if(props[i].bbsnode[0]) props[i].bbsnode[0]->removeAndDestroyAllChildren();
-		if(props[i].bbsnode[1]) props[i].bbsnode[1]->removeAndDestroyAllChildren();
-		if(props[i].bbsnode[2]) props[i].bbsnode[2]->removeAndDestroyAllChildren();
-		if(props[i].bbsnode[3]) props[i].bbsnode[3]->removeAndDestroyAllChildren();
-		if(props[i].snode) props[i].snode->removeAndDestroyAllChildren();
-		if(props[i].wheel) props[i].wheel->removeAndDestroyAllChildren();
+		if(props[i].bbsnode[0])
+		{
+			props[i].bbsnode[0]->removeAndDestroyAllChildren();
+			tsm->destroySceneNode(props[i].bbsnode[0]);
+		}
+		if(props[i].bbsnode[1])
+		{
+			props[i].bbsnode[1]->removeAndDestroyAllChildren();
+			tsm->destroySceneNode(props[i].bbsnode[1]);
+		}
+		if(props[i].bbsnode[2])
+		{
+			props[i].bbsnode[2]->removeAndDestroyAllChildren();
+			tsm->destroySceneNode(props[i].bbsnode[2]);
+		}
+		if(props[i].bbsnode[3])
+		{
+			props[i].bbsnode[3]->removeAndDestroyAllChildren();
+			tsm->destroySceneNode(props[i].bbsnode[3]);
+		}
+		if(props[i].snode)
+		{
+			props[i].snode->removeAndDestroyAllChildren();
+			tsm->destroySceneNode(props[i].snode);
+		}
+		if(props[i].wheel)
+		{
+			props[i].wheel->removeAndDestroyAllChildren();
+			tsm->destroySceneNode(props[i].wheel);
+		}
 		if(props[i].light[0]) tsm->destroyLight(props[i].light[0]);
 		if(props[i].light[1]) tsm->destroyLight(props[i].light[1]);
 		if(props[i].light[2]) tsm->destroyLight(props[i].light[2]);
@@ -172,7 +228,11 @@ Beam::~Beam()
 	// delete flares
 	for (int i=0; i<free_flare; i++)
 	{
-		if(flares[i].snode) flares[i].snode->removeAndDestroyAllChildren();
+		if(flares[i].snode)
+		{
+			flares[i].snode->removeAndDestroyAllChildren();
+			tsm->destroySceneNode(flares[i].snode);
+		}
 		if(flares[i].light) tsm->destroyLight(flares[i].light);
 
 	}
@@ -180,7 +240,11 @@ Beam::~Beam()
 	// delete exhausts
 	for(std::vector < exhaust_t >::iterator it=exhausts.begin(); it!=exhausts.end(); it++)
 	{
-		if(it->smokeNode) it->smokeNode->removeAndDestroyAllChildren();
+		if(it->smokeNode)
+		{
+			it->smokeNode->removeAndDestroyAllChildren();
+			tsm->destroySceneNode(it->smokeNode);
+		}
 		if(it->smoker)
 		{
 			it->smoker->removeAllAffectors();
@@ -192,7 +256,11 @@ Beam::~Beam()
 	// delete cparticles
 	for (int i=0; i<free_cparticle; i++)
 	{
-		if(cparticles[free_cparticle].snode) cparticles[free_cparticle].snode->removeAndDestroyAllChildren();
+		if(cparticles[free_cparticle].snode)
+		{
+			cparticles[free_cparticle].snode->removeAndDestroyAllChildren();
+			tsm->destroySceneNode(cparticles[free_cparticle].snode);
+		}
 		if(cparticles[free_cparticle].psys)
 		{
 			cparticles[free_cparticle].psys->removeAllAffectors();
@@ -206,7 +274,11 @@ Beam::~Beam()
 	for (int i=0; i<free_beam; i++)
 	{
 		if(beams[i].mEntity)    beams[i].mEntity->setVisible(false);
-		if(beams[i].mSceneNode) beams[i].mSceneNode->removeAndDestroyAllChildren();
+		if(beams[i].mSceneNode)
+		{
+			beams[i].mSceneNode->removeAndDestroyAllChildren();
+			//tsm->destroySceneNode(beams[i].mSceneNode);
+		}
 	}
 
 	// delete Rails
@@ -239,8 +311,6 @@ Beam::Beam(int tnum, SceneManager *manager, SceneNode *parent, RenderWindow* win
 	free_axle=0;
 	slideNodesConnectInstantly=false;
 	replayTimer=0;
-	source=0;
-	streamid=0;
 	minCameraRadius=0;
 	last_net_time=0;
 	lastFuzzyGroundModel=0;
@@ -885,7 +955,6 @@ inline bool Beam::inRange(float num, float min, float max)
 //called by the network thread
 void Beam::pushNetwork(char* data, int size)
 {
-	// todo: fix crash that occurs here!
 	if ((unsigned int)size==(netbuffersize+sizeof(oob_t)))
 	{
 		memcpy((char*)oob3, data, sizeof(oob_t));
@@ -2957,11 +3026,16 @@ int Beam::loadTruck(const char* fname, SceneManager *manager, SceneNode *parent,
 			{
 				props[free_prop].pale=1;
 			}
-			//hack for the translucent drivers seat
+			//detect driver seat, used to position the driver and make the seat translucent at times
 			if (!strncmp("seat", meshname, 4) && !driversseatfound)
 			{
 				driversseatfound=true;
 				te->setMaterialName("driversseat");
+				driverSeat = &props[free_prop];
+			}
+			else if (!strncmp("seat2", meshname, 5) && !driversseatfound)
+			{
+				driversseatfound=true;
 				driverSeat = &props[free_prop];
 			}
 			props[free_prop].beacontype='n';
@@ -4877,7 +4951,7 @@ int Beam::calculateDriverPos(Vector3 &pos, Quaternion &rot)
 	Vector3 refx=nodes[driverSeat->nodex].smoothpos-nodes[driverSeat->noderef].smoothpos;
 	refx.normalise();
 	Vector3 refy=refx.crossProduct(normal);
-	rot = Quaternion(refx, normal, refy) * driverSeat->rot;
+	rot = Quaternion(refx, normal, refy) * driverSeat->rot * Quaternion(Degree(180), Vector3::UNIT_Y); // rotate towards the driving direction
 	return 0;
 }
 
@@ -5846,8 +5920,8 @@ void Beam::prepareShutdown()
 
 void Beam::setNetworkProperties(int source, unsigned int streamid)
 {
-	bool reg = (this->source == 0 && this->streamid == 0);
-	this->source=source;
+	bool reg = (this->sourceid == 0 && this->streamid == 0);
+	this->sourceid=sourceid;
 	this->streamid=streamid;
 	if(reg)
 		sendStreamSetup();
@@ -5870,10 +5944,10 @@ void Beam::sendStreamSetup()
 	} else if(net && state == NETWORKED)
 	{
 		// remote
-		if(!(source == 0 && streamid == 0)) 
+		if(!(sourceid == 0 && streamid == 0)) 
 		{
-			LogManager::getSingleton().logMessage("new remote beam vehicle: " + StringConverter::toString(source) + ":"+ StringConverter::toString(streamid));
-			NetworkStreamManager::getSingleton().addRemoteStream(this, source, streamid);
+			LogManager::getSingleton().logMessage("new remote beam vehicle: " + StringConverter::toString(sourceid) + ":"+ StringConverter::toString(streamid));
+			NetworkStreamManager::getSingleton().addRemoteStream(this, sourceid, streamid);
 		}
 	}
 }
@@ -5965,7 +6039,7 @@ void Beam::receiveStreamData(unsigned int &type, int &source, unsigned int &stre
 	// TODO: FIX
 	//if(this->source != source || this->streamid != streamid) return; // data not for us
 
-	if(type == MSG2_STREAM_DATA)
+	if(type == MSG2_STREAM_DATA && source == this->sourceid && this->streamid == streamid)
 	{
 		pushNetwork(buffer, len);
 	}
@@ -9282,7 +9356,7 @@ void Beam::updateNetworkInfo()
 	bool remote = (state == NETWORKED);
 	if(remote)
 	{
-		client_t *c = net->getClientInfo(source);
+		client_t *c = net->getClientInfo(sourceid);
 		if(!c) return;
 		networkUsername = String(c->user_name);
 		networkAuthlevel = c->user_authlevel;

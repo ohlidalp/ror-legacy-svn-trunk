@@ -42,32 +42,49 @@ CharacterFactory::CharacterFactory(Camera *cam, Network *net, Collisions *c, Hei
 Character *CharacterFactory::createLocal(int playerColour)
 {
 	Character *ch = new Character(cam, c, net, h, w, m, scm, -1, 0, playerColour, false);
+
+	LOCKSTREAMS();
+	std::map < int, std::map < unsigned int, Character *> > &streamables = getStreams();
 	streamables[-1][0] = ch;
+	UNLOCKSTREAMS();
 	return ch;
 }
 
 void CharacterFactory::createRemoteInstance(stream_reg_t *reg)
 {
+	// NO LOCKS IN HERE, already locked
+
 	LogManager::getSingleton().logMessage(" new character for " + StringConverter::toString(reg->sourceid) + ":" + StringConverter::toString(reg->streamid) + ", colour: " + StringConverter::toString(reg->colour));
 	Character *ch = new Character(cam, c, net, h, w, m, scm, reg->sourceid, reg->streamid, reg->colour, true);
+
+	std::map < int, std::map < unsigned int, Character *> > &streamables = getStreams();
 	streamables[reg->sourceid][reg->streamid] = ch;
 }
 
 void CharacterFactory::localUserAttributesChanged(int newid)
 {
+	LOCKSTREAMS();
+	std::map < int, std::map < unsigned int, Character *> > &streamables = getStreams();
 	std::map < int, std::map < unsigned int, Character *> >::iterator it1;
 	std::map < unsigned int, Character *>::iterator it2;
 
-	if(streamables.find(-1) == streamables.end()) return;
+	if(streamables.find(-1) == streamables.end())
+	{
+		UNLOCKSTREAMS();
+		return;
+	}
 
 	Character *c = streamables[-1][0];
 	streamables[newid][0] = streamables[-1][0]; // add alias :)
 	c->setUID(newid);
 	c->updateNetLabel();
+	UNLOCKSTREAMS();
 }
 
 void CharacterFactory::netUserAttributesChanged(int source, int streamid)
 {
+	LOCKSTREAMS();
+	std::map < int, std::map < unsigned int, Character *> > &streamables = getStreams();
 	std::map < int, std::map < unsigned int, Character *> >::iterator it1;
 	std::map < unsigned int, Character *>::iterator it2;
 
@@ -79,10 +96,13 @@ void CharacterFactory::netUserAttributesChanged(int source, int streamid)
 			if(c) c->updateNetLabel();
 		}
 	}
+	UNLOCKSTREAMS();
 }
 
 void CharacterFactory::updateLabels()
 {
+	LOCKSTREAMS();
+	std::map < int, std::map < unsigned int, Character *> > &streamables = getStreams();
 	std::map < int, std::map < unsigned int, Character *> >::iterator it1;
 	std::map < unsigned int, Character *>::iterator it2;
 
@@ -94,4 +114,5 @@ void CharacterFactory::updateLabels()
 			if(c) c->updateNetLabelSize();
 		}
 	}
+	UNLOCKSTREAMS();
 }

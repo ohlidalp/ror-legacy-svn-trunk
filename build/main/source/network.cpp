@@ -533,12 +533,14 @@ void Network::receivethreadstart()
 			// this function syncs the user data in the network
 			{
 				// debug stuff
+				/*
 				LogManager::getSingleton().logMessage(" > received user info:" + StringConverter::toString(header.source) + " (we are " + StringConverter::toString(myuid) + ")");
 				client_info_on_join *cinfo = (client_info_on_join*) buffer;
 				LogManager::getSingleton().logMessage(" * version : " + StringConverter::toString(cinfo->version));
 				LogManager::getSingleton().logMessage(" * nickname: " + String(cinfo->nickname));
 				LogManager::getSingleton().logMessage(" * auth    : " + StringConverter::toString(cinfo->authstatus));
 				LogManager::getSingleton().logMessage(" * slotnum : " + StringConverter::toString(cinfo->slotnum));
+				*/
 			}
 			if(header.source == (int)myuid)
 			{
