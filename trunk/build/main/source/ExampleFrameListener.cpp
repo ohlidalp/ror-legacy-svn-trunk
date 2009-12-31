@@ -963,6 +963,8 @@ void ExampleFrameListener::setGravity(float value)
 // Constructor takes a RenderWindow because it uses that to determine input context
 ExampleFrameListener::ExampleFrameListener(RenderWindow* win, Camera* cam, SceneManager* scm, Root* root) :  initialized(false), mCollisionTools(0)
 {
+	for (int i=0; i<MAX_TRUCKS; i++) trucks[i]=0;
+
 	benchmarking=false;
 	fpsLineStream = netLineStream = netlagLineStream = 0;
 	enablePosStor = (SETTINGS.getSetting("Position Storage")=="Yes");
@@ -2919,22 +2921,8 @@ bool ExampleFrameListener::updateEvents(float dt)
 
 	if (loading_state==ALL_LOADED)
 	{
- 		if(net && person)
+ 		if(person)
 		{
-			// always position the person in network mode
-			if(current_truck != -1 && trucks[current_truck] && trucks[current_truck]->driverSeat)
-			{
-				person->setPhysicsEnabled(false);
-				Vector3 pos;
-				Quaternion rot;
-				int res = trucks[current_truck]->calculateDriverPos(pos, rot);
-				if(!res)
-				{
-					person->setPosition(pos + Vector3(0,-0.5f,0));
-					person->setOrientation(rot * Quaternion(Degree(180), Vector3::UNIT_Y));
-				}
-			}
-			// call update after positioning, so position is send over the net
 			person->update(dt);
 		}
 
@@ -2947,7 +2935,6 @@ bool ExampleFrameListener::updateEvents(float dt)
 				if(person)
 				{
 					person->setPhysicsEnabled(true);
-					person->update(dt);
 				}
 				//camera mode
 				if (INPUTENGINE.getEventBoolValueBounce(EV_CAMERA_CHANGE) && cameramode != CAMERA_FREE && cameramode != CAMERA_FREE_FIXED)
@@ -4459,6 +4446,7 @@ bool ExampleFrameListener::updateEvents(float dt)
 			{
 				Cache_Entry *selt = UILOADER.getSelection();
 				SkinPtr skin = UILOADER.getSelectedSkin();
+				Beam *localTruck = 0;
 				if(selt)
 				{
 					//we load an extra truck
@@ -4467,19 +4455,21 @@ bool ExampleFrameListener::updateEvents(float dt)
 					std::vector<Ogre::String> *configptr = &config;
 					if(config.size() == 0) configptr = 0;
 
-					BeamFactory::getSingleton().createLocal(reload_pos, reload_dir, selected, reload_box, false, flaresMode, configptr, skin);
+					localTruck = BeamFactory::getSingleton().createLocal(reload_pos, reload_dir, selected, reload_box, false, flaresMode, configptr, skin);
 					//trucks[free_truck] = new Beam(free_truck, mSceneMgr, mSceneMgr->getRootSceneNode(), mWindow, net, &mapsizex, &mapsizez, reload_pos.x, reload_pos.y, reload_pos.z, reload_dir, selected, collisions, dustp, clumpp, sparksp, dripp, splashp, ripplep, hfinder, w, mCamera, mirror, true, false, false, reload_box, false, flaresMode, configptr, skin);
 				}
 
-				if(bigMap)
+
+
+				if(bigMap && localTruck)
 				{
-					MapEntity *e = bigMap->createNamedMapEntity("Truck"+StringConverter::toString(free_truck), MapControl::getTypeByDriveable(trucks[free_truck]->driveable));
+					MapEntity *e = bigMap->createNamedMapEntity("Truck"+StringConverter::toString(localTruck->trucknum), MapControl::getTypeByDriveable(localTruck->driveable));
 					if(e)
 					{
 						e->setState(DESACTIVATED);
 						e->setVisibility(true);
 						e->setPosition(reload_pos);
-						e->setRotation(-Radian(trucks[free_truck]->getHeadingDirectionAngle()));
+						e->setRotation(-Radian(localTruck->getHeadingDirectionAngle()));
 						// create a map icon
 						//createNamedMapEntity();
 					}
@@ -4487,12 +4477,12 @@ bool ExampleFrameListener::updateEvents(float dt)
 
 				UILOADER.hide();
 				loading_state=ALL_LOADED;
-				if(trucks[free_truck]->driveable)
+				if(localTruck && localTruck->driveable)
 				{
 					//we are supposed to be in this truck, if it is a truck
-					if (trucks[free_truck]->engine)
-						trucks[free_truck]->engine->start();
-					setCurrentTruck(free_truck);
+					if (localTruck->engine)
+						localTruck->engine->start();
+					setCurrentTruck(localTruck->trucknum);
 				} else
 				{
 					// if it is a load or trailer, than stay in person mode
@@ -4501,7 +4491,6 @@ bool ExampleFrameListener::updateEvents(float dt)
 					person->move(Vector3(3.0, 0.2, 0.0)); //bad, but better
 					//setCurrentTruck(-1);
 				}
-				free_truck++;
 			}
 
 		}
@@ -6538,6 +6527,10 @@ void ExampleFrameListener::setCurrentTruck(int v)
 		if(bigMap) bigMap->setVisibility(false);
 		if(netmode && NETCHAT.getVisible()) NETCHAT.setMode(this, NETCHAT_LEFT_FULL, true);
 
+		// detach person to truck
+		if(person)
+			person->setBeamCoupling(false);
+
 		// hide truckhud
 		TRUCKHUD.show(false);
 
@@ -6572,7 +6565,7 @@ void ExampleFrameListener::setCurrentTruck(int v)
 		}
 		//			position.y=hfinder->getHeightAt(position.x,position.z);
 		if(position != Vector3::ZERO) person->setPosition(position);
-		person->setVisible(true);
+		//person->setVisible(true);
 		showDashboardOverlays(false,0);
 		showEditorOverlay(false);
 		ssm->trigStop(previous_truck, SS_TRIG_AIR);
@@ -6596,7 +6589,7 @@ void ExampleFrameListener::setCurrentTruck(int v)
 		//getting inside
 		if(netmode && NETCHAT.getVisible()) NETCHAT.setMode(this, NETCHAT_LEFT_SMALL, true);
 		mouseOverlay->show();
-		person->setVisible(false);
+		//person->setVisible(false);
 		if(!hidegui)
 		{
 			showDashboardOverlays(true, trucks[current_truck]->driveable);
@@ -6628,6 +6621,10 @@ void ExampleFrameListener::setCurrentTruck(int v)
 		if (trucks[current_truck]->free_active_shock==0) (OverlayManager::getSingleton().getOverlayElement("tracks/rollcorneedle"))->hide();
 		//					rollcorr_node->setVisible((trucks[current_truck]->free_active_shock>0));
 		//help panel
+
+		// attach person to truck
+		if(person)
+			person->setBeamCoupling(true, trucks[current_truck]);
 
 		try
 		{
@@ -8290,3 +8287,35 @@ void ExampleFrameListener::showspray(bool s)
 }
 
 
+int ExampleFrameListener::getFreeTruckSlot()
+{
+	// find a free slot for the truck
+	for (int i=0; i<MAX_TRUCKS; i++)
+	{
+		if(trucks[i] == 0 && i >= free_truck) // XXX: TODO: remove this hack
+		{
+			// reuse slots
+			if(i >= free_truck)
+				free_truck = i + 1;
+			return i;
+		}
+	}
+	return -1;
+}
+
+int ExampleFrameListener::addTruck(Beam *b)
+{
+	// find a free slot for the truck
+	for (int i=0; i<MAX_TRUCKS; i++)
+	{
+		if(trucks[i] == 0 && i >= free_truck) // XXX: TODO: remove this hack
+		{
+			// reuse old slots
+			trucks[i] = b;
+			if(i >= free_truck)
+				free_truck = i + 1;
+			return i;
+		}
+	}
+	return -1;
+}

@@ -27,6 +27,7 @@ along with Rigs of Rods.  If not, see <http://www.gnu.org/licenses/>.
 #include "InputEngine.h"
 #include "network.h"
 #include "NetworkStreamManager.h"
+#include "BeamFactory.h"
 #include "ColoredTextAreaOverlayElement.h"
 #include "PlayerColours.h"
 
@@ -49,6 +50,7 @@ Character::Character(Camera *cam,Collisions *c, Network *net, HeightFinder *h, W
 	this->colourNumber=colourNumber;
 	this->remote=remote;
 	this->physicsEnabled=true;
+	beamCoupling=0;
 	//remote = true;
 	last_net_time=0;
 	netMT=0;
@@ -244,7 +246,6 @@ void Character::setAnimationMode(Ogre::String mode, float time)
 {
 	if(!persoanim)
 		return;
-	static String lastmode = "";
 	if(lastmode != mode)
 	{
 		AnimationStateIterator it = persoanim->getAnimationStateIterator();
@@ -474,6 +475,23 @@ void Character::update(float dt)
 		*/
 		personode->setPosition(position);
 		updateMapIcon();
+	} else if(beamCoupling)
+	{
+		// if physics is disabled, its attached to a beam truck maybe?
+		Vector3 pos;
+		Quaternion rot;
+		float angle = beamCoupling->getSteeringAngle();
+		int res = beamCoupling->calculateDriverPos(pos, rot);
+		if(!res)
+		{
+			setPosition(pos + Vector3(0,-0.6f,-0.1f)); // hack to position the chacaracter right perfect on the default seat
+			setOrientation(rot);
+			setAnimationMode("driving", 0);
+			Real lenght = persoanim->getAnimationState("driving")->getLength();
+			float timePos = ((angle + 1.0f) * 0.5f) * lenght;
+			persoanim->getAnimationState("driving")->setTimePosition(timePos);
+		}
+
 	}
 
 	if(net)
@@ -514,6 +532,7 @@ void Character::sendStreamSetup()
 		reg.status = 1;
 		strcpy(reg.name, "default");
 		reg.type = 1;
+		reg.data[0] = 2;
 
 		NetworkStreamManager::getSingleton().addLocalStream(this, &reg);
 	}
@@ -525,24 +544,47 @@ void Character::sendStreamData()
 	if (t-last_net_time < 100)
 		return;
 
+	// do not send position data if coupled to a truck already
+	if(beamCoupling) return;
+
 	last_net_time = t;
 
-	netdata_t data;
+	pos_netdata_t data;
+	data.command = CHARCMD_POSITION;
 	data.pos = personode->getPosition();
 	data.rot = personode->getOrientation();
+	data.animationMode = lastmode;
+	data.animationTime = persoanim->getAnimationState(lastmode)->getTimePosition();
 
 	//LogManager::getSingleton().logMessage("sending character stream data: " + StringConverter::toString(net->getUserID()) + ":"+ StringConverter::toString(streamid));
-	this->addPacket(MSG2_STREAM_DATA, sizeof(netdata_t), (char*)&data);
+	this->addPacket(MSG2_STREAM_DATA, sizeof(pos_netdata_t), (char*)&data);
 }
 
 void Character::receiveStreamData(unsigned int &type, int &source, unsigned int &streamid, char *buffer, unsigned int &len)
 {
 	if(type == MSG2_STREAM_DATA && this->source == source && this->streamid == streamid)
 	{
-		netdata_t *data = (netdata_t *)buffer;
-		//LogManager::getSingleton().logMessage("character stream data correct: " + StringConverter::toString(source) + ":"+ StringConverter::toString(streamid) + ": "+ StringConverter::toString(data->pos));
-		personode->setPosition(data->pos);
-		personode->setOrientation(data->rot);
+		header_netdata_t *header = (header_netdata_t *)buffer;
+		if(header->command == CHARCMD_POSITION)
+		{
+			// position
+			pos_netdata_t *data = (pos_netdata_t *)buffer;
+			this->setPosition(data->pos);
+			this->setOrientation(data->rot);
+			setAnimationMode(data->animationMode, data->animationTime);
+		} else if (header->command == CHARCMD_ATTACH)
+		{
+			// attach
+			attach_netdata_t *data = (attach_netdata_t *)buffer;
+			if(data->enabled)
+			{
+				Beam *beam = BeamFactory::getSingleton().getBeam(data->source_id, data->stream_id);
+				setBeamCoupling(true, beam);
+			} else
+			{
+				setBeamCoupling(false);
+			}
+		}
 	}
 	//else
 	//	LogManager::getSingleton().logMessage("character stream data wrong: " + StringConverter::toString(source) + ":"+ StringConverter::toString(streamid));
@@ -567,4 +609,39 @@ void Character::updateNetLabelSize()
 
 	//netMT->setAdditionalHeight((maxy-miny)+h+0.1);
 	netMT->setVisible(true);
+}
+
+int Character::setBeamCoupling(bool enabled, Beam *truck)
+{
+	if(enabled)
+	{
+		if(!truck) return 1;
+		beamCoupling = truck;
+		setPhysicsEnabled(false);
+		if(netMT && netMT->isVisible()) netMT->setVisible(false);
+
+		if(net && !remote)
+		{
+			attach_netdata_t data;
+			data.command = CHARCMD_ATTACH;
+			data.enabled = true;
+			data.source_id = beamCoupling->getSourceID();
+			data.stream_id = beamCoupling->getStreamID();
+			this->addPacket(MSG2_STREAM_DATA, sizeof(attach_netdata_t), (char*)&data);
+		}
+
+	} else
+	{
+		setPhysicsEnabled(true);
+		beamCoupling=0;
+		if(netMT && !netMT->isVisible()) netMT->setVisible(true);
+		if(net && !remote)
+		{
+			attach_netdata_t data;
+			data.command = CHARCMD_ATTACH;
+			data.enabled = false;
+			this->addPacket(MSG2_STREAM_DATA, sizeof(attach_netdata_t), (char*)&data);
+		}
+	}
+	return 0;
 }

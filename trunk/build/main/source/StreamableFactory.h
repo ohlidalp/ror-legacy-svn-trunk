@@ -34,15 +34,34 @@ along with Rigs of Rods.  If not, see <http://www.gnu.org/licenses/>.
 class Network;
 class Streamable;
 
+// this is the master swith to debug the stream locking/unlocking
+//#define DEBUGSTREAMFACTORIES
+
+#define OGREFUNCTIONSTRING  String(__FUNCTION__)+" @ "+String(__FILE__)+":"+StringConverter::toString(__LINE__)
+
+#ifdef DEBUGSTREAMFACTORIES
+# define LOCKSTREAMS()       do { LogManager::getSingleton().logMessage("***LOCK:   "+OGREFUNCTIONSTRING); lockStreams();   } while(0)
+# define UNLOCKSTREAMS()     do { LogManager::getSingleton().logMessage("***UNLOCK: "+OGREFUNCTIONSTRING); unlockStreams(); } while(0)
+# ifdef WIN32
+// __debugbreak will break into the debugger in visual studio
+#  define MYASSERT(x)       do { if(!x) { LogManager::getSingleton().logMessage("***ASSERT FAILED: "+OGREFUNCTIONSTRING); __debugbreak(); }; } while(0)
+# else //!WIN32
+#  define MYASSERT(x)       assert(x)
+# endif //WIN32
+#else //!DEBUGSTREAMFACTORIES
+# define LOCKSTREAMS()       ((void)0)
+# define UNLOCKSTREAMS()     ((void)0)
+# define MYASSERT(x)         ((void)0)
+#endif //DEBUGSTREAMFACTORIES
 
 template<class T, class X> class StreamableFactory : public StreamableFactoryInterface
 {
 	friend class Network;
 public:
 	// constructor, destructor and singleton
-	StreamableFactory( void )
+	StreamableFactory( void ) : locked(false)
 	{
-		assert( !ms_Singleton );
+		MYASSERT( !ms_Singleton );
 		ms_Singleton = static_cast< T* >( this );
 		pthread_mutex_init(&stream_reg_mutex, NULL);
 
@@ -52,13 +71,13 @@ public:
 
 	~StreamableFactory( void )
 	{
-		assert( ms_Singleton );
+		MYASSERT( ms_Singleton );
 		ms_Singleton = 0;
 	}
 
 	static T& getSingleton( void )
 	{
-		assert( ms_Singleton );
+		MYASSERT( ms_Singleton );
 		return ( *ms_Singleton );
 	}
 
@@ -75,7 +94,7 @@ public:
 	// common functions
 	void createRemote(int sourceid, int streamid, stream_register_t *reg, int colour)
 	{
-		lockStreams();
+		LOCKSTREAMS();
 
 		stream_reg_t registration;
 		registration.sourceid = sourceid;
@@ -84,24 +103,24 @@ public:
 		registration.colour   = colour;
 		stream_registrations.push_back(registration);
 
-		unlockStreams();
+		UNLOCKSTREAMS();
 	}
 
 	void deleteRemote(int sourceid, int streamid)
 	{
-		lockStreams();
+		LOCKSTREAMS();
 
 		stream_del_t deletion;
 		deletion.sourceid = sourceid;
 		deletion.streamid = streamid;
 		stream_deletions.push_back(deletion);
 
-		unlockStreams();
+		UNLOCKSTREAMS();
 	}
 
 	virtual void syncRemoteStreams()
 	{
-		lockStreams();
+		LOCKSTREAMS();
 		// first registrations
 		while (!stream_registrations.empty())
 		{
@@ -117,11 +136,12 @@ public:
 			removeInstance(&del);
 			stream_deletions.pop_front();
 		}
-		unlockStreams();
+		UNLOCKSTREAMS();
 	}
 
 	void removeInstance(stream_del_t *del)
 	{
+		typename std::map < int, std::map < unsigned int, X *> > &streamables = getStreams();
 		typename std::map < int, std::map < unsigned int, X *> >::iterator it1;
 		typename std::map < unsigned int, X *>::iterator it2;
 
@@ -145,20 +165,36 @@ public:
 protected:
 	static T* ms_Singleton;
 	pthread_mutex_t stream_reg_mutex;
+	bool locked;
 
-	std::map < int, std::map < unsigned int, X *> > streamables;
 	std::deque < stream_reg_t > stream_registrations;
 	std::deque < stream_del_t > stream_deletions;
 
+	std::map < int, std::map < unsigned int, X *> > &getStreams()
+	{
+		// ensure we only access the map when we locked it before
+		MYASSERT(locked);
+		return mStreamables;
+	}
+
 	void lockStreams()
 	{
+		// double locking is not healty!
+		//MYASSERT(!this->locked);
 		pthread_mutex_lock(&stream_reg_mutex);
+		this->locked=true;
 	}
 
 	void unlockStreams()
 	{
 		pthread_mutex_unlock(&stream_reg_mutex);
+		this->locked=false;
 	}
+
+private:
+	// no direct access to it, helps with locking it before using it
+	std::map < int, std::map < unsigned int, X *> > mStreamables;
+
 };
 
 

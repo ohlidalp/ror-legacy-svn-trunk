@@ -27,11 +27,14 @@ along with Rigs of Rods.  If not, see <http://www.gnu.org/licenses/>.
 #include "MovableText.h"
 
 class Water;
+class Beam;
 class Collisions;
 class HeightFinder;
 class MapControl;
 class Network;
 class MapEntity;
+
+enum {CHARCMD_POSITION, CHARCMD_ATTACH};
 
 class Character : public Streamable
 {
@@ -55,6 +58,7 @@ public:
 	void updateCharacterColour();
 
 	void move(Ogre::Vector3 v);
+	int setBeamCoupling(bool enabled, Beam *truck=0);
 	
 	void update(float dt);
 	Ogre::SceneNode *getSceneNode();
@@ -78,6 +82,7 @@ protected:
 	HeightFinder *hfinder;
 	Ogre::Camera *mCamera;
 	Water *water;
+	Beam *beamCoupling;
 	MapControl *map;
 	Ogre::SceneManager *scm;
 	Network *net;
@@ -90,6 +95,7 @@ protected:
 	MapEntity *mapEnt;
 	Ogre::String networkUsername;
 	int networkAuthLevel;
+	Ogre::String lastmode;
 	
 	Ogre::SceneNode *personode;
 	Ogre::AnimationStateSet *persoanim;
@@ -102,12 +108,29 @@ protected:
 	Ogre::Vector3 lastpersopos;
 	void setAnimationMode(Ogre::String mode, float time=0);
 
-
-	typedef struct netdata_
+	typedef struct header_netdata_t
 	{
+		int command;
+	} header_netdata_t;
+
+
+	typedef struct pos_netdata_t
+	{
+		int command;
 		Ogre::Vector3 pos;
 		Ogre::Quaternion rot;
-	} netdata_t;
+		Ogre::String animationMode;
+		Ogre::Real animationTime;
+	} pos_netdata_t;
+
+	typedef struct attach_netdata_t
+	{
+		int command;
+		bool enabled;
+		int source_id;
+		int stream_id;
+		int position;
+	} attach_netdata_t;
 
 	// overloaded from Streamable:
 	Ogre::Timer netTimer;

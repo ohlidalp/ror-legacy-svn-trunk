@@ -47,6 +47,12 @@ Beam *BeamFactory::createLocal(int slotid)
 
 int BeamFactory::removeBeam(Beam *b)
 {
+	// remove the stream without locking yet, otherwise deadlock
+	if(net)
+		NetworkStreamManager::getSingleton().removeStream(b);
+	
+	LOCKSTREAMS();
+	std::map < int, std::map < unsigned int, Beam *> > &streamables = getStreams();
 	std::map < int, std::map < unsigned int, Beam *> >::iterator it1;
 	std::map < unsigned int, Beam *>::iterator it2;
 
@@ -56,15 +62,15 @@ int BeamFactory::removeBeam(Beam *b)
 		{
 			if(it2->second  == b)
 			{
-				if(net)
-					NetworkStreamManager::getSingleton().removeStream(it2->second);
 
 				delete it2->second;
 				it2->second = 0;
+				UNLOCKSTREAMS();
 				return 0;
 			}
 		}
 	}
+	UNLOCKSTREAMS();
 	return 1;
 }
 
@@ -73,7 +79,14 @@ Beam *BeamFactory::createLocal(Ogre::Vector3 pos, Ogre::Quaternion rot, Ogre::St
 	bool networked=false, networking=false;
 	if(net) networking = true;
 
-	Beam *b = new Beam(efl->free_truck,
+	int truck_num = efl->getFreeTruckSlot();
+	if(truck_num == -1)
+	{
+		LogManager::getSingleton().logMessage("ERROR: could not add beam to main list");
+		return 0;
+	}
+
+	Beam *b = new Beam(truck_num,
 		manager,
 		manager->getRootSceneNode(),
 		win,
@@ -99,28 +112,40 @@ Beam *BeamFactory::createLocal(Ogre::Vector3 pos, Ogre::Quaternion rot, Ogre::St
 		skin,
 		freePosition);
 
+	efl->trucks[truck_num] = b;
+
 	// lock slidenodes after spawning the truck?
 	if(b->getSlideNodesLockInstant())
 		b->toggleSlideNodeLock(efl->trucks, efl->free_truck, efl->free_truck);
 
-	efl->trucks[efl->free_truck] = b;
+	LOCKSTREAMS();
+	std::map < int, std::map < unsigned int, Beam *> > &streamables = getStreams();
+	streamables[-1][10 + truck_num] = b; // 10 streams offset for beam constructions
+	UNLOCKSTREAMS();
 
-	streamables[-1][10 + efl->free_truck] = b; // 10 streams offset
-	//efl->free_truck++;
 	return b;
 }
 
 void BeamFactory::createRemoteInstance(stream_reg_t *reg)
 {
+	// NO LOCKS IN HERE, already locked
+
 	LogManager::getSingleton().logMessage(" new beam truck for " + StringConverter::toString(reg->sourceid) + ":" + StringConverter::toString(reg->streamid));
 
 	bool networked=true, networking=false;
 	if(net) networking = true;
 
 	// spawn the truck far off anywhere
-	Vector3 pos = Vector3(99999,99999,99999);
+	Vector3 pos = Vector3(0,0,0);
 
-	Beam *b = new Beam(efl->free_truck,
+	int truck_num = efl->getFreeTruckSlot();
+	if(truck_num == -1)
+	{
+		LogManager::getSingleton().logMessage("ERROR: could not add beam to main list");
+		return;
+	}
+
+	Beam *b = new Beam(truck_num,
 		manager,
 		manager->getRootSceneNode(),
 		win,
@@ -145,11 +170,11 @@ void BeamFactory::createRemoteInstance(stream_reg_t *reg)
 		0,
 		SkinPtr());
 
-	b->setNetworkProperties(reg->sourceid, reg->streamid);
-	
-	efl->trucks[efl->free_truck] = b;
-	efl->free_truck++;
+	efl->trucks[truck_num] = b;
 
+	b->setNetworkProperties(reg->sourceid, reg->streamid);
+
+	std::map < int, std::map < unsigned int, Beam *> > &streamables = getStreams();
 	streamables[reg->sourceid][reg->streamid] = b;
 
 	b->updateNetworkInfo();
@@ -157,19 +182,28 @@ void BeamFactory::createRemoteInstance(stream_reg_t *reg)
 
 void BeamFactory::localUserAttributesChanged(int newid)
 {
+	LOCKSTREAMS();
+	std::map < int, std::map < unsigned int, Beam *> > &streamables = getStreams();
 	std::map < int, std::map < unsigned int, Beam *> >::iterator it1;
 	std::map < unsigned int, Beam *>::iterator it2;
 
-	if(streamables.find(-1) == streamables.end()) return;
+	if(streamables.find(-1) == streamables.end())
+	{
+		UNLOCKSTREAMS();
+		return;
+	}
 
 	Beam *b = streamables[-1][0];
 	streamables[newid][0] = streamables[-1][0]; // add alias :)
 	//b->setUID(newid);
 	//b->updateNetLabel();
+	UNLOCKSTREAMS();
 }
 
 void BeamFactory::netUserAttributesChanged(int source, int streamid)
 {
+	LOCKSTREAMS();
+	std::map < int, std::map < unsigned int, Beam *> > &streamables = getStreams();
 	std::map < int, std::map < unsigned int, Beam *> >::iterator it1;
 	std::map < unsigned int, Beam *>::iterator it2;
 
@@ -181,7 +215,30 @@ void BeamFactory::netUserAttributesChanged(int source, int streamid)
 			{
 				Beam *b = it2->second;
 				if(b) b->updateNetworkInfo();
+				break;
 			}
 		}
 	}
+	UNLOCKSTREAMS();
+}
+
+Beam *BeamFactory::getBeam(int source, int streamid)
+{
+	LOCKSTREAMS();
+	std::map < int, std::map < unsigned int, Beam *> > &streamables = getStreams();
+	std::map < int, std::map < unsigned int, Beam *> >::iterator it1;
+	std::map < unsigned int, Beam *>::iterator it2;
+
+	for(it1=streamables.begin(); it1!=streamables.end();it1++)
+	{
+		for(it2=it1->second.begin(); it2!=it1->second.end();it2++)
+		{
+			if(it1->first == source)
+			{
+				return it2->second;
+			}
+		}
+	}
+	UNLOCKSTREAMS();
+	return 0;
 }

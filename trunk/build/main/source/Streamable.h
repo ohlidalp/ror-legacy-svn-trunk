@@ -45,13 +45,18 @@ typedef struct recvPacket_t
 class Streamable
 {
 	friend class NetworkStreamManager;
+public:
+	unsigned int getStreamID() { return this->streamid; };
+	unsigned int getSourceID() { return this->sourceid; };
+
 protected:
 	// constructor/destructor are protected, so you cannot create instances without using the factory
 	Streamable();
 	~Streamable();
 
 	// static const members
-	static const unsigned int packetBufferSize = 10;
+	static const unsigned int packetBufferSize = 30; //!< hard buffer size limit
+	static const unsigned int packetBufferSizeDiscardData = 20; //!< we will discard all data packets after hitting this border. Then we have still some packets left for registration purposes.
 	static const unsigned int maxPacketLen     = 8192;
 
 	// custom types
@@ -64,8 +69,11 @@ protected:
 	// normal members
 	std::deque < bufferedPacket_t > packets;
 	std::deque < recvPacket_t > receivedPackets;
-	unsigned int streamid;
+	
+	unsigned int sourceid, streamid;
+
 	void setStreamID(unsigned int id) { this->streamid=id; };
+	void setSourceID(unsigned int id) { this->sourceid=id; };
 
 	// virtual interface methods
 	virtual void sendStreamData() = 0;

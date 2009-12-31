@@ -599,6 +599,10 @@ protected:
 	TruckEditor *trucked;
 #endif
 	Beam *trucks[MAX_TRUCKS];
+	/** adds a truck to the main array
+	  */
+	int addTruck(Beam *b);
+	int getFreeTruckSlot();
 	int free_truck;
 	int current_truck;
 
