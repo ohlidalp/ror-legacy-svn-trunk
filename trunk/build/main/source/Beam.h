@@ -933,7 +933,6 @@ public:
 	Replay *getReplay() { return replay; };
 
 	bool getSlideNodesLockInstant() { 	return slideNodesConnectInstantly; };
-	void setNetworkProperties(int source, unsigned int streamid);
 	void sendStreamData();
 
 protected:

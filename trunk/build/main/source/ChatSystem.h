@@ -62,7 +62,7 @@ public:
 	~ChatSystemFactory();
 
 	ChatSystem *createLocal(int playerColour);
-	void createRemoteInstance(stream_reg_t *reg);
+	ChatSystem *createRemoteInstance(stream_reg_t *reg);
 
 	void setNetwork(Network *net) { this->net = net; };
 

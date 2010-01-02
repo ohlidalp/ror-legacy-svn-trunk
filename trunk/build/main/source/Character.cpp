@@ -94,9 +94,10 @@ Character::Character(Camera *cam,Collisions *c, Network *net, HeightFinder *h, W
 	}
 
 	if(net)
-	{
 		sendStreamSetup();
-	}
+
+	if(remote) 
+		setVisible(true);
 
 	// setup colour
 	MaterialPtr mat = MaterialManager::getSingleton().getByName("tracks/character");
@@ -273,9 +274,7 @@ void Character::setAnimationMode(Ogre::String mode, float time)
 
 void Character::update(float dt)
 {
-	if(remote) return;
-
-	if(physicsEnabled)
+	if(physicsEnabled && !remote)
 	{
 		// small hack: if not visible do not apply physics
 		//mode perso
@@ -494,7 +493,7 @@ void Character::update(float dt)
 
 	}
 
-	if(net)
+	if(net && !remote)
 		sendStreamData();
 }
 
@@ -519,23 +518,16 @@ Ogre::SceneNode *Character::getSceneNode()
 
 void Character::sendStreamSetup()
 {
-	if(remote)
-	{
-		LogManager::getSingleton().logMessage("new remote character: " + StringConverter::toString(source) + ":"+ StringConverter::toString(streamid));
-		NetworkStreamManager::getSingleton().addRemoteStream(this, source, streamid);
-		setVisible(true);
-	}else
-	{
-		// new local stream
-		stream_register_t reg;
-		memset(&reg, 0, sizeof(reg));
-		reg.status = 1;
-		strcpy(reg.name, "default");
-		reg.type = 1;
-		reg.data[0] = 2;
+	if(remote) return;
+	// new local stream
+	stream_register_t reg;
+	memset(&reg, 0, sizeof(reg));
+	reg.status = 1;
+	strcpy(reg.name, "default");
+	reg.type = 1;
+	reg.data[0] = 2;
 
-		NetworkStreamManager::getSingleton().addLocalStream(this, &reg);
-	}
+	NetworkStreamManager::getSingleton().addLocalStream(this, &reg);
 }
 
 void Character::sendStreamData()

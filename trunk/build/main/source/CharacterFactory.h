@@ -45,9 +45,10 @@ public:
 
 	Character *createLocal(int playerColour);
 
-	void createRemoteInstance(stream_reg_t *reg);
+	Character *createRemoteInstance(stream_reg_t *reg);
 	void setNetwork(Network *net) { this->net = net; };
 
+	void updateCharacters(float dt);
 	void updateLabels();
 protected:
 	Ogre::Camera *cam;

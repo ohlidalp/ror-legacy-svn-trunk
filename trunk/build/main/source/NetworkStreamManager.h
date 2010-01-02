@@ -46,7 +46,8 @@ public:
 	
 	void addLocalStream(Streamable *stream, stream_register_t *reg, unsigned int size=0);
 	void addRemoteStream(Streamable *stream, int source=-1, int streamid=-1);
-	void removeStream(Streamable *stream);
+	void removeStream(int sourceid, int streamid);
+
 	void pauseStream(Streamable *stream);
 	void resumeStream(Streamable *stream);
 	

@@ -48,6 +48,8 @@ class Streamable
 public:
 	unsigned int getStreamID() { return this->streamid; };
 	unsigned int getSourceID() { return this->sourceid; };
+	void setStreamID(unsigned int id) { this->streamid=id; };
+	void setSourceID(unsigned int id) { this->sourceid=id; };
 
 protected:
 	// constructor/destructor are protected, so you cannot create instances without using the factory
@@ -72,8 +74,6 @@ protected:
 	
 	unsigned int sourceid, streamid;
 
-	void setStreamID(unsigned int id) { this->streamid=id; };
-	void setSourceID(unsigned int id) { this->sourceid=id; };
 
 	// virtual interface methods
 	virtual void sendStreamData() = 0;

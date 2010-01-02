@@ -50,7 +50,7 @@ Character *CharacterFactory::createLocal(int playerColour)
 	return ch;
 }
 
-void CharacterFactory::createRemoteInstance(stream_reg_t *reg)
+Character *CharacterFactory::createRemoteInstance(stream_reg_t *reg)
 {
 	// NO LOCKS IN HERE, already locked
 
@@ -59,6 +59,7 @@ void CharacterFactory::createRemoteInstance(stream_reg_t *reg)
 
 	std::map < int, std::map < unsigned int, Character *> > &streamables = getStreams();
 	streamables[reg->sourceid][reg->streamid] = ch;
+	return ch;
 }
 
 void CharacterFactory::localUserAttributesChanged(int newid)
@@ -94,6 +95,24 @@ void CharacterFactory::netUserAttributesChanged(int source, int streamid)
 		{
 			Character *c = dynamic_cast<Character*>(it2->second);
 			if(c) c->updateNetLabel();
+		}
+	}
+	UNLOCKSTREAMS();
+}
+
+void CharacterFactory::updateCharacters(float dt)
+{
+	LOCKSTREAMS();
+	std::map < int, std::map < unsigned int, Character *> > &streamables = getStreams();
+	std::map < int, std::map < unsigned int, Character *> >::iterator it1;
+	std::map < unsigned int, Character *>::iterator it2;
+
+	for(it1=streamables.begin(); it1!=streamables.end();it1++)
+	{
+		for(it2=it1->second.begin(); it2!=it1->second.end();it2++)
+		{
+			Character *c = dynamic_cast<Character*>(it2->second);
+			if(c) c->update(dt);
 		}
 	}
 	UNLOCKSTREAMS();

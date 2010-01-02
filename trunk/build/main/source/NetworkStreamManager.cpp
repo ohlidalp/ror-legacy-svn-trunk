@@ -83,18 +83,15 @@ void NetworkStreamManager::addRemoteStream(Streamable *stream, int rsource, int 
 {
 	//LogManager::getSingleton().logMessage("LLL addRemoteStream - lock");
 	//pthread_mutex_lock(&stream_mutex);
-	stream->streamid = rstreamid;
 	streams[rsource][rstreamid] = stream;
 	LogManager::getSingleton().logMessage("adding remote stream: " + StringConverter::toString(rsource) + ":"+ StringConverter::toString(rstreamid));
 	//pthread_mutex_unlock(&stream_mutex);
 	//LogManager::getSingleton().logMessage("UUU addRemoteStream - unlock");
 }
 
-void NetworkStreamManager::removeStream(Streamable *stream)
+void NetworkStreamManager::removeStream(int sourceid, int streamid)
 {
 	pthread_mutex_lock(&stream_mutex);
-
-	int sourceid=-1, streamid=-1;
 	
 	bool deleted=false;
 	std::map < int, std::map < unsigned int, Streamable *> >::iterator it;
@@ -104,12 +101,8 @@ void NetworkStreamManager::removeStream(Streamable *stream)
 		std::map<unsigned int,Streamable *>::iterator it2;
 		for(it2=it->second.begin(); it2!=it->second.end(); it2++)
 		{
-			if(!it2->second) continue;
-
-			if(it2->second == stream)
+			if(it->first == sourceid && it2->first == streamid)
 			{
-				sourceid = it->first;
-				streamid = it2->second->streamid;
 				streams[it->first].erase(it2);
 				// iterator gets invalid!
 				deleted=true;
@@ -118,18 +111,15 @@ void NetworkStreamManager::removeStream(Streamable *stream)
 		}
 		if(deleted) break;
 	}
-	if(sourceid != -1 && streamid != -1)
+	// now iterate over all factories and remove their instances (only triggers)
+	for(std::vector < StreamableFactoryInterface * >::iterator it=factories.begin(); it!=factories.end(); it++)
 	{
-		// now iterate over all factories and remove their instances (only triggers)
-		std::vector < StreamableFactoryInterface * >::iterator it;
-		for(it=factories.begin(); it!=factories.end(); it++)
-		{
-			(*it)->deleteRemote(sourceid, streamid);
-		}
+		(*it)->deleteRemote(sourceid, streamid);
 	}
 	pthread_mutex_unlock(&stream_mutex);
 	//LogManager::getSingleton().logMessage("UUU removeUser - unlock");
 }
+
 
 void NetworkStreamManager::pauseStream(Streamable *stream)
 {
@@ -169,12 +159,14 @@ void NetworkStreamManager::pushReceivedStreamMessage(header_t header, char *buff
 	if(streams.find(header.source) == streams.end())
 	{
 		// no such stream?!
+		LogManager::getSingleton().logMessage("EEE Source not found: "+StringConverter::toString(header.source)+":"+StringConverter::toString(header.streamid));
 		pthread_mutex_unlock(&stream_mutex);
 		return;
 	}
 	if(streams.find(header.source)->second.find(header.streamid) == streams.find(header.source)->second.end())
 	{
 		// no such stream?!
+		LogManager::getSingleton().logMessage("EEE Stream not found: "+StringConverter::toString(header.source)+":"+StringConverter::toString(header.streamid));
 		pthread_mutex_unlock(&stream_mutex);
 		return;
 	}
