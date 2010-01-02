@@ -266,6 +266,8 @@ typedef struct _node
 	Vector3 smoothpos; //absolute, per-frame smooth, must be used for visual effects only
 	bool iIsSkin;
 	bool isSkin;
+	bool contacter;
+	int pos;
 } node_t;
 
 typedef struct
@@ -303,6 +305,12 @@ typedef struct
 	Vector3 force;
 } netforcelist_t;
 
+typedef struct
+{
+	int rate;
+	int distance;
+} collcab_rate_t;
+
 class BeamThreadStats;
 class FlexMesh;
 class FlexObj;
@@ -322,6 +330,7 @@ class Network;
 class SlideNode;
 class Rail;
 class RailGroup;
+class PointColDetector;
 
 #ifdef LUASCRIPT
 class LuaSystem;
@@ -405,17 +414,7 @@ typedef struct
 	int nodeid;
 	int contacted;
 	int opticontact;
-	int cabindex;
-	int trucknum;
-	Vector3 lastpos;
 } contacter_t;
-
-typedef struct
-{
-	Vector3 vo;
-	Matrix3 forward;
-	Matrix3 reverse;
-} tritransform_t;
 
 typedef struct
 {
@@ -593,6 +592,7 @@ void *threadstart(void* vid);
 // included here so that all the structs have been declared, this would not be a
 // problem if the beam.h cleanup patch was applied 
 #include "SlideNode.h"
+#include "PointColDetector.h"
 
 static const float flapangles[6]={0.0, -0.07, -0.17, -0.33, -0.67, -1.0};
 
@@ -639,6 +639,8 @@ public:
 	void setupDefaultSoundSources();
 	void addSoundSource(SoundScriptInstance *ssi, int nodenum);
 	void calcBox();
+	void calcNodeConnectivityGraph();
+	void updateContacterNodes();
 	void moveOrigin(Vector3 offset); //move physics origin
 	void changeOrigin(Vector3 newOrigin); //change physics origin
 	Vector3 getPosition();
@@ -667,6 +669,7 @@ public:
 	bool frameStep(Real dt, Beam** trucks, int numtrucks);
 	void prepareShutdown();
 	void calcForcesEuler(int doUpdate, Real dt, int step, int maxsteps, Beam** trucks, int numtrucks);
+	void truckTruckCollisions(Real dt, Beam** trucks, int numtrucks);
 	void calcShocks2(int beam_i, Real difftoBeamL, Real &k, Real &d);
 	Quaternion specialGetRotationTo(const Vector3& src, const Vector3& dest) const;
 	void prepareInside(bool inside);
@@ -710,6 +713,8 @@ public:
 
 	node_t nodes[MAX_NODES];
 	beam_t beams[MAX_BEAMS];
+	std::vector< vector< int > > nodetonodeconnections;
+	std::vector< vector< int > > nodebeamconnections;
 
 	std::vector<debugtext_t>nodes_debug, beams_debug;
 	void updateDebugOverlay();
@@ -788,6 +793,7 @@ public:
 	float refpressure;
 	int pressure_beams[MAX_PRESSURE_BEAMS];
 	int free_pressure_beam;
+	PointColDetector *pointCD;
 
 	pthread_mutex_t work_mutex;
 	pthread_cond_t work_cv;
@@ -842,6 +848,7 @@ public:
 
 	int getNodeCount(){return free_node;};
 	node_t *getNodes(){return nodes;};
+	int nodeBeamConnections(int nodeid);
 
 	float getTotalMass(bool withLocked=true);
 	void recalc_masses();
@@ -919,6 +926,9 @@ public:
 
 	Vector3 origin;
 	int free_cab;
+	int free_contacter;
+	contacter_t contacters[MAX_CONTACTERS];
+	
 	int cabs[MAX_CABS*3];
 	int subisback[MAX_SUBMESHES];
 	void setMeshVisibility(bool visible);
@@ -974,9 +984,6 @@ protected:
 	int forwardcommands;
 	RenderWindow* mWindow;
 	int free_beam;
-	contacter_t contacters[MAX_CONTACTERS];
-	tritransform_t transforms[MAX_CABS];
-	int free_contacter;
 	rigidifier_t rigidifiers[MAX_RIGIDIFIERS];
 	int free_rigidifier;
 	int hydro[MAX_HYDROS];
@@ -998,6 +1005,7 @@ protected:
 	Vector3 texcoords[MAX_TEXCOORDS];
 	int collcabs[MAX_CABS];
 	int collcabstype[MAX_CABS];
+	collcab_rate_t collcabrate[MAX_CABS];
 
 	int buoycabs[MAX_CABS];
 	int buoycabtypes[MAX_CABS];

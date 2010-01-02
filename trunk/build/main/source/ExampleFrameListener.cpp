@@ -4722,23 +4722,21 @@ void ExampleFrameListener::removeTruck(int truck)
 
 int ExampleFrameListener::addTruck(char *fname, Vector3 pos)
 {
-	BeamFactory::getSingleton().createLocal(pos, Quaternion::ZERO, fname, 0, false, flaresMode);
+	Beam *b = BeamFactory::getSingleton().createLocal(pos, Quaternion::ZERO, fname, 0, false, flaresMode);
 
-	if(bigMap)
+	if(b && bigMap)
 	{
-		MapEntity *e = bigMap->createNamedMapEntity("Truck"+StringConverter::toString(free_truck), MapControl::getTypeByDriveable(trucks[free_truck]->driveable));
+		MapEntity *e = bigMap->createNamedMapEntity("Truck"+StringConverter::toString(b->trucknum), MapControl::getTypeByDriveable(b->driveable));
 		if(e)
 		{
 			e->setState(DESACTIVATED);
 			e->setVisibility(true);
 			e->setPosition(reload_pos);
-			e->setRotation(-Radian(trucks[free_truck]->getHeadingDirectionAngle()));
+			e->setRotation(-Radian(b->getHeadingDirectionAngle()));
 		}
+		return b->trucknum;
 	}
-
-	int num = free_truck;
-	free_truck++;
-	return num;
+	return -1;
 }
 
 void ExampleFrameListener::shutdown_final()
@@ -6467,25 +6465,23 @@ void ExampleFrameListener::initTrucks(bool loadmanual, Ogre::String selected, Og
 		int i;
 		for (i=0; i<truck_preload_num; i++)
 		{
-			BeamFactory::getSingleton().createLocal(Vector3(truck_preload[i].px, truck_preload[i].py, truck_preload[i].pz), truck_preload[i].rotation, truck_preload[i].name, 0, truck_preload[i].ismachine, flaresMode, truckconfig, SkinPtr(), truck_preload[i].freePosition);
+			Beam *b = BeamFactory::getSingleton().createLocal(Vector3(truck_preload[i].px, truck_preload[i].py, truck_preload[i].pz), truck_preload[i].rotation, truck_preload[i].name, 0, truck_preload[i].ismachine, flaresMode, truckconfig, SkinPtr(), truck_preload[i].freePosition);
 
 			//trucks[free_truck]=new Beam(free_truck, mSceneMgr, mSceneMgr->getRootSceneNode(), mWindow, net,
 			//	&mapsizex, &mapsizez, truck_preload[i].px, truck_preload[i].py, truck_preload[i].pz, truck_preload[i].rotation, truck_preload[i].name, collisions, dustp, clumpp, sparksp, dripp, splashp, ripplep, hfinder, w, mCamera, mirror,false,false,false,0,truck_preload[i].ismachine,flaresMode, truckconfig);
-			if(bigMap)
+			if(b && bigMap)
 			{
-				MapEntity *e = bigMap->createNamedMapEntity("Truck"+StringConverter::toString(free_truck), MapControl::getTypeByDriveable(trucks[free_truck]->driveable));
+				MapEntity *e = bigMap->createNamedMapEntity("Truck"+StringConverter::toString(b->trucknum), MapControl::getTypeByDriveable(b->driveable));
 				if(e)
 				{
 					e->setState(DESACTIVATED);
 					e->setVisibility(true);
-					e->setPosition(truck_preload[free_truck].px, truck_preload[i].pz);
-					e->setRotation(-Radian(trucks[free_truck]->getHeadingDirectionAngle()));
+					e->setPosition(truck_preload[i].px, truck_preload[i].pz);
+					e->setRotation(-Radian(b->getHeadingDirectionAngle()));
 				}
 			}
-
-			free_truck++;
-			//trucks[free_truck-1]->setNetworkName(truck_preload[i].name);
 		}
+
 #ifndef AITRAFFIC
 	}
 #endif
