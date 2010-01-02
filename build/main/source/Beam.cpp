@@ -50,6 +50,7 @@ along with Rigs of Rods.  If not, see <http://www.gnu.org/licenses/>.
 #include "TorqueCurve.h"
 #include "Settings.h"
 #include "network.h"
+#include "PointColDetector.h"
 #ifdef TIMING
 #include "BeamStats.h"
 #endif
@@ -561,6 +562,7 @@ Beam::Beam(int tnum, SceneManager *manager, SceneNode *parent, RenderWindow* win
 	for(int i=0; i<MAX_WHEELS*2; i++) skidtrails[i] = 0;
 
 	collisions=icollisions;
+	pointCD=new PointColDetector();
 
 	disable_smoke=(SETTINGS.getSetting("Engine smoke")=="No");
 	heathaze=(SETTINGS.getSetting("HeatHaze")=="Yes");
@@ -4530,6 +4532,12 @@ int Beam::loadTruck(const char* fname, SceneManager *manager, SceneNode *parent,
 	//compute collision box
 	calcBox();
 
+	//compute node connectivity graph
+	calcNodeConnectivityGraph();
+
+	//update contacter nodes
+	updateContacterNodes();
+
 	// print some truck memory stats
 	int mem = 0, memr = 0, tmpmem = 0;
 	LogManager::getSingleton().logMessage("BEAM: memory stats following");
@@ -4697,9 +4705,39 @@ void Beam::calcBox()
 	maxz+=0.3;
 }
 
+void Beam::calcNodeConnectivityGraph()
+{
+	int i;
+
+	nodetonodeconnections.resize(free_node, vector< int >());
+	nodebeamconnections.resize(free_node, vector< int >());
+	
+	for (i=0; i<free_beam; i++)
+	{
+		if (beams[i].p1!=NULL && beams[i].p2!=NULL && beams[i].p1->pos>=0 && beams[i].p2->pos>=0)
+		{
+			nodetonodeconnections[beams[i].p1->pos].push_back(beams[i].p2->pos);
+			nodebeamconnections[beams[i].p1->pos].push_back(i);
+			nodetonodeconnections[beams[i].p2->pos].push_back(beams[i].p1->pos);
+			nodebeamconnections[beams[i].p2->pos].push_back(i);
+		}
+	}
+}
+
+void Beam::updateContacterNodes()
+{
+	for (int i=0; i<free_collcab; i++)
+	{
+		int tmpv=collcabs[i]*3;
+		nodes[cabs[tmpv]].contacter=true;
+		nodes[cabs[tmpv+1]].contacter=true;
+		nodes[cabs[tmpv+2]].contacter=true;
+	}
+}
+
 float Beam::warea(Vector3 ref, Vector3 x, Vector3 y, Vector3 aref)
 {
-	return ((x-ref).crossProduct(y-ref)).length()/2.0+((x-aref).crossProduct(y-aref)).length()/2.0;
+	return (((x-ref).crossProduct(y-ref)).length()+((x-aref).crossProduct(y-aref)).length())*0.5f;
 }
 
 void Beam::wash_calculator(Quaternion rot)
@@ -5381,8 +5419,7 @@ void Beam::init_node(int pos, Real x, Real y, Real z, int type, Real m, int iswh
 	nodes[pos].colltesttimer=0;
 	nodes[pos].iIsSkin=false;
 	nodes[pos].isSkin=nodes[pos].iIsSkin;
-	nodes[pos].iIsSkin=false;
-	nodes[pos].isSkin=nodes[pos].iIsSkin;
+	nodes[pos].pos=pos;
 //		nodes[pos].tsmooth=Vector3::ZERO;
 	if (type==NODE_LOADED) masscount++;
 }
@@ -5547,6 +5584,7 @@ void Beam::SyncReset()
 	parkingbrake=0;
 	fusedrag=Vector3::ZERO;
 	origin=Vector3::ZERO; //to fix
+	pointCD->reset();
 
 	Vector3 cur_position = nodes[0].AbsPosition;
 	Vector3 cur_dir = nodes[cameranodepos[0]].RelPosition - nodes[cameranodedir[0]].RelPosition;
@@ -5625,6 +5663,8 @@ void Beam::threadentry(int id)
 		dt=tdt;
 		trucks=ttrucks;
 		numtrucks=tnumtrucks;
+		float dtperstep=dt/(Real)steps;
+		
 		for (i=0; i<steps; i++)
 		{
 			int t;
@@ -5635,10 +5675,11 @@ void Beam::threadentry(int id)
 				//				if (trucks[t]->engine) trucks[t]->engine->update(dt/(Real)steps, i==0);
 				if (trucks[t]->state!=SLEEPING && trucks[t]->state!=NETWORKED && trucks[t]->state!=RECYCLE && trucks[t]->state!=TRAFFICED)
 				{
-					trucks[t]->calcForcesEuler(i==0, dt/(Real)steps, i, steps, trucks, numtrucks);
+					trucks[t]->calcForcesEuler(i==0, dtperstep, i, steps, trucks, numtrucks);
 					//trucks[t]->position=trucks[t]->aposition;
 				}
 			}
+			truckTruckCollisions(dtperstep, trucks, numtrucks);
 		}
 		ffforce=affforce/steps;
 	}
@@ -5761,6 +5802,8 @@ bool Beam::frameStep(Real dt, Beam** trucks, int numtrucks)
 		{
 			ttdt=tdt;
 			tdt=dt;
+			float dtperstep=dt/(Real)steps;
+
 			for (t=0; t<numtrucks; t++)
 			{
 				if(!trucks[t]) continue;
@@ -5777,10 +5820,11 @@ bool Beam::frameStep(Real dt, Beam** trucks, int numtrucks)
 					//							if (trucks[t]->engine) trucks[t]->engine->update(dt/(Real)steps, i==0);
 					if (trucks[t]->state!=SLEEPING && trucks[t]->state!=NETWORKED && trucks[t]->state!=RECYCLE && trucks[t]->state!=TRAFFICED)
 					{
-						trucks[t]->calcForcesEuler(i==0, dt/(Real)steps, i, steps, trucks, numtrucks);
+						trucks[t]->calcForcesEuler(i==0, dtperstep, i, steps, trucks, numtrucks);
 //							trucks[t]->position=trucks[t]->aposition;
 					}
 				}
+				truckTruckCollisions(dtperstep, trucks, numtrucks);
 			}
 			//smooth
 			for (t=0; t<numtrucks; t++)
@@ -6251,9 +6295,17 @@ void Beam::calcForcesEuler(int doUpdate, Real dt, int step, int maxstep, Beam** 
 		{
 			Vector3 dis;
 			//Calculate beam length
-			if (!beams[i].p2truck) dis=beams[i].p1->RelPosition-beams[i].p2->RelPosition;
-			else dis=beams[i].p1->AbsPosition-beams[i].p2->AbsPosition;
+			if (!beams[i].p2truck) {
+				dis=beams[i].p1->RelPosition;
+				dis-=beams[i].p2->RelPosition;
+			}
+			else {
+				dis=beams[i].p1->AbsPosition;
+				dis-=beams[i].p2->AbsPosition;
+			}
+
 			Real dislen=dis.squaredLength();
+
 			Real inverted_dislen=fast_invSqrt(dislen);
 			dislen=dislen*inverted_dislen;
 
@@ -6288,7 +6340,10 @@ void Beam::calcForcesEuler(int doUpdate, Real dt, int step, int maxstep, Beam** 
 			}
 
 			//Calculate beam's rate of change
-			Vector3 v=beams[i].p1->Velocity-beams[i].p2->Velocity;
+			Vector3 v;
+			v=beams[i].p1->Velocity;
+			v-=beams[i].p2->Velocity;
+			
 			float flen;
 			flen = -k*(difftoBeamL)-d*v.dotProduct(dis)*inverted_dislen;
 			float sflen=flen;
@@ -6303,7 +6358,7 @@ void Beam::calcForcesEuler(int doUpdate, Real dt, int step, int maxstep, Beam** 
 				{
 					// Actual deformation tests
 					// For compression
-					if (sflen>beams[i].maxposstress)
+					if (sflen>beams[i].maxposstress && difftoBeamL<0.0f)
 					{
 
 						increased_accuracy=1;
@@ -6313,13 +6368,14 @@ void Beam::calcForcesEuler(int doUpdate, Real dt, int step, int maxstep, Beam** 
 						beams[i].L+=deform;
 						sflen=sflen-(sflen-beams[i].maxposstress)*0.5f;
 						flen=sflen;
-						beams[i].maxposstress*=Lold/beams[i].L;
+						if (beams[i].L>0.0f && beams[i].L<Lold)
+						{
+							beams[i].maxposstress*=Lold/beams[i].L;
+						}
 
-						//For the compression case we only remove half the energy (0.5f) from
-						//beam's strength. This is completely adhoc but serves to keep
-						//the trucks in one piece when crashing. Nevertheless
-						//you can play with it.
-						beams[i].strength=beams[i].strength+deform*k*0.5f;
+						//For the compression case we do not remove any of the beam's
+						//strength for structure stability reasons
+						//beams[i].strength=beams[i].strength+deform*k*0.5f;
 
 						//Sound effect
 						//Sound volume depends on the energy lost due to deformation (which gets converted to sound (and thermal) energy)
@@ -6330,7 +6386,7 @@ void Beam::calcForcesEuler(int doUpdate, Real dt, int step, int maxstep, Beam** 
 						beams[i].minmaxposnegstress=std::min(beams[i].minmaxposnegstress, beams[i].strength);
 
 					} else	// For expansion
-					if (sflen<beams[i].maxnegstress)
+					if (sflen<beams[i].maxnegstress && difftoBeamL>0.0f)
 					{
 						increased_accuracy=1;
 						Real yield_length=beams[i].maxnegstress/k;
@@ -6339,7 +6395,10 @@ void Beam::calcForcesEuler(int doUpdate, Real dt, int step, int maxstep, Beam** 
 						beams[i].L+=deform;
 						sflen=sflen-(sflen-beams[i].maxnegstress)*0.5f;
 						flen=-sflen;
-						beams[i].maxnegstress*=beams[i].L/Lold;
+						if (Lold>0.0f && beams[i].L>Lold)
+						{
+							beams[i].maxnegstress*=beams[i].L/Lold;
+						}
 						beams[i].strength=beams[i].strength-deform*k;
 
 						//Sound effect
@@ -6359,18 +6418,25 @@ void Beam::calcForcesEuler(int doUpdate, Real dt, int step, int maxstep, Beam** 
 					// Sound volume depends on spring's stored energy
 					ssm->modulate(trucknum, SS_MOD_BREAK, 0.5*k*difftoBeamL*difftoBeamL);
 					ssm->trigOnce(trucknum, SS_TRIG_BREAK);
-
 					increased_accuracy=1;
-					beams[i].broken=1;
-					beams[i].disabled=true;
-					sflen=0.0f;
-					beams[i].p1->isSkin=true;
-					beams[i].p2->isSkin=true;
 
-					if(beambreakdebug)
+					//Break the beam only when it is not connected to a node
+					//which is a part of a collision triangle and has less than 4 "live" beams
+					//connected to it.
+					if (!((beams[i].p1->contacter && nodeBeamConnections(beams[i].p1->pos)<4) || (beams[i].p2->contacter && nodeBeamConnections(beams[i].p2->pos)<4)))
 					{
-						LogManager::getSingleton().logMessage(" XXX Beam " + StringConverter::toString(i) + " just broke with force " + StringConverter::toString(flen) + " / " + StringConverter::toString(beams[i].strength) + ". It was between nodes " + StringConverter::toString(beams[i].p1->id) + " and " + StringConverter::toString(beams[i].p2->id) + ".");
-					}
+						beams[i].broken=1;
+						beams[i].disabled=true;
+						sflen=0.0f;
+						beams[i].p1->isSkin=true;
+						beams[i].p2->isSkin=true;
+
+						if(beambreakdebug)
+						{
+							LogManager::getSingleton().logMessage(" XXX Beam " + StringConverter::toString(i) + " just broke with force " + StringConverter::toString(flen) + " / " + StringConverter::toString(beams[i].strength) + ". It was between nodes " + StringConverter::toString(beams[i].p1->id) + " and " + StringConverter::toString(beams[i].p2->id) + ".");
+						}
+
+					} else beams[i].strength=2.0f*beams[i].minmaxposnegstress;
 
 					//something broke, check buoyant hull
 					int mk;
@@ -6386,7 +6452,8 @@ void Beam::calcForcesEuler(int doUpdate, Real dt, int step, int maxstep, Beam** 
 			}
 
 			// At last update the beam forces
-			Vector3 f=(sflen*inverted_dislen)*dis;
+			Vector3 f=dis;
+			f*=(sflen*inverted_dislen);
 			beams[i].p1->Forces+=f;
 			beams[i].p2->Forces-=f;
 		}
@@ -6652,7 +6719,8 @@ void Beam::calcForcesEuler(int doUpdate, Real dt, int step, int maxstep, Beam** 
 		{
 			nodes[i].Velocity+=nodes[i].Forces*(dt*nodes[i].inverted_mass);
 			nodes[i].RelPosition+=nodes[i].Velocity*dt;
-			nodes[i].AbsPosition=nodes[i].RelPosition+origin;
+			nodes[i].AbsPosition=origin;
+			nodes[i].AbsPosition+=nodes[i].RelPosition;
 		}
 		if (nodes[i].AbsPosition.x>tmaxx) tmaxx=nodes[i].AbsPosition.x;
 		else if (nodes[i].AbsPosition.x<tminx) tminx=nodes[i].AbsPosition.x;
@@ -6767,6 +6835,10 @@ void Beam::calcForcesEuler(int doUpdate, Real dt, int step, int maxstep, Beam** 
 		return; // return early to avoid propagating invalid values
 	}
 
+	minx=tminx-0.3;maxx=tmaxx+0.3;
+	miny=tminy-0.3;maxy=tmaxy+0.3;
+	minz=tminz-0.3;maxz=tmaxz+0.3;
+
 #ifdef TIMING
 	if(statistics)
 		statistics->queryStop(BeamThreadStats::Nodes);
@@ -6878,181 +6950,6 @@ void Beam::calcForcesEuler(int doUpdate, Real dt, int step, int maxstep, Beam** 
 	if(statistics)
 		statistics->queryStop(BeamThreadStats::Buoyance);
 #endif
-
-
-	minx=tminx-0.3;maxx=tmaxx+0.3;
-	miny=tminy-0.3;maxy=tmaxy+0.3;
-	minz=tminz-0.3;maxz=tmaxz+0.3;
-	//triangle collisions
-//		if (!networking) //nope
-	{
-		if (free_contacter || free_collcab)
-		{
-			//calculate transform matrices
-			//this part is not so time consuming
-			//if ((step%10)==0)
-			//we do it once for all trucks
-#ifdef TIMING
-			if(statistics)
-				statistics->queryStart(BeamThreadStats::CollisionCab);
-#endif
-			if (state==ACTIVATED)
-			{
-				int t;
-				for (t=0; t<numtrucks; t++)
-				{
-					if(!trucks[t]) continue;
-					if (trucks[t]->state==SLEEPING || trucks[t]->state==RECYCLE) continue;
-					if (trucks[t]->state==NETWORKED )	//?trafficed
-					{
-						// check if still in spawn area
-						if(trucks[t]->nodes[0].AbsPosition.distance(trucks[t]->nodes[0].iPosition) < 20)
-							// first node is in a 20 m radius of its spawn point, ignore collisions for now!
-							continue;
-					}
-
-					for (i=0; i<trucks[t]->free_collcab; i++)
-					{
-						//for each triangle
-						int tmpv=trucks[t]->collcabs[i]*3;
-						Vector3 vo=trucks[t]->nodes[trucks[t]->cabs[tmpv]].AbsPosition;
-						Vector3 va=trucks[t]->nodes[trucks[t]->cabs[tmpv+1]].AbsPosition;
-						Vector3 vb=trucks[t]->nodes[trucks[t]->cabs[tmpv+2]].AbsPosition;
-						//base construction
-						Vector3 bx=va-vo;
-						Vector3 by=vb-vo;
-						Vector3 bz=bx.crossProduct(by);
-						bz=fast_normalise(bz);
-						//coordinates change matrix
-						tritransform_t* tmpt=&(trucks[t]->transforms[trucks[t]->collcabs[i]]);
-						tmpt->reverse.SetColumn(0, bx);
-						tmpt->reverse.SetColumn(1, by);
-						tmpt->reverse.SetColumn(2, bz);
-						tmpt->forward=tmpt->reverse.Inverse();
-						tmpt->vo=vo;
-					}
-				}
-			}
-#ifdef TIMING
-			if(statistics)
-				statistics->queryStop(BeamThreadStats::CollisionCab);
-
-
-			if(statistics)
-				statistics->queryStart(BeamThreadStats::Contacters);
-#endif
-			//check contact(s)
-			for (j=0; j<free_contacter; j++)
-			{
-				//wheel contacters are different
-				if (!requires_wheel_contact && nodes[contacters[j].nodeid].iswheel) continue;
-				//we check 1/10th the time except for already contacted nodes
-				if (contacters[j].opticontact) contacters[j].opticontact--;
-				if (!contacters[j].opticontact && (step%10)) continue;
-				int mintri=-1;
-				int mintruck=-1;
-				float mindist=1;
-				//search closest tri
-				int t;
-				int colltype=0;
-				for (t=0; t<numtrucks; t++)
-				{
-					if (!trucks[t]) continue;
-					if (trucks[t]->state==SLEEPING || trucks[t]->state==RECYCLE) continue;
-					if (trucks[t]->state==NETWORKED) //? trafficed
-					{
-						// check if still in spawn area
-						if(trucks[t]->nodes[0].AbsPosition.distance(trucks[t]->nodes[0].iPosition) < 20)
-							// first node is in a 20 m radius of its spawn point, ignore collisions for now!
-							continue;
-					}
-					for (i=0; i<trucks[t]->free_collcab; i++)
-					{
-						//ignore self-contact
-						if (trucks[t]==this)
-						{
-							//ignore wheel/chassis self contact
-							if (nodes[contacters[j].nodeid].iswheel) continue;
-							int tmpv=collcabs[i]*3;
-							if (cabs[tmpv]==contacters[j].nodeid ||
-								cabs[tmpv+1]==contacters[j].nodeid ||
-								cabs[tmpv+2]==contacters[j].nodeid) continue;
-						}
-						//change coordinates
-						Vector3 point=trucks[t]->transforms[trucks[t]->collcabs[i]].forward*(nodes[contacters[j].nodeid].AbsPosition-trucks[t]->transforms[trucks[t]->collcabs[i]].vo);
-						//test
-						if (point.x>=0 && point.y>=0 && (point.x+point.y)<=1.0)
-						{
-							if (point.z<0.2 && point.z>-0.2) contacters[j].opticontact=200;
-							if (point.z<0.02 && point.z>-0.02)
-							{
-								//collision
-								if (fabs(point.z)<mindist)
-								{
-									mintri=trucks[t]->collcabs[i];
-									colltype=trucks[t]->collcabstype[i];
-									mintruck=t;
-									mindist=fabs(point.z);
-								}
-							}
-						}
-					}
-				}
-				if (mintri!=-1)
-				{
-					//we have a collision with index mintri of truck mintruck
-					Vector3 point=trucks[mintruck]->transforms[mintri].forward*(nodes[contacters[j].nodeid].AbsPosition-trucks[mintruck]->transforms[mintri].vo);
-					// fix possible zero division bug
-					float fl=nodes[contacters[j].nodeid].mass*inverted_dt*inverted_dt*(0.02-fabs(point.z));
-					// colltype = 0, default, as always
-					// colltype = 1, tripe force possible
-					// colltype = 2, no more check, no breaking
-					if (colltype == 0 && fl>1000000.0) fl=1000000.0;
-					if (colltype == 1 && fl>3000000.0) fl=3000000.0;
-					if (point.z>0) fl=-fl;
-					//friction
-					float frx=0;
-					float fry=0;
-					if (contacters[j].contacted && mintri==contacters[j].cabindex && mintruck==contacters[j].trucknum)
-					{
-						Vector3 dp=point-contacters[j].lastpos;
-						frx=nodes[contacters[j].nodeid].mass*inverted_dt*inverted_dt*dp.x;
-						if (frx>100000.0) frx=100000.0;
-						if (frx<-100000.0) frx=-100000.0;
-						fry=nodes[contacters[j].nodeid].mass*inverted_dt*inverted_dt*dp.y;
-						if (fry>100000.0) fry=100000.0;
-						if (fry<-100000.0) fry=-100000.0;
-					}
-
-					Vector3 force=trucks[mintruck]->transforms[mintri].reverse*Vector3(frx,fry,fl);
-					nodes[contacters[j].nodeid].Forces-=force;
-					if(trucks[mintruck]->state==NETWORKED)
-					{
-						// its a networked truck, we need to send the forces over the network
-
-					}
-					else
-					{
-						// is a local truck
-						trucks[mintruck]->nodes[trucks[mintruck]->cabs[mintri*3]].Forces+=(-point.x-point.y+1.0)*force;
-						trucks[mintruck]->nodes[trucks[mintruck]->cabs[mintri*3+1]].Forces+=(point.x)*force;
-						trucks[mintruck]->nodes[trucks[mintruck]->cabs[mintri*3+2]].Forces+=(point.y)*force;
-					}
-
-					//register the contact
-					contacters[j].contacted=true;
-					contacters[j].opticontact=400;
-					contacters[j].cabindex=mintri;
-					contacters[j].lastpos=point;
-					contacters[j].trucknum=mintruck;
-				} else {contacters[j].contacted=false;}
-			}
-#ifdef TIMING
-			if(statistics)
-				statistics->queryStop(BeamThreadStats::Contacters);
-#endif
-		}
-	}
 
 #ifdef TIMING
 	if(statistics)
@@ -7814,6 +7711,227 @@ void Beam::calcForcesEuler(int doUpdate, Real dt, int step, int maxstep, Beam** 
 		}
 	}
 
+}
+
+//truck-truck collisions
+void Beam::truckTruckCollisions(Real dt, Beam** trucks, int numtrucks)
+{
+
+#ifdef TIMING
+	if(statistics)
+		statistics->queryStart(BeamThreadStats::Contacters);
+#endif
+
+	const float trwidth=0.02f;
+	const float invtrwidth=1.0f/trwidth;
+
+	int t;
+	int hitnodeid;
+	int hittruckid;
+	int i;
+
+	float inverted_dt=1.0f/dt;
+
+	pointCD->update(trucks, numtrucks);
+
+	int colltype=0;
+	int tmpv;
+	Matrix3 forward;
+	bool calcforward;
+	Vector3 bx;
+	Vector3 by;
+	Vector3 bz;
+	Vector3 point;
+	Vector3 forcevec;
+	Vector3 vecrelVel;
+	Vector3 plnormal;
+	node_t* no;
+	node_t* na;
+	node_t* nb;
+	node_t* hitnode;
+	Beam* hittruck;
+
+	for (t=0; t<numtrucks; t++)
+	{
+		//If you change any of the below "ifs" concerning trucks then you should
+		//also consider changing the parallel "ifs" inside PointColDetector
+		//see "pointCD" above.
+		//Performance some times forces ugly architectural designs....
+		if (!trucks[t]) continue;
+		if (trucks[t]->state==SLEEPING || trucks[t]->state==RECYCLE) continue;
+		if (trucks[t]->state==NETWORKED) //? trafficed
+		{
+			// check if still in spawn area
+			if(trucks[t]->nodes[0].AbsPosition.distance(trucks[t]->nodes[0].iPosition) < 20)
+				// first node is in a 20 m radius of its spawn point, ignore collisions for now!
+				continue;
+		}
+
+		for (i=0; i<trucks[t]->free_collcab; i++)
+		{
+			if (trucks[t]->collcabrate[i].rate>0)
+			{
+				trucks[t]->collcabrate[i].rate--;
+				continue;
+			}
+
+			if (trucks[t]->collcabrate[i].distance< 1) trucks[t]->collcabrate[i].distance=1;
+			
+			tmpv=trucks[t]->collcabs[i]*3;
+			no=&trucks[t]->nodes[trucks[t]->cabs[tmpv]];
+			na=&trucks[t]->nodes[trucks[t]->cabs[tmpv+1]];
+			nb=&trucks[t]->nodes[trucks[t]->cabs[tmpv+2]];
+
+			pointCD->query(no->AbsPosition
+				, na->AbsPosition
+				, nb->AbsPosition, trwidth*trucks[t]->collcabrate[i].distance);
+
+			calcforward=true;
+			for (int h=0; h<pointCD->hit_count;h++)
+			{
+				hitnodeid=pointCD->hit_list[h]->nodeid;
+				hittruckid=pointCD->hit_list[h]->truckid;
+				hitnode=&trucks[hittruckid]->nodes[hitnodeid];
+
+				//ignore self-contact
+				if (hittruckid==t)
+				{
+					//ignore wheel/chassis self contact
+					//if (hitnode->iswheel && !(trucks[t]->requires_wheel_contact)) continue;
+					if (hitnode->iswheel) continue;
+					if (no==hitnode || na==hitnode || nb==hitnode) continue;
+				}
+
+				hittruck=trucks[hittruckid];
+
+				//calculate transform matrices
+				if (calcforward)
+				{
+					calcforward=false;
+					bx=na->RelPosition;
+					by=nb->RelPosition;
+					bx-=no->RelPosition;
+					by-=no->RelPosition;
+					bz=bx.crossProduct(by);
+					bz=fast_normalise(bz);
+					//coordinates change matrix
+					forward.SetColumn(0, bx);
+					forward.SetColumn(1, by);
+					forward.SetColumn(2, bz);
+					forward=forward.Inverse();
+				}
+
+				//change coordinates
+				point=forward * (hitnode->AbsPosition - no->AbsPosition);
+				
+				//test
+				if (point.x>=0 && point.y>=0 && (point.x+point.y)<=1.0 && point.z<=trwidth && point.z>=-trwidth)
+				{
+					//collision
+					plnormal=bz;
+
+					//some more accuracy for the normal
+					plnormal.normalise();
+
+					float penetration=0.0f;
+
+					//Find which side most of the connected nodes (through beams) are
+					if (hittruckid!=t && hittruck->nodetonodeconnections[hitnodeid].size()>3)
+					{
+						//float sumofdistances=0.0f;
+						int posside=0;
+						int negside=0;
+						float tmppz=point.z;
+						float distance;
+						
+						for (unsigned int ni=0;ni<hittruck->nodetonodeconnections[hitnodeid].size();ni++)
+						{
+							distance=plnormal.dotProduct(hittruck->nodes[hittruck->nodetonodeconnections[hitnodeid][ni]].AbsPosition-no->AbsPosition);
+							if (distance>=0) posside++; else negside++;
+						}
+
+						//Current hitpoint's position has triple the weight
+						if (point.z>=0) posside+=3;
+						else negside+=3;
+
+						if (negside>posside) 
+						{
+							plnormal=-plnormal;
+							tmppz=-tmppz;
+						}
+
+						penetration=(trwidth-tmppz);
+					}
+					else
+					{
+						//If we are on the other side of the triangle invert the triangle's normal
+						if (point.z<0) plnormal=-plnormal;
+						penetration=(trwidth-fabs(point.z));
+					}
+
+					//Find the point's velocity relative to the triangle
+					vecrelVel=(hitnode->Velocity-
+					(no->Velocity*(-point.x-point.y+1.0f)+na->Velocity*point.x
+						+nb->Velocity*point.y));
+
+					float velForce=vecrelVel.dotProduct(plnormal);
+					if (velForce<0.0f) velForce=-velForce;
+					else velForce=0.0f;
+
+					//Velocity impulse
+					float vi=hitnode->mass*inverted_dt*(velForce+inverted_dt*penetration)*0.5f;
+					//float vi=hitnode->mass*inverted_dt*inverted_dt*penetration;
+
+					//The force that the triangle puts on the point
+					float trfnormal=(no->Forces*(-point.x-point.y+1.0f)+na->Forces*point.x
+						+nb->Forces*point.y).dotProduct(plnormal);
+					//(applied only when it is towards the point)
+					if (trfnormal<0.0f) trfnormal=0.0f;
+
+					float pfnormal=hitnode->Forces.dotProduct(plnormal);
+					if (pfnormal>0.0f) pfnormal=0.0f;
+
+					float fl=(vi+trfnormal-pfnormal)*0.5f;
+					//float fl=vi;
+
+					forcevec=Vector3::ZERO;
+					float nso;
+
+					//Calculate the collision forces
+					collisions->primitiveCollision(hitnode, forcevec, vecrelVel, plnormal, ((float) dt), collisions->defaultgm, &nso, penetration, fl);
+
+					//forcevec=plnormal*fl;
+					hitnode->Forces+=forcevec;
+					if(trucks[t]->state==NETWORKED)
+					{
+						// its a networked truck, we need to send the forces over the network
+
+					}
+					else
+					{
+						no->Forces-=(-point.x-point.y+1.0f)*forcevec;
+						na->Forces-=(point.x)*forcevec;
+						nb->Forces-=(point.y)*forcevec;
+					}
+				}
+			}
+
+			if (calcforward)
+			{
+				trucks[t]->collcabrate[i].rate=((trucks[t]->collcabrate[i].distance)-1);
+				if (trucks[t]->collcabrate[i].distance<14) trucks[t]->collcabrate[i].distance++;
+			} else
+			{
+				trucks[t]->collcabrate[i].distance/=2;
+				trucks[t]->collcabrate[i].rate=0;
+			}
+		}
+	}
+
+#ifdef TIMING
+	if(statistics)
+		statistics->queryStop(BeamThreadStats::Contacters);
+#endif
 }
 
 // call this once per frame in order to update the skidmarks
@@ -9480,4 +9598,15 @@ node_t* Beam::getNode(unsigned int id)
 
 	// node not found
 	return NULL;
+}
+
+//Returns the number of active (non bounded) beams connected to a node
+int Beam::nodeBeamConnections(int nodeid)
+{
+	int totallivebeams=0;
+	for (unsigned int ni=0; ni<nodebeamconnections[nodeid].size(); ++ni)
+	{
+		if (!beams[nodebeamconnections[nodeid][ni]].disabled && !beams[nodebeamconnections[nodeid][ni]].bounded) totallivebeams++;
+	}
+	return totallivebeams;
 }

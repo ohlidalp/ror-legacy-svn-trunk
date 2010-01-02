@@ -160,7 +160,6 @@ private:
 	int largest_cellcount;
 	bool debugMode;
 	Landusemap *landuse;
-	ground_model_t *defaultgm, *defaultgroundgm;
 
 private:
 	void hash_add(int cell_x, int cell_z, int value);
@@ -174,6 +173,7 @@ private:
 public:
 	bool forcecam;
 	Vector3 forcecampos;
+	ground_model_t *defaultgm, *defaultgroundgm;
 
 	Collisions() {}; // for wrapper, DO NOT USE!
 
@@ -193,7 +193,7 @@ public:
 	bool isInside(Vector3 pos, char* instance, char* box, float border=0);
 	bool isInside(Vector3 pos, collision_box_t *cbox, float border=0);
 	bool groundCollision(node_t *node, float dt, ground_model_t** gm, float *nso=0);
-	void primitiveCollision(node_t *node, Vector3 normal, float dt, ground_model_t* gm, float* nso, float penetration=0);
+	void primitiveCollision(node_t *node, Vector3 &normal, Vector3 &force, Vector3 &velocity, float dt, ground_model_t* gm, float* nso, float penetration=0, float reaction=-1.0f);
 	void setHfinder(HeightFinder *hf);
 	void printStats();
 

@@ -960,7 +960,7 @@ node_coll_resume_cell:
 								if (cbox->refined) normal=cbox->rot*normal;
 
 								// collision boxes are always out of concrete as it seems
-								primitiveCollision(node, normal, dt, defaultgm, nso);
+								primitiveCollision(node, node->Forces, node->Velocity, normal, dt, defaultgm, nso);
 								if (ogm) *ogm=defaultgm;
 								}
 							}
@@ -1004,7 +1004,7 @@ node_coll_resume_cell:
 							//resume repere for the normal
 							if (cbox->selfrotated) normal=cbox->selfrot*normal;
 							if (cbox->refined) normal=cbox->rot*normal;
-							primitiveCollision(node, normal, dt, defaultgm, nso);
+							primitiveCollision(node, node->Forces, node->Velocity, normal, dt, defaultgm, nso);
 							if (ogm) *ogm=defaultgm;
 							/*//fix position
 							Vector3 prevPos=node->AbsPosition;
@@ -1075,7 +1075,7 @@ node_coll_resume_cell:
 		//we need the normal
 		//resume repere for the normal
 		Vector3 normal=minctri->reverse*Vector3::UNIT_Z;
-		primitiveCollision(node, normal, dt, minctri->gm, nso);
+		primitiveCollision(node, node->Forces, node->Velocity, normal, dt, minctri->gm, nso);
 		if (ogm) *ogm=minctri->gm;
 		/*
 		float depth=-minctripoint.z;
@@ -1194,29 +1194,30 @@ bool Collisions::groundCollision(node_t *node, float dt, ground_model_t** ogm, f
 		//collision!
 		Vector3 normal;
 		hfinder->getNormalAt(node->AbsPosition.x, v, node->AbsPosition.z, &normal);
-		primitiveCollision(node, normal, dt, *ogm, nso, v-node->AbsPosition.y);
+		primitiveCollision(node, node->Forces, node->Velocity, normal, dt, *ogm, nso, v-node->AbsPosition.y);
 		return true;
 	}
 	return false;
 }
 
-void Collisions::primitiveCollision(node_t *node, Vector3 normal, float dt, ground_model_t* gm, float* nso, float penetration)
+void Collisions::primitiveCollision(node_t *node, Vector3 &force, Vector3 &velocity, Vector3 &normal, float dt, ground_model_t* gm, float* nso, float penetration, float reaction)
 {
 	//normal velocity
-	float Vnormal=node->Velocity.dotProduct(normal);
+	
+	float Vnormal=velocity.dotProduct(normal);
 
 	// if we are inside the fluid (solid ground is below us)
 	if (gm->solid_ground_level!=0.0f && penetration>=0)
 	{
 		if (nso) *nso=0.0f;
 
-		float Vsquared=node->Velocity.squaredLength();
+		float Vsquared=velocity.squaredLength();
 		// First of all calculate power law fluid viscosity
 		float m = gm->flow_consistency_index*approx_pow(Vsquared, (gm->flow_behavior_index-1.0f)*0.5f);
 
 		//Then calculate drag based on above. We'are using a simplified Stokes' drag.
 		// Per node fluid drag surface coefficient set by node property applies here
-		Vector3 Fdrag=node->Velocity*(-m * node->surface_coef);
+		Vector3 Fdrag=velocity*(-m * node->surface_coef);
 
 		//If we have anisotropic drag
 		if (gm->drag_anisotropy<1.0f && Vnormal>0)
@@ -1228,7 +1229,7 @@ void Collisions::primitiveCollision(node_t *node, Vector3 normal, float dt, grou
 				da_factor=Vsquared/(gm->va*gm->va);
 			Fdrag+=(Vnormal*m*(1.0f-gm->drag_anisotropy)*da_factor)*normal;
 		}
-		node->Forces+=Fdrag;
+		force+=Fdrag;
 
 		//Now calculate upwards force based on a simplified boyancy equation;
 		//If the fluid is pseudoplastic then boyancy is constrained to only "stopping" a node from going downwards
@@ -1236,21 +1237,21 @@ void Collisions::primitiveCollision(node_t *node, Vector3 normal, float dt, grou
 		float Fboyancy = gm->fluid_density * penetration * (-DEFAULT_GRAVITY) * node->volume_coef;
 		if (gm->flow_behavior_index<1.0f && Vnormal>=0.0f)
 		{
-			float Fnormal=node->Forces.dotProduct(normal);
+			float Fnormal=force.dotProduct(normal);
 			if (Fnormal<0 && Fboyancy>-Fnormal)
 			{
 				Fboyancy=-Fnormal;
 			}
 		}
-		node->Forces+=Fboyancy*normal;
+		force+=Fboyancy*normal;
 	}
 
 	// if we are inside or touching the solid ground
 	if (penetration>=gm->solid_ground_level)
 	{
-		Vector3 slip=node->Velocity-Vnormal*normal;
+		Vector3 slip=velocity-Vnormal*normal;
 		float slipv=slip.squaredLength();
-		if (fabs(slipv) > 0.000000001f)
+		if (fabs(slipv) > 1e-08f)
 		{
 			float invslipv=fast_invSqrt(slipv);
 			slip=slip*invslipv;
@@ -1258,40 +1259,48 @@ void Collisions::primitiveCollision(node_t *node, Vector3 normal, float dt, grou
 		}
 		else
 		{
-			slip=Vector3::ZERO;
-			slipv=0.0f;
+			slipv=sqrt(slipv);
 		}
 
 		if (nso && gm->solid_ground_level==0.0f) *nso=slipv;
 
-		//steady force
-		float Fnormal=node->Forces.dotProduct(normal);
-		float Freaction=-Fnormal;
-		//impact force
-		if (Vnormal<0)
-		{
-			Freaction+=-Vnormal*node->mass/dt; //Newton's second law
-		}
-		if (Freaction<0) Freaction=0;
+		float Fnormal;
+		float Freaction;
+		float Greaction;
 
+		//steady force
+		if (reaction<0)
+		{
+			Fnormal=force.dotProduct(normal);
+			Freaction=-Fnormal;
+			//impact force
+			if (Vnormal<0)
+			{
+				Freaction+=-Vnormal*node->mass/dt; //Newton's second law
+			}
+			if (Freaction<0) Freaction=0.0f;
+		} else {
+			Freaction=reaction;
+			Fnormal=0.0f;
+		}
 		float ff;
 		// If the velocity that we slip is lower than adhesion velocity and
 		// we have a downforce and the slip forces are lower than static friction
 		// forces then it's time to go into static friction physics mode.
 		// This code is a direct translation of textbook static friction physics
-		float Greaction=(Freaction * gm->strength * node->friction_coef); //General moderated reaction, node property sets friction_coef as a pernodefriction setting
-		if ( slipv<(gm->va) && Freaction>0 && fabs(node->Forces.dotProduct(slip))<=fabs((gm->ms)*Greaction))
+		Greaction=(Freaction * gm->strength * node->friction_coef); //General moderated reaction, node property sets friction_coef as a pernodefriction setting
+		if ( slipv<(gm->va) && Greaction>0 && fabs(force.dotProduct(slip))<=fabs((gm->ms)*Greaction))
 		{
 			// Static friction model (with a little smoothing to help the integrator deal with it)
 			ff=-(gm->ms)*(1-approx_exp(-fabs(slipv/gm->va)))*Greaction;
-			node->Forces=(Fnormal+Freaction)*normal + ff*slip;
+			force=(Fnormal+Freaction)*normal + ff*slip;
 		}
 		else
 		{
 			//Stribek model. It also comes directly from textbooks.
 			float g=gm->mc+(gm->ms-gm->mc)*approx_exp(-approx_pow(slipv/gm->vs, gm->alpha));
 			ff=-(g+gm->t2*slipv)*Greaction;
-			node->Forces+=Freaction*normal + ff*slip;
+			force+=Freaction*normal + ff*slip;
 		}
 	}
 }
