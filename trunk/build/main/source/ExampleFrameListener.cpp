@@ -6399,6 +6399,7 @@ void ExampleFrameListener::initTrucks(bool loadmanual, Ogre::String selected, Og
 	char *selectedchr = const_cast<char *>(selected.c_str());
 	if (loadmanual)
 	{
+		Beam *b=0;
 		if(net)
 		{
 			Vector3 spawnpos = Vector3(truckx, trucky, truckz);
@@ -6426,35 +6427,34 @@ void ExampleFrameListener::initTrucks(bool loadmanual, Ogre::String selected, Og
 				}
 			}
 			//trucks[free_truck]=new Beam(free_truck, mSceneMgr, mSceneMgr->getRootSceneNode(), mWindow, net, &mapsizex, &mapsizez, spawnpos.x, spawnpos.y, spawnpos.z, spawnrot, selectedchr, collisions, dustp, clumpp, sparksp, dripp, splashp, ripplep, hfinder, w, mCamera, mirror, false, false, netmode,0,false,flaresMode, truckconfig);
-			BeamFactory::getSingleton().createLocal(spawnpos, spawnrot, selectedchr, 0, false, flaresMode, truckconfig);
+			b = BeamFactory::getSingleton().createLocal(spawnpos, spawnrot, selectedchr, 0, false, flaresMode, truckconfig);
 //IMI - on network mode we should be directly jump in
-			if (enterTruck)
+			if (b && enterTruck)
 			{
 					cameramode = CAMERA_INT;
-					setCurrentTruck(free_truck);
+					setCurrentTruck(b->trucknum);
 			}
 
 		} else
 		{
-			BeamFactory::getSingleton().createLocal(Vector3(truckx, trucky, truckz), Quaternion::ZERO, selectedchr, 0, false, flaresMode, truckconfig);
+			Beam *b = BeamFactory::getSingleton().createLocal(Vector3(truckx, trucky, truckz), Quaternion::ZERO, selectedchr, 0, false, flaresMode, truckconfig);
 			//trucks[free_truck]=new Beam(free_truck, mSceneMgr, mSceneMgr->getRootSceneNode(), mWindow, net, &mapsizex, &mapsizez, truckx, trucky, truckz, Quaternion::ZERO, selectedchr, collisions, dustp, clumpp, sparksp, dripp, splashp, ripplep, hfinder, w, mCamera, mirror, false, false, netmode,0,false,flaresMode, truckconfig);
-			if(enterTruck) setCurrentTruck(free_truck);
+			if(enterTruck) setCurrentTruck(b->trucknum);
 		}
 
-		if(bigMap)
+		if(b && bigMap)
 		{
-			MapEntity *e = bigMap->createNamedMapEntity("Truck"+StringConverter::toString(free_truck), MapControl::getTypeByDriveable(trucks[free_truck]->driveable));
+			MapEntity *e = bigMap->createNamedMapEntity("Truck"+StringConverter::toString(b->trucknum), MapControl::getTypeByDriveable(b->driveable));
 			if(e)
 			{
 				e->setState(DESACTIVATED);
 				e->setVisibility(true);
 				e->setPosition(truckx, truckz);
-				e->setRotation(-Radian(trucks[free_truck]->getHeadingDirectionAngle()));
+				e->setRotation(-Radian(b->getHeadingDirectionAngle()));
 			}
 		}
 
-		if (trucks[free_truck]->engine) trucks[free_truck]->engine->start();
-		free_truck++;
+		if (b && b->engine) b->engine->start();
 	}
 
 
