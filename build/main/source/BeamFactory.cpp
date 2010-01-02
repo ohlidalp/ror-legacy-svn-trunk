@@ -47,10 +47,6 @@ Beam *BeamFactory::createLocal(int slotid)
 
 int BeamFactory::removeBeam(Beam *b)
 {
-	// remove the stream without locking yet, otherwise deadlock
-	if(net)
-		NetworkStreamManager::getSingleton().removeStream(b);
-	
 	LOCKSTREAMS();
 	std::map < int, std::map < unsigned int, Beam *> > &streamables = getStreams();
 	std::map < int, std::map < unsigned int, Beam *> >::iterator it1;
@@ -126,7 +122,7 @@ Beam *BeamFactory::createLocal(Ogre::Vector3 pos, Ogre::Quaternion rot, Ogre::St
 	return b;
 }
 
-void BeamFactory::createRemoteInstance(stream_reg_t *reg)
+Beam *BeamFactory::createRemoteInstance(stream_reg_t *reg)
 {
 	// NO LOCKS IN HERE, already locked
 
@@ -142,7 +138,7 @@ void BeamFactory::createRemoteInstance(stream_reg_t *reg)
 	if(truck_num == -1)
 	{
 		LogManager::getSingleton().logMessage("ERROR: could not add beam to main list");
-		return;
+		return 0;
 	}
 
 	Beam *b = new Beam(truck_num,
@@ -172,12 +168,15 @@ void BeamFactory::createRemoteInstance(stream_reg_t *reg)
 
 	efl->trucks[truck_num] = b;
 
-	b->setNetworkProperties(reg->sourceid, reg->streamid);
+	b->setSourceID(reg->sourceid);
+	b->setStreamID(reg->streamid);
 
 	std::map < int, std::map < unsigned int, Beam *> > &streamables = getStreams();
 	streamables[reg->sourceid][reg->streamid] = b;
 
 	b->updateNetworkInfo();
+
+	return b;
 }
 
 void BeamFactory::localUserAttributesChanged(int newid)

@@ -27,6 +27,7 @@ along with Rigs of Rods.  If not, see <http://www.gnu.org/licenses/>.
 #include "pthread.h"
 #include "SocketW.h"
 #include "rornet.h"
+#include "Streamable.h"
 #include "NetworkStreamManager.h"
 #include <map>
 
@@ -49,7 +50,7 @@ class StreamableFactoryInterface
 {
 public:
 	virtual void netUserAttributesChanged(int source, int streamid) = 0;
-	virtual void createRemoteInstance(stream_reg_t *reg) = 0;
+	virtual Streamable *createRemoteInstance(stream_reg_t *reg) = 0;
 	virtual void createRemote(int sourceid, int streamid, stream_register_t *reg, int colour) = 0;
 	virtual void deleteRemote(int sourceid, int streamid) = 0;
 	virtual void syncRemoteStreams() = 0;

@@ -89,7 +89,7 @@ public:
 	// useful functions
 	virtual X *createLocal(int colour) = 0;
 	virtual void netUserAttributesChanged(int source, int streamid) = 0;
-	virtual void createRemoteInstance(stream_reg_t *reg) = 0;
+	virtual X *createRemoteInstance(stream_reg_t *reg) = 0;
 
 	// common functions
 	void createRemote(int sourceid, int streamid, stream_register_t *reg, int colour)
@@ -125,7 +125,12 @@ public:
 		while (!stream_registrations.empty())
 		{
 			stream_reg_t reg = stream_registrations.front();
-			createRemoteInstance(&reg);
+			Streamable *s = createRemoteInstance(&reg);
+			if(s)
+			{
+				// add it to the streams list
+				NetworkStreamManager::getSingleton().addRemoteStream(s, reg.sourceid, reg.streamid);
+			}
 			stream_registrations.pop_front();
 		}
 		// then deletions:

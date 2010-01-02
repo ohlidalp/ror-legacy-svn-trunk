@@ -2921,10 +2921,10 @@ bool ExampleFrameListener::updateEvents(float dt)
 
 	if (loading_state==ALL_LOADED)
 	{
- 		if(person)
-		{
+		if(net)
+			CharacterFactory::getSingleton().updateCharacters(dt);
+		else
 			person->update(dt);
-		}
 
 		bool enablegrab = true;
 		if (cameramode != CAMERA_FREE)

@@ -955,6 +955,7 @@ inline bool Beam::inRange(float num, float min, float max)
 //called by the network thread
 void Beam::pushNetwork(char* data, int size)
 {
+	if(!oob3) return;
 	if ((unsigned int)size==(netbuffersize+sizeof(oob_t)))
 	{
 		memcpy((char*)oob3, data, sizeof(oob_t));
@@ -5918,38 +5919,20 @@ void Beam::prepareShutdown()
 
 }
 
-void Beam::setNetworkProperties(int source, unsigned int streamid)
-{
-	bool reg = (this->sourceid == 0 && this->streamid == 0);
-	this->sourceid=sourceid;
-	this->streamid=streamid;
-	if(reg)
-		sendStreamSetup();
-}
-
 void Beam::sendStreamSetup()
 {
+	if(!net || state == NETWORKED ) return;
 	// only init stream if its local.
-	// the stream is local when networkign=true and networked=false
-	if(net && state != NETWORKED )
-	{
-		// register the local stream
-		stream_register_trucks_t reg;
-		reg.status = 0;
-		reg.type = 0; // 0 = truck
-		reg.bufferSize = netbuffersize;
-		strcpy(reg.name, realtruckfilename.c_str());
+	// the stream is local when networking=true and networked=false
+	
+	// register the local stream
+	stream_register_trucks_t reg;
+	reg.status = 0;
+	reg.type = 0; // 0 = truck
+	reg.bufferSize = netbuffersize;
+	strcpy(reg.name, realtruckfilename.c_str());
 
-		NetworkStreamManager::getSingleton().addLocalStream(this, (stream_register_t *)&reg, sizeof(reg));
-	} else if(net && state == NETWORKED)
-	{
-		// remote
-		if(!(sourceid == 0 && streamid == 0)) 
-		{
-			LogManager::getSingleton().logMessage("new remote beam vehicle: " + StringConverter::toString(sourceid) + ":"+ StringConverter::toString(streamid));
-			NetworkStreamManager::getSingleton().addRemoteStream(this, sourceid, streamid);
-		}
-	}
+	NetworkStreamManager::getSingleton().addLocalStream(this, (stream_register_t *)&reg, sizeof(reg));
 }
 
 void Beam::sendStreamData()

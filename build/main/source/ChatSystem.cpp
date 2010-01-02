@@ -57,7 +57,7 @@ ChatSystem *ChatSystemFactory::createLocal(int playerColour)
 	return ch;
 }
 
-void ChatSystemFactory::createRemoteInstance(stream_reg_t *reg)
+ChatSystem *ChatSystemFactory::createRemoteInstance(stream_reg_t *reg)
 {
 	// NO LOCKS IN HERE, already locked
 
@@ -66,6 +66,7 @@ void ChatSystemFactory::createRemoteInstance(stream_reg_t *reg)
 
 	std::map < int, std::map < unsigned int, ChatSystem *> > &streamables = getStreams();
 	streamables[reg->sourceid][reg->streamid] = ch;
+	return ch;
 }
 
 void ChatSystemFactory::syncRemoteStreams()
@@ -189,18 +190,13 @@ ChatSystem::~ChatSystem()
 
 void ChatSystem::sendStreamSetup()
 {
-	if(remote)
-	{
-		LogManager::getSingleton().logMessage("new remote ChatSystem: " + StringConverter::toString(source) + ":"+ StringConverter::toString(streamid));
-		NetworkStreamManager::getSingleton().addRemoteStream(this, source, streamid);
-	} else
-	{
-		stream_register_t reg;
-		reg.status = 1;
-		strcpy(reg.name, "chat");
-		reg.type = 3;
-		NetworkStreamManager::getSingleton().addLocalStream(this, &reg);
-	}
+	if(remote) return;
+
+	stream_register_t reg;
+	reg.status = 1;
+	strcpy(reg.name, "chat");
+	reg.type = 3;
+	NetworkStreamManager::getSingleton().addLocalStream(this, &reg);
 }
 
 void ChatSystem::sendStreamData()

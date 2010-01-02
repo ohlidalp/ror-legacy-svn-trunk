@@ -49,7 +49,7 @@ class BeamFactory : public StreamableFactory < BeamFactory, Beam >
 	Beam *createLocal(Ogre::Vector3 pos, Ogre::Quaternion rot, Ogre::String fname, collision_box_t *spawnbox=NULL, bool ismachine=false, int flareMode=0, std::vector<Ogre::String> *truckconfig=0, SkinPtr skin=SkinPtr(), bool freePosition=false);
 	int removeBeam(Beam *b);
 
-	void createRemoteInstance(stream_reg_t *reg);
+	Beam *createRemoteInstance(stream_reg_t *reg);
 
 	Beam *getBeam(int source, int streamid); // used by character
 protected:
