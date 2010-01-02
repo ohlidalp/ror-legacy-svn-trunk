@@ -2177,6 +2177,15 @@ void MyDialog::updateRendersystems(Ogre::RenderSystem *rs)
 	int x = 10;
 	int y = 50;
 	int counter = 0;
+	if(!rs)
+	{
+		wxString warning = _("Unable to load the render systems. Please check if all required files are there and the plugins.cfg file is correct.\nThis is a fatal error and the game will not start.");
+		wxString caption = _("Error: no rendersystems found");
+		wxMessageDialog *w = new wxMessageDialog(this, warning, caption, wxOK, wxDefaultPosition);
+		w->ShowModal();
+		delete(w);
+		return;
+	}
 	Ogre::ConfigOptionMap opts = rs->getConfigOptions();
 	Ogre::ConfigOptionMap::iterator optIt = opts.begin();
 	for(Ogre::ConfigOptionMap::iterator optIt=opts.begin(); optIt!=opts.end(); optIt++)
