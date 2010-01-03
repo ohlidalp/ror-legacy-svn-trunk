@@ -226,6 +226,8 @@ set(ror_src
 	source/PlayerColours.h
 	source/PlayerColours.cpp
     
+	source/PointColDetector.h
+	source/PointColDetector.cpp
 )
 
 include_directories (OgreMain/include Dependencies/include)
