@@ -437,8 +437,17 @@ void showUsage()
 void showVersion()
 {
 	char tmp[1024] = "";
-	sprintf(tmp, "Rigs of Rods version %s\n%s\n%s\n", ROR_VERSION_STRING, SVN_REVISION, SVN_ID);
+	sprintf(tmp, "Rigs of Rods\n"
+		" version: %s\n"
+		" revision: %s\n"
+		" full revision: %s\n"
+		" protocol version: %s\n"
+		" build time: %s, %s\n"
+		, ROR_VERSION_STRING, SVN_REVISION, SVN_ID, RORNET_VERSION, __DATE__, __TIME__);
 	showInfo(_L("Version Information"), String(tmp));
+#ifdef __GNUC__
+	printf(" * built with gcc %d.%d.%d\n", __GNUC_MINOR__, __GNUC_MINOR__, __GNUC_PATCHLEVEL__);
+#endif //__GNUC__
 }
 
 int main(int argc, char *argv[])

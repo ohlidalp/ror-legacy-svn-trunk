@@ -243,23 +243,16 @@ Rail* SlideNode::getClosestRail(const Rail* rail, const Ogre::Vector3& point )
 {	
 	Rail* curRail = (Rail*) rail;
 
-	Ogre::Real lenToCurrent = 0.0f;
-	Ogre::Real lenToPrev = 0.0f;
-	Ogre::Real lenToNext = 0.0f;
+	Ogre::Real lenToCurrent = getLenTo(curRail, point);
+	Ogre::Real lenToPrev = getLenTo(curRail->prev, point);
+	Ogre::Real lenToNext = getLenTo(curRail->next, point);
 	
-	for(;;)
+	
+	if( lenToCurrent > lenToPrev || lenToCurrent > lenToNext )
 	{
-		lenToCurrent = getLenTo(curRail, point);
-		lenToPrev = getLenTo(curRail->prev, point);
-		lenToNext = getLenTo(curRail->next, point);
-		
-		if( lenToCurrent > lenToPrev || lenToCurrent > lenToNext )
-		{
-			if( lenToPrev < lenToNext) curRail = curRail->prev;
-			else curRail = curRail->next;
-		}// else current beam is closest
-		else break; 
-	};
+		if( lenToPrev < lenToNext) curRail = curRail->prev;
+		else curRail = curRail->next;
+	}
 	
 	return curRail;
 }
