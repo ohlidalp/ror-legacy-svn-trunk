@@ -6431,13 +6431,18 @@ void ExampleFrameListener::initTrucks(bool loadmanual, Ogre::String selected, Og
 			{
 					cameramode = CAMERA_INT;
 					setCurrentTruck(b->trucknum);
-			}
+			} else if(!b && enterTruck)
+				setCurrentTruck(-1);
 
 		} else
 		{
 			Beam *b = BeamFactory::getSingleton().createLocal(Vector3(truckx, trucky, truckz), Quaternion::ZERO, selectedchr, 0, false, flaresMode, truckconfig);
 			//trucks[free_truck]=new Beam(free_truck, mSceneMgr, mSceneMgr->getRootSceneNode(), mWindow, net, &mapsizex, &mapsizez, truckx, trucky, truckz, Quaternion::ZERO, selectedchr, collisions, dustp, clumpp, sparksp, dripp, splashp, ripplep, hfinder, w, mCamera, mirror, false, false, netmode,0,false,flaresMode, truckconfig);
-			if(enterTruck) setCurrentTruck(b->trucknum);
+			if(b && enterTruck)
+			{
+				setCurrentTruck(b->trucknum);
+			} else if(!b && enterTruck)
+				setCurrentTruck(-1);
 		}
 
 		if(b && bigMap)
@@ -6488,6 +6493,9 @@ void ExampleFrameListener::initTrucks(bool loadmanual, Ogre::String selected, Og
 	LogManager::getSingleton().logMessage("EFL: beam instanciated");
 
 	if(!enterTruck) setCurrentTruck(-1);
+
+	// fix for problem on loading
+	if(enterTruck && trucks[current_truck] && trucks[current_truck]->free_node == 0) setCurrentTruck(-1);
 
 	//force perso start
 	if (persostart!=Vector3(0,0,0)) person->setPosition(persostart);
