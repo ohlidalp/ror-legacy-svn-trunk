@@ -28,6 +28,7 @@ along with Rigs of Rods.  If not, see <http://www.gnu.org/licenses/>.
 #include "DustManager.h"
 #include "water.h"
 #include "DustPool.h"
+#include "errorutils.h"
 #include "Replay.h"
 #include "mirrors.h"
 #include "autopilot.h"
@@ -5679,7 +5680,7 @@ void Beam::threadentry(int id)
 					//trucks[t]->position=trucks[t]->aposition;
 				}
 			}
-			truckTruckCollisions(dtperstep, trucks, numtrucks);
+			//truckTruckCollisions(dtperstep, trucks, numtrucks);
 		}
 		ffforce=affforce/steps;
 	}
@@ -9533,21 +9534,33 @@ void *threadstart(void* vid)
 	id=(long int)vid;
 	Beam *beam=threadbeam[id];
 
-	while (1)
+	try
 	{
-		//wait signal
-		pthread_mutex_lock(&beam->work_mutex);
+		//additional exception handler required, otherwise RoR just crashes upon exception
+		while (1)
+		{
+			//wait signal
+			pthread_mutex_lock(&beam->work_mutex);
 
-		//signal end
-		pthread_mutex_lock(&beam->done_count_mutex);
-		beam->done_count--;
-		pthread_cond_signal(&beam->done_count_cv);
-		pthread_mutex_unlock(&beam->done_count_mutex);
+			//signal end
+			pthread_mutex_lock(&beam->done_count_mutex);
+			beam->done_count--;
+			pthread_cond_signal(&beam->done_count_cv);
+			pthread_mutex_unlock(&beam->done_count_mutex);
 
-		pthread_cond_wait(&beam->work_cv, &beam->work_mutex);
-		pthread_mutex_unlock(&beam->work_mutex);
-		//do work
-		beam->threadentry(id);
+			pthread_cond_wait(&beam->work_cv, &beam->work_mutex);
+			pthread_mutex_unlock(&beam->work_mutex);
+			//do work
+			beam->threadentry(id);
+		}
+	} catch(Ogre::Exception& e)
+	{
+		// try to shutdown input system upon an error
+		if(InputEngine::instanceExists()) // this prevents the creating of it, if not existing
+			INPUTENGINE.prepareShutdown();
+
+		String url = "http://wiki.rigsofrods.com/index.php?title=Error_" + StringConverter::toString(e.getNumber())+"#"+e.getSource();
+		showWebError("An exception has occured!", e.getFullDescription(), url);
 	}
 	pthread_exit(NULL);
 	return NULL;
