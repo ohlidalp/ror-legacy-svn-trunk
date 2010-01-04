@@ -5680,7 +5680,7 @@ void Beam::threadentry(int id)
 					//trucks[t]->position=trucks[t]->aposition;
 				}
 			}
-			//truckTruckCollisions(dtperstep, trucks, numtrucks);
+			truckTruckCollisions(dtperstep, trucks, numtrucks);
 		}
 		ffforce=affforce/steps;
 	}
