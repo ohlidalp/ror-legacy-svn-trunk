@@ -479,15 +479,19 @@ void Character::update(float dt)
 		// if physics is disabled, its attached to a beam truck maybe?
 		Vector3 pos;
 		Quaternion rot;
-		float angle = beamCoupling->getSteeringAngle();
+		float angle = beamCoupling->hydrodirwheeldisplay * -1.0f; // not getSteeringAngle(), but this, as its smoothed
 		int res = beamCoupling->calculateDriverPos(pos, rot);
 		if(!res)
 		{
-			setPosition(pos + Vector3(0,-0.6f,-0.1f)); // hack to position the chacaracter right perfect on the default seat
+			setPosition(pos + rot * Vector3(0,-0.6f,0.07f)); // hack to position the chacaracter right perfect on the default seat
 			setOrientation(rot);
 			setAnimationMode("driving", 0);
 			Real lenght = persoanim->getAnimationState("driving")->getLength();
 			float timePos = ((angle + 1.0f) * 0.5f) * lenght;
+			//LogManager::getSingleton().logMessage("angle: " + StringConverter::toString(angle) + " / " + StringConverter::toString(timePos));
+			//prevent animation flickering on the borders:
+			if(timePos < 0.01f) timePos = 0.01f;
+			if(timePos > lenght - 0.01f) timePos = lenght - 0.01f;
 			persoanim->getAnimationState("driving")->setTimePosition(timePos);
 		}
 
