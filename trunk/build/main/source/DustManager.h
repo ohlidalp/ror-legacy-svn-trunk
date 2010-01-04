@@ -48,6 +48,7 @@ public:
 protected:
 	Ogre::SceneManager *mSceneMgr;
 	Water *w;
+	bool mEnabled;
 	std::map < Ogre::String , DustPool * > dustpools;
 	void addNewDustPool(ground_model_t *g);
 };

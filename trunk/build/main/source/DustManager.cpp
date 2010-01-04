@@ -40,8 +40,9 @@ DustManager& DustManager::getSingleton(void)
 	assert( ms_Singleton );  return ( *ms_Singleton );
 }
 
-DustManager::DustManager(Ogre::SceneManager *mSceneMgr) : mSceneMgr(mSceneMgr)
+DustManager::DustManager(Ogre::SceneManager *mSceneMgr) : mSceneMgr(mSceneMgr), mEnabled(false)
 {
+	mEnabled = (SETTINGS.getSetting("Dust") == "Yes");
 }
 
 DustManager::~DustManager()
@@ -60,6 +61,8 @@ DustManager::~DustManager()
 
 DustPool *DustManager::getGroundModelDustPool(ground_model_t *g)
 {
+	if(!mEnabled) return 0;
+
 	// if we have a non particle type, then return 0
 	if(g->fx_type != FX_PARTICLE) return 0;
 
@@ -74,6 +77,8 @@ DustPool *DustManager::getGroundModelDustPool(ground_model_t *g)
 
 void DustManager::addNewDustPool(ground_model_t *g)
 {
+	if(!mEnabled) return;
+
 	// simple and clean addition of a new dustpool class instance
 	String pname = String(g->particle_name);
 	DustPool *dp = new DustPool(pname,
@@ -91,6 +96,7 @@ void DustManager::addNewDustPool(ground_model_t *g)
 
 void DustManager::update(float wspeed)
 {
+	if(!mEnabled) return;
 	std::map < Ogre::String , DustPool * >::iterator it;
 	for(it=dustpools.begin(); it!=dustpools.end();it++)
 	{
@@ -100,6 +106,7 @@ void DustManager::update(float wspeed)
 
 void DustManager::setWater(Water *w)
 {
+	if(!mEnabled) return;
 	this->w = w;
 	std::map < Ogre::String , DustPool * >::iterator it;
 	for(it=dustpools.begin(); it!=dustpools.end();it++)
@@ -110,6 +117,7 @@ void DustManager::setWater(Water *w)
 
 void DustManager::setVisible(bool visible)
 {
+	if(!mEnabled) return;
 	std::map < Ogre::String , DustPool * >::iterator it;
 	for(it=dustpools.begin(); it!=dustpools.end();it++)
 	{
