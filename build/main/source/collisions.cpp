@@ -222,9 +222,18 @@ void Collisions::parseGroundConfig(Ogre::ConfigFile *cfg, String groundModel)
 					// set some default values
 					ground_models[secName].alpha = 2.0f;
 					ground_models[secName].strength = 1.0f;
+					// some fx defaults
+					ground_models[secName].fx_particle_amount = 20;
+					ground_models[secName].fx_particle_min_velo = 5;
+					ground_models[secName].fx_particle_max_velo = 99999;
+					ground_models[secName].fx_particle_velo_factor = 0.7f;
+					ground_models[secName].fx_particle_fade = -1;
+					ground_models[secName].fx_particle_timedelta = 1;
+					ground_models[secName].fx_particle_ttl = 2;
 					strncpy(ground_models[secName].name, secName.c_str(), 255);
 
 				}
+
 				if(kname == "adhesion velocity") ground_models[secName].va = StringConverter::parseReal(kvalue);
 				else if(kname == "static friction coefficient") ground_models[secName].ms = StringConverter::parseReal(kvalue);
 				else if(kname == "sliding friction coefficient") ground_models[secName].mc = StringConverter::parseReal(kvalue);
