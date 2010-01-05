@@ -75,7 +75,7 @@ protected:
 class MapEntity
 {
 public:
-	MapEntity(MapControl *ctrl, int uid, Ogre::String type, MyGUI::RenderBoxPtr parent);
+	MapEntity(MapControl *ctrl, int uid, Ogre::String type, MyGUI::StaticImagePtr parent);
 	~MapEntity();
 	void setPosition(Ogre::Vector3 pos);
 	void setPosition(float x, float z);
@@ -102,7 +102,7 @@ public:
 	int getUID() { return this->uid; };
 
 protected:
-	MyGUI::RenderBoxPtr parent;
+	MyGUI::StaticImagePtr parent;
 	MyGUI::StaticTextPtr txt;
 	MyGUI::StaticImagePtr icon;
 	Ogre::String myType;
@@ -162,7 +162,7 @@ protected:
 	MapTextureCreator *mtc;
 
 	// windowing
-	MyGUI::RenderBoxPtr rb;
+	MyGUI::StaticImagePtr si;
 };
 
 
