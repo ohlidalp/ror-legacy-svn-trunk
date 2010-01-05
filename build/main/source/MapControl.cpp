@@ -222,7 +222,7 @@ void MapTextureCreator::postRenderTargetUpdate(const RenderTargetEvent& evt)
 
 Ogre::String MapEntity::entityStates[MAX_MAP_ENTITYSTATES] = {"activated", "deactivated", "sleeping", "networked"};
 
-MapEntity::MapEntity(MapControl *ctrl, int _uid, String type, MyGUI::RenderBoxPtr _parent)
+MapEntity::MapEntity(MapControl *ctrl, int _uid, String type, MyGUI::StaticImagePtr _parent)
 {
 	mapCtrl=ctrl;
 	parent=_parent;
@@ -458,7 +458,7 @@ MapControl::MapControl(int _mapsizex, int _mapsizez) : bgInitiated(false), uniqu
 	mtc=0;
 
 	// create window
-	rb = MyGUI::Gui::getInstance().createWidget<MyGUI::RenderBox>("RenderBox", 10, 10, 300, 300, MyGUI::Align::Default, "Modal", "render_map");
+	si = MyGUI::Gui::getInstance().createWidget<MyGUI::StaticImage>("StaticImage", 10, 10, 300, 300, MyGUI::Align::Default, "Modal", "render_map");
 }
 
 MapControl::~MapControl()
@@ -468,7 +468,7 @@ MapControl::~MapControl()
 void MapControl::setMTC(MapTextureCreator *mtc)
 {
 	this->mtc = mtc;
-	rb->_setTextureName(mtc->getRTName());
+	si->setImageTexture(mtc->getRTName());
 
 }
 
@@ -482,7 +482,7 @@ void MapControl::setWorldSize(int x, int z)
 MapEntity *MapControl::createMapEntity(String type)
 {
 	uniqueCounter++;
-	MapEntity *m = new MapEntity(this, uniqueCounter, type, rb);
+	MapEntity *m = new MapEntity(this, uniqueCounter, type, si);
 	if(m!=0)
 		mapEntities.push_back(m);
 	return m;
@@ -538,22 +538,22 @@ void MapControl::deleteMapEntity(MapEntity *ent)
 
 bool MapControl::getVisibility()
 {
-	return rb->isVisible();
+	return si->isVisible();
 }
 
 void MapControl::setVisibility(bool value)
 {
-	rb->setVisible(value);
+	si->setVisible(value);
 }
 
 void MapControl::setAlpha(float value)
 {
-	rb->setAlpha(value);
+	si->setAlpha(value);
 }
 
 void MapControl::setPosition(float _x, float _y, float _w, float _h, Ogre::RenderWindow* rw)
 {
-	rb->setCoord(_x*rWinWidth, _y*rWinHeight, _w*rWinWidth, _h*rWinHeight);
+	si->setCoord(_x*rWinWidth, _y*rWinHeight, _w*rWinWidth, _h*rWinHeight);
 	myScale = _w;
 	updateEntityPositions();
 }
