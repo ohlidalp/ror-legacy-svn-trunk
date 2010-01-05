@@ -62,9 +62,13 @@ namespace MyGUI
 		// возвращает позицию в координатах леера
 		virtual IntPoint getPosition(int _left, int _top) = 0;
 
+		// возвращает размер леера
+		virtual const IntSize& getSize() = 0;
+
 		// рисует леер
 		virtual void renderToTarget(IRenderTarget* _target, bool _update) = 0;
 
+		virtual void dumpStatisticToLog() { }
 
 	protected:
 		std::string mName;

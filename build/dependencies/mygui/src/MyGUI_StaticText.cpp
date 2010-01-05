@@ -30,7 +30,7 @@ namespace MyGUI
 	{
 	}
 
-	void StaticText::_initialise(WidgetStyle _style, const IntCoord& _coord, Align _align, ResourceSkin* _info, WidgetPtr _parent, ICroppedRectangle * _croppedParent, IWidgetCreator * _creator, const std::string& _name)
+	void StaticText::_initialise(WidgetStyle _style, const IntCoord& _coord, Align _align, ResourceSkin* _info, Widget* _parent, ICroppedRectangle * _croppedParent, IWidgetCreator * _creator, const std::string& _name)
 	{
 		Base::_initialise(_style, _coord, _align, _info, _parent, _croppedParent, _creator, _name);
 
@@ -129,7 +129,12 @@ namespace MyGUI
 		else if (_key == "Text_TextAlign") setTextAlign(utility::parseValue<Align>(_value));
 		else if (_key == "Text_FontName") setFontName(_value);
 		else if (_key == "Text_FontHeight") setFontHeight(utility::parseValue<int>(_value));
-		else Base::setProperty(_key, _value);
+		else
+		{
+			Base::setProperty(_key, _value);
+			return;
+		}
+		eventChangeProperty(this, _key, _value);
 	}
 
 } // namespace MyGUI

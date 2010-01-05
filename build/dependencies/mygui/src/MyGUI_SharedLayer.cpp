@@ -26,6 +26,7 @@
 #include "MyGUI_LayerItem.h"
 #include "MyGUI_SharedLayer.h"
 #include "MyGUI_LayerNode.h"
+#include "MyGUI_RenderManager.h"
 
 namespace MyGUI
 {
@@ -134,5 +135,22 @@ namespace MyGUI
 		return EnumeratorILayerNode(nodes);
 	}
 
+	void SharedLayer::dumpStatisticToLog()
+	{
+		static const char* spacer = "                                                                                                                        ";
+		MYGUI_LOG(Info, spacer);
+		MYGUI_LOG(Info, "Layer name='" << getName() << "'" << " type='" << getTypeName() << "'" << spacer);
+		MYGUI_LOG(Info, "Count root nodes : " << (mChildItem == nullptr ? 0 : 1) << spacer);
+
+		if (mChildItem != nullptr)
+		{
+			mChildItem->dumpStatisticToLog(0);
+		}
+	}
+
+	const IntSize& SharedLayer::getSize()
+	{
+		return RenderManager::getInstance().getViewSize();
+	}
 
 } // namespace MyGUI

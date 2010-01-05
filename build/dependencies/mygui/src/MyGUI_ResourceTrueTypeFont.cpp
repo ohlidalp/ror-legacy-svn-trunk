@@ -26,10 +26,6 @@
 #include "MyGUI_DataManager.h"
 #include "MyGUI_RenderManager.h"
 
-#ifndef MYGUI_USE_FREETYPE
-#define MYGUI_USE_FREETYPE
-#endif //MYGUI_USE_FREETYPE
-
 #ifdef MYGUI_USE_FREETYPE
 	#include <ft2build.h>
 	#include FT_FREETYPE_H
@@ -380,7 +376,7 @@ namespace MyGUI
 		mTexture->unlock();
 
 		delete[] imageData;
-		delete data;
+		delete[] data;
 
 		FT_Done_FreeType(ftLibrary);
 

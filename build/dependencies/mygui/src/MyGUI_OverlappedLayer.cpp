@@ -26,6 +26,7 @@
 #include "MyGUI_LayerItem.h"
 #include "MyGUI_OverlappedLayer.h"
 #include "MyGUI_LayerNode.h"
+#include "MyGUI_RenderManager.h"
 
 namespace MyGUI
 {
@@ -144,6 +145,24 @@ namespace MyGUI
 	EnumeratorILayerNode OverlappedLayer::getEnumerator()
 	{
 		return EnumeratorILayerNode(mChildItems);
+	}
+
+	void OverlappedLayer::dumpStatisticToLog()
+	{
+		static const char* spacer = "                                                                                                                        ";
+		MYGUI_LOG(Info, spacer);
+		MYGUI_LOG(Info, "Layer name='" << getName() << "'" << " type='" << getTypeName() << "'" << spacer);
+		MYGUI_LOG(Info, "Count root nodes : " << mChildItems.size() << spacer);
+
+		for (VectorILayerNode::iterator iter=mChildItems.begin(); iter!=mChildItems.end(); ++iter)
+		{
+			(*iter)->dumpStatisticToLog(0);
+		}
+	}
+
+	const IntSize& OverlappedLayer::getSize()
+	{
+		return RenderManager::getInstance().getViewSize();
 	}
 
 } // namespace MyGUI

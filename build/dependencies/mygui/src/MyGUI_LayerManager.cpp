@@ -47,8 +47,8 @@ namespace MyGUI
 		WidgetManager::getInstance().registerUnlinker(this);
 		ResourceManager::getInstance().registerLoadXmlDelegate(XML_TYPE) = newDelegate(this, &LayerManager::_load);
 
-		FactoryManager::getInstance().registryFactory<SharedLayer>(XML_TYPE);
-		FactoryManager::getInstance().registryFactory<OverlappedLayer>(XML_TYPE);
+		FactoryManager::getInstance().registerFactory<SharedLayer>(XML_TYPE);
+		FactoryManager::getInstance().registerFactory<OverlappedLayer>(XML_TYPE);
 
 		MYGUI_LOG(Info, INSTANCE_TYPE_NAME << " successfully initialized");
 		mIsInitialise = true;
@@ -59,8 +59,8 @@ namespace MyGUI
 		if (!mIsInitialise) return;
 		MYGUI_LOG(Info, "* Shutdown: " << INSTANCE_TYPE_NAME);
 
-		FactoryManager::getInstance().unregistryFactory<SharedLayer>(XML_TYPE);
-		FactoryManager::getInstance().unregistryFactory<OverlappedLayer>(XML_TYPE);
+		FactoryManager::getInstance().unregisterFactory<SharedLayer>(XML_TYPE);
+		FactoryManager::getInstance().unregisterFactory<OverlappedLayer>(XML_TYPE);
 
 		// удаляем все хранители слоев
 		clear();
@@ -127,13 +127,13 @@ namespace MyGUI
 		merge(layers);
 	}
 
-	void LayerManager::_unlinkWidget(WidgetPtr _widget)
+	void LayerManager::_unlinkWidget(Widget* _widget)
 	{
 		detachFromLayer(_widget);
 	}
 
 	// поправить на виджет и проверять на рутовость
-	void LayerManager::attachToLayerNode(const std::string& _name, WidgetPtr _item)
+	void LayerManager::attachToLayerNode(const std::string& _name, Widget* _item)
 	{
 		MYGUI_ASSERT(nullptr != _item, "pointer must be valid");
 		MYGUI_ASSERT(_item->isRootWidget(), "attached widget must be root");
@@ -156,13 +156,13 @@ namespace MyGUI
 		//MYGUI_EXCEPT("Layer '" << _name << "' is not found");
 	}
 
-	void LayerManager::detachFromLayer(WidgetPtr _item)
+	void LayerManager::detachFromLayer(Widget* _item)
 	{
 		MYGUI_ASSERT(nullptr != _item, "pointer must be valid");
 		_item->detachFromLayer();
 	}
 
-	void LayerManager::upLayerItem(WidgetPtr _item)
+	void LayerManager::upLayerItem(Widget* _item)
 	{
 		MYGUI_ASSERT(nullptr != _item, "pointer must be valid");
 		_item->upLayerItem();
@@ -208,13 +208,13 @@ namespace MyGUI
 		MYGUI_LOG(Info, "destroy layer '" << _layer->getName() << "'");
 		delete _layer;
 	}
-	WidgetPtr LayerManager::getWidgetFromPoint(int _left, int _top)
+	Widget* LayerManager::getWidgetFromPoint(int _left, int _top)
 	{
 		VectorLayer::reverse_iterator iter = mLayerNodes.rbegin();
 		while (iter != mLayerNodes.rend())
 		{
 			ILayerItem * item = (*iter)->getLayerItemByPoint(_left, _top);
-			if (item != nullptr) return static_cast<WidgetPtr>(item);
+			if (item != nullptr) return static_cast<Widget*>(item);
 			++iter;
 		}
 		return nullptr;
@@ -237,6 +237,20 @@ namespace MyGUI
 		}
 		MYGUI_ASSERT(!_throw, "Layer '" << _name << "' not found");
 		return nullptr;
+	}
+
+	void LayerManager::dumpStatisticToLog()
+	{
+		static const char* spacer = "                                                                                                                        ";
+		MYGUI_LOG(Info, spacer);
+		MYGUI_LOG(Info, "---------- Statistic for layers start ----------" << spacer);
+		for (VectorLayer::iterator iter=mLayerNodes.begin(); iter!=mLayerNodes.end(); ++iter)
+		{
+			(*iter)->dumpStatisticToLog();
+		}
+		MYGUI_LOG(Info, spacer);
+		MYGUI_LOG(Info, "---------- Statistic for layers end ----------" << spacer);
+		MYGUI_LOG(Info, spacer);
 	}
 
 } // namespace MyGUI

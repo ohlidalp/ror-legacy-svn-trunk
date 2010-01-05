@@ -43,7 +43,7 @@ namespace MyGUI
 	{
 	}
 
-	void StaticImage::_initialise(WidgetStyle _style, const IntCoord& _coord, Align _align, ResourceSkin* _info, WidgetPtr _parent, ICroppedRectangle * _croppedParent, IWidgetCreator * _creator, const std::string& _name)
+	void StaticImage::_initialise(WidgetStyle _style, const IntCoord& _coord, Align _align, ResourceSkin* _info, Widget* _parent, ICroppedRectangle * _croppedParent, IWidgetCreator * _creator, const std::string& _name)
 	{
 		Base::_initialise(_style, _coord, _align, _info, _parent, _croppedParent, _creator, _name);
 
@@ -413,6 +413,9 @@ namespace MyGUI
 
 	void StaticImage::setItemResourcePtr(ResourceImageSetPtr _resource)
 	{
+		if (mResource == _resource)
+			return;
+
 		// если первый раз то устанавливаем дефолтное
 		if (mResource == nullptr && _resource != nullptr)
 		{
@@ -453,6 +456,9 @@ namespace MyGUI
 
 	void StaticImage::setItemGroup(const std::string& _group)
 	{
+		if (mItemGroup == _group)
+			return;
+
 		mItemGroup = _group;
 		if (!mResource || mItemGroup.empty() || mItemName.empty()) updateSelectIndex(ITEM_NONE);
 		else setItemResourceInfo(mResource->getIndexInfo(mItemGroup, mItemName));
@@ -460,6 +466,9 @@ namespace MyGUI
 
 	void StaticImage::setItemName(const std::string& _name)
 	{
+		if (mItemName == _name)
+			return;
+
 		mItemName = _name;
 		if (!mResource || mItemGroup.empty() || mItemName.empty()) updateSelectIndex(ITEM_NONE);
 		else setItemResourceInfo(mResource->getIndexInfo(mItemGroup, mItemName));
@@ -518,7 +527,12 @@ namespace MyGUI
 		else if (_key == "Image_Resource") setItemResource(_value);
 		else if (_key == "Image_Group") setItemGroup(_value);
 		else if (_key == "Image_Name") setItemName(_value);
-		else Base::setProperty(_key, _value);
+		else
+		{
+			Base::setProperty(_key, _value);
+			return;
+		}
+		eventChangeProperty(this, _key, _value);
 	}
 
 } // namespace MyGUI

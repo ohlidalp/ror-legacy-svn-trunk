@@ -33,7 +33,7 @@
 namespace MyGUI
 {
 
-	typedef delegates::CDelegate1<EditPtr> EventHandle_EditPtr;
+	typedef delegates::CDelegate1<Edit*> EventHandle_EditPtr;
 
 	class MYGUI_EXPORT Edit :
 		public StaticText,
@@ -116,7 +116,7 @@ namespace MyGUI
 		/** Erase _count characters from _start position */
 		void eraseText(size_t _start, size_t _count = 1);
 
-		/** Enable or disable edit read only mode
+		/** Enable or disable edit read only mode\n
 			Read only mode: you can't edit text, but can select it.\n
 			Disabled (false) by default.
 		*/
@@ -124,7 +124,7 @@ namespace MyGUI
 		/** Get edit read only mode flag */
 		bool getEditReadOnly() { return mModeReadOnly; }
 
-		/** Enable or disable edit password mode
+		/** Enable or disable edit password mode\n
 			Password mode: you see password chars (*** by default) instead text.\n
 			Disabled (false) by default.
 		*/
@@ -132,8 +132,8 @@ namespace MyGUI
 		/** Get edit password mode flag */
 		bool getEditPassword() { return mModePassword; }
 
-		/** Enable or disable edit multiline mode
-			Multile mode: new line character moves text to new line.
+		/** Enable or disable edit multiline mode\n
+			Multile mode: new line character moves text to new line.\n
 			Otherwise new lines replaced with space and all text is in single line.\n
 			Disabled (false) by default.
 		*/
@@ -141,7 +141,7 @@ namespace MyGUI
 		/** Get edit multiline mode flag */
 		bool getEditMultiLine() { return mModeMultiline; }
 
-		/** Enable or disable edit static mode
+		/** Enable or disable edit static mode\n
 			Static mode is same as read only, but you also can't select text.\n
 			Disabled (false) by default.
 		*/
@@ -156,7 +156,7 @@ namespace MyGUI
 		/** Get edit password character */
 		Char getPasswordChar() { return mCharPassword; }
 
-		/** Enable or disable edit word wrap mode
+		/** Enable or disable edit word wrap mode\n
 			Word Wrap mode: move words to new line if they goes out of width.
 			Also in this mode you can't edit or select text.\n
 			Disabled (false) by default.
@@ -165,7 +165,7 @@ namespace MyGUI
 		/** Get edit word wrap mode flag */
 		bool getEditWordWrap() { return mModeWordWrap; }
 
-		/** Enable or disable tab printing mode
+		/** Enable or disable tab printing mode\n
 			Tab printing mode: when editing text and pressing Tab key it displayed.
 			If this mode disabled Tab key ignored.\n
 			Disabled (false) by default.
@@ -174,9 +174,11 @@ namespace MyGUI
 		/** Get edit tab printing wrap mode flag */
 		bool getTabPrinting() { return mTabPrinting; }
 
-		//DESCRIBEME
+		/** Get invert selected text color property */
 		bool getInvertSelected();
-		//DESCRIBEME
+		/** Enable or disable inverting color of selected text\n
+			Enabled (true) by default
+		*/
 		void setInvertSelected(bool _value);
 
 		//! @copydoc Widget::setPosition(const IntPoint& _value)
@@ -197,22 +199,22 @@ namespace MyGUI
 		void setVisibleVScroll(bool _value);
 		/** Get Show VScroll flag */
 		bool isVisibleVScroll() { return mVisibleVScroll; }
-		//DESCRIBEME
+		/** Get range of vertical scroll (or 0 if no scroll) */
 		size_t getVScrollRange();
-		//DESCRIBEME
+		/** Get current position of vertical scroll (or 0 if no scroll) */
 		size_t getVScrollPosition();
-		//DESCRIBEME
+		/** Set current position of vertical scroll (or 0 if no scroll) */
 		void setVScrollPosition(size_t _index);
 
 		/** Show HScroll when text size larger than Edit */
 		void setVisibleHScroll(bool _value);
 		/** Get Show HScroll flag */
 		bool isVisibleHScroll() { return mVisibleHScroll; }
-		//DESCRIBEME
+		/** Get range of horizontal scroll (or 0 if no scroll) */
 		size_t getHScrollRange();
-		//DESCRIBEME
+		/** Get current position of horizontal scroll (or 0 if no scroll) */
 		size_t getHScrollPosition();
-		//DESCRIBEME
+		/** Set current position of horizontal scroll (or 0 if no scroll) */
 		void setHScrollPosition(size_t _index);
 
 
@@ -229,19 +231,19 @@ namespace MyGUI
 
 	/*event:*/
 		/** Event : Enter pressed (Ctrl+enter in multiline mode).\n
-			signature : void method(MyGUI::EditPtr _sender)
+			signature : void method(MyGUI::Edit* _sender)
 			@param _sender widget that called this event
 		*/
 		EventPair<EventHandle_WidgetVoid, EventHandle_EditPtr> eventEditSelectAccept;
 
 		/** Event : Text changed.\n
-			signature : void method(MyGUI::EditPtr _sender)
+			signature : void method(MyGUI::Edit* _sender)
 			@param _sender widget that called this event
 		*/
 		EventPair<EventHandle_WidgetVoid, EventHandle_EditPtr> eventEditTextChange;
 
 	/*internal:*/
-		virtual void _initialise(WidgetStyle _style, const IntCoord& _coord, Align _align, ResourceSkin* _info, WidgetPtr _parent, ICroppedRectangle * _croppedParent, IWidgetCreator * _creator, const std::string& _name);
+		virtual void _initialise(WidgetStyle _style, const IntCoord& _coord, Align _align, ResourceSkin* _info, Widget* _parent, ICroppedRectangle * _croppedParent, IWidgetCreator * _creator, const std::string& _name);
 
 	/*obsolete:*/
 #ifndef MYGUI_DONT_USE_OBSOLETE
@@ -294,20 +296,20 @@ namespace MyGUI
 		virtual ~Edit();
 
 		virtual void onMouseDrag(int _left, int _top);
-		virtual void onKeyLostFocus(WidgetPtr _new);
-		virtual void onKeySetFocus(WidgetPtr _old);
+		virtual void onKeyLostFocus(Widget* _new);
+		virtual void onKeySetFocus(Widget* _old);
 		virtual void onKeyButtonPressed(KeyCode _key, Char _char);
 
 		// потом убрать все нотифи в сраку
-		void notifyMouseSetFocus(WidgetPtr _sender, WidgetPtr _old);
-		void notifyMouseLostFocus(WidgetPtr _sender, WidgetPtr _new);
-		void notifyMousePressed(WidgetPtr _sender, int _left, int _top, MouseButton _id);
-		void notifyMouseReleased(WidgetPtr _sender, int _left, int _top, MouseButton _id);
-		void notifyMouseDrag(WidgetPtr _sender, int _left, int _top);
-		void notifyMouseButtonDoubleClick(WidgetPtr _sender);
+		void notifyMouseSetFocus(Widget* _sender, Widget* _old);
+		void notifyMouseLostFocus(Widget* _sender, Widget* _new);
+		void notifyMousePressed(Widget* _sender, int _left, int _top, MouseButton _id);
+		void notifyMouseReleased(Widget* _sender, int _left, int _top, MouseButton _id);
+		void notifyMouseDrag(Widget* _sender, int _left, int _top);
+		void notifyMouseButtonDoubleClick(Widget* _sender);
 
-		void notifyScrollChangePosition(VScrollPtr _sender, size_t _position);
-		void notifyMouseWheel(WidgetPtr _sender, int _rel);
+		void notifyScrollChangePosition(VScroll* _sender, size_t _position);
+		void notifyMouseWheel(Widget* _sender, int _rel);
 
 		// обновление представления
 		void updateView();

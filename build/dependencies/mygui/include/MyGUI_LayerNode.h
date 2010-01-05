@@ -61,7 +61,6 @@ namespace MyGUI
 		// список детей
 		virtual EnumeratorILayerNode getEnumerator();
 
-
 		// добавляем айтем к ноду
 		virtual void attachLayerItem(ILayerItem* _item);
 		// удаляем айтем из нода
@@ -78,6 +77,13 @@ namespace MyGUI
 		// рисует леер
 		virtual void renderToTarget(IRenderTarget* _target, bool _update);
 
+		virtual void dumpStatisticToLog(size_t _level);
+
+		bool isOutOfDate() { return mOutOfDate; }
+
+	protected:
+		void updateCompression();
+
 	protected:
 		// список двух очередей отрисовки, для сабскинов и текста
 		VectorRenderItem mFirstRenderItems;
@@ -92,6 +98,7 @@ namespace MyGUI
 
 		ILayerNode * mParent;
 		ILayer* mLayer;
+		bool mOutOfDate;
 	};
 
 } // namespace MyGUI

@@ -45,9 +45,9 @@ namespace MyGUI
 
 		const std::string factory_type = "Controller";
 
-		FactoryManager::getInstance().registryFactory<ControllerEdgeHide>(factory_type);
-		FactoryManager::getInstance().registryFactory<ControllerFadeAlpha>(factory_type);
-		FactoryManager::getInstance().registryFactory<ControllerPosition>(factory_type);
+		FactoryManager::getInstance().registerFactory<ControllerEdgeHide>(factory_type);
+		FactoryManager::getInstance().registerFactory<ControllerFadeAlpha>(factory_type);
+		FactoryManager::getInstance().registerFactory<ControllerPosition>(factory_type);
 
 		MYGUI_LOG(Info, INSTANCE_TYPE_NAME << " successfully initialized");
 		mIsInitialise = true;
@@ -60,9 +60,9 @@ namespace MyGUI
 
 		const std::string factory_type = "Controller";
 
-		FactoryManager::getInstance().unregistryFactory<ControllerEdgeHide>(factory_type);
-		FactoryManager::getInstance().unregistryFactory<ControllerFadeAlpha>(factory_type);
-		FactoryManager::getInstance().unregistryFactory<ControllerPosition>(factory_type);
+		FactoryManager::getInstance().unregisterFactory<ControllerEdgeHide>(factory_type);
+		FactoryManager::getInstance().unregisterFactory<ControllerFadeAlpha>(factory_type);
+		FactoryManager::getInstance().unregisterFactory<ControllerPosition>(factory_type);
 
 		WidgetManager::getInstance().unregisterUnlinker(this);
 		clear();
@@ -83,10 +83,10 @@ namespace MyGUI
 	ControllerItem* ControllerManager::createItem(const std::string& _type)
 	{
 		IObject* object = FactoryManager::getInstance().createObject("Controller", _type);
-		return object->castType<ControllerItem>();
+		return object == nullptr ? nullptr : object->castType<ControllerItem>();
 	}
 
-	void ControllerManager::addItem(WidgetPtr _widget, ControllerItem * _item)
+	void ControllerManager::addItem(Widget* _widget, ControllerItem * _item)
 	{
 		// если виджет первый, то подписываемся на кадры
 		if (0 == mListItem.size()) Gui::getInstance().eventFrameStart += newDelegate(this, &ControllerManager::frameEntered);
@@ -112,7 +112,7 @@ namespace MyGUI
 		mListItem.push_back(PairControllerItem(_widget, _item));
 	}
 
-	void ControllerManager::removeItem(WidgetPtr _widget)
+	void ControllerManager::removeItem(Widget* _widget)
 	{
 		// не удаляем из списка, а обнуляем, в цикле он будет удален
 		for (ListControllerItem::iterator iter=mListItem.begin(); iter!=mListItem.end(); ++iter)
@@ -121,7 +121,7 @@ namespace MyGUI
 		}
 	}
 
-	void ControllerManager::_unlinkWidget(WidgetPtr _widget)
+	void ControllerManager::_unlinkWidget(Widget* _widget)
 	{
 		removeItem(_widget);
 	}

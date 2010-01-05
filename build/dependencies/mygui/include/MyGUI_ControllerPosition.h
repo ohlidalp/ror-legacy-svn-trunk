@@ -40,12 +40,15 @@ namespace MyGUI
 		typedef delegates::CDelegate4<const IntCoord&, const IntCoord&, IntCoord&, float> FrameAction;
 
 		ControllerPosition();
+		virtual ~ControllerPosition() { }
 
 		void setCoord(const IntCoord& _value);
 
 		void setSize(const IntSize& _value);
 
 		void setPosition(const IntPoint& _value);
+
+		void setFunction(const std::string& _value);
 
 		/**
 			@param _value seconds in which widget planned to reach destination coordinate
@@ -60,8 +63,8 @@ namespace MyGUI
 		virtual void setProperty(const std::string& _key, const std::string& _value);
 
 	private:
-		bool addTime(WidgetPtr _widget, float _time);
-		void prepareItem(WidgetPtr _widget);
+		bool addTime(Widget* _widget, float _time);
+		void prepareItem(Widget* _widget);
 
 		float getElapsedTime() { return mElapsedTime; }
 
