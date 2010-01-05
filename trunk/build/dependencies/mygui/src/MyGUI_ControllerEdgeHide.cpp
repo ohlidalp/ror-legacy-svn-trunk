@@ -37,9 +37,9 @@ namespace MyGUI
 	{
 	}
 
-	void ControllerEdgeHide::prepareItem(WidgetPtr _widget)
+	void ControllerEdgeHide::prepareItem(Widget* _widget)
 	{
-		MYGUI_DEBUG_ASSERT(mTime > 0, "Time must be > 0");
+		if (mTime == 0.0) mTime = 0.0001;
 
 		float k = 0;
 		const MyGUI::IntCoord& coord = _widget->getCoord();
@@ -67,10 +67,10 @@ namespace MyGUI
 		eventPreAction(_widget);
 	}
 
-	bool ControllerEdgeHide::addTime(WidgetPtr _widget, float _time)
+	bool ControllerEdgeHide::addTime(Widget* _widget, float _time)
 	{
-		WidgetPtr keyFocus = InputManager::getInstance().getKeyFocusWidget();
-		WidgetPtr mouseFocus = InputManager::getInstance().getMouseFocusWidget();
+		Widget* keyFocus = InputManager::getInstance().getKeyFocusWidget();
+		Widget* mouseFocus = InputManager::getInstance().getMouseFocusWidget();
 
 		while ((keyFocus != nullptr) && (_widget != keyFocus))
 			keyFocus = keyFocus->getParent();
@@ -85,7 +85,6 @@ namespace MyGUI
 		if (mElapsedTime >= mTime)
 		{
 			mElapsedTime = mTime;
-			return true;
 		}
 		if (mElapsedTime <= 0)
 		{
@@ -97,11 +96,17 @@ namespace MyGUI
 		const float M_PI = 3.141593;
 		#endif
 		float k = sin(M_PI * mElapsedTime/mTime - M_PI/2);
-		if (k<0) k = (-pow((-k), (float)0.7) + 1)/2;
-		else k = (pow((k), (float)0.7) + 1)/2;
+		if (k<0) k = (-pow((-k), 0.7f) + 1)/2;
+		else k = (pow((k), 0.7f) + 1)/2;
 
 		MyGUI::IntCoord coord = _widget->getCoord();
-		const MyGUI::IntSize& view_size = MyGUI::Gui::getInstance().getViewSize();
+
+		IntSize view_size;
+		if (_widget->getCroppedParent() == nullptr)
+			view_size = _widget->getLayer()->getSize();
+		else
+			view_size = ((Widget*)_widget->getCroppedParent())->getSize();
+
 		bool nearBorder = false;
 
 		if ((coord.left <= 0) && !(coord.right() >= view_size.width))
@@ -114,20 +119,21 @@ namespace MyGUI
 			coord.top = - int( float(coord.height - mRemainPixels - mShadowSize) * k);
 			nearBorder = true;
 		}
-		if ((coord.right() >= view_size.width) && !(coord.left <= 0))
+		if ((coord.right() >= view_size.width-1) && !(coord.left <= 0))
 		{
-			coord.left = int(float(view_size.width) - float(mRemainPixels) - float(coord.width) * (float(1) - k));
+			coord.left = int(float(view_size.width-1) - float(mRemainPixels)*k - float(coord.width) * (1.f - k));
 			nearBorder = true;
 		}
-		if ((coord.bottom() >= view_size.height) && !(coord.top <= 0))
+		if ((coord.bottom() >= view_size.height-1) && !(coord.top <= 0))
 		{
-			coord.top = int(float(view_size.height) - float(mRemainPixels) - float(coord.height) * (float(1) - k));
+			coord.top = int(float(view_size.height-1) - float(mRemainPixels)*k - float(coord.height) * (1.f - k));
 			nearBorder = true;
 		}
 
-		if (!nearBorder) mElapsedTime = 0;
-
-		_widget->setCoord(coord);
+		if (nearBorder)
+			_widget->setCoord(coord);
+		else
+			mElapsedTime = 0;
 
 		eventUpdateAction(_widget);
 

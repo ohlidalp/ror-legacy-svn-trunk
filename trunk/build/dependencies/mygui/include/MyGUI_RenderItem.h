@@ -53,6 +53,7 @@ namespace MyGUI
 		void outOfDate() { mOutDate = true; }
 
 		size_t getNeedVertexCount() { return mNeedVertexCount; }
+		size_t getVertexCount() { return mCountVertex; }
 
 		bool getCurrentUpdate() { return mCurrentUpdate; }
 		Vertex* getCurrentVertextBuffer() { return mCurrentVertext; }
@@ -60,6 +61,8 @@ namespace MyGUI
 		void setLastVertexCount(size_t _count) { mLastVertextCount = _count; }
 
 		IRenderTarget* getRenderTarget() { return mRenderTarget; }
+
+		bool getCompression();
 
 	private:
 #if MYGUI_DEBUG_MODE == 1
@@ -83,6 +86,7 @@ namespace MyGUI
 		IVertexBuffer* mVertexBuffer;
 		IRenderTarget* mRenderTarget;
 
+		bool mCompression;
 	};
 
 } // namespace MyGUI

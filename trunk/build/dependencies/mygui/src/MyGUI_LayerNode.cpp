@@ -24,6 +24,7 @@
 #include "MyGUI_Precompiled.h"
 #include "MyGUI_LayerNode.h"
 #include "MyGUI_ILayerItem.h"
+#include "MyGUI_ITexture.h"
 #include "MyGUI_ISubWidget.h"
 #include "MyGUI_ISubWidgetText.h"
 
@@ -32,7 +33,8 @@ namespace MyGUI
 
 	LayerNode::LayerNode(ILayer* _layer, ILayerNode* _parent) :
 		mParent(_parent),
-		mLayer(_layer)
+		mLayer(_layer),
+		mOutOfDate(false)
 	{
 	}
 
@@ -95,6 +97,20 @@ namespace MyGUI
 
 	void LayerNode::renderToTarget(IRenderTarget* _target, bool _update)
 	{
+		// проверяем на сжатие пустот
+		bool need_compression = false;
+		for (VectorRenderItem::iterator iter=mFirstRenderItems.begin(); iter!=mFirstRenderItems.end(); ++iter)
+		{
+			if ((*iter)->getCompression())
+			{
+				need_compression = true;
+				break;
+			}
+		}
+
+		if (need_compression)
+			updateCompression();
+
 		// сначала отрисовываем свое
 		for (VectorRenderItem::iterator iter=mFirstRenderItems.begin(); iter!=mFirstRenderItems.end(); ++iter)
 		{
@@ -110,6 +126,8 @@ namespace MyGUI
 		{
 			(*iter)->renderToTarget(_target, _update);
 		}
+
+		mOutOfDate = false;
 	}
 
 	ILayerItem* LayerNode::getLayerItemByPoint(int _left, int _top)
@@ -228,6 +246,7 @@ namespace MyGUI
 
 	void LayerNode::outOfDate(RenderItem* _item)
 	{
+		mOutOfDate = true;
 		if (_item)
 			_item->outOfDate();
 	}
@@ -235,6 +254,49 @@ namespace MyGUI
 	EnumeratorILayerNode LayerNode::getEnumerator()
 	{
 		return EnumeratorILayerNode(mChildItems);
+	}
+
+	void LayerNode::updateCompression()
+	{
+		// буферы освобождаются по одному всегда
+		if (mFirstRenderItems.size() > 1)
+		{
+			// пытаемся поднять пустой буфер выше полных
+			VectorRenderItem::iterator iter1 = mFirstRenderItems.begin();
+			VectorRenderItem::iterator iter2 = iter1 + 1;
+			while (iter2 != mFirstRenderItems.end())
+			{
+				if ((*iter1)->getNeedVertexCount() == 0)
+				{
+					RenderItem * tmp = (*iter1);
+					(*iter1) = (*iter2);
+					(*iter2) = tmp;
+				}
+				iter1 = iter2;
+				++iter2;
+			}
+		}
+	}
+
+	void LayerNode::dumpStatisticToLog(size_t _level)
+	{
+		static const char* spacer = "                                                                                                                        ";
+		std::string offset(" ", _level);
+		MYGUI_LOG(Info, offset << " - Node batch_count='" << mFirstRenderItems.size() + mSecondRenderItems.size() << spacer);
+
+		for (VectorRenderItem::iterator iter=mFirstRenderItems.begin(); iter!=mFirstRenderItems.end(); ++iter)
+		{
+			MYGUI_LOG(Info, offset << "  * Batch texture='" << ((*iter)->getTexture() == nullptr ? "nullptr" : (*iter)->getTexture()->getName()) << "' vertex_count='" << (*iter)->getVertexCount() << "'" << spacer);
+		}
+		for (VectorRenderItem::iterator iter=mSecondRenderItems.begin(); iter!=mSecondRenderItems.end(); ++iter)
+		{
+			MYGUI_LOG(Info, offset << "  * Batch texture='" << ((*iter)->getTexture() == nullptr ? "nullptr" : (*iter)->getTexture()->getName()) << "' vertex_count='" << (*iter)->getVertexCount() << "'" << spacer);
+		}
+
+		for (VectorILayerNode::iterator iter = mChildItems.begin(); iter!=mChildItems.end(); ++iter)
+		{
+			(*iter)->dumpStatisticToLog(_level + 1);
+		}
 	}
 
 } // namespace MyGUI

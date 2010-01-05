@@ -48,7 +48,7 @@ namespace MyGUI
 	{
 	}
 
-	void VScroll::_initialise(WidgetStyle _style, const IntCoord& _coord, Align _align, ResourceSkin* _info, WidgetPtr _parent, ICroppedRectangle * _croppedParent, IWidgetCreator * _creator, const std::string& _name)
+	void VScroll::_initialise(WidgetStyle _style, const IntCoord& _coord, Align _align, ResourceSkin* _info, Widget* _parent, ICroppedRectangle * _croppedParent, IWidgetCreator * _creator, const std::string& _name)
 	{
 		Base::_initialise(_style, _coord, _align, _info, _parent, _croppedParent, _creator, _name);
 
@@ -116,7 +116,7 @@ namespace MyGUI
 		}
 
 		// slider don't have buttons
-		MYGUI_ASSERT(nullptr != mWidgetTrack, "Child Button Track not found in skin (Scroll must have Track)");
+		//MYGUI_ASSERT(nullptr != mWidgetTrack, "Child Button Track not found in skin (Scroll must have Track)");
 
 		// парсим свойства
 		const MapString& properties = _info->getProperties();
@@ -151,6 +151,9 @@ namespace MyGUI
 
 	void VScroll::updateTrack()
 	{
+		if (mWidgetTrack == nullptr)
+			return;
+
 		_forcePeek(mWidgetTrack);
 		// размер диапазана в пикселях
 		int pos = getLineSize();
@@ -188,6 +191,9 @@ namespace MyGUI
 
 	void VScroll::TrackMove(int _left, int _top)
 	{
+		if (mWidgetTrack == nullptr)
+			return;
+
 		const IntPoint& point = InputManager::getInstance().getLastLeftPressed();
 
 		// расчитываем позицию виджета
@@ -212,7 +218,7 @@ namespace MyGUI
 		eventScrollChangePosition(this, (int)mScrollPosition);
 	}
 
-	void VScroll::notifyMousePressed(WidgetPtr _sender, int _left, int _top, MouseButton _id)
+	void VScroll::notifyMousePressed(Widget* _sender, int _left, int _top, MouseButton _id)
 	{
 		// диспечерезируем нажатие своих детей как свое
 		eventMouseButtonPressed(this, _left, _top, _id);
@@ -290,12 +296,12 @@ namespace MyGUI
 		}
 	}
 
-	void VScroll::notifyMouseReleased(WidgetPtr _sender, int _left, int _top, MouseButton _id)
+	void VScroll::notifyMouseReleased(Widget* _sender, int _left, int _top, MouseButton _id)
 	{
 		updateTrack();
 	}
 
-	void VScroll::notifyMouseDrag(WidgetPtr _sender, int _left, int _top)
+	void VScroll::notifyMouseDrag(Widget* _sender, int _left, int _top)
 	{
 		TrackMove(_left, _top);
 	}
@@ -337,13 +343,14 @@ namespace MyGUI
 
 	void VScroll::setTrackSize(int _size)
 	{
-		mWidgetTrack->setSize(mWidgetTrack->getWidth(), ((int)_size < (int)mMinTrackSize)? (int)mMinTrackSize : (int)_size);
+		if (mWidgetTrack != nullptr)
+			mWidgetTrack->setSize(mWidgetTrack->getWidth(), ((int)_size < (int)mMinTrackSize)? (int)mMinTrackSize : (int)_size);
 		updateTrack();
 	}
 
 	int VScroll::getTrackSize()
 	{
-		return mWidgetTrack->getHeight();
+		return mWidgetTrack == nullptr ? 1 : mWidgetTrack->getHeight();
 	}
 
 	int VScroll::getLineSize()
@@ -358,7 +365,7 @@ namespace MyGUI
 		Base::onMouseWheel(_rel);
 	}
 
-	void VScroll::notifyMouseWheel(WidgetPtr _sender, int _rel)
+	void VScroll::notifyMouseWheel(Widget* _sender, int _rel)
 	{
 		if (mScrollRange < 2) return;
 
@@ -385,7 +392,12 @@ namespace MyGUI
 		else if (_key == "Scroll_Page") setScrollPage(utility::parseValue<size_t>(_value));
 		else if (_key == "Scroll_ViewPage") setScrollViewPage(utility::parseValue<size_t>(_value));
 		else if (_key == "Scroll_MoveToClick") setMoveToClick(utility::parseValue<bool>(_value));
-		else Base::setProperty(_key, _value);
+		else
+		{
+			Base::setProperty(_key, _value);
+			return;
+		}
+		eventChangeProperty(this, _key, _value);
 	}
 
 } // namespace MyGUI

@@ -25,7 +25,6 @@
 
 #include "MyGUI_Prerequest.h"
 #include "MyGUI_ISerializable.h"
-#include "MyGUI_IResource.h"
 #include "MyGUI_FontData.h"
 
 namespace MyGUI

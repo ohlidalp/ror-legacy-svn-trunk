@@ -49,7 +49,7 @@ namespace MyGUI
 	{
 	}
 
-	void Window::_initialise(WidgetStyle _style, const IntCoord& _coord, Align _align, ResourceSkin* _info, WidgetPtr _parent, ICroppedRectangle * _croppedParent, IWidgetCreator * _creator, const std::string& _name)
+	void Window::_initialise(WidgetStyle _style, const IntCoord& _coord, Align _align, ResourceSkin* _info, Widget* _parent, ICroppedRectangle * _croppedParent, IWidgetCreator * _creator, const std::string& _name)
 	{
 		Base::_initialise(_style, _coord, _align, _info, _parent, _croppedParent, _creator, _name);
 
@@ -131,7 +131,7 @@ namespace MyGUI
 	}
 
 	// переопределяем для присвоению клиенту
-	WidgetPtr Window::baseCreateWidget(WidgetStyle _style, const std::string& _type, const std::string& _skin, const IntCoord& _coord, Align _align, const std::string& _layer, const std::string& _name)
+	Widget* Window::baseCreateWidget(WidgetStyle _style, const std::string& _type, const std::string& _skin, const IntCoord& _coord, Align _align, const std::string& _layer, const std::string& _name)
 	{
 		MYGUI_ASSERT(mWidgetClient != this, "mWidgetClient can not be this widget");
 		if (mWidgetClient != nullptr) return mWidgetClient->createWidgetT(_style, _type, _skin, _coord, _align, _layer, _name);
@@ -169,7 +169,7 @@ namespace MyGUI
 		Base::onMouseButtonPressed(_left, _top, _id);
 	}
 
-	void Window::notifyMousePressed(MyGUI::WidgetPtr _sender, int _left, int _top, MouseButton _id)
+	void Window::notifyMousePressed(MyGUI::Widget* _sender, int _left, int _top, MouseButton _id)
 	{
 		if (MouseButton::Left == _id)
 		{
@@ -178,12 +178,12 @@ namespace MyGUI
 		}
 	}
 
-	void Window::notifyPressedButtonEvent(MyGUI::WidgetPtr _sender)
+	void Window::notifyPressedButtonEvent(MyGUI::Widget* _sender)
 	{
 		eventWindowButtonPressed(this, _sender->getUserString("Event"));
 	}
 
-	void Window::notifyMouseDrag(MyGUI::WidgetPtr _sender, int _left, int _top)
+	void Window::notifyMouseDrag(MyGUI::Widget* _sender, int _left, int _top)
 	{
 		const IntPoint& point = InputManager::getInstance().getLastLeftPressed();
 
@@ -193,7 +193,12 @@ namespace MyGUI
 		coord.width *= (_left - point.left);
 		coord.height *= (_top - point.top);
 
-		setCoord(mPreActionCoord + coord);
+		if (coord.left == 0 && coord.top == 0)
+			setSize((mPreActionCoord + coord).size());
+		else if (coord.width == 0 && coord.height == 0)
+			setPosition((mPreActionCoord + coord).point());
+		else
+			setCoord(mPreActionCoord + coord);
 
 		// посылаем событие о изменении позиции и размере
 		eventWindowChangeCoord(this);
@@ -226,39 +231,35 @@ namespace MyGUI
 
 	void Window::setPosition(const IntPoint& _point)
 	{
-		IntPoint pos = _point;
+		IntPoint point = _point;
 		// прилепляем к краям
 		if (mSnap)
 		{
-			if (abs(pos.left) <= WINDOW_SNAP_DISTANSE) pos.left = 0;
-			if (abs(pos.top) <= WINDOW_SNAP_DISTANSE) pos.top = 0;
-
-			const IntSize& view_size = Gui::getInstance().getViewSize();
-
-			if ( abs(pos.left + mCoord.width - view_size.width) < WINDOW_SNAP_DISTANSE) pos.left = view_size.width - mCoord.width;
-			if ( abs(pos.top + mCoord.height - view_size.height) < WINDOW_SNAP_DISTANSE) pos.top = view_size.height - mCoord.height;
+			IntCoord coord(point, mCoord.size());
+			getSnappedCoord(coord);
+			point = coord.point();
 		}
 
-		Base::setPosition(_point);
+		Base::setPosition(point);
 	}
 
 	void Window::setSize(const IntSize& _size)
 	{
 		IntSize size = _size;
 		// прилепляем к краям
-		if (mSnap)
-		{
-			const IntSize& view_size = Gui::getInstance().getViewSize();
-
-			if ( abs(mCoord.left + size.width - view_size.width) < WINDOW_SNAP_DISTANSE) size.width = view_size.width - mCoord.left;
-			if ( abs(mCoord.top + size.height - view_size.height) < WINDOW_SNAP_DISTANSE) size.height = view_size.height - mCoord.top;
-		}
 
 		if (size.width < mMinmax.left) size.width = mMinmax.left;
 		else if (size.width > mMinmax.right) size.width = mMinmax.right;
 		if (size.height < mMinmax.top) size.height = mMinmax.top;
 		else if (size.height > mMinmax.bottom) size.height = mMinmax.bottom;
 		if ((size.width == mCoord.width) && (size.height == mCoord.height) ) return;
+
+		if (mSnap)
+		{
+			IntCoord coord(mCoord.point(), size);
+			getSnappedCoord(coord);
+			size = coord.size();
+		}
 
 		Base::setSize(size);
 	}
@@ -267,20 +268,6 @@ namespace MyGUI
 	{
 		IntPoint pos = _coord.point();
 		IntSize size = _coord.size();
-		// прилепляем к краям
-		if (mSnap)
-		{
-			if (abs(pos.left) <= WINDOW_SNAP_DISTANSE) pos.left = 0;
-			if (abs(pos.top) <= WINDOW_SNAP_DISTANSE) pos.top = 0;
-
-			const IntSize& view_size = Gui::getInstance().getViewSize();
-
-			if ( abs(pos.left + mCoord.width - view_size.width) < WINDOW_SNAP_DISTANSE) pos.left = view_size.width - mCoord.width;
-			if ( abs(pos.top + mCoord.height - view_size.height) < WINDOW_SNAP_DISTANSE) pos.top = view_size.height - mCoord.height;
-
-			if ( abs(mCoord.left + size.width - view_size.width) < WINDOW_SNAP_DISTANSE) size.width = view_size.width - mCoord.left;
-			if ( abs(mCoord.top + size.height - view_size.height) < WINDOW_SNAP_DISTANSE) size.height = view_size.height - mCoord.top;
-		}
 
 		if (size.width < mMinmax.left)
 		{
@@ -311,6 +298,14 @@ namespace MyGUI
 			else pos.top = mCoord.top;
 		}
 
+		// прилепляем к краям
+		if (mSnap)
+		{
+			IntCoord coord(pos, size);
+			getSnappedCoord(coord);
+			size = coord.size();
+		}
+
 		IntCoord coord(pos, size);
 		if (coord == mCoord) return;
 
@@ -336,7 +331,7 @@ namespace MyGUI
 		ControllerManager::getInstance().addItem(this, controller);
 	}
 
-	void Window::animateStop(WidgetPtr _widget)
+	void Window::animateStop(Widget* _widget)
 	{
 		if (mAnimateSmooth)
 		{
@@ -362,6 +357,21 @@ namespace MyGUI
 	float Window::getAlphaVisible()
 	{
 		return (mIsAutoAlpha && !mKeyRootFocus) ? WINDOW_ALPHA_DEACTIVE : ALPHA_MAX;
+	}
+
+	void Window::getSnappedCoord(IntCoord& _coord)
+	{		
+		if (abs(_coord.left) <= WINDOW_SNAP_DISTANSE) _coord.left = 0;
+		if (abs(_coord.top) <= WINDOW_SNAP_DISTANSE) _coord.top = 0;
+
+		IntSize view_size;
+		if (getCroppedParent() == nullptr)
+			view_size = this->getLayer()->getSize();
+		else
+			view_size = ((Widget*)getCroppedParent())->getSize();
+
+		if ( abs(_coord.left + _coord.width - view_size.width) < WINDOW_SNAP_DISTANSE) _coord.left = view_size.width - _coord.width;
+		if ( abs(_coord.top + _coord.height - view_size.height) < WINDOW_SNAP_DISTANSE) _coord.top = view_size.height - _coord.height;
 	}
 
 	void Window::setVisibleSmooth(bool _visible)
@@ -441,7 +451,12 @@ namespace MyGUI
 		}
 #endif // MYGUI_DONT_USE_OBSOLETE
 
-		else Base::setProperty(_key, _value);
+		else
+		{
+			Base::setProperty(_key, _value);
+			return;
+		}
+		eventChangeProperty(this, _key, _value);
 	}
 
 } // namespace MyGUI

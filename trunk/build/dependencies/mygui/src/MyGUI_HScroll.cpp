@@ -33,7 +33,7 @@ namespace MyGUI
 	{
 	}
 
-	void HScroll::_initialise(WidgetStyle _style, const IntCoord& _coord, Align _align, ResourceSkin* _info, WidgetPtr _parent, ICroppedRectangle * _croppedParent, IWidgetCreator * _creator, const std::string& _name)
+	void HScroll::_initialise(WidgetStyle _style, const IntCoord& _coord, Align _align, ResourceSkin* _info, Widget* _parent, ICroppedRectangle * _croppedParent, IWidgetCreator * _creator, const std::string& _name)
 	{
 		Base::_initialise(_style, _coord, _align, _info, _parent, _croppedParent, _creator, _name);
 
@@ -62,6 +62,9 @@ namespace MyGUI
 
 	void HScroll::updateTrack()
 	{
+		if (mWidgetTrack == nullptr)
+			return;
+
 		_forcePeek(mWidgetTrack);
 		// размер диапазана в пикселях
 		int pos = getLineSize();
@@ -99,6 +102,9 @@ namespace MyGUI
 
 	void HScroll::TrackMove(int _left, int _top)
 	{
+		if (mWidgetTrack == nullptr)
+			return;
+
 		const IntPoint& point = InputManager::getInstance().getLastLeftPressed();
 
 		// расчитываем позицию виджета
@@ -125,13 +131,14 @@ namespace MyGUI
 
 	void HScroll::setTrackSize(int _size)
 	{
-		mWidgetTrack->setSize(((int)_size < (int)mMinTrackSize)? (int)mMinTrackSize : (int)_size, mWidgetTrack->getHeight());
+		if (mWidgetTrack != nullptr)
+			mWidgetTrack->setSize(((int)_size < (int)mMinTrackSize)? (int)mMinTrackSize : (int)_size, mWidgetTrack->getHeight());
 		updateTrack();
 	}
 
 	int HScroll::getTrackSize()
 	{
-		return mWidgetTrack->getWidth();
+		return mWidgetTrack == nullptr ? 1 : mWidgetTrack->getWidth();
 	}
 
 	int HScroll::getLineSize()

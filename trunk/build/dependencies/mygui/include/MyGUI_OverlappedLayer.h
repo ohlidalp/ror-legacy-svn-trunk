@@ -57,8 +57,12 @@ namespace MyGUI
 
 		virtual IntPoint getPosition(int _left, int _top);
 
+		virtual const IntSize& getSize();
+
 		// рисует леер
 		virtual void renderToTarget(IRenderTarget* _target, bool _update);
+
+		virtual void dumpStatisticToLog();
 
 	protected:
 		bool mIsPick;

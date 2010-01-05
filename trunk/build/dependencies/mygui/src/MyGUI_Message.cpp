@@ -51,7 +51,7 @@ namespace MyGUI
 	{
 	}
 
-	void Message::_initialise(WidgetStyle _style, const IntCoord& _coord, Align _align, ResourceSkin* _info, WidgetPtr _parent, ICroppedRectangle * _croppedParent, IWidgetCreator * _creator, const std::string& _name)
+	void Message::_initialise(WidgetStyle _style, const IntCoord& _coord, Align _align, ResourceSkin* _info, Widget* _parent, ICroppedRectangle * _croppedParent, IWidgetCreator * _creator, const std::string& _name)
 	{
 		Base::_initialise(_style, _coord, _align, _info, _parent, _croppedParent, _creator, _name);
 
@@ -88,7 +88,7 @@ namespace MyGUI
 				mIcon = (*iter)->castType<StaticImage>();
 			}
 		}
-		MYGUI_ASSERT(nullptr != mWidgetText, "Child Text not found in skin (MessageBox must have widget for text)");
+		//MYGUI_ASSERT(nullptr != mWidgetText, "Child Text not found in skin (MessageBox must have widget for text)");
 
 		if (mIcon != nullptr)
 		{
@@ -125,7 +125,8 @@ namespace MyGUI
 
 	void Message::setMessageText(const UString& _message)
 	{
-		mWidgetText->setCaption(_message);
+		if (mWidgetText != nullptr)
+			mWidgetText->setCaption(_message);
 		updateSize();
 	}
 
@@ -144,7 +145,7 @@ namespace MyGUI
 		if (mVectorButton.empty()) mInfoOk = info;
 		mInfoCancel = info;
 
-		WidgetPtr button = createWidgetT(mButtonType, mButtonSkin, IntCoord(), Align::Left | Align::Bottom);
+		Widget* button = createWidgetT(mButtonType, mButtonSkin, IntCoord(), Align::Left | Align::Bottom);
 		button->eventMouseButtonClick = newDelegate(this, &Message::notifyButtonClick);
 		button->setCaption(_name);
 		button->_setInternalData(info);
@@ -201,7 +202,7 @@ namespace MyGUI
 		setMessageIcon(_style);
 	}
 
-	void Message::notifyButtonClick(MyGUI::WidgetPtr _sender)
+	void Message::notifyButtonClick(MyGUI::Widget* _sender)
 	{
 		_destroyMessage(*_sender->_getInternalData<MessageBoxStyle>());
 	}
@@ -294,7 +295,7 @@ namespace MyGUI
 		return IconNames[_index];
 	}
 
-	MyGUI::MessagePtr Message::createMessageBox(
+	MyGUI::Message* Message::createMessageBox(
 		const std::string& _skin,
 		const UString& _caption,
 		const UString& _message,
@@ -306,7 +307,7 @@ namespace MyGUI
 		const std::string& _button3,
 		const std::string& _button4)
 	{
-		MessagePtr mess = Gui::getInstance().createWidget<Message>(_skin, IntCoord(), Align::Default, _layer);
+		Message* mess = Gui::getInstance().createWidget<Message>(_skin, IntCoord(), Align::Default, _layer);
 
 		mess->setCaption(_caption);
 		mess->setMessageText(_message);
@@ -337,8 +338,10 @@ namespace MyGUI
 
 	void Message::updateSize()
 	{
-		ISubWidgetText* text = mWidgetText->getSubWidgetText();
-		IntSize size = text ? text->getTextSize() : IntSize();
+		ISubWidgetText* text = nullptr;
+		if (mWidgetText != nullptr)
+			text = mWidgetText->getSubWidgetText();
+		IntSize size = text == nullptr ? IntSize() : text->getTextSize();
 		// минимум высота иконки
 		if ((nullptr != mIcon) && (mIcon->getImageIndex() != ITEM_NONE))
 		{
@@ -359,8 +362,11 @@ namespace MyGUI
 
 		if (nullptr != mIcon)
 		{
-			if (mIcon->getImageIndex() != ITEM_NONE) mWidgetText->setCoord(mLeftOffset2, mWidgetText->getTop(), mWidgetText->getWidth(), mWidgetText->getHeight());
-			else mWidgetText->setCoord(mLeftOffset1, mWidgetText->getTop(), mWidgetText->getWidth(), mWidgetText->getHeight());
+			if (mWidgetText != nullptr)
+			{
+				if (mIcon->getImageIndex() != ITEM_NONE) mWidgetText->setCoord(mLeftOffset2, mWidgetText->getTop(), mWidgetText->getWidth(), mWidgetText->getHeight());
+				else mWidgetText->setCoord(mLeftOffset1, mWidgetText->getTop(), mWidgetText->getWidth(), mWidgetText->getHeight());
+			}
 		}
 
 		for (VectorWidgetPtr::iterator iter=mVectorButton.begin(); iter!=mVectorButton.end(); ++iter)
@@ -432,7 +438,12 @@ namespace MyGUI
 		else if (_key == "Message_AddButton") addButtonName(_value);
 		else if (_key == "Message_SmoothShow") setSmoothShow(utility::parseValue<bool>(_value));
 		else if (_key == "Message_Fade") setWindowFade(utility::parseValue<bool>(_value));
-		else Base::setProperty(_key, _value);
+		else
+		{
+			Base::setProperty(_key, _value);
+			return;
+		}
+		eventChangeProperty(this, _key, _value);
 	}
 
 } // namespace MyGUI
