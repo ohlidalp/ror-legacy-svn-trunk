@@ -69,7 +69,8 @@ void EditorState::createScene()
 	MyGUI::ResourceManager::getInstance().load("initialise.xml");
 
 	mToolTip = new EditorToolTip();
-	MyGUI::DelegateManager::getInstance().addDelegate("eventInfo", MyGUI::newDelegate(eventInfo));
+	//TODO: FIX below
+	//MyGUI::DelegateManager::getInstance().addDelegate("eventInfo", MyGUI::newDelegate(eventInfo));
 	//MyGUI::DelegateManager::getInstance().addDelegate("eventEditorToolTip", MyGUI::newDelegate(this, &EditorState::notifyToolTip));
 
 	interfaceWidgets = MyGUI::LayoutManager::getInstance().loadLayout("interface.layout", "LayoutEditor_");
