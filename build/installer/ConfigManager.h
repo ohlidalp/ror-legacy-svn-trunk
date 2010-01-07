@@ -37,7 +37,9 @@ along with Rigs of Rods.  If not, see <http://www.gnu.org/licenses/>.
 	#include "wx/statbmp.h"
 #endif
 
-
+#ifdef WIN32
+std::string wstrtostr(const std::wstring &wstr);
+#endif
 
 typedef struct stream_desc_t_
 {

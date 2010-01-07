@@ -15,7 +15,7 @@ class DownloadPage;
 class WsyncThread : public wxThread
 {
 public:
-	WsyncThread(DownloadPage *handler, wxString ipath, std::vector < stream_desc_t > streams);
+	WsyncThread(bool debug, DownloadPage *handler, wxString ipath, std::vector < stream_desc_t > streams);
 	~WsyncThread();
 
 protected:
@@ -28,6 +28,7 @@ protected:
 	std::map < std::string, unsigned int > traffic_stats;
 	Timer dlStartTime;
 	bool dlStarted;
+	FILE *df;
 
 	// helper to construct event
 	void updateCallback(int type, std::string txt = std::string(), float percent=-1);
@@ -35,6 +36,7 @@ protected:
 	// special sync with visual event feedback
 	int sync();
 	int downloadFile(WSync *w, boost::filesystem::path localFile, std::string server, std::string path);
+	int buildFileIndex(WSync *w, boost::filesystem::path &outfilename, boost::filesystem::path &path, boost::filesystem::path &rootpath, std::map<std::string, Hashentry> &hashMap, bool writeFile, int mode);
 	void downloadProgress(WSync *w);
 
 	// wsync related functions
@@ -42,6 +44,7 @@ protected:
 	void recordDataUsage();
 	int findMirror(bool probeForBest=false);
 	std::string formatSeconds(float seconds);
+	void tryRemoveFile(boost::filesystem::path filename);
 
 	WSync *w;
 	std::map < std::string, Hashentry> hashMapLocal;
