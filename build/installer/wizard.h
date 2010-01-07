@@ -990,9 +990,9 @@ public:
 	{
 		wxMessageBox(wxT("Will now install DirectX. Please click ok to continue"), _T("directx"), wxICON_INFORMATION | wxOK);
 		executeBinary(wxT("dxwebsetup.exe"));
-		wxMessageBox(wxT("Please wait until the installation is done and click ok to continue"), _T("directx"), wxICON_INFORMATION | wxOK);
+		wxMessageBox(wxT("Please wait until the DirectX installation is done and click ok to continue"), _T("directx"), wxICON_INFORMATION | wxOK);
 		wxMessageBox(wxT("Will now install the Visual Studio runtime. Please click ok to continue."), _T("runtime"), wxICON_INFORMATION | wxOK);
-		executeBinary(wxT("msiexec"), wxT("runas"), wxT("/i VCCRT4.msi"), false);
+		executeBinary(wxT("c:\\windows\\system32\\msiexec.exe"), wxT("runas"), wxT("/i \"") + cm->getInstallPath() + wxT("\\VCCRT4.msi\""), wxT("cwd"), false);
 	}
 
 	void startConfigurator()
@@ -1006,22 +1006,12 @@ public:
 		executeBinary(wxT("keysheet.pdf"), wxT("open"));
 	}
 
-	void executeBinary(wxString filename, wxString action = wxT("runas"), wxString parameters = wxString(), bool useCWD=true)
+	void executeBinary(wxString filename, wxString action = wxT("runas"), wxString parameters = wxString(), wxString cwDir = wxString("cwd"), bool prependCWD=true)
 	{
 #if PLATFORM == PLATFORM_WINDOWS
 		char path[2048]= "";
-		strncpy(path, conv(cm->getInstallPath()).c_str(), 2048);
-
-		int buffSize = (int)strlen(path) + 1;
-		LPWSTR cwpath = new wchar_t[buffSize];
-		MultiByteToWideChar(CP_ACP, 0, path, buffSize, cwpath, buffSize);
-
-		strcat(path, "\\");
-		strcat(path, conv(filename).c_str());
-		buffSize = (int)strlen(path) + 1;
-		LPWSTR wpath = new wchar_t[buffSize];
-		MultiByteToWideChar(CP_ACP, 0, path, buffSize, wpath, buffSize);
-
+		if(prependCWD)
+			filename = cm->getInstallPath() + "\\" + filename;
 
 		// now construct struct that has the required starting info
 		SHELLEXECUTEINFO sei = { sizeof(sei) };
@@ -1029,12 +1019,12 @@ public:
 		sei.fMask = 0;
 		sei.hwnd = NULL;
 		sei.lpVerb = action;
-		sei.lpFile = wpath;
+		sei.lpFile = filename;
 		sei.lpParameters = parameters;
-		if(useCWD)
-			sei.lpDirectory = cwpath;
+		if(cwDir == wxT("cwd"))
+			sei.lpDirectory = cm->getInstallPath();
 		else
-			sei.lpDirectory = wxString();
+			sei.lpDirectory = cwDir;
 
 		sei.nShow = SW_NORMAL;
 		ShellExecuteEx(&sei);
