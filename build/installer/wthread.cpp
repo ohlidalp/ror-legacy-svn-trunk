@@ -826,6 +826,12 @@ int WsyncThread::findMirror(bool probeForBest)
 					updateCallback(MSE_UPDATE_PROGRESS, "", float(i)/float(list.size()));
 
 					double tdiff = w->measureDownloadSpeed(list[i][0], list[i][1]+"../speedtest.bin");
+					if(tdiff < 0)
+					{
+						// error, skip this server
+						dprintf("mirror speed: % 30s : error: %s\n", list[i][0].c_str(), w->getLastError().c_str());
+						continue;
+					}
 					if(tdiff >=0 && tdiff < bestTime)
 					{
 						bestTime = tdiff;
@@ -836,8 +842,6 @@ int WsyncThread::findMirror(bool probeForBest)
 					sprintf(tmp, "%6.2f: kB/s", (10240.0f / tdiff) / 1024.0f);
 					updateCallback(MSE_STARTING, "speed of " + list[i][0] + std::string(tmp));
 					dprintf("mirror speed: % 30s : %s\n", list[i][0].c_str(), tmp);
-					//Sleep(10000);
-
 				}
 				if(bestServer != -1)
 				{
