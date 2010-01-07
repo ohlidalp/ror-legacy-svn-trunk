@@ -665,7 +665,10 @@ public:
 	{
 		if(threadStarted) return;
 		threadStarted=true;
-		m_pThread = new WsyncThread(this, m_cm->getInstallPath(), *(m_cm->getStreamset()));
+		// XXX ENABLE DEBUG
+		bool debugEnabled = true;
+		// XXX
+		m_pThread = new WsyncThread(debugEnabled, this, m_cm->getInstallPath(), *(m_cm->getStreamset()));
 		if ( m_pThread->Create() != wxTHREAD_NO_ERROR )
 		{
 			wxLogError(wxT("Can't create the thread!"));
@@ -778,7 +781,7 @@ class LastPage : public wxWizardPageSimple, public EnterLeavePage
 protected:
 	ConfigManager* cm;
 	wxWizard *wizard;
-	wxCheckBox *chk_runtime, *chk_configurator, *chk_desktop, *chk_startmenu, *chk_viewmanual;
+	wxCheckBox *chk_runtime, *chk_configurator, *chk_desktop, *chk_startmenu, *chk_viewmanual, *chk_upgrade_configs;
 public:
 	LastPage(wxWizard *parent, ConfigManager* _cm) : wxWizardPageSimple(parent), cm(_cm), wizard(parent)
 	{
@@ -798,10 +801,24 @@ public:
 		mainSizer->Add(tst=new wxStaticText(this, wxID_ANY, _T("Thank you for downloading Rigs of Rods.\nWhat do you want to do now?")), 0, wxALL, 5);
 		tst->Wrap(TXTWRAP);
 
+		
 		chk_runtime = new wxCheckBox(this, wxID_ANY, _T("Install required runtime libraries now"));
 		mainSizer->Add(chk_runtime, 0, wxALL|wxALIGN_LEFT, 5);
 		chk_runtime->SetValue(firstInstall);
 		if(firstInstall) chk_runtime->Disable();
+
+		chk_upgrade_configs = new wxCheckBox(this, wxID_ANY, _T("Update User Configurations (important)"));
+		mainSizer->Add(chk_upgrade_configs, 0, wxALL|wxALIGN_LEFT, 5);
+		if(firstInstall)
+		{
+			chk_upgrade_configs->SetValue(false);
+			chk_upgrade_configs->Disable();
+		} else
+		{
+			// always enable this box, thus force the users to update always
+			chk_upgrade_configs->SetValue(true);
+			chk_upgrade_configs->Enable();
+		}
 
 		chk_desktop = new wxCheckBox(this, wxID_ANY, _T("Create Desktop shortcuts"));
 		mainSizer->Add(chk_desktop, 0, wxALL|wxALIGN_LEFT, 5);
@@ -863,7 +880,10 @@ public:
 
 		if(chk_runtime->IsChecked())
 			installRuntime();
-
+		
+		if(chk_upgrade_configs->IsChecked())
+			updateUserConfigs();
+		
 		if(chk_configurator->IsChecked())
 			startConfigurator();
 
@@ -884,17 +904,100 @@ public:
 	}
 #endif //PLATFORM
 
+
+	void tryRemoveFile(FILE *df, boost::filesystem::path filename)
+	{
+		if(df) fprintf(df, "removing file: %s ... ", filename.string().c_str());
+		try
+		{
+			remove(filename);
+			if(df) fprintf(df, "ok\n");
+		} catch(...)
+		{
+			if(df) fprintf(df, "ERROR\n");
+		}
+	}
+
+	void updateUserConfigFile(FILE *df, std::string filename, boost::filesystem::path iPath, boost::filesystem::path uPath)
+	{
+		boost::filesystem::path fPath = iPath / filename;
+		boost::filesystem::path dfPath = uPath / filename;
+		if(boost::filesystem::exists(dfPath))
+		{
+			tryRemoveFile(df, dfPath);
+		}
+		if(df) fprintf(df, "updating file: %s ... ", fPath.string().c_str());
+
+		bool ok = boost::filesystem::is_regular_file(fPath);
+		if(ok)
+		{
+			try
+			{
+				boost::filesystem::copy_file(fPath, dfPath);
+				ok=true;
+			} catch(...)
+			{
+				ok=false;
+			}
+		}
+
+		if(df) fprintf(df, "%s\n", ok?"ok":"error");
+	}
+
+	void updateUserConfigs()
+	{
+		boost::filesystem::path iPath = cm->getInstallPath();
+
+		boost::filesystem::path lPath = iPath / std::string("wizard.log");
+		FILE *df = fopen(lPath.string().c_str(), "w");
+
+		if(df) fprintf(df, "==== updating user configs ... \n");
+
+		iPath = iPath / std::string("skeleton") / std::string("config");
+
+		boost::filesystem::path uPath;
+#ifdef WIN32
+		LPWSTR wuser_path = new wchar_t[1024];
+		if (!SHGetFolderPath(NULL, CSIDL_PERSONAL, NULL, SHGFP_TYPE_CURRENT, wuser_path)!=S_OK)
+		{
+			GetShortPathName(wuser_path, wuser_path, 512); //this is legal
+			uPath = wstrtostr(std::wstring(wuser_path));
+			uPath = uPath / std::string("Rigs of Rods") / std::string("config");;		
+		}
+#else
+		// XXX : TODO
+#endif //WIN32
+
+		// check directories
+
+		if(df) fprintf(df, "installation path: %s ... ", iPath.string().c_str());
+		bool ok = boost::filesystem::is_directory(iPath);
+		if(df) fprintf(df, "%s\n", ok?"ok":"error");
+
+		if(df) fprintf(df, "user path: %s ... ", uPath.string().c_str());
+		ok = boost::filesystem::is_directory(uPath);
+		if(df) fprintf(df, "%s\n", ok?"ok":"error");
+
+		updateUserConfigFile(df, std::string("categories.cfg"), iPath, uPath);
+		updateUserConfigFile(df, std::string("ground_models.cfg"), iPath, uPath);
+		updateUserConfigFile(df, std::string("torque_models.cfg"), iPath, uPath);
+		updateUserConfigFile(df, std::string("wavefield.cfg"), iPath, uPath);
+
+		if(df) fclose(df);
+	}
+
 	void installRuntime()
 	{
-		wxMessageBox(wxT("Will now install DirectX. Please click ok to continue"), _T("vcredit_x86.exe!"), wxICON_INFORMATION | wxOK);
+		wxMessageBox(wxT("Will now install DirectX. Please click ok to continue"), _T("directx"), wxICON_INFORMATION | wxOK);
 		executeBinary(wxT("dxwebsetup.exe"));
-		wxMessageBox(wxT("Will now install the Visual Studio runtime. Please click ok to continue."), _T("vcredit_x86.exe!"), wxICON_INFORMATION | wxOK);
-		executeBinary(wxT("vcredist_x86.exe"));
+		wxMessageBox(wxT("Please wait until the installation is done and click ok to continue"), _T("directx"), wxICON_INFORMATION | wxOK);
+		wxMessageBox(wxT("Will now install the Visual Studio runtime. Please click ok to continue."), _T("runtime"), wxICON_INFORMATION | wxOK);
+		executeBinary(wxT("msiexec"), wxT("runas"), wxT("/i VCCRT4.msi"), false);
 	}
 
 	void startConfigurator()
 	{
-		executeBinary(wxT("rorconfig.exe"));
+		executeBinary(wxT("rorconfig.exe"), wxT("runas"), wxT("/postinstall"));
 	}
 
 	void viewManual()
@@ -903,7 +1006,7 @@ public:
 		executeBinary(wxT("keysheet.pdf"), wxT("open"));
 	}
 
-	void executeBinary(wxString filename, wxString action = wxT("runas"))
+	void executeBinary(wxString filename, wxString action = wxT("runas"), wxString parameters = wxString(), bool useCWD=true)
 	{
 #if PLATFORM == PLATFORM_WINDOWS
 		char path[2048]= "";
@@ -927,8 +1030,12 @@ public:
 		sei.hwnd = NULL;
 		sei.lpVerb = action;
 		sei.lpFile = wpath;
-		sei.lpParameters = wxT("");
-		sei.lpDirectory = cwpath;
+		sei.lpParameters = parameters;
+		if(useCWD)
+			sei.lpDirectory = cwpath;
+		else
+			sei.lpDirectory = wxString();
+
 		sei.nShow = SW_NORMAL;
 		ShellExecuteEx(&sei);
 #endif //PLATFORM

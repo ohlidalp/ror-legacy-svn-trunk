@@ -104,8 +104,22 @@ int ConfigManager::getOnlineStreams()
 	WSync *w = new WSync();
 
 	std::vector< std::map< std::string, std::string > > olist;
-	if(!w->downloadAdvancedConfigFile("wsync.rigsofrods.com", "/streams.index", olist))
+	int res = w->downloadAdvancedConfigFile("wsync.rigsofrods.com", "/streams.index", olist);
+	if(res == -1)
 	{
+		wxMessageBox("error creating tempfile for download", _T("Error"), wxICON_ERROR | wxOK);
+	} else if (res == -2)
+	{
+		std::string errorMsg = w->getLastError();
+		wxMessageBox("error downloading file:\n"+errorMsg, _T("Error"), wxICON_ERROR | wxOK);
+	} else if (res == -3)
+	{
+		wxMessageBox("unable to open local file for reading", _T("Error"), wxICON_ERROR | wxOK);
+	}
+	
+	if(!res)
+	{
+		// no error so far
 		if(olist.size() > 0)
 		{
 			for(int i=0;i<(int)olist.size();i++)
@@ -203,7 +217,10 @@ int ConfigManager::uninstall(bool deleteUserFolder)
 #if PLATFORM == PLATFORM_WINDOWS
 	wxString ipath = getInstallPath();
 	if(ipath.empty())
+	{
+		wxMessageBox("Installation Path empty?!", _T("Error"), wxICON_ERROR | wxOK);
 		return 1;
+	}
 
 	wxString mtxt = _T("Will now:\n\n");
 	mtxt += wxT("remove the main installation directory recursivly:\n") + ipath + wxT("\n\n");
@@ -225,9 +242,15 @@ int ConfigManager::uninstall(bool deleteUserFolder)
 	// remove shortcuts
 	wxString startmenuDir, desktopDir, workingDirectory = ipath, desktopLink;
 	if(!SHGetSpecialFolderPath(0, wxStringBuffer(startmenuDir, MAX_PATH), CSIDL_COMMON_PROGRAMS, FALSE))
+	{
+		wxMessageBox("Error getting Startmenu directory", _T("Error"), wxICON_ERROR | wxOK);
 		return 8;
+	}
 	if(!SHGetSpecialFolderPath(0, wxStringBuffer(desktopDir, MAX_PATH), CSIDL_DESKTOP, FALSE))
+	{
+		wxMessageBox("Error getting Desktop directory", _T("Error"), wxICON_ERROR | wxOK);
 		return 9;
+	}
 
 	if(workingDirectory.size() > 3 && workingDirectory.substr(workingDirectory.size()-1,1) != wxT("\\"))
 		workingDirectory += wxT("\\");
@@ -262,7 +285,10 @@ int ConfigManager::uninstall(bool deleteUserFolder)
 	#error You need at least wxWidgets version 2.9.0 in order to compile the installer correctly!
 #endif
 	if(!rmres)
+	{
+		wxMessageBox("Could not remove installation directory recursively", _T("Error"), wxICON_ERROR | wxOK);
 		return 2;
+	}
 
 	if(deleteUserFolder && !userPath.empty())
 	{
@@ -273,7 +299,10 @@ int ConfigManager::uninstall(bool deleteUserFolder)
 		#error You need at least wxWidgets version 2.9.0 in order to compile the installer correctly!
 #endif
 		if(!res)
+		{
+			wxMessageBox("Could not remove user directory recursively", _T("Error"), wxICON_ERROR | wxOK);
 			return 4;
+		}
 	}
 	// remove registry keys
 	wxRegKey *pRegKey = new wxRegKey(wxT("HKEY_LOCAL_MACHINE\\Software\\RigsOfRods"));

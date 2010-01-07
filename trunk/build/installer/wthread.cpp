@@ -8,11 +8,19 @@ using namespace boost::asio::ip;
 using namespace boost::filesystem;
 using namespace std;
 
-WsyncThread::WsyncThread(DownloadPage *_handler, wxString _ipath, std::vector < stream_desc_t > _streams) : wxThread(wxTHREAD_DETACHED), handler(_handler), ipath(conv(_ipath)), streams(_streams), predDownloadSize(0), dlStartTime(), dlStarted(false), w(new WSync())
+WsyncThread::WsyncThread(bool debug, DownloadPage *_handler, wxString _ipath, std::vector < stream_desc_t > _streams) : wxThread(wxTHREAD_DETACHED), handler(_handler), ipath(conv(_ipath)), streams(_streams), predDownloadSize(0), dlStartTime(), dlStarted(false), w(new WSync())
 {
 	// main server
 	mainserver = server = "wsync.rigsofrods.com";
 	mainserverdir = serverdir = "/";
+
+	if(debug)
+	{
+		char logFileName[2048]="";
+		sprintf(logFileName, "%s/sync.log", ipath.string().c_str());
+		df = fopen(logFileName, "w");
+	}
+
 }
 
 WsyncThread::~WsyncThread()
@@ -41,15 +49,60 @@ void WsyncThread::updateCallback(int type, std::string txt, float percent)
 	handler->AddPendingEvent(ev);
 }
 
+int WsyncThread::buildFileIndex(WSync *w, boost::filesystem::path &outfilename, boost::filesystem::path &path, boost::filesystem::path &rootpath, std::map<string, Hashentry> &hashMap, bool writeFile, int mode)
+{
+	vector<string> files;
+	w->listFiles(path, files);
+	char tmp[256] = "";
+	sprintf(tmp, "indexing %d files ...", files.size());
+	if(df) fprintf(df, "%s\n", tmp);
+	updateCallback(MSE_STARTING, string(tmp));
+	int counter = 0, counterMax = files.size();
+	for(vector<string>::iterator it=files.begin(); it!=files.end(); it++, counter++)
+	{
+		updateCallback(MSE_UPDATE_PROGRESS, "", float(counter)/float(counterMax));
+		// cut out root path
+		string respath = *it;
+		if(respath.substr(0, rootpath.string().size()) == rootpath.string())
+		{
+			// this ensures that all paths start with /
+			int start = rootpath.string().size();
+			if(respath.substr(rootpath.string().size()-1,1) == "/")
+				start -= 1;
+			respath = respath.substr(start);
+		}
+
+		// do not use the file index in itself!
+		if(respath == (string("/") + string(INDEXFILENAME)))
+			continue;
+
+		size_t found = respath.find(".svn");
+		if (found != string::npos)
+			continue;
+
+		found = respath.find(".temp.");
+		if (found != string::npos)
+			continue;
+
+		string resultHash = w->generateFileHash(it->c_str());
+
+		Hashentry entry(resultHash, file_size(*it));
+		hashMap[respath] = entry;
+	}
+	if(writeFile)
+		return w->saveHashMapToFile(outfilename, hashMap, mode);
+	return 0;
+}
+
 int WsyncThread::getSyncData()
 {
 	// generating local FileIndex
 	path myFileIndex = ipath / INDEXFILENAME;
-	updateCallback(MSE_STARTING, "indexing files ...");
 
 	hashMapLocal.clear();
-	if(w->buildFileIndex(myFileIndex, ipath, ipath, hashMapLocal, true, 1))
+	if(this->buildFileIndex(w, myFileIndex, ipath, ipath, hashMapLocal, true, 1))
 	{
+		if(df) fprintf(df, "error while generating local FileIndex\n");
 		updateCallback(MSE_ERROR, "error while generating local FileIndex");
 		return -1;
 	}
@@ -63,15 +116,18 @@ int WsyncThread::getSyncData()
 		path remoteFileIndex;
 		if(WSync::getTempFilename(remoteFileIndex))
 		{
+			if(df) fprintf(df, "error creating tempfile\n");
 			updateCallback(MSE_ERROR, "error creating tempfile!");
 			return -1;
 		}
 
-		updateCallback(MSE_UPDATE_TEXT, "downloading file list...");
+		updateCallback(MSE_UPDATE_TEXT, "downloading file list to file ...");
+		if(df) fprintf(df, "downloading file list to file %s ...", remoteFileIndex.string().c_str());
 		string url = "/" + conv(it->path) + "/" + INDEXFILENAME;
 		if(this->downloadFile(w, remoteFileIndex.string(), mainserver, url))
 		{
 			updateCallback(MSE_ERROR, "error downloading file index from http://" + mainserver + url);
+			if(df) fprintf(df, "error downloading file index from http://%s%s\n", mainserver.c_str(), url.c_str());
 			return -1;
 		}
 
@@ -80,7 +136,7 @@ int WsyncThread::getSyncData()
 		string hashMyFileIndex = w->generateFileHash(myFileIndex);
 		string hashRemoteFileIndex = w->generateFileHash(remoteFileIndex);
 
-		remove(INDEXFILENAME);
+		tryRemoveFile(INDEXFILENAME);
 		if(hashMyFileIndex == hashRemoteFileIndex)
 		{
 			updateCallback(MSE_DONE, "Files are up to date, no sync needed");
@@ -94,16 +150,18 @@ int WsyncThread::getSyncData()
 		int modeNumber = 0; // pseudo, not used, to be improved
 		int res = w->loadHashMapFromFile(remoteFileIndex, temp_hashMapRemote, modeNumber);
 		// remove that temp file
-		remove(remoteFileIndex);
+		tryRemoveFile(remoteFileIndex);
 		if(res)
 		{
 			updateCallback(MSE_ERROR, "error reading remote file index");
+			if(df) fprintf(df, "error reading remote file index\n");
 			return -2;
 		}
 
 		if(temp_hashMapRemote.size() == 0)
 		{
 			updateCallback(MSE_ERROR, "remote file index is invalid\nConnection Problems / Server down?");
+			if(df) fprintf(df, "remote file index is invalid\nConnection Problems / Server down?\n");
 			return -3;
 		}
 
@@ -209,26 +267,33 @@ int WsyncThread::sync()
 	int changeCounter = 0, changeMax = changedFiles.size() + newFiles.size() + deletedFiles.size();
 	int filesToDownload = newFiles.size() + changedFiles.size();
 
-	predDownloadSize = 0; // predicted download size
-	// XXX DEBUG
-	//FILE *f=fopen("log.txt", "w");
+	if(df) fprintf(df, "==== Changes:\n");
+	predDownloadSize = 0; // predicted download size	
 	for(itf=newFiles.begin(); itf!=newFiles.end(); itf++)
 	{
 		predDownloadSize += (int)itf->filesize;
-		// DEBUG
-		//fprintf(f, "> A path:%s, file: %s, size:%d\n", itf->stream_path.c_str(), itf->filename.c_str(), itf->filesize);
+		if(df) fprintf(df, "> A path:%s, file: %s, size:%d\n", itf->stream_path.c_str(), itf->filename.c_str(), itf->filesize);
 	}
+	if(df && !newFiles.size()) fprintf(df, "> no files added\n");
+
 
 	for(itf=changedFiles.begin(); itf!=changedFiles.end(); itf++)
 	{
 		predDownloadSize += (int)itf->filesize;
-		//fprintf(f, "> U path:%s, file: %s, size:%d\n", itf->stream_path.c_str(), itf->filename.c_str(), itf->filesize);
+		if(df) fprintf(df, "> U path:%s, file: %s, size:%d\n", itf->stream_path.c_str(), itf->filename.c_str(), itf->filesize);
 	}
-	// XXX DEBUG
-	//fclose(f);
+	if(df && !changedFiles.size()) fprintf(df, "> no files changed\n");
+
+	for(itf=deletedFiles.begin(); itf!=deletedFiles.end(); itf++)
+	{
+		if(df) fprintf(df, "> D path:%s, file: %s, size:%d\n", itf->stream_path.c_str(), itf->filename.c_str(), itf->filesize);
+	}
+	if(df && !deletedFiles.size()) fprintf(df, "> no files deleted\n");
+	
 
 	if(predDownloadSize > 0)
 	{
+		if(df) fprintf(df, "==== finding mirror\n");
 		bool measureMirrorSpeed = (predDownloadSize > 10485760); // 10 MB
 		if(findMirror(measureMirrorSpeed) && measureMirrorSpeed)
 		{
@@ -236,10 +301,15 @@ int WsyncThread::sync()
 			findMirror();
 		}
 	}
+	// reset progress bar
+	updateCallback(MSE_UPDATE_PROGRESS, "", 0);
+
+	if(df) fprintf(df, "==== starting download\n");
 
 	// security check in order not to delete the entire harddrive
 	if(deletedFiles.size() > 1000)
 	{
+		if(df) fprintf(df, "would delete more than 1000 files, aborting\n");
 		updateCallback(MSE_ERROR, "would delete more than 1000 files, aborting");
 		return -1;
 	}
@@ -260,11 +330,13 @@ retry:
 				//progressOutputShort(float(changeCounter)/float(changeMax));
 				sprintf(tmp, "downloading new file: %s (%s) ", itf->filename.c_str(), WSync::formatFilesize(itf->filesize).c_str());
 				updateCallback(MSE_UPDATE_TEXT, string(tmp));
+				if(df) fprintf(df, "%s\n", tmp);
 				path localfile = ipath / itf->filename;
 				string url = dir_use + itf->stream_path + itf->filename;
 				int stat = this->downloadFile(w, localfile, server_use, url);
 				if(stat == -404 && retrycount < 2)
 				{
+					if(df) fprintf(df, "  result: %d, retrycount: %d, falling back to main server\n", stat, retrycount);
 					// fallback to main server!
 					//printf("falling back to main server.\n");
 					server_use = mainserver;
@@ -274,6 +346,7 @@ retry:
 				}
 				if(stat)
 				{
+					if(df) fprintf(df, "  unable to create file: %s\n", itf->filename.c_str());
 					//printf("\nunable to create file: %s\n", itf->filename.c_str());
 				} else
 				{
@@ -281,13 +354,15 @@ retry:
 					string hash_remote = w->findHashInHashmap(hashMapRemote, itf->filename);
 					if(hash_remote == checkHash)
 					{
+						if(df) fprintf(df, "  file hash ok\n");
 						//printf(" OK                                             \n");
 					} else
 					{
 						//printf(" OK                                             \n");
 						//printf(" hash is: '%s'\n", checkHash.c_str());
 						//printf(" hash should be: '%s'\n", hash_remote.c_str());
-						remove(localfile);
+						if(df) fprintf(df, "  file hash wrong, is: '%s', should be: '%s'\n", checkHash.c_str(), hash_remote.c_str());
+						tryRemoveFile(localfile);
 						if(retrycount < 2)
 						{
 							// fallback to main server!
@@ -313,6 +388,7 @@ retry2:
 				//progressOutputShort(float(changeCounter)/float(changeMax));
 				sprintf(tmp, "updating changed file: %s (%s) ", itf->filename.c_str(), WSync::formatFilesize(itf->filesize).c_str());
 				updateCallback(MSE_UPDATE_TEXT, string(tmp));
+				if(df) fprintf(df, "%s\n", tmp);
 				path localfile = ipath / itf->filename;
 				string url = dir_use + itf->stream_path + itf->filename;
 				int stat = this->downloadFile(w, localfile, server_use, url);
@@ -327,6 +403,7 @@ retry2:
 				}
 				if(stat)
 				{
+					if(df) fprintf(df, "  unable to update file: %s\n", itf->filename.c_str());
 					//printf("\nunable to update file: %s\n", itf->filename.c_str());
 				} else
 				{
@@ -334,13 +411,15 @@ retry2:
 					string hash_remote = w->findHashInHashmap(hashMapRemote, itf->filename);
 					if(hash_remote == checkHash)
 					{
+						if(df) fprintf(df, "  file hash ok\n");
 						//printf(" OK                                             \n");
 					} else
 					{
 						//printf(" OK                                             \n");
 						//printf(" hash is: '%s'\n", checkHash.c_str());
 						//printf(" hash should be: '%s'\n", hash_remote.c_str());
-						remove(localfile);
+						if(df) fprintf(df, "  file hash wrong, is: '%s', should be: '%s'\n", checkHash.c_str(), hash_remote.c_str());
+						tryRemoveFile(localfile);
 						if(retrycount < 2)
 						{
 							// fallback to main server!
@@ -370,10 +449,11 @@ retry2:
 				//progressOutputShort(float(changeCounter)/float(changeMax));
 				sprintf(tmp, "deleting file: %s\n", filename.c_str()); //, WSync::formatFilesize(itf->filesize).c_str());
 				updateCallback(MSE_UPDATE_TEXT, string(tmp));
+				if(df) fprintf(df, "%s\n", tmp);
 				path localfile = ipath / filename;
 				try
 				{
-					boost::filesystem::remove(localfile);
+					tryRemoveFile(localfile);
 					//if(exists(localfile))
 					//	printf("unable to delete file: %s\n", localfile.string().c_str());
 				} catch(...)
@@ -393,6 +473,10 @@ retry2:
 	downloadProgress(w);
 	// user may proceed
 	updateCallback(MSE_DONE, string(tmp), 1);
+	if(df) fprintf(df, "%s\n", tmp);
+
+	if(df) fclose(df);
+
 	return res;
 }
 
@@ -400,7 +484,7 @@ retry2:
 
 int WsyncThread::downloadFile(WSync *w, boost::filesystem::path localFile, string server, string path)
 {
-	//wxMessageBox(_("download of http://") + conv(server) + conv(path) + _(" to ") + conv(localFile.string()), _("download"));
+	if(df) fprintf(df, "DLFile| http://%s%s -> %s ... \n", server.c_str(), path.c_str(), localFile.string().c_str());
 	if(!dlStarted)
 	{
 		dlStarted=1;
@@ -409,6 +493,7 @@ int WsyncThread::downloadFile(WSync *w, boost::filesystem::path localFile, strin
 	// remove '//' and '///' from url
 	WSync::cleanURL(path);
 	double lastTime=-1;
+	boost::uintmax_t fileSize = 0;
 	try
 	{
 		Timer time = Timer();
@@ -466,6 +551,8 @@ int WsyncThread::downloadFile(WSync *w, boost::filesystem::path localFile, strin
 		{
 			socket.close();
 			std::cout << endl << "Error: Invalid response\n";
+			if(df) fprintf(df, "DLFile|Error: Invalid response: %s\n", http_version.c_str());
+			if(df) fprintf(df, "DLFile|download URL: http://%s%s\n", server.c_str(), path.c_str());
 			printf("download URL: http://%s%s\n", server.c_str(), path.c_str());
 			return 1;
 		}
@@ -488,6 +575,8 @@ int WsyncThread::downloadFile(WSync *w, boost::filesystem::path localFile, strin
 			if(new_url.substr(0, 7) != "http://")
 			{
 				std::cout << endl << "Error: redirection uses unkown protocol: " << new_url << "\n";
+				if(df) fprintf(df, "DLFile|Error: redirection uses unkown protocol: %s\n", new_url.c_str());
+				if(df) fprintf(df, "DLFile|download URL: http://%s%s\n", server.c_str(), path.c_str());
 				return 1;
 			}
 			// trim line
@@ -501,12 +590,16 @@ int WsyncThread::downloadFile(WSync *w, boost::filesystem::path localFile, strin
 			//std::cout << "server : '" << new_server << "'\n";
 			//std::cout << "path : '" << new_path << "'\n";
 
+			if(df) fprintf(df, "DLFile| got redirected: http://%s%s -> http://%s%s\n", server.c_str(), path.c_str(), new_server.c_str(), new_path.c_str());
 			return downloadFile(w, localFile, new_server, new_path);
 		}
 		if (status_code != 200)
 		{
 			std::cout << endl << "Error: Response returned with status code " << status_code << "\n";
 			printf("download URL: http://%s%s\n", server.c_str(), path.c_str());
+			
+			if(df) fprintf(df, "DLFile|Error: Response returned with status code: %d\n", status_code);
+			if(df) fprintf(df, "DLFile|download URL: http://%s%s\n", server.c_str(), path.c_str());
 			return -(int)status_code;
 		}
 
@@ -531,6 +624,8 @@ int WsyncThread::downloadFile(WSync *w, boost::filesystem::path localFile, strin
 		if(!myfile.is_open())
 		{
 			printf("error opening file: %s\n", localFile.string().c_str());
+			if(df) fprintf(df, "DLFile|error opening local file: %d\n", localFile.string().c_str());
+			if(df) fprintf(df, "DLFile|download URL: http://%s%s\n", server.c_str(), path.c_str());
 			return 2;
 		}
 
@@ -568,13 +663,17 @@ int WsyncThread::downloadFile(WSync *w, boost::filesystem::path localFile, strin
 			throw boost::system::system_error(error);
 
 		myfile.close();
-		boost::uintmax_t fileSize = file_size(localFile);
+		fileSize = file_size(localFile);
 		socket.close();
 		if(reported_filesize != 0 && fileSize != reported_filesize)
 		{
 			printf("\nError: file size is different: should be %d, is %d. removing file.\n", reported_filesize, (int)fileSize);
 			printf("download URL: http://%s%s\n", server.c_str(), path.c_str());
-			remove(localFile);
+
+			if(df) fprintf(df, "DLFile|Error: file size is different: should be %d, is %d. removing file.\n", reported_filesize, (int)fileSize);
+			if(df) fprintf(df, "DLFile|download URL: http://%s%s\n", server.c_str(), path.c_str());
+
+			tryRemoveFile(localFile);
 			return 1;
 			// remove file data transfer again
 			//setDownloadSize(datacounter_before);
@@ -590,8 +689,14 @@ int WsyncThread::downloadFile(WSync *w, boost::filesystem::path localFile, strin
 	{
 		std::cout << endl << "Error: " << e.what() << "\n";
 		printf("download URL: http://%s%s\n", server.c_str(), path.c_str());
+
+		if(df) fprintf(df, "DLFile|Exception Error: %s\n", string(e.what()).c_str());
+		if(df) fprintf(df, "DLFile|download URL: http://%s%s\n", server.c_str(), path.c_str());
+
 		return 1;
 	}
+	if(df) fprintf(df, "DLFile| download ok, %d bytes in %s\n", fileSize, formatSeconds(dlStartTime.elapsed()).c_str());
+
 	return 0;
 }
 
@@ -677,9 +782,11 @@ int WsyncThread::findMirror(bool probeForBest)
 {
 	std::vector< std::vector< std::string > > list;
 	updateCallback(MSE_STARTING, "finding suitable mirror ...");
+	if(df) fprintf(df, "finding suitable mirror ...\n");
 	if(!probeForBest)
 	{
 		updateCallback(MSE_STARTING, "getting random mirror ...");
+		if(df) fprintf(df, "getting random mirror ...\n");
 		// just collect a best fitting server by geolocating this client's IP
 		if(!w->downloadConfigFile(API_SERVER, API_MIRROR, &list))
 		{
@@ -703,6 +810,7 @@ int WsyncThread::findMirror(bool probeForBest)
 	{
 		// probe servers :D
 		// get some random servers and test their speeds
+		if(df) fprintf(df, "getting fastest mirror ...\n");
 		if(!w->downloadConfigFile(API_SERVER, API_MIRROR_NOGEO, &list))
 		{
 			if(list.size() > 0)
@@ -727,6 +835,7 @@ int WsyncThread::findMirror(bool probeForBest)
 					char tmp[255]="";
 					sprintf(tmp, "%6.2f: kB/s", (10240.0f / tdiff) / 1024.0f);
 					updateCallback(MSE_STARTING, "speed of " + list[i][0] + std::string(tmp));
+					if(df) fprintf(df, "mirror speed: % 30s : %s\n", list[i][0].c_str(), tmp);
 					//Sleep(10000);
 
 				}
@@ -743,4 +852,17 @@ int WsyncThread::findMirror(bool probeForBest)
 
 	}
 	return 0;
+}
+
+void WsyncThread::tryRemoveFile(boost::filesystem::path filename)
+{
+	if(df) fprintf(df, "removing file: %s ... ", filename.string().c_str());
+	try
+	{
+		remove(filename);
+		if(df) fprintf(df, "ok\n");
+	} catch(...)
+	{
+		if(df) fprintf(df, "ERROR\n");
+	}
 }
