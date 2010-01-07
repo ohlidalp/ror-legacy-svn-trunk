@@ -29,6 +29,8 @@ protected:
 	Timer dlStartTime;
 	bool dlStarted;
 	FILE *df;
+	void dprintf(char* fmt, ...);
+
 
 	// helper to construct event
 	void updateCallback(int type, std::string txt = std::string(), float percent=-1);
