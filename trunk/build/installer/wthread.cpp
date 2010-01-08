@@ -809,7 +809,9 @@ void WsyncThread::recordDataUsage()
 		char tmp[256]="";
 		sprintf(tmp, API_RECORDTRAFFIC, itt->first.c_str(), itt->second);
 		w->responseLessRequest(API_SERVER, string(tmp));
-		dprintf("%s : %d bytes\n", itt->first.c_str(), itt->second);
+		
+		string sizeStr = WSync::formatFilesize(itt->second);
+		dprintf("%s : %d bytes / %s\n", itt->first.c_str(), itt->second, sizeStr.c_str());
 	}
 }
 
