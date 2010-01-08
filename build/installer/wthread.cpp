@@ -94,6 +94,15 @@ int WsyncThread::buildFileIndex(WSync *w, boost::filesystem::path &outfilename, 
 	return 0;
 }
 
+void WsyncThread::debugOutputHashMap(std::map<string, Hashentry> &hashMap)
+{
+	for(std::map<string, Hashentry>::iterator it=hashMap.begin(); it!=hashMap.end(); it++)
+	{
+		int fsize = (int)it->second.filesize;
+		dprintf(" - %s : %d : %s\n", it->first.c_str(), fsize, it->second.hash.c_str());
+	}
+}
+
 int WsyncThread::getSyncData()
 {
 	// generating local FileIndex
@@ -106,6 +115,8 @@ int WsyncThread::getSyncData()
 		updateCallback(MSE_ERROR, "error while generating local FileIndex");
 		return -1;
 	}
+	dprintf("local hashmap building done:\n");
+	debugOutputHashMap(hashMapLocal);
 
 	// now fetch remote file-indexes
 	for(std::vector < stream_desc_t >::iterator it = streams.begin(); it!=streams.end(); it++)
@@ -122,7 +133,7 @@ int WsyncThread::getSyncData()
 		}
 
 		updateCallback(MSE_UPDATE_TEXT, "downloading file list ...");
-		dprintf("downloading file list to file %s ...", remoteFileIndex.string().c_str());
+		dprintf("downloading file list to file %s ...\n", remoteFileIndex.string().c_str());
 		string url = "/" + conv(it->path) + "/" + INDEXFILENAME;
 		if(this->downloadFile(w, remoteFileIndex.string(), mainserver, url))
 		{
@@ -164,10 +175,13 @@ int WsyncThread::getSyncData()
 			dprintf("remote file index is invalid\nConnection Problems / Server down?\n");
 			return -3;
 		}
+		dprintf("remote hashmap reading done [%s]:\n", conv(it->path).c_str());
+		debugOutputHashMap(temp_hashMapRemote);
 
 		// add it to our map
 		hashMapRemote[conv(it->path)] = temp_hashMapRemote;
 	}
+	dprintf("all sync data received\n");
 	return 0;
 }
 
@@ -176,6 +190,8 @@ int WsyncThread::sync()
 	int res=0;
 	char tmp[512] = "";
 	memset(tmp, 0, 512);
+
+	dprintf("==== starting sync\n");
 
 	std::vector<Fileentry> deletedFiles;
 	std::vector<Fileentry> changedFiles;
@@ -189,6 +205,7 @@ int WsyncThread::sync()
 	for(itr = hashMapRemote.begin(); itr != hashMapRemote.end(); itr++)
 	{
 		//first, detect deleted or changed files
+		dprintf("* detecting deleted or changed files for stream %s...\n", itr->first.c_str());
 		for(it = hashMapLocal.begin(); it != hashMapLocal.end(); it++)
 		{
 			// filter some utility files
@@ -217,6 +234,7 @@ int WsyncThread::sync()
 				changedFiles.push_back(Fileentry(itr->first, it->first, itr->second[it->first].filesize));
 		}
 		// second, detect new files
+		dprintf("* detecting new files for stream %s...\n", itr->first.c_str());
 		for(it = itr->second.begin(); it != itr->second.end(); it++)
 		{
 			// filter some files
@@ -247,6 +265,7 @@ int WsyncThread::sync()
 	{
 		if(itf->filename == "/installer.exe")
 		{
+			dprintf("* will be updating the installer\n");
 			updateInstaller=true;
 			break;
 		}
@@ -257,7 +276,19 @@ int WsyncThread::sync()
 		path installer_to = ipath / "installer.exe.old";
 		if(exists(installer_from))
 		{
-			boost::filesystem::rename(installer_from, installer_to);
+			try
+			{
+				if(boost::filesystem::exists(installer_to))
+				{
+					// we dont need the old installer, remove it.
+					tryRemoveFile(installer_to);
+				}
+				dprintf("trying to rename installer from %s to %s\n", installer_from.string().c_str(), installer_to.string().c_str());
+				boost::filesystem::rename(installer_from, installer_to);
+			} catch (std::exception& e)
+			{
+				dprintf("error while renaming installer: %s\n", std::string(e.what()).c_str());
+			}
 		}
 	}
 #endif //WIN32
@@ -474,8 +505,6 @@ retry2:
 	// user may proceed
 	updateCallback(MSE_DONE, string(tmp), 1);
 	dprintf("%s\n", tmp);
-
-	if(df) fclose(df);
 
 	return res;
 }

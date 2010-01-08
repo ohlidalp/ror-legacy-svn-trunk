@@ -40,6 +40,7 @@ protected:
 	int downloadFile(WSync *w, boost::filesystem::path localFile, std::string server, std::string path);
 	int buildFileIndex(WSync *w, boost::filesystem::path &outfilename, boost::filesystem::path &path, boost::filesystem::path &rootpath, std::map<std::string, Hashentry> &hashMap, bool writeFile, int mode);
 	void downloadProgress(WSync *w);
+	void debugOutputHashMap(std::map<std::string, Hashentry> &hashMap);
 
 	// wsync related functions
 	int getSyncData();
