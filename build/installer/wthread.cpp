@@ -357,21 +357,23 @@ int WsyncThread::sync()
 			{
 				int retrycount = 0;
 // ARGHHHH GOTO D:
+				string server_use_file = server_use, dir_use_file = dir_use;
 retry:
+				updateCallback(MSE_UPDATE_SERVER, server_use_file);
 				//progressOutputShort(float(changeCounter)/float(changeMax));
 				sprintf(tmp, "downloading new file: %s (%s) ", itf->filename.c_str(), WSync::formatFilesize(itf->filesize).c_str());
 				updateCallback(MSE_UPDATE_TEXT, string(tmp));
 				dprintf("%s\n", tmp);
 				path localfile = ipath / itf->filename;
-				string url = dir_use + itf->stream_path + itf->filename;
-				int stat = this->downloadFile(w, localfile, server_use, url);
+				string url = dir_use_file + itf->stream_path + itf->filename;
+				int stat = this->downloadFile(w, localfile, server_use_file, url);
 				if(stat == -404 && retrycount < 2)
 				{
 					dprintf("  result: %d, retrycount: %d, falling back to main server\n", stat, retrycount);
-					// fallback to main server!
+					// fallback to main server (for this single file only!)
 					//printf("falling back to main server.\n");
-					server_use = mainserver;
-					dir_use = mainserverdir;
+					server_use_file = mainserver;
+					dir_use_file = mainserverdir;
 					retrycount++;
 					goto retry;
 				}
@@ -385,22 +387,22 @@ retry:
 					string hash_remote = w->findHashInHashmap(hashMapRemote, itf->filename);
 					if(hash_remote == checkHash)
 					{
-						dprintf("  file hash ok\n");
+						dprintf("DLFile| file hash ok\n");
 						//printf(" OK                                             \n");
 					} else
 					{
 						//printf(" OK                                             \n");
 						//printf(" hash is: '%s'\n", checkHash.c_str());
 						//printf(" hash should be: '%s'\n", hash_remote.c_str());
-						dprintf("  file hash wrong, is: '%s', should be: '%s'\n", checkHash.c_str(), hash_remote.c_str());
+						dprintf("DLFile| file hash wrong, is: '%s', should be: '%s'\n", checkHash.c_str(), hash_remote.c_str());
 						tryRemoveFile(localfile);
 						if(retrycount < 2)
 						{
 							// fallback to main server!
 							//printf(" hash wrong, falling back to main server.\n");
 							//printf(" probably the mirror is not in sync yet\n");
-							server_use = mainserver;
-							dir_use = mainserverdir;
+							server_use_file = mainserver;
+							dir_use_file = mainserverdir;
 							retrycount++;
 							goto retry;
 						}
@@ -415,20 +417,22 @@ retry:
 			{
 				int retrycount = 0;
 // ARGHHHH GOTO D:
+				string server_use_file = server_use, dir_use_file = dir_use;
 retry2:
+				updateCallback(MSE_UPDATE_SERVER, server_use_file);
 				//progressOutputShort(float(changeCounter)/float(changeMax));
 				sprintf(tmp, "updating changed file: %s (%s) ", itf->filename.c_str(), WSync::formatFilesize(itf->filesize).c_str());
 				updateCallback(MSE_UPDATE_TEXT, string(tmp));
 				dprintf("%s\n", tmp);
 				path localfile = ipath / itf->filename;
-				string url = dir_use + itf->stream_path + itf->filename;
-				int stat = this->downloadFile(w, localfile, server_use, url);
+				string url = dir_use_file + itf->stream_path + itf->filename;
+				int stat = this->downloadFile(w, localfile, server_use_file, url);
 				if(stat == -404 && retrycount < 2)
 				{
-					// fallback to main server!
+					// fallback to main server (for this file only)
 					//printf("falling back to main server.\n");
-					server_use = mainserver;
-					dir_use = mainserverdir;
+					server_use_file = mainserver;
+					dir_use_file = mainserverdir;
 					retrycount++;
 					goto retry2;
 				}
@@ -442,22 +446,22 @@ retry2:
 					string hash_remote = w->findHashInHashmap(hashMapRemote, itf->filename);
 					if(hash_remote == checkHash)
 					{
-						dprintf("  file hash ok\n");
+						dprintf("DLFile| file hash ok\n");
 						//printf(" OK                                             \n");
 					} else
 					{
 						//printf(" OK                                             \n");
 						//printf(" hash is: '%s'\n", checkHash.c_str());
 						//printf(" hash should be: '%s'\n", hash_remote.c_str());
-						dprintf("  file hash wrong, is: '%s', should be: '%s'\n", checkHash.c_str(), hash_remote.c_str());
+						dprintf("DLFile| file hash wrong, is: '%s', should be: '%s'\n", checkHash.c_str(), hash_remote.c_str());
 						tryRemoveFile(localfile);
 						if(retrycount < 2)
 						{
 							// fallback to main server!
 							//printf(" hash wrong, falling back to main server.\n");
 							//printf(" probably the mirror is not in sync yet\n");
-							server_use = mainserver;
-							dir_use = mainserverdir;
+							server_use_file = mainserver;
+							dir_use_file = mainserverdir;
 							retrycount++;
 							goto retry2;
 						}
@@ -724,7 +728,7 @@ int WsyncThread::downloadFile(WSync *w, boost::filesystem::path localFile, strin
 
 		return 1;
 	}
-	dprintf("DLFile| download ok, %d bytes in %s\n", fileSize, formatSeconds(dlStartTime.elapsed()).c_str());
+	dprintf("DLFile| download ok, %d bytes received\n", fileSize);
 
 	return 0;
 }
@@ -796,6 +800,7 @@ void WsyncThread::downloadProgress(WSync *w)
 
 void WsyncThread::recordDataUsage()
 {
+	dprintf("==== reporting used up bandwidth\n");
 	if(traffic_stats.size() == 0) return;
 	std::map < std::string, unsigned int >::iterator itt;
 	for(itt=traffic_stats.begin();itt!=traffic_stats.end(); itt++)
@@ -804,6 +809,7 @@ void WsyncThread::recordDataUsage()
 		char tmp[256]="";
 		sprintf(tmp, API_RECORDTRAFFIC, itt->first.c_str(), itt->second);
 		w->responseLessRequest(API_SERVER, string(tmp));
+		dprintf("%s : %d bytes\n", itt->first.c_str(), itt->second);
 	}
 }
 
