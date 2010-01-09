@@ -121,7 +121,7 @@ int WsyncThread::buildFileIndex(boost::filesystem::path &outfilename, boost::fil
 
 int WsyncThread::saveHashMapToFile(boost::filesystem::path &filename, std::map<std::string, Hashentry> &hashMap, int mode)
 {
-	WsyncDownload::ensurePathExist(filename);
+	ensurePathExist(filename);
 	const char *cfile = filename.string().c_str();
 	FILE *f = fopen(cfile, "wb");
 	if(!f)
@@ -183,7 +183,7 @@ int WsyncThread::getSyncData()
 		if(!it->checked) continue;
 
 		path remoteFileIndex;
-		if(WsyncDownload::getTempFilename(remoteFileIndex))
+		if(getTempFilename(remoteFileIndex))
 		{
 			LOG("error creating tempfile\n");
 			updateCallback(MSE_ERROR, "error creating tempfile!");
@@ -453,7 +453,7 @@ int WsyncThread::sync()
 retry:
 				updateCallback(MSE_UPDATE_SERVER, server_use_file);
 				//progressOutputShort(float(changeCounter)/float(changeMax));
-				sprintf(tmp, "downloading new file: %s (%s) ", itf->filename.c_str(), WsyncDownload::formatFilesize(itf->filesize).c_str());
+				sprintf(tmp, "downloading new file: %s (%s) ", itf->filename.c_str(), formatFilesize(itf->filesize).c_str());
 				updateCallback(MSE_UPDATE_TEXT, string(tmp));
 				LOG("%s\n", tmp);
 				path localfile = ipath / itf->filename;
@@ -513,7 +513,7 @@ retry:
 retry2:
 				updateCallback(MSE_UPDATE_SERVER, server_use_file);
 				//progressOutputShort(float(changeCounter)/float(changeMax));
-				sprintf(tmp, "updating changed file: %s (%s) ", itf->filename.c_str(), WsyncDownload::formatFilesize(itf->filesize).c_str());
+				sprintf(tmp, "updating changed file: %s (%s) ", itf->filename.c_str(), formatFilesize(itf->filesize).c_str());
 				updateCallback(MSE_UPDATE_TEXT, string(tmp));
 				LOG("%s\n", tmp);
 				path localfile = ipath / itf->filename;
@@ -589,7 +589,7 @@ retry2:
 				}
 			}
 		}
-		//sprintf(tmp, "sync complete, downloaded %s\n", WsyncDownload::formatFilesize(getDownloadSize()).c_str());
+		//sprintf(tmp, "sync complete, downloaded %s\n", formatFilesize(getDownloadSize()).c_str());
 		res = 1;
 	} else
 	{
@@ -643,7 +643,7 @@ void WsyncThread::recordDataUsage()
 		sprintf(tmp, API_RECORDTRAFFIC, itt->first.c_str(), itt->second);
 		//responseLessRequest(API_SERVER, string(tmp));
 		
-		string sizeStr = WsyncDownload::formatFilesize(itt->second);
+		string sizeStr = formatFilesize(itt->second);
 		LOG("%s : %d bytes / %s\n", itt->first.c_str(), itt->second, sizeStr.c_str());
 	}
 }
@@ -738,7 +738,7 @@ int WsyncThread::findMirror(bool probeForBest)
 double WsyncThread::measureDownloadSpeed(std::string server, std::string url)
 {
 	path tempfile;
-	if(WsyncDownload::getTempFilename(tempfile))
+	if(getTempFilename(tempfile))
 	{
 		printf("error creating tempfile!\n");
 		return -1;

@@ -6,6 +6,7 @@
 #include "Timer.h"
 #include "installerlog.h"
 #include "tokenize.h"
+#include "utils.h"
 
 #include <boost/asio.hpp>
 #include <boost/filesystem.hpp>
@@ -15,23 +16,6 @@ using namespace boost::asio;
 using namespace boost::asio::ip;
 using namespace boost::filesystem;
 using namespace std;
-
-#if 0
-inline wxString conv(const char *s)
-{
-	return wxString(s, wxConvUTF8);
-}
-
-inline wxString conv(const std::string& s)
-{
-	return wxString(s.c_str(), wxConvUTF8);
-}
-
-inline std::string conv(const wxString& s)
-{
-	return std::string(s.mb_str(wxConvUTF8));
-}
-#endif //0
 
 std::map < std::string, boost::uintmax_t > WsyncDownload::traffic_stats;
 
@@ -236,34 +220,6 @@ int WsyncDownload::downloadFile(boost::filesystem::path localFile, string server
 }
 
 
-int WsyncDownload::cleanURL(string &url)
-{
-	int position = url.find("//");
-	while (position != string::npos)
-	{
-		url.replace(position, 2, "/" );
-		position = url.find( "//", position + 1 );
-	}
-	position = url.find("//");
-	while (position != string::npos)
-	{
-		url.replace(position, 2, "/" );
-		position = url.find( "//", position + 1 );
-	}
-	return 0;
-}
-
-int WsyncDownload::ensurePathExist(boost::filesystem::path &path)
-{
-	boost::filesystem::path::iterator it;
-	for(it=path.begin();it!=path.end(); it++)
-	{
-		if(!exists(*it))
-			create_directories(path.branch_path());
-	}
-	return 0;
-}
-
 void WsyncDownload::reportDownloadProgress(Timer dlStartTime, boost::uintmax_t predDownloadSize, boost::uintmax_t size_done)
 {
 	// this function will format and send some info to the gui
@@ -413,7 +369,7 @@ int WsyncDownload::downloadConfigFile(std::string server, std::string url, std::
 	list.clear();
 
 	path tempfile;
-	if(WsyncDownload::getTempFilename(tempfile))
+	if(getTempFilename(tempfile))
 	{
 		printf("error creating tempfile!\n");
 		return -1;

@@ -42,17 +42,17 @@ void myClickText::click(wxMouseEvent &evt)
 
 
 // essential string conversion methods. helps to convert wxString<-->std::string<-->char string
-inline wxString conv(const char *s)
+wxString conv(const char *s)
 {
 	return wxString(s, wxConvUTF8);
 }
 
-inline wxString conv(const std::string& s)
+wxString conv(const std::string& s)
 {
 	return wxString(s.c_str(), wxConvUTF8);
 }
 
-inline std::string conv(const wxString& s)
+std::string conv(const wxString& s)
 {
 	return std::string(s.mb_str(wxConvUTF8));
 }
@@ -153,4 +153,30 @@ std::wstring strtowstr(const std::string &str)
 
 #endif //OGRE_PLATFORM
 
+int cleanURL(std::string &url)
+{
+	int position = url.find("//");
+	while (position != std::string::npos)
+	{
+		url.replace(position, 2, "/" );
+		position = url.find( "//", position + 1 );
+	}
+	position = url.find("//");
+	while (position != std::string::npos)
+	{
+		url.replace(position, 2, "/" );
+		position = url.find( "//", position + 1 );
+	}
+	return 0;
+}
 
+int ensurePathExist(boost::filesystem::path &path)
+{
+	boost::filesystem::path::iterator it;
+	for(it=path.begin();it!=path.end(); it++)
+	{
+		if(!boost::filesystem::exists(*it))
+			boost::filesystem::create_directories(path.branch_path());
+	}
+	return 0;
+}

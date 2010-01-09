@@ -20,14 +20,10 @@ public:
 	int downloadConfigFile(std::string server, std::string url, std::vector< std::vector< std::string > > &list);
 
 	// utils
-	static int cleanURL(std::string &url);
-	static int ensurePathExist(boost::filesystem::path &path);
 	static void tryRemoveFile(boost::filesystem::path filename);
-	static int getTempFilename(boost::filesystem::path &tempfile);
 
 	static void increaseServerStats(std::string server, boost::uintmax_t bytes);
-	static std::string formatFilesize(boost::uintmax_t size);
-	static std::string formatSeconds(float seconds);
+
 protected:
 	wxEvtHandler* parent;
 	static std::map < std::string, boost::uintmax_t > traffic_stats;
