@@ -449,13 +449,13 @@ PathPage::PathPage(wxWizard *parent) : wxWizardPageSimple(parent)
 	{
 		path = dir + wxT("\\Rigs of Rods");
 	}
-#if OGRE_PLATFORM == OGRE_PLATFORM_LINUX
+#elif OGRE_PLATFORM == OGRE_PLATFORM_LINUX
 	char homedir[255] = "";
 	strncpy(homedir, getenv ("HOME"), 250);
 	char tmp[255]="";
 	snprintf(tmp, 255, "%s/rigsofrods/", homedir);
 	path = conv(tmp);
-#if OGRE_PLATFORM == OGRE_PLATFORM_APPLE
+#elif OGRE_PLATFORM == OGRE_PLATFORM_APPLE
 	path = _T("/opt/games/rigsofrods/");
 #endif // OGRE_PLATFORM
 	mainSizer->Add(sel=new wxTextCtrl(this, wxID_ANY, path, wxDefaultPosition,wxDefaultSize, 0) , 0, wxALL|wxEXPAND , 5);
@@ -582,7 +582,7 @@ bool StreamsPage::OnLeave(bool forward)
 	return true;
 }
 
-StreamsPage::wxWizardPage *GetPrev() const
+wxWizardPage *StreamsPage::GetPrev() const
 {
 	if(CONFIG->getAction() == 0 || CONFIG->getAction() == 1)
 		return fpath;
@@ -873,19 +873,19 @@ bool LastPage::OnLeave(bool forward)
 	CONFIG->setPersistentConfig(wxT("installer.run_configurator"), chk_configurator->IsChecked()?wxT("yes"):wxT("no"));
 
 	if(chk_desktop->IsChecked() || chk_startmenu->IsChecked())
-		createProgramLinks(chk_desktop->IsChecked(), chk_startmenu->IsChecked());
+		CONFIG->createProgramLinks(chk_desktop->IsChecked(), chk_startmenu->IsChecked());
 
 	if(chk_runtime->IsChecked())
-		installRuntime();
+		CONFIG->installRuntime();
 	
 	if(chk_upgrade_configs->IsChecked())
-		updateUserConfigs();
+		CONFIG->updateUserConfigs();
 	
 	if(chk_configurator->IsChecked())
-		startConfigurator();
+		CONFIG->startConfigurator();
 
 	if(chk_viewmanual->IsChecked())
-		viewManual();
+		CONFIG->viewManual();
 
 #endif // OGRE_PLATFORM
 	return true;
