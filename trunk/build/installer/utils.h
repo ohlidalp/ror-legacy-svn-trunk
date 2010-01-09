@@ -65,14 +65,18 @@ protected:
 };
 
 
-inline wxString conv(const char *s);
-inline wxString conv(const std::string& s);
-inline std::string conv(const wxString& s);
+wxString conv(const char *s);
+wxString conv(const std::string& s);
+std::string conv(const wxString& s);
 
 std::string formatFilesize(boost::uintmax_t size);
 std::string formatSeconds(float seconds);
 
 int getTempFilename(boost::filesystem::path &tempfile);
+int cleanURL(std::string &url);
+
+int ensurePathExist(boost::filesystem::path &path);
+
 
 #if OGRE_PLATFORM == OGRE_PLATFORM_WIN32
 std::string wstrtostr(const std::wstring &wstr);
