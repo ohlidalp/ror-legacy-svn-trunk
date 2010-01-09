@@ -345,69 +345,8 @@ void WsyncDownload::updateCallback(int type, std::string txt, float percent)
 	this->parent->AddPendingEvent(ev);
 }
 
-string WsyncDownload::formatFilesize(boost::uintmax_t size)
-{
-	char tmp[256] = "";
-	if(size < 1024)
-		sprintf(tmp, "%d B", (int)(size));
-	else if(size/1024 < 1024)
-		sprintf(tmp, "%0.2f kB", (size/1024.0f));
-	else
-		sprintf(tmp, "%0.2f MB", (size/1024.0f/1024.0f));
-	return string(tmp);
-}
 
-std::string WsyncDownload::formatSeconds(float seconds)
-{
-	char tmp[255]="";
-	if(seconds > 0 && seconds < 1)
-	{
-		sprintf(tmp, "%.0f milli seconds", (seconds*1000.0f));
-	}
-	else if(seconds >= 1 && seconds < 1000000)
-	{
-		if(seconds<60)
-			sprintf(tmp, "%.0f seconds", seconds);
-		else
-			sprintf(tmp, "%.0f minutes, %.0f seconds", seconds/60, seconds - (((int)(seconds/60)) * 60));
-	}
-	return std::string(tmp);
-}
 
-int WsyncDownload::getTempFilename(path &tempfile)
-{
-#ifdef _WIN32
-	char tmp_path[MAX_PATH]="";
-	wchar_t *tmp_path_w=0;
-	mbstowcs(tmp_path_w,tmp_path,MAX_PATH);
-
-	char prefix_str[MAX_PATH]="WSY";
-	wchar_t *prefix_str_w=0;
-	mbstowcs(prefix_str_w,prefix_str,MAX_PATH);
-
-	char tmp_name[MAX_PATH]="";
-	wchar_t *tmp_name_w=0;
-	mbstowcs(tmp_name_w,tmp_path,MAX_PATH);
-
-	if(GetTempPath(MAX_PATH, tmp_path_w) == 0)
-		return -2;
-	//printf("GetTempPath() returned: '%s'\n", tmp_path);
-	if(GetTempFileName(tmp_path_w, prefix_str_w, 0, tmp_name_w) == 0)
-	{
-		return -3;
-	}
-
-	tempfile = path(tmp_name, native);
-	return 0;
-#else
-	char tempBuffer[] = "/tmp/wsync_tmp_XXXXXX";
-	int res = mkstemp(tempBuffer);
-	if(res == -1)
-		return -4;
-	tempfile = path(tempBuffer);
-	return 0;
-#endif
-}
 
 int WsyncDownload::downloadAdvancedConfigFile(std::string server, std::string url, std::vector< std::map< std::string, std::string > > &list)
 {

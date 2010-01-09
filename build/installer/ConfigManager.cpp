@@ -18,52 +18,29 @@ You should have received a copy of the GNU General Public License
 along with Rigs of Rods.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-// platform tools
-#define PLATFORM_WINDOWS 1
-#define PLATFORM_LINUX 2
-#define PLATFORM_APPLE 3
+#if OGRE_PLATFORM == OGRE_PLATFORM_WIN32
+	#include "wx/msw/private.h"
+	#include "wx/msw/registry.h"
+	#include <wx/msgdlg.h>
+	#include <shellapi.h> // needed for SHELLEXECUTEINFO
+	#include <shlobj.h>
+	#include <Shfolder.h>
+	#include "wthread.h"
+	#include "wsyncdownload.h"
+	#include "utils.h"
+#endif // OGRE_PLATFORM
 
-#if PLATFORM == PLATFORM_WINDOWS
-#include "wx/msw/private.h"
-#include "wx/msw/registry.h"
-#include <wx/msgdlg.h>
-#include <shellapi.h> // needed for SHELLEXECUTEINFO
-#include <shlobj.h>
-#include <Shfolder.h>
-#include "wthread.h"
-#include "wsyncdownload.h"
-
-
-std::string wstrtostr(const std::wstring &wstr)
-{
-    // Convert a Unicode string to an ASCII string
-    std::string strTo;
-    char *szTo = new char[wstr.length() + 1];
-    szTo[wstr.size()] = '\0';
-    WideCharToMultiByte(CP_ACP, 0, wstr.c_str(), -1, szTo, (int)wstr.length(), NULL, NULL);
-    strTo = szTo;
-    delete[] szTo;
-    return strTo;
-}
-
-std::wstring strtowstr(const std::string &str)
-{
-    // Convert an ASCII string to a Unicode String
-    std::wstring wstrTo;
-    wchar_t *wszTo = new wchar_t[str.length() + 1];
-    wszTo[str.size()] = L'\0';
-    MultiByteToWideChar(CP_ACP, 0, str.c_str(), -1, wszTo, (int)str.length());
-    wstrTo = wszTo;
-    delete[] wszTo;
-    return wstrTo;
-}
-
-//#include "winsock2.h"
-#endif //WINDOWS
 #include <wx/filename.h>
 #include <wx/dir.h>
 
 #include "ConfigManager.h"
+#include "installerlog.h"
+
+#if OGRE_PLATFORM == OGRE_PLATFORM_WIN32
+	#include <shlobj.h> // for the special path functions
+	#include "symlink.h"
+	#include <shellapi.h> // for executing the binaries
+#endif //OGRE_PLATFORM
 
 #include "boost/asio.hpp"
 #include "boost/filesystem.hpp"
@@ -74,24 +51,11 @@ std::wstring strtowstr(const std::string &str)
 #include "extrapack.xpm"
 #include <string>
 
-// string conversion utils
-inline wxString conv(const char *s)
-{
-	return wxString(s, wxConvUTF8);
-}
-
-inline wxString conv(const std::string& s)
-{
-	return wxString(s.c_str(), wxConvUTF8);
-}
-
-inline std::string conv(const wxString& s)
-{
-	return std::string(s.mb_str(wxConvUTF8));
-}
+ConfigManager *ConfigManager::instance = 0;
 
 ConfigManager::ConfigManager()
 {
+	ConfigManager::instance = this;
 	streams.clear();
 	dlerror=0;
 }
@@ -189,7 +153,7 @@ int ConfigManager::getOnlineStreams()
 
 wxString ConfigManager::getInstallationPath()
 {
-#if PLATFORM == PLATFORM_WINDOWS
+#if OGRE_PLATFORM == OGRE_PLATFORM_WIN32
 	wxString path;
 	wxRegKey *pRegKey = new wxRegKey(wxT("HKEY_LOCAL_MACHINE\\Software\\RigsOfRods"));
 	if(!pRegKey->Exists())
@@ -210,13 +174,13 @@ wxString ConfigManager::getInstallationPath()
 	//wxMessageBox(path,wxT("Registry Value"),0);
 #else
 	return wxString();
-#endif //PLATFORM
+#endif //OGRE_PLATFORM
 }
 
 int ConfigManager::uninstall(bool deleteUserFolder)
 {
 	// TODO: implement uninstall for non-windows versions!
-#if PLATFORM == PLATFORM_WINDOWS
+#if OGRE_PLATFORM == OGRE_PLATFORM_WIN32
 	wxString ipath = getInstallPath();
 	if(ipath.empty())
 	{
@@ -321,7 +285,7 @@ int ConfigManager::uninstall(bool deleteUserFolder)
 
 	if(!desktopLink.empty())
 		wxRemoveFile(desktopLink);
-#endif // PLATFORM
+#endif // OGRE_PLATFORM
 	return 0;
 }
 
@@ -330,14 +294,14 @@ void ConfigManager::saveStreamSubscription()
 	if(!streams.size()) return;
 	for(std::vector < stream_desc_t >::iterator it=streams.begin(); it!=streams.end(); it++)
 	{
-#if PLATFORM == PLATFORM_WINDOWS
+#if OGRE_PLATFORM == OGRE_PLATFORM_WIN32
 		wxRegKey *pRegKey = new wxRegKey(wxT("HKEY_LOCAL_MACHINE\\Software\\RigsOfRods\\streams"));
 		if(!pRegKey->Exists())
 			pRegKey->Create();
 		pRegKey->SetValue(it->path, it->checked?wxT("yes"):wxT("no"));
 #else
 	// TODO: implement
-#endif //PLATFORM
+#endif //OGRE_PLATFORM
 	}
 }
 
@@ -346,7 +310,7 @@ void ConfigManager::loadStreamSubscription()
 	if(!streams.size()) return;
 	for(std::vector < stream_desc_t >::iterator it=streams.begin(); it!=streams.end(); it++)
 	{
-#if PLATFORM == PLATFORM_WINDOWS
+#if OGRE_PLATFORM == OGRE_PLATFORM_WIN32
 		if(it->forcecheck) continue; // we enforce the value of this
 		wxRegKey *pRegKey = new wxRegKey(wxT("HKEY_LOCAL_MACHINE\\Software\\RigsOfRods\\streams"));
 		if(!pRegKey->Exists())
@@ -361,26 +325,26 @@ void ConfigManager::loadStreamSubscription()
 			it->checked = false;
 #else
 		// TODO: implement
-#endif //PLATFORM
+#endif //OGRE_PLATFORM
 	}
 }
 
 
 void ConfigManager::setPersistentConfig(wxString name, wxString value)
 {
-#if PLATFORM == PLATFORM_WINDOWS
+#if OGRE_PLATFORM == OGRE_PLATFORM_WIN32
 	wxRegKey *pRegKey = new wxRegKey(wxT("HKEY_LOCAL_MACHINE\\Software\\RigsOfRods\\config"));
 	if(!pRegKey->Exists())
 		pRegKey->Create();
 	pRegKey->SetValue(name, value);
 #else
 	// TODO: implement
-#endif //PLATFORM
+#endif //OGRE_PLATFORM
 }
 
 wxString ConfigManager::getPersistentConfig(wxString name)
 {
-#if PLATFORM == PLATFORM_WINDOWS
+#if OGRE_PLATFORM == OGRE_PLATFORM_WIN32
 	wxRegKey *pRegKey = new wxRegKey(wxT("HKEY_LOCAL_MACHINE\\Software\\RigsOfRods\\config"));
 	if(!pRegKey->Exists())
 		return wxT("");
@@ -394,28 +358,28 @@ wxString ConfigManager::getPersistentConfig(wxString name)
 #else
 	// TODO: implement
 	return wxT();
-#endif //PLATFORM
+#endif //OGRE_PLATFORM
 }
 void ConfigManager::setInstallationPath()
 {
-#if PLATFORM == PLATFORM_WINDOWS
+#if OGRE_PLATFORM == OGRE_PLATFORM_WIN32
 	wxRegKey *pRegKey = new wxRegKey(wxT("HKEY_LOCAL_MACHINE\\Software\\RigsOfRods"));
 	if(!pRegKey->Exists())
 		pRegKey->Create();
 	pRegKey->SetValue(wxT("InstallPath"), installPath);
 #else
 	// TODO: implement
-#endif //PLATFORM
+#endif //OGRE_PLATFORM
 }
 
 bool ConfigManager::isFirstInstall()
 {
 	wxString path = getInstallationPath();
 	installPath = path; //dont use setter, because it would write into the registry again
-#if PLATFORM == PLATFORM_WINDOWS
+#if OGRE_PLATFORM == OGRE_PLATFORM_WIN32
 	if(path.empty())
 		return true;
-#endif //PLATFORM
+#endif //OGRE_PLATFORM
 	return !wxFileExists(path + wxT("RoR.exe"));
 }
 
@@ -468,4 +432,172 @@ void ConfigManager::setStreamSelection(stream_desc_t* desc, bool selection)
 		}
 	}
 	//if we are here, an invalid desc has been provided! better safe than sorry.
+}
+
+
+
+
+
+
+
+
+
+void ConfigManager::updateUserConfigFile(std::string filename, boost::filesystem::path iPath, boost::filesystem::path uPath)
+{
+	boost::filesystem::path fPath = iPath / filename;
+	boost::filesystem::path dfPath = uPath / filename;
+	if(boost::filesystem::exists(dfPath))
+	{
+		WsyncDownload::tryRemoveFile(dfPath);
+	}
+	LOG("updating file: %s ... ", fPath.string().c_str());
+
+	bool ok = boost::filesystem::is_regular_file(fPath);
+	if(ok)
+	{
+		try
+		{
+			boost::filesystem::copy_file(fPath, dfPath);
+			ok=true;
+		} catch(...)
+		{
+			ok=false;
+		}
+	}
+
+	LOG("%s\n", ok?"ok":"error");
+}
+
+void ConfigManager::updateUserConfigs()
+{
+	LOG("==== updating user configs ... \n");
+
+	boost::filesystem::path iPath = getInstallationPath();
+	iPath = iPath / std::string("skeleton") / std::string("config");
+
+	boost::filesystem::path uPath;
+#if OGRE_PLATFORM == OGRE_PLATFORM_WIN32
+	LPWSTR wuser_path = new wchar_t[1024];
+	if (!SHGetFolderPath(NULL, CSIDL_PERSONAL, NULL, SHGFP_TYPE_CURRENT, wuser_path)!=S_OK)
+	{
+		GetShortPathName(wuser_path, wuser_path, 512); //this is legal
+		uPath = wstrtostr(std::wstring(wuser_path));
+		uPath = uPath / std::string("Rigs of Rods") / std::string("config");;		
+	}
+#else
+	// XXX : TODO
+#endif // OGRE_PLATFORM
+
+	// check directories
+
+	LOG("installation path: %s ... ", iPath.string().c_str());
+	bool ok = boost::filesystem::is_directory(iPath);
+	LOG("%s\n", ok?"ok":"error");
+
+	LOG("user path: %s ... ", uPath.string().c_str());
+	ok = boost::filesystem::is_directory(uPath);
+	LOG("%s\n", ok?"ok":"error");
+
+	updateUserConfigFile(std::string("categories.cfg"), iPath, uPath);
+	updateUserConfigFile(std::string("ground_models.cfg"), iPath, uPath);
+	updateUserConfigFile(std::string("torque_models.cfg"), iPath, uPath);
+	updateUserConfigFile(std::string("wavefield.cfg"), iPath, uPath);
+}
+
+void ConfigManager::installRuntime()
+{
+	wxMessageBox(wxT("Will now install DirectX. Please click ok to continue"), _T("directx"), wxICON_INFORMATION | wxOK);
+	executeBinary(wxT("dxwebsetup.exe"));
+	wxMessageBox(wxT("Please wait until the DirectX installation is done and click ok to continue"), _T("directx"), wxICON_INFORMATION | wxOK);
+	wxMessageBox(wxT("Will now install the Visual Studio runtime. Please click ok to continue."), _T("runtime"), wxICON_INFORMATION | wxOK);
+	executeBinary(wxT("c:\\windows\\system32\\msiexec.exe"), wxT("runas"), wxT("/i \"") + CONFIG->getInstallPath() + wxT("\\VCCRT4.msi\""), wxT("cwd"), false);
+}
+
+void ConfigManager::startConfigurator()
+{
+	executeBinary(wxT("rorconfig.exe"), wxT("runas"), wxT("/postinstall"));
+}
+
+void ConfigManager::viewManual()
+{
+	executeBinary(wxT("Things_you_can_do_in_Rigs_of_Rods.pdf"), wxT("open"));
+	executeBinary(wxT("keysheet.pdf"), wxT("open"));
+}
+
+void ConfigManager::executeBinary(wxString filename, wxString action, wxString parameters, wxString cwDir, bool prependCWD)
+{
+#if OGRE_PLATFORM == OGRE_PLATFORM_WIN32
+	char path[2048]= "";
+	if(prependCWD)
+		filename = CONFIG->getInstallPath() + "\\" + filename;
+
+	// now construct struct that has the required starting info
+	SHELLEXECUTEINFO sei = { sizeof(sei) };
+	sei.cbSize = sizeof(SHELLEXECUTEINFOA);
+	sei.fMask = 0;
+	sei.hwnd = NULL;
+	sei.lpVerb = action;
+	sei.lpFile = filename;
+	sei.lpParameters = parameters;
+	if(cwDir == wxT("cwd"))
+		sei.lpDirectory = CONFIG->getInstallPath();
+	else
+		sei.lpDirectory = cwDir;
+
+	sei.nShow = SW_NORMAL;
+	ShellExecuteEx(&sei);
+#endif //OGRE_PLATFORM
+}
+
+void ConfigManager::createProgramLinks(bool desktop, bool startmenu)
+{
+	// XXX: TODO: ADD LINUX code!
+	// create shortcuts
+#if OGRE_PLATFORM == OGRE_PLATFORM_WIN32
+	wxString startmenuDir, desktopDir, workingDirectory;
+
+	// XXX: ADD PROPER ERROR HANDLING
+	// CSIDL_COMMON_PROGRAMS = start menu for all users
+	// CSIDL_PROGRAMS = start menu for current user only
+	if(!SHGetSpecialFolderPath(0, wxStringBuffer(startmenuDir, MAX_PATH), CSIDL_COMMON_PROGRAMS, FALSE))
+		return;
+
+	// same with CSIDL_COMMON_DESKTOPDIRECTORY and CSIDL_DESKTOP
+	if(!SHGetSpecialFolderPath(0, wxStringBuffer(desktopDir, MAX_PATH), CSIDL_DESKTOP, FALSE))
+		return;
+
+	workingDirectory = CONFIG->getInstallPath();
+	if(workingDirectory.size() > 3 && workingDirectory.substr(workingDirectory.size()-1,1) != wxT("\\"))
+	{
+		workingDirectory += wxT("\\");
+	}
+	// ensure our directory in the start menu exists
+	startmenuDir += wxT("\\Rigs of Rods");
+	if (!wxDir::Exists(startmenuDir)) wxFileName::Mkdir(startmenuDir);
+
+	// the actual linking
+	if(desktop)
+		createShortcut(workingDirectory + wxT("rorconfig.exe"), workingDirectory, desktopDir + wxT("\\Rigs of Rods.lnk"), wxT("start Rigs of Rods"));
+
+	if(startmenu)
+	{
+		createShortcut(workingDirectory + wxT("RoR.exe"), workingDirectory, startmenuDir + wxT("\\Rigs of Rods.lnk"), wxT("start Rigs of Rods"));
+		createShortcut(workingDirectory + wxT("rorconfig.exe"), workingDirectory, startmenuDir + wxT("\\Configurator.lnk"), wxT("start Rigs of Rods Configuration Program (required upon first start)"));
+		createShortcut(workingDirectory + wxT("servergui.exe"), workingDirectory, startmenuDir + wxT("\\Multiplayer Server.lnk"), wxT("start Rigs of Rods multiplayer server"));
+		createShortcut(workingDirectory + wxT("Things_you_can_do_in_Rigs_of_Rods.pdf"), workingDirectory, startmenuDir + wxT("\\Manual.lnk"), wxT("open the RoR Manual"));
+		createShortcut(workingDirectory + wxT("keysheet.pdf"), workingDirectory, startmenuDir + wxT("\\Keysheet.lnk"), wxT("open the RoR Key Overview"));
+		createShortcut(workingDirectory + wxT("installer.exe"), workingDirectory, startmenuDir + wxT("\\Installer (update or uninstall).lnk"), wxT("open the Installer with which you can update or uninstall RoR."));
+	}
+#endif // OGRE_PLATFORM
+}
+
+// small wrapper that converts wxString to std::string and remvoes the file if already existing
+int ConfigManager::createShortcut(wxString linkTarget, wxString workingDirectory, wxString linkFile, wxString linkDescription)
+{
+#if OGRE_PLATFORM == OGRE_PLATFORM_WIN32
+	if(wxFileExists(linkFile)) wxRemoveFile(linkFile);
+	if(!wxFileExists(linkTarget)) return 1;
+	return createLink(conv(linkTarget), conv(workingDirectory), conv(linkFile), conv(linkDescription));
+#endif //OGRE_PLATFORM
+	return 1;
 }

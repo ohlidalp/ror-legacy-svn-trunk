@@ -25,8 +25,11 @@ along with Rigs of Rods.  If not, see <http://www.gnu.org/licenses/>.
 #include <wx/statbmp.h>
 #include <wx/stattext.h>
 
-class wxStrel;
+#include <boost/asio.hpp>
+#include <boost/filesystem.hpp>
+#include <boost/algorithm/string.hpp>
 
+class wxStrel;
 class myClickBitmap : public wxStaticBitmap
 {
 public:
@@ -60,5 +63,20 @@ public:
 protected:
 	wxStrel *s;
 };
+
+
+inline wxString conv(const char *s);
+inline wxString conv(const std::string& s);
+inline std::string conv(const wxString& s);
+
+std::string formatFilesize(boost::uintmax_t size);
+std::string formatSeconds(float seconds);
+
+int getTempFilename(boost::filesystem::path &tempfile);
+
+#if OGRE_PLATFORM == OGRE_PLATFORM_WIN32
+std::string wstrtostr(const std::wstring &wstr);
+std::wstring strtowstr(const std::string &str);
+#endif // OGRE_PLATFORM
 
 #endif //WXMYUTILS_H
