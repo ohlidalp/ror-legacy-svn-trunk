@@ -20,6 +20,7 @@ along with Rigs of Rods.  If not, see <http://www.gnu.org/licenses/>.
 
 #include "wizard.h"
 #include "cevent.h"
+#include "installerlog.h"
 
 BEGIN_EVENT_TABLE(PathPage, wxWizardPageSimple)
     EVT_BUTTON(ID_BROWSE, PathPage::OnBrowse)
@@ -47,6 +48,7 @@ bool MyApp::OnInit()
     // call default behaviour (mandatory)
     if (!wxApp::OnInit())
         return false;
+
 	MyWizard wizard(startupMode, NULL);
 
 	wizard.RunWizard(wizard.GetFirstPage());
@@ -92,6 +94,14 @@ MyWizard::MyWizard(int startupMode, wxFrame *frame, bool useSizer)
 	// now continue with normal startup
 	cm=new ConfigManager();
 	cm->setStartupMode(startupMode);
+
+
+	// create log
+	boost::filesystem::path iPath = cm->getInstallPath();
+	boost::filesystem::path lPath = iPath / std::string("wizard.log");
+	new InstallerLog(lPath);
+	LOG("installer log created");
+
     PresentationPage *presentation = new PresentationPage(this);
 	LicencePage *licence = new LicencePage(this);
 	PathPage *path = new PathPage(this, cm);
