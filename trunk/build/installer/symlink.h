@@ -1,9 +1,6 @@
-// platform tools
-#define PLATFORM_WINDOWS 1
-#define PLATFORM_LINUX 2
-#define PLATFORM_APPLE 3
+#include "platform.h"
 
-#if PLATFORM == PLATFORM_WINDOWS
+#if OGRE_PLATFORM == OGRE_PLATFORM_WIN32
 
 // from http://msdn.microsoft.com/en-us/library/bb776891(VS.85).aspx
 #ifndef SYMLINK__H__
@@ -38,4 +35,4 @@ int createLink(std::string target, std::string workingdir, std::string filename,
 
 #endif //MAKELINK_H__
 
-#endif //PLATFORM 
+#endif //OGRE_PLATFORM 

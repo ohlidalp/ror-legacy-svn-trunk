@@ -1,5 +1,5 @@
 #include "symlink.h"
-#if PLATFORM == PLATFORM_WINDOWS
+#if OGRE_PLATFORM == OGRE_PLATFORM_WIN32
 
 HRESULT createLink2(LPCWSTR lpszPathObj, LPCWSTR lpszWorkingDir, LPCWSTR lpszPathLink, LPCWSTR lpszDesc) 
 { 
@@ -55,4 +55,4 @@ int createLink(std::string target_str, std::string workingdir_str, std::string f
 	return createLink2(target.c_str(), workingdir.c_str(), filename.c_str(), description.c_str());
 }
 
-#endif //PLATFORM
+#endif //OGRE_PLATFORM

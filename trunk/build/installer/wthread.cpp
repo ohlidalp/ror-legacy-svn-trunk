@@ -3,12 +3,14 @@
 #include "cevent.h"
 #include "SHA1.h"
 #include "installerlog.h"
+#include "utils.h"
 #include "wsyncdownload.h"
 
-#ifdef WIN32
-#include <windows.h>
-#include <conio.h> // for getch
-#endif
+#if OGRE_PLATFORM == OGRE_PLATFORM_WIN32
+	#include <windows.h>
+	#include <conio.h> // for getch
+#endif // OGRE_PLATFORM
+
 #include "Timer.h"
 #include <boost/algorithm/string.hpp>
 
@@ -348,7 +350,7 @@ int WsyncThread::sync()
 	}
 
 	// rename the installer if required:
-#ifdef WIN32
+#if OGRE_PLATFORM == OGRE_PLATFORM_WIN32
 	//specific things to rename the installer on the fly in order to allow its update
 	bool updateInstaller = false;
 	for(std::vector<Fileentry>::iterator itf=changedFiles.begin();itf!=changedFiles.end();itf++)
@@ -381,7 +383,7 @@ int WsyncThread::sync()
 			}
 		}
 	}
-#endif //WIN32
+#endif // OGRE_PLATFORM
 
 	// done comparing, now summarize the changes
 	std::vector<Fileentry>::iterator itf;

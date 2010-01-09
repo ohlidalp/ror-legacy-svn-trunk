@@ -17,16 +17,15 @@ GNU General Public License for more details.
 You should have received a copy of the GNU General Public License
 along with Rigs of Rods.  If not, see <http://www.gnu.org/licenses/>.
 */
+
 #ifndef CONFIG_MANAGER_H
 #define CONFIG_MANAGER_H
 
 // For compilers that support precompilation, includes "wx/wx.h".
 #include "wx/wxprec.h"
 #include <vector>
-
-#ifdef __BORLANDC__
-    #pragma hdrstop
-#endif
+#include "boost/asio.hpp"
+#include "boost/filesystem.hpp"
 
 // for all others, include the necessary headers
 #ifndef WX_PRECOMP
@@ -37,9 +36,7 @@ along with Rigs of Rods.  If not, see <http://www.gnu.org/licenses/>.
 	#include "wx/statbmp.h"
 #endif
 
-#ifdef WIN32
-std::string wstrtostr(const std::wstring &wstr);
-#endif
+#define CONFIG ConfigManager::getSingleton()
 
 typedef struct stream_desc_t_
 {
@@ -90,6 +87,21 @@ public:
 	void setStartupMode(int val) { this->statupMode = val; };
 	int getStartupMode() { return this->statupMode; };
 
+	static ConfigManager *getSingleton() { return instance; };
+	static ConfigManager *instance;
+
+
+
+	void updateUserConfigFile(std::string filename, boost::filesystem::path iPath, boost::filesystem::path uPath);
+	void updateUserConfigs();
+	void installRuntime();
+	void startConfigurator();
+	void viewManual();
+	void executeBinary(wxString filename, wxString action = wxT("runas"), wxString parameters = wxString(), wxString cwDir = wxString("cwd"), bool prependCWD=true);
+	int createShortcut(wxString linkTarget, wxString workingDirectory, wxString linkFile, wxString linkDescription);
+	void createProgramLinks(bool desktop, bool startmenu);
+
+
 private:
 	int statupMode;
 	wxString installPath;
@@ -100,4 +112,4 @@ private:
 	void setInstallationPath();
 };
 
-#endif
+#endif // CONFIG_MANAGER_H
