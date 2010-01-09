@@ -30,6 +30,8 @@ along with Rigs of Rods.  If not, see <http://www.gnu.org/licenses/>.
 #include <shellapi.h> // needed for SHELLEXECUTEINFO
 #include <shlobj.h>
 #include <Shfolder.h>
+#include "wthread.h"
+#include "wsyncdownload.h"
 
 
 std::string wstrtostr(const std::wstring &wstr)
@@ -70,7 +72,6 @@ std::wstring strtowstr(const std::string &str)
 #include "unknown.xpm"
 #include "mainpack.xpm"
 #include "extrapack.xpm"
-#include "wsync.h"
 #include <string>
 
 // string conversion utils
@@ -101,21 +102,22 @@ int ConfigManager::getOnlineStreams()
 	clearStreamset();
 
 	// now get the available streams list
-	WSync *w = new WSync();
-
 	std::vector< std::map< std::string, std::string > > olist;
-	int res = w->downloadAdvancedConfigFile("wsync.rigsofrods.com", "/streams.index", olist);
+
+	WsyncDownload *wsdl = new WsyncDownload();
+	int res = wsdl->downloadAdvancedConfigFile("wsync.rigsofrods.com", "/streams.index", olist);
 	if(res == -1)
 	{
 		wxMessageBox("error creating tempfile for download", _T("Error"), wxICON_ERROR | wxOK);
 	} else if (res == -2)
 	{
-		std::string errorMsg = w->getLastError();
+		std::string errorMsg;// = w->getLastError();
 		wxMessageBox("error downloading file:\n"+errorMsg, _T("Error"), wxICON_ERROR | wxOK);
 	} else if (res == -3)
 	{
 		wxMessageBox("unable to open local file for reading", _T("Error"), wxICON_ERROR | wxOK);
 	}
+	delete wsdl;
 	
 	if(!res)
 	{

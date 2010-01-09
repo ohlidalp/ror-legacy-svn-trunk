@@ -27,6 +27,7 @@ along with Rigs of Rods.  If not, see <http://www.gnu.org/licenses/>.
 #include <wx/event.h>
 #include "wthread.h"
 #include "cevent.h"
+#include "installerlog.h"
 
 // for all others, include the necessary headers
 #ifndef WX_PRECOMP
@@ -668,7 +669,7 @@ public:
 		// XXX ENABLE DEBUG
 		bool debugEnabled = true;
 		// XXX
-		m_pThread = new WsyncThread(debugEnabled, this, m_cm->getInstallPath(), *(m_cm->getStreamset()));
+		m_pThread = new WsyncThread(this, m_cm->getInstallPath(), *(m_cm->getStreamset()));
 		if ( m_pThread->Create() != wxTHREAD_NO_ERROR )
 		{
 			wxLogError(wxT("Can't create the thread!"));
@@ -905,28 +906,15 @@ public:
 #endif //PLATFORM
 
 
-	void tryRemoveFile(FILE *df, boost::filesystem::path filename)
-	{
-		if(df) fprintf(df, "removing file: %s ... ", filename.string().c_str());
-		try
-		{
-			remove(filename);
-			if(df) fprintf(df, "ok\n");
-		} catch(...)
-		{
-			if(df) fprintf(df, "ERROR\n");
-		}
-	}
-
-	void updateUserConfigFile(FILE *df, std::string filename, boost::filesystem::path iPath, boost::filesystem::path uPath)
+	void updateUserConfigFile(std::string filename, boost::filesystem::path iPath, boost::filesystem::path uPath)
 	{
 		boost::filesystem::path fPath = iPath / filename;
 		boost::filesystem::path dfPath = uPath / filename;
 		if(boost::filesystem::exists(dfPath))
 		{
-			tryRemoveFile(df, dfPath);
+			WsyncDownload::tryRemoveFile(dfPath);
 		}
-		if(df) fprintf(df, "updating file: %s ... ", fPath.string().c_str());
+		LOG("updating file: %s ... ", fPath.string().c_str());
 
 		bool ok = boost::filesystem::is_regular_file(fPath);
 		if(ok)
@@ -941,17 +929,12 @@ public:
 			}
 		}
 
-		if(df) fprintf(df, "%s\n", ok?"ok":"error");
+		LOG("%s\n", ok?"ok":"error");
 	}
 
 	void updateUserConfigs()
 	{
-		boost::filesystem::path iPath = cm->getInstallPath();
-
-		boost::filesystem::path lPath = iPath / std::string("wizard.log");
-		FILE *df = fopen(lPath.string().c_str(), "w");
-
-		if(df) fprintf(df, "==== updating user configs ... \n");
+		LOG("==== updating user configs ... \n");
 
 		iPath = iPath / std::string("skeleton") / std::string("config");
 
@@ -970,20 +953,18 @@ public:
 
 		// check directories
 
-		if(df) fprintf(df, "installation path: %s ... ", iPath.string().c_str());
+		LOG("installation path: %s ... ", iPath.string().c_str());
 		bool ok = boost::filesystem::is_directory(iPath);
-		if(df) fprintf(df, "%s\n", ok?"ok":"error");
+		LOG("%s\n", ok?"ok":"error");
 
-		if(df) fprintf(df, "user path: %s ... ", uPath.string().c_str());
+		LOG("user path: %s ... ", uPath.string().c_str());
 		ok = boost::filesystem::is_directory(uPath);
-		if(df) fprintf(df, "%s\n", ok?"ok":"error");
+		LOG("%s\n", ok?"ok":"error");
 
-		updateUserConfigFile(df, std::string("categories.cfg"), iPath, uPath);
-		updateUserConfigFile(df, std::string("ground_models.cfg"), iPath, uPath);
-		updateUserConfigFile(df, std::string("torque_models.cfg"), iPath, uPath);
-		updateUserConfigFile(df, std::string("wavefield.cfg"), iPath, uPath);
-
-		if(df) fclose(df);
+		updateUserConfigFile(std::string("categories.cfg"), iPath, uPath);
+		updateUserConfigFile(std::string("ground_models.cfg"), iPath, uPath);
+		updateUserConfigFile(std::string("torque_models.cfg"), iPath, uPath);
+		updateUserConfigFile(std::string("wavefield.cfg"), iPath, uPath);
 	}
 
 	void installRuntime()
