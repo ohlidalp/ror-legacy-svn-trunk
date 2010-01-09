@@ -106,11 +106,15 @@ public:
 	void increaseDownloadSize(unsigned int size){downloadSize+=size;};
 	void setDownloadSize(unsigned int size){downloadSize=size;};
 
+
+	std::string getLastError() { return lastError; };
+
 protected:
 	// members
 	char statusText[1025];
 	int statusPercent;
 	int dlerror;
+	std::string lastError;
 	boost::uintmax_t downloadSize;
 };
 #endif

@@ -6,6 +6,8 @@
 
 #ifndef WIN32
 #include <sys/time.h>
+#else
+#include <windows.h>
 #endif
 
 class Timer
