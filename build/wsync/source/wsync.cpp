@@ -503,7 +503,7 @@ double WSync::measureDownloadSpeed(std::string server, std::string url)
 	Timer timer = Timer();
 	if(downloadFile(tempfile, server, url, false, false, &filesize))
 	{
-		return -1;
+		return -2;
 	}
 	double tdiff = timer.elapsed();
 	printf("mirror speed: %s : %dkB in %0.2f seconds = %0.2f kB/s\n", server.c_str(), (int)(filesize/1024.0f), tdiff, (filesize/1024.0f)/(float)tdiff);
@@ -555,13 +555,13 @@ int WSync::downloadAdvancedConfigFile(std::string server, std::string url, std::
 	if(downloadFile(tempfile, server, url))
 	{
 		printf("error downloading file from %s, %s\n", server.c_str(), url.c_str());
-		return -1;
+		return -2;
 	}
 	ifstream fin(tempfile.string().c_str());
 	if (fin.is_open() == false)
 	{
 		printf("unable to open file for reading: %s\n", tempfile.string().c_str());
-		return -1;
+		return -3;
 	}
 	bool complete = false;
 	string line = string();
@@ -716,11 +716,17 @@ int WSync::downloadFile(boost::filesystem::path localFile, string server, string
 		response_stream >> status_code;
 		std::string status_message;
 		std::getline(response_stream, status_message);
+		
 		if (!response_stream || http_version.substr(0, 5) != "HTTP/")
 		{
 			socket.close();
 			std::cout << endl << "Error: Invalid response\n";
 			printf("download URL: http://%s%s\n", server.c_str(), path.c_str());
+			
+			lastError = "Error: Invalid response:\n";
+			lastError += "download URL: http://"+server+path+"\n";
+			lastError += "response: "+http_version+"\n";
+
 			return 1;
 		}
 		if (status_code == 302)
@@ -742,6 +748,10 @@ int WSync::downloadFile(boost::filesystem::path localFile, string server, string
 			if(new_url.substr(0, 7) != "http://")
 			{
 				std::cout << endl << "Error: redirection uses unkown protocol: " << new_url << "\n";
+				
+				lastError = "Error: redirection uses unkown protocol: " + new_url+"\n";
+				lastError += "download URL: http://"+server+path+"\n";
+				//lastError += "response: "+response+"\n";
 				return 1;
 			}
 			// trim line
@@ -761,6 +771,12 @@ int WSync::downloadFile(boost::filesystem::path localFile, string server, string
 		{
 			std::cout << endl << "Error: Response returned with status code " << status_code << "\n";
 			printf("download URL: http://%s%s\n", server.c_str(), path.c_str());
+
+			char tmp[1024]="";
+			sprintf(tmp, "Error: Response returned with status code %d\n", status_code);
+			lastError = std::string(tmp);
+			lastError += "download URL: http://"+server+path+"\n";
+			//lastError += "response: "+response+"\n";
 			return -(int)status_code;
 		}
 
@@ -785,6 +801,10 @@ int WSync::downloadFile(boost::filesystem::path localFile, string server, string
 		if(!myfile.is_open())
 		{
 			printf("error opening file: %s\n", localFile.string().c_str());
+
+			lastError = "error opening local file: " + localFile.string();
+			lastError += string("download URL: http://")+server+path+string("\n");
+			//lastError += "response: "+response+"\n";
 			return 2;
 		}
 
@@ -824,6 +844,14 @@ int WSync::downloadFile(boost::filesystem::path localFile, string server, string
 		{
 			printf("\nError: file size is different: should be %d, is %d. removing file.\n", (int)reported_filesize, (int)fileSize);
 			printf("download URL: http://%s%s\n", server.c_str(), path.c_str());
+			
+			char tmp[1024]="";
+			sprintf(tmp, "Error: file size is different: should be %d, is %d. removing file.\n", (int)reported_filesize, (int)fileSize);
+			lastError = std::string(tmp);
+			lastError += "download URL: http://"+server+path+"\n";
+			//lastError += "response: "+response+"\n";
+
+
 			tryRemoveFile(localFile);
 			downloadSize += fileSize;
 			socket.close();
@@ -839,6 +867,11 @@ int WSync::downloadFile(boost::filesystem::path localFile, string server, string
 	{
 		std::cout << endl << "Error: " << e.what() << "\n";
 		printf("download URL: http://%s%s\n", server.c_str(), path.c_str());
+
+		lastError = string("Error: ") + string(e.what()) + "\n";
+		lastError += "download URL: http://"+server+path+"\n";
+
+
 		return 1;
 	}
 	return 0;
