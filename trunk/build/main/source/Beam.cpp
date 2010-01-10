@@ -6289,12 +6289,13 @@ void Beam::calcForcesEuler(int doUpdate, Real dt, int step, int maxstep, Beam** 
 
 #ifndef OPENCL
 //springs
+	Vector3 dis;
+	Vector3 v;
 	for (i=0; i<free_beam; i++)
 	{
 		//trick for exploding stuff
 		if (!beams[i].disabled)
 		{
-			Vector3 dis;
 			//Calculate beam length
 			if (!beams[i].p2truck) {
 				dis=beams[i].p1->RelPosition;
@@ -6322,11 +6323,23 @@ void Beam::calcForcesEuler(int doUpdate, Real dt, int step, int maxstep, Beam** 
 				// hard (normal) shock bump
 				if (beams[i].bounded==SHOCK1)
 				{
-					if (difftoBeamL > beams[i].longbound*beams[i].L || difftoBeamL < -beams[i].shortbound*beams[i].L)
+					if (difftoBeamL > beams[i].longbound*beams[i].L)
 					{
+						// Following code interpolates between defined beam parameters and default beam parameters
+						float interp_ratio=difftoBeamL-beams[i].longbound*beams[i].L;
+						
 						// hard (normal) shock bump
-						k=DEFAULT_SPRING;
-						d=DEFAULT_DAMP;
+						k=k+(DEFAULT_SPRING-k)*interp_ratio;
+						d=d+(DEFAULT_DAMP-d)*interp_ratio;
+					}
+					if (difftoBeamL < -beams[i].shortbound*beams[i].L)
+					{
+						// Following code interpolates between defined beam parameters and default beam parameters
+						float interp_ratio=-beams[i].shortbound*beams[i].L-difftoBeamL;
+
+						// hard (normal) shock bump
+						k=k+(DEFAULT_SPRING-k)*interp_ratio;
+						d=d+(DEFAULT_DAMP-d)*interp_ratio;
 					}
 				}
 				else if (beams[i].bounded==SHOCK2)
@@ -6341,7 +6354,6 @@ void Beam::calcForcesEuler(int doUpdate, Real dt, int step, int maxstep, Beam** 
 			}
 
 			//Calculate beam's rate of change
-			Vector3 v;
 			v=beams[i].p1->Velocity;
 			v-=beams[i].p2->Velocity;
 			
@@ -6355,7 +6367,7 @@ void Beam::calcForcesEuler(int doUpdate, Real dt, int step, int maxstep, Beam** 
 			// Fast test for deformation
 			if (flen > beams[i].minmaxposnegstress)
 			{
-				if ((beams[i].type==BEAM_NORMAL || beams[i].type==BEAM_INVISIBLE) && k!=0.0f)
+				if ((beams[i].type==BEAM_NORMAL || beams[i].type==BEAM_INVISIBLE) && beams[i].bounded!=SHOCK1 && k!=0.0f)
 				{
 					// Actual deformation tests
 					// For compression
@@ -6367,6 +6379,7 @@ void Beam::calcForcesEuler(int doUpdate, Real dt, int step, int maxstep, Beam** 
 						Real deform=difftoBeamL+yield_length*(1.0f-beams[i].plastic_coef);
 						Real Lold=beams[i].L;
 						beams[i].L+=deform;
+						if (beams[i].L < MIN_BEAM_LENGTH) beams[i].L=MIN_BEAM_LENGTH;
 						sflen=sflen-(sflen-beams[i].maxposstress)*0.5f;
 						flen=sflen;
 						if (beams[i].L>0.0f && beams[i].L<Lold)
@@ -6422,9 +6435,9 @@ void Beam::calcForcesEuler(int doUpdate, Real dt, int step, int maxstep, Beam** 
 					increased_accuracy=1;
 
 					//Break the beam only when it is not connected to a node
-					//which is a part of a collision triangle and has less than 4 "live" beams
+					//which is a part of a collision triangle and has 2 "live" beams or less
 					//connected to it.
-					if (!((beams[i].p1->contacter && nodeBeamConnections(beams[i].p1->pos)<4) || (beams[i].p2->contacter && nodeBeamConnections(beams[i].p2->pos)<4)))
+					if (!((beams[i].p1->contacter && nodeBeamConnections(beams[i].p1->pos)<3) || (beams[i].p2->contacter && nodeBeamConnections(beams[i].p2->pos)<3)))
 					{
 						beams[i].broken=1;
 						beams[i].disabled=true;
