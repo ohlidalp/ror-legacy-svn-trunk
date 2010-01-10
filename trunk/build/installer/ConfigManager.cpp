@@ -57,6 +57,7 @@ ConfigManager::ConfigManager()
 {
 	ConfigManager::instance = this;
 	streams.clear();
+	installPath = wxString();
 	dlerror=0;
 }
 
@@ -153,35 +154,40 @@ int ConfigManager::getOnlineStreams()
 
 wxString ConfigManager::getInstallationPath()
 {
+	if(installPath.empty())
+	{
 #if OGRE_PLATFORM == OGRE_PLATFORM_WIN32
-	wxString path;
-	wxRegKey *pRegKey = new wxRegKey(wxT("HKEY_LOCAL_MACHINE\\Software\\RigsOfRods"));
-	if(!pRegKey->Exists())
-		return wxString();
+		wxString path;
+		wxRegKey *pRegKey = new wxRegKey(wxT("HKEY_LOCAL_MACHINE\\Software\\RigsOfRods"));
+		if(!pRegKey->Exists())
+			return wxString();
 
-	if(!pRegKey->HasValue(wxT("InstallPath")))
-		return wxString();
+		if(!pRegKey->HasValue(wxT("InstallPath")))
+			return wxString();
 
-	pRegKey->QueryValue(wxT("InstallPath"), path);
-	path += wxT("\\");
-	// check if RoR.exe exists
-	bool exists = wxFileExists(path+wxT("RoR.exe"));
-	if(!exists)
-		return wxString();
-	// existing, everything correct.
-	return path;
-	// see http://docs.wxwidgets.org/stable/wx_wxregkey.html
-	//wxMessageBox(path,wxT("Registry Value"),0);
+		pRegKey->QueryValue(wxT("InstallPath"), path);
+		path += wxT("\\");
+		// check if RoR.exe exists
+		bool exists = wxFileExists(path+wxT("RoR.exe"));
+		if(!exists)
+			return wxString();
+		// existing, everything correct.
+		installPath = path;
+		// see http://docs.wxwidgets.org/stable/wx_wxregkey.html
+		//wxMessageBox(path,wxT("Registry Value"),0);
 #else
-	return wxString();
+		// TODO: implement
+		installPath = wxString();
 #endif //OGRE_PLATFORM
+	}
+	return installPath;
 }
 
 int ConfigManager::uninstall(bool deleteUserFolder)
 {
 	// TODO: implement uninstall for non-windows versions!
 #if OGRE_PLATFORM == OGRE_PLATFORM_WIN32
-	wxString ipath = getInstallPath();
+	wxString ipath = getInstallationPath();
 	if(ipath.empty())
 	{
 		wxMessageBox("Installation Path empty?!", _T("Error"), wxICON_ERROR | wxOK);
@@ -404,11 +410,6 @@ void ConfigManager::setInstallPath(wxString pth)
 	setInstallationPath();
 }
 
-wxString ConfigManager::getInstallPath()
-{
-	return installPath;
-}
-
 std::vector < stream_desc_t > *ConfigManager::getStreamset()
 {
 	return &streams;
@@ -510,7 +511,7 @@ void ConfigManager::installRuntime()
 	executeBinary(wxT("dxwebsetup.exe"));
 	wxMessageBox(wxT("Please wait until the DirectX installation is done and click ok to continue"), _T("directx"), wxICON_INFORMATION | wxOK);
 	wxMessageBox(wxT("Will now install the Visual Studio runtime. Please click ok to continue."), _T("runtime"), wxICON_INFORMATION | wxOK);
-	executeBinary(wxT("c:\\windows\\system32\\msiexec.exe"), wxT("runas"), wxT("/i \"") + CONFIG->getInstallPath() + wxT("\\VCCRT4.msi\""), wxT("cwd"), false);
+	executeBinary(wxT("c:\\windows\\system32\\msiexec.exe"), wxT("runas"), wxT("/i \"") + CONFIG->getInstallationPath() + wxT("\\VCCRT4.msi\""), wxT("cwd"), false);
 }
 
 void ConfigManager::startConfigurator()
@@ -529,7 +530,7 @@ void ConfigManager::executeBinary(wxString filename, wxString action, wxString p
 #if OGRE_PLATFORM == OGRE_PLATFORM_WIN32
 	char path[2048]= "";
 	if(prependCWD)
-		filename = CONFIG->getInstallPath() + "\\" + filename;
+		filename = CONFIG->getInstallationPath() + "\\" + filename;
 
 	// now construct struct that has the required starting info
 	SHELLEXECUTEINFO sei = { sizeof(sei) };
@@ -540,7 +541,7 @@ void ConfigManager::executeBinary(wxString filename, wxString action, wxString p
 	sei.lpFile = filename;
 	sei.lpParameters = parameters;
 	if(cwDir == wxT("cwd"))
-		sei.lpDirectory = CONFIG->getInstallPath();
+		sei.lpDirectory = CONFIG->getInstallationPath();
 	else
 		sei.lpDirectory = cwDir;
 
@@ -566,7 +567,7 @@ void ConfigManager::createProgramLinks(bool desktop, bool startmenu)
 	if(!SHGetSpecialFolderPath(0, wxStringBuffer(desktopDir, MAX_PATH), CSIDL_DESKTOP, FALSE))
 		return;
 
-	workingDirectory = CONFIG->getInstallPath();
+	workingDirectory = CONFIG->getInstallationPath();
 	if(workingDirectory.size() > 3 && workingDirectory.substr(workingDirectory.size()-1,1) != wxT("\\"))
 	{
 		workingDirectory += wxT("\\");

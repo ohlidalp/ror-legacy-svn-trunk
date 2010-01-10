@@ -82,7 +82,6 @@ public:
 	void setPersistentConfig(wxString name, wxString value);
 	void setInstallPath(wxString pth);
 	wxString getInstallationPath();
-	wxString getInstallPath();
 
 	void setStartupMode(int val) { this->statupMode = val; };
 	int getStartupMode() { return this->statupMode; };
