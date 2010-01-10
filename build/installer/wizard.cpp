@@ -163,11 +163,13 @@ MyWizard::MyWizard(int startupMode, wxFrame *frame, bool useSizer)
 	if(boost::filesystem::exists("installer.exe.old"))
 		boost::filesystem::remove("installer.exe.old");
 	// now continue with normal startup
+	
+	new ConfigManager();	
 	CONFIG->setStartupMode(startupMode);
 
 
 	// create log
-	boost::filesystem::path iPath = CONFIG->getInstallPath();
+	boost::filesystem::path iPath = CONFIG->getInstallationPath();
 	boost::filesystem::path lPath = iPath / std::string("wizard.log");
 	new InstallerLog(lPath);
 	LOG("installer log created");
@@ -685,7 +687,7 @@ void DownloadPage::startThread()
 	// XXX ENABLE DEBUG
 	bool debugEnabled = true;
 	// XXX
-	m_pThread = new WsyncThread(this, CONFIG->getInstallPath(), *(CONFIG->getStreamset()));
+	m_pThread = new WsyncThread(this, CONFIG->getInstallationPath(), *(CONFIG->getStreamset()));
 	if ( m_pThread->Create() != wxTHREAD_NO_ERROR )
 	{
 		wxLogError(wxT("Can't create the thread!"));
