@@ -3904,7 +3904,7 @@ bool ExampleFrameListener::updateEvents(float dt)
 							camRotY=pushcamRotY;
 							trucks[current_truck]->prepareInside(false);
 							showDashboardOverlays(true, trucks[current_truck]->driveable);
-							if(bigMap) bigMap->setVisibility(true);
+							//if(bigMap) bigMap->setVisibility(true);
 						}
 						cameramode++;
 						if (cameramode==CAMERA_INT)
@@ -3915,7 +3915,7 @@ bool ExampleFrameListener::updateEvents(float dt)
 							camRotX=0;
 							camRotY=DEFAULT_INTERNAL_CAM_PITCH;
 							trucks[current_truck]->prepareInside(true);
-							if(bigMap) bigMap->setVisibility(false);
+							//if(bigMap) bigMap->setVisibility(false);
 							// airplane dashboard in the plane visible
 							if(trucks[current_truck]->driveable == AIRPLANE)
 								showDashboardOverlays(true, trucks[current_truck]->driveable);
@@ -4237,16 +4237,14 @@ bool ExampleFrameListener::updateEvents(float dt)
 
 				if(mapMode==0)
 				{
+					bigMap->setVisibility(true);
 					if(cameramode!=CAMERA_INT)
 					{
-						bigMap->setVisibility(true);
 						if(mtc) mtc->update();
 						//make it small again
 						bigMap->updateRenderMetrics(mWindow);
 						bigMap->setPosition(0, 0.81, 0.14, 0.19, mWindow);
-					} else
-						bigMap->setVisibility(false);
-
+					}
 					if(net) playerListOverlay->hide();
 				} else if(mapMode==1)
 				{
@@ -4255,7 +4253,7 @@ bool ExampleFrameListener::updateEvents(float dt)
 					// make it big
 					bigMap->updateRenderMetrics(mWindow);
 					bigMap->setPosition(0.2, 0, 0.8, 0.8, mWindow);
-					NETCHAT.setMode(this, NETCHAT_MAP, true);
+					//NETCHAT.setMode(this, NETCHAT_MAP, true);
 					if(net)
 						playerListOverlay->show();
 				} else
@@ -6528,7 +6526,7 @@ void ExampleFrameListener::setCurrentTruck(int v)
 
 	if (current_truck==-1)
 	{
-		if(bigMap) bigMap->setVisibility(false);
+		//if(bigMap) bigMap->setVisibility(false);
 		if(netmode && NETCHAT.getVisible()) NETCHAT.setMode(this, NETCHAT_LEFT_FULL, true);
 
 		// detach person to truck
@@ -6615,7 +6613,7 @@ void ExampleFrameListener::setCurrentTruck(int v)
 		// show minimap and put it into lower left corner
 		if(bigMap)
 		{
-			bigMap->setVisibility(true);
+			//bigMap->setVisibility(true);
 			bigMap->setPosition(0, 0.81, 0.14, 0.19, mWindow);
 		}
 
@@ -6666,7 +6664,7 @@ void ExampleFrameListener::setCurrentTruck(int v)
 			trucks[current_truck]->prepareInside(true);
 			showDashboardOverlays(false, 0);
 			camRotY=DEFAULT_INTERNAL_CAM_PITCH;
-			if(bigMap) bigMap->setVisibility(false);
+			//if(bigMap) bigMap->setVisibility(false);
 		}
 #ifdef ANGELSCRIPT
 		ScriptEngine::getSingleton().triggerEvent(ScriptEngine::SE_TRUCK_ENTER, current_truck);
@@ -8138,7 +8136,7 @@ void ExampleFrameListener::hideGUI(bool visible)
 		showDashboardOverlays(false,0);
 		showEditorOverlay(false);
 		TRUCKHUD.show(false);
-		if(bigMap) bigMap->setVisibility(false);
+		//if(bigMap) bigMap->setVisibility(false);
 	}
 	else
 	{
@@ -8148,7 +8146,7 @@ void ExampleFrameListener::hideGUI(bool visible)
 		{
 			mouseOverlay->show();
 			showDashboardOverlays(true, trucks[current_truck]->driveable);
-			if(bigMap) bigMap->setVisibility(true);
+			//if(bigMap) bigMap->setVisibility(true);
 		}
 	}
 }
