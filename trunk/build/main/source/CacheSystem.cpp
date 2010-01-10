@@ -60,6 +60,12 @@ CacheSystem::CacheSystem()
 	known_extensions.push_back("load");
 	// skins:
 	known_extensions.push_back("skin");
+
+	if(SETTINGS.getSetting("streamCacheGenerationOnly") == "Yes")
+	{
+		writeStreamCache();
+		exit(0);
+	}
 }
 
 CacheSystem::~CacheSystem()
@@ -1112,6 +1118,43 @@ void CacheSystem::writeGeneratedCache()
 	LogManager::getSingleton().logMessage("...done!");
 }
 
+
+void CacheSystem::writeStreamCache()
+{
+	String dirsep="/";
+#if OGRE_PLATFORM == OGRE_PLATFORM_WIN32
+	dirsep="\\";
+#endif
+	ResourceGroupManager& rgm = ResourceGroupManager::getSingleton();
+
+	FileInfoListPtr dirs = rgm.findResourceFileInfo("Streams", "*", true);
+	for (FileInfoList::iterator itDir = dirs->begin(); itDir!= dirs->end(); ++itDir)
+	{
+		if (itDir->filename == String(".svn")) continue;
+		String dirName = SETTINGS.getSetting("Streams Path") + (*itDir).filename;
+		String cacheFilename = dirName + dirsep + "stream.cache";
+		FILE *f = fopen(cacheFilename.c_str(), "w");
+
+		// iterate through mods
+		std::vector<Cache_Entry>::iterator it;
+		int counter=0;
+		for(it = entries.begin(); it != entries.end(); it++)
+		{
+			if(it->deleted) continue;
+			if(it->dirname.substr(0, dirName.size()) == dirName)
+			{
+				if(f) fprintf(f, "%s", formatEntry(counter, *it).c_str());
+				
+				ResourceGroupManager::getSingleton().addResourceLocation(it->dirname, "Zip");
+				generateFileCache(*it, dirName + dirsep);
+				ResourceGroupManager::getSingleton().removeResourceLocation(it->dirname);
+				counter++;
+			}
+		}
+		if(f) fclose(f);
+	}
+}
+
 void CacheSystem::updateSingleTruckEntryCache(int number, Cache_Entry t)
 {
 	// todo: to be implemented
@@ -2082,12 +2125,12 @@ void CacheSystem::removeFileFromFileCache(std::vector<Cache_Entry>::iterator ite
 
 }
 
-void CacheSystem::generateFileCache(Cache_Entry &entry)
+void CacheSystem::generateFileCache(Cache_Entry &entry, Ogre::String directory)
 {
 	try
 	{
 
-		if(!entry.changedornew)
+		if(directory.empty() && !entry.changedornew)
 			return;
 
 		if(entry.fname == "")
@@ -2104,7 +2147,10 @@ void CacheSystem::generateFileCache(Cache_Entry &entry)
 		String outPath = "";
 		StringUtil::splitFilename(entry.dirname, outBasename, outPath);
 
-		String dst = location + outBasename + "_" + entry.fname + ".mini." + entry.minitype;
+		if(directory.empty())
+			directory = location;
+
+		String dst = directory + outBasename + "_" + entry.fname + ".mini." + entry.minitype;
 
 		// no path info in the cache file name ...
 		entry.filecachename = outBasename + "_" + entry.fname + ".mini." + entry.minitype;

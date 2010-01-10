@@ -374,7 +374,7 @@ void RigsOfRods::exploreTerrains()
 #define HELPTEXT "--help (this)\n-map <map> (loads map on startup)\n-truck <truck> (loads truck on startup)\n-setup shows the ogre configurator\n-version shows the version information\n-enter enters the selected truck\n\nFor example: RoR.exe -map oahu -truck semi"
 
 // option identifiers
-enum { OPT_HELP, OPT_MAP, OPT_TRUCK, OPT_SETUP, OPT_CMD, OPT_WDIR, OPT_ETM, OPT_BUILD, OPT_CONFIG, OPT_VER, OPT_CHECKCACHE, OPT_TRUCKCONFIG, OPT_ENTERTRUCK, OPT_BENCH};
+enum { OPT_HELP, OPT_MAP, OPT_TRUCK, OPT_SETUP, OPT_CMD, OPT_WDIR, OPT_ETM, OPT_BUILD, OPT_CONFIG, OPT_VER, OPT_CHECKCACHE, OPT_TRUCKCONFIG, OPT_ENTERTRUCK, OPT_BENCH, OPT_STREAMCACHEGEN};
 
 // option array
 CSimpleOpt::SOption cmdline_options[] = {
@@ -392,6 +392,7 @@ CSimpleOpt::SOption cmdline_options[] = {
 	{ OPT_CHECKCACHE,  ((char *)"-checkcache"),  SO_NONE    },
 	{ OPT_VER,         ((char *)"-version"),     SO_NONE    },
 	{ OPT_BENCH,       ((char *)"-benchmark"),   SO_REQ_SEP    },
+	{ OPT_STREAMCACHEGEN, ((char *)"-streamcachegen"),   SO_NONE    },
 SO_END_OF_OPTIONS
 };
 
@@ -498,6 +499,8 @@ int main(int argc, char *argv[])
 #if OGRE_PLATFORM == OGRE_PLATFORM_WIN32
 				SetCurrentDirectory(args.OptionArg());
 #endif
+			} else if (args.OptionId() == OPT_STREAMCACHEGEN) {
+				SETTINGS.setSetting("streamCacheGenerationOnly", "Yes");
 			} else if (args.OptionId() == OPT_CHECKCACHE) {
 				// just regen cache and exit
 				SETTINGS.setSetting("regen-cache-only", "True");

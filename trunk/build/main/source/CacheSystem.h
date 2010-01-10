@@ -303,9 +303,10 @@ protected:
 	String getCacheConfigFilename(bool full);	// returns filename of the cache file
 	int incrementalCacheUpdate();	// tries to update parts of the Cache only
 
-	void generateFileCache(Cache_Entry &entry);	// generates a new cache
+	void generateFileCache(Cache_Entry &entry, Ogre::String directory=Ogre::String());	// generates a new cache
 	void deleteFileCache(char *filename); // removed files from cache
 	void writeGeneratedCache();
+	void writeStreamCache();
 	
 	// adds a zip to the cache
 	void loadSingleZip(Ogre::FileInfo f, bool unload=true, bool ownGroup=true);
