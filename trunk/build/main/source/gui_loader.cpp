@@ -539,7 +539,14 @@ void GUI_Loader::onCategorySelected(int categoryID)
 			counter2++;
 			//printf("adding item %d\n", counter2);
 			String txt = StringConverter::toString(counter2)+". " + it->dname;
-			list->addItem(txt, it->number);
+
+			try
+			{
+				list->addItem(txt, it->number);
+			} catch(...)
+			{
+				list->addItem("ENCODING ERROR", it->number);
+			}
 		}
 	}
 	if(counter2 > 0)
@@ -598,7 +605,13 @@ void GUI_Loader::onEntrySelected(int entryID)
 		descriptiontxt += _L("Author: ") + skin->authorName + "\n";
 		descriptiontxt += _L("Description: ") + skin->description + "\n";
 
-		text_entry_descr->setCaption(descriptiontxt);
+		try
+		{
+			text_entry_descr->setCaption(descriptiontxt);
+		} catch(...)
+		{
+			text_entry_descr->setCaption("ENCODING ERROR");
+		}
 		return;
 	}
 	Cache_Entry *entry = CACHE.getEntry(entryID);
@@ -623,7 +636,15 @@ void GUI_Loader::updateControls(Cache_Entry *entry)
 		combo_configs->setVisible(true);
 		combo_configs->removeAllItems();
 		for(std::vector<String>::iterator its=entry->sectionconfigs.begin();its!=entry->sectionconfigs.end(); its++)
-			combo_configs->addItem(*its, *its);
+		{
+			try
+			{
+				combo_configs->addItem(*its, *its);
+			} catch(...)
+			{
+				combo_configs->addItem("ENCODING ERROR", *its);
+			}
+		}
 		combo_configs->setIndexSelected(0);
 		
 		truck_configs.clear();
@@ -661,7 +682,14 @@ void GUI_Loader::updateControls(Cache_Entry *entry)
 			}
 	} else
 		authorstxt = _L("no author information available");
-	text_entry_name->setCaption(entry->dname);
+
+	try
+	{
+		text_entry_name->setCaption(entry->dname);
+	} catch(...)
+	{
+		text_entry_name->setCaption("ENCODING ERROR");
+	}
 
 
 	String descriptiontxt = entry->description + "\n";
@@ -676,7 +704,13 @@ void GUI_Loader::updateControls(Cache_Entry *entry)
 
 	StringUtil::trim(descriptiontxt);
 
-	text_entry_descr->setCaption(descriptiontxt);
+	try
+	{
+		text_entry_descr->setCaption(descriptiontxt);
+	} catch(...)
+	{
+		text_entry_descr->setCaption("ENCODING ERROR");
+	}
 }
 
 void GUI_Loader::setPreviewImage(Ogre::String texture)
