@@ -8231,6 +8231,7 @@ void Beam::lightsToggle(Beam** trucks, int trucksnum)
 			if(flares[i].type == 'f')
 			{
 				flares[i].snode->setVisible(false);
+				if(flares[i].bbs) flares[i].snode->detachAllObjects();
 				if (flares[i].light) flares[i].light->setVisible(false);
 				flares[i].isVisible=false;
 			}
@@ -8257,6 +8258,7 @@ void Beam::lightsToggle(Beam** trucks, int trucksnum)
 			{
 				if (flares[i].light) flares[i].light->setVisible(true);
 				flares[i].isVisible=true;
+				if(flares[i].bbs) flares[i].snode->attachObject(flares[i].bbs);
 			}
 		}
 		if (hasEmissivePass)
