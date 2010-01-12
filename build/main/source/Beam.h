@@ -476,12 +476,44 @@ typedef struct _vwheel
 	bool meshwheel;
 } vwheel_t;
 
-typedef struct
+typedef struct hook_t
 {
+	int locked;
+	int group;
+	bool lockNodes;
+	node_t *hookNode;
+	node_t *lockNode;
+	Beam *lockTruck;
+} hook_t;
+
+typedef struct ropable_t
+{
+	node_t *node;
+	int group;
+	bool multilock;
+	int used;
+} ropable_t;
+
+typedef struct rope_t
+{
+	int locked;
+	int group;
 	beam_t *beam;
 	node_t *lockedto;
+	ropable_t *lockedto_ropable;
 	Beam *lockedtruck;
 } rope_t;
+
+
+typedef struct tie_t
+{
+	beam_t *beam;
+	ropable_t *lockedto;
+	int group;
+	bool tied;
+	bool tying;
+	float commandValue;
+} tie_t;
 
 typedef struct
 {
@@ -685,9 +717,13 @@ public:
 	void setDetailLevel(int v);
 	void showSkeleton(bool meshes=true, bool newMode=false);
 	void hideSkeleton(bool newMode=false);
-	void tieToggle(Beam** trucks, int trucksnum);
+
+	void tieToggle(Beam** trucks, int trucksnum, int group=-1);
+	void ropeToggle(Beam** trucks, int trucksnum, int group=-1);
+	void hookToggle(Beam** trucks, int trucksnum, int group=-1);
+
 	void toggleSlideNodeLock( Beam** trucks, int trucksnum, unsigned int curTruck );
-	void lockToggle(Beam** trucks, int trucksnum);
+	
 	void parkingbrakeToggle();
 	void beaconsToggle();
 	void setReplayMode(bool rm);
@@ -762,17 +798,11 @@ public:
 	int replaylen;
 	int replaypos;
 	int oldreplaypos;
-	int locked;
-	int lockedold;
 	int watercontact;
 	int watercontactold;
 	bool cparticle_enabled;
-	int hookId;
-	node_t *lockId;
-	Beam *lockTruck;
 	int free_node;
 	int dynamicMapMode;
-	int tied;
 	int canwork;
 	int hashelp;
 	char helpmat[256];
@@ -838,7 +868,6 @@ public:
 	int netbuffersize;
 	int nodebuffersize;
 	SceneNode *netLabelNode;
-	int current_hookgroup;
 
 	std::string getTruckName(){return std::string(realtruckname);};
 	std::vector<AuthorInfo> getAuthors(){return authors;};
@@ -946,6 +975,8 @@ public:
 
 	bool getSlideNodesLockInstant() { 	return slideNodesConnectInstantly; };
 	void sendStreamData();
+	bool isTied();
+	bool isLocked();
 
 protected:
 
@@ -1031,12 +1062,13 @@ protected:
 	int slowed;
 	Replay *replay;
 	PositionStorage *posStorage;
-	int ropables[MAX_ROPABLES];
-	int free_ropable;
-	rope_t ropes[MAX_ROPES];
-	int free_rope;
-	int ties[MAX_TIES];
-	int free_tie;
+
+	std::vector <rope_t> ropes;
+	std::vector <ropable_t> ropables;
+	std::vector <tie_t> ties;
+	std::vector <hook_t> hooks;
+	
+
 	cparticle_t cparticles[MAX_CPARTICLES];
 	int free_cparticle;
 	bool cparticle_mode;

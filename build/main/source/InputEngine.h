@@ -177,6 +177,7 @@ enum events
 	EV_COMMON_ENTER_OR_EXIT_TRUCK, //!< enter or exit a truck
 	EV_COMMON_HIDE_GUI, //!< hide all GUI elements
 	EV_COMMON_LOCK, //!< connect hook node to a node in close proximity
+	EV_COMMON_ROPELOCK, //!< connect hook node to a node in close proximity
 	EV_COMMON_MAP_ALPHA, //!< toggle translucency of overview-map
 	EV_COMMON_OUTPUT_POSITION, //!< write current position to log (you can open the logfile and reuse the position)
 	EV_COMMON_PRESSURE_LESS, //!< decrease tire pressure (note: only very few trucks support this)

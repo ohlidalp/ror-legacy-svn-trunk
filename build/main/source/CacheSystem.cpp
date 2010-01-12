@@ -2619,17 +2619,13 @@ bool CacheSystem::checkResourceLoaded(Cache_Entry t)
 	if(t.resourceLoaded || loaded[t.dirname])
 		// only load once
 		return true;
-	if(t.type == "FileSystem")
-	{
-		// should be loaded by then
-		return true;
-	} else if(t.type == "Zip")
+	if(t.type == "FileSystem" || t.type == "Zip")
 	{
 		try
 		{
 			rgcountera++;
 			String name = "General-Reloaded-"+StringConverter::toString(rgcountera);
-			ResourceGroupManager::getSingleton().addResourceLocation(t.dirname, "Zip", name);
+			ResourceGroupManager::getSingleton().addResourceLocation(t.dirname, t.type, name);
 			loaded[t.dirname]=true;
 			ResourceGroupManager::getSingleton().initialiseResourceGroup(name);
 			return true;
@@ -2637,10 +2633,13 @@ bool CacheSystem::checkResourceLoaded(Cache_Entry t)
 		{
 			if(e.getNumber() == Ogre::Exception::ERR_DUPLICATE_ITEM)
 			{
-				LogManager::getSingleton().logMessage(" *** error opening archive '"+t.dirname+"': some files are duplicates of existing files. The archive will be ignored.");
+				LogManager::getSingleton().logMessage(" *** error opening '"+t.dirname+"': some files are duplicates of existing files. The archive/directory will be ignored.");
 			} else
 			{
-				LogManager::getSingleton().logMessage("error opening archive '"+t.dirname+"'. Is it corrupt? Ignoring that archive. Error: " + e.getFullDescription());
+				LogManager::getSingleton().logMessage("error opening '"+t.dirname+"'.");
+				if(t.type == "Zip")
+					LogManager::getSingleton().logMessage("Is the zip archive corrupt? Error: " + e.getFullDescription());
+				LogManager::getSingleton().logMessage("Error description : " + e.getFullDescription());
 				LogManager::getSingleton().logMessage("trying to continue ...");
 			}
 		}
