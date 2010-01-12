@@ -1462,6 +1462,7 @@ int Beam::loadTruck(const char* fname, SceneManager *manager, SceneNode *parent,
 		if (!strcmp("shocks2",line)) {mode=56;continue;};
 		if (!strcmp("railgroups",line)) {mode=63;continue;}
 		if (!strcmp("slidenodes",line)) {mode=64;continue;}
+		if (!strcmp("flares2",line)) {mode=65;continue;};
 		if (!strncmp("enable_advanced_deformation", line, 27))
 		{
 			// parse the optional threshold value
@@ -2740,19 +2741,35 @@ int Beam::loadTruck(const char* fname, SceneManager *manager, SceneNode *parent,
 			freecinecamera++;
 		}
 
-		else if (mode==19)
+		else if (mode==19 || mode==65)
 		{
 			if(flaresMode==0)
 				continue;
 			//parse flares
 			int ref=-1, nx=0, ny=0, controlnumber=-1, blinkdelay=-2;
-			float ox=0, oy=0, size=-2;
+			float ox=0, oy=0, oz=1, size=-2;
 			char type='f';
 			char matname[255]="";
-			int result = sscanf(line,"%i, %i, %i, %f, %f, %c, %i, %i, %f %s", &ref, &nx, &ny, &ox, &oy, &type, &controlnumber, &blinkdelay, &size, matname);
-			if (result < 5 || result == EOF) {
-				LogManager::getSingleton().logMessage("Error parsing File (Flares) " + String(fname) +" line " + StringConverter::toString(linecounter) + ". trying to continue ...");
-				continue;
+			int result=-1;
+			if(mode == 19)
+			{
+				// original flares
+				result = sscanf(line,"%i, %i, %i, %f, %f, %c, %i, %i, %f %s", &ref, &nx, &ny, &ox, &oy, &type, &controlnumber, &blinkdelay, &size, matname);
+				if (result < 5 || result == EOF)
+				{
+					LogManager::getSingleton().logMessage("Error parsing File (Flares) " + String(fname) +" line " + StringConverter::toString(linecounter) + ". trying to continue ...");
+					continue;
+				}
+			} else if(mode == 65)
+			{
+				// flares 2
+				result = sscanf(line,"%i, %i, %i, %f, %f, %f, %c, %i, %i, %f %s", &ref, &nx, &ny, &ox, &oy, &oz, &type, &controlnumber, &blinkdelay, &size, matname);
+				if (result < 5 || result == EOF)
+				{
+					LogManager::getSingleton().logMessage("Error parsing File (Flares) " + String(fname) +" line " + StringConverter::toString(linecounter) + ". trying to continue ...");
+					continue;
+				}
+
 			}
 
 			// check validity
@@ -2804,6 +2821,7 @@ int Beam::loadTruck(const char* fname, SceneManager *manager, SceneNode *parent,
 			f.nodey=ny;
 			f.offsetx=ox;
 			f.offsety=oy;
+			f.offsetz=oz;
 			f.size=size;
 			f.snode = manager->getRootSceneNode()->createChildSceneNode();
 			char flarename[256];
@@ -8452,7 +8470,7 @@ void Beam::updateFlares(float dt, bool isCurrent)
 		//normalize
 		vdir=vdir/vlen;
 		float amplitude=normal.dotProduct(vdir);
-		flares[i].snode->setPosition(mposition-0.1*amplitude*normal);
+		flares[i].snode->setPosition(mposition-0.1*amplitude*normal*flares[i].offsetz);
 		flares[i].snode->setDirection(normal);
 		float fsize = flares[i].size;
 		if(fsize < 0)
