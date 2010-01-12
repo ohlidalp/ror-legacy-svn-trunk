@@ -1,6 +1,6 @@
 #include "CaelumSystem.h"
 
-namespace caelum {
+namespace Caelum {
 
 const Ogre::String CaelumSystem::SKY_DOME_MATERIAL_NAME = "CaelumSkyDomeMaterial";
 const Ogre::String CaelumSystem::STARFIELD_MATERIAL_NAME = "CaelumStarfieldMaterial";
@@ -392,4 +392,4 @@ void CaelumSystem::updateSkyDomeMaterialTime () {
 	}
 }
 
-} // namespace caelum
+} // namespace Caelum

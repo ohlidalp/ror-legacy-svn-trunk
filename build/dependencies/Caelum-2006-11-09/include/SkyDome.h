@@ -3,7 +3,7 @@
 
 #include "CaelumPrerequisites.h"
 
-namespace caelum {
+namespace Caelum {
 
 /** A sky dome element.
 	@author Jesús Alonso Abad
@@ -48,6 +48,6 @@ class DllExport SkyDome  : public Ogre::RenderTargetListener {
 		void preViewportUpdate (const Ogre::RenderTargetViewportEvent &e);
 };
 
-} // namespace caelum
+} // namespace Caelum
 
 #endif //SKYDOME_H

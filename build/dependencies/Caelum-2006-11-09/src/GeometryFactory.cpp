@@ -1,6 +1,6 @@
 #include "GeometryFactory.h"
 
-namespace caelum {
+namespace Caelum {
 
 void GeometryFactory::generateSphericDome (const Ogre::String &name, const unsigned int segments, DomeType type) {
 	// Return now if already exists
@@ -193,4 +193,4 @@ void GeometryFactory::fillStarfieldDomeBuffers (float *pVertex, unsigned short *
 	}
 }
 
-} // namespace caelum
+} // namespace Caelum

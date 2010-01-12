@@ -3,7 +3,7 @@
 
 #include "CaelumPrerequisites.h"
 
-namespace caelum {
+namespace Caelum {
 
 /** Starfield dome class.
 	@author Jesús Alonso Abad
@@ -62,6 +62,6 @@ class DllExport Starfield : public Ogre::RenderTargetListener {
 		void update (const float time);
 };
 
-} // namespace caelum;
+} // namespace Caelum;
 
 #endif //STARFIELD_H

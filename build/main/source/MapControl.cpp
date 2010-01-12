@@ -170,11 +170,11 @@ void MapTextureCreator::setFogVisible(bool value)
 	if(fogmode == 1)
 	{
 		if(value)
-			static_cast<caelum::StoredImageSkyColourModel *>(mefl->getCaelumModel())->setFogDensity(mefl->getFogDensity());
+			static_cast<Caelum::StoredImageSkyColourModel *>(mefl->getCaelumModel())->setFogDensity(mefl->getFogDensity());
 		else
-			static_cast<caelum::StoredImageSkyColourModel *>(mefl->getCaelumModel())->setFogDensity(0);
+			static_cast<Caelum::StoredImageSkyColourModel *>(mefl->getCaelumModel())->setFogDensity(0);
 
-		// force caelum to update
+		// force Caelum to update
 		if(value)
 			mefl->getCaelumSystem()->setLocalTime(mefl->getCaelumSystem()->getLocalTime()+1);
 		else

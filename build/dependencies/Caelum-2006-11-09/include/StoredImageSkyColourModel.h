@@ -4,7 +4,7 @@
 #include "SkyColourModel.h"
 #include "CaelumPrerequisites.h"
 
-namespace caelum {
+namespace Caelum {
 
 /** A stored image based sky colour model.
 	This particular model takes a stored bitmap as the sky gradients map.
@@ -66,6 +66,6 @@ class DllExport StoredImageSkyColourModel : public SkyColourModel {
 		static Ogre::ColourValue getInterpolatedColour (float x, float height, Ogre::Image *img);
 };
 
-} // namespace caelum
+} // namespace Caelum
 
 #endif //STOREDIMAGESKYCOLOURMODEL_H

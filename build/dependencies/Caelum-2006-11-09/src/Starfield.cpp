@@ -2,7 +2,7 @@
 #include "CaelumSystem.h"
 #include "GeometryFactory.h"
 
-namespace caelum {
+namespace Caelum {
 
 const Ogre::String Starfield::mStarfieldDomeResourceName = "CaelumStarfieldDome";
 
@@ -58,4 +58,4 @@ void Starfield::update (const float time) {
 	mNode->setOrientation (orientation);
 }
 
-} // namespace caelum
+} // namespace Caelum

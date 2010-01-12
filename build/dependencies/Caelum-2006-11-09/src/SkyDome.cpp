@@ -2,7 +2,7 @@
 #include "CaelumSystem.h"
 #include "GeometryFactory.h"
 
-namespace caelum {
+namespace Caelum {
 
 const Ogre::String SkyDome::mSphericDomeResourceName = "CaelumSphericDome";
 
@@ -43,4 +43,4 @@ void SkyDome::preViewportUpdate (const Ogre::RenderTargetViewportEvent &e) {
 	}
 }
 
-} // namespace caelum
+} // namespace Caelum

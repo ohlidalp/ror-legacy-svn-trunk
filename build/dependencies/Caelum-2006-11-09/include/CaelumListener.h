@@ -3,7 +3,7 @@
 
 #include "CaelumPrerequisites.h"
 
-namespace caelum {
+namespace Caelum {
 
 // Predefinition of the system for the crossed reference.
 class CaelumSystem;
@@ -42,6 +42,6 @@ class DllExport CaelumListener {
 		}
 };
 
-} // namespace caelum
+} // namespace Caelum
 
 #endif //CAELUMLISTENER_H
