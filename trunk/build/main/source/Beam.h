@@ -556,6 +556,7 @@ typedef struct _flare
 	int nodey;
 	float offsetx;
 	float offsety;
+	float offsetz;
 	SceneNode *snode;
 	BillboardSet *bbs;
 	Light *light;
