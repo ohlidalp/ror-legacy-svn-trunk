@@ -686,8 +686,14 @@ eventInfo_t eventInfo[] = {
 	{
 		"COMMON_LOCK",
 		EV_COMMON_LOCK,
-		"Keyboard L",
+		"Keyboard EXPL+L",
 		_L("connect hook node to a node in close proximity")
+	},
+	{
+		"COMMON_ROPELOCK",
+		EV_COMMON_ROPELOCK,
+		"Keyboard EXPL+CTRL+L",
+		_L("connect a rope to a node in close proximity")
 	},
 	{
 		"COMMON_MAP_ALPHA",

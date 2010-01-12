@@ -459,14 +459,12 @@ Beam::Beam(int tnum, SceneManager *manager, SceneNode *parent, RenderWindow* win
 	cameranodepos[0]=-1;
 	cameranodedir[0]=-1;
 	cameranoderoll[0]=-1;
-	current_hookgroup=-1,
 	rescuer=false;
 	freecamera=0;
 	requires_wheel_contact=false;
 	wheel_contact_requested=false;
 	subisback[0]=0;
 	canwork=1;
-	tied=0;
 	hashelp=0;
 	totalmass=0;
 	parkingbrake=0;
@@ -483,9 +481,6 @@ Beam::Beam(int tnum, SceneManager *manager, SceneNode *parent, RenderWindow* win
 	free_buoycab=0;
 	buoyance=0;
 	free_shock=0;
-	free_ropable=0;
-	free_rope=0;
-	free_tie=0;
 	free_flare=0;
 	free_prop=0;
 	forwardcommands=0;
@@ -535,13 +530,8 @@ Beam::Beam(int tnum, SceneManager *manager, SceneNode *parent, RenderWindow* win
 	replaypos=0;
 	replayPrecision=0;
 	oldreplaypos=-1;
-	locked=UNLOCKED;
-	lockedold=UNLOCKED;
 	watercontact=0;
 	watercontactold=0;
-	hookId=-1;
-	lockId=0;
-	lockTruck=0;
 	netlock.state=UNLOCKED;
 	//			lastdt=0.1;
 	//for (i=0; i<MAX_COMMANDS; i++) {commandkey[i].bfree=0;commandkey[i].rotfree=0;commandkey[i].kpressed=0;};
@@ -1216,18 +1206,18 @@ void Beam::calc_masses2(Real total, bool reCalc)
 		}
 	}
 	//fix rope masses
-	for (i=0; i<free_rope; i++)
+	for(std::vector <rope_t>::iterator it = ropes.begin(); it!=ropes.end(); it++)
 	{
-		ropes[i].beam->p2->mass=100.0;
+		it->beam->p2->mass=100.0;
 	}
 	//fix camera mass
 	for (i=0; i<freecinecamera; i++)
 		nodes[cinecameranodepos[i]].mass=20;
 
 	//hooks must be heavy
-	if (hookId!=-1)
-		if(!nodes[hookId].overrideMass)
-			nodes[hookId].mass=500.0;
+	for(std::vector<hook_t>::iterator it=hooks.begin(); it!=hooks.end(); it++)
+		if(!it->hookNode->overrideMass)
+			it->hookNode->mass = 500.0f;
 
 	//update gravimass
 	for (i=0; i<free_node; i++)
@@ -1295,8 +1285,16 @@ void Beam::recalc_masses()
 float Beam::getTotalMass(bool withLocked)
 {
 	float mass = totalmass; //already computed in calc_masses2
-	if (withLocked && lockTruck && lockTruck->getTruckName() != getTruckName())
-		mass += lockTruck->getTotalMass();
+	if (withLocked)
+	{
+		for(std::vector<hook_t>::iterator it=hooks.begin(); it!=hooks.end(); it++)
+		{
+			if(it->lockTruck && it->lockTruck->getTruckName() != getTruckName())
+			{
+				mass += it->lockTruck->getTotalMass();
+			}
+		}
+	}
 	return mass;
 }
 
@@ -1449,7 +1447,7 @@ int Beam::loadTruck(const char* fname, SceneManager *manager, SceneNode *parent,
 		if (!strcmp("airbrakes",line)) {mode=41;continue;};
 		if (!strcmp("meshwheels",line)) {mode=42;continue;};
 		if (!strcmp("flexbodies",line)) {mode=43;continue;};
-		if (!strncmp("hookgroup",line, 9)) {mode=44; /* NOT continue */;};
+		if (!strcmp("hookgroup",line)) {mode=44; continue;};
 		if (!strncmp("materialflarebindings",line, 21)) {mode=46; continue;};
 		if (!strcmp("disabledefaultsounds",line)) {disable_default_sounds=true;continue;};
 		if (!strcmp("soundsources",line)) {mode=47;continue;};
@@ -1797,7 +1795,15 @@ int Beam::loadTruck(const char* fname, SceneManager *manager, SceneNode *parent,
 						nodes[id].contactless = 1;
 						break;
 					case 'h':	//hook
-						hookId=id;
+						// emulate the old behaviour using new fancy hookgroups
+						hook_t h;
+						h.hookNode=&nodes[id];
+						h.locked=UNLOCKED;
+						h.lockNode=0;
+						h.lockTruck=0;
+						h.lockNodes=true;
+						h.group=-1;
+						hooks.push_back(h);
 						break;
 					case 'e':	//editor
 						if (!networking)
@@ -2565,8 +2571,8 @@ int Beam::loadTruck(const char* fname, SceneManager *manager, SceneNode *parent,
 		else if (mode==14)
 		{
 			//parse ropes
-			int id1, id2;
-			int result = sscanf(line,"%i, %i", &id1, &id2);
+			int id1=0, id2=0, key=0, group=0;
+			int result = sscanf(line,"%i, %i, %i, %i", &id1, &id2, &key, &group);
 			if (result < 2 || result == EOF) {
 				LogManager::getSingleton().logMessage("Error parsing File (Ropes) " + String(fname) +" line " + StringConverter::toString(linecounter) + ". trying to continue ...");
 				continue;
@@ -2586,40 +2592,50 @@ int Beam::loadTruck(const char* fname, SceneManager *manager, SceneNode *parent,
 			}
 			int pos=add_beam(&nodes[id1], &nodes[id2], manager, parent, BEAM_NORMAL, default_break, default_spring, default_damp);
 			beams[pos].bounded=ROPE;
+			
+			rope_t r;
 			//register rope
-			ropes[free_rope].beam=&beams[pos];
-			ropes[free_rope].lockedto=0;
+			r.beam=&beams[pos];
+			r.lockedto=0;
+			r.group=group;
+			ropes.push_back(r);
+			
 			nodes[id1].iIsSkin=true;
 			nodes[id2].iIsSkin=true;
-			free_rope++;
 		}
 		else if (mode==15)
 		{
 			//parse ropables
-			int id1;
-			int result = sscanf(line,"%i", &id1);
+			int id1=0, group=-1, multilock=0;
+			int result = sscanf(line,"%i, %i, %i", &id1, &group, &multilock);
 			if (result < 1 || result == EOF) {
 				LogManager::getSingleton().logMessage("Error parsing File (Ropeable) " + String(fname) +" line " + StringConverter::toString(linecounter) + ". trying to continue ...");
 				continue;
 			}
-			if(free_ropable >= MAX_ROPABLES)
+			if (id1>=free_node)
 			{
-				LogManager::getSingleton().logMessage("ropables limit reached ("+StringConverter::toString(MAX_ROPABLES)+"): " + String(fname) +" line " + StringConverter::toString(linecounter) + ". trying to continue ...");
-				continue;
+				LogManager::getSingleton().logMessage("Error: unknown node number in ropables section ("+StringConverter::toString(id1)+")");
+				exit(7);
 			}
-			ropables[free_ropable]=id1;
+
+			ropable_t r;
+			r.node = &nodes[id1];
+			r.group = group;
+			r.used = 0;
+			r.multilock = (bool)(multilock == 1);
+			ropables.push_back(r);
+
 			nodes[id1].iIsSkin=true;
-			free_ropable++;;
 		}
 		else if (mode==16)
 		{
 			//parse ties
-			int id1;
+			int id1=0, group=-1;
 			float maxl, rate, shortl, longl, maxstress;
 			char option='n';
 			maxstress=100000.0f;
 			hascommands=1;
-			int result = sscanf(line,"%i, %f, %f, %f, %f, %c, %f", &id1, &maxl, &rate, &shortl, &longl, &option, &maxstress);
+			int result = sscanf(line,"%i, %f, %f, %f, %f, %c, %f, %i", &id1, &maxl, &rate, &shortl, &longl, &option, &maxstress, &group);
 			if (result < 5 || result == EOF) {
 				LogManager::getSingleton().logMessage("Error parsing File (Ties) " + String(fname) +" line " + StringConverter::toString(linecounter) + ". trying to continue ...");
 				continue;
@@ -2640,19 +2656,19 @@ int Beam::loadTruck(const char* fname, SceneManager *manager, SceneNode *parent,
 			beams[pos].bounded=ROPE;
 			beams[pos].disabled=true;
 			beams[pos].mSceneNode->detachAllObjects();
-			//add short key
-			commandkey[0].beams.push_back(-pos);
-			//add long key
-			//			commandkey[keyl].beams[commandkey[keyl].bfree]=free_beam;
-			//			commandkey[keyl].bfree++;
 			beams[pos].commandRatioShort=rate;
 			beams[pos].commandRatioLong=rate;
 			beams[pos].commandShort=shortl;
 			beams[pos].commandLong=longl;
 			beams[pos].maxtiestress=maxstress;
+
 			//register tie
-			ties[free_tie]=pos;
-			free_tie++;
+			tie_t t;
+			t.group = group;
+			t.tying=false;
+			t.tied=false;
+			t.beam=&beams[pos];
+			ties.push_back(t);
 		}
 
 		else if (mode==17)
@@ -3832,17 +3848,26 @@ int Beam::loadTruck(const char* fname, SceneManager *manager, SceneNode *parent,
 		else if (mode==44)
 		{
 			//parse hookgroups
-			if(!strncmp("hookgroup", line, 9))
+			int id1=0, group=-1, lockNodes=1;
+			int result = sscanf(line,"%i, %i, %i", &id1, &group, &lockNodes);
+			if (result < 2 || result == EOF)
 			{
-				int hookgroup=-1;
-				char templatename[255];
-				int result = sscanf(line,"hookgroup %i, %s", &hookgroup, templatename);
-				if (result < 2 || result == EOF)
-				{
-					LogManager::getSingleton().logMessage("Error parsing File (hookgroup) " + String(fname) +" line " + StringConverter::toString(linecounter) + ". Too less arguments. trying to continue ...");
-					continue;
-				}
+				LogManager::getSingleton().logMessage("Error parsing File (hookgroup) " + String(fname) +" line " + StringConverter::toString(linecounter) + ". Too less arguments. trying to continue ...");
+				continue;
 			}
+			if (id1>=free_node)
+			{
+				LogManager::getSingleton().logMessage("Error: unknown node number in hookgroup section ("+StringConverter::toString(id1)+")");
+				exit(7);
+			};
+			hook_t h;
+			h.hookNode=&nodes[id1];
+			h.group=group;
+			h.locked=UNLOCKED;
+			h.lockNode=0;
+			h.lockTruck=0;
+			h.lockNodes=(bool)(lockNodes != 0);
+			hooks.push_back(h);
 
 		}
 		else if (mode==46)
@@ -5580,8 +5605,6 @@ void Beam::SyncReset()
 	hydroelevatorstate=0.0;
 	hydrodirwheeldisplay=0.0;
 	if(hydroInertia) hydroInertia->resetCmdKeyDelay(MAX_HYDROS);
-	locked=UNLOCKED;
-	tied=false;
 	parkingbrake=0;
 	fusedrag=Vector3::ZERO;
 	origin=Vector3::ZERO; //to fix
@@ -5628,8 +5651,12 @@ void Beam::SyncReset()
 	}
 	netlock.state=UNLOCKED;
 	for (i=0; i<free_contacter; i++) contacters[i].contacted=0;
-	for (i=0; i<free_rope; i++) ropes[i].lockedto=0;
-	for (i=0; i<free_tie; i++) {beams[ties[i]].disabled=true;beams[ties[i]].mSceneNode->detachAllObjects();};
+	for(std::vector <rope_t>::iterator it = ropes.begin(); it!=ropes.end(); it++) it->lockedto=0;
+	for(std::vector <tie_t>::iterator it = ties.begin(); it!=ties.end(); it++)
+	{
+		it->beam->disabled=true;
+		it->beam->mSceneNode->detachAllObjects();
+	}
 	for (i=0; i<free_aeroengine; i++) aeroengines[i]->reset();
 	for (i=0; i<free_screwprop; i++) screwprops[i]->reset();
 	for (i=0; i<free_rotator; i++) rotators[i].angle=0;
@@ -5742,12 +5769,15 @@ bool Beam::frameStep(Real dt, Beam** trucks, int numtrucks)
 
 	// some scripting stuff:
 #ifdef ANGELSCRIPT
+#if 0
+	// XXX: TO BE FIXED
 	if(lockedold != locked)
 	{
 		if(locked == LOCKED) ScriptEngine::getSingleton().triggerEvent(ScriptEngine::SE_TRUCK_LOCKED, trucknum);
 		if(locked == UNLOCKED) ScriptEngine::getSingleton().triggerEvent(ScriptEngine::SE_TRUCK_UNLOCKED, trucknum);
 		lockedold=locked;
 	}
+#endif //0
 	if(watercontact != watercontactold)
 	{
 		ScriptEngine::getSingleton().triggerEvent(ScriptEngine::SE_TRUCK_TOUCHED_WATER, trucknum);
@@ -6558,76 +6588,84 @@ void Beam::calcForcesEuler(int doUpdate, Real dt, int step, int maxstep, Beam** 
 			affforce=nodes[cameranodepos[currentcamera]].Forces;
 		else
 			affforce+=nodes[cameranodepos[currentcamera]].Forces;
+	
+	
 	//locks - this is not active in network mode
-	if (lockId && locked==LOCKED)
+	for(std::vector<hook_t>::iterator it=hooks.begin(); it!=hooks.end(); it++)
 	{
-		lockId->lockedPosition=nodes[hookId].AbsPosition;
-		lockId->lockedVelocity=nodes[hookId].Velocity;
-		nodes[hookId].Forces=nodes[hookId].Forces+lockId->lockedForces;
-		//			lockId->Forces=Vector3(0,0,0);
-	}
-	if (lockId && locked==PRELOCK)
-	{
-		//check for locking
-		if ((nodes[hookId].AbsPosition-lockId->AbsPosition).squaredLength()<0.00001)
+		if (it->lockNode && it->locked == LOCKED)
 		{
-			lockId->lockednode=1;
-			lockId->lockedPosition=lockId->AbsPosition;
-			lockId->lockedVelocity=lockId->Velocity;
-			lockId->lockedForces=lockId->Forces;
-			locked=LOCKED;
+			it->lockNode->lockedPosition = it->hookNode->AbsPosition;
+			it->lockNode->lockedVelocity = it->hookNode->Velocity;
+			it->lockNode->Forces         = it->hookNode->Forces + it->lockNode->lockedForces;
 		}
-		else
+		if (it->lockNode && it->locked==PRELOCK)
 		{
-			//add attraction forces
-			Vector3 f=nodes[hookId].AbsPosition-lockId->AbsPosition;
-			f.normalise();
-			nodes[hookId].Forces-=100000.0*f;
-			lockId->Forces+=100000.0*f;
+			//check for locking
+			if ((it->hookNode->AbsPosition - it->lockNode->AbsPosition).squaredLength() < 0.00001f)
+			{
+				it->lockNode->lockednode=1;
+				it->lockNode->lockedPosition = it->lockNode->AbsPosition;
+				it->lockNode->lockedVelocity = it->lockNode->Velocity;
+				it->lockNode->lockedForces   = it->lockNode->Forces;
+				it->locked = LOCKED;
+			}
+			else
+			{
+				//add attraction forces
+				Vector3 f = it->hookNode->AbsPosition - it->lockNode->AbsPosition;
+				f.normalise();
+				it->hookNode->Forces -= 100000.0 * f;
+				it->lockNode->Forces += 100000.0 * f;
+			}
 		}
-	}
-	//net forces (only when in network! :\ )
-	if(networking)
-	{
-		for (i=0; i<MAX_NETFORCE; i++)
+#if 0
+		// XXX : TODO : FIX
+		//net forces (only when in network! :\ )
+		if(networking)
 		{
-			if (netforces[i].used) nodes[netforces[i].node].Forces+=netforces[i].force;
+			for (i=0; i<MAX_NETFORCE; i++)
+			{
+				if (netforces[i].used) nodes[netforces[i].node].Forces+=netforces[i].force;
+			}
 		}
-	}
-	//netlock force
-	if (netlock.state==LOCKED)
-	{
-		Vector3 f=trucks[netlock.remote_truck]->nodes[netlock.remote_node].AbsPosition-nodes[netlock.local_node].AbsPosition;
-		float d=f.length();
-		f=f/d; //normalize
-		float rspeed=(d-netlock.last_dist)/(mrtime-netlock.last_time);
-		if (rspeed<0) rspeed=0;
-		float forcelen=d*10000.0+rspeed*100000.0;
-		if (forcelen>100000.0) forcelen=100000.0;
-		if (forcelen<-100000.0) forcelen=-100000.0;
-		f=f*forcelen;
-		nodes[netlock.local_node].Forces+=f;
-		netlock.toSendForce=-f;
-		netlock.last_dist=d;
-		netlock.last_time=mrtime;
+		//netlock force
+		if (netlock.state==LOCKED)
+		{
+			Vector3 f=trucks[netlock.remote_truck]->nodes[netlock.remote_node].AbsPosition-nodes[netlock.local_node].AbsPosition;
+			float d=f.length();
+			f=f/d; //normalize
+			float rspeed=(d-netlock.last_dist)/(mrtime-netlock.last_time);
+			if (rspeed<0) rspeed=0;
+			float forcelen=d*10000.0+rspeed*100000.0;
+			if (forcelen>100000.0) forcelen=100000.0;
+			if (forcelen<-100000.0) forcelen=-100000.0;
+			f=f*forcelen;
+			nodes[netlock.local_node].Forces+=f;
+			netlock.toSendForce=-f;
+			netlock.last_dist=d;
+			netlock.last_time=mrtime;
+		}
+#endif //0
 	}
 
 #ifdef TIMING
 	if(statistics)
 		statistics->queryStart(BeamThreadStats::Ropes);
 #endif
-	if (free_rope)
+	if (ropes.size())
 	{
-		int i;
-		for (i=0; i<free_rope; i++)
-			if (ropes[i].lockedto)
+		for(std::vector <rope_t>::iterator it = ropes.begin(); it!=ropes.end(); it++)
+		{
+			if (it->lockedto)
 			{
-				ropes[i].beam->p2->AbsPosition=ropes[i].lockedto->AbsPosition;
-				ropes[i].beam->p2->RelPosition=ropes[i].lockedto->AbsPosition-origin;//ropes[i].lockedtruck->origin; //we have a problem here
-				ropes[i].beam->p2->Velocity=ropes[i].lockedto->Velocity;
-				ropes[i].lockedto->Forces=ropes[i].lockedto->Forces+ropes[i].beam->p2->Forces;
-				ropes[i].beam->p2->Forces=Vector3(0,0,0);
+				it->beam->p2->AbsPosition = it->lockedto->AbsPosition;
+				it->beam->p2->RelPosition = it->lockedto->AbsPosition - origin; //ropes[i].lockedtruck->origin; //we have a problem here
+				it->beam->p2->Velocity = it->lockedto->Velocity;
+				it->lockedto->Forces = it->lockedto->Forces + it->beam->p2->Forces;
+				it->beam->p2->Forces=Vector3(0,0,0);
 			}
+		}
 	}
 #ifdef TIMING
 	if(statistics)
@@ -7343,17 +7381,19 @@ void Beam::calcForcesEuler(int doUpdate, Real dt, int step, int maxstep, Beam** 
 					trucks[i]->commandkey[j].commandValue = commandkey[j].commandValue;
 
 				// just send brake and lights to the connected truck, and no one else :)
-				if (lockTruck)
+				for(std::vector<hook_t>::iterator it=hooks.begin(); it!=hooks.end(); it++)
 				{
+					if(!it->lockTruck) continue;
 					// forward brake
-					lockTruck->brake = brake;
-					lockTruck->parkingbrake = parkingbrake;
+					it->lockTruck->brake = brake;
+					it->lockTruck->parkingbrake = parkingbrake;
 
 					// forward lights
-					lockTruck->lights = lights;
-					lockTruck->blinkingtype = blinkingtype;
+					it->lockTruck->lights = lights;
+					it->lockTruck->blinkingtype = blinkingtype;
 					//for(int k=0;k<4;k++)
 					//	lockTruck->setCustomLight(k, getCustomLight(k));
+
 				}
 			}
 		}
@@ -7389,6 +7429,44 @@ void Beam::calcForcesEuler(int doUpdate, Real dt, int step, int maxstep, Beam** 
 				if(commandkey[i].commandValue >= 0.5)
 					beams[abs(commandkey[i].beams[j])].autoMoveLock=true;
 
+		
+		// only process ties if there is enough force available
+		if(canwork)
+		{
+			bool requestpower = false;
+			// go through all ties and process them
+			for(std::vector<tie_t>::iterator it=ties.begin(); it!=ties.end(); it++)
+			{
+				// only process tying ties
+				if(!it->tying) continue;
+
+				// division through zero guard
+				if(it->beam->refL == 0 || it->beam->L == 0) continue;
+
+				float clen = it->beam->L / it->beam->refL;
+				if (clen > it->beam->commandShort)
+				{
+					float dl = it->beam->L;
+					it->beam->L *= (1.0 - it->beam->commandRatioShort * dt / it->beam->L);
+					dl = fabs(dl - it->beam->L);
+					requestpower = true;
+					active++;
+					work += fabs(it->beam->stress) * dl;
+				} else
+				{
+					// tying finished, end reached
+					it->tying = false;
+				}
+
+				// check if we hit a certain force limit, then abort the tying process
+				if (fabs(it->beam->stress) > it->beam->maxtiestress)
+					it->tying = false;
+			}
+			if(requestpower) 
+				requested++;
+		}
+
+		// now process normal commands
 		for (i=0; i<=MAX_COMMANDS; i++)
 		{
 			int j;
@@ -7587,9 +7665,6 @@ void Beam::calcForcesEuler(int doUpdate, Real dt, int step, int maxstep, Beam** 
 							}
 						} else
 						{
-							if (i==0)
-								commandkey[0].commandValue = 0;
-
 							// beyond lenght
 							if(beams[bbeam].isOnePressMode>0 && beams[bbeam].autoMovingMode < 0)
 							{
@@ -7597,9 +7672,6 @@ void Beam::calcForcesEuler(int doUpdate, Real dt, int step, int maxstep, Beam** 
 								beams[bbeam].autoMovingMode=0;
 							}
 						}
-
-						if (i==0 && fabs(beams[bbeam].stress) > beams[bbeam].maxtiestress)
-							commandkey[0].commandValue=0;
 					};
 				}
 			}
@@ -8822,9 +8894,14 @@ void Beam::showSkeleton(bool meshes, bool newMode)
 		setMeshWireframe(s, true);
 	}
 
-	for (i=0; i<free_tie; i++) if (beams[ties[i]].disabled) beams[ties[i]].mSceneNode->detachAllObjects();
-	if (lockTruck && lockTruck->getTruckName() != getTruckName())
-		lockTruck->showSkeleton();
+	for(std::vector<tie_t>::iterator it=ties.begin(); it!=ties.end(); it++)
+		if (it->beam->disabled)
+			it->beam->mSceneNode->detachAllObjects();
+	
+	for(std::vector<hook_t>::iterator it=hooks.begin(); it!=hooks.end(); it++)
+		if (it->lockTruck && it->lockTruck->getTruckName() != getTruckName())
+			it->lockTruck->showSkeleton();
+	
 	lockSkeletonchange=false;
 
 #ifdef ANGELSCRIPT
@@ -8904,12 +8981,14 @@ void Beam::hideSkeleton(bool newMode)
 		setMeshWireframe(s, false);
 	}
 
-	for (i=0; i<free_tie; i++)
-		if (beams[ties[i]].disabled)
-			beams[ties[i]].mSceneNode->detachAllObjects();
+	for(std::vector<tie_t>::iterator it=ties.begin(); it!=ties.end(); it++)
+		if (it->beam->disabled)
+			it->beam->mSceneNode->detachAllObjects();
 
-	if (lockTruck && lockTruck->getTruckName() != getTruckName())
-		lockTruck->hideSkeleton();
+	for(std::vector<hook_t>::iterator it=hooks.begin(); it!=hooks.end(); it++)
+		if (it->lockTruck && it->lockTruck->getTruckName() != getTruckName())
+			it->lockTruck->hideSkeleton();
+
 	lockSkeletonchange=false;
 }
 
@@ -9017,7 +9096,9 @@ void Beam::setMeshVisibility(bool visible)
 	meshesVisible = visible;
 
 	// apply to the locked truck
-	if (lockTruck && lockTruck->getTruckName() != getTruckName()) lockTruck->setMeshVisibility(visible);
+	for(std::vector<hook_t>::iterator it=hooks.begin(); it!=hooks.end(); it++)
+		if (it->lockTruck && it->lockTruck->getTruckName() != getTruckName())
+			it->lockTruck->setMeshVisibility(visible);
 }
 
 void Beam::cabFade(float amount)
@@ -9059,7 +9140,7 @@ void Beam::cabFade(float amount)
 	}
 }
 
-void Beam::tieToggle(Beam** trucks, int trucksnum)
+void Beam::tieToggle(Beam** trucks, int trucksnum, int group)
 {
 	//export tie commands
 	if (state==ACTIVATED && forwardcommands)
@@ -9068,70 +9149,157 @@ void Beam::tieToggle(Beam** trucks, int trucksnum)
 		for (i=0; i<trucksnum; i++)
 		{
 			if(!trucks[i]) continue;
-			if (trucks[i]->state==DESACTIVATED && trucks[i]->importcommands) trucks[i]->tieToggle(trucks, trucksnum);
+			if (trucks[i]->state==DESACTIVATED && trucks[i]->importcommands)
+				trucks[i]->tieToggle(trucks, trucksnum, group);
 		}
 	}
-	int i;
-	if (tied)
+
+	// iterate over all ties
+	for(std::vector<tie_t>::iterator it=ties.begin(); it!=ties.end(); it++)
 	{
-		tied=0;
-		commandkey[0].commandValue = 0;
-		for (i=0; i<free_tie; i++) {beams[ties[i]].disabled=1;beams[ties[i]].mSceneNode->detachAllObjects();};
-	}
-	else
-	{
-		for (i=0; i<free_tie; i++)
+		// only handle ties with correct group
+		if (group != -1 && (it->group != -1 && it->group != group))
+			continue;
+
+		// if tied, untie it. And the other way round
+		if (it->tied)
 		{
-			float mindist=beams[ties[i]].refL;
+			// tie is locked and should get unlocked
+
+			// not tied and stop tying
+			it->tied  = false;
+			it->tying = false;
+			if(it->lockedto) it->lockedto->used--;
+			// disable the ties beam
+			it->beam->disabled = 1;
+			it->beam->mSceneNode->detachAllObjects();
+		} else
+		{
+			// tie is unlocked and should get locked
+
+			// search new remote ropable to lock to
+			float mindist = it->beam->refL;
 			node_t *shorter=0;
 			Beam *shtruck=0;
-			int j,t;
-			for (t=0; t<trucksnum; t++)
+			ropable_t *locktedto=0;
+			// iterate over all trucks
+			for (int t=0; t<trucksnum; t++)
 			{
 				if(!trucks[t]) continue;
 				if (trucks[t]->state==SLEEPING) continue;
-				for (j=0; j<trucks[t]->free_ropable; j++)
+				// and their ropables
+				for(std::vector <ropable_t>::iterator itr = trucks[t]->ropables.begin(); itr!=trucks[t]->ropables.end(); itr++)
 				{
-					//cancel if this ropable is already tied
-					int k;
-					int cancel=0;
-					for (k=0; k<free_tie;k++) if (!beams[ties[k]].disabled && beams[ties[k]].p2==&(trucks[t]->nodes[trucks[t]->ropables[j]])) cancel=1;
-					if (cancel) continue;
-					float dist=(beams[ties[i]].p1->AbsPosition-trucks[t]->nodes[trucks[t]->ropables[j]].AbsPosition).length();
-					if (dist<mindist)
+					// if the ropable is not multilock and used, then discard this ropable
+					if(!itr->multilock && itr->used)
+						continue;
+
+					// calculate the distance and record the nearest ropable
+					float dist = (it->beam->p1->AbsPosition - itr->node->AbsPosition).length();
+					if (dist < mindist)
 					{
-						mindist=dist;
-						shorter=&(trucks[t]->nodes[trucks[t]->ropables[j]]);
-						shtruck=trucks[t];
-					};
+						mindist = dist;
+						shorter = itr->node;
+						shtruck = trucks[t];
+						locktedto = &(*itr);
+					}
 				}
 			}
+			// if we found a ropable, then tie towards it
 			if (shorter)
 			{
 				//okay, we have found a rope to tie
-				beams[ties[i]].disabled=0;
-				if (beams[ties[i]].mSceneNode->numAttachedObjects()==0) beams[ties[i]].mSceneNode->attachObject(beams[ties[i]].mEntity);
-				//				beams[ties[i]].mSceneNode->setVisible(true);
-				beams[ties[i]].p2=shorter;
-				beams[ties[i]].p2truck=shtruck;
-				beams[ties[i]].stress=0;
-				beams[ties[i]].L=beams[ties[i]].refL;
-				tied=1;
+				
+				// enable the beam and visually display the beam
+				it->beam->disabled = 0;
+				if (it->beam->mSceneNode->numAttachedObjects() == 0)
+					it->beam->mSceneNode->attachObject(it->beam->mEntity);
+
+				// now trigger the tying action
+				it->beam->p2 = shorter;
+				it->beam->p2truck = shtruck;
+				it->beam->stress = 0;
+				it->beam->L = it->beam->refL;
+				it->tied  = true;
+				it->tying = true;
+				it->lockedto = locktedto;
+				it->lockedto->used++;
 			}
 
 		}
-		commandkey[0].commandValue = 1;
 	}
 #ifdef ANGELSCRIPT
 	//ScriptEvent - Tie toggle
 	ScriptEngine::getSingleton().triggerEvent(ScriptEngine::SE_TRUCK_TIE_TOGGLE, trucknum);
 #endif
 }
-void Beam::lockToggle(Beam** trucks, int trucksnum)
+
+void Beam::ropeToggle(Beam** trucks, int trucksnum, int group)
 {
-	int i;
+	// iterate over all ropes
+	for(std::vector <rope_t>::iterator it = ropes.begin(); it!=ropes.end(); it++)
+	{
+		// only handle ropes with correct group
+		if (group != -1 && (it->group != -1 && it->group != group))
+			continue;
+
+		if (it->locked == LOCKED || it->locked == PRELOCK)
+		{
+			// we unlock ropes
+			it->locked = UNLOCKED;
+			// remove node locking
+			if(it->lockedto)         it->lockedto->lockednode=0;
+			if(it->lockedto_ropable) it->lockedto_ropable->used--;
+			it->lockedto = 0;
+			it->lockedtruck = 0;
+		} else
+		{
+			//we lock ropes
+			// search new remote ropable to lock to
+			float mindist = it->beam->L;
+			node_t *shorter=0;
+			Beam *shtruck=0;
+			ropable_t *rop=0;
+			// iterate over all trucks
+			for (int t=0; t<trucksnum; t++)
+			{
+				if(!trucks[t]) continue;
+				if (trucks[t]->state==SLEEPING) continue;
+				// and their ropables
+				for(std::vector <ropable_t>::iterator itr = trucks[t]->ropables.begin(); itr!=trucks[t]->ropables.end(); itr++)
+				{
+					// if the ropable is not multilock and used, then discard this ropable
+					if(!itr->multilock && itr->used)
+						continue;
+
+					// calculate the distance and record the nearest ropable
+					float dist = (it->beam->p1->AbsPosition - itr->node->AbsPosition).length();
+					if (dist < mindist)
+					{
+						mindist = dist;
+						shorter = itr->node;
+						shtruck = trucks[t];
+						rop     = &(*itr);
+					}
+				}
+			}
+			// if we found a ropable, then lock it
+			if (shorter)
+			{
+				//okay, we have found a rope to tie
+				it->lockedto    = shorter;
+				it->lockedtruck = shtruck;
+				it->locked      = PRELOCK;
+				it->lockedto_ropable = rop;
+				it->lockedto_ropable->used++;
+			}
+		}
+	}
+}
+
+
 #if 0
-	// todo: fix remote truck locks
+	// XXX: TODO: fix remote truck locks
 	if (networking)
 	{
 		if (netlock.state==LOCKED)
@@ -9167,83 +9335,92 @@ void Beam::lockToggle(Beam** trucks, int trucksnum)
 	}
 #endif //0
 
-	if (locked==LOCKED || locked==PRELOCK)
+void Beam::hookToggle(Beam** trucks, int trucksnum, int group)
+{
+	// iterate over all hooks
+	for(std::vector <hook_t>::iterator it = hooks.begin(); it!=hooks.end(); it++)
 	{
-		locked=UNLOCKED;
-		if (hookId!=-1) lockId->lockednode=0;
-		lockId=0;
-		lockTruck=0;
-		for (i=0; i<free_rope; i++)
+		// only handle hooks with correct group
+		if (group != -1 && (it->group != -1 && it->group != group))
+			continue;
+
+		if (it->locked == LOCKED || it->locked == PRELOCK)
 		{
-			//			if (ropes[i].lockedto) ropes[i].lockedto->lockednode=0;
-			ropes[i].lockedto=0;
-		}
-	} else
-	{
-		//we lock a hook
-		if (hookId!=-1)
+			// we unlock ropes
+			it->locked = UNLOCKED;
+			// remove node locking
+			if (it->lockNode) it->lockNode->lockednode=0;
+			it->lockNode = 0;
+			it->lockTruck = 0;
+		} else
 		{
-			int i,t;
-			for (t=0; t<trucksnum; t++)
+			// we lock hooks
+			// search new remote ropable to lock to
+			float mindist = 0.4f; //hardcoded max distance to target node of 40 centimeters
+			node_t *shorter=0;
+			Beam *shtruck=0;
+			// iterate over all trucks
+			for (int t=0; t<trucksnum; t++)
 			{
 				if(!trucks[t]) continue;
 				if (trucks[t]->state==SLEEPING) continue;
-				for (i=0; i<trucks[t]->free_node; i++)
+
+				// do we lock against all nodes or just against ropables?
+				bool found = false;
+				if(it->lockNodes)
 				{
-					if (!(trucks[t]->state==ACTIVATED && i==hookId) && (nodes[hookId].AbsPosition-trucks[t]->nodes[i].AbsPosition).length()<0.4)
+					// all nodes, so walk them
+					for (int i=0; i<trucks[t]->free_node; i++)
 					{
-						lockId=&(trucks[t]->nodes[i]);
-						lockTruck = trucks[t];
-						//lockId->lockednode=1;
-						//lockId->lockedPosition=lockId->Position;
-						//lockId->lockedVelocity=lockId->Velocity;
-						//lockId->lockedForces=lockId->Forces;
-						locked=PRELOCK;
-						break;
+						// exclude this local truck and the current hooknode from the locking search
+						if(this == trucks[t] && i == it->hookNode->id)
+							continue;
+
+						// measure distance
+						if ((it->hookNode->AbsPosition - trucks[t]->nodes[i].AbsPosition).length() < mindist)
+						{
+							// we found a node, lock to it
+							it->lockNode  = &(trucks[t]->nodes[i]);
+							it->lockTruck = trucks[t];
+							it->locked    = PRELOCK;
+							found         = true; // dont check the other trucks
+							break;
+						}
+					}
+				} else
+				{
+					// we lock against ropables
+					
+					// and their ropables
+					for(std::vector <ropable_t>::iterator itr = trucks[t]->ropables.begin(); itr!=trucks[t]->ropables.end(); itr++)
+					{
+						// if the ropable is not multilock and used, then discard this ropable
+						if(!itr->multilock && itr->used)
+							continue;
+
+						// calculate the distance and record the nearest ropable
+						float dist = (it->hookNode->AbsPosition - itr->node->AbsPosition).length();
+						if (dist < mindist)
+						{
+							mindist = dist;
+							shorter = itr->node;
+							shtruck = trucks[t];
+						}
 					}
 				}
-			}
-		}
-		//we lock ropes
-		//for each rope
-		for (i=0; i<free_rope; i++)
-		{
-			float mindist=ropes[i].beam->L;
-			node_t *shorter=0;
-			Beam* shtruck=0;
-			int j,t;
-			//for each truck
-			for (t=0; t<trucksnum; t++)
-			{
-				if(!trucks[t]) continue;
-				if (trucks[t]->state==SLEEPING) continue;
-				//for each ropable
-				for (j=0; j<trucks[t]->free_ropable; j++)
+				// if we found a ropable, then lock it
+				if (shorter)
 				{
-					//cancel if this ropable is already roped (by the active truck)
-					int k;
-					int cancel=0;
-					for (k=0; k<free_rope;k++) if (ropes[k].lockedto==&(trucks[t]->nodes[trucks[t]->ropables[j]])) cancel=1;
-					if (cancel) continue;
-					float dist=(ropes[i].beam->p1->AbsPosition-trucks[t]->nodes[trucks[t]->ropables[j]].AbsPosition).length();
-					if (dist<mindist)
-					{
-						mindist=dist;
-						shorter=&(trucks[t]->nodes[trucks[t]->ropables[j]]);
-						shtruck=trucks[t];
-					};
+					// we found a ropable, lock to it
+					it->lockNode  = shorter;
+					it->lockTruck = shtruck;
+					it->locked    = PRELOCK;
+					found         = true; // dont check the other trucks
 				}
-			}
-			if (shorter!=0)
-			{
-				//okay, we have found a rope to tie
-				ropes[i].lockedto=shorter;
-				ropes[i].lockedtruck=shtruck;
-				//				shorter->lockednode=1;
-				//				shorter->lockedPosition=shorter->Position;
-				//				shorter->lockedVelocity=shorter->Velocity;
-				//				shorter->lockedForces=shorter->Forces;
-				locked=LOCKED;
+
+				if(found)
+					// if we found some lock, we wont check all other trucks
+					break;
 			}
 		}
 	}
@@ -9635,4 +9812,20 @@ int Beam::nodeBeamConnections(int nodeid)
 		if (!beams[nodebeamconnections[nodeid][ni]].disabled && !beams[nodebeamconnections[nodeid][ni]].bounded) totallivebeams++;
 	}
 	return totallivebeams;
+}
+
+bool Beam::isTied()
+{
+	for(std::vector <tie_t>::iterator it=ties.begin(); it!=ties.end();it++)
+		if(it->tied)
+			return true;
+	return false;
+}
+
+bool Beam::isLocked()
+{
+	for(std::vector <hook_t>::iterator it=hooks.begin(); it!=hooks.end();it++)
+		if(it->locked==LOCKED)
+			return true;
+	return false;
 }

@@ -689,9 +689,17 @@ void ExampleFrameListener::updateGUI(float dt)
 		else batto->setMaterialName("tracks/batt-off");
 		if (trucks[current_truck]->parkingbrake) pbrakeo->setMaterialName("tracks/pbrake-on");
 		else pbrakeo->setMaterialName("tracks/pbrake-off");
-		if (trucks[current_truck]->locked) lockedo->setMaterialName("tracks/locked-on");
-		else lockedo->setMaterialName("tracks/locked-off");
-		if (trucks[current_truck]->tied)
+		
+		// TODO: FIX
+		if (trucks[current_truck]->isLocked())
+		{
+			lockedo->setMaterialName("tracks/locked-on");
+		} else 
+		{
+			lockedo->setMaterialName("tracks/locked-off");
+		}
+		
+		if (trucks[current_truck]->isTied())
 		{
 			if (fabs(trucks[current_truck]->commandkey[0].commandValue) > 0.000001f)
 			{
@@ -701,6 +709,7 @@ void ExampleFrameListener::updateGUI(float dt)
 			}
 			else securedo->setMaterialName("tracks/secured-on");
 		}
+
 		else securedo->setMaterialName("tracks/secured-off");
 		if (!trucks[current_truck]->canwork) lopresso->setMaterialName("tracks/lopress-on");
 		else lopresso->setMaterialName("tracks/lopress-off");
@@ -3830,17 +3839,20 @@ bool ExampleFrameListener::updateEvents(float dt)
 				{
 					removeTruck(current_truck);
 				}
-
+				if (INPUTENGINE.getEventBoolValueBounce(EV_COMMON_ROPELOCK))
+				{
+					trucks[current_truck]->ropeToggle(trucks, free_truck, -1);
+				}
 				if (INPUTENGINE.getEventBoolValueBounce(EV_COMMON_LOCK))
 				{
-					trucks[current_truck]->lockToggle(trucks, free_truck);
+					trucks[current_truck]->hookToggle(trucks, free_truck, -1);
 					//SlideNodeLock
 					trucks[current_truck]->toggleSlideNodeLock(trucks, free_truck, current_truck);
 				}
 				//strap
 				if (INPUTENGINE.getEventBoolValueBounce(EV_COMMON_SECURE_LOAD))
 				{
-					trucks[current_truck]->tieToggle(trucks, free_truck);
+					trucks[current_truck]->tieToggle(trucks, free_truck, -1);
 				}
 				if (INPUTENGINE.getEventBoolValue(EV_COMMON_RESET_TRUCK) && !trucks[current_truck]->replaymode)
 				{
