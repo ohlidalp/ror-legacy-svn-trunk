@@ -65,7 +65,6 @@ along with Rigs of Rods.  If not, see <http://www.gnu.org/licenses/>.
 # include "TreeLoader2D.h"
 #endif
 
-class Caelum;
 class MapTextureCreator;
 class ColoredTextAreaOverlayElement;
 
@@ -507,8 +506,8 @@ public:
 	Ogre::Radian getCameraRotationX() { return camRotX; };
 	void netDisconnectTruck(int number);
 
-	caelum::SkyColourModel *getCaelumModel() { return mCaelumModel; };
-	caelum::CaelumSystem *getCaelumSystem() { return mCaelumSystem; };
+	Caelum::SkyColourModel *getCaelumModel() { return mCaelumModel; };
+	Caelum::CaelumSystem *getCaelumSystem() { return mCaelumSystem; };
 
 	static float getGravity() { return gravity; };
 	static void setGravity(float value);
@@ -518,10 +517,10 @@ public:
 	void shutdown_final();
 
 	// Caelum system
-	caelum::CaelumSystem *mCaelumSystem;
+	Caelum::CaelumSystem *mCaelumSystem;
 	// Caelum model
-	caelum::SkyColourModel *mCaelumModel;
-	//caelum maps?
+	Caelum::SkyColourModel *mCaelumModel;
+	//Caelum maps?
 
 	Water *w;
 protected:

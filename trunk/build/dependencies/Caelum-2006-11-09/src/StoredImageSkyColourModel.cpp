@@ -1,6 +1,6 @@
 #include "StoredImageSkyColourModel.h"
 
-namespace caelum {
+namespace Caelum {
 
 StoredImageSkyColourModel::StoredImageSkyColourModel () {
 	mFogColourMap = 0;
@@ -77,4 +77,4 @@ Ogre::ColourValue StoredImageSkyColourModel::getInterpolatedColour (float x, flo
 	return cf;
 }
 
-} // namespace caelum
+} // namespace Caelum

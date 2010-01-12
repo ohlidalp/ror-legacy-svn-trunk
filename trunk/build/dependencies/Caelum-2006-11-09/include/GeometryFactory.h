@@ -3,9 +3,9 @@
 
 #include "CaelumPrerequisites.h"
 
-namespace caelum {
+namespace Caelum {
 
-/** A constructor for a number of caelum geometric objects.
+/** A constructor for a number of Caelum geometric objects.
 	@author Jesús Alonso Abad.
 	@version 0.1
  */
@@ -42,6 +42,6 @@ class DllExport GeometryFactory {
 		static void fillStarfieldDomeBuffers (float *pVertex, unsigned short *pIndices, unsigned int segments);
 };
 
-} // namespace caelum
+} // namespace Caelum
 
 #endif //GEOMETRYFACTORY_H

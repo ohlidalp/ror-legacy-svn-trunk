@@ -3,7 +3,7 @@
 
 #include "CaelumPrerequisites.h"
 
-namespace caelum {
+namespace Caelum {
 
 /** Class representing the sun.
 	It calculates the sun light direction, position, colour...
@@ -99,6 +99,6 @@ class DllExport Sun : public Ogre::RenderTargetListener {
 		void createSunMaterial ();
 };
 
-} // namespace caelum
+} // namespace Caelum
 
 #endif //SUN_H

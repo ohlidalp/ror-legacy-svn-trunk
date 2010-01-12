@@ -1,6 +1,6 @@
 #include "Sun.h"
 
-namespace caelum {
+namespace Caelum {
 
 const Ogre::String Sun::SUN_MATERIAL_NAME = "CaelumSunMaterial";
 
@@ -112,4 +112,4 @@ void Sun::createSunMaterial () {
 	mSunMaterial = mat;
 }
 
-} // namespace caelum
+} // namespace Caelum

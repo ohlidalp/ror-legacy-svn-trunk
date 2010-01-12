@@ -3,7 +3,7 @@
 
 #include "CaelumPrerequisites.h"
 
-namespace caelum {
+namespace Caelum {
 
 /** Sky colour model interface.
 	@author Jesús Alonso Abad
@@ -49,6 +49,6 @@ class DllExport SkyColourModel {
 
 };
 
-} // namespace caelum
+} // namespace Caelum
 
 #endif //SKYCOLOURMODEL_H

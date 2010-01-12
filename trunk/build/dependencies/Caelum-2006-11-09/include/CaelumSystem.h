@@ -9,7 +9,7 @@
 #include "Starfield.h"
 #include "Sun.h"
 
-namespace caelum {
+namespace Caelum {
 
 /** Root of the Caelum system.
 	This class is the root of the Caelum system.
@@ -260,6 +260,6 @@ class DllExport CaelumSystem : public Ogre::FrameListener {
 		void updateSkyDomeMaterialTime ();
 };
 
-} // namespace caelum
+} // namespace Caelum
 
 #endif //CAELUMSYSTEM_H

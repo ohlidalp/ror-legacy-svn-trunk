@@ -172,7 +172,7 @@ char terrainoriginalmaterial[100];
 bool shutdownall=false;
 bool caelum_mapped=false;
 
-class TerrainUpdater : public caelum::CaelumListener {
+class TerrainUpdater : public Caelum::CaelumListener {
 private:
 	int state;
 	char pname[100];
@@ -184,11 +184,11 @@ public:
 		mefl=efl;
 		state=-1;
 	}
-	bool caelumStarted (const Ogre::FrameEvent &e, caelum::CaelumSystem *sys)
+	bool caelumStarted (const Ogre::FrameEvent &e, Caelum::CaelumSystem *sys)
 	{
 		if (shutdownall) return true;
 
-		// disable caelum in menu's, etc
+		// disable Caelum in menu's, etc
 		if(mefl->getLoadingState() != ALL_LOADED)
 			return true;
 
@@ -4906,7 +4906,7 @@ void ExampleFrameListener::loadTerrain(String terrainfile)
 		//fscanf(fd," %[^\n\r]",line);
 		ds->readLine(line, 1023);
 	};
-	//caelum maps
+	//Caelum maps
 	if (!strncmp(line,"caelum", 6))
 	{
 		caelum_mapped=true;
@@ -4996,7 +4996,7 @@ void ExampleFrameListener::loadTerrain(String terrainfile)
 
 
 		/*
-		// we have caelum, no need for another light
+		// we have Caelum, no need for another light
 		mSceneMgr->setAmbientLight(ColourValue(0.3, 0.3, 0.3));
 		Light* l = mSceneMgr->createLight("Dir");
 		l->setType(Light::LT_DIRECTIONAL);
@@ -5109,7 +5109,7 @@ void ExampleFrameListener::loadTerrain(String terrainfile)
 
 	float fogstart = 0;
 
-	//caelum skies
+	//Caelum skies
 	if (SETTINGS.getSetting("Sky effects")=="Caelum (best looking, slower)")
 	{
 		//mCamera->setNearClipDistance (0.01);
@@ -5117,13 +5117,13 @@ void ExampleFrameListener::loadTerrain(String terrainfile)
 
 		// Initialise Caelum
 		ResourceGroupManager::getSingleton ().createResourceGroup ("Caelum");
-		mCaelumSystem = new caelum::CaelumSystem (mRoot, mSceneMgr);
+		mCaelumSystem = new Caelum::CaelumSystem (mRoot, mSceneMgr);
 		mCaelumSystem->getSun ()->setInclination (Degree (13));
 
 		// Create and configure the sky colours model to use
-		mCaelumModel = new caelum::StoredImageSkyColourModel ();
+		mCaelumModel = new Caelum::StoredImageSkyColourModel ();
 		mCaelumSystem->setSkyColourModel (mCaelumModel);	// Call this before changing the gradients image!!
-		static_cast<caelum::StoredImageSkyColourModel *>(mCaelumModel)->setSkyGradientsImage ("EarthClearSky.png");
+		static_cast<Caelum::StoredImageSkyColourModel *>(mCaelumModel)->setSkyGradientsImage ("EarthClearSky.png");
 
 
 //		Real fogdensity = 0.005;
@@ -5135,19 +5135,19 @@ void ExampleFrameListener::loadTerrain(String terrainfile)
 		{
 			fogmode=1;
 			mCaelumSystem->setManageFog(true);
-			static_cast<caelum::StoredImageSkyColourModel *>(mCaelumModel)->setFogColoursImage ("EarthClearSkyFog.png");
-			static_cast<caelum::StoredImageSkyColourModel *>(mCaelumModel)->setFogDensity (fogdensity);
+			static_cast<Caelum::StoredImageSkyColourModel *>(mCaelumModel)->setFogColoursImage ("EarthClearSkyFog.png");
+			static_cast<Caelum::StoredImageSkyColourModel *>(mCaelumModel)->setFogDensity (fogdensity);
 		}
 		else
 		{
 			fogmode=2;
 			mCaelumSystem->setManageFog(true);
-			static_cast<caelum::StoredImageSkyColourModel *>(mCaelumModel)->setFogColoursImage ("EarthClearSkyFog.png");
-			static_cast<caelum::StoredImageSkyColourModel *>(mCaelumModel)->setFogDensity(0);
+			static_cast<Caelum::StoredImageSkyColourModel *>(mCaelumModel)->setFogColoursImage ("EarthClearSkyFog.png");
+			static_cast<Caelum::StoredImageSkyColourModel *>(mCaelumModel)->setFogDensity(0);
 		}
 
 		// Create a sky dome
-		caelum::SkyDome *dome = mCaelumSystem->createSkyDome ();
+		Caelum::SkyDome *dome = mCaelumSystem->createSkyDome ();
 		dome->setSize(farclip);
 
 		// Create a starfield
@@ -6144,7 +6144,7 @@ void ExampleFrameListener::loadTerrain(String terrainfile)
 
 	//okay, taking a picture of the scene for the envmap
 	// SAY CHEESE!
-	//no, not yet, caelum is not ready!
+	//no, not yet, Caelum is not ready!
 	//if (envmap) envmap->update(Vector3(terrainxsize/2.0, hfinder->getHeightAt(terrainxsize/2.0, terrainzsize/2.0)+50.0, terrainzsize/2.0));
 
 #if OGRE_VERSION>0x010602
