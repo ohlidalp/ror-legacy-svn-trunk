@@ -9492,10 +9492,18 @@ void Beam::beaconsToggle()
 		{
 			props[i].light[0]->setVisible(beacon && enableLight);
 			props[i].bbsnode[0]->setVisible(beacon);
+			if(props[i].bbs[0] && beacon && !props[i].bbsnode[0]->numAttachedObjects())
+				props[i].bbsnode[0]->attachObject(props[i].bbs[0]);
+			else if(props[i].bbs[0] && !beacon)
+				props[i].bbsnode[0]->detachAllObjects();
 		}
 		else if (props[i].beacontype=='R' || props[i].beacontype=='L')
 		{
 			props[i].bbsnode[0]->setVisible(beacon);
+			if(props[i].bbs[0] && beacon && !props[i].bbsnode[0]->numAttachedObjects())
+				props[i].bbsnode[0]->attachObject(props[i].bbs[0]);
+			else if(props[i].bbs[0] && !beacon)
+				props[i].bbsnode[0]->detachAllObjects();
 		}
 		else if (props[i].beacontype=='p')
 		{
@@ -9503,6 +9511,10 @@ void Beam::beaconsToggle()
 			{
 				props[i].light[k]->setVisible(beacon && enableLight);
 				props[i].bbsnode[k]->setVisible(beacon);
+				if(props[i].bbs[k] && beacon && !props[i].bbsnode[k]->numAttachedObjects())
+					props[i].bbsnode[k]->attachObject(props[i].bbs[k]);
+				else if(props[i].bbs[k] && !beacon)
+					props[i].bbsnode[k]->detachAllObjects();
 			}
 		} else
 		{
@@ -9510,6 +9522,10 @@ void Beam::beaconsToggle()
 			{
 				if(props[i].light[k])props[i].light[k]->setVisible(beacon && enableLight);
 				if(props[i].bbsnode[k])props[i].bbsnode[k]->setVisible(beacon);
+				if(props[i].bbs[k] && beacon && !props[i].bbsnode[k]->numAttachedObjects())
+					props[i].bbsnode[k]->attachObject(props[i].bbs[k]);
+				else if(props[i].bbs[k] && !beacon)
+					props[i].bbsnode[k]->detachAllObjects();
 			}
 		}
 	}
