@@ -61,8 +61,8 @@ ${Index_RemoveFilesAndSubDirs}-done:
 
 ; HM NIS Edit Wizard helper defines
 !define PRODUCT_NAME "Rigs of Rods"
-!define PRODUCT_VERSION "0.36.2"
-!define PRODUCT_PUBLISHER "Pierre-Michel Ricordel"
+!define PRODUCT_VERSION "0.36.3"
+!define PRODUCT_PUBLISHER "Rigs of Rods Team"
 !define PRODUCT_WEB_SITE "http://www.rigsofrods.com"
 !define PRODUCT_UNINST_KEY "Software\Microsoft\Windows\CurrentVersion\Uninstall\${PRODUCT_NAME}"
 !define PRODUCT_UNINST_ROOT_KEY "HKLM"
@@ -200,12 +200,17 @@ FunctionEnd
 
 Function InstallVisualStudioRuntime
 	InitPluginsDir
-	File /oname=$PLUGINSDIR\vcredist_x86.exe "vcredist_x86.exe"
+	File /oname=$PLUGINSDIR\VCCRT4.msi "VCCRT4.msi"
 	Banner::show /NOUNLOAD "Installing Visual Studio Runtime"
-	ExecWait "vcredist_x86.exe /q"
-	Delete $PLUGINSDIR\vcredist_x86.exe
+	ExecWait '"msiexec" /i "VCCRT4.msi"'
+	Delete $PLUGINSDIR\VCCRT4.msi
 	Banner::destroy
 FunctionEnd
+
+Section -Prerequisites
+	Call InstallDirectX
+	Call InstallVisualStudioRuntime
+SectionEnd
 
 Function UninstallOld
     ReadRegStr $R0 HKCU "Software\RigsOfRods\" "directory"
@@ -239,11 +244,6 @@ Function .onInit
     Call UninstallOld
 FunctionEnd
 
-Section "Required Tools" SEC01
-	Call InstallDirectX
-	Call InstallVisualStudioRuntime
-SectionEnd
-
 Section "!RoR" SEC02
 	SetOutPath "$INSTDIR"
 	SetOverwrite try
@@ -257,7 +257,7 @@ Section "!RoR" SEC02
 	#File ..\..\doc\keysheet.pdf
 	#File "..\..\doc\Things you can do in Rigs of Rods.pdf"
 	; data
-	File /r /x .svn ..\..\..\test\current\*
+	File /r /x installerfiles\*
 
 SectionEnd
 
