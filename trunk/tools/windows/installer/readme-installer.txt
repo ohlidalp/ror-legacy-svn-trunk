@@ -1,5 +1,5 @@
-Copyright 2005,2006,2007,2008,2009 Pierre-Michel Ricordel
-Copyright 2007,2008,2009 Thomas Fischer
+Copyright 2005,2006,2007,2008,2009,2010 Pierre-Michel Ricordel
+Copyright 2007,2008,2009,2010 Thomas Fischer
 
 For more information, see http://www.rigsofrods.com/
 
