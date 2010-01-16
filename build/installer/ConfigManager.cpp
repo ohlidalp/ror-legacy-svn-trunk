@@ -73,14 +73,14 @@ int ConfigManager::getOnlineStreams()
 	int res = wsdl->downloadAdvancedConfigFile("wsync.rigsofrods.com", "/streams.index", olist);
 	if(res == -1)
 	{
-		wxMessageBox("error creating tempfile for download", _T("Error"), wxICON_ERROR | wxOK);
+		wxMessageBox(_T("error creating tempfile for download"), _T("Error"), wxICON_ERROR | wxOK);
 	} else if (res == -2)
 	{
 		std::string errorMsg;// = w->getLastError();
-		wxMessageBox("error downloading file:\n"+errorMsg, _T("Error"), wxICON_ERROR | wxOK);
+		wxMessageBox(_T("error downloading file:\n")/*+errorMsg*/, _T("Error"), wxICON_ERROR | wxOK);
 	} else if (res == -3)
 	{
-		wxMessageBox("unable to open local file for reading", _T("Error"), wxICON_ERROR | wxOK);
+		wxMessageBox(_T("unable to open local file for reading"), _T("Error"), wxICON_ERROR | wxOK);
 	}
 	delete wsdl;
 	
@@ -190,7 +190,7 @@ int ConfigManager::uninstall(bool deleteUserFolder)
 	wxString ipath = getInstallationPath();
 	if(ipath.empty())
 	{
-		wxMessageBox("Installation Path empty?!", _T("Error"), wxICON_ERROR | wxOK);
+		wxMessageBox(_T("Installation Path empty?!"), _T("Error"), wxICON_ERROR | wxOK);
 		return 1;
 	}
 
@@ -215,12 +215,12 @@ int ConfigManager::uninstall(bool deleteUserFolder)
 	wxString startmenuDir, desktopDir, workingDirectory = ipath, desktopLink;
 	if(!SHGetSpecialFolderPath(0, wxStringBuffer(startmenuDir, MAX_PATH), CSIDL_COMMON_PROGRAMS, FALSE))
 	{
-		wxMessageBox("Error getting Startmenu directory", _T("Error"), wxICON_ERROR | wxOK);
+		wxMessageBox(_T("Error getting Startmenu directory"), _T("Error"), wxICON_ERROR | wxOK);
 		return 8;
 	}
 	if(!SHGetSpecialFolderPath(0, wxStringBuffer(desktopDir, MAX_PATH), CSIDL_DESKTOP, FALSE))
 	{
-		wxMessageBox("Error getting Desktop directory", _T("Error"), wxICON_ERROR | wxOK);
+		wxMessageBox(_T("Error getting Desktop directory"), _T("Error"), wxICON_ERROR | wxOK);
 		return 9;
 	}
 
