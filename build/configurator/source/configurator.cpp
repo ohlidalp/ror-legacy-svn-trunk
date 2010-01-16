@@ -348,7 +348,8 @@ protected:
 	std::string selectedEvent;
 	std::string selectedType;
 	std::string selectedOption;
-	wxComboBox *cbe, *cbi;
+	wxListBox *cbe;
+	wxRadioBox *cbi;
 
 	bool loadEventListing()
 	{
@@ -365,7 +366,7 @@ protected:
 	}
 
 public:
-	KeyAddDialog(MyDialog *_dlg) : wxDialog(NULL, wxID_ANY, wxString(), wxDefaultPosition, wxSize(400,200), wxSTAY_ON_TOP|wxDOUBLE_BORDER|wxCLOSE_BOX), dlg(_dlg)
+	KeyAddDialog(MyDialog *_dlg) : wxDialog(NULL, wxID_ANY, wxString(), wxDefaultPosition, wxSize(400,400), wxSTAY_ON_TOP|wxDOUBLE_BORDER|wxCLOSE_BOX), dlg(_dlg)
 	{
 		selectedEvent="";
 		selectedType="";
@@ -373,7 +374,10 @@ public:
 		//wxString configpath=_dlg->app->UserPath+wxFileName::GetPathSeparator()+_T("config")+wxFileName::GetPathSeparator();
 		loadEventListing(); //configpath.ToUTF8().data());
 
-		wxStaticText *text = new wxStaticText(this, 4, _("Event Name: "), wxPoint(5,5), wxSize(70, 25));
+		desctext = new wxStaticText(this, wxID_ANY, _("Please select an input event."), wxPoint(5,5), wxSize(380, 30), wxST_NO_AUTORESIZE);
+		desctext->Wrap(380);
+
+		wxStaticText *text = new wxStaticText(this, 4, _("Event Name: "), wxPoint(5,35), wxSize(70, 25));
 		wxString eventChoices[MAX_EVENTS];
 		std::map<std::string, std::string>::iterator it;
 		int counter=0;
@@ -383,25 +387,23 @@ public:
 				break;
 			eventChoices[counter] = conv(it->first);
 		}
-		cbe = new wxComboBox(this, 1, _("Keyboard"), wxPoint(80,5), wxSize(300, 25), counter, eventChoices, wxCB_READONLY);
+//		cbe = new wxComboBox(this, 1, _("Keyboard"), wxPoint(80,35), wxSize(300, 25), counter, eventChoices, wxCB_READONLY);
+		cbe = new wxListBox(this, 1, wxPoint(80,35), wxSize(300, 270), counter, eventChoices, wxLB_SINGLE);
 		cbe->SetSelection(0);
 
-
-		desctext = new wxStaticText(this, wxID_ANY, _("Please select an input event."), wxPoint(5,35), wxSize(380, 80), wxST_NO_AUTORESIZE);
-		desctext->Wrap(380);
-
-
-		text = new wxStaticText(this, wxID_ANY, _("Input Type: "), wxPoint(5,120), wxSize(70,25));
+//		text = new wxStaticText(this, wxID_ANY, _("Input Type: "), wxPoint(5,120), wxSize(70,25));
 		wxString ch[3];
 		ch[0] = conv("Keyboard");
 		ch[1] = conv("JoystickAxis");
 		ch[2] = conv("JoystickButton");
-		cbi = new wxComboBox(this, wxID_ANY, _("Keyboard"), wxPoint(80,120), wxSize(300, 25), 3, ch, wxCB_READONLY);
+//		cbi = new wxComboBox(this, wxID_ANY, _("Keyboard"), wxPoint(80,120), wxSize(300, 25), 3, ch, wxCB_READONLY);
+		cbi=new wxRadioBox(this, wxID_ANY, _("Input Type: "),  wxPoint(5,310), wxSize(380,45), 3, ch);
+		cbi->SetSelection(0);
 
-		wxButton *btnOK = new wxButton(this, 2, _("Add"), wxPoint(5,165), wxSize(190,25));
+		wxButton *btnOK = new wxButton(this, 2, _("Add"), wxPoint(5,365), wxSize(190,25));
 		btnOK->SetToolTip(wxString(_("Add the key")));
 
-		wxButton *btnCancel = new wxButton(this, 3, _("Cancel"), wxPoint(200,165), wxSize(190,25));
+		wxButton *btnCancel = new wxButton(this, 3, _("Cancel"), wxPoint(200,365), wxSize(190,25));
 		btnCancel->SetToolTip(wxString(_("close this dialog")));
 
 		//SetBackgroundColour(wxColour("white"));
@@ -410,14 +412,14 @@ public:
 
 	void onChangeEventComboBox(wxCommandEvent& event)
 	{
-		std::string s = inputevents[conv(cbe->GetValue())];
+		std::string s = inputevents[conv(cbe->GetStringSelection())];
 		desctext->SetLabel(_("Event Description: ") + conv(s));
-		selectedEvent = conv(cbe->GetValue());
+		selectedEvent = conv(cbe->GetStringSelection());
 	}
 
 	void onChangeTypeComboBox(wxCommandEvent& event)
 	{
-		selectedType = conv(cbi->GetValue());
+		selectedType = conv(cbi->GetStringSelection());
 	}
 	void onButCancel(wxCommandEvent& event)
 	{
@@ -425,8 +427,8 @@ public:
 	}
 	void onButOK(wxCommandEvent& event)
 	{
-		selectedEvent = conv(cbe->GetValue());
-		selectedType = conv(cbi->GetValue());
+		selectedEvent = conv(cbe->GetStringSelection());
+		selectedType = conv(cbi->GetStringSelection());
 		// add some dummy values
 		if(conv(selectedType) == conv("Keyboard"))
 			selectedOption="";
@@ -1036,7 +1038,8 @@ BEGIN_EVENT_TABLE(KeySelectDialog, wxDialog)
 END_EVENT_TABLE()
 
 BEGIN_EVENT_TABLE(KeyAddDialog, wxDialog)
-	EVT_COMBOBOX(1, KeyAddDialog::onChangeEventComboBox)
+//	EVT_COMBOBOX(1, KeyAddDialog::onChangeEventComboBox)
+	EVT_LISTBOX(1, KeyAddDialog::onChangeEventComboBox)
 	EVT_BUTTON(2, KeyAddDialog::onButOK)
 	EVT_BUTTON(3, KeyAddDialog::onButCancel)
 	EVT_COMBOBOX(4, KeyAddDialog::onChangeTypeComboBox)
