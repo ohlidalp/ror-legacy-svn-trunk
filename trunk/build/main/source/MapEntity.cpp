@@ -28,7 +28,7 @@ MapEntity::MapEntity(MapControl *ctrl, Ogre::String type, MyGUI::StaticImagePtr 
 	initialiseByAttributes(this, _parent);
 
 	if (mIcon) mIconRotating = mIcon->getSubWidgetMain()->castType<MyGUI::RotatingSkin>(false);
-	mIconRotating = nullptr;
+	else mIconRotating = nullptr;
 
 	mMapControl = ctrl;
 	mParent = _parent;
