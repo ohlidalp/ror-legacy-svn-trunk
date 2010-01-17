@@ -108,6 +108,8 @@ along with Rigs of Rods.  If not, see <http://www.gnu.org/licenses/>.
 #endif
 
 #include "MapControl.h"
+#include "MapTextureCreator.h"
+#include "MapEntity.h"
 #include <OgreFontManager.h>
 #include "language.h"
 #include "errorutils.h"
@@ -2558,15 +2560,7 @@ void ExampleFrameListener::loadObject(const char* name, float px, float py, floa
 				e->setVisibility(true);
 				e->setPosition(px, pz);
 				e->setRotation(ry);
-				if(typestr == String("road")) //how can this be possible ?!?
-				{
-					e->setScale(0.5);
-					e->setMinSize(5);
-				} else
-				{
-					e->setScale(1);
-					e->setMinSize(10);
-				}
+
 				if(String(name) != String(""))
 					e->setDescription(String(instancename));
 			}
@@ -4223,16 +4217,16 @@ bool ExampleFrameListener::updateEvents(float dt)
 		{
 			mSceneDetailIndex = (mSceneDetailIndex+1)%3 ;
 			switch(mSceneDetailIndex) {
-				case 0 : mCamera->setPolygonMode(PM_SOLID) ; break ;
-				case 1 : mCamera->setPolygonMode(PM_WIREFRAME) ; break ;
-				case 2 : mCamera->setPolygonMode(PM_POINTS) ; break ;
+				case 0 : mCamera->setPolygonMode(Ogre::PM_SOLID) ; break ;
+				case 1 : mCamera->setPolygonMode(Ogre::PM_WIREFRAME) ; break ;
+				case 2 : mCamera->setPolygonMode(Ogre::PM_POINTS) ; break ;
 			}
 			if(mtc && interactivemap)
 			{
 				switch(mSceneDetailIndex) {
-					case 0 : mtc->setCameraMode(PM_SOLID) ; break ;
-					case 1 : mtc->setCameraMode(PM_WIREFRAME) ; break ;
-					case 2 : mtc->setCameraMode(PM_POINTS) ; break ;
+					case 0 : mtc->setCameraMode(Ogre::PM_SOLID) ; break ;
+					case 1 : mtc->setCameraMode(Ogre::PM_WIREFRAME) ; break ;
+					case 2 : mtc->setCameraMode(Ogre::PM_POINTS) ; break ;
 				}
 				mtc->update();
 
@@ -4584,12 +4578,12 @@ bool ExampleFrameListener::updateEvents(float dt)
 				mtc->setCamZoom(((mapsizex+mapsizez)/2)*0.5); // zoom that fits 1:1 to the map
 				mtc->setCamPosition(Vector3(mapsizex/2, hfinder->getHeightAt(mapsizex/2, mapsizez/2) , mapsizez/2), Quaternion(Degree(0), Vector3::UNIT_X));
 				mtc->update();
-				bigMap->setEntityVisibility(true);
+				bigMap->setEntitiesVisibility(true);
 				LogManager::getSingleton().logMessage("disabled interactive Map");
 			} else
 			{
 				mtc->setCamZoom(30); // zoom very near
-				bigMap->setEntityVisibility(false);
+				bigMap->setEntitiesVisibility(false);
 				interactivemap=1;
 				LogManager::getSingleton().logMessage("enabled interactive Map");
 			}
@@ -5631,7 +5625,7 @@ void ExampleFrameListener::loadTerrain(String terrainfile)
 		mtc->setCamPosition(Vector3(mapsizex/2, hfinder->getHeightAt(mapsizex/2, mapsizez/2) , mapsizez/2), Quaternion(Degree(0), Vector3::UNIT_X));
 		mtc->setAutoUpdated(false); // important!
 		bigMap->setVisibility(false);
-		bigMap->setMTC(mtc);
+		bigMap->setMapTexture(mtc->getRTName());
 	}
 
 	// fix the person starting position
@@ -6553,7 +6547,7 @@ void ExampleFrameListener::setCurrentTruck(int v)
 		{
 			// 2 = disabled normally, enabled for car
 			interactivemap = 0;
-			bigMap->setEntityVisibility(true);
+			bigMap->setEntitiesVisibility(true);
 		}
 
 		//getting outside
@@ -6619,7 +6613,7 @@ void ExampleFrameListener::setCurrentTruck(int v)
 			else if(interactivemap == 1 && trucks[current_truck]->dynamicMapMode == 2)
 				interactivemap = 3;
 			mtc->setCamZoom(30);
-			bigMap->setEntityVisibility(false);
+			bigMap->setEntitiesVisibility(false);
 		}
 
 		// show minimap and put it into lower left corner
