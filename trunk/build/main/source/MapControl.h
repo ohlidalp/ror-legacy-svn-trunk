@@ -18,112 +18,27 @@ You should have received a copy of the GNU General Public License
 along with Rigs of Rods.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-#ifndef MAPCONTROL_H_
-#define MAPCONTROL_H_
-
-//#define OGREPLUGIN
+#ifndef __MAP_CONTROL_H__
+#define __MAP_CONTROL_H__
 
 #include <Ogre.h>
 #include "OgreTextAreaOverlayElement.h"
 #include <vector>
 #include <MyGUI.h>
+#include <BaseLayout.h>
 
-#define MAX_MAP_ENTITYSTATES 4
-
-enum {MAP_DYNAMIC_ACTIVE, MAP_DYNAMIC_INACTIVE, MAP_DYNAMIC_NETWORKED};
-
-class MapControl;
 class MapEntity;
-class MapTextureCreator;
-class ExampleFrameListener;
 
-class MapTextureCreator : public Ogre::RenderTargetListener
-{
-public:
-	MapTextureCreator(Ogre::SceneManager *smgr, Ogre::Camera *mainCam, ExampleFrameListener *efl);
-	Ogre::String getMaterialName();
-	Ogre::String getRTName();
-	void setAutoUpdated(bool value);
-	void update();
-	void setCamPosition(Ogre::Vector3 pos, Ogre::Quaternion direction);
-	void setCameraMode(Ogre::PolygonMode pm);
-	void setStaticGeometry(Ogre::StaticGeometry *geo);
-	void setCamZoom(float newzoom);
-	void setCamZoomRel(float zoomdelta);
-	void setTranlucency(float amount);
-	Ogre::Camera *getCamera() { return mainCam; };
-protected:
-	void preRenderTargetUpdate(const Ogre::RenderTargetEvent& evt);
-    void postRenderTargetUpdate(const Ogre::RenderTargetEvent& evt);
-	void setFogVisible(bool value);
-	static int counter;
-	float zoom;
-	Ogre::Vector3 campos;
-	Ogre::Quaternion camdir;
-	Ogre::Viewport *v;
-	Ogre::StaticGeometry *statics;
-	Ogre::Camera *mainCam;
-	Ogre::SceneManager *smgr;
-	Ogre::Camera *mCamera;
-	Ogre::RenderTarget *rttTex;
-	Ogre::MaterialPtr mat;
-	Ogre::TextureUnitState* tex;
-	ExampleFrameListener *mefl;
-	void init();
-};
-
-class MapEntity
-{
-public:
-	MapEntity(MapControl *ctrl, int uid, Ogre::String type, MyGUI::StaticImagePtr parent);
-	~MapEntity();
-	void setPosition(Ogre::Vector3 pos);
-	void setPosition(float x, float z);
-	void setRotation(Ogre::Quaternion q);
-	void setRotation(float r);
-	void setRotation(Ogre::Radian r);
-	bool getVisibility();
-	void setVisibility(bool value);
-	void onTop();
-
-	void setState(int state);
-	int getState();
-
-	float getScale() { return scale; };
-	void setScale(float value) { scale=value; };
-
-	float getMinSize() { return minsize; };
-	void setMinSize(float value) { minsize=value; };
-
-	static Ogre::String entityStates[MAX_MAP_ENTITYSTATES];
-	void update();
-	void setDescription(Ogre::String s);
-	Ogre::String getDescription();
-	int getUID() { return this->uid; };
-
-protected:
-	MyGUI::StaticImagePtr parent;
-	MyGUI::StaticTextPtr txt;
-	MyGUI::StaticImagePtr icon;
-	Ogre::String myType;
-	Ogre::String myDescription;
-	Ogre::MaterialPtr myMaterials[MAX_MAP_ENTITYSTATES];
-	Ogre::Real x, z, tw, th, r;
-	int mapsizex, mapsizez;
-	MapControl *mapCtrl;
-	int uid;
-	int myState;
-	float scale;
-	float minsize;
-	bool isStatic;
-	void init();
-};
-
-class MapControl
+ATTRIBUTE_CLASS_LAYOUT(MapControl, "MapControl.layout");
+class MapControl :
+	public wraps::BaseLayout
 {
 public:
 	MapControl(int mapsizex, int mapsizez);
 	~MapControl();
+
+	void setMapTexture(Ogre::String _name);
+
 	MapEntity *createNamedMapEntity(Ogre::String name, Ogre::String type);
 	MapEntity *createMapEntity(Ogre::String type);
 	MapEntity *getEntityByName(Ogre::String name);
@@ -138,32 +53,27 @@ public:
 	void updateRenderMetrics(Ogre::RenderWindow* win);
 
 	static Ogre::String getTypeByDriveable(int driveable);
-	float getAlpha() { return alpha; };
+	float getAlpha() { return mAlpha; }
 	void setAlpha(float value);
-	void setEntityVisibility(bool value);
+	void setEntitiesVisibility(bool value);
 	void setWorldSize(int x, int z);
-	void setMTC(MapTextureCreator *mtc);
-	Ogre::Vector2 getMapSize(){ return Ogre::Vector2(mapsizex, mapsizez);};
-	float getWindowScale() { return myScale; };
+	Ogre::Vector2 getMapSize(){ return Ogre::Vector2(mapsizex, mapsizez); }
+	float getWindowScale() { return myScale; }
+
 protected:
-	int uniqueCounter;
-	bool bgInitiated;
-	Ogre::MaterialPtr bgMat;
-	static int mapcounter;
-	std::vector<MapEntity *> mapEntities;
-	std::map<Ogre::String, MapEntity *> namedEntities;
+	ATTRIBUTE_FIELD_WIDGET_NAME(MapControl, mMapTexture, "mMapTexture");
+	MyGUI::StaticImage* mMapTexture;
+
+	std::vector<MapEntity *> mMapEntities;
+	std::map<Ogre::String, MapEntity *> mNamedEntities;
 	int mapsizex, mapsizez;
 	float x,y,w,h, myScale;
-	float alpha;
+	float mAlpha;
 	unsigned int rWinWidth, rWinHeight, rWinDepth;
 	int rWinLeft, rWinTop;
 
 	void updateEntityPositions();
-	MapTextureCreator *mtc;
 
-	// windowing
-	MyGUI::StaticImagePtr si;
 };
 
-
-#endif
+#endif // __MAP_CONTROL_H__

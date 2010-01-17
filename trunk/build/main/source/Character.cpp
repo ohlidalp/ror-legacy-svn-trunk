@@ -24,6 +24,7 @@ along with Rigs of Rods.  If not, see <http://www.gnu.org/licenses/>.
 #include "collisions.h"
 #include "heightfinder.h"
 #include "MapControl.h"
+#include "MapEntity.h"
 #include "InputEngine.h"
 #include "network.h"
 #include "NetworkStreamManager.h"

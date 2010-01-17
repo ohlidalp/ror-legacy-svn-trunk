@@ -108,7 +108,7 @@ void GUI_Loader::setup(RenderWindow *_rw, Camera *camera)
 	btnCancel->eventMouseButtonClick = MyGUI::newDelegate(this, &GUI_Loader::event_btnCancel_MouseButtonClick);
 	btnSearch->eventMouseButtonClick = MyGUI::newDelegate(this, &GUI_Loader::event_btnCancel_MouseButtonClick);
 	//window->eventWindowButtonPressed = MyGUI::newDelegate(this, &GUI_Loader::notifyWindowPressed);
-	combobox->eventComboAccept = MyGUI::newDelegate(this, &GUI_Loader::event_combobox_eventComboAccept);
+	combobox->eventComboChangePosition = MyGUI::newDelegate(this, &GUI_Loader::event_combobox_eventComboAccept);
 	list->eventListChangePosition = MyGUI::newDelegate(this, &GUI_Loader::event_list_eventListChangePosition);
 
 	window->eventKeyButtonPressed = MyGUI::newDelegate(this, &GUI_Loader::event_window_eventKeyButtonPressed); 
