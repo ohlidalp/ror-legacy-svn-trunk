@@ -589,7 +589,7 @@ void Character::receiveStreamData(unsigned int &type, int &source, unsigned int 
 
 void Character::updateNetLabelSize()
 {
-	if (!net || !netMT || !netMT->isVisible()) return;
+	if (!this || !net || !netMT || !netMT->isVisible()) return;
 
 	Vector3 vdir = personode->getPosition() - mCamera->getPosition();
 	float vlen=vdir.length();
