@@ -985,6 +985,9 @@ protected:
 	SceneNode *simpleSkeletonNode;
 	std::vector<Ogre::String> truckconfig;
 
+	std::vector<Ogre::SceneNode*> deletion_sceneNodes;
+	std::vector<Ogre::MovableObject *> deletion_Objects;
+
 	Vector3 position;
 	Vector3 lastposition;
 	Vector3 lastlastposition;
