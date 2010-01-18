@@ -295,7 +295,9 @@ Beam::~Beam()
 
 }
 
-Beam::Beam(int tnum, SceneManager *manager, SceneNode *parent, RenderWindow* win, Network *_net, float *_mapsizex, float *_mapsizez, Real px, Real py, Real pz, Quaternion rot, const char* fname, Collisions *icollisions, HeightFinder *mfinder, Water *w, Camera *pcam, Mirrors *mmirror, bool networked, bool networking, collision_box_t *spawnbox, bool ismachine, int _flaresMode, std::vector<Ogre::String> *_truckconfig, SkinPtr skin, bool freeposition) : deleting(false)
+Beam::Beam(int tnum, SceneManager *manager, SceneNode *parent, RenderWindow* win, Network *_net, float *_mapsizex, float *_mapsizez, Real px, Real py, Real pz, Quaternion rot, const char* fname, Collisions *icollisions, HeightFinder *mfinder, Water *w, Camera *pcam, Mirrors *mmirror, bool networked, bool networking, collision_box_t *spawnbox, bool ismachine, int _flaresMode, std::vector<Ogre::String> *_truckconfig, SkinPtr skin, bool freeposition) : \
+	deleting(false),
+	driverSeat(0)
 {
 	net=_net;
 	if(net && !networking) networking = true; // enable networking if some network class is existing
@@ -304,7 +306,6 @@ Beam::Beam(int tnum, SceneManager *manager, SceneNode *parent, RenderWindow* win
 	networkAuthlevel = 0;
 	beambreakdebug = (SETTINGS.getSetting("Beam Break Debug") == "Yes");
 	freePositioned = freeposition;
-	driverSeat=0;
 	free_axle=0;
 	slideNodesConnectInstantly=false;
 	replayTimer=0;
@@ -5041,7 +5042,7 @@ void Beam::addCamera(int nodepos, int nodedir, int noderoll)
 
 int Beam::calculateDriverPos(Vector3 &pos, Quaternion &rot)
 {
-	if(!driverSeat) return 1;
+	if(!this || !driverSeat) return 1;
 	Vector3 normal=(nodes[driverSeat->nodey].smoothpos-nodes[driverSeat->noderef].smoothpos).crossProduct(nodes[driverSeat->nodex].smoothpos-nodes[driverSeat->noderef].smoothpos);
 	normal.normalise();
 	//position
