@@ -547,6 +547,10 @@ void Network::receivethreadstart()
 				// we got data about ourself!
 				memcpy(&userdata, buffer, sizeof(client_info_on_join));
 				CharacterFactory::getSingleton().localUserAttributesChanged(myuid);
+				// update our nickname
+				nickname = String(userdata.nickname);
+				// update auth status
+				myauthlevel = userdata.authstatus;
 			} else
 			{
 				client_info_on_join *cinfo = (client_info_on_join*) buffer;
