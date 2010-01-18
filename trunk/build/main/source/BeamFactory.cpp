@@ -61,6 +61,7 @@ int BeamFactory::removeBeam(Beam *b)
 
 				delete it2->second;
 				it2->second = 0;
+				it1->second.erase(it2);
 				UNLOCKSTREAMS();
 				return 0;
 			}
@@ -234,6 +235,7 @@ Beam *BeamFactory::getBeam(int source, int streamid)
 		{
 			if(it1->first == source)
 			{
+				UNLOCKSTREAMS();
 				return it2->second;
 			}
 		}

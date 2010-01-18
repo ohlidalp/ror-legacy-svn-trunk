@@ -116,27 +116,22 @@ Beam::~Beam()
 	if(cabMesh) delete cabMesh;
 	if(materialFunctionMapper) delete materialFunctionMapper;
 	if(replay) delete replay;
-	if(simpleSkeletonNode)
-	{
-		simpleSkeletonNode->removeAndDestroyAllChildren();
-		tsm->destroySceneNode(simpleSkeletonNode);
-	}
-	if(netLabelNode)
-	{
-		netLabelNode->removeAndDestroyAllChildren();
-		tsm->destroySceneNode(netLabelNode);
-	}
 
-	if(beamsRoot)
-	{
-		beamsRoot->removeAndDestroyAllChildren();
-		tsm->destroySceneNode(beamsRoot);
-	}
+	std::vector<Ogre::SceneNode*> deletion_sceneNodes;
+	std::vector<Ogre::Entity *> deletion_Entities;
 
-	if(cablightNode)
+	// remove all scene nodes
+	if(deletion_sceneNodes.size() > 0)
 	{
-		cablightNode->removeAndDestroyAllChildren();
-		tsm->destroySceneNode(cablightNode);
+		int size = deletion_sceneNodes.size();
+		for(int i=0;i<size; i++)
+		{
+			if(!deletion_sceneNodes[i]) continue;
+			deletion_sceneNodes[i]->removeAndDestroyAllChildren();
+			tsm->destroySceneNode(deletion_sceneNodes[i]);
+
+			deletion_sceneNodes[i]=0;
+		}
 	}
 	// delete skidmarks as well?!
 
@@ -426,7 +421,9 @@ Beam::Beam(int tnum, SceneManager *manager, SceneNode *parent, RenderWindow* win
 	categoryid=-1;
 	truckversion=-1;
 	tsm=manager;
-	simpleSkeletonNode = tsm->getRootSceneNode()->createChildSceneNode(String(truckname)+"_simpleskeleton_node");;
+	simpleSkeletonNode = tsm->getRootSceneNode()->createChildSceneNode(String(truckname)+"_simpleskeleton_node");
+	deletion_sceneNodes.push_back(simpleSkeletonNode);
+
 	tdt=0.1;
 	ttdt=0.1;
 	//load terrain altitudes
@@ -435,6 +432,8 @@ Beam::Beam(int tnum, SceneManager *manager, SceneNode *parent, RenderWindow* win
 	hfinder=mfinder;
 	mWindow=win;
 	beamsRoot=parent->createChildSceneNode();
+	deletion_sceneNodes.push_back(netLabelNode);
+
 	parentNode=parent;
 	//			float gears[]={6.0, 3.0, 1.5, 1.0, 0.75};
 	//	engine=new BeamEngine(1000.0,2000.0, 1870.0, 4.0, 5, gears, 3.42, audio);
@@ -2734,6 +2733,7 @@ int Beam::loadTruck(const char* fname, SceneManager *manager, SceneNode *parent,
 				cablight->setCastShadows(false);
 				cablight->setVisible(true);
 				cablightNode = manager->getRootSceneNode()->createChildSceneNode();
+				deletion_sceneNodes.push_back(cablightNode);
 				cablightNode->attachObject(cablight);
 				cablightNode->setVisible(false);
 			}
@@ -9758,6 +9758,8 @@ void Beam::updateNetworkInfo()
 		netLabelNode->attachObject(netMT);
 		netLabelNode->setPosition(position);
 		netLabelNode->setVisible(true);
+		deletion_sceneNodes.push_back(netLabelNode);
+		deletion_Objects.push_back(netMT);
 	}
 }
 

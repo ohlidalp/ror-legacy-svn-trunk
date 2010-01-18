@@ -49,8 +49,8 @@ class Streamable;
 #  define MYASSERT(x)       assert(x)
 # endif //WIN32
 #else //!DEBUGSTREAMFACTORIES
-# define LOCKSTREAMS()       ((void)0)
-# define UNLOCKSTREAMS()     ((void)0)
+# define LOCKSTREAMS()       lockStreams();
+# define UNLOCKSTREAMS()     unlockStreams();
 # define MYASSERT(x)         ((void)0)
 #endif //DEBUGSTREAMFACTORIES
 
