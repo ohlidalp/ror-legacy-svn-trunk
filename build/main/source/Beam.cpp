@@ -6055,6 +6055,14 @@ void Beam::sendStreamData()
 
 	last_net_time = t;
 
+	//look if the packet is too big first
+	int final_packet_size = sizeof(oob_t) + sizeof(float) * 3 + first_wheel_node * sizeof(float) * 3 + free_wheel * sizeof(float);
+	if(final_packet_size > maxPacketLen)
+	{
+		showError("Truck is too big to be send over the net.", "Network error!");
+		exit(126);
+	}
+
 	char send_buffer[maxPacketLen];
 	memset(send_buffer, 0, maxPacketLen);
 
@@ -8025,17 +8033,13 @@ void Beam::truckTruckCollisions(Real dt, Beam** trucks, int numtrucks)
 
 					//forcevec=plnormal*fl;
 					hitnode->Forces+=forcevec;
-					if(trucks[t]->state==NETWORKED)
-					{
-						// its a networked truck, we need to send the forces over the network
 
-					}
-					else
-					{
-						no->Forces-=(-point.x-point.y+1.0f)*forcevec;
-						na->Forces-=(point.x)*forcevec;
-						nb->Forces-=(point.y)*forcevec;
-					}
+					// no network special case for now
+					//if(trucks[t]->state==NETWORKED)
+
+					no->Forces-=(-point.x-point.y+1.0f)*forcevec;
+					na->Forces-=(point.x)*forcevec;
+					nb->Forces-=(point.y)*forcevec;
 				}
 			}
 

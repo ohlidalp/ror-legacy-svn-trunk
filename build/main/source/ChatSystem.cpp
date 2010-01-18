@@ -155,6 +155,13 @@ void ChatSystemFactory::updatePlayerList()
 	UNLOCKSTREAMS();
 }
 
+ChatSystem *ChatSystemFactory::getFirstChatSystem()
+{
+	std::map < int, std::map < unsigned int, ChatSystem *> > &streamables = getStreams();
+	if(streamables.empty() || streamables.begin()->second.empty()) return 0;
+	return streamables.begin()->second.begin()->second;
+}
+
 ///////////////////////////////////
 // ChatSystem
 
