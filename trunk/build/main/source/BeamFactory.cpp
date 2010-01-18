@@ -132,6 +132,15 @@ Beam *BeamFactory::createRemoteInstance(stream_reg_t *reg)
 	bool networked=true, networking=false;
 	if(net) networking = true;
 
+	// check if we got this truck installed
+	String filename = String(reg->reg.name);
+	String group = "";
+	if(!CACHE.checkResourceLoaded(filename, group))
+	{
+		LogManager::getSingleton().logMessage("wont add remote stream (truck not existing): '"+filename+"'");
+		return 0;
+	}
+
 	// spawn the truck far off anywhere
 	Vector3 pos = Vector3(0,0,0);
 
