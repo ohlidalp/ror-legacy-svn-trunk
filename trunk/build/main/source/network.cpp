@@ -87,7 +87,7 @@ Network::Network(Beam **btrucks, std::string servername, long sport, ExampleFram
 	myuid=0;
 
 	speed_time=0;
-	speed_bytes_sent = speed_bytes_sent_tmp = speed_bytes_recv = speed_bytes_sent_tmp = 0;
+	speed_bytes_sent = speed_bytes_sent_tmp = speed_bytes_recv = speed_bytes_recv_tmp = 0;
 
 	rconauthed=0;
 	last_time=0;
