@@ -66,6 +66,7 @@ public:
 	ChatSystem *createRemoteInstance(stream_reg_t *reg);
 
 	void setNetwork(Network *net) { this->net = net; };
+	ChatSystem *getFirstChatSystem();
 
 protected:
 	Network *net;

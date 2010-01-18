@@ -518,6 +518,12 @@ void Network::receivethreadstart()
 			}
 			continue;
 		}
+		else if(header.command == MSG2_CHAT && header.source == -1)
+		{
+			ChatSystem *cs = ChatSystemFactory::getSingleton().getFirstChatSystem();
+			if(cs) cs->addReceivedPacket(header, buffer);
+			continue;
+		}
 		else if(header.command == MSG2_USER_LEAVE || header.command == MSG2_DELETE)
 		{
 			// remove all things that belong to that user
