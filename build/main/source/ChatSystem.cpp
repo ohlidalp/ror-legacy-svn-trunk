@@ -164,7 +164,8 @@ ChatSystem::ChatSystem(Network *net, int source, unsigned int streamid, int colo
 	streamid(streamid),
 	colourNumber(colourNumber),
 	remote(remote),
-	username("unkown")
+	username("unkown"),
+	mNickColour("^0")
 {
 	sendStreamSetup();
 	if(remote)
@@ -173,10 +174,19 @@ ChatSystem::ChatSystem(Network *net, int source, unsigned int streamid, int colo
 		if(c)
 		{
 			username = tryConvertUTF(c->user_name);
+			
+			int nickColour = 8;
+			if(c->user_authlevel & AUTH_NONE)   nickColour = 8; // grey
+			if(c->user_authlevel & AUTH_BOT )   nickColour = 4; // blue
+			if(c->user_authlevel & AUTH_RANKED) nickColour = 2; // green
+			if(c->user_authlevel & AUTH_MOD)    nickColour = 1; // red
+			if(c->user_authlevel & AUTH_ADMIN)  nickColour = 1; // red
+
+			mNickColour = String("^") + StringConverter::toString(nickColour);
+			username = mNickColour + ColoredTextAreaOverlayElement::StripColors(username);
 		}
 
-		//NETCHAT.addText(username + _L(" joined the chat with language ") + String(c->user_language));
-		NETCHAT.addText(username + _L(" joined the chat"));
+		NETCHAT.addText(username + _L(" ^9joined the chat"));
 	}
 }
 
@@ -184,7 +194,7 @@ ChatSystem::~ChatSystem()
 {
 	if(remote)
 	{
-		NETCHAT.addText(username + _L(" left the chat"));
+		NETCHAT.addText(username + _L(" ^9left the chat"));
 	}
 }
 
@@ -216,7 +226,7 @@ void ChatSystem::receiveStreamData(unsigned int &type, int &source, unsigned int
 		} else if(this->source == source && this->streamid == streamid)
 		{
 			UTFString text = tryConvertUTF(buffer);
-			NETCHAT.addText(username + ": " + text);
+			NETCHAT.addText(username + "^7: " + text);
 		}
 	}
 }

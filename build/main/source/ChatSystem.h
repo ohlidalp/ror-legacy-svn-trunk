@@ -49,6 +49,7 @@ protected:
 	int colourNumber;
 	bool remote;
 	Ogre::UTFString username;
+	Ogre::String mNickColour;
 	void sendStreamSetup();
 	void sendStreamData();
 	void receiveStreamData(unsigned int &type, int &source, unsigned int &streamid, char *buffer, unsigned int &len);

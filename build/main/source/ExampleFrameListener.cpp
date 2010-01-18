@@ -489,11 +489,12 @@ void ExampleFrameListener::updateRacingGUI()
 //update engine panel
 void ExampleFrameListener::updateGUI(float dt)
 {
+	NETCHAT.update(dt);
+
 	if (current_truck==-1) return;
 
 	//update the truck info gui (also if not displayed!)
 	TRUCKHUD.update(dt, trucks[current_truck], mSceneMgr, mCamera, mWindow, mTruckInfoOn);
-	NETCHAT.update(dt);
 
 #ifdef TIMING
 	BES.updateGUI(dt, current_truck, trucks);
