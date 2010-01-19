@@ -138,18 +138,9 @@ void WsyncThread::reportProgress()
 		updateCallback(MSE_UPDATE_SPEED, speedstr);
 	}
 
-	if(progress < 1.0f)
-	{
-		char trafstr[256] = "";
-		sprintf(trafstr, "%s / %s (%0.0f%%)", sizeDone.c_str(), sizePredicted.c_str(), progress * 100);
-		updateCallback(MSE_UPDATE_TRAFFIC, string(trafstr));
-	} else
-	{
-		string sizeOverhead = formatFilesize(downloadedSize-predDownloadSize);
-		char trafstr[256] = "";
-		sprintf(trafstr, "%s (%s overhead)", sizeDone.c_str(), sizeOverhead.c_str());
-		updateCallback(MSE_UPDATE_TRAFFIC, string(trafstr));
-	}
+	char trafstr[256] = "";
+	sprintf(trafstr, "%s / %s (%0.0f%%)", sizeDone.c_str(), sizePredicted.c_str(), progress * 100);
+	updateCallback(MSE_UPDATE_TRAFFIC, string(trafstr));
 
 
 	//progressOutputShort(float(changeCounter)/float(changeMax));
@@ -158,6 +149,15 @@ void WsyncThread::reportProgress()
 
 	if(job_existing-job_done == 0)
 	{
+		// update the traffic label a last time
+		/*
+		string sizeOverhead = formatFilesize(downloadedSize-predDownloadSize);
+		char trafstr[256] = "";
+		sprintf(trafstr, "%s (%s overhead)", sizeDone.c_str(), sizeOverhead.c_str());
+		updateCallback(MSE_UPDATE_TRAFFIC, string(trafstr));
+		*/
+		updateCallback(MSE_UPDATE_TRAFFIC, formatFilesize(downloadedSize));
+
 		// we are done :D
 		updateCallback(MSE_DONE);
 	}
@@ -761,7 +761,7 @@ int WsyncThread::findMirror(bool probeForBest)
 
 					char tmp[255]="";
 					sprintf(tmp, "%6.2f: kB/s", (10240.0f / tdiff) / 1024.0f);
-					updateCallback(MSE_STARTING, "speed of " + list[i][0] + std::string(tmp));
+					updateCallback(MSE_STARTING, "speed of " + list[i][0]+ ": " + std::string(tmp));
 					LOG("mirror speed: % 30s : %s\n", list[i][0].c_str(), tmp);
 				}
 				if(bestServer != -1)
