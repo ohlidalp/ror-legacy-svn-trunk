@@ -133,6 +133,7 @@ retry:
 	if(stat)
 	{
 		LOG("DLFile-%04d|  unable to create file: %s\n", jobID, localFile.c_str());
+		updateCallback(jobID, MSE_ERROR, "unable to create file: " + localFile + "\nPlease ensure that you have the permissions to modify the file and\nthat it is not used by another process.");
 	} else
 	{
 		string checkHash = WsyncThread::generateFileHash(localFile);
@@ -154,6 +155,10 @@ retry:
 				goto retry;
 			}
 		}
+	}
+	if(retrycount >= 2)
+	{
+		updateCallback(jobID, MSE_ERROR, "failed to download file: " + remoteFile + "\nPlease ensure that you have internet access.");
 	}
 	updateCallback(jobID, MSE_DOWNLOAD_DONE);
 	LOG("DLFile-%04d| file ok\n", jobID);
