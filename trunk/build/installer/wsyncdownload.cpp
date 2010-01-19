@@ -26,7 +26,7 @@ WsyncDownload::WsyncDownload(wxEvtHandler* parent) : parent(parent)
 int WsyncDownload::downloadFile(boost::filesystem::path localFile, string server, string path, boost::uintmax_t predDownloadSize, boost::uintmax_t *fileSizeArg)
 {
 	LOG("DLFile| http://%s%s -> %s ... \n", server.c_str(), path.c_str(), localFile.string().c_str());
-	boost::uintmax_t downloadDoneSize;
+	boost::uintmax_t downloadDoneSize=0;
 
 	Timer dlStartTime = Timer();
 
@@ -144,7 +144,11 @@ int WsyncDownload::downloadFile(boost::filesystem::path localFile, string server
 			while (std::getline(response_stream, line) && line != "\r")
 			{
 				if(line.substr(0, 15) == "Content-Length:")
+				{
 					reported_filesize = atoi(line.substr(16).c_str());
+					if(predDownloadSize <= 0)
+						predDownloadSize = reported_filesize;
+				}
 			}
 		}
 
@@ -375,7 +379,7 @@ int WsyncDownload::downloadConfigFile(std::string server, std::string url, std::
 		return -1;
 	}
 
-//	if(downloadFile(tempfile, server, url))
+	if(downloadFile(tempfile, server, url))
 	{
 		printf("error downloading file from %s, %s\n", server.c_str(), url.c_str());
 		return -1;

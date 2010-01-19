@@ -90,17 +90,9 @@ std::string formatSeconds(float seconds)
 int getTempFilename(boost::filesystem::path &tempfile)
 {
 #if OGRE_PLATFORM == OGRE_PLATFORM_WIN32
-	char tmp_path[MAX_PATH]="";
-	wchar_t *tmp_path_w=0;
-	mbstowcs(tmp_path_w,tmp_path,MAX_PATH);
-
-	char prefix_str[MAX_PATH]="WSY";
-	wchar_t *prefix_str_w=0;
-	mbstowcs(prefix_str_w,prefix_str,MAX_PATH);
-
-	char tmp_name[MAX_PATH]="";
-	wchar_t *tmp_name_w=0;
-	mbstowcs(tmp_name_w,tmp_path,MAX_PATH);
+	wchar_t *tmp_path_w   = (wchar_t *)malloc( sizeof(wchar_t) * MAX_PATH);
+	wchar_t *prefix_str_w = L"WSY";
+	wchar_t *tmp_name_w   = (wchar_t *)malloc( sizeof(wchar_t) * MAX_PATH);
 
 	if(GetTempPath(MAX_PATH, tmp_path_w) == 0)
 		return -2;
@@ -110,7 +102,14 @@ int getTempFilename(boost::filesystem::path &tempfile)
 		return -3;
 	}
 
-	tempfile = boost::filesystem::path(tmp_name);
+	// convert again
+	std::wstring ws = std::wstring(tmp_name_w);
+	std::string s;
+	s.assign(ws.begin(), ws.end());
+	tempfile = boost::filesystem::path(s);
+
+	free(tmp_path_w);
+	free(tmp_name_w);
 	return 0;
 #elif OGRE_PLATFORM == OGRE_PLATFORM_LINUX
 	char tempBuffer[] = "/tmp/wsync_tmp_XXXXXX";
