@@ -118,7 +118,6 @@ int WsyncWorkerThread::downloadFile(WsyncJob job)
 retry:
 	updateCallback(jobID, MSE_DOWNLOAD_START);
 	std::string url = dir_use + remoteFile;
-	LOG("DLFile-%04d|  starting download %s -> %s\n", jobID, localFile.c_str(), remoteFile.c_str());
 	int stat = wsdl->downloadFile(jobID, localFile, server_use, url);
 	if(stat == -404 && retrycount < 2)
 	{

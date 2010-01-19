@@ -25,7 +25,7 @@ WsyncDownload::WsyncDownload(wxEvtHandler* parent) : parent(parent)
 
 int WsyncDownload::downloadFile(int jobID, boost::filesystem::path localFile, string server, string path, boost::uintmax_t predDownloadSize, boost::uintmax_t *fileSizeArg)
 {
-	LOG("DLFile-%04d| http://%s%s -> %s ... \n", jobID, server.c_str(), path.c_str(), localFile.string().c_str());
+	LOG("DLFile-%04d| starting: http://%s%s -> %s ... \n", jobID, server.c_str(), path.c_str(), localFile.string().c_str());
 	boost::uintmax_t downloadDoneSize=0;
 
 	Timer dlStartTime = Timer();
