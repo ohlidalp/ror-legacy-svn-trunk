@@ -86,7 +86,6 @@ void WsyncThread::reportProgress()
 {
 	boost::uintmax_t downloadedSize=0;
 	boost::uintmax_t speedSum=0;
-	int timeleft = 0;
 	float timerunning = dlStartTime.elapsed();
 	std::string text;
 	char tmp[1024]="";
@@ -105,10 +104,11 @@ void WsyncThread::reportProgress()
 		{
 			job_done++;
 		}
-
-		if(it->second.time_remaining > timeleft)
-			timeleft = (int)it->second.time_remaining;
 	}
+	boost::uintmax_t size_left = predDownloadSize - downloadedSize;
+	float speed = (float)(downloadedSize / timerunning);
+
+	float eta = size_left / speed;
 
 	// update the progress bar
 	float progress = ((float)downloadedSize) /((float)predDownloadSize);
@@ -120,11 +120,11 @@ void WsyncThread::reportProgress()
 	string timestr = formatSeconds(timerunning);
 	updateCallback(MSE_UPDATE_TIME, timestr);
 
-	if(timeleft > 10)
+	if(eta > 10)
 	{
-		timestr = formatSeconds(timeleft);
+		timestr = formatSeconds(eta);
 		updateCallback(MSE_UPDATE_TIME_LEFT, timestr);
-	} else if (timeleft != 0)
+	} else if (eta != 0)
 	{
 		timestr = std::string("less than 10 seconds");
 		updateCallback(MSE_UPDATE_TIME_LEFT, timestr);
@@ -133,7 +133,6 @@ void WsyncThread::reportProgress()
 	//speedsum is behaving strange ...
 	if(timerunning > 0)
 	{
-		float speed = (float)(downloadedSize / timerunning);
 		string speedstr = formatFilesize((int)speed) + "/s";
 		updateCallback(MSE_UPDATE_SPEED, speedstr);
 	}
