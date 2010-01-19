@@ -1,28 +1,32 @@
 #include "threadpool.h"
+#include "wsyncdownload.h"
+#include "utils.h"
+#include "installerlog.h"
+#include "wthread.h"
+
+using namespace std;
 
 //// WsyncJob
-WsyncJob::WsyncJob() : m_cmd(eID_THREAD_NULL)
+WsyncJob::WsyncJob() : mCmd(eID_THREAD_NULL)
 {
 }
 	
-WsyncJob::WsyncJob(job_commands cmd, const wxString& url, const wxString& file) : m_cmd(cmd), m_URL(url), m_File(file)
+WsyncJob::WsyncJob(
+	job_commands cmd, 
+	const wxString& localFile, 
+	const wxString& server, 
+	const wxString& remoteDir, 
+	const wxString& remoteFile,
+	const wxString& hashRemoteFile) : 
+		mCmd(cmd),
+		mLocalFile(localFile),
+		mServer(server),
+		mRemoteDir(remoteDir),
+		mRemoteFile(remoteFile),
+		mHashRemoteFile(hashRemoteFile)
 {
 }
 
-WsyncJob::job_commands WsyncJob::getCommand()
-{
-	return m_cmd;
-}
-
-wxString WsyncJob::getURL()
-{
-	return m_URL;
-}
-
-wxString WsyncJob::getFile()
-{
-	return m_File;
-}
 
 //// ThreadQueue
 
@@ -87,53 +91,55 @@ wxThread::ExitCode WsyncWorkerThread::Entry()
 	return (wxThread::ExitCode)iErr; // and return exit code
 }
 
-void WsyncWorkerThread::downloadFile(WsyncJob job)
+int WsyncWorkerThread::downloadFile(WsyncJob job)
 {
-	// XXX: TODO: TO FIX
-#if 0
-	int stat = downloadFile(localfile, server_use_file, url);
+	WsyncDownload *wsdl = new WsyncDownload();
+	int retrycount=0;
+	std::string server_use = conv(job.getServer());
+	std::string dir_use = conv(job.getRemoteDir());
+	std::string localFile = conv(job.getLocalFile());
+	std::string remoteFile = conv(job.getRemoteFile());
+	std::string hashRemote = conv(job.getHashRemoteFile());
+retry:
+	std::string url = dir_use + remoteFile;
+	int stat = wsdl->downloadFile(localFile, server_use, url);
 	if(stat == -404 && retrycount < 2)
 	{
-		dprintf("  result: %d, retrycount: %d, falling back to main server\n", stat, retrycount);
+		LOG("DLFile|  result: %d, retrycount: %d, falling back to main server\n", stat, retrycount);
 		// fallback to main server (for this single file only!)
 		//printf("falling back to main server.\n");
-		server_use_file = mainserver;
-		dir_use_file = mainserverdir;
+		server_use = WSYNC_MAIN_SERVER;
+		dir_use = WSYNC_MAIN_DIR;
 		retrycount++;
 		goto retry;
 	}
 	if(stat)
 	{
-		dprintf("  unable to create file: %s\n", itf->filename.c_str());
-		//printf("\nunable to create file: %s\n", itf->filename.c_str());
+		LOG("DLFile|  unable to create file: %s\n", localFile.c_str());
 	} else
 	{
-		string checkHash = w->generateFileHash(localfile);
-		string hash_remote = w->findHashInHashmap(hashMapRemote, itf->filename);
-		if(hash_remote == checkHash)
+		string checkHash = WsyncThread::generateFileHash(localFile);
+		if(hashRemote == checkHash)
 		{
-			dprintf("DLFile| file hash ok\n");
-			//printf(" OK                                             \n");
+			LOG("DLFile| file hash ok\n");
 		} else
 		{
-			//printf(" OK                                             \n");
-			//printf(" hash is: '%s'\n", checkHash.c_str());
-			//printf(" hash should be: '%s'\n", hash_remote.c_str());
-			dprintf("DLFile| file hash wrong, is: '%s', should be: '%s'\n", checkHash.c_str(), hash_remote.c_str());
-			tryRemoveFile(localfile);
+			LOG("DLFile| file hash wrong, is: '%s', should be: '%s'\n", checkHash.c_str(), hashRemote.c_str());
+			WsyncDownload::tryRemoveFile(localFile);
 			if(retrycount < 2)
 			{
 				// fallback to main server!
 				//printf(" hash wrong, falling back to main server.\n");
 				//printf(" probably the mirror is not in sync yet\n");
-				server_use_file = mainserver;
-				dir_use_file = mainserverdir;
+				server_use = WSYNC_MAIN_SERVER;
+				dir_use = WSYNC_MAIN_DIR;
 				retrycount++;
 				goto retry;
 			}
 		}
 	}
-#endif //0
+	delete(wsdl);
+	return 0;
 }
 
 void WsyncWorkerThread::OnJob()
@@ -143,12 +149,15 @@ void WsyncWorkerThread::OnJob()
 	{
 	case WsyncJob::eID_THREAD_EXIT: // thread should exit
 		throw WsyncJob::eID_THREAD_EXIT; // confirm exit command
-	case WsyncJob::eID_THREAD_JOB: // process a standard job
-		// XXX DOWNLOAD HERE!
-		m_pQueue->Report(WsyncJob::eID_THREAD_JOB, wxString::Format(wxT("Job #%s done."), job.getURL().c_str()), m_ID); // report successful completion
+	case WsyncJob::eID_THREAD_JOB:
+	{
+		// process a standard job
+		int res = this->downloadFile(job);
+		m_pQueue->Report(WsyncJob::eID_THREAD_JOB, wxString::Format(wxT("Job #%s done."), job.getRemoteFile().c_str()), m_ID); // report successful completion
 		break;
+	}
 	case WsyncJob::eID_THREAD_JOBERR: // process a job that terminates with an error
-		m_pQueue->Report(WsyncJob::eID_THREAD_JOB, wxString::Format(wxT("Job #%s errorneous."), job.getURL().c_str()), m_ID);
+		m_pQueue->Report(WsyncJob::eID_THREAD_JOB, wxString::Format(wxT("Job #%s errorneous."), job.getRemoteFile().c_str()), m_ID);
 		Sleep(1000);
 		throw WsyncJob::eID_THREAD_EXIT; // report exit of worker thread
 		break;
@@ -162,7 +171,7 @@ void WsyncWorkerThread::OnJob()
 
 WsyncDownloadManager::WsyncDownloadManager() : m_pQueue(NULL)
 {
-	m_pQueue=new ThreadQueue(this);
+	m_pQueue = new ThreadQueue(this);
 }
 	
 WsyncDownloadManager::~WsyncDownloadManager()
@@ -183,10 +192,10 @@ void WsyncDownloadManager::startThreads()
 	}
 }
 	
-void WsyncDownloadManager::addURL(wxString url, wxString filename)
+void WsyncDownloadManager::addURL(wxString localFile, wxString remoteDir, wxString remoteServer, wxString remoteFile, wxString hashRemoteFile)
 {
 	int iJob=rand();
-	m_pQueue->addJob(WsyncJob(WsyncJob::eID_THREAD_JOB, url, filename));
+	m_pQueue->addJob(WsyncJob(WsyncJob::eID_THREAD_JOB, localFile, remoteServer, remoteDir, remoteFile, hashRemoteFile));
 
 	// start the threads if not already done	
 	if(!m_Threads.size())
@@ -198,14 +207,14 @@ void WsyncDownloadManager::onThread(wxCommandEvent& event) // handler for thread
 	switch(event.GetId())
 	{
 		case WsyncJob::eID_THREAD_JOB:
-			//wxMessageBox(wxString::Format(wxT("[%i]: %s"), event.GetInt(), event.GetString()));
+			wxMessageBox(wxString::Format(wxT("[%i]: %s"), event.GetInt(), event.GetString()));
 			break; 
 		case WsyncJob::eID_THREAD_EXIT:
-			//wxMessageBox(wxString::Format(wxT("[%i]: Stopped."), event.GetInt()));
+			wxMessageBox(wxString::Format(wxT("[%i]: Stopped."), event.GetInt()));
 			m_Threads.remove(event.GetInt()); // thread has exited: remove thread ID from list
 			break;
 		case WsyncJob::eID_THREAD_STARTED:
-			//wxMessageBox(wxString::Format(wxT("[%i]: Ready."), event.GetInt()));
+			wxMessageBox(wxString::Format(wxT("[%i]: Ready."), event.GetInt()));
 			break; 
 		default:
 			event.Skip();
@@ -218,7 +227,7 @@ void WsyncDownloadManager::destroyThreads()
 		return;
 	for(size_t t=0; t<m_Threads.size(); ++t)
 	{
-		m_pQueue->addJob(WsyncJob(WsyncJob::eID_THREAD_EXIT, wxEmptyString, wxEmptyString), ThreadQueue::eHIGHEST); // send all running threads the "EXIT" signal
+		m_pQueue->addJob(WsyncJob(WsyncJob::eID_THREAD_EXIT, wxEmptyString, wxEmptyString, wxEmptyString, wxEmptyString, wxEmptyString), ThreadQueue::eHIGHEST); // send all running threads the "EXIT" signal
 	}
 }
 

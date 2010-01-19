@@ -30,15 +30,19 @@ public:
 
 	WsyncJob();
 	
-	WsyncJob(job_commands cmd, const wxString& url, const wxString& file);
+	WsyncJob(job_commands cmd, const wxString& localFile, const wxString& server, const wxString& remoteDir, const wxString& remoteFile, const wxString& hashRemoteFile);
 
-	job_commands getCommand();
-	wxString getURL();
-	wxString getFile();
+	job_commands getCommand() { return mCmd; };
+	wxString getRemoteDir() { return mRemoteDir; };
+	
+	wxString getServer() { return mServer; };
+	wxString getRemoteFile() { return mRemoteFile; };
+	wxString getHashRemoteFile() { return mHashRemoteFile; };
+
+	wxString getLocalFile() { return mLocalFile;};
 protected:
-	job_commands m_cmd;
-	wxString m_URL;
-	wxString m_File;
+	job_commands mCmd;
+	wxString mLocalFile, mServer, mRemoteDir, mURL, mHashRemoteFile, mRemoteFile;
 };
 
 class ThreadQueue
@@ -69,7 +73,7 @@ private:
 	int m_ID;
 
 	virtual wxThread::ExitCode Entry();
-	virtual void downloadFile(WsyncJob job);
+	virtual int downloadFile(WsyncJob job);
 	virtual void OnJob();
 };
 
@@ -79,7 +83,7 @@ public:
 	WsyncDownloadManager();
 	~WsyncDownloadManager();
 	void startThreads();
-	void addURL(wxString url, wxString filename);
+	void addURL(wxString localFile, wxString remoteDir, wxString remoteServer, wxString remoteFile, wxString hashRemoteFile);
 	void onThread(wxCommandEvent& event);
 	void destroyThreads();
 
