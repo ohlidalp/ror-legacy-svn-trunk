@@ -12,12 +12,14 @@ WsyncJob::WsyncJob() : mCmd(eID_THREAD_NULL)
 }
 	
 WsyncJob::WsyncJob(
+	int num,
 	job_commands cmd, 
 	const wxString& localFile, 
 	const wxString& server, 
 	const wxString& remoteDir, 
 	const wxString& remoteFile,
 	const wxString& hashRemoteFile) : 
+		mNum(num),
 		mCmd(cmd),
 		mLocalFile(localFile),
 		mServer(server),
@@ -67,7 +69,7 @@ size_t ThreadQueue::Stacksize() // helper function to return no of pending jobs
 }
 
 //// WsyncWorkerThread
-WsyncWorkerThread::WsyncWorkerThread(ThreadQueue* pQueue, int id) : m_pQueue(pQueue), m_ID(id)
+WsyncWorkerThread::WsyncWorkerThread(ThreadQueue* pQueue, int id, wxEvtHandler *handler) : m_pQueue(pQueue), m_ID(id), m_handler(handler)
 {
 	assert(pQueue);
 	wxThread::Create();
@@ -91,21 +93,36 @@ wxThread::ExitCode WsyncWorkerThread::Entry()
 	return (wxThread::ExitCode)iErr; // and return exit code
 }
 
+void WsyncWorkerThread::updateCallback(int jobID, int type, std::string txt, float percent)
+{
+	if(!m_handler) return;
+
+	// send event
+	MyStatusEvent ev(MyStatusCommandEvent, type);
+	ev.SetInt(jobID);
+	ev.SetString(wxString(txt.c_str(), wxConvUTF8));
+	ev.SetProgress(percent);
+	m_handler->AddPendingEvent(ev);
+}
+
 int WsyncWorkerThread::downloadFile(WsyncJob job)
 {
-	WsyncDownload *wsdl = new WsyncDownload();
+	WsyncDownload *wsdl = new WsyncDownload(m_handler);
 	int retrycount=0;
 	std::string server_use = conv(job.getServer());
 	std::string dir_use = conv(job.getRemoteDir());
 	std::string localFile = conv(job.getLocalFile());
 	std::string remoteFile = conv(job.getRemoteFile());
 	std::string hashRemote = conv(job.getHashRemoteFile());
+	int jobID = job.getJobNumber();
 retry:
+	updateCallback(jobID, MSE_DOWNLOAD_START);
 	std::string url = dir_use + remoteFile;
-	int stat = wsdl->downloadFile(localFile, server_use, url);
+	LOG("DLFile-%04d|  starting download %s -> %s\n", jobID, localFile.c_str(), remoteFile.c_str());
+	int stat = wsdl->downloadFile(jobID, localFile, server_use, url);
 	if(stat == -404 && retrycount < 2)
 	{
-		LOG("DLFile|  result: %d, retrycount: %d, falling back to main server\n", stat, retrycount);
+		LOG("DLFile-%04d|  result: %d, retrycount: %d, falling back to main server\n", jobID, stat, retrycount);
 		// fallback to main server (for this single file only!)
 		//printf("falling back to main server.\n");
 		server_use = WSYNC_MAIN_SERVER;
@@ -115,16 +132,16 @@ retry:
 	}
 	if(stat)
 	{
-		LOG("DLFile|  unable to create file: %s\n", localFile.c_str());
+		LOG("DLFile-%04d|  unable to create file: %s\n", jobID, localFile.c_str());
 	} else
 	{
 		string checkHash = WsyncThread::generateFileHash(localFile);
 		if(hashRemote == checkHash)
 		{
-			LOG("DLFile| file hash ok\n");
+			LOG("DLFile-%04d| file hash ok\n", jobID);
 		} else
 		{
-			LOG("DLFile| file hash wrong, is: '%s', should be: '%s'\n", checkHash.c_str(), hashRemote.c_str());
+			LOG("DLFile-%04d| file hash wrong, is: '%s', should be: '%s'\n", jobID, checkHash.c_str(), hashRemote.c_str());
 			WsyncDownload::tryRemoveFile(localFile);
 			if(retrycount < 2)
 			{
@@ -138,6 +155,8 @@ retry:
 			}
 		}
 	}
+	updateCallback(jobID, MSE_DOWNLOAD_DONE);
+	LOG("DLFile-%04d| file ok\n", jobID);
 	delete(wsdl);
 	return 0;
 }
@@ -153,7 +172,7 @@ void WsyncWorkerThread::OnJob()
 	{
 		// process a standard job
 		int res = this->downloadFile(job);
-		m_pQueue->Report(WsyncJob::eID_THREAD_JOB, wxString::Format(wxT("Job #%s done."), job.getRemoteFile().c_str()), m_ID); // report successful completion
+		//m_pQueue->Report(WsyncJob::eID_THREAD_JOB, wxString::Format(wxT("Job #%s done."), job.getRemoteFile().c_str()), m_ID); // report successful completion
 		break;
 	}
 	case WsyncJob::eID_THREAD_JOBERR: // process a job that terminates with an error
@@ -168,10 +187,12 @@ void WsyncWorkerThread::OnJob()
 }
 
 //// WsyncDownloadManager
-
-WsyncDownloadManager::WsyncDownloadManager() : m_pQueue(NULL)
+WsyncDownloadManager::WsyncDownloadManager() : m_pQueue(NULL), m_parent(NULL)
 {
-	m_pQueue = new ThreadQueue(this);
+}
+
+WsyncDownloadManager::WsyncDownloadManager(wxEvtHandler *parent) : m_pQueue(new ThreadQueue(this)), m_parent(parent)
+{
 }
 	
 WsyncDownloadManager::~WsyncDownloadManager()
@@ -187,15 +208,14 @@ void WsyncDownloadManager::startThreads()
 	{
 		int id = m_Threads.empty()?1:m_Threads.back() + 1;
 		m_Threads.push_back(id);
-		WsyncWorkerThread* pThread = new WsyncWorkerThread(m_pQueue, id); // create a new worker thread, increment thread counter (this implies, thread will start OK)
+		WsyncWorkerThread* pThread = new WsyncWorkerThread(m_pQueue, id, m_parent); // create a new worker thread, increment thread counter (this implies, thread will start OK)
 		pThread->Run();
 	}
 }
 	
-void WsyncDownloadManager::addURL(wxString localFile, wxString remoteDir, wxString remoteServer, wxString remoteFile, wxString hashRemoteFile)
+void WsyncDownloadManager::addJob(int num, wxString localFile, wxString remoteDir, wxString remoteServer, wxString remoteFile, wxString hashRemoteFile)
 {
-	int iJob=rand();
-	m_pQueue->addJob(WsyncJob(WsyncJob::eID_THREAD_JOB, localFile, remoteServer, remoteDir, remoteFile, hashRemoteFile));
+	m_pQueue->addJob(WsyncJob(num, WsyncJob::eID_THREAD_JOB, localFile, remoteServer, remoteDir, remoteFile, hashRemoteFile));
 
 	// start the threads if not already done	
 	if(!m_Threads.size())
@@ -207,18 +227,23 @@ void WsyncDownloadManager::onThread(wxCommandEvent& event) // handler for thread
 	switch(event.GetId())
 	{
 		case WsyncJob::eID_THREAD_JOB:
-			wxMessageBox(wxString::Format(wxT("[%i]: %s"), event.GetInt(), event.GetString()));
+			//wxMessageBox(wxString::Format(wxT("[%i]: %s"), event.GetInt(), event.GetString()));
 			break; 
 		case WsyncJob::eID_THREAD_EXIT:
-			wxMessageBox(wxString::Format(wxT("[%i]: Stopped."), event.GetInt()));
+			//wxMessageBox(wxString::Format(wxT("[%i]: Stopped."), event.GetInt()));
 			m_Threads.remove(event.GetInt()); // thread has exited: remove thread ID from list
 			break;
 		case WsyncJob::eID_THREAD_STARTED:
-			wxMessageBox(wxString::Format(wxT("[%i]: Ready."), event.GetInt()));
+			//wxMessageBox(wxString::Format(wxT("[%i]: Ready."), event.GetInt()));
 			break; 
 		default:
 			event.Skip();
 	}
+}
+
+bool WsyncDownloadManager::isDone()
+{
+	return m_Threads.empty();
 }
 
 void WsyncDownloadManager::destroyThreads()
@@ -227,7 +252,7 @@ void WsyncDownloadManager::destroyThreads()
 		return;
 	for(size_t t=0; t<m_Threads.size(); ++t)
 	{
-		m_pQueue->addJob(WsyncJob(WsyncJob::eID_THREAD_EXIT, wxEmptyString, wxEmptyString, wxEmptyString, wxEmptyString, wxEmptyString), ThreadQueue::eHIGHEST); // send all running threads the "EXIT" signal
+		m_pQueue->addJob(WsyncJob(0, WsyncJob::eID_THREAD_EXIT, wxEmptyString, wxEmptyString, wxEmptyString, wxEmptyString, wxEmptyString), ThreadQueue::eHIGHEST); // send all running threads the "EXIT" signal
 	}
 }
 

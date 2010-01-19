@@ -23,9 +23,9 @@ WsyncDownload::WsyncDownload(wxEvtHandler* parent) : parent(parent)
 {
 }
 
-int WsyncDownload::downloadFile(boost::filesystem::path localFile, string server, string path, boost::uintmax_t predDownloadSize, boost::uintmax_t *fileSizeArg)
+int WsyncDownload::downloadFile(int jobID, boost::filesystem::path localFile, string server, string path, boost::uintmax_t predDownloadSize, boost::uintmax_t *fileSizeArg)
 {
-	LOG("DLFile| http://%s%s -> %s ... \n", server.c_str(), path.c_str(), localFile.string().c_str());
+	LOG("DLFile-%04d| http://%s%s -> %s ... \n", jobID, server.c_str(), path.c_str(), localFile.string().c_str());
 	boost::uintmax_t downloadDoneSize=0;
 
 	Timer dlStartTime = Timer();
@@ -90,8 +90,8 @@ int WsyncDownload::downloadFile(boost::filesystem::path localFile, string server
 		if (!response_stream || http_version.substr(0, 5) != "HTTP/")
 		{
 			socket.close();
-			LOG("DLFile|Error: Invalid response: %s\n", http_version.c_str());
-			LOG("DLFile|download URL: http://%s%s\n", server.c_str(), path.c_str());
+			LOG("DLFile-%04d|Error: Invalid response: %s\n", jobID, http_version.c_str());
+			LOG("DLFile-%04d|download URL: http://%s%s\n", jobID, server.c_str(), path.c_str());
 			return 1;
 		}
 		if (status_code == 302)
@@ -112,8 +112,8 @@ int WsyncDownload::downloadFile(boost::filesystem::path localFile, string server
 			// check protocol
 			if(new_url.substr(0, 7) != "http://")
 			{
-				LOG("DLFile|Error: redirection uses unkown protocol: %s\n", new_url.c_str());
-				LOG("DLFile|download URL: http://%s%s\n", server.c_str(), path.c_str());
+				LOG("DLFile-%04d|Error: redirection uses unkown protocol: %s\n", jobID, new_url.c_str());
+				LOG("DLFile-%04d|download URL: http://%s%s\n", jobID, server.c_str(), path.c_str());
 				return 1;
 			}
 			// trim line
@@ -123,13 +123,13 @@ int WsyncDownload::downloadFile(boost::filesystem::path localFile, string server
 			string new_server = new_url.substr(7, new_url.find_first_of("/", 7)-7);
 			string new_path = new_url.substr(new_url.find_first_of("/", 7));
 
-			LOG("DLFile| got redirected: http://%s%s -> http://%s%s\n", server.c_str(), path.c_str(), new_server.c_str(), new_path.c_str());
-			return downloadFile(localFile, new_server, new_path);
+			LOG("DLFile-%04d| got redirected: http://%s%s -> http://%s%s\n", jobID, server.c_str(), path.c_str(), new_server.c_str(), new_path.c_str());
+			return downloadFile(jobID, localFile, new_server, new_path);
 		}
 		if (status_code != 200)
 		{
-			LOG("DLFile|Error: Response returned with status code: %d\n", status_code);
-			LOG("DLFile|download URL: http://%s%s\n", server.c_str(), path.c_str());
+			LOG("DLFile-%04d|Error: Response returned with status code: %d\n", jobID, status_code);
+			LOG("DLFile-%04d|download URL: http://%s%s\n", jobID, server.c_str(), path.c_str());
 			return -(int)status_code;
 		}
 
@@ -156,8 +156,8 @@ int WsyncDownload::downloadFile(boost::filesystem::path localFile, string server
 		myfile.open(localFile.string().c_str(), ios::out | ios::binary);
 		if(!myfile.is_open())
 		{
-			LOG("DLFile|error opening local file: %d\n", localFile.string().c_str());
-			LOG("DLFile|download URL: http://%s%s\n", server.c_str(), path.c_str());
+			LOG("DLFile-%04d|error opening local file: %d\n", jobID, localFile.string().c_str());
+			LOG("DLFile-%04d|download URL: http://%s%s\n", jobID, server.c_str(), path.c_str());
 			return 2;
 		}
 
@@ -175,7 +175,7 @@ int WsyncDownload::downloadFile(boost::filesystem::path localFile, string server
 			if(tdiff >= 0.5f)
 			{
 				downloadDoneSize += dataspeed;
-				reportDownloadProgress(dlStartTime, predDownloadSize, downloadDoneSize);
+				reportDownloadProgress(jobID, dlStartTime, predDownloadSize, downloadDoneSize);
 				dataspeed=0;
 				lastTime=time.elapsed();
 			}
@@ -198,8 +198,8 @@ int WsyncDownload::downloadFile(boost::filesystem::path localFile, string server
 		socket.close();
 		if(reported_filesize != 0 && fileSize != reported_filesize)
 		{
-			LOG("DLFile|Error: file size is different: should be %d, is %d. removing file.\n", reported_filesize, (int)fileSize);
-			LOG("DLFile|download URL: http://%s%s\n", server.c_str(), path.c_str());
+			LOG("DLFile-%04d|Error: file size is different: should be %d, is %d. removing file.\n", jobID, reported_filesize, (int)fileSize);
+			LOG("DLFile-%04d|download URL: http://%s%s\n", jobID, server.c_str(), path.c_str());
 
 			tryRemoveFile(localFile);
 			return 1;
@@ -213,18 +213,18 @@ int WsyncDownload::downloadFile(boost::filesystem::path localFile, string server
 	}
 	catch (std::exception& e)
 	{
-		LOG("DLFile|Exception Error: %s\n", string(e.what()).c_str());
-		LOG("DLFile|download URL: http://%s%s\n", server.c_str(), path.c_str());
+		LOG("DLFile-%04d|Exception Error: %s\n", jobID, string(e.what()).c_str());
+		LOG("DLFile-%04d|download URL: http://%s%s\n", jobID, server.c_str(), path.c_str());
 
 		return 1;
 	}
-	LOG("DLFile| download ok, %d bytes received\n", fileSize);
+	LOG("DLFile-%04d| download ok, %d bytes received\n", jobID, fileSize);
 
 	return 0;
 }
 
 
-void WsyncDownload::reportDownloadProgress(Timer dlStartTime, boost::uintmax_t predDownloadSize, boost::uintmax_t size_done)
+void WsyncDownload::reportDownloadProgress(int jobID, Timer dlStartTime, boost::uintmax_t predDownloadSize, boost::uintmax_t size_done)
 {
 	// this function will format and send some info to the gui
 	unsigned int size_left = predDownloadSize - size_done;
@@ -233,42 +233,13 @@ void WsyncDownload::reportDownloadProgress(Timer dlStartTime, boost::uintmax_t p
 	float eta = size_left / speed;
 	if(predDownloadSize == 0) eta = 0;
 	float progress = ((float)size_done) /((float)predDownloadSize);
-	char tmp[255]="";
 
-	// update the progress bar
-	updateCallback(MSE_UPDATE_PROGRESS, "", progress);
-
-	string sizeDone = formatFilesize(size_done);
-	string sizePredicted = formatFilesize(predDownloadSize);
-
-	string timestr = formatSeconds(tdiff);
-	updateCallback(MSE_UPDATE_TIME, timestr);
-
-	if(eta > 10)
-	{
-		timestr = formatSeconds(eta);
-		updateCallback(MSE_UPDATE_TIME_LEFT, timestr);
-	} else if (eta != 0)
-	{
-		timestr = std::string("less than 10 seconds");
-		updateCallback(MSE_UPDATE_TIME_LEFT, timestr);
-	}
-
-	string speedstr = formatFilesize((int)speed) + "/s";
-	updateCallback(MSE_UPDATE_SPEED, speedstr);
-
-	if(progress<1.0f)
-	{
-		char trafstr[256] = "";
-		sprintf(trafstr, "%s / %s (%0.0f%%)", sizeDone.c_str(), sizePredicted.c_str(), progress * 100);
-		updateCallback(MSE_UPDATE_TRAFFIC, string(trafstr));
-	} else
-	{
-		string sizeOverhead = formatFilesize(size_done-predDownloadSize);
-		char trafstr[256] = "";
-		sprintf(trafstr, "%s (%s overhead)", sizeDone.c_str(), sizeOverhead.c_str());
-		updateCallback(MSE_UPDATE_TRAFFIC, string(trafstr));
-	}
+	// update parent
+	updateCallback(jobID, MSE_DOWNLOAD_PROGRESS, "", progress);
+	updateCallback(jobID, MSE_DOWNLOAD_TIME, "", tdiff);
+	updateCallback(jobID, MSE_DOWNLOAD_TIME_LEFT, "", eta);
+	updateCallback(jobID, MSE_DOWNLOAD_SPEED, "", speed);
+	updateCallback(jobID, MSE_DOWNLOAD_DOWNLOADED, "", size_done);
 }
 
 void WsyncDownload::tryRemoveFile(boost::filesystem::path filename)
@@ -294,15 +265,16 @@ void WsyncDownload::increaseServerStats(std::string server, boost::uintmax_t byt
 	traffic_stats[server] += bytes;
 }
 
-void WsyncDownload::updateCallback(int type, std::string txt, float percent)
+void WsyncDownload::updateCallback(int jobID, int type, std::string txt, float percent)
 {
-	if(!this->parent) return;
+	if(!parent) return;
 
 	// send event
 	MyStatusEvent ev(MyStatusCommandEvent, type);
-	ev.text = wxString(txt.c_str(), wxConvUTF8);
-	ev.progress = percent;
-	this->parent->AddPendingEvent(ev);
+	ev.SetInt(jobID);
+	ev.SetString(wxString(txt.c_str(), wxConvUTF8));
+	ev.SetProgress(percent);
+	parent->AddPendingEvent(ev);
 }
 
 
@@ -317,7 +289,7 @@ int WsyncDownload::downloadAdvancedConfigFile(std::string server, std::string ur
 		return -1;
 	}
 
-	if(downloadFile(tempfile, server, url))
+	if(downloadFile(0, tempfile, server, url))
 	{
 		printf("error downloading file from %s, %s\n", server.c_str(), url.c_str());
 		return -2;
@@ -379,7 +351,7 @@ int WsyncDownload::downloadConfigFile(std::string server, std::string url, std::
 		return -1;
 	}
 
-	if(downloadFile(tempfile, server, url))
+	if(downloadFile(0, tempfile, server, url))
 	{
 		printf("error downloading file from %s, %s\n", server.c_str(), url.c_str());
 		return -1;

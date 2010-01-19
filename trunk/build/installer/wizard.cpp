@@ -660,6 +660,14 @@ DownloadPage::DownloadPage(wxWizard *parent) : wxWizardPageSimple(parent), wizar
 	txt_server = new wxStaticText(this, wxID_ANY, _T("only main server"));
 	wxg->Add(txt_server, 0, wxALL|wxEXPAND, 5);
 
+	// Server used
+	txt = new wxStaticText(this, wxID_ANY, _T("Download Jobs: "));
+	wxg->Add(txt, 0, wxALL|wxEXPAND, 5);
+	txt_concurr = new wxStaticText(this, wxID_ANY, wxString());
+	wxg->Add(txt_concurr, 0, wxALL|wxEXPAND, 5);
+
+	
+
 	// grid end
 	mainSizer->Add(wxg, 0, wxALL|wxEXPAND, 5);
 
@@ -740,39 +748,40 @@ void DownloadPage::OnStatusUpdate(MyStatusEvent &ev)
 	{
 	case MSE_STARTING:
 	case MSE_UPDATE_TEXT:
-		statusText->SetLabel(ev.text);
+		statusText->SetLabel(ev.GetString());
 		break;
 	case MSE_UPDATE_PROGRESS:
-		progress->SetValue(ev.progress * 1000.0f);
+		progress->SetValue(ev.GetProgress() * 1000.0f);
 		break;
 	case MSE_ERROR:
-		statusText->SetLabel(_("error: ") + ev.text);
+		statusText->SetLabel(_("error: ") + ev.GetString());
 		progress->SetValue(1000);
-		wxMessageBox(ev.text, _("Error"), wxICON_ERROR | wxOK, this);
+		wxMessageBox(ev.GetString(), _("Error"), wxICON_ERROR | wxOK, this);
 		break;
 	case MSE_UPDATE_TIME:
-		txt_dltime->SetLabel(ev.text);
+		txt_dltime->SetLabel(ev.GetString());
 		break;
 	case MSE_UPDATE_TIME_LEFT:
-		txt_remaintime->SetLabel(ev.text);
+		txt_remaintime->SetLabel(ev.GetString());
 		break;
 	case MSE_UPDATE_SPEED:
-		txt_speed->SetLabel(ev.text);
+		txt_speed->SetLabel(ev.GetString());
 		break;
 	case MSE_UPDATE_TRAFFIC:
-		txt_traf->SetLabel(ev.text);
+		txt_traf->SetLabel(ev.GetString());
 		break;
 	case MSE_UPDATE_PATH:
-		txt_localpath->SetLabel(ev.text);
+		txt_localpath->SetLabel(ev.GetString());
 		break;
 	case MSE_UPDATE_SERVER:
-		txt_server->SetLabel(ev.text);
+		txt_server->SetLabel(ev.GetString());
 		break;
-
-
+	case MSE_UPDATE_CONCURR:
+		txt_concurr->SetLabel(ev.GetString());
+		break;
 	case MSE_DONE:
 		// normal end
-		statusText->SetLabel(ev.text);
+		statusText->SetLabel(ev.GetString());
 		progress->SetValue(1000);
 		txt_remaintime->SetLabel(wxT("finished!"));
 		isDone=true;

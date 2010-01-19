@@ -30,7 +30,7 @@ public:
 
 	WsyncJob();
 	
-	WsyncJob(job_commands cmd, const wxString& localFile, const wxString& server, const wxString& remoteDir, const wxString& remoteFile, const wxString& hashRemoteFile);
+	WsyncJob(int num, job_commands cmd, const wxString& localFile, const wxString& server, const wxString& remoteDir, const wxString& remoteFile, const wxString& hashRemoteFile);
 
 	job_commands getCommand() { return mCmd; };
 	wxString getRemoteDir() { return mRemoteDir; };
@@ -40,7 +40,9 @@ public:
 	wxString getHashRemoteFile() { return mHashRemoteFile; };
 
 	wxString getLocalFile() { return mLocalFile;};
+	int      getJobNumber() { return mNum;};
 protected:
+	int mNum;
 	job_commands mCmd;
 	wxString mLocalFile, mServer, mRemoteDir, mURL, mHashRemoteFile, mRemoteFile;
 };
@@ -66,14 +68,16 @@ private:
 class WsyncWorkerThread : public wxThread
 {
 public:
-	WsyncWorkerThread(ThreadQueue* pQueue, int id=0);
+	WsyncWorkerThread(ThreadQueue* pQueue, int id=0, wxEvtHandler *handler=0);
 
 private:
+	wxEvtHandler *m_handler;
 	ThreadQueue* m_pQueue;
 	int m_ID;
 
 	virtual wxThread::ExitCode Entry();
 	virtual int downloadFile(WsyncJob job);
+	virtual void updateCallback(int jobID, int type, std::string txt = std::string(), float percent=0.0f);
 	virtual void OnJob();
 };
 
@@ -81,13 +85,17 @@ class WsyncDownloadManager : public wxEvtHandler
 {
 public:
 	WsyncDownloadManager();
+	WsyncDownloadManager(wxEvtHandler *parent);
 	~WsyncDownloadManager();
 	void startThreads();
-	void addURL(wxString localFile, wxString remoteDir, wxString remoteServer, wxString remoteFile, wxString hashRemoteFile);
+	void addJob(int num, wxString localFile, wxString remoteDir, wxString remoteServer, wxString remoteFile, wxString hashRemoteFile);
 	void onThread(wxCommandEvent& event);
 	void destroyThreads();
 
+	bool isDone();
+
 private:
+	wxEvtHandler *m_parent;
 	ThreadQueue* m_pQueue;
 	std::list<int> m_Threads;
 	DECLARE_DYNAMIC_CLASS(WsyncDownloadManager)
