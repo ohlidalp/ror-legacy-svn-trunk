@@ -5,6 +5,7 @@
 #include <wx/event.h>
 #include <string.h>
 #include "Timer.h"
+#include "cevent.h"
 #include "ConfigManager.h" //only use for stream_desc_t, dont use functions, as its not thread safe!
 #include "threadpool.h"
 
@@ -106,10 +107,11 @@ protected:
 	std::string findHashInHashmap(std::map < std::string, std::map < std::string, Hashentry > > hashMap, std::string filename);
 	double measureDownloadSpeed(std::string server, std::string url);
 
-
+	void onDownloadStatusUpdate(MyStatusEvent &ev);
 
 	std::map < std::string, Hashentry> hashMapLocal;
 	std::map < std::string, std::map<std::string, Hashentry> > hashMapRemote; // stream hashmaps, first key is stream path
 
+	DECLARE_EVENT_TABLE();
 };
 #endif //WTHREAD_H__

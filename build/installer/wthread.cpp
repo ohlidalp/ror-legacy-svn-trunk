@@ -19,13 +19,17 @@ using namespace boost::asio::ip;
 using namespace boost::filesystem;
 using namespace std;
 
+BEGIN_EVENT_TABLE(WsyncThread, wxEvtHandler)
+	EVT_MYSTATUS(wxID_ANY, WsyncThread::onDownloadStatusUpdate )
+END_EVENT_TABLE()
+
 WsyncThread::WsyncThread(wxEvtHandler *parent, wxString _ipath, std::vector < stream_desc_t > _streams) : \
 	wxThread(wxTHREAD_DETACHED), 
 	parent(parent), 
 	ipath(conv(_ipath)), 
 	streams(_streams),
 	predDownloadSize(0),
-	dlm(new WsyncDownloadManager())
+	dlm(0) //new WsyncDownloadManager())
 {
 	// main server
 	mainserver = server = "wsync.rigsofrods.com";
@@ -34,6 +38,12 @@ WsyncThread::WsyncThread(wxEvtHandler *parent, wxString _ipath, std::vector < st
 
 WsyncThread::~WsyncThread()
 {
+}
+
+void WsyncThread::onDownloadStatusUpdate(MyStatusEvent &ev)
+{
+	//just forward the event
+	this->parent->AddPendingEvent(ev);
 }
 
 WsyncThread::ExitCode WsyncThread::Entry()
@@ -193,12 +203,15 @@ int WsyncThread::getSyncData()
 		updateCallback(MSE_UPDATE_TEXT, "downloading file list ...");
 		LOG("downloading file list to file %s ...\n", remoteFileIndex.string().c_str());
 		string url = "/" + conv(it->path) + "/" + INDEXFILENAME;
-		//if(downloadFile(remoteFileIndex.string(), mainserver, url))
+		WsyncDownload *dl = new WsyncDownload(this);
+		if(dl->downloadFile(remoteFileIndex.string(), mainserver, url))
 		{
+			delete(dl);
 			updateCallback(MSE_ERROR, "error downloading file index from http://" + mainserver + url);
 			LOG("error downloading file index from http://%s%s\n", mainserver.c_str(), url.c_str());
 			return -1;
 		}
+		delete(dl);
 
 		/*
 		// this is not usable with overlaying streams anymore :(
@@ -441,6 +454,7 @@ int WsyncThread::sync()
 	if(changeMax)
 	{
 		string server_use = server, dir_use = serverdir;
+		WsyncDownload *wsdl = new WsyncDownload(this);
 
 		// do things now!
 		if(newFiles.size())
@@ -458,7 +472,7 @@ retry:
 				LOG("%s\n", tmp);
 				path localfile = ipath / itf->filename;
 				string url = dir_use_file + itf->stream_path + itf->filename;
-				int stat = 0; //downloadFile(localfile, server_use_file, url);
+				int stat = wsdl->downloadFile(localfile, server_use_file, url);
 				if(stat == -404 && retrycount < 2)
 				{
 					LOG("  result: %d, retrycount: %d, falling back to main server\n", stat, retrycount);
@@ -518,7 +532,7 @@ retry2:
 				LOG("%s\n", tmp);
 				path localfile = ipath / itf->filename;
 				string url = dir_use_file + itf->stream_path + itf->filename;
-				int stat = 0;//downloadFile(localfile, server_use_file, url);
+				int stat = wsdl->downloadFile(localfile, server_use_file, url);
 				if(stat == -404 && retrycount < 2)
 				{
 					// fallback to main server (for this file only)
@@ -591,6 +605,7 @@ retry2:
 		}
 		//sprintf(tmp, "sync complete, downloaded %s\n", formatFilesize(getDownloadSize()).c_str());
 		res = 1;
+		delete(wsdl);
 	} else
 	{
 		sprintf(tmp, "sync complete (already up to date)\n");
@@ -658,7 +673,7 @@ int WsyncThread::findMirror(bool probeForBest)
 		updateCallback(MSE_STARTING, "getting random mirror ...");
 		LOG("getting random mirror ...\n");
 		// just collect a best fitting server by geolocating this client's IP
-		WsyncDownload *wsdl = new WsyncDownload();
+		WsyncDownload *wsdl = new WsyncDownload(this);
 		int res = wsdl->downloadConfigFile(API_SERVER, API_MIRROR, list);
 		delete(wsdl);
 		if(!res)
@@ -684,7 +699,7 @@ int WsyncThread::findMirror(bool probeForBest)
 		// probe servers :D
 		// get some random servers and test their speeds
 		LOG("getting fastest mirror ...\n");
-		WsyncDownload *wsdl = new WsyncDownload();
+		WsyncDownload *wsdl = new WsyncDownload(this);
 		int res = wsdl->downloadConfigFile(API_SERVER, API_MIRROR_NOGEO, list);
 		delete(wsdl);
 
@@ -744,14 +759,18 @@ double WsyncThread::measureDownloadSpeed(std::string server, std::string url)
 		return -1;
 	}
 
-	int filesize=0;
+	boost::uintmax_t filesize=0;
 	Timer timer = Timer();
-	//if(downloadFile(tempfile, server, url, &filesize))
+	WsyncDownload *dl = new WsyncDownload(this);
+	if(dl->downloadFile(tempfile, server, url, 0, &filesize))
 	{
+		delete(dl);
 		return -2;
 	}
+	delete(dl);
 	double tdiff = timer.elapsed();
 	printf("mirror speed: %s : %dkB in %0.2f seconds = %0.2f kB/s\n", server.c_str(), (int)(filesize/1024.0f), tdiff, (filesize/1024.0f)/(float)tdiff);
 	WsyncDownload::tryRemoveFile(tempfile);
 	return tdiff;
 }
+

@@ -89,6 +89,7 @@ wxThread::ExitCode WsyncWorkerThread::Entry()
 
 void WsyncWorkerThread::downloadFile(WsyncJob job)
 {
+	// XXX: TODO: TO FIX
 #if 0
 	int stat = downloadFile(localfile, server_use_file, url);
 	if(stat == -404 && retrycount < 2)
