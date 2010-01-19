@@ -65,6 +65,17 @@ public:
 
 enum { CMD_THREAD_DONE };
 
+typedef struct dlstatus_t
+{
+	int status;
+	float percent;
+	std::string path;
+	std::string text;
+	float time;
+	float time_remaining;
+	int speed;
+	boost::uintmax_t downloaded;
+} dlstatus_t;
 
 class WsyncThread : public wxThread, public wxEvtHandler
 {
@@ -80,6 +91,8 @@ protected:
 	boost::filesystem::path ipath; // installation path, what we work on
 	boost::uintmax_t predDownloadSize;
 	Timer dlStartTime;
+	int dlNum;
+	std::map<int, dlstatus_t> dlStatus;
 
 	std::string mainserver, server, mainserverdir, serverdir;
 	std::vector < stream_desc_t > streams;
@@ -111,6 +124,8 @@ protected:
 	double measureDownloadSpeed(std::string server, std::string url);
 
 	void onDownloadStatusUpdate(MyStatusEvent &ev);
+	void reportProgress();
+	void addJob(wxString localFile, wxString remoteDir, wxString remoteServer, wxString remoteFile, wxString hashRemoteFile);
 
 	std::map < std::string, Hashentry> hashMapLocal;
 	std::map < std::string, std::map<std::string, Hashentry> > hashMapRemote; // stream hashmaps, first key is stream path

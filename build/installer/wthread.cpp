@@ -23,13 +23,14 @@ BEGIN_EVENT_TABLE(WsyncThread, wxEvtHandler)
 	EVT_MYSTATUS(wxID_ANY, WsyncThread::onDownloadStatusUpdate )
 END_EVENT_TABLE()
 
-WsyncThread::WsyncThread(wxEvtHandler *parent, wxString _ipath, std::vector < stream_desc_t > _streams) : \
+WsyncThread::WsyncThread(wxEvtHandler *parent, wxString _ipath, std::vector < stream_desc_t > _streams) : 
 	wxThread(wxTHREAD_DETACHED), 
 	parent(parent), 
 	ipath(conv(_ipath)), 
 	streams(_streams),
 	predDownloadSize(0),
-	dlm(new WsyncDownloadManager())
+	dlNum(0),
+	dlm(new WsyncDownloadManager(this))
 {
 	// main server
 	mainserver = server = WSYNC_MAIN_SERVER;
@@ -42,9 +43,126 @@ WsyncThread::~WsyncThread()
 
 void WsyncThread::onDownloadStatusUpdate(MyStatusEvent &ev)
 {
-	//just forward the event
-	this->parent->AddPendingEvent(ev);
+	// first, record the new status of that download job
+	int jobID = ev.GetInt();
+	
+	if(dlStatus.find(jobID) == dlStatus.end()) return; // invalid job
+	
+	switch(ev.GetId())
+	{
+	case MSE_DOWNLOAD_START:
+	{
+		dlStatus[jobID].status = 1;
+		// we do this here, since its getting overwritten on the start only
+		updateCallback(MSE_UPDATE_TEXT, "downloading file " + dlStatus[jobID].path);
+		break;
+	}
+	case MSE_DOWNLOAD_PROGRESS:
+		dlStatus[jobID].status = 1;
+		dlStatus[jobID].percent = ev.GetProgress();
+		break;
+	case MSE_DOWNLOAD_TIME:
+		dlStatus[jobID].time = ev.GetProgress();
+		break;
+	case MSE_DOWNLOAD_TIME_LEFT:
+		dlStatus[jobID].time_remaining = ev.GetProgress();
+		break;
+	case MSE_DOWNLOAD_SPEED:
+		dlStatus[jobID].speed = ev.GetProgress();
+		break;
+	case MSE_DOWNLOAD_DOWNLOADED:
+		dlStatus[jobID].downloaded = (boost::uintmax_t)ev.GetProgress();
+		break;
+	case MSE_DOWNLOAD_DONE:
+		dlStatus[jobID].status = 3;
+		break;
+	}
+
+	// then report the progress to the GUI
+	reportProgress();
 }
+
+void WsyncThread::reportProgress()
+{
+	boost::uintmax_t downloadedSize=0;
+	boost::uintmax_t speedSum=0;
+	int timeleft = 0;
+	float timerunning = dlStartTime.elapsed();
+	std::string text;
+	char tmp[1024]="";
+	int job_existing=0, job_done=0, job_running=0; 
+	std::map<int, dlstatus_t>::iterator it;
+	for(it=dlStatus.begin(); it!=dlStatus.end(); it++)
+	{
+		downloadedSize += it->second.downloaded;
+		speedSum += it->second.speed;
+
+		job_existing++;
+		if(it->second.status == 1)
+		{
+			job_running++;
+		}else if(it->second.status == 3)
+		{
+			job_done++;
+		}
+
+		if(it->second.time_remaining > timeleft)
+			timeleft = (int)it->second.time_remaining;
+	}
+
+	// update the progress bar
+	float progress = ((float)downloadedSize) /((float)predDownloadSize);
+	updateCallback(MSE_UPDATE_PROGRESS, "", progress);
+
+	string sizeDone = formatFilesize(downloadedSize);
+	string sizePredicted = formatFilesize(predDownloadSize);
+
+	string timestr = formatSeconds(timerunning);
+	updateCallback(MSE_UPDATE_TIME, timestr);
+
+	if(timeleft > 10)
+	{
+		timestr = formatSeconds(timeleft);
+		updateCallback(MSE_UPDATE_TIME_LEFT, timestr);
+	} else if (timeleft != 0)
+	{
+		timestr = std::string("less than 10 seconds");
+		updateCallback(MSE_UPDATE_TIME_LEFT, timestr);
+	}
+
+	//speedsum is behaving strange ...
+	if(timerunning > 0)
+	{
+		float speed = (float)(downloadedSize / timerunning);
+		string speedstr = formatFilesize((int)speed) + "/s";
+		updateCallback(MSE_UPDATE_SPEED, speedstr);
+	}
+
+	if(progress < 1.0f)
+	{
+		char trafstr[256] = "";
+		sprintf(trafstr, "%s / %s (%0.0f%%)", sizeDone.c_str(), sizePredicted.c_str(), progress * 100);
+		updateCallback(MSE_UPDATE_TRAFFIC, string(trafstr));
+	} else
+	{
+		string sizeOverhead = formatFilesize(downloadedSize-predDownloadSize);
+		char trafstr[256] = "";
+		sprintf(trafstr, "%s (%s overhead)", sizeDone.c_str(), sizeOverhead.c_str());
+		updateCallback(MSE_UPDATE_TRAFFIC, string(trafstr));
+	}
+
+
+	//progressOutputShort(float(changeCounter)/float(changeMax));
+	sprintf(tmp, "%d done, %d running, %d remaining", job_done, job_running, job_existing-job_done);
+	updateCallback(MSE_UPDATE_CONCURR, string(tmp));
+
+	if(job_existing-job_done == 0)
+	{
+		// we are done :D
+		updateCallback(MSE_DONE);
+	}
+}
+
 
 WsyncThread::ExitCode WsyncThread::Entry()
 {
@@ -62,8 +180,8 @@ void WsyncThread::updateCallback(int type, std::string txt, float percent)
 {
 	// send event
 	MyStatusEvent ev(MyStatusCommandEvent, type);
-	ev.text = conv(txt);
-	ev.progress = percent;
+	ev.SetString(conv(txt));
+	ev.SetProgress(percent);
 	parent->AddPendingEvent(ev);
 }
 
@@ -204,7 +322,7 @@ int WsyncThread::getSyncData()
 		LOG("downloading file list to file %s ...\n", remoteFileIndex.string().c_str());
 		string url = "/" + conv(it->path) + "/" + INDEXFILENAME;
 		WsyncDownload *dl = new WsyncDownload(this);
-		if(dl->downloadFile(remoteFileIndex.string(), mainserver, url))
+		if(dl->downloadFile(0, remoteFileIndex.string(), mainserver, url))
 		{
 			delete(dl);
 			updateCallback(MSE_ERROR, "error downloading file index from http://" + mainserver + url);
@@ -450,75 +568,21 @@ int WsyncThread::sync()
 		return -1;
 	}
 
+	dlStartTime = Timer(); // start download counter
+
 	// if there are files to be updated
 	if(changeMax)
 	{
 		string server_use = server, dir_use = serverdir;
-		WsyncDownload *wsdl = new WsyncDownload(this);
-
 		// do things now!
 		if(newFiles.size())
 		{
 			for(itf=newFiles.begin();itf!=newFiles.end();itf++, changeCounter++)
 			{
-				int retrycount = 0;
-// ARGHHHH GOTO D:
-				string server_use_file = server_use, dir_use_file = dir_use;
-retry:
-				updateCallback(MSE_UPDATE_SERVER, server_use_file);
-				//progressOutputShort(float(changeCounter)/float(changeMax));
-				sprintf(tmp, "downloading new file: %s (%s) ", itf->filename.c_str(), formatFilesize(itf->filesize).c_str());
-				updateCallback(MSE_UPDATE_TEXT, string(tmp));
-				LOG("%s\n", tmp);
 				path localfile = ipath / itf->filename;
-				string url = dir_use_file + itf->stream_path + itf->filename;
 				string hash_remote = findHashInHashmap(hashMapRemote, itf->filename);
-
-				//int stat = 0; //wsdl->downloadFile(localfile, server_use_file, url);
-				dlm->addURL(conv(localfile.string()), dir_use, server_use, itf->stream_path + itf->filename, hash_remote);
-				/*
-				if(stat == -404 && retrycount < 2)
-				{
-					LOG("  result: %d, retrycount: %d, falling back to main server\n", stat, retrycount);
-					// fallback to main server (for this single file only!)
-					//printf("falling back to main server.\n");
-					server_use_file = mainserver;
-					dir_use_file = mainserverdir;
-					retrycount++;
-					goto retry;
-				}
-				if(stat)
-				{
-					LOG("  unable to create file: %s\n", itf->filename.c_str());
-					//printf("\nunable to create file: %s\n", itf->filename.c_str());
-				} else
-				{
-					string checkHash = generateFileHash(localfile);
-					string hash_remote = findHashInHashmap(hashMapRemote, itf->filename);
-					if(hash_remote == checkHash)
-					{
-						LOG("DLFile| file hash ok\n");
-						//printf(" OK                                             \n");
-					} else
-					{
-						//printf(" OK                                             \n");
-						//printf(" hash is: '%s'\n", checkHash.c_str());
-						//printf(" hash should be: '%s'\n", hash_remote.c_str());
-						LOG("DLFile| file hash wrong, is: '%s', should be: '%s'\n", checkHash.c_str(), hash_remote.c_str());
-						WsyncDownload::tryRemoveFile(localfile);
-						if(retrycount < 2)
-						{
-							// fallback to main server!
-							//printf(" hash wrong, falling back to main server.\n");
-							//printf(" probably the mirror is not in sync yet\n");
-							server_use_file = mainserver;
-							dir_use_file = mainserverdir;
-							retrycount++;
-							goto retry;
-						}
-					}
-				}
-				*/
+				
+				this->addJob(conv(localfile.string()), dir_use, server_use, itf->stream_path + itf->filename, hash_remote);
 			}
 		}
 
@@ -526,62 +590,10 @@ retry:
 		{
 			for(itf=changedFiles.begin();itf!=changedFiles.end();itf++, changeCounter++)
 			{
-				int retrycount = 0;
-// ARGHHHH GOTO D:
-				string server_use_file = server_use, dir_use_file = dir_use;
-retry2:
-				updateCallback(MSE_UPDATE_SERVER, server_use_file);
-				//progressOutputShort(float(changeCounter)/float(changeMax));
-				sprintf(tmp, "updating changed file: %s (%s) ", itf->filename.c_str(), formatFilesize(itf->filesize).c_str());
-				updateCallback(MSE_UPDATE_TEXT, string(tmp));
-				LOG("%s\n", tmp);
 				path localfile = ipath / itf->filename;
-				string url = dir_use_file + itf->stream_path + itf->filename;
 				string hash_remote = findHashInHashmap(hashMapRemote, itf->filename);
-				dlm->addURL(conv(localfile.string()), dir_use, server_use, itf->stream_path + itf->filename, hash_remote);
-
-				/*
-				int stat = wsdl->downloadFile(localfile, server_use_file, url);
-				if(stat == -404 && retrycount < 2)
-				{
-					// fallback to main server (for this file only)
-					//printf("falling back to main server.\n");
-					server_use_file = mainserver;
-					dir_use_file = mainserverdir;
-					retrycount++;
-					goto retry2;
-				}
-				if(stat)
-				{
-					LOG("  unable to update file: %s\n", itf->filename.c_str());
-					//printf("\nunable to update file: %s\n", itf->filename.c_str());
-				} else
-				{
-					string checkHash = generateFileHash(localfile);
-					if(hash_remote == checkHash)
-					{
-						LOG("DLFile| file hash ok\n");
-						//printf(" OK                                             \n");
-					} else
-					{
-						//printf(" OK                                             \n");
-						//printf(" hash is: '%s'\n", checkHash.c_str());
-						//printf(" hash should be: '%s'\n", hash_remote.c_str());
-						LOG("DLFile| file hash wrong, is: '%s', should be: '%s'\n", checkHash.c_str(), hash_remote.c_str());
-						WsyncDownload::tryRemoveFile(localfile);
-						if(retrycount < 2)
-						{
-							// fallback to main server!
-							//printf(" hash wrong, falling back to main server.\n");
-							//printf(" probably the mirror is not in sync yet\n");
-							server_use_file = mainserver;
-							dir_use_file = mainserverdir;
-							retrycount++;
-							goto retry2;
-						}
-					}
-				}
-				*/
+				
+				this->addJob(conv(localfile.string()), dir_use, server_use, itf->stream_path + itf->filename, hash_remote);
 			}
 		}
 
@@ -614,7 +626,15 @@ retry2:
 		}
 		//sprintf(tmp, "sync complete, downloaded %s\n", formatFilesize(getDownloadSize()).c_str());
 		res = 1;
-		delete(wsdl);
+
+		while(!dlm->isDone())
+		{
+			Sleep(100);
+		}
+
+		// be aware that if you destory this thread before destorying all child threads,
+		// the child threads will crash upon event sending
+
 	} else
 	{
 		sprintf(tmp, "sync complete (already up to date)\n");
@@ -771,7 +791,7 @@ double WsyncThread::measureDownloadSpeed(std::string server, std::string url)
 	boost::uintmax_t filesize=0;
 	Timer timer = Timer();
 	WsyncDownload *dl = new WsyncDownload(this);
-	if(dl->downloadFile(tempfile, server, url, 0, &filesize))
+	if(dl->downloadFile(0, tempfile, server, url, 0, &filesize))
 	{
 		delete(dl);
 		return -2;
@@ -781,5 +801,19 @@ double WsyncThread::measureDownloadSpeed(std::string server, std::string url)
 	printf("mirror speed: %s : %dkB in %0.2f seconds = %0.2f kB/s\n", server.c_str(), (int)(filesize/1024.0f), tdiff, (filesize/1024.0f)/(float)tdiff);
 	WsyncDownload::tryRemoveFile(tempfile);
 	return tdiff;
+}
+
+void WsyncThread::addJob(wxString localFile, wxString remoteDir, wxString remoteServer, wxString remoteFile, wxString hashRemoteFile)
+{
+	dlStatus[dlNum].downloaded=0;
+	dlStatus[dlNum].percent=0;
+	dlStatus[dlNum].speed=0;
+	dlStatus[dlNum].status=0;
+	dlStatus[dlNum].text=string();
+	dlStatus[dlNum].time=0;
+	dlStatus[dlNum].time_remaining=0;
+	dlStatus[dlNum].path = remoteFile;
+	dlm->addJob(dlNum, localFile, remoteDir, remoteServer, remoteFile, hashRemoteFile);
+	dlNum++;
 }
 

@@ -152,7 +152,7 @@ public:
 	bool OnEnter(bool forward);
 	bool OnLeave(bool forward);
 private:
-	wxStaticText *txt_dltime, *txt_speed, *txt_traf, *txt_localpath, *txt_server, *txt_remaintime;
+	wxStaticText *txt_dltime, *txt_speed, *txt_traf, *txt_localpath, *txt_server, *txt_remaintime, *txt_concurr;
 	wxStaticText *statusText, *txtFinish;
 	wxGauge *progress;
 	bool threadStarted;
