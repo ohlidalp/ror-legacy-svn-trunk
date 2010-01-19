@@ -29,11 +29,11 @@ WsyncThread::WsyncThread(wxEvtHandler *parent, wxString _ipath, std::vector < st
 	ipath(conv(_ipath)), 
 	streams(_streams),
 	predDownloadSize(0),
-	dlm(0) //new WsyncDownloadManager())
+	dlm(new WsyncDownloadManager())
 {
 	// main server
-	mainserver = server = "wsync.rigsofrods.com";
-	mainserverdir = serverdir = "/";
+	mainserver = server = WSYNC_MAIN_SERVER;
+	mainserverdir = serverdir = WSYNC_MAIN_DIR;
 }
 
 WsyncThread::~WsyncThread()
@@ -472,7 +472,11 @@ retry:
 				LOG("%s\n", tmp);
 				path localfile = ipath / itf->filename;
 				string url = dir_use_file + itf->stream_path + itf->filename;
-				int stat = wsdl->downloadFile(localfile, server_use_file, url);
+				string hash_remote = findHashInHashmap(hashMapRemote, itf->filename);
+
+				//int stat = 0; //wsdl->downloadFile(localfile, server_use_file, url);
+				dlm->addURL(conv(localfile.string()), dir_use, server_use, itf->stream_path + itf->filename, hash_remote);
+				/*
 				if(stat == -404 && retrycount < 2)
 				{
 					LOG("  result: %d, retrycount: %d, falling back to main server\n", stat, retrycount);
@@ -514,6 +518,7 @@ retry:
 						}
 					}
 				}
+				*/
 			}
 		}
 
@@ -532,6 +537,10 @@ retry2:
 				LOG("%s\n", tmp);
 				path localfile = ipath / itf->filename;
 				string url = dir_use_file + itf->stream_path + itf->filename;
+				string hash_remote = findHashInHashmap(hashMapRemote, itf->filename);
+				dlm->addURL(conv(localfile.string()), dir_use, server_use, itf->stream_path + itf->filename, hash_remote);
+
+				/*
 				int stat = wsdl->downloadFile(localfile, server_use_file, url);
 				if(stat == -404 && retrycount < 2)
 				{
@@ -549,7 +558,6 @@ retry2:
 				} else
 				{
 					string checkHash = generateFileHash(localfile);
-					string hash_remote = findHashInHashmap(hashMapRemote, itf->filename);
 					if(hash_remote == checkHash)
 					{
 						LOG("DLFile| file hash ok\n");
@@ -573,6 +581,7 @@ retry2:
 						}
 					}
 				}
+				*/
 			}
 		}
 

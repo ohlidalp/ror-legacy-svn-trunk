@@ -30,6 +30,9 @@
 #define API_REPOSEARCH "/reposearch/"
 #define REPO_DOWNLOAD  "/files/mirror/geoselect/"
 
+#define WSYNC_MAIN_SERVER "wsync.rigsofrods.com"
+#define WSYNC_MAIN_DIR    "/"
+
 #define WMO_FULL     0x00000001
 #define WMO_NODELETE 0x00000010
 
@@ -69,6 +72,7 @@ public:
 	WsyncThread(wxEvtHandler *parent, wxString ipath, std::vector < stream_desc_t > streams);
 	~WsyncThread();
 
+	static std::string generateFileHash(boost::filesystem::path file);
 protected:
 	// members
 	wxEvtHandler *parent; // where we send events to
@@ -100,11 +104,10 @@ protected:
 	int findMirror(bool probeForBest=false);
 	
 	void listFiles(const boost::filesystem::path &dir_path, std::vector<std::string> &files);
-	std::string generateFileHash(boost::filesystem::path file);
 	int saveHashMapToFile(boost::filesystem::path &filename, std::map<std::string, Hashentry> &hashMap, int mode);
 	int loadHashMapFromFile(boost::filesystem::path &filename, std::map<std::string, Hashentry> &hashMap, int &mode);
-	std::string findHashInHashmap(std::map<std::string, Hashentry> hashMap, std::string filename);
-	std::string findHashInHashmap(std::map < std::string, std::map < std::string, Hashentry > > hashMap, std::string filename);
+	static std::string findHashInHashmap(std::map<std::string, Hashentry> hashMap, std::string filename);
+	static std::string findHashInHashmap(std::map < std::string, std::map < std::string, Hashentry > > hashMap, std::string filename);
 	double measureDownloadSpeed(std::string server, std::string url);
 
 	void onDownloadStatusUpdate(MyStatusEvent &ev);
