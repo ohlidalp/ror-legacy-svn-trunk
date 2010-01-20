@@ -422,8 +422,8 @@ void uninstall_crashrpt()
 
 void test_crashrpt()
 {
-  // emulate null pointer exception (access violation)
-  crEmulateCrash(CR_WIN32_STRUCTURED_EXCEPTION);
+	// emulate null pointer exception (access violation)
+	crEmulateCrash(CR_WIN32_STRUCTURED_EXCEPTION);
 }
 #endif
 
@@ -512,7 +512,7 @@ int main(int argc, char *argv[])
 #ifdef USE_WINDOWS_CRASH_REPORT
 	install_crashrpt();
 
-	test_crashrpt();
+	//test_crashrpt();
 #endif //USE_WINDOWS_CRASH_REPORT
 
 	// Create application object
