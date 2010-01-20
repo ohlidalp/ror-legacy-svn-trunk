@@ -37,9 +37,9 @@ along with Rigs of Rods.  If not, see <http://www.gnu.org/licenses/>.
 #include "language.h"
 #include "errorutils.h"
 
-#ifdef WSYNC
-#include "wsync.h"
-#endif //WSYNC
+#ifdef USE_WINDOWS_CRASH_REPORT
+# include "crashrpt.h"
+#endif
 
 using namespace RoR; //CSHA1
 
@@ -51,12 +51,22 @@ Network *net_instance;
 
 void *s_sendthreadstart(void* vid)
 {
+#ifdef USE_WINDOWS_CRASH_REPORT
+	// add the crash handler for this thread
+	CrThreadAutoInstallHelper cr_thread_install_helper();
+	assert(cr_thread_install_helper.m_nInstallStatus==0);
+#endif //USE_WINDOWS_CRASH_REPORT
 	net_instance->sendthreadstart();
 	return NULL;
 }
 
 void *s_receivethreadstart(void* vid)
 {
+#ifdef USE_WINDOWS_CRASH_REPORT
+	// add the crash handler for this thread
+	CrThreadAutoInstallHelper cr_thread_install_helper();
+	assert(cr_thread_install_helper.m_nInstallStatus==0);
+#endif //USE_WINDOWS_CRASH_REPORT
 	net_instance->receivethreadstart();
 	return NULL;
 }

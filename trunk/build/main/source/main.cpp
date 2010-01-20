@@ -362,9 +362,69 @@ void RigsOfRods::exploreTerrains()
 
 
 //BELOW IS THE C BOOTSTRAP===================================================================
-
-#ifdef USE_REPORT
+#ifdef USE_WINDOWS_CRASH_REPORT
+// see http://code.google.com/p/crashrpt/
 #include "crashrpt.h"
+
+// Define the crash callback
+BOOL WINAPI crashCallback(LPVOID /*lpvState*/)
+{
+	// Now add these two files to the error report
+	crAddFile((SETTINGS.getSetting("Log Path") + "RoR.log").c_str(), "Rigs of Rods Log");  
+	crAddFile((SETTINGS.getSetting("Log Path") + "mygui.log").c_str(), "Rigs of Rods GUI Log");  
+	crAddFile((SETTINGS.getSetting("Log Path") + "configlog.txt").c_str(), "Rigs of Rods Configurator Log");  
+	crAddFile((SETTINGS.getSetting("Program Path") + "wizard.log").c_str(), "Rigs of Rods Installer Log");  
+
+	crAddScreenshot(CR_AS_MAIN_WINDOW);
+	// Return TRUE to allow crash report generation
+	return TRUE;
+}
+
+void install_crashrpt()
+{
+	// Install CrashRpt support
+
+	CR_INSTALL_INFO info;
+	memset(&info, 0, sizeof(CR_INSTALL_INFO));
+	info.cb = sizeof(CR_INSTALL_INFO);  
+	info.pszAppName = "Rigs of Rods";
+	info.pszAppVersion = ROR_VERSION_STRING;
+	info.pszEmailSubject = "Error Report for Rigs of Rods";
+	info.pszEmailTo = "thomas@rigsofrods.com";  
+	info.pszUrl = "http://api.rigsofrods.com/crashreport/";
+	info.pfnCrashCallback = crashCallback; 
+	info.uPriorities[CR_HTTP]  = 3;  // Try HTTP the first
+	info.uPriorities[CR_SMTP]  = 2;  // Try SMTP the second
+	info.uPriorities[CR_SMAPI] = 1; // Try Simple MAPI the last  
+	info.dwFlags = 0; // Install all available exception handlers
+	info.pszPrivacyPolicyURL = "http://wiki.rigsofrods.com/pages/Crash_Report_Privacy_Policy"; // URL for the Privacy Policy link
+
+	int nInstResult = crInstall(&info);
+	if(nInstResult!=0)
+	{
+		// Something goes wrong!
+		TCHAR szErrorMsg[512];
+		szErrorMsg[0]=0;
+
+		crGetLastErrorMsg(szErrorMsg, 512);
+		printf("%s\n", szErrorMsg);
+
+		assert(nInstResult==0);
+	}
+}
+
+void uninstall_crashrpt()
+{
+	// Unset crash handlers
+	int nUninstResult = crUninstall();
+	assert(nUninstResult==0);
+}
+
+void test_crashrpt()
+{
+  // emulate null pointer exception (access violation)
+  crEmulateCrash(CR_WIN32_STRUCTURED_EXCEPTION);
+}
 #endif
 
 // simpleopt by http://code.jellycan.com/simpleopt/
@@ -389,6 +449,7 @@ CSimpleOpt::SOption cmdline_options[] = {
 	{ OPT_TRUCKCONFIG, ((char *)"-truckconfig"), SO_REQ_SEP    },
 	{ OPT_BUILD,       ((char *)"-build"),       SO_NONE    },
 	{ OPT_HELP,        ((char *)"--help"),       SO_NONE    },
+	{ OPT_HELP,        ((char *)"-help"),        SO_NONE    },
 	{ OPT_CHECKCACHE,  ((char *)"-checkcache"),  SO_NONE    },
 	{ OPT_VER,         ((char *)"-version"),     SO_NONE    },
 	{ OPT_BENCH,       ((char *)"-benchmark"),   SO_REQ_SEP    },
@@ -405,25 +466,6 @@ SO_END_OF_OPTIONS
 #endif //NOMINMAX
 #include "windows.h"
 #include "ShellAPI.h"
-
-#ifdef BUGTRAP
-#include "BugTrap.h"
-#pragma comment(lib, "BugTrapN.lib")  // Link to Unicode DLL
-
-static void setupExceptionHandler()
-{
-    BT_SetAppName("Rigs of Rods 0.36 Beta");
-	BT_SetSupportEMail("thomas@rigsofrods.com");
-    BT_SetFlags(BTF_DETAILEDMODE | BTF_EDITMAIL);
-    //BT_SetSupportServer("localhost", 9999);
-    BT_SetSupportURL("http://forum.rigsofrods.com");
-
-	// catch c++ exceptions:
-	BT_SetTerminate();
-}
-
-#endif //BUGTRAP
-
 #endif //OGRE_PLATFORM_WIN32
 
 #ifdef __cplusplus
@@ -467,9 +509,11 @@ int main(int argc, char *argv[])
 	printf("GETWD=%s\n", str);
 #endif
 
-#ifdef BUGTRAP
-	setupExceptionHandler();
-#endif //BUGTRAP
+#ifdef USE_WINDOWS_CRASH_REPORT
+	install_crashrpt();
+
+	test_crashrpt();
+#endif //USE_WINDOWS_CRASH_REPORT
 
 	// Create application object
 	RigsOfRods app;
@@ -533,6 +577,10 @@ int main(int argc, char *argv[])
 		showWebError("An exception has occured!", e.getFullDescription(), url);
 		return 1;
 	}
+
+#ifdef USE_WINDOWS_CRASH_REPORT
+	uninstall_crashrpt();
+#endif //USE_WINDOWS_CRASH_REPORT
 
 	return 0;
 }
