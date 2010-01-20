@@ -43,7 +43,7 @@ using namespace Ogre;
 #define inverse_CELL_SIZE 0.1
 #define MAXIMUM_CELL 0x7FFF
 
-#define MAX_EVENTSOURCE 100
+#define MAX_EVENTSOURCE 500
 
 #define LATEST_GROUND_MODEL_VERSION 3
 #define LATEST_LANDUSE_VERSION 1

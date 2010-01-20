@@ -399,7 +399,13 @@ BOOL WINAPI crashCallback(LPVOID /*lpvState*/)
 	crAddFile((SETTINGS.getSetting("Config Root") + "ogre.cfg").c_str(), "Rigs of Rods Renderer Configuration");
 	crAddFile((SETTINGS.getSetting("Config Root") + "RoR.cfg").c_str(), "Rigs of Rods Configuration");
 
-	crAddProperty("RoRVersion", getVersionString().c_str());
+	crAddProperty("Version", ROR_VERSION_STRING);
+	crAddProperty("Revision", SVN_REVISION);
+	crAddProperty("full Revision", SVN_ID);
+	crAddProperty("protocol version", RORNET_VERSION);
+	crAddProperty("build date", __DATE__);
+	crAddProperty("build time", __TIME__);
+
 	crAddScreenshot(CR_AS_MAIN_WINDOW);
 	// Return TRUE to allow crash report generation
 	return TRUE;
