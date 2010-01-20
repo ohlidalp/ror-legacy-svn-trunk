@@ -362,6 +362,19 @@ void RigsOfRods::exploreTerrains()
 
 
 //BELOW IS THE C BOOTSTRAP===================================================================
+Ogre::String getVersionString()
+{
+	char tmp[1024] = "";
+	sprintf(tmp, "Rigs of Rods\n"
+		" version: %s\n"
+		" revision: %s\n"
+		" full revision: %s\n"
+		" protocol version: %s\n"
+		" build time: %s, %s\n"
+		, ROR_VERSION_STRING, SVN_REVISION, SVN_ID, RORNET_VERSION, __DATE__, __TIME__);
+	return Ogre::String(tmp);
+}
+
 #ifdef USE_WINDOWS_CRASH_REPORT
 // see http://code.google.com/p/crashrpt/
 #include "crashrpt.h"
@@ -370,11 +383,23 @@ void RigsOfRods::exploreTerrains()
 BOOL WINAPI crashCallback(LPVOID /*lpvState*/)
 {
 	// Now add these two files to the error report
-	crAddFile((SETTINGS.getSetting("Log Path") + "RoR.log").c_str(), "Rigs of Rods Log");  
-	crAddFile((SETTINGS.getSetting("Log Path") + "mygui.log").c_str(), "Rigs of Rods GUI Log");  
-	crAddFile((SETTINGS.getSetting("Log Path") + "configlog.txt").c_str(), "Rigs of Rods Configurator Log");  
-	crAddFile((SETTINGS.getSetting("Program Path") + "wizard.log").c_str(), "Rigs of Rods Installer Log");  
+	
+	// logs
+	crAddFile((SETTINGS.getSetting("Log Path") + "RoR.log").c_str(), "Rigs of Rods Log");
+	crAddFile((SETTINGS.getSetting("Log Path") + "mygui.log").c_str(), "Rigs of Rods GUI Log");
+	crAddFile((SETTINGS.getSetting("Log Path") + "configlog.txt").c_str(), "Rigs of Rods Configurator Log");
+	crAddFile((SETTINGS.getSetting("Program Path") + "wizard.log").c_str(), "Rigs of Rods Installer Log");
 
+	// cache
+	crAddFile((SETTINGS.getSetting("Cache Path") + "mods.cache").c_str(), "Rigs of Rods Cache File");
+
+	// configs
+	crAddFile((SETTINGS.getSetting("Config Root") + "ground_models.cfg").c_str(), "Rigs of Rods Ground Configuration");
+	crAddFile((SETTINGS.getSetting("Config Root") + "input.map").c_str(), "Rigs of Rods Input Configuration");
+	crAddFile((SETTINGS.getSetting("Config Root") + "ogre.cfg").c_str(), "Rigs of Rods Renderer Configuration");
+	crAddFile((SETTINGS.getSetting("Config Root") + "RoR.cfg").c_str(), "Rigs of Rods Configuration");
+
+	crAddProperty("RoRVersion", getVersionString().c_str());
 	crAddScreenshot(CR_AS_MAIN_WINDOW);
 	// Return TRUE to allow crash report generation
 	return TRUE;
@@ -408,6 +433,9 @@ void install_crashrpt()
 
 		crGetLastErrorMsg(szErrorMsg, 512);
 		printf("%s\n", szErrorMsg);
+
+
+		showError("Exception handling registration problem", String(szErrorMsg));
 
 		assert(nInstResult==0);
 	}
@@ -479,15 +507,7 @@ void showUsage()
 
 void showVersion()
 {
-	char tmp[1024] = "";
-	sprintf(tmp, "Rigs of Rods\n"
-		" version: %s\n"
-		" revision: %s\n"
-		" full revision: %s\n"
-		" protocol version: %s\n"
-		" build time: %s, %s\n"
-		, ROR_VERSION_STRING, SVN_REVISION, SVN_ID, RORNET_VERSION, __DATE__, __TIME__);
-	showInfo(_L("Version Information"), String(tmp));
+	showInfo(_L("Version Information"), getVersionString());
 #ifdef __GNUC__
 	printf(" * built with gcc %d.%d.%d\n", __GNUC_MINOR__, __GNUC_MINOR__, __GNUC_PATCHLEVEL__);
 #endif //__GNUC__
