@@ -8005,13 +8005,14 @@ void Beam::truckTruckCollisions(Real dt, Beam** trucks, int numtrucks)
 					(no->Velocity*(-point.x-point.y+1.0f)+na->Velocity*point.x
 						+nb->Velocity*point.y));
 
+					//Find the velocity perpendicular to the triangle
 					float velForce=vecrelVel.dotProduct(plnormal);
+					//if it points away from the triangle the ignore it (set it to 0)
 					if (velForce<0.0f) velForce=-velForce;
 					else velForce=0.0f;
 
 					//Velocity impulse
 					float vi=hitnode->mass*inverted_dt*(velForce+inverted_dt*penetration)*0.5f;
-					//float vi=hitnode->mass*inverted_dt*inverted_dt*penetration;
 
 					//The force that the triangle puts on the point
 					float trfnormal=(no->Forces*(-point.x-point.y+1.0f)+na->Forces*point.x
@@ -8019,11 +8020,12 @@ void Beam::truckTruckCollisions(Real dt, Beam** trucks, int numtrucks)
 					//(applied only when it is towards the point)
 					if (trfnormal<0.0f) trfnormal=0.0f;
 
+					//The force that the point puts on the triangle
 					float pfnormal=hitnode->Forces.dotProduct(plnormal);
+					//(applied only when it is towards the triangle)
 					if (pfnormal>0.0f) pfnormal=0.0f;
 
 					float fl=(vi+trfnormal-pfnormal)*0.5f;
-					//float fl=vi;
 
 					forcevec=Vector3::ZERO;
 					float nso;
@@ -8031,7 +8033,6 @@ void Beam::truckTruckCollisions(Real dt, Beam** trucks, int numtrucks)
 					//Calculate the collision forces
 					collisions->primitiveCollision(hitnode, forcevec, vecrelVel, plnormal, ((float) dt), collisions->defaultgm, &nso, penetration, fl);
 
-					//forcevec=plnormal*fl;
 					hitnode->Forces+=forcevec;
 
 					// no network special case for now
