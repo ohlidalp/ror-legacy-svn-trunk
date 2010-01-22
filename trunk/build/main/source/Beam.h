@@ -214,9 +214,10 @@ extern int truckSteps;
 #define SHOCK_FLAG_ISSHOCK2     0x00000010
 #define SHOCK_FLAG_SOFTBUMP     0x00000020
 
-#define SHOCK1	1
-#define SHOCK2	2
-#define ROPE	4
+#define SHOCK1 1
+#define SHOCK2 2
+#define SUPPORTBEAM 3
+#define ROPE 4
 
 enum blinktype {BLINK_NONE, BLINK_LEFT, BLINK_RIGHT, BLINK_WARN};
 

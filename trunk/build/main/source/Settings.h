@@ -36,6 +36,10 @@ public:
 	bool setupPaths();
 	void loadSettings(Ogre::String configFile, bool overwrite=false);
 	void saveSettings(Ogre::String configFile);
+	void saveSettings();
+
+	void checkGUID();
+	void createGUID();
 
 #ifdef ANGELSCRIPT
 	// we have to add this to be able to use the class as reference inside scripts
