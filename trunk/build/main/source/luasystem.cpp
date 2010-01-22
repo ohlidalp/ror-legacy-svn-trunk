@@ -20,8 +20,8 @@ along with Rigs of Rods.  If not, see <http://www.gnu.org/licenses/>.
 #ifdef LUASCRIPT
 
 #include "luasystem.h"
-#include "gui_loader.h"
 #include "Settings.h"
+#include "SelectorWindow.h"
 
 // some gcc fixes
 #if OGRE_PLATFORM == OGRE_PLATFORM_LINUX
@@ -356,16 +356,16 @@ int LuaSystem::showChooser(lua_State *lua)
 	const char *inst = lua_tostring (lua, 2);
 	const char *box = lua_tostring (lua, 3);
 	int ntype=-1;
-	if (!strcmp("vehicle", type))   ntype = GUI_Loader::LT_Vehicle;
-	if (!strcmp("truck", type))     ntype = GUI_Loader::LT_Truck;
-	if (!strcmp("car", type))       ntype = GUI_Loader::LT_Truck;
-	if (!strcmp("boat", type))      ntype = GUI_Loader::LT_Boat;
-	if (!strcmp("airplane", type))  ntype = GUI_Loader::LT_Airplane;
-	if (!strcmp("heli", type))      ntype = GUI_Loader::LT_Heli;
-	if (!strcmp("trailer", type))   ntype = GUI_Loader::LT_Trailer;
-	if (!strcmp("load", type))      ntype = GUI_Loader::LT_Load;
-	if (!strcmp("allbeam", type))   ntype = GUI_Loader::LT_AllBeam;
-	if (!strcmp("extension", type)) ntype = GUI_Loader::LT_Extension;
+	if (!strcmp("vehicle", type))   ntype = SelectorWindow::LT_Vehicle;
+	if (!strcmp("truck", type))     ntype = SelectorWindow::LT_Truck;
+	if (!strcmp("car", type))       ntype = SelectorWindow::LT_Truck;
+	if (!strcmp("boat", type))      ntype = SelectorWindow::LT_Boat;
+	if (!strcmp("airplane", type))  ntype = SelectorWindow::LT_Airplane;
+	if (!strcmp("heli", type))      ntype = SelectorWindow::LT_Heli;
+	if (!strcmp("trailer", type))   ntype = SelectorWindow::LT_Trailer;
+	if (!strcmp("load", type))      ntype = SelectorWindow::LT_Load;
+	if (!strcmp("allbeam", type))   ntype = SelectorWindow::LT_AllBeam;
+	if (!strcmp("extension", type)) ntype = SelectorWindow::LT_Extension;
 	if (ntype!=-1)
 		mefl->showLoad(ntype, (char*)inst, (char*)box);
 	return 0;

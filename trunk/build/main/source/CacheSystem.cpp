@@ -24,9 +24,10 @@ along with Rigs of Rods.  If not, see <http://www.gnu.org/licenses/>.
 #include "ImprovedConfigFile.h"
 #include "skinmanager.h"
 #include "Settings.h"
-#include "gui_loader.h"
 #include "language.h"
 #include "SoundScriptManager.h"
+
+#include "LoadingWindow.h"
 
 using namespace RoR; //CSHA1
 
@@ -696,21 +697,21 @@ int CacheSystem::incrementalCacheUpdate()
 
 	LogManager::getSingleton().logMessage("* incremental check starting ...");
 	LogManager::getSingleton().logMessage("* incremental check (1/5): deleted and changed files ...");
-	UILOADER.setProgress(20, _L("incremental check: deleted and changed files"));
+	LoadingWindow::get()->setProgress(20, _L("incremental check: deleted and changed files"));
 	std::vector<Cache_Entry>::iterator it;
 	int counter=0;
 	std::vector<Cache_Entry> changed_entries;
 	for(it = entries.begin(); it != entries.end(); it++, counter++)
 	{
 		int progress = ((float)counter/(float)(entries.size()))*100;
-		UILOADER.setProgress(progress, _L("incremental check: deleted and changed files\n" + it->type + ": " + it->fname));
+		LoadingWindow::get()->setProgress(progress, _L("incremental check: deleted and changed files\n" + it->type + ": " + it->fname));
 		if(it->type == "FileSystem")
 		{
 			String fn = getRealPath(it->dirname + "/" + it->fname);
 			if(!fileExists(fn))
 			{
 				LogManager::getSingleton().logMessage("- "+fn+" is not existing");
-				UILOADER.setProgress(20, _L("incremental check: deleted and changed files\n")+it->fname+_L(" not existing"));
+				LoadingWindow::get()->setProgress(20, _L("incremental check: deleted and changed files\n")+it->fname+_L(" not existing"));
 				removeFileFromFileCache(it);
 				//entries.erase(it);
 				it->deleted=true;
@@ -726,7 +727,7 @@ int CacheSystem::incrementalCacheUpdate()
 			if(!fileExists(fn))
 			{
 				LogManager::getSingleton().logMessage("- "+fn+_L(" not existing"));
-				UILOADER.setProgress(20, _L("incremental check: deleted and changed files\n")+it->fname+_L(" not existing"));
+				LoadingWindow::get()->setProgress(20, _L("incremental check: deleted and changed files\n")+it->fname+_L(" not existing"));
 				removeFileFromFileCache(it);
 				//entries.erase(it);
 				it->deleted = true;
@@ -772,7 +773,7 @@ int CacheSystem::incrementalCacheUpdate()
 	std::vector<Ogre::String> reloaded_zips;
 	std::vector<Ogre::String>::iterator sit;
 	LogManager::getSingleton().logMessage("* incremental check (2/5): processing changed zips ...");
-	UILOADER.setProgress(40, _L("incremental check: processing changed zips\n"));
+	LoadingWindow::get()->setProgress(40, _L("incremental check: processing changed zips\n"));
 	for(it = changed_entries.begin(); it != changed_entries.end(); it++)
 	{
 		bool found=false;
@@ -786,21 +787,21 @@ int CacheSystem::incrementalCacheUpdate()
 		}
 		if (!found)
 		{
-			UILOADER.setProgress(40, _L("incremental check: processing changed zips\n")+it->fname);
+			LoadingWindow::get()->setProgress(40, _L("incremental check: processing changed zips\n")+it->fname);
 			loadSingleZip(*it);
 			reloaded_zips.push_back(it->dirname);
 		}
 	}
 	LogManager::getSingleton().logMessage("* incremental check (3/5): new content ...");
-	UILOADER.setProgress(60, _L("incremental check: new content\n"));
+	LoadingWindow::get()->setProgress(60, _L("incremental check: new content\n"));
 	checkForNewContent();
 
 	LogManager::getSingleton().logMessage("* incremental check (4/5): new files ...");
-	UILOADER.setProgress(80, _L("incremental check: new files\n"));
+	LoadingWindow::get()->setProgress(80, _L("incremental check: new files\n"));
 	checkForNewKnownFiles();
 
 	LogManager::getSingleton().logMessage("* incremental check (5/5): duplicates ...");
-	UILOADER.setProgress(90, _L("incremental check: duplicates\n"));
+	LoadingWindow::get()->setProgress(90, _L("incremental check: duplicates\n"));
 	std::vector<Cache_Entry>::iterator it2;
 	for(it = entries.begin(); it != entries.end(); it++)
 	{
@@ -878,14 +879,14 @@ int CacheSystem::incrementalCacheUpdate()
 			}
 		}
 	}
-	UILOADER.setProgress(UI_PROGRESSBAR_AUTOTRACK, _L("loading...\n"));
+	LoadingWindow::get()->setAutotrack(_L("loading...\n"));
 
 	//LogManager::getSingleton().logMessage("* incremental check (5/5): regenerating file cache ...");
 	//generateFileCache(true);
 
 	writeGeneratedCache();
 
-	UILOADER.setProgress(UI_PROGRESSBAR_HIDE);
+	LoadingWindow::get()->hide();
 	LogManager::getSingleton().logMessage("* incremental check done.");
 	return 0;
 }
@@ -2790,12 +2791,12 @@ void CacheSystem::loadAllZipsInResourceGroup(String group)
 		}
 		// update loader
 		int progress = ((float)i/(float)filecount)*100;
-		UILOADER.setProgress(progress, _L("Loading zips in group ") + group + "\n" + iterFiles->filename + "\n" + StringConverter::toString(i) + "/" + StringConverter::toString(filecount));
+		LoadingWindow::get()->setProgress(progress, _L("Loading zips in group ") + group + "\n" + iterFiles->filename + "\n" + StringConverter::toString(i) + "/" + StringConverter::toString(filecount));
 		loadSingleZip((Ogre::FileInfo)*iterFiles);
 		loadedZips[iterFiles->filename] = true;
 	}
 	// hide loader again
-	UILOADER.setProgress(UI_PROGRESSBAR_HIDE);
+	LoadingWindow::get()->hide();
 }
 
 void CacheSystem::loadAllDirectoriesInResourceGroup(String group)
@@ -2808,11 +2809,11 @@ void CacheSystem::loadAllDirectoriesInResourceGroup(String group)
 		String dirname = listitem->archive->getName() + SETTINGS.getSetting("dirsep") + listitem->filename;
 		// update loader
 		int progress = ((float)i/(float)filecount)*100;
-		UILOADER.setProgress(progress, _L("Loading directory\n") + listitem->filename);
+		LoadingWindow::get()->setProgress(progress, _L("Loading directory\n") + listitem->filename);
 		loadSingleDirectory(dirname, group, true);
 	}
 	// hide loader again
-	UILOADER.setProgress(UI_PROGRESSBAR_HIDE);
+	LoadingWindow::get()->hide();
 }
 
 void CacheSystem::loadAllZips()
@@ -2853,16 +2854,16 @@ void CacheSystem::checkForNewZipsInResourceGroup(String group)
 		zippath=zippath2;
 		#endif
 		int progress = ((float)i/(float)filecount)*100;
-		UILOADER.setProgress(progress, _L("checking for new zips in ") + group + "\n" + iterFiles->filename + "\n" + StringConverter::toString(i) + "/" + StringConverter::toString(filecount));
+		LoadingWindow::get()->setProgress(progress, _L("checking for new zips in ") + group + "\n" + iterFiles->filename + "\n" + StringConverter::toString(i) + "/" + StringConverter::toString(filecount));
 		if(!isZipUsedInEntries(zippath2))
 		{
-			UILOADER.setProgress(progress, _L("checking for new zips in ") + group + "\n" + _L("loading new zip: ") + iterFiles->filename + "\n" + StringConverter::toString(i) + "/" + StringConverter::toString(filecount));
+			LoadingWindow::get()->setProgress(progress, _L("checking for new zips in ") + group + "\n" + _L("loading new zip: ") + iterFiles->filename + "\n" + StringConverter::toString(i) + "/" + StringConverter::toString(filecount));
 			LogManager::getSingleton().logMessage("- "+zippath+" is new");
 			newFiles++;
 			loadSingleZip((Ogre::FileInfo)*iterFiles);
 		}
 	}
-	UILOADER.setProgress(UI_PROGRESSBAR_HIDE);
+	LoadingWindow::get()->hide();
 }
 
 void CacheSystem::checkForNewDirectoriesInResourceGroup(String group)
@@ -2874,15 +2875,15 @@ void CacheSystem::checkForNewDirectoriesInResourceGroup(String group)
 		if(!listitem->archive) continue;
 		String dirname = listitem->archive->getName() + SETTINGS.getSetting("dirsep") + listitem->filename;
 		int progress = ((float)i/(float)filecount)*100;
-		UILOADER.setProgress(progress, _L("checking for new directories in ") + group + "\n" + listitem->filename + "\n" + StringConverter::toString(i) + "/" + StringConverter::toString(filecount));
+		LoadingWindow::get()->setProgress(progress, _L("checking for new directories in ") + group + "\n" + listitem->filename + "\n" + StringConverter::toString(i) + "/" + StringConverter::toString(filecount));
 		if(!isDirectoryUsedInEntries(dirname))
 		{
-			UILOADER.setProgress(progress, _L("checking for new directories in ") + group + "\n" + _L("loading new directory: ") + listitem->filename + "\n" + StringConverter::toString(i) + "/" + StringConverter::toString(filecount));
+			LoadingWindow::get()->setProgress(progress, _L("checking for new directories in ") + group + "\n" + _L("loading new directory: ") + listitem->filename + "\n" + StringConverter::toString(i) + "/" + StringConverter::toString(filecount));
 			LogManager::getSingleton().logMessage("- "+dirname+" is new");
 			loadSingleDirectory(dirname, group, true);
 		}
 	}
-	UILOADER.setProgress(UI_PROGRESSBAR_HIDE);
+	LoadingWindow::get()->hide();
 }
 
 void CacheSystem::checkForNewContent()

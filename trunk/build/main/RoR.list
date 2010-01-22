@@ -41,7 +41,6 @@ set (HEADER_FILES
   source/groundmodel.h
   source/gui_friction.h
   source/gui_inputmanager.h
-  source/gui_loader.h
   source/gui_manager.h
   source/gui_menu.h
   source/hdrlistener.h
@@ -85,6 +84,7 @@ set (HEADER_FILES
   source/Settings.h
   source/sha1.h
   source/SimpleOpt.h
+  source/Singleton.h
   source/Skidmark.h
   source/skin.h
   source/skinmanager.h
@@ -107,6 +107,8 @@ set (HEADER_FILES
   source/MapControl.h
   source/MapEntity.h
   source/MapTextureCreator.h
+  source/SelectorWindow.h
+  source/LoadingWindow.h
 )
 set (SOURCE_FILES
   source/airbrake.cpp
@@ -148,7 +150,6 @@ set (SOURCE_FILES
   source/FlexObj.cpp
   source/gui_friction.cpp
   source/gui_inputmanager.cpp
-  source/gui_loader.cpp
   source/gui_manager.cpp
   source/gui_menu.cpp
   source/hdrlistener.cpp
@@ -205,6 +206,8 @@ set (SOURCE_FILES
   source/MapControl.cpp
   source/MapEntity.cpp
   source/MapTextureCreator.cpp
+  source/SelectorWindow.cpp
+  source/LoadingWindow.cpp
   source/COPYING
   source/ror.ico
 )
@@ -248,7 +251,6 @@ SOURCE_GROUP("Source Files" FILES
   source/FlexObj.cpp
   source/gui_friction.cpp
   source/gui_inputmanager.cpp
-  source/gui_loader.cpp
   source/gui_manager.cpp
   source/gui_menu.cpp
   source/hdrlistener.cpp
@@ -346,7 +348,6 @@ SOURCE_GROUP("Header Files" FILES
   source/groundmodel.h
   source/gui_friction.h
   source/gui_inputmanager.h
-  source/gui_loader.h
   source/gui_manager.h
   source/gui_menu.h
   source/hdrlistener.h
@@ -390,6 +391,7 @@ SOURCE_GROUP("Header Files" FILES
   source/Settings.h
   source/sha1.h
   source/SimpleOpt.h
+  source/Singleton.h
   source/Skidmark.h
   source/skin.h
   source/skinmanager.h
@@ -417,6 +419,14 @@ SOURCE_GROUP("GUI\\MiniMap" FILES
   source/MapEntity.h
   source/MapTextureCreator.cpp
   source/MapTextureCreator.h
+)
+SOURCE_GROUP("GUI\\SelectorWindow" FILES
+  source/SelectorWindow.cpp
+  source/SelectorWindow.h
+)
+SOURCE_GROUP("GUI\\LoadingWindow" FILES
+  source/LoadingWindow.cpp
+  source/LoadingWindow.h
 )
 SOURCE_GROUP("GUI" FILES
 )
