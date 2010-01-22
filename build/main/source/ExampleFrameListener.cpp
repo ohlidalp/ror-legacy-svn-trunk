@@ -75,9 +75,10 @@ along with Rigs of Rods.  If not, see <http://www.gnu.org/licenses/>.
 #include "FlexAirfoil.h"
 
 #include "gui_manager.h"
-#include "gui_loader.h"
 #include "gui_menu.h"
 #include "gui_friction.h"
+#include "SelectorWindow.h"
+#include "LoadingWindow.h"
 
 #include "mirrors.h"
 #include "TruckHUD.h"
@@ -1103,7 +1104,8 @@ ExampleFrameListener::ExampleFrameListener(RenderWindow* win, Camera* cam, Scene
 	// init GUI
 	new GUIManager(root, scm, win);
 
-	UILOADER.setup(win, cam);
+	LoadingWindow::Instance();
+	SelectorWindow::Instance();
 
 	// setup particle manager
 	new DustManager(mSceneMgr);
@@ -1624,14 +1626,14 @@ ExampleFrameListener::ExampleFrameListener(RenderWindow* win, Camera* cam, Scene
 		}
 		LogManager::getSingleton().logMessage("trying to join server '" + String(sname) + "' on port " + StringConverter::toString(sport) + "'...");
 
-		UILOADER.setProgress(UI_PROGRESSBAR_AUTOTRACK, _L("Trying to connect to server ..."));
+		LoadingWindow::get()->setAutotrack(_L("Trying to connect to server ..."));
 		// important note: all new network code is written in order to allow also the old network protocol to further exist.
 		// at some point you need to decide with what type of server you communicate below and choose the correct class
 
 		net = new Network(trucks, sname, sport, this);
 
 		bool connres = net->connect();
-		UILOADER.setProgress(UI_PROGRESSBAR_HIDE);
+		LoadingWindow::get()->hide();
 		if(!connres)
 		{
 			LogManager::getSingleton().logMessage("connection failed. server down?");
@@ -1736,16 +1738,16 @@ ExampleFrameListener::ExampleFrameListener(RenderWindow* win, Camera* cam, Scene
 			if (truck_preload_num == 0 && !netmode)
 			{
 				// show truck selector
-				UILOADER.setEnableCancel(false);
+				SelectorWindow::get()->setEnableCancel(false);
 				if(w)
 				{
 					hideMap();
-					UILOADER.show(GUI_Loader::LT_NetworkWithBoat);
+					SelectorWindow::get()->show(SelectorWindow::LT_NetworkWithBoat);
 				}
 				else
 				{
 					hideMap();
-					UILOADER.show(GUI_Loader::LT_Network);
+					SelectorWindow::get()->show(SelectorWindow::LT_Network);
 				}
 			} else {
 				// init no trucks, as there were found some
@@ -1757,8 +1759,8 @@ ExampleFrameListener::ExampleFrameListener(RenderWindow* win, Camera* cam, Scene
 		// show terrain selector
 		hideMap();
 		//LogManager::getSingleton().logMessage("huette debug 3");
-		UILOADER.show(GUI_Loader::LT_Terrain);
-		UILOADER.setEnableCancel(false);
+		SelectorWindow::get()->show(SelectorWindow::LT_Terrain);
+		SelectorWindow::get()->setEnableCancel(false);
 	}
 
 	// show character
@@ -1785,12 +1787,14 @@ ExampleFrameListener::ExampleFrameListener(RenderWindow* win, Camera* cam, Scene
 	pickLineNode->attachObject(pickLine);
 	pickLineNode->setVisible(false);
 
-
 	initialized=true;
 }
 
 ExampleFrameListener::~ExampleFrameListener()
 {
+	LoadingWindow::get()->FreeInstance();
+	SelectorWindow::get()->FreeInstance();
+
 //	if (joy) delete (joy);
 #ifdef PAGED
 	for(std::vector<paged_geometry_t>::iterator it=pagedGeometry.begin(); it!=pagedGeometry.end(); it++)
@@ -1865,7 +1869,7 @@ void ExampleFrameListener::setupBenchmark()
 	if(benchmark == "simple")
 	{
 		benchmarking=true;
-		UILOADER.setProgress(UI_PROGRESSBAR_HIDE);
+		LoadingWindow::get()->hide();
 	} else
 	{
 		// unkown benchmark
@@ -4401,11 +4405,11 @@ bool ExampleFrameListener::updateEvents(float dt)
 		//uiloader->updateEvents(dt);
 
 
-		if (UILOADER.isFinishedSelecting())
+		if (SelectorWindow::get()->isFinishedSelecting())
 		{
 			if (loading_state==NONE_LOADED)
 			{
-				Cache_Entry *sel = UILOADER.getSelection();
+				Cache_Entry *sel = SelectorWindow::get()->getSelection();
 				if(sel)
 				{
 					terrainUID = sel->uniqueid;
@@ -4422,12 +4426,12 @@ bool ExampleFrameListener::updateEvents(float dt)
 						if(w)
 						{
 							hideMap();
-							UILOADER.show(GUI_Loader::LT_NetworkWithBoat);
+							SelectorWindow::get()->show(SelectorWindow::LT_NetworkWithBoat);
 						}
 						else
 						{
 							hideMap();
-							UILOADER.show(GUI_Loader::LT_Network);
+							SelectorWindow::get()->show(SelectorWindow::LT_Network);
 						}
 					} else
 					{
@@ -4437,8 +4441,8 @@ bool ExampleFrameListener::updateEvents(float dt)
 				}
 			} else if (loading_state==TERRAIN_LOADED)
 			{
-				Cache_Entry *selt = UILOADER.getSelection();
-				std::vector<Ogre::String> config = UILOADER.getTruckConfig();
+				Cache_Entry *selt = SelectorWindow::get()->getSelection();
+				std::vector<Ogre::String> config = SelectorWindow::get()->getTruckConfig();
 				std::vector<Ogre::String> *configptr = &config;
 				if(config.size() == 0) configptr = 0;
 				if(selt)
@@ -4449,14 +4453,14 @@ bool ExampleFrameListener::updateEvents(float dt)
 
 			} else if (loading_state==RELOADING)
 			{
-				Cache_Entry *selt = UILOADER.getSelection();
-				SkinPtr skin = UILOADER.getSelectedSkin();
+				Cache_Entry *selt = SelectorWindow::get()->getSelection();
+				SkinPtr skin = SelectorWindow::get()->getSelectedSkin();
 				Beam *localTruck = 0;
 				if(selt)
 				{
 					//we load an extra truck
 					String selected = selt->fname;
-					std::vector<Ogre::String> config = UILOADER.getTruckConfig();
+					std::vector<Ogre::String> config = SelectorWindow::get()->getTruckConfig();
 					std::vector<Ogre::String> *configptr = &config;
 					if(config.size() == 0) configptr = 0;
 
@@ -4480,7 +4484,7 @@ bool ExampleFrameListener::updateEvents(float dt)
 					}
 				}
 
-				UILOADER.hide();
+				SelectorWindow::get()->hide();
 				loading_state=ALL_LOADED;
 				if(localTruck && localTruck->driveable)
 				{
@@ -4807,7 +4811,7 @@ void ExampleFrameListener::loadTerrain(String terrainfile)
 	updateXFire();
 #endif
 
-	UILOADER.setProgress(0, _L("Loading Terrain"), true);
+	LoadingWindow::get()->setProgress(0, _L("Trying to connect to server ..."));
 	bool disableMap = (SETTINGS.getSetting("disableOverViewMap") == "Yes");
 
 	// map must be loaded before lua!
@@ -5667,7 +5671,7 @@ void ExampleFrameListener::loadTerrain(String terrainfile)
 		int progress = ((float)(ds->tell()) / (float)(ds->size())) * 100.0f;
 		if(progress-lastprogress > 20)
 		{
-			UILOADER.setProgress(progress, _L("Loading Terrain"));
+			LoadingWindow::get()->setProgress(progress, _L("Loading Terrain"));
 			lastprogress = progress;
 		}
 
@@ -6128,7 +6132,7 @@ void ExampleFrameListener::loadTerrain(String terrainfile)
 	if(debugCollisions)
 		collisions->createCollisionDebugVisualization();
 
-	UILOADER.setProgress(UI_PROGRESSBAR_HIDE);
+	LoadingWindow::get()->hide();
 
 	if(bigMap)
 	{
@@ -7387,7 +7391,7 @@ bool ExampleFrameListener::frameStarted(const FrameEvent& evt)
 	//if(collisions) 	printf("> ground model used: %s\n", collisions->last_used_ground_model->name);
 
 	// exit frame started method when just displaying the GUI
-	if (UILOADER.getFrameForced())
+	if (LoadingWindow::get()->getFrameForced())
 		return true;
 
 	if(showcredits && creditsviewtime > 0)
@@ -7941,7 +7945,7 @@ void ExampleFrameListener::showLoad(int type, char* instance, char* box)
 	reload_box=collisions->getBox(instance, box);
 	loading_state=RELOADING;
 	hideMap();
-	UILOADER.show(type);
+	SelectorWindow::get()->show(type);
 }
 
 bool ExampleFrameListener::fileExists(const char* filename)

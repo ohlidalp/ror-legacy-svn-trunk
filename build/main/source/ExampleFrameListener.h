@@ -192,6 +192,8 @@ typedef struct
 class ExampleFrameListener;
 class DOFManager;
 
+class SelectorWindow;
+
 extern ExampleFrameListener *eflsingleton;
 
 
