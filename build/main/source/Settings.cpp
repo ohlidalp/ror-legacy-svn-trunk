@@ -67,6 +67,36 @@ void Settings::setSetting(Ogre::String key, Ogre::String value)
 	settings[key] = value;
 }
 
+void Settings::checkGUID()
+{
+	if(getSetting("GUID").empty())
+		createGUID();
+}
+
+void Settings::createGUID()
+{
+#if OGRE_PLATFORM == OGRE_PLATFORM_WIN32
+	GUID *g = new GUID();
+	CoCreateGuid(g);
+
+	char buf[120];
+	sprintf(buf,"%08x-%04x-%04x-%02x%02x-%02x%02x%02x%02x%02x%02x", g->Data1,g->Data2,g->Data3,UINT(g->Data4[0]),UINT(g->Data4[1]),UINT(g->Data4[2]),UINT(g->Data4[3]),UINT(g->Data4[4]),UINT(g->Data4[5]),UINT(g->Data4[6]),UINT(g->Data4[7]));
+	delete g;
+
+	String guid = String(buf);
+
+	// save in settings
+	setSetting("GUID", guid);
+	saveSettings();
+
+#endif //OGRE_PLATFORM
+}
+
+void Settings::saveSettings()
+{
+	saveSettings(getSetting("Config Root")+"RoR.cfg");
+}
+
 void Settings::saveSettings(Ogre::String configFile)
 {
 	//printf("saving Config to file: %s\n", configFile.c_str());
@@ -101,6 +131,8 @@ void Settings::loadSettings(Ogre::String configFile, bool overwrite)
 		settings[sname] = svalue;
 		//logfile->AddLine(conv("### ") + conv(sname) + conv(" : ") + conv(svalue));logfile->Write();
 	}
+	// add a GUID if not there
+	checkGUID();
 }
 
 bool Settings::setupPaths()

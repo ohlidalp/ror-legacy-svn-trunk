@@ -1905,6 +1905,9 @@ int Beam::loadTruck(const char* fname, SceneManager *manager, SceneNode *parent,
 					case 'r':
 						beams[pos].bounded=ROPE;
 						break;
+					case 's':
+						beams[pos].bounded=SUPPORTBEAM;
+						break;
 				}
 				options_pointer++;
 			}
@@ -6379,7 +6382,8 @@ void Beam::calcForcesEuler(int doUpdate, Real dt, int step, int maxstep, Beam** 
 				dis=beams[i].p1->RelPosition;
 				dis-=beams[i].p2->RelPosition;
 			}
-			else {
+			else
+			{
 				dis=beams[i].p1->AbsPosition;
 				dis-=beams[i].p2->AbsPosition;
 			}
@@ -6395,39 +6399,63 @@ void Beam::calcForcesEuler(int doUpdate, Real dt, int step, int maxstep, Beam** 
 			Real k=beams[i].k;
 			Real d=beams[i].d;
 
-			//dampers bump
 			if (beams[i].bounded)
 			{
-				// hard (normal) shock bump
-				if (beams[i].bounded==SHOCK1)
+				// We do a binary search in bounded's values to lessen the number of ifs
+				if (beams[i].bounded<=SHOCK2)
 				{
-					if (difftoBeamL > beams[i].longbound*beams[i].L)
+					// hard (normal) shock bump
+					if (beams[i].bounded==SHOCK1)
 					{
-						// Following code interpolates between defined beam parameters and default beam parameters
-						float interp_ratio=difftoBeamL-beams[i].longbound*beams[i].L;
-						
-						// hard (normal) shock bump
-						k=k+(DEFAULT_SPRING-k)*interp_ratio;
-						d=d+(DEFAULT_DAMP-d)*interp_ratio;
-					}
-					if (difftoBeamL < -beams[i].shortbound*beams[i].L)
-					{
-						// Following code interpolates between defined beam parameters and default beam parameters
-						float interp_ratio=-beams[i].shortbound*beams[i].L-difftoBeamL;
+						if (difftoBeamL > beams[i].longbound*beams[i].L)
+						{
+							// Following code interpolates between defined beam parameters and default beam parameters
+							float interp_ratio=difftoBeamL-beams[i].longbound*beams[i].L;
 
-						// hard (normal) shock bump
-						k=k+(DEFAULT_SPRING-k)*interp_ratio;
-						d=d+(DEFAULT_DAMP-d)*interp_ratio;
+							// hard (normal) shock bump
+							k=k+(DEFAULT_SPRING-k)*interp_ratio;
+							d=d+(DEFAULT_DAMP-d)*interp_ratio;
+						}
+						else if (difftoBeamL < -beams[i].shortbound*beams[i].L)
+						{
+							// Following code interpolates between defined beam parameters and default beam parameters
+							float interp_ratio=-beams[i].shortbound*beams[i].L-difftoBeamL;
+
+							// hard (normal) shock bump
+							k=k+(DEFAULT_SPRING-k)*interp_ratio;
+							d=d+(DEFAULT_DAMP-d)*interp_ratio;
+						}
+					}
+					else // We assume the bounded=SHOCK2 case
+					{
+						calcShocks2(i, difftoBeamL, k, d);
 					}
 				}
-				else if (beams[i].bounded==SHOCK2)
+				else
 				{
-					calcShocks2(i, difftoBeamL, k, d);
-				}
-				else if (beams[i].bounded==ROPE && difftoBeamL<0)
-				{
-					k=0.0f;
-					d=d*0.1f;
+
+					if (beams[i].bounded==ROPE)
+					{
+						if  (difftoBeamL<0.0f)
+						{
+							k=0.0f;
+							d=d*0.1f;
+						}
+					}
+					else // We assume the bounded=SUPPORTBEAM case
+					{
+						if (difftoBeamL>0.0f)
+						{
+							k=0.0f;
+							d=d*0.1f;
+							// If support beam is extended more than one beam length, break it
+							if (difftoBeamL>beams[i].L)
+							{
+								beams[i].broken=1;
+								beams[i].disabled=true;
+							}
+						}
+					}
 				}
 			}
 

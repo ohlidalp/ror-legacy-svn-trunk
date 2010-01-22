@@ -406,6 +406,8 @@ BOOL WINAPI crashCallback(LPVOID /*lpvState*/)
 	crAddProperty("build date", __DATE__);
 	crAddProperty("build time", __TIME__);
 
+	crAddProperty("System GUID", SETTINGS.getSetting("GUID"));
+	
 	crAddScreenshot(CR_AS_MAIN_WINDOW);
 	// Return TRUE to allow crash report generation
 	return TRUE;
