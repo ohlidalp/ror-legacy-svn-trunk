@@ -1483,7 +1483,7 @@ ExampleFrameListener::ExampleFrameListener(RenderWindow* win, Camera* cam, Scene
 	// no more force feedback
 	// useforce=(SETTINGS.getSetting("Controler Force Feedback")=="Enable");
 	// force feedback is ...back :)
-	if (SETTINGS.getSetting("Force Feedback")=="Enable")
+	if (SETTINGS.getSetting("Force Feedback")=="Yes")
 	{
 		//check if a device has been detected
 		if (INPUTENGINE.getForceFeedbackDevice())
@@ -1491,19 +1491,19 @@ ExampleFrameListener::ExampleFrameListener(RenderWindow* win, Camera* cam, Scene
 			//retrieve gain values
 			float ogain=1.0;
 			String tmpstring = SETTINGS.getSetting("Force Feedback Gain");
-			if (tmpstring != String("")) ogain = atof(tmpstring.c_str());
+			if (tmpstring != String("")) ogain = atof(tmpstring.c_str())/100.0;
 
 			float stressg=1.0;
 			tmpstring = SETTINGS.getSetting("Force Feedback Stress");
-			if (tmpstring != String("")) stressg = atof(tmpstring.c_str());
+			if (tmpstring != String("")) stressg = atof(tmpstring.c_str())/100.0;
 
 			float centg=0.0;
 			tmpstring = SETTINGS.getSetting("Force Feedback Centering");
-			if (tmpstring != String("")) centg = atof(tmpstring.c_str());
+			if (tmpstring != String("")) centg = atof(tmpstring.c_str())/100.0;
 
 			float camg=0.0;
 			tmpstring = SETTINGS.getSetting("Force Feedback Camera");
-			if (tmpstring != String("")) camg = atof(tmpstring.c_str());
+			if (tmpstring != String("")) camg = atof(tmpstring.c_str())/100.0;
 
 			forcefeedback=new ForceFeedback(INPUTENGINE.getForceFeedbackDevice(), ogain, stressg, centg, camg);
 		}
