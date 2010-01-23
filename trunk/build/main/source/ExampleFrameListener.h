@@ -58,6 +58,7 @@ along with Rigs of Rods.  If not, see <http://www.gnu.org/licenses/>.
 #include "ChatSystem.h"
 #include "AITraffic.h"
 #include "envmap.h"
+#include "ForceFeedback.h"
 
 #ifdef PAGED
 # include "PagedGeometry.h"
@@ -376,6 +377,7 @@ protected:
 	//	bool usejoy;
 	//bool useforce;
 	//BeamJoystick *joy;
+	ForceFeedback *forcefeedback;
 	bool flipflop;
 	HDRListener *hdrListener;
 

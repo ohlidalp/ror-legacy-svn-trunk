@@ -1513,7 +1513,7 @@ bool InputEngine::instanceExists()
 	return (myInstance != 0);
 }
 // Constructor takes a RenderWindow because it uses that to determine input context
-InputEngine::InputEngine() : mInputManager(0), mMouse(0), mKeyboard(0), captureMode(false), mappingLoaded(false),free_joysticks(0)
+InputEngine::InputEngine() : mInputManager(0), mMouse(0), mKeyboard(0), mForceFeedback(0), captureMode(false), mappingLoaded(false),free_joysticks(0)
 {
 	for(int i=0;i<MAX_JOYSTICKS;i++) mJoy[i]=0;
 #ifndef NOOGRE
@@ -1635,6 +1635,9 @@ bool InputEngine::setup(size_t hwnd, bool capture, bool capturemouse, int _grabM
 				mJoy[i] = (JoyStick*)mInputManager->createInputObject(OISJoyStick, true);
 				mJoy[i]->setEventCallback(this);
 				free_joysticks++;
+				//create force feedback too
+				//here, we take the first device we can get, but we could take a device index
+				if (!mForceFeedback) mForceFeedback = (OIS::ForceFeedback*)mJoy[i]->queryInterface(OIS::Interface::ForceFeedback );
 
 #ifndef NOOGRE
 				LogManager::getSingleton().logMessage("Creating Joystick " + StringConverter::toString(i + 1) + " (" + mJoy[i]->vendor() + ")");

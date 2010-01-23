@@ -5753,6 +5753,8 @@ void Beam::threadentry(int id)
 			truckTruckCollisions(dtperstep, trucks, numtrucks);
 		}
 		ffforce=affforce/steps;
+		ffhydro=affhydro/steps;
+		if (free_hydro) ffhydro=ffhydro/free_hydro;
 	}
 }
 //integration loop
@@ -5934,7 +5936,8 @@ bool Beam::frameStep(Real dt, Beam** trucks, int numtrucks)
 			}
 
 			ffforce=affforce/steps;
-
+			ffhydro=affhydro/steps;
+			if (free_hydro) ffhydro=ffhydro/free_hydro;
 		};
 		if (thread_mode==THREAD_HT)
 		{
@@ -6659,11 +6662,23 @@ void Beam::calcForcesEuler(int doUpdate, Real dt, int step, int maxstep, Beam** 
 #endif
 
 	//aposition=Vector3::ZERO;
-	if (state==ACTIVATED)
+	if (state==ACTIVATED) //force feedback sensors
+	{
 		if (doUpdate)
+		{
 			affforce=nodes[cameranodepos[currentcamera]].Forces;
+			affhydro=0;
+		}
 		else
+		{
 			affforce+=nodes[cameranodepos[currentcamera]].Forces;
+		}
+		for (int i=0; i<free_hydro; i++)
+		{
+			if (beams[hydro[i]].hydroFlags&(HYDRO_FLAG_DIR|HYDRO_FLAG_SPEED))
+				affhydro+=beams[hydro[i]].hydroRatio*beams[hydro[i]].stress;
+		}
+	}
 	
 	
 	//locks - this is not active in network mode

@@ -746,6 +746,8 @@ public:
 //	Vector3 aposition;
 	Vector3 affforce;
 	Vector3 ffforce;
+	Real affhydro;
+	Real ffhydro;
 	bool patchEngineTorque;
 
 	void scaleTruck(float value);
