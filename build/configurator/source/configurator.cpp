@@ -243,6 +243,7 @@ public:
 	void OnButUpdateRoR(wxCommandEvent& event);
 	void OnSimpleSliderScroll(wxScrollEvent& event);
 	void OnSimpleSlider2Scroll(wxScrollEvent& event);
+	void OnForceFeedbackScroll(wxScrollEvent& event);
 	void OnNoteBookPageChange(wxNotebookEvent& event);
 	void OnNoteBook2PageChange(wxNotebookEvent& event);
 
@@ -302,6 +303,15 @@ private:
 	wxChoice *vegetationMode;
 	wxChoice *screenShotFormat;
 	wxCheckBox *wheel2;
+	wxCheckBox *ffEnable;
+	wxSlider *ffOverall;
+	wxStaticText *ffOverallText;
+	wxSlider *ffHydro;
+	wxStaticText *ffHydroText;
+	wxSlider *ffCenter;
+	wxStaticText *ffCenterText;
+	wxSlider *ffCamera;
+	wxStaticText *ffCameraText;
 	wxTreeListCtrl *cTree;
 	wxTimer *timer1;
 	//wxStaticText *controlText;
@@ -962,6 +972,7 @@ enum
 	mynotebook,
 	mynotebook2,
 	command_joywizard,
+	FFSLIDER,
 };
 
 // ----------------------------------------------------------------------------
@@ -986,6 +997,7 @@ BEGIN_EVENT_TABLE(MyDialog, wxDialog)
 	//EVT_SCROLL(MyDialog::OnSightRangeScroll)
 	EVT_COMMAND_SCROLL_CHANGED(SCROLL1, MyDialog::OnSimpleSliderScroll)
 	EVT_COMMAND_SCROLL_CHANGED(SCROLL2, MyDialog::OnSimpleSlider2Scroll)
+	EVT_COMMAND_SCROLL(FFSLIDER, MyDialog::OnForceFeedbackScroll)
 	EVT_CHOICE(EVC_LANG, MyDialog::onChangeLanguageChoice)
 	//EVT_BUTTON(BTN_REMAP, MyDialog::OnButRemap)
 
@@ -1560,6 +1572,9 @@ MyDialog::MyDialog(const wxString& title, MyApp *_app) : wxDialog(NULL, wxID_ANY
 	wxPanel *cpuPanel=new wxPanel(snbook, -1);
 	snbook->AddPage(cpuPanel, _("CPU"), false);
 
+	wxPanel *ffPanel=new wxPanel(snbook, -1);
+	snbook->AddPage(ffPanel, _("Force Feedback"), false);
+
 	wxPanel *controlsPanel=new wxPanel(nbook, -1);
 	nbook->AddPage(controlsPanel, _("Controls"), false);
 	wxSizer *sizer_controls = new wxBoxSizer(wxVERTICAL);
@@ -1784,6 +1799,34 @@ MyDialog::MyDialog(const wxString& title, MyApp *_app) : wxDialog(NULL, wxID_ANY
 
 	wheel2=new wxCheckBox(cpuPanel, -1, _("Enable advanced wheel model"), wxPoint(150, 70));
 	wheel2->SetToolTip(_("Some vehicles may include an advanced wheel model that is CPU intensive.\nYou can force these vehicles to use a simpler model by unchecking this box."));
+
+	//force feedback panel
+	ffEnable=new wxCheckBox(ffPanel, -1, _("Enable Force Feedback"), wxPoint(150, 25));
+
+	dText = new wxStaticText(ffPanel, -1, _("Overall force level:"), wxPoint(20,53));
+	ffOverall=new wxSlider(ffPanel, FFSLIDER, 100, 0, 100, wxPoint(150, 50), wxSize(200, 40));
+	ffOverall->SetToolTip(_("Adjusts the level of all the forces."));
+	ffOverallText=new wxStaticText(ffPanel, -1, _(""), wxPoint(360,53));
+
+	dText = new wxStaticText(ffPanel, -1, _("Steering feedback level:"), wxPoint(20,103));
+	ffHydro=new wxSlider(ffPanel, FFSLIDER, 100, 0, 400, wxPoint(150, 100), wxSize(200, 40));
+	ffHydro->SetToolTip(_("Adjusts the contribution of forces coming from the wheels and the steering mechanism."));
+	ffHydroText=new wxStaticText(ffPanel, -1, _(""), wxPoint(360,103));
+
+	dText = new wxStaticText(ffPanel, -1, _("Self-centering level:"), wxPoint(20,153));
+	ffCenter=new wxSlider(ffPanel, FFSLIDER, 100, 0, 400, wxPoint(150, 150), wxSize(200, 40));
+	ffCenter->SetToolTip(_("Adjusts the self-centering effect applied to the driving wheel when driving at high speed."));
+	ffCenterText=new wxStaticText(ffPanel, -1, _(""), wxPoint(360,153));
+
+	dText = new wxStaticText(ffPanel, -1, _("Inertia feedback level:"), wxPoint(20,203));
+	ffCamera=new wxSlider(ffPanel, FFSLIDER, 100, 0, 400, wxPoint(150, 200), wxSize(200, 40));
+	ffCamera->SetToolTip(_("Adjusts the contribution of forces coming shocks and accelerations (this parameter is currently unused)."));
+	ffCamera->Enable(false);
+	ffCameraText=new wxStaticText(ffPanel, -1, _(""), wxPoint(360,203));
+
+	//update textboxes
+	wxScrollEvent dummye;
+	OnForceFeedbackScroll(dummye);
 
 	//network panel
 #ifdef NETWORK
@@ -2272,6 +2315,15 @@ void MyDialog::SetDefaults()
 	enableFog->SetValue(true);
 
 	sightrange->SetValue(30);
+	
+	ffEnable->SetValue(false);
+	ffOverall->SetValue(100);
+	ffHydro->SetValue(100);
+	ffCenter->SetValue(50);
+	ffCamera->SetValue(0);
+	//update textboxes
+	wxScrollEvent dummye;
+	OnForceFeedbackScroll(dummye);
 
 	screenShotFormat->SetSelection(0);
 
@@ -2377,6 +2429,16 @@ void MyDialog::getSettingsControls()
 	sprintf(tmp, "%d", sightrange->GetValue());
 	settings["FarClip Percent"] = tmp;
 
+	settings["Force Feedback"] = (ffEnable->GetValue()) ? "Yes" : "No";
+	sprintf(tmp, "%d", ffOverall->GetValue());
+	settings["Force Feedback Gain"] = tmp;
+	sprintf(tmp, "%d", ffHydro->GetValue());
+	settings["Force Feedback Stress"] = tmp;
+	sprintf(tmp, "%d", ffCenter->GetValue());
+	settings["Force Feedback Centering"] = tmp;
+	sprintf(tmp, "%d", ffCamera->GetValue());
+	settings["Force Feedback Camera"] = tmp;
+
 	settings["Lights"] = conv(flaresMode->GetStringSelection());
 	settings["Vegetation"] = conv(vegetationMode->GetStringSelection());
 	settings["Screenshot Format"] = conv(screenShotFormat->GetStringSelection());
@@ -2454,6 +2516,14 @@ void MyDialog::updateSettingsControls()
 	st = settings["Threads"]; if (st.length()>0) thread->SetStringSelection(conv(st));
 	st = settings["Enhanced wheels"]; if (st.length()>0) wheel2->SetValue(st=="Yes");
 	st = settings["FarClip Percent"]; if (st.length()>0) sightrange->SetValue((int)atof(st.c_str()));
+	st = settings["Force Feedback"]; if (st.length()>0) ffEnable->SetValue(st=="Yes");
+	st = settings["Force Feedback Gain"]; if (st.length()>0) ffOverall->SetValue((int)atof(st.c_str()));
+	st = settings["Force Feedback Stress"]; if (st.length()>0) ffHydro->SetValue((int)atof(st.c_str()));
+	st = settings["Force Feedback Centering"]; if (st.length()>0) ffCenter->SetValue((int)atof(st.c_str()));
+	st = settings["Force Feedback Camera"]; if (st.length()>0) ffCamera->SetValue((int)atof(st.c_str()));
+	//update textboxes
+	wxScrollEvent dummye;
+	OnForceFeedbackScroll(dummye);
 	st = settings["Fog"]; if (st.length()>0) enableFog->SetValue(st=="Yes");
 	st = settings["Lights"]; if (st.length()>0) flaresMode->SetStringSelection(conv(st));
 	st = settings["Vegetation"]; if (st.length()>0) vegetationMode->SetStringSelection(conv(st));
@@ -3352,7 +3422,26 @@ void MyDialog::OnSimpleSlider2Scroll(wxScrollEvent & event)
 	getSettingsControls();
 }
 
+void MyDialog::OnForceFeedbackScroll(wxScrollEvent & event)
+{
+	wxString s;
+	int val=ffOverall->GetValue();
+	s.Printf("%i%%", val);
+	ffOverallText->SetLabel(s);
 
+	val=ffHydro->GetValue();
+	s.Printf("%i%%", val);
+	ffHydroText->SetLabel(s);
+
+	val=ffCenter->GetValue();
+	s.Printf("%i%%", val);
+	ffCenterText->SetLabel(s);
+
+	val=ffCamera->GetValue();
+	s.Printf("%i%%", val);
+	ffCameraText->SetLabel(s);
+
+}
 void MyDialog::OnLinkClicked(wxHtmlLinkEvent& event)
 {
 	wxHtmlLinkInfo linkinfo=event.GetLinkInfo();
