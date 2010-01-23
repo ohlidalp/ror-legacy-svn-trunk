@@ -30,6 +30,7 @@ freely, subject to the following restrictions:
 #include "OISMouse.h"
 #include "OISKeyboard.h"
 #include "OISJoyStick.h"
+#include "OISForceFeedback.h"
 //#include <OgreFrameListener.h>
 #include <OgreWindowEventUtilities.h>
 #include <OgrePrerequisites.h>
@@ -461,6 +462,7 @@ public:
 	void updateKeyBounces(float dt);
 	void completeMissingEvents();
 	int getNumJoysticks() { return free_joysticks; };
+	OIS::ForceFeedback* getForceFeedbackDevice() {return mForceFeedback;};
 
 protected:
 	InputEngine();
@@ -475,6 +477,7 @@ protected:
 	OIS::Keyboard* mKeyboard;
 	OIS::JoyStick* mJoy[MAX_JOYSTICKS];
 	int free_joysticks;
+	OIS::ForceFeedback* mForceFeedback;
 
 	// JoyStickListener
 	bool buttonPressed( const OIS::JoyStickEvent &arg, int button );

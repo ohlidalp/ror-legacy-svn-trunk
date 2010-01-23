@@ -38,6 +38,7 @@ set (HEADER_FILES
   source/FlexMesh.h
   source/FlexMeshWheel.h
   source/FlexObj.h
+  source/ForceFeedback.h
   source/groundmodel.h
   source/gui_friction.h
   source/gui_inputmanager.h
@@ -148,6 +149,7 @@ set (SOURCE_FILES
   source/FlexMesh.cpp
   source/FlexMeshWheel.cpp
   source/FlexObj.cpp
+  source/ForceFeedback.cpp
   source/gui_friction.cpp
   source/gui_inputmanager.cpp
   source/gui_manager.cpp
@@ -249,6 +251,7 @@ SOURCE_GROUP("Source Files" FILES
   source/FlexMesh.cpp
   source/FlexMeshWheel.cpp
   source/FlexObj.cpp
+  source/ForceFeedback.cpp
   source/gui_friction.cpp
   source/gui_inputmanager.cpp
   source/gui_manager.cpp
@@ -345,6 +348,7 @@ SOURCE_GROUP("Header Files" FILES
   source/FlexMesh.h
   source/FlexMeshWheel.h
   source/FlexObj.h
+  source/ForceFeedback.h
   source/groundmodel.h
   source/gui_friction.h
   source/gui_inputmanager.h

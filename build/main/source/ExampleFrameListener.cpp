@@ -670,18 +670,16 @@ void ExampleFrameListener::updateGUI(float dt)
 
 
 		//force feedback
-		/*
-		// FF-code commented out when upgrading to new input system.
-		if (useforce)
+		if (forcefeedback)
 		{
-			Vector3 udir=trucks[current_truck]->nodes[trucks[current_truck]->cameranodepos[0]].Position-trucks[current_truck]->nodes[trucks[current_truck]->cameranodedir[0]].Position;
-			Vector3 uroll=trucks[current_truck]->nodes[trucks[current_truck]->cameranodepos[0]].Position-trucks[current_truck]->nodes[trucks[current_truck]->cameranoderoll[0]].Position;
+			Vector3 udir=trucks[current_truck]->nodes[trucks[current_truck]->cameranodepos[0]].RelPosition-trucks[current_truck]->nodes[trucks[current_truck]->cameranodedir[0]].RelPosition;
+			Vector3 uroll=trucks[current_truck]->nodes[trucks[current_truck]->cameranodepos[0]].RelPosition-trucks[current_truck]->nodes[trucks[current_truck]->cameranoderoll[0]].RelPosition;
 			udir.normalise();
 			uroll.normalise();
-			joy->setForceFeedback(-trucks[current_truck]->ffforce.dotProduct(uroll)/10000.0,
-				trucks[current_truck]->ffforce.dotProduct(udir)/10000.0);
+			forcefeedback->setForces(-trucks[current_truck]->ffforce.dotProduct(uroll)/10000.0,
+				trucks[current_truck]->ffforce.dotProduct(udir)/10000.0, trucks[current_truck]->WheelSpeed, trucks[current_truck]->hydrodircommand, trucks[current_truck]->ffhydro);
 		}
-		*/
+		
 		//map update
 		//((TerrainSceneManager*)mSceneMgr)->getScale().x;
 
@@ -987,6 +985,7 @@ ExampleFrameListener::ExampleFrameListener(RenderWindow* win, Camera* cam, Scene
 	mDOFDebug=false;
 	mouseGrabForce=100000.0f;
 	eflsingleton=this;
+	forcefeedback=0;
 
 	if(SETTINGS.getSetting("Skidmarks") == "Yes")
 		new SkidmarkManager();
@@ -1483,6 +1482,33 @@ ExampleFrameListener::ExampleFrameListener(RenderWindow* win, Camera* cam, Scene
 
 	// no more force feedback
 	// useforce=(SETTINGS.getSetting("Controler Force Feedback")=="Enable");
+	// force feedback is ...back :)
+	if (SETTINGS.getSetting("Force Feedback")=="Enable")
+	{
+		//check if a device has been detected
+		if (INPUTENGINE.getForceFeedbackDevice())
+		{
+			//retrieve gain values
+			float ogain=1.0;
+			String tmpstring = SETTINGS.getSetting("Force Feedback Gain");
+			if (tmpstring != String("")) ogain = atof(tmpstring.c_str());
+
+			float stressg=1.0;
+			tmpstring = SETTINGS.getSetting("Force Feedback Stress");
+			if (tmpstring != String("")) stressg = atof(tmpstring.c_str());
+
+			float centg=0.0;
+			tmpstring = SETTINGS.getSetting("Force Feedback Centering");
+			if (tmpstring != String("")) centg = atof(tmpstring.c_str());
+
+			float camg=0.0;
+			tmpstring = SETTINGS.getSetting("Force Feedback Camera");
+			if (tmpstring != String("")) camg = atof(tmpstring.c_str());
+
+			forcefeedback=new ForceFeedback(INPUTENGINE.getForceFeedbackDevice(), ogain, stressg, centg, camg);
+		}
+	}
+
 	if(SETTINGS.getSetting("Screenshot Format")=="" || SETTINGS.getSetting("Screenshot Format")=="jpg (smaller, default)")
 		strcpy(screenshotformat, "jpg");
 	else if(SETTINGS.getSetting("Screenshot Format")=="png (bigger, no quality loss)")
@@ -6544,6 +6570,10 @@ void ExampleFrameListener::setCurrentTruck(int v)
 		if(person)
 			person->setBeamCoupling(false);
 
+		//force feedback
+		if (forcefeedback) forcefeedback->setEnabled(false);
+
+
 		// hide truckhud
 		TRUCKHUD.show(false);
 
@@ -6634,6 +6664,9 @@ void ExampleFrameListener::setCurrentTruck(int v)
 		if (trucks[current_truck]->free_active_shock==0) (OverlayManager::getSingleton().getOverlayElement("tracks/rollcorneedle"))->hide();
 		//					rollcorr_node->setVisible((trucks[current_truck]->free_active_shock>0));
 		//help panel
+		//force feddback
+		if (forcefeedback) forcefeedback->setEnabled(trucks[current_truck]->driveable==TRUCK); //only for trucks so far
+
 
 		// attach person to truck
 		if(person)
