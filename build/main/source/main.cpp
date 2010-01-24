@@ -124,6 +124,7 @@ bool RigsOfRods::setup(void)
 	loadMainResource("paged", ResourceGroupManager::DEFAULT_RESOURCE_GROUP_NAME);
 	loadMainResource("particles", ResourceGroupManager::DEFAULT_RESOURCE_GROUP_NAME);
 	loadMainResource("mygui", ResourceGroupManager::DEFAULT_RESOURCE_GROUP_NAME);
+	loadMainResource("layouts", ResourceGroupManager::DEFAULT_RESOURCE_GROUP_NAME);
 	loadMainResource("scripts", ResourceGroupManager::DEFAULT_RESOURCE_GROUP_NAME);
 	loadMainResource("sounds", ResourceGroupManager::DEFAULT_RESOURCE_GROUP_NAME);
 	loadMainResource("textures", ResourceGroupManager::DEFAULT_RESOURCE_GROUP_NAME);

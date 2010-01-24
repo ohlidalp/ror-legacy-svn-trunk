@@ -355,7 +355,7 @@ int LuaSystem::showChooser(lua_State *lua)
 	const char *type = lua_tostring (lua, 1);
 	const char *inst = lua_tostring (lua, 2);
 	const char *box = lua_tostring (lua, 3);
-	int ntype=-1;
+	SelectorWindow::LoaderType ntype = SelectorWindow::LT_None;
 	if (!strcmp("vehicle", type))   ntype = SelectorWindow::LT_Vehicle;
 	if (!strcmp("truck", type))     ntype = SelectorWindow::LT_Truck;
 	if (!strcmp("car", type))       ntype = SelectorWindow::LT_Truck;
@@ -366,7 +366,7 @@ int LuaSystem::showChooser(lua_State *lua)
 	if (!strcmp("load", type))      ntype = SelectorWindow::LT_Load;
 	if (!strcmp("allbeam", type))   ntype = SelectorWindow::LT_AllBeam;
 	if (!strcmp("extension", type)) ntype = SelectorWindow::LT_Extension;
-	if (ntype!=-1)
+	if (ntype != SelectorWindow::LT_None)
 		mefl->showLoad(ntype, (char*)inst, (char*)box);
 	return 0;
 }

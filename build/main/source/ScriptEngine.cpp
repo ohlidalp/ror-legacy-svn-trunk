@@ -786,7 +786,7 @@ void GameScript::setChatFontSize(int size)
 
 void GameScript::showChooser(string &type, string &instance, string &box)
 {
-	int ntype=-1;
+	SelectorWindow::LoaderType ntype = SelectorWindow::LT_None;
 	if (type == "vehicle")   ntype = SelectorWindow::LT_Vehicle;
 	if (type == "truck")     ntype = SelectorWindow::LT_Truck;
 	if (type == "car")       ntype = SelectorWindow::LT_Truck;
@@ -796,7 +796,7 @@ void GameScript::showChooser(string &type, string &instance, string &box)
 	if (type == "trailer")   ntype = SelectorWindow::LT_Trailer;
 	if (type == "load")      ntype = SelectorWindow::LT_Load;
 	if (type == "extension") ntype = SelectorWindow::LT_Extension;
-	if (ntype!=-1)
+	if (ntype != SelectorWindow::LT_None)
 		mefl->showLoad(ntype, const_cast<char*>(instance.c_str()), const_cast<char*>(box.c_str()));
 }
 

@@ -36,19 +36,19 @@ public:
 	SelectorWindow();
 	~SelectorWindow();
 
+	void setupCamera(Ogre::Camera* _camera) { mCamera = _camera; }
+
 	bool isFinishedSelecting();
-	void show(int type);
+	enum LoaderType {LT_None, LT_Terrain, LT_Vehicle, LT_Truck, LT_Car, LT_Boat, LT_Airplane, LT_Trailer, LT_Load, LT_Extension, LT_Network, LT_NetworkWithBoat, LT_Heli, LT_SKIN, LT_AllBeam};
+	void show(LoaderType type);
 	void hide();
 
-	Cache_Entry *getSelection();
-	SkinPtr getSelectedSkin();
-	std::vector<Ogre::String> getTruckConfig();
+	Cache_Entry *getSelection() { return mSelectedTruck; }
+	SkinPtr getSelectedSkin() { return mSelectedSkin; }
+	std::vector<Ogre::String> getTruckConfig() { return mTruckConfigs; }
 	void setEnableCancel(bool enabled);
-
-	void setupCamera(Ogre::Camera* _camera) { mCamera = _camera; }
-	enum loaderType {LT_Terrain, LT_Vehicle, LT_Truck, LT_Car, LT_Boat, LT_Airplane, LT_Trailer, LT_Load, LT_Extension, LT_Network, LT_NetworkWithBoat, LT_Heli, LT_SKIN, LT_AllBeam};
-
 private:
+	// gui events
 	void eventKeyButtonPressed_Main(MyGUI::WidgetPtr _sender, MyGUI::KeyCode _key, MyGUI::Char _char);
 	void eventComboChangePositionTypeComboBox(MyGUI::ComboBoxPtr _sender, size_t _index);
 	void eventListChangePositionModelList(MyGUI::ListPtr _sender, size_t _index);
@@ -56,18 +56,7 @@ private:
 	void eventMouseButtonClickOkButton(MyGUI::WidgetPtr _sender);
 	void eventMouseButtonClickCancelButton(MyGUI::WidgetPtr _sender);
 
-	// junk
-	std::vector<Cache_Entry> myEntries;
-	std::map<int, int> categoryUsage;
-	std::vector<SkinPtr> current_skins;
-	int loaderType;
-	Cache_Entry *selectedtruck;
-	bool selectiondone;
-	std::vector<Ogre::String> truck_configs;
-	SkinPtr selectedskin;
-	Ogre::Camera *mCamera;
-
-
+	// other functions
 	void getData();
 	void onCategorySelected(int categoryID);
 	void onEntrySelected(int entryID);
@@ -75,6 +64,16 @@ private:
 	
 	void updateControls(Cache_Entry *entry);
 	void setPreviewImage(Ogre::String texture);
+
+	std::vector<Cache_Entry> mEntries;
+	std::map<int, int> mCategoryUsage;
+	std::vector<SkinPtr> mCurrentSkins;
+	LoaderType mLoaderType;
+	bool mSelectionDone;
+	std::vector<Ogre::String> mTruckConfigs;
+	Ogre::Camera *mCamera;
+	Cache_Entry *mSelectedTruck;
+	SkinPtr mSelectedSkin;
 private:
 	ATTRIBUTE_FIELD_WIDGET_NAME(SelectorWindow, mCacheSheet, "Cache");
 	MyGUI::Sheet* mCacheSheet;

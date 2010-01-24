@@ -1818,8 +1818,8 @@ ExampleFrameListener::ExampleFrameListener(RenderWindow* win, Camera* cam, Scene
 
 ExampleFrameListener::~ExampleFrameListener()
 {
-	LoadingWindow::get()->FreeInstance();
-	SelectorWindow::get()->FreeInstance();
+	LoadingWindow::FreeInstance();
+	SelectorWindow::FreeInstance();
 
 //	if (joy) delete (joy);
 #ifdef PAGED
@@ -7978,7 +7978,7 @@ void ExampleFrameListener::showLoad(int type, char* instance, char* box)
 	reload_box=collisions->getBox(instance, box);
 	loading_state=RELOADING;
 	hideMap();
-	SelectorWindow::get()->show(type);
+	SelectorWindow::get()->show(SelectorWindow::LoaderType(type));
 }
 
 bool ExampleFrameListener::fileExists(const char* filename)

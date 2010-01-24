@@ -20,48 +20,28 @@ along with Rigs of Rods.  If not, see <http://www.gnu.org/licenses/>.
 #ifndef __SINGLETON_H__
 #define __SINGLETON_H__
 
-// damn you "using namespace Ogre"
+// damn you "using namespace Ogre" that cause name conflict with Singleton
 
 template <class T>
 class Singleton2
 {
 	static T* _self;
-	static int _refcount;
 protected:
 	Singleton2(){}
 	virtual ~Singleton2() { _self = 0; }
+	void _free() { delete this; }
 public:
-	static T* Instance();
-	static T* get();
-	void FreeInstance();
+	static T* Instance()
+	{
+		if (!_self) _self = new T;
+		return _self;
+	}
+	// just shorter name
+	static T* get() { return Instance(); }
+	static void FreeInstance() { Instance()->_free(); }
 };
 
 template <class T>
 T* Singleton2<T>::_self = 0;
-
-template <class T>
-int Singleton2<T>::_refcount = 0;
-
-template <class T>
-T* Singleton2<T>::get()
-{
-	return _self;
-}
-
-template <class T>
-T* Singleton2<T>::Instance()
-{
-	if (!_self)
-		_self = new T;
-	_refcount++;
-	return _self;
-}
-
-template <class T>
-void Singleton2<T>::FreeInstance()
-{
-  if (--_refcount == 0)
-    delete this;
-}
 
 #endif // __SINGLETON_H__

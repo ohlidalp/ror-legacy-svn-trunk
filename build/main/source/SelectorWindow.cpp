@@ -131,7 +131,7 @@ void SelectorWindow::eventKeyButtonPressed_Main(MyGUI::WidgetPtr _sender, MyGUI:
 	}
 
 	// select key
-	else if(_key == MyGUI::KeyCode::Return && selectedtruck)
+	else if(_key == MyGUI::KeyCode::Return && mSelectedTruck)
 		selectionDone();
 
 }
@@ -143,8 +143,8 @@ void SelectorWindow::eventMouseButtonClickOkButton(MyGUI::WidgetPtr _sender)
 
 void SelectorWindow::eventMouseButtonClickCancelButton(MyGUI::WidgetPtr _sender)
 {
-	selectedtruck = 0;
-	selectiondone = true;
+	mSelectedTruck = nullptr;
+	mSelectionDone = true;
 }
 
 void SelectorWindow::eventComboChangePositionTypeComboBox(MyGUI::ComboBoxPtr _sender, size_t _index)
@@ -176,9 +176,9 @@ void SelectorWindow::eventComboAcceptConfigComboBox(MyGUI::ComboBoxPtr _sender, 
 	if(!mMainWidget->isVisible()) return;
 	try
 	{
-		truck_configs.clear();
+		mTruckConfigs.clear();
 		Ogre::String config = *mConfigComboBox->getItemDataAt<Ogre::String>(_index);
-		truck_configs.push_back(config);
+		mTruckConfigs.push_back(config);
 	} catch(...)
 	{
 	}
@@ -189,9 +189,9 @@ void SelectorWindow::getData()
 	mTypeComboBox->removeAllItems();
 	if(mModelList->getItemCount() != 0) mModelList->setIndexSelected(0);
 	mModelList->removeAllItems();
-	myEntries.clear();
-	categoryUsage.clear();
-	if(loaderType == LT_SKIN)
+	mEntries.clear();
+	mCategoryUsage.clear();
+	if(mLoaderType == LT_SKIN)
 	{
 		// skin specific stuff
 		mTypeComboBox->setEnabled(false);
@@ -202,7 +202,7 @@ void SelectorWindow::getData()
 		mModelList->removeAllItems();
 		mModelList->addItem(_L("Default Skin"), 0);
 		int i=1;
-		for(std::vector<SkinPtr>::iterator it=current_skins.begin(); it!=current_skins.end(); it++, i++)
+		for(std::vector<SkinPtr>::iterator it=mCurrentSkins.begin(); it!=mCurrentSkins.end(); it++, i++)
 		{
 			mModelList->addItem((*it)->getName(), i);
 		}
@@ -227,21 +227,21 @@ void SelectorWindow::getData()
 		//printf("category: %d\n", it->categoryid);
 		bool add =false;
 		if(it->fext=="terrn")
-			add = (loaderType == LT_Terrain);
+			add = (mLoaderType == LT_Terrain);
 		else if(it->fext=="truck")
-			add = (loaderType == LT_Vehicle || loaderType == LT_Truck || loaderType == LT_Network || loaderType == LT_NetworkWithBoat);
+			add = (mLoaderType == LT_Vehicle || mLoaderType == LT_Truck || mLoaderType == LT_Network || mLoaderType == LT_NetworkWithBoat);
 		else if(it->fext=="car")
-			add = (loaderType == LT_Vehicle || loaderType == LT_Car || loaderType == LT_Network || loaderType == LT_NetworkWithBoat);
+			add = (mLoaderType == LT_Vehicle || mLoaderType == LT_Car || mLoaderType == LT_Network || mLoaderType == LT_NetworkWithBoat);
 		else if(it->fext=="boat")
-			add = (loaderType == LT_Boat || loaderType == LT_NetworkWithBoat);
+			add = (mLoaderType == LT_Boat || mLoaderType == LT_NetworkWithBoat);
 		else if(it->fext=="airplane")
-			add = (loaderType == LT_Airplane || loaderType == LT_Network || loaderType == LT_NetworkWithBoat);
+			add = (mLoaderType == LT_Airplane || mLoaderType == LT_Network || mLoaderType == LT_NetworkWithBoat);
 		else if(it->fext=="trailer")
-			add = (loaderType == LT_Trailer || loaderType == LT_Extension);
+			add = (mLoaderType == LT_Trailer || mLoaderType == LT_Extension);
 		else if(it->fext=="load")
-			add = (loaderType == LT_Load || loaderType == LT_Extension);
+			add = (mLoaderType == LT_Load || mLoaderType == LT_Extension);
 		
-		if(loaderType == LT_AllBeam && (it->fext == "truck" || it->fext == "car" ||  it->fext == "airplane" ||  it->fext == "trailer" ||  it->fext == "boat" || it->fext == "load"))
+		if(mLoaderType == LT_AllBeam && (it->fext == "truck" || it->fext == "car" ||  it->fext == "airplane" ||  it->fext == "trailer" ||  it->fext == "boat" || it->fext == "load"))
 			add = true;
 
 		if(!add)
@@ -255,28 +255,28 @@ void SelectorWindow::getData()
 		if(it->categoryid == -1)
 			it->categoryid = 9990;
 		
-		categoryUsage[it->categoryid] = categoryUsage[it->categoryid] + 1;
+		mCategoryUsage[it->categoryid] = mCategoryUsage[it->categoryid] + 1;
 		
 		// all
-		categoryUsage[9991] = categoryUsage[9991] + 1;
+		mCategoryUsage[9991] = mCategoryUsage[9991] + 1;
 		
 		// fresh, 24 hours = 86400
 		if(ts - it->addtimestamp < 86400)
-			categoryUsage[9992] = categoryUsage[9992] + 1;
+			mCategoryUsage[9992] = mCategoryUsage[9992] + 1;
 		
-		myEntries.push_back(*it);
+		mEntries.push_back(*it);
 	}
 	int counter=0, counter2=0;
 	std::map<int, Category_Entry> *cats = CACHE.getCategories();
 	std::map<int, Category_Entry>::iterator itc;
 	for(itc = cats->begin(); itc!=cats->end(); itc++)
 	{
-		if(categoryUsage[itc->second.number]>0)
+		if(mCategoryUsage[itc->second.number]>0)
 			counter++;
 	}
 	for(itc = cats->begin(); itc!=cats->end(); itc++)
 	{
-		int usage = categoryUsage[itc->second.number];
+		int usage = mCategoryUsage[itc->second.number];
 		if(usage == 0)
 			continue;
 		counter2++;
@@ -302,18 +302,18 @@ void SelectorWindow::getData()
 
 void SelectorWindow::onCategorySelected(int categoryID)
 {
-	if(loaderType == LT_SKIN) return;
+	if(mLoaderType == LT_SKIN) return;
 	int ts = CACHE.getTimeStamp();
 	mModelList->removeAllItems();
 	std::vector<Cache_Entry>::iterator it;
 	int counter=0, counter2=0;
-	for(it = myEntries.begin(); it != myEntries.end(); it++)
+	for(it = mEntries.begin(); it != mEntries.end(); it++)
 	{
 		if(it->categoryid == categoryID || (categoryID == 9991) || (categoryID == 9992 && (ts - it->addtimestamp < 86400)))
 			counter++;
 	}
 
-	for(it = myEntries.begin(); it != myEntries.end(); it++)
+	for(it = mEntries.begin(); it != mEntries.end(); it++)
 	{
 		if(it->categoryid == categoryID || (categoryID == 9991) || (categoryID == 9992 && (ts - it->addtimestamp < 86400)) )
 		{
@@ -346,17 +346,17 @@ void SelectorWindow::onCategorySelected(int categoryID)
 
 void SelectorWindow::onEntrySelected(int entryID)
 {
-	if(loaderType == LT_SKIN)
+	if(mLoaderType == LT_SKIN)
 	{
 		// special skin handling
 		if(entryID == 0)
 		{
 			// default, default infos
-			updateControls(selectedtruck);
+			updateControls(mSelectedTruck);
 			return;
 		}
 		entryID -= 1; // remove default skin :)
-		SkinPtr &skin = current_skins[entryID];
+		SkinPtr &skin = mCurrentSkins[entryID];
 		
 		// check if loaded
 		if(!skin->loaded && skin->sourcetype == "FileSystem")
@@ -376,9 +376,9 @@ void SelectorWindow::onEntrySelected(int entryID)
 		}
 
 		// set selected skin as current
-		selectedskin = skin;
+		mSelectedSkin = skin;
 
-		setPreviewImage(current_skins[entryID]->thumbnail);
+		setPreviewImage(mCurrentSkins[entryID]->thumbnail);
 
 		mEntryNameStaticText->setCaption(skin->name);
 
@@ -397,40 +397,40 @@ void SelectorWindow::onEntrySelected(int entryID)
 	}
 	Cache_Entry *entry = CACHE.getEntry(entryID);
 	if(!entry) return;
-	selectedtruck = entry;
-	updateControls(selectedtruck);
+	mSelectedTruck = entry;
+	updateControls(mSelectedTruck);
 }
 
 void SelectorWindow::selectionDone()
 {
-	if(!selectedtruck || selectiondone)
+	if(!mSelectedTruck || mSelectionDone)
 		return;
 
-	if(loaderType != LT_SKIN)
+	if(mLoaderType != LT_SKIN)
 	{
 		// we show the normal loader
 		// check if the resource is loaded
-		CACHE.checkResourceLoaded(*selectedtruck);
+		CACHE.checkResourceLoaded(*mSelectedTruck);
 
-		this->current_skins.clear();
-		int res = SkinManager::getSingleton().getUsableSkins(selectedtruck, this->current_skins);
-		if(!res && this->current_skins.size()>0)
+		this->mCurrentSkins.clear();
+		int res = SkinManager::getSingleton().getUsableSkins(mSelectedTruck, this->mCurrentSkins);
+		if(!res && this->mCurrentSkins.size()>0)
 		{
 			// show skin selection dialog!
 			this->show(LT_SKIN);
-			selectiondone = false;
+			mSelectionDone = false;
 			// just let the user select a skin as well
 		} else
 		{
-			selectedskin.setNull();
-			selectiondone = true;
+			mSelectedSkin.setNull();
+			mSelectionDone = true;
 			hide();
 		}
 	} else
 	{
 		// we show the skin loader, set final skin and exit!
-		// selectedskin should be set already!
-		selectiondone = true;
+		// mSelectedSkin should be set already!
+		mSelectionDone = true;
 		hide();
 	}
 }
@@ -462,9 +462,9 @@ void SelectorWindow::updateControls(Cache_Entry *entry)
 		}
 		mConfigComboBox->setIndexSelected(0);
 		
-		truck_configs.clear();
+		mTruckConfigs.clear();
 		String configstr = *mConfigComboBox->getItemDataAt<String>(0);
-		truck_configs.push_back(configstr);
+		mTruckConfigs.push_back(configstr);
 	} else
 		mConfigComboBox->setVisible(false);
 
@@ -548,25 +548,25 @@ void SelectorWindow::setPreviewImage(Ogre::String texture)
 
 bool SelectorWindow::isFinishedSelecting()
 {
-	return selectiondone;
+	return mSelectionDone;
 }
 
-void SelectorWindow::show(int type)
+void SelectorWindow::show(LoaderType type)
 {
 	if (SETTINGS.getSetting("GaussianBlur") == "Yes")
 		CompositorManager::getSingleton().setCompositorEnabled(mCamera->getViewport(), "Gaussian Blur", true);
-	selectiondone=false;
+	mSelectionDone=false;
 	LoadingWindow::get()->hide();
 	// show mouse cursor
 	MyGUI::PointerManager::getInstance().setVisible(true);
 	// focus main mMainWidget (for key input)
-	truck_configs.clear();
+	mTruckConfigs.clear();
 	MyGUI::InputManager::getInstance().setKeyFocusWidget(mMainWidget);
 	mMainWidget->setEnabledSilent(true);
 	mMainWidget->castType<MyGUI::Window>()->setVisibleSmooth(true);
-	if(type != LT_SKIN) selectedtruck = 0; // when in skin, we still need the info
-	loaderType = type;
-	selectiondone = false;
+	if (type != LT_SKIN) mSelectedTruck = nullptr; // when in skin, we still need the info
+	mLoaderType = type;
+	mSelectionDone = false;
 	getData();
 }
 
@@ -578,21 +578,6 @@ void SelectorWindow::hide()
 	mMainWidget->setEnabledSilent(false);
 	// hide cursor
 	MyGUI::PointerManager::getInstance().setVisible(false);
-}
-
-Cache_Entry *SelectorWindow::getSelection()
-{
-	return selectedtruck;
-}
-
-SkinPtr SelectorWindow::getSelectedSkin()
-{
-	return selectedskin;
-}
-
-std::vector<Ogre::String> SelectorWindow::getTruckConfig()
-{
-	return truck_configs;
 }
 
 void SelectorWindow::setEnableCancel(bool enabled)

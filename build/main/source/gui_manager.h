@@ -59,6 +59,8 @@ private:
 	virtual void windowResized(Ogre::RenderWindow* _rw);
 	virtual void windowClosed(Ogre::RenderWindow* _rw);
 
+	void eventRequestTag(const MyGUI::UString& _tag, MyGUI::UString& _result);
+
 private:
 	MyGUI::Gui* mGUI;
 	MyGUI::OgrePlatform* mPlatform;

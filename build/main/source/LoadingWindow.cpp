@@ -24,7 +24,7 @@ LoadingWindow::LoadingWindow() :
 {
 	initialiseByAttributes(this);
 
-	//mMainWidget->setPosition(MyGUI::Gui::getInstance().getViewSize().width/2 - mMainWidget->getWidth()/2, MyGUI::Gui::getInstance().getViewSize().height/2 - mMainWidget->getHeight()/2);
+	mMainWidget->setPosition(MyGUI::Gui::getInstance().getViewSize().width/2 - mMainWidget->getWidth()/2, MyGUI::Gui::getInstance().getViewSize().height/2 - mMainWidget->getHeight()/2);
 }
 
 LoadingWindow::~LoadingWindow()
@@ -40,6 +40,7 @@ bool LoadingWindow::getFrameForced()
 
 void LoadingWindow::setProgress(int _percent, const Ogre::String& _text, bool _updateRenderFrame)
 {
+	mMainWidget->setVisible(true);
 	mInfoStaticText->setCaption(_text);
 
 	mBarProgress->setProgressAutoTrack(false);
@@ -50,6 +51,7 @@ void LoadingWindow::setProgress(int _percent, const Ogre::String& _text, bool _u
 
 void LoadingWindow::setAutotrack(const Ogre::String& _text, bool _updateRenderFrame)
 {
+	mMainWidget->setVisible(true);
 	mInfoStaticText->setCaption(_text);
 	mBarProgress->setProgressPosition(0);
 	mBarProgress->setProgressAutoTrack(true);
@@ -59,7 +61,7 @@ void LoadingWindow::setAutotrack(const Ogre::String& _text, bool _updateRenderFr
 
 void LoadingWindow::hide()
 {
-	mMainWidget->hide();
+	mMainWidget->setVisible(false);
 	renderOneFrame();
 }
 
