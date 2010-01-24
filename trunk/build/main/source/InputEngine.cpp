@@ -2704,6 +2704,7 @@ bool InputEngine::processLine(char *line)
 			t_slider.joystickNumber = joyNo;
 			t_slider.joystickSliderNumber = sliderNumber;
 			t_slider.joystickSliderReverse = reverse;
+			strncpy(t_slider.configline, options, 128);
 			strncpy(t_slider.group, getEventGroup(eventName).c_str(), 128);
 			strncpy(t_slider.tmp_eventname, eventName, 128);
 			strncpy(t_slider.comments, cur_comment.c_str(), 1024);
@@ -2846,13 +2847,21 @@ bool InputEngine::updateConfigline(event_trigger_t *t)
 	bool isSlider = (t->eventtype == ET_JoystickSliderX || t->eventtype == ET_JoystickSliderY);
 	strcpy(t->configline, "");
 
+	if (isSlider)
+	{
+		if(t->joystickSliderReverse && !strlen(t->configline))
+			strcat(t->configline, "REVERSE");
+		else if(t->joystickSliderReverse && strlen(t->configline))
+			strcat(t->configline, "+REVERSE");
+
+		// is this is a slider, ignore the rest
+		return true;
+	}
+
 	if(t->joystickAxisReverse && !strlen(t->configline))
 		strcat(t->configline, "REVERSE");
 	else if(t->joystickAxisReverse && strlen(t->configline))
 		strcat(t->configline, "+REVERSE");
-
-	// is this is a slider, ignore the rest
-	if(isSlider) return true;
 
 	if(t->joystickAxisRegion==1 && !strlen(t->configline))
 		strcat(t->configline, "UPPER");
