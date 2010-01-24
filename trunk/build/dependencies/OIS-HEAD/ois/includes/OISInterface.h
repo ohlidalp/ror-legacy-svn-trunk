@@ -40,6 +40,7 @@ namespace OIS
 		enum IType
 		{
 			ForceFeedback,
+			LogitechLEDs,
 			Reserved
 		};
 	};

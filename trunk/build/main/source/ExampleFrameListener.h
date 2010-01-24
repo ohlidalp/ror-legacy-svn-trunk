@@ -378,6 +378,9 @@ protected:
 	//bool useforce;
 	//BeamJoystick *joy;
 	ForceFeedback *forcefeedback;
+#if OGRE_PLATFORM == OGRE_PLATFORM_WIN32
+	OIS::Win32LogitechLEDs* leds;
+#endif
 	bool flipflop;
 	HDRListener *hdrListener;
 

@@ -280,6 +280,7 @@ private:
 	wxCheckBox *heathaze;
 	wxCheckBox *hydrax;
 	wxCheckBox *dismap;
+	wxCheckBox *leds;
 	wxCheckBox *enablexfire;
 	wxCheckBox *beamdebug;
 	wxCheckBox *autodl;
@@ -1980,6 +1981,9 @@ MyDialog::MyDialog(const wxString& title, MyApp *_app) : wxDialog(NULL, wxID_ANY
 	dismap=new wxCheckBox(advancedPanel, -1, _("Disable Overview Map"), wxPoint(320, y));
 	dismap->SetToolTip(_("Disabled the map. This is for testing purposes only, you should not gain any FPS with that."));
 	y+=15;
+	leds=new wxCheckBox(advancedPanel, -1, _("Enable Logitech G27 LEDs"), wxPoint(320, y));
+	leds->SetToolTip(_("Enable support for the Logitech G27 LED tachometer (Windows only)."));
+	y+=15;
 
 
 #if OGRE_PLATFORM == OGRE_PLATFORM_WIN32
@@ -2339,6 +2343,7 @@ void MyDialog::SetDefaults()
 	heathaze->SetValue(false);
 	hydrax->SetValue(false);
 	dismap->SetValue(false);
+	leds->SetValue(false);
 	enablexfire->SetValue(true);
 	autodl->SetValue(true);
 	posstor->SetValue(true);
@@ -2404,6 +2409,7 @@ void MyDialog::getSettingsControls()
 	settings["HeatHaze"] = (heathaze->GetValue()) ? "Yes" : "No";
 	settings["Hydrax"] = (hydrax->GetValue()) ? "Yes" : "No";
 	settings["disableOverViewMap"] = (dismap->GetValue()) ? "Yes" : "No";
+	settings["Logitech LEDs"] = (leds->GetValue()) ? "Yes" : "No";
 	settings["DebugBeams"] = (beamdebug->GetValue()) ? "Yes" : "No";
 	settings["XFire"] = (enablexfire->GetValue()) ? "Yes" : "No";
 	settings["AutoDownload"] = (autodl->GetValue()) ? "Yes" : "No";
@@ -2496,6 +2502,7 @@ void MyDialog::updateSettingsControls()
 	st = settings["HeatHaze"]; if (st.length()>0) heathaze->SetValue(st=="Yes");
 	st = settings["Hydrax"]; if (st.length()>0) hydrax->SetValue(st=="Yes");
 	st = settings["disableOverViewMap"]; if (st.length()>0) dismap->SetValue(st=="Yes");
+	st = settings["Logitech LEDs"]; if (st.length()>0) leds->SetValue(st=="Yes");
 	st = settings["External Camera Mode"]; if (st.length()>0) extcam->SetValue(st=="Static");
 	st = settings["AutoDownload"]; if (st.length()>0) autodl->SetValue(st=="Yes");
 	st = settings["Position Storage"]; if (st.length()>0) posstor->SetValue(st=="Yes");
