@@ -132,6 +132,10 @@ along with Rigs of Rods.  If not, see <http://www.gnu.org/licenses/>.
 
 #include "OISKeyboard.h"
 
+#if OGRE_PLATFORM == OGRE_PLATFORM_WIN32
+#include "win32/Win32LogitechLEDs.h"
+#endif
+
 //#include "OgreTerrainSceneManager.h" // = ILLEGAL to link to a plugin!
 
 #include "writeTextToTexture.h"
@@ -633,7 +637,13 @@ void ExampleFrameListener::updateGUI(float dt)
 		if (angle>121.0) angle=121.0;
 		tachotexture->setTextureRotate(Degree(angle));
 
-
+#if OGRE_PLATFORM == OGRE_PLATFORM_WIN32
+		//logitech G27 LEDs tachometer
+		if (leds)
+		{
+			leds->play(trucks[current_truck]->engine->getRPM(), trucks[current_truck]->engine->getMaxRPM()*0.75, trucks[current_truck]->engine->getMaxRPM());
+		}
+#endif
 		//	tach_node->roll(Degree(angle));
 		//roll
 		Vector3 dir=trucks[current_truck]->nodes[trucks[current_truck]->cameranodepos[0]].RelPosition-trucks[current_truck]->nodes[trucks[current_truck]->cameranoderoll[0]].RelPosition;
@@ -986,6 +996,9 @@ ExampleFrameListener::ExampleFrameListener(RenderWindow* win, Camera* cam, Scene
 	mouseGrabForce=100000.0f;
 	eflsingleton=this;
 	forcefeedback=0;
+#if OGRE_PLATFORM == OGRE_PLATFORM_WIN32
+	leds=0;
+#endif
 
 	if(SETTINGS.getSetting("Skidmarks") == "Yes")
 		new SkidmarkManager();
@@ -1508,6 +1521,14 @@ ExampleFrameListener::ExampleFrameListener(RenderWindow* win, Camera* cam, Scene
 			forcefeedback=new ForceFeedback(INPUTENGINE.getForceFeedbackDevice(), ogain, stressg, centg, camg);
 		}
 	}
+
+#if OGRE_PLATFORM == OGRE_PLATFORM_WIN32
+	if (SETTINGS.getSetting("Logitech LEDs")=="Yes")
+	{
+		leds=INPUTENGINE.getLogitechLEDsDevice();
+	}
+#endif
+
 
 	if(SETTINGS.getSetting("Screenshot Format")=="" || SETTINGS.getSetting("Screenshot Format")=="jpg (smaller, default)")
 		strcpy(screenshotformat, "jpg");
@@ -4804,6 +4825,13 @@ void ExampleFrameListener::shutdown_pre()
 	loading_state=EXITING;
 	OverlayManager::getSingleton().getByName("tracks/CreditsOverlay")->show();
 	ssm->soundEnable(false);
+#if OGRE_PLATFORM == OGRE_PLATFORM_WIN32
+	//logitech G27 LEDs tachometer
+	if (leds)
+	{
+		leds->play(0, 10, 20);//stop the LEDs
+	}
+#endif
 }
 
 void ExampleFrameListener::hideMap()
@@ -6572,7 +6600,14 @@ void ExampleFrameListener::setCurrentTruck(int v)
 
 		//force feedback
 		if (forcefeedback) forcefeedback->setEnabled(false);
-
+		//LEDs
+#if OGRE_PLATFORM == OGRE_PLATFORM_WIN32
+		//logitech G27 LEDs tachometer
+		if (leds)
+		{
+			leds->play(0, 10, 20);//stop the LEDs
+		}
+#endif
 
 		// hide truckhud
 		TRUCKHUD.show(false);
@@ -6664,8 +6699,16 @@ void ExampleFrameListener::setCurrentTruck(int v)
 		if (trucks[current_truck]->free_active_shock==0) (OverlayManager::getSingleton().getOverlayElement("tracks/rollcorneedle"))->hide();
 		//					rollcorr_node->setVisible((trucks[current_truck]->free_active_shock>0));
 		//help panel
-		//force feddback
+		//force feedback
 		if (forcefeedback) forcefeedback->setEnabled(trucks[current_truck]->driveable==TRUCK); //only for trucks so far
+		//LEDs
+#if OGRE_PLATFORM == OGRE_PLATFORM_WIN32
+		//logitech G27 LEDs tachometer
+		if (leds && trucks[current_truck]->driveable!=TRUCK)
+		{
+			leds->play(0, 10, 20);//stop the LEDs
+		}
+#endif
 
 
 		// attach person to truck

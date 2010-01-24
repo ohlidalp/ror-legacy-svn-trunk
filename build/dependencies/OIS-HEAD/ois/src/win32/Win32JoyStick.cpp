@@ -23,6 +23,7 @@ restrictions:
 #include "Win32/Win32JoyStick.h"
 #include "Win32/Win32InputManager.h"
 #include "Win32/Win32ForceFeedback.h"
+#include "Win32/Win32LogitechLEDs.h"
 #include "OISEvents.h"
 #include "OISException.h"
 
@@ -414,6 +415,8 @@ Interface* Win32JoyStick::queryInterface(Interface::IType type)
 
 	if( ff_device && type == Interface::ForceFeedback )
 		return ff_device;
+	else if( ff_device && type == Interface::LogitechLEDs )
+		return new Win32LogitechLEDs(mJoyStick);
 	else
 		return 0;
 }

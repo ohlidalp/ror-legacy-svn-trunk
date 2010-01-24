@@ -37,6 +37,15 @@ freely, subject to the following restrictions:
 #include <OgreUTFString.h>
 #include <map>
 
+#if OGRE_PLATFORM == OGRE_PLATFORM_WIN32
+namespace OIS
+{
+class Win32LogitechLEDs;
+};
+	//#include "win32/Win32LogitechLEDs.h"
+#endif
+
+
 //class ExampleFrameListener;
 // some shortcut
 #define INPUTENGINE InputEngine::Instance()
@@ -463,6 +472,12 @@ public:
 	void completeMissingEvents();
 	int getNumJoysticks() { return free_joysticks; };
 	OIS::ForceFeedback* getForceFeedbackDevice() {return mForceFeedback;};
+#if OGRE_PLATFORM == OGRE_PLATFORM_WIN32
+	OIS::Win32LogitechLEDs* getLogitechLEDsDevice()
+	{
+		return (OIS::Win32LogitechLEDs*)mJoy[0]->queryInterface(OIS::Interface::LogitechLEDs);
+	}
+#endif
 
 protected:
 	InputEngine();
