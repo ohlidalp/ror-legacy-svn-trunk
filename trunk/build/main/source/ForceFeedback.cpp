@@ -70,7 +70,7 @@ void ForceFeedback::setForces(Real roll, Real pitch, Real wspeed, Real dircomman
 	}
 	
 	OIS::ConstantEffect* hydroConstForce = dynamic_cast<OIS::ConstantEffect*>(hydroEffect->getForceEffect());
-	Real ff=-stress*stress_gain*4.0+dircommand*100.0*centering_gain*wspeed*wspeed;
+	Real ff=-stress*stress_gain+dircommand*100.0*centering_gain*wspeed*wspeed;
 	if (ff>10000) ff=10000;
 	if (ff<-10000) ff=-10000;
 	hydroConstForce->level = ff;  //-10K to +10k
