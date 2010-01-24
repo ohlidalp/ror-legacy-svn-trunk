@@ -6676,7 +6676,7 @@ void Beam::calcForcesEuler(int doUpdate, Real dt, int step, int maxstep, Beam** 
 		for (int i=0; i<free_hydro; i++)
 		{
 			if (beams[hydro[i]].hydroFlags&(HYDRO_FLAG_DIR|HYDRO_FLAG_SPEED))
-				affhydro+=beams[hydro[i]].hydroRatio*beams[hydro[i]].stress;
+				affhydro+=beams[hydro[i]].hydroRatio*beams[hydro[i]].refL*beams[hydro[i]].stress;
 		}
 	}
 	
