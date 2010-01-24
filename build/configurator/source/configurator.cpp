@@ -2662,7 +2662,7 @@ void MyDialog::onRightClickItem(wxTreeEvent& event)
 		wxMenu *m = new wxMenu(_("Joystick Options"));
 
 		wxMenuItem *i = m->AppendCheckItem(1, _("Reverse"), _("reverse axis"));
-		i->Check(t->joystickAxisReverse);
+		i->Check(t->joystickAxisReverse || t->joystickSliderReverse);
 
 		wxMenu *iregion = new wxMenu(_("Joystick Axis Region"));
 		i = iregion->AppendRadioItem(30, _("Upper"));
