@@ -4865,7 +4865,7 @@ void ExampleFrameListener::loadTerrain(String terrainfile)
 	updateXFire();
 #endif
 
-	LoadingWindow::get()->setProgress(0, _L("Trying to connect to server ..."));
+	LoadingWindow::get()->setProgress(0, _L("Loading Terrain"));
 	bool disableMap = (SETTINGS.getSetting("disableOverViewMap") == "Yes");
 
 	// map must be loaded before lua!

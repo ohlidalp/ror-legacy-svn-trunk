@@ -23,6 +23,7 @@ include_directories (${RoR_Dependencies_SOURCE_DIR}/mygui/include)
 
 IF(WIN32)
   add_definitions("-DWIN32_LEAN_AND_MEAN -DNOMINMAX -D_CRT_SECURE_NO_WARNINGS")
+  include_directories (${DirectX_INCLUDE_DIR})
 ELSEIF(LINUX)
   add_definitions("-Wno-float-equal")
 ELSEIF(APPLE)
