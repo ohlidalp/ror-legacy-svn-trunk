@@ -402,12 +402,13 @@ BOOL WINAPI crashCallback(LPVOID /*lpvState*/)
 
 	crAddProperty("Version", ROR_VERSION_STRING);
 	crAddProperty("Revision", SVN_REVISION);
-	crAddProperty("full Revision", SVN_ID);
-	crAddProperty("protocol version", RORNET_VERSION);
-	crAddProperty("build date", __DATE__);
-	crAddProperty("build time", __TIME__);
+	crAddProperty("full_revision", SVN_ID);
+	crAddProperty("protocol_version", RORNET_VERSION);
+	crAddProperty("build_date", __DATE__);
+	crAddProperty("build_time", __TIME__);
 
-	crAddProperty("System GUID", SETTINGS.getSetting("GUID").c_str());
+	crAddProperty("System_GUID", SETTINGS.getSetting("GUID").c_str());
+	crAddProperty("Multiplayer", (SETTINGS.getSetting("Network enable")=="Yes")?"1":"0");
 	
 	crAddScreenshot(CR_AS_MAIN_WINDOW);
 	// Return TRUE to allow crash report generation
@@ -424,8 +425,17 @@ void install_crashrpt()
 	info.pszAppName = "Rigs of Rods";
 	info.pszAppVersion = ROR_VERSION_STRING;
 	info.pszEmailSubject = "Error Report for Rigs of Rods";
-	info.pszEmailTo = "thomas@rigsofrods.com";  
-	info.pszUrl = "http://api.rigsofrods.com/crashreport/";
+	info.pszEmailTo = "thomas@rigsofrods.com";
+
+	char tmp[512]="";
+	sprintf(tmp, "http://api.rigsofrods.com/crashreport/?version=%s_%s", __DATE__, __TIME__);
+	for(int i=0;i<strnlen(tmp, 512);i++)
+	{
+		if(tmp[i] == ' ')
+			tmp[i] = '_';
+	}
+
+	info.pszUrl = tmp;
 	info.pfnCrashCallback = crashCallback; 
 	info.uPriorities[CR_HTTP]  = 3;  // Try HTTP the first
 	info.uPriorities[CR_SMTP]  = 2;  // Try SMTP the second
