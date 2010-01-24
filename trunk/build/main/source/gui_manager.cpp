@@ -21,6 +21,7 @@ along with Rigs of Rods.  If not, see <http://www.gnu.org/licenses/>.
 
 #include "gui_manager.h"
 #include "Settings.h"
+#include "language.h"
 #include <MyGUI_OgrePlatform.h>
 
 #if MYGUI_PLATFORM == MYGUI_PLATFORM_WIN32
@@ -66,6 +67,8 @@ bool GUIManager::create()
 	createInput(handle);
 	windowResized(mWindow);
 	createGui();
+	// need MyGUI from trunk for this
+	//MyGUI::LanguageManager::getInstance().eventRequestTag = MyGUI::newDelegate(this, &GUIManager::eventRequestTag);
 	return true;
 }
 
@@ -125,6 +128,11 @@ void GUIManager::windowClosed(Ogre::RenderWindow* _rw)
 {
 	mExit = true;
 	destroyInput();
+}
+
+void GUIManager::eventRequestTag(const MyGUI::UString& _tag, MyGUI::UString& _result)
+{
+	_result = LanguageEngine::Instance().lookUp(_tag);
 }
 
 void GUIManager::injectMouseMove(int _absx, int _absy, int _absz)
