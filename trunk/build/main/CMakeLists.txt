@@ -64,10 +64,10 @@ if(ROR_BUILD_LUASCRIPT)
   include_directories (${RoR_Dependencies_SOURCE_DIR}/lua-5.1.2/src)
 endif(ROR_BUILD_LUASCRIPT)
 
-if(ROR_BUILD_BUGTRAP)
-  add_definitions("-DBUGTRAP")
-  include_directories (${RoR_Dependencies_SOURCE_DIR}/bugtrap)
-endif(ROR_BUILD_BUGTRAP)
+if(ROR_BUILD_CRASHRPT)
+  add_definitions("-DUSE_WINDOWS_CRASH_REPORT")
+  #include_directories (${RoR_Dependencies_SOURCE_DIR}/bugtrap)
+endif(ROR_BUILD_CRASHRPT)
 
 #if(WSYNC_BUILD_WSYNC)
 #  add_definitions("-DWSYNC")
@@ -143,10 +143,6 @@ if(ROR_BUILD_LUASCRIPT)
   add_dependencies(RoR lua)
 endif(ROR_BUILD_LUASCRIPT)
 
-if(ROR_BUILD_BUGTRAP)
-  #
-endif(ROR_BUILD_BUGTRAP)
-
 # now the linking
 
 # always required common libs for self generated targets
@@ -193,6 +189,10 @@ if(ROR_BUILD_HYDRAX)
   add_dependencies(RoR hydrax)
   target_link_libraries(RoR hydrax)
 endif(ROR_BUILD_HYDRAX)
+
+if(ROR_BUILD_CRASHRPT)
+  target_link_libraries(RoR CrashRpt)
+endif(ROR_BUILD_CRASHRPT)
 
 
 if(ROR_BUILD_PAGED)
