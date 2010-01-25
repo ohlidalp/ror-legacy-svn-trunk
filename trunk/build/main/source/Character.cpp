@@ -616,7 +616,6 @@ int Character::setBeamCoupling(bool enabled, Beam *truck)
 		beamCoupling = truck;
 		setPhysicsEnabled(false);
 		if(netMT && netMT->isVisible()) netMT->setVisible(false);
-
 		if(net && !remote)
 		{
 			attach_netdata_t data;
@@ -625,6 +624,19 @@ int Character::setBeamCoupling(bool enabled, Beam *truck)
 			data.source_id = beamCoupling->getSourceID();
 			data.stream_id = beamCoupling->getStreamID();
 			this->addPacket(MSG2_STREAM_DATA, sizeof(attach_netdata_t), (char*)&data);
+		}
+
+		// do not cast shadows inside of a truck
+		personode->getAttachedObject(0)->setCastShadows(false);
+
+		// check if there is a seat, if not, hide our character
+		Vector3 pos;
+		Quaternion rot;
+		int res = beamCoupling->calculateDriverPos(pos, rot);
+		if(res)
+		{
+			// driver seat not found
+			setVisible(false);
 		}
 
 	} else
@@ -639,6 +651,9 @@ int Character::setBeamCoupling(bool enabled, Beam *truck)
 			data.enabled = false;
 			this->addPacket(MSG2_STREAM_DATA, sizeof(attach_netdata_t), (char*)&data);
 		}
+
+		// cast shadows when using it on the outside
+		personode->getAttachedObject(0)->setCastShadows(true);
 	}
 	return 0;
 }
