@@ -652,6 +652,9 @@ int Character::setBeamCoupling(bool enabled, Beam *truck)
 			this->addPacket(MSG2_STREAM_DATA, sizeof(attach_netdata_t), (char*)&data);
 		}
 
+		// show character
+		setVisible(true);
+
 		// cast shadows when using it on the outside
 		personode->getAttachedObject(0)->setCastShadows(true);
 	}
