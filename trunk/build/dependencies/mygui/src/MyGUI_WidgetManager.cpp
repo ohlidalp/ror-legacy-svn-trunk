@@ -54,6 +54,9 @@
 #include "MyGUI_VScroll.h"
 #include "MyGUI_Widget.h"
 #include "MyGUI_Window.h"
+#include "MyGUI_Panel.h"
+#include "MyGUI_StackPanel.h"
+#include "MyGUI_WrapPanel.h"
 
 namespace MyGUI
 {
@@ -94,6 +97,9 @@ namespace MyGUI
 		factory.registerFactory<VScroll>("Widget");
 		factory.registerFactory<Widget>("Widget");
 		factory.registerFactory<Window>("Widget");
+		factory.registerFactory<Panel>("Widget");
+		factory.registerFactory<StackPanel>("Widget");
+		factory.registerFactory<WrapPanel>("Widget");
 
 #ifndef MYGUI_DONT_USE_OBSOLETE
 
@@ -268,7 +274,7 @@ namespace MyGUI
 		MYGUI_LOG(Info, "* Unregister widget factory '" << _factory->getTypeName() << "'");
 	}
 
-	void WidgetManager::parse(Widget* _widget, const std::string &_key, const std::string &_value)
+	void WidgetManager::_parse(Widget* _widget, const std::string &_key, const std::string &_value)
 	{
 		MapDelegate::iterator iter = mDelegates.find(_key);
 		if (iter == mDelegates.end())

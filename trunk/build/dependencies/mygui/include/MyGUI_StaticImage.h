@@ -207,6 +207,8 @@ namespace MyGUI
 
 		void baseChangeWidgetSkin(ResourceSkin* _info);
 
+		virtual void overrideMeasure(const IntSize& _sizeAvailable);
+
 	private:
 		void initialiseWidgetSkin(ResourceSkin* _info);
 		void shutdownWidgetSkin();
@@ -217,6 +219,7 @@ namespace MyGUI
 		void updateSelectIndex(size_t _index);
 
 		void frameAdvise(bool _advise);
+		void setDesiredSize(const IntSize& _size);
 
 	private:
 		// кусок в текстуре наших картинок
@@ -238,6 +241,7 @@ namespace MyGUI
 		std::string mItemName;
 		std::string mItemGroup;
 		std::string mCurrentTextureName;
+		IntSize mNativeImageSize;
 
 	};
 

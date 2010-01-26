@@ -24,7 +24,6 @@
 #include "MyGUI_SubSkin.h"
 #include "MyGUI_RenderItem.h"
 #include "MyGUI_SkinManager.h"
-#include "MyGUI_LanguageManager.h"
 #include "MyGUI_LayerNode.h"
 #include "MyGUI_CommonStateInfo.h"
 #include "MyGUI_RenderManager.h"
@@ -68,10 +67,10 @@ namespace MyGUI
 		if (nullptr != mNode) mNode->outOfDate(mRenderItem);
 	}
 
-	void SubSkin::_setAlign(const IntCoord& _oldcoord, bool _update)
+	/*void SubSkin::_setAlign(const IntCoord& _oldcoord, bool _update)
 	{
 		_setAlign(_oldcoord.size(), _update);
-	}
+	}*/
 
 	void SubSkin::_setAlign(const IntSize& _oldsize, bool _update)
 	{

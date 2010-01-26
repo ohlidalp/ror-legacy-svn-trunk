@@ -55,6 +55,7 @@ namespace MyGUI
 		mInheritsVisible(true),
 		mAlpha(ALPHA_MIN),
 		mInheritsAlpha(true),
+		mTexture(nullptr),
 		mParent(nullptr),
 		mIWidgetCreator(nullptr),
 		mNeedKeyFocus(false),
@@ -67,8 +68,7 @@ namespace MyGUI
 		mToolTipCurrentTime(0),
 		mToolTipOldIndex(ITEM_NONE),
 		mWidgetStyle(WidgetStyle::Child),
-		mDisableUpdateRelative(false),
-		mTexture(nullptr)
+		mMaxSize(MAX_COORD, MAX_COORD)
 	{
 		_initialise(_style, _coord, _align, _info, _parent, _croppedParent, _creator, _name);
 	}
@@ -94,7 +94,7 @@ namespace MyGUI
 		mToolTipCurrentTime(0),
 		mToolTipOldIndex(ITEM_NONE),
 		mWidgetStyle(WidgetStyle::Child),
-		mDisableUpdateRelative(false)
+		mMaxSize(MAX_COORD, MAX_COORD)
 	{
 	}
 
@@ -143,30 +143,6 @@ namespace MyGUI
 		if (nullptr != mCroppedParent)
 		{
 			mAbsolutePosition += mCroppedParent->getAbsolutePosition();
-		}
-
-		const IntSize& parent_size = mCroppedParent ? mCroppedParent->getSize() : Gui::getInstance().getViewSize();
-
-		if (parent_size.width)
-		{
-			mRelativeCoord.left = (float)_coord.left / (float)parent_size.width;
-			mRelativeCoord.width = (float)_coord.width / (float)parent_size.width;
-		}
-		else
-		{
-			mRelativeCoord.left = 0;
-			mRelativeCoord.width = 0;
-		}
-
-		if (parent_size.height)
-		{
-			mRelativeCoord.top = (float)_coord.top / (float)parent_size.height;
-			mRelativeCoord.height = (float)_coord.height / (float)parent_size.height;
-		}
-		else
-		{
-			mRelativeCoord.top = 0;
-			mRelativeCoord.height = 0;
 		}
 
 		initialiseWidgetSkin(_info, _coord.size());
@@ -362,6 +338,8 @@ namespace MyGUI
 		// присоединяем виджет с уровню
 		if (!_layer.empty() && widget->isRootWidget()) LayerManager::getInstance().attachToLayerNode(_layer, widget);
 
+		//invalidateMeasure();
+
 		return widget;
 	}
 
@@ -388,11 +366,14 @@ namespace MyGUI
 				_setSubSkinVisible(false);
 
 				// для тех кому нужно подправить себя при движении
-				//for (VectorSubWidget::iterator skin = mSubSkinChild.begin(); skin != mSubSkinChild.end(); ++skin) (*skin)->_updateView();
+				//for (VectorSubWidget::iterator skin = mSubSkinChild.begin(); skin != mSubSkinChild.end(); ++skin)
+				//	(*skin)->_updateView();
 
 				// вся иерархия должна быть проверенна
-				for (VectorWidgetPtr::iterator widget = mWidgetChild.begin(); widget != mWidgetChild.end(); ++widget) (*widget)->_updateView();
-				for (VectorWidgetPtr::iterator widget = mWidgetChildSkin.begin(); widget != mWidgetChildSkin.end(); ++widget) (*widget)->_updateView();
+				for (VectorWidgetPtr::iterator widget = mWidgetChild.begin(); widget != mWidgetChild.end(); ++widget)
+					(*widget)->_updateView();
+				for (VectorWidgetPtr::iterator widget = mWidgetChildSkin.begin(); widget != mWidgetChildSkin.end(); ++widget)
+					(*widget)->_updateView();
 
 				return;
 			}
@@ -406,7 +387,8 @@ namespace MyGUI
 
 			//_setSubSkinVisible(true);
 			// для тех кому нужно подправить себя при движении
-			for (VectorSubWidget::iterator skin = mSubSkinChild.begin(); skin != mSubSkinChild.end(); ++skin) (*skin)->_updateView();
+			for (VectorSubWidget::iterator skin = mSubSkinChild.begin(); skin != mSubSkinChild.end(); ++skin)
+				(*skin)->_updateView();
 
 			return;
 		}
@@ -418,9 +400,12 @@ namespace MyGUI
 		_setSubSkinVisible(true);
 
 		// обновляем наших детей, а они уже решат обновлять ли своих детей
-		for (VectorWidgetPtr::iterator widget = mWidgetChild.begin(); widget != mWidgetChild.end(); ++widget) (*widget)->_updateView();
-		for (VectorWidgetPtr::iterator widget = mWidgetChildSkin.begin(); widget != mWidgetChildSkin.end(); ++widget) (*widget)->_updateView();
-		for (VectorSubWidget::iterator skin = mSubSkinChild.begin(); skin != mSubSkinChild.end(); ++skin) (*skin)->_updateView();
+		for (VectorWidgetPtr::iterator widget = mWidgetChild.begin(); widget != mWidgetChild.end(); ++widget)
+			(*widget)->_updateView();
+		for (VectorWidgetPtr::iterator widget = mWidgetChildSkin.begin(); widget != mWidgetChildSkin.end(); ++widget)
+			(*widget)->_updateView();
+		for (VectorSubWidget::iterator skin = mSubSkinChild.begin(); skin != mSubSkinChild.end(); ++skin)
+			(*skin)->_updateView();
 
 	}
 
@@ -517,9 +502,12 @@ namespace MyGUI
 		if (nullptr != mParent) mRealAlpha = mAlpha * (mInheritsAlpha ? mParent->_getRealAlpha() : ALPHA_MAX);
 		else mRealAlpha = mAlpha;
 
-		for (VectorWidgetPtr::iterator widget = mWidgetChild.begin(); widget != mWidgetChild.end(); ++widget) (*widget)->_updateAlpha();
-		for (VectorWidgetPtr::iterator widget = mWidgetChildSkin.begin(); widget != mWidgetChildSkin.end(); ++widget) (*widget)->_updateAlpha();
-		for (VectorSubWidget::iterator skin = mSubSkinChild.begin(); skin != mSubSkinChild.end(); ++skin) (*skin)->setAlpha(mRealAlpha);
+		for (VectorWidgetPtr::iterator widget = mWidgetChild.begin(); widget != mWidgetChild.end(); ++widget)
+			(*widget)->_updateAlpha();
+		for (VectorWidgetPtr::iterator widget = mWidgetChildSkin.begin(); widget != mWidgetChildSkin.end(); ++widget)
+			(*widget)->_updateAlpha();
+		for (VectorSubWidget::iterator skin = mSubSkinChild.begin(); skin != mSubSkinChild.end(); ++skin)
+			(*skin)->setAlpha(mRealAlpha);
 	}
 
 	void Widget::_updateAlpha()
@@ -527,9 +515,12 @@ namespace MyGUI
 		MYGUI_DEBUG_ASSERT(nullptr != mParent, "Widget must have parent");
 		mRealAlpha = mAlpha * (mInheritsAlpha ? mParent->_getRealAlpha() : ALPHA_MAX);
 
-		for (VectorWidgetPtr::iterator widget = mWidgetChild.begin(); widget != mWidgetChild.end(); ++widget) (*widget)->_updateAlpha();
-		for (VectorWidgetPtr::iterator widget = mWidgetChildSkin.begin(); widget != mWidgetChildSkin.end(); ++widget) (*widget)->_updateAlpha();
-		for (VectorSubWidget::iterator skin = mSubSkinChild.begin(); skin != mSubSkinChild.end(); ++skin) (*skin)->setAlpha(mRealAlpha);
+		for (VectorWidgetPtr::iterator widget = mWidgetChild.begin(); widget != mWidgetChild.end(); ++widget)
+			(*widget)->_updateAlpha();
+		for (VectorWidgetPtr::iterator widget = mWidgetChildSkin.begin(); widget != mWidgetChildSkin.end(); ++widget)
+			(*widget)->_updateAlpha();
+		for (VectorSubWidget::iterator skin = mSubSkinChild.begin(); skin != mSubSkinChild.end(); ++skin)
+			(*skin)->setAlpha(mRealAlpha);
 	}
 
 	void Widget::setInheritsAlpha(bool _inherits)
@@ -537,7 +528,7 @@ namespace MyGUI
 		mInheritsAlpha = _inherits;
 		// принудительно обновляем
 		float alpha = mAlpha;
-		mAlpha = 101;
+		mAlpha += 101;
 		setAlpha(alpha);
 	}
 
@@ -578,9 +569,12 @@ namespace MyGUI
 
 		mAbsolutePosition = mCroppedParent->getAbsolutePosition() + mCoord.point();
 
-		for (VectorWidgetPtr::iterator widget = mWidgetChild.begin(); widget != mWidgetChild.end(); ++widget) (*widget)->_updateAbsolutePoint();
-		for (VectorWidgetPtr::iterator widget = mWidgetChildSkin.begin(); widget != mWidgetChildSkin.end(); ++widget) (*widget)->_updateAbsolutePoint();
-		for (VectorSubWidget::iterator skin = mSubSkinChild.begin(); skin != mSubSkinChild.end(); ++skin) (*skin)->_correctView();
+		for (VectorWidgetPtr::iterator widget = mWidgetChild.begin(); widget != mWidgetChild.end(); ++widget)
+			(*widget)->_updateAbsolutePoint();
+		for (VectorWidgetPtr::iterator widget = mWidgetChildSkin.begin(); widget != mWidgetChildSkin.end(); ++widget)
+			(*widget)->_updateAbsolutePoint();
+		for (VectorSubWidget::iterator skin = mSubSkinChild.begin(); skin != mSubSkinChild.end(); ++skin)
+			(*skin)->_correctView();
 	}
 
 	void Widget::_setUVSet(const FloatRect& _rect)
@@ -590,8 +584,6 @@ namespace MyGUI
 
 	void Widget::_setTextureName(const std::string& _texture)
 	{
-		//if (_texture == mTextureName) return;
-
 		mTextureName = _texture;
 		mTexture = RenderManager::getInstance().getTexture(mTextureName);
 
@@ -699,14 +691,14 @@ namespace MyGUI
 				Widget* widget = InputManager::getInstance().getMouseFocusWidget();
 				while (widget != 0)
 				{
-					if (widget/*->getName()*/ == this/*mName*/)
+					if (widget == this)
 					{
 						inside = true;
 						break;
 					}
 					// если виджет берет тултип, значит сбрасываем
 					if (widget->getNeedToolTip())
-						widget = 0;//widget->getParent();
+						widget = 0;
 					else 
 						widget = widget->getParent();
 				}
@@ -760,14 +752,14 @@ namespace MyGUI
 				Widget* widget = InputManager::getInstance().getMouseFocusWidget();
 				while (widget != 0)
 				{
-					if (widget/*->getName()*/ == this/*mName*/)
+					if (widget == this)
 					{
 						inside = true;
 						break;
 					}
 					// если виджет берет тултип, значит сбрасываем
 					if (widget->getNeedToolTip())
-						widget = 0;//widget->getParent();
+						widget = 0;
 					else 
 						widget = widget->getParent();
 				}
@@ -836,17 +828,17 @@ namespace MyGUI
 
 	void Widget::setRealPosition(const FloatPoint& _point)
 	{
-		setPosition(CoordConverter::convertFromRelative(_point, mCroppedParent == nullptr ? Gui::getInstance().getViewSize() : mCroppedParent->getSize()));
+		setPosition(CoordConverter::convertFromRelative(_point, getParentSize()));
 	}
 
 	void Widget::setRealSize(const FloatSize& _size)
 	{
-		setSize(CoordConverter::convertFromRelative(_size, mCroppedParent == nullptr ? Gui::getInstance().getViewSize() : mCroppedParent->getSize()));
+		setSize(CoordConverter::convertFromRelative(_size, getParentSize()));
 	}
 
 	void Widget::setRealCoord(const FloatCoord& _coord)
 	{
-		setCoord(CoordConverter::convertFromRelative(_coord, mCroppedParent == nullptr ? Gui::getInstance().getViewSize() : mCroppedParent->getSize()));
+		setCoord(CoordConverter::convertFromRelative(_coord, getParentSize()));
 	}
 
 	void Widget::_linkChildWidget(Widget* _widget)
@@ -949,118 +941,8 @@ namespace MyGUI
 		return (nullptr == mText) ? IntCoord() : mText->getCoord();
 	}
 
-	void Widget::_setAlign(const IntCoord& _oldcoord, bool _update)
-	{
-		// для виджета изменение х у  не меняються
-		_setAlign(_oldcoord.size(), _update);
-	}
-
-	void Widget::_setAlign(const IntSize& _oldsize, bool _update)
-	{
-		const IntSize& size = mCroppedParent ? mCroppedParent->getSize() : Gui::getInstance().getViewSize();
-
-		bool need_move = false;
-		bool need_size = false;
-		IntCoord coord = mCoord;
-
-		// первоначальное выравнивание
-		if (mAlign.isHRelative())
-		{
-			coord.left = int((float)size.width * mRelativeCoord.left);
-			coord.width = int((float)size.width * mRelativeCoord.width);
-		}
-		else if (mAlign.isHStretch())
-		{
-			// растягиваем
-			coord.width = mCoord.width + (size.width - _oldsize.width);
-			need_size = true;
-		}
-		else if (mAlign.isRight())
-		{
-			// двигаем по правому краю
-			coord.left = mCoord.left + (size.width - _oldsize.width);
-			need_move = true;
-		}
-		else if (mAlign.isHCenter())
-		{
-			// выравнивание по горизонтали без растяжения
-			coord.left = (size.width - mCoord.width) / 2;
-			need_move = true;
-		}
-
-		if (mAlign.isVRelative())
-		{
-			coord.top = int((float)size.height * mRelativeCoord.top);
-			coord.height = int((float)size.height * mRelativeCoord.height);
-		}
-		else if (mAlign.isVStretch())
-		{
-			// растягиваем
-			coord.height = mCoord.height + (size.height - _oldsize.height);
-			need_size = true;
-		}
-		else if (mAlign.isBottom())
-		{
-			// двигаем по нижнему краю
-			coord.top = mCoord.top + (size.height - _oldsize.height);
-			need_move = true;
-		}
-		else if (mAlign.isVCenter())
-		{
-			// выравнивание по вертикали без растяжения
-			coord.top = (size.height - mCoord.height) / 2;
-			need_move = true;
-		}
-
-		if (mAlign.isHRelative() || mAlign.isVRelative())
-		{
-			mDisableUpdateRelative = true;
-			setCoord(coord);
-			mDisableUpdateRelative = false;
-		}
-		else if (need_move)
-		{
-			if (need_size) setCoord(coord);
-			else setPosition(coord.point());
-		}
-		else if (need_size)
-		{
-			setSize(coord.size());
-		}
-		else
-		{
-			_updateView(); // только если не вызвано передвижение и сайз
-		}
-
-	}
-
 	void Widget::setPosition(const IntPoint& _point)
 	{
-		if (mAlign.isHRelative() || mAlign.isVRelative())
-		{
-
-			const IntSize& parent_size = mCroppedParent ? mCroppedParent->getSize() : Gui::getInstance().getViewSize();
-
-			if (parent_size.width)
-			{
-				mRelativeCoord.left = (float)_point.left / (float)parent_size.width;
-			}
-			else
-			{
-				mRelativeCoord.left = 0;
-			}
-
-			if (parent_size.height)
-			{
-				mRelativeCoord.top = (float)_point.top / (float)parent_size.height;
-			}
-			else
-			{
-				mRelativeCoord.top = 0;
-			}
-
-		}
-
 		// обновляем абсолютные координаты
 		mAbsolutePosition += _point - mCoord.point();
 
@@ -1074,31 +956,6 @@ namespace MyGUI
 
 	void Widget::setSize(const IntSize& _size)
 	{
-		if (mAlign.isHRelative() || mAlign.isVRelative())
-		{
-
-			const IntSize& parent_size = mCroppedParent ? mCroppedParent->getSize() : Gui::getInstance().getViewSize();
-
-			if (parent_size.width)
-			{
-				mRelativeCoord.width = (float)_size.width / (float)parent_size.width;
-			}
-			else
-			{
-				mRelativeCoord.width = 0;
-			}
-
-			if (parent_size.height)
-			{
-				mRelativeCoord.height = (float)_size.height / (float)parent_size.height;
-			}
-			else
-			{
-				mRelativeCoord.height = 0;
-			}
-
-		}
-
 		// устанавливаем новую координату а старую пускаем в расчеты
 		IntSize old = mCoord.size();
 		mCoord = _size;
@@ -1121,46 +978,17 @@ namespace MyGUI
 		_setSubSkinVisible(show);
 
 		// передаем старую координату , до вызова, текущая координата отца должна быть новой
-		for (VectorWidgetPtr::iterator widget = mWidgetChild.begin(); widget != mWidgetChild.end(); ++widget) (*widget)->_setAlign(old, mIsMargin || margin);
-		for (VectorWidgetPtr::iterator widget = mWidgetChildSkin.begin(); widget != mWidgetChildSkin.end(); ++widget) (*widget)->_setAlign(old, mIsMargin || margin);
-		for (VectorSubWidget::iterator skin = mSubSkinChild.begin(); skin != mSubSkinChild.end(); ++skin) (*skin)->_setAlign(old, mIsMargin || margin);
+		overrideArrange(old);
+
+		for (VectorSubWidget::iterator skin = mSubSkinChild.begin(); skin != mSubSkinChild.end(); ++skin)
+			(*skin)->_setAlign(old, mIsMargin || margin);
 
 		// запоминаем текущее состояние
 		mIsMargin = margin;
-
 	}
 
 	void Widget::setCoord(const IntCoord& _coord)
 	{
-		if (!mDisableUpdateRelative && (mAlign.isHRelative() || mAlign.isVRelative()))
-		{
-
-			const IntSize& parent_size = mCroppedParent ? mCroppedParent->getSize() : Gui::getInstance().getViewSize();
-
-			if (parent_size.width)
-			{
-				mRelativeCoord.left = (float)_coord.left / (float)parent_size.width;
-				mRelativeCoord.width = (float)_coord.width / (float)parent_size.width;
-			}
-			else
-			{
-				mRelativeCoord.left = 0;
-				mRelativeCoord.width = 0;
-			}
-
-			if (parent_size.height)
-			{
-				mRelativeCoord.top = (float)_coord.top / (float)parent_size.height;
-				mRelativeCoord.height = (float)_coord.height / (float)parent_size.height;
-			}
-			else
-			{
-				mRelativeCoord.top = 0;
-				mRelativeCoord.height = 0;
-			}
-
-		}
-
 		// обновляем абсолютные координаты
 		mAbsolutePosition += _coord.point() - mCoord.point();
 
@@ -1189,47 +1017,21 @@ namespace MyGUI
 		_setSubSkinVisible(show);
 
 		// передаем старую координату , до вызова, текущая координата отца должна быть новой
-		for (VectorWidgetPtr::iterator widget = mWidgetChild.begin(); widget != mWidgetChild.end(); ++widget) (*widget)->_setAlign(old, mIsMargin || margin);
-		for (VectorWidgetPtr::iterator widget = mWidgetChildSkin.begin(); widget != mWidgetChildSkin.end(); ++widget) (*widget)->_setAlign(old, mIsMargin || margin);
-		for (VectorSubWidget::iterator skin = mSubSkinChild.begin(); skin != mSubSkinChild.end(); ++skin) (*skin)->_setAlign(old, mIsMargin || margin);
+		overrideArrange(old.size());
+
+		for (VectorSubWidget::iterator skin = mSubSkinChild.begin(); skin != mSubSkinChild.end(); ++skin)
+			(*skin)->_setAlign(old.size(), mIsMargin || margin);
 
 		// запоминаем текущее состояние
 		mIsMargin = margin;
-
 	}
 
 	void Widget::setAlign(Align _align)
 	{
 		ICroppedRectangle::setAlign(_align);
 
-		if (mAlign.isHRelative() || mAlign.isVRelative())
-		{
-			const IntSize& parent_size = mCroppedParent ? mCroppedParent->getSize() : Gui::getInstance().getViewSize();
-
-			if (parent_size.width)
-			{
-				mRelativeCoord.left = (float)mCoord.left / (float)parent_size.width;
-				mRelativeCoord.width = (float)mCoord.width / (float)parent_size.width;
-			}
-			else
-			{
-				mRelativeCoord.left = 0;
-				mRelativeCoord.width = 0;
-			}
-
-			if (parent_size.height)
-			{
-				mRelativeCoord.top = (float)mCoord.top / (float)parent_size.height;
-				mRelativeCoord.height = (float)mCoord.height / (float)parent_size.height;
-			}
-			else
-			{
-				mRelativeCoord.top = 0;
-				mRelativeCoord.height = 0;
-			}
-
-		}
-
+		if (mSizePolicy != SizePolicy::Manual)
+			invalidateMeasure();
 	}
 
 	void Widget::detachFromWidget(const std::string& _layer)
@@ -1289,9 +1091,8 @@ namespace MyGUI
 
 		// корректируем параметры
 		float alpha = mAlpha;
-		mAlpha = -1;
+		mAlpha += 101;
 		setAlpha(alpha);
-
 	}
 
 	void Widget::attachToWidget(Widget* _parent, WidgetStyle _style, const std::string& _layer)
@@ -1300,7 +1101,8 @@ namespace MyGUI
 		MYGUI_ASSERT(_parent != this, "cyclic attach (attaching to self)");
 
 		// attach to client if widget have it
-		if (_parent->getClientWidget()) _parent = _parent->getClientWidget();
+		if (_parent->getClientWidget())
+			_parent = _parent->getClientWidget();
 
 		// проверяем на цикличность атача
 		Widget* parent = _parent;
@@ -1568,6 +1370,12 @@ namespace MyGUI
 		else if (_key == "Widget_NeedToolTip") setNeedToolTip(utility::parseValue<bool>(_value));
 		else if (_key == "Widget_Pointer") setPointer(_value);
 
+		else if (_key == "Widget_SizePolicy") setSizePolicy(utility::parseValue<SizePolicy>(_value));
+		else if (_key == "Widget_Margin") setMargin(utility::parseValue<IntRect>(_value));
+		else if (_key == "Widget_Padding") setPadding(utility::parseValue<IntRect>(_value));
+		else if (_key == "Widget_MinSize") setMinSize(utility::parseValue<IntSize>(_value));
+		else if (_key == "Widget_MaxSize") setMaxSize(utility::parseValue<IntSize>(_value));
+
 #ifndef MYGUI_DONT_USE_OBSOLETE
 		else if (_key == "Widget_TextColour")
 		{
@@ -1647,6 +1455,8 @@ namespace MyGUI
 				(*widget)->_setInheritsVisible(_value);
 		}
 
+		// при скрытии скрол баров в скрол вью срывается в рекурсию
+		//invalidateMeasure();
 	}
 
 	void Widget::_setInheritsVisible(bool _value)
@@ -1715,6 +1525,339 @@ namespace MyGUI
 			if (rect)
 				rect->_setColour(_value);
 		}
+		for (VectorWidgetPtr::iterator widget = mWidgetChildSkin.begin(); widget != mWidgetChildSkin.end(); ++widget)
+		{
+			(*widget)->setColour(_value);
+		}
+	}
+
+	void Widget::invalidateMeasure()
+	{
+		if (getVisualParent() != nullptr)
+		{
+			getVisualParent()->invalidateMeasure();
+			overrideArrange(getSize());
+		}
+		else
+		{
+			const IntSize& size = getParentSize();
+			updateArrange(IntCoord(0, 0, size.width, size.height), size);
+		}
+	}
+
+	void Widget::setMargin(const IntRect& _value)
+	{
+		mMargin = _value;
+		invalidateMeasure();
+	}
+
+	void Widget::setMinSize(const IntSize& _value)
+	{
+		mMinSize = _value;
+		invalidateMeasure();
+	}
+
+	void Widget::setMaxSize(const IntSize& _value)
+	{
+		mMaxSize = _value;
+		invalidateMeasure();
+	}
+
+	void Widget::setSizePolicy(SizePolicy _value)
+	{
+		mSizePolicy = _value;
+		invalidateMeasure();
+	}
+
+	IntSize Widget::getParentSize()
+	{
+		if (getVisualParent())
+			return getVisualParent()->getSize();
+		if (getLayer())
+			return getLayer()->getSize();
+
+		return Gui::getInstance().getViewSize();
+	}
+
+	/*
+	Запрос размера.
+	Метод overrideMeasure вызывается для обновления размера mDesiredSize.
+	Метод является перекрываемым, для того чтобы виджеты могли учесть свою внутренюю структуру для размещения содержимого.
+	В метод передается доступный размер _sizeAvailable. В этот размер не входят внешние отступы Margin, т.е. это размер для самого виджета.
+	В этом методе виджет должен сам учесть свои внутренние отступы Padding, размеры свой рамки и размер содержимого.
+	Если размер mDesiredSize будет больше _sizeAvailable то он усечется.
+	*/
+	void Widget::overrideMeasure(const IntSize& _sizeAvailable)
+	{
+		mDesiredSize.clear();
+		IntSize size_place(_sizeAvailable.width - getPaddingWidth(), _sizeAvailable.height - getPaddingHeight());
+
+		EnumeratorWidgetPtr child = /*mWidgetClient ? mWidgetClient->getEnumerator() : */getEnumerator();
+		while (child.next())
+		{
+			if (!child->isVisible())
+				continue;
+
+			if (child->getSizePolicy() == SizePolicy::Manual)
+			{
+				mDesiredSize.width = std::max(mDesiredSize.width, child->getRight());
+				mDesiredSize.height = std::max(mDesiredSize.height, child->getBottom());
+			}
+			else
+			{
+				/*
+				передаем ребенку размер доступного места, без учета нашего внутреннего отступа Padding
+				*/
+				child->updateMeasure(size_place);
+				if (child->getSizePolicy() == SizePolicy::Content)
+				{
+					mDesiredSize.width = std::max(mDesiredSize.width, child->getDesiredSize().width);
+					mDesiredSize.height = std::max(mDesiredSize.height, child->getDesiredSize().height);
+				}
+				else if (child->getSizePolicy() == SizePolicy::ContentWidth)
+				{
+					mDesiredSize.width = std::max(mDesiredSize.width, child->getDesiredSize().width);
+					mDesiredSize.height = std::max(mDesiredSize.height, child->getBottom());
+				}
+				else if (child->getSizePolicy() == SizePolicy::ContentHeight)
+				{
+					mDesiredSize.width = std::max(mDesiredSize.width, child->getRight());
+					mDesiredSize.height = std::max(mDesiredSize.height, child->getDesiredSize().height);
+				}
+			}
+		}
+
+		// а может всетаки там прибавить
+		mDesiredSize.width += getPaddingWidth();
+		mDesiredSize.height += getPaddingHeight();
+	}
+
+	/*
+	вызывается отцом для того чтобы виджет себя физически разместил
+	передается _coordPlace это координаты места где виджет будет находиться
+	виджет не имеет права заходить за эти координаты,
+	в эти координаты не входит внутрение отступы отца Padding, так как они принадлежат отцу
+	эти отступы отец уже учел
+	*/
+	void Widget::updateArrange(const IntCoord& _coordPlace, const IntSize& _oldsize)
+	{
+		IntCoord coord = mCoord;
+
+		if (mSizePolicy != SizePolicy::Content && mSizePolicy != SizePolicy::ContentWidth)
+		{
+			const IntSize& size = getParentSize();
+			if (mAlign.isHStretch())
+			{
+				// растягиваем
+				coord.width = mCoord.width + (size.width - _oldsize.width);
+			}
+			else if (mAlign.isRight())
+			{
+				// двигаем по правому краю
+				coord.left = mCoord.left + (size.width - _oldsize.width);
+			}
+			else if (mAlign.isHCenter())
+			{
+				// выравнивание по горизонтали без растяжения
+				coord.left = (size.width - mCoord.width) / 2;
+			}
+		}
+
+		if (mSizePolicy != SizePolicy::Content && mSizePolicy != SizePolicy::ContentHeight)
+		{
+			const IntSize& size = getParentSize();
+			if (mAlign.isVStretch())
+			{
+				// растягиваем
+				coord.height = mCoord.height + (size.height - _oldsize.height);
+			}
+			else if (mAlign.isBottom())
+			{
+				// двигаем по нижнему краю
+				coord.top = mCoord.top + (size.height - _oldsize.height);
+			}
+			else if (mAlign.isVCenter())
+			{
+				// выравнивание по вертикали без растяжения
+				coord.top = (size.height - mCoord.height) / 2;
+			}
+		}
+
+		if (mSizePolicy != SizePolicy::Manual)
+		{
+			/*
+			обновляем наши размеры по содержимому
+			и используем эти размеры для выравнивания внутри доступной зоны
+			которую нам указал отец
+			*/
+			updateMeasure(_coordPlace.size());
+			const IntSize& size_content = getDesiredSize();
+
+			if (mSizePolicy == SizePolicy::Content || mSizePolicy == SizePolicy::ContentWidth)
+			{
+				if (mAlign.isHStretch())
+				{
+					coord.left = mMargin.left + _coordPlace.left;
+					coord.width = _coordPlace.width - getMarginWidth();
+
+					// дополнительно чекаем, потому что при стрейтч размер контента не учитывается
+					coord.width = std::min(coord.width, mMaxSize.width);
+					coord.width = std::max(coord.width, mMinSize.width);
+				}
+				else if (mAlign.isRight())
+				{
+					coord.width = size_content.width - getMarginWidth();
+					coord.left = _coordPlace.width - size_content.width + mMargin.left + _coordPlace.left;
+				}
+				else if (mAlign.isLeft())
+				{
+					coord.width = size_content.width - getMarginWidth();
+					coord.left = mMargin.left + _coordPlace.left;
+				}
+				else if (mAlign.isHCenter())
+				{
+					coord.width = size_content.width - getMarginWidth();
+					coord.left = (_coordPlace.width - (size_content.width)) / 2 + mMargin.left + _coordPlace.left;
+				}
+
+				coord.left = std::max(coord.left, _coordPlace.left);
+				coord.width = std::min(coord.width, _coordPlace.width);
+			}
+
+			if (mSizePolicy == SizePolicy::Content || mSizePolicy == SizePolicy::ContentHeight)
+			{
+				if (mAlign.isVStretch())
+				{
+					coord.top = mMargin.top + _coordPlace.top;
+					coord.height = _coordPlace.height - getMarginHeight();
+
+					// дополнительно чекаем, потому что при стрейтч размер контента не учитывается
+					coord.height = std::min(coord.height, mMaxSize.height);
+					coord.height = std::max(coord.height, mMinSize.height);
+				}
+				else if (mAlign.isBottom())
+				{
+					coord.top = _coordPlace.height - size_content.height  + mMargin.top + _coordPlace.top;
+					coord.height = size_content.height - getMarginHeight();
+				}
+				else if (mAlign.isTop())
+				{
+					coord.top = mMargin.top + _coordPlace.top;
+					coord.height = size_content.height - getMarginHeight();
+				}
+				else if (mAlign.isVCenter())
+				{
+					coord.top = (_coordPlace.height - (size_content.height)) / 2 + mMargin.top + _coordPlace.top;
+					coord.height = size_content.height - getMarginHeight();
+				}
+
+				coord.top = std::max(coord.top, _coordPlace.top);
+				coord.height = std::min(coord.height, _coordPlace.height);
+			}
+		}
+
+		if (coord.point() != mCoord.point())
+		{
+			if (coord.size() != mCoord.size())
+				setCoord(coord);
+			else
+				setPosition(coord.point());
+		}
+		else if (coord.size() != mCoord.size())
+		{
+			setSize(coord.size());
+		}
+		else
+		{
+			// только если не вызвано передвижение и сайз
+			_updateView();
+		}
+	}
+
+	/*
+	Обновление размеров содержимого.
+	Метод updateMeasure вызывается для обновления mDesiredSize по нашему содержимому.
+	В этот размер входят наши внешние отступы Margin, внутрение отступы Padding, размер наших рамок и размер самого содержимого.
+	При расчете mDesiredSize учитывается MinSize и MaxSize, но только для виджета, без учета внешних отступов Margin.
+	В метод передается размер доступной зоны _sizeAvailable в который мы должны себя уместить.
+	Размер mDesiredSize не может быть больше чем размер доступной зоны _sizeAvailable.
+	*/
+	void Widget::updateMeasure(const IntSize& _sizeAvailable)
+	{
+		/*
+		в overrideMeasure передается размер без учета внешних отступов
+		это то место где реально можно будет разместить виджет
+		*/
+		IntSize size_place(_sizeAvailable.width - getMarginWidth(), _sizeAvailable.height - getMarginHeight());
+		overrideMeasure(size_place);
+
+		// хз, может перенести в оверайд меасуре
+		//mDesiredSize.width += getPaddingWidth();
+		//mDesiredSize.height += getPaddingHeight();
+
+		mDesiredSize.width = std::max(mDesiredSize.width, mMinSize.width);
+		mDesiredSize.height = std::max(mDesiredSize.height, mMinSize.height);
+		mDesiredSize.width = std::min(mDesiredSize.width, mMaxSize.width);
+		mDesiredSize.height = std::min(mDesiredSize.height, mMaxSize.height);
+
+		mDesiredSize.width += getMarginWidth();
+		mDesiredSize.height += getMarginHeight();
+
+		mDesiredSize.width = std::min(mDesiredSize.width, _sizeAvailable.width);
+		mDesiredSize.height = std::min(mDesiredSize.height, _sizeAvailable.height);
+	}
+
+	/*
+	Метод overrideArrange для раставления дочерних виджетов.
+	Можно использовать размер mDesiredSize дочерних виджетов.
+	*/
+	void Widget::overrideArrange(const IntSize& _oldSize)
+	{
+		for (VectorWidgetPtr::iterator widget = mWidgetChild.begin(); widget != mWidgetChild.end(); ++widget)
+		{
+			(*widget)->updateArrange(
+				IntCoord(mPadding.left, mPadding.top, mCoord.width - getPaddingWidth(), mCoord.height - getPaddingHeight()),
+				_oldSize);
+		}
+		for (VectorWidgetPtr::iterator widget = mWidgetChildSkin.begin(); widget != mWidgetChildSkin.end(); ++widget)
+		{
+			(*widget)->updateArrange(
+				IntCoord(mPadding.left, mPadding.top, mCoord.width - getPaddingWidth(), mCoord.height - getPaddingHeight()),
+				_oldSize);
+		}
+	}
+
+	int Widget::getPaddingWidth()
+	{
+		if (mWidgetClient != nullptr)
+			return mWidgetClient->getPaddingWidth();
+
+		return mPadding.left + mPadding.right;
+	}
+
+	int Widget::getPaddingHeight()
+	{
+		if (mWidgetClient != nullptr)
+			return mWidgetClient->getPaddingHeight();
+
+		return mPadding.top + mPadding.bottom;
+	}
+
+	const IntRect& Widget::getPadding()
+	{
+		if (mWidgetClient != nullptr)
+			return mWidgetClient->getPadding();
+
+		return mPadding;
+	}
+
+	void Widget::setPadding(const IntRect& _value)
+	{
+		if (mWidgetClient != nullptr)
+			mWidgetClient->setPadding(_value);
+
+		mPadding = _value;
+		invalidateMeasure();
 	}
 
 } // namespace MyGUI

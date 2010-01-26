@@ -99,6 +99,12 @@ namespace MyGUI
 		}
 
 		//MYGUI_ASSERT(nullptr != mScrollClient, "Child Widget Client not found in skin (ScrollView must have Client)");
+		if (mScrollClient != nullptr)
+		{
+			mBorderSize.set(mScrollClient->getLeft(), mScrollClient->getTop());
+			mBorderSize.width += getWidth() - ((mVScroll != nullptr) ? mVScroll->getRight() : mScrollClient->getRight());
+			mBorderSize.height += getHeight() - ((mHScroll != nullptr) ? mHScroll->getBottom() : mScrollClient->getBottom());
+		}
 
 		updateView();
 	}
@@ -173,12 +179,14 @@ namespace MyGUI
 		Base::setSize(_size);
 
 		updateView();
+		updateView();
 	}
 
 	void ScrollView::setCoord(const IntCoord& _coord)
 	{
 		Base::setCoord(_coord);
 
+		updateView();
 		updateView();
 	}
 
@@ -313,7 +321,9 @@ namespace MyGUI
 	void ScrollView::setCanvasSize(const IntSize& _value)
 	{
 		if (mWidgetClient != nullptr)
-			mWidgetClient->setSize(_value); updateView();
+			mWidgetClient->setSize(_value);
+		updateView();
+		//updateView();// разобраться, лечит скролы
 	}
 
 	void ScrollView::setProperty(const std::string& _key, const std::string& _value)
@@ -352,6 +362,38 @@ namespace MyGUI
 	IntSize ScrollView::getCanvasSize()
 	{
 		return mWidgetClient == nullptr ? IntSize() : mWidgetClient->getSize();
+	}
+
+	void ScrollView::overrideMeasure(const IntSize& _sizeAvailable)
+	{
+		Base::overrideMeasure(IntSize(MAX_COORD, MAX_COORD));
+
+		mContentSize = mDesiredSize;
+
+		// размеры рамки скрола
+		mDesiredSize += mBorderSize;
+
+		if (_sizeAvailable.width < mDesiredSize.width)
+		{
+			if (mHScroll != nullptr)
+				mDesiredSize.height += mHScroll->getHeight();
+		}
+		if (_sizeAvailable.height < mDesiredSize.height)
+		{
+			if (mVScroll != nullptr)
+				mDesiredSize.width += mVScroll->getWidth();
+		}
+	}
+
+	void ScrollView::overrideArrange(const IntSize& _sizeOld)
+	{
+		Base::overrideArrange(_sizeOld);
+
+		if (mSizePolicy != SizePolicy::Manual)
+		{
+			setCanvasSize(IntSize());
+			setCanvasSize(mContentSize);
+		}
 	}
 
 } // namespace MyGUI

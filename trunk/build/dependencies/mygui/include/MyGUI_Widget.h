@@ -173,6 +173,23 @@ namespace MyGUI
 		/** Get inherits alpha mode flag */
 		bool isInheritsAlpha() { return mInheritsAlpha; }
 
+		// внешние отступы
+		void setMargin(const IntRect& _value);
+		const IntRect& getMargin() { return mMargin; }
+
+		// внутренние отступы
+		void setPadding(const IntRect& _value);
+		const IntRect& getPadding();
+
+		void setMinSize(const IntSize& _value);
+		const IntSize& getMinSize() { return mMinSize; }
+
+		void setMaxSize(const IntSize& _value);
+		const IntSize& getMaxSize() { return mMaxSize; }
+
+		void setSizePolicy(SizePolicy _value);
+		SizePolicy getSizePolicy() { return mSizePolicy; }
+
 		/** Set widget's state */
 		bool setState(const std::string& _value);
 
@@ -184,6 +201,10 @@ namespace MyGUI
 
 		/** Get parent widget or nullptr if no parent */
 		Widget* getParent() { return mParent; }
+
+		Widget* getVisualParent() { return static_cast<Widget*>(mCroppedParent); }
+
+		IntSize getParentSize();
 
 		/** Get child widgets Enumerator */
 		EnumeratorWidgetPtr getEnumerator();
@@ -322,6 +343,19 @@ namespace MyGUI
 		void setCaptionWithNewLine(const std::string& _value);
 		virtual void _initialise(WidgetStyle _style, const IntCoord& _coord, Align _align, ResourceSkin* _info, Widget* _parent, ICroppedRectangle * _croppedParent, IWidgetCreator * _creator, const std::string& _name);
 
+		void invalidateMeasure();
+
+		void updateMeasure(const IntSize& _sizeAvailable);
+
+		const IntSize& getDesiredSize() { return mDesiredSize; }
+
+		int getMarginWidth() { return mMargin.left + mMargin.right; }
+		int getMarginHeight() { return mMargin.top + mMargin.bottom; }
+
+		int getPaddingWidth();
+		int getPaddingHeight();
+
+		void updateArrange(const IntCoord& _coordPlace, const IntSize& _oldsize);
 
 	/*obsolete:*/
 #ifndef MYGUI_DONT_USE_OBSOLETE
@@ -378,9 +412,6 @@ namespace MyGUI
 
 		void _updateView(); // обновления себя и детей
 
-		void _setAlign(const IntSize& _oldsize, bool _update);
-		void _setAlign(const IntCoord& _oldcoord, bool _update);
-
 		// создает виджет
 		virtual Widget* baseCreateWidget(WidgetStyle _style, const std::string& _type, const std::string& _skin, const IntCoord& _coord, Align _align, const std::string& _layer, const std::string& _name);
 
@@ -401,6 +432,9 @@ namespace MyGUI
 		// наследуемся он LayerInfo
 		virtual ILayerItem * getLayerItemByPoint(int _left, int _top);
 		virtual const IntCoord& getLayerItemCoord() { return mCoord; }
+
+		virtual void overrideMeasure(const IntSize& _sizeAvailable);
+		virtual void overrideArrange(const IntSize& _sizeOld);
 
 	private:
 
@@ -495,9 +529,13 @@ namespace MyGUI
 		// поведение виджета, перекрывающийся дочерний или всплывающий
 		WidgetStyle mWidgetStyle;
 
-		FloatCoord mRelativeCoord;
-		bool mDisableUpdateRelative;
+		IntSize mDesiredSize;
+		IntRect mMargin;
+		IntRect mPadding;
 
+		IntSize mMaxSize;
+		IntSize mMinSize;
+		SizePolicy mSizePolicy;
 	};
 
 } // namespace MyGUI

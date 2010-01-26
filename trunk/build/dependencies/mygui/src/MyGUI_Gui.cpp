@@ -313,7 +313,7 @@ namespace MyGUI
 		// выравниваем рутовые окна
 		for (VectorWidgetPtr::iterator iter = mWidgetChild.begin(); iter!=mWidgetChild.end(); ++iter)
 		{
-			((ICroppedRectangle*)(*iter))->_setAlign(oldViewSize, true);
+			(*iter)->updateArrange(IntCoord(0, 0,  mViewSize.width, mViewSize.height), oldViewSize);
 		}
 	}
 
