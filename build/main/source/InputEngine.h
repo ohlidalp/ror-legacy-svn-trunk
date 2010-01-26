@@ -398,6 +398,7 @@ typedef struct
 	// Sliders
 	int joystickSliderNumber;
 	int joystickSliderReverse;
+	int joystickSliderRegion;
 
 	//others
 	char configline[128];
@@ -430,6 +431,7 @@ public:
 
 	int getCurrentKeyCombo(std::string *combo);
 	int getCurrentJoyButton(int &joystickNumber, int &button);
+	int getCurrentPovValue(int &joystickNumber, int &pov, int &povdir);
 	std::string getKeyNameForKeyCode(OIS::KeyCode keycode);
 	void resetKeys();
 	OIS::JoyStickState *getCurrentJoyState(int joystickNumber);

@@ -656,7 +656,7 @@ void ExampleFrameListener::updateGUI(float dt)
 		rolltexture->setTextureRotate(Radian(angle));
 		//	roll_node->roll(Radian(angle));
 		//rollcorr
-		if (trucks[current_truck]->free_active_shock)
+		if (trucks[current_truck]->free_active_shock && guiRoll && rollcortexture)
 		{
 			//		rollcorr_node->resetOrientation();
 			//		rollcorr_node->roll(Radian(-trucks[current_truck]->stabratio*5.0));
@@ -990,6 +990,8 @@ ExampleFrameListener::ExampleFrameListener(RenderWindow* win, Camera* cam, Scene
 	fpsLineStream = netLineStream = netlagLineStream = 0;
 	enablePosStor = (SETTINGS.getSetting("Position Storage")=="Yes");
 	objectCounter=0;
+	guiRoll=0;
+	rollcortexture=0;
 	hdrListener=0;
 	mDOF=0;
 	mDOFDebug=false;
