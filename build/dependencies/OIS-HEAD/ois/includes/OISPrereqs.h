@@ -51,7 +51,7 @@ restrictions:
 #elif defined( __BORLANDC__ )
 #	define OIS_BORLAND_COMPILER
 #else
-#	error No Recognized Compiler!
+//#	error No Recognized Compiler!
 #endif
 
 // --------------- Determine Operating System Platform ---------------
