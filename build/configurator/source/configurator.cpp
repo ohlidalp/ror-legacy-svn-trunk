@@ -377,7 +377,7 @@ protected:
 	}
 
 public:
-	KeyAddDialog(MyDialog *_dlg) : wxDialog(NULL, wxID_ANY, wxString(), wxDefaultPosition, wxSize(400,400), wxSTAY_ON_TOP|wxDOUBLE_BORDER|wxCLOSE_BOX), dlg(_dlg)
+	KeyAddDialog(MyDialog *_dlg) : wxDialog(NULL, wxID_ANY, wxString(), wxDefaultPosition, wxSize(500,400), wxSTAY_ON_TOP|wxDOUBLE_BORDER|wxCLOSE_BOX), dlg(_dlg)
 	{
 		selectedEvent="";
 		selectedType="";
@@ -386,7 +386,7 @@ public:
 		loadEventListing(); //configpath.ToUTF8().data());
 
 		desctext = new wxStaticText(this, wxID_ANY, _("Please select an input event."), wxPoint(5,5), wxSize(380, 30), wxST_NO_AUTORESIZE);
-		desctext->Wrap(380);
+		desctext->Wrap(480);
 
 		wxStaticText *text = new wxStaticText(this, 4, _("Event Name: "), wxPoint(5,35), wxSize(70, 25));
 		wxString eventChoices[MAX_EVENTS];
@@ -399,16 +399,17 @@ public:
 			eventChoices[counter] = conv(it->first);
 		}
 //		cbe = new wxComboBox(this, 1, _("Keyboard"), wxPoint(80,35), wxSize(300, 25), counter, eventChoices, wxCB_READONLY);
-		cbe = new wxListBox(this, 1, wxPoint(80,35), wxSize(300, 270), counter, eventChoices, wxLB_SINGLE);
+		cbe = new wxListBox(this, 1, wxPoint(80,35), wxSize(400, 270), counter, eventChoices, wxLB_SINGLE);
 		cbe->SetSelection(0);
 
 //		text = new wxStaticText(this, wxID_ANY, _("Input Type: "), wxPoint(5,120), wxSize(70,25));
-		wxString ch[3];
+		wxString ch[5];
 		ch[0] = conv("Keyboard");
 		ch[1] = conv("JoystickAxis");
-		ch[2] = conv("JoystickButton");
-//		cbi = new wxComboBox(this, wxID_ANY, _("Keyboard"), wxPoint(80,120), wxSize(300, 25), 3, ch, wxCB_READONLY);
-		cbi=new wxRadioBox(this, wxID_ANY, _("Input Type: "),  wxPoint(5,310), wxSize(380,45), 3, ch);
+		ch[2] = conv("JoystickSlider");
+		ch[3] = conv("JoystickButton");
+		ch[4] = conv("JoystickPov");
+		cbi=new wxRadioBox(this, wxID_ANY, _("Input Type: "),  wxPoint(5,310), wxSize(480,45), 5, ch);
 		cbi->SetSelection(0);
 
 		wxButton *btnOK = new wxButton(this, 2, _("Add"), wxPoint(5,365), wxSize(190,25));
@@ -446,6 +447,10 @@ public:
 		else if(conv(selectedType) == conv("JoystickAxis"))
 			selectedOption=" 0 0";
 		else if(conv(selectedType) == conv("JoystickButton"))
+			selectedOption=" 0 0";
+		else if(conv(selectedType) == conv("JoystickSlider"))
+			selectedOption=" 0 X 0";
+		else if(conv(selectedType) == conv("JoystickPov"))
 			selectedOption=" 0 0";
 
 		EndModal(0);
@@ -605,12 +610,14 @@ protected:
 	wxButton *btnCancel;
 	wxTimer *timer;
 	std::string lastCombo;
-	int lastBtn, lastJoy;
+	int lastBtn, lastJoy, lastPov, lastPovDir;
 	int selectedJoystickLast, selectedAxisLast;
 	float joyMinState[MAX_JOYSTICKS][MAX_JOYSTICK_AXIS];
 	float joyMaxState[MAX_JOYSTICKS][MAX_JOYSTICK_AXIS];
-	float joySliderMinState[MAX_JOYSTICKS][MAX_JOYSTICK_SLIDERS];
-	float joySliderMaxState[MAX_JOYSTICKS][MAX_JOYSTICK_SLIDERS];
+	float joySliderMinState[MAX_JOYSTICKS][2][MAX_JOYSTICK_SLIDERS];
+	float joySliderMaxState[MAX_JOYSTICKS][2][MAX_JOYSTICK_SLIDERS];
+	void OnEraseBackGround(wxEraseEvent& event) { event.Skip(); };
+
 
 public:
 	KeySelectDialog(MyDialog *_dlg, event_trigger_t *_t) : wxDialog(NULL, wxID_ANY, wxString(), wxDefaultPosition, wxSize(300,600), wxSTAY_ON_TOP|wxDOUBLE_BORDER|wxCLOSE_BOX), t(_t), dlg(_dlg)
@@ -632,8 +639,10 @@ public:
 			}
 			for(int x=0;x<MAX_JOYSTICK_SLIDERS;x++)
 			{
-				joySliderMinState[i][x]=0;
-				joySliderMaxState[i][x]=0;
+				joySliderMinState[i][0][x]=0;
+				joySliderMaxState[i][0][x]=0;
+				joySliderMinState[i][1][x]=0;
+				joySliderMaxState[i][1][x]=0;
 			}
 		}
 
@@ -680,12 +689,12 @@ public:
 
 	void closeWindow()
 	{
+		EndModal(0);
 		INPUTENGINE.destroy();
 		timer->Stop();
 		delete timer;
 		delete text;
 		delete text2;
-		EndModal(0);
 	}
 
 	void update()
@@ -708,12 +717,16 @@ public:
 				}
 				for(int x=0;x<MAX_JOYSTICK_SLIDERS;x++)
 				{
-					joySliderMinState[i][x]=0;
-					joySliderMaxState[i][x]=0;
+					joySliderMinState[i][0][x]=0;
+					joySliderMaxState[i][0][x]=0;
+					joySliderMinState[i][1][x]=0;
+					joySliderMaxState[i][1][x]=0;
 				}
 			}
 			if(t->eventtype == ET_JoystickAxisAbs || t->eventtype == ET_JoystickAxisRel)
 				text2->SetLabel(_("(Please move an Axis)\n"));
+			if(t->eventtype == ET_JoystickSliderX || t->eventtype == ET_JoystickSliderX)
+				text2->SetLabel(_("(Please move a Slider)\n"));
 		}
 
 		if(t->eventtype == ET_Keyboard)
@@ -734,6 +747,44 @@ public:
 					text2->SetLabel(s);
 				lastCombo = combo;
 			} else if(keys > 0)
+			{
+				closeWindow();
+				return;
+			}
+		} else if(t->eventtype == ET_JoystickPov)
+		{
+			int joyPov=-1, joyNum=-1, povDir=-1;
+			int res = INPUTENGINE.getCurrentPovValue(joyNum, joyPov, povDir);
+			if(res && joyPov != lastPov && joyNum != lastJoy && povDir != lastPovDir)
+			{
+				char *dirStr = "North";
+				if(povDir == OIS::Pov::North)     dirStr = "North";
+				if(povDir == OIS::Pov::South)     dirStr = "South";
+				if(povDir == OIS::Pov::East)      dirStr = "East";
+				if(povDir == OIS::Pov::West)      dirStr = "West";
+				if(povDir == OIS::Pov::NorthEast) dirStr = "NorthEast";
+				if(povDir == OIS::Pov::SouthEast) dirStr = "SouthEast";
+				if(povDir == OIS::Pov::NorthWest) dirStr = "NorthWest";
+				if(povDir == OIS::Pov::SouthWest) dirStr = "SouthWest";
+				std::string str = conv(wxString::Format(_T("%d %s"), joyPov, dirStr));
+				strcpy(t->configline, str.c_str());
+				t->joystickPovNumber = joyPov;
+				t->joystickPovDirection = povDir;
+				wxString s = conv(str);
+				if(text2->GetLabel() != s)
+					text2->SetLabel(s);
+				lastPov = joyPov;
+				lastJoy = joyNum;
+				lastPovDir = povDir;
+
+			} else if (!res)
+			{
+				wxString s = _("(Please use your POV)");
+				if(text2->GetLabel() != s)
+					text2->SetLabel(s);
+				lastBtn = -1;
+				lastJoy = -1;
+			} else if(joyPov >= 0 && joyNum >= 0 && povDir >= 0)
 			{
 				closeWindow();
 				return;
@@ -845,12 +896,12 @@ public:
 				//str = wxString::Format(_T("%f"), joyMaxState[0]) + "/" + wxString::Format(_T("%f"), joyMinState[i][0]) + " - " + wxString::Format(_T("%f"), fabs((float)(joyMaxState[0]-joyMinState[i][0])));
 			}
 			wxString s = conv(str);
-			if(text2->GetLabel() != s)
+			if(!s.empty() && text2->GetLabel() != s)
 				text2->SetLabel(s);
 		} else if(t->eventtype == ET_JoystickSliderX || t->eventtype == ET_JoystickSliderY)
 		{
 			std::string str = "";
-			int sliders=0;
+			int sliders=0, cd=0;
 			for(int i=0;i<INPUTENGINE.getNumJoysticks();i++)
 			{
 				OIS::JoyStickState *j = INPUTENGINE.getCurrentJoyState(i);
@@ -860,62 +911,79 @@ public:
 				sliders += slidercount;
 
 				std::vector<OIS::Slider>::iterator it;
-				int counter = 0;
+				int counter = 0, cdi=0;
 
-				for(int s=0;s<slidercount;s++)
+				for(int s=0;s<slidercount;s++, counter++)
 				{
-					float value = ((t->eventtype == ET_JoystickSliderX)?j->mSliders[s].abX:j->mSliders[s].abY);
+					for(int type=0;type<2;type++)
+					{
+						float value = ((type == 0)?j->mSliders[s].abX:j->mSliders[s].abY);
 
-					value = 100*(value/(float)OIS::JoyStick::MAX_AXIS);
-					if(value < joySliderMinState[i][counter]) joySliderMinState[i][counter] = value;
-					if(value > joySliderMaxState[i][counter]) joySliderMaxState[i][counter] = value;
-					//str += "Axis " + wxString::Format(_T("%d"), counter) + ": " + wxString::Format(_T("%0.2f"), value) + "\n";
+						value = 100*(value/(float)OIS::JoyStick::MAX_AXIS);
+						if(value < joySliderMinState[i][type][counter]) joySliderMinState[i][type][counter] = value;
+						if(value > joySliderMaxState[i][type][counter]) joySliderMaxState[i][type][counter] = value;
+						float delta = fabs((float)(joySliderMaxState[i][type][counter]-joySliderMinState[i][type][counter]));
+						if(value > 10 || delta > 10)
+						{
+							str += std::string("Joystick ") + conv(wxString::Format(wxT("%d"), i)) + ", Slider " + wxString::Format(_T("%c"), type?'Y':'X') + ": " + wxString::Format(_T("%d"), counter) + ": " + wxString::Format(_T("%0.2f"), value) + "\n";
+							cdi++;
+						}
+					}
 				}
+				if(cdi)
+					str += std::string(" ---- \nResult: ");
+				cd+=cdi;
 
 				// check for delta on each axis
-				str = conv(_("(Please move a Slider)\n"));
+				if(!cd) str += conv(_("(Please move a Slider)\n"));
 				float maxdelta=0;
-				int selectedSlider = -1;
+				int selectedSlider = -1, selectedSliderType = -1;
 				for(int c=0;c<=counter;c++)
 				{
-					float delta = fabs((float)(joySliderMaxState[i][c]-joySliderMinState[i][c]));
-					if(delta > maxdelta && delta > 50)
+					float deltaX = fabs((float)(joySliderMaxState[i][0][c]-joySliderMinState[i][0][c]));
+					float deltaY = fabs((float)(joySliderMaxState[i][1][c]-joySliderMinState[i][1][c]));
+					if(deltaX > maxdelta && deltaX > 50)
 					{
 						selectedSlider = c;
-						maxdelta = delta;
+						selectedSliderType = 0;
+						maxdelta = deltaX;
+					} 
+					if(deltaY > maxdelta && deltaY > 50)
+					{
+						selectedSlider = c;
+						selectedSliderType = 1;
+						maxdelta = deltaY;
 					}
 				}
 
-				if(selectedSlider >= 0)
+				if(selectedSlider >= 0 && selectedSliderType >= 0)
 				{
-					float delta = fabs((float)(joySliderMaxState[i][selectedSlider]-joySliderMinState[i][selectedSlider]));
+					float delta = fabs((float)(joySliderMaxState[i][selectedSliderType][selectedSlider]-joySliderMinState[i][selectedSliderType][selectedSlider]));
 					static float olddeta = 0;
-					bool upper = (joyMaxState[i][selectedSlider] > 50);
-					if(delta > 50 && delta < 120)
+
+					if(selectedSliderType == 0)
+						t->eventtype = ET_JoystickSliderX;
+					else if(selectedSliderType == 1)
+						t->eventtype = ET_JoystickSliderY;
+
+					bool upper = (joySliderMaxState[i][selectedSliderType][selectedSlider] > 50);
+					if(delta > 10)
 					{
-						str = std::string("Slider ") + \
-								conv(wxString::Format(_T("%d"), selectedSlider)) + \
-								(upper?std::string(" UPPER"):std::string(" LOWER")); // + " - " + wxString::Format(_T("%f"), lastJoyEventTime);
-						t->joystickSliderNumber = selectedSlider;
-						// todo: support this
-						//t->joystickAxisRegion = (upper?1:-1); // half axis
-						strcpy(t->configline, "");
-					}
-					else if(delta > 120)
-					{
-						str = std::string("Slider ") + conv(wxString::Format(_T("%d"), selectedSlider)); //+ " - " + wxString::Format(_T("%f"), lastJoyEventTime);
+						str += std::string("Joystick ") + conv(wxString::Format(wxT("%d"), i)) + std::string(", Slider ") + conv(wxString::Format(_T("%d"), selectedSlider)); //+ " - " + wxString::Format(_T("%f"), lastJoyEventTime);
 						t->joystickSliderNumber = selectedSlider;
 						strcpy(t->configline, "");
 					}
 				}
+				str += std::string("\n====\nPress RETURN or ESC to complete\nPress 'c' to reset ranges\n");
 				//str = wxString::Format(_T("%f"), joyMaxState[0]) + "/" + wxString::Format(_T("%f"), joyMinState[i][0]) + " - " + wxString::Format(_T("%f"), fabs((float)(joyMaxState[0]-joyMinState[i][0])));
 				wxString s = conv(str);
-				if(text2->GetLabel() != s)
+				if(!s.empty() && text2->GetLabel() != s)
 					text2->SetLabel(s);
 			}
 			if(!sliders)
 			{
 				// no sliders found!
+				closeWindow();
 			}
 		}
 	}
@@ -1048,6 +1116,7 @@ END_EVENT_TABLE()
 BEGIN_EVENT_TABLE(KeySelectDialog, wxDialog)
 	EVT_BUTTON(1, KeySelectDialog::OnButCancel)
 	EVT_TIMER(2, KeySelectDialog::OnTimer)
+	EVT_ERASE_BACKGROUND(KeySelectDialog::OnEraseBackGround)
 END_EVENT_TABLE()
 
 BEGIN_EVENT_TABLE(KeyAddDialog, wxDialog)
@@ -2069,10 +2138,8 @@ void MyDialog::loadInputControls()
 		// only add them once
 		cTree->AddColumn (_("Event"), 180);
 		cTree->SetColumnEditable (0, false);
-		cTree->AddColumn (_("Key/Axis"), 100);
-		cTree->SetColumnEditable (3, false);
-		cTree->AddColumn (_("Options"), 100);
-		cTree->SetColumnEditable (4, false);
+		cTree->AddColumn (_("Arguments"), 320);
+		cTree->SetColumnEditable (1, false);
 	}
 	wxTreeItemId root = cTree->AddRoot(conv("Root"));
 	wxTreeItemId *curRoot = 0;
@@ -2092,6 +2159,9 @@ void MyDialog::loadInputControls()
 	}
 	printf("===========================\n");
 	*/
+
+	// init now here, so we get the correct device name
+	INPUTENGINE.setup(getOISHandle(this), true, false);
 
 	// clear everything
 	controlItemCounter=0;
@@ -2136,45 +2206,14 @@ void MyDialog::loadInputControls()
 				evName = conv(evn.substr(strlen(evt.group)+1));
 		    wxTreeItemId item = cTree->AppendItem(devices[deviceName].second[curGroup], evName);
 
-			/*
-			wxTreeItemId cItem_context = cTree->AppendItem(item, "Context");
-			cTree->SetItemText (cItem_context, 1,  wxString(INPUTENGINE.getEventTypeName(vecIt->eventtype).c_str()));
-
-			wxTreeItemId cItem_function = cTree->AppendItem(item, "Function");
-			wxTreeItemId cItem_input = cTree->AppendItem(item, "Input");
-			*/
-
 			// set some data beside the tree entry
 			cTree->SetItemData(item, new IDData(evt.suid));
 			updateItemText(item, (event_trigger_t *)&(evt));
 			treeItems[evt.suid] = item;
 
-			/*
-			cTree->SetItemText (item, 1,  wxString(INPUTENGINE.getEventTypeName(vecIt->eventtype).c_str()));
-			if(vecIt->eventtype == ET_Keyboard)
-			{
-				cTree->SetItemText (cItem_function, 1,  "");
-				cTree->SetItemText (cItem_input, 1, wxString(vecIt->configline.c_str()));
-
-				cTree->SetItemText (item, 2, wxString(vecIt->configline.c_str()));
-			} else if(vecIt->eventtype == ET_JoystickAxisAbs || vecIt->eventtype == ET_JoystickAxisRel)
-			{
-				cTree->SetItemText (cItem_function, 1,  wxString::Format(_T("%d"), vecIt->joystickAxisNumber));
-				cTree->SetItemText (cItem_input, 1, wxString((vecIt->configline).c_str()));
-
-				cTree->SetItemText (item, 2,  wxString::Format(_T("%d"), vecIt->joystickAxisNumber));
-				cTree->SetItemText (item, 3,  wxString((vecIt->configline).c_str()));
-			} else if(vecIt->eventtype == ET_JoystickButton)
-			{
-				cTree->SetItemText (cItem_function, 1,  "");
-				cTree->SetItemText (cItem_input, 1, wxString::Format(_T("%d"), vecIt->joystickButtonNumber));
-
-				cTree->SetItemText (item, 2, wxString::Format(_T("%d"), vecIt->joystickButtonNumber));
-			}
-			*/
-
 		}
 	}
+	INPUTENGINE.destroy();
 	//cTree->ExpandAll(root);
 }
 
@@ -2182,23 +2221,42 @@ void MyDialog::updateItemText(wxTreeItemId item, event_trigger_t *t)
 {
 	if(t->eventtype == ET_Keyboard)
 	{
-		cTree->SetItemText (item, 1, conv(t->configline));
+		wxString txt = wxString::Format(_T("Keyboard: %s"), t->configline);
+		cTree->SetItemText (item, 1, txt);
 	} else if(t->eventtype == ET_JoystickAxisAbs || t->eventtype == ET_JoystickAxisRel)
 	{
-		cTree->SetItemText (item, 1,  wxString::Format(_T("%d"), t->joystickNumber));
-		cTree->SetItemText (item, 2,  wxString::Format(_T("%d"), t->joystickAxisNumber));
-		cTree->SetItemText (item, 3,  conv((t->configline)));
+		wxString txt = wxString::Format(_T("Joystick %d, Axis %d%c %s"), t->joystickNumber, t->joystickAxisNumber, (strlen(t->configline)>0?',':' '), t->configline);
+		cTree->SetItemText (item, 1, txt);
 	} else if(t->eventtype == ET_JoystickSliderX || t->eventtype == ET_JoystickSliderY)
 	{
-		cTree->SetItemText (item, 1,  wxString::Format(_T("%d"), t->joystickNumber));
-		cTree->SetItemText (item, 2,  wxString::Format(_T("%d"), t->joystickSliderNumber));
-		cTree->SetItemText (item, 3,  conv((t->configline)));
+			char type = 'X';
+			if(t->eventtype == ET_JoystickSliderY)
+				type = 'Y';
+		wxString txt = wxString::Format(_T("Joystick %d, %c-Slider %d%c %s"), t->joystickNumber, type, t->joystickSliderNumber, (strlen(t->configline)>0?',':' '), t->configline);
+		cTree->SetItemText (item, 1, txt);
 	} else if(t->eventtype == ET_JoystickButton)
 	{
-		cTree->SetItemText (item, 1,  wxString::Format(_T("%d"), t->joystickNumber));
-		cTree->SetItemText (item, 2, wxString::Format(_T("%d"), t->joystickButtonNumber));
+		//wxString txt = wxString::Format(_T("Joystick %d, Button %d%c %s"), t->joystickNumber, t->joystickButtonNumber, (strlen(t->configline)>0?',':' '), t->configline);
+		wxString txt = wxString::Format(_T("Joystick %d, Button %d"), t->joystickNumber, t->joystickButtonNumber);
+		cTree->SetItemText (item, 1, txt);
+	} else if(t->eventtype == ET_JoystickPov)
+	{
+		char *dirStr = "North";
+		if     (t->joystickPovDirection == OIS::Pov::Centered)  dirStr = "Centered";
+		else if(t->joystickPovDirection == OIS::Pov::North)     dirStr = "North";
+		else if(t->joystickPovDirection == OIS::Pov::South)     dirStr = "South";
+		else if(t->joystickPovDirection == OIS::Pov::East)      dirStr = "East";
+		else if(t->joystickPovDirection == OIS::Pov::West)      dirStr = "West";
+		else if(t->joystickPovDirection == OIS::Pov::NorthEast) dirStr = "NorthEast";
+		else if(t->joystickPovDirection == OIS::Pov::SouthEast) dirStr = "SouthEast";
+		else if(t->joystickPovDirection == OIS::Pov::NorthWest) dirStr = "NorthWest";
+		else if(t->joystickPovDirection == OIS::Pov::SouthWest) dirStr = "SouthWest";
+
+		wxString txt = wxString::Format(_T("Joystick %d, POV %d, Direction %s%c %s"), t->joystickNumber, t->joystickPovNumber, dirStr, (strlen(t->configline)>0?',':' '), t->configline);
+		cTree->SetItemText (item, 1, txt);
 	}
 }
+
 void MyDialog::updateRendersystems(Ogre::RenderSystem *rs)
 {
 	// beware: rs may be null if no config file is present (this is normal)
@@ -2659,83 +2717,92 @@ void MyDialog::onRightClickItem(wxTreeEvent& event)
 		return;
 	if(t->eventtype == ET_JoystickAxisAbs || t->eventtype == ET_JoystickAxisRel || t->eventtype == ET_JoystickSliderX || t->eventtype == ET_JoystickSliderY)
 	{
-		wxMenu *m = new wxMenu(_("Joystick Options"));
+		wxMenu *m = 0;
+		if(t->eventtype == ET_JoystickAxisAbs || t->eventtype == ET_JoystickAxisRel)
+			m = new wxMenu(_("Joystick Axis Options"));
+		else if(t->eventtype == ET_JoystickSliderX || t->eventtype == ET_JoystickSliderY)
+			m = new wxMenu(_("Joystick Slider Options"));
 
 		wxMenuItem *i = m->AppendCheckItem(1, _("Reverse"), _("reverse axis"));
 		i->Check(t->joystickAxisReverse || t->joystickSliderReverse);
 
-		wxMenu *iregion = new wxMenu(_("Joystick Axis Region"));
-		i = iregion->AppendRadioItem(30, _("Upper"));
-		i->Check(t->joystickAxisRegion == 1);
-		i = iregion->AppendRadioItem(31, _("Full"));
-		i->Check(t->joystickAxisRegion == 0);
-		i = iregion->AppendRadioItem(32, _("Lower"));
-		i->Check(t->joystickAxisRegion == -1);
-		i = m->AppendSubMenu(iregion, _("Region"));
+		if(t->eventtype != ET_JoystickSliderX && t->eventtype != ET_JoystickSliderY)
+		{
+			wxMenu *iregion = new wxMenu(_("Joystick Axis Region"));
+			i = iregion->AppendRadioItem(30, _("Upper"));
+			i->Check(t->joystickAxisRegion == 1);
+			i = iregion->AppendRadioItem(31, _("Full"));
+			i->Check(t->joystickAxisRegion == 0);
+			i = iregion->AppendRadioItem(32, _("Lower"));
+			i->Check(t->joystickAxisRegion == -1);
+			i = m->AppendSubMenu(iregion, _("Region"));
 
-		wxMenu *idead = new wxMenu(_("Joystick Axis Deadzones"));
-		i = idead->AppendRadioItem(20, _("0 % (No deadzone)"), _("no deadzone"));
-		i->Check(fabs(t->joystickAxisDeadzone)< 0.0001);
+			wxMenu *idead = new wxMenu(_("Joystick Axis Deadzones"));
+			i = idead->AppendRadioItem(20, _("0 % (No deadzone)"), _("no deadzone"));
+			i->Check(fabs(t->joystickAxisDeadzone)< 0.0001);
 
-		i = idead->AppendRadioItem(21, _("5 %"), _("5% deadzone"));
-		i->Check(fabs(t->joystickAxisDeadzone-0.05)< 0.0001);
+			i = idead->AppendRadioItem(21, _("5 %"), _("5% deadzone"));
+			i->Check(fabs(t->joystickAxisDeadzone-0.05)< 0.0001);
 
-		i = idead->AppendRadioItem(22, _("10 %"), _("10% deadzone"));
-		i->Check(fabs(t->joystickAxisDeadzone-0.1)< 0.0001);
+			i = idead->AppendRadioItem(22, _("10 %"), _("10% deadzone"));
+			i->Check(fabs(t->joystickAxisDeadzone-0.1)< 0.0001);
 
-		i = idead->AppendRadioItem(23, _("15 %"), _("15% deadzone"));
-		i->Check(fabs(t->joystickAxisDeadzone-0.15)< 0.0001);
+			i = idead->AppendRadioItem(23, _("15 %"), _("15% deadzone"));
+			i->Check(fabs(t->joystickAxisDeadzone-0.15)< 0.0001);
 
-		i = idead->AppendRadioItem(24, _("20 %"), _("20% deadzone"));
-		i->Check(fabs(t->joystickAxisDeadzone-0.2)< 0.0001);
+			i = idead->AppendRadioItem(24, _("20 %"), _("20% deadzone"));
+			i->Check(fabs(t->joystickAxisDeadzone-0.2)< 0.0001);
 
-		i = idead->AppendRadioItem(25, _("30 %"), _("30% deadzone"));
-		i->Check(fabs(t->joystickAxisDeadzone-0.3)< 0.0001);
+			i = idead->AppendRadioItem(25, _("30 %"), _("30% deadzone"));
+			i->Check(fabs(t->joystickAxisDeadzone-0.3)< 0.0001);
 
-		i = m->AppendSubMenu(idead, _("Deadzone"));
+			i = m->AppendSubMenu(idead, _("Deadzone"));
 
-		//////////////////
-		wxMenu *iLinear = new wxMenu(_("Joystick Axis Linearity"));
-		i = iLinear->AppendRadioItem(50, _("+30 %"), _("+30% multiplication"));
-		i->Check(t->joystickAxisLinearity > 1.29f && t->joystickAxisLinearity < 1.31f);
+			//////////////////
+			wxMenu *iLinear = new wxMenu(_("Joystick Axis Linearity"));
+			i = iLinear->AppendRadioItem(50, _("+30 %"), _("+30% multiplication"));
+			i->Check(t->joystickAxisLinearity > 1.29f && t->joystickAxisLinearity < 1.31f);
 
-		i = iLinear->AppendRadioItem(51, _("+25 %"), _("+25% multiplication"));
-		i->Check(t->joystickAxisLinearity > 1.24f && t->joystickAxisLinearity < 1.26f);
+			i = iLinear->AppendRadioItem(51, _("+25 %"), _("+25% multiplication"));
+			i->Check(t->joystickAxisLinearity > 1.24f && t->joystickAxisLinearity < 1.26f);
 
-		i = iLinear->AppendRadioItem(52, _("+20 %"), _("+20% multiplication"));
-		i->Check(t->joystickAxisLinearity > 1.19f && t->joystickAxisLinearity < 1.21f);
+			i = iLinear->AppendRadioItem(52, _("+20 %"), _("+20% multiplication"));
+			i->Check(t->joystickAxisLinearity > 1.19f && t->joystickAxisLinearity < 1.21f);
 
-		i = iLinear->AppendRadioItem(53, _("+15 %"), _("+15% multiplication"));
-		i->Check(t->joystickAxisLinearity > 1.14f && t->joystickAxisLinearity < 1.16f);
+			i = iLinear->AppendRadioItem(53, _("+15 %"), _("+15% multiplication"));
+			i->Check(t->joystickAxisLinearity > 1.14f && t->joystickAxisLinearity < 1.16f);
 
-		i = iLinear->AppendRadioItem(54, _("+10 %"), _("+10% multiplication"));
-		i->Check(t->joystickAxisLinearity > 1.09f && t->joystickAxisLinearity < 1.11f);
+			i = iLinear->AppendRadioItem(54, _("+10 %"), _("+10% multiplication"));
+			i->Check(t->joystickAxisLinearity > 1.09f && t->joystickAxisLinearity < 1.11f);
 
-		i = iLinear->AppendRadioItem(55, _("+5 %"), _("+5% multiplication"));
-		i->Check(t->joystickAxisLinearity > 1.04f && t->joystickAxisLinearity < 1.06f);
+			i = iLinear->AppendRadioItem(55, _("+5 %"), _("+5% multiplication"));
+			i->Check(t->joystickAxisLinearity > 1.04f && t->joystickAxisLinearity < 1.06f);
 
-		i = iLinear->AppendRadioItem(56, _("0 % (Total Linear)"), _("Total Linear"));
-		i->Check(fabs(1.0f - t->joystickAxisLinearity) < 0.01);
+			i = iLinear->AppendRadioItem(56, _("0 % (Total Linear)"), _("Total Linear"));
+			i->Check(fabs(1.0f - t->joystickAxisLinearity) < 0.01);
 
-		i = iLinear->AppendRadioItem(57, _("-5 %"), _("-5% multiplication"));
-		i->Check(t->joystickAxisLinearity > 0.94f && t->joystickAxisLinearity < 0.96f);
+			i = iLinear->AppendRadioItem(57, _("-5 %"), _("-5% multiplication"));
+			i->Check(t->joystickAxisLinearity > 0.94f && t->joystickAxisLinearity < 0.96f);
 
-		i = iLinear->AppendRadioItem(58, _("-10 %"), _("-10% multiplication"));
-		i->Check(t->joystickAxisLinearity > 0.89f && t->joystickAxisLinearity < 0.91f);
+			i = iLinear->AppendRadioItem(58, _("-10 %"), _("-10% multiplication"));
+			i->Check(t->joystickAxisLinearity > 0.89f && t->joystickAxisLinearity < 0.91f);
 
-		i = iLinear->AppendRadioItem(59, _("-15 %"), _("-15% multiplication"));
-		i->Check(t->joystickAxisLinearity > 0.84f && t->joystickAxisLinearity < 0.86f);
+			i = iLinear->AppendRadioItem(59, _("-15 %"), _("-15% multiplication"));
+			i->Check(t->joystickAxisLinearity > 0.84f && t->joystickAxisLinearity < 0.86f);
 
-		i = iLinear->AppendRadioItem(60, _("-20 %"), _("-20% multiplication"));
-		i->Check(t->joystickAxisLinearity > 0.79f && t->joystickAxisLinearity < 0.81f);
+			i = iLinear->AppendRadioItem(60, _("-20 %"), _("-20% multiplication"));
+			i->Check(t->joystickAxisLinearity > 0.79f && t->joystickAxisLinearity < 0.81f);
 
-		i = iLinear->AppendRadioItem(61, _("-25 %"), _("-25% multiplication"));
-		i->Check(t->joystickAxisLinearity > 0.74f && t->joystickAxisLinearity < 0.76f);
+			i = iLinear->AppendRadioItem(61, _("-25 %"), _("-25% multiplication"));
+			i->Check(t->joystickAxisLinearity > 0.74f && t->joystickAxisLinearity < 0.76f);
 
-		i = iLinear->AppendRadioItem(62, _("-30 %"), _("-30% multiplication"));
-		i->Check(t->joystickAxisLinearity > 0.69f && t->joystickAxisLinearity < 0.71f);
+			i = iLinear->AppendRadioItem(62, _("-30 %"), _("-30% multiplication"));
+			i->Check(t->joystickAxisLinearity > 0.69f && t->joystickAxisLinearity < 0.71f);
 
-		i = m->AppendSubMenu(iLinear, _("Linearity"));
+			i = m->AppendSubMenu(iLinear, _("Linearity"));
+
+		}
+
 		this->PopupMenu(m);
 	}
 }
