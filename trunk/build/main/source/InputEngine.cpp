@@ -2448,6 +2448,7 @@ bool InputEngine::processLine(char *line)
 	else if(!strncmp(evtype, "JoystickAxis", 12)) eventtype = ET_JoystickAxisAbs;
 	//else if(!strncmp(evtype, "JoystickAxis", 250)) eventtype = ET_JoystickAxisRel;
 	else if(!strncmp(evtype, "JoystickPov", 11)) eventtype = ET_JoystickPov;
+	else if(!strncmp(evtype, "JoystickSlider", 14)) eventtype = ET_JoystickSliderX;
 	else if(!strncmp(evtype, "JoystickSliderX", 15)) eventtype = ET_JoystickSliderX;
 	else if(!strncmp(evtype, "JoystickSliderY", 15)) eventtype = ET_JoystickSliderY;
 	else if(!strncmp(evtype, "None", 4)) eventtype = ET_NONE;
@@ -2654,10 +2655,10 @@ bool InputEngine::processLine(char *line)
 			if(eventID == -1) return false;
 
 			int direction = OIS::Pov::Centered;
-			if(!strcmp(dir, "North")) direction = OIS::Pov::North;
-			if(!strcmp(dir, "South")) direction = OIS::Pov::South;
-			if(!strcmp(dir, "East")) direction = OIS::Pov::East;
-			if(!strcmp(dir, "West")) direction = OIS::Pov::West;
+			if(!strcmp(dir, "North"))     direction = OIS::Pov::North;
+			if(!strcmp(dir, "South"))     direction = OIS::Pov::South;
+			if(!strcmp(dir, "East"))      direction = OIS::Pov::East;
+			if(!strcmp(dir, "West"))      direction = OIS::Pov::West;
 			if(!strcmp(dir, "NorthEast")) direction = OIS::Pov::NorthEast;
 			if(!strcmp(dir, "SouthEast")) direction = OIS::Pov::SouthEast;
 			if(!strcmp(dir, "NorthWest")) direction = OIS::Pov::NorthWest;
@@ -2682,8 +2683,9 @@ bool InputEngine::processLine(char *line)
 		{
 			int sliderNumber=0;
 			char options[250];
+			char type;
 			memset(options, 0, 250);
-			sscanf(line, "%s %s %d %d %s", eventName, evtype, &joyNo, &sliderNumber, options);
+			sscanf(line, "%s %s %d %c %d %s", eventName, evtype, &joyNo, &type, &sliderNumber, options);
 			int eventID = resolveEventName(String(eventName));
 			if(eventID == -1) return false;
 
@@ -2700,10 +2702,18 @@ bool InputEngine::processLine(char *line)
 			}
 
 			event_trigger_t t_slider = newEvent();
+
+			if(type == 'Y' || type == 'y')
+				t_slider.eventtype = ET_JoystickSliderY;
+			else if(type == 'X' || type == 'x')
+				t_slider.eventtype = ET_JoystickSliderX;
+
 			t_slider.eventtype = eventtype;
 			t_slider.joystickNumber = joyNo;
 			t_slider.joystickSliderNumber = sliderNumber;
 			t_slider.joystickSliderReverse = reverse;
+			// TODO: add region support to sliders!
+			t_slider.joystickSliderRegion = 0;
 			strncpy(t_slider.configline, options, 128);
 			strncpy(t_slider.group, getEventGroup(eventName).c_str(), 128);
 			strncpy(t_slider.tmp_eventname, eventName, 128);
@@ -2735,6 +2745,25 @@ int InputEngine::getCurrentJoyButton(int &joystickNumber, int &button)
 	}
 	return 0;
 }
+
+int InputEngine::getCurrentPovValue(int &joystickNumber, int &pov, int &povdir)
+{
+	for(int j=0; j<free_joysticks; j++)
+	{
+		for(int i=0; i<MAX_JOYSTICK_SLIDERS; i++)
+		{
+			if(joyState[j].mPOV[i].direction != Pov::Centered)
+			{
+				joystickNumber = j;
+				pov = i;
+				povdir = joyState[j].mPOV[i].direction;
+				return 1;
+			}
+		}
+	}
+	return 0;
+}
+
 
 event_trigger_t InputEngine::newEvent()
 {
@@ -2853,6 +2882,15 @@ bool InputEngine::updateConfigline(event_trigger_t *t)
 			strcat(t->configline, "REVERSE");
 		else if(t->joystickSliderReverse && strlen(t->configline))
 			strcat(t->configline, "+REVERSE");
+
+		if(t->joystickSliderRegion==1 && !strlen(t->configline))
+			strcat(t->configline, "UPPER");
+		else if(t->joystickSliderRegion==1 && strlen(t->configline))
+			strcat(t->configline, "+UPPER");
+		else if(t->joystickSliderRegion==-1 && !strlen(t->configline))
+			strcat(t->configline, "LOWER");
+		else if(t->joystickSliderRegion==-1 && strlen(t->configline))
+			strcat(t->configline, "+LOWER");
 
 		// is this is a slider, ignore the rest
 		return true;
@@ -3005,6 +3043,10 @@ bool InputEngine::saveMapping(Ogre::String outfile, size_t hwnd, int joyNum)
 			} else if(vecIt->eventtype == ET_JoystickSliderX || vecIt->eventtype == ET_JoystickSliderY)
 			{
 				fprintf(f, "%d ", vecIt->joystickNumber);
+				char type = 'X';
+				if(vecIt->eventtype == ET_JoystickSliderY)
+					type = 'Y';
+				fprintf(f, "%c ", type);
 				fprintf(f, "%d ", vecIt->joystickSliderNumber);
 				fprintf(f, "%s ", vecIt->configline);
 			} else if(vecIt->eventtype == ET_JoystickButton)
@@ -3013,7 +3055,17 @@ bool InputEngine::saveMapping(Ogre::String outfile, size_t hwnd, int joyNum)
 				fprintf(f, "%d ", vecIt->joystickButtonNumber);
 			} else if(vecIt->eventtype == ET_JoystickPov)
 			{
-				fprintf(f, "%d ", vecIt->joystickNumber);
+				char *dirStr = "North";
+				if(vecIt->joystickPovDirection == OIS::Pov::North)     dirStr = "North";
+				if(vecIt->joystickPovDirection == OIS::Pov::South)     dirStr = "South";
+				if(vecIt->joystickPovDirection == OIS::Pov::East)      dirStr = "East";
+				if(vecIt->joystickPovDirection == OIS::Pov::West)      dirStr = "West";
+				if(vecIt->joystickPovDirection == OIS::Pov::NorthEast) dirStr = "NorthEast";
+				if(vecIt->joystickPovDirection == OIS::Pov::SouthEast) dirStr = "SouthEast";
+				if(vecIt->joystickPovDirection == OIS::Pov::NorthWest) dirStr = "NorthWest";
+				if(vecIt->joystickPovDirection == OIS::Pov::SouthWest) dirStr = "SouthWest";
+
+				fprintf(f, "%d %d %s", vecIt->joystickNumber, vecIt->joystickPovNumber, dirStr);
 			}
 			// end this line
 			fprintf(f, "\n");
