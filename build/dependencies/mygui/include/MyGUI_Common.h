@@ -51,15 +51,10 @@
 #include "MyGUI_InputDefine.h"
 #include "MyGUI_Version.h"
 #include "MyGUI_WidgetStyle.h"
+#include "MyGUI_SizePolicy.h"
+#include "MyGUI_FlowDirection.h"
 #include "MyGUI_UString.h"
 #include "MyGUI_Diagnostic.h"
 #include "MyGUI_Delegate.h"
-
-namespace MyGUI
-{
-
-	using MyGUI::delegates::newDelegate;
-
-} // namespace MyGUI
 
 #endif // __MYGUI_COMMON_H__

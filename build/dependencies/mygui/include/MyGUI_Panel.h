@@ -1,9 +1,10 @@
 /*!
 	@file
-	@author		Alexander Ptakhin
-	@date		01/2009
+	@author		Albert Semenov
+	@date		01/2010
 	@module
-*//*
+*/
+/*
 	This file is part of MyGUI.
 	
 	MyGUI is free software: you can redistribute it and/or modify
@@ -19,25 +20,28 @@
 	You should have received a copy of the GNU Lesser General Public License
 	along with MyGUI.  If not, see <http://www.gnu.org/licenses/>.
 */
-#ifndef __MYGUI_CANVAS_FACTORY_H__
-#define __MYGUI_CANVAS_FACTORY_H__
+#ifndef __MYGUI_PANEL_H__
+#define __MYGUI_PANEL_H__
 
-#include "MyGUI_Canvas.h"
-#include "MyGUI_IWidgetFactory.h"
+#include "MyGUI_Prerequest.h"
+#include "MyGUI_Widget.h"
 
 namespace MyGUI
 {
-	namespace factory
+
+	class MYGUI_EXPORT Panel :
+		public Widget
 	{
+		MYGUI_RTTI_DERIVED( Panel );
 
-		class MYGUI_EXPORT CanvasFactory : public BaseWidgetFactory<Canvas>
-		{
-		public:
-			CanvasFactory();
-			~CanvasFactory();
-		};
+	public:
+		Panel();
 
-	} // namespace factory
+		//virtual const IntSize& overrideMeasure(const IntSize& _sizeAvailable);
+		//virtual void overrideArrange(const IntSize& _sizeFinal);
+
+	};
+
 } // namespace MyGUI
 
-#endif // __MYGUI_CANVAS_FACTORY_H__
+#endif // __MYGUI_PANEL_H__

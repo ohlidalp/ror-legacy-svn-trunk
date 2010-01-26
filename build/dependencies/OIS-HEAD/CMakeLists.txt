@@ -14,6 +14,7 @@ SET(LIB_INSTALL_DIR "lib")
 
 IF(WIN32)
   add_definitions("-D_WIN32")
+  include_directories(${DirectX_INCLUDE_DIR})
 ELSEIF(UNIX)
 ELSEIF(APPLE)
 ENDIF(WIN32)

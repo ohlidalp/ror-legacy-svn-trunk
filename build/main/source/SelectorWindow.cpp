@@ -30,17 +30,7 @@ SelectorWindow::SelectorWindow()
 {
 	initialiseByAttributes(this);
 
-	//mCamera = camera;
-
 	mMainWidget->setVisible(false);
-
-	//set language
-	mMainWidget->setCaption(_L("Loader"));
-	mOkButton->setCaption(_L("OK"));
-	mCancelButton->setCaption(_L("Cancel"));
-	//sheet_cache->setCaption(_L("List"));
-	//sheet_search->setCaption(_L("Search"));
-	mStartSearchButton->setCaption(_L("Search"));
 
 	// setup controls
 	mConfigComboBox->addItem("Default", Ogre::String("Default"));

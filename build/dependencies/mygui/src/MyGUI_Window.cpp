@@ -74,7 +74,7 @@ namespace MyGUI
 		mNeedKeyFocus = true;
 
 		// дефолтные размеры
-		mMinmax.set(0, 0, 3000, 3000);
+		//mMinmax.set(0, 0, 3000, 3000);
 
 		bool main_move = false;
 		// парсим свойства
@@ -245,14 +245,16 @@ namespace MyGUI
 
 	void Window::setSize(const IntSize& _size)
 	{
-		IntSize size = _size;
 		// прилепляем к краям
+		IntSize size = _size;
 
-		if (size.width < mMinmax.left) size.width = mMinmax.left;
-		else if (size.width > mMinmax.right) size.width = mMinmax.right;
-		if (size.height < mMinmax.top) size.height = mMinmax.top;
-		else if (size.height > mMinmax.bottom) size.height = mMinmax.bottom;
-		if ((size.width == mCoord.width) && (size.height == mCoord.height) ) return;
+		size.width = std::max(size.width, mMinSize.width);
+		size.height = std::max(size.height, mMinSize.height);
+		size.width = std::min(size.width, mMaxSize.width);
+		size.height = std::min(size.height, mMaxSize.height);
+
+		if (size == mCoord.size())
+			return;
 
 		if (mSnap)
 		{
@@ -269,31 +271,31 @@ namespace MyGUI
 		IntPoint pos = _coord.point();
 		IntSize size = _coord.size();
 
-		if (size.width < mMinmax.left)
+		if (size.width < mMinSize.width)
 		{
-			int offset = mMinmax.left - size.width;
-			size.width = mMinmax.left;
+			int offset = mMinSize.width - size.width;
+			size.width = mMinSize.width;
 			if ((pos.left - mCoord.left) > offset) pos.left -= offset;
 			else pos.left = mCoord.left;
 		}
-		else if (size.width > mMinmax.right)
+		else if (size.width > mMaxSize.width)
 		{
-			int offset = mMinmax.right - size.width;
-			size.width = mMinmax.right;
+			int offset = mMaxSize.width - size.width;
+			size.width = mMaxSize.width;
 			if ((pos.left - mCoord.left) < offset) pos.left -= offset;
 			else pos.left = mCoord.left;
 		}
-		if (size.height < mMinmax.top)
+		if (size.height < mMinSize.height)
 		{
-			int offset = mMinmax.top - size.height;
-			size.height = mMinmax.top;
+			int offset = mMinSize.height - size.height;
+			size.height = mMinSize.height;
 			if ((pos.top - mCoord.top) > offset) pos.top -= offset;
 			else pos.top = mCoord.top;
 		}
-		else if (size.height > mMinmax.bottom)
+		else if (size.height > mMaxSize.height)
 		{
-			int offset = mMinmax.bottom - size.height;
-			size.height = mMinmax.bottom;
+			int offset = mMaxSize.height - size.height;
+			size.height = mMaxSize.height;
 			if ((pos.top - mCoord.top) < offset) pos.top -= offset;
 			else pos.top = mCoord.top;
 		}
@@ -364,11 +366,7 @@ namespace MyGUI
 		if (abs(_coord.left) <= WINDOW_SNAP_DISTANSE) _coord.left = 0;
 		if (abs(_coord.top) <= WINDOW_SNAP_DISTANSE) _coord.top = 0;
 
-		IntSize view_size;
-		if (getCroppedParent() == nullptr)
-			view_size = this->getLayer()->getSize();
-		else
-			view_size = ((Widget*)getCroppedParent())->getSize();
+		const IntSize view_size = getParentSize();
 
 		if ( abs(_coord.left + _coord.width - view_size.width) < WINDOW_SNAP_DISTANSE) _coord.left = view_size.width - _coord.width;
 		if ( abs(_coord.top + _coord.height - view_size.height) < WINDOW_SNAP_DISTANSE) _coord.top = view_size.height - _coord.height;
@@ -412,51 +410,23 @@ namespace MyGUI
 		return controller;
 	}
 
-	void Window::setMinSize(const IntSize& _value)
-	{
-		mMinmax.left = _value.width;
-		mMinmax.top = _value.height;
-	}
-
-	IntSize Window::getMinSize()
-	{
-		return IntSize(mMinmax.left, mMinmax.top);
-	}
-
-	void Window::setMaxSize(const IntSize& _value)
-	{
-		mMinmax.right = _value.width;
-		mMinmax.bottom = _value.height;
-	}
-
-	IntSize Window::getMaxSize()
-	{
-		return IntSize(mMinmax.right, mMinmax.bottom);
-	}
-
 	void Window::setProperty(const std::string& _key, const std::string& _value)
 	{
 		if (_key == "Window_AutoAlpha") setAutoAlpha(utility::parseValue<bool>(_value));
 		else if (_key == "Window_Snap") setSnap(utility::parseValue<bool>(_value));
-		else if (_key == "Window_MinSize") setMinSize(utility::parseValue<IntSize>(_value));
-		else if (_key == "Window_MaxSize") setMaxSize(utility::parseValue<IntSize>(_value));
-
-#ifndef MYGUI_DONT_USE_OBSOLETE
-		else if (_key == "Window_MinMax")
-		{
-			IntRect rect = IntRect::parse(_value);
-			setMinSize(rect.left, rect.top);
-			setMaxSize(rect.right, rect.bottom);
-			MYGUI_LOG(Warning, "Window_MinMax is obsolete, use Window_MinSize or Window_MaxSize");
-		}
-#endif // MYGUI_DONT_USE_OBSOLETE
-
 		else
 		{
 			Base::setProperty(_key, _value);
 			return;
 		}
 		eventChangeProperty(this, _key, _value);
+	}
+
+	void Window::overrideMeasure(const IntSize& _sizeAvailable)
+	{
+		IntSize size_frame = mWidgetClient ? (getSize() - mWidgetClient->getSize()) : IntSize();
+		Base::overrideMeasure(_sizeAvailable - size_frame);
+		mDesiredSize += size_frame;
 	}
 
 } // namespace MyGUI

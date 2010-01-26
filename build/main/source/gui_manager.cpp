@@ -67,8 +67,8 @@ bool GUIManager::create()
 	createInput(handle);
 	windowResized(mWindow);
 	createGui();
-	// need MyGUI from trunk for this
-	//MyGUI::LanguageManager::getInstance().eventRequestTag = MyGUI::newDelegate(this, &GUIManager::eventRequestTag);
+
+	MyGUI::LanguageManager::getInstance().eventRequestTag = MyGUI::newDelegate(this, &GUIManager::eventRequestTag);
 	return true;
 }
 

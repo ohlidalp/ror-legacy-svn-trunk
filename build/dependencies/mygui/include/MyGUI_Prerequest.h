@@ -106,6 +106,9 @@ namespace MyGUI
 	class Canvas;
 	class ListCtrl;
 	class ListBox;
+	class Panel;
+	class StackPanel;
+	class WrapPanel;
 
 	typedef Widget* WidgetPtr;
 	typedef Button* ButtonPtr;
@@ -144,7 +147,7 @@ namespace MyGUI
 
 	// Define version
     #define MYGUI_VERSION_MAJOR 3
-    #define MYGUI_VERSION_MINOR 0
+    #define MYGUI_VERSION_MINOR 1
     #define MYGUI_VERSION_PATCH 0
 
     #define MYGUI_VERSION    MYGUI_DEFINE_VERSION(MYGUI_VERSION_MAJOR, MYGUI_VERSION_MINOR, MYGUI_VERSION_PATCH)

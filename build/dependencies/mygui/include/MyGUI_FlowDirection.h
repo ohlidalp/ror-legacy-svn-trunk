@@ -20,27 +20,28 @@
 	You should have received a copy of the GNU Lesser General Public License
 	along with MyGUI.  If not, see <http://www.gnu.org/licenses/>.
 */
-#ifndef __MYGUI_WIDGET_STYLE_H__
-#define __MYGUI_WIDGET_STYLE_H__
+#ifndef __MYGUI_FLOW_DIRECTION_H__
+#define __MYGUI_FLOW_DIRECTION_H__
 
 #include "MyGUI_Prerequest.h"
 
 namespace MyGUI
 {
 
-	struct MYGUI_EXPORT WidgetStyle
+	struct MYGUI_EXPORT FlowDirection
 	{
 		enum Enum
 		{
-			Child, /**< child widget, cropped by parent widget borders, no overlapping (used by default for child widgets) */
-			Popup, /**< popup widget, have parent widget, but not cropped on its borders */
-			Overlapped, /**< child widget, cropped by parent widget borders, can overlap (used by default for root widgets) */
+			LeftToRight,
+			RightToLeft,
+			TopToBottom,
+			BottomToTop,
 			MAX
 		};
 
-		static WidgetStyle parse(const std::string& _value)
+		static FlowDirection parse(const std::string& _value)
 		{
-			WidgetStyle type;
+			FlowDirection type;
 			int value = 0;
 			while (true)
 			{
@@ -52,23 +53,22 @@ namespace MyGUI
 			return type;
 		}
 
-		WidgetStyle() : value(MAX) { }
-		WidgetStyle(Enum _value) : value(_value) { }
+		FlowDirection(Enum _value = LeftToRight) : value(_value) { }
 
-		friend bool operator == (WidgetStyle const& a, WidgetStyle const& b) { return a.value == b.value; }
-		friend bool operator != (WidgetStyle const& a, WidgetStyle const& b) { return a.value != b.value; }
+		friend bool operator == (FlowDirection const& a, FlowDirection const& b) { return a.value == b.value; }
+		friend bool operator != (FlowDirection const& a, FlowDirection const& b) { return a.value != b.value; }
 
-		friend std::ostream& operator << ( std::ostream& _stream, const WidgetStyle&  _value )
+		friend std::ostream& operator << ( std::ostream& _stream, const FlowDirection&  _value )
 		{
 			_stream << _value.getValueName(_value.value);
 			return _stream;
 		}
 
-		friend std::istream& operator >> ( std::istream& _stream, WidgetStyle&  _value )
+		friend std::istream& operator >> ( std::istream& _stream, FlowDirection&  _value )
 		{
 			std::string value;
 			_stream >> value;
-			_value = WidgetStyle::parse(value);
+			_value = FlowDirection::parse(value);
 			return _stream;
 		}
 
@@ -77,7 +77,7 @@ namespace MyGUI
 	private:
 		const char * getValueName(int _index) const
 		{
-			static const char * values[MAX + 1] = { "Child", "Popup", "Overlapped", "" };
+			static const char * values[MAX + 1] = { "LeftToRight", "RightToLeft", "TopToBottom", "BottomToTop", "" };
 			return values[(_index < MAX && _index >= 0) ? _index : MAX];
 		}
 
@@ -87,4 +87,4 @@ namespace MyGUI
 
 } // namespace MyGUI
 
-#endif // __MYGUI_WIDGET_STYLE_H__
+#endif // __MYGUI_FLOW_DIRECTION_H__

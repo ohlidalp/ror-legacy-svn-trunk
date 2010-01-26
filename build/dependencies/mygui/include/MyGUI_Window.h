@@ -62,19 +62,8 @@ namespace MyGUI
 		/** Get window caption */
 		virtual const UString& getCaption();
 
-		/** Set minimal possible window size */
-		void setMinSize(const IntSize& _value);
-		/** Set minimal possible window size */
-		void setMinSize(int _width, int _height) { setMinSize(IntSize(_width, _height)); }
-		/** Get minimal possible window size */
-		IntSize getMinSize();
-
-		/** Set maximal possible window size */
-		void setMaxSize(const IntSize& _value);
-		/** Set maximal possible window size */
-		void setMaxSize(int _width, int _height) { setMaxSize(IntSize(_width, _height)); }
-		/** Get maximal possible window size */
-		IntSize getMaxSize();
+		/** Get window caption widget */
+		Widget* getCaptionWidget() { return mWidgetCaption; }
 
 		//! @copydoc Widget::setPosition(const IntPoint& _value)
 		virtual void setPosition(const IntPoint& _value);
@@ -126,12 +115,6 @@ namespace MyGUI
 		void showSmooth(bool _reset = false) { setVisibleSmooth(true); }
 		MYGUI_OBSOLETE("use : void setVisibleSmooth(bool _visible)")
 		void hideSmooth() { setVisibleSmooth(false); }
-		MYGUI_OBSOLETE("use : void setMinSize(const IntSize& _min) , void setMaxSize(const IntSize& _min)")
-		void setMinMax(const IntRect& _minmax) { setMinSize(_minmax.left, _minmax.top); setMaxSize(_minmax.right, _minmax.bottom); }
-		MYGUI_OBSOLETE("use : void setMinSize(const IntSize& _min) , void setMaxSize(const IntSize& _min)")
-		void setMinMax(int _min_w, int _min_h, int _max_w, int _max_h) { setMinSize(_min_w, _min_h); setMaxSize(_max_w, _max_h); }
-		MYGUI_OBSOLETE("use : IntSize getMinSize() , IntSize getMaxSize()")
-		IntRect getMinMax() { return IntRect(getMinSize().width, getMinSize().height, getMaxSize().width, getMaxSize().height); }
 
 #endif // MYGUI_DONT_USE_OBSOLETE
 
@@ -157,6 +140,8 @@ namespace MyGUI
 
 		void animateStop(Widget* _widget);
 
+		virtual void overrideMeasure(const IntSize& _sizeAvailable);
+
 	private:
 		void initialiseWidgetSkin(ResourceSkin* _info);
 		void shutdownWidgetSkin();
@@ -179,14 +164,10 @@ namespace MyGUI
 		// автоматическое или ручное управление альфой
 		bool mIsAutoAlpha;
 
-		// минимальные и максимальные размеры окна
-		IntRect mMinmax;
-
 		bool mSnap; // прилеплять ли к краям
 
 		IntCoord mCurrentActionScale;
 		bool mAnimateSmooth;
-
 	};
 
 } // namespace MyGUI
