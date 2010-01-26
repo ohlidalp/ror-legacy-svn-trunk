@@ -152,8 +152,8 @@ protected:
 	int selectedJoystickLast, selectedAxisLast;
 	float joyMinState[MAX_JOYSTICKS][MAX_JOYSTICK_AXIS];
 	float joyMaxState[MAX_JOYSTICKS][MAX_JOYSTICK_AXIS];
-	float joySliderMinState[MAX_JOYSTICKS][MAX_JOYSTICK_SLIDERS];
-	float joySliderMaxState[MAX_JOYSTICKS][MAX_JOYSTICK_SLIDERS];
+	float joySliderMinState[MAX_JOYSTICKS][2][MAX_JOYSTICK_SLIDERS];
+	float joySliderMaxState[MAX_JOYSTICKS][2][MAX_JOYSTICK_SLIDERS];
 public:
 	AxisPage(size_t ihandle, int eventType, wxWizard *parent) : wxWizardPageSimple(parent), eventType(eventType), ihandle(ihandle)
     {
@@ -212,8 +212,10 @@ public:
 			}
 			for(int x=0;x<MAX_JOYSTICK_SLIDERS;x++)
 			{
-				joySliderMinState[i][x]=0;
-				joySliderMaxState[i][x]=0;
+				joySliderMinState[i][0][x]=0;
+				joySliderMaxState[i][0][x]=0;
+				joySliderMinState[i][1][x]=0;
+				joySliderMaxState[i][1][x]=0;
 			}
 		}
 		//if(eventType == ID_EVUP)
@@ -333,6 +335,7 @@ public:
 				text2->SetLabel(s);
 		} else if(eventType == ID_EVDOWN)
 		{
+#if 0			
 			std::string str = "";
 			int sliders=0;
 			for(int i=0;i<INPUTENGINE.getNumJoysticks();i++)
@@ -401,6 +404,7 @@ public:
 			{
 				// no sliders found!
 			}
+#endif //0
 		}
 	}
 
@@ -414,7 +418,7 @@ public:
 		try
 		{
 			INPUTENGINE.Capture();
-		} catch (std::exception& e)
+		} catch (...) //std::exception& e)
 		{
 			//wxMessageDialog(this, conv(e.what()), wxT("exception while updating input system"), wxOK||wxICON_ERROR, wxDefaultPosition).ShowModal();;
 		}
