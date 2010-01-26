@@ -3055,7 +3055,7 @@ bool InputEngine::saveMapping(Ogre::String outfile, size_t hwnd, int joyNum)
 				fprintf(f, "%d ", vecIt->joystickButtonNumber);
 			} else if(vecIt->eventtype == ET_JoystickPov)
 			{
-				char *dirStr = "North";
+				const char *dirStr = "North";
 				if(vecIt->joystickPovDirection == OIS::Pov::North)     dirStr = "North";
 				if(vecIt->joystickPovDirection == OIS::Pov::South)     dirStr = "South";
 				if(vecIt->joystickPovDirection == OIS::Pov::East)      dirStr = "East";

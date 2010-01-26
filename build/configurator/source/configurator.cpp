@@ -757,7 +757,7 @@ public:
 			int res = INPUTENGINE.getCurrentPovValue(joyNum, joyPov, povDir);
 			if(res && joyPov != lastPov && joyNum != lastJoy && povDir != lastPovDir)
 			{
-				char *dirStr = "North";
+				const char *dirStr = "North";
 				if(povDir == OIS::Pov::North)     dirStr = "North";
 				if(povDir == OIS::Pov::South)     dirStr = "South";
 				if(povDir == OIS::Pov::East)      dirStr = "East";
@@ -925,7 +925,15 @@ public:
 						float delta = fabs((float)(joySliderMaxState[i][type][counter]-joySliderMinState[i][type][counter]));
 						if(value > 10 || delta > 10)
 						{
-							str += std::string("Joystick ") + conv(wxString::Format(wxT("%d"), i)) + ", Slider " + wxString::Format(_T("%c"), type?'Y':'X') + ": " + wxString::Format(_T("%d"), counter) + ": " + wxString::Format(_T("%0.2f"), value) + "\n";
+							str += std::string("Joystick ");
+							str += conv(wxString::Format(wxT("%d"), i));
+							str += std::string(", Slider ");
+							str += conv(wxString::Format(_T("%c"), type?'Y':'X'));
+							str += std::string(": ");
+							str += conv(wxString::Format(_T("%d"), counter));
+							str += std::string(": ");
+							str += conv(wxString::Format(_T("%0.2f"), value));
+							str += std::string("\n");
 							cdi++;
 						}
 					}
@@ -947,7 +955,7 @@ public:
 						selectedSlider = c;
 						selectedSliderType = 0;
 						maxdelta = deltaX;
-					} 
+					}
 					if(deltaY > maxdelta && deltaY > 50)
 					{
 						selectedSlider = c;
@@ -2088,7 +2096,7 @@ MyDialog::MyDialog(const wxString& title, MyApp *_app) : wxDialog(NULL, wxID_ANY
 	Show();
 	SetSize(500,600);
 	Centre();
-	
+
 	// important: show before we load ogre, since ogre loading can take some time
 	loadOgre();
 }
@@ -2241,7 +2249,7 @@ void MyDialog::updateItemText(wxTreeItemId item, event_trigger_t *t)
 		cTree->SetItemText (item, 1, txt);
 	} else if(t->eventtype == ET_JoystickPov)
 	{
-		char *dirStr = "North";
+		const char *dirStr = "North";
 		if     (t->joystickPovDirection == OIS::Pov::Centered)  dirStr = "Centered";
 		else if(t->joystickPovDirection == OIS::Pov::North)     dirStr = "North";
 		else if(t->joystickPovDirection == OIS::Pov::South)     dirStr = "South";
@@ -2377,7 +2385,7 @@ void MyDialog::SetDefaults()
 	enableFog->SetValue(true);
 
 	sightrange->SetValue(30);
-	
+
 	ffEnable->SetValue(false);
 	ffOverall->SetValue(100);
 	ffHydro->SetValue(100);
@@ -3500,19 +3508,19 @@ void MyDialog::OnForceFeedbackScroll(wxScrollEvent & event)
 {
 	wxString s;
 	int val=ffOverall->GetValue();
-	s.Printf("%i%%", val);
+	s.Printf(wxT("%i%%"), val);
 	ffOverallText->SetLabel(s);
 
 	val=ffHydro->GetValue();
-	s.Printf("%i%%", val);
+	s.Printf(wxT("%i%%"), val);
 	ffHydroText->SetLabel(s);
 
 	val=ffCenter->GetValue();
-	s.Printf("%i%%", val);
+	s.Printf(wxT("%i%%"), val);
 	ffCenterText->SetLabel(s);
 
 	val=ffCamera->GetValue();
-	s.Printf("%i%%", val);
+	s.Printf(wxT("%i%%"), val);
 	ffCameraText->SetLabel(s);
 
 }
