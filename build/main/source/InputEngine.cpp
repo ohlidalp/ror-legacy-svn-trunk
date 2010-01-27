@@ -2318,18 +2318,6 @@ float InputEngine::getEventValue(int eventID, bool pure)
 				}
 				break;
 			case ET_JoystickSliderX:
-				{
-					if(t.joystickNumber > free_joysticks || !mJoy[t.joystickNumber])
-					{
-						value=0;
-						continue;
-					}
-					value = (float)joyState[t.joystickNumber].mSliders[t.joystickSliderNumber].abX / (float)mJoy[t.joystickNumber]->MAX_AXIS;
-					value = (value + 1)/2; // full axis
-					if(t.joystickSliderReverse)
-						value = 1.0 - value; // reversed
-				}
-				break;
 			case ET_JoystickSliderY:
 				{
 					if(t.joystickNumber > free_joysticks || !mJoy[t.joystickNumber])
@@ -2337,7 +2325,10 @@ float InputEngine::getEventValue(int eventID, bool pure)
 						value=0;
 						continue;
 					}
-					value = (float)joyState[t.joystickNumber].mSliders[t.joystickSliderNumber].abY / (float)mJoy[t.joystickNumber]->MAX_AXIS;
+					if(t.eventtype == ET_JoystickSliderX)
+						value = (float)joyState[t.joystickNumber].mSliders[t.joystickSliderNumber].abX / (float)mJoy[t.joystickNumber]->MAX_AXIS;
+					else if(t.eventtype == ET_JoystickSliderY)
+						value = (float)joyState[t.joystickNumber].mSliders[t.joystickSliderNumber].abY / (float)mJoy[t.joystickNumber]->MAX_AXIS;
 					value = (value + 1)/2; // full axis
 					if(t.joystickSliderReverse)
 						value = 1.0 - value; // reversed
@@ -2439,19 +2430,19 @@ bool InputEngine::processLine(char *line)
 	if(strnlen(eventName, 255) == 0 || strnlen(evtype, 255) == 0)
 		return false;
 
-	if(!strncmp(evtype, "Keyboard", 8)) eventtype = ET_Keyboard;
-	else if(!strncmp(evtype, "MouseButton", 10)) eventtype = ET_MouseButton;
-	else if(!strncmp(evtype, "MouseAxisX", 9)) eventtype = ET_MouseAxisX;
-	else if(!strncmp(evtype, "MouseAxisY", 9)) eventtype = ET_MouseAxisY;
-	else if(!strncmp(evtype, "MouseAxisZ", 9)) eventtype = ET_MouseAxisZ;
-	else if(!strncmp(evtype, "JoystickButton", 14)) eventtype = ET_JoystickButton;
-	else if(!strncmp(evtype, "JoystickAxis", 12)) eventtype = ET_JoystickAxisAbs;
+	if(!strncmp(evtype, "Keyboard", 8))              eventtype = ET_Keyboard;
+	else if(!strncmp(evtype, "MouseButton", 10))     eventtype = ET_MouseButton;
+	else if(!strncmp(evtype, "MouseAxisX", 9))       eventtype = ET_MouseAxisX;
+	else if(!strncmp(evtype, "MouseAxisY", 9))       eventtype = ET_MouseAxisY;
+	else if(!strncmp(evtype, "MouseAxisZ", 9))       eventtype = ET_MouseAxisZ;
+	else if(!strncmp(evtype, "JoystickButton", 14))  eventtype = ET_JoystickButton;
+	else if(!strncmp(evtype, "JoystickAxis", 12))    eventtype = ET_JoystickAxisAbs;
 	//else if(!strncmp(evtype, "JoystickAxis", 250)) eventtype = ET_JoystickAxisRel;
-	else if(!strncmp(evtype, "JoystickPov", 11)) eventtype = ET_JoystickPov;
-	else if(!strncmp(evtype, "JoystickSlider", 14)) eventtype = ET_JoystickSliderX;
+	else if(!strncmp(evtype, "JoystickPov", 11))     eventtype = ET_JoystickPov;
+	else if(!strncmp(evtype, "JoystickSlider", 14))  eventtype = ET_JoystickSliderX;
 	else if(!strncmp(evtype, "JoystickSliderX", 15)) eventtype = ET_JoystickSliderX;
 	else if(!strncmp(evtype, "JoystickSliderY", 15)) eventtype = ET_JoystickSliderY;
-	else if(!strncmp(evtype, "None", 4)) eventtype = ET_NONE;
+	else if(!strncmp(evtype, "None", 4))             eventtype = ET_NONE;
 
 	switch(eventtype)
 	{
@@ -2704,9 +2695,9 @@ bool InputEngine::processLine(char *line)
 			event_trigger_t t_slider = newEvent();
 
 			if(type == 'Y' || type == 'y')
-				t_slider.eventtype = ET_JoystickSliderY;
+				eventtype = ET_JoystickSliderY;
 			else if(type == 'X' || type == 'x')
-				t_slider.eventtype = ET_JoystickSliderX;
+				eventtype = ET_JoystickSliderX;
 
 			t_slider.eventtype = eventtype;
 			t_slider.joystickNumber = joyNo;
@@ -2750,7 +2741,7 @@ int InputEngine::getCurrentPovValue(int &joystickNumber, int &pov, int &povdir)
 {
 	for(int j=0; j<free_joysticks; j++)
 	{
-		for(int i=0; i<MAX_JOYSTICK_SLIDERS; i++)
+		for(int i=0; i<MAX_JOYSTICK_POVS; i++)
 		{
 			if(joyState[j].mPOV[i].direction != Pov::Centered)
 			{
