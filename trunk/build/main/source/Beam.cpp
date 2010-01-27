@@ -7952,7 +7952,7 @@ void Beam::truckTruckCollisions(Real dt, Beam** trucks, int numtrucks)
 				continue;
 			}
 
-			if (trucks[t]->collcabrate[i].distance< 1) trucks[t]->collcabrate[i].distance=1;
+			if (trucks[t]->collcabrate[i].distance<1) trucks[t]->collcabrate[i].distance=1;
 			
 			tmpv=trucks[t]->collcabs[i]*3;
 			no=&trucks[t]->nodes[trucks[t]->cabs[tmpv]];
@@ -8093,7 +8093,7 @@ void Beam::truckTruckCollisions(Real dt, Beam** trucks, int numtrucks)
 			if (calcforward)
 			{
 				trucks[t]->collcabrate[i].rate=((trucks[t]->collcabrate[i].distance)-1);
-				if (trucks[t]->collcabrate[i].distance<14) trucks[t]->collcabrate[i].distance++;
+				if (trucks[t]->collcabrate[i].distance<13) trucks[t]->collcabrate[i].distance++;
 			} else
 			{
 				trucks[t]->collcabrate[i].distance/=2;
