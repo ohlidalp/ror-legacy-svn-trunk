@@ -53,6 +53,7 @@ class Win32LogitechLEDs;
 // config filename
 #define CONFIGFILENAME "input.map"
 #define MAX_JOYSTICKS 10
+#define MAX_JOYSTICK_POVS 4
 #define MAX_JOYSTICK_SLIDERS 4
 #define MAX_JOYSTICK_AXIS 32
 
