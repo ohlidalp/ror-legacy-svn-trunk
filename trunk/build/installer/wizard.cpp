@@ -184,7 +184,8 @@ MyWizard::MyWizard(int startupMode, wxFrame *frame, bool useSizer)
 	streams->setPages(path, action);
 
 	m_page1 = presentation;
-    if (!CONFIG->isLicenceAccepted())
+
+	if (!CONFIG->isLicenceAccepted())
 	{
 		wxWizardPageSimple::Chain(presentation, licence);
 		licence->SetNext(action);
@@ -192,8 +193,16 @@ MyWizard::MyWizard(int startupMode, wxFrame *frame, bool useSizer)
 	}
 	else
 	{
-		presentation->SetNext(action);
-		action->SetPrev(presentation);
+		if(startupMode == IMODE_UPDATE)
+		{
+			presentation->SetNext(streams);
+			streams->SetPrev(presentation);
+			CONFIG->setAction(2); // 2 = update
+		} else
+		{
+			presentation->SetNext(action);
+			action->SetPrev(presentation);
+		}
 	}
 	path->SetPrev(action);
 	wxWizardPageSimple::Chain(path, streams);
@@ -785,6 +794,7 @@ void DownloadPage::OnStatusUpdate(MyStatusEvent &ev)
 		progress->SetValue(1000);
 		txt_remaintime->SetLabel(wxT("finished!"));
 		isDone=true;
+		CONFIG->writeVersionInfo(); // write the version to the file, since we updated
 		// enableforward button
 		txtFinish->Show();
 		setControlEnable(wizard, wxID_FORWARD, true);
