@@ -1722,8 +1722,8 @@ MyDialog::MyDialog(const wxString& title, MyApp *_app) : wxDialog(NULL, wxID_ANY
 
 #if OGRE_PLATFORM == OGRE_PLATFORM_WIN32
 	// this is removed for now
-	//wxPanel *updatePanel=new wxPanel(nbook, -1);
-	//nbook->AddPage(updatePanel, _("Updates"), false);
+	wxPanel *updatePanel=new wxPanel(nbook, -1);
+	nbook->AddPage(updatePanel, _("Updates"), false);
 #endif
 //	wxPanel *aboutPanel=new wxPanel(nbook, -1);
 //	nbook->AddPage(aboutPanel, "About", false);
@@ -2064,7 +2064,6 @@ MyDialog::MyDialog(const wxString& title, MyApp *_app) : wxDialog(NULL, wxID_ANY
 
 
 #if OGRE_PLATFORM == OGRE_PLATFORM_WIN32
-	/*
 	// this is removed for now
 	wxSizer *sizer_updates = new wxBoxSizer(wxVERTICAL);
 	helphtmw = new HtmlWindow(updatePanel, help_html, wxPoint(0, 0), wxSize(480, 380));
@@ -2077,7 +2076,6 @@ MyDialog::MyDialog(const wxString& title, MyApp *_app) : wxDialog(NULL, wxID_ANY
 	sizer_updates->Add(btnu, 0, wxGROW);
 
 	updatePanel->SetSizer(sizer_updates);
-	*/
 #endif
 
 
@@ -3259,7 +3257,7 @@ void MyDialog::OnButUpdateRoR(wxCommandEvent& event)
 	// get paths to update.exe
 	char path[2048];
 	getcwd(path, 2048);
-	strcat(path, "\\update.exe");
+	strcat(path, "\\installer.exe");
 	logfile->AddLine(conv(path));logfile->Write();
 
 	int buffSize = (int)strlen(path) + 1;
@@ -3278,7 +3276,7 @@ void MyDialog::OnButUpdateRoR(wxCommandEvent& event)
 	sei.hwnd = NULL;
 	sei.lpVerb = _T("runas");
 	sei.lpFile = wpath;
-	sei.lpParameters = wxT("");
+	sei.lpParameters = wxT("--update");
 	sei.lpDirectory = cwpath;
 	sei.nShow = SW_NORMAL;
 
@@ -3559,23 +3557,18 @@ void MyDialog::OnNoteBook2PageChange(wxNotebookEvent& event)
 
 void MyDialog::OnNoteBookPageChange(wxNotebookEvent& event)
 {
-#if 0
-	if(event.GetSelection() == 7) // updates page
+	if(event.GetSelection() == 4) // updates page
 	{
 		// try to find our version
 		Ogre::String ver = "";
 		FILE *f = fopen("version", "r");
 		if(f)
 		{
-			char line[10];
-			char *res = fgets(line, 10, f);
+			char line[30];
+			char *res = fgets(line, 30, f);
 			fclose(f);
-			int vernum = 0;
-			int resn = sscanf(line, "%d", &vernum);
-			if(resn>0)
-			{
-				ver = Ogre::StringConverter::toString(vernum);
-			}
+			if(strnlen(line, 30) > 0)
+				ver = Ogre::String(line);
 		}
 
 		helphtmw->LoadPage(wxString(wxT(NEWS_HTML_PAGE))+
@@ -3600,7 +3593,6 @@ void MyDialog::OnNoteBookPageChange(wxNotebookEvent& event)
 							  conv(lshort));
 		*/
 	}
-#endif
 }
 
 void MyDialog::OnTimerReset(wxTimerEvent& event)
