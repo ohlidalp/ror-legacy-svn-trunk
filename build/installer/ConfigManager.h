@@ -100,10 +100,11 @@ public:
 	int createShortcut(wxString linkTarget, wxString workingDirectory, wxString linkFile, wxString linkDescription);
 	void createProgramLinks(bool desktop, bool startmenu);
 
-
+	int writeVersionInfo();
 private:
 	int statupMode;
 	wxString installPath;
+	std::string currVersion;
 	int installeraction;
 	int dlerror;
 	std::vector < stream_desc_t > streams;

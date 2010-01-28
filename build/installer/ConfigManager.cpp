@@ -53,12 +53,22 @@ along with Rigs of Rods.  If not, see <http://www.gnu.org/licenses/>.
 
 ConfigManager *ConfigManager::instance = 0;
 
-ConfigManager::ConfigManager()
+ConfigManager::ConfigManager() : currVersion()
 {
 	ConfigManager::instance = this;
 	streams.clear();
 	installPath = wxString();
 	dlerror=0;
+}
+
+int ConfigManager::writeVersionInfo()
+{
+	wxString fn = getInstallationPath() + wxString("\\version");
+	FILE *f = fopen(fn.c_str(), "w");
+	if(!f) return -1;
+	fprintf(f, "%s", currVersion.c_str());
+	fclose(f);
+	return 0;
 }
 
 int ConfigManager::getOnlineStreams()
@@ -98,6 +108,9 @@ int ConfigManager::getOnlineStreams()
 				s.group     = conv(olist[i]["group"]);
 				s.platform  = conv(olist[i]["platform"]);
 				s.path      = conv(olist[i]["path"]);
+
+				if(olist[i]["version"].size() > 0 && currVersion.empty())
+					currVersion = olist[i]["version"];
 
 				s.icon      = (olist[i]["type"]=="0")?wxBitmap(mainpack_xpm):wxBitmap(extrapack_xpm);
 				s.checked   = (olist[i]["checked"] == "1");
