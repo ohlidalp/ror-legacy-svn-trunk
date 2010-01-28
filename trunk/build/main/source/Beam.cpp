@@ -6688,7 +6688,7 @@ void Beam::calcForcesEuler(int doUpdate, Real dt, int step, int maxstep, Beam** 
 		{
 			it->lockNode->lockedPosition = it->hookNode->AbsPosition;
 			it->lockNode->lockedVelocity = it->hookNode->Velocity;
-			it->lockNode->Forces         = it->hookNode->Forces + it->lockNode->lockedForces;
+			it->hookNode->Forces         = it->hookNode->Forces + it->lockNode->lockedForces;
 		}
 		if (it->lockNode && it->locked==PRELOCK)
 		{
