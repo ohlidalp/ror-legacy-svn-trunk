@@ -218,6 +218,7 @@ public:
 	void OnButRestore(wxCommandEvent& event);
 	void OnTestNet(wxCommandEvent& event);
 	void OnLinkClicked(wxHtmlLinkEvent& event);
+	void OnLinkClickedUpdate(wxHtmlLinkEvent& event);
 	//void OnSightRangeScroll(wxScrollEvent& event);
 	void onTreeSelChange(wxTreeEvent& event);
 	void onChangeLanguageChoice(wxCommandEvent& event);
@@ -241,6 +242,7 @@ public:
 	void OnButRegenCache(wxCommandEvent& event);
 	void OnButClearCache(wxCommandEvent& event);
 	void OnButUpdateRoR(wxCommandEvent& event);
+	void updateRoR();
 	void OnSimpleSliderScroll(wxScrollEvent& event);
 	void OnSimpleSlider2Scroll(wxScrollEvent& event);
 	void OnForceFeedbackScroll(wxScrollEvent& event);
@@ -336,7 +338,7 @@ private:
 	wxTextCtrl *serverpassword;
 	wxTextCtrl *usertoken;
 	wxHtmlWindow *networkhtmw;
-	HtmlWindow *helphtmw;
+	wxHtmlWindow *helphtmw;
 //	wxTextCtrl *p2pport;
 #endif
 
@@ -1031,7 +1033,7 @@ enum
 	CONTROLS_TIMER_ID,
 	UPDATE_RESET_TIMER_ID,
 	main_html,
-	help_html,
+	update_html,
 	CTREE_ID,
 	command_load_keymap,
 	command_save_keymap,
@@ -1071,6 +1073,7 @@ BEGIN_EVENT_TABLE(MyDialog, wxDialog)
 	EVT_BUTTON(regen_cache, MyDialog::OnButRegenCache)
 	EVT_BUTTON(update_ror, MyDialog::OnButUpdateRoR)
 	EVT_HTML_LINK_CLICKED(main_html, MyDialog::OnLinkClicked)
+	EVT_HTML_LINK_CLICKED(update_html, MyDialog::OnLinkClickedUpdate)
 	//EVT_SCROLL(MyDialog::OnSightRangeScroll)
 	EVT_COMMAND_SCROLL_CHANGED(SCROLL1, MyDialog::OnSimpleSliderScroll)
 	EVT_COMMAND_SCROLL_CHANGED(SCROLL2, MyDialog::OnSimpleSlider2Scroll)
@@ -2066,14 +2069,16 @@ MyDialog::MyDialog(const wxString& title, MyApp *_app) : wxDialog(NULL, wxID_ANY
 #if OGRE_PLATFORM == OGRE_PLATFORM_WIN32
 	// this is removed for now
 	wxSizer *sizer_updates = new wxBoxSizer(wxVERTICAL);
-	helphtmw = new HtmlWindow(updatePanel, help_html, wxPoint(0, 0), wxSize(480, 380));
+	helphtmw = new wxHtmlWindow(updatePanel, update_html, wxPoint(0, 0), wxSize(480, 380));
 	helphtmw->SetPage(_("... loading ... (maybe you should check your internet connection)"));
 	// tooltip is confusing there, better none!
 	//helphtmw->SetToolTip(_("here you can get help"));
 	sizer_updates->Add(helphtmw, 1, wxGROW);
+	
+	// update button replaced with html link
 	// update button only for windows users
-	wxButton *btnu = new wxButton(updatePanel, update_ror, _("Update now"));
-	sizer_updates->Add(btnu, 0, wxGROW);
+	//wxButton *btnu = new wxButton(updatePanel, update_ror, _("Update now"));
+	//sizer_updates->Add(btnu, 0, wxGROW);
 
 	updatePanel->SetSizer(sizer_updates);
 #endif
@@ -3250,7 +3255,7 @@ void MyDialog::OnButRestore(wxCommandEvent& event)
 	SetDefaults();
 }
 
-void MyDialog::OnButUpdateRoR(wxCommandEvent& event)
+void MyDialog::updateRoR()
 {
 #if OGRE_PLATFORM == OGRE_PLATFORM_WIN32
 
@@ -3289,6 +3294,11 @@ void MyDialog::OnButUpdateRoR(wxCommandEvent& event)
 	w->ShowModal();
 	delete(w);
 #endif
+}
+
+void MyDialog::OnButUpdateRoR(wxCommandEvent& event)
+{
+	updateRoR();
 }
 
 void MyDialog::OnButRegenCache(wxCommandEvent& event)
@@ -3522,6 +3532,7 @@ void MyDialog::OnForceFeedbackScroll(wxScrollEvent & event)
 	ffCameraText->SetLabel(s);
 
 }
+
 void MyDialog::OnLinkClicked(wxHtmlLinkEvent& event)
 {
 	wxHtmlLinkInfo linkinfo=event.GetLinkInfo();
@@ -3543,6 +3554,24 @@ void MyDialog::OnLinkClicked(wxHtmlLinkEvent& event)
 		networkhtmw->OnLinkClicked(linkinfo);
 //	wxMessageDialog *res=new wxMessageDialog(this, href, "Success", wxOK | wxICON_INFORMATION );
 //	res->ShowModal();
+}
+
+
+void MyDialog::OnLinkClickedUpdate(wxHtmlLinkEvent& event)
+{
+	wxHtmlLinkInfo linkinfo=event.GetLinkInfo();
+	wxString href=linkinfo.GetHref();
+	wxURI *uri=new wxURI(href);
+	if (uri->GetScheme()==conv("rorinstaller"))
+	{
+		if(uri->GetServer() == wxT("update"))
+		{
+			updateRoR();
+		}
+	} else
+	{
+		helphtmw->OnLinkClicked(linkinfo);
+	}
 }
 
 void MyDialog::OnNoteBook2PageChange(wxNotebookEvent& event)
