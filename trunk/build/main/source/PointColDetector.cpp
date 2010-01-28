@@ -72,14 +72,6 @@ void PointColDetector::update(Beam** trucks, const int numtrucks)
 	{
 		if (!trucks[t]) continue;
 		if (trucks[t]->state==SLEEPING || trucks[t]->state==RECYCLE) continue;
-		if (trucks[t]->state==NETWORKED) //? trafficed
-		{
-			// check if still in spawn area
-			if(trucks[t]->nodes[0].AbsPosition.distance(trucks[t]->nodes[0].iPosition) < 20)
-				// first node is in a 20 m radius of its spawn point, ignore collisions for now!
-				continue;
-		}
-
 		contacters_size+=trucks[t]->free_contacter;
 	}
 
@@ -125,14 +117,6 @@ void PointColDetector::update_structures_for_contacters(Beam** trucks, const int
 	{
 		if (!trucks[t]) continue;
 		if (trucks[t]->state==SLEEPING || trucks[t]->state==RECYCLE) continue;
-		if (trucks[t]->state==NETWORKED) //? trafficed
-		{
-			// check if still in spawn area
-			if(trucks[t]->nodes[0].AbsPosition.distance(trucks[t]->nodes[0].iPosition) < 20)
-				// first node is in a 20 m radius of its spawn point, ignore collisions for now!
-				continue;
-		}
-
 		for (int i=0;i<trucks[t]->free_contacter;++i)
 		{
 			ref_list[refi].pidref=&pointid_list[refi];

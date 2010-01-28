@@ -7936,12 +7936,12 @@ void Beam::truckTruckCollisions(Real dt, Beam** trucks, int numtrucks)
 		//Performance some times forces ugly architectural designs....
 		if (!trucks[t]) continue;
 		if (trucks[t]->state==SLEEPING || trucks[t]->state==RECYCLE) continue;
-		if (trucks[t]->state==NETWORKED) //? trafficed
+
+		// check if still in spawn area
+		if(trucks[t]->nodes[0].AbsPosition.distance(trucks[t]->nodes[0].iPosition) < 20)
 		{
-			// check if still in spawn area
-			if(trucks[t]->nodes[0].AbsPosition.distance(trucks[t]->nodes[0].iPosition) < 20)
-				// first node is in a 20 m radius of its spawn point, ignore collisions for now!
-				continue;
+			// first node is in a 20 m radius of its spawn point, ignore collisions for now!
+			continue;
 		}
 
 		for (i=0; i<trucks[t]->free_collcab; i++)
