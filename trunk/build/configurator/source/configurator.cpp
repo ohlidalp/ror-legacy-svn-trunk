@@ -2067,7 +2067,6 @@ MyDialog::MyDialog(const wxString& title, MyApp *_app) : wxDialog(NULL, wxID_ANY
 
 
 #if OGRE_PLATFORM == OGRE_PLATFORM_WIN32
-	// this is removed for now
 	wxSizer *sizer_updates = new wxBoxSizer(wxVERTICAL);
 	helphtmw = new wxHtmlWindow(updatePanel, update_html, wxPoint(0, 0), wxSize(480, 380));
 	helphtmw->SetPage(_("... loading ... (maybe you should check your internet connection)"));
