@@ -478,7 +478,9 @@ public:
 #if OGRE_PLATFORM == OGRE_PLATFORM_WIN32
 	OIS::Win32LogitechLEDs* getLogitechLEDsDevice()
 	{
-		return (OIS::Win32LogitechLEDs*)mJoy[0]->queryInterface(OIS::Interface::LogitechLEDs);
+		if(free_joysticks > 0 && mJoy[0])
+			return (OIS::Win32LogitechLEDs*)mJoy[0]->queryInterface(OIS::Interface::LogitechLEDs);
+		return 0;
 	}
 #endif
 

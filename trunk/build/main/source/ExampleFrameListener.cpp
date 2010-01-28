@@ -1527,7 +1527,7 @@ ExampleFrameListener::ExampleFrameListener(RenderWindow* win, Camera* cam, Scene
 #if OGRE_PLATFORM == OGRE_PLATFORM_WIN32
 	if (SETTINGS.getSetting("Logitech LEDs")=="Yes")
 	{
-		leds=INPUTENGINE.getLogitechLEDsDevice();
+		leds = INPUTENGINE.getLogitechLEDsDevice();
 	}
 #endif
 
