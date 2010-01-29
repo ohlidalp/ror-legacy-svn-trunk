@@ -7934,15 +7934,7 @@ void Beam::truckTruckCollisions(Real dt, Beam** trucks, int numtrucks)
 		//also consider changing the parallel "ifs" inside PointColDetector
 		//see "pointCD" above.
 		//Performance some times forces ugly architectural designs....
-		if (!trucks[t]) continue;
-		if (trucks[t]->state==SLEEPING || trucks[t]->state==RECYCLE) continue;
-
-		// check if still in spawn area
-		if(trucks[t]->nodes[0].AbsPosition.distance(trucks[t]->nodes[0].iPosition) < 20)
-		{
-			// first node is in a 20 m radius of its spawn point, ignore collisions for now!
-			continue;
-		}
+		if (!trucks[t] || trucks[t]->state==SLEEPING || trucks[t]->state==RECYCLE || trucks[t]->state==NETWORKED) continue;
 
 		for (i=0; i<trucks[t]->free_collcab; i++)
 		{

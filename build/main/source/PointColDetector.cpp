@@ -70,8 +70,8 @@ void PointColDetector::update(Beam** trucks, const int numtrucks)
 	//Count the contacters of all trucks
 	for (t=0; t<numtrucks; t++)
 	{
-		if (!trucks[t]) continue;
-		if (trucks[t]->state==SLEEPING || trucks[t]->state==RECYCLE) continue;
+		if (!trucks[t] || trucks[t]->state==SLEEPING || trucks[t]->state==RECYCLE || trucks[t]->state==NETWORKED) continue;
+
 		contacters_size+=trucks[t]->free_contacter;
 	}
 
@@ -115,8 +115,8 @@ void PointColDetector::update_structures_for_contacters(Beam** trucks, const int
 	//Insert all contacters, into the list of points to consider when building the kdtree
 	for (t=0; t<numtrucks; t++)
 	{
-		if (!trucks[t]) continue;
-		if (trucks[t]->state==SLEEPING || trucks[t]->state==RECYCLE) continue;
+		if (!trucks[t] || trucks[t]->state==SLEEPING || trucks[t]->state==RECYCLE || trucks[t]->state==NETWORKED) continue;
+
 		for (int i=0;i<trucks[t]->free_contacter;++i)
 		{
 			ref_list[refi].pidref=&pointid_list[refi];
