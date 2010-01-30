@@ -111,6 +111,7 @@ FlexBody::FlexBody(SceneManager *manager, node_t *nds, int numnds, char* meshnam
 	MeshPtr newmesh = mesh->clone(uname_mesh);
 	
 	Entity *ent = manager->createEntity(uname, uname_mesh);
+	MaterialFunctionMapper::replaceSimpleMeshMaterials(ent, ColourValue(0.5, 0.5, 1));
 	if(mfm) mfm->replaceMeshMaterials(ent);
 	if(!usedSkin.isNull()) usedSkin->replaceMeshMaterials(ent);
 	LogManager::getSingleton().logMessage("FLEXBODY unique mesh created: "+String(meshname)+" -> "+String(uname_mesh));

@@ -2999,6 +2999,8 @@ int Beam::loadTruck(const char* fname, SceneManager *manager, SceneNode *parent,
 					LogManager::getSingleton().logMessage("error loading mesh: "+diwmeshname);
 					continue;
 				}
+				MaterialFunctionMapper::replaceSimpleMeshMaterials(te, ColourValue(0, 0.5, 0.5));
+
 				if(materialFunctionMapper) materialFunctionMapper->replaceMeshMaterials(te);
 				if(!usedSkin.isNull()) usedSkin->replaceMeshMaterials(te);
 				props[free_prop].wheel=manager->getRootSceneNode()->createChildSceneNode();
@@ -3056,6 +3058,7 @@ int Beam::loadTruck(const char* fname, SceneManager *manager, SceneNode *parent,
 				LogManager::getSingleton().logMessage("error loading mesh: "+String(meshname));
 				continue;
 			}
+			MaterialFunctionMapper::replaceSimpleMeshMaterials(te, ColourValue(1, 1, 0));
 			if(materialFunctionMapper) materialFunctionMapper->replaceMeshMaterials(te);
 			if(!usedSkin.isNull()) usedSkin->replaceMeshMaterials(te);
 			props[free_prop].snode=manager->getRootSceneNode()->createChildSceneNode();
@@ -3252,6 +3255,7 @@ int Beam::loadTruck(const char* fname, SceneManager *manager, SceneNode *parent,
 				LogManager::getSingleton().logMessage("error loading mesh: "+String(wname));
 				continue;
 			}
+			MaterialFunctionMapper::replaceSimpleMeshMaterials(ec, ColourValue(0.5, 1, 0));
 			if(materialFunctionMapper) materialFunctionMapper->replaceMeshMaterials(ec);
 			if(!usedSkin.isNull()) usedSkin->replaceMeshMaterials(ec);
 			wings[free_wing].cnode = manager->getRootSceneNode()->createChildSceneNode();
@@ -4560,6 +4564,7 @@ int Beam::loadTruck(const char* fname, SceneManager *manager, SceneNode *parent,
 		{
 			LogManager::getSingleton().logMessage("error loading mesh: "+String(wname));
 		}
+		MaterialFunctionMapper::replaceSimpleMeshMaterials(ec, ColourValue(0.5, 1, 0.5));
 		if(materialFunctionMapper) materialFunctionMapper->replaceMeshMaterials(ec);
 		if(!usedSkin.isNull()) usedSkin->replaceMeshMaterials(ec);
 	};
@@ -5229,6 +5234,7 @@ void Beam::addWheel(SceneManager *manager, SceneNode *parent, Real radius, Real 
 			Entity *ec = manager->createEntity(wnamei, wname);
 			vwheels[free_wheel].cnode = manager->getRootSceneNode()->createChildSceneNode();
 			vwheels[free_wheel].cnode->attachObject(ec);
+			MaterialFunctionMapper::replaceSimpleMeshMaterials(ec, ColourValue(0, 0.5, 0.5));
 			if(materialFunctionMapper) materialFunctionMapper->replaceMeshMaterials(ec);
 			if(!usedSkin.isNull()) usedSkin->replaceMeshMaterials(ec);
 		}catch(...)
@@ -5242,6 +5248,7 @@ void Beam::addWheel(SceneManager *manager, SceneNode *parent, Real radius, Real 
 		try
 		{
 			Entity *ec = manager->createEntity(wnamei, wname);
+			MaterialFunctionMapper::replaceSimpleMeshMaterials(ec, ColourValue(0, 0.5, 0.5));
 			if(materialFunctionMapper) materialFunctionMapper->replaceMeshMaterials(ec);
 			if(!usedSkin.isNull()) usedSkin->replaceMeshMaterials(ec);
 			vwheels[free_wheel].cnode = manager->getRootSceneNode()->createChildSceneNode();
@@ -5433,6 +5440,7 @@ void Beam::addWheel2(SceneManager *manager, SceneNode *parent, Real radius, Real
 	try
 	{
 		Entity *ec = manager->createEntity(wnamei, wname);
+		MaterialFunctionMapper::replaceSimpleMeshMaterials(ec, ColourValue(0, 0.5, 0.5));
 		if(materialFunctionMapper) materialFunctionMapper->replaceMeshMaterials(ec);
 		if(!usedSkin.isNull()) usedSkin->replaceMeshMaterials(ec);
 		//	ec->setMaterialName("tracks/wheel");
@@ -5580,6 +5588,15 @@ int Beam::add_beam(node_t *p1, node_t *p2, SceneManager *manager, SceneNode *par
 		//            beams[pos].mSceneNode->attachObject(ec);
 		//            beams[pos].mSceneNode->setScale(default_beam_diameter/100.0,length/100.0,default_beam_diameter/100.0);
 		beams[pos].mSceneNode->setScale(beams[pos].diameter, length, beams[pos].diameter);
+
+		// colourize beams in simple mode
+		ColourValue c = ColourValue::Blue;
+		if(type == BEAM_HYDRO)
+			c = ColourValue::Red;
+		else if(type == BEAM_HYDRO)
+			c = ColourValue::Red;
+		MaterialFunctionMapper::replaceSimpleMeshMaterials(beams[pos].mEntity, c);
+
 	}
 	else {beams[pos].mSceneNode=0;beams[pos].mEntity=0;};
 	if (beams[pos].mSceneNode && beams[pos].mEntity && !(type==BEAM_VIRTUAL || type==BEAM_INVISIBLE || type==BEAM_INVISIBLE_HYDRO)) beams[pos].mSceneNode->attachObject(beams[pos].mEntity);//beams[pos].mSceneNode->setVisible(0);

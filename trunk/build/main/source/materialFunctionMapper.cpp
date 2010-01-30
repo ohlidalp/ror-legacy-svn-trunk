@@ -252,3 +252,34 @@ void MaterialFunctionMapper::replaceMeshMaterials(Ogre::Entity *e)
 		addSSAOToEntity(e);
 }
 
+int MaterialFunctionMapper::simpleMaterialCounter = 0;
+void MaterialFunctionMapper::replaceSimpleMeshMaterials(Ogre::Entity *e, Ogre::ColourValue c)
+{
+	if (SETTINGS.getSetting("SimpleMaterials") != "Yes") return;
+
+	MaterialPtr mat = MaterialManager::getSingleton().getByName("tracks/simple");
+	if(mat.isNull()) return;
+
+	String newMatName = "tracks/simple/" + StringConverter::toString(simpleMaterialCounter);
+	MaterialPtr newmat = mat->clone(newMatName);
+
+	newmat->getTechnique(0)->getPass(0)->setAmbient(c);
+
+	simpleMaterialCounter++;
+	
+	MeshPtr m = e->getMesh();
+	if(!m.isNull())
+	{
+		for(int n=0; n<(int)m->getNumSubMeshes();n++)
+		{
+			SubMesh *sm = m->getSubMesh(n);
+			sm->setMaterialName(newMatName);
+		}
+	}
+
+	for(int n=0; n<(int)e->getNumSubEntities();n++)
+	{
+		SubEntity *subent = e->getSubEntity(n);
+		subent->setMaterialName(newMatName);
+	}
+}

@@ -60,6 +60,7 @@ Turbojet::Turbojet(SceneManager *manager, char* propname, int tnumber, int truck
 	char paname[256];
 	sprintf(paname, "%s-nozzle", propname);
 	Entity *te = manager->createEntity(paname, "nozzle.mesh");
+	MaterialFunctionMapper::replaceSimpleMeshMaterials(te, ColourValue(1, 0.5, 0.5));
 	if(mfm) mfm->replaceMeshMaterials(te);
 	if(!usedSkin.isNull()) usedSkin->replaceMeshMaterials(te);
 	nzsnode=manager->getRootSceneNode()->createChildSceneNode();
@@ -69,6 +70,7 @@ Turbojet::Turbojet(SceneManager *manager, char* propname, int tnumber, int truck
 	{
 		sprintf(paname, "%s-abflame", propname);
 		Entity *te = manager->createEntity(paname, "abflame.mesh");
+		MaterialFunctionMapper::replaceSimpleMeshMaterials(te, ColourValue(1, 1, 0));
 		if(mfm) mfm->replaceMeshMaterials(te);
 		if(!usedSkin.isNull()) usedSkin->replaceMeshMaterials(te);
 		absnode=manager->getRootSceneNode()->createChildSceneNode();

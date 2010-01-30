@@ -42,9 +42,11 @@ public:
 	void toggleFunction(int flareid, bool enabled);
 	// this function searchs and replaces materials in meshes
 	void replaceMeshMaterials(Ogre::Entity *e);
+	static void replaceSimpleMeshMaterials(Ogre::Entity *e, Ogre::ColourValue c = Ogre::ColourValue::White);
 
 protected:
 	bool useSSAO;
+	static int simpleMaterialCounter;
 	void addSSAOToEntity(Ogre::Entity *e);
 	Ogre::MaterialPtr addSSAOToMaterial(Ogre::MaterialPtr material);
 	std::map <int, std::vector<materialmapping_t> > materialBindings;
