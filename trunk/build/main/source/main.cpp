@@ -418,7 +418,6 @@ BOOL WINAPI crashCallback(LPVOID /*lpvState*/)
 void install_crashrpt()
 {
 	// Install CrashRpt support
-
 	CR_INSTALL_INFO info;
 	memset(&info, 0, sizeof(CR_INSTALL_INFO));
 	info.cb = sizeof(CR_INSTALL_INFO);  
