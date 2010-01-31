@@ -50,7 +50,7 @@ Replay::Replay(Beam *b, int _numFrames)
 	int x = (MyGUI::Gui::getInstance().getViewWidth() - width) / 2;
 	int y = 0;
 
-	panel = MyGUI::Gui::getInstance().createWidget<MyGUI::Widget>("Panel", x, y, width, height,  MyGUI::Align::Center, "Back");
+	panel = MyGUI::Gui::getInstance().createWidget<MyGUI::Widget>("Panel", x, y, width, height, MyGUI::Align::HCenter | MyGUI::Align::Top, "Back");
 	panel->setCaption(_L("Replay"));
 	panel->setAlpha(0.6);
 
