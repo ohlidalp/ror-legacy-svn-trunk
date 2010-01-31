@@ -1,7 +1,7 @@
 project(RoR_Installer)
 
 set(resource_files download.xpm action.xpm dest.xpm extrapack.xpm finished.xpm licence.xpm mainpack.xpm streams.xpm unknown.xpm welcome.xpm icon.rc)
-set(source_files ConfigManager.cpp wizard.cpp wthread.cpp cevent.cpp symlink.cpp wxStrel.cpp utils.cpp)
+set(source_files ConfigManager.cpp wizard.cpp wthread.cpp cevent.cpp symlink.cpp wxStrel.cpp utils.cpp threadpool.cpp wsyncdownload.cpp installerlog.cpp)
 set(include_files ConfigManager.h wizard.h wxStrel.h wthread.h cevent.h symlink.h utils.h)
 
 SET(wxWidgets_USE_UNICODE ON)
@@ -33,16 +33,20 @@ IF(wxWidgets_FOUND)
 
   IF(WIN32)
     include_directories(${wxWidgets_INCLUDE_DIRS}/msvc)
+    include_directories("C:\\wxWidgets-2.9.0-static\\include C:\\wxWidgets-2.9.0-static\\include\\msvc")
+
     add_definitions("-D__WIN32__ -D_CRT_SECURE_NO_WARNINGS -DPLATFORM=1 -DWIN32_LEAN_AND_MEAN")
+
     link_directories ("C:\\Program Files\\boost\\boost_1_39\\lib")
+	link_directories ("C:\\wxWidgets-2.9.0-static\\lib\\vc_lib")
   ENDIF(WIN32)
   IF(UNIX)
     add_definitions("-DPLATFORM=2")
     FIND_PACKAGE(PkgConfig REQUIRED)
     PKG_CHECK_MODULES(GTK gtk+-2.0 REQUIRED)
     INCLUDE_DIRECTORIES(${GTK_INCLUDE_DIRS})
+    link_directories (${wxWidgets_LIB_DIR})
   ENDIF(UNIX)
-  link_directories (${wxWidgets_LIB_DIR})
   include_directories (${RoR_SOURCE_DIR}/wsync/include)
   include_directories(${Boost_INCLUDE_DIRS})
 
@@ -57,13 +61,31 @@ IF(wxWidgets_FOUND)
   add_executable(installer ${source_files} ${include_files} ${resource_files})
   # we dont need to add ${Boost_LIBRARIES} here, could be wrong as well ...
   target_link_libraries(installer libwsync-static)
-  TARGET_LINK_LIBRARIES(installer ${wxWidgets_LIBRARIES})
 
   IF(WIN32)
     SET_TARGET_PROPERTIES(installer PROPERTIES COMPILE_FLAGS "/bigobj /MT /MP")
     SET_TARGET_PROPERTIES(installer PROPERTIES LINK_FLAGS    "/MANIFESTUAC:\"level='requireAdministrator' uiAccess='false'\" /SUBSYSTEM:WINDOWS /NODEFAULTLIB:\"msvcprt.lib\" /NODEFAULTLIB:\"MSVCRT.lib\"")
+	
+	
+	TARGET_LINK_LIBRARIES(installer 
+wxbase29u.lib
+wxmsw29u_core.lib
+wxmsw29u_html.lib
+wxmsw29u_adv.lib
+wxpng.lib
+wxtiff.lib
+wxjpeg.lib
+wxzlib.lib
+wxregexu.lib
+wxexpat.lib
+winmm
+comctl32
+rpcrt4
+wsock32
+	)
   ELSE(WIN32)
     TARGET_LINK_LIBRARIES(installer ${Boost_LIBRARIES})
+    TARGET_LINK_LIBRARIES(installer ${wxWidgets_LIBRARIES})
   ENDIF(WIN32)
 
   install(TARGETS installer
