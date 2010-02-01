@@ -20,6 +20,7 @@ along with Rigs of Rods.  If not, see <http://www.gnu.org/licenses/>.
 
 #include "ColoredTextAreaOverlayElement.h"
 #include "OgreRoot.h"
+#include "rormemory.h"
 #define POS_TEX_BINDING 0
 #define COLOUR_BINDING 1
 
@@ -152,7 +153,7 @@ void ColoredTextAreaOverlayElement::updateColours(void)
 
 	//RGBA* pDest = static_cast<RGBA*>(
 	//	vbuf->lock(HardwareBuffer::HBL_NORMAL) );
-	RGBA* pDest=(RGBA*)malloc(vbuf->getSizeInBytes());
+	RGBA* pDest=(RGBA*)ror_malloc(vbuf->getSizeInBytes());
 	RGBA* oDest=pDest;
 
 	for (size_t i = 0; i < mAllocSize; ++i)
@@ -173,6 +174,6 @@ void ColoredTextAreaOverlayElement::updateColours(void)
 		*pDest++ = bottomColour;
 	}
 	vbuf->writeData(0, vbuf->getSizeInBytes(), oDest, true);
-	free(oDest);
+	ror_free(oDest);
 	//vbuf->unlock();
 }

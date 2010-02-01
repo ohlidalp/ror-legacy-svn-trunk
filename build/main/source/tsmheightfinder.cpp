@@ -19,6 +19,7 @@ along with Rigs of Rods.  If not, see <http://www.gnu.org/licenses/>.
 */
 #include "heightfinder.h"
 //#include <OgreTerrainSceneManager.h>
+#include "rormemory.h"
 #include <Ogre.h>
 #include <OgreConfigFile.h>
 #include <OgreLogManager.h>
@@ -71,7 +72,7 @@ TSMHeightFinder::TSMHeightFinder(char *_cfgfilename, char *fname, float defaulth
 	inverse_scale.y=scale.y/65535.0;
 	inverse_scale.z=1.0/scale.z;
 
-	data=(unsigned short*)malloc(size*size*2);
+	data=(unsigned short*)ror_malloc(size*size*2);
 	DataStreamPtr ds=rgm.openResource(fname, ResourceGroupManager::DEFAULT_RESOURCE_GROUP_NAME);
 	ds->read(data, size*size*2);
 	// ds closes automatically, so do not close it explicitly here
@@ -89,7 +90,7 @@ void TSMHeightFinder::loadSettings()
 
 TSMHeightFinder::~TSMHeightFinder()
 {
-	if (data) free(data);
+	if (data) ror_free(data);
 }
 
 float TSMHeightFinder::getHeightAt(float x, float z)

@@ -25,6 +25,7 @@ along with Rigs of Rods.  If not, see <http://www.gnu.org/licenses/>.
 #include "softshadowlistener.h"
 #include "ssaolistener.h"
 #include "main.h"
+#include "utils.h"
 #include "ScopeLog.h"
 #include "DepthOfFieldEffect.h"
 #include "Lens.h"
@@ -33,6 +34,7 @@ along with Rigs of Rods.  If not, see <http://www.gnu.org/licenses/>.
 
 #include "CharacterFactory.h"
 #include "BeamFactory.h"
+#include "rormemory.h"
 #include "PlayerColours.h"
 
 #ifdef AITRAFFIC
@@ -290,6 +292,41 @@ void ExampleFrameListener::updateStats(void)
 
 		OverlayElement* guiDbg = OverlayManager::getSingleton().getOverlayElement("Core/DebugText");
 		guiDbg->setCaption(debugText);
+
+		// create some memory texts
+		String memoryText;
+		if(TextureManager::getSingleton().getMemoryUsage() > 1)
+			memoryText += "Textures: " + formatBytes(TextureManager::getSingleton().getMemoryUsage()) + " / " + formatBytes(TextureManager::getSingleton().getMemoryBudget()) + "\n";
+		if(CompositorManager::getSingleton().getMemoryUsage() > 1)
+			memoryText += "Compositors: " + formatBytes(CompositorManager::getSingleton().getMemoryUsage()) + " / " + formatBytes(CompositorManager::getSingleton().getMemoryBudget()) + "\n";
+		if(FontManager::getSingleton().getMemoryUsage() > 1)
+			memoryText += "Fonts: " + formatBytes(FontManager::getSingleton().getMemoryUsage()) + " / " + formatBytes(FontManager::getSingleton().getMemoryBudget()) + "\n";
+		if(GpuProgramManager::getSingleton().getMemoryUsage() > 1)
+			memoryText += "GPU Program: " + formatBytes(GpuProgramManager::getSingleton().getMemoryUsage()) + " / " + formatBytes(GpuProgramManager::getSingleton().getMemoryBudget()) + "\n";
+		if(HighLevelGpuProgramManager ::getSingleton().getMemoryUsage() >1)
+			memoryText += "HL GPU Program: " + formatBytes(HighLevelGpuProgramManager ::getSingleton().getMemoryUsage()) + " / " + formatBytes(HighLevelGpuProgramManager ::getSingleton().getMemoryBudget()) + "\n";
+		if(MaterialManager::getSingleton().getMemoryUsage() > 1)
+			memoryText += "Materials: " + formatBytes(MaterialManager::getSingleton().getMemoryUsage()) + " / " + formatBytes(MaterialManager::getSingleton().getMemoryBudget()) + "\n";
+		if(MeshManager::getSingleton().getMemoryUsage() > 1)
+			memoryText += "Meshes: " + formatBytes(MeshManager::getSingleton().getMemoryUsage()) + " / " + formatBytes(MeshManager::getSingleton().getMemoryBudget()) + "\n";
+		if(SkeletonManager::getSingleton().getMemoryUsage() > 1)
+			memoryText += "Skeletons: " + formatBytes(SkeletonManager::getSingleton().getMemoryUsage()) + " / " + formatBytes(SkeletonManager::getSingleton().getMemoryBudget()) + "\n";
+		if(MaterialManager::getSingleton().getMemoryUsage() > 1)
+			memoryText += "Materials: " + formatBytes(MaterialManager::getSingleton().getMemoryUsage()) + " / " + formatBytes(MaterialManager::getSingleton().getMemoryBudget()) + "\n";
+		memoryText += "\n";
+		memoryText += "RoR: " + formatBytes(getMemoryAllocated()) + "\n";
+
+		OverlayElement* memoryDbg = OverlayManager::getSingleton().getOverlayElement("Core/MemoryText");
+		memoryDbg->setCaption(memoryText);
+
+
+		
+		float sumMem = TextureManager::getSingleton().getMemoryUsage() + CompositorManager::getSingleton().getMemoryUsage() + FontManager::getSingleton().getMemoryUsage() + GpuProgramManager::getSingleton().getMemoryUsage() + HighLevelGpuProgramManager ::getSingleton().getMemoryUsage() + MaterialManager::getSingleton().getMemoryUsage() + MeshManager::getSingleton().getMemoryUsage() + SkeletonManager::getSingleton().getMemoryUsage() + MaterialManager::getSingleton().getMemoryUsage();
+		String sumMemoryText = "Memory (Ogre): " + formatBytes(sumMem) + "\n";
+	
+		OverlayElement* memorySumDbg = OverlayManager::getSingleton().getOverlayElement("Core/CurrMemory");
+		memorySumDbg->setCaption(sumMemoryText);
+
 
 		if(mStatsOn>0)
 		{

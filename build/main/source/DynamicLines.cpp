@@ -18,6 +18,7 @@ You should have received a copy of the GNU General Public License
 along with Rigs of Rods.  If not, see <http://www.gnu.org/licenses/>.
 */
 #include "DynamicLines.h"
+#include "rormemory.h"
 #include <Ogre.h>
 #include <cassert>
 #include <cmath>
@@ -112,7 +113,7 @@ void DynamicLines::fillHardwareBuffers()
     mRenderOp.vertexData->vertexBufferBinding->getBuffer(0);
 
   //Real *prPos = static_cast<Real*>(vbuf->lock(HardwareBuffer::HBL_NORMAL));
-  Real *prPos=(Real*)malloc(vbuf->getSizeInBytes());
+  Real *prPos=(Real*)ror_malloc(vbuf->getSizeInBytes());
   Real *orPos=prPos;
   {
    for(int i = 0; i < size; i++)
@@ -137,7 +138,7 @@ void DynamicLines::fillHardwareBuffers()
    }
   }
   vbuf->writeData(0, vbuf->getSizeInBytes(), orPos, true);
-  free(orPos);
+  ror_free(orPos);
   //vbuf->unlock();
 
   mBox.setExtents(vaabMin, vaabMax);

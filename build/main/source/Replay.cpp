@@ -21,6 +21,7 @@ along with Rigs of Rods.  If not, see <http://www.gnu.org/licenses/>.
 
 #include "Ogre.h"
 #include "gui_manager.h"
+#include "rormemory.h"
 #include "language.h"
 
 using namespace Ogre;
@@ -69,9 +70,9 @@ Replay::~Replay()
 {
 	if(nodes)
 	{
-		free(nodes); nodes=0;
-		free(beams); beams=0;
-		free(times); times=0;
+		ror_free(nodes); nodes=0;
+		ror_free(beams); beams=0;
+		ror_free(times); times=0;
 	}
 	delete replayTimer;
 }
@@ -81,9 +82,9 @@ void *Replay::getWriteBuffer(int type)
 	if(!nodes)
 	{
 		// get memory
-		nodes = (node_simple_t*)calloc(numNodes * numFrames, sizeof(node_simple_t));
-		beams = (beam_simple_t*)calloc(numBeams * numFrames, sizeof(beam_simple_t));	
-		times = (unsigned long*)calloc(numFrames, sizeof(unsigned long));
+		nodes = (node_simple_t*)ror_calloc(numNodes * numFrames, sizeof(node_simple_t));
+		beams = (beam_simple_t*)ror_calloc(numBeams * numFrames, sizeof(beam_simple_t));	
+		times = (unsigned long*)ror_calloc(numFrames, sizeof(unsigned long));
 	}
 	void *ptr = 0;
 	times[writeIndex] = replayTimer->getMicroseconds();
