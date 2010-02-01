@@ -110,6 +110,9 @@ set (HEADER_FILES
   source/SelectorWindow.h
   source/LoadingWindow.h
   source/Console.h
+  source/malloc.c.h
+  source/nedmalloc.h
+  source/rormemory.h
 )
 set (SOURCE_FILES
   source/airbrake.cpp
@@ -210,6 +213,8 @@ set (SOURCE_FILES
   source/SelectorWindow.cpp
   source/LoadingWindow.cpp
   source/Console.cpp
+  source/nedmalloc.c
+  source/rormemory.cpp
   source/COPYING
   source/ror.ico
 )
@@ -435,6 +440,13 @@ SOURCE_GROUP("GUI\\Console" FILES
   source/Console.h
 )
 SOURCE_GROUP("GUI" FILES
+)
+SOURCE_GROUP("Memory(nedmalloc)" FILES
+  source/malloc.c.h
+  source/nedmalloc.c
+  source/nedmalloc.h
+  source/rormemory.cpp
+  source/rormemory.h
 )
 SOURCE_GROUP("" FILES
   CMakeLists.txt
