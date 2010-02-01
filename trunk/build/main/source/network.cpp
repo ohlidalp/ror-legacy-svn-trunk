@@ -36,6 +36,7 @@ along with Rigs of Rods.  If not, see <http://www.gnu.org/licenses/>.
 #include "utils.h"
 #include "language.h"
 #include "errorutils.h"
+#include "rormemory.h"
 
 #ifdef USE_WINDOWS_CRASH_REPORT
 # include "crashrpt.h"
@@ -466,7 +467,7 @@ void Network::receivethreadstart()
 {
 	header_t header;
 
-	char *buffer=(char*)malloc(MAX_MESSAGE_LENGTH);
+	char *buffer=(char*)ror_malloc(MAX_MESSAGE_LENGTH);
 	bool autoDl = (SETTINGS.getSetting("AutoDownload") == "Yes");
 	LogManager::getSingleton().logMessage("Receivethread starting");
 	// unlimited timeout, important!

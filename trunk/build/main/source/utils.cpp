@@ -94,3 +94,19 @@ UTFString tryConvertUTF(char *buffer)
 	}
 	return UTFString();
 }
+
+Ogre::String formatBytes(double bytes)
+{
+	char tmp[128]="";
+	if(bytes <= 1024)
+		sprintf(tmp, "%0.2f B", bytes);
+	else if(bytes > 1024 && bytes <= 1048576)
+		sprintf(tmp, "%0.2f KB", bytes / 1024.0f);
+	else if(bytes > 1048576 && bytes <= 1073741824)
+		sprintf(tmp, "%0.2f MB", bytes / 1024.0f / 1024.0f);
+	else //if(bytes > 1073741824 && bytes <= 1099511627776)
+		sprintf(tmp, "%0.2f GB", bytes / 1024.0f / 1024.0f / 1024.0f);
+	//else if(bytes > 1099511627776)
+	//	sprintf(res, "%0.2f TB", bytes / 1024.0f / 1024.0f / 1024.0f / 1024.0f);
+	return Ogre::String(tmp);
+}

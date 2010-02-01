@@ -21,6 +21,7 @@ along with Rigs of Rods.  If not, see <http://www.gnu.org/licenses/>.
 
 #include <float.h>
 #include "Beam.h"
+#include "rormemory.h"
 
 #include "engine.h"
 #include "SoundScriptManager.h"
@@ -666,12 +667,12 @@ Beam::Beam(int tnum, SceneManager *manager, SceneNode *parent, RenderWindow* win
 	{
 		state=NETWORKED;
 		//alloc memory
-		oob1=(oob_t*)malloc(sizeof(oob_t));
-		oob2=(oob_t*)malloc(sizeof(oob_t));
-		oob3=(oob_t*)malloc(sizeof(oob_t));
-		netb1=(char*)malloc(netbuffersize);
-		netb2=(char*)malloc(netbuffersize);
-		netb3=(char*)malloc(netbuffersize);
+		oob1=(oob_t*)ror_malloc(sizeof(oob_t));
+		oob2=(oob_t*)ror_malloc(sizeof(oob_t));
+		oob3=(oob_t*)ror_malloc(sizeof(oob_t));
+		netb1=(char*)ror_malloc(netbuffersize);
+		netb2=(char*)ror_malloc(netbuffersize);
+		netb3=(char*)ror_malloc(netbuffersize);
 		nettimer=new Timer();
 		net_toffset=0;
 		netcounter=0;

@@ -19,6 +19,7 @@ along with Rigs of Rods.  If not, see <http://www.gnu.org/licenses/>.
 */
 #include "WaterOld.h"
 #include "Settings.h"
+#include "rormemory.h"
 #include "ExampleFrameListener.h"
 #include "ResourceBuffer.h"
 
@@ -280,7 +281,7 @@ WaterOld::WaterOld(int type, Camera *camera, SceneManager *mSceneMgr, RenderWind
 	wbuf=mprt->sharedVertexData->vertexBufferBinding->getBuffer(0);
 	if (wbuf->getSizeInBytes()==(WAVEREZ+1)*(WAVEREZ+1)*32)
 	{
-		wbuffer=(float*)malloc(wbuf->getSizeInBytes());
+		wbuffer=(float*)ror_malloc(wbuf->getSizeInBytes());
 		wbuf->readData(0, wbuf->getSizeInBytes(), wbuffer);
 	} else wbuffer=0;
 }

@@ -6,7 +6,7 @@ Copyright 2007,2008,2009 Thomas Fischer
 For more information, see http://www.rigsofrods.com/
 
 Rigs of Rods is free software: you can redistribute it and/or modify
-it under the terms of the GNU General Public License version 3, as 
+it under the terms of the GNU General Public License version 3, as
 published by the Free Software Foundation.
 
 Rigs of Rods is distributed in the hope that it will be useful,
@@ -18,19 +18,35 @@ You should have received a copy of the GNU General Public License
 along with Rigs of Rods.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-// created by Thomas Fischer thomas{AT}thomasfischer{DOT}biz, 9th of August 2009
+// created by Thomas Fischer thomas{AT}thomasfischer{DOT}biz, 1st of February 2010
 
-#include "OgrePrerequisites.h"
-#include "OgreUTFString.h"
+#include "rormemory.h"
 
-#ifndef UTILS_H_
-#define UTILS_H_
+unsigned int bytes_allocated = 0;
 
-// from http://stahlforce.com/dev/index.php?tool=csc01
-Ogre::String hexdump(void *pAddressIn, long  lSize);
+void *ror_malloc(size_t size)
+{
+	void *addr = nedalloc::nedmalloc(size);
+	bytes_allocated += size;
+	return addr;
+}
 
-Ogre::UTFString tryConvertUTF(char *buffer);
+void *ror_calloc(size_t no, size_t size)
+{
+	void *addr = nedalloc::nedcalloc(no, size);
+	bytes_allocated += size;
+	return addr;
+}
 
-Ogre::String formatBytes(double bytes);
+void ror_free(void *mem)
+{
+	// wont work like this ...
+	//bytes_allocated -= size
+	//allocations.erase(mem);
+	nedalloc::nedfree(mem);
+}
 
-#endif //UTILS_H_
+unsigned long getMemoryAllocated()
+{
+	return bytes_allocated;
+}

@@ -19,6 +19,7 @@ along with Rigs of Rods.  If not, see <http://www.gnu.org/licenses/>.
 */
 #include "road2.h"
 #include "ResourceBuffer.h"
+#include "rormemory.h"
 
 Road2::Road2(SceneManager *manager, HeightFinder *hf, Collisions *collisions, int id)
 {
@@ -560,7 +561,7 @@ void Road2::createMesh()
 
 	/// Define the vertices
 	size_t vbufCount = (2*3+2)*nVertices;
-	vertices=(float*)malloc(vbufCount*sizeof(float));
+	vertices=(float*)ror_malloc(vbufCount*sizeof(float));
 	int i;
 	//fill values
 	for (i=0; i<(int)nVertices; i++)

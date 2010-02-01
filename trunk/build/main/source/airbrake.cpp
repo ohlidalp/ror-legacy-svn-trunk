@@ -19,6 +19,7 @@ along with Rigs of Rods.  If not, see <http://www.gnu.org/licenses/>.
 */
 #include "airbrake.h"
 #include "ResourceBuffer.h"
+#include "rormemory.h"
 
 Airbrake::Airbrake(SceneManager *manager, char* basename, int num, node_t *ndref, node_t *ndx, node_t *ndy, node_t *nda, Vector3 pos, float width, float length, float maxang, char* texname, float tx1, float ty1, float tx2, float ty2)
     {
@@ -50,7 +51,7 @@ Airbrake::Airbrake(SceneManager *manager, char* basename, int num, node_t *ndref
         /// Define the vertices
         size_t nVertices = 4;
         size_t vbufCount = (2*3+2)*nVertices;
-		vertices=(float*)malloc(vbufCount*sizeof(float));
+		vertices=(float*)ror_malloc(vbufCount*sizeof(float));
 
 		//textures coordinates
 		covertices[0].texcoord=Vector2(tx1, ty1);
