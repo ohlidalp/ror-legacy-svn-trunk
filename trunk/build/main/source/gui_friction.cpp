@@ -52,7 +52,7 @@ GUI_Friction::GUI_Friction() : col(0), active_gm(0), selected_gm(0), win(0)
 	MyGUI::ButtonPtr b;
 	MyGUI::StaticTextPtr t;
 
-	msgwin = MyGUI::Gui::getInstance().createWidget<MyGUI::Window>("WindowCSX", 0, 0, 400, 300,  MyGUI::Align::Center, "Back");
+	msgwin = MyGUI::Gui::getInstance().createWidget<MyGUI::Window>("WindowCSX", 0, 0, 400, 300,  MyGUI::Align::Center, "Overlapped");
 	msgwin->setCaption(_L("Friction Help"));
 	msgwin->eventWindowButtonPressed = MyGUI::newDelegate(this, &GUI_Friction::notifyHelpWindowButtonPressed);
 	e = msgwin->createWidget<MyGUI::Edit>("EditStretch", 0, 0, 400, 300,  MyGUI::Align::Default, "helptext");
@@ -62,7 +62,7 @@ GUI_Friction::GUI_Friction() : col(0), active_gm(0), selected_gm(0), win(0)
 	msgwin->setVisible(false);
 
 
-	win = MyGUI::Gui::getInstance().createWidget<MyGUI::Window>("WindowCSX", 0, 0, 400, 500,  MyGUI::Align::Center, "Back");
+	win = MyGUI::Gui::getInstance().createWidget<MyGUI::Window>("WindowCSX", 0, 0, 400, 500,  MyGUI::Align::Center, "Overlapped");
 	win->setCaption(_L("Friction Settings"));
 
 	// active ground

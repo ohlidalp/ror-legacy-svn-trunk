@@ -141,7 +141,7 @@ along with Rigs of Rods.  If not, see <http://www.gnu.org/licenses/>.
 //#include "OgreTerrainSceneManager.h" // = ILLEGAL to link to a plugin!
 
 #include "writeTextToTexture.h"
-#include "ogreconsole.h"
+#include "Console.h"
 
 #if OGRE_PLATFORM == OGRE_PLATFORM_APPLE
 //#include <CFUserNotification.h>
@@ -1050,9 +1050,6 @@ ExampleFrameListener::ExampleFrameListener(RenderWindow* win, Camera* cam, Scene
 
 #ifdef ANGELSCRIPT
 	new ScriptEngine(this);
-	new OgreConsole;
-	OgreConsole::getSingleton().init(root, win);
-	OgreConsole::getSingleton().setVisible(false);
 #endif
 
 	externalCameraMode=0;
@@ -1154,6 +1151,11 @@ ExampleFrameListener::ExampleFrameListener(RenderWindow* win, Camera* cam, Scene
 
 	// init GUI
 	new GUIManager(root, scm, win);
+
+#ifdef ANGELSCRIPT
+	new ScriptEngine(this);
+	Console::Instance();
+#endif
 
 	LoadingWindow::Instance();
 	SelectorWindow::Instance();
@@ -4438,7 +4440,7 @@ bool ExampleFrameListener::updateEvents(float dt)
 
 		if (INPUTENGINE.getEventBoolValueBounce(EV_COMMON_CONSOLEDISPLAY))
 		{
-			OgreConsole::getSingleton().setVisible(!OgreConsole::getSingleton().getVisible());
+			Console::get()->setVisible(!Console::get()->getVisible());
 		}
 
 		if (INPUTENGINE.getEventBoolValueBounce(EV_COMMON_NETCHATMODE))

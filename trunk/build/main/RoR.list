@@ -64,7 +64,6 @@ set (HEADER_FILES
   source/network.h
   source/networkinfo.h
   source/NetworkStreamManager.h
-  source/ogreconsole.h
   source/OgreLineStreamOverlayElement.h
   source/opencl_beam.h
   source/PlayerColours.h
@@ -110,6 +109,7 @@ set (HEADER_FILES
   source/MapTextureCreator.h
   source/SelectorWindow.h
   source/LoadingWindow.h
+  source/Console.h
 )
 set (SOURCE_FILES
   source/airbrake.cpp
@@ -172,7 +172,6 @@ set (SOURCE_FILES
   source/mplatform_fd.cpp
   source/network.cpp
   source/NetworkStreamManager.cpp
-  source/ogreconsole.cpp
   source/OgreLineStreamOverlayElement.cpp
   source/opencl_beam.cpp
   source/PlayerColours.cpp
@@ -210,6 +209,7 @@ set (SOURCE_FILES
   source/MapTextureCreator.cpp
   source/SelectorWindow.cpp
   source/LoadingWindow.cpp
+  source/Console.cpp
   source/COPYING
   source/ror.ico
 )
@@ -274,7 +274,6 @@ SOURCE_GROUP("Source Files" FILES
   source/mplatform_fd.cpp
   source/network.cpp
   source/NetworkStreamManager.cpp
-  source/ogreconsole.cpp
   source/OgreLineStreamOverlayElement.cpp
   source/opencl_beam.cpp
   source/PlayerColours.cpp
@@ -374,7 +373,6 @@ SOURCE_GROUP("Header Files" FILES
   source/network.h
   source/networkinfo.h
   source/NetworkStreamManager.h
-  source/ogreconsole.h
   source/OgreLineStreamOverlayElement.h
   source/opencl_beam.h
   source/PlayerColours.h
@@ -431,6 +429,10 @@ SOURCE_GROUP("GUI\\SelectorWindow" FILES
 SOURCE_GROUP("GUI\\LoadingWindow" FILES
   source/LoadingWindow.cpp
   source/LoadingWindow.h
+)
+SOURCE_GROUP("GUI\\Console" FILES
+  source/Console.cpp
+  source/Console.h
 )
 SOURCE_GROUP("GUI" FILES
 )

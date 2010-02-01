@@ -158,7 +158,7 @@ namespace MyGUI
 			updateSelectIndex(mIndexSelect);
 		}
 
-		invalidateMeasure();
+		setDesiredSize(mSizeTexture);
 	}
 
 	void StaticImage::recalcIndexes()
@@ -547,9 +547,9 @@ namespace MyGUI
 		eventChangeProperty(this, _key, _value);
 	}
 
-	void StaticImage::overrideMeasure(const IntSize& _sizeAvailable)
+	IntSize StaticImage::overrideMeasure(const IntSize& _sizeAvailable)
 	{
-		mDesiredSize = mNativeImageSize;
+		return mNativeImageSize;
 	}
 
 } // namespace MyGUI
