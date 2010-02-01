@@ -78,7 +78,9 @@ void Console::eventButtonPressed(MyGUI::Widget* _sender, MyGUI::KeyCode _key, My
 	{
 		setVisible(false);
 		// delete last character (to avoid printing `)
-		mCommandEdit->eraseText(mCommandEdit->getTextLength() - 2, 1);
+		size_t lastChar = mCommandEdit->getTextLength() - 1;
+		if (mCommandEdit->getCaption()[lastChar] == '`')
+			mCommandEdit->eraseText(lastChar);
 		return;
 	}
 
@@ -87,6 +89,11 @@ void Console::eventButtonPressed(MyGUI::Widget* _sender, MyGUI::KeyCode _key, My
 	case MyGUI::KeyCode::ArrowUp:
 		if(mHistoryPosition > 0)
 		{
+			// first we save what we was writing
+			if (mHistoryPosition == history.size() - 1)
+			{
+				history[mHistoryPosition] = mCommandEdit->getCaption();
+			}
 			mHistoryPosition--;
 			mCommandEdit->setCaption(history[mHistoryPosition]);
 		}
