@@ -1491,7 +1491,7 @@ eventInfo_t eventInfo[] = {
 #endif
 
 #ifndef NOOGRE
-#include "ogreconsole.h"
+#include "Console.h"
 #endif
 
 using namespace std;
@@ -1867,9 +1867,9 @@ bool InputEngine::keyPressed( const OIS::KeyEvent &arg )
 {
 #ifndef NOOGRE
 # ifdef ANGELSCRIPT
-	if(OgreConsole::getSingleton().getVisible())
+	if(Console::get()->getVisible())
 	{
-		OgreConsole::getSingleton().onKeyPressed(arg);
+		MYGUI.keyPressed(arg);
 		return true;
 	}
 # endif

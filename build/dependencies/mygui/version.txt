@@ -1,4 +1,4 @@
 http://mygui.info
 
-MyGUI 3.1.0 from trunk (revision 2696)
-January 24th, 2010
+MyGUI 3.1.0 from trunk (revision 2712)
+February 1st, 2010
