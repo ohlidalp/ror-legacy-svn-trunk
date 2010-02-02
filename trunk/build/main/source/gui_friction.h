@@ -30,7 +30,7 @@ along with Rigs of Rods.  If not, see <http://www.gnu.org/licenses/>.
 
 class Collisions;
 
-class GUI_Friction : public Ogre::Singleton< GUI_Friction >
+class GUI_Friction : public Ogre::Singleton< GUI_Friction >, public MemoryAllocatedObject
 {
 public:
 	GUI_Friction();

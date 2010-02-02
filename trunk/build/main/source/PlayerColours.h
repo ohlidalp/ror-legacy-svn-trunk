@@ -25,8 +25,9 @@ along with Rigs of Rods.  If not, see <http://www.gnu.org/licenses/>.
 
 #include "OgrePrerequisites.h"
 #include "OgreSingleton.h"
+#include "rormemory.h"
 
-class PlayerColours : public Ogre::Singleton < PlayerColours >
+class PlayerColours : public Ogre::Singleton < PlayerColours >, public MemoryAllocatedObject
 {
 public:
 	PlayerColours();

@@ -24,6 +24,7 @@ along with Rigs of Rods.  If not, see <http://www.gnu.org/licenses/>.
 
 #include <Ogre.h>
 #include <map>
+#include "rormemory.h"
 
 class Beam;
 
@@ -39,7 +40,7 @@ class Beam;
 
 #define MAX_TIMINGS 20
 #define BES BeamEngineStats::getInstance()
-class BeamThreadStats
+class BeamThreadStats : public MemoryAllocatedObject
 {
 public:
 	BeamThreadStats();
@@ -64,7 +65,7 @@ private:
 	unsigned int physcounter;
 };
 
-class BeamEngineStats
+class BeamEngineStats : public MemoryAllocatedObject
 {
 public:
 	bool updateGUI(float dt, int current_truck, Beam **trucks);

@@ -37,7 +37,7 @@ using namespace Ogre;
 #include <vector>
 #include <map>
 
-class LuaSystem
+class LuaSystem : public MemoryAllocatedObject
 {
 private:
 	lua_State* L;

@@ -27,12 +27,13 @@ along with Rigs of Rods.  If not, see <http://www.gnu.org/licenses/>.
 #include "MovableText.h"
 #include "StreamableFactory.h"
 #include "IngameConsole.h"
+#include "rormemory.h"
 
 class MapControl;
 class Network;
 class ChatSystemFactory;
 
-class ChatSystem : public Streamable
+class ChatSystem : public Streamable, public MemoryAllocatedObject
 {
 	friend class ChatSystemFactory;
 	friend class Network;
@@ -55,7 +56,7 @@ protected:
 	void receiveStreamData(unsigned int &type, int &source, unsigned int &streamid, char *buffer, unsigned int &len);
 };
 
-class ChatSystemFactory : public StreamableFactory < ChatSystemFactory, ChatSystem >
+class ChatSystemFactory : public StreamableFactory < ChatSystemFactory, ChatSystem >, public MemoryAllocatedObject
 {
 	friend class Network;
 public:

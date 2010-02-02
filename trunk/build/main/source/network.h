@@ -32,7 +32,7 @@ using namespace Ogre;
 
 class ExampleFrameListener;
 
-class Network
+class Network : public MemoryAllocatedObject
 {
 private:
 	SWInetSocket socket;

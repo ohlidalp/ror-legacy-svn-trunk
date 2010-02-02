@@ -30,6 +30,7 @@ class TorqueCurve;
 
 #include <stdio.h>
 #include <stdlib.h>
+#include "rormemory.h"
 
 //#include "Ogre.h"
 //using namespace Ogre;
@@ -41,7 +42,7 @@ class TorqueCurve;
 
 enum autoswitch {REAR=0, NEUTRAL=1, DRIVE=2, TWO=3, ONE=4, MANUALMODE=5};
 
-class BeamEngine
+class BeamEngine : public MemoryAllocatedObject
 {
 protected:
 	float clutch_time;

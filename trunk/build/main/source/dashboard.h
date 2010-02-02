@@ -21,13 +21,14 @@ along with Rigs of Rods.  If not, see <http://www.gnu.org/licenses/>.
 #define __Dashboard_H__
 
 #include "Ogre.h"
+#include "rormemory.h"
 
 using namespace Ogre;
 
 extern SceneManager* mScene;
 
 
-class Dashboard
+class Dashboard : public MemoryAllocatedObject
 {
 private:
 	Camera *mDashCam;

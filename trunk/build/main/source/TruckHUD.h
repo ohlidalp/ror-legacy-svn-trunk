@@ -26,7 +26,7 @@ along with Rigs of Rods.  If not, see <http://www.gnu.org/licenses/>.
 #include "Beam.h"
 #include "OgreLineStreamOverlayElement.h"
 
-class TruckHUD
+class TruckHUD : public MemoryAllocatedObject
 {
 public:
 	bool update(float dt, Beam *truck, Ogre::SceneManager *sm, Ogre::Camera* mCamera, Ogre::RenderWindow* mWindow, bool visible=true);

@@ -36,7 +36,7 @@ typedef struct beam_simple_ {
 	bool disabled;
 } beam_simple_t;
 
-class Replay
+class Replay : public MemoryAllocatedObject
 {
 public:
 	Replay(Beam *b, int nframes);

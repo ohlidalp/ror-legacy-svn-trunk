@@ -181,7 +181,7 @@ char terrainoriginalmaterial[100];
 bool shutdownall=false;
 bool caelum_mapped=false;
 
-class TerrainUpdater : public Caelum::CaelumListener {
+class TerrainUpdater : public Caelum::CaelumListener, public MemoryAllocatedObject {
 private:
 	int state;
 	char pname[100];
@@ -314,7 +314,7 @@ void ExampleFrameListener::updateStats(void)
 		if(MaterialManager::getSingleton().getMemoryUsage() > 1)
 			memoryText += "Materials: " + formatBytes(MaterialManager::getSingleton().getMemoryUsage()) + " / " + formatBytes(MaterialManager::getSingleton().getMemoryBudget()) + "\n";
 		memoryText += "\n";
-		memoryText += "RoR: " + formatBytes(getMemoryAllocated()) + "\n";
+		memoryText += "RoR: " + formatBytes(MemoryWrapper::getMemoryAllocated()) + "\n";
 
 		OverlayElement* memoryDbg = OverlayManager::getSingleton().getOverlayElement("Core/MemoryText");
 		memoryDbg->setCaption(memoryText);

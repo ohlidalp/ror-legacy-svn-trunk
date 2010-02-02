@@ -26,6 +26,7 @@ along with Rigs of Rods.  If not, see <http://www.gnu.org/licenses/>.
 #include <vector>
 #include <map>
 #include "sha1.h"
+#include "rormemory.h"
 //#include "Beam.h" // for authorinfo_t
 
 #define CACHE_FILE "mods.cache"
@@ -207,7 +208,7 @@ public:
 
 };
 
-class CacheSystem
+class CacheSystem : public MemoryAllocatedObject
 {
 public:
 	static CacheSystem &Instance();

@@ -21,6 +21,7 @@ along with Rigs of Rods.  If not, see <http://www.gnu.org/licenses/>.
 #define __TorqueCurve_H__
 
 #include "OgrePrerequisites.h"
+#include "rormemory.h"
 
 /**
  * @file TorqueCurve.h
@@ -33,7 +34,7 @@ along with Rigs of Rods.  If not, see <http://www.gnu.org/licenses/>.
 /**
  *  @brief This class loads and processes a torque curve for a truck.
  */
-class TorqueCurve
+class TorqueCurve : public MemoryAllocatedObject
 {
 public:
 	const static Ogre::String customModel;

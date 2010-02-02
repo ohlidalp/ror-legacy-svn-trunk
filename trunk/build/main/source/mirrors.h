@@ -22,10 +22,11 @@ along with Rigs of Rods.  If not, see <http://www.gnu.org/licenses/>.
 #define __Mirrors_H__
 
 #include "Ogre.h"
+#include "rormemory.h"
 
 using namespace Ogre;
 
-class Mirrors
+class Mirrors : public MemoryAllocatedObject
 {
 private:
 	Camera *mCamera;

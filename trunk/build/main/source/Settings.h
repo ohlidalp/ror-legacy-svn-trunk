@@ -22,11 +22,12 @@ along with Rigs of Rods.  If not, see <http://www.gnu.org/licenses/>.
 #define SETTINGS_H
 
 #include "Ogre.h"
+#include "rormemory.h"
 #include <map>
 
 #define SETTINGS Settings::Instance()
 
-class Settings
+class Settings : public MemoryAllocatedObject
 {
 public:
 	static Settings & Instance();

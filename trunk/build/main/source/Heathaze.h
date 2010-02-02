@@ -21,8 +21,9 @@ along with Rigs of Rods.  If not, see <http://www.gnu.org/licenses/>.
 #define __HeatHaze_H__
 
 #include "Ogre.h"
+#include "rormemory.h"
 
-class HeatHazeListener : public Ogre::RenderTargetListener
+class HeatHazeListener : public Ogre::RenderTargetListener, public MemoryAllocatedObject
 {
 public:
 	HeatHazeListener(Ogre::SceneManager *mSceneMgr);
@@ -32,7 +33,7 @@ private:
 	Ogre::SceneManager *mSceneMgr;
 };
 
-class HeatHaze
+class HeatHaze : public MemoryAllocatedObject
 {
 public:
 	HeatHaze(Ogre::SceneManager *mSceneMgr, Ogre::RenderWindow *mWindow, Ogre::Camera *cam);

@@ -22,11 +22,13 @@ along with Rigs of Rods.  If not, see <http://www.gnu.org/licenses/>.
 
 #include "Singleton.h"
 #include <BaseLayout.h>
+#include "rormemory.h"
 
 ATTRIBUTE_CLASS_LAYOUT(Console, "Console.layout");
 class Console :
 	public wraps::BaseLayout,
-	public Singleton2<Console>
+	public Singleton2<Console>,
+	public MemoryAllocatedObject
 {
 public:
 	Console();

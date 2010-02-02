@@ -26,6 +26,7 @@ along with Rigs of Rods.  If not, see <http://www.gnu.org/licenses/>.
 #include "Ogre.h"
 #include "OgreTextAreaOverlayElement.h"
 #include "ColoredTextAreaOverlayElement.h"
+#include "rormemory.h"
 
 #define NETCHAT IngameConsole::getInstance()
 
@@ -34,7 +35,7 @@ enum {NETCHAT_MSG_CHAT, NETCHAT_MSG_COMMAND};
 
 class ExampleFrameListener;
 
-class IngameConsole
+class IngameConsole : public MemoryAllocatedObject
 {
 public:
 	bool update(float dt);

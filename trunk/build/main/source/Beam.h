@@ -60,6 +60,8 @@ using namespace Ogre;
 #include "PositionStorage.h"
 #include "Streamable.h"
 #include "groundmodel.h"
+#include "rormemory.h"
+
 
 //#include "scriptCommands.h"
 #include <vector>
@@ -642,7 +644,7 @@ inline float fast_length(Ogre::Vector3 v)
 	return fast_sqrt(v.squaredLength());
 }
 
-class Beam : public Streamable
+class Beam : public Streamable, public MemoryAllocatedObject
 {
 public:
 	Beam() {}; // for wrapper, DO NOT USE!

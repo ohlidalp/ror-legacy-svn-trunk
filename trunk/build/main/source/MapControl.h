@@ -26,12 +26,14 @@ along with Rigs of Rods.  If not, see <http://www.gnu.org/licenses/>.
 #include <vector>
 #include <MyGUI.h>
 #include <BaseLayout.h>
+#include "rormemory.h"
 
 class MapEntity;
 
 ATTRIBUTE_CLASS_LAYOUT(MapControl, "MapControl.layout");
 class MapControl :
-	public wraps::BaseLayout
+	public wraps::BaseLayout,
+	public MemoryAllocatedObject
 {
 public:
 	MapControl(int mapsizex, int mapsizez);

@@ -50,7 +50,7 @@ using namespace Ogre;
 #endif
 
 // Event handler to add ability to alter curvature
-class RoRFrameListener : public ExampleFrameListener
+class RoRFrameListener : public ExampleFrameListener, public MemoryAllocatedObject
 {
 public:
 	RoRFrameListener(RenderWindow* win, Camera* cam, SceneManager* scm, Root* root) : 
