@@ -92,10 +92,10 @@ Beam::~Beam()
 	// TODO: IMPROVE below: delete/destroy prop entities, etc
 
 	deleting = true;
-	
+
 	// Very Important: remove this truck out of the trucks array, otherwise segfault
 	if (eflsingleton) eflsingleton->removeBeam(this);
-	
+
 
 	// hide all meshes, prevents deleting stuff while drawing
 	this->setMeshVisibility(false);
@@ -2600,14 +2600,14 @@ int Beam::loadTruck(const char* fname, SceneManager *manager, SceneNode *parent,
 			}
 			int pos=add_beam(&nodes[id1], &nodes[id2], manager, parent, BEAM_NORMAL, default_break, default_spring, default_damp);
 			beams[pos].bounded=ROPE;
-			
+
 			rope_t r;
 			//register rope
 			r.beam=&beams[pos];
 			r.lockedto=0;
 			r.group=group;
 			ropes.push_back(r);
-			
+
 			nodes[id1].iIsSkin=true;
 			nodes[id2].iIsSkin=true;
 		}
@@ -4786,7 +4786,7 @@ void Beam::calcNodeConnectivityGraph()
 
 	nodetonodeconnections.resize(free_node, vector< int >());
 	nodebeamconnections.resize(free_node, vector< int >());
-	
+
 	for (i=0; i<free_beam; i++)
 	{
 		if (beams[i].p1!=NULL && beams[i].p2!=NULL && beams[i].p1->pos>=0 && beams[i].p2->pos>=0)
@@ -5753,7 +5753,7 @@ void Beam::threadentry(int id)
 		trucks=ttrucks;
 		numtrucks=tnumtrucks;
 		float dtperstep=dt/(Real)steps;
-		
+
 		for (i=0; i<steps; i++)
 		{
 			int t;
@@ -6063,7 +6063,7 @@ void Beam::sendStreamSetup()
 	if(!net || state == NETWORKED ) return;
 	// only init stream if its local.
 	// the stream is local when networking=true and networked=false
-	
+
 	// register the local stream
 	stream_register_trucks_t reg;
 	reg.status = 0;
@@ -6084,7 +6084,7 @@ void Beam::sendStreamData()
 
 	//look if the packet is too big first
 	int final_packet_size = sizeof(oob_t) + sizeof(float) * 3 + first_wheel_node * sizeof(float) * 3 + free_wheel * sizeof(float);
-	if(final_packet_size > maxPacketLen)
+	if(final_packet_size > (int)maxPacketLen)
 	{
 		showError("Truck is too big to be send over the net.", "Network error!");
 		exit(126);
@@ -6163,13 +6163,16 @@ void Beam::sendStreamData()
 	this->addPacket(MSG2_STREAM_DATA, packet_len, send_buffer);
 }
 
-void Beam::receiveStreamData(unsigned int &type, int &source, unsigned int &streamid, char *buffer, unsigned int &len)
+void Beam::receiveStreamData(unsigned int &type, int &source, unsigned int &_streamid, char *buffer, unsigned int &len)
 {
-	if(state!=NETWORKED) return; // this should not happen
+	if(state != NETWORKED) return; // this should not happen
 	// TODO: FIX
 	//if(this->source != source || this->streamid != streamid) return; // data not for us
 
-	if(type == MSG2_STREAM_DATA && source == this->sourceid && this->streamid == streamid)
+	if(type == MSG2_STREAM_DATA
+	   && source == (int)this->sourceid
+	   && _streamid == this->streamid
+	  )
 	{
 		pushNetwork(buffer, len);
 	}
@@ -6483,7 +6486,7 @@ void Beam::calcForcesEuler(int doUpdate, Real dt, int step, int maxstep, Beam** 
 			//Calculate beam's rate of change
 			v=beams[i].p1->Velocity;
 			v-=beams[i].p2->Velocity;
-			
+
 			float flen;
 			flen = -k*(difftoBeamL)-d*v.dotProduct(dis)*inverted_dislen;
 			float sflen=flen;
@@ -6697,8 +6700,8 @@ void Beam::calcForcesEuler(int doUpdate, Real dt, int step, int maxstep, Beam** 
 				affhydro+=beams[hydro[i]].hydroRatio*beams[hydro[i]].refL*beams[hydro[i]].stress;
 		}
 	}
-	
-	
+
+
 	//locks - this is not active in network mode
 	for(std::vector<hook_t>::iterator it=hooks.begin(); it!=hooks.end(); it++)
 	{
@@ -7538,7 +7541,7 @@ void Beam::calcForcesEuler(int doUpdate, Real dt, int step, int maxstep, Beam** 
 				if(commandkey[i].commandValue >= 0.5)
 					beams[abs(commandkey[i].beams[j])].autoMoveLock=true;
 
-		
+
 		// only process ties if there is enough force available
 		if(canwork)
 		{
@@ -7571,7 +7574,7 @@ void Beam::calcForcesEuler(int doUpdate, Real dt, int step, int maxstep, Beam** 
 				if (fabs(it->beam->stress) > it->beam->maxtiestress)
 					it->tying = false;
 			}
-			if(requestpower) 
+			if(requestpower)
 				requested++;
 		}
 
@@ -7963,7 +7966,7 @@ void Beam::truckTruckCollisions(Real dt, Beam** trucks, int numtrucks)
 			}
 
 			if (trucks[t]->collcabrate[i].distance<1) trucks[t]->collcabrate[i].distance=1;
-			
+
 			tmpv=trucks[t]->collcabs[i]*3;
 			no=&trucks[t]->nodes[trucks[t]->cabs[tmpv]];
 			na=&trucks[t]->nodes[trucks[t]->cabs[tmpv+1]];
@@ -8010,7 +8013,7 @@ void Beam::truckTruckCollisions(Real dt, Beam** trucks, int numtrucks)
 
 				//change coordinates
 				point=forward * (hitnode->AbsPosition - no->AbsPosition);
-				
+
 				//test
 				if (point.x>=0 && point.y>=0 && (point.x+point.y)<=1.0 && point.z<=trwidth && point.z>=-trwidth)
 				{
@@ -8030,7 +8033,7 @@ void Beam::truckTruckCollisions(Real dt, Beam** trucks, int numtrucks)
 						int negside=0;
 						float tmppz=point.z;
 						float distance;
-						
+
 						for (unsigned int ni=0;ni<hittruck->nodetonodeconnections[hitnodeid].size();ni++)
 						{
 							distance=plnormal.dotProduct(hittruck->nodes[hittruck->nodetonodeconnections[hitnodeid][ni]].AbsPosition-no->AbsPosition);
@@ -8041,7 +8044,7 @@ void Beam::truckTruckCollisions(Real dt, Beam** trucks, int numtrucks)
 						if (point.z>=0) posside+=3;
 						else negside+=3;
 
-						if (negside>posside) 
+						if (negside>posside)
 						{
 							plnormal=-plnormal;
 							tmppz=-tmppz;
@@ -8997,11 +9000,11 @@ void Beam::showSkeleton(bool meshes, bool newMode)
 	for(std::vector<tie_t>::iterator it=ties.begin(); it!=ties.end(); it++)
 		if (it->beam->disabled)
 			it->beam->mSceneNode->detachAllObjects();
-	
+
 	for(std::vector<hook_t>::iterator it=hooks.begin(); it!=hooks.end(); it++)
 		if (it->lockTruck && it->lockTruck->getTruckName() != getTruckName())
 			it->lockTruck->showSkeleton();
-	
+
 	lockSkeletonchange=false;
 
 #ifdef ANGELSCRIPT
@@ -9309,7 +9312,7 @@ void Beam::tieToggle(Beam** trucks, int trucksnum, int group)
 			if (shorter)
 			{
 				//okay, we have found a rope to tie
-				
+
 				// enable the beam and visually display the beam
 				it->beam->disabled = 0;
 				if (it->beam->mSceneNode->numAttachedObjects() == 0)
@@ -9490,7 +9493,7 @@ void Beam::hookToggle(Beam** trucks, int trucksnum, int group)
 				} else
 				{
 					// we lock against ropables
-					
+
 					// and their ropables
 					for(std::vector <ropable_t>::iterator itr = trucks[t]->ropables.begin(); itr!=trucks[t]->ropables.end(); itr++)
 					{

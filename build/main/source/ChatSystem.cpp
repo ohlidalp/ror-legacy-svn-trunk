@@ -35,7 +35,7 @@ along with Rigs of Rods.  If not, see <http://www.gnu.org/licenses/>.
 using namespace Ogre;
 
 ///////////////////////////////////
-// ChatSystemFactory 
+// ChatSystemFactory
 
 template<> ChatSystemFactory *StreamableFactory < ChatSystemFactory, ChatSystem >::ms_Singleton = 0;
 
@@ -100,7 +100,7 @@ void ChatSystemFactory::updatePlayerList()
 			{
 				UTFString username = tryConvertUTF(c->nickname);
 				te->setCaption(username);
-				
+
 				String matName = PlayerColours::getSingleton().getColourMaterial(c->colournum);
 				tec->setMaterialName(matName);
 				if(c->authstatus & AUTH_ADMIN)
@@ -110,7 +110,7 @@ void ChatSystemFactory::updatePlayerList()
 				else
 					te->setColour(ColourValue::Black);
 
-				
+
 			} catch(...)
 			{
 			}
@@ -165,8 +165,8 @@ ChatSystem *ChatSystemFactory::getFirstChatSystem()
 ///////////////////////////////////
 // ChatSystem
 
-ChatSystem::ChatSystem(Network *net, int source, unsigned int streamid, int colourNumber, bool remote) : 
-	net(net), 
+ChatSystem::ChatSystem(Network *net, int source, unsigned int streamid, int colourNumber, bool remote) :
+	net(net),
 	source(source),
 	streamid(streamid),
 	colourNumber(colourNumber),
@@ -181,7 +181,7 @@ ChatSystem::ChatSystem(Network *net, int source, unsigned int streamid, int colo
 		if(c)
 		{
 			username = tryConvertUTF(c->user_name);
-			
+
 			int nickColour = 8;
 			if(c->user_authlevel & AUTH_NONE)   nickColour = 8; // grey
 			if(c->user_authlevel & AUTH_BOT )   nickColour = 4; // blue
@@ -230,7 +230,7 @@ void ChatSystem::receiveStreamData(unsigned int &type, int &source, unsigned int
 		{
 			// server said something
 			NETCHAT.addText(String(buffer));
-		} else if(this->source == source && this->streamid == streamid)
+		} else if(source == (int)this->source && (int)streamid == this->streamid)
 		{
 			UTFString text = tryConvertUTF(buffer);
 			NETCHAT.addText(username + "^7: " + text);

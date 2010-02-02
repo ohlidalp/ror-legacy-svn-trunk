@@ -6,7 +6,7 @@ Copyright 2007,2008,2009 Thomas Fischer
 For more information, see http://www.rigsofrods.com/
 
 Rigs of Rods is free software: you can redistribute it and/or modify
-it under the terms of the GNU General Public License version 3, as 
+it under the terms of the GNU General Public License version 3, as
 published by the Free Software Foundation.
 
 Rigs of Rods is distributed in the hope that it will be useful,
@@ -90,7 +90,7 @@ void Console::eventButtonPressed(MyGUI::Widget* _sender, MyGUI::KeyCode _key, My
 		if(mHistoryPosition > 0)
 		{
 			// first we save what we was writing
-			if (mHistoryPosition == history.size() - 1)
+			if (mHistoryPosition == (int)history.size() - 1)
 			{
 				history[mHistoryPosition] = mCommandEdit->getCaption();
 			}

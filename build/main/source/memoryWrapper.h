@@ -1,6 +1,7 @@
 #ifndef MEMORY_WRAPPER_H__
 #define MEMORY_WRAPPER_H__
 
+#include <stddef.h>   /* for size_t */
 
 #define ror_malloc(x)   MemoryWrapper::allocBytes(x)
 #define ror_calloc(x,y) MemoryWrapper::callocBytes(x,y)

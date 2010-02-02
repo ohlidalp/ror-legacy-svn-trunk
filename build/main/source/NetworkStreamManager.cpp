@@ -58,11 +58,11 @@ void NetworkStreamManager::addLocalStream(Streamable *stream, stream_register_t 
 	pthread_mutex_lock(&stream_mutex);
 	// for own streams: count stream id up ...
 	int mysourceid = net->getUserID();
-	
+
 	// use counting streamid
 	stream->setSourceID(mysourceid);
 	stream->setStreamID(streamid);
-	
+
 	// add new stream map to the streams map
 	if(streams.find(mysourceid) == streams.end())
 		streams[mysourceid] = std::map < unsigned int, Streamable *>();
@@ -92,7 +92,7 @@ void NetworkStreamManager::addRemoteStream(Streamable *stream, int rsource, int 
 void NetworkStreamManager::removeStream(int sourceid, int streamid)
 {
 	pthread_mutex_lock(&stream_mutex);
-	
+
 	bool deleted=false;
 	std::map < int, std::map < unsigned int, Streamable *> >::iterator it;
 	for(it=streams.begin(); it!=streams.end(); it++)
@@ -101,7 +101,7 @@ void NetworkStreamManager::removeStream(int sourceid, int streamid)
 		std::map<unsigned int,Streamable *>::iterator it2;
 		for(it2=it->second.begin(); it2!=it->second.end(); it2++)
 		{
-			if(it->first == sourceid && it2->first == streamid)
+			if(it->first == sourceid && (int)it2->first == streamid)
 			{
 				streams[it->first].erase(it2);
 				// iterator gets invalid!
@@ -216,7 +216,7 @@ void NetworkStreamManager::sendStreams(Network *net, SWInetSocket *socket)
 					pthread_mutex_unlock(&stream_mutex);
 					return;
 				}
-			
+
 				packets->pop_front();
 			}
 
@@ -270,7 +270,7 @@ void NetworkStreamManager::receiveStreams()
 				//Network::debugPacket("receive-2", &packet.header, (char *)packet.buffer);
 
 				if(it2->second) it2->second->receiveStreamData(packet.header.command, packet.header.source, packet.header.streamid, (char*)packet.buffer, packet.header.size);
-			
+
 				packets->pop_front();
 			}
 			it2->second->unlockReceiveQueue();

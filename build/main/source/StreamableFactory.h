@@ -156,7 +156,7 @@ public:
 
 			for(it2=it1->second.begin(); it2!=it1->second.end();it2++)
 			{
-				if(del->streamid == -1 || del->streamid == it2->first)
+				if(del->streamid == -1 || del->streamid == (int)it2->first)
 				{
 					// deletes the stream
 					delete it2->second;
