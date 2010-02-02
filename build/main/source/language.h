@@ -27,11 +27,12 @@ freely, subject to the following restrictions:
 
 #include "Ogre.h"
 #include "moFileReader.h"
+#include "rormemory.h"
 
 #define _L(str) LanguageEngine::Instance().lookUp(str)
 #define MOFILENAME "ror"
 
-class LanguageEngine
+class LanguageEngine : public MemoryAllocatedObject
 {
 public:
     static LanguageEngine & Instance();

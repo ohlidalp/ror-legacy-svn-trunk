@@ -2,9 +2,10 @@
 #define SHADOWLISTENER_H__
 
 #include "Ogre.h"
+#include "rormemory.h"
 
 #if OGRE_VERSION>0x010602
-class SoftShadowListener : public Ogre::SceneManager::Listener
+class SoftShadowListener : public Ogre::SceneManager::Listener, public MemoryAllocatedObject
 #else
 class SoftShadowListener : public Ogre::ShadowListener
 #endif //OGRE_VERSION

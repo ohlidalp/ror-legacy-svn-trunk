@@ -28,7 +28,7 @@ using namespace Ogre;
 #include "Airfoil.h"
 #include "aeroengine.h"
 
-class Turboprop: public AeroEngine
+class Turboprop: public AeroEngine, public MemoryAllocatedObject
 {
 private:
 	node_t *nodes;

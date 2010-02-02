@@ -36,7 +36,7 @@ class MapControl;
 //class Character;
 #include "Character.h"
 
-class CharacterFactory : public StreamableFactory < CharacterFactory, Character >
+class CharacterFactory : public StreamableFactory < CharacterFactory, Character >, public MemoryAllocatedObject
 {
 	friend class Network;
 public:

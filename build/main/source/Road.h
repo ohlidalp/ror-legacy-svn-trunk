@@ -22,6 +22,7 @@ along with Rigs of Rods.  If not, see <http://www.gnu.org/licenses/>.
 
 #include <stdio.h>
 #include <math.h>
+#include "rormemory.h"
 
 #include "Ogre.h"
 using namespace Ogre;
@@ -42,7 +43,7 @@ typedef struct _RoadType
 	SceneNode *node;
 } RoadType_t;
 
-class Road
+class Road : public MemoryAllocatedObject
 {
 protected:
 //	RoadElement_t *roadlink;

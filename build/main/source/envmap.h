@@ -21,11 +21,12 @@ along with Rigs of Rods.  If not, see <http://www.gnu.org/licenses/>.
 #define __Envmap_H__
 
 #include "Ogre.h"
+#include "rormemory.h"
 
 class Beam;
 using namespace Ogre;
 
-class Envmap
+class Envmap : public MemoryAllocatedObject
 {
 private:
 	Camera *camera[6];

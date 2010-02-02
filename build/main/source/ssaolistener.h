@@ -3,8 +3,9 @@
 
 #include "Ogre.h"
 #include "OgreCompositorInstance.h"
+#include "rormemory.h"
 
-class SSAOListener : public Ogre::CompositorInstance::Listener
+class SSAOListener : public Ogre::CompositorInstance::Listener, public MemoryAllocatedObject
 {
 protected:
 	Ogre::SceneManager *mgr;

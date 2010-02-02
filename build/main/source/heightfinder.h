@@ -22,6 +22,7 @@ along with Rigs of Rods.  If not, see <http://www.gnu.org/licenses/>.
 
 #include <OgrePrerequisites.h>
 #include <OgreVector3.h>
+#include "rormemory.h"
 
 // forward definitions
 //namespace Ogre {
@@ -46,7 +47,7 @@ public:
 /**
  * Heightfinder for the standart Ogre Terrain Mnager
  */
-class TSMHeightFinder : public HeightFinder
+class TSMHeightFinder : public HeightFinder, public MemoryAllocatedObject
 {
 protected:
 	Ogre::Vector3 scale;

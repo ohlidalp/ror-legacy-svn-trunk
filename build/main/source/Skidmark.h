@@ -47,7 +47,7 @@ typedef struct _skidmark_config
 	float slipTo;
 } skidmark_config_t;
 
-class SkidmarkManager : public Ogre::Singleton<SkidmarkManager>
+class SkidmarkManager : public Ogre::Singleton<SkidmarkManager>, public MemoryAllocatedObject
 {
 public:
 	SkidmarkManager();

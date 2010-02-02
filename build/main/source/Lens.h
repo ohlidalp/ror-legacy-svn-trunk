@@ -10,8 +10,10 @@
 
 #include "OgrePrerequisites.h"
 #include "OgreMath.h"
+#include "rormemory.h"
 
-class Lens {
+class Lens : public MemoryAllocatedObject
+{
 public:
   Lens(void) {};
   Lens(const Ogre::Real& _focalLength, const Ogre::Real& _fStop, const Ogre::Real& _frameSize = 3.5, const Ogre::Real& _circleOfConfusion = 0.003);

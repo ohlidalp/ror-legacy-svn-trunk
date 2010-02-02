@@ -328,9 +328,9 @@ Beam::Beam(int tnum, SceneManager *manager, SceneNode *parent, RenderWindow* win
 
 	ssm=SoundScriptManager::getSingleton();
 	materialFunctionMapper = new MaterialFunctionMapper();
-	cmdInertia=new CmdKeyInertia(MAX_COMMANDS);
-	hydroInertia=new CmdKeyInertia(MAX_HYDROS);
-	rotaInertia=new CmdKeyInertia(MAX_ROTATORS);
+	cmdInertia   = new CmdKeyInertia(MAX_COMMANDS);
+	hydroInertia = new CmdKeyInertia(MAX_HYDROS);
+	rotaInertia  = new CmdKeyInertia(MAX_ROTATORS);
 	free_soundsource=0;
 	nodedebugstate=-1;
 	debugVisuals=0;
@@ -557,7 +557,7 @@ Beam::Beam(int tnum, SceneManager *manager, SceneNode *parent, RenderWindow* win
 	for(int i=0; i<MAX_WHEELS*2; i++) skidtrails[i] = 0;
 
 	collisions=icollisions;
-	pointCD=new PointColDetector();
+	pointCD = new PointColDetector();
 
 	disable_smoke=(SETTINGS.getSetting("Engine smoke")=="No");
 	heathaze=(SETTINGS.getSetting("HeatHaze")=="Yes");
@@ -673,7 +673,7 @@ Beam::Beam(int tnum, SceneManager *manager, SceneNode *parent, RenderWindow* win
 		netb1=(char*)ror_malloc(netbuffersize);
 		netb2=(char*)ror_malloc(netbuffersize);
 		netb3=(char*)ror_malloc(netbuffersize);
-		nettimer=new Timer();
+		nettimer = new Timer();
 		net_toffset=0;
 		netcounter=0;
 		//init mutex
@@ -2340,7 +2340,7 @@ int Beam::loadTruck(const char* fname, SceneManager *manager, SceneNode *parent,
 			}
 			//if (audio) audio->setupEngine();
 
-			engine=new BeamEngine(minrpm, maxrpm, torque, rear, numgears - 1, gears, dratio, trucknum);
+			engine = new BeamEngine(minrpm, maxrpm, torque, rear, numgears - 1, gears, dratio, trucknum);
 			//engine->start();
 		}
 
@@ -2389,7 +2389,7 @@ int Beam::loadTruck(const char* fname, SceneManager *manager, SceneNode *parent,
 			if (type=='c') {collcabs[free_collcab]=free_cab; collcabstype[free_collcab]=0; free_collcab++;};
 			if (type=='p') {collcabs[free_collcab]=free_cab; collcabstype[free_collcab]=1; free_collcab++;};
 			if (type=='u') {collcabs[free_collcab]=free_cab; collcabstype[free_collcab]=2; free_collcab++;};
-			if (type=='b') {buoycabs[free_buoycab]=free_cab; collcabstype[free_collcab]=0; buoycabtypes[free_buoycab]=BUOY_NORMAL; free_buoycab++; if (!buoyance) buoyance=new Buoyance(water);};
+			if (type=='b') {buoycabs[free_buoycab]=free_cab; collcabstype[free_collcab]=0; buoycabtypes[free_buoycab]=BUOY_NORMAL; free_buoycab++;   if (!buoyance) buoyance=new Buoyance(water);};
 			if (type=='r') {buoycabs[free_buoycab]=free_cab; collcabstype[free_collcab]=0; buoycabtypes[free_buoycab]=BUOY_DRAGONLY; free_buoycab++; if (!buoyance) buoyance=new Buoyance(water);};
 			if (type=='s') {buoycabs[free_buoycab]=free_cab; collcabstype[free_collcab]=0; buoycabtypes[free_buoycab]=BUOY_DRAGLESS; free_buoycab++; if (!buoyance) buoyance=new Buoyance(water);};
 			if (type=='D' || type == 'F' || type == 'S')

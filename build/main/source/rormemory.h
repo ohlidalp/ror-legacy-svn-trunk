@@ -22,12 +22,7 @@ along with Rigs of Rods.  If not, see <http://www.gnu.org/licenses/>.
 #ifndef RORMEMORY_H__
 #define RORMEMORY_H__
 
-#include <vector>
-#include "nedmalloc.h"
-
-void *ror_malloc(size_t size);
-void *ror_calloc(size_t no, size_t size);
-void ror_free(void *mem);
-unsigned long getMemoryAllocated();
+#include "memoryWrapper.h"
+#include "memoryAllocatedObject.h"
 
 #endif //RORMEMORY_H__

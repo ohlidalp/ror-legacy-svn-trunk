@@ -37,7 +37,7 @@ class ExampleFrameListener;
 
 #include "Beam.h"
 
-class BeamFactory : public StreamableFactory < BeamFactory, Beam >
+class BeamFactory : public StreamableFactory < BeamFactory, Beam >, public MemoryAllocatedObject
 {
 	friend class Network;
 	friend class ExampleFrameListener;

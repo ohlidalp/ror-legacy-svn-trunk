@@ -21,6 +21,7 @@ along with Rigs of Rods.  If not, see <http://www.gnu.org/licenses/>.
 #ifndef __CmdKeyInertia_H__
 #define __CmdKeyInertia_H__
 #include "OgrePrerequisites.h"
+#include "rormemory.h"
 
 
 struct cmdKeyInertia_struct
@@ -33,7 +34,7 @@ struct cmdKeyInertia_struct
 	Ogre::Real time;
 };
 
-class CmdKeyInertia
+class CmdKeyInertia : public MemoryAllocatedObject
 {
 	
 public:

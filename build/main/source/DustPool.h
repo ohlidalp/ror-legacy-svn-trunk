@@ -26,6 +26,7 @@ along with Rigs of Rods.  If not, see <http://www.gnu.org/licenses/>.
 #include "OgrePrerequisites.h"
 #include "OgreVector3.h"
 #include "OgreColourValue.h"
+#include "rormemory.h"
 //#include "OgreDeflectorPlaneAffector.h"
 
 class Water;
@@ -40,7 +41,7 @@ typedef struct dustatom_t
 	float rate;
 } dustatom_t;
 
-class DustPool
+class DustPool : public MemoryAllocatedObject
 {
 protected:
 	Water* w;

@@ -27,7 +27,7 @@ using namespace Ogre;
 #include "Beam.h"
 #include "SoundScriptManager.h"
 
-class Screwprop
+class Screwprop : public MemoryAllocatedObject
 {
 private:
 	node_t *nodes;

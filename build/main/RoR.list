@@ -113,6 +113,8 @@ set (HEADER_FILES
   source/malloc.c.h
   source/nedmalloc.h
   source/rormemory.h
+  source/memoryWrapper.h
+  source/memoryAllocatedObject.h
 )
 set (SOURCE_FILES
   source/airbrake.cpp
@@ -214,7 +216,7 @@ set (SOURCE_FILES
   source/LoadingWindow.cpp
   source/Console.cpp
   source/nedmalloc.c
-  source/rormemory.cpp
+  source/memoryWrapper.cpp
   source/COPYING
   source/ror.ico
 )
@@ -311,6 +313,7 @@ SOURCE_GROUP("Source Files" FILES
   source/WaterOld.cpp
   source/writeTextToTexture.cpp
   source/xfiregameclient.cpp
+  source/nedmalloc.c
 )
 SOURCE_GROUP("Header Files" FILES
   source/aeroengine.h
@@ -445,7 +448,9 @@ SOURCE_GROUP("Memory(nedmalloc)" FILES
   source/malloc.c.h
   source/nedmalloc.c
   source/nedmalloc.h
-  source/rormemory.cpp
+  source/memoryWrapper.cpp
+  source/memoryWrapper.h
+  source/memoryAllocatedObject.h
   source/rormemory.h
 )
 SOURCE_GROUP("" FILES

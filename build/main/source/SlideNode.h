@@ -25,6 +25,7 @@ along with Rigs of Rods.  If not, see <http://www.gnu.org/licenses/>.
 #define SLIDENODE_H_
 
 #include "Beam.h"
+#include "rormemory.h"
 #include <limits>
 
 /** 
@@ -107,7 +108,7 @@ static inline Ogre::Vector3 nearestPointOnLine(const Ogre::Vector3& pt1,
 /**
  * 
  */
-class Rail
+class Rail : public MemoryAllocatedObject
 {
 // Members /////////////////////////////////////////////////////////////////////
 private:
@@ -130,7 +131,7 @@ public:
 /**
  * 
  */
-class RailGroup
+class RailGroup : public MemoryAllocatedObject
 {
 // Members /////////////////////////////////////////////////////////////////////
 public: 
