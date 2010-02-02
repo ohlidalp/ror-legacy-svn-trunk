@@ -428,7 +428,7 @@ void install_crashrpt()
 
 	char tmp[512]="";
 	sprintf(tmp, "http://api.rigsofrods.com/crashreport/?version=%s_%s", __DATE__, __TIME__);
-	for(int i=0;i<strnlen(tmp, 512);i++)
+	for(unsigned int i=0;i<strnlen(tmp, 512);i++)
 	{
 		if(tmp[i] == ' ')
 			tmp[i] = '_';
