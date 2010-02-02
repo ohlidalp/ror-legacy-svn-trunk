@@ -215,7 +215,7 @@ set (SOURCE_FILES
   source/SelectorWindow.cpp
   source/LoadingWindow.cpp
   source/Console.cpp
-  source/nedmalloc.c
+  source/nedmalloc.cpp
   source/memoryWrapper.cpp
   source/COPYING
   source/ror.ico
@@ -255,7 +255,7 @@ SOURCE_GROUP("GUI" FILES
 
 SOURCE_GROUP("Memory Management" FILES
   source/malloc.c.h
-  source/nedmalloc.c
+  source/nedmalloc.cpp
   source/nedmalloc.h
   source/memoryWrapper.cpp
   source/memoryWrapper.h
