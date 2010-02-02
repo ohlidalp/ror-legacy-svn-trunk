@@ -220,208 +220,7 @@ set (SOURCE_FILES
   source/COPYING
   source/ror.ico
 )
-SOURCE_GROUP("Source Files" FILES
-  source/airbrake.cpp
-  source/Airfoil.cpp
-  source/AITraffic.cpp
-  source/AITraffic_Common.cpp
-  source/AITrafficFactory.cpp
-  source/as_ogre.cpp
-  source/autopilot.cpp
-  source/Beam.cpp
-  source/BeamFactory.cpp
-  source/BeamSlideNode.cpp
-  source/BeamStats.cpp
-  source/buoyance.cpp
-  source/CacheSystem.cpp
-  source/Character.cpp
-  source/CharacterFactory.cpp
-  source/ChatSystem.cpp
-  source/CmdKeyInertia.cpp
-  source/collisions.cpp
-  source/CollisionTools.cpp
-  source/ColoredTextAreaOverlayElement.cpp
-  source/dashboard.cpp
-  source/DepthOfFieldEffect.cpp
-  source/Differentials.cpp
-  source/DustManager.cpp
-  source/DustPool.cpp
-  source/DynamicLines.cpp
-  source/DynamicRenderable.cpp
-  source/editor.cpp
-  source/engine.cpp
-  source/envmap.cpp
-  source/errorutils.cpp
-  source/ExampleFrameListener.cpp
-  source/FlexAirfoil.cpp
-  source/FlexBody.cpp
-  source/FlexMesh.cpp
-  source/FlexMeshWheel.cpp
-  source/FlexObj.cpp
-  source/ForceFeedback.cpp
-  source/gui_friction.cpp
-  source/gui_inputmanager.cpp
-  source/gui_manager.cpp
-  source/gui_menu.cpp
-  source/hdrlistener.cpp
-  source/Heathaze.cpp
-  source/HydraxWater.cpp
-  source/icon.rc
-  source/IngameConsole.cpp
-  source/InputEngine.cpp
-  source/Landusemap.cpp
-  source/language.cpp
-  source/Lens.cpp
-  source/luasystem.cpp
-  source/main.cpp
-  source/materialFunctionMapper.cpp
-  source/mirrors.cpp
-  source/MovableText.cpp
-  source/mplatform_base.cpp
-  source/mplatform_fd.cpp
-  source/network.cpp
-  source/NetworkStreamManager.cpp
-  source/OgreLineStreamOverlayElement.cpp
-  source/opencl_beam.cpp
-  source/PlayerColours.cpp
-  source/PointColDetector.cpp
-  source/PositionStorage.cpp
-  source/ProceduralManager.cpp
-  source/Replay.cpp
-  source/Road.cpp
-  source/road2.cpp
-  source/ScopeLog.cpp
-  source/screwprop.cpp
-  source/ScriptEngine.cpp
-  source/Settings.cpp
-  source/sha1.cpp
-  source/Skidmark.cpp
-  source/skin.cpp
-  source/skinmanager.cpp
-  source/SlideNode.cpp
-  source/softshadowlistener.cpp
-  source/SoundManager.cpp
-  source/SoundScriptManager.cpp
-  source/ssaolistener.cpp
-  source/Streamable.cpp
-  source/TorqueCurve.cpp
-  source/TruckHUD.cpp
-  source/tsmheightfinder.cpp
-  source/turbojet.cpp
-  source/turboprop.cpp
-  source/utils.cpp
-  source/WaterOld.cpp
-  source/writeTextToTexture.cpp
-  source/xfiregameclient.cpp
-  source/nedmalloc.c
-)
-SOURCE_GROUP("Header Files" FILES
-  source/aeroengine.h
-  source/airbrake.h
-  source/Airfoil.h
-  source/AITraffic.h
-  source/AITraffic_Common.h
-  source/AITrafficFactory.h
-  source/approxmath.h
-  source/as_ogre.h
-  source/autopilot.h
-  source/Beam.h
-  source/BeamFactory.h
-  source/BeamStats.h
-  source/buoyance.h
-  source/CacheSystem.h
-  source/Character.h
-  source/CharacterFactory.h
-  source/ChatSystem.h
-  source/CmdKeyInertia.h
-  source/collisions.h
-  source/CollisionTools.h
-  source/ColoredTextAreaOverlayElement.h
-  source/ColoredTextAreaOverlayElementFactory.h
-  source/dashboard.h
-  source/DepthOfFieldEffect.h
-  source/Differentials.h
-  source/DustManager.h
-  source/DustPool.h
-  source/DynamicLines.h
-  source/DynamicRenderable.h
-  source/editor.h
-  source/engine.h
-  source/envmap.h
-  source/errorutils.h
-  source/ExampleFrameListener.h
-  source/FlexAirfoil.h
-  source/FlexBody.h
-  source/FlexMesh.h
-  source/FlexMeshWheel.h
-  source/FlexObj.h
-  source/ForceFeedback.h
-  source/groundmodel.h
-  source/gui_friction.h
-  source/gui_inputmanager.h
-  source/gui_manager.h
-  source/gui_menu.h
-  source/hdrlistener.h
-  source/Heathaze.h
-  source/heightfinder.h
-  source/HydraxWater.h
-  source/ImprovedConfigFile.h
-  source/IngameConsole.h
-  source/InputEngine.h
-  source/Landusemap.h
-  source/language.h
-  source/Lens.h
-  source/luasystem.h
-  source/main.h
-  source/materialFunctionMapper.h
-  source/mirrors.h
-  source/MovableText.h
-  source/mplatform_base.h
-  source/mplatform_fd.h
-  source/network.h
-  source/networkinfo.h
-  source/NetworkStreamManager.h
-  source/OgreLineStreamOverlayElement.h
-  source/opencl_beam.h
-  source/PlayerColours.h
-  source/PointColDetector.h
-  source/PositionStorage.h
-  source/ProceduralManager.h
-  source/pstdint.h
-  source/RandomTreeLoader.h
-  source/Replay.h
-  source/resource.h
-  source/ResourceBuffer.h
-  source/Road.h
-  source/road2.h
-  source/rornet.h
-  source/ScopeLog.h
-  source/screwprop.h
-  source/ScriptEngine.h
-  source/Settings.h
-  source/sha1.h
-  source/SimpleOpt.h
-  source/Singleton.h
-  source/Skidmark.h
-  source/skin.h
-  source/skinmanager.h
-  source/SlideNode.h
-  source/softshadowlistener.h
-  source/SoundManager.h
-  source/SoundScriptManager.h
-  source/ssaolistener.h
-  source/Streamable.h
-  source/StreamableFactory.h
-  source/TorqueCurve.h
-  source/TruckHUD.h
-  source/turbojet.h
-  source/turboprop.h
-  source/utils.h
-  source/water.h
-  source/WaterOld.h
-  source/writeTextToTexture.h
-  source/xfiregameclient.h
-)
+
 SOURCE_GROUP("GUI\\MiniMap" FILES
   source/MapControl.cpp
   source/MapControl.h
@@ -442,9 +241,19 @@ SOURCE_GROUP("GUI\\Console" FILES
   source/Console.cpp
   source/Console.h
 )
+
 SOURCE_GROUP("GUI" FILES
+  source/gui_inputmanager.h
+  source/gui_inputmanager.cpp
+  source/gui_manager.h
+  source/gui_manager.cpp
+  source/gui_menu.h
+  source/gui_menu.cpp  
+  source/gui_friction.h
+  source/gui_friction.cpp
 )
-SOURCE_GROUP("Memory(nedmalloc)" FILES
+
+SOURCE_GROUP("Memory Management" FILES
   source/malloc.c.h
   source/nedmalloc.c
   source/nedmalloc.h
@@ -456,5 +265,229 @@ SOURCE_GROUP("Memory(nedmalloc)" FILES
 SOURCE_GROUP("" FILES
   CMakeLists.txt
   source/COPYING
+  source/icon.rc
   source/ror.ico
+  source/resource.h
+)
+
+SOURCE_GROUP("GUI-related" FILES
+  source/ColoredTextAreaOverlayElement.h
+  source/ColoredTextAreaOverlayElement.cpp
+  source/ColoredTextAreaOverlayElementFactory.h
+  source/dashboard.h
+  source/dashboard.cpp
+  source/IngameConsole.h
+  source/IngameConsole.cpp
+)
+
+SOURCE_GROUP("GFX" FILES
+  source/DepthOfFieldEffect.h
+  source/DepthOfFieldEffect.cpp
+  source/DustManager.h
+  source/DustManager.cpp
+  source/DustPool.h
+  source/DustPool.cpp
+  source/DynamicLines.h
+  source/DynamicLines.cpp
+  source/DynamicRenderable.h  
+  source/DynamicRenderable.cpp  
+  source/envmap.h
+  source/envmap.cpp
+  source/hdrlistener.h
+  source/hdrlistener.cpp
+  source/Heathaze.h
+  source/Heathaze.cpp
+  source/HydraxWater.h
+  source/HydraxWater.cpp
+  source/Lens.h
+  source/Lens.cpp
+  source/MovableText.h
+  source/MovableText.cpp
+  source/OgreLineStreamOverlayElement.h
+  source/OgreLineStreamOverlayElement.cpp
+  source/Skidmark.h
+  source/Skidmark.cpp
+  source/softshadowlistener.h
+  source/softshadowlistener.cpp
+  source/ssaolistener.h
+  source/ssaolistener.cpp
+  source/water.h
+  source/WaterOld.h
+  source/WaterOld.cpp
+  source/writeTextToTexture.h
+  source/writeTextToTexture.cpp
+  source/RandomTreeLoader.h
+)
+
+SOURCE_GROUP("Script Engine" FILES
+  source/as_ogre.h
+  source/as_ogre.cpp
+  source/luasystem.h
+  source/luasystem.cpp
+  source/ScriptEngine.h
+  source/ScriptEngine.cpp
+  source/as_ogre.h
+)
+
+SOURCE_GROUP("Beam Engine" FILES
+  source/heightfinder.h
+  source/aeroengine.h
+  source/groundmodel.h
+  source/Airfoil.h
+  source/Airfoil.cpp
+  source/Beam.h
+  source/Beam.cpp
+  source/BeamFactory.h
+  source/BeamFactory.cpp
+  source/BeamSlideNode.cpp
+  source/BeamStats.h
+  source/BeamStats.cpp
+  source/buoyance.h
+  source/buoyance.cpp
+  source/CmdKeyInertia.h
+  source/CmdKeyInertia.cpp
+  source/collisions.h
+  source/collisions.cpp
+  source/CollisionTools.h
+  source/CollisionTools.cpp
+  source/Differentials.h
+  source/Differentials.cpp
+  source/FlexAirfoil.h
+  source/FlexAirfoil.cpp
+  source/FlexBody.h
+  source/FlexBody.cpp
+  source/FlexMesh.h
+  source/FlexMesh.cpp
+  source/FlexMeshWheel.h
+  source/FlexMeshWheel.cpp
+  source/FlexObj.h
+  source/FlexObj.cpp
+  source/Landusemap.h
+  source/Landusemap.cpp
+  source/opencl_beam.h
+  source/opencl_beam.cpp
+  source/PointColDetector.h
+  source/PointColDetector.cpp
+  source/PositionStorage.h
+  source/PositionStorage.cpp
+  source/screwprop.h
+  source/screwprop.cpp
+  source/SlideNode.h
+  source/SlideNode.cpp
+  source/tsmheightfinder.h
+  source/tsmheightfinder.cpp
+  source/turbojet.h
+  source/turbojet.cpp
+  source/turboprop.h
+  source/turboprop.cpp
+  source/airbrake.h
+  source/airbrake.cpp
+  source/airbrake.h
+  source/approxmath.h
+  
+)
+
+SOURCE_GROUP("Game Engine" FILES
+  source/autopilot.h
+  source/autopilot.cpp
+  source/AITraffic.h
+  source/AITraffic.cpp
+  source/AITraffic_Common.h
+  source/AITraffic_Common.cpp
+  source/AITrafficFactory.h
+  source/AITrafficFactory.cpp
+  source/AITraffic.h
+  source/AITraffic_Common.h
+  source/AITrafficFactory.h
+  source/CacheSystem.h
+  source/CacheSystem.cpp
+  source/Character.h
+  source/Character.cpp
+  source/CharacterFactory.h
+  source/CharacterFactory.cpp
+  source/ChatSystem.h
+  source/ChatSystem.cpp
+  source/editor.h
+  source/editor.cpp
+  source/engine.h
+  source/engine.cpp
+  source/ExampleFrameListener.h
+  source/ExampleFrameListener.cpp
+  source/main.h
+  source/main.cpp
+  source/materialFunctionMapper.h
+  source/materialFunctionMapper.cpp
+  source/mirrors.h
+  source/mirrors.cpp
+  source/PlayerColours.h
+  source/PlayerColours.cpp
+  source/ProceduralManager.h
+  source/ProceduralManager.cpp
+  source/Replay.h
+  source/Replay.cpp
+  source/Road.h
+  source/Road.cpp
+  source/road2.h
+  source/road2.cpp
+  source/skin.h
+  source/skin.cpp
+  source/skinmanager.h
+  source/skinmanager.cpp
+  source/TorqueCurve.h
+  source/TorqueCurve.cpp
+  source/TruckHUD.h
+  source/TruckHUD.cpp
+)
+
+
+SOURCE_GROUP("Input/Output Engine" FILES
+  source/ForceFeedback.h
+  source/ForceFeedback.cpp
+  source/InputEngine.h
+  source/InputEngine.cpp
+  source/mplatform_base.h
+  source/mplatform_base.cpp
+  source/mplatform_fd.h
+  source/mplatform_fd.cpp
+)
+
+SOURCE_GROUP("Utilities" FILES
+  source/errorutils.h
+  source/errorutils.cpp
+  source/language.h
+  source/language.cpp
+  source/ScopeLog.h
+  source/ScopeLog.cpp
+  source/Settings.h
+  source/Settings.cpp
+  source/sha1.h
+  source/sha1.cpp
+  source/utils.h
+  source/utils.cpp
+  source/xfiregameclient.h
+  source/xfiregameclient.cpp
+  source/ImprovedConfigFile.h
+  source/pstdint.h
+  source/ResourceBuffer.h
+  source/SimpleOpt.h
+  source/Singleton.h
+)
+
+SOURCE_GROUP("Sound Engine" FILES
+  source/SoundManager.h
+  source/SoundManager.cpp
+  source/SoundScriptManager.h
+  source/SoundScriptManager.cpp
+)
+
+SOURCE_GROUP("Network" FILES
+  source/rornet.h
+  source/network.h
+  source/networkinfo.h
+  source/network.cpp
+  source/NetworkStreamManager.h
+  source/NetworkStreamManager.cpp
+  source/Streamable.h
+  source/Streamable.cpp
+  source/StreamableFactory.h
 )
