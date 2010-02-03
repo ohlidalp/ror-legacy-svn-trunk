@@ -426,48 +426,13 @@ SET_TARGET_PROPERTIES(${LIBNAME} PROPERTIES VERSION ${LIB_VERSION}
 IF(WIN32)
     SET_TARGET_PROPERTIES(${LIBNAME} PROPERTIES PREFIX "")
 ENDIF()
-IF(WIN32)
-  SET_TARGET_PROPERTIES(${LIBNAME} PROPERTIES COMPILE_FLAGS "/MP")
-ENDIF(WIN32)
 TARGET_LINK_LIBRARIES(${LIBNAME} ${EXTRA_LIBS})
 
-# Add an install target here
-INSTALL(TARGETS ${LIBNAME}
-        RUNTIME DESTINATION ${BIN_DIR}
-        LIBRARY DESTINATION ${BIN_DIR}
-        ARCHIVE DESTINATION ${LIB_DIR}
-)
-#INSTALL(FILES include/AL/al.h
-#              include/AL/alc.h
-#              include/AL/alext.h
-#        DESTINATION include/AL
-#)
-#INSTALL(FILES "${OpenAL_BINARY_DIR}/admin/pkgconfig/openal.pc"
-#        DESTINATION "${LIB_INSTALL_DIR}/pkgconfig")
-
-# Add an install target here
-INSTALL(TARGETS ${LIBNAME}
-        RUNTIME DESTINATION ${BIN_DIR}
-        LIBRARY DESTINATION ${BIN_DIR}
-        ARCHIVE DESTINATION ${LIB_DIR}
-)
 
 # Install alsoft.conf configuration file
-IF(ALSOFT_CONFIG)
-    INSTALL(FILES alsoftrc.sample
-            DESTINATION /etc/openal
-            RENAME alsoft.conf
-    )
-ENDIF()
-
 IF(EXAMPLES)
     ADD_EXECUTABLE(openal-info examples/openal-info.c)
     TARGET_LINK_LIBRARIES(openal-info ${LIBNAME})
-    INSTALL(TARGETS openal-info
-            RUNTIME DESTINATION ${BIN_DIR}
-            LIBRARY DESTINATION ${BIN_DIR}
-            ARCHIVE DESTINATION ${LIB_DIR}
-    )
 ENDIF()
 
 # removed to decrease silly info on screen

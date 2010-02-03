@@ -36,12 +36,6 @@ target_link_libraries(Plugin_BSPSceneManager OgreMain)
 if (NOT OGRE_STATIC)
   set_target_properties(Plugin_BSPSceneManager PROPERTIES
     COMPILE_DEFINITIONS OGRE_BSPPLUGIN_EXPORTS
-  ) 
+  )
 endif ()
 set_target_properties(Plugin_BSPSceneManager PROPERTIES PREFIX "")
-
-install(TARGETS Plugin_BSPSceneManager
-      RUNTIME DESTINATION ${BIN_DIR}
-      LIBRARY DESTINATION ${BIN_DIR}
-      ARCHIVE DESTINATION ${LIB_DIR})
-      

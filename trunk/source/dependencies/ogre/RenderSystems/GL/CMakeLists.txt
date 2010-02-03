@@ -127,7 +127,7 @@ set(ATIFS_FILES
 
 # Add system specific settings
 if (WIN32)
-  set(PLATFORM_FILES 
+  set(PLATFORM_FILES
     include/OgreWin32Context.h
     include/OgreWin32GLSupport.h
     include/OgreWin32Prerequisites.h
@@ -144,7 +144,7 @@ if (WIN32)
   source_group(ATIFS FILES ${ATIFS_FILES})
   source_group(GLSL FILES ${GLSL_FILES})
 elseif (UNIX)
-  set(PLATFORM_FILES 
+  set(PLATFORM_FILES
     include/GLX/OgreGLXContext.h
     include/GLX/OgreGLXGLSupport.h
     include/GLX/OgreGLXRenderTexture.h
@@ -182,9 +182,3 @@ if (NOT OGRE_STATIC)
   )
 endif ()
 set_target_properties(RenderSystem_GL PROPERTIES PREFIX "")
-
-install(TARGETS RenderSystem_GL
-      RUNTIME DESTINATION ${BIN_DIR}
-      LIBRARY DESTINATION ${BIN_DIR}
-      ARCHIVE DESTINATION ${LIB_DIR})
-      

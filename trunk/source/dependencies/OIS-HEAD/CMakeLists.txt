@@ -3,7 +3,7 @@ FILE(GLOB_RECURSE ois_headers  ois/includes/*.h)
 include_directories (ois/includes)
 
 # general flags
-add_definitions("-D_CRT_SECURE_NO_WARNINGS -DOIS_DYNAMIC_LIB -DOIS_NONCLIENT_BUILD")
+add_definitions("-DOIS_DYNAMIC_LIB -DOIS_NONCLIENT_BUILD")
 
 SET(EnableFunctionLevelLinking TRUE)
 SET(LIB_MAJOR_VERSION "1")
@@ -11,13 +11,6 @@ SET(LIB_MINOR_VERSION "5")
 SET(LIB_BUILD_VERSION "0")
 SET(LIB_VERSION "${LIB_MAJOR_VERSION}.${LIB_MINOR_VERSION}.${LIB_BUILD_VERSION}")
 SET(LIB_INSTALL_DIR "lib")
-
-IF(WIN32)
-  add_definitions("-D_WIN32")
-  include_directories(${DirectX_INCLUDE_DIR})
-ELSEIF(UNIX)
-ELSEIF(APPLE)
-ENDIF(WIN32)
 
 # platform
 IF(WIN32)
@@ -41,9 +34,7 @@ add_library(ois SHARED ${ois_src} ${ois_headers})
 #IF(WIN32)
 #    SET_TARGET_PROPERTIES(${LIBNAME} PROPERTIES PREFIX "")
 #ENDIF()
-IF(WIN32)
-  SET_TARGET_PROPERTIES(ois PROPERTIES COMPILE_FLAGS "/MP")
-ENDIF(WIN32)
+
 # platform - libs
 IF(WIN32)
   target_link_libraries(ois "dxguid.lib dinput8.lib")
@@ -51,9 +42,3 @@ ELSEIF(UNIX)
   TARGET_LINK_LIBRARIES(ois ${SDL_LIBRARY})
 ELSEIF(APPLE)
 ENDIF(WIN32)
-
-install(TARGETS ois
-      RUNTIME DESTINATION ${BIN_DIR}
-      LIBRARY DESTINATION ${BIN_DIR}
-      ARCHIVE DESTINATION ${LIB_DIR})
-      

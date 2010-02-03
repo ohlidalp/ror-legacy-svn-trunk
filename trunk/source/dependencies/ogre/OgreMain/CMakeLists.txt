@@ -424,7 +424,7 @@ if (WIN32)
     src/WIN32/OgreTimer.cpp
     src/WIN32/OgreWin32Resources.rc
     src/WIN32/winres.h
-  )  
+  )
   set(RESOURCE_FILES
     src/WIN32/resource.h
     src/WIN32/OgreWin32Resources.rc
@@ -476,8 +476,3 @@ if (OGRE_CONFIG_THREADS)
 endif ()
 
 copy_file(OgreMain ${CMAKE_BINARY_DIR}/Samples)
-
-install(TARGETS OgreMain
-      RUNTIME DESTINATION ${BIN_DIR}
-      LIBRARY DESTINATION ${BIN_DIR}
-      ARCHIVE DESTINATION ${LIB_DIR})

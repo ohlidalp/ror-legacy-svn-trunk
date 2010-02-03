@@ -5,17 +5,6 @@ include_directories (include ${OGRE_INCLUDE_DIR})
 # the final lib
 add_library(caelum SHARED ${caelum_src})
 
-IF(WIN32)
-  SET_TARGET_PROPERTIES(caelum PROPERTIES COMPILE_FLAGS "/MP")
-ENDIF(WIN32)
-
 # this is for windows only, since windows is stupid ...
 add_dependencies(caelum OgreMain)
 target_link_libraries(caelum OgreMain)
-
-install(TARGETS caelum
-      RUNTIME DESTINATION ${BIN_DIR}
-      LIBRARY DESTINATION ${BIN_DIR}
-      ARCHIVE DESTINATION ${LIB_DIR})
-      
-      
