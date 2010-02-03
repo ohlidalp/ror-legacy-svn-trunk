@@ -16,6 +16,7 @@ include_directories (${MYGUI_INCLUDE_DIR})
 
 IF(WIN32)
   include_directories (${DirectX_INCLUDE_DIR})
+  add_definitions("-DWIN32_LEAN_AND_MEAN -DNOMINMAX")
   link_directories("$ENV{DXSDK_DIR}\\Lib\\x86")
 ELSEIF(LINUX)
   add_definitions("-Wno-float-equal")

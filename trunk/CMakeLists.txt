@@ -14,17 +14,17 @@ IF(NOT CMAKE_BUILD_TYPE)
       FORCE)
 ENDIF(NOT CMAKE_BUILD_TYPE)
 
+# global cmake options
+SET(BUILD_SHARED_LIBS ON)
+
 # setup paths
-SET(ROR_DEPENDENCY_DIR       "${RoR_SOURCE_DIR}/source/dependencies/")
+SET(ROR_DEPENDENCY_DIR       "${RoR_SOURCE_DIR}/source/dependencies")
 SET(RUNTIME_OUTPUT_DIRECTORY "${RoR_SOURCE_DIR}/bin/")
 SET(LIBRARY_OUTPUT_DIRECTORY "${RoR_SOURCE_DIR}/lib/")
 SET(ARCHIVE_OUTPUT_DIRECTORY "${RoR_SOURCE_DIR}/lib/")
 SET(EXECUTABLE_OUTPUT_PATH   ${RUNTIME_OUTPUT_DIRECTORY})
 SET(LIBRARY_OUTPUT_PATH      ${RUNTIME_OUTPUT_DIRECTORY})
 SET(RoR_Dependencies_CMAKE_DIR "${ROR_DEPENDENCY_DIR}/cmake")
-
-# global cmake options
-SET(BUILD_SHARED_LIBS ON)
 
 # setup project specific  variables
 SET(OGRE_INCLUDE_DIR              ${ROR_DEPENDENCY_DIR}/ogre/OgreMain/include)
@@ -44,6 +44,29 @@ SET(WIN32PTHREADS_INCLUDE_DIR     ${ROR_DEPENDENCY_DIR}/pthreads/Pre-built.2/inc
 SET(WIN32PTHREADS_LIB             ${ROR_DEPENDENCY_DIR}/pthreads/Pre-built.2/lib/pthreadVC2.lib)
 SET(ROR_MAIN_SOURCE_DIR           ${RoR_SOURCE_DIR}/source/main/source)
 
+set(ROR_CMAKE_DEBUG FALSE)
+
+if(ROR_CMAKE_DEBUG)
+message("Used Directories:
+OGRE_INCLUDE_DIR:              ${OGRE_INCLUDE_DIR}
+OGRE_INCLUDE_DEPENDENCIES_DIR: ${OGRE_INCLUDE_DEPENDENCIES_DIR}
+OIS_INCLUDE_DIR:               ${OIS_INCLUDE_DIR}
+MYGUI_INCLUDE_DIR:             ${MYGUI_INCLUDE_DIR}
+AS_INCLUDE_DIR:                ${AS_INCLUDE_DIR}
+AS_ADDON_DIR:                  ${AS_ADDON_DIR}
+MYSOCKETW_INCLUDE_DIR:         ${MYSOCKETW_INCLUDE_DIR}
+CAELUM_INCLUDE_DIR:            ${CAELUM_INCLUDE_DIR}
+OPENAL_INCLUDE_DIR:            ${OPENAL_INCLUDE_DIR}
+MOFILEREADER_INCLUDE_DIR:      ${MOFILEREADER_INCLUDE_DIR}
+HYDRAX_INCLUDE_DIR:            ${HYDRAX_INCLUDE_DIR}
+PAGED_INCLUDE_DIR:             ${PAGED_INCLUDE_DIR}
+LUA_INCLUDE_DIR:               ${LUA_INCLUDE_DIR}
+WIN32PTHREADS_INCLUDE_DIR:     ${WIN32PTHREADS_INCLUDE_DIR}
+WIN32PTHREADS_LIB:             ${WIN32PTHREADS_LIB}
+ROR_MAIN_SOURCE_DIR:           ${ROR_MAIN_SOURCE_DIR}
+")
+endif(ROR_CMAKE_DEBUG)
+
 # RoR options
 option(ROR_BUILD_HYDRAX               "build RoR with HYDRAX water engine support" TRUE)
 option(ROR_BUILD_PAGED                "build RoR with Paged Geometry support (grass and trees)" TRUE)
@@ -56,6 +79,16 @@ option(ROR_BUILD_INSTALLER            "builds the wsync-installer tool" FALSE)
 set(ROR_BUILD_ANGELSCRIPT TRUE)
 set(ROR_BUILD_LUASCRIPT TRUE)
 
+# hide some settings
+mark_as_advanced(
+  CMAKE_DEBUG_POSTFIX
+  CMAKE_BACKWARDS_COMPATIBILITY
+  Boost_LIB_DIAGNOSTIC_DEFINITIONS
+  EXECUTABLE_OUTPUT_PATH
+  LIBRARY_OUTPUT_PATH
+)
+
+# enforce option dependencies
 IF(WIN32)
   set(ROR_BUILD_XFIRE TRUE)
   option(ROR_BUILD_CRASHRPT "build RoR with CrashRPT support (windows only, only use if you produce an official release: complicated)" FALSE)
@@ -70,18 +103,18 @@ ENDIF(WIN32)
 
 if(WIN32)
   # add multi processor compilation flags
-  set(CMAKE_CXX_FLAGS_RELEASE        "/MP")
-  set(CMAKE_CXX_FLAGS_MINSIZEREL     "/MP")
-  set(CMAKE_CXX_FLAGS_RELWITHDEBINFO "/MP")
-  set(CMAKE_CXX_FLAGS_DEBUG          "/MP")
+  set(CMAKE_CXX_FLAGS_RELEASE        "${CMAKE_CXX_FLAGS_RELEASE}        /MP /GL /Ox /Ob2 /Oi /Ot /Oy /fp:fast /GS- /MP")
+  set(CMAKE_CXX_FLAGS_MINSIZEREL     "${CMAKE_CXX_FLAGS_MINSIZEREL}     /MP")
+  set(CMAKE_CXX_FLAGS_RELWITHDEBINFO "${CMAKE_CXX_FLAGS_RELWITHDEBINFO} /MP /Od")
+  set(CMAKE_CXX_FLAGS_DEBUG          "${CMAKE_CXX_FLAGS_DEBUG}          /MP /Od")
   # some general flags
-  add_definitions("-DWIN32_LEAN_AND_MEAN -DNOMINMAX -D_CRT_SECURE_NO_WARNINGS")
+  add_definitions("-D_CRT_SECURE_NO_WARNINGS")
   include_directories(${DirectX_INCLUDE_DIR})
 
   set(CMAKE_EXE_LINKER_FLAGS_RELEASE      "${CMAKE_EXE_LINKER_FLAGS_RELEASE}      /SUBSYSTEM:WINDOWS /LTCG /OPT:REF /OPT:NOWIN98")
   set(CMAKE_EXE_LINKER_FLAGS_RelWithDebug "${CMAKE_EXE_LINKER_FLAGS_RelWithDebug} /SUBSYSTEM:CONSOLE /OPT:NOWIN98")
   set(CMAKE_EXE_LINKER_FLAGS_RELEASE      "${CMAKE_EXE_LINKER_FLAGS_RELEASE}      /GL /Ox /Ob2 /Oi /Ot /Oy /fp:fast /GS- /MP")
-  set(CMAKE_EXE_LINKER_FLAGS_RelWithDebug "${CMAKE_EXE_LINKER_FLAGS_RelWithDebug} /0d")
+  set(CMAKE_EXE_LINKER_FLAGS_RelWithDebug "${CMAKE_EXE_LINKER_FLAGS_RelWithDebug} /Od")
 ENDIF(WIN32)
 
 IF(UNIX)
@@ -90,3 +123,27 @@ IF(UNIX)
 endif(UNIX)
 
 add_subdirectory(source)
+
+IF(WIN32)
+	macro(copy_files GLOBPAT DESTINATION)
+	  file(GLOB COPY_FILES
+		RELATIVE ${CMAKE_CURRENT_SOURCE_DIR}
+		${GLOBPAT})
+	  add_custom_target(copy ALL
+		COMMENT "Copying files: ${GLOBPAT}")
+
+	  foreach(FILENAME ${COPY_FILES})
+		set(SRC "${CMAKE_CURRENT_SOURCE_DIR}/${FILENAME}")
+		set(DST "${DESTINATION}/${FILENAME}")
+
+		add_custom_command(
+		  TARGET copy
+		  COMMAND ${CMAKE_COMMAND} -E copy ${SRC} ${DST}
+		  )
+	  endforeach(FILENAME)
+	endmacro(copy_files)
+
+	copy_files(${RUNTIME_OUTPUT_DIRECTORY}/${CMAKE_CFG_INTDIR} ${RUNTIME_OUTPUT_DIRECTORY})
+ENDIF(WIN32)
+
+
