@@ -17,31 +17,5 @@ GNU General Public License for more details.
 You should have received a copy of the GNU General Public License
 along with Rigs of Rods.  If not, see <http://www.gnu.org/licenses/>.
 
-DIRECTORY CONTENTS
 
-build: build environment
-
-test: test environment (generated from build)
-
-deploy: upload environment (generated from test)
-
-tools: building tools (build->test, test->deploy)
-
-
-HOWTO BUILD (new style)
-1. Use CMake with source code in RoRdev\build, and build directory RoRdev\build\build
-2. Open project in RoRdev\build\build\RoR.sln
-3. Build target INSTALL
-4. Switch to test mode: RoRdev\build2test.py
-5. go to RoRdev\test\current to find the release directory
-6. download latest content pack from the sourceforge website: http://sourceforge.net/project/showfiles.php?group_id=252198
-
-HOWTO BUILD (new style) under linux
-1. make a new directory: mkdir RoRdev\build\build
-2. navigate to it: cd RoRdev\build\build
-3. execute: ccmake ..
-4. execute: make -j <your number of CPU cores +1>
-5. execute: make install
-6. Switch to test mode: cd RoRdev\ && python build2test.py
-7. go to RoRdev\test\current to find the release directory
-8. download latest content pack from the sourceforge website: http://sourceforge.net/project/showfiles.php?group_id=252198
+please read http://wiki.rigsofrods.com/pages/Developer_Wiki_Portal
