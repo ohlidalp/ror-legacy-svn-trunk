@@ -21,6 +21,7 @@ along with Rigs of Rods.  If not, see <http://www.gnu.org/licenses/>.
 #include "platform.h"
 #include "wx/wizard.h"
 #include "cevent.h"
+#include "wthread.h"
 
 #ifndef WX_PRECOMP
 	#include "wx/frame.h"

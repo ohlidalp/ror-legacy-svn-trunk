@@ -37,10 +37,6 @@ along with Rigs of Rods.  If not, see <http://www.gnu.org/licenses/>.
 #include "rormemory.h"
 #include "PlayerColours.h"
 
-#ifdef AITRAFFIC
-#include "AITrafficFactory.h"
-#endif
-
 #ifdef MPLATFORM
 #include "mplatform_fd.h"
 #endif
@@ -87,10 +83,6 @@ along with Rigs of Rods.  If not, see <http://www.gnu.org/licenses/>.
 #include "autopilot.h"
 #include "ResourceBuffer.h"
 #include "CacheSystem.h"
-
-#ifdef AITRAFFIC
-#include "AITraffic.h"
-#endif
 
 #ifdef PAGED
 # include "PagedGeometry.h"
@@ -320,10 +312,10 @@ void ExampleFrameListener::updateStats(void)
 		memoryDbg->setCaption(memoryText);
 
 
-		
+
 		float sumMem = TextureManager::getSingleton().getMemoryUsage() + CompositorManager::getSingleton().getMemoryUsage() + FontManager::getSingleton().getMemoryUsage() + GpuProgramManager::getSingleton().getMemoryUsage() + HighLevelGpuProgramManager ::getSingleton().getMemoryUsage() + MaterialManager::getSingleton().getMemoryUsage() + MeshManager::getSingleton().getMemoryUsage() + SkeletonManager::getSingleton().getMemoryUsage() + MaterialManager::getSingleton().getMemoryUsage();
 		String sumMemoryText = "Memory (Ogre): " + formatBytes(sumMem) + "\n";
-	
+
 		OverlayElement* memorySumDbg = OverlayManager::getSingleton().getOverlayElement("Core/CurrMemory");
 		memorySumDbg->setCaption(sumMemoryText);
 
@@ -726,7 +718,7 @@ void ExampleFrameListener::updateGUI(float dt)
 			forcefeedback->setForces(-trucks[current_truck]->ffforce.dotProduct(uroll)/10000.0,
 				trucks[current_truck]->ffforce.dotProduct(udir)/10000.0, trucks[current_truck]->WheelSpeed, trucks[current_truck]->hydrodircommand, trucks[current_truck]->ffhydro);
 		}
-		
+
 		//map update
 		//((TerrainSceneManager*)mSceneMgr)->getScale().x;
 
@@ -738,16 +730,16 @@ void ExampleFrameListener::updateGUI(float dt)
 		else batto->setMaterialName("tracks/batt-off");
 		if (trucks[current_truck]->parkingbrake) pbrakeo->setMaterialName("tracks/pbrake-on");
 		else pbrakeo->setMaterialName("tracks/pbrake-off");
-		
+
 		// TODO: FIX
 		if (trucks[current_truck]->isLocked())
 		{
 			lockedo->setMaterialName("tracks/locked-on");
-		} else 
+		} else
 		{
 			lockedo->setMaterialName("tracks/locked-off");
 		}
-		
+
 		if (trucks[current_truck]->isTied())
 		{
 			if (fabs(trucks[current_truck]->commandkey[0].commandValue) > 0.000001f)
@@ -1760,13 +1752,6 @@ ExampleFrameListener::ExampleFrameListener(RenderWindow* win, Camera* cam, Scene
 	if(net)
 		source = net->getUserID();
 
-#ifdef AITRAFFIC
-	if (netmode)
-	{
-		new AITrafficFactory(this, net, mSceneMgr);
-	}
-#endif //AITRAFFIC
-
 	// we need dust before we start the beam factory
 	initDust();
 
@@ -1909,9 +1894,6 @@ ExampleFrameListener::~ExampleFrameListener()
 	}
 	#endif
 
-//#ifdef AITRAFFIC
-//	if (aitraffic) delete(aitraffic);
-//#endif //AITRAFFIC
 }
 
 void ExampleFrameListener::loadNetTerrain(char *preselected_map)
@@ -6567,10 +6549,8 @@ void ExampleFrameListener::initTrucks(bool loadmanual, Ogre::String selected, Og
 
 	// load the rest in SP
 	// in netmode, dont load other trucks!
-#ifndef AITRAFFIC // - we spawn the trafficed trucks this way until we cannot command it via AITRAFFIC module
 	if (!netmode)
 	{
-#endif
 		int i;
 		for (i=0; i<truck_preload_num; i++)
 		{
@@ -6591,9 +6571,7 @@ void ExampleFrameListener::initTrucks(bool loadmanual, Ogre::String selected, Og
 			}
 		}
 
-#ifndef AITRAFFIC
 	}
-#endif
 	LogManager::getSingleton().logMessage("EFL: beam instanciated");
 
 	if(!enterTruck) setCurrentTruck(-1);
@@ -6665,7 +6643,7 @@ void ExampleFrameListener::setCurrentTruck(int v)
 		mouseOverlay->hide();
 		Vector3 position = Vector3::ZERO;
 		if(trucks[previous_truck])
-		{	
+		{
 			trucks[previous_truck]->prepareInside(false);
 
 			// this workaround enables trucks to spawn that have no cinecam. required for cmdline options
@@ -6800,14 +6778,6 @@ void ExampleFrameListener::setCurrentTruck(int v)
 	}
 #ifdef XFIRE
 	updateXFire();
-
-#ifdef AITRAFFIC
-	for (int i=0;i<free_truck;i++)
-		{
-			if (i!=current_truck) trucks[i]->state = TRAFFICED;
-		}
-#endif
-
 #endif
 }
 
@@ -7670,41 +7640,11 @@ bool ExampleFrameListener::frameStarted(const FrameEvent& evt)
 		}
 END OF OLD CODE */
 
-#ifdef AITRAFFIC
-		// Update traffic movement
-		AITraffic *aitraffic = AITrafficFactory::getSingleton().getTraffic();
-		if (aitraffic)
-			{
-				AITraffic *aitraffic = AITrafficFactory::getSingleton().getTraffic();
-				if (person)
-					{
-						aitraffic->nettraffic.playerpos = person->getPosition();
-						aitraffic->nettraffic.playerdir = person->getOrientation();
-					}
-				else
-					{
-						if (current_truck!=-1)
-							{
-								aitraffic->nettraffic.playerpos = trucks[current_truck]->getPosition();
-								// how to add orientation?
-							}
-						else
-							{
-								// that's impossible ... we are not with truck and not a person ... how?
-								aitraffic->nettraffic.playerpos = Ogre::Vector3(0,0,0);
-							}
-					}
-			}
-//		aitraffic->frameStep(evt.timeSinceLastFrame);		// we calculate this in VTC from this on
-
-
-#endif //AITRAFFIC
-
 		//we simulate one truck, it will take care of the others (except networked ones)
 		//this is the big "shaker"
 		if (current_truck!=-1)
 			trucks[current_truck]->frameStep(evt.timeSinceLastFrame, trucks, free_truck);
-		
+
 		//things always on
 		for (t=0; t<free_truck; t++)
 		{
@@ -7714,13 +7654,6 @@ END OF OLD CODE */
 			switch(trucks[t]->state)
 			{
 
-				case TRAFFICED:
-				{
-#ifdef AITRAFFIC
-					if (aitraffic) trucks[t]->calcTraffic(aitraffic->nettraffic.objs[t]);
-#endif //AITRAFFIC
-					break;
-				}
 				case NETWORKED:
 				{
 					trucks[t]->calcNetwork();
@@ -7992,13 +7925,6 @@ bool ExampleFrameListener::setCameraPositionWithCollision(Vector3 newPos)
 
 bool ExampleFrameListener::frameEnded(const FrameEvent& evt)
 {
-#ifdef AITRAFFIC	// send vehicle new positions
-	AITraffic *aitraffic = AITrafficFactory::getSingleton().getTraffic();
-	if (aitraffic)
-		{
-			aitraffic->sendStreamData();
-		}
-#endif
 	updateStats();
 
 #if OGRE_PLATFORM == OGRE_PLATFORM_WIN32

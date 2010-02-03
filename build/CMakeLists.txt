@@ -14,9 +14,10 @@ SET(RoR_Dependencies_CMAKE_DIR "${RoR_SOURCE_DIR}/dependencies/cmake")
 SET(BUILD_SHARED_LIBS ON)
 
 # setup ogre variables
-SET(OGRE_INCLUDE_DIR "${RoR_SOURCE_DIR}/dependencies/ogrenew/OgreMain/include")
 SET(OGRE_LIBRARIES "OgreMain")
-SET(OGRE_LIB_DIR "${RoR_SOURCE_DIR}/dependencies/ogrenew/lib")
+SET(OGRE_DIR "ogre")
+SET(OGRE_INCLUDE_DIR ${RoR_SOURCE_DIR}/dependencies/${OGRE_DIR}/OgreMain/include)
+SET(OGRE_INCLUDE_DEPENDENCIES_DIR ${RoR_SOURCE_DIR}/dependencies/${OGRE_DIR}/Dependencies/include)
 mark_as_advanced(OGRE_INCLUDE_DIR OGRE_LIBRARIES OGRE_LIB_DIR)
 
 IF(WIN32)
@@ -30,16 +31,6 @@ ELSEIF(APPLE)
   add_definitions("-DNWINDOWS")
 ENDIF(WIN32)
 
-option(ROR_OGRE_NEWER "use Ogre 1.6.x instead of 1.4.3 (recommeneded)" TRUE)
-if(ROR_OGRE_NEWER)
- #ogre 1.6 resides in ogre directory
- SET(OGRE_DIR "ogre")
-ELSE(ROR_OGRE_NEWER)
- #ogre 1.4 resides in ogrenew directory
- SET(OGRE_DIR "ogrenew")
-ENDIF(ROR_OGRE_NEWER)
-SET(OGRE_INCLUDE_DIR ${RoR_SOURCE_DIR}/dependencies/${OGRE_DIR}/OgreMain/include)
-SET(OGRE_INCLUDE_DEPENDENCIES_DIR ${RoR_SOURCE_DIR}/dependencies/${OGRE_DIR}/Dependencies/include)
 
 
 # build types
@@ -77,10 +68,6 @@ option(ROR_BUILD_PAGED "build RoR with Paged Geometry support (grass and trees)"
 option(ROR_BUILD_PAGED_SF "use latest Paged Geometry support from SF" FALSE)
 
 option(ROR_BUILD_CONFIGURATOR "builds the RoRConfig" TRUE)
-
-option(ROR_BUILD_TRAFFIC_SUPPORT "adds AI traffic support to RoR" FALSE)
-option(ROR_BUILD_OPENCL_SUPPORT "adds OpenCL support to ROR" FALSE)
-
 option(ROR_BUILD_LAYOUTEDITOR "builds a tool to construct GUI layouts" FALSE)
 
 # optimization things
@@ -90,9 +77,7 @@ option(ROR_USE_OPTIMIZATIONS_WINDOWS "optimize build, gives more FPS, but needs 
 #option(ROR_BUILD_ANGELSCRIPT "build and use the new scripting engine" FALSE)
 set(ROR_BUILD_ANGELSCRIPT TRUE)
 option(ROR_BUILD_ANGELSCRIPT_COMPILER "build the AS compiler tool." FALSE)
-option(WSYNC_BUILD_WSYNC "builds the wsync tool" FALSE)
-#set(WSYNC_BUILD_WSYNC FALSE)
-option(WSYNC_BUILD_INSTALLER "builds the wsync-installer tool" FALSE)
+option(ROR_BUILD_INSTALLER "builds the wsync-installer tool" FALSE)
 #option(ROR_BUILD_LUASCRIPT "adds the LUA Scripting engine" TRUE)
 set(ROR_BUILD_LUASCRIPT TRUE)
 
@@ -123,18 +108,9 @@ IF(ROR_BUILD_CONFIGURATOR)
   add_subdirectory(configurator)
 ENDIF(ROR_BUILD_CONFIGURATOR)
 
-IF(WSYNC_BUILD_WSYNC)
-  add_subdirectory(wsync)
-ENDIF(WSYNC_BUILD_WSYNC)
-
-IF(WSYNC_BUILD_INSTALLER)
-  if(WSYNC_BUILD_WSYNC)
-    add_subdirectory(installer)
-  else(WSYNC_BUILD_WSYNC)
-    message("to build the installer, you need to build wsync as well. Disabling the installer.")
-  endif(WSYNC_BUILD_WSYNC)
-ENDIF(WSYNC_BUILD_INSTALLER)
-
+IF(ROR_BUILD_INSTALLER)
+  add_subdirectory(installer)
+ENDIF(ROR_BUILD_INSTALLER)
 
 #always build the layout editor
 IF(ROR_BUILD_LAYOUTEDITOR)

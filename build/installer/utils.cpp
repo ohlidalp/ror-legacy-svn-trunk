@@ -2,6 +2,12 @@
 #include "wxStrel.h"
 #include "platform.h"
 
+#include <boost/algorithm/string.hpp>
+
+using namespace boost::asio;
+using namespace boost::asio::ip;
+using namespace boost::filesystem;
+
 BEGIN_EVENT_TABLE(myClickBitmap, wxStaticBitmap)
     EVT_LEFT_UP(myClickBitmap::click)
 END_EVENT_TABLE()

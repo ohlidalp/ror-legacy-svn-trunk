@@ -1,7 +1,7 @@
 project(RoR_Installer)
 
 set(resource_files download.xpm action.xpm dest.xpm extrapack.xpm finished.xpm licence.xpm mainpack.xpm streams.xpm unknown.xpm welcome.xpm icon.rc)
-set(source_files ConfigManager.cpp wizard.cpp wthread.cpp cevent.cpp symlink.cpp wxStrel.cpp utils.cpp threadpool.cpp wsyncdownload.cpp installerlog.cpp)
+set(source_files ConfigManager.cpp wizard.cpp wthread.cpp cevent.cpp symlink.cpp wxStrel.cpp utils.cpp threadpool.cpp wsyncdownload.cpp installerlog.cpp SHA1.cpp)
 set(include_files ConfigManager.h wizard.h wxStrel.h wthread.h cevent.h symlink.h utils.h)
 
 SET(wxWidgets_USE_UNICODE ON)
@@ -47,7 +47,6 @@ IF(wxWidgets_FOUND)
     INCLUDE_DIRECTORIES(${GTK_INCLUDE_DIRS})
     link_directories (${wxWidgets_LIB_DIR})
   ENDIF(UNIX)
-  include_directories (${RoR_SOURCE_DIR}/wsync/include)
   include_directories(${Boost_INCLUDE_DIRS})
 
 
@@ -60,14 +59,13 @@ IF(wxWidgets_FOUND)
 
   add_executable(installer ${source_files} ${include_files} ${resource_files})
   # we dont need to add ${Boost_LIBRARIES} here, could be wrong as well ...
-  target_link_libraries(installer libwsync-static)
 
   IF(WIN32)
     SET_TARGET_PROPERTIES(installer PROPERTIES COMPILE_FLAGS "/bigobj /MT /MP")
     SET_TARGET_PROPERTIES(installer PROPERTIES LINK_FLAGS    "/MANIFESTUAC:\"level='requireAdministrator' uiAccess='false'\" /SUBSYSTEM:WINDOWS /NODEFAULTLIB:\"msvcprt.lib\" /NODEFAULTLIB:\"MSVCRT.lib\"")
-	
-	
-	TARGET_LINK_LIBRARIES(installer 
+
+
+	TARGET_LINK_LIBRARIES(installer
 wxbase29u.lib
 wxmsw29u_core.lib
 wxmsw29u_html.lib

@@ -38,10 +38,6 @@ using namespace Ogre;
 
 #define MAX_TRUCKS 64
 
-#ifdef AITRAFFIC
-#include "AITraffic_Common.h"
-#endif //AIT
-
 #include <pthread.h>
 #include <string>
 
@@ -174,7 +170,6 @@ extern int truckSteps;
 #define NETWORKED 5
 #define RECYCLE 6
 #define DELETED 7 // special used when truck pointer is 0
-#define TRAFFICED 8
 
 #define MAX_WINGS 40
 
@@ -628,7 +623,7 @@ void *threadstart(void* vid);
 
 
 // included here so that all the structs have been declared, this would not be a
-// problem if the beam.h cleanup patch was applied 
+// problem if the beam.h cleanup patch was applied
 #include "SlideNode.h"
 #include "PointColDetector.h"
 
@@ -665,9 +660,6 @@ public:
 	void pushNetwork(char* data, int size);
 	void pushNetForce(int node_id, Vector3 force);
 	void expireNetForce();
-#ifdef AITRAFFIC
-	void calcTraffic(netobj_t node);
-#endif //AITRAFFIC
 	void calcNetwork();
 	void addPressure(float v);
 	float getPressure();
@@ -727,7 +719,7 @@ public:
 	void hookToggle(Beam** trucks, int trucksnum, int group=-1);
 
 	void toggleSlideNodeLock( Beam** trucks, int trucksnum, unsigned int curTruck );
-	
+
 	void parkingbrakeToggle();
 	void beaconsToggle();
 	void setReplayMode(bool rm);
@@ -965,7 +957,7 @@ public:
 	int free_cab;
 	int free_contacter;
 	contacter_t contacters[MAX_CONTACTERS];
-	
+
 	int cabs[MAX_CABS*3];
 	int subisback[MAX_SUBMESHES];
 	void setMeshVisibility(bool visible);
@@ -1076,7 +1068,7 @@ protected:
 	std::vector <ropable_t> ropables;
 	std::vector <tie_t> ties;
 	std::vector <hook_t> hooks;
-	
+
 
 	cparticle_t cparticles[MAX_CPARTICLES];
 	int free_cparticle;
@@ -1142,7 +1134,7 @@ protected:
 	int netcounter;
 	MovableText *netMT; //, *netDist;
 	float minimass;
-	
+
 	// network properties
 	String networkUsername;
 	int networkAuthlevel;
@@ -1241,47 +1233,47 @@ protected:
 	void updateSlideNodePositions();
 
 	/**
-	 * 
+	 *
 	 * @param truck which truck to retrieve the closest Rail from
 	 * @param node which SlideNode is being checked against
 	 * @return a pair containing the rail, and the distant to the SlideNode
 	 */
 	std::pair<RailGroup*, Ogre::Real> getClosestRailOnTruck( Beam* truck, const SlideNode& node);
-	
+
 
 	// RAIL GROUPS /////////////////////////////////////////////////////////////
 	//! Stores all the available RailGroups for this truck
 	std::vector< RailGroup* > mRailGroups;
-	
+
 	/**
 	 * @param line line in configuration file
 	 * @return true if line was successfully parsed, false if not
 	 */
 	bool parseRailGroupLine(const Ogre::String& line);
-	
+
 	// utility methods /////////////////////////////////////////////////////////
 
-	/** 
+	/**
 	 * searches the RailGRoup array for a rail with the corresponding id value
 	 * @param id of rail group to search for
 	 * @return NULL if no rail group is found, otherwise the corresponding rail group.
 	 */
 	RailGroup* getRailFromID(unsigned int id);
-	
+
 	/**
 	 * wrapper for getRails, converts the list of strings to a compatible format
 	 * @param railStrings list of node id's in string format
 	 * @return same as getRails
 	 */
 	Rail* parseRailString( const std::vector<Ogre::String>& railStrings);
-	
+
 	/**
-	 * parses an array of nodes id's to generate a Rail 
+	 * parses an array of nodes id's to generate a Rail
 	 * @param nodeids a list of node id's
 	 * @return NULL if nodes do not form a continuous beam structure
 	 */
 	Rail* getRails(const std::vector<int>& nodeids);
-	
+
 	/**
 	 * Finds the beam instance based on the node IDs
 	 * @param node1ID node id of one node
@@ -1289,7 +1281,7 @@ protected:
 	 * @return pointer to beam instance, NULL if no beam is found
 	 */
 	beam_t* getBeam(unsigned int node1ID, unsigned int node2ID);
-	
+
 	/**
 	 * Finds the beam based on actual node instances
 	 * @param node1 first node of the beam
@@ -1297,10 +1289,10 @@ protected:
 	 * @return pointer to beam instance, NULL if no beam is found
 	 */
 	beam_t* getBeam(node_t* node1, node_t* node2);
-	
+
 	/**
 	 * Find node instance baed on the id
-	 * @param id of the node we are looking for 
+	 * @param id of the node we are looking for
 	 * @return pointer to node instance, NULL if no beam is found
 	 */
 	node_t* getNode(unsigned int id);

@@ -17,23 +17,24 @@ GNU General Public License for more details.
 You should have received a copy of the GNU General Public License
 along with Rigs of Rods.  If not, see <http://www.gnu.org/licenses/>.
 */
+#include "platform.h"
 
 #if OGRE_PLATFORM == OGRE_PLATFORM_WIN32
 	#include "wx/msw/private.h"
 	#include "wx/msw/registry.h"
-	#include <wx/msgdlg.h>
 	#include <shellapi.h> // needed for SHELLEXECUTEINFO
 	#include <shlobj.h>
 	#include <Shfolder.h>
-	#include "wthread.h"
-	#include "wsyncdownload.h"
-	#include "utils.h"
 #endif // OGRE_PLATFORM
 
 #include <wx/filename.h>
 #include <wx/dir.h>
+#include <wx/msgdlg.h>
 
 #include "ConfigManager.h"
+#include "wthread.h"
+#include "wsyncdownload.h"
+#include "utils.h"
 #include "installerlog.h"
 
 #if OGRE_PLATFORM == OGRE_PLATFORM_WIN32
@@ -63,8 +64,8 @@ ConfigManager::ConfigManager() : currVersion()
 
 int ConfigManager::writeVersionInfo()
 {
-	wxString fn = getInstallationPath() + wxString("\\version");
-	FILE *f = fopen(fn.c_str(), "w");
+	wxString fn = getInstallationPath() + wxT("\\version");
+	FILE *f = fopen(conv(fn).c_str(), "w");
 	if(!f) return -1;
 	fprintf(f, "%s", currVersion.c_str());
 	fclose(f);
@@ -93,7 +94,7 @@ int ConfigManager::getOnlineStreams()
 		wxMessageBox(_T("unable to open local file for reading"), _T("Error"), wxICON_ERROR | wxOK);
 	}
 	delete wsdl;
-	
+
 	if(!res)
 	{
 		// no error so far
@@ -376,7 +377,7 @@ wxString ConfigManager::getPersistentConfig(wxString name)
 	return result;
 #else
 	// TODO: implement
-	return wxT();
+	return wxString();
 #endif //OGRE_PLATFORM
 }
 void ConfigManager::setInstallationPath()
@@ -486,7 +487,7 @@ void ConfigManager::updateUserConfigs()
 {
 	LOG("==== updating user configs ... \n");
 
-	boost::filesystem::path iPath = getInstallationPath();
+	boost::filesystem::path iPath = boost::filesystem::path (conv(getInstallationPath()));
 	iPath = iPath / std::string("skeleton") / std::string("config");
 
 	boost::filesystem::path uPath;
@@ -496,7 +497,7 @@ void ConfigManager::updateUserConfigs()
 	{
 		GetShortPathName(wuser_path, wuser_path, 512); //this is legal
 		uPath = wstrtostr(std::wstring(wuser_path));
-		uPath = uPath / std::string("Rigs of Rods") / std::string("config");;		
+		uPath = uPath / std::string("Rigs of Rods") / std::string("config");;
 	}
 #else
 	// XXX : TODO

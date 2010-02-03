@@ -17,7 +17,7 @@ InstallerLog *InstallerLog::getSingleton()
 	return InstallerLog::instance;
 }
 
-void InstallerLog::logMessage(char* fmt, ...)
+void InstallerLog::logMessage(const char* fmt, ...)
 {
 	if(!this->file) return;
 	wxMutexLocker lock(logmutex);
@@ -30,7 +30,7 @@ void InstallerLog::logMessage(char* fmt, ...)
 	va_end(args);
 }
 
-void InstallerLog::logMessageNoNewLine(char* fmt, ...)
+void InstallerLog::logMessageNoNewLine(const char* fmt, ...)
 {
 	if(!this->file) return;
 	wxMutexLocker lock(logmutex);

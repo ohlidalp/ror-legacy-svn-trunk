@@ -26,7 +26,6 @@ along with Rigs of Rods.  If not, see <http://www.gnu.org/licenses/>.
 #include "BeamFactory.h"
 #include "CharacterFactory.h"
 #include "ChatSystem.h"
-#include "AITrafficFactory.h"
 #ifdef ANGELSCRIPT
 #include "ScriptEngine.h"
 #endif //ANGELSCRIPT
@@ -82,7 +81,7 @@ Network::Network(Beam **btrucks, std::string servername, long sport, ExampleFram
 	NetworkStreamManager::getSingleton().net = this;
 	CharacterFactory::getSingleton().setNetwork(this);
 	ChatSystemFactory::getSingleton().setNetwork(this);
-	
+
 	//
 	memset(&userdata, 0, sizeof(client_info_on_join));
 	shutdown=false;
@@ -501,10 +500,9 @@ void Network::receivethreadstart()
 			String typeStr = "unkown";
 			switch(reg->type)
 			{
-			case 0: typeStr="truck"; break; 
-			case 1: typeStr="character"; break; 
-			case 2: typeStr="aitraffic"; break; 
-			case 3: typeStr="chat"; break; 
+				case 0: typeStr="truck"; break;
+				case 1: typeStr="character"; break;
+				case 3: typeStr="chat"; break;
 			};
 			LogManager::getSingleton().logMessage(" * received stream registration: " + StringConverter::toString(header.source) + ": "+StringConverter::toString(header.streamid) + ", type: "+typeStr);
 
@@ -516,12 +514,9 @@ void Network::receivethreadstart()
 			{
 				// person
 				CharacterFactory::getSingleton().createRemote(header.source, header.streamid, reg, playerColour);
-#ifdef AITRAFFIC
 			} else if (reg->type == 2)
 			{
-				// traffic communication
-				AITrafficFactory::getSingleton().createRemote(header.source, header.streamid, reg, slotid);
-#endif //AITRAFFIC
+				// previously AITRAFFIC, unused for now
 			} else if (reg->type == 3)
 			{
 				// chat stream
