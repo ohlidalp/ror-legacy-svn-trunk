@@ -39,11 +39,7 @@ endif(ROR_BUILD_HYDRAX)
 
 if(ROR_BUILD_PAGED)
  add_definitions("-DPAGED")
- if(ROR_BUILD_PAGED_SF)
-  include_directories (${RoR_Dependencies_SOURCE_DIR}/pagedgeometry_sf/include)
- else(ROR_BUILD_PAGED_SF)
-  include_directories (${RoR_Dependencies_SOURCE_DIR}/PagedGeometry/include)
- endif(ROR_BUILD_PAGED_SF)
+ include_directories (${RoR_Dependencies_SOURCE_DIR}/PagedGeometry/include)
 endif(ROR_BUILD_PAGED)
 
 if(ROR_BUILD_BEAMSTATS)
@@ -94,7 +90,6 @@ ELSEIF(UNIX)
     -isystem ${RoR_Dependencies_SOURCE_DIR}/mygui/include
     -isystem ${RoR_Dependencies_SOURCE_DIR}/hydrax
     -isystem ${RoR_Dependencies_SOURCE_DIR}/PagedGeometry/include/
-    -isystem ${RoR_Dependencies_SOURCE_DIR}/pagedGeometry_sf/include/
   ")
 
   EXEC_PROGRAM(pkg-config ARGS "--cflags gtk+" OUTPUT_VARIABLE CFLAGS_GTK)
@@ -176,13 +171,8 @@ endif(ROR_BUILD_CRASHRPT)
 
 
 if(ROR_BUILD_PAGED)
- if(ROR_BUILD_PAGED_SF)
-  add_dependencies(RoR PagedGeometry)
-  target_link_libraries(RoR PagedGeometry)
- else(ROR_BUILD_PAGED_SF)
-  add_dependencies(RoR paged)
-  target_link_libraries(RoR paged)
- endif(ROR_BUILD_PAGED_SF)
+ add_dependencies(RoR paged)
+ target_link_libraries(RoR paged)
 endif(ROR_BUILD_PAGED)
 
 if(ROR_BUILD_LUASCRIPT)
