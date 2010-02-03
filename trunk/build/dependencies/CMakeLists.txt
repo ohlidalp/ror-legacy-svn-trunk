@@ -7,8 +7,6 @@ endif(ROR_BUILD_LUASCRIPT)
 
 add_subdirectory("mysocketw")
 add_subdirectory("OIS-HEAD")
-#add_subdirectory("openal-soft-1.5.304")
-#add_subdirectory("openal-soft-1.6.372")
 add_subdirectory("openal-soft-1.8.466")
 
 set(OGRE_SET_DISABLE_FREEIMAGE 1)
@@ -22,11 +20,7 @@ if(ROR_BUILD_HYDRAX)
 endif(ROR_BUILD_HYDRAX)
 
 if(ROR_BUILD_PAGED)
-if(ROR_BUILD_PAGED_SF)
-  add_subdirectory("pagedgeometry_sf")
-else(ROR_BUILD_PAGED_SF)
   add_subdirectory("PagedGeometry")
-endif(ROR_BUILD_PAGED_SF)
 endif(ROR_BUILD_PAGED)
 
 IF(ROR_BUILD_ANGELSCRIPT)
