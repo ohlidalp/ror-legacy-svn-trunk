@@ -23,10 +23,10 @@ BEGIN_EVENT_TABLE(WsyncThread, wxEvtHandler)
 	EVT_MYSTATUS(wxID_ANY, WsyncThread::onDownloadStatusUpdate )
 END_EVENT_TABLE()
 
-WsyncThread::WsyncThread(wxEvtHandler *parent, wxString _ipath, std::vector < stream_desc_t > _streams) : 
-	wxThread(wxTHREAD_DETACHED), 
-	parent(parent), 
-	ipath(conv(_ipath)), 
+WsyncThread::WsyncThread(wxEvtHandler *parent, wxString _ipath, std::vector < stream_desc_t > _streams) :
+	wxThread(wxTHREAD_DETACHED),
+	parent(parent),
+	ipath(conv(_ipath)),
 	streams(_streams),
 	predDownloadSize(0),
 	dlNum(0),
@@ -45,9 +45,9 @@ void WsyncThread::onDownloadStatusUpdate(MyStatusEvent &ev)
 {
 	// first, record the new status of that download job
 	int jobID = ev.GetInt();
-	
+
 	if(dlStatus.find(jobID) == dlStatus.end()) return; // invalid job
-	
+
 	switch(ev.GetId())
 	{
 	case MSE_DOWNLOAD_START:
@@ -89,7 +89,7 @@ void WsyncThread::reportProgress()
 	float timerunning = dlStartTime.elapsed();
 	std::string text;
 	char tmp[1024]="";
-	int job_existing=0, job_done=0, job_running=0; 
+	int job_existing=0, job_done=0, job_running=0;
 	std::map<int, dlstatus_t>::iterator it;
 	for(it=dlStatus.begin(); it!=dlStatus.end(); it++)
 	{
@@ -521,7 +521,7 @@ int WsyncThread::sync()
 	int filesToDownload = newFiles.size() + changedFiles.size();
 
 	LOG("==== Changes:\n");
-	predDownloadSize = 0; // predicted download size	
+	predDownloadSize = 0; // predicted download size
 	for(itf=newFiles.begin(); itf!=newFiles.end(); itf++)
 	{
 		predDownloadSize += (int)itf->filesize;
@@ -542,7 +542,7 @@ int WsyncThread::sync()
 		LOG("> D path:%s, file: %s, size:%d\n", itf->stream_path.c_str(), itf->filename.c_str(), itf->filesize);
 	}
 	if(!deletedFiles.size()) LOG("> no files deleted");
-	
+
 
 	if(predDownloadSize > 0)
 	{
@@ -580,8 +580,8 @@ int WsyncThread::sync()
 			{
 				path localfile = ipath / itf->filename;
 				string hash_remote = findHashInHashmap(hashMapRemote, itf->filename);
-				
-				this->addJob(conv(localfile.string()), dir_use, server_use, itf->stream_path + itf->filename, hash_remote);
+
+				this->addJob(conv(localfile.string()), conv(dir_use), conv(server_use), conv(itf->stream_path + itf->filename), conv(hash_remote));
 			}
 		}
 
@@ -591,8 +591,8 @@ int WsyncThread::sync()
 			{
 				path localfile = ipath / itf->filename;
 				string hash_remote = findHashInHashmap(hashMapRemote, itf->filename);
-				
-				this->addJob(conv(localfile.string()), dir_use, server_use, itf->stream_path + itf->filename, hash_remote);
+
+				this->addJob(conv(localfile.string()), conv(dir_use), conv(server_use), conv(itf->stream_path + itf->filename), conv(hash_remote));
 			}
 		}
 
@@ -685,7 +685,7 @@ void WsyncThread::recordDataUsage()
 		char tmp[256]="";
 		sprintf(tmp, API_RECORDTRAFFIC, itt->first.c_str(), itt->second);
 		//responseLessRequest(API_SERVER, string(tmp));
-		
+
 		string sizeStr = formatFilesize(itt->second);
 		LOG("%s : %d bytes / %s\n", itt->first.c_str(), itt->second, sizeStr.c_str());
 	}
@@ -811,7 +811,7 @@ void WsyncThread::addJob(wxString localFile, wxString remoteDir, wxString remote
 	dlStatus[dlNum].text=string();
 	dlStatus[dlNum].time=0;
 	dlStatus[dlNum].time_remaining=0;
-	dlStatus[dlNum].path = remoteFile;
+	dlStatus[dlNum].path = conv(remoteFile);
 	dlm->addJob(dlNum, localFile, remoteDir, remoteServer, remoteFile, hashRemoteFile);
 	dlNum++;
 }

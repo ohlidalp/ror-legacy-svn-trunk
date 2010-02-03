@@ -12,6 +12,9 @@
 #include <boost/filesystem.hpp>
 #include <boost/algorithm/string.hpp>
 
+#include <iostream>
+#include <fstream>
+
 using namespace boost::asio;
 using namespace boost::asio::ip;
 using namespace boost::filesystem;
@@ -207,7 +210,7 @@ int WsyncDownload::downloadFile(int jobID, boost::filesystem::path localFile, st
 
 		// traffic stats tracking
 		increaseServerStats(server, fileSize);
-		
+
 		if(fileSizeArg)
 			*fileSizeArg = (int)fileSize;
 	}
@@ -260,7 +263,7 @@ void WsyncDownload::increaseServerStats(std::string server, boost::uintmax_t byt
 {
 	if(traffic_stats.find(server) == traffic_stats.end())
 		traffic_stats[server] = 0;
-	
+
 	// add filesize to traffic stats
 	traffic_stats[server] += bytes;
 }

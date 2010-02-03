@@ -19,10 +19,10 @@ public:
 	InstallerLog(boost::filesystem::path logFilename);
 	~InstallerLog();
 	static InstallerLog *getSingleton();
-	
-	void logMessage(char* fmt, ...);
-	void logMessageNoNewLine(char* fmt, ...);
-	
+
+	void logMessage(const char* fmt, ...);
+	void logMessageNoNewLine(const char* fmt, ...);
+
 
 	static InstallerLog *instance;
 protected:

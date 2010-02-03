@@ -2,9 +2,6 @@ set (HEADER_FILES
   source/aeroengine.h
   source/airbrake.h
   source/Airfoil.h
-  source/AITraffic.h
-  source/AITraffic_Common.h
-  source/AITrafficFactory.h
   source/approxmath.h
   source/as_ogre.h
   source/autopilot.h
@@ -65,7 +62,6 @@ set (HEADER_FILES
   source/networkinfo.h
   source/NetworkStreamManager.h
   source/OgreLineStreamOverlayElement.h
-  source/opencl_beam.h
   source/PlayerColours.h
   source/PointColDetector.h
   source/PositionStorage.h
@@ -119,9 +115,6 @@ set (HEADER_FILES
 set (SOURCE_FILES
   source/airbrake.cpp
   source/Airfoil.cpp
-  source/AITraffic.cpp
-  source/AITraffic_Common.cpp
-  source/AITrafficFactory.cpp
   source/as_ogre.cpp
   source/autopilot.cpp
   source/Beam.cpp
@@ -178,7 +171,6 @@ set (SOURCE_FILES
   source/network.cpp
   source/NetworkStreamManager.cpp
   source/OgreLineStreamOverlayElement.cpp
-  source/opencl_beam.cpp
   source/PlayerColours.cpp
   source/PointColDetector.cpp
   source/PositionStorage.cpp
@@ -364,8 +356,6 @@ SOURCE_GROUP("Beam Engine" FILES
   source/FlexObj.cpp
   source/Landusemap.h
   source/Landusemap.cpp
-  source/opencl_beam.h
-  source/opencl_beam.cpp
   source/PointColDetector.h
   source/PointColDetector.cpp
   source/PositionStorage.h
@@ -390,15 +380,6 @@ SOURCE_GROUP("Beam Engine" FILES
 SOURCE_GROUP("Game Engine" FILES
   source/autopilot.h
   source/autopilot.cpp
-  source/AITraffic.h
-  source/AITraffic.cpp
-  source/AITraffic_Common.h
-  source/AITraffic_Common.cpp
-  source/AITrafficFactory.h
-  source/AITrafficFactory.cpp
-  source/AITraffic.h
-  source/AITraffic_Common.h
-  source/AITrafficFactory.h
   source/CacheSystem.h
   source/CacheSystem.cpp
   source/Character.h

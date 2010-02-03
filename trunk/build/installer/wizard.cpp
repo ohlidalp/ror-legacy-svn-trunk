@@ -6,7 +6,7 @@ Copyright 2007,2008,2009 Thomas Fischer
 For more information, see http://www.rigsofrods.com/
 
 Rigs of Rods is free software: you can redistribute it and/or modify
-it under the terms of the GNU General Public License version 3, as 
+it under the terms of the GNU General Public License version 3, as
 published by the Free Software Foundation.
 
 Rigs of Rods is distributed in the hope that it will be useful,
@@ -138,7 +138,7 @@ void MyApp::OnInitCmdLine(wxCmdLineParser& parser)
     // must refuse '/' as parameter starter or cannot use "/path" style paths
     parser.SetSwitchChars (wxT("-"));
 }
- 
+
 bool MyApp::OnCmdLineParsed(wxCmdLineParser& parser)
 {
 	startupMode = IMODE_NONE;
@@ -163,13 +163,13 @@ MyWizard::MyWizard(int startupMode, wxFrame *frame, bool useSizer)
 	if(boost::filesystem::exists("installer.exe.old"))
 		boost::filesystem::remove("installer.exe.old");
 	// now continue with normal startup
-	
-	new ConfigManager();	
+
+	new ConfigManager();
 	CONFIG->setStartupMode(startupMode);
 
 
 	// create log
-	boost::filesystem::path iPath = CONFIG->getInstallationPath();
+	boost::filesystem::path iPath = boost::filesystem::path(conv(CONFIG->getInstallationPath()));
 	boost::filesystem::path lPath = iPath / std::string("wizard.log");
 	new InstallerLog(lPath);
 	LOG("installer log created");
@@ -675,7 +675,7 @@ DownloadPage::DownloadPage(wxWizard *parent) : wxWizardPageSimple(parent), wizar
 	txt_concurr = new wxStaticText(this, wxID_ANY, wxString());
 	wxg->Add(txt_concurr, 0, wxALL|wxEXPAND, 5);
 
-	
+
 
 	// grid end
 	mainSizer->Add(wxg, 0, wxALL|wxEXPAND, 5);
@@ -821,7 +821,7 @@ LastPage::LastPage(wxWizard *parent) : wxWizardPageSimple(parent), wizard(parent
 	mainSizer->Add(tst=new wxStaticText(this, wxID_ANY, _T("Thank you for downloading Rigs of Rods.\nWhat do you want to do now?")), 0, wxALL, 5);
 	tst->Wrap(TXTWRAP);
 
-	
+
 	chk_runtime = new wxCheckBox(this, wxID_ANY, _T("Install required runtime libraries now"));
 	mainSizer->Add(chk_runtime, 0, wxALL|wxALIGN_LEFT, 5);
 	chk_runtime->SetValue(firstInstall);
@@ -898,10 +898,10 @@ bool LastPage::OnLeave(bool forward)
 
 	if(chk_runtime->IsChecked())
 		CONFIG->installRuntime();
-	
+
 	if(chk_upgrade_configs->IsChecked())
 		CONFIG->updateUserConfigs();
-	
+
 	if(chk_configurator->IsChecked())
 		CONFIG->startConfigurator();
 
