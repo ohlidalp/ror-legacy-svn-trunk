@@ -41,12 +41,6 @@ target_link_libraries(Plugin_OctreeSceneManager OgreMain)
 if (NOT OGRE_STATIC)
   set_target_properties(Plugin_OctreeSceneManager PROPERTIES
     COMPILE_DEFINITIONS OGRE_TERRAINPLUGIN_EXPORTS
-  ) 
+  )
 endif ()
 set_target_properties(Plugin_OctreeSceneManager PROPERTIES PREFIX "")
-
-install(TARGETS Plugin_OctreeSceneManager
-      RUNTIME DESTINATION ${BIN_DIR}
-      LIBRARY DESTINATION ${BIN_DIR}
-      ARCHIVE DESTINATION ${LIB_DIR})
-      

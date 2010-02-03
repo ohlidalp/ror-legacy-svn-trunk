@@ -7,14 +7,3 @@ add_definitions("-D_CONSOLE")
 
 # the final lib
 add_library(mofilereader STATIC ${mofilereader_src})
-
-IF(WIN32)
-  SET_TARGET_PROPERTIES(mofilereader PROPERTIES COMPILE_FLAGS "/MP")
-ENDIF(WIN32)
-
-# this is for windows only, since windows is stupid ...
-
-install(TARGETS mofilereader
-      RUNTIME DESTINATION ${BIN_DIR}
-      LIBRARY DESTINATION ${BIN_DIR}
-      ARCHIVE DESTINATION ${LIB_DIR})

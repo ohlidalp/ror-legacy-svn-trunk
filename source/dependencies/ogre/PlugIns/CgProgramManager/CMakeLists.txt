@@ -23,12 +23,6 @@ target_link_libraries(Plugin_CgProgramManager OgreMain ${CG_LIBRARY})
 if (NOT OGRE_STATIC)
   set_target_properties(Plugin_CgProgramManager PROPERTIES
     COMPILE_DEFINITIONS OGRE_CGPLUGIN_EXPORTS
-  ) 
+  )
 endif (NOT OGRE_STATIC)
 set_target_properties(Plugin_CgProgramManager PROPERTIES PREFIX "")
-
-install(TARGETS Plugin_CgProgramManager
-      RUNTIME DESTINATION ${BIN_DIR}
-      LIBRARY DESTINATION ${BIN_DIR}
-      ARCHIVE DESTINATION ${LIB_DIR})
-      

@@ -69,9 +69,3 @@ if (NOT OGRE_STATIC)
   )
 endif ()
 set_target_properties(RenderSystem_Direct3D9 PROPERTIES PREFIX "")
-
-install(TARGETS RenderSystem_Direct3D9
-      RUNTIME DESTINATION ${BIN_DIR}
-      LIBRARY DESTINATION ${BIN_DIR}
-      ARCHIVE DESTINATION ${LIB_DIR})
-      

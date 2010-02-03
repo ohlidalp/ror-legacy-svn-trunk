@@ -25,12 +25,11 @@ IF(wxWidgets_FOUND)
     INCLUDE_DIRECTORIES(${GTK_INCLUDE_DIRS})
   ENDIF(UNIX)
   link_directories (${wxWidgets_LIB_DIR})
-  include_directories (${RoR_Dependencies_SOURCE_DIR}/rorserver-sf/source)
   include_directories (${OGRE_INCLUDE_DIR} ${OGRE_INCLUDE_DEPENDENCIES_DIR})
-  include_directories (${RoR_Dependencies_SOURCE_DIR}/OIS-HEAD/ois/includes)
-  include_directories (${RoR_Main_SOURCE_DIR}/source)
+  include_directories (${OIS_INCLUDE_DIR})
+  include_directories (${ROR_MAIN_SOURCE_DIR})
 
-  SET(config_source ${config_source} ${RoR_SOURCE_DIR}/main/source/InputEngine.cpp)
+  SET(config_source ${config_source} ${ROR_MAIN_SOURCE_DIR}/InputEngine.cpp)
 
   IF(WIN32)
       source_group(Resources FILES ${config_res})
@@ -51,16 +50,9 @@ IF(wxWidgets_FOUND)
 
   IF(WIN32)
     SET_TARGET_PROPERTIES(rorconfig PROPERTIES COMPILE_FLAGS "/bigobj /MP")
-    SET_TARGET_PROPERTIES(rorconfig PROPERTIES LINK_FLAGS    "/SUBSYSTEM:WINDOWS")  
+    SET_TARGET_PROPERTIES(rorconfig PROPERTIES LINK_FLAGS    "/SUBSYSTEM:WINDOWS")
   ENDIF(WIN32)
 
-  install(TARGETS rorconfig
-          RUNTIME DESTINATION ${BIN_DIR}
-          LIBRARY DESTINATION ${BIN_DIR}
-          ARCHIVE DESTINATION ${LIB_DIR})
-            
-  # already in correct path, no need to install at all!
-  #install(TARGETS rorconfig DESTINATION ${BIN_DIR})
 
 ELSE(wxWidgets_FOUND)
     MESSAGE("wxWidgets not found. Will not build the configurator.")

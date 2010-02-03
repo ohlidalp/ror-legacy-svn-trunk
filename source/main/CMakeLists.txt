@@ -5,25 +5,16 @@ project(RoR_Main)
 # can be edited by hands too
 include (RoR.list)
 
-include_directories (OgreMain/include Dependencies/include)
 include_directories (${OGRE_INCLUDE_DIR})
-include_directories (${RoR_Dependencies_SOURCE_DIR}/mysocketw/)
-
-if(CAELUM_BUILD_NEW)
-  include_directories (${RoR_Dependencies_SOURCE_DIR}/caelum/main/include)
-else(CAELUM_BUILD_NEW)
-  include_directories (${RoR_Dependencies_SOURCE_DIR}/Caelum-2006-11-09/include)
-endif(CAELUM_BUILD_NEW)
-
-include_directories (${RoR_Dependencies_SOURCE_DIR}/openal-soft-1.8.466/include/AL)
-include_directories (${RoR_Dependencies_SOURCE_DIR}/openal-soft-1.8.466/include)
-include_directories (${RoR_Dependencies_SOURCE_DIR}/OIS-HEAD/ois/includes)
-include_directories (${RoR_Dependencies_SOURCE_DIR}/moFileReader/include)
-include_directories (${RoR_Dependencies_SOURCE_DIR}/mygui/include)
+include_directories (${OGRE_INCLUDE_DEPENDENCIES_DIR})
+include_directories (${MYSOCKETW_INCLUDE_DIR})
+include_directories (${CAELUM_INCLUDE_DIR})
+include_directories (${OPENAL_INCLUDE_DIR})
+include_directories (${OIS_INCLUDE_DIR})
+include_directories (${MOFILEREADER_INCLUDE_DIR})
+include_directories (${MYGUI_INCLUDE_DIR})
 
 IF(WIN32)
-  add_definitions("-DWIN32_LEAN_AND_MEAN -DNOMINMAX -D_CRT_SECURE_NO_WARNINGS")
-
   include_directories (${DirectX_INCLUDE_DIR})
   link_directories("$ENV{DXSDK_DIR}\\Lib\\x86")
 ELSEIF(LINUX)
@@ -34,12 +25,12 @@ ENDIF(WIN32)
 # optional features
 if(ROR_BUILD_HYDRAX)
   add_definitions("-DHYDRAX")
-  include_directories (${RoR_Dependencies_SOURCE_DIR}/hydrax/)
+  include_directories (${HYDRAX_INCLUDE_DIR})
 endif(ROR_BUILD_HYDRAX)
 
 if(ROR_BUILD_PAGED)
  add_definitions("-DPAGED")
- include_directories (${RoR_Dependencies_SOURCE_DIR}/PagedGeometry/include)
+ include_directories (${PAGED_INCLUDE_DIR})
 endif(ROR_BUILD_PAGED)
 
 if(ROR_BUILD_BEAMSTATS)
@@ -52,17 +43,12 @@ endif(ROR_BUILD_MOTION_PLATFORM)
 
 if(ROR_BUILD_LUASCRIPT)
   add_definitions("-DLUASCRIPT")
-  include_directories (${RoR_Dependencies_SOURCE_DIR}/lua-5.1.2/src)
+  include_directories (${LUA_INCLUDE_DIR})
 endif(ROR_BUILD_LUASCRIPT)
 
 if(ROR_BUILD_CRASHRPT)
   add_definitions("-DUSE_WINDOWS_CRASH_REPORT")
-  #include_directories (${RoR_Dependencies_SOURCE_DIR}/bugtrap)
 endif(ROR_BUILD_CRASHRPT)
-
-if(CAELUM_BUILD_NEW)
-  add_definitions("-DCAELUMNEW")
-endif(CAELUM_BUILD_NEW)
 
 if(ROR_BUILD_XFIRE)
   add_definitions("-DXFIRE")
@@ -70,33 +56,26 @@ endif(ROR_BUILD_XFIRE)
 
 IF(ROR_BUILD_ANGELSCRIPT)
   add_definitions("-DANGELSCRIPT -DAS_USE_NAMESPACE")
-  include_directories (${RoR_Dependencies_SOURCE_DIR}/angelscript/include)
-  include_directories (${RoR_Dependencies_SOURCE_DIR}/angelscript/add_on)
+  include_directories (${AS_INCLUDE_DIR} ${AS_ADDON_DIR})
 ENDIF(ROR_BUILD_ANGELSCRIPT)
 
 # platform specific flags
 IF(WIN32)
-  include_directories (${RoR_Dependencies_SOURCE_DIR}/pthreads/Pre-built.2/include)
-
-#  add_definitions("")
+  include_directories (${WIN32PTHREADS_INCLUDE_DIR})
 ELSEIF(UNIX)
-#  some useful optimizations, including SSE
-#  add_definitions("-mfpmath=sse -msse2 -O2 -fomit-frame-pointer -fstrict-aliasing -ffast-math -ftracer")
-  add_definitions("-Wextra -Wfloat-equal -Wno-deprecated-declarations") # -Wunreachable-code")
+  add_definitions("-Wextra -Wfloat-equal -Wno-deprecated-declarations")
 
   # ignore warnings that are generated from the libs we use, just warn about RoR code
   add_definitions("
-    -isystem ${RoR_Dependencies_SOURCE_DIR}/ogre/OgreMain/include
-    -isystem ${RoR_Dependencies_SOURCE_DIR}/mygui/include
-    -isystem ${RoR_Dependencies_SOURCE_DIR}/hydrax
-    -isystem ${RoR_Dependencies_SOURCE_DIR}/PagedGeometry/include/
+    -isystem ${OGRE_INCLUDE_DIR}
+    -isystem ${MYGUI_INCLUDE_DIR}
+    -isystem ${HYDRAX_INCLUDE_DIR}
+    -isystem ${PAGED_INCLUDE_DIR}
   ")
 
   EXEC_PROGRAM(pkg-config ARGS "--cflags gtk+" OUTPUT_VARIABLE CFLAGS_GTK)
   SET(CMAKE_C_FLAGS "${CMAKE_PKGCONFIG_C_FLAGS} ${CFLAGS_GTK}")
-
 ELSEIF(APPLE)
-#  add_definitions("")
 ENDIF(WIN32)
 
 # main target
@@ -110,16 +89,11 @@ if(ROR_BUILD_HYDRAX)
   add_dependencies(RoR hydrax)
 endif(ROR_BUILD_HYDRAX)
 
-if(ROR_BUILD_ETM)
-  add_dependencies(RoR etm)
-endif(ROR_BUILD_ETM)
-
 if(ROR_BUILD_LUASCRIPT)
   add_dependencies(RoR lua)
 endif(ROR_BUILD_LUASCRIPT)
 
 # now the linking
-
 # always required common libs for self generated targets
 target_link_libraries(RoR
   caelum
@@ -131,33 +105,11 @@ target_link_libraries(RoR
 )
 
 IF(WIN32)
-  set_target_properties(RoR PROPERTIES LINK_FLAGS_DEBUG "/SUBSYSTEM:CONSOLE")
-  set_target_properties(RoR PROPERTIES LINK_FLAGS_RELWITHDEBINFO "/SUBSYSTEM:CONSOLE")
-  set_target_properties(RoR PROPERTIES LINK_FLAGS_RELEASE "/LTCG /OPT:REF /SUBSYSTEM:WINDOWS")
-  set_target_properties(RoR PROPERTIES LINK_FLAGS_MINSIZEREL "/LTCG /OPT:REF /SUBSYSTEM:WINDOWS")
-
-# this causes problems:
-#if(ROR_USE_OPTIMIZATIONS_WINDOWS)
-#  set(CMAKE_CXX_FLAGS_RELEASE "/GL /Ox /Ob2 /Oi /Ot /Oy /fp:fast /GS-")
-#  set(CMAKE_CXX_FLAGS_MINSIZEREL "/GL /Ox /Ob2 /Oi /Ot /Oy /fp:fast /GS-")
-#  set(CMAKE_CXX_FLAGS_RELWITHDEBINFO "/Od")
-#  set(CMAKE_CXX_FLAGS_DEBUG "/Od")
-#endif(ROR_USE_OPTIMIZATIONS_WINDOWS)
-
-  if(ROR_USE_OPTIMIZATIONS_WINDOWS)
-    SET_TARGET_PROPERTIES(RoR PROPERTIES COMPILE_FLAGS "/GL /Ox /Ob2 /Oi /Ot /Oy /fp:fast /GS- /MP")
-  else(ROR_USE_OPTIMIZATIONS_WINDOWS)
-    SET_TARGET_PROPERTIES(RoR PROPERTIES COMPILE_FLAGS "/Od")
-  endif(ROR_USE_OPTIMIZATIONS_WINDOWS)
-
   target_link_libraries(RoR OpenAL32)
 ELSEIF(UNIX)
-  SET_TARGET_PROPERTIES(RoR PROPERTIES COMPILE_FLAGS "-msse2 -msse2 -mmmx -msse -msse3 -m3dnow")
-  SET_TARGET_PROPERTIES(RoR PROPERTIES LINK_FLAGS    "")
   target_link_libraries(RoR openal)
 ELSEIF(APPLE)
 ENDIF(WIN32)
-
 
 # optional, self build features
 if(ROR_BUILD_HYDRAX)
@@ -168,7 +120,6 @@ endif(ROR_BUILD_HYDRAX)
 if(ROR_BUILD_CRASHRPT)
   target_link_libraries(RoR CrashRpt)
 endif(ROR_BUILD_CRASHRPT)
-
 
 if(ROR_BUILD_PAGED)
  add_dependencies(RoR paged)
@@ -185,7 +136,6 @@ IF(ROR_BUILD_ANGELSCRIPT)
  target_link_libraries(RoR angelscript)
 ENDIF(ROR_BUILD_ANGELSCRIPT)
 
-
 IF(WIN32)
 ELSEIF(UNIX)
   EXEC_PROGRAM(pkg-config ARGS "--libs gtk+" OUTPUT_VARIABLE LDFLAGS_GTK)
@@ -195,9 +145,7 @@ ENDIF(WIN32)
 
 # platform specific libraries (external ones only)
 IF(WIN32)
-  target_link_libraries(RoR
-    ${RoR_Dependencies_SOURCE_DIR}/pthreads/Pre-built.2/lib/pthreadVC2.lib
-  )
+  target_link_libraries(RoR ${WIN32PTHREADS_LIB})
 ELSEIF(UNIX)
   target_link_libraries(RoR
     zzip
@@ -208,30 +156,3 @@ ELSEIF(UNIX)
   )
 ELSEIF(APPLE)
 ENDIF(WIN32)
-
-install(TARGETS RoR
-      RUNTIME DESTINATION ${BIN_DIR}
-      LIBRARY DESTINATION ${BIN_DIR}
-      ARCHIVE DESTINATION ${LIB_DIR})
-
-IF(WIN32)
-ELSEIF(UNIX)
-	SET(CPACK_PACKAGE_DESCRIPTION_SUMMARY "Rigs of Rods")
-	SET(CPACK_PACKAGE_VENDOR "rigsofrods.com team")
-	SET(CPACK_PACKAGE_DESCRIPTION_FILE "${RoR_SOURCE_DIR}/readme.txt")
-	SET(CPACK_RESOURCE_FILE_LICENSE "${RoR_SOURCE_DIR}/main/source/COPYING")
-	SET(CPACK_PACKAGE_VERSION_MAJOR "0")
-	SET(CPACK_PACKAGE_VERSION_MINOR "3")
-	SET(CPACK_PACKAGE_VERSION_PATCH "7")
-	SET(CPACK_SOURCE_IGNORE_FILES "\\\\\\\\.svn")
-	SET(CPACK_INSTALL_COMMANDS "rm -rf ${RoR_SOURCE_DIR}/bin/release/linux/.svn")
-
-	#SET(CPACK_GENERATOR ZIP)
-	SET(CPACK_STRIP_FILES TRUE)
-	SET(CPACK_PACKAGE_FILE_NAME ror-${CPACK_PACKAGE_VERSION_MAJOR}.${CPACK_PACKAGE_VERSION_MINOR}.${CPACK_PACKAGE_VERSION_PATCH}-Linux-i686)
-	SET(CPACK_INSTALLED_DIRECTORIES "${RoR_SOURCE_DIR}/bin/release/linux;/")
-	#SET(CPACK_INSTALL_CMAKE_PROJECTS "${RoR_SOURCE_DIR};RoR;ALL;.")
-	SET(CPACK_PACKAGE_INSTALL_DIRECTORY "Rigs of Rods")
-	INCLUDE(CPack)
-ENDIF(WIN32)
-

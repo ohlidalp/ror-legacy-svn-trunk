@@ -28,7 +28,7 @@ IF(wxWidgets_FOUND)
   include_directories(${wxWidgets_INCLUDE_DIRS})
   add_definitions(${wxWidgets_DEFINITIONS} ${wxWidgets_CXX_FLAGS})
   add_definitions("-DINSTALLER_PLATFORM=\"${INSTALLER_PLATFORM}\"")
-  message("the default installer platform is \"${INSTALLER_PLATFORM}\". To change this, edit INSTALLER_PLATFORM value in cmake.")
+  #message("the default installer platform is \"${INSTALLER_PLATFORM}\". To change this, edit INSTALLER_PLATFORM value in cmake.")
   include_directories(${Boost_INCLUDE_DIRS})
 
   IF(WIN32)
@@ -85,11 +85,6 @@ wsock32
     TARGET_LINK_LIBRARIES(installer ${Boost_LIBRARIES})
     TARGET_LINK_LIBRARIES(installer ${wxWidgets_LIBRARIES})
   ENDIF(WIN32)
-
-  install(TARGETS installer
-          RUNTIME DESTINATION ${BIN_DIR}
-          LIBRARY DESTINATION ${BIN_DIR}
-          ARCHIVE DESTINATION ${LIB_DIR})
 
   # already in correct path, no need to install at all!
   #install(TARGETS rorconfig DESTINATION ${BIN_DIR})

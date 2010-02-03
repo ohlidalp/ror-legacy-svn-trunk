@@ -66,11 +66,6 @@ target_link_libraries(Plugin_ParticleFX OgreMain)
 if (NOT OGRE_STATIC)
   set_target_properties(Plugin_ParticleFX PROPERTIES
     COMPILE_DEFINITIONS OGRE_PARTICLEFXPLUGIN_EXPORTS
-  ) 
+  )
 endif ()
 set_target_properties(Plugin_ParticleFX PROPERTIES PREFIX "")
-
-install(TARGETS Plugin_ParticleFX
-      RUNTIME DESTINATION ${BIN_DIR}
-      LIBRARY DESTINATION ${BIN_DIR}
-      ARCHIVE DESTINATION ${LIB_DIR})
