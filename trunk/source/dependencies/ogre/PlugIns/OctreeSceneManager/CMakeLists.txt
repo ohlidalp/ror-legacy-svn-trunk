@@ -36,7 +36,6 @@ include_directories(${CMAKE_CURRENT_SOURCE_DIR}/include)
 add_definitions(-D_USRDLL)
 
 add_library(Plugin_OctreeSceneManager ${OGRE_LIB_TYPE} ${HEADER_FILES} ${SOURCE_FILES})
-windows_hacks(Plugin_OctreeSceneManager)
 
 target_link_libraries(Plugin_OctreeSceneManager OgreMain)
 
@@ -46,3 +45,4 @@ if (NOT OGRE_STATIC)
   )
 endif ()
 set_target_properties(Plugin_OctreeSceneManager PROPERTIES PREFIX "")
+windows_hacks(Plugin_OctreeSceneManager)

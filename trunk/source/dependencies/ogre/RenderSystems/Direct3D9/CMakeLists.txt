@@ -55,7 +55,6 @@ link_directories(${DirectX_LIBRARY_PATHS})
 add_definitions(-D_USRDLL)
 
 add_library(RenderSystem_Direct3D9 ${OGRE_LIB_TYPE} ${HEADER_FILES} ${SOURCE_FILES})
-windows_hacks(RenderSystem_Direct3D9)
 
 target_link_libraries(RenderSystem_Direct3D9
   OgreMain
@@ -71,3 +70,5 @@ if (NOT OGRE_STATIC)
   )
 endif ()
 set_target_properties(RenderSystem_Direct3D9 PROPERTIES PREFIX "")
+
+windows_hacks(RenderSystem_Direct3D9)
