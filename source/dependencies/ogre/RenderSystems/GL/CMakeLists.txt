@@ -174,7 +174,6 @@ if (UNIX)
 endif ()
 
 add_library(RenderSystem_GL ${OGRE_LIB_TYPE} ${HEADER_FILES} ${SOURCE_FILES} ${GLSL_FILES} ${ATIFS_FILES} ${NVPARSE_FILES} ${PLATFORM_FILES})
-windows_hacks(RenderSystem_GL)
 
 target_link_libraries(RenderSystem_GL OgreMain ${OPENGL_LIBRARIES} ${PLATFORM_LIBS})
 
@@ -184,3 +183,4 @@ if (NOT OGRE_STATIC)
   )
 endif ()
 set_target_properties(RenderSystem_GL PROPERTIES PREFIX "")
+windows_hacks(RenderSystem_GL)
