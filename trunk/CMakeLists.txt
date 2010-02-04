@@ -154,7 +154,7 @@ macro(copy_files srcDir destDir)
             configure_file(
                     ${srcTemplatePath}
                     ${destDir}/${filename}
-                    @ONLY)
+                    COPYONLY)
         endif(NOT IS_DIRECTORY ${srcTemplatePath})
     endforeach(filename)
 endmacro(copy_files)
