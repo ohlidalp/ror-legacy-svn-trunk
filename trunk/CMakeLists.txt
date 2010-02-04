@@ -44,6 +44,15 @@ SET(WIN32PTHREADS_INCLUDE_DIR     ${ROR_DEPENDENCY_DIR}/pthreads/Pre-built.2/inc
 SET(WIN32PTHREADS_LIB             ${ROR_DEPENDENCY_DIR}/pthreads/Pre-built.2/lib/pthreadVC2.lib)
 SET(ROR_MAIN_SOURCE_DIR           ${RoR_SOURCE_DIR}/source/main/source)
 
+# set the tools binary directory accordingly to the used platform
+IF(WIN32)
+  SET(ROR_BINTOOL_DIR             ${RoR_SOURCE_DIR}/tools/windows/binaries)
+ELSEIF(UNIX)
+  SET(ROR_BINTOOL_DIR             ${RoR_SOURCE_DIR}/tools/linux)
+ELSEIF(APPLE)
+  SET(ROR_BINTOOL_DIR             ${RoR_SOURCE_DIR}/tools/linux)
+ENDIF(WIN32)
+
 set(ROR_CMAKE_DEBUG FALSE)
 
 if(ROR_CMAKE_DEBUG)
@@ -64,6 +73,7 @@ LUA_INCLUDE_DIR:               ${LUA_INCLUDE_DIR}
 WIN32PTHREADS_INCLUDE_DIR:     ${WIN32PTHREADS_INCLUDE_DIR}
 WIN32PTHREADS_LIB:             ${WIN32PTHREADS_LIB}
 ROR_MAIN_SOURCE_DIR:           ${ROR_MAIN_SOURCE_DIR}
+ROR_BINTOOL_DIR:               ${ROR_BINTOOL_DIR}
 ")
 endif(ROR_CMAKE_DEBUG)
 
@@ -132,5 +142,23 @@ IF(WIN32)
 ENDIF(WIN32)
 endmacro(windows_hacks)
 
+macro(copy_files srcDir destDir)
+    message(STATUS "Configuring ${destDir} ...")
+    #make_directory(${destDir})
+
+    file(GLOB files RELATIVE ${srcDir} ${srcDir}/*)
+    foreach(filename ${files})
+        set(srcTemplatePath ${srcDir}/${filename})
+        if(NOT IS_DIRECTORY ${srcTemplatePath})
+            message(STATUS "Copying file ${filename}")
+            configure_file(
+                    ${srcTemplatePath}
+                    ${destDir}/${filename}
+                    @ONLY)
+        endif(NOT IS_DIRECTORY ${srcTemplatePath})
+    endforeach(filename)
+endmacro(copy_files)
+
 add_subdirectory(source)
 
+copy_files(${ROR_BINTOOL_DIR} ${EXECUTABLE_OUTPUT_PATH})
