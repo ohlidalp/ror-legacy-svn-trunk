@@ -12,6 +12,7 @@ include_directories (${AS_ADDON_DIR})
 
 # main target
 add_executable(as_compiler ${sc_src})
+windows_hacks(as_compiler)
 
 # add dependencies
 add_dependencies(as_compiler angelscript)

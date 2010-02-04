@@ -9,6 +9,7 @@ add_definitions("-DHYDRAX_LIB")
 
 # the final lib
 add_library(hydrax SHARED ${hydrax_src})
+windows_hacks(hydrax)
 
 # this is for windows only, since windows is stupid ...
 add_dependencies(hydrax OgreMain)

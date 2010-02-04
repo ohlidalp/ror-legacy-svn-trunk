@@ -18,6 +18,8 @@ include_directories(${CMAKE_CURRENT_SOURCE_DIR}/include)
 add_definitions(-D_USRDLL)
 
 add_library(Plugin_CgProgramManager ${OGRE_LIB_TYPE} ${HEADER_FILES} ${SOURCE_FILES})
+windows_hacks(Plugin_CgProgramManager)
+
 target_link_libraries(Plugin_CgProgramManager OgreMain ${CG_LIBRARY})
 
 if (NOT OGRE_STATIC)

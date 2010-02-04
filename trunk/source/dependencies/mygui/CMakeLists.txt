@@ -12,6 +12,7 @@ add_definitions("-DWIN32 -DNDEBUG -D_WINDOWS -D_USRDLL -DMYGUI_BUILD -DMYGUI_USE
 
 # the final lib
 add_library(mygui SHARED ${mygui_src} ${mygui_headers})
+windows_hacks(mygui)
 
 # this is for windows only, since windows is stupid ...
 add_dependencies(mygui OgreMain ois)

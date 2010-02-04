@@ -82,6 +82,8 @@ ENDIF(WIN32)
 # main target
 add_executable(RoR ${HEADER_FILES} ${SOURCE_FILES})
 
+windows_hacks(RoR)
+
 # add dependencies
 add_dependencies(RoR OgreMain caelum mysocketw ois mygui mofilereader)
 
