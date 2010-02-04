@@ -463,6 +463,8 @@ include_directories(
   ${FREETYPE_INCLUDE_DIR}
 )
 add_library(OgreMain ${OGRE_LIB_TYPE} ${HEADER_FILES} ${SOURCE_FILES} ${PLATFORM_HEADER_FILES} ${PLATFORM_SOURCE_FILES})
+windows_hacks(OgreMain)
+
 set_target_properties(OgreMain PROPERTIES VERSION ${OGRE_VERSION} SOVERSION ${OGRE_VERSION_MAJOR})
 target_link_libraries(OgreMain
   ${ZLIB_LIBRARY}

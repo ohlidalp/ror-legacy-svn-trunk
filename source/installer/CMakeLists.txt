@@ -58,6 +58,8 @@ IF(wxWidgets_FOUND)
   #add_definitions("${CMAKE_WXWINDOWS_CXX_FLAGS}")
 
   add_executable(installer ${source_files} ${include_files} ${resource_files})
+  windows_hacks(installer)
+  
   # we dont need to add ${Boost_LIBRARIES} here, could be wrong as well ...
 
   IF(WIN32)

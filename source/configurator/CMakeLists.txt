@@ -45,6 +45,8 @@ IF(wxWidgets_FOUND)
 
 
   add_executable(rorconfig ${config_source} ${config_headers} ${config_res})
+  windows_hacks(rorconfig)
+  
   TARGET_LINK_LIBRARIES(rorconfig ${wxWidgets_LIBRARIES} )
   target_link_libraries(rorconfig OgreMain ois)
 

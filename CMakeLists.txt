@@ -122,28 +122,15 @@ IF(UNIX)
   set(CMAKE_EXE_LINKER_FLAGS_RelWithDebug "${CMAKE_EXE_LINKER_FLAGS_RelWithDebug} -O0")
 endif(UNIX)
 
-add_subdirectory(source)
-
+macro(windows_hacks NAME)
 IF(WIN32)
-	macro(copy_files GLOBPAT DESTINATION)
-	  file(GLOB COPY_FILES
-		RELATIVE ${CMAKE_CURRENT_SOURCE_DIR}
-		${GLOBPAT})
-	  add_custom_target(copy ALL
-		COMMENT "Copying files: ${GLOBPAT}")
-
-	  foreach(FILENAME ${COPY_FILES})
-		set(SRC "${CMAKE_CURRENT_SOURCE_DIR}/${FILENAME}")
-		set(DST "${DESTINATION}/${FILENAME}")
-
-		add_custom_command(
-		  TARGET copy
-		  COMMAND ${CMAKE_COMMAND} -E copy ${SRC} ${DST}
-		  )
-	  endforeach(FILENAME)
-	endmacro(copy_files)
-
-	copy_files(${RUNTIME_OUTPUT_DIRECTORY}/${CMAKE_CFG_INTDIR} ${RUNTIME_OUTPUT_DIRECTORY})
+	if (MSVC_IDE)
+		# hack to get around the "Debug" and "Release" directories cmake tries to add on Windows
+		set_target_properties(${NAME} PROPERTIES PREFIX "../")
+		set_target_properties(${NAME} PROPERTIES IMPORT_PREFIX "../")
+	endif(MSVC_IDE)
 ENDIF(WIN32)
+endmacro(windows_hacks)
 
+add_subdirectory(source)
 
