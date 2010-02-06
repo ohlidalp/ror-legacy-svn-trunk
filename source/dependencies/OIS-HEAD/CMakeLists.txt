@@ -14,6 +14,9 @@ SET(LIB_INSTALL_DIR "lib")
 
 # platform
 IF(WIN32)
+  include_directories (${DirectX_INCLUDE_DIR})
+  add_definitions("-DWIN32_LEAN_AND_MEAN -DNOMINMAX")
+  link_directories("$ENV{DXSDK_DIR}\\Lib\\x86")
   aux_source_directory(ois/src/win32 ois_src)
 ELSEIF(UNIX)
   aux_source_directory(ois/src/linux ois_src)
