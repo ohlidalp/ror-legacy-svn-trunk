@@ -7,6 +7,12 @@ include_directories (${OGRE_INCLUDE_DIR})
 include_directories (${OGRE_INCLUDE_DEPENDENCIES_DIR}) # for freetype
 include_directories (${OIS_INCLUDE_DIR})
 
+IF(WIN32)
+  include_directories (${DirectX_INCLUDE_DIR})
+  add_definitions("-DWIN32_LEAN_AND_MEAN -DNOMINMAX")
+  link_directories("$ENV{DXSDK_DIR}\\Lib\\x86")
+ENDIF(WIN32)
+
 # -DHYDRAX_LIB will  give us the correct dllspec export setting
 add_definitions("-DWIN32 -DNDEBUG -D_WINDOWS -D_USRDLL -DMYGUI_BUILD -DMYGUI_USE_FREETYPE")
 
