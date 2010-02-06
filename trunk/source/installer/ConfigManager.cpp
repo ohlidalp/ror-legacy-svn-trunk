@@ -92,6 +92,9 @@ int ConfigManager::getOnlineStreams()
 	} else if (res == -3)
 	{
 		wxMessageBox(_T("unable to open local file for reading"), _T("Error"), wxICON_ERROR | wxOK);
+	} else if (res == -4)
+	{
+		wxMessageBox(_T("unable to download file, content incorrect: http://wsync.rigsofrods.com/streams.index"), _T("Error"), wxICON_ERROR | wxOK);
 	}
 	delete wsdl;
 

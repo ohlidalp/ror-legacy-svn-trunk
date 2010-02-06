@@ -337,7 +337,7 @@ int WsyncDownload::downloadAdvancedConfigFile(std::string server, std::string ur
 	if(!complete)
 	{
 		LOG("error downloading file from %s, %s\n", server.c_str(), url.c_str());
-		return -1;
+		return -4;
 	}
 	return 0;
 }
