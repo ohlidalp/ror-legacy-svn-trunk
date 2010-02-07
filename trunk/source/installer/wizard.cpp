@@ -84,6 +84,11 @@ BEGIN_EVENT_TABLE(DownloadPage, wxWizardPageSimple)
 	EVT_MYSTATUS(wxID_ANY, DownloadPage::OnStatusUpdate )
 END_EVENT_TABLE()
 
+BEGIN_EVENT_TABLE(StreamsPage, wxWizardPageSimple)
+	//EVT_TIMER(ID_TIMER, DownloadPage::OnTimer)
+	EVT_RADIOBOX(wxID_ANY, StreamsPage::OnBetaChange )
+END_EVENT_TABLE()
+
 BEGIN_EVENT_TABLE(MyWizard, wxWizard)
 	EVT_WIZARD_PAGE_CHANGING(ID_WIZARD, MyWizard::OnPageChanging)
 END_EVENT_TABLE()
@@ -178,10 +183,13 @@ MyWizard::MyWizard(int startupMode, wxFrame *frame, bool useSizer)
 	LicencePage *licence = new LicencePage(this);
 	PathPage *path = new PathPage(this);
 	StreamsPage *streams = new StreamsPage(this);
+	StreamsContentPage *streamsContent = new StreamsContentPage(this);
     ActionPage *action = new ActionPage(this, licence, path, streams);
 	DownloadPage *download = new DownloadPage(this);
 	LastPage *last = new LastPage(this);
-	streams->setPages(path, action);
+	streams->setPages(path, streamsContent);
+	streamsContent->setPrevPage(streams);
+	
 
 	m_page1 = presentation;
 
@@ -206,7 +214,8 @@ MyWizard::MyWizard(int startupMode, wxFrame *frame, bool useSizer)
 	}
 	path->SetPrev(action);
 	wxWizardPageSimple::Chain(path, streams);
-	wxWizardPageSimple::Chain(streams, download);
+	wxWizardPageSimple::Chain(streams, streamsContent);
+	wxWizardPageSimple::Chain(streamsContent, download);
 	wxWizardPageSimple::Chain(download, last);
 
     if ( useSizer )
@@ -526,7 +535,19 @@ StreamsPage::StreamsPage(wxWizard *parent) : wxWizardPageSimple(parent)
 	dfont.SetPointSize(dfont.GetPointSize()+4);
 	tst->SetFont(dfont);
 	tst->Wrap(TXTWRAP);
-	mainSizer->Add(tst=new wxStaticText(this, wxID_ANY, _T("Choose which feature packs you want to download:\n")), 0, wxALL, 0);
+	
+	wxString choices[4];
+	choices[0]=_T("Stable");
+	choices[1]=_T("BETA (experimental)");
+	betaOption=new wxRadioBox(this, wxID_ANY, _T("Version"), wxDefaultPosition, wxDefaultSize, 2, choices, 1, wxRA_SPECIFY_COLS);
+	mainSizer->Add(betaOption);
+	bool use_stable = CONFIG->getPersistentConfig(wxT("installer.use_stable")) == wxT("yes");
+	if(use_stable)
+		betaOption->SetSelection(0);
+	else
+		betaOption->SetSelection(1);
+
+	mainSizer->Add(tst=new wxStaticText(this, wxID_ANY, _T("Choose which binary pack you want to download:\n")), 0, wxALL, 0);
 	tst->Wrap(TXTWRAP);
 
 	mainSizer->Add(scrw=new wxScrolledWindow(this, wxID_ANY, wxDefaultPosition, wxDefaultSize, wxVSCROLL), 1, wxGROW, 0);
@@ -535,24 +556,44 @@ StreamsPage::StreamsPage(wxWizard *parent) : wxWizardPageSimple(parent)
 	//scrw->SetBackgroundColour(*wxWHITE);
 	scrw->SetScrollbars(0, STREL_HEIGHT+3, 100, 30);
 
-	mainSizer->Add(tst=new wxStaticText(this, wxID_ANY, _T("Click Next to begin the download.")), 0, wxALL, 0);
+	mainSizer->Add(tst=new wxStaticText(this, wxID_ANY, _T("Click Next to select the content.")), 0, wxALL, 0);
 	tst->Wrap(TXTWRAP);
 
 	SetSizer(mainSizer);
-	//scrwsz->Fit(scrw);
+	scrwsz->Fit(scrw);
 	mainSizer->Fit(this);
 
+}
+void StreamsPage::OnBetaChange(wxCommandEvent &evt)
+{
+	if(betaOption->GetSelection() == 0)
+	{
+		// stable
+		CONFIG->setPersistentConfig(wxT("installer.use_stable"), wxT("yes"));
+		OnEnter(true);
+	} else
+	{
+		// beta
+		CONFIG->setPersistentConfig(wxT("installer.use_stable"), wxT("no"));
+		OnEnter(true);
+	}
 }
 
 bool StreamsPage::OnEnter(bool forward)
 {
-	if (streamset) return true; //reloading streams do not work for the moment (GUI problem)
 	int res = CONFIG->getOnlineStreams();
 	if(res)
 	{
 		wxMessageBox(_T("The program could not connect to the central Streams server.\nThe service may be temporarily unavailable, or you have no network connection."), _T("Network error"), wxICON_ERROR | wxOK, this);
 	}
-	scrwsz->Clear(true);
+	wxSizerItemList::compatibility_iterator node = scrwsz->GetChildren().GetFirst();
+	while (node)
+	{
+		wxSizerItem *item = node->GetData();
+		item->Show(false);
+		node = node->GetNext();
+	}
+	//scrwsz->Clear();
 	//add the streams
 	std::vector < stream_desc_t > *streams = CONFIG->getStreamset();
 	if(!streams->size())
@@ -561,14 +602,18 @@ bool StreamsPage::OnEnter(bool forward)
 		dlg->ShowModal();
 		exit(1);
 	}
+	bool use_stable = CONFIG->getPersistentConfig(wxT("installer.use_stable")) == wxT("yes");
 	for(std::vector < stream_desc_t >::iterator it=streams->begin(); it!=streams->end(); it++)
 	{
 		if(it->hidden) continue; // hide hidden entries ;)
+		if(!it->binary && !it->resource) continue; // just show binaries and resources
+		if((!it->stable || it->beta )&& use_stable) continue; // hide non-stable in stable mode
+		if((it->stable || !it->beta )&& !use_stable) continue; // hide stable in beta mode
 		wxStrel *wst=new wxStrel(scrw, &(*it));
 		wxSizerItem *si = scrwsz->Add(wst, 0, wxALL|wxEXPAND,0);
 		si->SetUserData((wxObject *)wst);
 	}
-	streamset=true;
+	scrwsz->Fit(scrw);
 	return true;
 }
 
@@ -581,9 +626,12 @@ bool StreamsPage::OnLeave(bool forward)
 		while (node)
 		{
 			wxSizerItem *item = node->GetData();
-			wxStrel *wst = (wxStrel *)item->GetUserData();
-			if(!wst) continue;
-			CONFIG->setStreamSelection(wst->getDesc(), wst->getSelection());
+			if(item->IsShown())
+			{
+				wxStrel *wst = (wxStrel *)item->GetUserData();
+				if(wst)
+					CONFIG->setStreamSelection(wst->getDesc(), wst->getSelection());
+			}
 			node = node->GetNext();
 		}
 		// save the selection in the registry for the next time.
@@ -605,6 +653,100 @@ void StreamsPage::setPages(wxWizardPage* _fpath, wxWizardPage* _faction)
 	fpath=_fpath;
 	faction=_faction;
 }
+
+//// StreamsContentPage
+StreamsContentPage::StreamsContentPage(wxWizard *parent) : wxWizardPageSimple(parent)
+{
+	streamset=false;
+	wxBoxSizer *mainSizer = new wxBoxSizer(wxVERTICAL);
+	wxStaticText *tst;
+	m_bitmap = wxBitmap(streams_xpm);
+	mainSizer->Add(tst=new wxStaticText(this, wxID_ANY, _T("Content Streams selection\n")), 0, wxALL, 0);
+	wxFont dfont=tst->GetFont();
+	dfont.SetWeight(wxFONTWEIGHT_BOLD);
+	dfont.SetPointSize(dfont.GetPointSize()+4);
+	tst->SetFont(dfont);
+	tst->Wrap(TXTWRAP);
+	
+	mainSizer->Add(tst=new wxStaticText(this, wxID_ANY, _T("Choose which content packs you want to download:\n")), 0, wxALL, 0);
+	tst->Wrap(TXTWRAP);
+
+	mainSizer->Add(scrw=new wxScrolledWindow(this, wxID_ANY, wxDefaultPosition, wxDefaultSize, wxVSCROLL), 1, wxGROW, 0);
+	scrwsz=new wxBoxSizer(wxVERTICAL);
+	scrw->SetSizer(scrwsz);
+	//scrw->SetBackgroundColour(*wxWHITE);
+	scrw->SetScrollbars(0, STREL_HEIGHT+3, 100, 30);
+
+	mainSizer->Add(tst=new wxStaticText(this, wxID_ANY, _T("Click Next to begin the download.")), 0, wxALL, 0);
+	tst->Wrap(TXTWRAP);
+
+	SetSizer(mainSizer);
+	//scrwsz->Fit(scrw);
+	mainSizer->Fit(this);
+
+}
+
+bool StreamsContentPage::OnEnter(bool forward)
+{
+	if (streamset) return true; //reloading streams do not work for the moment (GUI problem)
+	int res = CONFIG->getOnlineStreams();
+	if(res)
+	{
+		wxMessageBox(_T("The program could not connect to the central Streams server.\nThe service may be temporarily unavailable, or you have no network connection."), _T("Network error"), wxICON_ERROR | wxOK, this);
+	}
+	scrwsz->Clear(true);
+	//add the streams
+	std::vector < stream_desc_t > *streams = CONFIG->getStreamset();
+	if(!streams->size())
+	{
+		wxMessageDialog *dlg = new wxMessageDialog(this, wxT("Error while downloading the streams index. Please retry later."), wxT("Error"),wxOK|wxICON_ERROR);
+		dlg->ShowModal();
+		exit(1);
+	}
+	bool use_stable = CONFIG->getPersistentConfig(wxT("installer.use_stable")) == wxT("yes");
+	for(std::vector < stream_desc_t >::iterator it=streams->begin(); it!=streams->end(); it++)
+	{
+		if(it->hidden || !it->content) continue; // hide hidden entries and non-content things
+		if(it->beta && use_stable) continue; // hide non-stable in stable mode
+		wxStrel *wst=new wxStrel(scrw, &(*it));
+		wxSizerItem *si = scrwsz->Add(wst, 0, wxALL|wxEXPAND,0);
+		si->SetUserData((wxObject *)wst);
+	}
+	scrwsz->Fit(scrw);
+	streamset=true;
+	return true;
+}
+
+bool StreamsContentPage::OnLeave(bool forward)
+{
+	if (forward)
+	{
+		//store the user settings
+		wxSizerItemList::compatibility_iterator node = scrwsz->GetChildren().GetFirst();
+		while (node)
+		{
+			wxSizerItem *item = node->GetData();
+			wxStrel *wst = (wxStrel *)item->GetUserData();
+			if(!wst) continue;
+			CONFIG->setStreamSelection(wst->getDesc(), wst->getSelection());
+			node = node->GetNext();
+		}
+		// save the selection in the registry for the next time.
+		CONFIG->saveStreamSubscription();
+	}
+	return true;
+}
+
+wxWizardPage *StreamsContentPage::GetPrev() const
+{
+	return fpage;
+}
+
+void StreamsContentPage::setPrevPage(wxWizardPage* _fpage)
+{
+	fpage=_fpage;
+}
+
 
 //// DownloadPage
 DownloadPage::DownloadPage(wxWizard *parent) : wxWizardPageSimple(parent), wizard(parent)

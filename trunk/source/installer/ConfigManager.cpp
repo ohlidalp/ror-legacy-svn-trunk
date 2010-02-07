@@ -74,6 +74,7 @@ int ConfigManager::writeVersionInfo()
 
 int ConfigManager::getOnlineStreams()
 {
+	if(streams.size() > 0) return 0; // already downloaded
 	//clear list
 	clearStreamset();
 
@@ -120,9 +121,13 @@ int ConfigManager::getOnlineStreams()
 				s.checked   = (olist[i]["checked"] == "1");
 				s.forcecheck= (olist[i]["forcecheck"] == "1");
 				s.hidden    = (olist[i]["hidden"] == "1");
+				s.binary    = (olist[i]["binary"] == "1");
+				s.resource  = (olist[i]["resource"] == "1");
 				s.disabled  = (olist[i]["disabled"] == "1");
 				s.beta      = (olist[i]["beta"] == "1");
+				s.stable    = (olist[i]["stable"] == "1");
 				s.del       = (olist[i]["delete"] == "1");
+				s.content   = (olist[i]["content"] == "1");
 				s.overwrite = (olist[i]["overwrite"] == "1");
 				//s.overwrite = (olist[i]["overwrite"] == "1");
 				conv(olist[i]["size"]).ToULong(&s.size);
@@ -383,6 +388,7 @@ wxString ConfigManager::getPersistentConfig(wxString name)
 	return wxString();
 #endif //OGRE_PLATFORM
 }
+
 void ConfigManager::setInstallationPath()
 {
 #if OGRE_PLATFORM == OGRE_PLATFORM_WIN32

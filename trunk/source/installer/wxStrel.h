@@ -89,6 +89,11 @@ public:
 
 		//mainSizer->Fit(this);
 	}
+
+	~wxStrel()
+	{
+	}
+
 	stream_desc_t *getDesc() {return desc;}
 	bool getSelection() {return chk->GetValue();}
 
