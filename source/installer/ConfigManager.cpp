@@ -333,6 +333,53 @@ void ConfigManager::saveStreamSubscription()
 	}
 }
 
+void ConfigManager::saveStreamSubscription(wxString streamPath, bool value)
+{
+#if OGRE_PLATFORM == OGRE_PLATFORM_WIN32
+	wxRegKey *pRegKey = new wxRegKey(wxT("HKEY_LOCAL_MACHINE\\Software\\RigsOfRods\\streams"));
+	if(!pRegKey->Exists())
+		pRegKey->Create();
+	pRegKey->SetValue(streamPath, value?wxT("yes"):wxT("no"));
+#else
+	// TODO: implement
+#endif //OGRE_PLATFORM
+}
+
+bool ConfigManager::isStreamSubscribed(wxString streamPath)
+{
+	if(!streams.size()) return false;
+#if OGRE_PLATFORM == OGRE_PLATFORM_WIN32
+	wxRegKey *pRegKey = new wxRegKey(wxT("HKEY_LOCAL_MACHINE\\Software\\RigsOfRods\\streams"));
+	if(!pRegKey->Exists())
+		return false;
+
+	wxString enabled;
+	if(!pRegKey->HasValue(streamPath)) return false;
+	pRegKey->QueryValue(streamPath, enabled);
+	if(enabled == wxT("yes"))
+		return true;
+#else
+	// TODO: implement
+#endif //OGRE_PLATFORM
+	return false;
+}
+
+void ConfigManager::clearStreamSubscription()
+{
+	if(!streams.size()) return;
+	for(std::vector < stream_desc_t >::iterator it=streams.begin(); it!=streams.end(); it++)
+		it->checked = false;
+}
+
+void ConfigManager::streamSubscriptionDebug()
+{
+	if(!streams.size()) return;
+	LOG("==== Stream Subscriptions:\n");
+	for(std::vector < stream_desc_t >::iterator it=streams.begin(); it!=streams.end(); it++)
+		LOG("  %s(%s) : %s\n", conv(it->title).c_str(), conv(it->path).c_str(), it->checked?"YES":"NO");
+}
+
+
 void ConfigManager::loadStreamSubscription()
 {
 	if(!streams.size()) return;
@@ -347,11 +394,6 @@ void ConfigManager::loadStreamSubscription()
 		wxString enabled;
 		if(!pRegKey->HasValue(it->path)) continue;
 		pRegKey->QueryValue(it->path, enabled);
-		if(it->binary || it->resource)
-		{
-			it->checked = false;
-			continue; // ignore binaries - no subscription for them
-		}
 		if(enabled == wxT("yes"))
 			it->checked = true;
 		else if(enabled == wxT("no"))
@@ -457,6 +499,7 @@ void ConfigManager::setStreamSelection(stream_desc_t* desc, bool selection)
 		{
 			//if (!it->disabled)
 			it->checked=selection;
+			saveStreamSubscription(it->path, selection);
 			return;
 		}
 	}

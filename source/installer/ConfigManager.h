@@ -50,6 +50,7 @@ typedef struct stream_desc_t_
 	bool checked;
 	bool forcecheck;
 	bool hidden;
+	bool shown;
 	bool content;
 	bool disabled;
 	bool binary;
@@ -80,6 +81,10 @@ public:
 	void setStreamSelection(stream_desc_t* desc, bool selection);
 	void loadStreamSubscription();
 	void saveStreamSubscription();
+	bool isStreamSubscribed(wxString stream);
+	void saveStreamSubscription(wxString streamPath, bool value);
+	void clearStreamSubscription();
+	void streamSubscriptionDebug();
 
 	// registry things
 	wxString getPersistentConfig(wxString name);
