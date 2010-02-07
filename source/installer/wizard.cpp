@@ -595,6 +595,7 @@ bool StreamsPage::OnEnter(bool forward)
 	}
 	//scrwsz->Clear();
 	//add the streams
+	CONFIG->loadStreamSubscription();
 	std::vector < stream_desc_t > *streams = CONFIG->getStreamset();
 	if(!streams->size())
 	{
@@ -606,9 +607,17 @@ bool StreamsPage::OnEnter(bool forward)
 	for(std::vector < stream_desc_t >::iterator it=streams->begin(); it!=streams->end(); it++)
 	{
 		if(it->hidden) continue; // hide hidden entries ;)
-		if(!it->binary && !it->resource) continue; // just show binaries and resources
-		if((!it->stable || it->beta )&& use_stable) continue; // hide non-stable in stable mode
-		if((it->stable || !it->beta )&& !use_stable) continue; // hide stable in beta mode
+		bool disable = false;
+		if(!it->binary && !it->resource) disable=true; // just show binaries and resources
+		if((!it->stable || it->beta )&& use_stable) disable=true; // hide non-stable in stable mode
+		if((it->stable || !it->beta )&& !use_stable) disable=true; // hide stable in beta mode
+		
+		if(disable)
+		{
+			CONFIG->setStreamSelection(&(*it), false);
+			continue;
+		}
+		
 		wxStrel *wst=new wxStrel(scrw, &(*it));
 		wxSizerItem *si = scrwsz->Add(wst, 0, wxALL|wxEXPAND,0);
 		si->SetUserData((wxObject *)wst);
@@ -634,8 +643,6 @@ bool StreamsPage::OnLeave(bool forward)
 			}
 			node = node->GetNext();
 		}
-		// save the selection in the registry for the next time.
-		CONFIG->saveStreamSubscription();
 	}
 
 	return true;
@@ -696,6 +703,7 @@ bool StreamsContentPage::OnEnter(bool forward)
 	}
 	scrwsz->Clear(true);
 	//add the streams
+	CONFIG->loadStreamSubscription();
 	std::vector < stream_desc_t > *streams = CONFIG->getStreamset();
 	if(!streams->size())
 	{
@@ -707,7 +715,13 @@ bool StreamsContentPage::OnEnter(bool forward)
 	for(std::vector < stream_desc_t >::iterator it=streams->begin(); it!=streams->end(); it++)
 	{
 		if(it->hidden || !it->content) continue; // hide hidden entries and non-content things
-		if(it->beta && use_stable) continue; // hide non-stable in stable mode
+		bool disable=false;
+		if(it->beta && use_stable) disable=true; // hide non-stable in stable mode
+		if(disable)
+		{
+			CONFIG->setStreamSelection(&(*it), false);
+			continue;
+		}
 		wxStrel *wst=new wxStrel(scrw, &(*it));
 		wxSizerItem *si = scrwsz->Add(wst, 0, wxALL|wxEXPAND,0);
 		si->SetUserData((wxObject *)wst);
