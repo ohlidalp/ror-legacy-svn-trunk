@@ -137,12 +137,29 @@ public:
 	virtual wxWizardPage *GetPrev() const;
 	void setPages(wxWizardPage* _fpath, wxWizardPage* _faction);
 private:
+	void OnBetaChange(wxCommandEvent &evt);
 	wxScrolledWindow *scrw;
 	wxSizer *scrwsz;
+	wxRadioBox* betaOption;
 	wxWizardPage* fpath, *faction;
 	bool streamset;
+	DECLARE_EVENT_TABLE()
 };
 
+class StreamsContentPage : public wxWizardPageSimple, public EnterLeavePage
+{
+public:
+	StreamsContentPage(wxWizard *parent);
+	bool OnEnter(bool forward);
+	bool OnLeave(bool forward);
+	virtual wxWizardPage *GetPrev() const;
+	void setPrevPage(wxWizardPage* fpage);
+private:
+	wxScrolledWindow *scrw;
+	wxSizer *scrwsz;
+	wxWizardPage* fpage;
+	bool streamset;
+};
 
 class DownloadPage : public wxWizardPageSimple, public EnterLeavePage
 {

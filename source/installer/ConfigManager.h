@@ -50,9 +50,13 @@ typedef struct stream_desc_t_
 	bool checked;
 	bool forcecheck;
 	bool hidden;
+	bool content;
 	bool disabled;
+	bool binary;
+	bool resource;
 	bool del;
 	bool beta;
+	bool stable;
 	bool overwrite;
 	unsigned long size;
 } stream_desc_t;
