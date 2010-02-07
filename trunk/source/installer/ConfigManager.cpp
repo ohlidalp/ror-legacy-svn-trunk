@@ -347,7 +347,11 @@ void ConfigManager::loadStreamSubscription()
 		wxString enabled;
 		if(!pRegKey->HasValue(it->path)) continue;
 		pRegKey->QueryValue(it->path, enabled);
-		if(it->binary || it->resource) continue; // ignore binaries - no subscription for them
+		if(it->binary || it->resource)
+		{
+			it->checked = false;
+			continue; // ignore binaries - no subscription for them
+		}
 		if(enabled == wxT("yes"))
 			it->checked = true;
 		else if(enabled == wxT("no"))
