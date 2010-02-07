@@ -611,12 +611,10 @@ bool StreamsPage::OnEnter(bool forward)
 		if(!it->binary && !it->resource) disable=true; // just show binaries and resources
 		if((!it->stable || it->beta )&& use_stable) disable=true; // hide non-stable in stable mode
 		if((it->stable || !it->beta )&& !use_stable) disable=true; // hide stable in beta mode
-		
-		if(disable)
-		{
-			CONFIG->setStreamSelection(&(*it), false);
-			continue;
-		}
+		if(disable)	continue;
+
+		if(it->forcecheck)
+			it->checked = true;
 		
 		wxStrel *wst=new wxStrel(scrw, &(*it));
 		wxSizerItem *si = scrwsz->Add(wst, 0, wxALL|wxEXPAND,0);
@@ -640,6 +638,11 @@ bool StreamsPage::OnLeave(bool forward)
 				wxStrel *wst = (wxStrel *)item->GetUserData();
 				if(wst)
 					CONFIG->setStreamSelection(wst->getDesc(), wst->getSelection());
+			} else
+			{
+				wxStrel *wst = (wxStrel *)item->GetUserData();
+				if(wst)
+					CONFIG->setStreamSelection(wst->getDesc(), false);
 			}
 			node = node->GetNext();
 		}
@@ -703,7 +706,6 @@ bool StreamsContentPage::OnEnter(bool forward)
 	}
 	scrwsz->Clear(true);
 	//add the streams
-	CONFIG->loadStreamSubscription();
 	std::vector < stream_desc_t > *streams = CONFIG->getStreamset();
 	if(!streams->size())
 	{
@@ -717,11 +719,11 @@ bool StreamsContentPage::OnEnter(bool forward)
 		if(it->hidden || !it->content) continue; // hide hidden entries and non-content things
 		bool disable=false;
 		if(it->beta && use_stable) disable=true; // hide non-stable in stable mode
-		if(disable)
-		{
-			CONFIG->setStreamSelection(&(*it), false);
-			continue;
-		}
+		if(disable) continue;
+
+		if(it->forcecheck)
+			it->checked = true;
+
 		wxStrel *wst=new wxStrel(scrw, &(*it));
 		wxSizerItem *si = scrwsz->Add(wst, 0, wxALL|wxEXPAND,0);
 		si->SetUserData((wxObject *)wst);
@@ -742,11 +744,13 @@ bool StreamsContentPage::OnLeave(bool forward)
 			wxSizerItem *item = node->GetData();
 			wxStrel *wst = (wxStrel *)item->GetUserData();
 			if(!wst) continue;
+			// save the selection in the registry for the next time.
 			CONFIG->setStreamSelection(wst->getDesc(), wst->getSelection());
 			node = node->GetNext();
 		}
-		// save the selection in the registry for the next time.
-		CONFIG->saveStreamSubscription();
+		// then load the full set from the storage again and use it!
+		CONFIG->loadStreamSubscription();
+		CONFIG->streamSubscriptionDebug();
 	}
 	return true;
 }
