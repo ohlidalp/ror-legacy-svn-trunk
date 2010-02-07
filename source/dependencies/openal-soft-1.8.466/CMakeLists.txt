@@ -19,6 +19,7 @@ INCLUDE(CheckTypeSize)
 PROJECT(OpenAL C)
 
 
+
 SET(CMAKE_ALLOW_LOOSE_LOOP_CONSTRUCTS TRUE)
 
 
@@ -51,6 +52,8 @@ IF(WIN32)
     SET(LIBNAME OpenAL32)
     ADD_DEFINITIONS("-D_WIN32")
     include_directories (${DirectX_INCLUDE_DIR})
+	include_directories (${DirectX_INCLUDE_DIR})
+	link_directories("$ENV{DXSDK_DIR}\\Lib\\x86")	
 ELSE()
     SET(LIBNAME openal)
 ENDIF()
