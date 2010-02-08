@@ -18,7 +18,7 @@
 namespace MyGUI
 {
 
-	class MYGUI_EXPORT OgreDataStream : public IDataStream
+	class OgreDataStream : public IDataStream
 	{
 	public:
 		OgreDataStream(Ogre::DataStreamPtr _stream);

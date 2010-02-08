@@ -24,7 +24,7 @@
 namespace MyGUI
 {
 
-	class MYGUI_EXPORT OgreVertexBuffer : public IVertexBuffer
+	class OgreVertexBuffer : public IVertexBuffer
 	{
 	public:
 		OgreVertexBuffer();

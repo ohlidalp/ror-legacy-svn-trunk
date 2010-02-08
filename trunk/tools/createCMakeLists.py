@@ -91,9 +91,9 @@ def isIgnoredProject(name):
     return False
 
 # ----------
-dir_src = '../build'
+dir_src = '../'
 
-dir_solution = '../build/build'
+dir_solution = '../'
 #try:
 #  dir_solution = sys.argv[1]
 #except:

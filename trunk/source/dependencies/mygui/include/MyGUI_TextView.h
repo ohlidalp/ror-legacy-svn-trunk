@@ -69,10 +69,10 @@ namespace MyGUI
 		}
 
 		void clear() { rollback = false; }
-		bool empty() { return !rollback; }
-		int getLenght() { MYGUI_DEBUG_ASSERT(rollback, "rollback point not valid"); return lenght; }
-		size_t getCount() { MYGUI_DEBUG_ASSERT(rollback, "rollback point not valid"); return count; }
-		size_t getPosition() { MYGUI_DEBUG_ASSERT(rollback, "rollback point not valid"); return position; }
+		bool empty() const { return !rollback; }
+		int getLenght() const { MYGUI_DEBUG_ASSERT(rollback, "rollback point not valid"); return lenght; }
+		size_t getCount() const { MYGUI_DEBUG_ASSERT(rollback, "rollback point not valid"); return count; }
+		size_t getPosition() const { MYGUI_DEBUG_ASSERT(rollback, "rollback point not valid"); return position; }
 		UString::const_iterator getTextIter() { MYGUI_DEBUG_ASSERT(rollback, "rollback point not valid"); return space_point; }
 
 	private:
@@ -97,7 +97,11 @@ namespace MyGUI
 			mFontHeight = _height;
 
 			// массив для быстрой конвертации цветов
-			static const char convert_colour[64] = { 0,1,2,3,4,5,6,7,8,9,0,0,0,0,0,0,0,10,11,12,13,14,15,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,10,11,12,13,14,15,0,0,0,0,0,0,0,0,0 };
+			static const char convert_colour[64] = { 0,  1,  2,  3,  4,  5,  6, 7, 8, 9, 0, 0, 0, 0, 0, 0,
+													 0, 10, 11, 12, 13, 14, 15, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+													 0,  0,  0,  0,  0,  0,  0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+													 0, 10, 11, 12, 13, 14, 15, 0, 0, 0, 0, 0, 0, 0, 0, 0
+			                                       };
 
 			mViewSize.clear();
 
@@ -158,7 +162,7 @@ namespace MyGUI
 				{
 					// берем следующий символ
 					++ index;
-					if (index == end) { --index ;continue; } // это защита
+					if (index == end) { --index; continue; } // это защита
 
 					character = *index;
 					// если два подряд, то рисуем один шарп, если нет то меняем цвет
@@ -171,7 +175,7 @@ namespace MyGUI
 						for (char i=0; i<5; i++)
 						{
 							++ index;
-							if (index == end) { --index ;continue; } // это защита
+							if (index == end) { --index; continue; } // это защита
 							colour <<= 4;
 							colour += convert_colour[ ((*index) - 48) & 0x3F ];
 						}
@@ -304,7 +308,7 @@ namespace MyGUI
 
 			return result;
 		}
-	
+
 		IntPoint getCursorPoint(size_t _position)
 		{
 			if (_position >= mLength + 1) _position = mLength;
@@ -337,8 +341,8 @@ namespace MyGUI
 			return IntPoint(left, top);
 		}
 
-		const IntSize& getViewSize() { return mViewSize; }
-		size_t getTextLength() { return mLength; }
+		const IntSize& getViewSize() const { return mViewSize; }
+		size_t getTextLength() const { return mLength; }
 		const VectorLineInfo& getData() { return mLineInfo; }
 
 	private:

@@ -6,17 +6,17 @@
 */
 /*
 	This file is part of MyGUI.
-	
+
 	MyGUI is free software: you can redistribute it and/or modify
 	it under the terms of the GNU Lesser General Public License as published by
 	the Free Software Foundation, either version 3 of the License, or
 	(at your option) any later version.
-	
+
 	MyGUI is distributed in the hope that it will be useful,
 	but WITHOUT ANY WARRANTY; without even the implied warranty of
 	MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 	GNU Lesser General Public License for more details.
-	
+
 	You should have received a copy of the GNU Lesser General Public License
 	along with MyGUI.  If not, see <http://www.gnu.org/licenses/>.
 */
@@ -46,25 +46,25 @@ namespace MyGUI
 			VStretch = Top | Bottom, /**< stretch vertically proportionate to parent window (and center horizontally) */
 
 			Stretch = HStretch | VStretch, /**< stretch proportionate to parent window */
-			Default = Left | Top, /**< default value (value from left and top) */
+			Default = Left | Top /**< default value (value from left and top) */
 		};
 
 		Align(Enum _value = Default) : value(_value) { }
 
-		bool isHCenter() { return HCenter == (value & ((int)HStretch)); }
-		bool isVCenter() { return VCenter == (value & ((int)VStretch)); }
-		bool isCenter() { return Center == (value & ((int)Stretch)); }
+		bool isHCenter() const { return HCenter == (value & ((int)HStretch)); }
+		bool isVCenter() const { return VCenter == (value & ((int)VStretch)); }
+		bool isCenter() const { return Center == (value & ((int)Stretch)); }
 
-		bool isLeft() { return Left == (value & ((int)HStretch)); }
-		bool isRight() { return Right == (value & ((int)HStretch)); }
-		bool isHStretch() { return HStretch == (value & ((int)HStretch)); }
+		bool isLeft() const { return Left == (value & ((int)HStretch)); }
+		bool isRight() const { return Right == (value & ((int)HStretch)); }
+		bool isHStretch() const { return HStretch == (value & ((int)HStretch)); }
 
-		bool isTop() { return Top == (value & ((int)VStretch)); }
-		bool isBottom() { return (Bottom == (value & ((int)VStretch))); }
-		bool isVStretch() { return (VStretch == (value & ((int)VStretch))); }
+		bool isTop() const { return Top == (value & ((int)VStretch)); }
+		bool isBottom() const { return (Bottom == (value & ((int)VStretch))); }
+		bool isVStretch() const { return (VStretch == (value & ((int)VStretch))); }
 
-		bool isStretch() { return (Stretch == (value & ((int)Stretch))); }
-		bool isDefault() { return (Default == (value & ((int)Stretch))); }
+		bool isStretch() const { return (Stretch == (value & ((int)Stretch))); }
+		bool isDefault() const { return (Default == (value & ((int)Stretch))); }
 
 		Align& operator |= (Align const& _other) { value = Enum(int(value) | int(_other.value)); return *this; }
 		friend Align operator | (Enum const& a, Enum const& b) { return Align(Enum(int(a) | int(b))); }
@@ -135,7 +135,7 @@ namespace MyGUI
 			if (iter != map_names.end())
 				_value.value = Enum(int(_value.value) | int(iter->second));
 
-			
+
 			if (!_stream.eof())
 			{
 				std::string value2;
@@ -149,7 +149,7 @@ namespace MyGUI
 		}
 
 	private:
-		const MapAlign& getValueNames()
+		const MapAlign& getValueNames() const
 		{
 			static MapAlign map_names;
 

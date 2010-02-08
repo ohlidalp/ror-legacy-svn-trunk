@@ -18,7 +18,7 @@
 namespace MyGUI
 {
 
-	class MYGUI_EXPORT OgreRTTexture :
+	class OgreRTTexture :
 		public IRenderTarget
 	{
 	public:

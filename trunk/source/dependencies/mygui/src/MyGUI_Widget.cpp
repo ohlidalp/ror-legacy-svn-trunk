@@ -6,17 +6,17 @@
 */
 /*
 	This file is part of MyGUI.
-	
+
 	MyGUI is free software: you can redistribute it and/or modify
 	it under the terms of the GNU Lesser General Public License as published by
 	the Free Software Foundation, either version 3 of the License, or
 	(at your option) any later version.
-	
+
 	MyGUI is distributed in the hope that it will be useful,
 	but WITHOUT ANY WARRANTY; without even the implied warranty of
 	MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 	GNU Lesser General Public License for more details.
-	
+
 	You should have received a copy of the GNU Lesser General Public License
 	along with MyGUI.  If not, see <http://www.gnu.org/licenses/>.
 */
@@ -25,7 +25,6 @@
 #include "MyGUI_Widget.h"
 #include "MyGUI_InputManager.h"
 #include "MyGUI_SkinManager.h"
-#include "MyGUI_SubWidgetManager.h"
 #include "MyGUI_WidgetManager.h"
 #include "MyGUI_ResourceSkin.h"
 #include "MyGUI_WidgetDefines.h"
@@ -54,6 +53,7 @@ namespace MyGUI
 		mSubSkinsVisible(true),
 		mInheritsVisible(true),
 		mAlpha(ALPHA_MIN),
+		mRealAlpha(ALPHA_MIN),
 		mInheritsAlpha(true),
 		mTexture(nullptr),
 		mParent(nullptr),
@@ -78,10 +78,13 @@ namespace MyGUI
 		mText(nullptr),
 		mMainSkin(nullptr),
 		mEnabled(true),
+		mInheritsEnabled(true),
 		mSubSkinsVisible(true),
 		mInheritsVisible(true),
 		mAlpha(ALPHA_MIN),
+		mRealAlpha(ALPHA_MIN),
 		mInheritsAlpha(true),
+		mTexture(nullptr),
 		mParent(nullptr),
 		mIWidgetCreator(nullptr),
 		mNeedKeyFocus(false),
@@ -699,7 +702,7 @@ namespace MyGUI
 					// если виджет берет тултип, значит сбрасываем
 					if (widget->getNeedToolTip())
 						widget = 0;
-					else 
+					else
 						widget = widget->getParent();
 				}
 
@@ -760,7 +763,7 @@ namespace MyGUI
 					// если виджет берет тултип, значит сбрасываем
 					if (widget->getNeedToolTip())
 						widget = 0;
-					else 
+					else
 						widget = widget->getParent();
 				}
 
@@ -960,7 +963,7 @@ namespace MyGUI
 		IntSize old = mCoord.size();
 		mCoord = _size;
 
-		bool show = true;
+		bool visible = true;
 
 		// обновляем выравнивание
 		bool margin = mCroppedParent ? _checkMargin() : false;
@@ -971,11 +974,11 @@ namespace MyGUI
 			if (_checkOutside())
 			{
 				// скрываем
-				show = false;
+				visible = false;
 			}
 		}
 
-		_setSubSkinVisible(show);
+		_setSubSkinVisible(visible);
 
 		// передаем старую координату , до вызова, текущая координата отца должна быть новой
 		overrideArrange(old);
@@ -999,7 +1002,7 @@ namespace MyGUI
 		IntCoord old = mCoord;
 		mCoord = _coord;
 
-		bool show = true;
+		bool visible = true;
 
 		// обновляем выравнивание
 		bool margin = mCroppedParent ? _checkMargin() : false;
@@ -1010,11 +1013,11 @@ namespace MyGUI
 			if (_checkOutside())
 			{
 				// скрываем
-				show = false;
+				visible = false;
 			}
 		}
 
-		_setSubSkinVisible(show);
+		_setSubSkinVisible(visible);
 
 		// передаем старую координату , до вызова, текущая координата отца должна быть новой
 		overrideArrange(old.size());
@@ -1817,9 +1820,18 @@ namespace MyGUI
 	{
 		for (VectorWidgetPtr::iterator widget = mWidgetChild.begin(); widget != mWidgetChild.end(); ++widget)
 		{
-			(*widget)->updateArrange(
-				IntCoord(mPadding.left, mPadding.top, mCoord.width - getPaddingWidth(), mCoord.height - getPaddingHeight()),
-				_oldSize);
+			// рутовые всплывающие дочки
+			if ((*widget)->getVisualParent() == nullptr)
+			{
+				const IntSize& size = (*widget)->getParentSize();
+				(*widget)->updateArrange(IntCoord(0, 0, size.width, size.height), size);
+			}
+			else
+			{
+				(*widget)->updateArrange(
+					IntCoord(mPadding.left, mPadding.top, mCoord.width - getPaddingWidth(), mCoord.height - getPaddingHeight()),
+					_oldSize);
+			}
 		}
 		for (VectorWidgetPtr::iterator widget = mWidgetChildSkin.begin(); widget != mWidgetChildSkin.end(); ++widget)
 		{
@@ -1863,4 +1875,3 @@ namespace MyGUI
 	}
 
 } // namespace MyGUI
-

@@ -28,7 +28,7 @@ namespace MyGUI
 		OgreTexture(const std::string& _name, const std::string& _group);
 		virtual ~OgreTexture();
 
-		virtual const std::string& getName();
+		virtual const std::string& getName() const;
 
 		virtual void createManual(int _width, int _height, TextureUsage _usage, PixelFormat _format);
 		virtual void loadFromFile(const std::string& _filename);
@@ -51,6 +51,8 @@ namespace MyGUI
 
 		virtual IRenderTarget* getRenderTarget();
 
+		static Ogre::TextureUsage convertUsage(TextureUsage _usage);
+		static Ogre::PixelFormat convertFormat(PixelFormat _format);
 	/*internal:*/
 		Ogre::TexturePtr getOgreTexture() { return mTexture; }
 		void setOgreTexture(Ogre::TexturePtr _value) { mTexture = _value; }

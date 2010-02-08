@@ -6,17 +6,17 @@
 */
 /*
 	This file is part of MyGUI.
-	
+
 	MyGUI is free software: you can redistribute it and/or modify
 	it under the terms of the GNU Lesser General Public License as published by
 	the Free Software Foundation, either version 3 of the License, or
 	(at your option) any later version.
-	
+
 	MyGUI is distributed in the hope that it will be useful,
 	but WITHOUT ANY WARRANTY; without even the implied warranty of
 	MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 	GNU Lesser General Public License for more details.
-	
+
 	You should have received a copy of the GNU Lesser General Public License
 	along with MyGUI.  If not, see <http://www.gnu.org/licenses/>.
 */
@@ -41,6 +41,7 @@ namespace MyGUI
 		mRange(0),
 		mStartPosition(0),
 		mEndPosition(0),
+		mAutoPosition(0.0f),
 		mAutoTrack(false),
 		mFillTrack(false),
 		mClient(nullptr)
@@ -264,19 +265,19 @@ namespace MyGUI
 		{
 			// сколько не видно
 			int hide_pix = (width * (int)mStartPosition / (int)mRange);
-			int hide = hide_pix / mTrackStep;
+			int hide_count = hide_pix / mTrackStep;
 			// сколько видно
 			int show_pix = (width * (int)mEndPosition / (int)mRange);
-			int show = show_pix / mTrackStep;
+			int show_count = show_pix / mTrackStep;
 
 			int pos = 0;
 			for (VectorWidgetPtr::iterator iter=mVectorTrack.begin(); iter!=mVectorTrack.end(); ++iter)
 			{
-				if (0 > show)
+				if (0 > show_count)
 				{
 					(*iter)->setVisible(false);
 				}
-				else if (0 == show)
+				else if (0 == show_count)
 				{
 					(*iter)->setAlpha((float)(show_pix % mTrackStep) / (float)mTrackStep);
 					(*iter)->setVisible(true);
@@ -284,11 +285,11 @@ namespace MyGUI
 				}
 				else
 				{
-					if (0 < hide)
+					if (0 < hide_count)
 					{
 						(*iter)->setVisible(false);
 					}
-					else if (0 == hide)
+					else if (0 == hide_count)
 					{
 						(*iter)->setAlpha(1.0f - ((float)(hide_pix % mTrackStep) / (float)mTrackStep));
 						(*iter)->setVisible(true);
@@ -301,8 +302,8 @@ namespace MyGUI
 						setTrackPosition(*iter, pos * mTrackStep, 0, mTrackWidth, getClientHeight());
 					}
 				}
-				hide --;
-				show --;
+				hide_count --;
+				show_count --;
 				pos ++;
 			}
 		}
