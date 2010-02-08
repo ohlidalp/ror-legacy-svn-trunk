@@ -19,7 +19,7 @@
 namespace MyGUI
 {
 
-	MYGUI_INSTANCE_IMPLEMENT(OgreRenderManager);
+	MYGUI_INSTANCE_IMPLEMENT(OgreRenderManager)
 
 	void OgreRenderManager::initialise(Ogre::RenderWindow* _window, Ogre::SceneManager* _scene)
 	{
@@ -333,6 +333,14 @@ namespace MyGUI
 			return nullptr;
 		}
 		return item->second;
+	}
+
+	bool OgreRenderManager::isFormatSupported(PixelFormat _format, TextureUsage _usage)
+	{
+		return Ogre::TextureManager::getSingleton().isFormatSupported(
+			Ogre::TEX_TYPE_2D,
+			OgreTexture::convertFormat(_format),
+			OgreTexture::convertUsage(_usage));
 	}
 
 	void OgreRenderManager::destroyAllResources()

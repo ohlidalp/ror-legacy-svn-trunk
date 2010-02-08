@@ -6,17 +6,17 @@
 */
 /*
 	This file is part of MyGUI.
-	
+
 	MyGUI is free software: you can redistribute it and/or modify
 	it under the terms of the GNU Lesser General Public License as published by
 	the Free Software Foundation, either version 3 of the License, or
 	(at your option) any later version.
-	
+
 	MyGUI is distributed in the hope that it will be useful,
 	but WITHOUT ANY WARRANTY; without even the implied warranty of
 	MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 	GNU Lesser General Public License for more details.
-	
+
 	You should have received a copy of the GNU Lesser General Public License
 	along with MyGUI.  If not, see <http://www.gnu.org/licenses/>.
 */
@@ -34,7 +34,16 @@ namespace MyGUI
 	struct MYGUI_EXPORT IBDrawItemInfo
 	{
 
-		IBDrawItemInfo() : index(ITEM_NONE) { }
+		IBDrawItemInfo() :
+			index(ITEM_NONE),
+			update(false),
+			select(false),
+			active(false),
+			drag(false),
+			drop_accept(false),
+			drop_refuse(false)
+		{
+		}
 
 		IBDrawItemInfo(size_t _index, size_t _select, size_t _active, size_t _accept, size_t _refuse, bool _update, bool _drag) :
 			index(_index),

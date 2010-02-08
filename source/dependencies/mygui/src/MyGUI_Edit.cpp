@@ -6,17 +6,17 @@
 */
 /*
 	This file is part of MyGUI.
-	
+
 	MyGUI is free software: you can redistribute it and/or modify
 	it under the terms of the GNU Lesser General Public License as published by
 	the Free Software Foundation, either version 3 of the License, or
 	(at your option) any later version.
-	
+
 	MyGUI is distributed in the hope that it will be useful,
 	but WITHOUT ANY WARRANTY; without even the implied warranty of
 	MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 	GNU Lesser General Public License for more details.
-	
+
 	You should have received a copy of the GNU Lesser General Public License
 	along with MyGUI.  If not, see <http://www.gnu.org/licenses/>.
 */
@@ -24,10 +24,8 @@
 #include "MyGUI_Gui.h"
 #include "MyGUI_Edit.h"
 #include "MyGUI_ResourceSkin.h"
-#include "MyGUI_SkinManager.h"
 #include "MyGUI_InputManager.h"
 #include "MyGUI_ClipboardManager.h"
-#include "MyGUI_PointerManager.h"
 #include "MyGUI_ISubWidgetText.h"
 #include "MyGUI_VScroll.h"
 #include "MyGUI_HScroll.h"
@@ -349,7 +347,7 @@ namespace MyGUI
 					// прыгаем на одну назад и удаляем
 					if (mCursorPosition != 0)
 					{
-						mCursorPosition -- ;
+						mCursorPosition--;
 						eraseText(mCursorPosition, 1, true);
 					}
 				}
@@ -788,7 +786,7 @@ namespace MyGUI
 			}
 
 		} // if (mMouseLeftPressed)
-  }
+	}
 
 	void Edit::setTextCursor(size_t _index)
 	{
@@ -931,7 +929,7 @@ namespace MyGUI
 		UString text = getRealString();
 
 		// восстанавливаем последовательность
-		for (VectorChangeInfo::iterator iter=info.begin(); iter!=info.end(); iter++)
+		for (VectorChangeInfo::iterator iter=info.begin(); iter!=info.end(); ++iter)
 		{
 
 			if ((*iter).type == TextCommandInfo::COMMAND_INSERT) text.insert((*iter).start, (*iter).text);
@@ -1119,7 +1117,7 @@ namespace MyGUI
 				mText->setCaption(UString(mTextLength, '*'));
 			}
 		}
-		else 
+		else
 		{
 			if (mText != nullptr)
 			{
@@ -1701,7 +1699,7 @@ namespace MyGUI
 			mText->setViewOffset(_point);
 	}
 
-	IntSize Edit::getViewSize()
+	IntSize Edit::getViewSize() const
 	{
 		return mWidgetClient == nullptr ? getSize() : mWidgetClient->getSize();
 	}

@@ -26,18 +26,13 @@
 #include <memory>
 #include <limits>
 
-#ifdef max
-	#undef max
-	#undef min
-#endif
-
 namespace MyGUI
 {
 
 	template<typename T>
 	class Allocator
 	{
-	public :
+	public:
 		//    typedefs
 		typedef T value_type;
 		typedef value_type* pointer;
@@ -47,7 +42,7 @@ namespace MyGUI
 		typedef std::size_t size_type;
 		typedef std::ptrdiff_t difference_type;
 
-	public :
+	public:
 		//    convert an allocator<T> to allocator<U>
 		template<typename U>
 		struct rebind
@@ -55,7 +50,7 @@ namespace MyGUI
 			typedef Allocator<U> other;
 		};
 
-	public :
+	public:
 		inline explicit Allocator() { }
 		inline ~Allocator() { }
 		template<typename U>
@@ -68,11 +63,11 @@ namespace MyGUI
 		//    memory allocation
 		inline pointer allocate(size_type cnt, typename std::allocator<void>::const_pointer = 0)
 		{
-			return reinterpret_cast<pointer>(::operator new(cnt * sizeof (T)));
+			return reinterpret_cast<pointer>(::operator new (cnt * sizeof (T)));
 		}
 		inline void deallocate(pointer p, size_type)
 		{
-			::operator delete(p);
+			::operator delete (p);
 		}
 
 		//    size
@@ -82,7 +77,7 @@ namespace MyGUI
 		}
 
 		//    construction/destruction
-		inline void construct(pointer p, const T& t) { new(p) T(t); }
+		inline void construct(pointer p, const T& t) { new (p) T(t); }
 		inline void destroy(pointer p) { p->~T(); }
 
 		inline bool operator==(Allocator const&) { return true; }

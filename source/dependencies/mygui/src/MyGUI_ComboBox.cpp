@@ -29,7 +29,6 @@
 #include "MyGUI_List.h"
 #include "MyGUI_Button.h"
 #include "MyGUI_ResourceSkin.h"
-#include "MyGUI_LayerManager.h"
 
 namespace MyGUI
 {
@@ -46,7 +45,8 @@ namespace MyGUI
 		mItemIndex(ITEM_NONE),
 		mModeDrop(false),
 		mDropMouse(false),
-		mShowSmooth(false)
+		mShowSmooth(false),
+		mManualList(true)
 	{
 	}
 
@@ -76,7 +76,7 @@ namespace MyGUI
 		if (!properties.empty())
 		{
 			MapString::const_iterator iter = properties.find("HeightList");
-			if (iter != properties.end()) mMaxHeight = utility::parseSizeT(iter->second);
+			if (iter != properties.end()) mMaxHeight = utility::parseValue<int>(iter->second);
 
 			iter = properties.find("ListSmoothShow");
 			if (iter != properties.end()) setSmoothShow(utility::parseBool(iter->second));
@@ -107,7 +107,7 @@ namespace MyGUI
 		//MYGUI_ASSERT(nullptr != mButton, "Child Button not found in skin (combobox must have Button)");
 
 		//MYGUI_ASSERT(nullptr != mList, "Child List not found in skin (combobox must have List)");
-		mManualList = mList == nullptr;
+		mManualList = (mList == nullptr);
 		if (mList == nullptr)
 		{
 			std::string list_skin;
@@ -296,23 +296,23 @@ namespace MyGUI
 
 		mListShow = true;
 
-		size_t height = mList->getOptimalHeight();
+		int height = mList->getOptimalHeight();
 		if (height > mMaxHeight) height = mMaxHeight;
 
 		// берем глобальные координаты выджета
 		IntCoord coord = getAbsoluteCoord();
 
 		//показываем список вверх
-		if ((coord.top + coord.height + height) > (size_t)mList->getParentSize().height)
+		if ((coord.top + coord.height + height) > mList->getParentSize().height)
 		{
-			coord.height = (int)height;
+			coord.height = height;
 			coord.top -= coord.height;
 		}
 		// показываем список вниз
 		else
 		{
 			coord.top += coord.height;
-			coord.height = (int)height;
+			coord.height = height;
 		}
 		mList->setCoord(coord);
 

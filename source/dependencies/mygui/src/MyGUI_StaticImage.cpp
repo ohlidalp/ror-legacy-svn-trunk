@@ -6,17 +6,17 @@
 */
 /*
 	This file is part of MyGUI.
-	
+
 	MyGUI is free software: you can redistribute it and/or modify
 	it under the terms of the GNU Lesser General Public License as published by
 	the Free Software Foundation, either version 3 of the License, or
 	(at your option) any later version.
-	
+
 	MyGUI is distributed in the hope that it will be useful,
 	but WITHOUT ANY WARRANTY; without even the implied warranty of
 	MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 	GNU Lesser General Public License for more details.
-	
+
 	You should have received a copy of the GNU Lesser General Public License
 	along with MyGUI.  If not, see <http://www.gnu.org/licenses/>.
 */
@@ -110,6 +110,8 @@ namespace MyGUI
 
 		recalcIndexes();
 		updateSelectIndex(mIndexSelect);
+
+		setDesiredSize(mSizeTile);
 	}
 
 	void StaticImage::setImageCoord(const IntCoord& _coord)
@@ -497,9 +499,9 @@ namespace MyGUI
 
 	void StaticImage::frameAdvise(bool _advise)
 	{
-		if( _advise )
+		if ( _advise )
 		{
-			if( ! mFrameAdvise )
+			if ( ! mFrameAdvise )
 			{
 				MyGUI::Gui::getInstance().eventFrameStart += MyGUI::newDelegate( this, &StaticImage::frameEntered );
 				mFrameAdvise = true;
@@ -507,7 +509,7 @@ namespace MyGUI
 		}
 		else
 		{
-			if( mFrameAdvise )
+			if ( mFrameAdvise )
 			{
 				MyGUI::Gui::getInstance().eventFrameStart -= MyGUI::newDelegate( this, &StaticImage::frameEntered );
 				mFrameAdvise = false;
@@ -549,7 +551,10 @@ namespace MyGUI
 
 	IntSize StaticImage::overrideMeasure(const IntSize& _sizeAvailable)
 	{
-		return mNativeImageSize;
+		IntSize result = Base::overrideMeasure(_sizeAvailable);
+		result.width = std::max(result.width, mNativeImageSize.width);
+		result.height = std::max(result.height, mNativeImageSize.height);
+		return result;
 	}
 
 } // namespace MyGUI

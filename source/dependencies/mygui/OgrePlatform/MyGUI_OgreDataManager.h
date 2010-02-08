@@ -14,10 +14,10 @@
 namespace MyGUI
 {
 
-	class MYGUI_EXPORT OgreDataManager :
+	class OgreDataManager :
 		public DataManager
 	{
-		MYGUI_INSTANCE_HEADER(OgreDataManager);
+		MYGUI_INSTANCE_HEADER(OgreDataManager)
 
 	public:
 		void initialise(const std::string& _group);

@@ -1,28 +1,52 @@
-FILE(GLOB_RECURSE mygui_src  src/*.cpp)
-FILE(GLOB_RECURSE mygui_headers  include/*.h)
+set (PROJECTNAME mygui)
 
-include_directories (include)
+# paths and settings from RoR
+set (MYGUI_USE_FREETYPE TRUE)
+set (FREETYPE_INCLUDE_DIRS ${OGRE_INCLUDE_DEPENDENCIES_DIR})
+set (FREETYPE_LIBRARIES ${FREETYPE_LIBRARY_REL})
 
-include_directories (${OGRE_INCLUDE_DIR})
-include_directories (${OGRE_INCLUDE_DEPENDENCIES_DIR}) # for freetype
-include_directories (${OIS_INCLUDE_DIR})
+project( ${PROJECTNAME} )
 
-IF(WIN32)
-  include_directories (${DirectX_INCLUDE_DIR})
-  add_definitions("-DWIN32_LEAN_AND_MEAN -DNOMINMAX")
-  link_directories("$ENV{DXSDK_DIR}\\Lib\\x86")
-ENDIF(WIN32)
+#include(PrecompiledHeader)
 
-# -DHYDRAX_LIB will  give us the correct dllspec export setting
-add_definitions("-DWIN32 -DNDEBUG -D_WINDOWS -D_USRDLL -DMYGUI_BUILD -DMYGUI_USE_FREETYPE")
+include(${PROJECTNAME}.list)
 
-# the final lib
-add_library(mygui SHARED ${mygui_src} ${mygui_headers})
+include_directories(include)
+if (MYGUI_USE_FREETYPE)
+	include_directories(
+		${FREETYPE_INCLUDE_DIRS}
+	)
+	add_definitions(-DMYGUI_USE_FREETYPE)
+endif ()
+
+if (MYGUI_DONT_USE_OBSOLETE)
+	add_definitions(-DMYGUI_DONT_USE_OBSOLETE)
+endif ()
+
+add_definitions(-DMYGUI_BUILD)
+
+# setup MyGUIEngine target
+add_library(${PROJECTNAME} ${MYGUI_LIB_TYPE} ${HEADER_FILES} ${SOURCE_FILES})
 windows_hacks(mygui)
+set_target_properties(${PROJECTNAME} PROPERTIES VERSION ${MYGUI_VERSION} SOVERSION ${MYGUI_VERSION_MAJOR})
+if (MYGUI_USE_FREETYPE)
+	target_link_libraries(${PROJECTNAME}
+		${FREETYPE_LIBRARIES}
+	)
+endif()
 
-# this is for windows only, since windows is stupid ...
-add_dependencies(mygui OgreMain ois)
-target_link_libraries(mygui OgreMain ois)
+## specify a precompiled header to use
+#use_precompiled_header(${PROJECTNAME}
+#  "${CMAKE_CURRENT_SOURCE_DIR}/include/MyGUI_Precompiled.h"
+#  "${CMAKE_CURRENT_SOURCE_DIR}/src/MyGUI_Precompiled.cpp"
+#)
+#
+#mygui_config_lib(${PROJECTNAME})
+#
+## install MyGUIEngine headers
+#install(FILES ${HEADER_FILES}
+#  DESTINATION include/MYGUI
+#)
 
 IF(WIN32)
 ELSEIF(UNIX)
