@@ -34,13 +34,16 @@ Console::Console()
 	mCommandEdit->eventEditSelectAccept = MyGUI::newDelegate(this, &Console::eventCommandAccept);
 
 	mHistoryPosition = 0;
-	history.push_back("");
+	mHistory.push_back("");
 
 	setVisible(false);
+
+	Ogre::LogManager::getSingleton().getDefaultLog()->addListener(this);
 }
 
 Console::~Console()
 {
+	Ogre::LogManager::getSingleton().getDefaultLog()->removeListener(this);
 }
 
 void Console::setVisible(bool _visible)
@@ -72,6 +75,16 @@ void Console::print(const MyGUI::UString &_text)
 	mLogEdit->setTextSelection(mLogEdit->getTextLength(), mLogEdit->getTextLength());
 }
 
+void Console::messageLogged( const Ogre::String& message, Ogre::LogMessageLevel lml, bool maskDebug, const Ogre::String &logName )
+{
+	Ogre::String msg = message;
+	//this->print(logName+": "+message);
+	// strip script engine things
+	if(message.substr(0,4) == "SE| ")
+		msg = message.substr(4);
+	this->print(msg);
+}
+
 void Console::eventButtonPressed(MyGUI::Widget* _sender, MyGUI::KeyCode _key, MyGUI::Char _char)
 {
 	if(_key == MyGUI::KeyCode::Escape || _key == MyGUI::KeyCode::Enum(INPUTENGINE.getKeboardKeyForCommand(EV_COMMON_CONSOLEDISPLAY)))
@@ -79,7 +92,7 @@ void Console::eventButtonPressed(MyGUI::Widget* _sender, MyGUI::KeyCode _key, My
 		setVisible(false);
 		// delete last character (to avoid printing `)
 		size_t lastChar = mCommandEdit->getTextLength() - 1;
-		if (mCommandEdit->getCaption()[lastChar] == '`')
+		if (_key != MyGUI::KeyCode::Escape && mCommandEdit->getCaption()[lastChar] == '`')
 			mCommandEdit->eraseText(lastChar);
 		return;
 	}
@@ -90,20 +103,20 @@ void Console::eventButtonPressed(MyGUI::Widget* _sender, MyGUI::KeyCode _key, My
 		if(mHistoryPosition > 0)
 		{
 			// first we save what we was writing
-			if (mHistoryPosition == (int)history.size() - 1)
+			if (mHistoryPosition == (int)mHistory.size() - 1)
 			{
-				history[mHistoryPosition] = mCommandEdit->getCaption();
+				mHistory[mHistoryPosition] = mCommandEdit->getCaption();
 			}
 			mHistoryPosition--;
-			mCommandEdit->setCaption(history[mHistoryPosition]);
+			mCommandEdit->setCaption(mHistory[mHistoryPosition]);
 		}
 		break;
 
 	case MyGUI::KeyCode::ArrowDown:
-		if(mHistoryPosition < (int)history.size() - 1)
+		if(mHistoryPosition < (int)mHistory.size() - 1)
 		{
 			mHistoryPosition++;
-			mCommandEdit->setCaption(history[mHistoryPosition]);
+			mCommandEdit->setCaption(mHistory[mHistoryPosition]);
 		}
 		break;
 
@@ -136,7 +149,8 @@ void Console::eventCommandAccept(MyGUI::Edit* _sender)
 		ScriptEngine::getSingleton().executeString(command);
 #endif //ANGELSCRIPT
 	}
-	*history.rbegin() = command;
-	history.push_back(""); // new, empty last entry
-	mHistoryPosition = history.size() - 1; // switch to the new line
+	*mHistory.rbegin() = command;
+	mHistory.push_back(""); // new, empty last entry
+	mHistoryPosition = mHistory.size() - 1; // switch to the new line
+	mCommandEdit->setCaption(mHistory[mHistoryPosition]);
 }

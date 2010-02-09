@@ -21,18 +21,12 @@ along with Rigs of Rods.  If not, see <http://www.gnu.org/licenses/>.
 // created by Thomas Fischer thomas{AT}thomasfischer{DOT}biz, 7th of September 2009
 
 #include "gui_friction.h"
-#include "gui_manager.h"
-#include "Ogre.h"
 #include "Settings.h"
 
 #include "collisions.h"
 #include "Beam.h"
 
-#include "MyGUI_ControllerFadeAlpha.h"
-
 #include "language.h"
-
-using namespace Ogre;
 
 template<> GUI_Friction * Singleton< GUI_Friction >::ms_Singleton = 0;
 GUI_Friction* GUI_Friction::getSingletonPtr(void)

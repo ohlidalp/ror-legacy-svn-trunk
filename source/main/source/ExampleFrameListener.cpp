@@ -1146,11 +1146,11 @@ ExampleFrameListener::ExampleFrameListener(RenderWindow* win, Camera* cam, Scene
 
 #ifdef ANGELSCRIPT
 	new ScriptEngine(this);
-	Console::Instance();
+	Console::getInstance();
 #endif
 
-	LoadingWindow::Instance();
-	SelectorWindow::Instance();
+	LoadingWindow::getInstance();
+	SelectorWindow::getInstance();
 
 	// setup particle manager
 	new DustManager(mSceneMgr);

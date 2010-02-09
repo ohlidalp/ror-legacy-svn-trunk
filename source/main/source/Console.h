@@ -23,23 +23,27 @@ along with Rigs of Rods.  If not, see <http://www.gnu.org/licenses/>.
 #include "Singleton.h"
 #include <BaseLayout.h>
 #include "rormemory.h"
+#include <OgreLog.h>
 
 ATTRIBUTE_CLASS_LAYOUT(Console, "Console.layout");
 class Console :
 	public wraps::BaseLayout,
 	public Singleton2<Console>,
-	public MemoryAllocatedObject
+	public MemoryAllocatedObject,
+	public Ogre::LogListener
 {
-public:
+	friend class Singleton2<Console>;
 	Console();
 	~Console();
+public:
 
 	void setVisible(bool _visible);
 	bool getVisible();
 
 	void print(const MyGUI::UString &text);
 
-	//void onKeyPressed(const OIS::KeyEvent &arg);
+	// method from Ogre::LogListener
+	virtual void messageLogged( const Ogre::String& message, Ogre::LogMessageLevel lml, bool maskDebug, const Ogre::String &logName );
 
 protected:
 	void eventButtonPressed(MyGUI::Widget* _sender, MyGUI::KeyCode _key, MyGUI::Char _char);
@@ -53,8 +57,7 @@ protected:
 	bool mVisible;
 
 	int mHistoryPosition;
-	std::list<MyGUI::UString> lines;
-	std::vector<MyGUI::UString> history;
+	std::vector<MyGUI::UString> mHistory;
 };
 
 #endif // __CONSOLE_H__
