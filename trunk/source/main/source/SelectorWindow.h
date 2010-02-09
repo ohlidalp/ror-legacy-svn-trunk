@@ -32,9 +32,10 @@ class SelectorWindow :
 	public wraps::BaseLayout,
 	public Singleton2<SelectorWindow>
 {
-public:
+	friend class Singleton2<SelectorWindow>;
 	SelectorWindow();
 	~SelectorWindow();
+public:
 
 	void setupCamera(Ogre::Camera* _camera) { mCamera = _camera; }
 

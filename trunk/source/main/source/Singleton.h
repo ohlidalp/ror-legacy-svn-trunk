@@ -31,14 +31,19 @@ protected:
 	virtual ~Singleton2() { _self = 0; }
 	void _free() { delete this; }
 public:
-	static T* Instance()
+	static T& getInstance()
+	{
+		if (!_self) _self = new T;
+		return *_self;
+	}
+	static T* getInstancePtr()
 	{
 		if (!_self) _self = new T;
 		return _self;
 	}
 	// just shorter name
-	static T* get() { return Instance(); }
-	static void FreeInstance() { Instance()->_free(); }
+	static T* get() { return getInstancePtr(); }
+	static void FreeInstance() { getInstancePtr()->_free(); }
 };
 
 template <class T>

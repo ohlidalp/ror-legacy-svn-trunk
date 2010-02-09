@@ -29,9 +29,10 @@ class LoadingWindow :
 	public wraps::BaseLayout,
 	public Singleton2<LoadingWindow>
 {
-public:
+	friend class Singleton2<LoadingWindow>;
 	LoadingWindow();
-	virtual ~LoadingWindow();
+	~LoadingWindow();
+public:
 
 	void setProgress(int _percent, const Ogre::String& _text = "", bool _updateRenderFrame = true);
 	void setAutotrack(const Ogre::String& _text = "", bool _updateRenderFrame = true);

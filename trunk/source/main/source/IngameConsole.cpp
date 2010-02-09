@@ -24,8 +24,6 @@ along with Rigs of Rods.  If not, see <http://www.gnu.org/licenses/>.
 using namespace std;
 using namespace Ogre;
 
-IngameConsole *IngameConsole::myInstance = 0;
-
 IngameConsole::IngameConsole()
 {
 	consoleOverlay = 0;
@@ -44,14 +42,6 @@ IngameConsole::IngameConsole()
 
 IngameConsole::~IngameConsole()
 {
-}
-
-IngameConsole &IngameConsole::getInstance()
-{
-	if(myInstance == 0) {
-		myInstance = new IngameConsole();
-	}
-	return *myInstance;
 }
 
 void IngameConsole::setFontSize(int size)

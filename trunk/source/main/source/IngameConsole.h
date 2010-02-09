@@ -26,6 +26,7 @@ along with Rigs of Rods.  If not, see <http://www.gnu.org/licenses/>.
 #include "Ogre.h"
 #include "OgreTextAreaOverlayElement.h"
 #include "ColoredTextAreaOverlayElement.h"
+#include "Singleton.h"
 #include "rormemory.h"
 
 #define NETCHAT IngameConsole::getInstance()
@@ -35,16 +36,19 @@ enum {NETCHAT_MSG_CHAT, NETCHAT_MSG_COMMAND};
 
 class ExampleFrameListener;
 
-class IngameConsole : public MemoryAllocatedObject
+class IngameConsole :
+	public Singleton2<IngameConsole>,
+	public MemoryAllocatedObject
 {
+	friend class Singleton2<IngameConsole>;
+	IngameConsole();
+	~IngameConsole();
 public:
 	bool update(float dt);
 	void setMode(ExampleFrameListener *mefl, int mode, bool visible);
 	int getMode();
 	int toggleMode(ExampleFrameListener *mefl);
 	void toggleVisible(ExampleFrameListener *mefl);
-	static IngameConsole & getInstance();
-	~IngameConsole();
 	bool addText(Ogre::UTFString msg, bool addtime=false);
 	bool setEnterText(Ogre::UTFString msg, bool visible=true, bool cursor=false);
 	void resize(int left, int top, int width, int height);
@@ -59,11 +63,6 @@ public:
 	void scrollPageUp();
 	void scrollPageDown();
 	void noScroll();
-
-protected:
-	IngameConsole();
-	IngameConsole(const IngameConsole&);
-	IngameConsole& operator= (const IngameConsole&);
 
 private:
     static IngameConsole *myInstance;
