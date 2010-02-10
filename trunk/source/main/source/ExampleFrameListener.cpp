@@ -7016,9 +7016,6 @@ void ExampleFrameListener::moveCamera(float dt)
 				dir.normalise();
 				angle=-atan2(dir.dotProduct(Vector3::UNIT_X), dir.dotProduct(-Vector3::UNIT_Z));
 
-				Real truckmindist = trucks[current_truck]->getMinimalCameraRadius();
-				if(camDist < truckmindist) camDist = truckmindist;
-
 				if(externalCameraMode==0)
 				{
 					float pitch=-asin(dir.dotProduct(Vector3::UNIT_Y));

@@ -313,7 +313,6 @@ Beam::Beam(int tnum, SceneManager *manager, SceneNode *parent, RenderWindow* win
 	free_axle=0;
 	slideNodesConnectInstantly=false;
 	replayTimer=0;
-	minCameraRadius=0;
 	last_net_time=0;
 	lastFuzzyGroundModel=0;
 	patchEngineTorque=false;
@@ -4952,21 +4951,6 @@ void Beam::resetPosition(float px, float pz, bool setI, float miny)
 
 	position=apos/free_node;
 
-	// calculate min camera radius for truck
-	if(minCameraRadius<0.01)
-	{
-		// recalc
-		for (i=0; i<free_node; i++)
-		{
-			Real dist = nodes[i].AbsPosition.distance(position);
-			if(dist > minCameraRadius)
-			{
-				minCameraRadius = dist;
-			}
-		}
-		minCameraRadius *= 1.2f; // ten percent buffer
-	}
-
 	//if (netLabelNode) netLabelNode->setPosition(nodes[0].Position);
 
 	resetSlideNodePositions();
@@ -4994,21 +4978,6 @@ void Beam::resetPosition(Ogre::Vector3 translation, bool setInitPosition)
 		apos += nodes[i].AbsPosition;
 	}
 	position = apos / free_node;
-
-	// calculate min camera radius for truck
-	if(minCameraRadius < 0.01f)
-	{
-		// recalc
-		for (i=0; i<free_node; i++)
-		{
-			Real dist = nodes[i].AbsPosition.distance(position);
-			if(dist > minCameraRadius)
-			{
-				minCameraRadius = dist;
-			}
-		}
-		minCameraRadius *= 1.2f; // ten percent buffer
-	}
 
 	//if (netLabelNode) netLabelNode->setPosition(nodes[0].Position);
 
