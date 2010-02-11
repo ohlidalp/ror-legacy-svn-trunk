@@ -69,7 +69,7 @@ ELSEIF(UNIX)
   # ignore warnings that are generated from the libs we use, just warn about RoR code
   add_definitions("
     -isystem ${OGRE_INCLUDE_DIR}
-    -isystem ${MYGUI_INCLUDE_DIR}
+    -isystem ${MYGUI_ENGINE_INCLUDE_DIR}
     -isystem ${HYDRAX_INCLUDE_DIR}
     -isystem ${PAGED_INCLUDE_DIR}
   ")
