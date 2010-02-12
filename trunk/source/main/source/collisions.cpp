@@ -1212,7 +1212,7 @@ bool Collisions::groundCollision(node_t *node, float dt, ground_model_t** ogm, f
 void Collisions::primitiveCollision(node_t *node, Vector3 &force, Vector3 &velocity, Vector3 &normal, float dt, ground_model_t* gm, float* nso, float penetration, float reaction)
 {
 	//normal velocity
-	
+
 	float Vnormal=velocity.dotProduct(normal);
 
 	// if we are inside the fluid (solid ground is below us)

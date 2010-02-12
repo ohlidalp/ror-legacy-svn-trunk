@@ -1015,6 +1015,8 @@ ExampleFrameListener::ExampleFrameListener(RenderWindow* win, Camera* cam, Scene
 {
 	for (int i=0; i<MAX_TRUCKS; i++) trucks[i]=0;
 
+	current_truck=-1;
+	lua=0;
 	benchmarking=false;
 	fpsLineStream = netLineStream = netlagLineStream = 0;
 	enablePosStor = (SETTINGS.getSetting("Position Storage")=="Yes");
@@ -1458,6 +1460,7 @@ ExampleFrameListener::ExampleFrameListener(RenderWindow* win, Camera* cam, Scene
 	laptimes = (TextAreaOverlayElement*)OverlayManager::getSingleton().getOverlayElement("tracks/LapTimes");
 	laptimems = (TextAreaOverlayElement*)OverlayManager::getSingleton().getOverlayElement("tracks/LapTimems");
 	lasttime = (TextAreaOverlayElement*)OverlayManager::getSingleton().getOverlayElement("tracks/LastTime");
+	lasttime->setCaption("");
 
 	flashOverlay = OverlayManager::getSingleton().getByName("tracks/FlashMessage");
 	OverlayContainer *flashPanel = static_cast<OverlayContainer*>(OverlayManager::getSingleton().createOverlayElement("Panel", "tracks/FlashMessage/Panel"));
@@ -1605,6 +1608,24 @@ ExampleFrameListener::ExampleFrameListener(RenderWindow* win, Camera* cam, Scene
 
 	objcounter=0;
 
+	// load 3d line for mouse picking
+	pickLine =  mSceneMgr->createManualObject("PickLineObject");
+	pickLineNode = mSceneMgr->getRootSceneNode()->createChildSceneNode("PickLineNode");
+
+	MaterialPtr pickLineMaterial = MaterialManager::getSingleton().create("PickLineMaterial","debugger");
+	pickLineMaterial->setReceiveShadows(false);
+	pickLineMaterial->getTechnique(0)->setLightingEnabled(true);
+	pickLineMaterial->getTechnique(0)->getPass(0)->setDiffuse(0,0,1,0);
+	pickLineMaterial->getTechnique(0)->getPass(0)->setAmbient(0,0,1);
+	pickLineMaterial->getTechnique(0)->getPass(0)->setSelfIllumination(0,0,1);
+
+	pickLine->begin("PickLineMaterial", Ogre::RenderOperation::OT_LINE_LIST);
+	pickLine->position(0, 0, 0);
+	pickLine->position(0, 0, 0);
+	pickLine->end();
+
+	pickLineNode->attachObject(pickLine);
+	pickLineNode->setVisible(false);
 
 	//network
 	netmode=(SETTINGS.getSetting("Network enable")=="Yes");
@@ -1652,13 +1673,6 @@ ExampleFrameListener::ExampleFrameListener(RenderWindow* win, Camera* cam, Scene
 	if(!netmode && cmdAction == "joinserver")
 		netmode = true;
 	net=0;
-
-	String benchmark = SETTINGS.getSetting("Benchmark");
-	if(!benchmark.empty())
-	{
-		setupBenchmark();
-		return;
-	}
 
 	// preselected map or truck?
 	String preselected_map = SETTINGS.getSetting("Preselected Map");
@@ -1759,6 +1773,10 @@ ExampleFrameListener::ExampleFrameListener(RenderWindow* win, Camera* cam, Scene
 	new BeamFactory(this, trucks, mSceneMgr, mSceneMgr->getRootSceneNode(), mWindow, net, &mapsizex, &mapsizez, collisions, hfinder, w, mCamera, mirror);
 
 
+	// setup a benchmark if required
+	if(setupBenchmark())
+		return;
+
 	// now continue to load everything...
 	if(preselected_map != "")
 	{
@@ -1839,26 +1857,6 @@ ExampleFrameListener::ExampleFrameListener(RenderWindow* win, Camera* cam, Scene
 	// show character
 	person->setVisible(true);
 
-	//LogManager::getSingleton().logMessage("ngolo1");
-
-	// load 3d line for mouse picking
-	pickLine =  mSceneMgr->createManualObject("PickLineObject");
-	pickLineNode = mSceneMgr->getRootSceneNode()->createChildSceneNode("PickLineNode");
-
-	MaterialPtr pickLineMaterial = MaterialManager::getSingleton().create("PickLineMaterial","debugger");
-	pickLineMaterial->setReceiveShadows(false);
-	pickLineMaterial->getTechnique(0)->setLightingEnabled(true);
-	pickLineMaterial->getTechnique(0)->getPass(0)->setDiffuse(0,0,1,0);
-	pickLineMaterial->getTechnique(0)->getPass(0)->setAmbient(0,0,1);
-	pickLineMaterial->getTechnique(0)->getPass(0)->setSelfIllumination(0,0,1);
-
-	pickLine->begin("PickLineMaterial", Ogre::RenderOperation::OT_LINE_LIST);
-	pickLine->position(0, 0, 0);
-	pickLine->position(0, 0, 0);
-	pickLine->end();
-
-	pickLineNode->attachObject(pickLine);
-	pickLineNode->setVisible(false);
 
 	initialized=true;
 }
@@ -1932,20 +1930,68 @@ void ExampleFrameListener::loadNetTerrain(char *preselected_map)
 }
 
 
-void ExampleFrameListener::setupBenchmark()
+int ExampleFrameListener::setupBenchmark()
 {
-	//showDebugOverlay(3);
 	String benchmark = SETTINGS.getSetting("Benchmark");
+	if(benchmark.empty()) return 0;
+
 	if(benchmark == "simple")
 	{
+		// very simple benchmark: a simple truck driving
 		benchmarking=true;
 		LoadingWindow::get()->hide();
+
+		// load a simple terrain
+		loadTerrain("simple.terrn");
+
+		// get truck name to test
+		int trucknums = 10;
+		String truckname = SETTINGS.getSetting("Preselected Truck");
+		if(truckname.empty())
+		{
+			showError(_L("please specify truck to benchmark"), _L("Benchmark truck not specified"));
+			exit(1);
+		}
+
+		// load trucks
+		float radius = 10;
+		for(int i=0;i<trucknums;i++)
+		{
+			Vector3 pos = Vector3(500,0,250+3.5f*i);
+			Ogre::Quaternion dir = Ogre::Quaternion::ZERO;
+			Beam *truck = BeamFactory::getSingleton().createLocal(pos, dir, truckname);
+			truck->reset();
+			radius = truck->getMinimalCameraRadius() * 3.5f;
+			setCurrentTruck(truck->trucknum);
+		}
+
+		// activate them all
+		for(int i=0;i<trucknums;i++)
+			trucks[i]->activate();
+
+		// setup the camera
+		cameramode=CAMERA_EXT;
+		camRotX = Degree(-120);
+		camDist = radius;
+
+		// start the simulation
+		loading_state=ALL_LOADED;
+
+		// modify the gui
+		TRUCKHUD.show(false);
+		showDashboardOverlays(false,0);
+		showDebugOverlay(1);
+		startTimer();
+
+		// return 1 to skip the normal loading
+		return 1;
 	} else
 	{
 		// unkown benchmark
 		showError(_L("Benchmark loading error"), _L("Benchmark not known: ") + benchmark);
 		exit(1);
 	}
+	return 0;
 }
 
 void ExampleFrameListener::getMeshInformation(Mesh* mesh,size_t &vertex_count,Vector3* &vertices,
@@ -2106,6 +2152,7 @@ String ExampleFrameListener::saveTerrainMesh()
 	delete mMeshSeri;
 	return mfilename;
 }
+
 
 void ExampleFrameListener::loadObject(const char* name, float px, float py, float pz, float rx, float ry, float rz, SceneNode * bakeNode, const char* instancename, bool enable_collisions, int luahandler, const char *type, bool uniquifyMaterial)
 {
@@ -2691,12 +2738,55 @@ void ExampleFrameListener::removeTruck(char* inst, char* box)
 	}
 }
 
+
+bool ExampleFrameListener::benchmarkStep(float dt)
+{
+	// accelerate the truck a bit
+	//if(current_truck != -1 && trucks[current_truck] && trucks[current_truck]->engine)
+	for (int i=0; i<free_truck; i++)
+	{
+		if(!trucks[i]) continue;
+		trucks[i]->engine->autoSetAcc(0.5f);
+
+	}
+
+#if 0
+	if(rtime > 10.0f && rtime < 15.0f)
+		trucks[current_truck]->brake = 1;
+
+	// toggle parking brake around 20 and 25 sec
+	if(fabs(20.0f - rtime) < 0.1f)
+		trucks[current_truck]->parkingbrake=1;
+
+	if(fabs(22.0f - rtime) < 0.1f)
+		trucks[current_truck]->parkingbrake=0;
+#endif //0
+
+	// end the benchmark after some time
+	if(rtime > 30.0f)
+	{
+		// abort the benchmark after some seconds
+		exit(1);
+	}
+
+	// rotate camera slowly
+	//camRotX += Degree(-0.03f);
+
+	// update timer
+	updateRacingGUI();
+
+	return true;
+}
+
 bool ExampleFrameListener::updateEvents(float dt)
 {
 	if (dt==0.0f) return true;
-
 	INPUTENGINE.updateKeyBounces(dt);
 	if(!INPUTENGINE.getInputsChanged()) return true;
+
+	// when in benchmark mode, do not process user events, rather execute some hardcoded actions
+	if(benchmarking)
+		return benchmarkStep(dt);
 
 	bool dirty = false;
 	//update joystick readings
@@ -4883,6 +4973,14 @@ void ExampleFrameListener::loadTerrain(String terrainfile)
 {
 	ScopeLog log("terrain_"+terrainfile);
 
+	// check if the resource is loaded
+	if(!CACHE.checkResourceLoaded(terrainfile))
+	{
+		LogManager::getSingleton().logMessage("Terrain not found: " + terrainfile);
+		showError(_L("Terrain loading error"), _L("Terrain not found: ") + terrainfile);
+		exit(123);
+	}
+
 	loadedTerrain = terrainfile;
 #ifdef XFIRE
 	updateXFire();
@@ -4925,7 +5023,7 @@ void ExampleFrameListener::loadTerrain(String terrainfile)
 	//setup collision system
 	collisions=new Collisions(lua, this, debugCollisions);
 
-	if(!netmode)
+	if(!netmode && lua)
 		lua->loadTerrain(terrainfile);
 #else
 	collisions=new Collisions(this, debugCollisions);
@@ -7686,7 +7784,7 @@ END OF OLD CODE */
 	if (loading_state==ALL_LOADED)
 	{
 #ifdef LUASCRIPT
-		lua->framestep();
+		if(lua) lua->framestep();
 #endif
 		updateGUI(dt);
 		if (raceStartTime > 0)

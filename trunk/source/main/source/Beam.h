@@ -966,6 +966,8 @@ public:
 
 	int getTruckTime() { return nettimer->getMilliseconds(); };
 	int getNetTruckTimeOffset() { return net_toffset; };
+	Real getMinimalCameraRadius() { return minCameraRadius; };
+
 
 	Replay *getReplay() { return replay; };
 
@@ -986,6 +988,8 @@ protected:
 	Vector3 position;
 	Vector3 lastposition;
 	Vector3 lastlastposition;
+	Real minCameraRadius;
+
 	MaterialFunctionMapper *materialFunctionMapper;
 	Real replayTimer;
 	Real replayPrecision;

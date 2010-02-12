@@ -197,7 +197,7 @@ class ExampleFrameListener: public FrameListener, public Ogre::WindowEventListen
 {
 	friend class BeamFactory;
 protected:
-	void setupBenchmark();
+	int setupBenchmark();
 	void benchStep(float dt);
 	truck_prepare_t truck_preload[100];
 	int truck_preload_num;
@@ -443,6 +443,7 @@ public:
 	void repairTruck(char* inst, char* box);
 	void removeTruck(char* inst, char* box);
 	bool updateEvents(float dt);
+	bool benchmarkStep(float dt);
 	void initTrucks(bool loadmanual, Ogre::String selected, Ogre::String selectedExtension = Ogre::String(), std::vector<Ogre::String> *truckconfig=0, bool enterTruck=false);
 	void setCurrentTruck(int v);
 	//bool processUnbufferedMouseInput(const FrameEvent& evt);
