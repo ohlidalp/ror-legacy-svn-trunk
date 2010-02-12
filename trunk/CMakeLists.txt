@@ -80,7 +80,6 @@ endif(ROR_CMAKE_DEBUG)
 
 # RoR options
 option(ROR_BUILD_HYDRAX               "build RoR with HYDRAX water engine support" TRUE)
-option(ROR_BUILD_PAGED                "build RoR with Paged Geometry support (grass and trees)" TRUE)
 option(ROR_BUILD_CONFIGURATOR         "builds the RoRConfig" TRUE)
 option(ROR_BUILD_BEAMSTATS            "build RoR extensive Beam engine debugging/profiling support (do not enable in release build)" FALSE)
 option(ROR_BUILD_ANGELSCRIPT_COMPILER "build the AS compiler tool." FALSE)
@@ -89,6 +88,7 @@ option(ROR_BUILD_INSTALLER            "builds the wsync-installer tool" FALSE)
 # required options, enabled by default
 set(ROR_BUILD_ANGELSCRIPT TRUE)
 set(ROR_BUILD_LUASCRIPT TRUE)
+set(ROR_BUILD_PAGED TRUE)
 
 # hide some settings
 mark_as_advanced(
