@@ -26,6 +26,7 @@
 #define __MYGUI_DYNLIB_H__
 
 #include "MyGUI_Prerequest.h"
+#include <string>
 
 
 #if MYGUI_PLATFORM == MYGUI_PLATFORM_WIN32
@@ -44,6 +45,7 @@ typedef struct HINSTANCE__* hInstance;
 #    define MYGUI_DYNLIB_UNLOAD( a ) dlclose( a )
 
 #elif MYGUI_PLATFORM == MYGUI_PLATFORM_APPLE
+#    include <CoreFoundation/CFBundle.h>
 #    define MYGUI_DYNLIB_HANDLE CFBundleRef
 #    define MYGUI_DYNLIB_LOAD( a ) mac_loadExeBundle( a )
 #    define MYGUI_DYNLIB_GETSYM( a, b ) mac_getBundleSym( a, b )
