@@ -74,9 +74,6 @@ along with Rigs of Rods.  If not, see <http://www.gnu.org/licenses/>.
 
 float mrtime;
 
-const float Beam::inverse_RAND_MAX = 1.0/RAND_MAX;
-const int Beam::half_RAND_MAX = RAND_MAX/2;
-
 //threads and mutexes, see also at the bottom
 int thread_mode=0;
 
@@ -6862,7 +6859,7 @@ void Beam::calcForcesEuler(int doUpdate, Real dt, int step, int maxstep, Beam** 
 					//Real maxtur=defdragxspeed*speed*0.01f;
 					nodes[i].lastdrag=-defdragxspeed*nodes[i].Velocity;
 					Real maxtur=defdragxspeed*speed*0.01f;
-					nodes[i].lastdrag+=maxtur*Vector3(randHalf(), randHalf(), randHalf());
+					nodes[i].lastdrag+=maxtur*Vector3(frand_11()*0.5f, frand_11()*0.5f, frand_11()*0.5f);
 					nodes[i].Forces+=nodes[i].lastdrag;
 				}
 			}

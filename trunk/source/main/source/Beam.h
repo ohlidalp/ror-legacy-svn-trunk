@@ -911,14 +911,6 @@ public:
 
 	bool getReverseLightVisible();
 
-	static const float inverse_RAND_MAX;
-	static const int half_RAND_MAX;
-
-	inline float randHalf()
-	{
-		return  ((float)(rand()-half_RAND_MAX))*inverse_RAND_MAX;
-	}
-
 	inline bool getCustomLightVisible(int number)
 	{
 		if(netCustomLightArray[number] != -1)
