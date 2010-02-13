@@ -11,7 +11,7 @@
 static int mirand = 1;
 
 // Returns a random number in the range [0, 1]
-inline float frand_01()
+inline float frand()
 {
     unsigned int a;
 

@@ -6858,8 +6858,8 @@ void Beam::calcForcesEuler(int doUpdate, Real dt, int step, int maxstep, Beam** 
 					Real defdragxspeed= DEFAULT_DRAG*speed;
 					//Real maxtur=defdragxspeed*speed*0.01f;
 					nodes[i].lastdrag=-defdragxspeed*nodes[i].Velocity;
-					Real maxtur=defdragxspeed*speed*0.01f;
-					nodes[i].lastdrag+=maxtur*Vector3(frand_11()*0.5f, frand_11()*0.5f, frand_11()*0.5f);
+					Real maxtur=defdragxspeed*speed*0.005f;
+					nodes[i].lastdrag+=maxtur*Vector3(frand_11(), frand_11(), frand_11());
 					nodes[i].Forces+=nodes[i].lastdrag;
 				}
 			}
