@@ -24,6 +24,7 @@ along with Rigs of Rods.  If not, see <http://www.gnu.org/licenses/>.
 #include <BaseLayout.h>
 #include "rormemory.h"
 #include <OgreLog.h>
+#include <pthread.h>
 
 ATTRIBUTE_CLASS_LAYOUT(Console, "Console.layout");
 class Console :
@@ -44,7 +45,8 @@ public:
 
 	// method from Ogre::LogListener
 	virtual void messageLogged( const Ogre::String& message, Ogre::LogMessageLevel lml, bool maskDebug, const Ogre::String &logName );
-
+	// print waiting messages
+	void frameEntered(float _frame);
 protected:
 	void eventButtonPressed(MyGUI::Widget* _sender, MyGUI::KeyCode _key, MyGUI::Char _char);
 	void eventCommandAccept(MyGUI::Edit* _sender);
@@ -55,6 +57,9 @@ protected:
 	MyGUI::Edit* mCommandEdit;
 
 	bool mVisible;
+
+	pthread_mutex_t mWaitingMessagesMutex;
+	std::vector<MyGUI::UString> mWaitingMessages;
 
 	int mHistoryPosition;
 	std::vector<MyGUI::UString> mHistory;

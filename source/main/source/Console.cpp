@@ -38,12 +38,18 @@ Console::Console()
 
 	setVisible(false);
 
+	pthread_mutex_init(&mWaitingMessagesMutex, NULL);
+
+	MyGUI::Gui::getInstance().eventFrameStart += MyGUI::newDelegate( this, &Console::frameEntered );
 	Ogre::LogManager::getSingleton().getDefaultLog()->addListener(this);
 }
 
 Console::~Console()
 {
 	Ogre::LogManager::getSingleton().getDefaultLog()->removeListener(this);
+	MyGUI::Gui::getInstance().eventFrameStart -= MyGUI::newDelegate( this, &Console::frameEntered );
+
+	pthread_mutex_destroy(&mWaitingMessagesMutex);
 }
 
 void Console::setVisible(bool _visible)
@@ -68,11 +74,9 @@ bool Console::getVisible()
 
 void Console::print(const MyGUI::UString &_text)
 {
-	if (!mLogEdit->getCaption().empty())
-		mLogEdit->addText("\n");
-	mLogEdit->addText(_text);
-
-	mLogEdit->setTextSelection(mLogEdit->getTextLength(), mLogEdit->getTextLength());
+	pthread_mutex_lock(&mWaitingMessagesMutex);
+	mWaitingMessages.push_back(_text);
+	pthread_mutex_unlock(&mWaitingMessagesMutex);
 }
 
 void Console::messageLogged( const Ogre::String& message, Ogre::LogMessageLevel lml, bool maskDebug, const Ogre::String &logName )
@@ -83,6 +87,25 @@ void Console::messageLogged( const Ogre::String& message, Ogre::LogMessageLevel 
 	if(message.substr(0,4) == "SE| ")
 		msg = message.substr(4);
 	this->print(msg);
+}
+
+void Console::frameEntered(float _frame)
+{
+	pthread_mutex_lock(&mWaitingMessagesMutex);
+	if (!mWaitingMessages.empty())
+	{
+		for (std::vector<MyGUI::UString>::iterator iter = mWaitingMessages.begin(); iter != mWaitingMessages.end(); ++iter)
+		{
+			if (!mLogEdit->getCaption().empty())
+				mLogEdit->addText("\n" + *iter);
+			else
+				mLogEdit->addText(*iter);
+
+			mLogEdit->setTextSelection(mLogEdit->getTextLength(), mLogEdit->getTextLength());
+		}
+		mWaitingMessages.clear();
+	}
+	pthread_mutex_unlock(&mWaitingMessagesMutex);
 }
 
 void Console::eventButtonPressed(MyGUI::Widget* _sender, MyGUI::KeyCode _key, MyGUI::Char _char)
