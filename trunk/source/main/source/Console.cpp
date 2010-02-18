@@ -91,21 +91,25 @@ void Console::messageLogged( const Ogre::String& message, Ogre::LogMessageLevel 
 
 void Console::frameEntered(float _frame)
 {
+	// only copy the content and then unlock again
+	// this prevents that loggers are hung due to time consuming iteration over it
+	std::vector<MyGUI::UString> tmpWaitingMessages;
 	pthread_mutex_lock(&mWaitingMessagesMutex);
-	if (!mWaitingMessages.empty())
-	{
-		for (std::vector<MyGUI::UString>::iterator iter = mWaitingMessages.begin(); iter != mWaitingMessages.end(); ++iter)
-		{
-			if (!mLogEdit->getCaption().empty())
-				mLogEdit->addText("\n" + *iter);
-			else
-				mLogEdit->addText(*iter);
-
-			mLogEdit->setTextSelection(mLogEdit->getTextLength(), mLogEdit->getTextLength());
-		}
-		mWaitingMessages.clear();
-	}
+	tmpWaitingMessages = mWaitingMessages;
 	pthread_mutex_unlock(&mWaitingMessagesMutex);
+
+	if (!tmpWaitingMessages.empty())
+		return;
+	
+	for (std::vector<MyGUI::UString>::iterator iter = tmpWaitingMessages.begin(); iter != tmpWaitingMessages.end(); ++iter)
+	{
+		if (!mLogEdit->getCaption().empty())
+			mLogEdit->addText("\n" + *iter);
+		else
+			mLogEdit->addText(*iter);
+
+		mLogEdit->setTextSelection(mLogEdit->getTextLength(), mLogEdit->getTextLength());
+	}
 }
 
 void Console::eventButtonPressed(MyGUI::Widget* _sender, MyGUI::KeyCode _key, MyGUI::Char _char)

@@ -44,12 +44,14 @@ void DepthOfFieldEffect::setFarBlurCutoff(float cutoff)
 
 bool DepthOfFieldEffect::getEnabled() const
 {
+	if(!mCompositor) return false;
 	return mCompositor->getEnabled();
 }
 
 void DepthOfFieldEffect::setEnabled(bool value)
 {
-	mCompositor->setEnabled(value);
+	if(mCompositor)
+		mCompositor->setEnabled(value);
 }
 
 void DepthOfFieldEffect::createDepthRenderTexture()
@@ -169,8 +171,10 @@ void DepthOfFieldEffect::addCompositor()
 	mCompositor = CompositorManager::getSingleton().addCompositor(
 		mViewport, "DoF_Compositor_test");
 
+	//TODO: throw error and exit if not found
 	// Register 'this' as a listener
-	mCompositor->addListener(this);
+	if(mCompositor)
+		mCompositor->addListener(this);
 }
 
 void DepthOfFieldEffect::removeCompositor()

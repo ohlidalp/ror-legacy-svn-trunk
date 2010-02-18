@@ -68,15 +68,9 @@ class FlexBody;
 //#include "collisions.h"
 typedef struct _collision_box collision_box_t;
 
-
-extern String debugText;
-extern int truckSteps;
-
 #define THREAD_MONO 0
 #define THREAD_HT 1
-#define THREAD_DUAL 2
-#define THREAD_TRI 3
-#define THREAD_QUAD 4
+#define THREAD_HT2 2
 
 #define MAX_NODES 1000
 #define MAX_BEAMS 5000
@@ -692,6 +686,10 @@ public:
 	void updateSkidmarks();
 	ground_model_t *getLastFuzzyGroundModel() { return lastFuzzyGroundModel; };
 
+
+	String debugText;
+	int truckSteps;
+
 	//integration loop
 	//bool frameStarted(const FrameEvent& evt)
 	//this will be called once by frame and is responsible for animation of all the trucks!
@@ -967,6 +965,7 @@ public:
 	void sendStreamData();
 	bool isTied();
 	bool isLocked();
+	int tsteps;
 
 protected:
 
@@ -1066,7 +1065,6 @@ protected:
 	cparticle_t cparticles[MAX_CPARTICLES];
 	int free_cparticle;
 	bool cparticle_mode;
-	int tsteps;
 	Beam** ttrucks;
 	int tnumtrucks;
 	SceneNode *parentNode;

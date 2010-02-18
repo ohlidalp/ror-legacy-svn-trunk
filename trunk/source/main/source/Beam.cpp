@@ -303,6 +303,7 @@ Beam::Beam(int tnum, SceneManager *manager, SceneNode *parent, RenderWindow* win
 	net=_net;
 	if(net && !networking) networking = true; // enable networking if some network class is existing
 
+	tsteps=100;
 	networkUsername = String();
 	networkAuthlevel = 0;
 	beambreakdebug = (SETTINGS.getSetting("Beam Break Debug") == "Yes");
@@ -621,10 +622,9 @@ Beam::Beam(int tnum, SceneManager *manager, SceneNode *parent, RenderWindow* win
 	addPressure(0.0);
 	//thread start
 	//get parameters
-	if (SETTINGS.getSetting("Threads")=="1 (Standard CPU)") thread_mode=0;
-	if (SETTINGS.getSetting("Threads")=="2 (Hyper-Threading or Dual core CPU)") thread_mode=1;
-
-	if (thread_mode>1) thread_mode=1;
+	if (SETTINGS.getSetting("Threads")=="1 (Standard CPU)")thread_mode=THREAD_MONO;
+	if (SETTINGS.getSetting("Threads")=="2 (Hyper-Threading or Dual core CPU)") thread_mode=THREAD_HT;
+	if (SETTINGS.getSetting("Threads")=="3 (multi core CPU, one thread per beam)") thread_mode=THREAD_HT2;
 
 	checkBeamMaterial();
 
@@ -632,7 +632,11 @@ Beam::Beam(int tnum, SceneManager *manager, SceneNode *parent, RenderWindow* win
 	pthread_mutex_init(&work_mutex, NULL);
 	pthread_cond_init(&work_cv, NULL);
 
-	done_count=thread_mode;//for ready test
+	if (thread_mode == THREAD_HT)
+		done_count=thread_mode;//for ready test
+	else if (thread_mode == THREAD_HT2)
+		done_count=1;//for ready test
+
 	pthread_mutex_init(&done_count_mutex, NULL);
 	pthread_cond_init(&done_count_cv, NULL);
 
@@ -640,14 +644,27 @@ Beam::Beam(int tnum, SceneManager *manager, SceneNode *parent, RenderWindow* win
 	free_tb++;
 
 	//starting threads
-	for (i=0; i<thread_mode; i++)
+	if (thread_mode == THREAD_HT)
 	{
+		for (i=0; i<thread_mode; i++)
+		{
+			int rc;
+			rc=pthread_create(&threads[i], NULL, threadstart, (void*)(free_tb-1));
+			if (rc) LogManager::getSingleton().logMessage("BEAM: Can not start a thread");
+		}
+
+		//we must wait the threads to be ready
+		pthread_mutex_lock(&done_count_mutex);
+		while (done_count>0)
+			pthread_cond_wait(&done_count_cv, &done_count_mutex);
+		pthread_mutex_unlock(&done_count_mutex);
+	} else if (thread_mode == THREAD_HT2)
+	{
+		// just create ONE thread for this beam
 		int rc;
 		rc=pthread_create(&threads[i], NULL, threadstart, (void*)(free_tb-1));
 		if (rc) LogManager::getSingleton().logMessage("BEAM: Can not start a thread");
-	}
-	if (thread_mode)
-	{
+
 		//we must wait the threads to be ready
 		pthread_mutex_lock(&done_count_mutex);
 		while (done_count>0)
@@ -4247,7 +4264,6 @@ int Beam::loadTruck(const char* fname, SceneManager *manager, SceneNode *parent,
 			char sectionName[10][256];
 			for(int i=0;i<10;i++) memset(sectionName, 0, 255); // clear
 			if(strnlen(line,9)<8) continue;
-			//LogManager::getSingleton().logMessage(">>> "+String(line+7));
 			int result = sscanf(line+7,"%d %s %s %s %s %s %s %s %s %s %s", &version, sectionName[0], sectionName[1], sectionName[2], sectionName[3], sectionName[4], sectionName[5], sectionName[6], sectionName[7], sectionName[8], sectionName[9]);
 			if (result < 2 || result == EOF) {
 				LogManager::getSingleton().logMessage("Error parsing File (section) " + String(fname) +" line " + StringConverter::toString(linecounter) + ". trying to continue ...");
@@ -5749,8 +5765,35 @@ void Beam::threadentry(int id)
 		ffforce=affforce/steps;
 		ffhydro=affhydro/steps;
 		if (free_hydro) ffhydro=ffhydro/free_hydro;
+
+	} else if (thread_mode==THREAD_HT2)
+	{
+		int steps,i;
+		float dt;
+		Beam **trucks;
+		int numtrucks;
+		steps=tsteps;
+		dt=tdt;
+		trucks=ttrucks;
+		numtrucks=tnumtrucks;
+		float dtperstep=dt/(Real)steps;
+
+		for (i=0; i<steps; i++)
+		{
+			if(!trucks[id]) return;
+			if (trucks[id]->state!=SLEEPING 
+				&& trucks[id]->state!=NETWORKED 
+				&& trucks[id]->state!=RECYCLE)
+			{
+				trucks[id]->calcForcesEuler(i==0, dtperstep, i, steps, trucks, numtrucks);
+			}
+		}
+		ffforce=affforce/steps;
+		ffhydro=affhydro/steps;
+		if (free_hydro) ffhydro=ffhydro/free_hydro;
 	}
 }
+
 //integration loop
 //bool frameStarted(const FrameEvent& evt)
 //this will be called once by frame and is responsible for animation of all the trucks!
@@ -5780,19 +5823,16 @@ bool Beam::frameStep(Real dt, Beam** trucks, int numtrucks)
 	}
 
 	int i;
-	//            Real dt=evt.timeSinceLastFrame;
-	int steps=100;
-	steps=(int)(2000.0*dt);
-	truckSteps = steps; // copy for the stats
+	int steps=(int)(2000.0*dt);
 	if (steps>100) steps=100;
 	if (dt>1.0/20.0)
 	{
 		dt=1.0/20.0;
-		debugText="Not real time!!! - Fasttrack: "+StringConverter::toString(fasted*100/(fasted+slowed))+"% ";
+		debugText="NOT real time - Fasttrack: "+StringConverter::toString(fasted*100/(fasted+slowed))+"% "+StringConverter::toString(steps)+" steps";
 	}
 	else
 	{
-		debugText="Real time - Fasttrack: "+StringConverter::toString(fasted*100/(fasted+slowed))+"% "+StringConverter::toString(steps)+" steps";
+		debugText="___ Real time - Fasttrack: "+StringConverter::toString(fasted*100/(fasted+slowed))+"% "+StringConverter::toString(steps)+" steps";
 	};
 	//update visual - antishaking
 	//	int t;
@@ -5932,8 +5972,8 @@ bool Beam::frameStep(Real dt, Beam** trucks, int numtrucks)
 			ffforce=affforce/steps;
 			ffhydro=affhydro/steps;
 			if (free_hydro) ffhydro=ffhydro/free_hydro;
-		};
-		if (thread_mode==THREAD_HT)
+
+		} else if (thread_mode==THREAD_HT)
 		{
 			//block until all threads done
 			pthread_mutex_lock(&done_count_mutex);
@@ -5961,21 +6001,9 @@ bool Beam::frameStep(Real dt, Beam** trucks, int numtrucks)
 					for (int n=0; n<trucks[t]->free_node; n++)
 					{
 						trucks[t]->nodes[n].smoothpos=trucks[t]->nodes[n].AbsPosition;
-
-						if((trucks[t]->nodes[n].AbsPosition - trucks[t]->nodes[0].AbsPosition).squaredLength() > trucks[t]->nodes[n].iDistance * 25)
-						{
-							// loose node, ignore ...
-						} else
-						{
-							// valid node
-							aposition += trucks[t]->nodes[n].smoothpos;
-							nodesnum++;
-						}
-
-//						trucks[t]->nodes[n].smoothpos=trucks[t]->nodes[n].tsmooth/tsteps;
-//							trucks[t]->nodes[n].tsmooth=Vector3::ZERO;
+						aposition += trucks[t]->nodes[n].smoothpos;
 					}
-					trucks[t]->position = aposition / nodesnum;
+					trucks[t]->position = aposition / free_node;
 				}
 				if (floating_origin_enable && trucks[t]->nodes[0].RelPosition.length()>100.0)
 				{
@@ -5997,15 +6025,46 @@ bool Beam::frameStep(Real dt, Beam** trucks, int numtrucks)
 			pthread_mutex_lock(&work_mutex);
 			pthread_cond_broadcast(&work_cv);
 			pthread_mutex_unlock(&work_mutex);
+		
+		} else if (thread_mode==THREAD_HT2)
+		{
+			// just for this truck
+			lastlastposition = lastposition;
+			lastposition = position;
 
+			if (reset_requested) SyncReset();
+			
+			if (state!=SLEEPING && state!=NETWORKED && state!=RECYCLE)
+			{
+				// average position
+				Vector3 aposition=Vector3::ZERO;
+				int nodesnum=0;
+				for (int n=0; n<free_node; n++)
+				{
+					nodes[n].smoothpos=nodes[n].AbsPosition;
+					aposition += nodes[n].smoothpos;
+				}
+				position = aposition / free_node;
+			}
+			if (floating_origin_enable && nodes[0].RelPosition.length()>100.0)
+			{
+				moveOrigin(nodes[0].RelPosition);
+			}
+
+			tsteps=steps;
+			ttdt=tdt;
+			tdt=dt;
+			ttrucks=trucks;
+			tnumtrucks=numtrucks;
 		}
+
 
 #ifdef TIMING
 		if(statistics)
 			statistics->frameStep(dt);
 #endif
 		//we must take care of this
-		for (t=0; t<numtrucks; t++)
+		for (int t=0; t<numtrucks; t++)
 		{
 			if(!trucks[t]) continue;
 			//synchronous sleep
