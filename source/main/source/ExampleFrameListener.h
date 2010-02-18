@@ -601,6 +601,8 @@ protected:
 	TruckEditor *trucked;
 #endif
 	Beam *trucks[MAX_TRUCKS];
+	int thread_mode;
+
 	/** adds a truck to the main array
 	  */
 	int addTruck(Beam *b);

@@ -146,9 +146,6 @@ bool disableRendering=false;
 SceneManager *caelumSM;
 Camera *gCamera;
 
-String debugText;
-int truckSteps;
-
 class disableRenderingListener : public RenderTargetListener
 {
 private:
@@ -283,6 +280,12 @@ void ExampleFrameListener::updateStats(void)
 		guiTris->setCaption(triss);
 
 		OverlayElement* guiDbg = OverlayManager::getSingleton().getOverlayElement("Core/DebugText");
+		String debugText = "";
+		for(int t=0;t<free_truck;t++)
+		{
+			if(!trucks[t]->debugText.empty())
+				debugText += StringConverter::toString(t) + ": " + trucks[t]->debugText + "\n";
+		}
 		guiDbg->setCaption(debugText);
 
 		// create some memory texts
@@ -419,10 +422,10 @@ void ExampleFrameListener::updateStats(void)
 				sprintf(tmp, "%0.0f", fps);
 
 				fpsLineStream->setTraceInfo(0, cr, "FPS: " + String(tmp));
-				fpsLineStream->setTraceInfo(1, cg, "Physic Lag: " + StringConverter::toString(truckSteps));
+				//fpsLineStream->setTraceInfo(1, cg, "Physic Lag: " + StringConverter::toString(truckSteps));
 
 				fpsLineStream->setTraceValue(0, fpscount/6.0f);
-				fpsLineStream->setTraceValue(1, truckSteps);
+				//fpsLineStream->setTraceValue(1, truckSteps);
 				if(netmode && net && netLineStream)
 				{
 					// in kB/s not B/s
@@ -1014,6 +1017,11 @@ void ExampleFrameListener::setGravity(float value)
 ExampleFrameListener::ExampleFrameListener(RenderWindow* win, Camera* cam, SceneManager* scm, Root* root) :  initialized(false), mCollisionTools(0)
 {
 	for (int i=0; i<MAX_TRUCKS; i++) trucks[i]=0;
+
+	thread_mode=THREAD_MONO;
+	if (SETTINGS.getSetting("Threads")=="1 (Standard CPU)")thread_mode=THREAD_MONO;
+	if (SETTINGS.getSetting("Threads")=="2 (Hyper-Threading or Dual core CPU)") thread_mode=THREAD_HT;
+	if (SETTINGS.getSetting("Threads")=="3 (multi core CPU, one thread per beam)") thread_mode=THREAD_HT2;
 
 	current_truck=-1;
 	lua=0;
@@ -1945,7 +1953,9 @@ int ExampleFrameListener::setupBenchmark()
 		loadTerrain("simple.terrn");
 
 		// get truck name to test
-		int trucknums = 10;
+		int trucknums = 6;
+		if(!SETTINGS.getSetting("BenchmarkTrucks").empty())
+			trucknums = StringConverter::parseInt(SETTINGS.getSetting("BenchmarkTrucks"));
 		String truckname = SETTINGS.getSetting("Preselected Truck");
 		if(truckname.empty())
 		{
@@ -7738,7 +7748,48 @@ END OF OLD CODE */
 		//we simulate one truck, it will take care of the others (except networked ones)
 		//this is the big "shaker"
 		if (current_truck!=-1)
-			trucks[current_truck]->frameStep(evt.timeSinceLastFrame, trucks, free_truck);
+		{
+			// now handle inter truck coll in different HT modes
+			if (thread_mode == THREAD_HT2)
+			{
+				// wait for all threads to finish
+				for (t=0; t<free_truck; t++)
+				{
+					if(!trucks[t]) continue;
+					pthread_mutex_lock(&trucks[t]->done_count_mutex);
+					while(trucks[t]->done_count > 0)
+						pthread_cond_wait(&trucks[t]->done_count_cv, &trucks[t]->done_count_mutex);
+					pthread_mutex_unlock(&trucks[t]->done_count_mutex);
+				}
+
+				// smooth the stuff
+				for (t=0; t<free_truck; t++)
+				{
+					if(!trucks[t]) continue;
+					trucks[t]->frameStep(dt, trucks, free_truck);
+				}
+
+
+				// inter truck coll.
+				float dtperstep=dt/(Real)trucks[current_truck]->tsteps;
+				trucks[current_truck]->truckTruckCollisions(dtperstep, trucks, free_truck);
+
+				// unlock all threads
+				for (t=0; t<free_truck; t++)
+				{
+					if(!trucks[t]) continue;
+					trucks[t]->done_count=1;
+					pthread_mutex_lock(&trucks[t]->work_mutex);
+					pthread_cond_broadcast(&trucks[t]->work_cv);
+					pthread_mutex_unlock(&trucks[t]->work_mutex);
+				}
+			} else
+			{
+				// classic mode
+				trucks[current_truck]->frameStep(evt.timeSinceLastFrame, trucks, free_truck);
+			}
+
+		}
 
 		//things always on
 		for (t=0; t<free_truck; t++)

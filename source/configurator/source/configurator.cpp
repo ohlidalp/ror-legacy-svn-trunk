@@ -1876,6 +1876,7 @@ MyDialog::MyDialog(const wxString& title, MyApp *_app) : wxDialog(NULL, wxID_ANY
 	thread=new wxChoice(cpuPanel, -1, wxPoint(150, 25), wxSize(200, -1), 0);
 	thread->Append(conv("1 (Standard CPU)"));
 	thread->Append(conv("2 (Hyper-Threading or Dual core CPU)"));
+	thread->Append(conv("3 (multi core CPU, one thread per beam)"));
 	thread->SetToolTip(_("If you have a Hyper-Threading, or Dual core or multiprocessor computer,\nyou will have a huge gain in speed by choosing the second option.\nBut this mode has some camera shaking issues.\n"));
 
 	wheel2=new wxCheckBox(cpuPanel, -1, _("Enable advanced wheel model"), wxPoint(150, 70));
