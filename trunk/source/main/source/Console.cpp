@@ -96,6 +96,7 @@ void Console::frameEntered(float _frame)
 	std::vector<MyGUI::UString> tmpWaitingMessages;
 	pthread_mutex_lock(&mWaitingMessagesMutex);
 	tmpWaitingMessages = mWaitingMessages;
+	mWaitingMessages.clear();
 	pthread_mutex_unlock(&mWaitingMessagesMutex);
 
 	if (!tmpWaitingMessages.empty())
