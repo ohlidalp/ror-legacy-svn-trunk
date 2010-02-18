@@ -5768,29 +5768,21 @@ void Beam::threadentry(int id)
 
 	} else if (thread_mode==THREAD_HT2)
 	{
-		int steps,i;
-		float dt;
-		Beam **trucks;
-		int numtrucks;
-		steps=tsteps;
-		dt=tdt;
-		trucks=ttrucks;
-		numtrucks=tnumtrucks;
-		float dtperstep=dt/(Real)steps;
-
-		for (i=0; i<steps; i++)
+		// work on 'this'
+		if (this->state==SLEEPING || this->state==NETWORKED || this->state==RECYCLE)
 		{
-			if(!trucks[id]) return;
-			if (trucks[id]->state!=SLEEPING 
-				&& trucks[id]->state!=NETWORKED 
-				&& trucks[id]->state!=RECYCLE)
-			{
-				trucks[id]->calcForcesEuler(i==0, dtperstep, i, steps, trucks, numtrucks);
-			}
+			debugText = "";
+			return;
 		}
-		ffforce=affforce/steps;
-		ffhydro=affhydro/steps;
-		if (free_hydro) ffhydro=ffhydro/free_hydro;
+		float dtperstep = tdt / (Real)tsteps;
+
+		for (int i=0; i<tsteps; i++)
+		{
+			this->calcForcesEuler(i==0, dtperstep, i, tsteps, ttrucks, tnumtrucks);
+		}
+		ffforce = affforce / tsteps;
+		ffhydro = affhydro / tsteps;
+		if (free_hydro) ffhydro = ffhydro / free_hydro;
 	}
 }
 
