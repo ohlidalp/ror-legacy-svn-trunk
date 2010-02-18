@@ -99,7 +99,7 @@ void Console::frameEntered(float _frame)
 	mWaitingMessages.clear();
 	pthread_mutex_unlock(&mWaitingMessagesMutex);
 
-	if (!tmpWaitingMessages.empty())
+	if (tmpWaitingMessages.empty())
 		return;
 	
 	for (std::vector<MyGUI::UString>::iterator iter = tmpWaitingMessages.begin(); iter != tmpWaitingMessages.end(); ++iter)
