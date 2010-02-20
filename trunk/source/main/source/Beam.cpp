@@ -475,6 +475,7 @@ Beam::Beam(int tnum, SceneManager *manager, SceneNode *parent, RenderWindow* win
 	free_texcoord=0;
 	free_cab=0;
 	free_collcab=0;
+	collrange=0.02f;
 	free_buoycab=0;
 	buoyance=0;
 	free_shock=0;
@@ -1674,6 +1675,21 @@ int Beam::loadTruck(const char* fname, SceneManager *manager, SceneNode *parent,
 			subisback[free_sub]=0;
 			continue;
 		};
+
+		if (!strncmp("set_collision_range", line, 21))
+		{
+			int result = sscanf(line,"set_collision_range %f", &collrange);
+			if (result < 2 || result == EOF)
+			{
+				LogManager::getSingleton().logMessage("Error parsing File (set_collision_range) " + String(fname) +" line " + StringConverter::toString(linecounter) + ". trying to continue ...");
+				continue;
+			}
+
+			if(collrange<0)
+				collrange=DEFAULT_COLLISION_RANGE;
+			continue;
+		};
+
 		if (mode==1)
 		{
 			//parse nodes
@@ -7908,8 +7924,7 @@ void Beam::truckTruckCollisions(Real dt, Beam** trucks, int numtrucks)
 		statistics->queryStart(BeamThreadStats::Contacters);
 #endif
 
-	const float trwidth=0.02f;
-	const float invtrwidth=1.0f/trwidth;
+	float trwidth;
 
 	int t;
 	int hitnodeid;
@@ -7952,6 +7967,8 @@ void Beam::truckTruckCollisions(Real dt, Beam** trucks, int numtrucks)
 				trucks[t]->collcabrate[i].rate--;
 				continue;
 			}
+
+			trwidth=trucks[t]->collrange;
 
 			if (trucks[t]->collcabrate[i].distance<1) trucks[t]->collcabrate[i].distance=1;
 

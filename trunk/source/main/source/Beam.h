@@ -114,6 +114,7 @@ typedef struct _collision_box collision_box_t;
 #define DEFAULT_GRAVITY -9.8
 #define DEFAULT_DRAG 0.05
 #define DEFAULT_BEAM_DIAMETER 0.05
+#define DEFAULT_COLLISION_RANGE 0.02f
 #define MIN_BEAM_LENGTH 0.1f
 #define INVERTED_MIN_BEAM_LENGTH 1.0f/MIN_BEAM_LENGTH
 #define BEAM_SKELETON_DIAMETER 0.01
@@ -1026,6 +1027,7 @@ protected:
 	int free_collcab;
 	int free_buoycab;
 	int free_sub;
+	float collrange;
 	int subtexcoords[MAX_SUBMESHES];
 	int subcabs[MAX_SUBMESHES];
 	Vector3 texcoords[MAX_TEXCOORDS];
