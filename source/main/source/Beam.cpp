@@ -7959,6 +7959,8 @@ void Beam::truckTruckCollisions(Real dt, Beam** trucks, int numtrucks)
 		//see "pointCD" above.
 		//Performance some times forces ugly architectural designs....
 		if (!trucks[t] || trucks[t]->state==SLEEPING || trucks[t]->state==RECYCLE || trucks[t]->state==NETWORKED) continue;
+		
+		trwidth=trucks[t]->collrange;
 
 		for (i=0; i<trucks[t]->free_collcab; i++)
 		{
@@ -7967,8 +7969,6 @@ void Beam::truckTruckCollisions(Real dt, Beam** trucks, int numtrucks)
 				trucks[t]->collcabrate[i].rate--;
 				continue;
 			}
-
-			trwidth=trucks[t]->collrange;
 
 			if (trucks[t]->collcabrate[i].distance<1) trucks[t]->collcabrate[i].distance=1;
 
