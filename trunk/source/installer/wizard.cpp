@@ -538,14 +538,13 @@ StreamsPage::StreamsPage(wxWizard *parent) : wxWizardPageSimple(parent)
 	
 	wxString choices[4];
 	choices[0]=_T("Stable");
-	choices[1]=_T("BETA (experimental)");
+	choices[1]=_T("Latest");
 	betaOption=new wxRadioBox(this, wxID_ANY, _T("Version"), wxDefaultPosition, wxDefaultSize, 2, choices, 1, wxRA_SPECIFY_COLS);
 	mainSizer->Add(betaOption);
 	bool use_stable = CONFIG->getPersistentConfig(wxT("installer.use_stable")) == wxT("yes");
+	betaOption->SetSelection(1);
 	if(use_stable)
 		betaOption->SetSelection(0);
-	else
-		betaOption->SetSelection(1);
 
 	mainSizer->Add(tst=new wxStaticText(this, wxID_ANY, _T("Choose which binary pack you want to download:\n")), 0, wxALL, 0);
 	tst->Wrap(TXTWRAP);
@@ -603,7 +602,8 @@ bool StreamsPage::OnEnter(bool forward)
 		dlg->ShowModal();
 		exit(1);
 	}
-	bool use_stable = CONFIG->getPersistentConfig(wxT("installer.use_stable")) == wxT("yes");
+	bool use_stable = betaOption->GetSelection() == 0; // 0 == stable
+	int counter=0;
 	for(std::vector < stream_desc_t >::iterator it=streams->begin(); it!=streams->end(); it++)
 	{
 		if(it->hidden) continue; // hide hidden entries ;)
@@ -616,11 +616,15 @@ bool StreamsPage::OnEnter(bool forward)
 		if(it->forcecheck)
 			it->checked = true;
 		
+		counter++;
 		wxStrel *wst=new wxStrel(scrw, &(*it));
 		wxSizerItem *si = scrwsz->Add(wst, 0, wxALL|wxEXPAND,0);
 		si->SetUserData((wxObject *)wst);
 	}
 	scrwsz->Fit(scrw);
+	if(!counter && use_stable)
+		wxMessageBox(wxT("No stable version currently available. Please select the latest option"), wxT("No stable stream"));
+
 	return true;
 }
 
