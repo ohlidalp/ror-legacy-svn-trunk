@@ -82,7 +82,7 @@ int ConfigManager::getOnlineStreams()
 	std::vector< std::map< std::string, std::string > > olist;
 
 	WsyncDownload *wsdl = new WsyncDownload();
-	int res = wsdl->downloadAdvancedConfigFile("wsync.rigsofrods.com", "/streams.index", olist);
+	int res = wsdl->downloadAdvancedConfigFile("wsync.rigsofrods.com", "/streams.index", olist, true);
 	if(res == -1)
 	{
 		wxMessageBox(_T("error creating tempfile for download"), _T("Error"), wxICON_ERROR | wxOK);

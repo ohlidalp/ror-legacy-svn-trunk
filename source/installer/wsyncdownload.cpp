@@ -2,6 +2,7 @@
 
 #include <wx/thread.h>
 #include <wx/event.h>
+#include <wx/progdlg.h>
 #include <string.h>
 #include "Timer.h"
 #include "installerlog.h"
@@ -20,15 +21,20 @@ using namespace boost::asio::ip;
 using namespace boost::filesystem;
 using namespace std;
 
+
 std::map < std::string, boost::uintmax_t > WsyncDownload::traffic_stats;
 
 WsyncDownload::WsyncDownload(wxEvtHandler* parent) : parent(parent)
 {
 }
 
-int WsyncDownload::downloadFile(int jobID, boost::filesystem::path localFile, string server, string path, boost::uintmax_t predDownloadSize, boost::uintmax_t *fileSizeArg)
+int WsyncDownload::downloadFile(int jobID, boost::filesystem::path localFile, string server, string path, boost::uintmax_t predDownloadSize, boost::uintmax_t *fileSizeArg, bool showProgress)
 {
 	LOG("DLFile-%04d| starting: http://%s%s -> %s ... \n", jobID, server.c_str(), path.c_str(), localFile.string().c_str());
+
+	wxProgressDialog *wxp = 0;
+	if(showProgress)
+		wxp = new wxProgressDialog(wxT("downloading file ..."), conv(string("downloading ") + server + path), 1000,0, wxPD_AUTO_HIDE|wxPD_SMOOTH|wxPD_ELAPSED_TIME|wxPD_ESTIMATED_TIME|wxPD_REMAINING_TIME|wxPD_CAN_ABORT);
 	boost::uintmax_t downloadDoneSize=0;
 
 	Timer dlStartTime = Timer();
@@ -54,6 +60,7 @@ int WsyncDownload::downloadFile(int jobID, boost::filesystem::path localFile, st
 		tcp::resolver::iterator end;
 
 		// Try each endpoint until we successfully establish a connection.
+		if(wxp)	wxp->Update(0, wxT("Connecting to ") + conv(server) + wxT(" ..."));
 		tcp::socket socket(io_service);
 		boost::system::error_code error = boost::asio::error::host_not_found;
 		while (error && endpoint_iterator != end)
@@ -95,6 +102,7 @@ int WsyncDownload::downloadFile(int jobID, boost::filesystem::path localFile, st
 			socket.close();
 			LOG("DLFile-%04d|Error: Invalid response: %s\n", jobID, http_version.c_str());
 			LOG("DLFile-%04d|download URL: http://%s%s\n", jobID, server.c_str(), path.c_str());
+			if(wxp)	wxp->Update(1000, wxT("error"));
 			return 1;
 		}
 		if (status_code == 302)
@@ -117,6 +125,7 @@ int WsyncDownload::downloadFile(int jobID, boost::filesystem::path localFile, st
 			{
 				LOG("DLFile-%04d|Error: redirection uses unkown protocol: %s\n", jobID, new_url.c_str());
 				LOG("DLFile-%04d|download URL: http://%s%s\n", jobID, server.c_str(), path.c_str());
+				if(wxp)	wxp->Update(1000, wxT("error"));
 				return 1;
 			}
 			// trim line
@@ -127,12 +136,14 @@ int WsyncDownload::downloadFile(int jobID, boost::filesystem::path localFile, st
 			string new_path = new_url.substr(new_url.find_first_of("/", 7));
 
 			LOG("DLFile-%04d| got redirected: http://%s%s -> http://%s%s\n", jobID, server.c_str(), path.c_str(), new_server.c_str(), new_path.c_str());
+			if(wxp)	wxp->Update(1000, wxT("error"));
 			return downloadFile(jobID, localFile, new_server, new_path);
 		}
 		if (status_code != 200)
 		{
 			LOG("DLFile-%04d|Error: Response returned with status code: %d\n", jobID, status_code);
 			LOG("DLFile-%04d|download URL: http://%s%s\n", jobID, server.c_str(), path.c_str());
+			if(wxp)	wxp->Update(1000, wxT("error"));
 			return -(int)status_code;
 		}
 
@@ -161,6 +172,7 @@ int WsyncDownload::downloadFile(int jobID, boost::filesystem::path localFile, st
 		{
 			LOG("DLFile-%04d|error opening local file: %d\n", jobID, localFile.string().c_str());
 			LOG("DLFile-%04d|download URL: http://%s%s\n", jobID, server.c_str(), path.c_str());
+			if(wxp)	wxp->Update(1000, wxT("error"));
 			return 2;
 		}
 
@@ -177,6 +189,7 @@ int WsyncDownload::downloadFile(int jobID, boost::filesystem::path localFile, st
 			double tdiff = (time.elapsed() - lastTime);
 			if(tdiff >= 0.5f)
 			{
+				if(wxp)	wxp->Update(1000*(((float)downloadDoneSize)/((float)predDownloadSize)), wxT("downloading..."));
 				downloadDoneSize += dataspeed;
 				reportDownloadProgress(jobID, dlStartTime, predDownloadSize, downloadDoneSize);
 				dataspeed=0;
@@ -203,10 +216,12 @@ int WsyncDownload::downloadFile(int jobID, boost::filesystem::path localFile, st
 		{
 			LOG("DLFile-%04d|Error: file size is different: should be %d, is %d. removing file.\n", jobID, reported_filesize, (int)fileSize);
 			LOG("DLFile-%04d|download URL: http://%s%s\n", jobID, server.c_str(), path.c_str());
+			if(wxp)	wxp->Update(1000, wxT("error"));
 
 			tryRemoveFile(localFile);
 			return 1;
 		}
+		if(wxp)	wxp->Update(1000, wxT("done"));
 
 		// traffic stats tracking
 		increaseServerStats(server, fileSize);
@@ -283,7 +298,7 @@ void WsyncDownload::updateCallback(int jobID, int type, std::string txt, float p
 
 
 
-int WsyncDownload::downloadAdvancedConfigFile(std::string server, std::string url, std::vector< std::map< std::string, std::string > > &list)
+int WsyncDownload::downloadAdvancedConfigFile(std::string server, std::string url, std::vector< std::map< std::string, std::string > > &list, bool showProgress)
 {
 	path tempfile;
 	if(getTempFilename(tempfile))
@@ -292,7 +307,7 @@ int WsyncDownload::downloadAdvancedConfigFile(std::string server, std::string ur
 		return -1;
 	}
 
-	if(downloadFile(0, tempfile, server, url))
+	if(downloadFile(0, tempfile, server, url, 0, 0, showProgress))
 	{
 		printf("error downloading file from %s, %s\n", server.c_str(), url.c_str());
 		return -2;
@@ -343,7 +358,7 @@ int WsyncDownload::downloadAdvancedConfigFile(std::string server, std::string ur
 }
 
 
-int WsyncDownload::downloadConfigFile(std::string server, std::string url, std::vector< std::vector< std::string > > &list)
+int WsyncDownload::downloadConfigFile(std::string server, std::string url, std::vector< std::vector< std::string > > &list, bool showProgress)
 {
 	list.clear();
 
@@ -354,7 +369,7 @@ int WsyncDownload::downloadConfigFile(std::string server, std::string url, std::
 		return -1;
 	}
 
-	if(downloadFile(0, tempfile, server, url))
+	if(downloadFile(0, tempfile, server, url, 0, 0, showProgress))
 	{
 		printf("error downloading file from %s, %s\n", server.c_str(), url.c_str());
 		return -1;
