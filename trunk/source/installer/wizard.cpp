@@ -786,8 +786,9 @@ DownloadPage::DownloadPage(wxWizard *parent) : wxWizardPageSimple(parent), wizar
 	tst->Wrap(TXTWRAP);
 
 	// status text and progress bar
-	statusText=new wxStaticText(this, wxID_ANY, _T("Please wait for the download to finish\n"));
-	mainSizer->Add(statusText, 0, wxALL, 2);
+	statusList = new wxListBox(this, wxID_ANY, wxDefaultPosition, wxSize(20, 160));
+	mainSizer->Add(statusList, 0, wxALL|wxEXPAND, 0);
+	mainSizer->Add(10, 10);
 	tst->Wrap(TXTWRAP);
 	progress=new wxGauge(this, wxID_ANY, 1000, wxDefaultPosition, wxDefaultSize, wxGA_HORIZONTAL|wxGA_SMOOTH);
 	mainSizer->Add(progress, 0, wxALL|wxEXPAND, 0);
@@ -795,49 +796,49 @@ DownloadPage::DownloadPage(wxWizard *parent) : wxWizardPageSimple(parent), wizar
 
 
 	// now the information thingy
-	wxGridSizer *wxg = new wxGridSizer(3, 2, 5, 5);
+	wxGridSizer *wxg = new wxGridSizer(3, 2, 2, 5);
 
 	// download time
 	wxStaticText *txt = new wxStaticText(this, wxID_ANY, _T("Download time: "));
-	wxg->Add(txt, 0, wxALL|wxEXPAND, 5);
+	wxg->Add(txt, 0, wxALL|wxEXPAND, 0);
 	txt_dltime = new wxStaticText(this, wxID_ANY, _T("n/a"));
-	wxg->Add(txt_dltime, 0, wxALL|wxEXPAND, 5);
+	wxg->Add(txt_dltime, 0, wxALL|wxEXPAND, 0);
 
 	// download time
 	txt = new wxStaticText(this, wxID_ANY, _T("Remaining time: "));
-	wxg->Add(txt, 0, wxALL|wxEXPAND, 5);
+	wxg->Add(txt, 0, wxALL|wxEXPAND, 0);
 	txt_remaintime = new wxStaticText(this, wxID_ANY, _T("n/a"));
-	wxg->Add(txt_remaintime, 0, wxALL|wxEXPAND, 5);
+	wxg->Add(txt_remaintime, 0, wxALL|wxEXPAND, 0);
 
 	// traffic
 	txt = new wxStaticText(this, wxID_ANY, _T("Data transferred: "));
-	wxg->Add(txt, 0, wxALL|wxEXPAND, 5);
+	wxg->Add(txt, 0, wxALL|wxEXPAND, 0);
 	txt_traf = new wxStaticText(this, wxID_ANY, _T("n/a"));
-	wxg->Add(txt_traf, 0, wxALL|wxEXPAND, 5);
+	wxg->Add(txt_traf, 0, wxALL|wxEXPAND, 0);
 
 	// speed
 	txt = new wxStaticText(this, wxID_ANY, _T("Average Download Speed: "));
-	wxg->Add(txt, 0, wxALL|wxEXPAND, 5);
+	wxg->Add(txt, 0, wxALL|wxEXPAND, 0);
 	txt_speed = new wxStaticText(this, wxID_ANY, _T("n/a"));
-	wxg->Add(txt_speed, 0, wxALL|wxEXPAND, 5);
+	wxg->Add(txt_speed, 0, wxALL|wxEXPAND, 0);
 
 	// Local Path
 	txt = new wxStaticText(this, wxID_ANY, _T("Sync Path: "));
-	wxg->Add(txt, 0, wxALL|wxEXPAND, 5);
+	wxg->Add(txt, 0, wxALL|wxEXPAND, 0);
 	txt_localpath = new wxStaticText(this, wxID_ANY, _T("n/a"));
-	wxg->Add(txt_localpath, 0, wxALL|wxEXPAND, 5);
+	wxg->Add(txt_localpath, 0, wxALL|wxEXPAND, 0);
 
 	// Server used
 	txt = new wxStaticText(this, wxID_ANY, _T("Server used: "));
-	wxg->Add(txt, 0, wxALL|wxEXPAND, 5);
+	wxg->Add(txt, 0, wxALL|wxEXPAND, 0);
 	txt_server = new wxStaticText(this, wxID_ANY, _T("only main server"));
-	wxg->Add(txt_server, 0, wxALL|wxEXPAND, 5);
+	wxg->Add(txt_server, 0, wxALL|wxEXPAND, 0);
 
 	// Server used
 	txt = new wxStaticText(this, wxID_ANY, _T("Download Jobs: "));
-	wxg->Add(txt, 0, wxALL|wxEXPAND, 5);
-	txt_concurr = new wxStaticText(this, wxID_ANY, wxString());
-	wxg->Add(txt_concurr, 0, wxALL|wxEXPAND, 5);
+	wxg->Add(txt, 0, wxALL|wxEXPAND, 0);
+	txt_concurr = new wxStaticText(this, wxID_ANY, wxString("none"));
+	wxg->Add(txt_concurr, 0, wxALL|wxEXPAND, 0);
 
 
 
@@ -858,6 +859,7 @@ DownloadPage::DownloadPage(wxWizard *parent) : wxWizardPageSimple(parent), wizar
 	mainSizer->Fit(this);
 
 	//timer = new wxTimer(this, ID_TIMER);
+	statusTextCounter=0;
 }
 
 
@@ -921,13 +923,15 @@ void DownloadPage::OnStatusUpdate(MyStatusEvent &ev)
 	{
 	case MSE_STARTING:
 	case MSE_UPDATE_TEXT:
-		statusText->SetLabel(ev.GetString());
+		statusList->Append(ev.GetString());
+		statusList->SetSelection(statusList->GetCount()-1);
 		break;
 	case MSE_UPDATE_PROGRESS:
 		progress->SetValue(ev.GetProgress() * 1000.0f);
 		break;
 	case MSE_ERROR:
-		statusText->SetLabel(_("error: ") + ev.GetString());
+		statusList->Append(_("error: ") + ev.GetString());
+		statusList->SetSelection(statusList->GetCount()-1);
 		progress->SetValue(1000);
 		wxMessageBox(ev.GetString(), _("Error"), wxICON_ERROR | wxOK, this);
 		break;
@@ -954,7 +958,8 @@ void DownloadPage::OnStatusUpdate(MyStatusEvent &ev)
 		break;
 	case MSE_DONE:
 		// normal end
-		statusText->SetLabel(ev.GetString());
+		statusList->Append(ev.GetString());
+		statusList->SetSelection(statusList->GetCount()-1);
 		progress->SetValue(1000);
 		txt_remaintime->SetLabel(wxT("finished!"));
 		isDone=true;

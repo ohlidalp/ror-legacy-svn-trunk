@@ -54,7 +54,7 @@ void WsyncThread::onDownloadStatusUpdate(MyStatusEvent &ev)
 	{
 		dlStatus[jobID].status = 1;
 		// we do this here, since its getting overwritten on the start only
-		updateCallback(MSE_UPDATE_TEXT, "downloading file " + dlStatus[jobID].path);
+		updateCallback(MSE_UPDATE_TEXT, "downloading file " + dlStatus[jobID].path + " ...");
 		break;
 	}
 	case MSE_DOWNLOAD_PROGRESS:
@@ -317,7 +317,7 @@ int WsyncThread::getSyncData()
 			return -1;
 		}
 
-		updateCallback(MSE_UPDATE_TEXT, "downloading file list ...");
+		updateCallback(MSE_UPDATE_TEXT, "downloading file list for stream " + conv(it->path) + " ...");
 		LOG("downloading file list to file %s ...\n", remoteFileIndex.string().c_str());
 		string url = "/" + conv(it->path) + "/" + INDEXFILENAME;
 		WsyncDownload *dl = new WsyncDownload(this);
@@ -527,7 +527,7 @@ int WsyncThread::sync()
 		predDownloadSize += (int)itf->filesize;
 		LOG("> A path:%s, file: %s, size:%d\n", itf->stream_path.c_str(), itf->filename.c_str(), itf->filesize);
 	}
-	if(!newFiles.size()) LOG("> no files added");
+	if(!newFiles.size()) LOG("> no files added\n");
 
 
 	for(itf=changedFiles.begin(); itf!=changedFiles.end(); itf++)
@@ -535,13 +535,13 @@ int WsyncThread::sync()
 		predDownloadSize += (int)itf->filesize;
 		LOG("> U path:%s, file: %s, size:%d\n", itf->stream_path.c_str(), itf->filename.c_str(), itf->filesize);
 	}
-	if(!changedFiles.size()) LOG("> no files changed");
+	if(!changedFiles.size()) LOG("> no files changed\n");
 
 	for(itf=deletedFiles.begin(); itf!=deletedFiles.end(); itf++)
 	{
 		LOG("> D path:%s, file: %s, size:%d\n", itf->stream_path.c_str(), itf->filename.c_str(), itf->filesize);
 	}
-	if(!deletedFiles.size()) LOG("> no files deleted");
+	if(!deletedFiles.size()) LOG("> no files deleted\n");
 
 
 	if(predDownloadSize > 0)

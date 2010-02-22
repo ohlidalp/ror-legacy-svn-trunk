@@ -302,6 +302,10 @@ int ConfigManager::uninstall(bool deleteUserFolder)
 	wxRegKey *pRegKey = new wxRegKey(wxT("HKEY_LOCAL_MACHINE\\Software\\RigsOfRods"));
 	if(pRegKey->Exists())
 		pRegKey->DeleteSelf();
+	
+	pRegKey = new wxRegKey(wxT("HKEY_LOCAL_MACHINE\\SOFTWARE\\Microsoft\\Windows\\CurrentVersion\\Uninstall\\Rigs of Rods"));
+	if(pRegKey->Exists())
+		pRegKey->DeleteSelf();
 
 	// remove shortcuts
 	if(!startmenuDir.empty())
@@ -443,6 +447,22 @@ void ConfigManager::setInstallationPath()
 	if(!pRegKey->Exists())
 		pRegKey->Create();
 	pRegKey->SetValue(wxT("InstallPath"), installPath);
+
+	// add theuninstall Info
+	pRegKey = new wxRegKey(wxT("HKEY_LOCAL_MACHINE\\SOFTWARE\\Microsoft\\Windows\\CurrentVersion\\Uninstall\\Rigs of Rods"));
+	if(!pRegKey->Exists())
+		pRegKey->Create();
+	pRegKey->SetValue(wxT("DisplayName"), wxT("Rigs of Rods"));
+	pRegKey->SetValue(wxT("DisplayVersion"), wxT("installer version"));
+	pRegKey->SetValue(wxT("Publisher"), wxT("Rigs of Rods Team"));
+	pRegKey->SetValue(wxT("UninstallString"), wxT("\"") + installPath + wxT("\\installer.exe\""));
+	pRegKey->SetValue(wxT("URLInfoAbout"), wxT("http://www.rigsofrods.com"));
+	pRegKey->SetValue(wxT("URLUpdateInfo"), wxT("http://www.rigsofrods.com"));
+	pRegKey->SetValue(wxT("DisplayIcon"), wxT("\"") + installPath + wxT("\\ror.exe\""));
+	pRegKey->SetValue(wxT("HelpLink"), wxT("http://forum.rigsofrods.com/index.php?board=10.0"));
+	//pRegKey->SetValue(wxT("InstallDate"), wxT(""));
+	pRegKey->SetValue(wxT("InstallLocation"), installPath);
+
 #else
 	// TODO: implement
 #endif //OGRE_PLATFORM
