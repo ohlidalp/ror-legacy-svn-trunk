@@ -3,6 +3,7 @@
 #include "utils.h"
 #include "installerlog.h"
 #include "wthread.h"
+#include <wx/msgdlg.h>
 
 using namespace std;
 
@@ -10,15 +11,15 @@ using namespace std;
 WsyncJob::WsyncJob() : mCmd(eID_THREAD_NULL)
 {
 }
-	
+
 WsyncJob::WsyncJob(
 	int num,
-	job_commands cmd, 
-	const wxString& localFile, 
-	const wxString& server, 
-	const wxString& remoteDir, 
+	job_commands cmd,
+	const wxString& localFile,
+	const wxString& server,
+	const wxString& remoteDir,
 	const wxString& remoteFile,
-	const wxString& hashRemoteFile) : 
+	const wxString& hashRemoteFile) :
 		mNum(num),
 		mCmd(cmd),
 		mLocalFile(localFile),
@@ -35,7 +36,7 @@ WsyncJob::WsyncJob(
 ThreadQueue::ThreadQueue(wxEvtHandler* pParent) : m_pParent(pParent)
 {
 }
-	
+
 void ThreadQueue::addJob(const WsyncJob& job, const ThreadQueue::job_priority& priority) // push a job with given priority class onto the FIFO
 {
 	wxMutexLocker lock(m_MutexQueue); // lock the queue
@@ -89,7 +90,7 @@ wxThread::ExitCode WsyncWorkerThread::Entry()
 	{
 		// catch return value from error condition
 		m_pQueue->Report(iErr=i, wxEmptyString, m_ID);
-	} 
+	}
 	return (wxThread::ExitCode)iErr; // and return exit code
 }
 
@@ -200,7 +201,7 @@ WsyncDownloadManager::WsyncDownloadManager() : m_pQueue(NULL), m_parent(NULL)
 WsyncDownloadManager::WsyncDownloadManager(wxEvtHandler *parent) : m_pQueue(new ThreadQueue(this)), m_parent(parent)
 {
 }
-	
+
 WsyncDownloadManager::~WsyncDownloadManager()
 {
 	destroyThreads();
@@ -218,12 +219,12 @@ void WsyncDownloadManager::startThreads()
 		pThread->Run();
 	}
 }
-	
+
 void WsyncDownloadManager::addJob(int num, wxString localFile, wxString remoteDir, wxString remoteServer, wxString remoteFile, wxString hashRemoteFile)
 {
 	m_pQueue->addJob(WsyncJob(num, WsyncJob::eID_THREAD_JOB, localFile, remoteServer, remoteDir, remoteFile, hashRemoteFile));
 
-	// start the threads if not already done	
+	// start the threads if not already done
 	if(!m_Threads.size())
 		startThreads();
 }
@@ -234,14 +235,14 @@ void WsyncDownloadManager::onThread(wxCommandEvent& event) // handler for thread
 	{
 		case WsyncJob::eID_THREAD_JOB:
 			//wxMessageBox(wxString::Format(wxT("[%i]: %s"), event.GetInt(), event.GetString()));
-			break; 
+			break;
 		case WsyncJob::eID_THREAD_EXIT:
 			//wxMessageBox(wxString::Format(wxT("[%i]: Stopped."), event.GetInt()));
 			m_Threads.remove(event.GetInt()); // thread has exited: remove thread ID from list
 			break;
 		case WsyncJob::eID_THREAD_STARTED:
 			//wxMessageBox(wxString::Format(wxT("[%i]: Ready."), event.GetInt()));
-			break; 
+			break;
 		default:
 			event.Skip();
 	}
@@ -254,7 +255,7 @@ bool WsyncDownloadManager::isDone()
 
 void WsyncDownloadManager::destroyThreads()
 {
-	if(m_Threads.empty()) 
+	if(m_Threads.empty())
 		return;
 	for(size_t t=0; t<m_Threads.size(); ++t)
 	{
