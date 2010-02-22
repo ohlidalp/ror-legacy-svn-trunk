@@ -189,7 +189,7 @@ MyWizard::MyWizard(int startupMode, wxFrame *frame, bool useSizer)
 	LastPage *last = new LastPage(this);
 	streams->setPages(path, streamsContent);
 	streamsContent->setPrevPage(streams);
-	
+
 
 	m_page1 = presentation;
 
@@ -535,7 +535,7 @@ StreamsPage::StreamsPage(wxWizard *parent) : wxWizardPageSimple(parent)
 	dfont.SetPointSize(dfont.GetPointSize()+4);
 	tst->SetFont(dfont);
 	tst->Wrap(TXTWRAP);
-	
+
 	wxString choices[4];
 	choices[0]=_T("Stable");
 	choices[1]=_T("Latest");
@@ -615,7 +615,7 @@ bool StreamsPage::OnEnter(bool forward)
 
 		if(it->forcecheck)
 			it->checked = true;
-		
+
 		counter++;
 		wxStrel *wst=new wxStrel(scrw, &(*it));
 		wxSizerItem *si = scrwsz->Add(wst, 0, wxALL|wxEXPAND,0);
@@ -681,7 +681,7 @@ StreamsContentPage::StreamsContentPage(wxWizard *parent) : wxWizardPageSimple(pa
 	dfont.SetPointSize(dfont.GetPointSize()+4);
 	tst->SetFont(dfont);
 	tst->Wrap(TXTWRAP);
-	
+
 	mainSizer->Add(tst=new wxStaticText(this, wxID_ANY, _T("Choose which content packs you want to download:\n")), 0, wxALL, 0);
 	tst->Wrap(TXTWRAP);
 
@@ -837,7 +837,7 @@ DownloadPage::DownloadPage(wxWizard *parent) : wxWizardPageSimple(parent), wizar
 	// Server used
 	txt = new wxStaticText(this, wxID_ANY, _T("Download Jobs: "));
 	wxg->Add(txt, 0, wxALL|wxEXPAND, 0);
-	txt_concurr = new wxStaticText(this, wxID_ANY, wxString("none"));
+	txt_concurr = new wxStaticText(this, wxID_ANY, wxT("none"));
 	wxg->Add(txt_concurr, 0, wxALL|wxEXPAND, 0);
 
 
