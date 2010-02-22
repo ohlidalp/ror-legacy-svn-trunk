@@ -171,7 +171,8 @@ public:
 	bool OnLeave(bool forward);
 private:
 	wxStaticText *txt_dltime, *txt_speed, *txt_traf, *txt_localpath, *txt_server, *txt_remaintime, *txt_concurr;
-	wxStaticText *statusText, *txtFinish;
+	wxStaticText *txtFinish;
+	wxListBox *statusList;
 	wxGauge *progress;
 	bool threadStarted;
 	bool isDone;
