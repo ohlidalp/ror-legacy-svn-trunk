@@ -143,7 +143,7 @@ void WsyncThread::reportProgress()
 
 
 	//progressOutputShort(float(changeCounter)/float(changeMax));
-	sprintf(tmp, "%d done, %d running, %d remaining", job_done, job_running, job_existing-job_done);
+	sprintf(tmp, "%d done, %d running, %d remaining", job_done, job_running, job_existing-job_done-job_running);
 	updateCallback(MSE_UPDATE_CONCURR, string(tmp));
 
 	if(job_existing-job_done == 0)
