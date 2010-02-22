@@ -958,7 +958,7 @@ void DownloadPage::OnStatusUpdate(MyStatusEvent &ev)
 		break;
 	case MSE_DONE:
 		// normal end
-		statusList->Append(ev.GetString());
+		statusList->Append(wxT("Finished downloading."));
 		statusList->SetSelection(statusList->GetCount()-1);
 		progress->SetValue(1000);
 		txt_remaintime->SetLabel(wxT("finished!"));
