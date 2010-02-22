@@ -857,9 +857,6 @@ DownloadPage::DownloadPage(wxWizard *parent) : wxWizardPageSimple(parent), wizar
 
 	SetSizer(mainSizer);
 	mainSizer->Fit(this);
-
-	//timer = new wxTimer(this, ID_TIMER);
-	statusTextCounter=0;
 }
 
 
