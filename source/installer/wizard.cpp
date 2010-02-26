@@ -623,7 +623,7 @@ bool StreamsPage::OnEnter(bool forward)
 	}
 	scrwsz->Fit(scrw);
 	if(!counter && use_stable)
-		wxMessageBox(wxT("No stable version currently available. Please select the latest option"), wxT("No stable stream"));
+		wxMessageBox(wxT("No stable version currently available via the installer. Please select the latest option or download the latest stable version from \nhttp://sourceforge.net/projects/rigsofrods/"), wxT("No stable stream"));
 
 	return true;
 }
@@ -925,6 +925,34 @@ void DownloadPage::OnStatusUpdate(MyStatusEvent &ev)
 		break;
 	case MSE_UPDATE_PROGRESS:
 		progress->SetValue(ev.GetProgress() * 1000.0f);
+		break;
+	case MSE_DOWNLOAD_PROGRESS:
+	{
+		wxString str = ev.GetString();
+		for(int i=statusList->GetCount()-1;i>=0;--i)
+		{
+			wxString str_comp = statusList->GetString(i).SubString(0, str.size()-1);
+			if(str_comp == str)
+			{
+				statusList->SetString(i, str + wxString::Format(wxT(" (%3.1f%% downloaded)"), ev.GetProgress() * 100.0f));
+				break;
+			}
+		}
+	}
+		break;
+	case MSE_DOWNLOAD_DONE:
+	{
+		wxString str = ev.GetString();
+		for(int i=statusList->GetCount()-1;i>=0;--i)
+		{
+			wxString str_comp = statusList->GetString(i).SubString(0, str.size()-1);
+			if(str_comp == str)
+			{
+				statusList->SetString(i, str + " (DONE)");
+				break;
+			}
+		}
+	}
 		break;
 	case MSE_ERROR:
 		statusList->Append(_("error: ") + ev.GetString());
