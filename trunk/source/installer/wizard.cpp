@@ -213,7 +213,7 @@ MyWizard::MyWizard(int startupMode, wxFrame *frame, bool useSizer)
 		// compare both
 		if(!error && strcmp(program_path, install_path) && boost::filesystem::exists(installPath))
 		{
-			wxMessageBox(_T("Please use the installer that you downloaded during the installation (and delete this installer):\n"+conv(installPath.string())), _T("Warning"), wxICON_WARNING | wxOK);
+			wxMessageBox(_T("Please use the installer that you downloaded during the installation:\n"+conv(installPath.string()+"\n\nPlease do not use the installer you just started, as it can get out of date.")), _T("Warning"), wxICON_WARNING | wxOK);
 			exit(1);
 		}
 	}
