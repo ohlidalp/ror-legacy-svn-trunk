@@ -1,0 +1,1 @@
+RoR.exe -benchmark simple -truck semi.truck -userpath ./skeleton/ -benchmarktrucks 1
