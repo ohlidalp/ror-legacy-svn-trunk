@@ -74,6 +74,7 @@ typedef struct dlstatus_t
 	float time;
 	float time_remaining;
 	int speed;
+	boost::uintmax_t filesize;
 	boost::uintmax_t downloaded;
 } dlstatus_t;
 
@@ -125,7 +126,7 @@ protected:
 
 	void onDownloadStatusUpdate(MyStatusEvent &ev);
 	void reportProgress();
-	void addJob(wxString localFile, wxString remoteDir, wxString remoteServer, wxString remoteFile, wxString hashRemoteFile);
+	void addJob(wxString localFile, wxString remoteDir, wxString remoteServer, wxString remoteFile, wxString hashRemoteFile, wxString localFilename, boost::uintmax_t filesize);
 
 	std::map < std::string, Hashentry> hashMapLocal;
 	std::map < std::string, std::map<std::string, Hashentry> > hashMapRemote; // stream hashmaps, first key is stream path

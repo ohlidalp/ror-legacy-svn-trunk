@@ -602,7 +602,7 @@ void ConfigManager::installRuntime()
 	executeBinary(wxT("dxwebsetup.exe"));
 	wxMessageBox(wxT("Please wait until the DirectX installation is done and click ok to continue"), _T("directx"), wxICON_INFORMATION | wxOK);
 	wxMessageBox(wxT("Will now install the Visual Studio runtime. Please click ok to continue."), _T("runtime"), wxICON_INFORMATION | wxOK);
-	executeBinary(wxT("c:\\windows\\system32\\msiexec.exe"), wxT("runas"), wxT("/i \"") + CONFIG->getInstallationPath() + wxT("\\VCCRT4.msi\""), wxT("cwd"), false);
+	executeBinary(wxT("msiexec.exe"), wxT("runas"), wxT("/i \"") + CONFIG->getInstallationPath() + wxT("\\VCCRT4.msi\""), wxT("cwd"), false);
 }
 
 void ConfigManager::startConfigurator()

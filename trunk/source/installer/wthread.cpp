@@ -54,12 +54,13 @@ void WsyncThread::onDownloadStatusUpdate(MyStatusEvent &ev)
 	{
 		dlStatus[jobID].status = 1;
 		// we do this here, since its getting overwritten on the start only
-		updateCallback(MSE_UPDATE_TEXT, "downloading file " + dlStatus[jobID].path + " ...");
+		updateCallback(MSE_UPDATE_TEXT, dlStatus[jobID].path + " (" + formatFilesize(dlStatus[jobID].filesize) + ") ...");
 		break;
 	}
 	case MSE_DOWNLOAD_PROGRESS:
 		dlStatus[jobID].status = 1;
 		dlStatus[jobID].percent = ev.GetProgress();
+		updateCallback(MSE_DOWNLOAD_PROGRESS, dlStatus[jobID].path, ev.GetProgress());
 		break;
 	case MSE_DOWNLOAD_TIME:
 		dlStatus[jobID].time = ev.GetProgress();
@@ -75,6 +76,7 @@ void WsyncThread::onDownloadStatusUpdate(MyStatusEvent &ev)
 		break;
 	case MSE_DOWNLOAD_DONE:
 		dlStatus[jobID].status = 3;
+		updateCallback(MSE_DOWNLOAD_DONE, dlStatus[jobID].path);
 		break;
 	}
 
@@ -291,13 +293,20 @@ void WsyncThread::debugOutputHashMap(std::map<string, Hashentry> &hashMap)
 int WsyncThread::getSyncData()
 {
 	// generating local FileIndex
-	path myFileIndex = ipath / INDEXFILENAME;
+	path myFileIndex;
+	if(getTempFilename(myFileIndex))
+	{
+		LOG("error creating tempfile\n");
+		updateCallback(MSE_ERROR, "error creating tempfile!");
+		return -1;
+	}
 
 	hashMapLocal.clear();
 	if(buildFileIndex(myFileIndex, ipath, ipath, hashMapLocal, true, 1))
 	{
 		LOG("error while generating local FileIndex\n");
 		updateCallback(MSE_ERROR, "error while generating local FileIndex");
+		WsyncDownload::tryRemoveFile(myFileIndex);
 		return -1;
 	}
 	LOG("local hashmap building done:\n");
@@ -314,6 +323,7 @@ int WsyncThread::getSyncData()
 		{
 			LOG("error creating tempfile\n");
 			updateCallback(MSE_ERROR, "error creating tempfile!");
+			WsyncDownload::tryRemoveFile(myFileIndex);
 			return -1;
 		}
 
@@ -326,6 +336,7 @@ int WsyncThread::getSyncData()
 			delete(dl);
 			updateCallback(MSE_ERROR, "error downloading file index from http://" + mainserver + url);
 			LOG("error downloading file index from http://%s%s\n", mainserver.c_str(), url.c_str());
+			WsyncDownload::tryRemoveFile(myFileIndex);
 			return -1;
 		}
 		delete(dl);
@@ -354,6 +365,7 @@ int WsyncThread::getSyncData()
 		{
 			updateCallback(MSE_ERROR, "error reading remote file index");
 			LOG("error reading remote file index\n");
+			WsyncDownload::tryRemoveFile(myFileIndex);
 			return -2;
 		}
 
@@ -361,6 +373,7 @@ int WsyncThread::getSyncData()
 		{
 			updateCallback(MSE_ERROR, "remote file index is invalid\nConnection Problems / Server down?");
 			LOG("remote file index is invalid\nConnection Problems / Server down?\n");
+			WsyncDownload::tryRemoveFile(myFileIndex);
 			return -3;
 		}
 		LOG("remote hashmap reading done [%s]:\n", conv(it->path).c_str());
@@ -369,6 +382,7 @@ int WsyncThread::getSyncData()
 		// add it to our map
 		hashMapRemote[conv(it->path)] = temp_hashMapRemote;
 	}
+	WsyncDownload::tryRemoveFile(myFileIndex);
 	LOG("all sync data received\n");
 	return 0;
 }
@@ -557,6 +571,7 @@ int WsyncThread::sync()
 	// reset progress bar
 	updateCallback(MSE_UPDATE_PROGRESS, "", 0);
 
+	updateCallback(MSE_UPDATE_TEXT, "starting download", 0);
 	LOG("==== starting download\n");
 
 	// security check in order not to delete the entire harddrive
@@ -581,7 +596,7 @@ int WsyncThread::sync()
 				path localfile = ipath / itf->filename;
 				string hash_remote = findHashInHashmap(hashMapRemote, itf->filename);
 
-				this->addJob(conv(localfile.string()), conv(dir_use), conv(server_use), conv(itf->stream_path + itf->filename), conv(hash_remote));
+				this->addJob(conv(localfile.string()), conv(dir_use), conv(server_use), conv(itf->stream_path + itf->filename), conv(hash_remote), conv(itf->filename), itf->filesize);
 			}
 		}
 
@@ -592,7 +607,7 @@ int WsyncThread::sync()
 				path localfile = ipath / itf->filename;
 				string hash_remote = findHashInHashmap(hashMapRemote, itf->filename);
 
-				this->addJob(conv(localfile.string()), conv(dir_use), conv(server_use), conv(itf->stream_path + itf->filename), conv(hash_remote));
+				this->addJob(conv(localfile.string()), conv(dir_use), conv(server_use), conv(itf->stream_path + itf->filename), conv(hash_remote), conv(itf->filename), itf->filesize);
 			}
 		}
 
@@ -797,12 +812,12 @@ double WsyncThread::measureDownloadSpeed(std::string server, std::string url)
 	}
 	delete(dl);
 	double tdiff = timer.elapsed();
-	printf("mirror speed: %s : %dkB in %0.2f seconds = %0.2f kB/s\n", server.c_str(), (int)(filesize/1024.0f), tdiff, (filesize/1024.0f)/(float)tdiff);
+	//printf("mirror speed: %s : %dkB in %0.2f seconds = %0.2f kB/s\n", server.c_str(), (int)(filesize/1024.0f), tdiff, (filesize/1024.0f)/(float)tdiff);
 	WsyncDownload::tryRemoveFile(tempfile);
 	return tdiff;
 }
 
-void WsyncThread::addJob(wxString localFile, wxString remoteDir, wxString remoteServer, wxString remoteFile, wxString hashRemoteFile)
+void WsyncThread::addJob(wxString localFile, wxString remoteDir, wxString remoteServer, wxString remoteFile, wxString hashRemoteFile, wxString localFilename, boost::uintmax_t filesize)
 {
 	dlStatus[dlNum].downloaded=0;
 	dlStatus[dlNum].percent=0;
@@ -811,7 +826,8 @@ void WsyncThread::addJob(wxString localFile, wxString remoteDir, wxString remote
 	dlStatus[dlNum].text=string();
 	dlStatus[dlNum].time=0;
 	dlStatus[dlNum].time_remaining=0;
-	dlStatus[dlNum].path = conv(remoteFile);
+	dlStatus[dlNum].filesize=filesize;
+	dlStatus[dlNum].path = conv(localFilename);
 	dlm->addJob(dlNum, localFile, remoteDir, remoteServer, remoteFile, hashRemoteFile);
 	dlNum++;
 }
