@@ -158,6 +158,22 @@ bool MyApp::OnCmdLineParsed(wxCmdLineParser& parser)
 // ----------------------------------------------------------------------------
 // MyWizard
 // ----------------------------------------------------------------------------
+void path_descend(char* path)
+{
+	// WINDOWS ONLY
+	char dirsep='\\';
+	char* pt1=path;
+	while(*pt1)
+	{
+		// normalize
+		if(*pt1 == '/') *pt1 = dirsep;
+		pt1++;
+	}
+	char* pt=path+strlen(path)-1;
+	if (pt>=path && *pt==dirsep) pt--;
+	while (pt>=path && *pt!=dirsep) pt--;
+	if (pt>=path) *(pt+1)=0;
+}
 
 MyWizard::MyWizard(int startupMode, wxFrame *frame, bool useSizer)
         : wxWizard(frame,ID_WIZARD,_T("Rigs of Rods Installation Assistant"),
@@ -172,6 +188,39 @@ MyWizard::MyWizard(int startupMode, wxFrame *frame, bool useSizer)
 	new ConfigManager();
 	CONFIG->setStartupMode(startupMode);
 
+#if OGRE_PLATFORM == OGRE_PLATFORM_WIN32
+	// detect wether the user should run the other installer
+	if(!CONFIG->isFirstInstall())
+	{
+		// find the current working directory of this running app
+		bool error=false;
+		char program_path[1024]="", install_path[1024]="";
+		memset(program_path, 0, 1024);
+		memset(install_path, 0, 1024);
+		if (!GetModuleFileNameA(NULL, program_path, 512))
+		{
+			error=true;
+		}
+		GetShortPathNameA(program_path, program_path, 512);
+		path_descend(program_path);
+
+		// find the installation path
+		boost::filesystem::path installPath = boost::filesystem::path(conv(CONFIG->getInstallationPath()) + std::string("installer.exe"));
+		strncpy(install_path, installPath.string().c_str(), installPath.string().size());
+		GetShortPathNameA(install_path, install_path, 512);
+		path_descend(install_path);
+
+		// compare both
+		if(!error && strcmp(program_path, install_path) && boost::filesystem::exists(installPath))
+		{
+			wxMessageBox(_T("Please use the installer that you downloaded during the installation (and delete this installer):\n"+conv(installPath.string())), _T("Warning"), wxICON_WARNING | wxOK);
+			exit(1);
+		}
+	}
+
+
+
+#endif // OGRE_PLATFORM
 
 	// create log
 	boost::filesystem::path iPath = boost::filesystem::path(conv(CONFIG->getInstallationPath()));
