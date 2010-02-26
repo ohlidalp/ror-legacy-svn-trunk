@@ -5950,11 +5950,11 @@ bool Beam::frameStep(Real dt, Beam** trucks, int numtrucks)
 	if (dt>1.0/20.0)
 	{
 		dt=1.0/20.0;
-		debugText="NOT real time - Fasttrack: "+StringConverter::toString(fasted*100/(fasted+slowed))+"% "+StringConverter::toString(steps)+" steps";
+		debugText="RT - Fasttrack: "+StringConverter::toString(fasted*100/(fasted+slowed))+"% "+StringConverter::toString(steps)+" steps";
 	}
 	else
 	{
-		debugText="___ Real time - Fasttrack: "+StringConverter::toString(fasted*100/(fasted+slowed))+"% "+StringConverter::toString(steps)+" steps";
+		debugText="SL - Fasttrack: "+StringConverter::toString(fasted*100/(fasted+slowed))+"% "+StringConverter::toString(steps)+" steps";
 	};
 	//update visual - antishaking
 	//	int t;
@@ -10324,9 +10324,12 @@ void Beam::deleteNetTruck()
 void *threadstart(void* vid)
 {
 #ifdef USE_WINDOWS_CRASH_REPORT
-	// add the crash handler for this thread
-	CrThreadAutoInstallHelper cr_thread_install_helper();
-	assert(cr_thread_install_helper.m_nInstallStatus==0);
+	if(SETTINGS.getSetting("NoCrashRpt").empty())
+	{
+		// add the crash handler for this thread
+		CrThreadAutoInstallHelper cr_thread_install_helper();
+		assert(cr_thread_install_helper.m_nInstallStatus==0);
+	}
 #endif //USE_WINDOWS_CRASH_REPORT
 
 	// 64 bit systems does have longer addresses!

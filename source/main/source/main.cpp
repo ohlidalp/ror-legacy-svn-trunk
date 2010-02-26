@@ -480,7 +480,7 @@ void test_crashrpt()
 #define HELPTEXT "--help (this)\n-map <map> (loads map on startup)\n-truck <truck> (loads truck on startup)\n-setup shows the ogre configurator\n-version shows the version information\n-enter enters the selected truck\n-userpath <path> sets the user directory\nFor example: RoR.exe -map oahu -truck semi"
 
 // option identifiers
-enum { OPT_HELP, OPT_MAP, OPT_TRUCK, OPT_SETUP, OPT_CMD, OPT_WDIR, OPT_ETM, OPT_BUILD, OPT_CONFIG, OPT_VER, OPT_CHECKCACHE, OPT_TRUCKCONFIG, OPT_ENTERTRUCK, OPT_BENCH, OPT_STREAMCACHEGEN, OPT_BENCHNUM, OPT_USERPATH, OPT_BENCHPOS, OPT_BENCHPOSERR};
+enum { OPT_HELP, OPT_MAP, OPT_TRUCK, OPT_SETUP, OPT_CMD, OPT_WDIR, OPT_ETM, OPT_BUILD, OPT_CONFIG, OPT_VER, OPT_CHECKCACHE, OPT_TRUCKCONFIG, OPT_ENTERTRUCK, OPT_BENCH, OPT_STREAMCACHEGEN, OPT_BENCHNUM, OPT_USERPATH, OPT_BENCHPOS, OPT_BENCHPOSERR, OPT_NOCRASHCRPT};
 
 // option array
 CSimpleOpt::SOption cmdline_options[] = {
@@ -505,6 +505,7 @@ CSimpleOpt::SOption cmdline_options[] = {
 	{ OPT_BENCHNUM,       ((char *)"-benchmarktrucks"),       SO_REQ_SEP },
 	{ OPT_BENCHNUM,       ((char *)"-benchmark-trucks"),       SO_REQ_SEP },
 	{ OPT_STREAMCACHEGEN, ((char *)"-streamcachegen"),   SO_NONE    },
+	{ OPT_NOCRASHCRPT,    ((char *)"-nocrashrpt"),   SO_NONE    },
 SO_END_OF_OPTIONS
 };
 
@@ -552,12 +553,6 @@ int main(int argc, char *argv[])
 	printf("GETWD=%s\n", str);
 #endif
 
-#ifdef USE_WINDOWS_CRASH_REPORT
-	install_crashrpt();
-
-	//test_crashrpt();
-#endif //USE_WINDOWS_CRASH_REPORT
-
 	// Create application object
 	RigsOfRods app;
 	app.buildmode=false;
@@ -586,6 +581,8 @@ int main(int argc, char *argv[])
 				SETTINGS.setSetting("BenchmarkFinalPosition", String(args.OptionArg()));
 			} else if (args.OptionId() == OPT_BENCHPOSERR) {
 				SETTINGS.setSetting("BenchmarkFinalPositionError", String(args.OptionArg()));
+			} else if (args.OptionId() == OPT_NOCRASHCRPT) {
+				SETTINGS.setSetting("NoCrashRpt", "Yes");
 			} else if (args.OptionId() == OPT_USERPATH) {
 				SETTINGS.setSetting("userpath", String(args.OptionArg()));
 			} else if (args.OptionId() == OPT_CONFIG) {
@@ -616,6 +613,13 @@ int main(int argc, char *argv[])
 	}
 #endif
 
+#ifdef USE_WINDOWS_CRASH_REPORT
+	if(SETTINGS.getSetting("NoCrashRpt").empty())
+		install_crashrpt();
+
+	//test_crashrpt();
+#endif //USE_WINDOWS_CRASH_REPORT
+
 	try {
 		app.go();
 	} catch(Ogre::Exception& e)
@@ -630,7 +634,8 @@ int main(int argc, char *argv[])
 	}
 
 #ifdef USE_WINDOWS_CRASH_REPORT
-	uninstall_crashrpt();
+	if(SETTINGS.getSetting("NoCrashRpt").empty())
+		uninstall_crashrpt();
 #endif //USE_WINDOWS_CRASH_REPORT
 
 	return 0;

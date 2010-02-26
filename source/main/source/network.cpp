@@ -52,9 +52,12 @@ Network *net_instance;
 void *s_sendthreadstart(void* vid)
 {
 #ifdef USE_WINDOWS_CRASH_REPORT
-	// add the crash handler for this thread
-	CrThreadAutoInstallHelper cr_thread_install_helper();
-	assert(cr_thread_install_helper.m_nInstallStatus==0);
+	if(SETTINGS.getSetting("NoCrashRpt").empty())
+	{
+		// add the crash handler for this thread
+		CrThreadAutoInstallHelper cr_thread_install_helper();
+		assert(cr_thread_install_helper.m_nInstallStatus==0);
+	}
 #endif //USE_WINDOWS_CRASH_REPORT
 	net_instance->sendthreadstart();
 	return NULL;
@@ -63,9 +66,12 @@ void *s_sendthreadstart(void* vid)
 void *s_receivethreadstart(void* vid)
 {
 #ifdef USE_WINDOWS_CRASH_REPORT
-	// add the crash handler for this thread
-	CrThreadAutoInstallHelper cr_thread_install_helper();
-	assert(cr_thread_install_helper.m_nInstallStatus==0);
+	if(SETTINGS.getSetting("NoCrashRpt").empty())
+	{
+		// add the crash handler for this thread
+		CrThreadAutoInstallHelper cr_thread_install_helper();
+		assert(cr_thread_install_helper.m_nInstallStatus==0);
+	}
 #endif //USE_WINDOWS_CRASH_REPORT
 	net_instance->receivethreadstart();
 	return NULL;
