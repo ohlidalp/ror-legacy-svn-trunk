@@ -6,7 +6,7 @@ Copyright 2007,2008,2009 Thomas Fischer
 For more information, see http://www.rigsofrods.com/
 
 Rigs of Rods is free software: you can redistribute it and/or modify
-it under the terms of the GNU General Public License version 3, as 
+it under the terms of the GNU General Public License version 3, as
 published by the Free Software Foundation.
 
 Rigs of Rods is distributed in the hope that it will be useful,
@@ -25,7 +25,7 @@ using namespace Ogre;
 using namespace std;
 
 CmdKeyInertia::CmdKeyInertia(int maxCmdKeys)
-{	
+{
 	loadDefaultInertiaModels();
 
 	cmdKeyInertia=new cmdKeyInertia_struct[maxCmdKeys];
@@ -78,7 +78,7 @@ Real CmdKeyInertia::calcCmdKeyDelay(Real cmdInput,int cmdKey,Real dt)
 	}
 	//negative values, mainly needed for hydros, between 0 and -1
 	if (absDiff<0)
-	{	
+	{
 		if (relDiff>0)
 			calculatedOutput=lastOutput-calculateCmdOutput(startFactor,cmdKeyInertia[cmdKey].startSpline);
 		if (relDiff<0)
@@ -91,32 +91,34 @@ Real CmdKeyInertia::calcCmdKeyDelay(Real cmdInput,int cmdKey,Real dt)
 }
 
 int CmdKeyInertia::setCmdKeyDelay(int cmdKey,Real startDelay,Real stopDelay, String startFunction, String stopFunction)
-{	//Delay values should always be greater than 0
+{
+	//Delay values should always be greater than 0
 	if (startDelay>0)
 		cmdKeyInertia[cmdKey].startDelay=startDelay;
-	//else
-	//	LogManager::getSingleton().logMessage("Inertia| Start Delay should be >0");
+	else
+		LogManager::getSingleton().logMessage("Inertia| Start Delay should be >0");
 
 	if (stopDelay>0)
 		cmdKeyInertia[cmdKey].stopDelay=stopDelay;
-	//else
-	//	LogManager::getSingleton().logMessage("Inertia| Stop Delay should be >0");
+	else
+		LogManager::getSingleton().logMessage("Inertia| Stop Delay should be >0");
+
 	//if we don't find the spline, we use the "constant" one
 	if (splines.find(startFunction) != splines.end())
 		cmdKeyInertia[cmdKey].startSpline=&splines.find(startFunction)->second;
-	//else
-	//	LogManager::getSingleton().logMessage("Inertia| Start Function "+startFunction +" not found");
-	
+	else
+		LogManager::getSingleton().logMessage("Inertia| Start Function "+startFunction +" not found");
+
 	if (splines.find(stopFunction) != splines.end())
 		cmdKeyInertia[cmdKey].stopSpline=&splines.find(stopFunction)->second;
-	//else
-	//	LogManager::getSingleton().logMessage("Inertia| Start Function "+stopFunction +" not found");
+	else
+		LogManager::getSingleton().logMessage("Inertia| Start Function "+stopFunction +" not found");
 
 	return 0;
 }
 
 Real CmdKeyInertia::calculateCmdOutput(Real time,SimpleSpline *spline)
-{	
+{
 	if (time>1.0)
 		time=1.0;
 	Vector3 output=spline->interpolate(time);
@@ -146,21 +148,21 @@ int CmdKeyInertia::loadDefaultInertiaModels()
 	String currentModel = "";
 
 	while (!ds->eof())
-	{	
+	{
 		line=ds->getLine();
 		StringUtil::trim(line);
-		
+
 		if (line.empty() || line[0]==';')
 			continue;
 
 		std::vector< String > args = StringUtil::split(line, ",");
-		
+
 		if (args.size() == 1)
 		{
 			currentModel = line;
 			continue;
 		}
-		
+
 		// process the line if we got a model
 		if(!currentModel.empty())
 			processLine(args, currentModel);
@@ -177,18 +179,19 @@ int CmdKeyInertia::processLine(vector< String > args,  String model)
 	float pointx = StringConverter::parseReal(args[0]);
 	float pointy = StringConverter::parseReal(args[1]);
 	Vector3 point = Vector3(pointx,pointy,0);
-	
+
 	// find the spline to attach the points
 	if(splines.find(model) == splines.end())
 		splines[model] = SimpleSpline();
-	
+
 	// attach the points to the spline
 	splines[model].addPoint(point);
 
 	return 0;
 }
 void CmdKeyInertia::resetCmdKeyDelay(int maxCmdKeys)
-{	//reset lastOutput and time, if we reset the truck
+{
+	//reset lastOutput and time, if we reset the truck
 	for (int i=0;i<maxCmdKeys;i++)
 	{
 		cmdKeyInertia[i].lastOutput=0.0;
