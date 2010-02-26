@@ -1356,6 +1356,11 @@ int Beam::loadTruck(const char* fname, SceneManager *manager, SceneNode *parent,
 	ds->readLine(line, 1023);
 	// read in truckname for real
 	strncpy(realtruckname, line, 255);
+
+	// some temp vars used
+	Real inertia_startDelay=0, inertia_stopDelay=0;
+	char inertia_default_startFunction[50]="", inertia_default_stopFunction[50]="";
+
 	while (!ds->eof())
 	{
 		size_t ll=ds->readLine(line, 1023);
@@ -1567,6 +1572,23 @@ int Beam::loadTruck(const char* fname, SceneManager *manager, SceneNode *parent,
 			{
 				beam_creak=0.0f;
 				default_plastic_coef=tmpdefault_plastic_coef;
+			}
+			continue;
+		}
+		if (!strncmp("set_inertia_defaults", line, 20))
+		{
+			int result = sscanf(line,"set_inertia_defaults %f, %f, %s %s",&inertia_startDelay, &inertia_stopDelay, inertia_default_startFunction, inertia_default_stopFunction);
+			if (result < 4 || result == EOF) {
+				LogManager::getSingleton().logMessage("Error parsing File (set_inertia_defaults) " + String(fname) +" line " + StringConverter::toString(linecounter) + ". trying to continue ...");
+				continue;
+			}
+			if (inertia_startDelay < 0 || inertia_stopDelay < 0)
+			{
+				// reset it
+				inertia_startDelay=0;
+				inertia_stopDelay=0;
+				inertia_default_startFunction[0]=0;
+				inertia_default_stopFunction[0]=0;
 			}
 			continue;
 		}
@@ -2173,8 +2195,11 @@ int Beam::loadTruck(const char* fname, SceneManager *manager, SceneNode *parent,
 			}
 			//            printf("beam : %i %i\n", id1, id2);
 
-			if(hydroInertia)
+			if(hydroInertia && startDelay != 0 && stopDelay != 0)
 				hydroInertia->setCmdKeyDelay(free_hydro,startDelay,stopDelay,String (startFunction), String (stopFunction));
+			else if(hydroInertia && (inertia_startDelay > 0.00001f || inertia_stopDelay > 0.00001f))
+				hydroInertia->setCmdKeyDelay(free_hydro,inertia_startDelay,inertia_stopDelay, String (inertia_default_startFunction), String (inertia_default_stopFunction));
+
 
 			int pos=add_beam(&nodes[id1], &nodes[id2], manager, parent, htype, default_break, default_spring, default_damp);
 			hydro[free_hydro]=pos;free_hydro++;
@@ -2231,18 +2256,13 @@ int Beam::loadTruck(const char* fname, SceneManager *manager, SceneNode *parent,
 					beams[pos].hydroFlags |= HYDRO_FLAG_DIR;
 			}
 		}
-
 		else if (mode==66)
 		{
 			//parse animators
 			int id1, id2;
 			float ratio;
 			char options[250] = "";
-			Real startDelay=0;
-			Real stopDelay=0;
-			char startFunction[50]="";
-			char stopFunction[50]="";
-			int result = sscanf(line,"%i, %i, %f, %f, %f, %s %s %s",&id1,&id2,&ratio,&startDelay,&stopDelay,options,startFunction,stopFunction);
+			int result = sscanf(line,"%i, %i, %f, %s",&id1,&id2,&ratio,options);
 			if (result < 3 || result == EOF)
 			{
 				LogManager::getSingleton().logMessage("Error parsing File (Animator) " + String(fname) +" line " + StringConverter::toString(linecounter) + ". trying to continue ...");
@@ -2270,8 +2290,8 @@ int Beam::loadTruck(const char* fname, SceneManager *manager, SceneNode *parent,
 				continue;
 			}
 
-			if(hydroInertia)
-				hydroInertia->setCmdKeyDelay(free_hydro, startDelay, stopDelay, String(startFunction), String(stopFunction));
+			if(hydroInertia && (inertia_startDelay > 0.00001f || inertia_stopDelay > 0.00001f))
+				hydroInertia->setCmdKeyDelay(free_hydro,inertia_startDelay,inertia_stopDelay, String (inertia_default_startFunction), String (inertia_default_stopFunction));
 
 			int pos=add_beam(&nodes[id1], &nodes[id2], manager, parent, htype, default_break, default_spring, default_damp);
 			hydro[free_hydro]=pos;
@@ -2638,14 +2658,18 @@ int Beam::loadTruck(const char* fname, SceneManager *manager, SceneNode *parent,
 			else
 				beams[pos].centerLength = (beams[pos].commandShort-beams[pos].commandLong)/2 + beams[pos].commandLong;
 
-			if(cmdInertia)
+			if(cmdInertia && startDelay > 0 && stopDelay > 0)
 			{
 				cmdInertia->setCmdKeyDelay(keys,startDelay,stopDelay,String (startFunction),String (stopFunction));
 				cmdInertia->setCmdKeyDelay(keyl,startDelay,stopDelay,String (startFunction),String (stopFunction));
 			}
+			else if(cmdInertia && (inertia_startDelay > 0.00001f || inertia_stopDelay > 0.00001f))
+			{
+				cmdInertia->setCmdKeyDelay(keys,inertia_startDelay,inertia_stopDelay, String (inertia_default_startFunction), String (inertia_default_stopFunction));
+				cmdInertia->setCmdKeyDelay(keyl,inertia_startDelay,inertia_stopDelay, String (inertia_default_startFunction), String (inertia_default_stopFunction));
+			}
 
 		}
-
 		else if (mode==13)
 		{
 			//parse contacters
@@ -3661,11 +3685,17 @@ int Beam::loadTruck(const char* fname, SceneManager *manager, SceneNode *parent,
 			commandkey[keyl].rotators.push_back(free_rotator+1);
 			commandkey[keyl].description = "Rotate Right";
 
-			if(rotaInertia)
+			if(rotaInertia && startDelay > 0 && stopDelay > 0)
 			{
 				rotaInertia->setCmdKeyDelay(keys,startDelay,stopDelay,String (startFunction),String (stopFunction));
 				rotaInertia->setCmdKeyDelay(keyl,startDelay,stopDelay,String (startFunction),String (stopFunction));
 			}
+			else if(rotaInertia && (inertia_startDelay > 0.00001f || inertia_stopDelay > 0.00001f))
+			{
+				rotaInertia->setCmdKeyDelay(keys,inertia_startDelay,inertia_stopDelay, String (inertia_default_startFunction), String (inertia_default_stopFunction));
+				rotaInertia->setCmdKeyDelay(keyl,inertia_startDelay,inertia_stopDelay, String (inertia_default_startFunction), String (inertia_default_stopFunction));
+			}
+
 			free_rotator++;
 		}
 		else if (mode==28)
