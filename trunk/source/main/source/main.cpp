@@ -477,28 +477,29 @@ void test_crashrpt()
 // license: MIT
 #include "SimpleOpt.h"
 
-#define HELPTEXT "--help (this)\n-map <map> (loads map on startup)\n-truck <truck> (loads truck on startup)\n-setup shows the ogre configurator\n-version shows the version information\n-enter enters the selected truck\n\nFor example: RoR.exe -map oahu -truck semi"
+#define HELPTEXT "--help (this)\n-map <map> (loads map on startup)\n-truck <truck> (loads truck on startup)\n-setup shows the ogre configurator\n-version shows the version information\n-enter enters the selected truck\n-userpath <path> sets the user directory\nFor example: RoR.exe -map oahu -truck semi"
 
 // option identifiers
-enum { OPT_HELP, OPT_MAP, OPT_TRUCK, OPT_SETUP, OPT_CMD, OPT_WDIR, OPT_ETM, OPT_BUILD, OPT_CONFIG, OPT_VER, OPT_CHECKCACHE, OPT_TRUCKCONFIG, OPT_ENTERTRUCK, OPT_BENCH, OPT_STREAMCACHEGEN, OPT_BENCHNUM};
+enum { OPT_HELP, OPT_MAP, OPT_TRUCK, OPT_SETUP, OPT_CMD, OPT_WDIR, OPT_ETM, OPT_BUILD, OPT_CONFIG, OPT_VER, OPT_CHECKCACHE, OPT_TRUCKCONFIG, OPT_ENTERTRUCK, OPT_BENCH, OPT_STREAMCACHEGEN, OPT_BENCHNUM, OPT_USERPATH};
 
 // option array
 CSimpleOpt::SOption cmdline_options[] = {
-	{ OPT_MAP,         ((char *)"-map"),         SO_REQ_SEP },
-	{ OPT_MAP,         ((char *)"-terrain"),     SO_REQ_SEP },
-	{ OPT_TRUCK,       ((char *)"-truck"),       SO_REQ_SEP },
-	{ OPT_ENTERTRUCK,  ((char *)"-enter"),       SO_NONE },
-	{ OPT_CMD,         ((char *)"-cmd"),         SO_REQ_SEP },
-	{ OPT_WDIR,        ((char *)"-wd"),          SO_REQ_SEP },
-	{ OPT_SETUP,       ((char *)"-setup"),       SO_NONE    },
-	{ OPT_CONFIG,      ((char *)"-config"),      SO_NONE    },
-	{ OPT_TRUCKCONFIG, ((char *)"-truckconfig"), SO_REQ_SEP    },
-	{ OPT_BUILD,       ((char *)"-build"),       SO_NONE    },
-	{ OPT_HELP,        ((char *)"--help"),       SO_NONE    },
-	{ OPT_HELP,        ((char *)"-help"),        SO_NONE    },
-	{ OPT_CHECKCACHE,  ((char *)"-checkcache"),  SO_NONE    },
-	{ OPT_VER,         ((char *)"-version"),     SO_NONE    },
-	{ OPT_BENCH,       ((char *)"-benchmark"),   SO_REQ_SEP    },
+	{ OPT_MAP,            ((char *)"-map"),         SO_REQ_SEP },
+	{ OPT_MAP,            ((char *)"-terrain"),     SO_REQ_SEP },
+	{ OPT_TRUCK,          ((char *)"-truck"),       SO_REQ_SEP },
+	{ OPT_ENTERTRUCK,     ((char *)"-enter"),       SO_NONE },
+	{ OPT_CMD,            ((char *)"-cmd"),         SO_REQ_SEP },
+	{ OPT_WDIR,           ((char *)"-wd"),          SO_REQ_SEP },
+	{ OPT_SETUP,          ((char *)"-setup"),       SO_NONE    },
+	{ OPT_CONFIG,         ((char *)"-config"),      SO_NONE    },
+	{ OPT_TRUCKCONFIG,    ((char *)"-truckconfig"), SO_REQ_SEP    },
+	{ OPT_BUILD,          ((char *)"-build"),       SO_NONE    },
+	{ OPT_HELP,           ((char *)"--help"),       SO_NONE    },
+	{ OPT_HELP,           ((char *)"-help"),        SO_NONE    },
+	{ OPT_CHECKCACHE,     ((char *)"-checkcache"),  SO_NONE    },
+	{ OPT_VER,            ((char *)"-version"),     SO_NONE    },
+	{ OPT_USERPATH,       ((char *)"-userpath"),   SO_REQ_SEP    },
+	{ OPT_BENCH,          ((char *)"-benchmark"),   SO_REQ_SEP    },
 	{ OPT_BENCHNUM,       ((char *)"-benchmarktrucks"),       SO_REQ_SEP },
 	{ OPT_STREAMCACHEGEN, ((char *)"-streamcachegen"),   SO_NONE    },
 SO_END_OF_OPTIONS
@@ -578,6 +579,8 @@ int main(int argc, char *argv[])
 				SETTINGS.setSetting("Benchmark", String(args.OptionArg()));
 			} else if (args.OptionId() == OPT_BENCHNUM) {
 				SETTINGS.setSetting("BenchmarkTrucks", String(args.OptionArg()));
+			} else if (args.OptionId() == OPT_USERPATH) {
+				SETTINGS.setSetting("userpath", String(args.OptionArg()));
 			} else if (args.OptionId() == OPT_CONFIG) {
 				SETTINGS.setSetting("configfile", String(args.OptionArg()));
 			} else if (args.OptionId() == OPT_WDIR) {
