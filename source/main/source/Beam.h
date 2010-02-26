@@ -76,7 +76,7 @@ typedef struct _collision_box collision_box_t;
 #define MAX_BEAMS 5000
 #define MAX_ROTATORS 20
 #define MAX_CONTACTERS 2000
-#define MAX_HYDROS 64
+#define MAX_HYDROS 1000
 #define MAX_WHEELS 64
 #define MAX_SUBMESHES 500
 #define MAX_TEXCOORDS 3000
@@ -198,6 +198,36 @@ typedef struct _collision_box collision_box_t;
 #define HYDRO_FLAG_REV_RUDDER   0x00000040
 #define HYDRO_FLAG_REV_ELEVATOR 0x00000080
 
+#define ANIM_FLAG_AIRSPEED      0x00000001
+#define ANIM_FLAG_VVI           0x00000002
+#define ANIM_FLAG_ALTIMETER1    0x00000004
+#define ANIM_FLAG_ALTIMETER10   0x00000008
+#define ANIM_FLAG_ALTIMETER100  0x00000010
+#define ANIM_FLAG_AOA           0x00000020
+#define ANIM_FLAG_FLAP          0x00000040
+#define ANIM_FLAG_AIRBRAKE      0x00000080
+#define ANIM_FLAG_ROLL          0x00000100
+#define ANIM_FLAG_PITCH         0x00000200
+#define ANIM_FLAG_THROTTLE1     0x00000400
+#define ANIM_FLAG_THROTTLE2     0x00000800
+#define ANIM_FLAG_THROTTLE3     0x00001000
+#define ANIM_FLAG_THROTTLE4     0x00002000
+#define ANIM_FLAG_RPM1          0x00004000
+#define ANIM_FLAG_RPM2          0x00008000
+#define ANIM_FLAG_RPM3          0x00010000
+#define ANIM_FLAG_RPM4          0x00020000
+#define ANIM_FLAG_ACCEL         0x00040000
+#define ANIM_FLAG_BRAKE         0x00080000
+#define ANIM_FLAG_CLUTCH        0x00100000
+#define ANIM_FLAG_RPM           0x00200000
+#define ANIM_FLAG_SPEEDO        0x00400000
+#define ANIM_FLAG_PBRAKE        0x00800000
+#define ANIM_FLAG_TURBO         0x01000000
+#define ANIM_FLAG_SHIFTER1      0x02000000
+#define ANIM_FLAG_SHIFTER2      0x04000000
+#define ANIM_FLAG_SHIFTER3      0x08000000
+#define ANIM_FLAG_SHIFTER4      0x10000000
+#define ANIM_FLAG_TORQUE        0x20000000
 
 #define SHOCK_FLAG_NORMAL       0x00000001
 #define SHOCK_FLAG_INVISIBLE    0x00000002
@@ -367,6 +397,7 @@ typedef struct _beam
 	Real Lhydro;//hydro reference len
 	Real hydroRatio;//hydro rotation ratio
 	int hydroFlags;
+	int animFlags;
 	Real commandRatioLong;
 	Real commandRatioShort;
 	Real commandShort;
@@ -808,6 +839,9 @@ public:
 	int sleepcount;
 	//can this be drived?
 	int driveable;
+	int previousGear;
+	float previousCrank;
+	float animTimer;
 	int importcommands;
 	bool requires_wheel_contact;
 	bool wheel_contact_requested;
