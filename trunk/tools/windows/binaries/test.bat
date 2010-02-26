@@ -1,1 +1,1 @@
-RoR.exe -benchmark simple -truck semi.truck -userpath ./skeleton/ -benchmarktrucks 1
+RoR.exe -benchmark simple -truck semi.truck -userpath ./skeleton/ -benchmarktrucks 1 -benchmark-final-position "70.1729 1.18253 210.506" -benchmark-final-position-error 1 -nocrashrpt
