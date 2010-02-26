@@ -153,13 +153,19 @@ bool Settings::setupPaths()
 	GetShortPathName(program_path, program_path, 512); //this is legal
 	path_descend(program_path);
 
-	if (SHGetFolderPath(NULL, CSIDL_PERSONAL, NULL, SHGFP_TYPE_CURRENT, user_path)!=S_OK)
+	if (getSetting("userpath").empty())
 	{
-		showError(_L("Startup error"), _L("Error while retrieving user space path"));
-		return false;
+		if (SHGetFolderPath(NULL, CSIDL_PERSONAL, NULL, SHGFP_TYPE_CURRENT, user_path)!=S_OK)
+		{
+			showError(_L("Startup error"), _L("Error while retrieving user space path"));
+			return false;
+		}
+		GetShortPathName(user_path, user_path, 512); //this is legal
+		sprintf(user_path, "%s\\Rigs of Rods\\", user_path);
+	} else
+	{
+		strcpy(user_path, getSetting("userpath").c_str());
 	}
-	GetShortPathName(user_path, user_path, 512); //this is legal
-	sprintf(user_path, "%s\\Rigs of Rods\\", user_path);
 
 #elif OGRE_PLATFORM == OGRE_PLATFORM_LINUX
 	//true program path is impossible to get from POSIX functions
