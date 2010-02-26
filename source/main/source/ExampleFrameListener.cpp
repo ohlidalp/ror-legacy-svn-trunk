@@ -1025,7 +1025,7 @@ ExampleFrameListener::ExampleFrameListener(RenderWindow* win, Camera* cam, Scene
 
 	current_truck=-1;
 	lua=0;
-	benchmarking=false;
+	benchmarking = !(SETTINGS.getSetting("Benchmark").empty());
 	fpsLineStream = netLineStream = netlagLineStream = 0;
 	enablePosStor = (SETTINGS.getSetting("Position Storage")=="Yes");
 	objectCounter=0;
@@ -1149,7 +1149,9 @@ ExampleFrameListener::ExampleFrameListener(RenderWindow* win, Camera* cam, Scene
 	size_t hWnd = 0;
 	win->getCustomAttribute("WINDOW", &hWnd);
 
-	INPUTENGINE.setup(hWnd, true, true, inputGrabMode);
+
+	if(!benchmarking)
+		INPUTENGINE.setup(hWnd, true, true, inputGrabMode);
 
 	// init GUI
 	new GUIManager(root, scm, win);
@@ -2775,8 +2777,35 @@ bool ExampleFrameListener::benchmarkStep(float dt)
 	// end the benchmark after some time
 	if(rtime > 30.0f)
 	{
-		// abort the benchmark after some seconds
-		exit(1);
+		Vector3 pos = trucks[current_truck]->nodes[0].AbsPosition;
+		LogManager::getSingleton().logMessage("Benchmark final Position: " + StringConverter::toString(pos));
+
+		String finalpos_str = SETTINGS.getSetting("BenchmarkFinalPosition");
+		String finalpos_error_str = SETTINGS.getSetting("BenchmarkFinalPositionError");
+		if(!finalpos_str.empty() && !finalpos_error_str.empty())
+		{
+			// check if we are at the wished position
+			Real finalpos_error = StringConverter::parseReal(finalpos_error_str);
+			Vector3 finalPos = StringConverter::parseVector3(finalpos_str);
+			LogManager::getSingleton().logMessage("Benchmark target Position: " + StringConverter::toString(finalPos));
+			Real targetDistance = fabs(pos.distance(finalPos));
+			LogManager::getSingleton().logMessage("Benchmark target distance: " + StringConverter::toString(targetDistance));
+			LogManager::getSingleton().logMessage("Benchmark error allowance: " + StringConverter::toString(finalpos_error));
+
+			if(targetDistance < finalpos_error)
+			{
+				LogManager::getSingleton().logMessage("Benchmark succeeding, inside of error radius");
+				exit(0);
+			} else
+			{
+				LogManager::getSingleton().logMessage("Benchmark failing, out of allowance error radius");
+				exit(1);
+			}
+		} else
+		{
+			// exit gracefully
+			exit(0);
+		}
 	}
 
 	// rotate camera slowly
@@ -2791,12 +2820,13 @@ bool ExampleFrameListener::benchmarkStep(float dt)
 bool ExampleFrameListener::updateEvents(float dt)
 {
 	if (dt==0.0f) return true;
-	INPUTENGINE.updateKeyBounces(dt);
-	if(!INPUTENGINE.getInputsChanged()) return true;
 
 	// when in benchmark mode, do not process user events, rather execute some hardcoded actions
 	if(benchmarking)
 		return benchmarkStep(dt);
+
+	INPUTENGINE.updateKeyBounces(dt);
+	if(!INPUTENGINE.getInputsChanged()) return true;
 
 	bool dirty = false;
 	//update joystick readings
