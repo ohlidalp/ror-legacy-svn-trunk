@@ -409,6 +409,9 @@ Beam::Beam(int tnum, SceneManager *manager, SceneNode *parent, RenderWindow* win
 		driveable=MACHINE;
 	else
 		driveable=NOT_DRIVEABLE;
+	previousGear = 0;
+	previousCrank = 0.0f;
+	animTimer = 0.0f;
 	engine=0;
 	truckversion=-1;
 	editorId=-1;
@@ -1461,6 +1464,7 @@ int Beam::loadTruck(const char* fname, SceneManager *manager, SceneNode *parent,
 		if (!strcmp("railgroups",line)) {mode=63;continue;}
 		if (!strcmp("slidenodes",line)) {mode=64;continue;}
 		if (!strcmp("flares2",line)) {mode=65;continue;};
+		if (!strcmp("animators",line)) {mode=66;continue;};
 		if (!strncmp("enable_advanced_deformation", line, 27))
 		{
 			// parse the optional threshold value
@@ -2176,8 +2180,6 @@ int Beam::loadTruck(const char* fname, SceneManager *manager, SceneNode *parent,
 			hydro[free_hydro]=pos;free_hydro++;
 			beams[pos].Lhydro=beams[pos].L;
 			beams[pos].hydroRatio=ratio;
-			beams[pos].hydroFlags=0;
-
 
 			// now 'parse' the options
 			options_pointer = options;
@@ -2222,7 +2224,6 @@ int Beam::loadTruck(const char* fname, SceneManager *manager, SceneNode *parent,
 					case 'h':
 						beams[pos].hydroFlags |= (HYDRO_FLAG_REV_ELEVATOR | HYDRO_FLAG_RUDDER);
 						break;
-
 				}
 				options_pointer++;
 				// if you use the i flag on its own, add the direction to it
@@ -2230,6 +2231,88 @@ int Beam::loadTruck(const char* fname, SceneManager *manager, SceneNode *parent,
 					beams[pos].hydroFlags |= HYDRO_FLAG_DIR;
 			}
 		}
+
+		else if (mode==66)
+		{
+			//parse animators
+			int id1, id2;
+			float ratio;
+			char options[250] = "";
+			Real startDelay=0;
+			Real stopDelay=0;
+			char startFunction[50]="";
+			char stopFunction[50]="";
+			int result = sscanf(line,"%i, %i, %f, %f, %f, %s %s %s",&id1,&id2,&ratio,&startDelay,&stopDelay,options,startFunction,stopFunction);
+			if (result < 3 || result == EOF)
+			{
+				LogManager::getSingleton().logMessage("Error parsing File (Animator) " + String(fname) +" line " + StringConverter::toString(linecounter) + ". trying to continue ...");
+				continue;
+			}
+
+			int htype=BEAM_HYDRO;
+
+			if (strstr(options,"inv")) htype=BEAM_INVISIBLE_HYDRO;
+
+			if (id1>=free_node || id2>=free_node)
+			{
+				LogManager::getSingleton().logMessage("Error: unknown node number in animators section ("+StringConverter::toString(id1)+","+StringConverter::toString(id2)+")");
+				exit(6);
+			}
+
+			if(free_beam >= MAX_BEAMS)
+			{
+				LogManager::getSingleton().logMessage("beams limit reached ("+StringConverter::toString(MAX_BEAMS)+"): " + String(fname) +" line " + StringConverter::toString(linecounter) + ". trying to continue ...");
+				continue;
+			}
+			if(free_hydro >= MAX_HYDROS)
+			{
+				LogManager::getSingleton().logMessage("hydros limit reached (via animators) ("+StringConverter::toString(MAX_HYDROS)+"): " + String(fname) +" line " + StringConverter::toString(linecounter) + ". trying to continue ...");
+				continue;
+			}
+
+			if(hydroInertia)
+				hydroInertia->setCmdKeyDelay(free_hydro, startDelay, stopDelay, String(startFunction), String(stopFunction));
+
+			int pos=add_beam(&nodes[id1], &nodes[id2], manager, parent, htype, default_break, default_spring, default_damp);
+			hydro[free_hydro]=pos;
+			free_hydro++;
+			beams[pos].Lhydro=beams[pos].L;
+			beams[pos].hydroRatio=ratio;
+
+			if (strstr(options,"vis"))           beams[pos].type = BEAM_HYDRO;
+			if (strstr(options,"inv"))           htype=BEAM_INVISIBLE_HYDRO;
+			if (strstr(options,"airspeed"))      beams[pos].animFlags |= (ANIM_FLAG_AIRSPEED);
+			if (strstr(options,"vvi"))           beams[pos].animFlags |= (ANIM_FLAG_VVI);
+			if (strstr(options,"altimeter100k")) beams[pos].animFlags |= (ANIM_FLAG_ALTIMETER100);
+			if (strstr(options,"altimeter10k"))  beams[pos].animFlags |= (ANIM_FLAG_ALTIMETER10);
+			if (strstr(options,"altimeter1k"))   beams[pos].animFlags |= (ANIM_FLAG_ALTIMETER1);
+			if (strstr(options,"aoa"))           beams[pos].animFlags |= (ANIM_FLAG_AOA);
+			if (strstr(options,"flap"))          beams[pos].animFlags |= (ANIM_FLAG_FLAP);
+			if (strstr(options,"airbrake"))      beams[pos].animFlags |= (ANIM_FLAG_AIRBRAKE);
+			if (strstr(options,"roll"))          beams[pos].animFlags |= (ANIM_FLAG_ROLL);
+			if (strstr(options,"pitch"))         beams[pos].animFlags |= (ANIM_FLAG_PITCH);
+			if (strstr(options,"throttle1"))     beams[pos].animFlags |= (ANIM_FLAG_THROTTLE1);
+			if (strstr(options,"throttle2"))     beams[pos].animFlags |= (ANIM_FLAG_THROTTLE2);
+			if (strstr(options,"throttle3"))     beams[pos].animFlags |= (ANIM_FLAG_THROTTLE3);
+			if (strstr(options,"throttle4"))     beams[pos].animFlags |= (ANIM_FLAG_THROTTLE4);
+			if (strstr(options,"rpm1"))          beams[pos].animFlags |= (ANIM_FLAG_RPM1);
+			if (strstr(options,"rpm2"))          beams[pos].animFlags |= (ANIM_FLAG_RPM2);
+			if (strstr(options,"rpm3"))          beams[pos].animFlags |= (ANIM_FLAG_RPM3);
+			if (strstr(options,"rpm4"))          beams[pos].animFlags |= (ANIM_FLAG_RPM4);
+			if (strstr(options,"brake"))         beams[pos].animFlags |= (ANIM_FLAG_BRAKE);
+			if (strstr(options,"accel"))         beams[pos].animFlags |= (ANIM_FLAG_ACCEL);
+			if (strstr(options,"clutch"))        beams[pos].animFlags |= (ANIM_FLAG_CLUTCH);
+			if (strstr(options,"speedo"))        beams[pos].animFlags |= (ANIM_FLAG_SPEEDO);
+			if (strstr(options,"tacho"))         beams[pos].animFlags |= (ANIM_FLAG_RPM);
+			if (strstr(options,"turbo"))         beams[pos].animFlags |= (ANIM_FLAG_TURBO);
+			if (strstr(options,"parking"))       beams[pos].animFlags |= (ANIM_FLAG_PBRAKE);
+			if (strstr(options,"shifterman1"))   beams[pos].animFlags |= (ANIM_FLAG_SHIFTER1);
+			if (strstr(options,"shifterman2"))   beams[pos].animFlags |= (ANIM_FLAG_SHIFTER2);
+			if (strstr(options,"shifterseq"))    beams[pos].animFlags |= (ANIM_FLAG_SHIFTER3);
+			if (strstr(options,"shifterlin"))    beams[pos].animFlags |= (ANIM_FLAG_SHIFTER4);
+			if (strstr(options,"torque"))        beams[pos].animFlags |= (ANIM_FLAG_TORQUE);
+		}
+
 		else if (mode==6)
 		{
 			//parse wheels
@@ -5533,6 +5616,7 @@ int Beam::add_beam(node_t *p1, node_t *p2, SceneManager *manager, SceneNode *par
 	beams[pos].refL=beams[pos].L;
 	beams[pos].hydroRatio=0.0;
 	beams[pos].hydroFlags=0;
+	beams[pos].animFlags=0;
 	beams[pos].stress=0.0;
 	beams[pos].lastforce=Vector3(0,0,0);
 	beams[pos].iscentering=false;
@@ -6033,7 +6117,7 @@ bool Beam::frameStep(Real dt, Beam** trucks, int numtrucks)
 			pthread_mutex_lock(&work_mutex);
 			pthread_cond_broadcast(&work_cv);
 			pthread_mutex_unlock(&work_mutex);
-		
+
 		} else if (thread_mode==THREAD_HT2)
 		{
 			// just for this truck
@@ -6041,7 +6125,7 @@ bool Beam::frameStep(Real dt, Beam** trucks, int numtrucks)
 			lastposition = position;
 
 			if (reset_requested) SyncReset();
-			
+
 			if (state!=SLEEPING && state!=NETWORKED && state!=RECYCLE)
 			{
 				// average position
@@ -6534,7 +6618,10 @@ void Beam::calcForcesEuler(int doUpdate, Real dt, int step, int maxstep, Beam** 
 
 						beams[i].minmaxposnegstress=std::min(beams[i].maxposstress, -beams[i].maxnegstress);
 						beams[i].minmaxposnegstress=std::min(beams[i].minmaxposnegstress, beams[i].strength);
-
+						if(beambreakdebug)
+						{
+							LogManager::getSingleton().logMessage(" YYY Beam " + StringConverter::toString(i) + " just deformed with compression force " + StringConverter::toString(flen) + " / " + StringConverter::toString(beams[i].strength) + ". It was between nodes " + StringConverter::toString(beams[i].p1->id) + " and " + StringConverter::toString(beams[i].p2->id) + ".");
+						}
 					} else	// For expansion
 					if (sflen<beams[i].maxnegstress && difftoBeamL>0.0f)
 					{
@@ -6558,6 +6645,10 @@ void Beam::calcForcesEuler(int doUpdate, Real dt, int step, int maxstep, Beam** 
 
 						beams[i].minmaxposnegstress=std::min(beams[i].maxposstress, -beams[i].maxnegstress);
 						beams[i].minmaxposnegstress=std::min(beams[i].minmaxposnegstress, beams[i].strength);
+						if(beambreakdebug)
+						{
+							LogManager::getSingleton().logMessage(" YYY Beam " + StringConverter::toString(i) + " just deformed with extension force " + StringConverter::toString(flen) + " / " + StringConverter::toString(beams[i].strength) + ". It was between nodes " + StringConverter::toString(beams[i].p1->id) + " and " + StringConverter::toString(beams[i].p2->id) + ".");
+						}
 					}
 				}
 
@@ -7465,6 +7556,364 @@ void Beam::calcForcesEuler(int doUpdate, Real dt, int step, int maxstep, Beam** 
 		if (beams[hydro[i]].hydroFlags & HYDRO_FLAG_REV_AILERON) {cstate-=hydroaileronstate;div++;}
 		if (beams[hydro[i]].hydroFlags & HYDRO_FLAG_REV_RUDDER) {cstate-=hydrorudderstate;div++;}
 		if (beams[hydro[i]].hydroFlags & HYDRO_FLAG_REV_ELEVATOR) {cstate-=hydroelevatorstate;div++;}
+
+		// ANIMATORS FOLLOWING
+		// if no animator, skip all the tests...
+		if(beams[hydro[i]].animFlags)
+		{
+			//torque
+			if (beams[hydro[i]].animFlags & ANIM_FLAG_TORQUE)
+			{
+				float torque=trucks[trucknum]->engine->getCrankFactor();
+				if (torque <= 0.0f) torque = 0.0f;
+				if (torque >= previousCrank)
+					cstate -= torque / 10.0f;
+				else
+					cstate = 0.0f;
+
+				if (cstate <= -1.0f) cstate = -1.0f;
+				previousCrank = torque;
+				div++;
+			}
+
+			//shifterseq, to amimate sequentiell shifting
+			if (beams[hydro[i]].animFlags & ANIM_FLAG_SHIFTER3)
+			{
+				int shifter=trucks[trucknum]->engine->getGear();
+				if (shifter > trucks[trucknum]->previousGear)
+				{
+					cstate = 1.0f;
+					trucks[trucknum]->animTimer = 0.2f;
+				}
+				if (shifter < trucks[trucknum]->previousGear)
+				{
+					cstate = -1.0f;
+					trucks[trucknum]->animTimer = -0.2f;
+				}
+				trucks[trucknum]->previousGear = shifter;
+
+				if (trucks[trucknum]->animTimer > 0.0f)
+				{
+					cstate = 1.0f;
+					trucks[trucknum]->animTimer -= dt;
+					if (trucks[trucknum]->animTimer < 0.0f)
+						trucks[trucknum]->animTimer = 0.0f;
+				}
+				if (trucks[trucknum]->animTimer < 0.0f)
+				{
+					cstate = -1.0f;
+					trucks[trucknum]->animTimer += dt;
+					if (trucks[trucknum]->animTimer > 0.0f)
+						trucks[trucknum]->animTimer = 0.0f;
+				}
+				div++;
+			}
+
+			//shifterman1, left/right
+			if (beams[hydro[i]].animFlags & ANIM_FLAG_SHIFTER1)
+			{
+				int shifter=trucks[trucknum]->engine->getGear();
+				if (!shifter)
+				{
+					cstate = -0.5f;
+				} else
+				if (shifter < 0)
+				{
+					cstate = 1.0f;
+				} else
+				{
+					cstate -= int((shifter - 1.0) / 2.0);
+				}
+				div++;
+			}
+
+			//shifterman2, up/down
+			if (beams[hydro[i]].animFlags & ANIM_FLAG_SHIFTER2)
+			{
+				int shifter=trucks[trucknum]->engine->getGear();
+				cstate = 0.5f;
+				if (shifter < 0)
+				{
+					cstate = 1.0f;
+				}
+				if (shifter > 0)
+				{
+					// this is a really crappy if line, but somehow if (shifter/2 == int(shifter/2)) did not work reliable at all
+					if (shifter == 2 || shifter == 4 || shifter == 6 || shifter == 8 || shifter == 10 || shifter == 12)
+					{
+						cstate = 0.0f;
+					} else
+					{
+						cstate = 1.0f;
+					}
+				}
+				div++;
+			}
+
+			//shifterlinear, to amimate cockpit gearselect gauge and autotransmission stick
+			if (beams[hydro[i]].animFlags & ANIM_FLAG_SHIFTER4)
+			{
+				int shifter=trucks[trucknum]->engine->getGear();
+				int numgears= trucks[trucknum]->engine->getNumGears();
+				cstate -= (shifter + 2.0) / (numgears + 2.0);
+				div++;
+			}
+
+			//parking brake
+			if (beams[hydro[i]].animFlags & ANIM_FLAG_PBRAKE)
+			{
+				float pbrake=trucks[trucknum]->parkingbrake;
+				cstate -= pbrake;
+				div++;
+			}
+
+			//speedo ( scales with speedomax )
+			if (beams[hydro[i]].animFlags & ANIM_FLAG_SPEEDO)
+			{
+				float speedo=trucks[trucknum]->WheelSpeed / trucks[trucknum]->speedoMax;
+				cstate -= speedo * 3.0f;
+				div++;
+			}
+
+			//engine tacho ( scales with maxrpm, default is 3500 )
+			if (beams[hydro[i]].animFlags & ANIM_FLAG_RPM)
+			{
+				float tacho=trucks[trucknum]->engine->getRPM()/trucks[trucknum]->engine->getMaxRPM();
+				cstate -= tacho;
+				div++;
+			}
+
+			//turbo
+			if (beams[hydro[i]].animFlags & ANIM_FLAG_TURBO)
+			{
+				float turbo=trucks[trucknum]->engine->getTurboPSI()*3.34;
+				cstate -= turbo / 67.0f ;
+				div++;
+			}
+
+			//brake
+			if (beams[hydro[i]].animFlags & ANIM_FLAG_BRAKE)
+			{
+				float brake=trucks[trucknum]->brake/trucks[trucknum]->brakeforce;
+				cstate -= brake;
+				div++;
+			}
+
+			//accelerator
+			if (beams[hydro[i]].animFlags & ANIM_FLAG_ACCEL)
+			{
+				float accel=trucks[trucknum]->engine->getAcc();
+				cstate -= accel + 0.06f;
+				//( small correction, get acc is nver smaller then 0.06.
+				div++;
+			}
+
+				//clutch
+			if (beams[hydro[i]].animFlags & ANIM_FLAG_CLUTCH)
+			{
+				float clutch=trucks[trucknum]->engine->getClutch();
+				cstate -= abs(1.0f - clutch);
+				div++;
+			}
+
+			//aeroengines rpm&throttle
+			int ftp=trucks[trucknum]->free_aeroengine;
+
+			if (ftp > 0)
+			{
+				if (beams[hydro[i]].animFlags & ANIM_FLAG_RPM1)
+				{
+					float angle;
+					float pcent=trucks[trucknum]->aeroengines[0]->getRPMpc();
+					if (pcent<60.0) angle=-5.0+pcent*1.9167;
+					else if (pcent<110.0) angle=110.0+(pcent-60.0)*4.075;
+					else angle=314.0;
+					cstate -= angle / 314.0f;
+					div++;
+				}
+				if (beams[hydro[i]].animFlags & ANIM_FLAG_THROTTLE1)
+				{
+					float throttle=trucks[trucknum]->aeroengines[0]->getThrotle();
+					cstate -= throttle;
+					div++;
+				}
+			}
+
+			if (ftp > 1)
+			{
+				if (beams[hydro[i]].animFlags & ANIM_FLAG_RPM2)
+				{
+					float angle;
+					float pcent=trucks[trucknum]->aeroengines[1]->getRPMpc();
+					if (pcent<60.0) angle=-5.0+pcent*1.9167;
+					else if (pcent<110.0) angle=110.0+(pcent-60.0)*4.075;
+					else angle=314.0;
+					cstate -= angle / 314.0f;
+					div++;
+				}
+				if (beams[hydro[i]].animFlags & ANIM_FLAG_THROTTLE2)
+				{
+					float throttle=trucks[trucknum]->aeroengines[1]->getThrotle();
+					cstate -= throttle;
+					div++;
+				}
+			}
+
+			if (ftp > 2)
+			{
+				if (beams[hydro[i]].animFlags & ANIM_FLAG_RPM3)
+				{
+					float angle;
+					float pcent=trucks[trucknum]->aeroengines[2]->getRPMpc();
+					if (pcent<60.0) angle=-5.0+pcent*1.9167;
+					else if (pcent<110.0) angle=110.0+(pcent-60.0)*4.075;
+					else angle=314.0;
+					cstate -= angle / 314.0f;
+					div++;
+				}
+				if (beams[hydro[i]].animFlags & ANIM_FLAG_THROTTLE3)
+				{
+					float throttle=trucks[trucknum]->aeroengines[2]->getThrotle();
+					cstate -= throttle;
+					div++;
+				}
+			}
+
+			if (ftp > 3)
+			{
+				if (beams[hydro[i]].animFlags & ANIM_FLAG_RPM4)
+				{
+					float angle;
+					float pcent=trucks[trucknum]->aeroengines[3]->getRPMpc();
+					if (pcent<60.0) angle=-5.0+pcent*1.9167;
+					else if (pcent<110.0) angle=110.0+(pcent-60.0)*4.075;
+					else angle=314.0;
+					cstate -= angle / 314.0f;
+					div++;
+				}
+				if (beams[hydro[i]].animFlags & ANIM_FLAG_THROTTLE4)
+				{
+					float throttle=trucks[trucknum]->aeroengines[3]->getThrotle();
+					cstate -= throttle;
+					div++;
+				}
+			}
+
+			//airspeed indicator
+			if (beams[hydro[i]].animFlags & ANIM_FLAG_AIRSPEED)
+			{
+				float angle=0.0;
+				float ground_speed_kt= trucks[trucknum]->nodes[0].Velocity.length()*1.9438;
+				float altitude=trucks[trucknum]->nodes[0].AbsPosition.y;
+				float sea_level_temperature=273.15+15.0; //in Kelvin
+				float sea_level_pressure=101325; //in Pa
+				float airtemperature=sea_level_temperature-altitude*0.0065; //in Kelvin
+				float airpressure=sea_level_pressure*pow(1.0-0.0065*altitude/288.15, 5.24947); //in Pa
+				float airdensity=airpressure*0.0000120896;//1.225 at sea level
+				float kt=ground_speed_kt*sqrt(airdensity/1.225);
+				cstate -= kt / 100.0f;
+				div++;
+			}
+
+			//vvi indicator
+			if (beams[hydro[i]].animFlags & ANIM_FLAG_VVI)
+			{
+				float vvi=trucks[trucknum]->nodes[0].Velocity.y*196.85;
+				// limit vvi scale to +/- 6m/s
+				cstate -=vvi / 6000.0f;
+				if (cstate >= 1.0f) cstate = 1.0f;
+				if (cstate <= -1.0f) cstate = -1.0f;
+				div++;
+			}
+
+			//altimeter indicator 1k oscillating
+			if (beams[hydro[i]].animFlags & ANIM_FLAG_ALTIMETER1)
+			{
+				float altimeter = (trucks[trucknum]->nodes[0].AbsPosition.y*1.1811) / 360.0f;
+				int alti_int = int(altimeter);
+				float alti_mod= (altimeter - alti_int);
+				cstate -= alti_mod;
+				div++;
+			}
+
+			//altimeter indicator 10k oscillating
+			if (beams[hydro[i]].animFlags & ANIM_FLAG_ALTIMETER10)
+			{
+				float alti=trucks[trucknum]->nodes[0].AbsPosition.y*1.1811 / 3600.0f;
+				int alti_int = int(alti);
+				float alti_mod= (alti - alti_int);
+				cstate -= alti_mod;
+				if (cstate <= -1.0f) cstate = -1.0f;
+				div++;
+			}
+
+			//altimeter indicator 100k limited
+			if (beams[hydro[i]].animFlags & ANIM_FLAG_ALTIMETER100)
+			{
+				float alti=trucks[trucknum]->nodes[0].AbsPosition.y*1.1811  / 36000.0f;
+				cstate -= alti;
+				if (cstate <= -1.0f) cstate = -1.0f;
+				div++;
+			}
+
+			//AOA
+			if (beams[hydro[i]].animFlags & ANIM_FLAG_AOA)
+			{
+				float aoa=0;
+				if (trucks[trucknum]->free_wing>4) aoa=(trucks[trucknum]->wings[4].fa->aoa) / 25.0f;
+				if ((trucks[trucknum]->nodes[0].Velocity.length()*1.9438) < 10.0f) aoa=0;
+				cstate -= aoa;
+				if (cstate <= -1.0f) cstate = -1.0f;
+				if (cstate >= 1.0f) cstate = 1.0f;
+				div++;
+			}
+
+			//roll
+			if (beams[hydro[i]].animFlags & ANIM_FLAG_ROLL)
+			{
+				Vector3 rollv=trucks[trucknum]->nodes[trucks[trucknum]->cameranodepos[0]].RelPosition-trucks[trucknum]->nodes[trucks[trucknum]->cameranoderoll[0]].RelPosition;
+				rollv.normalise();
+				float rollangle=asin(rollv.dotProduct(Vector3::UNIT_Y));
+				Vector3 dirv=trucks[trucknum]->nodes[trucks[trucknum]->cameranodepos[0]].RelPosition-trucks[trucknum]->nodes[trucks[trucknum]->cameranodedir[0]].RelPosition;
+				//flip to other side when upside down
+				Vector3 upv=dirv.crossProduct(-rollv);
+				if (upv.y<0) rollangle=3.14159f-rollangle;
+				//radian to degrees with a max cstate of +/- 1.0
+				cstate = (( rollangle * 57.2957795f )  / 180.0f ) / 1.5f;
+				div++;
+			}
+
+			//pitch
+			if (beams[hydro[i]].animFlags & ANIM_FLAG_PITCH)
+			{
+				Vector3 dirv=trucks[trucknum]->nodes[trucks[trucknum]->cameranodepos[0]].RelPosition-trucks[trucknum]->nodes[trucks[trucknum]->cameranodedir[0]].RelPosition;
+				dirv.normalise();
+				float pitchangle=asin(dirv.dotProduct(Vector3::UNIT_Y));
+				//radian to degrees with a max cstate of +/- 1.0
+				cstate = (( pitchangle * 57.2957795f )  / 90.0f ) / 1.5f;
+				div++;
+			}
+
+			//airbrake
+			if (beams[hydro[i]].animFlags & ANIM_FLAG_AIRBRAKE)
+			{
+				float airbrake=trucks[trucknum]->airbrakeval;
+				// cstate limited to -1.0f
+				cstate -= airbrake / 5.0f;
+				div++;
+			}
+
+			//flaps
+			if (beams[hydro[i]].animFlags & ANIM_FLAG_FLAP)
+			{
+				float flap=flapangles[trucks[trucknum]->flap];
+				// cstate limited to -1.0f
+				cstate = flap;
+				div++;
+			}
+		}
+		// ANIMATORS END
+
 		if (div)
 		{
 			cstate=cstate/(float)div;
@@ -7473,7 +7922,6 @@ void Beam::calcForcesEuler(int doUpdate, Real dt, int step, int maxstep, Beam** 
 
 			if (!(beams[hydro[i]].hydroFlags & HYDRO_FLAG_SPEED))
 				hydrodirwheeldisplay=cstate;
-
 			beams[hydro[i]].L=beams[hydro[i]].Lhydro*(1.0-cstate*beams[hydro[i]].hydroRatio);
 		}
 	}
@@ -7959,7 +8407,7 @@ void Beam::truckTruckCollisions(Real dt, Beam** trucks, int numtrucks)
 		//see "pointCD" above.
 		//Performance some times forces ugly architectural designs....
 		if (!trucks[t] || trucks[t]->state==SLEEPING || trucks[t]->state==RECYCLE || trucks[t]->state==NETWORKED) continue;
-		
+
 		trwidth=trucks[t]->collrange;
 
 		for (i=0; i<trucks[t]->free_collcab; i++)
