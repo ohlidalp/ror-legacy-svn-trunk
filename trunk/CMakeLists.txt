@@ -27,6 +27,7 @@ SET(LIBRARY_OUTPUT_PATH      ${RUNTIME_OUTPUT_DIRECTORY})
 SET(RoR_Dependencies_CMAKE_DIR "${ROR_DEPENDENCY_DIR}/cmake")
 
 # setup project specific  variables
+
 SET(OGRE_INCLUDE_DIR              ${ROR_DEPENDENCY_DIR}/ogre/OgreMain/include)
 SET(OGRE_INCLUDE_DEPENDENCIES_DIR ${ROR_DEPENDENCY_DIR}/ogre/Dependencies/include)
 SET(OIS_INCLUDE_DIR               ${ROR_DEPENDENCY_DIR}/OIS-HEAD/ois/includes)
@@ -44,6 +45,8 @@ SET(LUA_INCLUDE_DIR               ${ROR_DEPENDENCY_DIR}/lua-5.1.2/src)
 SET(WIN32PTHREADS_INCLUDE_DIR     ${ROR_DEPENDENCY_DIR}/pthreads/Pre-built.2/include)
 SET(WIN32PTHREADS_LIB             ${ROR_DEPENDENCY_DIR}/pthreads/Pre-built.2/lib/pthreadVC2.lib)
 SET(ROR_MAIN_SOURCE_DIR           ${RoR_SOURCE_DIR}/source/main/source)
+SET(DirectX_INCLUDE_DIR           $ENV{DXSDK_DIR}\\Include)
+SET(DirectX_LIB_DIR               $ENV{DXSDK_DIR}\\Lib\\x86)
 
 # set the tools binary directory accordingly to the used platform
 IF(WIN32)
@@ -105,6 +108,14 @@ IF(WIN32)
   option(ROR_BUILD_CRASHRPT "build RoR with CrashRPT support (windows only, only use if you produce an official release: complicated)" FALSE)
   #set(ROR_BUILD_CRASHRPT FALSE)
   set(NVIDIA_CG_DIR "$ENV{PROGRAMFILES}\\NVIDIA Corporation\\Cg" CACHE PATH "directory of the nvidia cg toolkit installation")
+
+  if(ROR_BUILD_CRASHRPT)
+	set(CRASHRPT_PATH "C:\\crashrpt" CACHE PATH "the path to crashrpt: http://code.google.com/p/crashrpt/" )
+	set(CRASHRPT_WTL_PATH "C:\\WTL80_sf" CACHE PATH "the path to WTL: http://wtl.sourceforge.net/" )
+	
+    SET(CRASHRPT_INCLUDE_DIR          ${CRASHRPT_PATH}/include ${CRASHRPT_WTL_PATH}/include)
+    SET(CRASHRPT_LIB_DIR              ${CRASHRPT_PATH}/lib)
+  endif(ROR_BUILD_CRASHRPT)
 ELSE(WIN32)
   set(ROR_BUILD_CRASHRPT FALSE)
   set(ROR_BUILD_XFIRE FALSE)
