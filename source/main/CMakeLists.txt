@@ -16,8 +16,8 @@ include_directories (${MYGUI_INCLUDE_DIR})
 
 IF(WIN32)
   include_directories (${DirectX_INCLUDE_DIR})
+  link_directories(${DirectX_LIB_DIR})
   add_definitions("-DWIN32_LEAN_AND_MEAN -DNOMINMAX")
-  link_directories("$ENV{DXSDK_DIR}\\Lib\\x86")
 ELSEIF(LINUX)
   add_definitions("-Wno-float-equal")
 ELSEIF(APPLE)
@@ -49,6 +49,8 @@ endif(ROR_BUILD_LUASCRIPT)
 
 if(ROR_BUILD_CRASHRPT)
   add_definitions("-DUSE_WINDOWS_CRASH_REPORT")
+  include_directories(${CRASHRPT_INCLUDE_DIR})
+  link_directories(${CRASHRPT_LIB_DIR})
 endif(ROR_BUILD_CRASHRPT)
 
 if(ROR_BUILD_XFIRE)
