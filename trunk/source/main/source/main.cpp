@@ -480,7 +480,7 @@ void test_crashrpt()
 #define HELPTEXT "--help (this)\n-map <map> (loads map on startup)\n-truck <truck> (loads truck on startup)\n-setup shows the ogre configurator\n-version shows the version information\n-enter enters the selected truck\n-userpath <path> sets the user directory\nFor example: RoR.exe -map oahu -truck semi"
 
 // option identifiers
-enum { OPT_HELP, OPT_MAP, OPT_TRUCK, OPT_SETUP, OPT_CMD, OPT_WDIR, OPT_ETM, OPT_BUILD, OPT_CONFIG, OPT_VER, OPT_CHECKCACHE, OPT_TRUCKCONFIG, OPT_ENTERTRUCK, OPT_BENCH, OPT_STREAMCACHEGEN, OPT_BENCHNUM, OPT_USERPATH};
+enum { OPT_HELP, OPT_MAP, OPT_TRUCK, OPT_SETUP, OPT_CMD, OPT_WDIR, OPT_ETM, OPT_BUILD, OPT_CONFIG, OPT_VER, OPT_CHECKCACHE, OPT_TRUCKCONFIG, OPT_ENTERTRUCK, OPT_BENCH, OPT_STREAMCACHEGEN, OPT_BENCHNUM, OPT_USERPATH, OPT_BENCHPOS, OPT_BENCHPOSERR};
 
 // option array
 CSimpleOpt::SOption cmdline_options[] = {
@@ -500,7 +500,10 @@ CSimpleOpt::SOption cmdline_options[] = {
 	{ OPT_VER,            ((char *)"-version"),     SO_NONE    },
 	{ OPT_USERPATH,       ((char *)"-userpath"),   SO_REQ_SEP    },
 	{ OPT_BENCH,          ((char *)"-benchmark"),   SO_REQ_SEP    },
+	{ OPT_BENCHPOS,       ((char *)"-benchmark-final-position"),   SO_REQ_SEP    },
+	{ OPT_BENCHPOSERR,    ((char *)"-benchmark-final-position-error"),   SO_REQ_SEP    },
 	{ OPT_BENCHNUM,       ((char *)"-benchmarktrucks"),       SO_REQ_SEP },
+	{ OPT_BENCHNUM,       ((char *)"-benchmark-trucks"),       SO_REQ_SEP },
 	{ OPT_STREAMCACHEGEN, ((char *)"-streamcachegen"),   SO_NONE    },
 SO_END_OF_OPTIONS
 };
@@ -579,6 +582,10 @@ int main(int argc, char *argv[])
 				SETTINGS.setSetting("Benchmark", String(args.OptionArg()));
 			} else if (args.OptionId() == OPT_BENCHNUM) {
 				SETTINGS.setSetting("BenchmarkTrucks", String(args.OptionArg()));
+			} else if (args.OptionId() == OPT_BENCHPOS) {
+				SETTINGS.setSetting("BenchmarkFinalPosition", String(args.OptionArg()));
+			} else if (args.OptionId() == OPT_BENCHPOSERR) {
+				SETTINGS.setSetting("BenchmarkFinalPositionError", String(args.OptionArg()));
 			} else if (args.OptionId() == OPT_USERPATH) {
 				SETTINGS.setSetting("userpath", String(args.OptionArg()));
 			} else if (args.OptionId() == OPT_CONFIG) {
