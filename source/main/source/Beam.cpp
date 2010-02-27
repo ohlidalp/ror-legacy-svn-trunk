@@ -2319,7 +2319,7 @@ int Beam::loadTruck(const char* fname, SceneManager *manager, SceneNode *parent,
 			if (strstr(options,"rpm2"))          beams[pos].animFlags |= (ANIM_FLAG_RPM2);
 			if (strstr(options,"rpm3"))          beams[pos].animFlags |= (ANIM_FLAG_RPM3);
 			if (strstr(options,"rpm4"))          beams[pos].animFlags |= (ANIM_FLAG_RPM4);
-			if (strstr(options,"brake"))         beams[pos].animFlags |= (ANIM_FLAG_BRAKE);
+			if (strstr(options,"brakes"))        beams[pos].animFlags |= (ANIM_FLAG_BRAKE);
 			if (strstr(options,"accel"))         beams[pos].animFlags |= (ANIM_FLAG_ACCEL);
 			if (strstr(options,"clutch"))        beams[pos].animFlags |= (ANIM_FLAG_CLUTCH);
 			if (strstr(options,"speedo"))        beams[pos].animFlags |= (ANIM_FLAG_SPEEDO);
