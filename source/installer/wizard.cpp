@@ -934,7 +934,7 @@ DownloadPage::DownloadPage(wxWizard *parent) : wxWizardPageSimple(parent), wizar
 	mainSizer->Add(htmlinfo, 0, wxALL|wxEXPAND);
     htmlinfo->SetPage(_("."));
     timer = new wxTimer(this, ID_TIMER);
-    timer->Start(3000);
+    timer->Start(10000);
     
 	// FINISHED text
 	txtFinish = new wxStaticText(this, wxID_ANY, _T("Finished downloading, please continue by pressing next."));
