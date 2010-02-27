@@ -74,6 +74,7 @@ wxbase29u.lib
 wxmsw29u_core.lib
 wxmsw29u_html.lib
 wxmsw29u_adv.lib
+wxbase29u_net.lib
 wxpng.lib
 wxtiff.lib
 wxjpeg.lib
