@@ -1358,7 +1358,7 @@ int Beam::loadTruck(const char* fname, SceneManager *manager, SceneNode *parent,
 	strncpy(realtruckname, line, 255);
 
 	// some temp vars used
-	Real inertia_startDelay=0, inertia_stopDelay=0;
+	Real inertia_startDelay=-1, inertia_stopDelay=-1;
 	char inertia_default_startFunction[50]="", inertia_default_stopFunction[50]="";
 
 	while (!ds->eof())
@@ -1585,10 +1585,10 @@ int Beam::loadTruck(const char* fname, SceneManager *manager, SceneNode *parent,
 			if (inertia_startDelay < 0 || inertia_stopDelay < 0)
 			{
 				// reset it
-				inertia_startDelay=0;
-				inertia_stopDelay=0;
-				inertia_default_startFunction[0]=0;
-				inertia_default_stopFunction[0]=0;
+				inertia_startDelay = -1;
+				inertia_stopDelay  = -1;
+				memset(inertia_default_startFunction, 0, sizeof(inertia_default_startFunction));
+				memset(inertia_default_stopFunction, 0, sizeof(inertia_default_stopFunction));
 			}
 			continue;
 		}
@@ -2197,7 +2197,7 @@ int Beam::loadTruck(const char* fname, SceneManager *manager, SceneNode *parent,
 
 			if(hydroInertia && startDelay != 0 && stopDelay != 0)
 				hydroInertia->setCmdKeyDelay(free_hydro,startDelay,stopDelay,String (startFunction), String (stopFunction));
-			else if(hydroInertia && (inertia_startDelay > 0.00001f || inertia_stopDelay > 0.00001f))
+			else if(hydroInertia && (inertia_startDelay > 0 || inertia_stopDelay > 0))
 				hydroInertia->setCmdKeyDelay(free_hydro,inertia_startDelay,inertia_stopDelay, String (inertia_default_startFunction), String (inertia_default_stopFunction));
 
 
@@ -2290,7 +2290,7 @@ int Beam::loadTruck(const char* fname, SceneManager *manager, SceneNode *parent,
 				continue;
 			}
 
-			if(hydroInertia && (inertia_startDelay > 0.00001f || inertia_stopDelay > 0.00001f))
+			if(hydroInertia && (inertia_startDelay > 0 || inertia_stopDelay > 0))
 				hydroInertia->setCmdKeyDelay(free_hydro,inertia_startDelay,inertia_stopDelay, String (inertia_default_startFunction), String (inertia_default_stopFunction));
 
 			int pos=add_beam(&nodes[id1], &nodes[id2], manager, parent, htype, default_break, default_spring, default_damp);
@@ -2663,7 +2663,7 @@ int Beam::loadTruck(const char* fname, SceneManager *manager, SceneNode *parent,
 				cmdInertia->setCmdKeyDelay(keys,startDelay,stopDelay,String (startFunction),String (stopFunction));
 				cmdInertia->setCmdKeyDelay(keyl,startDelay,stopDelay,String (startFunction),String (stopFunction));
 			}
-			else if(cmdInertia && (inertia_startDelay > 0.00001f || inertia_stopDelay > 0.00001f))
+			else if(cmdInertia && (inertia_startDelay > 0 || inertia_stopDelay > 0))
 			{
 				cmdInertia->setCmdKeyDelay(keys,inertia_startDelay,inertia_stopDelay, String (inertia_default_startFunction), String (inertia_default_stopFunction));
 				cmdInertia->setCmdKeyDelay(keyl,inertia_startDelay,inertia_stopDelay, String (inertia_default_startFunction), String (inertia_default_stopFunction));
@@ -3690,7 +3690,7 @@ int Beam::loadTruck(const char* fname, SceneManager *manager, SceneNode *parent,
 				rotaInertia->setCmdKeyDelay(keys,startDelay,stopDelay,String (startFunction),String (stopFunction));
 				rotaInertia->setCmdKeyDelay(keyl,startDelay,stopDelay,String (startFunction),String (stopFunction));
 			}
-			else if(rotaInertia && (inertia_startDelay > 0.00001f || inertia_stopDelay > 0.00001f))
+			else if(rotaInertia && (inertia_startDelay > 0 || inertia_stopDelay > 0))
 			{
 				rotaInertia->setCmdKeyDelay(keys,inertia_startDelay,inertia_stopDelay, String (inertia_default_startFunction), String (inertia_default_stopFunction));
 				rotaInertia->setCmdKeyDelay(keyl,inertia_startDelay,inertia_stopDelay, String (inertia_default_startFunction), String (inertia_default_stopFunction));
