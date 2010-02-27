@@ -28,6 +28,9 @@ along with Rigs of Rods.  If not, see <http://www.gnu.org/licenses/>.
 #include <wx/dir.h>
 #include <wx/thread.h>
 #include <wx/event.h>
+#include <wx/fs_inet.h>
+#include <wx/html/htmlwin.h>
+#include <wx/settings.h>
 #include "wthread.h"
 #include "cevent.h"
 #include "installerlog.h"
@@ -80,7 +83,7 @@ BEGIN_EVENT_TABLE(PathPage, wxWizardPageSimple)
 END_EVENT_TABLE()
 
 BEGIN_EVENT_TABLE(DownloadPage, wxWizardPageSimple)
-	//EVT_TIMER(ID_TIMER, DownloadPage::OnTimer)
+	EVT_TIMER(ID_TIMER, DownloadPage::OnTimer)
 	EVT_MYSTATUS(wxID_ANY, DownloadPage::OnStatusUpdate )
 END_EVENT_TABLE()
 
@@ -95,6 +98,34 @@ END_EVENT_TABLE()
 
 
 IMPLEMENT_APP(MyApp)
+
+
+// some helper
+// from wxWidetgs wiki: http://wiki.wxwidgets.org/Calling_The_Default_Browser_In_WxHtmlWindow
+class HtmlWindow: public wxHtmlWindow
+{
+public:
+	HtmlWindow(wxWindow *parent, wxWindowID id = -1,
+		const wxPoint& pos = wxDefaultPosition, const wxSize& size = wxDefaultSize,
+		long style = wxHW_SCROLLBAR_NEVER|wxHW_NO_SELECTION|wxBORDER_SUNKEN, const wxString& name = _T("htmlWindow"));
+	void OnLinkClicked(const wxHtmlLinkInfo& link);
+};
+
+HtmlWindow::HtmlWindow(wxWindow *parent, wxWindowID id, const wxPoint& pos,
+	const wxSize& size, long style, const wxString& name)
+: wxHtmlWindow(parent, id, pos, size, style, name)
+{
+  this->SetBorders(1);
+}
+
+void HtmlWindow::OnLinkClicked(const wxHtmlLinkInfo& link)
+{
+	wxString linkhref = link.GetHref();
+    if(!wxLaunchDefaultBrowser(linkhref))
+          // failed to launch externally, so open internally
+          wxHtmlWindow::OnLinkClicked(link);
+}
+
 
 // ----------------------------------------------------------------------------
 // the application class
@@ -827,28 +858,29 @@ DownloadPage::DownloadPage(wxWizard *parent) : wxWizardPageSimple(parent), wizar
 	m_bitmap = wxBitmap(download_xpm);
 	wxBoxSizer *mainSizer = new wxBoxSizer(wxVERTICAL);
 	wxStaticText *tst;
-	mainSizer->Add(tst=new wxStaticText(this, wxID_ANY, _T("Downloading\n")), 0, wxALL, 5);
+	
+    mainSizer->Add(tst=new wxStaticText(this, wxID_ANY, _T("Downloading")), 0, wxALL, 5);
 	wxFont dfont=tst->GetFont();
 	dfont.SetWeight(wxFONTWEIGHT_BOLD);
-	dfont.SetPointSize(dfont.GetPointSize()+4);
+	dfont.SetPointSize(dfont.GetPointSize()+3);
 	tst->SetFont(dfont);
 	tst->Wrap(TXTWRAP);
+     
 
 	// status text and progress bar
 	statusList = new wxListBox(this, wxID_ANY, wxDefaultPosition, wxSize(20, 160));
 	mainSizer->Add(statusList, 0, wxALL|wxEXPAND, 0);
 	mainSizer->Add(10, 10);
-	tst->Wrap(TXTWRAP);
 	progress=new wxGauge(this, wxID_ANY, 1000, wxDefaultPosition, wxDefaultSize, wxGA_HORIZONTAL|wxGA_SMOOTH);
 	mainSizer->Add(progress, 0, wxALL|wxEXPAND, 0);
 	progress->Pulse();
 
-
-	// now the information thingy
+ 	// now the information thingy
 	wxGridSizer *wxg = new wxGridSizer(3, 2, 2, 5);
 
+    wxStaticText *txt;
 	// download time
-	wxStaticText *txt = new wxStaticText(this, wxID_ANY, _T("Download time: "));
+	txt = new wxStaticText(this, wxID_ANY, _T("Download time: "));
 	wxg->Add(txt, 0, wxALL|wxEXPAND, 0);
 	txt_dltime = new wxStaticText(this, wxID_ANY, _T("n/a"));
 	wxg->Add(txt_dltime, 0, wxALL|wxEXPAND, 0);
@@ -895,12 +927,21 @@ DownloadPage::DownloadPage(wxWizard *parent) : wxWizardPageSimple(parent), wizar
 	mainSizer->Add(wxg, 0, wxALL|wxEXPAND, 5);
 
 
+	mainSizer->Add(10, 10);
+    // important to be able to load web URLs
+    wxFileSystem::AddHandler( new wxInternetFSHandler );
+    htmlinfo = new HtmlWindow(this, wxID_ANY, wxDefaultPosition, wxSize(50, 50));
+	mainSizer->Add(htmlinfo, 0, wxALL|wxEXPAND);
+    htmlinfo->SetPage(_("."));
+    timer = new wxTimer(this, ID_TIMER);
+    timer->Start(3000);
+    
 	// FINISHED text
 	txtFinish = new wxStaticText(this, wxID_ANY, _T("Finished downloading, please continue by pressing next."));
-	dfont=txtFinish->GetFont();
-	dfont.SetWeight(wxFONTWEIGHT_BOLD);
-	dfont.SetPointSize(dfont.GetPointSize()+2);
-	txtFinish->SetFont(dfont);
+    wxFont dfont2=txtFinish->GetFont();
+	dfont2.SetWeight(wxFONTWEIGHT_BOLD);
+	dfont2.SetPointSize(dfont2.GetPointSize()+2);
+	txtFinish->SetFont(dfont2);
 	//txtFinish->Wrap(TXTWRAP);
 	mainSizer->Add(txtFinish, 0, wxALL|wxEXPAND, 0);
 
@@ -953,7 +994,9 @@ bool DownloadPage::OnEnter(bool forward)
 		return false;
 	}
 
-	startThread();
+    htmlinfo->LoadPage(wxT("http://api.rigsofrods.com/didyouknow/"));
+
+    startThread();
 	return true;
 }
 
@@ -997,7 +1040,7 @@ void DownloadPage::OnStatusUpdate(MyStatusEvent &ev)
 			wxString str_comp = statusList->GetString(i).SubString(0, str.size()-1);
 			if(str_comp == str)
 			{
-				statusList->SetString(i, str + " (DONE)");
+				statusList->SetString(i, str + wxT(" (DONE)"));
 				break;
 			}
 		}
@@ -1010,7 +1053,7 @@ void DownloadPage::OnStatusUpdate(MyStatusEvent &ev)
 		wxMessageBox(ev.GetString(), _("Error"), wxICON_ERROR | wxOK, this);
 		break;
 	case MSE_UPDATE_TIME:
-		txt_dltime->SetLabel(ev.GetString());
+		//txt_dltime->SetLabel(ev.GetString());
 		break;
 	case MSE_UPDATE_TIME_LEFT:
 		txt_remaintime->SetLabel(ev.GetString());
@@ -1040,10 +1083,17 @@ void DownloadPage::OnStatusUpdate(MyStatusEvent &ev)
 		CONFIG->writeVersionInfo(); // write the version to the file, since we updated
 		// enableforward button
 		txtFinish->Show();
+        htmlinfo->Hide();
 		setControlEnable(wizard, wxID_FORWARD, true);
 		break;
 	}
 }
+void DownloadPage::OnTimer(wxTimerEvent& event)
+{
+    if(htmlinfo)
+      htmlinfo->LoadPage(wxT("http://api.rigsofrods.com/didyouknow/"));
+}
+
 
 //// LastPage
 LastPage::LastPage(wxWizard *parent) : wxWizardPageSimple(parent), wizard(parent)
