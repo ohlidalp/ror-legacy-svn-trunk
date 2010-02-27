@@ -23,7 +23,7 @@ IF(UNIX)
 set(INSTALLER_PLATFORM "ubuntu9.10" CACHE PATH "Installer chosen platform")
 ENDIF(UNIX)
 
-FIND_PACKAGE(wxWidgets COMPONENTS base core html adv)
+FIND_PACKAGE(wxWidgets COMPONENTS base core html net adv )
 IF(wxWidgets_FOUND)
   include_directories(${wxWidgets_INCLUDE_DIRS})
   add_definitions(${wxWidgets_DEFINITIONS} ${wxWidgets_CXX_FLAGS})

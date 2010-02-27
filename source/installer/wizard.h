@@ -47,7 +47,7 @@ along with Rigs of Rods.  If not, see <http://www.gnu.org/licenses/>.
 
 #define TXTWRAP 400
 
-enum {ID_BROWSE, ID_WIZARD};
+enum {ID_BROWSE, ID_WIZARD, ID_TIMER};
 enum {IMODE_NONE=0, IMODE_UPDATE, IMODE_INSTALL, IMODE_UNINSTALL, IMODE_UPGRADE};
 
 class MyApp : public wxApp
@@ -60,6 +60,8 @@ public:
 protected:
 	int startupMode;
 };
+
+class HtmlWindow;
 
 // ----------------------------------------------------------------------------
 // our wizard
@@ -174,13 +176,16 @@ private:
 	wxStaticText *txtFinish;
 	wxListBox *statusList;
 	wxGauge *progress;
+        HtmlWindow *htmlinfo;
 	bool threadStarted;
 	bool isDone;
 	wxWizard *wizard;
+        wxTimer *timer;
 
 	WsyncThread *m_pThread;
 
 	void OnStatusUpdate(MyStatusEvent &ev);
+        void OnTimer(wxTimerEvent& event);
 	DECLARE_EVENT_TABLE()
 };
 
