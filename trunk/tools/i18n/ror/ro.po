@@ -54,7 +54,7 @@ msgstr "Nu e nevoie sa schimbi aceste setari, decat daca ai probleme"
 # # | translated from communitytranslateid=17141
 # | communitytranslateid=22756
 msgid "You can disable the default creak sound by checking this box"
-msgstr "Puteti dezactiva "scartaitul" mecanic din aceasta casuta"
+msgstr "Puteti dezactiva 'scartaitul' mecanic din aceasta casuta"
 
 # | communitytranslateid=12693
 msgid "wrote screenshot:"
