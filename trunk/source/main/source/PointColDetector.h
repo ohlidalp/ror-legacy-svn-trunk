@@ -21,6 +21,7 @@ along with Rigs of Rods.  If not, see <http://www.gnu.org/licenses/>.
 #define __PointColDetector_H__
 
 #include "Ogre.h"
+#include <vector>
 using namespace Ogre;
 using namespace std;
 #include "Beam.h"
@@ -48,11 +49,11 @@ typedef struct _kdnode {
 class PointColDetector : public MemoryAllocatedObject
 {
 public:
-	vector< Vector3 > *object_list;
-	vector< pointid_t* > hit_list;
+	std::vector< Vector3 > *object_list;
+	std::vector< pointid_t* > hit_list;
 	int hit_count;
 
-	PointColDetector(vector< Vector3 > &o_list);
+	PointColDetector(std::vector< Vector3 > &o_list);
 	PointColDetector();
 	~PointColDetector();
 
@@ -70,7 +71,7 @@ private:
 	int object_list_size;
 	refelem_t *ref_list;
 	pointid_t *pointid_list;
-	vector< kdnode_t > kdtree;
+	std::vector< kdnode_t > kdtree;
 	Vector3 bbmin;
 	Vector3 bbmax;
 	inline void queryrec(int kdindex, int axis);

@@ -57,7 +57,7 @@ using namespace Ogre;
 #include "Streamable.h"
 #include "groundmodel.h"
 #include "rormemory.h"
-
+#include <vector>
 
 //#include "scriptCommands.h"
 #include <vector>
@@ -779,8 +779,8 @@ public:
 
 	node_t nodes[MAX_NODES];
 	beam_t beams[MAX_BEAMS];
-	std::vector< vector< int > > nodetonodeconnections;
-	std::vector< vector< int > > nodebeamconnections;
+	std::vector< std::vector< int > > nodetonodeconnections;
+	std::vector< std::vector< int > > nodebeamconnections;
 
 	std::vector<debugtext_t>nodes_debug, beams_debug;
 	void updateDebugOverlay();
