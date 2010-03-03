@@ -1876,7 +1876,7 @@ MyDialog::MyDialog(const wxString& title, MyApp *_app) : wxDialog(NULL, wxID_ANY
 	thread=new wxChoice(cpuPanel, -1, wxPoint(150, 25), wxSize(200, -1), 0);
 	thread->Append(conv("1 (Standard CPU)"));
 	thread->Append(conv("2 (Hyper-Threading or Dual core CPU)"));
-	thread->Append(conv("3 (multi core CPU, one thread per beam)"));
+	//thread->Append(conv("3 (multi core CPU, one thread per beam)"));
 	thread->SetToolTip(_("If you have a Hyper-Threading, or Dual core or multiprocessor computer,\nyou will have a huge gain in speed by choosing the second option.\nBut this mode has some camera shaking issues.\n"));
 
 	wheel2=new wxCheckBox(cpuPanel, -1, _("Enable advanced wheel model"), wxPoint(150, 70));
@@ -2034,6 +2034,7 @@ MyDialog::MyDialog(const wxString& title, MyApp *_app) : wxDialog(NULL, wxID_ANY
 	y+=15;
 	trucklod=new wxCheckBox(advancedPanel, -1, _("Enable Truck LODs"), wxPoint(320, y));
 	trucklod->SetToolTip(_("Enables a technique for multiple level of detail meshes. Only disable if you experience problems with it."));
+	trucklod->Disable(); // not in use atm
 	y+=15;
 	objlod=new wxCheckBox(advancedPanel, -1, _("Enable Object LODs"), wxPoint(320, y));
 	objlod->SetToolTip(_("Enables a technique for multiple level of detail meshes. Only disable if you experience problems with it."));
@@ -2416,7 +2417,7 @@ void MyDialog::SetDefaults()
 	enablexfire->SetValue(true);
 	autodl->SetValue(true);
 	posstor->SetValue(true);
-	trucklod->SetValue(true);
+	trucklod->SetValue(false);
 	objlod->SetValue(true);
 	beamdebug->SetValue(false);
 	extcam->SetValue(false);
@@ -2483,7 +2484,8 @@ void MyDialog::getSettingsControls()
 	settings["XFire"] = (enablexfire->GetValue()) ? "Yes" : "No";
 	settings["AutoDownload"] = (autodl->GetValue()) ? "Yes" : "No";
 	settings["Position Storage"] = (posstor->GetValue()) ? "Yes" : "No";
-	settings["Truck LOD"] = (trucklod->GetValue()) ? "Yes" : "No";
+	// disabled for now
+	//settings["Truck LOD"] = (trucklod->GetValue()) ? "Yes" : "No";
 	settings["Object LOD"] = (objlod->GetValue()) ? "Yes" : "No";
 	settings["External Camera Mode"] = (extcam->GetValue()) ? "Static" : "Pitching";
 	settings["Dashboard"] = (dashboard->GetValue()) ? "Yes" : "No";
@@ -2575,7 +2577,8 @@ void MyDialog::updateSettingsControls()
 	st = settings["External Camera Mode"]; if (st.length()>0) extcam->SetValue(st=="Static");
 	st = settings["AutoDownload"]; if (st.length()>0) autodl->SetValue(st=="Yes");
 	st = settings["Position Storage"]; if (st.length()>0) posstor->SetValue(st=="Yes");
-	st = settings["Truck LOD"]; if (st.length()>0) trucklod->SetValue(st=="Yes");
+	// disabled for now
+	//st = settings["Truck LOD"]; if (st.length()>0) trucklod->SetValue(st=="Yes");
 	st = settings["Object LOD"]; if (st.length()>0) objlod->SetValue(st=="Yes");
 	st = settings["DebugBeams"]; if (st.length()>0) beamdebug->SetValue(st=="Yes");
 	st = settings["XFire"]; if (st.length()>0) enablexfire->SetValue(st=="Yes");
@@ -2649,6 +2652,9 @@ bool MyDialog::LoadConfig()
 	{
 		sname = i.peekNextKey();
 		svalue = i.getNext();
+		// filter out some things that shouldnt be in there (since we cannot use RoR normally anymore after those)
+		if(sname == Ogre::String("Benchmark") || sname == Ogre::String("streamCacheGenerationOnly")|| sname == Ogre::String("regen-cache-only"))
+			continue;
 		settings[sname] = svalue;
 		//logfile->AddLine(conv("### ") + conv(sname) + conv(" : ") + conv(svalue));logfile->Write();
 	}
