@@ -1318,7 +1318,7 @@ int Beam::loadTruck(const char* fname, SceneManager *manager, SceneNode *parent,
 	int rightlight=0;
 	float wingarea=0.0;
 	int currentScriptCommandNumber=-1;
-	bool enable_truck_lod = (SETTINGS.getSetting("Truck LOD") == "Yes");
+	bool enable_truck_lod = (SETTINGS.getSetting("Truck LOD Enabled") == "Yes");
 
 	//convert ry
 	//ry=ry*3.14159/180.0;
