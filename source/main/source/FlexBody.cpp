@@ -447,7 +447,7 @@ FlexBody::FlexBody(SceneManager *manager, node_t *nds, int numnds, char* meshnam
 	//okay, show the mesh now
 	snode=manager->getRootSceneNode()->createChildSceneNode();
 
-	bool enable_truck_lod = (SETTINGS.getSetting("Truck LOD") == "Yes");
+	bool enable_truck_lod = (SETTINGS.getSetting("Truck LOD Enabled") == "Yes");
 	if(enable_truck_lod)
 	{
 		LogManager::getSingleton().logMessage("FLEXBODY uses " + StringConverter::toString(msh->getNumLodLevels()) + " LOD levels.");
