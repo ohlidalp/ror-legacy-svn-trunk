@@ -52,7 +52,7 @@ private:
 public:
 
 
-	Airbrake(SceneManager *manager, char* basename, int num, node_t *ndref, node_t *ndx, node_t *ndy, node_t *nda, Vector3 pos, float width, float length, float maxang, char* texname, float tx1, float tx2, float tx3, float tx4);
+	Airbrake(SceneManager *manager, char* basename, int num, node_t *ndref, node_t *ndx, node_t *ndy, node_t *nda, Vector3 pos, float width, float length, float maxang, char* texname, float tx1, float tx2, float tx3, float tx4, float lift_coef);
 
 	void updatePosition(float amount);
 	void applyForce();

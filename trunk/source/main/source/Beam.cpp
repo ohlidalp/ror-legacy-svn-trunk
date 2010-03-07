@@ -3321,9 +3321,9 @@ int Beam::loadTruck(const char* fname, SceneManager *manager, SceneNode *parent,
 			int nds[8];
 			float txes[8];
 			char type;
-			float cratio, mind, maxd;
+			float cratio, mind, maxd, liftcoef = 1.0f;
 			char afname[256];
-			int result = sscanf(line,"%i, %i, %i, %i, %i, %i, %i, %i, %f, %f, %f, %f, %f, %f, %f, %f, %c, %f, %f, %f, %s",
+			int result = sscanf(line,"%i, %i, %i, %i, %i, %i, %i, %i, %f, %f, %f, %f, %f, %f, %f, %f, %c, %f, %f, %f, %s %f",
 				&nds[0],
 				&nds[1],
 				&nds[2],
@@ -3344,8 +3344,10 @@ int Beam::loadTruck(const char* fname, SceneManager *manager, SceneNode *parent,
 				&cratio,
 				&mind,
 				&maxd,
-				afname
+				afname,
+				&liftcoef
 				);
+
 			//visuals
 			if (result < 13 || result == EOF) {
 				LogManager::getSingleton().logMessage("Error parsing File (Wing) " + String(fname) +" line " + StringConverter::toString(linecounter) + ". trying to continue ...");
@@ -3362,7 +3364,8 @@ int Beam::loadTruck(const char* fname, SceneManager *manager, SceneNode *parent,
 			sprintf(wname, "wing-%s-%i",truckname, free_wing);
 			char wnamei[256];
 			sprintf(wnamei, "wingobj-%s-%i",truckname, free_wing);
-			wings[free_wing].fa=new FlexAirfoil(manager, wname, nodes, nds[0], nds[1], nds[2], nds[3], nds[4], nds[5], nds[6], nds[7], texname, Vector2(txes[0], txes[1]), Vector2(txes[2], txes[3]), Vector2(txes[4], txes[5]), Vector2(txes[6], txes[7]), type, cratio, mind, maxd, afname, aeroengines, state!=NETWORKED);
+			if (liftcoef != 1.0f) LogManager::getSingleton().logMessage("Wing liftforce coefficent: " + StringConverter::toString(liftcoef));
+			wings[free_wing].fa=new FlexAirfoil(manager, wname, nodes, nds[0], nds[1], nds[2], nds[3], nds[4], nds[5], nds[6], nds[7], texname, Vector2(txes[0], txes[1]), Vector2(txes[2], txes[3]), Vector2(txes[4], txes[5]), Vector2(txes[6], txes[7]), type, cratio, mind, maxd, afname, liftcoef, aeroengines, state!=NETWORKED);
 			Entity *ec=0;
 			try
 			{
@@ -3946,9 +3949,9 @@ int Beam::loadTruck(const char* fname, SceneManager *manager, SceneNode *parent,
 			int ref, nx, ny, na;
 			float ox, oy, oz;
 			float tx1, tx2, tx3, tx4;
-			float wd, len;
+			float wd, len, liftcoef = 1.0f;
 			float maxang;
-			int result = sscanf(line,"%i, %i, %i, %i, %f, %f, %f, %f, %f, %f, %f, %f, %f, %f", &ref, &nx, &ny, &na, &ox, &oy, &oz, &wd, &len, &maxang, &tx1, &tx2, &tx3, &tx4);
+			int result = sscanf(line,"%i, %i, %i, %i, %f, %f, %f, %f, %f, %f, %f, %f, %f, %f, %f", &ref, &nx, &ny, &na, &ox, &oy, &oz, &wd, &len, &maxang, &tx1, &tx2, &tx3, &tx4, &liftcoef);
 			if (result < 14 || result == EOF) {
 				LogManager::getSingleton().logMessage("Error parsing File (Airbrakes) " + String(fname) +" line " + StringConverter::toString(linecounter) + ". trying to continue ...");
 				continue;
@@ -3959,7 +3962,10 @@ int Beam::loadTruck(const char* fname, SceneManager *manager, SceneNode *parent,
 				LogManager::getSingleton().logMessage("airbrakes limit reached ("+StringConverter::toString(MAX_AIRBRAKES)+"): " + String(fname) +" line " + StringConverter::toString(linecounter) + ". trying to continue ...");
 				continue;
 			}
-			airbrakes[free_airbrake]=new Airbrake(manager, truckname, free_airbrake, &nodes[ref], &nodes[nx], &nodes[ny], &nodes[na], Vector3(ox,oy,oz), wd, len, maxang, texname, tx1,tx2,tx3,tx4);
+			if (liftcoef != 1.0f) 
+				LogManager::getSingleton().logMessage("Airbrakes force coefficent: " + StringConverter::toString(liftcoef));
+
+			airbrakes[free_airbrake]=new Airbrake(manager, truckname, free_airbrake, &nodes[ref], &nodes[nx], &nodes[ny], &nodes[na], Vector3(ox,oy,oz), wd, len, maxang, texname, tx1,tx2,tx3,tx4,liftcoef);
 			free_airbrake++;
 		}
 		else if (mode==43)

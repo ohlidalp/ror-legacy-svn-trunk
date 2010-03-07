@@ -65,9 +65,10 @@ float refairfoilpos[90]={
 		1.00, 0.50, 1.00
 	};
 
-FlexAirfoil::FlexAirfoil(SceneManager *manager, char* name, node_t *nds, int pnfld, int pnfrd, int pnflu, int pnfru, int pnbld, int pnbrd, int pnblu, int pnbru, char* texband, Vector2 texlf, Vector2 texrf, Vector2 texlb, Vector2 texrb, char mtype, float controlratio, float mind, float maxd, char* afname, AeroEngine** tps, bool break_able)
+FlexAirfoil::FlexAirfoil(SceneManager *manager, char* name, node_t *nds, int pnfld, int pnfrd, int pnflu, int pnfru, int pnbld, int pnbrd, int pnblu, int pnbru, char* texband, Vector2 texlf, Vector2 texrf, Vector2 texlb, Vector2 texrb, char mtype, float controlratio, float mind, float maxd, char* afname, float lift_coef, AeroEngine** tps, bool break_able)
 {
 //		innan=0;
+	liftcoef=lift_coef;
 	breakable=break_able;
 	broken=false;
 	debug[0]=0;
@@ -845,8 +846,8 @@ void FlexAirfoil::updateForces()
 	float moment=-cm*0.5*airdensity*wspeed*wspeed*s;//*chord;
 	//apply forces
 
-	Vector3 f1=wforce*(0.75/4.0f)+normv*(moment/(4.0f*0.25f));
-	Vector3 f2=wforce*(0.25/4.0f)-normv*(moment/(4.0f*0.75f));
+	Vector3 f1=wforce*(liftcoef * 0.75/4.0f)+normv*(liftcoef *moment/(4.0f*0.25f));
+	Vector3 f2=wforce*(liftcoef *0.25/4.0f)-normv*(liftcoef *moment/(4.0f*0.75f));
 
 	//focal at 0.25 chord
 	nodes[nfld].Forces+=f1;

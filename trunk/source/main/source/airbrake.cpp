@@ -21,7 +21,7 @@ along with Rigs of Rods.  If not, see <http://www.gnu.org/licenses/>.
 #include "ResourceBuffer.h"
 #include "rormemory.h"
 
-Airbrake::Airbrake(SceneManager *manager, char* basename, int num, node_t *ndref, node_t *ndx, node_t *ndy, node_t *nda, Vector3 pos, float width, float length, float maxang, char* texname, float tx1, float ty1, float tx2, float ty2)
+Airbrake::Airbrake(SceneManager *manager, char* basename, int num, node_t *ndref, node_t *ndx, node_t *ndy, node_t *nda, Vector3 pos, float width, float length, float maxang, char* texname, float tx1, float ty1, float tx2, float ty2, float lift_coef)
     {
 		snode=0;
 		noderef=ndref;
@@ -30,7 +30,7 @@ Airbrake::Airbrake(SceneManager *manager, char* basename, int num, node_t *ndref
 		nodea=nda; nodea->iIsSkin=true;
 		offset=pos;
 		maxangle=maxang;
-		area=width*length;
+		area=width*length*lift_coef;
 		char meshname[256];
 		sprintf(meshname, "airbrakemesh-%s-%i", basename, num);
 		/// Create the mesh via the MeshManager
