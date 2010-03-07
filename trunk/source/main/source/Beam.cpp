@@ -7454,7 +7454,7 @@ void Beam::calcForcesEuler(int doUpdate, Real dt, int step, int maxstep, Beam** 
 
 				// key triggered animations
 				if (props[propi].animFlags[animnum] & ANIM_FLAG_KEY && props[propi].animKey != -1) 
-					cstate = INPUTENGINE.getEventValue(props[propi].animKey));
+					cstate = INPUTENGINE.getEventValue(props[propi].animKey);
 				
 				//propanimation placed here to avoid interference with existing hydros(cstate) and permanent prop animation
 				//truck steering
