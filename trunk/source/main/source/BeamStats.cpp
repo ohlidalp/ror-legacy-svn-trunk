@@ -24,6 +24,7 @@ along with Rigs of Rods.  If not, see <http://www.gnu.org/licenses/>.
 // thomas, 11th of March 2008
 
 #include "Beam.h"
+#include "Timer.h"
 
 using namespace std;
 using namespace Ogre;
@@ -122,7 +123,7 @@ BeamThreadStats::BeamThreadStats()
 	{
 		timings[i]=0;
 		savedTimings[i]=0;
-		timings_start[i].QuadPart=0;
+		timings_start[i]=0;
 	}
 	framecounter=0;
 	physcounter=0;
@@ -162,17 +163,14 @@ void BeamThreadStats::frameStep(float ds)
 
 void BeamThreadStats::queryStart(int type)
 {
-	QueryPerformanceCounter(&timings_start[type]);
+	timings_start[type] = new PrecisionTimer();
 }
 
 void BeamThreadStats::queryStop(int type)
 {
-	LARGE_INTEGER tick, ticksPerSecond;
-	QueryPerformanceFrequency(&ticksPerSecond);
-	QueryPerformanceCounter(&tick);
-	
-	if (timings_start[type].QuadPart != 0)
-		timings[type] += ((double)tick.QuadPart - (double)timings_start[type].QuadPart) / (double)ticksPerSecond.QuadPart;
+	if(!timings_start[type]) return;
+
+	timings[type] += (timings_start[type]->elapsed());
 	
 	if(type == WholeTruckCalc)
 	{
