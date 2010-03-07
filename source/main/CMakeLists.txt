@@ -34,10 +34,6 @@ if(ROR_BUILD_PAGED)
  include_directories (${PAGED_INCLUDE_DIR})
 endif(ROR_BUILD_PAGED)
 
-if(ROR_BUILD_BEAMSTATS)
-  add_definitions("-DBEAMSTATS -DTIMING")
-endif(ROR_BUILD_BEAMSTATS)
-
 if(ROR_BUILD_MOTION_PLATFORM)
   add_definitions("-DMPLATFORM")
 endif(ROR_BUILD_MOTION_PLATFORM)
@@ -81,65 +77,66 @@ ELSEIF(UNIX)
 ELSEIF(APPLE)
 ENDIF(WIN32)
 
-# main target
-add_executable(RoR ${HEADER_FILES} ${SOURCE_FILES})
+MACRO(AddRoRTarget target)
+	# main target
+	add_executable(${target} ${HEADER_FILES} ${SOURCE_FILES})
+	windows_hacks(${target})
 
-windows_hacks(RoR)
+	# add dependencies
+	add_dependencies(${target} OgreMain caelum mysocketw ois mygui mofilereader)
 
-# add dependencies
-add_dependencies(RoR OgreMain caelum mysocketw ois mygui mofilereader)
+	# optional features
+	if(ROR_BUILD_HYDRAX)
+	  add_dependencies(${target} hydrax)
+	endif(ROR_BUILD_HYDRAX)
 
-# optional features
-if(ROR_BUILD_HYDRAX)
-  add_dependencies(RoR hydrax)
-endif(ROR_BUILD_HYDRAX)
+	if(ROR_BUILD_LUASCRIPT)
+	  add_dependencies(${target} lua)
+	endif(ROR_BUILD_LUASCRIPT)
 
-if(ROR_BUILD_LUASCRIPT)
-  add_dependencies(RoR lua)
-endif(ROR_BUILD_LUASCRIPT)
+	# now the linking
+	# always required common libs for self generated targets
+	target_link_libraries(${target}
+	  caelum
+	  mysocketw
+	  OgreMain
+	  ois
+	  mygui
+	  mofilereader
+	)
 
-# now the linking
-# always required common libs for self generated targets
-target_link_libraries(RoR
-  caelum
-  mysocketw
-  OgreMain
-  ois
-  mygui
-  mofilereader
-)
+	IF(WIN32)
+	  target_link_libraries(${target} OpenAL32 ${WIN32PTHREADS_LIB})
+	ELSEIF(UNIX)
+	  target_link_libraries(${target} openal zzip freetype X11 Xt Xaw)
+	ELSEIF(APPLE)
+	ENDIF(WIN32)
 
-IF(WIN32)
-  target_link_libraries(RoR OpenAL32)
-ELSEIF(UNIX)
-  target_link_libraries(RoR openal)
-ELSEIF(APPLE)
-ENDIF(WIN32)
+	# optional, self build features
+	if(ROR_BUILD_HYDRAX)
+	  add_dependencies(${target} hydrax)
+	  target_link_libraries(${target} hydrax)
+	endif(ROR_BUILD_HYDRAX)
 
-# optional, self build features
-if(ROR_BUILD_HYDRAX)
-  add_dependencies(RoR hydrax)
-  target_link_libraries(RoR hydrax)
-endif(ROR_BUILD_HYDRAX)
+	if(ROR_BUILD_CRASHRPT)
+	  target_link_libraries(${target} CrashRpt)
+	endif(ROR_BUILD_CRASHRPT)
 
-if(ROR_BUILD_CRASHRPT)
-  target_link_libraries(RoR CrashRpt)
-endif(ROR_BUILD_CRASHRPT)
+	if(ROR_BUILD_PAGED)
+	 add_dependencies(${target} paged)
+	 target_link_libraries(${target} paged)
+	endif(ROR_BUILD_PAGED)
 
-if(ROR_BUILD_PAGED)
- add_dependencies(RoR paged)
- target_link_libraries(RoR paged)
-endif(ROR_BUILD_PAGED)
+	if(ROR_BUILD_LUASCRIPT)
+	  add_dependencies(${target} lua)
+	  target_link_libraries(${target} lua)
+	endif(ROR_BUILD_LUASCRIPT)
 
-if(ROR_BUILD_LUASCRIPT)
-  add_dependencies(RoR lua)
-  target_link_libraries(RoR lua)
-endif(ROR_BUILD_LUASCRIPT)
-
-IF(ROR_BUILD_ANGELSCRIPT)
- add_dependencies(RoR angelscript)
- target_link_libraries(RoR angelscript)
-ENDIF(ROR_BUILD_ANGELSCRIPT)
+	IF(ROR_BUILD_ANGELSCRIPT)
+	 add_dependencies(${target} angelscript)
+	 target_link_libraries(${target} angelscript)
+	ENDIF(ROR_BUILD_ANGELSCRIPT)
+ENDMACRO(AddRoRTarget)
 
 IF(WIN32)
 ELSEIF(UNIX)
@@ -148,16 +145,11 @@ ELSEIF(UNIX)
 ELSEIF(APPLE)
 ENDIF(WIN32)
 
-# platform specific libraries (external ones only)
-IF(WIN32)
-  target_link_libraries(RoR ${WIN32PTHREADS_LIB})
-ELSEIF(UNIX)
-  target_link_libraries(RoR
-    zzip
-    freetype
-    X11
-    Xt
-    Xaw
-  )
-ELSEIF(APPLE)
-ENDIF(WIN32)
+# now compile the normal RoR
+AddRoRTarget(RoR)
+
+if(ROR_BUILD_TEST)
+  # and a test version of it with the same configuration
+  add_definitions("-DBEAMSTATS -DTIMING -DTESTBUILD")
+  AddRoRTarget(RoRTest)
+endif(ROR_BUILD_TEST)

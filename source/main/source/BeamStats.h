@@ -27,14 +27,7 @@ along with Rigs of Rods.  If not, see <http://www.gnu.org/licenses/>.
 #include "rormemory.h"
 
 class Beam;
-
-#if OGRE_PLATFORM == OGRE_PLATFORM_WIN32
-#define BEAMSTATS
-#elif OGRE_PLATFORM == OGRE_PLATFORM_LINUX
-#undef BEAMSTATS
-#elif OGRE_PLATFORM == OGRE_PLATFORM_APPLE
-#undef BEAMSTATS
-#endif
+class PrecisionTimer;
 
 #ifdef BEAMSTATS
 
@@ -57,7 +50,7 @@ public:
 	static enum types {WholeTruckCalc=0, Beams, Nodes, TruckEngine, Rigidifiers, Ropes, Turboprop, Screwprop, Wing, FuseDrag, Airbrakes, Buoyance, Contacters, CollisionCab, Wheels, Shocks, Hydros, Commands};
 	static Ogre::String typeDescriptions[MAX_TIMINGS];
 private:
-	LARGE_INTEGER  timings_start[MAX_TIMINGS];
+	PrecisionTimer *timings_start[MAX_TIMINGS];
 	double timings[MAX_TIMINGS];
 	double savedTimings[MAX_TIMINGS];
 	Ogre::String stattext;
