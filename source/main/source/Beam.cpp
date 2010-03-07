@@ -1751,6 +1751,23 @@ int Beam::loadTruck(const char* fname, SceneManager *manager, SceneNode *parent,
 						prop->animMode[animnum] |= (ANIM_MODE_BOUNCE);
 						prop->animOpt5[animnum] = 1.0f;
 					}
+					else if (args2[0] == "key" && args2.size() == 1)
+					{
+						// ONLY ONE KEY SUPPORTED ATM, to be improved?
+						// now parse the keys
+						std::vector<Ogre::String> args3 = Ogre::StringUtil::split(args2[1], "|");
+						for(unsigned int j=0;j<args3.size();j++)
+						{
+							String keyStr = args3[j];
+							Ogre::StringUtil::trim(keyStr);
+							Ogre::StringUtil::toUpperCase(keyStr);
+							int evtID = INPUTENGINE.resolveEventName(keyStr);
+							if(evtID != -1)
+								prop->animKey = evtID;
+							else
+								LogManager::getSingleton().logMessage("Animation key unkown: " + keyStr);
+						}
+					}
 
 				}
 			}
@@ -3360,6 +3377,7 @@ int Beam::loadTruck(const char* fname, SceneManager *manager, SceneNode *parent,
 			//set no animation by default
 			props[free_prop].animFlags[0]=0;
 			props[free_prop].animMode[0]=0;
+			props[free_prop].animKey=-1;
 			String meshnameString = String(meshname);
 			std::string::size_type loc = meshnameString.find("leftmirror", 0);
 			if( loc != std::string::npos ) props[free_prop].mirror=1;
@@ -7434,6 +7452,10 @@ void Beam::calcForcesEuler(int doUpdate, Real dt, int step, int maxstep, Beam** 
 
 				calcAnimators(flagstate, cstate, div, dt, animOpt1, animOpt2, animOpt3);
 
+				// key triggered animations
+				if (props[propi].animFlags[animnum] & ANIM_FLAG_KEY && props[propi].animKey != -1) 
+					cstate = INPUTENGINE.getEventValue(props[propi].animKey));
+				
 				//propanimation placed here to avoid interference with existing hydros(cstate) and permanent prop animation
 				//truck steering
 				if (props[propi].animFlags[animnum] & ANIM_FLAG_STEERING) cstate += hydrodirstate;
