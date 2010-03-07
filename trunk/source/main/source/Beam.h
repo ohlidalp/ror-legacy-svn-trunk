@@ -200,34 +200,48 @@ typedef struct _collision_box collision_box_t;
 
 #define ANIM_FLAG_AIRSPEED      0x00000001
 #define ANIM_FLAG_VVI           0x00000002
-#define ANIM_FLAG_ALTIMETER1    0x00000004
-#define ANIM_FLAG_ALTIMETER10   0x00000008
-#define ANIM_FLAG_ALTIMETER100  0x00000010
-#define ANIM_FLAG_AOA           0x00000020
-#define ANIM_FLAG_FLAP          0x00000040
-#define ANIM_FLAG_AIRBRAKE      0x00000080
-#define ANIM_FLAG_ROLL          0x00000100
-#define ANIM_FLAG_PITCH         0x00000200
-#define ANIM_FLAG_THROTTLE1     0x00000400
-#define ANIM_FLAG_THROTTLE2     0x00000800
-#define ANIM_FLAG_THROTTLE3     0x00001000
-#define ANIM_FLAG_THROTTLE4     0x00002000
-#define ANIM_FLAG_RPM1          0x00004000
-#define ANIM_FLAG_RPM2          0x00008000
-#define ANIM_FLAG_RPM3          0x00010000
-#define ANIM_FLAG_RPM4          0x00020000
-#define ANIM_FLAG_ACCEL         0x00040000
-#define ANIM_FLAG_BRAKE         0x00080000
-#define ANIM_FLAG_CLUTCH        0x00100000
-#define ANIM_FLAG_RPM           0x00200000
-#define ANIM_FLAG_SPEEDO        0x00400000
-#define ANIM_FLAG_PBRAKE        0x00800000
-#define ANIM_FLAG_TURBO         0x01000000
-#define ANIM_FLAG_SHIFTER1      0x02000000
-#define ANIM_FLAG_SHIFTER2      0x04000000
-#define ANIM_FLAG_SHIFTER3      0x08000000
-#define ANIM_FLAG_SHIFTER4      0x10000000
-#define ANIM_FLAG_TORQUE        0x20000000
+#define ANIM_FLAG_ALTIMETER     0x00000004
+#define ANIM_FLAG_AOA           0x00000008
+#define ANIM_FLAG_FLAP          0x00000010
+#define ANIM_FLAG_AIRBRAKE      0x00000020
+#define ANIM_FLAG_ROLL          0x00000040
+#define ANIM_FLAG_PITCH         0x00000080
+#define ANIM_FLAG_THROTTLE      0x00000100
+#define ANIM_FLAG_RPM           0x00000200
+#define ANIM_FLAG_ACCEL         0x00000400
+#define ANIM_FLAG_BRAKE         0x00000800
+#define ANIM_FLAG_CLUTCH        0x00001000
+#define ANIM_FLAG_TACHO         0x00002000
+#define ANIM_FLAG_SPEEDO        0x00004000
+#define ANIM_FLAG_PBRAKE        0x00008000
+#define ANIM_FLAG_TURBO         0x00010000
+#define ANIM_FLAG_SHIFTER       0x00020000
+#define ANIM_FLAG_AETORQUE      0x00040000
+#define ANIM_FLAG_AEPITCH       0x00080000
+#define ANIM_FLAG_AESTATUS      0x00100000
+#define ANIM_FLAG_TORQUE        0x00200000
+#define ANIM_FLAG_HEADING       0x00400000
+#define ANIM_FLAG_DIFFLOCK      0x00800000
+#define ANIM_FLAG_STEERING      0x01000000
+
+#define ANIM_FLAG_UNUSED		0x02000000
+
+#define ANIM_FLAG_AILERONS      0x04000000
+#define ANIM_FLAG_ARUDDER       0x08000000
+#define ANIM_FLAG_BRUDDER       0x10000000
+#define ANIM_FLAG_BTHROTTLE     0x20000000
+#define ANIM_FLAG_PERMANENT     0x40000000
+#define ANIM_FLAG_ELEVATORS     0x80000000
+
+#define ANIM_MODE_ROTA_X		0x00000001
+#define ANIM_MODE_ROTA_Y		0x00000002
+#define ANIM_MODE_ROTA_Z		0x00000004
+#define ANIM_MODE_OFFSET_X		0x00000008
+#define ANIM_MODE_OFFSET_Y		0x00000010
+#define ANIM_MODE_OFFSET_Z		0x00000020
+#define ANIM_MODE_AUTOANIMATE	0x00000040
+#define ANIM_MODE_NOFLIP		0x00000080
+#define ANIM_MODE_BOUNCE		0x00000100
 
 #define SHOCK_FLAG_NORMAL       0x00000001
 #define SHOCK_FLAG_INVISIBLE    0x00000002
@@ -398,6 +412,7 @@ typedef struct _beam
 	Real hydroRatio;//hydro rotation ratio
 	int hydroFlags;
 	int animFlags;
+	float animOption;
 	Real commandRatioLong;
 	Real commandRatioShort;
 	Real commandShort;
@@ -602,6 +617,12 @@ typedef struct _prop
 	float offsetx;
 	float offsety;
 	float offsetz;
+	float rotaX;
+	float rotaY;
+	float rotaZ;
+	float orgoffsetX;
+	float orgoffsetY;
+	float orgoffsetZ;
 	Quaternion rot;
 	SceneNode *snode;
 	SceneNode *wheel;
@@ -615,6 +636,21 @@ typedef struct _prop
 	float bpos[4];
 	int pale;
 	int spinner;
+	bool animated;
+	float anim_x_Rot;
+	float anim_y_Rot;
+	float anim_z_Rot;
+	float anim_x_Off;
+	float anim_y_Off;
+	float anim_z_Off;
+	float animratio[10];
+	int animFlags[10];
+	int animMode[10];
+	float animOpt1[10];
+	float animOpt2[10];
+	float animOpt3[10];
+	float animOpt4[10];
+	float animOpt5[10];
 	Ogre::Real wheelrotdegree;
 } prop_t;
 
@@ -731,6 +767,7 @@ public:
 	void calcForcesEuler(int doUpdate, Real dt, int step, int maxsteps, Beam** trucks, int numtrucks);
 	void truckTruckCollisions(Real dt, Beam** trucks, int numtrucks);
 	void calcShocks2(int beam_i, Real difftoBeamL, Real &k, Real &d);
+	void calcAnimators(int flagstate, float &cstate, int &div, float timer, float opt1, float opt2, float opt3);
 	Quaternion specialGetRotationTo(const Vector3& src, const Vector3& dest) const;
 	void prepareInside(bool inside);
 	void lightsToggle(Beam** trucks, int trucksnum);

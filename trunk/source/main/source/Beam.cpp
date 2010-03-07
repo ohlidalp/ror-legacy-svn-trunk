@@ -1546,6 +1546,217 @@ int Beam::loadTruck(const char* fname, SceneManager *manager, SceneNode *parent,
 		if(!strcmp("slidenode_connect_instantly", line))
 			slideNodesConnectInstantly=true;
 
+		if (!strncmp("add_animation", line, 13))
+		{
+			/*
+			 * this command has several layers for splitting up the line:
+			 * 1. ',' the top level will be split up with a comma to separate the main options
+			 * 2. ':' the second level will be split up with colon, it separates the entry name and its value
+			 * 3. '|' the third level is used to specify multiple values for the entry value 
+			 */
+			int animnum = 0;
+			float ratio = 0.0f, opt1 = -1.0f, opt2 = -1.0f;
+			// parse the line
+			if(String(line).size() < 14)
+			{
+				LogManager::getSingleton().logMessage("Error parsing File (add_animation) " + String(fname) +" line " + StringConverter::toString(linecounter) + ". Not enough Options parsed, trying to continue ...");
+				continue;
+			}
+			std::vector<Ogre::String> options = Ogre::StringUtil::split(String(line).substr(14), ","); // "add_animation " = 14 characters
+			// check for common errors
+			if (options.size() < 4)
+			{
+				LogManager::getSingleton().logMessage("Error parsing File (add_animation) " + String(fname) +" line " + StringConverter::toString(linecounter) + ". Not enough Options parsed, trying to continue ...");
+				continue;
+			}
+			if (!free_prop)
+			{
+				LogManager::getSingleton().logMessage("Error parsing File (add_animation) " + String(fname) +" line " + StringConverter::toString(linecounter) + ". No prop to animate existing, trying to continue ...");
+				continue;
+			}
+
+			// always use the last prop
+			prop_t *prop = &props[free_prop-1];
+
+			// look for a free anim slot, important: do not over the borders!
+			while (prop->animFlags[animnum] && animnum < 10) 
+				animnum++;
+
+			// all slots used?
+			if (animnum >= 10)
+			{
+				LogManager::getSingleton().logMessage("Error parsing File (add_animation) " + String(fname) +" line " + StringConverter::toString(linecounter) + ". Cant animate a prop more then 10 times. Trying to continue...");
+				continue;
+			}
+
+			// parse the arguments individually
+			for(unsigned int i=0;i<options.size();i++)
+			{
+				if(i == 0)
+				{
+					ratio = StringConverter::parseReal(options[i]);
+					//set ratio
+					if (ratio)
+						prop->animratio[animnum]=ratio;
+					else
+						LogManager::getSingleton().logMessage("Error parsing File (add_animation) " + String(fname) +" line " + StringConverter::toString(linecounter) + ". Animation-Ratio = 0 ?");
+				} else if(i == 1)
+				{
+					opt1 = StringConverter::parseReal(options[i]);
+					prop->animOpt1[animnum] = opt1;
+				} else if(i == 2)
+				{
+					opt2 = StringConverter::parseReal(options[i]);
+					prop->animOpt2[animnum] = opt2;
+					prop->animOpt3[animnum] = 0.0f;
+					prop->animOpt4[animnum] = 0.0f;
+					prop->animOpt5[animnum] = 0.0f;
+				} else
+				{
+					// parse the rest
+					std::vector<Ogre::String> args2 = Ogre::StringUtil::split(options[i], ":");
+					if(args2.size() == 0)
+						continue;
+					
+					// trim spaces from the entry
+					Ogre::StringUtil::trim(args2[0]);
+					if(args2.size() >= 2) Ogre::StringUtil::trim(args2[1]);
+
+					if(args2[0] == "source" && args2.size() == 2)
+					{
+						//set source identification flag
+						std::vector<Ogre::String> args3 = Ogre::StringUtil::split(args2[1], "|");
+						for(unsigned int j=0;j<args3.size();j++)
+						{
+							String sourceStr = args3[j];
+							Ogre::StringUtil::trim(sourceStr);
+							if (sourceStr == "airspeed")             { prop->animFlags[animnum] |= (ANIM_FLAG_AIRSPEED); }
+							else if (sourceStr == "vvi")             { prop->animFlags[animnum] |= (ANIM_FLAG_VVI); }
+							else if (sourceStr == "altimeter100k")   { prop->animFlags[animnum] |= (ANIM_FLAG_ALTIMETER); prop->animOpt3[animnum] = 1.0f; }
+							else if (sourceStr == "altimeter10k")    { prop->animFlags[animnum] |= (ANIM_FLAG_ALTIMETER); prop->animOpt3[animnum] = 2.0f; }
+							else if (sourceStr == "altimeter1k")     { prop->animFlags[animnum] |= (ANIM_FLAG_ALTIMETER); prop->animOpt3[animnum] = 3.0f; }
+							else if (sourceStr == "aoa")             { prop->animFlags[animnum] |= (ANIM_FLAG_AOA); }
+							else if (sourceStr == "flap")            { prop->animFlags[animnum] |= (ANIM_FLAG_FLAP); }
+							else if (sourceStr == "airbrake")        { prop->animFlags[animnum] |= (ANIM_FLAG_AIRBRAKE); }
+							else if (sourceStr == "roll")            { prop->animFlags[animnum] |= (ANIM_FLAG_ROLL); }
+							else if (sourceStr == "pitch")           { prop->animFlags[animnum] |= (ANIM_FLAG_PITCH); }
+							else if (sourceStr == "throttle1")       { prop->animFlags[animnum] |= (ANIM_FLAG_THROTTLE); prop->animOpt3[animnum] = 1.0f; }
+							else if (sourceStr == "throttle2")       { prop->animFlags[animnum] |= (ANIM_FLAG_THROTTLE); prop->animOpt3[animnum] = 2.0f; }
+							else if (sourceStr == "throttle3")       { prop->animFlags[animnum] |= (ANIM_FLAG_THROTTLE); prop->animOpt3[animnum] = 3.0f; }
+							else if (sourceStr == "throttle4")       { prop->animFlags[animnum] |= (ANIM_FLAG_THROTTLE); prop->animOpt3[animnum] = 4.0f; }
+							else if (sourceStr == "throttle5")       { prop->animFlags[animnum] |= (ANIM_FLAG_THROTTLE); prop->animOpt3[animnum] = 5.0f; }
+							else if (sourceStr == "throttle6")       { prop->animFlags[animnum] |= (ANIM_FLAG_THROTTLE); prop->animOpt3[animnum] = 6.0f; }
+							else if (sourceStr == "throttle7")       { prop->animFlags[animnum] |= (ANIM_FLAG_THROTTLE); prop->animOpt3[animnum] = 7.0f; }
+							else if (sourceStr == "throttle8")       { prop->animFlags[animnum] |= (ANIM_FLAG_THROTTLE); prop->animOpt3[animnum] = 8.0f; }
+							else if (sourceStr == "rpm1")            { prop->animFlags[animnum] |= (ANIM_FLAG_RPM); prop->animOpt3[animnum] = 1.0f; }
+							else if (sourceStr == "rpm2")            { prop->animFlags[animnum] |= (ANIM_FLAG_RPM); prop->animOpt3[animnum] = 2.0f; }
+							else if (sourceStr == "rpm3")            { prop->animFlags[animnum] |= (ANIM_FLAG_RPM); prop->animOpt3[animnum] = 3.0f; }
+							else if (sourceStr == "rpm4")            { prop->animFlags[animnum] |= (ANIM_FLAG_RPM); prop->animOpt3[animnum] = 4.0f; }
+							else if (sourceStr == "rpm5")            { prop->animFlags[animnum] |= (ANIM_FLAG_RPM); prop->animOpt3[animnum] = 5.0f; }
+							else if (sourceStr == "rpm6")            { prop->animFlags[animnum] |= (ANIM_FLAG_RPM); prop->animOpt3[animnum] = 6.0f; }
+							else if (sourceStr == "rpm7")            { prop->animFlags[animnum] |= (ANIM_FLAG_RPM); prop->animOpt3[animnum] = 7.0f; }
+							else if (sourceStr == "rpm8")            { prop->animFlags[animnum] |= (ANIM_FLAG_RPM); prop->animOpt3[animnum] = 8.0f; }
+							else if (sourceStr == "aerotorq1")       { prop->animFlags[animnum] |= (ANIM_FLAG_AETORQUE); prop->animOpt3[animnum] = 1.0f; }
+							else if (sourceStr == "aerotorq2")       { prop->animFlags[animnum] |= (ANIM_FLAG_AETORQUE); prop->animOpt3[animnum] = 2.0f; }
+							else if (sourceStr == "aerotorq3")       { prop->animFlags[animnum] |= (ANIM_FLAG_AETORQUE); prop->animOpt3[animnum] = 3.0f; }
+							else if (sourceStr == "aerotorq4")       { prop->animFlags[animnum] |= (ANIM_FLAG_AETORQUE); prop->animOpt3[animnum] = 4.0f; }
+							else if (sourceStr == "aerotorq5")       { prop->animFlags[animnum] |= (ANIM_FLAG_AETORQUE); prop->animOpt3[animnum] = 5.0f; }
+							else if (sourceStr == "aerotorq6")       { prop->animFlags[animnum] |= (ANIM_FLAG_AETORQUE); prop->animOpt3[animnum] = 6.0f; }
+							else if (sourceStr == "aerotorq7")       { prop->animFlags[animnum] |= (ANIM_FLAG_AETORQUE); prop->animOpt3[animnum] = 7.0f; }
+							else if (sourceStr == "aerotorq8")       { prop->animFlags[animnum] |= (ANIM_FLAG_AETORQUE); prop->animOpt3[animnum] = 8.0f; }
+							else if (sourceStr == "aeropit1")        { prop->animFlags[animnum] |= (ANIM_FLAG_AEPITCH); prop->animOpt3[animnum] = 1.0f; }
+							else if (sourceStr == "aeropit2")        { prop->animFlags[animnum] |= (ANIM_FLAG_AEPITCH); prop->animOpt3[animnum] = 2.0f; }
+							else if (sourceStr == "aeropit3")        { prop->animFlags[animnum] |= (ANIM_FLAG_AEPITCH); prop->animOpt3[animnum] = 3.0f; }
+							else if (sourceStr == "aeropit4")        { prop->animFlags[animnum] |= (ANIM_FLAG_AEPITCH); prop->animOpt3[animnum] = 4.0f; }
+							else if (sourceStr == "aeropit5")        { prop->animFlags[animnum] |= (ANIM_FLAG_AEPITCH); prop->animOpt3[animnum] = 5.0f; }
+							else if (sourceStr == "aeropit6")        { prop->animFlags[animnum] |= (ANIM_FLAG_AEPITCH); prop->animOpt3[animnum] = 6.0f; }
+							else if (sourceStr == "aeropit7")        { prop->animFlags[animnum] |= (ANIM_FLAG_AEPITCH); prop->animOpt3[animnum] = 7.0f; }
+							else if (sourceStr == "aeropit8")        { prop->animFlags[animnum] |= (ANIM_FLAG_AEPITCH); prop->animOpt3[animnum] = 8.0f; }
+							else if (sourceStr == "aerostatus1")     { prop->animFlags[animnum] |= (ANIM_FLAG_AESTATUS); prop->animOpt3[animnum] = 1.0f; }
+							else if (sourceStr == "aerostatus2")     { prop->animFlags[animnum] |= (ANIM_FLAG_AESTATUS); prop->animOpt3[animnum] = 2.0f; }
+							else if (sourceStr == "aerostatus3")     { prop->animFlags[animnum] |= (ANIM_FLAG_AESTATUS); prop->animOpt3[animnum] = 3.0f; }
+							else if (sourceStr == "aerostatus4")     { prop->animFlags[animnum] |= (ANIM_FLAG_AESTATUS); prop->animOpt3[animnum] = 4.0f; }
+							else if (sourceStr == "aerostatus5")     { prop->animFlags[animnum] |= (ANIM_FLAG_AESTATUS); prop->animOpt3[animnum] = 5.0f; }
+							else if (sourceStr == "aerostatus6")     { prop->animFlags[animnum] |= (ANIM_FLAG_AESTATUS); prop->animOpt3[animnum] = 6.0f; }
+							else if (sourceStr == "aerostatus7")     { prop->animFlags[animnum] |= (ANIM_FLAG_AESTATUS); prop->animOpt3[animnum] = 7.0f; }
+							else if (sourceStr == "aerostatus8")     { prop->animFlags[animnum] |= (ANIM_FLAG_AESTATUS); prop->animOpt3[animnum] = 8.0f; }
+							else if (sourceStr == "brakes")          { prop->animFlags[animnum] |= (ANIM_FLAG_BRAKE); }
+							else if (sourceStr == "accel")           { prop->animFlags[animnum] |= (ANIM_FLAG_ACCEL); }
+							else if (sourceStr == "clutch")          { prop->animFlags[animnum] |= (ANIM_FLAG_CLUTCH); }
+							else if (sourceStr == "speedo")          { prop->animFlags[animnum] |= (ANIM_FLAG_SPEEDO); }
+							else if (sourceStr == "tacho")           { prop->animFlags[animnum] |= (ANIM_FLAG_TACHO); }
+							else if (sourceStr == "turbo")           { prop->animFlags[animnum] |= (ANIM_FLAG_TURBO); }
+							else if (sourceStr == "parking")         { prop->animFlags[animnum] |= (ANIM_FLAG_PBRAKE); }
+							else if (sourceStr == "shifterman1")     { prop->animFlags[animnum] |= (ANIM_FLAG_SHIFTER); prop->animOpt3[animnum] = 1.0f; }
+							else if (sourceStr == "shifterman2")     { prop->animFlags[animnum] |= (ANIM_FLAG_SHIFTER); prop->animOpt3[animnum] = 2.0f; }
+							else if (sourceStr == "sequential")      { prop->animFlags[animnum] |= (ANIM_FLAG_SHIFTER); prop->animOpt3[animnum] = 3.0f; }
+							else if (sourceStr == "shifterlin")      { prop->animFlags[animnum] |= (ANIM_FLAG_SHIFTER); prop->animOpt3[animnum] = 4.0f; }
+							else if (sourceStr == "torque")          { prop->animFlags[animnum] |= (ANIM_FLAG_TORQUE); }
+							else if (sourceStr == "heading")         { prop->animFlags[animnum] |= (ANIM_FLAG_HEADING); }
+							else if (sourceStr == "difflock")        { prop->animFlags[animnum] |= (ANIM_FLAG_DIFFLOCK); }
+							else if (sourceStr == "steeringwheel")   { prop->animFlags[animnum] |= (ANIM_FLAG_STEERING); }
+							else if (sourceStr == "aileron")         { prop->animFlags[animnum] |= (ANIM_FLAG_AILERONS); }
+							else if (sourceStr == "elevator")        { prop->animFlags[animnum] |= (ANIM_FLAG_ELEVATORS); }
+							else if (sourceStr == "rudderair")       { prop->animFlags[animnum] |= (ANIM_FLAG_ARUDDER); }
+							else if (sourceStr == "rudderboat")      { prop->animFlags[animnum] |= (ANIM_FLAG_BRUDDER); }
+							else if (sourceStr == "throttleboat")    { prop->animFlags[animnum] |= (ANIM_FLAG_BTHROTTLE); }
+							else if (sourceStr == "permanent")       { prop->animFlags[animnum] |= (ANIM_FLAG_PERMANENT); }
+						}
+
+						if (prop->animFlags[animnum] == 0)
+							LogManager::getSingleton().logMessage("Error parsing File (add_animation) " + String(fname) +" line " + StringConverter::toString(linecounter) + ". Failed to identify source.");
+						else
+							LogManager::getSingleton().logMessage("Animation source set to prop#: " + StringConverter::toString(free_prop-1) + ", flag " +StringConverter::toString(prop->animFlags[animnum]) + ", Animationnumber: " + StringConverter::toString(animnum));
+					}
+					else if(args2[0] == "mode" && args2.size() == 2)
+					{
+						//set mode identification flag
+						std::vector<Ogre::String> args3 = Ogre::StringUtil::split(args2[1], "|");
+						for(unsigned int j=0;j<args3.size();j++)
+						{
+							String modeStr = args3[j];
+							Ogre::StringUtil::trim(modeStr);
+							if (modeStr == "x-rotation")      prop->animMode[animnum] |= (ANIM_MODE_ROTA_X);
+							else if (modeStr == "y-rotation") prop->animMode[animnum] |= (ANIM_MODE_ROTA_Y);
+							else if (modeStr == "z-rotation") prop->animMode[animnum] |= (ANIM_MODE_ROTA_Z);
+							else if (modeStr == "x-offset")   prop->animMode[animnum] |= (ANIM_MODE_OFFSET_X);
+							else if (modeStr == "y-offset")   prop->animMode[animnum] |= (ANIM_MODE_OFFSET_Y);
+							else if (modeStr == "z-offset")   prop->animMode[animnum] |= (ANIM_MODE_OFFSET_Z);
+						}
+
+						if (prop->animMode[animnum] == 0)
+							LogManager::getSingleton().logMessage("Error parsing File (add_animation) " + String(fname) +" line " + StringConverter::toString(linecounter) + ". Failed to identify animation mode.");
+						else
+							LogManager::getSingleton().logMessage("Animation mode set to prop#: " + StringConverter::toString(free_prop-1)+ ", mode " +StringConverter::toString(prop->animMode[animnum]) + ", Animationnumber: " + StringConverter::toString(animnum));
+					}
+					else if (args2[0] == "autoanimate" && args2.size() == 1)
+					{
+						// TODO: re-add check for invalid cases
+						prop->animMode[animnum] |= (ANIM_MODE_AUTOANIMATE);
+						
+						if     (prop->animMode[animnum] & ANIM_MODE_ROTA_X)   { prop->animOpt1[animnum] = opt1 + prop->rotaX; prop->animOpt2[animnum] = opt2 + prop->rotaX; prop->animOpt4[animnum] = prop->rotaX; }
+						else if(prop->animMode[animnum] & ANIM_MODE_ROTA_Y)   { prop->animOpt1[animnum] = opt1 + prop->rotaY; prop->animOpt2[animnum] = opt2 + prop->rotaY; prop->animOpt4[animnum] = prop->rotaY; }
+						else if(prop->animMode[animnum] & ANIM_MODE_ROTA_Z)   { prop->animOpt1[animnum] = opt1 + prop->rotaZ; prop->animOpt2[animnum] = opt2 + prop->rotaZ; prop->animOpt4[animnum] = prop->rotaZ; }
+						else if(prop->animMode[animnum] & ANIM_MODE_OFFSET_X) { prop->animOpt1[animnum] = opt1 + prop->orgoffsetX; prop->animOpt2[animnum] = opt2 + prop->orgoffsetX; prop->animOpt4[animnum] = prop->orgoffsetX; }
+						else if(prop->animMode[animnum] & ANIM_MODE_OFFSET_Y) { prop->animOpt1[animnum] = opt1 + prop->orgoffsetY; prop->animOpt2[animnum] = opt2 + prop->orgoffsetY; prop->animOpt4[animnum] = prop->orgoffsetY; }
+						else if(prop->animMode[animnum] & ANIM_MODE_OFFSET_Z) { prop->animOpt1[animnum] = opt1 + prop->orgoffsetZ; prop->animOpt2[animnum] = opt2 + prop->orgoffsetZ; prop->animOpt4[animnum] = prop->orgoffsetZ; }
+						LogManager::getSingleton().logMessage("Animation mode Autoanimation added to prop#: " + StringConverter::toString(free_prop-1) + " , Animationnumber: " + StringConverter::toString(animnum));
+					}
+					else if (args2[0] == "noflip" && args2.size() == 1)
+					{
+						prop->animMode[animnum] |= (ANIM_MODE_NOFLIP);
+					}
+					else if (args2[0] == "bounce" && args2.size() == 1)
+					{
+						prop->animMode[animnum] |= (ANIM_MODE_BOUNCE);
+						prop->animOpt5[animnum] = 1.0f;
+					}
+
+				}
+			}
+			continue;
+		}
+
 		if (!strncmp("set_beam_defaults", line, 17))
 		{
 			char default_beam_material2[256]="";
@@ -1578,7 +1789,8 @@ int Beam::loadTruck(const char* fname, SceneManager *manager, SceneNode *parent,
 		if (!strncmp("set_inertia_defaults", line, 20))
 		{
 			int result = sscanf(line,"set_inertia_defaults %f, %f, %s %s",&inertia_startDelay, &inertia_stopDelay, inertia_default_startFunction, inertia_default_stopFunction);
-			if (result < 4 || result == EOF) {
+			if (result < 1 || result == EOF)
+			{
 				LogManager::getSingleton().logMessage("Error parsing File (set_inertia_defaults) " + String(fname) +" line " + StringConverter::toString(linecounter) + ". trying to continue ...");
 				continue;
 			}
@@ -2261,17 +2473,29 @@ int Beam::loadTruck(const char* fname, SceneManager *manager, SceneNode *parent,
 			//parse animators
 			int id1, id2;
 			float ratio;
-			char options[250] = "";
-			int result = sscanf(line,"%i, %i, %f, %s",&id1,&id2,&ratio,options);
-			if (result < 3 || result == EOF)
+			std::vector<Ogre::String> options = Ogre::StringUtil::split(String(line), ",");
+			if (options.size() < 4)
 			{
 				LogManager::getSingleton().logMessage("Error parsing File (Animator) " + String(fname) +" line " + StringConverter::toString(linecounter) + ". trying to continue ...");
 				continue;
 			}
+			// the required values
+			id1 = StringConverter::parseInt(options[0]);
+			id2 = StringConverter::parseInt(options[1]);
+			ratio = StringConverter::parseReal(options[2]);
+			String optionStr = options[3];
+			std::vector<Ogre::String> optionArgs = Ogre::StringUtil::split(optionStr, "|");
 
 			int htype=BEAM_HYDRO;
 
-			if (strstr(options,"inv")) htype=BEAM_INVISIBLE_HYDRO;
+			// detect invisible beams
+			for(unsigned int i=0;i<optionArgs.size();i++)
+			{
+				String arg = optionArgs[i];
+				StringUtil::trim(arg);
+				if(arg == "inv")
+					htype=BEAM_INVISIBLE_HYDRO;
+			}
 
 			if (id1>=free_node || id2>=free_node)
 			{
@@ -2299,38 +2523,85 @@ int Beam::loadTruck(const char* fname, SceneManager *manager, SceneNode *parent,
 			beams[pos].Lhydro=beams[pos].L;
 			beams[pos].hydroRatio=ratio;
 
-			if (strstr(options,"vis"))           beams[pos].type = BEAM_HYDRO;
-			if (strstr(options,"inv"))           htype=BEAM_INVISIBLE_HYDRO;
-			if (strstr(options,"airspeed"))      beams[pos].animFlags |= (ANIM_FLAG_AIRSPEED);
-			if (strstr(options,"vvi"))           beams[pos].animFlags |= (ANIM_FLAG_VVI);
-			if (strstr(options,"altimeter100k")) beams[pos].animFlags |= (ANIM_FLAG_ALTIMETER100);
-			if (strstr(options,"altimeter10k"))  beams[pos].animFlags |= (ANIM_FLAG_ALTIMETER10);
-			if (strstr(options,"altimeter1k"))   beams[pos].animFlags |= (ANIM_FLAG_ALTIMETER1);
-			if (strstr(options,"aoa"))           beams[pos].animFlags |= (ANIM_FLAG_AOA);
-			if (strstr(options,"flap"))          beams[pos].animFlags |= (ANIM_FLAG_FLAP);
-			if (strstr(options,"airbrake"))      beams[pos].animFlags |= (ANIM_FLAG_AIRBRAKE);
-			if (strstr(options,"roll"))          beams[pos].animFlags |= (ANIM_FLAG_ROLL);
-			if (strstr(options,"pitch"))         beams[pos].animFlags |= (ANIM_FLAG_PITCH);
-			if (strstr(options,"throttle1"))     beams[pos].animFlags |= (ANIM_FLAG_THROTTLE1);
-			if (strstr(options,"throttle2"))     beams[pos].animFlags |= (ANIM_FLAG_THROTTLE2);
-			if (strstr(options,"throttle3"))     beams[pos].animFlags |= (ANIM_FLAG_THROTTLE3);
-			if (strstr(options,"throttle4"))     beams[pos].animFlags |= (ANIM_FLAG_THROTTLE4);
-			if (strstr(options,"rpm1"))          beams[pos].animFlags |= (ANIM_FLAG_RPM1);
-			if (strstr(options,"rpm2"))          beams[pos].animFlags |= (ANIM_FLAG_RPM2);
-			if (strstr(options,"rpm3"))          beams[pos].animFlags |= (ANIM_FLAG_RPM3);
-			if (strstr(options,"rpm4"))          beams[pos].animFlags |= (ANIM_FLAG_RPM4);
-			if (strstr(options,"brakes"))        beams[pos].animFlags |= (ANIM_FLAG_BRAKE);
-			if (strstr(options,"accel"))         beams[pos].animFlags |= (ANIM_FLAG_ACCEL);
-			if (strstr(options,"clutch"))        beams[pos].animFlags |= (ANIM_FLAG_CLUTCH);
-			if (strstr(options,"speedo"))        beams[pos].animFlags |= (ANIM_FLAG_SPEEDO);
-			if (strstr(options,"tacho"))         beams[pos].animFlags |= (ANIM_FLAG_RPM);
-			if (strstr(options,"turbo"))         beams[pos].animFlags |= (ANIM_FLAG_TURBO);
-			if (strstr(options,"parking"))       beams[pos].animFlags |= (ANIM_FLAG_PBRAKE);
-			if (strstr(options,"shifterman1"))   beams[pos].animFlags |= (ANIM_FLAG_SHIFTER1);
-			if (strstr(options,"shifterman2"))   beams[pos].animFlags |= (ANIM_FLAG_SHIFTER2);
-			if (strstr(options,"shifterseq"))    beams[pos].animFlags |= (ANIM_FLAG_SHIFTER3);
-			if (strstr(options,"shifterlin"))    beams[pos].animFlags |= (ANIM_FLAG_SHIFTER4);
-			if (strstr(options,"torque"))        beams[pos].animFlags |= (ANIM_FLAG_TORQUE);
+			// parse the rest
+			for(unsigned int i=0;i<optionArgs.size();i++)
+			{
+				String arg = optionArgs[i];
+				StringUtil::trim(arg);
+				beam_t *beam = &beams[pos];
+				if      (arg == "vis")            { beam->type = BEAM_HYDRO; }
+				else if (arg == "inv")            { htype=BEAM_INVISIBLE_HYDRO; }
+				else if (arg == "airspeed")       { beam->animFlags |= (ANIM_FLAG_AIRSPEED); }
+				else if (arg == "vvi")            { beam->animFlags |= (ANIM_FLAG_VVI); }
+				else if (arg == "altimeter100k")  { beam->animFlags |= (ANIM_FLAG_ALTIMETER); beam->animOption = 1.0f; }
+				else if (arg == "altimeter10k")   { beam->animFlags |= (ANIM_FLAG_ALTIMETER); beam->animOption = 2.0f; }
+				else if (arg == "altimeter1k")    { beam->animFlags |= (ANIM_FLAG_ALTIMETER); beam->animOption = 3.0f; }
+				else if (arg == "aoa")            { beam->animFlags |= (ANIM_FLAG_AOA); }
+				else if (arg == "flap")           { beam->animFlags |= (ANIM_FLAG_FLAP); }
+				else if (arg == "airbrake")       { beam->animFlags |= (ANIM_FLAG_AIRBRAKE); }
+				else if (arg == "roll")           { beam->animFlags |= (ANIM_FLAG_ROLL); }
+				else if (arg == "pitch")          { beam->animFlags |= (ANIM_FLAG_PITCH); }
+				else if (arg == "throttle1")      { beam->animFlags |= (ANIM_FLAG_THROTTLE); beam->animOption = 1.0f; }
+				else if (arg == "throttle2")      { beam->animFlags |= (ANIM_FLAG_THROTTLE); beam->animOption = 2.0f; }
+				else if (arg == "throttle3")      { beam->animFlags |= (ANIM_FLAG_THROTTLE); beam->animOption = 3.0f; }
+				else if (arg == "throttle4")      { beam->animFlags |= (ANIM_FLAG_THROTTLE); beam->animOption = 4.0f; }
+				else if (arg == "throttle5")      { beam->animFlags |= (ANIM_FLAG_THROTTLE); beam->animOption = 5.0f; }
+				else if (arg == "throttle6")      { beam->animFlags |= (ANIM_FLAG_THROTTLE); beam->animOption = 6.0f; }
+				else if (arg == "throttle7")      { beam->animFlags |= (ANIM_FLAG_THROTTLE); beam->animOption = 7.0f; }
+				else if (arg == "throttle8")      { beam->animFlags |= (ANIM_FLAG_THROTTLE); beam->animOption = 8.0f; }
+				else if (arg == "rpm1")           { beam->animFlags |= (ANIM_FLAG_RPM); beam->animOption = 1.0f; }
+				else if (arg == "rpm2")           { beam->animFlags |= (ANIM_FLAG_RPM); beam->animOption = 2.0f; }
+				else if (arg == "rpm3")           { beam->animFlags |= (ANIM_FLAG_RPM); beam->animOption = 3.0f; }
+				else if (arg == "rpm4")           { beam->animFlags |= (ANIM_FLAG_RPM); beam->animOption = 4.0f; }
+				else if (arg == "rpm5")           { beam->animFlags |= (ANIM_FLAG_RPM); beam->animOption = 5.0f; }
+				else if (arg == "rpm6")           { beam->animFlags |= (ANIM_FLAG_RPM); beam->animOption = 6.0f; }
+				else if (arg == "rpm7")           { beam->animFlags |= (ANIM_FLAG_RPM); beam->animOption = 7.0f; }
+				else if (arg == "rpm8")           { beam->animFlags |= (ANIM_FLAG_RPM); beam->animOption = 8.0f; }
+				else if (arg == "aerotorq1")      { beam->animFlags |= (ANIM_FLAG_AETORQUE); beam->animOption = 1.0f; }
+				else if (arg == "aerotorq2")      { beam->animFlags |= (ANIM_FLAG_AETORQUE); beam->animOption = 2.0f; }
+				else if (arg == "aerotorq3")      { beam->animFlags |= (ANIM_FLAG_AETORQUE); beam->animOption = 3.0f; }
+				else if (arg == "aerotorq4")      { beam->animFlags |= (ANIM_FLAG_AETORQUE); beam->animOption = 4.0f; }
+				else if (arg == "aerotorq5")      { beam->animFlags |= (ANIM_FLAG_AETORQUE); beam->animOption = 5.0f; }
+				else if (arg == "aerotorq6")      { beam->animFlags |= (ANIM_FLAG_AETORQUE); beam->animOption = 6.0f; }
+				else if (arg == "aerotorq7")      { beam->animFlags |= (ANIM_FLAG_AETORQUE); beam->animOption = 7.0f; }
+				else if (arg == "aerotorq8")      { beam->animFlags |= (ANIM_FLAG_AETORQUE); beam->animOption = 8.0f; }
+				else if (arg == "aeropit1")       { beam->animFlags |= (ANIM_FLAG_AEPITCH); beam->animOption = 1.0f; }
+				else if (arg == "aeropit2")       { beam->animFlags |= (ANIM_FLAG_AEPITCH); beam->animOption = 2.0f; }
+				else if (arg == "aeropit3")       { beam->animFlags |= (ANIM_FLAG_AEPITCH); beam->animOption = 3.0f; }
+				else if (arg == "aeropit4")       { beam->animFlags |= (ANIM_FLAG_AEPITCH); beam->animOption = 4.0f; }
+				else if (arg == "aeropit5")       { beam->animFlags |= (ANIM_FLAG_AEPITCH); beam->animOption = 5.0f; }
+				else if (arg == "aeropit6")       { beam->animFlags |= (ANIM_FLAG_AEPITCH); beam->animOption = 6.0f; }
+				else if (arg == "aeropit7")       { beam->animFlags |= (ANIM_FLAG_AEPITCH); beam->animOption = 7.0f; }
+				else if (arg == "aeropit8")       { beam->animFlags |= (ANIM_FLAG_AEPITCH); beam->animOption = 8.0f; }
+				else if (arg == "aerostatus1")    { beam->animFlags |= (ANIM_FLAG_AESTATUS); beam->animOption = 1.0f; }
+				else if (arg == "aerostatus2")    { beam->animFlags |= (ANIM_FLAG_AESTATUS); beam->animOption = 2.0f; }
+				else if (arg == "aerostatus3")    { beam->animFlags |= (ANIM_FLAG_AESTATUS); beam->animOption = 3.0f; }
+				else if (arg == "aerostatus4")    { beam->animFlags |= (ANIM_FLAG_AESTATUS); beam->animOption = 4.0f; }
+				else if (arg == "aerostatus5")    { beam->animFlags |= (ANIM_FLAG_AESTATUS); beam->animOption = 5.0f; }
+				else if (arg == "aerostatus6")    { beam->animFlags |= (ANIM_FLAG_AESTATUS); beam->animOption = 6.0f; }
+				else if (arg == "aerostatus7")    { beam->animFlags |= (ANIM_FLAG_AESTATUS); beam->animOption = 7.0f; }
+				else if (arg == "aerostatus8")    { beam->animFlags |= (ANIM_FLAG_AESTATUS); beam->animOption = 8.0f; }
+				else if (arg == "brakes")         { beam->animFlags |= (ANIM_FLAG_BRAKE); }
+				else if (arg == "accel")          { beam->animFlags |= (ANIM_FLAG_ACCEL); }
+				else if (arg == "clutch")         { beam->animFlags |= (ANIM_FLAG_CLUTCH); }
+				else if (arg == "speedo")         { beam->animFlags |= (ANIM_FLAG_SPEEDO); }
+				else if (arg == "tacho")          { beam->animFlags |= (ANIM_FLAG_TACHO); }
+				else if (arg == "turbo")          { beam->animFlags |= (ANIM_FLAG_TURBO); }
+				else if (arg == "parking")        { beam->animFlags |= (ANIM_FLAG_PBRAKE); }
+				else if (arg == "shifterman1")    { beam->animFlags |= (ANIM_FLAG_SHIFTER); beam->animOption= 1.0f; }
+				else if (arg == "shifterman2")    { beam->animFlags |= (ANIM_FLAG_SHIFTER); beam->animOption= 2.0f; }
+				else if (arg == "seqential")      { beam->animFlags |= (ANIM_FLAG_SHIFTER); beam->animOption= 3.0f; }
+				else if (arg == "shifterlin")     { beam->animFlags |= (ANIM_FLAG_SHIFTER); beam->animOption= 4.0f; }
+				else if (arg == "torque")         { beam->animFlags |= (ANIM_FLAG_TORQUE); }
+				else if (arg == "throttleboat")   { beam->animFlags |= (ANIM_FLAG_BTHROTTLE); }
+				else if (arg == "rudderboat")     { beam->animFlags |= (ANIM_FLAG_BRUDDER); }
+
+				if (beam->animFlags == 0)
+					LogManager::getSingleton().logMessage("Error parsing File (animators) " + String(fname) +" line " + StringConverter::toString(linecounter) + ". Failed to identify source.");
+				else
+					LogManager::getSingleton().logMessage("Animator source set: with flag " +StringConverter::toString(beams[pos].animFlags));
+			}
+
 		}
 
 		else if (mode==6)
@@ -3072,6 +3343,12 @@ int Beam::loadTruck(const char* fname, SceneManager *manager, SceneNode *parent,
 			props[free_prop].offsetx=ox;
 			props[free_prop].offsety=oy;
 			props[free_prop].offsetz=oz;
+			props[free_prop].orgoffsetX=ox;
+			props[free_prop].orgoffsetY=oy;
+			props[free_prop].orgoffsetZ=oz;
+			props[free_prop].rotaX=rx;
+			props[free_prop].rotaY=ry;
+			props[free_prop].rotaZ=rz;
 			props[free_prop].rot=Quaternion(Degree(rz), Vector3::UNIT_Z);
 			props[free_prop].rot=props[free_prop].rot*Quaternion(Degree(ry), Vector3::UNIT_Y);
 			props[free_prop].rot=props[free_prop].rot*Quaternion(Degree(rx), Vector3::UNIT_X);
@@ -3080,6 +3357,9 @@ int Beam::loadTruck(const char* fname, SceneManager *manager, SceneNode *parent,
 			props[free_prop].pale=0;
 			props[free_prop].spinner=0;
 			props[free_prop].wheelrotdegree=160.0;
+			//set no animation by default
+			props[free_prop].animFlags[0]=0;
+			props[free_prop].animMode[0]=0;
 			String meshnameString = String(meshname);
 			std::string::size_type loc = meshnameString.find("leftmirror", 0);
 			if( loc != std::string::npos ) props[free_prop].mirror=1;
@@ -6341,6 +6621,403 @@ void Beam::receiveStreamData(unsigned int &type, int &source, unsigned int &_str
 	}
 }
 
+void Beam::calcAnimators(int flagstate, float &cstate, int &div, Real timer, float opt1, float opt2, float opt3)
+{
+	int flag_state=flagstate;
+	Real dt = timer;
+	float option1 = opt1;
+	float option2 = opt2;
+	float option3 = opt3;
+
+	//boat rudder
+	if (flag_state & ANIM_FLAG_BRUDDER)
+	{
+		int spi;
+		float ctmp = 0.0f;
+		for (spi=0; spi<free_screwprop; spi++)
+			if(screwprops[spi]) ctmp += screwprops[spi]->getRudder();
+
+		if (spi > 0) ctmp = ctmp / spi;
+		cstate = ctmp;
+		div++;
+	}
+
+	//boat throttle
+	if (flag_state & ANIM_FLAG_BTHROTTLE)
+	{
+		int spi;
+		float ctmp = 0.0f;
+		for (spi=0; spi<free_screwprop; spi++)
+			if(screwprops[spi]) ctmp += screwprops[spi]->getThrotle();
+
+		if (spi > 0) ctmp = ctmp / spi;
+		cstate = ctmp;
+		div++;
+	}
+
+	//differential lock status
+	if (flag_state & ANIM_FLAG_DIFFLOCK)
+	{
+		if(free_axle)
+		{
+			if (getAxleLockName() == "Open") cstate = 0.0f;
+			if (getAxleLockName() == "Split") cstate = 0.5f;
+			if (getAxleLockName() == "Locked") cstate = 1.0f;
+		} else  // no axles/diffs avail, mode is split by default
+			cstate=0.5f;  
+
+		div++;
+	}
+
+	//heading
+	if (flag_state & ANIM_FLAG_HEADING)
+	{
+		float heading = getHeadingDirectionAngle();
+		// rad2deg limitedrange  -1 to +1
+		cstate = (heading * 57.29578f) / 360.0f;
+		div++;
+	}
+
+	//torque
+	if (flag_state & ANIM_FLAG_TORQUE)
+	{
+		float torque=engine->getCrankFactor();
+		if (torque <= 0.0f) torque = 0.0f;
+		if (torque >= previousCrank)
+			cstate -= torque / 10.0f;
+		else
+			cstate = 0.0f;
+
+		if (cstate <= -1.0f) cstate = -1.0f;
+		previousCrank = torque;
+		div++;
+	}
+
+	//shifterseq, to amimate sequentiell shifting
+	if (flag_state & ANIM_FLAG_SHIFTER && option3 == 3.0f)
+	{
+	// opt1 &opt2 = 0   this is a shifter
+		if (!option1 &&  !option2)
+		{
+			int shifter=engine->getGear();
+			if (shifter > previousGear)
+			{
+				cstate = 1.0f;
+				animTimer = 0.2f;
+			}
+			if (shifter < previousGear)
+			{
+				cstate = -1.0f;
+				animTimer = -0.2f;
+			}
+			previousGear = shifter;
+
+			if (animTimer > 0.0f)
+			{
+				cstate = 1.0f;
+				animTimer -= dt;
+				if (animTimer < 0.0f)
+					animTimer = 0.0f;
+			}
+			if (animTimer < 0.0f)
+			{
+				cstate = -1.0f;
+				animTimer += dt;
+				if (animTimer > 0.0f)
+					animTimer = 0.0f;
+			}
+		} else
+		{
+			// check if option1 is a valid to get commandvalue, then get commandvalue
+			if (option1 >= 1.0f && option1 <= 48.0)
+				if (commandkey[int(option1)].commandValue > 0) cstate += 1.0f;
+			// check if option2 is a valid to get commandvalue, then get commandvalue
+			if (option2 >= 1.0f && option2 <= 48.0)
+				if (commandkey[int(option2)].commandValue > 0) cstate -= 1.0f;
+		}
+
+		div++;
+	}
+
+	//shifterman1, left/right
+	if (flag_state & ANIM_FLAG_SHIFTER && option3 == 1.0f)
+	{
+		int shifter=engine->getGear();
+		if (!shifter)
+		{
+			cstate = -0.5f;
+		} else
+		if (shifter < 0)
+		{
+			cstate = 1.0f;
+		} else
+		{
+			cstate -= int((shifter - 1.0) / 2.0);
+		}
+		div++;
+	}
+
+	//shifterman2, up/down
+	if (flag_state & ANIM_FLAG_SHIFTER && option3 == 2.0f)
+	{
+		int shifter=engine->getGear();
+		cstate = 0.5f;
+		if (shifter < 0)
+		{
+			cstate = 1.0f;
+		}
+		if (shifter > 0)
+		{
+			// this is a really crappy if line, but somehow if (shifter/2 == int(shifter/2)) did not work reliable at all
+			if (shifter == 2 || shifter == 4 || shifter == 6 || shifter == 8 || shifter == 10 || shifter == 12)
+			{
+				cstate = 0.0f;
+			} else
+			{
+				cstate = 1.0f;
+			}
+		}
+		div++;
+	}
+
+	//shifterlinear, to amimate cockpit gearselect gauge and autotransmission stick
+	if (flag_state & ANIM_FLAG_SHIFTER && option3 == 4.0f)
+	{
+		int shifter=engine->getGear();
+		int numgears= engine->getNumGears();
+		cstate -= (shifter + 2.0) / (numgears + 2.0);
+		div++;
+	}
+
+	//parking brake
+	if (flag_state & ANIM_FLAG_PBRAKE)
+	{
+		float pbrake=parkingbrake;
+		cstate -= pbrake;
+		div++;
+	}
+
+	//speedo ( scales with speedomax )
+	if (flag_state & ANIM_FLAG_SPEEDO)
+	{
+		float speedo=WheelSpeed / speedoMax;
+		cstate -= speedo * 3.0f;
+		div++;
+	}
+
+	//engine tacho ( scales with maxrpm, default is 3500 )
+	if (flag_state & ANIM_FLAG_TACHO)
+	{
+		float tacho=engine->getRPM()/engine->getMaxRPM();
+		cstate -= tacho;
+		div++;
+	}
+
+	//turbo
+	if (flag_state & ANIM_FLAG_TURBO)
+	{
+		float turbo=engine->getTurboPSI()*3.34;
+		cstate -= turbo / 67.0f ;
+		div++;
+	}
+
+	//brake
+	if (flag_state & ANIM_FLAG_BRAKE)
+	{
+		float brakes=brake/brakeforce;
+		cstate -= brakes;
+		div++;
+	}
+
+	//accelerator
+	if (flag_state & ANIM_FLAG_ACCEL)
+	{
+		float accel=engine->getAcc();
+		cstate -= accel + 0.06f;
+		//( small correction, get acc is nver smaller then 0.06.
+		div++;
+	}
+
+		//clutch
+	if (flag_state & ANIM_FLAG_CLUTCH)
+	{
+		float clutch=engine->getClutch();
+		cstate -= abs(1.0f - clutch);
+		div++;
+	}
+
+	//aeroengines rpm + throttle + torque ( turboprop ) + pitch ( turboprop ) + status +  fire
+	int ftp=free_aeroengine;
+
+	if (ftp > option3 - 1.0f)
+	{
+		int aenum = int(option3 - 1.0f);
+		if (flag_state & ANIM_FLAG_RPM)
+		{
+			float angle;
+			float pcent=aeroengines[aenum]->getRPMpc();
+			if (pcent<60.0) angle=-5.0+pcent*1.9167;
+			else if (pcent<110.0) angle=110.0+(pcent-60.0)*4.075;
+			else angle=314.0;
+			cstate -= angle / 314.0f;
+			div++;
+		}
+		if (flag_state & ANIM_FLAG_THROTTLE)
+		{
+			float throttle=aeroengines[aenum]->getThrotle();
+			cstate -= throttle;
+			div++;
+		}
+
+		if (flag_state & ANIM_FLAG_AETORQUE)
+			if (aeroengines[aenum]->getType()==AEROENGINE_TYPE_TURBOPROP)
+			{
+				Turboprop *tp=(Turboprop*)aeroengines[aenum];
+				cstate=(100.0*tp->indicated_torque/tp->max_torque) / 120.0f;
+				div++;
+			}
+
+		if (flag_state & ANIM_FLAG_AEPITCH)
+			if (aeroengines[aenum]->getType()==AEROENGINE_TYPE_TURBOPROP)
+			{
+				Turboprop *tp=(Turboprop*)aeroengines[aenum];
+				cstate=tp->pitch / 120.0f;
+				div++;
+			}
+
+		if (flag_state & ANIM_FLAG_AESTATUS)
+		{
+ 			if (!aeroengines[aenum]->getIgnition()) 
+				cstate = 0.0f;
+			else 
+				cstate = 0.5f;
+			if (aeroengines[aenum]->isFailed()) cstate = 1.0f;
+			div++;
+		}
+	}
+
+	//airspeed indicator
+	if (flag_state & ANIM_FLAG_AIRSPEED)
+	{
+		float angle=0.0;
+		float ground_speed_kt= nodes[0].Velocity.length()*1.9438;
+		float altitude=nodes[0].AbsPosition.y;
+		float sea_level_temperature=273.15+15.0; //in Kelvin
+		float sea_level_pressure=101325; //in Pa
+		float airtemperature=sea_level_temperature-altitude*0.0065; //in Kelvin
+		float airpressure=sea_level_pressure*pow(1.0-0.0065*altitude/288.15, 5.24947); //in Pa
+		float airdensity=airpressure*0.0000120896;//1.225 at sea level
+		float kt=ground_speed_kt*sqrt(airdensity/1.225);
+		cstate -= kt / 100.0f;
+		div++;
+	}
+
+	//vvi indicator
+	if (flag_state & ANIM_FLAG_VVI)
+	{
+		float vvi=nodes[0].Velocity.y*196.85;
+		// limit vvi scale to +/- 6m/s
+		cstate -=vvi / 6000.0f;
+		if (cstate >= 1.0f) cstate = 1.0f;
+		if (cstate <= -1.0f) cstate = -1.0f;
+		div++;
+	}
+
+	//altimeter
+	if (flag_state & ANIM_FLAG_ALTIMETER)
+	{
+		//altimeter indicator 1k oscillating
+		if (option3 == 3.0f)
+		{
+			float altimeter = (nodes[0].AbsPosition.y*1.1811) / 360.0f;
+			int alti_int = int(altimeter);
+			float alti_mod= (altimeter - alti_int);
+			cstate -= alti_mod;
+		}
+
+		//altimeter indicator 10k oscillating
+		if (option3 == 2.0f)
+		{
+			float alti=nodes[0].AbsPosition.y*1.1811 / 3600.0f;
+			int alti_int = int(alti);
+			float alti_mod= (alti - alti_int);
+			cstate -= alti_mod;
+			if (cstate <= -1.0f) cstate = -1.0f;
+		}
+
+		//altimeter indicator 100k limited
+		if (option3 == 1.0f)
+		{
+			float alti=nodes[0].AbsPosition.y*1.1811  / 36000.0f;
+			cstate -= alti;
+			if (cstate <= -1.0f) cstate = -1.0f;
+		}
+		div++;
+	}
+
+	//AOA
+	if (flag_state & ANIM_FLAG_AOA)
+	{
+		float aoa=0;
+		if (free_wing>4) aoa=(wings[4].fa->aoa) / 25.0f;
+		if ((nodes[0].Velocity.length()*1.9438) < 10.0f) aoa=0;
+		cstate -= aoa;
+		if (cstate <= -1.0f) cstate = -1.0f;
+		if (cstate >= 1.0f) cstate = 1.0f;
+		div++;
+	}
+
+	//roll
+	if (flag_state & ANIM_FLAG_ROLL)
+	{
+		Vector3 rollv=nodes[cameranodepos[0]].RelPosition-nodes[cameranoderoll[0]].RelPosition;
+		rollv.normalise();
+		float rollangle=asin(rollv.dotProduct(Vector3::UNIT_Y));
+		Vector3 dirv=nodes[cameranodepos[0]].RelPosition-nodes[cameranodedir[0]].RelPosition;
+		Vector3 upv=dirv.crossProduct(-rollv);
+		// rad to deg
+		rollangle = (rollangle * 57.2957795f);
+		//flip to other side when upside down
+		if (upv.y<0) rollangle= 180.0f - rollangle;
+		cstate = rollangle / 180.0f;
+		// dataoutpu is -0.5 to 1.5, normalize to -1 to +1 without changing the zero position. 
+		// this is vital for the animateor beams and does not effect the animated props
+		if (cstate >= 1.0f) cstate = cstate - 2.0f;
+		div++;
+	}
+
+	//pitch
+	if (flag_state & ANIM_FLAG_PITCH)
+	{
+		Vector3 dirv=nodes[cameranodepos[0]].RelPosition-nodes[cameranodedir[0]].RelPosition;
+		dirv.normalise();
+		float pitchangle=asin(dirv.dotProduct(Vector3::UNIT_Y));
+		//radian to degrees with a max cstate of +/- 1.0
+		cstate = (( pitchangle * 57.29578f )  / 90.0f );
+		div++;
+	}
+
+	//airbrake
+	if (flag_state & ANIM_FLAG_AIRBRAKE)
+	{
+		float airbrake=airbrakeval;
+		// cstate limited to -1.0f
+		cstate -= airbrake / 5.0f;
+		div++;
+	}
+
+	//flaps
+	if (flag_state & ANIM_FLAG_FLAP)
+	{
+		float flaps=flapangles[flap];
+		// cstate limited to -1.0f
+		cstate = flaps;
+		div++;
+	}
+
+}
+
+
 void Beam::calcShocks2(int beam_i, Real difftoBeamL, Real &k, Real &d)
 {
 	int i=beam_i;
@@ -6734,6 +7411,246 @@ void Beam::calcForcesEuler(int doUpdate, Real dt, int step, int maxstep, Beam** 
 			beams[i].p1->Forces+=f;
 			beams[i].p2->Forces-=f;
 		}
+	}
+
+	//animate props
+	for (int propi=0; propi<free_prop; propi++)
+	{
+		int animnum=0;
+		float rx = 0.0f;
+		float ry = 0.0f;
+		float rz = 0.0f;
+
+		while (props[propi].animFlags[animnum])
+		{
+			if (props[propi].animFlags[animnum])
+			{
+				float cstate = 0.0f;
+				int div = 0.0f;
+				int flagstate = props[propi].animFlags[animnum];
+				float animOpt1 =props[propi].animOpt1[animnum];
+				float animOpt2 =props[propi].animOpt2[animnum];
+				float animOpt3 =props[propi].animOpt3[animnum];
+
+				calcAnimators(flagstate, cstate, div, dt, animOpt1, animOpt2, animOpt3);
+
+				//propanimation placed here to avoid interference with existing hydros(cstate) and permanent prop animation
+				//truck steering
+				if (props[propi].animFlags[animnum] & ANIM_FLAG_STEERING) cstate += hydrodirstate;
+				//aileron
+				if (props[propi].animFlags[animnum] & ANIM_FLAG_AILERONS) cstate += hydroaileronstate;
+				//elevator
+				if (props[propi].animFlags[animnum] & ANIM_FLAG_ELEVATORS) cstate += hydroelevatorstate;
+				//rudder Liftec
+				if (props[propi].animFlags[animnum] & ANIM_FLAG_ARUDDER) cstate += hydrorudderstate;
+				//permanent
+				if (props[propi].animFlags[animnum] & ANIM_FLAG_PERMANENT) cstate += 1.0f;
+
+				cstate *= props[propi].animratio[animnum];
+
+				// autoanimate noflip_bouncer
+				if (props[propi].animOpt5[animnum]) cstate *= (props[propi].animOpt5[animnum]);
+
+				//rotate prop
+				if (props[propi].animMode[animnum] & ANIM_MODE_ROTA_X || props[propi].animMode[animnum] & ANIM_MODE_ROTA_Y || props[propi].animMode[animnum] & ANIM_MODE_ROTA_Z)
+				{
+					float limiter = 0.0f;
+					if (props[propi].animMode[animnum] & ANIM_MODE_AUTOANIMATE)
+					{
+						if (props[propi].animMode[animnum] & ANIM_MODE_ROTA_X)
+						{
+							props[propi].rot = props[propi].rot * (Quaternion(Degree(0), Vector3::UNIT_Z) * Quaternion(Degree(0), Vector3::UNIT_Y) * Quaternion(Degree(cstate), Vector3::UNIT_X));
+							props[propi].rotaX += cstate;
+							limiter = props[propi].rotaX;
+						}
+						if (props[propi].animMode[animnum] & ANIM_MODE_ROTA_Y)
+						{
+							props[propi].rot = props[propi].rot * (Quaternion(Degree(0), Vector3::UNIT_Z) * Quaternion(Degree(cstate), Vector3::UNIT_Y) * Quaternion(Degree(0), Vector3::UNIT_X));
+							props[propi].rotaY += cstate;
+							limiter = props[propi].rotaY;
+						}
+						if (props[propi].animMode[animnum] & ANIM_MODE_ROTA_Z)
+						{
+							props[propi].rot = props[propi].rot * (Quaternion(Degree(cstate), Vector3::UNIT_Z) * Quaternion(Degree(0), Vector3::UNIT_Y) * Quaternion(Degree(0), Vector3::UNIT_X));
+							props[propi].rotaZ += cstate;
+							limiter = props[propi].rotaZ;
+						}
+
+					} else
+					{
+						if (props[propi].animMode[animnum] & ANIM_MODE_ROTA_X) rx += cstate;
+						if (props[propi].animMode[animnum] & ANIM_MODE_ROTA_Y) ry += cstate;
+						if (props[propi].animMode[animnum] & ANIM_MODE_ROTA_Z) rz += cstate;
+					}
+
+					bool limiterchanged = false;
+					// check if a positive custom limit is set to evaluate/calc flip back
+					if (props[propi].animOpt2[animnum] - props[propi].animOpt4[animnum])
+					{
+						if (limiter > props[propi].animOpt2[animnum])
+						{
+							if (props[propi].animMode[animnum] & ANIM_MODE_NOFLIP)
+							{
+								limiter = props[propi].animOpt2[animnum];				// stop at limit
+								props[propi].animOpt5[animnum] *= -1.0f;				// change cstate multiplier if bounce is set
+								limiterchanged = true;
+							} else
+							{
+								limiter = props[propi].animOpt1[animnum];				// flip to other side at limit
+								limiterchanged = true;
+							}
+						}
+					} else
+					{																	// no custom limit set, use 360°
+						while (limiter > 180.0f)
+						{
+							if (props[propi].animMode[animnum] & ANIM_MODE_NOFLIP)
+							{
+								limiter = 180.0f;										// stop at limit
+								props[propi].animOpt5[animnum] *= -1.0f;				// change cstate multiplier if bounce is set
+								limiterchanged = true;
+							} else 
+							{
+								limiter -= 360.0f;										// flip to other side at limit
+								limiterchanged = true;
+							}
+						}
+					}
+	
+					// check if a negative custom limit is set to evaluate/calc flip back
+					if (props[propi].animOpt1[animnum] - props[propi].animOpt4[animnum])
+					{
+						if (limiter < (props[propi].animOpt1[animnum]))
+						{
+							if (props[propi].animMode[animnum] & ANIM_MODE_NOFLIP)
+							{
+								limiter = props[propi].animOpt1[animnum];				// stop at limit
+								props[propi].animOpt5[animnum] *= -1.0f;				// change cstate multiplier if active
+								limiterchanged = true;
+							} else
+							{
+								limiter = props[propi].animOpt2[animnum];				// flip to other side at limit
+								limiterchanged = true;
+							}
+						}
+					} else																// no custom limit set, use 360°
+					{
+						while (limiter < -180.0f)
+						{
+							if (props[propi].animMode[animnum] & ANIM_MODE_NOFLIP)
+							{
+								limiter = -180.0f;										// stop at limit
+								props[propi].animOpt5[animnum] *= -1.0f;				// change cstate multiplier if active
+								limiterchanged = true;
+							} else
+							{
+								limiter += 360.0f;										// flip to other side at limit including overflow
+								limiterchanged = true;
+							}
+						}
+					}
+					
+					if (limiterchanged)
+					{
+						if (props[propi].animMode[animnum] & ANIM_MODE_ROTA_X) props[propi].rotaX = limiter;
+						if (props[propi].animMode[animnum] & ANIM_MODE_ROTA_Y) props[propi].rotaY = limiter;
+						if (props[propi].animMode[animnum] & ANIM_MODE_ROTA_Z) props[propi].rotaZ = limiter;
+					}
+				}
+
+				//offset prop
+				float ox = props[propi].orgoffsetX;
+				float oy = props[propi].orgoffsetY;
+				float oz = props[propi].orgoffsetZ;
+
+				if (props[propi].animMode[animnum] & ANIM_MODE_OFFSET_X || props[propi].animMode[animnum] & ANIM_MODE_OFFSET_Y || props[propi].animMode[animnum] & ANIM_MODE_OFFSET_Z)
+				{
+					float offset = 0.0f;
+					float autooffset = 0.0f;
+
+					if (props[propi].animMode[animnum] & ANIM_MODE_OFFSET_X) offset = props[propi].orgoffsetX;
+					if (props[propi].animMode[animnum] & ANIM_MODE_OFFSET_Y) offset = props[propi].orgoffsetY;
+					if (props[propi].animMode[animnum] & ANIM_MODE_OFFSET_Z) offset = props[propi].orgoffsetZ;
+
+					offset += cstate;
+					if (props[propi].animMode[animnum] & ANIM_MODE_AUTOANIMATE)
+					{
+						autooffset = offset;
+																							// check if a positive custom limit is set to evaluate/calc flip back
+						if (props[propi].animOpt2[animnum] - props[propi].animOpt4[animnum])
+						{
+							if (autooffset > props[propi].animOpt2[animnum])
+							{
+								if (props[propi].animMode[animnum] & ANIM_MODE_NOFLIP)
+								{
+									autooffset = props[propi].animOpt2[animnum];			// stop at limit
+									props[propi].animOpt5[animnum] *= -1.0f;				// change cstate multiplier if active
+								} else
+									autooffset = props[propi].animOpt1[animnum];			// flip to other side at limit
+							}
+						} else																// no custom limit set, use 10x as default
+							while (autooffset > 10.0f)
+							{
+								if (props[propi].animMode[animnum] & ANIM_MODE_NOFLIP)
+								{
+									autooffset = 10.0f;										// stop at limit
+									props[propi].animOpt5[animnum] *= -1.0f;				// change cstate multiplier if bounce is set
+								} else 
+									autooffset -= 20.0f;									// flip to other side at limit including overflow
+							}
+
+																							// check if a negative custom limit is set to evaluate/calc flip back
+						if (props[propi].animOpt1[animnum] - props[propi].animOpt4[animnum])
+						{
+							if (autooffset < (props[propi].animOpt1[animnum]))
+							{
+								if (props[propi].animMode[animnum] & ANIM_MODE_NOFLIP)
+								{
+									autooffset = props[propi].animOpt1[animnum];			// stop at limit
+									props[propi].animOpt5[animnum] *= -1.0f;				// change cstate multiplier if active
+								} else
+									autooffset = props[propi].animOpt2[animnum];			// flip to other side at limit
+							}
+						} else																// no custom limit set, use -10x°
+							while (autooffset < -10.0f)
+							{
+								if (props[propi].animMode[animnum] & ANIM_MODE_NOFLIP)
+								{
+									autooffset = -10.0f;									// stop at limit
+									props[propi].animOpt5[animnum] *= -1.0f;				// change cstate multiplier if bounce is set
+								} else 
+									autooffset += 20.0f;									// flip to other side at limit including overflow
+							}
+					}
+
+					if (props[propi].animMode[animnum] & ANIM_MODE_OFFSET_X)
+					{
+						props[propi].offsetx = offset;
+						if (props[propi].animMode[animnum] & ANIM_MODE_AUTOANIMATE)
+							props[propi].orgoffsetX = autooffset;
+					}
+					if (props[propi].animMode[animnum] & ANIM_MODE_OFFSET_Y)
+					{
+						props[propi].offsety = offset;
+						if (props[propi].animMode[animnum] & ANIM_MODE_AUTOANIMATE)
+							props[propi].orgoffsetY = autooffset;
+					}
+					if (props[propi].animMode[animnum] & ANIM_MODE_OFFSET_Z)
+					{
+						props[propi].offsetz = offset;
+						if (props[propi].animMode[animnum] & ANIM_MODE_AUTOANIMATE)
+							props[propi].orgoffsetZ = autooffset;
+					}
+				}
+				
+			}
+		animnum++;
+		}
+	//recalc the quaternions with final stacked rotation values ( rx, ry, rz )
+	rx += props[propi].rotaX;
+	ry += props[propi].rotaY;
+	rz += props[propi].rotaZ;
+	props[propi].rot = Quaternion(Degree(rz), Vector3::UNIT_Z) * Quaternion(Degree(ry), Vector3::UNIT_Y) * Quaternion(Degree(rx), Vector3::UNIT_X);
 	}
 
 	//skeleton colouring
@@ -7576,7 +8493,7 @@ void Beam::calcForcesEuler(int doUpdate, Real dt, int step, int maxstep, Beam** 
 	for (int i=0; i<free_hydro; i++)
 	{
 		//compound hydro
-		float cstate=0;
+		float cstate=0.0f;
 		int div=0;
 		if (beams[hydro[i]].hydroFlags & HYDRO_FLAG_SPEED)
 		{
@@ -7593,362 +8510,13 @@ void Beam::calcForcesEuler(int doUpdate, Real dt, int step, int maxstep, Beam** 
 		if (beams[hydro[i]].hydroFlags & HYDRO_FLAG_REV_RUDDER) {cstate-=hydrorudderstate;div++;}
 		if (beams[hydro[i]].hydroFlags & HYDRO_FLAG_REV_ELEVATOR) {cstate-=hydroelevatorstate;div++;}
 
-		// ANIMATORS FOLLOWING
-		// if no animator, skip all the tests...
-		if(beams[hydro[i]].animFlags)
+		// Animators following, if no animator, skip all the tests...
+		int flagstate = beams[hydro[i]].animFlags;
+		if(flagstate)
 		{
-			//torque
-			if (beams[hydro[i]].animFlags & ANIM_FLAG_TORQUE)
-			{
-				float torque=trucks[trucknum]->engine->getCrankFactor();
-				if (torque <= 0.0f) torque = 0.0f;
-				if (torque >= previousCrank)
-					cstate -= torque / 10.0f;
-				else
-					cstate = 0.0f;
-
-				if (cstate <= -1.0f) cstate = -1.0f;
-				previousCrank = torque;
-				div++;
+			float animoption = beams[hydro[i]].animOption;
+			calcAnimators(flagstate, cstate, div, dt, 0.0f, 0.0f, animoption);
 			}
-
-			//shifterseq, to amimate sequentiell shifting
-			if (beams[hydro[i]].animFlags & ANIM_FLAG_SHIFTER3)
-			{
-				int shifter=trucks[trucknum]->engine->getGear();
-				if (shifter > trucks[trucknum]->previousGear)
-				{
-					cstate = 1.0f;
-					trucks[trucknum]->animTimer = 0.2f;
-				}
-				if (shifter < trucks[trucknum]->previousGear)
-				{
-					cstate = -1.0f;
-					trucks[trucknum]->animTimer = -0.2f;
-				}
-				trucks[trucknum]->previousGear = shifter;
-
-				if (trucks[trucknum]->animTimer > 0.0f)
-				{
-					cstate = 1.0f;
-					trucks[trucknum]->animTimer -= dt;
-					if (trucks[trucknum]->animTimer < 0.0f)
-						trucks[trucknum]->animTimer = 0.0f;
-				}
-				if (trucks[trucknum]->animTimer < 0.0f)
-				{
-					cstate = -1.0f;
-					trucks[trucknum]->animTimer += dt;
-					if (trucks[trucknum]->animTimer > 0.0f)
-						trucks[trucknum]->animTimer = 0.0f;
-				}
-				div++;
-			}
-
-			//shifterman1, left/right
-			if (beams[hydro[i]].animFlags & ANIM_FLAG_SHIFTER1)
-			{
-				int shifter=trucks[trucknum]->engine->getGear();
-				if (!shifter)
-				{
-					cstate = -0.5f;
-				} else
-				if (shifter < 0)
-				{
-					cstate = 1.0f;
-				} else
-				{
-					cstate -= int((shifter - 1.0) / 2.0);
-				}
-				div++;
-			}
-
-			//shifterman2, up/down
-			if (beams[hydro[i]].animFlags & ANIM_FLAG_SHIFTER2)
-			{
-				int shifter=trucks[trucknum]->engine->getGear();
-				cstate = 0.5f;
-				if (shifter < 0)
-				{
-					cstate = 1.0f;
-				}
-				if (shifter > 0)
-				{
-					// this is a really crappy if line, but somehow if (shifter/2 == int(shifter/2)) did not work reliable at all
-					if (shifter == 2 || shifter == 4 || shifter == 6 || shifter == 8 || shifter == 10 || shifter == 12)
-					{
-						cstate = 0.0f;
-					} else
-					{
-						cstate = 1.0f;
-					}
-				}
-				div++;
-			}
-
-			//shifterlinear, to amimate cockpit gearselect gauge and autotransmission stick
-			if (beams[hydro[i]].animFlags & ANIM_FLAG_SHIFTER4)
-			{
-				int shifter=trucks[trucknum]->engine->getGear();
-				int numgears= trucks[trucknum]->engine->getNumGears();
-				cstate -= (shifter + 2.0) / (numgears + 2.0);
-				div++;
-			}
-
-			//parking brake
-			if (beams[hydro[i]].animFlags & ANIM_FLAG_PBRAKE)
-			{
-				float pbrake=trucks[trucknum]->parkingbrake;
-				cstate -= pbrake;
-				div++;
-			}
-
-			//speedo ( scales with speedomax )
-			if (beams[hydro[i]].animFlags & ANIM_FLAG_SPEEDO)
-			{
-				float speedo=trucks[trucknum]->WheelSpeed / trucks[trucknum]->speedoMax;
-				cstate -= speedo * 3.0f;
-				div++;
-			}
-
-			//engine tacho ( scales with maxrpm, default is 3500 )
-			if (beams[hydro[i]].animFlags & ANIM_FLAG_RPM)
-			{
-				float tacho=trucks[trucknum]->engine->getRPM()/trucks[trucknum]->engine->getMaxRPM();
-				cstate -= tacho;
-				div++;
-			}
-
-			//turbo
-			if (beams[hydro[i]].animFlags & ANIM_FLAG_TURBO)
-			{
-				float turbo=trucks[trucknum]->engine->getTurboPSI()*3.34;
-				cstate -= turbo / 67.0f ;
-				div++;
-			}
-
-			//brake
-			if (beams[hydro[i]].animFlags & ANIM_FLAG_BRAKE)
-			{
-				float brake=trucks[trucknum]->brake/trucks[trucknum]->brakeforce;
-				cstate -= brake;
-				div++;
-			}
-
-			//accelerator
-			if (beams[hydro[i]].animFlags & ANIM_FLAG_ACCEL)
-			{
-				float accel=trucks[trucknum]->engine->getAcc();
-				cstate -= accel + 0.06f;
-				//( small correction, get acc is nver smaller then 0.06.
-				div++;
-			}
-
-				//clutch
-			if (beams[hydro[i]].animFlags & ANIM_FLAG_CLUTCH)
-			{
-				float clutch=trucks[trucknum]->engine->getClutch();
-				cstate -= abs(1.0f - clutch);
-				div++;
-			}
-
-			//aeroengines rpm&throttle
-			int ftp=trucks[trucknum]->free_aeroengine;
-
-			if (ftp > 0)
-			{
-				if (beams[hydro[i]].animFlags & ANIM_FLAG_RPM1)
-				{
-					float angle;
-					float pcent=trucks[trucknum]->aeroengines[0]->getRPMpc();
-					if (pcent<60.0) angle=-5.0+pcent*1.9167;
-					else if (pcent<110.0) angle=110.0+(pcent-60.0)*4.075;
-					else angle=314.0;
-					cstate -= angle / 314.0f;
-					div++;
-				}
-				if (beams[hydro[i]].animFlags & ANIM_FLAG_THROTTLE1)
-				{
-					float throttle=trucks[trucknum]->aeroengines[0]->getThrotle();
-					cstate -= throttle;
-					div++;
-				}
-			}
-
-			if (ftp > 1)
-			{
-				if (beams[hydro[i]].animFlags & ANIM_FLAG_RPM2)
-				{
-					float angle;
-					float pcent=trucks[trucknum]->aeroengines[1]->getRPMpc();
-					if (pcent<60.0) angle=-5.0+pcent*1.9167;
-					else if (pcent<110.0) angle=110.0+(pcent-60.0)*4.075;
-					else angle=314.0;
-					cstate -= angle / 314.0f;
-					div++;
-				}
-				if (beams[hydro[i]].animFlags & ANIM_FLAG_THROTTLE2)
-				{
-					float throttle=trucks[trucknum]->aeroengines[1]->getThrotle();
-					cstate -= throttle;
-					div++;
-				}
-			}
-
-			if (ftp > 2)
-			{
-				if (beams[hydro[i]].animFlags & ANIM_FLAG_RPM3)
-				{
-					float angle;
-					float pcent=trucks[trucknum]->aeroengines[2]->getRPMpc();
-					if (pcent<60.0) angle=-5.0+pcent*1.9167;
-					else if (pcent<110.0) angle=110.0+(pcent-60.0)*4.075;
-					else angle=314.0;
-					cstate -= angle / 314.0f;
-					div++;
-				}
-				if (beams[hydro[i]].animFlags & ANIM_FLAG_THROTTLE3)
-				{
-					float throttle=trucks[trucknum]->aeroengines[2]->getThrotle();
-					cstate -= throttle;
-					div++;
-				}
-			}
-
-			if (ftp > 3)
-			{
-				if (beams[hydro[i]].animFlags & ANIM_FLAG_RPM4)
-				{
-					float angle;
-					float pcent=trucks[trucknum]->aeroengines[3]->getRPMpc();
-					if (pcent<60.0) angle=-5.0+pcent*1.9167;
-					else if (pcent<110.0) angle=110.0+(pcent-60.0)*4.075;
-					else angle=314.0;
-					cstate -= angle / 314.0f;
-					div++;
-				}
-				if (beams[hydro[i]].animFlags & ANIM_FLAG_THROTTLE4)
-				{
-					float throttle=trucks[trucknum]->aeroengines[3]->getThrotle();
-					cstate -= throttle;
-					div++;
-				}
-			}
-
-			//airspeed indicator
-			if (beams[hydro[i]].animFlags & ANIM_FLAG_AIRSPEED)
-			{
-				float angle=0.0;
-				float ground_speed_kt= trucks[trucknum]->nodes[0].Velocity.length()*1.9438;
-				float altitude=trucks[trucknum]->nodes[0].AbsPosition.y;
-				float sea_level_temperature=273.15+15.0; //in Kelvin
-				float sea_level_pressure=101325; //in Pa
-				float airtemperature=sea_level_temperature-altitude*0.0065; //in Kelvin
-				float airpressure=sea_level_pressure*pow(1.0-0.0065*altitude/288.15, 5.24947); //in Pa
-				float airdensity=airpressure*0.0000120896;//1.225 at sea level
-				float kt=ground_speed_kt*sqrt(airdensity/1.225);
-				cstate -= kt / 100.0f;
-				div++;
-			}
-
-			//vvi indicator
-			if (beams[hydro[i]].animFlags & ANIM_FLAG_VVI)
-			{
-				float vvi=trucks[trucknum]->nodes[0].Velocity.y*196.85;
-				// limit vvi scale to +/- 6m/s
-				cstate -=vvi / 6000.0f;
-				if (cstate >= 1.0f) cstate = 1.0f;
-				if (cstate <= -1.0f) cstate = -1.0f;
-				div++;
-			}
-
-			//altimeter indicator 1k oscillating
-			if (beams[hydro[i]].animFlags & ANIM_FLAG_ALTIMETER1)
-			{
-				float altimeter = (trucks[trucknum]->nodes[0].AbsPosition.y*1.1811) / 360.0f;
-				int alti_int = int(altimeter);
-				float alti_mod= (altimeter - alti_int);
-				cstate -= alti_mod;
-				div++;
-			}
-
-			//altimeter indicator 10k oscillating
-			if (beams[hydro[i]].animFlags & ANIM_FLAG_ALTIMETER10)
-			{
-				float alti=trucks[trucknum]->nodes[0].AbsPosition.y*1.1811 / 3600.0f;
-				int alti_int = int(alti);
-				float alti_mod= (alti - alti_int);
-				cstate -= alti_mod;
-				if (cstate <= -1.0f) cstate = -1.0f;
-				div++;
-			}
-
-			//altimeter indicator 100k limited
-			if (beams[hydro[i]].animFlags & ANIM_FLAG_ALTIMETER100)
-			{
-				float alti=trucks[trucknum]->nodes[0].AbsPosition.y*1.1811  / 36000.0f;
-				cstate -= alti;
-				if (cstate <= -1.0f) cstate = -1.0f;
-				div++;
-			}
-
-			//AOA
-			if (beams[hydro[i]].animFlags & ANIM_FLAG_AOA)
-			{
-				float aoa=0;
-				if (trucks[trucknum]->free_wing>4) aoa=(trucks[trucknum]->wings[4].fa->aoa) / 25.0f;
-				if ((trucks[trucknum]->nodes[0].Velocity.length()*1.9438) < 10.0f) aoa=0;
-				cstate -= aoa;
-				if (cstate <= -1.0f) cstate = -1.0f;
-				if (cstate >= 1.0f) cstate = 1.0f;
-				div++;
-			}
-
-			//roll
-			if (beams[hydro[i]].animFlags & ANIM_FLAG_ROLL)
-			{
-				Vector3 rollv=trucks[trucknum]->nodes[trucks[trucknum]->cameranodepos[0]].RelPosition-trucks[trucknum]->nodes[trucks[trucknum]->cameranoderoll[0]].RelPosition;
-				rollv.normalise();
-				float rollangle=asin(rollv.dotProduct(Vector3::UNIT_Y));
-				Vector3 dirv=trucks[trucknum]->nodes[trucks[trucknum]->cameranodepos[0]].RelPosition-trucks[trucknum]->nodes[trucks[trucknum]->cameranodedir[0]].RelPosition;
-				//flip to other side when upside down
-				Vector3 upv=dirv.crossProduct(-rollv);
-				if (upv.y<0) rollangle=3.14159f-rollangle;
-				//radian to degrees with a max cstate of +/- 1.0
-				cstate = (( rollangle * 57.2957795f )  / 180.0f ) / 1.5f;
-				div++;
-			}
-
-			//pitch
-			if (beams[hydro[i]].animFlags & ANIM_FLAG_PITCH)
-			{
-				Vector3 dirv=trucks[trucknum]->nodes[trucks[trucknum]->cameranodepos[0]].RelPosition-trucks[trucknum]->nodes[trucks[trucknum]->cameranodedir[0]].RelPosition;
-				dirv.normalise();
-				float pitchangle=asin(dirv.dotProduct(Vector3::UNIT_Y));
-				//radian to degrees with a max cstate of +/- 1.0
-				cstate = (( pitchangle * 57.2957795f )  / 90.0f ) / 1.5f;
-				div++;
-			}
-
-			//airbrake
-			if (beams[hydro[i]].animFlags & ANIM_FLAG_AIRBRAKE)
-			{
-				float airbrake=trucks[trucknum]->airbrakeval;
-				// cstate limited to -1.0f
-				cstate -= airbrake / 5.0f;
-				div++;
-			}
-
-			//flaps
-			if (beams[hydro[i]].animFlags & ANIM_FLAG_FLAP)
-			{
-				float flap=flapangles[trucks[trucknum]->flap];
-				// cstate limited to -1.0f
-				cstate = flap;
-				div++;
-			}
-		}
-		// ANIMATORS END
 
 		if (div)
 		{
