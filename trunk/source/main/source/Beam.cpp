@@ -1701,6 +1701,7 @@ int Beam::loadTruck(const char* fname, SceneManager *manager, SceneNode *parent,
 							else if (sourceStr == "rudderboat")      { prop->animFlags[animnum] |= (ANIM_FLAG_BRUDDER); }
 							else if (sourceStr == "throttleboat")    { prop->animFlags[animnum] |= (ANIM_FLAG_BTHROTTLE); }
 							else if (sourceStr == "permanent")       { prop->animFlags[animnum] |= (ANIM_FLAG_PERMANENT); }
+							else if (sourceStr == "key")             { prop->animFlags[animnum] |= (ANIM_FLAG_EVENT); }
 						}
 
 						if (prop->animFlags[animnum] == 0)
@@ -1751,7 +1752,7 @@ int Beam::loadTruck(const char* fname, SceneManager *manager, SceneNode *parent,
 						prop->animMode[animnum] |= (ANIM_MODE_BOUNCE);
 						prop->animOpt5[animnum] = 1.0f;
 					}
-					else if (args2[0] == "key" && args2.size() == 1)
+					else if (args2[0] == "key" && args2.size() == 2)
 					{
 						// ONLY ONE KEY SUPPORTED ATM, to be improved?
 						// now parse the keys
@@ -7453,7 +7454,7 @@ void Beam::calcForcesEuler(int doUpdate, Real dt, int step, int maxstep, Beam** 
 				calcAnimators(flagstate, cstate, div, dt, animOpt1, animOpt2, animOpt3);
 
 				// key triggered animations
-				if (props[propi].animFlags[animnum] & ANIM_FLAG_KEY && props[propi].animKey != -1) 
+				if (props[propi].animFlags[animnum] & ANIM_FLAG_EVENT && props[propi].animKey != -1) 
 					cstate = INPUTENGINE.getEventValue(props[propi].animKey);
 				
 				//propanimation placed here to avoid interference with existing hydros(cstate) and permanent prop animation
