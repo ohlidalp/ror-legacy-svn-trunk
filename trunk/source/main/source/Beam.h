@@ -223,9 +223,7 @@ typedef struct _collision_box collision_box_t;
 #define ANIM_FLAG_HEADING       0x00400000
 #define ANIM_FLAG_DIFFLOCK      0x00800000
 #define ANIM_FLAG_STEERING      0x01000000
-
-#define ANIM_FLAG_UNUSED		0x02000000
-
+#define ANIM_FLAG_KEY           0x02000000
 #define ANIM_FLAG_AILERONS      0x04000000
 #define ANIM_FLAG_ARUDDER       0x08000000
 #define ANIM_FLAG_BRUDDER       0x10000000
@@ -651,6 +649,7 @@ typedef struct _prop
 	float animOpt3[10];
 	float animOpt4[10];
 	float animOpt5[10];
+	int animKey;
 	Ogre::Real wheelrotdegree;
 } prop_t;
 
