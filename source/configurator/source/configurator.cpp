@@ -305,6 +305,7 @@ private:
 	wxChoice *languageMode;
 	wxChoice *vegetationMode;
 	wxChoice *screenShotFormat;
+	wxChoice *gearBoxMode;
 	wxCheckBox *wheel2;
 	wxCheckBox *ffEnable;
 	wxSlider *ffOverall;
@@ -2020,6 +2021,16 @@ MyDialog::MyDialog(const wxString& title, MyApp *_app) : wxDialog(NULL, wxID_ANY
 	sightrange->SetLineSize(100);
 	y+=50;
 
+	// Gearbox
+	dText = new wxStaticText(advancedPanel, -1, _("Gearbox mode"), wxPoint(10,y));
+	gearBoxMode=new wxChoice(advancedPanel, -1, wxPoint(115, y), wxSize(200, -1), 0);
+	gearBoxMode->Append(wxT("Automatic shift"));
+	gearBoxMode->Append(wxT("Manual shift - Auto clutch"));
+	gearBoxMode->Append(wxT("Fully Manual: sequential shift"));
+	gearBoxMode->Append(wxT("Fully Manual: stick shift"));
+	gearBoxMode->Append(wxT("Fully Manual: stick shift with ranges"));
+	gearBoxMode->SetToolTip(_("The default mode for the gearbox when a new vehicle is loaded."));
+	y+=25;
 
 	// second column
 	y=30;
@@ -2484,6 +2495,7 @@ void MyDialog::getSettingsControls()
 	settings["XFire"] = (enablexfire->GetValue()) ? "Yes" : "No";
 	settings["AutoDownload"] = (autodl->GetValue()) ? "Yes" : "No";
 	settings["Position Storage"] = (posstor->GetValue()) ? "Yes" : "No";
+	settings["GearboxMode"]= conv(gearBoxMode->GetStringSelection());
 	// disabled for now
 	//settings["Truck LOD"] = (trucklod->GetValue()) ? "Yes" : "No";
 	settings["Object LOD"] = (objlod->GetValue()) ? "Yes" : "No";
@@ -2567,6 +2579,7 @@ void MyDialog::updateSettingsControls()
 	st = settings["Replay mode"]; if (st.length()>0) replaymode->SetValue(st=="Yes");
 	st = settings["Debug Truck Mass"]; if (st.length()>0) dtm->SetValue(st=="Yes");
 	st = settings["Debug Collisions"]; if (st.length()>0) dcm->SetValue(st=="Yes");
+	st = settings["GearboxMode"]; if (st.length()>0) gearBoxMode->SetStringSelection(conv(st));
 	st = settings["Dust"]; if (st.length()>0) dust->SetValue(st=="Yes");
 	st = settings["Spray"]; if (st.length()>0) spray->SetValue(st=="Yes");
 	st = settings["Custom Particles"]; if (st.length()>0) cpart->SetValue(st=="Yes");

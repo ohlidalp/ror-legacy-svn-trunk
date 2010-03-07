@@ -20,6 +20,7 @@ along with Rigs of Rods.  If not, see <http://www.gnu.org/licenses/>.
 #include "engine.h"
 #include "SoundScriptManager.h"
 #include "TorqueCurve.h"
+#include "Settings.h"
 
 #ifdef ANGELSCRIPT
 #include "ScriptEngine.h"
@@ -65,6 +66,17 @@ BeamEngine::BeamEngine(float iddle, float max, float torque, float rear, int num
 	hasturbo=true;
 	hasair=true;
 	type='t';
+
+	// are there any startup shifter settings?
+	Ogre::String gearboxMode = SETTINGS.getSetting("GearboxMode");
+	if (gearboxMode == "Manual shift - Auto clutch")
+		automode = SEMIAUTO;
+	else if (gearboxMode == "Fully Manual: sequential shift")
+		automode = MANUAL;
+	else if (gearboxMode == "Fully Manual: stick shift")
+		automode = MANUAL_STICK;
+	else if (gearboxMode == "Fully Manual: stick shift with ranges")
+		automode = MANUAL_RANGES;
 
 	// set previous hardcoded clutch/shift time defaults
 	clutch_time     = 0.2f;
@@ -347,9 +359,24 @@ void BeamEngine::toggleContact()
 //quick start
 void BeamEngine::start()
 {
-	curGear=1;
+	if (automode == AUTOMATIC) 
+	{
+		curGear=1;
+		autoselect=DRIVE;
+	}
+	else
+	{
+		if (automode == SEMIAUTO) 
+		{
+			curGear=1;
+		}
+		else
+		{
+			curGear=0;
+		}
+		autoselect=MANUALMODE;
+	}
 	curClutch=0;
-	autoselect=DRIVE;
 	curEngineRPM=750.0f;
 	curGearboxRPM=750.0f;
 	curClutchTorque=0.0f;
