@@ -1701,7 +1701,7 @@ int Beam::loadTruck(const char* fname, SceneManager *manager, SceneNode *parent,
 							else if (sourceStr == "rudderboat")      { prop->animFlags[animnum] |= (ANIM_FLAG_BRUDDER); }
 							else if (sourceStr == "throttleboat")    { prop->animFlags[animnum] |= (ANIM_FLAG_BTHROTTLE); }
 							else if (sourceStr == "permanent")       { prop->animFlags[animnum] |= (ANIM_FLAG_PERMANENT); }
-							else if (sourceStr == "key")             { prop->animFlags[animnum] |= (ANIM_FLAG_EVENT); }
+							else if (sourceStr == "event")           { prop->animFlags[animnum] |= (ANIM_FLAG_EVENT); }
 						}
 
 						if (prop->animFlags[animnum] == 0)
@@ -1752,21 +1752,21 @@ int Beam::loadTruck(const char* fname, SceneManager *manager, SceneNode *parent,
 						prop->animMode[animnum] |= (ANIM_MODE_BOUNCE);
 						prop->animOpt5[animnum] = 1.0f;
 					}
-					else if (args2[0] == "key" && args2.size() == 2)
+					else if (args2[0] == "event" && args2.size() == 2)
 					{
 						// ONLY ONE KEY SUPPORTED ATM, to be improved?
 						// now parse the keys
 						std::vector<Ogre::String> args3 = Ogre::StringUtil::split(args2[1], "|");
 						for(unsigned int j=0;j<args3.size();j++)
 						{
-							String keyStr = args3[j];
-							Ogre::StringUtil::trim(keyStr);
-							Ogre::StringUtil::toUpperCase(keyStr);
-							int evtID = INPUTENGINE.resolveEventName(keyStr);
+							String eventStr = args3[j];
+							Ogre::StringUtil::trim(eventStr);
+							Ogre::StringUtil::toUpperCase(eventStr);
+							int evtID = INPUTENGINE.resolveEventName(eventStr);
 							if(evtID != -1)
 								prop->animKey = evtID;
 							else
-								LogManager::getSingleton().logMessage("Animation key unkown: " + keyStr);
+								LogManager::getSingleton().logMessage("Animation event unkown: " + eventStr);
 						}
 					}
 
