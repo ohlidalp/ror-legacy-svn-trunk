@@ -45,8 +45,8 @@ SET(LUA_INCLUDE_DIR               ${ROR_DEPENDENCY_DIR}/lua-5.1.2/src)
 SET(WIN32PTHREADS_INCLUDE_DIR     ${ROR_DEPENDENCY_DIR}/pthreads/Pre-built.2/include)
 SET(WIN32PTHREADS_LIB             ${ROR_DEPENDENCY_DIR}/pthreads/Pre-built.2/lib/pthreadVC2.lib)
 SET(ROR_MAIN_SOURCE_DIR           ${RoR_SOURCE_DIR}/source/main/source)
-SET(DirectX_INCLUDE_DIR           $ENV{DXSDK_DIR}\\Include)
-SET(DirectX_LIB_DIR               $ENV{DXSDK_DIR}\\Lib\\x86)
+SET(DirectX_INCLUDE_DIR           "$ENV{DXSDK_DIR}\\Include"  CACHE PATH "the directx include directory" )
+SET(DirectX_LIB_DIR               "$ENV{DXSDK_DIR}\\Lib\\x86" CACHE PATH "the directx lib directory" )
 
 # set the tools binary directory accordingly to the used platform
 IF(WIN32)
