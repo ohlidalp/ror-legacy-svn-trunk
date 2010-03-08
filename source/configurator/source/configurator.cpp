@@ -1051,6 +1051,7 @@ enum
 	RENDERER_OPTION=990,
 	mynotebook,
 	mynotebook2,
+	mynotebook3,
 	command_joywizard,
 	FFSLIDER,
 };
@@ -1638,9 +1639,9 @@ MyDialog::MyDialog(const wxString& title, MyApp *_app) : wxDialog(NULL, wxID_ANY
 	wxSizer *settingsSizer = new wxBoxSizer(wxVERTICAL);
 	//settingsSizer->SetSizeHints(this);
 	settingsPanel->SetSizer(settingsSizer);
+	// second notebook containing the settings tabs
 	wxNotebook *snbook=new wxNotebook(settingsPanel, mynotebook2, wxPoint(0, 0), wxSize(100,250));
 	settingsSizer->Add(snbook, 1, wxGROW);
-
 
 	rsPanel=new wxPanel(snbook, -1);
 	snbook->AddPage(rsPanel, _("Render System"), true);
@@ -1654,17 +1655,32 @@ MyDialog::MyDialog(const wxString& title, MyApp *_app) : wxDialog(NULL, wxID_ANY
 	wxPanel *cpuPanel=new wxPanel(snbook, -1);
 	snbook->AddPage(cpuPanel, _("CPU"), false);
 
-	wxPanel *ffPanel=new wxPanel(snbook, -1);
-	snbook->AddPage(ffPanel, _("Force Feedback"), false);
-
+	// Controls
 	wxPanel *controlsPanel=new wxPanel(nbook, -1);
 	nbook->AddPage(controlsPanel, _("Controls"), false);
-	wxSizer *sizer_controls = new wxBoxSizer(wxVERTICAL);
-	controlsPanel->SetSizer(sizer_controls);
+	wxSizer *controlsSizer = new wxBoxSizer(wxVERTICAL);
+	controlsPanel->SetSizer(controlsSizer);
+	// third notebook for control tabs
+	wxNotebook *ctbook=new wxNotebook(controlsPanel, mynotebook3, wxPoint(0, 0), wxSize(100,250));
+	controlsSizer->Add(ctbook, 1, wxGROW);
 
+	wxPanel *eventsPanel=new wxPanel(ctbook, -1);
+	ctbook->AddPage(eventsPanel, _("Bindings"), true);
+	wxSizer *eventsSizer = new wxBoxSizer(wxVERTICAL);
+	eventsPanel->SetSizer(eventsSizer);
+
+	wxPanel *ffPanel=new wxPanel(ctbook, -1);
+	ctbook->AddPage(ffPanel, _("Force Feedback"), false);
+
+	wxPanel *ctsetPanel=new wxPanel(ctbook, -1);
+	ctbook->AddPage(ctsetPanel, _("Advanced"), false);
+	wxSizer *ctsetSizer = new wxBoxSizer(wxVERTICAL);
+	ctsetPanel->SetSizer(ctsetSizer);
+
+	// the events page
 	int maxTreeHeight = 310;
 	int maxTreeWidth = 480;
-	cTree = new wxTreeListCtrl(controlsPanel,
+	cTree = new wxTreeListCtrl(eventsPanel,
                        CTREE_ID,
                        wxPoint(0, 0),
 					   wxSize(maxTreeWidth, maxTreeHeight));
@@ -1675,28 +1691,10 @@ MyDialog::MyDialog(const wxString& title, MyApp *_app) : wxDialog(NULL, wxID_ANY
 	style |= wxTR_HIDE_ROOT;
 	style |= wxTR_ROW_LINES;
 	cTree->SetWindowStyle(style);
-	sizer_controls->Add(cTree, 2, wxGROW);
+	eventsSizer->Add(cTree, 2, wxGROW);
 
-	wxPanel *controlsInfoPanel = new wxPanel(controlsPanel, wxID_ANY, wxPoint(0, 0 ), wxSize( maxTreeWidth, 390 ));
-	sizer_controls->Add(controlsInfoPanel, 0, wxGROW);
-
-	// controlText = new wxStaticText(controlsInfoPanel, wxID_ANY, wxString("Key description..."), wxPoint(5,5));
-
-	/*
-	typeChoices[0] = "None";
-	typeChoices[1] = "Keyboard";
-	typeChoices[2] = "MouseButton";
-	typeChoices[3] = "MouseAxisX";
-	typeChoices[4] = "MouseAxisY";
-	typeChoices[5] = "MouseAxisZ";
-	typeChoices[6] = "JoystickButton";
-	typeChoices[7] = "JoystickAxis";
-	typeChoices[8] = "JoystickPov";
-	typeChoices[9] = "JoystickSliderX";
-	typeChoices[10] = "JoystickSliderY";
-	*/
-	//ctrlTypeCombo = new wxComboBox(controlsInfoPanel, EVCB_BOX, "Keyboard", wxPoint(5,25), wxSize(150, 20), 11, typeChoices, wxCB_READONLY);
-
+	wxPanel *controlsInfoPanel = new wxPanel(eventsPanel, wxID_ANY, wxPoint(0, 0 ), wxSize( maxTreeWidth, 390 ));
+	eventsSizer->Add(controlsInfoPanel, 0, wxGROW);
 	wxButton *wizBtn = new wxButton(controlsInfoPanel, command_joywizard, _("Wizard"), wxPoint(5,5), wxSize(80, 50));
 	// XXX TOFIX: disable until fixed!
 	wizBtn->Disable();
@@ -1714,7 +1712,6 @@ MyDialog::MyDialog(const wxString& title, MyApp *_app) : wxDialog(NULL, wxID_ANY
 	new wxButton(controlsInfoPanel, command_testevents, _("Test"), wxPoint(255,5), wxSize(95, 50));
 
 	//btnRemap = new wxButton( controlsInfoPanel, BTN_REMAP, "Remap", wxPoint(maxTreeWidth-250,5), wxSize(120,45));
-
 	loadInputControls();
 
 #ifdef NETWORK
@@ -2021,17 +2018,6 @@ MyDialog::MyDialog(const wxString& title, MyApp *_app) : wxDialog(NULL, wxID_ANY
 	sightrange->SetLineSize(100);
 	y+=50;
 
-	// Gearbox
-	dText = new wxStaticText(advancedPanel, -1, _("Gearbox mode"), wxPoint(10,y));
-	gearBoxMode=new wxChoice(advancedPanel, -1, wxPoint(115, y), wxSize(200, -1), 0);
-	gearBoxMode->Append(wxT("Automatic shift"));
-	gearBoxMode->Append(wxT("Manual shift - Auto clutch"));
-	gearBoxMode->Append(wxT("Fully Manual: sequential shift"));
-	gearBoxMode->Append(wxT("Fully Manual: stick shift"));
-	gearBoxMode->Append(wxT("Fully Manual: stick shift with ranges"));
-	gearBoxMode->SetToolTip(_("The default mode for the gearbox when a new vehicle is loaded."));
-	y+=25;
-
 	// second column
 	y=30;
 	extcam=new wxCheckBox(advancedPanel, -1, _("Disable Camera Pitching"), wxPoint(320, y));
@@ -2074,10 +2060,23 @@ MyDialog::MyDialog(const wxString& title, MyApp *_app) : wxDialog(NULL, wxID_ANY
 	dismap=new wxCheckBox(advancedPanel, -1, _("Disable Overview Map"), wxPoint(320, y));
 	dismap->SetToolTip(_("Disabled the map. This is for testing purposes only, you should not gain any FPS with that."));
 	y+=15;
-	leds=new wxCheckBox(advancedPanel, -1, _("Enable Logitech G27 LEDs"), wxPoint(320, y));
-	leds->SetToolTip(_("Enable support for the Logitech G27 LED tachometer (Windows only)."));
-	y+=15;
 
+	// controls settings panel
+	y=10;
+	leds=new wxCheckBox(ctsetPanel, -1, _("Enable Logitech G27 LEDs"), wxPoint(115, y));
+	leds->SetToolTip(_("Enable support for the Logitech G27 LED tachometer (Windows only)."));
+	y+=25;
+
+	// Gearbox
+	dText = new wxStaticText(ctsetPanel, -1, _("Gearbox mode:"), wxPoint(10,y));
+	gearBoxMode=new wxChoice(ctsetPanel, -1, wxPoint(115, y), wxSize(200, -1), 0);
+	gearBoxMode->Append(wxT("Automatic shift"));
+	gearBoxMode->Append(wxT("Manual shift - Auto clutch"));
+	gearBoxMode->Append(wxT("Fully Manual: sequential shift"));
+	gearBoxMode->Append(wxT("Fully Manual: stick shift"));
+	gearBoxMode->Append(wxT("Fully Manual: stick shift with ranges"));
+	gearBoxMode->SetToolTip(_("The default mode for the gearbox when a new vehicle is loaded."));
+	y+=25;
 
 #if OGRE_PLATFORM == OGRE_PLATFORM_WIN32
 	wxSizer *sizer_updates = new wxBoxSizer(wxVERTICAL);
