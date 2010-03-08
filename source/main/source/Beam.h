@@ -649,7 +649,9 @@ typedef struct _prop
 	float animOpt3[10];
 	float animOpt4[10];
 	float animOpt5[10];
-	int animKey;
+	int animKey[10];
+	int animKeyState[10];
+	int lastanimKS[10];
 	Ogre::Real wheelrotdegree;
 } prop_t;
 

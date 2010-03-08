@@ -1611,6 +1611,7 @@ int Beam::loadTruck(const char* fname, SceneManager *manager, SceneNode *parent,
 					prop->animOpt3[animnum] = 0.0f;
 					prop->animOpt4[animnum] = 0.0f;
 					prop->animOpt5[animnum] = 0.0f;
+					prop->animKeyState[animnum] = -1.0f;
 				} else
 				{
 					// parse the rest
@@ -1752,10 +1753,18 @@ int Beam::loadTruck(const char* fname, SceneManager *manager, SceneNode *parent,
 						prop->animMode[animnum] |= (ANIM_MODE_BOUNCE);
 						prop->animOpt5[animnum] = 1.0f;
 					}
+					else if (args2[0] == "eventlock" && args2.size() == 1)
+					{
+						prop->animKeyState[animnum] = 0.0f;
+						prop->lastanimKS[animnum] = 0.0f;
+					}
 					else if (args2[0] == "event" && args2.size() == 2)
 					{
-						// ONLY ONE KEY SUPPORTED ATM, to be improved?
+						// we are using keys as source
+						prop->animFlags[animnum] |= ANIM_FLAG_EVENT;
+						
 						// now parse the keys
+						prop->animFlags[animnum] |= ANIM_FLAG_EVENT;
 						std::vector<Ogre::String> args3 = Ogre::StringUtil::split(args2[1], "|");
 						for(unsigned int j=0;j<args3.size();j++)
 						{
@@ -1764,7 +1773,7 @@ int Beam::loadTruck(const char* fname, SceneManager *manager, SceneNode *parent,
 							Ogre::StringUtil::toUpperCase(eventStr);
 							int evtID = INPUTENGINE.resolveEventName(eventStr);
 							if(evtID != -1)
-								prop->animKey = evtID;
+								prop->animKey[animnum] = evtID;
 							else
 								LogManager::getSingleton().logMessage("Animation event unkown: " + eventStr);
 						}
@@ -3378,7 +3387,8 @@ int Beam::loadTruck(const char* fname, SceneManager *manager, SceneNode *parent,
 			//set no animation by default
 			props[free_prop].animFlags[0]=0;
 			props[free_prop].animMode[0]=0;
-			props[free_prop].animKey=-1;
+			props[free_prop].animKey[0]=-1;
+			props[free_prop].animKeyState[0]=-1.0f;
 			String meshnameString = String(meshname);
 			std::string::size_type loc = meshnameString.find("leftmirror", 0);
 			if( loc != std::string::npos ) props[free_prop].mirror=1;
@@ -7454,9 +7464,46 @@ void Beam::calcForcesEuler(int doUpdate, Real dt, int step, int maxstep, Beam** 
 				calcAnimators(flagstate, cstate, div, dt, animOpt1, animOpt2, animOpt3);
 
 				// key triggered animations
-				if (props[propi].animFlags[animnum] & ANIM_FLAG_EVENT && props[propi].animKey != -1) 
-					cstate = INPUTENGINE.getEventValue(props[propi].animKey);
-				
+				if ((props[propi].animFlags[animnum] & ANIM_FLAG_EVENT) && props[propi].animKey[animnum] != -1)
+				{
+					if (INPUTENGINE.getEventValue(props[propi].animKey[animnum]))
+					{
+						// keystatelock is disabled then set cstate
+						if (props[propi].animKeyState[animnum] == -1.0f)
+						{
+							cstate += INPUTENGINE.getEventValue(props[propi].animKey[animnum]);
+						} else if (!props[propi].animKeyState[animnum])
+						{
+							// a key was pressed and a toggle was done already, so bypass
+							//toggle now
+							if (!props[propi].lastanimKS[animnum])
+							{
+								props[propi].lastanimKS[animnum] = 1.0f;
+								// use animkey as bool to determine keypress / release state of inputengine
+								props[propi].animKeyState[animnum] = 1.0f;
+							}
+							else 
+							{
+								props[propi].lastanimKS[animnum] = 0.0f;
+								// use animkey as bool to determine keypress / release state of inputengine
+								props[propi].animKeyState[animnum] = 1.0f;
+							}
+						} else
+						{
+							// bypas mode, get the last set position and set it
+							cstate +=props[propi].lastanimKS[animnum];
+						}
+					} else
+					{
+						// keyevent exists and keylock is enabled but the key isnt pressed right now = get lastanimkeystatus for cstate and reset keypressed bool animkey 
+						if (props[propi].animKeyState[animnum] != -1.0f)
+						{
+							cstate +=props[propi].lastanimKS[animnum];
+							props[propi].animKeyState[animnum] = 0.0f;
+						}
+					}
+				}
+
 				//propanimation placed here to avoid interference with existing hydros(cstate) and permanent prop animation
 				//truck steering
 				if (props[propi].animFlags[animnum] & ANIM_FLAG_STEERING) cstate += hydrodirstate;
