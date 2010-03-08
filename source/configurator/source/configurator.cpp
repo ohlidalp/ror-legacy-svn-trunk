@@ -2411,6 +2411,7 @@ void MyDialog::SetDefaults()
 	OnForceFeedbackScroll(dummye);
 
 	screenShotFormat->SetSelection(0);
+	gearBoxMode->SetSelection(0);
 
 	smoke->SetValue(true);
 	replaymode->SetValue(false);
