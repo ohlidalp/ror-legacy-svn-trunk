@@ -79,6 +79,7 @@ void Console::print(const MyGUI::UString &_text)
 	pthread_mutex_unlock(&mWaitingMessagesMutex);
 }
 
+#if MYGUI_PLATFORM == MYGUI_PLATFORM_WIN32
 std::wstring ansi_to_utf16(const std::string& _source)
 {
 	const char* srcPtr = _source.c_str();
@@ -89,6 +90,7 @@ std::wstring ansi_to_utf16(const std::string& _source)
 	delete[] tmpBuff;
 	return ret;
 }
+#endif
 
 void Console::messageLogged( const Ogre::String& message, Ogre::LogMessageLevel lml, bool maskDebug, const Ogre::String &logName )
 {
@@ -97,7 +99,11 @@ void Console::messageLogged( const Ogre::String& message, Ogre::LogMessageLevel 
 	// strip script engine things
 	if(message.substr(0,4) == "SE| ")
 		msg = message.substr(4);
+#if MYGUI_PLATFORM == MYGUI_PLATFORM_WIN32
 	this->print(ansi_to_utf16(msg));
+#else
+	this->print(msg);
+#endif
 }
 
 void Console::frameEntered(float _frame)
