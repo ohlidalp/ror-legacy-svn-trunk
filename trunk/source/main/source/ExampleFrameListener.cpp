@@ -2978,6 +2978,7 @@ bool ExampleFrameListener::updateEvents(float dt)
 		// copy over the most basic info
 		if(beam->free_node == newBeam->free_node)
 		{
+			// copy over nodes attributes if the amount of them didnt change
 			for(int i=0;i<beam->free_node;i++)
 			{
 				newBeam->nodes[i].AbsPosition = beam->nodes[i].AbsPosition;
@@ -2996,8 +2997,10 @@ bool ExampleFrameListener::updateEvents(float dt)
 		String msg = StringConverter::toString(newBeam->trucknum) + String(" of ") + StringConverter::toString(MAX_TRUCKS) + String(" possible reloads.");
 		flashMessage(msg, 10.0f);
 
-		// dislocate the old truck_getgear
+		// dislocate the old truck, so its out of sight
 		beam->resetPosition(100000, 100000, false, 100000);
+		// note: in some point in the future we would delete the truck here,
+		// but since this function is buggy we dont do it yet.
 
 		// restore camera position
 		camRotX = camRotX_saved;
