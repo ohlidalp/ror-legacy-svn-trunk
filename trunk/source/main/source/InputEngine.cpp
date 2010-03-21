@@ -740,7 +740,7 @@ eventInfo_t eventInfo[] = {
 	{
 		"COMMON_RESCUE_TRUCK",
 		EV_COMMON_RESCUE_TRUCK,
-		"Keyboard R",
+		"Keyboard EXPL+R",
 		_L("teleport to rescue truck")
 	},
 	{
@@ -1470,6 +1470,9 @@ eventInfo_t eventInfo[] = {
 	{ "DOF_DEBUG_APERTURE_LESS", EV_DOF_DEBUG_APERTURE_LESS, "Keyboard EXPL+2", _L("less aperture") },
 	{ "DOF_DEBUG_FOCUS_IN", EV_DOF_DEBUG_FOCUS_IN, "Keyboard EXPL+3", _L("move focus in") },
 	{ "DOF_DEBUG_FOCUS_OUT", EV_DOF_DEBUG_FOCUS_OUT, "Keyboard EXPL+4", _L("move focus out") },
+
+	{ "TRUCKEDIT_RELOAD", EV_TRUCKEDIT_RELOAD, "Keyboard EXPL+SHIFT+CTRL+R", _L("reload truck") },
+
 
 	// the end, DO NOT MODIFY
 	{"", -1, "", ""},
