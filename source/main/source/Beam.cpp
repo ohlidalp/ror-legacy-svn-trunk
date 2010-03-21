@@ -2549,6 +2549,7 @@ int Beam::loadTruck(const char* fname, SceneManager *manager, SceneNode *parent,
 			free_hydro++;
 			beams[pos].Lhydro=beams[pos].L;
 			beams[pos].hydroRatio=ratio;
+			beams[pos].animOption = 0.0f;
 
 			// parse the rest
 			for(unsigned int i=0;i<optionArgs.size();i++)
@@ -3611,7 +3612,9 @@ int Beam::loadTruck(const char* fname, SceneManager *manager, SceneNode *parent,
 					props[free_prop].bbsnode[k]->setVisible(false);
 				}
 			}
-
+			//set no animation by default
+			props[free_prop].animFlags[0]=0;
+			props[free_prop].animMode[0]=0;
 			free_prop++;
 		}
 		else if (mode==21)
@@ -3741,6 +3744,8 @@ int Beam::loadTruck(const char* fname, SceneManager *manager, SceneNode *parent,
 						props[free_prop].bbsnode[0]->attachObject(props[free_prop].bbs[0]);
 						props[free_prop].bbsnode[0]->setVisible(false);
 						props[free_prop].bbs[0]->setDefaultDimensions(0.5, 0.5);
+						props[free_prop].animFlags[0]=0;
+						props[free_prop].animMode[0]=0;
 						free_prop++;
 						//Left flash
 						props[free_prop].noderef=wings[free_wing-1].fa->nbld;
@@ -3776,6 +3781,8 @@ int Beam::loadTruck(const char* fname, SceneManager *manager, SceneNode *parent,
 						props[free_prop].bbsnode[0]->attachObject(props[free_prop].bbs[0]);
 						props[free_prop].bbsnode[0]->setVisible(false);
 						props[free_prop].bbs[0]->setDefaultDimensions(1.0, 1.0);
+						props[free_prop].animFlags[0]=0;
+						props[free_prop].animMode[0]=0;
 						free_prop++;
 						//Right red
 						rightlight=wings[wingstart].fa->nfrd;
@@ -3806,6 +3813,8 @@ int Beam::loadTruck(const char* fname, SceneManager *manager, SceneNode *parent,
 						props[free_prop].bbsnode[0]->attachObject(props[free_prop].bbs[0]);
 						props[free_prop].bbsnode[0]->setVisible(false);
 						props[free_prop].bbs[0]->setDefaultDimensions(0.5, 0.5);
+						props[free_prop].animFlags[0]=0;
+						props[free_prop].animMode[0]=0;
 						free_prop++;
 						//Right flash
 						props[free_prop].noderef=wings[wingstart].fa->nbrd;
@@ -3841,6 +3850,8 @@ int Beam::loadTruck(const char* fname, SceneManager *manager, SceneNode *parent,
 						props[free_prop].bbsnode[0]->attachObject(props[free_prop].bbs[0]);
 						props[free_prop].bbsnode[0]->setVisible(false);
 						props[free_prop].bbs[0]->setDefaultDimensions(1.0, 1.0);
+						props[free_prop].animFlags[0]=0;
+						props[free_prop].animMode[0]=0;
 						free_prop++;
 						hasposlights=true;
 					}
@@ -8490,7 +8501,6 @@ void Beam::calcForcesEuler(int doUpdate, Real dt, int step, int maxstep, Beam** 
 #ifdef TIMING
 	if(statistics)
 		statistics->queryStop(BeamThreadStats::Shocks);
-
 	if(statistics)
 		statistics->queryStart(BeamThreadStats::Hydros);
 #endif

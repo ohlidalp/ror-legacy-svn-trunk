@@ -2956,6 +2956,56 @@ bool ExampleFrameListener::updateEvents(float dt)
 		flashMessage(tmp1);
 	}
 
+	if (INPUTENGINE.getEventBoolValueBounce(EV_TRUCKEDIT_RELOAD, 0.5f) && current_truck != -1 && trucks[current_truck])
+	{
+		// store camera settings
+		Radian camRotX_saved = camRotX;
+		Radian camRotY_saved = camRotY;
+
+		// store current trucks node positions
+		Beam *beam = trucks[current_truck];
+		Vector3 *nodeStorage = (Vector3 *)malloc(sizeof(Vector3) * beam->free_node + 10);
+
+		// remove the old truck
+		beam->state=RECYCLE;
+
+		// load the same truck again
+		Beam *newBeam = BeamFactory::getSingleton().createLocal(reload_pos, reload_dir, beam->realtruckfilename);
+
+		// enter the new truck
+		setCurrentTruck(newBeam->trucknum);
+
+		// copy over the most basic info
+		if(beam->free_node == newBeam->free_node)
+		{
+			for(int i=0;i<beam->free_node;i++)
+			{
+				newBeam->nodes[i].AbsPosition = beam->nodes[i].AbsPosition;
+				newBeam->nodes[i].RelPosition = beam->nodes[i].RelPosition;
+				newBeam->nodes[i].Velocity    = beam->nodes[i].Velocity;
+				newBeam->nodes[i].Forces      = beam->nodes[i].Forces;
+			}
+		}
+
+		// TODO:
+		// * copy over the engine infomations
+		// * commands status
+		// * other minor stati
+
+		// notice the user about the amount of possible reloads
+		String msg = StringConverter::toString(newBeam->trucknum) + String(" of ") + StringConverter::toString(MAX_TRUCKS) + String(" possible reloads.");
+		flashMessage(msg, 10.0f);
+
+		// dislocate the old truck_getgear
+		beam->resetPosition(100000, 100000, false, 100000);
+
+		// restore camera position
+		camRotX = camRotX_saved;
+		camRotY = camRotY_saved;
+
+		return true;
+	}
+
 	// special keys for the debug mode
 	if(mDOF && mDOFDebug)
 	{

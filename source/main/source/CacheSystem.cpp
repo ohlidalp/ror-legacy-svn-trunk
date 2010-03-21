@@ -1271,6 +1271,7 @@ void CacheSystem::addFile(String filename, String archiveType, String archiveDir
 			if(e.getNumber() == Ogre::Exception::ERR_DUPLICATE_ITEM)
 			{
 				LogManager::getSingleton().logMessage(" *** error opening archive '"+filename+"': some files are duplicates of existing files. The file will be ignored.");
+				LogManager::getSingleton().logMessage("error while opening resource: " + e.getFullDescription());
 			}else
 			{
 				LogManager::getSingleton().logMessage("error while opening resource: " + e.getFullDescription());
@@ -2636,6 +2637,7 @@ bool CacheSystem::checkResourceLoaded(Cache_Entry t)
 			if(e.getNumber() == Ogre::Exception::ERR_DUPLICATE_ITEM)
 			{
 				LogManager::getSingleton().logMessage(" *** error opening '"+t.dirname+"': some files are duplicates of existing files. The archive/directory will be ignored.");
+				LogManager::getSingleton().logMessage("error while opening resource: " + e.getFullDescription());
 			} else
 			{
 				LogManager::getSingleton().logMessage("error opening '"+t.dirname+"'.");
@@ -2701,6 +2703,7 @@ void CacheSystem::loadSingleDirectory(String dirname, String group, bool already
 		if(e.getNumber() == Ogre::Exception::ERR_DUPLICATE_ITEM)
 		{
 			LogManager::getSingleton().logMessage(" *** error opening directory '"+dirname+"': some files are duplicates of existing files. The directory will be ignored.");
+			LogManager::getSingleton().logMessage("error while opening resource: " + e.getFullDescription());
 		} else
 		{
 			LogManager::getSingleton().logMessage("error while loading directory: " + e.getFullDescription());
@@ -2765,6 +2768,7 @@ void CacheSystem::loadSingleZip(String zippath, int cfactor, bool unload, bool o
 		if(e.getNumber() == Ogre::Exception::ERR_DUPLICATE_ITEM)
 		{
 			LogManager::getSingleton().logMessage(" *** error opening archive '"+realzipPath+"': some files are duplicates of existing files. The archive will be ignored.");
+			LogManager::getSingleton().logMessage("error while opening resource: " + e.getFullDescription());
 		}else
 		{
 			LogManager::getSingleton().logMessage("error while loading single Zip: " + e.getFullDescription());
