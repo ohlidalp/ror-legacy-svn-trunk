@@ -2958,6 +2958,10 @@ bool ExampleFrameListener::updateEvents(float dt)
 
 	if (INPUTENGINE.getEventBoolValueBounce(EV_TRUCKEDIT_RELOAD, 0.5f) && current_truck != -1 && trucks[current_truck])
 	{
+		if(current_truck + 1 >= MAX_TRUCKS)
+		{
+			flashMessage(String("unable to load new truck: limit reached. Please restart RoR"), 30);
+		}
 		// store camera settings
 		Radian camRotX_saved = camRotX;
 		Radian camRotY_saved = camRotY;
@@ -2985,11 +2989,13 @@ bool ExampleFrameListener::updateEvents(float dt)
 				newBeam->nodes[i].RelPosition = beam->nodes[i].RelPosition;
 				newBeam->nodes[i].Velocity    = beam->nodes[i].Velocity;
 				newBeam->nodes[i].Forces      = beam->nodes[i].Forces;
+				newBeam->nodes[i].iPosition   = beam->nodes[i].iPosition;
+				newBeam->nodes[i].smoothpos   = beam->nodes[i].smoothpos;
 			}
 		}
 
 		// TODO:
-		// * copy over the engine infomations
+		// * copy over the engine information
 		// * commands status
 		// * other minor stati
 
