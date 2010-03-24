@@ -1,4 +1,0 @@
-+ zlib: ZLib <http://>
-+ zzip: ZZip <http://>
-+ freeimage: FreeImage <http://>
-+ freetype: FreeType <http://>

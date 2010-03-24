@@ -1,63 +1,48 @@
 project(RoR_Configurator)
 
-set(config_source source/configurator.cpp source/statpict.cpp source/treelistctrl.cpp source/joywizard.cpp)
-set(config_headers source/ImprovedConfigFile.h source/statpict.h source/treelistctrl.h source/joysticks.h source/joywizard.h source/utils.h)
-set(config_res source/config.xpm source/icon.rc source/joycfg.xpm source/keyboardcfg.xpm source/mousecfg.xpm source/resource.h)
-
+# find wxWidgets
 SET(wxWidgets_USE_UNICODE ON)
+FIND_PACKAGE(wxWidgets REQUIRED COMPONENTS base core html net adv)
+include_directories(${wxWidgets_INCLUDE_DIRS})
+add_definitions(${wxWidgets_DEFINITIONS} ${wxWidgets_CXX_FLAGS})
+link_directories (${wxWidgets_LIB_DIR})
 
 IF(WIN32)
- SET(wxWidgets_USE_STATIC ON)
+ include_directories(${BOOST_PATH})
+ link_directories   (${BOOST_PATH}/lib)
+ include_directories(${PThread_INCLUDE_DIRS})
+ link_directories   (${PThread_LIBRARY_DIRS})
+ 
+ set(OS_LIBS "${PThread_LIBRARIES} dinput8.lib dxguid.lib")
+ set(OS_SOURCE "icon.rc")
+ 
+ # disable some annoying VS warnings:
+ # warning C4244: 'initializing' : conversion from 'const float' to 'int', possible loss of data
+ # warning C4305: 'initializing' : truncation from 'double' to 'const float'
+ add_definitions("/wd4305 /wd4244")
+
+ELSEIF(UNIX)
+ find_package(PkgConfig)
+ PKG_CHECK_MODULES  (GTK gtk+-2.0 REQUIRED)
+ INCLUDE_DIRECTORIES(${GTK_INCLUDE_DIRS})
+
+ PKG_CHECK_MODULES  (Ogre OGRE REQUIRED)
+ PKG_CHECK_MODULES  (Ois OIS REQUIRED)
+ 
+ set(OS_SOURCE "")
 ENDIF(WIN32)
 
-FIND_PACKAGE(wxWidgets COMPONENTS base core html net adv)
-IF(wxWidgets_FOUND)
-  include_directories(${wxWidgets_INCLUDE_DIRS})
-  add_definitions(${wxWidgets_DEFINITIONS} ${wxWidgets_CXX_FLAGS})
+include_directories(${Ogre_INCLUDE_DIRS})
+link_directories   (${Ogre_LIBRARY_DIRS})
+include_directories(${Ois_INCLUDE_DIRS})
+link_directories   (${Ois_LIBRARY_DIRS})
 
-  IF(WIN32)
-    include_directories(${wxWidgets_INCLUDE_DIRS}/msvc)
-    add_definitions("-D__WIN32__")
-    include_directories (${DirectX_INCLUDE_DIR})
-    link_directories(${DirectX_LIB_DIR})
-  ENDIF(WIN32)
-  IF(UNIX)
-    FIND_PACKAGE(PkgConfig REQUIRED)
-    PKG_CHECK_MODULES(GTK gtk+-2.0 REQUIRED)
-    INCLUDE_DIRECTORIES(${GTK_INCLUDE_DIRS})
-  ENDIF(UNIX)
-  link_directories (${wxWidgets_LIB_DIR})
-  include_directories (${OGRE_INCLUDE_DIR} ${OGRE_INCLUDE_DEPENDENCIES_DIR})
-  include_directories (${OIS_INCLUDE_DIR})
-  include_directories (${ROR_MAIN_SOURCE_DIR})
+add_definitions("-DNOOGRE -D_UNICODE")
+include_directories(../main)
 
-  SET(config_source ${config_source} ${ROR_MAIN_SOURCE_DIR}/InputEngine.cpp)
+FILE(GLOB sources "*.cpp")
+add_executable(rorconfig ${sources} ${OS_SOURCE} ../main/InputEngine.cpp)
+windows_hacks(rorconfig)
 
-  IF(WIN32)
-      source_group(Resources FILES ${config_res})
-  ENDIF(WIN32)
+TARGET_LINK_LIBRARIES(rorconfig ${wxWidgets_LIBRARIES} ${Ogre_LIBRARIES} ${Ois_LIBRARIES} ${OS_LIBS})
 
-
-  add_definitions("-DNOOGRE -D_UNICODE")
-
-  # always use no debug, otherwise we cannot link against the wxWidgets lib (that used no debug mode on compile time)
-  add_definitions("-DNDEBUG")
-
-  #add_definitions("${CMAKE_WXWINDOWS_CXX_FLAGS}")
-
-
-  add_executable(rorconfig ${config_source} ${config_headers} ${config_res})
-  windows_hacks(rorconfig)
-  
-  TARGET_LINK_LIBRARIES(rorconfig ${wxWidgets_LIBRARIES} )
-  target_link_libraries(rorconfig OgreMain ois)
-
-  IF(WIN32)
-    SET_TARGET_PROPERTIES(rorconfig PROPERTIES COMPILE_FLAGS "/bigobj /MP")
-    SET_TARGET_PROPERTIES(rorconfig PROPERTIES LINK_FLAGS    "/SUBSYSTEM:WINDOWS")
-  ENDIF(WIN32)
-
-
-ELSE(wxWidgets_FOUND)
-    MESSAGE("wxWidgets not found. Will not build the configurator.")
-ENDIF(wxWidgets_FOUND)
