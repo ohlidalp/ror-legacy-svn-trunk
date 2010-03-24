@@ -1,5 +1,12 @@
 IF(WIN32)
-	set(ROR_DEPENDENCIES_DIR "" CACHE PATH "The ROR dependency path to use")
+	# check if dependencies dir is in here
+	set(DEPENDENCIES_DIR_CHECK "${RoR_SOURCE_DIR}/dependencies")
+	set(DEPENDENCIES_DIR "")
+	if(IS_DIRECTORY ${DEPENDENCIES_DIR_CHECK})
+		set(DEPENDENCIES_DIR ${DEPENDENCIES_DIR_CHECK})
+	endif(IS_DIRECTORY ${DEPENDENCIES_DIR_CHECK})
+	
+	set(ROR_DEPENDENCIES_DIR "${DEPENDENCIES_DIR}" CACHE PATH "The ROR dependency path to use")
 
 	if(NOT ROR_DEPENDENCIES_DIR)
 		message(FATAL_ERROR "Rigs of Rods dependency dir not set properly!") 
