@@ -2,15 +2,6 @@ project(RoR_Main)
 
 include (RoR.list)
 
-# components
-set(ROR_USE_MYGUI   "FALSE" CACHE BOOL "use MyGUI")
-set(ROR_USE_OPENAL  "FALSE" CACHE BOOL "use OPENAL")
-set(ROR_USE_LUA     "FALSE" CACHE BOOL "use LUA")
-set(ROR_USE_SOCKETW "FALSE" CACHE BOOL "use SOCKETW")
-set(ROR_USE_OIS_G27 "FALSE" CACHE BOOL "use OIS With G27 patches")
-set(ROR_USE_MOFILEREADER "FALSE" CACHE BOOL "use mofilereader")
-set(ROR_USE_PAGED   "FALSE" CACHE BOOL "use paged geometry")
-
 # config below
 IF(WIN32)
  include_directories(${PThread_INCLUDE_DIRS})
@@ -67,11 +58,17 @@ if(ROR_USE_PAGED)
  add_definitions("-DUSE_PAGED")
 endif(ROR_USE_PAGED)
 
+if(ROR_USE_CAELUM)
+ include_directories(${CAELUM_INCLUDE_DIRS})
+ link_directories   (${CAELUM_LIBRARY_DIRS})
+ add_definitions("-DUSE_CAELUM")
+endif(ROR_USE_CAELUM)
+
 if(ROR_USE_OIS_G27)
  add_definitions("-DUSE_OIS_G27")
 endif(ROR_USE_OIS_G27)
 
 add_executable(RoR ${HEADER_FILES} ${SOURCE_FILES})
-target_link_libraries(RoR ${Ogre_LIBRARIES} ${Ois_LIBRARIES} ${OS_LIBS} ${MyGUI_LIBRARIES} ${OPENAL_LIBRARIES} ${LUA_LIBRARIES} ${SOCKETW_LIBRARIES} ${MOFILEREADER_LIBRARIES} ${PAGED_LIBRARIES})
+target_link_libraries(RoR ${Ogre_LIBRARIES} ${Ois_LIBRARIES} ${OS_LIBS} ${MyGUI_LIBRARIES} ${OPENAL_LIBRARIES} ${LUA_LIBRARIES} ${SOCKETW_LIBRARIES} ${MOFILEREADER_LIBRARIES} ${PAGED_LIBRARIES} ${CAELUM_LIBRARIES})
 windows_hacks(RoR)
 

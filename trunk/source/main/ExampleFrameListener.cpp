@@ -147,7 +147,6 @@ using namespace std;
 
 bool disableRendering=false;
 
-SceneManager *caelumSM;
 Camera *gCamera;
 
 class disableRenderingListener : public RenderTargetListener
@@ -172,78 +171,7 @@ Material *terrainmaterial = 0;
 
 char terrainoriginalmaterial[100];
 bool shutdownall=false;
-bool caelum_mapped=false;
 
-class TerrainUpdater : 
-#ifdef USE_CAELUM
-	public Caelum::CaelumListener, 
-#endif //CAELUM
-	public MemoryAllocatedObject {
-private:
-	int state;
-	char pname[100];
-	char sname[10];
-	ExampleFrameListener *mefl;
-public:
-	TerrainUpdater(ExampleFrameListener *efl)
-	{
-		mefl=efl;
-		state=-1;
-	}
-#ifdef USE_CAELUM
-	bool caelumStarted (const Ogre::FrameEvent &e, Caelum::CaelumSystem *sys)
-	{
-		if (shutdownall) return true;
-
-		// disable Caelum in menu's, etc
-		if(mefl->getLoadingState() != ALL_LOADED)
-			return true;
-
-		caelumSM->setAmbientLight(sys->getSun()->getSunColour() / 4.0);
-		//			terrainmaterial->setLightingEnabled(sys->getSun()->getInclination()<Degree(0.0));
-		//			terrainmaterial->setLightingEnabled(true);
-
-		// try to update the water "ambient"
-		Water *w = mefl->getWater();
-		if(w)
-		{
-			w->setFadeColour(sys->getSun()->getSunColour() / 4.0);
-			Ogre::Vector3 sunPosition = gCamera->getPosition() - 100000 * sys->getSun()->getSunDirection().normalisedCopy();
-			w->setSunPosition(sunPosition);
-		}
-
-		if (!caelum_mapped)
-			return true;
-
-		// old school terrain texture loading
-		if(!terrainmaterial)
-			return true;
-		if (state==-1)
-		{
-			strcpy(terrainoriginalmaterial, (terrainmaterial->getTechnique(0)->getPass(0)->getTextureUnitState(0)->getTextureName()).c_str());
-			strcpy(pname,terrainoriginalmaterial);
-			char* p=pname+strlen(pname);
-			while (p!=pname && *p!='.') p--;
-			*p=0;
-			strcpy(sname, p+1);
-		}
-		float time=sys->getLocalTime()/3600.0;
-		int nstate=(int)(time+0.5);
-		if (nstate<7) nstate=0;
-		if (nstate>17) nstate=0;
-		if (state!=nstate)
-		{
-			state=nstate;
-			char tname[100];
-			sprintf(tname, "%s-%ih.%s", pname, state, sname);
-			LogManager::getSingleton().logMessage("Caelum terrain loading: "+String(tname));
-			terrainmaterial->getTechnique(0)->getPass(0)->getTextureUnitState(0)->setTextureName(tname);
-
-		}
-		return true;
-	}
-#endif //CAELUM
-};
 
 
 // static heightfinder
@@ -1090,8 +1018,6 @@ ExampleFrameListener::ExampleFrameListener(RenderWindow* win, Camera* cam, Scene
 	pressure_pressed=false;
 	chatting=false;
 #ifdef USE_CAELUM
-	caelumSM=scm;
-	caelum_mapped=false;
 	mCaelumSystem=0;
 #endif //CAELUM
 	rtime=0;
@@ -4518,33 +4444,19 @@ bool ExampleFrameListener::updateEvents(float dt)
 #ifdef USE_CAELUM
 		if (INPUTENGINE.getEventBoolValue(EV_CAELUM_INCREASE_TIME) && mCaelumSystem)
 		{
-			int val=(int)(mCaelumSystem->getLocalTime()+60);
-			//				int val=(mCaelumSystem->getLocalTime()+3600);
-			if (val>86400) val-=86400;
-			mCaelumSystem->setLocalTime(val);
-			if (envmap) envmap->forceUpdate(Vector3(terrainxsize/2.0, hfinder->getHeightAt(terrainxsize/2.0, terrainzsize/2.0)+50.0, terrainzsize/2.0));
+			caelumUpdateSpeedFactor(mCaelumSpeedFactor + 2.0f);
 		}
 		if (INPUTENGINE.getEventBoolValue(EV_CAELUM_INCREASE_TIME_FAST) && mCaelumSystem)
 		{
-			int val=(int)(mCaelumSystem->getLocalTime()+400);
-			//				int val=(mCaelumSystem->getLocalTime()+3600);
-			if (val>86400) val-=86400;
-			mCaelumSystem->setLocalTime(val);
-			if (envmap) envmap->forceUpdate(Vector3(terrainxsize/2.0, hfinder->getHeightAt(terrainxsize/2.0, terrainzsize/2.0)+50.0, terrainzsize/2.0));
+			caelumUpdateSpeedFactor(mCaelumSpeedFactor + 20.0f);
 		}
 		if (INPUTENGINE.getEventBoolValue(EV_CAELUM_DECREASE_TIME) && mCaelumSystem)
 		{
-			int val=(int)(mCaelumSystem->getLocalTime()-60);
-			if (val<0) val+=86400;
-			mCaelumSystem->setLocalTime(val);
-			if (envmap) envmap->forceUpdate(Vector3(terrainxsize/2.0, hfinder->getHeightAt(terrainxsize/2.0, terrainzsize/2.0)+50.0, terrainzsize/2.0));
+			caelumUpdateSpeedFactor(mCaelumSpeedFactor - 2.0f);
 		}
 		if (INPUTENGINE.getEventBoolValue(EV_CAELUM_DECREASE_TIME_FAST) && mCaelumSystem)
 		{
-			int val=(int)(mCaelumSystem->getLocalTime()-400);
-			if (val<0) val+=86400;
-			mCaelumSystem->setLocalTime(val);
-			if (envmap) envmap->forceUpdate(Vector3(terrainxsize/2.0, hfinder->getHeightAt(terrainxsize/2.0, terrainzsize/2.0)+50.0, terrainzsize/2.0));
+			caelumUpdateSpeedFactor(mCaelumSpeedFactor - 20.0f);
 		}
 #endif //CAELUM
 		if (INPUTENGINE.getEventBoolValueBounce(EV_COMMON_TOGGLE_RENDER_MODE, 0.5f))
@@ -5278,7 +5190,7 @@ void ExampleFrameListener::loadTerrain(String terrainfile)
 	//Caelum maps
 	if (!strncmp(line,"caelum", 6))
 	{
-		caelum_mapped=true;
+		//caelum_mapped=true;
 		//fscanf(fd," %[^\n\r]",line);
 		ds->readLine(line, 1023);
 	};
@@ -5486,62 +5398,58 @@ void ExampleFrameListener::loadTerrain(String terrainfile)
 		mCamera->setFarClipDistance( farclip*1.733 );
 
 		// Initialise Caelum
-		ResourceGroupManager::getSingleton ().createResourceGroup ("Caelum");
-		mCaelumSystem = new Caelum::CaelumSystem (mRoot, mSceneMgr);
-		mCaelumSystem->getSun ()->setInclination (Degree (13));
+		ResourceGroupManager::getSingleton().createResourceGroup ("Caelum");
 
-		// Create and configure the sky colours model to use
-		mCaelumModel = new Caelum::StoredImageSkyColourModel ();
-		mCaelumSystem->setSkyColourModel (mCaelumModel);	// Call this before changing the gradients image!!
-		static_cast<Caelum::StoredImageSkyColourModel *>(mCaelumModel)->setSkyGradientsImage ("EarthClearSky.png");
 
+        Caelum::CaelumSystem::CaelumComponent componentMask;
+        componentMask = static_cast<Caelum::CaelumSystem::CaelumComponent> (
+                Caelum::CaelumSystem::CAELUM_COMPONENT_SUN |				
+                Caelum::CaelumSystem::CAELUM_COMPONENT_MOON |
+                Caelum::CaelumSystem::CAELUM_COMPONENT_SKY_DOME |
+                //Caelum::CaelumSystem::CAELUM_COMPONENT_IMAGE_STARFIELD |
+                Caelum::CaelumSystem::CAELUM_COMPONENT_POINT_STARFIELD |
+				Caelum::CaelumSystem::CAELUM_COMPONENT_SCREEN_SPACE_FOG |
+                Caelum::CaelumSystem::CAELUM_COMPONENT_CLOUDS |
+                0);
+        componentMask = Caelum::CaelumSystem::CAELUM_COMPONENTS_DEFAULT;
+
+        // Initialise CaelumSystem.
+        mCaelumSystem = new Caelum::CaelumSystem (Root::getSingletonPtr(), mScene, componentMask);
+
+        // Set time acceleration.
+        mCaelumSystem->getUniversalClock ()->setTimeScale (512);
+
+        // Register caelum as a listener.
+        mWindow->addListener (mCaelumSystem);
+        Root::getSingletonPtr()->addFrameListener(mCaelumSystem);
+
+        caelumUpdateSpeedFactor(mCaelumSystem->getUniversalClock()->getTimeScale ());
 
 //		Real fogdensity = 0.005;
 		fogdensity = 5.0/farclip;
 //		if (SETTINGS.getSetting("Caelum Fog Density") != "")
 //			fogdensity = StringConverter::parseReal(SETTINGS.getSetting("Caelum Fog Density"));
 
-		if(fogEnable)
+		mCaelumSystem->setSceneFogDensityMultiplier (0.0015);
+		mCaelumSystem->setManageAmbientLight (true);
+		mCaelumSystem->setMinimumAmbientLight (Ogre::ColourValue (0.1, 0.1, 0.1));
+
+
+		mCaelumSystem->setDepthComposer (new Caelum::DepthComposer (mSceneMgr));
+
+		Caelum::DepthComposerInstance* inst = mCaelumSystem->getDepthComposer ()->getViewportInstance (mCamera->getViewport());
+		if(inst)
 		{
-			fogmode=1;
-			mCaelumSystem->setManageFog(true);
-			static_cast<Caelum::StoredImageSkyColourModel *>(mCaelumModel)->setFogColoursImage ("EarthClearSkyFog.png");
-			static_cast<Caelum::StoredImageSkyColourModel *>(mCaelumModel)->setFogDensity (fogdensity);
-		}
-		else
-		{
-			fogmode=2;
-			mCaelumSystem->setManageFog(true);
-			static_cast<Caelum::StoredImageSkyColourModel *>(mCaelumModel)->setFogColoursImage ("EarthClearSkyFog.png");
-			static_cast<Caelum::StoredImageSkyColourModel *>(mCaelumModel)->setFogDensity(0);
+			//inst->getDepthRenderer()->setRenderGroupRangeFilter (20, 80);
+			inst->getDepthRenderer()->setViewportVisibilityMask (~0x00001000);
+			mCaelumSystem->forceSubcomponentVisibilityFlags (0x00001000);
+
+			mCaelumSystem->setGroundFogDensityMultiplier (0.03);
+			mCaelumSystem->getDepthComposer ()->setGroundFogVerticalDecay (0.06);
+			mCaelumSystem->getDepthComposer ()->setGroundFogBaseLevel (0);
 		}
 
-		// Create a sky dome
-		Caelum::SkyDome *dome = mCaelumSystem->createSkyDome ();
-		dome->setSize(farclip);
 
-		// Create a starfield
-		//mWindow->addListener (mCaelumSystem->createStarfield ("Starfield.jpg"));
-		//mCaelumSystem->getStarfield ()->setInclination (Degree (13));
-
-		//add a listener to change terrain visual
-		mCaelumSystem->addListener (new TerrainUpdater(this));
-
-		// Register all to the render window
-		mCaelumSystem->registerAllToTarget (mWindow);
-
-		// Set some time parameters
-		time_t t = time (&t);
-
-		// t2 is unused
-		//struct tm *t2 = localtime (&t);
-
-		//			mCaelumSystem->setTimeScale (10.0);
-		mCaelumSystem->setTimeScale (1.0);
-		//			mCaelumSystem->setLocalTime (3600 * t2->tm_hour + 60 * t2->tm_min + t2->tm_sec);
-		mCaelumSystem->setLocalTime (3600 * 15 );
-		mCaelumSystem->setUpdateRate (1.0 / (24.0*60.0));
-		//			mCaelumSystem->setUpdateRate (1.0/60.0);
 	}
 	else
 #endif //CAELUM
@@ -6730,6 +6638,13 @@ int ExampleFrameListener::changeGrassBuffer(unsigned char *data, int relchange)
 #endif
 }
 
+#ifdef USE_CAELUM
+void ExampleFrameListener::caelumUpdateSpeedFactor(double factor)
+{
+    mCaelumSpeedFactor = factor;
+    mCaelumSystem->getUniversalClock ()->setTimeScale (mCaelumSpeedFactor);
+}
+#endif //USE_CAELUM
 
 void ExampleFrameListener::saveGrassDensity()
 {
