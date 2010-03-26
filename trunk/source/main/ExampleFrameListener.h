@@ -46,11 +46,7 @@ along with Rigs of Rods.  If not, see <http://www.gnu.org/licenses/>.
 #include "CollisionTools.h"
 #include <string.h>
 #include <stdio.h>
-
-#ifdef USE_CAELUM
-#include "Caelum.h"
-#endif // CAELUM
-
+#include "SkyManager.h"
 #include "Beam.h"
 #include "InputEngine.h"
 #include "turbojet.h"
@@ -512,13 +508,6 @@ public:
 	void setDirectionArrow(char *text, Vector3 position);
 	Ogre::Radian getCameraRotationX() { return camRotX; };
 	void netDisconnectTruck(int number);
-
-#ifdef USE_CAELUM
-    Caelum::CaelumSystem *mCaelumSystem;
-	Caelum::CaelumSystem *getCaelumSystem() { return mCaelumSystem; };
-	double mCaelumSpeedFactor;
-	void caelumUpdateSpeedFactor(double factor);
-#endif // CAELUM
 
 	static float getGravity() { return gravity; };
 	static void setGravity(float value);
