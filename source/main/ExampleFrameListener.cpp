@@ -1017,9 +1017,6 @@ ExampleFrameListener::ExampleFrameListener(RenderWindow* win, Camera* cam, Scene
 	loading_state=NONE_LOADED;
 	pressure_pressed=false;
 	chatting=false;
-#ifdef USE_CAELUM
-	mCaelumSystem=0;
-#endif //CAELUM
 	rtime=0;
 	joyshiftlock=0;
 	mScene=scm;
@@ -4442,21 +4439,21 @@ bool ExampleFrameListener::updateEvents(float dt)
 			camDist=20;
 		}
 #ifdef USE_CAELUM
-		if (INPUTENGINE.getEventBoolValue(EV_CAELUM_INCREASE_TIME) && mCaelumSystem)
+		if (INPUTENGINE.getEventBoolValue(EV_CAELUM_INCREASE_TIME) && SkyManager::getSingletonPtr())
 		{
-			caelumUpdateSpeedFactor(mCaelumSpeedFactor + 2.0f);
+			SkyManager::getSingleton().setTimeFactor(2.0f);
 		}
-		if (INPUTENGINE.getEventBoolValue(EV_CAELUM_INCREASE_TIME_FAST) && mCaelumSystem)
+		if (INPUTENGINE.getEventBoolValue(EV_CAELUM_INCREASE_TIME_FAST) && SkyManager::getSingletonPtr())
 		{
-			caelumUpdateSpeedFactor(mCaelumSpeedFactor + 20.0f);
+			SkyManager::getSingleton().setTimeFactor(20.0f);
 		}
-		if (INPUTENGINE.getEventBoolValue(EV_CAELUM_DECREASE_TIME) && mCaelumSystem)
+		if (INPUTENGINE.getEventBoolValue(EV_CAELUM_DECREASE_TIME) && SkyManager::getSingletonPtr())
 		{
-			caelumUpdateSpeedFactor(mCaelumSpeedFactor - 2.0f);
+			SkyManager::getSingleton().setTimeFactor(-2.0f);
 		}
-		if (INPUTENGINE.getEventBoolValue(EV_CAELUM_DECREASE_TIME_FAST) && mCaelumSystem)
+		if (INPUTENGINE.getEventBoolValue(EV_CAELUM_DECREASE_TIME_FAST) && SkyManager::getSingletonPtr())
 		{
-			caelumUpdateSpeedFactor(mCaelumSpeedFactor - 20.0f);
+			SkyManager::getSingleton().setTimeFactor(-20.0f);
 		}
 #endif //CAELUM
 		if (INPUTENGINE.getEventBoolValueBounce(EV_COMMON_TOGGLE_RENDER_MODE, 0.5f))
@@ -5020,8 +5017,6 @@ void ExampleFrameListener::shutdown_final()
 
 	shutdownall=true;
 	//terrainmaterial->getBestTechnique()->getPass(0)->getTextureUnitState(0)->setTextureName(terrainoriginalmaterial);
-
-	//delete mCaelumSystem;mCaelumSystem = 0;
 }
 
 void ExampleFrameListener::shutdown_pre()
@@ -5396,60 +5391,10 @@ void ExampleFrameListener::loadTerrain(String terrainfile)
 	{
 		//mCamera->setNearClipDistance (0.01);
 		mCamera->setFarClipDistance( farclip*1.733 );
+		new SkyManager();
 
-		// Initialise Caelum
-		ResourceGroupManager::getSingleton().createResourceGroup ("Caelum");
-
-
-        Caelum::CaelumSystem::CaelumComponent componentMask;
-        componentMask = static_cast<Caelum::CaelumSystem::CaelumComponent> (
-                Caelum::CaelumSystem::CAELUM_COMPONENT_SUN |				
-                Caelum::CaelumSystem::CAELUM_COMPONENT_MOON |
-                Caelum::CaelumSystem::CAELUM_COMPONENT_SKY_DOME |
-                //Caelum::CaelumSystem::CAELUM_COMPONENT_IMAGE_STARFIELD |
-                Caelum::CaelumSystem::CAELUM_COMPONENT_POINT_STARFIELD |
-				Caelum::CaelumSystem::CAELUM_COMPONENT_SCREEN_SPACE_FOG |
-                Caelum::CaelumSystem::CAELUM_COMPONENT_CLOUDS |
-                0);
-        componentMask = Caelum::CaelumSystem::CAELUM_COMPONENTS_DEFAULT;
-
-        // Initialise CaelumSystem.
-        mCaelumSystem = new Caelum::CaelumSystem (Root::getSingletonPtr(), mScene, componentMask);
-
-        // Set time acceleration.
-        mCaelumSystem->getUniversalClock ()->setTimeScale (512);
-
-        // Register caelum as a listener.
-        mWindow->addListener (mCaelumSystem);
-        Root::getSingletonPtr()->addFrameListener(mCaelumSystem);
-
-        caelumUpdateSpeedFactor(mCaelumSystem->getUniversalClock()->getTimeScale ());
-
-//		Real fogdensity = 0.005;
-		fogdensity = 5.0/farclip;
-//		if (SETTINGS.getSetting("Caelum Fog Density") != "")
-//			fogdensity = StringConverter::parseReal(SETTINGS.getSetting("Caelum Fog Density"));
-
-		mCaelumSystem->setSceneFogDensityMultiplier (0.0015);
-		mCaelumSystem->setManageAmbientLight (true);
-		mCaelumSystem->setMinimumAmbientLight (Ogre::ColourValue (0.1, 0.1, 0.1));
-
-
-		mCaelumSystem->setDepthComposer (new Caelum::DepthComposer (mSceneMgr));
-
-		Caelum::DepthComposerInstance* inst = mCaelumSystem->getDepthComposer ()->getViewportInstance (mCamera->getViewport());
-		if(inst)
-		{
-			//inst->getDepthRenderer()->setRenderGroupRangeFilter (20, 80);
-			inst->getDepthRenderer()->setViewportVisibilityMask (~0x00001000);
-			mCaelumSystem->forceSubcomponentVisibilityFlags (0x00001000);
-
-			mCaelumSystem->setGroundFogDensityMultiplier (0.03);
-			mCaelumSystem->getDepthComposer ()->setGroundFogVerticalDecay (0.06);
-			mCaelumSystem->getDepthComposer ()->setGroundFogBaseLevel (0);
-		}
-
-
+		SkyManager::getSingleton().init(mScene, mWindow, mCamera);
+	
 	}
 	else
 #endif //CAELUM
@@ -6637,14 +6582,6 @@ int ExampleFrameListener::changeGrassBuffer(unsigned char *data, int relchange)
 	return 0;
 #endif
 }
-
-#ifdef USE_CAELUM
-void ExampleFrameListener::caelumUpdateSpeedFactor(double factor)
-{
-    mCaelumSpeedFactor = factor;
-    mCaelumSystem->getUniversalClock ()->setTimeScale (mCaelumSpeedFactor);
-}
-#endif //USE_CAELUM
 
 void ExampleFrameListener::saveGrassDensity()
 {
