@@ -1,3 +1,14 @@
+# components
+set(ROR_USE_MYGUI   "FALSE" CACHE BOOL "use MyGUI")
+set(ROR_USE_OPENAL  "FALSE" CACHE BOOL "use OPENAL")
+set(ROR_USE_LUA     "FALSE" CACHE BOOL "use LUA")
+set(ROR_USE_SOCKETW "FALSE" CACHE BOOL "use SOCKETW")
+set(ROR_USE_OIS_G27 "FALSE" CACHE BOOL "use OIS With G27 patches")
+set(ROR_USE_MOFILEREADER "FALSE" CACHE BOOL "use mofilereader")
+set(ROR_USE_PAGED   "FALSE" CACHE BOOL "use paged geometry")
+set(ROR_USE_CAELUM  "FALSE" CACHE BOOL "use caelum sky")
+
+
 IF(WIN32)
 	# check if dependencies dir is in here
 	set(DEPENDENCIES_DIR_CHECK "${RoR_SOURCE_DIR}/dependencies")
@@ -68,6 +79,12 @@ IF(WIN32)
 			set(PAGED_LIBRARY_DIRS "${ROR_DEPENDENCIES_DIR}/lib" CACHE PATH "The paged lib path to use")
 			set(PAGED_LIBRARIES "paged.lib" CACHE STRING "The paged lib to link against")
 		endif(ROR_USE_PAGED)
+
+		if(ROR_USE_CAELUM)
+			set(CAELUM_INCLUDE_DIRS "${ROR_DEPENDENCIES_DIR}/include/Caelum" CACHE PATH "The caelum include path to use")
+			set(CAELUM_LIBRARY_DIRS "${ROR_DEPENDENCIES_DIR}/lib" CACHE PATH "The caelum lib path to use")
+			set(CAELUM_LIBRARIES "caelum.lib" CACHE STRING "The caelum lib to link against")
+		endif(ROR_USE_CAELUM)
 		
 ELSEIF(UNIX)
  find_package(PkgConfig)

@@ -161,7 +161,9 @@ void MapTextureCreator::setFogVisible(bool value)
 	// this refuses to work, somehow:
 	if(fogmode == 1)
 	{
-#ifdef USE_CAELUM
+#if 0
+		// TODO: tofix: caelum
+		// USE_CAELUM
 		if(value)
 			static_cast<Caelum::StoredImageSkyColourModel *>(mEfl->getCaelumModel())->setFogDensity(mEfl->getFogDensity());
 		else
@@ -172,7 +174,7 @@ void MapTextureCreator::setFogVisible(bool value)
 			mEfl->getCaelumSystem()->setLocalTime(mEfl->getCaelumSystem()->getLocalTime()+1);
 		else
 			mEfl->getCaelumSystem()->setLocalTime(mEfl->getCaelumSystem()->getLocalTime()-1);
-#endif //CAELUM
+#endif //0
 	}
 	else if(fogmode == 3)
 	{
