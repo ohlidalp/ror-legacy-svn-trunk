@@ -38,6 +38,7 @@ public:
 
 	void init(Ogre::SceneManager *mScene, Ogre::RenderWindow *mWindow, Ogre::Camera *mCamera);
 
+	void loadScript(Ogre::String script);
 	void setTimeFactor(double f);
 
 protected:

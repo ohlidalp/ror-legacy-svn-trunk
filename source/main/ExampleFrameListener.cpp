@@ -5144,8 +5144,8 @@ void ExampleFrameListener::loadTerrain(String terrainfile)
 	//we load terrain
 	//FILE *fd;
 	char geom[1024];
-	char sandstormcubemap[255];
-	sandstormcubemap[0]=0;
+	char sandstormcubemap[255]="";
+	char caelumconfig[255]="ror_default_sky"; // setup some default
 	char line[1024];
 	float r,g,b;
 	float cx,cy,cz;
@@ -5185,8 +5185,7 @@ void ExampleFrameListener::loadTerrain(String terrainfile)
 	//Caelum maps
 	if (!strncmp(line,"caelum", 6))
 	{
-		//caelum_mapped=true;
-		//fscanf(fd," %[^\n\r]",line);
+		// deprecated
 		ds->readLine(line, 1023);
 	};
 
@@ -5924,6 +5923,12 @@ void ExampleFrameListener::loadTerrain(String terrainfile)
 			collisions->setupLandUse(line+15);
 			continue;
 		}
+		
+		//Caelum config
+		if (!strncmp(line,"caelumconfig", 12))
+		{
+			sscanf(line, "caelumconfig %s", caelumconfig);
+		};
 
 #ifdef USE_HYDRAX
 		if (!strncmp("hydraxconfig", line, 12))
@@ -6354,6 +6359,11 @@ void ExampleFrameListener::loadTerrain(String terrainfile)
 	if (SETTINGS.getSetting("Sky effects")!="Caelum (best looking, slower)" && strlen(sandstormcubemap)>0)
 	{
 		mSceneMgr->setSkyBox(true, sandstormcubemap, farclip);
+	}
+	// load caelum config
+	if (SETTINGS.getSetting("Sky effects")=="Caelum (best looking, slower)")
+	{
+		SkyManager::getSingleton().loadScript(String(caelumconfig));
 	}
 
 #ifdef USE_HYDRAX

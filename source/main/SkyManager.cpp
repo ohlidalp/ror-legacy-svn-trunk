@@ -52,12 +52,17 @@ void SkyManager::init(Ogre::SceneManager *mScene, Ogre::RenderWindow *mWindow, O
 {
 	// Initi5alise CaelumSystem.
 	mCaelumSystem = new Caelum::CaelumSystem (Root::getSingletonPtr(), mScene, Caelum::CaelumSystem::CAELUM_COMPONENTS_NONE);
-	CaelumPlugin::getSingleton ().loadCaelumSystemFromScript (mCaelumSystem, "ror_default_sky");
 	mCaelumSystem->attachViewport(mCamera->getViewport());
 
 	// Register caelum as a listener.
 	mWindow->addListener (mCaelumSystem);
 	Root::getSingletonPtr()->addFrameListener(mCaelumSystem);
+}
+
+void SkyManager::loadScript(Ogre::String script)
+{
+	// load the caelum config
+	CaelumPlugin::getSingleton().loadCaelumSystemFromScript (mCaelumSystem, script);
 }
 
 void SkyManager::setTimeFactor(double factor)
