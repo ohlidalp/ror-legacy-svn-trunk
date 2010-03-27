@@ -32,16 +32,24 @@ RigsOfRods::RigsOfRods()
 
 RigsOfRods::~RigsOfRods()
 {
+	// this is the end of all and everything
 	if (mFrameListener)
 		delete mFrameListener;
 	if (mRoot)
 	{
-		if (mWindow) mRoot->detachRenderTarget(mWindow);
-		try {
+		if (mWindow)
+			mRoot->detachRenderTarget(mWindow);
+		try
+		{
 			mRoot->shutdown();
-			if(mRoot)
-				delete mRoot;
-		} catch(...){}
+			// XXX : commented out code below crashes
+			// 
+			//if(mRoot)
+			//	delete mRoot;
+		} catch(Ogre::Exception& e)
+		{
+			LogManager::getSingleton().logMessage("error while closing RoR: " + e.getFullDescription());
+		}
 	}
 }
 
