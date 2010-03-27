@@ -17,6 +17,9 @@ GNU General Public License for more details.
 You should have received a copy of the GNU General Public License
 along with Rigs of Rods.  If not, see <http://www.gnu.org/licenses/>.
 */
+
+#ifdef USE_CAELUM
+
 #ifndef SKYMANAGER_H__
 #define SKYMANAGER_H__
 
@@ -44,3 +47,5 @@ protected:
 };
 
 #endif //SKYMANAGER_H__
+
+#endif //USE_CAELUM

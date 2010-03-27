@@ -1,3 +1,25 @@
+/*
+This source file is part of Rigs of Rods
+Copyright 2005,2006,2007,2008,2009,2010 Pierre-Michel Ricordel
+Copyright 2007,2008,2009,2010 Thomas Fischer
+
+For more information, see http://www.rigsofrods.com/
+
+Rigs of Rods is free software: you can redistribute it and/or modify
+it under the terms of the GNU General Public License version 3, as
+published by the Free Software Foundation.
+
+Rigs of Rods is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+GNU General Public License for more details.
+
+You should have received a copy of the GNU General Public License
+along with Rigs of Rods.  If not, see <http://www.gnu.org/licenses/>.
+*/
+
+#ifdef USE_CAELUM
+
 #include "SkyManager.h"
 
 #include "Ogre.h"
@@ -28,47 +50,14 @@ SkyManager::~SkyManager()
 
 void SkyManager::init(Ogre::SceneManager *mScene, Ogre::RenderWindow *mWindow, Ogre::Camera *mCamera)
 {
-	Caelum::CaelumSystem::CaelumComponent componentMask;
-	componentMask = static_cast<Caelum::CaelumSystem::CaelumComponent> (
-			Caelum::CaelumSystem::CAELUM_COMPONENT_SUN |				
-			Caelum::CaelumSystem::CAELUM_COMPONENT_MOON |
-			Caelum::CaelumSystem::CAELUM_COMPONENT_SKY_DOME |
-			//Caelum::CaelumSystem::CAELUM_COMPONENT_IMAGE_STARFIELD |
-			Caelum::CaelumSystem::CAELUM_COMPONENT_POINT_STARFIELD |
-			Caelum::CaelumSystem::CAELUM_COMPONENT_SCREEN_SPACE_FOG |
-			Caelum::CaelumSystem::CAELUM_COMPONENT_CLOUDS |
-			0);
-
-	// Initialise CaelumSystem.
-	mCaelumSystem = new Caelum::CaelumSystem (Root::getSingletonPtr(), mScene, componentMask);
-
-	// Set time acceleration.
-	mCaelumSpeedFactor = 512;
-	mCaelumSystem->getUniversalClock()->setTimeScale(512);
+	// Initi5alise CaelumSystem.
+	mCaelumSystem = new Caelum::CaelumSystem (Root::getSingletonPtr(), mScene, Caelum::CaelumSystem::CAELUM_COMPONENTS_NONE);
+	CaelumPlugin::getSingleton ().loadCaelumSystemFromScript (mCaelumSystem, "ror_default_sky");
+	mCaelumSystem->attachViewport(mCamera->getViewport());
 
 	// Register caelum as a listener.
 	mWindow->addListener (mCaelumSystem);
 	Root::getSingletonPtr()->addFrameListener(mCaelumSystem);
-
-	mCaelumSystem->setSceneFogDensityMultiplier (0.0015);
-	mCaelumSystem->setManageAmbientLight (true);
-	mCaelumSystem->setMinimumAmbientLight (Ogre::ColourValue (0.1, 0.1, 0.1));
-
-	mCaelumSystem->setDepthComposer (new Caelum::DepthComposer (mScene));
-
-	Caelum::DepthComposerInstance* inst = mCaelumSystem->getDepthComposer ()->getViewportInstance (mCamera->getViewport());
-	if(inst)
-	{
-		//inst->getDepthRenderer()->setRenderGroupRangeFilter (20, 80);
-		inst->getDepthRenderer()->setViewportVisibilityMask (~0x00001000);
-		mCaelumSystem->forceSubcomponentVisibilityFlags (0x00001000);
-
-		mCaelumSystem->setGroundFogDensityMultiplier (0.03);
-		mCaelumSystem->getDepthComposer ()->setGroundFogVerticalDecay (0.06);
-		mCaelumSystem->getDepthComposer ()->setGroundFogBaseLevel (0);
-	}
-
-	//CaelumPlugin::getSingleton ().loadCaelumSystemFromScript (mCaelumSystem, "sky_system_name");
 }
 
 void SkyManager::setTimeFactor(double factor)
@@ -77,3 +66,4 @@ void SkyManager::setTimeFactor(double factor)
     mCaelumSystem->getUniversalClock()->setTimeScale (mCaelumSpeedFactor);
 }
 
+#endif //USE_CAELUM
