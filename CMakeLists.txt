@@ -91,4 +91,7 @@ add_subdirectory(source)
 
 # fill the bin dir with binaries
 copy_files(${ROR_BINTOOL_DIR} ${EXECUTABLE_OUTPUT_PATH})
-copy_files(${ROR_DEPENDENCIES_DIR}/bin ${EXECUTABLE_OUTPUT_PATH})
+
+if(WIN32)
+	copy_files(${ROR_DEPENDENCIES_DIR}/bin ${EXECUTABLE_OUTPUT_PATH})
+endif(WIN32)
