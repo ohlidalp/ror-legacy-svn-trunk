@@ -6360,11 +6360,13 @@ void ExampleFrameListener::loadTerrain(String terrainfile)
 	{
 		mSceneMgr->setSkyBox(true, sandstormcubemap, farclip);
 	}
+#ifdef USE_CAELUM
 	// load caelum config
 	if (SETTINGS.getSetting("Sky effects")=="Caelum (best looking, slower)")
 	{
 		SkyManager::getSingleton().loadScript(String(caelumconfig));
 	}
+#endif //USE_CAELUM
 
 #ifdef USE_HYDRAX
 	if(w && useHydrax)
