@@ -42,6 +42,10 @@ IF(WIN32)
 		include_directories(${PThread_INCLUDE_DIRS})
 		link_directories   (${PThread_LIBRARY_DIRS})
 
+		# directX
+		include_directories($ENV{DXSDK_DIR}/Include)
+		link_directories   ($ENV{DXSDK_DIR}/Lib/x86)
+		
 
 		#### OPTIONAL COMPONENTS
 		if(ROR_USE_MYGUI)
