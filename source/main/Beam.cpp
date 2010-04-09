@@ -3511,7 +3511,8 @@ int Beam::loadTruck(const char* fname, SceneManager *manager, SceneNode *parent,
 			if (!strncmp("spinprop", meshname, 8))
 			{
 				props[free_prop].spinner=1;
-				props[free_prop].snode->getAttachedObject(0)->setCastShadows(false);
+				if(props[free_prop].snode->numAttachedObjects())
+					props[free_prop].snode->getAttachedObject(0)->setCastShadows(false);
 				props[free_prop].snode->setVisible(false);
 			}
 			if (!strncmp("pale", meshname, 4))
@@ -9401,14 +9402,14 @@ void Beam::prepareInside(bool inside)
 		}
 
 		//disabling shadow
-		if (cabNode && cabNode->getAttachedObject(0)) ((Entity*)(cabNode->getAttachedObject(0)))->setCastShadows(false);
+		if (cabNode && cabNode->numAttachedObjects() && cabNode->getAttachedObject(0)) ((Entity*)(cabNode->getAttachedObject(0)))->setCastShadows(false);
 		int i;
 		for (i=0; i<free_prop; i++)
 		{
-			if (props[i].snode) props[i].snode->getAttachedObject(0)->setCastShadows(false);
-			if (props[i].wheel) props[i].wheel->getAttachedObject(0)->setCastShadows(false);
+			if (props[i].snode && props[i].snode->numAttachedObjects()) props[i].snode->getAttachedObject(0)->setCastShadows(false);
+			if (props[i].wheel && props[i].wheel->numAttachedObjects()) props[i].wheel->getAttachedObject(0)->setCastShadows(false);
 		}
-		for (i=0; i<free_wheel; i++) vwheels[i].cnode->getAttachedObject(0)->setCastShadows(false);
+		for (i=0; i<free_wheel; i++) if(vwheels[i].cnode->numAttachedObjects()) vwheels[i].cnode->getAttachedObject(0)->setCastShadows(false);
 		for (i=0; i<free_beam; i++) if (beams[i].mEntity) beams[i].mEntity->setCastShadows(false);
 
 		if (cabNode)
@@ -9439,14 +9440,14 @@ void Beam::prepareInside(bool inside)
 		}
 
 		//enabling shadow
-		if (cabNode && cabNode->getAttachedObject(0)) ((Entity*)(cabNode->getAttachedObject(0)))->setCastShadows(true);
+		if (cabNode && cabNode->numAttachedObjects() && cabNode->getAttachedObject(0)) ((Entity*)(cabNode->getAttachedObject(0)))->setCastShadows(true);
 		int i;
 		for (i=0; i<free_prop; i++)
 		{
-			if (props[i].snode) props[i].snode->getAttachedObject(0)->setCastShadows(true);
-			if (props[i].wheel) props[i].wheel->getAttachedObject(0)->setCastShadows(true);
+			if (props[i].snode && props[i].snode->numAttachedObjects()) props[i].snode->getAttachedObject(0)->setCastShadows(true);
+			if (props[i].wheel && props[i].wheel->numAttachedObjects()) props[i].wheel->getAttachedObject(0)->setCastShadows(true);
 		}
-		for (i=0; i<free_wheel; i++) vwheels[i].cnode->getAttachedObject(0)->setCastShadows(true);
+		for (i=0; i<free_wheel; i++) if(vwheels[i].cnode->numAttachedObjects()) vwheels[i].cnode->getAttachedObject(0)->setCastShadows(true);
 		for (i=0; i<free_beam; i++) if (beams[i].mEntity) beams[i].mEntity->setCastShadows(true);
 
 		if (cabNode)
@@ -9503,14 +9504,17 @@ void Beam::lightsToggle(Beam** trucks, int trucksnum)
 		{
 			char clomatname[256];
 			sprintf(clomatname, "%s-noem", texname);
-			Entity* ent=((Entity*)(cabNode->getAttachedObject(0)));
-			int numsubent=ent->getNumSubEntities();
-			for (i=0; i<numsubent; i++)
+			if(cabNode->numAttachedObjects())
 			{
-				SubEntity *subent=ent->getSubEntity(i);
-				if (!strcmp((subent->getMaterialName()).c_str(), texname)) subent->setMaterialName(clomatname);
+				Entity* ent=((Entity*)(cabNode->getAttachedObject(0)));
+				int numsubent=ent->getNumSubEntities();
+				for (i=0; i<numsubent; i++)
+				{
+					SubEntity *subent=ent->getSubEntity(i);
+					if (!strcmp((subent->getMaterialName()).c_str(), texname)) subent->setMaterialName(clomatname);
+				}
+				//			((Entity*)(cabNode->getAttachedObject(0)))->setMaterialName(clomatname);
 			}
-			//			((Entity*)(cabNode->getAttachedObject(0)))->setMaterialName(clomatname);
 		}
 	}
 	else
@@ -9528,14 +9532,17 @@ void Beam::lightsToggle(Beam** trucks, int trucksnum)
 		{
 			char clomatname[256];
 			sprintf(clomatname, "%s-noem", texname);
-			Entity* ent=((Entity*)(cabNode->getAttachedObject(0)));
-			int numsubent=ent->getNumSubEntities();
-			for (i=0; i<numsubent; i++)
+			if(cabNode->numAttachedObjects())
 			{
-				SubEntity *subent=ent->getSubEntity(i);
-				if (!strcmp((subent->getMaterialName()).c_str(), clomatname)) subent->setMaterialName(texname);
+				Entity* ent=((Entity*)(cabNode->getAttachedObject(0)));
+				int numsubent=ent->getNumSubEntities();
+				for (i=0; i<numsubent; i++)
+				{
+					SubEntity *subent=ent->getSubEntity(i);
+					if (!strcmp((subent->getMaterialName()).c_str(), clomatname)) subent->setMaterialName(texname);
+				}
+				//			((Entity*)(cabNode->getAttachedObject(0)))->setMaterialName(texname);
 			}
-			//			((Entity*)(cabNode->getAttachedObject(0)))->setMaterialName(texname);
 		}
 	};
 #ifdef USE_ANGELSCRIPT
