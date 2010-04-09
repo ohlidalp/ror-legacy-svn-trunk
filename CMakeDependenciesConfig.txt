@@ -108,7 +108,7 @@ IF(WIN32)
 		endif(ROR_USE_ANGELSCRIPT)
 		
 		if(ROR_USE_HYDRAX)
-			set(HYDRAX_INCLUDE_DIRS "${ROR_DEPENDENCIES_DIR}/include/Hydrax" CACHE PATH "The Hydrax include path to use")
+			set(HYDRAX_INCLUDE_DIRS "${ROR_DEPENDENCIES_DIR}/include/Hydrax;${ROR_DEPENDENCIES_DIR}/include/" CACHE PATH "The Hydrax include paths to use")
 			set(HYDRAX_LIBRARY_DIRS "${ROR_DEPENDENCIES_DIR}/lib" CACHE PATH "The Hydrax lib path to use")
 			set(HYDRAX_LIBRARIES "Hydrax.lib" CACHE STRING "The Hydrax lib to link against")
 		endif(ROR_USE_HYDRAX)
