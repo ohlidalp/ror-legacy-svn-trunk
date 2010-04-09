@@ -7,9 +7,14 @@ set(ROR_USE_OIS_G27 "FALSE" CACHE BOOL "use OIS With G27 patches")
 set(ROR_USE_MOFILEREADER "FALSE" CACHE BOOL "use mofilereader")
 set(ROR_USE_PAGED   "FALSE" CACHE BOOL "use paged geometry")
 set(ROR_USE_CAELUM  "FALSE" CACHE BOOL "use caelum sky")
+set(ROR_USE_ANGELSCRIPT  "FALSE" CACHE BOOL "use angel script")
+set(ROR_USE_HYDRAX  "FALSE" CACHE BOOL "use hydrax water system")
 
-
+# set some defaults
+set(ROR_USE_CRASHRPT FALSE)
 IF(WIN32)
+	# options only available under windows
+	set(ROR_USE_CRASHRPT "FALSE" CACHE BOOL "use crash report tool")
 	# check if dependencies dir is in here
 	set(DEPENDENCIES_DIR_CHECK "${RoR_SOURCE_DIR}/dependencies")
 	set(DEPENDENCIES_DIR "")
@@ -81,7 +86,7 @@ IF(WIN32)
 		if(ROR_USE_PAGED)
 			set(PAGED_INCLUDE_DIRS "${ROR_DEPENDENCIES_DIR}/include/paged" CACHE PATH "The paged include path to use")
 			set(PAGED_LIBRARY_DIRS "${ROR_DEPENDENCIES_DIR}/lib" CACHE PATH "The paged lib path to use")
-			set(PAGED_LIBRARIES "paged.lib" CACHE STRING "The paged lib to link against")
+			set(PAGED_LIBRARIES "PagedGeometry.lib" CACHE STRING "The paged lib to link against")
 		endif(ROR_USE_PAGED)
 
 		if(ROR_USE_CAELUM)
@@ -89,6 +94,25 @@ IF(WIN32)
 			set(CAELUM_LIBRARY_DIRS "${ROR_DEPENDENCIES_DIR}/lib" CACHE PATH "The caelum lib path to use")
 			set(CAELUM_LIBRARIES "caelum.lib" CACHE STRING "The caelum lib to link against")
 		endif(ROR_USE_CAELUM)
+
+		if(ROR_USE_CRASHRPT)
+			set(CRASHRPT_INCLUDE_DIRS "${ROR_DEPENDENCIES_DIR}/include/CrashRpt" CACHE PATH "The CrashRpt include path to use")
+			set(CRASHRPT_LIBRARY_DIRS "${ROR_DEPENDENCIES_DIR}/lib" CACHE PATH "The CrashRpt lib path to use")
+			set(CRASHRPT_LIBRARIES "CrashRpt.lib" CACHE STRING "The CrashRpt lib to link against")
+		endif(ROR_USE_CRASHRPT)
+
+		if(ROR_USE_ANGELSCRIPT)
+			set(ANGELSCRIPT_INCLUDE_DIRS "${ROR_DEPENDENCIES_DIR}/include/AngelScript" CACHE PATH "The AngelScript include path to use")
+			set(ANGELSCRIPT_LIBRARY_DIRS "${ROR_DEPENDENCIES_DIR}/lib" CACHE PATH "The AngelScript lib path to use")
+			set(ANGELSCRIPT_LIBRARIES "angelscript.lib" CACHE STRING "The AngelScript lib to link against")
+		endif(ROR_USE_ANGELSCRIPT)
+		
+		if(ROR_USE_HYDRAX)
+			set(HYDRAX_INCLUDE_DIRS "${ROR_DEPENDENCIES_DIR}/include/Hydrax" CACHE PATH "The Hydrax include path to use")
+			set(HYDRAX_LIBRARY_DIRS "${ROR_DEPENDENCIES_DIR}/lib" CACHE PATH "The Hydrax lib path to use")
+			set(HYDRAX_LIBRARIES "Hydrax.lib" CACHE STRING "The Hydrax lib to link against")
+		endif(ROR_USE_HYDRAX)
+		
 		
 ELSEIF(UNIX)
  find_package(PkgConfig)
