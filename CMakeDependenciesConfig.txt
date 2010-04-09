@@ -84,7 +84,7 @@ IF(WIN32)
 		endif(ROR_USE_MOFILEREADER)
 
 		if(ROR_USE_PAGED)
-			set(PAGED_INCLUDE_DIRS "${ROR_DEPENDENCIES_DIR}/include/paged" CACHE PATH "The paged include path to use")
+			set(PAGED_INCLUDE_DIRS "${ROR_DEPENDENCIES_DIR}/include/PagedGeometry" CACHE PATH "The paged include path to use")
 			set(PAGED_LIBRARY_DIRS "${ROR_DEPENDENCIES_DIR}/lib" CACHE PATH "The paged lib path to use")
 			set(PAGED_LIBRARIES "PagedGeometry.lib" CACHE STRING "The paged lib to link against")
 		endif(ROR_USE_PAGED)
