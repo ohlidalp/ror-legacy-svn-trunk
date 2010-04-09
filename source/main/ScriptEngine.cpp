@@ -23,9 +23,9 @@ along with Rigs of Rods.  If not, see <http://www.gnu.org/licenses/>.
 #include "ScriptEngine.h"
 #include "Ogre.h"
 #include "ExampleFrameListener.h"
-#include "scriptstdstring/scriptstdstring.h" // angelscript addon
-#include "scriptmath3d/scriptmath3d.h" // angelscript addon
-#include "scriptmath/scriptmath.h" // angelscript addon
+//#include "scriptstdstring/scriptstdstring.h" // angelscript addon
+//#include "scriptmath3d/scriptmath3d.h" // angelscript addon
+//#include "scriptmath/scriptmath.h" // angelscript addon
 #include "water.h"
 #include "Beam.h"
 #include "Settings.h"
@@ -254,9 +254,9 @@ void ScriptEngine::init()
 	// string type for C++ applications. Every developer is free to register it's own string type.
 	// The SDK do however provide a standard add-on for registering a string type, so it's not
 	// necessary to register your own string type if you don't want to.
-	RegisterStdString(engine);
-	RegisterScriptMath(engine);
-	RegisterScriptMath3D(engine);
+//	RegisterStdString(engine);
+//	RegisterScriptMath(engine);
+//	RegisterScriptMath3D(engine);
 
 	registerOgreObjects(engine);
 
@@ -599,12 +599,16 @@ int ScriptEngine::executeString(Ogre::String command)
 	if(!engine) return 1;
 	if(!context) context = engine->CreateContext();
 
+	// XXX: TODO: FIXME (the function was replaced by an addon)
+	/*
 	int result = engine->ExecuteString("terrainScript", command.c_str(), &context);
 	if(result<0)
 	{
 		LogManager::getSingleton().logMessage("error " + StringConverter::toString(result) + " while executing string: " + command + ".");
 	}
 	return result;
+	*/
+	return 1;
 }
 
 void ScriptEngine::triggerEvent(enum scriptEvents eventnum, int value)
@@ -672,18 +676,18 @@ void GameScript::movePerson(Ogre::Vector3 vec)
 
 float GameScript::getCaelumTime()
 {
-	if(mefl && mefl->mCaelumSystem) return mefl->mCaelumSystem->getLocalTime();
+	//if(mefl && mefl->mCaelumSystem) return mefl->mCaelumSystem->getLocalTime();
 	return 0;
 }
 
 void GameScript::setCaelumTime(float value)
 {
-	if(mefl && mefl->mCaelumSystem) mefl->mCaelumSystem->setLocalTime(value);
+	//if(mefl && mefl->mCaelumSystem) mefl->mCaelumSystem->setLocalTime(value);
 }
 
 bool GameScript::getCaelumAvailable()
 {
-	if(mefl && mefl->mCaelumSystem) return true;
+	//if(mefl && mefl->mCaelumSystem) return true;
 	return false;
 }
 
