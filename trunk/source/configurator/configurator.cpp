@@ -2285,14 +2285,14 @@ void MyDialog::updateRendersystems(Ogre::RenderSystem *rs)
 	std::map<Ogre::String, bool> filterOptions;
 	filterOptions["Allow NVPerfHUD"]=true;
 	filterOptions["Floating-point mode"]=true;
-#if 0
+
 	if(renderer->GetCount() == 0)
 	{
 		// add all rendersystems to the list
-		Ogre::RenderSystemList *list = ogreRoot->getAvailableRenderers();
+		const Ogre::RenderSystemList list = ogreRoot->getAvailableRenderers();
 		int selection = 0;
 		int valuecounter = 0;
-		for(Ogre::RenderSystemList::iterator it=list->begin(); it!=list->end(); it++, valuecounter++)
+		for(Ogre::RenderSystemList::const_iterator it=list.begin(); it!=list.end(); it++, valuecounter++)
 		{
 			if(rs && rs->getName() == (*it)->getName())
 				selection = valuecounter;
@@ -2304,7 +2304,6 @@ void MyDialog::updateRendersystems(Ogre::RenderSystem *rs)
 		}
 		renderer->SetSelection(selection);
 	}
-#endif //0
 
 	int x = 10;
 	int y = 50;
