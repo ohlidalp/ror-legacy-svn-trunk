@@ -2137,7 +2137,18 @@ void MyDialog::loadOgre()
 									Ogre::String(logsdirPrefix.ToUTF8().data())+"RoR.log");
 
 	logfile->AddLine(conv("Root restore config"));logfile->Write();
-	ogreRoot->restoreConfig();
+	try
+	{
+		ogreRoot->restoreConfig();
+	} catch (Ogre::Exception& e)
+	{
+		wxString warning = conv(e.getFullDescription());
+		wxString caption = _("error upon restoring Ogre Configuration");
+
+		wxMessageDialog *w = new wxMessageDialog(this, warning, caption, wxOK, wxDefaultPosition);
+		w->ShowModal();
+		delete(w);
+	}
 	updateRendersystems(ogreRoot->getRenderSystem());
 }
 void MyDialog::onChangeLanguageChoice(wxCommandEvent& event)

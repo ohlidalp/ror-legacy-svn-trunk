@@ -217,9 +217,6 @@ void MaterialFunctionMapper::addSSAOToEntity(Ogre::Entity *e)
 
 void MaterialFunctionMapper::replaceMeshMaterials(Ogre::Entity *e)
 {
-#if 0
-	// TODO: FIX THIS!
-
 	// this is not nice, but required (its not so much performance relevant ...
 	for(std::map <int, std::vector<materialmapping_t> >::iterator mfb=materialBindings.begin();mfb!=materialBindings.end();mfb++)
 	{
@@ -253,7 +250,6 @@ void MaterialFunctionMapper::replaceMeshMaterials(Ogre::Entity *e)
 
 	if(useSSAO)
 		addSSAOToEntity(e);
-#endif //0
 }
 
 int MaterialFunctionMapper::simpleMaterialCounter = 0;
