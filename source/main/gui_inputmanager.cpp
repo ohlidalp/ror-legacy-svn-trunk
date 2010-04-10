@@ -102,43 +102,10 @@ GUIInputManager::~GUIInputManager()
 
 void GUIInputManager::createInput(size_t _handle)
 {
-#if 0
-    // we dont use this code anymore, rather forward the events from the inputmanager
-    std::ostringstream windowHndStr;
-    windowHndStr << _handle;
-
-    OIS::ParamList pl;
-    pl.insert(std::make_pair(std::string("WINDOW"), windowHndStr.str()));
-
-    mInputManager = OIS::InputManager::createInputSystem(pl);
-
-    mKeyboard = static_cast<OIS::Keyboard*>(mInputManager->createInputObject( OIS::OISKeyboard, true ));
-    mKeyboard->setEventCallback(this);
-
-    mMouse = static_cast<OIS::Mouse*>(mInputManager->createInputObject( OIS::OISMouse, true ));
-    mMouse->setEventCallback(this);
-#endif //0
 }
 
 void GUIInputManager::destroyInput()
 {
-#if 0
-    if (mInputManager)
-    {
-        if (mMouse)
-        {
-            mInputManager->destroyInputObject( mMouse );
-            mMouse = nullptr;
-        }
-        if (mKeyboard)
-        {
-            mInputManager->destroyInputObject( mKeyboard );
-            mKeyboard = nullptr;
-        }
-        OIS::InputManager::destroyInputSystem(mInputManager);
-        mInputManager = nullptr;
-    }
-#endif //0
 }
 
 bool GUIInputManager::mouseMoved(const OIS::MouseEvent& _arg)
