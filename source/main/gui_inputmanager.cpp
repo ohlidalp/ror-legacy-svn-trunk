@@ -100,13 +100,6 @@ GUIInputManager::~GUIInputManager()
 {
 }
 
-void GUIInputManager::createInput(size_t _handle)
-{
-}
-
-void GUIInputManager::destroyInput()
-{
-}
 
 bool GUIInputManager::mouseMoved(const OIS::MouseEvent& _arg)
 {
@@ -161,12 +154,6 @@ bool GUIInputManager::keyReleased(const OIS::KeyEvent& _arg)
 {
     injectKeyRelease(MyGUI::KeyCode::Enum(_arg.key));
     return true;
-}
-
-void GUIInputManager::captureInput()
-{
-    //if (mMouse) mMouse->capture();
-    //if (mKeyboard) mKeyboard->capture();
 }
 
 void GUIInputManager::setInputViewSize(int _width, int _height)

@@ -63,9 +63,6 @@ bool GUIManager::create()
 	mRoot->addFrameListener(this);
 	Ogre::WindowEventUtilities::addWindowEventListener(mWindow, this);
 
-	size_t handle = 0;
-	mWindow->getCustomAttribute("WINDOW", &handle);
-	createInput(handle);
 	windowResized(mWindow);
 	createGui();
 
@@ -76,7 +73,6 @@ bool GUIManager::create()
 void GUIManager::destroy()
 {
 	destroyGui();
-	destroyInput();
 }
 
 void GUIManager::createGui()
@@ -109,7 +105,6 @@ bool GUIManager::frameStarted(const Ogre::FrameEvent& evt)
 {
 	if (mExit) return false;
 	if (!mGUI) return true;
-	captureInput();
 	return true;
 }
 
@@ -128,7 +123,6 @@ void GUIManager::windowResized(Ogre::RenderWindow* _rw)
 void GUIManager::windowClosed(Ogre::RenderWindow* _rw)
 {
 	mExit = true;
-	destroyInput();
 }
 
 void GUIManager::eventRequestTag(const MyGUI::UString& _tag, MyGUI::UString& _result)

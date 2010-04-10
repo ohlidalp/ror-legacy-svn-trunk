@@ -36,9 +36,6 @@ public:
     GUIInputManager();
     virtual ~GUIInputManager();
 
-    void createInput(size_t _handle);
-    void destroyInput();
-    void captureInput();
     void setInputViewSize(int _width, int _height);
 
     virtual void injectMouseMove(int _absx, int _absy, int _absz) { }
