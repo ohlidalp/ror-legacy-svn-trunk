@@ -660,11 +660,20 @@ void StreamsPage::OnBetaChange(wxCommandEvent &evt)
 
 bool StreamsPage::OnEnter(bool forward)
 {
+	int res1 = CONFIG->getCurrentVersionInfo();
+	if(res1)
+	{
+		wxMessageBox(_T("The program could not connect to the central Streams server in order to receive the latest version information.\nThe service may be temporarily unavailable, or you have no network connection."), _T("Network error"), wxICON_ERROR | wxOK, this);
+		exit(1);
+	}
+
 	int res = CONFIG->getOnlineStreams();
 	if(res)
 	{
 		wxMessageBox(_T("The program could not connect to the central Streams server.\nThe service may be temporarily unavailable, or you have no network connection."), _T("Network error"), wxICON_ERROR | wxOK, this);
+		exit(1);
 	}
+
 	wxSizerItemList::compatibility_iterator node = scrwsz->GetChildren().GetFirst();
 	while (node)
 	{
@@ -879,11 +888,14 @@ DownloadPage::DownloadPage(wxWizard *parent) : wxWizardPageSimple(parent), wizar
 	wxGridSizer *wxg = new wxGridSizer(3, 2, 2, 5);
 
     wxStaticText *txt;
+	/*
+	// removed for now
 	// download time
 	txt = new wxStaticText(this, wxID_ANY, _T("Download time: "));
 	wxg->Add(txt, 0, wxALL|wxEXPAND, 0);
 	txt_dltime = new wxStaticText(this, wxID_ANY, _T("n/a"));
 	wxg->Add(txt_dltime, 0, wxALL|wxEXPAND, 0);
+	*/
 
 	// download time
 	txt = new wxStaticText(this, wxID_ANY, _T("Remaining time: "));
@@ -930,7 +942,7 @@ DownloadPage::DownloadPage(wxWizard *parent) : wxWizardPageSimple(parent), wizar
 	mainSizer->Add(10, 10);
     // important to be able to load web URLs
     wxFileSystem::AddHandler( new wxInternetFSHandler );
-    htmlinfo = new HtmlWindow(this, wxID_ANY, wxDefaultPosition, wxSize(50, 50));
+    htmlinfo = new HtmlWindow(this, wxID_ANY, wxDefaultPosition, wxSize(50, 50), wxBORDER_NONE);
 	mainSizer->Add(htmlinfo, 0, wxALL|wxEXPAND);
     htmlinfo->SetPage(_("."));
     timer = new wxTimer(this, ID_TIMER);
@@ -1144,6 +1156,10 @@ LastPage::LastPage(wxWizard *parent) : wxWizardPageSimple(parent), wizard(parent
 
 	chk_configurator = new wxCheckBox(this, wxID_ANY, _T("Run the Configurator"));
 	mainSizer->Add(chk_configurator, 0, wxALL|wxALIGN_LEFT, 5);
+
+	chk_changelog = new wxCheckBox(this, wxID_ANY, _T("View the Changelog"));
+	mainSizer->Add(chk_changelog, 0, wxALL|wxALIGN_LEFT, 5);
+
 #else
 	// TODO: add linux options
 	mainSizer->Add(tst=new wxStaticText(this, wxID_ANY, _T("Thank you for downloading Rigs of Rods.\n")), 0, wxALL, 5);
@@ -1173,6 +1189,11 @@ bool LastPage::OnEnter(bool forward)
 	chk_configurator->SetValue(true);
 	if(CONFIG->getPersistentConfig(wxT("installer.run_configurator")) == wxT("no"))
 		chk_configurator->SetValue(false);
+
+	chk_changelog->SetValue(true);
+	if(CONFIG->getPersistentConfig(wxT("installer.view_changelog")) == wxT("no"))
+		chk_changelog->SetValue(false);
+	
 #endif // OGRE_PLATFORM
 	return true;
 }
@@ -1185,7 +1206,9 @@ bool LastPage::OnLeave(bool forward)
 	CONFIG->setPersistentConfig(wxT("installer.create_desktop_shortcuts"), chk_desktop->IsChecked()?wxT("yes"):wxT("no"));
 	CONFIG->setPersistentConfig(wxT("installer.create_start_menu_shortcuts"), chk_startmenu->IsChecked()?wxT("yes"):wxT("no"));
 	CONFIG->setPersistentConfig(wxT("installer.run_configurator"), chk_configurator->IsChecked()?wxT("yes"):wxT("no"));
+	CONFIG->setPersistentConfig(wxT("installer.view_changelog"), chk_changelog->IsChecked()?wxT("yes"):wxT("no"));
 
+	
 	if(chk_desktop->IsChecked() || chk_startmenu->IsChecked())
 		CONFIG->createProgramLinks(chk_desktop->IsChecked(), chk_startmenu->IsChecked());
 
@@ -1201,6 +1224,9 @@ bool LastPage::OnLeave(bool forward)
 	if(chk_viewmanual->IsChecked())
 		CONFIG->viewManual();
 
+	if(chk_changelog->IsChecked())
+		CONFIG->viewChangelog();
+	
 #endif // OGRE_PLATFORM
 	return true;
 }

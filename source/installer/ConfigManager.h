@@ -105,11 +105,13 @@ public:
 	void installRuntime();
 	void startConfigurator();
 	void viewManual();
+	void viewChangelog();
 	void executeBinary(wxString filename, wxString action = wxT("runas"), wxString parameters = wxString(), wxString cwDir = wxT("cwd"), bool prependCWD=true);
 	int createShortcut(wxString linkTarget, wxString workingDirectory, wxString linkFile, wxString linkDescription);
 	void createProgramLinks(bool desktop, bool startmenu);
 
 	int writeVersionInfo();
+	int getCurrentVersionInfo();
 private:
 	int statupMode;
 	wxString installPath;

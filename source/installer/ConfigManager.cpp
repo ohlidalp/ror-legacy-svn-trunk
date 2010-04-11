@@ -62,6 +62,24 @@ ConfigManager::ConfigManager() : currVersion()
 	dlerror=0;
 }
 
+int ConfigManager::getCurrentVersionInfo()
+{
+	// get the most recent version information
+	WsyncDownload *wsdl = new WsyncDownload();
+	std::vector< std::vector< std::string > > list;
+	int res = wsdl->downloadConfigFile(WSYNC_MAIN_SERVER, WSYNC_VERSION_INFO, list);
+	delete(wsdl);
+	if(!res && list.size()>0 && list[0].size()>0)
+	{
+		currVersion = list[0][0];
+		return 0;
+	} else
+	{
+		currVersion = std::string();
+	}
+	return 1;
+}
+
 int ConfigManager::writeVersionInfo()
 {
 	wxString fn = getInstallationPath() + wxT("\\version");
@@ -114,8 +132,9 @@ int ConfigManager::getOnlineStreams()
 				s.platform  = conv(olist[i]["platform"]);
 				s.path      = conv(olist[i]["path"]);
 
-				if(olist[i]["version"].size() > 0 && currVersion.empty())
-					currVersion = olist[i]["version"];
+				// OLD version of getting the version, now obsolete
+				//if(olist[i]["version"].size() > 0 && currVersion.empty())
+				//	currVersion = olist[i]["version"];
 
 				s.icon      = (olist[i]["type"]=="0")?wxBitmap(mainpack_xpm):wxBitmap(extrapack_xpm);
 				s.checked   = (olist[i]["checked"] == "1");
@@ -614,6 +633,12 @@ void ConfigManager::viewManual()
 {
 	executeBinary(wxT("Things_you_can_do_in_Rigs_of_Rods.pdf"), wxT("open"));
 	executeBinary(wxT("keysheet.pdf"), wxT("open"));
+}
+
+void ConfigManager::viewChangelog()
+{
+	wxString changeLogURL = wxT("http://wiki.rigsofrods.com/pages/Changelog#") + conv(currVersion);
+	wxLaunchDefaultBrowser(changeLogURL);
 }
 
 void ConfigManager::executeBinary(wxString filename, wxString action, wxString parameters, wxString cwDir, bool prependCWD)
