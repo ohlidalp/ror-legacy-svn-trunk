@@ -30,8 +30,9 @@
 #define API_REPOSEARCH "/reposearch/"
 #define REPO_DOWNLOAD  "/files/mirror/geoselect/"
 
-#define WSYNC_MAIN_SERVER "wsync.rigsofrods.com"
-#define WSYNC_MAIN_DIR    "/"
+#define WSYNC_MAIN_SERVER  "wsync.rigsofrods.com"
+#define WSYNC_MAIN_DIR     "/"
+#define WSYNC_VERSION_INFO "/version"
 
 #define WMO_FULL     0x00000001
 #define WMO_NODELETE 0x00000010

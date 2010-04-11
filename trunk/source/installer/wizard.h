@@ -193,7 +193,7 @@ class LastPage : public wxWizardPageSimple, public EnterLeavePage
 {
 protected:
 	wxWizard *wizard;
-	wxCheckBox *chk_runtime, *chk_configurator, *chk_desktop, *chk_startmenu, *chk_viewmanual, *chk_upgrade_configs;
+	wxCheckBox *chk_runtime, *chk_configurator, *chk_desktop, *chk_startmenu, *chk_viewmanual, *chk_upgrade_configs, *chk_changelog;
 public:
 	LastPage(wxWizard *parent);
 	bool OnEnter(bool forward);
