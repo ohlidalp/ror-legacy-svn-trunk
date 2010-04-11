@@ -1743,6 +1743,8 @@ void CacheSystem::fillTruckDetailInfo(Cache_Entry &entry, Ogre::DataStreamPtr ds
 					LogManager::getSingleton().logMessage("Error parsing File (Prop) " + String(fname) +" line " + StringConverter::toString(linecounter) + ". trying to continue ...");
 					continue;
 				}
+				/*
+				// XXX TODO fix for skins at some point
 				Entity *te=0;
 				String propMats="";
 				try
@@ -1750,6 +1752,7 @@ void CacheSystem::fillTruckDetailInfo(Cache_Entry &entry, Ogre::DataStreamPtr ds
 					if(smgr)
 					{
 						te = smgr->createEntity("CacheEntityMaterialTest", String(meshname));
+						if(!te) continue;
 						addMeshMaterials(entry, te);
 						smgr->destroyEntity(te);
 					}
@@ -1757,6 +1760,7 @@ void CacheSystem::fillTruckDetailInfo(Cache_Entry &entry, Ogre::DataStreamPtr ds
 				{
 					LogManager::getSingleton().logMessage("error loading mesh: "+String(meshname));
 				}
+				*/
 				entry.propscount++;
 				continue;
 			}
@@ -1977,6 +1981,8 @@ void CacheSystem::fillTruckDetailInfo(Cache_Entry &entry, Ogre::DataStreamPtr ds
 					LogManager::getSingleton().logMessage("Error parsing File (Flexbodies) " + String(fname) +" line " + StringConverter::toString(linecounter) + ". trying to continue ...");
 					continue;
 				}
+				/*
+				// XXX TODO fix for skins at some point
 				Entity *te=0;
 				String propMats="";
 				try
@@ -1984,6 +1990,7 @@ void CacheSystem::fillTruckDetailInfo(Cache_Entry &entry, Ogre::DataStreamPtr ds
 					if(smgr)
 					{
 						te = smgr->createEntity("CacheEntityMaterialTest", String(meshname));
+						if(!te) continue;
 						addMeshMaterials(entry, te);
 						smgr->destroyEntity(te);
 					}
@@ -1991,6 +1998,7 @@ void CacheSystem::fillTruckDetailInfo(Cache_Entry &entry, Ogre::DataStreamPtr ds
 				{
 					LogManager::getSingleton().logMessage("error loading mesh: "+String(meshname));
 				}
+				*/
 				entry.flexbodiescount++;
 				continue;
 			}
