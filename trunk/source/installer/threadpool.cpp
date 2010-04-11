@@ -165,6 +165,7 @@ retry:
 	updateCallback(jobID, MSE_DOWNLOAD_DONE);
 	LOG("DLFile-%04d| file ok\n", jobID);
 	delete(wsdl);
+	updateCallback(jobID, MSE_DOWNLOAD_DONE);
 	return 0;
 }
 

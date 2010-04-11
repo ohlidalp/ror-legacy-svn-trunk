@@ -36,6 +36,8 @@ along with Rigs of Rods.  If not, see <http://www.gnu.org/licenses/>.
 #include "wsyncdownload.h"
 #include "utils.h"
 #include "installerlog.h"
+#include "SHA1.h"
+#include "wizard.h"
 
 #if OGRE_PLATFORM == OGRE_PLATFORM_WIN32
 	#include <shlobj.h> // for the special path functions
@@ -88,6 +90,19 @@ int ConfigManager::writeVersionInfo()
 	fprintf(f, "%s", currVersion.c_str());
 	fclose(f);
 	return 0;
+}
+
+std::string ConfigManager::readVersionInfo()
+{
+	wxString fn = getInstallationPath() + wxT("\\version");
+	FILE *f = fopen(conv(fn).c_str(), "r");
+	if(!f) return std::string("unkown");
+	char tmp[256]="";
+	int res = fscanf(f, "%s", tmp);
+	fclose(f);
+	if(res>0)
+		return std::string(tmp);
+	return std::string("unkown");
 }
 
 int ConfigManager::getOnlineStreams()
@@ -637,7 +652,7 @@ void ConfigManager::viewManual()
 
 void ConfigManager::viewChangelog()
 {
-	wxString changeLogURL = wxT("http://wiki.rigsofrods.com/pages/Changelog#") + conv(currVersion);
+	wxString changeLogURL = wxT(CHANGELOGURL) + conv(currVersion);
 	wxLaunchDefaultBrowser(changeLogURL);
 }
 
@@ -717,4 +732,57 @@ int ConfigManager::createShortcut(wxString linkTarget, wxString workingDirectory
 	return createLink(conv(linkTarget), conv(workingDirectory), conv(linkFile), conv(linkDescription));
 #endif //OGRE_PLATFORM
 	return 1;
+}
+
+std::string ConfigManager::getOwnHash()
+{
+	// now hash ourself and validate our installer version, to be sure we are using the latest installer
+	std::string myPath = conv(MyApp::getExecutablePath());
+	
+	CSHA1 sha1;
+	bool res = sha1.HashFile(const_cast<char*>(myPath.c_str()));
+	if(!res) return std::string("");
+	sha1.Final();
+	char resultHash[256] = "";
+	sha1.ReportHash(resultHash, CSHA1::REPORT_HEX_SHORT);
+	return std::string(resultHash);
+}
+
+void ConfigManager::checkForNewInstaller()
+{
+	std::string ourHash = getOwnHash();
+
+	char url_tmp[256]="";
+	sprintf(url_tmp, API_CHINSTALLER, ourHash.c_str());
+
+	WsyncDownload *wsdl = new WsyncDownload();
+	wsdl->setDownloadMessage(_T("checking for installer updates"));
+	std::vector< std::vector< std::string > > list;
+	int res = wsdl->downloadConfigFile(API_SERVER, std::string(url_tmp), list, true);
+	if(!res && list.size()>0 && list[0].size()>0)
+	{
+		if(list[0][0] == std::string("ok"))
+		{
+			// no updates
+		} else if(list[0][0] == std::string("update") && list[0].size() > 2)
+		{
+			// yay, an update
+			wsdl->setDownloadMessage(_T("downloading installer update"));
+			
+			// rename ourself, so we can replace ourself
+			std::string myPath = conv(MyApp::getExecutablePath());
+			boost::filesystem::rename(myPath, myPath+std::string(".old"));
+			
+			int res = wsdl->downloadFile(0, myPath, list[0][1], list[0][2], 0, 0, true);
+			if(!res)
+			{
+				wxMessageBox(_T("Installer was updated, will restart the installer now!"));
+
+				// now start the new installer and quit ourselfs
+				executeBinary(conv(myPath), wxT("runas"), wxT(""), wxT("cwd"), false);
+				exit(1);
+			}
+		}
+	}
+	delete(wsdl);
 }

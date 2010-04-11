@@ -60,6 +60,8 @@ along with Rigs of Rods.  If not, see <http://www.gnu.org/licenses/>.
 
 #include "wx/wizard.h"
 #include "wxStrel.h"
+#include "wx/filename.h"
+#include <wx/clipbrd.h>
 
 #include "ConfigManager.h"
 
@@ -139,6 +141,7 @@ static const wxCmdLineEntryDesc g_cmdLineDesc [] =
      { wxCMD_LINE_SWITCH, ("r"), ("uninstall"), ("uninstall mode"), wxCMD_LINE_VAL_NONE },
      { wxCMD_LINE_SWITCH, ("i"), ("install"),   ("install mode"), wxCMD_LINE_VAL_NONE  },
      { wxCMD_LINE_SWITCH, ("g"), ("upgrade"),   ("upgrade mode"), wxCMD_LINE_VAL_NONE  },
+     { wxCMD_LINE_SWITCH, ("d"), ("hash"),      ("put installer hash into clipboard"), wxCMD_LINE_VAL_NONE  },
 #else
      { wxCMD_LINE_SWITCH, wxT("h"), wxT("help"),      wxT("displays help on the command line parameters"), wxCMD_LINE_VAL_NONE, wxCMD_LINE_OPTION_HELP },
      { wxCMD_LINE_SWITCH, wxT("u"), wxT("update"),    wxT("update mode"), wxCMD_LINE_VAL_NONE },
@@ -182,9 +185,74 @@ bool MyApp::OnCmdLineParsed(wxCmdLineParser& parser)
     if(parser.Found(wxT("r"))) startupMode = IMODE_UNINSTALL;
     if(parser.Found(wxT("i"))) startupMode = IMODE_INSTALL;
     if(parser.Found(wxT("g"))) startupMode = IMODE_UPGRADE;
+    
+	
+	// special mode: put our hash into the clipboard
+	if(parser.Found(wxT("d")))
+	{
+		if (wxTheClipboard->Open())
+		{
+			wxString txt = getExecutablePath() + wxT(" ") + ConfigManager::getOwnHash();
+			wxTheClipboard->SetData(new wxTextDataObject(txt));
+			wxTheClipboard->Flush();
+			wxTheClipboard->Close();
+		}
+		exit(0);
+	}
     return true;
 }
 
+
+wxString MyApp::getExecutablePath()
+{
+    static bool found = false;
+    static wxString path;
+
+    if (found)
+        return path;
+    else
+    {
+#ifdef __WXMSW__
+
+        TCHAR buf[512];
+        *buf = '\0';
+        GetModuleFileName(NULL, buf, 511);
+        path = buf;
+
+#elif defined(__WXMAC__)
+
+        ProcessInfoRec processinfo;
+        ProcessSerialNumber procno ;
+        FSSpec fsSpec;
+
+        procno.highLongOfPSN = NULL ;
+        procno.lowLongOfPSN = kCurrentProcess ;
+        processinfo.processInfoLength = sizeof(ProcessInfoRec);
+        processinfo.processName = NULL;
+        processinfo.processAppSpec = &fsSpec;
+
+        GetProcessInformation( &procno , &processinfo ) ;
+        path = wxMacFSSpec2MacFilename(&fsSpec);
+#else
+        wxString argv0 = wxTheApp->argv[0];
+
+        if (wxIsAbsolutePath(argv0))
+            path = argv0;
+        else
+        {
+            wxPathList pathlist;
+            pathlist.AddEnvList(wxT("PATH"));
+            path = pathlist.FindAbsoluteValidPath(argv0);
+        }
+
+        wxFileName filename(path);
+        filename.Normalize();
+        path = filename.GetFullPath();
+#endif
+        found = true;
+        return path;
+    }
+}
 
 // ----------------------------------------------------------------------------
 // MyWizard
@@ -219,19 +287,29 @@ MyWizard::MyWizard(int startupMode, wxFrame *frame, bool useSizer)
 	new ConfigManager();
 	CONFIG->setStartupMode(startupMode);
 
+	// create log
+	boost::filesystem::path iPath = boost::filesystem::path(conv(CONFIG->getInstallationPath()));
+	boost::filesystem::path lPath = iPath / std::string("wizard.log");
+	new InstallerLog(lPath);
+	LOG("installer log created");
+
 #if OGRE_PLATFORM == OGRE_PLATFORM_WIN32
+#if 0 
+	// this is disabled since we check for the newest installer anyways
+
 	// detect wether the user should run the other installer
 	if(!CONFIG->isFirstInstall())
 	{
 		// find the current working directory of this running app
 		bool error=false;
-		char program_path[1024]="", install_path[1024]="";
+		char program_path[1024]="";
+		char install_path[1024]="";
 		memset(program_path, 0, 1024);
 		memset(install_path, 0, 1024);
-		if (!GetModuleFileNameA(NULL, program_path, 512))
-		{
-			error=true;
-		}
+
+		// get our path
+		wxString myPath = MyApp::getExecutablePath();
+		strncpy(program_path, myPath.c_str(), myPath.size());
 		GetShortPathNameA(program_path, program_path, 512);
 		path_descend(program_path);
 
@@ -248,16 +326,11 @@ MyWizard::MyWizard(int startupMode, wxFrame *frame, bool useSizer)
 			//exit(1);
 		}
 	}
-
-
-
+#endif //0
 #endif // OGRE_PLATFORM
 
-	// create log
-	boost::filesystem::path iPath = boost::filesystem::path(conv(CONFIG->getInstallationPath()));
-	boost::filesystem::path lPath = iPath / std::string("wizard.log");
-	new InstallerLog(lPath);
-	LOG("installer log created");
+	// check if there is a newer installer available
+	CONFIG->checkForNewInstaller();
 
     PresentationPage *presentation = new PresentationPage(this);
 	LicencePage *licence = new LicencePage(this);
@@ -933,6 +1006,11 @@ DownloadPage::DownloadPage(wxWizard *parent) : wxWizardPageSimple(parent), wizar
 	txt_concurr = new wxStaticText(this, wxID_ANY, wxT("none"));
 	wxg->Add(txt_concurr, 0, wxALL|wxEXPAND, 0);
 
+	// version information
+	txt = new wxStaticText(this, wxID_ANY, _T("Version Info: "));
+	wxg->Add(txt, 0, wxALL|wxEXPAND, 0);
+	hlink = new wxHyperlinkCtrl(this, wxID_ANY, wxT("none"), wxT(""));
+	wxg->Add(hlink, 0, wxALL|wxEXPAND, 0);
 
 
 	// grid end
@@ -998,6 +1076,15 @@ bool DownloadPage::OnEnter(bool forward)
 	//disable forward and backward buttons
 	setControlEnable(wizard, wxID_FORWARD, false);
 	setControlEnable(wizard, wxID_BACKWARD, false);
+
+	// fill in version information
+	std::string fromVersion = CONFIG->readVersionInfo();
+	std::string toVersion   = CONFIG->getOnlineVersion();
+	std::string versionText = std::string("updating from ") + fromVersion + std::string(" to ") + toVersion + std::string("\n(click to view changelog))");
+	std::string versionURL  = std::string(CHANGELOGURL) + toVersion;
+	hlink->SetLabel(conv(versionText));
+	hlink->SetURL(conv(versionURL));
+
 
 	std::vector < stream_desc_t > *streams = CONFIG->getStreamset();
 	if(!streams->size())
