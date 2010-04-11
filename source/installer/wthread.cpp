@@ -75,8 +75,8 @@ void WsyncThread::onDownloadStatusUpdate(MyStatusEvent &ev)
 		dlStatus[jobID].downloaded = (boost::uintmax_t)ev.GetProgress();
 		break;
 	case MSE_DOWNLOAD_DONE:
-		dlStatus[jobID].status = 3;
 		updateCallback(MSE_DOWNLOAD_DONE, dlStatus[jobID].path);
+		dlStatus[jobID].status = 3;
 		break;
 	}
 

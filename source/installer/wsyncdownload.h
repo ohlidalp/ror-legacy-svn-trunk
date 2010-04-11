@@ -24,12 +24,16 @@ public:
 
 	static void increaseServerStats(std::string server, boost::uintmax_t bytes);
 
+	void setDownloadMessage(wxString msg) { mDownloadMessage = msg; };
+
 protected:
 	wxEvtHandler* parent;
 	static std::map < std::string, boost::uintmax_t > traffic_stats;
 
 	void reportDownloadProgress(int jobID, Timer dlStartTime, boost::uintmax_t predDownloadSize, boost::uintmax_t downloaded);
 	void updateCallback(int jobID, int type, std::string txt = std::string(), float percent=-1);
+
+	wxString mDownloadMessage;
 };
 
 #endif //WSYNCDOWNLOAD_H__

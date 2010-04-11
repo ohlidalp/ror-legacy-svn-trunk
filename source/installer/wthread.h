@@ -13,26 +13,30 @@
 #include "boost/filesystem.hpp"
 
 
-#define INDEXFILENAME  "files.index"
+#define INDEXFILENAME       "files.index"
 
 // servers
-#define API_SERVER     "api.rigsofrods.com"
+#define API_SERVER          "api.rigsofrods.com"
 
 #ifndef REPO_SERVER
-# define REPO_SERVER   "repository.rigsofrods.com"
+# define REPO_SERVER        "repository.rigsofrods.com"
 #endif //REPO_SERVER
 
 
 // functions
-#define API_MIRROR     "/getwsyncmirror/"
-#define API_MIRROR_NOGEO     "/getwsyncmirror/?ignoregeo"
-#define API_RECORDTRAFFIC "/reporttraffic/?mirror=%s&bytes=%d"
-#define API_REPOSEARCH "/reposearch/"
-#define REPO_DOWNLOAD  "/files/mirror/geoselect/"
+#define API_MIRROR          "/getwsyncmirror/"
+#define API_MIRROR_NOGEO    "/getwsyncmirror/?ignoregeo"
+#define API_RECORDTRAFFIC   "/reporttraffic/?mirror=%s&bytes=%d"
+#define API_REPOSEARCH      "/reposearch/"
+#define API_CHINSTALLER     "/checkinstallerupdate/?h=%s"
 
-#define WSYNC_MAIN_SERVER  "wsync.rigsofrods.com"
-#define WSYNC_MAIN_DIR     "/"
-#define WSYNC_VERSION_INFO "/version"
+#define REPO_DOWNLOAD       "/files/mirror/geoselect/"
+
+#define WSYNC_MAIN_SERVER   "wsync.rigsofrods.com"
+#define WSYNC_MAIN_DIR      "/"
+#define WSYNC_VERSION_INFO  "/version"
+
+#define CHANGELOGURL        "http://wiki.rigsofrods.com/pages/Changelog#"
 
 #define WMO_FULL     0x00000001
 #define WMO_NODELETE 0x00000010

@@ -111,7 +111,14 @@ public:
 	void createProgramLinks(bool desktop, bool startmenu);
 
 	int writeVersionInfo();
+	std::string readVersionInfo();
 	int getCurrentVersionInfo();
+
+	static std::string getOwnHash();
+	void checkForNewInstaller();
+
+	std::string getOnlineVersion() { return currVersion; };
+
 private:
 	int statupMode;
 	wxString installPath;

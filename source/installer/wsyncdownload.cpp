@@ -26,6 +26,7 @@ std::map < std::string, boost::uintmax_t > WsyncDownload::traffic_stats;
 
 WsyncDownload::WsyncDownload(wxEvtHandler* parent) : parent(parent)
 {
+	mDownloadMessage = wxT("downloading file ...");
 }
 
 int WsyncDownload::downloadFile(int jobID, boost::filesystem::path localFile, string server, string path, boost::uintmax_t predDownloadSize, boost::uintmax_t *fileSizeArg, bool showProgress)
@@ -34,7 +35,7 @@ int WsyncDownload::downloadFile(int jobID, boost::filesystem::path localFile, st
 
 	wxProgressDialog *wxp = 0;
 	if(showProgress)
-		wxp = new wxProgressDialog(wxT("downloading file ..."), conv(string("downloading ") + server + path), 1000,0, wxPD_AUTO_HIDE|wxPD_SMOOTH|wxPD_ELAPSED_TIME|wxPD_ESTIMATED_TIME|wxPD_REMAINING_TIME|wxPD_CAN_ABORT);
+		wxp = new wxProgressDialog(mDownloadMessage, conv(string("downloading http://") + server + path), 1000,0, wxPD_AUTO_HIDE|wxPD_SMOOTH|wxPD_ELAPSED_TIME|wxPD_ESTIMATED_TIME|wxPD_REMAINING_TIME|wxPD_CAN_ABORT);
 	boost::uintmax_t downloadDoneSize=0;
 
 	Timer dlStartTime = Timer();
@@ -231,6 +232,7 @@ int WsyncDownload::downloadFile(int jobID, boost::filesystem::path localFile, st
 	}
 	catch (std::exception& e)
 	{
+		if(wxp)	wxp->Update(1000, wxT("error"));
 		LOG("DLFile-%04d|Exception Error: %s\n", jobID, string(e.what()).c_str());
 		LOG("DLFile-%04d|download URL: http://%s%s\n", jobID, server.c_str(), path.c_str());
 

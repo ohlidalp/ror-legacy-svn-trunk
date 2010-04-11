@@ -44,6 +44,7 @@ along with Rigs of Rods.  If not, see <http://www.gnu.org/licenses/>.
 	#include "wx/timer.h"
 	#include "wx/scrolwin.h"
 #endif
+#include <wx/hyperlink.h>
 
 #define TXTWRAP 400
 
@@ -57,8 +58,10 @@ public:
 	virtual bool OnInit();
 	virtual void OnInitCmdLine(wxCmdLineParser& parser);
     virtual bool OnCmdLineParsed(wxCmdLineParser& parser);
+	static wxString getExecutablePath();
 protected:
 	int startupMode;
+
 };
 
 class HtmlWindow;
@@ -172,7 +175,8 @@ public:
 	bool OnEnter(bool forward);
 	bool OnLeave(bool forward);
 private:
-	wxStaticText *txt_dltime, *txt_speed, *txt_traf, *txt_localpath, *txt_server, *txt_remaintime, *txt_concurr;
+	wxStaticText *txt_dltime, *txt_speed, *txt_traf, *txt_localpath, *txt_server, *txt_remaintime, *txt_concurr, *txt_updver;
+	wxHyperlinkCtrl *hlink;
 	wxStaticText *txtFinish;
 	wxListBox *statusList;
 	wxGauge *progress;
