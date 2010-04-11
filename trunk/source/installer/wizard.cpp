@@ -192,7 +192,7 @@ bool MyApp::OnCmdLineParsed(wxCmdLineParser& parser)
 	{
 		if (wxTheClipboard->Open())
 		{
-			wxString txt = getExecutablePath() + wxT(" ") + ConfigManager::getOwnHash();
+			wxString txt = getExecutablePath() + wxT(" ") + ConfigManager::getOwnHash() + wxT(" ") + wxT(__TIME__) + wxT(" ") + wxT(__DATE__);
 			wxTheClipboard->SetData(new wxTextDataObject(txt));
 			wxTheClipboard->Flush();
 			wxTheClipboard->Close();
