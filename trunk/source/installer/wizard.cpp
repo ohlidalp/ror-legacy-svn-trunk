@@ -1080,7 +1080,7 @@ bool DownloadPage::OnEnter(bool forward)
 	// fill in version information
 	std::string fromVersion = CONFIG->readVersionInfo();
 	std::string toVersion   = CONFIG->getOnlineVersion();
-	std::string versionText = std::string("updating from ") + fromVersion + std::string(" to ") + toVersion + std::string("\n(click to view changelog))");
+	std::string versionText = std::string("updating from ") + fromVersion + std::string(" to ") + toVersion;
 	std::string versionURL  = std::string(CHANGELOGURL) + toVersion;
 	hlink->SetLabel(conv(versionText));
 	hlink->SetURL(conv(versionURL));
