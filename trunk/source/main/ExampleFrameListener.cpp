@@ -6961,30 +6961,6 @@ void ExampleFrameListener::setCurrentTruck(int v)
 #endif
 }
 
-#if 0
-bool ExampleFrameListener::processUnbufferedMouseInput(const FrameEvent& evt)
-{
-	/* Rotation factors, may not be used if the second mouse button is pressed. */
-
-	/* If the second mouse button is pressed, then the mouse movement results in
-	sliding the camera, otherwise we rotate. */
-	/*        if( mInputDevice->getMouseButton( 1 ) )
-	{
-	mTranslateVector.x += mInputDevice->getMouseRelativeX() * 0.13;
-	mTranslateVector.y -= mInputDevice->getMouseRelativeY() * 0.13;
-	}
-	else
-	{
-	mRotX = Degree(-mInputDevice->getMouseRelativeX() * 0.13);
-	mRotY = Degree(-mInputDevice->getMouseRelativeY() * 0.13);
-	}
-	*/
-
-	//if (!mWindow->isAutoUpdated()) mWindow->update();
-	return true;
-}
-#endif
-
 void ExampleFrameListener::moveCamera(float dt)
 {
 	if(!hfinder) return;
@@ -7922,96 +7898,6 @@ END OF OLD CODE */
 		updateGUI(dt);
 		if (raceStartTime > 0)
 			updateRacingGUI();
-#if 0
-		if (netmode && net)
-		{
-			//send player's truck data
-
-			//OLD: net->sendData(trucks[0]);
-			//also take care of this
-			//trucks[0]->expireNetForce();
-			//check for chat
-			char name[256];
-			//check for new truck to spawn
-			unsigned int uid;
-			unsigned int label;
-			if (net->vehicle_to_spawn(name, &uid, &label))
-			{
-				//check first if we can recycle a truck
-				bool recy=false;
-				for (int t=0; t<free_truck; t++)
-				{
-					if(!trucks[t]) continue;
-					if (trucks[t]->state==RECYCLE && trucks[t]->realtruckfilename == String(name))
-					{
-						recy=true;
-						trucks[t]->state=NETWORKED;
-						trucks[t]->label=label;
-						trucks[t]->reset();
-						client_t cinfo;
-						if(net->vehicle_spawned(uid, t, cinfo))
-						{
-							// error getting info
-							// TODO: what to do now?
-						}
-						trucks[t]->setNetworkInfo(cinfo);
-						break;
-					}
-				}
-				if (!recy)
-				{
-					std::vector<Ogre::String> truckconfig;
-					truckconfig.push_back("networked");
-
-					// TODO: to check of we have other free places in the array, not only at the end
-
-					// spawn not everyone in the user's area -> lag
-					trucks[free_truck]=new Beam(free_truck, mSceneMgr, mSceneMgr->getRootSceneNode(), mWindow, net,
-						&mapsizex, &mapsizez, truckx, trucky, truckz, Quaternion::ZERO, name, collisions, dustp, clumpp, sparksp, dripp, splashp, ripplep, hfinder, w, mCamera, mirror, true, true,false,0,false,flaresMode, &truckconfig);
-					trucks[free_truck]->label=label;
-
-					if(bigMap)
-					{
-						MapEntity *e = bigMap->createNamedMapEntity("Truck"+StringConverter::toString(free_truck), MapControl::getTypeByDriveable(trucks[free_truck]->driveable));
-						if(e)
-						{
-							e->setState(DESACTIVATED);
-							e->setVisibility(true);
-							e->setPosition(truckx, truckz);
-							e->setRotation(-Radian(trucks[free_truck]->getHeadingDirectionAngle()));
-						}
-					}
-
-					free_truck++;
-					client_t cinfo;
-					if(net->vehicle_spawned(uid, free_truck-1, cinfo))
-					{
-						// error getting truck info
-						// TODO: what to do now?
-					} else
-					{
-						trucks[free_truck-1]->setNetworkInfo(cinfo);
-					}
-
-				}
-
-				//add text
-				/*
-				char poename[256];
-				sprintf(poename,"maptext-%s-%s", nickname, "netname");
-				TextAreaOverlayElement *taoe=new TextAreaOverlayElement(poename);
-				taoe->setColourTop(ColourValue(0.1, 0.1, 0.1, 1.0));
-				taoe->setColourBottom(ColourValue(0.0, 0.0, 0.0, 1.0));
-				taoe->setFontName("Cyberbit");
-				taoe->setCharHeight(0.02);
-				taoe->setCaption(nickname);
-				taoe->setLeft(bigMapo->getWidth()*(truckx/mapsizex)+0.01);
-				taoe->setTop(bigMapo->getHeight()*(trucky/mapsizez)-0.01);
-				((OverlayContainer*)bigMapo)->addChild(taoe);
-				*/
-			}
-		}
-#endif // 0
 	}
 
 

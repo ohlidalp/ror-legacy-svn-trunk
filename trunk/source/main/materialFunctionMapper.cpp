@@ -217,6 +217,11 @@ void MaterialFunctionMapper::addSSAOToEntity(Ogre::Entity *e)
 
 void MaterialFunctionMapper::replaceMeshMaterials(Ogre::Entity *e)
 {
+	if(!e)
+	{
+		LogManager::getSingleton().logMessage("MaterialFunctionMapper: got invalid Entity in replaceMeshMaterials");
+		return;
+	}
 	// this is not nice, but required (its not so much performance relevant ...
 	for(std::map <int, std::vector<materialmapping_t> >::iterator mfb=materialBindings.begin();mfb!=materialBindings.end();mfb++)
 	{
@@ -255,6 +260,11 @@ void MaterialFunctionMapper::replaceMeshMaterials(Ogre::Entity *e)
 int MaterialFunctionMapper::simpleMaterialCounter = 0;
 void MaterialFunctionMapper::replaceSimpleMeshMaterials(Ogre::Entity *e, Ogre::ColourValue c)
 {
+	if(!e)
+	{
+		LogManager::getSingleton().logMessage("MaterialFunctionMapper: got invalid Entity in replaceSimpleMeshMaterials");
+		return;
+	}
 	if (SETTINGS.getSetting("SimpleMaterials") != "Yes") return;
 
 	MaterialPtr mat = MaterialManager::getSingleton().getByName("tracks/simple");
