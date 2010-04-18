@@ -48,8 +48,10 @@ IF(WIN32)
 		link_directories   (${PThread_LIBRARY_DIRS})
 
 		# directX
-		include_directories($ENV{DXSDK_DIR}/Include)
-		link_directories   ($ENV{DXSDK_DIR}/Lib/x86)
+		set(DirectX_INCLUDE_DIRS "$ENV{DXSDK_DIR}/Include" CACHE PATH "The DirectX include path to use")
+		set(DirectX_LIBRARY_DIRS "$ENV{DXSDK_DIR}/Lib/x86" CACHE PATH "The DirectX lib path to use")
+		include_directories(${DirectX_INCLUDE_DIRS})
+		link_directories   (${DirectX_LIBRARY_DIRS})
 		
 
 		#### OPTIONAL COMPONENTS
