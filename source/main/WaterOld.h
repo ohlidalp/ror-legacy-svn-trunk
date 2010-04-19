@@ -57,6 +57,7 @@ private:
 	Camera *mRefractCam;
 	Camera *mCamera;
 	int mType;
+	float mScale;
 	bool haswaves;
 	RenderTexture* rttTex1;
 	RenderTexture* rttTex2;
