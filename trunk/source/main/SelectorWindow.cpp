@@ -43,15 +43,19 @@ SelectorWindow::SelectorWindow()
 
 	mMainWidget->eventKeyButtonPressed      = MyGUI::newDelegate(this, &SelectorWindow::eventKeyButtonPressed_Main); 
 	mTypeComboBox->eventComboChangePosition = MyGUI::newDelegate(this, &SelectorWindow::eventComboChangePositionTypeComboBox);
+	mTypeComboBox->eventKeyButtonPressed    = MyGUI::newDelegate(this, &SelectorWindow::eventKeyButtonPressed_Main); 
 	mModelList->eventListChangePosition     = MyGUI::newDelegate(this, &SelectorWindow::eventListChangePositionModelList);
+	//mModelList->eventKeyButtonPressed       = MyGUI::newDelegate(this, &SelectorWindow::eventKeyButtonPressed_Main); 
 	mConfigComboBox->eventComboAccept       = MyGUI::newDelegate(this, &SelectorWindow::eventComboAcceptConfigComboBox);
+	//mConfigComboBox->eventKeyButtonPressed  = MyGUI::newDelegate(this, &SelectorWindow::eventKeyButtonPressed_Main); 
 	mOkButton->eventMouseButtonClick        = MyGUI::newDelegate(this, &SelectorWindow::eventMouseButtonClickOkButton);
 	mCancelButton->eventMouseButtonClick    = MyGUI::newDelegate(this, &SelectorWindow::eventMouseButtonClickCancelButton);
 	
 	// search stuff
-	mSearchLineEdit->eventEditTextChange = MyGUI::newDelegate(this, &SelectorWindow::eventSearchTextChange);
-	mSearchLineEdit->eventMouseSetFocus  = MyGUI::newDelegate(this, &SelectorWindow::eventSearchTextGotFocus);
-	mSearchLineEdit->eventKeySetFocus    = MyGUI::newDelegate(this, &SelectorWindow::eventSearchTextGotFocus);
+	mSearchLineEdit->eventEditTextChange    = MyGUI::newDelegate(this, &SelectorWindow::eventSearchTextChange);
+	mSearchLineEdit->eventMouseSetFocus     = MyGUI::newDelegate(this, &SelectorWindow::eventSearchTextGotFocus);
+	mSearchLineEdit->eventKeySetFocus       = MyGUI::newDelegate(this, &SelectorWindow::eventSearchTextGotFocus);
+	mSearchLineEdit->eventKeyButtonPressed  = MyGUI::newDelegate(this, &SelectorWindow::eventKeyButtonPressed_Main); 
 	
 }
 
@@ -65,15 +69,18 @@ void SelectorWindow::eventKeyButtonPressed_Main(MyGUI::WidgetPtr _sender, MyGUI:
 	int cid = mTypeComboBox->getIndexSelected();
 	int iid = mModelList->getIndexSelected();
 
+	bool searching = (mTypeComboBox->getCaption() == _L("Search Results"));
+	
 	// search
 	if(_key == MyGUI::KeyCode::Slash)
 	{
 		MyGUI::InputManager::getInstance().setKeyFocusWidget(mSearchLineEdit);
 		mSearchLineEdit->setCaption("");
+		searching=true;
 	}
 
 	// category
-	if(_key == MyGUI::KeyCode::ArrowLeft)
+	if(_key == MyGUI::KeyCode::ArrowLeft && !searching)
 	{
 		int newitem = cid - 1;
 		if(cid == 0)
@@ -88,7 +95,7 @@ void SelectorWindow::eventKeyButtonPressed_Main(MyGUI::WidgetPtr _sender, MyGUI:
 		}
 		eventComboChangePositionTypeComboBox(mTypeComboBox, newitem);
 
-	} else if(_key == MyGUI::KeyCode::ArrowRight)
+	} else if(_key == MyGUI::KeyCode::ArrowRight && !searching)
 	{
 		int newitem = cid + 1;
 		if(cid == (int)mTypeComboBox->getItemCount() - 1)
@@ -119,6 +126,8 @@ void SelectorWindow::eventKeyButtonPressed_Main(MyGUI::WidgetPtr _sender, MyGUI:
 			return;
 		}
 		eventListChangePositionModelList(mModelList, newitem);
+		// fix cursor position
+		if(searching) mSearchLineEdit->setTextCursor(mSearchLineEdit->getTextLength());
 	} else if(_key == MyGUI::KeyCode::ArrowDown)
 	{
 		int newitem = iid + 1;
@@ -133,6 +142,8 @@ void SelectorWindow::eventKeyButtonPressed_Main(MyGUI::WidgetPtr _sender, MyGUI:
 			return;
 		}
 		eventListChangePositionModelList(mModelList, newitem);
+		// fix cursor position
+		if(searching) mSearchLineEdit->setTextCursor(mSearchLineEdit->getTextLength());
 	}
 
 	// select key
@@ -158,6 +169,7 @@ void SelectorWindow::eventComboChangePositionTypeComboBox(MyGUI::ComboBoxPtr _se
 	try
 	{
 		int categoryID = *mTypeComboBox->getItemDataAt<int>(_index);
+		mSearchLineEdit->setCaption(_L("Search ..."));
 		onCategorySelected(categoryID);
 	} catch(...)
 	{
