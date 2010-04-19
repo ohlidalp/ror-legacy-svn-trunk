@@ -4817,7 +4817,7 @@ bool ExampleFrameListener::updateEvents(float dt)
 			pos = trucks[current_truck]->getPosition();
 		setGrassDensity(pos.x, pos.z, 20, true);
 	}
-#endif //PAGED
+#endif //USE_PAGED
 
 #ifdef USE_MYGUI 
 	if (INPUTENGINE.getEventBoolValueBounce(EV_MAP_INTERACTIVE_TOGGLE, 0.5f) && mtc)
@@ -4915,7 +4915,7 @@ bool ExampleFrameListener::updateEvents(float dt)
 		}
 	}
 #endif //0
-#endif //paged
+#endif //USE_PAGED
 	if (INPUTENGINE.getEventBoolValueBounce(EV_COMMON_OUTPUT_POSITION) && loading_state == ALL_LOADED)
 	{
 		Vector3 pos = Vector3::ZERO;
@@ -6145,7 +6145,7 @@ void ExampleFrameListener::loadTerrain(String terrainfile)
 
 			continue;
 		}
-#endif //PAGED
+#endif //USE_PAGED
 		//ugly stuff to parse procedural roads
 		if (!strncmp("begin_procedural_roads", line, 22))
 		{
@@ -6566,7 +6566,7 @@ void ExampleFrameListener::setGrassDensity(float x, float y, int density, bool r
 		StringConverter::toString(*data)+" / " + StringConverter::toString(value)+", "+StringConverter::toString(valuechange));
 	grass->reloadGeometryPage(Vector3(x, 0, y));
 #endif
-#endif //PAGED
+#endif //USE_PAGED
 }
 
 void ExampleFrameListener::updateGrass(Vector3 pos)
@@ -6616,7 +6616,7 @@ void ExampleFrameListener::saveGrassDensity()
 	img.save(filename.c_str());
 	LogManager::getSingleton().logMessage("saving grass to "+filename);
 #endif
-#endif //PAGED
+#endif //USE_PAGED
 }
 
 void ExampleFrameListener::initDust()
@@ -7737,7 +7737,7 @@ bool ExampleFrameListener::frameStarted(const FrameEvent& evt)
 		{
 			if(it->geom) it->geom->update();
 		}
-#endif //PAGED
+#endif //USE_PAGED
 
 		//airplane chatter
 		//chatter disabled for the moment
