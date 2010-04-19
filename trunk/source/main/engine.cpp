@@ -129,7 +129,11 @@ void BeamEngine::update(float dt, int doUpdate)
 		//braking (compression)
 		turbotorque-=curTurboRPM/200000.0f;
 		//powering (exhaust) with limiter
-		if (curTurboRPM<200000 && running && contact) turbotorque+=curAcc*(curEngineRPM/maxRPM);//*(curEngineRPM/maxRPM);
+		if (curTurboRPM<200000 && running && curAcc>0.06) 
+			turbotorque+=1.5*curAcc*(curEngineRPM/maxRPM);
+		else
+			turbotorque+=0.1*(curEngineRPM/maxRPM);
+		
 		//integration
 		curTurboRPM+=dt*turbotorque/turboInertia;
 	}
@@ -325,7 +329,8 @@ void BeamEngine::netForceSettings(float rpm, float force)
 
 float BeamEngine::getSmoke()
 {
-	if (running) return curAcc*(1.0f-curEngineRPM/maxRPM);//*engineTorque/5000.0;
+	int maxTurboRPM = 200000.0f;
+	if (running) return curAcc*(1.0f-curTurboRPM/maxTurboRPM);//*engineTorque/5000.0;
 	else return -1;
 }
 
