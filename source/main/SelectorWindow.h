@@ -58,6 +58,9 @@ private:
 	void eventComboAcceptConfigComboBox(MyGUI::ComboBoxPtr _sender, size_t _index);
 	void eventMouseButtonClickOkButton(MyGUI::WidgetPtr _sender);
 	void eventMouseButtonClickCancelButton(MyGUI::WidgetPtr _sender);
+	void eventSearchTextChange(MyGUI::WidgetPtr _sender);
+	void eventSearchTextGotFocus(MyGUI::WidgetPtr _sender, MyGUI::WidgetPtr oldWidget);
+	
 
 	// other functions
 	void getData();
@@ -100,8 +103,6 @@ private:
 	MyGUI::Sheet* mSearchSheet;
 	ATTRIBUTE_FIELD_WIDGET_NAME(SelectorWindow, mSearchLineEdit, "SearchLine");
 	MyGUI::Edit* mSearchLineEdit;
-	ATTRIBUTE_FIELD_WIDGET_NAME(SelectorWindow, mStartSearchButton, "StartSearch");
-	MyGUI::Button* mStartSearchButton;
 };
 
 #endif // __SELECTOR_WINDOW_H__

@@ -4787,7 +4787,7 @@ bool ExampleFrameListener::updateEvents(float dt)
 		dirty=true;
 	}
 
-	if (INPUTENGINE.getEventBoolValueBounce(EV_COMMON_TOGGLE_STATS))
+	if (INPUTENGINE.getEventBoolValueBounce(EV_COMMON_TOGGLE_STATS) && loading_state == ALL_LOADED)
 	{
 		dirty=true;
 		if(mStatsOn==0)
