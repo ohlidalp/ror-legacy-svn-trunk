@@ -2042,8 +2042,11 @@ MyDialog::MyDialog(const wxString& title, MyApp *_app) : wxDialog(NULL, wxID_ANY
 	autodl=new wxCheckBox(advancedPanel, -1, _("Enable Auto-Downloader"), wxPoint(320, y));
 	autodl->SetToolTip(_("This enables the automatic downloading of missing mods when using Multiplayer"));
 	y+=15;
+	enablexfire=0;
+#if OGRE_PLATFORM == OGRE_PLATFORM_WIN32
 	enablexfire=new wxCheckBox(advancedPanel, -1, _("Enable XFire Extension"), wxPoint(320, y));
 	enablexfire->SetToolTip(_("If you use XFire, you can switch on this option to generate a more detailed game info."));
+#endif //WINDOWS
 	y+=15;
 	hydrax=new wxCheckBox(advancedPanel, -1, _("Hydrax Water System"), wxPoint(320, y));
 	hydrax->SetToolTip(_("Enables the new water rendering system. EXPERIMENTAL. Overrides any water settings."));
@@ -2062,10 +2065,13 @@ MyDialog::MyDialog(const wxString& title, MyApp *_app) : wxDialog(NULL, wxID_ANY
 	y+=15;
 
 	// controls settings panel
+	leds = 0;
+#if OGRE_PLATFORM == OGRE_PLATFORM_WIN32
 	y=10;
 	leds=new wxCheckBox(ctsetPanel, -1, _("Enable Logitech G27 LEDs"), wxPoint(115, y));
 	leds->SetToolTip(_("Enable support for the Logitech G27 LED tachometer (Windows only)."));
 	y+=25;
+#endif //WINDOWS
 
 	// Gearbox
 	dText = new wxStaticText(ctsetPanel, -1, _("Gearbox mode:"), wxPoint(10,y));
@@ -2436,8 +2442,8 @@ void MyDialog::SetDefaults()
 	heathaze->SetValue(false);
 	hydrax->SetValue(false);
 	dismap->SetValue(false);
-	leds->SetValue(false);
-	enablexfire->SetValue(true);
+	if(leds) leds->SetValue(false);
+	if(enablexfire) enablexfire->SetValue(true);
 	autodl->SetValue(true);
 	posstor->SetValue(true);
 	trucklod->SetValue(false);
@@ -2502,9 +2508,9 @@ void MyDialog::getSettingsControls()
 	settings["HeatHaze"] = (heathaze->GetValue()) ? "Yes" : "No";
 	settings["Hydrax"] = (hydrax->GetValue()) ? "Yes" : "No";
 	settings["disableOverViewMap"] = (dismap->GetValue()) ? "Yes" : "No";
-	settings["Logitech LEDs"] = (leds->GetValue()) ? "Yes" : "No";
+	if(leds) settings["Logitech LEDs"] = (leds->GetValue()) ? "Yes" : "No";
 	settings["DebugBeams"] = (beamdebug->GetValue()) ? "Yes" : "No";
-	settings["XFire"] = (enablexfire->GetValue()) ? "Yes" : "No";
+	if(enablexfire) settings["XFire"] = (enablexfire->GetValue()) ? "Yes" : "No";
 	settings["AutoDownload"] = (autodl->GetValue()) ? "Yes" : "No";
 	settings["Position Storage"] = (posstor->GetValue()) ? "Yes" : "No";
 	settings["GearboxMode"]= conv(gearBoxMode->GetStringSelection());
@@ -2598,7 +2604,7 @@ void MyDialog::updateSettingsControls()
 	st = settings["HeatHaze"]; if (st.length()>0) heathaze->SetValue(st=="Yes");
 	st = settings["Hydrax"]; if (st.length()>0) hydrax->SetValue(st=="Yes");
 	st = settings["disableOverViewMap"]; if (st.length()>0) dismap->SetValue(st=="Yes");
-	st = settings["Logitech LEDs"]; if (st.length()>0) leds->SetValue(st=="Yes");
+	if(leds) st = settings["Logitech LEDs"]; if (st.length()>0) leds->SetValue(st=="Yes");
 	st = settings["External Camera Mode"]; if (st.length()>0) extcam->SetValue(st=="Static");
 	st = settings["AutoDownload"]; if (st.length()>0) autodl->SetValue(st=="Yes");
 	st = settings["Position Storage"]; if (st.length()>0) posstor->SetValue(st=="Yes");
@@ -2606,7 +2612,7 @@ void MyDialog::updateSettingsControls()
 	//st = settings["Truck LOD"]; if (st.length()>0) trucklod->SetValue(st=="Yes");
 	st = settings["Object LOD"]; if (st.length()>0) objlod->SetValue(st=="Yes");
 	st = settings["DebugBeams"]; if (st.length()>0) beamdebug->SetValue(st=="Yes");
-	st = settings["XFire"]; if (st.length()>0) enablexfire->SetValue(st=="Yes");
+	if(enablexfire) st = settings["XFire"]; if (st.length()>0) enablexfire->SetValue(st=="Yes");
 	st = settings["Dashboard"]; if (st.length()>0) dashboard->SetValue(st=="Yes");
 	st = settings["Mirrors"]; if (st.length()>0) mirror->SetValue(st=="Yes");
 	st = settings["Creak Sound"]; if (st.length()>0) creaksound->SetValue(st=="No");
@@ -3423,7 +3429,7 @@ void MyDialog::OnSimpleSliderScroll(wxScrollEvent & event)
 
 			dtm->SetValue(false); // debug truck mass
 			dcm->SetValue(false); //debug collision meshes
-			enablexfire->SetValue(false);
+			if(enablexfire) enablexfire->SetValue(false);
 			extcam->SetValue(false);
 			sound->SetSelection(1);//default
 			thread->SetSelection(1);//2 CPUs is now the norm (incl. HyperThreading)
@@ -3434,7 +3440,7 @@ void MyDialog::OnSimpleSliderScroll(wxScrollEvent & event)
 			beamdebug->SetValue(false);
 			dtm->SetValue(false); // debug truck mass
 			dcm->SetValue(false); //debug collision meshes
-			enablexfire->SetValue(true);
+			if(enablexfire) enablexfire->SetValue(true);
 			extcam->SetValue(false);
 			sound->SetSelection(1);//default
 			thread->SetSelection(1);//2 CPUs is now the norm (incl. HyperThreading)
@@ -3445,7 +3451,7 @@ void MyDialog::OnSimpleSliderScroll(wxScrollEvent & event)
 			beamdebug->SetValue(false);
 			dtm->SetValue(false); // debug truck mass
 			dcm->SetValue(false); //debug collision meshes
-			enablexfire->SetValue(true);
+			if(enablexfire) enablexfire->SetValue(true);
 			extcam->SetValue(false);
 			sound->SetSelection(1);//default
 			thread->SetSelection(1);//2 CPUs is now the norm (incl. HyperThreading)
