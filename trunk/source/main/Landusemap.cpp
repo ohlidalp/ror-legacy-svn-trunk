@@ -39,6 +39,9 @@ Landusemap::Landusemap(String configFilename, Collisions *c, int _mapsizex, int 
 	coll(c), mapsizex(_mapsizex), mapsizez(_mapsizez)
 {
 	loadConfig(configFilename);
+#ifndef USE_PAGED
+	LogManager::getSingleton().logMessage("RoR was not compiled with PagedGeometry support. You cannot use Landuse maps with it.");
+#endif //USE_PAGED
 }
 
 Landusemap::~Landusemap()
@@ -48,11 +51,15 @@ Landusemap::~Landusemap()
 
 ground_model_t *Landusemap::getGroundModelAt(int x, int z)
 {
+#ifdef USE_PAGED
 	// we return the default ground model if we are not anymore in this map
 	if (x < 0 || x >= mapsizex || z < 0 || z >= mapsizez)
 		return default_ground_model;
 
 	return data[x + z * mapsizex];
+#else
+	return 0;
+#endif // USE_PAGED
 }
 
 
@@ -124,7 +131,7 @@ int Landusemap::loadConfig(Ogre::String filename)
 			}
 		}
 	}
-#if PAGED
+#ifdef USE_PAGED
 	// process the config data and load the buffers finally
 	Forests::ColorMap *colourMap = Forests::ColorMap::load(textureFilename, Forests::CHANNEL_COLOR);
 	colourMap->setFilter(Forests::MAPFILTER_NONE);
@@ -167,6 +174,6 @@ int Landusemap::loadConfig(Ogre::String filename)
 			ptr++;
 		}
 	}
-#endif // PAGED
+#endif // USE_PAGED
 	return 0;
 }

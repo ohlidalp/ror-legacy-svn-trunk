@@ -273,8 +273,12 @@ void Collisions::parseGroundConfig(Ogre::ConfigFile *cfg, String groundModel)
 
 void Collisions::setupLandUse(const char *configfile)
 {
+#ifdef USE_PAGED
 	if(landuse) return;
 	landuse = new Landusemap(configfile, this, mefl->mapsizex, mefl->mapsizez);
+#else
+	LogManager::getSingleton().logMessage("RoR was not compiled with PagedGeometry support. You cannot use Landuse maps with it.");
+#endif //USE_PAGED
 }
 
 ground_model_t *Collisions::getGroundModelByString(const String name)
@@ -1191,7 +1195,7 @@ bool Collisions::groundCollision(node_t *node, float dt, ground_model_t** ogm, f
 {
 	if (!hfinder) return false;
 	if(landuse) *ogm = landuse->getGroundModelAt(node->AbsPosition.x, node->AbsPosition.z);
-	// we landuse fails or we dont have it, use the default value
+	// when landuse fails or we dont have it, use the default value
 	if(!*ogm) *ogm = defaultgroundgm;
 	last_used_ground_model = *ogm;
 
