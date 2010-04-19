@@ -61,6 +61,7 @@ public:
 	static wxString getExecutablePath();
 protected:
 	int startupMode;
+	bool autoUpdateEnabled;
 
 };
 
@@ -73,13 +74,14 @@ class HtmlWindow;
 class MyWizard : public wxWizard
 {
 public:
-	MyWizard(int startupMode, wxFrame *frame, bool useSizer = true);
+	MyWizard(int startupMode, wxFrame *frame, bool autoUpdateEnabled, bool useSizer = true);
 	wxWizardPage *GetFirstPage() const { return m_page1; }
 	void OnPageChanging(wxWizardEvent& event);
 
 private:
 	wxWizardPageSimple *m_page1;
 	int startupMode;
+	bool autoUpdateEnabled;
 	DECLARE_EVENT_TABLE()
 };
 

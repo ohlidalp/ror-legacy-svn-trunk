@@ -641,7 +641,7 @@ void ConfigManager::installRuntime()
 
 void ConfigManager::startConfigurator()
 {
-	executeBinary(wxT("rorconfig.exe"), wxT("runas"), wxT("/postinstall"));
+	executeBinary(wxT("rorconfig.exe"), wxT("runas"), wxT(""), CONFIG->getInstallationPath());
 }
 
 void ConfigManager::viewManual()

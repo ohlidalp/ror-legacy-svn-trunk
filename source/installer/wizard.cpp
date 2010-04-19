@@ -141,6 +141,7 @@ static const wxCmdLineEntryDesc g_cmdLineDesc [] =
      { wxCMD_LINE_SWITCH, ("r"), ("uninstall"), ("uninstall mode"), wxCMD_LINE_VAL_NONE },
      { wxCMD_LINE_SWITCH, ("i"), ("install"),   ("install mode"), wxCMD_LINE_VAL_NONE  },
      { wxCMD_LINE_SWITCH, ("g"), ("upgrade"),   ("upgrade mode"), wxCMD_LINE_VAL_NONE  },
+     { wxCMD_LINE_SWITCH, ("n"), ("noupdate"),  ("ignore available updates"), wxCMD_LINE_VAL_NONE  },
      { wxCMD_LINE_SWITCH, ("d"), ("hash"),      ("put installer hash into clipboard"), wxCMD_LINE_VAL_NONE  },
 #else
      { wxCMD_LINE_SWITCH, wxT("h"), wxT("help"),      wxT("displays help on the command line parameters"), wxCMD_LINE_VAL_NONE, wxCMD_LINE_OPTION_HELP },
@@ -155,11 +156,13 @@ static const wxCmdLineEntryDesc g_cmdLineDesc [] =
 // `Main program' equivalent: the program execution "starts" here
 bool MyApp::OnInit()
 {
+	autoUpdateEnabled=true;
+
     // call default behaviour (mandatory)
     if (!wxApp::OnInit())
         return false;
 
-	MyWizard wizard(startupMode, NULL);
+	MyWizard wizard(startupMode, NULL, autoUpdateEnabled);
 
 	wizard.RunWizard(wizard.GetFirstPage());
 
@@ -185,7 +188,9 @@ bool MyApp::OnCmdLineParsed(wxCmdLineParser& parser)
     if(parser.Found(wxT("r"))) startupMode = IMODE_UNINSTALL;
     if(parser.Found(wxT("i"))) startupMode = IMODE_INSTALL;
     if(parser.Found(wxT("g"))) startupMode = IMODE_UPGRADE;
-    
+
+	// ignore auto-update function
+    if(parser.Found(wxT("n"))) autoUpdateEnabled=false;
 	
 	// special mode: put our hash into the clipboard
 	if(parser.Found(wxT("d")))
@@ -274,10 +279,11 @@ void path_descend(char* path)
 	if (pt>=path) *(pt+1)=0;
 }
 
-MyWizard::MyWizard(int startupMode, wxFrame *frame, bool useSizer)
+MyWizard::MyWizard(int startupMode, wxFrame *frame, bool _autoUpdateEnabled, bool useSizer)
         : wxWizard(frame,ID_WIZARD,_T("Rigs of Rods Installation Assistant"),
                    wxBitmap(licence_xpm),wxDefaultPosition,
-                   wxDEFAULT_DIALOG_STYLE | wxRESIZE_BORDER), startupMode(startupMode)
+                   wxDEFAULT_DIALOG_STYLE | wxRESIZE_BORDER), startupMode(startupMode),
+				   autoUpdateEnabled(_autoUpdateEnabled)
 {
 	// first thing to do: remove old installer file if possible
 	if(boost::filesystem::exists("installer.exe.old"))
@@ -330,7 +336,8 @@ MyWizard::MyWizard(int startupMode, wxFrame *frame, bool useSizer)
 #endif // OGRE_PLATFORM
 
 	// check if there is a newer installer available
-	CONFIG->checkForNewInstaller();
+	if(autoUpdateEnabled)
+		CONFIG->checkForNewInstaller();
 
     PresentationPage *presentation = new PresentationPage(this);
 	LicencePage *licence = new LicencePage(this);
