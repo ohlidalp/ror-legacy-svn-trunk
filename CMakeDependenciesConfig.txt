@@ -11,7 +11,6 @@ set(ROR_USE_ANGELSCRIPT  "FALSE" CACHE BOOL "use angel script")
 set(ROR_USE_HYDRAX  "FALSE" CACHE BOOL "use hydrax water system")
 
 # set some defaults
-set(ROR_USE_CRASHRPT FALSE)
 IF(WIN32)
 	# options only available under windows
 	set(ROR_USE_CRASHRPT "FALSE" CACHE BOOL "use crash report tool")
@@ -123,6 +122,8 @@ ELSEIF(UNIX)
 
  PKG_CHECK_MODULES  (Ogre OGRE REQUIRED)
  PKG_CHECK_MODULES  (Ois OIS REQUIRED)
+
+ set(ROR_USE_CRASHRPT FALSE)
 ENDIF(WIN32)
 
 
