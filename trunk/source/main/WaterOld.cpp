@@ -86,6 +86,7 @@ WaterOld::WaterOld(int type, Camera *camera, SceneManager *mSceneMgr, RenderWind
 	vRtt1 = vRtt2 = 0;
 	mapsizex = _mapsizex;
 	mapsizez = _mapsizez;
+	mScale = 2.0f;
 	//reading wavefield
 	visible=true;
 	haswaves=usewaves;
@@ -238,7 +239,7 @@ WaterOld::WaterOld(int type, Camera *camera, SceneManager *mSceneMgr, RenderWind
 		mprt=MeshManager::getSingleton().createPlane("ReflectPlane",
 			ResourceGroupManager::DEFAULT_RESOURCE_GROUP_NAME,
 			waterPlane,
-			*mapsizex,*mapsizez,WAVEREZ,WAVEREZ,true,1,50,50,Vector3::UNIT_Z, HardwareBuffer::HBU_DYNAMIC_WRITE_ONLY_DISCARDABLE);
+			*mapsizex * mScale,*mapsizez * mScale,WAVEREZ,WAVEREZ,true,1,50,50,Vector3::UNIT_Z, HardwareBuffer::HBU_DYNAMIC_WRITE_ONLY_DISCARDABLE);
 		pPlaneEnt = mSceneMgr->createEntity( "plane", "ReflectPlane" );
 		if (mType==WATER_FULL_QUALITY || mType==WATER_FULL_SPEED) pPlaneEnt->setMaterialName("Examples/FresnelReflectionRefraction");
 		else pPlaneEnt->setMaterialName("Examples/FresnelReflection");
@@ -246,7 +247,7 @@ WaterOld::WaterOld(int type, Camera *camera, SceneManager *mSceneMgr, RenderWind
 		//position
 		pTestNode = mSceneMgr->getRootSceneNode()->createChildSceneNode("WaterPlane");
 		pTestNode->attachObject(pPlaneEnt);
-		pTestNode->setPosition( Vector3((*mapsizex)/2,0,(*mapsizez)/2) );
+		pTestNode->setPosition( Vector3((*mapsizex * mScale)/2,0,(*mapsizez * mScale)/2) );
 	}
 	else
 	{
@@ -256,13 +257,13 @@ WaterOld::WaterOld(int type, Camera *camera, SceneManager *mSceneMgr, RenderWind
 		mprt=MeshManager::getSingleton().createPlane("WaterPlane",
 			ResourceGroupManager::DEFAULT_RESOURCE_GROUP_NAME,
 			waterPlane,
-			*mapsizex,*mapsizez,WAVEREZ,WAVEREZ,true,1,50,50,Vector3::UNIT_Z, HardwareBuffer::HBU_DYNAMIC_WRITE_ONLY_DISCARDABLE);
+			*mapsizex * mScale,*mapsizez * mScale,WAVEREZ,WAVEREZ,true,1,50,50,Vector3::UNIT_Z, HardwareBuffer::HBU_DYNAMIC_WRITE_ONLY_DISCARDABLE);
 		pPlaneEnt = mSceneMgr->createEntity( "plane", "WaterPlane" );
 		pPlaneEnt->setMaterialName("tracks/basicwater");
 		//position
 		pTestNode = mSceneMgr->getRootSceneNode()->createChildSceneNode("WaterPlane");
 		pTestNode->attachObject(pPlaneEnt);
-		pTestNode->setPosition( Vector3((*mapsizex)/2,0,(*mapsizez)/2) );
+		pTestNode->setPosition( Vector3((*mapsizex * mScale)/2,0,(*mapsizez * mScale)/2) );
 	}
 	//bottom
 	bottomPlane.normal = Vector3::UNIT_Y;
@@ -270,13 +271,13 @@ WaterOld::WaterOld(int type, Camera *camera, SceneManager *mSceneMgr, RenderWind
 	MeshManager::getSingleton().createPlane("BottomPlane",
 		ResourceGroupManager::DEFAULT_RESOURCE_GROUP_NAME,
 		bottomPlane,
-		*mapsizex,*mapsizez,1,1,true,1,1,1,Vector3::UNIT_Z);
+		*mapsizex * mScale,*mapsizez * mScale,1,1,true,1,1,1,Vector3::UNIT_Z);
 	Entity *pE = mSceneMgr->createEntity( "bplane", "BottomPlane" );
 	pE->setMaterialName("tracks/seabottom");
 	//position
 	pBottomNode = mSceneMgr->getRootSceneNode()->createChildSceneNode("BottomWaterPlane");
 	pBottomNode->attachObject(pE);
-	pBottomNode->setPosition( Vector3((*mapsizex)/2,0,(*mapsizez)/2) );
+	pBottomNode->setPosition( Vector3((*mapsizex * mScale)/2,0,(*mapsizez * mScale)/2) );
 	//setup for waves
 	wbuf=mprt->sharedVertexData->vertexBufferBinding->getBuffer(0);
 	if (wbuf->getSizeInBytes()==(WAVEREZ+1)*(WAVEREZ+1)*32)
@@ -319,7 +320,7 @@ void WaterOld::moveTo(Camera *cam, float centerheight)
 		Vector3 offset=cam->getDirection();
 		offset.y=0;
 		offset.normalise();
-		pos = pos + offset * *mapsizex * 0.46666;
+		pos = pos + offset * *mapsizex * mScale * 0.46666;
 		pos.y=orgheight - height;
 		pos.x=((int)pos.x/60)*60;
 		pos.z=((int)pos.z/60)*60;
@@ -338,7 +339,7 @@ void WaterOld::showWave(Vector3 refpos)
 	{
 		for (pz=0; pz<WAVEREZ+1; pz++)
 		{
-			wbuffer[(pz*(WAVEREZ+1)+px)*8+1]=getHeightWaves(refpos+Vector3((*mapsizex)/2-(float)px*(*mapsizex)/WAVEREZ, 0, (float)pz*(*mapsizez)/WAVEREZ-(*mapsizez)/2));
+			wbuffer[(pz*(WAVEREZ+1)+px)*8+1]=getHeightWaves(refpos+Vector3((*mapsizex * mScale)/2-(float)px*(*mapsizex * mScale)/WAVEREZ, 0, (float)pz*(*mapsizez * mScale)/WAVEREZ-(*mapsizez * mScale)/2));
 		}
 	}
 	//normals
@@ -424,7 +425,7 @@ float WaterOld::getHeightWaves(Vector3 pos)
 		return height;
 	if (pos.y>height+maxampl) return height;
 	int i;
-	float waveheight=(pos-Vector3((*mapsizex)/2, height, (*mapsizez)/2)).squaredLength()/3000000.0;
+	float waveheight=(pos-Vector3((*mapsizex * mScale)/2, height, (*mapsizez * mScale)/2)).squaredLength()/3000000.0;
 	float result=height;
 	for (i=0; i<free_wavetrain; i++)
 	{
@@ -439,7 +440,7 @@ Vector3 WaterOld::getVelocity(Vector3 pos)
 {
 	if (pos.y>height+maxampl) return Vector3::ZERO;
 	int i;
-	float waveheight=(pos-Vector3((*mapsizex)/2, height, (*mapsizez)/2)).squaredLength()/3000000.0;
+	float waveheight=(pos-Vector3((*mapsizex * mScale)/2, height, (*mapsizez * mScale)/2)).squaredLength()/3000000.0;
 	Vector3 result=Vector3::ZERO;
 	for (i=0; i<free_wavetrain; i++)
 	{
