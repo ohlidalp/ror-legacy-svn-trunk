@@ -13,18 +13,18 @@ set(ROR_USE_HYDRAX  "FALSE" CACHE BOOL "use hydrax water system")
 # set some defaults
 IF(WIN32)
 	# options only available under windows
-	set(ROR_USE_CRASHRPT "FALSE" CACHE BOOL "use crash report tool")
+	set(ROR_USE_WINDOWS_CRASH_REPORT "FALSE" CACHE BOOL "use crash report tool")
 	# check if dependencies dir is in here
 	set(DEPENDENCIES_DIR_CHECK "${RoR_SOURCE_DIR}/dependencies")
 	set(DEPENDENCIES_DIR "")
 	if(IS_DIRECTORY ${DEPENDENCIES_DIR_CHECK})
 		set(DEPENDENCIES_DIR ${DEPENDENCIES_DIR_CHECK})
 	endif(IS_DIRECTORY ${DEPENDENCIES_DIR_CHECK})
-	
+
 	set(ROR_DEPENDENCIES_DIR "${DEPENDENCIES_DIR}" CACHE PATH "The ROR dependency path to use")
 
 	if(NOT ROR_DEPENDENCIES_DIR)
-		message(FATAL_ERROR "Rigs of Rods dependency dir not set properly!") 
+		message(FATAL_ERROR "Rigs of Rods dependency dir not set properly!")
 	endif(NOT ROR_DEPENDENCIES_DIR)
 
 		#### REQUIRED COMPONENTS
@@ -51,7 +51,7 @@ IF(WIN32)
 		set(DirectX_LIBRARY_DIRS "$ENV{DXSDK_DIR}/Lib/x86" CACHE PATH "The DirectX lib path to use")
 		include_directories(${DirectX_INCLUDE_DIRS})
 		link_directories   (${DirectX_LIBRARY_DIRS})
-		
+
 
 		#### OPTIONAL COMPONENTS
 		if(ROR_USE_MYGUI)
@@ -64,19 +64,19 @@ IF(WIN32)
 			set(OPENAL_INCLUDE_DIRS "${ROR_DEPENDENCIES_DIR}/include/openal-soft" CACHE PATH "The openal include path to use")
 			set(OPENAL_LIBRARY_DIRS "${ROR_DEPENDENCIES_DIR}/lib" CACHE PATH "The openal lib path to use")
 			set(OPENAL_LIBRARIES "OpenAL32.lib" CACHE STRING "The openal libs to link against")
-		endif(ROR_USE_OPENAL) 
+		endif(ROR_USE_OPENAL)
 
 		if(ROR_USE_LUA)
 			set(LUA_INCLUDE_DIRS "${ROR_DEPENDENCIES_DIR}/include/lua" CACHE PATH "The lua include path to use")
 			set(LUA_LIBRARY_DIRS "${ROR_DEPENDENCIES_DIR}/lib" CACHE PATH "The lua lib path to use")
 			set(LUA_LIBRARIES "lua.lib" CACHE STRING "The lua lib to link against")
-		endif(ROR_USE_LUA) 
+		endif(ROR_USE_LUA)
 
 		if(ROR_USE_SOCKETW)
 			set(SOCKETW_INCLUDE_DIRS "${ROR_DEPENDENCIES_DIR}/include/SocketW" CACHE PATH "The socketw include path to use")
 			set(SOCKETW_LIBRARY_DIRS "${ROR_DEPENDENCIES_DIR}/lib" CACHE PATH "The socketw lib path to use")
 			set(SOCKETW_LIBRARIES "mysocketw.lib Ws2_32.lib" CACHE STRING "The socketw lib to link against")
-		endif(ROR_USE_SOCKETW) 
+		endif(ROR_USE_SOCKETW)
 
 		if(ROR_USE_MOFILEREADER)
 			set(MOFILEREADER_INCLUDE_DIRS "${ROR_DEPENDENCIES_DIR}/include/mofilereader" CACHE PATH "The mofilereader include path to use")
@@ -107,23 +107,61 @@ IF(WIN32)
 			set(ANGELSCRIPT_LIBRARY_DIRS "${ROR_DEPENDENCIES_DIR}/lib" CACHE PATH "The AngelScript lib path to use")
 			set(ANGELSCRIPT_LIBRARIES "angelscript.lib" CACHE STRING "The AngelScript lib to link against")
 		endif(ROR_USE_ANGELSCRIPT)
-		
+
 		if(ROR_USE_HYDRAX)
 			set(HYDRAX_INCLUDE_DIRS "${ROR_DEPENDENCIES_DIR}/include/Hydrax;${ROR_DEPENDENCIES_DIR}/include/" CACHE PATH "The Hydrax include paths to use")
 			set(HYDRAX_LIBRARY_DIRS "${ROR_DEPENDENCIES_DIR}/lib" CACHE PATH "The Hydrax lib path to use")
 			set(HYDRAX_LIBRARIES "Hydrax.lib" CACHE STRING "The Hydrax lib to link against")
 		endif(ROR_USE_HYDRAX)
-		
-		
+
+
 ELSEIF(UNIX)
- find_package(PkgConfig)
- PKG_CHECK_MODULES  (GTK gtk+-2.0 REQUIRED)
- include_directories(${GTK_INCLUDE_DIRS})
+   find_package(PkgConfig)
+   PKG_CHECK_MODULES  (GTK gtk+-2.0 REQUIRED)
+   include_directories(${GTK_INCLUDE_DIRS})
 
- PKG_CHECK_MODULES  (Ogre OGRE REQUIRED)
- PKG_CHECK_MODULES  (Ois OIS REQUIRED)
+   PKG_CHECK_MODULES  (Ogre OGRE REQUIRED)
+   PKG_CHECK_MODULES  (Ois OIS REQUIRED)
 
- set(ROR_USE_CRASHRPT FALSE)
+   if(ROR_USE_OPENAL)
+      find_package(OpenAL)
+      set(OPENAL_INCLUDE_DIRS ${OPENAL_INCLUDE_DIR})
+      set(OPENAL_LIBRARIES ${OPENAL_LIBRARY})
+   endif(ROR_USE_OPENAL)
+
+   if(ROR_USE_LUA)
+      find_package(Lua51)
+      set(LUA_INCLUDE_DIRS ${LUA_INCLUDE_DIR})
+      set(LUA_LIBRARIES ${LUA_LIBRARIES})
+   endif(ROR_USE_LUA)
+
+   if(ROR_USE_MYGUI)
+      PKG_CHECK_MODULES(MYGUI MYGUI)
+      find_library(MYGUI_OGRE_PLATFORM MyGUI.OgrePlatform)
+      set(MYGUI_LIBRARIES ${MYGUI_LIBRARIES} ${MYGUI_OGRE_PLATFORM})
+   endif(ROR_USE_MYGUI)
+
+   if(ROR_USE_MOFILEREADER)
+      find_path(MOFILEREADER_INCLUDE_DIRS "moFileReader.h")
+      find_library(MOFILEREADER_LIBRARIES "moFileReader.static")
+   endif(ROR_USE_MOFILEREADER)
+
+   if(ROR_USE_SOCKETW)
+      find_path(SOCKETW_INCLUDE_DIRS "SocketW.h")
+      find_library(SOCKETW_LIBRARIES "SocketW")
+   endif(ROR_USE_SOCKETW)
+
+   if(ROR_USE_PAGED)
+      find_path(PAGED_INCLUDE_DIRS "PagedGeometry.h" "/usr/local/include/Paged")
+      find_library(PAGED_LIBRARIES "PagedGeometry")
+   endif(ROR_USE_PAGED)
+
+   if(ROR_USE_CAELUM)
+      #assumes Caelum is installed to uner /usr/local/include/Caelum
+      find_path(CAELUM_INCLUDE_DIRS "Caelum.h" "/usr/local/include/Caelum")
+      find_path(CAELUM_LIBRARIES "libCaelum.so")
+   endif(ROR_USE_CAELUM)
+
 ENDIF(WIN32)
 
 

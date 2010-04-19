@@ -1,103 +1,62 @@
 project(RoR_Main)
 
+# sources
 include (RoR.list)
+
+#setup libraries
+macro(setup_lib name)
+   if(ROR_USE_${name})
+      message(STATUS "Enabled:     ${name}")
+      include_directories(${${name}_INCLUDE_DIRS})
+      link_directories   (${${name}_LIBRARY_DIRS})
+      add_definitions("-DUSE_${name}")
+      set(optional_libs ${optional_libs} ${${name}_LIBRARIES})
+      message(STATUS "${name}_INCLUDE_DIRS:     ${${name}_INCLUDE_DIRS}")
+      message(STATUS "${name}_LIBRARY_DIRS:     ${${name}_LIBRARY_DIRS}")
+      message(STATUS "${name}_LIBRARIES:     ${${name}_LIBRARIES}")
+   else()
+      message(STATUS "Not enabled: ${name}")
+   endif(ROR_USE_${name})
+endmacro(setup_lib)
 
 # config below
 IF(WIN32)
- include_directories(${PThread_INCLUDE_DIRS})
- link_directories   (${PThread_LIBRARY_DIRS})
- set(OS_LIBS "${PThread_LIBRARIES} dinput8.lib dxguid.lib")
- 
- # disable some annoying VS warnings:
- # warning C4244: 'initializing' : conversion from 'const float' to 'int', possible loss of data
- # warning C4305: 'initializing' : truncation from 'double' to 'const float'
- add_definitions("/wd4305 /wd4244 -DNOMINMAX")
+   include_directories(${PThread_INCLUDE_DIRS})
+   link_directories   (${PThread_LIBRARY_DIRS})
+   set(OS_LIBS "${PThread_LIBRARIES} dinput8.lib dxguid.lib")
+
+   # disable some annoying VS warnings:
+   # warning C4244: 'initializing' : conversion from 'const float' to 'int', possible loss of data
+   # warning C4305: 'initializing' : truncation from 'double' to 'const float'
+   add_definitions("/wd4305 /wd4244 -DNOMINMAX")
 ELSEIF(UNIX)
- include_directories(${GTK_INCLUDE_DIRS})
- set(OS_LIBS "X11")
+   include_directories(${GTK_INCLUDE_DIRS})
+   set(OS_LIBS "X11")
 ENDIF(WIN32)
 
+# required components
 include_directories(${Ogre_INCLUDE_DIRS})
 link_directories   (${Ogre_LIBRARY_DIRS})
 include_directories(${Ois_INCLUDE_DIRS})
 link_directories   (${Ois_LIBRARY_DIRS})
 
-set(additional_libs "")
-if(ROR_USE_MYGUI)
- include_directories(${MyGUI_INCLUDE_DIRS})
- link_directories   (${MyGUI_LIBRARY_DIRS})
- add_definitions("-DUSE_MYGUI")
- set(additional_libs ${additional_libs} ${MyGUI_LIBRARIES})
-endif(ROR_USE_MYGUI)
-
-if(ROR_USE_OPENAL)
- include_directories(${OPENAL_INCLUDE_DIRS})
- link_directories   (${OPENAL_LIBRARY_DIRS})
- add_definitions("-DUSE_OPENAL")
- set(additional_libs ${additional_libs} ${OPENAL_LIBRARIES})
-endif(ROR_USE_OPENAL) 
-
-if(ROR_USE_LUA)
- include_directories(${LUA_INCLUDE_DIRS})
- link_directories   (${LUA_LIBRARY_DIRS})
- add_definitions("-DUSE_LUA")
- set(additional_libs ${additional_libs} ${LUA_LIBRARIES})
-endif(ROR_USE_LUA)
-
-if(ROR_USE_SOCKETW)
- include_directories(${SOCKETW_INCLUDE_DIRS})
- link_directories   (${SOCKETW_LIBRARY_DIRS})
- add_definitions("-DUSE_SOCKETW")
- set(additional_libs ${additional_libs} ${SOCKETW_LIBRARIES})
-endif(ROR_USE_SOCKETW) 
-
-if(ROR_USE_MOFILEREADER)
- include_directories(${MOFILEREADER_INCLUDE_DIRS})
- link_directories   (${MOFILEREADER_LIBRARY_DIRS})
- add_definitions("-DUSE_MOFILEREADER")
- set(additional_libs ${additional_libs} ${MOFILEREADER_LIBRARIES})
-endif(ROR_USE_MOFILEREADER)
-
-if(ROR_USE_PAGED)
- include_directories(${PAGED_INCLUDE_DIRS})
- link_directories   (${PAGED_LIBRARY_DIRS})
- add_definitions("-DUSE_PAGED")
- set(additional_libs ${additional_libs} ${PAGED_LIBRARIES})
-endif(ROR_USE_PAGED)
-
-if(ROR_USE_CAELUM)
- include_directories(${CAELUM_INCLUDE_DIRS})
- link_directories   (${CAELUM_LIBRARY_DIRS})
- add_definitions("-DUSE_CAELUM")
- set(additional_libs ${additional_libs} ${CAELUM_LIBRARIES})
-endif(ROR_USE_CAELUM)
-
-if(ROR_USE_CRASHRPT)
- include_directories(${CRASHRPT_INCLUDE_DIRS})
- link_directories   (${CRASHRPT_LIBRARY_DIRS})
- add_definitions("-DUSE_WINDOWS_CRASH_REPORT")
- set(additional_libs ${additional_libs} ${CRASHRPT_LIBRARIES})
-endif(ROR_USE_CRASHRPT)
-
-if(ROR_USE_ANGELSCRIPT)
- include_directories(${ANGELSCRIPT_INCLUDE_DIRS})
- link_directories   (${ANGELSCRIPT_LIBRARY_DIRS})
- add_definitions("-DUSE_ANGELSCRIPT")
- set(additional_libs ${additional_libs} ${ANGELSCRIPT_LIBRARIES})
-endif(ROR_USE_ANGELSCRIPT)
-
-if(ROR_USE_HYDRAX)
- include_directories(${HYDRAX_INCLUDE_DIRS})
- link_directories   (${HYDRAX_LIBRARY_DIRS})
- add_definitions("-DUSE_HYDRAX")
- set(additional_libs ${additional_libs} ${HYDRAX_LIBRARIES})
-endif(ROR_USE_HYDRAX)
+# optional components
+setup_lib(MYGUI)
+setup_lib(OPENAL)
+setup_lib(LUA)
+setup_lib(SOCKETW)
+setup_lib(MOFILEREADER)
+setup_lib(PAGED)
+setup_lib(CAELUM)
+setup_lib(ANGELSCRIPT)
+setup_lib(HYDRAX)
+setup_lib(WINDOWS_CRASH_REPORT)
 
 if(ROR_USE_OIS_G27)
- add_definitions("-DUSE_OIS_G27")
+   add_definitions("-DUSE_OIS_G27")
 endif(ROR_USE_OIS_G27)
 
 add_executable(RoR ${HEADER_FILES} ${SOURCE_FILES})
-target_link_libraries(RoR ${Ogre_LIBRARIES} ${Ois_LIBRARIES} ${OS_LIBS} ${additional_libs})
+target_link_libraries(RoR ${Ogre_LIBRARIES} ${Ois_LIBRARIES} ${OS_LIBS} ${optional_libs})
 windows_hacks(RoR)
 
