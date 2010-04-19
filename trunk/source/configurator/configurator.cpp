@@ -2148,12 +2148,18 @@ void MyDialog::loadOgre()
 		ogreRoot->restoreConfig();
 	} catch (Ogre::Exception& e)
 	{
-		wxString warning = conv(e.getFullDescription());
-		wxString caption = _("error upon restoring Ogre Configuration");
+		if(e.getSource() == "D3D9RenderSystem::setConfigOption" && e.getDescription() == "Option named 'Anti aliasing' does not exist.")
+		{
+			// this is a normal error that happens when the suers switch from ogre 1.6 to 1.7
+		} else
+		{
+			wxString warning = conv(e.getFullDescription());
+			wxString caption = _("error upon restoring Ogre Configuration");
 
-		wxMessageDialog *w = new wxMessageDialog(this, warning, caption, wxOK, wxDefaultPosition);
-		w->ShowModal();
-		delete(w);
+			wxMessageDialog *w = new wxMessageDialog(this, warning, caption, wxOK, wxDefaultPosition);
+			w->ShowModal();
+			delete(w);
+		}
 	}
 	updateRendersystems(ogreRoot->getRenderSystem());
 }
