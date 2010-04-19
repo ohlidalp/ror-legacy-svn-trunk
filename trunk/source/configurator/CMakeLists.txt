@@ -12,10 +12,10 @@ IF(WIN32)
  link_directories   (${BOOST_PATH}/lib)
  include_directories(${PThread_INCLUDE_DIRS})
  link_directories   (${PThread_LIBRARY_DIRS})
- 
+
  set(OS_LIBS "${PThread_LIBRARIES} dinput8.lib dxguid.lib")
  set(OS_SOURCE "icon.rc")
- 
+
  # disable some annoying VS warnings:
  # warning C4244: 'initializing' : conversion from 'const float' to 'int', possible loss of data
  # warning C4305: 'initializing' : truncation from 'double' to 'const float'
@@ -28,7 +28,7 @@ ELSEIF(UNIX)
 
  PKG_CHECK_MODULES  (Ogre OGRE REQUIRED)
  PKG_CHECK_MODULES  (Ois OIS REQUIRED)
- 
+
  set(OS_SOURCE "")
 ENDIF(WIN32)
 
