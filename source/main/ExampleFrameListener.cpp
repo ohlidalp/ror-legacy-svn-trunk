@@ -3165,9 +3165,14 @@ bool ExampleFrameListener::updateEvents(float dt)
 	if (loading_state==ALL_LOADED)
 	{
 		if(net)
+		{
 			CharacterFactory::getSingleton().updateCharacters(dt);
-		else
-			person->update(dt);
+		} else
+		{
+			if (cameramode != CAMERA_FREE)
+				// do not move the person in free camera mode
+				person->update(dt);
+		}
 
 		bool enablegrab = true;
 		if (cameramode != CAMERA_FREE)
@@ -5796,6 +5801,7 @@ void ExampleFrameListener::loadTerrain(String terrainfile)
 				w=new WaterOld(WATER_FULL_QUALITY, mCamera, mSceneMgr, mWindow, waterline, &mapsizex, &mapsizez, usewaves);
 		}
 	}
+	if(w) w->setFadeColour(fadeColour);
 	if(person) person->setWater(w);
 	BeamFactory::getSingleton().w = w;
 	DustManager::getSingleton().setWater(w);
