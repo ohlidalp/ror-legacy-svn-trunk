@@ -41,12 +41,18 @@ SelectorWindow::SelectorWindow()
 	mMainWidget->setRealPosition(0.1, 0.1);
 	mMainWidget->setRealSize(0.8, 0.8);
 
-	mMainWidget->eventKeyButtonPressed = MyGUI::newDelegate(this, &SelectorWindow::eventKeyButtonPressed_Main); 
+	mMainWidget->eventKeyButtonPressed      = MyGUI::newDelegate(this, &SelectorWindow::eventKeyButtonPressed_Main); 
 	mTypeComboBox->eventComboChangePosition = MyGUI::newDelegate(this, &SelectorWindow::eventComboChangePositionTypeComboBox);
-	mModelList->eventListChangePosition = MyGUI::newDelegate(this, &SelectorWindow::eventListChangePositionModelList);
-	mConfigComboBox->eventComboAccept = MyGUI::newDelegate(this, &SelectorWindow::eventComboAcceptConfigComboBox);
-	mOkButton->eventMouseButtonClick = MyGUI::newDelegate(this, &SelectorWindow::eventMouseButtonClickOkButton);
-	mCancelButton->eventMouseButtonClick = MyGUI::newDelegate(this, &SelectorWindow::eventMouseButtonClickCancelButton);
+	mModelList->eventListChangePosition     = MyGUI::newDelegate(this, &SelectorWindow::eventListChangePositionModelList);
+	mConfigComboBox->eventComboAccept       = MyGUI::newDelegate(this, &SelectorWindow::eventComboAcceptConfigComboBox);
+	mOkButton->eventMouseButtonClick        = MyGUI::newDelegate(this, &SelectorWindow::eventMouseButtonClickOkButton);
+	mCancelButton->eventMouseButtonClick    = MyGUI::newDelegate(this, &SelectorWindow::eventMouseButtonClickCancelButton);
+	
+	// search stuff
+	mSearchLineEdit->eventEditTextChange = MyGUI::newDelegate(this, &SelectorWindow::eventSearchTextChange);
+	mSearchLineEdit->eventMouseSetFocus  = MyGUI::newDelegate(this, &SelectorWindow::eventSearchTextGotFocus);
+	mSearchLineEdit->eventKeySetFocus    = MyGUI::newDelegate(this, &SelectorWindow::eventSearchTextGotFocus);
+	
 }
 
 SelectorWindow::~SelectorWindow()
@@ -58,6 +64,13 @@ void SelectorWindow::eventKeyButtonPressed_Main(MyGUI::WidgetPtr _sender, MyGUI:
 	if(!mMainWidget->isVisible()) return;
 	int cid = mTypeComboBox->getIndexSelected();
 	int iid = mModelList->getIndexSelected();
+
+	// search
+	if(_key == MyGUI::KeyCode::Slash)
+	{
+		MyGUI::InputManager::getInstance().setKeyFocusWidget(mSearchLineEdit);
+		mSearchLineEdit->setCaption("");
+	}
 
 	// category
 	if(_key == MyGUI::KeyCode::ArrowLeft)
@@ -255,6 +268,12 @@ void SelectorWindow::getData()
 		// fresh, 24 hours = 86400
 		if(ts - it->addtimestamp < 86400)
 			mCategoryUsage[9992] = mCategoryUsage[9992] + 1;
+
+		// hidden
+		//mCategoryUsage[9993] = 0;
+		// search results
+		mCategoryUsage[9994] = 0;
+
 		
 		mEntries.push_back(*it);
 	}
@@ -273,7 +292,10 @@ void SelectorWindow::getData()
 			continue;
 		counter2++;
 		
-		String txt = "["+StringConverter::toString(counter2)+"/"+StringConverter::toString(counter)+"] (" + StringConverter::toString(usage)+") "+itc->second.title;
+		String title = itc->second.title;
+		if(title.empty())
+			title = _L("unkown");
+		String txt = "["+StringConverter::toString(counter2)+"/"+StringConverter::toString(counter)+"] (" + StringConverter::toString(usage)+") " + title;
 
 		mTypeComboBox->addItem(txt, itc->second.number);
 	}
@@ -299,10 +321,23 @@ void SelectorWindow::onCategorySelected(int categoryID)
 	mModelList->removeAllItems();
 	std::vector<Cache_Entry>::iterator it;
 	int counter=0, counter2=0;
+	// re-test too see how much matches
 	for(it = mEntries.begin(); it != mEntries.end(); it++)
 	{
 		if(it->categoryid == categoryID || (categoryID == 9991) || (categoryID == 9992 && (ts - it->addtimestamp < 86400)))
 			counter++;
+		
+		// search results
+		if(categoryID == 9994)
+		{
+			String dname_lower = it->dname;
+			Ogre::StringUtil::toLowerCase(dname_lower);
+			String search_lower = mSearchLineEdit->getCaption();
+			Ogre::StringUtil::toLowerCase(search_lower);
+
+			if(dname_lower.find(search_lower) != String::npos)
+				counter++;
+		}
 	}
 
 	for(it = mEntries.begin(); it != mEntries.end(); it++)
@@ -320,7 +355,28 @@ void SelectorWindow::onCategorySelected(int categoryID)
 			{
 				mModelList->addItem("ENCODING ERROR", it->number);
 			}
+		} else if(categoryID == 9994)
+		{
+			String dname_lower = it->dname;
+			Ogre::StringUtil::toLowerCase(dname_lower);
+			String search_lower = mSearchLineEdit->getCaption();
+			Ogre::StringUtil::toLowerCase(search_lower);
+
+			if(dname_lower.find(search_lower) != String::npos)
+			{
+				counter2++;
+				//printf("adding item %d\n", counter2);
+				String txt = StringConverter::toString(counter2)+". " + it->dname;
+				try
+				{
+					mModelList->addItem(txt, it->number);
+				} catch(...)
+				{
+					mModelList->addItem("ENCODING ERROR", it->number);
+				}
+			}
 		}
+
 	}
 	if(counter2 > 0)
 	{
@@ -577,5 +633,17 @@ void SelectorWindow::setEnableCancel(bool enabled)
 	mCancelButton->setEnabled(enabled);
 }
 
+void SelectorWindow::eventSearchTextChange(MyGUI::WidgetPtr _sender)
+{
+	if(!mMainWidget->isVisible()) return;
+	onCategorySelected(9994);
+	mTypeComboBox->setCaption(_L("Search Results"));	
+}
+
+void SelectorWindow::eventSearchTextGotFocus(MyGUI::WidgetPtr _sender, MyGUI::WidgetPtr oldWidget)
+{
+	if(!mMainWidget->isVisible()) return;
+	mSearchLineEdit->setCaption("");
+}
 #endif //MYGUI
 
