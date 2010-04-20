@@ -39,7 +39,7 @@ along with Rigs of Rods.  If not, see <http://www.gnu.org/licenses/>.
 #include "errorutils.h"
 #include "rormemory.h"
 
-#ifdef USE_WINDOWS_CRASH_REPORT
+#ifdef USE_CRASHRPT
 # include "crashrpt.h"
 #endif
 
@@ -53,28 +53,28 @@ Network *net_instance;
 
 void *s_sendthreadstart(void* vid)
 {
-#ifdef USE_WINDOWS_CRASH_REPORT
+#ifdef USE_CRASHRPT
 	if(SETTINGS.getSetting("NoCrashRpt").empty())
 	{
 		// add the crash handler for this thread
 		CrThreadAutoInstallHelper cr_thread_install_helper();
 		assert(cr_thread_install_helper.m_nInstallStatus==0);
 	}
-#endif //USE_WINDOWS_CRASH_REPORT
+#endif //USE_CRASHRPT
 	net_instance->sendthreadstart();
 	return NULL;
 }
 
 void *s_receivethreadstart(void* vid)
 {
-#ifdef USE_WINDOWS_CRASH_REPORT
+#ifdef USE_CRASHRPT
 	if(SETTINGS.getSetting("NoCrashRpt").empty())
 	{
 		// add the crash handler for this thread
 		CrThreadAutoInstallHelper cr_thread_install_helper();
 		assert(cr_thread_install_helper.m_nInstallStatus==0);
 	}
-#endif //USE_WINDOWS_CRASH_REPORT
+#endif //USE_CRASHRPT
 	net_instance->receivethreadstart();
 	return NULL;
 }

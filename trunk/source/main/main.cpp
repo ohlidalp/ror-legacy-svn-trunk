@@ -387,7 +387,7 @@ Ogre::String getVersionString()
 	return Ogre::String(tmp);
 }
 
-#ifdef USE_WINDOWS_CRASH_REPORT
+#ifdef USE_CRASHRPT
 // see http://code.google.com/p/crashrpt/
 #include "crashrpt.h"
 
@@ -624,12 +624,12 @@ int main(int argc, char *argv[])
 	}
 #endif
 
-#ifdef USE_WINDOWS_CRASH_REPORT
+#ifdef USE_CRASHRPT
 	if(SETTINGS.getSetting("NoCrashRpt").empty())
 		install_crashrpt();
 
 	//test_crashrpt();
-#endif //USE_WINDOWS_CRASH_REPORT
+#endif //USE_CRASHRPT
 
 	try {
 		app.go();
@@ -644,10 +644,10 @@ int main(int argc, char *argv[])
 		return 1;
 	}
 
-#ifdef USE_WINDOWS_CRASH_REPORT
+#ifdef USE_CRASHRPT
 	if(SETTINGS.getSetting("NoCrashRpt").empty())
 		uninstall_crashrpt();
-#endif //USE_WINDOWS_CRASH_REPORT
+#endif //USE_CRASHRPT
 
 	return 0;
 }

@@ -68,7 +68,7 @@ along with Rigs of Rods.  If not, see <http://www.gnu.org/licenses/>.
 #pragma GCC diagnostic ignored "-Wfloat-equal"
 #endif //OGRE_PLATFORM_LINUX
 
-#ifdef USE_WINDOWS_CRASH_REPORT
+#ifdef USE_CRASHRPT
 # include "crashrpt.h"
 #endif
 
@@ -11055,14 +11055,14 @@ void Beam::deleteNetTruck()
 
 void *threadstart(void* vid)
 {
-#ifdef USE_WINDOWS_CRASH_REPORT
+#ifdef USE_CRASHRPT
 	if(SETTINGS.getSetting("NoCrashRpt").empty())
 	{
 		// add the crash handler for this thread
 		CrThreadAutoInstallHelper cr_thread_install_helper();
 		assert(cr_thread_install_helper.m_nInstallStatus==0);
 	}
-#endif //USE_WINDOWS_CRASH_REPORT
+#endif //USE_CRASHRPT
 
 	// 64 bit systems does have longer addresses!
 	long int id;

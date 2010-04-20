@@ -13,7 +13,7 @@ set(ROR_USE_HYDRAX  "FALSE" CACHE BOOL "use hydrax water system")
 # set some defaults
 IF(WIN32)
 	# options only available under windows
-	set(ROR_USE_WINDOWS_CRASH_REPORT "FALSE" CACHE BOOL "use crash report tool")
+	set(ROR_USE_CRASHRPT "FALSE" CACHE BOOL "use crash report tool")
 	# check if dependencies dir is in here
 	set(DEPENDENCIES_DIR_CHECK "${RoR_SOURCE_DIR}/dependencies")
 	set(DEPENDENCIES_DIR "")
@@ -55,9 +55,9 @@ IF(WIN32)
 
 		#### OPTIONAL COMPONENTS
 		if(ROR_USE_MYGUI)
-			set(MyGUI_INCLUDE_DIRS "${ROR_DEPENDENCIES_DIR}/include/MyGUI" CACHE PATH "The mygui include path to use")
-			set(MyGUI_LIBRARY_DIRS "${ROR_DEPENDENCIES_DIR}/lib" CACHE PATH "The mygui lib path to use")
-			set(MyGUI_LIBRARIES "MyGUI.OgrePlatform.lib MyGUIEngine.lib" CACHE STRING "The mygui libs to link against")
+			set(MYGUI_INCLUDE_DIRS "${ROR_DEPENDENCIES_DIR}/include/MyGUI" CACHE PATH "The mygui include path to use")
+			set(MYGUI_LIBRARY_DIRS "${ROR_DEPENDENCIES_DIR}/lib" CACHE PATH "The mygui lib path to use")
+			set(MYGUI_LIBRARIES "MyGUI.OgrePlatform.lib MyGUIEngine.lib" CACHE STRING "The mygui libs to link against")
 		endif(ROR_USE_MYGUI)
 
 		if(ROR_USE_OPENAL)
@@ -161,7 +161,8 @@ ELSEIF(UNIX)
       find_path(CAELUM_INCLUDE_DIRS "Caelum.h" "/usr/local/include/Caelum")
       find_path(CAELUM_LIBRARIES "libCaelum.so")
    endif(ROR_USE_CAELUM)
-
+   
+   set(ROR_USE_CRASHRPT FALSE)
 ENDIF(WIN32)
 
 

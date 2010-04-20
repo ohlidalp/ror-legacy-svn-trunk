@@ -50,7 +50,7 @@ setup_lib(PAGED)
 setup_lib(CAELUM)
 setup_lib(ANGELSCRIPT)
 setup_lib(HYDRAX)
-setup_lib(WINDOWS_CRASH_REPORT)
+setup_lib(CRASHRPT)
 
 if(ROR_USE_OIS_G27)
    add_definitions("-DUSE_OIS_G27")
