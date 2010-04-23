@@ -72,7 +72,7 @@ along with Rigs of Rods.  If not, see <http://www.gnu.org/licenses/>.
 #include "screwprop.h"
 #include "FlexAirfoil.h"
 
-#ifdef USE_MYGUI 
+#ifdef USE_MYGUI
 #include "gui_manager.h"
 #include "gui_menu.h"
 #include "gui_friction.h"
@@ -104,7 +104,7 @@ along with Rigs of Rods.  If not, see <http://www.gnu.org/licenses/>.
 # include "GrassLoader.h"
 #endif
 
-#ifdef USE_MYGUI 
+#ifdef USE_MYGUI
 #include "MapControl.h"
 #include "MapTextureCreator.h"
 #include "MapEntity.h"
@@ -485,7 +485,7 @@ void ExampleFrameListener::updateGUI(float dt)
 	}
 
 	// update map
-#ifdef USE_MYGUI 
+#ifdef USE_MYGUI
 	if(bigMap)
 	{
 		for (int i=0; i<free_truck; i++)
@@ -1097,7 +1097,7 @@ ExampleFrameListener::ExampleFrameListener(RenderWindow* win, Camera* cam, Scene
 
 	if(!benchmarking)
 		INPUTENGINE.setup(hWnd, true, true, inputGrabMode);
-#ifdef USE_MYGUI 
+#ifdef USE_MYGUI
 	// init GUI
 	new GUIManager(root, scm, win);
 	LoadingWindow::getInstance();
@@ -1109,7 +1109,7 @@ ExampleFrameListener::ExampleFrameListener(RenderWindow* win, Camera* cam, Scene
 
 #ifdef USE_ANGELSCRIPT
 	new ScriptEngine(this);
-#ifdef USE_MYGUI 
+#ifdef USE_MYGUI
 	Console::getInstance();
 #endif// MYGUI
 #endif
@@ -1579,7 +1579,6 @@ ExampleFrameListener::ExampleFrameListener(RenderWindow* win, Camera* cam, Scene
 	pickLine->position(0, 0, 0);
 	pickLine->position(0, 0, 0);
 	pickLine->end();
-
 	pickLineNode->attachObject(pickLine);
 	pickLineNode->setVisible(false);
 
@@ -1787,7 +1786,7 @@ ExampleFrameListener::ExampleFrameListener(RenderWindow* win, Camera* cam, Scene
 			// no trucks loaded?
 			if (truck_preload_num == 0 && !netmode)
 			{
-#ifdef USE_MYGUI 
+#ifdef USE_MYGUI
 				// show truck selector
 				SelectorWindow::get()->setEnableCancel(false);
 				if(w)
@@ -1808,7 +1807,7 @@ ExampleFrameListener::ExampleFrameListener(RenderWindow* win, Camera* cam, Scene
 		}
 	} else
 	{
-#ifdef USE_MYGUI 
+#ifdef USE_MYGUI
 		// show terrain selector
 		hideMap();
 		//LogManager::getSingleton().logMessage("huette debug 3");
@@ -1826,7 +1825,7 @@ ExampleFrameListener::ExampleFrameListener(RenderWindow* win, Camera* cam, Scene
 
 ExampleFrameListener::~ExampleFrameListener()
 {
-#ifdef USE_MYGUI 
+#ifdef USE_MYGUI
 	LoadingWindow::FreeInstance();
 	SelectorWindow::FreeInstance();
 #endif //MYGUI
@@ -1906,7 +1905,7 @@ int ExampleFrameListener::setupBenchmark()
 	{
 		// very simple benchmark: a simple truck driving
 		benchmarking=true;
-#ifdef USE_MYGUI 
+#ifdef USE_MYGUI
 		LoadingWindow::get()->hide();
 #endif //MYGUI
 
@@ -2638,7 +2637,7 @@ void ExampleFrameListener::loadObject(const char* name, float px, float py, floa
 	//ds->close();
 
 	//add icons if type is set
-#ifdef USE_MYGUI 
+#ifdef USE_MYGUI
 	String typestr = "";
 	if(type && bigMap)
 	{
@@ -2815,7 +2814,7 @@ bool ExampleFrameListener::updateEvents(float dt)
 	//flashing message
 	if (timeUntilUnflash>0)	timeUntilUnflash-=dt;
 	else if (flashOverlay->isVisible()) flashOverlay->hide();
-#ifdef USE_MYGUI 
+#ifdef USE_MYGUI
 	if(GUI_Friction::getSingleton().getVisible() && current_truck >= 0 && trucks[current_truck])
 	{
 		// friction GUI active
@@ -2848,7 +2847,7 @@ bool ExampleFrameListener::updateEvents(float dt)
 	if(chatting)
 		return true;
 
-#ifdef USE_MYGUI 
+#ifdef USE_MYGUI
 	if(INPUTENGINE.getEventBoolValueBounce(EV_COMMON_SHOW_MENU))
 	{
 		bool newvalue = !GUI_MainMenu::getSingleton().getVisible();
@@ -2866,7 +2865,7 @@ bool ExampleFrameListener::updateEvents(float dt)
 				shutdown_final();
 		}
 	}
-#ifdef USE_MYGUI 
+#ifdef USE_MYGUI
 	if(GUI_MainMenu::getSingleton().getVisible()) return true; // disable input events in menu mode
 #endif // MYGUI
 
@@ -4469,7 +4468,7 @@ bool ExampleFrameListener::updateEvents(float dt)
 				case 1 : mCamera->setPolygonMode(Ogre::PM_WIREFRAME) ; break ;
 				case 2 : mCamera->setPolygonMode(Ogre::PM_POINTS) ; break ;
 			}
-#ifdef USE_MYGUI 
+#ifdef USE_MYGUI
 			if(mtc && interactivemap)
 			{
 				switch(mSceneDetailIndex) {
@@ -4483,7 +4482,7 @@ bool ExampleFrameListener::updateEvents(float dt)
 #endif //MYGUI
 		}
 
-#ifdef USE_MYGUI 
+#ifdef USE_MYGUI
 		if (INPUTENGINE.getEventBoolValueBounce(EV_COMMON_VIEW_MAP))
 		{
 			if(bigMap)
@@ -4597,7 +4596,7 @@ bool ExampleFrameListener::updateEvents(float dt)
 			NETCHAT.toggleVisible(this);
 		}
 
-#ifdef USE_MYGUI 
+#ifdef USE_MYGUI
 		if (INPUTENGINE.getEventBoolValueBounce(EV_COMMON_CONSOLEDISPLAY))
 		{
 			Console::get()->setVisible(!Console::get()->getVisible());
@@ -4654,7 +4653,7 @@ bool ExampleFrameListener::updateEvents(float dt)
 		//uiloader->updateEvents(dt);
 
 
-#ifdef USE_MYGUI 
+#ifdef USE_MYGUI
 		if (SelectorWindow::get()->isFinishedSelecting())
 		{
 			if (loading_state==NONE_LOADED)
@@ -4824,7 +4823,7 @@ bool ExampleFrameListener::updateEvents(float dt)
 	}
 #endif //USE_PAGED
 
-#ifdef USE_MYGUI 
+#ifdef USE_MYGUI
 	if (INPUTENGINE.getEventBoolValueBounce(EV_MAP_INTERACTIVE_TOGGLE, 0.5f) && mtc)
 	{
 		if(mtc && bigMap)
@@ -4986,7 +4985,7 @@ int ExampleFrameListener::addTruck(char *fname, Vector3 pos)
 {
 	Beam *b = BeamFactory::getSingleton().createLocal(pos, Quaternion::ZERO, fname, 0, false, flaresMode);
 
-#ifdef USE_MYGUI 
+#ifdef USE_MYGUI
 	if(b && bigMap)
 	{
 		MapEntity *e = bigMap->createNamedMapEntity("Truck"+StringConverter::toString(b->trucknum), MapControl::getTypeByDriveable(b->driveable));
@@ -5048,7 +5047,7 @@ void ExampleFrameListener::shutdown_pre()
 
 void ExampleFrameListener::hideMap()
 {
-#ifdef USE_MYGUI 
+#ifdef USE_MYGUI
 	if(bigMap)
 		bigMap->setVisibility(false);
 #endif // MYGUI
@@ -5089,7 +5088,7 @@ void ExampleFrameListener::loadTerrain(String terrainfile)
 	updateXFire();
 #endif
 
-#ifdef USE_MYGUI 
+#ifdef USE_MYGUI
 	LoadingWindow::get()->setProgress(0, _L("Loading Terrain"));
 	bool disableMap = (SETTINGS.getSetting("disableOverViewMap") == "Yes");
 
@@ -5138,7 +5137,7 @@ void ExampleFrameListener::loadTerrain(String terrainfile)
 	BeamFactory::getSingleton().icollisions = collisions;
 
 	if(person) person->setCollisions(collisions);
-#ifdef USE_MYGUI 
+#ifdef USE_MYGUI
 	GUI_Friction::getSingleton().setCollisions(collisions);
 #endif //MYGUI
 
@@ -5398,7 +5397,7 @@ void ExampleFrameListener::loadTerrain(String terrainfile)
 		new SkyManager();
 
 		SkyManager::getSingleton().init(mScene, mWindow, mCamera);
-	
+
 	}
 	else
 #endif //CAELUM
@@ -5460,7 +5459,7 @@ void ExampleFrameListener::loadTerrain(String terrainfile)
 		tmpSize = cfg.getSetting("PageWorldZ");
 		if (tmpSize != String(""))
 			mapsizez = atof(tmpSize.c_str());
-#ifdef USE_MYGUI 
+#ifdef USE_MYGUI
 		if(!disableMap && bigMap)
 			bigMap->setWorldSize(mapsizex, mapsizez);
 #endif //MYGUI
@@ -5847,12 +5846,10 @@ void ExampleFrameListener::loadTerrain(String terrainfile)
 	BeamFactory::getSingleton().mfinder = hfinder;
 
 	// set camera to some nice spot, overviewing the terrain, showing the loading progress
-	{
-		mCamera->setPosition(spl.pos);
-		mCamera->setOrientation(spl.rot);
-	}
+	if(spl.pos != Vector3::ZERO)    mCamera->setPosition(spl.pos);
+	if(spl.rot != Quaternion::ZERO) mCamera->setOrientation(spl.rot);
 
-#ifdef USE_MYGUI 
+#ifdef USE_MYGUI
 	if(bigMap)
 	{
 		mtc = new MapTextureCreator(mScene, mCamera, this);
@@ -5903,7 +5900,7 @@ void ExampleFrameListener::loadTerrain(String terrainfile)
 		int progress = ((float)(ds->tell()) / (float)(ds->size())) * 100.0f;
 		if(progress-lastprogress > 20)
 		{
-#ifdef USE_MYGUI 
+#ifdef USE_MYGUI
 			LoadingWindow::get()->setProgress(progress, _L("Loading Terrain"));
 #endif //MYGUI
 			lastprogress = progress;
@@ -5929,7 +5926,7 @@ void ExampleFrameListener::loadTerrain(String terrainfile)
 			collisions->setupLandUse(line+15);
 			continue;
 		}
-		
+
 		//Caelum config
 		if (!strncmp(line,"caelumconfig", 12))
 		{
@@ -6352,7 +6349,7 @@ void ExampleFrameListener::loadTerrain(String terrainfile)
 
 	}
 
-#ifdef USE_MYGUI 
+#ifdef USE_MYGUI
 	// tell this the map, so it can change the drawing distance !
 	if(mtc)
 		mtc->setStaticGeometry(bakesg);
@@ -6382,7 +6379,7 @@ void ExampleFrameListener::loadTerrain(String terrainfile)
 	if(debugCollisions)
 		collisions->createCollisionDebugVisualization();
 
-#ifdef USE_MYGUI 
+#ifdef USE_MYGUI
 	LoadingWindow::get()->hide();
 
 	if(bigMap)
@@ -6705,7 +6702,7 @@ void ExampleFrameListener::initTrucks(bool loadmanual, Ogre::String selected, Og
 				setCurrentTruck(-1);
 		}
 
-#ifdef USE_MYGUI 
+#ifdef USE_MYGUI
 		if(b && bigMap)
 		{
 			MapEntity *e = bigMap->createNamedMapEntity("Truck"+StringConverter::toString(b->trucknum), MapControl::getTypeByDriveable(b->driveable));
@@ -6734,7 +6731,7 @@ void ExampleFrameListener::initTrucks(bool loadmanual, Ogre::String selected, Og
 
 			//trucks[free_truck]=new Beam(free_truck, mSceneMgr, mSceneMgr->getRootSceneNode(), mWindow, net,
 			//	&mapsizex, &mapsizez, truck_preload[i].px, truck_preload[i].py, truck_preload[i].pz, truck_preload[i].rotation, truck_preload[i].name, collisions, dustp, clumpp, sparksp, dripp, splashp, ripplep, hfinder, w, mCamera, mirror,false,false,false,0,truck_preload[i].ismachine,flaresMode, truckconfig);
-#ifdef USE_MYGUI 
+#ifdef USE_MYGUI
 			if(b && bigMap)
 			{
 				MapEntity *e = bigMap->createNamedMapEntity("Truck"+StringConverter::toString(b->trucknum), MapControl::getTypeByDriveable(b->driveable));
@@ -6773,7 +6770,7 @@ void ExampleFrameListener::initTrucks(bool loadmanual, Ogre::String selected, Og
 	//					showDashboardOverlays(true);
 	LogManager::getSingleton().logMessage("EFL: overlays ok");
 
-#ifdef USE_MYGUI 
+#ifdef USE_MYGUI
 	if(mtc)
 		mtc->update();
 #endif // MYGUI
@@ -6811,7 +6808,7 @@ void ExampleFrameListener::setCurrentTruck(int v)
 		// hide truckhud
 		TRUCKHUD.show(false);
 
-#ifdef USE_MYGUI 
+#ifdef USE_MYGUI
 		// return to normal mapmode
 		if(mtc && interactivemap > 1)
 		{
@@ -6878,7 +6875,7 @@ void ExampleFrameListener::setCurrentTruck(int v)
 		}
 
 		// mapmode change?
-#ifdef USE_MYGUI 
+#ifdef USE_MYGUI
 		if(mtc && trucks[current_truck]->dynamicMapMode > 0)
 		{
 			// > 1 = disabled normally, enabled for car
@@ -6972,7 +6969,7 @@ void ExampleFrameListener::moveCamera(float dt)
 	if(!hfinder) return;
 	if (loading_state!=ALL_LOADED && loading_state != EDITOR_PAUSE) return;
 
-#ifdef USE_MYGUI 
+#ifdef USE_MYGUI
 	if(GUI_MainMenu::getSingleton().getVisible()) return; // disable camera movement in menu mode
 #endif // MYGUI
 
@@ -7058,7 +7055,7 @@ void ExampleFrameListener::moveCamera(float dt)
 	}
 	if (current_truck==-1)
 	{
-#ifdef USE_MYGUI 
+#ifdef USE_MYGUI
 		if(mtc && interactivemap)
 		{
 			mtc->setCamPosition(person->getPosition(), mCamera->getOrientation());
@@ -7148,7 +7145,7 @@ void ExampleFrameListener::moveCamera(float dt)
 	}
 	else
 	{
-#ifdef USE_MYGUI 
+#ifdef USE_MYGUI
 		if(mtc && interactivemap)
 		{
 			// update the interactive map
@@ -7645,7 +7642,7 @@ bool ExampleFrameListener::frameStarted(const FrameEvent& evt)
 	//if(collisions) 	printf("> ground model used: %s\n", collisions->last_used_ground_model->name);
 
 	// exit frame started method when just displaying the GUI
-#ifdef USE_MYGUI 
+#ifdef USE_MYGUI
 	if (LoadingWindow::get()->getFrameForced())
 		return true;
 #endif //MYGUI
@@ -8109,7 +8106,7 @@ void ExampleFrameListener::showLoad(int type, char* instance, char* box)
 	reload_box=collisions->getBox(instance, box);
 	loading_state=RELOADING;
 	hideMap();
-#ifdef USE_MYGUI 
+#ifdef USE_MYGUI
 	SelectorWindow::get()->show(SelectorWindow::LoaderType(type));
 #endif // MYGUI
 }
@@ -8152,7 +8149,7 @@ void ExampleFrameListener::netDisconnectTruck(int number)
 	// we will remove the truck completely
 	// TODO: fix that below!
 	//removeTruck(number);
-#ifdef USE_MYGUI 
+#ifdef USE_MYGUI
 	if(bigMap)
 	{
 		MapEntity *e = bigMap->getEntityByName("Truck"+StringConverter::toString(number));
