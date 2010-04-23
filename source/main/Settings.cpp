@@ -182,7 +182,8 @@ bool Settings::setupPaths()
 	//user path is easy
 	char home_path[255];
 	strncpy(home_path, getenv ("HOME"), 240);
-	sprintf(user_path, "%s/RigsOfRods/", home_path);
+	//sprintf(user_path, "%s/RigsOfRods/", home_path); // old version
+	sprintf(user_path, "%s/.rigsofrods/", home_path);
 #elif OGRE_PLATFORM == OGRE_PLATFORM_APPLE
 	//found this code, will look later
 	std::string path = "./";
