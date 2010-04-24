@@ -1406,7 +1406,7 @@ bool MyApp::filesystemBootstrap()
 	//user path is easy
 	strncpy(user_path, getenv ("HOME"), 240);
 	wxFileName tfn=wxFileName(conv(user_path), wxEmptyString);
-	tfn.AppendDir(_T("RigsOfRods"));
+	tfn.AppendDir(_T(".rigsofrods"));
 	UserPath=tfn.GetPath();
 #endif
 #if OGRE_PLATFORM == OGRE_PLATFORM_APPLE
