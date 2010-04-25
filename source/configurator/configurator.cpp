@@ -2514,9 +2514,9 @@ void MyDialog::getSettingsControls()
 	settings["HeatHaze"] = (heathaze->GetValue()) ? "Yes" : "No";
 	settings["Hydrax"] = (hydrax->GetValue()) ? "Yes" : "No";
 	settings["disableOverViewMap"] = (dismap->GetValue()) ? "Yes" : "No";
-	if(leds) settings["Logitech LEDs"] = (leds->GetValue()) ? "Yes" : "No";
+	if(leds) { settings["Logitech LEDs"] = (leds->GetValue()) ? "Yes" : "No"; };
 	settings["DebugBeams"] = (beamdebug->GetValue()) ? "Yes" : "No";
-	if(enablexfire) settings["XFire"] = (enablexfire->GetValue()) ? "Yes" : "No";
+	if(enablexfire) { settings["XFire"] = (enablexfire->GetValue()) ? "Yes" : "No"; };
 	settings["AutoDownload"] = (autodl->GetValue()) ? "Yes" : "No";
 	settings["Position Storage"] = (posstor->GetValue()) ? "Yes" : "No";
 	settings["GearboxMode"]= conv(gearBoxMode->GetStringSelection());
@@ -2610,7 +2610,7 @@ void MyDialog::updateSettingsControls()
 	st = settings["HeatHaze"]; if (st.length()>0) heathaze->SetValue(st=="Yes");
 	st = settings["Hydrax"]; if (st.length()>0) hydrax->SetValue(st=="Yes");
 	st = settings["disableOverViewMap"]; if (st.length()>0) dismap->SetValue(st=="Yes");
-	if(leds) st = settings["Logitech LEDs"]; if (st.length()>0) leds->SetValue(st=="Yes");
+	if(leds) { st = settings["Logitech LEDs"]; if (st.length()>0) leds->SetValue(st=="Yes"); };
 	st = settings["External Camera Mode"]; if (st.length()>0) extcam->SetValue(st=="Static");
 	st = settings["AutoDownload"]; if (st.length()>0) autodl->SetValue(st=="Yes");
 	st = settings["Position Storage"]; if (st.length()>0) posstor->SetValue(st=="Yes");
@@ -2618,7 +2618,7 @@ void MyDialog::updateSettingsControls()
 	//st = settings["Truck LOD"]; if (st.length()>0) trucklod->SetValue(st=="Yes");
 	st = settings["Object LOD"]; if (st.length()>0) objlod->SetValue(st=="Yes");
 	st = settings["DebugBeams"]; if (st.length()>0) beamdebug->SetValue(st=="Yes");
-	if(enablexfire) st = settings["XFire"]; if (st.length()>0) enablexfire->SetValue(st=="Yes");
+	if(enablexfire) { st = settings["XFire"]; if (st.length()>0) enablexfire->SetValue(st=="Yes"); };
 	st = settings["Dashboard"]; if (st.length()>0) dashboard->SetValue(st=="Yes");
 	st = settings["Mirrors"]; if (st.length()>0) mirror->SetValue(st=="Yes");
 	st = settings["Creak Sound"]; if (st.length()>0) creaksound->SetValue(st=="No");
