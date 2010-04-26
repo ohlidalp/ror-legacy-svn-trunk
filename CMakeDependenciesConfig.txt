@@ -159,7 +159,7 @@ ELSEIF(UNIX)
    if(ROR_USE_CAELUM)
       #assumes Caelum is installed to uner /usr/local/include/Caelum
       find_path(CAELUM_INCLUDE_DIRS "Caelum.h" "/usr/local/include/Caelum")
-      find_path(CAELUM_LIBRARIES "libCaelum.so")
+      find_path(CAELUM_LIBRARIES "Caelum")
    endif(ROR_USE_CAELUM)
    
    set(ROR_USE_CRASHRPT FALSE)
