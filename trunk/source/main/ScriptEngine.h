@@ -55,6 +55,9 @@ public:
 	ScriptEngine(ExampleFrameListener *efl);
 	~ScriptEngine();
 
+
+	int loadScript(Ogre::String scriptname);
+
 	/**
 	 * Loads a script bound to a terrain
 	 * @param terrainName name of the loaded terrain. I.e. 'nhelens.terrn'
@@ -124,6 +127,7 @@ protected:
 	AngelScript::asIScriptContext *context;              //!< context in which all scripting happens
 	int frameStepFunctionPtr;               //!< script function pointer to the frameStep function
 	int eventCallbackFunctionPtr;           //!< script function pointer to the event callback function
+	std::map <std::string , std::vector<int> > callbacks;
 
 	/**
 	 * This function initialzies the engine and registeres all types
@@ -142,9 +146,10 @@ protected:
 	 * This function reads a file into the provided string.
 	 * @param filename filename of the file that should be loaded into the script string
 	 * @param script reference to a string where the contents of the file is written to
+	 * @param hash reference to a string where the hash of the contents is written to
 	 * @return 0 on success, everything else on error
 	 */
-	int loadScriptFile(const char *fileName, std::string &script);
+	int loadScriptFile(const char *fileName, std::string &script, std::string &hash);
 
 	// undocumented debugging functions below, not working.
 	void ExceptionCallback(AngelScript::asIScriptContext *ctx, void *param);
@@ -312,6 +317,18 @@ public:
 	float rangeRandom(float from, float to);
 	Ogre::Vector3 getPersonPosition();
 };
+
+class CBytecodeStream : public AngelScript::asIBinaryStream
+{
+public:
+	CBytecodeStream(std::string filename);
+	~CBytecodeStream();
+	void Read(void *ptr, AngelScript::asUINT size);
+	void Write(const void *ptr, AngelScript::asUINT size);
+private:
+	FILE *f;
+};
+
 
 #endif //SCRIPTENGINE_H__
 

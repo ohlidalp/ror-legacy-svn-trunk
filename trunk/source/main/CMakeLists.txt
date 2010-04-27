@@ -52,6 +52,10 @@ setup_lib(ANGELSCRIPT)
 setup_lib(HYDRAX)
 setup_lib(CRASHRPT)
 
+if(ROR_USE_ANGELSCRIPT)
+	add_definitions("-DAS_USE_NAMESPACE")
+endif()
+
 if(ROR_USE_OIS_G27)
    add_definitions("-DUSE_OIS_G27")
 endif(ROR_USE_OIS_G27)

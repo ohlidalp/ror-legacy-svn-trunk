@@ -496,6 +496,7 @@ public:
 	int getLoadingState() { return loading_state; };
 	void pauseSim(bool value);
 	void loadNetTerrain(char *preselected_map);
+	void exploreScripts();
 	float mapsizex, mapsizez;
 
 	float stopTimer();

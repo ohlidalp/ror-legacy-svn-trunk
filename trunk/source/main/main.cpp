@@ -157,6 +157,10 @@ bool RigsOfRods::setup(void)
 	ResourceGroupManager::getSingleton().addResourceLocation(SETTINGS.getSetting("User Path")+"terrains", "FileSystem", "TerrainFolders");
 	exploreTerrains(); //this will add subdirs contents into General
 
+	// add scripts folder
+	ResourceGroupManager::getSingleton().addResourceLocation(SETTINGS.getSetting("User Path")+"scripts", "FileSystem", "Scripts", true);
+
+
 	// init skin manager, important to happen before trucks resource loading!
 	LogManager::getSingleton().logMessage("registering Skin Manager");
 	new SkinManager();
