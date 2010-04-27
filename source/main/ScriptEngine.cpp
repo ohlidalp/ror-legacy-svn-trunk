@@ -664,40 +664,60 @@ int ScriptEngine::loadScript(Ogre::String scriptname)
 	// Add the script to the module as a section. If desired, multiple script
 	// sections can be added to the same module. They will then be compiled
 	// together as if it was one large script.
-	AngelScript::asIScriptModule *mod = engine->GetModule("terrainScript", asGM_ALWAYS_CREATE);
-	result = mod->AddScriptSection(scriptname.c_str(), script.c_str(), script.length());
-	if( result < 0 )
-	{
-		LogManager::getSingleton().logMessage("SE| Unkown error while adding script section");
-		return 1;
-	}
+	AngelScript::asIScriptModule *mod = engine->GetModule("RoRScript", asGM_ALWAYS_CREATE);
 
-	// Build the module
-	result = mod->Build();
-	if( result < 0 )
+	// try to load bytecode
+	bool cached = false;
 	{
-		if(result == asINVALID_CONFIGURATION)
+		// the code below should load a compilation result but it crashes for some reason atm ...
+		/*
+		String fn = SETTINGS.getSetting("Cache Path") + "script" + hash + "_" + scriptname + "c";
+		CBytecodeStream bstream(fn);
+		if(bstream.Existing())
 		{
-			LogManager::getSingleton().logMessage("SE| The engine configuration is invalid.");
-			return 1;
-		} else if(result == asERROR)
+			// CRASHES here :(
+			int res = mod->LoadByteCode(&bstream);
+			cached = !res;
+		}
+		*/
+	}
+	if(!cached)
+	{
+		// not cached so dynamically load and compile it
+		result = mod->AddScriptSection(scriptname.c_str(), script.c_str(), script.length());
+		if( result < 0 )
 		{
-			LogManager::getSingleton().logMessage("SE| The script failed to build. ");
-			return 1;
-		} else if(result == asBUILD_IN_PROGRESS)
-		{
-			LogManager::getSingleton().logMessage("SE| Another thread is currently building.");
+			LogManager::getSingleton().logMessage("SE| Unkown error while adding script section");
 			return 1;
 		}
-		LogManager::getSingleton().logMessage("SE| Unkown error while building the script");
-		return 1;
-	}
 
-	// save bytecode
-	{
-		String fn = SETTINGS.getSetting("Cache Path") + "script" + hash + "_" + scriptname + ".o";
-		CBytecodeStream bstream(fn);
-		mod->SaveByteCode(&bstream);
+		// Build the module
+		result = mod->Build();
+		if( result < 0 )
+		{
+			if(result == asINVALID_CONFIGURATION)
+			{
+				LogManager::getSingleton().logMessage("SE| The engine configuration is invalid.");
+				return 1;
+			} else if(result == asERROR)
+			{
+				LogManager::getSingleton().logMessage("SE| The script failed to build. ");
+				return 1;
+			} else if(result == asBUILD_IN_PROGRESS)
+			{
+				LogManager::getSingleton().logMessage("SE| Another thread is currently building.");
+				return 1;
+			}
+			LogManager::getSingleton().logMessage("SE| Unkown error while building the script");
+			return 1;
+		}
+
+		// save bytecode
+		{
+			String fn = SETTINGS.getSetting("Cache Path") + "script" + hash + "_" + scriptname + "c";
+			CBytecodeStream bstream(fn);
+			mod->SaveByteCode(&bstream);
+		}
 	}
 
 	// Find the function that is to be called.
@@ -1014,13 +1034,18 @@ CBytecodeStream::~CBytecodeStream()
 void CBytecodeStream::Write(const void *ptr, AngelScript::asUINT size)
 {
 	if(!f) return;
-	fwrite(ptr, 1, size, f);
+	fwrite(ptr, size, 1, f);
 }
 
 void CBytecodeStream::Read(void *ptr, AngelScript::asUINT size)
 {
 	if(!f) return;
-	fread(ptr, 1, size, f);
+	fread(ptr, size, 1, f);
+}
+
+bool CBytecodeStream::Existing()
+{
+	return (f != 0);
 }
 
 #endif //ANGELSCRIPT
