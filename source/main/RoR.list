@@ -40,6 +40,10 @@ set (HEADER_FILES
   as_ogre.h
   luasystem.h
   ScriptEngine.h
+  angelscript/scriptmath/scriptmath.h
+  angelscript/scripthelper/scripthelper.h
+  angelscript/scriptmath3d/scriptmath3d.h
+  angelscript/scriptstdstring/scriptstdstring.h
   aeroengine.h
   airbrake.h
   Airfoil.h
@@ -149,6 +153,10 @@ set (SOURCE_FILES
   as_ogre.cpp
   luasystem.cpp
   ScriptEngine.cpp
+  angelscript/scriptmath/scriptmath.cpp
+  angelscript/scripthelper/scripthelper.cpp
+  angelscript/scriptmath3d/scriptmath3d.cpp
+  angelscript/scriptstdstring/scriptstdstring.cpp
   airbrake.cpp
   Airfoil.cpp
   Beam.cpp
@@ -309,6 +317,14 @@ SOURCE_GROUP("Script Engine" FILES
   luasystem.h
   ScriptEngine.cpp
   ScriptEngine.h
+  angelscript/scripthelper/scripthelper.cpp
+  angelscript/scripthelper/scripthelper.h
+  angelscript/scriptmath/scriptmath.cpp
+  angelscript/scriptmath/scriptmath.h
+  angelscript/scriptmath3d/scriptmath3d.cpp
+  angelscript/scriptmath3d/scriptmath3d.h
+  angelscript/scriptstdstring/scriptstdstring.cpp
+  angelscript/scriptstdstring/scriptstdstring.h
 )
 SOURCE_GROUP("Beam Engine" FILES
   aeroengine.h

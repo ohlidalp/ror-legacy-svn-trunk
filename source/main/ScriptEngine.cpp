@@ -23,9 +23,9 @@ along with Rigs of Rods.  If not, see <http://www.gnu.org/licenses/>.
 #include "ScriptEngine.h"
 #include "Ogre.h"
 #include "ExampleFrameListener.h"
-//#include "scriptstdstring/scriptstdstring.h" // angelscript addon
-//#include "scriptmath3d/scriptmath3d.h" // angelscript addon
-//#include "scriptmath/scriptmath.h" // angelscript addon
+#include "angelscript/scriptstdstring/scriptstdstring.h" // angelscript addon
+#include "angelscript/scriptmath3d/scriptmath3d.h" // angelscript addon
+#include "angelscript/scriptmath/scriptmath.h" // angelscript addon
 #include "water.h"
 #include "Beam.h"
 #include "Settings.h"
@@ -33,6 +33,7 @@ along with Rigs of Rods.  If not, see <http://www.gnu.org/licenses/>.
 #include "CacheSystem.h"
 #include "as_ogre.h"
 #include "SelectorWindow.h"
+#include "sha1.h"
 
 using namespace Ogre;
 using namespace std;
@@ -43,6 +44,8 @@ template<> ScriptEngine *Ogre::Singleton<ScriptEngine>::ms_Singleton=0;
 ScriptEngine::ScriptEngine(ExampleFrameListener *efl) : mefl(efl), engine(0), context(0), frameStepFunctionPtr(-1), eventMask(0)
 {
 	init();
+
+	callbacks["on_terrain_loading"] = std::vector<int>();
 }
 
 ScriptEngine::~ScriptEngine()
@@ -56,8 +59,8 @@ int ScriptEngine::loadTerrainScript(Ogre::String scriptname)
 {
 	// Load the entire script file into the buffer
 	int result=0;
-	string script;
-	result = loadScriptFile(scriptname.c_str(), script);
+	string script, hash;
+	result = loadScriptFile(scriptname.c_str(), script, hash);
 	if( result )
 	{
 		LogManager::getSingleton().logMessage("SE| Unkown error while loading script file: "+scriptname);
@@ -254,14 +257,15 @@ void ScriptEngine::init()
 	// string type for C++ applications. Every developer is free to register it's own string type.
 	// The SDK do however provide a standard add-on for registering a string type, so it's not
 	// necessary to register your own string type if you don't want to.
-//	RegisterStdString(engine);
-//	RegisterScriptMath(engine);
-//	RegisterScriptMath3D(engine);
+	RegisterStdString(engine);
+	RegisterScriptMath(engine);
+	RegisterScriptMath3D(engine);
 
 	registerOgreObjects(engine);
 
 	// Register everything
 	// class Beam
+	/*
 	result = engine->RegisterObjectType("BeamClass", sizeof(Beam), asOBJ_REF); assert(result>=0);
 	result = engine->RegisterObjectMethod("BeamClass", "void scaleTruck(float)", asMETHOD(Beam,scaleTruck), asCALL_THISCALL); assert(result>=0);
 	result = engine->RegisterObjectMethod("BeamClass", "string getTruckName()", asMETHOD(Beam,getTruckName), asCALL_THISCALL); assert(result>=0);
@@ -294,7 +298,7 @@ void ScriptEngine::init()
 	result = engine->RegisterObjectMethod("BeamClass", "bool getCustomParticleMode()", asMETHOD(Beam,getCustomParticleMode), asCALL_THISCALL); assert(result>=0);
 	result = engine->RegisterObjectMethod("BeamClass", "bool getReverseLightVisible()", asMETHOD(Beam,getCustomParticleMode), asCALL_THISCALL); assert(result>=0);
 	result = engine->RegisterObjectMethod("BeamClass", "float getHeadingDirectionAngle()", asMETHOD(Beam,getHeadingDirectionAngle), asCALL_THISCALL); assert(result>=0);
-	/*
+
 	// offsetof invalid for classes?
 	result = engine->RegisterObjectProperty("BeamClass", "float brake", offsetof(Beam, brake)); assert(result>=0);
 	result = engine->RegisterObjectProperty("BeamClass", "float currentScale", offsetof(Beam, currentScale)); assert(result>=0);
@@ -378,8 +382,8 @@ void ScriptEngine::init()
 	result = engine->RegisterObjectBehaviour("SettingsClass", asBEHAVE_RELEASE, "void f()",asMETHOD(Settings,release), asCALL_THISCALL); assert(result>=0);
 
 	// class Cache_Entry
-	result = engine->RegisterObjectType("Cache_EntryClass", sizeof(Cache_Entry), asOBJ_REF); assert(result>=0);
 	/*
+	result = engine->RegisterObjectType("Cache_EntryClass", sizeof(Cache_Entry), asOBJ_REF); assert(result>=0);
 	result = engine->RegisterObjectProperty("Cache_EntryClass", "string minitype", offsetof(Cache_Entry, minitype)); assert(result>=0);
 	result = engine->RegisterObjectProperty("Cache_EntryClass", "string fname", offsetof(Cache_Entry, fname)); assert(result>=0);
 	result = engine->RegisterObjectProperty("Cache_EntryClass", "string fname_without_uid", offsetof(Cache_Entry, fname_without_uid)); assert(result>=0);
@@ -463,8 +467,8 @@ void ScriptEngine::init()
 	result = engine->RegisterObjectMethod("GameScriptClass", "void setDirectionArrow(const string &in, vector3)", asMETHOD(GameScript,setDirectionArrow), asCALL_THISCALL); assert(result>=0);
 	result = engine->RegisterObjectMethod("GameScriptClass", "void hideDirectionArrow()", asMETHOD(GameScript,hideDirectionArrow), asCALL_THISCALL); assert(result>=0);
 	result = engine->RegisterObjectMethod("GameScriptClass", "void registerForEvent(int)", asMETHOD(GameScript,registerForEvent), asCALL_THISCALL); assert(result>=0);
-	result = engine->RegisterObjectMethod("GameScriptClass", "BeamClass @getCurrentTruck()", asMETHOD(GameScript,getCurrentTruck), asCALL_THISCALL); assert(result>=0);
-	result = engine->RegisterObjectMethod("GameScriptClass", "BeamClass @getTruckByNum(int)", asMETHOD(GameScript,getTruckByNum), asCALL_THISCALL); assert(result>=0);
+	//result = engine->RegisterObjectMethod("GameScriptClass", "BeamClass @getCurrentTruck()", asMETHOD(GameScript,getCurrentTruck), asCALL_THISCALL); assert(result>=0);
+	//result = engine->RegisterObjectMethod("GameScriptClass", "BeamClass @getTruckByNum(int)", asMETHOD(GameScript,getTruckByNum), asCALL_THISCALL); assert(result>=0);
 	result = engine->RegisterObjectMethod("GameScriptClass", "int getChatFontSize()", asMETHOD(GameScript,getChatFontSize), asCALL_THISCALL); assert(result>=0);
 	result = engine->RegisterObjectMethod("GameScriptClass", "void setChatFontSize(int)", asMETHOD(GameScript,setChatFontSize), asCALL_THISCALL); assert(result>=0);
 	result = engine->RegisterObjectMethod("GameScriptClass", "void showChooser(const string &in, const string &in, const string &in)", asMETHOD(GameScript,showChooser), asCALL_THISCALL); assert(result>=0);
@@ -557,13 +561,23 @@ void ScriptEngine::msgCallback(const asSMessageInfo *msg)
 	LogManager::getSingleton().logMessage(tmp);
 }
 
-int ScriptEngine::loadScriptFile(const char *fileName, string &script)
+int ScriptEngine::loadScriptFile(const char *fileName, string &script, string &hash)
 {
 	try
 	{
+		// read the file
 		DataStreamPtr ds=ResourceGroupManager::getSingleton().openResource(fileName, ResourceGroupManager::DEFAULT_RESOURCE_GROUP_NAME);
 		script.resize(ds->size());
 		ds->read(&script[0], ds->size());
+
+		// using SHA1 here is stupid, we need to replace it with something better
+		// then hash it
+		char hash_result[250];
+		RoR::CSHA1 sha1;
+		sha1.UpdateHash((uint8_t *)script.c_str(), script.size());
+		sha1.Final();
+		sha1.ReportHash(hash_result, RoR::CSHA1::REPORT_HEX_SHORT);
+		hash = string(hash_result);
 		return 0;
 	} catch(...)
 	{
@@ -633,6 +647,96 @@ void ScriptEngine::triggerEvent(enum scriptEvents eventnum, int value)
 		}
 		return;
 	}
+}
+
+int ScriptEngine::loadScript(Ogre::String scriptname)
+{
+	// Load the entire script file into the buffer
+	int result=0;
+	string script, hash;
+	result = loadScriptFile(scriptname.c_str(), script, hash);
+	if( result )
+	{
+		LogManager::getSingleton().logMessage("SE| Unkown error while loading script file: "+scriptname);
+		return 1;
+	}
+
+	// Add the script to the module as a section. If desired, multiple script
+	// sections can be added to the same module. They will then be compiled
+	// together as if it was one large script.
+	AngelScript::asIScriptModule *mod = engine->GetModule("terrainScript", asGM_ALWAYS_CREATE);
+	result = mod->AddScriptSection(scriptname.c_str(), script.c_str(), script.length());
+	if( result < 0 )
+	{
+		LogManager::getSingleton().logMessage("SE| Unkown error while adding script section");
+		return 1;
+	}
+
+	// Build the module
+	result = mod->Build();
+	if( result < 0 )
+	{
+		if(result == asINVALID_CONFIGURATION)
+		{
+			LogManager::getSingleton().logMessage("SE| The engine configuration is invalid.");
+			return 1;
+		} else if(result == asERROR)
+		{
+			LogManager::getSingleton().logMessage("SE| The script failed to build. ");
+			return 1;
+		} else if(result == asBUILD_IN_PROGRESS)
+		{
+			LogManager::getSingleton().logMessage("SE| Another thread is currently building.");
+			return 1;
+		}
+		LogManager::getSingleton().logMessage("SE| Unkown error while building the script");
+		return 1;
+	}
+
+	// save bytecode
+	{
+		String fn = SETTINGS.getSetting("Cache Path") + "script" + hash + "_" + scriptname + ".o";
+		CBytecodeStream bstream(fn);
+		mod->SaveByteCode(&bstream);
+	}
+
+	// Find the function that is to be called.
+	int funcId = mod->GetFunctionIdByDecl("void main()");
+	if( funcId < 0 )
+	{
+		// The function couldn't be found. Instruct the script writer to include the
+		// expected function in the script.
+		LogManager::getSingleton().logMessage("SE| The script must have the function 'void main()'. Please add it and try again.");
+		return 1;
+	}
+
+	// get some other optional functions
+	int cb = mod->GetFunctionIdByDecl("void on_terrain_loading(string lines)");
+	if(cb>0)
+		callbacks["on_terrain_loading"].push_back(cb);
+
+	// Create our context, prepare it, and then execute
+	context = engine->CreateContext();
+
+	//context->SetLineCallback(asMETHOD(ScriptEngine,LineCallback), this, asCALL_THISCALL);
+
+	// this does not work :(
+	//context->SetExceptionCallback(asMETHOD(ScriptEngine,ExceptionCallback), this, asCALL_THISCALL);
+
+	context->Prepare(funcId);
+	LogManager::getSingleton().logMessage("SE| Executing main()");
+	result = context->Execute();
+	if( result != asEXECUTION_FINISHED )
+	{
+		// The execution didn't complete as expected. Determine what happened.
+		if( result == asEXECUTION_EXCEPTION )
+		{
+			// An exception occurred, let the script writer know what happened so it can be corrected.
+			LogManager::getSingleton().logMessage("SE| An exception '" + String(context->GetExceptionString()) + "' occurred. Please correct the code in file '" + scriptname + "' and try again.");
+		}
+	}
+
+	return 0;
 }
 
 /* class that implements the interface for the scripts */
@@ -892,6 +996,31 @@ int GameScript::setMaterialEmissive(const std::string &materialName, float red, 
 float GameScript::rangeRandom(float from, float to)
 {
 	return Ogre::Math::RangeRandom(from, to);
+}
+
+///////////////////////////////////////////////////////////////////////////////
+// CBytecodeStream
+CBytecodeStream::CBytecodeStream(std::string filename) : f(0)
+{
+	f = fopen(filename.c_str(), "wb");
+}
+
+CBytecodeStream::~CBytecodeStream()
+{
+	if(f)
+		fclose(f);
+}
+
+void CBytecodeStream::Write(const void *ptr, AngelScript::asUINT size)
+{
+	if(!f) return;
+	fwrite(ptr, 1, size, f);
+}
+
+void CBytecodeStream::Read(void *ptr, AngelScript::asUINT size)
+{
+	if(!f) return;
+	fread(ptr, 1, size, f);
 }
 
 #endif //ANGELSCRIPT

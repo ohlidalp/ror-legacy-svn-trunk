@@ -998,6 +998,7 @@ ExampleFrameListener::ExampleFrameListener(RenderWindow* win, Camera* cam, Scene
 
 #ifdef USE_ANGELSCRIPT
 	new ScriptEngine(this);
+	exploreScripts();
 #endif
 
 	externalCameraMode=0;
@@ -1108,7 +1109,6 @@ ExampleFrameListener::ExampleFrameListener(RenderWindow* win, Camera* cam, Scene
 #endif //MYGUI
 
 #ifdef USE_ANGELSCRIPT
-	new ScriptEngine(this);
 #ifdef USE_MYGUI
 	Console::getInstance();
 #endif// MYGUI
@@ -1858,6 +1858,15 @@ ExampleFrameListener::~ExampleFrameListener()
 	}
 	#endif
 
+}
+
+void ExampleFrameListener::exploreScripts()
+{
+	FileInfoListPtr files= ResourceGroupManager::getSingleton().findResourceFileInfo("Scripts", "*.rs", false);
+	for (FileInfoList::iterator iterFiles = files->begin(); iterFiles!= files->end(); ++iterFiles)
+	{
+		ScriptEngine::getSingleton().loadScript(iterFiles->filename);
+	}
 }
 
 void ExampleFrameListener::loadNetTerrain(char *preselected_map)
