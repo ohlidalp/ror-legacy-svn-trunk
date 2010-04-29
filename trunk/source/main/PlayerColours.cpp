@@ -62,7 +62,7 @@ void PlayerColours::updateMaterial(int colourNum, String materialName, int textu
     
     MaterialPtr mat = MaterialManager::getSingleton().getByName(materialName);
     if(mat.isNull()) return;
-    if(mat->getNumTechniques()>0 && mat->getTechnique(0)->getNumPasses()>0 && mat->getTechnique(0)->getPass(0)->getNumTextureUnitStates() > 0)
+    if(mat->getNumTechniques()>0 && mat->getTechnique(0)->getNumPasses()>0 && textureUnitStateNum < mat->getTechnique(0)->getPass(0)->getNumTextureUnitStates())
     {
         mat->getTechnique(0)->getPass(0)->getTextureUnitState(textureUnitStateNum)->setAlphaOperation(LBX_BLEND_CURRENT_ALPHA , LBS_MANUAL, LBS_CURRENT, 0.8);
         mat->getTechnique(0)->getPass(0)->getTextureUnitState(textureUnitStateNum)->setColourOperationEx(LBX_BLEND_CURRENT_ALPHA , LBS_MANUAL, LBS_CURRENT, cval, cval, 1);
