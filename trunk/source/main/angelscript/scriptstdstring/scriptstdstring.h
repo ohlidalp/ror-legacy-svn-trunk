@@ -1,3 +1,5 @@
+#ifdef USE_ANGELSCRIPT
+
 //
 // Script std::string
 //
@@ -21,3 +23,5 @@ void RegisterStdString(asIScriptEngine *engine);
 END_AS_NAMESPACE
 
 #endif
+
+#endif //USE_ANGELSCRIPT

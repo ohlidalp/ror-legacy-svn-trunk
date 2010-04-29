@@ -1,3 +1,5 @@
+#ifdef USE_ANGELSCRIPT
+
 #include <string.h>
 #include "scripthelper.h"
 #include <string>
@@ -159,3 +161,5 @@ int ExecuteString(asIScriptEngine *engine, const char *code, asIScriptModule *mo
 }
 
 END_AS_NAMESPACE
+
+#endif //USE_ANGELSCRIPT

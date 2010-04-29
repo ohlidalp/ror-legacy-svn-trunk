@@ -1,3 +1,5 @@
+#ifdef USE_ANGELSCRIPT
+
 #ifndef SCRIPTHELPER_H
 #define SCRIPTHELPER_H
 
@@ -18,4 +20,6 @@ int ExecuteString(asIScriptEngine *engine, const char *code, asIScriptModule *mo
 
 END_AS_NAMESPACE
 
-#endif
+#endif //SCRIPTHELPER_H
+
+#endif // USE_ANGELSCRIPT

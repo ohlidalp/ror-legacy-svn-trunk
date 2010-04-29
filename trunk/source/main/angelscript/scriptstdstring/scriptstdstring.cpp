@@ -1,3 +1,5 @@
+#ifdef USE_ANGELSCRIPT
+
 #include <assert.h>
 #include <sstream>
 #include "scriptstdstring.h"
@@ -478,6 +480,4 @@ void RegisterStdString(asIScriptEngine * engine)
 
 END_AS_NAMESPACE
 
-
-
-
+#endif //USE_ANGELSCRIPT
