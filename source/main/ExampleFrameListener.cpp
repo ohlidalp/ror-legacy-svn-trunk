@@ -1862,11 +1862,13 @@ ExampleFrameListener::~ExampleFrameListener()
 
 void ExampleFrameListener::exploreScripts()
 {
+#if USE_ANGELSCRIPT
 	FileInfoListPtr files= ResourceGroupManager::getSingleton().findResourceFileInfo("Scripts", "*.rs", false);
 	for (FileInfoList::iterator iterFiles = files->begin(); iterFiles!= files->end(); ++iterFiles)
 	{
 		ScriptEngine::getSingleton().loadScript(iterFiles->filename);
 	}
+#endif //USE_ANGELSCRIPT
 }
 
 void ExampleFrameListener::loadNetTerrain(char *preselected_map)
