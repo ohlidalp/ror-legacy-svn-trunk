@@ -25,12 +25,9 @@ along with Rigs of Rods.  If not, see <http://www.gnu.org/licenses/>.
 
 #include "OgreSingleton.h"
 #include "OgrePrerequisites.h"
-#include "groundmodel.h"
+#include "RoRPrerequisites.h"
 #include "rormemory.h"
 
-class Collisions;
-class Water;
-class DustPool;
 
 class DustManager : public Ogre::Singleton< DustManager >, public MemoryAllocatedObject
 {

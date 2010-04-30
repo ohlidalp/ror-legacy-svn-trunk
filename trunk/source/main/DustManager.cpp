@@ -25,6 +25,7 @@ along with Rigs of Rods.  If not, see <http://www.gnu.org/licenses/>.
 #include "DustPool.h"
 #include "Settings.h"
 #include "collisions.h"
+#include "BeamData.h"
 
 #include "language.h"
 

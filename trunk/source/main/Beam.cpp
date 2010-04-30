@@ -21,6 +21,7 @@ along with Rigs of Rods.  If not, see <http://www.gnu.org/licenses/>.
 
 #include <float.h>
 #include "Beam.h"
+#include "BeamData.h"
 #include "rormemory.h"
 
 #include "engine.h"

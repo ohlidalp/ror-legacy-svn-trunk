@@ -71,7 +71,9 @@ class LuaSystem;
 // forward typedefs for structs
 
 // little helper macro that should prevent typos and increase readability
+// "FWDCLSTRUCT(node)" will be "typedef struct node node_t"
 #define FWDCLSTRUCT(x) typedef struct x x##_t
+
 
 FWDCLSTRUCT(node);
 FWDCLSTRUCT(beam);
@@ -96,5 +98,7 @@ FWDCLSTRUCT(rig);
 FWDCLSTRUCT(collision_box);
 FWDCLSTRUCT(tie);
 FWDCLSTRUCT(hook);
+FWDCLSTRUCT(ground_model);
+
 
 #endif //RORPREREQUISITES_H__
