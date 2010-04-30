@@ -57,7 +57,6 @@ private:
 	client_t clients[MAX_PEERS];
 	pthread_mutex_t clients_mutex;
 	Beam** trucks;
-	netlock_t netlock;
 	std::string mySname;
 	long mySport;
 	char sendthreadstart_buffer[MAX_MESSAGE_LENGTH];

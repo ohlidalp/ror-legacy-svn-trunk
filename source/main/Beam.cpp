@@ -297,13 +297,13 @@ Beam::~Beam()
 }
 
 Beam::Beam(int tnum, SceneManager *manager, SceneNode *parent, RenderWindow* win, Network *_net, float *_mapsizex, float *_mapsizez, Real px, Real py, Real pz, Quaternion rot, const char* fname, Collisions *icollisions, HeightFinder *mfinder, Water *w, Camera *pcam, Mirrors *mmirror, bool networked, bool networking, collision_box_t *spawnbox, bool ismachine, int _flaresMode, std::vector<Ogre::String> *_truckconfig, SkinPtr skin, bool freeposition) : \
-	deleting(false),
-	driverSeat(0)
+	deleting(false)
 {
 	net=_net;
 	if(net && !networking) networking = true; // enable networking if some network class is existing
 
 	tsteps=100;
+	driverSeat=0;
 	networkUsername = String();
 	networkAuthlevel = 0;
 	beambreakdebug = (SETTINGS.getSetting("Beam Break Debug") == "Yes");
@@ -360,7 +360,6 @@ Beam::Beam(int tnum, SceneManager *manager, SceneNode *parent, RenderWindow* win
 	netLabelNode=0;
 	free_rigidifier=0;
 	autopilot=0;
-	for (i=0; i<MAX_NETFORCE; i++) netforces[i].used=false;
 	free_rotator=0;
 	free_cparticle=0;
 	free_airbrake=0;
@@ -534,7 +533,6 @@ Beam::Beam(int tnum, SceneManager *manager, SceneNode *parent, RenderWindow* win
 	oldreplaypos=-1;
 	watercontact=0;
 	watercontactold=0;
-	netlock.state=UNLOCKED;
 	//			lastdt=0.1;
 	//for (i=0; i<MAX_COMMANDS; i++) {commandkey[i].bfree=0;commandkey[i].rotfree=0;commandkey[i].kpressed=0;};
 	hascommands=0;
@@ -925,6 +923,8 @@ void Beam::desactivate()
 	}
 }
 
+#if 0
+// old netforce code
 void Beam::pushNetForce(int node_id, Vector3 force)
 {
 	for (int i=0; i<MAX_NETFORCE; i++)
@@ -957,6 +957,7 @@ void Beam::expireNetForce()
 		if (netforces[i].used && mrtime-netforces[i].birthdate>0.5) netforces[i].used=false;
 	}
 }
+#endif //0
 
 inline bool Beam::inRange(float num, float min, float max)
 {
@@ -6209,7 +6210,6 @@ void Beam::SyncReset()
 			if (beams[i].mSceneNode->numAttachedObjects()==0) beams[i].mSceneNode->attachObject(beams[i].mEntity);
 		}
 	}
-	netlock.state=UNLOCKED;
 	for (i=0; i<free_contacter; i++) contacters[i].contacted=0;
 	for(std::vector <rope_t>::iterator it = ropes.begin(); it!=ropes.end(); it++) it->lockedto=0;
 	for(std::vector <tie_t>::iterator it = ties.begin(); it!=ties.end(); it++)
@@ -7917,34 +7917,6 @@ void Beam::calcForcesEuler(int doUpdate, Real dt, int step, int maxstep, Beam** 
 				it->lockNode->Forces += 100000.0 * f;
 			}
 		}
-#if 0
-		// XXX : TODO : FIX
-		//net forces (only when in network! :\ )
-		if(networking)
-		{
-			for (i=0; i<MAX_NETFORCE; i++)
-			{
-				if (netforces[i].used) nodes[netforces[i].node].Forces+=netforces[i].force;
-			}
-		}
-		//netlock force
-		if (netlock.state==LOCKED)
-		{
-			Vector3 f=trucks[netlock.remote_truck]->nodes[netlock.remote_node].AbsPosition-nodes[netlock.local_node].AbsPosition;
-			float d=f.length();
-			f=f/d; //normalize
-			float rspeed=(d-netlock.last_dist)/(mrtime-netlock.last_time);
-			if (rspeed<0) rspeed=0;
-			float forcelen=d*10000.0+rspeed*100000.0;
-			if (forcelen>100000.0) forcelen=100000.0;
-			if (forcelen<-100000.0) forcelen=-100000.0;
-			f=f*forcelen;
-			nodes[netlock.local_node].Forces+=f;
-			netlock.toSendForce=-f;
-			netlock.last_dist=d;
-			netlock.last_time=mrtime;
-		}
-#endif //0
 	}
 
 #ifdef FEAT_TIMING
@@ -10608,44 +10580,6 @@ void Beam::ropeToggle(Beam** trucks, int trucksnum, int group)
 		}
 	}
 }
-
-
-#if 0
-	// XXX: TODO: fix remote truck locks
-	if (networking)
-	{
-		if (netlock.state==LOCKED)
-		{
-			netlock.state=UNLOCKED;
-		}
-		else
-		{
-			//we lock a hook
-			if (hookId!=-1)
-			{
-				int i,t;
-				for (t=0; t<trucksnum; t++)
-				{
-					if(!trucks[t]) continue;
-					if (trucks[t]->state==SLEEPING || trucks[t]->state==RECYCLE) continue;
-					for (i=0; i<trucks[t]->free_node; i++)
-					{
-						if (!(trucks[t]->state==ACTIVATED && i==hookId) && (nodes[hookId].AbsPosition-trucks[t]->nodes[i].AbsPosition).length()<0.4)
-						{
-							netlock.remote_truck=t;
-							netlock.remote_node=i;
-							netlock.local_node=hookId;
-							netlock.state=LOCKED;
-							netlock.toSendForce=Vector3::ZERO;
-							break;
-						}
-					}
-				}
-			}
-		}
-		return;
-	}
-#endif //0
 
 void Beam::hookToggle(Beam** trucks, int trucksnum, int group)
 {
