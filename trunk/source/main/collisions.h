@@ -70,40 +70,6 @@ class LuaSystem;
 #include "ExampleFrameListener.h"
 #include "heightfinder.h"
 
-typedef struct _collision_box
-{
-	//absolute collision box
-	float lo_x;
-	float hi_x;
-	float lo_y;
-	float hi_y;
-	float lo_z;
-	float hi_z;
-	bool refined;
-	//rotation
-	Quaternion rot;
-	Quaternion unrot;
-	//center of rotation
-	Vector3 center;
-	//relative collision box
-	float relo_x;
-	float rehi_x;
-	float relo_y;
-	float rehi_y;
-	float relo_z;
-	float rehi_z;
-	//self rotation
-	bool selfrotated;
-	Vector3 selfcenter;
-	Quaternion selfrot;
-	Quaternion selfunrot;
-	int eventsourcenum;
-	bool virt;
-	bool camforced;
-	Vector3 campos;
-	int event_filter;
-} collision_box_t;
-
 typedef struct _collision_tri
 {
 	Vector3 a;

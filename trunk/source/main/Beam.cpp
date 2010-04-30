@@ -41,6 +41,7 @@ along with Rigs of Rods.  If not, see <http://www.gnu.org/licenses/>.
 #include "FlexMeshWheel.h"
 #include "FlexObj.h"
 #include "FlexAirfoil.h"
+#include "MovableText.h"
 #include "turboprop.h"
 #include "turbojet.h"
 #include "screwprop.h"
