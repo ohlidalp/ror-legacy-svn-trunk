@@ -47,7 +47,7 @@ public:
 	void hide();
 
 	Cache_Entry *getSelection() { return mSelectedTruck; }
-	SkinPtr getSelectedSkin() { return mSelectedSkin; }
+	Skin *getSelectedSkin() { return mSelectedSkin; }
 	std::vector<Ogre::String> getTruckConfig() { return mTruckConfigs; }
 	void setEnableCancel(bool enabled);
 private:
@@ -73,13 +73,13 @@ private:
 
 	std::vector<Cache_Entry> mEntries;
 	std::map<int, int> mCategoryUsage;
-	std::vector<SkinPtr> mCurrentSkins;
+	std::vector<Skin *> mCurrentSkins;
 	LoaderType mLoaderType;
 	bool mSelectionDone;
 	std::vector<Ogre::String> mTruckConfigs;
 	Ogre::Camera *mCamera;
 	Cache_Entry *mSelectedTruck;
-	SkinPtr mSelectedSkin;
+	Skin *mSelectedSkin;
 private:
 	ATTRIBUTE_FIELD_WIDGET_NAME(SelectorWindow, mCacheSheet, "Cache");
 	MyGUI::Sheet* mCacheSheet;

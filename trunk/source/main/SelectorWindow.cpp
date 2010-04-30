@@ -57,6 +57,7 @@ SelectorWindow::SelectorWindow()
 	mSearchLineEdit->eventKeySetFocus       = MyGUI::newDelegate(this, &SelectorWindow::eventSearchTextGotFocus);
 	mSearchLineEdit->eventKeyButtonPressed  = MyGUI::newDelegate(this, &SelectorWindow::eventKeyButtonPressed_Main); 
 	
+	mSelectedSkin=0;
 }
 
 SelectorWindow::~SelectorWindow()
@@ -219,7 +220,7 @@ void SelectorWindow::getData()
 		mModelList->removeAllItems();
 		mModelList->addItem(_L("Default Skin"), 0);
 		int i=1;
-		for(std::vector<SkinPtr>::iterator it=mCurrentSkins.begin(); it!=mCurrentSkins.end(); it++, i++)
+		for(std::vector<Skin *>::iterator it=mCurrentSkins.begin(); it!=mCurrentSkins.end(); it++, i++)
 		{
 			mModelList->addItem((*it)->getName(), i);
 		}
@@ -416,7 +417,7 @@ void SelectorWindow::onEntrySelected(int entryID)
 			return;
 		}
 		entryID -= 1; // remove default skin :)
-		SkinPtr &skin = mCurrentSkins[entryID];
+		Skin *skin = mCurrentSkins[entryID];
 		
 		// check if loaded
 		if(!skin->loaded && skin->sourcetype == "FileSystem")
@@ -482,7 +483,7 @@ void SelectorWindow::selectionDone()
 			// just let the user select a skin as well
 		} else
 		{
-			mSelectedSkin.setNull();
+			mSelectedSkin = 0;
 			mSelectionDone = true;
 			hide();
 		}

@@ -35,12 +35,7 @@ using namespace Ogre;
 # include "SocketW.h"
 #endif //SOCKETW
 #include "rornet.h"
-#include "engine.h"
-#include "networkinfo.h"
 #include "CacheSystem.h"
-#include "aeroengine.h"
-#include "CmdKeyInertia.h"
-#include "skin.h"
 #include "Differentials.h"
 #include "approxmath.h"
 #include "PositionStorage.h"
@@ -60,16 +55,6 @@ void *threadstart(void* vid);
 
 static const float flapangles[6]={0.0, -0.07, -0.17, -0.33, -0.67, -1.0};
 
-inline Ogre::Vector3 fast_normalise(Ogre::Vector3 v)
-{
-	return v*fast_invSqrt(v.squaredLength());
-}
-
-inline float fast_length(Ogre::Vector3 v)
-{
-	return fast_sqrt(v.squaredLength());
-}
-
 class Beam : public rig_t, public Streamable, public MemoryAllocatedObject
 {
 public:
@@ -85,7 +70,7 @@ public:
 #endif
 
 	//constructor
-	Beam(int tnum, SceneManager *manager, SceneNode *parent, RenderWindow* win, Network *net, float *mapsizex, float *mapsizez, Real px, Real py, Real pz, Quaternion rot, const char* fname, Collisions *icollisions, HeightFinder *mfinder, Water *w, Camera *pcam, Mirrors *mmirror, bool networked=false, bool networking=false, collision_box_t *spawnbox=NULL, bool ismachine=false, int flareMode=0, std::vector<Ogre::String> *truckconfig=0, SkinPtr skin=SkinPtr(), bool freeposition=false);
+	Beam(int tnum, SceneManager *manager, SceneNode *parent, RenderWindow* win, Network *net, float *mapsizex, float *mapsizez, Real px, Real py, Real pz, Quaternion rot, const char* fname, Collisions *icollisions, HeightFinder *mfinder, Water *w, Camera *pcam, Mirrors *mmirror, bool networked=false, bool networking=false, collision_box_t *spawnbox=NULL, bool ismachine=false, int flareMode=0, std::vector<Ogre::String> *truckconfig=0, Skin *skin=0, bool freeposition=false);
 	void activate();
 	void desactivate();
 	void pushNetwork(char* data, int size);
@@ -198,7 +183,7 @@ public:
 	bool networking;
 	int label;
 	int trucknum;
-	SkinPtr usedSkin;
+	Skin *usedSkin;
 
 	int cinecameranodepos[MAX_CAMERAS];
 	int cameranodepos[MAX_CAMERAS];

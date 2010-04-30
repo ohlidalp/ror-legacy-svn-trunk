@@ -558,7 +558,7 @@ bool CacheSystem::loadCache()
 	LogManager::getSingleton().logMessage("CacheSystem::loadCache2");
 
 	Cache_Entry t;
-	SkinPtr pSkin;
+	Skin *pSkin;
 	int mode = 0;
 	while( !stream->eof() )
 	{
@@ -598,7 +598,7 @@ bool CacheSystem::loadCache()
 					// "skin" + StringConverter::toString(SkinManager::getSingleton().getSkinCount())
 					try
 					{
-						pSkin = SkinManager::getSingleton().create(sname, ResourceGroupManager::DEFAULT_RESOURCE_GROUP_NAME);
+						pSkin = (Skin *)SkinManager::getSingleton().create(sname, ResourceGroupManager::DEFAULT_RESOURCE_GROUP_NAME).getPointer();
 						pSkin->_notifyOrigin(stream->getName());
 						// Skip to and over next {
 						stream->skipLine("{");
@@ -628,7 +628,7 @@ bool CacheSystem::loadCache()
 				if (line == "}")
 				{
 					// Finished
-					pSkin.setNull();
+					pSkin = 0;
 					mode = 0;
 				}
 				else
@@ -1101,7 +1101,7 @@ Ogre::String CacheSystem::formatEntry(int counter, Cache_Entry t)
 	return result;
 }
 
-Ogre::String CacheSystem::formatSkinEntry(int counter, SkinPtr skin)
+Ogre::String CacheSystem::formatSkinEntry(int counter, Skin *skin)
 {
 	String result = "skin\n";
 	result += "{\n";

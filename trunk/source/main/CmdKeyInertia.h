@@ -23,17 +23,6 @@ along with Rigs of Rods.  If not, see <http://www.gnu.org/licenses/>.
 #include "OgrePrerequisites.h"
 #include "rormemory.h"
 
-
-struct cmdKeyInertia_struct
-{
-	Ogre::Real startDelay;
-	Ogre::Real stopDelay;
-	Ogre::Real lastOutput;
-	Ogre::SimpleSpline *startSpline;
-	Ogre::SimpleSpline *stopSpline;
-	Ogre::Real time;
-};
-
 class CmdKeyInertia : public MemoryAllocatedObject
 {
 	
@@ -45,11 +34,21 @@ public:
 	int setCmdKeyDelay(int number,Ogre::Real startDelay,Ogre::Real stopDelay,Ogre::String startFunction, Ogre::String stopFunction);
 	void resetCmdKeyDelay(int maxCmdKeys);
 protected: 
-	
+
+	struct cmdKeyInertia_s
+	{
+		Ogre::Real startDelay;
+		Ogre::Real stopDelay;
+		Ogre::Real lastOutput;
+		Ogre::SimpleSpline *startSpline;
+		Ogre::SimpleSpline *stopSpline;
+		Ogre::Real time;
+	};
+
 	Ogre::Real calculateCmdOutput(Ogre::Real time,Ogre::SimpleSpline *spline);
 	int processLine(Ogre::vector< Ogre::String >::type args,  Ogre::String model);
 
-	cmdKeyInertia_struct *cmdKeyInertia;
+	cmdKeyInertia_s *cmdKeyInertia;
 	std::map < Ogre::String, Ogre::SimpleSpline > splines;
 	int loadDefaultInertiaModels();
 

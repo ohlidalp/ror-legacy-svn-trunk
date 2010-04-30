@@ -225,15 +225,15 @@ static const enum {
 };
 
 static const enum { 
-	ANIM_MODE_ROTA_X		= BITMASK(1),
-	ANIM_MODE_ROTA_Y		= BITMASK(2),
-	ANIM_MODE_ROTA_Z		= BITMASK(3),
-	ANIM_MODE_OFFSET_X		= BITMASK(4),
-	ANIM_MODE_OFFSET_Y		= BITMASK(5),
-	ANIM_MODE_OFFSET_Z		= BITMASK(6),
-	ANIM_MODE_AUTOANIMATE	= BITMASK(7),
-	ANIM_MODE_NOFLIP		= BITMASK(8),
-	ANIM_MODE_BOUNCE		= BITMASK(9),
+	ANIM_MODE_ROTA_X        = BITMASK(1),
+	ANIM_MODE_ROTA_Y        = BITMASK(2),
+	ANIM_MODE_ROTA_Z        = BITMASK(3),
+	ANIM_MODE_OFFSET_X      = BITMASK(4),
+	ANIM_MODE_OFFSET_Y      = BITMASK(5),
+	ANIM_MODE_OFFSET_Z      = BITMASK(6),
+	ANIM_MODE_AUTOANIMATE   = BITMASK(7),
+	ANIM_MODE_NOFLIP        = BITMASK(8),
+	ANIM_MODE_BOUNCE        = BITMASK(9),
 };
 
 static const enum { 
@@ -762,6 +762,25 @@ struct ground_model
 	float fx_particle_timedelta; // delta for particle animation
 	float fx_particle_velo_factor; // velocity factor
 	float fx_particle_ttl;
+};
+
+struct client
+{
+	bool          used;                 //!< if this slot is used already
+	int           trucknum;             //!< the truck's number of the truck bound to this slot
+	int           slotnum;              //!< server slot number
+	bool          loaded;               //!< if the truck bound to this slot is loaded
+	bool          invisible;            //!< if the truck is invisible for the user (since he dont have the required resource)
+
+	char          client_version[10];   //!< clients version, i.e. RoR-0.36.1
+	char          protocol_version[10]; //!< protocol version, i.e. RoRNet-3.0
+	char          truck_name[255];      //!< the truck filename, i.e. agoras.truck
+	unsigned int  truck_size;           //!< the size truck buffer needed
+	char          user_language[10];    //!< the users language
+	char          user_name[20];        //!< the users nickname
+	unsigned int  user_id;              //!< the users id, set by the server
+	unsigned int  user_authlevel;       //!< the users authorization level.
+	int  colournum;                        //!< the users authorization colour
 };
 
 #endif //BEAMDATA_H__

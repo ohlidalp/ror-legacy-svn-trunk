@@ -31,7 +31,6 @@ using namespace Ogre;
 #include "Beam.h"
 #include "engine.h"
 #include "SoundScriptManager.h"
-#include "networkinfo.h"
 
 class ExampleFrameListener;
 

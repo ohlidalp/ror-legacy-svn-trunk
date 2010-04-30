@@ -38,14 +38,14 @@ public:
 	static SkinManager& getSingleton(void);
 	static SkinManager* getSingletonPtr(void);
 
-	int getMaterialAlternatives(Ogre::String materialName, std::vector<SkinPtr> &skin);
-	int getUsableSkins(Cache_Entry *e, std::vector<SkinPtr> &skins);
+	int getMaterialAlternatives(Ogre::String materialName, std::vector<Skin *> &skin);
+	int getUsableSkins(Cache_Entry *e, std::vector<Skin *> &skins);
 
 	int getSkinCount();
 	int serialize(Ogre::String &dst);
 	int clear();
 
-	void parseAttribute(const Ogre::String& line, SkinPtr& pSkin);
+	void parseAttribute(const Ogre::String& line, Skin *pSkin);
 	void unload(const Ogre::String& name);
 	void unload(Ogre::ResourceHandle handle);
 	void unloadAll(bool reloadableOnly = true);
@@ -65,7 +65,7 @@ protected:
 		const Ogre::String& group, bool isManual, Ogre::ManualResourceLoader* loader,
 		const Ogre::NameValuePairList* params);
 
-	void logBadAttrib(const Ogre::String& line, SkinPtr& pSkin);
+	void logBadAttrib(const Ogre::String& line, Skin *pSkin);
 
 
 };

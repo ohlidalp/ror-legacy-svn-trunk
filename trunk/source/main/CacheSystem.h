@@ -26,6 +26,7 @@ along with Rigs of Rods.  If not, see <http://www.gnu.org/licenses/>.
 #include <vector>
 #include <map>
 #include "sha1.h"
+#include "RoRPrerequisites.h"
 #include "rormemory.h"
 //#include "Beam.h" // for authorinfo_t
 
@@ -39,7 +40,6 @@ along with Rigs of Rods.  If not, see <http://www.gnu.org/licenses/>.
 
 using namespace Ogre;
 
-class SkinPtr;
 
 class AuthorInfo
 {
@@ -318,7 +318,7 @@ protected:
 	void generateCache(bool forcefull=false);
 	Ogre::String formatEntry(int counter, Cache_Entry t);
 	Ogre::String formatInnerEntry(int counter, Cache_Entry t);
-	Ogre::String formatSkinEntry(int counter, SkinPtr skin);
+	Ogre::String formatSkinEntry(int counter, Skin *skin);
 	void updateSingleTruckEntryCache(int number, Cache_Entry t);
 	void parseModAttribute(const Ogre::String& line, Cache_Entry& t);
 	void logBadTruckAttrib(const Ogre::String& line, Cache_Entry& t);

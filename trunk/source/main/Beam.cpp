@@ -298,7 +298,7 @@ Beam::~Beam()
 
 }
 
-Beam::Beam(int tnum, SceneManager *manager, SceneNode *parent, RenderWindow* win, Network *_net, float *_mapsizex, float *_mapsizez, Real px, Real py, Real pz, Quaternion rot, const char* fname, Collisions *icollisions, HeightFinder *mfinder, Water *w, Camera *pcam, Mirrors *mmirror, bool networked, bool networking, collision_box_t *spawnbox, bool ismachine, int _flaresMode, std::vector<Ogre::String> *_truckconfig, SkinPtr skin, bool freeposition) : \
+Beam::Beam(int tnum, SceneManager *manager, SceneNode *parent, RenderWindow* win, Network *_net, float *_mapsizex, float *_mapsizez, Real px, Real py, Real pz, Quaternion rot, const char* fname, Collisions *icollisions, HeightFinder *mfinder, Water *w, Camera *pcam, Mirrors *mmirror, bool networked, bool networking, collision_box_t *spawnbox, bool ismachine, int _flaresMode, std::vector<Ogre::String> *_truckconfig, Skin *skin, bool freeposition) : \
 	deleting(false)
 {
 	net=_net;
@@ -2703,7 +2703,7 @@ int Beam::loadTruck(const char* fname, SceneManager *manager, SceneNode *parent,
 
 
 			// check for skins
-			if(!usedSkin.isNull() && usedSkin->hasReplacementForMaterial(texname))
+			if(usedSkin && usedSkin->hasReplacementForMaterial(texname))
 			{
 				// yay, we use a skin :D
 				strncpy(texname, usedSkin->getReplacementForMaterial(texname).c_str(), 1024);
@@ -3443,7 +3443,7 @@ int Beam::loadTruck(const char* fname, SceneManager *manager, SceneNode *parent,
 				MaterialFunctionMapper::replaceSimpleMeshMaterials(te, ColourValue(0, 0.5, 0.5));
 
 				if(materialFunctionMapper) materialFunctionMapper->replaceMeshMaterials(te);
-				if(!usedSkin.isNull()) usedSkin->replaceMeshMaterials(te);
+				if(usedSkin) usedSkin->replaceMeshMaterials(te);
 				props[free_prop].wheel=manager->getRootSceneNode()->createChildSceneNode();
 				if(te)
 					props[free_prop].wheel->attachObject(te);
@@ -3508,7 +3508,7 @@ int Beam::loadTruck(const char* fname, SceneManager *manager, SceneNode *parent,
 			}
 			MaterialFunctionMapper::replaceSimpleMeshMaterials(te, ColourValue(1, 1, 0));
 			if(materialFunctionMapper) materialFunctionMapper->replaceMeshMaterials(te);
-			if(!usedSkin.isNull()) usedSkin->replaceMeshMaterials(te);
+			if(usedSkin) usedSkin->replaceMeshMaterials(te);
 			props[free_prop].snode=manager->getRootSceneNode()->createChildSceneNode();
 			if(te)
 				props[free_prop].snode->attachObject(te);
@@ -3723,7 +3723,7 @@ int Beam::loadTruck(const char* fname, SceneManager *manager, SceneNode *parent,
 			}
 			MaterialFunctionMapper::replaceSimpleMeshMaterials(ec, ColourValue(0.5, 1, 0));
 			if(materialFunctionMapper) materialFunctionMapper->replaceMeshMaterials(ec);
-			if(!usedSkin.isNull()) usedSkin->replaceMeshMaterials(ec);
+			if(usedSkin) usedSkin->replaceMeshMaterials(ec);
 			wings[free_wing].cnode = manager->getRootSceneNode()->createChildSceneNode();
 			if(ec)
 				wings[free_wing].cnode->attachObject(ec);
@@ -4192,7 +4192,7 @@ int Beam::loadTruck(const char* fname, SceneManager *manager, SceneNode *parent,
 			if(strnlen(material,50) == 0 || String(material) == "default")
 				strcpy(material, "tracks/Smoke");
 
-			if(!usedSkin.isNull()) strncpy(material, usedSkin->getReplacementForMaterial(material).c_str(), 50);
+			if(usedSkin) strncpy(material, usedSkin->getReplacementForMaterial(material).c_str(), 50);
 
 			e.smoker = manager->createParticleSystem(wname, material);
 			if (!e.smoker)
@@ -5062,7 +5062,7 @@ int Beam::loadTruck(const char* fname, SceneManager *manager, SceneNode *parent,
 		}
 		MaterialFunctionMapper::replaceSimpleMeshMaterials(ec, ColourValue(0.5, 1, 0.5));
 		if(materialFunctionMapper) materialFunctionMapper->replaceMeshMaterials(ec);
-		if(!usedSkin.isNull()) usedSkin->replaceMeshMaterials(ec);
+		if(usedSkin) usedSkin->replaceMeshMaterials(ec);
 	};
 	LogManager::getSingleton().logMessage("BEAM: cab ok");
 	//	mWindow->setDebugText("Beam number:"+ StringConverter::toString(free_beam));
@@ -5733,7 +5733,7 @@ void Beam::addWheel(SceneManager *manager, SceneNode *parent, Real radius, Real 
 				vwheels[free_wheel].cnode->attachObject(ec);
 			MaterialFunctionMapper::replaceSimpleMeshMaterials(ec, ColourValue(0, 0.5, 0.5));
 			if(materialFunctionMapper) materialFunctionMapper->replaceMeshMaterials(ec);
-			if(!usedSkin.isNull()) usedSkin->replaceMeshMaterials(ec);
+			if(usedSkin) usedSkin->replaceMeshMaterials(ec);
 		}catch(...)
 		{
 			LogManager::getSingleton().logMessage("error loading mesh: "+String(wname));
@@ -5747,7 +5747,7 @@ void Beam::addWheel(SceneManager *manager, SceneNode *parent, Real radius, Real 
 			Entity *ec = manager->createEntity(wnamei, wname);
 			MaterialFunctionMapper::replaceSimpleMeshMaterials(ec, ColourValue(0, 0.5, 0.5));
 			if(materialFunctionMapper) materialFunctionMapper->replaceMeshMaterials(ec);
-			if(!usedSkin.isNull()) usedSkin->replaceMeshMaterials(ec);
+			if(usedSkin) usedSkin->replaceMeshMaterials(ec);
 			vwheels[free_wheel].cnode = manager->getRootSceneNode()->createChildSceneNode();
 			if(ec)
 				vwheels[free_wheel].cnode->attachObject(ec);
@@ -5940,7 +5940,7 @@ void Beam::addWheel2(SceneManager *manager, SceneNode *parent, Real radius, Real
 		Entity *ec = manager->createEntity(wnamei, wname);
 		MaterialFunctionMapper::replaceSimpleMeshMaterials(ec, ColourValue(0, 0.5, 0.5));
 		if(materialFunctionMapper) materialFunctionMapper->replaceMeshMaterials(ec);
-		if(!usedSkin.isNull()) usedSkin->replaceMeshMaterials(ec);
+		if(usedSkin) usedSkin->replaceMeshMaterials(ec);
 		//	ec->setMaterialName("tracks/wheel");
 		//ec->setMaterialName("Test/ColourTest");
 		vwheels[free_wheel].cnode = manager->getRootSceneNode()->createChildSceneNode();

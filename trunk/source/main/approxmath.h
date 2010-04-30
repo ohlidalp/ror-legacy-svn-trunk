@@ -126,6 +126,17 @@ inline float sign(const float x)
 }
 
 
+// Ogre3 specific helpers
+inline Ogre::Vector3 fast_normalise(Ogre::Vector3 v)
+{
+	return v*fast_invSqrt(v.squaredLength());
+}
+
+inline float fast_length(Ogre::Vector3 v)
+{
+	return fast_sqrt(v.squaredLength());
+}
+
 
 
 #endif	/* _APPROXMATH_H */
