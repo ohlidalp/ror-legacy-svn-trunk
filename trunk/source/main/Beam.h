@@ -209,8 +209,6 @@ public:
 	int stabcommand;
 	int skeleton;
 	float stabratio;
-	int free_shock;
-	int free_active_shock; // this has no array associated with it. its just to determine if there are active shocks!
 	//direction
 	float hydrodircommand;
 	bool hydroSpeedCoupling;
@@ -268,11 +266,6 @@ public:
 	float default_beam_diameter;
 	float default_plastic_coef;
 	float skeleton_beam_diameter;
-	int free_aeroengine;
-	AeroEngine *aeroengines[MAX_AEROENGINES];
-
-	int free_screwprop;
-	Screwprop *screwprops[MAX_SCREWPROPS];
 
 	float elevator;
 	float rudder;
@@ -371,10 +364,6 @@ public:
 	float abs_timer;
 
 	Vector3 origin;
-	int free_cab;
-
-	int cabs[MAX_CABS*3];
-	int subisback[MAX_SUBMESHES];
 	void setMeshVisibility(bool visible);
 	bool meshesVisible;
 	inline bool inRange(float num, float min, float max);
@@ -433,8 +422,6 @@ protected:
 	int hascommands;
 	int forwardcommands;
 	RenderWindow* mWindow;
-	int hydro[MAX_HYDROS];
-	int free_hydro;
 	Real hydrolen;
 	Real truckmass;
 	Real loadmass;
@@ -442,20 +429,7 @@ protected:
 	//number of torque points
 	//    int torquenum;
 	Real lastwspeed;
-	int free_texcoord;
-	int free_collcab;
-	int free_buoycab;
-	int free_sub;
 	float collrange;
-	int subtexcoords[MAX_SUBMESHES];
-	int subcabs[MAX_SUBMESHES];
-	Vector3 texcoords[MAX_TEXCOORDS];
-	int collcabs[MAX_CABS];
-	int collcabstype[MAX_CABS];
-	collcab_rate_t collcabrate[MAX_CABS];
-
-	int buoycabs[MAX_CABS];
-	int buoycabtypes[MAX_CABS];
 	FlexObj *cabMesh;
 	SceneNode *cabNode;
 	bool disable_smoke;
@@ -463,7 +437,6 @@ protected:
 	SceneNode *smokeNode;
 	int smokeRef;
 	ParticleSystem* smoker;
-	shock_t shocks[MAX_SHOCKS];
 	float stabsleep;
 	int proped_wheels;
 	int braked_wheels;
@@ -516,8 +489,6 @@ protected:
 	float mousemoveforce;
 	int reset_requested;
 
-	int free_airbrake;
-	Airbrake *airbrakes[MAX_AIRBRAKES];
 
 	Buoyance *buoyance;
 	float ipy;
@@ -542,13 +513,6 @@ protected:
 	// network properties
 	String networkUsername;
 	int networkAuthlevel;
-
-	// skidmark stuff
-	Skidmark *skidtrails[MAX_WHEELS*2];
-	bool useSkidmarks;
-
-	FlexBody *flexbodies[MAX_FLEXBODIES];
-	int free_flexbody;
 
 	int netCustomLightArray[4];
 	unsigned char netCustomLightArray_counter;

@@ -2229,7 +2229,7 @@ int Beam::loadTruck(const char* fname, SceneManager *manager, SceneNode *parent,
 
 
 			// options
-			int htype=BEAM_HYDRO;
+			int htype = BEAM_HYDRO;
 			int shockflag = SHOCK_FLAG_NORMAL;
 
 			// now 'parse' the options
@@ -2265,7 +2265,7 @@ int Beam::loadTruck(const char* fname, SceneManager *manager, SceneNode *parent,
 				}
 				options_pointer++;
 			}
-			int pos=add_beam(&nodes[id1], &nodes[id2], manager, parent, htype, default_break*4.0, s, d, -1.0, sbound, lbound, precomp);
+			int pos = add_beam(&nodes[id1], &nodes[id2], manager, parent, htype, default_break*4.0, s, d, -1.0, sbound, lbound, precomp);
 			beams[pos].shock = &shocks[free_shock];
 			shocks[free_shock].beamid = pos;
 			shocks[free_shock].flags = shockflag;
@@ -5651,7 +5651,7 @@ void Beam::addWheel(SceneManager *manager, SceneNode *parent, Real radius, Real 
 		add_beam(&nodes[nodebase+i*2+1], &nodes[nodebase+((i+1)%rays)*2+1], manager, parent, BEAM_INVISIBLE, default_break, wspring, wdamp);
 		add_beam(&nodes[nodebase+i*2+1], &nodes[nodebase+((i+1)%rays)*2], manager, parent, BEAM_INVISIBLE, default_break, wspring, wdamp);
 		//reinforcement
-		//init_beam(free_beam , &nodes[nodebase+i*2], &nodes[nodebase+((i+1)%rays)*2+1], manager, parent, BEAM_INVISIBLE, default_break, wspring, wdamp);free_beam++;
+		//add_beam(&nodes[nodebase+i*2], &nodes[nodebase+((i+1)%rays)*2+1], manager, parent, BEAM_INVISIBLE, default_break, wspring, wdamp);
 
 		if (snode!=9999)
 		{
@@ -6015,7 +6015,10 @@ int Beam::add_beam(node_t *p1, node_t *p2, SceneManager *manager, SceneNode *par
 		t=p1->RelPosition;
 		t=t-p2->RelPosition;
 		beams[pos].L=precomp*t.length();
-	} else beams[pos].L=length;
+	} else
+	{
+		beams[pos].L=length;
+	}
 	beams[pos].k=spring;
 	beams[pos].d=damp;
 	beams[pos].broken=0;
@@ -6049,11 +6052,14 @@ int Beam::add_beam(node_t *p1, node_t *p2, SceneManager *manager, SceneNode *par
 	beams[pos].scale=0.0;
 	if (shortbound!=-1.0)
 	{
-		beams[pos].bounded=1;
-		beams[pos].shortbound=shortbound;
-		beams[pos].longbound=longbound;
+		beams[pos].bounded    = SHOCK1;
+		beams[pos].shortbound = shortbound;
+		beams[pos].longbound  = longbound;
 
-	} else beams[pos].bounded=0;
+	} else
+	{
+		beams[pos].bounded = NOSHOCK;
+	}
 
 	/*
 	if (beams[pos].L<0.01)
@@ -6100,9 +6106,12 @@ int Beam::add_beam(node_t *p1, node_t *p2, SceneManager *manager, SceneNode *par
 			c = ColourValue::Red;
 		MaterialFunctionMapper::replaceSimpleMeshMaterials(beams[pos].mEntity, c);
 
+	} else
+	{
+		beams[pos].mSceneNode=0;beams[pos].mEntity=0;
 	}
-	else {beams[pos].mSceneNode=0;beams[pos].mEntity=0;};
-	if (beams[pos].mSceneNode && beams[pos].mEntity && !(type==BEAM_VIRTUAL || type==BEAM_INVISIBLE || type==BEAM_INVISIBLE_HYDRO)) beams[pos].mSceneNode->attachObject(beams[pos].mEntity);//beams[pos].mSceneNode->setVisible(0);
+ 	if (beams[pos].mSceneNode && beams[pos].mEntity && !(type==BEAM_VIRTUAL || type==BEAM_INVISIBLE || type==BEAM_INVISIBLE_HYDRO))
+		beams[pos].mSceneNode->attachObject(beams[pos].mEntity);//beams[pos].mSceneNode->setVisible(0);
 
 	free_beam++;
 	return pos;
@@ -7117,6 +7126,8 @@ void Beam::calcAnimators(int flagstate, float &cstate, int &div, Real timer, flo
 
 void Beam::calcShocks2(int beam_i, Real difftoBeamL, Real &k, Real &d)
 {
+	if(!beams[beam_i].shock) return;
+
 	int i=beam_i;
 	float beamsLep=beams[i].L*0.8f;
 	float longboundprelimit=beams[i].longbound*beamsLep;
@@ -7352,7 +7363,7 @@ void Beam::calcForcesEuler(int doUpdate, Real dt, int step, int maxstep, Beam** 
 					}
 					else // We assume the bounded=SHOCK2 case
 					{
-						calcShocks2(i, difftoBeamL, k, d);
+ 						calcShocks2(i, difftoBeamL, k, d);
 					}
 				}
 				else
