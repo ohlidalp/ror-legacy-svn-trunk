@@ -59,6 +59,7 @@ along with Rigs of Rods.  If not, see <http://www.gnu.org/licenses/>.
 
 /* maximum limits */
 static const int   MAX_TRUCKS                 = 64;              //!< maximum number of trucks for the engine
+
 static const int   MAX_NODES                  = 1000;            //!< maximum number of nodes per truck
 static const int   MAX_BEAMS                  = 5000;            //!< maximum number of beams per truck
 static const int   MAX_ROTATORS               = 20;              //!< maximum number of rotators per truck
@@ -82,8 +83,8 @@ static const int   MAX_SCREWPROPS             = 8;               //!< maximum nu
 static const int   MAX_AIRBRAKES              = 20;              //!< maximum number of airbrakes per truck
 static const int   MAX_SOUNDSCRIPTS_PER_TRUCK = 128;             //!< maximum number of soundsscripts per truck
 static const int   MAX_WINGS                  = 40;              //!< maximum number of wings per truck
-static const int   MAX_CPARTICLES             = 10;              //!< maximum number of custom particles
-static const int   MAX_PRESSURE_BEAMS         = 4000;            //!< maximum number of pressure beams
+static const int   MAX_CPARTICLES             = 10;              //!< maximum number of custom particles per truck
+static const int   MAX_PRESSURE_BEAMS         = 4000;            //!< maximum number of pressure beams per truck
 
 /* other global static definitions */
 static const int   TRUCKFILEFORMATVERSION     = 3;               //!< truck file format version number
@@ -94,11 +95,11 @@ static const float DEFAULT_RIGIDIFIER_SPRING    = 1000000.0f;
 static const float DEFAULT_RIGIDIFIER_DAMP      = 50000.0f;
 static const float DEFAULT_SPRING               = 9000000.0f;
 static const float DEFAULT_DAMP                 = 12000.0f;
-static const float DEFAULT_GRAVITY              = -9.8f;
+static const float DEFAULT_GRAVITY              = -9.8f;         //!< earth gravity
 static const float DEFAULT_DRAG                 = 0.05f;
-static const float DEFAULT_BEAM_DIAMETER        = 0.05f;
+static const float DEFAULT_BEAM_DIAMETER        = 0.05f;         //!< 5 centimeters default beam width
 static const float DEFAULT_COLLISION_RANGE      = 0.02f;
-static const float MIN_BEAM_LENGTH              = 0.1f;
+static const float MIN_BEAM_LENGTH              = 0.1f;          //!< minimum beam lenght is 10 centimeters
 static const float INVERTED_MIN_BEAM_LENGTH     = 1.0f / MIN_BEAM_LENGTH;
 static const float BEAM_SKELETON_DIAMETER       = 0.01f;
 static const float DEFAULT_WATERDRAG            = 10.0f;
@@ -116,26 +117,64 @@ static const float NODE_SURFACE_COEF_DEFAULT    = 1.0f;
 static const float NODE_LOADWEIGHT_DEFAULT      = -1.0f;
 
 /* Enumerations */
-static const enum { THREAD_MONO, THREAD_HT, THREAD_HT2 };
-static const enum { BEAM_NORMAL, BEAM_HYDRO, BEAM_VIRTUAL, BEAM_MARKED, BEAM_INVISIBLE, BEAM_INVISIBLE_HYDRO };
-static const enum { NODE_NORMAL, NODE_LOADED };
+static const enum {
+	THREAD_MONO,    //!< mono threading mode
+	THREAD_HT,      //!< dual thread mode
+	THREAD_HT2      //!< multi-core threading mode
+};
+static const enum {
+	BEAM_NORMAL,
+	BEAM_HYDRO,
+	BEAM_VIRTUAL,
+	BEAM_MARKED,
+	BEAM_INVISIBLE,
+	BEAM_INVISIBLE_HYDRO
+};
+static const enum {
+	NODE_NORMAL,
+	NODE_LOADED
+};
 
 static const enum {
 	ACTIVATED,      //!< leading truck
 	DESACTIVATED,   //!< not leading but active 
 	MAYSLEEP,       //!< active but wanting to sleep
 	GOSLEEP,        //!< active but ordered to sleep ASAP (synchronously)
-	SLEEPING,
-	NETWORKED,
-	RECYCLE,
+	SLEEPING,       //!< not active, sleeping
+	NETWORKED,      //!< not calculated, gets remote data
+	RECYCLE,        //!< waiting for reusage
 	DELETED,        //!< special used when truck pointer is 0
 };
 
-static const enum { UNLOCKED, PRELOCK, LOCKED };
-static const enum { NOT_DRIVEABLE, TRUCK, AIRPLANE, BOAT, MACHINE };
-static const enum { DRY, DRIPPING, WET };
-static const enum { SHOCK1, SHOCK2, SUPPORTBEAM, ROPE };
-static const enum blinktype { BLINK_NONE, BLINK_LEFT, BLINK_RIGHT, BLINK_WARN };
+static const enum {
+	UNLOCKED,       //!< lock not locked
+	PRELOCK,        //!< prelocking, attraction forces in action
+	LOCKED          //!< lock locked.
+};
+static const enum {
+	NOT_DRIVEABLE,  //!< not drivable at all
+	TRUCK,          //!< its a truck
+	AIRPLANE,       //!< its an airplane
+	BOAT,           //!< its a boat
+	MACHINE         //!< its a machine
+};
+static const enum {
+	DRY,            //!< node is dry
+	DRIPPING,       //!< node is dripping
+	WET             //!< node is wet
+};
+static const enum {
+	SHOCK1,         //!< shock1
+	SHOCK2,         //!< shock2
+	SUPPORTBEAM,    //!< 
+	ROPE            //!< 
+};
+static const enum blinktype {
+	BLINK_NONE,    //!< 
+	BLINK_LEFT,    //!< 
+	BLINK_RIGHT,   //!< 
+	BLINK_WARN     //!< 
+};
 
 static const enum { 
 	HYDRO_FLAG_SPEED        = BITMASK(1),
@@ -184,15 +223,15 @@ static const enum {
 };
 
 static const enum { 
-	ANIM_MODE_ROTA_X		 = BITMASK(1),
-	ANIM_MODE_ROTA_Y		 = BITMASK(2),
-	ANIM_MODE_ROTA_Z		 = BITMASK(3),
-	ANIM_MODE_OFFSET_X		 = BITMASK(4),
-	ANIM_MODE_OFFSET_Y		 = BITMASK(5),
-	ANIM_MODE_OFFSET_Z		 = BITMASK(6),
-	ANIM_MODE_AUTOANIMATE	 = BITMASK(7),
-	ANIM_MODE_NOFLIP		 = BITMASK(8),
-	ANIM_MODE_BOUNCE		 = BITMASK(9),
+	ANIM_MODE_ROTA_X		= BITMASK(1),
+	ANIM_MODE_ROTA_Y		= BITMASK(2),
+	ANIM_MODE_ROTA_Z		= BITMASK(3),
+	ANIM_MODE_OFFSET_X		= BITMASK(4),
+	ANIM_MODE_OFFSET_Y		= BITMASK(5),
+	ANIM_MODE_OFFSET_Z		= BITMASK(6),
+	ANIM_MODE_AUTOANIMATE	= BITMASK(7),
+	ANIM_MODE_NOFLIP		= BITMASK(8),
+	ANIM_MODE_BOUNCE		= BITMASK(9),
 };
 
 static const enum { 
@@ -205,23 +244,23 @@ static const enum {
 };
 
 /* basic structures */
-typedef struct node_t
+struct node
 {
-	Ogre::Vector3 RelPosition; //!<relative to the local physics origin (one origin per truck) (shaky)
-	Ogre::Vector3 AbsPosition; //!<absolute position in the world (shaky)
+	Ogre::Vector3 RelPosition; //!< relative to the local physics origin (one origin per truck) (shaky)
+	Ogre::Vector3 AbsPosition; //!< absolute position in the world (shaky)
 	Ogre::Vector3 Velocity;
 	Ogre::Vector3 Forces;
 	Ogre::Real inverted_mass;
 	Ogre::Real mass;
 	Ogre::Vector3 lastNormal;
 	int locked;
-	int iswheel; //!<0=no, 1, 2=wheel1  3,4=wheel2, etc...
+	int iswheel; //!< 0=no, 1, 2=wheel1  3,4=wheel2, etc...
 	int wheelid;
 	int masstype;
 	int wetstate;
 	int contactless;
 	int lockednode;
-	Ogre::Vector3 lockedPosition; //absolute
+	Ogre::Vector3 lockedPosition; //!< absolute
 	Ogre::Vector3 lockedForces;
 	Ogre::Vector3 lockedVelocity;
 	int contacted;
@@ -245,10 +284,9 @@ typedef struct node_t
 	bool isSkin;
 	bool contacter;
 	int pos;
-} node_t;
+};
 
-
-typedef struct shock_t
+struct shock
 {
 	int beamid;
 	int flags;
@@ -262,15 +300,15 @@ typedef struct shock_t
 	float sprogout;
 	float dprogout;
 
-} shock_t;
+};
 
-typedef struct
+struct collcab_rate
 {
 	int rate;
 	int distance;
-} collcab_rate_t;
+};
 
-typedef struct beam_t
+struct beam
 {
 	node_t *p1;
 	node_t *p2;
@@ -318,22 +356,22 @@ typedef struct beam_t
 	shock_t *shock;
 	SceneNode *mSceneNode; //!< visual
 	Entity *mEntity; //!< visual
-} beam_t;
+};
 
-typedef struct soundsource_t
+struct soundsource
 {
 	SoundScriptInstance* ssi;
 	int nodenum;
-} soundsource_t;
+};
 
-typedef struct contacter_t
+struct contacter
 {
 	int nodeid;
 	int contacted;
 	int opticontact;
-} contacter_t;
+};
 
-typedef struct rigidifier_t
+struct rigidifier
 {
 	node_t* a;
 	node_t* b;
@@ -344,9 +382,9 @@ typedef struct rigidifier_t
 	float lastalpha;
 	beam_t *beama;
 	beam_t *beamc;
-} rigidifier_t;
+};
 
-typedef struct wheel_t
+struct wheel
 {
 	int nbnodes;
 	node_t* nodes[50];
@@ -380,18 +418,18 @@ typedef struct wheel_t
 	float lastSlip;
 	int lastContactType;
 	ground_model_t *lastGroundModel;
-} wheel_t;
+};
 
-typedef struct vwheel_t
+struct vwheel
 {
 	node_t *p1;
 	node_t *p2;
 	Flexable *fm;
 	SceneNode *cnode;
 	bool meshwheel;
-} vwheel_t;
+};
 
-typedef struct hook_t
+struct hook
 {
 	int locked;
 	int group;
@@ -399,17 +437,17 @@ typedef struct hook_t
 	node_t *hookNode;
 	node_t *lockNode;
 	Beam *lockTruck;
-} hook_t;
+};
 
-typedef struct ropable_t
+struct ropable
 {
 	node_t *node;
 	int group;
 	bool multilock;
 	int used;
-} ropable_t;
+};
 
-typedef struct rope_t
+struct rope
 {
 	int locked;
 	int group;
@@ -417,10 +455,10 @@ typedef struct rope_t
 	node_t *lockedto;
 	ropable_t *lockedto_ropable;
 	Beam *lockedtruck;
-} rope_t;
+};
 
 
-typedef struct tie_t
+struct tie
 {
 	beam_t *beam;
 	ropable_t *lockedto;
@@ -428,10 +466,10 @@ typedef struct tie_t
 	bool tied;
 	bool tying;
 	float commandValue;
-} tie_t;
+};
 
 
-typedef struct wing_t
+struct wing
 {
 	/*	int nfld;
 	int nfrd;
@@ -444,17 +482,17 @@ typedef struct wing_t
 	*/
 	FlexAirfoil *fa;
 	SceneNode *cnode;
-} wing_t;
+};
 
-typedef struct command_t
+struct command
 {
 	float commandValue;
 	std::vector<int> beams;
 	std::vector<int> rotators;
 	Ogre::String description;
-} command_t;
+};
 
-typedef struct rotator_t
+struct rotator
 {
 	int nodes1[4];
 	int nodes2[4];
@@ -462,9 +500,9 @@ typedef struct rotator_t
 	int axis2;
 	float angle;
 	float rate;
-} rotator_t;
+};
 
-typedef struct flare_t
+struct flare
 {
 	int noderef;
 	int nodex;
@@ -483,9 +521,9 @@ typedef struct flare_t
 	bool blinkdelay_state;
 	float size;
 	bool isVisible;
-} flare_t;
+};
 
-typedef struct prop_t
+struct prop
 {
 	int noderef;
 	int nodex;
@@ -531,9 +569,9 @@ typedef struct prop_t
 	int animKeyState[10];
 	int lastanimKS[10];
 	Ogre::Real wheelrotdegree;
-} prop_t;
+};
 
-typedef struct exhaust_t
+struct exhaust
 {
 	int emitterNode;
 	int directionNode;
@@ -542,27 +580,27 @@ typedef struct exhaust_t
 	bool isOldFormat;
 	SceneNode *smokeNode;
 	ParticleSystem* smoker;
-} exhaust_t;
+};
 
 
-typedef struct cparticle_t
+struct cparticle
 {
 	int emitterNode;
 	int directionNode;
 	bool active;
 	SceneNode *snode;
 	ParticleSystem* psys;
-} cparticle_t;
+};
 
 
-typedef struct debugtext_t
+struct debugtext
 {
 	int id;
 	Ogre::MovableText *txt;
 	SceneNode *node;
-} debugtext_t;
+};
 
-typedef struct rig_t
+struct rig
 {
 	node_t nodes[MAX_NODES];
 	int free_node;
@@ -613,11 +651,11 @@ typedef struct rig_t
 	int pressure_beams[MAX_PRESSURE_BEAMS];
 	int free_pressure_beam;
 
-} rig_t;
+};
 
 // some non-beam structs
 
-typedef struct _collision_box
+struct collision_box
 {
 	//absolute collision box
 	float lo_x;
@@ -649,6 +687,6 @@ typedef struct _collision_box
 	bool camforced;
 	Vector3 campos;
 	int event_filter;
-} collision_box_t;
+};
 
 #endif //BEAMDATA_H__
