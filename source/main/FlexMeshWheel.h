@@ -96,7 +96,7 @@ typedef struct
 	bool revrim;
 	Entity *rimEnt;
 public:
-	FlexMeshWheel(SceneManager *manager, char* name, node_t *nds, int n1, int n2, int nstart, int nrays, char* meshname, char* texband, float rimradius, bool rimreverse, MaterialFunctionMapper *mfm, SkinPtr usedSkin);
+	FlexMeshWheel(SceneManager *manager, char* name, node_t *nds, int n1, int n2, int nstart, int nrays, char* meshname, char* texband, float rimradius, bool rimreverse, MaterialFunctionMapper *mfm, Skin *usedSkin);
 
 	Vector3 updateVertices();
 	Vector3 updateShadowVertices();

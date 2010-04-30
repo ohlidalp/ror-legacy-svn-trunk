@@ -24,35 +24,37 @@ along with Rigs of Rods.  If not, see <http://www.gnu.org/licenses/>.
 #define RORPREREQUISITES_H__
 
 class AeroEngine;
+class Airfoil;
 class Airbrake;
-class Flexable;
-class FlexBody;
+class Autopilot;
 class Beam;
+class BeamEngine;
 class BeamThreadStats;
-class FlexMesh;
-class FlexObj;
-class FlexAirfoil;
-class Screwprop;
 class Buoyance;
+class CmdKeyInertia;
 class Collisions;
 class DustPool;
-class BeamEngine;
+class Flexable;
+class FlexAirfoil;
+class FlexBody;
+class FlexMesh;
+class FlexObj;
 class HeightFinder;
-class Water;
+class MaterialFunctionMapper;
 class Mirrors;
-class Turboprop;
-class Replay;
-class Airfoil;
 class Network;
-class SlideNode;
+class PointColDetector;
 class Rail;
 class RailGroup;
-class PointColDetector;
+class Replay;
+class Screwprop;
 class Skidmark;
-class Autopilot;
-class MaterialFunctionMapper;
-class CmdKeyInertia;
+class Skin;
+class SlideNode;
 class SoundScriptInstance;
+class SoundScriptManager;
+class Turboprop;
+class Water;
 
 namespace Ogre
 {
@@ -61,8 +63,11 @@ namespace Ogre
 
 #ifdef USE_LUA
 class LuaSystem;
-#endif
+#endif //USE_LUA
 
+#ifdef USE_SOCKETW
+class SWBaseSocket;
+#endif //USE_SOCKETW
 
 // some platform fixes
 #if OGRE_PLATFORM == OGRE_PLATFORM_APPLE
@@ -99,7 +104,8 @@ FWDCLSTRUCT(rig);
 FWDCLSTRUCT(collision_box);
 FWDCLSTRUCT(tie);
 FWDCLSTRUCT(hook);
-FWDCLSTRUCT(ground_model);
 
+FWDCLSTRUCT(ground_model);
+FWDCLSTRUCT(client);
 
 #endif //RORPREREQUISITES_H__

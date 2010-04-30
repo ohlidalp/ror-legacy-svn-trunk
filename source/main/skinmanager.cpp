@@ -90,7 +90,7 @@ void SkinManager::parseScript(DataStreamPtr& stream, const String& groupName)
 	try
 	{
 		String line;
-		SkinPtr pSkin;
+		Skin *pSkin=0;
 		LogManager::getSingleton().logMessage("SkinManager::parseScript");
 
 		while( !stream->eof() )
@@ -103,11 +103,11 @@ void SkinManager::parseScript(DataStreamPtr& stream, const String& groupName)
 			}
 			else
 			{
-				if (pSkin.isNull())
+				if (!pSkin)
 				{
 					// No current skin
 					// So first valid data should be skin name
-					pSkin = create(line, groupName);
+					pSkin = (Skin *)create(line, groupName).getPointer();
 					pSkin->_notifyOrigin(stream->getName());
 
 					// Skip to and over next {
@@ -120,7 +120,7 @@ void SkinManager::parseScript(DataStreamPtr& stream, const String& groupName)
 					{
 						// Finished
 						//this->addImpl((Ogre::ResourcePtr)pSkin);
-						pSkin.setNull();
+						pSkin=0;
 						// NB skin isn't loaded until required
 					}
 					else
@@ -153,7 +153,7 @@ String SkinManager::joinString(Ogre::vector<String>::type params, String del, in
 	return res;
 }
 //---------------------------------------------------------------------
-void SkinManager::parseAttribute(const String& line, SkinPtr& pSkin)
+void SkinManager::parseAttribute(const String& line, Skin *pSkin)
 {
 	Ogre::vector<String>::type params = StringUtil::split(line, "\x09\x0a\x20\x3d"); // 0x9 = tab, 0xa = \n, 0x20 = space, 0x3d = '='
 	String& attrib = params[0];
@@ -176,42 +176,42 @@ void SkinManager::parseAttribute(const String& line, SkinPtr& pSkin)
 }
 
 //---------------------------------------------------------------------
-void SkinManager::logBadAttrib(const String& line, SkinPtr& pSkin)
+void SkinManager::logBadAttrib(const String& line, Skin *pSkin)
 {
 	LogManager::getSingleton().logMessage("Bad attribute line: " + line +
 		" in skin " + pSkin->getName());
 
 }
 
-int SkinManager::getMaterialAlternatives(Ogre::String materialName, std::vector<SkinPtr> &skinVector)
+int SkinManager::getMaterialAlternatives(Ogre::String materialName, std::vector<Skin *> &skinVector)
 {
 	Ogre::ResourceManager::ResourceMapIterator it = SkinManager::getSingleton().getResourceIterator();
 	while (it.hasMoreElements())
 	{
-	   SkinPtr skin = it.getNext();
+		Skin *skin = (Skin *)it.getNext().getPointer();
 
-	   if (skin->hasReplacementForMaterial(materialName))
-	   {
-		  skinVector.push_back(skin);
-	   }
+		if (skin->hasReplacementForMaterial(materialName))
+		{
+			skinVector.push_back(skin);
+		}
 	}
 	return 0; // no errors
 }
 
 
-int SkinManager::getUsableSkins(Cache_Entry *e, std::vector<SkinPtr> &skins)
+int SkinManager::getUsableSkins(Cache_Entry *e, std::vector<Skin *> &skins)
 {
 	Ogre::ResourceManager::ResourceMapIterator it = SkinManager::getSingleton().getResourceIterator();
 	while (it.hasMoreElements())
 	{
-		SkinPtr skin = it.getNext();
+		Skin *skin = (Skin *)it.getNext().getPointer();
 		std::set < Ogre::String >::iterator mit;
 		for(mit = e->materials.begin(); mit != e->materials.end(); mit++)
 		{
 			if(skin->hasReplacementForMaterial(*mit))
 			{
 				bool found=false;
-				for(std::vector<SkinPtr>::iterator sit = skins.begin(); sit != skins.end(); sit++)
+				for(std::vector<Skin *>::iterator sit = skins.begin(); sit != skins.end(); sit++)
 				{
 					if(*sit == skin) // operator== implemented
 					{
@@ -245,12 +245,12 @@ int SkinManager::serialize(Ogre::String &dst)
 
 		std::string::size_type loc = source.find(".zip", 0);
 		if( loc != std::string::npos )
-			((SkinPtr)(it->second))->sourcetype = "Zip";
+			((Skin *)(it->second.getPointer()))->sourcetype = "Zip";
 		else
-			((SkinPtr)(it->second))->sourcetype = "FileSystem";
+			((Skin *)(it->second.getPointer()))->sourcetype = "FileSystem";
 
-		dst += "skin " + ((SkinPtr)(it->second))->name + "\n{\n";
-		int sres = ((SkinPtr)(it->second))->serialize(dst);
+		dst += "skin " + ((Skin *)(it->second.getPointer()))->name + "\n{\n";
+		int sres = ((Skin *)(it->second.getPointer()))->serialize(dst);
 		dst += "\torigin=" + it->second->getOrigin() + "\n";
 		dst += "\tsource=" + source + "\n";
 		dst += "}\n\n";

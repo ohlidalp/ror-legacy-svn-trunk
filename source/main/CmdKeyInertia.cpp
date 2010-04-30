@@ -28,7 +28,7 @@ CmdKeyInertia::CmdKeyInertia(int maxCmdKeys)
 {
 	loadDefaultInertiaModels();
 
-	cmdKeyInertia=new cmdKeyInertia_struct[maxCmdKeys];
+	cmdKeyInertia = new cmdKeyInertia_s[maxCmdKeys];
 	for (int i=0;i<maxCmdKeys;i++)
 	{
 		cmdKeyInertia[i].lastOutput=0.0f;

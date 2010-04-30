@@ -71,7 +71,7 @@ int BeamFactory::removeBeam(Beam *b)
 	return 1;
 }
 
-Beam *BeamFactory::createLocal(Ogre::Vector3 pos, Ogre::Quaternion rot, Ogre::String fname, collision_box_t *spawnbox, bool ismachine, int flareMode, std::vector<Ogre::String> *truckconfig, SkinPtr skin, bool freePosition)
+Beam *BeamFactory::createLocal(Ogre::Vector3 pos, Ogre::Quaternion rot, Ogre::String fname, collision_box_t *spawnbox, bool ismachine, int flareMode, std::vector<Ogre::String> *truckconfig, Skin *skin, bool freePosition)
 {
 	bool networked=false, networking=false;
 	if(net) networking = true;
@@ -174,7 +174,7 @@ Beam *BeamFactory::createRemoteInstance(stream_reg_t *reg)
 		false,
 		0,
 		0,
-		SkinPtr());
+		0);
 
 	efl->trucks[truck_num] = b;
 

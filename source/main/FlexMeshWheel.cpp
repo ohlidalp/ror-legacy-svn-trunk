@@ -20,12 +20,13 @@ along with Rigs of Rods.  If not, see <http://www.gnu.org/licenses/>.
 #include "FlexMeshWheel.h"
 #include "ResourceBuffer.h"
 #include "rormemory.h"
+#include "skin.h"
 
-FlexMeshWheel::FlexMeshWheel(SceneManager *manager, char* name, node_t *nds, int n1, int n2, int nstart, int nrays, char* meshname, char* texband, float rimradius, bool rimreverse, MaterialFunctionMapper *mfm, SkinPtr usedSkin)
+FlexMeshWheel::FlexMeshWheel(SceneManager *manager, char* name, node_t *nds, int n1, int n2, int nstart, int nrays, char* meshname, char* texband, float rimradius, bool rimreverse, MaterialFunctionMapper *mfm, Skin *usedSkin)
 {
 	rim_radius=rimradius;
 	revrim=rimreverse;
-    smanager=manager;
+	smanager=manager;
 	nbrays=nrays;
 	nodes=nds;
 	id0=n1;
@@ -38,22 +39,22 @@ FlexMeshWheel::FlexMeshWheel(SceneManager *manager, char* name, node_t *nds, int
 	rimEnt = manager->createEntity(rimname, meshname);
 	MaterialFunctionMapper::replaceSimpleMeshMaterials(rimEnt, ColourValue(0, 0.5, 0.8));
 	if(mfm) mfm->replaceMeshMaterials(rimEnt);
-	if(!usedSkin.isNull()) usedSkin->replaceMeshMaterials(rimEnt);
+	if(usedSkin) usedSkin->replaceMeshMaterials(rimEnt);
 	rnode=manager->getRootSceneNode()->createChildSceneNode();
 	rnode->attachObject(rimEnt);
 
 	/// Create the mesh via the MeshManager
-    msh = MeshManager::getSingleton().createManual(name, ResourceGroupManager::DEFAULT_RESOURCE_GROUP_NAME,new ResourceBuffer());
+	msh = MeshManager::getSingleton().createManual(name, ResourceGroupManager::DEFAULT_RESOURCE_GROUP_NAME,new ResourceBuffer());
 
-    /// Create submeshes
-    sub = msh->createSubMesh();
+	/// Create submeshes
+	sub = msh->createSubMesh();
 
 	//materials
 	sub->setMaterialName(texband);
 
-    /// Define the vertices 
-    nVertices = 6*(nrays+1);
-    vbufCount = (2*3+2)*nVertices;
+	/// Define the vertices 
+	nVertices = 6*(nrays+1);
+	vbufCount = (2*3+2)*nVertices;
 	vertices=(float*)ror_malloc(vbufCount*sizeof(float));
 	//shadow
 	shadownorvertices=(float*)ror_malloc(nVertices*(3+2)*sizeof(float));
@@ -71,10 +72,10 @@ FlexMeshWheel::FlexMeshWheel(SceneManager *manager, char* name, node_t *nds, int
 		covertices[i*6+5 ].texcoord=Vector2((float)i/(float)nrays, 1.00);
 	}
 
-    /// Define triangles
-    /// The values in this table refer to vertices in the above table
-    ibufCount = 3*10*nrays;
-    faces=(unsigned short*)ror_malloc(ibufCount*sizeof(unsigned short));
+	/// Define triangles
+	/// The values in this table refer to vertices in the above table
+	ibufCount = 3*10*nrays;
+	faces=(unsigned short*)ror_malloc(ibufCount*sizeof(unsigned short));
 	for (i=0; i<nrays; i++)
 	{
 		faces[3*(i*10  )]=i*6;   faces[3*(i*10  )+1]=i*6+1;     faces[3*(i*10  )+2]=(i+1)*6;
@@ -101,58 +102,58 @@ FlexMeshWheel::FlexMeshWheel(SceneManager *manager, char* name, node_t *nds, int
 	//recompute for normals
 	updateVertices();
 
-    /// Create vertex data structure for 8 vertices shared between submeshes
-    msh->sharedVertexData = new VertexData();
-    msh->sharedVertexData->vertexCount = nVertices;
+	/// Create vertex data structure for 8 vertices shared between submeshes
+	msh->sharedVertexData = new VertexData();
+	msh->sharedVertexData->vertexCount = nVertices;
 
-    /// Create declaration (memory format) of vertex data
-    decl = msh->sharedVertexData->vertexDeclaration;
-    size_t offset = 0;
-    decl->addElement(0, offset, VET_FLOAT3, VES_POSITION);
-    offset += VertexElement::getTypeSize(VET_FLOAT3);
-    decl->addElement(0, offset, VET_FLOAT3, VES_NORMAL);
-    offset += VertexElement::getTypeSize(VET_FLOAT3);
+	/// Create declaration (memory format) of vertex data
+	decl = msh->sharedVertexData->vertexDeclaration;
+	size_t offset = 0;
+	decl->addElement(0, offset, VET_FLOAT3, VES_POSITION);
+	offset += VertexElement::getTypeSize(VET_FLOAT3);
+	decl->addElement(0, offset, VET_FLOAT3, VES_NORMAL);
+	offset += VertexElement::getTypeSize(VET_FLOAT3);
 //        decl->addElement(0, offset, VET_FLOAT3, VES_DIFFUSE);
 //        offset += VertexElement::getTypeSize(VET_FLOAT3);
-    decl->addElement(0, offset, VET_FLOAT2, VES_TEXTURE_COORDINATES, 0);
-    offset += VertexElement::getTypeSize(VET_FLOAT2);
+	decl->addElement(0, offset, VET_FLOAT2, VES_TEXTURE_COORDINATES, 0);
+	offset += VertexElement::getTypeSize(VET_FLOAT2);
 
-    /// Allocate vertex buffer of the requested number of vertices (vertexCount) 
-    /// and bytes per vertex (offset)
-    vbuf = 
-      HardwareBufferManager::getSingleton().createVertexBuffer(
-          offset, msh->sharedVertexData->vertexCount, HardwareBuffer::HBU_DYNAMIC_WRITE_ONLY_DISCARDABLE);
+	/// Allocate vertex buffer of the requested number of vertices (vertexCount) 
+	/// and bytes per vertex (offset)
+	vbuf = 
+	  HardwareBufferManager::getSingleton().createVertexBuffer(
+		  offset, msh->sharedVertexData->vertexCount, HardwareBuffer::HBU_DYNAMIC_WRITE_ONLY_DISCARDABLE);
 
-    /// Upload the vertex data to the card
-    vbuf->writeData(0, vbuf->getSizeInBytes(), vertices, true);
+	/// Upload the vertex data to the card
+	vbuf->writeData(0, vbuf->getSizeInBytes(), vertices, true);
 
-    /// Set vertex buffer binding so buffer 0 is bound to our vertex buffer
-    VertexBufferBinding* bind = msh->sharedVertexData->vertexBufferBinding; 
-    bind->setBinding(0, vbuf);
+	/// Set vertex buffer binding so buffer 0 is bound to our vertex buffer
+	VertexBufferBinding* bind = msh->sharedVertexData->vertexBufferBinding; 
+	bind->setBinding(0, vbuf);
 
-    //for the face
+	//for the face
 	/// Allocate index buffer of the requested number of vertices (ibufCount) 
-    HardwareIndexBufferSharedPtr ibuf = HardwareBufferManager::getSingleton().
-     createIndexBuffer(
-         HardwareIndexBuffer::IT_16BIT, 
-            ibufCount, 
-            HardwareBuffer::HBU_STATIC_WRITE_ONLY);
+	HardwareIndexBufferSharedPtr ibuf = HardwareBufferManager::getSingleton().
+	 createIndexBuffer(
+		 HardwareIndexBuffer::IT_16BIT, 
+			ibufCount, 
+			HardwareBuffer::HBU_STATIC_WRITE_ONLY);
 
-    /// Upload the index data to the card
-    ibuf->writeData(0, ibuf->getSizeInBytes(), faces, true);
+	/// Upload the index data to the card
+	ibuf->writeData(0, ibuf->getSizeInBytes(), faces, true);
 
-    /// Set parameters of the submesh
-    sub->useSharedVertices = true;
-    sub->indexData->indexBuffer = ibuf;
-    sub->indexData->indexCount = ibufCount;
-    sub->indexData->indexStart = 0;
+	/// Set parameters of the submesh
+	sub->useSharedVertices = true;
+	sub->indexData->indexBuffer = ibuf;
+	sub->indexData->indexCount = ibufCount;
+	sub->indexData->indexStart = 0;
 
     
-    /// Set bounding information (for culling)
-    msh->_setBounds(AxisAlignedBox(-1,-1,0,1,1,0), true);
-    //msh->_setBoundingSphereRadius(Math::Sqrt(1*1+1*1));
+	/// Set bounding information (for culling)
+	msh->_setBounds(AxisAlignedBox(-1,-1,0,1,1,0), true);
+	//msh->_setBoundingSphereRadius(Math::Sqrt(1*1+1*1));
 
-    /// Notify Mesh object that it has been loaded
+	/// Notify Mesh object that it has been loaded
 	msh->buildEdgeList();
 	//msh->buildTangentVectors();
 	/*unsigned short src, dest;
