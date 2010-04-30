@@ -68,6 +68,33 @@ class LuaSystem;
 #define strnlen(str,len) strlen(str)
 #endif
 
+// forward typedefs for structs
 
+// little helper macro that should prevent typos and increase readability
+#define FWDCLSTRUCT(x) typedef struct x x##_t
+
+FWDCLSTRUCT(node);
+FWDCLSTRUCT(beam);
+FWDCLSTRUCT(shock);
+FWDCLSTRUCT(collcab_rate);
+FWDCLSTRUCT(soundsource);
+FWDCLSTRUCT(contacter);
+FWDCLSTRUCT(rigidifier);
+FWDCLSTRUCT(wheel);
+FWDCLSTRUCT(vwheel);
+FWDCLSTRUCT(ropable);
+FWDCLSTRUCT(wing);
+FWDCLSTRUCT(command);
+FWDCLSTRUCT(rotator);
+FWDCLSTRUCT(flare);
+FWDCLSTRUCT(prop);
+FWDCLSTRUCT(rope);
+FWDCLSTRUCT(exhaust);
+FWDCLSTRUCT(cparticle);
+FWDCLSTRUCT(debugtext);
+FWDCLSTRUCT(rig);
+FWDCLSTRUCT(collision_box);
+FWDCLSTRUCT(tie);
+FWDCLSTRUCT(hook);
 
 #endif //RORPREREQUISITES_H__
