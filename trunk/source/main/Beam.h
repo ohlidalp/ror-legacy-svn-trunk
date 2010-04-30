@@ -63,9 +63,6 @@ using namespace Ogre;
 
 //#include "scriptCommands.h"
 #include <vector>
-class Airbrake;
-class Flexable;
-class FlexBody;
 
 //#include "collisions.h"
 typedef struct _collision_box collision_box_t;
@@ -261,428 +258,11 @@ using namespace Ogre;
 struct differential_data_t;
 
 //RaySceneQuery* nodeSceneQuery = 0;
-class Beam;
-
-// RoR's performance is very sensitive to the ordering of the parameters in this
-// structure (due to cache reasons). You can easily destroy RoR's performance if you put
-// something in the wrong place. Unless you know what you are doing (do you come armed
-// with a cache usage tracker?), add what you wish to the bottom of the structure.
-typedef struct _node
-{
-	Vector3 RelPosition; //relative to the local physics origin (one origin per truck) (shaky)
-	Vector3 AbsPosition; //absolute position in the world (shaky)
-	Vector3 Velocity;
-	Vector3 Forces;
-	Real inverted_mass;
-	Real mass;
-	Vector3 lastNormal;
-	int locked;
-	int iswheel; //0=no, 1, 2=wheel1  3,4=wheel2, etc...
-	int wheelid;
-	int masstype;
-	int wetstate;
-	int contactless;
-	int lockednode;
-	Vector3 lockedPosition; //absolute
-	Vector3 lockedForces;
-	Vector3 lockedVelocity;
-	int contacted;
-	Real friction_coef;
-	Real buoyancy;
-	Real volume_coef;
-	Real surface_coef;
-	Vector3 lastdrag;
-	Vector3 gravimass;
-	float wettime;
-	bool isHot;
-	bool overrideMass;
-	bool disable_particles;
-	Vector3 buoyanceForce;
-	int id;
-	float colltesttimer;
-	Vector3 iPosition; // initial position, absolute
-	Real    iDistance; // initial distance from node0 during loading - used to check for loose parts
-	Vector3 smoothpos; //absolute, per-frame smooth, must be used for visual effects only
-	bool iIsSkin;
-	bool isSkin;
-	bool contacter;
-	int pos;
-} node_t;
-
-typedef struct
-{
-	int beamid;
-	int flags;
-	float lastpos;
-	float springin;
-	float dampin;
-	float sprogin;
-	float dprogin;
-	float springout;
-	float dampout;
-	float sprogout;
-	float dprogout;
-
-}shock_t;
-
-typedef struct
-{
-	int state;
-	int local_node;
-	int remote_truck;
-	int remote_node;
-	Vector3 toSendForce;
-	float last_dist;
-	float last_time;
-} netlock_t;
-
-typedef struct
-{
-	bool used;
-	float birthdate;
-	int node;
-	Vector3 force;
-} netforcelist_t;
-
-typedef struct
-{
-	int rate;
-	int distance;
-} collcab_rate_t;
-
-class BeamThreadStats;
-class FlexMesh;
-class FlexObj;
-class FlexAirfoil;
-class Screwprop;
-class Buoyance;
-class Collisions;
-class DustPool;
-class BeamEngine;
-class HeightFinder;
-class Water;
-class Mirrors;
-class Turboprop;
-class Replay;
-class Airfoil;
-class Network;
-class SlideNode;
-class Rail;
-class RailGroup;
-class PointColDetector;
-
-#ifdef USE_LUA
-class LuaSystem;
-#endif
-
-class Skidmark;
-class Autopilot;
-class MaterialFunctionMapper;
-class CmdKeyInertia;
 
 
-// RoR's performance is very sensitive to the ordering of the parameters in this
-// structure (due to cache reasons). You can easily destroy RoR's performance if you put
-// something in the wrong place. Unless you know what you are doing (do you come armed
-// with a cache usage tracker?), add what you wish to the bottom of the structure.
-typedef struct _beam
-{
-	node_t *p1;
-	node_t *p2;
-	Beam *p2truck; //in case p2 is on another truck
-	bool disabled;
-	Real k; //tensile spring
-	Real d; //damping factor
-	Real L; //length
-	Real minmaxposnegstress;
-	int type;
-	Real maxposstress;
-	Real maxnegstress;
-	Real shortbound;
-	Real longbound;
-	Real strength;
-	Real stress;
-	int bounded;
-	bool broken;
-	Real plastic_coef;
-	SceneNode *mSceneNode; //visual
-	Entity *mEntity; //visual
-	Real refL; //reference length
-	Real Lhydro;//hydro reference len
-	Real hydroRatio;//hydro rotation ratio
-	int hydroFlags;
-	int animFlags;
-	float animOption;
-	Real commandRatioLong;
-	Real commandRatioShort;
-	Real commandShort;
-	Real commandLong;
-	Real maxtiestress;
-	Real diameter;
-	Vector3 lastforce;
-	bool iscentering;
-	int isOnePressMode;
-	bool isforcerestricted;
-	float iStrength; //initial strength
-	Real default_deform;
-	Real default_plastic_coef;
-	int autoMovingMode;
-	bool autoMoveLock;
-	bool pressedCenterMode;
-	float centerLength;
-	float minendmass;
-	float scale;
-	shock_t *shock;
-} beam_t;
-
-typedef struct
-{
-	node_t *p1;
-	node_t *p2;
-	Real L; //length
-} transient_beam_t;
-
-class SoundScriptInstance;
-
-typedef struct
-{
-	SoundScriptInstance* ssi;
-	int nodenum;
-} soundsource_t;
-
-typedef struct
-{
-	int nodeid;
-	int contacted;
-	int opticontact;
-} contacter_t;
-
-typedef struct
-{
-	node_t* a;
-	node_t* b;
-	node_t* c;
-	float k;
-	float d;
-	float alpha;
-	float lastalpha;
-	beam_t *beama;
-	beam_t *beamc;
-} rigidifier_t;
-
-typedef struct _wheel
-{
-	int nbnodes;
-	node_t* nodes[50];
-	/**
-	 * Defines the braking characteristics of a wheel. Wheels are braked by three mechanisms:
-	 * A footbrake, a handbrake/parkingbrake, and directional brakes used for skidsteer steering.
-	 * - 0 = no  footbrake, no  handbrake, no  direction control -- wheel is unbraked
-	 * - 1 = yes footbrake, yes handbrake, no  direction control
-	 * - 2 = yes footbrake, yes handbrake, yes direction control (braked when truck steers to the left)
-	 * - 3 = yes footbrake, yes handbrake, yes direction control (braked when truck steers to the right)
-	 * - 4 = yes footbrake, no  handbrake, no  direction control -- wheel has footbrake only, such as with the front wheels of a normal car
-	 **/
-	int braked;
-	node_t* arm;
-	node_t* near_attach;
-	node_t* refnode0;
-	node_t* refnode1;
-	int propulsed;
-	Real radius;
-	Real speed;
-	Real delta_rotation; //! difference in wheel position
-	float rp;
-	float rp1;
-	float rp2;
-	float rp3;
-	float width;
-
-	// for skidmarks
-	Vector3 lastContactInner;
-	Vector3 lastContactOuter;
-	float lastSlip;
-	int lastContactType;
-	ground_model_t *lastGroundModel;
-} wheel_t;
-
-typedef struct _vwheel
-{
-	node_t *p1;
-	node_t *p2;
-	Flexable *fm;
-	SceneNode *cnode;
-	bool meshwheel;
-} vwheel_t;
-
-typedef struct hook_t
-{
-	int locked;
-	int group;
-	bool lockNodes;
-	node_t *hookNode;
-	node_t *lockNode;
-	Beam *lockTruck;
-} hook_t;
-
-typedef struct ropable_t
-{
-	node_t *node;
-	int group;
-	bool multilock;
-	int used;
-} ropable_t;
-
-typedef struct rope_t
-{
-	int locked;
-	int group;
-	beam_t *beam;
-	node_t *lockedto;
-	ropable_t *lockedto_ropable;
-	Beam *lockedtruck;
-} rope_t;
+#include "BeamData.h"
 
 
-typedef struct tie_t
-{
-	beam_t *beam;
-	ropable_t *lockedto;
-	int group;
-	bool tied;
-	bool tying;
-	float commandValue;
-} tie_t;
-
-typedef struct
-{
-	/*	int nfld;
-	int nfrd;
-	int nflu;
-	int nfru;
-	int nbld;
-	int nbrd;
-	int nblu;
-	int nbru;
-	*/
-	FlexAirfoil *fa;
-	SceneNode *cnode;
-} wing_t;
-
-typedef struct _command_tmp
-{
-	float commandValue;
-	std::vector<int> beams;
-	std::vector<int> rotators;
-	Ogre::String description;
-} command_t;
-
-typedef struct
-{
-	int nodes1[4];
-	int nodes2[4];
-	int axis1; //rot axis
-	int axis2;
-	float angle;
-	float rate;
-} rotator_t;
-
-
-typedef struct _flare
-{
-	int noderef;
-	int nodex;
-	int nodey;
-	float offsetx;
-	float offsety;
-	float offsetz;
-	SceneNode *snode;
-	BillboardSet *bbs;
-	Light *light;
-	char type;
-	int controlnumber;
-	bool controltoggle_status;
-	float blinkdelay;
-	float blinkdelay_curr;
-	bool blinkdelay_state;
-	float size;
-	bool isVisible;
-} flare_t;
-
-typedef struct _prop
-{
-	int noderef;
-	int nodex;
-	int nodey;
-	float offsetx;
-	float offsety;
-	float offsetz;
-	float rotaX;
-	float rotaY;
-	float rotaZ;
-	float orgoffsetX;
-	float orgoffsetY;
-	float orgoffsetZ;
-	Quaternion rot;
-	SceneNode *snode;
-	SceneNode *wheel;
-	Vector3 wheelpos;
-	int mirror;
-	char beacontype;
-	BillboardSet *bbs[4];
-	SceneNode *bbsnode[4];
-	Light *light[4];
-	float brate[4];
-	float bpos[4];
-	int pale;
-	int spinner;
-	bool animated;
-	float anim_x_Rot;
-	float anim_y_Rot;
-	float anim_z_Rot;
-	float anim_x_Off;
-	float anim_y_Off;
-	float anim_z_Off;
-	float animratio[10];
-	int animFlags[10];
-	int animMode[10];
-	float animOpt1[10];
-	float animOpt2[10];
-	float animOpt3[10];
-	float animOpt4[10];
-	float animOpt5[10];
-	int animKey[10];
-	int animKeyState[10];
-	int lastanimKS[10];
-	Ogre::Real wheelrotdegree;
-} prop_t;
-
-typedef struct _exhaust
-{
-	int emitterNode;
-	int directionNode;
-	char material[255];
-	float factor;
-	bool isOldFormat;
-	SceneNode *smokeNode;
-	ParticleSystem* smoker;
-} exhaust_t;
-
-typedef struct _cparticle
-{
-	int emitterNode;
-	int directionNode;
-	bool active;
-	SceneNode *snode;
-	ParticleSystem* psys;
-} cparticle_t;
-
-typedef struct _debugtext
-{
-	int id;
-	MovableText *txt;
-	SceneNode *node;
-} debugtext_t;
 
 void *threadstart(void* vid);
 
@@ -704,7 +284,7 @@ inline float fast_length(Ogre::Vector3 v)
 	return fast_sqrt(v.squaredLength());
 }
 
-class Beam : public Streamable, public MemoryAllocatedObject
+class Beam : public rig_t, public Streamable, public MemoryAllocatedObject
 {
 public:
 	Beam() {}; // for wrapper, DO NOT USE!
@@ -723,8 +303,6 @@ public:
 	void activate();
 	void desactivate();
 	void pushNetwork(char* data, int size);
-	void pushNetForce(int node_id, Vector3 force);
-	void expireNetForce();
 	void calcNetwork();
 	void addPressure(float v);
 	float getPressure();
@@ -822,7 +400,6 @@ public:
 	std::vector< std::vector< int > > nodetonodeconnections;
 	std::vector< std::vector< int > > nodebeamconnections;
 
-	std::vector<debugtext_t>nodes_debug, beams_debug;
 	void updateDebugOverlay();
 	int nodedebugstate;
 	int debugVisuals;
@@ -844,7 +421,6 @@ public:
 	bool revroll[MAX_CAMERAS];
 	float WheelSpeed;
 	int stabcommand;
-	command_t commandkey[MAX_COMMANDS + 1];
 	int skeleton;
 	float stabratio;
 	int free_shock;
@@ -869,7 +445,6 @@ public:
 	int watercontact;
 	int watercontactold;
 	bool cparticle_enabled;
-	int free_node;
 	int dynamicMapMode;
 	int canwork;
 	int hashelp;
@@ -904,11 +479,8 @@ public:
 	pthread_mutex_t done_count_mutex;
 	pthread_cond_t done_count_cv;
 	int done_count;
-	prop_t props[MAX_PROPS];
-	prop_t *driverSeat;
 	int calculateDriverPos(Vector3 &pos, Quaternion &rot);
 	float getSteeringAngle() { return hydrodircommand; };
-	int free_prop;
 	float default_beam_diameter;
 	float default_plastic_coef;
 	float skeleton_beam_diameter;
@@ -922,8 +494,7 @@ public:
 	float rudder;
 	float aileron;
 	int flap;
-	int free_wing;
-	wing_t wings[MAX_WINGS];
+
 	Vector3 fusedrag;
 	float fadeDist;
 	bool disableDrag;
@@ -965,9 +536,7 @@ public:
 
 	Ogre::String realtruckfilename;
 
-	wheel_t wheels[MAX_WHEELS];
 	Axle axles[MAX_WHEELS/2];
-	int free_wheel;
 	int free_axle;
 	bool beambreakdebug;
 
@@ -1003,7 +572,6 @@ public:
 	void setBlinkType(blinktype blink);
 	blinktype getBlinkType() { return blinkingtype; };
 	void deleteNetTruck();
-	netlock_t netlock;
 	Autopilot *autopilot;
 	float getHeadingDirectionAngle();
 	bool getCustomParticleMode() { return cparticle_mode; };
@@ -1020,8 +588,6 @@ public:
 
 	Vector3 origin;
 	int free_cab;
-	int free_contacter;
-	contacter_t contacters[MAX_CONTACTERS];
 
 	int cabs[MAX_CABS*3];
 	int subisback[MAX_SUBMESHES];
@@ -1078,18 +644,13 @@ protected:
 	int truckversion;
 	char uniquetruckid[255];
 	int categoryid;
-	std::vector < exhaust_t > exhausts;
 
 	std::vector<std::string> description;
 	int hascommands;
 	int forwardcommands;
 	RenderWindow* mWindow;
-	int free_beam;
-	rigidifier_t rigidifiers[MAX_RIGIDIFIERS];
-	int free_rigidifier;
 	int hydro[MAX_HYDROS];
 	int free_hydro;
-	vwheel_t vwheels[MAX_WHEELS];
 	Real hydrolen;
 	Real truckmass;
 	Real loadmass;
@@ -1132,14 +693,8 @@ protected:
 	Replay *replay;
 	PositionStorage *posStorage;
 
-	std::vector <rope_t> ropes;
-	std::vector <ropable_t> ropables;
-	std::vector <tie_t> ties;
-	std::vector <hook_t> hooks;
 
 
-	cparticle_t cparticles[MAX_CPARTICLES];
-	int free_cparticle;
 	bool cparticle_mode;
 	Beam** ttrucks;
 	int tnumtrucks;
@@ -1147,8 +702,6 @@ protected:
 	SceneNode *beamsRoot;
 	int detailLevel;
 	Water *water;
-	std::vector<flare_t> flares;
-	int free_flare;
 	Camera *mCamera;
 	char texname[1024];
 	int hasEmissivePass;
@@ -1182,8 +735,6 @@ protected:
 	int free_airbrake;
 	Airbrake *airbrakes[MAX_AIRBRAKES];
 
-	rotator_t rotators[MAX_ROTATORS];
-	int free_rotator;
 	Buoyance *buoyance;
 	float ipy;
 
@@ -1242,15 +793,12 @@ protected:
 	int lowestnode;
 	bool floating_origin_enable;
 
-	netforcelist_t netforces[MAX_NETFORCE];
-
 	Ogre::ManualObject *simpleSkeletonManualObject;
 	bool simpleSkeletonInitiated;
 	void initSimpleSkeleton();
 
 	SoundScriptManager *ssm;
-	soundsource_t soundsources[MAX_SOUNDSCRIPTS_PER_TRUCK];
-	int free_soundsource;
+	
 
 	bool disable_default_sounds;
 	/**
