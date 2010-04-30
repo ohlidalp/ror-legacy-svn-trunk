@@ -51,6 +51,195 @@ along with Rigs of Rods.  If not, see <http://www.gnu.org/licenses/>.
 // The RoR required includes
 #include "RoRPrerequisites.h"
 
+#define THREAD_MONO 0
+#define THREAD_HT 1
+#define THREAD_HT2 2
+
+#define MAX_TRUCKS 64
+
+#define MAX_NODES 1000
+#define MAX_BEAMS 5000
+#define MAX_ROTATORS 20
+#define MAX_CONTACTERS 2000
+#define MAX_HYDROS 1000
+#define MAX_WHEELS 64
+#define MAX_SUBMESHES 500
+#define MAX_TEXCOORDS 3000
+#define MAX_CABS 3000
+#define MAX_SHOCKS MAX_BEAMS
+#define MAX_ROPES 64
+#define MAX_ROPABLES 64
+#define MAX_TIES 64
+//#define MAX_FLARES 200 // transformed into vector
+#define MAX_PROPS 200
+#define MAX_COMMANDS 48
+#define MAX_CAMERAS 10
+#define MAX_RIGIDIFIERS 100
+
+#define MAX_FLEXBODIES 64
+
+#define MAX_AEROENGINES 8
+
+#define MAX_SCREWPROPS 8
+
+#define MAX_SOUNDSCRIPTS_PER_TRUCK 128
+
+#define DEFAULT_RIGIDIFIER_SPRING 1000000.0
+#define DEFAULT_RIGIDIFIER_DAMP 50000.0
+
+#define MAX_AIRBRAKES 20
+
+#define DEFAULT_SPRING 9000000.0
+//should be 60000
+#define DEFAULT_DAMP 12000.0
+//#define DEFAULT_DAMP 60000.0
+//mars
+//#define DEFAULT_GRAVITY -3.8
+//earth
+#define DEFAULT_GRAVITY -9.8
+#define DEFAULT_DRAG 0.05
+#define DEFAULT_BEAM_DIAMETER 0.05
+#define DEFAULT_COLLISION_RANGE 0.02f
+#define MIN_BEAM_LENGTH 0.1f
+#define INVERTED_MIN_BEAM_LENGTH 1.0f/MIN_BEAM_LENGTH
+#define BEAM_SKELETON_DIAMETER 0.01
+
+#define DEFAULT_WATERDRAG 10.0
+//buoyancy force per node in Newton
+//#define DEFAULT_BUOYANCY 700.0
+
+// version 1 = pre 0.32
+// version 2 = post 0.32
+#define TRUCKFILEFORMATVERSION 3
+
+#define IRON_DENSITY 7874.0
+#define BEAM_BREAK 1000000.0
+#define BEAM_DEFORM 400000.0
+#define BEAM_CREAK_DEFAULT  100000.0
+#define WHEEL_FRICTION_COEF 2.0
+#define CHASSIS_FRICTION_COEF 0.5 //Chassis has 1/4 the friction of wheels.
+#define SPEED_STOP 0.2
+
+#define MAX_PRESSURE_BEAMS 4000
+
+#define STAB_RATE 0.1
+
+#define BEAM_NORMAL 0
+#define BEAM_HYDRO 1
+#define BEAM_VIRTUAL 2
+#define BEAM_MARKED 3
+#define BEAM_INVISIBLE 4
+#define BEAM_INVISIBLE_HYDRO 5
+
+#define NODE_NORMAL 0
+#define NODE_LOADED 1
+
+#define MAX_NETFORCE 16
+
+//leading truck
+#define ACTIVATED 0
+//not leading but active
+#define DESACTIVATED 1
+//active but wanting to sleep
+#define MAYSLEEP 2
+//active but ordered to sleep ASAP (synchronously)
+#define GOSLEEP 3
+//static
+#define SLEEPING 4
+//network
+#define NETWORKED 5
+#define RECYCLE 6
+#define DELETED 7 // special used when truck pointer is 0
+
+#define MAX_WINGS 40
+
+#define MAX_CPARTICLES 10
+
+#define UNLOCKED 0
+#define PRELOCK 1
+#define LOCKED 2
+
+#define NOT_DRIVEABLE 0
+#define TRUCK 1
+#define AIRPLANE 2
+#define BOAT 3
+#define MACHINE 4
+
+#define DRY 0
+#define DRIPPING 1
+#define WET 2
+
+#define NODE_FRICTION_COEF_DEFAULT   1.0f
+#define NODE_VOLUME_COEF_DEFAULT     1.0f
+#define NODE_SURFACE_COEF_DEFAULT    1.0f
+#define NODE_LOADWEIGHT_DEFAULT     -1.0f
+
+#define HYDRO_FLAG_SPEED        0x00000001
+#define HYDRO_FLAG_DIR          0x00000002
+#define HYDRO_FLAG_AILERON      0x00000004
+#define HYDRO_FLAG_RUDDER       0x00000008
+#define HYDRO_FLAG_ELEVATOR     0x00000010
+#define HYDRO_FLAG_REV_AILERON  0x00000020
+#define HYDRO_FLAG_REV_RUDDER   0x00000040
+#define HYDRO_FLAG_REV_ELEVATOR 0x00000080
+
+#define ANIM_FLAG_AIRSPEED      0x00000001
+#define ANIM_FLAG_VVI           0x00000002
+#define ANIM_FLAG_ALTIMETER     0x00000004
+#define ANIM_FLAG_AOA           0x00000008
+#define ANIM_FLAG_FLAP          0x00000010
+#define ANIM_FLAG_AIRBRAKE      0x00000020
+#define ANIM_FLAG_ROLL          0x00000040
+#define ANIM_FLAG_PITCH         0x00000080
+#define ANIM_FLAG_THROTTLE      0x00000100
+#define ANIM_FLAG_RPM           0x00000200
+#define ANIM_FLAG_ACCEL         0x00000400
+#define ANIM_FLAG_BRAKE         0x00000800
+#define ANIM_FLAG_CLUTCH        0x00001000
+#define ANIM_FLAG_TACHO         0x00002000
+#define ANIM_FLAG_SPEEDO        0x00004000
+#define ANIM_FLAG_PBRAKE        0x00008000
+#define ANIM_FLAG_TURBO         0x00010000
+#define ANIM_FLAG_SHIFTER       0x00020000
+#define ANIM_FLAG_AETORQUE      0x00040000
+#define ANIM_FLAG_AEPITCH       0x00080000
+#define ANIM_FLAG_AESTATUS      0x00100000
+#define ANIM_FLAG_TORQUE        0x00200000
+#define ANIM_FLAG_HEADING       0x00400000
+#define ANIM_FLAG_DIFFLOCK      0x00800000
+#define ANIM_FLAG_STEERING      0x01000000
+#define ANIM_FLAG_EVENT         0x02000000
+#define ANIM_FLAG_AILERONS      0x04000000
+#define ANIM_FLAG_ARUDDER       0x08000000
+#define ANIM_FLAG_BRUDDER       0x10000000
+#define ANIM_FLAG_BTHROTTLE     0x20000000
+#define ANIM_FLAG_PERMANENT     0x40000000
+#define ANIM_FLAG_ELEVATORS     0x80000000
+
+#define ANIM_MODE_ROTA_X		0x00000001
+#define ANIM_MODE_ROTA_Y		0x00000002
+#define ANIM_MODE_ROTA_Z		0x00000004
+#define ANIM_MODE_OFFSET_X		0x00000008
+#define ANIM_MODE_OFFSET_Y		0x00000010
+#define ANIM_MODE_OFFSET_Z		0x00000020
+#define ANIM_MODE_AUTOANIMATE	0x00000040
+#define ANIM_MODE_NOFLIP		0x00000080
+#define ANIM_MODE_BOUNCE		0x00000100
+
+#define SHOCK_FLAG_NORMAL       0x00000001
+#define SHOCK_FLAG_INVISIBLE    0x00000002
+#define SHOCK_FLAG_LACTIVE      0x00000004
+#define SHOCK_FLAG_RACTIVE      0x00000008
+#define SHOCK_FLAG_ISSHOCK2     0x00000010
+#define SHOCK_FLAG_SOFTBUMP     0x00000020
+
+#define SHOCK1 1
+#define SHOCK2 2
+#define SUPPORTBEAM 3
+#define ROPE 4
+
+enum blinktype {BLINK_NONE, BLINK_LEFT, BLINK_RIGHT, BLINK_WARN};
+
 
 typedef struct node_t
 {
@@ -405,10 +594,9 @@ typedef struct cparticle_t
 typedef struct debugtext_t
 {
 	int id;
-	MovableText *txt;
+	Ogre::MovableText *txt;
 	SceneNode *node;
 } debugtext_t;
-
 
 typedef struct rig_t
 {
@@ -460,5 +648,40 @@ typedef struct rig_t
 	
 } rig_t;
 
+// some non-beam structs
+
+typedef struct _collision_box
+{
+	//absolute collision box
+	float lo_x;
+	float hi_x;
+	float lo_y;
+	float hi_y;
+	float lo_z;
+	float hi_z;
+	bool refined;
+	//rotation
+	Quaternion rot;
+	Quaternion unrot;
+	//center of rotation
+	Vector3 center;
+	//relative collision box
+	float relo_x;
+	float rehi_x;
+	float relo_y;
+	float rehi_y;
+	float relo_z;
+	float rehi_z;
+	//self rotation
+	bool selfrotated;
+	Vector3 selfcenter;
+	Quaternion selfrot;
+	Quaternion selfunrot;
+	int eventsourcenum;
+	bool virt;
+	bool camforced;
+	Vector3 campos;
+	int event_filter;
+} collision_box_t;
 
 #endif //BEAMDATA_H__

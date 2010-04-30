@@ -53,9 +53,21 @@ class MaterialFunctionMapper;
 class CmdKeyInertia;
 class SoundScriptInstance;
 
+namespace Ogre
+{
+	class MovableText;
+};
+
 #ifdef USE_LUA
 class LuaSystem;
 #endif
+
+
+// some platform fixes
+#if OGRE_PLATFORM == OGRE_PLATFORM_APPLE
+#define strnlen(str,len) strlen(str)
+#endif
+
 
 
 #endif //RORPREREQUISITES_H__
