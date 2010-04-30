@@ -48,210 +48,174 @@ along with Rigs of Rods.  If not, see <http://www.gnu.org/licenses/>.
 // The Ogre required includes
 #include "OgrePrerequisites.h"
 #include "OgreVector3.h"
+
 // The RoR required includes
 #include "RoRPrerequisites.h"
 
-#define THREAD_MONO 0
-#define THREAD_HT 1
-#define THREAD_HT2 2
+// some tool to define the bitmasks. We use this, as it it far better readable (prevents errors)
+#define BITMASK(x) (1 << (x-1)) 
+// BITMASK(1) = 0x00000001 = 0b00....0001
+// BITMASK(2) = 0x00000002 = 0b00....0010
 
-#define MAX_TRUCKS 64
+/* maximum limits */
+static const int   MAX_TRUCKS                 = 64;              //!< maximum number of trucks for the engine
+static const int   MAX_NODES                  = 1000;            //!< maximum number of nodes per truck
+static const int   MAX_BEAMS                  = 5000;            //!< maximum number of beams per truck
+static const int   MAX_ROTATORS               = 20;              //!< maximum number of rotators per truck
+static const int   MAX_CONTACTERS             = 2000;            //!< maximum number of contacters per truck
+static const int   MAX_HYDROS                 = 1000;            //!< maximum number of hydros per truck
+static const int   MAX_WHEELS                 = 64;              //!< maximum number of wheels per truck
+static const int   MAX_SUBMESHES              = 500;             //!< maximum number of submeshes per truck
+static const int   MAX_TEXCOORDS              = 3000;            //!< maximum number of texture coordinates per truck
+static const int   MAX_CABS                   = 3000;            //!< maximum number of cabs per truck
+static const int   MAX_SHOCKS                 = MAX_BEAMS;       //!< maximum number of shocks per truck
+static const int   MAX_ROPES                  = 64;              //!< maximum number of ropes per truck
+static const int   MAX_ROPABLES               = 64;              //!< maximum number of ropables per truck
+static const int   MAX_TIES                   = 64;              //!< maximum number of ties per truck
+static const int   MAX_PROPS                  = 200;             //!< maximum number of props per truck
+static const int   MAX_COMMANDS               = 48;              //!< maximum number of commands per truck
+static const int   MAX_CAMERAS                = 10;              //!< maximum number of cameras per truck
+static const int   MAX_RIGIDIFIERS            = 100;             //!< maximum number of rigifiers per truck
+static const int   MAX_FLEXBODIES             = 64;              //!< maximum number of flexbodies per truck
+static const int   MAX_AEROENGINES            = 8;               //!< maximum number of aero engines per truck
+static const int   MAX_SCREWPROPS             = 8;               //!< maximum number of boat screws per truck
+static const int   MAX_AIRBRAKES              = 20;              //!< maximum number of airbrakes per truck
+static const int   MAX_SOUNDSCRIPTS_PER_TRUCK = 128;             //!< maximum number of soundsscripts per truck
+static const int   MAX_WINGS                  = 40;              //!< maximum number of wings per truck
+static const int   MAX_CPARTICLES             = 10;              //!< maximum number of custom particles
+static const int   MAX_PRESSURE_BEAMS         = 4000;            //!< maximum number of pressure beams
 
-#define MAX_NODES 1000
-#define MAX_BEAMS 5000
-#define MAX_ROTATORS 20
-#define MAX_CONTACTERS 2000
-#define MAX_HYDROS 1000
-#define MAX_WHEELS 64
-#define MAX_SUBMESHES 500
-#define MAX_TEXCOORDS 3000
-#define MAX_CABS 3000
-#define MAX_SHOCKS MAX_BEAMS
-#define MAX_ROPES 64
-#define MAX_ROPABLES 64
-#define MAX_TIES 64
-//#define MAX_FLARES 200 // transformed into vector
-#define MAX_PROPS 200
-#define MAX_COMMANDS 48
-#define MAX_CAMERAS 10
-#define MAX_RIGIDIFIERS 100
-
-#define MAX_FLEXBODIES 64
-
-#define MAX_AEROENGINES 8
-
-#define MAX_SCREWPROPS 8
-
-#define MAX_SOUNDSCRIPTS_PER_TRUCK 128
-
-#define DEFAULT_RIGIDIFIER_SPRING 1000000.0
-#define DEFAULT_RIGIDIFIER_DAMP 50000.0
-
-#define MAX_AIRBRAKES 20
-
-#define DEFAULT_SPRING 9000000.0
-//should be 60000
-#define DEFAULT_DAMP 12000.0
-//#define DEFAULT_DAMP 60000.0
-//mars
-//#define DEFAULT_GRAVITY -3.8
-//earth
-#define DEFAULT_GRAVITY -9.8
-#define DEFAULT_DRAG 0.05
-#define DEFAULT_BEAM_DIAMETER 0.05
-#define DEFAULT_COLLISION_RANGE 0.02f
-#define MIN_BEAM_LENGTH 0.1f
-#define INVERTED_MIN_BEAM_LENGTH 1.0f/MIN_BEAM_LENGTH
-#define BEAM_SKELETON_DIAMETER 0.01
-
-#define DEFAULT_WATERDRAG 10.0
-//buoyancy force per node in Newton
-//#define DEFAULT_BUOYANCY 700.0
-
-// version 1 = pre 0.32
-// version 2 = post 0.32
-#define TRUCKFILEFORMATVERSION 3
-
-#define IRON_DENSITY 7874.0
-#define BEAM_BREAK 1000000.0
-#define BEAM_DEFORM 400000.0
-#define BEAM_CREAK_DEFAULT  100000.0
-#define WHEEL_FRICTION_COEF 2.0
-#define CHASSIS_FRICTION_COEF 0.5 //Chassis has 1/4 the friction of wheels.
-#define SPEED_STOP 0.2
-
-#define MAX_PRESSURE_BEAMS 4000
-
-#define STAB_RATE 0.1
-
-#define BEAM_NORMAL 0
-#define BEAM_HYDRO 1
-#define BEAM_VIRTUAL 2
-#define BEAM_MARKED 3
-#define BEAM_INVISIBLE 4
-#define BEAM_INVISIBLE_HYDRO 5
-
-#define NODE_NORMAL 0
-#define NODE_LOADED 1
-
-#define MAX_NETFORCE 16
-
-//leading truck
-#define ACTIVATED 0
-//not leading but active
-#define DESACTIVATED 1
-//active but wanting to sleep
-#define MAYSLEEP 2
-//active but ordered to sleep ASAP (synchronously)
-#define GOSLEEP 3
-//static
-#define SLEEPING 4
-//network
-#define NETWORKED 5
-#define RECYCLE 6
-#define DELETED 7 // special used when truck pointer is 0
-
-#define MAX_WINGS 40
-
-#define MAX_CPARTICLES 10
-
-#define UNLOCKED 0
-#define PRELOCK 1
-#define LOCKED 2
-
-#define NOT_DRIVEABLE 0
-#define TRUCK 1
-#define AIRPLANE 2
-#define BOAT 3
-#define MACHINE 4
-
-#define DRY 0
-#define DRIPPING 1
-#define WET 2
-
-#define NODE_FRICTION_COEF_DEFAULT   1.0f
-#define NODE_VOLUME_COEF_DEFAULT     1.0f
-#define NODE_SURFACE_COEF_DEFAULT    1.0f
-#define NODE_LOADWEIGHT_DEFAULT     -1.0f
-
-#define HYDRO_FLAG_SPEED        0x00000001
-#define HYDRO_FLAG_DIR          0x00000002
-#define HYDRO_FLAG_AILERON      0x00000004
-#define HYDRO_FLAG_RUDDER       0x00000008
-#define HYDRO_FLAG_ELEVATOR     0x00000010
-#define HYDRO_FLAG_REV_AILERON  0x00000020
-#define HYDRO_FLAG_REV_RUDDER   0x00000040
-#define HYDRO_FLAG_REV_ELEVATOR 0x00000080
-
-#define ANIM_FLAG_AIRSPEED      0x00000001
-#define ANIM_FLAG_VVI           0x00000002
-#define ANIM_FLAG_ALTIMETER     0x00000004
-#define ANIM_FLAG_AOA           0x00000008
-#define ANIM_FLAG_FLAP          0x00000010
-#define ANIM_FLAG_AIRBRAKE      0x00000020
-#define ANIM_FLAG_ROLL          0x00000040
-#define ANIM_FLAG_PITCH         0x00000080
-#define ANIM_FLAG_THROTTLE      0x00000100
-#define ANIM_FLAG_RPM           0x00000200
-#define ANIM_FLAG_ACCEL         0x00000400
-#define ANIM_FLAG_BRAKE         0x00000800
-#define ANIM_FLAG_CLUTCH        0x00001000
-#define ANIM_FLAG_TACHO         0x00002000
-#define ANIM_FLAG_SPEEDO        0x00004000
-#define ANIM_FLAG_PBRAKE        0x00008000
-#define ANIM_FLAG_TURBO         0x00010000
-#define ANIM_FLAG_SHIFTER       0x00020000
-#define ANIM_FLAG_AETORQUE      0x00040000
-#define ANIM_FLAG_AEPITCH       0x00080000
-#define ANIM_FLAG_AESTATUS      0x00100000
-#define ANIM_FLAG_TORQUE        0x00200000
-#define ANIM_FLAG_HEADING       0x00400000
-#define ANIM_FLAG_DIFFLOCK      0x00800000
-#define ANIM_FLAG_STEERING      0x01000000
-#define ANIM_FLAG_EVENT         0x02000000
-#define ANIM_FLAG_AILERONS      0x04000000
-#define ANIM_FLAG_ARUDDER       0x08000000
-#define ANIM_FLAG_BRUDDER       0x10000000
-#define ANIM_FLAG_BTHROTTLE     0x20000000
-#define ANIM_FLAG_PERMANENT     0x40000000
-#define ANIM_FLAG_ELEVATORS     0x80000000
-
-#define ANIM_MODE_ROTA_X		0x00000001
-#define ANIM_MODE_ROTA_Y		0x00000002
-#define ANIM_MODE_ROTA_Z		0x00000004
-#define ANIM_MODE_OFFSET_X		0x00000008
-#define ANIM_MODE_OFFSET_Y		0x00000010
-#define ANIM_MODE_OFFSET_Z		0x00000020
-#define ANIM_MODE_AUTOANIMATE	0x00000040
-#define ANIM_MODE_NOFLIP		0x00000080
-#define ANIM_MODE_BOUNCE		0x00000100
-
-#define SHOCK_FLAG_NORMAL       0x00000001
-#define SHOCK_FLAG_INVISIBLE    0x00000002
-#define SHOCK_FLAG_LACTIVE      0x00000004
-#define SHOCK_FLAG_RACTIVE      0x00000008
-#define SHOCK_FLAG_ISSHOCK2     0x00000010
-#define SHOCK_FLAG_SOFTBUMP     0x00000020
-
-#define SHOCK1 1
-#define SHOCK2 2
-#define SUPPORTBEAM 3
-#define ROPE 4
-
-enum blinktype {BLINK_NONE, BLINK_LEFT, BLINK_RIGHT, BLINK_WARN};
+/* other global static definitions */
+static const int   TRUCKFILEFORMATVERSION     = 3;               //!< truck file format version number
 
 
+/* physics defaults */
+static const float DEFAULT_RIGIDIFIER_SPRING    = 1000000.0f;
+static const float DEFAULT_RIGIDIFIER_DAMP      = 50000.0f;
+static const float DEFAULT_SPRING               = 9000000.0f;
+static const float DEFAULT_DAMP                 = 12000.0f;
+static const float DEFAULT_GRAVITY              = -9.8f;
+static const float DEFAULT_DRAG                 = 0.05f;
+static const float DEFAULT_BEAM_DIAMETER        = 0.05f;
+static const float DEFAULT_COLLISION_RANGE      = 0.02f;
+static const float MIN_BEAM_LENGTH              = 0.1f;
+static const float INVERTED_MIN_BEAM_LENGTH     = 1.0f / MIN_BEAM_LENGTH;
+static const float BEAM_SKELETON_DIAMETER       = 0.01f;
+static const float DEFAULT_WATERDRAG            = 10.0f;
+static const float IRON_DENSITY                 = 7874.0f;
+static const float BEAM_BREAK                   = 1000000.0f;
+static const float BEAM_DEFORM                  = 400000.0f;
+static const float BEAM_CREAK_DEFAULT           = 100000.0f;
+static const float WHEEL_FRICTION_COEF          = 2.0f;
+static const float CHASSIS_FRICTION_COEF        = 0.5f; //!< Chassis has 1/4 the friction of wheels.
+static const float SPEED_STOP                   = 0.2f;
+static const float STAB_RATE                    = 0.1f;
+static const float NODE_FRICTION_COEF_DEFAULT   = 1.0f;
+static const float NODE_VOLUME_COEF_DEFAULT     = 1.0f;
+static const float NODE_SURFACE_COEF_DEFAULT    = 1.0f;
+static const float NODE_LOADWEIGHT_DEFAULT      = -1.0f;
+
+/* Enumerations */
+static const enum { THREAD_MONO, THREAD_HT, THREAD_HT2 };
+static const enum { BEAM_NORMAL, BEAM_HYDRO, BEAM_VIRTUAL, BEAM_MARKED, BEAM_INVISIBLE, BEAM_INVISIBLE_HYDRO };
+static const enum { NODE_NORMAL, NODE_LOADED };
+
+static const enum {
+	ACTIVATED,      //!< leading truck
+	DESACTIVATED,   //!< not leading but active 
+	MAYSLEEP,       //!< active but wanting to sleep
+	GOSLEEP,        //!< active but ordered to sleep ASAP (synchronously)
+	SLEEPING,
+	NETWORKED,
+	RECYCLE,
+	DELETED,        //!< special used when truck pointer is 0
+};
+
+static const enum { UNLOCKED, PRELOCK, LOCKED };
+static const enum { NOT_DRIVEABLE, TRUCK, AIRPLANE, BOAT, MACHINE };
+static const enum { DRY, DRIPPING, WET };
+static const enum { SHOCK1, SHOCK2, SUPPORTBEAM, ROPE };
+static const enum blinktype { BLINK_NONE, BLINK_LEFT, BLINK_RIGHT, BLINK_WARN };
+
+static const enum { 
+	HYDRO_FLAG_SPEED        = BITMASK(1),
+	HYDRO_FLAG_DIR          = BITMASK(2),
+	HYDRO_FLAG_AILERON      = BITMASK(3),
+	HYDRO_FLAG_RUDDER       = BITMASK(4),
+	HYDRO_FLAG_ELEVATOR     = BITMASK(5),
+	HYDRO_FLAG_REV_AILERON  = BITMASK(6),
+	HYDRO_FLAG_REV_RUDDER   = BITMASK(7),
+	HYDRO_FLAG_REV_ELEVATOR = BITMASK(8),
+};
+
+static const enum { 
+	ANIM_FLAG_AIRSPEED      = BITMASK(1),
+	ANIM_FLAG_VVI           = BITMASK(2),
+	ANIM_FLAG_ALTIMETER     = BITMASK(3),
+	ANIM_FLAG_AOA           = BITMASK(4),
+	ANIM_FLAG_FLAP          = BITMASK(5),
+	ANIM_FLAG_AIRBRAKE      = BITMASK(6),
+	ANIM_FLAG_ROLL          = BITMASK(7),
+	ANIM_FLAG_PITCH         = BITMASK(8),
+	ANIM_FLAG_THROTTLE      = BITMASK(9),
+	ANIM_FLAG_RPM           = BITMASK(10),
+	ANIM_FLAG_ACCEL         = BITMASK(11),
+	ANIM_FLAG_BRAKE         = BITMASK(12),
+	ANIM_FLAG_CLUTCH        = BITMASK(13),
+	ANIM_FLAG_TACHO         = BITMASK(14),
+	ANIM_FLAG_SPEEDO        = BITMASK(15),
+	ANIM_FLAG_PBRAKE        = BITMASK(16),
+	ANIM_FLAG_TURBO         = BITMASK(17),
+	ANIM_FLAG_SHIFTER       = BITMASK(18),
+	ANIM_FLAG_AETORQUE      = BITMASK(19),
+	ANIM_FLAG_AEPITCH       = BITMASK(20),
+	ANIM_FLAG_AESTATUS      = BITMASK(21),
+	ANIM_FLAG_TORQUE        = BITMASK(22),
+	ANIM_FLAG_HEADING       = BITMASK(23),
+	ANIM_FLAG_DIFFLOCK      = BITMASK(24),
+	ANIM_FLAG_STEERING      = BITMASK(25),
+	ANIM_FLAG_EVENT         = BITMASK(26),
+	ANIM_FLAG_AILERONS      = BITMASK(27),
+	ANIM_FLAG_ARUDDER       = BITMASK(28),
+	ANIM_FLAG_BRUDDER       = BITMASK(29),
+	ANIM_FLAG_BTHROTTLE     = BITMASK(30),
+	ANIM_FLAG_PERMANENT     = BITMASK(31),
+	ANIM_FLAG_ELEVATORS     = BITMASK(32),
+};
+
+static const enum { 
+	ANIM_MODE_ROTA_X		 = BITMASK(1),
+	ANIM_MODE_ROTA_Y		 = BITMASK(2),
+	ANIM_MODE_ROTA_Z		 = BITMASK(3),
+	ANIM_MODE_OFFSET_X		 = BITMASK(4),
+	ANIM_MODE_OFFSET_Y		 = BITMASK(5),
+	ANIM_MODE_OFFSET_Z		 = BITMASK(6),
+	ANIM_MODE_AUTOANIMATE	 = BITMASK(7),
+	ANIM_MODE_NOFLIP		 = BITMASK(8),
+	ANIM_MODE_BOUNCE		 = BITMASK(9),
+};
+
+static const enum { 
+	SHOCK_FLAG_NORMAL       = BITMASK(1),
+	SHOCK_FLAG_INVISIBLE    = BITMASK(2),
+	SHOCK_FLAG_LACTIVE      = BITMASK(3),
+	SHOCK_FLAG_RACTIVE      = BITMASK(4),
+	SHOCK_FLAG_ISSHOCK2     = BITMASK(5),
+	SHOCK_FLAG_SOFTBUMP     = BITMASK(6),
+};
+
+/* basic structures */
 typedef struct node_t
 {
-	Ogre::Vector3 RelPosition; //relative to the local physics origin (one origin per truck) (shaky)
-	Ogre::Vector3 AbsPosition; //absolute position in the world (shaky)
+	Ogre::Vector3 RelPosition; //!<relative to the local physics origin (one origin per truck) (shaky)
+	Ogre::Vector3 AbsPosition; //!<absolute position in the world (shaky)
 	Ogre::Vector3 Velocity;
 	Ogre::Vector3 Forces;
 	Ogre::Real inverted_mass;
 	Ogre::Real mass;
 	Ogre::Vector3 lastNormal;
 	int locked;
-	int iswheel; //0=no, 1, 2=wheel1  3,4=wheel2, etc...
+	int iswheel; //!<0=no, 1, 2=wheel1  3,4=wheel2, etc...
 	int wheelid;
 	int masstype;
 	int wetstate;
@@ -274,9 +238,9 @@ typedef struct node_t
 	Ogre::Vector3 buoyanceForce;
 	int id;
 	float colltesttimer;
-	Ogre::Vector3 iPosition; // initial position, absolute
-	Ogre::Real    iDistance; // initial distance from node0 during loading - used to check for loose parts
-	Ogre::Vector3 smoothpos; //absolute, per-frame smooth, must be used for visual effects only
+	Ogre::Vector3 iPosition; //!< initial position, absolute
+	Ogre::Real    iDistance; //!< initial distance from node0 during loading - used to check for loose parts
+	Ogre::Vector3 smoothpos; //!< absolute, per-frame smooth, must be used for visual effects only
 	bool iIsSkin;
 	bool isSkin;
 	bool contacter;
@@ -310,11 +274,11 @@ typedef struct beam_t
 {
 	node_t *p1;
 	node_t *p2;
-	Beam *p2truck; //in case p2 is on another truck
+	Beam *p2truck; //!< in case p2 is on another truck
 	bool disabled;
-	Ogre::Real k; //tensile spring
-	Ogre::Real d; //damping factor
-	Ogre::Real L; //length
+	Ogre::Real k; //!< tensile spring
+	Ogre::Real d; //!< damping factor
+	Ogre::Real L; //!< length
 	Ogre::Real minmaxposnegstress;
 	int type;
 	Ogre::Real maxposstress;
@@ -326,9 +290,9 @@ typedef struct beam_t
 	int bounded;
 	bool broken;
 	Ogre::Real plastic_coef;
-	Ogre::Real refL; //reference length
-	Ogre::Real Lhydro;//hydro reference len
-	Ogre::Real hydroRatio;//hydro rotation ratio
+	Ogre::Real refL; //!< reference length
+	Ogre::Real Lhydro;//!< hydro reference len
+	Ogre::Real hydroRatio;//!< hydro rotation ratio
 	int hydroFlags;
 	int animFlags;
 	float animOption;
@@ -342,7 +306,7 @@ typedef struct beam_t
 	bool iscentering;
 	int isOnePressMode;
 	bool isforcerestricted;
-	float iStrength; //initial strength
+	float iStrength; //!< initial strength
 	Ogre::Real default_deform;
 	Ogre::Real default_plastic_coef;
 	int autoMovingMode;
@@ -352,8 +316,8 @@ typedef struct beam_t
 	float minendmass;
 	float scale;
 	shock_t *shock;
-	SceneNode *mSceneNode; //visual
-	Entity *mEntity; //visual
+	SceneNode *mSceneNode; //!< visual
+	Entity *mEntity; //!< visual
 } beam_t;
 
 typedef struct soundsource_t
@@ -403,7 +367,7 @@ typedef struct wheel_t
 	int propulsed;
 	Real radius;
 	Real speed;
-	Real delta_rotation; //! difference in wheel position
+	Real delta_rotation; //!<  difference in wheel position
 	float rp;
 	float rp1;
 	float rp2;
@@ -646,6 +610,9 @@ typedef struct rig_t
 	soundsource_t soundsources[MAX_SOUNDSCRIPTS_PER_TRUCK];
 	int free_soundsource;
 	
+	int pressure_beams[MAX_PRESSURE_BEAMS];
+	int free_pressure_beam;
+
 } rig_t;
 
 // some non-beam structs

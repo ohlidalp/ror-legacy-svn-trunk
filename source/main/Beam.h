@@ -255,8 +255,6 @@ public:
 	float rightMirrorAngle;
 	float *mapsizex, *mapsizez;
 	float refpressure;
-	int pressure_beams[MAX_PRESSURE_BEAMS];
-	int free_pressure_beam;
 	PointColDetector *pointCD;
 
 	pthread_mutex_t work_mutex;
