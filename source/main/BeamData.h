@@ -165,6 +165,7 @@ static const enum {
 	WET             //!< node is wet
 };
 static const enum {
+	NOSHOCK,        //!< not a shock
 	SHOCK1,         //!< shock1
 	SHOCK2,         //!< shock2
 	SUPPORTBEAM,    //!< 
@@ -630,6 +631,10 @@ struct rig
 	prop_t *driverSeat;
 	int free_prop;
 	
+	shock_t shocks[MAX_SHOCKS];
+	int free_shock;
+	int free_active_shock; // this has no array associated with it. its just to determine if there are active shocks!
+
 	std::vector < exhaust_t > exhausts;
 
 	cparticle_t cparticles[MAX_CPARTICLES];
@@ -642,6 +647,44 @@ struct rig
 	
 	int pressure_beams[MAX_PRESSURE_BEAMS];
 	int free_pressure_beam;
+
+	int free_aeroengine;
+	AeroEngine *aeroengines[MAX_AEROENGINES];
+
+	int free_screwprop;
+	Screwprop *screwprops[MAX_SCREWPROPS];
+
+	int cabs[MAX_CABS*3];
+	int subisback[MAX_SUBMESHES];
+	int free_cab;
+
+	int hydro[MAX_HYDROS];
+	int free_hydro;
+
+	Ogre::Vector3 texcoords[MAX_TEXCOORDS];
+	int free_texcoord;
+
+	int subtexcoords[MAX_SUBMESHES];
+	int subcabs[MAX_SUBMESHES];
+	int free_sub;
+
+	int collcabs[MAX_CABS];
+	int collcabstype[MAX_CABS];
+	collcab_rate_t collcabrate[MAX_CABS];
+	int free_collcab;
+
+	int buoycabs[MAX_CABS];
+	int buoycabtypes[MAX_CABS];
+	int free_buoycab;
+
+	int free_airbrake;
+	Airbrake *airbrakes[MAX_AIRBRAKES];
+
+	Skidmark *skidtrails[MAX_WHEELS*2];
+	bool useSkidmarks;
+
+	FlexBody *flexbodies[MAX_FLEXBODIES];
+	int free_flexbody;
 
 };
 

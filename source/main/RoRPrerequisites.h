@@ -23,6 +23,7 @@ along with Rigs of Rods.  If not, see <http://www.gnu.org/licenses/>.
 #ifndef RORPREREQUISITES_H__
 #define RORPREREQUISITES_H__
 
+class AeroEngine;
 class Airbrake;
 class Flexable;
 class FlexBody;
