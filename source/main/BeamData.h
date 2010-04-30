@@ -48,6 +48,7 @@ along with Rigs of Rods.  If not, see <http://www.gnu.org/licenses/>.
 // The Ogre required includes
 #include "OgrePrerequisites.h"
 #include "OgreVector3.h"
+#include "OgreColourValue.h"
 
 // The RoR required includes
 #include "RoRPrerequisites.h"
@@ -354,8 +355,8 @@ struct beam
 	float minendmass;
 	float scale;
 	shock_t *shock;
-	SceneNode *mSceneNode; //!< visual
-	Entity *mEntity; //!< visual
+	Ogre::SceneNode *mSceneNode; //!< visual
+	Ogre::Entity *mEntity; //!< visual
 };
 
 struct soundsource
@@ -403,9 +404,9 @@ struct wheel
 	node_t* refnode0;
 	node_t* refnode1;
 	int propulsed;
-	Real radius;
-	Real speed;
-	Real delta_rotation; //!<  difference in wheel position
+	Ogre::Real radius;
+	Ogre::Real speed;
+	Ogre::Real delta_rotation; //!<  difference in wheel position
 	float rp;
 	float rp1;
 	float rp2;
@@ -413,8 +414,8 @@ struct wheel
 	float width;
 
 	// for skidmarks
-	Vector3 lastContactInner;
-	Vector3 lastContactOuter;
+	Ogre::Vector3 lastContactInner;
+	Ogre::Vector3 lastContactOuter;
 	float lastSlip;
 	int lastContactType;
 	ground_model_t *lastGroundModel;
@@ -425,7 +426,7 @@ struct vwheel
 	node_t *p1;
 	node_t *p2;
 	Flexable *fm;
-	SceneNode *cnode;
+	Ogre::SceneNode *cnode;
 	bool meshwheel;
 };
 
@@ -471,17 +472,8 @@ struct tie
 
 struct wing
 {
-	/*	int nfld;
-	int nfrd;
-	int nflu;
-	int nfru;
-	int nbld;
-	int nbrd;
-	int nblu;
-	int nbru;
-	*/
 	FlexAirfoil *fa;
-	SceneNode *cnode;
+	Ogre::SceneNode *cnode;
 };
 
 struct command
@@ -510,9 +502,9 @@ struct flare
 	float offsetx;
 	float offsety;
 	float offsetz;
-	SceneNode *snode;
-	BillboardSet *bbs;
-	Light *light;
+	Ogre::SceneNode *snode;
+	Ogre::BillboardSet *bbs;
+	Ogre::Light *light;
 	char type;
 	int controlnumber;
 	bool controltoggle_status;
@@ -537,15 +529,15 @@ struct prop
 	float orgoffsetX;
 	float orgoffsetY;
 	float orgoffsetZ;
-	Quaternion rot;
-	SceneNode *snode;
-	SceneNode *wheel;
-	Vector3 wheelpos;
+	Ogre::Quaternion rot;
+	Ogre::SceneNode *snode;
+	Ogre::SceneNode *wheel;
+	Ogre::Vector3 wheelpos;
 	int mirror;
 	char beacontype;
-	BillboardSet *bbs[4];
-	SceneNode *bbsnode[4];
-	Light *light[4];
+	Ogre::BillboardSet *bbs[4];
+	Ogre::SceneNode *bbsnode[4];
+	Ogre::Light *light[4];
 	float brate[4];
 	float bpos[4];
 	int pale;
@@ -578,8 +570,8 @@ struct exhaust
 	char material[255];
 	float factor;
 	bool isOldFormat;
-	SceneNode *smokeNode;
-	ParticleSystem* smoker;
+	Ogre::SceneNode *smokeNode;
+	Ogre::ParticleSystem* smoker;
 };
 
 
@@ -588,8 +580,8 @@ struct cparticle
 	int emitterNode;
 	int directionNode;
 	bool active;
-	SceneNode *snode;
-	ParticleSystem* psys;
+	Ogre::SceneNode *snode;
+	Ogre::ParticleSystem* psys;
 };
 
 
@@ -597,7 +589,7 @@ struct debugtext
 {
 	int id;
 	Ogre::MovableText *txt;
-	SceneNode *node;
+	Ogre::SceneNode *node;
 };
 
 struct rig
@@ -666,10 +658,10 @@ struct collision_box
 	float hi_z;
 	bool refined;
 	//rotation
-	Quaternion rot;
-	Quaternion unrot;
+	Ogre::Quaternion rot;
+	Ogre::Quaternion unrot;
 	//center of rotation
-	Vector3 center;
+	Ogre::Vector3 center;
 	//relative collision box
 	float relo_x;
 	float rehi_x;
@@ -679,14 +671,54 @@ struct collision_box
 	float rehi_z;
 	//self rotation
 	bool selfrotated;
-	Vector3 selfcenter;
-	Quaternion selfrot;
-	Quaternion selfunrot;
+	Ogre::Vector3 selfcenter;
+	Ogre::Quaternion selfrot;
+	Ogre::Quaternion selfunrot;
 	int eventsourcenum;
 	bool virt;
 	bool camforced;
-	Vector3 campos;
+	Ogre::Vector3 campos;
 	int event_filter;
+};
+
+struct ground_model
+{
+	float va; //adhesion velocity
+	float ms; //static friction coefficient
+	float mc; //sliding friction coefficient
+	float t2; //hydrodynamic friction (s/m)
+	float vs; //stribeck velocity (m/s)
+	float alpha; //steady-steady
+	float strength; //ground strength
+
+	float fluid_density;	// Density of liquid
+	float flow_consistency_index;// general drag coefficient
+
+	// if flow_behavior_index<1 then liquid is Pseudoplastic (ketchup, whipped cream, paint)
+	// if =1 then liquid is Newtonian fluid
+	// if >1 then liquid is Dilatant fluid (less common)
+	float flow_behavior_index;
+
+	// how deep the solid ground is
+	float solid_ground_level;
+
+	// Upwards/Downwards drag anisotropy
+	float drag_anisotropy;
+
+	int fx_type;
+	Ogre::ColourValue fx_colour;
+	char name[255];
+	char basename[255];
+	char particle_name[255];
+
+	int fx_particle_amount; // amount of particles
+
+	float fx_particle_min_velo; // minimum velocity to display sparks
+	float fx_particle_max_velo; // maximum velocity to display sparks
+	float fx_particle_fade; // fade coefficient
+	float fx_particle_timedelta; // delta for particle animation
+	float fx_particle_velo_factor; // velocity factor
+	float fx_particle_ttl;
 };
 
 #endif //BEAMDATA_H__

@@ -21,7 +21,9 @@ along with Rigs of Rods.  If not, see <http://www.gnu.org/licenses/>.
 #define __Beam_H__
 
 #include "OgrePrerequisites.h"
+#include "RoRPrerequisites.h"
 
+#include "BeamData.h" // TODO: fix the other headers, so we can remove this line
 
 
 using namespace Ogre;
@@ -43,12 +45,10 @@ using namespace Ogre;
 #include "approxmath.h"
 #include "PositionStorage.h"
 #include "Streamable.h"
-#include "groundmodel.h"
 #include "rormemory.h"
 #include <vector>
 
 
-#include "BeamData.h"
 
 
 
