@@ -118,12 +118,12 @@ static const float NODE_SURFACE_COEF_DEFAULT    = 1.0f;
 static const float NODE_LOADWEIGHT_DEFAULT      = -1.0f;
 
 /* Enumerations */
-static const enum {
+enum {
 	THREAD_MONO,    //!< mono threading mode
 	THREAD_HT,      //!< dual thread mode
 	THREAD_HT2      //!< multi-core threading mode
 };
-static const enum {
+enum {
 	BEAM_NORMAL,
 	BEAM_HYDRO,
 	BEAM_VIRTUAL,
@@ -131,12 +131,12 @@ static const enum {
 	BEAM_INVISIBLE,
 	BEAM_INVISIBLE_HYDRO
 };
-static const enum {
+enum {
 	NODE_NORMAL,
 	NODE_LOADED
 };
 
-static const enum {
+enum {
 	ACTIVATED,      //!< leading truck
 	DESACTIVATED,   //!< not leading but active 
 	MAYSLEEP,       //!< active but wanting to sleep
@@ -147,38 +147,38 @@ static const enum {
 	DELETED,        //!< special used when truck pointer is 0
 };
 
-static const enum {
+enum {
 	UNLOCKED,       //!< lock not locked
 	PRELOCK,        //!< prelocking, attraction forces in action
 	LOCKED          //!< lock locked.
 };
-static const enum {
+enum {
 	NOT_DRIVEABLE,  //!< not drivable at all
 	TRUCK,          //!< its a truck
 	AIRPLANE,       //!< its an airplane
 	BOAT,           //!< its a boat
 	MACHINE         //!< its a machine
 };
-static const enum {
+enum {
 	DRY,            //!< node is dry
 	DRIPPING,       //!< node is dripping
 	WET             //!< node is wet
 };
-static const enum {
+enum {
 	NOSHOCK,        //!< not a shock
 	SHOCK1,         //!< shock1
 	SHOCK2,         //!< shock2
 	SUPPORTBEAM,    //!< 
 	ROPE            //!< 
 };
-static const enum blinktype {
+enum blinktype {
 	BLINK_NONE,    //!< 
 	BLINK_LEFT,    //!< 
 	BLINK_RIGHT,   //!< 
 	BLINK_WARN     //!< 
 };
 
-static const enum { 
+enum { 
 	HYDRO_FLAG_SPEED        = BITMASK(1),
 	HYDRO_FLAG_DIR          = BITMASK(2),
 	HYDRO_FLAG_AILERON      = BITMASK(3),
@@ -189,7 +189,7 @@ static const enum {
 	HYDRO_FLAG_REV_ELEVATOR = BITMASK(8),
 };
 
-static const enum { 
+enum { 
 	ANIM_FLAG_AIRSPEED      = BITMASK(1),
 	ANIM_FLAG_VVI           = BITMASK(2),
 	ANIM_FLAG_ALTIMETER     = BITMASK(3),
@@ -224,7 +224,7 @@ static const enum {
 	ANIM_FLAG_ELEVATORS     = BITMASK(32),
 };
 
-static const enum { 
+enum { 
 	ANIM_MODE_ROTA_X        = BITMASK(1),
 	ANIM_MODE_ROTA_Y        = BITMASK(2),
 	ANIM_MODE_ROTA_Z        = BITMASK(3),
@@ -236,7 +236,7 @@ static const enum {
 	ANIM_MODE_BOUNCE        = BITMASK(9),
 };
 
-static const enum { 
+enum { 
 	SHOCK_FLAG_NORMAL       = BITMASK(1),
 	SHOCK_FLAG_INVISIBLE    = BITMASK(2),
 	SHOCK_FLAG_LACTIVE      = BITMASK(3),

@@ -393,12 +393,18 @@ Beam::Beam(int tnum, SceneManager *manager, SceneNode *parent, RenderWindow* win
 	free_wing=0;
 	refpressure=50.0;
 	free_pressure_beam=0;
-	default_break=BEAM_BREAK;
-	default_deform=BEAM_DEFORM;
 	default_beam_diameter=DEFAULT_BEAM_DIAMETER;
 	skeleton_beam_diameter=BEAM_SKELETON_DIAMETER;
+	
 	default_spring=DEFAULT_SPRING;
+	default_spring_scale=1;
 	default_damp=DEFAULT_DAMP;
+	default_damp_scale=1;
+	default_deform=BEAM_DEFORM;
+	default_deform_scale=1;
+	default_break=BEAM_BREAK;
+	default_break_scale=1;
+	
 	default_node_friction=NODE_FRICTION_COEF_DEFAULT;
 	default_node_volume=NODE_VOLUME_COEF_DEFAULT;
 	default_node_surface=NODE_SURFACE_COEF_DEFAULT;
@@ -882,9 +888,9 @@ beam_t *Beam::addBeam(int id1, int id2)
 	}
 
 	int pos=add_beam(&nodes[id1], &nodes[id2], tsm, \
-			  beamsRoot, type, default_break, default_spring, \
-			  default_damp, -1, -1, -1, 1, \
-			  default_beam_diameter);
+			beamsRoot, type, default_break * default_break_scale, default_spring * default_spring_scale, \
+			default_damp * default_damp_scale, -1, -1, -1, 1, \
+			default_beam_diameter);
 
 	beams[pos].type=BEAM_NORMAL;
 	return &beams[pos];
@@ -1823,6 +1829,26 @@ int Beam::loadTruck(const char* fname, SceneManager *manager, SceneNode *parent,
 				beam_creak=0.0f;
 				default_plastic_coef=tmpdefault_plastic_coef;
 			}
+			if(default_spring_scale != 1 || default_damp_scale != 1 || default_deform_scale != 1 || default_break_scale != 1)
+			{
+				LogManager::getSingleton().logMessage("Due to using set_beam_defaults_scale, this set_beam_defaults was interpreted as  " + \
+					StringConverter::toString(default_spring * default_spring_scale) + ", " + \
+					StringConverter::toString(default_damp   * default_damp_scale) + ", " + \
+					StringConverter::toString(default_deform * default_deform_scale) + ", " + \
+					StringConverter::toString(default_break  * default_break_scale) + ". In " + \
+					String(fname) +" line " + StringConverter::toString(linecounter) + ".");
+
+			}
+			continue;
+		}
+		if (!strncmp("set_beam_defaults_scale", line, 23))
+		{
+			int result = sscanf(line,"set_beam_defaults_scale %f, %f, %f, %f", &default_spring_scale, &default_damp_scale, &default_deform_scale, &default_break_scale);
+			if (result < 4 || result == EOF)
+			{
+				LogManager::getSingleton().logMessage("Error parsing File (set_beam_defaults_scale) " + String(fname) +" line " + StringConverter::toString(linecounter) + ". trying to continue ...");
+				continue;
+			}
 			continue;
 		}
 		if (!strncmp("set_inertia_defaults", line, 20))
@@ -2173,9 +2199,9 @@ int Beam::loadTruck(const char* fname, SceneManager *manager, SceneNode *parent,
 			*/
 
 			int pos=add_beam(&nodes[id1], &nodes[id2], manager, \
-					  parent, type, default_break, default_spring, \
-					  default_damp, -1, -1, -1, 1, \
-					  default_beam_diameter);
+				parent, type, default_break * default_break_scale, default_spring * default_spring_scale, \
+				default_damp * default_damp_scale, -1, -1, -1, 1, \
+				default_beam_diameter);
 
 			// now 'parse' the options
 			options_pointer = options;
@@ -2452,7 +2478,7 @@ int Beam::loadTruck(const char* fname, SceneManager *manager, SceneNode *parent,
 				hydroInertia->setCmdKeyDelay(free_hydro,inertia_startDelay,inertia_stopDelay, String (inertia_default_startFunction), String (inertia_default_stopFunction));
 
 
-			int pos=add_beam(&nodes[id1], &nodes[id2], manager, parent, htype, default_break, default_spring, default_damp);
+			int pos=add_beam(&nodes[id1], &nodes[id2], manager, parent, htype, default_break * default_break_scale, default_spring * default_spring_scale, default_damp * default_damp_scale);
 			hydro[free_hydro]=pos;free_hydro++;
 			beams[pos].Lhydro=beams[pos].L;
 			beams[pos].hydroRatio=ratio;
@@ -2558,7 +2584,7 @@ int Beam::loadTruck(const char* fname, SceneManager *manager, SceneNode *parent,
 			if(hydroInertia && (inertia_startDelay > 0 || inertia_stopDelay > 0))
 				hydroInertia->setCmdKeyDelay(free_hydro,inertia_startDelay,inertia_stopDelay, String (inertia_default_startFunction), String (inertia_default_stopFunction));
 
-			int pos=add_beam(&nodes[id1], &nodes[id2], manager, parent, htype, default_break, default_spring, default_damp);
+			int pos=add_beam(&nodes[id1], &nodes[id2], manager, parent, htype, default_break * default_break_scale, default_spring * default_spring_scale, default_damp * default_damp_scale);
 			hydro[free_hydro]=pos;
 			free_hydro++;
 			beams[pos].Lhydro=beams[pos].L;
@@ -2887,7 +2913,7 @@ int Beam::loadTruck(const char* fname, SceneManager *manager, SceneNode *parent,
 				continue;
 			}
 
-			int pos=add_beam(&nodes[id1], &nodes[id2], manager, parent, htype, default_break, default_spring, default_damp, -1, -1, -1, 1, default_beam_diameter);
+			int pos=add_beam(&nodes[id1], &nodes[id2], manager, parent, htype, default_break * default_break_scale, default_spring * default_spring_scale, default_damp * default_damp_scale, -1, -1, -1, 1, default_beam_diameter);
 			// now 'parse' the options
 			options_pointer = options;
 			while (*options_pointer != 0)
@@ -3026,7 +3052,7 @@ int Beam::loadTruck(const char* fname, SceneManager *manager, SceneNode *parent,
 				LogManager::getSingleton().logMessage("cannot create rope: beams limit reached ("+StringConverter::toString(MAX_BEAMS)+"): " + String(fname) +" line " + StringConverter::toString(linecounter) + ". trying to continue ...");
 				continue;
 			}
-			int pos=add_beam(&nodes[id1], &nodes[id2], manager, parent, BEAM_NORMAL, default_break, default_spring, default_damp);
+			int pos=add_beam(&nodes[id1], &nodes[id2], manager, parent, BEAM_NORMAL, default_break * default_break_scale, default_spring * default_spring_scale, default_damp * default_damp_scale);
 			beams[pos].bounded=ROPE;
 
 			rope_t r;
@@ -3085,7 +3111,7 @@ int Beam::loadTruck(const char* fname, SceneManager *manager, SceneNode *parent,
 
 			int htype=BEAM_HYDRO;
 			if (option=='i') htype=BEAM_INVISIBLE_HYDRO;
-			int pos=add_beam(&nodes[id1], &nodes[0], manager, parent, htype, default_break, default_spring, default_damp);
+			int pos=add_beam(&nodes[id1], &nodes[0], manager, parent, htype, default_break * default_break_scale, default_spring * default_spring_scale, default_damp * default_damp_scale);
 			beams[pos].L=maxl;
 			beams[pos].refL=maxl;
 			beams[pos].Lhydro=maxl;
