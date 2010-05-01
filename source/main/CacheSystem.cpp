@@ -431,11 +431,11 @@ void CacheSystem::parseModAttribute(const String& line, Cache_Entry& t)
 			return;
 		}
 		// Set
-		AuthorInfo ai;
-		ai.type = params[1];
-		ai.id = StringConverter::parseInt(params[2]);
-		ai.name = params[3];
-		ai.email = params[4];
+		authorinfo_t *ai = new authorinfo_t();
+		ai->id = StringConverter::parseInt(params[2]);
+		strncpy(ai->type, params[1].c_str(), 255);
+		strncpy(ai->name, params[3].c_str(), 255);
+		strncpy(ai->email, params[4].c_str(), 255);
 		t.authors.push_back(ai);
 	}
 	else if (attrib == "sectionconfig")
@@ -1004,13 +1004,15 @@ Ogre::String CacheSystem::formatInnerEntry(int counter, Cache_Entry t)
 		{
 			for(int i=0;i<(int)t.authors.size();i++)
 			{
-				if(t.authors[i].type == "")
-					t.authors[i].type = "unkown";
-				if(t.authors[i].name == "")
-					t.authors[i].name = "unkown";
-				if(t.authors[i].email == "")
-					t.authors[i].email = "unkown";
-				result += "\tauthor="+t.authors[i].type+","+StringConverter::toString(t.authors[i].id)+","+t.authors[i].name+","+t.authors[i].email+"\n";
+				if(strnlen(t.authors[i]->type, 3) == 0)
+					strcpy(t.authors[i]->type, "unkown");
+				if(strnlen(t.authors[i]->name, 3) == 0)
+					strcpy(t.authors[i]->name, "unkown");
+				if(strnlen(t.authors[i]->email, 3) == 0)
+					strcpy(t.authors[i]->email, "unkown");
+				result += "\tauthor=" + String(t.authors[i]->type) + \
+					"," + StringConverter::toString(t.authors[i]->id) + \
+					"," + String(t.authors[i]->name) + "," + String(t.authors[i]->email) + "\n";
 			}
 		}
 
@@ -1435,11 +1437,11 @@ void CacheSystem::fillTruckDetailInfo(Cache_Entry &entry, Ogre::DataStreamPtr ds
 			{
 				int authorid;
 				char authorname[255], authoremail[255], authortype[255];
-				AuthorInfo author;
-				author.id = -1;
-				author.email = "unkown";
-				author.name = "unkown";
-				author.type = "unkown";
+				authorinfo_t *author = new authorinfo_t();
+				author->id = -1;
+				strcpy(author->email, "unkown");
+				strcpy(author->name,  "unkown");
+				strcpy(author->type,  "unkown");
 
 				int result = sscanf(line,"author %s %i %s %s", authortype, &authorid, authorname, authoremail);
 				if (result < 1 || result == EOF) {
@@ -1450,13 +1452,13 @@ void CacheSystem::fillTruckDetailInfo(Cache_Entry &entry, Ogre::DataStreamPtr ds
 				char *tmp = authorname;
 				while (*tmp!=0) {if (*tmp=='_') *tmp=' ';tmp++;};
 				//fill the struct now
-				author.id = authorid;
+				author->id = authorid;
 				if(strnlen(authortype, 250) > 0)
-					author.type = String(authortype);
+					strncpy(author->type, authortype, 255);
 				if(strnlen(authorname, 250) > 0)
-					author.name = String(authorname);
+					strncpy(author->name, authorname, 255);
 				if(strnlen(authoremail, 250) > 0)
-					author.email = String(authoremail);
+					strncpy(author->email, authoremail, 255);
 				entry.authors.push_back(author);
 				mode=0;
 				continue;
@@ -2511,14 +2513,14 @@ void CacheSystem::fillTerrainDetailInfo(Cache_Entry &entry, Ogre::DataStreamPtr 
 				continue;
 			}
 			//replace '_' with ' '
-			AuthorInfo author;
+			authorinfo_t *author = new authorinfo_t();
 			char *tmp = authorname;
 			while (*tmp!=0) {if (*tmp=='_') *tmp=' ';tmp++;};
 			//fill the struct now
-			author.id = authorid;
-			author.type = String(authortype);
-			author.name = String(authorname);
-			author.email = String(authoremail);
+			author->id = authorid;
+			strncpy(author->type, authortype, 255);
+			strncpy(author->name, authorname, 255);
+			strncpy(author->email, authoremail, 255);
 			entry.authors.push_back(author);
 		} else if (!strncmp(categorytag, line, strnlen(categorytag, 254)))
 		{

@@ -51,6 +51,7 @@ along with Rigs of Rods.  If not, see <http://www.gnu.org/licenses/>.
 #include "InputEngine.h"
 #include "turbojet.h"
 #include "Character.h"
+#include "CacheSystem.h"
 #include "ChatSystem.h"
 #include "envmap.h"
 #include "ForceFeedback.h"

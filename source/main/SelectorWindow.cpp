@@ -27,6 +27,7 @@ along with Rigs of Rods.  If not, see <http://www.gnu.org/licenses/>.
 #include "CacheSystem.h"
 #include "skin.h"
 #include "skinmanager.h"
+#include "BeamData.h"
 
 SelectorWindow::SelectorWindow()
 {
@@ -533,11 +534,11 @@ void SelectorWindow::updateControls(Cache_Entry *entry)
 	std::vector<String> authornames;
 	if(entry->authors.size() > 0)
 	{
-		std::vector<AuthorInfo>::iterator it;
+		std::vector<authorinfo_t *>::iterator it;
 		for(it=entry->authors.begin(); it!=entry->authors.end(); it++)
-			if(it->type.size() > 2 && it->name.size() > 2)
+			if(strnlen((*it)->type, 3) > 2 && strnlen((*it)->name, 3) > 2)
 			{
-				String name = it->name;
+				String name = String((*it)->name);
 				Ogre::StringUtil::trim(name);
 
 				// check if already used

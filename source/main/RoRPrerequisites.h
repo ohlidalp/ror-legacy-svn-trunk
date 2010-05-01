@@ -44,6 +44,7 @@ class MaterialFunctionMapper;
 class Mirrors;
 class Network;
 class PointColDetector;
+class PositionStorage;
 class Rail;
 class RailGroup;
 class Replay;
@@ -107,5 +108,7 @@ FWDCLSTRUCT(hook);
 
 FWDCLSTRUCT(ground_model);
 FWDCLSTRUCT(client);
+FWDCLSTRUCT(authorinfo);
+
 
 #endif //RORPREREQUISITES_H__

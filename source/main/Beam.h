@@ -17,43 +17,31 @@ GNU General Public License for more details.
 You should have received a copy of the GNU General Public License
 along with Rigs of Rods.  If not, see <http://www.gnu.org/licenses/>.
 */
-#ifndef __Beam_H__
-#define __Beam_H__
+#ifndef BEAM_H__
+#define BEAM_H__
 
 #include "OgrePrerequisites.h"
 #include "RoRPrerequisites.h"
 
-#include "BeamData.h" // TODO: fix the other headers, so we can remove this line
+//using namespace Ogre;
 
-
-using namespace Ogre;
-
-#include <pthread.h>
-#include <string>
-
-#ifdef SOCKETW
-# include "SocketW.h"
-#endif //SOCKETW
+// includes to be removed / cleaned up
 #include "rornet.h"
-#include "CacheSystem.h"
 #include "Differentials.h"
-#include "approxmath.h"
-#include "PositionStorage.h"
-#include "Streamable.h"
-#include "rormemory.h"
-#include <vector>
-
-
-
-
-
-void *threadstart(void* vid);
-
-
 #include "SlideNode.h"
 #include "PointColDetector.h"
 
-static const float flapangles[6]={0.0, -0.07, -0.17, -0.33, -0.67, -1.0};
+// ror includes
+#include "Streamable.h"
+#include "BeamData.h" // for rig_t
+#include "rormemory.h"
+#include "approxmath.h"
+
+// system includes
+#include <vector>
+#include <pthread.h>
+
+
 
 class Beam : public rig_t, public Streamable, public MemoryAllocatedObject
 {
@@ -274,7 +262,7 @@ public:
 	SceneNode *netLabelNode;
 
 	std::string getTruckName(){return std::string(realtruckname);};
-	std::vector<AuthorInfo> getAuthors(){return authors;};
+	std::vector<authorinfo_t> getAuthors(){return authors;};
 	std::vector<std::string> getDescription() {return description;};
 
 	int getBeamCount(){return free_beam;};
@@ -397,7 +385,7 @@ protected:
 	char default_node_options[50];
 	char truckname[256];
 	char realtruckname[256];
-	std::vector<AuthorInfo> authors;
+	std::vector<authorinfo_t> authors;
 
 	int truckversion;
 	char uniquetruckid[255];
@@ -649,4 +637,4 @@ protected:
 };
 
 
-#endif
+#endif //BEAM_H__
