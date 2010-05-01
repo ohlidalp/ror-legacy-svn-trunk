@@ -444,10 +444,16 @@ protected:
 	float default_node_volume;
 	float default_node_surface;
 	float default_node_loadweight;
-	float default_break;
-	float default_deform;
+
 	float default_spring;
+	float default_spring_scale;
 	float default_damp;
+	float default_damp_scale;
+	float default_deform;
+	float default_deform_scale;
+	float default_break;
+	float default_break_scale;
+
 	bool advanced_drag;
 	float advanced_node_drag;
 	float advanced_total_drag;

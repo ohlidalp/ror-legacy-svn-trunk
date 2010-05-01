@@ -61,7 +61,6 @@ set (HEADER_FILES
   FlexMesh.h
   FlexMeshWheel.h
   FlexObj.h
-  groundmodel.h
   heightfinder.h
   Landusemap.h
   PointColDetector.h
@@ -109,7 +108,6 @@ set (HEADER_FILES
   SoundManager.h
   SoundScriptManager.h
   network.h
-  networkinfo.h
   NetworkStreamManager.h
   rornet.h
   Streamable.h
@@ -360,7 +358,6 @@ SOURCE_GROUP("Beam Engine" FILES
   FlexMeshWheel.h
   FlexObj.cpp
   FlexObj.h
-  groundmodel.h
   heightfinder.h
   Landusemap.cpp
   Landusemap.h
@@ -460,7 +457,6 @@ SOURCE_GROUP("Sound Engine" FILES
 SOURCE_GROUP("Network" FILES
   network.cpp
   network.h
-  networkinfo.h
   NetworkStreamManager.cpp
   NetworkStreamManager.h
   rornet.h
