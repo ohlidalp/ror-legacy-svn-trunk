@@ -1334,6 +1334,7 @@ int Beam::loadTruck(const char* fname, SceneManager *manager, SceneNode *parent,
 	int wingstart=-1;
 	int leftlight=0;
 	int rightlight=0;
+	int managedmaterials_doublesided=0; // not by default
 	float wingarea=0.0;
 	int currentScriptCommandNumber=-1;
 	bool enable_truck_lod = (SETTINGS.getSetting("Truck LOD Enabled") == "Yes");
@@ -1802,6 +1803,17 @@ int Beam::loadTruck(const char* fname, SceneManager *manager, SceneNode *parent,
 			continue;
 		}
 
+		
+		if (!strncmp("set_managedmaterials_options", line, 28))
+		{
+			int result = sscanf(line,"set_managedmaterials_options %d", &managedmaterials_doublesided);
+			if (result < 1 || result == EOF)
+			{
+				LogManager::getSingleton().logMessage("Error parsing File (set_managedmaterials_options) " + String(fname) +" line " + StringConverter::toString(linecounter) + ". trying to continue ...");
+				continue;
+			}
+			continue;
+		}
 		if (!strncmp("set_beam_defaults", line, 17))
 		{
 			char default_beam_material2[256]="";
@@ -4523,7 +4535,8 @@ int Beam::loadTruck(const char* fname, SceneManager *manager, SceneNode *parent,
 
 						MaterialPtr dstmat=srcmat->clone(material);
 						dstmat->getTechnique(0)->getPass(0)->getTextureUnitState(0)->setTextureName(maintex);
-						dstmat->getTechnique(0)->getPass(0)->setCullingMode(Ogre::CULL_NONE);
+						if(managedmaterials_doublesided)
+							dstmat->getTechnique(0)->getPass(0)->setCullingMode(Ogre::CULL_NONE);
 						dstmat->compile();
 					}
 					else
@@ -4540,8 +4553,11 @@ int Beam::loadTruck(const char* fname, SceneManager *manager, SceneNode *parent,
 						dstmat->getTechnique(0)->getPass(0)->getTextureUnitState(0)->setTextureName(maintex);
 						dstmat->getTechnique(0)->getPass(0)->getTextureUnitState(1)->setTextureName(spectex);
 						dstmat->getTechnique(0)->getPass(1)->getTextureUnitState(0)->setTextureName(spectex);
-						dstmat->getTechnique(0)->getPass(0)->setCullingMode(Ogre::CULL_NONE);
-						dstmat->getTechnique(0)->getPass(1)->setCullingMode(Ogre::CULL_NONE);
+						if(managedmaterials_doublesided)
+						{
+							dstmat->getTechnique(0)->getPass(0)->setCullingMode(Ogre::CULL_NONE);
+							dstmat->getTechnique(0)->getPass(1)->setCullingMode(Ogre::CULL_NONE);
+						}
 						dstmat->compile();
 					}
 				}
@@ -4561,7 +4577,8 @@ int Beam::loadTruck(const char* fname, SceneManager *manager, SceneNode *parent,
 						MaterialPtr dstmat=srcmat->clone(material);
 						dstmat->getTechnique(0)->getPass(0)->getTextureUnitState(0)->setTextureName(maintex);
 						dstmat->getTechnique(0)->getPass(0)->getTextureUnitState(1)->setTextureName(dmgtex);
-						dstmat->getTechnique(0)->getPass(0)->setCullingMode(Ogre::CULL_NONE);
+						if(managedmaterials_doublesided)
+							dstmat->getTechnique(0)->getPass(0)->setCullingMode(Ogre::CULL_NONE);
 						dstmat->compile();
 					}
 					else
@@ -4579,8 +4596,11 @@ int Beam::loadTruck(const char* fname, SceneManager *manager, SceneNode *parent,
 						dstmat->getTechnique(0)->getPass(0)->getTextureUnitState(1)->setTextureName(spectex);
 						dstmat->getTechnique(0)->getPass(0)->getTextureUnitState(2)->setTextureName(dmgtex);
 						dstmat->getTechnique(0)->getPass(1)->getTextureUnitState(0)->setTextureName(spectex);
-						dstmat->getTechnique(0)->getPass(0)->setCullingMode(Ogre::CULL_NONE);
-						dstmat->getTechnique(0)->getPass(1)->setCullingMode(Ogre::CULL_NONE);
+						if(managedmaterials_doublesided)
+						{
+							dstmat->getTechnique(0)->getPass(0)->setCullingMode(Ogre::CULL_NONE);
+							dstmat->getTechnique(0)->getPass(1)->setCullingMode(Ogre::CULL_NONE);
+						}
 						dstmat->compile();
 					}
 				}
@@ -4616,7 +4636,8 @@ int Beam::loadTruck(const char* fname, SceneManager *manager, SceneNode *parent,
 
 						MaterialPtr dstmat=srcmat->clone(material);
 						dstmat->getTechnique(0)->getPass(0)->getTextureUnitState(0)->setTextureName(maintex);
-						dstmat->getTechnique(0)->getPass(0)->setCullingMode(Ogre::CULL_NONE);
+						if(managedmaterials_doublesided)
+							dstmat->getTechnique(0)->getPass(0)->setCullingMode(Ogre::CULL_NONE);
 						dstmat->compile();
 					}
 					else
@@ -4633,8 +4654,11 @@ int Beam::loadTruck(const char* fname, SceneManager *manager, SceneNode *parent,
 						dstmat->getTechnique(0)->getPass(0)->getTextureUnitState(0)->setTextureName(maintex);
 						dstmat->getTechnique(0)->getPass(0)->getTextureUnitState(1)->setTextureName(spectex);
 						dstmat->getTechnique(0)->getPass(1)->getTextureUnitState(0)->setTextureName(spectex);
-						dstmat->getTechnique(0)->getPass(0)->setCullingMode(Ogre::CULL_NONE);
-						dstmat->getTechnique(0)->getPass(1)->setCullingMode(Ogre::CULL_NONE);
+						if(managedmaterials_doublesided)
+						{
+							dstmat->getTechnique(0)->getPass(0)->setCullingMode(Ogre::CULL_NONE);
+							dstmat->getTechnique(0)->getPass(1)->setCullingMode(Ogre::CULL_NONE);
+						}
 						dstmat->compile();
 					}
 				}
@@ -4654,7 +4678,8 @@ int Beam::loadTruck(const char* fname, SceneManager *manager, SceneNode *parent,
 						MaterialPtr dstmat=srcmat->clone(material);
 						dstmat->getTechnique(0)->getPass(0)->getTextureUnitState(0)->setTextureName(maintex);
 						dstmat->getTechnique(0)->getPass(0)->getTextureUnitState(1)->setTextureName(dmgtex);
-						dstmat->getTechnique(0)->getPass(0)->setCullingMode(Ogre::CULL_NONE);
+						if(managedmaterials_doublesided)
+							dstmat->getTechnique(0)->getPass(0)->setCullingMode(Ogre::CULL_NONE);
 						dstmat->compile();
 					}
 					else
@@ -4672,8 +4697,11 @@ int Beam::loadTruck(const char* fname, SceneManager *manager, SceneNode *parent,
 						dstmat->getTechnique(0)->getPass(0)->getTextureUnitState(1)->setTextureName(spectex);
 						dstmat->getTechnique(0)->getPass(0)->getTextureUnitState(2)->setTextureName(dmgtex);
 						dstmat->getTechnique(0)->getPass(1)->getTextureUnitState(0)->setTextureName(spectex);
-						dstmat->getTechnique(0)->getPass(0)->setCullingMode(Ogre::CULL_NONE);
-						dstmat->getTechnique(0)->getPass(1)->setCullingMode(Ogre::CULL_NONE);
+						if(managedmaterials_doublesided)
+						{
+							dstmat->getTechnique(0)->getPass(0)->setCullingMode(Ogre::CULL_NONE);
+							dstmat->getTechnique(0)->getPass(1)->setCullingMode(Ogre::CULL_NONE);
+						}
 						dstmat->compile();
 					}
 				}
@@ -4704,7 +4732,8 @@ int Beam::loadTruck(const char* fname, SceneManager *manager, SceneNode *parent,
 
 					MaterialPtr dstmat=srcmat->clone(material);
 					dstmat->getTechnique(0)->getPass(0)->getTextureUnitState(0)->setTextureName(maintex);
-					dstmat->getTechnique(0)->getPass(0)->setCullingMode(Ogre::CULL_NONE);
+					if(managedmaterials_doublesided)
+						dstmat->getTechnique(0)->getPass(0)->setCullingMode(Ogre::CULL_NONE);
 					dstmat->compile();
 				}
 				else
@@ -4721,8 +4750,11 @@ int Beam::loadTruck(const char* fname, SceneManager *manager, SceneNode *parent,
 					dstmat->getTechnique(0)->getPass(0)->getTextureUnitState(0)->setTextureName(maintex);
 					dstmat->getTechnique(0)->getPass(0)->getTextureUnitState(1)->setTextureName(spectex);
 					dstmat->getTechnique(0)->getPass(1)->getTextureUnitState(0)->setTextureName(spectex);
-					dstmat->getTechnique(0)->getPass(0)->setCullingMode(Ogre::CULL_NONE);
-					dstmat->getTechnique(0)->getPass(1)->setCullingMode(Ogre::CULL_NONE);
+					if(managedmaterials_doublesided)
+					{
+						dstmat->getTechnique(0)->getPass(0)->setCullingMode(Ogre::CULL_NONE);
+						dstmat->getTechnique(0)->getPass(1)->setCullingMode(Ogre::CULL_NONE);
+					}
 					dstmat->compile();
 				}
 			}
@@ -4752,7 +4784,8 @@ int Beam::loadTruck(const char* fname, SceneManager *manager, SceneNode *parent,
 
 					MaterialPtr dstmat=srcmat->clone(material);
 					dstmat->getTechnique(0)->getPass(0)->getTextureUnitState(0)->setTextureName(maintex);
-					dstmat->getTechnique(0)->getPass(0)->setCullingMode(Ogre::CULL_NONE);
+					if(managedmaterials_doublesided)
+						dstmat->getTechnique(0)->getPass(0)->setCullingMode(Ogre::CULL_NONE);
 					dstmat->compile();
 				}
 				else
@@ -4769,8 +4802,11 @@ int Beam::loadTruck(const char* fname, SceneManager *manager, SceneNode *parent,
 					dstmat->getTechnique(0)->getPass(0)->getTextureUnitState(0)->setTextureName(maintex);
 					dstmat->getTechnique(0)->getPass(0)->getTextureUnitState(1)->setTextureName(spectex);
 					dstmat->getTechnique(0)->getPass(1)->getTextureUnitState(0)->setTextureName(spectex);
-					dstmat->getTechnique(0)->getPass(0)->setCullingMode(Ogre::CULL_NONE);
-					dstmat->getTechnique(0)->getPass(1)->setCullingMode(Ogre::CULL_NONE);
+					if(managedmaterials_doublesided)
+					{
+						dstmat->getTechnique(0)->getPass(0)->setCullingMode(Ogre::CULL_NONE);
+						dstmat->getTechnique(0)->getPass(1)->setCullingMode(Ogre::CULL_NONE);
+					}
 					dstmat->compile();
 				}
 			}
