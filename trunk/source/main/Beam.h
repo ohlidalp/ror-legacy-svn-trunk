@@ -41,8 +41,6 @@ along with Rigs of Rods.  If not, see <http://www.gnu.org/licenses/>.
 #include <vector>
 #include <pthread.h>
 
-
-
 class Beam : public rig_t, public Streamable, public MemoryAllocatedObject
 {
 public:
@@ -59,17 +57,21 @@ public:
 
 	//constructor
 	Beam(int tnum, SceneManager *manager, SceneNode *parent, RenderWindow* win, Network *net, float *mapsizex, float *mapsizez, Real px, Real py, Real pz, Quaternion rot, const char* fname, Collisions *icollisions, HeightFinder *mfinder, Water *w, Camera *pcam, Mirrors *mmirror, bool networked=false, bool networking=false, collision_box_t *spawnbox=NULL, bool ismachine=false, int flareMode=0, std::vector<Ogre::String> *truckconfig=0, Skin *skin=0, bool freeposition=false);
-	void activate();
-	void desactivate();
+
+	/* Input/Output related functions */
+	int loadTruck(const char* fname, SceneManager *manager, SceneNode *parent, Real px, Real py, Real pz, Quaternion rot, collision_box_t *spawnbox);
+
+	/* network related functions */
 	void pushNetwork(char* data, int size);
 	void calcNetwork();
+	void updateNetworkInfo();
+
+	/* physic related functions */
+	void activate();
+	void desactivate();
 	void addPressure(float v);
 	float getPressure();
 	void calc_masses2(Real total, bool reCalc=false);
-	//to load a truck file
-	int loadTruck(const char* fname, SceneManager *manager, SceneNode *parent, Real px, Real py, Real pz, Quaternion rot, collision_box_t *spawnbox);
-	void setupDefaultSoundSources();
-	void addSoundSource(SoundScriptInstance *ssi, int nodenum);
 	void calcBox();
 	void calcNodeConnectivityGraph();
 	void updateContacterNodes();
@@ -81,93 +83,93 @@ public:
 	void resetAngle(float rot);
 	void resetPosition(float px, float pz, bool setInitPosition, float miny=-9999.0);
 	void resetPosition(Ogre::Vector3 translation, bool setInitPosition);
-	void mouseMove(int node, Vector3 pos, float force);
-	void addCamera(int nodepos, int nodedir, int noderoll);
-	void addWheel(SceneManager *manager, SceneNode *parent, Real radius, Real width, int rays, int node1, int node2, int snode, int braked, int propulsed, int torquenode, float mass, float wspring, float wdamp, char* texf, char* texb, bool meshwheel=false, float rimradius=0.0, bool rimreverse=false);
-	void addWheel2(SceneManager *manager, SceneNode *parent, Real radius, Real radius2, Real width, int rays, int node1, int node2, int snode, int braked, int propulsed, int torquenode, float mass, float wspring, float wdamp, float wspring2, float wdamp2, char* texf, char* texb);
-	void init_node(int pos, Real x, Real y, Real z, int type=NODE_NORMAL, Real m=10.0, int iswheel=0, Real friction=CHASSIS_FRICTION_COEF, int id=-1, int wheelid=-1, Real nfriction=NODE_FRICTION_COEF_DEFAULT, Real nvolume=NODE_VOLUME_COEF_DEFAULT, Real nsurface=NODE_SURFACE_COEF_DEFAULT, Real nloadweight=NODE_LOADWEIGHT_DEFAULT);
-	int add_beam(node_t *p1, node_t *p2, SceneManager *manager, SceneNode *parent, int type, Real strength, Real spring, Real damp, Real length=-1.0, float shortbound=-1.0, float longbound=-1.0, float precomp=1.0, float diameter=DEFAULT_BEAM_DIAMETER);
 	void reset(bool keepPosition = false); //call this one to reset a truck from any context
 	void SyncReset(); //this one should be called only synchronously (without physics running in background)
 	//this is called by the threads
 	void threadentry(int id);
-	void updateSkidmarks();
-	ground_model_t *getLastFuzzyGroundModel() { return lastFuzzyGroundModel; };
-
-
-	String debugText;
-	int truckSteps;
-
 	//integration loop
 	//bool frameStarted(const FrameEvent& evt)
 	//this will be called once by frame and is responsible for animation of all the trucks!
 	//the instance called is the one of the current ACTIVATED truck
 	bool frameStep(Real dt, Beam** trucks, int numtrucks);
-	void prepareShutdown();
+	int truckSteps;
 	void calcForcesEuler(int doUpdate, Real dt, int step, int maxsteps, Beam** trucks, int numtrucks);
 	void truckTruckCollisions(Real dt, Beam** trucks, int numtrucks);
 	void calcShocks2(int beam_i, Real difftoBeamL, Real &k, Real &d);
 	void calcAnimators(int flagstate, float &cstate, int &div, float timer, float opt1, float opt2, float opt3);
-	Quaternion specialGetRotationTo(const Vector3& src, const Vector3& dest) const;
-	void prepareInside(bool inside);
-	void lightsToggle(Beam** trucks, int trucksnum);
-	void updateFlares(float dt, bool isCurrent=false);
-	void updateProps();
-	void updateVisual(float dt=0);
-	void updateSoundSources();
-	//v=0: full detail
-	//v=1: no beams
-	void setDetailLevel(int v);
-	void showSkeleton(bool meshes=true, bool newMode=false);
-	void hideSkeleton(bool newMode=false);
 
+	/* truck specific physics functions */
+	void addWheel(SceneManager *manager, SceneNode *parent, Real radius, Real width, int rays, int node1, int node2, int snode, int braked, int propulsed, int torquenode, float mass, float wspring, float wdamp, char* texf, char* texb, bool meshwheel=false, float rimradius=0.0, bool rimreverse=false);
+	void addWheel2(SceneManager *manager, SceneNode *parent, Real radius, Real radius2, Real width, int rays, int node1, int node2, int snode, int braked, int propulsed, int torquenode, float mass, float wspring, float wdamp, float wspring2, float wdamp2, char* texf, char* texb);
+	void init_node(int pos, Real x, Real y, Real z, int type=NODE_NORMAL, Real m=10.0, int iswheel=0, Real friction=CHASSIS_FRICTION_COEF, int id=-1, int wheelid=-1, Real nfriction=NODE_FRICTION_COEF_DEFAULT, Real nvolume=NODE_VOLUME_COEF_DEFAULT, Real nsurface=NODE_SURFACE_COEF_DEFAULT, Real nloadweight=NODE_LOADWEIGHT_DEFAULT);
+	int add_beam(node_t *p1, node_t *p2, SceneManager *manager, SceneNode *parent, int type, Real strength, Real spring, Real damp, Real length=-1.0, float shortbound=-1.0, float longbound=-1.0, float precomp=1.0, float diameter=DEFAULT_BEAM_DIAMETER);
+	BeamEngine *engine;
+
+	/* audio related functions */
+	void setupDefaultSoundSources();
+	void addSoundSource(SoundScriptInstance *ssi, int nodenum);
+	void updateSoundSources();
+
+	/* user interaction functions */
+	void mouseMove(int node, Vector3 pos, float force);
+	void lightsToggle(Beam** trucks, int trucksnum);
 	void tieToggle(Beam** trucks, int trucksnum, int group=-1);
 	void ropeToggle(Beam** trucks, int trucksnum, int group=-1);
 	void hookToggle(Beam** trucks, int trucksnum, int group=-1);
-
 	void toggleSlideNodeLock( Beam** trucks, int trucksnum, unsigned int curTruck );
-
+	void toggleCustomParticles();
+	void toggleAxleLock();	//! diff lock on or off
 	void parkingbrakeToggle();
 	void beaconsToggle();
 	void setReplayMode(bool rm);
 	int savePosition(int position);
 	int loadPosition(int position);
-	void updateNetworkInfo();
+
+	/* camera related functions */
+	void addCamera(int nodepos, int nodedir, int noderoll);
+
+	/* ground */
+	ground_model_t *getLastFuzzyGroundModel() { return lastFuzzyGroundModel; };
+
+	/* graphical display things */
+	void updateSkidmarks();
+	String debugText;
+	void prepareInside(bool inside);
+	void updateFlares(float dt, bool isCurrent=false);
+	void updateProps();
+	void updateVisual(float dt=0);
+	//v=0: full detail
+	//v=1: no beams
+	void setDetailLevel(int v);
+	void showSkeleton(bool meshes=true, bool newMode=false);
+	void hideSkeleton(bool newMode=false);
 	void resetAutopilot();
 	void disconnectAutopilot();
-	void toggleCustomParticles();
-	void toggleAxleLock();	//! diff lock on or off
-	Ogre::String getAxleLockName();	//! get the name of the current differential model
-	int getAxleLockCount();
+	void scaleTruck(float value);
+	float currentScale;
+	void updateDebugOverlay();
+	int nodedebugstate;
+	int debugVisuals;
+	SceneManager *tsm;
 
-	//total torque
-	//    Real torque;
-	//total braking action
+	/* startup / shutdown */
+	void prepareShutdown();
+
+	/* dynamic physical properties */
 	Real brake;
-//	Vector3 aposition;
 	Vector3 affforce;
 	Vector3 ffforce;
 	Real affhydro;
 	Real ffhydro;
 	bool patchEngineTorque;
 
-	void scaleTruck(float value);
-	float currentScale;
-
-	node_t nodes[MAX_NODES];
-	beam_t beams[MAX_BEAMS];
+	/* functions to be sorted */
+	Quaternion specialGetRotationTo(const Vector3& src, const Vector3& dest) const;
+	Ogre::String getAxleLockName();	//! get the name of the current differential model
+	int getAxleLockCount();
 	std::vector< std::vector< int > > nodetonodeconnections;
 	std::vector< std::vector< int > > nodebeamconnections;
-
-	void updateDebugOverlay();
-	int nodedebugstate;
-	int debugVisuals;
-
-	SceneManager *tsm;
-
-	BeamEngine *engine;
 	bool freePositioned;
-
 	bool networking;
 	int label;
 	int trucknum;
