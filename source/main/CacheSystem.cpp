@@ -27,6 +27,7 @@ along with Rigs of Rods.  If not, see <http://www.gnu.org/licenses/>.
 #include "language.h"
 #include "rormemory.h"
 #include "SoundScriptManager.h"
+#include "BeamData.h" // for authorinfo_t
 
 #ifdef USE_MYGUI 
 #include "LoadingWindow.h"
