@@ -245,6 +245,9 @@ static const enum {
 	SHOCK_FLAG_SOFTBUMP     = BITMASK(6),
 };
 
+/* some info holding arrays */
+static const float flapangles[6] = {0.0, -0.07, -0.17, -0.33, -0.67, -1.0};
+
 /* basic structures */
 struct node
 {
@@ -783,4 +786,11 @@ struct client
 	int  colournum;                        //!< the users authorization colour
 };
 
+struct authorinfo
+{
+	int id;
+	char type[255];
+	char name[255];
+	char email[255];
+};
 #endif //BEAMDATA_H__

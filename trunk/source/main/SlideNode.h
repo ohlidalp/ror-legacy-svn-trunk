@@ -28,6 +28,9 @@ along with Rigs of Rods.  If not, see <http://www.gnu.org/licenses/>.
 #include "rormemory.h"
 #include <limits>
 
+#include "BeamData.h"
+#include "OgreVector3.h"
+
 /** 
  * Find the point on a line defined by pt1 and pt2 that
  * is nearest to a given point tp

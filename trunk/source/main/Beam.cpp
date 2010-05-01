@@ -53,6 +53,7 @@ along with Rigs of Rods.  If not, see <http://www.gnu.org/licenses/>.
 #include "materialFunctionMapper.h"
 #include "TorqueCurve.h"
 #include "Settings.h"
+#include "PositionStorage.h"
 #include "network.h"
 #include "PointColDetector.h"
 #ifdef FEAT_TIMING
@@ -64,6 +65,7 @@ along with Rigs of Rods.  If not, see <http://www.gnu.org/licenses/>.
 #ifdef USE_ANGELSCRIPT
 #include "ScriptEngine.h"
 #endif
+
 
 // some gcc fixes
 #if OGRE_PLATFORM == OGRE_PLATFORM_LINUX
@@ -1526,11 +1528,11 @@ int Beam::loadTruck(const char* fname, SceneManager *manager, SceneNode *parent,
 		{
 			int authorid;
 			char authorname[255], authoremail[255], authortype[255];
-			AuthorInfo author;
+			authorinfo_t author;
 			author.id = -1;
-			author.email = "unknown";
-			author.name = "unknown";
-			author.type = "unknown";
+			strcpy(author.email, "unknown");
+			strcpy(author.name,  "unknown");
+			strcpy(author.type,  "unknown");
 
 			int result = sscanf(line,"author %s %i %s %s", authortype, &authorid, authorname, authoremail);
 			if (result < 1 || result == EOF) {
@@ -1543,11 +1545,11 @@ int Beam::loadTruck(const char* fname, SceneManager *manager, SceneNode *parent,
 			//fill the struct now
 			author.id = authorid;
 			if(strnlen(authortype, 250) > 0)
-				author.type = String(authortype);
+				strncpy(author.type, authortype, 255);
 			if(strnlen(authorname, 250) > 0)
-				author.name = String(authorname);
+				strncpy(author.name, authorname, 255);
 			if(strnlen(authoremail, 250) > 0)
-				author.email = String(authoremail);
+				strncpy(author.email, authoremail, 255);
 			authors.push_back(author);
 			mode=0;
 			continue;

@@ -126,12 +126,12 @@ bool TruckHUD::update(float dt, Beam *truck, SceneManager *mSceneMgr, Camera* mC
 		checkOverflow(oTruckname);
 
 		OverlayElement* oTruckauthor = OverlayManager::getSingleton().getOverlayElement("tracks/TruckInfoBox/Truckauthor");
-		std::vector<AuthorInfo> file_authors = truck->getAuthors();
+		std::vector<authorinfo_t> file_authors = truck->getAuthors();
 		if(file_authors.size() > 0)
 		{
 			String author_string = String("");
 			for(unsigned int i=0;i<file_authors.size();i++)
-				author_string += file_authors[i].name + String(" ");
+				author_string += String(file_authors[i].name) + String(" ");
 			oTruckauthor->setCaption(_L("Authors: ") + author_string);
 		} else
 		{

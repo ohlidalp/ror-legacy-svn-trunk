@@ -28,7 +28,6 @@ along with Rigs of Rods.  If not, see <http://www.gnu.org/licenses/>.
 #include "sha1.h"
 #include "RoRPrerequisites.h"
 #include "rormemory.h"
-//#include "Beam.h" // for authorinfo_t
 
 #define CACHE_FILE "mods.cache"
 #define CACHE_FILE_FORMAT "6"
@@ -39,24 +38,6 @@ along with Rigs of Rods.  If not, see <http://www.gnu.org/licenses/>.
 #define CACHE CacheSystem::Instance()
 
 using namespace Ogre;
-
-
-class AuthorInfo
-{
-public:
-	int id;
-	Ogre::String type;
-	Ogre::String name;
-	Ogre::String email;
-};
-
-typedef struct //helper for writing to file /reading from file
-{
-	int id;
-	char type[255];
-	char name[255];
-	char email[255];
-} AuthorInfo_raw;
 
 typedef struct
 {
@@ -90,7 +71,7 @@ public:
 	bool changedornew;					// is it added or changed during this runtime?
 	bool deleted;						// is this mod deleted?
 	int usagecounter;					// how much it was used already
-	std::vector<AuthorInfo> authors;	// authors
+	std::vector<authorinfo *> authors;	// authors
 	Ogre::String filecachename;			// preview image filename
 
 	// following all TRUCK detail information:
