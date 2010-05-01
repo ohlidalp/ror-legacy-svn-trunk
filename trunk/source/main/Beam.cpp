@@ -1814,6 +1814,16 @@ int Beam::loadTruck(const char* fname, SceneManager *manager, SceneNode *parent,
 			}
 			continue;
 		}
+		if (!strncmp("set_beam_defaults_scale", line, 23))
+		{
+			int result = sscanf(line,"set_beam_defaults_scale %f, %f, %f, %f", &default_spring_scale, &default_damp_scale, &default_deform_scale, &default_break_scale);
+			if (result < 4 || result == EOF)
+			{
+				LogManager::getSingleton().logMessage("Error parsing File (set_beam_defaults_scale) " + String(fname) +" line " + StringConverter::toString(linecounter) + ". trying to continue ...");
+				continue;
+			}
+			continue;
+		}
 		if (!strncmp("set_beam_defaults", line, 17))
 		{
 			char default_beam_material2[256]="";
@@ -1850,16 +1860,6 @@ int Beam::loadTruck(const char* fname, SceneManager *manager, SceneNode *parent,
 					StringConverter::toString(default_break  * default_break_scale) + ". In " + \
 					String(fname) +" line " + StringConverter::toString(linecounter) + ".");
 
-			}
-			continue;
-		}
-		if (!strncmp("set_beam_defaults_scale", line, 23))
-		{
-			int result = sscanf(line,"set_beam_defaults_scale %f, %f, %f, %f", &default_spring_scale, &default_damp_scale, &default_deform_scale, &default_break_scale);
-			if (result < 4 || result == EOF)
-			{
-				LogManager::getSingleton().logMessage("Error parsing File (set_beam_defaults_scale) " + String(fname) +" line " + StringConverter::toString(linecounter) + ". trying to continue ...");
-				continue;
 			}
 			continue;
 		}
