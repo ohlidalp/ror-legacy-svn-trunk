@@ -56,17 +56,50 @@ public:
 #endif
 
 	//constructor
-	Beam(int tnum, SceneManager *manager, SceneNode *parent, RenderWindow* win, Network *net, float *mapsizex, float *mapsizez, Real px, Real py, Real pz, Quaternion rot, const char* fname, Collisions *icollisions, HeightFinder *mfinder, Water *w, Camera *pcam, Mirrors *mmirror, bool networked=false, bool networking=false, collision_box_t *spawnbox=NULL, bool ismachine=false, int flareMode=0, std::vector<Ogre::String> *truckconfig=0, Skin *skin=0, bool freeposition=false);
+	Beam(int tnum
+	, SceneManager *manager
+	, SceneNode *parent
+	, RenderWindow* win
+	, Network *net
+	, float *mapsizex
+	, float *mapsizez
+	, Real px
+	, Real py
+	, Real pz
+	, Quaternion rot
+	, const char* fname
+	, Collisions *icollisions
+	, HeightFinder *mfinder
+	, Water *w
+	, Camera *pcam
+	, Mirrors *mmirror
+	, bool networked=false
+	, bool networking=false
+	, collision_box_t *spawnbox=NULL
+	, bool ismachine=false
+	, int flareMode=0
+	, std::vector<Ogre::String> *truckconfig=0
+	, Skin *skin=0
+	, bool freeposition=false);
 
-	/* Input/Output related functions */
-	int loadTruck(const char* fname, SceneManager *manager, SceneNode *parent, Real px, Real py, Real pz, Quaternion rot, collision_box_t *spawnbox);
+	//! @{ Input/Output related functions
+	int loadTruck(const char* fname
+	, SceneManager *manager
+	, SceneNode *parent
+	, Real px
+	, Real py
+	, Real pz
+	, Quaternion rot
+	, collision_box_t *spawnbox);
+	//! @}
 
-	/* network related functions */
+	//! @{ network related functions
 	void pushNetwork(char* data, int size);
 	void calcNetwork();
 	void updateNetworkInfo();
+	//! @}
 
-	/* physic related functions */
+	//! @{ physic related functions
 	void activate();
 	void desactivate();
 	void addPressure(float v);
@@ -97,20 +130,88 @@ public:
 	void truckTruckCollisions(Real dt, Beam** trucks, int numtrucks);
 	void calcShocks2(int beam_i, Real difftoBeamL, Real &k, Real &d);
 	void calcAnimators(int flagstate, float &cstate, int &div, float timer, float opt1, float opt2, float opt3);
+	//! @}
 
-	/* truck specific physics functions */
-	void addWheel(SceneManager *manager, SceneNode *parent, Real radius, Real width, int rays, int node1, int node2, int snode, int braked, int propulsed, int torquenode, float mass, float wspring, float wdamp, char* texf, char* texb, bool meshwheel=false, float rimradius=0.0, bool rimreverse=false);
-	void addWheel2(SceneManager *manager, SceneNode *parent, Real radius, Real radius2, Real width, int rays, int node1, int node2, int snode, int braked, int propulsed, int torquenode, float mass, float wspring, float wdamp, float wspring2, float wdamp2, char* texf, char* texb);
-	void init_node(int pos, Real x, Real y, Real z, int type=NODE_NORMAL, Real m=10.0, int iswheel=0, Real friction=CHASSIS_FRICTION_COEF, int id=-1, int wheelid=-1, Real nfriction=NODE_FRICTION_COEF_DEFAULT, Real nvolume=NODE_VOLUME_COEF_DEFAULT, Real nsurface=NODE_SURFACE_COEF_DEFAULT, Real nloadweight=NODE_LOADWEIGHT_DEFAULT);
-	int add_beam(node_t *p1, node_t *p2, SceneManager *manager, SceneNode *parent, int type, Real strength, Real spring, Real damp, Real length=-1.0, float shortbound=-1.0, float longbound=-1.0, float precomp=1.0, float diameter=DEFAULT_BEAM_DIAMETER);
+	//! @{ truck specific physics functions
+	void addWheel(SceneManager *manager
+	, SceneNode *parent
+	, Real radius
+	, Real width
+	, int rays
+	, int node1
+	, int node2
+	, int snode
+	, int braked
+	, int propulsed
+	, int torquenode
+	, float mass
+	, float wspring
+	, float wdamp
+	, char* texf
+	, char* texb
+	, bool meshwheel=false
+	, float rimradius=0.0
+	, bool rimreverse=false);
+	
+	void addWheel2(SceneManager *manager
+	, SceneNode *parent
+	, Real radius
+	, Real radius2
+	, Real width
+	, int rays
+	, int node1
+	, int node2
+	, int snode
+	, int braked
+	, int propulsed
+	, int torquenode
+	, float mass
+	, float wspring
+	, float wdamp
+	, float wspring2
+	, float wdamp2
+	, char* texf
+	, char* texb);
+	
+	void init_node(int pos
+	, Real x
+	, Real y
+	, Real z
+	, int type=NODE_NORMAL
+	, Real m=10.0
+	, int iswheel=0
+	, Real friction=CHASSIS_FRICTION_COEF
+	, int id=-1
+	, int wheelid=-1
+	, Real nfriction=NODE_FRICTION_COEF_DEFAULT
+	, Real nvolume=NODE_VOLUME_COEF_DEFAULT
+	, Real nsurface=NODE_SURFACE_COEF_DEFAULT
+	, Real nloadweight=NODE_LOADWEIGHT_DEFAULT);
+	
+	int add_beam(node_t *p1
+	, node_t *p2
+	, SceneManager *manager
+	, SceneNode *parent
+	, int type
+	, Real strength
+	, Real spring
+	, Real damp
+	, Real length=-1.0
+	, float shortbound=-1.0
+	, float longbound=-1.0
+	, float precomp=1.0
+	, float diameter=DEFAULT_BEAM_DIAMETER);
+	
 	BeamEngine *engine;
+	//! @}
 
-	/* audio related functions */
+	//! @{ audio related functions
 	void setupDefaultSoundSources();
 	void addSoundSource(SoundScriptInstance *ssi, int nodenum);
 	void updateSoundSources();
+	//! @}
 
-	/* user interaction functions */
+	//! @{ user interaction functions
 	void mouseMove(int node, Vector3 pos, float force);
 	void lightsToggle(Beam** trucks, int trucksnum);
 	void tieToggle(Beam** trucks, int trucksnum, int group=-1);
@@ -124,14 +225,17 @@ public:
 	void setReplayMode(bool rm);
 	int savePosition(int position);
 	int loadPosition(int position);
+	//! @}
 
-	/* camera related functions */
+	//! @{ camera related functions
 	void addCamera(int nodepos, int nodedir, int noderoll);
+	//! @}
 
-	/* ground */
-	ground_model_t *getLastFuzzyGroundModel() { return lastFuzzyGroundModel; };
+	//! @{ ground
+	ground_model_t *getLastFuzzyGroundModel();
+	//! @}
 
-	/* graphical display things */
+	//! @{ graphical display things */
 	void updateSkidmarks();
 	String debugText;
 	void prepareInside(bool inside);
@@ -151,17 +255,20 @@ public:
 	int nodedebugstate;
 	int debugVisuals;
 	SceneManager *tsm;
+	//! @}
 
-	/* startup / shutdown */
+	//! @{ startup / shutdown
 	void prepareShutdown();
+	//! @}
 
-	/* dynamic physical properties */
+	//! @{ dynamic physical properties
 	Real brake;
 	Vector3 affforce;
 	Vector3 ffforce;
 	Real affhydro;
 	Real ffhydro;
 	bool patchEngineTorque;
+	//! @}
 
 	/* functions to be sorted */
 	Quaternion specialGetRotationTo(const Vector3& src, const Vector3& dest) const;
@@ -237,7 +344,7 @@ public:
 	pthread_cond_t done_count_cv;
 	int done_count;
 	int calculateDriverPos(Vector3 &pos, Quaternion &rot);
-	float getSteeringAngle() { return hydrodircommand; };
+	float getSteeringAngle();
 	float default_beam_diameter;
 	float default_plastic_coef;
 	float skeleton_beam_diameter;
@@ -263,22 +370,22 @@ public:
 	int nodebuffersize;
 	SceneNode *netLabelNode;
 
-	std::string getTruckName(){return std::string(realtruckname);};
-	std::vector<authorinfo_t> getAuthors(){return authors;};
-	std::vector<std::string> getDescription() {return description;};
+	std::string getTruckName();
+	std::vector<authorinfo_t> getAuthors();
+	std::vector<std::string> getDescription();
 
-	int getBeamCount(){return free_beam;};
-	beam_t *getBeams(){return beams;};
-	float getDefaultDeformation(){ return default_deform;}
+	int getBeamCount();
+	beam_t *getBeams();
+	float getDefaultDeformation();
 
-	int getNodeCount(){return free_node;};
-	node_t *getNodes(){return nodes;};
+	int getNodeCount();
+	node_t *getNodes();
 	int nodeBeamConnections(int nodeid);
 
 	float getTotalMass(bool withLocked=true);
 	void recalc_masses();
 	int getWheelNodeCount();
-	void setMass(float m) { truckmass = m; };
+	void setMass(float m);
 
 	beam_t *addBeam(int id1, int id2);
 	node_t *addNode(Ogre::Vector3 pos);
@@ -288,47 +395,35 @@ public:
 
 	Ogre::String realtruckfilename;
 
+	//! @{ Axle variables and methods  
 	Axle axles[MAX_WHEELS/2];
 	int free_axle;
+	//! @}
+	
 	bool beambreakdebug;
 
 
 	// this must be in the header as the network stuff is using it...
-	inline bool getBrakeLightVisible()
-	{
-		if(state==NETWORKED)
-			return netBrakeLight;
-
-//		return (brake > 0.15 && !parkingbrake);
-		return (brake > 0.15);
-	}
+	bool getBrakeLightVisible();
 
 	bool getReverseLightVisible();
 
-	inline bool getCustomLightVisible(int number)
-	{
-		if(netCustomLightArray[number] != -1)
-			return flares[netCustomLightArray[number]].controltoggle_status;
-		else
-			return false;
-	}
+	bool getCustomLightVisible(int number);
 
-	inline void setCustomLightVisible(int number, bool visible)
-	{
-		if(netCustomLightArray[number] == -1)
-			return;
-		flares[netCustomLightArray[number]].controltoggle_status = visible;
-	}
+	void setCustomLightVisible(int number, bool visible);
 
-	bool getBeaconMode() { return beacon; };
+	bool getBeaconMode();
 	void setBlinkType(blinktype blink);
-	blinktype getBlinkType() { return blinkingtype; };
+	blinktype getBlinkType();
 	void deleteNetTruck();
+	
 	Autopilot *autopilot;
+	
 	float getHeadingDirectionAngle();
-	bool getCustomParticleMode() { return cparticle_mode; };
-	int getLowestNode() { return lowestnode; };
+	bool getCustomParticleMode();
+	int getLowestNode();
 	void preMapLabelRenderUpdate(bool mode, float cheight=0);
+	
 	SceneNode *cablightNode;
 	float tdt;
 	float ttdt;
@@ -341,16 +436,16 @@ public:
 	Vector3 origin;
 	void setMeshVisibility(bool visible);
 	bool meshesVisible;
-	inline bool inRange(float num, float min, float max);
+	bool inRange(float num, float min, float max);
 
-	int getTruckTime() { return nettimer->getMilliseconds(); };
-	int getNetTruckTimeOffset() { return net_toffset; };
-	Real getMinimalCameraRadius() { return minCameraRadius; };
+	int getTruckTime();
+	int getNetTruckTimeOffset();
+	Real getMinimalCameraRadius();
 
 
-	Replay *getReplay() { return replay; };
+	Replay *getReplay();
 
-	bool getSlideNodesLockInstant() { 	return slideNodesConnectInstantly; };
+	bool getSlideNodesLockInstant();
 	void sendStreamData();
 	bool isTied();
 	bool isLocked();
@@ -474,7 +569,7 @@ protected:
 	Buoyance *buoyance;
 	float ipy;
 
-#ifdef SOCEKTW
+#ifdef SOCKETW
 	SWInetSocket *sock;
 #endif //SOCKETW
 	pthread_t netthread;
@@ -557,7 +652,7 @@ protected:
 	//! true if SlideNodes are locked, false if not
 	bool SlideNodesLocked;
 
-	//! try to connect slidenodes direclty after spawning
+	//! try to connect slidenodes directly after spawning
 	bool slideNodesConnectInstantly;
 
 	/**
@@ -645,4 +740,128 @@ protected:
 };
 
 
+// BEAM Inlined methods ////////////////////////////////////////////////////////
+
+inline ground_model_t* Beam::getLastFuzzyGroundModel()
+{
+	return lastFuzzyGroundModel;
+}
+
+inline float Beam::getSteeringAngle()
+{
+	return hydrodircommand;
+}
+
+inline std::string Beam::getTruckName()
+{
+	return std::string(realtruckname);
+}
+
+inline std::vector<authorinfo_t> Beam::getAuthors()
+{
+	return authors;
+}
+
+inline std::vector<std::string> Beam::getDescription()
+{
+	return description;
+}
+
+inline int Beam::getBeamCount()
+{
+	return free_beam;
+}
+
+inline beam_t* Beam::getBeams()
+{
+	return beams;
+}
+
+inline float Beam::getDefaultDeformation()
+{
+	return default_deform;
+}
+
+inline int Beam::getNodeCount()
+{
+	return free_node;
+}
+
+inline node_t* Beam::getNodes()
+{
+	return nodes;
+}
+
+inline void Beam::setMass(float m)
+{
+	truckmass = m;
+}
+
+inline bool Beam::getBrakeLightVisible()
+{
+	if(state==NETWORKED)
+		return netBrakeLight;
+
+//		return (brake > 0.15 && !parkingbrake);
+	return (brake > 0.15);
+}
+
+inline bool Beam::getCustomLightVisible(int number)
+{
+	return netCustomLightArray[number] != -1
+			&& flares[netCustomLightArray[number]].controltoggle_status;
+}
+
+inline void Beam::setCustomLightVisible(int number, bool visible)
+{
+	if(netCustomLightArray[number] == -1)
+		return;
+	flares[netCustomLightArray[number]].controltoggle_status = visible;
+}
+
+
+inline bool Beam::getBeaconMode()
+{
+	return beacon;
+}
+
+inline blinktype Beam::getBlinkType()
+{
+	return blinkingtype;
+}
+
+inline bool Beam::getCustomParticleMode()
+{
+	return cparticle_mode;
+}
+
+inline int Beam::getLowestNode()
+{
+	return lowestnode;
+}
+
+inline int Beam::getTruckTime()
+{
+	return nettimer->getMilliseconds();
+}
+
+inline int Beam::getNetTruckTimeOffset()
+{
+	return net_toffset;
+}
+
+inline Real Beam::getMinimalCameraRadius()
+{
+	return minCameraRadius;
+}
+
+inline Replay* Beam::getReplay()
+{
+	return replay;
+}
+
+inline bool Beam::getSlideNodesLockInstant() 
+{
+	return slideNodesConnectInstantly;
+}
 #endif //BEAM_H__

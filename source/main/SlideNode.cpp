@@ -22,8 +22,8 @@ along with Rigs of Rods.  If not, see <http://www.gnu.org/licenses/>.
 */
 
 #include "SlideNode.h"
-#include "Ogre.h"
-
+#include "OgreVector3.h"
+#include "OgrePrerequisites.h"
 
 // RAIL GROUP IMPLEMENTATION ///////////////////////////////////////////////////
 unsigned int RailGroup::nextId = 7000000;
@@ -36,7 +36,6 @@ Rail::Rail( beam_t* newBeam, Rail* newPrev, Rail* newNext ) :
 
 Rail::Rail( Rail& o) : prev(o.prev), curBeam(o.curBeam), next(o.next)
 {
-	LogManager::getSingleton().logMessage("SLIDENODE: Enter copy constructor");
 	o.prev = NULL;
 	o.curBeam = NULL;
 	o.next = NULL;
