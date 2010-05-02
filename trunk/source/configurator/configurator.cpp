@@ -105,7 +105,6 @@ extern eventInfo_t eventInfo[]; // defines all input events
 #define NETWORK
 #define MAX_EVENTS 2048
 
-wxTextFile *logfile;
 wxLocale locale;
 wxLanguageInfo *language=0;
 std::vector<wxLanguageInfo*> avLanguages;
@@ -136,6 +135,7 @@ public:
 	virtual bool OnCmdLineParsed(wxCmdLineParser& parser);
 	bool filesystemBootstrap();
 	void recurseCopy(wxString sourceDir, wxString destinationDir);
+	void initLogging();
 //private:
 	wxString UserPath;
 	wxString ProgramPath;
@@ -525,7 +525,7 @@ public:
 
 		if(!INPUTENGINE.setup(getOISHandle(this), true, false))
 		{
-			logfile->AddLine(conv("Unable to open inputs!"));logfile->Write();
+			wxLogStatus(wxT("Unable to open inputs!"));
 		}
 
 		timer = new wxTimer(this, 2);
@@ -651,7 +651,7 @@ public:
 
 		if(!INPUTENGINE.setup(getOISHandle(this), true, captureMouse))
 		{
-			logfile->AddLine(conv("Unable to open default input map!"));logfile->Write();
+			wxLogStatus(wxT("Unable to open default input map!"));
 		}
 
 		INPUTENGINE.resetKeys();
@@ -1151,17 +1151,12 @@ END_EVENT_TABLE()
 // wxGetApp() which will return the reference of the right type (i.e. MyApp and
 // not wxApp)
 
+
+#ifdef USE_CONSOLE
+IMPLEMENT_APP_CONSOLE(MyApp)
+#else
 IMPLEMENT_APP(MyApp)
-
-/*
-IMPLEMENT_APP_NO_MAIN(MyApp)
-
-int main(int argc, char **argv)
-{
-	MyApp app;
-	app.OnInit();
-}
-*/
+#endif
 
 // ============================================================================
 // implementation
@@ -1204,7 +1199,7 @@ int getAvLang(wxString dir, std::vector<wxLanguageInfo*> &files)
 	wxDir dp(dir);
 	if (!dp.IsOpened())
 	{
-		printf("error opening %s\n", conv(dir).c_str());
+		wxLogStatus(wxT("error opening ") + dir);
 		return -1;
 	}
 	wxString name;
@@ -1229,7 +1224,7 @@ int getAvLang(wxString dir, std::vector<wxLanguageInfo*> &files)
 				files.push_back(li);
 			} else
 			{
-				logfile->AddLine(conv("failed to get Language: "+conv(name)));logfile->Write();
+				wxLogStatus(wxT("failed to get Language: "+name));
 			}
 		} while (dp.GetNext(&name));
 	}
@@ -1240,8 +1235,6 @@ void initLanguage(wxString languagePath, wxString userpath)
 {
 	// add language stuff
 
-	// this prevents error messages
-	wxLogNull noLog;
 	// Initialize the catalogs we'll be using
 	wxString langfile = wxT("ror");
 	wxString dirsep = wxT("/");
@@ -1254,24 +1247,22 @@ void initLanguage(wxString languagePath, wxString userpath)
 
 	// get all available languages
 	getAvLang(languagePath, avLanguages);
-	logfile->AddLine(conv("searching languages in ")+basedir);logfile->Write();
+	wxLogStatus(wxT("searching languages in ")+basedir);
 	if(avLanguages.size() > 0)
 	{
-		printf("Available Languages:\n");
-		logfile->AddLine(_T("Available Languages:"));logfile->Write();
+		wxLogStatus(wxT("Available Languages:"));
 		std::vector<wxLanguageInfo *>::iterator it;
 		for(it = avLanguages.begin(); it!=avLanguages.end(); it++)
+		{
 			if(*it)
 			{
-				logfile->AddLine((*it)->Description);logfile->Write();
-				printf(" * %s (%s)\n", conv((*it)->Description).c_str(), conv((*it)->CanonicalName).c_str());
+				wxLogStatus(wxT(" * ") + (*it)->Description + wxT("(") + (*it)->CanonicalName + wxT(")"));
 			}
-	}else
+		}
+	} else
 	{
-		logfile->AddLine(_T("no Languages found!"));logfile->Write();
-		printf("no Languages found!\n");
+		wxLogStatus(wxT("no Languages found!"));
 	}
-
 
 	wxString rorcfg=userpath + dirsep + _T("config") + dirsep + _T("RoR.cfg");
 	Ogre::ImprovedConfigFile cfg;
@@ -1283,37 +1274,37 @@ void initLanguage(wxString languagePath, wxString userpath)
 		language = const_cast<wxLanguageInfo *>(getLanguageInfoByName(langSavedName));
 	if(language == 0)
 	{
-		logfile->AddLine(conv("asking system for default language."));logfile->Write();
-		printf("asking system for default language.\n");
+		wxLogStatus(wxT("asking system for default language."));
 		language = const_cast<wxLanguageInfo *>(wxLocale::GetLanguageInfo(locale.GetSystemLanguage()));
 		if(language)
-			printf(" system returned: %s (%s)\n", conv(language->Description).c_str(), conv(language->CanonicalName).c_str());
-		else
-			printf(" error getting language information!\n");
+		{
+			wxLogStatus(wxT(" system returned: ") + language->Description + wxT("(") + language->CanonicalName + wxT(")"));
+		} else
+		{
+			wxLogStatus(wxT(" error getting language information!"));
+		}
 	}
-	logfile->AddLine(conv("preferred language: "+conv(language->Description)));logfile->Write();
-	printf("preferred language: %s\n", conv(language->Description).c_str());
+	wxLogStatus(wxT("preferred language: ")+language->Description);
 	wxString lshort = language->CanonicalName.substr(0, 2);
 	wxString tmp = basedir + dirsep + lshort + dirsep + langfile + wxT(".mo");
-	printf("lang file: %s\n", conv(tmp).c_str());
-	logfile->AddLine(wxString(wxT("lang file: "))+tmp);logfile->Write();
+	wxLogStatus(wxT("lang file: ") + tmp);
 	if(wxFileName::FileExists(tmp))
 	{
-		printf("language existing, using it!\n");
+		wxLogStatus(wxT("language existing, using it!"));
 		if(!locale.IsAvailable((wxLanguage)language->Language))
 		{
-			printf("language file existing, but not found via wxLocale!\n");
-			printf("is the language installed on your system?\n");
+			wxLogStatus(wxT("language file existing, but not found via wxLocale!"));
+			wxLogStatus(wxT("is the language installed on your system?"));
 		}
 		bool res = locale.Init((wxLanguage)language->Language, wxLOCALE_CONV_ENCODING);
 		if(!res)
 		{
-			printf("error while initializing language!\n");
+			wxLogStatus(wxT("error while initializing language!"));
 		}
 		res = locale.AddCatalog(langfile);
 		if(!res)
 		{
-			printf("error while loading language!\n");
+			wxLogStatus(wxT("error while loading language!"));
 		}
 
 
@@ -1321,7 +1312,7 @@ void initLanguage(wxString languagePath, wxString userpath)
 	else
 	{
 		locale.Init(wxLANGUAGE_DEFAULT, wxLOCALE_CONV_ENCODING);
-		printf("language not existing, no locale support!\n");
+		wxLogStatus(wxT("language not existing, no locale support!"));
 	}
 }
 
@@ -1482,21 +1473,39 @@ bool MyApp::filesystemBootstrap()
 
 }
 
+void MyApp::initLogging()
+{
+	// log everything
+	wxLog::SetLogLevel(wxLOG_Max);
+	wxLog::SetVerbose();
+
+	// use stdout always
+	wxLog *logger_cout = new wxLogStream(&std::cout);
+	wxLog::SetActiveTarget(logger_cout);
+
+	wxFileName clfn=wxFileName(UserPath, wxEmptyString);
+	clfn.AppendDir(wxT("logs"));
+	clfn.SetFullName(wxT("configlog.txt"));
+	FILE *f = fopen(conv(clfn.GetFullPath()).c_str(), "w");
+	if(f)
+	{
+		// and a file log
+		wxLog *logger_file = new wxLogStderr(f);
+		wxLogChain *logChain = new wxLogChain(logger_file);
+	}
+	wxLogStatus(wxT("log started"));
+}
+
 // 'Main program' equivalent: the program execution "starts" here
 bool MyApp::OnInit()
 {
+
 	buildmode=false;
 	if (argc==2 && wxString(argv[1])==wxT("/buildmode")) buildmode=true;
 	//setup the user filesystem
 	if (!filesystemBootstrap()) return false;
-	// open logfile
-	wxFileName clfn=wxFileName(UserPath, wxEmptyString);
-	clfn.AppendDir(wxT("logs"));
-	clfn.SetFullName(wxT("configlog.txt"));
-	logfile=new wxTextFile(clfn.GetFullPath());
-	if (logfile->Exists()) {logfile->Open();logfile->Clear();} else logfile->Create();
-	logfile->AddLine(conv("Log created"));logfile->Write();
 
+	initLogging();
 	initLanguage(languagePath, UserPath);
 
 #if OGRE_PLATFORM == OGRE_PLATFORM_WIN32
@@ -1510,20 +1519,20 @@ bool MyApp::OnInit()
 	if ( !wxApp::OnInit() )
 		return false;
 
-	logfile->AddLine(conv("Creating dialog"));logfile->Write();
+	wxLogStatus(wxT("Creating dialog"));
 	// create the main application window
 	MyDialog *dialog = new MyDialog(_("Rigs of Rods configuration"), this);
 
 	// and show it (the frames, unlike simple controls, are not shown when
 	// created initially)
-	logfile->AddLine(conv("Showing dialog"));logfile->Write();
+	wxLogStatus(wxT("Showing dialog"));
 	dialog->Show(true);
 	SetTopWindow(dialog);
 	SetExitOnFrameDelete(false);
 	// success: wxApp::OnRun() will be called which will enter the main message
 	// loop and the application will run. If we returned false here, the
 	// application would exit immediately.
-	logfile->AddLine(conv("App ready"));logfile->Write();
+	wxLogStatus(wxT("App ready"));
 	return true;
 }
 
@@ -1556,23 +1565,23 @@ MyDialog::MyDialog(const wxString& title, MyApp *_app) : wxDialog(NULL, wxID_ANY
 	SetWindowStyle(wxRESIZE_BORDER | wxCAPTION);
 	//SetMinSize(wxSize(300,300));
 
-	logfile->AddLine(conv("InputEngine starting"));logfile->Write();
+	wxLogStatus(wxT("InputEngine starting"));
 	wxFileName tfn=wxFileName(app->UserPath, wxEmptyString);
 	tfn.AppendDir(_T("config"));
-	logfile->AddLine(conv("Searching input.map in ")+tfn.GetPath());logfile->Write();
+	wxLogStatus(wxT("Searching input.map in ")+tfn.GetPath());
 	InputMapFileName=tfn.GetPath()+wxFileName::GetPathSeparator()+_T("input.map");
 	std::string path = ((tfn.GetPath()+wxFileName::GetPathSeparator()).ToUTF8().data());
 	if(!INPUTENGINE.setup(getOISHandle(this), false, false, 0))
 	{
-		logfile->AddLine(conv("Unable to setup inputengine!"));logfile->Write();
+		wxLogStatus(wxT("Unable to setup inputengine!"));
 	} else
 	{
 		if (!INPUTENGINE.loadMapping(path+"input.map"))
 		{
-			logfile->AddLine(conv("Unable to open default input map!"));logfile->Write();
+			wxLogStatus(wxT("Unable to open default input map!"));
 		}
 	}
-	logfile->AddLine(conv("InputEngine started"));logfile->Write();
+	wxLogStatus(wxT("InputEngine started"));
 	kd=0;
 	controlItemCounter = 0;
 
@@ -1588,7 +1597,7 @@ MyDialog::MyDialog(const wxString& title, MyApp *_app) : wxDialog(NULL, wxID_ANY
 	wxToolTip::SetDelay(100);
 	//image
 //	wxBitmap *bitmap=new wxBitmap("data\\config.png", wxBITMAP_TYPE_BMP);
-	//logfile->AddLine(conv("Loading bitmap"));logfile->Write();
+	//wxLogStatus(wxT("Loading bitmap"));
 	wxSizer *mainsizer = new wxBoxSizer(wxVERTICAL);
 	mainsizer->SetSizeHints(this);
 
@@ -2107,9 +2116,9 @@ MyDialog::MyDialog(const wxString& title, MyApp *_app) : wxDialog(NULL, wxID_ANY
 	// inititalize ogre only when we really need it due to long startup times
 	ogreRoot = 0;
 
-	logfile->AddLine(conv("Setting default values"));logfile->Write();
+	wxLogStatus(wxT("Setting default values"));
 	SetDefaults();
-	logfile->AddLine(conv("Loading config"));logfile->Write();
+	wxLogStatus(wxT("Loading config"));
 	LoadConfig();
 
 	// centers dialog window on the screen
@@ -2125,7 +2134,7 @@ MyDialog::MyDialog(const wxString& title, MyApp *_app) : wxDialog(NULL, wxID_ANY
 void MyDialog::loadOgre()
 {
 	if(ogreRoot) return;
-	logfile->AddLine(conv("Creating Ogre root"));logfile->Write();
+	wxLogStatus(wxT("Creating Ogre root"));
 	//we must do this once
 	wxFileName tcfn=wxFileName(app->UserPath, wxEmptyString);
 	tcfn.AppendDir(_T("config"));
@@ -2137,12 +2146,12 @@ void MyDialog::loadOgre()
 
 	wxString progdirPrefix=app->ProgramPath+wxFileName::GetPathSeparator();
 	const char *pluginsfile="plugins.cfg";
-	printf(">> If it crashes after here, check your plugins.cfg and remove the DirectX entry if under linux!\n");
+	wxLogStatus(wxT(">> If it crashes after here, check your plugins.cfg (and remove the DirectX entry if under linux)!"));
 	ogreRoot = new Ogre::Root(Ogre::String(progdirPrefix.ToUTF8().data())+pluginsfile,
 									Ogre::String(confdirPrefix.ToUTF8().data())+"ogre.cfg",
 									Ogre::String(logsdirPrefix.ToUTF8().data())+"RoR.log");
 
-	logfile->AddLine(conv("Root restore config"));logfile->Write();
+	wxLogStatus(wxT("Root restore config"));
 	try
 	{
 		ogreRoot->restoreConfig();
@@ -2672,12 +2681,12 @@ void MyDialog::updateSettingsControls()
 bool MyDialog::LoadConfig()
 {
 	//RoR config
-	logfile->AddLine(conv("Loading RoR.cfg"));logfile->Write();
+	wxLogStatus(wxT("Loading RoR.cfg"));
 	Ogre::ImprovedConfigFile cfg;
 
 	wxString rorcfg=app->UserPath + wxFileName::GetPathSeparator() + _T("config") + wxFileName::GetPathSeparator() + _T("RoR.cfg");
 
-	printf("reading from Config file: %s\n", conv2(rorcfg));
+	wxLogStatus(wxT("reading from Config file: ") + rorcfg);
 
 	// Don't trim whitespace
 	cfg.load(rorcfg.ToUTF8().data(), "=:\t", false);
@@ -2693,7 +2702,6 @@ bool MyDialog::LoadConfig()
 		if(sname == Ogre::String("Benchmark") || sname == Ogre::String("streamCacheGenerationOnly")|| sname == Ogre::String("regen-cache-only"))
 			continue;
 		settings[sname] = svalue;
-		//logfile->AddLine(conv("### ") + conv(sname) + conv(" : ") + conv(svalue));logfile->Write();
 	}
 
 	// enforce default settings
@@ -2743,7 +2751,7 @@ void MyDialog::SaveConfig()
 	FILE *fd;
 	wxString rorcfg=app->UserPath + wxFileName::GetPathSeparator() + _T("config") + wxFileName::GetPathSeparator() + _T("RoR.cfg");
 
-	printf("saving to Config file: %s\n", rorcfg.ToUTF8().data());
+	wxLogStatus(wxT("saving to Config file: ") + rorcfg);
 	fd=fopen(rorcfg.ToUTF8().data(), "w");
 	if (!fd)
 	{
@@ -3002,11 +3010,13 @@ void MyDialog::OnChangeRenderer(wxCommandEvent& ev)
 			ogreRoot->setRenderSystem(rs);
 			updateRendersystems(rs);
 		} else
-			logfile->AddLine(conv("Unable to change to new rendersystem(1)"));logfile->Write();
+		{
+			wxLogStatus(wxT("Unable to change to new rendersystem(1)"));
+		}
 	}
 	catch(...)
 	{
-		logfile->AddLine(conv("Unable to change to new rendersystem(2)"));logfile->Write();
+		wxLogStatus(wxT("Unable to change to new rendersystem(2)"));
 	}
 }
 
@@ -3264,7 +3274,7 @@ void MyDialog::OnButPlay(wxCommandEvent& event)
 	char path[2048];
 	getcwd(path, 2048);
 	strcat(path, "\\RoR.exe");
-	logfile->AddLine(conv(path));logfile->Write();
+	wxLogStatus(wxT("using RoR: ") + wxString(path));
 
 	int buffSize = (int)strlen(path) + 1;
 	LPWSTR wpath = new wchar_t[buffSize];
@@ -3306,7 +3316,7 @@ void MyDialog::updateRoR()
 	char path[2048];
 	getcwd(path, 2048);
 	strcat(path, "\\installer.exe");
-	logfile->AddLine(conv(path));logfile->Write();
+	wxLogStatus(wxT("using installer: ") + wxString(path));
 
 	int buffSize = (int)strlen(path) + 1;
 	LPWSTR wpath = new wchar_t[buffSize];
@@ -3358,7 +3368,7 @@ void MyDialog::OnButRegenCache(wxCommandEvent& event)
 	char path[2048];
 	getcwd(path, 2048);
 	strcat(path, "\\RoR.exe -checkcache");
-	logfile->AddLine(conv(path));logfile->Write();
+	wxLogStatus(wxT("executing RoR: ") + wxString(path));
 
 	int buffSize = (int)strlen(path) + 1;
 	LPWSTR wpath = new wchar_t[buffSize];
@@ -3768,7 +3778,7 @@ static BOOL CALLBACK DSoundEnumDevices(LPGUID guid, LPCSTR desc, LPCSTR drvname,
 	{
 		//sometimes you get weird strings here
 		wxString wxdesc=conv(desc);
-//		logfile->AddLine(conv("DirectSound Callback with source '")+conv(desc)+conv("'"));logfile->Write();
+		//wxLogStatus(wxT("DirectSound Callback with source '")+conv(desc)+conv("'"));
 		if (wxdesc.Length()>0) wxc->Append(wxdesc);
 	}
     return TRUE;

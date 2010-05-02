@@ -40,8 +40,17 @@ link_directories   (${Ois_LIBRARY_DIRS})
 add_definitions("-DNOOGRE -D_UNICODE")
 include_directories(../main)
 
+if(WIN32)
+  # we have to extend the cflags to add USE_CONSOLE definition for non release modes
+  set(CMAKE_CXX_FLAGS_MINSIZEREL     "${CMAKE_CXX_FLAGS_MINSIZEREL}     /D USE_CONSOLE")
+  set(CMAKE_CXX_FLAGS_RELWITHDEBINFO "${CMAKE_CXX_FLAGS_RELWITHDEBINFO} /D USE_CONSOLE")
+  set(CMAKE_CXX_FLAGS_DEBUG          "${CMAKE_CXX_FLAGS_DEBUG}          /D USE_CONSOLE")
+endif(WIN32)
+
+
 FILE(GLOB sources "*.cpp")
-add_executable(rorconfig ${sources} ${OS_SOURCE} ../main/InputEngine.cpp)
+FILE(GLOB headers "*.h")
+add_executable(rorconfig ${sources} ${headers} ${OS_SOURCE} ../main/InputEngine.cpp)
 windows_hacks(rorconfig)
 
 TARGET_LINK_LIBRARIES(rorconfig ${wxWidgets_LIBRARIES} ${Ogre_LIBRARIES} ${Ois_LIBRARIES} ${OS_LIBS})
