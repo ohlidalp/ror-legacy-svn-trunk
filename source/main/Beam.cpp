@@ -66,6 +66,8 @@ along with Rigs of Rods.  If not, see <http://www.gnu.org/licenses/>.
 #include "ScriptEngine.h"
 #endif
 
+#include "MeshObject.h"
+
 
 // some gcc fixes
 #if OGRE_PLATFORM == OGRE_PLATFORM_LINUX
@@ -1338,6 +1340,7 @@ int Beam::loadTruck(const char* fname, SceneManager *manager, SceneNode *parent,
 	float wingarea=0.0;
 	int currentScriptCommandNumber=-1;
 	bool enable_truck_lod = (SETTINGS.getSetting("Truck LOD Enabled") == "Yes");
+	bool enable_background_loading = (SETTINGS.getSetting("Background Loading") == "Yes");
 
 	//convert ry
 	//ry=ry*3.14159/180.0;
@@ -3468,96 +3471,30 @@ int Beam::loadTruck(const char* fname, SceneManager *manager, SceneNode *parent,
 					diwmeshname = String(dirwheelmeshname);
 				}
 				if(result2 != result && result2 >= 15) props[free_prop].wheelrotdegree=rotdegrees;
-				//create a wheel
-				char propname[256];
-				sprintf(propname, "prop-%s-%i-wheel", truckname, free_prop);
-				Entity *te=0;
-				try
-				{
-					te = manager->createEntity(propname, diwmeshname);
-				}catch(...)
-				{
-					LogManager::getSingleton().logMessage("error loading mesh: "+diwmeshname);
-					continue;
-				}
-				MaterialFunctionMapper::replaceSimpleMeshMaterials(te, ColourValue(0, 0.5, 0.5));
-
-				if(materialFunctionMapper) materialFunctionMapper->replaceMeshMaterials(te);
-				if(usedSkin) usedSkin->replaceMeshMaterials(te);
-				props[free_prop].wheel=manager->getRootSceneNode()->createChildSceneNode();
-				if(te)
-					props[free_prop].wheel->attachObject(te);
 				props[free_prop].wheelpos=stdpos;
+
+				// create the meshs scenenode
+				props[free_prop].wheel = manager->getRootSceneNode()->createChildSceneNode();
+				// now create the mesh
+				MeshObject *mo = new MeshObject(manager, diwmeshname, "", props[free_prop].wheel, enable_background_loading);
+				mo->setSimpleMaterialColour(ColourValue(0, 0.5, 0.5));
+				mo->setSkin(usedSkin);
+				mo->setMaterialFunctionMapper(materialFunctionMapper);
 			}
-			char propname[256];
-			sprintf(propname, "prop-%s-%i", truckname, free_prop);
-			Entity *te=0;
-			try
-			{
-				// LODs for props
-#if 0
-				// DISABLED FOR OGRE 1.7 
-				// XXX: TODO: FIX!
-				if(enable_truck_lod)
-				{
-					String meshGroup = ResourceGroupManager::getSingleton().findGroupContainingResource(meshname);
-					MeshPtr mesh = MeshManager::getSingleton().load(meshname, meshGroup);
 
-					// find vertex count
-					unsigned long vertex_count = 0;
-					if(mesh->getNumLodLevels() < 2)
-					{
-						if (mesh->sharedVertexData)
-							vertex_count += mesh->sharedVertexData->vertexCount;
-						for (int i=0; i<mesh->getNumSubMeshes(); i++)
-							if (!mesh->getSubMesh(i)->useSharedVertices)
-								vertex_count += mesh->getSubMesh(i)->vertexData->vertexCount;
-					}
+			// create the meshs scenenode
+			props[free_prop].snode = manager->getRootSceneNode()->createChildSceneNode();
+			// now create the mesh
+			MeshObject *mo = new MeshObject(manager, meshname, "", props[free_prop].snode, enable_background_loading);
+			mo->setSimpleMaterialColour(ColourValue(1, 1, 0));
+			mo->setSkin(usedSkin);
+			mo->setMaterialFunctionMapper(materialFunctionMapper);
 
-					// check against some border
-					if(mesh->getNumLodLevels() < 2 && vertex_count > 10000)
-					{
-						LogManager::getSingleton().logMessage("prop uses > 10k (" + StringConverter::toString(vertex_count) + ") vertices but does not provide its own LODs, will generate some now. This can take a while. Please add LODs when exporting the mesh, this prevents the automatic generation (and the waiting time).");
-
-						Ogre::Mesh::LodDistanceList default_dists;
-						//default_dists.push_back(50);
-						//default_dists.push_back(100);
-						default_dists.push_back(300);
-						mesh->generateLodLevels(default_dists, ProgressiveMesh::VRQ_PROPORTIONAL, Ogre::Real(0.8));
-
-						// custom entities for custom LODs
-						te = manager->createEntity(String(propname)+"LOD", mesh->getName());
-					} else
-					{
-						// no custom LOD's here
-						te = manager->createEntity(propname, meshname);
-					}
-				} else
-				{
-						// no LOD's
-						te = manager->createEntity(propname, meshname);
-				}
-				LogManager::getSingleton().logMessage("prop is using LODs");
-#endif //0
-				// no LOD's
-				te = manager->createEntity(propname, meshname);
-			}catch(...)
-			{
-				LogManager::getSingleton().logMessage("error loading mesh: "+String(meshname));
-				continue;
-			}
-			MaterialFunctionMapper::replaceSimpleMeshMaterials(te, ColourValue(1, 1, 0));
-			if(materialFunctionMapper) materialFunctionMapper->replaceMeshMaterials(te);
-			if(usedSkin) usedSkin->replaceMeshMaterials(te);
-			props[free_prop].snode=manager->getRootSceneNode()->createChildSceneNode();
-			if(te)
-				props[free_prop].snode->attachObject(te);
 			//hack for the spinprops
 			if (!strncmp("spinprop", meshname, 8))
 			{
 				props[free_prop].spinner=1;
-				if(props[free_prop].snode->numAttachedObjects())
-					props[free_prop].snode->getAttachedObject(0)->setCastShadows(false);
+				mo->setCastShadows(false);
 				props[free_prop].snode->setVisible(false);
 			}
 			if (!strncmp("pale", meshname, 4))
@@ -3568,8 +3505,7 @@ int Beam::loadTruck(const char* fname, SceneManager *manager, SceneNode *parent,
 			if (!strncmp("seat", meshname, 4) && !driversseatfound)
 			{
 				driversseatfound=true;
-				if(te)
-					te->setMaterialName("driversseat");
+				mo->setMaterialName("driversseat");
 				driverSeat = &props[free_prop];
 			}
 			else if (!strncmp("seat2", meshname, 5) && !driversseatfound)
@@ -3596,7 +3532,7 @@ int Beam::loadTruck(const char* fname, SceneManager *manager, SceneNode *parent,
 				props[free_prop].beacontype='b';
 				props[free_prop].bbs[0]=0;
 				//the light
-				props[free_prop].light[0]=manager->createLight(propname);
+				props[free_prop].light[0]=manager->createLight(); //propname);
 				props[free_prop].light[0]->setType(Light::LT_SPOTLIGHT);
 				props[free_prop].light[0]->setDiffuseColour(color);
 				props[free_prop].light[0]->setSpecularColour(color);
@@ -3606,7 +3542,7 @@ int Beam::loadTruck(const char* fname, SceneManager *manager, SceneNode *parent,
 				props[free_prop].light[0]->setVisible(false);
 				//the flare billboard
 				props[free_prop].bbsnode[0] = manager->getRootSceneNode()->createChildSceneNode();
-				props[free_prop].bbs[0]=manager->createBillboardSet(propname,1);
+				props[free_prop].bbs[0]=manager->createBillboardSet(1); //(propname,1);
 				props[free_prop].bbs[0]->createBillboard(0,0,0);
 				if(props[free_prop].bbs[0])
 					props[free_prop].bbs[0]->setMaterialName(matname);
@@ -3621,7 +3557,7 @@ int Beam::loadTruck(const char* fname, SceneManager *manager, SceneNode *parent,
 				props[free_prop].beacontype='r';
 				props[free_prop].bbs[0]=0;
 				//the light
-				props[free_prop].light[0]=manager->createLight(propname);
+				props[free_prop].light[0]=manager->createLight();//propname);
 				props[free_prop].light[0]->setType(Light::LT_POINT);
 				props[free_prop].light[0]->setDiffuseColour( ColourValue(1.0, 0.0, 0.0));
 				props[free_prop].light[0]->setSpecularColour( ColourValue(1.0, 0.0, 0.0));
@@ -3630,7 +3566,7 @@ int Beam::loadTruck(const char* fname, SceneManager *manager, SceneNode *parent,
 				props[free_prop].light[0]->setVisible(false);
 				//the flare billboard
 				props[free_prop].bbsnode[0] = manager->getRootSceneNode()->createChildSceneNode();
-				props[free_prop].bbs[0]=manager->createBillboardSet(propname,1);
+				props[free_prop].bbs[0]=manager->createBillboardSet(1); //propname,1);
 				props[free_prop].bbs[0]->createBillboard(0,0,0);
 				if(props[free_prop].bbs[0])
 					props[free_prop].bbs[0]->setMaterialName("tracks/redbeaconflare");
@@ -3650,9 +3586,9 @@ int Beam::loadTruck(const char* fname, SceneManager *manager, SceneNode *parent,
 					props[free_prop].brate[k]=4.0*3.14+((Real)rand()/(Real)RAND_MAX)-0.5;
 					props[free_prop].bbs[k]=0;
 					//the light
-					char rpname[256];
-					sprintf(rpname,"%s-%i", propname, k);
-					props[free_prop].light[k]=manager->createLight(rpname);
+					//char rpname[256];
+					//sprintf(rpname,"%s-%i", propname, k);
+					props[free_prop].light[k]=manager->createLight(); //rpname);
 					props[free_prop].light[k]->setType(Light::LT_SPOTLIGHT);
 					if (k>1)
 					{
@@ -3670,7 +3606,7 @@ int Beam::loadTruck(const char* fname, SceneManager *manager, SceneNode *parent,
 					props[free_prop].light[k]->setVisible(false);
 					//the flare billboard
 					props[free_prop].bbsnode[k] = manager->getRootSceneNode()->createChildSceneNode();
-					props[free_prop].bbs[k]=manager->createBillboardSet(rpname,1);
+					props[free_prop].bbs[k]=manager->createBillboardSet(1); //rpname,1);
 					props[free_prop].bbs[k]->createBillboard(0,0,0);
 					if(props[free_prop].bbs[k])
 					{
@@ -6102,10 +6038,10 @@ int Beam::add_beam(node_t *p1, node_t *p2, SceneManager *manager, SceneNode *par
 	beams[pos].disabled=false;
 	beams[pos].shock=0;
 	if (default_deform<beam_creak) default_deform=beam_creak;
-	beams[pos].default_deform=default_deform;
-	beams[pos].minmaxposnegstress=default_deform;
-	beams[pos].maxposstress=default_deform;
-	beams[pos].maxnegstress=-default_deform;
+	beams[pos].default_deform=default_deform * default_deform_scale;
+	beams[pos].minmaxposnegstress=default_deform * default_deform_scale;
+	beams[pos].maxposstress=default_deform * default_deform_scale;
+	beams[pos].maxnegstress=-default_deform * default_deform_scale;
 	beams[pos].plastic_coef=default_plastic_coef;
 	beams[pos].default_plastic_coef=default_plastic_coef;
 	beams[pos].strength=strength;
