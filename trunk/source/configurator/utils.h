@@ -41,8 +41,7 @@ inline size_t getOISHandle(wxWindow *window)
 #elif OGRE_PLATFORM == OGRE_PLATFORM_LINUX
 #ifdef __WXGTK__
 	if (!window->IsShownOnScreen()) {
-		printf("getOISHandle(): Window needs to be realized before we "
-			"can get its XID. Showing the window to avoid crash!\n");
+		wxLogStatus(wxT("getOISHandle(): Window needs to be realized before we can get its XID. Showing the window to avoid crash!"));
 		window->Show();
 	}
 #if GTK_CHECK_VERSION (2,14,0)
