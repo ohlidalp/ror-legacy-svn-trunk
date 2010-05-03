@@ -23,9 +23,7 @@ along with Rigs of Rods.  If not, see <http://www.gnu.org/licenses/>.
 #include "OgrePrerequisites.h"
 #include "RoRPrerequisites.h"
 
-//using namespace Ogre;
-
-// includes to be removed / cleaned up
+// includes to be removed or cleaned up
 #include "rornet.h"
 #include "Differentials.h"
 #include "SlideNode.h"
@@ -41,7 +39,10 @@ along with Rigs of Rods.  If not, see <http://www.gnu.org/licenses/>.
 #include <vector>
 #include <pthread.h>
 
-class Beam : public rig_t, public Streamable, public MemoryAllocatedObject
+class Beam : 
+	public rig_t, 
+	public Streamable, 
+	public MemoryAllocatedObject
 {
 public:
 	Beam() {}; // for wrapper, DO NOT USE!
@@ -57,40 +58,40 @@ public:
 
 	//constructor
 	Beam(int tnum
-	, SceneManager *manager
-	, SceneNode *parent
-	, RenderWindow* win
-	, Network *net
-	, float *mapsizex
-	, float *mapsizez
-	, Real px
-	, Real py
-	, Real pz
-	, Quaternion rot
-	, const char* fname
-	, Collisions *icollisions
-	, HeightFinder *mfinder
-	, Water *w
-	, Camera *pcam
-	, Mirrors *mmirror
-	, bool networked=false
-	, bool networking=false
-	, collision_box_t *spawnbox=NULL
-	, bool ismachine=false
-	, int flareMode=0
-	, std::vector<Ogre::String> *truckconfig=0
-	, Skin *skin=0
-	, bool freeposition=false);
+		, SceneManager *manager
+		, SceneNode *parent
+		, RenderWindow* win
+		, Network *net
+		, float *mapsizex
+		, float *mapsizez
+		, Real px
+		, Real py
+		, Real pz
+		, Quaternion rot
+		, const char* fname
+		, Collisions *icollisions
+		, HeightFinder *mfinder
+		, Water *w
+		, Camera *pcam
+		, Mirrors *mmirror
+		, bool networked=false
+		, bool networking=false
+		, collision_box_t *spawnbox=NULL
+		, bool ismachine=false
+		, int flareMode=0
+		, std::vector<Ogre::String> *truckconfig=0
+		, Skin *skin=0
+		, bool freeposition=false);
 
 	//! @{ Input/Output related functions
 	int loadTruck(const char* fname
-	, SceneManager *manager
-	, SceneNode *parent
-	, Real px
-	, Real py
-	, Real pz
-	, Quaternion rot
-	, collision_box_t *spawnbox);
+		, SceneManager *manager
+		, SceneNode *parent
+		, Real px
+		, Real py
+		, Real pz
+		, Quaternion rot
+		, collision_box_t *spawnbox);
 	//! @}
 
 	//! @{ network related functions
@@ -134,73 +135,73 @@ public:
 
 	//! @{ truck specific physics functions
 	void addWheel(SceneManager *manager
-	, SceneNode *parent
-	, Real radius
-	, Real width
-	, int rays
-	, int node1
-	, int node2
-	, int snode
-	, int braked
-	, int propulsed
-	, int torquenode
-	, float mass
-	, float wspring
-	, float wdamp
-	, char* texf
-	, char* texb
-	, bool meshwheel=false
-	, float rimradius=0.0
-	, bool rimreverse=false);
+		, SceneNode *parent
+		, Real radius
+		, Real width
+		, int rays
+		, int node1
+		, int node2
+		, int snode
+		, int braked
+		, int propulsed
+		, int torquenode
+		, float mass
+		, float wspring
+		, float wdamp
+		, char* texf
+		, char* texb
+		, bool meshwheel=false
+		, float rimradius=0.0
+		, bool rimreverse=false);
 	
 	void addWheel2(SceneManager *manager
-	, SceneNode *parent
-	, Real radius
-	, Real radius2
-	, Real width
-	, int rays
-	, int node1
-	, int node2
-	, int snode
-	, int braked
-	, int propulsed
-	, int torquenode
-	, float mass
-	, float wspring
-	, float wdamp
-	, float wspring2
-	, float wdamp2
-	, char* texf
-	, char* texb);
+		, SceneNode *parent
+		, Real radius
+		, Real radius2
+		, Real width
+		, int rays
+		, int node1
+		, int node2
+		, int snode
+		, int braked
+		, int propulsed
+		, int torquenode
+		, float mass
+		, float wspring
+		, float wdamp
+		, float wspring2
+		, float wdamp2
+		, char* texf
+		, char* texb);
 	
 	void init_node(int pos
-	, Real x
-	, Real y
-	, Real z
-	, int type=NODE_NORMAL
-	, Real m=10.0
-	, int iswheel=0
-	, Real friction=CHASSIS_FRICTION_COEF
-	, int id=-1
-	, int wheelid=-1
-	, Real nfriction=NODE_FRICTION_COEF_DEFAULT
-	, Real nvolume=NODE_VOLUME_COEF_DEFAULT
-	, Real nsurface=NODE_SURFACE_COEF_DEFAULT
-	, Real nloadweight=NODE_LOADWEIGHT_DEFAULT);
+		, Real x
+		, Real y
+		, Real z
+		, int type=NODE_NORMAL
+		, Real m=10.0
+		, int iswheel=0
+		, Real friction=CHASSIS_FRICTION_COEF
+		, int id=-1
+		, int wheelid=-1
+		, Real nfriction=NODE_FRICTION_COEF_DEFAULT
+		, Real nvolume=NODE_VOLUME_COEF_DEFAULT
+		, Real nsurface=NODE_SURFACE_COEF_DEFAULT
+		, Real nloadweight=NODE_LOADWEIGHT_DEFAULT);
 	
 	int add_beam(node_t *p1
-	, node_t *p2
-	, SceneManager *manager
-	, SceneNode *parent
-	, int type
-	, Real strength
-	, Real spring
-	, Real damp
-	, Real length=-1.0
-	, float shortbound=-1.0
-	, float longbound=-1.0
-	, float precomp=1.0
-	, float diameter=DEFAULT_BEAM_DIAMETER);
+		, node_t *p2
+		, SceneManager *manager
+		, SceneNode *parent
+		, int type
+		, Real strength
+		, Real spring
+		, Real damp
+		, Real length=-1.0
+		, float shortbound=-1.0
+		, float longbound=-1.0
+		, float precomp=1.0
+		, float diameter=DEFAULT_BEAM_DIAMETER);
 	
 	BeamEngine *engine;
 	//! @}
@@ -569,9 +570,6 @@ protected:
 	Buoyance *buoyance;
 	float ipy;
 
-#ifdef SOCKETW
-	SWInetSocket *sock;
-#endif //SOCKETW
 	pthread_t netthread;
 	oob_t *oob1;
 	oob_t *oob2;

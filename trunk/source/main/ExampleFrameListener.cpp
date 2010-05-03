@@ -221,6 +221,7 @@ void ExampleFrameListener::updateStats(void)
 		String debugText = "";
 		for(int t=0;t<free_truck;t++)
 		{
+			if(!trucks[t]) continue;
 			if(!trucks[t]->debugText.empty())
 				debugText += StringConverter::toString(t) + ": " + trucks[t]->debugText + "\n";
 		}
@@ -7933,6 +7934,7 @@ void ExampleFrameListener::removeBeam(Beam *b)
 	int i;
 	for (i=0; i<free_truck; i++)
 	{
+		if(!trucks[i]) continue;
 		if(trucks[i] == b)
 		{
 			trucks[i] = 0;
