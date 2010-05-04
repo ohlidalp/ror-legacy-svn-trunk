@@ -1103,21 +1103,19 @@ void Beam::calcNetwork()
 	unsigned int flagmask=oob1->flagmask;
 
 	pthread_mutex_unlock(&net_mutex);
-	if (engine)
-	{
 #ifdef USE_OPENAL
+	if (engine && ssm)
+	{
 		ssm->modulate(trucknum, SS_MOD_ENGINE, engspeed);
-#endif //OPENAL
 	}
-	if(free_aeroengine>0)
+	if(free_aeroengine>0 && ssm)
 	{
-#ifdef USE_OPENAL
 		ssm->modulate(trucknum, SS_MOD_AEROENGINE1, engspeed);
 		ssm->modulate(trucknum, SS_MOD_AEROENGINE2, engspeed);
 		ssm->modulate(trucknum, SS_MOD_AEROENGINE3, engspeed);
 		ssm->modulate(trucknum, SS_MOD_AEROENGINE4, engspeed);
-#endif //OPENAL
 	}
+#endif //OPENAL
 	if (engine) engine->netForceSettings(engspeed, engforce); //for smoke
 
 
@@ -1146,18 +1144,18 @@ void Beam::calcNetwork()
 	setCustomLightVisible(3, ((flagmask&NETMASK_CLIGHT4)>0));
 
 #ifdef USE_OPENAL
-	if (flagmask&NETMASK_HORN)
+	if (flagmask&NETMASK_HORN && ssm)
 		ssm->trigStart(trucknum, SS_TRIG_HORN);
-	else
+	else if(ssm)
 		ssm->trigStop(trucknum, SS_TRIG_HORN);
 #endif //OPENAL
 	netBrakeLight = ((flagmask&NETMASK_BRAKES)!=0);
 	netReverseLight = ((flagmask&NETMASK_REVERSE)!=0);
 
 #ifdef USE_OPENAL
-	if(netReverseLight)
+	if(netReverseLight && ssm)
 		ssm->trigStart(trucknum, SS_TRIG_REVERSE_GEAR);
-	else
+	else if(ssm)
 		ssm->trigStop(trucknum, SS_TRIG_REVERSE_GEAR);
 #endif //OPENAL
 
@@ -4414,7 +4412,7 @@ int Beam::loadTruck(const char* fname, SceneManager *manager, SceneNode *parent,
 				continue;
 			}
 #ifdef USE_OPENAL
-			addSoundSource(ssm->createInstance(script, trucknum, NULL), ref);
+			if(ssm) addSoundSource(ssm->createInstance(script, trucknum, NULL), ref);
 #endif //OPENAL
 		}
 		else if (mode==48)
@@ -5165,6 +5163,7 @@ void Beam::addSoundSource(SoundScriptInstance *ssi, int nodenum)
 void Beam::setupDefaultSoundSources()
 {
 #ifdef USE_OPENAL
+	if(!ssm) return;
 	//engine
 	if (engine)
 	{
@@ -6684,7 +6683,7 @@ void Beam::sendStreamData()
 		if (getBeaconMode())			send_oob->flagmask+=NETMASK_BEACONS;
 		if (getCustomParticleMode())    send_oob->flagmask+=NETMASK_PARTICLE;
 #ifdef USE_OPENAL
-		if (ssm->getTrigState(trucknum, SS_TRIG_HORN)) send_oob->flagmask+=NETMASK_HORN;
+		if (ssm && ssm->getTrigState(trucknum, SS_TRIG_HORN)) send_oob->flagmask+=NETMASK_HORN;
 #endif //OPENAL
 	}
 
@@ -7493,8 +7492,8 @@ void Beam::calcForcesEuler(int doUpdate, Real dt, int step, int maxstep, Beam** 
 					// Sound effect.
 					// Sound volume depends on spring's stored energy
 #ifdef USE_OPENAL
-					ssm->modulate(trucknum, SS_MOD_BREAK, 0.5*k*difftoBeamL*difftoBeamL);
-					ssm->trigOnce(trucknum, SS_TRIG_BREAK);
+					if(ssm) ssm->modulate(trucknum, SS_MOD_BREAK, 0.5*k*difftoBeamL*difftoBeamL);
+					if(ssm) ssm->trigOnce(trucknum, SS_TRIG_BREAK);
 #endif //OPENAL
 					increased_accuracy=1;
 
@@ -8563,9 +8562,9 @@ void Beam::calcForcesEuler(int doUpdate, Real dt, int step, int maxstep, Beam** 
 		else stabcommand=0;
 
 #ifdef USE_OPENAL
-		if (stabcommand && fabs(stabratio)<0.1)
+		if (stabcommand && fabs(stabratio)<0.1 && ssm)
 			ssm->trigStart(trucknum, SS_TRIG_AIR);
-		else
+		else if (ssm)
 			ssm->trigStop(trucknum, SS_TRIG_AIR);
 #endif //OPENAL
 
@@ -9044,13 +9043,12 @@ void Beam::calcForcesEuler(int doUpdate, Real dt, int step, int maxstep, Beam** 
 		if (doUpdate && state==ACTIVATED)
 		{
 #ifdef USE_OPENAL
-			if (active)
+			if (active && ssm)
 			{
 				ssm->trigStart(trucknum, SS_TRIG_PUMP);
 				float pump_rpm=660.0*(1.0-(work/(float)active)/100.0);
 				ssm->modulate(trucknum, SS_MOD_PUMP, pump_rpm);
-			}
-			else
+			} else if(ssm)
 				ssm->trigStop(trucknum, SS_TRIG_PUMP);
 #endif //OPENAL
 		}
@@ -9819,9 +9817,9 @@ void Beam::setBlinkType(blinktype blink)
 {
 #ifdef USE_OPENAL
 	blinkingtype = blink;
-	if(blink == BLINK_NONE)
+	if(blink == BLINK_NONE && ssm)
 		ssm->trigStop(trucknum, SS_TRIG_TURN_SIGNAL);
-	else
+	else if(ssm)
 		ssm->trigStart(trucknum, SS_TRIG_TURN_SIGNAL);
 #endif //OPENAL
 }
@@ -9905,6 +9903,7 @@ void Beam::toggleCustomParticles()
 void Beam::updateSoundSources()
 {
 #ifdef USE_OPENAL
+	if(!ssm) return;
 	for (int i=0; i<free_soundsource; i++)
 	{
 		soundsources[i].ssi->setPosition(nodes[soundsources[i].nodenum].AbsPosition, nodes[soundsources[i].nodenum].Velocity);
@@ -10725,9 +10724,9 @@ void Beam::parkingbrakeToggle()
 	parkingbrake=!parkingbrake;
 
 #ifdef USE_OPENAL
-	if (parkingbrake)
+	if (parkingbrake && ssm)
 		ssm->trigStart(trucknum, SS_TRIG_PARK);
-	else
+	else if (ssm)
 		ssm->trigStop(trucknum, SS_TRIG_PARK);
 #endif // USE_OPENAL
 

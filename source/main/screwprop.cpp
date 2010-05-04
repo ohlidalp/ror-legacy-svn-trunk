@@ -63,7 +63,8 @@ void Screwprop::setThrotle(float val)
 	//pseudo-rpm
 	float prpm=(0.5+fabs(val)/2.0)*100.0;
 #ifdef USE_OPENAL
-	SoundScriptManager::getSingleton()->modulate(trucknum, SS_MOD_ENGINE, prpm);
+	SoundScriptManager *ssm = SoundScriptManager::getSingleton();
+	if(ssm) ssm->modulate(trucknum, SS_MOD_ENGINE, prpm);
 #endif //OPENAL
 }
 

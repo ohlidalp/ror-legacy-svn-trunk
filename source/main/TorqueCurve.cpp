@@ -125,7 +125,7 @@ int TorqueCurve::processLine(Ogre::vector< String >::type args, String model)
 
 int TorqueCurve::setTorqueModel(String name)
 {
-	LogManager::getSingleton().logMessage("using torque curve: " + name);
+	//LogManager::getSingleton().logMessage("using torque curve: " + name);
 	// check if we have such a model loaded
 	if (splines.find(name) == splines.end())
 	{

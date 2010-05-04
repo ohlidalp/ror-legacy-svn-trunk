@@ -86,7 +86,9 @@ WaterOld::WaterOld(int type, Camera *camera, SceneManager *mSceneMgr, RenderWind
 	vRtt1 = vRtt2 = 0;
 	mapsizex = _mapsizex;
 	mapsizez = _mapsizez;
-	mScale = 2.0f;
+	mScale = 1.0f;
+	if(*mapsizex < 1500)
+		mScale = 1.5f;
 	//reading wavefield
 	visible=true;
 	haswaves=usewaves;

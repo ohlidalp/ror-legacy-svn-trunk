@@ -192,7 +192,7 @@ void Turbojet::updateForces(float dt, int doUpdate)
 	{
 #ifdef USE_OPENAL
 		//sound update
-		ssm->modulate(trucknum, mod_id, rpm);
+		if(ssm) ssm->modulate(trucknum, mod_id, rpm);
 #endif //OPENAL
 	}
 	timer+=dt;
@@ -225,8 +225,8 @@ void Turbojet::updateForces(float dt, int doUpdate)
 		if (afterburner) enginethrust+=(afterburnthrust-maxdrythrust);
 	} else afterburner=false;
 #ifdef USE_OPENAL
-	if (afterburner) ssm->trigStart(trucknum, ab_id);
-	else ssm->trigStop(trucknum, ab_id);
+	if (afterburner && ssm) ssm->trigStart(trucknum, ab_id);
+	else if(ssm) ssm->trigStop(trucknum, ab_id);
 #endif //OPENAL
 
 	nodes[nodeback].Forces+=(enginethrust*1000.0)*axis;
@@ -240,7 +240,7 @@ void Turbojet::setThrotle(float val)
 	throtle=val;
 #ifdef USE_OPENAL
 	//sound update
-	ssm->modulate(trucknum, thr_id, val);
+	if(ssm) ssm->modulate(trucknum, thr_id, val);
 #endif //OPENAL
 }
 
@@ -280,13 +280,13 @@ void Turbojet::flipStart()
 		warmup=true;
 		warmupstart=timer;
 #ifdef USE_OPENAL
-		ssm->trigStart(trucknum, src_id);
+		if(ssm) ssm->trigStart(trucknum, src_id);
 #endif //OPENAL
 	}
 	else
 	{
 #ifdef USE_OPENAL
-		ssm->trigStop(trucknum, src_id);
+		if(ssm) ssm->trigStop(trucknum, src_id);
 #endif //OPENAL
 	}
 

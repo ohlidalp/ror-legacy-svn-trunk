@@ -213,7 +213,7 @@ void Turboprop::updateForces(float dt, int doUpdate)
 		airdensity=airpressure*0.0000120896;//1.225 at sea level
 #ifdef USE_OPENAL
 		//sound update
-		ssm->modulate(trucknum, mod_id, rpm);
+		if(ssm) ssm->modulate(trucknum, mod_id, rpm);
 #endif //OPENAL
 	}
 
@@ -394,7 +394,7 @@ void Turboprop::setThrotle(float val)
 	throtle=val;
 #ifdef USE_OPENAL
 	//sound update
-	ssm->modulate(trucknum, thr_id, val);
+	if(ssm) ssm->modulate(trucknum, thr_id, val);
 #endif //OPENAL
 }
 
@@ -435,13 +435,13 @@ void Turboprop::flipStart()
 		warmup=true;
 		warmupstart=timer;
 #ifdef USE_OPENAL
-		ssm->trigStart(trucknum, src_id);
+		if(ssm) ssm->trigStart(trucknum, src_id);
 #endif //OPENAL
 	}
 	else
 	{
 #ifdef USE_OPENAL
-		ssm->trigStop(trucknum, src_id);
+		if(ssm) ssm->trigStop(trucknum, src_id);
 #endif //OPENAL
 	}
 	lastflip=timer;
