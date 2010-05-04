@@ -79,6 +79,7 @@ private:
 	std::vector<Ogre::String> mTruckConfigs;
 	Ogre::Camera *mCamera;
 	Cache_Entry *mSelectedTruck;
+	int visibleCounter;
 	Skin *mSelectedSkin;
 private:
 	ATTRIBUTE_FIELD_WIDGET_NAME(SelectorWindow, mCacheSheet, "Cache");
