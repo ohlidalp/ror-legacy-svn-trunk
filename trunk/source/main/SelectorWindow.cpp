@@ -33,6 +33,7 @@ SelectorWindow::SelectorWindow()
 {
 	initialiseByAttributes(this);
 
+	visibleCounter=0;
 	mMainWidget->setVisible(false);
 
 	// setup controls
@@ -625,11 +626,16 @@ void SelectorWindow::show(LoaderType type)
 	mTruckConfigs.clear();
 	MyGUI::InputManager::getInstance().setKeyFocusWidget(mMainWidget);
 	mMainWidget->setEnabledSilent(true);
-	mMainWidget->castType<MyGUI::Window>()->setVisibleSmooth(true);
+	// first time fast
+	if(!visibleCounter)
+		mMainWidget->castType<MyGUI::Window>()->setVisible(true);
+	else
+		mMainWidget->castType<MyGUI::Window>()->setVisibleSmooth(true);
 	if (type != LT_SKIN) mSelectedTruck = nullptr; // when in skin, we still need the info
 	mLoaderType = type;
 	mSelectionDone = false;
 	getData();
+	visibleCounter++;
 }
 
 void SelectorWindow::hide()
