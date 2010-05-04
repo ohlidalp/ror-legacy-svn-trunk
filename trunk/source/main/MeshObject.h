@@ -154,7 +154,7 @@ protected:
 	void loadMesh()
 	{
 		Ogre::String resourceGroup = Ogre::ResourceGroupManager::DEFAULT_RESOURCE_GROUP_NAME;
-		Ogre::MeshPtr mesh = static_cast<Ogre::MeshPtr>(Ogre::MeshManager::getSingletonPtr()->create(meshName, resourceGroup));
+		Ogre::MeshPtr mesh = static_cast<Ogre::MeshPtr>(Ogre::MeshManager::getSingleton().create(meshName, resourceGroup));
 		if(backgroundLoading)
 		{
 			mesh->setBackgroundLoaded(true);
@@ -167,6 +167,43 @@ protected:
 				0,
 				0,
 				0);
+
+                        // try to load its textures in the background
+                        for(int i=0; i<mesh->getNumSubMeshes(); i++)
+                        {
+                            SubMesh *sm = mesh->getSubMesh(i);
+                            String materialName = sm->getMaterialName();
+                            Ogre::MaterialPtr mat = static_cast<Ogre::MaterialPtr>(Ogre::MaterialManager::getSingleton().getByName(materialName)); //, resourceGroup));
+                            if(mat.isNull()) continue;
+                            for(int tn=0; tn<mat->getNumTechniques(); tn++)
+                            {
+                                Technique *t = mat->getTechnique(tn);
+                                for(int pn=0; pn<t->getNumPasses(); pn++)
+                                {
+                                    Pass *p = t->getPass(pn);
+                                    for(int tun=0; tun<p->getNumTextureUnitStates(); tun++)
+                                    {
+                                        TextureUnitState *tu = p->getTextureUnitState(tun);
+                                        String textureName = tu->getTextureName();
+                                        // now add this texture to the background loading queue
+                                        Ogre::TexturePtr tex = static_cast<Ogre::TexturePtr>(Ogre::TextureManager::getSingleton().create(textureName, resourceGroup));
+                                        tex->setBackgroundLoaded(true);
+                                        tex->addListener(this);
+                                        ticket = Ogre::ResourceBackgroundQueue::getSingleton().load(
+                                                Ogre::TextureManager::getSingletonPtr()->getResourceType(),
+                                                tex->getName(),
+                                                resourceGroup,
+                                                false,
+                                                0,
+                                                0,
+                                                0);
+
+                                    }
+                                }
+                            
+                            }
+                        }
+
 		}
 
 		// now create an entity around the mesh and attach it to the scene graph
@@ -190,6 +227,7 @@ protected:
 
 	void operationCompleted(BackgroundProcessTicket ticket, const BackgroundProcessResult& result)
 	{
+                // NOT USED ATM
 		LogManager::getSingleton().logMessage("operationCompleted: " + meshName);
 		if(ticket == this->ticket)
 			postProcess();
@@ -207,18 +245,18 @@ protected:
 
 	void loadingComplete(Resource *r)
 	{
-		LogManager::getSingleton().logMessage("loadingComplete: " + meshName);
+		LogManager::getSingleton().logMessage("loadingComplete: " + r->getName());
 		postProcess();
 	}
 
 	void preparingComplete(Resource *r)
 	{
-		LogManager::getSingleton().logMessage("preparingComplete: " + meshName);
+		LogManager::getSingleton().logMessage("preparingComplete: " + r->getName());
 	}
 
 	void unloadingComplete(Resource *r)
 	{
-		LogManager::getSingleton().logMessage("unloadingComplete: " + meshName);
+		LogManager::getSingleton().logMessage("unloadingComplete: " + r->getName());
 	}
 };
 
