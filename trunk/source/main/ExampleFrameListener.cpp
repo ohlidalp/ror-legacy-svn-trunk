@@ -750,8 +750,8 @@ void ExampleFrameListener::updateGUI(float dt)
 				float absangle=angle;
 				if (absangle<0) absangle=-absangle;
 #ifdef USE_OPENAL
-				ssm->modulate(current_truck, SS_MOD_AOA, absangle);
-				if (absangle>18.0) ssm->trigStart(current_truck, SS_TRIG_AOA); else ssm->trigStop(current_truck, SS_TRIG_AOA);
+				if(ssm) ssm->modulate(current_truck, SS_MOD_AOA, absangle);
+				if (absangle>18.0 && ssm) ssm->trigStart(current_truck, SS_TRIG_AOA); else ssm->trigStop(current_truck, SS_TRIG_AOA);
 #endif // OPENAL
 				if (angle>25.0) angle=25.0;
 				if (angle<-25.0) angle=-25.0;
@@ -2698,7 +2698,7 @@ void ExampleFrameListener::repairTruck(char* inst, char* box)
 	{
 		//take a position reference
 #ifdef USE_OPENAL
-		ssm->trigOnce(rtruck, SS_TRIG_REPAIR);
+		if(ssm) ssm->trigOnce(rtruck, SS_TRIG_REPAIR);
 #endif //OPENAL
 		Vector3 ipos=trucks[rtruck]->nodes[0].AbsPosition;
 		trucks[rtruck]->reset();
@@ -2901,6 +2901,10 @@ bool ExampleFrameListener::updateEvents(float dt)
 	}
 	if (INPUTENGINE.getEventBoolValueBounce(EV_COMMON_SCREENSHOT_BIG, 0.5f))
 	{
+		// hide flash messages
+		flashMessage(0);
+		flashOverlay->hide();
+
 		int mNumScreenShots=0;
 		String path = SETTINGS.getSetting("User Path");
 		String tmp = path + String("screenshot_big_") + StringConverter::toString(++mNumScreenShots) + String(".") + String(screenshotformat);
@@ -2908,9 +2912,6 @@ bool ExampleFrameListener::updateEvents(float dt)
 			tmp = path + String("screenshot_big_") + StringConverter::toString(++mNumScreenShots) + String(".") + String(screenshotformat);
 
 		tmp = String("screenshot_big_") + StringConverter::toString(++mNumScreenShots);
-
-		// hide flash messages
-		flashMessage(0);
 
 		hideGUI(true);
 
@@ -3484,9 +3485,9 @@ bool ExampleFrameListener::updateEvents(float dt)
 						float brake = INPUTENGINE.getEventValue(EV_TRUCK_BRAKE);
 						trucks[current_truck]->brake = brake*trucks[current_truck]->brakeforce;
 #ifdef USE_OPENAL
-						if (trucks[current_truck]->brake > trucks[current_truck]->brakeforce/6.0)
+						if (ssm && trucks[current_truck]->brake > trucks[current_truck]->brakeforce/6.0)
 							ssm->trigStart(current_truck, SS_TRIG_BRAKE);
-						else
+						else if (ssm)
 							ssm->trigStop(current_truck, SS_TRIG_BRAKE);
 #endif //OPENAL
 
@@ -3503,14 +3504,14 @@ bool ExampleFrameListener::updateEvents(float dt)
 										//starter
 										trucks[current_truck]->engine->setstarter(1);
 #ifdef USE_OPENAL
-										ssm->trigStart(current_truck, SS_TRIG_STARTER);
+										if(ssm) ssm->trigStart(current_truck, SS_TRIG_STARTER);
 #endif // OPENAL
 									}
 								else
 									{
 										trucks[current_truck]->engine->setstarter(0);
 #ifdef USE_OPENAL
-										ssm->trigStop(current_truck, SS_TRIG_STARTER);
+										if(ssm) ssm->trigStop(current_truck, SS_TRIG_STARTER);
 #endif // OPENAL
 									}
 
@@ -3655,7 +3656,7 @@ bool ExampleFrameListener::updateEvents(float dt)
 #ifdef USE_OPENAL
 					if (trucks[current_truck]->ispolice)
 					{
-						if (INPUTENGINE.getEventBoolValueBounce(EV_TRUCK_HORN))
+						if (INPUTENGINE.getEventBoolValueBounce(EV_TRUCK_HORN) && ssm)
 						{
 							ssm->trigToggle(current_truck, SS_TRIG_HORN);
 						}
@@ -3664,8 +3665,11 @@ bool ExampleFrameListener::updateEvents(float dt)
 					{
 						if (INPUTENGINE.getEventBoolValue(EV_TRUCK_HORN) && !trucks[current_truck]->replaymode)
 						{
-							ssm->trigStart(current_truck, SS_TRIG_HORN);
-						} else {ssm->trigStop(current_truck, SS_TRIG_HORN);};
+							if(ssm) ssm->trigStart(current_truck, SS_TRIG_HORN);
+						} else
+						{
+							if(ssm) ssm->trigStop(current_truck, SS_TRIG_HORN);
+						};
 					}
 #endif // OPENAL
 
@@ -4122,7 +4126,7 @@ bool ExampleFrameListener::updateEvents(float dt)
 				if (INPUTENGINE.getEventBoolValue(EV_COMMON_REPAIR_TRUCK))
 				{
 #ifdef USE_OPENAL
-					ssm->trigOnce(current_truck, SS_TRIG_REPAIR);
+					if(ssm) ssm->trigOnce(current_truck, SS_TRIG_REPAIR);
 #endif //OPENAL
 					trucks[current_truck]->reset(true);
 				}
@@ -4202,7 +4206,7 @@ bool ExampleFrameListener::updateEvents(float dt)
 				{
 					showPressureOverlay(true);
 #ifdef USE_OPENAL
-					ssm->trigStart(current_truck, SS_TRIG_AIR);
+					if(ssm) ssm->trigStart(current_truck, SS_TRIG_AIR);
 #endif // OPENAL
 					trucks[current_truck]->addPressure(-dt*10.0);
 					pressure_pressed=true;
@@ -4211,14 +4215,14 @@ bool ExampleFrameListener::updateEvents(float dt)
 				{
 					showPressureOverlay(true);
 #ifdef USE_OPENAL
-					ssm->trigStart(current_truck, SS_TRIG_AIR);
+					if(ssm) ssm->trigStart(current_truck, SS_TRIG_AIR);
 #endif // OPENAL
 					trucks[current_truck]->addPressure(dt*10.0);
 					pressure_pressed=true;
 				} else if (pressure_pressed)
 				{
 #ifdef USE_OPENAL
-					ssm->trigStop(current_truck, SS_TRIG_AIR);
+					if(ssm) ssm->trigStop(current_truck, SS_TRIG_AIR);
 #endif // OPENAL
 					pressure_pressed=false;
 					showPressureOverlay(false);
@@ -5046,7 +5050,7 @@ void ExampleFrameListener::shutdown_pre()
 	loading_state=EXITING;
 	OverlayManager::getSingleton().getByName("tracks/CreditsOverlay")->show();
 #ifdef USE_OPENAL
-	ssm->soundEnable(false);
+	if(ssm) ssm->soundEnable(false);
 #endif // OPENAL
 #ifdef USE_OIS_G27
 	//logitech G27 LEDs tachometer
@@ -6857,8 +6861,8 @@ void ExampleFrameListener::setCurrentTruck(int v)
 		showDashboardOverlays(false,0);
 		showEditorOverlay(false);
 #ifdef USE_OPENAL
-		ssm->trigStop(previous_truck, SS_TRIG_AIR);
-		ssm->trigStop(previous_truck, SS_TRIG_PUMP);
+		if(ssm) ssm->trigStop(previous_truck, SS_TRIG_AIR);
+		if(ssm) ssm->trigStop(previous_truck, SS_TRIG_PUMP);
 #endif // OPENAL
 		int t;
 		for (t=0; t<free_truck; t++)
@@ -7366,7 +7370,7 @@ void ExampleFrameListener::moveCamera(float dt)
 	cdoppler=cpos;
 	// XXX maybe thats the source of sound destorsion: runtime order???
 #ifdef USE_OPENAL
-	ssm->setCamera(cpos, cdir, cup, cspeed);
+	if(ssm) ssm->setCamera(cpos, cdir, cup, cspeed);
 #endif // OPENAL
 	//if (cspeed.length()>50.0) {cspeed.normalise(); cspeed=50.0*cspeed;};
 	//if (audioManager) audioManager->setListenerPosition(cpos.x, cpos.y, cpos.z, cspeed.x, cspeed.y, cspeed.z, cdir.x, cdir.y, cdir.z, cup.x, cup.y, cup.z);

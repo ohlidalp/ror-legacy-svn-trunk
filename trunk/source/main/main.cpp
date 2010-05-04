@@ -129,15 +129,25 @@ bool RigsOfRods::setup(void)
 	loadMainResource("materials", ResourceGroupManager::DEFAULT_RESOURCE_GROUP_NAME);
 	loadMainResource("meshes", ResourceGroupManager::DEFAULT_RESOURCE_GROUP_NAME);
 	loadMainResource("overlays", ResourceGroupManager::DEFAULT_RESOURCE_GROUP_NAME);
-	loadMainResource("paged", ResourceGroupManager::DEFAULT_RESOURCE_GROUP_NAME);
 	loadMainResource("particles", ResourceGroupManager::DEFAULT_RESOURCE_GROUP_NAME);
 	loadMainResource("mygui", ResourceGroupManager::DEFAULT_RESOURCE_GROUP_NAME);
 	loadMainResource("layouts", ResourceGroupManager::DEFAULT_RESOURCE_GROUP_NAME);
 	loadMainResource("scripts", ResourceGroupManager::DEFAULT_RESOURCE_GROUP_NAME);
-	loadMainResource("sounds", ResourceGroupManager::DEFAULT_RESOURCE_GROUP_NAME);
 	loadMainResource("textures", ResourceGroupManager::DEFAULT_RESOURCE_GROUP_NAME);
-	loadMainResource("caelum", ResourceGroupManager::DEFAULT_RESOURCE_GROUP_NAME);
-	loadMainResource("hydrax", "Hydrax"); // special resourcegroup required!
+
+	// optional ones
+	if (SETTINGS.getSetting("3D Sound renderer") != "No sound")
+		loadMainResource("sounds", ResourceGroupManager::DEFAULT_RESOURCE_GROUP_NAME);
+	
+	if (SETTINGS.getSetting("Sky effects") == "Caelum (best looking, slower)")
+		loadMainResource("caelum", ResourceGroupManager::DEFAULT_RESOURCE_GROUP_NAME);
+
+	if(SETTINGS.getSetting("Hydrax") == "Yes")
+		loadMainResource("hydrax", "Hydrax"); // special resourcegroup required!
+
+	if(SETTINGS.getSetting("Vegetation") != "None (fastest)")
+		loadMainResource("paged", ResourceGroupManager::DEFAULT_RESOURCE_GROUP_NAME);
+
 	//streams path, to be processed later by the cache system
 	LogManager::getSingleton().logMessage("Loading filesystems");
 
@@ -262,13 +272,6 @@ void RigsOfRods::createScene(void)
 	if (tft=="Bilinear") tfo=TFO_BILINEAR;
 	if (tft=="Trilinear") tfo=TFO_TRILINEAR;
 	if (tft=="Anisotropic (best looking)") tfo=TFO_ANISOTROPIC;
-
-
-	// Test which syntax are allowed for shaders
-	LogManager::getSingleton().logMessage("* supported shader profiles:");
-	const GpuProgramManager::SyntaxCodes &syntaxCodes = GpuProgramManager::getSingleton().getSupportedSyntax();
-	for (GpuProgramManager::SyntaxCodes::const_iterator iter = syntaxCodes.begin();iter != syntaxCodes.end();++iter)
-		LogManager::getSingleton().logMessage(" - "+(*iter));
 
 	// Set ambient light
 	//        mSceneMgr->setAmbientLight(ColourValue(0.5, 0.5, 0.5));

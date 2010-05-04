@@ -64,7 +64,7 @@ void Autopilot::disconnect()
 	if (mode_gpws)
 	{
 #ifdef USE_OPENAL
-		ssm->trigOnce(trucknum, SS_TRIG_GPWS_APDISCONNECT);
+		if(ssm) ssm->trigOnce(trucknum, SS_TRIG_GPWS_APDISCONNECT);
 #endif //OPENAL
 	}
 }
@@ -265,6 +265,7 @@ int Autopilot::adjIAS(int d)
 void Autopilot::gpws_update()
 {
 #ifdef USE_OPENAL
+	if(!ssm) return;
 	if (mode_gpws && hf && ref_b)
 	{
 		float groundalt=hf->getHeightAt(ref_b->AbsPosition.x, ref_b->AbsPosition.z);
@@ -349,7 +350,7 @@ void Autopilot::getRadioFix(localizer_t *localizers, int free_localizer, float *
 	*hdev=closest_hangle;
 	*vdev=closest_vangle;
 #ifdef USE_OPENAL
-	if (mode_heading==HEADING_NAV && mode_gpws && closest_hdist>10.0 && closest_hdist<350.0 && last_closest_hdist>10.0 && last_closest_hdist>350.0)
+	if (ssm && mode_heading==HEADING_NAV && mode_gpws && closest_hdist>10.0 && closest_hdist<350.0 && last_closest_hdist>10.0 && last_closest_hdist>350.0)
 		ssm->trigOnce(trucknum, SS_TRIG_GPWS_MINIMUMS);
 #endif //OPENAL
 	last_closest_hdist=closest_hdist;

@@ -128,6 +128,7 @@ void SoundScriptManager::setCamera(Vector3 position, Vector3 direction, Vector3 
 
 SoundScriptManager *SoundScriptManager::getSingleton()
 {
+	if (SETTINGS.getSetting("3D Sound renderer") == "No sound") return 0;
 	if (!singleton) singleton=new SoundScriptManager();
 	return singleton;
 }
