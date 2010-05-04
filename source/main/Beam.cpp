@@ -78,6 +78,7 @@ along with Rigs of Rods.  If not, see <http://www.gnu.org/licenses/>.
 # include "crashrpt.h"
 #endif
 
+// TODO WHAT IS THIS?
 float mrtime;
 
 //threads and mutexes, see also at the bottom
@@ -1339,7 +1340,8 @@ int Beam::loadTruck(const char* fname, SceneManager *manager, SceneNode *parent,
 	int managedmaterials_doublesided=0; // not by default
 	float wingarea=0.0;
 	int currentScriptCommandNumber=-1;
-	bool enable_truck_lod = (SETTINGS.getSetting("Truck LOD Enabled") == "Yes");
+	// TODO Unused Varaible
+	//bool enable_truck_lod = (SETTINGS.getSetting("Truck LOD Enabled") == "Yes");
 	bool enable_background_loading = (SETTINGS.getSetting("Background Loading") == "Yes");
 
 	//convert ry
@@ -2080,7 +2082,7 @@ int Beam::loadTruck(const char* fname, SceneManager *manager, SceneNode *parent,
 							e.smokeNode = parent->createChildSceneNode();
 							//ParticleSystemManager *pSysM=ParticleSystemManager::getSingletonPtr();
 							char wname[256];
-							sprintf(wname, "exhaust-%d-%s", exhausts.size(), truckname);
+							sprintf(wname, "exhaust-%zu-%s", exhausts.size(), truckname);
 							//if (pSysM) smoker=pSysM->createSystem(wname, "tracks/Smoke");
 							e.smoker=manager->createParticleSystem(wname, "tracks/Smoke");
 							// ParticleSystem* pSys = ParticleSystemManager::getSingleton().createSystem("exhaust", "tracks/Smoke");
@@ -2108,7 +2110,7 @@ int Beam::loadTruck(const char* fname, SceneManager *manager, SceneNode *parent,
 							e.smokeNode = parent->createChildSceneNode();
 							//ParticleSystemManager *pSysM=ParticleSystemManager::getSingletonPtr();
 							char wname[256];
-							sprintf(wname, "exhaust-%d-%s", exhausts.size(), truckname);
+							sprintf(wname, "exhaust-%zu-%s", exhausts.size(), truckname);
 							//if (pSysM) smoker=pSysM->createSystem(wname, "tracks/Smoke");
 							e.smoker=manager->createParticleSystem(wname, "tracks/Smoke");
 							// ParticleSystem* pSys = ParticleSystemManager::getSingleton().createSystem("exhaust", "tracks/Smoke");
@@ -2202,7 +2204,9 @@ int Beam::loadTruck(const char* fname, SceneManager *manager, SceneNode *parent,
 				options_pointer++;
 			}
 
-			float beam_length = nodes[id1].AbsPosition.distance(nodes[id2].AbsPosition);
+
+			// TODO Unused Varaible
+			//float beam_length = nodes[id1].AbsPosition.distance(nodes[id2].AbsPosition);
 			/*
 			if(beam_length < 0.01f)
 			{
@@ -4164,7 +4168,7 @@ int Beam::loadTruck(const char* fname, SceneManager *manager, SceneNode *parent,
 			e.isOldFormat = false;
 			e.smokeNode = parent->createChildSceneNode();
 			char wname[256];
-			sprintf(wname, "exhaust-%d-%s", exhausts.size(), truckname);
+			sprintf(wname, "exhaust-%zu-%s", exhausts.size(), truckname);
 			if(strnlen(material,50) == 0 || String(material) == "default")
 				strcpy(material, "tracks/Smoke");
 
@@ -4819,7 +4823,7 @@ int Beam::loadTruck(const char* fname, SceneManager *manager, SceneNode *parent,
 				continue;
 			}
 
-			int wheel_node[2][2] = {0};
+			int wheel_node[2][2] = {{0, 0}, {0, 0}};
 			Ogre::vector<Ogre::String>::type options = Ogre::StringUtil::split(line, ",");
 			Ogre::vector<Ogre::String>::type::iterator cur = options.begin();
 
@@ -6507,7 +6511,9 @@ bool Beam::frameStep(Real dt, Beam** trucks, int numtrucks)
 				{
 					// average position
 					Vector3 aposition=Vector3::ZERO;
-					int nodesnum=0;
+
+					// TODO Unused Varaible
+					//int nodesnum=0;
 					for (int n=0; n<trucks[t]->free_node; n++)
 					{
 						trucks[t]->nodes[n].smoothpos=trucks[t]->nodes[n].AbsPosition;
@@ -6548,7 +6554,9 @@ bool Beam::frameStep(Real dt, Beam** trucks, int numtrucks)
 			{
 				// average position
 				Vector3 aposition=Vector3::ZERO;
-				int nodesnum=0;
+
+				// TODO Unused Varaible
+				//int nodesnum=0;
 				for (int n=0; n<free_node; n++)
 				{
 					nodes[n].smoothpos=nodes[n].AbsPosition;
@@ -7005,12 +7013,18 @@ void Beam::calcAnimators(int flagstate, float &cstate, int &div, Real timer, flo
 	//airspeed indicator
 	if (flag_state & ANIM_FLAG_AIRSPEED)
 	{
-		float angle=0.0;
+
+		// TODO Unused Varaible
+		//float angle=0.0;
 		float ground_speed_kt= nodes[0].Velocity.length()*1.9438;
 		float altitude=nodes[0].AbsPosition.y;
-		float sea_level_temperature=273.15+15.0; //in Kelvin
+
+		// TODO Unused Varaible
+		//float sea_level_temperature=273.15+15.0; //in Kelvin
 		float sea_level_pressure=101325; //in Pa
-		float airtemperature=sea_level_temperature-altitude*0.0065; //in Kelvin
+
+		// TODO Unused Varaible
+		//float airtemperature=sea_level_temperature-altitude*0.0065; //in Kelvin
 		float airpressure=sea_level_pressure*pow(1.0-0.0065*altitude/288.15, 5.24947); //in Pa
 		float airdensity=airpressure*0.0000120896;//1.225 at sea level
 		float kt=ground_speed_kt*sqrt(airdensity/1.225);
@@ -7710,9 +7724,15 @@ void Beam::calcForcesEuler(int doUpdate, Real dt, int step, int maxstep, Beam** 
 				}
 
 				//offset prop
-				float ox = props[propi].orgoffsetX;
-				float oy = props[propi].orgoffsetY;
-				float oz = props[propi].orgoffsetZ;
+
+				// TODO Unused Varaible
+				//float ox = props[propi].orgoffsetX;
+
+				// TODO Unused Varaible
+				//float oy = props[propi].orgoffsetY;
+
+				// TODO Unused Varaible
+				//float oz = props[propi].orgoffsetZ;
 
 				if (props[propi].animMode[animnum] & ANIM_MODE_OFFSET_X || props[propi].animMode[animnum] & ANIM_MODE_OFFSET_Y || props[propi].animMode[animnum] & ANIM_MODE_OFFSET_Z)
 				{
@@ -8006,10 +8026,12 @@ void Beam::calcForcesEuler(int doUpdate, Real dt, int step, int maxstep, Beam** 
 			nodes[i].colltesttimer+=dt;
 			if (nodes[i].contacted || nodes[i].colltesttimer>0.005 || (nodes[i].iswheel && nodes[i].colltesttimer>0.0025) || increased_accuracy )
 			{
-				int contacted=0;
 				float ns=0;
 				ground_model_t *gm = 0; // this is used as result storage, so we can use it later on
-				if ((contacted=collisions->groundCollision(&nodes[i], nodes[i].colltesttimer, &gm, &ns)) |
+				int contacted = collisions->groundCollision(&nodes[i], nodes[i].colltesttimer, &gm, &ns);
+				
+				//TODO is this supposed to be a binary operator, or a logical operator?
+				if ( contacted |
 					collisions->nodeCollision(&nodes[i], i==cinecameranodepos[currentcamera], contacted, nodes[i].colltesttimer, &ns, &gm))
 				{
 					//FX
@@ -8225,9 +8247,13 @@ void Beam::calcForcesEuler(int doUpdate, Real dt, int step, int maxstep, Beam** 
 
 		//tropospheric model valid up to 11.000m (33.000ft)
 		float altitude=fuseFront->AbsPosition.y;
-		float sea_level_temperature=273.15f+15.0f; //in Kelvin
+
+		// TODO Unused Varaible
+		//float sea_level_temperature=273.15f+15.0f; //in Kelvin
 		float sea_level_pressure=101325; //in Pa
-		float airtemperature=sea_level_temperature-altitude*0.0065f; //in Kelvin
+
+		// TODO Unused Varaible
+		//float airtemperature=sea_level_temperature-altitude*0.0065f; //in Kelvin
 		float airpressure=sea_level_pressure*approx_pow(1.0-0.0065*altitude/288.1, 5.24947); //in Pa
 		float airdensity=airpressure*0.0000120896f;//1.225 at sea level
 
@@ -8581,10 +8607,12 @@ void Beam::calcForcesEuler(int doUpdate, Real dt, int step, int maxstep, Beam** 
 	if (hydroaileronstate!=0 || hydroaileroncommand!=0)
 	{
 		if (hydroaileroncommand!=0)
+		{
 			if (hydroaileronstate>(hydroaileroncommand))
 				hydroaileronstate-=dt*4.0;
 			else
 				hydroaileronstate+=dt*4.0;
+		}
 		float delta=dt;
 		if (hydroaileronstate>delta) hydroaileronstate-=delta;
 		else if (hydroaileronstate<-delta) hydroaileronstate+=delta;
@@ -8594,10 +8622,13 @@ void Beam::calcForcesEuler(int doUpdate, Real dt, int step, int maxstep, Beam** 
 	if (hydrorudderstate!=0 || hydroruddercommand!=0)
 	{
 		if (hydroruddercommand!=0)
+		{
 			if (hydrorudderstate>(hydroruddercommand))
 				hydrorudderstate-=dt*4.0;
 			else
 				hydrorudderstate+=dt*4.0;
+		}
+		
 		float delta=dt;
 		if (hydrorudderstate>delta) hydrorudderstate-=delta;
 		else if (hydrorudderstate<-delta) hydrorudderstate+=delta;
@@ -8607,10 +8638,12 @@ void Beam::calcForcesEuler(int doUpdate, Real dt, int step, int maxstep, Beam** 
 	if (hydroelevatorstate!=0 || hydroelevatorcommand!=0)
 	{
 		if (hydroelevatorcommand!=0)
+		{
 			if (hydroelevatorstate>(hydroelevatorcommand))
 				hydroelevatorstate-=dt*4.0;
 			else
 				hydroelevatorstate+=dt*4.0;
+		}
 		float delta=dt;
 		if (hydroelevatorstate>delta) hydroelevatorstate-=delta;
 		else if (hydroelevatorstate<-delta) hydroelevatorstate+=delta;
@@ -9116,7 +9149,9 @@ void Beam::truckTruckCollisions(Real dt, Beam** trucks, int numtrucks)
 
 	pointCD->update(trucks, numtrucks);
 
-	int colltype=0;
+
+	// TODO Unused Varaible
+	//int colltype=0;
 	int tmpv;
 	Matrix3 forward;
 	bool calcforward;

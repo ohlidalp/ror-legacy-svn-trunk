@@ -118,63 +118,64 @@ public:
 	std::set<Ogre::String> materials;
 
 	// default constructor resets the data.
-	Cache_Entry() : \
-		minitype(""), \
-		fname(""), \
-		fname_without_uid(""), \
-		dname(""), \
-		categoryid(0), \
-		categoryname(""), \
-		addtimestamp(0), \
-		uniqueid(""), \
-		version(0), \
-		fext(""), \
-		filetime(""), \
-		type(""), \
-		dirname(""), \
-		hash(""), \
-		resourceLoaded(false), \
-		number(0), \
-		changedornew(false), \
-		deleted(false), \
-		usagecounter(0), \
-		filecachename(""), \
-		description(""), \
-		tags(""), \
-		fileformatversion(0), \
-		hasSubmeshs(false), \
-		nodecount(0), \
-		beamcount(0), \
-		shockcount(0), \
-		fixescount(0), \
-		hydroscount(0), \
-		wheelcount(0), \
-		propwheelcount(0), \
-		commandscount(0), \
-		flarescount(0), \
-		propscount(0), \
-		wingscount(0), \
-		turbopropscount(0), \
-		turbojetcount(0), \
-		rotatorscount(0), \
-		exhaustscount(0), \
-		flexbodiescount(0), \
-		materialflarebindingscount(0), \
-		soundsourcescount(0), \
-		managedmaterialscount(0), \
-		truckmass(0), \
-		loadmass(0), \
-		minrpm(0), \
-		maxrpm(0), \
-		torque(0), \
-		customtach(false), \
-		custom_particles(false), \
-		forwardcommands(false), \
-		importcommands(false), \
-		rollon(false), \
-		rescuer(false), \
-		driveable(0), \
-		numgears(0), \
+	Cache_Entry() : 
+		minitype(""), 
+		fname(""), 
+		fname_without_uid(""), 
+		dname(""), 
+		categoryid(0), 
+		categoryname(""), 
+		addtimestamp(0), 
+		uniqueid(""), 
+		version(0), 
+		fext(""),  
+		type(""), 
+		dirname(""), 
+		hash(""), 
+		resourceLoaded(false), 
+		number(0),
+		filetime(""), 
+		changedornew(false), 
+		deleted(false), 
+		usagecounter(0),
+		//authors
+		filecachename(""), 
+		description(""), 
+		tags(""), 
+		fileformatversion(0), 
+		hasSubmeshs(false), 
+		nodecount(0), 
+		beamcount(0), 
+		shockcount(0), 
+		fixescount(0), 
+		hydroscount(0), 
+		wheelcount(0), 
+		propwheelcount(0), 
+		commandscount(0), 
+		flarescount(0), 
+		propscount(0), 
+		wingscount(0), 
+		turbopropscount(0), 
+		turbojetcount(0), 
+		rotatorscount(0), 
+		exhaustscount(0), 
+		flexbodiescount(0), 
+		materialflarebindingscount(0), 
+		soundsourcescount(0), 
+		managedmaterialscount(0), 
+		truckmass(0), 
+		loadmass(0), 
+		minrpm(0), 
+		maxrpm(0), 
+		torque(0), 
+		customtach(false), 
+		custom_particles(false), 
+		forwardcommands(false), 
+		importcommands(false), 
+		rollon(false), 
+		rescuer(false), 
+		driveable(0), 
+		numgears(0), 
 		enginetype('t'),
 		materials()
 	{

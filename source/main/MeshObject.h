@@ -29,9 +29,19 @@ along with Rigs of Rods.  If not, see <http://www.gnu.org/licenses/>.
 class MeshObject : public Ogre::ResourceBackgroundQueue::Listener, public Ogre::Resource::Listener
 {
 public:
-	MeshObject(Ogre::SceneManager *smgr, Ogre::String meshName, Ogre::String entityName, Ogre::SceneNode *sceneNode=0, bool backgroundLoading=true) : \
-		smgr(smgr), entityName(entityName), meshName(meshName), sceneNode(sceneNode), ent(0), backgroundLoading(backgroundLoading), loaded(false), 
-		enableSimpleMaterial(false), materialName(), skin(0), castshadows(true), mfm(0)
+	MeshObject(Ogre::SceneManager *smgr, Ogre::String meshName, Ogre::String entityName, Ogre::SceneNode *sceneNode=0, bool backgroundLoading=true)
+		: smgr(smgr)
+		, meshName(meshName)
+		, entityName(entityName)
+		, sceneNode(sceneNode)
+		, ent(0)
+		, backgroundLoading(backgroundLoading)
+		, loaded(false)
+		, enableSimpleMaterial(false)
+		, materialName()
+		, skin(0)
+		, castshadows(true)
+		, mfm(0)
 	{
 		// create a new sceneNode if not existing
 		if(!sceneNode)
@@ -101,7 +111,8 @@ public:
 	}
 protected:
 	Ogre::SceneManager *smgr;
-	Ogre::String meshName, entityName;
+	Ogre::String meshName;
+	Ogre::String entityName;
 	Ogre::SceneNode *sceneNode;
 	Ogre::Entity *ent;
 	Ogre::MeshPtr mesh;
