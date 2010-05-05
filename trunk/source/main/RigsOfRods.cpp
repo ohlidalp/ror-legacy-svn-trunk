@@ -242,6 +242,7 @@ bool RigsOfRods::setup(void)
 	//mRoot->setFrameSmoothingPeriod(2.0);
 
 #if OGRE_PLATFORM == OGRE_PLATFORM_WIN32
+#ifndef _UNICODE
 	size_t hWnd = 0;
 	mWindow->getCustomAttribute("WINDOW", &hWnd);
 
@@ -249,14 +250,14 @@ bool RigsOfRods::setup(void)
 	::GetModuleFileNameA(0, (LPCH)&buf, MAX_PATH);
 
 	HINSTANCE instance = ::GetModuleHandleA(buf);
-
 	HICON hIcon = ::LoadIconA(instance, MAKEINTRESOURCE(1001));
 	if (hIcon)
 	{
 		::SendMessageA((HWND)hWnd, WM_SETICON, 1, (LPARAM)hIcon);
 		::SendMessageA((HWND)hWnd, WM_SETICON, 0, (LPARAM)hIcon);
 	}
-#endif
+#endif //_UNICODE
+#endif //OGRE_PLATFORM_WIN32
 
 	// load all resources now, so the zip files are also initiated
 	LogManager::getSingleton().logMessage("initialiseAllResourceGroups()");
@@ -270,9 +271,11 @@ bool RigsOfRods::setup(void)
 
 	//rgm.initialiseResourceGroup(ResourceGroupManager::DEFAULT_RESOURCE_GROUP_NAME);
 
+#ifndef NOLANG
 	// load language, must happen after initializing Settings class and Ogre Root!
 	// also it must happen after loading all basic resources!
 	LanguageEngine::Instance().setup();
+#endif //NOLANG
 
 	// Create the scene
 	LogManager::getSingleton().logMessage("createScene()");

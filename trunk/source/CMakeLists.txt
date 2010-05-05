@@ -11,3 +11,8 @@ set(ROR_BUILD_INSTALLER "FALSE" CACHE BOOL "build the installer")
 IF(ROR_BUILD_INSTALLER)
   add_subdirectory(installer)
 ENDIF(ROR_BUILD_INSTALLER)
+
+set(ROR_BUILD_EDITOR "FALSE" CACHE BOOL "build the editor")
+IF(ROR_BUILD_EDITOR)
+  add_subdirectory(editor)
+ENDIF(ROR_BUILD_EDITOR)
