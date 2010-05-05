@@ -1217,103 +1217,109 @@ void Collisions::primitiveCollision(node_t *node, Vector3 &force, Vector3 &veloc
 {
 	//normal velocity
 
-	float Vnormal=velocity.dotProduct(normal);
+	float Vnormal = velocity.dotProduct(normal);
 
 	// if we are inside the fluid (solid ground is below us)
-	if (gm->solid_ground_level!=0.0f && penetration>=0)
+	if (gm->solid_ground_level != 0.0f && penetration >= 0)
 	{
-		if (nso) *nso=0.0f;
+		if (nso) *nso = 0.0f;
 
-		float Vsquared=velocity.squaredLength();
+		float Vsquared = velocity.squaredLength();
 		// First of all calculate power law fluid viscosity
-		float m = gm->flow_consistency_index*approx_pow(Vsquared, (gm->flow_behavior_index-1.0f)*0.5f);
+		float m = gm->flow_consistency_index * approx_pow(Vsquared, (gm->flow_behavior_index - 1.0f)*0.5f);
 
 		//Then calculate drag based on above. We'are using a simplified Stokes' drag.
 		// Per node fluid drag surface coefficient set by node property applies here
-		Vector3 Fdrag=velocity*(-m * node->surface_coef);
+		Vector3 Fdrag = velocity * (-m * node->surface_coef);
 
 		//If we have anisotropic drag
-		if (gm->drag_anisotropy<1.0f && Vnormal>0)
+		if (gm->drag_anisotropy < 1.0f && Vnormal > 0)
 		{
 			float da_factor;
-			if (Vsquared>gm->va*gm->va)
-				da_factor=1.0;
+			if (Vsquared > gm->va * gm->va)
+				da_factor = 1.0;
 			else
-				da_factor=Vsquared/(gm->va*gm->va);
-			Fdrag+=(Vnormal*m*(1.0f-gm->drag_anisotropy)*da_factor)*normal;
+				da_factor = Vsquared / (gm->va * gm->va);
+			Fdrag += (Vnormal * m * (1.0f - gm->drag_anisotropy) * da_factor) * normal;
 		}
-		force+=Fdrag;
+		force += Fdrag;
 
 		//Now calculate upwards force based on a simplified boyancy equation;
 		//If the fluid is pseudoplastic then boyancy is constrained to only "stopping" a node from going downwards
 		//Buoyancy per node volume coefficient set by node property applies here
 		float Fboyancy = gm->fluid_density * penetration * (-DEFAULT_GRAVITY) * node->volume_coef;
-		if (gm->flow_behavior_index<1.0f && Vnormal>=0.0f)
+		if (gm->flow_behavior_index < 1.0f && Vnormal >= 0.0f)
 		{
-			float Fnormal=force.dotProduct(normal);
-			if (Fnormal<0 && Fboyancy>-Fnormal)
+			float Fnormal = force.dotProduct(normal);
+			if (Fnormal < 0 && Fboyancy>-Fnormal)
 			{
-				Fboyancy=-Fnormal;
+				Fboyancy = -Fnormal;
 			}
 		}
-		force+=Fboyancy*normal;
+		force += Fboyancy*normal;
 	}
 
 	// if we are inside or touching the solid ground
-	if (penetration>=gm->solid_ground_level)
+	if (penetration >= gm->solid_ground_level)
 	{
-		Vector3 slip=velocity-Vnormal*normal;
-		float slipv=slip.squaredLength();
+		Vector3 slip = velocity - Vnormal*normal;
+		float slipv = slip.squaredLength();
 		if (fabs(slipv) > 1e-08f)
 		{
-			float invslipv=fast_invSqrt(slipv);
-			slip=slip*invslipv;
-			slipv=slipv*invslipv;
+			float invslipv = fast_invSqrt(slipv);
+			slip = slip*invslipv;
+			slipv = slipv*invslipv;
 		}
 		else
 		{
-			slipv=sqrt(slipv);
+			slipv = sqrt(slipv);
 		}
 
-		if (nso && gm->solid_ground_level==0.0f) *nso=slipv;
+		if (nso && gm->solid_ground_level == 0.0f) *nso = slipv;
 
-		float Fnormal;
+		float Fnormal = 0.0f;
+		float Fdnormal = 0.0f;
 		float Freaction;
 		float Greaction;
 
+		Fnormal = force.dotProduct(normal);
+		Fdnormal = Fnormal;
+
 		//steady force
-		if (reaction<0)
+		if (reaction < 0)
 		{
-			Fnormal=force.dotProduct(normal);
-			Freaction=-Fnormal;
+			Freaction = -Fnormal;
 			//impact force
-			if (Vnormal<0)
+			if (Vnormal < 0)
 			{
-				Freaction+=-Vnormal*node->mass/dt; //Newton's second law
+				Freaction += -Vnormal * node->mass / dt; //Newton's second law
 			}
-			if (Freaction<0) Freaction=0.0f;
-		} else {
-			Freaction=reaction;
-			Fnormal=0.0f;
+			if (Freaction < 0) Freaction = 0.0f;
+		}
+		else
+		{
+			Freaction = reaction;
+			Fnormal = 0.0f;
 		}
 		float ff;
 		// If the velocity that we slip is lower than adhesion velocity and
 		// we have a downforce and the slip forces are lower than static friction
 		// forces then it's time to go into static friction physics mode.
 		// This code is a direct translation of textbook static friction physics
-		Greaction=(Freaction * gm->strength * node->friction_coef); //General moderated reaction, node property sets friction_coef as a pernodefriction setting
-		if ( slipv<(gm->va) && Greaction>0 && fabs(force.dotProduct(slip))<=fabs((gm->ms)*Greaction))
+		Greaction = (Freaction * gm->strength * node->friction_coef); //General moderated reaction, node property sets friction_coef as a pernodefriction setting
+		float msGreaction = (gm->ms) * Greaction;
+		if (slipv < (gm->va) && Greaction > 0.0f && (force - Fdnormal * normal).squaredLength() <= msGreaction * msGreaction)
 		{
 			// Static friction model (with a little smoothing to help the integrator deal with it)
-			ff=-(gm->ms)*(1-approx_exp(-fabs(slipv/gm->va)))*Greaction;
-			force=(Fnormal+Freaction)*normal + ff*slip;
+			ff = -msGreaction * (1.0f - approx_exp(-slipv / gm->va));
+			force = (Fnormal + Freaction) * normal + ff*slip;
 		}
 		else
 		{
 			//Stribek model. It also comes directly from textbooks.
-			float g=gm->mc+(gm->ms-gm->mc)*approx_exp(-approx_pow(slipv/gm->vs, gm->alpha));
-			ff=-(g+gm->t2*slipv)*Greaction;
-			force+=Freaction*normal + ff*slip;
+			float g = gm->mc + (gm->ms - gm->mc) * min(1.0f, approx_exp(-approx_pow(slipv / gm->vs, gm->alpha)));
+			ff = -(g + gm->t2 * slipv) * Greaction;
+			force += Freaction * normal + ff*slip;
 		}
 	}
 }
