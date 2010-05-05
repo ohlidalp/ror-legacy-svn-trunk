@@ -360,7 +360,6 @@ int LuaSystem::showChooser(lua_State *lua)
 	const char *box = lua_tostring (lua, 3);
 #ifdef USE_MYGUI
 	SelectorWindow::LoaderType ntype = SelectorWindow::LT_None;
-#endif //USE_MYGUI
 	if (!strcmp("vehicle", type))   ntype = SelectorWindow::LT_Vehicle;
 	if (!strcmp("truck", type))     ntype = SelectorWindow::LT_Truck;
 	if (!strcmp("car", type))       ntype = SelectorWindow::LT_Truck;
@@ -373,6 +372,7 @@ int LuaSystem::showChooser(lua_State *lua)
 	if (!strcmp("extension", type)) ntype = SelectorWindow::LT_Extension;
 	if (ntype != SelectorWindow::LT_None)
 		mefl->showLoad(ntype, (char*)inst, (char*)box);
+#endif //USE_MYGUI
 	return 0;
 }
 

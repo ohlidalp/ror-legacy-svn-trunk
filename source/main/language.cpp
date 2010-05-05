@@ -22,6 +22,8 @@ freely, subject to the following restrictions:
 */
 // created: 12th of January 2009, thomas fischer thomas{AT}thomasfischer{DOT}biz
 
+#ifndef NOLANG
+
 #include "OgreFontManager.h"
 #include "language.h"
 #include "Settings.h"
@@ -149,3 +151,4 @@ void LanguageEngine::setupCodeRanges(String codeRangesFilename, String codeRange
 	//fontCacheInit("Cyberbit");
 	//generateAllFontTextures();
 }
+#endif //NOLANG
