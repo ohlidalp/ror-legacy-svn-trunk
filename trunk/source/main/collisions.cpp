@@ -103,7 +103,7 @@ Collisions::Collisions(
 #ifdef USE_LUA
   LuaSystem *mlua,
 #endif
-  ExampleFrameListener *efl, bool _debugMode) : mefl(efl), ground_models()
+  RoRFrameListener *efl, bool _debugMode) : mefl(efl), ground_models()
 {
 	landuse=0;
 	debugMode=_debugMode;

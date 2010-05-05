@@ -24,7 +24,7 @@ along with Rigs of Rods.  If not, see <http://www.gnu.org/licenses/>.
 #include <math.h>
 
 #include "Ogre.h"
-#include "ExampleFrameListener.h"
+#include "RoRFrameListener.h"
 using namespace Ogre;
 
 
@@ -51,7 +51,7 @@ public:
 	Vector3 ppos;
 	char curtype[256];
 
-	Editor(SceneManager *scm, ExampleFrameListener *efl);
+	Editor(SceneManager *scm, RoRFrameListener *efl);
 	void addObjectType(char* name);
 
 	void updatePending();

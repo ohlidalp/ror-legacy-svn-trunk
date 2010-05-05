@@ -29,7 +29,7 @@ along with Rigs of Rods.  If not, see <http://www.gnu.org/licenses/>.
 
 #include "Ogre.h"
 #include "OgreConfigFile.h"
-#include "ExampleFrameListener.h"
+#include "RoRFrameListener.h"
 //#include "OgrePlatformManager.h"
 #include "OgreConfigDialog.h"
 #ifdef HAS_EDITOR
@@ -51,45 +51,35 @@ using namespace Ogre;
 //#include <CFUserNotification.h>
 #endif
 
-// Event handler to add ability to alter curvature
-class RoRFrameListener : public ExampleFrameListener, public MemoryAllocatedObject
-{
-public:
-	RoRFrameListener(RenderWindow* win, Camera* cam, SceneManager* scm, Root* root) : 
-		ExampleFrameListener(win, cam, scm, root)
-	{
-	}
-
-	bool frameStarted(const FrameEvent& evt)
-	{
-		bool ret = ExampleFrameListener::frameStarted(evt);
-		return ret;
-	}
-
-};
-
-
-
 class RigsOfRods
 {
 public:
-	RigsOfRods();
+	RigsOfRods(Ogre::String name = Ogre::String("RoR"), unsigned int hwnd=0);
 	~RigsOfRods();
-	//startup game
-	void go(void);
+	// creates Ogre Root
+	bool setup(void);
+	// setup and start game
+	void go();
 	void shutdown(void);
 
 	bool useogreconfig;
 	bool buildmode;
 
+	SceneManager *getSceneManager() { return mSceneMgr; };
+	RenderWindow *getRenderWindow() { return mWindow; };
+	Camera *getCamera() { return mCamera; };
+	Viewport *getViewport() { return vp; };
+
 protected:
 	Root *mRoot;
 	Camera* mCamera;
 	SceneManager* mSceneMgr;
-	ExampleFrameListener* mFrameListener;
+	RoRFrameListener* mFrameListener;
 	RenderWindow* mWindow;
 	SoundScriptManager* ssm;
-	static RigsOfRods *myinstance;
+	Viewport* vp;
+	unsigned int hwnd;
+	Ogre::String name;
 
 #ifdef HAS_EDITOR
 	SpinControlOverlayElementFactory* spinfact;
@@ -97,8 +87,6 @@ protected:
 
 	void loadMainResource(String name, String group);
 
-	//creates Ogre Root
-	bool setup(void);
 
 	// create scene
 	void createScene(void);

@@ -33,16 +33,16 @@ class HeightFinder;
 class Water;
 class MapControl;
 class Network;
-class ExampleFrameListener;
+class RoRFrameListener;
 
 #include "Beam.h"
 
 class BeamFactory : public StreamableFactory < BeamFactory, Beam >, public MemoryAllocatedObject
 {
 	friend class Network;
-	friend class ExampleFrameListener;
+	friend class RoRFrameListener;
 	public:
-	BeamFactory(ExampleFrameListener *efl, Beam **trucks, SceneManager *manager, SceneNode *parent, RenderWindow* win, Network *net, float *mapsizex, float *mapsizez, Collisions *icollisions, HeightFinder *mfinder, Water *w, Camera *pcam, Mirrors *mmirror0);
+	BeamFactory(RoRFrameListener *efl, Beam **trucks, SceneManager *manager, SceneNode *parent, RenderWindow* win, Network *net, float *mapsizex, float *mapsizez, Collisions *icollisions, HeightFinder *mfinder, Water *w, Camera *pcam, Mirrors *mmirror0);
 	~BeamFactory();
 
 	Beam *createLocal(int slotid);
@@ -53,7 +53,7 @@ class BeamFactory : public StreamableFactory < BeamFactory, Beam >, public Memor
 
 	Beam *getBeam(int source, int streamid); // used by character
 protected:
-	ExampleFrameListener *efl;
+	RoRFrameListener *efl;
 	Ogre::SceneManager *manager;
 	Ogre::SceneNode *parent;
 	Ogre::RenderWindow* win;

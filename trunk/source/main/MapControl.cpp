@@ -24,7 +24,7 @@ along with Rigs of Rods.  If not, see <http://www.gnu.org/licenses/>.
 #include "Beam.h"
 
 
-#include "ExampleFrameListener.h"
+#include "RoRFrameListener.h"
 
 #include "MapEntity.h"
 

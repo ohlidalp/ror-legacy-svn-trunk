@@ -21,11 +21,11 @@ along with Rigs of Rods.  If not, see <http://www.gnu.org/licenses/>.
 #include "MapTextureCreator.h"
 
 #include "ResourceBuffer.h"
-#include "ExampleFrameListener.h"
+#include "RoRFrameListener.h"
 #include "water.h"
 
 int MapTextureCreator::mCounter=0;
-MapTextureCreator::MapTextureCreator(Ogre::SceneManager *mgr, Ogre::Camera *maincam, ExampleFrameListener *efl)
+MapTextureCreator::MapTextureCreator(Ogre::SceneManager *mgr, Ogre::Camera *maincam, RoRFrameListener *efl)
 {
 	mEfl=efl;
 	mMainCam = maincam;

@@ -108,7 +108,7 @@ int lua_run(lua_State *L, String filename)
 	return s;
 }
 
-LuaSystem::LuaSystem(ExampleFrameListener *efl)
+LuaSystem::LuaSystem(RoRFrameListener *efl)
 {
 	if (luaInstance) return; else luaInstance=this;
 	L = lua_open();

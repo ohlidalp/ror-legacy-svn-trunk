@@ -67,7 +67,7 @@ class LuaSystem;
 #endif
 
 #include "Beam.h"
-#include "ExampleFrameListener.h"
+#include "RoRFrameListener.h"
 #include "heightfinder.h"
 
 typedef struct _collision_tri
@@ -119,7 +119,7 @@ private:
 #ifdef USE_LUA
 	LuaSystem *lua;
 #endif
-	ExampleFrameListener *mefl;
+	RoRFrameListener *mefl;
 	unsigned int hashmask;
 	HeightFinder *hfinder;
 	int collision_count;
@@ -147,7 +147,7 @@ public:
 #ifdef USE_LUA
     LuaSystem *mlua,
 #endif
-    ExampleFrameListener *efl, bool debugMode);
+    RoRFrameListener *efl, bool debugMode);
 
 	void addCollisionBox(SceneNode *tenode, bool rotating, bool virt, float px, float py, float pz, float rx, float ry, float rz, float lx,float hx,float ly,float hy,float lz,float hz,float srx,float sry,float srz, const char* eventname, const char* instancename, bool forcecam, Vector3 campos, float scx=1.0, float scy=1.0, float scz=1.0, float drx=0.0, float dry=0.0, float drz=0.0, int event_filter=EVENT_ALL, int luahandler=-1);
 	int addCollisionTri(Vector3 p1, Vector3 p2, Vector3 p3, ground_model_t* gm);

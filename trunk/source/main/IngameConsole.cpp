@@ -18,7 +18,7 @@ You should have received a copy of the GNU General Public License
 along with Rigs of Rods.  If not, see <http://www.gnu.org/licenses/>.
 */
 #include "IngameConsole.h"
-#include "ExampleFrameListener.h"
+#include "RoRFrameListener.h"
 #include "language.h"
 
 using namespace std;
@@ -52,7 +52,7 @@ void IngameConsole::setFontSize(int size)
 	updateDisplay();
 }
 
-void IngameConsole::setMode(ExampleFrameListener *efl, int mode, bool visible)
+void IngameConsole::setMode(RoRFrameListener *efl, int mode, bool visible)
 {
 	this->mefl=efl;
 	//LogManager::getSingleton().logMessage("CONSOLE setmode (" + StringConverter::toString(mode) + ") ...");
@@ -123,12 +123,12 @@ void IngameConsole::setVisible(bool visible)
 		setMode(mefl, displaymode, visible);
 }
 
-void IngameConsole::toggleVisible(ExampleFrameListener *efl)
+void IngameConsole::toggleVisible(RoRFrameListener *efl)
 {
 	setMode(efl, displaymode, !isvisible);
 }
 
-int IngameConsole::toggleMode(ExampleFrameListener *efl)
+int IngameConsole::toggleMode(RoRFrameListener *efl)
 {
 	setMode(efl, displaymode+1, isvisible);
 	return displaymode;
