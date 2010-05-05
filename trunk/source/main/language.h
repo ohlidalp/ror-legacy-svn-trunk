@@ -25,6 +25,14 @@ freely, subject to the following restrictions:
 #ifndef LANGUAGE_H_
 #define LANGUAGE_H_
 
+#ifdef NOLANG
+// no language mode
+// used when building with wxwidgets for example (as they ship their own i18n)
+
+#define _L(str) str
+
+#else // NOLANG
+
 #include "Ogre.h"
 #ifdef USE_MOFILEREADER
 #include "moFileReader.h"
@@ -53,4 +61,5 @@ protected:
 #endif // MOFILEREADER
 	void setupCodeRanges(Ogre::String codeRangesFilename, Ogre::String codeRangesGroupname);
 };
-#endif
+#endif //NOLANG
+#endif //LANGUAGE_H_

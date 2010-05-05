@@ -22,12 +22,11 @@ along with Rigs of Rods.  If not, see <http://www.gnu.org/licenses/>.
 #define SETTINGS_H
 
 #include "Ogre.h"
-#include "rormemory.h"
 #include <map>
 
 #define SETTINGS Settings::Instance()
 
-class Settings : public MemoryAllocatedObject
+class Settings
 {
 public:
 	static Settings & Instance();
@@ -61,6 +60,8 @@ protected:
 	// methods
 	void path_descend(char* path);
 	void path_add(char* path, const char* dirname);
+
+	bool get_system_paths(char *program_path, char *user_path);
 
 };
 #endif
