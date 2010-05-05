@@ -24,7 +24,7 @@ along with Rigs of Rods.  If not, see <http://www.gnu.org/licenses/>.
 #include "hdrlistener.h"
 #include "softshadowlistener.h"
 #include "ssaolistener.h"
-#include "main.h"
+#include "RigsOfRods.h"
 #include "utils.h"
 #include "ScopeLog.h"
 #include "DepthOfFieldEffect.h"
