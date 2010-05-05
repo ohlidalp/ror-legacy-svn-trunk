@@ -34,7 +34,7 @@ along with Rigs of Rods.  If not, see <http://www.gnu.org/licenses/>.
 enum {NETCHAT_LEFT_SMALL, NETCHAT_LEFT_FULL, NETCHAT_TOP, NETCHAT_MAP, NETCHAT_END};
 enum {NETCHAT_MSG_CHAT, NETCHAT_MSG_COMMAND};
 
-class ExampleFrameListener;
+class RoRFrameListener;
 
 class IngameConsole :
 	public Singleton2<IngameConsole>,
@@ -45,10 +45,10 @@ class IngameConsole :
 	~IngameConsole();
 public:
 	bool update(float dt);
-	void setMode(ExampleFrameListener *mefl, int mode, bool visible);
+	void setMode(RoRFrameListener *mefl, int mode, bool visible);
 	int getMode();
-	int toggleMode(ExampleFrameListener *mefl);
-	void toggleVisible(ExampleFrameListener *mefl);
+	int toggleMode(RoRFrameListener *mefl);
+	void toggleVisible(RoRFrameListener *mefl);
 	bool addText(Ogre::UTFString msg, bool addtime=false);
 	bool setEnterText(Ogre::UTFString msg, bool visible=true, bool cursor=false);
 	void resize(int left, int top, int width, int height);
@@ -70,7 +70,7 @@ private:
 	int top, left, width, height;
 	int lineheight, bordersize;
 	int displaymode;
-	ExampleFrameListener *mefl;
+	RoRFrameListener *mefl;
 
 	// cursor stuff
 	Ogre::UTFString enterText;

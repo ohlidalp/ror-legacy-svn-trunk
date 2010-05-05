@@ -23,7 +23,7 @@ along with Rigs of Rods.  If not, see <http://www.gnu.org/licenses/>.
 #include "gui_menu.h"
 #include "gui_friction.h"
 #include "gui_manager.h"
-#include "ExampleFrameListener.h"
+#include "RoRFrameListener.h"
 #include "Ogre.h"
 #include "Settings.h"
 
@@ -41,7 +41,7 @@ GUI_MainMenu& GUI_MainMenu::getSingleton(void)
 	assert( ms_Singleton );  return ( *ms_Singleton );
 }
 
-GUI_MainMenu::GUI_MainMenu(ExampleFrameListener *efl) : mefl(efl)
+GUI_MainMenu::GUI_MainMenu(RoRFrameListener *efl) : mefl(efl)
 {
 	//MyGUI::WidgetPtr back = createWidget<MyGUI::Widget>("Panel", 0, 0, 912, 652,MyGUI::Align::Default, "Back");
 	mainmenu = MyGUI::Gui::getInstance().createWidget<MyGUI::MenuBar>("MenuBar", 0, 0, 300, 26,  MyGUI::Align::HStretch | MyGUI::Align::Top, "Back"); 

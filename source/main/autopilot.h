@@ -29,7 +29,7 @@ along with Rigs of Rods.  If not, see <http://www.gnu.org/licenses/>.
 #include "water.h"
 #include "SoundScriptManager.h"
 #include "Beam.h"
-#include "ExampleFrameListener.h"
+#include "RoRFrameListener.h"
 #include <stdio.h>
 using namespace Ogre;
 

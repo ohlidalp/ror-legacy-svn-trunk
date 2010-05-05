@@ -28,7 +28,7 @@ along with Rigs of Rods.  If not, see <http://www.gnu.org/licenses/>.
 #endif //MYGUI
 
 
-class ExampleFrameListener;
+class RoRFrameListener;
 
 typedef struct node_simple_ {
 	Ogre::Vector3 pos;

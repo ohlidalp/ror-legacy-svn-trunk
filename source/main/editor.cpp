@@ -20,7 +20,7 @@ along with Rigs of Rods.  If not, see <http://www.gnu.org/licenses/>.
 #include "editor.h"
 #include "Settings.h"
 
-Editor::Editor(SceneManager *scm, ExampleFrameListener *efl)
+Editor::Editor(SceneManager *scm, RoRFrameListener *efl)
 {
 	char line[1024];
 	mSceneMgr=scm;

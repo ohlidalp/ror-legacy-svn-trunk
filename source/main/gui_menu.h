@@ -29,12 +29,12 @@ along with Rigs of Rods.  If not, see <http://www.gnu.org/licenses/>.
 #include "OgrePrerequisites.h"
 #include "rormemory.h"
 
-class ExampleFrameListener;
+class RoRFrameListener;
 
 class GUI_MainMenu : public Ogre::Singleton< GUI_MainMenu >, public MemoryAllocatedObject
 {
 public:
-	GUI_MainMenu(ExampleFrameListener *efl);
+	GUI_MainMenu(RoRFrameListener *efl);
 	~GUI_MainMenu();
 	static GUI_MainMenu& getSingleton(void);
 	static GUI_MainMenu* getSingletonPtr(void);
@@ -42,7 +42,7 @@ public:
 	bool getVisible();
 	void setVisible(bool value);
 protected:
-	ExampleFrameListener *mefl;
+	RoRFrameListener *mefl;
 	MyGUI::MenuBarPtr mainmenu;
 	void onMenuBtn(MyGUI::MenuCtrlPtr _sender, MyGUI::MenuItemPtr _item);
 };

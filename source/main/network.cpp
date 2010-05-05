@@ -21,7 +21,7 @@ along with Rigs of Rods.  If not, see <http://www.gnu.org/licenses/>.
 
 #include "network.h"
 #include "NetworkStreamManager.h"
-#include "ExampleFrameListener.h"
+#include "RoRFrameListener.h"
 #include "ColoredTextAreaOverlayElement.h"
 #include "IngameConsole.h"
 #include "CacheSystem.h"
@@ -82,7 +82,7 @@ void *s_receivethreadstart(void* vid)
 Timer Network::timer = Ogre::Timer();
 unsigned int Network::myuid=0;
 
-Network::Network(Beam **btrucks, std::string servername, long sport, ExampleFrameListener *efl): lagDataClients()
+Network::Network(Beam **btrucks, std::string servername, long sport, RoRFrameListener *efl): lagDataClients()
 {
 	// update factories network objects
 

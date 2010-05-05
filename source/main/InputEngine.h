@@ -48,7 +48,7 @@ class Win32LogitechLEDs;
 #endif
 
 
-//class ExampleFrameListener;
+//class RoRFrameListener;
 // some shortcut
 #define INPUTENGINE InputEngine::Instance()
 
@@ -539,7 +539,7 @@ protected:
 	bool processLine(char *line);
 	bool captureMode;
 
-	//ExampleFrameListener *mefl;
+	//RoRFrameListener *mefl;
 
 	void initAllKeys();
 	std::map<std::string, OIS::KeyCode> allkeys;

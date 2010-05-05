@@ -76,7 +76,7 @@ set (HEADER_FILES
   ChatSystem.h
   editor.h
   engine.h
-  ExampleFrameListener.h
+  RoRFrameListener.h
   RigsOfRods.h
   materialFunctionMapper.h
   mirrors.h
@@ -186,7 +186,7 @@ set (SOURCE_FILES
   ChatSystem.cpp
   editor.cpp
   engine.cpp
-  ExampleFrameListener.cpp
+  RoRFrameListener.cpp
   main.cpp
   RigsOfRods.cpp
   materialFunctionMapper.cpp
@@ -391,8 +391,8 @@ SOURCE_GROUP("Game Engine" FILES
   editor.h
   engine.cpp
   engine.h
-  ExampleFrameListener.cpp
-  ExampleFrameListener.h
+  RoRFrameListener.cpp
+  RoRFrameListener.h
   main.cpp
   RigsOfRods.cpp
   RigsOfRods.h

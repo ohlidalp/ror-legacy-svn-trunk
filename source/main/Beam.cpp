@@ -1250,7 +1250,7 @@ void Beam::calc_masses2(Real total, bool reCalc)
 				LogManager::getSingleton().logMessage("Node " + StringConverter::toString(i) +" mass ("+StringConverter::toString(nodes[i].mass)+"kg) too light. Resetting to minimass ("+ StringConverter::toString(minimass) +"kg).");
 			nodes[i].mass=minimass;
 		}
-		nodes[i].gravimass=Vector3(0, ExampleFrameListener::getGravity() * nodes[i].mass, 0);
+		nodes[i].gravimass=Vector3(0, RoRFrameListener::getGravity() * nodes[i].mass, 0);
 	}
 
     // update inverted mass cache
@@ -5990,7 +5990,7 @@ void Beam::init_node(int pos, Real x, Real y, Real z, int type, Real m, int iswh
 	nodes[pos].buoyanceForce=Vector3::ZERO;
 	nodes[pos].buoyancy=truckmass/15.0;//DEFAULT_BUOYANCY;
 	nodes[pos].lastdrag=Vector3(0,0,0);
-	nodes[pos].gravimass=Vector3(0,ExampleFrameListener::getGravity()*m,0);
+	nodes[pos].gravimass=Vector3(0,RoRFrameListener::getGravity()*m,0);
 	nodes[pos].wetstate=DRY;
 	nodes[pos].isHot=false;
 	nodes[pos].overrideMass=false;

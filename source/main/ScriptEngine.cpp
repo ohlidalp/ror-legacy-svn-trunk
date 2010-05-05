@@ -22,7 +22,7 @@ along with Rigs of Rods.  If not, see <http://www.gnu.org/licenses/>.
 
 #include "ScriptEngine.h"
 #include "Ogre.h"
-#include "ExampleFrameListener.h"
+#include "RoRFrameListener.h"
 #include "angelscript/scriptstdstring/scriptstdstring.h" // angelscript addon
 #include "angelscript/scriptmath3d/scriptmath3d.h" // angelscript addon
 #include "angelscript/scriptmath/scriptmath.h" // angelscript addon
@@ -41,7 +41,7 @@ using namespace AngelScript;
 
 template<> ScriptEngine *Ogre::Singleton<ScriptEngine>::ms_Singleton=0;
 
-ScriptEngine::ScriptEngine(ExampleFrameListener *efl) : mefl(efl), engine(0), context(0), frameStepFunctionPtr(-1), eventMask(0)
+ScriptEngine::ScriptEngine(RoRFrameListener *efl) : mefl(efl), engine(0), context(0), frameStepFunctionPtr(-1), eventMask(0)
 {
 	init();
 
@@ -760,7 +760,7 @@ int ScriptEngine::loadScript(Ogre::String scriptname)
 }
 
 /* class that implements the interface for the scripts */
-GameScript::GameScript(ScriptEngine *se, ExampleFrameListener *efl) : mse(se), mefl(efl)
+GameScript::GameScript(ScriptEngine *se, RoRFrameListener *efl) : mse(se), mefl(efl)
 {
 }
 

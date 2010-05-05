@@ -32,7 +32,7 @@ using namespace Ogre;
 #include "engine.h"
 #include "SoundScriptManager.h"
 
-class ExampleFrameListener;
+class RoRFrameListener;
 
 class Network : public MemoryAllocatedObject
 {
@@ -60,7 +60,7 @@ private:
 	long mySport;
 	char sendthreadstart_buffer[MAX_MESSAGE_LENGTH];
 	pthread_mutex_t msgsend_mutex;
-	ExampleFrameListener *mefl;
+	RoRFrameListener *mefl;
 	char terrainName[255];
 	bool requestTerrainName();
 	Ogre::String nickname;
@@ -75,7 +75,7 @@ private:
 	void updatePlayerList();
 public:
 
-	Network(Beam **btrucks, std::string servername, long sport, ExampleFrameListener *efl);
+	Network(Beam **btrucks, std::string servername, long sport, RoRFrameListener *efl);
 	~Network();
 
 	// messaging functions

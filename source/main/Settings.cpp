@@ -250,23 +250,7 @@ bool Settings::setupPaths()
 	path_add(resources_path, "resources");
 	strcpy(streams_path, program_path);
 	path_add(streams_path, "streams");
-	if (getSetting("BuildMode") == "Yes")
-	{
-		//okay, this is totally different!
-		strcpy(user_path, program_path); //RoRdev/build/bin/release/windows
-		path_descend(user_path); //RoRdev/build/bin/release
-		path_descend(user_path); //RoRdev/build/bin
-		path_descend(user_path); //RoRdev/build
-		//we are in build here, take opportunity for other paths too
-		strcpy(resources_path, user_path);
-		strcpy(streams_path, user_path);
-		path_add(user_path, "userspace");
-		path_add(resources_path, "contents");
-		path_add(resources_path, "source");
-		path_descend(streams_path); //RoRdev
-		path_add(streams_path, "streams");
-		path_add(streams_path, "release");
-	}
+
 	//setup config files names
 	char plugins_fname[1024];
 	strcpy(plugins_fname, program_path);
@@ -321,6 +305,7 @@ bool Settings::setupPaths()
 		loadSettings(configfile, true);
 	} catch(...)
 	{
+		// file not found or other error
 	}
 
 	printf(" * config path:      %s\n", settings["Config Root"].c_str());

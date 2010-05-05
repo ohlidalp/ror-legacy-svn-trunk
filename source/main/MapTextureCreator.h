@@ -22,12 +22,12 @@ along with Rigs of Rods.  If not, see <http://www.gnu.org/licenses/>.
 
 #include <Ogre.h>
 
-class ExampleFrameListener;
+class RoRFrameListener;
 
 class MapTextureCreator : public Ogre::RenderTargetListener
 {
 public:
-	MapTextureCreator(Ogre::SceneManager *smgr, Ogre::Camera *mainCam, ExampleFrameListener *efl);
+	MapTextureCreator(Ogre::SceneManager *smgr, Ogre::Camera *mainCam, RoRFrameListener *efl);
 	Ogre::String getMaterialName();
 	Ogre::String getRTName();
 	void setAutoUpdated(bool value);
@@ -56,7 +56,7 @@ protected:
 	Ogre::RenderTarget *mRttTex;
 	Ogre::MaterialPtr mMaterial;
 	Ogre::TextureUnitState* mTextureUnitState;
-	ExampleFrameListener *mEfl;
+	RoRFrameListener *mEfl;
 
 	void init();
 };

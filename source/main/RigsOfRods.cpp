@@ -22,11 +22,16 @@ along with Rigs of Rods.  If not, see <http://www.gnu.org/licenses/>.
 #include "language.h"
 #include "errorutils.h"
 
-RigsOfRods::RigsOfRods()
+RigsOfRods::RigsOfRods(Ogre::String name, unsigned int hwnd) :
+	mRoot(0),
+	mCamera(0),
+	mSceneMgr(0),
+	mFrameListener(0),
+	mWindow(0),
+	ssm(0),
+	hwnd(hwnd),
+	name(name)
 {
-	mFrameListener = 0;
-	mRoot = 0;
-	mWindow=0;
 	useogreconfig=false;
 }
 
@@ -70,6 +75,8 @@ void RigsOfRods::loadMainResource(String name, String group)
 #if OGRE_PLATFORM == OGRE_PLATFORM_WIN32
 	dirsep="\\";
 #endif
+	/*
+	// old buildmode (non-zip mode)
 	if (buildmode)
 	{
 		if (name==String("textures"))
@@ -77,8 +84,9 @@ void RigsOfRods::loadMainResource(String name, String group)
 		else
 			ResourceGroupManager::getSingleton().addResourceLocation(SETTINGS.getSetting("Resources Path")+name, "FileSystem", group);
 	}
-	else
-		ResourceGroupManager::getSingleton().addResourceLocation(SETTINGS.getSetting("Resources Path")+name+".zip", "Zip", group, true);
+	*/
+
+	ResourceGroupManager::getSingleton().addResourceLocation(SETTINGS.getSetting("Resources Path")+name+".zip", "Zip", group, true);
 }
 
 bool RigsOfRods::setup(void)
@@ -97,7 +105,8 @@ bool RigsOfRods::setup(void)
 	SETTINGS.loadSettings(SETTINGS.getSetting("Config Root")+"RoR.cfg");
 
 	//CREATE OGRE ROOT
-	mRoot = new Root(SETTINGS.getSetting("plugins.cfg"), SETTINGS.getSetting("ogre.cfg"), SETTINGS.getSetting("ogre.log"));
+	String logFilename = SETTINGS.getSetting("Log Path") + name + Ogre::String(".log");
+	mRoot = new Root(SETTINGS.getSetting("plugins.cfg"), SETTINGS.getSetting("ogre.cfg"), logFilename);
 
 	//FROM NOW ON WE HAVE LOGMANAGER!
 
@@ -230,7 +239,7 @@ bool RigsOfRods::setup(void)
 	//CREATE VIEWPORT
 	LogManager::getSingleton().logMessage("Creating Viewport");
 	// Create one viewport, entire window
-	Viewport* vp = mWindow->addViewport(mCamera);
+	vp = mWindow->addViewport(mCamera);
 	vp->setBackgroundColour(ColourValue(0,0,0));
 
 	// Alter the camera aspect ratio to match the viewport
@@ -243,18 +252,22 @@ bool RigsOfRods::setup(void)
 
 #if OGRE_PLATFORM == OGRE_PLATFORM_WIN32
 #ifndef _UNICODE
-	size_t hWnd = 0;
-	mWindow->getCustomAttribute("WINDOW", &hWnd);
-
-	char buf[MAX_PATH];
-	::GetModuleFileNameA(0, (LPCH)&buf, MAX_PATH);
-
-	HINSTANCE instance = ::GetModuleHandleA(buf);
-	HICON hIcon = ::LoadIconA(instance, MAKEINTRESOURCE(1001));
-	if (hIcon)
+	if(hwnd == 0)
 	{
-		::SendMessageA((HWND)hWnd, WM_SETICON, 1, (LPARAM)hIcon);
-		::SendMessageA((HWND)hWnd, WM_SETICON, 0, (LPARAM)hIcon);
+		// only in non-embedded mode
+		size_t hWnd = 0;
+		mWindow->getCustomAttribute("WINDOW", &hWnd);
+
+		char buf[MAX_PATH];
+		::GetModuleFileNameA(0, (LPCH)&buf, MAX_PATH);
+
+		HINSTANCE instance = ::GetModuleHandleA(buf);
+		HICON hIcon = ::LoadIconA(instance, MAKEINTRESOURCE(1001));
+		if (hIcon)
+		{
+			::SendMessageA((HWND)hWnd, WM_SETICON, 1, (LPARAM)hIcon);
+			::SendMessageA((HWND)hWnd, WM_SETICON, 0, (LPARAM)hIcon);
+		}
 	}
 #endif //_UNICODE
 #endif //OGRE_PLATFORM_WIN32
@@ -278,11 +291,13 @@ bool RigsOfRods::setup(void)
 #endif //NOLANG
 
 	// Create the scene
+
 	LogManager::getSingleton().logMessage("createScene()");
 	createScene();
 
 	LogManager::getSingleton().logMessage("Adding Frame Listener");
-	mFrameListener = new RoRFrameListener(mWindow, mCamera, mSceneMgr, mRoot);
+	bool isEmbedded = (hwnd != 0);
+	mFrameListener = new RoRFrameListener(mWindow, mCamera, mSceneMgr, mRoot, isEmbedded);
 	mRoot->addFrameListener(mFrameListener);
 
 	LogManager::getSingleton().logMessage("Setup finished successfully");
@@ -318,23 +333,43 @@ bool RigsOfRods::configure(void)
 	// Show the configuration dialog and initialise the system
 	// You can skip this and use root.restoreConfig() to load configuration
 	// settings if you were sure there are valid ones saved in ogre.cfg
-	bool ok = false;
-	if(useogreconfig)
-		ok = mRoot->showConfigDialog();
-	else
-		ok = mRoot->restoreConfig();
-	if(ok)
+	if(hwnd == 0)
 	{
-		// If returned true, user clicked OK so initialise
-		// Here we choose to let the system create a default rendering window by passing 'true'
-		mWindow = mRoot->initialise(true);
+		//default mode
+		bool ok = false;
+		if(useogreconfig)
+			ok = mRoot->showConfigDialog();
+		else
+			ok = mRoot->restoreConfig();
+		if(ok)
+		{
+			// If returned true, user clicked OK so initialise
+			// Here we choose to let the system create a default rendering window by passing 'true'
+			mWindow = mRoot->initialise(true);
+			return true;
+		}
+		else
+		{
+			showError(_L("Configuration error"), _L("Run the RoRconfig program first."));
+			return false;
+		}
+	} else
+	{
+		// embedded mode
+		if(!mRoot->restoreConfig())
+		{
+			showError(_L("Configuration error"), _L("Run the RoRconfig program first."));
+			return false;
+		}
+
+		mRoot->initialise(false);
+
+		Ogre::NameValuePairList param;
+		param["externalWindowHandle"] = Ogre::StringConverter::toString(hwnd);
+		mWindow = mRoot->createRenderWindow(name, 320, 240, false, &param);
 		return true;
 	}
-	else
-	{
-		showError(_L("Configuration error"), _L("Run the RoRconfig program first."));
-		return false;
-	}
+	return false;
 }
 
 void RigsOfRods::exploreStreams()

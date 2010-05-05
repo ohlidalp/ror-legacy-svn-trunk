@@ -33,7 +33,7 @@ extern "C" {
 #include "Ogre.h"
 using namespace Ogre;
 #include "collisions.h"
-#include "ExampleFrameListener.h"
+#include "RoRFrameListener.h"
 #include <vector>
 #include <map>
 
@@ -41,7 +41,7 @@ class LuaSystem : public MemoryAllocatedObject
 {
 private:
 	lua_State* L;
-	ExampleFrameListener* mefl;
+	RoRFrameListener* mefl;
 	int event_pool_id[10];
 	eventsource_t event_pool[10];
 	int lastevents[MAX_EVENTSOURCE];
@@ -52,7 +52,7 @@ private:
 	bool fileExists(const char *filename);
 
 public:
-	LuaSystem(ExampleFrameListener *efl);
+	LuaSystem(RoRFrameListener *efl);
 	~LuaSystem();
 	void spawnEvent(int id, eventsource_t *source);
 	void framestep();

@@ -33,7 +33,7 @@ along with Rigs of Rods.  If not, see <http://www.gnu.org/licenses/>.
 #include "rormemory.h"
 
 //forward decl.
-class ExampleFrameListener;
+class RoRFrameListener;
 class GameScript;
 class Beam;
 
@@ -52,7 +52,7 @@ class Beam;
 class ScriptEngine : public Ogre::Singleton<ScriptEngine>
 {
 public:
-	ScriptEngine(ExampleFrameListener *efl);
+	ScriptEngine(RoRFrameListener *efl);
 	~ScriptEngine();
 
 
@@ -122,7 +122,7 @@ public:
 	AngelScript::asIScriptEngine *getEngine() { return engine; };
 
 protected:
-    ExampleFrameListener *mefl;             //!< local Exampleframelistener instance, used as proxy for many functions
+    RoRFrameListener *mefl;             //!< local RoRFrameListener instance, used as proxy for many functions
     AngelScript::asIScriptEngine *engine;                //!< instance of the scripting engine
 	AngelScript::asIScriptContext *context;              //!< context in which all scripting happens
 	int frameStepFunctionPtr;               //!< script function pointer to the frameStep function
@@ -165,15 +165,15 @@ class GameScript : public MemoryAllocatedObject
 {
 protected:
 	ScriptEngine *mse;              //!< local script engine pointer, used as proxy mostly
-	ExampleFrameListener *mefl;     //!< local pointer to the main ExampleFrameListener, used as proxy mostly
+	RoRFrameListener *mefl;     //!< local pointer to the main RoRFrameListener, used as proxy mostly
 
 public:
 	/**
 	 * constructor
 	 * @param se pointer to the ScriptEngine instance
-	 * @param efl pointer to the ExampleFrameListener instance
+	 * @param efl pointer to the RoRFrameListener instance
 	 */
-	GameScript(ScriptEngine *se, ExampleFrameListener *efl);
+	GameScript(ScriptEngine *se, RoRFrameListener *efl);
 
 	/**
 	 * destructor
