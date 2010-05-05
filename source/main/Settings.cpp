@@ -135,32 +135,27 @@ void Settings::loadSettings(Ogre::String configFile, bool overwrite)
 	checkGUID();
 }
 
-bool Settings::setupPaths()
+bool Settings::get_system_paths(char *program_path, char *user_path)
 {
-	char program_path[1024]="";
-	char resources_path[1024]="";
-	char streams_path[1024]="";
-	char user_path[1024]="";
-	char config_root[1024]="";
-	char dirsep='/';
 
 #if OGRE_PLATFORM == OGRE_PLATFORM_WIN32
-	if (!GetModuleFileName(NULL, program_path, 512))
+	// note: we enforce usage of the non-UNICODE interfaces (since its easier to integrate here)
+	if (!GetModuleFileNameA(NULL, program_path, 512))
 	{
 		showError(_L("Startup error"), _L("Error while retrieving program space path"));
 		return false;
 	}
-	GetShortPathName(program_path, program_path, 512); //this is legal
+	GetShortPathNameA(program_path, program_path, 512); //this is legal
 	path_descend(program_path);
 
 	if (getSetting("userpath").empty())
 	{
-		if (SHGetFolderPath(NULL, CSIDL_PERSONAL, NULL, SHGFP_TYPE_CURRENT, user_path)!=S_OK)
+		if (SHGetFolderPathA(NULL, CSIDL_PERSONAL, NULL, SHGFP_TYPE_CURRENT, user_path)!=S_OK)
 		{
 			showError(_L("Startup error"), _L("Error while retrieving user space path"));
 			return false;
 		}
-		GetShortPathName(user_path, user_path, 512); //this is legal
+		GetShortPathNameA(user_path, user_path, 512); //this is legal
 		sprintf(user_path, "%s\\Rigs of Rods\\", user_path);
 	} else
 	{
@@ -233,6 +228,21 @@ bool Settings::setupPaths()
 		}
 	}
 #endif
+	return true;
+}
+
+bool Settings::setupPaths()
+{
+	char program_path[1024]="";
+	char resources_path[1024]="";
+	char streams_path[1024]="";
+	char user_path[1024]="";
+	char config_root[1024]="";
+	char dirsep='/';
+
+	if(get_system_paths(program_path, user_path))
+		return false;
+
 	//NEXT, derive the resources and stream paths from the base paths (depends on configuration)
 	//from now we are mostly platform neutral
 	//default mode (released)

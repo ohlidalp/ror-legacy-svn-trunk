@@ -5580,18 +5580,6 @@ void ExampleFrameListener::loadTerrain(String terrainfile)
 		CompositorManager::getSingleton().setCompositorEnabled(mCamera->getViewport(), "Gaussian Blur", false);
 	}
 
-	// fun stuff :D
-	if (SETTINGS.getSetting("ASCII") == "Yes")
-	{
-		CompositorManager::getSingleton().addCompositor(mCamera->getViewport(),"ASCII");
-		CompositorManager::getSingleton().setCompositorEnabled(mCamera->getViewport(), "ASCII", true);
-	}
-	if (SETTINGS.getSetting("Night Vision") == "Yes")
-	{
-		CompositorManager::getSingleton().addCompositor(mCamera->getViewport(),"Night Vision");
-		CompositorManager::getSingleton().setCompositorEnabled(mCamera->getViewport(), "Night Vision", true);
-	}
-
 	// Motion blur stuff :)
 	if (SETTINGS.getSetting("Motion blur")=="Yes")
 	{
@@ -5822,7 +5810,6 @@ void ExampleFrameListener::loadTerrain(String terrainfile)
 	DustManager::getSingleton().setWater(w);
 
 	//environment map
-	//envmap is always created!
 	if (SETTINGS.getSetting("Envmapdisable")!="Yes")
 	{
 		envmap=new Envmap(mSceneMgr, mWindow, mCamera, SETTINGS.getSetting("Envmap")=="Yes");
