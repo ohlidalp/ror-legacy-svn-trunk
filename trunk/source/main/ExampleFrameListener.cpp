@@ -3151,7 +3151,7 @@ bool ExampleFrameListener::updateEvents(float dt)
 		{
 			cameramode = CAMERA_FREE;
 			LogManager::getSingleton().logMessage("switching to free camera mode from fixed mode");
-			flashMessage(_L("free camera").c_str());
+			flashMessage(_L("free camera"));
 		}
 	}
 
@@ -3163,14 +3163,14 @@ bool ExampleFrameListener::updateEvents(float dt)
 			// change back to normal camera
 			cameramode = storedcameramode;
 			LogManager::getSingleton().logMessage("exiting free camera mode");
-			flashMessage(_L("normal camera").c_str());
+			flashMessage(_L("normal camera"));
 		} else if(cameramode != CAMERA_FREE && cameramode != CAMERA_FREE_FIXED )
 		{
 			// enter free camera mode
 			storedcameramode = cameramode;
 			cameramode = CAMERA_FREE;
 			LogManager::getSingleton().logMessage("entering free camera mode");
-			flashMessage(_L("free camera").c_str());
+			flashMessage(_L("free camera"));
 		}
 	}
 
@@ -8100,7 +8100,7 @@ void ExampleFrameListener::showLoad(int type, char* instance, char* box)
 			if (collisions->isInside(trucks[t]->nodes[i].AbsPosition, spawnbox))
 			{
 				//boy, thats bad
-				flashMessage(_L("Please clear the place first").c_str(), 4);
+				flashMessage(_L("Please clear the place first"), 4);
 				return;
 			}
 		}

@@ -652,7 +652,7 @@ bool CacheSystem::fileExists(String filename)
 Ogre::String CacheSystem::fileTime(String filename)
 {
 #if OGRE_PLATFORM == OGRE_PLATFORM_WIN32
-	HANDLE hFile = CreateFile(filename.c_str(), FILE_READ_ATTRIBUTES, FILE_SHARE_READ, NULL, OPEN_EXISTING, FILE_ATTRIBUTE_NORMAL, NULL);
+	HANDLE hFile = CreateFileA(filename.c_str(), FILE_READ_ATTRIBUTES, FILE_SHARE_READ, NULL, OPEN_EXISTING, FILE_ATTRIBUTE_NORMAL, NULL);
 
 	// Set the file time on the file
 	FILETIME ftCreate, ftAccess, ftWrite;

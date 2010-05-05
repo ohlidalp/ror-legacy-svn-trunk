@@ -198,7 +198,7 @@ bool TruckHUD::update(float dt, Beam *truck, SceneManager *mSceneMgr, Camera* mC
 		{
 			sprintf(beamhealthstr, "%0.2f", (1-health)*100);
 			descl = OverlayManager::getSingleton().getOverlayElement("tracks/TruckInfoBox/BeamHealth");
-			descl->setCaption(_L("health: ") + beamhealthstr + string("%"));
+			descl->setCaption(_L("health: ") + string(beamhealthstr) + string("%"));
 			checkOverflow(descl);
 			descl = OverlayManager::getSingleton().getOverlayElement("tracks/TruckInfoBox/BeamHealth");
 			descl->setColour(ColourValue(0.6,0.8,0.4,1));
@@ -210,7 +210,7 @@ bool TruckHUD::update(float dt, Beam *truck, SceneManager *mSceneMgr, Camera* mC
 				health=1;
 			sprintf(beamhealthstr, "%0.2f", (health)*100);
 			descl = OverlayManager::getSingleton().getOverlayElement("tracks/TruckInfoBox/BeamHealth");
-			descl->setCaption(_L("destruction: ") + beamhealthstr + string("%"));
+			descl->setCaption(_L("destruction: ") + string(beamhealthstr) + string("%"));
 			checkOverflow(descl);
 			descl = OverlayManager::getSingleton().getOverlayElement("tracks/TruckInfoBox/BeamHealth");
 			descl->setColour(ColourValue(0.8,0.4,0.4,1));
@@ -225,13 +225,13 @@ bool TruckHUD::update(float dt, Beam *truck, SceneManager *mSceneMgr, Camera* mC
 		char beamavdeformedstr[255];
 		sprintf(beamavdeformedstr, "%0.4f", ((float)average_deformation/(float)beamCount));
 		descl = OverlayManager::getSingleton().getOverlayElement("tracks/TruckInfoBox/AverageBeamDeformation");
-		descl->setCaption(_L("average deformation: ") + beamavdeformedstr);
+		descl->setCaption(_L("average deformation: ") + string(beamavdeformedstr));
 		checkOverflow(descl);
 
 		char beamstressstr[255];
 		sprintf(beamstressstr, "%+08.0f", 1-(float)beamstress/(float)beamCount);
 		descl = OverlayManager::getSingleton().getOverlayElement("tracks/TruckInfoBox/AverageBeamStress");
-		descl->setCaption(_L("average stress: ") + beamstressstr);
+		descl->setCaption(_L("average stress: ") + string(beamstressstr));
 		checkOverflow(descl);
 
 		int nodeCount = truck->getNodeCount();
