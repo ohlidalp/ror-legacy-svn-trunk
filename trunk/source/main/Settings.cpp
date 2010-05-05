@@ -240,7 +240,7 @@ bool Settings::setupPaths()
 	char config_root[1024]="";
 	char dirsep='/';
 
-	if(get_system_paths(program_path, user_path))
+	if(!get_system_paths(program_path, user_path))
 		return false;
 
 	//NEXT, derive the resources and stream paths from the base paths (depends on configuration)
