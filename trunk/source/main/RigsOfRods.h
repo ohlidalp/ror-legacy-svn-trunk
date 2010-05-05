@@ -24,6 +24,8 @@ along with Rigs of Rods.  If not, see <http://www.gnu.org/licenses/>.
 
 	please note that the documentation is work in progress
 */
+#ifndef RIGSOFRODS_H__
+#define RIGSOFRODS_H__
 
 #include "Ogre.h"
 #include "OgreConfigFile.h"
@@ -109,3 +111,5 @@ protected:
 	void exploreTerrains();
 	void exploreVehicles();
 };
+
+#endif //RIGSOFRODS_H__

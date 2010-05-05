@@ -29,7 +29,7 @@ freely, subject to the following restrictions:
 // no language mode
 // used when building with wxwidgets for example (as they ship their own i18n)
 
-#define _L(str) str
+#define _L(str) Ogre::String(str)
 
 #else // NOLANG
 
