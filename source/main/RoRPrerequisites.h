@@ -48,6 +48,8 @@ class PositionStorage;
 class Rail;
 class RailGroup;
 class Replay;
+class RigsOfRods;
+class RoRFrameListener;
 class Screwprop;
 class Skidmark;
 class Skin;
