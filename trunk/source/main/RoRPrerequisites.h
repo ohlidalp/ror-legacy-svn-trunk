@@ -41,6 +41,7 @@ class FlexMesh;
 class FlexObj;
 class HeightFinder;
 class MaterialFunctionMapper;
+class MapTextureCreator;
 class Mirrors;
 class Network;
 class PointColDetector;
