@@ -518,6 +518,7 @@ public:
 	void shutdown_pre();
 	void shutdown_final();
 
+	void loadTerrain(Ogre::String terrainfile);
 
 	Water *w;
 protected:
@@ -629,7 +630,6 @@ protected:
 	MPlatform_Base *mplatform;
 #endif
 
-	void loadTerrain(Ogre::String terrainfile);
 	static bool fileExists(const char* filename);
 	void processConsoleInput();
 

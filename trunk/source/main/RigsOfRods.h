@@ -69,6 +69,8 @@ public:
 	RenderWindow *getRenderWindow() { return mWindow; };
 	Camera *getCamera() { return mCamera; };
 	Viewport *getViewport() { return vp; };
+	Root *getRoot() { return mRoot; };
+	RoRFrameListener *getRoRFrameListener() { return mFrameListener; };
 
 protected:
 	Root *mRoot;
