@@ -20,7 +20,6 @@ along with Rigs of Rods.  If not, see <http://www.gnu.org/licenses/>.
 #ifndef __TRUCKHUD_H__
 #define __TRUCKHUD_H__
 
-#define TRUCKHUD TruckHUD::getInstance()
 #define COMMANDS_VISIBLE 25
 
 #include "Beam.h"
@@ -29,16 +28,13 @@ along with Rigs of Rods.  If not, see <http://www.gnu.org/licenses/>.
 class TruckHUD : public MemoryAllocatedObject
 {
 public:
+	TruckHUD();
+	~TruckHUD();
 	bool update(float dt, Beam *truck, Ogre::SceneManager *sm, Ogre::Camera* mCamera, Ogre::RenderWindow* mWindow, bool visible=true);
 	void show(bool value);
 	bool isVisible();
-	static TruckHUD & getInstance();
-	~TruckHUD();
   
 protected:
-	TruckHUD();
-	TruckHUD(const TruckHUD&);
-	TruckHUD& operator= (const TruckHUD&);
 
 	Ogre::LineStreamOverlayElement *torqueLineStream; //!< pointer to the linestream overlay, which is the element that renders the curve
 	Ogre::String lastTorqueModel; //!< name of the last used torque model, needed to detect a change in the model

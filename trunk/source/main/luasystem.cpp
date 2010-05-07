@@ -21,6 +21,7 @@ along with Rigs of Rods.  If not, see <http://www.gnu.org/licenses/>.
 
 #include "luasystem.h"
 #include "Settings.h"
+#include "OverlayWrapper.h"
 
 #ifdef USE_MYGUI
 #include "SelectorWindow.h"
@@ -324,7 +325,8 @@ int LuaSystem::flashMessage (lua_State *lua)
 	float flashtime = (float)lua_tonumber (lua, 2);
 	if(flashtime < 1)
 		flashtime = 1;
-	mefl->flashMessage((char*)msg, flashtime);
+	if(mefl->getOverlayWrapper())
+		mefl->getOverlayWrapper()->flashMessage((char*)msg, flashtime);
 	return 0;
 }
 

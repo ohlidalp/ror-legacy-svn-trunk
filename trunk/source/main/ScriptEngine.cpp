@@ -30,6 +30,7 @@ along with Rigs of Rods.  If not, see <http://www.gnu.org/licenses/>.
 #include "Beam.h"
 #include "Settings.h"
 #include "IngameConsole.h"
+#include "OverlayWrapper.h"
 #include "CacheSystem.h"
 #include "as_ogre.h"
 #include "SelectorWindow.h"
@@ -894,7 +895,8 @@ void GameScript::registerForEvent(int eventValue)
 
 void GameScript::flashMessage(std::string &txt, float time, float charHeight)
 {
-	if(mefl) mefl->flashMessage(txt, time, charHeight);
+	if(mefl && mefl->getOverlayWrapper())
+		mefl->getOverlayWrapper()->flashMessage(txt, time, charHeight);
 }
 
 void GameScript::setDirectionArrow(std::string &text, Ogre::Vector3 vec)

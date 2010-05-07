@@ -27,9 +27,9 @@ along with Rigs of Rods.  If not, see <http://www.gnu.org/licenses/>.
 using namespace std;
 using namespace Ogre;
 
-TruckHUD *TruckHUD::myInstance = 0;
 
-TruckHUD::TruckHUD() : torqueLineStream(0)
+TruckHUD::TruckHUD() :
+	torqueLineStream(0)
 {
 	width = 400;
 	border = 10;
@@ -65,16 +65,6 @@ TruckHUD::TruckHUD() : torqueLineStream(0)
 TruckHUD::~TruckHUD()
 {
 }
-
-TruckHUD &TruckHUD::getInstance()
-{
-	if(myInstance == 0) {
-		myInstance = new TruckHUD();
-		myInstance->show(false);
-	}
-	return *myInstance;
-}
-
 
 void TruckHUD::show(bool value)
 {

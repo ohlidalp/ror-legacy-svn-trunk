@@ -102,6 +102,7 @@ public:
 	void setOptions(float einertia, char etype, float eclutch, float ctime, float stime, float pstime);
 	void update(float dt, int doUpdate);
 	float getRPM();
+	void setRPM(float value);
 	void toggleAutoMode();
 	int getAutoMode();
 	void setAcc(float val);
