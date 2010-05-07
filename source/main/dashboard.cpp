@@ -26,6 +26,7 @@ SceneManager* mScene;
 Overlay* dashOverlay;
 Overlay* needlesOverlay;
 Overlay* blendOverlay;
+Overlay* truckHUDOverlay;
 
 class DashboardListener : public RenderTargetListener
 {
@@ -33,15 +34,16 @@ private:
 	bool fpsDisplayed;
 	bool truckHUD;
 	bool consolevisible;
+	bool truckhHUDvisible;
 	Ogre::Overlay *fpsOverlay;
 public:
 	DashboardListener() : RenderTargetListener(), fpsOverlay(0)
 	{
 	}
 
-    void preRenderTargetUpdate(const RenderTargetEvent& evt)
-    {
-        // Hide everything
+	void preRenderTargetUpdate(const RenderTargetEvent& evt)
+	{
+		// Hide everything
 		mScene->setFindVisibleObjects(false);
 
 		// hide fps stats
@@ -55,31 +57,32 @@ public:
 			fpsOverlay = OverlayManager::getSingleton().getByName("Core/DebugOverlay");
 
 		// hide truck HUD
-		truckHUD = TRUCKHUD.isVisible();
-		if(truckHUD)
-			TRUCKHUD.show(false);
+		truckhHUDvisible = truckHUDOverlay->isVisible();
+		if(truckhHUDvisible)
+			truckHUDOverlay->hide();
 
 		//show overlay
 		dashOverlay->show();
 		needlesOverlay->show();
 		blendOverlay->show();
+
 		//hide unwanted overlays
 		consolevisible = NETCHAT.getVisible();
 		if(consolevisible)
 			NETCHAT.setVisible(false);
 
-    }
-    void postRenderTargetUpdate(const RenderTargetEvent& evt)
-    {
-        // Show everything 
+	}
+	void postRenderTargetUpdate(const RenderTargetEvent& evt)
+	{
+		// Show everything 
 		mScene->setFindVisibleObjects(true);
 
 		//show everything again, if it was displayed before hiding it...
 		if(fpsOverlay && fpsDisplayed)
 			fpsOverlay->show();
 
-		if(truckHUD)
-			TRUCKHUD.show(true);
+		if(truckHUDOverlay && truckhHUDvisible)
+			truckHUDOverlay->show();
 
 		//hide overlay
 		dashOverlay->hide();
@@ -88,7 +91,7 @@ public:
 
 		if(consolevisible)
 			NETCHAT.setVisible(true);
-    }
+	}
 
 };
 
@@ -111,7 +114,7 @@ Dashboard::Dashboard(SceneManager *mSceneMgr, RenderWindow *mWindow)
 
 			Viewport *v = rttTex->addViewport( mDashCam );
 			v->setClearEveryFrame( true );
-		    v->setBackgroundColour( ColourValue::Black );
+			v->setBackgroundColour( ColourValue::Black );
 
 			MaterialPtr mat = MaterialManager::getSingleton().getByName("renderdash");
 			mat->getTechnique(0)->getPass(0)->getTextureUnitState(0)->setTextureName("dashtexture");
@@ -124,6 +127,7 @@ Dashboard::Dashboard(SceneManager *mSceneMgr, RenderWindow *mWindow)
 		dashOverlay = OverlayManager::getSingleton().getByName("tracks/3D_DashboardOverlay");
 		needlesOverlay = OverlayManager::getSingleton().getByName("tracks/3D_NeedlesOverlay");
 		blendOverlay = OverlayManager::getSingleton().getByName("tracks/3D_BlendOverlay");
+		truckHUDOverlay = OverlayManager::getSingleton().getByName("tracks/TruckInfoBox");
 
 //		dbdebugOverlay = OverlayManager::getSingleton().getByName("Core/DebugOverlay");
 //		dbeditorOverlay = OverlayManager::getSingleton().getByName("tracks/EditorOverlay");

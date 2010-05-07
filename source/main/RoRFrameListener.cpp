@@ -36,6 +36,8 @@ along with Rigs of Rods.  If not, see <http://www.gnu.org/licenses/>.
 #include "BeamFactory.h"
 #include "rormemory.h"
 #include "PlayerColours.h"
+#include "OverlayWrapper.h"
+#include "TruckHUD.h"
 
 #ifdef USE_MPLATFORM
 #include "mplatform_fd.h"
@@ -81,7 +83,6 @@ along with Rigs of Rods.  If not, see <http://www.gnu.org/licenses/>.
 #endif //MYGUI
 
 #include "mirrors.h"
-#include "TruckHUD.h"
 #include "autopilot.h"
 #include "ResourceBuffer.h"
 #include "CacheSystem.h"
@@ -186,293 +187,95 @@ inline float getTerrainHeight(Ogre::Real x, Ogre::Real z, void *unused=0)
 	return RoRFrameListener::hfinder->getHeightAt(x, z);
 }
 
-void RoRFrameListener::updateStats(void)
-{
-	static String currFps = _L("Current FPS: ");
-	static String avgFps = _L("Average FPS: ");
-	static String bestFps = _L("Best FPS: ");
-	static String worstFps = _L("Worst FPS: ");
-	static String tris = _L("Triangle Count: ");
-	const RenderTarget::FrameStats& stats = mWindow->getStatistics();
 
-	// update stats when necessary
-	try
-	{
-		OverlayElement* guiAvg = OverlayManager::getSingleton().getOverlayElement("Core/AverageFps");
-		OverlayElement* guiCurr = OverlayManager::getSingleton().getOverlayElement("Core/CurrFps");
-		OverlayElement* guiBest = OverlayManager::getSingleton().getOverlayElement("Core/BestFps");
-		OverlayElement* guiWorst = OverlayManager::getSingleton().getOverlayElement("Core/WorstFps");
-
-
-		guiAvg->setCaption(avgFps + StringConverter::toString(stats.avgFPS));
-		guiCurr->setCaption(currFps + StringConverter::toString(stats.lastFPS));
-		guiBest->setCaption(bestFps + StringConverter::toString(stats.bestFPS) + " " + StringConverter::toString(stats.bestFrameTime)+" ms");
-		guiWorst->setCaption(worstFps + StringConverter::toString(stats.worstFPS) + " " + StringConverter::toString(stats.worstFrameTime)+" ms");
-
-		OverlayElement* guiTris = OverlayManager::getSingleton().getOverlayElement("Core/NumTris");
-		String triss = tris + StringConverter::toString(stats.triangleCount);
-		if(stats.triangleCount > 1000000)
-			triss = tris + StringConverter::toString(stats.triangleCount/1000000.0f) + " M";
-		else if(stats.triangleCount > 1000)
-			triss = tris + StringConverter::toString(stats.triangleCount/1000.0f) + " k";
-		guiTris->setCaption(triss);
-
-		OverlayElement* guiDbg = OverlayManager::getSingleton().getOverlayElement("Core/DebugText");
-		String debugText = "";
-		for(int t=0;t<free_truck;t++)
-		{
-			if(!trucks[t]) continue;
-			if(!trucks[t]->debugText.empty())
-				debugText += StringConverter::toString(t) + ": " + trucks[t]->debugText + "\n";
-		}
-		guiDbg->setCaption(debugText);
-
-		// create some memory texts
-		String memoryText;
-		if(TextureManager::getSingleton().getMemoryUsage() > 1)
-			memoryText += "Textures: " + formatBytes(TextureManager::getSingleton().getMemoryUsage()) + " / " + formatBytes(TextureManager::getSingleton().getMemoryBudget()) + "\n";
-		if(CompositorManager::getSingleton().getMemoryUsage() > 1)
-			memoryText += "Compositors: " + formatBytes(CompositorManager::getSingleton().getMemoryUsage()) + " / " + formatBytes(CompositorManager::getSingleton().getMemoryBudget()) + "\n";
-		if(FontManager::getSingleton().getMemoryUsage() > 1)
-			memoryText += "Fonts: " + formatBytes(FontManager::getSingleton().getMemoryUsage()) + " / " + formatBytes(FontManager::getSingleton().getMemoryBudget()) + "\n";
-		if(GpuProgramManager::getSingleton().getMemoryUsage() > 1)
-			memoryText += "GPU Program: " + formatBytes(GpuProgramManager::getSingleton().getMemoryUsage()) + " / " + formatBytes(GpuProgramManager::getSingleton().getMemoryBudget()) + "\n";
-		if(HighLevelGpuProgramManager ::getSingleton().getMemoryUsage() >1)
-			memoryText += "HL GPU Program: " + formatBytes(HighLevelGpuProgramManager ::getSingleton().getMemoryUsage()) + " / " + formatBytes(HighLevelGpuProgramManager ::getSingleton().getMemoryBudget()) + "\n";
-		if(MaterialManager::getSingleton().getMemoryUsage() > 1)
-			memoryText += "Materials: " + formatBytes(MaterialManager::getSingleton().getMemoryUsage()) + " / " + formatBytes(MaterialManager::getSingleton().getMemoryBudget()) + "\n";
-		if(MeshManager::getSingleton().getMemoryUsage() > 1)
-			memoryText += "Meshes: " + formatBytes(MeshManager::getSingleton().getMemoryUsage()) + " / " + formatBytes(MeshManager::getSingleton().getMemoryBudget()) + "\n";
-		if(SkeletonManager::getSingleton().getMemoryUsage() > 1)
-			memoryText += "Skeletons: " + formatBytes(SkeletonManager::getSingleton().getMemoryUsage()) + " / " + formatBytes(SkeletonManager::getSingleton().getMemoryBudget()) + "\n";
-		if(MaterialManager::getSingleton().getMemoryUsage() > 1)
-			memoryText += "Materials: " + formatBytes(MaterialManager::getSingleton().getMemoryUsage()) + " / " + formatBytes(MaterialManager::getSingleton().getMemoryBudget()) + "\n";
-		memoryText += "\n";
-		memoryText += "RoR: " + formatBytes(MemoryWrapper::getMemoryAllocated()) + "\n";
-
-		OverlayElement* memoryDbg = OverlayManager::getSingleton().getOverlayElement("Core/MemoryText");
-		memoryDbg->setCaption(memoryText);
-
-
-
-		float sumMem = TextureManager::getSingleton().getMemoryUsage() + CompositorManager::getSingleton().getMemoryUsage() + FontManager::getSingleton().getMemoryUsage() + GpuProgramManager::getSingleton().getMemoryUsage() + HighLevelGpuProgramManager ::getSingleton().getMemoryUsage() + MaterialManager::getSingleton().getMemoryUsage() + MeshManager::getSingleton().getMemoryUsage() + SkeletonManager::getSingleton().getMemoryUsage() + MaterialManager::getSingleton().getMemoryUsage();
-		String sumMemoryText = "Memory (Ogre): " + formatBytes(sumMem) + "\n";
-
-		OverlayElement* memorySumDbg = OverlayManager::getSingleton().getOverlayElement("Core/CurrMemory");
-		memorySumDbg->setCaption(sumMemoryText);
-
-
-		if(mStatsOn>0)
-		{
-			static int framecounter = 0;
-			static int fpscount=0;
-			static ColourValue cr = ColourValue(0.3f,0.3f,1.0f);
-			static ColourValue cg = ColourValue(0.3f,1.0f,0.3f);
-			static ColourValue gr = ColourValue(0.8f,0.8f,0.8f);
-			// we view the extended stats, so draw the FPS graph :)
-			if(!fpsLineStream)
-			{
-				float graphHeight = 0.1f;
-				float border = graphHeight * 0.1f;
-				float posY = 0;
-				MaterialPtr backMat = MaterialManager::getSingleton().create("linestream_white", ResourceGroupManager::DEFAULT_RESOURCE_GROUP_NAME);
-				TextureUnitState *t = backMat->getTechnique(0)->getPass(0)->createTextureUnitState();
-				t->setColourOperationEx(Ogre::LBX_SOURCE1, Ogre::LBS_MANUAL, Ogre::LBS_CURRENT, ColourValue::White);
-				t->setAlphaOperation(Ogre::LBX_SOURCE1, Ogre::LBS_MANUAL, Ogre::LBS_CURRENT, 0.3);
-				backMat->getTechnique(0)->getPass(0)->setSceneBlending(SBT_TRANSPARENT_ALPHA);
-
-				backMat = MaterialManager::getSingleton().create("linestream_lines", ResourceGroupManager::DEFAULT_RESOURCE_GROUP_NAME);
-				t = backMat->getTechnique(0)->getPass(0)->createTextureUnitState();
-
-				fpsLineStream = dynamic_cast<Ogre::LineStreamOverlayElement *>(OverlayManager::getSingleton().createOverlayElement("LineStream", "FPSCurveLineStream"));
-				fpsLineStream->_setPosition(0.7f, posY);
-				fpsLineStream->_setDimensions(0.3f, graphHeight);
-				fpsLineStream->setMaterialName("linestream_lines");
-				fpsLineStream->setNumberOfSamplesForTrace(400);
-				fpsLineStream->setNumberOfTraces(2);
-				fpsLineStream->setTitle(gr, "Frame stats");
-
-				fpsLineStream->setMoveMode(0);
-				fpsLineStream->createVertexBuffer();
-				mDebugOverlay->add2D(fpsLineStream);
-				OverlayContainer *debugLineStreamPanel = (OverlayContainer *) (OverlayManager::getSingleton().createOverlayElement("Panel","debugLineStreamPanel"));
-				debugLineStreamPanel->_setPosition(0.7f, posY);
-				debugLineStreamPanel->_setDimensions(0.4f, graphHeight);
-				debugLineStreamPanel->setMaterialName("linestream_white");
-				mDebugOverlay->add2D(debugLineStreamPanel);
-				posY += graphHeight + border;
-
-				if(netmode)
-				{
-					// net traffic
-					netLineStream = dynamic_cast<Ogre::LineStreamOverlayElement *>(OverlayManager::getSingleton().createOverlayElement("LineStream", "NETCurveLineStream"));
-					netLineStream->_setPosition(0.7f, posY);
-					netLineStream->_setDimensions(0.3f, graphHeight);
-					netLineStream->setMaterialName("linestream_lines");
-					netLineStream->setNumberOfSamplesForTrace(400);
-					netLineStream->setNumberOfTraces(2);
-					netLineStream->setMoveMode(0);
-					netLineStream->createVertexBuffer();
-					netLineStream->setTitle(gr, "Network Traffic");
-					mDebugOverlay->add2D(netLineStream);
-					OverlayContainer *debugLineStreamPanel = (OverlayContainer *) (OverlayManager::getSingleton().createOverlayElement("Panel","debugLineStreamPanel2"));
-					debugLineStreamPanel->_setPosition(0.7f, posY);
-					debugLineStreamPanel->_setDimensions(0.4f, graphHeight);
-					debugLineStreamPanel->setMaterialName("linestream_white");
-					mDebugOverlay->add2D(debugLineStreamPanel);
-					posY += graphHeight + border;
-
-					// net lag
-					netlagLineStream = dynamic_cast<Ogre::LineStreamOverlayElement *>(OverlayManager::getSingleton().createOverlayElement("LineStream", "NETLAGCurveLineStream"));
-					netlagLineStream->_setPosition(0.7f, posY);
-					netlagLineStream->_setDimensions(0.3f, graphHeight);
-					netlagLineStream->setMaterialName("linestream_lines");
-					netlagLineStream->setNumberOfSamplesForTrace(400);
-					netlagLineStream->setNumberOfTraces(10);
-					netlagLineStream->setMoveMode(0);
-					netlagLineStream->createVertexBuffer();
-					netlagLineStream->setTitle(gr, "Network Lag");
-					mDebugOverlay->add2D(netlagLineStream);
-					debugLineStreamPanel = (OverlayContainer *) (OverlayManager::getSingleton().createOverlayElement("Panel","debugLineStreamPanel3"));
-					debugLineStreamPanel->_setPosition(0.7f, posY);
-					debugLineStreamPanel->_setDimensions(0.4f, graphHeight);
-					debugLineStreamPanel->setMaterialName("linestream_white");
-					mDebugOverlay->add2D(debugLineStreamPanel);
-				}
-
-				fpsLineStream->setTraceInfo(0, cr, "FPS");
-				fpsLineStream->setTraceInfo(1, cg, "Physic Frames");
-				if(netmode && netLineStream)
-				{
-					netLineStream->setTraceInfo(0, cr, "Traffic Up");
-					netLineStream->setTraceInfo(1, cg, "Traffic Down");
-					netlagLineStream->setTraceInfo(0, cr, "Average");
-					for(int i=1;i<10;i++)
-						netlagLineStream->setTraceInfo(i, ColourValue(0.8f,0.8f,0.8f), "");
-				}
-
-			}
-			if(!fpsLineStream)
-				return;
-			if(framecounter > 5)
-			{
-				char tmp[10]="";
-				float fps = fpscount/6.0f;
-				sprintf(tmp, "%0.0f", fps);
-
-				fpsLineStream->setTraceInfo(0, cr, "FPS: " + String(tmp));
-				//fpsLineStream->setTraceInfo(1, cg, "Physic Lag: " + StringConverter::toString(truckSteps));
-
-				fpsLineStream->setTraceValue(0, fpscount/6.0f);
-				//fpsLineStream->setTraceValue(1, truckSteps);
-#ifdef USE_SOCKETW
-				if(netmode && net && netLineStream)
-				{
-					// in kB/s not B/s
-					memset(tmp, 0, 10);
-					float speedUp = net->getSpeedUp()/1024.0f;
-					sprintf(tmp, "%0.1fkB/s", speedUp);
-					netLineStream->setTraceValue(0, speedUp);
-
-					netLineStream->setTraceInfo(0, cr, "Traffic Up: "+String(tmp));
-
-					float speedDown = net->getSpeedDown()/1024.0f;
-					memset(tmp, 0, 10);
-					sprintf(tmp, "%0.1fkB/s", speedDown);
-					netLineStream->setTraceValue(1, speedDown);
-					netLineStream->setTraceInfo(1, cg, "Traffic Down: "+String(tmp));
-
-					netLineStream->moveForward();
-
-					/*
-					// TODO: fix lag data
-					std::map<int, float> &lag = net->getLagData();
-					int c=0;
-					float sum=0;
-					for(std::map<int, float>::iterator it = lag.begin(); it!= lag.end(); it++)
-					{
-						int n = it->first;
-						float lag = fabs(it->second);
-						//LogManager::getSingleton().logMessage("lag("+StringConverter::toString(c)+")="+StringConverter::toString(lag));
-						sum += lag;
-						c++;
-						netlagLineStream->setTraceValue(c, lag);
-					}
-
-					float av = sum / (float)(c);
-					netlagLineStream->setTraceValue(0, av);
-					memset(tmp, 0, 10);
-					sprintf(tmp, "%0.0fms", av);
-
-					netlagLineStream->setTraceInfo(0, cr, "Average:" + String(tmp));
-					netlagLineStream->moveForward();
-					*/
-				}
-#endif //SOCKETW
-				fpsLineStream->moveForward();
-				fpscount = 0;
-				framecounter = 0;
-			} else
-			{
-				fpscount += stats.lastFPS;
-				framecounter++;
-			}
-		}
-	}
-	catch(...)
-	{
-		// ignore
-	}
-}
 
 void RoRFrameListener::startTimer()
 {
 	//LogManager::getSingleton().logMessage("LUA: startTimer()");
 	raceStartTime = (int)rtime;
-	OverlayManager::getSingleton().getByName("tracks/Racing")->show();
-	laptimes->show();
-	laptimems->show();
-	laptimemin->show();
+	if(ow)
+	{
+		ow->racing->show();
+		ow->laptimes->show();
+		ow->laptimems->show();
+		ow->laptimemin->show();
+	}
 }
 
 float RoRFrameListener::stopTimer()
 {
 	//LogManager::getSingleton().logMessage("LUA: stopTimer()");
 	float time=rtime - raceStartTime;
-	char txt[255];
-	sprintf(txt, "Last lap: %.2i'%.2i.%.2i", ((int)(time))/60,((int)(time))%60, ((int)(time*100.0))%100);
-	lasttime->setCaption(txt);
 	// let the display on
-	//OverlayManager::getSingleton().getByName("tracks/Racing")->hide();
-	laptimes->hide();
-	laptimems->hide();
-	laptimemin->hide();
+	if(ow)
+	{
+		char txt[255];
+		sprintf(txt, "Last lap: %.2i'%.2i.%.2i", ((int)(time))/60,((int)(time))%60, ((int)(time*100.0))%100);
+		ow->lasttime->setCaption(txt);
+		//ow->racing->hide();
+		ow->laptimes->hide();
+		ow->laptimems->hide();
+		ow->laptimemin->hide();
+	}
 	raceStartTime = -1;
 	return time;
 }
 
 void RoRFrameListener::updateRacingGUI()
 {
+	if(!ow) return;
 	// update raceing gui if required
 	float time=rtime - raceStartTime;
 	char txt[10];
 	sprintf(txt, "%.2i", ((int)(time*100.0))%100);
-	laptimems->setCaption(txt);
+	ow->laptimems->setCaption(txt);
 	sprintf(txt, "%.2i", ((int)(time))%60);
-	laptimes->setCaption(txt);
+	ow->laptimes->setCaption(txt);
 	sprintf(txt, "%.2i'", ((int)(time))/60);
-	laptimemin->setCaption(txt);
+	ow->laptimemin->setCaption(txt);
 }
 
-//update engine panel
+void RoRFrameListener::updateIO(float dt)
+{
+	if (current_truck != -1 && trucks[current_truck] && trucks[current_truck]->driveable == TRUCK)
+	{
+#ifdef USE_OIS_G27
+		//logitech G27 LEDs tachometer
+		if (leds)
+		{
+			leds->play(trucks[current_truck]->engine->getRPM(), 
+				trucks[current_truck]->engine->getMaxRPM()*0.75, 
+				trucks[current_truck]->engine->getMaxRPM());
+		}
+#endif //OIS_G27
+
+		// force feedback
+		if (forcefeedback)
+		{
+			Vector3 udir=trucks[current_truck]->nodes[trucks[current_truck]->cameranodepos[0]].RelPosition-trucks[current_truck]->nodes[trucks[current_truck]->cameranodedir[0]].RelPosition;
+			Vector3 uroll=trucks[current_truck]->nodes[trucks[current_truck]->cameranodepos[0]].RelPosition-trucks[current_truck]->nodes[trucks[current_truck]->cameranoderoll[0]].RelPosition;
+			udir.normalise();
+			uroll.normalise();
+			forcefeedback->setForces(-trucks[current_truck]->ffforce.dotProduct(uroll)/10000.0,
+				trucks[current_truck]->ffforce.dotProduct(udir)/10000.0, 
+				trucks[current_truck]->WheelSpeed, 
+				trucks[current_truck]->hydrodircommand, 
+				trucks[current_truck]->ffhydro);
+		}
+	}
+
+}
+
 void RoRFrameListener::updateGUI(float dt)
 {
+	if(!ow) return; // no gui, then skip this
+
 	NETCHAT.update(dt);
 
 	if (current_truck==-1) return;
 
 	//update the truck info gui (also if not displayed!)
-	TRUCKHUD.update(dt, trucks[current_truck], mSceneMgr, mCamera, mWindow, mTruckInfoOn);
+	ow->truckhud->update(dt, trucks[current_truck], mSceneMgr, mCamera, mWindow, mTruckInfoOn);
 
 #ifdef FEAT_TIMING
 	BES.updateGUI(dt, current_truck, trucks);
@@ -482,8 +285,12 @@ void RoRFrameListener::updateGUI(float dt)
 	{
 		Real angle;
 		angle=135.0-trucks[current_truck]->getPressure()*2.7;
-		pressuretexture->setTextureRotate(Degree(angle));
+		ow->pressuretexture->setTextureRotate(Degree(angle));
 	}
+
+	// racing gui
+	if (raceStartTime > 0)
+		updateRacingGUI();
 
 	// update map
 #ifdef USE_MYGUI
@@ -493,115 +300,109 @@ void RoRFrameListener::updateGUI(float dt)
 		{
 			if(!trucks[i]) continue;
 			MapEntity *e = bigMap->getEntityByName("Truck"+StringConverter::toString(i));
-			if(!e)
-				continue;
+			if(!e) continue;
 			if (trucks[i]->state != RECYCLE && !interactivemap)
 			{
 				e->setState(trucks[i]->state);
 				e->setVisibility(true);
 				e->setPosition(trucks[i]->getPosition());
 				e->setRotation(-Radian(trucks[i]->getHeadingDirectionAngle()));
-			}else
+			} else
+			{
 				e->setVisibility(false);
+			}
 		}
 	}
 #endif // MYGUI
 
-	if (trucks[current_truck]->driveable==TRUCK)
+	if (trucks[current_truck]->driveable == TRUCK)
 	{
-		if(!trucks[current_truck]->engine)
-			return;
 		//TRUCK
+		if(!trucks[current_truck]->engine) return;
+		
 		//special case for the editor
 		if (trucks[current_truck]->editorId>=0 && editor)
 		{
-			OverlayManager::getSingleton().getOverlayElement("tracks/EditorPosition")->setCaption("Position: X=" +
+			ow->editor_pos->setCaption("Position: X=" +
 				StringConverter::toString(trucks[current_truck]->nodes[trucks[current_truck]->editorId].AbsPosition.x)+
 				"  Y="+StringConverter::toString(trucks[current_truck]->nodes[trucks[current_truck]->editorId].AbsPosition.y)+
 				"  Z="+StringConverter::toString(trucks[current_truck]->nodes[trucks[current_truck]->editorId].AbsPosition.z)
 				);
-			OverlayManager::getSingleton().getOverlayElement("tracks/EditorAngles")->setCaption("Angles: 0.0 " +
+			ow->editor_angles->setCaption("Angles: 0.0 " +
 				StringConverter::toString(editor->pturn)+
 				"  "+StringConverter::toString(editor->ppitch)
 				);
 			char type[256];
 			sprintf(type, "Object: %s", editor->curtype);
-			OverlayManager::getSingleton().getOverlayElement("tracks/EditorObject")->setCaption(type);
+			ow->editor_object->setCaption(type);
 		}
-		int truck_getgear = trucks[current_truck]->engine->getGear();
 
+		// gears
+		int truck_getgear = trucks[current_truck]->engine->getGear();
 		if (truck_getgear>0)
 		{
 			int numgears = trucks[current_truck]->engine->getNumGears();
 			String gearstr = StringConverter::toString(truck_getgear) + "/" + StringConverter::toString(numgears);
-			guiGear->setCaption(gearstr);
-			guiGear3D->setCaption(gearstr);
-		}
-		else if (truck_getgear==0)
+			ow->guiGear->setCaption(gearstr);
+			ow->guiGear3D->setCaption(gearstr);
+		} else if (truck_getgear==0)
 		{
-			guiGear->setCaption("N");
-			guiGear3D->setCaption("N");
-		}
-		else
+			ow->guiGear->setCaption("N");
+			ow->guiGear3D->setCaption("N");
+		} else
 		{
-			guiGear->setCaption("R");
-			guiGear3D->setCaption("R");
+			ow->guiGear->setCaption("R");
+			ow->guiGear3D->setCaption("R");
 		}
 		//autogears
-		int i;
-		int cg=trucks[current_truck]->engine->getAutoShift();
-		for (i=0; i<5; i++)
+		int cg = trucks[current_truck]->engine->getAutoShift();
+		for (int i=0; i<5; i++)
 		{
 			if (i==cg)
 			{
 				if (i==1)
 				{
-					guiAuto[i]->setColourTop(ColourValue(1.0, 0.2, 0.2, 1.0));
-					guiAuto[i]->setColourBottom(ColourValue(0.8, 0.1, 0.1, 1.0));
-					guiAuto3D[i]->setColourTop(ColourValue(1.0, 0.2, 0.2, 1.0));
-					guiAuto3D[i]->setColourBottom(ColourValue(0.8, 0.1, 0.1, 1.0));
+					ow->guiAuto[i]->setColourTop(ColourValue(1.0, 0.2, 0.2, 1.0));
+					ow->guiAuto[i]->setColourBottom(ColourValue(0.8, 0.1, 0.1, 1.0));
+					ow->guiAuto3D[i]->setColourTop(ColourValue(1.0, 0.2, 0.2, 1.0));
+					ow->guiAuto3D[i]->setColourBottom(ColourValue(0.8, 0.1, 0.1, 1.0));
 				} else
 				{
-					guiAuto[i]->setColourTop(ColourValue(1.0, 1.0, 1.0, 1.0));
-					guiAuto[i]->setColourBottom(ColourValue(0.8, 0.8, 0.8, 1.0));
-					guiAuto3D[i]->setColourTop(ColourValue(1.0, 1.0, 1.0, 1.0));
-					guiAuto3D[i]->setColourBottom(ColourValue(0.8, 0.8, 0.8, 1.0));
+					ow->guiAuto[i]->setColourTop(ColourValue(1.0, 1.0, 1.0, 1.0));
+					ow->guiAuto[i]->setColourBottom(ColourValue(0.8, 0.8, 0.8, 1.0));
+					ow->guiAuto3D[i]->setColourTop(ColourValue(1.0, 1.0, 1.0, 1.0));
+					ow->guiAuto3D[i]->setColourBottom(ColourValue(0.8, 0.8, 0.8, 1.0));
 				}
 			} else
 			{
 				if (i==1)
 				{
-					guiAuto[i]->setColourTop(ColourValue(0.4, 0.05, 0.05, 1.0));
-					guiAuto[i]->setColourBottom(ColourValue(0.3, 0.02, 0.2, 1.0));
-					guiAuto3D[i]->setColourTop(ColourValue(0.4, 0.05, 0.05, 1.0));
-					guiAuto3D[i]->setColourBottom(ColourValue(0.3, 0.02, 0.2, 1.0));
+					ow->guiAuto[i]->setColourTop(ColourValue(0.4, 0.05, 0.05, 1.0));
+					ow->guiAuto[i]->setColourBottom(ColourValue(0.3, 0.02, 0.2, 1.0));
+					ow->guiAuto3D[i]->setColourTop(ColourValue(0.4, 0.05, 0.05, 1.0));
+					ow->guiAuto3D[i]->setColourBottom(ColourValue(0.3, 0.02, 0.2, 1.0));
 				} else
 				{
-					guiAuto[i]->setColourTop(ColourValue(0.4, 0.4, 0.4, 1.0));
-					guiAuto[i]->setColourBottom(ColourValue(0.3, 0.3, 0.3, 1.0));
-					guiAuto3D[i]->setColourTop(ColourValue(0.4, 0.4, 0.4, 1.0));
-					guiAuto3D[i]->setColourBottom(ColourValue(0.3, 0.3, 0.3, 1.0));
+					ow->guiAuto[i]->setColourTop(ColourValue(0.4, 0.4, 0.4, 1.0));
+					ow->guiAuto[i]->setColourBottom(ColourValue(0.3, 0.3, 0.3, 1.0));
+					ow->guiAuto3D[i]->setColourTop(ColourValue(0.4, 0.4, 0.4, 1.0));
+					ow->guiAuto3D[i]->setColourBottom(ColourValue(0.3, 0.3, 0.3, 1.0));
 				}
 			}
 
 		}
-		//pedals
-		guipedclutch->setTop(-0.05*trucks[current_truck]->engine->getClutch()-0.01);
-		guipedbrake->setTop(-0.05*(1.0-trucks[current_truck]->brake/trucks[current_truck]->brakeforce)-0.01);
-		guipedacc->setTop(-0.05*(1.0-trucks[current_truck]->engine->getAcc())-0.01);
 
-		//	speed_node->resetOrientation();
+		// pedals
+		ow->guipedclutch->setTop(-0.05*trucks[current_truck]->engine->getClutch()-0.01);
+		ow->guipedbrake->setTop(-0.05*(1.0-trucks[current_truck]->brake/trucks[current_truck]->brakeforce)-0.01);
+		ow->guipedacc->setTop(-0.05*(1.0-trucks[current_truck]->engine->getAcc())-0.01);
 
-		// calculate speed
+		// speedo / calculate speed
 		Real guiSpeedFactor = 7.0 * (140.0 / trucks[current_truck]->speedoMax);
 		Real angle = 140 - fabs(trucks[current_truck]->WheelSpeed * guiSpeedFactor);
 		if (angle < -140)
 			angle = -140;
-		speedotexture->setTextureRotate(Degree(angle));
-
-
-		//	speed_node->roll(Degree(angle));
-		//	tach_node->resetOrientation();
+		ow->speedotexture->setTextureRotate(Degree(angle));
 
 		// calculate tach stuff
 		Real tachoFactor = 0.072;
@@ -610,17 +411,9 @@ void RoRFrameListener::updateGUI(float dt)
 		angle=126.0-fabs(trucks[current_truck]->engine->getRPM() * tachoFactor);
 		if (angle<-120.0) angle=-120.0;
 		if (angle>121.0) angle=121.0;
-		tachotexture->setTextureRotate(Degree(angle));
+		ow->tachotexture->setTextureRotate(Degree(angle));
 
-#ifdef USE_OIS_G27
-		//logitech G27 LEDs tachometer
-		if (leds)
-		{
-			leds->play(trucks[current_truck]->engine->getRPM(), trucks[current_truck]->engine->getMaxRPM()*0.75, trucks[current_truck]->engine->getMaxRPM());
-		}
-#endif //OIS_G27
-		//	tach_node->roll(Degree(angle));
-		//roll
+		// roll
 		Vector3 dir=trucks[current_truck]->nodes[trucks[current_truck]->cameranodepos[0]].RelPosition-trucks[current_truck]->nodes[trucks[current_truck]->cameranoderoll[0]].RelPosition;
 		dir.normalise();
 		//	roll_node->resetOrientation();
@@ -628,320 +421,296 @@ void RoRFrameListener::updateGUI(float dt)
 		if (angle<-1) angle=-1;
 		if (angle>1) angle=1;
 		//float jroll=angle*1.67;
-		rolltexture->setTextureRotate(Radian(angle));
+		ow->rolltexture->setTextureRotate(Radian(angle));
 		//	roll_node->roll(Radian(angle));
-		//rollcorr
-		if (trucks[current_truck]->free_active_shock && guiRoll && rollcortexture)
+		
+		// rollcorr
+		if (trucks[current_truck]->free_active_shock && ow && ow->guiRoll && ow->rollcortexture)
 		{
 			//		rollcorr_node->resetOrientation();
 			//		rollcorr_node->roll(Radian(-trucks[current_truck]->stabratio*5.0));
-			rollcortexture->setTextureRotate(Radian(-trucks[current_truck]->stabratio*10.0));
+			ow->rollcortexture->setTextureRotate(Radian(-trucks[current_truck]->stabratio*10.0));
 			if (trucks[current_truck]->stabcommand)
-				guiRoll->setMaterialName("tracks/rollmaskblink");
-			else guiRoll->setMaterialName("tracks/rollmask");
+				ow->guiRoll->setMaterialName("tracks/rollmaskblink");
+			else 
+				ow->guiRoll->setMaterialName("tracks/rollmask");
 		}
-		//pitch
+
+		// pitch
 		dir=trucks[current_truck]->nodes[trucks[current_truck]->cameranodepos[0]].RelPosition-trucks[current_truck]->nodes[trucks[current_truck]->cameranodedir[0]].RelPosition;
 		dir.normalise();
 		//	pitch_node->resetOrientation();
 		angle=asin(dir.dotProduct(Vector3::UNIT_Y));
 		if (angle<-1) angle=-1;
 		if (angle>1) angle=1;
-		pitchtexture->setTextureRotate(Radian(angle));
+		ow->pitchtexture->setTextureRotate(Radian(angle));
 		//	pitch_node->roll(Radian(angle));
-		//turbo
+		
+		// turbo
 		angle=40.0-trucks[current_truck]->engine->getTurboPSI()*3.34;
-		turbotexture->setTextureRotate(Degree(angle));
+		ow->turbotexture->setTextureRotate(Degree(angle));
 
-
-		//force feedback
-		if (forcefeedback)
-		{
-			Vector3 udir=trucks[current_truck]->nodes[trucks[current_truck]->cameranodepos[0]].RelPosition-trucks[current_truck]->nodes[trucks[current_truck]->cameranodedir[0]].RelPosition;
-			Vector3 uroll=trucks[current_truck]->nodes[trucks[current_truck]->cameranodepos[0]].RelPosition-trucks[current_truck]->nodes[trucks[current_truck]->cameranoderoll[0]].RelPosition;
-			udir.normalise();
-			uroll.normalise();
-			forcefeedback->setForces(-trucks[current_truck]->ffforce.dotProduct(uroll)/10000.0,
-				trucks[current_truck]->ffforce.dotProduct(udir)/10000.0, trucks[current_truck]->WheelSpeed, trucks[current_truck]->hydrodircommand, trucks[current_truck]->ffhydro);
-		}
-
-		//map update
-		//((TerrainSceneManager*)mSceneMgr)->getScale().x;
-
-
-		//indicators
-		if (trucks[current_truck]->engine->contact ) igno->setMaterialName("tracks/ign-on");
-		else igno->setMaterialName("tracks/ign-off");
-		if (trucks[current_truck]->engine->contact && !trucks[current_truck]->engine->running) batto->setMaterialName("tracks/batt-on");
-		else batto->setMaterialName("tracks/batt-off");
-		if (trucks[current_truck]->parkingbrake) pbrakeo->setMaterialName("tracks/pbrake-on");
-		else pbrakeo->setMaterialName("tracks/pbrake-off");
-
-		// TODO: FIX
-		if (trucks[current_truck]->isLocked())
-		{
-			lockedo->setMaterialName("tracks/locked-on");
-		} else
-		{
-			lockedo->setMaterialName("tracks/locked-off");
-		}
+		// indicators
+		ow->igno->setMaterialName(String("tracks/ign-")     + ((trucks[current_truck]->engine->contact)?"on":"off"));
+		ow->igno->setMaterialName(String("tracks/batt-")    + ((trucks[current_truck]->engine->contact && !trucks[current_truck]->engine->running)?"on":"off"));
+		ow->igno->setMaterialName(String("tracks/pbrake-")  + ((trucks[current_truck]->parkingbrake)?"on":"off"));
+		ow->igno->setMaterialName(String("tracks/locked-")  + ((trucks[current_truck]->isLocked())?"on":"off"));
+		ow->igno->setMaterialName(String("tracks/lopress-") + ((!trucks[current_truck]->canwork)?"on":"off"));
+		ow->igno->setMaterialName(String("tracks/clutch-")  + ((fabs(trucks[current_truck]->engine->getTorque())>=trucks[current_truck]->engine->getClutchForce()*10.0f)?"on":"off"));
+		ow->igno->setMaterialName(String("tracks/lights-")  + ((trucks[current_truck]->lights)?"on":"off"));
 
 		if (trucks[current_truck]->isTied())
 		{
 			if (fabs(trucks[current_truck]->commandkey[0].commandValue) > 0.000001f)
 			{
-				flipflop=!flipflop;
-				if (flipflop) securedo->setMaterialName("tracks/secured-on");
-				else securedo->setMaterialName("tracks/secured-off");
-			}
-			else securedo->setMaterialName("tracks/secured-on");
-		}
-
-		else securedo->setMaterialName("tracks/secured-off");
-		if (!trucks[current_truck]->canwork) lopresso->setMaterialName("tracks/lopress-on");
-		else lopresso->setMaterialName("tracks/lopress-off");
-
-		if (fabs(trucks[current_truck]->engine->getTorque())>=trucks[current_truck]->engine->getClutchForce()*10.0f) clutcho->setMaterialName("tracks/clutch-on");
-		else clutcho->setMaterialName("tracks/clutch-off");
-
-		if (trucks[current_truck]->lights) lightso->setMaterialName("tracks/lights-on");
-		else lightso->setMaterialName("tracks/lights-off");
-	}
-	else
-		if (trucks[current_truck]->driveable==AIRPLANE)
-		{
-			//AIRPLANE GUI
-			int ftp=trucks[current_truck]->free_aeroengine;
-			//throtles
-			thro1->setTop(thrtop+thrheight*(1.0-trucks[current_truck]->aeroengines[0]->getThrotle())-1.0);
-			if (ftp>1) thro2->setTop(thrtop+thrheight*(1.0-trucks[current_truck]->aeroengines[1]->getThrotle())-1.0);
-			if (ftp>2) thro3->setTop(thrtop+thrheight*(1.0-trucks[current_truck]->aeroengines[2]->getThrotle())-1.0);
-			if (ftp>3) thro4->setTop(thrtop+thrheight*(1.0-trucks[current_truck]->aeroengines[3]->getThrotle())-1.0);
-			//fire
-			if (trucks[current_truck]->aeroengines[0]->isFailed()) engfireo1->setMaterialName("tracks/engfire-on"); else engfireo1->setMaterialName("tracks/engfire-off");
-			if (ftp>1 && trucks[current_truck]->aeroengines[1]->isFailed()) engfireo2->setMaterialName("tracks/engfire-on"); else engfireo2->setMaterialName("tracks/engfire-off");
-			if (ftp>2 && trucks[current_truck]->aeroengines[2]->isFailed()) engfireo3->setMaterialName("tracks/engfire-on"); else engfireo3->setMaterialName("tracks/engfire-off");
-			if (ftp>3 && trucks[current_truck]->aeroengines[3]->isFailed()) engfireo4->setMaterialName("tracks/engfire-on"); else engfireo4->setMaterialName("tracks/engfire-off");
-
-			//airspeed
-			float angle=0.0;
-			float ground_speed_kt=trucks[current_truck]->nodes[0].Velocity.length()*1.9438;
-
-			//tropospheric model valid up to 11.000m (33.000ft)
-			float altitude=trucks[current_truck]->nodes[0].AbsPosition.y;
-			float sea_level_temperature=273.15+15.0; //in Kelvin
-			float sea_level_pressure=101325; //in Pa
-			float airtemperature=sea_level_temperature-altitude*0.0065; //in Kelvin
-			float airpressure=sea_level_pressure*pow(1.0-0.0065*altitude/288.15, 5.24947); //in Pa
-			float airdensity=airpressure*0.0000120896;//1.225 at sea level
-
-			float kt=ground_speed_kt*sqrt(airdensity/1.225); //KIAS
-
-			if (kt>23.0)
-				if (kt<50.0) angle=((kt-23.0)/1.111);
-				else if (kt<100.0) angle=(24.0+(kt-50.0)/0.8621);
-				else if (kt<300.0) angle=(82.0+(kt-100.0)/0.8065);
-				else angle=329.0;
-				airspeedtexture->setTextureRotate(Degree(-angle));
-				//aoa
-				angle=0;
-				if (trucks[current_truck]->free_wing>4) angle=trucks[current_truck]->wings[4].fa->aoa;
-				if (kt<10.0) angle=0;
-				float absangle=angle;
-				if (absangle<0) absangle=-absangle;
-#ifdef USE_OPENAL
-				if(ssm) ssm->modulate(current_truck, SS_MOD_AOA, absangle);
-				if (absangle>18.0 && ssm) ssm->trigStart(current_truck, SS_TRIG_AOA); else ssm->trigStop(current_truck, SS_TRIG_AOA);
-#endif // OPENAL
-				if (angle>25.0) angle=25.0;
-				if (angle<-25.0) angle=-25.0;
-				aoatexture->setTextureRotate(Degree(-angle*4.7+90.0));
-				//altimeter
-				angle=trucks[current_truck]->nodes[0].AbsPosition.y*1.1811;
-				altimetertexture->setTextureRotate(Degree(-angle));
-				char altc[10];
-				sprintf(altc, "%03u", (int)(trucks[current_truck]->nodes[0].AbsPosition.y/30.48));
-				alt_value_taoe->setCaption(altc);
-				//adi
-				//roll
-				Vector3 rollv=trucks[current_truck]->nodes[trucks[current_truck]->cameranodepos[0]].RelPosition-trucks[current_truck]->nodes[trucks[current_truck]->cameranoderoll[0]].RelPosition;
-				rollv.normalise();
-				float rollangle=asin(rollv.dotProduct(Vector3::UNIT_Y));
-				//pitch
-				Vector3 dirv=trucks[current_truck]->nodes[trucks[current_truck]->cameranodepos[0]].RelPosition-trucks[current_truck]->nodes[trucks[current_truck]->cameranodedir[0]].RelPosition;
-				dirv.normalise();
-				float pitchangle=asin(dirv.dotProduct(Vector3::UNIT_Y));
-				Vector3 upv=dirv.crossProduct(-rollv);
-				if (upv.y<0) rollangle=3.14159-rollangle;
-				adibugstexture->setTextureRotate(Radian(-rollangle));
-				aditapetexture->setTextureVScroll(-pitchangle*0.25);
-				aditapetexture->setTextureRotate(Radian(-rollangle));
-
-				//hsi
-				Vector3 idir=trucks[current_truck]->nodes[trucks[current_truck]->cameranodepos[0]].RelPosition-trucks[current_truck]->nodes[trucks[current_truck]->cameranodedir[0]].RelPosition;
-				//			idir.normalise();
-				float dirangle=atan2(idir.dotProduct(Vector3::UNIT_X), idir.dotProduct(-Vector3::UNIT_Z));
-				hsirosetexture->setTextureRotate(Radian(dirangle));
-				if (trucks[current_truck]->autopilot)
-				{
-					hsibugtexture->setTextureRotate(Radian(dirangle)-Degree(trucks[current_truck]->autopilot->heading));
-					float vdev=0;
-					float hdev=0;
-					trucks[current_truck]->autopilot->getRadioFix(localizers, free_localizer, &vdev, &hdev);
-					if (hdev>15) hdev=15;
-					if (hdev<-15) hdev=-15;
-					hsivtexture->setTextureUScroll(-hdev*0.02);
-					if (vdev>15) vdev=15;
-					if (vdev<-15) vdev=-15;
-					hsihtexture->setTextureVScroll(-vdev*0.02);
-				}
-
-				//vvi
-				float vvi=trucks[current_truck]->nodes[0].Velocity.y*196.85;
-				if (vvi<1000.0 && vvi>-1000.0) angle=vvi*0.047;
-				if (vvi>1000.0 && vvi<6000.0) angle=47.0+(vvi-1000.0)*0.01175;
-				if (vvi>6000.0) angle=105.75;
-				if (vvi<-1000.0 && vvi>-6000.0) angle=-47.0+(vvi+1000.0)*0.01175;
-				if (vvi<-6000.0) angle=-105.75;
-				vvitexture->setTextureRotate(Degree(-angle+90.0));
-				//rpm
-				float pcent=trucks[current_truck]->aeroengines[0]->getRPMpc();
-				if (pcent<60.0) angle=-5.0+pcent*1.9167;
-				else if (pcent<110.0) angle=110.0+(pcent-60.0)*4.075;
-				else angle=314.0;
-				airrpm1texture->setTextureRotate(Degree(-angle));
-
-				if (ftp>1) pcent=trucks[current_truck]->aeroengines[1]->getRPMpc(); else pcent=0;
-				if (pcent<60.0) angle=-5.0+pcent*1.9167;
-				else if (pcent<110.0) angle=110.0+(pcent-60.0)*4.075;
-				else angle=314.0;
-				airrpm2texture->setTextureRotate(Degree(-angle));
-
-				if (ftp>2) pcent=trucks[current_truck]->aeroengines[2]->getRPMpc(); else pcent=0;
-				if (pcent<60.0) angle=-5.0+pcent*1.9167;
-				else if (pcent<110.0) angle=110.0+(pcent-60.0)*4.075;
-				else angle=314.0;
-				airrpm3texture->setTextureRotate(Degree(-angle));
-
-				if (ftp>3) pcent=trucks[current_truck]->aeroengines[3]->getRPMpc(); else pcent=0;
-				if (pcent<60.0) angle=-5.0+pcent*1.9167;
-				else if (pcent<110.0) angle=110.0+(pcent-60.0)*4.075;
-				else angle=314.0;
-				airrpm4texture->setTextureRotate(Degree(-angle));
-
-				if (trucks[current_truck]->aeroengines[0]->getType()==AEROENGINE_TYPE_TURBOPROP)
-				{
-					Turboprop *tp=(Turboprop*)trucks[current_truck]->aeroengines[0];
-					//pitch
-					airpitch1texture->setTextureRotate(Degree(-tp->pitch*2.0));
-					//torque
-					pcent=100.0*tp->indicated_torque/tp->max_torque;
-					if (pcent<60.0) angle=-5.0+pcent*1.9167;
-					else if (pcent<110.0) angle=110.0+(pcent-60.0)*4.075;
-					else angle=314.0;
-					airtorque1texture->setTextureRotate(Degree(-angle));
-				}
-
-				if (ftp>1 && trucks[current_truck]->aeroengines[1]->getType()==AEROENGINE_TYPE_TURBOPROP)
-				{
-					Turboprop *tp=(Turboprop*)trucks[current_truck]->aeroengines[1];
-					//pitch
-					airpitch2texture->setTextureRotate(Degree(-tp->pitch*2.0));
-					//torque
-					pcent=100.0*tp->indicated_torque/tp->max_torque;
-					if (pcent<60.0) angle=-5.0+pcent*1.9167;
-					else if (pcent<110.0) angle=110.0+(pcent-60.0)*4.075;
-					else angle=314.0;
-					airtorque2texture->setTextureRotate(Degree(-angle));
-				}
-
-				if (ftp>2 && trucks[current_truck]->aeroengines[2]->getType()==AEROENGINE_TYPE_TURBOPROP)
-				{
-					Turboprop *tp=(Turboprop*)trucks[current_truck]->aeroengines[2];
-					//pitch
-					airpitch3texture->setTextureRotate(Degree(-tp->pitch*2.0));
-					//torque
-					pcent=100.0*tp->indicated_torque/tp->max_torque;
-					if (pcent<60.0) angle=-5.0+pcent*1.9167;
-					else if (pcent<110.0) angle=110.0+(pcent-60.0)*4.075;
-					else angle=314.0;
-					airtorque3texture->setTextureRotate(Degree(-angle));
-				}
-
-				if (ftp>3 && trucks[current_truck]->aeroengines[3]->getType()==AEROENGINE_TYPE_TURBOPROP)
-				{
-					Turboprop *tp=(Turboprop*)trucks[current_truck]->aeroengines[3];
-					//pitch
-					airpitch4texture->setTextureRotate(Degree(-tp->pitch*2.0));
-					//torque
-					pcent=100.0*tp->indicated_torque/tp->max_torque;
-					if (pcent<60.0) angle=-5.0+pcent*1.9167;
-					else if (pcent<110.0) angle=110.0+(pcent-60.0)*4.075;
-					else angle=314.0;
-					airtorque4texture->setTextureRotate(Degree(-angle));
-				}
-
-				//starters
-				if (trucks[current_truck]->aeroengines[0]->getIgnition()) engstarto1->setMaterialName("tracks/engstart-on"); else engstarto1->setMaterialName("tracks/engstart-off");
-				if (ftp>1 && trucks[current_truck]->aeroengines[1]->getIgnition()) engstarto2->setMaterialName("tracks/engstart-on"); else engstarto2->setMaterialName("tracks/engstart-off");
-				if (ftp>2 && trucks[current_truck]->aeroengines[2]->getIgnition()) engstarto3->setMaterialName("tracks/engstart-on"); else engstarto3->setMaterialName("tracks/engstart-off");
-				if (ftp>3 && trucks[current_truck]->aeroengines[3]->getIgnition()) engstarto4->setMaterialName("tracks/engstart-on"); else engstarto4->setMaterialName("tracks/engstart-off");
-		}
-		else
-			if (trucks[current_truck]->driveable==BOAT)
+				flipflop = !flipflop;
+				if (flipflop)
+					ow->securedo->setMaterialName("tracks/secured-on");
+				else
+					ow->securedo->setMaterialName("tracks/secured-off");
+			} else
 			{
-				//BOAT GUI
-				int fsp=trucks[current_truck]->free_screwprop;
-				//throtles
-				bthro1->setTop(thrtop+thrheight*(0.5-trucks[current_truck]->screwprops[0]->getThrotle()/2.0)-1.0);
-				if (fsp>1) bthro2->setTop(thrtop+thrheight*(0.5-trucks[current_truck]->screwprops[1]->getThrotle()/2.0)-1.0);
-				//map update
-
-				//position
-				Vector3 dir=trucks[current_truck]->nodes[trucks[current_truck]->cameranodepos[0]].RelPosition-trucks[current_truck]->nodes[trucks[current_truck]->cameranodedir[0]].RelPosition;
-				dir.normalise();
-				//moveBoatMapDot(trucks[current_truck]->position.x/mapsizex, trucks[current_truck]->position.z/mapsizez);
-				//position
-
-				char tmp[50]="";
-				if(trucks[current_truck]->getLowestNode() != -1)
-				{
-					Vector3 pos = trucks[current_truck]->nodes[trucks[current_truck]->getLowestNode()].AbsPosition;
-					float height =  pos.y - hfinder->getHeightAt(pos.x, pos.z);
-					if(height>0.1 && height < 99.9)
-					{
-						sprintf(tmp, "%2.1f", height);
-						boat_depth_value_taoe->setCaption(tmp);
-					}else
-						boat_depth_value_taoe->setCaption("--.-");
-				}
-
-				//waterspeed
-				float angle=0.0;
-				Vector3 hdir=trucks[current_truck]->nodes[trucks[current_truck]->cameranodepos[0]].RelPosition-trucks[current_truck]->nodes[trucks[current_truck]->cameranodedir[0]].RelPosition;
-				hdir.normalise();
-				float kt=hdir.dotProduct(trucks[current_truck]->nodes[trucks[current_truck]->cameranodepos[0]].Velocity)*1.9438;
-				angle=kt*4.2;
-				boatspeedtexture->setTextureRotate(Degree(-angle));
-				boatsteertexture->setTextureRotate(Degree(trucks[current_truck]->screwprops[0]->getRudder() * 170));
+				ow->securedo->setMaterialName("tracks/secured-on");
 			}
-}
+		} else
+		{
+			ow->securedo->setMaterialName("tracks/secured-off");
+		}
 
-void RoRFrameListener::resizePanel(OverlayElement *oe, RenderWindow *win)
-{
-	oe->setHeight(oe->getHeight()*(Real)win->getWidth()/(Real)win->getHeight());
-	oe->setTop(oe->getTop()*(Real)win->getWidth()/(Real)win->getHeight());
-}
+	} else if (ow && trucks[current_truck]->driveable == AIRPLANE)
+	{
+		//AIRPLANE GUI
+		int ftp = trucks[current_truck]->free_aeroengine;
+		
+		//throttles
+		ow->thro1->setTop(ow->thrtop+ow->thrheight*(1.0-trucks[current_truck]->aeroengines[0]->getThrotle())-1.0);
+		if (ftp>1) ow->thro2->setTop(ow->thrtop+ow->thrheight*(1.0-trucks[current_truck]->aeroengines[1]->getThrotle())-1.0);
+		if (ftp>2) ow->thro3->setTop(ow->thrtop+ow->thrheight*(1.0-trucks[current_truck]->aeroengines[2]->getThrotle())-1.0);
+		if (ftp>3) ow->thro4->setTop(ow->thrtop+ow->thrheight*(1.0-trucks[current_truck]->aeroengines[3]->getThrotle())-1.0);
+		
+		//fire
+		if (trucks[current_truck]->aeroengines[0]->isFailed()) ow->engfireo1->setMaterialName("tracks/engfire-on"); else ow->engfireo1->setMaterialName("tracks/engfire-off");
+		if (ftp>1 && trucks[current_truck]->aeroengines[1]->isFailed()) ow->engfireo2->setMaterialName("tracks/engfire-on"); else ow->engfireo2->setMaterialName("tracks/engfire-off");
+		if (ftp>2 && trucks[current_truck]->aeroengines[2]->isFailed()) ow->engfireo3->setMaterialName("tracks/engfire-on"); else ow->engfireo3->setMaterialName("tracks/engfire-off");
+		if (ftp>3 && trucks[current_truck]->aeroengines[3]->isFailed()) ow->engfireo4->setMaterialName("tracks/engfire-on"); else ow->engfireo4->setMaterialName("tracks/engfire-off");
 
-void RoRFrameListener::reposPanel(OverlayElement *oe, RenderWindow *win)
-{
-	oe->setTop(oe->getTop()*(Real)win->getWidth()/(Real)win->getHeight());
-}
+		//airspeed
+		float angle=0.0;
+		float ground_speed_kt=trucks[current_truck]->nodes[0].Velocity.length()*1.9438;
 
-void RoRFrameListener::placeNeedle(RenderWindow* win, SceneNode *node, float x, float y, float len)
-{/**(Real)win->getHeight()/(Real)win->getWidth()*/
-	node->setPosition((x-640.0)/444.0, (512-y)/444.0, -2.0);
-	node->setScale(0.0025, 0.007*len, 0.007);
+		//tropospheric model valid up to 11.000m (33.000ft)
+		float altitude=trucks[current_truck]->nodes[0].AbsPosition.y;
+		float sea_level_temperature=273.15+15.0; //in Kelvin
+		float sea_level_pressure=101325; //in Pa
+		float airtemperature=sea_level_temperature-altitude*0.0065; //in Kelvin
+		float airpressure=sea_level_pressure*pow(1.0-0.0065*altitude/288.15, 5.24947); //in Pa
+		float airdensity=airpressure*0.0000120896;//1.225 at sea level
+
+		float kt = ground_speed_kt*sqrt(airdensity/1.225); //KIAS
+		if (kt>23.0)
+		{
+			if (kt<50.0)
+				angle=((kt-23.0)/1.111);
+			else if (kt<100.0)
+				angle=(24.0+(kt-50.0)/0.8621);
+			else if(kt<300.0)
+				angle=(82.0+(kt-100.0)/0.8065);
+			else
+				angle=329.0;
+		}
+		ow->airspeedtexture->setTextureRotate(Degree(-angle));
+		
+		// AOA
+		angle=0;
+		if (trucks[current_truck]->free_wing>4)
+			angle=trucks[current_truck]->wings[4].fa->aoa;
+		if (kt<10.0) angle=0;
+		float absangle=angle;
+		if (absangle<0) absangle=-absangle;
+#ifdef USE_OPENAL
+		if (ssm)
+			ssm->modulate(current_truck, SS_MOD_AOA, absangle);
+		if (absangle>18.0 && ssm)
+			ssm->trigStart(current_truck, SS_TRIG_AOA);
+		else
+			ssm->trigStop(current_truck, SS_TRIG_AOA);
+#endif // OPENAL
+		if (angle>25.0) angle=25.0;
+		if (angle<-25.0) angle=-25.0;
+		ow->aoatexture->setTextureRotate(Degree(-angle*4.7+90.0));
+		
+		// altimeter
+		angle=trucks[current_truck]->nodes[0].AbsPosition.y*1.1811;
+		ow->altimetertexture->setTextureRotate(Degree(-angle));
+		char altc[10];
+		sprintf(altc, "%03u", (int)(trucks[current_truck]->nodes[0].AbsPosition.y/30.48));
+		ow->alt_value_taoe->setCaption(altc);
+		
+		//adi
+		//roll
+		Vector3 rollv=trucks[current_truck]->nodes[trucks[current_truck]->cameranodepos[0]].RelPosition-trucks[current_truck]->nodes[trucks[current_truck]->cameranoderoll[0]].RelPosition;
+		rollv.normalise();
+		float rollangle=asin(rollv.dotProduct(Vector3::UNIT_Y));
+		
+		//pitch
+		Vector3 dirv=trucks[current_truck]->nodes[trucks[current_truck]->cameranodepos[0]].RelPosition-trucks[current_truck]->nodes[trucks[current_truck]->cameranodedir[0]].RelPosition;
+		dirv.normalise();
+		float pitchangle=asin(dirv.dotProduct(Vector3::UNIT_Y));
+		Vector3 upv=dirv.crossProduct(-rollv);
+		if (upv.y<0) rollangle=3.14159-rollangle;
+		ow->adibugstexture->setTextureRotate(Radian(-rollangle));
+		ow->aditapetexture->setTextureVScroll(-pitchangle*0.25);
+		ow->aditapetexture->setTextureRotate(Radian(-rollangle));
+
+		//hsi
+		Vector3 idir=trucks[current_truck]->nodes[trucks[current_truck]->cameranodepos[0]].RelPosition-trucks[current_truck]->nodes[trucks[current_truck]->cameranodedir[0]].RelPosition;
+		//			idir.normalise();
+		float dirangle=atan2(idir.dotProduct(Vector3::UNIT_X), idir.dotProduct(-Vector3::UNIT_Z));
+		ow->hsirosetexture->setTextureRotate(Radian(dirangle));
+		if (trucks[current_truck]->autopilot)
+		{
+			ow->hsibugtexture->setTextureRotate(Radian(dirangle)-Degree(trucks[current_truck]->autopilot->heading));
+			float vdev=0;
+			float hdev=0;
+			trucks[current_truck]->autopilot->getRadioFix(localizers, free_localizer, &vdev, &hdev);
+			if (hdev>15) hdev=15;
+			if (hdev<-15) hdev=-15;
+			ow->hsivtexture->setTextureUScroll(-hdev*0.02);
+			if (vdev>15) vdev=15;
+			if (vdev<-15) vdev=-15;
+			ow->hsihtexture->setTextureVScroll(-vdev*0.02);
+		}
+
+		//vvi
+		float vvi=trucks[current_truck]->nodes[0].Velocity.y*196.85;
+		if (vvi<1000.0 && vvi>-1000.0) angle=vvi*0.047;
+		if (vvi>1000.0 && vvi<6000.0) angle=47.0+(vvi-1000.0)*0.01175;
+		if (vvi>6000.0) angle=105.75;
+		if (vvi<-1000.0 && vvi>-6000.0) angle=-47.0+(vvi+1000.0)*0.01175;
+		if (vvi<-6000.0) angle=-105.75;
+		ow->vvitexture->setTextureRotate(Degree(-angle+90.0));
+
+		//rpm
+		float pcent=trucks[current_truck]->aeroengines[0]->getRPMpc();
+		if (pcent<60.0) angle=-5.0+pcent*1.9167;
+		else if (pcent<110.0) angle=110.0+(pcent-60.0)*4.075;
+		else angle=314.0;
+		ow->airrpm1texture->setTextureRotate(Degree(-angle));
+
+		if (ftp>1) pcent=trucks[current_truck]->aeroengines[1]->getRPMpc(); else pcent=0;
+		if (pcent<60.0) angle=-5.0+pcent*1.9167;
+		else if (pcent<110.0) angle=110.0+(pcent-60.0)*4.075;
+		else angle=314.0;
+		ow->airrpm2texture->setTextureRotate(Degree(-angle));
+
+		if (ftp>2) pcent=trucks[current_truck]->aeroengines[2]->getRPMpc(); else pcent=0;
+		if (pcent<60.0) angle=-5.0+pcent*1.9167;
+		else if (pcent<110.0) angle=110.0+(pcent-60.0)*4.075;
+		else angle=314.0;
+		ow->airrpm3texture->setTextureRotate(Degree(-angle));
+
+		if (ftp>3) pcent=trucks[current_truck]->aeroengines[3]->getRPMpc(); else pcent=0;
+		if (pcent<60.0) angle=-5.0+pcent*1.9167;
+		else if (pcent<110.0) angle=110.0+(pcent-60.0)*4.075;
+		else angle=314.0;
+		ow->airrpm4texture->setTextureRotate(Degree(-angle));
+
+		if (trucks[current_truck]->aeroengines[0]->getType() == AEROENGINE_TYPE_TURBOPROP)
+		{
+			Turboprop *tp=(Turboprop*)trucks[current_truck]->aeroengines[0];
+			//pitch
+			ow->airpitch1texture->setTextureRotate(Degree(-tp->pitch*2.0));
+			//torque
+			pcent=100.0*tp->indicated_torque/tp->max_torque;
+			if (pcent<60.0) angle=-5.0+pcent*1.9167;
+			else if (pcent<110.0) angle=110.0+(pcent-60.0)*4.075;
+			else angle=314.0;
+			ow->airtorque1texture->setTextureRotate(Degree(-angle));
+		}
+
+		if (ftp>1 && trucks[current_truck]->aeroengines[1]->getType()==AEROENGINE_TYPE_TURBOPROP)
+		{
+			Turboprop *tp=(Turboprop*)trucks[current_truck]->aeroengines[1];
+			//pitch
+			ow->airpitch2texture->setTextureRotate(Degree(-tp->pitch*2.0));
+			//torque
+			pcent=100.0*tp->indicated_torque/tp->max_torque;
+			if (pcent<60.0) angle=-5.0+pcent*1.9167;
+			else if (pcent<110.0) angle=110.0+(pcent-60.0)*4.075;
+			else angle=314.0;
+			ow->airtorque2texture->setTextureRotate(Degree(-angle));
+		}
+
+		if (ftp>2 && trucks[current_truck]->aeroengines[2]->getType()==AEROENGINE_TYPE_TURBOPROP)
+		{
+			Turboprop *tp=(Turboprop*)trucks[current_truck]->aeroengines[2];
+			//pitch
+			ow->airpitch3texture->setTextureRotate(Degree(-tp->pitch*2.0));
+			//torque
+			pcent=100.0*tp->indicated_torque/tp->max_torque;
+			if (pcent<60.0) angle=-5.0+pcent*1.9167;
+			else if (pcent<110.0) angle=110.0+(pcent-60.0)*4.075;
+			else angle=314.0;
+			ow->airtorque3texture->setTextureRotate(Degree(-angle));
+		}
+
+		if (ftp>3 && trucks[current_truck]->aeroengines[3]->getType()==AEROENGINE_TYPE_TURBOPROP)
+		{
+			Turboprop *tp=(Turboprop*)trucks[current_truck]->aeroengines[3];
+			//pitch
+			ow->airpitch4texture->setTextureRotate(Degree(-tp->pitch*2.0));
+			//torque
+			pcent=100.0*tp->indicated_torque/tp->max_torque;
+			if (pcent<60.0) angle=-5.0+pcent*1.9167;
+			else if (pcent<110.0) angle=110.0+(pcent-60.0)*4.075;
+			else angle=314.0;
+			ow->airtorque4texture->setTextureRotate(Degree(-angle));
+		}
+
+		//starters
+		if (trucks[current_truck]->aeroengines[0]->getIgnition()) ow->engstarto1->setMaterialName("tracks/engstart-on"); else ow->engstarto1->setMaterialName("tracks/engstart-off");
+		if (ftp>1 && trucks[current_truck]->aeroengines[1]->getIgnition()) ow->engstarto2->setMaterialName("tracks/engstart-on"); else ow->engstarto2->setMaterialName("tracks/engstart-off");
+		if (ftp>2 && trucks[current_truck]->aeroengines[2]->getIgnition()) ow->engstarto3->setMaterialName("tracks/engstart-on"); else ow->engstarto3->setMaterialName("tracks/engstart-off");
+		if (ftp>3 && trucks[current_truck]->aeroengines[3]->getIgnition()) ow->engstarto4->setMaterialName("tracks/engstart-on"); else ow->engstarto4->setMaterialName("tracks/engstart-off");
+	} else if (trucks[current_truck]->driveable==BOAT)
+	{
+		//BOAT GUI
+		int fsp = trucks[current_truck]->free_screwprop;
+		//throtles
+		ow->bthro1->setTop(ow->thrtop+ow->thrheight*(0.5-trucks[current_truck]->screwprops[0]->getThrotle()/2.0)-1.0);
+		if (fsp>1)
+			ow->bthro2->setTop(ow->thrtop+ow->thrheight*(0.5-trucks[current_truck]->screwprops[1]->getThrotle()/2.0)-1.0);
+
+		//position
+		Vector3 dir=trucks[current_truck]->nodes[trucks[current_truck]->cameranodepos[0]].RelPosition-trucks[current_truck]->nodes[trucks[current_truck]->cameranodedir[0]].RelPosition;
+		dir.normalise();
+		//moveBoatMapDot(trucks[current_truck]->position.x/mapsizex, trucks[current_truck]->position.z/mapsizez);
+		//position
+
+		char tmp[50]="";
+		if(trucks[current_truck]->getLowestNode() != -1)
+		{
+			Vector3 pos = trucks[current_truck]->nodes[trucks[current_truck]->getLowestNode()].AbsPosition;
+			float height =  pos.y - hfinder->getHeightAt(pos.x, pos.z);
+			if(height>0.1 && height < 99.9)
+			{
+				sprintf(tmp, "%2.1f", height);
+				ow->boat_depth_value_taoe->setCaption(tmp);
+			} else
+			{
+				ow->boat_depth_value_taoe->setCaption("--.-");
+			}
+		}
+
+		//waterspeed
+		float angle=0.0;
+		Vector3 hdir=trucks[current_truck]->nodes[trucks[current_truck]->cameranodepos[0]].RelPosition-trucks[current_truck]->nodes[trucks[current_truck]->cameranodedir[0]].RelPosition;
+		hdir.normalise();
+		float kt=hdir.dotProduct(trucks[current_truck]->nodes[trucks[current_truck]->cameranodepos[0]].Velocity)*1.9438;
+		angle=kt*4.2;
+		ow->boatspeedtexture->setTextureRotate(Degree(-angle));
+		ow->boatsteertexture->setTextureRotate(Degree(trucks[current_truck]->screwprops[0]->getRudder() * 170));
+	}
 }
 
 float RoRFrameListener::gravity = DEFAULT_GRAVITY;
@@ -962,7 +731,8 @@ void RoRFrameListener::setGravity(float value)
 RoRFrameListener::RoRFrameListener(RenderWindow* win, Camera* cam, SceneManager* scm, Root* root, bool isEmbedded) : 
 	initialized(false),
 	mCollisionTools(0),
-	isEmbedded(isEmbedded)
+	isEmbedded(isEmbedded),
+	ow(0)
 {
 	for (int i=0; i<MAX_TRUCKS; i++) trucks[i]=0;
 
@@ -975,12 +745,14 @@ RoRFrameListener::RoRFrameListener(RenderWindow* win, Camera* cam, SceneManager*
 #ifdef USE_LUA
 	lua=0;
 #endif // LUASCRIPT
+	
+	// we dont use overlays in embedded mode
+	if(!isEmbedded)
+		ow = new OverlayWrapper(win);
+	
 	benchmarking = !(SETTINGS.getSetting("Benchmark").empty());
-	fpsLineStream = netLineStream = netlagLineStream = 0;
 	enablePosStor = (SETTINGS.getSetting("Position Storage")=="Yes");
 	objectCounter=0;
-	guiRoll=0;
-	rollcortexture=0;
 	hdrListener=0;
 	mDOF=0;
 	mDOFDebug=false;
@@ -1043,7 +815,6 @@ RoRFrameListener::RoRFrameListener(RenderWindow* win, Camera* cam, SceneManager*
 	mapsizez = 3000;
 	hidegui=false;
 	collisions=0;
-	timeUntilUnflash=-1.0;
 	editor=0;
 	mirror=0;
 	dashboard=0;//new Dashboard(scm,win);
@@ -1054,24 +825,24 @@ RoRFrameListener::RoRFrameListener(RenderWindow* win, Camera* cam, SceneManager*
 #endif //OPENAL
 	mRoot=root;
 
-	// setup direction arrow
-	directionOverlay = OverlayManager::getSingleton().getByName("tracks/DirectionArrow");
-	directionArrowText = (TextAreaOverlayElement*)OverlayManager::getSingleton().getOverlayElement("tracks/DirectionArrow/Text");
-	directionArrowDistance = (TextAreaOverlayElement*)OverlayManager::getSingleton().getOverlayElement("tracks/DirectionArrow/Distance");
-	Entity *arrent = mSceneMgr->createEntity("dirArrowEntity", "arrow2.mesh");
-#if OGRE_VERSION<0x010602
-	arrent->setNormaliseNormals(true);
-#endif //OGRE_VERSION
-	// Add entity to the scene node
-	dirArrowNode= new SceneNode(mSceneMgr);
-	dirArrowNode->attachObject(arrent);
-	dirArrowNode->setVisible(false);
-	dirArrowNode->setScale(0.1, 0.1, 0.1);
-	dirArrowNode->setPosition(Vector3(-0.6, +0.4, -1));
-	dirArrowNode->setFixedYawAxis(true, Vector3::UNIT_Y);
-	dirvisible = false;
-	dirArrowPointed = Vector3::ZERO;
-	directionOverlay->add3D(dirArrowNode);
+	if(ow)
+	{
+		// setup direction arrow
+		Entity *arrent = mSceneMgr->createEntity("dirArrowEntity", "arrow2.mesh");
+	#if OGRE_VERSION<0x010602
+		arrent->setNormaliseNormals(true);
+	#endif //OGRE_VERSION
+		// Add entity to the scene node
+		dirArrowNode= new SceneNode(mSceneMgr);
+		dirArrowNode->attachObject(arrent);
+		dirArrowNode->setVisible(false);
+		dirArrowNode->setScale(0.1, 0.1, 0.1);
+		dirArrowNode->setPosition(Vector3(-0.6, +0.4, -1));
+		dirArrowNode->setFixedYawAxis(true, Vector3::UNIT_Y);
+		dirvisible = false;
+		dirArrowPointed = Vector3::ZERO;
+		ow->directionOverlay->add3D(dirArrowNode);
+	}
 	raceStartTime=-1;
 	truck_preload_num=0;
 
@@ -1136,320 +907,16 @@ RoRFrameListener::RoRFrameListener(RenderWindow* win, Camera* cam, SceneManager*
 		exit(0);
 	}
 
-	mouseOverlay = OverlayManager::getSingleton().getByName("tracks/MouseOverlay");
-#ifdef HAS_EDITOR
-	truckeditorOverlay = OverlayManager::getSingleton().getByName("tracks/TruckEditorOverlay");
-#endif
-	mDebugOverlay = OverlayManager::getSingleton().getByName("Core/DebugOverlay");
-	mTimingDebugOverlay = OverlayManager::getSingleton().getByName("tracks/DebugBeamTiming");
-	mTimingDebugOverlay->hide();
 
 
-	machinedashboardOverlay = OverlayManager::getSingleton().getByName("tracks/MachineDashboardOverlay");
-	airdashboardOverlay = OverlayManager::getSingleton().getByName("tracks/AirDashboardOverlay");
-	airneedlesOverlay = OverlayManager::getSingleton().getByName("tracks/AirNeedlesOverlay");
-	boatdashboardOverlay = OverlayManager::getSingleton().getByName("tracks/BoatDashboardOverlay");
-	boatneedlesOverlay = OverlayManager::getSingleton().getByName("tracks/BoatNeedlesOverlay");
-	dashboardOverlay = OverlayManager::getSingleton().getByName("tracks/DashboardOverlay");
-	needlesOverlay = OverlayManager::getSingleton().getByName("tracks/NeedlesOverlay");
-	needlesMaskOverlay = OverlayManager::getSingleton().getByName("tracks/NeedlesMaskOverlay");
-
-
-
-
-
-	playerListOverlay = OverlayManager::getSingleton().getByName("tracks/MPPlayerList");
-
-	pressureOverlay = OverlayManager::getSingleton().getByName("tracks/PressureOverlay");
-	pressureNeedleOverlay = OverlayManager::getSingleton().getByName("tracks/PressureNeedleOverlay");
-	editorOverlay = OverlayManager::getSingleton().getByName("tracks/EditorOverlay");
-
-	//adjust dashboard size for screen ratio
-	resizePanel(OverlayManager::getSingleton().getOverlayElement("tracks/pressureo"), win);
-	resizePanel(OverlayManager::getSingleton().getOverlayElement("tracks/pressureneedle"), win);
-	pressuretexture=((MaterialPtr)(MaterialManager::getSingleton().getByName("tracks/pressureneedle_mat")))->getTechnique(0)->getPass(0)->getTextureUnitState(0);
-
-	resizePanel(OverlayManager::getSingleton().getOverlayElement("tracks/speedo"), win);
-	resizePanel(OverlayManager::getSingleton().getOverlayElement("tracks/tacho"), win);
-	resizePanel(OverlayManager::getSingleton().getOverlayElement("tracks/anglo"), win);
-	resizePanel(OverlayManager::getSingleton().getOverlayElement("tracks/instructions"), win);
-	resizePanel(OverlayManager::getSingleton().getOverlayElement("tracks/machineinstructions"), win);
-	resizePanel(OverlayManager::getSingleton().getOverlayElement("tracks/dashbar"), win);
-	resizePanel(OverlayManager::getSingleton().getOverlayElement("tracks/dashfiller"), win	);
-	resizePanel(OverlayManager::getSingleton().getOverlayElement("tracks/helppanel"), win);
-	resizePanel(OverlayManager::getSingleton().getOverlayElement("tracks/machinehelppanel"), win);
-
-	resizePanel(igno=OverlayManager::getSingleton().getOverlayElement("tracks/ign"), win);
-	resizePanel(batto=OverlayManager::getSingleton().getOverlayElement("tracks/batt"), win);
-	resizePanel(pbrakeo=OverlayManager::getSingleton().getOverlayElement("tracks/pbrake"), win);
-	resizePanel(lockedo=OverlayManager::getSingleton().getOverlayElement("tracks/locked"), win);
-	resizePanel(securedo=OverlayManager::getSingleton().getOverlayElement("tracks/secured"), win);
-	resizePanel(lopresso=OverlayManager::getSingleton().getOverlayElement("tracks/lopress"), win);
-	resizePanel(clutcho=OverlayManager::getSingleton().getOverlayElement("tracks/clutch"), win);
-	resizePanel(lightso=OverlayManager::getSingleton().getOverlayElement("tracks/lights"), win);
-
-	mouseElement = OverlayManager::getSingleton().getOverlayElement("mouse/pointer");
 	screenWidth=win->getWidth();
 	screenHeight=win->getHeight();
 	mouseX=screenWidth-20;
 	mouseY=screenHeight-20;
 	isnodegrabbed=false;
 
-	resizePanel(OverlayManager::getSingleton().getOverlayElement("tracks/machinedashbar"), win);
-	resizePanel(OverlayManager::getSingleton().getOverlayElement("tracks/machinedashfiller"), win);
-
-	resizePanel(OverlayManager::getSingleton().getOverlayElement("tracks/airdashbar"), win);
-	resizePanel(OverlayManager::getSingleton().getOverlayElement("tracks/airdashfiller"), win);
-	OverlayElement* tempoe;
-	resizePanel(tempoe=OverlayManager::getSingleton().getOverlayElement("tracks/thrusttrack1"), win);
-	resizePanel(OverlayManager::getSingleton().getOverlayElement("tracks/thrusttrack2"), win);
-	resizePanel(OverlayManager::getSingleton().getOverlayElement("tracks/thrusttrack3"), win);
-	resizePanel(OverlayManager::getSingleton().getOverlayElement("tracks/thrusttrack4"), win);
-
-	//resizePanel(airmapo=OverlayManager::getSingleton().getOverlayElement("tracks/airmap"), win);
-	//	resizePanel(airmapdot=OverlayManager::getSingleton().getOverlayElement("tracks/airreddot"), win);
-
-	resizePanel(thro1=OverlayManager::getSingleton().getOverlayElement("tracks/thrust1"), win);
-	resizePanel(thro2=OverlayManager::getSingleton().getOverlayElement("tracks/thrust2"), win);
-	resizePanel(thro3=OverlayManager::getSingleton().getOverlayElement("tracks/thrust3"), win);
-	resizePanel(thro4=OverlayManager::getSingleton().getOverlayElement("tracks/thrust4"), win);
-	engfireo1=OverlayManager::getSingleton().getOverlayElement("tracks/engfire1");
-	engfireo2=OverlayManager::getSingleton().getOverlayElement("tracks/engfire2");
-	engfireo3=OverlayManager::getSingleton().getOverlayElement("tracks/engfire3");
-	engfireo4=OverlayManager::getSingleton().getOverlayElement("tracks/engfire4");
-	engstarto1=OverlayManager::getSingleton().getOverlayElement("tracks/engstart1");
-	engstarto2=OverlayManager::getSingleton().getOverlayElement("tracks/engstart2");
-	engstarto3=OverlayManager::getSingleton().getOverlayElement("tracks/engstart3");
-	engstarto4=OverlayManager::getSingleton().getOverlayElement("tracks/engstart4");
-	resizePanel(OverlayManager::getSingleton().getOverlayElement("tracks/airrpm1"), win);
-	resizePanel(OverlayManager::getSingleton().getOverlayElement("tracks/airrpm2"), win);
-	resizePanel(OverlayManager::getSingleton().getOverlayElement("tracks/airrpm3"), win);
-	resizePanel(OverlayManager::getSingleton().getOverlayElement("tracks/airrpm4"), win);
-	resizePanel(OverlayManager::getSingleton().getOverlayElement("tracks/airpitch1"), win);
-	resizePanel(OverlayManager::getSingleton().getOverlayElement("tracks/airpitch2"), win);
-	resizePanel(OverlayManager::getSingleton().getOverlayElement("tracks/airpitch3"), win);
-	resizePanel(OverlayManager::getSingleton().getOverlayElement("tracks/airpitch4"), win);
-	resizePanel(OverlayManager::getSingleton().getOverlayElement("tracks/airtorque1"), win);
-	resizePanel(OverlayManager::getSingleton().getOverlayElement("tracks/airtorque2"), win);
-	resizePanel(OverlayManager::getSingleton().getOverlayElement("tracks/airtorque3"), win);
-	resizePanel(OverlayManager::getSingleton().getOverlayElement("tracks/airtorque4"), win);
-	resizePanel(OverlayManager::getSingleton().getOverlayElement("tracks/airspeed"), win);
-	resizePanel(OverlayManager::getSingleton().getOverlayElement("tracks/vvi"), win);
-	resizePanel(OverlayManager::getSingleton().getOverlayElement("tracks/altimeter"), win);
-	resizePanel(OverlayManager::getSingleton().getOverlayElement("tracks/altimeter_val"), win);
-	alt_value_taoe=(TextAreaOverlayElement*)OverlayManager::getSingleton().getOverlayElement("tracks/altimeter_val");
-	boat_depth_value_taoe=(TextAreaOverlayElement*)OverlayManager::getSingleton().getOverlayElement("tracks/boatdepthmeter_val");
-	resizePanel(OverlayManager::getSingleton().getOverlayElement("tracks/adi-tape"), win);
-	resizePanel(OverlayManager::getSingleton().getOverlayElement("tracks/adi"), win);
-	resizePanel(OverlayManager::getSingleton().getOverlayElement("tracks/adi-bugs"), win);
-	adibugstexture=((MaterialPtr)(MaterialManager::getSingleton().getByName("tracks/adi-bugs")))->getTechnique(0)->getPass(0)->getTextureUnitState(0);
-	aditapetexture=((MaterialPtr)(MaterialManager::getSingleton().getByName("tracks/adi-tape")))->getTechnique(0)->getPass(0)->getTextureUnitState(0);
-	resizePanel(OverlayManager::getSingleton().getOverlayElement("tracks/aoa"), win);
-	resizePanel(OverlayManager::getSingleton().getOverlayElement("tracks/hsi"), win);
-	resizePanel(OverlayManager::getSingleton().getOverlayElement("tracks/hsi-rose"), win);
-	resizePanel(OverlayManager::getSingleton().getOverlayElement("tracks/hsi-bug"), win);
-	resizePanel(OverlayManager::getSingleton().getOverlayElement("tracks/hsi-v"), win);
-	resizePanel(OverlayManager::getSingleton().getOverlayElement("tracks/hsi-h"), win);
-	hsirosetexture=((MaterialPtr)(MaterialManager::getSingleton().getByName("tracks/hsi-rose")))->getTechnique(0)->getPass(0)->getTextureUnitState(0);
-	hsibugtexture=((MaterialPtr)(MaterialManager::getSingleton().getByName("tracks/hsi-bug")))->getTechnique(0)->getPass(0)->getTextureUnitState(0);
-	hsivtexture=((MaterialPtr)(MaterialManager::getSingleton().getByName("tracks/hsi-v")))->getTechnique(0)->getPass(0)->getTextureUnitState(0);
-	hsihtexture=((MaterialPtr)(MaterialManager::getSingleton().getByName("tracks/hsi-h")))->getTechnique(0)->getPass(0)->getTextureUnitState(0);
-	//autopilot
-	reposPanel(OverlayManager::getSingleton().getOverlayElement("tracks/ap_hdg_pack"), win);
-	reposPanel(OverlayManager::getSingleton().getOverlayElement("tracks/ap_wlv_but"), win);
-	reposPanel(OverlayManager::getSingleton().getOverlayElement("tracks/ap_nav_but"), win);
-	reposPanel(OverlayManager::getSingleton().getOverlayElement("tracks/ap_alt_pack"), win);
-	reposPanel(OverlayManager::getSingleton().getOverlayElement("tracks/ap_vs_pack"), win);
-	reposPanel(OverlayManager::getSingleton().getOverlayElement("tracks/ap_ias_pack"), win);
-	reposPanel(OverlayManager::getSingleton().getOverlayElement("tracks/ap_gpws_but"), win);
-	reposPanel(OverlayManager::getSingleton().getOverlayElement("tracks/ap_brks_but"), win);
-
-
-	thrtop=1.0+tempoe->getTop()+thro1->getHeight()/2.0;
-	thrheight=tempoe->getHeight()-thro1->getHeight()*2.0;
-	throffset=thro1->getHeight()/2.0;
-
-	//boat
-	resizePanel(OverlayManager::getSingleton().getOverlayElement("tracks/boatdashbar"), win);
-	resizePanel(OverlayManager::getSingleton().getOverlayElement("tracks/boatdashfiller"), win);
-	resizePanel(OverlayManager::getSingleton().getOverlayElement("tracks/boatthrusttrack1"), win);
-	resizePanel(OverlayManager::getSingleton().getOverlayElement("tracks/boatthrusttrack2"), win);
-
-	//resizePanel(boatmapo=OverlayManager::getSingleton().getOverlayElement("tracks/boatmap"), win);
-	//resizePanel(boatmapdot=OverlayManager::getSingleton().getOverlayElement("tracks/boatreddot"), win);
-
-	resizePanel(bthro1=OverlayManager::getSingleton().getOverlayElement("tracks/boatthrust1"), win);
-	resizePanel(bthro2=OverlayManager::getSingleton().getOverlayElement("tracks/boatthrust2"), win);
-
-	resizePanel(OverlayManager::getSingleton().getOverlayElement("tracks/boatspeed"), win);
-	resizePanel(OverlayManager::getSingleton().getOverlayElement("tracks/boatsteer"), win);
-	resizePanel(OverlayManager::getSingleton().getOverlayElement("tracks/boatspeedneedle"), win);
-	resizePanel(OverlayManager::getSingleton().getOverlayElement("tracks/boatsteer/fg"), win);
-	boatspeedtexture=((MaterialPtr)(MaterialManager::getSingleton().getByName("tracks/boatspeedneedle_mat")))->getTechnique(0)->getPass(0)->getTextureUnitState(0);
-	boatsteertexture=((MaterialPtr)(MaterialManager::getSingleton().getByName("tracks/boatsteer/fg_mat")))->getTechnique(0)->getPass(0)->getTextureUnitState(0);
-
-	//adjust dashboard mask
-	//pitch mask
-	OverlayElement *pmask=OverlayManager::getSingleton().getOverlayElement("tracks/pitchmask");
-	pmask->setHeight(pmask->getHeight()*(Real)win->getWidth()/(Real)win->getHeight());
-	pmask->setTop(pmask->getTop()*(Real)win->getWidth()/(Real)win->getHeight());
-	//roll mask
-	OverlayElement *rmask=OverlayManager::getSingleton().getOverlayElement("tracks/rollmask");
-	rmask->setHeight(rmask->getHeight()*(Real)win->getWidth()/(Real)win->getHeight());
-	rmask->setTop(rmask->getTop()*(Real)win->getWidth()/(Real)win->getHeight());
-
-	//prepare needles
-	resizePanel(OverlayManager::getSingleton().getOverlayElement("tracks/speedoneedle"), win);
-	speedotexture=((MaterialPtr)(MaterialManager::getSingleton().getByName("tracks/speedoneedle_mat")))->getTechnique(0)->getPass(0)->getTextureUnitState(0);
-
-	resizePanel(OverlayManager::getSingleton().getOverlayElement("tracks/tachoneedle"), win);
-	tachotexture=((MaterialPtr)(MaterialManager::getSingleton().getByName("tracks/tachoneedle_mat")))->getTechnique(0)->getPass(0)->getTextureUnitState(0);
-
-	resizePanel(OverlayManager::getSingleton().getOverlayElement("tracks/rollneedle"), win);
-	rolltexture=((MaterialPtr)(MaterialManager::getSingleton().getByName("tracks/rollneedle_mat")))->getTechnique(0)->getPass(0)->getTextureUnitState(0);
-
-	resizePanel(OverlayManager::getSingleton().getOverlayElement("tracks/pitchneedle"), win);
-	pitchtexture=((MaterialPtr)(MaterialManager::getSingleton().getByName("tracks/pitchneedle_mat")))->getTechnique(0)->getPass(0)->getTextureUnitState(0);
-
-	resizePanel(OverlayManager::getSingleton().getOverlayElement("tracks/rollcorneedle"), win);
-	rollcortexture=((MaterialPtr)(MaterialManager::getSingleton().getByName("tracks/rollcorneedle_mat")))->getTechnique(0)->getPass(0)->getTextureUnitState(0);
-
-	resizePanel(OverlayManager::getSingleton().getOverlayElement("tracks/turboneedle"), win);
-	turbotexture=((MaterialPtr)(MaterialManager::getSingleton().getByName("tracks/turboneedle_mat")))->getTechnique(0)->getPass(0)->getTextureUnitState(0);
-
-	resizePanel(OverlayManager::getSingleton().getOverlayElement("tracks/airspeedneedle"), win);
-	airspeedtexture=((MaterialPtr)(MaterialManager::getSingleton().getByName("tracks/airspeedneedle_mat")))->getTechnique(0)->getPass(0)->getTextureUnitState(0);
-
-	resizePanel(OverlayManager::getSingleton().getOverlayElement("tracks/altimeterneedle"), win);
-	altimetertexture=((MaterialPtr)(MaterialManager::getSingleton().getByName("tracks/altimeterneedle_mat")))->getTechnique(0)->getPass(0)->getTextureUnitState(0);
-
-	resizePanel(OverlayManager::getSingleton().getOverlayElement("tracks/vvineedle"), win);
-	vvitexture=((MaterialPtr)(MaterialManager::getSingleton().getByName("tracks/vvineedle_mat")))->getTechnique(0)->getPass(0)->getTextureUnitState(0);
-
-	resizePanel(OverlayManager::getSingleton().getOverlayElement("tracks/aoaneedle"), win);
-	aoatexture=((MaterialPtr)(MaterialManager::getSingleton().getByName("tracks/aoaneedle_mat")))->getTechnique(0)->getPass(0)->getTextureUnitState(0);
-
-
-	resizePanel(OverlayManager::getSingleton().getOverlayElement("tracks/airrpm1needle"), win);
-	airrpm1texture=((MaterialPtr)(MaterialManager::getSingleton().getByName("tracks/airrpm1needle_mat")))->getTechnique(0)->getPass(0)->getTextureUnitState(0);
-	resizePanel(OverlayManager::getSingleton().getOverlayElement("tracks/airrpm2needle"), win);
-	airrpm2texture=((MaterialPtr)(MaterialManager::getSingleton().getByName("tracks/airrpm2needle_mat")))->getTechnique(0)->getPass(0)->getTextureUnitState(0);
-	resizePanel(OverlayManager::getSingleton().getOverlayElement("tracks/airrpm3needle"), win);
-	airrpm3texture=((MaterialPtr)(MaterialManager::getSingleton().getByName("tracks/airrpm3needle_mat")))->getTechnique(0)->getPass(0)->getTextureUnitState(0);
-	resizePanel(OverlayManager::getSingleton().getOverlayElement("tracks/airrpm4needle"), win);
-	airrpm4texture=((MaterialPtr)(MaterialManager::getSingleton().getByName("tracks/airrpm4needle_mat")))->getTechnique(0)->getPass(0)->getTextureUnitState(0);
-
-	resizePanel(OverlayManager::getSingleton().getOverlayElement("tracks/airpitch1needle"), win);
-	airpitch1texture=((MaterialPtr)(MaterialManager::getSingleton().getByName("tracks/airpitch1needle_mat")))->getTechnique(0)->getPass(0)->getTextureUnitState(0);
-	resizePanel(OverlayManager::getSingleton().getOverlayElement("tracks/airpitch2needle"), win);
-	airpitch2texture=((MaterialPtr)(MaterialManager::getSingleton().getByName("tracks/airpitch2needle_mat")))->getTechnique(0)->getPass(0)->getTextureUnitState(0);
-	resizePanel(OverlayManager::getSingleton().getOverlayElement("tracks/airpitch3needle"), win);
-	airpitch3texture=((MaterialPtr)(MaterialManager::getSingleton().getByName("tracks/airpitch3needle_mat")))->getTechnique(0)->getPass(0)->getTextureUnitState(0);
-	resizePanel(OverlayManager::getSingleton().getOverlayElement("tracks/airpitch4needle"), win);
-	airpitch4texture=((MaterialPtr)(MaterialManager::getSingleton().getByName("tracks/airpitch4needle_mat")))->getTechnique(0)->getPass(0)->getTextureUnitState(0);
-
-	resizePanel(OverlayManager::getSingleton().getOverlayElement("tracks/airtorque1needle"), win);
-	airtorque1texture=((MaterialPtr)(MaterialManager::getSingleton().getByName("tracks/airtorque1needle_mat")))->getTechnique(0)->getPass(0)->getTextureUnitState(0);
-	resizePanel(OverlayManager::getSingleton().getOverlayElement("tracks/airtorque2needle"), win);
-	airtorque2texture=((MaterialPtr)(MaterialManager::getSingleton().getByName("tracks/airtorque2needle_mat")))->getTechnique(0)->getPass(0)->getTextureUnitState(0);
-	resizePanel(OverlayManager::getSingleton().getOverlayElement("tracks/airtorque3needle"), win);
-	airtorque3texture=((MaterialPtr)(MaterialManager::getSingleton().getByName("tracks/airtorque3needle_mat")))->getTechnique(0)->getPass(0)->getTextureUnitState(0);
-	resizePanel(OverlayManager::getSingleton().getOverlayElement("tracks/airtorque4needle"), win);
-	airtorque4texture=((MaterialPtr)(MaterialManager::getSingleton().getByName("tracks/airtorque4needle_mat")))->getTechnique(0)->getPass(0)->getTextureUnitState(0);
-	//		speedotexture=((MaterialPtr)(MaterialManager::getSingleton().getByName("tracks/speedoneedle")))->getTechnique(0)->getPass(0)->getTextureUnitState(0);
-
-	//        Entity *ecs=scm->createEntity("speed_needle", "needle.mesh");
-	//        speed_node=scm->getRootSceneNode()->createChildSceneNode();
-	//        speed_node->attachObject(ecs);
-	//		needlesOverlay->add3D(speed_node);
-	//		placeNeedle(win, speed_node, 1189, 936, 1.0);
-	//tacho
-	//        Entity *ect=scm->createEntity("tacho_needle", "needle.mesh");
-	//        tach_node=scm->getRootSceneNode()->createChildSceneNode();
-	//        tach_node->attachObject(ect);
-	//		needlesOverlay->add3D(tach_node);
-	//		placeNeedle(win, tach_node, 1011, 935, 1.0);
-	//		//pitch
-	//        Entity *ecp=scm->createEntity("pitch_needle", "needle.mesh");
-	//		ecp->setMaterialName("tracks/whiteneedle");
-	//        pitch_node=scm->getRootSceneNode()->createChildSceneNode();
-	//        pitch_node->attachObject(ecp);
-	//		needlesOverlay->add3D(pitch_node);
-	//		placeNeedle(win, pitch_node, 876, 1014, 1.0);
-	//roll
-	//        Entity *ecr=scm->createEntity("roll_needle", "needle.mesh");
-	//		ecr->setMaterialName("tracks/whiteneedle");
-	//        roll_node=scm->getRootSceneNode()->createChildSceneNode();
-	//        roll_node->attachObject(ecr);
-	//		needlesOverlay->add3D(roll_node);
-	//		placeNeedle(win, roll_node, 876, 924, 1.0);
-
-	//rollcorr
-	//		Entity *ecrc=scm->createEntity("rollcorr_needle", "needle.mesh");
-	//		ecrc->setMaterialName("tracks/stabneedle");
-	//		rollcorr_node=scm->getRootSceneNode()->createChildSceneNode();
-	//		rollcorr_node->attachObject(ecrc);
-	//		needlesOverlay->add3D(rollcorr_node);
-	//		placeNeedle(win, rollcorr_node, 876, 924, 0.8);
-
-
-	guiGear=OverlayManager::getSingleton().getOverlayElement("tracks/Gear");
-	guiGear3D=OverlayManager::getSingleton().getOverlayElement("tracks/3DGear");
-	guiRoll=OverlayManager::getSingleton().getOverlayElement("tracks/rollmask");
-
-	guiAuto[0]=(TextAreaOverlayElement*)OverlayManager::getSingleton().getOverlayElement("tracks/AGearR");
-	guiAuto[1]=(TextAreaOverlayElement*)OverlayManager::getSingleton().getOverlayElement("tracks/AGearN");
-	guiAuto[2]=(TextAreaOverlayElement*)OverlayManager::getSingleton().getOverlayElement("tracks/AGearD");
-	guiAuto[3]=(TextAreaOverlayElement*)OverlayManager::getSingleton().getOverlayElement("tracks/AGear2");
-	guiAuto[4]=(TextAreaOverlayElement*)OverlayManager::getSingleton().getOverlayElement("tracks/AGear1");
-
-	guiAuto3D[0]=(TextAreaOverlayElement*)OverlayManager::getSingleton().getOverlayElement("tracks/3DAGearR");
-	guiAuto3D[1]=(TextAreaOverlayElement*)OverlayManager::getSingleton().getOverlayElement("tracks/3DAGearN");
-	guiAuto3D[2]=(TextAreaOverlayElement*)OverlayManager::getSingleton().getOverlayElement("tracks/3DAGearD");
-	guiAuto3D[3]=(TextAreaOverlayElement*)OverlayManager::getSingleton().getOverlayElement("tracks/3DAGear2");
-	guiAuto3D[4]=(TextAreaOverlayElement*)OverlayManager::getSingleton().getOverlayElement("tracks/3DAGear1");
-
-	guipedclutch=OverlayManager::getSingleton().getOverlayElement("tracks/pedalclutch");
-	guipedbrake=OverlayManager::getSingleton().getOverlayElement("tracks/pedalbrake");
-	guipedacc=OverlayManager::getSingleton().getOverlayElement("tracks/pedalacc");
-
 	mRotateSpeed = 100;
 	mMoveSpeed = 50;
-	//        beam=NULL;
-	laptimemin = (TextAreaOverlayElement*)OverlayManager::getSingleton().getOverlayElement("tracks/LapTimemin");
-	laptimes = (TextAreaOverlayElement*)OverlayManager::getSingleton().getOverlayElement("tracks/LapTimes");
-	laptimems = (TextAreaOverlayElement*)OverlayManager::getSingleton().getOverlayElement("tracks/LapTimems");
-	lasttime = (TextAreaOverlayElement*)OverlayManager::getSingleton().getOverlayElement("tracks/LastTime");
-	lasttime->setCaption("");
-
-	flashOverlay = OverlayManager::getSingleton().getByName("tracks/FlashMessage");
-	OverlayContainer *flashPanel = static_cast<OverlayContainer*>(OverlayManager::getSingleton().createOverlayElement("Panel", "tracks/FlashMessage/Panel"));
-
-	// create flash message
-	flashMessageTE = static_cast<ColoredTextAreaOverlayElement*>(OverlayManager::getSingleton().createOverlayElement("ColoredTextArea", "tracks/Message2"));
-	flashMessageTE->setMetricsMode(Ogre::GMM_RELATIVE);
-	flashMessageTE->setPosition(0.1f, 0.1f);
-	flashMessageTE->setDimensions(0.8f, 0.3f);
-	flashMessageTE->setFontName("Cyberbit");
-	flashMessageTE->setCharHeight(0.05f);
-	flashMessageTE->setCaption("/");
-	flashMessageTE->setColourTop(ColourValue(1.0f,0.6f, 0.0f));
-	flashMessageTE->setColourBottom(ColourValue(0.8f,0.4f, 0.0f));
-	flashPanel->addChild(flashMessageTE);
-	flashOverlay->add2D(flashPanel);
-
-	/*
-	//OIS CONFIGURE
-	OIS::ParamList pl;
-	size_t windowHnd = 0;
-	std::ostringstream windowHndStr;
-	win->getCustomAttribute("WINDOW", &windowHnd);
-	windowHndStr << windowHnd;
-	pl.insert(std::make_pair(std::string("WINDOW"), windowHndStr.str()));
-	mInputManager = OIS::InputManager::createInputSystem( pl );
-
-	mMouse = static_cast<OIS::Mouse*>(mInputManager->createInputObject(OIS::OISMouse, false));
-	*/
 
 	windowResized(win);
 	Ogre::WindowEventUtilities::addWindowEventListener(win, this);
@@ -1963,9 +1430,12 @@ int RoRFrameListener::setupBenchmark()
 		loading_state=ALL_LOADED;
 
 		// modify the gui
-		TRUCKHUD.show(false);
-		showDashboardOverlays(false,0);
-		showDebugOverlay(1);
+		if(ow)
+		{
+			ow->truckhud->show(false);
+			ow->showDashboardOverlays(false,0);
+			ow->showDebugOverlay(1);
+		}
 		startTimer();
 
 		// return 1 to skip the normal loading
@@ -2826,9 +2296,10 @@ bool RoRFrameListener::updateEvents(float dt)
 	}
 	else joy->updateStickShift(false, 0.0);
 	*/
-	//flashing message
-	if (timeUntilUnflash>0)	timeUntilUnflash-=dt;
-	else if (flashOverlay->isVisible()) flashOverlay->hide();
+
+	// update overlays if enabled
+	if(ow) ow->update(dt);
+
 #ifdef USE_MYGUI
 	if(GUI_Friction::getSingleton().getVisible() && current_truck >= 0 && trucks[current_truck])
 	{
@@ -2905,8 +2376,7 @@ bool RoRFrameListener::updateEvents(float dt)
 	if (INPUTENGINE.getEventBoolValueBounce(EV_COMMON_SCREENSHOT_BIG, 0.5f))
 	{
 		// hide flash messages
-		flashMessage(0);
-		flashOverlay->hide();
+		if(ow) ow->hideFlashMessage();
 
 		int mNumScreenShots=0;
 		String path = SETTINGS.getSetting("User Path");
@@ -2923,7 +2393,7 @@ bool RoRFrameListener::updateEvents(float dt)
 		hideGUI(false);
 
 		LogManager::getSingleton().logMessage("Wrote big screenshot : " + tmp);
-		flashMessage(String("Wrote big screenshot : ") + tmp);
+		if(ow) ow->flashMessage(String("Wrote big screenshot : ") + tmp);
 
 	} else if (INPUTENGINE.getEventBoolValueBounce(EV_COMMON_SCREENSHOT, 0.5f))
 	{
@@ -2934,21 +2404,22 @@ bool RoRFrameListener::updateEvents(float dt)
 
 		LogManager::getSingleton().logMessage("Wrote screenshot : " + tmp);
 		// hide any flash message
-		flashMessage(0);
+		if(ow) ow->hideFlashMessage();
+
 		mWindow->update();
 
 		mWindow->writeContentsToFile(tmp);
 		char tmp1[255];
 		String ssmsg = _L("wrote screenshot:");
 		sprintf(tmp1, "%s %d", ssmsg.c_str(), mNumScreenShots);
-		flashMessage(tmp1);
+		if(ow) ow->flashMessage(tmp1);
 	}
 
 	if (INPUTENGINE.getEventBoolValueBounce(EV_TRUCKEDIT_RELOAD, 0.5f) && current_truck != -1 && trucks[current_truck])
 	{
 		if(current_truck + 1 >= MAX_TRUCKS)
 		{
-			flashMessage(String("unable to load new truck: limit reached. Please restart RoR"), 30);
+			if(ow) ow->flashMessage(String("unable to load new truck: limit reached. Please restart RoR"), 30);
 			return true;
 		}
 
@@ -2991,7 +2462,7 @@ bool RoRFrameListener::updateEvents(float dt)
 
 		// notice the user about the amount of possible reloads
 		String msg = StringConverter::toString(newBeam->trucknum) + String(" of ") + StringConverter::toString(MAX_TRUCKS) + String(" possible reloads.");
-		flashMessage(msg, 10.0f);
+		if(ow) ow->flashMessage(msg, 10.0f);
 
 		// dislocate the old truck, so its out of sight
 		beam->resetPosition(100000, 100000, false, 100000);
@@ -3056,10 +2527,10 @@ bool RoRFrameListener::updateEvents(float dt)
 
 	if (INPUTENGINE.getEventBoolValueBounce(EV_COMMON_SAVE_TERRAIN, 0.5f))
 	{
-		flashMessage("saving terrain, please wait...");
+		if(ow) ow->flashMessage("saving terrain, please wait...");
 		mWindow->update();
 		String fn = saveTerrainMesh();
-		flashMessage("terrain saved to file: " + fn);
+		if(ow) ow->flashMessage("terrain saved to file: " + fn);
 	}
 
 	// position storage
@@ -3077,9 +2548,9 @@ bool RoRFrameListener::updateEvents(float dt)
 		if (INPUTENGINE.getEventBoolValueBounce(EV_TRUCK_SAVE_POS9, 0.5f)) { slot=8; res = trucks[current_truck]->savePosition(slot); };
 		if (INPUTENGINE.getEventBoolValueBounce(EV_TRUCK_SAVE_POS10, 0.5f)) { slot=9; res = trucks[current_truck]->savePosition(slot); };
 		if(slot != -1 && !res)
-			flashMessage("Position saved under slot " + StringConverter::toString(slot+1), 3);
+			if(ow) ow->flashMessage("Position saved under slot " + StringConverter::toString(slot+1), 3);
 		else if(slot != -1 && res)
-			flashMessage("Error while saving position saved under slot " + StringConverter::toString(slot+1)+" : "+StringConverter::toString(res), 3);
+			if(ow) ow->flashMessage("Error while saving position saved under slot " + StringConverter::toString(slot+1)+" : "+StringConverter::toString(res), 3);
 
 		if(res == -10)
 		{
@@ -3094,9 +2565,9 @@ bool RoRFrameListener::updateEvents(float dt)
 			if (INPUTENGINE.getEventBoolValueBounce(EV_TRUCK_LOAD_POS9, 0.5f)) { slot=8; res = trucks[current_truck]->loadPosition(slot); };
 			if (INPUTENGINE.getEventBoolValueBounce(EV_TRUCK_LOAD_POS10, 0.5f)) { slot=9; res = trucks[current_truck]->loadPosition(slot); };
 			if(slot != -1 && res==0)
-				flashMessage("Loaded position from slot " + StringConverter::toString(slot+1), 3);
+				if(ow) ow->flashMessage("Loaded position from slot " + StringConverter::toString(slot+1), 3);
 			else if(slot != -1 && res!=0)
-				flashMessage("Could not load position from slot " + StringConverter::toString(slot+1) + "", 3);
+				if(ow) ow->flashMessage("Could not load position from slot " + StringConverter::toString(slot+1) + "", 3);
 		}
 	}
 
@@ -3107,7 +2578,7 @@ bool RoRFrameListener::updateEvents(float dt)
 		if(fov>10)
 			fov -= 2;
 		mCamera->setFOVy(Degree(fov));
-		flashMessage(_L("FOV: ") + StringConverter::toString(fov));
+		if(ow) ow->flashMessage(_L("FOV: ") + StringConverter::toString(fov));
 	}
 
 	if (INPUTENGINE.getEventBoolValueBounce(EV_COMMON_FOV_MORE))
@@ -3116,7 +2587,7 @@ bool RoRFrameListener::updateEvents(float dt)
 		if(fov<160)
 			fov += 2;
 		mCamera->setFOVy(Degree(fov));
-		flashMessage(_L("FOV: ") + StringConverter::toString(fov));
+		if(ow) ow->flashMessage(_L("FOV: ") + StringConverter::toString(fov));
 	}
 
 	// full screen/windowed screen switching
@@ -3149,12 +2620,12 @@ bool RoRFrameListener::updateEvents(float dt)
 			// change to fixed free camera: that is working like fixed cam
 			cameramode = CAMERA_FREE_FIXED;
 			LogManager::getSingleton().logMessage("switching to fixed free camera mode");
-			flashMessage(_L("fixed free camera"));
+			if(ow) ow->flashMessage(_L("fixed free camera"));
 		} else if(cameramode == CAMERA_FREE_FIXED)
 		{
 			cameramode = CAMERA_FREE;
 			LogManager::getSingleton().logMessage("switching to free camera mode from fixed mode");
-			flashMessage(_L("free camera"));
+			if(ow) ow->flashMessage(_L("free camera"));
 		}
 	}
 
@@ -3166,14 +2637,14 @@ bool RoRFrameListener::updateEvents(float dt)
 			// change back to normal camera
 			cameramode = storedcameramode;
 			LogManager::getSingleton().logMessage("exiting free camera mode");
-			flashMessage(_L("normal camera"));
+			if(ow) ow->flashMessage(_L("normal camera"));
 		} else if(cameramode != CAMERA_FREE && cameramode != CAMERA_FREE_FIXED )
 		{
 			// enter free camera mode
 			storedcameramode = cameramode;
 			cameramode = CAMERA_FREE;
 			LogManager::getSingleton().logMessage("entering free camera mode");
-			flashMessage(_L("free camera"));
+			if(ow) ow->flashMessage(_L("free camera"));
 		}
 	}
 
@@ -3259,7 +2730,7 @@ bool RoRFrameListener::updateEvents(float dt)
 				{
 					if(oldstate != 1)
 					{
-						mouseOverlay->getChild("mouse/pointer")->setMaterialName("mouse");
+						if(ow) ow->mouseOverlay->getChild("mouse/pointer")->setMaterialName("mouse");
 						oldstate = 1;
 					}
 
@@ -3279,7 +2750,7 @@ bool RoRFrameListener::updateEvents(float dt)
 					if (mouseY>screenHeight-1) mouseY=screenHeight-1;
 
 					// set the final position of the ingame cursor
-					mouseElement->setPosition(mouseX, mouseY);
+					if(ow) ow->mouseElement->setPosition(mouseX, mouseY);
 
 					//action
 					if(switchMouseButtons)
@@ -3295,7 +2766,7 @@ bool RoRFrameListener::updateEvents(float dt)
 				}else {
 					if(oldstate != 0)
 					{
-						mouseOverlay->getChild("mouse/pointer")->setMaterialName("mouse-rotate");
+						if(ow) ow->mouseOverlay->getChild("mouse/pointer")->setMaterialName("mouse-rotate");
 						oldstate = 0;
 					}
 				}
@@ -3522,14 +2993,17 @@ bool RoRFrameListener::updateEvents(float dt)
 									{
 										//Toggle Auto shift
 										trucks[current_truck]->engine->toggleAutoMode();
-										switch(trucks[current_truck]->engine->getAutoMode())
+										if(ow)
+										{
+											switch(trucks[current_truck]->engine->getAutoMode())
 											{
-												case AUTOMATIC: flashMessage(_L("Automatic shift")); break;
-												case SEMIAUTO: flashMessage(_L("Manual shift - Auto clutch")); break;
-												case MANUAL: flashMessage(_L("Fully Manual: sequential shift")); break;
-												case MANUAL_STICK: flashMessage(_L("Fully manual: stick shift")); break;
-												case MANUAL_RANGES: flashMessage(_L("Fully Manual: stick shift with ranges")); break;
+												case AUTOMATIC: ow->flashMessage(_L("Automatic shift")); break;
+												case SEMIAUTO: ow->flashMessage(_L("Manual shift - Auto clutch")); break;
+												case MANUAL: ow->flashMessage(_L("Fully Manual: sequential shift")); break;
+												case MANUAL_STICK: ow->flashMessage(_L("Fully manual: stick shift")); break;
+												case MANUAL_RANGES: ow->flashMessage(_L("Fully Manual: stick shift with ranges")); break;
 											}
+										}
 									}
 
 								//joy clutch
@@ -3573,19 +3047,19 @@ bool RoRFrameListener::updateEvents(float dt)
 													{
 														trucks[current_truck]->engine->setGearRange(0);
 														gear_changed = true;
-														flashMessage(_L("Low range selected"));
+														if(ow) ow->flashMessage(_L("Low range selected"));
 													}
 												else if  (INPUTENGINE.getEventBoolValueBounce(EV_TRUCK_SHIFT_MIDRANGE)  && curgearrange !=1 && trucks[current_truck]->engine->getNumGearsRanges()>1)
 													{
 														trucks[current_truck]->engine->setGearRange(1);
 														gear_changed = true;
-														flashMessage(_L("Mid range selected"));
+														if(ow) ow->flashMessage(_L("Mid range selected"));
 													}
 												else if  (INPUTENGINE.getEventBoolValueBounce(EV_TRUCK_SHIFT_HIGHRANGE) && curgearrange!=2 && trucks[current_truck]->engine->getNumGearsRanges()>2)
 													{
 														trucks[current_truck]->engine->setGearRange(2);
 														gear_changed = true;
-														flashMessage(_L("High range selected"));
+														if(ow) ow->flashMessage(_L("High range selected"));
 													}
 											}
 //zaxxon
@@ -3648,11 +3122,11 @@ bool RoRFrameListener::updateEvents(float dt)
 						//Toggle Auto shift
 						if(!trucks[current_truck]->getAxleLockCount())
 						{
-							flashMessage(_L("No differential installed on current vehicle!"));
+							if(ow) ow->flashMessage(_L("No differential installed on current vehicle!"));
 						} else
 						{
 							trucks[current_truck]->toggleAxleLock();
-							flashMessage(_L("Differentials switched to: ") + _L(trucks[current_truck]->getAxleLockName()) );
+							if(ow) ow->flashMessage(_L("Differentials switched to: ") + _L(trucks[current_truck]->getAxleLockName()) );
 						}
 					}
 
@@ -3690,21 +3164,21 @@ bool RoRFrameListener::updateEvents(float dt)
 						trucks[current_truck]->disconnectAutopilot();
 					}
 					//left mouse click
-					if (click==0)
+					if (ow && click==0)
 					{
-						OverlayElement *element=airneedlesOverlay->findElementAt((float)mouseX/(float)screenWidth,(float)mouseY/(float)screenHeight);
+						OverlayElement *element=ow->airneedlesOverlay->findElementAt((float)mouseX/(float)screenWidth,(float)mouseY/(float)screenHeight);
 						if (element)
 						{
 							char name[256];
 							strcpy(name,element->getName().c_str());
-							if (!strncmp(name, "tracks/thrust1", 14)) trucks[current_truck]->aeroengines[0]->setThrotle(1.0f-((((float)mouseY/(float)screenHeight)-thrtop-throffset)/thrheight));
-							if (!strncmp(name, "tracks/thrust2", 14) && trucks[current_truck]->free_aeroengine>1) trucks[current_truck]->aeroengines[1]->setThrotle(1.0f-((((float)mouseY/(float)screenHeight)-thrtop-throffset)/thrheight));
-							if (!strncmp(name, "tracks/thrust3", 14) && trucks[current_truck]->free_aeroengine>2) trucks[current_truck]->aeroengines[2]->setThrotle(1.0f-((((float)mouseY/(float)screenHeight)-thrtop-throffset)/thrheight));
-							if (!strncmp(name, "tracks/thrust4", 14) && trucks[current_truck]->free_aeroengine>3) trucks[current_truck]->aeroengines[3]->setThrotle(1.0f-((((float)mouseY/(float)screenHeight)-thrtop-throffset)/thrheight));
+							if (!strncmp(name, "tracks/thrust1", 14)) trucks[current_truck]->aeroengines[0]->setThrotle(1.0f-((((float)mouseY/(float)screenHeight)-ow->thrtop-ow->throffset)/ow->thrheight));
+							if (!strncmp(name, "tracks/thrust2", 14) && trucks[current_truck]->free_aeroengine>1) trucks[current_truck]->aeroengines[1]->setThrotle(1.0f-((((float)mouseY/(float)screenHeight)-ow->thrtop-ow->throffset)/ow->thrheight));
+							if (!strncmp(name, "tracks/thrust3", 14) && trucks[current_truck]->free_aeroengine>2) trucks[current_truck]->aeroengines[2]->setThrotle(1.0f-((((float)mouseY/(float)screenHeight)-ow->thrtop-ow->throffset)/ow->thrheight));
+							if (!strncmp(name, "tracks/thrust4", 14) && trucks[current_truck]->free_aeroengine>3) trucks[current_truck]->aeroengines[3]->setThrotle(1.0f-((((float)mouseY/(float)screenHeight)-ow->thrtop-ow->throffset)/ow->thrheight));
 							enablegrab=false;
 						}
 						//also for main dashboard
-						OverlayElement *element2=airdashboardOverlay->findElementAt((float)mouseX/(float)screenWidth,(float)mouseY/(float)screenHeight);
+						OverlayElement *element2=ow->airdashboardOverlay->findElementAt((float)mouseX/(float)screenWidth,(float)mouseY/(float)screenHeight);
 						if (element2)
 						{
 							enablegrab=false;
@@ -3921,10 +3395,13 @@ bool RoRFrameListener::updateEvents(float dt)
 					if (INPUTENGINE.getEventBoolValueBounce(EV_AIRPLANE_PARKING_BRAKE))
 					{
 						trucks[current_truck]->parkingbrakeToggle();
-						if(trucks[current_truck]->parkingbrake)
-							OverlayManager::getSingleton().getOverlayElement("tracks/ap_brks_but")->setMaterialName("tracks/brks-on");
-						else
-							OverlayManager::getSingleton().getOverlayElement("tracks/ap_brks_but")->setMaterialName("tracks/brks-off");
+						if(ow)
+						{
+							if(trucks[current_truck]->parkingbrake)
+								OverlayManager::getSingleton().getOverlayElement("tracks/ap_brks_but")->setMaterialName("tracks/brks-on");
+							else
+								OverlayManager::getSingleton().getOverlayElement("tracks/ap_brks_but")->setMaterialName("tracks/brks-off");
+						}
 					}
 					//reverse
 					if (INPUTENGINE.getEventBoolValueBounce(EV_AIRPLANE_REVERSE))
@@ -4182,7 +3659,7 @@ bool RoRFrameListener::updateEvents(float dt)
 							camRotX=pushcamRotX;
 							camRotY=pushcamRotY;
 							trucks[current_truck]->prepareInside(false);
-							showDashboardOverlays(true, trucks[current_truck]->driveable);
+							if(ow) ow->showDashboardOverlays(true, trucks[current_truck]->driveable);
 							//if(bigMap) bigMap->setVisibility(true);
 						}
 						cameramode++;
@@ -4196,10 +3673,13 @@ bool RoRFrameListener::updateEvents(float dt)
 							trucks[current_truck]->prepareInside(true);
 							//if(bigMap) bigMap->setVisibility(false);
 							// airplane dashboard in the plane visible
-							if(trucks[current_truck]->driveable == AIRPLANE)
-								showDashboardOverlays(true, trucks[current_truck]->driveable);
-							else
-								showDashboardOverlays(false, 0);
+							if(ow)
+							{
+								if(trucks[current_truck]->driveable == AIRPLANE)
+									ow->showDashboardOverlays(true, trucks[current_truck]->driveable);
+								else
+									ow->showDashboardOverlays(false, 0);
+							}
 						}
 						if (cameramode==CAMERA_END) cameramode=0;
 					}
@@ -4207,7 +3687,7 @@ bool RoRFrameListener::updateEvents(float dt)
 				//camera mode
 				if (INPUTENGINE.getEventBoolValue(EV_COMMON_PRESSURE_LESS) && current_truck!=-1)
 				{
-					showPressureOverlay(true);
+					if(ow) ow->showPressureOverlay(true);
 #ifdef USE_OPENAL
 					if(ssm) ssm->trigStart(current_truck, SS_TRIG_AIR);
 #endif // OPENAL
@@ -4216,7 +3696,7 @@ bool RoRFrameListener::updateEvents(float dt)
 				}
 				else if (INPUTENGINE.getEventBoolValue(EV_COMMON_PRESSURE_MORE))
 				{
-					showPressureOverlay(true);
+					if(ow) ow->showPressureOverlay(true);
 #ifdef USE_OPENAL
 					if(ssm) ssm->trigStart(current_truck, SS_TRIG_AIR);
 #endif // OPENAL
@@ -4228,10 +3708,10 @@ bool RoRFrameListener::updateEvents(float dt)
 					if(ssm) ssm->trigStop(current_truck, SS_TRIG_AIR);
 #endif // OPENAL
 					pressure_pressed=false;
-					showPressureOverlay(false);
+					if(ow) ow->showPressureOverlay(false);
 				}
 
-				if(enablegrab)
+				if(enablegrab && ow)
 				{
 					//node grabbing
 					bool ctrldown = INPUTENGINE.isKeyDown(OIS::KC_LCONTROL) || INPUTENGINE.isKeyDown(OIS::KC_RCONTROL);
@@ -4241,9 +3721,9 @@ bool RoRFrameListener::updateEvents(float dt)
 						if(oldstate != 2)
 						{
 							if(ctrldown)
-								mouseOverlay->getChild("mouse/pointer")->setMaterialName("mouse-locked-heavy");
+								ow->mouseOverlay->getChild("mouse/pointer")->setMaterialName("mouse-locked-heavy");
 							else
-								mouseOverlay->getChild("mouse/pointer")->setMaterialName("mouse-locked");
+								ow->mouseOverlay->getChild("mouse/pointer")->setMaterialName("mouse-locked");
 							pickLineNode->setVisible(true);
 							oldstate = 2;
 						}
@@ -4335,7 +3815,7 @@ bool RoRFrameListener::updateEvents(float dt)
 
 		const OIS::MouseState mstate = INPUTENGINE.getMouseState();
 		static bool buttonsPressed = false;
-		if(inputGrabMode == GRAB_ALL || (inputGrabMode == GRAB_DYNAMICALLY &&  (mstate.buttons != 0 || buttonsPressed)))
+		if(ow && inputGrabMode == GRAB_ALL || (inputGrabMode == GRAB_DYNAMICALLY &&  (mstate.buttons != 0 || buttonsPressed)))
 		{
 			if ((cameramode==CAMERA_INT || cameramode==CAMERA_EXT || cameramode==CAMERA_FIX || cameramode==CAMERA_FREE_FIXED) && current_truck == -1)
 			{
@@ -4348,15 +3828,15 @@ bool RoRFrameListener::updateEvents(float dt)
 						mouseX = mstate.X.abs;
 						mouseY = mstate.Y.abs;
 						// display cursor
-						mouseElement->setPosition(mouseX, mouseY);
-						mouseOverlay->getChild("mouse/pointer")->setMaterialName("mouse-rotate");
-						mouseOverlay->show();
+						ow->mouseElement->setPosition(mouseX, mouseY);
+						ow->mouseOverlay->getChild("mouse/pointer")->setMaterialName("mouse-rotate");
+						ow->mouseOverlay->show();
 						INPUTENGINE.hideMouse(true);
 					} else if (buttonsPressed && !btnview)
 					{
 						// release event
-						mouseOverlay->getChild("mouse/pointer")->setMaterialName("mouse");
-						mouseOverlay->hide();
+						ow->mouseOverlay->getChild("mouse/pointer")->setMaterialName("mouse");
+						ow->mouseOverlay->hide();
 						INPUTENGINE.hideMouse(false);
 					}
 					if(btnview)
@@ -4520,7 +4000,7 @@ bool RoRFrameListener::updateEvents(float dt)
 						bigMap->updateRenderMetrics(mWindow);
 						bigMap->setPosition(0, 0.81, 0.14, 0.19, mWindow);
 					}
-					if(net) playerListOverlay->hide();
+					if(net && ow) ow->playerListOverlay->hide();
 				} else if(mapMode==1)
 				{
 					bigMap->setVisibility(true);
@@ -4529,13 +4009,11 @@ bool RoRFrameListener::updateEvents(float dt)
 					bigMap->updateRenderMetrics(mWindow);
 					bigMap->setPosition(0.2, 0, 0.8, 0.8, mWindow);
 					//NETCHAT.setMode(this, NETCHAT_MAP, true);
-					if(net)
-						playerListOverlay->show();
+					if(net && ow) ow->playerListOverlay->show();
 				} else
 				{
 					bigMap->setVisibility(false);
-					if(net)
-						playerListOverlay->hide();
+					if(net && ow) ow->playerListOverlay->hide();
 				}
 			}
 
@@ -4576,7 +4054,7 @@ bool RoRFrameListener::updateEvents(float dt)
 			}
 			if(rtruck == -1)
 			{
-				flashMessage("No rescue truck found!", 3);
+				if(ow) ow->flashMessage("No rescue truck found!", 3);
 			} else
 			{
 				// go to person mode first
@@ -4683,10 +4161,6 @@ bool RoRFrameListener::updateEvents(float dt)
 					terrainUID = sel->uniqueid;
 					loadTerrain(sel->fname);
 
-					//load truck list
-					//OverlayManager::getSingleton().getOverlayElement("tracks/Title")->setCaption("Choose your vehicle:");
-					//					if (collisions->hasbuildbox && !netmode) FIXME
-
 					// no trucks loaded?
 					if (truck_preload_num == 0)
 					{
@@ -4774,28 +4248,13 @@ bool RoRFrameListener::updateEvents(float dt)
 #endif //MYGUI
 	}
 
-#ifdef HAS_EDITOR
-	/*
-	// not supported anymore
-	if (loading_state==EDITING)
-	{
-		if (!trucked->processInput(mMouse, mKeyboard))
-		{
-			//exit clicked
-			dirty=true;
-			showTruckEditorOverlay(false);
-			loading_state=ALL_LOADED;
-		}
-	}
-	*/
-#endif
 
 
 	if(INPUTENGINE.getEventBoolValueBounce(EV_COMMON_TRUCK_INFO) && !showcredits && current_truck != -1)
 	{
 		mTruckInfoOn = ! mTruckInfoOn;
 		dirty=true;
-		TRUCKHUD.show(mTruckInfoOn);
+		if(ow) ow->truckhud->show(mTruckInfoOn);
 	}
 
 	if(INPUTENGINE.getEventBoolValueBounce(EV_COMMON_HIDE_GUI) && !showcredits)
@@ -4815,7 +4274,7 @@ bool RoRFrameListener::updateEvents(float dt)
 		else if(mStatsOn==2)
 			mStatsOn=0;
 
-		showDebugOverlay(mStatsOn);
+		if(ow) ow->showDebugOverlay(mStatsOn);
 	}
 
 	if (INPUTENGINE.getEventBoolValueBounce(EV_COMMON_TOGGLE_MAT_DEBUG))
@@ -4827,7 +4286,7 @@ bool RoRFrameListener::updateEvents(float dt)
 		else if(mStatsOn==2)
 			mStatsOn=0;
 		dirty=true;
-		showDebugOverlay(mStatsOn);
+		if(ow) ow->showDebugOverlay(mStatsOn);
 	}
 
 #ifdef USE_PAGED
@@ -5051,7 +4510,7 @@ void RoRFrameListener::shutdown_pre()
 #endif //SOCKETW
 	showcredits=1;
 	loading_state=EXITING;
-	OverlayManager::getSingleton().getByName("tracks/CreditsOverlay")->show();
+	if(ow) OverlayManager::getSingleton().getByName("tracks/CreditsOverlay")->show();
 #ifdef USE_OPENAL
 	if(ssm) ssm->soundEnable(false);
 #endif // OPENAL
@@ -5123,8 +4582,7 @@ void RoRFrameListener::loadTerrain(String terrainfile)
 		//make it small again
 		bigMap->updateRenderMetrics(mWindow);
 		bigMap->setPosition(0, 0.81, 0.14, 0.19, mWindow);
-		if(net)
-			playerListOverlay->hide();
+		if(net && ow) ow->playerListOverlay->hide();
 		//bigMap->setPosition(0, 0, 1, 1);
 		//bigMap->resizeToScreenRatio(win);
 	}
@@ -5671,33 +5129,6 @@ void RoRFrameListener::loadTerrain(String terrainfile)
 		}
 		CompositorManager::getSingleton().addCompositor(mCamera->getViewport(),"MotionBlur");
 		CompositorManager::getSingleton().setCompositorEnabled(mCamera->getViewport(), "MotionBlur", true);
-		/*						RenderTexture *motionBlurTexture = mRoot->getRenderSystem ()->createRenderTexture ("MotionBlurTexture", 1280, 1024);
-		motionBlurTexture->addViewport (mCamera);
-		motionBlurTexture->getViewport(0)->setBackgroundColour(fadeColour);
-		//motionBlurTexture->getViewport(0)->setOverlaysEnabled (false);
-
-		Material *motionBlurMaterial;
-		MaterialPtr tmp;
-		tmp=(MaterialPtr)MaterialManager::getSingleton().create("MotionBlurMaterial", "Main");
-		motionBlurMaterial = &(*tmp);
-		//Material *motionBlurMaterial = mSceneMgr->createMaterial ("MotionBlurMaterial");
-
-		TextureUnitState *tUnit = motionBlurMaterial->getTechnique (0)->getPass (0)->createTextureUnitState ();
-		tUnit->setTextureName ("MotionBlurTexture");
-		tUnit->setAlphaOperation (LBX_BLEND_MANUAL, LBS_MANUAL, LBS_CURRENT, 0.5, 1, 1);
-		motionBlurMaterial->setSceneBlending (SBT_TRANSPARENT_ALPHA);
-		motionBlurMaterial->setDepthCheckEnabled (false);
-		motionBlurMaterial->setDepthWriteEnabled (false);
-
-		//        Overlay *motionBlurOverlay = mSceneMgr->createOverlay ("MotionBlurOverlay", 10);
-		Overlay *motionBlurOverlay = OverlayManager::getSingleton().create ("MotionBlurOverlay");
-		motionBlurOverlay->setZOrder(10);
-
-		OverlayElement *motionBlurPanel = OverlayManager::getSingleton ().createOverlayElement ("Panel", "MotionBlurPanel", false);
-		//		GuiElement *motionBlurPanel = GuiManager::getSingleton ().createGuiElement ("Panel", "MotionBlurPanel", false);
-		motionBlurPanel->setMaterialName ("MotionBlurMaterial");
-		motionBlurOverlay->add2D ((OverlayContainer *)motionBlurPanel);
-		motionBlurOverlay->show ();*/
 	}
 	// End of motion blur :(
 
@@ -6773,8 +6204,7 @@ void RoRFrameListener::initTrucks(bool loadmanual, Ogre::String selected, Ogre::
 	loading_state=ALL_LOADED;
 	//uiloader->hide();
 	showcredits=0;
-	//					showDashboardOverlays(true);
-	LogManager::getSingleton().logMessage("EFL: overlays ok");
+	LogManager::getSingleton().logMessage("initTrucks done");
 
 #ifdef USE_MYGUI
 	if(mtc)
@@ -6812,7 +6242,7 @@ void RoRFrameListener::setCurrentTruck(int v)
 #endif //OIS_G27
 
 		// hide truckhud
-		TRUCKHUD.show(false);
+		if(ow) ow->truckhud->show(false);
 
 #ifdef USE_MYGUI
 		// return to normal mapmode
@@ -6825,7 +6255,7 @@ void RoRFrameListener::setCurrentTruck(int v)
 #endif //MYGUI
 
 		//getting outside
-		mouseOverlay->hide();
+		if(ow) ow->mouseOverlay->hide();
 		Vector3 position = Vector3::ZERO;
 		if(trucks[previous_truck])
 		{
@@ -6848,8 +6278,8 @@ void RoRFrameListener::setCurrentTruck(int v)
 		//			position.y=hfinder->getHeightAt(position.x,position.z);
 		if(position != Vector3::ZERO) person->setPosition(position);
 		//person->setVisible(true);
-		showDashboardOverlays(false,0);
-		showEditorOverlay(false);
+		if(ow) ow->showDashboardOverlays(false,0);
+		if(ow) ow->showEditorOverlay(false);
 #ifdef USE_OPENAL
 		if(ssm) ssm->trigStop(previous_truck, SS_TRIG_AIR);
 		if(ssm) ssm->trigStop(previous_truck, SS_TRIG_PUMP);
@@ -6872,12 +6302,12 @@ void RoRFrameListener::setCurrentTruck(int v)
 	{
 		//getting inside
 		if(netmode && NETCHAT.getVisible()) NETCHAT.setMode(this, NETCHAT_LEFT_SMALL, true);
-		mouseOverlay->show();
+		if(ow) ow->mouseOverlay->show();
 		//person->setVisible(false);
-		if(!hidegui)
+		if(ow &&!hidegui)
 		{
-			showDashboardOverlays(true, trucks[current_truck]->driveable);
-			showEditorOverlay(trucks[current_truck]->editorId>=0);
+			ow->showDashboardOverlays(true, trucks[current_truck]->driveable);
+			ow->showEditorOverlay(trucks[current_truck]->editorId>=0);
 		}
 
 		// mapmode change?
@@ -6904,7 +6334,8 @@ void RoRFrameListener::setCurrentTruck(int v)
 		trucks[current_truck]->activate();
 		//if (trucks[current_truck]->engine->running) trucks[current_truck]->audio->playStart();
 		//hide unused items
-		if (trucks[current_truck]->free_active_shock==0) (OverlayManager::getSingleton().getOverlayElement("tracks/rollcorneedle"))->hide();
+		if (ow && trucks[current_truck]->free_active_shock==0)
+			(OverlayManager::getSingleton().getOverlayElement("tracks/rollcorneedle"))->hide();
 		//					rollcorr_node->setVisible((trucks[current_truck]->free_active_shock>0));
 		//help panel
 		//force feedback
@@ -6922,33 +6353,35 @@ void RoRFrameListener::setCurrentTruck(int v)
 		// attach person to truck
 		if(person)
 			person->setBeamCoupling(true, trucks[current_truck]);
-
-		try
+		if(ow)
 		{
-			// we wont crash for help panels ...
-			if (trucks[current_truck]->hashelp)
+			try
 			{
-				OverlayManager::getSingleton().getOverlayElement("tracks/helppanel")->setMaterialName(trucks[current_truck]->helpmat);
-				OverlayManager::getSingleton().getOverlayElement("tracks/machinehelppanel")->setMaterialName(trucks[current_truck]->helpmat);
+				// we wont crash for help panels ...
+				if (trucks[current_truck]->hashelp)
+				{
+					OverlayManager::getSingleton().getOverlayElement("tracks/helppanel")->setMaterialName(trucks[current_truck]->helpmat);
+					OverlayManager::getSingleton().getOverlayElement("tracks/machinehelppanel")->setMaterialName(trucks[current_truck]->helpmat);
+				}
+				else
+				{
+					OverlayManager::getSingleton().getOverlayElement("tracks/helppanel")->setMaterialName("tracks/black");
+					OverlayManager::getSingleton().getOverlayElement("tracks/machinehelppanel")->setMaterialName("tracks/black");
+				}
+			} catch(...)
+			{
 			}
+			// enable gui mods
+			if (trucks[current_truck]->speedomat != String(""))
+				OverlayManager::getSingleton().getOverlayElement("tracks/speedo")->setMaterialName(trucks[current_truck]->speedomat);
 			else
-			{
-				OverlayManager::getSingleton().getOverlayElement("tracks/helppanel")->setMaterialName("tracks/black");
-				OverlayManager::getSingleton().getOverlayElement("tracks/machinehelppanel")->setMaterialName("tracks/black");
-			}
-		} catch(...)
-		{
-		}
-		// enable gui mods
-		if (trucks[current_truck]->speedomat != String(""))
-			OverlayManager::getSingleton().getOverlayElement("tracks/speedo")->setMaterialName(trucks[current_truck]->speedomat);
-		else
-			OverlayManager::getSingleton().getOverlayElement("tracks/speedo")->setMaterialName("tracks/Speedo");
+				OverlayManager::getSingleton().getOverlayElement("tracks/speedo")->setMaterialName("tracks/Speedo");
 
-		if (trucks[current_truck]->tachomat != String(""))
-			OverlayManager::getSingleton().getOverlayElement("tracks/tacho")->setMaterialName(trucks[current_truck]->tachomat);
-		else
-			OverlayManager::getSingleton().getOverlayElement("tracks/tacho")->setMaterialName("tracks/Tacho");
+			if (trucks[current_truck]->tachomat != String(""))
+				OverlayManager::getSingleton().getOverlayElement("tracks/tacho")->setMaterialName(trucks[current_truck]->tachomat);
+			else
+				OverlayManager::getSingleton().getOverlayElement("tracks/tacho")->setMaterialName("tracks/Tacho");
+		}
 
 		//lastangle=0;
 		camRotX=0;
@@ -6957,7 +6390,7 @@ void RoRFrameListener::setCurrentTruck(int v)
 		if (cameramode==CAMERA_INT)
 		{
 			trucks[current_truck]->prepareInside(true);
-			showDashboardOverlays(false, 0);
+			if(ow) ow->showDashboardOverlays(false, 0);
 			camRotY=DEFAULT_INTERNAL_CAM_PITCH;
 			//if(bigMap) bigMap->setVisibility(false);
 		}
@@ -7330,7 +6763,7 @@ void RoRFrameListener::moveCamera(float dt)
 				camRotX=pushcamRotX;
 				camRotY=pushcamRotY;
 				trucks[current_truck]->prepareInside(false);
-				showDashboardOverlays(true, trucks[current_truck]->driveable);
+				if(ow) ow->showDashboardOverlays(true, trucks[current_truck]->driveable);
 			}
 		}
 	}
@@ -7371,154 +6804,6 @@ void RoRFrameListener::moveCamera(float dt)
 			w->moveTo(mCamera, w->getHeightWaves(trucks[current_truck]->getPosition()));
 		else
 			w->moveTo(mCamera, w->getHeight());
-	}
-}
-
-
-void RoRFrameListener::showDebugOverlay(int mode)
-{
-	if (!mDebugOverlay || !mTimingDebugOverlay) return;
-	if (mode > 0)
-	{
-		mDebugOverlay->show();
-		if(mode > 1)
-			mTimingDebugOverlay->show();
-		else
-			mTimingDebugOverlay->hide();
-	}
-	else
-	{
-		mDebugOverlay->hide();
-		mTimingDebugOverlay->hide();
-	}
-}
-
-#ifdef HAS_EDITOR
-void RoRFrameListener::showTruckEditorOverlay(bool show)
-{
-	if (truckeditorOverlay && mouseOverlay)
-	{
-		if (show)
-		{
-			if (audioManager) audioManager->soundEnable(false);
-			truckeditorOverlay->show();
-			mouseOverlay->show();
-			if (dashboard) dashboard->setEnable(false);
-			disableRendering=true;
-			mWindow->setAutoUpdated(false);
-		}
-		else
-		{
-			truckeditorOverlay->hide();
-			//mouseOverlay->hide();
-			if (dashboard) dashboard->setEnable(true);
-			disableRendering=false;
-			mWindow->setAutoUpdated(true);
-			if (audioManager) audioManager->soundEnable(true);
-		}
-	}
-}
-#endif
-
-/*
-void RoRFrameListener::showBigMapOverlay(bool show)
-{
-	if (bigMapOverlay)
-	{
-		if (show)
-		{
-			bigMapOverlay->show();
-			if(netmode)
-				playerListOverlay->show();
-		}
-		else
-		{
-			bigMapOverlay->hide();
-			if(netmode)
-				playerListOverlay->hide();
-		}
-	}
-}
-*/
-
-void RoRFrameListener::showPressureOverlay(bool show)
-{
-	if (pressureOverlay)
-	{
-		if (show)
-		{
-			pressureOverlay->show();
-			pressureNeedleOverlay->show();
-		}
-		else
-		{
-			pressureOverlay->hide();
-			pressureNeedleOverlay->hide();
-		}
-	}
-}
-
-void RoRFrameListener::showEditorOverlay(bool show)
-{
-	if (editorOverlay)
-	{
-		if (show)
-		{
-			editorOverlay->show();
-		}
-		else
-		{
-			editorOverlay->hide();
-		}
-	}
-}
-
-void RoRFrameListener::showDashboardOverlays(bool show, int mode)
-{
-	if (needlesOverlay && dashboardOverlay)
-	{
-		if (show)
-		{
-			if (mode==TRUCK)
-			{
-				needlesMaskOverlay->show();
-				needlesOverlay->show();
-				dashboardOverlay->show();
-			};
-			if (mode==AIRPLANE)
-			{
-				airneedlesOverlay->show();
-				airdashboardOverlay->show();
-				//mouseOverlay->show();
-			};
-			if (mode==BOAT)
-			{
-				boatneedlesOverlay->show();
-				boatdashboardOverlay->show();
-			};
-			if (mode==BOAT)
-			{
-				boatneedlesOverlay->show();
-				boatdashboardOverlay->show();
-			};
-			if (mode==MACHINE)
-			{
-				machinedashboardOverlay->show();
-			};
-		}
-		else
-		{
-			machinedashboardOverlay->hide();
-			needlesMaskOverlay->hide();
-			needlesOverlay->hide();
-			dashboardOverlay->hide();
-			//for the airplane
-			airneedlesOverlay->hide();
-			airdashboardOverlay->hide();
-			//mouseOverlay->hide();
-			boatneedlesOverlay->hide();
-			boatdashboardOverlay->hide();
-		}
 	}
 }
 
@@ -7705,7 +6990,7 @@ bool RoRFrameListener::frameStarted(const FrameEvent& evt)
 	}
 
 	// update gui 3d arrow
-	if(dirvisible && loading_state==ALL_LOADED)
+	if(ow && dirvisible && loading_state==ALL_LOADED)
 	{
 		dirArrowNode->lookAt(dirArrowPointed, Node::TS_WORLD,Vector3::UNIT_Y);
 		char tmp[255];
@@ -7715,7 +7000,7 @@ bool RoRFrameListener::frameStarted(const FrameEvent& evt)
 		else
 			distance = person->getPosition().distance(dirArrowPointed);
 		sprintf(tmp,"%0.1f meter", distance);
-		directionArrowDistance->setCaption(tmp);
+		ow->directionArrowDistance->setCaption(tmp);
 	}
 
 	// one of the input modes is immediate, so setup what is needed for immediate mouse/key movement
@@ -7904,9 +7189,12 @@ END OF OLD CODE */
 #ifdef USE_LUA
 		if(lua) lua->framestep();
 #endif
-		updateGUI(dt);
-		if (raceStartTime > 0)
-			updateRacingGUI();
+		updateIO(dt);
+
+		if(!isEmbedded)
+		{
+			updateGUI(dt);
+		}
 	}
 
 
@@ -7980,45 +7268,6 @@ bool RoRFrameListener::checkForActive(int j, bool *sleepyList)
 	return false;
 }
 
-void RoRFrameListener::flashMessage(Ogre::String txt, float time, float charHeight)
-{
-	flashMessage(txt.c_str(), time, charHeight);
-}
-
-void RoRFrameListener::flashMessage(const char* txt, float time, float charHeight)
-{
-	if(!txt || time < 0)
-	{
-		// hide
-		flashMessageTE->setCaption("");
-		flashOverlay->hide();
-		timeUntilUnflash=0;
-		return;
-	}
-	try
-	{
-		// catch any non UTF chars
-		flashMessageTE->setCaption(txt);
-	} catch(...)
-	{
-	}
-
-	if(charHeight != -1)
-		flashMessageTE->setCharHeight(charHeight);
-	else
-		// set original height
-		flashMessageTE->setCharHeight(0.05f);
-
-	flashOverlay->show();
-	timeUntilUnflash=time;
-}
-
-void RoRFrameListener::flashMessage()
-{
-	flashOverlay->show();
-	timeUntilUnflash=1;
-}
-
 bool RoRFrameListener::setCameraPositionWithCollision(Vector3 newPos)
 {
 	bool res = true;
@@ -8049,7 +7298,8 @@ bool RoRFrameListener::setCameraPositionWithCollision(Vector3 newPos)
 
 bool RoRFrameListener::frameEnded(const FrameEvent& evt)
 {
-	updateStats();
+	// TODO: IMPROVE STATS
+	if(ow) ow->updateStats();
 
 #if OGRE_PLATFORM == OGRE_PLATFORM_WIN32
 		/*
@@ -8088,7 +7338,7 @@ void RoRFrameListener::showLoad(int type, char* instance, char* box)
 	/*
 	if ((SETTINGS.getSetting("Water effects")=="None") && type == LOADER_BOAT)
 	{
-		flashMessage("Closed (No water)", 4);
+		if(ow) ow->flashMessage("Closed (No water)", 4);
 		return;
 	}
 	*/
@@ -8103,7 +7353,7 @@ void RoRFrameListener::showLoad(int type, char* instance, char* box)
 			if (collisions->isInside(trucks[t]->nodes[i].AbsPosition, spawnbox))
 			{
 				//boy, thats bad
-				flashMessage(_L("Please clear the place first"), 4);
+				if(ow) ow->flashMessage(_L("Please clear the place first"), 4);
 				return;
 			}
 		}
@@ -8130,20 +7380,21 @@ bool RoRFrameListener::fileExists(const char* filename)
 
 void RoRFrameListener::setDirectionArrow(char *text, Vector3 position)
 {
+	if(!ow) return;
 	if(!text)
 	{
 		dirArrowNode->setVisible(false);
 		dirvisible = false;
 		dirArrowPointed = Vector3::ZERO;
-		directionOverlay->hide();
+		ow->directionOverlay->hide();
 	}
 	else
 	{
-		directionOverlay->show();
-		directionArrowText->setCaption(String(text));
-		float w = directionArrowText->getWidth();
+		ow->directionOverlay->show();
+		ow->directionArrowText->setCaption(String(text));
+		float w = ow->directionArrowText->getWidth();
 		//LogManager::getSingleton().logMessage("*** new pointed position: " + StringConverter::toString(position));
-		directionArrowDistance->setCaption("");
+		ow->directionArrowDistance->setCaption("");
 		dirvisible = true;
 		dirArrowPointed = position;
 		dirArrowNode->setVisible(true);
@@ -8218,12 +7469,15 @@ void RoRFrameListener::pauseSim(bool value)
 {
 	// TODO: implement this (how to do so?)
 	static int savedmode = -1;
+	if(value && loading_state == EDITOR_PAUSE)
+		// already paused
+		return;
 	if(value)
 	{
 		savedmode = loading_state;
 		loading_state = EDITOR_PAUSE;
 		LogManager::getSingleton().logMessage("** pausing game");
-	}else if (!value && savedmode != -1)
+	} else if (!value && savedmode != -1)
 	{
 		loading_state = savedmode;
 		LogManager::getSingleton().logMessage("** unpausing game");
@@ -8312,13 +7566,13 @@ void RoRFrameListener::hideGUI(bool visible)
 {
 	if(visible)
 	{
-		mouseOverlay->hide();
+		if(ow) ow->mouseOverlay->hide();
 		if (netmode && NETCHAT.getVisible())
 			NETCHAT.toggleVisible(this);
 
-		showDashboardOverlays(false,0);
-		showEditorOverlay(false);
-		TRUCKHUD.show(false);
+		if(ow) ow->showDashboardOverlays(false,0);
+		if(ow) ow->showEditorOverlay(false);
+		if(ow) ow->truckhud->show(false);
 		//if(bigMap) bigMap->setVisibility(false);
 	}
 	else
@@ -8327,8 +7581,8 @@ void RoRFrameListener::hideGUI(bool visible)
 			NETCHAT.toggleVisible(this);
 		if(current_truck != -1 && cameramode!=CAMERA_INT)
 		{
-			mouseOverlay->show();
-			showDashboardOverlays(true, trucks[current_truck]->driveable);
+			if(ow) ow->mouseOverlay->show();
+			if(ow) ow->showDashboardOverlays(true, trucks[current_truck]->driveable);
 			//if(bigMap) bigMap->setVisibility(true);
 		}
 	}
@@ -8503,4 +7757,9 @@ int RoRFrameListener::addTruck(Beam *b)
 		}
 	}
 	return -1;
+}
+
+void RoRFrameListener::setLoadingState(int value)
+{
+	loading_state = value;
 }

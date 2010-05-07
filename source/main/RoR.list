@@ -77,6 +77,7 @@ set (HEADER_FILES
   editor.h
   engine.h
   RoRFrameListener.h
+  OverlayWrapper.h
   RigsOfRods.h
   materialFunctionMapper.h
   mirrors.h
@@ -187,6 +188,7 @@ set (SOURCE_FILES
   editor.cpp
   engine.cpp
   RoRFrameListener.cpp
+  OverlayWrapper.cpp
   main.cpp
   RigsOfRods.cpp
   materialFunctionMapper.cpp
@@ -268,6 +270,8 @@ SOURCE_GROUP("GUI-related" FILES
   dashboard.h
   IngameConsole.cpp
   IngameConsole.h
+  OverlayWrapper.cpp
+  OverlayWrapper.h
 )
 SOURCE_GROUP("GFX" FILES
   DepthOfFieldEffect.cpp

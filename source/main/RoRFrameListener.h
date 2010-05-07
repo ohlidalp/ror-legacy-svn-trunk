@@ -38,9 +38,6 @@ along with Rigs of Rods.  If not, see <http://www.gnu.org/licenses/>.
 
 #include "OgreStringConverter.h"
 #include "OgreException.h"
-#include "OgreTextAreaOverlayElement.h"
-#include "OgreLineStreamOverlayElement.h"
-#include <OgrePanelOverlayElement.h>
 //#include "OgreTerrainSceneManager.h"
 #include "OgrePixelFormat.h"
 #include "CollisionTools.h"
@@ -62,8 +59,6 @@ along with Rigs of Rods.  If not, see <http://www.gnu.org/licenses/>.
 # include "TreeLoader2D.h"
 #endif
 
-class MapTextureCreator;
-class ColoredTextAreaOverlayElement;
 
 #ifdef USE_LUA
 class LuaSystem;
@@ -198,6 +193,7 @@ class RoRFrameListener: public FrameListener, public Ogre::WindowEventListener
 {
 	friend class BeamFactory;
 protected:
+	OverlayWrapper *ow;
 	int setupBenchmark();
 	void benchStep(float dt);
 	truck_prepare_t truck_preload[100];
@@ -209,19 +205,6 @@ protected:
 	bool benchmarking;
 	//    Real dirSpeed;
 	Degree mRotateSpeed;
-	Overlay* directionOverlay;
-	Overlay* mDebugOverlay;
-	Overlay* mTimingDebugOverlay;
-	Overlay* dashboardOverlay;
-	Overlay* machinedashboardOverlay;
-	Overlay* airdashboardOverlay;
-	Overlay* boatdashboardOverlay;
-	Overlay* needlesOverlay;
-	Overlay* airneedlesOverlay;
-	Overlay* boatneedlesOverlay;
-	Overlay* needlesMaskOverlay;
-	LineStreamOverlayElement *fpsLineStream, *netLineStream, *netlagLineStream;
-	//Overlay* bigMapOverlay;
 
 	MapControl *bigMap;
 	StaticGeometry *bakesg;
@@ -229,42 +212,12 @@ protected:
     bool xfire_enabled;
 	int externalCameraMode;
 
-	Overlay* playerListOverlay;
-	//Overlay* bigMapOverlayText;
-	//OverlayElement *bigmapotext;
-	Overlay* pressureOverlay;
-	Overlay* pressureNeedleOverlay;
-	Overlay* editorOverlay;
-#ifdef HAS_EDITOR
-	Overlay* truckeditorOverlay;
-#endif
-	Overlay* mouseOverlay;
-	Overlay* flashOverlay;
 	//    Beam *beam;
 	int loading_state;
-	OverlayElement* guiGear;
-	OverlayElement* guiGear3D;
-	OverlayElement* guiRoll;
-	TextAreaOverlayElement* guiAuto[5];
-	TextAreaOverlayElement* guiAuto3D[5];
-	OverlayElement* guipedclutch;
-	OverlayElement* guipedbrake;
-	OverlayElement* guipedacc;
-	TextAreaOverlayElement* laptimemin;
-	TextAreaOverlayElement* laptimes;
-	TextAreaOverlayElement* laptimems;
-	TextAreaOverlayElement* lasttime;
-	ColoredTextAreaOverlayElement* flashMessageTE;
 
-	TextAreaOverlayElement* directionArrowText;
-	TextAreaOverlayElement* directionArrowDistance;
-
-	TextAreaOverlayElement* alt_value_taoe;
-	TextAreaOverlayElement* boat_depth_value_taoe;
 
 	DOFManager *mDOF;
 	bool mDOFDebug;
-	OverlayElement* mouseElement;
 	int mouseX;
 	int mouseY;
 	int inputGrabMode;
@@ -280,10 +233,6 @@ protected:
 
 	//GUI_Progress *gui_progress;
 
-	float thrtop;
-	float thrheight;
-	float throffset;
-
 	std::map<String, spawn_location_t> netSpawnPos;
 	float truckx, trucky, truckz;
 	//	SceneNode *speed_node;
@@ -291,82 +240,7 @@ protected:
 	//	SceneNode *roll_node;
 	//	SceneNode *pitch_node;
 	//	SceneNode *rollcorr_node;
-	/*
-	OverlayElement *mapdot[MAX_ARROW];
-	OverlayElement *mapo;
-	OverlayElement *airmapdot[MAX_ARROW];
-	OverlayElement *airmapo;
-	OverlayElement *bigmapdot[MAX_ARROW];
-	OverlayElement *bigmapo;
-	OverlayElement *boatmapdot;
-	OverlayElement *boatmapo;
-	*/
 
-	OverlayElement *pbrakeo;
-	OverlayElement *lockedo;
-	OverlayElement *securedo;
-	OverlayElement *lopresso;
-	OverlayElement *clutcho;
-	OverlayElement *lightso;
-	OverlayElement *batto;
-	OverlayElement *igno;
-
-	OverlayElement *thro1;
-	OverlayElement *thro2;
-	OverlayElement *thro3;
-	OverlayElement *thro4;
-	OverlayElement *engfireo1;
-	OverlayElement *engfireo2;
-	OverlayElement *engfireo3;
-	OverlayElement *engfireo4;
-	OverlayElement *engstarto1;
-	OverlayElement *engstarto2;
-	OverlayElement *engstarto3;
-	OverlayElement *engstarto4;
-
-	OverlayElement *bthro1;
-	OverlayElement *bthro2;
-
-	TextureUnitState *adibugstexture;
-	TextureUnitState *aditapetexture;
-
-	TextureUnitState *hsirosetexture;
-	TextureUnitState *hsibugtexture;
-	TextureUnitState *hsivtexture;
-	TextureUnitState *hsihtexture;
-
-	//TextureUnitState *arrowtexture[MAX_ARROW];
-	TextureUnitState *speedotexture;
-	TextureUnitState *tachotexture;
-	TextureUnitState *rolltexture;
-	TextureUnitState *pitchtexture;
-	TextureUnitState *rollcortexture;
-	TextureUnitState *turbotexture;
-
-	TextureUnitState *airspeedtexture;
-	TextureUnitState *altimetertexture;
-	TextureUnitState *vvitexture;
-	TextureUnitState *aoatexture;
-
-	TextureUnitState *boatspeedtexture;
-	TextureUnitState *boatsteertexture;
-
-	TextureUnitState *pressuretexture;
-
-	TextureUnitState *airrpm1texture;
-	TextureUnitState *airrpm2texture;
-	TextureUnitState *airrpm3texture;
-	TextureUnitState *airrpm4texture;
-
-	TextureUnitState *airpitch1texture;
-	TextureUnitState *airpitch2texture;
-	TextureUnitState *airpitch3texture;
-	TextureUnitState *airpitch4texture;
-
-	TextureUnitState *airtorque1texture;
-	TextureUnitState *airtorque2texture;
-	TextureUnitState *airtorque3texture;
-	TextureUnitState *airtorque4texture;
 
 	SceneManager *mSceneMgr;
 	Root *mRoot;
@@ -399,13 +273,7 @@ protected:
 	void updateStats(void);
 	//update engine panel
 	void updateGUI(float dt);
-	//void moveMapDot(int n, float x, float y);
-	//void moveAirMapDot(int n, float x, float y);
-	//void moveBoatMapDot(float x, float y);
-	//void moveBigMapDot(int n, float x, float y, int trucknum, int truckstate=0);
-	void resizePanel(OverlayElement *oe, RenderWindow *win);
-	void reposPanel(OverlayElement *oe, RenderWindow *win);
-	void placeNeedle(RenderWindow* win, SceneNode *node, float x, float y, float len);
+	void updateIO(float dt);
 
 #ifdef USE_PAGED
 	std::vector<paged_geometry_t> pagedGeometry;
@@ -449,24 +317,14 @@ public:
 	void setCurrentTruck(int v);
 	//bool processUnbufferedMouseInput(const FrameEvent& evt);
 	void moveCamera(float dt);
-	void showDebugOverlay(int mode);
 	void hideGUI(bool visible);
-#ifdef HAS_EDITOR
-	void showTruckEditorOverlay(bool show);
-#endif
 	Ogre::String saveTerrainMesh();
 	//void showBigMap(bool show);
-	void showPressureOverlay(bool show);
-	void showEditorOverlay(bool show);
-	void showDashboardOverlays(bool show, int mode);
 	// Override frameStarted event to process that (don't care about frameEnded)
 	bool frameStarted(const FrameEvent& evt);
 	void recursiveActivation(int j);
 	bool setCameraPositionWithCollision(Ogre::Vector3 newPos);
 	bool checkForActive(int j, bool *sleepyList);
-	void flashMessage(Ogre::String txt, float time=1, float charHeight=-1);
-	void flashMessage(const char* txt, float time=1, float charHeight=-1);
-	void flashMessage();
 	int getFogMode() { return fogmode; };
 	float getFogDensity() { return fogdensity; };
 	bool frameEnded(const FrameEvent& evt);
@@ -489,12 +347,13 @@ public:
 	Beam *getTruck(int number) { return trucks[number]; };
 	int getCurrentTruckNumber() { return current_truck; };
 	int getTruckCount() { return free_truck; };
-	Beam *getCurrentTruck() { return trucks[current_truck]; };
+	Beam *getCurrentTruck() { return (current_truck<0)?0:trucks[current_truck]; };
 	Water *getWater() { return w; };
 	Camera *getCamera() { return mCamera; };
 	//SceneNode *getPersonNode() { return personode; };
 	//OIS::Mouse *getMouse() { return  mMouse; };
 	int getLoadingState() { return loading_state; };
+	void setLoadingState(int value);
 	void pauseSim(bool value);
 	void loadNetTerrain(char *preselected_map);
 	void exploreScripts();
@@ -519,6 +378,8 @@ public:
 	void shutdown_final();
 
 	void loadTerrain(Ogre::String terrainfile);
+
+	OverlayWrapper *getOverlayWrapper() { return ow; };
 
 	Water *w;
 protected:
@@ -607,7 +468,6 @@ protected:
 	int current_truck;
 
 	Vector3 persostart;
-	float timeUntilUnflash;
 	int joyshiftlock;
 
 	Envmap *envmap;

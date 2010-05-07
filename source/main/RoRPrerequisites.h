@@ -33,6 +33,7 @@ class BeamThreadStats;
 class Buoyance;
 class CmdKeyInertia;
 class Collisions;
+class ColoredTextAreaOverlayElement;
 class DustPool;
 class Flexable;
 class FlexAirfoil;
@@ -44,6 +45,7 @@ class MaterialFunctionMapper;
 class MapTextureCreator;
 class Mirrors;
 class Network;
+class OverlayWrapper;
 class PointColDetector;
 class PositionStorage;
 class Rail;
@@ -58,6 +60,7 @@ class SlideNode;
 class SoundScriptInstance;
 class SoundScriptManager;
 class Turboprop;
+class TruckHUD;
 class Water;
 
 namespace Ogre

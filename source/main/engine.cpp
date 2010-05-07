@@ -276,7 +276,15 @@ void BeamEngine::update(float dt, int doUpdate)
 #endif //OPENAL
 }
 
-float BeamEngine::getRPM() {return curEngineRPM;}
+float BeamEngine::getRPM()
+{
+	return curEngineRPM;
+}
+
+void BeamEngine::setRPM(float value)
+{
+	curEngineRPM = value;
+}
 
 void BeamEngine::toggleAutoMode()
 {
