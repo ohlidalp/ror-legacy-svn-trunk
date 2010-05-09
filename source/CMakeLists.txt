@@ -16,3 +16,5 @@ set(ROR_BUILD_EDITOR "FALSE" CACHE BOOL "build the editor")
 IF(ROR_BUILD_EDITOR)
   add_subdirectory(editor)
 ENDIF(ROR_BUILD_EDITOR)
+
+add_subdirectory(serializer)

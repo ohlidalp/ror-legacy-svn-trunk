@@ -20,9 +20,11 @@ along with Rigs of Rods.  If not, see <http://www.gnu.org/licenses/>.
 #ifndef SERIALIZER_H__
 #define SERIALIZER_H__
 
-#include <string>
+#include <string.h>
 #include <map>
+
 #include "RoRPrerequisites.h"
+#include "BeamData.h"
 
 #include "OgreDataStream.h"
 #include "OgreLogManager.h"
