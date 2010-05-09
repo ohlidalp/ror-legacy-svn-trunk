@@ -45,12 +45,14 @@ int RoRSerializer::loadRig(Ogre::DataStreamPtr ds, rig_t *rig)
 
 	// first: init rig
 	// TODO: IMPORTANT: FIX the rig_t initialization
+	/*
 	rig->patchEngineTorque = false;
 	rig->forwardcommands = 0;
 	rig->importcommands = 0;
 	rig->wheel_contact_requested = false;
 	rig->rescuer = false;
 	rig->disable_default_sounds = false;
+	*/
 
 	// read in truckname
 	ds->readLine(line, 1023);
