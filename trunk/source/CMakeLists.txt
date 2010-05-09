@@ -17,4 +17,4 @@ IF(ROR_BUILD_EDITOR)
   add_subdirectory(editor)
 ENDIF(ROR_BUILD_EDITOR)
 
-add_subdirectory(serializer)
+#add_subdirectory(serializer)
