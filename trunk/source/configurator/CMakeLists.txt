@@ -4,7 +4,7 @@ project(RoR_Configurator)
 SET(wxWidgets_USE_UNICODE ON)
 FIND_PACKAGE(wxWidgets REQUIRED COMPONENTS base core html net adv)
 include_directories(${wxWidgets_INCLUDE_DIRS})
-add_definitions(${wxWidgets_DEFINITIONS} ${wxWidgets_CXX_FLAGS})
+add_definitions("-D${wxWidgets_DEFINITIONS}" ${wxWidgets_CXX_FLAGS})
 link_directories (${wxWidgets_LIB_DIR})
 
 IF(WIN32)
