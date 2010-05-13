@@ -18,12 +18,13 @@ RoRSerializer::RoRSerializer()
 	new NodeSerializer(this);
 	new BeamSerializer(this);
 
-	new FileInfoSerializer(this);
-	new AuthorSerializer(this);
 	new EngineSerializer(this);
 	new CamerasSerializer(this);
 	new ShocksSerializer(this);
 	new HydrosSerializer(this);
+
+	new FileInfoSerializer(this);
+	new AuthorSerializer(this);
 }
 
 RoRSerializer::~RoRSerializer()
@@ -100,24 +101,37 @@ int RoRSerializer::registerModuleSerializer(RoRSerializationModule *module)
 	modules[module->getName()] = module;
 	return 0;
 }
+void RoRSerializer::addSectionHandler(std::string section, RoRSerializationModule *module)
+{
+	sections[section] = module;
+}
+
+
+void RoRSerializer::addCommandHandler(std::string command, RoRSerializationModule *module)
+{
+	commands[command] = module;
+}
 
 int RoRSerializer::processModules(char *line, rig_t *rig, SerializationContext *ctx, std::string &activeSection)
 {
 	// parse for commands or other sections
+	// commands
 	std::map < std::string, RoRSerializationModule *>::iterator it;
-	for(it = modules.begin(); it != modules.end() ; it++)
+	for(it = commands.begin(); it != commands.end() ; it++)
 	{
 		// check if that command is matched
-		std::string *cmd = &it->second->commandTrigger;
-		if(cmd->size() && !strncmp(cmd->c_str(), line, cmd->size()))
+		if(it->first.size() && !strncmp(it->first.c_str(), line, it->first.size()))
 		{
-			// match, using this module
-			return it->second->deserialize(line, rig);
+		// match, using this module
+		return it->second->deserialize(line, rig);
 		}
+	}
 
+	// sections
+	for(it = sections.begin(); it != sections.end() ; it++)
+	{
 		// check for a new section
-		std::string *sec = &it->second->sectionTrigger;
-		if(sec->size() && !strcmp(sec->c_str(), line))
+		if(it->first.size() && !strcmp(it->first.c_str(), line))
 		{
 			// match, using this module
 			//set section as active
@@ -131,7 +145,7 @@ int RoRSerializer::processModules(char *line, rig_t *rig, SerializationContext *
 	if(!activeSection.empty())
 	{
 		// just try to use that section and ignore the others
-		return modules[activeSection]->deserialize(line, rig);
+		return sections[activeSection]->deserialize(line, rig);
 	}
 
 	// no match

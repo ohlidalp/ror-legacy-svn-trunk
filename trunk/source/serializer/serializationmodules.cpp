@@ -16,8 +16,8 @@ using namespace Ogre;
 GlobalsSerializer::GlobalsSerializer(RoRSerializer *s) : RoRSerializationModule(s)
 {
 	// setup the base descriptions, etc, then register ourself
-	name = sectionTrigger = "globals";
 	s->registerModuleSerializer(this);
+	s->addSectionHandler("globals", this);
 }
 
 void GlobalsSerializer::initData(rig_t *rig)
@@ -43,16 +43,15 @@ int GlobalsSerializer::deserialize(char *line, rig_t *rig)
 
 int GlobalsSerializer::serialize(char *line, rig_t *rig)
 {
-	// XXX: TODO
-	return -1;
+	return sprintf(line, "globals\n%f, %f, %s\n", rig->globals->truckmass, rig->globals->loadmass, rig->globals->texname);
 }
 
 //// NodeSerializer
 NodeSerializer::NodeSerializer(RoRSerializer *s) : RoRSerializationModule(s)
 {
 	// setup the base descriptions, etc, then register ourself
-	name = sectionTrigger = "nodes";
 	s->registerModuleSerializer(this);
+	s->addSectionHandler("nodes", this);
 }
 
 void NodeSerializer::initData(rig_t *rig)
@@ -247,18 +246,85 @@ int NodeSerializer::serialize(char *line, rig_t *rig)
 	return -1;
 }
 
+void NodeSerializer::init_node(rig_t *rig, int pos, float x, float y, float z, int type, float m, int iswheel, float friction, int id, int wheelid, float nfriction, float nvolume, float nsurface, float nloadweight)
+{
+	nodes_section *n = rig->nodes;
+	n->nodes[pos].AbsPosition    = Vector3(x, y, z);
+	n->nodes[pos].RelPosition    = Vector3(x, y, z) - n->origin;
+	n->nodes[pos].smoothpos      = n->nodes[pos].AbsPosition;
+	n->nodes[pos].iPosition      = Vector3(x, y, z);
+	if(pos != 0)
+		n->nodes[pos].iDistance  = (n->nodes[0].AbsPosition - Vector3(x, y, z)).squaredLength();
+	else
+		n->nodes[pos].iDistance  = 0;
+	n->nodes[pos].Velocity       = Vector3::ZERO;
+	n->nodes[pos].Forces         = Vector3::ZERO;
+	n->nodes[pos].locked         = m < 0.0;
+	n->nodes[pos].mass           = m;
+	n->nodes[pos].iswheel        = iswheel;
+	n->nodes[pos].wheelid        = wheelid;
+	n->nodes[pos].friction_coef  = nfriction;
+	n->nodes[pos].volume_coef    = nvolume;
+	n->nodes[pos].surface_coef   = nsurface;
+	if (nloadweight >= 0.0f)
+	{
+		n->nodes[pos].masstype   = NODE_LOADED;
+		n->nodes[pos].overrideMass = true;
+		n->nodes[pos].mass       = nloadweight;
+	}
+	n->nodes[pos].disable_particles = false;
+	n->nodes[pos].masstype       = type;
+	n->nodes[pos].contactless    = 0;
+	n->nodes[pos].contacted      = 0;
+	n->nodes[pos].lockednode     = 0;
+	n->nodes[pos].buoyanceForce  = Vector3::ZERO;
+	n->nodes[pos].buoyancy       = rig->globals->truckmass / 15.0f;//DEFAULT_BUOYANCY;
+	n->nodes[pos].lastdrag       = Vector3(0,0,0);
+	// XXX: TOFIX
+	//n->nodes[pos].gravimass      = Vector3(0, RoRFrameListener::getGravity()*m, 0);
+	n->nodes[pos].gravimass      = Vector3(0, n->gravitation * m, 0);
+	n->nodes[pos].wetstate       = DRY;
+	n->nodes[pos].isHot          = false;
+	n->nodes[pos].overrideMass   = false;
+	n->nodes[pos].id             = id;
+	n->nodes[pos].colltesttimer  = 0;
+	n->nodes[pos].iIsSkin        = false;
+	n->nodes[pos].isSkin         = n->nodes[pos].iIsSkin;
+	n->nodes[pos].pos            = pos;
+	if (type == NODE_LOADED)
+		n->masscount++;
+}
+
+
 //// BeamSerializer
 BeamSerializer::BeamSerializer(RoRSerializer *s) : RoRSerializationModule(s)
 {
 	// setup the base descriptions, etc, then register ourself
-	name = sectionTrigger = "beams";
 	s->registerModuleSerializer(this);
+	s->addSectionHandler("beams", this);
 }
 
 void BeamSerializer::initData(rig_t *rig)
 {
 	rig->beams = new beams_section_t();
 	memset(rig->beams, 0, sizeof(beams_section_t));
+
+	// init basics
+	rig->beams->default_spring        = DEFAULT_SPRING;
+	rig->beams->default_spring_scale  = 1;
+	rig->beams->default_damp          = DEFAULT_DAMP;
+	rig->beams->default_damp_scale    = 1;
+	rig->beams->default_deform        = BEAM_DEFORM;
+	rig->beams->default_deform_scale  = 1;
+	rig->beams->default_break         = BEAM_BREAK;
+	rig->beams->default_break_scale   = 1;
+	rig->beams->default_beam_diameter = DEFAULT_BEAM_DIAMETER;
+	strcpy(rig->beams->default_beam_material, "tracks/beam");
+	rig->beams->default_plastic_coef  = 0;
+	rig->beams->beam_creak            = BEAM_CREAK_DEFAULT;
+
+
+	// done
 	initiated = true;
 }
 
@@ -367,13 +433,85 @@ int BeamSerializer::serialize(char *line, rig_t *rig)
 	return -1;
 }
 
+int BeamSerializer::add_beam(rig_t *rig, node_t *p1, node_t *p2, int type, float strength, float spring, float damp, float length, float shortbound, float longbound, float precomp, float diameter)
+{
+	// shortcuts
+	nodes_section_t *n = rig->nodes;
+	beams_section_t *b = rig->beams;
+	
+	int pos = b->free_beam;
+
+	b->beams[pos].p1 = p1;
+	b->beams[pos].p2 = p2;
+	b->beams[pos].p2truck = 0;
+	b->beams[pos].type = type;
+	if (length < 0)
+	{
+		//calculate the length
+		Vector3 t = p1->RelPosition - p2->RelPosition;
+		b->beams[pos].L = precomp * t.length();
+	} else
+	{
+		b->beams[pos].L = length;
+	}
+	b->beams[pos].k                 = spring;
+	b->beams[pos].d                 = damp;
+	b->beams[pos].broken            = 0;
+	b->beams[pos].Lhydro            = b->beams[pos].L;
+	b->beams[pos].refL              = b->beams[pos].L;
+	b->beams[pos].hydroRatio        = 0;
+	b->beams[pos].hydroFlags        = 0;
+	b->beams[pos].animFlags         = 0;
+	b->beams[pos].stress            = 0;
+	b->beams[pos].lastforce         = Vector3::ZERO;
+	b->beams[pos].iscentering       = false;
+	b->beams[pos].isOnePressMode    = 0;
+	b->beams[pos].isforcerestricted = false;
+	b->beams[pos].autoMovingMode    = 0;
+	b->beams[pos].autoMoveLock      = false;
+	b->beams[pos].pressedCenterMode = false;
+	b->beams[pos].disabled          = false;
+	b->beams[pos].shock             = 0;
+	if (b->default_deform < b->beam_creak)
+		b->default_deform = b->beam_creak;
+	b->beams[pos].default_deform    = b->default_deform  * b->default_deform_scale;
+	b->beams[pos].minmaxposnegstress = b->default_deform * b->default_deform_scale;
+	b->beams[pos].maxposstress      = b->default_deform  * b->default_deform_scale;
+	b->beams[pos].maxnegstress      = - b->beams[pos].maxposstress;
+	b->beams[pos].plastic_coef      = b->default_plastic_coef;
+	b->beams[pos].default_plastic_coef = b->default_plastic_coef;
+	b->beams[pos].strength          = strength;
+	b->beams[pos].iStrength         = strength;
+	b->beams[pos].diameter          = b->default_beam_diameter;
+	b->beams[pos].minendmass        = 1;
+	b->beams[pos].diameter          = diameter;
+	b->beams[pos].scale             = 0;
+	if (shortbound != -1.0)
+	{
+		b->beams[pos].bounded       = SHOCK1;
+		b->beams[pos].shortbound    = shortbound;
+		b->beams[pos].longbound     = longbound;
+
+	} else
+	{
+		b->beams[pos].bounded       = NOSHOCK;
+	}
+
+	// no visuals here
+	b->beams[pos].mSceneNode        = 0;
+	b->beams[pos].mEntity           = 0;
+
+	b->free_beam++;
+	return pos;
+}
+
 
 //// FileInfoSerializer
 FileInfoSerializer::FileInfoSerializer(RoRSerializer *s) : RoRSerializationModule(s)
 {
 	// setup the base descriptions, etc, then register ourself
-	name = commandTrigger = "fileinfo";
 	s->registerModuleSerializer(this);
+	s->addCommandHandler("fileinfo", this);
 }
 
 void FileInfoSerializer::initData(rig_t *rig)
@@ -398,8 +536,8 @@ int FileInfoSerializer::serialize(char *line, rig_t *rig)
 AuthorSerializer::AuthorSerializer(RoRSerializer *s) : RoRSerializationModule(s)
 {
 	// setup the base descriptions, etc, then register ourself
-	name = commandTrigger = "author";
 	s->registerModuleSerializer(this);
+	s->addCommandHandler("author", this);
 }
 
 void AuthorSerializer::initData(rig_t *rig)
@@ -454,8 +592,8 @@ int AuthorSerializer::serialize(char *line, rig_t *rig)
 EngineSerializer::EngineSerializer(RoRSerializer *s) : RoRSerializationModule(s)
 {
 	// setup the base descriptions, etc, then register ourself
-	name = sectionTrigger = "engine";
 	s->registerModuleSerializer(this);
+	s->addSectionHandler("engine", this);
 }
 
 void EngineSerializer::initData(rig_t *rig)
@@ -520,8 +658,8 @@ int EngineSerializer::serialize(char *line, rig_t *rig)
 CamerasSerializer::CamerasSerializer(RoRSerializer *s) : RoRSerializationModule(s)
 {
 	// setup the base descriptions, etc, then register ourself
-	name = sectionTrigger = "cameras";
 	s->registerModuleSerializer(this);
+	s->addSectionHandler("cameras", this);
 }
 
 void CamerasSerializer::initData(rig_t *rig)
@@ -541,9 +679,10 @@ int CamerasSerializer::deserialize(char *line, rig_t *rig)
 
 	// shortcuts
 	cameras_section_t *c = rig->cameras;
+	nodes_section_t   *n = rig->nodes;
 	
-	int nodepos, nodedir, dir;
-	int result = sscanf(line,"%i, %i, %i",&nodepos,&nodedir,&dir);
+	int node_center, node_back, node_left;
+	int result = sscanf(line,"%i, %i, %i", &node_center, &node_back, &node_left);
 	if (result < 3 || result == EOF)
 	{
 		//LogManager::getSingleton().logMessage("Error parsing File (Camera) " + String(fname) +" line " + StringConverter::toString(linecounter) + ". trying to continue ...");
@@ -555,9 +694,9 @@ int CamerasSerializer::deserialize(char *line, rig_t *rig)
 		return -1;
 	}
 
-	c->cameras[c->free_camera].nodepos = nodepos;
-	c->cameras[c->free_camera].nodedir = nodedir;
-	c->cameras[c->free_camera].dir = dir;
+	c->cameras[c->free_camera].nodepos  = &n->nodes[node_center];
+	c->cameras[c->free_camera].nodedir  = &n->nodes[node_back];
+	c->cameras[c->free_camera].noderoll = &n->nodes[node_left];
 	c->free_camera++;
 	return result;
 }
@@ -573,8 +712,8 @@ int CamerasSerializer::serialize(char *line, rig_t *rig)
 ShocksSerializer::ShocksSerializer(RoRSerializer *s) : RoRSerializationModule(s)
 {
 	// setup the base descriptions, etc, then register ourself
-	name = sectionTrigger = "shocks";
 	s->registerModuleSerializer(this);
+	s->addSectionHandler("shocks", this);
 }
 
 void ShocksSerializer::initData(rig_t *rig)
@@ -667,7 +806,7 @@ int ShocksSerializer::deserialize(char *line, rig_t *rig)
 		}
 		options_pointer++;
 	}
-	int pos = add_beam(rig, &n->nodes[id1], &n->nodes[id2], htype, b->default_break * 4.0f, sp, d, -1.0f, sbound, lbound, precomp);
+	int pos = BeamSerializer::add_beam(rig, &n->nodes[id1], &n->nodes[id2], htype, b->default_break * 4.0f, sp, d, -1.0f, sbound, lbound, precomp);
 	b->beams[pos].shock = &s->shocks[s->free_shock];
 	s->shocks[s->free_shock].beamid = pos;
 	s->shocks[s->free_shock].flags = shockflag;
@@ -687,8 +826,8 @@ int ShocksSerializer::serialize(char *line, rig_t *rig)
 HydrosSerializer::HydrosSerializer(RoRSerializer *s) : RoRSerializationModule(s)
 {
 	// setup the base descriptions, etc, then register ourself
-	name = sectionTrigger = "hydros";
 	s->registerModuleSerializer(this);
+	s->addSectionHandler("hydros", this);
 }
 
 void HydrosSerializer::initData(rig_t *rig)
@@ -765,7 +904,7 @@ int HydrosSerializer::deserialize(char *line, rig_t *rig)
 		return -1;
 	}
 
-	int pos = add_beam(rig, &n->nodes[id1], &n->nodes[id2], htype, b->default_break * b->default_break_scale, b->default_spring * b->default_spring_scale, b->default_damp * b->default_damp_scale);
+	int pos = BeamSerializer::add_beam(rig, &n->nodes[id1], &n->nodes[id2], htype, b->default_break * b->default_break_scale, b->default_spring * b->default_spring_scale, b->default_damp * b->default_damp_scale);
 	h->hydro[h->free_hydro]=pos;
 	h->free_hydro++;
 	b->beams[pos].Lhydro = b->beams[pos].L;
@@ -832,124 +971,372 @@ int HydrosSerializer::serialize(char *line, rig_t *rig)
 }
 
 
-//// HELPER functions below
-int add_beam(rig_t *rig, node_t *p1, node_t *p2, int type, float strength, float spring, float damp, float length, float shortbound, float longbound, float precomp, float diameter)
+//// HydrosSerializer
+WheelsSerializer::WheelsSerializer(RoRSerializer *s) : RoRSerializationModule(s)
 {
-	// shortcuts
-	nodes_section_t *n = rig->nodes;
-	beams_section_t *b = rig->beams;
-	
-	int pos = b->free_beam;
-
-	b->beams[pos].p1 = p1;
-	b->beams[pos].p2 = p2;
-	b->beams[pos].p2truck = 0;
-	b->beams[pos].type = type;
-	if (length < 0)
-	{
-		//calculate the length
-		Vector3 t = p1->RelPosition - p2->RelPosition;
-		b->beams[pos].L = precomp * t.length();
-	} else
-	{
-		b->beams[pos].L = length;
-	}
-	b->beams[pos].k                 = spring;
-	b->beams[pos].d                 = damp;
-	b->beams[pos].broken            = 0;
-	b->beams[pos].Lhydro            = b->beams[pos].L;
-	b->beams[pos].refL              = b->beams[pos].L;
-	b->beams[pos].hydroRatio        = 0;
-	b->beams[pos].hydroFlags        = 0;
-	b->beams[pos].animFlags         = 0;
-	b->beams[pos].stress            = 0;
-	b->beams[pos].lastforce         = Vector3::ZERO;
-	b->beams[pos].iscentering       = false;
-	b->beams[pos].isOnePressMode    = 0;
-	b->beams[pos].isforcerestricted = false;
-	b->beams[pos].autoMovingMode    = 0;
-	b->beams[pos].autoMoveLock      = false;
-	b->beams[pos].pressedCenterMode = false;
-	b->beams[pos].disabled          = false;
-	b->beams[pos].shock             = 0;
-	if (b->default_deform < b->beam_creak)
-		b->default_deform = b->beam_creak;
-	b->beams[pos].default_deform    = b->default_deform  * b->default_deform_scale;
-	b->beams[pos].minmaxposnegstress = b->default_deform * b->default_deform_scale;
-	b->beams[pos].maxposstress      = b->default_deform  * b->default_deform_scale;
-	b->beams[pos].maxnegstress      = - b->beams[pos].maxposstress;
-	b->beams[pos].plastic_coef      = b->default_plastic_coef;
-	b->beams[pos].default_plastic_coef = b->default_plastic_coef;
-	b->beams[pos].strength          = strength;
-	b->beams[pos].iStrength         = strength;
-	b->beams[pos].diameter          = b->default_beam_diameter;
-	b->beams[pos].minendmass        = 1;
-	b->beams[pos].diameter          = diameter;
-	b->beams[pos].scale             = 0;
-	if (shortbound != -1.0)
-	{
-		b->beams[pos].bounded       = SHOCK1;
-		b->beams[pos].shortbound    = shortbound;
-		b->beams[pos].longbound     = longbound;
-
-	} else
-	{
-		b->beams[pos].bounded       = NOSHOCK;
-	}
-
-	// no visuals here
-	b->beams[pos].mSceneNode        = 0;
-	b->beams[pos].mEntity           = 0;
-
-	b->free_beam++;
-	return pos;
+	// setup the base descriptions, etc, then register ourself
+	s->registerModuleSerializer(this);
+	s->addSectionHandler("wheels", this);
 }
 
-void init_node(rig_t *rig, int pos, float x, float y, float z, int type, float m, int iswheel, float friction, int id, int wheelid, float nfriction, float nvolume, float nsurface, float nloadweight)
+void WheelsSerializer::initData(rig_t *rig)
 {
-	nodes_section *n = rig->nodes;
-	n->nodes[pos].AbsPosition    = Vector3(x, y, z);
-	n->nodes[pos].RelPosition    = Vector3(x, y, z) - n->origin;
-	n->nodes[pos].smoothpos      = n->nodes[pos].AbsPosition;
-	n->nodes[pos].iPosition      = Vector3(x, y, z);
-	if(pos != 0)
-		n->nodes[pos].iDistance  = (n->nodes[0].AbsPosition - Vector3(x, y, z)).squaredLength();
-	else
-		n->nodes[pos].iDistance  = 0;
-	n->nodes[pos].Velocity       = Vector3::ZERO;
-	n->nodes[pos].Forces         = Vector3::ZERO;
-	n->nodes[pos].locked         = m < 0.0;
-	n->nodes[pos].mass           = m;
-	n->nodes[pos].iswheel        = iswheel;
-	n->nodes[pos].wheelid        = wheelid;
-	n->nodes[pos].friction_coef  = nfriction;
-	n->nodes[pos].volume_coef    = nvolume;
-	n->nodes[pos].surface_coef   = nsurface;
-	if (nloadweight >= 0.0f)
+	rig->hydros = new hydros_section_t();
+	memset(rig->hydros, 0, sizeof(hydros_section_t));
+	initiated = true;
+}
+
+int WheelsSerializer::deserialize(char *line, rig_t *rig)
+{
+	return -1;
+}
+
+int WheelsSerializer::serialize(char *line, rig_t *rig)
+{
+	// XXX: TODO
+	return -1;
+}
+void WheelsSerializer::addWheel(rig_t *rig, float radius, float width, int rays, int node1, int node2, int snode, int braked, int propulsed, int torquenode, float mass, float wspring, float wdamp, char* texf, char* texb, bool meshwheel, float rimradius, bool rimreverse)
+{
+	int i;
+	int nodebase = rig->nodes->free_node;
+	int node3;
+	int contacter_wheel=1;
+	//ignore the width parameter
+	width=(rig->nodes->nodes[node1].RelPosition - rig->nodes->nodes[node2].RelPosition).length();
+	//enforce the "second node must have a larger Z coordinate than the first" constraint
+	if (rig->nodes->nodes[node1].RelPosition.z > rig->nodes->nodes[node2].RelPosition.z)
 	{
-		n->nodes[pos].masstype   = NODE_LOADED;
-		n->nodes[pos].overrideMass = true;
-		n->nodes[pos].mass       = nloadweight;
+		//swap
+		node3=node1;
+		node1=node2;
+		node2=node3;
 	}
-	n->nodes[pos].disable_particles = false;
-	n->nodes[pos].masstype       = type;
-	n->nodes[pos].contactless    = 0;
-	n->nodes[pos].contacted      = 0;
-	n->nodes[pos].lockednode     = 0;
-	n->nodes[pos].buoyanceForce  = Vector3::ZERO;
-	n->nodes[pos].buoyancy       = rig->globals->truckmass / 15.0f;//DEFAULT_BUOYANCY;
-	n->nodes[pos].lastdrag       = Vector3(0,0,0);
-	// XXX: TOFIX
-	//n->nodes[pos].gravimass      = Vector3(0, RoRFrameListener::getGravity()*m, 0);
-	n->nodes[pos].gravimass      = Vector3(0, n->gravitation * m, 0);
-	n->nodes[pos].wetstate       = DRY;
-	n->nodes[pos].isHot          = false;
-	n->nodes[pos].overrideMass   = false;
-	n->nodes[pos].id             = id;
-	n->nodes[pos].colltesttimer  = 0;
-	n->nodes[pos].iIsSkin        = false;
-	n->nodes[pos].isSkin         = n->nodes[pos].iIsSkin;
-	n->nodes[pos].pos            = pos;
-	if (type == NODE_LOADED)
-		n->masscount++;
+	//ignore the sign of snode, just do the thing automatically
+	//if (snode<0) node3=-snode; else node3=snode;
+	if (snode<0) snode=-snode;
+	bool closest1=false;
+	if (snode!=9999) closest1=(rig->nodes->nodes[snode].RelPosition-rig->nodes->nodes[node1].RelPosition).length()<(rig->nodes->nodes[snode].RelPosition-rig->nodes->nodes[node2].RelPosition).length();
+
+	//unused:
+	//Real px=rig->nodes->nodes[node1].Position.x;
+	//Real py=rig->nodes->nodes[node1].Position.y;
+	//Real pz=rig->nodes->nodes[node1].Position.z;
+
+	Vector3 axis=rig->nodes->nodes[node2].RelPosition-rig->nodes->nodes[node1].RelPosition;
+	axis.normalise();
+	Vector3 rayvec = axis.perpendicular() * radius;
+	// old rayvec:
+	//Vector3 rayvec=Vector3(0, radius, 0);
+	Quaternion rayrot=Quaternion(Degree(-360.0/(Real)(rays*2)), axis);
+	for (i=0; i<rays; i++)
+	{
+		//with propnodes and variable friction
+//			init_node(nodebase+i*2, px+radius*sin((Real)i*6.283185307179/(Real)rays), py+radius*cos((Real)i*6.283185307179/(Real)rays), pz, NODE_NORMAL, mass/(2.0*rays),1, WHEEL_FRICTION_COEF*width);
+		Vector3 raypoint;
+		raypoint=rig->nodes->nodes[node1].RelPosition+rayvec;
+		rayvec=rayrot*rayvec;
+		NodeSerializer::init_node(rig, nodebase+i*2, raypoint.x, raypoint.y, raypoint.z, NODE_NORMAL, mass/(2.0*rays),1, WHEEL_FRICTION_COEF*width, -1, rig->wheels->free_wheel, rig->nodes->default_node_friction, rig->nodes->default_node_volume, rig->nodes->default_node_surface, NODE_LOADWEIGHT_DEFAULT);
+
+		// outer ring has wheelid%2 != 0
+		rig->nodes->nodes[nodebase+i*2].iswheel = rig->wheels->free_wheel*2+1;
+
+		if (contacter_wheel)
+		{
+			rig->contacters->contacters[rig->contacters->free_contacter].nodeid      = nodebase + i * 2;
+			rig->contacters->contacters[rig->contacters->free_contacter].contacted   = 0;
+			rig->contacters->contacters[rig->contacters->free_contacter].opticontact = 0;
+			rig->contacters->free_contacter++;
+		}
+//			init_node(nodebase+i*2+1, px+radius*sin((Real)i*6.283185307179/(Real)rays), py+radius*cos((Real)i*6.283185307179/(Real)rays), pz+width, NODE_NORMAL, mass/(2.0*rays),1, WHEEL_FRICTION_COEF*width);
+		raypoint=rig->nodes->nodes[node2].RelPosition+rayvec;
+
+		rayvec=rayrot*rayvec;
+		NodeSerializer::init_node(rig, nodebase+i*2+1, raypoint.x, raypoint.y, raypoint.z, NODE_NORMAL, mass/(2.0*rays),1, WHEEL_FRICTION_COEF*width, -1, rig->wheels->free_wheel, rig->nodes->default_node_friction, rig->nodes->default_node_volume, rig->nodes->default_node_surface, NODE_LOADWEIGHT_DEFAULT);
+
+		// inner ring has wheelid%2 == 0
+		rig->nodes->nodes[nodebase+i*2+1].iswheel = rig->wheels->free_wheel*2+2;
+		if (contacter_wheel)
+		{
+			rig->contacters->contacters[rig->contacters->free_contacter].nodeid      = nodebase+i*2+1;
+			rig->contacters->contacters[rig->contacters->free_contacter].contacted   = 0;
+			rig->contacters->contacters[rig->contacters->free_contacter].opticontact = 0;
+			rig->contacters->free_contacter++;
+		}
+		//wheel object
+		rig->wheels->wheels[rig->wheels->free_wheel].nodes[i*2]   = &rig->nodes->nodes[nodebase+i*2];
+		rig->wheels->wheels[rig->wheels->free_wheel].nodes[i*2+1] = &rig->nodes->nodes[nodebase+i*2+1];
+	}
+	rig->nodes->free_node += 2 * rays;
+	for (i=0; i<rays; i++)
+	{
+		//bounded
+		BeamSerializer::add_beam(rig, &rig->nodes->nodes[node1],          &rig->nodes->nodes[nodebase+i*2],              BEAM_INVISIBLE, rig->beams->default_break, wspring, wdamp, -1.0, 0.66, 0.0);
+		//bounded
+		BeamSerializer::add_beam(rig, &rig->nodes->nodes[node2],          &rig->nodes->nodes[nodebase+i*2+1],            BEAM_INVISIBLE, rig->beams->default_break, wspring, wdamp, -1.0, 0.66, 0.0);
+		BeamSerializer::add_beam(rig, &rig->nodes->nodes[node2],          &rig->nodes->nodes[nodebase+i*2],              BEAM_INVISIBLE, rig->beams->default_break, wspring, wdamp);
+		BeamSerializer::add_beam(rig, &rig->nodes->nodes[node1],          &rig->nodes->nodes[nodebase+i*2+1],            BEAM_INVISIBLE, rig->beams->default_break, wspring, wdamp);
+		//reinforcement
+		BeamSerializer::add_beam(rig, &rig->nodes->nodes[node1],          &rig->nodes->nodes[nodebase+i*2],              BEAM_INVISIBLE, rig->beams->default_break, wspring, wdamp);
+		BeamSerializer::add_beam(rig, &rig->nodes->nodes[nodebase+i*2],   &rig->nodes->nodes[nodebase+i*2+1],            BEAM_INVISIBLE, rig->beams->default_break, wspring, wdamp);
+		BeamSerializer::add_beam(rig, &rig->nodes->nodes[nodebase+i*2],   &rig->nodes->nodes[nodebase+((i+1)%rays)*2],   BEAM_INVISIBLE, rig->beams->default_break, wspring, wdamp);
+		BeamSerializer::add_beam(rig, &rig->nodes->nodes[nodebase+i*2+1], &rig->nodes->nodes[nodebase+((i+1)%rays)*2+1], BEAM_INVISIBLE, rig->beams->default_break, wspring, wdamp);
+		BeamSerializer::add_beam(rig, &rig->nodes->nodes[nodebase+i*2+1], &rig->nodes->nodes[nodebase+((i+1)%rays)*2],   BEAM_INVISIBLE, rig->beams->default_break, wspring, wdamp);
+		//reinforcement
+		//BeamSerializer::add_beam(this, &nodes[nodebase+i*2], &nodes[nodebase+((i+1)%rays)*2+1], manager, parent, BEAM_INVISIBLE, default_break, wspring, wdamp);
+
+		if (snode!=9999)
+		{
+			//back beams //BEAM_VIRTUAL
+
+			if (closest1)
+			{
+				BeamSerializer::add_beam(rig, &rig->nodes->nodes[snode], &rig->nodes->nodes[nodebase+i*2],   BEAM_VIRTUAL, rig->beams->default_break, wspring, wdamp);
+			} else
+			{
+				BeamSerializer::add_beam(rig, &rig->nodes->nodes[snode], &rig->nodes->nodes[nodebase+i*2+1], BEAM_VIRTUAL, rig->beams->default_break, wspring, wdamp);
+			}
+
+			/* THIS ALMOST WORKS BUT IT IS INSTABLE AT SPEED !!!!
+			//rigidifier version
+			if(free_rigidifier >= MAX_RIGIDIFIERS)
+			{
+				LogManager::getSingleton().logMessage("rigidifiers limit reached ...");
+			}
+
+			int na=(closest1)?node2:node1;
+			int nb=(closest1)?node1:node2;
+			int nc=snode;
+			rigidifiers[free_rigidifier].a=&nodes[na];
+			rigidifiers[free_rigidifier].b=&nodes[nb];
+			rigidifiers[free_rigidifier].c=&nodes[nc];
+			rigidifiers[free_rigidifier].k=wspring;
+			rigidifiers[free_rigidifier].d=wdamp;
+			rigidifiers[free_rigidifier].alpha=2.0*acos((nodes[na].RelPosition-nodes[nb].RelPosition).getRotationTo(nodes[nc].RelPosition-nodes[nb].RelPosition).w);
+			rigidifiers[free_rigidifier].lastalpha=rigidifiers[free_rigidifier].alpha;
+			rigidifiers[free_rigidifier].beama=0;
+			rigidifiers[free_rigidifier].beamc=0;
+			//searching for associated beams
+			for (int i=0; i<free_beam; i++)
+			{
+				if ((beams[i].p1==&nodes[na] && beams[i].p2==&nodes[nb]) || (beams[i].p2==&nodes[na] && beams[i].p1==&nodes[nb])) rigidifiers[free_rigidifier].beama=&beams[i];
+				if ((beams[i].p1==&nodes[nc] && beams[i].p2==&nodes[nb]) || (beams[i].p2==&nodes[nc] && beams[i].p1==&nodes[nb])) rigidifiers[free_rigidifier].beamc=&beams[i];
+			}
+			free_rigidifier++;
+			*/
+		}
+	}
+	//wheel object
+	rig->wheels->wheels[rig->wheels->free_wheel].braked           = braked;
+	rig->wheels->wheels[rig->wheels->free_wheel].propulsed        = propulsed;
+	rig->wheels->wheels[rig->wheels->free_wheel].nbnodes          = 2 * rays;
+	rig->wheels->wheels[rig->wheels->free_wheel].refnode0         = &rig->nodes->nodes[node1];
+	rig->wheels->wheels[rig->wheels->free_wheel].refnode1         = &rig->nodes->nodes[node2];
+	rig->wheels->wheels[rig->wheels->free_wheel].radius           = radius;
+	rig->wheels->wheels[rig->wheels->free_wheel].speed            = 0;
+	rig->wheels->wheels[rig->wheels->free_wheel].rp               = 0;
+	rig->wheels->wheels[rig->wheels->free_wheel].rp1              = 0;
+	rig->wheels->wheels[rig->wheels->free_wheel].rp2              = 0;
+	rig->wheels->wheels[rig->wheels->free_wheel].rp3              = 0;
+	rig->wheels->wheels[rig->wheels->free_wheel].width            = width;
+	rig->wheels->wheels[rig->wheels->free_wheel].arm              = &rig->nodes->nodes[torquenode];
+	rig->wheels->wheels[rig->wheels->free_wheel].lastContactInner = Vector3::ZERO;
+	rig->wheels->wheels[rig->wheels->free_wheel].lastContactOuter = Vector3::ZERO;
+	if (propulsed>0)
+	{
+		//for inter-differential locking
+		rig->wheels->proppairs[rig->wheels->proped_wheels] = rig->wheels->free_wheel;
+		rig->wheels->proped_wheels++;
+	}
+	if (braked) rig->wheels->braked_wheels++;
+	//find near attach
+	Real l1 = (rig->nodes->nodes[node1].RelPosition - rig->nodes->nodes[torquenode].RelPosition).length();
+	Real l2 = (rig->nodes->nodes[node2].RelPosition - rig->nodes->nodes[torquenode].RelPosition).length();
+	if (l1 < l2)
+		rig->wheels->wheels[rig->wheels->free_wheel].near_attach = &rig->nodes->nodes[node1];
+	else
+		rig->wheels->wheels[rig->wheels->free_wheel].near_attach = &rig->nodes->nodes[node2];
+	rig->wheels->free_wheel++;
+}
+
+void WheelsSerializer::addWheel2(rig_t *rig, float radius, float radius2, float width, int rays, int node1, int node2, int snode, int braked, int propulsed, int torquenode, float mass, float wspring, float wdamp, float wspring2, float wdamp2, char* texf, char* texb)
+{
+	int i;
+	int nodebase=rig->nodes->free_node;
+	int node3;
+	int contacter_wheel=1;
+	//ignore the width parameter
+	width=(rig->nodes->nodes[node1].RelPosition - rig->nodes->nodes[node2].RelPosition).length();
+	//enforce the "second node must have a larger Z coordinate than the first" constraint
+	if (rig->nodes->nodes[node1].RelPosition.z > rig->nodes->nodes[node2].RelPosition.z)
+	{
+		//swap
+		node3=node1;
+		node1=node2;
+		node2=node3;
+	}
+	//ignore the sign of snode, just do the thing automatically
+	//if (snode<0) node3=-snode; else node3=snode;
+	if (snode<0) snode=-snode;
+	bool closest1=false;
+	if (snode!=9999) closest1=(rig->nodes->nodes[snode].RelPosition - rig->nodes->nodes[node1].RelPosition).length() < (rig->nodes->nodes[snode].RelPosition - rig->nodes->nodes[node2].RelPosition).length();
+
+	//unused:
+	//Real px=nodes[node1].Position.x;
+	//Real py=nodes[node1].Position.y;
+	//Real pz=nodes[node1].Position.z;
+
+	Vector3 axis = rig->nodes->nodes[node2].RelPosition - rig->nodes->nodes[node1].RelPosition;
+	axis.normalise();
+	Vector3 rayvec=Vector3(0, radius, 0);
+	Quaternion rayrot=Quaternion(Degree(-360.0/(Real)rays), axis);
+	Quaternion rayrot2=Quaternion(Degree(-180.0/(Real)rays), axis);
+	Vector3 rayvec2=Vector3(0, radius2, 0);
+	rayvec2=rayrot2*rayvec2;
+	//rim nodes
+	for (i=0; i<rays; i++)
+	{
+		//with propnodes
+		Vector3 raypoint=rig->nodes->nodes[node1].RelPosition+rayvec;
+		NodeSerializer::init_node(rig, nodebase+i*2, raypoint.x, raypoint.y, raypoint.z, NODE_NORMAL, mass/(4.0*rays),1, -1, -1, rig->wheels->free_wheel, rig->nodes->default_node_friction, rig->nodes->default_node_volume, rig->nodes->default_node_surface, NODE_LOADWEIGHT_DEFAULT);
+		// outer ring has wheelid%2 != 0
+		rig->nodes->nodes[nodebase+i*2].iswheel = rig->wheels->free_wheel*2+1;
+
+		raypoint=rig->nodes->nodes[node2].RelPosition+rayvec;
+		NodeSerializer::init_node(rig, nodebase+i*2+1, raypoint.x, raypoint.y, raypoint.z, NODE_NORMAL, mass/(4.0*rays),1, -1, -1, rig->wheels->free_wheel, rig->nodes->default_node_friction, rig->nodes->default_node_volume, rig->nodes->default_node_surface, NODE_LOADWEIGHT_DEFAULT);
+
+		// inner ring has wheelid%2 == 0
+		rig->nodes->nodes[nodebase+i*2+1].iswheel = rig->wheels->free_wheel*2+2;
+		//wheel object
+		rig->wheels->wheels[rig->wheels->free_wheel].nodes[i*2]   = &rig->nodes->nodes[nodebase+i*2];
+		rig->wheels->wheels[rig->wheels->free_wheel].nodes[i*2+1] = &rig->nodes->nodes[nodebase+i*2+1];
+		rayvec=  rayrot*rayvec;
+	}
+	//tire nodes
+	for (i=0; i<rays; i++)
+	{
+		//with propnodes and variable friction
+		Vector3 raypoint=rig->nodes->nodes[node1].RelPosition+rayvec2;
+		NodeSerializer::init_node(rig, nodebase+2*rays+i*2, raypoint.x, raypoint.y, raypoint.z, NODE_NORMAL, 0.67*mass/(2.0*rays),1, WHEEL_FRICTION_COEF*width, -1, rig->wheels->free_wheel, rig->nodes->default_node_friction, rig->nodes->default_node_volume, rig->nodes->default_node_surface);
+		// outer ring has wheelid%2 != 0
+		rig->nodes->nodes[nodebase+2*rays+i*2].iswheel = rig->wheels->free_wheel*2+1;
+		if (contacter_wheel)
+		{
+			rig->contacters->contacters[rig->contacters->free_contacter].nodeid      = nodebase+2*rays+i*2;
+			rig->contacters->contacters[rig->contacters->free_contacter].contacted   = 0;
+			rig->contacters->contacters[rig->contacters->free_contacter].opticontact = 0;
+			rig->contacters->free_contacter++;;
+		}
+		raypoint=rig->nodes->nodes[node2].RelPosition+rayvec2;
+		NodeSerializer::init_node(rig, nodebase+2*rays+i*2+1, raypoint.x, raypoint.y, raypoint.z, NODE_NORMAL, 0.33*mass/(2.0*rays),1, WHEEL_FRICTION_COEF*width, -1,  rig->wheels->free_wheel, rig->nodes->default_node_friction, rig->nodes->default_node_volume, rig->nodes->default_node_surface);
+
+		// inner ring has wheelid%2 == 0
+		rig->nodes->nodes[nodebase+2*rays+i*2+1].iswheel = rig->wheels->free_wheel*2+2;
+		if (contacter_wheel)
+		{
+			rig->contacters->contacters[rig->contacters->free_contacter].nodeid      = nodebase+2*rays+i*2+1;
+			rig->contacters->contacters[rig->contacters->free_contacter].contacted   = 0;
+			rig->contacters->contacters[rig->contacters->free_contacter].opticontact = 0;
+			rig->contacters->free_contacter++;;
+		}
+		//wheel object
+//			wheels->wheels[free_wheel].nodes[i*2]=&nodes[nodebase+i*2];
+//			wheels->wheels[free_wheel].nodes[i*2+1]=&nodes[nodebase+i*2+1];
+		rayvec2=rayrot*rayvec2; //this is not a bug
+	}
+	rig->nodes->free_node += 4 * rays;
+	for (i=0; i<rays; i++)
+	{
+		//rim
+		//bounded
+		BeamSerializer::add_beam(rig, &rig->nodes->nodes[node1], &rig->nodes->nodes[nodebase+i*2], BEAM_INVISIBLE, rig->beams->default_break, wspring, wdamp, -1.0, 0.66, 0.0);
+		BeamSerializer::add_beam(rig, &rig->nodes->nodes[node2], &rig->nodes->nodes[nodebase+i*2+1], BEAM_INVISIBLE, rig->beams->default_break, wspring, wdamp, -1.0, 0.66, 0.0);
+		BeamSerializer::add_beam(rig, &rig->nodes->nodes[node2], &rig->nodes->nodes[nodebase+i*2], BEAM_INVISIBLE, rig->beams->default_break, wspring, wdamp);
+		BeamSerializer::add_beam(rig, &rig->nodes->nodes[node1], &rig->nodes->nodes[nodebase+i*2+1], BEAM_INVISIBLE, rig->beams->default_break, wspring, wdamp);
+		//reinforcement
+		BeamSerializer::add_beam(rig, &rig->nodes->nodes[node1], &rig->nodes->nodes[nodebase+i*2], BEAM_INVISIBLE, rig->beams->default_break, wspring, wdamp);
+		BeamSerializer::add_beam(rig, &rig->nodes->nodes[nodebase+i*2], &rig->nodes->nodes[nodebase+i*2+1], BEAM_INVISIBLE, rig->beams->default_break, wspring, wdamp);
+		BeamSerializer::add_beam(rig, &rig->nodes->nodes[nodebase+i*2], &rig->nodes->nodes[nodebase+((i+1)%rays)*2], BEAM_INVISIBLE, rig->beams->default_break, wspring, wdamp);
+		BeamSerializer::add_beam(rig, &rig->nodes->nodes[nodebase+i*2+1], &rig->nodes->nodes[nodebase+((i+1)%rays)*2+1], BEAM_INVISIBLE, rig->beams->default_break, wspring, wdamp);
+		BeamSerializer::add_beam(rig, &rig->nodes->nodes[nodebase+i*2], &rig->nodes->nodes[nodebase+((i+1)%rays)*2+1], BEAM_INVISIBLE, rig->beams->default_break, wspring, wdamp);
+		//reinforcement
+		BeamSerializer::add_beam(rig, &rig->nodes->nodes[nodebase+i*2+1], &rig->nodes->nodes[nodebase+((i+1)%rays)*2], BEAM_INVISIBLE, rig->beams->default_break, wspring, wdamp);
+		if (snode!=9999)
+		{
+			//back beams
+			if (closest1)
+			{
+				BeamSerializer::add_beam(rig, &rig->nodes->nodes[snode], &rig->nodes->nodes[nodebase+i*2], BEAM_VIRTUAL, rig->beams->default_break, wspring, wdamp);
+			} else
+			{
+				BeamSerializer::add_beam(rig, &rig->nodes->nodes[snode], &rig->nodes->nodes[nodebase+i*2+1], BEAM_VIRTUAL, rig->beams->default_break, wspring, wdamp);
+			}
+		}
+		//tire
+		//band
+		//init_beam(free_beam , &nodes[nodebase+2*rays+i*2], &nodes[nodebase+2*rays+i*2+1], BEAM_INVISIBLE, rig->beams->default_break, wspring2, wdamp2);
+		//pressure_beams[free_pressure_beam]=free_beam-1; free_pressure_beam++;
+		int pos;
+		pos=BeamSerializer::add_beam(rig, &rig->nodes->nodes[nodebase+2*rays+i*2], &rig->nodes->nodes[nodebase+2*rays+((i+1)%rays)*2], BEAM_INVISIBLE, rig->beams->default_break, wspring2, wdamp2);
+		rig->beams->pressure_beams[rig->beams->free_pressure_beam]=pos; rig->beams->free_pressure_beam++;
+		pos=BeamSerializer::add_beam(rig, &rig->nodes->nodes[nodebase+2*rays+i*2], &rig->nodes->nodes[nodebase+2*rays+((i+1)%rays)*2+1], BEAM_INVISIBLE, rig->beams->default_break, wspring2, wdamp2);
+		rig->beams->pressure_beams[rig->beams->free_pressure_beam]=pos; rig->beams->free_pressure_beam++;
+		pos=BeamSerializer::add_beam(rig, &rig->nodes->nodes[nodebase+2*rays+i*2+1], &rig->nodes->nodes[nodebase+2*rays+((i+1)%rays)*2], BEAM_INVISIBLE, rig->beams->default_break, wspring2, wdamp2);
+		rig->beams->pressure_beams[rig->beams->free_pressure_beam]=pos; rig->beams->free_pressure_beam++;
+		pos=BeamSerializer::add_beam(rig, &rig->nodes->nodes[nodebase+2*rays+i*2+1], &rig->nodes->nodes[nodebase+2*rays+((i+1)%rays)*2+1], BEAM_INVISIBLE, rig->beams->default_break, wspring2, wdamp2);
+		//walls
+		pos=BeamSerializer::add_beam(rig, &rig->nodes->nodes[nodebase+2*rays+i*2], &rig->nodes->nodes[nodebase+i*2], BEAM_INVISIBLE, rig->beams->default_break, wspring2, wdamp2);
+		rig->beams->pressure_beams[rig->beams->free_pressure_beam]=pos; rig->beams->free_pressure_beam++;
+		pos=BeamSerializer::add_beam(rig, &rig->nodes->nodes[nodebase+2*rays+i*2], &rig->nodes->nodes[nodebase+((i+1)%rays)*2], BEAM_INVISIBLE, rig->beams->default_break, wspring2, wdamp2);
+		rig->beams->pressure_beams[rig->beams->free_pressure_beam]=pos; rig->beams->free_pressure_beam++;
+		pos=BeamSerializer::add_beam(rig, &rig->nodes->nodes[nodebase+2*rays+i*2+1], &rig->nodes->nodes[nodebase+i*2+1], BEAM_INVISIBLE, rig->beams->default_break, wspring2, wdamp2);
+		rig->beams->pressure_beams[rig->beams->free_pressure_beam]=pos; rig->beams->free_pressure_beam++;
+		pos=BeamSerializer::add_beam(rig, &rig->nodes->nodes[nodebase+2*rays+i*2+1], &rig->nodes->nodes[nodebase+((i+1)%rays)*2+1], BEAM_INVISIBLE, rig->beams->default_break, wspring2, wdamp2);
+		rig->beams->pressure_beams[rig->beams->free_pressure_beam]=pos; rig->beams->free_pressure_beam++;
+		//reinforcement
+		pos=BeamSerializer::add_beam(rig, &rig->nodes->nodes[nodebase+2*rays+i*2], &rig->nodes->nodes[nodebase+i*2+1], BEAM_INVISIBLE, rig->beams->default_break, wspring2, wdamp2);
+		rig->beams->pressure_beams[rig->beams->free_pressure_beam]=pos; rig->beams->free_pressure_beam++;
+		pos=BeamSerializer::add_beam(rig, &rig->nodes->nodes[nodebase+2*rays+i*2], &rig->nodes->nodes[nodebase+((i+1)%rays)*2+1], BEAM_INVISIBLE, rig->beams->default_break, wspring2, wdamp2);
+		rig->beams->pressure_beams[rig->beams->free_pressure_beam]=pos; rig->beams->free_pressure_beam++;
+		pos=BeamSerializer::add_beam(rig, &rig->nodes->nodes[nodebase+2*rays+i*2+1], &rig->nodes->nodes[nodebase+i*2], BEAM_INVISIBLE, rig->beams->default_break, wspring2, wdamp2);
+		rig->beams->pressure_beams[rig->beams->free_pressure_beam]=pos; rig->beams->free_pressure_beam++;
+		pos=BeamSerializer::add_beam(rig, &rig->nodes->nodes[nodebase+2*rays+i*2+1], &rig->nodes->nodes[nodebase+((i+1)%rays)*2], BEAM_INVISIBLE, rig->beams->default_break, wspring2, wdamp2);
+		rig->beams->pressure_beams[rig->beams->free_pressure_beam]=pos; rig->beams->free_pressure_beam++;
+		//backpressure, bounded
+		pos=BeamSerializer::add_beam(rig, &rig->nodes->nodes[node1], &rig->nodes->nodes[nodebase+2*rays+i*2], BEAM_INVISIBLE, rig->beams->default_break, wspring2, wdamp2, -1.0, radius/radius2, 0.0);
+		rig->beams->pressure_beams[rig->beams->free_pressure_beam]=pos; rig->beams->free_pressure_beam++;
+		pos=BeamSerializer::add_beam(rig, &rig->nodes->nodes[node2], &rig->nodes->nodes[nodebase+2*rays+i*2+1], BEAM_INVISIBLE, rig->beams->default_break, wspring2, wdamp2, -1.0, radius/radius2, 0.0);
+		rig->beams->pressure_beams[rig->beams->free_pressure_beam]=pos; rig->beams->free_pressure_beam++;
+	}
+	//wheel object
+	rig->wheels->wheels[rig->wheels->free_wheel].braked     = braked;
+	rig->wheels->wheels[rig->wheels->free_wheel].propulsed  = propulsed;
+	rig->wheels->wheels[rig->wheels->free_wheel].nbnodes    = 2 * rays;
+	rig->wheels->wheels[rig->wheels->free_wheel].refnode0   = &rig->nodes->nodes[node1];
+	rig->wheels->wheels[rig->wheels->free_wheel].refnode1   = &rig->nodes->nodes[node2];
+	rig->wheels->wheels[rig->wheels->free_wheel].radius     = radius;
+	rig->wheels->wheels[rig->wheels->free_wheel].speed      = 0;
+	rig->wheels->wheels[rig->wheels->free_wheel].width      = width;
+	rig->wheels->wheels[rig->wheels->free_wheel].rp         = 0;
+	rig->wheels->wheels[rig->wheels->free_wheel].rp1        = 0;
+	rig->wheels->wheels[rig->wheels->free_wheel].rp2        = 0;
+	rig->wheels->wheels[rig->wheels->free_wheel].rp3        = 0;
+	rig->wheels->wheels[rig->wheels->free_wheel].arm        = &rig->nodes->nodes[torquenode];
+	if (propulsed)
+	{
+		//for inter-differential locking
+		rig->wheels->proppairs[rig->wheels->proped_wheels] = rig->wheels->free_wheel;
+		rig->wheels->proped_wheels++;
+	}
+	if (braked) rig->wheels->braked_wheels++;
+	
+	//find near attach
+	Real l1 = (rig->nodes->nodes[node1].RelPosition - rig->nodes->nodes[torquenode].RelPosition).length();
+	Real l2 = (rig->nodes->nodes[node2].RelPosition - rig->nodes->nodes[torquenode].RelPosition).length();
+	if (l1 < l2)
+		rig->wheels->wheels[rig->wheels->free_wheel].near_attach = &rig->nodes->nodes[node1];
+	else
+		rig->wheels->wheels[rig->wheels->free_wheel].near_attach = &rig->nodes->nodes[node2];
+
+	rig->wheels->free_wheel++;
 }
