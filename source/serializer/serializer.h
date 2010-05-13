@@ -57,9 +57,16 @@ public:
 	int saveRig(std::string filename, rig_t *rig);
 
 	int registerModuleSerializer(RoRSerializationModule *module);
+	void addSectionHandler(std::string section, RoRSerializationModule *module);
+	void addCommandHandler(std::string section, RoRSerializationModule *module);
+
 protected:
 	int processModules(char *line, rig_t *rig, SerializationContext *ctx, std::string &activeSection);
 
+
+
+	std::map < std::string, RoRSerializationModule *> sections;
+	std::map < std::string, RoRSerializationModule *> commands;
 	std::map < std::string, RoRSerializationModule *> modules;
 };
 
@@ -70,8 +77,6 @@ public:
 	RoRSerializationModule(RoRSerializer *s) :
 		s(s),
 		name(),
-		commandTrigger(),
-		sectionTrigger(),
 		initiated(false)
 	{
 	}
@@ -85,8 +90,6 @@ public:
 protected:
 	RoRSerializer *s;
 	std::string name;
-	std::string commandTrigger;
-	std::string sectionTrigger;
 	bool initiated;
 
 	// some utils
