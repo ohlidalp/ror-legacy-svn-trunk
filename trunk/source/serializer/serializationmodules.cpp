@@ -1551,7 +1551,7 @@ int ContactersSerializer::deserialize(char *line, rig_t *rig, std::string active
 	rig->contacters->contacters[rig->contacters->free_contacter].opticontact = 0;
 	rig->nodes->nodes[id1].iIsSkin = true;
 	rig->contacters->free_contacter++;
-
+	return result;
 }
 
 int ContactersSerializer::serialize(char *line, rig_t *rig)
