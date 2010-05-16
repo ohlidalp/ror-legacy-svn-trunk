@@ -10,7 +10,6 @@
 
 using namespace Ogre;
 
-
 RoRSerializer::RoRSerializer()
 {
 	// register all available modules :)
@@ -23,8 +22,15 @@ RoRSerializer::RoRSerializer()
 	new ShocksSerializer(this);
 	new HydrosSerializer(this);
 
+	new WheelsSerializer(this);
+	new ContactersSerializer(this);
+
+	new BrakesSerializer(this);
+
 	new FileInfoSerializer(this);
 	new AuthorSerializer(this);
+
+	new DummySerializer(this);
 }
 
 RoRSerializer::~RoRSerializer()
@@ -98,7 +104,7 @@ int RoRSerializer::saveRig(std::string filename, rig_t *rig)
 
 int RoRSerializer::registerModuleSerializer(RoRSerializationModule *module)
 {
-	modules[module->getName()] = module;
+	modules.push_back(module);
 	return 0;
 }
 void RoRSerializer::addSectionHandler(std::string section, RoRSerializationModule *module)
@@ -137,7 +143,7 @@ int RoRSerializer::processModules(char *line, rig_t *rig, SerializationContext *
 			//set section as active
 			activeSection = it->first;
 			// parse this as well, could be that the section header contains information as well
-			return it->second->deserialize(line, rig);
+			return it->second->deserialize(line, rig, activeSection);
 		}
 	}
 
@@ -145,9 +151,33 @@ int RoRSerializer::processModules(char *line, rig_t *rig, SerializationContext *
 	if(!activeSection.empty())
 	{
 		// just try to use that section and ignore the others
-		return sections[activeSection]->deserialize(line, rig);
+		return sections[activeSection]->deserialize(line, rig, activeSection);
 	}
 
 	// no match
 	return -1;
+}
+
+int RoRSerializer::initResources(Ogre::SceneManager *manager, Ogre::SceneNode *node, rig_t *rig)
+{
+	std::vector < RoRSerializationModule *>::iterator it;
+	for(it = modules.begin(); it != modules.end() ; it++)
+	{
+		(*it)->initResources(manager, node, rig);
+	}
+	return 0;
+}
+
+RoRSerializationModule *RoRSerializer::getSectionModule(rig_t *rig, std::string section)
+{
+	if(sections.find(section) == sections.end())
+	{
+		// TODO: throw error
+		return 0;
+	}
+	if(!sections[section]->isInitiated())
+	{
+		sections[section]->initData(rig);
+	}
+	return sections[section];
 }
