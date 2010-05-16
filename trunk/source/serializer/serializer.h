@@ -60,14 +60,17 @@ public:
 	void addSectionHandler(std::string section, RoRSerializationModule *module);
 	void addCommandHandler(std::string section, RoRSerializationModule *module);
 
+	int initResources(Ogre::SceneManager *manager, Ogre::SceneNode *node, rig_t *rig);
+
+	RoRSerializationModule *getSectionModule(rig_t *rig, std::string section);
+
 protected:
 	int processModules(char *line, rig_t *rig, SerializationContext *ctx, std::string &activeSection);
 
 
-
 	std::map < std::string, RoRSerializationModule *> sections;
 	std::map < std::string, RoRSerializationModule *> commands;
-	std::map < std::string, RoRSerializationModule *> modules;
+	std::vector <RoRSerializationModule *> modules;
 };
 
 class RoRSerializationModule
@@ -83,10 +86,12 @@ public:
 
 	~RoRSerializationModule() {}
 
-	virtual int deserialize(char *line, rig_t *rig) = 0;
+	virtual int deserialize(char *line, rig_t *rig, std::string activeSection = std::string()) = 0;
 	virtual int serialize(char *line, rig_t *rig) = 0;
+	virtual int initResources(Ogre::SceneManager *manager, Ogre::SceneNode *node, rig_t *rig) = 0;
 
 	std::string getName() { return name; };
+	bool isInitiated() { return initiated; };
 protected:
 	RoRSerializer *s;
 	std::string name;

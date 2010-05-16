@@ -22,12 +22,13 @@ GlobalsSerializer::GlobalsSerializer(RoRSerializer *s) : RoRSerializationModule(
 
 void GlobalsSerializer::initData(rig_t *rig)
 {
+	if(initiated) return;
 	rig->globals = new globals_section_t();
 	memset(rig->globals, 0, sizeof(globals_section_t));
 	initiated = true;
 }
 
-int GlobalsSerializer::deserialize(char *line, rig_t *rig)
+int GlobalsSerializer::deserialize(char *line, rig_t *rig, std::string activeSection)
 {
 	// ignore section header
 	if(!strcmp(line, "globals"))
@@ -46,6 +47,11 @@ int GlobalsSerializer::serialize(char *line, rig_t *rig)
 	return sprintf(line, "globals\n%f, %f, %s\n", rig->globals->truckmass, rig->globals->loadmass, rig->globals->texname);
 }
 
+int GlobalsSerializer::initResources(Ogre::SceneManager *manager, Ogre::SceneNode *node, rig_t *rig)
+{
+	return 0;
+}
+
 //// NodeSerializer
 NodeSerializer::NodeSerializer(RoRSerializer *s) : RoRSerializationModule(s)
 {
@@ -56,6 +62,7 @@ NodeSerializer::NodeSerializer(RoRSerializer *s) : RoRSerializationModule(s)
 
 void NodeSerializer::initData(rig_t *rig)
 {
+	if(initiated) return;
 	rig->nodes = new nodes_section_t();
 	memset(rig->nodes, 0, sizeof(nodes_section_t));
 	// set some defaults, important!
@@ -63,7 +70,7 @@ void NodeSerializer::initData(rig_t *rig)
 	initiated = true;
 }
 
-int NodeSerializer::deserialize(char *line, rig_t *rig)
+int NodeSerializer::deserialize(char *line, rig_t *rig, std::string activeSection)
 {
 	// ignore section header
 	if(!strcmp(line, "nodes"))
@@ -246,6 +253,12 @@ int NodeSerializer::serialize(char *line, rig_t *rig)
 	return -1;
 }
 
+int NodeSerializer::initResources(Ogre::SceneManager *manager, Ogre::SceneNode *node, rig_t *rig)
+{
+	return 0;
+}
+
+
 void NodeSerializer::init_node(rig_t *rig, int pos, float x, float y, float z, int type, float m, int iswheel, float friction, int id, int wheelid, float nfriction, float nvolume, float nsurface, float nloadweight)
 {
 	nodes_section *n = rig->nodes;
@@ -306,6 +319,7 @@ BeamSerializer::BeamSerializer(RoRSerializer *s) : RoRSerializationModule(s)
 
 void BeamSerializer::initData(rig_t *rig)
 {
+	if(initiated) return;
 	rig->beams = new beams_section_t();
 	memset(rig->beams, 0, sizeof(beams_section_t));
 
@@ -328,7 +342,7 @@ void BeamSerializer::initData(rig_t *rig)
 	initiated = true;
 }
 
-int BeamSerializer::deserialize(char *line, rig_t *rig)
+int BeamSerializer::deserialize(char *line, rig_t *rig, std::string activeSection)
 {
 	// ignore section header
 	if(!strcmp(line, "beams"))
@@ -433,6 +447,63 @@ int BeamSerializer::serialize(char *line, rig_t *rig)
 	return -1;
 }
 
+int BeamSerializer::initResources(Ogre::SceneManager *manager, Ogre::SceneNode *node, rig_t *rig)
+{
+	// create visuals for beams
+	// root node
+	rig->beams->beamsRoot = node->createChildSceneNode();
+
+	// then all the beams
+	for(int i = 0; i < rig->beams->free_beam; i++)
+	{
+	    beam_t *b = &rig->beams->beams[i];
+	    if (b->type != BEAM_VIRTUAL)
+	    {
+		    //setup visuals
+		    //the cube is 100x100x100
+		    try
+		    {
+			    b->mEntity = manager->createEntity("beam.mesh");
+		    }catch(...)
+		    {
+			    LogManager::getSingleton().logMessage("error loading mesh: beam.mesh");
+		    }
+
+		    // no materialmapping for beams!
+		    //		ec->setCastShadows(false);
+
+		    if (b->mEntity && (b->type == BEAM_HYDRO || b->type == BEAM_MARKED))
+			    b->mEntity->setMaterialName("tracks/Chrome");
+		    else if(b->mEntity)
+			    b->mEntity->setMaterialName(rig->beams->default_beam_material);
+		    b->mSceneNode = rig->beams->beamsRoot->createChildSceneNode();
+		    b->mSceneNode->setScale(b->diameter, b->L, b->diameter);
+
+		    // colourize beams in simple mode
+			/*
+		    ColourValue c = ColourValue::Blue;
+		    if(b->type == BEAM_HYDRO)
+			    c = ColourValue::Red;
+		    else if(b->type == BEAM_HYDRO)
+			    c = ColourValue::Red;
+		    MaterialFunctionMapper::replaceSimpleMeshMaterials(b->mEntity, c);
+		    b->mSceneNode->attachObject(b->mEntity);
+		    b->mSceneNode->setVisible(true);
+			*/
+
+			/*
+		    printf("nodes %p, %d, from nodes %d to %d: (%3.3f,%3.3f,%3.3f) to (%3.3f,%3.3f,%3.3f)\n",
+			    b, i, b->p1->id, b->p2->id,
+			    b->p1->RelPosition.x, b->p1->RelPosition.y, b->p1->RelPosition.z,
+			    b->p2->RelPosition.x, b->p2->RelPosition.y, b->p2->RelPosition.z
+			    );
+			*/
+
+	    }
+	}
+	return 0;
+}
+
 int BeamSerializer::add_beam(rig_t *rig, node_t *p1, node_t *p2, int type, float strength, float spring, float damp, float length, float shortbound, float longbound, float precomp, float diameter)
 {
 	// shortcuts
@@ -516,12 +587,13 @@ FileInfoSerializer::FileInfoSerializer(RoRSerializer *s) : RoRSerializationModul
 
 void FileInfoSerializer::initData(rig_t *rig)
 {
+	if(initiated) return;
 	rig->fileinfo = new fileinfo_t();
 	memset(rig->fileinfo, 0, sizeof(fileinfo_t));
 	initiated = true;
 }
 
-int FileInfoSerializer::deserialize(char *line, rig_t *rig)
+int FileInfoSerializer::deserialize(char *line, rig_t *rig, std::string activeSection)
 {
 	if(!initiated) initData(rig);
 	return checkRes(1, sscanf(line, "fileinfo %s, %i, %i", rig->fileinfo->uniquetruckid, &rig->fileinfo->categoryid, &rig->fileinfo->truckversion));
@@ -529,6 +601,11 @@ int FileInfoSerializer::deserialize(char *line, rig_t *rig)
 int FileInfoSerializer::serialize(char *line, rig_t *rig)
 {
 	return sprintf(line, "fileinfo %s, %i, %i\n", rig->fileinfo->uniquetruckid, rig->fileinfo->categoryid, rig->fileinfo->truckversion);
+}
+
+int FileInfoSerializer::initResources(Ogre::SceneManager *manager, Ogre::SceneNode *node, rig_t *rig)
+{
+	return 0;
 }
 
 
@@ -542,13 +619,14 @@ AuthorSerializer::AuthorSerializer(RoRSerializer *s) : RoRSerializationModule(s)
 
 void AuthorSerializer::initData(rig_t *rig)
 {
+	if(initiated) return;
 	rig->fileauthors = new fileauthors_t();
 	// beware or memsetting std::* !
 	rig->fileauthors->authors.clear();
 	initiated = true;
 }
 
-int AuthorSerializer::deserialize(char *line, rig_t *rig)
+int AuthorSerializer::deserialize(char *line, rig_t *rig, std::string activeSection)
 {
 	if(!initiated) initData(rig);
 	fileauthors_t *a = rig->fileauthors;
@@ -588,6 +666,11 @@ int AuthorSerializer::serialize(char *line, rig_t *rig)
 	return -1;
 }
 
+int AuthorSerializer::initResources(Ogre::SceneManager *manager, Ogre::SceneNode *node, rig_t *rig)
+{
+	return 0;
+}
+
 //// EngineSerializer
 EngineSerializer::EngineSerializer(RoRSerializer *s) : RoRSerializationModule(s)
 {
@@ -598,12 +681,13 @@ EngineSerializer::EngineSerializer(RoRSerializer *s) : RoRSerializationModule(s)
 
 void EngineSerializer::initData(rig_t *rig)
 {
-	rig->engine = new engine_section_t();
-	memset(rig->engine, 0, sizeof(engine_section_t));
+	if(initiated) return;
+	rig->engine_section = new engine_section_t();
+	memset(rig->engine_section, 0, sizeof(engine_section_t));
 	initiated = true;
 }
 
-int EngineSerializer::deserialize(char *line, rig_t *rig)
+int EngineSerializer::deserialize(char *line, rig_t *rig, std::string activeSection)
 {
 	// ignore section header
 	if(!strcmp(line, "engine"))
@@ -612,7 +696,7 @@ int EngineSerializer::deserialize(char *line, rig_t *rig)
 	if(!initiated) initData(rig);
 
 	// shortcuts
-	engine_section_t *e = rig->engine;
+	engine_section_t *e = rig->engine_section;
 	
 	//parse engine
 	int numgears;
@@ -653,6 +737,10 @@ int EngineSerializer::serialize(char *line, rig_t *rig)
 	return -1;
 }
 
+int EngineSerializer::initResources(Ogre::SceneManager *manager, Ogre::SceneNode *node, rig_t *rig)
+{
+	return 0;
+}
 
 //// CamerasSerializer
 CamerasSerializer::CamerasSerializer(RoRSerializer *s) : RoRSerializationModule(s)
@@ -664,12 +752,13 @@ CamerasSerializer::CamerasSerializer(RoRSerializer *s) : RoRSerializationModule(
 
 void CamerasSerializer::initData(rig_t *rig)
 {
+	if(initiated) return;
 	rig->cameras = new cameras_section_t();
 	memset(rig->cameras, 0, sizeof(cameras_section_t));
 	initiated = true;
 }
 
-int CamerasSerializer::deserialize(char *line, rig_t *rig)
+int CamerasSerializer::deserialize(char *line, rig_t *rig, std::string activeSection)
 {
 	// ignore section header
 	if(!strcmp(line, "cameras"))
@@ -689,14 +778,14 @@ int CamerasSerializer::deserialize(char *line, rig_t *rig)
 		return 0;
 	}
 
-	if(c->free_camera > MAX_CAMERAS)
+	if(c->free_camera >= MAX_CAMERAS)
 	{
 		return -1;
 	}
 
-	c->cameras[c->free_camera].nodepos  = &n->nodes[node_center];
-	c->cameras[c->free_camera].nodedir  = &n->nodes[node_back];
-	c->cameras[c->free_camera].noderoll = &n->nodes[node_left];
+	c->cameras[c->free_camera].nodepos  = &(n->nodes[node_center]);
+	c->cameras[c->free_camera].nodedir  = &(n->nodes[node_back]);
+	c->cameras[c->free_camera].noderoll = &(n->nodes[node_left]);
 	c->free_camera++;
 	return result;
 }
@@ -707,6 +796,10 @@ int CamerasSerializer::serialize(char *line, rig_t *rig)
 	return -1;
 }
 
+int CamerasSerializer::initResources(Ogre::SceneManager *manager, Ogre::SceneNode *node, rig_t *rig)
+{
+	return 0;
+}
 
 //// ShocksSerializer
 ShocksSerializer::ShocksSerializer(RoRSerializer *s) : RoRSerializationModule(s)
@@ -718,12 +811,13 @@ ShocksSerializer::ShocksSerializer(RoRSerializer *s) : RoRSerializationModule(s)
 
 void ShocksSerializer::initData(rig_t *rig)
 {
+	if(initiated) return;
 	rig->shocks = new shocks_section_t();
 	memset(rig->shocks, 0, sizeof(shocks_section_t));
 	initiated = true;
 }
 
-int ShocksSerializer::deserialize(char *line, rig_t *rig)
+int ShocksSerializer::deserialize(char *line, rig_t *rig, std::string activeSection)
 {
 	// ignore section header
 	if(!strcmp(line, "shocks"))
@@ -821,6 +915,10 @@ int ShocksSerializer::serialize(char *line, rig_t *rig)
 	return -1;
 }
 
+int ShocksSerializer::initResources(Ogre::SceneManager *manager, Ogre::SceneNode *node, rig_t *rig)
+{
+	return 0;
+}
 
 //// HydrosSerializer
 HydrosSerializer::HydrosSerializer(RoRSerializer *s) : RoRSerializationModule(s)
@@ -832,12 +930,13 @@ HydrosSerializer::HydrosSerializer(RoRSerializer *s) : RoRSerializationModule(s)
 
 void HydrosSerializer::initData(rig_t *rig)
 {
+	if(initiated) return;
 	rig->hydros = new hydros_section_t();
 	memset(rig->hydros, 0, sizeof(hydros_section_t));
 	initiated = true;
 }
 
-int HydrosSerializer::deserialize(char *line, rig_t *rig)
+int HydrosSerializer::deserialize(char *line, rig_t *rig, std::string activeSection)
 {
 	// ignore section header
 	if(!strcmp(line, "hydros"))
@@ -970,6 +1069,10 @@ int HydrosSerializer::serialize(char *line, rig_t *rig)
 	return -1;
 }
 
+int HydrosSerializer::initResources(Ogre::SceneManager *manager, Ogre::SceneNode *node, rig_t *rig)
+{
+	return 0;
+}
 
 //// HydrosSerializer
 WheelsSerializer::WheelsSerializer(RoRSerializer *s) : RoRSerializationModule(s)
@@ -977,17 +1080,55 @@ WheelsSerializer::WheelsSerializer(RoRSerializer *s) : RoRSerializationModule(s)
 	// setup the base descriptions, etc, then register ourself
 	s->registerModuleSerializer(this);
 	s->addSectionHandler("wheels", this);
+	s->addSectionHandler("wheels2", this);
 }
 
 void WheelsSerializer::initData(rig_t *rig)
 {
-	rig->hydros = new hydros_section_t();
-	memset(rig->hydros, 0, sizeof(hydros_section_t));
+	if(initiated) return;
+	rig->wheels = new wheels_section_t();
+	memset(rig->wheels, 0, sizeof(wheels_section_t));
 	initiated = true;
 }
 
-int WheelsSerializer::deserialize(char *line, rig_t *rig)
+int WheelsSerializer::deserialize(char *line, rig_t *rig, std::string activeSection)
 {
+	if(!initiated) initData(rig);
+
+	if (activeSection == "wheels")
+	{
+		// ignore section header
+		if(!strcmp(line, "wheels"))
+			return 1;
+
+		//parse wheels
+		float radius, width, mass, spring, damp;
+		char texf[256];
+		char texb[256];
+		int rays, node1, node2, snode, braked, propulsed, torquenode;
+		int result = sscanf(line,"%f, %f, %i, %i, %i, %i, %i, %i, %i, %f, %f, %f, %s %s",
+			&radius,
+			&width,
+			&rays,
+			&node1,
+			&node2,
+			&snode,
+			&braked,
+			&propulsed,
+			&torquenode,
+			&mass,
+			&spring,
+			&damp,
+			texf,
+			texb);
+		if (result < 14 || result == EOF)
+		{
+			//LogManager::getSingleton().logMessage("Error parsing File (Wheel) " + String(fname) +" line " + StringConverter::toString(linecounter) + ". trying to continue ...");
+			return 0;
+		}
+		WheelsSerializer::addWheel(rig, radius, width, rays, node1, node2, snode, braked, propulsed, torquenode, mass, spring, damp, texf, texb);
+		return result;
+	}
 	return -1;
 }
 
@@ -996,6 +1137,12 @@ int WheelsSerializer::serialize(char *line, rig_t *rig)
 	// XXX: TODO
 	return -1;
 }
+
+int WheelsSerializer::initResources(Ogre::SceneManager *manager, Ogre::SceneNode *node, rig_t *rig)
+{
+	return -2;
+}
+
 void WheelsSerializer::addWheel(rig_t *rig, float radius, float width, int rays, int node1, int node2, int snode, int braked, int propulsed, int torquenode, float mass, float wspring, float wdamp, char* texf, char* texb, bool meshwheel, float rimradius, bool rimreverse)
 {
 	int i;
@@ -1043,6 +1190,9 @@ void WheelsSerializer::addWheel(rig_t *rig, float radius, float width, int rays,
 
 		if (contacter_wheel)
 		{
+			// init contacters if required
+			s->getSectionModule(rig, "contacters");
+
 			rig->contacters->contacters[rig->contacters->free_contacter].nodeid      = nodebase + i * 2;
 			rig->contacters->contacters[rig->contacters->free_contacter].contacted   = 0;
 			rig->contacters->contacters[rig->contacters->free_contacter].opticontact = 0;
@@ -1128,6 +1278,8 @@ void WheelsSerializer::addWheel(rig_t *rig, float radius, float width, int rays,
 	}
 	//wheel object
 	rig->wheels->wheels[rig->wheels->free_wheel].braked           = braked;
+	rig->wheels->wheels[rig->wheels->free_wheel].nodebase           = nodebase;
+	rig->wheels->wheels[rig->wheels->free_wheel].nrays            = rays;
 	rig->wheels->wheels[rig->wheels->free_wheel].propulsed        = propulsed;
 	rig->wheels->wheels[rig->wheels->free_wheel].nbnodes          = 2 * rays;
 	rig->wheels->wheels[rig->wheels->free_wheel].refnode0         = &rig->nodes->nodes[node1];
@@ -1142,6 +1294,11 @@ void WheelsSerializer::addWheel(rig_t *rig, float radius, float width, int rays,
 	rig->wheels->wheels[rig->wheels->free_wheel].arm              = &rig->nodes->nodes[torquenode];
 	rig->wheels->wheels[rig->wheels->free_wheel].lastContactInner = Vector3::ZERO;
 	rig->wheels->wheels[rig->wheels->free_wheel].lastContactOuter = Vector3::ZERO;
+	rig->wheels->wheels[rig->wheels->free_wheel].rimradius        = rimradius;
+	rig->wheels->wheels[rig->wheels->free_wheel].rimreverse       = rimreverse;
+	strncpy(rig->wheels->wheels[rig->wheels->free_wheel].texf, texf, 255);
+	strncpy(rig->wheels->wheels[rig->wheels->free_wheel].texb, texb, 255);
+
 	if (propulsed>0)
 	{
 		//for inter-differential locking
@@ -1156,6 +1313,8 @@ void WheelsSerializer::addWheel(rig_t *rig, float radius, float width, int rays,
 		rig->wheels->wheels[rig->wheels->free_wheel].near_attach = &rig->nodes->nodes[node1];
 	else
 		rig->wheels->wheels[rig->wheels->free_wheel].near_attach = &rig->nodes->nodes[node2];
+
+	rig->wheels->vwheels[rig->wheels->free_wheel].meshwheel = meshwheel;
 	rig->wheels->free_wheel++;
 }
 
@@ -1339,4 +1498,204 @@ void WheelsSerializer::addWheel2(rig_t *rig, float radius, float radius2, float 
 		rig->wheels->wheels[rig->wheels->free_wheel].near_attach = &rig->nodes->nodes[node2];
 
 	rig->wheels->free_wheel++;
+}
+
+
+//// ContactersSerializer
+ContactersSerializer::ContactersSerializer(RoRSerializer *s) : RoRSerializationModule(s)
+{
+	// setup the base descriptions, etc, then register ourself
+	s->registerModuleSerializer(this);
+	s->addSectionHandler("contacters", this);
+}
+
+void ContactersSerializer::initData(rig_t *rig)
+{
+	if(initiated) return;
+	rig->contacters = new contacters_section_t();
+	memset(rig->contacters, 0, sizeof(contacters_section_t));
+	initiated = true;
+}
+
+int ContactersSerializer::deserialize(char *line, rig_t *rig, std::string activeSection)
+{
+	// ignore section header
+	if(!strcmp(line, "contacters"))
+		return 1;
+
+	if(!rig->nodes)
+	{
+		LogManager::getSingleton().logMessage("Contacters section must come after the nodes section");
+		return -1;
+	}
+
+	if(!initiated) initData(rig);
+
+	//parse contacters
+	int id1;
+	int result = sscanf(line,"%i", &id1);
+	if (result < 1 || result == EOF)
+	{
+		//LogManager::getSingleton().logMessage("Error parsing File (Contacters) " + String(fname) +" line " + StringConverter::toString(linecounter) + ". trying to continue ...");
+		return 0;
+	}
+
+	if(rig->contacters->free_contacter >= MAX_CONTACTERS)
+	{
+		//LogManager::getSingleton().logMessage("contacters limit reached ("+StringConverter::toString(MAX_CONTACTERS)+"): " + String(fname) +" line " + StringConverter::toString(linecounter) + ". trying to continue ...");
+		return -1;
+	}
+
+	rig->contacters->contacters[rig->contacters->free_contacter].nodeid      = id1;
+	rig->contacters->contacters[rig->contacters->free_contacter].contacted   = 0;
+	rig->contacters->contacters[rig->contacters->free_contacter].opticontact = 0;
+	rig->nodes->nodes[id1].iIsSkin = true;
+	rig->contacters->free_contacter++;
+
+}
+
+int ContactersSerializer::serialize(char *line, rig_t *rig)
+{
+	// XXX: TODO
+	return -1;
+}
+
+int ContactersSerializer::initResources(Ogre::SceneManager *manager, Ogre::SceneNode *node, rig_t *rig)
+{
+	return 0;
+}
+
+
+//// BrakesSerializer
+BrakesSerializer::BrakesSerializer(RoRSerializer *s) : RoRSerializationModule(s)
+{
+	// setup the base descriptions, etc, then register ourself
+	s->registerModuleSerializer(this);
+	s->addSectionHandler("brakes", this);
+}
+
+void BrakesSerializer::initData(rig_t *rig)
+{
+	if(initiated) return;
+	rig->brakes = new brakes_section_t();
+	memset(rig->brakes, 0, sizeof(brakes_section_t));
+	initiated = true;
+}
+
+int BrakesSerializer::deserialize(char *line, rig_t *rig, std::string activeSection)
+{
+	// ignore section header
+	if(!strcmp(line, "brakes"))
+		return 1;
+
+	if(!initiated) initData(rig);
+
+	// parse brakes
+	int result = sscanf(line,"%f, %f", &rig->brakes->brakeforce, &rig->brakes->hbrakeforce);
+	// Read in footbrake force and handbrake force. If handbrakeforce is not present, set it to the default value 2*footbrake force to preserve older functionality
+	if (result == 1)
+		rig->brakes->hbrakeforce = 2.0f * rig->brakes->brakeforce;
+	return result;
+}
+
+int BrakesSerializer::serialize(char *line, rig_t *rig)
+{
+	// XXX: TODO
+	return -1;
+}
+
+int BrakesSerializer::initResources(Ogre::SceneManager *manager, Ogre::SceneNode *node, rig_t *rig)
+{
+	return 0;
+}
+
+
+//// DummySerializer : dummy for all not yet implemented sections and commands
+DummySerializer::DummySerializer(RoRSerializer *s) : RoRSerializationModule(s)
+{
+	s->registerModuleSerializer(this);
+	// unsupported sections
+	s->addSectionHandler("cinecam", this);
+	s->addSectionHandler("help", this);
+	s->addSectionHandler("engoption", this);
+	s->addSectionHandler("wheels2", this);
+	s->addSectionHandler("meshwheels", this);
+	s->addSectionHandler("shocks", this);
+	s->addSectionHandler("shocks2", this);
+	s->addSectionHandler("hydros", this);
+	s->addSectionHandler("animators", this);
+	s->addSectionHandler("commands", this);
+	s->addSectionHandler("commands2", this);
+	s->addSectionHandler("rotators", this);
+	s->addSectionHandler("ropes", this);
+	s->addSectionHandler("fixes", this);
+	s->addSectionHandler("minimass", this);
+	s->addSectionHandler("ties", this);
+	s->addSectionHandler("ropables", this);
+	s->addSectionHandler("hookgroup", this);
+	s->addSectionHandler("particles", this);
+	s->addSectionHandler("rigidifiers", this);
+	s->addSectionHandler("torquecurve", this);
+	s->addSectionHandler("axles", this);
+	s->addSectionHandler("managedmaterials", this);
+	s->addSectionHandler("flares", this);
+	s->addSectionHandler("materialflarebindings", this);
+	s->addSectionHandler("flares2", this);
+	s->addSectionHandler("flexbodies", this);
+	s->addSectionHandler("submesh", this);
+	s->addSectionHandler("texcoords", this);
+	s->addSectionHandler("cab", this);
+	s->addSectionHandler("backmesh", this);
+	s->addSectionHandler("exhausts", this);
+	s->addSectionHandler("guisettings", this);
+	s->addSectionHandler("soundsources", this);
+	s->addSectionHandler("props", this);
+	s->addSectionHandler("wings", this);
+	s->addSectionHandler("airbrakes", this);
+	s->addSectionHandler("turboprops", this);
+	s->addSectionHandler("fusedrag", this);
+	s->addSectionHandler("turbojets", this);
+	s->addSectionHandler("pistonprops", this);
+	s->addSectionHandler("screwprops", this);
+	s->addSectionHandler("slidenodes", this);
+	s->addSectionHandler("railgroups", this);
+	s->addSectionHandler("globeams", this);
+
+	// unsupported commands
+	s->addCommandHandler("set_inertia_defaults", this);
+	s->addCommandHandler("forwardcommands", this);
+	s->addCommandHandler("importcommands", this);
+	s->addCommandHandler("set_beam_defaults", this);
+	s->addCommandHandler("set_beam_defaults_scale", this);
+	s->addCommandHandler("set_node_defaults", this);
+	s->addCommandHandler("enable_advanced_deformation", this);
+	s->addCommandHandler("rollon", this);
+	s->addCommandHandler("rescuer", this);
+	s->addCommandHandler("set_managedmaterials_options", this);
+	s->addCommandHandler("add_animation", this);
+	s->addCommandHandler("set_skeleton_settings", this);
+	s->addCommandHandler("disabledefaultsounds", this);
+	s->addCommandHandler("slidenode_connect_instantly", this);
+	s->addCommandHandler("set_collision_range", this);
+}
+
+void DummySerializer::initData(rig_t *rig)
+{
+	initiated = true;
+}
+
+int DummySerializer::deserialize(char *line, rig_t *rig, std::string activeSection)
+{
+	// ignore everything
+	return 0;
+}
+
+int DummySerializer::serialize(char *line, rig_t *rig)
+{
+	return 0;
+}
+
+int DummySerializer::initResources(Ogre::SceneManager *manager, Ogre::SceneNode *node, rig_t *rig)
+{
+	return 0;
 }
