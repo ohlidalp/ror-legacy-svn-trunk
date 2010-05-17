@@ -583,6 +583,7 @@ FileInfoSerializer::FileInfoSerializer(RoRSerializer *s) : RoRSerializationModul
 	// setup the base descriptions, etc, then register ourself
 	s->registerModuleSerializer(this);
 	s->addCommandHandler("fileinfo", this);
+	s->addCommandHandler("fileformatversion", this);
 }
 
 void FileInfoSerializer::initData(rig_t *rig)
@@ -596,8 +597,29 @@ void FileInfoSerializer::initData(rig_t *rig)
 int FileInfoSerializer::deserialize(char *line, rig_t *rig, std::string activeSection)
 {
 	if(!initiated) initData(rig);
-	return checkRes(1, sscanf(line, "fileinfo %s, %i, %i", rig->fileinfo->uniquetruckid, &rig->fileinfo->categoryid, &rig->fileinfo->truckversion));
+	string linestr = string(line);
+	if(linestr.substr(0, 8) == "fileinfo")
+	{
+		return checkRes(1, sscanf(line, "fileinfo %s, %i, %i", rig->fileinfo->uniquetruckid, &rig->fileinfo->categoryid, &rig->fileinfo->truckversion));
+	} else if(linestr.substr(0, 17) == "fileformatversion") 
+	{
+		int fileformatversion;
+		int result = sscanf(line,"fileformatversion %i", &fileformatversion);
+		if (result < 1 || result == EOF)
+		{
+			//LogManager::getSingleton().logMessage("Error parsing File (fileformatversion) " + String(fname) +" line " + StringConverter::toString(linecounter) + ". trying to continue ...");
+			return 0;
+		}
+		if (fileformatversion > TRUCKFILEFORMATVERSION)
+		{
+			//LogManager::getSingleton().logMessage("The Truck File " + String(fname) +" is for a newer version or RoR! trying to continue ...");
+			return 0;
+		}
+		mode=0;
+	}
+	return 0;
 }
+
 int FileInfoSerializer::serialize(char *line, rig_t *rig)
 {
 	return sprintf(line, "fileinfo %s, %i, %i\n", rig->fileinfo->uniquetruckid, rig->fileinfo->categoryid, rig->fileinfo->truckversion);
@@ -677,6 +699,7 @@ EngineSerializer::EngineSerializer(RoRSerializer *s) : RoRSerializationModule(s)
 	// setup the base descriptions, etc, then register ourself
 	s->registerModuleSerializer(this);
 	s->addSectionHandler("engine", this);
+	s->addCommandHandler("patchEngineTorque", this);
 }
 
 void EngineSerializer::initData(rig_t *rig)
@@ -684,13 +707,21 @@ void EngineSerializer::initData(rig_t *rig)
 	if(initiated) return;
 	rig->engine_section = new engine_section_t();
 	memset(rig->engine_section, 0, sizeof(engine_section_t));
+
+	// set engoption defaults
+	rig->engine_section->clutch        = -1;
+	rig->engine_section->shifttime     = -1;
+	rig->engine_section->clutchtime    = -1;
+	rig->engine_section->postshifttime = -1;
+	rig->engine_section->type          = 't';
+	
 	initiated = true;
 }
 
 int EngineSerializer::deserialize(char *line, rig_t *rig, std::string activeSection)
 {
 	// ignore section header
-	if(!strcmp(line, "engine"))
+	if(std::string(line) == activeSection)
 		return 1;
 
 	if(!initiated) initData(rig);
@@ -698,37 +729,61 @@ int EngineSerializer::deserialize(char *line, rig_t *rig, std::string activeSect
 	// shortcuts
 	engine_section_t *e = rig->engine_section;
 	
-	//parse engine
-	int numgears;
-	if(rig->driveable == MACHINE)
-		// ignore engine section on machines
+	// parse some command
+	if (!strcmp("patchEngineTorque",line))
+	{
+		e->patchEngineTorque = true;
 		return 1;
+	}
 
-	rig->driveable = TRUCK;
-	int result = sscanf(line, "%f, %f, %f, %f, %f, %f, %f, %f, %f, %f, %f, %f, %f, %f, %f, %f, %f, %f, %f, %f, %f", \
-		&e->minrpm, \
-		&e->maxrpm, \
-		&e->torque, \
-		&e->dratio, \
-		&e->rear, \
-		&e->gears[0],&e->gears[1],&e->gears[2],&e->gears[3],&e->gears[4],&e->gears[5],&e->gears[6],&e->gears[7],&e->gears[8],&e->gears[9],&e->gears[10],&e->gears[11],&e->gears[12],&e->gears[13],&e->gears[14],&e->gears[15]
-		);
-	
-	if (result < 7 || result == EOF)
+	if(activeSection == "engine")
 	{
-		//LogManager::getSingleton().logMessage("Error parsing File (Engine) " + String(fname) +" line " + StringConverter::toString(linecounter) + ". trying to continue ...");
-		return 0;
+		//parse engine
+		int numgears;
+		if(rig->driveable == MACHINE)
+			// ignore engine section on machines
+			return 1;
+
+		rig->driveable = TRUCK;
+		int result = sscanf(line, "%f, %f, %f, %f, %f, %f, %f, %f, %f, %f, %f, %f, %f, %f, %f, %f, %f, %f, %f, %f, %f", \
+			&e->minrpm, \
+			&e->maxrpm, \
+			&e->torque, \
+			&e->dratio, \
+			&e->rear, \
+			&e->gears[0],&e->gears[1],&e->gears[2],&e->gears[3],&e->gears[4],&e->gears[5],&e->gears[6],&e->gears[7],&e->gears[8],&e->gears[9],&e->gears[10],&e->gears[11],&e->gears[12],&e->gears[13],&e->gears[14],&e->gears[15]
+			);
+		
+		if (result < 7 || result == EOF)
+		{
+			//LogManager::getSingleton().logMessage("Error parsing File (Engine) " + String(fname) +" line " + StringConverter::toString(linecounter) + ". trying to continue ...");
+			return 0;
+		}
+		for (numgears = 0; numgears < MAX_GEARS; numgears++)
+			if (e->gears[numgears] <= 0)
+				break;
+		if (numgears < 3)
+		{
+			//LogManager::getSingleton().logMessage("Trucks with less than 3 gears are not supported! " + String(fname) +" line " + StringConverter::toString(linecounter) + ". trying to continue ...");
+			return -1;
+		}
+		e->numgears = numgears;
+		return result;
 	}
-	for (numgears = 0; numgears < MAX_GEARS; numgears++)
-		if (e->gears[numgears] <= 0)
-			break;
-	if (numgears < 3)
+
+	if(activeSection == "engoption")
 	{
-		//LogManager::getSingleton().logMessage("Trucks with less than 3 gears are not supported! " + String(fname) +" line " + StringConverter::toString(linecounter) + ". trying to continue ...");
-		return -1;
+		//parse engoption
+		int result = sscanf(line,"%f, %c, %f, %f, %f, %f", &e->inertia, &e->type, &e->clutch, &e->shifttime, &e->clutchtime, &e->postshifttime);
+		if (result < 1 || result == EOF)
+		{
+			//LogManager::getSingleton().logMessage("Error parsing File (Engoption) " + String(fname) +" line " + StringConverter::toString(linecounter) + ". trying to continue ...");
+			return 0;
+		}
+		return result;
 	}
-	e->numgears = numgears;
-	return result;
+
+	return 0;
 }
 
 int EngineSerializer::serialize(char *line, rig_t *rig)
