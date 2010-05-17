@@ -120,30 +120,46 @@ void RoRSerializer::addCommandHandler(std::string command, RoRSerializationModul
 
 int RoRSerializer::processModules(char *line, rig_t *rig, SerializationContext *ctx, std::string &activeSection)
 {
+	string linestr = string(line);
 	// parse for commands or other sections
 	// commands
 	std::map < std::string, RoRSerializationModule *>::iterator it;
 	for(it = commands.begin(); it != commands.end() ; it++)
 	{
+		if(!it->first.size()) continue;
+
 		// check if that command is matched
-		if(it->first.size() && !strncmp(it->first.c_str(), line, it->first.size()))
+		if(linestr.substr(0, it->first.size()+2) == "=="+it->first))
 		{
-		// match, using this module
-		return it->second->deserialize(line, rig);
+			// new format
+			return it->second->deserialize(line+2, rig);
+		} else if(linestr.substr(0, it->first.size()) == it->first)
+		{
+			// old format
+			return it->second->deserialize(line, rig);
 		}
 	}
 
 	// sections
 	for(it = sections.begin(); it != sections.end() ; it++)
 	{
+		if(!it->first.size()) continue;
 		// check for a new section
-		if(it->first.size() && !strcmp(it->first.c_str(), line))
+		if((it->first == linestr || "=" + it->first == linestr)
 		{
 			// match, using this module
 			//set section as active
 			activeSection = it->first;
 			// parse this as well, could be that the section header contains information as well
 			return it->second->deserialize(line, rig, activeSection);
+		}
+
+		// check for a section end
+		if("end_" + it->first == linestr || "=end_"+it->first == linestr)
+		{
+			// found section end
+			activeSection = string();
+			return 1;
 		}
 	}
 
