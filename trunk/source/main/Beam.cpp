@@ -7381,7 +7381,6 @@ void Beam::calcForcesEuler(int doUpdate, Real dt, int step, int maxstep, Beam** 
 				}
 				else
 				{
-
 					if (beams[i].bounded==ROPE)
 					{
 						if  (difftoBeamL<0.0f)
@@ -7390,14 +7389,14 @@ void Beam::calcForcesEuler(int doUpdate, Real dt, int step, int maxstep, Beam** 
 							d=d*0.1f;
 						}
 					}
-					else // We assume the bounded=SUPPORTBEAM case
+					else // We assume bounded=SUPPORTBEAM 
 					{
 						if (difftoBeamL>0.0f)
 						{
 							k=0.0f;
 							d=d*0.1f;
-							// If support beam is extended more than one beam length, break it
-							if (difftoBeamL>beams[i].L)
+							// If support beam is extended more than four beam lengths, break it
+							if (difftoBeamL>beams[i].L*4.0f)
 							{
 								beams[i].broken=1;
 								beams[i].disabled=true;
@@ -7665,7 +7664,7 @@ void Beam::calcForcesEuler(int doUpdate, Real dt, int step, int maxstep, Beam** 
 							}
 						}
 					} else
-					{																	// no custom limit set, use 360°
+					{																	// no custom limit set, use 360ï¿½
 						while (limiter > 180.0f)
 						{
 							if (props[propi].animMode[animnum] & ANIM_MODE_NOFLIP)
@@ -7697,7 +7696,7 @@ void Beam::calcForcesEuler(int doUpdate, Real dt, int step, int maxstep, Beam** 
 								limiterchanged = true;
 							}
 						}
-					} else																// no custom limit set, use 360°
+					} else																// no custom limit set, use 360ï¿½
 					{
 						while (limiter < -180.0f)
 						{
@@ -7781,7 +7780,7 @@ void Beam::calcForcesEuler(int doUpdate, Real dt, int step, int maxstep, Beam** 
 								} else
 									autooffset = props[propi].animOpt2[animnum];			// flip to other side at limit
 							}
-						} else																// no custom limit set, use -10x°
+						} else																// no custom limit set, use -10xï¿½
 							while (autooffset < -10.0f)
 							{
 								if (props[propi].animMode[animnum] & ANIM_MODE_NOFLIP)
