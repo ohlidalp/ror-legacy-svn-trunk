@@ -582,6 +582,10 @@ FileInfoSerializer::FileInfoSerializer(RoRSerializer *s) : RoRSerializationModul
 {
 	// setup the base descriptions, etc, then register ourself
 	s->registerModuleSerializer(this);
+	s->addSectionHandler("description", this);
+	s->setSectionExplicit("description", true);
+	s->addSectionHandler("comment", this);
+	s->setSectionExplicit("comment", true);
 	s->addCommandHandler("fileinfo", this);
 	s->addCommandHandler("fileformatversion", this);
 }
@@ -597,7 +601,25 @@ void FileInfoSerializer::initData(rig_t *rig)
 int FileInfoSerializer::deserialize(char *line, rig_t *rig, std::string activeSection)
 {
 	if(!initiated) initData(rig);
-	string linestr = string(line);
+	std::string linestr = std::string(line);
+
+	// ignore section header
+	if(linestr == activeSection)
+		return 1;
+
+	if(activeSection == "description")
+	{
+		if(strlen(rig->fileinfo->description) + strlen(line) < 9045)
+		{
+			strcat(rig->fileinfo->description, line);
+			strcat(rig->fileinfo->description, "\n");
+			return 1;
+		} else
+		{
+			return 0;
+		}
+	}
+
 	if(linestr.substr(0, 8) == "fileinfo")
 	{
 		return checkRes(1, sscanf(line, "fileinfo %s, %i, %i", rig->fileinfo->uniquetruckid, &rig->fileinfo->categoryid, &rig->fileinfo->truckversion));
@@ -615,7 +637,6 @@ int FileInfoSerializer::deserialize(char *line, rig_t *rig, std::string activeSe
 			//LogManager::getSingleton().logMessage("The Truck File " + String(fname) +" is for a newer version or RoR! trying to continue ...");
 			return 0;
 		}
-		mode=0;
 	}
 	return 0;
 }

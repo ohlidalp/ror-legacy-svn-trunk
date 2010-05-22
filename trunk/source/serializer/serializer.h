@@ -59,16 +59,18 @@ public:
 	int registerModuleSerializer(RoRSerializationModule *module);
 	void addSectionHandler(std::string section, RoRSerializationModule *module);
 	void addCommandHandler(std::string section, RoRSerializationModule *module);
+	void setSectionExplicit(std::string section, bool value);
 
 	int initResources(Ogre::SceneManager *manager, Ogre::SceneNode *node, rig_t *rig);
 
 	RoRSerializationModule *getSectionModule(rig_t *rig, std::string section);
 
 protected:
-	int processModules(char *line, rig_t *rig, SerializationContext *ctx, std::string &activeSection);
+	int processModules(char *line, rig_t *rig, SerializationContext *ctx, std::string &activeSection, bool &activeSectionExplicit);
 
 
 	std::map < std::string, RoRSerializationModule *> sections;
+	std::map < std::string, bool> explictSections;
 	std::map < std::string, RoRSerializationModule *> commands;
 	std::vector <RoRSerializationModule *> modules;
 };
