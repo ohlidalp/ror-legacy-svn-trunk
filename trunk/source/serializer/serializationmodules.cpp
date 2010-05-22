@@ -607,6 +607,10 @@ int FileInfoSerializer::deserialize(char *line, rig_t *rig, std::string activeSe
 	if(linestr == activeSection)
 		return 1;
 
+	// comment section ignored
+	if(activeSection == "comment")
+		return 1;
+
 	if(activeSection == "description")
 	{
 		if(strlen(rig->fileinfo->description) + strlen(line) < 9045)

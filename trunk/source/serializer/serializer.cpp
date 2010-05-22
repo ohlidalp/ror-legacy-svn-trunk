@@ -48,7 +48,7 @@ int RoRSerializer::loadRig(Ogre::DataStreamPtr ds, rig_t *rig)
 	// file things
 	char line[1024];
 	int linecounter = 0;
-	std::string activeSection;
+	std::string activeSection, previousSection;
 	bool activeSectionExplicit = false;
 	
 	// read in truckname
@@ -71,7 +71,7 @@ int RoRSerializer::loadRig(Ogre::DataStreamPtr ds, rig_t *rig)
 
 		// now process the modules and try to parse the line
 		// -1 = error, 0 = no match, > 0 = n matches
-		int res = processModules(line, rig, &ctx, activeSection, activeSectionExplicit);
+		int res = processModules(line, rig, &ctx, activeSection, previousSection, activeSectionExplicit);
 		if(!activeSection.empty() && res == 0)
 		{
 			LogManager::getSingleton().logMessage("line section parsing with no result: " + String(line));
@@ -120,7 +120,7 @@ void RoRSerializer::addCommandHandler(std::string command, RoRSerializationModul
 	commands[command] = module;
 }
 
-int RoRSerializer::processModules(char *line, rig_t *rig, SerializationContext *ctx, std::string &activeSection, bool &activeSectionExplicit)
+int RoRSerializer::processModules(char *line, rig_t *rig, SerializationContext *ctx, std::string &activeSection, std::string &previousSection, bool &activeSectionExplicit)
 {
 	std::string linestr = std::string(line);
 	// parse for commands
@@ -141,37 +141,44 @@ int RoRSerializer::processModules(char *line, rig_t *rig, SerializationContext *
 		}
 	}
 
-	// parse for sections
-	for(it = sections.begin(); it != sections.end() ; it++)
+	// parse for sections if the current section is non explicit
+	if(!activeSectionExplicit)
 	{
-		if(!it->first.size()) continue;
-		// check for a new section
-		if(!activeSectionExplicit && it->first == linestr || "=" + it->first == linestr)
+		for(it = sections.begin(); it != sections.end() ; it++)
 		{
-			// match, using this module
-			//set section as active
-			activeSection = it->first;
+			if(!it->first.size()) continue;
+			// check for a new section
+			if(it->first == linestr || "=" + it->first == linestr)
+			{
+				// match, using this module
+				//set section as active
+				previousSection = activeSection;
+				activeSection = it->first;
 
-			// find out whether its explicit
-			activeSectionExplicit = (explictSections.find(activeSection) != explictSections.end());
 
-			// parse this as well, could be that the section header contains information as well
-			return it->second->deserialize(line, rig, activeSection);
-		}
+				// find out whether its explicit
+				activeSectionExplicit = (explictSections.find(activeSection) != explictSections.end());
 
-		// check for a section end
-		if("end_" + it->first == linestr || "=end_"+it->first == linestr)
-		{
-			// found section end
-			activeSection = std::string();
-			activeSectionExplicit = false;
-			return 1;
+				// parse this as well, could be that the section header contains information as well
+				return it->second->deserialize(line, rig, activeSection);
+			}
 		}
 	}
 
 	// if we are in a section, parse it in its module handler
 	if(!activeSection.empty())
 	{
+		// check for active section end
+		if("end_" + activeSection == linestr || "=end_" + activeSection == linestr)
+		{
+			// found section end
+			// restore previous section if closed explicitly
+			activeSection = previousSection;
+			previousSection = "";
+			activeSectionExplicit = false;
+			return 1;
+		}
+
 		// just try to use that section and ignore the others
 		return sections[activeSection]->deserialize(line, rig, activeSection);
 	}
