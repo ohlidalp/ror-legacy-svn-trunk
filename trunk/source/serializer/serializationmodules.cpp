@@ -58,6 +58,7 @@ NodeSerializer::NodeSerializer(RoRSerializer *s) : RoRSerializationModule(s)
 	// setup the base descriptions, etc, then register ourself
 	s->registerModuleSerializer(this);
 	s->addSectionHandler("nodes", this);
+	s->addCommandHandler("set_node_defaults", this);
 }
 
 void NodeSerializer::initData(rig_t *rig)
@@ -87,164 +88,182 @@ int NodeSerializer::deserialize(char *line, rig_t *rig, std::string activeSectio
 		return -1;
 	}
 
-
-	// XXX: TOFIX: logging!
-	// parse nodes
-	int id = 0;
-	float x = 0, y = 0, z = 0, mass = 0;
-	char options[255] = "n";
-	int result = sscanf(line,"%i, %f, %f, %f, %s %f", &id, &x, &y, &z, options, &mass);
-	// catch some errors
-	if (result < 4 || result == EOF)
+	if (!strncmp("set_node_defaults", line, 17))
 	{
-		//LogManager::getSingleton().logMessage("Error parsing File " + String(fname) +" line " + StringConverter::toString(linecounter) + ". trying to continue ...");
-		return 0;
-	}
-	if (id != n->free_node)
-	{
-		//LogManager::getSingleton().logMessage("Error parsing File (Node) " + String(fname) +" line " + StringConverter::toString(linecounter) + ":");
-		//LogManager::getSingleton().logMessage("Error: lost sync in nodes numbers after node " + StringConverter::toString(free_node) + "(got " + StringConverter::toString(id) + " instead)");
-		exit(2);
-	};
-
-	if(n->free_node >= MAX_NODES)
-	{
-		//LogManager::getSingleton().logMessage("nodes limit reached ("+StringConverter::toString(MAX_NODES)+"): " + String(fname) +" line " + StringConverter::toString(linecounter) + ". trying to continue ...");
-		return 0;
-	}
-
-	Vector3 npos = n->startPos + n->startRot * Vector3(x, y, z);
-	init_node(rig, id, npos.x, npos.y, npos.z, NODE_NORMAL, 10, 0, 0, n->free_node, -1, n->default_node_friction, n->default_node_volume, n->default_node_surface, n->default_node_loadweight);
-	n->nodes[id].iIsSkin = true;
-
-	if 	(n->default_node_loadweight >= 0.0f)
-	{
-		n->nodes[id].masstype     = NODE_LOADED;
-		n->nodes[id].overrideMass = true;
-		n->nodes[id].mass         = n->default_node_loadweight;
-	}
-
-	// merge options and default_node_options
-	strncpy(options, ((String(n->default_node_options) + String(options)).c_str()), 250);
-
-	// now 'parse' the options
-	char *options_pointer = options;
-	while (*options_pointer != 0)
-	{
-		switch (*options_pointer)
+		int result = sscanf(line,"set_node_defaults %f, %f, %f, %f, %s", &n->default_node_loadweight, &n->default_node_friction, &n->default_node_volume, &n->default_node_surface, n->default_node_options);
+		if (result < 1 || result == EOF)
 		{
-			case 'l':	// load node
-				if(mass != 0)
-				{
-					n->nodes[id].masstype     = NODE_LOADED;
-					n->nodes[id].overrideMass = true;
-					n->nodes[id].mass         = mass;
-				}
-				else
-				{
-					n->nodes[id].masstype     = NODE_LOADED;
-					n->masscount++;
-				}
-				break;
-			case 'x':	//exhaust
-				// XXX: TOFIX
-				//if (disable_smoke)
-				//	break;
-				/*
-				if(s->smokeId == 0 && s->smokeRef != 0)
-				{
-					exhaust_t e;
-					e.emitterNode = id;
-					e.directionNode = smokeRef;
-					e.isOldFormat = true;
-					//smokeId=id;
-					e.smokeNode = parent->createChildSceneNode();
-					//ParticleSystemManager *pSysM=ParticleSystemManager::getSingletonPtr();
-					char wname[256];
-					sprintf(wname, "exhaust-%zu-%s", exhausts.size(), truckname);
-					//if (pSysM) smoker=pSysM->createSystem(wname, "tracks/Smoke");
-					e.smoker=manager->createParticleSystem(wname, "tracks/Smoke");
-					// ParticleSystem* pSys = ParticleSystemManager::getSingleton().createSystem("exhaust", "tracks/Smoke");
-					if (!e.smoker)
-						continue;
-					e.smokeNode->attachObject(e.smoker);
-					e.smokeNode->setPosition(nodes[e.emitterNode].AbsPosition);
-					exhausts.push_back(e);
-
-				}
-				*/
-				n->nodes[n->smokeId].isHot = true;
-				n->nodes[id].isHot      = true;
-				n->smokeId = id;
-				break;
-			case 'y':	//exhaust reference
-				// XXX: TOFIX
-				//if (disable_smoke)
-				//	break;
-				/*
-				if(smokeId != 0 && smokeRef == 0)
-				{
-					exhaust_t e;
-					e.emitterNode = smokeId;
-					e.directionNode = id;
-					e.isOldFormat = true;
-					//smokeId=id;
-					e.smokeNode = parent->createChildSceneNode();
-					//ParticleSystemManager *pSysM=ParticleSystemManager::getSingletonPtr();
-					char wname[256];
-					sprintf(wname, "exhaust-%zu-%s", exhausts.size(), truckname);
-					//if (pSysM) smoker=pSysM->createSystem(wname, "tracks/Smoke");
-					e.smoker=manager->createParticleSystem(wname, "tracks/Smoke");
-					// ParticleSystem* pSys = ParticleSystemManager::getSingleton().createSystem("exhaust", "tracks/Smoke");
-					if (!e.smoker)
-						continue;
-					e.smokeNode->attachObject(e.smoker);
-					e.smokeNode->setPosition(nodes[e.emitterNode].AbsPosition);
-					exhausts.push_back(e);
-
-					nodes[smokeId].isHot=true;
-					nodes[id].isHot=true;
-				}
-				*/
-				n->smokeRef = id;
-				break;
-			case 'c':	//contactless
-				n->nodes[id].contactless = 1;
-				break;
-			case 'h':	//hook
-				// emulate the old behaviour using new fancy hookgroups
-				// XXX: TOFIX
-				/*
-				hook_t h;
-				h.hookNode=&nodes[id];
-				h.locked=UNLOCKED;
-				h.lockNode=0;
-				h.lockTruck=0;
-				h.lockNodes=true;
-				h.group=-1;
-				hooks.push_back(h);
-				*/
-				break;
-			case 'e':	//editor
-				n->editorId = id;
-				break;
-			case 'b':	//buoy
-				n->nodes[id].buoyancy = 10000.0f;
-				break;
-			case 'p':	//diasble particles
-				n->nodes[id].disable_particles = true;
-			break;
-			case 'L':	//Log data:
-				LogManager::getSingleton().logMessage("Node " + StringConverter::toString(id) + "  settings. Node load mass: " \
-					+ StringConverter::toString(n->nodes[id].mass) + ", friction coefficient: " + StringConverter::toString(n->default_node_friction) \
-					+ " and buoyancy volume coefficient: " + StringConverter::toString(n->default_node_volume) + " Fluid drag surface coefficient: " \
-					+ StringConverter::toString(n->default_node_surface)+ " Particle mode: " + StringConverter::toString(n->nodes[id].disable_particles));
-			break;
+			//LogManager::getSingleton().logMessage("Error parsing File (set_node_defaults) " + String(fname) +" line " + StringConverter::toString(linecounter) + ". trying to continue ...");
+			return 0;
 		}
-		options_pointer++;
+		if (n->default_node_friction   < 0) n->default_node_friction   = NODE_FRICTION_COEF_DEFAULT;
+		if (n->default_node_volume     < 0) n->default_node_volume     = NODE_VOLUME_COEF_DEFAULT;
+		if (n->default_node_surface    < 0) n->default_node_surface    = NODE_SURFACE_COEF_DEFAULT;
+		if (n->default_node_loadweight < 0) n->default_node_loadweight = NODE_LOADWEIGHT_DEFAULT;
+		if (result <= 4) memset(n->default_node_options, 0, sizeof n->default_node_options);
+		return result;
 	}
-	n->free_node++;
-	return result;
+	if(activeSection == "nodes")
+	{
+		// XXX: TOFIX: logging!
+		// parse nodes
+		int id = 0;
+		float x = 0, y = 0, z = 0, mass = 0;
+		char options[255] = "n";
+		int result = sscanf(line,"%i, %f, %f, %f, %s %f", &id, &x, &y, &z, options, &mass);
+		// catch some errors
+		if (result < 4 || result == EOF)
+		{
+			//LogManager::getSingleton().logMessage("Error parsing File " + String(fname) +" line " + StringConverter::toString(linecounter) + ". trying to continue ...");
+			return 0;
+		}
+		if (id != n->free_node)
+		{
+			//LogManager::getSingleton().logMessage("Error parsing File (Node) " + String(fname) +" line " + StringConverter::toString(linecounter) + ":");
+			//LogManager::getSingleton().logMessage("Error: lost sync in nodes numbers after node " + StringConverter::toString(free_node) + "(got " + StringConverter::toString(id) + " instead)");
+			exit(2);
+		};
+
+		if(n->free_node >= MAX_NODES)
+		{
+			//LogManager::getSingleton().logMessage("nodes limit reached ("+StringConverter::toString(MAX_NODES)+"): " + String(fname) +" line " + StringConverter::toString(linecounter) + ". trying to continue ...");
+			return 0;
+		}
+
+		Vector3 npos = n->startPos + n->startRot * Vector3(x, y, z);
+		init_node(rig, id, npos.x, npos.y, npos.z, NODE_NORMAL, 10, 0, 0, n->free_node, -1, n->default_node_friction, n->default_node_volume, n->default_node_surface, n->default_node_loadweight);
+		n->nodes[id].iIsSkin = true;
+
+		if 	(n->default_node_loadweight >= 0.0f)
+		{
+			n->nodes[id].masstype     = NODE_LOADED;
+			n->nodes[id].overrideMass = true;
+			n->nodes[id].mass         = n->default_node_loadweight;
+		}
+
+		// merge options and default_node_options
+		strncpy(options, ((String(n->default_node_options) + String(options)).c_str()), 250);
+
+		// now 'parse' the options
+		char *options_pointer = options;
+		while (*options_pointer != 0)
+		{
+			switch (*options_pointer)
+			{
+				case 'l':	// load node
+					if(mass != 0)
+					{
+						n->nodes[id].masstype     = NODE_LOADED;
+						n->nodes[id].overrideMass = true;
+						n->nodes[id].mass         = mass;
+					}
+					else
+					{
+						n->nodes[id].masstype     = NODE_LOADED;
+						n->masscount++;
+					}
+					break;
+				case 'x':	//exhaust
+					// XXX: TOFIX
+					//if (disable_smoke)
+					//	break;
+					/*
+					if(s->smokeId == 0 && s->smokeRef != 0)
+					{
+						exhaust_t e;
+						e.emitterNode = id;
+						e.directionNode = smokeRef;
+						e.isOldFormat = true;
+						//smokeId=id;
+						e.smokeNode = parent->createChildSceneNode();
+						//ParticleSystemManager *pSysM=ParticleSystemManager::getSingletonPtr();
+						char wname[256];
+						sprintf(wname, "exhaust-%zu-%s", exhausts.size(), truckname);
+						//if (pSysM) smoker=pSysM->createSystem(wname, "tracks/Smoke");
+						e.smoker=manager->createParticleSystem(wname, "tracks/Smoke");
+						// ParticleSystem* pSys = ParticleSystemManager::getSingleton().createSystem("exhaust", "tracks/Smoke");
+						if (!e.smoker)
+							continue;
+						e.smokeNode->attachObject(e.smoker);
+						e.smokeNode->setPosition(nodes[e.emitterNode].AbsPosition);
+						exhausts.push_back(e);
+
+					}
+					*/
+					n->nodes[n->smokeId].isHot = true;
+					n->nodes[id].isHot      = true;
+					n->smokeId = id;
+					break;
+				case 'y':	//exhaust reference
+					// XXX: TOFIX
+					//if (disable_smoke)
+					//	break;
+					/*
+					if(smokeId != 0 && smokeRef == 0)
+					{
+						exhaust_t e;
+						e.emitterNode = smokeId;
+						e.directionNode = id;
+						e.isOldFormat = true;
+						//smokeId=id;
+						e.smokeNode = parent->createChildSceneNode();
+						//ParticleSystemManager *pSysM=ParticleSystemManager::getSingletonPtr();
+						char wname[256];
+						sprintf(wname, "exhaust-%zu-%s", exhausts.size(), truckname);
+						//if (pSysM) smoker=pSysM->createSystem(wname, "tracks/Smoke");
+						e.smoker=manager->createParticleSystem(wname, "tracks/Smoke");
+						// ParticleSystem* pSys = ParticleSystemManager::getSingleton().createSystem("exhaust", "tracks/Smoke");
+						if (!e.smoker)
+							continue;
+						e.smokeNode->attachObject(e.smoker);
+						e.smokeNode->setPosition(nodes[e.emitterNode].AbsPosition);
+						exhausts.push_back(e);
+
+						nodes[smokeId].isHot=true;
+						nodes[id].isHot=true;
+					}
+					*/
+					n->smokeRef = id;
+					break;
+				case 'c':	//contactless
+					n->nodes[id].contactless = 1;
+					break;
+				case 'h':	//hook
+					// emulate the old behaviour using new fancy hookgroups
+					// XXX: TOFIX
+					/*
+					hook_t h;
+					h.hookNode=&nodes[id];
+					h.locked=UNLOCKED;
+					h.lockNode=0;
+					h.lockTruck=0;
+					h.lockNodes=true;
+					h.group=-1;
+					hooks.push_back(h);
+					*/
+					break;
+				case 'e':	//editor
+					n->editorId = id;
+					break;
+				case 'b':	//buoy
+					n->nodes[id].buoyancy = 10000.0f;
+					break;
+				case 'p':	//diasble particles
+					n->nodes[id].disable_particles = true;
+				break;
+				case 'L':	//Log data:
+					LogManager::getSingleton().logMessage("Node " + StringConverter::toString(id) + "  settings. Node load mass: " \
+						+ StringConverter::toString(n->nodes[id].mass) + ", friction coefficient: " + StringConverter::toString(n->default_node_friction) \
+						+ " and buoyancy volume coefficient: " + StringConverter::toString(n->default_node_volume) + " Fluid drag surface coefficient: " \
+						+ StringConverter::toString(n->default_node_surface)+ " Particle mode: " + StringConverter::toString(n->nodes[id].disable_particles));
+				break;
+			}
+			options_pointer++;
+		}
+		n->free_node++;
+		return result;
+	}
+	return 0;
 }
 
 int NodeSerializer::serialize(char *line, rig_t *rig)
