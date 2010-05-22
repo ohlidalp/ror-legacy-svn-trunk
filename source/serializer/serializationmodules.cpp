@@ -315,6 +315,8 @@ BeamSerializer::BeamSerializer(RoRSerializer *s) : RoRSerializationModule(s)
 	// setup the base descriptions, etc, then register ourself
 	s->registerModuleSerializer(this);
 	s->addSectionHandler("beams", this);
+	s->addCommandHandler("set_beam_defaults", this);
+	s->addCommandHandler("set_beam_defaults_scale", this);
 }
 
 void BeamSerializer::initData(rig_t *rig)
@@ -359,86 +361,141 @@ int BeamSerializer::deserialize(char *line, rig_t *rig, std::string activeSectio
 		return -1;
 	}
 
-	// XXX: TOFIX: logging!
-	//parse beams
-	int id1, id2;
-	char options[50] = "v";
-	int type = BEAM_NORMAL;
-	int result = sscanf(line, "%i, %i, %s", &id1, &id2, options);
-	if (result < 2 || result == EOF)
+	if (!strncmp("set_beam_defaults_scale", line, 23))
 	{
-		//LogManager::getSingleton().logMessage("Error parsing File (Beam) " + String(fname) +" line " + StringConverter::toString(linecounter) + ". trying to continue ...");
-		return -1;
-	}
-
-	if (id1 >= n->free_node || id2 >= n->free_node)
-	{
-		LogManager::getSingleton().logMessage("Error: unknown node number in beams section ("
-			+StringConverter::toString(id1)+","+StringConverter::toString(id2)+")");
-		exit(3);
-	};
-
-	if(b->free_beam >= MAX_BEAMS)
-	{
-		//LogManager::getSingleton().logMessage("beams limit reached ("+StringConverter::toString(MAX_BEAMS)+"): " + String(fname) +" line " + StringConverter::toString(linecounter) + ". trying to continue ...");
-		return -1;
-	}
-
-	//skip if a beam already exists
-	int i;
-	for (i=0; i < b->free_beam; i++)
-	{
-		if ((b->beams[i].p1 == &n->nodes[id1] && b->beams[i].p2 == &n->nodes[id2]) \
-			|| (b->beams[i].p1 == &n->nodes[id2] && b->beams[i].p2 == &n->nodes[id1]))
+		int result = sscanf(line,"set_beam_defaults_scale %f, %f, %f, %f", &b->default_spring_scale, &b->default_damp_scale, &b->default_deform_scale, &b->default_break_scale);
+		if (result < 4 || result == EOF)
 		{
-			LogManager::getSingleton().logMessage("Skipping duplicate beams: from node "+StringConverter::toString(id1)+" to node "+StringConverter::toString(id2));
+			//LogManager::getSingleton().logMessage("Error parsing File (set_beam_defaults_scale) " + String(fname) +" line " + StringConverter::toString(linecounter) + ". trying to continue ...");
 			return 0;
 		}
+		return result;
 	}
-
-	// FIXME: separate init_beam and setup_beam to be able to set all parameters after creation
-	// this is just ugly:
-	char *options_pointer = options;
-	while (*options_pointer != 0)
+	if (!strncmp("set_beam_defaults", line, 17))
 	{
-		if(*options_pointer=='i')
+		int result = sscanf(line,"set_beam_defaults %f, %f, %f, %f, %f, %s, %f", &b->default_spring, &b->default_damp, &b->default_deform,&b->default_break,&b->default_beam_diameter, b->default_beam_material, &b->default_plastic_coef);
+		if (result < 1 || result == EOF)
 		{
-			type = BEAM_INVISIBLE;
-			break;
+			//LogManager::getSingleton().logMessage("Error parsing File (set_beam_defaults) " + String(fname) +" line " + StringConverter::toString(linecounter) + ". trying to continue ...");
+			return 0;
 		}
-		options_pointer++;
+		/*
+		// XXX: TODO: FIX
+		if(strnlen(default_beam_material2, 255))
+		{
+			MaterialPtr mat = MaterialManager::getSingleton().getByName(String(default_beam_material2));
+			if(!mat.isNull())
+				strncpy(default_beam_material, default_beam_material2, 256);
+			else
+				LogManager::getSingleton().logMessage("beam material '" + String(default_beam_material2) + "' not found!");
+		}*/
+		if (b->default_spring        < 0) b->default_spring        = DEFAULT_SPRING;
+		if (b->default_damp          < 0) b->default_damp          = DEFAULT_DAMP;
+		if (b->default_deform        < 0) b->default_deform        = BEAM_DEFORM;
+		if (b->default_break         < 0) b->default_break         = BEAM_BREAK;
+		if (b->default_beam_diameter < 0) b->default_beam_diameter = DEFAULT_BEAM_DIAMETER;
+		if (b->default_plastic_coef >= 0.0f)
+		{
+			b->beam_creak = 0;
+		}
+		if(b->default_spring_scale != 1 || b->default_damp_scale != 1 || b->default_deform_scale != 1 || b->default_break_scale != 1)
+		{
+			// XXX
+			/*
+			LogManager::getSingleton().logMessage("Due to using set_beam_defaults_scale, this set_beam_defaults was interpreted as  " + \
+				StringConverter::toString(default_spring * default_spring_scale) + ", " + \
+				StringConverter::toString(default_damp   * default_damp_scale) + ", " + \
+				StringConverter::toString(default_deform * default_deform_scale) + ", " + \
+				StringConverter::toString(default_break  * default_break_scale) + ". In " + \
+				String(fname) +" line " + StringConverter::toString(linecounter) + ".");
+				*/
+
+		}
+		return result;
 	}
-
-	int pos = add_beam(rig, &n->nodes[id1], &n->nodes[id2], type, \
-		b->default_break  * b->default_break_scale, \
-		b->default_spring * b->default_spring_scale, \
-		b->default_damp   * b->default_damp_scale, \
-		-1, -1, -1, 1, \
-		b->default_beam_diameter);
-
-	// now 'parse' the options
-	options_pointer = options;
-	while (*options_pointer != 0)
+	if(activeSection == "beams")
 	{
-		switch (*options_pointer)
+		// XXX: TOFIX: logging!
+		//parse beams
+		int id1, id2;
+		char options[50] = "v";
+		int type = BEAM_NORMAL;
+		int result = sscanf(line, "%i, %i, %s", &id1, &id2, options);
+		if (result < 2 || result == EOF)
 		{
-			case 'i':	// invisible
-				b->beams[pos].type = BEAM_INVISIBLE;
-				break;
-			case 'v':	// visible
-				b->beams[pos].type = BEAM_NORMAL;
-				break;
-			case 'r':
-				b->beams[pos].bounded = ROPE;
-				break;
-			case 's':
-				b->beams[pos].bounded = SUPPORTBEAM;
-				break;
+			//LogManager::getSingleton().logMessage("Error parsing File (Beam) " + String(fname) +" line " + StringConverter::toString(linecounter) + ". trying to continue ...");
+			return -1;
 		}
-		options_pointer++;
-	}
 
-	return result;
+		if (id1 >= n->free_node || id2 >= n->free_node)
+		{
+			LogManager::getSingleton().logMessage("Error: unknown node number in beams section ("
+				+StringConverter::toString(id1)+","+StringConverter::toString(id2)+")");
+			exit(3);
+		};
+
+		if(b->free_beam >= MAX_BEAMS)
+		{
+			//LogManager::getSingleton().logMessage("beams limit reached ("+StringConverter::toString(MAX_BEAMS)+"): " + String(fname) +" line " + StringConverter::toString(linecounter) + ". trying to continue ...");
+			return -1;
+		}
+
+		//skip if a beam already exists
+		int i;
+		for (i=0; i < b->free_beam; i++)
+		{
+			if ((b->beams[i].p1 == &n->nodes[id1] && b->beams[i].p2 == &n->nodes[id2]) \
+				|| (b->beams[i].p1 == &n->nodes[id2] && b->beams[i].p2 == &n->nodes[id1]))
+			{
+				LogManager::getSingleton().logMessage("Skipping duplicate beams: from node "+StringConverter::toString(id1)+" to node "+StringConverter::toString(id2));
+				return 0;
+			}
+		}
+
+		// FIXME: separate init_beam and setup_beam to be able to set all parameters after creation
+		// this is just ugly:
+		char *options_pointer = options;
+		while (*options_pointer != 0)
+		{
+			if(*options_pointer=='i')
+			{
+				type = BEAM_INVISIBLE;
+				break;
+			}
+			options_pointer++;
+		}
+
+		int pos = add_beam(rig, &n->nodes[id1], &n->nodes[id2], type, \
+			b->default_break  * b->default_break_scale, \
+			b->default_spring * b->default_spring_scale, \
+			b->default_damp   * b->default_damp_scale, \
+			-1, -1, -1, 1, \
+			b->default_beam_diameter);
+
+		// now 'parse' the options
+		options_pointer = options;
+		while (*options_pointer != 0)
+		{
+			switch (*options_pointer)
+			{
+				case 'i':	// invisible
+					b->beams[pos].type = BEAM_INVISIBLE;
+					break;
+				case 'v':	// visible
+					b->beams[pos].type = BEAM_NORMAL;
+					break;
+				case 'r':
+					b->beams[pos].bounded = ROPE;
+					break;
+				case 's':
+					b->beams[pos].bounded = SUPPORTBEAM;
+					break;
+			}
+			options_pointer++;
+		}
+		return result;
+	}
+	return 0;
 }
 
 int BeamSerializer::serialize(char *line, rig_t *rig)
@@ -1697,7 +1754,6 @@ DummySerializer::DummySerializer(RoRSerializer *s) : RoRSerializationModule(s)
 	// unsupported sections
 	s->addSectionHandler("cinecam", this);
 	s->addSectionHandler("help", this);
-	s->addSectionHandler("engoption", this);
 	s->addSectionHandler("wheels2", this);
 	s->addSectionHandler("meshwheels", this);
 	s->addSectionHandler("shocks", this);
@@ -1745,8 +1801,6 @@ DummySerializer::DummySerializer(RoRSerializer *s) : RoRSerializationModule(s)
 	s->addCommandHandler("set_inertia_defaults", this);
 	s->addCommandHandler("forwardcommands", this);
 	s->addCommandHandler("importcommands", this);
-	s->addCommandHandler("set_beam_defaults", this);
-	s->addCommandHandler("set_beam_defaults_scale", this);
 	s->addCommandHandler("set_node_defaults", this);
 	s->addCommandHandler("enable_advanced_deformation", this);
 	s->addCommandHandler("rollon", this);
