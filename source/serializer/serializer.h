@@ -66,7 +66,7 @@ public:
 	RoRSerializationModule *getSectionModule(rig_t *rig, std::string section);
 
 protected:
-	int processModules(char *line, rig_t *rig, SerializationContext *ctx, std::string &activeSection, bool &activeSectionExplicit);
+	int processModules(char *line, rig_t *rig, SerializationContext *ctx, std::string &activeSection, std::string &previousSection, bool &activeSectionExplicit);
 
 
 	std::map < std::string, RoRSerializationModule *> sections;
