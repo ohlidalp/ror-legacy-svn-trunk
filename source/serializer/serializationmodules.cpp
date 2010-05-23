@@ -1820,7 +1820,6 @@ DummySerializer::DummySerializer(RoRSerializer *s) : RoRSerializationModule(s)
 	s->addCommandHandler("set_inertia_defaults", this);
 	s->addCommandHandler("forwardcommands", this);
 	s->addCommandHandler("importcommands", this);
-	s->addCommandHandler("set_node_defaults", this);
 	s->addCommandHandler("enable_advanced_deformation", this);
 	s->addCommandHandler("rollon", this);
 	s->addCommandHandler("rescuer", this);
