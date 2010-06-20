@@ -1,18 +1,13 @@
 project(RoR_Configurator)
 
-# find wxWidgets
-SET(wxWidgets_USE_UNICODE ON)
-FIND_PACKAGE(wxWidgets REQUIRED COMPONENTS base core html net adv)
-include_directories(${wxWidgets_INCLUDE_DIRS})
-add_definitions("-D${wxWidgets_DEFINITIONS}" ${wxWidgets_CXX_FLAGS})
-link_directories (${wxWidgets_LIB_DIR})
-
 IF(WIN32)
- include_directories(${BOOST_PATH})
- link_directories   (${BOOST_PATH}/lib)
+ include_directories(${BOOST_INCLUDE_DIRS})
+ link_directories   (${BOOST_LIBRARY_DIRS})
  include_directories(${PThread_INCLUDE_DIRS})
  link_directories   (${PThread_LIBRARY_DIRS})
-
+ include_directories(${WXWIDGETS_SHARED_INCLUDE_DIRS})
+ link_directories   (${WXWIDGETS_SHARED_LIBRARY_DIRS})
+ 
  set(OS_LIBS "${PThread_LIBRARIES} dinput8.lib dxguid.lib")
  set(OS_SOURCE "icon.rc")
 
@@ -53,5 +48,7 @@ FILE(GLOB headers "*.h")
 add_executable(rorconfig ${sources} ${headers} ${OS_SOURCE} ../main/InputEngine.cpp)
 windows_hacks(rorconfig)
 
-TARGET_LINK_LIBRARIES(rorconfig ${wxWidgets_LIBRARIES} ${Ogre_LIBRARIES} ${Ois_LIBRARIES} ${OS_LIBS})
+TARGET_LINK_LIBRARIES(rorconfig ${WXWIDGETS_SHARED_LIBRARIES} ${Ogre_LIBRARIES} ${Ois_LIBRARIES} ${OS_LIBS})
+
+
 

@@ -21,6 +21,8 @@ endmacro(setup_lib)
 
 # config below
 IF(WIN32)
+   include_directories(${BOOST_INCLUDE_DIRS})
+   link_directories   (${BOOST_LIBRARY_DIRS})
    include_directories(${PThread_INCLUDE_DIRS})
    link_directories   (${PThread_LIBRARY_DIRS})
    set(OS_LIBS "${PThread_LIBRARIES} dinput8.lib dxguid.lib")
