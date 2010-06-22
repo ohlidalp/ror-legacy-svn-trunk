@@ -20,17 +20,27 @@ link_directories   (${BOOST_LIBRARY_DIRS})
 
 
 IF(WIN32)
-	add_definitions("-D__WIN32__ -D_CRT_SECURE_NO_WARNINGS -DPLATFORM=1 -DWIN32_LEAN_AND_MEAN")
-	link_directories ("C:\\Program Files\\boost\\boost_1_39\\lib")
-	link_directories ("C:\\Program Files (x86)\\boost\\boost_1_39\\lib")
-	link_directories ("C:\\wxWidgets-2.9.0-static\\lib\\vc_lib")
+   add_definitions("-D__WIN32__ -D_CRT_SECURE_NO_WARNINGS -DPLATFORM=1 -DWIN32_LEAN_AND_MEAN")
+   link_directories ("C:\\Program Files\\boost\\boost_1_39\\lib")
+   link_directories ("C:\\Program Files (x86)\\boost\\boost_1_39\\lib")
+   link_directories ("C:\\wxWidgets-2.9.0-static\\lib\\vc_lib")
 ENDIF(WIN32)
 IF(UNIX)
-	add_definitions("-DPLATFORM=2")
-	FIND_PACKAGE(PkgConfig REQUIRED)
-	PKG_CHECK_MODULES(GTK gtk+-2.0 REQUIRED)
-	INCLUDE_DIRECTORIES(${GTK_INCLUDE_DIRS})
-	link_directories (${wxWidgets_LIB_DIR})
+   add_definitions("-DPLATFORM=2")
+   FIND_PACKAGE(PkgConfig REQUIRED)
+   PKG_CHECK_MODULES(GTK gtk+-2.0 REQUIRED)
+   INCLUDE_DIRECTORIES(${GTK_INCLUDE_DIRS})
+   link_directories (${wxWidgets_LIB_DIR})
+
+   # find wxwidgets
+   SET(wxWidgets_USE_UNICODE ON)
+   FIND_PACKAGE(wxWidgets REQUIRED COMPONENTS base core html net adv)
+   include_directories(${wxWidgets_INCLUDE_DIRS})
+   add_definitions("-D${wxWidgets_DEFINITIONS}" ${wxWidgets_CXX_FLAGS})
+   link_directories (${wxWidgets_LIB_DIR})
+
+   # and boost
+   FIND_PACKAGE(Boost REQUIRED system filesystem)
 ENDIF(UNIX)
 
 add_definitions("-DNOOGRE -D_UNICODE")
@@ -46,15 +56,12 @@ windows_hacks(installer)
 # we dont need to add ${Boost_LIBRARIES} here, could be wrong as well ...
 
 IF(WIN32)
-	SET_TARGET_PROPERTIES(installer PROPERTIES COMPILE_FLAGS "/bigobj /MT /MP")
-	SET_TARGET_PROPERTIES(installer PROPERTIES LINK_FLAGS    "/MANIFESTUAC:\"level='requireAdministrator' uiAccess='false'\" /SUBSYSTEM:WINDOWS /NODEFAULTLIB:\"msvcprt.lib\" /NODEFAULTLIB:\"MSVCRT.lib\"")
-	TARGET_LINK_LIBRARIES(installer ${WXWIDGETS_STATIC_LIBRARIES})
+   SET_TARGET_PROPERTIES(installer PROPERTIES COMPILE_FLAGS "/bigobj /MT /MP")
+   SET_TARGET_PROPERTIES(installer PROPERTIES LINK_FLAGS    "/MANIFESTUAC:\"level='requireAdministrator' uiAccess='false'\" /SUBSYSTEM:WINDOWS /NODEFAULTLIB:\"msvcprt.lib\" /NODEFAULTLIB:\"MSVCRT.lib\"")
+   TARGET_LINK_LIBRARIES(installer ${WXWIDGETS_STATIC_LIBRARIES})
 ELSE(WIN32)
-	#TARGET_LINK_LIBRARIES(installer ${Boost_LIBRARIES})
-	#TARGET_LINK_LIBRARIES(installer ${wxWidgets_LIBRARIES})
+   TARGET_LINK_LIBRARIES(installer ${Boost_LIBRARIES})
+   TARGET_LINK_LIBRARIES(installer ${wxWidgets_LIBRARIES})
 ENDIF(WIN32)
-
-# already in correct path, no need to install at all!
-#install(TARGETS rorconfig DESTINATION ${BIN_DIR})
 
 
