@@ -243,8 +243,8 @@ void RoRFrameListener::updateIO(float dt)
 		//logitech G27 LEDs tachometer
 		if (leds)
 		{
-			leds->play(trucks[current_truck]->engine->getRPM(), 
-				trucks[current_truck]->engine->getMaxRPM()*0.75, 
+			leds->play(trucks[current_truck]->engine->getRPM(),
+				trucks[current_truck]->engine->getMaxRPM()*0.75,
 				trucks[current_truck]->engine->getMaxRPM());
 		}
 #endif //OIS_G27
@@ -257,9 +257,9 @@ void RoRFrameListener::updateIO(float dt)
 			udir.normalise();
 			uroll.normalise();
 			forcefeedback->setForces(-trucks[current_truck]->ffforce.dotProduct(uroll)/10000.0,
-				trucks[current_truck]->ffforce.dotProduct(udir)/10000.0, 
-				trucks[current_truck]->WheelSpeed, 
-				trucks[current_truck]->hydrodircommand, 
+				trucks[current_truck]->ffforce.dotProduct(udir)/10000.0,
+				trucks[current_truck]->WheelSpeed,
+				trucks[current_truck]->hydrodircommand,
 				trucks[current_truck]->ffhydro);
 		}
 	}
@@ -319,7 +319,7 @@ void RoRFrameListener::updateGUI(float dt)
 	{
 		//TRUCK
 		if(!trucks[current_truck]->engine) return;
-		
+
 		//special case for the editor
 		if (trucks[current_truck]->editorId>=0 && editor)
 		{
@@ -423,7 +423,7 @@ void RoRFrameListener::updateGUI(float dt)
 		//float jroll=angle*1.67;
 		ow->rolltexture->setTextureRotate(Radian(angle));
 		//	roll_node->roll(Radian(angle));
-		
+
 		// rollcorr
 		if (trucks[current_truck]->free_active_shock && ow && ow->guiRoll && ow->rollcortexture)
 		{
@@ -432,7 +432,7 @@ void RoRFrameListener::updateGUI(float dt)
 			ow->rollcortexture->setTextureRotate(Radian(-trucks[current_truck]->stabratio*10.0));
 			if (trucks[current_truck]->stabcommand)
 				ow->guiRoll->setMaterialName("tracks/rollmaskblink");
-			else 
+			else
 				ow->guiRoll->setMaterialName("tracks/rollmask");
 		}
 
@@ -445,7 +445,7 @@ void RoRFrameListener::updateGUI(float dt)
 		if (angle>1) angle=1;
 		ow->pitchtexture->setTextureRotate(Radian(angle));
 		//	pitch_node->roll(Radian(angle));
-		
+
 		// turbo
 		angle=40.0-trucks[current_truck]->engine->getTurboPSI()*3.34;
 		ow->turbotexture->setTextureRotate(Degree(angle));
@@ -481,13 +481,13 @@ void RoRFrameListener::updateGUI(float dt)
 	{
 		//AIRPLANE GUI
 		int ftp = trucks[current_truck]->free_aeroengine;
-		
+
 		//throttles
 		ow->thro1->setTop(ow->thrtop+ow->thrheight*(1.0-trucks[current_truck]->aeroengines[0]->getThrotle())-1.0);
 		if (ftp>1) ow->thro2->setTop(ow->thrtop+ow->thrheight*(1.0-trucks[current_truck]->aeroengines[1]->getThrotle())-1.0);
 		if (ftp>2) ow->thro3->setTop(ow->thrtop+ow->thrheight*(1.0-trucks[current_truck]->aeroengines[2]->getThrotle())-1.0);
 		if (ftp>3) ow->thro4->setTop(ow->thrtop+ow->thrheight*(1.0-trucks[current_truck]->aeroengines[3]->getThrotle())-1.0);
-		
+
 		//fire
 		if (trucks[current_truck]->aeroengines[0]->isFailed()) ow->engfireo1->setMaterialName("tracks/engfire-on"); else ow->engfireo1->setMaterialName("tracks/engfire-off");
 		if (ftp>1 && trucks[current_truck]->aeroengines[1]->isFailed()) ow->engfireo2->setMaterialName("tracks/engfire-on"); else ow->engfireo2->setMaterialName("tracks/engfire-off");
@@ -519,7 +519,7 @@ void RoRFrameListener::updateGUI(float dt)
 				angle=329.0;
 		}
 		ow->airspeedtexture->setTextureRotate(Degree(-angle));
-		
+
 		// AOA
 		angle=0;
 		if (trucks[current_truck]->free_wing>4)
@@ -538,20 +538,20 @@ void RoRFrameListener::updateGUI(float dt)
 		if (angle>25.0) angle=25.0;
 		if (angle<-25.0) angle=-25.0;
 		ow->aoatexture->setTextureRotate(Degree(-angle*4.7+90.0));
-		
+
 		// altimeter
 		angle=trucks[current_truck]->nodes[0].AbsPosition.y*1.1811;
 		ow->altimetertexture->setTextureRotate(Degree(-angle));
 		char altc[10];
 		sprintf(altc, "%03u", (int)(trucks[current_truck]->nodes[0].AbsPosition.y/30.48));
 		ow->alt_value_taoe->setCaption(altc);
-		
+
 		//adi
 		//roll
 		Vector3 rollv=trucks[current_truck]->nodes[trucks[current_truck]->cameranodepos[0]].RelPosition-trucks[current_truck]->nodes[trucks[current_truck]->cameranoderoll[0]].RelPosition;
 		rollv.normalise();
 		float rollangle=asin(rollv.dotProduct(Vector3::UNIT_Y));
-		
+
 		//pitch
 		Vector3 dirv=trucks[current_truck]->nodes[trucks[current_truck]->cameranodepos[0]].RelPosition-trucks[current_truck]->nodes[trucks[current_truck]->cameranodedir[0]].RelPosition;
 		dirv.normalise();
@@ -728,7 +728,7 @@ void RoRFrameListener::setGravity(float value)
 }
 
 // Constructor takes a RenderWindow because it uses that to determine input context
-RoRFrameListener::RoRFrameListener(RenderWindow* win, Camera* cam, SceneManager* scm, Root* root, bool isEmbedded) : 
+RoRFrameListener::RoRFrameListener(RenderWindow* win, Camera* cam, SceneManager* scm, Root* root, bool isEmbedded) :
 	initialized(false),
 	mCollisionTools(0),
 	isEmbedded(isEmbedded),
@@ -745,11 +745,11 @@ RoRFrameListener::RoRFrameListener(RenderWindow* win, Camera* cam, SceneManager*
 #ifdef USE_LUA
 	lua=0;
 #endif // LUASCRIPT
-	
+
 	// we dont use overlays in embedded mode
 	if(!isEmbedded)
 		ow = new OverlayWrapper(win);
-	
+
 	benchmarking = !(SETTINGS.getSetting("Benchmark").empty());
 	enablePosStor = (SETTINGS.getSetting("Position Storage")=="Yes");
 	objectCounter=0;
@@ -1146,14 +1146,18 @@ RoRFrameListener::RoRFrameListener(RenderWindow* win, Camera* cam, SceneManager*
 		}
 		LogManager::getSingleton().logMessage("trying to join server '" + String(sname) + "' on port " + StringConverter::toString(sport) + "'...");
 
+#ifdef USE_MYGUI
 		LoadingWindow::get()->setAutotrack(_L("Trying to connect to server ..."));
+#endif // USE_MYGUI
 		// important note: all new network code is written in order to allow also the old network protocol to further exist.
 		// at some point you need to decide with what type of server you communicate below and choose the correct class
 
 		net = new Network(trucks, sname, sport, this);
 
 		bool connres = net->connect();
+#ifdef USE_MYGUI
 		LoadingWindow::get()->hide();
+#endif //USE_MYGUI
 		if(!connres)
 		{
 			LogManager::getSingleton().logMessage("connection failed. server down?");
