@@ -3,7 +3,6 @@ set(ROR_USE_MYGUI   "FALSE" CACHE BOOL "use MyGUI")
 set(ROR_USE_OPENAL  "FALSE" CACHE BOOL "use OPENAL")
 set(ROR_USE_LUA     "FALSE" CACHE BOOL "use LUA")
 set(ROR_USE_SOCKETW "FALSE" CACHE BOOL "use SOCKETW")
-set(ROR_USE_OIS_G27 "FALSE" CACHE BOOL "use OIS With G27 patches")
 set(ROR_USE_MOFILEREADER "FALSE" CACHE BOOL "use mofilereader")
 set(ROR_USE_PAGED   "FALSE" CACHE BOOL "use paged geometry")
 set(ROR_USE_CAELUM  "FALSE" CACHE BOOL "use caelum sky")
@@ -13,6 +12,7 @@ set(ROR_USE_HYDRAX  "FALSE" CACHE BOOL "use hydrax water system")
 # set some defaults
 IF(WIN32)
 	# options only available under windows
+    set(ROR_USE_OIS_G27 "FALSE" CACHE BOOL "use OIS With G27 patches")
 	set(ROR_USE_CRASHRPT "FALSE" CACHE BOOL "use crash report tool")
 	# check if dependencies dir is in here
 	set(DEPENDENCIES_DIR_CHECK "${RoR_SOURCE_DIR}/dependencies")
@@ -132,6 +132,8 @@ ELSEIF(UNIX)
    PKG_CHECK_MODULES  (Ogre OGRE REQUIRED)
    PKG_CHECK_MODULES  (Ois OIS REQUIRED)
 
+   # using cmake fingd modules
+   # Open-AL
    find_package(OpenAL)
    if(ROR_USE_OPENAL)
       set(OPENAL_INCLUDE_DIRS ${OPENAL_INCLUDE_DIR})
@@ -142,6 +144,7 @@ ELSEIF(UNIX)
       endif(OPENAL_FOUND)
    endif(ROR_USE_OPENAL)
 
+   # LUA
    find_package(Lua51)
    if(ROR_USE_LUA)
       set(LUA_INCLUDE_DIRS ${LUA_INCLUDE_DIR})
@@ -152,34 +155,85 @@ ELSEIF(UNIX)
       endif(LUA51_FOUND)
    endif(ROR_USE_LUA)
 
+   # using pkg-config
+   # MyGUI
+   PKG_CHECK_MODULES(MYGUI MYGUI)
    if(ROR_USE_MYGUI)
-      PKG_CHECK_MODULES(MYGUI MYGUI)
       find_library(MYGUI_OGRE_PLATFORM MyGUI.OgrePlatform)
       set(MYGUI_LIBRARIES ${MYGUI_LIBRARIES} ${MYGUI_OGRE_PLATFORM})
+      # add our mygui BaseLayout
+      set(MYGUI_INCLUDE_DIRS ${MYGUI_INCLUDE_DIRS} ${RoR_SOURCE_DIR}/source/main/mygui)
+   else()
+      if(MYGUI_FOUND)
+         message(" > MyGUI found, you should enable MyGUI support by setting ROR_USE_MYGUI")
+      endif(MYGUI_FOUND)
    endif(ROR_USE_MYGUI)
 
+   # using custom checks
+   # MoFileReader
+   find_path(MOFILEREADER_INCLUDE_DIRS "moFileReader.h")
    if(ROR_USE_MOFILEREADER)
-      find_path(MOFILEREADER_INCLUDE_DIRS "moFileReader.h")
-      find_library(MOFILEREADER_LIBRARIES "moFileReader.static")
+      find_library(MOFILEREADER_LIBRARIES "moFileReader")
+   else(ROR_USE_MOFILEREADER)
+      if(MOFILEREADER_INCLUDE_DIRS)
+         message(" > MoFileReader found, you should enable MoFileReader support by setting ROR_USE_MOFILEREADER")
+      endif(MOFILEREADER_INCLUDE_DIRS)
    endif(ROR_USE_MOFILEREADER)
 
+   # SocketW
+   find_path(SOCKETW_INCLUDE_DIRS "SocketW.h")
    if(ROR_USE_SOCKETW)
-      find_path(SOCKETW_INCLUDE_DIRS "SocketW.h")
       find_library(SOCKETW_LIBRARIES "SocketW")
+   else(ROR_USE_SOCKETW)
+      if(SOCKETW_INCLUDE_DIRS)
+         message(" > SocketW found, you should enable SocketW support by setting ROR_USE_SOCKETW")
+      endif(SOCKETW_INCLUDE_DIRS)
    endif(ROR_USE_SOCKETW)
 
+   # Paged Geometry
+   find_path(PAGED_INCLUDE_DIRS "PagedGeometry/PagedGeometry.h")
    if(ROR_USE_PAGED)
-      find_path(PAGED_INCLUDE_DIRS "PagedGeometry.h" "/usr/local/include/Paged")
+      set(PAGED_INCLUDE_DIRS "${PAGED_INCLUDE_DIRS};/${PAGED_INCLUDE_DIRS}/PagedGeometry")
       find_library(PAGED_LIBRARIES "PagedGeometry")
+   else(ROR_USE_PAGED)
+      if(PAGED_INCLUDE_DIRS)
+         message(" > PagedGeometry found, you should enable PagedGeometry support by setting ROR_USE_PAGED")
+      endif(PAGED_INCLUDE_DIRS)
    endif(ROR_USE_PAGED)
 
+   # Caelum
+   find_path(CAELUM_INCLUDE_DIRS "Caelum/Caelum.h")
    if(ROR_USE_CAELUM)
-      #assumes Caelum is installed to uner /usr/local/include/Caelum
-      find_path(CAELUM_INCLUDE_DIRS "Caelum.h" "/usr/local/include/Caelum")
-      find_path(CAELUM_LIBRARIES "Caelum")
+      set(CAELUM_INCLUDE_DIRS "${CAELUM_INCLUDE_DIRS}/Caelum")
+      find_library(CAELUM_LIBRARIES "Caelum")
+   else(ROR_USE_CAELUM)
+      if(CAELUM_INCLUDE_DIRS)
+         message(" > Caelum found, you should enable Caelum support by setting ROR_USE_CAELUM")
+      endif(CAELUM_INCLUDE_DIRS)
    endif(ROR_USE_CAELUM)
 
+   # Hydrax
+   # WIP!
+   find_path(HYDRAX_INCLUDE_DIRS "Hyrax/Hydrax.h")
+   if(ROR_USE_HYDRAX)
+      set(HYDRAX_INCLUDE_DIRS "${CAELUM_INCLUDE_DIRS}/Hyrax")
+      find_library(HYDRAX_LIBRARIES "Hyrax")
+   else(ROR_USE_HYDRAX)
+      if(HYDRAX_INCLUDE_DIRS)
+         message(" > Hydrax found, you should enable Hydrax support by setting ROR_USE_HYDRAX")
+      endif(HYDRAX_INCLUDE_DIRS)
+   endif(ROR_USE_HYDRAX)
+
+   # Angelscript
+   find_path(ANGELSCRIPT_INCLUDE_DIRS "angelscript.h")
+   if(ROR_USE_ANGELSCRIPT)
+      find_library(ANGELSCRIPT_LIBRARIES "angelscript")
+   else(ROR_USE_ANGELSCRIPT)
+      if(ANGELSCRIPT_INCLUDE_DIRS)
+         message(" > Angelscript found, you should enable Angelscript support by setting ROR_USE_ANGELSCRIPT")
+      endif(ANGELSCRIPT_INCLUDE_DIRS)
+   endif(ROR_USE_ANGELSCRIPT)
+
    set(ROR_USE_CRASHRPT FALSE)
+   set(ROR_USE_OIS_G27 FALSE)
 ENDIF(WIN32)
-
-
