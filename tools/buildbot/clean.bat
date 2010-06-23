@@ -3,3 +3,5 @@ cd build
 /clean ^
 release ^
 RoR.sln
+rem force clean exit
+exit /b 0
