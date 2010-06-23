@@ -7,11 +7,11 @@ set(ROR_USE_MOFILEREADER "FALSE" CACHE BOOL "use mofilereader")
 set(ROR_USE_PAGED   "FALSE" CACHE BOOL "use paged geometry")
 set(ROR_USE_CAELUM  "FALSE" CACHE BOOL "use caelum sky")
 set(ROR_USE_ANGELSCRIPT  "FALSE" CACHE BOOL "use angel script")
-set(ROR_USE_HYDRAX  "FALSE" CACHE BOOL "use hydrax water system")
 
 # set some defaults
 IF(WIN32)
 	# options only available under windows
+    set(ROR_USE_HYDRAX  "FALSE" CACHE BOOL "use hydrax water system")
     set(ROR_USE_OIS_G27 "FALSE" CACHE BOOL "use OIS With G27 patches")
 	set(ROR_USE_CRASHRPT "FALSE" CACHE BOOL "use crash report tool")
 	# check if dependencies dir is in here
@@ -236,4 +236,5 @@ ELSEIF(UNIX)
 
    set(ROR_USE_CRASHRPT FALSE)
    set(ROR_USE_OIS_G27 FALSE)
+   set(ROR_USE_HYDRAX FALSE)
 ENDIF(WIN32)
