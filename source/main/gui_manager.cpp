@@ -18,7 +18,7 @@ You should have received a copy of the GNU General Public License
 along with Rigs of Rods.  If not, see <http://www.gnu.org/licenses/>.
 */
 // based on the basemanager code from mygui common
-#ifdef USE_MYGUI 
+#ifdef USE_MYGUI
 
 #include "gui_manager.h"
 #include "Settings.h"
@@ -66,8 +66,7 @@ bool GUIManager::create()
 	windowResized(mWindow);
 	createGui();
 
-	// XXX broken:
-	//MyGUI::LanguageManager::getInstance().eventRequestTag = MyGUI::newDelegate(this, &GUIManager::eventRequestTag);
+	MyGUI::LanguageManager::getInstance().eventRequestTag = MyGUI::newDelegate(this, &GUIManager::eventRequestTag);
 	return true;
 }
 
