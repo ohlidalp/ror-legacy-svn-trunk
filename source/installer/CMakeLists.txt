@@ -37,6 +37,8 @@ IF(UNIX)
 ENDIF(UNIX)
 
 include_directories(${WXWIDGETS_STATIC_INCLUDE_DIRS})
+link_directories   (${WXWIDGETS_STATIC_LIBRARY_DIRS})
+
 add_definitions("-DINSTALLER_PLATFORM=\"${INSTALLER_PLATFORM}\"")
 message("the default installer platform is \"${INSTALLER_PLATFORM}\". To change this, edit INSTALLER_PLATFORM value in cmake.")
 
@@ -46,9 +48,6 @@ link_directories   (${BOOST_LIBRARY_DIRS})
 
 IF(WIN32)
    add_definitions("-D__WIN32__ -D_CRT_SECURE_NO_WARNINGS -DPLATFORM=1 -DWIN32_LEAN_AND_MEAN")
-   link_directories ("C:\\Program Files\\boost\\boost_1_39\\lib")
-   link_directories ("C:\\Program Files (x86)\\boost\\boost_1_39\\lib")
-   link_directories ("C:\\wxWidgets-2.9.0-static\\lib\\vc_lib")
 ENDIF(WIN32)
 IF(UNIX)
    add_definitions("-DPLATFORM=2")
