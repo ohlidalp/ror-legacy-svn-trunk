@@ -2080,7 +2080,7 @@ int Beam::loadTruck(const char* fname, SceneManager *manager, SceneNode *parent,
 							e.smokeNode = parent->createChildSceneNode();
 							//ParticleSystemManager *pSysM=ParticleSystemManager::getSingletonPtr();
 							char wname[256];
-							sprintf(wname, "exhaust-%zu-%s", exhausts.size(), truckname);
+							sprintf(wname, "exhaust-%d-%s", exhausts.size(), truckname);
 							//if (pSysM) smoker=pSysM->createSystem(wname, "tracks/Smoke");
 							e.smoker=manager->createParticleSystem(wname, "tracks/Smoke");
 							// ParticleSystem* pSys = ParticleSystemManager::getSingleton().createSystem("exhaust", "tracks/Smoke");
@@ -2108,7 +2108,7 @@ int Beam::loadTruck(const char* fname, SceneManager *manager, SceneNode *parent,
 							e.smokeNode = parent->createChildSceneNode();
 							//ParticleSystemManager *pSysM=ParticleSystemManager::getSingletonPtr();
 							char wname[256];
-							sprintf(wname, "exhaust-%zu-%s", exhausts.size(), truckname);
+							sprintf(wname, "exhaust-%d-%s", exhausts.size(), truckname);
 							//if (pSysM) smoker=pSysM->createSystem(wname, "tracks/Smoke");
 							e.smoker=manager->createParticleSystem(wname, "tracks/Smoke");
 							// ParticleSystem* pSys = ParticleSystemManager::getSingleton().createSystem("exhaust", "tracks/Smoke");
@@ -4166,7 +4166,7 @@ int Beam::loadTruck(const char* fname, SceneManager *manager, SceneNode *parent,
 			e.isOldFormat = false;
 			e.smokeNode = parent->createChildSceneNode();
 			char wname[256];
-			sprintf(wname, "exhaust-%zu-%s", exhausts.size(), truckname);
+			sprintf(wname, "exhaust-%d-%s", exhausts.size(), truckname);
 			if(strnlen(material,50) == 0 || String(material) == "default")
 				strcpy(material, "tracks/Smoke");
 
