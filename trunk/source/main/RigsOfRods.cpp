@@ -105,8 +105,10 @@ bool RigsOfRods::setup(void)
 	SETTINGS.loadSettings(SETTINGS.getSetting("Config Root")+"RoR.cfg");
 
 	//CREATE OGRE ROOT
-	String logFilename = SETTINGS.getSetting("Log Path") + name + Ogre::String(".log");
-	mRoot = new Root(SETTINGS.getSetting("plugins.cfg"), SETTINGS.getSetting("ogre.cfg"), logFilename);
+	String logFilename   = SETTINGS.getSetting("Log Path") + name + Ogre::String(".log");
+	String pluginsConfig = SETTINGS.getSetting("plugins.cfg");
+	String ogreConfig    = SETTINGS.getSetting("ogre.cfg");
+	mRoot = new Root(pluginsConfig, ogreConfig, logFilename);
 
 	//FROM NOW ON WE HAVE LOGMANAGER!
 
@@ -168,6 +170,9 @@ bool RigsOfRods::setup(void)
 
 	if(SETTINGS.getSetting("Motion blur") == "Yes")
 		loadMainResource("blur", ResourceGroupManager::DEFAULT_RESOURCE_GROUP_NAME);
+	
+	if(SETTINGS.getSetting("Envmap") == "Yes")
+		loadMainResource("envmap", ResourceGroupManager::DEFAULT_RESOURCE_GROUP_NAME);
 
 	if(SETTINGS.getSetting("HeatHaze") == "Yes")
 		loadMainResource("heathaze", ResourceGroupManager::DEFAULT_RESOURCE_GROUP_NAME);
