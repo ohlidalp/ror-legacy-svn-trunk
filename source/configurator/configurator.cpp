@@ -2149,7 +2149,7 @@ void MyDialog::loadOgre()
 	wxLogStatus(wxT(">> If it crashes after here, check your plugins.cfg (and remove the DirectX entry if under linux)!"));
 	ogreRoot = new Ogre::Root(Ogre::String(progdirPrefix.ToUTF8().data())+pluginsfile,
 									Ogre::String(confdirPrefix.ToUTF8().data())+"ogre.cfg",
-									Ogre::String(logsdirPrefix.ToUTF8().data())+"RoR.log");
+									Ogre::String(logsdirPrefix.ToUTF8().data())+"RoRConfig.log");
 
 	wxLogStatus(wxT("Root restore config"));
 	try
