@@ -110,6 +110,13 @@ bool RigsOfRods::setup(void)
 	String ogreConfig    = SETTINGS.getSetting("ogre.cfg");
 	mRoot = new Root(pluginsConfig, ogreConfig, logFilename);
 
+	// log verbosity change
+	if(SETTINGS.getSetting("Logging Level") == "verbose")
+		mRoot->setLogDetail(LL_BOREME);
+	else if(SETTINGS.getSetting("Logging Level") == "normal")
+		mRoot->setLogDetail(LL_NORMAL);
+	else if(SETTINGS.getSetting("Logging Level") == "low")
+		mRoot->setLogDetail(LL_LL_LOW);
 	//FROM NOW ON WE HAVE LOGMANAGER!
 
 	CACHE.setLocation(SETTINGS.getSetting("Cache Path"), SETTINGS.getSetting("Config Root"));
