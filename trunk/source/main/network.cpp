@@ -93,7 +93,9 @@ Network::Network(Beam **btrucks, std::string servername, long sport, RoRFrameLis
 	//
 	memset(&userdata, 0, sizeof(client_info_on_join));
 	shutdown=false;
+#ifdef USE_OPENAL
 	ssm=SoundScriptManager::getSingleton();
+#endif //USE_OPENAL
 	mySname = servername;
 	mySport = sport;
 	strcpy(terrainName, "");
