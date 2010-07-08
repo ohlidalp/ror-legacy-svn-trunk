@@ -217,6 +217,7 @@ public:
 	void OnButPlay(wxCommandEvent& event);
 	void OnButRestore(wxCommandEvent& event);
 	void OnTestNet(wxCommandEvent& event);
+	void OnGetUserToken(wxCommandEvent& event);
 	void OnLinkClicked(wxHtmlLinkEvent& event);
 	void OnLinkClickedUpdate(wxHtmlLinkEvent& event);
 	//void OnSightRangeScroll(wxScrollEvent& event);
@@ -322,7 +323,7 @@ private:
 	//wxComboBox *ctrlTypeCombo;
 	//wxString typeChoices[11];
 	//wxButton *btnRemap;
-	wxButton *btnUpdate;
+	wxButton *btnUpdate, *btnToken;
 	event_trigger_t *getSelectedControlEvent();
 	KeySelectDialog *kd;
 	int controlItemCounter;
@@ -1054,6 +1055,7 @@ enum
 	mynotebook3,
 	command_joywizard,
 	FFSLIDER,
+	get_user_token,
 };
 
 // ----------------------------------------------------------------------------
@@ -1071,6 +1073,7 @@ BEGIN_EVENT_TABLE(MyDialog, wxDialog)
 	EVT_BUTTON(command_play, MyDialog::OnButPlay)
 	EVT_BUTTON(command_restore, MyDialog::OnButRestore)
 	EVT_BUTTON(net_test, MyDialog::OnTestNet)
+	EVT_BUTTON(get_user_token, MyDialog::OnGetUserToken)
 	EVT_BUTTON(clear_cache, MyDialog::OnButClearCache)
 	EVT_BUTTON(regen_cache, MyDialog::OnButRegenCache)
 	EVT_BUTTON(update_ror, MyDialog::OnButUpdateRoR)
@@ -1958,9 +1961,11 @@ MyDialog::MyDialog(const wxString& title, MyApp *_app) : wxDialog(NULL, wxID_ANY
 
 	dText = new wxStaticText(panel_net_bottom, -1, _("User Token: "), wxPoint(10,80));
 	usertoken=new wxTextCtrl(panel_net_bottom, -1, wxString(), wxPoint(150, 80), wxSize(200, -1));
-	usertoken->SetToolTip(_("Your Forum User Token."));
+	usertoken->SetToolTip(_("Your rigsofrods.com User Token."));
 
-	btnUpdate = new wxButton(panel_net_bottom, net_test, _("Update"), wxPoint(360, 5), wxSize(120,85));
+	btnToken = new wxButton(panel_net_bottom, get_user_token, _("Get Token"), wxPoint(360, 78), wxSize(110,25));
+
+	btnUpdate = new wxButton(panel_net_bottom, net_test, _("Update"), wxPoint(360, 5), wxSize(110,65));
 
 	netPanel->SetSizer(sizer_net);
 
@@ -3682,6 +3687,11 @@ void MyDialog::OnTimerReset(wxTimerEvent& event)
 	btnUpdate->Enable(true);
 }
 
+
+void MyDialog::OnGetUserToken(wxCommandEvent& event)
+{
+	wxLaunchDefaultBrowser(wxT("http://usertoken.rigsofrods.com"));
+}
 
 void MyDialog::OnTestNet(wxCommandEvent& event)
 {
