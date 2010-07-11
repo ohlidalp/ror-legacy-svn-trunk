@@ -3946,21 +3946,42 @@ bool RoRFrameListener::updateEvents(float dt)
 			camDist=20;
 		}
 #ifdef USE_CAELUM
-		if (INPUTENGINE.getEventBoolValue(EV_CAELUM_INCREASE_TIME) && SkyManager::getSingletonPtr())
+		if (SETTINGS.getSetting("Sky effects")=="Caelum (best looking, slower)")
 		{
-			SkyManager::getSingleton().setTimeFactor(2.0f);
-		}
-		if (INPUTENGINE.getEventBoolValue(EV_CAELUM_INCREASE_TIME_FAST) && SkyManager::getSingletonPtr())
-		{
-			SkyManager::getSingleton().setTimeFactor(20.0f);
-		}
-		if (INPUTENGINE.getEventBoolValue(EV_CAELUM_DECREASE_TIME) && SkyManager::getSingletonPtr())
-		{
-			SkyManager::getSingleton().setTimeFactor(-2.0f);
-		}
-		if (INPUTENGINE.getEventBoolValue(EV_CAELUM_DECREASE_TIME_FAST) && SkyManager::getSingletonPtr())
-		{
-			SkyManager::getSingleton().setTimeFactor(-20.0f);
+			Ogre::Real time_factor = 1000.0f;
+			Ogre::Real multiplier = 10;
+			bool update_time = false;
+					
+			if (INPUTENGINE.getEventBoolValue(EV_CAELUM_INCREASE_TIME) && SkyManager::getSingletonPtr())
+			{
+				update_time = true;
+			}
+			else if (INPUTENGINE.getEventBoolValue(EV_CAELUM_INCREASE_TIME_FAST) && SkyManager::getSingletonPtr())
+			{
+				time_factor *= multiplier;
+				update_time = true;
+			}
+			else if (INPUTENGINE.getEventBoolValue(EV_CAELUM_DECREASE_TIME) && SkyManager::getSingletonPtr())
+			{
+				time_factor = -time_factor;
+				update_time = true;
+			}
+			else if (INPUTENGINE.getEventBoolValue(EV_CAELUM_DECREASE_TIME_FAST) && SkyManager::getSingletonPtr())
+			{
+				time_factor *= -multiplier;
+				update_time = true;
+			}
+			else
+			{
+				time_factor = 1.0f;
+				update_time = SkyManager::getSingleton().getTimeFactor() != 1.0f;			
+			}
+			
+			if( update_time )
+			{
+				SkyManager::getSingleton().setTimeFactor(time_factor);
+				if(ow) ow->flashMessage(Ogre::String("Time set to ") + SkyManager::getSingleton().getPrettyTime(), 2.0);
+			}
 		}
 #endif //CAELUM
 		if (INPUTENGINE.getEventBoolValueBounce(EV_COMMON_TOGGLE_RENDER_MODE, 0.5f))
@@ -4109,8 +4130,9 @@ bool RoRFrameListener::updateEvents(float dt)
 			NETCHAT.toggleMode(this);
 		}
 
-		if (INPUTENGINE.getEventBoolValueBounce(EV_COMMON_ENTER_OR_EXIT_TRUCK, 0.5f) && !chatting)
+		if (INPUTENGINE.getEventBoolValue(EV_COMMON_ENTER_OR_EXIT_TRUCK) && !chatting && mTimeUntilNextToggle <= 0)
 		{
+			mTimeUntilNextToggle = 0.5; //Some delay before trying to re-enter(exit) truck
 			//perso in/out
 			if (current_truck==-1)
 			{
@@ -4144,6 +4166,7 @@ bool RoRFrameListener::updateEvents(float dt)
 			} else
 			{
 				trucks[current_truck]->brake=trucks[current_truck]->brakeforce*0.66;
+				mTimeUntilNextToggle = 0.0; //No delay in this case: the truck must brake like braking normally
 			}
 		}
 

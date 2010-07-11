@@ -39,12 +39,20 @@ public:
 	void init(Ogre::SceneManager *mScene, Ogre::RenderWindow *mWindow, Ogre::Camera *mCamera);
 
 	void loadScript(Ogre::String script);
+	
+	/// change the time scale
 	void setTimeFactor(double f);
+	
+	/// gets the current time scale
+	double getTimeFactor();
+	
+	/// prints the current time of the simulation inthe format of HH:MM:SS
+	Ogre::String getPrettyTime();
+	
 
 protected:
     Caelum::CaelumSystem *mCaelumSystem;
 	Caelum::CaelumSystem *getCaelumSystem() { return mCaelumSystem; };
-	double mCaelumSpeedFactor;
 };
 
 #endif //SKYMANAGER_H__
