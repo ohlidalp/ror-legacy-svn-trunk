@@ -65,10 +65,28 @@ void SkyManager::loadScript(Ogre::String script)
 	CaelumPlugin::getSingleton().loadCaelumSystemFromScript (mCaelumSystem, script);
 }
 
-void SkyManager::setTimeFactor(double factor)
+void SkyManager::setTimeFactor(LongReal factor)
 {
-    mCaelumSpeedFactor += factor;
-    mCaelumSystem->getUniversalClock()->setTimeScale (mCaelumSpeedFactor);
+    mCaelumSystem->getUniversalClock()->setTimeScale (factor);
+}
+
+LongReal SkyManager::getTimeFactor()
+{
+    return mCaelumSystem->getUniversalClock()->getTimeScale();
+}
+
+Ogre::String SkyManager::getPrettyTime()
+{
+	int ignore;
+	int hour;
+	int minute;
+	Caelum::LongReal second;
+	Caelum::Astronomy::getGregorianDateTimeFromJulianDay(mCaelumSystem->getJulianDay()
+	, ignore, ignore, ignore, hour, minute, second);
+	
+	return Ogre::StringConverter::toString( hour, 2, '0' )
+	+ ":" + Ogre::StringConverter::toString( minute, 2, '0' )
+	+ ":" + Ogre::StringConverter::toString( (int)second, 2, '0' );
 }
 
 #endif //USE_CAELUM
