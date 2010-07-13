@@ -29,9 +29,9 @@ IF(WIN32)
 	endif(NOT ROR_DEPENDENCIES_DIR)
 
 		#### REQUIRED COMPONENTS
-		set(Ogre_INCLUDE_DIRS "${ROR_DEPENDENCIES_DIR}/include/Ogre" CACHE PATH "The ogre include path to use")
+		set(Ogre_INCLUDE_DIRS "${ROR_DEPENDENCIES_DIR}/include/Ogre;${ROR_DEPENDENCIES_DIR}/include/Ogre/Terrain;${ROR_DEPENDENCIES_DIR}/include/Ogre/Paging" CACHE PATH "The ogre include path to use")
 		set(Ogre_LIBRARY_DIRS "${ROR_DEPENDENCIES_DIR}/lib" CACHE PATH "The ogre lib path to use")
-		set(Ogre_LIBRARIES "OgreMain" CACHE STRING "The ogre lib to link against")
+		set(Ogre_LIBRARIES "OgreMain;OgrePaging;OgreTerrain" CACHE STRING "The ogre lib to link against")
 
 		set(Ois_INCLUDE_DIRS "${ROR_DEPENDENCIES_DIR}/include/ois" CACHE PATH "The OIS include path to use")
 		set(Ois_LIBRARY_DIRS "${ROR_DEPENDENCIES_DIR}/lib" CACHE PATH "The OIS lib path to use")
