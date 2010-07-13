@@ -24,11 +24,10 @@ along with Rigs of Rods.  If not, see <http://www.gnu.org/licenses/>.
 #include <OgreVector3.h>
 #include "rormemory.h"
 
-// forward definitions
-//namespace Ogre {
-//	class TerrainSceneManager;
-//};
+#include "OgreTerrain.h"
+#include "OgreTerrainGroup.h"
 
+using namespace Ogre;
 /**
  * This is the common Interface for all Scenemanager Specific Implementations of the Heightfinder
  */
@@ -40,6 +39,44 @@ public:
 
 	virtual float getHeightAt(float x, float z) = 0;
 	virtual void getNormalAt(float x, float y, float z, Ogre::Vector3 *result, float precision=0.1) = 0;
+};
+
+// new terrain height finder. For the new terrain from Ogre 1.7
+class NTHeightFinder : public HeightFinder, public MemoryAllocatedObject
+{
+protected:
+	TerrainGroup *mTerrainGroup;
+	Vector3 mTerrainPos;
+public:
+	NTHeightFinder(TerrainGroup *tg, Vector3 tp) : mTerrainGroup(tg), mTerrainPos(tp)
+	{
+	}
+	
+	~NTHeightFinder()
+	{
+	}
+
+	float getHeightAt(float x, float z)
+	{
+		Terrain *t=0;
+		return mTerrainGroup->getHeightAtWorldPosition(x, 1000, z, &t);
+	}
+
+	void getNormalAt(float x, float y, float z, Ogre::Vector3 *result, float precision=0.1)
+	{
+		Vector3 left, down;
+
+		left.x = -precision;
+		left.y = getHeightAt( x - precision, z ) - y;
+		left.z = 0;
+
+		down.x = 0;
+		down.y = getHeightAt( x, z + precision ) - y;
+		down.z = precision;
+
+		*result = left.crossProduct( down );
+		result->normalise();
+	}
 };
 
 // Scene-Manager Specific implementations
