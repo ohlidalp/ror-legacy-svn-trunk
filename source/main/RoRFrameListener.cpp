@@ -4804,6 +4804,7 @@ void RoRFrameListener::loadTerrain(String terrainfile)
 
 	Light *mainLight = 0;
 #ifdef USE_CAELUM
+	bool useCaelum = SETTINGS.getSetting("Sky effects")=="Caelum (best looking, slower)";
 	if(!useCaelum)
 		mainLight = mSceneMgr->getLight("MainLight");
 	else
@@ -4814,7 +4815,6 @@ void RoRFrameListener::loadTerrain(String terrainfile)
 
 #ifdef USE_CAELUM
 	//Caelum skies
-	bool useCaelum = SETTINGS.getSetting("Sky effects")=="Caelum (best looking, slower)";
 	if (useCaelum)
 	{
 		//mCamera->setNearClipDistance (0.01);
