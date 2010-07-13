@@ -102,7 +102,9 @@ int OverlayWrapper::init()
 	//adjust dashboard size for screen ratio
 	resizePanel(loadOverlayElement("tracks/pressureo"));
 	resizePanel(loadOverlayElement("tracks/pressureneedle"));
-	pressuretexture=((MaterialPtr)(MaterialManager::getSingleton().getByName("tracks/pressureneedle_mat")))->getTechnique(0)->getPass(0)->getTextureUnitState(0);
+	MaterialPtr m = MaterialManager::getSingleton().getByName("tracks/pressureneedle_mat");
+	if(!m.isNull())
+		pressuretexture=m->getTechnique(0)->getPass(0)->getTextureUnitState(0);
 
 	resizePanel(loadOverlayElement("tracks/speedo"));
 	resizePanel(loadOverlayElement("tracks/tacho"));
