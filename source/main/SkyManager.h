@@ -42,7 +42,7 @@ public:
 	
 	/// change the time scale
 	void setTimeFactor(double f);
-	
+	Ogre::Light *getMainLight();
 	/// gets the current time scale
 	double getTimeFactor();
 	

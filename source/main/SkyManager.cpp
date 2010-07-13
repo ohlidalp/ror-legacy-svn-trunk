@@ -70,6 +70,12 @@ void SkyManager::setTimeFactor(LongReal factor)
     mCaelumSystem->getUniversalClock()->setTimeScale (factor);
 }
 
+Ogre::Light *SkyManager::getMainLight()
+{
+	if(mCaelumSystem && mCaelumSystem->getSun())
+		return mCaelumSystem->getSun()->getMainLight();
+	return 0;
+}
 LongReal SkyManager::getTimeFactor()
 {
     return mCaelumSystem->getUniversalClock()->getTimeScale();
