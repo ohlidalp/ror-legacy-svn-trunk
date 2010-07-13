@@ -115,6 +115,7 @@ set (HEADER_FILES
   StreamableFactory.h
   resource.h
   SkyManager.h
+  ShadowManager.h
 )
 set (SOURCE_FILES
   gui_friction.cpp
@@ -219,6 +220,7 @@ set (SOURCE_FILES
   NetworkStreamManager.cpp
   Streamable.cpp
   SkyManager.cpp
+  ShadowManager.cpp
   COPYING
   icon.rc
   ror.ico
@@ -286,6 +288,8 @@ SOURCE_GROUP("GFX" FILES
   DynamicRenderable.h
   SkyManager.h
   SkyManager.cpp
+  ShadowManager.h
+  ShadowManager.cpp
   envmap.cpp
   envmap.h
   hdrlistener.cpp

@@ -19,6 +19,13 @@ along with Rigs of Rods.  If not, see <http://www.gnu.org/licenses/>.
 */
 #include "RoRFrameListener.h"
 
+#include "OgrePrerequisites.h"
+#include "OgreTerrain.h"
+#include "OgreTerrainQuadTreeNode.h"
+#include "OgreTerrainMaterialGeneratorA.h"
+#include "OgreTerrainPaging.h"
+
+
 //#include "joystick.h"
 #include "ProceduralManager.h"
 #include "hdrlistener.h"
@@ -37,6 +44,7 @@ along with Rigs of Rods.  If not, see <http://www.gnu.org/licenses/>.
 #include "rormemory.h"
 #include "PlayerColours.h"
 #include "OverlayWrapper.h"
+#include "ShadowManager.h"
 #include "TruckHUD.h"
 
 #ifdef USE_MPLATFORM
@@ -149,6 +157,17 @@ using namespace std;
 bool disableRendering=false;
 
 Camera *gCamera;
+
+/// This class just pretends to provide prcedural page content to avoid page loading
+class DummyPageProvider : public PageProvider
+{
+public:
+	bool prepareProceduralPage(Page* page, PagedWorldSection* section) { return true; }
+	bool loadProceduralPage(Page* page, PagedWorldSection* section) { return true; }
+	bool unloadProceduralPage(Page* page, PagedWorldSection* section) { return true; }
+	bool unprepareProceduralPage(Page* page, PagedWorldSection* section) { return true; }
+};
+DummyPageProvider mDummyPageProvider;
 
 class disableRenderingListener : public RenderTargetListener
 {
@@ -4716,119 +4735,9 @@ void RoRFrameListener::loadTerrain(String terrainfile)
 #endif
 
 	//shadows
-	if (SETTINGS.getSetting("Shadow technique")=="Stencil shadows (best looking)")
-	{
-		float scoef=0.2;
-		mSceneMgr->setShadowColour(ColourValue(0.563+scoef, 0.578+scoef, 0.625+scoef));
+	new ShadowManager(mSceneMgr, mWindow, mCamera);
+	ShadowManager::getSingleton().loadConfiguration();
 
-		mSceneMgr->setShadowTechnique(SHADOWTYPE_STENCIL_MODULATIVE); //projects on ground
-		//        mSceneMgr->setShadowTechnique(SHADOWTYPE_STENCIL_ADDITIVE); //does not project on ground
-		//		mSceneMgr->setShadowIndexBufferSize(2000000);
-		mSceneMgr->setShadowDirectionalLightExtrusionDistance(100);
-		mSceneMgr->setShadowFarDistance(550);
-
-		//important optimization
-		mSceneMgr->getRenderQueue()->getQueueGroup(RENDER_QUEUE_WORLD_GEOMETRY_1)->setShadowsEnabled(false);
-
-		//		mSceneMgr->setUseCullCamera(false);
-		//		mSceneMgr->setShowBoxes(true);
-		//		mSceneMgr->showBoundingBoxes(true);
-		//		mSceneMgr->setShowDebugShadows(true);
-	} else if (SETTINGS.getSetting("Shadow technique")=="Texture shadows")
-	{
-		float scoef=0.2;
-		mSceneMgr->setShadowColour(ColourValue(0.563+scoef, 0.578+scoef, 0.625+scoef));
-
-		mSceneMgr->setShadowTechnique(SHADOWTYPE_TEXTURE_MODULATIVE);
-		//		LiSPSMShadowCameraSetup* m_LiSPSMSetup = new Ogre::LiSPSMShadowCameraSetup();
-		//      m_LiSPSMSetup->setOptimalAdjustFactor( 1 );
-		//      ShadowCameraSetupPtr m_currentShadowCameraSetup = Ogre::ShadowCameraSetupPtr(m_LiSPSMSetup);
-		//		mSceneMgr->setShadowCameraSetup(m_currentShadowCameraSetup);
-
-		//		FocusedShadowCameraSetup* m_FocusedSetup = new Ogre::FocusedShadowCameraSetup();
-		//      ShadowCameraSetupPtr m_currentShadowCameraSetup = Ogre::ShadowCameraSetupPtr(m_FocusedSetup);
-		//		mSceneMgr->setShadowCameraSetup(m_currentShadowCameraSetup);
-
-		mSceneMgr->setShadowFarDistance(50);
-		mSceneMgr->setShadowTextureSettings(1024,1);
-	} else if (SETTINGS.getSetting("Shadow technique")=="Soft shadows")
-	{
-		initSoftShadows();
-	} else if (SETTINGS.getSetting("Shadow technique")=="Parallel-split Shadow Maps")
-	{
-#if OGRE_VERSION>0x010602
-		mSceneMgr->setShadowTechnique(SHADOWTYPE_TEXTURE_ADDITIVE_INTEGRATED);
-
-		// 3 textures per directional light
-		mSceneMgr->setShadowTextureCountPerLightType(Ogre::Light::LT_DIRECTIONAL, 3);
-		mSceneMgr->setShadowTextureSettings(2048, 3, PF_FLOAT32_R);
-		mSceneMgr->setShadowTextureSelfShadow(true);
-		// Set up caster material - this is just a standard depth/shadow map caster
-		mSceneMgr->setShadowTextureCasterMaterial("PSSM/shadow_caster");
-
-		// shadow camera setup
-		PSSMShadowCameraSetup* pssmSetup = new PSSMShadowCameraSetup();
-		pssmSetup->calculateSplitPoints(3, mCamera->getNearClipDistance(), mCamera->getFarClipDistance());
-		pssmSetup->setUseSimpleOptimalAdjust(true);
-		//pssmSetup->setSplitPadding(10);
-		//pssmSetup->setOptimalAdjustFactor(0, 2);
-		//pssmSetup->setOptimalAdjustFactor(1, 1);
-		//pssmSetup->setOptimalAdjustFactor(2, 0.5);
-
-		mSceneMgr->setShadowCameraSetup(ShadowCameraSetupPtr(pssmSetup));
-
-
-		/*
-		// we have Caelum, no need for another light
-		mSceneMgr->setAmbientLight(ColourValue(0.3, 0.3, 0.3));
-		Light* l = mSceneMgr->createLight("Dir");
-		l->setType(Light::LT_DIRECTIONAL);
-		Vector3 dir(0.3, -1, 0.2);
-		dir.normalise();
-		l->setDirection(dir);
-		*/
-
-		// Create a basic plane to have something in the scene to look at
-		/*
-		Plane plane;
-		plane.normal = Vector3::UNIT_Y;
-		plane.d = 100;
-		MeshPtr msh = MeshManager::getSingleton().createPlane("Myplane",
-			ResourceGroupManager::DEFAULT_RESOURCE_GROUP_NAME, plane,
-			4500,4500,100,100,true,1,40,40,Vector3::UNIT_Z);
-		msh->buildTangentVectors(VES_TANGENT);
-		Entity* pPlaneEnt;
-		pPlaneEnt = mSceneMgr->createEntity( "plane", "Myplane" );
-		pPlaneEnt->setMaterialName("PSSM/Plane");
-		mSceneMgr->getRootSceneNode()->createChildSceneNode()->attachObject(pPlaneEnt);
-
-		mCamera->setPosition(-50, 500, 1000);
-		mCamera->lookAt(Vector3(-50,-100,0));
-
-		*/
-		//Entity* ent = mSceneMgr->createEntity("knot", "knot.mesh");
-		//ent->setMaterialName("PSSM/Knot");
-		//mSceneMgr->getRootSceneNode()->createChildSceneNode(Vector3(0,0,0))->attachObject(ent);
-		//createRandomEntityClones(ent, 20, Vector3(-1000,0,-1000), Vector3(1000,0,1000));
-
-		const PSSMShadowCameraSetup::SplitPointList& splitPointList = pssmSetup->getSplitPoints();
-		for (int i = 0; i < 3; ++i)
-		{
-			splitPoints[i] = splitPointList[i];
-		}
-		//MaterialPtr mat = MaterialManager::getSingleton().getByName("PSSM/Plane");
-		//mat->getTechnique(0)->getPass(0)->getFragmentProgramParameters()->setNamedConstant("pssmSplitPoints", splitPoints);
-
-		//mat = MaterialManager::getSingleton().getByName("PSSM/Plane2");
-		//mat->getTechnique(0)->getPass(0)->getFragmentProgramParameters()->setNamedConstant("pssmSplitPoints", splitPoints);
-
-		//mat = MaterialManager::getSingleton().getByName("PSSM/Knot");
-		//mat->getTechnique(0)->getPass(0)->getFragmentProgramParameters()->setNamedConstant("pssmSplitPoints", splitPoints);
-#else
-		showError("Parallel-split Shadow Maps as shadow technique is only available when you build with Ogre 1.6 support.", "PSSM error");
-		exit(1);
-#endif //OGRE_VERSION
-	}
 	ColourValue fadeColour(r,g,b);
 
 	bool fogEnable = true;
@@ -4894,7 +4803,8 @@ void RoRFrameListener::loadTerrain(String terrainfile)
 
 #ifdef USE_CAELUM
 	//Caelum skies
-	if (SETTINGS.getSetting("Sky effects")=="Caelum (best looking, slower)")
+	bool useCaelum = SETTINGS.getSetting("Sky effects")=="Caelum (best looking, slower)";
+	if (useCaelum)
 	{
 		//mCamera->setNearClipDistance (0.01);
 		mCamera->setFarClipDistance( farclip*1.733 );
@@ -4967,8 +4877,199 @@ void RoRFrameListener::loadTerrain(String terrainfile)
 		if(!disableMap && bigMap)
 			bigMap->setWorldSize(mapsizex, mapsizez);
 #endif //MYGUI
-		if(!disableTetrrain)
-			mSceneMgr->setWorldGeometry(geom);
+
+	bool newTerrainMode = (SETTINGS.getSetting("new Terrain Mode") == "Yes");
+	if(!newTerrainMode && !disableTetrrain)
+	{
+		// classic mode
+		mSceneMgr->setWorldGeometry(geom);
+	} else if (newTerrainMode && !disableTetrrain)
+	{
+		// new terrain mode
+		mRoot->destroySceneManager(mScene);
+		mScene = mRoot->createSceneManager(ST_GENERIC);
+		// XXX OLD TERRAIN
+		//if(!disableTetrrain)
+		//	mSceneMgr->setWorldGeometry(geom);
+
+		// new terrain
+		int pageSize = StringConverter::parseInt(cfg.getSetting("PageSize"));
+		int worldSize = StringConverter::parseInt(cfg.getSetting("PageWorldX"));
+		int pageMaxHeight = StringConverter::parseInt(cfg.getSetting("MaxHeight"));
+
+		String TERRAIN_FILE_PREFIX  = String(geom); //"testTerrain";
+		String TERRAIN_FILE_SUFFIX  = "mapbin";
+		float TERRAIN_WORLD_SIZE    = worldSize; //1000.0f; // PageWorldX?
+		int TERRAIN_SIZE            = pageSize;
+		int TERRAIN_PAGE_MIN_X=0, TERRAIN_PAGE_MAX_X=0;
+		int TERRAIN_PAGE_MIN_Y=0, TERRAIN_PAGE_MAX_Y=0;
+		bool mTerrainsImported=false;
+		TerrainPaging* mTerrainPaging=0;
+		PageManager* mPageManager=0;
+		Light* l = 0;
+
+#ifdef USE_CAELUM
+		if(!useCaelum)
+			l = mSceneMgr->getLight("MainLight");
+		else
+			l = SkyManager::getSingleton().getMainLight();
+#else // USE_CAELUM
+		l = mSceneMgr->getLight("MainLight");
+#endif // USE_CAELUM
+
+		Vector3 mTerrainPos(0,0,0);
+		mTerrainGroup = OGRE_NEW TerrainGroup(mSceneMgr, Terrain::ALIGN_X_Z, TERRAIN_SIZE, TERRAIN_WORLD_SIZE);
+		mTerrainGroup->setFilenameConvention(TERRAIN_FILE_PREFIX, TERRAIN_FILE_SUFFIX);
+		mTerrainGroup->setOrigin(mTerrainPos);
+
+		new TerrainGlobalOptions();
+		// Configure global
+		TerrainGlobalOptions::getSingleton().setMaxPixelError(8);
+		// testing composite map
+		TerrainGlobalOptions::getSingleton().setCompositeMapDistance(3000);
+		//mTerrainGlobals->setUseRayBoxDistanceCalculation(true);
+		//mTerrainGlobals->getDefaultMaterialGenerator()->setDebugLevel(1);
+		//mTerrainGlobals->setLightMapSize(256);
+
+		//matProfile->setLightmapEnabled(false);
+		// Important to set these so that the terrain knows what to use for derived (non-realtime) data
+		if(l) TerrainGlobalOptions::getSingleton().setLightMapDirection(l->getDerivedDirection());
+		TerrainGlobalOptions::getSingleton().setCompositeMapAmbient(mSceneMgr->getAmbientLight());
+		//mTerrainGlobals->setCompositeMapAmbient(ColourValue::Red);
+		if(l) TerrainGlobalOptions::getSingleton().setCompositeMapDiffuse(l->getDiffuseColour());
+
+		// Configure default import settings for if we use imported image
+		Terrain::ImportData& defaultimp = mTerrainGroup->getDefaultImportSettings();
+		defaultimp.terrainSize  = TERRAIN_SIZE;
+		defaultimp.worldSize    = TERRAIN_WORLD_SIZE;
+
+		defaultimp.inputScale   = pageMaxHeight;
+		defaultimp.minBatchSize = 32;
+		defaultimp.maxBatchSize = 64;
+		// textures
+		defaultimp.layerList.resize(3);
+		defaultimp.layerList[0].worldSize = 10;
+		defaultimp.layerList[0].textureNames.push_back("dirt_grayrocky_diffusespecular.dds");
+		defaultimp.layerList[0].textureNames.push_back("dirt_grayrocky_normalheight.dds");
+		defaultimp.layerList[1].worldSize = 10;
+		defaultimp.layerList[1].textureNames.push_back("grass_green-01_diffusespecular.dds");
+		defaultimp.layerList[1].textureNames.push_back("grass_green-01_normalheight.dds");
+		defaultimp.layerList[2].worldSize = 20;
+		defaultimp.layerList[2].textureNames.push_back("growth_weirdfungus-03_diffusespecular.dds");
+		defaultimp.layerList[2].textureNames.push_back("growth_weirdfungus-03_normalheight.dds");
+
+		bool paging = false;
+		if(!paging)
+		{
+			for (long x = TERRAIN_PAGE_MIN_X; x <= TERRAIN_PAGE_MAX_X; ++x)
+			{
+				for (long y = TERRAIN_PAGE_MIN_Y; y <= TERRAIN_PAGE_MAX_Y; ++y)
+				{
+					String filename = mTerrainGroup->generateFilename(x, y);
+					if (ResourceGroupManager::getSingleton().resourceExists(mTerrainGroup->getResourceGroup(), filename))
+					{
+						mTerrainGroup->defineTerrain(x, y);
+					}
+					else
+					{
+						String heightmapFilename = cfg.getSetting("Heightmap.image");
+						Image img;
+						if(heightmapFilename.find(".raw") != String::npos)
+						{
+							int rawSize = StringConverter::parseInt(cfg.getSetting("Heightmap.raw.size"));
+							int bpp = StringConverter::parseInt(cfg.getSetting("Heightmap.raw.bpp"));
+							
+							// load raw data
+							DataStreamPtr stream = ResourceGroupManager::getSingleton().openResource(heightmapFilename);
+							LogManager::getSingleton().logMessage(" loading RAW image: " + StringConverter::toString(stream->size()) + " / " + StringConverter::toString(rawSize*rawSize*bpp));
+							PixelFormat pformat = PF_L8;
+							if(bpp == 2)
+								pformat = PF_L16;
+							img.loadRawData(stream, rawSize, rawSize, 1, pformat);
+						} else
+						{
+							img.load(heightmapFilename, ResourceGroupManager::DEFAULT_RESOURCE_GROUP_NAME);
+						}
+						if (x % 2 != 0)
+							img.flipAroundY();
+						if (y % 2 != 0)
+							img.flipAroundX();
+
+						mTerrainGroup->defineTerrain(x, y, &img);
+						mTerrainsImported = true;
+					}
+				}
+			}
+			// sync load since we want everything in place when we start
+			mTerrainGroup->loadAllTerrains(true);
+		} else
+		{
+			// paging, yeah!
+			// Paging setup
+			mPageManager = OGRE_NEW PageManager();
+			// Since we're not loading any pages from .page files, we need a way just 
+			// to say we've loaded them without them actually being loaded
+			mPageManager->setPageProvider(&mDummyPageProvider);
+			mPageManager->addCamera(mCamera);
+			mTerrainPaging = OGRE_NEW TerrainPaging(mPageManager);
+			PagedWorld* world = mPageManager->createWorld();
+			mTerrainPaging->createWorldSection(world, mTerrainGroup, TERRAIN_WORLD_SIZE, TERRAIN_WORLD_SIZE*1.2f, 
+				TERRAIN_PAGE_MIN_X, TERRAIN_PAGE_MIN_Y, 
+				TERRAIN_PAGE_MAX_X, TERRAIN_PAGE_MAX_Y);
+		}
+
+		if (mTerrainsImported)
+		{
+			TerrainGroup::TerrainIterator ti = mTerrainGroup->getTerrainIterator();
+			while(ti.hasMoreElements())
+			{
+				Terrain* terrain = ti.getNext()->instance;
+				TerrainLayerBlendMap* blendMap0 = terrain->getLayerBlendMap(1);
+				TerrainLayerBlendMap* blendMap1 = terrain->getLayerBlendMap(2);
+				Real minHeight0 = 5;
+				Real fadeDist0 = 40;
+				Real minHeight1 = 10;
+				Real fadeDist1 = 15;
+				float* pBlend1 = blendMap1->getBlendPointer();
+				for (Ogre::uint16 y = 0; y < terrain->getLayerBlendMapSize(); ++y)
+				{
+					for (Ogre::uint16 x = 0; x < terrain->getLayerBlendMapSize(); ++x)
+					{
+						Real tx, ty;
+
+						blendMap0->convertImageToTerrainSpace(x, y, &tx, &ty);
+						Real height = terrain->getHeightAtTerrainPosition(tx, ty);
+						Real val = (height - minHeight0) / fadeDist0;
+						val = Math::Clamp(val, (Real)0, (Real)1);
+						//*pBlend0++ = val;
+
+						val = (height - minHeight1) / fadeDist1;
+						val = Math::Clamp(val, (Real)0, (Real)1);
+						*pBlend1++ = val;
+
+
+					}
+				}
+				blendMap0->dirty();
+				blendMap1->dirty();
+				//blendMap0->loadImage("blendmap1.png", ResourceGroupManager::DEFAULT_RESOURCE_GROUP_NAME);
+				blendMap0->update();
+				blendMap1->update();
+
+				// set up a colour map
+				/*
+				if (!terrain->getGlobalColourMapEnabled())
+				{
+					terrain->setGlobalColourMapEnabled(true);
+					Image colourMap;
+					colourMap.load("testcolourmap.jpg", ResourceGroupManager::DEFAULT_RESOURCE_GROUP_NAME);
+					terrain->getGlobalColourMap()->loadImage(colourMap);
+				}
+				*/
+			}
+		}
+
+		mTerrainGroup->freeTemporaryResources();
 	}
 
 
@@ -5301,8 +5402,13 @@ void RoRFrameListener::loadTerrain(String terrainfile)
 	float wheight=0.0;
 	if (w) wheight=w->getHeight()-30.0;
 
-
-	hfinder = new TSMHeightFinder(geom, terrainmap, wheight);
+	// we choose the heightfinder depending on whether we use the classical
+	// terrain or the new one
+	if(newTerrainMode)
+		hfinder = new NTHeightFinder(mTerrainGroup, Vector3::ZERO);
+	else
+		hfinder = new TSMHeightFinder(geom, terrainmap, wheight);
+	
 	collisions->setHfinder(hfinder);
 	if(person) person->setHFinder(hfinder);
 
@@ -5860,6 +5966,8 @@ void RoRFrameListener::loadTerrain(String terrainfile)
 	//if (envmap) envmap->update(Vector3(terrainxsize/2.0, hfinder->getHeightAt(terrainxsize/2.0, terrainzsize/2.0)+50.0, terrainzsize/2.0));
 
 #if OGRE_VERSION>0x010602
+#if 0
+	// disabled for now, to be cleaned up and moved into the shadowmanager
 	if (SETTINGS.getSetting("Shadow technique")=="Parallel-split Shadow Maps")
 	{
 		Ogre::ResourceManager::ResourceMapIterator RI = Ogre::MaterialManager::getSingleton().getResourceIterator();
@@ -5872,6 +5980,7 @@ void RoRFrameListener::loadTerrain(String terrainfile)
 				mat->getTechnique(0)->getPass("SkyLight")->getFragmentProgramParameters()->setNamedConstant("pssmSplitPoints", splitPoints);
 		}
 	}
+#endif //0
 #endif //OGRE_VERSION
 
 }
