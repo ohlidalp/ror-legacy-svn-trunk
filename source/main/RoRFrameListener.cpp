@@ -4801,6 +4801,17 @@ void RoRFrameListener::loadTerrain(String terrainfile)
 
 	float fogstart = 0;
 
+
+	Light *mainLight = 0;
+#ifdef USE_CAELUM
+	if(!useCaelum)
+		mainLight = mSceneMgr->getLight("MainLight");
+	else
+		mainLight = SkyManager::getSingleton().getMainLight();
+#else // USE_CAELUM
+	mainLight = mSceneMgr->getLight("MainLight");
+#endif // USE_CAELUM
+
 #ifdef USE_CAELUM
 	//Caelum skies
 	bool useCaelum = SETTINGS.getSetting("Sky effects")=="Caelum (best looking, slower)";
@@ -4822,24 +4833,14 @@ void RoRFrameListener::loadTerrain(String terrainfile)
 //			fogstart = StringConverter::parseLong(SETTINGS.getSetting("Sandstorm Fog Start"));
 
 		// Create a light
-		Light* l = 0;
-
-#ifdef USE_CAELUM
-		if(!useCaelum)
-			l = mSceneMgr->getLight("MainLight");
-		else
-			l = SkyManager::getSingleton().getMainLight();
-#else // USE_CAELUM
-		l = mSceneMgr->getLight("MainLight");
-#endif // USE_CAELUM
-		if(l)
+		if(mainLight)
 		{
 			//directional light for shadow
-			l->setType(Light::LT_DIRECTIONAL);
-			l->setDirection(0.785, -0.423, 0.453);
+			mainLight->setType(Light::LT_DIRECTIONAL);
+			mainLight->setDirection(0.785, -0.423, 0.453);
 
-			l->setDiffuseColour(fadeColour);
-			l->setSpecularColour(fadeColour);
+			mainLight->setDiffuseColour(fadeColour);
+			mainLight->setSpecularColour(fadeColour);
 		}
 
 		mCamera->setFarClipDistance( farclip*1.733 );
@@ -4918,16 +4919,6 @@ void RoRFrameListener::loadTerrain(String terrainfile)
 			bool mTerrainsImported=false;
 			TerrainPaging* mTerrainPaging=0;
 			PageManager* mPageManager=0;
-			Light* l = 0;
-
-#ifdef USE_CAELUM
-			if(!useCaelum)
-				l = mSceneMgr->getLight("MainLight");
-			else
-				l = SkyManager::getSingleton().getMainLight();
-#else // USE_CAELUM
-			l = mSceneMgr->getLight("MainLight");
-#endif // USE_CAELUM
 
 			Vector3 mTerrainPos(0,0,0);
 			mTerrainGroup = OGRE_NEW TerrainGroup(mSceneMgr, Terrain::ALIGN_X_Z, TERRAIN_SIZE, TERRAIN_WORLD_SIZE);
@@ -4945,10 +4936,10 @@ void RoRFrameListener::loadTerrain(String terrainfile)
 
 			//matProfile->setLightmapEnabled(false);
 			// Important to set these so that the terrain knows what to use for derived (non-realtime) data
-			if(l) TerrainGlobalOptions::getSingleton().setLightMapDirection(l->getDerivedDirection());
+			if(mainLight) TerrainGlobalOptions::getSingleton().setLightMapDirection(mainLight->getDerivedDirection());
 			TerrainGlobalOptions::getSingleton().setCompositeMapAmbient(mSceneMgr->getAmbientLight());
 			//mTerrainGlobals->setCompositeMapAmbient(ColourValue::Red);
-			if(l) TerrainGlobalOptions::getSingleton().setCompositeMapDiffuse(l->getDiffuseColour());
+			if(mainLight) TerrainGlobalOptions::getSingleton().setCompositeMapDiffuse(mainLight->getDiffuseColour());
 
 			// Configure default import settings for if we use imported image
 			Terrain::ImportData& defaultimp = mTerrainGroup->getDefaultImportSettings();
