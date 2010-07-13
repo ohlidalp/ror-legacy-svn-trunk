@@ -85,9 +85,10 @@ int ShadowManager::changeShadowTechnique(Ogre::ShadowTechnique tech)
 	{
 #if OGRE_VERSION>0x010602
 
+		TerrainMaterialGeneratorA::SM2Profile *matProfile  = 0;
 		if(TerrainGlobalOptions::getSingletonPtr())
 		{
-			TerrainMaterialGeneratorA::SM2Profile* matProfile = static_cast<TerrainMaterialGeneratorA::SM2Profile*>(TerrainGlobalOptions::getSingleton().getDefaultMaterialGenerator()->getActiveProfile());
+			matProfile = static_cast<TerrainMaterialGeneratorA::SM2Profile*>(TerrainGlobalOptions::getSingleton().getDefaultMaterialGenerator()->getActiveProfile());
 			matProfile->setReceiveDynamicShadowsEnabled(true);
 			matProfile->setReceiveDynamicShadowsLowLod(false);
 		}
@@ -144,8 +145,11 @@ int ShadowManager::changeShadowTechnique(Ogre::ShadowTechnique tech)
 			mSceneMgr->setShadowTextureCasterMaterial(StringUtil::BLANK);
 		}
 
-		matProfile->setReceiveDynamicShadowsDepth(depthShadows);
-		matProfile->setReceiveDynamicShadowsPSSM(static_cast<PSSMShadowCameraSetup*>(mPSSMSetup.get()));
+		if(matProfile)
+		{
+			matProfile->setReceiveDynamicShadowsDepth(depthShadows);
+			matProfile->setReceiveDynamicShadowsPSSM(static_cast<PSSMShadowCameraSetup*>(mPSSMSetup.get()));
+		}
 #else
 		showError("Parallel-split Shadow Maps as shadow technique is only available when you build with Ogre 1.6 support.", "PSSM error");
 		exit(1);
