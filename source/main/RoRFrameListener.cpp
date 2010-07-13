@@ -4822,13 +4822,25 @@ void RoRFrameListener::loadTerrain(String terrainfile)
 //			fogstart = StringConverter::parseLong(SETTINGS.getSetting("Sandstorm Fog Start"));
 
 		// Create a light
-		Light* l = mSceneMgr->createLight("MainLight");
-		//directional light for shadow
-		l->setType(Light::LT_DIRECTIONAL);
-		l->setDirection(0.785, -0.423, 0.453);
+		Light* l = 0;
 
-		l->setDiffuseColour(fadeColour);
-		l->setSpecularColour(fadeColour);
+#ifdef USE_CAELUM
+		if(!useCaelum)
+			l = mSceneMgr->getLight("MainLight");
+		else
+			l = SkyManager::getSingleton().getMainLight();
+#else // USE_CAELUM
+		l = mSceneMgr->getLight("MainLight");
+#endif // USE_CAELUM
+		if(l)
+		{
+			//directional light for shadow
+			l->setType(Light::LT_DIRECTIONAL);
+			l->setDirection(0.785, -0.423, 0.453);
+
+			l->setDiffuseColour(fadeColour);
+			l->setSpecularColour(fadeColour);
+		}
 
 		mCamera->setFarClipDistance( farclip*1.733 );
 
