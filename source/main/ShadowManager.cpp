@@ -85,9 +85,12 @@ int ShadowManager::changeShadowTechnique(Ogre::ShadowTechnique tech)
 	{
 #if OGRE_VERSION>0x010602
 
-		TerrainMaterialGeneratorA::SM2Profile* matProfile = static_cast<TerrainMaterialGeneratorA::SM2Profile*>(TerrainGlobalOptions::getSingleton().getDefaultMaterialGenerator()->getActiveProfile());
-		matProfile->setReceiveDynamicShadowsEnabled(true);
-		matProfile->setReceiveDynamicShadowsLowLod(false);
+		if(TerrainGlobalOptions::getSingletonPtr())
+		{
+			TerrainMaterialGeneratorA::SM2Profile* matProfile = static_cast<TerrainMaterialGeneratorA::SM2Profile*>(TerrainGlobalOptions::getSingleton().getDefaultMaterialGenerator()->getActiveProfile());
+			matProfile->setReceiveDynamicShadowsEnabled(true);
+			matProfile->setReceiveDynamicShadowsLowLod(false);
+		}
 
 
 		// General scene setup
