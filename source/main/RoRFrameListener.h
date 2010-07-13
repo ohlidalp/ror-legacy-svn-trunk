@@ -59,6 +59,7 @@ along with Rigs of Rods.  If not, see <http://www.gnu.org/licenses/>.
 # include "TreeLoader2D.h"
 #endif
 
+#include "OgreTerrainGroup.h"
 
 #ifdef USE_LUA
 class LuaSystem;
@@ -232,6 +233,7 @@ protected:
 	bool enablePosStor;
 
 	//GUI_Progress *gui_progress;
+	TerrainGroup* mTerrainGroup;
 
 	std::map<String, spawn_location_t> netSpawnPos;
 	float truckx, trucky, truckz;

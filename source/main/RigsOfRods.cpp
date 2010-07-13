@@ -234,7 +234,13 @@ bool RigsOfRods::setup(void)
 
 	//CREATE SCENE MANAGER
 	LogManager::getSingleton().logMessage("Creating Scene Manager");
-	mSceneMgr = mRoot->createSceneManager(ST_EXTERIOR_CLOSE);
+	if(SETTINGS.getSetting("new Terrain Mode") == "Yes")
+	{
+		mSceneMgr = mRoot->createSceneManager(ST_GENERIC);
+	} else
+	{
+		mSceneMgr = mRoot->createSceneManager(ST_EXTERIOR_CLOSE);
+	}
 
 	//CREATE CAMERA
 	LogManager::getSingleton().logMessage("Creating camera");
