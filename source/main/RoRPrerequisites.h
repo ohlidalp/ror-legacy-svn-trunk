@@ -21,7 +21,7 @@ along with Rigs of Rods.  If not, see <http://www.gnu.org/licenses/>.
 // created on 30th of April 2010 by Thomas Fischer
 
 // macro that checks for the correct ogre version and aborts compilation if not correct
-#if OGRE_VERSION < 0x010701
+#if OGRE_VERSION < 0x010700
 #error You need at least Ogre version 1.7.1, older versions are not supported
 #endif
 
