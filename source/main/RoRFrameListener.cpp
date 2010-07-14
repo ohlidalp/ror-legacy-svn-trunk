@@ -4806,11 +4806,20 @@ void RoRFrameListener::loadTerrain(String terrainfile)
 #ifdef USE_CAELUM
 	bool useCaelum = SETTINGS.getSetting("Sky effects")=="Caelum (best looking, slower)";
 	if(!useCaelum)
-		mainLight = mSceneMgr->getLight("MainLight");
-	else
+	{
+		mainLight = mSceneMgr->createLight("MainLight");
+		//directional light for shadow
+		mainLight->setType(Light::LT_DIRECTIONAL);
+		mainLight->setDirection(0.785, -0.423, 0.453);
+	} else
+	{
 		mainLight = SkyManager::getSingleton().getMainLight();
+	}
 #else // USE_CAELUM
-	mainLight = mSceneMgr->getLight("MainLight");
+	mainLight = mSceneMgr->createLight("MainLight");
+	//directional light for shadow
+	mainLight->setType(Light::LT_DIRECTIONAL);
+	mainLight->setDirection(0.785, -0.423, 0.453);
 #endif // USE_CAELUM
 
 #ifdef USE_CAELUM
