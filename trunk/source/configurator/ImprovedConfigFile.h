@@ -31,7 +31,7 @@ class ImprovedConfigFile : public ConfigFile
 public:
 	ImprovedConfigFile() : separators(), filename()
 	{
-		ConfigFile::ConfigFile();
+		ConfigFile();
 	}
 	
 	~ImprovedConfigFile()

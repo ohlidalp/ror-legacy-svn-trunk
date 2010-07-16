@@ -7,6 +7,7 @@ IF(WIN32)
    link_directories   (${PThread_LIBRARY_DIRS})
    include_directories(${WXWIDGETS_SHARED_INCLUDE_DIRS})
    link_directories   (${WXWIDGETS_SHARED_LIBRARY_DIRS})
+   include_directories(${RoR_SOURCE_DIR}/source/protocol)
 
    set(OS_LIBS "${PThread_LIBRARIES} dinput8.lib dxguid.lib")
    set(OS_SOURCE "icon.rc")

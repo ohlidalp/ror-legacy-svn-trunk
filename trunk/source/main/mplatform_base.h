@@ -11,6 +11,38 @@
 #include "Ogre.h"
 #include "rornet.h"
 
+
+typedef struct			// struct is used for motion platforms
+{
+	int time;
+
+	float	x;			// absolute coordinates
+	float	y;
+	float	z;
+
+	float	x_acc;		// accelerations regarding to different vectors
+	float	y_acc;
+	float	z_acc;
+
+	float	head;		// orientations
+	float	roll;
+	float	pitch;
+
+	float	head_acc;	// accelerations of orientations
+	float	roll_acc;
+	float	pitch_acc;
+
+	float	steer;		// user inputs
+	float	throttle;
+	float	brake;
+	float	clutch;
+
+	float	speed;		// different stats
+	float	rpm;
+	int		gear;
+	float	avg_friction;
+} mstat_t;
+
 class MPlatform_Base
 {
 	public:
