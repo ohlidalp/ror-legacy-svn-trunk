@@ -3658,9 +3658,9 @@ void MyDialog::OnNoteBookPageChange(wxNotebookEvent& event)
 				ver = Ogre::String(line);
 		}
 
-		helphtmw->LoadPage(wxString(wxT(NEWS_HTML_PAGE))+
+		helphtmw->LoadPage(wxString(NEWS_HTML_PAGE)+
 						   wxString(conv("?netversion="))+
-						   wxString(wxT(RORNET_VERSION))+
+						   wxString(RORNET_VERSION)+
 						   wxString(conv("&version="))+
 						   wxString(conv(ver))+
 						   wxString(conv("&lang="))+
