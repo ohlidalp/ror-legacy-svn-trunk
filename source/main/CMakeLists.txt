@@ -38,6 +38,8 @@ ELSEIF(UNIX)
    set(OS_LIBS "X11")
 ENDIF(WIN32)
 
+include_directories(${RoR_SOURCE_DIR}/source/protocol)
+
 # required components
 include_directories(${Ogre_INCLUDE_DIRS})
 link_directories   (${Ogre_LIBRARY_DIRS})

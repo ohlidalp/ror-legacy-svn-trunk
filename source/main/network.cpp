@@ -459,7 +459,7 @@ void Network::sendthreadstart()
 void Network::disconnect()
 {
 	shutdown=true;
-	sendmessage(&socket, MSG2_DELETE, 0, 0, 0);
+	sendmessage(&socket, MSG2_USER_LEAVE, 0, 0, 0);
 	SWBaseSocket::SWBaseError error;
 	socket.set_timeout(1, 1000);
 	socket.disconnect(&error);
@@ -540,7 +540,7 @@ void Network::receivethreadstart()
 			if(cs) cs->addReceivedPacket(header, buffer);
 			continue;
 		}
-		else if(header.command == MSG2_USER_LEAVE || header.command == MSG2_DELETE)
+		else if(header.command == MSG2_USER_LEAVE)
 		{
 			// remove all things that belong to that user
 			client_t *client = getClientInfo(header.source);

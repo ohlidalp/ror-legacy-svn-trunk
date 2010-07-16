@@ -110,7 +110,6 @@ set (HEADER_FILES
   SoundScriptManager.h
   network.h
   NetworkStreamManager.h
-  rornet.h
   Streamable.h
   StreamableFactory.h
   resource.h
@@ -469,7 +468,6 @@ SOURCE_GROUP("Network" FILES
   network.h
   NetworkStreamManager.cpp
   NetworkStreamManager.h
-  rornet.h
   Streamable.cpp
   Streamable.h
   StreamableFactory.h
