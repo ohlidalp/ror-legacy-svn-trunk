@@ -91,7 +91,7 @@ Network::Network(Beam **btrucks, std::string servername, long sport, RoRFrameLis
 	ChatSystemFactory::getSingleton().setNetwork(this);
 
 	//
-	memset(&userdata, 0, sizeof(client_info_on_join));
+	memset(&userdata, 0, sizeof(user_info_t));
 	shutdown=false;
 #ifdef USE_OPENAL
 	ssm=SoundScriptManager::getSingleton();
@@ -237,13 +237,13 @@ bool Network::connect()
 	}
 
 	// construct user credentials
-	user_credentials_t c;
-	memset(&c, 0, sizeof(user_credentials_t));
+	user_info_t c;
+	memset(&c, 0, sizeof(user_info_t));
 	strncpy(c.username, nickname.c_str(), 20);
-	strncpy(c.password, sha1pwresult, 40);
-	strncpy(c.uniqueid, usertokensha1result, 40);
+	strncpy(c.serverpassword, sha1pwresult, 40);
+	strncpy(c.usertoken, usertokensha1result, 40);
 
-	if (sendmessage(&socket, MSG2_USER_CREDENTIALS, 0, sizeof(user_credentials_t), (char*)&c))
+	if (sendmessage(&socket, MSG2_USER_CREDENTIALS, 0, sizeof(user_info_t), (char*)&c))
 	{
 		//this is an error!
 		netFatalError("Establishing network session: error sending hello", false);
@@ -505,7 +505,7 @@ void Network::receivethreadstart()
 			stream_register_t *reg = (stream_register_t *)buffer;
 			client_t *client = getClientInfo(header.source);
 			int playerColour = 0;
-			if(client) playerColour = client->colournum;
+			if(client) playerColour = client->user.colournum;
 
 			String typeStr = "unkown";
 			switch(reg->type)
@@ -557,7 +557,7 @@ void Network::receivethreadstart()
 				// debug stuff
 				/*
 				LogManager::getSingleton().logMessage(" > received user info:" + StringConverter::toString(header.source) + " (we are " + StringConverter::toString(myuid) + ")");
-				client_info_on_join *cinfo = (client_info_on_join*) buffer;
+				user_info_t *cinfo = (user_info_t*) buffer;
 				LogManager::getSingleton().logMessage(" * version : " + StringConverter::toString(cinfo->version));
 				LogManager::getSingleton().logMessage(" * nickname: " + String(cinfo->nickname));
 				LogManager::getSingleton().logMessage(" * auth    : " + StringConverter::toString(cinfo->authstatus));
@@ -567,24 +567,22 @@ void Network::receivethreadstart()
 			if(header.source == (int)myuid)
 			{
 				// we got data about ourself!
-				memcpy(&userdata, buffer, sizeof(client_info_on_join));
+				memcpy(&userdata, buffer, sizeof(user_info_t));
 				CharacterFactory::getSingleton().localUserAttributesChanged(myuid);
 				// update our nickname
-				nickname = String(userdata.nickname);
+				nickname = String(userdata.clientname);
 				// update auth status
 				myauthlevel = userdata.authstatus;
 			} else
 			{
-				client_info_on_join *cinfo = (client_info_on_join*) buffer;
+				user_info_t *cinfo = (user_info_t*) buffer;
 				// data about someone else, try to update the array
 				bool found = false; // whether to add a new client
 				client_t *client = getClientInfo(header.source);
 				if(client)
 				{
-					client->user_authlevel = cinfo->authstatus;
-					client->slotnum = cinfo->slotnum;
-					client->colournum= cinfo->colournum;
-					strncpy(client->user_name, cinfo->nickname, 20);
+					memcpy(&client->user, cinfo, sizeof(user_info_t));
+
 					// inform the streamfactories of a attribute change
 					CharacterFactory::getSingleton().netUserAttributesChanged(header.source, -1);
 					BeamFactory::getSingleton().netUserAttributesChanged(header.source, -1);
@@ -598,13 +596,11 @@ void Network::receivethreadstart()
 						if (clients[i].used)
 							continue;
 						clients[i].used = true;
-						clients[i].user_id = header.source;
-						clients[i].user_authlevel = cinfo->authstatus;
-						clients[i].slotnum = cinfo->slotnum;
-						clients[i].colournum = cinfo->colournum;
+						memcpy(&clients[i].user, cinfo, sizeof(user_info_t));
+
+						// inform the streamfactories of a attribute change
 						CharacterFactory::getSingleton().netUserAttributesChanged(header.source, -1);
 						BeamFactory::getSingleton().netUserAttributesChanged(header.source, -1);
-						strncpy(clients[i].user_name,cinfo->nickname, 20);
 						break;
 					}
 					pthread_mutex_unlock(&clients_mutex);
@@ -624,7 +620,7 @@ client_t *Network::getClientInfo(unsigned int uid)
 	client_t *c = 0;
 	for (int i=0; i<MAX_PEERS; i++)
 	{
-		if (clients[i].user_id == uid)
+		if (clients[i].user.uniqueid == uid)
 			c = &clients[i];
 	}
 //	pthread_mutex_unlock(&clients_mutex);

@@ -94,12 +94,12 @@ void ChatSystemFactory::updatePlayerList()
 #ifdef USE_SOCKETW
 	if(te && tec)
 	{
-		client_info_on_join *c = net->getLocalUserData();
+		user_info_t *c = net->getLocalUserData();
 		if(c)
 		{
 			try
 			{
-				UTFString username = tryConvertUTF(c->nickname);
+				UTFString username = tryConvertUTF(c->clientname);
 				te->setCaption(username);
 
 				String matName = PlayerColours::getSingleton().getColourMaterial(c->colournum);
@@ -128,7 +128,7 @@ void ChatSystemFactory::updatePlayerList()
 
 		try
 		{
-			UTFString username = tryConvertUTF(c->user_name);
+			UTFString username = tryConvertUTF(c->user.clientname);
 
 			String plstr = StringConverter::toString(num) + ": " + ColoredTextAreaOverlayElement::StripColors(username);
 
@@ -138,11 +138,11 @@ void ChatSystemFactory::updatePlayerList()
 			tec = (TextAreaOverlayElement*)OverlayManager::getSingleton().getOverlayElement(colname);
 			if(!te || !tec) break;
 			te->setCaption(plstr);
-			String matName = PlayerColours::getSingleton().getColourMaterial(c->colournum);
+			String matName = PlayerColours::getSingleton().getColourMaterial(c->user.colournum);
 			tec->setMaterialName(matName);
-			if(c->user_authlevel & AUTH_ADMIN)
+			if(c->user.authstatus & AUTH_ADMIN)
 				te->setColour(ColourValue(1,0,0));
-			else if(c->user_authlevel & AUTH_RANKED)
+			else if(c->user.authstatus & AUTH_RANKED)
 				te->setColour(ColourValue(0,1,0));
 			else
 				te->setColour(ColourValue::Black);
@@ -184,14 +184,14 @@ ChatSystem::ChatSystem(Network *net, int source, unsigned int streamid, int colo
 		client_t *c = net->getClientInfo(source);
 		if(c)
 		{
-			username = tryConvertUTF(c->user_name);
+			username = tryConvertUTF(c->user.clientname);
 
 			int nickColour = 8;
-			if(c->user_authlevel & AUTH_NONE)   nickColour = 8; // grey
-			if(c->user_authlevel & AUTH_BOT )   nickColour = 4; // blue
-			if(c->user_authlevel & AUTH_RANKED) nickColour = 2; // green
-			if(c->user_authlevel & AUTH_MOD)    nickColour = 1; // red
-			if(c->user_authlevel & AUTH_ADMIN)  nickColour = 1; // red
+			if(c->user.authstatus & AUTH_NONE)   nickColour = 8; // grey
+			if(c->user.authstatus & AUTH_BOT )   nickColour = 4; // blue
+			if(c->user.authstatus & AUTH_RANKED) nickColour = 2; // green
+			if(c->user.authstatus & AUTH_MOD)    nickColour = 1; // red
+			if(c->user.authstatus & AUTH_ADMIN)  nickColour = 1; // red
 
 			mNickColour = String("^") + StringConverter::toString(nickColour);
 			username = mNickColour + ColoredTextAreaOverlayElement::StripColors(username);

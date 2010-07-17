@@ -10964,14 +10964,14 @@ void Beam::updateNetworkInfo()
 	{
 		client_t *c = net->getClientInfo(sourceid);
 		if(!c) return;
-		networkUsername = String(c->user_name);
-		networkAuthlevel = c->user_authlevel;
+		networkUsername = String(c->user.clientname);
+		networkAuthlevel = c->user.authstatus;
 	} else
 	{
-		client_info_on_join *info = net->getLocalUserData();
+		user_info_t *info = net->getLocalUserData();
 		if(!info) return;
-		if(!strlen(info->nickname)) return;
-		networkUsername = String(info->nickname);
+		if(!strlen(info->clientname)) return;
+		networkUsername = String(info->clientname);
 		networkAuthlevel = info->authstatus;
 	}
 

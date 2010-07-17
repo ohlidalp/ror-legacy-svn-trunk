@@ -66,7 +66,7 @@ private:
 	Ogre::String nickname;
 	int rconauthed;
 	bool shutdown;
-	client_info_on_join userdata;
+	user_info_t userdata;
 	SoundScriptManager* ssm;
 	Ogre::String getUserChatName(client_t *c);
 	void calcSpeed();
@@ -100,7 +100,7 @@ public:
 	int getSpeedUp();
 	int getSpeedDown();
 
-	client_info_on_join *getLocalUserData() { return &userdata; };
+	user_info_t *getLocalUserData() { return &userdata; };
 
 	static unsigned int getUID() { return myuid; };
 
