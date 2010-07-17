@@ -2255,7 +2255,7 @@ float InputEngine::getEventValue(int eventID, bool pure)
 							if(value > 0)
 								value = 0;
 							else
-								value = value * -1.0;
+								value = -value;
 							break;
 						case 1:
 							// upper range used
