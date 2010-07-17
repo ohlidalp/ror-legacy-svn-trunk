@@ -52,6 +52,7 @@ along with Rigs of Rods.  If not, see <http://www.gnu.org/licenses/>.
 
 // The RoR required includes
 #include "RoRPrerequisites.h"
+#include "rornet.h"
 
 // some tool to define the bitmasks. We use this, as it it far better readable (prevents errors)
 #define BITMASK(x) (1 << (x-1)) 
@@ -767,21 +768,12 @@ struct ground_model
 
 struct client
 {
+	user_info_t   user;                 //!< user struct
 	bool          used;                 //!< if this slot is used already
+
 	int           trucknum;             //!< the truck's number of the truck bound to this slot
-	int           slotnum;              //!< server slot number
 	bool          loaded;               //!< if the truck bound to this slot is loaded
 	bool          invisible;            //!< if the truck is invisible for the user (since he dont have the required resource)
-
-	char          client_version[10];   //!< clients version, i.e. RoR-0.36.1
-	char          protocol_version[10]; //!< protocol version, i.e. RoRNet-3.0
-	char          truck_name[255];      //!< the truck filename, i.e. agoras.truck
-	unsigned int  truck_size;           //!< the size truck buffer needed
-	char          user_language[10];    //!< the users language
-	char          user_name[20];        //!< the users nickname
-	unsigned int  user_id;              //!< the users id, set by the server
-	unsigned int  user_authlevel;       //!< the users authorization level.
-	int  colournum;                     //!< the users authorization colour
 };
 
 struct authorinfo

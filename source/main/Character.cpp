@@ -147,19 +147,17 @@ void Character::updateNetLabel()
 	{
 		client_t *info = net->getClientInfo(this->source);
 		if(!info) return;
-		if(!strlen(info->user_name)) return;
-		// update colour
-		this->colourNumber = info->colournum;
-		networkUsername = info->user_name;
-		networkAuthLevel = info->user_authlevel;
+		if(!strlen(info->user.clientname)) return;
+		this->colourNumber = info->user.colournum;
+		networkUsername = info->user.clientname;
+		networkAuthLevel = info->user.authstatus;
 	} else
 	{
-		client_info_on_join *info = net->getLocalUserData();
+		user_info_t *info = net->getLocalUserData();
 		if(!info) return;
-		if(!strlen(info->nickname)) return;
-		// update colour
+		if(!strlen(info->clientname)) return;
 		this->colourNumber = info->colournum;
-		networkUsername = String(info->nickname);
+		networkUsername = String(info->clientname);
 		networkAuthLevel = info->authstatus;
 	}
 
