@@ -61,8 +61,6 @@ private:
 	char sendthreadstart_buffer[MAX_MESSAGE_LENGTH];
 	pthread_mutex_t msgsend_mutex;
 	RoRFrameListener *mefl;
-	char terrainName[255];
-	bool requestTerrainName();
 	Ogre::String nickname;
 	int rconauthed;
 	bool shutdown;
@@ -73,6 +71,7 @@ private:
 	std::map<int, float> lagDataClients;
 	std::map<Ogre::String, Ogre::String> downloadingMods;
 	void updatePlayerList();
+	server_info_t server_settings;
 public:
 
 	Network(Beam **btrucks, std::string servername, long sport, RoRFrameListener *efl);
@@ -91,7 +90,7 @@ public:
 	void sendthreadstart();
 	void receivethreadstart();
 
-	char *getTerrainName() { return terrainName; };
+	char *getTerrainName() { return server_settings.terrain; };
 	Ogre::String getNickname(bool colour=false);
 	unsigned int getUserID() { return myuid; };
 	static unsigned long getNetTime();
@@ -112,5 +111,5 @@ protected:
 
 #endif
 
-#endif // SOCKETW
+#endif // USE_SOCKETW
 

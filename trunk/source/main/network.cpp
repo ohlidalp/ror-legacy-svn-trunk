@@ -91,6 +91,7 @@ Network::Network(Beam **btrucks, std::string servername, long sport, RoRFrameLis
 	ChatSystemFactory::getSingleton().setNetwork(this);
 
 	//
+	memset(&server_settings, 0, sizeof(server_info_t));
 	memset(&userdata, 0, sizeof(user_info_t));
 	shutdown=false;
 #ifdef USE_OPENAL
@@ -98,7 +99,6 @@ Network::Network(Beam **btrucks, std::string servername, long sport, RoRFrameLis
 #endif //USE_OPENAL
 	mySname = servername;
 	mySport = sport;
-	strcpy(terrainName, "");
 	mefl = efl;
 	myauthlevel = AUTH_NONE;
 	net_instance=this;
@@ -181,26 +181,19 @@ bool Network::connect()
 		netFatalError("Establishing network session: error getting server version", false);
 		return false;
 	}
-	//check server version
-	if (strncmp(buffer, RORNET_VERSION, strlen(RORNET_VERSION)))
+	if(header.command != MSG2_HELLO)
 	{
-		netFatalError("Establishing network session: wrong server version");
+		netFatalError("Establishing network session: error getting server hello");
 		return false;
 	}
-	// receive terrain name
-	if (receivemessage(&socket, &header, buffer, 255))
-	{
-		netFatalError("Establishing network session: error getting server terrain");
-		return false;
-	}
-	if (header.command != MSG2_TERRAIN_RESP)
-	{
-		netFatalError("Establishing network session: error getting server terrain response");
-		return false;
-	}
-	strncpy(terrainName, buffer, header.size);
-	terrainName[header.size]=0;
+	// save server settings
+	memcpy(&server_settings, buffer, sizeof(server_info_t));
 
+	if (strncmp(server_settings.protocolversion, RORNET_VERSION, strlen(RORNET_VERSION)))
+	{
+		netFatalError("Establishing network session: wrong server version, you are using version '" + String(RORNET_VERSION) + "' and the server is using '"+String(server_settings.protocolversion)+"'");
+		return false;
+	}
 	// first handshake done, increase the timeout, important!
 	socket.set_timeout(0, 0);
 
@@ -242,11 +235,17 @@ bool Network::connect()
 	strncpy(c.username, nickname.c_str(), 20);
 	strncpy(c.serverpassword, sha1pwresult, 40);
 	strncpy(c.usertoken, usertokensha1result, 40);
-
-	if (sendmessage(&socket, MSG2_USER_CREDENTIALS, 0, sizeof(user_info_t), (char*)&c))
+	strncpy(c.clientversion, ROR_VERSION_STRING, strnlen(ROR_VERSION_STRING, 25));
+	strcpy(c.clientname, "RoR");
+	String lang = SETTINGS.getSetting("Language Short");
+	strncpy(c.language, lang.c_str(), std::min<int>(lang.size(), 10));
+	String guid = SETTINGS.getSetting("GUID");
+	strncpy(c.clientGUID, guid.c_str(), std::min<int>(guid.size(), 10));
+	strcpy(c.sessiontype, "normal");
+	if (sendmessage(&socket, MSG2_USER_INFO, 0, sizeof(user_info_t), (char*)&c))
 	{
 		//this is an error!
-		netFatalError("Establishing network session: error sending hello", false);
+		netFatalError("Establishing network session: error sending user info", false);
 		return false;
 	}
 	//now this is important, getting authorization
@@ -262,7 +261,7 @@ bool Network::connect()
 		netFatalError("Establishing network session: sorry, server has too many players", false);
 		return false;
 	}
-	if (header.command==MSG2_BANNED)
+	else if (header.command==MSG2_BANNED)
 	{
 		char tmp[512];
 		memset(tmp, 0, 512);
@@ -278,10 +277,16 @@ bool Network::connect()
 
 		return false;
 	}
-	if (header.command==MSG2_WRONG_PW)
+	else if (header.command==MSG2_WRONG_PW)
 	{
 		//this is an error!
 		netFatalError("Establishing network session: sorry, wrong password!", false);
+		return false;
+	}
+	else if (header.command==MSG2_WRONG_VER)
+	{
+		//this is an error!
+		netFatalError("Establishing network session: sorry, wrong protocol version!", false);
 		return false;
 	}
 	if (header.command!=MSG2_WELCOME)
@@ -292,8 +297,9 @@ bool Network::connect()
 	}
 	//okay keep our uid
 	myuid = header.source;
-	// set player colour
-	userdata.colournum = *((int *)buffer);
+
+	// we get our userdata back
+	memcpy(&userdata, buffer, std::min<int>(sizeof(user_info_t), header.size));
 
 	//start the handling threads
 	pthread_create(&sendthread, NULL, s_sendthreadstart, (void*)(0));
@@ -542,6 +548,12 @@ void Network::receivethreadstart()
 		}
 		else if(header.command == MSG2_USER_LEAVE)
 		{
+			if(header.source == (int)myuid)
+			{
+				netFatalError("disconnected", false);
+				return;
+			}
+
 			// remove all things that belong to that user
 			client_t *client = getClientInfo(header.source);
 			if(client)
@@ -549,28 +561,17 @@ void Network::receivethreadstart()
 
 			// now remove all possible streams
 			NetworkStreamManager::getSingleton().removeUser(header.source);
+			continue;
 		}
 		else if(header.command == MSG2_USER_INFO || header.command == MSG2_USER_JOIN)
 		{
-			// this function syncs the user data in the network
-			{
-				// debug stuff
-				/*
-				LogManager::getSingleton().logMessage(" > received user info:" + StringConverter::toString(header.source) + " (we are " + StringConverter::toString(myuid) + ")");
-				user_info_t *cinfo = (user_info_t*) buffer;
-				LogManager::getSingleton().logMessage(" * version : " + StringConverter::toString(cinfo->version));
-				LogManager::getSingleton().logMessage(" * nickname: " + String(cinfo->nickname));
-				LogManager::getSingleton().logMessage(" * auth    : " + StringConverter::toString(cinfo->authstatus));
-				LogManager::getSingleton().logMessage(" * slotnum : " + StringConverter::toString(cinfo->slotnum));
-				*/
-			}
 			if(header.source == (int)myuid)
 			{
 				// we got data about ourself!
 				memcpy(&userdata, buffer, sizeof(user_info_t));
 				CharacterFactory::getSingleton().localUserAttributesChanged(myuid);
 				// update our nickname
-				nickname = String(userdata.clientname);
+				nickname = String(userdata.username);
 				// update auth status
 				myauthlevel = userdata.authstatus;
 			} else
@@ -606,6 +607,7 @@ void Network::receivethreadstart()
 					pthread_mutex_unlock(&clients_mutex);
 				}
 			}
+			continue;
 		}
 		//debugPacket("receive-1", &header, buffer);
 		NetworkStreamManager::getSingleton().pushReceivedStreamMessage(header, buffer);
