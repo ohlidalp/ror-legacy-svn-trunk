@@ -99,7 +99,7 @@ void ChatSystemFactory::updatePlayerList()
 		{
 			try
 			{
-				UTFString username = tryConvertUTF(c->clientname);
+				UTFString username = tryConvertUTF(c->username);
 				te->setCaption(username);
 
 				String matName = PlayerColours::getSingleton().getColourMaterial(c->colournum);
@@ -128,7 +128,7 @@ void ChatSystemFactory::updatePlayerList()
 
 		try
 		{
-			UTFString username = tryConvertUTF(c->user.clientname);
+			UTFString username = tryConvertUTF(c->user.username);
 
 			String plstr = StringConverter::toString(num) + ": " + ColoredTextAreaOverlayElement::StripColors(username);
 
@@ -184,7 +184,7 @@ ChatSystem::ChatSystem(Network *net, int source, unsigned int streamid, int colo
 		client_t *c = net->getClientInfo(source);
 		if(c)
 		{
-			username = tryConvertUTF(c->user.clientname);
+			username = tryConvertUTF(c->user.username);
 
 			int nickColour = 8;
 			if(c->user.authstatus & AUTH_NONE)   nickColour = 8; // grey

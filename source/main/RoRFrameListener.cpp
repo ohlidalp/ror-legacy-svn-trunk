@@ -2676,9 +2676,8 @@ bool RoRFrameListener::updateEvents(float dt)
 		if(net)
 		{
 			CharacterFactory::getSingleton().updateCharacters(dt);
-		} else
+		} else if (!net && cameramode != CAMERA_FREE)
 		{
-			if (cameramode != CAMERA_FREE)
 				// do not move the person in free camera mode
 				person->update(dt);
 		}

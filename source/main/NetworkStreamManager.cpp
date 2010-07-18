@@ -170,7 +170,8 @@ void NetworkStreamManager::pushReceivedStreamMessage(header_t header, char *buff
 	if(streams.find(header.source)->second.find(header.streamid) == streams.find(header.source)->second.end())
 	{
 		// no such stream?!
-		LogManager::getSingleton().logMessage("EEE Stream not found: "+StringConverter::toString(header.source)+":"+StringConverter::toString(header.streamid));
+		if(header.streamid != 0)
+			LogManager::getSingleton().logMessage("EEE Stream not found: "+StringConverter::toString(header.source)+":"+StringConverter::toString(header.streamid));
 		pthread_mutex_unlock(&stream_mutex);
 		return;
 	}

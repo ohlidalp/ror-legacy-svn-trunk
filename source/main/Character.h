@@ -76,6 +76,7 @@ public:
 
 	bool getPhysicsEnabled() { return physicsEnabled; };
 	void setPhysicsEnabled(bool val) { physicsEnabled=val; };
+	bool isRemote() { return remote; };
 
 protected:
 	Ogre::Vector3 position;

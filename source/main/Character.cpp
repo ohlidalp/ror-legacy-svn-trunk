@@ -147,17 +147,17 @@ void Character::updateNetLabel()
 	{
 		client_t *info = net->getClientInfo(this->source);
 		if(!info) return;
-		if(!strlen(info->user.clientname)) return;
+		if(!strlen(info->user.username)) return;
 		this->colourNumber = info->user.colournum;
-		networkUsername = info->user.clientname;
+		networkUsername = info->user.username;
 		networkAuthLevel = info->user.authstatus;
 	} else
 	{
 		user_info_t *info = net->getLocalUserData();
 		if(!info) return;
-		if(!strlen(info->clientname)) return;
+		if(!strlen(info->username)) return;
 		this->colourNumber = info->colournum;
-		networkUsername = String(info->clientname);
+		networkUsername = String(info->username);
 		networkAuthLevel = info->authstatus;
 	}
 
@@ -505,10 +505,10 @@ void Character::update(float dt)
 
 	}
 
-#ifdef MYSOCKETW
+#ifdef USE_SOCKETW
 	if(net && !remote)
 		sendStreamData();
-#endif //MYSOCKETW
+#endif // USE_SOCKETW
 }
 
 void Character::updateMapIcon()
