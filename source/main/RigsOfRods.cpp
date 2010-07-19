@@ -143,15 +143,16 @@ bool RigsOfRods::setup(void)
 	loadMainResource("OgreCore", "Bootstrap");
 	//main game resources
 	LogManager::getSingleton().logMessage("Loading main resources");
-	loadMainResource("airfoils", ResourceGroupManager::DEFAULT_RESOURCE_GROUP_NAME);
+	loadMainResource("airfoils",  ResourceGroupManager::DEFAULT_RESOURCE_GROUP_NAME);
 	loadMainResource("materials", ResourceGroupManager::DEFAULT_RESOURCE_GROUP_NAME);
-	loadMainResource("meshes", ResourceGroupManager::DEFAULT_RESOURCE_GROUP_NAME);
-	loadMainResource("overlays", ResourceGroupManager::DEFAULT_RESOURCE_GROUP_NAME);
+	loadMainResource("meshes",    ResourceGroupManager::DEFAULT_RESOURCE_GROUP_NAME);
+	loadMainResource("overlays",  ResourceGroupManager::DEFAULT_RESOURCE_GROUP_NAME);
 	loadMainResource("particles", ResourceGroupManager::DEFAULT_RESOURCE_GROUP_NAME);
-	loadMainResource("mygui", ResourceGroupManager::DEFAULT_RESOURCE_GROUP_NAME);
-	loadMainResource("layouts", ResourceGroupManager::DEFAULT_RESOURCE_GROUP_NAME);
-	loadMainResource("scripts", ResourceGroupManager::DEFAULT_RESOURCE_GROUP_NAME);
-	loadMainResource("textures", ResourceGroupManager::DEFAULT_RESOURCE_GROUP_NAME);
+	loadMainResource("mygui",     ResourceGroupManager::DEFAULT_RESOURCE_GROUP_NAME);
+	loadMainResource("layouts",   ResourceGroupManager::DEFAULT_RESOURCE_GROUP_NAME);
+	loadMainResource("scripts",   ResourceGroupManager::DEFAULT_RESOURCE_GROUP_NAME);
+	loadMainResource("textures",  ResourceGroupManager::DEFAULT_RESOURCE_GROUP_NAME);
+	loadMainResource("flags",     ResourceGroupManager::DEFAULT_RESOURCE_GROUP_NAME);
 
 	// optional ones
 	if (SETTINGS.getSetting("3D Sound renderer") != "No sound")
@@ -178,9 +179,6 @@ bool RigsOfRods::setup(void)
 	if(SETTINGS.getSetting("Motion blur") == "Yes")
 		loadMainResource("blur", ResourceGroupManager::DEFAULT_RESOURCE_GROUP_NAME);
 	
-	if(SETTINGS.getSetting("Envmap") == "Yes")
-		loadMainResource("envmap", ResourceGroupManager::DEFAULT_RESOURCE_GROUP_NAME);
-
 	if(SETTINGS.getSetting("HeatHaze") == "Yes")
 		loadMainResource("heathaze", ResourceGroupManager::DEFAULT_RESOURCE_GROUP_NAME);
 
