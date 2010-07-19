@@ -33,6 +33,8 @@ along with Rigs of Rods.  If not, see <http://www.gnu.org/licenses/>.
 #include "StreamableFactoryInterface.h"
 #include <map>
 
+#include <Ogre.h>
+
 class Network;
 class Streamable;
 
@@ -272,9 +274,9 @@ public:
 				{
 					it2->second->addStreamRegistrationResult(sourceid, *reg);
 					if(reg->status == 1)
-						LogManager::getSingleton().logMessage("Client " + StringConverter::toString(sourceid) + " successfully loaded stream " + StringConverter::toString(reg->origin_streamid) + " with name '" + reg->name + "', result code: " + StringConverter::toString(reg->status));
+						Ogre::LogManager::getSingleton().logMessage("Client " + Ogre::StringConverter::toString(sourceid) + " successfully loaded stream " + Ogre::StringConverter::toString(reg->origin_streamid) + " with name '" + reg->name + "', result code: " + Ogre::StringConverter::toString(reg->status));
 					else
-						LogManager::getSingleton().logMessage("Client " + StringConverter::toString(sourceid) + " could not load stream " + StringConverter::toString(reg->origin_streamid) + " with name '" + reg->name + "', result code: " + StringConverter::toString(reg->status));
+						Ogre::LogManager::getSingleton().logMessage("Client " + Ogre::StringConverter::toString(sourceid) + " could not load stream " + Ogre::StringConverter::toString(reg->origin_streamid) + " with name '" + reg->name + "', result code: " + Ogre::StringConverter::toString(reg->status));
 					res++;
 					break;
 				}
