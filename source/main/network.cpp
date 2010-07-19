@@ -82,7 +82,7 @@ void *s_receivethreadstart(void* vid)
 Timer Network::timer = Ogre::Timer();
 unsigned int Network::myuid=0;
 
-Network::Network(Beam **btrucks, std::string servername, long sport, RoRFrameListener *efl): lagDataClients()
+Network::Network(Beam **btrucks, std::string servername, long sport, RoRFrameListener *efl): lagDataClients(), initiated(false)
 {
 	// update factories network objects
 
@@ -121,10 +121,14 @@ Network::Network(Beam **btrucks, std::string servername, long sport, RoRFrameLis
 	// reset client list
 	pthread_mutex_lock(&clients_mutex);
 	for (int i=0; i<MAX_PEERS; i++)
+	{
 		clients[i].used=false;
+		memset(&clients[i].user, 0, sizeof(user_info_t));
+	}
 	pthread_mutex_unlock(&clients_mutex);
 
 	// direct start, no vehicle required
+	initiated = true;
 }
 
 Network::~Network()
@@ -550,7 +554,7 @@ void Network::receivethreadstart()
 		{
 			if(header.source == (int)myuid)
 			{
-				netFatalError("disconnected", false);
+				netFatalError("disconnected: remote side closed the connection", false);
 				return;
 			}
 
@@ -614,6 +618,15 @@ void Network::receivethreadstart()
 	}
 }
 
+int Network::getClientInfos(client_t c[MAX_PEERS])
+{
+	if(!initiated) return 1;
+	pthread_mutex_lock(&clients_mutex);
+	for(int i=0;i<MAX_PEERS;i++)
+		c[i] = clients[i]; // copy the whole client list
+	pthread_mutex_unlock(&clients_mutex);
+	return 0;
+}
 
 client_t *Network::getClientInfo(unsigned int uid)
 {

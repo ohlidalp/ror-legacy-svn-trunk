@@ -72,6 +72,7 @@ private:
 	std::map<Ogre::String, Ogre::String> downloadingMods;
 	void updatePlayerList();
 	server_info_t server_settings;
+	bool initiated;
 public:
 
 	Network(Beam **btrucks, std::string servername, long sport, RoRFrameListener *efl);
@@ -95,6 +96,7 @@ public:
 	unsigned int getUserID() { return myuid; };
 	static unsigned long getNetTime();
 	client_t *getClientInfo(unsigned int uid);
+	int getClientInfos(client_t c[MAX_PEERS]);
 
 	int getSpeedUp();
 	int getSpeedDown();
