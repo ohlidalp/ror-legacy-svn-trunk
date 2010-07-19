@@ -770,10 +770,6 @@ struct client
 {
 	user_info_t   user;                 //!< user struct
 	bool          used;                 //!< if this slot is used already
-
-	int           trucknum;             //!< the truck's number of the truck bound to this slot
-	bool          loaded;               //!< if the truck bound to this slot is loaded
-	bool          invisible;            //!< if the truck is invisible for the user (since he dont have the required resource)
 };
 
 struct authorinfo
