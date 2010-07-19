@@ -64,6 +64,14 @@ void NetworkStreamManager::addLocalStream(Streamable *stream, stream_register_t 
 	stream->setSourceID(mysourceid);
 	stream->setStreamID(streamid);
 
+	// add IDs to registration
+	reg->origin_sourceid = mysourceid;
+	reg->origin_streamid = streamid;
+	reg->status = 0;
+
+	// tell the stream that its a local stream (an origin)
+	stream->isOrigin = true;
+
 	// add new stream map to the streams map
 	if(streams.find(mysourceid) == streams.end())
 		streams[mysourceid] = std::map < unsigned int, Streamable *>();

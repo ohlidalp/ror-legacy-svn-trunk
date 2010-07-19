@@ -32,6 +32,10 @@ along with Rigs of Rods.  If not, see <http://www.gnu.org/licenses/>.
 #include "utils.h"
 #include "PlayerColours.h"
 
+#ifdef USE_MYGUI
+#include "gui_mp.h"
+#endif  // USE_MYGUI
+
 using namespace Ogre;
 
 ///////////////////////////////////
@@ -81,81 +85,10 @@ void ChatSystemFactory::updatePlayerList()
 {
 	if(!net) return;
 
-	LOCKSTREAMS();
-
-	std::map < int, std::map < unsigned int, ChatSystem *> > &streamables = getStreams();
-	std::map < int, std::map < unsigned int, ChatSystem *> >::iterator it1;
-
-	// the player itself
-	String oname = "tracks/MPPlayerList/Player0";
-	String colname = "tracks/MPPlayerList/Player0/Colour";
-	TextAreaOverlayElement *te = (TextAreaOverlayElement*)OverlayManager::getSingleton().getOverlayElement(oname);
-	TextAreaOverlayElement *tec = (TextAreaOverlayElement*)OverlayManager::getSingleton().getOverlayElement(colname);
-#ifdef USE_SOCKETW
-	if(te && tec)
-	{
-		user_info_t *c = net->getLocalUserData();
-		if(c)
-		{
-			try
-			{
-				UTFString username = tryConvertUTF(c->username);
-				te->setCaption(username);
-
-				String matName = PlayerColours::getSingleton().getColourMaterial(c->colournum);
-				tec->setMaterialName(matName);
-				if(c->authstatus & AUTH_ADMIN)
-					te->setColour(ColourValue(1,0,0));
-				else if(c->authstatus & AUTH_RANKED)
-					te->setColour(ColourValue(0,1,0));
-				else
-					te->setColour(ColourValue::Black);
-
-
-			} catch(...)
-			{
-			}
-		}
-	}
-
-	int num=1;
-	for(it1=streamables.begin(); it1!=streamables.end();it1++)
-	{
-		if(it1->second.size() == 0) continue;
-
-		client_t *c = net->getClientInfo(it1->first);
-		if(!c) continue;
-
-		try
-		{
-			UTFString username = tryConvertUTF(c->user.username);
-
-			String plstr = StringConverter::toString(num) + ": " + ColoredTextAreaOverlayElement::StripColors(username);
-
-			String oname = "tracks/MPPlayerList/Player" + StringConverter::toString(num);
-			String colname = "tracks/MPPlayerList/Player"+ StringConverter::toString(num)+"/Colour";
-			te = (TextAreaOverlayElement*)OverlayManager::getSingleton().getOverlayElement(oname);
-			tec = (TextAreaOverlayElement*)OverlayManager::getSingleton().getOverlayElement(colname);
-			if(!te || !tec) break;
-			te->setCaption(plstr);
-			String matName = PlayerColours::getSingleton().getColourMaterial(c->user.colournum);
-			tec->setMaterialName(matName);
-			if(c->user.authstatus & AUTH_ADMIN)
-				te->setColour(ColourValue(1,0,0));
-			else if(c->user.authstatus & AUTH_RANKED)
-				te->setColour(ColourValue(0,1,0));
-			else
-				te->setColour(ColourValue::Black);
-
-		} catch(...)
-		{
-		}
-
-		num++;
-	}
-#endif //SOCKETW
-
-	UNLOCKSTREAMS();
+#ifdef USE_MYGUI
+	// TODO: we need to do this upon changes only, not all the time
+	GUI_Multiplayer::getSingleton().update();
+#endif // USE_MYGUI
 }
 
 ChatSystem *ChatSystemFactory::getFirstChatSystem()

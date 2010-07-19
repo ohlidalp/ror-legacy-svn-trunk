@@ -51,6 +51,11 @@ public:
 	void setStreamID(unsigned int id) { this->streamid=id; };
 	void setSourceID(unsigned int id) { this->sourceid=id; };
 
+	bool getIsOrigin() { return isOrigin; };
+
+	void addStreamRegistrationResult(int source, stream_register_t reg);
+	int getStreamRegisterResultForSource(int sourceid, stream_register_t *reg);
+
 protected:
 	// constructor/destructor are protected, so you cannot create instances without using the factory
 	Streamable();
@@ -89,6 +94,11 @@ protected:
 
 	void lockReceiveQueue();
 	void unlockReceiveQueue();
+
+private:
+	std::map < int, stream_register_t > mStreamableResults;
+	bool isOrigin;
+
 };
 
 #endif //STREAMABLE_H__

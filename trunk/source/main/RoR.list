@@ -1,5 +1,6 @@
 set (HEADER_FILES
   gui_friction.h
+  gui_mp.h
   gui_inputmanager.h
   gui_manager.h
   gui_menu.h
@@ -118,6 +119,7 @@ set (HEADER_FILES
 )
 set (SOURCE_FILES
   gui_friction.cpp
+  gui_mp.cpp
   gui_inputmanager.cpp
   gui_manager.cpp
   gui_menu.cpp
@@ -247,6 +249,8 @@ SOURCE_GROUP("GUI\\Console" FILES
 SOURCE_GROUP("GUI" FILES
   gui_friction.cpp
   gui_friction.h
+  gui_mp.cpp
+  gui_mp.h
   gui_inputmanager.cpp
   gui_inputmanager.h
   gui_manager.cpp
