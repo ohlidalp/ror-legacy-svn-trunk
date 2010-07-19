@@ -1515,7 +1515,7 @@ bool InputEngine::instanceExists()
 	return (myInstance != 0);
 }
 // Constructor takes a RenderWindow because it uses that to determine input context
-InputEngine::InputEngine() : mInputManager(0), mMouse(0), mKeyboard(0), mForceFeedback(0), captureMode(false), mappingLoaded(false),free_joysticks(0)
+InputEngine::InputEngine() : mInputManager(0), mMouse(0), mKeyboard(0), mForceFeedback(0), captureMode(false), mappingLoaded(false), free_joysticks(0), inputsChanged(true)
 {
 	for(int i=0;i<MAX_JOYSTICKS;i++) mJoy[i]=0;
 #ifndef NOOGRE
