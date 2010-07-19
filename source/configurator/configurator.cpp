@@ -3658,9 +3658,9 @@ void MyDialog::OnNoteBookPageChange(wxNotebookEvent& event)
 				ver = Ogre::String(line);
 		}
 
-		helphtmw->LoadPage(wxString(NEWS_HTML_PAGE)+
+		helphtmw->LoadPage(wxString(conv(NEWS_HTML_PAGE))+
 						   wxString(conv("?netversion="))+
-						   wxString(RORNET_VERSION)+
+						   wxString(conv(RORNET_VERSION))+
 						   wxString(conv("&version="))+
 						   wxString(conv(ver))+
 						   wxString(conv("&lang="))+
@@ -3699,9 +3699,9 @@ void MyDialog::OnTestNet(wxCommandEvent& event)
 	btnUpdate->Enable(false);
 	timer1->Start(10000);
 	std::string lshort = conv(language->CanonicalName).substr(0, 2);
-	networkhtmw->LoadPage(wxString(_(REPO_HTML_SERVERLIST))+
+	networkhtmw->LoadPage(wxString(conv(REPO_HTML_SERVERLIST))+
 						  wxString(conv("?version="))+
-						  wxString(_(RORNET_VERSION))+
+						  wxString(conv(RORNET_VERSION))+
 						  wxString(conv("&lang="))+
 						  conv(lshort));
 
