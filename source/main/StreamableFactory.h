@@ -132,7 +132,17 @@ public:
 			{
 				// add it to the streams list
 				NetworkStreamManager::getSingleton().addRemoteStream(s, reg.sourceid, reg.streamid);
+				reg.reg.status = 1;
+			} else
+			{
+				// error creating stream, tell the sourceid that it failed
+				reg.reg.status = -1;
 			}
+			// fixup the registration information
+			reg.reg.origin_sourceid = reg.sourceid;
+			reg.reg.origin_streamid = reg.streamid;
+
+			stream_creation_results.push_back(reg);
 			stream_registrations.pop_front();
 		}
 		// then deletions:
@@ -169,6 +179,111 @@ public:
 		}
 	}
 
+	bool checkStreamsOK(int sourceid)
+	{
+		// walk client and the streams and checks for errors
+		typename std::map < int, std::map < unsigned int, X *> > &streamables = getStreams();
+		typename std::map < int, std::map < unsigned int, X *> >::iterator it1;
+		typename std::map < unsigned int, X *>::iterator it2;
+
+		bool ok = true;
+		for(it1=streamables.begin(); it1!=streamables.end();it1++)
+		{
+			if(it1->first != sourceid) continue;
+			for(it2=it1->second.begin(); it2!=it1->second.end();it2++)
+			{
+				if(it2->second == 0)
+				{
+					ok = false;
+					break;
+				}
+			}
+			break;
+		}
+		return ok;
+	}
+
+	bool checkStreamsRemoteOK(int sourceid)
+	{
+		// walk client and the streams and checks for errors
+		typename std::map < int, std::map < unsigned int, X *> > &streamables = getStreams();
+		typename std::map < int, std::map < unsigned int, X *> >::iterator it1;
+		typename std::map < unsigned int, X *>::iterator it2;
+
+		bool ok = false;
+		for(it1=streamables.begin(); it1!=streamables.end();it1++)
+		{
+			for(it2=it1->second.begin(); it2!=it1->second.end();it2++)
+			{
+				if(!it2->second)
+					continue;
+				if(!it2->second->getIsOrigin())
+					continue;
+				stream_register_t reg;
+				reg.status = -2;
+				int res = it2->second->getStreamRegisterResultForSource(sourceid, &reg);
+				if(!res)
+				{
+					if(reg.status == 1)
+						ok = true;
+				}
+				break;
+			}
+			break;
+		}
+		return ok;
+	}
+
+	int getStreamRegistrationResults(std::deque < stream_reg_t > *net_results)
+	{
+		LOCKSTREAMS();
+		// move list entries over to the list in the networking thread
+		int res = 0;
+		while (!stream_creation_results.empty())
+		{
+			stream_reg_t reg = stream_creation_results.front();
+			net_results->push_back(reg);
+			stream_creation_results.pop_front();
+			res++;
+		}
+		UNLOCKSTREAMS();
+		return res;
+	}
+
+	int addStreamRegistrationResults(int sourceid, stream_register_t *reg)
+	{
+		typename std::map < int, std::map < unsigned int, X *> > &streamables = getStreams();
+		typename std::map < int, std::map < unsigned int, X *> >::iterator it1;
+		typename std::map < unsigned int, X *>::iterator it2;
+
+		int res = 0;
+		for(it1=streamables.begin(); it1!=streamables.end();it1++)
+		{
+			for(it2=it1->second.begin(); it2!=it1->second.end();it2++)
+			{
+				if(!it2->second)
+					continue;
+				if(!it2->second->getIsOrigin())
+					continue;
+				int sid = it2->second->getSourceID();
+				int stid = it2->second->getStreamID();
+				// only use our locally created streams
+				if(stid == reg->origin_streamid)
+				{
+					it2->second->addStreamRegistrationResult(sourceid, *reg);
+					if(reg->status == 1)
+						LogManager::getSingleton().logMessage("Client " + StringConverter::toString(sourceid) + " successfully loaded stream " + StringConverter::toString(reg->origin_streamid) + " with name '" + reg->name + "', result code: " + StringConverter::toString(reg->status));
+					else
+						LogManager::getSingleton().logMessage("Client " + StringConverter::toString(sourceid) + " could not load stream " + StringConverter::toString(reg->origin_streamid) + " with name '" + reg->name + "', result code: " + StringConverter::toString(reg->status));
+					res++;
+					break;
+				}
+			}
+			break;
+		}
+		return res;
+	}
+
 protected:
 	static T* ms_Singleton;
 	pthread_mutex_t stream_reg_mutex;
@@ -176,6 +291,7 @@ protected:
 
 	std::deque < stream_reg_t > stream_registrations;
 	std::deque < stream_del_t > stream_deletions;
+	std::deque < stream_reg_t > stream_creation_results;
 
 	std::map < int, std::map < unsigned int, X *> > &getStreams()
 	{

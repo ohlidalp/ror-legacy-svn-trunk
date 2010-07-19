@@ -138,6 +138,11 @@ Beam *BeamFactory::createRemoteInstance(stream_reg_t *reg)
 	if(!CACHE.checkResourceLoaded(filename, group))
 	{
 		LogManager::getSingleton().logMessage("wont add remote stream (truck not existing): '"+filename+"'");
+
+		// add 0 to the map so we know its stream is existing but not usable for us
+		std::map < int, std::map < unsigned int, Beam *> > &streamables = getStreams();
+		streamables[reg->sourceid][reg->streamid] = 0;
+
 		return 0;
 	}
 

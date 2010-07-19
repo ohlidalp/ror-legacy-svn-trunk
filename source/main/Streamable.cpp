@@ -32,7 +32,7 @@ along with Rigs of Rods.  If not, see <http://www.gnu.org/licenses/>.
 
 using namespace Ogre;
 
-Streamable::Streamable()
+Streamable::Streamable() : isOrigin(false)
 {
 	//NetworkStreamManager::getSingleton().addStream(this);
 	pthread_mutex_init(&recv_work_mutex, NULL);
@@ -144,4 +144,17 @@ void Streamable::lockReceiveQueue()
 void Streamable::unlockReceiveQueue()
 {
 	pthread_mutex_unlock(&recv_work_mutex);
+}
+
+void Streamable::addStreamRegistrationResult(int sourceid, stream_register_t reg)
+{
+	mStreamableResults[sourceid] = reg;
+}
+
+int Streamable::getStreamRegisterResultForSource(int sourceid, stream_register_t *reg)
+{
+	if(mStreamableResults.find(sourceid) == mStreamableResults.end())
+		return 1;
+	*reg = mStreamableResults[sourceid];
+	return 0;
 }

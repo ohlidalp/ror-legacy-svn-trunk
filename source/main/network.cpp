@@ -488,8 +488,21 @@ void Network::receivethreadstart()
 
 	char *buffer=(char*)ror_malloc(MAX_MESSAGE_LENGTH);
 	bool autoDl = (SETTINGS.getSetting("AutoDownload") == "Yes");
+	std::deque < stream_reg_t > streamCreationResults;
 	LogManager::getSingleton().logMessage("Receivethread starting");
 	// unlimited timeout, important!
+
+	// wait for beamfactory to be existant before doing anything
+	// otherwise you can get runtime conditions
+	while(!BeamFactory::getSingletonPtr())
+	{
+#ifndef WIN32
+			sleep(1);
+#else
+			Sleep(1000);
+#endif
+	};
+
 	socket.set_timeout(0,0);
 	while (!shutdown)
 	{
@@ -505,6 +518,17 @@ void Network::receivethreadstart()
 			return;
 		}
 
+		// check for stream registration errors and notify the remote client
+		if(BeamFactory::getSingletonPtr() && BeamFactory::getSingletonPtr()->getStreamRegistrationResults(&streamCreationResults))
+		{
+			while (!streamCreationResults.empty())
+			{
+				stream_reg_t r = streamCreationResults.front();
+				stream_register_t reg = r.reg;
+				sendmessage(&socket, MSG2_STREAM_REGISTER_RESULT, 0, sizeof(stream_register_t), (char *)&reg);
+				streamCreationResults.pop_front();
+			}
+		}
 
 		// TODO: produce new streamable classes when required
 		if(header.command == MSG2_STREAM_REGISTER)
@@ -543,6 +567,12 @@ void Network::receivethreadstart()
 				ChatSystemFactory::getSingleton().createRemote(header.source, header.streamid, reg, playerColour);
 			}
 			continue;
+		}
+		else if(header.command == MSG2_STREAM_REGISTER_RESULT)
+		{
+			stream_register_t *reg = (stream_register_t *)buffer;
+			BeamFactory::getSingleton().addStreamRegistrationResults(header.source, reg);
+			LogManager::getSingleton().logMessage(" * received stream registration result: " + StringConverter::toString(header.source) + ": "+StringConverter::toString(header.streamid));
 		}
 		else if(header.command == MSG2_CHAT && header.source == -1)
 		{

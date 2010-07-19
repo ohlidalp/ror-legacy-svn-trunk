@@ -86,6 +86,7 @@ along with Rigs of Rods.  If not, see <http://www.gnu.org/licenses/>.
 #include "gui_manager.h"
 #include "gui_menu.h"
 #include "gui_friction.h"
+#include "gui_mp.h"
 #include "SelectorWindow.h"
 #include "LoadingWindow.h"
 #endif //MYGUI
@@ -773,6 +774,7 @@ RoRFrameListener::RoRFrameListener(RenderWindow* win, Camera* cam, SceneManager*
 	enablePosStor = (SETTINGS.getSetting("Position Storage")=="Yes");
 	objectCounter=0;
 	hdrListener=0;
+	netPointToUID=-1;
 	mDOF=0;
 	mDOFDebug=false;
 	mouseGrabForce=100000.0f;
@@ -1176,6 +1178,9 @@ RoRFrameListener::RoRFrameListener(RenderWindow* win, Camera* cam, SceneManager*
 		bool connres = net->connect();
 #ifdef USE_MYGUI
 		LoadingWindow::get()->hide();
+
+		new GUI_Multiplayer(net);
+
 #endif //USE_MYGUI
 		if(!connres)
 		{
@@ -7910,4 +7915,10 @@ int RoRFrameListener::addTruck(Beam *b)
 void RoRFrameListener::setLoadingState(int value)
 {
 	loading_state = value;
+}
+
+void RoRFrameListener::setNetPointToUID(int uid)
+{
+	// TODO: setup arrow
+	netPointToUID = uid;
 }

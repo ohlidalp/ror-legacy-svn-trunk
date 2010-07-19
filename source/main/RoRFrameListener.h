@@ -212,6 +212,7 @@ protected:
 	int interactivemap;
     bool xfire_enabled;
 	int externalCameraMode;
+	int netPointToUID;
 
 	//    Beam *beam;
 	int loading_state;
@@ -336,6 +337,8 @@ public:
 			const Vector3 &position = Vector3::ZERO,
 			const Quaternion &orient = Quaternion::IDENTITY,const Vector3 &scale = Vector3::UNIT_SCALE);
 	void showspray(bool s);
+	int getNetPointToUID() { return netPointToUID; };
+	void setNetPointToUID(int uid);
 
 	Character *person;
 	ChatSystem *netChat;
