@@ -53,6 +53,13 @@ Ogre::String PlayerColours::getColourMaterial(int colourNum)
 	return "tracks/PlayerColours/"+StringConverter::toString(colourNum);
 }
 
+Ogre::ColourValue PlayerColours::getColour(int colourNum)
+{
+    int numColours = sizeof(cvals) / sizeof(ColourValue);
+	if(colourNum < 0 || colourNum >= numColours) return ColourValue::ZERO;
+	return cvals[colourNum];
+}
+
 void PlayerColours::updateMaterial(int colourNum, String materialName, int textureUnitStateNum)
 {
     int numColours = sizeof(cvals) / sizeof(ColourValue);
