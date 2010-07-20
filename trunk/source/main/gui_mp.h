@@ -21,6 +21,7 @@ along with Rigs of Rods.  If not, see <http://www.gnu.org/licenses/>.
 // created by Thomas Fischer thomas{AT}thomasfischer{DOT}biz, 18th of July 2010
 
 #ifdef USE_MYGUI 
+#ifdef USE_SOCKETW
 
 #ifndef GUI_MP_H__
 #define GUI_MP_H__
@@ -71,5 +72,6 @@ protected:
 
 #endif //GUI_MP_H__
 
-#endif //MYGUI
+#endif // USE_SOCKETW
+#endif // USE_MYGUI
 

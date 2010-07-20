@@ -1179,7 +1179,9 @@ RoRFrameListener::RoRFrameListener(RenderWindow* win, Camera* cam, SceneManager*
 #ifdef USE_MYGUI
 		LoadingWindow::get()->hide();
 
+#ifdef USE_SOCKETW
 		new GUI_Multiplayer(net);
+#endif //USE_SOCKETW
 
 #endif //USE_MYGUI
 		if(!connres)
@@ -7724,7 +7726,11 @@ void RoRFrameListener::hideGUI(bool visible)
 		if(ow) ow->showEditorOverlay(false);
 		if(ow) ow->truckhud->show(false);
 		//if(bigMap) bigMap->setVisibility(false);
+#ifdef USE_MYGUI
+#ifdef USE_SOCKETW
 		if(net) GUI_Multiplayer::getSingleton().setVisible(false);
+#endif // USE_SOCKETW
+#endif // USE_MYGUI
 	}
 	else
 	{
@@ -7736,7 +7742,11 @@ void RoRFrameListener::hideGUI(bool visible)
 			if(ow) ow->showDashboardOverlays(true, trucks[current_truck]->driveable);
 			//if(bigMap) bigMap->setVisibility(true);
 		}
+#ifdef USE_SOCKETW
+#ifdef USE_MYGUI
 		if(net) GUI_Multiplayer::getSingleton().setVisible(true);
+#endif // USE_MYGUI
+#endif // USE_SOCKETW
 	}
 }
 
