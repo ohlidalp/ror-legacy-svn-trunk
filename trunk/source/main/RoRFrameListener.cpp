@@ -2356,6 +2356,7 @@ bool RoRFrameListener::updateEvents(float dt)
 		chatting=false;
 		INPUTENGINE.setRecordInput(false);
 		INPUTENGINE.resetKeyLine();
+		mTimeUntilNextToggle = 0.5; // for enter/exit truck 
 		return true;
 	}
 
