@@ -21,6 +21,7 @@ along with Rigs of Rods.  If not, see <http://www.gnu.org/licenses/>.
 // created by Thomas Fischer thomas{AT}thomasfischer{DOT}biz, 7th of September 2009
 
 #ifdef USE_MYGUI
+#ifdef USE_SOCKETW
 
 #include "gui_mp.h"
 #include "gui_manager.h"
@@ -342,4 +343,5 @@ bool GUI_Multiplayer::getVisible()
 	return mpPanel->isVisible();
 }
 
-#endif //MYGUI
+#endif // USE_SOCKETW
+#endif // USE_MYGUI
