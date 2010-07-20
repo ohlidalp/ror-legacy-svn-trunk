@@ -15,7 +15,7 @@ rem poor mans escaping of newlines to make this giant more readable ...
 -DROR_USE_MOFILEREADER=ON ^
 -DROR_USE_MYGUI=ON ^
 -DROR_USE_OIS_G27=ON ^
--ROR_USE_OPENAL=ON ^
--ROR_USE_PAGED=ON ^
--ROR_USE_SOCKETW=ON ^
+-DROR_USE_OPENAL=ON ^
+-DROR_USE_PAGED=ON ^
+-DROR_USE_SOCKETW=ON ^
 ..
