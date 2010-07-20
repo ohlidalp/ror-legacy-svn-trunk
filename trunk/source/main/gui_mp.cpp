@@ -202,29 +202,29 @@ void GUI_Multiplayer::updateSlot(player_row_t *row, user_info_t *c, bool self)
 		row->userTruckOKImg->setUserString("uid", StringConverter::toString(c->uniqueid));
 		row->userTruckOKRemoteImg->setUserString("uid", StringConverter::toString(c->uniqueid));
 		row->userTruckOKImg->setPosition(x, y);
-		x -= 18;
+		x -= 10;
 		row->userTruckOKRemoteImg->setPosition(x, y);
-		x -= 18;
+		x -= 10;
 
 		bool ok = BeamFactory::getSingleton().checkStreamsOK(c->uniqueid);
 		if(ok)
 		{
-			row->userTruckOKImg->setImageTexture("accept.png");
+			row->userTruckOKImg->setImageTexture("arrow_down.png");
 			row->userTruckOKImg->setUserString("tooltip", "Truck loaded correctly, no errors");
 		} else
 		{
-			row->userTruckOKImg->setImageTexture("cancel.png");
+			row->userTruckOKImg->setImageTexture("arrow_down_red.png");
 			row->userTruckOKImg->setUserString("tooltip", "Truck loading errors");
 		}
 
 		bool rok = BeamFactory::getSingleton().checkStreamsRemoteOK(c->uniqueid);
 		if(rok)
 		{
-			row->userTruckOKRemoteImg->setImageTexture("accept.png");
+			row->userTruckOKRemoteImg->setImageTexture("arrow_up.png");
 			row->userTruckOKRemoteImg->setUserString("tooltip", "Remote Truck loaded correctly, no errors");
 		} else
 		{
-			row->userTruckOKRemoteImg->setImageTexture("cancel.png");
+			row->userTruckOKRemoteImg->setImageTexture("arrow_up_red.png");
 			row->userTruckOKRemoteImg->setUserString("tooltip", "Remote Truck loading errors");
 		}
 	} else
@@ -234,6 +234,9 @@ void GUI_Multiplayer::updateSlot(player_row_t *row, user_info_t *c, bool self)
 	}
 	
 	// user go img
+	row->usergoimg->setVisible(false);
+	/*
+	// disabled for now, since no use
 	if(!self)
 	{
 		row->usergoimg->setVisible(true);
@@ -253,6 +256,7 @@ void GUI_Multiplayer::updateSlot(player_row_t *row, user_info_t *c, bool self)
 	{
 		row->usergoimg->setVisible(false);
 	}
+	*/
 }
 
 int GUI_Multiplayer::update()
@@ -328,5 +332,14 @@ void GUI_Multiplayer::openToolTip(MyGUI::WidgetPtr sender, const MyGUI::ToolTipI
 	}
 }
 
-#endif //MYGUI
+void GUI_Multiplayer::setVisible(bool value)
+{
+	mpPanel->setVisible(value);
+}
 
+bool GUI_Multiplayer::getVisible()
+{
+	return mpPanel->isVisible();
+}
+
+#endif //MYGUI

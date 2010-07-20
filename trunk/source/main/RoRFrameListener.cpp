@@ -7727,6 +7727,7 @@ void RoRFrameListener::hideGUI(bool visible)
 		if(ow) ow->showEditorOverlay(false);
 		if(ow) ow->truckhud->show(false);
 		//if(bigMap) bigMap->setVisibility(false);
+		if(net) GUI_Multiplayer::getSingleton().setVisible(false);
 	}
 	else
 	{
@@ -7738,6 +7739,7 @@ void RoRFrameListener::hideGUI(bool visible)
 			if(ow) ow->showDashboardOverlays(true, trucks[current_truck]->driveable);
 			//if(bigMap) bigMap->setVisibility(true);
 		}
+		if(net) GUI_Multiplayer::getSingleton().setVisible(true);
 	}
 }
 
