@@ -4815,9 +4815,6 @@ void RoRFrameListener::loadTerrain(String terrainfile)
 		//directional light for shadow
 		mainLight->setType(Light::LT_DIRECTIONAL);
 		mainLight->setDirection(0.785, -0.423, 0.453);
-	} else
-	{
-		mainLight = SkyManager::getSingleton().getMainLight();
 	}
 #else // USE_CAELUM
 	mainLight = mSceneMgr->createLight("MainLight");
@@ -4835,7 +4832,7 @@ void RoRFrameListener::loadTerrain(String terrainfile)
 		new SkyManager();
 
 		SkyManager::getSingleton().init(mScene, mWindow, mCamera);
-
+		mainLight = SkyManager::getSingleton().getMainLight();
 	}
 	else
 #endif //CAELUM
