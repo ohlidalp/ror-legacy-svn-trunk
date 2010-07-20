@@ -153,6 +153,7 @@ bool RigsOfRods::setup(void)
 	loadMainResource("scripts",   ResourceGroupManager::DEFAULT_RESOURCE_GROUP_NAME);
 	loadMainResource("textures",  ResourceGroupManager::DEFAULT_RESOURCE_GROUP_NAME);
 	loadMainResource("flags",     ResourceGroupManager::DEFAULT_RESOURCE_GROUP_NAME);
+	loadMainResource("icons",     ResourceGroupManager::DEFAULT_RESOURCE_GROUP_NAME);
 
 	// optional ones
 	if (SETTINGS.getSetting("3D Sound renderer") != "No sound")

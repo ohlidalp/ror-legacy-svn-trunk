@@ -41,6 +41,8 @@ public:
 	static GUI_Multiplayer* getSingletonPtr(void);
 
 	int update();
+	void setVisible(bool value);
+	bool getVisible();
 protected:
 
 	typedef struct player_row_t {
