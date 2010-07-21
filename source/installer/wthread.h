@@ -28,7 +28,7 @@
 #define API_MIRROR_NOGEO    "/getwsyncmirror/?ignoregeo"
 #define API_RECORDTRAFFIC   "/reporttraffic/?mirror=%s&bytes=%d"
 #define API_REPOSEARCH      "/reposearch/"
-#define API_CHINSTALLER     "/checkinstallerupdate/?h=%s"
+#define API_CHINSTALLER     "/checkinstallerupdate/?h=%s&platform=%s"
 
 #define REPO_DOWNLOAD       "/files/mirror/geoselect/"
 

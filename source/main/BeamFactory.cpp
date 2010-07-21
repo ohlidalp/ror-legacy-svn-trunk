@@ -127,13 +127,15 @@ Beam *BeamFactory::createRemoteInstance(stream_reg_t *reg)
 {
 	// NO LOCKS IN HERE, already locked
 
+	stream_register_trucks_t *treg = (stream_register_trucks_t *)&reg->reg;
+
 	LogManager::getSingleton().logMessage(" new beam truck for " + StringConverter::toString(reg->sourceid) + ":" + StringConverter::toString(reg->streamid));
 
 	bool networked=true, networking=false;
 	if(net) networking = true;
 
 	// check if we got this truck installed
-	String filename = String(reg->reg.name);
+	String filename = String(treg->name);
 	String group = "";
 	if(!CACHE.checkResourceLoaded(filename, group))
 	{
@@ -146,8 +148,18 @@ Beam *BeamFactory::createRemoteInstance(stream_reg_t *reg)
 		return 0;
 	}
 
+	// fill truckconfig
+	std::vector<Ogre::String> truckconfig;
+	for(int i = 0; i < 10; i++)
+	{
+		if(!strnlen(treg->truckconfig[i], 60))
+			break;
+		truckconfig.push_back(String(treg->truckconfig[i]));
+	}
+
+
 	// spawn the truck far off anywhere
-	Vector3 pos = Vector3(0,0,0);
+	Vector3 pos = Vector3(1000000,1000000,1000000);
 
 	int truck_num = efl->getFreeTruckSlot();
 	if(truck_num == -1)
@@ -178,7 +190,7 @@ Beam *BeamFactory::createRemoteInstance(stream_reg_t *reg)
 		0,
 		false,
 		0,
-		0,
+		&truckconfig,
 		0);
 
 	efl->trucks[truck_num] = b;

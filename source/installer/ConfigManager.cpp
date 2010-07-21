@@ -336,7 +336,7 @@ int ConfigManager::uninstall(bool deleteUserFolder)
 	wxRegKey *pRegKey = new wxRegKey(wxT("HKEY_LOCAL_MACHINE\\Software\\RigsOfRods"));
 	if(pRegKey->Exists())
 		pRegKey->DeleteSelf();
-	
+
 	pRegKey = new wxRegKey(wxT("HKEY_LOCAL_MACHINE\\SOFTWARE\\Microsoft\\Windows\\CurrentVersion\\Uninstall\\Rigs of Rods"));
 	if(pRegKey->Exists())
 		pRegKey->DeleteSelf();
@@ -738,7 +738,7 @@ std::string ConfigManager::getOwnHash()
 {
 	// now hash ourself and validate our installer version, to be sure we are using the latest installer
 	std::string myPath = conv(MyApp::getExecutablePath());
-	
+
 	CSHA1 sha1;
 	bool res = sha1.HashFile(const_cast<char*>(myPath.c_str()));
 	if(!res) return std::string("");
@@ -752,15 +752,24 @@ void ConfigManager::checkForNewInstaller()
 {
 	std::string ourHash = getOwnHash();
 
-	char url_tmp[256]="";
-	sprintf(url_tmp, API_CHINSTALLER, ourHash.c_str());
+    char platform_str[256]="";
+#ifdef WIN32
+   sprintf(platform_str, "windows");
+#else
+   sprintf(platform_str, "linux");
+#endif
+
+    char url_tmp[256]="";
+	sprintf(url_tmp, API_CHINSTALLER, ourHash.c_str(), platform_str);
 
 	WsyncDownload *wsdl = new WsyncDownload();
+	LOG("checking for installer updates...\n");
 	wsdl->setDownloadMessage(_T("checking for installer updates"));
 	std::vector< std::vector< std::string > > list;
 	int res = wsdl->downloadConfigFile(API_SERVER, std::string(url_tmp), list, true);
 	if(!res && list.size()>0 && list[0].size()>0)
 	{
+		LOG("installer check update result: %s\n", list[0][0].c_str());
 		if(list[0][0] == std::string("ok"))
 		{
 			// no updates
@@ -768,11 +777,11 @@ void ConfigManager::checkForNewInstaller()
 		{
 			// yay, an update
 			wsdl->setDownloadMessage(_T("downloading installer update"));
-			
+
 			// rename ourself, so we can replace ourself
 			std::string myPath = conv(MyApp::getExecutablePath());
 			boost::filesystem::rename(myPath, myPath+std::string(".old"));
-			
+
 			int res = wsdl->downloadFile(0, myPath, list[0][1], list[0][2], 0, 0, true);
 			if(!res)
 			{
