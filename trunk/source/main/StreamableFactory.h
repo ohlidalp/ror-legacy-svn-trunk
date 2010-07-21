@@ -122,10 +122,11 @@ public:
 		UNLOCKSTREAMS();
 	}
 
-	virtual void syncRemoteStreams()
+	virtual bool syncRemoteStreams()
 	{
 		LOCKSTREAMS();
 		// first registrations
+		int changes = 0;
 		while (!stream_registrations.empty())
 		{
 			stream_reg_t reg = stream_registrations.front();
@@ -146,6 +147,7 @@ public:
 
 			stream_creation_results.push_back(reg);
 			stream_registrations.pop_front();
+			changes++;
 		}
 		// then deletions:
 		// first registrations
@@ -154,8 +156,10 @@ public:
 			stream_del_t del = stream_deletions.front();
 			removeInstance(&del);
 			stream_deletions.pop_front();
+			changes++;
 		}
 		UNLOCKSTREAMS();
+		return (changes > 0);
 	}
 
 	void removeInstance(stream_del_t *del)

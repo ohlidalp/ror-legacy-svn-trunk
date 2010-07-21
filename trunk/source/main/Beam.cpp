@@ -399,7 +399,7 @@ Beam::Beam(int tnum, SceneManager *manager, SceneNode *parent, RenderWindow* win
 	free_pressure_beam=0;
 	default_beam_diameter=DEFAULT_BEAM_DIAMETER;
 	skeleton_beam_diameter=BEAM_SKELETON_DIAMETER;
-	
+
 	default_spring=DEFAULT_SPRING;
 	default_spring_scale=1;
 	default_damp=DEFAULT_DAMP;
@@ -408,7 +408,7 @@ Beam::Beam(int tnum, SceneManager *manager, SceneNode *parent, RenderWindow* win
 	default_deform_scale=1;
 	default_break=BEAM_BREAK;
 	default_break_scale=1;
-	
+
 	default_node_friction=NODE_FRICTION_COEF_DEFAULT;
 	default_node_volume=NODE_VOLUME_COEF_DEFAULT;
 	default_node_surface=NODE_SURFACE_COEF_DEFAULT;
@@ -1575,7 +1575,7 @@ int Beam::loadTruck(const char* fname, SceneManager *manager, SceneNode *parent,
 			 * this command has several layers for splitting up the line:
 			 * 1. ',' the top level will be split up with a comma to separate the main options
 			 * 2. ':' the second level will be split up with colon, it separates the entry name and its value
-			 * 3. '|' the third level is used to specify multiple values for the entry value 
+			 * 3. '|' the third level is used to specify multiple values for the entry value
 			 */
 			int animnum = 0;
 			float ratio = 0.0f, opt1 = -1.0f, opt2 = -1.0f;
@@ -1602,7 +1602,7 @@ int Beam::loadTruck(const char* fname, SceneManager *manager, SceneNode *parent,
 			prop_t *prop = &props[free_prop-1];
 
 			// look for a free anim slot, important: do not over the borders!
-			while (prop->animFlags[animnum] && animnum < 10) 
+			while (prop->animFlags[animnum] && animnum < 10)
 				animnum++;
 
 			// all slots used?
@@ -1641,7 +1641,7 @@ int Beam::loadTruck(const char* fname, SceneManager *manager, SceneNode *parent,
 					Ogre::vector<Ogre::String>::type args2 = Ogre::StringUtil::split(options[i], ":");
 					if(args2.size() == 0)
 						continue;
-					
+
 					// trim spaces from the entry
 					Ogre::StringUtil::trim(args2[0]);
 					if(args2.size() >= 2) Ogre::StringUtil::trim(args2[1]);
@@ -1758,7 +1758,7 @@ int Beam::loadTruck(const char* fname, SceneManager *manager, SceneNode *parent,
 					{
 						// TODO: re-add check for invalid cases
 						prop->animMode[animnum] |= (ANIM_MODE_AUTOANIMATE);
-						
+
 						if     (prop->animMode[animnum] & ANIM_MODE_ROTA_X)   { prop->animOpt1[animnum] = opt1 + prop->rotaX; prop->animOpt2[animnum] = opt2 + prop->rotaX; prop->animOpt4[animnum] = prop->rotaX; }
 						else if(prop->animMode[animnum] & ANIM_MODE_ROTA_Y)   { prop->animOpt1[animnum] = opt1 + prop->rotaY; prop->animOpt2[animnum] = opt2 + prop->rotaY; prop->animOpt4[animnum] = prop->rotaY; }
 						else if(prop->animMode[animnum] & ANIM_MODE_ROTA_Z)   { prop->animOpt1[animnum] = opt1 + prop->rotaZ; prop->animOpt2[animnum] = opt2 + prop->rotaZ; prop->animOpt4[animnum] = prop->rotaZ; }
@@ -1785,7 +1785,7 @@ int Beam::loadTruck(const char* fname, SceneManager *manager, SceneNode *parent,
 					{
 						// we are using keys as source
 						prop->animFlags[animnum] |= ANIM_FLAG_EVENT;
-						
+
 						// now parse the keys
 						prop->animFlags[animnum] |= ANIM_FLAG_EVENT;
 						Ogre::vector<Ogre::String>::type args3 = Ogre::StringUtil::split(args2[1], "|");
@@ -1807,7 +1807,7 @@ int Beam::loadTruck(const char* fname, SceneManager *manager, SceneNode *parent,
 			continue;
 		}
 
-		
+
 		if (!strncmp("set_managedmaterials_options", line, 28))
 		{
 			int result = sscanf(line,"set_managedmaterials_options %d", &managedmaterials_doublesided);
@@ -4306,7 +4306,7 @@ int Beam::loadTruck(const char* fname, SceneManager *manager, SceneNode *parent,
 				LogManager::getSingleton().logMessage("airbrakes limit reached ("+StringConverter::toString(MAX_AIRBRAKES)+"): " + String(fname) +" line " + StringConverter::toString(linecounter) + ". trying to continue ...");
 				continue;
 			}
-			if (liftcoef != 1.0f) 
+			if (liftcoef != 1.0f)
 				LogManager::getSingleton().logMessage("Airbrakes force coefficent: " + StringConverter::toString(liftcoef));
 
 			airbrakes[free_airbrake]=new Airbrake(manager, truckname, free_airbrake, &nodes[ref], &nodes[nx], &nodes[ny], &nodes[na], Vector3(ox,oy,oz), wd, len, maxang, texname, tx1,tx2,tx3,tx4,liftcoef);
@@ -6092,7 +6092,7 @@ int Beam::add_beam(node_t *p1, node_t *p2, SceneManager *manager, SceneNode *par
 
 		// no materialmapping for beams!
 		//		ec->setCastShadows(false);
-		
+
 		if (beams[pos].mEntity && (type==BEAM_HYDRO || type==BEAM_MARKED))
 			beams[pos].mEntity->setMaterialName("tracks/Chrome");
 		else if(beams[pos].mEntity)
@@ -6619,10 +6619,17 @@ void Beam::sendStreamSetup()
 
 	// register the local stream
 	stream_register_trucks_t reg;
+	memset(&reg, 0, sizeof(stream_register_trucks_t));
 	reg.status = 0;
-	reg.type = 0; // 0 = truck
+	reg.type   = 0; // 0 = truck
 	reg.bufferSize = netbuffersize;
-	strcpy(reg.name, realtruckfilename.c_str());
+	strncpy(reg.name, realtruckfilename.c_str(), 128);
+	if(!truckconfig.empty())
+	{
+		// insert section config
+		for(int i = 0; i < std::min<int>(truckconfig.size(), 10); i++)
+			strncpy(reg.truckconfig[i], truckconfig[i].c_str(), 60);
+	}
 
 	NetworkStreamManager::getSingleton().addLocalStream(this, (stream_register_t *)&reg, sizeof(reg));
 }
@@ -6778,7 +6785,7 @@ void Beam::calcAnimators(int flagstate, float &cstate, int &div, Real timer, flo
 			if (getAxleLockName() == "Split") cstate = 0.5f;
 			if (getAxleLockName() == "Locked") cstate = 1.0f;
 		} else  // no axles/diffs avail, mode is split by default
-			cstate=0.5f;  
+			cstate=0.5f;
 
 		div++;
 	}
@@ -7001,9 +7008,9 @@ void Beam::calcAnimators(int flagstate, float &cstate, int &div, Real timer, flo
 
 		if (flag_state & ANIM_FLAG_AESTATUS)
 		{
- 			if (!aeroengines[aenum]->getIgnition()) 
+ 			if (!aeroengines[aenum]->getIgnition())
 				cstate = 0.0f;
-			else 
+			else
 				cstate = 0.5f;
 			if (aeroengines[aenum]->isFailed()) cstate = 1.0f;
 			div++;
@@ -7100,7 +7107,7 @@ void Beam::calcAnimators(int flagstate, float &cstate, int &div, Real timer, flo
 		//flip to other side when upside down
 		if (upv.y<0) rollangle= 180.0f - rollangle;
 		cstate = rollangle / 180.0f;
-		// dataoutpu is -0.5 to 1.5, normalize to -1 to +1 without changing the zero position. 
+		// dataoutpu is -0.5 to 1.5, normalize to -1 to +1 without changing the zero position.
 		// this is vital for the animateor beams and does not effect the animated props
 		if (cstate >= 1.0f) cstate = cstate - 2.0f;
 		div++;
@@ -7390,7 +7397,7 @@ void Beam::calcForcesEuler(int doUpdate, Real dt, int step, int maxstep, Beam** 
 							d=d*0.1f;
 						}
 					}
-					else // We assume bounded=SUPPORTBEAM 
+					else // We assume bounded=SUPPORTBEAM
 					{
 						if (difftoBeamL>0.0f)
 						{
@@ -7576,7 +7583,7 @@ void Beam::calcForcesEuler(int doUpdate, Real dt, int step, int maxstep, Beam** 
 								// use animkey as bool to determine keypress / release state of inputengine
 								props[propi].animKeyState[animnum] = 1.0f;
 							}
-							else 
+							else
 							{
 								props[propi].lastanimKS[animnum] = 0.0f;
 								// use animkey as bool to determine keypress / release state of inputengine
@@ -7589,7 +7596,7 @@ void Beam::calcForcesEuler(int doUpdate, Real dt, int step, int maxstep, Beam** 
 						}
 					} else
 					{
-						// keyevent exists and keylock is enabled but the key isnt pressed right now = get lastanimkeystatus for cstate and reset keypressed bool animkey 
+						// keyevent exists and keylock is enabled but the key isnt pressed right now = get lastanimkeystatus for cstate and reset keypressed bool animkey
 						if (props[propi].animKeyState[animnum] != -1.0f)
 						{
 							cstate +=props[propi].lastanimKS[animnum];
@@ -7673,14 +7680,14 @@ void Beam::calcForcesEuler(int doUpdate, Real dt, int step, int maxstep, Beam** 
 								limiter = 180.0f;										// stop at limit
 								props[propi].animOpt5[animnum] *= -1.0f;				// change cstate multiplier if bounce is set
 								limiterchanged = true;
-							} else 
+							} else
 							{
 								limiter -= 360.0f;										// flip to other side at limit
 								limiterchanged = true;
 							}
 						}
 					}
-	
+
 					// check if a negative custom limit is set to evaluate/calc flip back
 					if (props[propi].animOpt1[animnum] - props[propi].animOpt4[animnum])
 					{
@@ -7713,7 +7720,7 @@ void Beam::calcForcesEuler(int doUpdate, Real dt, int step, int maxstep, Beam** 
 							}
 						}
 					}
-					
+
 					if (limiterchanged)
 					{
 						if (props[propi].animMode[animnum] & ANIM_MODE_ROTA_X) props[propi].rotaX = limiter;
@@ -7765,7 +7772,7 @@ void Beam::calcForcesEuler(int doUpdate, Real dt, int step, int maxstep, Beam** 
 								{
 									autooffset = 10.0f;										// stop at limit
 									props[propi].animOpt5[animnum] *= -1.0f;				// change cstate multiplier if bounce is set
-								} else 
+								} else
 									autooffset -= 20.0f;									// flip to other side at limit including overflow
 							}
 
@@ -7788,7 +7795,7 @@ void Beam::calcForcesEuler(int doUpdate, Real dt, int step, int maxstep, Beam** 
 								{
 									autooffset = -10.0f;									// stop at limit
 									props[propi].animOpt5[animnum] *= -1.0f;				// change cstate multiplier if bounce is set
-								} else 
+								} else
 									autooffset += 20.0f;									// flip to other side at limit including overflow
 							}
 					}
@@ -7812,7 +7819,7 @@ void Beam::calcForcesEuler(int doUpdate, Real dt, int step, int maxstep, Beam** 
 							props[propi].orgoffsetZ = autooffset;
 					}
 				}
-				
+
 			}
 		animnum++;
 		}
@@ -8028,7 +8035,7 @@ void Beam::calcForcesEuler(int doUpdate, Real dt, int step, int maxstep, Beam** 
 				float ns=0;
 				ground_model_t *gm = 0; // this is used as result storage, so we can use it later on
 				int contacted = collisions->groundCollision(&nodes[i], nodes[i].colltesttimer, &gm, &ns);
-				
+
 				//TODO is this supposed to be a binary operator, or a logical operator?
 				if ( contacted |
 					collisions->nodeCollision(&nodes[i], i==cinecameranodepos[currentcamera], contacted, nodes[i].colltesttimer, &ns, &gm))
@@ -8627,7 +8634,7 @@ void Beam::calcForcesEuler(int doUpdate, Real dt, int step, int maxstep, Beam** 
 			else
 				hydrorudderstate+=dt*4.0;
 		}
-		
+
 		float delta=dt;
 		if (hydrorudderstate>delta) hydrorudderstate-=delta;
 		else if (hydrorudderstate<-delta) hydrorudderstate+=delta;

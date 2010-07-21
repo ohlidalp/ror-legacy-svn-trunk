@@ -73,18 +73,21 @@ ChatSystem *ChatSystemFactory::createRemoteInstance(stream_reg_t *reg)
 	return ch;
 }
 
-void ChatSystemFactory::syncRemoteStreams()
+bool ChatSystemFactory::syncRemoteStreams()
 {
-	StreamableFactory <ChatSystemFactory, ChatSystem>::syncRemoteStreams();
+	// we override this here, so we know if something changed and could update the player list
+	bool changes = StreamableFactory <ChatSystemFactory, ChatSystem>::syncRemoteStreams();
 
 	// now add the update for the player list here
-	updatePlayerList();
+	if(changes)
+		updatePlayerList();
 }
 
 void ChatSystemFactory::updatePlayerList()
 {
 	if(!net) return;
 
+	LogManager::getSingleton().logMessage(" updatePlayerList()");
 #ifdef USE_MYGUI
 #ifdef USE_SOCKETW
 	// TODO: we need to do this upon changes only, not all the time

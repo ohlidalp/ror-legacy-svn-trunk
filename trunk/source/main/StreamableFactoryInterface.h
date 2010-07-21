@@ -52,7 +52,7 @@ public:
 	virtual Streamable *createRemoteInstance(stream_reg_t *reg) = 0;
 	virtual void createRemote(int sourceid, int streamid, stream_register_t *reg, int colour) = 0;
 	virtual void deleteRemote(int sourceid, int streamid) = 0;
-	virtual void syncRemoteStreams() = 0;
+	virtual bool syncRemoteStreams() = 0;
 	virtual void removeInstance(stream_del_t *del) = 0;
 };
 

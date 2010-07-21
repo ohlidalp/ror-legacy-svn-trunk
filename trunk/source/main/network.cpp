@@ -177,7 +177,7 @@ bool Network::connect()
 	}
 
 	header_t header;
-	char buffer[256];
+	char buffer[MAX_MESSAGE_LENGTH];
 	//get server version
 	if (receivemessage(&socket, &header, buffer, 255))
 	{
@@ -190,6 +190,7 @@ bool Network::connect()
 		netFatalError("Establishing network session: error getting server hello");
 		return false;
 	}
+
 	// save server settings
 	memcpy(&server_settings, buffer, sizeof(server_info_t));
 
