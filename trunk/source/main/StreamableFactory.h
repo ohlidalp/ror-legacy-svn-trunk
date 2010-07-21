@@ -149,6 +149,10 @@ public:
 			stream_registrations.pop_front();
 			changes++;
 		}
+
+		// count the stream creation results into the changes
+		changes += stream_creation_results.size();
+
 		// then deletions:
 		// first registrations
 		while (!stream_deletions.empty())

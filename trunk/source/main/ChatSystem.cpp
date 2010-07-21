@@ -81,6 +81,8 @@ bool ChatSystemFactory::syncRemoteStreams()
 	// now add the update for the player list here
 	if(changes)
 		updatePlayerList();
+	
+	return changes;
 }
 
 void ChatSystemFactory::updatePlayerList()
