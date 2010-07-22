@@ -167,11 +167,24 @@ int WsyncDownload::downloadFile(int jobID, boost::filesystem::path localFile, st
 			}
 		}
 
-		// open local file late -> prevent creating emoty files
-		myfile.open(localFile.string().c_str(), ios::out | ios::binary);
+		// open local file late -> prevent creating empty files
+		try
+		{
+			// throw exceptions
+			myfile.exceptions ( ofstream::eofbit | ofstream::failbit | ofstream::badbit );
+			myfile.open(localFile.string().c_str(), ios::out | ios::binary);
+		}
+		catch (ofstream::failure e)
+		{
+			LOG("DLFile-%04d|error opening local file: %s. error: %s\n", jobID, localFile.string().c_str(), e.what());
+			LOG("DLFile-%04d|download URL: http://%s%s\n", jobID, server.c_str(), path.c_str());
+			if(wxp)	wxp->Update(1000, wxT("error"));
+			return 2;
+		}
+
 		if(!myfile.is_open())
 		{
-			LOG("DLFile-%04d|error opening local file: %d\n", jobID, localFile.string().c_str());
+			LOG("DLFile-%04d|error opening local file: %s\n", jobID, localFile.string().c_str());
 			LOG("DLFile-%04d|download URL: http://%s%s\n", jobID, server.c_str(), path.c_str());
 			if(wxp)	wxp->Update(1000, wxT("error"));
 			return 2;
