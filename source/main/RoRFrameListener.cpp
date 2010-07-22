@@ -775,6 +775,7 @@ RoRFrameListener::RoRFrameListener(RenderWindow* win, Camera* cam, SceneManager*
 	objectCounter=0;
 	hdrListener=0;
 	netPointToUID=-1;
+	netcheckGUITimer=0;
 	mDOF=0;
 	mDOFDebug=false;
 	mouseGrabForce=100000.0f;
@@ -1181,6 +1182,7 @@ RoRFrameListener::RoRFrameListener(RenderWindow* win, Camera* cam, SceneManager*
 
 #ifdef USE_SOCKETW
 		new GUI_Multiplayer(net);
+		GUI_Multiplayer::getSingleton().update();
 #endif //USE_SOCKETW
 
 #endif //USE_MYGUI
@@ -7111,6 +7113,17 @@ bool RoRFrameListener::frameStarted(const FrameEvent& evt)
 	// update animated objects
 	updateAnimatedObjects(dt);
 
+	// update network gui if required, at most every 2 seconds
+	if(net)
+	{
+		netcheckGUITimer += dt;
+		if(netcheckGUITimer > 2)
+		{
+			checkRemoteStreamResultsChanged();
+			netcheckGUITimer=0;
+		}
+	}
+
 	// updating mirrors fixes its shaking!
 	if (cameramode==CAMERA_INT)
 		updateTruckMirrors(dt);
@@ -7931,4 +7944,15 @@ void RoRFrameListener::setNetPointToUID(int uid)
 {
 	// TODO: setup arrow
 	netPointToUID = uid;
+}
+
+
+void RoRFrameListener::checkRemoteStreamResultsChanged()
+{
+#ifdef USE_MYGUI
+#ifdef USE_SOCKETW
+	if(BeamFactory::getSingleton().checkStreamsResultsChanged())
+		GUI_Multiplayer::getSingleton().update();
+#endif // USE_SOCKETW
+#endif // USE_MYGUI	
 }

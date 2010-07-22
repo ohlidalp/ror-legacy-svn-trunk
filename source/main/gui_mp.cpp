@@ -207,26 +207,34 @@ void GUI_Multiplayer::updateSlot(player_row_t *row, user_info_t *c, bool self)
 		row->userTruckOKRemoteImg->setPosition(x, y);
 		x -= 10;
 
-		bool ok = BeamFactory::getSingleton().checkStreamsOK(c->uniqueid);
-		if(ok)
-		{
-			row->userTruckOKImg->setImageTexture("arrow_down.png");
-			row->userTruckOKImg->setUserString("tooltip", "Truck loaded correctly, no errors");
-		} else
+		int ok = BeamFactory::getSingleton().checkStreamsOK(c->uniqueid);
+		if(ok == 0)
 		{
 			row->userTruckOKImg->setImageTexture("arrow_down_red.png");
 			row->userTruckOKImg->setUserString("tooltip", "Truck loading errors");
+		} else if(ok == 1)
+		{
+			row->userTruckOKImg->setImageTexture("arrow_down.png");
+			row->userTruckOKImg->setUserString("tooltip", "Truck loaded correctly, no errors");
+		} else if(ok == 2)
+		{
+			row->userTruckOKImg->setImageTexture("arrow_down_grey.png");
+			row->userTruckOKImg->setUserString("tooltip", "no truck loaded");
 		}
 
-		bool rok = BeamFactory::getSingleton().checkStreamsRemoteOK(c->uniqueid);
-		if(rok)
-		{
-			row->userTruckOKRemoteImg->setImageTexture("arrow_up.png");
-			row->userTruckOKRemoteImg->setUserString("tooltip", "Remote Truck loaded correctly, no errors");
-		} else
+		int rok = BeamFactory::getSingleton().checkStreamsRemoteOK(c->uniqueid);
+		if(rok == 0)
 		{
 			row->userTruckOKRemoteImg->setImageTexture("arrow_up_red.png");
 			row->userTruckOKRemoteImg->setUserString("tooltip", "Remote Truck loading errors");
+		} else if(rok == 1)
+		{
+			row->userTruckOKRemoteImg->setImageTexture("arrow_up.png");
+			row->userTruckOKRemoteImg->setUserString("tooltip", "Remote Truck loaded correctly, no errors");
+		} else if(rok == 2)
+		{
+			row->userTruckOKRemoteImg->setImageTexture("arrow_up_grey.png");
+			row->userTruckOKRemoteImg->setUserString("tooltip", "No Trucks loaded");
 		}
 	} else
 	{

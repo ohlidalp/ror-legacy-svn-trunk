@@ -30,6 +30,10 @@ along with Rigs of Rods.  If not, see <http://www.gnu.org/licenses/>.
 #include "RoRFrameListener.h"
 #include "mirrors.h"
 
+#ifdef USE_MYGUI
+#include "gui_mp.h"
+#endif  // USE_MYGUI
+
 using namespace Ogre;
 
 
@@ -268,4 +272,24 @@ Beam *BeamFactory::getBeam(int source, int streamid)
 	}
 	UNLOCKSTREAMS();
 	return 0;
+}
+
+bool BeamFactory::syncRemoteStreams()
+{
+	// we override this here, so we know if something changed and could update the player list
+	bool changes = StreamableFactory <BeamFactory, Beam>::syncRemoteStreams();
+	
+	if(changes)
+		updateGUI();
+
+	return changes;
+}
+
+void BeamFactory::updateGUI()
+{
+#ifdef USE_MYGUI
+#ifdef USE_SOCKETW
+	GUI_Multiplayer::getSingleton().update();
+#endif // USE_SOCKETW
+#endif // USE_MYGUI	
 }

@@ -339,6 +339,8 @@ public:
 	void showspray(bool s);
 	int getNetPointToUID() { return netPointToUID; };
 	void setNetPointToUID(int uid);
+	void checkRemoteStreamResultsChanged();
+	float netcheckGUITimer;
 
 	Character *person;
 	ChatSystem *netChat;

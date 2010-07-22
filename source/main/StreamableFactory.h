@@ -145,7 +145,14 @@ public:
 			reg.reg.origin_sourceid = reg.sourceid;
 			reg.reg.origin_streamid = reg.streamid;
 
-			stream_creation_results.push_back(reg);
+			// only save registration results for beam streams
+			// TODO: maybe enforce general design to allow all stream types to
+			// have a feedback channel
+			if(reg.reg.type == 0)
+			{
+				stream_creation_results.push_back(reg);
+			}
+			// remove registration from list
 			stream_registrations.pop_front();
 			changes++;
 		}
@@ -189,38 +196,63 @@ public:
 		}
 	}
 
-	bool checkStreamsOK(int sourceid)
+	int checkStreamsOK(int sourceid)
 	{
 		// walk client and the streams and checks for errors
 		typename std::map < int, std::map < unsigned int, X *> > &streamables = getStreams();
 		typename std::map < int, std::map < unsigned int, X *> >::iterator it1;
 		typename std::map < unsigned int, X *>::iterator it2;
 
-		bool ok = true;
+		int ok = 0;
+		int num = 0;
 		for(it1=streamables.begin(); it1!=streamables.end();it1++)
 		{
 			if(it1->first != sourceid) continue;
 			for(it2=it1->second.begin(); it2!=it1->second.end();it2++)
 			{
-				if(it2->second == 0)
+				num++;
+				if(it2->second != 0)
 				{
-					ok = false;
+					ok = 1;
 					break;
 				}
 			}
 			break;
 		}
+		if(!num)
+			ok = 2;
 		return ok;
 	}
 
-	bool checkStreamsRemoteOK(int sourceid)
+	int checkStreamsResultsChanged()
+	{
+		typename std::map < int, std::map < unsigned int, X *> > &streamables = getStreams();
+		typename std::map < int, std::map < unsigned int, X *> >::iterator it1;
+		typename std::map < unsigned int, X *>::iterator it2;
+
+		for(it1=streamables.begin(); it1!=streamables.end();it1++)
+		{
+			for(it2=it1->second.begin(); it2!=it1->second.end();it2++)
+			{
+				if(!it2->second) continue;
+				if(it2->second->getStreamResultsChanged())
+				{
+					return 1;
+				}
+			}
+		}
+		return 0;
+	}
+
+	int checkStreamsRemoteOK(int sourceid)
 	{
 		// walk client and the streams and checks for errors
 		typename std::map < int, std::map < unsigned int, X *> > &streamables = getStreams();
 		typename std::map < int, std::map < unsigned int, X *> >::iterator it1;
 		typename std::map < unsigned int, X *>::iterator it2;
 
-		bool ok = false;
+		int ok = 0;
+		int originstreams = 0;
 		for(it1=streamables.begin(); it1!=streamables.end();it1++)
 		{
 			for(it2=it1->second.begin(); it2!=it1->second.end();it2++)
@@ -229,19 +261,30 @@ public:
 					continue;
 				if(!it2->second->getIsOrigin())
 					continue;
+				originstreams++;
 				stream_register_t reg;
 				reg.status = -2;
 				int res = it2->second->getStreamRegisterResultForSource(sourceid, &reg);
 				if(!res)
 				{
 					if(reg.status == 1)
-						ok = true;
+						ok = 1;
 				}
 				break;
 			}
 			break;
 		}
+		if(!originstreams)
+			ok = 2;
 		return ok;
+	}
+
+	int clearStreamRegistrationResults()
+	{
+		LOCKSTREAMS();
+		stream_creation_results.clear();
+		UNLOCKSTREAMS();
+		return 0;
 	}
 
 	int getStreamRegistrationResults(std::deque < stream_reg_t > *net_results)
