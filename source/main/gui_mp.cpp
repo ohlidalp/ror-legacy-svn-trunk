@@ -281,26 +281,30 @@ int GUI_Multiplayer::update()
 	// add remote players
 	int res = net->getClientInfos(clients);
 	if(res) return 1;
-	for(int i = 0; i < MAX_PEERS; i++, slotid++)
+	for(int i = 0; i < MAX_PEERS; i++)
 	{
 		client_t *c = &clients[i];
 		player_row_t *row = &player_rows[slotid];
-		if(!c->used)
+		// only count up slotid for used slots, so there are no gap in the list
+		if(c->used)
 		{
+			// used
+			slotid++;
+			try
+			{
+				updateSlot(row, &c->user, false);
+			} catch(...)
+			{
+			}
+		} else
+		{
+			// not used, hide everything
 			row->flagimg->setVisible(false);
 			row->playername->setVisible(false);
 			row->statimg->setVisible(false);
 			row->usergoimg->setVisible(false);
 			row->userTruckOKImg->setVisible(false);
 			row->userTruckOKRemoteImg->setVisible(false);
-			continue;
-		}
-		try
-		{
-			updateSlot(row, &c->user, false);
-		} catch(...)
-		{
-			continue;
 		}
 	}
 	return 0;
