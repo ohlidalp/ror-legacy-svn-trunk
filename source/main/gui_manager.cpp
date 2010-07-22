@@ -65,8 +65,9 @@ bool GUIManager::create()
 
 	windowResized(mWindow);
 	createGui();
-
-	//MyGUI::LanguageManager::getInstance().eventRequestTag = MyGUI::newDelegate(this, &GUIManager::eventRequestTag);
+#ifdef WIN32
+	MyGUI::LanguageManager::getInstance().eventRequestTag = MyGUI::newDelegate(this, &GUIManager::eventRequestTag);
+#endif // WIN32
 	return true;
 }
 
