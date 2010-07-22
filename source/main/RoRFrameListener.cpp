@@ -471,13 +471,13 @@ void RoRFrameListener::updateGUI(float dt)
 		ow->turbotexture->setTextureRotate(Degree(angle));
 
 		// indicators
-		ow->igno->setMaterialName(String("tracks/ign-")     + ((trucks[current_truck]->engine->contact)?"on":"off"));
-		ow->igno->setMaterialName(String("tracks/batt-")    + ((trucks[current_truck]->engine->contact && !trucks[current_truck]->engine->running)?"on":"off"));
-		ow->igno->setMaterialName(String("tracks/pbrake-")  + ((trucks[current_truck]->parkingbrake)?"on":"off"));
-		ow->igno->setMaterialName(String("tracks/locked-")  + ((trucks[current_truck]->isLocked())?"on":"off"));
-		ow->igno->setMaterialName(String("tracks/lopress-") + ((!trucks[current_truck]->canwork)?"on":"off"));
-		ow->igno->setMaterialName(String("tracks/clutch-")  + ((fabs(trucks[current_truck]->engine->getTorque())>=trucks[current_truck]->engine->getClutchForce()*10.0f)?"on":"off"));
-		ow->igno->setMaterialName(String("tracks/lights-")  + ((trucks[current_truck]->lights)?"on":"off"));
+		ow->igno->setMaterialName(String("tracks/ign-")         + ((trucks[current_truck]->engine->contact)?"on":"off"));
+		ow->batto->setMaterialName(String("tracks/batt-")       + ((trucks[current_truck]->engine->contact && !trucks[current_truck]->engine->running)?"on":"off"));
+		ow->pbrakeo->setMaterialName(String("tracks/pbrake-")   + ((trucks[current_truck]->parkingbrake)?"on":"off"));
+		ow->lockedo->setMaterialName(String("tracks/locked-")   + ((trucks[current_truck]->isLocked())?"on":"off"));
+		ow->lopresso->setMaterialName(String("tracks/lopress-") + ((!trucks[current_truck]->canwork)?"on":"off"));
+		ow->clutcho->setMaterialName(String("tracks/clutch-")   + ((fabs(trucks[current_truck]->engine->getTorque())>=trucks[current_truck]->engine->getClutchForce()*10.0f)?"on":"off"));
+		ow->lightso->setMaterialName(String("tracks/lights-")   + ((trucks[current_truck]->lights)?"on":"off"));
 
 		if (trucks[current_truck]->isTied())
 		{
