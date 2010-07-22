@@ -6,7 +6,7 @@ Copyright 2007,2008,2009 Thomas Fischer
 For more information, see http://www.rigsofrods.com/
 
 Rigs of Rods is free software: you can redistribute it and/or modify
-it under the terms of the GNU General Public License version 3, as
+it under the terms of the GNU General Public License version 3, as 
 published by the Free Software Foundation.
 
 Rigs of Rods is distributed in the hope that it will be useful,
@@ -20,98 +20,263 @@ along with Rigs of Rods.  If not, see <http://www.gnu.org/licenses/>.
 #include "DustPool.h"
 #include "water.h"
 
-#if OGRE_PLATFORM == OGRE_PLATFORM_LINUX
-#pragma GCC diagnostic ignored "-Wfloat-equal"
-#endif //OGRE_PLATFORM_LINUX
-
-DustPool::DustPool(String dname, int dsize, float minvelo, float maxvelo, float fadeco, float timedelta, float velofac, float ttl, SceneNode *parent, SceneManager *smgr, Water *mw) : w(mw), smgr(smgr), dustAtomsVec(), parentNode(parent), dname(dname), size(dsize), allocated(0), minvelo(minvelo), maxvelo(maxvelo), fadeco(fadeco), timedelta(timedelta), velofac(velofac), ttl(ttl)
+DustPool::DustPool(char* dname, int dsize, SceneNode *parent, SceneManager *smgr, Water *mw)
 {
-	//dustAtomsVec.resize(size);
-	for(int i=0; i<size;i++)
+	w=mw;
+	size=dsize;
+	allocated=0;
+	int i;
+	for (i=0; i<size; i++)
 	{
-		// per class values
-		String dename = "Dust " + dname + StringConverter::toString(i);
-		dustatom_t da = dustatom_t();
-		da.node = parent->createChildSceneNode();
-		da.ps = smgr->createParticleSystem(dename, dname);
-		da.node->attachObject(da.ps);
-		da.ps->setCastShadows(false);
-		da.ps->getEmitter(0)->setEnabled(false);
-		dustAtomsVec.push_back(da);
-	}
-}
-
-DustPool::~DustPool()
-{
-	for (int i=0; i<size; i++)
-	{
-		if(dustAtomsVec[i].ps)
+		char dename[256];
+		sprintf(dename,"Dust %s %i", dname, i);
+		sns[i]=parent->createChildSceneNode();
+		pss[i]=smgr->createParticleSystem(dename, dname);
+		if (pss[i]) 
 		{
-			smgr->destroyParticleSystem(dustAtomsVec[i].ps);
-			dustAtomsVec[i].ps = 0;
-		}
-		if(dustAtomsVec[i].node)
-		{
-			dustAtomsVec[i].node->removeAndDestroyAllChildren();
-			//dustAtomsVec[i] = 0;
+			sns[i]->attachObject(pss[i]);
+			pss[i]->setCastShadows(false);
+			//can't do this
+//				if (w) ((DeflectorPlaneAffector*)(pss[i]->getAffector(0)))->setPlanePoint(Vector3(0, w->getHeight(), 0));
 		}
 	}
 
-}
+};
 
 void DustPool::setVisible(bool s)
 {
-	for (int i=0; i<size; i++)
+	int i;
+	for (i=0; i<size; i++) 
 	{
-		dustAtomsVec[i].ps->setVisible(s);
+		pss[i]->setVisible(s ^ (types[i]==DUST_RIPPLE));
 	}
 }
 
-void DustPool::alloc(Vector3 pos, Vector3 vel, ColourValue col, float time)
+//Dust
+void DustPool::alloc(Vector3 pos, Vector3 vel, ColourValue col)
 {
-	if(allocated == size) return; // discard then
-	if(vel.length() < minvelo || vel.length() > maxvelo) return;
+	if (allocated==size) return;
+	positions[allocated]=pos;
+	velocities[allocated]=vel;
+	colours[allocated]=col;
+	types[allocated]=DUST_NORMAL;
+	allocated++;
+}
 
-	dustAtomsVec[allocated].colour = col;
-	dustAtomsVec[allocated].velocity = vel;
-	dustAtomsVec[allocated].position = pos;
-	if(time > 0)
-		dustAtomsVec[allocated].rate = timedelta - time;
+//Clumps
+void DustPool::allocClump(Vector3 pos, Vector3 vel, ColourValue col)
+{
+	if (allocated==size) return;
+	positions[allocated]=pos;
+	velocities[allocated]=vel;
+	colours[allocated]=col;
+	types[allocated]=DUST_CLUMP;
+	allocated++;
+}
+
+//Rubber smoke
+void DustPool::allocSmoke(Vector3 pos, Vector3 vel)
+{
+	if (allocated==size) return;
+	positions[allocated]=pos;
+	velocities[allocated]=vel;
+	types[allocated]=DUST_RUBBER;
+	allocated++;
+}
+
+//
+void DustPool::allocSparks(Vector3 pos, Vector3 vel)
+{
+	if(vel.length() < 0.1) return; // try to prevent emitting sparks while standing
+	if (allocated==size) return;
+	positions[allocated]=pos;
+	velocities[allocated]=vel;
+	types[allocated]=DUST_SPARKS;
+	allocated++;
+}
+
+//Water vapour
+void DustPool::allocVapour(Vector3 pos, Vector3 vel, float time)
+{
+	if (allocated==size) return;
+	positions[allocated]=pos;
+	velocities[allocated]=vel;
+	types[allocated]=DUST_VAPOUR;
+	rates[allocated]=5.0-time;
+	allocated++;
+}
+
+void DustPool::allocDrip(Vector3 pos, Vector3 vel, float time)
+{
+	if (allocated==size) return;
+	positions[allocated]=pos;
+	velocities[allocated]=vel;
+	types[allocated]=DUST_DRIP;
+	rates[allocated]=5.0-time;
+	allocated++;
+}
+
+void DustPool::allocSplash(Vector3 pos, Vector3 vel)
+{
+	if (allocated==size) return;
+	positions[allocated]=pos;
+	velocities[allocated]=vel;
+	types[allocated]=DUST_SPLASH;
+	allocated++;
+}
+
+void DustPool::allocRipple(Vector3 pos, Vector3 vel)
+{
+	if (allocated==size) return;
+	positions[allocated]=pos;
+	velocities[allocated]=vel;
+	types[allocated]=DUST_RIPPLE;
 	allocated++;
 }
 
 void DustPool::update(float gspeed)
 {
+	int i;
 	gspeed=fabs(gspeed);
-	// walk the queue
-	for(int i=0; i<allocated; i++)
+	for (i=0; i<allocated; i++)
 	{
-		dustatom_t *da = &dustAtomsVec[i];
-
-		ParticleEmitter *emit = da->ps->getEmitter(0);
-		Vector3 ndir = da->velocity;
-		ndir.y = 0;
-		ndir = ndir * velofac;
-		// XXX: whats this for?!
-		//if (ndir.y<0) ndir.y=-ndir.y;
-		Real vel = ndir.length();
-		//ndir.y+=vel/5.5;
-		if(vel == 0) vel += 0.0001; // fix division thorugh zero
-		ndir = ndir / vel;
-		emit->setEnabled(true);
-		da->node->setPosition(da->position);
-		emit->setDirection(ndir);
-		emit->setParticleVelocity(vel);
+		if (types[i]==DUST_NORMAL)
+		{
+			ParticleEmitter *emit=pss[i]->getEmitter(0);
+			Vector3 ndir=velocities[i];
+			ndir.y=0;
+			ndir=ndir/2.0;
+			//if (ndir.y<0) ndir.y=-ndir.y;
+			Real vel=ndir.length();
+			if(vel == 0)
+				vel += 0.0001;
+			ndir=ndir/vel;
+			emit->setEnabled(true);
+			sns[i]->setPosition(positions[i]);
+			emit->setDirection(ndir);
+			emit->setParticleVelocity(vel);
 //			emit->setColour(ColourValue(0.65, 0.55, 0.53,(vel+(gspeed/10.0))*0.05));
-		ColourValue col = da->colour;
-		if(fadeco >= 0)
-			col.a = (((vel+(gspeed/10.0))*0.05) * fadeco);
-		emit->setColour(col);
-		// TODO: FIX below
-		emit->setTimeToLive((vel+(gspeed/10.0)) * ttl);
-
+			ColourValue col=colours[i];
+			col.a=(vel+(gspeed/10.0))*0.05;
+			emit->setColour(col);
+			emit->setTimeToLive((vel+(gspeed/10.0))*0.05/0.1);
+		}
+		if (types[i]==DUST_CLUMP)
+		{
+			ParticleEmitter *emit=pss[i]->getEmitter(0);
+			Vector3 ndir=velocities[i];
+			//ndir.y=0;
+			ndir=ndir/2.0;
+			if (ndir.y<0) ndir.y=-ndir.y;
+			Real vel=ndir.length();
+			ndir.y+=vel/5.5;
+			vel=ndir.length();
+			if(vel == 0)
+				vel += 0.0001;
+			ndir=ndir/vel;
+			emit->setEnabled(true);
+			sns[i]->setPosition(positions[i]);
+			emit->setDirection(ndir);
+			emit->setParticleVelocity(vel);
+			ColourValue col=colours[i];
+			col.a=1.0;
+			emit->setColour(col);
+		}
+		else if (types[i]==DUST_RUBBER)
+		{
+			ParticleEmitter *emit=pss[i]->getEmitter(0);
+			Vector3 ndir=velocities[i];
+			ndir.y=0;
+			ndir=ndir/4.0;
+			//if (ndir.y<0) ndir.y=-ndir.y;
+			Real vel=ndir.length();
+			if(vel == 0)
+				vel += 0.0001;
+			ndir=ndir/vel;
+			emit->setEnabled(true);
+			sns[i]->setPosition(positions[i]);
+			emit->setDirection(ndir);
+			emit->setParticleVelocity(vel);
+			emit->setColour(ColourValue(0.9, 0.9, 0.9,vel*0.05));
+			emit->setTimeToLive(vel*0.05/0.1);
+		}
+		else if (types[i]==DUST_SPARKS)
+		{
+			ParticleEmitter *emit=pss[i]->getEmitter(0);
+			Vector3 ndir=-velocities[i];
+			//ndir.y=-ndir.y;
+			Real vel=ndir.length();
+			if(vel == 0)
+				vel += 0.0001;
+			ndir=ndir/vel;
+			emit->setEnabled(true);
+			sns[i]->setPosition(positions[i]);
+			emit->setDirection(ndir);
+			emit->setParticleVelocity(vel);
+		}
+		else if (types[i]==DUST_VAPOUR)
+		{
+			ParticleEmitter *emit=pss[i]->getEmitter(0);
+			Vector3 ndir=velocities[i];
+			Real vel=ndir.length();
+			if(vel == 0)
+				vel += 0.0001;
+			ndir=ndir/vel;
+			emit->setEnabled(true);
+			sns[i]->setPosition(positions[i]);
+			emit->setDirection(ndir);
+			emit->setParticleVelocity(vel/2.0);
+			emit->setColour(ColourValue(0.9, 0.9, 0.9,rates[i]*0.03));
+			emit->setTimeToLive(rates[i]*0.03/0.1);
+		}
+		else if (types[i]==DUST_DRIP)
+		{
+			ParticleEmitter *emit=pss[i]->getEmitter(0);
+			Vector3 ndir=velocities[i];
+			Real vel=ndir.length();
+			if(vel == 0)
+				vel += 0.0001;
+			ndir=ndir/vel;
+			emit->setEnabled(true);
+			sns[i]->setPosition(positions[i]);
+			emit->setDirection(ndir);
+			emit->setParticleVelocity(vel);
+			emit->setEmissionRate(rates[i]);
+		}
+		else if (types[i]==DUST_SPLASH)
+		{
+			ParticleEmitter *emit=pss[i]->getEmitter(0);
+			Vector3 ndir=velocities[i];
+			if (ndir.y<0) ndir.y=-ndir.y/2.0;
+			ndir=ndir/2.0;
+			Real vel=ndir.length();
+			if(vel == 0)
+				vel += 0.0001;
+			ndir=ndir/vel;
+			emit->setEnabled(true);
+			sns[i]->setPosition(positions[i]);
+			emit->setDirection(ndir);
+			emit->setParticleVelocity(vel);
+			emit->setColour(ColourValue(0.9, 0.9, 0.9,vel*0.05));
+			emit->setTimeToLive(vel*0.05/0.1);
+		}
+		else if (types[i]==DUST_RIPPLE)
+		{
+			ParticleEmitter *emit=pss[i]->getEmitter(0);
+			Real vel=velocities[i].length();
+			emit->setEnabled(true);
+			positions[i].y=w->getHeight()-0.02;
+			sns[i]->setPosition(positions[i]);
+			emit->setColour(ColourValue(0.9, 0.9, 0.9,vel*0.04));
+			emit->setTimeToLive(vel*0.04/0.1);
+		}
 	}
-	for (int i=allocated; i<size; i++)
-		dustAtomsVec[i].ps->getEmitter(0)->setEnabled(false);
+	for (i=allocated; i<size; i++) pss[i]->getEmitter(0)->setEnabled(false);
 	allocated=0;
 }
+
+
+DustPool::~DustPool()
+{
+}
+

@@ -28,6 +28,8 @@ Screwprop::Screwprop(node_t *nd, int nr, int nb, int nu, float power, Water* w, 
 	nodeup=nu;
 	fullpower=power;
 	water=w;
+	splashp = DustManager::getSingleton().getDustPool("splash");
+	ripplep = DustManager::getSingleton().getDustPool("ripple");
 	reset();
 }
 
@@ -44,14 +46,11 @@ void Screwprop::updateForces(int update)
 	rudaxis.normalise();
 	dir=(throtle*fullpower)*(Quaternion(Degree(rudder),rudaxis)*dir);
 	nodes[noderef].Forces+=dir;
-	// TODO: FIX SPLASH!
-	/*
 	if (update && splashp && throtle>0.1)
 	{
 		if (depth<0.2) splashp->allocSplash(nodes[noderef].AbsPosition, 10.0*dir/fullpower);
 		ripplep->allocRipple(nodes[noderef].AbsPosition, 10.0*dir/fullpower);
 	}
-	*/
 }
 
 void Screwprop::setThrotle(float val)

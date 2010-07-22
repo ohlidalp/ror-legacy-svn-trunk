@@ -246,6 +246,12 @@ void Collisions::parseGroundConfig(Ogre::ConfigFile *cfg, String groundModel)
 				{
 					if(kvalue == "PARTICLE")
 						ground_models[secName].fx_type = FX_PARTICLE;
+					else if(kvalue == "HARD")
+						ground_models[secName].fx_type = FX_HARD;
+					else if(kvalue == "DUSTY")
+						ground_models[secName].fx_type = FX_DUSTY;
+					else if(kvalue == "CLUMPY")
+						ground_models[secName].fx_type = FX_CLUMPY;
 				}
 				else if(kname == "fx_particle_name") strncpy(ground_models[secName].particle_name, kvalue.c_str(), 255);
 				else if(kname == "fx_colour") ground_models[secName].fx_colour = StringConverter::parseColourValue(kvalue);

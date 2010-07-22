@@ -569,6 +569,13 @@ Beam::Beam(int tnum, SceneManager *manager, SceneNode *parent, RenderWindow* win
 	collisions=icollisions;
 	pointCD = new PointColDetector();
 
+	dustp   = DustManager::getSingleton().getDustPool("dust");
+	dripp   = DustManager::getSingleton().getDustPool("dripp");
+	sparksp = DustManager::getSingleton().getDustPool("sparks");
+	clumpp  = DustManager::getSingleton().getDustPool("clump");
+	splashp = DustManager::getSingleton().getDustPool("splash");
+	ripplep = DustManager::getSingleton().getDustPool("ripple");
+
 	disable_smoke=(SETTINGS.getSetting("Engine smoke")=="No");
 	heathaze=(SETTINGS.getSetting("HeatHaze")=="Yes");
 	if(heathaze && disable_smoke)
@@ -8011,10 +8018,10 @@ void Beam::calcForcesEuler(int doUpdate, Real dt, int step, int maxstep, Beam** 
 		if (nodes[i].wetstate==DRIPPING && !nodes[i].contactless)
 		{
 			nodes[i].wettime+=dt;
-			//if (nodes[i].wettime>5.0) nodes[i].wetstate=DRY; //dry!
-			//if (!nodes[i].iswheel && dripp) dripp->alloc(nodes[i].smoothpos, nodes[i].Velocity, ColourValue::ZERO, nodes[i].wettime);
+			if (nodes[i].wettime>5.0) nodes[i].wetstate=DRY; //dry!
+			if (!nodes[i].iswheel && dripp) dripp->allocDrip(nodes[i].smoothpos, nodes[i].Velocity, nodes[i].wettime);
 			//also for hot engine
-			//if (nodes[i].isHot && dustp) dustp->alloc(nodes[i].smoothpos, nodes[i].Velocity, ColourValue::ZERO, nodes[i].wettime);
+			if (nodes[i].isHot && dustp) dustp->allocVapour(nodes[i].smoothpos, nodes[i].Velocity, nodes[i].wettime);
 		}
 		//locked nodes
 		if (nodes[i].lockednode)
@@ -8041,12 +8048,31 @@ void Beam::calcForcesEuler(int doUpdate, Real dt, int step, int maxstep, Beam** 
 					collisions->nodeCollision(&nodes[i], i==cinecameranodepos[currentcamera], contacted, nodes[i].colltesttimer, &ns, &gm))
 				{
 					//FX
-					if (gm && doUpdate && !nodes[i].disable_particles)
+					if (gm && doUpdate && dustp)
 					{
-						DustPool *dp = DustManager::getSingleton().getGroundModelDustPool(gm);
-						if(dp)
+						if (gm->fx_type==FX_DUSTY)
 						{
-							dp->alloc(nodes[i].AbsPosition, nodes[i].Velocity, gm->fx_colour);
+							if(dustp) dustp->alloc(nodes[i].AbsPosition, nodes[i].Velocity/2.0, gm->fx_colour);
+						}else if (gm->fx_type==FX_HARD)
+						{
+							float thresold=10.0;
+							//smokey
+							if (nodes[i].iswheel && ns>thresold)
+							{
+								if(dustp) dustp->allocSmoke(nodes[i].AbsPosition, nodes[i].Velocity);
+								ssm->modulate(trucknum, SS_MOD_SCREETCH, (ns-thresold)/thresold);
+								ssm->trigOnce(trucknum, SS_TRIG_SCREETCH);
+							}
+
+							//sparks
+							if (!nodes[i].iswheel && ns>1.0 && !nodes[i].disable_particles)
+							{
+								// friction < 10 will remove the 'f' nodes from the spark generation nodes
+								if(sparksp) sparksp->allocSparks(nodes[i].AbsPosition, nodes[i].Velocity);
+							}
+						} else if (gm->fx_type==FX_CLUMPY)
+						{
+							if (clumpp && nodes[i].Velocity.squaredLength()>1.0) clumpp->allocClump(nodes[i].AbsPosition, nodes[i].Velocity/2.0, gm->fx_colour);
 						}
 					}
 
@@ -8141,14 +8167,11 @@ void Beam::calcForcesEuler(int doUpdate, Real dt, int step, int maxstep, Beam** 
 					nodes[i].Forces-=(DEFAULT_WATERDRAG*velocityLength)*nodes[i].Velocity;
 					nodes[i].Forces+=nodes[i].buoyancy*Vector3::UNIT_Y;
 					//basic splashing
-					// TODO: FIX SPLASH!
-					/*
-					if (splashp && water->getHeight()-nodes[i].AbsPosition.y<0.2 && velocityLength>2.0)
+					if (splashp && water->getHeight()-nodes[i].AbsPosition.y<0.2 && nodes[i].Velocity.squaredLength()>4.0)
 					{
-						splashp->alloc(nodes[i].AbsPosition, nodes[i].Velocity);
-						ripplep->alloc(nodes[i].AbsPosition, nodes[i].Velocity);
+						splashp->allocSplash(nodes[i].AbsPosition, nodes[i].Velocity);
+						ripplep->allocRipple(nodes[i].AbsPosition, nodes[i].Velocity);
 					}
-					*/
 					//engine stall
 					if (i==cinecameranodepos[0] && engine) engine->stop();
 					//wetness
@@ -9934,14 +9957,8 @@ void Beam::updateVisual(float dt)
 
 	//dust
 	DustManager::getSingleton().update(WheelSpeed);
-	/*
-	if (dustp && state==ACTIVATED) dustp->update(WheelSpeed);
-	if (dripp) dripp->update(WheelSpeed);
-	if (splashp) splashp->update(WheelSpeed);
-	if (ripplep) ripplep->update(WheelSpeed);
-	if (sparksp) sparksp->update(WheelSpeed);
-	if (clumpp) clumpp->update(WheelSpeed);
-	*/
+
+
 	//update custom particle systems
 	for (int i=0; i<free_cparticle; i++)
 	{

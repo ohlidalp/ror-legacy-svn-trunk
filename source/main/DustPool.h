@@ -6,7 +6,7 @@ Copyright 2007,2008,2009 Thomas Fischer
 For more information, see http://www.rigsofrods.com/
 
 Rigs of Rods is free software: you can redistribute it and/or modify
-it under the terms of the GNU General Public License version 3, as
+it under the terms of the GNU General Public License version 3, as 
 published by the Free Software Foundation.
 
 Rigs of Rods is distributed in the hope that it will be useful,
@@ -23,48 +23,67 @@ along with Rigs of Rods.  If not, see <http://www.gnu.org/licenses/>.
 #include <stdio.h>
 #include <math.h>
 
-#include "OgrePrerequisites.h"
-#include "OgreVector3.h"
-#include "OgreColourValue.h"
-#include "rormemory.h"
+#include "Ogre.h"
 //#include "OgreDeflectorPlaneAffector.h"
 
 class Water;
 
-typedef struct dustatom_t
-{
-	Ogre::ParticleSystem *ps;
-	Ogre::SceneNode *node;
-	Ogre::Vector3 position;
-	Ogre::Vector3 velocity;
-	Ogre::ColourValue colour;
-	float rate;
-} dustatom_t;
+using namespace Ogre;
 
-class DustPool : public MemoryAllocatedObject
+#define MAX_DUSTS 100
+
+#define DUST_NORMAL 0
+#define DUST_RUBBER 1
+#define DUST_DRIP   2
+#define DUST_VAPOUR   3
+#define DUST_SPLASH 4
+#define DUST_RIPPLE 5
+#define DUST_SPARKS 6
+#define DUST_CLUMP 7
+
+class DustPool
 {
 protected:
-	Water* w;
-	Ogre::SceneManager *smgr;
-	Ogre::SceneNode *parentNode;
-	Ogre::String dname;
+	ParticleSystem* pss[MAX_DUSTS];
+    SceneNode *sns[MAX_DUSTS];
 	int size;
 	int allocated;
-
-	std::vector<dustatom_t> dustAtomsVec;
-
-	float minvelo, maxvelo, fadeco, timedelta, velofac, ttl;
+	Vector3 positions[MAX_DUSTS];
+	Vector3 velocities[MAX_DUSTS];
+	ColourValue colours[MAX_DUSTS];
+	int types[MAX_DUSTS];
+	float rates[MAX_DUSTS];
+	Water* w;
 
 public:
-	DustPool(Ogre::String name, int dsize, float minvelo, float maxvelo, float fadeco, float timedelta, float velofac, float ttl, Ogre::SceneNode *parent, Ogre::SceneManager *smgr, Water *mw=NULL);
-	~DustPool();
+	DustPool(char* dname, int dsize, SceneNode *parent, SceneManager *smgr, Water *mw);
 
-	void alloc(Ogre::Vector3 pos, Ogre::Vector3 vel, Ogre::ColourValue col = Ogre::ColourValue::ZERO, float time = -1);
-	void update(float gspeed);
-
-	void setWater(Water *mw) { this->w = mw; };
 	void setVisible(bool s);
+	//Dust
+	void alloc(Vector3 pos, Vector3 vel, ColourValue col=ColourValue(0.83, 0.71, 0.64, 1.0));
+	//clumps
+	void allocClump(Vector3 pos, Vector3 vel, ColourValue col=ColourValue(0.83, 0.71, 0.64, 1.0));
+	//Rubber smoke
+	void allocSmoke(Vector3 pos, Vector3 vel);
+	//
+	void allocSparks(Vector3 pos, Vector3 vel);
+	//Water vapour
+	void allocVapour(Vector3 pos, Vector3 vel, float time);
+
+	void allocDrip(Vector3 pos, Vector3 vel, float time);
+
+	void allocSplash(Vector3 pos, Vector3 vel);
+
+	void allocRipple(Vector3 pos, Vector3 vel);
+
+	void update(float gspeed);
+	void setWater(Water *_w) { w = _w; };
+	~DustPool();
 };
+
+extern int numdust;
+extern DustPool* dusts[10];
+
 
 #endif
 

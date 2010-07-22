@@ -44,6 +44,21 @@ DustManager& DustManager::getSingleton(void)
 DustManager::DustManager(Ogre::SceneManager *mSceneMgr) : mSceneMgr(mSceneMgr), mEnabled(false)
 {
 	mEnabled = (SETTINGS.getSetting("Dust") == "Yes");
+
+	
+	if (SETTINGS.getSetting("Dust")=="Yes")
+	{
+		dustpools["dust"]   = new DustPool("tracks/Dust", 20, mSceneMgr->getRootSceneNode(), mSceneMgr, w);
+		dustpools["clump"]  = new DustPool("tracks/Clump", 20, mSceneMgr->getRootSceneNode(), mSceneMgr, w);
+		dustpools["sparks"] = new DustPool("tracks/Sparks", 10, mSceneMgr->getRootSceneNode(), mSceneMgr, w);
+	}
+	if (SETTINGS.getSetting("Spray")=="Yes")
+	{
+		dustpools["drip"]   = new DustPool("tracks/Drip", 50, mSceneMgr->getRootSceneNode(), mSceneMgr, w);
+		dustpools["splash"] = new DustPool("tracks/Splash", 20, mSceneMgr->getRootSceneNode(), mSceneMgr, w);
+		dustpools["ripple"] = new DustPool("tracks/Ripple", 20, mSceneMgr->getRootSceneNode(), mSceneMgr, w);
+	}
+
 }
 
 DustManager::~DustManager()
@@ -62,6 +77,10 @@ DustManager::~DustManager()
 
 DustPool *DustManager::getGroundModelDustPool(ground_model_t *g)
 {
+	return 0;
+
+	/*
+	// disabled for now...
 	if(!mEnabled) return 0;
 
 	// if we have a non particle type, then return 0
@@ -74,8 +93,10 @@ DustPool *DustManager::getGroundModelDustPool(ground_model_t *g)
 	}
 	// return the entry we have
 	return dustpools[pname];
+	*/
 }
 
+/*
 void DustManager::addNewDustPool(ground_model_t *g)
 {
 	if(!mEnabled) return;
@@ -94,6 +115,7 @@ void DustManager::addNewDustPool(ground_model_t *g)
 								mSceneMgr);
 	dustpools[pname] = dp;
 }
+*/
 
 void DustManager::update(float wspeed)
 {
@@ -124,4 +146,11 @@ void DustManager::setVisible(bool visible)
 	{
 		it->second->setVisible(visible);
 	}
+}
+
+DustPool *DustManager::getDustPool(Ogre::String name)
+{
+	if(dustpools.find(name) == dustpools.end())
+		return 0;
+	return dustpools[name];
 }

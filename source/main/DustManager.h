@@ -42,13 +42,15 @@ public:
 	void update(float wspeed);
 	void setWater(Water *w);
 	void setVisible(bool visible);
+
+	DustPool *getDustPool(Ogre::String name);
 	
 protected:
 	Ogre::SceneManager *mSceneMgr;
 	Water *w;
 	bool mEnabled;
 	std::map < Ogre::String , DustPool * > dustpools;
-	void addNewDustPool(ground_model_t *g);
+	//void addNewDustPool(ground_model_t *g);
 };
 
 #endif //GUI_FRICTION_H__

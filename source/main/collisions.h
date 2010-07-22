@@ -48,8 +48,16 @@ using namespace Ogre;
 #define LATEST_GROUND_MODEL_VERSION 3
 #define LATEST_LANDUSE_VERSION 1
 
+//nothing
 #define FX_NONE 0
-#define FX_PARTICLE 1
+//hard surface: rubber burning and sparks
+#define FX_HARD 1
+//dusty surface (with dust colour)
+#define FX_DUSTY 2
+//throws clumps (e.g. snow, grass) with colour
+#define FX_CLUMPY 3
+
+#define FX_PARTICLE 4
 
 typedef struct _eventsource
 {

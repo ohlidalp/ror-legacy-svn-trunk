@@ -96,7 +96,6 @@ public:
 	void framestep(float dt);
 	bool allowUnderWater();
 	void setHeight(float value);
-
 };
 
 
