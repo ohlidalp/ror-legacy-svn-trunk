@@ -4053,7 +4053,6 @@ bool RoRFrameListener::updateEvents(float dt)
 						bigMap->updateRenderMetrics(mWindow);
 						bigMap->setPosition(0, 0.81, 0.14, 0.19, mWindow);
 					}
-					if(net && ow) ow->playerListOverlay->hide();
 				} else if(mapMode==1)
 				{
 					bigMap->setVisibility(true);
@@ -4062,11 +4061,9 @@ bool RoRFrameListener::updateEvents(float dt)
 					bigMap->updateRenderMetrics(mWindow);
 					bigMap->setPosition(0.2, 0, 0.8, 0.8, mWindow);
 					//NETCHAT.setMode(this, NETCHAT_MAP, true);
-					if(net && ow) ow->playerListOverlay->show();
 				} else
 				{
 					bigMap->setVisibility(false);
-					if(net && ow) ow->playerListOverlay->hide();
 				}
 			}
 
@@ -4637,7 +4634,6 @@ void RoRFrameListener::loadTerrain(String terrainfile)
 		//make it small again
 		bigMap->updateRenderMetrics(mWindow);
 		bigMap->setPosition(0, 0.81, 0.14, 0.19, mWindow);
-		if(net && ow) ow->playerListOverlay->hide();
 		//bigMap->setPosition(0, 0, 1, 1);
 		//bigMap->resizeToScreenRatio(win);
 	}
