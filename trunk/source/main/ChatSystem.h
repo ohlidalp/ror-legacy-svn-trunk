@@ -76,8 +76,6 @@ protected:
 	void localUserAttributesChanged(int newid) {};
 
 	bool syncRemoteStreams();
-
-	void updatePlayerList();
 };
 
 #endif

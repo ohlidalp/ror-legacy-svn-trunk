@@ -130,13 +130,6 @@ Network::Network(Beam **btrucks, std::string servername, long sport, RoRFrameLis
 
 	// direct start, no vehicle required
 	initiated = true;
-
-#ifdef USE_MYGUI
-#ifdef USE_SOCKETW
-	// you can just run this here in the main thread, not in others!
-	GUI_Multiplayer::getSingleton().update();
-#endif // USE_SOCKETW
-#endif // USE_MYGUI
 }
 
 Network::~Network()

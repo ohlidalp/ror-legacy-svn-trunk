@@ -55,6 +55,7 @@ public:
 
 	void addStreamRegistrationResult(int source, stream_register_t reg);
 	int getStreamRegisterResultForSource(int sourceid, stream_register_t *reg);
+	bool getStreamResultsChanged();
 
 protected:
 	// constructor/destructor are protected, so you cannot create instances without using the factory
@@ -97,7 +98,7 @@ protected:
 
 private:
 	std::map < int, stream_register_t > mStreamableResults;
-	bool isOrigin;
+	bool isOrigin, streamResultsChanged;
 
 };
 

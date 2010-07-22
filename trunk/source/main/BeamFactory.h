@@ -71,6 +71,9 @@ protected:
 	void netUserAttributesChanged(int source, int streamid);
 	void localUserAttributesChanged(int newid);
 
+
+	bool syncRemoteStreams();
+	void updateGUI();
 };
 
 
