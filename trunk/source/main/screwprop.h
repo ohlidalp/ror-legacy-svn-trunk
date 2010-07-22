@@ -26,6 +26,8 @@ along with Rigs of Rods.  If not, see <http://www.gnu.org/licenses/>.
 using namespace Ogre;
 #include "Beam.h"
 #include "SoundScriptManager.h"
+#include "DustPool.h"
+#include "DustManager.h"
 
 class Screwprop : public MemoryAllocatedObject
 {
@@ -36,6 +38,7 @@ private:
 	float fullpower; //in HP
 	Water* water;
 	int trucknum;
+	DustPool *splashp, *ripplep;
 
 public:
 	int noderef;

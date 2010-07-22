@@ -30,6 +30,9 @@ along with Rigs of Rods.  If not, see <http://www.gnu.org/licenses/>.
 //#include "DustPool.h"
 #include "Beam.h"
 
+#include "DustPool.h"
+#include "DustManager.h"
+
 #define PI 3.1415926535897932384626433832795
 using namespace Ogre;
 
@@ -43,6 +46,8 @@ private:
 	Water *w;
 	int update;
 	int sink;
+	DustPool *splashp, *ripplep;
+
 public:
 
 	Buoyance(Water *water);

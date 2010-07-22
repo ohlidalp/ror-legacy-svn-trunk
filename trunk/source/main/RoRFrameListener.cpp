@@ -1227,9 +1227,6 @@ RoRFrameListener::RoRFrameListener(RenderWindow* win, Camera* cam, SceneManager*
 		source = net->getUserID();
 #endif //SOCKETW
 
-	// we need dust before we start the beam factory
-	initDust();
-
 	// new beam factory
 	new BeamFactory(this, trucks, mSceneMgr, mSceneMgr->getRootSceneNode(), mWindow, net, &mapsizex, &mapsizez, collisions, hfinder, w, mCamera, mirror);
 
@@ -6210,31 +6207,6 @@ void RoRFrameListener::saveGrassDensity()
 #endif //USE_PAGED
 }
 
-void RoRFrameListener::initDust()
-{
-	// fancy new dustmanager takes over the work of manually creating the dustpool classes
-	/*
-	//we create dust
-	dustp=0;
-	dripp=0;
-	splashp=0;
-	ripplep=0;
-	sparksp=0;
-	clumpp=0;
-	if (SETTINGS.getSetting("Dust")=="Yes")
-	{
-		dustp=new DustPool("tracks/Dust", 20, mSceneMgr->getRootSceneNode(), mSceneMgr);
-		clumpp=new DustPool("tracks/Clump", 20, mSceneMgr->getRootSceneNode(), mSceneMgr);
-		sparksp=new DustPool("tracks/Sparks", 10, mSceneMgr->getRootSceneNode(), mSceneMgr);
-	}
-	if (SETTINGS.getSetting("Spray")=="Yes")
-	{
-		dripp=new DustPool("tracks/Drip", 50, mSceneMgr->getRootSceneNode(), mSceneMgr);
-		splashp=new DustPool("tracks/Splash", 20, mSceneMgr->getRootSceneNode(), mSceneMgr);
-		ripplep=new DustPool("tracks/Ripple", 20, mSceneMgr->getRootSceneNode(), mSceneMgr);
-	}
-	*/
-}
 
 void RoRFrameListener::initTrucks(bool loadmanual, Ogre::String selected, Ogre::String selectedExtension, std::vector<Ogre::String> *truckconfig, bool enterTruck)
 {

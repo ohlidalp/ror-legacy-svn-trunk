@@ -643,6 +643,14 @@ protected:
 	void sendStreamSetup();
 	void receiveStreamData(unsigned int &type, int &source, unsigned int &streamid, char *buffer, unsigned int &len);
 
+	// dustpools
+	DustPool *dustp;
+    DustPool *dripp;
+    DustPool *sparksp;
+    DustPool *clumpp;
+    DustPool *splashp;
+    DustPool *ripplep;
+
 
 	// SLIDE NODES /////////////////////////////////////////////////////////////
 	//! Stores all the SlideNodes available on this truck

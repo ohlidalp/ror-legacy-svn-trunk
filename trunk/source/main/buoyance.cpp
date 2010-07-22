@@ -24,6 +24,8 @@ Buoyance::Buoyance(Water *water)
 	w=water;
 	update=0;
 	sink=0;
+	splashp = DustManager::getSingleton().getDustPool("splash");
+	ripplep = DustManager::getSingleton().getDustPool("ripple");
 }
 
 
@@ -76,8 +78,6 @@ Vector3 Buoyance::computePressureForceSub(Vector3 a, Vector3 b, Vector3 c, Vecto
 	//		drg=(-500.0*surf*vell*cosaoa)*vel;
 			drg=(-500.0*surf*vell*vell*cosaoa)*normal;
 			if (normal.dotProduct(vel/vell)<0) drg=-drg;
-			/*
-			// TODO: FIX SPLASH!
 			if (update && splashp)
 			{
 				float fxl=vell*cosaoa*surf;
@@ -90,7 +90,6 @@ Vector3 Buoyance::computePressureForceSub(Vector3 a, Vector3 b, Vector3 c, Vecto
 					else if (w->getHeightWaves(c)-c.y<0.1) splashp->alloc(c, fxdir);
 				}
 			}
-			*/
 		}
 	}
 	//okay
