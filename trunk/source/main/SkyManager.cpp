@@ -54,6 +54,18 @@ void SkyManager::init(Ogre::SceneManager *mScene, Ogre::RenderWindow *mWindow, O
 	mCaelumSystem = new Caelum::CaelumSystem (Root::getSingletonPtr(), mScene, Caelum::CaelumSystem::CAELUM_COMPONENTS_NONE);
 	mCaelumSystem->attachViewport(mCamera->getViewport());
 
+	// overwrite some settings
+	mCaelumSystem->setEnsureSingleShadowSource(true);
+	mCaelumSystem->setEnsureSingleLightSource(true);
+
+	/*
+	// TODO: set real time, and let the user select his true location
+	mCaelumSystem->getUniversalClock()->setGregorianDateTime(2008, 4, 9, 6, 33, 0);
+	mCaelumSystem->setObserverLongitude(Ogre::Degree(0));
+	mCaelumSystem->setObserverLatitude(Ogre::Degree(0));
+	mCaelumSystem->getUniversalClock()->setTimeScale(100);
+	*/
+
 	// Register caelum as a listener.
 	mWindow->addListener (mCaelumSystem);
 	Root::getSingletonPtr()->addFrameListener(mCaelumSystem);
