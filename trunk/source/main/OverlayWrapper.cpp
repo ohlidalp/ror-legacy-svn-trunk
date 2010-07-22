@@ -363,8 +363,6 @@ int OverlayWrapper::init()
 	flashOverlay->add2D(flashPanel);
 
 
-	playerListOverlay = loadOverlay("tracks/MPPlayerList");
-
 	pressureOverlay = loadOverlay("tracks/PressureOverlay");
 	pressureNeedleOverlay = loadOverlay("tracks/PressureNeedleOverlay");
 	editorOverlay = loadOverlay("tracks/EditorOverlay");

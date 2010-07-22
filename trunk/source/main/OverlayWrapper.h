@@ -80,7 +80,6 @@ public:
 	Ogre::Overlay *airneedlesOverlay;
 	Ogre::Overlay *boatneedlesOverlay;
 	Ogre::Overlay *needlesMaskOverlay;
-	Ogre::Overlay *playerListOverlay;
 	Ogre::Overlay *pressureOverlay;
 	Ogre::Overlay *pressureNeedleOverlay;
 	Ogre::Overlay *editorOverlay;
