@@ -73,6 +73,7 @@ public:
 private:
 	wxEvtHandler *m_handler;
 	ThreadQueue* m_pQueue;
+	static const int retrylimit = 5;
 	int m_ID;
 
 	virtual wxThread::ExitCode Entry();

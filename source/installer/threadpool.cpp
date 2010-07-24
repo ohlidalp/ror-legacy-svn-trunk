@@ -120,7 +120,7 @@ retry:
 	updateCallback(jobID, MSE_DOWNLOAD_START);
 	std::string url = dir_use + remoteFile;
 	int stat = wsdl->downloadFile(jobID, localFile, server_use, url);
-	if(stat == -404 && retrycount < 2)
+	if(stat != 0 && retrycount < retrylimit)
 	{
 		LOG("DLFile-%04d|  result: %d, retrycount: %d, falling back to main server\n", jobID, stat, retrycount);
 		// fallback to main server (for this single file only!)
@@ -144,7 +144,7 @@ retry:
 		{
 			LOG("DLFile-%04d| file hash wrong, is: '%s', should be: '%s'\n", jobID, checkHash.c_str(), hashRemote.c_str());
 			WsyncDownload::tryRemoveFile(localFile);
-			if(retrycount < 2)
+			if(retrycount < retrylimit)
 			{
 				// fallback to main server!
 				//printf(" hash wrong, falling back to main server.\n");
@@ -156,7 +156,7 @@ retry:
 			}
 		}
 	}
-	if(retrycount >= 2)
+	if(retrycount >= retrylimit)
 	{
 		updateCallback(jobID, MSE_ERROR, "failed to download file: " + remoteFile + "\nPlease ensure that you have internet access.");
 		wxMessageBox(_T("failed to download file: ") + conv(remoteFile) + wxT("\nPlease ensure that you have internet access."), _T("Error"), wxICON_ERROR | wxOK);
