@@ -756,6 +756,10 @@ RoRFrameListener::RoRFrameListener(RenderWindow* win, Camera* cam, SceneManager*
 {
 	for (int i=0; i<MAX_TRUCKS; i++) trucks[i]=0;
 
+	pthread_mutex_init(&mutex_data, NULL);
+	net_quality=0; 
+	net_quality_changed=false;
+
 	thread_mode=THREAD_MONO;
 	if (SETTINGS.getSetting("Threads")=="1 (Standard CPU)")thread_mode=THREAD_MONO;
 	if (SETTINGS.getSetting("Threads")=="2 (Hyper-Threading or Dual core CPU)") thread_mode=THREAD_HT;
@@ -1181,7 +1185,7 @@ RoRFrameListener::RoRFrameListener(RenderWindow* win, Camera* cam, SceneManager*
 		LoadingWindow::get()->hide();
 
 #ifdef USE_SOCKETW
-		new GUI_Multiplayer(net);
+		new GUI_Multiplayer(net, cam);
 		GUI_Multiplayer::getSingleton().update();
 #endif //USE_SOCKETW
 
@@ -7090,6 +7094,12 @@ bool RoRFrameListener::frameStarted(const FrameEvent& evt)
 			checkRemoteStreamResultsChanged();
 			netcheckGUITimer=0;
 		}
+
+		// update net quality icon
+		if(getNetQualityChanged())
+		{
+			GUI_Multiplayer::getSingleton().update();
+		}
 	}
 
 	// updating mirrors fixes its shaking!
@@ -7322,7 +7332,7 @@ END OF OLD CODE */
 	{
 #ifdef USE_LUA
 		if(lua) lua->framestep();
-#endif
+#endif //USE_LUA
 		updateIO(dt);
 
 		if(!isEmbedded)
@@ -7923,4 +7933,32 @@ void RoRFrameListener::checkRemoteStreamResultsChanged()
 		GUI_Multiplayer::getSingleton().update();
 #endif // USE_SOCKETW
 #endif // USE_MYGUI	
+}
+
+
+void RoRFrameListener::setNetQuality(int q)
+{
+	pthread_mutex_lock(&mutex_data);
+	net_quality = q;
+	net_quality_changed = true;
+	pthread_mutex_unlock(&mutex_data);
+}
+
+int RoRFrameListener::getNetQuality(bool ack)
+{
+	int res = 0;
+	pthread_mutex_lock(&mutex_data);
+	res = net_quality;
+	if(ack) net_quality_changed=false;
+	pthread_mutex_unlock(&mutex_data);
+	return res;
+}
+
+bool RoRFrameListener::getNetQualityChanged()
+{
+	bool res = false;
+	pthread_mutex_lock(&mutex_data);
+	res = net_quality_changed;
+	pthread_mutex_unlock(&mutex_data);
+	return res;
 }

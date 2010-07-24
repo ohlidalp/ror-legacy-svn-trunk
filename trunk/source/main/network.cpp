@@ -367,6 +367,12 @@ int Network::sendmessage(SWInetSocket *socket, int type, unsigned int streamid, 
 
 	// construct buffer
 	const int msgsize = sizeof(header_t) + len;
+
+	if(msgsize >= MAX_MESSAGE_LENGTH)
+	{
+    	return -2;
+	}
+
 	char buffer[MAX_MESSAGE_LENGTH];
 	memset(buffer, 0, MAX_MESSAGE_LENGTH);
 	memcpy(buffer, (char *)&head, sizeof(header_t));
@@ -410,6 +416,11 @@ int Network::receivemessage(SWInetSocket *socket, header_t *head, char* content,
 	}
 
 	memcpy(head, buffer, sizeof(header_t));
+
+	if(head->size >= MAX_MESSAGE_LENGTH)
+	{
+    	return -3;
+	}
 
 	if(head->size>0)
 	{
@@ -580,6 +591,15 @@ void Network::receivethreadstart()
 		{
 			ChatSystem *cs = ChatSystemFactory::getSingleton().getFirstChatSystem();
 			if(cs) cs->addReceivedPacket(header, buffer);
+			continue;
+		}
+		else if(header.command == MSG2_NETQUALITY && header.source == -1)
+		{
+			if(header.size != sizeof(int))
+				continue;
+			int quality = *(int *)buffer;
+			if(eflsingleton)
+				eflsingleton->setNetQuality(quality);
 			continue;
 		}
 		else if(header.command == MSG2_USER_LEAVE)

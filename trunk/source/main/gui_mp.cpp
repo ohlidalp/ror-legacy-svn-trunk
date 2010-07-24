@@ -43,8 +43,10 @@ GUI_Multiplayer& GUI_Multiplayer::getSingleton(void)
 	assert( ms_Singleton );  return ( *ms_Singleton );
 }
 
-GUI_Multiplayer::GUI_Multiplayer(Network *_net) : net(_net), msgwin(0)
+GUI_Multiplayer::GUI_Multiplayer(Network *_net, Ogre::Camera *cam) : net(_net), msgwin(0), mCamera(cam)
 {
+	lineheight=16;
+
 	// tooltip window
 	tooltipPanel = MyGUI::Gui::getInstance().createWidget<MyGUI::Widget>("PanelSmall", 0, 0, 200, 20,  MyGUI::Align::Default, "ToolTip");
 	tooltipText = tooltipPanel->createWidget<MyGUI::StaticText>("StaticText", 4, 2, 200, 16,  MyGUI::Align::Default);
@@ -62,9 +64,23 @@ GUI_Multiplayer::GUI_Multiplayer(Network *_net) : net(_net), msgwin(0)
 	msgtext->setEditStatic(true);
 	msgwin->setVisible(false);
 
+
+	// network quality warning
+	netmsgwin = MyGUI::Gui::getInstance().createWidget<MyGUI::Window>("FlowContainer", 5, 30, 300, 40,  MyGUI::Align::Default, "Main");
+	netmsgwin->setAlpha(0.8f);
+	MyGUI::StaticImagePtr nimg = netmsgwin->createWidget<MyGUI::StaticImage>("StaticImage", 0, 0, 16, 16,  MyGUI::Align::Default, "Main");
+	nimg->setImageTexture("error.png");
+	netmsgtext = netmsgwin->createWidget<MyGUI::StaticText>("StaticText", 18, 2, 300, 40,  MyGUI::Align::Default, "helptext");
+	netmsgtext->setCaption(_L("Slow  Network  Download"));
+	netmsgtext->setFontName("VeraMoBd");
+	netmsgtext->setTextColour(MyGUI::Colour::Red);
+	netmsgtext->setFontHeight(lineheight);
+	netmsgwin->setVisible(false);
+
+
 	// now the main GUI
 	MyGUI::IntSize gui_area = GUIManager::getSingleton().getGUI()->getViewSize();
-	int x=gui_area.width - 200, y=30, lineheight=16;
+	int x=gui_area.width - 200, y=30;
 	mpPanel = MyGUI::Gui::getInstance().createWidget<MyGUI::Widget>("FlowContainer", x, y, 200, gui_area.height,  MyGUI::Align::Default, "Main");
 	mpPanel->setVisible(true);
 
@@ -273,6 +289,10 @@ int GUI_Multiplayer::update()
 	client_t clients[MAX_PEERS];
 	int slotid = 0;
 	
+	MyGUI::IntSize gui_area = GUIManager::getSingleton().getGUI()->getViewSize();
+	int x=gui_area.width - 200, y=30;
+	mpPanel->setPosition(x,y);
+
 	// add local player to first slot always
 	user_info_t *lu = net->getLocalUserData();
 	updateSlot(&player_rows[slotid], lu, true);
@@ -307,6 +327,14 @@ int GUI_Multiplayer::update()
 			row->userTruckOKRemoteImg->setVisible(false);
 		}
 	}
+	
+	if(eflsingleton && eflsingleton->getNetQuality(true) != 0)
+	{
+		netmsgwin->setVisible(true);
+	} else if(eflsingleton && eflsingleton->getNetQuality(true) == 0)
+	{
+		netmsgwin->setVisible(false);
+	}
 	return 0;
 }
 
@@ -324,8 +352,8 @@ void GUI_Multiplayer::clickUserGoIcon(MyGUI::WidgetPtr sender)
 
 void GUI_Multiplayer::clickInfoIcon(MyGUI::WidgetPtr sender)
 {
-	msgtext->setCaption("FOOBAR: "+sender->getUserString("info"));
-	msgwin->setVisible(true);
+	//msgtext->setCaption("FOOBAR: "+sender->getUserString("info"));
+	//msgwin->setVisible(true);
 }
 
 void GUI_Multiplayer::openToolTip(MyGUI::WidgetPtr sender, const MyGUI::ToolTipInfo &t)
