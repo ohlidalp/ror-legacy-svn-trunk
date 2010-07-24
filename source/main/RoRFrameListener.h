@@ -389,6 +389,18 @@ public:
 	OverlayWrapper *getOverlayWrapper() { return ow; };
 
 	Water *w;
+
+public:
+	// mutex'ed data
+	void setNetQuality(int q);
+	int getNetQuality(bool ack=false);
+	bool getNetQualityChanged();
+	pthread_mutex_t mutex_data;
+private:
+	int net_quality; 
+	bool net_quality_changed; 
+
+
 protected:
 
 	HeatHaze *heathaze;

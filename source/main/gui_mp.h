@@ -36,7 +36,7 @@ class Collisions;
 class GUI_Multiplayer : public Ogre::Singleton< GUI_Multiplayer >, public MemoryAllocatedObject
 {
 public:
-	GUI_Multiplayer(Network *net);
+	GUI_Multiplayer(Network *net, Ogre::Camera *mCamera);
 	~GUI_Multiplayer();
 	static GUI_Multiplayer& getSingleton(void);
 	static GUI_Multiplayer* getSingletonPtr(void);
@@ -66,8 +66,13 @@ protected:
 	void openToolTip(MyGUI::WidgetPtr sender, const MyGUI::ToolTipInfo &t);
 	void clickUserGoIcon(MyGUI::WidgetPtr sender);
 
+	MyGUI::WindowPtr netmsgwin;
+	MyGUI::StaticTextPtr netmsgtext;
 	
 	void updateSlot(player_row_t *row, user_info_t *c, bool self);
+
+	Ogre::Camera *mCamera;
+	int lineheight;
 };
 
 #endif //GUI_MP_H__
