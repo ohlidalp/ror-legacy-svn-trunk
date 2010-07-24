@@ -284,6 +284,9 @@ void Character::update(float dt)
 {
 	if(physicsEnabled && !remote)
 	{
+		// disable character movement when using the free camera mode
+		if(eflsingleton && eflsingleton->cameramode == CAMERA_FREE) return;
+
 		// small hack: if not visible do not apply physics
 		//mode perso
 		Vector3 position=personode->getPosition();
