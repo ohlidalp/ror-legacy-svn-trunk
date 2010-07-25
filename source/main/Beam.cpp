@@ -8060,8 +8060,10 @@ void Beam::calcForcesEuler(int doUpdate, Real dt, int step, int maxstep, Beam** 
 							if (nodes[i].iswheel && ns>thresold)
 							{
 								if(dustp) dustp->allocSmoke(nodes[i].AbsPosition, nodes[i].Velocity);
+#ifdef USE_OPENAL
 								ssm->modulate(trucknum, SS_MOD_SCREETCH, (ns-thresold)/thresold);
 								ssm->trigOnce(trucknum, SS_TRIG_SCREETCH);
+#endif // USE_OPENAL
 							}
 
 							//sparks
