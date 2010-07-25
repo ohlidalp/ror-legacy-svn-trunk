@@ -4948,7 +4948,7 @@ void RoRFrameListener::loadTerrain(String terrainfile)
 
 			//matProfile->setLightmapEnabled(false);
 			// Important to set these so that the terrain knows what to use for derived (non-realtime) data
-			if(mainLight) TerrainGlobalOptions::getSingleton().setLightMapDirection(mainLight->getDerivedDirection());
+			//if(mainLight) TerrainGlobalOptions::getSingleton().setLightMapDirection(mainLight->getDerivedDirection());
 			TerrainGlobalOptions::getSingleton().setCompositeMapAmbient(mSceneMgr->getAmbientLight());
 			//mTerrainGlobals->setCompositeMapAmbient(ColourValue::Red);
 			if(mainLight) TerrainGlobalOptions::getSingleton().setCompositeMapDiffuse(mainLight->getDiffuseColour());
@@ -7095,11 +7095,15 @@ bool RoRFrameListener::frameStarted(const FrameEvent& evt)
 			netcheckGUITimer=0;
 		}
 
+#ifdef USE_SOCKETW
+#ifdef USE_MYGUI
 		// update net quality icon
 		if(getNetQualityChanged())
 		{
 			GUI_Multiplayer::getSingleton().update();
 		}
+#endif // USE_MYGUI
+#endif // USE_SOCKETW
 	}
 
 	// updating mirrors fixes its shaking!
