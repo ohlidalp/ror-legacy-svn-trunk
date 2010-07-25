@@ -4911,12 +4911,6 @@ void RoRFrameListener::loadTerrain(String terrainfile)
 		} else if (newTerrainMode && !disableTetrrain)
 		{
 			// new terrain mode
-			mRoot->destroySceneManager(mScene);
-			mScene = mRoot->createSceneManager(ST_GENERIC);
-			// XXX OLD TERRAIN
-			//if(!disableTetrrain)
-			//	mSceneMgr->setWorldGeometry(geom);
-
 			// new terrain
 			int pageSize = StringConverter::parseInt(cfg.getSetting("PageSize"));
 			int worldSize = StringConverter::parseInt(cfg.getSetting("PageWorldX"));
@@ -4928,6 +4922,12 @@ void RoRFrameListener::loadTerrain(String terrainfile)
 			int TERRAIN_SIZE            = pageSize;
 			int TERRAIN_PAGE_MIN_X=0, TERRAIN_PAGE_MAX_X=0;
 			int TERRAIN_PAGE_MIN_Y=0, TERRAIN_PAGE_MAX_Y=0;
+			bool usepaging = (cfg.getSetting("UsePaging") == "1");
+			if(usepaging)
+			{
+				TERRAIN_PAGE_MAX_X = StringConverter::parseInt(cfg.getSetting("Pages_X"));
+				TERRAIN_PAGE_MAX_Y = StringConverter::parseInt(cfg.getSetting("Pages_Y"));
+			}
 			bool mTerrainsImported=false;
 			TerrainPaging* mTerrainPaging=0;
 			PageManager* mPageManager=0;
@@ -4939,16 +4939,17 @@ void RoRFrameListener::loadTerrain(String terrainfile)
 
 			new TerrainGlobalOptions();
 			// Configure global
-			TerrainGlobalOptions::getSingleton().setMaxPixelError(8);
+			TerrainGlobalOptions::getSingleton().setMaxPixelError(StringConverter::parseInt(cfg.getSetting("MaxPixelError")));
 			// testing composite map
-			TerrainGlobalOptions::getSingleton().setCompositeMapDistance(3000);
+			TerrainGlobalOptions::getSingleton().setCompositeMapDistance(300);
 			//mTerrainGlobals->setUseRayBoxDistanceCalculation(true);
 			//mTerrainGlobals->getDefaultMaterialGenerator()->setDebugLevel(1);
 			//mTerrainGlobals->setLightMapSize(256);
 
-			//matProfile->setLightmapEnabled(false);
+			TerrainGlobalOptions::getSingleton().setLightMapSize(256);
+			TerrainGlobalOptions::getSingleton().setCastsDynamicShadows(false);
 			// Important to set these so that the terrain knows what to use for derived (non-realtime) data
-			//if(mainLight) TerrainGlobalOptions::getSingleton().setLightMapDirection(mainLight->getDerivedDirection());
+			if(mainLight) TerrainGlobalOptions::getSingleton().setLightMapDirection(mainLight->getDerivedDirection());
 			TerrainGlobalOptions::getSingleton().setCompositeMapAmbient(mSceneMgr->getAmbientLight());
 			//mTerrainGlobals->setCompositeMapAmbient(ColourValue::Red);
 			if(mainLight) TerrainGlobalOptions::getSingleton().setCompositeMapDiffuse(mainLight->getDiffuseColour());
@@ -4959,21 +4960,22 @@ void RoRFrameListener::loadTerrain(String terrainfile)
 			defaultimp.worldSize    = TERRAIN_WORLD_SIZE;
 
 			defaultimp.inputScale   = pageMaxHeight;
-			defaultimp.minBatchSize = 32;
-			defaultimp.maxBatchSize = 64;
+			defaultimp.minBatchSize = StringConverter::parseInt(cfg.getSetting("minBatchSize"));;
+			defaultimp.maxBatchSize = StringConverter::parseInt(cfg.getSetting("maxBatchSize"));;
 			// textures
 			defaultimp.layerList.resize(3);
 			defaultimp.layerList[0].worldSize = 10;
 			defaultimp.layerList[0].textureNames.push_back("dirt_grayrocky_diffusespecular.dds");
 			defaultimp.layerList[0].textureNames.push_back("dirt_grayrocky_normalheight.dds");
 			defaultimp.layerList[1].worldSize = 10;
-			defaultimp.layerList[1].textureNames.push_back("grass_green-01_diffusespecular.dds");
-			defaultimp.layerList[1].textureNames.push_back("grass_green-01_normalheight.dds");
+			defaultimp.layerList[1].textureNames.push_back("growth_weirdfungus-03_diffusespecular.dds");
+			defaultimp.layerList[1].textureNames.push_back("growth_weirdfungus-03_normalheight.dds");
 			defaultimp.layerList[2].worldSize = 20;
-			defaultimp.layerList[2].textureNames.push_back("growth_weirdfungus-03_diffusespecular.dds");
-			defaultimp.layerList[2].textureNames.push_back("growth_weirdfungus-03_normalheight.dds");
+			defaultimp.layerList[2].textureNames.push_back("grass_green-01_diffusespecular.dds");
+			defaultimp.layerList[2].textureNames.push_back("grass_green-01_normalheight.dds");
 
-			bool paging = false;
+			String filename = mTerrainGroup->generateFilename(0, 0);
+			bool paging = (ResourceGroupManager::getSingleton().resourceExists(mTerrainGroup->getResourceGroup(), filename));
 			if(!paging)
 			{
 				for (long x = TERRAIN_PAGE_MIN_X; x <= TERRAIN_PAGE_MAX_X; ++x)
@@ -4987,12 +4989,13 @@ void RoRFrameListener::loadTerrain(String terrainfile)
 						}
 						else
 						{
-							String heightmapFilename = cfg.getSetting("Heightmap.image");
+							String heightmapString = "Heightmap.image." + StringConverter::toString(x) + "." + StringConverter::toString(y);
+							String heightmapFilename = cfg.getSetting(heightmapString);
 							Image img;
 							if(heightmapFilename.find(".raw") != String::npos)
 							{
-								int rawSize = StringConverter::parseInt(cfg.getSetting("Heightmap.raw.size"));
-								int bpp = StringConverter::parseInt(cfg.getSetting("Heightmap.raw.bpp"));
+								int rawSize = StringConverter::parseInt(cfg.getSetting(heightmapString + ".size"));
+								int bpp = StringConverter::parseInt(cfg.getSetting(heightmapString + ".bpp"));
 								
 								// load raw data
 								DataStreamPtr stream = ResourceGroupManager::getSingleton().openResource(heightmapFilename);
@@ -5005,10 +5008,11 @@ void RoRFrameListener::loadTerrain(String terrainfile)
 							{
 								img.load(heightmapFilename, ResourceGroupManager::DEFAULT_RESOURCE_GROUP_NAME);
 							}
-							if (x % 2 != 0)
-								img.flipAroundY();
-							if (y % 2 != 0)
-								img.flipAroundX();
+
+							//if (x % 2 != 0)
+							//	img.flipAroundY();
+							//if (y % 2 != 0)
+							//	img.flipAroundX();
 
 							mTerrainGroup->defineTerrain(x, y, &img);
 							mTerrainsImported = true;
@@ -5017,6 +5021,56 @@ void RoRFrameListener::loadTerrain(String terrainfile)
 				}
 				// sync load since we want everything in place when we start
 				mTerrainGroup->loadAllTerrains(true);
+
+				for (long x = TERRAIN_PAGE_MIN_X; x <= TERRAIN_PAGE_MAX_X; ++x)
+				{
+					for (long y = TERRAIN_PAGE_MIN_Y; y <= TERRAIN_PAGE_MAX_Y; ++y)
+					{
+						Terrain* terrain = mTerrainGroup->getTerrain(x,y);
+						if(!terrain) continue;
+						TerrainLayerBlendMap* blendMap0 = terrain->getLayerBlendMap(1);
+						TerrainLayerBlendMap* blendMap1 = terrain->getLayerBlendMap(2);
+						Real minHeight0 = 70;
+						Real fadeDist0 = 40;
+						Real minHeight1 = 70;
+						Real fadeDist1 = 15;
+						float* pBlend1 = blendMap1->getBlendPointer();
+						for (Ogre::uint16 yb = 0; yb < terrain->getLayerBlendMapSize(); ++yb)
+						{
+							for (Ogre::uint16 xb = 0; xb < terrain->getLayerBlendMapSize(); ++xb)
+							{
+								Real tx, ty;
+
+								blendMap0->convertImageToTerrainSpace(xb, yb, &tx, &ty);
+								Real height = terrain->getHeightAtTerrainPosition(tx, ty);
+								Real val = (height - minHeight0) / fadeDist0;
+								val = Math::Clamp(val, (Real)0, (Real)1);
+								//*pBlend0++ = val;
+
+								val = (height - minHeight1) / fadeDist1;
+								val = Math::Clamp(val, (Real)0, (Real)1);
+								*pBlend1++ = val;
+							}
+						}
+						blendMap0->dirty();
+						blendMap1->dirty();
+						//blendMap0->loadImage("blendmap1.png", ResourceGroupManager::DEFAULT_RESOURCE_GROUP_NAME);
+						blendMap0->update();
+						blendMap1->update();
+
+						// set up a colour map
+						String textureString = "Texture.image." + StringConverter::toString(x) + "." + StringConverter::toString(y);
+						String textureFilename = cfg.getSetting(textureString);
+						if (!terrain->getGlobalColourMapEnabled())
+						{
+							terrain->setGlobalColourMapEnabled(true);
+							Image colourMap;
+							colourMap.load(textureFilename, ResourceGroupManager::DEFAULT_RESOURCE_GROUP_NAME);
+							terrain->getGlobalColourMap()->loadImage(colourMap);
+						}
+					}
+				}
+				mTerrainGroup->saveAllTerrains(false);
 			} else
 			{
 				// paging, yeah!
@@ -5028,60 +5082,9 @@ void RoRFrameListener::loadTerrain(String terrainfile)
 				mPageManager->addCamera(mCamera);
 				mTerrainPaging = OGRE_NEW TerrainPaging(mPageManager);
 				PagedWorld* world = mPageManager->createWorld();
-				mTerrainPaging->createWorldSection(world, mTerrainGroup, TERRAIN_WORLD_SIZE, TERRAIN_WORLD_SIZE*1.2f, 
+				mTerrainPaging->createWorldSection(world, mTerrainGroup, TERRAIN_SIZE, TERRAIN_SIZE*1.2f, 
 					TERRAIN_PAGE_MIN_X, TERRAIN_PAGE_MIN_Y, 
 					TERRAIN_PAGE_MAX_X, TERRAIN_PAGE_MAX_Y);
-			}
-
-			if (mTerrainsImported)
-			{
-				TerrainGroup::TerrainIterator ti = mTerrainGroup->getTerrainIterator();
-				while(ti.hasMoreElements())
-				{
-					Terrain* terrain = ti.getNext()->instance;
-					TerrainLayerBlendMap* blendMap0 = terrain->getLayerBlendMap(1);
-					TerrainLayerBlendMap* blendMap1 = terrain->getLayerBlendMap(2);
-					Real minHeight0 = 5;
-					Real fadeDist0 = 40;
-					Real minHeight1 = 10;
-					Real fadeDist1 = 15;
-					float* pBlend1 = blendMap1->getBlendPointer();
-					for (Ogre::uint16 y = 0; y < terrain->getLayerBlendMapSize(); ++y)
-					{
-						for (Ogre::uint16 x = 0; x < terrain->getLayerBlendMapSize(); ++x)
-						{
-							Real tx, ty;
-
-							blendMap0->convertImageToTerrainSpace(x, y, &tx, &ty);
-							Real height = terrain->getHeightAtTerrainPosition(tx, ty);
-							Real val = (height - minHeight0) / fadeDist0;
-							val = Math::Clamp(val, (Real)0, (Real)1);
-							//*pBlend0++ = val;
-
-							val = (height - minHeight1) / fadeDist1;
-							val = Math::Clamp(val, (Real)0, (Real)1);
-							*pBlend1++ = val;
-
-
-						}
-					}
-					blendMap0->dirty();
-					blendMap1->dirty();
-					//blendMap0->loadImage("blendmap1.png", ResourceGroupManager::DEFAULT_RESOURCE_GROUP_NAME);
-					blendMap0->update();
-					blendMap1->update();
-
-					// set up a colour map
-					/*
-					if (!terrain->getGlobalColourMapEnabled())
-					{
-						terrain->setGlobalColourMapEnabled(true);
-						Image colourMap;
-						colourMap.load("testcolourmap.jpg", ResourceGroupManager::DEFAULT_RESOURCE_GROUP_NAME);
-						terrain->getGlobalColourMap()->loadImage(colourMap);
-					}
-					*/
-				}
 			}
 
 			mTerrainGroup->freeTemporaryResources();
