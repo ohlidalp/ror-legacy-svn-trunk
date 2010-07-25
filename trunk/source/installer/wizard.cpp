@@ -168,7 +168,6 @@ bool MyApp::OnInit()
 	wizard.RunWizard(wizard.GetFirstPage());
 
 	// we're done
-	// forecfully end this, otherwise: CRASH when we used ASIO :(
 	exit(0);
 
 	// this crashes the app:
@@ -1089,6 +1088,10 @@ bool DownloadPage::OnEnter(bool forward)
 	std::string fromVersion = CONFIG->readVersionInfo();
 	std::string toVersion   = CONFIG->getOnlineVersion();
 	std::string versionText = std::string("updating from ") + fromVersion + std::string(" to ") + toVersion;
+	if(fromVersion == "unkown")
+		versionText = toVersion;
+	if(fromVersion == toVersion)
+		versionText = toVersion;
 	std::string versionURL  = std::string(CHANGELOGURL) + toVersion;
 	hlink->SetLabel(conv(versionText));
 	hlink->SetURL(conv(versionURL));
@@ -1128,13 +1131,16 @@ void DownloadPage::OnStatusUpdate(MyStatusEvent &ev)
 	case MSE_DOWNLOAD_PROGRESS:
 	{
 		wxString str = ev.GetString();
-		for(int i=statusList->GetCount()-1;i>=0;--i)
+		if(ev.GetProgress() > 0)
 		{
-			wxString str_comp = statusList->GetString(i).SubString(0, str.size()-1);
-			if(str_comp == str)
+			for(int i=statusList->GetCount()-1;i>=0;--i)
 			{
-				statusList->SetString(i, str + wxString::Format(wxT(" (%3.1f%% downloaded)"), ev.GetProgress() * 100.0f));
-				break;
+				wxString str_comp = statusList->GetString(i).SubString(0, str.size()-1);
+				if(str_comp == str)
+				{
+					statusList->SetString(i, str + wxString::Format(wxT(" (%3.1f%% downloaded)"), ev.GetProgress() * 100.0f));
+					break;
+				}
 			}
 		}
 	}

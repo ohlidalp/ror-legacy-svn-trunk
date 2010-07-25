@@ -24,7 +24,6 @@ along with Rigs of Rods.  If not, see <http://www.gnu.org/licenses/>.
 // For compilers that support precompilation, includes "wx/wx.h".
 #include "wx/wxprec.h"
 #include <vector>
-#include "boost/asio.hpp"
 #include "boost/filesystem.hpp"
 
 // for all others, include the necessary headers

@@ -80,8 +80,12 @@ void WsyncThread::onDownloadStatusUpdate(MyStatusEvent &ev)
 		break;
 	}
 
-	// then report the progress to the GUI
-	reportProgress();
+	if(updateTimer.elapsed() > 0.5f)
+	{
+		// then report the progress to the GUI
+		reportProgress();
+		updateTimer.restart();
+	}
 }
 
 void WsyncThread::reportProgress()

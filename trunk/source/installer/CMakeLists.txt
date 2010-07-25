@@ -42,6 +42,8 @@ link_directories   (${WXWIDGETS_STATIC_LIBRARY_DIRS})
 add_definitions("-DINSTALLER_PLATFORM=\"${INSTALLER_PLATFORM}\"")
 message("the default installer platform is \"${INSTALLER_PLATFORM}\". To change this, edit INSTALLER_PLATFORM value in cmake.")
 
+include_directories(${CURL_INCLUDE_DIRS})
+link_directories   (${CURL_LIBRARY_DIRS})
 include_directories(${BOOST_INCLUDE_DIRS})
 link_directories   (${BOOST_LIBRARY_DIRS})
 
@@ -87,5 +89,6 @@ ELSE(WIN32)
    TARGET_LINK_LIBRARIES(installer ${Boost_LIBRARIES})
    TARGET_LINK_LIBRARIES(installer ${wxWidgets_LIBRARIES})
 ENDIF(WIN32)
-
+TARGET_LINK_LIBRARIES(installer ${CURL_LIBRARIES})
+   
 
