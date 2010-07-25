@@ -3608,8 +3608,16 @@ void MyDialog::OnLinkClicked(wxHtmlLinkEvent& event)
 			serverpassword->Enable(true);
 		}else
 			serverpassword->Enable(false);
+	} else if (uri->GetScheme()==conv("rorinstaller"))
+	{
+		if(uri->GetServer() == wxT("update"))
+		{
+			updateRoR();
+		}
 	} else
+	{
 		networkhtmw->OnLinkClicked(linkinfo);
+	}
 //	wxMessageDialog *res=new wxMessageDialog(this, href, "Success", wxOK | wxICON_INFORMATION );
 //	res->ShowModal();
 }
