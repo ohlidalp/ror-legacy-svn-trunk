@@ -9,7 +9,6 @@
 #include "ConfigManager.h" //only use for stream_desc_t, dont use functions, as its not thread safe!
 #include "threadpool.h"
 
-#include "boost/asio.hpp"
 #include "boost/filesystem.hpp"
 
 
@@ -97,6 +96,7 @@ protected:
 	boost::filesystem::path ipath; // installation path, what we work on
 	boost::uintmax_t predDownloadSize;
 	Timer dlStartTime;
+	Timer updateTimer;
 	int dlNum;
 	std::map<int, dlstatus_t> dlStatus;
 

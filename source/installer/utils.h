@@ -25,7 +25,6 @@ along with Rigs of Rods.  If not, see <http://www.gnu.org/licenses/>.
 #include <wx/statbmp.h>
 #include <wx/stattext.h>
 
-#include <boost/asio.hpp>
 #include <boost/filesystem.hpp>
 #include <boost/algorithm/string.hpp>
 

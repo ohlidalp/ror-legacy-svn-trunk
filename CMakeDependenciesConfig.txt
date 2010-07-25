@@ -48,6 +48,10 @@ IF(WIN32)
 		set(BOOST_INCLUDE_DIRS "${ROR_DEPENDENCIES_DIR}/include/boost" CACHE PATH "The BOOST include path to use")
 		set(BOOST_LIBRARY_DIRS "${ROR_DEPENDENCIES_DIR}/lib/boost" CACHE PATH "The BOOST lib path to use")
 
+		set(CURL_INCLUDE_DIRS "${ROR_DEPENDENCIES_DIR}/include/" CACHE PATH "The curl include path to use")
+		set(CURL_LIBRARY_DIRS "${ROR_DEPENDENCIES_DIR}/lib" CACHE PATH "The curl lib path to use")
+		set(CURL_LIBRARIES "libcurl.lib" CACHE STRING "The curl lib to link against")
+		
 		set(PThread_INCLUDE_DIRS "${ROR_DEPENDENCIES_DIR}/include/pthread" CACHE PATH "The pthread include path to use")
 		set(PThread_LIBRARY_DIRS "${ROR_DEPENDENCIES_DIR}/lib" CACHE PATH "The pthread lib path to use")
 		set(PThread_LIBRARIES "pthreadVC2.lib" CACHE STRING "The pthread lib to link against")
@@ -155,6 +159,11 @@ ELSEIF(UNIX)
 
    PKG_CHECK_MODULES  (Ois OIS REQUIRED)
 
+   find_package(CURL)
+   if(NOT CURL_FOUND)
+     message(ERROR "curl not found, please install curl")
+   endif(NOT CURL_FOUND)
+   
    # using cmake fingd modules
    # Open-AL
    find_package(OpenAL)

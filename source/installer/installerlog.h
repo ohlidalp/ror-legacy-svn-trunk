@@ -23,6 +23,7 @@ public:
 	void logMessage(const char* fmt, ...);
 	void logMessageNoNewLine(const char* fmt, ...);
 
+	FILE *getLogFilePtr() { return file; };
 
 	static InstallerLog *instance;
 protected:

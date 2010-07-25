@@ -45,7 +45,6 @@ along with Rigs of Rods.  If not, see <http://www.gnu.org/licenses/>.
 	#include <shellapi.h> // for executing the binaries
 #endif //OGRE_PLATFORM
 
-#include "boost/asio.hpp"
 #include "boost/filesystem.hpp"
 
 //icons must be 50x50

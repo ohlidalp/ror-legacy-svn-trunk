@@ -4,8 +4,6 @@
 
 #include <boost/algorithm/string.hpp>
 
-using namespace boost::asio;
-using namespace boost::asio::ip;
 using namespace boost::filesystem;
 
 BEGIN_EVENT_TABLE(myClickBitmap, wxStaticBitmap)
