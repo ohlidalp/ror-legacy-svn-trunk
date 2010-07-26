@@ -180,6 +180,7 @@ private:
 	wxStaticText *txt_dltime, *txt_speed, *txt_traf, *txt_localpath, *txt_server, *txt_remaintime, *txt_concurr, *txt_updver;
 	wxHyperlinkCtrl *hlink;
 	wxStaticText *txtFinish;
+	wxStaticText *txtTitle;
 	wxListBox *statusList;
 	wxGauge *progress;
         HtmlWindow *htmlinfo;

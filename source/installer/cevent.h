@@ -73,6 +73,7 @@ enum {
 	MSE_UPDATE_SERVER, 
 	MSE_UPDATE_TIME_LEFT,
 	MSE_UPDATE_CONCURR,
+	MSE_UPDATE_TITLE,
 
 	// for the download backends
 	MSE_DOWNLOAD_START,
