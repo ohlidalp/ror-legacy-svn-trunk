@@ -175,8 +175,13 @@ WsyncThread::ExitCode WsyncThread::Entry()
 	updateCallback(MSE_UPDATE_PATH, ipath.string());
 
 	getSyncData();
+
+	updateCallback(MSE_UPDATE_TITLE, "Downloading ...");
 	sync();
+
 	recordDataUsage();
+
+	updateCallback(MSE_UPDATE_TITLE, "Finished!");
 
 	return (WsyncThread::ExitCode)0;     // success
 }
@@ -212,15 +217,24 @@ int WsyncThread::buildFileIndex(boost::filesystem::path &outfilename, boost::fil
 	vector<string> files;
 	listFiles(path, files);
 	char tmp[256] = "";
+	updateCallback(MSE_UPDATE_TITLE, "Indexing local files ..");
 	sprintf(tmp, "indexing %d files ...", files.size());
 	LOG("%s\n", tmp);
 	updateCallback(MSE_STARTING, string(tmp));
 	int counter = 0, counterMax = files.size();
 	for(vector<string>::iterator it=files.begin(); it!=files.end(); it++, counter++)
 	{
-		updateCallback(MSE_UPDATE_PROGRESS, "", float(counter)/float(counterMax));
-		// cut out root path
 		string respath = *it;
+
+		boost::uintmax_t fileSize = 0;
+		try
+		{
+			fileSize = file_size(respath);
+		} catch(...)
+		{
+		}
+
+		// cut out root path
 		if(respath.substr(0, rootpath.string().size()) == rootpath.string())
 		{
 			// this ensures that all paths start with /
@@ -241,6 +255,11 @@ int WsyncThread::buildFileIndex(boost::filesystem::path &outfilename, boost::fil
 		found = respath.find(".temp.");
 		if (found != string::npos)
 			continue;
+
+
+		sprintf(tmp, "%s (%s) ...", respath.c_str(), formatFilesize(fileSize).c_str());
+		updateCallback(MSE_UPDATE_PROGRESS, string(tmp), float(counter)/float(counterMax));
+		updateCallback(MSE_UPDATE_TEXT, string(tmp));
 
 		string resultHash = generateFileHash(it->c_str());
 
@@ -315,6 +334,8 @@ int WsyncThread::getSyncData()
 	}
 	LOG("local hashmap building done:\n");
 	debugOutputHashMap(hashMapLocal);
+
+	updateCallback(MSE_UPDATE_TITLE, "Getting remote streams ...");
 
 	// now fetch remote file-indexes
 	for(std::vector < stream_desc_t >::iterator it = streams.begin(); it!=streams.end(); it++)

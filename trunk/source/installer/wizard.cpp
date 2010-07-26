@@ -946,14 +946,13 @@ DownloadPage::DownloadPage(wxWizard *parent) : wxWizardPageSimple(parent), wizar
 	isDone=false;
 	m_bitmap = wxBitmap(download_xpm);
 	wxBoxSizer *mainSizer = new wxBoxSizer(wxVERTICAL);
-	wxStaticText *tst;
 	
-    mainSizer->Add(tst=new wxStaticText(this, wxID_ANY, _T("Downloading")), 0, wxALL, 5);
-	wxFont dfont=tst->GetFont();
+    mainSizer->Add(txtTitle=new wxStaticText(this, wxID_ANY, _T("Downloading")), 0, wxALL, 5);
+	wxFont dfont=txtTitle->GetFont();
 	dfont.SetWeight(wxFONTWEIGHT_BOLD);
 	dfont.SetPointSize(dfont.GetPointSize()+3);
-	tst->SetFont(dfont);
-	tst->Wrap(TXTWRAP);
+	txtTitle->SetFont(dfont);
+	txtTitle->Wrap(TXTWRAP);
      
 
 	// status text and progress bar
@@ -1185,6 +1184,9 @@ void DownloadPage::OnStatusUpdate(MyStatusEvent &ev)
 		break;
 	case MSE_UPDATE_CONCURR:
 		txt_concurr->SetLabel(ev.GetString());
+		break;
+	case MSE_UPDATE_TITLE:
+		txtTitle->SetLabel(ev.GetString());
 		break;
 	case MSE_DONE:
 		// normal end
