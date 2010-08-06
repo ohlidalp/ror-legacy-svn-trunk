@@ -757,7 +757,7 @@ RoRFrameListener::RoRFrameListener(RenderWindow* win, Camera* cam, SceneManager*
 	for (int i=0; i<MAX_TRUCKS; i++) trucks[i]=0;
 
 	pthread_mutex_init(&mutex_data, NULL);
-	net_quality=0; 
+	net_quality=0;
 	net_quality_changed=false;
 
 	thread_mode=THREAD_MONO;
@@ -2359,7 +2359,7 @@ bool RoRFrameListener::updateEvents(float dt)
 		chatting=false;
 		INPUTENGINE.setRecordInput(false);
 		INPUTENGINE.resetKeyLine();
-		mTimeUntilNextToggle = 0.5; // for enter/exit truck 
+		mTimeUntilNextToggle = 0.5; // for enter/exit truck
 		return true;
 	}
 
@@ -3980,7 +3980,7 @@ bool RoRFrameListener::updateEvents(float dt)
 			Ogre::Real time_factor = 1000.0f;
 			Ogre::Real multiplier = 10;
 			bool update_time = false;
-					
+
 			if (INPUTENGINE.getEventBoolValue(EV_CAELUM_INCREASE_TIME) && SkyManager::getSingletonPtr())
 			{
 				update_time = true;
@@ -4003,9 +4003,9 @@ bool RoRFrameListener::updateEvents(float dt)
 			else
 			{
 				time_factor = 1.0f;
-				update_time = SkyManager::getSingleton().getTimeFactor() != 1.0f;			
+				update_time = SkyManager::getSingleton().getTimeFactor() != 1.0f;
 			}
-			
+
 			if( update_time )
 			{
 				SkyManager::getSingleton().setTimeFactor(time_factor);
@@ -4996,7 +4996,7 @@ void RoRFrameListener::loadTerrain(String terrainfile)
 							{
 								int rawSize = StringConverter::parseInt(cfg.getSetting(heightmapString + ".size"));
 								int bpp = StringConverter::parseInt(cfg.getSetting(heightmapString + ".bpp"));
-								
+
 								// load raw data
 								DataStreamPtr stream = ResourceGroupManager::getSingleton().openResource(heightmapFilename);
 								LogManager::getSingleton().logMessage(" loading RAW image: " + StringConverter::toString(stream->size()) + " / " + StringConverter::toString(rawSize*rawSize*bpp));
@@ -5076,14 +5076,14 @@ void RoRFrameListener::loadTerrain(String terrainfile)
 				// paging, yeah!
 				// Paging setup
 				mPageManager = OGRE_NEW PageManager();
-				// Since we're not loading any pages from .page files, we need a way just 
+				// Since we're not loading any pages from .page files, we need a way just
 				// to say we've loaded them without them actually being loaded
 				mPageManager->setPageProvider(&mDummyPageProvider);
 				mPageManager->addCamera(mCamera);
 				mTerrainPaging = OGRE_NEW TerrainPaging(mPageManager);
 				PagedWorld* world = mPageManager->createWorld();
-				mTerrainPaging->createWorldSection(world, mTerrainGroup, TERRAIN_SIZE, TERRAIN_SIZE*1.2f, 
-					TERRAIN_PAGE_MIN_X, TERRAIN_PAGE_MIN_Y, 
+				mTerrainPaging->createWorldSection(world, mTerrainGroup, TERRAIN_SIZE, TERRAIN_SIZE*1.2f,
+					TERRAIN_PAGE_MIN_X, TERRAIN_PAGE_MIN_Y,
 					TERRAIN_PAGE_MAX_X, TERRAIN_PAGE_MAX_Y);
 			}
 
@@ -5427,7 +5427,7 @@ void RoRFrameListener::loadTerrain(String terrainfile)
 		hfinder = new NTHeightFinder(mTerrainGroup, Vector3::ZERO);
 	else
 		hfinder = new TSMHeightFinder(geom, terrainmap, wheight);
-	
+
 	collisions->setHfinder(hfinder);
 	if(person) person->setHFinder(hfinder);
 
@@ -5931,7 +5931,8 @@ void RoRFrameListener::loadTerrain(String terrainfile)
 	{
 		bakesg->build();
 		bakeNode->detachAllObjects();
-		bakeNode->removeAndDestroyAllChildren();
+		// crash under linux:
+		//bakeNode->removeAndDestroyAllChildren();
 	}catch(...)
 	{
 		LogManager::getSingleton().logMessage("error while baking roads. ignoring.");
@@ -7939,7 +7940,7 @@ void RoRFrameListener::checkRemoteStreamResultsChanged()
 	if(BeamFactory::getSingleton().checkStreamsResultsChanged())
 		GUI_Multiplayer::getSingleton().update();
 #endif // USE_SOCKETW
-#endif // USE_MYGUI	
+#endif // USE_MYGUI
 }
 
 
