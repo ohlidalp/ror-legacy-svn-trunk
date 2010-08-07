@@ -74,7 +74,13 @@ void SkyManager::init(Ogre::SceneManager *mScene, Ogre::RenderWindow *mWindow, O
 void SkyManager::loadScript(Ogre::String script)
 {
 	// load the caelum config
-	CaelumPlugin::getSingleton().loadCaelumSystemFromScript (mCaelumSystem, script);
+	try
+	{
+		CaelumPlugin::getSingleton().loadCaelumSystemFromScript (mCaelumSystem, script);
+	} catch(Ogre::Exception& e)
+	{
+		LogManager::getSingleton().logMessage("exception upon loading sky script: " + e.getFullDescription());
+	}
 }
 
 void SkyManager::setTimeFactor(LongReal factor)
