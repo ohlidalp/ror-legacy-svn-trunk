@@ -56,9 +56,7 @@ along with Rigs of Rods.  If not, see <http://www.gnu.org/licenses/>.
 #include "PositionStorage.h"
 #include "network.h"
 #include "PointColDetector.h"
-#ifdef FEAT_TIMING
 #include "BeamStats.h"
-#endif
 #include "Skidmark.h"
 #include "CmdKeyInertia.h"
 #include "ColoredTextAreaOverlayElement.h"
@@ -346,9 +344,13 @@ Beam::Beam(int tnum, SceneManager *manager, SceneNode *parent, RenderWindow* win
 	dynamicMapMode=0;
 	meshesVisible=true;
 	disable_default_sounds=false;
+
 #ifdef FEAT_TIMING
-	statistics = BES.getClient(tnum);
+	// this enables beam engine timing statistics
+	statistics = BES.getClient(tnum, BES_CORE);
+	statistics_gfx = BES.getClient(tnum, BES_GFX);
 #endif
+
 	//truckScript = new TruckCommandScheduler();
 	flaresMode = _flaresMode;
 	int i;
@@ -567,7 +569,11 @@ Beam::Beam(int tnum, SceneManager *manager, SceneNode *parent, RenderWindow* win
 	for(int i=0; i<MAX_WHEELS*2; i++) skidtrails[i] = 0;
 
 	collisions=icollisions;
+
+	// you could disable the collision code here:
+	// pointCD = 0;
 	pointCD = new PointColDetector();
+
 
 	dustp   = DustManager::getSingleton().getDustPool("dust");
 	dripp   = DustManager::getSingleton().getDustPool("dripp");
@@ -726,6 +732,8 @@ Beam::Beam(int tnum, SceneManager *manager, SceneNode *parent, RenderWindow* win
 // the material type and they do not depend on length or scale.
 void Beam::scaleTruck(float value)
 {
+	BES_GFX_START(BES_GFX_ScaleTruck);
+
 	if(value<0) return;
 	currentScale *= value;
 	// scale beams
@@ -794,6 +802,7 @@ void Beam::scaleTruck(float value)
 		//if(vwheels[i].cnode) vwheels[i].cnode->scale(value, value, value);
 		//if(vwheels[i].fm && vwheels[i].cnode) vwheels[i].cnode->scale(value, value, value);
 	//}
+	BES_GFX_STOP(BES_GFX_ScaleTruck);
 
 }
 
@@ -820,6 +829,8 @@ void Beam::initSimpleSkeleton()
 
 void Beam::updateSimpleSkeleton()
 {
+	BES_GFX_START(BES_GFX_UpdateSkeleton);
+
 	if(!simpleSkeletonInitiated)
 		initSimpleSkeleton();
 	// just update
@@ -844,6 +855,8 @@ void Beam::updateSimpleSkeleton()
 			simpleSkeletonManualObject->position(beams[i].p2->smoothpos);
 		simpleSkeletonManualObject->end();
 	}
+
+	BES_GFX_STOP(BES_GFX_UpdateSkeleton);
 }
 
 void Beam::moveOrigin(Vector3 offset)
@@ -909,6 +922,7 @@ beam_t *Beam::addBeam(int id1, int id2)
 
 void Beam::checkBeamMaterial()
 {
+	BES_GFX_START(BES_GFX_checkBeamMaterial);
 	if(MaterialManager::getSingleton().resourceExists("mat-beam-0"))
 		return;
 	int i = 0;
@@ -928,6 +942,7 @@ void Beam::checkBeamMaterial()
 		mat->setLightingEnabled(false);
 		mat->setReceiveShadows(false);
 	}
+	BES_GFX_STOP(BES_GFX_checkBeamMaterial);
 }
 
 void Beam::activate()
@@ -988,6 +1003,7 @@ inline bool Beam::inRange(float num, float min, float max)
 //called by the network thread
 void Beam::pushNetwork(char* data, int size)
 {
+	BES_GFX_START(BES_GFX_pushNetwork);
 	if(!oob3) return;
 	if ((unsigned int)size==(netbuffersize+sizeof(oob_t)))
 	{
@@ -1023,10 +1039,12 @@ void Beam::pushNetwork(char* data, int size)
 	}
 	netcounter++;
 	pthread_mutex_unlock(&net_mutex);
+	BES_GFX_STOP(BES_GFX_pushNetwork);
 }
 
 void Beam::calcNetwork()
 {
+	BES_GFX_START(BES_GFX_calcNetwork);
 	Vector3 apos=Vector3::ZERO;
 	if (netcounter<4) return;
 	//we must update Nodes positions from available network informations
@@ -1167,6 +1185,7 @@ void Beam::calcNetwork()
 		ssm->trigStop(trucknum, SS_TRIG_REVERSE_GEAR);
 #endif //OPENAL
 
+	BES_GFX_STOP(BES_GFX_calcNetwork);
 }
 
 void Beam::addPressure(float v)
@@ -1188,6 +1207,7 @@ float Beam::getPressure()
 
 void Beam::calc_masses2(Real total, bool reCalc)
 {
+	BES_GFX_START(BES_GFX_calc_masses2);
 
 	bool debugMass=(SETTINGS.getSetting("Debug Truck Mass")=="Yes");
 
@@ -1302,6 +1322,8 @@ void Beam::calc_masses2(Real total, bool reCalc)
 		if (beams[i].p2->mass<mass) mass=beams[i].p2->mass;
 	}
 	LogManager::getSingleton().logMessage("Beams status: unstable:"+StringConverter::toString(unst)+" wheel:"+StringConverter::toString(wunst)+" normal:"+StringConverter::toString(free_beam-unst-wunst-st)+" superstable:"+StringConverter::toString(st));
+
+	BES_GFX_STOP(BES_GFX_calc_masses2);
 }
 
 // this recalcs the masses, useful when the gravity was changed...
@@ -5257,6 +5279,8 @@ void Beam::setupDefaultSoundSources()
 
 void Beam::calcBox()
 {
+	BES_GFX_START(BES_GFX_calcBox);
+
 	minx=nodes[0].AbsPosition.x;
 	maxx=nodes[0].AbsPosition.x;
 	miny=nodes[0].AbsPosition.y;
@@ -5284,10 +5308,13 @@ void Beam::calcBox()
 	maxy+=0.3;
 	minz-=0.3;
 	maxz+=0.3;
+
+	BES_GFX_STOP(BES_GFX_calcBox);
 }
 
 void Beam::calcNodeConnectivityGraph()
 {
+	BES_GFX_START(BES_GFX_calcNodeConnectivityGraph);
 	int i;
 
 	nodetonodeconnections.resize(free_node, std::vector< int >());
@@ -5303,6 +5330,7 @@ void Beam::calcNodeConnectivityGraph()
 			nodebeamconnections[beams[i].p2->pos].push_back(i);
 		}
 	}
+	BES_GFX_STOP(BES_GFX_calcNodeConnectivityGraph);
 }
 
 void Beam::updateContacterNodes()
@@ -5560,6 +5588,7 @@ void Beam::addCamera(int nodepos, int nodedir, int noderoll)
 
 int Beam::calculateDriverPos(Vector3 &pos, Quaternion &rot)
 {
+	BES_GFX_START(BES_GFX_calculateDriverPos);
 	if(!this || !driverSeat) return 1;
 	Vector3 normal=(nodes[driverSeat->nodey].smoothpos-nodes[driverSeat->noderef].smoothpos).crossProduct(nodes[driverSeat->nodex].smoothpos-nodes[driverSeat->noderef].smoothpos);
 	normal.normalise();
@@ -5572,6 +5601,7 @@ int Beam::calculateDriverPos(Vector3 &pos, Quaternion &rot)
 	refx.normalise();
 	Vector3 refy=refx.crossProduct(normal);
 	rot = Quaternion(refx, normal, refy) * driverSeat->rot * Quaternion(Degree(180), Vector3::UNIT_Y); // rotate towards the driving direction
+	BES_GFX_STOP(BES_GFX_calculateDriverPos);
 	return 0;
 }
 
@@ -6191,7 +6221,7 @@ void Beam::SyncReset()
 	parkingbrake=0;
 	fusedrag=Vector3::ZERO;
 	origin=Vector3::ZERO; //to fix
-	pointCD->reset();
+	if(pointCD) pointCD->reset();
 
 	Vector3 cur_position = nodes[0].AbsPosition;
 	Vector3 cur_dir = nodes[cameranodepos[0]].RelPosition - nodes[cameranodedir[0]].RelPosition;
@@ -6321,6 +6351,7 @@ void Beam::threadentry(int id)
 //the instance called is the one of the current ACTIVATED truck
 bool Beam::frameStep(Real dt, Beam** trucks, int numtrucks)
 {
+	BES_GFX_START(BES_GFX_framestep);
 	/*LogManager::getSingleton().logMessage("BEAM: frame starting dt="+StringConverter::toString(dt)
 	+"minx"+StringConverter::toString(minx)
 	+"maxx"+StringConverter::toString(maxx)
@@ -6389,6 +6420,7 @@ bool Beam::frameStep(Real dt, Beam** trucks, int numtrucks)
 	//if(networking)
 	//	sendStreamData();
 
+	BES_GFX_STOP(BES_GFX_framestep);
 
 	fasted=1;
 	slowed=1;
@@ -6585,8 +6617,8 @@ bool Beam::frameStep(Real dt, Beam** trucks, int numtrucks)
 
 
 #ifdef FEAT_TIMING
-		if(statistics)
-			statistics->frameStep(dt);
+		if(statistics)     statistics->frameStep(dt);
+		if(statistics_gfx) statistics_gfx->frameStep(dt);
 #endif
 		//we must take care of this
 		for (int t=0; t<numtrucks; t++)
@@ -6643,6 +6675,7 @@ void Beam::sendStreamSetup()
 
 void Beam::sendStreamData()
 {
+	BES_GFX_START(BES_GFX_sendStreamData);
 #ifdef USE_SOCKETW
 	int t = netTimer.getMilliseconds();
 	if (t-last_net_time < 100)
@@ -6732,10 +6765,12 @@ void Beam::sendStreamData()
 	//memcpy(send_buffer+sizeof(oob_t), (char*)send_buffer, send_buffer_len);
 	this->addPacket(MSG2_STREAM_DATA, packet_len, send_buffer);
 #endif //SOCKETW
+	BES_GFX_STOP(BES_GFX_sendStreamData);
 }
 
 void Beam::receiveStreamData(unsigned int &type, int &source, unsigned int &_streamid, char *buffer, unsigned int &len)
 {
+	BES_GFX_START(BES_GFX_receiveStreamData);
 	if(state != NETWORKED) return; // this should not happen
 	// TODO: FIX
 	//if(this->source != source || this->streamid != streamid) return; // data not for us
@@ -6747,10 +6782,12 @@ void Beam::receiveStreamData(unsigned int &type, int &source, unsigned int &_str
 	{
 		pushNetwork(buffer, len);
 	}
+	BES_GFX_STOP(BES_GFX_receiveStreamData);
 }
 
 void Beam::calcAnimators(int flagstate, float &cstate, int &div, Real timer, float opt1, float opt2, float opt3)
 {
+	BES_GFX_START(BES_GFX_calcAnimators);
 	int flag_state=flagstate;
 	Real dt = timer;
 	float option1 = opt1;
@@ -7149,6 +7186,7 @@ void Beam::calcAnimators(int flagstate, float &cstate, int &div, Real timer, flo
 		div++;
 	}
 
+	BES_GFX_STOP(BES_GFX_calcAnimators);
 }
 
 
@@ -7306,33 +7344,24 @@ void Beam::calcForcesEuler(int doUpdate, Real dt, int step, int maxstep, Beam** 
 	int increased_accuracy=0;
 	float inverted_dt=1.0f/dt;
 
-#ifdef FEAT_TIMING
-	if(statistics)
-		statistics->queryStart(BeamThreadStats::WholeTruckCalc);
-#endif
+	BES_START(BES_CORE_WholeTruckCalc);
+
 	//engine callback
 	if (state==ACTIVATED && engine)
 	{
-#ifdef FEAT_TIMING
-		if(statistics)
-			statistics->queryStart(BeamThreadStats::TruckEngine);
-#endif
+		BES_START(BES_CORE_TruckEngine);
+
 		if(engine)
 			engine->update(dt, doUpdate);
-#ifdef FEAT_TIMING
-		if(statistics)
-			statistics->queryStop(BeamThreadStats::TruckEngine);
-#endif
+
+		BES_STOP(BES_CORE_TruckEngine);
 	}
 	//		if (doUpdate) mWindow->setDebugText(engine->status);
 
 
-#ifdef FEAT_TIMING
-	if(statistics)
-		statistics->queryStart(BeamThreadStats::Beams);
-#endif
+	BES_START(BES_CORE_Beams);
 
-//springs
+	//springs
 	Vector3 dis;
 	Vector3 v;
 	for (i=0; i<free_beam; i++)
@@ -7549,6 +7578,9 @@ void Beam::calcForcesEuler(int doUpdate, Real dt, int step, int maxstep, Beam** 
 			beams[i].p2->Forces-=f;
 		}
 	}
+
+	BES_STOP(BES_CORE_Beams);
+	BES_START(BES_CORE_AnimatedProps);
 
 	//animate props
 	for (int propi=0; propi<free_prop; propi++)
@@ -7837,6 +7869,9 @@ void Beam::calcForcesEuler(int doUpdate, Real dt, int step, int maxstep, Beam** 
 	props[propi].rot = Quaternion(Degree(rz), Vector3::UNIT_Z) * Quaternion(Degree(ry), Vector3::UNIT_Y) * Quaternion(Degree(rx), Vector3::UNIT_X);
 	}
 
+	BES_STOP(BES_CORE_AnimatedProps);
+	BES_START(BES_CORE_SkeletonColouring);
+
 	//skeleton colouring
 	if (((skeleton && doUpdate) || replay) )
 	{
@@ -7867,13 +7902,9 @@ void Beam::calcForcesEuler(int doUpdate, Real dt, int step, int maxstep, Beam** 
 		}
 	}
 
-#ifdef FEAT_TIMING
-	if(statistics)
-		statistics->queryStop(BeamThreadStats::Beams);
+	BES_STOP(BES_CORE_SkeletonColouring);
+	BES_START(BES_CORE_Rigidifiers);
 
-	if(statistics)
-		statistics->queryStart(BeamThreadStats::Rigidifiers);
-#endif
 	//the rigidifiers
 	for (i=0; i<free_rigidifier; i++)
 	{
@@ -7909,10 +7940,10 @@ void Beam::calcForcesEuler(int doUpdate, Real dt, int step, int maxstep, Beam** 
 		rigidifiers[i].b->Forces += -va - vc;
 		rigidifiers[i].lastalpha=alphap;
 	}
-#ifdef FEAT_TIMING
-	if(statistics)
-		statistics->queryStop(BeamThreadStats::Rigidifiers);
-#endif
+
+
+	BES_STOP(BES_CORE_Rigidifiers);
+	BES_START(BES_CORE_Hooks);
 
 	//aposition=Vector3::ZERO;
 	if (state==ACTIVATED) //force feedback sensors
@@ -7965,10 +7996,9 @@ void Beam::calcForcesEuler(int doUpdate, Real dt, int step, int maxstep, Beam** 
 		}
 	}
 
-#ifdef FEAT_TIMING
-	if(statistics)
-		statistics->queryStart(BeamThreadStats::Ropes);
-#endif
+	BES_STOP(BES_CORE_Hooks);
+	BES_START(BES_CORE_Ropes);
+
 	if (ropes.size())
 	{
 		for(std::vector <rope_t>::iterator it = ropes.begin(); it!=ropes.end(); it++)
@@ -7983,10 +8013,9 @@ void Beam::calcForcesEuler(int doUpdate, Real dt, int step, int maxstep, Beam** 
 			}
 		}
 	}
-#ifdef FEAT_TIMING
-	if(statistics)
-		statistics->queryStop(BeamThreadStats::Ropes);
-#endif
+
+	BES_STOP(BES_CORE_Ropes);
+
 	//mouse stuff
 	if (mousenode!=-1)
 	{
@@ -7997,13 +8026,14 @@ void Beam::calcForcesEuler(int doUpdate, Real dt, int step, int maxstep, Beam** 
 
 	// START Slidenode section /////////////////////////////////////////////////
 	// these must be done before the integrator, or else the forces are not calculated properly
+	BES_START(BES_CORE_SlideNodes);
 	updateSlideNodeForces(dt);
+	BES_STOP(BES_CORE_SlideNodes);
 	// END Slidenode section   /////////////////////////////////////////////////
 
-#ifdef FEAT_TIMING
-	if(statistics)
-		statistics->queryStart(BeamThreadStats::Nodes);
-#endif
+
+	BES_START(BES_CORE_Nodes);
+
 	float tminx=nodes[0].AbsPosition.x;
 	float tmaxx=tminx;
 	float tminy=nodes[0].AbsPosition.y;
@@ -8227,42 +8257,30 @@ void Beam::calcForcesEuler(int doUpdate, Real dt, int step, int maxstep, Beam** 
 	miny=tminy-0.3;maxy=tmaxy+0.3;
 	minz=tminz-0.3;maxz=tmaxz+0.3;
 
-#ifdef FEAT_TIMING
-	if(statistics)
-		statistics->queryStop(BeamThreadStats::Nodes);
+	BES_STOP(BES_CORE_Nodes);
+	BES_START(BES_CORE_Turboprop);
 
-	if(statistics)
-		statistics->queryStart(BeamThreadStats::Turboprop);
-#endif
 	//turboprop forces
 	for (i=0; i<free_aeroengine; i++)
 		if(aeroengines[i]) aeroengines[i]->updateForces(dt, doUpdate);
-#ifdef FEAT_TIMING
-	if(statistics)
-		statistics->queryStop(BeamThreadStats::Turboprop);
 
-	if(statistics)
-		statistics->queryStart(BeamThreadStats::Screwprop);
-#endif
+	BES_STOP(BES_CORE_Turboprop);
+	BES_START(BES_CORE_Screwprop);
+
 	//screwprop forces
 	for (i=0; i<free_screwprop; i++)
 		if(screwprops[i]) screwprops[i]->updateForces(doUpdate);
-#ifdef FEAT_TIMING
-	if(statistics)
-		statistics->queryStop(BeamThreadStats::Screwprop);
-	if(statistics)
-		statistics->queryStart(BeamThreadStats::Wing);
-#endif
+
+	BES_STOP(BES_CORE_Screwprop);
+	BES_START(BES_CORE_Wing);
+
 	//wing forces
 	for (i=0; i<free_wing; i++)
 		if(wings[i].fa) wings[i].fa->updateForces();
-#ifdef FEAT_TIMING
-	if(statistics)
-		statistics->queryStop(BeamThreadStats::Wing);
 
-	if(statistics)
-		statistics->queryStart(BeamThreadStats::FuseDrag);
-#endif
+	BES_STOP(BES_CORE_Wing);
+	BES_START(BES_CORE_FuseDrag);
+
 	//compute fuse drag
 	if (fuseAirfoil)
 	{
@@ -8291,25 +8309,19 @@ void Beam::calcForcesEuler(int doUpdate, Real dt, int step, int maxstep, Beam** 
 		//fuselage as an airfoil + parasitic drag (half fuselage front surface almost as a flat plane!)
 		fusedrag=((cx*s+fuseWidth*fuseWidth*0.5)*0.5*airdensity*wspeed/free_node)*wind; //free_node is never null
 	}
-#ifdef FEAT_TIMING
-	if(statistics)
-		statistics->queryStop(BeamThreadStats::FuseDrag);
 
-	if(statistics)
-		statistics->queryStart(BeamThreadStats::Airbrakes);
-#endif
+	BES_STOP(BES_CORE_FuseDrag);
+	BES_START(BES_CORE_Airbrakes);
+
 	//airbrakes
 	for (int i=0; i<free_airbrake; i++)
 	{
 		airbrakes[i]->applyForce();
 	}
-#ifdef FEAT_TIMING
-	if(statistics)
-		statistics->queryStop(BeamThreadStats::Airbrakes);
 
-	if(statistics)
-		statistics->queryStart(BeamThreadStats::Buoyance);
-#endif
+	BES_STOP(BES_CORE_Airbrakes);
+	BES_START(BES_CORE_Buoyance);
+
 	//water buoyance
 	mrtime+=dt;
 	if (free_buoycab && water)
@@ -8338,15 +8350,10 @@ void Beam::calcForcesEuler(int doUpdate, Real dt, int step, int maxstep, Beam** 
 		}
 
 	}
-#ifdef FEAT_TIMING
-	if(statistics)
-		statistics->queryStop(BeamThreadStats::Buoyance);
-#endif
 
-#ifdef FEAT_TIMING
-	if(statistics)
-		statistics->queryStart(BeamThreadStats::Wheels);
-#endif
+	BES_STOP(BES_CORE_Buoyance);
+	BES_START(BES_CORE_Axles);
+
 	//wheel speed
 	Real wspeed=0;
 	//wheel stuff
@@ -8377,6 +8384,8 @@ void Beam::calcForcesEuler(int doUpdate, Real dt, int step, int maxstep, Beam** 
 			intertorque[i*2+3]+=torque*0.5f;
 		}
 	}
+
+
 	// new-style Axles
 	// loop through all axles for interaxle torque, this is the torsion to keep
 	// the axles aligned with each other as if they connected by a shaft
@@ -8437,6 +8446,8 @@ void Beam::calcForcesEuler(int doUpdate, Real dt, int step, int maxstep, Beam** 
 		intertorque[axles[i].wheel_1] = diff_data.out_torque[0];
 		intertorque[axles[i].wheel_2] = diff_data.out_torque[1];
 	}
+	BES_STOP(BES_CORE_Axles);
+	BES_START(BES_CORE_Wheels);
 
 	for (i=0; i<free_wheel; i++)
 	{
@@ -8553,14 +8564,9 @@ void Beam::calcForcesEuler(int doUpdate, Real dt, int step, int maxstep, Beam** 
 		}
 	}
 
+	BES_STOP(BES_CORE_Wheels);
+	BES_START(BES_CORE_Shocks);
 
-#ifdef FEAT_TIMING
-	if(statistics)
-		statistics->queryStop(BeamThreadStats::Wheels);
-
-	if(statistics)
-		statistics->queryStart(BeamThreadStats::Shocks);
-#endif
 	//update position
 //		if(free_node != 0)
 //			aposition/=(Real)(free_node);
@@ -8601,13 +8607,10 @@ void Beam::calcForcesEuler(int doUpdate, Real dt, int step, int maxstep, Beam** 
 #endif //OPENAL
 
 	}
-#ifdef FEAT_TIMING
-	if(statistics)
-		statistics->queryStop(BeamThreadStats::Shocks);
 
-	if(statistics)
-		statistics->queryStart(BeamThreadStats::Hydros);
-#endif
+	BES_STOP(BES_CORE_Shocks);
+	BES_START(BES_CORE_Hydros);
+
 	//direction
 	if (hydrodirstate!=0 || hydrodircommand!=0)
 	{
@@ -8721,10 +8724,9 @@ void Beam::calcForcesEuler(int doUpdate, Real dt, int step, int maxstep, Beam** 
 		}
 	}
 
-#ifdef FEAT_TIMING
-	if(statistics)
-		statistics->queryStop(BeamThreadStats::Hydros);
-#endif
+	BES_STOP(BES_CORE_Hydros);
+	BES_START(BES_CORE_Commands);
+
 
 	// forward things to trailers
 	if (state==ACTIVATED && forwardcommands)
@@ -8758,10 +8760,6 @@ void Beam::calcForcesEuler(int doUpdate, Real dt, int step, int maxstep, Beam** 
 		}
 	}
 
-#ifdef FEAT_TIMING
-	if(statistics)
-		statistics->queryStart(BeamThreadStats::Commands);
-#endif
 	// commands
 	if (hascommands)
 	{
@@ -9124,13 +9122,9 @@ void Beam::calcForcesEuler(int doUpdate, Real dt, int step, int maxstep, Beam** 
 		}
 
 	}
-#ifdef FEAT_TIMING
-	if(statistics)
-		statistics->queryStop(BeamThreadStats::Commands);
 
-	if(statistics)
-		statistics->queryStop(BeamThreadStats::WholeTruckCalc);
-#endif
+	BES_STOP(BES_CORE_Commands);
+	BES_START(BES_CORE_Replay);
 
 	//we also store a new replay frame
 	if(replay)
@@ -9157,16 +9151,16 @@ void Beam::calcForcesEuler(int doUpdate, Real dt, int step, int maxstep, Beam** 
 		}
 	}
 
+	BES_STOP(BES_CORE_Replay);
+	BES_STOP(BES_CORE_WholeTruckCalc);
+
 }
 
 //truck-truck collisions
 void Beam::truckTruckCollisions(Real dt, Beam** trucks, int numtrucks)
 {
-
-#ifdef FEAT_TIMING
-	if(statistics)
-		statistics->queryStart(BeamThreadStats::Contacters);
-#endif
+	if(!pointCD) return;
+	BES_START(BES_CORE_Contacters);
 
 	float trwidth;
 
@@ -9177,7 +9171,7 @@ void Beam::truckTruckCollisions(Real dt, Beam** trucks, int numtrucks)
 
 	float inverted_dt=1.0f/dt;
 
-	pointCD->update(trucks, numtrucks);
+	if(pointCD) pointCD->update(trucks, numtrucks);
 
 
 	// TODO Unused Varaible
@@ -9366,15 +9360,14 @@ void Beam::truckTruckCollisions(Real dt, Beam** trucks, int numtrucks)
 		}
 	}
 
-#ifdef FEAT_TIMING
-	if(statistics)
-		statistics->queryStop(BeamThreadStats::Contacters);
-#endif
+	BES_STOP(BES_CORE_Contacters);
 }
 
 // call this once per frame in order to update the skidmarks
 void Beam::updateSkidmarks()
 {
+	BES_START(BES_CORE_Skidmarks);
+
 	for(int i=0;i<free_wheel;i++)
 	{
 		// ignore wheels without data
@@ -9389,6 +9382,8 @@ void Beam::updateSkidmarks()
 	//LogManager::getSingleton().logMessage("updating skidmark visuals");
 	for(int i=0;i<free_wheel;i++)
 		if(skidtrails[i]) skidtrails[i]->update();
+
+	BES_STOP(BES_CORE_Skidmarks);
 }
 
 
@@ -9610,6 +9605,7 @@ void Beam::updateFlares(float dt, bool isCurrent)
 		return;
 	if(flaresMode==2 && !isCurrent)
 		enableAll=false;
+	BES_GFX_START(BES_GFX_updateFlares);
 	int i;
 	//okay, this is just ugly, we have flares in props!
 	//we have to update them here because they run
@@ -9842,6 +9838,7 @@ void Beam::updateFlares(float dt, bool isCurrent)
 	}
 	if(keysleep)
 		mTimeUntilNextToggle = 0.2;
+	BES_GFX_STOP(BES_GFX_updateFlares);
 
 }
 
@@ -9884,6 +9881,7 @@ void Beam::autoBlinkReset()
 
 void Beam::updateProps()
 {
+	BES_GFX_START(BES_GFX_updateProps);
 	int i;
 	//the props
 	for (i=0; i<free_prop; i++)
@@ -9911,6 +9909,7 @@ void Beam::updateProps()
 	}
 	//we also consider airbrakes as props
 	for (i=0; i<free_airbrake; i++) airbrakes[i]->updatePosition((float)airbrakeval/5.0);
+	BES_GFX_STOP(BES_GFX_updateProps);
 }
 
 void Beam::toggleCustomParticles()
@@ -9934,6 +9933,7 @@ void Beam::toggleCustomParticles()
 
 void Beam::updateSoundSources()
 {
+	BES_GFX_START(BES_GFX_updateSoundSources);
 #ifdef USE_OPENAL
 	if(!ssm) return;
 	for (int i=0; i<free_soundsource; i++)
@@ -9944,10 +9944,12 @@ void Beam::updateSoundSources()
 	ssm->modulate(trucknum, SS_MOD_AIRSPEED, nodes[0].Velocity.length()*1.9438);
 	ssm->modulate(trucknum, SS_MOD_WHEELSPEED, WheelSpeed*3.6);
 #endif //OPENAL
+	BES_GFX_STOP(BES_GFX_updateSoundSources);
 }
 
 void Beam::updateVisual(float dt)
 {
+	BES_GFX_START(BES_GFX_updateVisual);
 	int i;
 	Vector3 ref=Vector3(0.0,1.0,0.0);
 	autoBlinkReset();
@@ -10109,8 +10111,11 @@ void Beam::updateVisual(float dt)
 			updateSimpleSkeleton();
 		//updateDebugOverlay();
 	}
+
 	//Flex body
+	BES_GFX_START(BES_GFX_updateFlexBodies);
 	for (i=0; i<free_flexbody; i++) flexbodies[i]->flexit();
+	BES_GFX_STOP(BES_GFX_updateFlexBodies);
 
 	if (netLabelNode && netMT && netMT->isVisible())
 	{
@@ -10132,6 +10137,8 @@ void Beam::updateVisual(float dt)
 		//netMT->setAdditionalHeight((maxy-miny)+h+0.1);
 		netMT->setVisible(true);
 	}
+
+	BES_GFX_STOP(BES_GFX_updateVisual);
 }
 
 
@@ -10983,6 +10990,7 @@ void Beam::updateDebugOverlay()
 
 void Beam::updateNetworkInfo()
 {
+	BES_GFX_START(BES_GFX_updateNetworkInfo);
 #ifdef USE_SOCKETW
 	if(!net) return;
 	bool remote = (state == NETWORKED);
@@ -11048,6 +11056,7 @@ void Beam::updateNetworkInfo()
 		deletion_Objects.push_back(netMT);
 	}
 #endif //SOCKETW
+	BES_GFX_STOP(BES_GFX_updateNetworkInfo);
 }
 
 void Beam::deleteNetTruck()

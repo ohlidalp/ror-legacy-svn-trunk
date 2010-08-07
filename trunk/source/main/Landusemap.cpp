@@ -36,7 +36,7 @@ using namespace Ogre;
 // this is the Height-Finder for the standart ogre Terrain Manager
 
 Landusemap::Landusemap(String configFilename, Collisions *c, int _mapsizex, int _mapsizez) :
-	coll(c), mapsizex(_mapsizex), mapsizez(_mapsizez)
+	data(0), coll(c), mapsizex(_mapsizex), mapsizez(_mapsizez)
 {
 	loadConfig(configFilename);
 #ifndef USE_PAGED
@@ -51,6 +51,7 @@ Landusemap::~Landusemap()
 
 ground_model_t *Landusemap::getGroundModelAt(int x, int z)
 {
+	if(!data) return 0;
 #ifdef USE_PAGED
 	// we return the default ground model if we are not anymore in this map
 	if (x < 0 || x >= mapsizex || z < 0 || z >= mapsizez)
@@ -131,6 +132,7 @@ int Landusemap::loadConfig(Ogre::String filename)
 			}
 		}
 	}
+
 #ifdef USE_PAGED
 	// process the config data and load the buffers finally
 	Forests::ColorMap *colourMap = Forests::ColorMap::load(textureFilename, Forests::CHANNEL_COLOR);

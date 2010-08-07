@@ -633,7 +633,7 @@ protected:
 	CmdKeyInertia *hydroInertia;
 	CmdKeyInertia *cmdInertia;
 #ifdef FEAT_TIMING
-	BeamThreadStats *statistics;
+	BeamThreadStats *statistics, *statistics_gfx;
 #endif
 
 

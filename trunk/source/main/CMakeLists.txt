@@ -70,6 +70,10 @@ if(ROR_USE_OIS_G27)
    add_definitions("-DUSE_OIS_G27")
 endif(ROR_USE_OIS_G27)
 
+if(ROR_FEAT_TIMING)
+   add_definitions("-DFEAT_TIMING")
+endif(ROR_FEAT_TIMING)
+
 add_executable(RoR ${HEADER_FILES} ${SOURCE_FILES})
 target_link_libraries(RoR ${Ogre_LIBRARIES} ${Ogre_Terrain_LIBRARIES} ${Ogre_Paging_LIBRARIES} ${Ois_LIBRARIES} ${OS_LIBS} ${optional_libs})
 windows_hacks(RoR)
