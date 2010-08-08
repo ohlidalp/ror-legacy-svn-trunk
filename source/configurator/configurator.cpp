@@ -247,6 +247,7 @@ public:
 	void OnButClearCache(wxCommandEvent& event);
 	void OnButUpdateRoR(wxCommandEvent& event);
 	void OnButCheckOpenCL(wxCommandEvent& event);
+	void OnButCheckOpenCLBW(wxCommandEvent& event);
 	void updateRoR();
 	void OnSimpleSliderScroll(wxScrollEvent& event);
 	void OnSimpleSlider2Scroll(wxScrollEvent& event);
@@ -1062,6 +1063,7 @@ enum
 	FFSLIDER,
 	get_user_token,
 	check_opencl,
+	check_opencl_bw,
 };
 
 // ----------------------------------------------------------------------------
@@ -1084,6 +1086,7 @@ BEGIN_EVENT_TABLE(MyDialog, wxDialog)
 	EVT_BUTTON(regen_cache, MyDialog::OnButRegenCache)
 	EVT_BUTTON(update_ror, MyDialog::OnButUpdateRoR)
 	EVT_BUTTON(check_opencl, MyDialog::OnButCheckOpenCL)
+	EVT_BUTTON(check_opencl_bw, MyDialog::OnButCheckOpenCLBW)
 	EVT_HTML_LINK_CLICKED(main_html, MyDialog::OnLinkClicked)
 	EVT_HTML_LINK_CLICKED(update_html, MyDialog::OnLinkClickedUpdate)
 	//EVT_SCROLL(MyDialog::OnSightRangeScroll)
@@ -2137,10 +2140,13 @@ MyDialog::MyDialog(const wxString& title, MyApp *_app) : wxDialog(NULL, wxID_ANY
 	gputext = new wxTextCtrl(GPUPanel, wxID_ANY, _("press the button below to check if OpenCL is working for you"), wxDefaultPosition, wxDefaultSize, wxTE_READONLY|wxTE_MULTILINE);
 	sizer_gpu2->Add(gputext, 1, wxGROW);
 
-	sizer_gpu->Add(sizer_gpu2, 0, wxGROW);
+	sizer_gpu->Add(sizer_gpu2, 1, wxGROW);
 
 	wxButton *btng = new wxButton(GPUPanel, check_opencl, _("Check for OpenCL Support"));
 	sizer_gpu->Add(btng, 0, wxGROW);
+
+	wxButton *btnw = new wxButton(GPUPanel, check_opencl_bw, _("Check OpenCL Bandwidth"));
+	sizer_gpu->Add(btnw, 0, wxGROW);
 
 	GPUPanel->SetSizer(sizer_gpu);
 #endif // USE_OPENCL
@@ -3392,7 +3398,19 @@ void MyDialog::OnButUpdateRoR(wxCommandEvent& event)
 
 #ifdef USE_OPENCL
 #include <oclUtils.h>
+
+#include "ocl_bwtest.h"
 #endif // USE_OPENCL
+
+void MyDialog::OnButCheckOpenCLBW(wxCommandEvent& event)
+{
+#ifdef USE_OPENCL
+	gputext->SetValue("");
+	ostream tstream(gputext);
+	OpenCLTestBandwidth bw_test(tstream);
+
+#endif // USE_OPENCL
+}
 
 void MyDialog::OnButCheckOpenCL(wxCommandEvent& event)
 {
