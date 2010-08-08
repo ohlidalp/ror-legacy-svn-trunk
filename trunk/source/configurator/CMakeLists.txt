@@ -1,5 +1,23 @@
 project(RoR_Configurator)
 
+#setup libraries
+macro(setup_lib name)
+   if(ROR_USE_${name})
+      include_directories(${${name}_INCLUDE_DIRS})
+      link_directories   (${${name}_LIBRARY_DIRS})
+      add_definitions("-DUSE_${name}")
+      set(optional_libs ${optional_libs} ${${name}_LIBRARIES})
+      message(STATUS "${name} Enabled:      \tYES")
+      message(STATUS "${name}_INCLUDE_DIRS: \t${${name}_INCLUDE_DIRS}")
+      #if(${${name}_LIBRARY_DIRS})
+      #   message(STATUS "${name}_LIBRARY_DIRS: \t${${name}_LIBRARY_DIRS}")
+      #endif(${${name}_LIBRARY_DIRS})
+      message(STATUS "${name}_LIBRARIES:    \t${${name}_LIBRARIES}")
+   else()
+      message(STATUS "${name} Enabled:      \tNO")
+   endif(ROR_USE_${name})
+endmacro(setup_lib)
+
 IF(WIN32)
    include_directories(${BOOST_INCLUDE_DIRS})
    link_directories   (${BOOST_LIBRARY_DIRS})
@@ -32,7 +50,11 @@ ELSEIF(UNIX)
    link_directories (${wxWidgets_LIB_DIR})
 
    set(OS_LIBS "${wxWidgets_LIBRARIES}")
+
+   setup_lib(CRASHRPT)
 ENDIF(WIN32)
+
+setup_lib(OPENCL)
 
 include_directories(${Ogre_INCLUDE_DIRS})
 link_directories   (${Ogre_LIBRARY_DIRS})
@@ -56,7 +78,7 @@ FILE(GLOB headers "*.h")
 add_executable(rorconfig ${sources} ${headers} ${OS_SOURCE} ../main/InputEngine.cpp)
 windows_hacks(rorconfig)
 
-TARGET_LINK_LIBRARIES(rorconfig ${WXWIDGETS_SHARED_LIBRARIES} ${Ogre_LIBRARIES} ${Ois_LIBRARIES} ${OS_LIBS})
+TARGET_LINK_LIBRARIES(rorconfig ${WXWIDGETS_SHARED_LIBRARIES} ${Ogre_LIBRARIES} ${Ois_LIBRARIES} ${OS_LIBS} ${optional_libs})
 
 
 

@@ -9,6 +9,7 @@ set(ROR_USE_CAELUM  "FALSE" CACHE BOOL "use caelum sky")
 set(ROR_USE_ANGELSCRIPT  "FALSE" CACHE BOOL "use angel script")
 set(ROR_USE_LITESQL  "FALSE" CACHE BOOL "use sqlite")
 set(ROR_FEAT_TIMING  "FALSE" CACHE BOOL "enable beam statistics. For core development only")
+set(ROR_USE_OPENCL  "FALSE" CACHE BOOL "use opencl (highly experimental)")
 
 
 # set some defaults
@@ -145,6 +146,15 @@ IF(WIN32)
 			set(LITESQL_LIBRARY_DIRS "${ROR_DEPENDENCIES_DIR}/lib/litesql" CACHE PATH "The litesql lib path to use")
 			set(LITESQL_LIBRARIES    "litesql.lib litesql-util.lib litesql_sqlite.lib" CACHE STRING "The litesql libs to link against")
 		endif(ROR_USE_LITESQL)
+		
+		
+		set(OPENCL_DIR  "C:\\ProgramData\\NVIDIA Corporation\\NVIDIA GPU Computing SDK\\" CACHE PATH "openCL path to use")
+
+		if(ROR_USE_OPENCL)
+			set(OPENCL_INCLUDE_DIRS "${OPENCL_DIR}/OpenCL/common/inc;${OPENCL_DIR}/shared/inc" CACHE PATH "The openCL include paths to use")
+			set(OPENCL_LIBRARY_DIRS "${OPENCL_DIR}/shared/lib;${OPENCL_DIR}/OpenCL/common/lib;${OPENCL_DIR}/OpenCL/common/lib/Win32" CACHE PATH "The openCL lib paths to use")
+			set(OPENCL_LIBRARIES    "oclUtils32.lib shrUtils32.lib OpenCL.lib" CACHE STRING "The openCL libs to link against")
+		endif(ROR_USE_OPENCL)
 		
 ELSEIF(UNIX)
    find_package(PkgConfig)
