@@ -48,6 +48,8 @@ mode_t getumask(void)
 
 #endif
 
+#include <iostream>
+using namespace std;
 
 #include <wx/wx.h>
 #include <wx/notebook.h>
@@ -100,12 +102,13 @@ extern eventInfo_t eventInfo[]; // defines all input events
 #include "joycfg.xpm"
 #include "mousecfg.xpm"
 #include "keyboardcfg.xpm"
+#include "opencllogo.xpm"
 
 // de-comment this to enable network stuff
 #define NETWORK
 #define MAX_EVENTS 2048
 
-wxLocale locale;
+wxLocale lang_locale;
 wxLanguageInfo *language=0;
 std::vector<wxLanguageInfo*> avLanguages;
 
@@ -243,6 +246,7 @@ public:
 	void OnButRegenCache(wxCommandEvent& event);
 	void OnButClearCache(wxCommandEvent& event);
 	void OnButUpdateRoR(wxCommandEvent& event);
+	void OnButCheckOpenCL(wxCommandEvent& event);
 	void updateRoR();
 	void OnSimpleSliderScroll(wxScrollEvent& event);
 	void OnSimpleSlider2Scroll(wxScrollEvent& event);
@@ -261,6 +265,7 @@ private:
 	wxPanel *graphicsPanel;
 	wxPanel *settingsPanel;
 	wxPanel *rsPanel;
+	wxTextCtrl *gputext;
 	wxChoice *renderer;
 	std::vector<wxStaticText *> renderer_text;
 	std::vector<wxChoice *> renderer_choice;
@@ -1056,6 +1061,7 @@ enum
 	command_joywizard,
 	FFSLIDER,
 	get_user_token,
+	check_opencl,
 };
 
 // ----------------------------------------------------------------------------
@@ -1077,6 +1083,7 @@ BEGIN_EVENT_TABLE(MyDialog, wxDialog)
 	EVT_BUTTON(clear_cache, MyDialog::OnButClearCache)
 	EVT_BUTTON(regen_cache, MyDialog::OnButRegenCache)
 	EVT_BUTTON(update_ror, MyDialog::OnButUpdateRoR)
+	EVT_BUTTON(check_opencl, MyDialog::OnButCheckOpenCL)
 	EVT_HTML_LINK_CLICKED(main_html, MyDialog::OnLinkClicked)
 	EVT_HTML_LINK_CLICKED(update_html, MyDialog::OnLinkClickedUpdate)
 	//EVT_SCROLL(MyDialog::OnSightRangeScroll)
@@ -1278,7 +1285,7 @@ void initLanguage(wxString languagePath, wxString userpath)
 	if(language == 0)
 	{
 		wxLogStatus(wxT("asking system for default language."));
-		language = const_cast<wxLanguageInfo *>(wxLocale::GetLanguageInfo(locale.GetSystemLanguage()));
+		language = const_cast<wxLanguageInfo *>(wxLocale::GetLanguageInfo(lang_locale.GetSystemLanguage()));
 		if(language)
 		{
 			wxLogStatus(wxT(" system returned: ") + language->Description + wxT("(") + language->CanonicalName + wxT(")"));
@@ -1294,17 +1301,17 @@ void initLanguage(wxString languagePath, wxString userpath)
 	if(wxFileName::FileExists(tmp))
 	{
 		wxLogStatus(wxT("language existing, using it!"));
-		if(!locale.IsAvailable((wxLanguage)language->Language))
+		if(!lang_locale.IsAvailable((wxLanguage)language->Language))
 		{
 			wxLogStatus(wxT("language file existing, but not found via wxLocale!"));
 			wxLogStatus(wxT("is the language installed on your system?"));
 		}
-		bool res = locale.Init((wxLanguage)language->Language, wxLOCALE_CONV_ENCODING);
+		bool res = lang_locale.Init((wxLanguage)language->Language, wxLOCALE_CONV_ENCODING);
 		if(!res)
 		{
 			wxLogStatus(wxT("error while initializing language!"));
 		}
-		res = locale.AddCatalog(langfile);
+		res = lang_locale.AddCatalog(langfile);
 		if(!res)
 		{
 			wxLogStatus(wxT("error while loading language!"));
@@ -1314,8 +1321,8 @@ void initLanguage(wxString languagePath, wxString userpath)
 	}
 	else
 	{
-		locale.Init(wxLANGUAGE_DEFAULT, wxLOCALE_CONV_ENCODING);
-		wxLogStatus(wxT("language not existing, no locale support!"));
+		lang_locale.Init(wxLANGUAGE_DEFAULT, wxLOCALE_CONV_ENCODING);
+		wxLogStatus(wxT("language not existing, no lang_locale support!"));
 	}
 }
 
@@ -1741,6 +1748,11 @@ MyDialog::MyDialog(const wxString& title, MyApp *_app) : wxDialog(NULL, wxID_ANY
 //	wxPanel *aboutPanel=new wxPanel(nbook, -1);
 //	nbook->AddPage(aboutPanel, "About", false);
 
+#ifdef USE_OPENCL
+	wxPanel *GPUPanel=new wxPanel(nbook, -1);
+	nbook->AddPage(GPUPanel, _("OpenCL"), false);
+#endif // USE_OPENCL
+
 	wxStaticText *dText = 0;
 
 	// simple settings panel
@@ -2113,6 +2125,25 @@ MyDialog::MyDialog(const wxString& title, MyApp *_app) : wxDialog(NULL, wxID_ANY
 
 	updatePanel->SetSizer(sizer_updates);
 #endif
+
+#ifdef USE_OPENCL
+	wxSizer *sizer_gpu = new wxBoxSizer(wxVERTICAL);
+	
+	wxSizer *sizer_gpu2 = new wxBoxSizer(wxHORIZONTAL);
+	const wxBitmap bm_ocl(opencllogo_xpm);
+	wxStaticPicture *openCLImagePanel = new wxStaticPicture(GPUPanel, wxID_ANY, bm_ocl, wxPoint(0, 0), wxSize(200, 200), wxNO_BORDER);
+	sizer_gpu2->Add(openCLImagePanel, 0, wxGROW);
+
+	gputext = new wxTextCtrl(GPUPanel, wxID_ANY, _("press the button below to check if OpenCL is working for you"), wxDefaultPosition, wxDefaultSize, wxTE_READONLY|wxTE_MULTILINE);
+	sizer_gpu2->Add(gputext, 1, wxGROW);
+
+	sizer_gpu->Add(sizer_gpu2, 0, wxGROW);
+
+	wxButton *btng = new wxButton(GPUPanel, check_opencl, _("Check for OpenCL Support"));
+	sizer_gpu->Add(btng, 0, wxGROW);
+
+	GPUPanel->SetSizer(sizer_gpu);
+#endif // USE_OPENCL
 
 
 	//	controlstimer=new wxTimer(this, CONTROLS_TIMER_ID);
@@ -3357,6 +3388,114 @@ void MyDialog::updateRoR()
 void MyDialog::OnButUpdateRoR(wxCommandEvent& event)
 {
 	updateRoR();
+}
+
+#ifdef USE_OPENCL
+#include <oclUtils.h>
+#endif // USE_OPENCL
+
+void MyDialog::OnButCheckOpenCL(wxCommandEvent& event)
+{
+#ifdef USE_OPENCL
+	gputext->SetValue("");
+	ostream tstream(gputext);
+    bool bPassed = true;
+
+    // Get OpenCL platform ID for NVIDIA if avaiable, otherwise default
+    tstream << "OpenCL Software Information:" << endl;
+    char cBuffer[1024];
+    cl_platform_id clSelectedPlatformID = NULL; 
+    cl_int ciErrNum = oclGetPlatformID (&clSelectedPlatformID);
+    oclCheckError(ciErrNum, CL_SUCCESS);
+
+    // Get OpenCL platform name and version
+    ciErrNum = clGetPlatformInfo (clSelectedPlatformID, CL_PLATFORM_NAME, sizeof(cBuffer), cBuffer, NULL);
+    if (ciErrNum == CL_SUCCESS)
+    {
+		tstream << "Platform Name: " << cBuffer << endl;
+    } 
+    else
+    {
+		tstream << "Platform Name: ERROR " << ciErrNum << endl;
+        bPassed = false;
+    }
+    
+    ciErrNum = clGetPlatformInfo (clSelectedPlatformID, CL_PLATFORM_VERSION, sizeof(cBuffer), cBuffer, NULL);
+    if (ciErrNum == CL_SUCCESS)
+    {
+		tstream << "Platform Version: " << cBuffer << endl;
+    } 
+    else
+    {
+		tstream << "Platform Version: ERROR " << ciErrNum << endl;
+        bPassed = false;
+    }
+	tstream.flush();
+
+    // Log OpenCL SDK Revision # 
+	tstream << "OpenCL SDK Revision: " << OCL_SDKREVISION << endl;
+
+    // Get and log OpenCL device info 
+    cl_uint ciDeviceCount;
+    cl_device_id *devices;
+    ciErrNum = clGetDeviceIDs (clSelectedPlatformID, CL_DEVICE_TYPE_ALL, 0, NULL, &ciDeviceCount);
+
+    tstream << endl;
+
+    tstream << "OpenCL Hardware Information:" << endl;
+	tstream << "Devices found: " << ciDeviceCount << endl;
+
+    // check for 0 devices found or errors... 
+    if (ciDeviceCount == 0)
+    {
+		tstream << "No devices found supporting OpenCL (return code " << ciErrNum << ")" << endl;
+        bPassed = false;
+    } 
+    else if (ciErrNum != CL_SUCCESS)
+    {
+		tstream << "Error in clGetDeviceIDs call: " << ciErrNum << endl;
+        bPassed = false;
+    }
+    else
+    {
+		if ((devices = (cl_device_id*)malloc(sizeof(cl_device_id) * ciDeviceCount)) == NULL)
+		{
+			tstream << "ERROR: Failed to allocate memory for devices" << endl;
+			bPassed = false;
+		}
+        ciErrNum = clGetDeviceIDs (clSelectedPlatformID, CL_DEVICE_TYPE_ALL, ciDeviceCount, devices, &ciDeviceCount);
+        if (ciErrNum == CL_SUCCESS)
+        {
+            //Create a context for the devices
+            cl_context cxGPUContext = clCreateContext(0, ciDeviceCount, devices, NULL, NULL, &ciErrNum);
+            if (ciErrNum != CL_SUCCESS)
+            {
+				tstream << "ERROR in clCreateContext call: " << ciErrNum << endl;
+                bPassed = false;
+            }
+            else 
+            {
+                // show info for each device in the context
+                for(unsigned int i = 0; i < ciDeviceCount; ++i ) 
+                {  
+                    clGetDeviceInfo(devices[i], CL_DEVICE_NAME, sizeof(cBuffer), &cBuffer, NULL);
+					tstream << (i + 1) << " : Device " << cBuffer << endl;
+                    //oclPrintDevInfo(LOGBOTH, devices[i]);
+                }
+            }
+        }
+        else
+        {
+			tstream << "ERROR in clGetDeviceIDs call: " << ciErrNum << endl;
+            bPassed = false;
+        }
+    }
+    // finish
+	if(bPassed)
+		tstream << "=== PASSED, OpenCL working ===" << endl;
+	else
+		tstream << "=== FAILED, OpenCL NOT working ===" << endl;
+#endif // USE_OPENCL
 }
 
 void MyDialog::OnButRegenCache(wxCommandEvent& event)
