@@ -681,10 +681,11 @@ void OpenCLTestBandwidth::printResultsReadable(unsigned int *memSizes, double* b
         }
     }
 
-	stream << "> Transfer Size (Bytes) : Bandwidth(MB/s)" << endl;
+	//stream << "> Transfer Size (Bytes) : Bandwidth(MB/s)" << endl;
     unsigned int i; 
     for(i = 0; i < count; i++)
     {
-		stream <<  "> " << memSizes[i] << " : " << bandwidths[i] << endl;
+		//stream <<  "> " << memSizes[i] << " : " << bandwidths[i] << endl;
+		stream <<  "Result: " << bandwidths[i] <<  " MB/s" << endl;
     }
 }

@@ -2135,18 +2135,18 @@ MyDialog::MyDialog(const wxString& title, MyApp *_app) : wxDialog(NULL, wxID_ANY
 	wxSizer *sizer_gpu2 = new wxBoxSizer(wxHORIZONTAL);
 	const wxBitmap bm_ocl(opencllogo_xpm);
 	wxStaticPicture *openCLImagePanel = new wxStaticPicture(GPUPanel, wxID_ANY, bm_ocl, wxPoint(0, 0), wxSize(200, 200), wxNO_BORDER);
-	sizer_gpu2->Add(openCLImagePanel, 0, wxGROW);
+	sizer_gpu2->Add(openCLImagePanel, 0, wxALL|wxALIGN_CENTER_VERTICAL, 3);
 
-	gputext = new wxTextCtrl(GPUPanel, wxID_ANY, _("press the button below to check if OpenCL is working for you"), wxDefaultPosition, wxDefaultSize, wxTE_READONLY|wxTE_MULTILINE);
-	sizer_gpu2->Add(gputext, 1, wxGROW);
+	gputext = new wxTextCtrl(GPUPanel, wxID_ANY, _("Please use the buttons below"), wxDefaultPosition, wxDefaultSize, wxTE_READONLY|wxTE_MULTILINE);
+	sizer_gpu2->Add(gputext, 1, wxGROW, 3);
 
-	sizer_gpu->Add(sizer_gpu2, 1, wxGROW);
+	sizer_gpu->Add(sizer_gpu2, 1, wxGROW, 3);
 
 	wxButton *btng = new wxButton(GPUPanel, check_opencl, _("Check for OpenCL Support"));
-	sizer_gpu->Add(btng, 0, wxGROW);
+	sizer_gpu->Add(btng, 0, wxGROW, 3);
 
 	wxButton *btnw = new wxButton(GPUPanel, check_opencl_bw, _("Check OpenCL Bandwidth"));
-	sizer_gpu->Add(btnw, 0, wxGROW);
+	sizer_gpu->Add(btnw, 0, wxGROW, 3);
 
 	GPUPanel->SetSizer(sizer_gpu);
 #endif // USE_OPENCL
