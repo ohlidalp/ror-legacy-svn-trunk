@@ -3424,90 +3424,97 @@ void MyDialog::OnButCheckOpenCL(wxCommandEvent& event)
     char cBuffer[1024];
     cl_platform_id clSelectedPlatformID = NULL; 
     cl_int ciErrNum = oclGetPlatformID (&clSelectedPlatformID);
-    oclCheckError(ciErrNum, CL_SUCCESS);
+    if(ciErrNum != CL_SUCCESS)
+	{
+		tstream << "error getting platform info" << endl;
+		bPassed = false;
+	}
 
-    // Get OpenCL platform name and version
-    ciErrNum = clGetPlatformInfo (clSelectedPlatformID, CL_PLATFORM_NAME, sizeof(cBuffer), cBuffer, NULL);
-    if (ciErrNum == CL_SUCCESS)
-    {
-		tstream << "Platform Name: " << cBuffer << endl;
-    } 
-    else
-    {
-		tstream << "Platform Name: ERROR " << ciErrNum << endl;
-        bPassed = false;
-    }
-    
-    ciErrNum = clGetPlatformInfo (clSelectedPlatformID, CL_PLATFORM_VERSION, sizeof(cBuffer), cBuffer, NULL);
-    if (ciErrNum == CL_SUCCESS)
-    {
-		tstream << "Platform Version: " << cBuffer << endl;
-    } 
-    else
-    {
-		tstream << "Platform Version: ERROR " << ciErrNum << endl;
-        bPassed = false;
-    }
-	tstream.flush();
-
-    // Log OpenCL SDK Revision # 
-	tstream << "OpenCL SDK Revision: " << OCL_SDKREVISION << endl;
-
-    // Get and log OpenCL device info 
-    cl_uint ciDeviceCount;
-    cl_device_id *devices;
-    ciErrNum = clGetDeviceIDs (clSelectedPlatformID, CL_DEVICE_TYPE_ALL, 0, NULL, &ciDeviceCount);
-
-    tstream << endl;
-
-    tstream << "OpenCL Hardware Information:" << endl;
-	tstream << "Devices found: " << ciDeviceCount << endl;
-
-    // check for 0 devices found or errors... 
-    if (ciDeviceCount == 0)
-    {
-		tstream << "No devices found supporting OpenCL (return code " << ciErrNum << ")" << endl;
-        bPassed = false;
-    } 
-    else if (ciErrNum != CL_SUCCESS)
-    {
-		tstream << "Error in clGetDeviceIDs call: " << ciErrNum << endl;
-        bPassed = false;
-    }
-    else
-    {
-		if ((devices = (cl_device_id*)malloc(sizeof(cl_device_id) * ciDeviceCount)) == NULL)
+	if(bPassed)
+	{
+		// Get OpenCL platform name and version
+		ciErrNum = clGetPlatformInfo (clSelectedPlatformID, CL_PLATFORM_NAME, sizeof(cBuffer), cBuffer, NULL);
+		if (ciErrNum == CL_SUCCESS)
 		{
-			tstream << "ERROR: Failed to allocate memory for devices" << endl;
+			tstream << "Platform Name: " << cBuffer << endl;
+		} 
+		else
+		{
+			tstream << "Platform Name: ERROR " << ciErrNum << endl;
 			bPassed = false;
 		}
-        ciErrNum = clGetDeviceIDs (clSelectedPlatformID, CL_DEVICE_TYPE_ALL, ciDeviceCount, devices, &ciDeviceCount);
-        if (ciErrNum == CL_SUCCESS)
-        {
-            //Create a context for the devices
-            cl_context cxGPUContext = clCreateContext(0, ciDeviceCount, devices, NULL, NULL, &ciErrNum);
-            if (ciErrNum != CL_SUCCESS)
-            {
-				tstream << "ERROR in clCreateContext call: " << ciErrNum << endl;
-                bPassed = false;
-            }
-            else 
-            {
-                // show info for each device in the context
-                for(unsigned int i = 0; i < ciDeviceCount; ++i ) 
-                {  
-                    clGetDeviceInfo(devices[i], CL_DEVICE_NAME, sizeof(cBuffer), &cBuffer, NULL);
-					tstream << (i + 1) << " : Device " << cBuffer << endl;
-                    //oclPrintDevInfo(LOGBOTH, devices[i]);
-                }
-            }
-        }
-        else
-        {
-			tstream << "ERROR in clGetDeviceIDs call: " << ciErrNum << endl;
-            bPassed = false;
-        }
-    }
+	    
+		ciErrNum = clGetPlatformInfo (clSelectedPlatformID, CL_PLATFORM_VERSION, sizeof(cBuffer), cBuffer, NULL);
+		if (ciErrNum == CL_SUCCESS)
+		{
+			tstream << "Platform Version: " << cBuffer << endl;
+		} 
+		else
+		{
+			tstream << "Platform Version: ERROR " << ciErrNum << endl;
+			bPassed = false;
+		}
+		tstream.flush();
+
+		// Log OpenCL SDK Revision # 
+		tstream << "OpenCL SDK Revision: " << OCL_SDKREVISION << endl;
+
+		// Get and log OpenCL device info 
+		cl_uint ciDeviceCount;
+		cl_device_id *devices;
+		ciErrNum = clGetDeviceIDs (clSelectedPlatformID, CL_DEVICE_TYPE_ALL, 0, NULL, &ciDeviceCount);
+
+		tstream << endl;
+
+		tstream << "OpenCL Hardware Information:" << endl;
+		tstream << "Devices found: " << ciDeviceCount << endl;
+
+		// check for 0 devices found or errors... 
+		if (ciDeviceCount == 0)
+		{
+			tstream << "No devices found supporting OpenCL (return code " << ciErrNum << ")" << endl;
+			bPassed = false;
+		} 
+		else if (ciErrNum != CL_SUCCESS)
+		{
+			tstream << "Error in clGetDeviceIDs call: " << ciErrNum << endl;
+			bPassed = false;
+		}
+		else
+		{
+			if ((devices = (cl_device_id*)malloc(sizeof(cl_device_id) * ciDeviceCount)) == NULL)
+			{
+				tstream << "ERROR: Failed to allocate memory for devices" << endl;
+				bPassed = false;
+			}
+			ciErrNum = clGetDeviceIDs (clSelectedPlatformID, CL_DEVICE_TYPE_ALL, ciDeviceCount, devices, &ciDeviceCount);
+			if (ciErrNum == CL_SUCCESS)
+			{
+				//Create a context for the devices
+				cl_context cxGPUContext = clCreateContext(0, ciDeviceCount, devices, NULL, NULL, &ciErrNum);
+				if (ciErrNum != CL_SUCCESS)
+				{
+					tstream << "ERROR in clCreateContext call: " << ciErrNum << endl;
+					bPassed = false;
+				}
+				else 
+				{
+					// show info for each device in the context
+					for(unsigned int i = 0; i < ciDeviceCount; ++i ) 
+					{  
+						clGetDeviceInfo(devices[i], CL_DEVICE_NAME, sizeof(cBuffer), &cBuffer, NULL);
+						tstream << (i + 1) << " : Device " << cBuffer << endl;
+						//oclPrintDevInfo(LOGBOTH, devices[i]);
+					}
+				}
+			}
+			else
+			{
+				tstream << "ERROR in clGetDeviceIDs call: " << ciErrNum << endl;
+				bPassed = false;
+			}
+		}
+	}
     // finish
 	if(bPassed)
 		tstream << "=== PASSED, OpenCL working ===" << endl;

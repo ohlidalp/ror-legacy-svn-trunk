@@ -80,6 +80,8 @@ protected:
 	double testHostToDeviceTransfer(unsigned int memSize, accessMode accMode, memoryMode memMode);
 	double testDeviceToDeviceTransfer(unsigned int memSize);
 	void printResultsReadable(unsigned int *memSizes, double* bandwidths, unsigned int count, memcpyKind kind, accessMode accMode, memoryMode memMode, int iNumDevs);
+
+	void ownCheckError(int sample, int ref);
 };
 
 // class implementation
@@ -104,9 +106,12 @@ OpenCLTestBandwidth::~OpenCLTestBandwidth()
 {
 }
 
-///////////////////////////////////////////////////////////////////////////////
-//Parse args, run the appropriate tests
-///////////////////////////////////////////////////////////////////////////////
+void OpenCLTestBandwidth::ownCheckError(int sample, int ref)
+{
+    if(sample != ref)
+		stream << " ERROR " << endl;
+}
+
 int OpenCLTestBandwidth::runTest(memoryMode memMode, accessMode accMode, testMode mode)
 {
     int start = DEFAULT_SIZE;
@@ -121,7 +126,7 @@ int OpenCLTestBandwidth::runTest(memoryMode memMode, accessMode accMode, testMod
     // Get OpenCL platform ID for NVIDIA if available, otherwise default
     cl_platform_id clSelectedPlatformID = NULL; 
     cl_int ciErrNum = oclGetPlatformID (&clSelectedPlatformID);
-    oclCheckError(ciErrNum, CL_SUCCESS);
+    ownCheckError(ciErrNum, CL_SUCCESS);
 
     // Find out how many devices there are
     cl_uint ciDeviceCount;
@@ -395,11 +400,11 @@ double OpenCLTestBandwidth::testDeviceToHostTransfer(unsigned int memSize, acces
     {
         // Create a host buffer
         cmPinnedData = clCreateBuffer(cxGPUContext, CL_MEM_READ_WRITE | CL_MEM_ALLOC_HOST_PTR, memSize, NULL, &ciErrNum);
-        oclCheckError(ciErrNum, CL_SUCCESS);
+        ownCheckError(ciErrNum, CL_SUCCESS);
 
         // Get a mapped pointer
         h_data = (unsigned char*)clEnqueueMapBuffer(cqCommandQueue, cmPinnedData, CL_TRUE, CL_MAP_WRITE, 0, memSize, 0, NULL, NULL, &ciErrNum);
-        oclCheckError(ciErrNum, CL_SUCCESS);
+        ownCheckError(ciErrNum, CL_SUCCESS);
 
         //initialize 
         for(unsigned int i = 0; i < memSize/sizeof(unsigned char); i++)
@@ -409,7 +414,7 @@ double OpenCLTestBandwidth::testDeviceToHostTransfer(unsigned int memSize, acces
 
         // unmap and make data in the host buffer valid
         ciErrNum = clEnqueueUnmapMemObject(cqCommandQueue, cmPinnedData, (void*)h_data, 0, NULL, NULL);
-        oclCheckError(ciErrNum, CL_SUCCESS);
+        ownCheckError(ciErrNum, CL_SUCCESS);
     }
     else 
     {
@@ -425,7 +430,7 @@ double OpenCLTestBandwidth::testDeviceToHostTransfer(unsigned int memSize, acces
 
     // allocate device memory 
     cmDevData = clCreateBuffer(cxGPUContext, CL_MEM_READ_WRITE, memSize, NULL, &ciErrNum);
-    oclCheckError(ciErrNum, CL_SUCCESS);
+    ownCheckError(ciErrNum, CL_SUCCESS);
 
     // initialize device memory 
     if(memMode == PINNED)
@@ -434,14 +439,14 @@ double OpenCLTestBandwidth::testDeviceToHostTransfer(unsigned int memSize, acces
         h_data = (unsigned char*)clEnqueueMapBuffer(cqCommandQueue, cmPinnedData, CL_TRUE, CL_MAP_WRITE, 0, memSize, 0, NULL, NULL, &ciErrNum);	        
 
         ciErrNum = clEnqueueWriteBuffer(cqCommandQueue, cmDevData, CL_FALSE, 0, memSize, h_data, 0, NULL, NULL);
-        oclCheckError(ciErrNum, CL_SUCCESS);
+        ownCheckError(ciErrNum, CL_SUCCESS);
     }
     else
     {
         ciErrNum = clEnqueueWriteBuffer(cqCommandQueue, cmDevData, CL_FALSE, 0, memSize, h_data, 0, NULL, NULL);
-        oclCheckError(ciErrNum, CL_SUCCESS);
+        ownCheckError(ciErrNum, CL_SUCCESS);
     }
-    oclCheckError(ciErrNum, CL_SUCCESS);
+    ownCheckError(ciErrNum, CL_SUCCESS);
 
     // Sync queue to host, start timer 0, and copy data from GPU to Host
     ciErrNum = clFinish(cqCommandQueue);
@@ -452,22 +457,22 @@ double OpenCLTestBandwidth::testDeviceToHostTransfer(unsigned int memSize, acces
         for(unsigned int i = 0; i < MEMCOPY_ITERATIONS; i++)
         {
             ciErrNum = clEnqueueReadBuffer(cqCommandQueue, cmDevData, CL_FALSE, 0, memSize, h_data, 0, NULL, NULL);
-            oclCheckError(ciErrNum, CL_SUCCESS);
+            ownCheckError(ciErrNum, CL_SUCCESS);
         }
         ciErrNum = clFinish(cqCommandQueue);
-        oclCheckError(ciErrNum, CL_SUCCESS);
+        ownCheckError(ciErrNum, CL_SUCCESS);
     } 
     else 
     {
         // MAPPED: mapped pointers to device buffer for conventional pointer access
         void* dm_idata = clEnqueueMapBuffer(cqCommandQueue, cmDevData, CL_TRUE, CL_MAP_WRITE, 0, memSize, 0, NULL, NULL, &ciErrNum);
-        oclCheckError(ciErrNum, CL_SUCCESS);
+        ownCheckError(ciErrNum, CL_SUCCESS);
         for(unsigned int i = 0; i < MEMCOPY_ITERATIONS; i++)
         {
             memcpy(h_data, dm_idata, memSize);
         }
         ciErrNum = clEnqueueUnmapMemObject(cqCommandQueue, cmDevData, dm_idata, 0, NULL, NULL);
-        oclCheckError(ciErrNum, CL_SUCCESS);
+        ownCheckError(ciErrNum, CL_SUCCESS);
     }
     
     //get the the elapsed time in seconds
@@ -505,11 +510,11 @@ double OpenCLTestBandwidth::testHostToDeviceTransfer(unsigned int memSize, acces
     {
         // Create a host buffer
         cmPinnedData = clCreateBuffer(cxGPUContext, CL_MEM_READ_WRITE | CL_MEM_ALLOC_HOST_PTR, memSize, NULL, &ciErrNum);
-        oclCheckError(ciErrNum, CL_SUCCESS);
+        ownCheckError(ciErrNum, CL_SUCCESS);
 
         // Get a mapped pointer
         h_data = (unsigned char*)clEnqueueMapBuffer(cqCommandQueue, cmPinnedData, CL_TRUE, CL_MAP_WRITE, 0, memSize, 0, NULL, NULL, &ciErrNum);
-        oclCheckError(ciErrNum, CL_SUCCESS);
+        ownCheckError(ciErrNum, CL_SUCCESS);
 
         //initialize 
         for(unsigned int i = 0; i < memSize/sizeof(unsigned char); i++)
@@ -519,7 +524,7 @@ double OpenCLTestBandwidth::testHostToDeviceTransfer(unsigned int memSize, acces
 	
         // unmap and make data in the host buffer valid
         ciErrNum = clEnqueueUnmapMemObject(cqCommandQueue, cmPinnedData, (void*)h_data, 0, NULL, NULL);
-        oclCheckError(ciErrNum, CL_SUCCESS);
+        ownCheckError(ciErrNum, CL_SUCCESS);
     }
     else 
     {
@@ -535,7 +540,7 @@ double OpenCLTestBandwidth::testHostToDeviceTransfer(unsigned int memSize, acces
 
     // allocate device memory 
     cmDevData = clCreateBuffer(cxGPUContext, CL_MEM_READ_WRITE, memSize, NULL, &ciErrNum);
-    oclCheckError(ciErrNum, CL_SUCCESS);
+    ownCheckError(ciErrNum, CL_SUCCESS);
 
     // Sync queue to host, start timer 0, and copy data from Host to GPU
     clFinish(cqCommandQueue);
@@ -546,17 +551,17 @@ double OpenCLTestBandwidth::testHostToDeviceTransfer(unsigned int memSize, acces
         {
             // Get a mapped pointer
             h_data = (unsigned char*)clEnqueueMapBuffer(cqCommandQueue, cmPinnedData, CL_TRUE, CL_MAP_WRITE, 0, memSize, 0, NULL, NULL, &ciErrNum);
-            oclCheckError(ciErrNum, CL_SUCCESS);
+            ownCheckError(ciErrNum, CL_SUCCESS);
 	    }
 
         // DIRECT:  API access to device buffer 
         for(unsigned int i = 0; i < MEMCOPY_ITERATIONS; i++)
         {
                 ciErrNum = clEnqueueWriteBuffer(cqCommandQueue, cmDevData, CL_FALSE, 0, memSize, h_data, 0, NULL, NULL);
-                oclCheckError(ciErrNum, CL_SUCCESS);
+                ownCheckError(ciErrNum, CL_SUCCESS);
         }
         ciErrNum = clFinish(cqCommandQueue);
-        oclCheckError(ciErrNum, CL_SUCCESS);
+        ownCheckError(ciErrNum, CL_SUCCESS);
     } 
     else 
     {
@@ -567,7 +572,7 @@ double OpenCLTestBandwidth::testHostToDeviceTransfer(unsigned int memSize, acces
             memcpy(dm_idata, h_data, memSize);
         }
         ciErrNum = clEnqueueUnmapMemObject(cqCommandQueue, cmDevData, dm_idata, 0, NULL, NULL);
-        oclCheckError(ciErrNum, CL_SUCCESS);
+        ownCheckError(ciErrNum, CL_SUCCESS);
     }
     
     //get the the elapsed time in seconds
@@ -609,11 +614,11 @@ double OpenCLTestBandwidth::testDeviceToDeviceTransfer(unsigned int memSize)
 
     // allocate device input and output memory and initialize the device input memory
     cl_mem d_idata = clCreateBuffer(cxGPUContext, CL_MEM_READ_ONLY, memSize, NULL, &ciErrNum);
-    oclCheckError(ciErrNum, CL_SUCCESS);
+    ownCheckError(ciErrNum, CL_SUCCESS);
     cl_mem d_odata = clCreateBuffer(cxGPUContext, CL_MEM_WRITE_ONLY, memSize, NULL, &ciErrNum);         
-    oclCheckError(ciErrNum, CL_SUCCESS);
+    ownCheckError(ciErrNum, CL_SUCCESS);
     ciErrNum = clEnqueueWriteBuffer(cqCommandQueue, d_idata, CL_TRUE, 0, memSize, h_idata, 0, NULL, NULL);
-    oclCheckError(ciErrNum, CL_SUCCESS);
+    ownCheckError(ciErrNum, CL_SUCCESS);
 
     // Sync queue to host, start timer 0, and copy data from one GPU buffer to another GPU bufffer
     clFinish(cqCommandQueue);
@@ -621,7 +626,7 @@ double OpenCLTestBandwidth::testDeviceToDeviceTransfer(unsigned int memSize)
     for(unsigned int i = 0; i < MEMCOPY_ITERATIONS; i++)
     {
         ciErrNum = clEnqueueCopyBuffer(cqCommandQueue, d_idata, d_odata, 0, 0, memSize, 0, NULL, NULL);                
-        oclCheckError(ciErrNum, CL_SUCCESS);
+        ownCheckError(ciErrNum, CL_SUCCESS);
     }    
 
     // Sync with GPU
