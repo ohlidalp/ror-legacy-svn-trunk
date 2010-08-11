@@ -115,7 +115,9 @@ std::vector<wxLanguageInfo*> avLanguages;
 
 std::map<std::string, std::string> settings;
 
-
+#ifdef USE_OPENCL
+#include <delayimp.h>
+#endif // USE_OPENCL
 
 
 #ifdef __WXGTK__
@@ -350,6 +352,8 @@ private:
 //	wxTextCtrl *p2pport;
 #endif
 
+	void tryLoadOpenCL();
+	int openCLAvailable;
 	//Joysticks *joy;
 //	wxTextCtrl *deadzone;
 //	wxGauge *joygauges[256];
@@ -1568,7 +1572,7 @@ bool MyApp::OnCmdLineParsed(wxCmdLineParser& parser)
 // ----------------------------------------------------------------------------
 
 // frame constructor
-MyDialog::MyDialog(const wxString& title, MyApp *_app) : wxDialog(NULL, wxID_ANY, title,  wxPoint(100, 100), wxSize(500, 580), wxDEFAULT_DIALOG_STYLE|wxRESIZE_BORDER)
+MyDialog::MyDialog(const wxString& title, MyApp *_app) : wxDialog(NULL, wxID_ANY, title,  wxPoint(100, 100), wxSize(500, 580), wxDEFAULT_DIALOG_STYLE|wxRESIZE_BORDER), openCLAvailable(0)
 {
 	app=_app;
 
@@ -3402,19 +3406,63 @@ void MyDialog::OnButUpdateRoR(wxCommandEvent& event)
 #include "ocl_bwtest.h"
 #endif // USE_OPENCL
 
+
+#ifdef USE_OPENCL
+// late loading DLLs
+// see http://msdn.microsoft.com/en-us/library/8yfshtha.aspx
+int tryLoadOpenCL2()
+{
+#ifdef WIN32
+	bool failed = false;
+	__try
+	{
+		failed = FAILED(__HrLoadAllImportsForDll("OpenCL.dll"));
+	} __except (EXCEPTION_EXECUTE_HANDLER)
+	{
+		failed = true;
+	}
+
+	if(failed)
+		return -1;
+	return 1;
+#else // WIN32
+	// TODO: implement late loading under different OSs
+#endif // WIN32
+}
+
+void MyDialog::tryLoadOpenCL()
+{
+	if(openCLAvailable != 0) return;
+	
+	openCLAvailable = tryLoadOpenCL2();
+	if(openCLAvailable != 1)
+	{
+		wxMessageDialog *msg=new wxMessageDialog(this, "OpenCL.dll not found\nAre the Display drivers up to date?", "OpenCL.dll not found", wxOK | wxICON_ERROR );
+		msg->ShowModal();
+
+		gputext->SetValue("failed to load OpenCL.dll");
+	}
+}
+#endif // USE_OPENCL
+
+
 void MyDialog::OnButCheckOpenCLBW(wxCommandEvent& event)
 {
 #ifdef USE_OPENCL
+	tryLoadOpenCL();
+	if(openCLAvailable != 1) return;
 	gputext->SetValue("");
 	ostream tstream(gputext);
 	OpenCLTestBandwidth bw_test(tstream);
-
 #endif // USE_OPENCL
 }
+
 
 void MyDialog::OnButCheckOpenCL(wxCommandEvent& event)
 {
 #ifdef USE_OPENCL
+	tryLoadOpenCL();
+	if(openCLAvailable != 1) return;
 	gputext->SetValue("");
 	ostream tstream(gputext);
     bool bPassed = true;
