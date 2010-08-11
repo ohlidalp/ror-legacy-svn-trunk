@@ -34,6 +34,16 @@ IF(WIN32)
    # warning C4305: 'initializing' : truncation from 'double' to 'const float'
    add_definitions("/wd4305 /wd4244")
 
+   
+   #now: delay loading for opencl
+   if(ROR_USE_OPENCL)
+      set(CMAKE_EXE_LINKER_FLAGS_DEBUG          "${CMAKE_EXE_LINKER_FLAGS_DEBUG}          /DELAYLOAD:OpenCL.dll")
+      set(CMAKE_EXE_LINKER_FLAGS_RELEASE        "${CMAKE_EXE_LINKER_FLAGS_RELEASE}        /DELAYLOAD:OpenCL.dll")
+      set(CMAKE_EXE_LINKER_FLAGS_MINSIZEREL     "${CMAKE_EXE_LINKER_FLAGS_MINSIZEREL}     /DELAYLOAD:OpenCL.dll")
+      set(CMAKE_EXE_LINKER_FLAGS_RELWITHDEBINFO "${CMAKE_EXE_LINKER_FLAGS_RELWITHDEBINFO} /DELAYLOAD:OpenCL.dll")
+      set(OS_LIBS ${OS_LIBS} Delayimp.lib)
+   endif(ROR_USE_OPENCL)
+
 ELSEIF(UNIX)
    find_package(PkgConfig)
    PKG_CHECK_MODULES  (GTK gtk+-2.0 REQUIRED)
