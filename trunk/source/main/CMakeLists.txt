@@ -47,6 +47,8 @@ include_directories(${Ogre_Terrain_INCLUDE_DIRS})
 link_directories   (${Ogre_Terrain_LIBRARY_DIRS})
 include_directories(${Ogre_Paging_INCLUDE_DIRS})
 link_directories   (${Ogre_Paging_LIBRARY_DIRS})
+include_directories(${Ogre_RTShader_INCLUDE_DIRS})
+link_directories   (${Ogre_RTShader_LIBRARY_DIRS})
 include_directories(${Ois_INCLUDE_DIRS})
 link_directories   (${Ois_LIBRARY_DIRS})
 
@@ -75,6 +77,6 @@ if(ROR_FEAT_TIMING)
 endif(ROR_FEAT_TIMING)
 
 add_executable(RoR ${HEADER_FILES} ${SOURCE_FILES})
-target_link_libraries(RoR ${Ogre_LIBRARIES} ${Ogre_Terrain_LIBRARIES} ${Ogre_Paging_LIBRARIES} ${Ois_LIBRARIES} ${OS_LIBS} ${optional_libs})
+target_link_libraries(RoR ${Ogre_LIBRARIES} ${Ogre_Terrain_LIBRARIES} ${Ogre_Paging_LIBRARIES} ${Ogre_RTShader_LIBRARIES} ${Ois_LIBRARIES} ${OS_LIBS} ${optional_libs})
 windows_hacks(RoR)
 

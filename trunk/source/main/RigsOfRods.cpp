@@ -22,6 +22,8 @@ along with Rigs of Rods.  If not, see <http://www.gnu.org/licenses/>.
 #include "language.h"
 #include "errorutils.h"
 
+#include "OgreRTShaderSystem.h"
+
 RigsOfRods::RigsOfRods(Ogre::String name, unsigned int hwnd) :
 	mRoot(0),
 	mCamera(0),
@@ -75,17 +77,6 @@ void RigsOfRods::loadMainResource(String name, String group)
 #if OGRE_PLATFORM == OGRE_PLATFORM_WIN32
 	dirsep="\\";
 #endif
-	/*
-	// old buildmode (non-zip mode)
-	if (buildmode)
-	{
-		if (name==String("textures"))
-			ResourceGroupManager::getSingleton().addResourceLocation(SETTINGS.getSetting("Resources Path")+name+dirsep+"temp", "FileSystem", group);
-		else
-			ResourceGroupManager::getSingleton().addResourceLocation(SETTINGS.getSetting("Resources Path")+name, "FileSystem", group);
-	}
-	*/
-
 	ResourceGroupManager::getSingleton().addResourceLocation(SETTINGS.getSetting("Resources Path")+name+".zip", "Zip", group, true);
 }
 
@@ -143,51 +134,51 @@ bool RigsOfRods::setup(void)
 	loadMainResource("OgreCore", "Bootstrap");
 	//main game resources
 	LogManager::getSingleton().logMessage("Loading main resources");
-	loadMainResource("airfoils",  ResourceGroupManager::DEFAULT_RESOURCE_GROUP_NAME);
-	loadMainResource("materials", ResourceGroupManager::DEFAULT_RESOURCE_GROUP_NAME);
-	loadMainResource("meshes",    ResourceGroupManager::DEFAULT_RESOURCE_GROUP_NAME);
-	loadMainResource("overlays",  ResourceGroupManager::DEFAULT_RESOURCE_GROUP_NAME);
-	loadMainResource("particles", ResourceGroupManager::DEFAULT_RESOURCE_GROUP_NAME);
-	loadMainResource("mygui",     ResourceGroupManager::DEFAULT_RESOURCE_GROUP_NAME);
-	loadMainResource("layouts",   ResourceGroupManager::DEFAULT_RESOURCE_GROUP_NAME);
-	loadMainResource("scripts",   ResourceGroupManager::DEFAULT_RESOURCE_GROUP_NAME);
-	loadMainResource("textures",  ResourceGroupManager::DEFAULT_RESOURCE_GROUP_NAME);
-	loadMainResource("flags",     ResourceGroupManager::DEFAULT_RESOURCE_GROUP_NAME);
-	loadMainResource("icons",     ResourceGroupManager::DEFAULT_RESOURCE_GROUP_NAME);
+	loadMainResource("airfoils");
+	loadMainResource("materials");
+	loadMainResource("meshes");
+	loadMainResource("overlays");
+	loadMainResource("particles");
+	loadMainResource("mygui");
+	loadMainResource("layouts");
+	loadMainResource("scripts");
+	loadMainResource("textures");
+	loadMainResource("flags");
+	loadMainResource("icons");
 
 	// optional ones
 	if (SETTINGS.getSetting("3D Sound renderer") != "No sound")
-		loadMainResource("sounds", ResourceGroupManager::DEFAULT_RESOURCE_GROUP_NAME);
+		loadMainResource("sounds");
 	
 	if (SETTINGS.getSetting("Sky effects") == "Caelum (best looking, slower)")
-		loadMainResource("caelum", ResourceGroupManager::DEFAULT_RESOURCE_GROUP_NAME);
+		loadMainResource("caelum");
 
 	if(SETTINGS.getSetting("Hydrax") == "Yes")
 		loadMainResource("hydrax", "Hydrax"); // special resourcegroup required!
 
 	if(SETTINGS.getSetting("Vegetation") != "None (fastest)")
-		loadMainResource("paged", ResourceGroupManager::DEFAULT_RESOURCE_GROUP_NAME);
+		loadMainResource("paged");
 
 	if(SETTINGS.getSetting("HDR") == "Yes")
-		loadMainResource("hdr", ResourceGroupManager::DEFAULT_RESOURCE_GROUP_NAME);
+		loadMainResource("hdr");
 
 	if(SETTINGS.getSetting("DOF") == "Yes")
-		loadMainResource("dof", ResourceGroupManager::DEFAULT_RESOURCE_GROUP_NAME);
+		loadMainResource("dof");
 
 	if(SETTINGS.getSetting("Glow") == "Yes")
-		loadMainResource("glow", ResourceGroupManager::DEFAULT_RESOURCE_GROUP_NAME);
+		loadMainResource("glow");
 
 	if(SETTINGS.getSetting("Motion blur") == "Yes")
-		loadMainResource("blur", ResourceGroupManager::DEFAULT_RESOURCE_GROUP_NAME);
+		loadMainResource("blur");
 	
 	if(SETTINGS.getSetting("HeatHaze") == "Yes")
-		loadMainResource("heathaze", ResourceGroupManager::DEFAULT_RESOURCE_GROUP_NAME);
+		loadMainResource("heathaze");
 
 	if (SETTINGS.getSetting("Sunburn")!="Yes")
-		loadMainResource("sunburn", ResourceGroupManager::DEFAULT_RESOURCE_GROUP_NAME);
+		loadMainResource("sunburn");
 
 	if (SETTINGS.getSetting("Shadow technique")=="Parallel-split Shadow Maps")
-		loadMainResource("pssm", ResourceGroupManager::DEFAULT_RESOURCE_GROUP_NAME);
+		loadMainResource("pssm");
 	
 	//streams path, to be processed later by the cache system
 	LogManager::getSingleton().logMessage("Loading filesystems");
@@ -240,6 +231,9 @@ bool RigsOfRods::setup(void)
 	{
 		mSceneMgr = mRoot->createSceneManager(ST_EXTERIOR_CLOSE);
 	}
+
+	// create RTShader System
+	initRTShaderSystem();
 
 	//CREATE CAMERA
 	LogManager::getSingleton().logMessage("Creating camera");
@@ -319,6 +313,24 @@ bool RigsOfRods::setup(void)
 
 	LogManager::getSingleton().logMessage("Setup finished successfully");
 	return true;
+}
+
+void RigsOfRods::initRTShaderSystem()
+{
+	if(!Ogre::RTShader::ShaderGenerator::initialize())
+		return;
+
+	// Grab the shader generator pointer.
+	Ogre::RTShader::ShaderGenerator *mShaderGenerator = Ogre::RTShader::ShaderGenerator::getSingletonPtr();
+
+	// Add the shader libs resource location.
+	loadMainResource("rtshader");
+
+	// Set shader cache path.
+	mShaderGenerator->setShaderCachePath(SETTINGS.getSetting("User Path")+"cache");		
+
+	// Set the scene manager.
+	mShaderGenerator->addSceneManager(mSceneMgr);
 }
 
 void RigsOfRods::createScene(void)
