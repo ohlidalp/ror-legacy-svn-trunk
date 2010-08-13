@@ -87,8 +87,9 @@ protected:
 	SpinControlOverlayElementFactory* spinfact;
 #endif
 
-	void loadMainResource(String name, String group);
+	void loadMainResource(String name, String group=ResourceGroupManager::DEFAULT_RESOURCE_GROUP_NAME);
 
+	void initRTShaderSystem();
 
 	// create scene
 	void createScene(void);
