@@ -103,9 +103,8 @@ GUIInputManager::~GUIInputManager()
 
 bool GUIInputManager::mouseMoved(const OIS::MouseEvent& _arg)
 {
-    mCursorX += _arg.state.X.rel;
-    mCursorY += _arg.state.Y.rel;
-
+	mCursorX = _arg.state.X.abs;
+	mCursorY = _arg.state.Y.abs;
     checkPosition();
 
     injectMouseMove(mCursorX, mCursorY, _arg.state.Z.abs);
