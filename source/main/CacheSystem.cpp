@@ -2200,8 +2200,8 @@ void CacheSystem::generateFileCache(Cache_Entry &entry, Ogre::String directory)
 		StringUtil::splitBaseFilename(entry.fname, fbase, fext);
 		String minifn = fbase + "-mini." + entry.minitype;
 
-		bool exists = ResourceGroupManager::getSingleton().resourceExistsInAnyGroup(minifn);
 		String group = "";
+		bool exists = ResourceGroupManager::getSingleton().resourceExistsInAnyGroup(minifn);
 		if(!exists)
 		{
 			String base, ext;
@@ -2639,6 +2639,7 @@ bool CacheSystem::checkResourceLoaded(Ogre::String &filename, Ogre::String &grou
 			bool exists = ResourceGroupManager::getSingleton().resourceExistsInAnyGroup(filename);
 			if(!exists)
 				return false;
+			group = ResourceGroupManager::getSingleton().findGroupContainingResource(filename);
 			return res;
 		}
 	}
