@@ -206,6 +206,33 @@ protected:
 
 		}
 
+		// now find possible LODs
+		String basename, ext;
+		StringUtil::splitBaseFilename(meshName, basename, ext);
+		for(int i=0; i<4;i++)
+		{
+			String fn = basename + "_" + StringConverter::toString(i) + ".mesh";
+			String group = "";
+			try
+			{
+				group = ResourceGroupManager::getSingleton().findGroupContainingResource(fn);
+			}catch(...)
+			{
+				continue;
+			}
+
+			if(group.empty()) continue;
+
+			float distance = 3;
+			if(i == 1) distance = 20;
+			if(i == 2) distance = 50;
+			if(i == 3) distance = 200;
+			mesh->createManualLodLevel(distance, fn);
+		}
+		
+		
+
+
 		// now create an entity around the mesh and attach it to the scene graph
 		try
 		{
