@@ -59,7 +59,7 @@ void ShadowManager::loadConfiguration()
 }
 int ShadowManager::changeShadowTechnique(Ogre::ShadowTechnique tech)
 {
-	float shadowFarDistance = 500;
+	float shadowFarDistance = 50;
 	float scoef=0.2;
 	mSceneMgr->setShadowColour(ColourValue(0.563+scoef, 0.578+scoef, 0.625+scoef));
 
@@ -80,7 +80,7 @@ int ShadowManager::changeShadowTechnique(Ogre::ShadowTechnique tech)
 		//		mSceneMgr->showBoundingBoxes(true);
 	} else if(tech == SHADOWTYPE_TEXTURE_MODULATIVE)
 	{
-		mSceneMgr->setShadowTextureSettings(1024,1);
+		mSceneMgr->setShadowTextureSettings(2048,1);
 	} else if(tech == SHADOWTYPE_TEXTURE_ADDITIVE_INTEGRATED)
 	{
 #if OGRE_VERSION>0x010602
@@ -117,7 +117,6 @@ int ShadowManager::changeShadowTechnique(Ogre::ShadowTechnique tech)
 		bool depthShadows = false;
 		if (depthShadows)
 		{
-			/*
 			mSceneMgr->setShadowTextureCount(3);
 			mSceneMgr->setShadowTextureConfig(0, 2048, 2048, PF_FLOAT32_R);
 			mSceneMgr->setShadowTextureConfig(1, 1024, 1024, PF_FLOAT32_R);
@@ -126,13 +125,13 @@ int ShadowManager::changeShadowTechnique(Ogre::ShadowTechnique tech)
 			mSceneMgr->setShadowCasterRenderBackFaces(true);
 			mSceneMgr->setShadowTextureCasterMaterial("PSSM/shadow_caster");
 
+			/*
 			MaterialPtr houseMat = buildDepthShadowMaterial("fw12b.jpg");
 			for (EntityList::iterator i = mHouseList.begin(); i != mHouseList.end(); ++i)
 			{
 				(*i)->setMaterial(houseMat);
 			}
 			*/
-
 		}
 		else
 		{

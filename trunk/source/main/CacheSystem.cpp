@@ -2200,30 +2200,26 @@ void CacheSystem::generateFileCache(Cache_Entry &entry, Ogre::String directory)
 		StringUtil::splitBaseFilename(entry.fname, fbase, fext);
 		String minifn = fbase + "-mini." + entry.minitype;
 
-		String group="";
-		try
-		{
-			group = ResourceGroupManager::getSingleton().findGroupContainingResource(minifn);
-		}catch(...)
-		{
-		}
-		if(group == "")
+		bool exists = ResourceGroupManager::getSingleton().resourceExistsInAnyGroup(minifn);
+		String group = "";
+		if(!exists)
 		{
 			String base, ext;
 			StringUtil::splitBaseFilename(entry.fname, base, ext);
 			entry.minitype = detectFilesMiniType(base + "-mini");
-			try
-			{
-				group = ResourceGroupManager::getSingleton().findGroupContainingResource(minifn);
-			}catch(...)
-			{
-			}
-			if(group == "")
+			exists = ResourceGroupManager::getSingleton().resourceExistsInAnyGroup(minifn);
+			if(!exists)
 			{
 				// no minipic found
 				entry.filecachename = "none";
 				return;
+			} else
+			{
+				group = ResourceGroupManager::getSingleton().findGroupContainingResource(minifn);
 			}
+		} else
+		{
+			group = ResourceGroupManager::getSingleton().findGroupContainingResource(minifn);
 		}
 
 		FileInfoListPtr files = ResourceGroupManager::getSingleton().findResourceFileInfo(group, minifn);
@@ -2640,13 +2636,9 @@ bool CacheSystem::checkResourceLoaded(Ogre::String &filename, Ogre::String &grou
 			// we found the file, load it
 			filename = it->fname;
 			bool res = checkResourceLoaded(*it);
-			try
-			{
-				group = ResourceGroupManager::getSingleton().findGroupContainingResource(filename);
-			} catch (...)
-			{
+			bool exists = ResourceGroupManager::getSingleton().resourceExistsInAnyGroup(filename);
+			if(!exists)
 				return false;
-			}
 			return res;
 		}
 	}

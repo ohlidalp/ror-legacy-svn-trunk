@@ -1689,13 +1689,11 @@ void RoRFrameListener::loadObject(const char* name, float px, float py, float pz
 	{
 		sprintf(fname,"%s-%s.odef", terrainUID.c_str(), name);
 		odefname = String(fname);
-		try
+		bool exists = ResourceGroupManager::getSingleton().resourceExistsInAnyGroup(odefname);
+		if(exists)
 		{
 			odefgroup = ResourceGroupManager::getSingleton().findGroupContainingResource(odefname);
 			odefFound = true;
-		} catch(...)
-		{
-			odefFound=false;
 		}
 	}
 
@@ -1703,13 +1701,11 @@ void RoRFrameListener::loadObject(const char* name, float px, float py, float pz
 	{
 		sprintf(fname,"%s.odef", name);
 		odefname = String(fname);
-		try
+		bool exists = ResourceGroupManager::getSingleton().resourceExistsInAnyGroup(odefname);
+		if(exists)
 		{
 			odefgroup = ResourceGroupManager::getSingleton().findGroupContainingResource(odefname);
-			odefFound=true;
-		} catch(...)
-		{
-			odefFound=false;
+			odefFound = true;
 		}
 	}
 

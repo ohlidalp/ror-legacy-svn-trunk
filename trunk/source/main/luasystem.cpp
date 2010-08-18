@@ -130,14 +130,7 @@ LuaSystem::LuaSystem(RoRFrameListener *efl)
 
 bool LuaSystem::fileExists(const char *filename)
 {
-	try
-	{
-		ResourceGroupManager::getSingleton().findGroupContainingResource(filename);
-		return true;
-	}catch(...)
-	{
-	}
-	return false;
+	return ResourceGroupManager::getSingleton().resourceExistsInAnyGroup(filename);
 }
 
 void LuaSystem::loadTerrain(Ogre::String terrainname)
