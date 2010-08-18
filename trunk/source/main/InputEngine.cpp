@@ -2279,11 +2279,11 @@ float InputEngine::getEventValue(int eventID, bool pure)
 						}else
 						{
 							//LogManager::getSingleton().logMessage("not half: "+StringConverter::toString(value)+" / "+StringConverter::toString(deadZone(value, t.joystickAxisDeadzone)) +" / "+StringConverter::toString(t.joystickAxisDeadzone) );
+							if (t.joystickAxisReverse)
+								value = 1-value;
 							if(!pure)
 								// no deadzone when using oure value
 								value = deadZone(value, t.joystickAxisDeadzone);
-							if (t.joystickAxisReverse)
-								value = 1-value;
 							if(!pure)
 								value = axisLinearity(value, t.joystickAxisLinearity);
 						}
