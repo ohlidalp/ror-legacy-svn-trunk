@@ -1369,7 +1369,6 @@ int Beam::loadTruck(const char* fname, SceneManager *manager, SceneNode *parent,
 	float wingarea=0.0;
 	int currentScriptCommandNumber=-1;
 	// TODO Unused Varaible
-	//bool enable_truck_lod = (SETTINGS.getSetting("Truck LOD Enabled") == "Yes");
 	bool enable_background_loading = (SETTINGS.getSetting("Background Loading") == "Yes");
 
 	//convert ry
