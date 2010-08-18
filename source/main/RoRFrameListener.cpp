@@ -38,6 +38,7 @@ along with Rigs of Rods.  If not, see <http://www.gnu.org/licenses/>.
 #include "Lens.h"
 #include "ChatSystem.h"
 #include "GlowMaterialListener.h"
+#include "MeshObject.h"
 
 #include "CharacterFactory.h"
 #include "BeamFactory.h"
@@ -1677,7 +1678,6 @@ void RoRFrameListener::loadObject(const char* name, float px, float py, float pz
 	Quaternion rotation;
 	bool ismovable=false;
 
-	bool enable_object_lod = (SETTINGS.getSetting("Object LOD") == "Yes");
 	int event_filter = EVENT_ALL;
 	rotation=Quaternion(Degree(rx), Vector3::UNIT_X)*Quaternion(Degree(ry), Vector3::UNIT_Y)*Quaternion(Degree(rz), Vector3::UNIT_Z);
 
@@ -1722,14 +1722,11 @@ void RoRFrameListener::loadObject(const char* name, float px, float py, float pz
 
 	DataStreamPtr ds=ResourceGroupManager::getSingleton().openResource(odefname, odefgroup);
 
-	bool usingLOD=false;
-
 	ds->readLine(mesh, 1023);
 	if(String(mesh) == "LOD")
 	{
-		//mesh
+		// LOD line is obsolete
 		ds->readLine(mesh, 1023);
-		usingLOD=true;
 	}
 
 	//scale
@@ -1737,53 +1734,32 @@ void RoRFrameListener::loadObject(const char* name, float px, float py, float pz
 	sscanf(line, "%f, %f, %f",&scx,&scy,&scz);
 	sprintf(oname,"object%i(%s)", objcounter,name);
 	objcounter++;
-	Entity *te = mSceneMgr->createEntity(oname, mesh);
-	if(!te)
-	{
-		LogManager::getSingleton().logMessage("Error while loading Object: " + String(mesh));
-		return;
-	}
-	if(te->getNumManualLodLevels()>0)
-		usingLOD=true;
-	te->setQueryFlags(OBJECTS_MASK);
-
-	if(!enable_object_lod) usingLOD=false;
-
-	//		if (!strncmp(name, "road", 4)&&mSceneMgr->getShadowTechnique()==SHADOWTYPE_TEXTURE_MODULATIVE) te->setCastShadows(false);
-	SceneNode *tenode;
-	if (bakeNode && !ismovable &&!usingLOD) //FIXME
-	{
-		//add to a special node that will be baked
-		tenode=bakeNode->createChildSceneNode();
-	}
-	else
-	{
-#if OGRE_VERSION<0x010602
-		te->setNormaliseNormals(true);
-#endif //OGRE_VERSION
-		tenode=mSceneMgr->getRootSceneNode()->createChildSceneNode();
-		LogManager::getSingleton().logMessage("Object is using LOD");
-	}
-	tenode->attachObject(te);
+	
+	SceneNode *tenode = mSceneMgr->getRootSceneNode()->createChildSceneNode();
+	MeshObject *mo = new MeshObject(mScene, mesh, oname, tenode);
+	//mo->setQueryFlags(OBJECTS_MASK);
+	//tenode->attachObject(te);
 	tenode->setScale(scx,scy,scz);
 	tenode->setPosition(px,py,pz);
 	tenode->rotate(rotation);
 	tenode->pitch(Degree(-90));
+	tenode->setVisible(true);
 
 	if(uniquifyMaterial && instancename)
 	{
-		for(unsigned int i = 0; i < te->getNumSubEntities(); i++)
+		for(unsigned int i = 0; i < mo->getEntity()->getNumSubEntities(); i++)
 		{
-			String matname = te->getSubEntity(i)->getMaterialName();
+			SubEntity *se = mo->getEntity()->getSubEntity(i);
+			String matname = se->getMaterialName();
 			String newmatname = matname + "/" + String(instancename);
 			//LogManager::getSingleton().logMessage("subentity " + StringConverter::toString(i) + ": "+ matname + " -> " + newmatname);
-			te->getSubEntity(i)->getMaterial()->clone(newmatname);
-			te->getSubEntity(i)->setMaterialName(newmatname);
+			se->getMaterial()->clone(newmatname);
+			se->setMaterialName(newmatname);
 		}
 	}
 
 	String meshGroup = ResourceGroupManager::getSingleton().findGroupContainingResource(mesh);
-	MeshPtr mainMesh = MeshManager::getSingleton().load(String(mesh), meshGroup);
+	MeshPtr mainMesh = mo->getMesh();
 
 	//collision box(es)
 	bool virt=false;
@@ -1791,11 +1767,6 @@ void RoRFrameListener::loadObject(const char* name, float px, float py, float pz
 	bool classic_ref=true;
 	// everything is of concrete by default
 	ground_model_t *gm = collisions->getGroundModelByString("concrete");
-	//Ogre::Mesh::LodDistanceList dists;
-	//Ogre::Mesh::LodDistanceList default_dists;
-	//default_dists.push_back(50);
-	//default_dists.push_back(300);
-	//default_dists.push_back(900);
 	bool generateLod=false;
 	char eventname[256];
 	eventname[0]=0;
@@ -1807,52 +1778,6 @@ void RoRFrameListener::loadObject(const char* name, float px, float py, float pz
 		if (ll==0 || line[0]=='/' || line[0]==';') continue;
 		//trim line
 		while (*ptline==' ' || *ptline=='\t') ptline++;
-
-		if (!strcmp("endlodmesh", ptline) && lodmode)
-		{
-#if 0
-			if(generateLod)
-			{
-				mainMesh->generateLodLevels(dists, ProgressiveMesh::VRQ_PROPORTIONAL, Ogre::Real(0.8));
-			}
-			LogManager::getSingleton().logMessage("cloning Object LOD");
-			String lodName = mainMesh->getName()+"_LOD_"+StringConverter::toString(objectCounter++);
-			mainMesh->clone(lodName);
-			Entity *teL = mSceneMgr->createEntity(String(oname)+"LOD", lodName);
-			tenode->detachAllObjects();
-			tenode->attachObject(teL);
-#endif //0
-
-			lodmode=false;
-			continue;
-		}
-
-		if(lodmode)
-		{
-#if 0
-			// we parse a LOD line
-			if(enable_object_lod)
-			{
-				float distance=0;
-				char tmp[255]="";
-				int res = sscanf(ptline, "%f, %s",&distance, tmp);
-				if(!strcmp("generate", tmp))
-				{
-					dists.push_back(distance);
-					generateLod=true;
-					continue;
-				}
-
-				if(res < 2) continue;
-				// manual lod now
-				String meshname = String(tmp);
-				String meshGroup = ResourceGroupManager::getSingleton().findGroupContainingResource(meshname);
-				MeshPtr lmesh = MeshManager::getSingleton().load(meshname, meshGroup);
-				mainMesh->createManualLodLevel(distance, lmesh->getName());
-			}
-#endif //0
-			continue;
-		}
 
 		if (!strcmp("end",ptline)) break;
 		if (!strcmp("movable", ptline)) {ismovable=true;continue;};
@@ -1901,11 +1826,6 @@ void RoRFrameListener::loadObject(const char* name, float px, float py, float pz
 			gm = collisions->getGroundModelByString("concrete");
 			continue;
 		};
-		if (!strcmp("beginlodmesh", ptline))
-		{
-			lodmode=true;
-			continue;
-		}
 		if (!strncmp("boxcoords", ptline, 9))
 		{
 			sscanf(ptline, "boxcoords %f, %f, %f, %f, %f, %f",&lx,&hx,&ly, &hy,&lz, &hz);
@@ -2005,26 +1925,13 @@ void RoRFrameListener::loadObject(const char* name, float px, float py, float pz
 
 			continue;
 		}
-		if (!strcmp("autogeneratelod", ptline) && !lodmode)
-		{
-#if 0
-			if(enable_object_lod)
-			{
-				mainMesh->generateLodLevels(default_dists, ProgressiveMesh::VRQ_PROPORTIONAL, Ogre::Real(0.8));
-				Entity *teL = mSceneMgr->createEntity(String(oname)+"LOD", mainMesh->getName());
-				tenode->detachAllObjects();
-				tenode->attachObject(teL);
-			}
-#endif //0
-			continue;
-		}
 		if (!strncmp("setMeshMaterial", ptline, 15))
 		{
 			char mat[255]="";
 			sscanf(ptline, "setMeshMaterial %s", mat);
-			if(te && strnlen(mat,250)>0)
+			if(mo->getEntity() && strnlen(mat,250)>0)
 			{
-				te->setMaterialName(String(mat));
+				mo->getEntity()->setMaterialName(String(mat));
 				// load it
 				//MaterialManager::getSingleton().load(String(mat), ResourceGroupManager::DEFAULT_RESOURCE_GROUP_NAME);
 			}
@@ -2035,9 +1942,9 @@ void RoRFrameListener::loadObject(const char* name, float px, float py, float pz
 			char animname[255]="";
 			float speedfactorMin = 0, speedfactorMax = 0;
 			sscanf(ptline, "playanimation %f, %f, %s", &speedfactorMin, &speedfactorMax, animname);
-			if(tenode && te && strnlen(animname,250)>0)
+			if(tenode && mo->getEntity() && strnlen(animname,250)>0)
 			{
-				AnimationStateSet *s = te->getAllAnimationStates();
+				AnimationStateSet *s = mo->getEntity()->getAllAnimationStates();
 				if(!s->hasAnimationState(String(animname)))
 				{
 					LogManager::getSingleton().logMessage("ODEF: animation '" + String(animname) + "' for mesh: '" + String(mesh) + "' in odef file '" + String(name) + ".odef' not found!");
@@ -2045,14 +1952,14 @@ void RoRFrameListener::loadObject(const char* name, float px, float py, float pz
 				}
 				animated_object_t ao;
 				ao.node = tenode;
-				ao.ent = te;
+				ao.ent = mo->getEntity();
 				ao.speedfactor = speedfactorMin;
 				if(speedfactorMin != speedfactorMax)
 					ao.speedfactor = Math::RangeRandom(speedfactorMin, speedfactorMax);
 				ao.anim = 0;
 				try
 				{
-					ao.anim = te->getAnimationState(String(animname));
+					ao.anim = mo->getEntity()->getAnimationState(String(animname));
 				} catch (...)
 				{
 					ao.anim = 0;
@@ -2069,9 +1976,9 @@ void RoRFrameListener::loadObject(const char* name, float px, float py, float pz
 		}
 		if (!strncmp("drawTextOnMeshTexture", ptline, 21))
 		{
-			if(!te)
+			if(!mo->getEntity())
 				continue;
-			String matName = te->getSubEntity(0)->getMaterialName();
+			String matName = mo->getEntity()->getSubEntity(0)->getMaterialName();
 			MaterialPtr m = MaterialManager::getSingleton().getByName(matName);
 			if(m.getPointer() == 0)
 			{
@@ -2134,8 +2041,8 @@ void RoRFrameListener::loadObject(const char* name, float px, float py, float pz
 			w = background->getWidth() * w;
 			h = background->getHeight() * h;
 
-      Image::Box box = Image::Box((size_t)x, (size_t)y, (size_t)(x+w), (size_t)(y+h));
-      WriteToTexture(String(text), texture, box, font, ColourValue(r, g, b, a), option);
+			Image::Box box = Image::Box((size_t)x, (size_t)y, (size_t)(x+w), (size_t)(y+h));
+			WriteToTexture(String(text), texture, box, font, ColourValue(r, g, b, a), option);
 
 			// we can save it to disc for debug purposes:
 			//SaveImage(texture, "test.png");
@@ -2144,15 +2051,12 @@ void RoRFrameListener::loadObject(const char* name, float px, float py, float pz
 			MaterialPtr mNew = MaterialManager::getSingleton().getByName(tmpMatName);
 			mNew->getTechnique(0)->getPass(0)->getTextureUnitState(0)->setTextureName(tmpTextName);
 
-			te->setMaterialName(String(tmpMatName));
+			mo->getEntity()->setMaterialName(String(tmpMatName));
 			continue;
 		}
 
 		LogManager::getSingleton().logMessage("ODEF: unknown command in "+String(fname)+" : "+String(ptline));
 	}
-
-	// ds closes automatically, so do not close it explicitly here:
-	//ds->close();
 
 	//add icons if type is set
 #ifdef USE_MYGUI
@@ -6912,8 +6816,10 @@ void RoRFrameListener::moveCamera(float dt)
 	//envmap
 	if (envmap)
 	{
-		if (!envmap->inited) envmap->forceUpdate(Vector3(terrainxsize/2.0, hfinder->getHeightAt(terrainxsize/2.0, terrainzsize/2.0)+50.0, terrainzsize/2.0));
-		if (current_truck!=-1) envmap->update(trucks[current_truck]->getPosition(), trucks[current_truck]);
+		if (!envmap->inited)
+			envmap->forceUpdate(Vector3(terrainxsize/2.0, hfinder->getHeightAt(terrainxsize/2.0, terrainzsize/2.0)+50.0, terrainzsize/2.0));
+		if (current_truck != -1)
+			envmap->update(trucks[current_truck]->getPosition(), trucks[current_truck]);
 	}
 
 	//position audio listener
