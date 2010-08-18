@@ -267,6 +267,7 @@ void Beam::updateSlideNodeForces(const Ogre::Real dt)
 
 void Beam::resetSlideNodePositions()
 {
+	if(mSlideNodes.empty()) return;
 	for(std::vector<SlideNode>::iterator it = mSlideNodes.begin(); it != mSlideNodes.end(); ++it)
 	{
 		it->ResetPositions();

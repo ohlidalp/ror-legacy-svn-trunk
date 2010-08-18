@@ -266,7 +266,6 @@ void ScriptEngine::init()
 
 	// Register everything
 	// class Beam
-	/*
 	result = engine->RegisterObjectType("BeamClass", sizeof(Beam), asOBJ_REF); assert(result>=0);
 	result = engine->RegisterObjectMethod("BeamClass", "void scaleTruck(float)", asMETHOD(Beam,scaleTruck), asCALL_THISCALL); assert(result>=0);
 	result = engine->RegisterObjectMethod("BeamClass", "string getTruckName()", asMETHOD(Beam,getTruckName), asCALL_THISCALL); assert(result>=0);
@@ -299,6 +298,7 @@ void ScriptEngine::init()
 	result = engine->RegisterObjectMethod("BeamClass", "bool getCustomParticleMode()", asMETHOD(Beam,getCustomParticleMode), asCALL_THISCALL); assert(result>=0);
 	result = engine->RegisterObjectMethod("BeamClass", "bool getReverseLightVisible()", asMETHOD(Beam,getCustomParticleMode), asCALL_THISCALL); assert(result>=0);
 	result = engine->RegisterObjectMethod("BeamClass", "float getHeadingDirectionAngle()", asMETHOD(Beam,getHeadingDirectionAngle), asCALL_THISCALL); assert(result>=0);
+	result = engine->RegisterObjectMethod("BeamClass", "bool isLocked()", asMETHOD(Beam,isLocked), asCALL_THISCALL); assert(result>=0);
 
 	// offsetof invalid for classes?
 	result = engine->RegisterObjectProperty("BeamClass", "float brake", offsetof(Beam, brake)); assert(result>=0);
@@ -313,13 +313,12 @@ void ScriptEngine::init()
 	result = engine->RegisterObjectProperty("BeamClass", "bool replaymode", offsetof(Beam, replaymode)); assert(result>=0);
 	result = engine->RegisterObjectProperty("BeamClass", "int replaylen", offsetof(Beam, replaylen)); assert(result>=0);
 	result = engine->RegisterObjectProperty("BeamClass", "int replaypos", offsetof(Beam, replaypos)); assert(result>=0);
-	result = engine->RegisterObjectProperty("BeamClass", "int locked", offsetof(Beam, locked)); assert(result>=0);
 	result = engine->RegisterObjectProperty("BeamClass", "bool cparticle_enabled", offsetof(Beam, cparticle_enabled)); assert(result>=0);
-	result = engine->RegisterObjectProperty("BeamClass", "int hookId", offsetof(Beam, hookId)); assert(result>=0);
-	result = engine->RegisterObjectProperty("BeamClass", "BeamClass @lockTruck", offsetof(Beam, lockTruck)); assert(result>=0);
+	//result = engine->RegisterObjectProperty("BeamClass", "int hookId", offsetof(Beam, hookId)); assert(result>=0);
+	//result = engine->RegisterObjectProperty("BeamClass", "BeamClass @lockTruck", offsetof(Beam, lockTruck)); assert(result>=0);
 	result = engine->RegisterObjectProperty("BeamClass", "int free_node", offsetof(Beam, free_node)); assert(result>=0);
 	result = engine->RegisterObjectProperty("BeamClass", "int dynamicMapMode", offsetof(Beam, dynamicMapMode)); assert(result>=0);
-	result = engine->RegisterObjectProperty("BeamClass", "int tied", offsetof(Beam, tied)); assert(result>=0);
+	//result = engine->RegisterObjectProperty("BeamClass", "int tied", offsetof(Beam, tied)); assert(result>=0);
 	result = engine->RegisterObjectProperty("BeamClass", "int canwork", offsetof(Beam, canwork)); assert(result>=0);
 	result = engine->RegisterObjectProperty("BeamClass", "int hashelp", offsetof(Beam, hashelp)); assert(result>=0);
 	result = engine->RegisterObjectProperty("BeamClass", "float minx", offsetof(Beam, minx)); assert(result>=0);
@@ -374,7 +373,6 @@ void ScriptEngine::init()
 	result = engine->RegisterObjectProperty("BeamClass", "bool meshesVisible", offsetof(Beam, meshesVisible)); assert(result>=0);
 	result = engine->RegisterObjectBehaviour("BeamClass", asBEHAVE_ADDREF, "void f()",asMETHOD(Beam,addRef), asCALL_THISCALL); assert(result>=0);
 	result = engine->RegisterObjectBehaviour("BeamClass", asBEHAVE_RELEASE, "void f()",asMETHOD(Beam,release), asCALL_THISCALL); assert(result>=0);
-	*/
 
 	// class Settings
 	result = engine->RegisterObjectType("SettingsClass", sizeof(Settings), asOBJ_REF); assert(result>=0);
@@ -383,7 +381,6 @@ void ScriptEngine::init()
 	result = engine->RegisterObjectBehaviour("SettingsClass", asBEHAVE_RELEASE, "void f()",asMETHOD(Settings,release), asCALL_THISCALL); assert(result>=0);
 
 	// class Cache_Entry
-	/*
 	result = engine->RegisterObjectType("Cache_EntryClass", sizeof(Cache_Entry), asOBJ_REF); assert(result>=0);
 	result = engine->RegisterObjectProperty("Cache_EntryClass", "string minitype", offsetof(Cache_Entry, minitype)); assert(result>=0);
 	result = engine->RegisterObjectProperty("Cache_EntryClass", "string fname", offsetof(Cache_Entry, fname)); assert(result>=0);
@@ -445,7 +442,6 @@ void ScriptEngine::init()
 	result = engine->RegisterObjectBehaviour("Cache_EntryClass", asBEHAVE_ADDREF, "void f()",asMETHOD(Cache_Entry,addRef), asCALL_THISCALL); assert(result>=0);
 	result = engine->RegisterObjectBehaviour("Cache_EntryClass", asBEHAVE_RELEASE, "void f()",asMETHOD(Cache_Entry,release), asCALL_THISCALL); assert(result>=0);
 	// TODO: add Cache_Entry::sectionconfigs
-	*/
 
 	// todo: add Vector3 classes and other utility classes!
 

@@ -35,7 +35,7 @@ Airfoil::Airfoil(char* fname)
 	int lastia=-1;
 	//fd=fopen(rfname, "r");
 	ResourceGroupManager& rgm = ResourceGroupManager::getSingleton();
-		
+	
 	String group="";
 	try
 	{

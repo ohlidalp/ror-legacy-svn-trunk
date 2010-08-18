@@ -217,16 +217,8 @@ protected:
 		for(int i=0; i<4;i++)
 		{
 			String fn = basename + "_lod" + StringConverter::toString(i+1) + ".mesh";
-			String group = "";
-			try
-			{
-				group = ResourceGroupManager::getSingleton().findGroupContainingResource(fn);
-			}catch(...)
-			{
-				continue;
-			}
-
-			if(group.empty()) continue;
+			bool exists = ResourceGroupManager::getSingleton().resourceExistsInAnyGroup(fn);
+			if(!exists) continue;
 
 			float distance = 3;
 			if(i == 1) distance = 20;
