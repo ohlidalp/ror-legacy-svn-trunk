@@ -112,6 +112,30 @@ FlexBody::FlexBody(SceneManager *manager, node_t *nds, int numnds, char* meshnam
 	MeshPtr mesh = Ogre::MeshManager::getSingleton().load(meshname, groupname);
 	MeshPtr newmesh = mesh->clone(uname_mesh);
 	
+	// now find possible LODs
+ 	String basename, ext;
+	StringUtil::splitBaseFilename(String(meshname), basename, ext);
+	for(int i=0; i<4;i++)
+	{
+		String fn = basename + "_" + StringConverter::toString(i) + ".mesh";
+		String group = "";
+		try
+		{
+			group = ResourceGroupManager::getSingleton().findGroupContainingResource(fn);
+		}catch(...)
+		{
+			continue;
+		}
+
+		if(group.empty()) continue;
+
+		float distance = 3;
+		if(i == 1) distance = 20;
+		if(i == 2) distance = 50;
+		if(i == 3) distance = 200;
+		newmesh->createManualLodLevel(distance, fn);
+	}
+
 	Entity *ent = manager->createEntity(uname, uname_mesh);
 	MaterialFunctionMapper::replaceSimpleMeshMaterials(ent, ColourValue(0.5, 0.5, 1));
 	if(mfm) mfm->replaceMeshMaterials(ent);
@@ -447,40 +471,7 @@ FlexBody::FlexBody(SceneManager *manager, node_t *nds, int numnds, char* meshnam
 	LogManager::getSingleton().logMessage("FLEXBODY show mesh");
 	//okay, show the mesh now
 	snode=manager->getRootSceneNode()->createChildSceneNode();
-
-	bool enable_truck_lod = (SETTINGS.getSetting("Truck LOD Enabled") == "Yes");
-	if(enable_truck_lod)
-	{
-		LogManager::getSingleton().logMessage("FLEXBODY uses " + StringConverter::toString(msh->getNumLodLevels()) + " LOD levels.");
-#if 0
-		// XXX: FIX: LODs in 1.7
-		// enforce LOD
-		if(msh->getNumLodLevels() < 2 && vertex_count > 10000)
-		{
-			LogManager::getSingleton().logMessage("FLEXBODY uses > 10k (" + StringConverter::toString(vertex_count) + ") vertices but does not provide its own LODs, will generate some now. This can take a while. Please add LODs when exporting the mesh, this prevents the automatic generation (and the waiting time).");
-			
-			Ogre::Mesh::LodDistanceList default_dists;
-			default_dists.push_back(50);
-			default_dists.push_back(100);
-			default_dists.push_back(300);
-			msh->generateLodLevels(default_dists, ProgressiveMesh::VRQ_PROPORTIONAL, Ogre::Real(0.8));
-			// custom entities for custom LODs
-			Entity *ent_lod = manager->createEntity(String(uname)+"LOD", msh->getName());
-
-			snode->attachObject(ent_lod);
-
-		} else
-#endif //0	
-		{
-			// no custom LOD's here
-			snode->attachObject(ent);
-		}
-		LogManager::getSingleton().logMessage("flexbody is using LODs");
-	} else
-	{
-		// no LOD's here
-		snode->attachObject(ent);
-	}
+	snode->attachObject(ent);
 	snode->setPosition(position);
 
 #if 0
