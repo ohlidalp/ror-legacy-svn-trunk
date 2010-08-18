@@ -29,7 +29,7 @@ along with Rigs of Rods.  If not, see <http://www.gnu.org/licenses/>.
 class MeshObject : public Ogre::ResourceBackgroundQueue::Listener, public Ogre::Resource::Listener
 {
 public:
-	MeshObject(Ogre::SceneManager *smgr, Ogre::String meshName, Ogre::String entityName, Ogre::SceneNode *sceneNode=0, bool backgroundLoading=true)
+	MeshObject(Ogre::SceneManager *smgr, Ogre::String meshName, Ogre::String entityName, Ogre::SceneNode *sceneNode=0, bool backgroundLoading=false)
 		: smgr(smgr)
 		, meshName(meshName)
 		, entityName(entityName)
@@ -109,6 +109,10 @@ public:
 		}
 
 	}
+
+	Ogre::MeshPtr getMesh() { return mesh; };
+	Ogre::Entity *getEntity() { return ent; };
+
 protected:
 	Ogre::SceneManager *smgr;
 	Ogre::String meshName;
@@ -126,6 +130,7 @@ protected:
 	Skin *skin;
 	bool castshadows;
 	MaterialFunctionMapper *mfm;
+
 
 	void postProcess()
 	{
@@ -211,7 +216,7 @@ protected:
 		StringUtil::splitBaseFilename(meshName, basename, ext);
 		for(int i=0; i<4;i++)
 		{
-			String fn = basename + "_" + StringConverter::toString(i) + ".mesh";
+			String fn = basename + "_lod" + StringConverter::toString(i+1) + ".mesh";
 			String group = "";
 			try
 			{
