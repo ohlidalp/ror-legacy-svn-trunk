@@ -4544,7 +4544,8 @@ void RoRFrameListener::loadTerrain(String terrainfile)
 	if(!netmode)
 	{
 		LogManager::getSingleton().logMessage("Loading Angelscript Script engine." );
-		ScriptEngine::getSingleton().loadTerrainScript(terrainfile+".as");
+		if(ResourceGroupManager::getSingleton().resourceExistsInAnyGroup(terrainfile+".as"))
+			ScriptEngine::getSingleton().loadTerrainScript(terrainfile+".as");
 	}
 #endif
 
@@ -5884,24 +5885,6 @@ void RoRFrameListener::loadTerrain(String terrainfile)
 	// SAY CHEESE!
 	//no, not yet, Caelum is not ready!
 	//if (envmap) envmap->update(Vector3(terrainxsize/2.0, hfinder->getHeightAt(terrainxsize/2.0, terrainzsize/2.0)+50.0, terrainzsize/2.0));
-
-#if OGRE_VERSION>0x010602
-#if 0
-	// disabled for now, to be cleaned up and moved into the shadowmanager
-	if (SETTINGS.getSetting("Shadow technique")=="Parallel-split Shadow Maps")
-	{
-		Ogre::ResourceManager::ResourceMapIterator RI = Ogre::MaterialManager::getSingleton().getResourceIterator();
-		while (RI.hasMoreElements())
-		{
-			Ogre::MaterialPtr mat = RI.getNext();
-			if(mat.isNull()) continue;
-			if(!mat->getNumTechniques()) continue;
-			if (mat->getTechnique(0)->getPass("SkyLight") != NULL)
-				mat->getTechnique(0)->getPass("SkyLight")->getFragmentProgramParameters()->setNamedConstant("pssmSplitPoints", splitPoints);
-		}
-	}
-#endif //0
-#endif //OGRE_VERSION
 
 }
 

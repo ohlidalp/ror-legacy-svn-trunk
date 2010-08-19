@@ -65,7 +65,7 @@ int ShadowManager::changeShadowTechnique(Ogre::ShadowTechnique tech)
 
 	mSceneMgr->setShadowTechnique(tech);
 	mSceneMgr->setShadowFarDistance(shadowFarDistance);
-	mSceneMgr->setShowDebugShadows(true);
+	mSceneMgr->setShowDebugShadows(false);
 
 	if(tech == SHADOWTYPE_STENCIL_MODULATIVE)
 	{
@@ -114,7 +114,7 @@ int ShadowManager::changeShadowTechnique(Ogre::ShadowTechnique tech)
 		}
 		mSceneMgr->setShadowCameraSetup(mPSSMSetup);
 		
-		bool depthShadows = false;
+		bool depthShadows = true;
 		if (depthShadows)
 		{
 			mSceneMgr->setShadowTextureCount(3);
@@ -149,6 +149,19 @@ int ShadowManager::changeShadowTechnique(Ogre::ShadowTechnique tech)
 			matProfile->setReceiveDynamicShadowsDepth(depthShadows);
 			matProfile->setReceiveDynamicShadowsPSSM(static_cast<PSSMShadowCameraSetup*>(mPSSMSetup.get()));
 		}
+
+		/*
+		Ogre::ResourceManager::ResourceMapIterator RI = Ogre::MaterialManager::getSingleton().getResourceIterator();
+		while (RI.hasMoreElements())
+		{
+			Ogre::MaterialPtr mat = RI.getNext();
+			if(mat.isNull()) continue;
+			if(!mat->getNumTechniques()) continue;
+			if (mat->getTechnique(0)->getPass("SkyLight") != NULL)
+				mat->getTechnique(0)->getPass("SkyLight")->getFragmentProgramParameters()->setNamedConstant("pssmSplitPoints", splitPoints);
+		}
+		*/
+
 #else
 		showError("Parallel-split Shadow Maps as shadow technique is only available when you build with Ogre 1.6 support.", "PSSM error");
 		exit(1);
