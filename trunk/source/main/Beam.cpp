@@ -8616,18 +8616,20 @@ void Beam::calcForcesEuler(int doUpdate, Real dt, int step, int maxstep, Beam** 
 		float rate=1;
 		if(hydroSpeedCoupling)
 		{
-			rate=40.0/(10.0+fabs(wspeed/2.0));
-
+			//new rate value (30 instead of 40) to deal with the changed cmdKeyInertia settings
+			rate=30.0/(10.0+fabs(wspeed/2.0));
 			// minimum rate: 20% --> enables to steer high velocity trucks
 			if(rate<1.2) rate = 1.2;
 		}
-		if (hydrodircommand!=0)
-		{
-			if (hydrodirstate > hydrodircommand)
-				hydrodirstate -= dt * rate;
-			else
-				hydrodirstate += dt * rate;
-		}
+		//need a maximum rate for analog devices, otherwise hydro beams break
+		if (!hydroSpeedCoupling)
+			rate=100;
+
+		if (hydrodirstate > hydrodircommand)
+			hydrodirstate -= dt * rate;
+		else
+			hydrodirstate += dt * rate;
+
 		if(hydroSpeedCoupling)
 		{
 			float dirdelta=dt;

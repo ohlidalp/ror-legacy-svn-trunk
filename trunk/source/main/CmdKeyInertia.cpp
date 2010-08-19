@@ -35,8 +35,8 @@ CmdKeyInertia::CmdKeyInertia(int maxCmdKeys)
 		cmdKeyInertia[i].time=0.0f;
 		cmdKeyInertia[i].startSpline=0;
 		cmdKeyInertia[i].stopSpline=0;
-		//set "normal" values with nearly no delay
-		setCmdKeyDelay(i,10.0,10.0,"constant","constant");
+		cmdKeyInertia[i].startDelay=0;
+		cmdKeyInertia[i].stopDelay=0;
 	}
 }
 CmdKeyInertia::~CmdKeyInertia()

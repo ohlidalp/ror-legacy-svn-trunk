@@ -2119,16 +2119,21 @@ bool InputEngine::isEventAnalog(int eventID)
 	std::vector<event_trigger_t> t_vec = events[eventID];
 	if(t_vec.size() > 0)
 	{
-		if(t_vec[0].eventtype == ET_MouseAxisX \
-			|| t_vec[0].eventtype == ET_MouseAxisY \
-			|| t_vec[0].eventtype == ET_MouseAxisZ \
-			|| t_vec[0].eventtype == ET_JoystickAxisAbs \
-			|| t_vec[0].eventtype == ET_JoystickAxisRel \
-			|| t_vec[0].eventtype == ET_JoystickSliderX \
-			|| t_vec[0].eventtype == ET_JoystickSliderY)
-			return true;
-		else
-			return false;
+		//loop through all eventtypes, because we want to find a analog device wether it is the first device or not
+		//this means a analog device is always preferred over a digital one
+		for (unsigned int i=0;i<t_vec.size();i++)
+		{
+			if(t_vec[i].eventtype == ET_MouseAxisX \
+				|| t_vec[i].eventtype == ET_MouseAxisY \
+				|| t_vec[i].eventtype == ET_MouseAxisZ \
+				|| t_vec[i].eventtype == ET_JoystickAxisAbs \
+				|| t_vec[i].eventtype == ET_JoystickAxisRel \
+				|| t_vec[i].eventtype == ET_JoystickSliderX \
+				|| t_vec[i].eventtype == ET_JoystickSliderY)
+				{
+					return true;
+				}
+		}
 	}
 	return false;
 #if 0
