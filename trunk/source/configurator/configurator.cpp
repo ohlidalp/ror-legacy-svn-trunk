@@ -227,6 +227,7 @@ public:
 	void OnLinkClickedUpdate(wxHtmlLinkEvent& event);
 	//void OnSightRangeScroll(wxScrollEvent& event);
 	void onTreeSelChange(wxTreeEvent& event);
+	void onChangeShadowChoice(wxCommandEvent& event);
 	void onChangeLanguageChoice(wxCommandEvent& event);
 	//void OnButRemap(wxCommandEvent& event);
 	void onActivateItem(wxTreeEvent& event);
@@ -251,6 +252,7 @@ public:
 	void OnButCheckOpenCL(wxCommandEvent& event);
 	void OnButCheckOpenCLBW(wxCommandEvent& event);
 	void updateRoR();
+	void OnShadowSliderScroll(wxScrollEvent& event);
 	void OnSimpleSliderScroll(wxScrollEvent& event);
 	void OnSimpleSlider2Scroll(wxScrollEvent& event);
 	void OnForceFeedbackScroll(wxScrollEvent& event);
@@ -275,6 +277,9 @@ private:
 	wxChoice *textfilt;
 	wxChoice *sky;
 	wxChoice *shadow;
+	wxCheckBox *shadowOptimizations;
+	wxSlider *shadowDistance;
+	wxStaticText *shadowDistanceText;
 	wxChoice *water;
 	wxCheckBox *waves;
 	wxCheckBox *enableFog;
@@ -296,8 +301,6 @@ private:
 	wxCheckBox *beamdebug;
 	wxCheckBox *autodl;
 	wxCheckBox *posstor;
-	wxCheckBox *trucklod;
-	wxCheckBox *objlod;
 	wxCheckBox *extcam;
 	wxCheckBox *dashboard;
 	wxCheckBox *mirror;
@@ -1068,6 +1071,9 @@ enum
 	get_user_token,
 	check_opencl,
 	check_opencl_bw,
+	shadowslider,
+	shadowschoice,
+	shadowopt,
 };
 
 // ----------------------------------------------------------------------------
@@ -1094,6 +1100,8 @@ BEGIN_EVENT_TABLE(MyDialog, wxDialog)
 	EVT_HTML_LINK_CLICKED(main_html, MyDialog::OnLinkClicked)
 	EVT_HTML_LINK_CLICKED(update_html, MyDialog::OnLinkClickedUpdate)
 	//EVT_SCROLL(MyDialog::OnSightRangeScroll)
+	EVT_CHOICE(shadowschoice, MyDialog::onChangeShadowChoice)
+	EVT_COMMAND_SCROLL_CHANGED(shadowslider, MyDialog::OnShadowSliderScroll)
 	EVT_COMMAND_SCROLL_CHANGED(SCROLL1, MyDialog::OnSimpleSliderScroll)
 	EVT_COMMAND_SCROLL_CHANGED(SCROLL2, MyDialog::OnSimpleSlider2Scroll)
 	EVT_COMMAND_SCROLL(FFSLIDER, MyDialog::OnForceFeedbackScroll)
@@ -1806,8 +1814,8 @@ MyDialog::MyDialog(const wxString& title, MyApp *_app) : wxDialog(NULL, wxID_ANY
 	sky->SetToolTip(_("Caelum sky is nice but quite slow unless you have a high-powered GPU."));
 	y+=25;
 
-	dText = new wxStaticText(graphicsPanel, -1, _("Shadow type:"), wxPoint(10,y+3));
-	shadow=new wxChoice(graphicsPanel, -1, wxPoint(x_row1, y), wxSize(200, -1), 0);
+	dText = new wxStaticText(graphicsPanel, wxID_ANY, _("Shadow type:"), wxPoint(10,y+3));
+	shadow=new wxChoice(graphicsPanel, shadowschoice, wxPoint(x_row1, y), wxSize(200, -1), 0);
 	shadow->Append(conv("No shadows (fastest)"));
 	shadow->Append(conv("Texture shadows"));
 	shadow->Append(conv("Stencil shadows (best looking)"));
@@ -1815,6 +1823,16 @@ MyDialog::MyDialog(const wxString& title, MyApp *_app) : wxDialog(NULL, wxID_ANY
 	shadow->Append(conv("Parallel-split Shadow Maps"));
 #endif //OGRE_VERSION
 	shadow->SetToolTip(_("Texture shadows are fast but limited: jagged edges, no object self-shadowing, limited shadow distance.\nStencil shadows are slow but gives perfect shadows."));
+	y+=25;
+
+	dText = new wxStaticText(graphicsPanel, wxID_ANY, _("Shadow Distance:"), wxPoint(10,y+3));
+	shadowDistance=new wxSlider(graphicsPanel, shadowslider, 50, 5, 200,wxPoint(x_row1, y), wxSize(200, -1));
+	shadowDistance->SetToolTip(_("Adjusts how far the shadows will be drawn"));
+	shadowDistanceText = new wxStaticText(graphicsPanel, wxID_ANY, _("50 m"), wxPoint(x_row1 + 210,y+3));
+	y+=25;
+
+	shadowOptimizations=new wxCheckBox(graphicsPanel, shadowopt, _("Shadow Performance Optimizations"), wxPoint(x_row1, y), wxSize(200, -1), 0);
+	shadowOptimizations->SetToolTip(_("When turned on, it disables the vehicles shadow when driving in first person mode."));
 	y+=25;
 
 	dText = new wxStaticText(graphicsPanel, -1, _("Water type:"), wxPoint(10,y+3));
@@ -2044,7 +2062,7 @@ MyDialog::MyDialog(const wxString& title, MyApp *_app) : wxDialog(NULL, wxID_ANY
 	dText = new wxStaticText(advancedPanel, -1, _("minimum visibility range in percent"), wxPoint(10,y));
 	y+=20;
 	//this makes a visual bug in macosx
-	sightrange=new wxSlider(advancedPanel, -1, 30, 20, 130, wxPoint(30, y), wxSize(200, 40), wxSL_LABELS|wxSL_AUTOTICKS);
+	sightrange=new wxSlider(advancedPanel, -1, 30, 5, 500, wxPoint(30, y), wxSize(200, 40), wxSL_LABELS|wxSL_AUTOTICKS);
 	sightrange->SetToolTip(_("This sets the minimum sight range Setting. It determines how far the terrain should be drawn. \n100% means you can view the whole terrain. \nWith 130% you can view everything across the diagonal Axis."));
 	sightrange->SetTickFreq(10, 0);
 	sightrange->SetPageSize(10);
@@ -2061,13 +2079,6 @@ MyDialog::MyDialog(const wxString& title, MyApp *_app) : wxDialog(NULL, wxID_ANY
 	y+=15;
 	replaymode=new wxCheckBox(advancedPanel, -1, _("Replay Mode"), wxPoint(320, y));
 	replaymode->SetToolTip(_("Replay mode. (Can affect your frame rate)"));
-	y+=15;
-	trucklod=new wxCheckBox(advancedPanel, -1, _("Enable Truck LODs"), wxPoint(320, y));
-	trucklod->SetToolTip(_("Enables a technique for multiple level of detail meshes. Only disable if you experience problems with it."));
-	trucklod->Disable(); // not in use atm
-	y+=15;
-	objlod=new wxCheckBox(advancedPanel, -1, _("Enable Object LODs"), wxPoint(320, y));
-	objlod->SetToolTip(_("Enables a technique for multiple level of detail meshes. Only disable if you experience problems with it."));
 	y+=15;
 	posstor=new wxCheckBox(advancedPanel, -1, _("Enable Position Storage"), wxPoint(320, y));
 	posstor->SetToolTip(_("Can be used to quick save and load positions of trucks"));
@@ -2218,6 +2229,25 @@ void MyDialog::loadOgre()
 	}
 	updateRendersystems(ogreRoot->getRenderSystem());
 }
+
+void MyDialog::onChangeShadowChoice(wxCommandEvent &e)
+{
+	// TBD
+	bool enable = (shadow->GetSelection() != 0);
+
+	if(enable)
+	{
+		shadowDistance->Enable();
+		shadowOptimizations->Enable();
+	} else
+	{
+		shadowDistance->Disable();
+		shadowOptimizations->Disable();
+	}
+
+
+}
+
 void MyDialog::onChangeLanguageChoice(wxCommandEvent& event)
 {
 	wxString warning = _("You must save and restart the program to activate the new language!");
@@ -2468,6 +2498,8 @@ void MyDialog::SetDefaults()
 	sky->SetSelection(0);//sandstorm
 	//wxChoice *shadow;
 	shadow->SetSelection(0);//no shadows
+	shadowOptimizations->SetValue(true);
+	shadowDistance->SetValue(50);
 	//wxChoice *water;
 	water->SetSelection(0);//basic water
 	waves->SetValue(false);
@@ -2507,8 +2539,6 @@ void MyDialog::SetDefaults()
 	if(enablexfire) enablexfire->SetValue(true);
 	autodl->SetValue(true);
 	posstor->SetValue(true);
-	trucklod->SetValue(false);
-	objlod->SetValue(true);
 	beamdebug->SetValue(false);
 	extcam->SetValue(false);
 	//wxCheckBox *dashboard;
@@ -2556,7 +2586,12 @@ void MyDialog::getSettingsControls()
 	char tmp[255]="";
 	settings["Texture Filtering"] = conv(textfilt->GetStringSelection());
 	settings["Sky effects"] = conv(sky->GetStringSelection());
+
 	settings["Shadow technique"] = conv(shadow->GetStringSelection());
+	sprintf(tmp, "%d", shadowDistance->GetValue());
+	settings["Shadow distance"] = tmp;
+	settings["Shadow optimizations"] = (shadowOptimizations->GetValue()) ? "Yes" : "No";
+	
 	settings["Water effects"] = conv(water->GetStringSelection());
 	settings["Waves"] = (waves->GetValue()) ? "Yes" : "No";
 	settings["Engine smoke"] = (smoke->GetValue()) ? "Yes" : "No";
@@ -2575,9 +2610,6 @@ void MyDialog::getSettingsControls()
 	settings["AutoDownload"] = (autodl->GetValue()) ? "Yes" : "No";
 	settings["Position Storage"] = (posstor->GetValue()) ? "Yes" : "No";
 	settings["GearboxMode"]= conv(gearBoxMode->GetStringSelection());
-	// disabled for now
-	//settings["Truck LOD"] = (trucklod->GetValue()) ? "Yes" : "No";
-	settings["Object LOD"] = (objlod->GetValue()) ? "Yes" : "No";
 	settings["External Camera Mode"] = (extcam->GetValue()) ? "Static" : "Pitching";
 	settings["Dashboard"] = (dashboard->GetValue()) ? "Yes" : "No";
 	settings["Mirrors"] = (mirror->GetValue()) ? "Yes" : "No";
@@ -2652,6 +2684,8 @@ void MyDialog::updateSettingsControls()
 	st = settings["Texture Filtering"]; if (st.length()>0) textfilt->SetStringSelection(conv(st));
 	st = settings["Sky effects"]; if (st.length()>0) sky->SetStringSelection(conv(st));
 	st = settings["Shadow technique"]; if (st.length()>0) shadow->SetStringSelection(conv(st));
+	st = settings["Shadow distance"]; if (st.length()>0) shadowDistance->SetValue((int)atof(st.c_str()));
+	st = settings["Shadow optimizations"]; if (st.length()>0) shadowOptimizations->SetValue(st=="Yes");
 	st = settings["Water effects"]; if (st.length()>0) water->SetStringSelection(conv(st));
 	st = settings["Waves"]; if (st.length()>0) waves->SetValue(st=="Yes");
 	st = settings["Engine smoke"]; if (st.length()>0) smoke->SetValue(st=="Yes");
@@ -2669,9 +2703,6 @@ void MyDialog::updateSettingsControls()
 	st = settings["External Camera Mode"]; if (st.length()>0) extcam->SetValue(st=="Static");
 	st = settings["AutoDownload"]; if (st.length()>0) autodl->SetValue(st=="Yes");
 	st = settings["Position Storage"]; if (st.length()>0) posstor->SetValue(st=="Yes");
-	// disabled for now
-	//st = settings["Truck LOD"]; if (st.length()>0) trucklod->SetValue(st=="Yes");
-	st = settings["Object LOD"]; if (st.length()>0) objlod->SetValue(st=="Yes");
 	st = settings["DebugBeams"]; if (st.length()>0) beamdebug->SetValue(st=="Yes");
 	if(enablexfire) { st = settings["XFire"]; if (st.length()>0) enablexfire->SetValue(st=="Yes"); };
 	st = settings["Dashboard"]; if (st.length()>0) dashboard->SetValue(st=="Yes");
@@ -2722,6 +2753,9 @@ void MyDialog::updateSettingsControls()
 #endif
 	st = settings["Simple Settings CPU"]; if (st.length()>0) simpleSlider->SetValue(atoi(st.c_str()));
 	st = settings["Simple Settings Graphics"]; if (st.length()>0) simpleSlider2->SetValue(atoi(st.c_str()));
+
+	// update slider text
+	OnShadowSliderScroll(dummye);
 }
 
 bool MyDialog::LoadConfig()
@@ -3645,6 +3679,13 @@ void MyDialog::OnSightRangeScroll(wxScrollEvent & event)
 */
 
 
+void MyDialog::OnShadowSliderScroll(wxScrollEvent &e)
+{
+	wxString s;
+	s.Printf(wxT("%i m"), shadowDistance->GetValue());
+	shadowDistanceText->SetLabel(s);
+}
+
 void MyDialog::OnSimpleSliderScroll(wxScrollEvent & event)
 {
 	int val = simpleSlider->GetValue();
@@ -3652,8 +3693,6 @@ void MyDialog::OnSimpleSliderScroll(wxScrollEvent & event)
 	// 0 (high perf) - 2 (high quality)
 	creaksound->SetValue(true); // disable creak sound
 	autodl->SetValue(true);
-	trucklod->SetValue(false);
-	objlod->SetValue(false);
 	replaymode->SetValue(false);
 	switch(val)
 	{
@@ -3707,6 +3746,8 @@ void MyDialog::OnSimpleSlider2Scroll(wxScrollEvent & event)
 			textfilt->SetSelection(0);
 			sky->SetSelection(0);//sandstorm
 			shadow->SetSelection(0);//no shadows
+			shadowDistance->SetValue(5);
+			shadowOptimizations->SetValue(true);
 			water->SetSelection(0);//basic water
 			waves->SetValue(false);
 			vegetationMode->SetSelection(0); // None
@@ -3732,6 +3773,8 @@ void MyDialog::OnSimpleSlider2Scroll(wxScrollEvent & event)
 			textfilt->SetSelection(2);
 			sky->SetSelection(0);//sandstorm
 			shadow->SetSelection(1);
+			shadowDistance->SetValue(50);
+			shadowOptimizations->SetValue(true);
 			water->SetSelection(1);
 			waves->SetValue(false);
 			vegetationMode->SetSelection(1);
@@ -3757,6 +3800,8 @@ void MyDialog::OnSimpleSlider2Scroll(wxScrollEvent & event)
 			textfilt->SetSelection(3);
 			sky->SetSelection(1);
 			shadow->SetSelection(1);
+			shadowDistance->SetValue(100);
+			shadowOptimizations->SetValue(false);
 			water->SetSelection(3);
 			waves->SetValue(true);
 			vegetationMode->SetSelection(3);
@@ -3780,6 +3825,10 @@ void MyDialog::OnSimpleSlider2Scroll(wxScrollEvent & event)
 		break;
 	};
 	getSettingsControls();
+	
+	// update slider text
+	wxScrollEvent dummye;
+	OnShadowSliderScroll(dummye);
 }
 
 void MyDialog::OnForceFeedbackScroll(wxScrollEvent & event)

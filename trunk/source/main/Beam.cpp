@@ -366,6 +366,7 @@ Beam::Beam(int tnum, SceneManager *manager, SceneNode *parent, RenderWindow* win
 	lockSkeletonchange=false;
 	reset_requested=0;
 	mrtime=0.0;
+	shadowOptimizations = (SETTINGS.getSetting("Shadow optimizations") == "Yes");
 	free_flexbody=0;
 	netLabelNode=0;
 	free_rigidifier=0;
@@ -5051,7 +5052,8 @@ int Beam::loadTruck(const char* fname, SceneManager *manager, SceneNode *parent,
 		if (mat->getTechnique(0)->getNumPasses()>1) backmat->getTechnique(0)->removePass(1);
 		if(transmat->getTechnique(0)->getPass(0)->getNumTextureUnitStates()>0)
 			backmat->getTechnique(0)->getPass(0)->getTextureUnitState(0)->setColourOperationEx(LBX_SOURCE1, LBS_MANUAL, LBS_MANUAL, ColourValue(0,0,0),ColourValue(0,0,0));
-		backmat->setReceiveShadows(false);
+		if(shadowOptimizations)
+			backmat->setReceiveShadows(false);
 		//just in case
 		//backmat->getTechnique(0)->getPass(0)->setSceneBlending(SBT_TRANSPARENT_ALPHA);
 		//backmat->getTechnique(0)->getPass(0)->setAlphaRejectSettings(CMPF_GREATER, 128);
@@ -9449,17 +9451,20 @@ void Beam::prepareInside(bool inside)
 			cablight->setVisible(true);
 		}
 
-		//disabling shadow
-		if (cabNode && cabNode->numAttachedObjects() && cabNode->getAttachedObject(0)) ((Entity*)(cabNode->getAttachedObject(0)))->setCastShadows(false);
-		int i;
-		for (i=0; i<free_prop; i++)
+		if(shadowOptimizations)
 		{
-			if (props[i].snode && props[i].snode->numAttachedObjects()) props[i].snode->getAttachedObject(0)->setCastShadows(false);
-			if (props[i].wheel && props[i].wheel->numAttachedObjects()) props[i].wheel->getAttachedObject(0)->setCastShadows(false);
-		}
-		for (i=0; i<free_wheel; i++) if(vwheels[i].cnode->numAttachedObjects()) vwheels[i].cnode->getAttachedObject(0)->setCastShadows(false);
-		for (i=0; i<free_beam; i++) if (beams[i].mEntity) beams[i].mEntity->setCastShadows(false);
+			//disabling shadow
+			if (cabNode && cabNode->numAttachedObjects() && cabNode->getAttachedObject(0)) ((Entity*)(cabNode->getAttachedObject(0)))->setCastShadows(false);
+			int i;
+			for (i=0; i<free_prop; i++)
+			{
+				if (props[i].snode && props[i].snode->numAttachedObjects()) props[i].snode->getAttachedObject(0)->setCastShadows(false);
+				if (props[i].wheel && props[i].wheel->numAttachedObjects()) props[i].wheel->getAttachedObject(0)->setCastShadows(false);
+			}
+			for (i=0; i<free_wheel; i++) if(vwheels[i].cnode->numAttachedObjects()) vwheels[i].cnode->getAttachedObject(0)->setCastShadows(false);
+			for (i=0; i<free_beam; i++) if (beams[i].mEntity) beams[i].mEntity->setCastShadows(false);
 
+		}
 		if (cabNode)
 		{
 			char transmatname[256];
@@ -9487,16 +9492,19 @@ void Beam::prepareInside(bool inside)
 			cablight->setVisible(false);
 		}
 
-		//enabling shadow
-		if (cabNode && cabNode->numAttachedObjects() && cabNode->getAttachedObject(0)) ((Entity*)(cabNode->getAttachedObject(0)))->setCastShadows(true);
-		int i;
-		for (i=0; i<free_prop; i++)
+		if(shadowOptimizations)
 		{
-			if (props[i].snode && props[i].snode->numAttachedObjects()) props[i].snode->getAttachedObject(0)->setCastShadows(true);
-			if (props[i].wheel && props[i].wheel->numAttachedObjects()) props[i].wheel->getAttachedObject(0)->setCastShadows(true);
+			//enabling shadow
+			if (cabNode && cabNode->numAttachedObjects() && cabNode->getAttachedObject(0)) ((Entity*)(cabNode->getAttachedObject(0)))->setCastShadows(true);
+			int i;
+			for (i=0; i<free_prop; i++)
+			{
+				if (props[i].snode && props[i].snode->numAttachedObjects()) props[i].snode->getAttachedObject(0)->setCastShadows(true);
+				if (props[i].wheel && props[i].wheel->numAttachedObjects()) props[i].wheel->getAttachedObject(0)->setCastShadows(true);
+			}
+			for (i=0; i<free_wheel; i++) if(vwheels[i].cnode->numAttachedObjects()) vwheels[i].cnode->getAttachedObject(0)->setCastShadows(true);
+			for (i=0; i<free_beam; i++) if (beams[i].mEntity) beams[i].mEntity->setCastShadows(true);
 		}
-		for (i=0; i<free_wheel; i++) if(vwheels[i].cnode->numAttachedObjects()) vwheels[i].cnode->getAttachedObject(0)->setCastShadows(true);
-		for (i=0; i<free_beam; i++) if (beams[i].mEntity) beams[i].mEntity->setCastShadows(true);
 
 		if (cabNode)
 		{
