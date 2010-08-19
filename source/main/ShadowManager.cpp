@@ -59,7 +59,7 @@ void ShadowManager::loadConfiguration()
 }
 int ShadowManager::changeShadowTechnique(Ogre::ShadowTechnique tech)
 {
-	float shadowFarDistance = 50;
+	float shadowFarDistance = StringConverter::parseInt(SETTINGS.getSetting("Shadow distance"));
 	float scoef=0.2;
 	mSceneMgr->setShadowColour(ColourValue(0.563+scoef, 0.578+scoef, 0.625+scoef));
 
@@ -80,7 +80,7 @@ int ShadowManager::changeShadowTechnique(Ogre::ShadowTechnique tech)
 		//		mSceneMgr->showBoundingBoxes(true);
 	} else if(tech == SHADOWTYPE_TEXTURE_MODULATIVE)
 	{
-		mSceneMgr->setShadowTextureSettings(2048,1);
+		mSceneMgr->setShadowTextureSettings(2048,2);
 	} else if(tech == SHADOWTYPE_TEXTURE_ADDITIVE_INTEGRATED)
 	{
 #if OGRE_VERSION>0x010602

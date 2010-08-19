@@ -332,6 +332,7 @@ public:
 	int lights;
 	int smokeId;
 	int editorId;
+	bool shadowOptimizations;
 	float leftMirrorAngle;
 	float rightMirrorAngle;
 	float *mapsizex, *mapsizez;
