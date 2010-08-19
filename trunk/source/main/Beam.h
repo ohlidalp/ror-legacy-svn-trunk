@@ -330,6 +330,7 @@ public:
 	bool rescuer;
 	int parkingbrake;
 	int lights;
+	bool reverselight;
 	int smokeId;
 	int editorId;
 	bool shadowOptimizations;

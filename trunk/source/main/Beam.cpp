@@ -486,6 +486,7 @@ Beam::Beam(int tnum, SceneManager *manager, SceneNode *parent, RenderWindow* win
 	totalmass=0;
 	parkingbrake=0;
 	lights=1;
+	reverselight=false;
 	free_node=0;
 	free_beam=0;
 	free_contacter=0;
@@ -8757,7 +8758,8 @@ void Beam::calcForcesEuler(int doUpdate, Real dt, int step, int maxstep, Beam** 
 					it->lockTruck->blinkingtype = blinkingtype;
 					//for(int k=0;k<4;k++)
 					//	lockTruck->setCustomLight(k, getCustomLight(k));
-
+					//forward reverse light e.g. for trailers
+					it->lockTruck->reverselight=getReverseLightVisible();
 				}
 			}
 		}
@@ -9771,7 +9773,7 @@ void Beam::updateFlares(float dt, bool isCurrent)
 		} else if(flares[i].type == 'b') {
 			isvisible = getBrakeLightVisible();
 		} else if(flares[i].type == 'R') {
-			if(engine)
+			if(engine || reverselight)
 				isvisible = getReverseLightVisible();
 			else
 				isvisible=false;
@@ -11140,8 +11142,10 @@ bool Beam::getReverseLightVisible()
 {
 	if(state==NETWORKED)
 		return netReverseLight;
-	if (!engine) return 0;
-	return (engine->getGear() < 0);
+	if (!engine && !reverselight) return 0;
+	if (engine) return (engine->getGear() < 0);
+	if (reverselight) return true;
+	return false;
 }
 
 // Utility functions ///////////////////////////////////////////////////////////
