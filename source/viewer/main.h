@@ -52,6 +52,11 @@ class PanelMeshTree;
 enum
 {
 	ID_VIEWPORT,
+
+	ID_TOOL_MODE_TEXTURE,
+	ID_TOOL_MODE_WIREFRAME,
+	ID_TOOL_MODE_POINT,
+
 };
 
 class Window3DHandler
@@ -103,6 +108,8 @@ public:
 	void DenitializeRoRViewer(void);
 
 	void OnIdle(wxIdleEvent& event);
+
+	void OnViewToolClick(wxCommandEvent& e);
 
 	// Window3DHandler
 	void OnLeftUp(int x, int y);

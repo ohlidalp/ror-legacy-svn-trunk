@@ -26,6 +26,8 @@ along with Rigs of Rods.  If not, see <http://www.gnu.org/licenses/>.
 #include "wxutils.h"
 #include "Settings.h"
 
+#include "display_mode.xpm"
+
 Window3D::Window3D(wxWindow* parent, wxWindowID id) : wxPanel(parent, id, wxDefaultPosition, wxDefaultSize, wxTRANSPARENT_WINDOW | wxBORDER_NONE | wxNO_FULL_REPAINT_ON_RESIZE)
 {
 	wnd = NULL;
@@ -120,6 +122,21 @@ RoRViewerFrame::~RoRViewerFrame()
 	DeinitializeAUI();
 
 }
+void RoRViewerFrame::OnViewToolClick(wxCommandEvent& e)
+{
+	switch(e.GetId())
+	{
+		case ID_TOOL_MODE_TEXTURE:
+			viewer->GetCamera()->setPolygonMode(Ogre::PM_SOLID);
+			break;
+		case ID_TOOL_MODE_WIREFRAME:
+			viewer->GetCamera()->setPolygonMode(Ogre::PM_WIREFRAME);
+			break;
+		case ID_TOOL_MODE_POINT:
+			viewer->GetCamera()->setPolygonMode(Ogre::PM_POINTS);
+			break;
+	};
+}
 
 void RoRViewerFrame::InitializeAUI(void)
 {
@@ -173,6 +190,27 @@ void RoRViewerFrame::InitializeAUI(void)
 	panel_meshtree = new PanelMeshTree(0, this, wxID_ANY);
 	panel_meshtree->setPropGrid(panel_meshprop);
 	aui_mgr->AddPane(panel_meshtree, *pane_meshtree);
+
+	// toolbars
+	wxAuiToolBar *view_toolbar = new wxAuiToolBar(this, wxID_ANY, wxDefaultPosition, wxDefaultSize, wxAUI_TB_HORZ_LAYOUT);
+	view_toolbar->SetToolBitmapSize(wxSize(16,16));
+	wxBitmap bmpDisMode = wxBitmap(display_mode_xpm);
+	view_toolbar->AddTool(ID_TOOL_MODE_TEXTURE, "Texture", bmpDisMode, "show textures", wxITEM_RADIO);
+	aui_mgr->Bind(wxEVT_COMMAND_TOOL_CLICKED, &RoRViewerFrame::OnViewToolClick, this, ID_TOOL_MODE_TEXTURE);
+	view_toolbar->AddTool(ID_TOOL_MODE_WIREFRAME, "Wireframe", bmpDisMode, "show wireframe", wxITEM_RADIO);
+	aui_mgr->Bind(wxEVT_COMMAND_TOOL_CLICKED, &RoRViewerFrame::OnViewToolClick, this, ID_TOOL_MODE_WIREFRAME);
+	view_toolbar->AddTool(ID_TOOL_MODE_POINT, "Point", bmpDisMode, "show points", wxITEM_RADIO);
+	aui_mgr->Bind(wxEVT_COMMAND_TOOL_CLICKED, &RoRViewerFrame::OnViewToolClick, this, ID_TOOL_MODE_POINT);
+	view_toolbar->Realize();
+
+	wxAuiPaneInfo *pane_toolbar = new wxAuiPaneInfo();
+	pane_toolbar->ToolbarPane();
+	pane_toolbar->LeftDockable(false);
+	pane_toolbar->RightDockable(false);
+	pane_toolbar->Top();
+	pane_toolbar->Row(0);
+	pane_toolbar->Position(0);
+	aui_mgr->AddPane(view_toolbar, *pane_toolbar);
 
 	// done with AUI
 	aui_mgr->Update();
@@ -256,7 +294,7 @@ void RoRViewerFrame::OnMouseMove(wxMouseEvent& e)
 	/// shit behaves badly, to be fixed!
 	if (e.LeftIsDown() || wp != 0)
 	{
-		viewer->TurnCamera(Vector3(xp*0.2f, yp*0.2f, wp*0.002f));
+		viewer->TurnCamera(Vector3(xp*0.8f, yp*0.8f, wp*0.002f));
 	}
 }
 
