@@ -425,7 +425,7 @@ class InputEngine :
 public:
 	static InputEngine & Instance();
 	void Capture();
-	float getEventValue(int eventID, bool pure=false);
+	float getEventValue(int eventID, bool pure=false, bool onlyAnalog=false);
 	bool getEventBoolValue(int eventID);
 	bool isEventAnalog(int eventID);
 	bool getEventBoolValueBounce(int eventID, float time=0.2f);

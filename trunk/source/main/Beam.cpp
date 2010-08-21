@@ -8627,12 +8627,13 @@ void Beam::calcForcesEuler(int doUpdate, Real dt, int step, int maxstep, Beam** 
 		//need a maximum rate for analog devices, otherwise hydro beams break
 		if (!hydroSpeedCoupling)
 			rate=100;
-
-		if (hydrodirstate > hydrodircommand)
-			hydrodirstate -= dt * rate;
-		else
-			hydrodirstate += dt * rate;
-
+		if ( (hydrodircommand!=0 && hydroSpeedCoupling) || !hydroSpeedCoupling)
+		{
+			if (hydrodirstate > hydrodircommand)
+				hydrodirstate -= dt * rate;
+			else
+				hydrodirstate += dt * rate;
+		}
 		if(hydroSpeedCoupling)
 		{
 			float dirdelta=dt;
