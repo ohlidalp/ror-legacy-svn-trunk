@@ -354,6 +354,32 @@ int ConfigManager::uninstall(bool deleteUserFolder)
 	return 0;
 }
 
+void ConfigManager::associateViewerFileTypes(std::string type)
+{
+#if OGRE_PLATFORM == OGRE_PLATFORM_WIN32
+	// add the icon
+	wxRegKey *pRegKey = new wxRegKey(wxT("HKEY_CLASSES_ROOT\\" + type + "\\DefaultIcon"));
+	if(!pRegKey->Exists())
+		pRegKey->Create();
+
+	pRegKey->SetValue("", installPath + "\\RoRViewer.exe,0");
+
+	// add the action
+	pRegKey = new wxRegKey(wxT("HKEY_CLASSES_ROOT\\" + type + "\\shell\\open\\command"));
+	if(!pRegKey->Exists())
+		pRegKey->Create();
+
+	pRegKey->SetValue("", installPath + "\\RoRViewer.exe \"%1\" ");
+#else
+	// TODO: implement
+#endif //OGRE_PLATFORM
+}
+int ConfigManager::associateFileTypes()
+{
+	associateViewerFileTypes(".mesh");
+	return 0;
+}
+
 void ConfigManager::saveStreamSubscription()
 {
 	if(!streams.size()) return;

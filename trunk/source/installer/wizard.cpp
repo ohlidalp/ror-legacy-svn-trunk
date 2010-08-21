@@ -1263,6 +1263,9 @@ LastPage::LastPage(wxWizard *parent) : wxWizardPageSimple(parent), wizard(parent
 	chk_changelog = new wxCheckBox(this, wxID_ANY, _T("View the Changelog"));
 	mainSizer->Add(chk_changelog, 0, wxALL|wxALIGN_LEFT, 5);
 
+	chk_filetypes = new wxCheckBox(this, wxID_ANY, _T("Associate file types"));
+	mainSizer->Add(chk_filetypes, 0, wxALL|wxALIGN_LEFT, 5);
+
 #else
 	// TODO: add linux options
 	mainSizer->Add(tst=new wxStaticText(this, wxID_ANY, _T("Thank you for downloading Rigs of Rods.\n")), 0, wxALL, 5);
@@ -1296,6 +1299,11 @@ bool LastPage::OnEnter(bool forward)
 	chk_changelog->SetValue(true);
 	if(CONFIG->getPersistentConfig(wxT("installer.view_changelog")) == wxT("no"))
 		chk_changelog->SetValue(false);
+
+	chk_filetypes->SetValue(true);
+	if(CONFIG->getPersistentConfig(wxT("installer.associate_filetypes")) == wxT("no"))
+		chk_filetypes->SetValue(false);
+
 	
 #endif // OGRE_PLATFORM
 	return true;
@@ -1310,6 +1318,7 @@ bool LastPage::OnLeave(bool forward)
 	CONFIG->setPersistentConfig(wxT("installer.create_start_menu_shortcuts"), chk_startmenu->IsChecked()?wxT("yes"):wxT("no"));
 	CONFIG->setPersistentConfig(wxT("installer.run_configurator"), chk_configurator->IsChecked()?wxT("yes"):wxT("no"));
 	CONFIG->setPersistentConfig(wxT("installer.view_changelog"), chk_changelog->IsChecked()?wxT("yes"):wxT("no"));
+	CONFIG->setPersistentConfig(wxT("installer.associate_filetypes"), chk_filetypes->IsChecked()?wxT("yes"):wxT("no"));
 
 	
 	if(chk_desktop->IsChecked() || chk_startmenu->IsChecked())
@@ -1329,7 +1338,10 @@ bool LastPage::OnLeave(bool forward)
 
 	if(chk_changelog->IsChecked())
 		CONFIG->viewChangelog();
-	
+
+	if(chk_filetypes->IsChecked())
+		CONFIG->associateFileTypes();
+
 #endif // OGRE_PLATFORM
 	return true;
 }
