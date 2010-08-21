@@ -17,4 +17,6 @@ ENDIF(ROR_BUILD_INSTALLER)
 #  add_subdirectory(editor)
 #ENDIF(ROR_BUILD_EDITOR)
 
-#add_subdirectory(serializer)
+IF(ROR_BUILD_VIEWER)
+  add_subdirectory(viewer)
+ENDIF(ROR_BUILD_VIEWER)

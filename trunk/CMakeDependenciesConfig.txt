@@ -1,4 +1,5 @@
 # components
+set(ROR_BUILD_VIEWER "TRUE" CACHE BOOL "build the RoR Viewer Application")
 set(ROR_USE_MYGUI   "FALSE" CACHE BOOL "use MyGUI")
 set(ROR_USE_OPENAL  "FALSE" CACHE BOOL "use OPENAL")
 set(ROR_USE_LUA     "FALSE" CACHE BOOL "use LUA")
