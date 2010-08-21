@@ -2882,7 +2882,7 @@ bool RoRFrameListener::updateEvents(float dt)
 						if(sum > 1) sum = 1;
 
 						trucks[current_truck]->hydrodircommand = sum;
-						trucks[current_truck]->hydroSpeedCoupling = !(INPUTENGINE.isEventAnalog(EV_TRUCK_STEER_LEFT) && INPUTENGINE.isEventAnalog(EV_TRUCK_STEER_RIGHT));
+						trucks[current_truck]->hydroSpeedCoupling = !(INPUTENGINE.isEventAnalog(EV_TRUCK_STEER_LEFT) || INPUTENGINE.isEventAnalog(EV_TRUCK_STEER_RIGHT));
 
 						//accelerate
 						float accval = INPUTENGINE.getEventValue(EV_TRUCK_ACCELERATE);

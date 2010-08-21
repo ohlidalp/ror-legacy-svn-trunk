@@ -2123,13 +2123,16 @@ bool InputEngine::isEventAnalog(int eventID)
 		//this means a analog device is always preferred over a digital one
 		for (unsigned int i=0;i<t_vec.size();i++)
 		{
-			if(t_vec[i].eventtype == ET_MouseAxisX \
+			if((t_vec[i].eventtype == ET_MouseAxisX \
 				|| t_vec[i].eventtype == ET_MouseAxisY \
 				|| t_vec[i].eventtype == ET_MouseAxisZ \
 				|| t_vec[i].eventtype == ET_JoystickAxisAbs \
 				|| t_vec[i].eventtype == ET_JoystickAxisRel \
 				|| t_vec[i].eventtype == ET_JoystickSliderX \
-				|| t_vec[i].eventtype == ET_JoystickSliderY)
+				|| t_vec[i].eventtype == ET_JoystickSliderY) \
+				//check if value comes from analog device
+				//this way, only valid events (e.g. joystick mapped, but unplugged) are recognized as analog events
+				&& getEventValue(eventID, false, true)!=0.0)
 				{
 					return true;
 				}
@@ -2156,47 +2159,94 @@ bool InputEngine::isEventAnalog(int eventID)
 #endif //0
 }
 
-float InputEngine::getEventValue(int eventID, bool pure)
+float InputEngine::getEventValue(int eventID, bool pure, bool onlyAnalog)
 {
 	float returnValue = 0;
 	std::vector<event_trigger_t> t_vec = events[eventID];
+	float value=0;
 	for(std::vector<event_trigger_t>::iterator i = t_vec.begin(); i != t_vec.end(); i++)
 	{
 		event_trigger_t t = *i;
-		float value = 0;
-		switch(t.eventtype)
-		{
-			case ET_NONE:
-				break;
-			case ET_Keyboard:
-				if(!keyState[t.keyCode])
-					break;
 
-				// only use explicite mapping, if two keys with different modifiers exist, i.e. F1 and SHIFT+F1.
-				// check for modificators
-				if (t.explicite)
-				{
-					if(t.ctrl != (keyState[KC_LCONTROL] || keyState[KC_RCONTROL]))
+		if (!onlyAnalog)
+		{
+			switch(t.eventtype)
+			{
+				case ET_NONE:
+					break;
+				case ET_Keyboard:
+					if(!keyState[t.keyCode])
 						break;
-					if(t.shift != (keyState[KC_LSHIFT] || keyState[KC_RSHIFT]))
-						break;
-					if(t.alt != (keyState[KC_LMENU] || keyState[KC_RMENU]))
-						break;
-				} else {
-					if(t.ctrl && !(keyState[KC_LCONTROL] || keyState[KC_RCONTROL]))
-						break;
-					if(t.shift && !(keyState[KC_LSHIFT] || keyState[KC_RSHIFT]))
-						break;
-					if(t.alt && !(keyState[KC_LMENU] || keyState[KC_RMENU]))
-						break;
-				}
-				value = 1;
-				break;
-			case ET_MouseButton:
-				//if(t.mouseButtonNumber == 0)
-				// TODO: FIXME
-				value = mouseState.buttonDown(MB_Left);
-				break;
+
+					// only use explicite mapping, if two keys with different modifiers exist, i.e. F1 and SHIFT+F1.
+					// check for modificators
+					if (t.explicite)
+					{
+						if(t.ctrl != (keyState[KC_LCONTROL] || keyState[KC_RCONTROL]))
+							break;
+						if(t.shift != (keyState[KC_LSHIFT] || keyState[KC_RSHIFT]))
+							break;
+						if(t.alt != (keyState[KC_LMENU] || keyState[KC_RMENU]))
+							break;
+					} else {
+						if(t.ctrl && !(keyState[KC_LCONTROL] || keyState[KC_RCONTROL]))
+							break;
+						if(t.shift && !(keyState[KC_LSHIFT] || keyState[KC_RSHIFT]))
+							break;
+						if(t.alt && !(keyState[KC_LMENU] || keyState[KC_RMENU]))
+							break;
+					}
+					value = 1;
+					break;
+				case ET_MouseButton:
+					//if(t.mouseButtonNumber == 0)
+					// TODO: FIXME
+					value = mouseState.buttonDown(MB_Left);
+					break;
+				case ET_JoystickButton:
+					{
+						if(t.joystickNumber > free_joysticks || !mJoy[t.joystickNumber])
+						{
+							value=0;
+							continue;
+						}
+						if(t.joystickButtonNumber >= (int)mJoy[t.joystickNumber]->getNumberOfComponents(OIS_Button))
+						{
+#ifndef NOOGRE
+							LogManager::getSingleton().logMessage("*** Joystick has not enough buttons for mapping: need button "+StringConverter::toString(t.joystickButtonNumber) + ", availabe buttons: "+StringConverter::toString(mJoy[t.joystickNumber]->getNumberOfComponents(OIS_Button)));
+#endif
+							value=0;
+							continue;
+						}
+						value = joyState[t.joystickNumber].mButtons[t.joystickButtonNumber];
+					}
+					break;
+				case ET_JoystickPov:
+					{
+						if(t.joystickNumber > free_joysticks || !mJoy[t.joystickNumber])
+						{
+							value=0;
+							continue;
+						}
+						if(t.joystickPovNumber >= (int)mJoy[t.joystickNumber]->getNumberOfComponents(OIS_POV))
+						{
+#ifndef NOOGRE
+							LogManager::getSingleton().logMessage("*** Joystick has not enough POVs for mapping: need POV "+StringConverter::toString(t.joystickPovNumber) + ", availabe POVs: "+StringConverter::toString(mJoy[t.joystickNumber]->getNumberOfComponents(OIS_POV)));
+#endif
+							value=0;
+							continue;
+						}
+						if(joyState[t.joystickNumber].mPOV[t.joystickPovNumber].direction & t.joystickPovDirection)
+							value = 1;
+						else
+							value = 0;
+					}
+					break;
+			}
+
+		}
+		switch (t.eventtype)
+		{
 			case ET_MouseAxisX:
 				value = mouseState.X.abs / 32767;
 				break;
@@ -2206,24 +2256,7 @@ float InputEngine::getEventValue(int eventID, bool pure)
 			case ET_MouseAxisZ:
 				value = mouseState.Z.abs / 32767;
 				break;
-			case ET_JoystickButton:
-				{
-					if(t.joystickNumber > free_joysticks || !mJoy[t.joystickNumber])
-					{
-						value=0;
-						continue;
-					}
-					if(t.joystickButtonNumber >= (int)mJoy[t.joystickNumber]->getNumberOfComponents(OIS_Button))
-					{
-#ifndef NOOGRE
-						LogManager::getSingleton().logMessage("*** Joystick has not enough buttons for mapping: need button "+StringConverter::toString(t.joystickButtonNumber) + ", availabe buttons: "+StringConverter::toString(mJoy[t.joystickNumber]->getNumberOfComponents(OIS_Button)));
-#endif
-						value=0;
-						continue;
-					}
-					value = joyState[t.joystickNumber].mButtons[t.joystickButtonNumber];
-				}
-				break;
+			
 			case ET_JoystickAxisRel:
 			case ET_JoystickAxisAbs:
 				{
@@ -2299,27 +2332,6 @@ float InputEngine::getEventValue(int eventID, bool pure)
 							else
 								value = 0;
 					}
-				}
-				break;
-			case ET_JoystickPov:
-				{
-					if(t.joystickNumber > free_joysticks || !mJoy[t.joystickNumber])
-					{
-						value=0;
-						continue;
-					}
-					if(t.joystickPovNumber >= (int)mJoy[t.joystickNumber]->getNumberOfComponents(OIS_POV))
-					{
-#ifndef NOOGRE
-						LogManager::getSingleton().logMessage("*** Joystick has not enough POVs for mapping: need POV "+StringConverter::toString(t.joystickPovNumber) + ", availabe POVs: "+StringConverter::toString(mJoy[t.joystickNumber]->getNumberOfComponents(OIS_POV)));
-#endif
-						value=0;
-						continue;
-					}
-					if(joyState[t.joystickNumber].mPOV[t.joystickPovNumber].direction & t.joystickPovDirection)
-						value = 1;
-					else
-						value = 0;
 				}
 				break;
 			case ET_JoystickSliderX:
