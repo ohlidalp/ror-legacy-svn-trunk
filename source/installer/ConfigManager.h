@@ -84,6 +84,8 @@ public:
 	void saveStreamSubscription(wxString streamPath, bool value);
 	void clearStreamSubscription();
 	void streamSubscriptionDebug();
+	int  associateFileTypes();
+	void associateViewerFileTypes(std::string type);
 
 	// registry things
 	wxString getPersistentConfig(wxString name);
