@@ -23,6 +23,9 @@ along with Rigs of Rods.  If not, see <http://www.gnu.org/licenses/>.
 #include <string>
 #include <Ogre.h>
 
+#include <CCSCameraControlSystem.h>
+#include <CCSOrbitalCameraMode.h>
+
 using namespace std;
 using namespace Ogre;
 
@@ -45,6 +48,7 @@ public:
 	SceneNode* GetSceneNode(void){return active_node;}
 
 	void TurnCamera(Vector3 speed);
+	void MoveCamera(Vector3 speed);
 
 private:
 	bool			initialized;
@@ -63,6 +67,9 @@ private:
 	Light*			light;
 
 	Ogre::Timer*	timer;
+
+	CCS::CameraControlSystem *mCameraCS;
+	CCS::OrbitalCameraMode *camModeOrbital;
 	
 	string          meshPath;
 };

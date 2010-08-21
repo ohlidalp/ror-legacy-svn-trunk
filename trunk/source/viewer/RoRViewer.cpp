@@ -74,15 +74,16 @@ bool RoRViewer::Initialize(std::string hwndStr)
 	camera    = scene_mgr->createCamera("ViewerCam");
 	viewport  = window->addViewport(camera);
 
-	camera_node = scene_mgr->createSceneNode();
-	scene_mgr->getRootSceneNode()->addChild(camera_node);
-	camera_node->attachObject(camera);
-	camera_node->setPosition(0, 0.01f, 3.3);
 	camera->setNearClipDistance(0.1);
 	camera->setFarClipDistance(1000);
 	camera->setFOVy(Ogre::Radian(Ogre::Degree(60)));
 	camera->setAutoAspectRatio(true);
 	camera->lookAt(0, 0, 0);
+	camera->setPosition(Ogre::Vector3(0,12,0));
+
+	mCameraCS = new CCS::CameraControlSystem(scene_mgr, "CameraControlSystem", camera);
+	camModeOrbital = new CCS::OrbitalCameraMode(mCameraCS, 1);
+	mCameraCS->registerCameraMode("Orbital",camModeOrbital);
 
 	viewport->setBackgroundColour(ColourValue(0.35, 0.35, 0.35));
 
@@ -130,11 +131,11 @@ bool RoRViewer::Initialize(std::string hwndStr)
 
 	active_node->setPosition(0,0,0);
 
-	// reposition camera
-	float radius = active_mesh->getBoundingSphereRadius();
-	camera_node->setPosition(0, 1.7, 3.3 + radius);
-	camera->lookAt(0, 0, 0);
+	mCameraCS->setFixedYawAxis(true);
 
+	mCameraCS->setCameraTarget(active_node);
+	mCameraCS->setCurrentCameraMode(camModeOrbital);
+	camModeOrbital->setZoom(active_mesh->getBoundingSphereRadius());
 	return true;
 }
 
@@ -145,8 +146,8 @@ void RoRViewer::Deinitialize(void)
 
 	if(timer) delete timer;
 	window->removeViewport(0);
-	scene_mgr->getRootSceneNode()->removeChild(camera_node);
-	scene_mgr->destroySceneNode(camera_node);
+	//scene_mgr->getRootSceneNode()->removeChild(camera_node);
+	mCameraCS->deleteAllCameraModes();
 	scene_mgr->destroyCamera(camera);
 	ogre_root->destroySceneManager(scene_mgr);
 	ogre_root->detachRenderTarget("RoRViewer");
@@ -160,21 +161,20 @@ void RoRViewer::Update()
 	double tm = timer->getMilliseconds();
 	timer->reset();
 	ogre_root->renderOneFrame(tm);
+	mCameraCS->update(tm);
 
 }
 
 void RoRViewer::TurnCamera(Vector3 speed)
 {
-	speed = - speed; // invert
-	active_node->yaw(Radian(Degree(speed.x)), Node::TS_WORLD);
-	active_node->pitch(Radian(Degree(speed.y)), Node::TS_LOCAL);
+	camModeOrbital->yaw(-speed.x);
+	camModeOrbital->pitch(-speed.y);
+	camModeOrbital->zoom(-speed.z);
+}
 
-	if(speed.z != 0)
-	{
-		Vector3 pos = camera_node->getPosition();
-		pos += Vector3(0,0,speed.z);
-		camera_node->setPosition(pos);
-		camera->lookAt(0, 0, 0);
-	}
 
+
+void RoRViewer::MoveCamera(Vector3 speed)
+{
+	// TODO
 }
