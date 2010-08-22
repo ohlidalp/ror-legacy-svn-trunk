@@ -4540,16 +4540,6 @@ void RoRFrameListener::loadTerrain(String terrainfile)
 	}
 #endif // MYGUI
 
-#ifdef USE_ANGELSCRIPT
-	if(!netmode)
-	{
-		LogManager::getSingleton().logMessage("Loading Angelscript Script engine." );
-		if(ResourceGroupManager::getSingleton().resourceExistsInAnyGroup(terrainfile+".as"))
-			ScriptEngine::getSingleton().loadTerrainScript(terrainfile+".as");
-	}
-#endif
-
-
 #ifdef USE_LUA
 	//setup lua
 	LogManager::getSingleton().logMessage("Loading LUA Script engine." );
@@ -4561,6 +4551,15 @@ void RoRFrameListener::loadTerrain(String terrainfile)
 		lua->loadTerrain(terrainfile);
 #else
 	collisions=new Collisions(this, debugCollisions);
+#endif
+
+#ifdef USE_ANGELSCRIPT
+	if(!netmode)
+	{
+		LogManager::getSingleton().logMessage("Loading Angelscript Script engine." );
+		if(ResourceGroupManager::getSingleton().resourceExistsInAnyGroup(terrainfile+".as"))
+			ScriptEngine::getSingleton().loadTerrainScript(terrainfile+".as");
+	}
 #endif
 
 	// update icollisions instance in factory
