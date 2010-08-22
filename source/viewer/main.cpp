@@ -178,9 +178,9 @@ void RoRViewerFrame::InitializeAUI(void)
 	pane_meshtree->CaptionVisible(true);
 	pane_meshtree->Caption(L"Tree");
 	pane_meshtree->FloatingSize(wxSize(200, 150));
-	pane_meshtree->MinSize(wxSize(200, 250));
+	pane_meshtree->MinSize(wxSize(200, 100));
 	//pane_meshtree->MaxSize(wxSize(200, 150));
-	pane_meshtree->BestSize(wxSize(200, 250));
+	pane_meshtree->BestSize(wxSize(200, 200));
 	pane_meshtree->Resizable(true);
 	pane_meshtree->TopDockable(false);
 	pane_meshtree->BottomDockable(false);
@@ -294,7 +294,7 @@ void RoRViewerFrame::OnMouseMove(wxMouseEvent& e)
 	/// shit behaves badly, to be fixed!
 	if (e.LeftIsDown() || wp != 0)
 	{
-		viewer->TurnCamera(Vector3(xp*0.8f, yp*0.8f, wp*0.002f));
+		viewer->TurnCamera(Vector3(xp, yp, wp*0.02f));
 	}
 }
 
