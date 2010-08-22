@@ -23,6 +23,7 @@ along with Rigs of Rods.  If not, see <http://www.gnu.org/licenses/>.
 #include "approxmath.h"
 #include "errorutils.h"
 #include "language.h"
+#include "ScriptEngine.h"
 
 // some gcc fixes
 #if OGRE_PLATFORM == OGRE_PLATFORM_LINUX
@@ -741,8 +742,16 @@ coll_corr_resume_cell:
 						{
 							if (cbox->eventsourcenum!=-1 && permitEvent(cbox->event_filter))
 							{
+								// prefer AS to LUA
+								bool handled = false;
+#ifdef USE_ANGELSCRIPT
+								int ret = ScriptEngine::getSingleton().envokeCallback(eventsources[cbox->eventsourcenum].luahandler, &eventsources[cbox->eventsourcenum]);
+								if(ret == 0)
+									handled=true;
+#endif
 #ifdef USE_LUA
-								lua->spawnEvent(cbox->eventsourcenum, &eventsources[cbox->eventsourcenum]);
+								if(!handled)
+									lua->spawnEvent(cbox->eventsourcenum, &eventsources[cbox->eventsourcenum]);
 #endif
 							}
 							if (cbox->camforced && !forcecam)
@@ -794,8 +803,16 @@ coll_corr_resume_cell:
 					{
 						if (cbox->eventsourcenum!=-1 && permitEvent(cbox->event_filter))
 						{
+							// prefer AS to LUA
+							bool handled = false;
+#ifdef USE_ANGELSCRIPT
+							int ret = ScriptEngine::getSingleton().envokeCallback(eventsources[cbox->eventsourcenum].luahandler, &eventsources[cbox->eventsourcenum]);
+							if(ret == 0)
+								handled=true;
+#endif
 #ifdef USE_LUA
-							lua->spawnEvent(cbox->eventsourcenum, &eventsources[cbox->eventsourcenum]);
+							if(!handled)
+								lua->spawnEvent(cbox->eventsourcenum, &eventsources[cbox->eventsourcenum]);
 #endif
 						}
 						if (cbox->camforced && !forcecam)
@@ -940,8 +957,16 @@ node_coll_resume_cell:
 						{
 							if (cbox->eventsourcenum!=-1 && permitEvent(cbox->event_filter))
 							{
+								// prefer AS to LUA
+								bool handled = false;
+#ifdef USE_ANGELSCRIPT
+								int ret = ScriptEngine::getSingleton().envokeCallback(eventsources[cbox->eventsourcenum].luahandler, &eventsources[cbox->eventsourcenum]);
+								if(ret == 0)
+									handled=true;
+#endif
 #ifdef USE_LUA
-								lua->spawnEvent(cbox->eventsourcenum, &eventsources[cbox->eventsourcenum]);
+								if(!handled)
+									lua->spawnEvent(cbox->eventsourcenum, &eventsources[cbox->eventsourcenum]);
 #endif
 							}
 							if (cbox->camforced && !forcecam)
@@ -988,8 +1013,16 @@ node_coll_resume_cell:
 					{
 						if (cbox->eventsourcenum!=-1 && permitEvent(cbox->event_filter))
 						{
+							// prefer AS to LUA
+							bool handled = false;
+#ifdef USE_ANGELSCRIPT
+							int ret = ScriptEngine::getSingleton().envokeCallback(eventsources[cbox->eventsourcenum].luahandler, &eventsources[cbox->eventsourcenum]);
+							if(ret == 0)
+								handled=true;
+#endif
 #ifdef USE_LUA
-							lua->spawnEvent(cbox->eventsourcenum, &eventsources[cbox->eventsourcenum]);
+							if(!handled)
+								lua->spawnEvent(cbox->eventsourcenum, &eventsources[cbox->eventsourcenum]);
 #endif
 						}
 						if (cbox->camforced && !forcecam)

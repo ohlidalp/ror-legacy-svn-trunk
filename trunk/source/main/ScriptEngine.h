@@ -32,6 +32,8 @@ along with Rigs of Rods.  If not, see <http://www.gnu.org/licenses/>.
 #include "Ogre.h"
 #include "rormemory.h"
 
+#include "collisions.h"
+
 //forward decl.
 class RoRFrameListener;
 class GameScript;
@@ -119,6 +121,8 @@ public:
 	 */
 	int executeString(Ogre::String command);
 
+	int envokeCallback(int functionPtr, eventsource_t *source);
+
 	AngelScript::asIScriptEngine *getEngine() { return engine; };
 
 protected:
@@ -200,6 +204,7 @@ public:
 	 */
 	void setPersonPosition(Ogre::Vector3 vec);
 
+	void loadTerrain(std::string &terrain);
 	/**
 	 * moves the person relative
 	 * @param x X translation

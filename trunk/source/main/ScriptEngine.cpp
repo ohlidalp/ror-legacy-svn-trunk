@@ -112,7 +112,7 @@ int ScriptEngine::loadTerrainScript(Ogre::String scriptname)
 
 	// get some other optional functions
 	frameStepFunctionPtr = mod->GetFunctionIdByDecl("void frameStep(float)");
-	eventCallbackFunctionPtr = mod->GetFunctionIdByDecl("void eventCallback(int event, int value)");
+	eventCallbackFunctionPtr = mod->GetFunctionIdByDecl("void eventCallback(int, int)");
 
 	// Create our context, prepare it, and then execute
 	context = engine->CreateContext();
@@ -450,6 +450,7 @@ void ScriptEngine::init()
 	result = engine->RegisterObjectMethod("GameScriptClass", "void log(const string &in)", asMETHOD(GameScript,log), asCALL_THISCALL); assert(result>=0);
 	result = engine->RegisterObjectMethod("GameScriptClass", "double getTime()", asMETHOD(GameScript,getTime), asCALL_THISCALL); assert(result>=0);
 	result = engine->RegisterObjectMethod("GameScriptClass", "void setPersonPosition(vector3)", asMETHOD(GameScript,setPersonPosition), asCALL_THISCALL); assert(result>=0);
+	result = engine->RegisterObjectMethod("GameScriptClass", "void loadTerrain(const string &in)", asMETHOD(GameScript,loadTerrain), asCALL_THISCALL); assert(result>=0);
 	result = engine->RegisterObjectMethod("GameScriptClass", "vector3 getPersonPosition()", asMETHOD(GameScript,getPersonPosition), asCALL_THISCALL); assert(result>=0);
 	result = engine->RegisterObjectMethod("GameScriptClass", "void movePerson(float, float, float)", asMETHOD(GameScript,movePerson), asCALL_THISCALL); assert(result>=0);
 	result = engine->RegisterObjectMethod("GameScriptClass", "float getCaelumTime()", asMETHOD(GameScript,getCaelumTime), asCALL_THISCALL); assert(result>=0);
@@ -593,6 +594,27 @@ int ScriptEngine::framestep(Ogre::Real dt)
 
 	// Set the function arguments
 	context->SetArgFloat(0, dt);
+
+	//LogManager::getSingleton().logMessage("SE| Executing framestep()");
+	int r = context->Execute();
+	if( r == asEXECUTION_FINISHED )
+	{
+	  // The return value is only valid if the execution finished successfully
+	  asDWORD ret = context->GetReturnDWord();
+	}
+	return 0;
+}
+
+int ScriptEngine::envokeCallback(int functionPtr, eventsource_t *source)
+{
+	if(functionPtr<=0) return 1;
+	if(!engine) return 0;
+	if(!context) context = engine->CreateContext();
+	context->Prepare(functionPtr);
+
+	// Set the function arguments
+	context->SetArgObject(0, &std::string(source->instancename));
+	context->SetArgObject(1, &std::string(source->boxname));
 
 	//LogManager::getSingleton().logMessage("SE| Executing framestep()");
 	int r = context->Execute();
@@ -778,6 +800,11 @@ double GameScript::getTime()
 void GameScript::setPersonPosition(Ogre::Vector3 vec)
 {
 	if(mefl && mefl->person) mefl->person->setPosition(Ogre::Vector3(vec.x, vec.y, vec.z));
+}
+
+void GameScript::loadTerrain(std::string &terrain)
+{
+	if(mefl) mefl->loadTerrain(terrain);
 }
 
 Ogre::Vector3 GameScript::getPersonPosition()
