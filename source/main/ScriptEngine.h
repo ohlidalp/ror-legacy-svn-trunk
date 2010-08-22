@@ -231,6 +231,8 @@ public:
 	 */
 	float getWaterHeight();
 
+	float getGroundHeight(Ogre::Vector3 v);
+
 	/**
 	 * sets the base water height
 	 * @param value base height in meters
@@ -307,7 +309,8 @@ public:
 	// new things, not documented yet
 	void showChooser(std::string &type, std::string &instance, std::string &box);
 	void repairVehicle(std::string &instance, std::string &box);
-	void spawnObject(const std::string &objectName, const std::string &instanceName, float px, float py, float pz, float rx, float ry, float rz, const std::string &eventhandler, bool uniquifyMaterials);
+	void spawnObject(const std::string &objectName, const std::string &instanceName, Ogre::Vector3 pos, Ogre::Vector3 rot, const std::string &eventhandler, bool uniquifyMaterials);
+	void destroyObject(const std::string &instanceName);
 	int getNumTrucksByFlag(int flag);
 	bool getCaelumAvailable();
 	void stopTimer();

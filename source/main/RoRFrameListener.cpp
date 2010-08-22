@@ -1642,6 +1642,20 @@ String RoRFrameListener::saveTerrainMesh()
 	return mfilename;
 }
 
+void RoRFrameListener::unloadObject(const char* instancename)
+{
+	if(loadedObjects.find(std::string(instancename)) == loadedObjects.end())
+	{
+		LogManager::getSingleton().logMessage("unable to unload object: " + std::string(instancename));
+		return;
+	}
+
+	// TODO: proper unloading with unloading of the collision things
+
+	Ogre::SceneNode *node = loadedObjects[std::string(instancename)];
+	node->detachAllObjects();
+	node->setVisible(false);
+}
 
 void RoRFrameListener::loadObject(const char* name, float px, float py, float pz, float rx, float ry, float rz, SceneNode * bakeNode, const char* instancename, bool enable_collisions, int luahandler, const char *type, bool uniquifyMaterial)
 {
@@ -1731,6 +1745,7 @@ void RoRFrameListener::loadObject(const char* name, float px, float py, float pz
 	sprintf(oname,"object%i(%s)", objcounter,name);
 	objcounter++;
 	
+
 	SceneNode *tenode = mSceneMgr->getRootSceneNode()->createChildSceneNode();
 	MeshObject *mo = new MeshObject(mScene, mesh, oname, tenode);
 	//mo->setQueryFlags(OBJECTS_MASK);
@@ -1740,6 +1755,10 @@ void RoRFrameListener::loadObject(const char* name, float px, float py, float pz
 	tenode->rotate(rotation);
 	tenode->pitch(Degree(-90));
 	tenode->setVisible(true);
+
+	// register in map
+	loadedObjects[std::string(instancename)] = tenode;
+
 
 	if(uniquifyMaterial && instancename)
 	{

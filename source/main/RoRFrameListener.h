@@ -218,6 +218,7 @@ protected:
 	int loading_state;
 
 
+	std::map< std::string, Ogre::SceneNode *> loadedObjects;
 	DOFManager *mDOF;
 	bool mDOFDebug;
 	int mouseX;
@@ -312,6 +313,7 @@ public:
 	void removeBeam(Beam *);
 	void removeTruck(int truck);
 	void loadObject(const char* name, float px, float py, float pz, float rx, float ry, float rz, SceneNode * bakeNode, const char* instancename, bool enable_collisions=true, int luahandler=-1, const char *type=0, bool uniquifyMaterial=false);
+	void unloadObject(const char* name);
 	void repairTruck(char* inst, char* box);
 	void removeTruck(char* inst, char* box);
 	bool updateEvents(float dt);
