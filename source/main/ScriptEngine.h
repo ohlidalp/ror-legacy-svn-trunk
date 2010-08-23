@@ -54,9 +54,10 @@ class Beam;
 class ScriptEngine : public Ogre::Singleton<ScriptEngine>
 {
 public:
-	ScriptEngine(RoRFrameListener *efl);
+	ScriptEngine(RoRFrameListener *efl, Collisions *_coll);
 	~ScriptEngine();
 
+	void setCollisions(Collisions *_coll) { coll=_coll; };
 
 	int loadScript(Ogre::String scriptname);
 
@@ -72,7 +73,7 @@ public:
 	 * @param dt time passed since the last call to this function in seconds
 	 * @return 0 on success, everything else on error
 	 */
-	int framestep(Ogre::Real dt);
+	int framestep(Ogre::Real dt, Beam **trucks, int free_truck);
 
 	/**
 	 * This enum describes what events are existing. The script can register to receive events.
@@ -121,15 +122,17 @@ public:
 	 */
 	int executeString(Ogre::String command);
 
-	int envokeCallback(int functionPtr, eventsource_t *source);
+	int envokeCallback(int functionPtr, eventsource_t *source, node_t *node);
 
 	AngelScript::asIScriptEngine *getEngine() { return engine; };
 
 protected:
     RoRFrameListener *mefl;             //!< local RoRFrameListener instance, used as proxy for many functions
+	Collisions *coll;
     AngelScript::asIScriptEngine *engine;                //!< instance of the scripting engine
 	AngelScript::asIScriptContext *context;              //!< context in which all scripting happens
 	int frameStepFunctionPtr;               //!< script function pointer to the frameStep function
+	int wheelEventFunctionPtr;               //!< script function pointer
 	int eventCallbackFunctionPtr;           //!< script function pointer to the event callback function
 	std::map <std::string , std::vector<int> > callbacks;
 

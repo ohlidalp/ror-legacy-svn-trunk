@@ -149,6 +149,8 @@ public:
 	Vector3 forcecampos;
 	ground_model_t *defaultgm, *defaultgroundgm;
 
+	eventsource_t *getEvent(int eventID) { return &eventsources[eventID]; };
+
 	Collisions() {}; // for wrapper, DO NOT USE!
 
   Collisions(
@@ -160,7 +162,7 @@ public:
 	void addCollisionBox(SceneNode *tenode, bool rotating, bool virt, float px, float py, float pz, float rx, float ry, float rz, float lx,float hx,float ly,float hy,float lz,float hz,float srx,float sry,float srz, const char* eventname, const char* instancename, bool forcecam, Vector3 campos, float scx=1.0, float scy=1.0, float scz=1.0, float drx=0.0, float dry=0.0, float drz=0.0, int event_filter=EVENT_ALL, int luahandler=-1);
 	int addCollisionTri(Vector3 p1, Vector3 p2, Vector3 p3, ground_model_t* gm);
 	bool collisionCorrect(Vector3 *refpos);
-	bool nodeCollision(node_t *node, bool iscinecam, int contacted, float dt, float* nso, ground_model_t** ogm);
+	bool nodeCollision(node_t *node, bool iscinecam, int contacted, float dt, float* nso, ground_model_t** ogm, int *handlernum=0);
 	Vector3 getPosition(char* instance, char* box);
 	Quaternion getDirection(char* instance, char* box);
 	collision_box_t *getBox(char* instance, char* box);

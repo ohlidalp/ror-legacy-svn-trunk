@@ -35,6 +35,7 @@ along with Rigs of Rods.  If not, see <http://www.gnu.org/licenses/>.
 #include "as_ogre.h"
 #include "SelectorWindow.h"
 #include "sha1.h"
+#include "collisions.h"
 
 using namespace Ogre;
 using namespace std;
@@ -42,7 +43,7 @@ using namespace AngelScript;
 
 template<> ScriptEngine *Ogre::Singleton<ScriptEngine>::ms_Singleton=0;
 
-ScriptEngine::ScriptEngine(RoRFrameListener *efl) : mefl(efl), engine(0), context(0), frameStepFunctionPtr(-1), eventMask(0)
+ScriptEngine::ScriptEngine(RoRFrameListener *efl, Collisions *_coll) : mefl(efl), coll(_coll), engine(0), context(0), frameStepFunctionPtr(-1), wheelEventFunctionPtr(-1), eventMask(0)
 {
 	init();
 
@@ -112,6 +113,8 @@ int ScriptEngine::loadTerrainScript(Ogre::String scriptname)
 
 	// get some other optional functions
 	frameStepFunctionPtr = mod->GetFunctionIdByDecl("void frameStep(float)");
+	wheelEventFunctionPtr = mod->GetFunctionIdByDecl("void wheelEvents(int, string, string)");
+	
 	eventCallbackFunctionPtr = mod->GetFunctionIdByDecl("void eventCallback(int, int)");
 
 	// Create our context, prepare it, and then execute
@@ -587,8 +590,57 @@ int ScriptEngine::loadScriptFile(const char *fileName, string &script, string &h
 	return 1;
 }
 
-int ScriptEngine::framestep(Ogre::Real dt)
+int ScriptEngine::framestep(Ogre::Real dt, Beam **trucks, int free_truck)
 {
+	// check for all truck wheels
+	if(coll && wheelEventFunctionPtr != -1)
+	{
+		for(int t = 0; t < free_truck; t++)
+		{
+			Beam *b = trucks[t];
+			if (!b || b->state == SLEEPING || b->state == NETWORKED || b->state == RECYCLE)
+				continue;
+
+			bool allwheels=true;
+			int handlerid=-1;
+			for(int w = 0; w < b->free_wheel; w++)
+			{
+				if(handlerid == -1 && b->wheels[w].lastEventHandler != -1)
+				{
+					handlerid = b->wheels[w].lastEventHandler;
+					continue;
+				}else if(b->wheels[w].lastEventHandler != handlerid)
+				{
+					allwheels=false;
+					break;
+				}
+			}
+
+			if(handlerid >= 0 && handlerid < MAX_EVENTSOURCE)
+			{
+				eventsource_t *source = coll->getEvent(handlerid);
+				if(!engine) return 0;
+				if(!context) context = engine->CreateContext();
+				context->Prepare(wheelEventFunctionPtr);
+
+				// Set the function arguments
+				context->SetArgFloat (0, t);
+				context->SetArgObject(1, &std::string(source->instancename));
+				context->SetArgObject(2, &std::string(source->boxname));
+
+				//LogManager::getSingleton().logMessage("SE| Executing framestep()");
+				int r = context->Execute();
+				if( r == asEXECUTION_FINISHED )
+				{
+				  // The return value is only valid if the execution finished successfully
+				  asDWORD ret = context->GetReturnDWord();
+				}				
+			}
+		}
+	}
+
+
+	// framestep stuff below
 	if(frameStepFunctionPtr<0) return 1;
 	if(!engine) return 0;
 	if(!context) context = engine->CreateContext();
@@ -607,7 +659,8 @@ int ScriptEngine::framestep(Ogre::Real dt)
 	return 0;
 }
 
-int ScriptEngine::envokeCallback(int functionPtr, eventsource_t *source)
+
+int ScriptEngine::envokeCallback(int functionPtr, eventsource_t *source, node_t *node)
 {
 	if(functionPtr<=0) return 1;
 	if(!engine) return 0;
@@ -617,6 +670,10 @@ int ScriptEngine::envokeCallback(int functionPtr, eventsource_t *source)
 	// Set the function arguments
 	context->SetArgObject(0, &std::string(source->instancename));
 	context->SetArgObject(1, &std::string(source->boxname));
+	if(node)
+		context->SetArgDWord (2, node->id);
+	else
+		context->SetArgDWord (2, -1);
 
 	//LogManager::getSingleton().logMessage("SE| Executing framestep()");
 	int r = context->Execute();
