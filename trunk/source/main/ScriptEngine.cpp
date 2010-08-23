@@ -616,7 +616,8 @@ int ScriptEngine::framestep(Ogre::Real dt, Beam **trucks, int free_truck)
 				}
 			}
 
-			if(handlerid >= 0 && handlerid < MAX_EVENTSOURCE)
+			// if the truck is in there, call the functions
+			if(allwheels && handlerid >= 0 && handlerid < MAX_EVENTSOURCE)
 			{
 				eventsource_t *source = coll->getEvent(handlerid);
 				if(!engine) return 0;
