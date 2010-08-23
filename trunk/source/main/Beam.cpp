@@ -8075,9 +8075,10 @@ void Beam::calcForcesEuler(int doUpdate, Real dt, int step, int maxstep, Beam** 
 				ground_model_t *gm = 0; // this is used as result storage, so we can use it later on
 				int contacted = collisions->groundCollision(&nodes[i], nodes[i].colltesttimer, &gm, &ns);
 
+				int handlernum = 0;
 				//TODO is this supposed to be a binary operator, or a logical operator?
 				if ( contacted |
-					collisions->nodeCollision(&nodes[i], i==cinecameranodepos[currentcamera], contacted, nodes[i].colltesttimer, &ns, &gm))
+					collisions->nodeCollision(&nodes[i], i==cinecameranodepos[currentcamera], contacted, nodes[i].colltesttimer, &ns, &gm, &handlernum))
 				{
 					//FX
 					if (gm && doUpdate && dustp)
@@ -8121,6 +8122,8 @@ void Beam::calcForcesEuler(int doUpdate, Real dt, int step, int maxstep, Beam** 
 						wheels[nodes[i].wheelid].lastSlip = ns;
 						wheels[nodes[i].wheelid].lastGroundModel = gm;
 					}
+
+					wheels[nodes[i].wheelid].lastEventHandler = handlernum;
 
 					// note last ground model
 					lastFuzzyGroundModel = gm;

@@ -800,7 +800,7 @@ RoRFrameListener::RoRFrameListener(RenderWindow* win, Camera* cam, SceneManager*
 
 
 #ifdef USE_ANGELSCRIPT
-	new ScriptEngine(this);
+	new ScriptEngine(this, 0);
 	exploreScripts();
 #endif
 
@@ -4573,6 +4573,7 @@ void RoRFrameListener::loadTerrain(String terrainfile)
 #endif
 
 #ifdef USE_ANGELSCRIPT
+	ScriptEngine::getSingleton().setCollisions(collisions);
 	if(!netmode)
 	{
 		LogManager::getSingleton().logMessage("Loading Angelscript Script engine." );
@@ -7253,8 +7254,11 @@ END OF OLD CODE */
 	}
 
 
+	// TODO: check if all wheels are on a certain event id
+	// wheels[nodes[i].wheelid].lastEventHandler
+
 #ifdef USE_ANGELSCRIPT
-	ScriptEngine::getSingleton().framestep(dt);
+	ScriptEngine::getSingleton().framestep(dt, trucks, free_truck);
 #endif
 
 	// update network labels

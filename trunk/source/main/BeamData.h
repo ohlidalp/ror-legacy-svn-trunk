@@ -424,6 +424,9 @@ struct wheel
 	float lastSlip;
 	int lastContactType;
 	ground_model_t *lastGroundModel;
+
+	// for improved collision code
+	int lastEventHandler;
 };
 
 struct vwheel
