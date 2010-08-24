@@ -108,6 +108,7 @@ Collisions::Collisions(
 {
 	landuse=0;
 	debugMode=_debugMode;
+	debugModeEvents = SETTINGS.getSetting("Debug Event Boxes") == "Yes";
 	last_used_ground_model=0;
 #ifdef USE_LUA
 	lua=mlua;
@@ -619,6 +620,67 @@ void Collisions::addCollisionBox(SceneNode *tenode, bool rotating, bool virt, fl
 		collision_boxes[free_collision_box].lo_z=pz+lz*scz;
 		collision_boxes[free_collision_box].hi_z=pz+hz*scz;
 	}
+
+	if(debugModeEvents && virt)
+	{
+		collision_box_t *cb = &collision_boxes[free_collision_box];
+		Entity *ent = mefl->getSceneMgr()->createEntity("beam.mesh");
+		SceneNode *n = mefl->getSceneMgr()->getRootSceneNode()->createChildSceneNode();
+		n->attachObject(ent);
+		if(luahandler == -1)
+			ent->setMaterialName("tracks/transred");
+		else
+			ent->setMaterialName("tracks/transgreen");
+		// since beam.mesh origin is in its middle ...
+		n->setPosition(
+			cb->lo_x + (cb->hi_x - cb->lo_x) * 0.5f, 
+			cb->lo_y + (cb->hi_y - cb->lo_y) * 0.5f, 
+			cb->lo_z + (cb->hi_z - cb->lo_z) * 0.5f
+			);
+		n->setScale(
+			(cb->hi_x - cb->lo_x), 
+			(cb->hi_y - cb->lo_y), 
+			(cb->hi_z - cb->lo_z)
+			);
+		n->setVisible(true);
+		n->showBoundingBox(true);
+		
+		// setup the label
+		String labelName = "collision_box_label_"+StringConverter::toString(free_collision_box);
+		String labelCaption = String(eventname) + " / " + String(instancename) + " / " + StringConverter::toString(luahandler);
+		MovableText *mt = new MovableText(labelName, labelCaption);
+		mt->setFontName("highcontrast_black");
+		mt->setTextAlignment(MovableText::H_CENTER, MovableText::V_ABOVE);
+		mt->setAdditionalHeight(1);
+		mt->showOnTop(false);
+		mt->setCharacterHeight(0.3);
+		mt->setColor(ColourValue::White);
+		SceneNode *n2 = mefl->getSceneMgr()->getRootSceneNode()->createChildSceneNode();
+		n2->attachObject(mt);
+		n2->setPosition(
+			cb->lo_x + (cb->hi_x - cb->lo_x) * 0.5f, 
+			cb->lo_y + (cb->hi_y - cb->lo_y) * 0.5f, 
+			cb->lo_z + (cb->hi_z - cb->lo_z) * 0.5f
+			);
+
+		ManualObject* manual = mefl->getSceneMgr()->createManualObject("collision_boxes_debug_"+StringConverter::toString(free_collision_box));
+		manual->setDynamic(false);
+		if(luahandler == -1)
+			manual->begin("tracks/transred", RenderOperation::OT_LINE_LIST);
+		else
+			manual->begin("tracks/transgreen", RenderOperation::OT_LINE_LIST);
+
+		// specify indexes now
+		manual->position(Vector3::ZERO);
+		manual->position(Vector3((cb->hi_x - cb->lo_x), (cb->hi_y - cb->lo_y), (cb->hi_z - cb->lo_z)));
+		manual->index(0);
+		manual->index(1);
+		manual->end();
+		SceneNode *n3 = mefl->getSceneMgr()->getRootSceneNode()->createChildSceneNode();
+		n3->attachObject(manual);
+		n3->setPosition(Vector3(cb->lo_x, cb->lo_y, cb->lo_z));
+	}
+
 //		collision_boxes[free_collision_box].camerapos+=Vector3(px,py,pz);
 	//register this collision box in the index
 	int ilox, ihix, iloz, ihiz;
@@ -1196,6 +1258,34 @@ collision_box_t *Collisions::getBox(char* instance, char* box)
 		}
 	}
 	return NULL;
+}
+
+eventsource_t *Collisions::isTruckInEventBox(Beam *truck)
+{
+	if(!truck) return 0;
+	// check all boxes
+	for (int i=0; i<free_eventsource; i++)
+	{
+		collision_box_t *cb = &collision_boxes[eventsources[i].cbox];
+		// check all nodes
+
+		bool allInside = true;
+		for (int i=0; i < truck->free_node; i++)
+		{
+			if (!isInside(truck->nodes[i].AbsPosition, cb))
+			{
+				// node not in box, no need to check the rest
+				allInside=false;
+				break;
+			}
+		}
+		if(allInside && cb->eventsourcenum != -1)
+		{
+			return &eventsources[cb->eventsourcenum];
+		}
+
+	}
+	return 0;
 }
 
 bool Collisions::isInside(Vector3 pos, char* instance, char* box, float border)

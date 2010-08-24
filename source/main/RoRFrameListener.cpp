@@ -1835,7 +1835,7 @@ void RoRFrameListener::loadObject(const char* name, float px, float py, float pz
 			rotating=false;
 			virt=false;
 			forcecam=false;
-			event_filter=EVENT_ALL;
+			event_filter=EVENT_NONE;
 			eventname[0]=0;
 			collmesh[0]=0;
 			gm = collisions->getGroundModelByString("concrete");
@@ -1843,7 +1843,7 @@ void RoRFrameListener::loadObject(const char* name, float px, float py, float pz
 		};
 		if (!strncmp("boxcoords", ptline, 9))
 		{
-			sscanf(ptline, "boxcoords %f, %f, %f, %f, %f, %f",&lx,&hx,&ly, &hy,&lz, &hz);
+			sscanf(ptline, "boxcoords %f, %f, %f, %f, %f, %f",&lx,&hx,&ly,&hy,&lz, &hz);
 			continue;
 		}
 		if (!strncmp("mesh", ptline, 4))
@@ -1904,12 +1904,38 @@ void RoRFrameListener::loadObject(const char* name, float px, float py, float pz
 		}
 		if (!strcmp("endmesh", ptline))
 		{
-			//oookay
-			static int colmeshcounter = 0;
-			colmeshcounter++;
-			char colmeshname[255]="";
-			sprintf(colmeshname, "collision_mesh_%d", colmeshcounter);
-			Entity *ent = mSceneMgr->createEntity(colmeshname, collmesh);
+			// check if this is an event box:
+			if((SETTINGS.getSetting("Debug Event Boxes") == "Yes") && virt && event_filter != EVENT_NONE)
+			{
+				// load mesh, find bounds, add collision box, discard mesh
+				Entity *ent = mSceneMgr->createEntity(collmesh);
+				AxisAlignedBox bounds = ent->getBoundingBox();
+
+				Vector3 min = bounds.getMinimum();
+				Vector3 max = bounds.getMaximum();
+				
+				// add event box
+				collisions->addCollisionBox(tenode, rotating, virt, px,py,pz,rx,ry,rz,min.x,max.x,min.y,max.y,min.z,max.z,srx,sry,srz,eventname, instancename, forcecam, Vector3(fcx, fcy, fcz), scx, scy, scz, drx, dry, drz, event_filter, luahandler);
+
+				if(debugCollisions)
+				{
+					ent->setMaterialName("tracks/transred");
+					SceneNode *colbakenode=mSceneMgr->getRootSceneNode()->createChildSceneNode();
+					colbakenode->attachObject(ent);
+					colbakenode->setPosition(Vector3(px,py,pz));
+					colbakenode->setOrientation(tenode->getOrientation());
+					colbakenode->showBoundingBox(true);
+				} else
+				{
+					mSceneMgr->destroyEntity(ent);
+				}
+				
+
+				
+
+			}
+			// normal, non virtual collision box
+			Entity *ent = mSceneMgr->createEntity(collmesh);
 			ent->setMaterialName("tracks/transred");
 
 			size_t vertex_count,index_count;
@@ -1929,7 +1955,7 @@ void RoRFrameListener::loadObject(const char* name, float px, float py, float pz
 			delete[] indices;
 			if(!debugCollisions)
 			{
-				mSceneMgr->destroyEntity(colmeshname);
+				mSceneMgr->destroyEntity(ent);
 			} else
 			{
 				SceneNode *colbakenode=mSceneMgr->getRootSceneNode()->createChildSceneNode();
