@@ -104,11 +104,12 @@ class HDRListener;
 #define RELOADING 5
 #define EDITOR_PAUSE 6
 
-#define EVENT_ALL 0
-#define EVENT_AVATAR 1
-#define EVENT_TRUCK 2
-#define EVENT_AIRPLANE 3
-#define EVENT_DELETE 4
+#define EVENT_NONE 0
+#define EVENT_ALL 1
+#define EVENT_AVATAR 2
+#define EVENT_TRUCK 3
+#define EVENT_AIRPLANE 4
+#define EVENT_DELETE 5
 
 #define DEFAULT_INTERNAL_CAM_PITCH Degree(-15)
 

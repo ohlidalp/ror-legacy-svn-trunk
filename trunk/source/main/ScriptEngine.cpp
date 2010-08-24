@@ -113,7 +113,7 @@ int ScriptEngine::loadTerrainScript(Ogre::String scriptname)
 
 	// get some other optional functions
 	frameStepFunctionPtr = mod->GetFunctionIdByDecl("void frameStep(float)");
-	wheelEventFunctionPtr = mod->GetFunctionIdByDecl("void wheelEvents(int, string, string)");
+	wheelEventFunctionPtr = mod->GetFunctionIdByDecl("void wheelEvents(int, string, string, string)");
 	
 	eventCallbackFunctionPtr = mod->GetFunctionIdByDecl("void eventCallback(int, int)");
 
@@ -123,7 +123,7 @@ int ScriptEngine::loadTerrainScript(Ogre::String scriptname)
 	//context->SetLineCallback(asMETHOD(ScriptEngine,LineCallback), this, asCALL_THISCALL);
 
 	// this does not work :(
-	//context->SetExceptionCallback(asMETHOD(ScriptEngine,ExceptionCallback), this, asCALL_THISCALL);
+	context->SetExceptionCallback(asMETHOD(ScriptEngine,ExceptionCallback), this, asCALL_THISCALL);
 
 	context->Prepare(funcId);
 	LogManager::getSingleton().logMessage("SE| Executing main()");
@@ -593,7 +593,7 @@ int ScriptEngine::loadScriptFile(const char *fileName, string &script, string &h
 int ScriptEngine::framestep(Ogre::Real dt, Beam **trucks, int free_truck)
 {
 	// check for all truck wheels
-	if(coll && wheelEventFunctionPtr != -1)
+	if(coll && wheelEventFunctionPtr >= 0)
 	{
 		for(int t = 0; t < free_truck; t++)
 		{
@@ -626,8 +626,9 @@ int ScriptEngine::framestep(Ogre::Real dt, Beam **trucks, int free_truck)
 
 				// Set the function arguments
 				context->SetArgFloat (0, t);
-				context->SetArgObject(1, &std::string(source->instancename));
-				context->SetArgObject(2, &std::string(source->boxname));
+				context->SetArgObject(1, &std::string("wheels"));
+				context->SetArgObject(2, &std::string(source->instancename));
+				context->SetArgObject(3, &std::string(source->boxname));
 
 				//LogManager::getSingleton().logMessage("SE| Executing framestep()");
 				int r = context->Execute();
@@ -640,6 +641,13 @@ int ScriptEngine::framestep(Ogre::Real dt, Beam **trucks, int free_truck)
 		}
 	}
 
+	// check if current truck is in an event box
+	Beam *truck = mefl->getCurrentTruck();
+	if(truck)
+	{
+		eventsource_t *source = coll->isTruckInEventBox(truck);
+		if(source) envokeCallback(source->luahandler, source, 0, 1);
+	}
 
 	// framestep stuff below
 	if(frameStepFunctionPtr<0) return 1;
@@ -661,7 +669,7 @@ int ScriptEngine::framestep(Ogre::Real dt, Beam **trucks, int free_truck)
 }
 
 
-int ScriptEngine::envokeCallback(int functionPtr, eventsource_t *source, node_t *node)
+int ScriptEngine::envokeCallback(int functionPtr, eventsource_t *source, node_t *node, int type)
 {
 	if(functionPtr<=0) return 1;
 	if(!engine) return 0;
@@ -669,14 +677,14 @@ int ScriptEngine::envokeCallback(int functionPtr, eventsource_t *source, node_t 
 	context->Prepare(functionPtr);
 
 	// Set the function arguments
-	context->SetArgObject(0, &std::string(source->instancename));
-	context->SetArgObject(1, &std::string(source->boxname));
+	context->SetArgDWord (0, type);
+	context->SetArgObject(1, &std::string(source->instancename));
+	context->SetArgObject(2, &std::string(source->boxname));
 	if(node)
-		context->SetArgDWord (2, node->id);
+		context->SetArgDWord (3, node->id);
 	else
-		context->SetArgDWord (2, -1);
+		context->SetArgDWord (3, -1);
 
-	//LogManager::getSingleton().logMessage("SE| Executing framestep()");
 	int r = context->Execute();
 	if( r == asEXECUTION_FINISHED )
 	{

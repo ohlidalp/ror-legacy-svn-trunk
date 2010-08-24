@@ -122,7 +122,7 @@ public:
 	 */
 	int executeString(Ogre::String command);
 
-	int envokeCallback(int functionPtr, eventsource_t *source, node_t *node);
+	int envokeCallback(int functionPtr, eventsource_t *source, node_t *node=0, int type=0);
 
 	AngelScript::asIScriptEngine *getEngine() { return engine; };
 
