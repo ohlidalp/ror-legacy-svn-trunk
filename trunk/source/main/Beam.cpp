@@ -8629,7 +8629,7 @@ void Beam::calcForcesEuler(int doUpdate, Real dt, int step, int maxstep, Beam** 
 		}
 		//need a maximum rate for analog devices, otherwise hydro beams break
 		if (!hydroSpeedCoupling)
-			rate=100;
+			rate=10;
 		if ( (hydrodircommand!=0 && hydroSpeedCoupling) || !hydroSpeedCoupling)
 		{
 			if (hydrodirstate > hydrodircommand)
@@ -8712,6 +8712,8 @@ void Beam::calcForcesEuler(int doUpdate, Real dt, int step, int maxstep, Beam** 
 		if (beams[hydro[i]].hydroFlags & HYDRO_FLAG_REV_RUDDER) {cstate-=hydrorudderstate;div++;}
 		if (beams[hydro[i]].hydroFlags & HYDRO_FLAG_REV_ELEVATOR) {cstate-=hydroelevatorstate;div++;}
 
+		if (cstate>1.0) cstate=1.0;
+		if (cstate<-1.0) cstate=-1.0;
 		// Animators following, if no animator, skip all the tests...
 		int flagstate = beams[hydro[i]].animFlags;
 		if(flagstate)

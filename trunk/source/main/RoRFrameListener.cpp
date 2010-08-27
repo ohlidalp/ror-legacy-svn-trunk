@@ -2920,14 +2920,22 @@ bool RoRFrameListener::updateEvents(float dt)
 					else	// this else part is called when we are NOT in replaymode
 					{
 						// steering
-						float tmp_left = INPUTENGINE.getEventValue(EV_TRUCK_STEER_LEFT);
-						float tmp_right = INPUTENGINE.getEventValue(EV_TRUCK_STEER_RIGHT);
-						float sum = -tmp_left + tmp_right;
+						float tmp_left_digital = INPUTENGINE.getEventValue(EV_TRUCK_STEER_LEFT,false,1);
+						float tmp_right_digital = INPUTENGINE.getEventValue(EV_TRUCK_STEER_RIGHT,false,1);
+						float tmp_left_analog = INPUTENGINE.getEventValue(EV_TRUCK_STEER_LEFT,false,2);
+						float tmp_right_analog = INPUTENGINE.getEventValue(EV_TRUCK_STEER_RIGHT,false,2);
+
+						float sum = -max(tmp_left_digital,tmp_left_analog)+ max(tmp_right_digital,tmp_right_analog);
+
 						if(sum < -1) sum = -1;
 						if(sum > 1) sum = 1;
 
 						trucks[current_truck]->hydrodircommand = sum;
-						trucks[current_truck]->hydroSpeedCoupling = !(INPUTENGINE.isEventAnalog(EV_TRUCK_STEER_LEFT) || INPUTENGINE.isEventAnalog(EV_TRUCK_STEER_RIGHT));
+						
+						if ((tmp_left_digital<tmp_left_analog) || (tmp_right_digital<tmp_right_analog))
+							trucks[current_truck]->hydroSpeedCoupling=false; 
+						else
+							trucks[current_truck]->hydroSpeedCoupling=true;
 
 						//accelerate
 						float accval = INPUTENGINE.getEventValue(EV_TRUCK_ACCELERATE);
