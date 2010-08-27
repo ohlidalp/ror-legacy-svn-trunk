@@ -167,7 +167,7 @@ public:
 	Vector3 getPosition(char* instance, char* box);
 	Quaternion getDirection(char* instance, char* box);
 	collision_box_t *getBox(char* instance, char* box);
-	eventsource_t *Collisions::isTruckInEventBox(Beam *truck);
+	eventsource_t *isTruckInEventBox(Beam *truck);
 	bool isInside(Vector3 pos, char* instance, char* box, float border=0);
 	bool isInside(Vector3 pos, collision_box_t *cbox, float border=0);
 	bool groundCollision(node_t *node, float dt, ground_model_t** gm, float *nso=0);
