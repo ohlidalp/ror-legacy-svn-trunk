@@ -2132,7 +2132,7 @@ bool InputEngine::isEventAnalog(int eventID)
 				|| t_vec[i].eventtype == ET_JoystickSliderY) \
 				//check if value comes from analog device
 				//this way, only valid events (e.g. joystick mapped, but unplugged) are recognized as analog events
-				&& getEventValue(eventID, false, true)!=0.0)
+				&& getEventValue(eventID, true, 2)!=0.0)
 				{
 					return true;
 				}
@@ -2159,7 +2159,7 @@ bool InputEngine::isEventAnalog(int eventID)
 #endif //0
 }
 
-float InputEngine::getEventValue(int eventID, bool pure, bool onlyAnalog)
+float InputEngine::getEventValue(int eventID, bool pure, int valueSource)
 {
 	float returnValue = 0;
 	std::vector<event_trigger_t> t_vec = events[eventID];
@@ -2168,7 +2168,7 @@ float InputEngine::getEventValue(int eventID, bool pure, bool onlyAnalog)
 	{
 		event_trigger_t t = *i;
 
-		if (!onlyAnalog)
+		if (valueSource==0 || valueSource==1)
 		{
 			switch(t.eventtype)
 			{
@@ -2245,112 +2245,115 @@ float InputEngine::getEventValue(int eventID, bool pure, bool onlyAnalog)
 			}
 
 		}
-		switch (t.eventtype)
+		if (valueSource==0 || valueSource==2)
 		{
-			case ET_MouseAxisX:
-				value = mouseState.X.abs / 32767;
-				break;
-			case ET_MouseAxisY:
-				value = mouseState.Y.abs / 32767;
-				break;
-			case ET_MouseAxisZ:
-				value = mouseState.Z.abs / 32767;
-				break;
-			
-			case ET_JoystickAxisRel:
-			case ET_JoystickAxisAbs:
-				{
-					if(t.joystickNumber > free_joysticks || !mJoy[t.joystickNumber])
+			switch (t.eventtype)
+			{
+				case ET_MouseAxisX:
+					value = mouseState.X.abs / 32767;
+					break;
+				case ET_MouseAxisY:
+					value = mouseState.Y.abs / 32767;
+					break;
+				case ET_MouseAxisZ:
+					value = mouseState.Z.abs / 32767;
+					break;
+				
+				case ET_JoystickAxisRel:
+				case ET_JoystickAxisAbs:
 					{
-						value=0;
-						continue;
-					}
-					if(t.joystickAxisNumber >= (int)joyState[t.joystickNumber].mAxes.size())
-					{
-#ifndef NOOGRE
-						LogManager::getSingleton().logMessage("*** Joystick has not enough axis for mapping: need axe "+StringConverter::toString(t.joystickAxisNumber) + ", availabe axis: "+StringConverter::toString(joyState[t.joystickNumber].mAxes.size()));
-#endif
-						value=0;
-						continue;
-					}
-					Axis axe = joyState[t.joystickNumber].mAxes[t.joystickAxisNumber];
-
-					if(t.eventtype == ET_JoystickAxisRel)
-					{
-						value = (float)axe.rel / (float)mJoy[t.joystickNumber]->MAX_AXIS;
-					}
-					else
-					{
-						value = (float)axe.abs / (float)mJoy[t.joystickNumber]->MAX_AXIS;
-						switch(t.joystickAxisRegion)
+						if(t.joystickNumber > free_joysticks || !mJoy[t.joystickNumber])
 						{
-						case 0:
-							// normal case, full axis used
-							value = (value + 1)/2;
-							break;
-						case -1:
-							// lower range used
-							if(value > 0)
-								value = 0;
-							else
-								value = -value;
-							break;
-						case 1:
-							// upper range used
-							if(value < 0)
-								value = 0;
-							break;
+							value=0;
+							continue;
 						}
-
-						if(t.joystickAxisHalf)
+						if(t.joystickAxisNumber >= (int)joyState[t.joystickNumber].mAxes.size())
 						{
-							// XXX: TODO: write this
-							//float a = (double)((value+1.0)/2.0);
-							//float b = (double)(1.0-(value+1.0)/2.0);
-							//LogManager::getSingleton().logMessage("half: "+StringConverter::toString(value)+" / "+StringConverter::toString(a)+" / "+StringConverter::toString(b));
-							//no dead zone in half axis
-							value = (1.0 + value) / 2.0;
-							if (t.joystickAxisReverse)
-								value = 1.0 - value;
-							if(!pure)
-								value = axisLinearity(value, t.joystickAxisLinearity);
-						}else
-						{
-							//LogManager::getSingleton().logMessage("not half: "+StringConverter::toString(value)+" / "+StringConverter::toString(deadZone(value, t.joystickAxisDeadzone)) +" / "+StringConverter::toString(t.joystickAxisDeadzone) );
-							if (t.joystickAxisReverse)
-								value = 1-value;
-							if(!pure)
-								// no deadzone when using oure value
-								value = deadZone(value, t.joystickAxisDeadzone);
-							if(!pure)
-								value = axisLinearity(value, t.joystickAxisLinearity);
+	#ifndef NOOGRE
+							LogManager::getSingleton().logMessage("*** Joystick has not enough axis for mapping: need axe "+StringConverter::toString(t.joystickAxisNumber) + ", availabe axis: "+StringConverter::toString(joyState[t.joystickNumber].mAxes.size()));
+	#endif
+							value=0;
+							continue;
 						}
-						// digital mapping of analog axis
-						if(t.joystickAxisUseDigital)
-							if(value >= 0.5)
-								value = 1;
-							else
-								value = 0;
+						Axis axe = joyState[t.joystickNumber].mAxes[t.joystickAxisNumber];
+
+						if(t.eventtype == ET_JoystickAxisRel)
+						{
+							value = (float)axe.rel / (float)mJoy[t.joystickNumber]->MAX_AXIS;
+						}
+						else
+						{
+							value = (float)axe.abs / (float)mJoy[t.joystickNumber]->MAX_AXIS;
+							switch(t.joystickAxisRegion)
+							{
+							case 0:
+								// normal case, full axis used
+								value = (value + 1)/2;
+								break;
+							case -1:
+								// lower range used
+								if(value > 0)
+									value = 0;
+								else
+									value = -value;
+								break;
+							case 1:
+								// upper range used
+								if(value < 0)
+									value = 0;
+								break;
+							}
+
+							if(t.joystickAxisHalf)
+							{
+								// XXX: TODO: write this
+								//float a = (double)((value+1.0)/2.0);
+								//float b = (double)(1.0-(value+1.0)/2.0);
+								//LogManager::getSingleton().logMessage("half: "+StringConverter::toString(value)+" / "+StringConverter::toString(a)+" / "+StringConverter::toString(b));
+								//no dead zone in half axis
+								value = (1.0 + value) / 2.0;
+								if (t.joystickAxisReverse)
+									value = 1.0 - value;
+								if(!pure)
+									value = axisLinearity(value, t.joystickAxisLinearity);
+							}else
+							{
+								//LogManager::getSingleton().logMessage("not half: "+StringConverter::toString(value)+" / "+StringConverter::toString(deadZone(value, t.joystickAxisDeadzone)) +" / "+StringConverter::toString(t.joystickAxisDeadzone) );
+								if (t.joystickAxisReverse)
+									value = 1-value;
+								if(!pure)
+									// no deadzone when using oure value
+									value = deadZone(value, t.joystickAxisDeadzone);
+								if(!pure)
+									value = axisLinearity(value, t.joystickAxisLinearity);
+							}
+							// digital mapping of analog axis
+							if(t.joystickAxisUseDigital)
+								if(value >= 0.5)
+									value = 1;
+								else
+									value = 0;
+						}
 					}
-				}
-				break;
-			case ET_JoystickSliderX:
-			case ET_JoystickSliderY:
-				{
-					if(t.joystickNumber > free_joysticks || !mJoy[t.joystickNumber])
+					break;
+				case ET_JoystickSliderX:
+				case ET_JoystickSliderY:
 					{
-						value=0;
-						continue;
+						if(t.joystickNumber > free_joysticks || !mJoy[t.joystickNumber])
+						{
+							value=0;
+							continue;
+						}
+						if(t.eventtype == ET_JoystickSliderX)
+							value = (float)joyState[t.joystickNumber].mSliders[t.joystickSliderNumber].abX / (float)mJoy[t.joystickNumber]->MAX_AXIS;
+						else if(t.eventtype == ET_JoystickSliderY)
+							value = (float)joyState[t.joystickNumber].mSliders[t.joystickSliderNumber].abY / (float)mJoy[t.joystickNumber]->MAX_AXIS;
+						value = (value + 1)/2; // full axis
+						if(t.joystickSliderReverse)
+							value = 1.0 - value; // reversed
 					}
-					if(t.eventtype == ET_JoystickSliderX)
-						value = (float)joyState[t.joystickNumber].mSliders[t.joystickSliderNumber].abX / (float)mJoy[t.joystickNumber]->MAX_AXIS;
-					else if(t.eventtype == ET_JoystickSliderY)
-						value = (float)joyState[t.joystickNumber].mSliders[t.joystickSliderNumber].abY / (float)mJoy[t.joystickNumber]->MAX_AXIS;
-					value = (value + 1)/2; // full axis
-					if(t.joystickSliderReverse)
-						value = 1.0 - value; // reversed
-				}
-				break;
+					break;
+			}
 		}
 		// only return if grater zero, otherwise check all other bombinations
 		if(value > returnValue)
