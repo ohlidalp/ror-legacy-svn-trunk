@@ -48,15 +48,15 @@ DustManager::DustManager(Ogre::SceneManager *mSceneMgr) : mSceneMgr(mSceneMgr), 
 	
 	if (SETTINGS.getSetting("Dust")=="Yes")
 	{
-		dustpools["dust"]   = new DustPool("tracks/Dust", 20, mSceneMgr->getRootSceneNode(), mSceneMgr, w);
-		dustpools["clump"]  = new DustPool("tracks/Clump", 20, mSceneMgr->getRootSceneNode(), mSceneMgr, w);
-		dustpools["sparks"] = new DustPool("tracks/Sparks", 10, mSceneMgr->getRootSceneNode(), mSceneMgr, w);
+		dustpools["dust"]   = new DustPool((char *)"tracks/Dust", 20, mSceneMgr->getRootSceneNode(), mSceneMgr, w);
+		dustpools["clump"]  = new DustPool((char *)"tracks/Clump", 20, mSceneMgr->getRootSceneNode(), mSceneMgr, w);
+		dustpools["sparks"] = new DustPool((char *)"tracks/Sparks", 10, mSceneMgr->getRootSceneNode(), mSceneMgr, w);
 	}
 	if (SETTINGS.getSetting("Spray")=="Yes")
 	{
-		dustpools["drip"]   = new DustPool("tracks/Drip", 50, mSceneMgr->getRootSceneNode(), mSceneMgr, w);
-		dustpools["splash"] = new DustPool("tracks/Splash", 20, mSceneMgr->getRootSceneNode(), mSceneMgr, w);
-		dustpools["ripple"] = new DustPool("tracks/Ripple", 20, mSceneMgr->getRootSceneNode(), mSceneMgr, w);
+		dustpools["drip"]   = new DustPool((char *)"tracks/Drip", 50, mSceneMgr->getRootSceneNode(), mSceneMgr, w);
+		dustpools["splash"] = new DustPool((char *)"tracks/Splash", 20, mSceneMgr->getRootSceneNode(), mSceneMgr, w);
+		dustpools["ripple"] = new DustPool((char *)"tracks/Ripple", 20, mSceneMgr->getRootSceneNode(), mSceneMgr, w);
 	}
 
 }
