@@ -57,9 +57,11 @@ void registerOgreObjects(AngelScript::asIScriptEngine *engine)
 
 
 	// Register the object properties
-	r = engine->RegisterObjectProperty("Vector3", "float x", offsetof(Vector3, x)); assert( r >= 0 );
-	r = engine->RegisterObjectProperty("Vector3", "float y", offsetof(Vector3, y)); assert( r >= 0 );
-	r = engine->RegisterObjectProperty("Vector3", "float z", offsetof(Vector3, z)); assert( r >= 0 );
+	r = engine->RegisterObjectProperty("Vector3", "float x", offsetof(Ogre::Vector3, x)); assert( r >= 0 );
+	r = engine->RegisterObjectProperty("Vector3", "float y", offsetof(Ogre::Vector3, y)); assert( r >= 0 );
+	r = engine->RegisterObjectProperty("Vector3", "float z", offsetof(Ogre::Vector3, z)); assert( r >= 0 );
+	r = engine->RegisterObjectProperty("Vector3", "float x", offsetof(Ogre::Vector3, x)); assert( r >= 0 );
+
 
 	// Register the object methods
 	r = engine->RegisterObjectMethod("Vector3", "float length() const", asMETHOD(Vector3,length), asCALL_THISCALL); assert( r >= 0 );
