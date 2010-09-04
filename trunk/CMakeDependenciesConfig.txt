@@ -137,7 +137,7 @@ IF(WIN32)
 		if(ROR_BUILD_CONFIGURATOR)
 			set(WXWIDGETS_SHARED_INCLUDE_DIRS "${ROR_DEPENDENCIES_DIR}/include/wxWidgets" CACHE PATH "The wxWidgets (shared) include paths to use")
 			set(WXWIDGETS_SHARED_LIBRARY_DIRS "${ROR_DEPENDENCIES_DIR}/lib/wx/shared" CACHE PATH "The wxWidgets (shared) lib path to use")
-			set(WXWIDGETS_SHARED_LIBRARIES    "wxbase29u.lib;wxmsw29u_core.lib;wxmsw29u_html.lib;wxbase29u_net.lib;wxmsw29u_adv.lib;wxpng.lib;wxtiff.lib;wxjpeg.lib;wxzlib.lib;wxregexu.lib;wxexpat.lib;winmm;comctl32;rpcrt4;wsock32" CACHE STRING "The wxWidgets(shared) libs to link against")
+			set(WXWIDGETS_SHARED_LIBRARIES    "wxbase29u.lib;wxmsw29u_core.lib;wxmsw29u_html.lib;wxbase29u_net.lib;wxmsw29u_adv.lib;wxpng.lib;wxtiff.lib;wxjpeg.lib;wxzlib.lib;wxregexu.lib;wxexpat.lib;winmm;comctl32;rpcrt4;wsock32;wxmsw29u_propgrid.lib;wxmsw29u_aui.lib" CACHE STRING "The wxWidgets(shared) libs to link against")
 		endif(ROR_BUILD_CONFIGURATOR)
 
 		if(ROR_BUILD_INSTALLER)
