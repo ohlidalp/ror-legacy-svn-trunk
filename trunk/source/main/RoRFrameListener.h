@@ -224,6 +224,7 @@ protected:
 	bool mDOFDebug;
 	int mouseX;
 	int mouseY;
+	int shaderSchemeMode;
 	int inputGrabMode;
 	int mouseGrabState;
 	bool switchMouseButtons;

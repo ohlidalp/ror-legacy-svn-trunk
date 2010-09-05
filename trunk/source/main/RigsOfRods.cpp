@@ -22,7 +22,57 @@ along with Rigs of Rods.  If not, see <http://www.gnu.org/licenses/>.
 #include "language.h"
 #include "errorutils.h"
 
-#include "OgreRTShaderSystem.h"
+#include <OgreHeaderPrefix.h>
+#include <OgreRTShaderSystem.h>
+
+/** This class simply demonstrates basic usage of the CRTShader system.
+It sub class the material manager listener class and when a target scheme callback
+is invoked with the shader generator scheme it tries to create an equvialent shader
+based technique based on the default technique of the given material.
+*/
+class ShaderGeneratorTechniqueResolverListener : public MaterialManager::Listener
+{
+public:
+
+	ShaderGeneratorTechniqueResolverListener(RTShader::ShaderGenerator* pShaderGenerator)
+	{
+		mShaderGenerator = pShaderGenerator;
+	}
+
+	virtual Technique* handleSchemeNotFound(unsigned short schemeIndex, 
+		const String& schemeName, Material* originalMaterial, unsigned short lodIndex, 
+		const Renderable* rend)
+	{		
+		// Case this is the default shader generator scheme.
+		if (schemeName == RTShader::ShaderGenerator::DEFAULT_SCHEME_NAME)
+		{
+			MaterialRegisterIterator itFind = mRegisteredMaterials.find(originalMaterial);
+			bool techniqueCreated = false;
+
+			// This material was not registered before.
+			if (itFind == mRegisteredMaterials.end())
+			{
+				techniqueCreated = mShaderGenerator->createShaderBasedTechnique(
+					originalMaterial->getName(), 
+					MaterialManager::DEFAULT_SCHEME_NAME, 
+					schemeName);				
+			}
+			mRegisteredMaterials[originalMaterial] = techniqueCreated;
+		}
+
+		return NULL;
+	}
+
+protected:
+	typedef std::map<Material*, bool>		MaterialRegisterMap;
+	typedef MaterialRegisterMap::iterator	MaterialRegisterIterator;
+
+
+protected:
+	MaterialRegisterMap				mRegisteredMaterials;		// Registered material map.
+	RTShader::ShaderGenerator*		mShaderGenerator;			// The shader generator instance.
+};
+
 
 RigsOfRods::RigsOfRods(Ogre::String name, unsigned int hwnd) :
 	mRoot(0),
@@ -323,14 +373,29 @@ void RigsOfRods::initRTShaderSystem()
 	// Grab the shader generator pointer.
 	Ogre::RTShader::ShaderGenerator *mShaderGenerator = Ogre::RTShader::ShaderGenerator::getSingletonPtr();
 
+	// Set the scene manager.
+	mShaderGenerator->addSceneManager(mSceneMgr);
+
+
 	// Add the shader libs resource location.
 	loadMainResource("rtshader");
 
 	// Set shader cache path.
-	mShaderGenerator->setShaderCachePath(SETTINGS.getSetting("User Path")+"cache");		
+	mShaderGenerator->setShaderCachePath(SETTINGS.getSetting("User Path")+"cache");
 
-	// Set the scene manager.
-	mShaderGenerator->addSceneManager(mSceneMgr);
+	ShaderGeneratorTechniqueResolverListener *mMaterialMgrListener = new ShaderGeneratorTechniqueResolverListener(mShaderGenerator);				
+	MaterialManager::getSingleton().addListener(mMaterialMgrListener);
+
+	// add per pixel lighting
+	/*
+	RTShader::ShaderGenerator* shaderGenerator = RTShader::ShaderGenerator::getSingletonPtr();
+	RTShader::RenderState* renderState = shaderGenerator->getRenderState(RTShader::ShaderGenerator::DEFAULT_SCHEME_NAME);
+	renderState->reset();
+	RTShader::SubRenderState* perPixelLightModel = shaderGenerator->createSubRenderState(RTShader::PerPixelLighting::Type);
+	renderState->addTemplateSubRenderState(perPixelLightModel);
+	// Invalidate the scheme in order to re-generate all shaders based technique related to this scheme.
+	shaderGenerator->invalidateScheme(RTShader::ShaderGenerator::DEFAULT_SCHEME_NAME);
+	*/
 }
 
 void RigsOfRods::createScene(void)

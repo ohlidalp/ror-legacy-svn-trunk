@@ -58,7 +58,7 @@ void *s_sendthreadstart(void* vid)
 	if(SETTINGS.getSetting("NoCrashRpt").empty())
 	{
 		// add the crash handler for this thread
-		CrThreadAutoInstallHelper cr_thread_install_helper();
+		CrThreadAutoInstallHelper cr_thread_install_helper;
 		assert(cr_thread_install_helper.m_nInstallStatus==0);
 	}
 #endif //USE_CRASHRPT
@@ -72,7 +72,7 @@ void *s_receivethreadstart(void* vid)
 	if(SETTINGS.getSetting("NoCrashRpt").empty())
 	{
 		// add the crash handler for this thread
-		CrThreadAutoInstallHelper cr_thread_install_helper();
+		CrThreadAutoInstallHelper cr_thread_install_helper(0);
 		assert(cr_thread_install_helper.m_nInstallStatus==0);
 	}
 #endif //USE_CRASHRPT
