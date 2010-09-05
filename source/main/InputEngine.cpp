@@ -1472,6 +1472,8 @@ eventInfo_t eventInfo[] = {
 	{ "DOF_DEBUG_FOCUS_OUT", EV_DOF_DEBUG_FOCUS_OUT, "Keyboard EXPL+4", _L("move focus out") },
 
 	{ "TRUCKEDIT_RELOAD", EV_TRUCKEDIT_RELOAD, "Keyboard EXPL+SHIFT+CTRL+R", _L("reload truck") },
+	
+	{ "TOGGLESHADERS", EV_TOGGLESHADERS, "Keyboard EXPL+SHIFT+CTRL+S", _L("toggle shader usage") },
 
 	// the end, DO NOT MODIFY
 	{"", -1, "", ""},

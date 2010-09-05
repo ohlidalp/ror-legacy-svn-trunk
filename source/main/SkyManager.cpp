@@ -54,10 +54,6 @@ void SkyManager::init(Ogre::SceneManager *mScene, Ogre::RenderWindow *mWindow, O
 	mCaelumSystem = new Caelum::CaelumSystem (Root::getSingletonPtr(), mScene, Caelum::CaelumSystem::CAELUM_COMPONENTS_NONE);
 	mCaelumSystem->attachViewport(mCamera->getViewport());
 
-	// overwrite some settings
-	mCaelumSystem->setEnsureSingleShadowSource(true);
-	mCaelumSystem->setEnsureSingleLightSource(true);
-
 	/*
 	// TODO: set real time, and let the user select his true location
 	mCaelumSystem->getUniversalClock()->setGregorianDateTime(2008, 4, 9, 6, 33, 0);
@@ -77,6 +73,20 @@ void SkyManager::loadScript(Ogre::String script)
 	try
 	{
 		CaelumPlugin::getSingleton().loadCaelumSystemFromScript (mCaelumSystem, script);
+
+
+		// overwrite some settings
+		if(mCaelumSystem->getMoon())
+		{
+			mCaelumSystem->getMoon()->setAutoDisable(true);
+			mCaelumSystem->getMoon()->setAutoDisableThreshold(1);
+			mCaelumSystem->getMoon()->setForceDisable(true);
+			mCaelumSystem->getMoon()->getMainLight()->setCastShadows(false);
+		}
+
+		mCaelumSystem->setEnsureSingleShadowSource(true);
+		mCaelumSystem->setEnsureSingleLightSource(true);
+
 	} catch(Ogre::Exception& e)
 	{
 		LogManager::getSingleton().logMessage("exception upon loading sky script: " + e.getFullDescription());

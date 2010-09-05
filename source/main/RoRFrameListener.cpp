@@ -125,6 +125,8 @@ along with Rigs of Rods.  If not, see <http://www.gnu.org/licenses/>.
 #include "errorutils.h"
 #include "DustManager.h"
 
+#include <OgreHeaderPrefix.h>
+#include <OgreRTShaderSystem.h>
 
 #if OGRE_PLATFORM == OGRE_PLATFORM_WIN32
 	#include <Windows.h>
@@ -779,6 +781,8 @@ RoRFrameListener::RoRFrameListener(RenderWindow* win, Camera* cam, SceneManager*
 	enablePosStor = (SETTINGS.getSetting("Position Storage")=="Yes");
 	objectCounter=0;
 	hdrListener=0;
+	shaderSchemeMode=1;
+
 	netPointToUID=-1;
 	netcheckGUITimer=0;
 	mDOF=0;
@@ -2352,6 +2356,24 @@ bool RoRFrameListener::updateEvents(float dt)
 		mDOFDebug = !mDOFDebug;
 		mDOF->setDebugEnabled(mDOFDebug);
 	}
+	
+	if (INPUTENGINE.getEventBoolValueBounce(EV_TOGGLESHADERS, 0.5f))
+	{
+		if(shaderSchemeMode)
+		{
+			shaderSchemeMode=0;
+			mCamera->getViewport()->setMaterialScheme(MaterialManager::DEFAULT_SCHEME_NAME);
+			LogManager::getSingleton().logMessage("shaders disabled");
+			if(ow) ow->flashMessage("shaders disabled");
+		} else
+		{
+			shaderSchemeMode=1;
+			mCamera->getViewport()->setMaterialScheme(RTShader::ShaderGenerator::DEFAULT_SCHEME_NAME);
+			LogManager::getSingleton().logMessage("shaders enabled");
+			if(ow) ow->flashMessage("shaders enabled");
+		}
+	}
+
 	if (INPUTENGINE.getEventBoolValueBounce(EV_COMMON_SCREENSHOT_BIG, 0.5f))
 	{
 		// hide flash messages
