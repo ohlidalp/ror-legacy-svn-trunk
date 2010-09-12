@@ -427,8 +427,11 @@ class InputEngine :
 public:
 	static InputEngine & Instance();
 	void Capture();
-	//valueSource: 0=digital and analog devices, 1=only digital, 2=only analog
-	float getEventValue(int eventID, bool pure=false, int valueSource=0);
+
+	enum {ET_ANY, ET_DIGITAL, ET_ANALOG};
+	//valueSource: ET_ANY=digital and analog devices, ET_DIGITAL=only digital, ET_ANALOG=only analog
+	float getEventValue(int eventID, bool pure = false, int valueSource = ET_ANY);
+
 	bool getEventBoolValue(int eventID);
 	bool isEventAnalog(int eventID);
 	bool getEventBoolValueBounce(int eventID, float time=0.2f);

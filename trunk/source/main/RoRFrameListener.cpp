@@ -2942,10 +2942,10 @@ bool RoRFrameListener::updateEvents(float dt)
 					else	// this else part is called when we are NOT in replaymode
 					{
 						// steering
-						float tmp_left_digital = INPUTENGINE.getEventValue(EV_TRUCK_STEER_LEFT,false,1);
-						float tmp_right_digital = INPUTENGINE.getEventValue(EV_TRUCK_STEER_RIGHT,false,1);
-						float tmp_left_analog = INPUTENGINE.getEventValue(EV_TRUCK_STEER_LEFT,false,2);
-						float tmp_right_analog = INPUTENGINE.getEventValue(EV_TRUCK_STEER_RIGHT,false,2);
+						float tmp_left_digital  = INPUTENGINE.getEventValue(EV_TRUCK_STEER_LEFT,  false, InputEngine::ET_DIGITAL);
+						float tmp_right_digital = INPUTENGINE.getEventValue(EV_TRUCK_STEER_RIGHT, false, InputEngine::ET_DIGITAL);
+						float tmp_left_analog   = INPUTENGINE.getEventValue(EV_TRUCK_STEER_LEFT,  false, InputEngine::ET_ANALOG);
+						float tmp_right_analog  = INPUTENGINE.getEventValue(EV_TRUCK_STEER_RIGHT, false, InputEngine::ET_ANALOG);
 
 						float sum = -max(tmp_left_digital,tmp_left_analog)+ max(tmp_right_digital,tmp_right_analog);
 
