@@ -48,19 +48,10 @@ bool RoRViewer::Initialize(std::string hwndStr)
 
 	String logFilename   = SETTINGS.getSetting("Log Path") + Ogre::String("RoRViewer.log");
 	String programPath   = SETTINGS.getSetting("Program Path");
-	String pluginsConfig = ""; // important to be empty //SETTINGS.getSetting("plugins.cfg");
+	String pluginsConfig = SETTINGS.getSetting("plugins.cfg");
 	
 	String ogreConfig    = SETTINGS.getSetting("ogre.cfg");
 	ogre_root = new Ogre::Root(pluginsConfig, ogreConfig, logFilename);
-
-	// load plugins by hand
-#ifdef WIN32
-	ogre_root->loadPlugin(programPath + "RenderSystem_Direct3D9");
-#endif // WIN32
-	ogre_root->loadPlugin(programPath + "RenderSystem_GL");
-	ogre_root->loadPlugin(programPath + "Plugin_ParticleFX");
-	ogre_root->loadPlugin(programPath + "Plugin_OctreeSceneManager");
-	ogre_root->loadPlugin(programPath + "Plugin_CgProgramManager");
 
 	ogre_root->restoreConfig();
 	ogre_root->initialise(false);

@@ -28,6 +28,14 @@ ELSEIF(UNIX)
  PKG_CHECK_MODULES  (Ogre OGRE REQUIRED)
  PKG_CHECK_MODULES  (Ois OIS REQUIRED)
 
+ # find wxwidgets
+ SET(wxWidgets_USE_UNICODE ON)
+ FIND_PACKAGE(wxWidgets REQUIRED COMPONENTS base core html net adv propgrid aui)
+ include_directories(${wxWidgets_INCLUDE_DIRS})
+ add_definitions("-D${wxWidgets_DEFINITIONS}" ${wxWidgets_CXX_FLAGS})
+ link_directories (${wxWidgets_LIB_DIR})
+ set(OS_LIBS "${OS_LIBS};${wxWidgets_LIBRARIES}")
+
  set(OS_SOURCE "")
 ENDIF(WIN32)
 
@@ -80,7 +88,7 @@ IF(WIN32)
    add_definitions("/wd4305 /wd4244 -DNOMINMAX")
 ELSEIF(UNIX)
    include_directories(${GTK_INCLUDE_DIRS})
-   set(OS_LIBS "X11")
+   set(OS_LIBS "${OS_LIBS};X11")
 ENDIF(WIN32)
 
 # required components
