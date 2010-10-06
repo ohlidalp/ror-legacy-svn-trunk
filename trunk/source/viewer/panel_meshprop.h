@@ -119,7 +119,7 @@ public:
 			wxPropertyGridPage *pgp = pgman->AddPage(wxT("Mesh"));
 
 			// bounds
-			pgp->Append(new wxPropertyCategory("Bounds"));
+			pgp->Append(new wxPropertyCategory("Bounding Box"));
 
 			AxisAlignedBox bounds = current_mesh->getBounds();
 			Vector3 bounds_min = bounds.getMinimum();
