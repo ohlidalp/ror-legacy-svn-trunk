@@ -29,7 +29,7 @@ Console::Console()
 	initialiseByAttributes(this);
 
 	// make it 1/3 of screen height and place over screen
-	MyGUI::IntSize size = MyGUI::Gui::getInstance().getViewSize();
+	MyGUI::IntSize size = MyGUI::RenderManager::getInstance().getViewSize();
 	size.height = size.height/3;
 	mMainWidget->setCoord(0, -size.height, size.width, size.height);
 

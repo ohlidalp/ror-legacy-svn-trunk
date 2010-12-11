@@ -366,7 +366,7 @@ GUI_Friction::GUI_Friction() : col(0), active_gm(0), selected_gm(0), win(0)
 
 void GUI_Friction::setShaded(bool value)
 {
-	if(!win || !win->isVisible()) return;
+	if(!win || !win->getVisible()) return;
 	if(value)
 	{
 		MyGUI::ControllerItem* item = MyGUI::ControllerManager::getInstance().createItem(MyGUI::ControllerFadeAlpha::getClassTypeName());
@@ -415,7 +415,7 @@ void GUI_Friction::setVisible(bool value)
 
 bool GUI_Friction::getVisible()
 {
-	return win->isVisible();
+	return win->getVisible();
 }
 
 void GUI_Friction::setActiveCol(ground_model_t *gm)
@@ -563,7 +563,7 @@ void GUI_Friction::updateControls(ground_model_t *gm, bool setCombo)
 void GUI_Friction::event_combo_grounds_eventComboAccept(MyGUI::ComboBoxPtr _sender, size_t _index)
 {
 	if(!col) return;
-	if(!win->isVisible()) return;
+	if(!win->getVisible()) return;
 	MyGUI::ComboBoxPtr cb = (MyGUI::ComboBoxPtr)win->findWidget("combo_grounds");
 	if(!cb) return;
 	ground_model_t *gm = col->getGroundModelByString(cb->getItemNameAt(_index).asUTF8_c_str());

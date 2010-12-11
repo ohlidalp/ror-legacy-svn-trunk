@@ -134,31 +134,31 @@ void GUIManager::eventRequestTag(const MyGUI::UString& _tag, MyGUI::UString& _re
 void GUIManager::injectMouseMove(int _absx, int _absy, int _absz)
 {
 	if (!mGUI) return;
-	mGUI->injectMouseMove(_absx, _absy, _absz);
+	MyGUI::InputManager::getInstance().injectMouseMove(_absx, _absy, _absz);
 }
 
 void GUIManager::injectMousePress(int _absx, int _absy, MyGUI::MouseButton _id)
 {
 	if (!mGUI) return;
-	mGUI->injectMousePress(_absx, _absy, _id);
+	MyGUI::InputManager::getInstance().injectMousePress(_absx, _absy, _id);
 }
 
 void GUIManager::injectMouseRelease(int _absx, int _absy, MyGUI::MouseButton _id)
 {
 	if (!mGUI) return;
-	mGUI->injectMouseRelease(_absx, _absy, _id);
+	MyGUI::InputManager::getInstance().injectMouseRelease(_absx, _absy, _id);
 }
 
 void GUIManager::injectKeyPress(MyGUI::KeyCode _key, MyGUI::Char _text)
 {
 	if (!mGUI) return;
-	mGUI->injectKeyPress(_key, _text);
+	MyGUI::InputManager::getInstance().injectKeyPress(_key, _text);
 }
 
 void GUIManager::injectKeyRelease(MyGUI::KeyCode _key)
 {
 	if (!mGUI) return;
-	mGUI->injectKeyRelease(_key);
+	MyGUI::InputManager::getInstance().injectKeyRelease(_key);
 }
 #endif //MYGUI
 

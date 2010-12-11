@@ -51,11 +51,11 @@ Replay::Replay(Beam *b, int _numFrames)
 	// windowing
 	int width = 300;
 	int height = 60;
-	int x = (MyGUI::Gui::getInstance().getViewWidth() - width) / 2;
+	int x = (MyGUI::RenderManager::getInstance().getViewSize().width - width) / 2;
 	int y = 0;
 
 	panel = MyGUI::Gui::getInstance().createWidget<MyGUI::Widget>("Panel", x, y, width, height, MyGUI::Align::HCenter | MyGUI::Align::Top, "Back");
-	panel->setCaption(_L("Replay"));
+	//panel->setCaption(_L("Replay"));
 	panel->setAlpha(0.6);
 
 	pr = panel->createWidget<MyGUI::Progress>("Progress", 10, 10, 280, 20,  MyGUI::Align::Default);
@@ -172,7 +172,7 @@ void Replay::setVisible(bool value)
 bool Replay::getVisible()
 {
 #ifdef USE_MYGUI 
-	return panel->isVisible();
+	return panel->getVisible();
 #else
 	return false;
 #endif //MYGUI

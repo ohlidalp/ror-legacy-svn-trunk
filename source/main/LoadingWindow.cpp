@@ -26,7 +26,8 @@ LoadingWindow::LoadingWindow() :
 {
 	initialiseByAttributes(this);
 
-	mMainWidget->setPosition(MyGUI::Gui::getInstance().getViewSize().width/2 - mMainWidget->getWidth()/2, MyGUI::Gui::getInstance().getViewSize().height/2 - mMainWidget->getHeight()/2);
+	MyGUI::IntSize gui_area = MyGUI::RenderManager::getInstance().getViewSize();
+	mMainWidget->setPosition(gui_area.width/2 - mMainWidget->getWidth()/2, gui_area.height/2 - mMainWidget->getHeight()/2);
 }
 
 LoadingWindow::~LoadingWindow()

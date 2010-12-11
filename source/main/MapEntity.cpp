@@ -104,7 +104,7 @@ void MapEntity::onTop()
 
 bool MapEntity::getVisibility()
 {
-	return mMainWidget->isVisible();
+	return mMainWidget->getVisible();
 }
 
 void MapEntity::setVisibility(bool value)
