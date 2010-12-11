@@ -1,5 +1,3 @@
-#ifdef USE_ANGELSCRIPT
-
 #ifndef SCRIPTHELPER_H
 #define SCRIPTHELPER_H
 
@@ -18,8 +16,13 @@ int CompareEquality(asIScriptEngine *engine, void *lobj, void *robj, int typeId,
 // The caller can optionally provide its own context, for example if a context should be reused.
 int ExecuteString(asIScriptEngine *engine, const char *code, asIScriptModule *mod = 0, asIScriptContext *ctx = 0);
 
+// Write the registered application interface to a file for an offline compiler.
+// The format is compatible with the offline compiler in /sdk/samples/asbuild/.
+int WriteConfigToFile(asIScriptEngine *engine, const char *filename);
+
+// Print details of the script exception to the standard output
+void PrintException(asIScriptContext *ctx, bool printStack = false);
+
 END_AS_NAMESPACE
 
-#endif //SCRIPTHELPER_H
-
-#endif // USE_ANGELSCRIPT
+#endif

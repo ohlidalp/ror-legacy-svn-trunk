@@ -1,10 +1,14 @@
-#ifdef USE_ANGELSCRIPT
-
 #include <assert.h>
 #include <string.h> // strstr
 #include <new> // new()
 #include <math.h>
 #include "scriptmath3d.h"
+
+#ifdef __BORLANDC__
+// C++Builder doesn't define a non-standard "sqrtf" function but rather an overload of "sqrt"
+// for float arguments.
+inline float sqrtf (float x) { return sqrt (x); }
+#endif
 
 BEGIN_AS_NAMESPACE
 
@@ -331,4 +335,3 @@ void RegisterScriptMath3D(asIScriptEngine *engine)
 END_AS_NAMESPACE
 
 
-#endif //USE_ANGELSCRIPT
