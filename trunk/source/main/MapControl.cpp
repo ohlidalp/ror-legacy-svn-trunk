@@ -108,7 +108,7 @@ void MapControl::deleteMapEntity(MapEntity *ent)
 
 bool MapControl::getVisibility()
 {
-	return mMainWidget->isVisible();
+	return mMainWidget->getVisible();
 }
 
 void MapControl::setVisibility(bool value)

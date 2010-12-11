@@ -68,7 +68,7 @@ SelectorWindow::~SelectorWindow()
 
 void SelectorWindow::eventKeyButtonPressed_Main(MyGUI::WidgetPtr _sender, MyGUI::KeyCode _key, MyGUI::Char _char)
 {
-	if(!mMainWidget->isVisible()) return;
+	if(!mMainWidget->getVisible()) return;
 	int cid = mTypeComboBox->getIndexSelected();
 	int iid = mModelList->getIndexSelected();
 
@@ -168,7 +168,7 @@ void SelectorWindow::eventMouseButtonClickCancelButton(MyGUI::WidgetPtr _sender)
 
 void SelectorWindow::eventComboChangePositionTypeComboBox(MyGUI::ComboBoxPtr _sender, size_t _index)
 {
-	if(!mMainWidget->isVisible()) return;
+	if(!mMainWidget->getVisible()) return;
 	try
 	{
 		int categoryID = *mTypeComboBox->getItemDataAt<int>(_index);
@@ -181,7 +181,7 @@ void SelectorWindow::eventComboChangePositionTypeComboBox(MyGUI::ComboBoxPtr _se
 
 void SelectorWindow::eventListChangePositionModelList(MyGUI::ListPtr _sender, size_t _index)
 {
-	if(!mMainWidget->isVisible()) return;
+	if(!mMainWidget->getVisible()) return;
 	try
 	{
 		int entryID = *mModelList->getItemDataAt<int>(_index);
@@ -193,7 +193,7 @@ void SelectorWindow::eventListChangePositionModelList(MyGUI::ListPtr _sender, si
 
 void SelectorWindow::eventComboAcceptConfigComboBox(MyGUI::ComboBoxPtr _sender, size_t _index)
 {
-	if(!mMainWidget->isVisible()) return;
+	if(!mMainWidget->getVisible()) return;
 	try
 	{
 		mTruckConfigs.clear();
@@ -655,14 +655,14 @@ void SelectorWindow::setEnableCancel(bool enabled)
 
 void SelectorWindow::eventSearchTextChange(MyGUI::WidgetPtr _sender)
 {
-	if(!mMainWidget->isVisible()) return;
+	if(!mMainWidget->getVisible()) return;
 	onCategorySelected(9994);
 	mTypeComboBox->setCaption(_L("Search Results"));	
 }
 
 void SelectorWindow::eventSearchTextGotFocus(MyGUI::WidgetPtr _sender, MyGUI::WidgetPtr oldWidget)
 {
-	if(!mMainWidget->isVisible()) return;
+	if(!mMainWidget->getVisible()) return;
 	mSearchLineEdit->setCaption("");
 }
 #endif //MYGUI

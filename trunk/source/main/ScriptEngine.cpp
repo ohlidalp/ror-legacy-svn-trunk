@@ -155,7 +155,7 @@ void ScriptEngine::ExceptionCallback(asIScriptContext *ctx, void *param)
 	LogManager::getSingleton().logMessage("line: "+StringConverter::toString(line)+","+StringConverter::toString(col));
 
 	// Print the variables in the current function
-	PrintVariables(ctx, -1);
+	//PrintVariables(ctx, -1);
 
 	// Show the call stack with the variables
 	LogManager::getSingleton().logMessage("--- call stack ---");

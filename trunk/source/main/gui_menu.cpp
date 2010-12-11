@@ -134,7 +134,7 @@ void GUI_MainMenu::setVisible(bool value)
 
 bool GUI_MainMenu::getVisible()
 {
-	return mainmenu->isVisible();
+	return mainmenu->getVisible();
 }
 
 #endif // MYGUI

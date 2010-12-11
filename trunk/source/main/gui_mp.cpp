@@ -79,7 +79,7 @@ GUI_Multiplayer::GUI_Multiplayer(Network *_net, Ogre::Camera *cam) : net(_net), 
 
 
 	// now the main GUI
-	MyGUI::IntSize gui_area = GUIManager::getSingleton().getGUI()->getViewSize();
+	MyGUI::IntSize gui_area = MyGUI::RenderManager::getInstance().getViewSize();
 	int x=gui_area.width - 200, y=30;
 	mpPanel = MyGUI::Gui::getInstance().createWidget<MyGUI::Widget>("FlowContainer", x, y, 200, gui_area.height,  MyGUI::Align::Default, "Main");
 	mpPanel->setVisible(true);
@@ -289,7 +289,7 @@ int GUI_Multiplayer::update()
 	client_t clients[MAX_PEERS];
 	int slotid = 0;
 	
-	MyGUI::IntSize gui_area = GUIManager::getSingleton().getGUI()->getViewSize();
+	MyGUI::IntSize gui_area = MyGUI::RenderManager::getInstance().getViewSize();
 	int x=gui_area.width - 200, y=30;
 	mpPanel->setPosition(x,y);
 
@@ -380,7 +380,7 @@ void GUI_Multiplayer::setVisible(bool value)
 
 bool GUI_Multiplayer::getVisible()
 {
-	return mpPanel->isVisible();
+	return mpPanel->getVisible();
 }
 
 #endif // USE_SOCKETW
