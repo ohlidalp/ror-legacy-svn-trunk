@@ -159,17 +159,17 @@ void ScriptEngine::ExceptionCallback(asIScriptContext *ctx, void *param)
 
 	// Show the call stack with the variables
 	LogManager::getSingleton().logMessage("--- call stack ---");
-	for( int n = 0; n < ctx->GetCallstackSize(); n++ )
-	{
-		funcID = ctx->GetCallstackFunction(n);
-		const asIScriptFunction *func = engine->GetFunctionDescriptorById(funcID);
-		line = ctx->GetCallstackLineNumber(n,&col);
-		LogManager::getSingleton().logMessage(String(func->GetModuleName()) + ":" + func->GetDeclaration() + ":" + StringConverter::toString(line)+ "," + StringConverter::toString(col));
-
-		PrintVariables(ctx, n);
-	}
+	char tmp[2048]="";
+    for( asUINT n = 1; n < ctx->GetCallstackSize(); n++ )
+    {
+    	function = ctx->GetFunction(n);
+		sprintf(tmp, "%s (%d): %s\n", function->GetScriptSectionName(), ctx->GetLineNumber(n), function->GetDeclaration());
+		LogManager::getSingleton().logMessage(String(tmp));
+		//PrintVariables(ctx, n);
+    }
 }
 
+/*
 void ScriptEngine::LineCallback(asIScriptContext *ctx, void *param)
 {
 	char tmp[1024]="";
@@ -229,6 +229,7 @@ void ScriptEngine::PrintVariables(asIScriptContext *ctx, int stackLevel)
 		}
 	}
 };
+*/
 
 // continue with initializing everything
 void ScriptEngine::init()
