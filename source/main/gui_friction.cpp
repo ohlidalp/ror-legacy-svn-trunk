@@ -608,7 +608,8 @@ void GUI_Friction::event_btn_MouseButtonClick(MyGUI::WidgetPtr _sender)
 		applyChanges();
 	}
 
-	LogManager::getSingleton().logMessage(" Friction GUI button pressed: " + _sender->getCaption());
+
+	//LogManager::getSingleton().logMessage(" Friction GUI button pressed: " + _sender->getName());
 }
 
 void GUI_Friction::event_scroll_value(MyGUI::VScrollPtr _sender, size_t _value)
