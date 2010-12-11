@@ -1,5 +1,3 @@
-#ifdef USE_ANGELSCRIPT
-
 #include <assert.h>
 #include <sstream>
 #include "scriptstdstring.h"
@@ -154,6 +152,16 @@ void AssignDouble2StringGeneric(asIScriptGeneric *gen)
 	gen->SetReturnAddress(self);
 }
 
+void AssignBool2StringGeneric(asIScriptGeneric *gen) 
+{
+	bool *a = static_cast<bool*>(gen->GetAddressOfArg(0));
+	string *self = static_cast<string*>(gen->GetObject());
+	std::stringstream sstr;
+	sstr << *a ? "true" : "false";
+	*self = sstr.str();
+	gen->SetReturnAddress(self);
+}
+
 void AddAssignDouble2StringGeneric(asIScriptGeneric * gen) {
   double * a = static_cast<double *>(gen->GetAddressOfArg(0));
   string * self = static_cast<string *>(gen->GetObject());
@@ -177,6 +185,15 @@ void AddAssignUInt2StringGeneric(asIScriptGeneric * gen) {
   string * self = static_cast<string *>(gen->GetObject());
   std::stringstream sstr;
   sstr << *a;
+  *self += sstr.str();
+  gen->SetReturnAddress(self);
+}
+
+void AddAssignBool2StringGeneric(asIScriptGeneric * gen) {
+  bool * a = static_cast<bool *>(gen->GetAddressOfArg(0));
+  string * self = static_cast<string *>(gen->GetObject());
+  std::stringstream sstr;
+  sstr << *a ? "true" : "false";
   *self += sstr.str();
   gen->SetReturnAddress(self);
 }
@@ -208,6 +225,15 @@ void AddString2UIntGeneric(asIScriptGeneric * gen) {
   gen->SetReturnObject(&ret_val);
 }
 
+void AddString2BoolGeneric(asIScriptGeneric * gen) {
+  string * a = static_cast<string *>(gen->GetObject());
+  bool * b = static_cast<bool *>(gen->GetAddressOfArg(0));
+  std::stringstream sstr;
+  sstr << *a << *b ? "true" : "false";
+  std::string ret_val = sstr.str();
+  gen->SetReturnObject(&ret_val);
+}
+
 void AddDouble2StringGeneric(asIScriptGeneric * gen) {
   double* a = static_cast<double *>(gen->GetAddressOfArg(0));
   string * b = static_cast<string *>(gen->GetObject());
@@ -231,6 +257,15 @@ void AddUInt2StringGeneric(asIScriptGeneric * gen) {
   string * b = static_cast<string *>(gen->GetObject());
   std::stringstream sstr;
   sstr << *a << *b;
+  std::string ret_val = sstr.str();
+  gen->SetReturnObject(&ret_val);
+}
+
+void AddBool2StringGeneric(asIScriptGeneric * gen) {
+  bool* a = static_cast<bool *>(gen->GetAddressOfArg(0));
+  string * b = static_cast<string *>(gen->GetObject());
+  std::stringstream sstr;
+  sstr << (*a ? "true" : "false") << *b;
   std::string ret_val = sstr.str();
   gen->SetReturnObject(&ret_val);
 }
@@ -265,8 +300,8 @@ void RegisterStdString_Generic(asIScriptEngine *engine) {
   }
 
   // Register the index operator, both as a mutator and as an inspector
-  r = engine->RegisterObjectBehaviour("string", asBEHAVE_INDEX, "uint8 &f(uint)", asFUNCTION(StringCharAtGeneric), asCALL_GENERIC); assert( r >= 0 );
-  r = engine->RegisterObjectBehaviour("string", asBEHAVE_INDEX, "const uint8 &f(uint) const", asFUNCTION(StringCharAtGeneric), asCALL_GENERIC); assert( r >= 0 );
+  r = engine->RegisterObjectMethod("string", "uint8 &opIndex(uint)", asFUNCTION(StringCharAtGeneric), asCALL_GENERIC); assert( r >= 0 );
+  r = engine->RegisterObjectMethod("string", "const uint8 &opIndex(uint) const", asFUNCTION(StringCharAtGeneric), asCALL_GENERIC); assert( r >= 0 );
 
   // Automatic conversion from values
   r = engine->RegisterObjectMethod("string", "string &opAssign(double)", asFUNCTION(AssignDouble2StringGeneric), asCALL_GENERIC); assert( r >= 0 );
@@ -283,6 +318,11 @@ void RegisterStdString_Generic(asIScriptEngine *engine) {
   r = engine->RegisterObjectMethod("string", "string &opAddAssign(uint)", asFUNCTION(AddAssignUInt2StringGeneric), asCALL_GENERIC); assert( r >= 0 );
   r = engine->RegisterObjectMethod("string", "string opAdd(uint) const", asFUNCTION(AddString2UIntGeneric), asCALL_GENERIC); assert( r >= 0 );
   r = engine->RegisterObjectMethod("string", "string opAdd_r(uint) const", asFUNCTION(AddUInt2StringGeneric), asCALL_GENERIC); assert( r >= 0 );
+
+  r = engine->RegisterObjectMethod("string", "string &opAssign(bool)", asFUNCTION(AssignBool2StringGeneric), asCALL_GENERIC); assert( r >= 0 );
+  r = engine->RegisterObjectMethod("string", "string &opAddAssign(bool)", asFUNCTION(AddAssignBool2StringGeneric), asCALL_GENERIC); assert( r >= 0 );
+  r = engine->RegisterObjectMethod("string", "string opAdd(bool) const", asFUNCTION(AddString2BoolGeneric), asCALL_GENERIC); assert( r >= 0 );
+  r = engine->RegisterObjectMethod("string", "string opAdd_r(bool) const", asFUNCTION(AddBool2StringGeneric), asCALL_GENERIC); assert( r >= 0 );
 }
 
 static string StringFactory(asUINT length, const char *s)
@@ -378,6 +418,22 @@ static string &AddAssignDoubleToString(double f, string &dest)
 	return dest;
 }
 
+static string &AssignBoolToString(bool b, string &dest)
+{
+	ostringstream stream;
+	stream << b ? "true" : "false";
+	dest = stream.str();
+	return dest;
+}
+
+static string &AddAssignBoolToString(bool b, string &dest)
+{
+	ostringstream stream;
+	stream << b ? "true" : "false";
+	dest += stream.str();
+	return dest;
+}
+
 static string AddStringDouble(string &str, double f)
 {
 	ostringstream stream;
@@ -390,6 +446,21 @@ static string AddDoubleString(double f, string &str)
 {
 	ostringstream stream;
 	stream << f;
+	return stream.str() + str;
+}
+
+static string AddStringBool(string &str, bool b)
+{
+	ostringstream stream;
+	stream << b ? "true" : "false";
+	str += stream.str();
+	return str;
+}
+
+static string AddBoolString(bool b, string &str)
+{
+	ostringstream stream;
+	stream << b ? "true" : "false";
 	return stream.str() + str;
 }
 
@@ -450,8 +521,8 @@ void RegisterStdString_Native(asIScriptEngine *engine)
 
 	// Register the index operator, both as a mutator and as an inspector
 	// Note that we don't register the operator[] directory, as it doesn't do bounds checking
-	r = engine->RegisterObjectBehaviour("string", asBEHAVE_INDEX, "uint8 &f(uint)", asFUNCTION(StringCharAt), asCALL_CDECL_OBJLAST); assert( r >= 0 );
-	r = engine->RegisterObjectBehaviour("string", asBEHAVE_INDEX, "const uint8 &f(uint) const", asFUNCTION(StringCharAt), asCALL_CDECL_OBJLAST); assert( r >= 0 );
+	r = engine->RegisterObjectMethod("string", "uint8 &opIndex(uint)", asFUNCTION(StringCharAt), asCALL_CDECL_OBJLAST); assert( r >= 0 );
+	r = engine->RegisterObjectMethod("string", "const uint8 &opIndex(uint) const", asFUNCTION(StringCharAt), asCALL_CDECL_OBJLAST); assert( r >= 0 );
 
 	// Automatic conversion from values
 	r = engine->RegisterObjectMethod("string", "string &opAssign(double)", asFUNCTION(AssignDoubleToString), asCALL_CDECL_OBJLAST); assert( r >= 0 );
@@ -468,6 +539,11 @@ void RegisterStdString_Native(asIScriptEngine *engine)
 	r = engine->RegisterObjectMethod("string", "string &opAddAssign(uint)", asFUNCTION(AddAssignUIntToString), asCALL_CDECL_OBJLAST); assert( r >= 0 );
 	r = engine->RegisterObjectMethod("string", "string opAdd(uint) const", asFUNCTION(AddStringUInt), asCALL_CDECL_OBJFIRST); assert( r >= 0 );
 	r = engine->RegisterObjectMethod("string", "string opAdd_r(uint) const", asFUNCTION(AddUIntString), asCALL_CDECL_OBJLAST); assert( r >= 0 );
+
+	r = engine->RegisterObjectMethod("string", "string &opAssign(bool)", asFUNCTION(AssignBoolToString), asCALL_CDECL_OBJLAST); assert( r >= 0 );
+	r = engine->RegisterObjectMethod("string", "string &opAddAssign(bool)", asFUNCTION(AddAssignBoolToString), asCALL_CDECL_OBJLAST); assert( r >= 0 );
+	r = engine->RegisterObjectMethod("string", "string opAdd(bool) const", asFUNCTION(AddStringBool), asCALL_CDECL_OBJFIRST); assert( r >= 0 );
+	r = engine->RegisterObjectMethod("string", "string opAdd_r(bool) const", asFUNCTION(AddBoolString), asCALL_CDECL_OBJLAST); assert( r >= 0 );
 }
 
 void RegisterStdString(asIScriptEngine * engine)
@@ -480,4 +556,6 @@ void RegisterStdString(asIScriptEngine * engine)
 
 END_AS_NAMESPACE
 
-#endif //USE_ANGELSCRIPT
+
+
+
