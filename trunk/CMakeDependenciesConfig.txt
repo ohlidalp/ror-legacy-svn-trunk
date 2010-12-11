@@ -180,6 +180,9 @@ ELSEIF(UNIX)
    find_package(CURL)
    if(NOT CURL_FOUND)
      message(ERROR "curl not found, please install curl")
+   else(NOT CURL_FOUND)
+      set(CURL_INCLUDE_DIRS ${CURL_INCLUDE_DIR})
+      set(CURL_LIBRARIES ${CURL_LIBRARY})   
    endif(NOT CURL_FOUND)
    
    # using cmake fingd modules
