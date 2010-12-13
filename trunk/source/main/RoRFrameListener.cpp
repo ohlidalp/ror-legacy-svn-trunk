@@ -7540,13 +7540,6 @@ void RoRFrameListener::windowResized(RenderWindow* rw)
 		return;
 	LogManager::getSingleton().logMessage("*** windowResized");
 
-	if(initialized && mCamera)
-	{
-		Viewport *vp = mCamera->getViewport();
-		if(vp)
-			mCamera->setAspectRatio(Real(vp->getActualWidth()) / Real(vp->getActualHeight()));
-	}
-
 	// Update mouse screen width/height
 	unsigned int width, height, depth;
 	int left, top;
