@@ -303,9 +303,6 @@ bool RigsOfRods::setup(void)
 	vp = mWindow->addViewport(mCamera);
 	vp->setBackgroundColour(ColourValue(0,0,0));
 
-	// Alter the camera aspect ratio to match the viewport
-	mCamera->setAspectRatio(
-		Real(vp->getActualWidth()) / Real(vp->getActualHeight()));
 
 	// Set default mipmap level (NB some APIs ignore this)
 	TextureManager::getSingleton().setDefaultNumMipmaps(5);
