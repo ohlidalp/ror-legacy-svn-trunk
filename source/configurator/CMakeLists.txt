@@ -75,18 +75,9 @@ include_directories(${RoR_SOURCE_DIR}/source/protocol)
 add_definitions("-DNOOGRE -D_UNICODE")
 include_directories(../main)
 
-if(WIN32)
-   # we have to extend the cflags to add USE_CONSOLE definition for non release modes
-   set(CMAKE_CXX_FLAGS_MINSIZEREL     "${CMAKE_CXX_FLAGS_MINSIZEREL}     /D USE_CONSOLE")
-   set(CMAKE_CXX_FLAGS_RELWITHDEBINFO "${CMAKE_CXX_FLAGS_RELWITHDEBINFO} /D USE_CONSOLE")
-   set(CMAKE_CXX_FLAGS_DEBUG          "${CMAKE_CXX_FLAGS_DEBUG}          /D USE_CONSOLE")
-endif(WIN32)
-
-
 FILE(GLOB sources "*.cpp")
 FILE(GLOB headers "*.h")
-add_executable(rorconfig ${sources} ${headers} ${OS_SOURCE} ../main/InputEngine.cpp)
-windows_hacks(rorconfig)
+add_executable(rorconfig WIN32 ${sources} ${headers} ${OS_SOURCE} ../main/InputEngine.cpp)
 
 TARGET_LINK_LIBRARIES(rorconfig ${WXWIDGETS_SHARED_LIBRARIES} ${Ogre_LIBRARIES} ${Ois_LIBRARIES} ${OS_LIBS} ${optional_libs})
 

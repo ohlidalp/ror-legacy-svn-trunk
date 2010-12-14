@@ -22,9 +22,7 @@ along with Rigs of Rods.  If not, see <http://www.gnu.org/licenses/>.
 #if OGRE_PLATFORM == OGRE_PLATFORM_WIN32
 	#include "wx/msw/private.h"
 	#include "wx/msw/registry.h"
-	#include <shellapi.h> // needed for SHELLEXECUTEINFO
 	#include <shlobj.h>
-	#include <Shfolder.h>
 #endif // OGRE_PLATFORM
 
 #include <wx/filename.h>

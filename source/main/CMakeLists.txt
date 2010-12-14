@@ -27,7 +27,7 @@ IF(WIN32)
    link_directories   (${BOOST_LIBRARY_DIRS})
    include_directories(${PThread_INCLUDE_DIRS})
    link_directories   (${PThread_LIBRARY_DIRS})
-   set(OS_LIBS "${PThread_LIBRARIES} dinput8.lib dxguid.lib")
+   set(OS_LIBS "${PThread_LIBRARIES};dinput8.lib;dxguid.lib")
 
    # disable some annoying VS warnings:
    # warning C4244: 'initializing' : conversion from 'const float' to 'int', possible loss of data
@@ -76,7 +76,6 @@ if(ROR_FEAT_TIMING)
    add_definitions("-DFEAT_TIMING")
 endif(ROR_FEAT_TIMING)
 
-add_executable(RoR ${HEADER_FILES} ${SOURCE_FILES})
+add_executable(RoR WIN32 ${HEADER_FILES} ${SOURCE_FILES})
 target_link_libraries(RoR ${Ogre_LIBRARIES} ${Ogre_Terrain_LIBRARIES} ${Ogre_Paging_LIBRARIES} ${Ogre_RTShader_LIBRARIES} ${Ois_LIBRARIES} ${OS_LIBS} ${optional_libs})
-windows_hacks(RoR)
 
