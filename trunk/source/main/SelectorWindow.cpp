@@ -43,21 +43,21 @@ SelectorWindow::SelectorWindow()
 	mMainWidget->setRealPosition(0.1, 0.1);
 	mMainWidget->setRealSize(0.8, 0.8);
 
-	mMainWidget->eventKeyButtonPressed      = MyGUI::newDelegate(this, &SelectorWindow::eventKeyButtonPressed_Main); 
-	mTypeComboBox->eventComboChangePosition = MyGUI::newDelegate(this, &SelectorWindow::eventComboChangePositionTypeComboBox);
-	mTypeComboBox->eventKeyButtonPressed    = MyGUI::newDelegate(this, &SelectorWindow::eventKeyButtonPressed_Main); 
-	mModelList->eventListChangePosition     = MyGUI::newDelegate(this, &SelectorWindow::eventListChangePositionModelList);
+	mMainWidget->eventKeyButtonPressed      += MyGUI::newDelegate(this, &SelectorWindow::eventKeyButtonPressed_Main); 
+	mTypeComboBox->eventComboChangePosition += MyGUI::newDelegate(this, &SelectorWindow::eventComboChangePositionTypeComboBox);
+	mTypeComboBox->eventKeyButtonPressed    += MyGUI::newDelegate(this, &SelectorWindow::eventKeyButtonPressed_Main); 
+	mModelList->eventListChangePosition     += MyGUI::newDelegate(this, &SelectorWindow::eventListChangePositionModelList);
 	//mModelList->eventKeyButtonPressed       = MyGUI::newDelegate(this, &SelectorWindow::eventKeyButtonPressed_Main); 
-	mConfigComboBox->eventComboAccept       = MyGUI::newDelegate(this, &SelectorWindow::eventComboAcceptConfigComboBox);
+	mConfigComboBox->eventComboAccept       += MyGUI::newDelegate(this, &SelectorWindow::eventComboAcceptConfigComboBox);
 	//mConfigComboBox->eventKeyButtonPressed  = MyGUI::newDelegate(this, &SelectorWindow::eventKeyButtonPressed_Main); 
-	mOkButton->eventMouseButtonClick        = MyGUI::newDelegate(this, &SelectorWindow::eventMouseButtonClickOkButton);
-	mCancelButton->eventMouseButtonClick    = MyGUI::newDelegate(this, &SelectorWindow::eventMouseButtonClickCancelButton);
+	mOkButton->eventMouseButtonClick        += MyGUI::newDelegate(this, &SelectorWindow::eventMouseButtonClickOkButton);
+	mCancelButton->eventMouseButtonClick    += MyGUI::newDelegate(this, &SelectorWindow::eventMouseButtonClickCancelButton);
 	
 	// search stuff
-	mSearchLineEdit->eventEditTextChange    = MyGUI::newDelegate(this, &SelectorWindow::eventSearchTextChange);
-	mSearchLineEdit->eventMouseSetFocus     = MyGUI::newDelegate(this, &SelectorWindow::eventSearchTextGotFocus);
-	mSearchLineEdit->eventKeySetFocus       = MyGUI::newDelegate(this, &SelectorWindow::eventSearchTextGotFocus);
-	mSearchLineEdit->eventKeyButtonPressed  = MyGUI::newDelegate(this, &SelectorWindow::eventKeyButtonPressed_Main); 
+	mSearchLineEdit->eventEditTextChange    += MyGUI::newDelegate(this, &SelectorWindow::eventSearchTextChange);
+	mSearchLineEdit->eventMouseSetFocus     += MyGUI::newDelegate(this, &SelectorWindow::eventSearchTextGotFocus);
+	mSearchLineEdit->eventKeySetFocus       += MyGUI::newDelegate(this, &SelectorWindow::eventSearchTextGotFocus);
+	mSearchLineEdit->eventKeyButtonPressed  += MyGUI::newDelegate(this, &SelectorWindow::eventKeyButtonPressed_Main); 
 	
 	mSelectedSkin=0;
 }

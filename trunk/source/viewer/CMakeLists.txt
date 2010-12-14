@@ -80,7 +80,7 @@ endmacro(setup_lib)
 IF(WIN32)
    include_directories(${PThread_INCLUDE_DIRS})
    link_directories   (${PThread_LIBRARY_DIRS})
-   set(OS_LIBS "${PThread_LIBRARIES} dinput8.lib dxguid.lib")
+   set(OS_LIBS "${PThread_LIBRARIES};dinput8.lib;dxguid.lib")
 
    # disable some annoying VS warnings:
    # warning C4244: 'initializing' : conversion from 'const float' to 'int', possible loss of data
@@ -118,7 +118,6 @@ include_directories(.)
 include_directories(../main)
 
 add_executable(RoRViewer ${viewer_sources} ${viewer_headers} ${OS_SOURCE} ${additional_sources} ${HEADER_FILES} ${SOURCE_FILES} ../main/Settings.cpp ../main/errorutils.cpp)
-windows_hacks(RoRViewer)
 
 TARGET_LINK_LIBRARIES(RoRViewer ${WXWIDGETS_SHARED_LIBRARIES} ${Ogre_LIBRARIES} ${Ois_LIBRARIES} ${OS_LIBS} ${optional_libs})
 
