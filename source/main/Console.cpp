@@ -33,8 +33,8 @@ Console::Console()
 	size.height = size.height/3;
 	mMainWidget->setCoord(0, -size.height, size.width, size.height);
 
-	mCommandEdit->eventKeyButtonPressed = MyGUI::newDelegate(this, &Console::eventButtonPressed);
-	mCommandEdit->eventEditSelectAccept = MyGUI::newDelegate(this, &Console::eventCommandAccept);
+	mCommandEdit->eventKeyButtonPressed += MyGUI::newDelegate(this, &Console::eventButtonPressed);
+	mCommandEdit->eventEditSelectAccept += MyGUI::newDelegate(this, &Console::eventCommandAccept);
 
 	mHistoryPosition = 0;
 	mHistory.push_back("");

@@ -96,7 +96,7 @@ GUI_MainMenu::GUI_MainMenu(RoRFrameListener *efl) : mefl(efl)
 	pop->addItem("Camera Control", MyGUI::MenuItemType::Normal, "cameratool");
 	pop->addItem("Friction Settings", MyGUI::MenuItemType::Normal, "frictiongui");
 	
-	mainmenu->eventMenuCtrlAccept = MyGUI::newDelegate(this, &GUI_MainMenu::onMenuBtn);
+	mainmenu->eventMenuCtrlAccept += MyGUI::newDelegate(this, &GUI_MainMenu::onMenuBtn);
 
 
 

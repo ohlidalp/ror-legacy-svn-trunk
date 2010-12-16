@@ -93,7 +93,7 @@ GUI_Multiplayer::GUI_Multiplayer(Network *_net, Ogre::Camera *cam) : net(_net), 
 		row->playername->setCaption("Player " + StringConverter::toString(i));
 		row->playername->setFontName("VeraMoBd");
 		row->playername->setUserString("tooltip", "user name");
-		row->playername->eventToolTip = MyGUI::newDelegate(this, &GUI_Multiplayer::openToolTip);
+		row->playername->eventToolTip += MyGUI::newDelegate(this, &GUI_Multiplayer::openToolTip);
 		row->playername->setNeedToolTip(true);
 		row->playername->setVisible(false);
 		row->playername->setFontHeight(lineheight);
@@ -102,48 +102,48 @@ GUI_Multiplayer::GUI_Multiplayer(Network *_net, Ogre::Camera *cam) : net(_net), 
 		x -= 18;
 		row->flagimg = mpPanel->createWidget<MyGUI::StaticImage>("StaticImage", x, y + 3, 16, 11,  MyGUI::Align::Default, "Main");
 		row->flagimg->setUserString("tooltip", "user country");
-		row->flagimg->eventToolTip = MyGUI::newDelegate(this, &GUI_Multiplayer::openToolTip);
+		row->flagimg->eventToolTip += MyGUI::newDelegate(this, &GUI_Multiplayer::openToolTip);
 		row->flagimg->setNeedToolTip(true);
 		row->flagimg->setVisible(false);
 
 		x -= 18;
 		row->statimg = mpPanel->createWidget<MyGUI::StaticImage>("StaticImage", x, y, 16, 16,  MyGUI::Align::Default, "Main");
 		row->statimg->setUserString("tooltip", "user authentication level");
-		row->statimg->eventToolTip = MyGUI::newDelegate(this, &GUI_Multiplayer::openToolTip);
+		row->statimg->eventToolTip += MyGUI::newDelegate(this, &GUI_Multiplayer::openToolTip);
 		row->statimg->setNeedToolTip(true);
 		row->statimg->setVisible(false);
 
 		x -= 18;
 		row->userTruckOKImg = mpPanel->createWidget<MyGUI::StaticImage>("StaticImage", x, y, 16, 16,  MyGUI::Align::Default, "Main");
 		row->userTruckOKImg->setUserString("tooltip", "truck loading state");
-		row->userTruckOKImg->eventToolTip = MyGUI::newDelegate(this, &GUI_Multiplayer::openToolTip);
+		row->userTruckOKImg->eventToolTip += MyGUI::newDelegate(this, &GUI_Multiplayer::openToolTip);
 		row->userTruckOKImg->setNeedToolTip(true);
 		row->userTruckOKImg->setVisible(false);
-		row->userTruckOKImg->eventMouseButtonClick = MyGUI::newDelegate(this, &GUI_Multiplayer::clickInfoIcon);
+		row->userTruckOKImg->eventMouseButtonClick += MyGUI::newDelegate(this, &GUI_Multiplayer::clickInfoIcon);
 
 		x -= 18;
 		row->userTruckOKRemoteImg = mpPanel->createWidget<MyGUI::StaticImage>("StaticImage", x, y, 16, 16,  MyGUI::Align::Default, "Main");
 		row->userTruckOKRemoteImg->setUserString("tooltip", "remote truck loading state");
-		row->userTruckOKRemoteImg->eventToolTip = MyGUI::newDelegate(this, &GUI_Multiplayer::openToolTip);
+		row->userTruckOKRemoteImg->eventToolTip += MyGUI::newDelegate(this, &GUI_Multiplayer::openToolTip);
 		row->userTruckOKRemoteImg->setNeedToolTip(true);
 		row->userTruckOKRemoteImg->setVisible(false);
-		row->userTruckOKRemoteImg->eventMouseButtonClick = MyGUI::newDelegate(this, &GUI_Multiplayer::clickInfoIcon);
+		row->userTruckOKRemoteImg->eventMouseButtonClick += MyGUI::newDelegate(this, &GUI_Multiplayer::clickInfoIcon);
 		
 		x -= 18;
 		row->usergoimg = mpPanel->createWidget<MyGUI::StaticImage>("StaticImage", x, y, 16, 16,  MyGUI::Align::Default, "Main");
 		row->usergoimg->setUserString("num", StringConverter::toString(i));
 		row->usergoimg->setUserString("tooltip", "go to user");
 		row->usergoimg->setImageTexture("user_go.png");
-		row->usergoimg->eventToolTip = MyGUI::newDelegate(this, &GUI_Multiplayer::openToolTip);
+		row->usergoimg->eventToolTip += MyGUI::newDelegate(this, &GUI_Multiplayer::openToolTip);
 		row->usergoimg->setNeedToolTip(true);
 		row->usergoimg->setVisible(false);
-		row->usergoimg->eventMouseButtonClick = MyGUI::newDelegate(this, &GUI_Multiplayer::clickUserGoIcon);
+		row->usergoimg->eventMouseButtonClick += MyGUI::newDelegate(this, &GUI_Multiplayer::clickUserGoIcon);
 
 		/*
 		img = MyGUI::Gui::getInstance().createWidget<MyGUI::StaticImage>("StaticImage", x-36, y, 16, 16,  MyGUI::Align::Default, "Overlapped");
 		img->setImageTexture("information.png");
-		img->eventMouseButtonClick = MyGUI::newDelegate(this, &GUI_Multiplayer::clickInfoIcon);
-		img->eventToolTip = MyGUI::newDelegate(this, &GUI_Multiplayer::openToolTip);
+		img->eventMouseButtonClick += MyGUI::newDelegate(this, &GUI_Multiplayer::clickInfoIcon);
+		img->eventToolTip += MyGUI::newDelegate(this, &GUI_Multiplayer::openToolTip);
 		img->setNeedToolTip(true);
 		img->setUserString("info", StringConverter::toString(i));
 		img->setUserString("tooltip", "information about the user");
