@@ -192,6 +192,8 @@ bool MyApp::OnCmdLineParsed(wxCmdLineParser& parser)
 	// ignore auto-update function
     if(parser.Found(wxT("n"))) autoUpdateEnabled=false;
 	
+
+#if wxCHECK_VERSION(2, 9, 0)
 	// special mode: put our hash into the clipboard
 	if(parser.Found(wxT("d")))
 	{
@@ -204,6 +206,7 @@ bool MyApp::OnCmdLineParsed(wxCmdLineParser& parser)
 		}
 		exit(0);
 	}
+#endif
     return true;
 }
 
