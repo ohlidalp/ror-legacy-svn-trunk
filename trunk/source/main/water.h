@@ -22,7 +22,7 @@ along with Rigs of Rods.  If not, see <http://www.gnu.org/licenses/>.
 
 #include "Ogre.h"
 //#include "DustPool.h"
-using namespace Ogre;
+//using namespace Ogre;
 
 // interface only
 class Water
@@ -32,22 +32,29 @@ public:
 	{
 	};
 
-	Water(int type, Camera *camera, SceneManager *mSceneMgr, RenderWindow *mWindow, float wheight, float *mapsizex, float *mapsizez, bool usewaves)
+	Water(int type
+	, Ogre::Camera *camera
+	, Ogre::SceneManager *mSceneMgr
+	, Ogre::RenderWindow *mWindow
+	, float wheight
+	, float *mapsizex
+	, float *mapsizez
+	, bool usewaves)
 	{
 	};
 	virtual ~Water() {};
 	
 	bool visible;
-	virtual void moveTo(Camera *cam, float centerheight)= 0;
-	virtual void showWave(Vector3 refpos) = 0;
+	virtual void moveTo(Ogre::Camera *cam, float centerheight)= 0;
+	virtual void showWave(Ogre::Vector3 refpos) = 0;
 	virtual void update()= 0;
 	virtual void prepareShutdown()= 0;
 	virtual float getHeight()= 0;
 	virtual void setVisible(bool value)= 0;
-	virtual float getHeightWaves(Vector3 pos)= 0;
-	virtual Vector3 getVelocity(Vector3 pos)= 0;
+	virtual float getHeightWaves(Ogre::Vector3 pos)= 0;
+	virtual Ogre::Vector3 getVelocity(Ogre::Vector3 pos)= 0;
 	virtual void updateReflectionPlane(float h)= 0;
-	virtual void setFadeColour(ColourValue ambient)= 0;
+	virtual void setFadeColour(Ogre::ColourValue ambient)= 0;
 	virtual void setSunPosition(Ogre::Vector3)= 0;
 	virtual void framestep(float dt)= 0;
 	virtual bool allowUnderWater()= 0;

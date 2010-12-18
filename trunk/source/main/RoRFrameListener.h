@@ -125,7 +125,7 @@ class HDRListener;
 #define SVN_ID "$Id: RoRFrameListener.h 1355 2010-05-01 07:16:13Z rorthomas $"
 #define ROR_VERSION_STRING "0.37"
 
-using namespace Ogre;
+//using namespace Ogre;
 
 #ifdef USE_PAGED
 using namespace Forests;

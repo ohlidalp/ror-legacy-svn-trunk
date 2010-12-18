@@ -37,9 +37,9 @@ along with Rigs of Rods.  If not, see <http://www.gnu.org/licenses/>.
 #include "sha1.h"
 #include "collisions.h"
 
-using namespace Ogre;
-using namespace std;
-using namespace AngelScript;
+//using namespace Ogre;
+//using namespace std;
+//using namespace AngelScript;
 
 template<> ScriptEngine *Ogre::Singleton<ScriptEngine>::ms_Singleton=0;
 
@@ -72,7 +72,7 @@ int ScriptEngine::loadTerrainScript(Ogre::String scriptname)
 	// Add the script to the module as a section. If desired, multiple script
 	// sections can be added to the same module. They will then be compiled
 	// together as if it was one large script.
-	AngelScript::asIScriptModule *mod = engine->GetModule("terrainScript", asGM_ALWAYS_CREATE);
+	AngelScript::asIScriptModule *mod = engine->GetModule("terrainScript", AngelScript::asGM_ALWAYS_CREATE);
 	result = mod->AddScriptSection(scriptname.c_str(), script.c_str(), script.length());
 	if( result < 0 )
 	{
@@ -84,15 +84,15 @@ int ScriptEngine::loadTerrainScript(Ogre::String scriptname)
 	result = mod->Build();
 	if( result < 0 )
 	{
-		if(result == asINVALID_CONFIGURATION)
+		if(result == AngelScript::asINVALID_CONFIGURATION)
 		{
 			LogManager::getSingleton().logMessage("SE| The engine configuration is invalid.");
 			return 1;
-		} else if(result == asERROR)
+		} else if(result == AngelScript::asERROR)
 		{
 			LogManager::getSingleton().logMessage("SE| The script failed to build. ");
 			return 1;
-		} else if(result == asBUILD_IN_PROGRESS)
+		} else if(result == AngelScript::asBUILD_IN_PROGRESS)
 		{
 			LogManager::getSingleton().logMessage("SE| Another thread is currently building.");
 			return 1;
@@ -120,18 +120,18 @@ int ScriptEngine::loadTerrainScript(Ogre::String scriptname)
 	// Create our context, prepare it, and then execute
 	context = engine->CreateContext();
 
-	//context->SetLineCallback(asMETHOD(ScriptEngine,LineCallback), this, asCALL_THISCALL);
+	//context->SetLineCallback(AngelScript::asMETHOD(ScriptEngine,LineCallback), this, AngelScript::asCALL_THISCALL);
 
 	// this does not work :(
-	context->SetExceptionCallback(asMETHOD(ScriptEngine,ExceptionCallback), this, asCALL_THISCALL);
+	context->SetExceptionCallback(AngelScript::asMETHOD(ScriptEngine,ExceptionCallback), this, AngelScript::asCALL_THISCALL);
 
 	context->Prepare(funcId);
 	LogManager::getSingleton().logMessage("SE| Executing main()");
 	result = context->Execute();
-	if( result != asEXECUTION_FINISHED )
+	if( result != AngelScript::asEXECUTION_FINISHED )
 	{
 		// The execution didn't complete as expected. Determine what happened.
-		if( result == asEXECUTION_EXCEPTION )
+		if( result == AngelScript::asEXECUTION_EXCEPTION )
 		{
 			// An exception occurred, let the script writer know what happened so it can be corrected.
 			LogManager::getSingleton().logMessage("SE| An exception '" + String(context->GetExceptionString()) + "' occurred. Please correct the code in file '" + scriptname + "' and try again.");
@@ -141,11 +141,11 @@ int ScriptEngine::loadTerrainScript(Ogre::String scriptname)
 	return 0;
 }
 
-void ScriptEngine::ExceptionCallback(asIScriptContext *ctx, void *param)
+void ScriptEngine::ExceptionCallback(AngelScript::asIScriptContext *ctx, void *param)
 {
-	asIScriptEngine *engine = ctx->GetEngine();
+	AngelScript::asIScriptEngine *engine = ctx->GetEngine();
 	int funcID = ctx->GetExceptionFunction();
-	const asIScriptFunction *function = engine->GetFunctionDescriptorById(funcID);
+	const AngelScript::asIScriptFunction *function = engine->GetFunctionDescriptorById(funcID);
 	LogManager::getSingleton().logMessage("--- exception ---");
 	LogManager::getSingleton().logMessage("desc: " + String(ctx->GetExceptionString()));
 	LogManager::getSingleton().logMessage("func: " + String(function->GetDeclaration()));
@@ -160,7 +160,7 @@ void ScriptEngine::ExceptionCallback(asIScriptContext *ctx, void *param)
 	// Show the call stack with the variables
 	LogManager::getSingleton().logMessage("--- call stack ---");
 	char tmp[2048]="";
-    for( asUINT n = 1; n < ctx->GetCallstackSize(); n++ )
+    for( AngelScript::asUINT n = 1; n < ctx->GetCallstackSize(); n++ )
     {
     	function = ctx->GetFunction(n);
 		sprintf(tmp, "%s (%d): %s\n", function->GetScriptSectionName(), ctx->GetLineNumber(n), function->GetDeclaration());
@@ -236,20 +236,20 @@ void ScriptEngine::init()
 {
 	int result;
 	// Create the script engine
-	engine = asCreateScriptEngine(ANGELSCRIPT_VERSION);
+	engine = AngelScript::asCreateScriptEngine(ANGELSCRIPT_VERSION);
 
 	// Set the message callback to receive information on errors in human readable form.
 	// It's recommended to do this right after the creation of the engine, because if
 	// some registration fails the engine may send valuable information to the message
 	// stream.
-	result = engine->SetMessageCallback(asMETHOD(ScriptEngine,msgCallback), this, asCALL_THISCALL);
+	result = engine->SetMessageCallback(AngelScript::asMETHOD(ScriptEngine,msgCallback), this, AngelScript::asCALL_THISCALL);
 	if(result < 0)
 	{
-		if(result == asINVALID_ARG)
+		if(result == AngelScript::asINVALID_ARG)
 		{
 			LogManager::getSingleton().logMessage("SE| One of the arguments is incorrect, e.g. obj is null for a class method.");
 			return;
-		} else if(result == asNOT_SUPPORTED)
+		} else if(result == AngelScript::asNOT_SUPPORTED)
 		{
 			LogManager::getSingleton().logMessage("SE| 	The arguments are not supported, e.g. asCALL_GENERIC.");
 			return;
@@ -262,47 +262,47 @@ void ScriptEngine::init()
 	// string type for C++ applications. Every developer is free to register it's own string type.
 	// The SDK do however provide a standard add-on for registering a string type, so it's not
 	// necessary to register your own string type if you don't want to.
-	RegisterStdString(engine);
-	RegisterScriptMath(engine);
-	RegisterScriptMath3D(engine);
+	AngelScript::RegisterStdString(engine);
+	AngelScript::RegisterScriptMath(engine);
+	AngelScript::RegisterScriptMath3D(engine);
 
 	registerOgreObjects(engine);
 
 	// Register everything
 	// class Beam
-	result = engine->RegisterObjectType("BeamClass", sizeof(Beam), asOBJ_REF); assert(result>=0);
-	result = engine->RegisterObjectMethod("BeamClass", "void scaleTruck(float)", asMETHOD(Beam,scaleTruck), asCALL_THISCALL); assert(result>=0);
-	result = engine->RegisterObjectMethod("BeamClass", "string getTruckName()", asMETHOD(Beam,getTruckName), asCALL_THISCALL); assert(result>=0);
-//	result = engine->RegisterObjectMethod("BeamClass", "void resetPosition(float, float, bool, float)", asMETHOD(Beam,resetPosition), asCALL_THISCALL); assert(result>=0);
-	result = engine->RegisterObjectMethod("BeamClass", "void setDetailLevel(int)", asMETHOD(Beam,setDetailLevel), asCALL_THISCALL); assert(result>=0);
-	result = engine->RegisterObjectMethod("BeamClass", "void showSkeleton(bool, bool)", asMETHOD(Beam,showSkeleton), asCALL_THISCALL); assert(result>=0);
-	result = engine->RegisterObjectMethod("BeamClass", "void hideSkeleton(bool)", asMETHOD(Beam,hideSkeleton), asCALL_THISCALL); assert(result>=0);
-	result = engine->RegisterObjectMethod("BeamClass", "void parkingbrakeToggle()", asMETHOD(Beam,parkingbrakeToggle), asCALL_THISCALL); assert(result>=0);
-	result = engine->RegisterObjectMethod("BeamClass", "void beaconsToggle()", asMETHOD(Beam,beaconsToggle), asCALL_THISCALL); assert(result>=0);
-	result = engine->RegisterObjectMethod("BeamClass", "void setReplayMode(bool)", asMETHOD(Beam,setReplayMode), asCALL_THISCALL); assert(result>=0);
-	result = engine->RegisterObjectMethod("BeamClass", "void resetAutopilot()", asMETHOD(Beam,resetAutopilot), asCALL_THISCALL); assert(result>=0);
-	result = engine->RegisterObjectMethod("BeamClass", "void toggleCustomParticles()", asMETHOD(Beam,toggleCustomParticles), asCALL_THISCALL); assert(result>=0);
-	result = engine->RegisterObjectMethod("BeamClass", "void parkingbrakeToggle()", asMETHOD(Beam,parkingbrakeToggle), asCALL_THISCALL); assert(result>=0);
-	result = engine->RegisterObjectMethod("BeamClass", "float getDefaultDeformation()", asMETHOD(Beam,getDefaultDeformation), asCALL_THISCALL); assert(result>=0);
-	result = engine->RegisterObjectMethod("BeamClass", "int getNodeCount()", asMETHOD(Beam,getNodeCount), asCALL_THISCALL); assert(result>=0);
-	result = engine->RegisterObjectMethod("BeamClass", "float getTotalMass(bool)", asMETHOD(Beam,getTotalMass), asCALL_THISCALL); assert(result>=0);
-	result = engine->RegisterObjectMethod("BeamClass", "int getWheelNodeCount()", asMETHOD(Beam,getWheelNodeCount), asCALL_THISCALL); assert(result>=0);
-	result = engine->RegisterObjectMethod("BeamClass", "void recalc_masses()", asMETHOD(Beam,recalc_masses), asCALL_THISCALL); assert(result>=0);
-	result = engine->RegisterObjectMethod("BeamClass", "void setMass(float)", asMETHOD(Beam,setMass), asCALL_THISCALL); assert(result>=0);
-	result = engine->RegisterObjectMethod("BeamClass", "bool getBrakeLightVisible()", asMETHOD(Beam,getBrakeLightVisible), asCALL_THISCALL); assert(result>=0);
-	result = engine->RegisterObjectMethod("BeamClass", "bool getCustomLightVisible(int)", asMETHOD(Beam,getCustomLightVisible), asCALL_THISCALL); assert(result>=0);
-	result = engine->RegisterObjectMethod("BeamClass", "void setCustomLightVisible(int, bool)", asMETHOD(Beam,setCustomLightVisible), asCALL_THISCALL); assert(result>=0);
-	result = engine->RegisterObjectMethod("BeamClass", "bool getBeaconMode()", asMETHOD(Beam,getBeaconMode), asCALL_THISCALL); assert(result>=0);
-	result = engine->RegisterObjectMethod("BeamClass", "void setBlinkType(int)", asMETHOD(Beam,setBlinkType), asCALL_THISCALL); assert(result>=0);
-	result = engine->RegisterObjectMethod("BeamClass", "int getBlinkType()", asMETHOD(Beam,getBlinkType), asCALL_THISCALL); assert(result>=0);
-	result = engine->RegisterObjectMethod("BeamClass", "bool getCustomParticleMode()", asMETHOD(Beam,getCustomParticleMode), asCALL_THISCALL); assert(result>=0);
-	result = engine->RegisterObjectMethod("BeamClass", "int getLowestNode()", asMETHOD(Beam,getLowestNode), asCALL_THISCALL); assert(result>=0);
-	result = engine->RegisterObjectMethod("BeamClass", "bool setMeshVisibility(bool)", asMETHOD(Beam,setMeshVisibility), asCALL_THISCALL); assert(result>=0);
-	result = engine->RegisterObjectMethod("BeamClass", "bool getCustomParticleMode()", asMETHOD(Beam,getCustomParticleMode), asCALL_THISCALL); assert(result>=0);
-	result = engine->RegisterObjectMethod("BeamClass", "bool getCustomParticleMode()", asMETHOD(Beam,getCustomParticleMode), asCALL_THISCALL); assert(result>=0);
-	result = engine->RegisterObjectMethod("BeamClass", "bool getReverseLightVisible()", asMETHOD(Beam,getCustomParticleMode), asCALL_THISCALL); assert(result>=0);
-	result = engine->RegisterObjectMethod("BeamClass", "float getHeadingDirectionAngle()", asMETHOD(Beam,getHeadingDirectionAngle), asCALL_THISCALL); assert(result>=0);
-	result = engine->RegisterObjectMethod("BeamClass", "bool isLocked()", asMETHOD(Beam,isLocked), asCALL_THISCALL); assert(result>=0);
+	result = engine->RegisterObjectType("BeamClass", sizeof(Beam), AngelScript::asOBJ_REF); assert(result>=0);
+	result = engine->RegisterObjectMethod("BeamClass", "void scaleTruck(float)", AngelScript::asMETHOD(Beam,scaleTruck), AngelScript::asCALL_THISCALL); assert(result>=0);
+	result = engine->RegisterObjectMethod("BeamClass", "string getTruckName()", AngelScript::asMETHOD(Beam,getTruckName), AngelScript::asCALL_THISCALL); assert(result>=0);
+//	result = engine->RegisterObjectMethod("BeamClass", "void resetPosition(float, float, bool, float)", AngelScript::asMETHOD(Beam,resetPosition), asCALL_THISCALL); assert(result>=0);
+	result = engine->RegisterObjectMethod("BeamClass", "void setDetailLevel(int)", AngelScript::asMETHOD(Beam,setDetailLevel), AngelScript::asCALL_THISCALL); assert(result>=0);
+	result = engine->RegisterObjectMethod("BeamClass", "void showSkeleton(bool, bool)", AngelScript::asMETHOD(Beam,showSkeleton), AngelScript::asCALL_THISCALL); assert(result>=0);
+	result = engine->RegisterObjectMethod("BeamClass", "void hideSkeleton(bool)", AngelScript::asMETHOD(Beam,hideSkeleton), AngelScript::asCALL_THISCALL); assert(result>=0);
+	result = engine->RegisterObjectMethod("BeamClass", "void parkingbrakeToggle()", AngelScript::asMETHOD(Beam,parkingbrakeToggle), AngelScript::asCALL_THISCALL); assert(result>=0);
+	result = engine->RegisterObjectMethod("BeamClass", "void beaconsToggle()", AngelScript::asMETHOD(Beam,beaconsToggle), AngelScript::asCALL_THISCALL); assert(result>=0);
+	result = engine->RegisterObjectMethod("BeamClass", "void setReplayMode(bool)", AngelScript::asMETHOD(Beam,setReplayMode), AngelScript::asCALL_THISCALL); assert(result>=0);
+	result = engine->RegisterObjectMethod("BeamClass", "void resetAutopilot()", AngelScript::asMETHOD(Beam,resetAutopilot), AngelScript::asCALL_THISCALL); assert(result>=0);
+	result = engine->RegisterObjectMethod("BeamClass", "void toggleCustomParticles()", AngelScript::asMETHOD(Beam,toggleCustomParticles), AngelScript::asCALL_THISCALL); assert(result>=0);
+	result = engine->RegisterObjectMethod("BeamClass", "void parkingbrakeToggle()", AngelScript::asMETHOD(Beam,parkingbrakeToggle), AngelScript::asCALL_THISCALL); assert(result>=0);
+	result = engine->RegisterObjectMethod("BeamClass", "float getDefaultDeformation()", AngelScript::asMETHOD(Beam,getDefaultDeformation), AngelScript::asCALL_THISCALL); assert(result>=0);
+	result = engine->RegisterObjectMethod("BeamClass", "int getNodeCount()", AngelScript::asMETHOD(Beam,getNodeCount), AngelScript::asCALL_THISCALL); assert(result>=0);
+	result = engine->RegisterObjectMethod("BeamClass", "float getTotalMass(bool)", AngelScript::asMETHOD(Beam,getTotalMass), AngelScript::asCALL_THISCALL); assert(result>=0);
+	result = engine->RegisterObjectMethod("BeamClass", "int getWheelNodeCount()", AngelScript::asMETHOD(Beam,getWheelNodeCount), AngelScript::asCALL_THISCALL); assert(result>=0);
+	result = engine->RegisterObjectMethod("BeamClass", "void recalc_masses()", AngelScript::asMETHOD(Beam,recalc_masses), AngelScript::asCALL_THISCALL); assert(result>=0);
+	result = engine->RegisterObjectMethod("BeamClass", "void setMass(float)", AngelScript::asMETHOD(Beam,setMass), AngelScript::asCALL_THISCALL); assert(result>=0);
+	result = engine->RegisterObjectMethod("BeamClass", "bool getBrakeLightVisible()", AngelScript::asMETHOD(Beam,getBrakeLightVisible), AngelScript::asCALL_THISCALL); assert(result>=0);
+	result = engine->RegisterObjectMethod("BeamClass", "bool getCustomLightVisible(int)", AngelScript::asMETHOD(Beam,getCustomLightVisible), AngelScript::asCALL_THISCALL); assert(result>=0);
+	result = engine->RegisterObjectMethod("BeamClass", "void setCustomLightVisible(int, bool)", AngelScript::asMETHOD(Beam,setCustomLightVisible), AngelScript::asCALL_THISCALL); assert(result>=0);
+	result = engine->RegisterObjectMethod("BeamClass", "bool getBeaconMode()", AngelScript::asMETHOD(Beam,getBeaconMode), AngelScript::asCALL_THISCALL); assert(result>=0);
+	result = engine->RegisterObjectMethod("BeamClass", "void setBlinkType(int)", AngelScript::asMETHOD(Beam,setBlinkType), AngelScript::asCALL_THISCALL); assert(result>=0);
+	result = engine->RegisterObjectMethod("BeamClass", "int getBlinkType()", AngelScript::asMETHOD(Beam,getBlinkType), AngelScript::asCALL_THISCALL); assert(result>=0);
+	result = engine->RegisterObjectMethod("BeamClass", "bool getCustomParticleMode()", AngelScript::asMETHOD(Beam,getCustomParticleMode), AngelScript::asCALL_THISCALL); assert(result>=0);
+	result = engine->RegisterObjectMethod("BeamClass", "int getLowestNode()", AngelScript::asMETHOD(Beam,getLowestNode), AngelScript::asCALL_THISCALL); assert(result>=0);
+	result = engine->RegisterObjectMethod("BeamClass", "bool setMeshVisibility(bool)", AngelScript::asMETHOD(Beam,setMeshVisibility), AngelScript::asCALL_THISCALL); assert(result>=0);
+	result = engine->RegisterObjectMethod("BeamClass", "bool getCustomParticleMode()", AngelScript::asMETHOD(Beam,getCustomParticleMode), AngelScript::asCALL_THISCALL); assert(result>=0);
+	result = engine->RegisterObjectMethod("BeamClass", "bool getCustomParticleMode()", AngelScript::asMETHOD(Beam,getCustomParticleMode), AngelScript::asCALL_THISCALL); assert(result>=0);
+	result = engine->RegisterObjectMethod("BeamClass", "bool getReverseLightVisible()", AngelScript::asMETHOD(Beam,getCustomParticleMode), AngelScript::asCALL_THISCALL); assert(result>=0);
+	result = engine->RegisterObjectMethod("BeamClass", "float getHeadingDirectionAngle()", AngelScript::asMETHOD(Beam,getHeadingDirectionAngle), AngelScript::asCALL_THISCALL); assert(result>=0);
+	result = engine->RegisterObjectMethod("BeamClass", "bool isLocked()", AngelScript::asMETHOD(Beam,isLocked), AngelScript::asCALL_THISCALL); assert(result>=0);
 
 	// offsetof invalid for classes?
 	result = engine->RegisterObjectProperty("BeamClass", "float brake", offsetof(Beam, brake)); assert(result>=0);
@@ -375,17 +375,17 @@ void ScriptEngine::init()
 	result = engine->RegisterObjectProperty("BeamClass", "int free_cab", offsetof(Beam, free_cab)); assert(result>=0);
 	// wont work: result = engine->RegisterObjectProperty("BeamClass", "int airbrakeval", offsetof(Beam, airbrakeval)); assert(result>=0);
 	result = engine->RegisterObjectProperty("BeamClass", "bool meshesVisible", offsetof(Beam, meshesVisible)); assert(result>=0);
-	result = engine->RegisterObjectBehaviour("BeamClass", asBEHAVE_ADDREF, "void f()",asMETHOD(Beam,addRef), asCALL_THISCALL); assert(result>=0);
-	result = engine->RegisterObjectBehaviour("BeamClass", asBEHAVE_RELEASE, "void f()",asMETHOD(Beam,release), asCALL_THISCALL); assert(result>=0);
+	result = engine->RegisterObjectBehaviour("BeamClass", AngelScript::asBEHAVE_ADDREF, "void f()",AngelScript::asMETHOD(Beam,addRef), AngelScript::asCALL_THISCALL); assert(result>=0);
+	result = engine->RegisterObjectBehaviour("BeamClass", AngelScript::asBEHAVE_RELEASE, "void f()",AngelScript::asMETHOD(Beam,release), AngelScript::asCALL_THISCALL); assert(result>=0);
 
 	// class Settings
-	result = engine->RegisterObjectType("SettingsClass", sizeof(Settings), asOBJ_REF); assert(result>=0);
-	result = engine->RegisterObjectMethod("SettingsClass", "string getSetting(const string &in)", asMETHOD(Settings,getSettingScriptSafe), asCALL_THISCALL); assert(result>=0);
-	result = engine->RegisterObjectBehaviour("SettingsClass", asBEHAVE_ADDREF, "void f()",asMETHOD(Settings,addRef), asCALL_THISCALL); assert(result>=0);
-	result = engine->RegisterObjectBehaviour("SettingsClass", asBEHAVE_RELEASE, "void f()",asMETHOD(Settings,release), asCALL_THISCALL); assert(result>=0);
+	result = engine->RegisterObjectType("SettingsClass", sizeof(Settings), AngelScript::asOBJ_REF); assert(result>=0);
+	result = engine->RegisterObjectMethod("SettingsClass", "string getSetting(const string &in)", AngelScript::asMETHOD(Settings,getSettingScriptSafe), AngelScript::asCALL_THISCALL); assert(result>=0);
+	result = engine->RegisterObjectBehaviour("SettingsClass", AngelScript::asBEHAVE_ADDREF, "void f()",AngelScript::asMETHOD(Settings,addRef), AngelScript::asCALL_THISCALL); assert(result>=0);
+	result = engine->RegisterObjectBehaviour("SettingsClass", AngelScript::asBEHAVE_RELEASE, "void f()",AngelScript::asMETHOD(Settings,release), AngelScript::asCALL_THISCALL); assert(result>=0);
 
 	// class Cache_Entry
-	result = engine->RegisterObjectType("Cache_EntryClass", sizeof(Cache_Entry), asOBJ_REF); assert(result>=0);
+	result = engine->RegisterObjectType("Cache_EntryClass", sizeof(Cache_Entry), AngelScript::asOBJ_REF); assert(result>=0);
 	result = engine->RegisterObjectProperty("Cache_EntryClass", "string minitype", offsetof(Cache_Entry, minitype)); assert(result>=0);
 	result = engine->RegisterObjectProperty("Cache_EntryClass", "string fname", offsetof(Cache_Entry, fname)); assert(result>=0);
 	result = engine->RegisterObjectProperty("Cache_EntryClass", "string fname_without_uid", offsetof(Cache_Entry, fname_without_uid)); assert(result>=0);
@@ -443,64 +443,64 @@ void ScriptEngine::init()
 	result = engine->RegisterObjectProperty("Cache_EntryClass", "int driveable", offsetof(Cache_Entry, driveable)); assert(result>=0);
 	result = engine->RegisterObjectProperty("Cache_EntryClass", "int numgears", offsetof(Cache_Entry, numgears)); assert(result>=0);
 	result = engine->RegisterObjectProperty("Cache_EntryClass", "uint8 enginetype", offsetof(Cache_Entry, enginetype)); assert(result>=0);
-	result = engine->RegisterObjectBehaviour("Cache_EntryClass", asBEHAVE_ADDREF, "void f()",asMETHOD(Cache_Entry,addRef), asCALL_THISCALL); assert(result>=0);
-	result = engine->RegisterObjectBehaviour("Cache_EntryClass", asBEHAVE_RELEASE, "void f()",asMETHOD(Cache_Entry,release), asCALL_THISCALL); assert(result>=0);
+	result = engine->RegisterObjectBehaviour("Cache_EntryClass", AngelScript::asBEHAVE_ADDREF, "void f()",AngelScript::asMETHOD(Cache_Entry,addRef), AngelScript::asCALL_THISCALL); assert(result>=0);
+	result = engine->RegisterObjectBehaviour("Cache_EntryClass", AngelScript::asBEHAVE_RELEASE, "void f()",AngelScript::asMETHOD(Cache_Entry,release), AngelScript::asCALL_THISCALL); assert(result>=0);
 	// TODO: add Cache_Entry::sectionconfigs
 
 	// todo: add Vector3 classes and other utility classes!
 
 	// class GameScript
-	result = engine->RegisterObjectType("GameScriptClass", sizeof(GameScript), asOBJ_VALUE | asOBJ_POD | asOBJ_APP_CLASS); assert(result>=0);
-	result = engine->RegisterObjectMethod("GameScriptClass", "void log(const string &in)", asMETHOD(GameScript,log), asCALL_THISCALL); assert(result>=0);
-	result = engine->RegisterObjectMethod("GameScriptClass", "double getTime()", asMETHOD(GameScript,getTime), asCALL_THISCALL); assert(result>=0);
-	result = engine->RegisterObjectMethod("GameScriptClass", "void setPersonPosition(vector3)", asMETHOD(GameScript,setPersonPosition), asCALL_THISCALL); assert(result>=0);
-	result = engine->RegisterObjectMethod("GameScriptClass", "void loadTerrain(const string &in)", asMETHOD(GameScript,loadTerrain), asCALL_THISCALL); assert(result>=0);
-	result = engine->RegisterObjectMethod("GameScriptClass", "vector3 getPersonPosition()", asMETHOD(GameScript,getPersonPosition), asCALL_THISCALL); assert(result>=0);
-	result = engine->RegisterObjectMethod("GameScriptClass", "void movePerson(float, float, float)", asMETHOD(GameScript,movePerson), asCALL_THISCALL); assert(result>=0);
-	result = engine->RegisterObjectMethod("GameScriptClass", "float getCaelumTime()", asMETHOD(GameScript,getCaelumTime), asCALL_THISCALL); assert(result>=0);
-	result = engine->RegisterObjectMethod("GameScriptClass", "void setCaelumTime(float)", asMETHOD(GameScript,setCaelumTime), asCALL_THISCALL); assert(result>=0);
-	result = engine->RegisterObjectMethod("GameScriptClass", "void setWaterHeight(float)", asMETHOD(GameScript,setWaterHeight), asCALL_THISCALL); assert(result>=0);
-	result = engine->RegisterObjectMethod("GameScriptClass", "float getWaterHeight()", asMETHOD(GameScript,getWaterHeight), asCALL_THISCALL); assert(result>=0);
-	result = engine->RegisterObjectMethod("GameScriptClass", "float getGroundHeight(vector3)", asMETHOD(GameScript,getGroundHeight), asCALL_THISCALL); assert(result>=0);
-	result = engine->RegisterObjectMethod("GameScriptClass", "int getCurrentTruckNumber()", asMETHOD(GameScript,getCurrentTruckNumber), asCALL_THISCALL); assert(result>=0);
-	result = engine->RegisterObjectMethod("GameScriptClass", "int getNumTrucks()", asMETHOD(GameScript,getNumTrucks), asCALL_THISCALL); assert(result>=0);
-	result = engine->RegisterObjectMethod("GameScriptClass", "float getGravity()", asMETHOD(GameScript,getGravity), asCALL_THISCALL); assert(result>=0);
-	result = engine->RegisterObjectMethod("GameScriptClass", "void setGravity(float)", asMETHOD(GameScript,setGravity), asCALL_THISCALL); assert(result>=0);
-	result = engine->RegisterObjectMethod("GameScriptClass", "void flashMessage(const string &in, float, float)", asMETHOD(GameScript,flashMessage), asCALL_THISCALL); assert(result>=0);
-	result = engine->RegisterObjectMethod("GameScriptClass", "void setDirectionArrow(const string &in, vector3)", asMETHOD(GameScript,setDirectionArrow), asCALL_THISCALL); assert(result>=0);
-	result = engine->RegisterObjectMethod("GameScriptClass", "void hideDirectionArrow()", asMETHOD(GameScript,hideDirectionArrow), asCALL_THISCALL); assert(result>=0);
-	result = engine->RegisterObjectMethod("GameScriptClass", "void registerForEvent(int)", asMETHOD(GameScript,registerForEvent), asCALL_THISCALL); assert(result>=0);
-	//result = engine->RegisterObjectMethod("GameScriptClass", "BeamClass @getCurrentTruck()", asMETHOD(GameScript,getCurrentTruck), asCALL_THISCALL); assert(result>=0);
-	//result = engine->RegisterObjectMethod("GameScriptClass", "BeamClass @getTruckByNum(int)", asMETHOD(GameScript,getTruckByNum), asCALL_THISCALL); assert(result>=0);
-	result = engine->RegisterObjectMethod("GameScriptClass", "int getChatFontSize()", asMETHOD(GameScript,getChatFontSize), asCALL_THISCALL); assert(result>=0);
-	result = engine->RegisterObjectMethod("GameScriptClass", "void setChatFontSize(int)", asMETHOD(GameScript,setChatFontSize), asCALL_THISCALL); assert(result>=0);
-	result = engine->RegisterObjectMethod("GameScriptClass", "void showChooser(const string &in, const string &in, const string &in)", asMETHOD(GameScript,showChooser), asCALL_THISCALL); assert(result>=0);
-	result = engine->RegisterObjectMethod("GameScriptClass", "void repairVehicle(const string &in, const string &in)", asMETHOD(GameScript,repairVehicle), asCALL_THISCALL); assert(result>=0);
-	result = engine->RegisterObjectMethod("GameScriptClass", "void spawnObject(const string &in, const string &in, vector3, vector3, const string &in, bool)", asMETHOD(GameScript,spawnObject), asCALL_THISCALL); assert(result>=0);
-	result = engine->RegisterObjectMethod("GameScriptClass", "void destroyObject(const string &in)", asMETHOD(GameScript,destroyObject), asCALL_THISCALL); assert(result>=0);
-	result = engine->RegisterObjectMethod("GameScriptClass", "int setMaterialAmbient(const string &in, float, float, float)", asMETHOD(GameScript,setMaterialAmbient), asCALL_THISCALL); assert(result>=0);
-	result = engine->RegisterObjectMethod("GameScriptClass", "int setMaterialDiffuse(const string &in, float, float, float, float)", asMETHOD(GameScript,setMaterialDiffuse), asCALL_THISCALL); assert(result>=0);
-	result = engine->RegisterObjectMethod("GameScriptClass", "int setMaterialSpecular(const string &in, float, float, float, float)", asMETHOD(GameScript,setMaterialSpecular), asCALL_THISCALL); assert(result>=0);
-	result = engine->RegisterObjectMethod("GameScriptClass", "int setMaterialEmissive(const string &in, float, float, float)", asMETHOD(GameScript,setMaterialEmissive), asCALL_THISCALL); assert(result>=0);
-	result = engine->RegisterObjectMethod("GameScriptClass", "int getNumTrucksByFlag(int)", asMETHOD(GameScript,getNumTrucksByFlag), asCALL_THISCALL); assert(result>=0);
-	result = engine->RegisterObjectMethod("GameScriptClass", "bool getCaelumAvailable()", asMETHOD(GameScript,getCaelumAvailable), asCALL_THISCALL); assert(result>=0);
-	result = engine->RegisterObjectMethod("GameScriptClass", "void startTimer()", asMETHOD(GameScript,startTimer), asCALL_THISCALL); assert(result>=0);
-	result = engine->RegisterObjectMethod("GameScriptClass", "void stopTimer()", asMETHOD(GameScript,stopTimer), asCALL_THISCALL); assert(result>=0);
-	result = engine->RegisterObjectMethod("GameScriptClass", "float rangeRandom(float, float)", asMETHOD(GameScript,rangeRandom), asCALL_THISCALL); assert(result>=0);
+	result = engine->RegisterObjectType("GameScriptClass", sizeof(GameScript), AngelScript::asOBJ_VALUE | AngelScript::asOBJ_POD | AngelScript::asOBJ_APP_CLASS); assert(result>=0);
+	result = engine->RegisterObjectMethod("GameScriptClass", "void log(const string &in)", AngelScript::asMETHOD(GameScript,log), AngelScript::asCALL_THISCALL); assert(result>=0);
+	result = engine->RegisterObjectMethod("GameScriptClass", "double getTime()", AngelScript::asMETHOD(GameScript,getTime), AngelScript::asCALL_THISCALL); assert(result>=0);
+	result = engine->RegisterObjectMethod("GameScriptClass", "void setPersonPosition(vector3)", AngelScript::asMETHOD(GameScript,setPersonPosition), AngelScript::asCALL_THISCALL); assert(result>=0);
+	result = engine->RegisterObjectMethod("GameScriptClass", "void loadTerrain(const string &in)", AngelScript::asMETHOD(GameScript,loadTerrain), AngelScript::asCALL_THISCALL); assert(result>=0);
+	result = engine->RegisterObjectMethod("GameScriptClass", "vector3 getPersonPosition()", AngelScript::asMETHOD(GameScript,getPersonPosition), AngelScript::asCALL_THISCALL); assert(result>=0);
+	result = engine->RegisterObjectMethod("GameScriptClass", "void movePerson(float, float, float)", AngelScript::asMETHOD(GameScript,movePerson), AngelScript::asCALL_THISCALL); assert(result>=0);
+	result = engine->RegisterObjectMethod("GameScriptClass", "float getCaelumTime()", AngelScript::asMETHOD(GameScript,getCaelumTime), AngelScript::asCALL_THISCALL); assert(result>=0);
+	result = engine->RegisterObjectMethod("GameScriptClass", "void setCaelumTime(float)", AngelScript::asMETHOD(GameScript,setCaelumTime), AngelScript::asCALL_THISCALL); assert(result>=0);
+	result = engine->RegisterObjectMethod("GameScriptClass", "void setWaterHeight(float)", AngelScript::asMETHOD(GameScript,setWaterHeight), AngelScript::asCALL_THISCALL); assert(result>=0);
+	result = engine->RegisterObjectMethod("GameScriptClass", "float getWaterHeight()", AngelScript::asMETHOD(GameScript,getWaterHeight), AngelScript::asCALL_THISCALL); assert(result>=0);
+	result = engine->RegisterObjectMethod("GameScriptClass", "float getGroundHeight(vector3)", AngelScript::asMETHOD(GameScript,getGroundHeight), AngelScript::asCALL_THISCALL); assert(result>=0);
+	result = engine->RegisterObjectMethod("GameScriptClass", "int getCurrentTruckNumber()", AngelScript::asMETHOD(GameScript,getCurrentTruckNumber), AngelScript::asCALL_THISCALL); assert(result>=0);
+	result = engine->RegisterObjectMethod("GameScriptClass", "int getNumTrucks()", AngelScript::asMETHOD(GameScript,getNumTrucks), AngelScript::asCALL_THISCALL); assert(result>=0);
+	result = engine->RegisterObjectMethod("GameScriptClass", "float getGravity()", AngelScript::asMETHOD(GameScript,getGravity), AngelScript::asCALL_THISCALL); assert(result>=0);
+	result = engine->RegisterObjectMethod("GameScriptClass", "void setGravity(float)", AngelScript::asMETHOD(GameScript,setGravity), AngelScript::asCALL_THISCALL); assert(result>=0);
+	result = engine->RegisterObjectMethod("GameScriptClass", "void flashMessage(const string &in, float, float)", AngelScript::asMETHOD(GameScript,flashMessage), AngelScript::asCALL_THISCALL); assert(result>=0);
+	result = engine->RegisterObjectMethod("GameScriptClass", "void setDirectionArrow(const string &in, vector3)", AngelScript::asMETHOD(GameScript,setDirectionArrow), AngelScript::asCALL_THISCALL); assert(result>=0);
+	result = engine->RegisterObjectMethod("GameScriptClass", "void hideDirectionArrow()", AngelScript::asMETHOD(GameScript,hideDirectionArrow), AngelScript::asCALL_THISCALL); assert(result>=0);
+	result = engine->RegisterObjectMethod("GameScriptClass", "void registerForEvent(int)", AngelScript::asMETHOD(GameScript,registerForEvent), AngelScript::asCALL_THISCALL); assert(result>=0);
+	//result = engine->RegisterObjectMethod("GameScriptClass", "BeamClass @getCurrentTruck()", AngelScript::asMETHOD(GameScript,getCurrentTruck), AngelScript::asCALL_THISCALL); assert(result>=0);
+	//result = engine->RegisterObjectMethod("GameScriptClass", "BeamClass @getTruckByNum(int)", AngelScript::asMETHOD(GameScript,getTruckByNum), AngelScript::asCALL_THISCALL); assert(result>=0);
+	result = engine->RegisterObjectMethod("GameScriptClass", "int getChatFontSize()", AngelScript::asMETHOD(GameScript,getChatFontSize), AngelScript::asCALL_THISCALL); assert(result>=0);
+	result = engine->RegisterObjectMethod("GameScriptClass", "void setChatFontSize(int)", AngelScript::asMETHOD(GameScript,setChatFontSize), AngelScript::asCALL_THISCALL); assert(result>=0);
+	result = engine->RegisterObjectMethod("GameScriptClass", "void showChooser(const string &in, const string &in, const string &in)", AngelScript::asMETHOD(GameScript,showChooser), AngelScript::asCALL_THISCALL); assert(result>=0);
+	result = engine->RegisterObjectMethod("GameScriptClass", "void repairVehicle(const string &in, const string &in)", AngelScript::asMETHOD(GameScript,repairVehicle), AngelScript::asCALL_THISCALL); assert(result>=0);
+	result = engine->RegisterObjectMethod("GameScriptClass", "void spawnObject(const string &in, const string &in, vector3, vector3, const string &in, bool)", AngelScript::asMETHOD(GameScript,spawnObject), AngelScript::asCALL_THISCALL); assert(result>=0);
+	result = engine->RegisterObjectMethod("GameScriptClass", "void destroyObject(const string &in)", AngelScript::asMETHOD(GameScript,destroyObject), AngelScript::asCALL_THISCALL); assert(result>=0);
+	result = engine->RegisterObjectMethod("GameScriptClass", "int setMaterialAmbient(const string &in, float, float, float)", AngelScript::asMETHOD(GameScript,setMaterialAmbient), AngelScript::asCALL_THISCALL); assert(result>=0);
+	result = engine->RegisterObjectMethod("GameScriptClass", "int setMaterialDiffuse(const string &in, float, float, float, float)", AngelScript::asMETHOD(GameScript,setMaterialDiffuse), AngelScript::asCALL_THISCALL); assert(result>=0);
+	result = engine->RegisterObjectMethod("GameScriptClass", "int setMaterialSpecular(const string &in, float, float, float, float)", AngelScript::asMETHOD(GameScript,setMaterialSpecular), AngelScript::asCALL_THISCALL); assert(result>=0);
+	result = engine->RegisterObjectMethod("GameScriptClass", "int setMaterialEmissive(const string &in, float, float, float)", AngelScript::asMETHOD(GameScript,setMaterialEmissive), AngelScript::asCALL_THISCALL); assert(result>=0);
+	result = engine->RegisterObjectMethod("GameScriptClass", "int getNumTrucksByFlag(int)", AngelScript::asMETHOD(GameScript,getNumTrucksByFlag), AngelScript::asCALL_THISCALL); assert(result>=0);
+	result = engine->RegisterObjectMethod("GameScriptClass", "bool getCaelumAvailable()", AngelScript::asMETHOD(GameScript,getCaelumAvailable), AngelScript::asCALL_THISCALL); assert(result>=0);
+	result = engine->RegisterObjectMethod("GameScriptClass", "void startTimer()", AngelScript::asMETHOD(GameScript,startTimer), AngelScript::asCALL_THISCALL); assert(result>=0);
+	result = engine->RegisterObjectMethod("GameScriptClass", "void stopTimer()", AngelScript::asMETHOD(GameScript,stopTimer), AngelScript::asCALL_THISCALL); assert(result>=0);
+	result = engine->RegisterObjectMethod("GameScriptClass", "float rangeRandom(float, float)", AngelScript::asMETHOD(GameScript,rangeRandom), AngelScript::asCALL_THISCALL); assert(result>=0);
 
 	// class CacheSystem
-	result = engine->RegisterObjectType("CacheSystemClass", sizeof(CacheSystem), asOBJ_REF | asOBJ_NOHANDLE);
-	result = engine->RegisterObjectMethod("CacheSystemClass", "bool checkResourceLoaded(string &in)", asMETHODPR(CacheSystem, checkResourceLoaded, (Ogre::String &), bool), asCALL_THISCALL); assert(result>=0);
-	result = engine->RegisterObjectMethod("CacheSystemClass", "bool checkResourceLoaded(string &in, string &in)", asMETHODPR(CacheSystem, checkResourceLoaded, (Ogre::String &, Ogre::String &), bool), asCALL_THISCALL); assert(result>=0);
+	result = engine->RegisterObjectType("CacheSystemClass", sizeof(CacheSystem), AngelScript::asOBJ_REF | AngelScript::asOBJ_NOHANDLE);
+	result = engine->RegisterObjectMethod("CacheSystemClass", "bool checkResourceLoaded(string &in)", AngelScript::asMETHODPR(CacheSystem, checkResourceLoaded, (Ogre::String &), bool), AngelScript::asCALL_THISCALL); assert(result>=0);
+	result = engine->RegisterObjectMethod("CacheSystemClass", "bool checkResourceLoaded(string &in, string &in)", AngelScript::asMETHODPR(CacheSystem, checkResourceLoaded, (Ogre::String &, Ogre::String &), bool), AngelScript::asCALL_THISCALL); assert(result>=0);
 	// unable to register the following:
-	//result = engine->RegisterObjectMethod("CacheSystemClass", "bool checkResourceLoaded(Cache_EntryClass)", asMETHODPR(CacheSystem, checkResourceLoaded, (Cache_Entry), bool), asCALL_THISCALL); assert_net(result>=0);
-	//result = engine->RegisterObjectMethod("CacheSystemClass", "Cache_EntryClass &getResourceInfo(string)", asMETHODPR(CacheSystem, getResourceInfo, (Cache_Entry), bool), asCALL_THISCALL); assert_net(result>=0);
-	//result = engine->RegisterObjectMethod("CacheSystemClass", "Cache_EntryClass &getResourceInfo(string)", asMETHODPR(CacheSystem, getResourceInfo, (Cache_Entry), bool), asCALL_THISCALL); assert_net(result>=0);
-	//result = engine->RegisterObjectMethod("CacheSystemClass", "Cache_EntryClass &getResourceInfo(string)", asMETHODPR(CacheSystem, getResourceInfo, (Cache_Entry), bool), asCALL_THISCALL); assert_net(result>=0);
+	//result = engine->RegisterObjectMethod("CacheSystemClass", "bool checkResourceLoaded(Cache_EntryClass)", AngelScript::asMETHODPR(CacheSystem, checkResourceLoaded, (Cache_Entry), bool), AngelScript::asCALL_THISCALL); assert_net(result>=0);
+	//result = engine->RegisterObjectMethod("CacheSystemClass", "Cache_EntryClass &getResourceInfo(string)", AngelScript::asMETHODPR(CacheSystem, getResourceInfo, (Cache_Entry), bool), AngelScript::asCALL_THISCALL); assert_net(result>=0);
+	//result = engine->RegisterObjectMethod("CacheSystemClass", "Cache_EntryClass &getResourceInfo(string)", AngelScript::asMETHODPR(CacheSystem, getResourceInfo, (Cache_Entry), bool), AngelScript::asCALL_THISCALL); assert_net(result>=0);
+	//result = engine->RegisterObjectMethod("CacheSystemClass", "Cache_EntryClass &getResourceInfo(string)", AngelScript::asMETHODPR(CacheSystem, getResourceInfo, (Cache_Entry), bool), AngelScript::asCALL_THISCALL); assert_net(result>=0);
 	// these are static methods, special handling for them :)
-	result = engine->RegisterGlobalFunction("string stripUIDfromString(string)", asFUNCTION(CacheSystem::stripUIDfromString), asCALL_CDECL); assert(result>=0);
-	result = engine->RegisterGlobalFunction("string getUIDfromString(string)", asFUNCTION(CacheSystem::getUIDfromString), asCALL_CDECL); assert(result>=0);
-	result = engine->RegisterGlobalFunction("bool stringHasUID(string)", asFUNCTION(CacheSystem::stringHasUID), asCALL_CDECL); assert(result>=0);
+	result = engine->RegisterGlobalFunction("string stripUIDfromString(string)", AngelScript::asFUNCTION(CacheSystem::stripUIDfromString), AngelScript::asCALL_CDECL); assert(result>=0);
+	result = engine->RegisterGlobalFunction("string getUIDfromString(string)", AngelScript::asFUNCTION(CacheSystem::getUIDfromString), AngelScript::asCALL_CDECL); assert(result>=0);
+	result = engine->RegisterGlobalFunction("bool stringHasUID(string)", AngelScript::asFUNCTION(CacheSystem::stringHasUID), AngelScript::asCALL_CDECL); assert(result>=0);
 
 	// enum scriptEvents
 	result = engine->RegisterEnum("scriptEvents"); assert(result>=0);
@@ -542,22 +542,15 @@ void ScriptEngine::init()
 	result = engine->RegisterGlobalProperty("CacheSystemClass cache", &CacheSystem::Instance()); assert(result>=0);
 	result = engine->RegisterGlobalProperty("SettingsClass settings", &SETTINGS); assert(result>=0);
 
-
-
-
-
-
-
-
 	LogManager::getSingleton().logMessage("SE| Registration done");
 }
 
-void ScriptEngine::msgCallback(const asSMessageInfo *msg)
+void ScriptEngine::msgCallback(const AngelScript::asSMessageInfo *msg)
 {
 	const char *type = "Error";
-	if( msg->type == asMSGTYPE_INFORMATION )
+	if( msg->type == AngelScript::asMSGTYPE_INFORMATION )
 		type = "Info";
-	else if( msg->type == asMSGTYPE_WARNING )
+	else if( msg->type == AngelScript::asMSGTYPE_WARNING )
 		type = "Warning";
 
 	char tmp[1024]="";
@@ -633,10 +626,10 @@ int ScriptEngine::framestep(Ogre::Real dt, Beam **trucks, int free_truck)
 
 				//LogManager::getSingleton().logMessage("SE| Executing framestep()");
 				int r = context->Execute();
-				if( r == asEXECUTION_FINISHED )
+				if( r == AngelScript::asEXECUTION_FINISHED )
 				{
 				  // The return value is only valid if the execution finished successfully
-				  asDWORD ret = context->GetReturnDWord();
+					AngelScript::asDWORD ret = context->GetReturnDWord();
 				}				
 			}
 		}
@@ -661,10 +654,10 @@ int ScriptEngine::framestep(Ogre::Real dt, Beam **trucks, int free_truck)
 
 	//LogManager::getSingleton().logMessage("SE| Executing framestep()");
 	int r = context->Execute();
-	if( r == asEXECUTION_FINISHED )
+	if( r == AngelScript::asEXECUTION_FINISHED )
 	{
 	  // The return value is only valid if the execution finished successfully
-	  asDWORD ret = context->GetReturnDWord();
+		AngelScript::asDWORD ret = context->GetReturnDWord();
 	}
 	return 0;
 }
@@ -687,10 +680,10 @@ int ScriptEngine::envokeCallback(int functionPtr, eventsource_t *source, node_t 
 		context->SetArgDWord (3, -1);
 
 	int r = context->Execute();
-	if( r == asEXECUTION_FINISHED )
+	if( r == AngelScript::asEXECUTION_FINISHED )
 	{
 	  // The return value is only valid if the execution finished successfully
-	  asDWORD ret = context->GetReturnDWord();
+		AngelScript::asDWORD ret = context->GetReturnDWord();
 	}
 	return 0;
 }
@@ -728,10 +721,10 @@ void ScriptEngine::triggerEvent(enum scriptEvents eventnum, int value)
 		context->SetArgDWord(1, value);
 
 		int r = context->Execute();
-		if( r == asEXECUTION_FINISHED )
+		if( r == AngelScript::asEXECUTION_FINISHED )
 		{
 		  // The return value is only valid if the execution finished successfully
-		  asDWORD ret = context->GetReturnDWord();
+			AngelScript::asDWORD ret = context->GetReturnDWord();
 		}
 		return;
 	}
@@ -752,7 +745,7 @@ int ScriptEngine::loadScript(Ogre::String scriptname)
 	// Add the script to the module as a section. If desired, multiple script
 	// sections can be added to the same module. They will then be compiled
 	// together as if it was one large script.
-	AngelScript::asIScriptModule *mod = engine->GetModule("RoRScript", asGM_ALWAYS_CREATE);
+	AngelScript::asIScriptModule *mod = engine->GetModule("RoRScript", AngelScript::asGM_ALWAYS_CREATE);
 
 	// try to load bytecode
 	bool cached = false;
@@ -783,15 +776,15 @@ int ScriptEngine::loadScript(Ogre::String scriptname)
 		result = mod->Build();
 		if( result < 0 )
 		{
-			if(result == asINVALID_CONFIGURATION)
+			if(result == AngelScript::asINVALID_CONFIGURATION)
 			{
 				LogManager::getSingleton().logMessage("SE| The engine configuration is invalid.");
 				return 1;
-			} else if(result == asERROR)
+			} else if(result == AngelScript::asERROR)
 			{
 				LogManager::getSingleton().logMessage("SE| The script failed to build. ");
 				return 1;
-			} else if(result == asBUILD_IN_PROGRESS)
+			} else if(result == AngelScript::asBUILD_IN_PROGRESS)
 			{
 				LogManager::getSingleton().logMessage("SE| Another thread is currently building.");
 				return 1;
@@ -826,18 +819,18 @@ int ScriptEngine::loadScript(Ogre::String scriptname)
 	// Create our context, prepare it, and then execute
 	context = engine->CreateContext();
 
-	//context->SetLineCallback(asMETHOD(ScriptEngine,LineCallback), this, asCALL_THISCALL);
+	//context->SetLineCallback(AngelScript::asMETHOD(ScriptEngine,LineCallback), this, AngelScript::asCALL_THISCALL);
 
 	// this does not work :(
-	//context->SetExceptionCallback(asMETHOD(ScriptEngine,ExceptionCallback), this, asCALL_THISCALL);
+	//context->SetExceptionCallback(AngelScript::asMETHOD(ScriptEngine,ExceptionCallback), this, AngelScript::asCALL_THISCALL);
 
 	context->Prepare(funcId);
 	LogManager::getSingleton().logMessage("SE| Executing main()");
 	result = context->Execute();
-	if( result != asEXECUTION_FINISHED )
+	if( result != AngelScript::asEXECUTION_FINISHED )
 	{
 		// The execution didn't complete as expected. Determine what happened.
-		if( result == asEXECUTION_EXCEPTION )
+		if( result == AngelScript::asEXECUTION_EXCEPTION )
 		{
 			// An exception occurred, let the script writer know what happened so it can be corrected.
 			LogManager::getSingleton().logMessage("SE| An exception '" + String(context->GetExceptionString()) + "' occurred. Please correct the code in file '" + scriptname + "' and try again.");
@@ -1043,10 +1036,10 @@ void GameScript::destroyObject(const std::string &instanceName)
 
 void GameScript::spawnObject(const std::string &objectName, const std::string &instanceName, Ogre::Vector3 pos, Ogre::Vector3 rot, const std::string &eventhandler, bool uniquifyMaterials)
 {
-	asIScriptModule *mod=0;
+	AngelScript::asIScriptModule *mod=0;
 	try
 	{
-		mod = mse->getEngine()->GetModule("terrainScript", asGM_ONLY_IF_EXISTS);
+		mod = mse->getEngine()->GetModule("terrainScript", AngelScript::asGM_ONLY_IF_EXISTS);
 	}catch(...)
 	{
 		return;
