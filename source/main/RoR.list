@@ -161,6 +161,7 @@ set (SOURCE_FILES
   airbrake.cpp
   Airfoil.cpp
   Beam.cpp
+  BeamForcesEuler.cpp
   BeamLoadTruck.cpp
   BeamFactory.cpp
   BeamSlideNode.cpp
@@ -345,6 +346,7 @@ SOURCE_GROUP("Beam Engine" FILES
   Airfoil.h
   approxmath.h
   Beam.cpp
+  BeamForcesEuler.cpp
   BeamLoadTruck.cpp
   Beam.h
   BeamFactory.cpp

@@ -872,4 +872,9 @@ inline bool Beam::getSlideNodesLockInstant()
 {
 	return slideNodesConnectInstantly;
 }
+
+inline bool Beam::inRange(float num, float min, float max)
+{
+	return (num <= max && num >= min);
+}
 #endif //BEAM_H__
