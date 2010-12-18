@@ -27,11 +27,11 @@ along with Rigs of Rods.  If not, see <http://www.gnu.org/licenses/>.
 
 #include "Settings.h"
 
-using namespace std;
-using namespace Ogre;
+//using namespace std;
+//using namespace Ogre;
 
 //---------------------------------------------------------------------
-template<> ShadowManager * Singleton< ShadowManager >::ms_Singleton = 0;
+template<> ShadowManager * Ogre::Singleton< ShadowManager >::ms_Singleton = 0;
 ShadowManager* ShadowManager::getSingletonPtr(void)
 {
 	return ms_Singleton;
@@ -52,43 +52,44 @@ ShadowManager::~ShadowManager()
 
 void ShadowManager::loadConfiguration()
 {
-	String s = SETTINGS.getSetting("Shadow technique");
-	if (s == "Stencil shadows")            changeShadowTechnique(SHADOWTYPE_STENCIL_MODULATIVE);
-	if (s == "Texture shadows")            changeShadowTechnique(SHADOWTYPE_TEXTURE_MODULATIVE);
-	if (s == "Parallel-split Shadow Maps") changeShadowTechnique(SHADOWTYPE_TEXTURE_ADDITIVE_INTEGRATED);
+	Ogre::String s = SETTINGS.getSetting("Shadow technique");
+	if (s == "Stencil shadows")            changeShadowTechnique(Ogre::SHADOWTYPE_STENCIL_MODULATIVE);
+	if (s == "Texture shadows")            changeShadowTechnique(Ogre::SHADOWTYPE_TEXTURE_MODULATIVE);
+	if (s == "Parallel-split Shadow Maps") changeShadowTechnique(Ogre::SHADOWTYPE_TEXTURE_ADDITIVE_INTEGRATED);
 }
+
 int ShadowManager::changeShadowTechnique(Ogre::ShadowTechnique tech)
 {
-	float shadowFarDistance = StringConverter::parseInt(SETTINGS.getSetting("Shadow distance"));
+	float shadowFarDistance = Ogre::StringConverter::parseInt(SETTINGS.getSetting("Shadow distance"));
 	float scoef=0.2;
-	mSceneMgr->setShadowColour(ColourValue(0.563+scoef, 0.578+scoef, 0.625+scoef));
+	mSceneMgr->setShadowColour(Ogre::ColourValue(0.563+scoef, 0.578+scoef, 0.625+scoef));
 
 	mSceneMgr->setShadowTechnique(tech);
 	mSceneMgr->setShadowFarDistance(shadowFarDistance);
 	mSceneMgr->setShowDebugShadows(false);
 
-	if(tech == SHADOWTYPE_STENCIL_MODULATIVE)
+	if(tech == Ogre::SHADOWTYPE_STENCIL_MODULATIVE)
 	{
 		//		mSceneMgr->setShadowIndexBufferSize(2000000);
 		mSceneMgr->setShadowDirectionalLightExtrusionDistance(100);
 
 		//important optimization
-		mSceneMgr->getRenderQueue()->getQueueGroup(RENDER_QUEUE_WORLD_GEOMETRY_1)->setShadowsEnabled(false);
+		mSceneMgr->getRenderQueue()->getQueueGroup(Ogre::RENDER_QUEUE_WORLD_GEOMETRY_1)->setShadowsEnabled(false);
 
 		//		mSceneMgr->setUseCullCamera(false);
 		//		mSceneMgr->setShowBoxes(true);
 		//		mSceneMgr->showBoundingBoxes(true);
-	} else if(tech == SHADOWTYPE_TEXTURE_MODULATIVE)
+	} else if(tech == Ogre::SHADOWTYPE_TEXTURE_MODULATIVE)
 	{
 		mSceneMgr->setShadowTextureSettings(2048,2);
-	} else if(tech == SHADOWTYPE_TEXTURE_ADDITIVE_INTEGRATED)
+	} else if(tech == Ogre::SHADOWTYPE_TEXTURE_ADDITIVE_INTEGRATED)
 	{
 #if OGRE_VERSION>0x010602
 
-		TerrainMaterialGeneratorA::SM2Profile *matProfile  = 0;
-		if(TerrainGlobalOptions::getSingletonPtr())
+		Ogre::TerrainMaterialGeneratorA::SM2Profile *matProfile  = 0;
+		if(Ogre::TerrainGlobalOptions::getSingletonPtr())
 		{
-			matProfile = static_cast<TerrainMaterialGeneratorA::SM2Profile*>(TerrainGlobalOptions::getSingleton().getDefaultMaterialGenerator()->getActiveProfile());
+			matProfile = static_cast<Ogre::TerrainMaterialGeneratorA::SM2Profile*>(Ogre::TerrainGlobalOptions::getSingleton().getDefaultMaterialGenerator()->getActiveProfile());
 			matProfile->setReceiveDynamicShadowsEnabled(true);
 			matProfile->setReceiveDynamicShadowsLowLod(false);
 		}
@@ -102,7 +103,7 @@ int ShadowManager::changeShadowTechnique(Ogre::ShadowTechnique tech)
 		if (mPSSMSetup.isNull())
 		{
 			// shadow camera setup
-			PSSMShadowCameraSetup* pssmSetup = new PSSMShadowCameraSetup();
+			Ogre::PSSMShadowCameraSetup* pssmSetup = new Ogre::PSSMShadowCameraSetup();
 			pssmSetup->setSplitPadding(mCamera->getNearClipDistance());
 			pssmSetup->calculateSplitPoints(3, mCamera->getNearClipDistance(), mSceneMgr->getShadowFarDistance());
 			pssmSetup->setOptimalAdjustFactor(0, 2);
@@ -118,9 +119,9 @@ int ShadowManager::changeShadowTechnique(Ogre::ShadowTechnique tech)
 		if (depthShadows)
 		{
 			mSceneMgr->setShadowTextureCount(3);
-			mSceneMgr->setShadowTextureConfig(0, 2048, 2048, PF_FLOAT32_R);
-			mSceneMgr->setShadowTextureConfig(1, 1024, 1024, PF_FLOAT32_R);
-			mSceneMgr->setShadowTextureConfig(2, 1024, 1024, PF_FLOAT32_R);
+			mSceneMgr->setShadowTextureConfig(0, 2048, 2048, Ogre::PF_FLOAT32_R);
+			mSceneMgr->setShadowTextureConfig(1, 1024, 1024, Ogre::PF_FLOAT32_R);
+			mSceneMgr->setShadowTextureConfig(2, 1024, 1024, Ogre::PF_FLOAT32_R);
 			mSceneMgr->setShadowTextureSelfShadow(true);
 			mSceneMgr->setShadowCasterRenderBackFaces(true);
 			mSceneMgr->setShadowTextureCasterMaterial("PSSM/shadow_caster");
@@ -136,18 +137,18 @@ int ShadowManager::changeShadowTechnique(Ogre::ShadowTechnique tech)
 		else
 		{
 			mSceneMgr->setShadowTextureCount(3);
-			mSceneMgr->setShadowTextureConfig(0, 2048, 2048, PF_X8B8G8R8);
-			mSceneMgr->setShadowTextureConfig(1, 1024, 1024, PF_X8B8G8R8);
-			mSceneMgr->setShadowTextureConfig(2, 1024, 1024, PF_X8B8G8R8);
+			mSceneMgr->setShadowTextureConfig(0, 2048, 2048, Ogre::PF_X8B8G8R8);
+			mSceneMgr->setShadowTextureConfig(1, 1024, 1024, Ogre::PF_X8B8G8R8);
+			mSceneMgr->setShadowTextureConfig(2, 1024, 1024, Ogre::PF_X8B8G8R8);
 			mSceneMgr->setShadowTextureSelfShadow(false);
 			mSceneMgr->setShadowCasterRenderBackFaces(false);
-			mSceneMgr->setShadowTextureCasterMaterial(StringUtil::BLANK);
+			mSceneMgr->setShadowTextureCasterMaterial(Ogre::StringUtil::BLANK);
 		}
 
 		if(matProfile)
 		{
 			matProfile->setReceiveDynamicShadowsDepth(depthShadows);
-			matProfile->setReceiveDynamicShadowsPSSM(static_cast<PSSMShadowCameraSetup*>(mPSSMSetup.get()));
+			matProfile->setReceiveDynamicShadowsPSSM(static_cast<Ogre::PSSMShadowCameraSetup*>(mPSSMSetup.get()));
 		}
 
 		/*

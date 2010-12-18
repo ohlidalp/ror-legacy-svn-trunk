@@ -145,19 +145,3 @@ float TSMHeightFinder::getHeightAt(float x, float z)
 	if (h<defaulth) h=defaulth;
 	return h;
 }
-
-void TSMHeightFinder::getNormalAt(float x, float y, float z, Vector3 *result, float precision)
-{
-	Vector3 left, down;
-
-	left.x = -precision;
-	left.y = getHeightAt( x - precision, z ) - y;
-	left.z = 0;
-
-	down.x = 0;
-	down.y = getHeightAt( x, z + precision ) - y;
-	down.z = precision;
-
-	*result = left.crossProduct( down );
-	result -> normalise();
-}

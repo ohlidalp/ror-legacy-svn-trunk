@@ -321,7 +321,8 @@ int Collisions::removeCollisionTri(int number)
 	Vector3 p1 = collision_tris[number].a;
 	Vector3 p2 = collision_tris[number].b;
 	Vector3 p3 = collision_tris[number].c;
-	ground_model_t* gm = collision_tris[number].gm;
+	// TODO: Unused Variable
+	//ground_model_t* gm = collision_tris[number].gm;
 
 	//compute tri AAB
 	AxisAlignedBox aab;
@@ -1336,8 +1337,7 @@ bool Collisions::groundCollision(node_t *node, float dt, ground_model_t** ogm, f
 	{
 
 		//collision!
-		Vector3 normal;
-		hfinder->getNormalAt(node->AbsPosition.x, v, node->AbsPosition.z, &normal);
+		Ogre::Vector3 normal = hfinder->getNormalAt(node->AbsPosition.x, v, node->AbsPosition.z);
 		primitiveCollision(node, node->Forces, node->Velocity, normal, dt, *ogm, nso, v-node->AbsPosition.y);
 		return true;
 	}

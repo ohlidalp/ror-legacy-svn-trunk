@@ -21,7 +21,7 @@ along with Rigs of Rods.  If not, see <http://www.gnu.org/licenses/>.
 #define __Collisions_H__
 
 #include "Ogre.h"
-using namespace Ogre;
+//using namespace Ogre;
 #include "OgreTextAreaOverlayElement.h"
 #if OGRE_PLATFORM == OGRE_PLATFORM_WIN32
 #include <windows.h>
@@ -63,8 +63,8 @@ typedef struct _eventsource
 {
 	char instancename[256];
 	char boxname[256];
-	SceneNode *snode;
-	Quaternion direction;
+	Ogre::SceneNode *snode;
+	Ogre::Quaternion direction;
 	int luahandler;
 	int cbox;
 } eventsource_t;
@@ -80,11 +80,11 @@ class LuaSystem;
 
 typedef struct _collision_tri
 {
-	Vector3 a;
-	Vector3 b;
-	Vector3 c;
-	Matrix3 forward;
-	Matrix3 reverse;
+	Ogre::Vector3 a;
+	Ogre::Vector3 b;
+	Ogre::Vector3 c;
+	Ogre::Matrix3 forward;
+	Ogre::Matrix3 reverse;
 	ground_model_t* gm;
 	bool enabled;
 } collision_tri_t;
@@ -147,7 +147,7 @@ private:
 
 public:
 	bool forcecam;
-	Vector3 forcecampos;
+	Ogre::Vector3 forcecampos;
 	ground_model_t *defaultgm, *defaultgroundgm;
 
 	eventsource_t *getEvent(int eventID) { return &eventsources[eventID]; };
