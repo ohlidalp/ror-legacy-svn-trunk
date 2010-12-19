@@ -20,20 +20,15 @@ along with Rigs of Rods.  If not, see <http://www.gnu.org/licenses/>.
 #ifndef __Engine_H__
 #define __Engine_H__
 
-#include "Ogre.h"
-#if OGRE_PLATFORM == OGRE_PLATFORM_WIN32
-#include <windows.h>
-#endif
 
 class SoundScriptManager;
 class TorqueCurve;
 
 #include <stdio.h>
 #include <stdlib.h>
+#include <vector>
 #include "rormemory.h"
 
-//#include "Ogre.h"
-//using namespace Ogre;
 #define AUTOMATIC 0
 #define SEMIAUTO 1
 #define MANUAL 2
@@ -49,10 +44,8 @@ protected:
 	float shift_time;
 	float post_shift_time;
 
-	float reverseRatio;
 	int numGears;
-	int numGearsRanges;
-	float *gearsRatio;
+	std::vector<float> gearsRatio;
 	float inertia;
 	float clutchForce;
 
@@ -86,8 +79,8 @@ public:
 	float iddleRPM;
 	float maxRPM;
 	float stallRPM;
-	float engineTorque;
 	float brakingTorque;
+	float engineTorque;
 
 	bool hasturbo;
 	bool hasair;
@@ -98,13 +91,17 @@ public:
 	float hydropump;
 	int prime;
 
-	BeamEngine(float iddle, float max, float torque, float rear, int numgears, float *gears, float diff, int trucknum);
+	BeamEngine(float iddle, float max, float torque, std::vector<float> gears, float diff, int trucknum);
 	void setOptions(float einertia, char etype, float eclutch, float ctime, float stime, float pstime);
 	void update(float dt, int doUpdate);
+	void updateAudio(int doUpdate);
 	float getRPM();
 	void setRPM(float value);
+	
 	void toggleAutoMode();
 	int getAutoMode();
+	void setAutoMode(int mode);
+	
 	void setAcc(float val);
 	float getTurboPSI();
 	float getAcc();
@@ -138,11 +135,12 @@ public:
 	void autoShiftDown();
 	int getAutoShift();
 	void setManualClutch(float val);
-	int getNumGears() { return numGears; };
-	int getNumGearsRanges() {return numGearsRanges; }
+	int getNumGears() { return gearsRatio.size() - 2; };
+	int getNumGearsRanges() {return getNumGears()/6+1; }
 	float getMaxRPM() { return maxRPM; };
 	TorqueCurve *getTorqueCurve() { return torqueCurve; };
 	~BeamEngine();
 };
+
 
 #endif

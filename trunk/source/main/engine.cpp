@@ -20,70 +20,73 @@ along with Rigs of Rods.  If not, see <http://www.gnu.org/licenses/>.
 #include "engine.h"
 #include "SoundScriptManager.h"
 #include "TorqueCurve.h"
-#include "Settings.h"
 
 #ifdef USE_ANGELSCRIPT
 #include "ScriptEngine.h"
 #endif
 
-BeamEngine::BeamEngine(float iddle, float max, float torque, float rear, int numgears, float *gears, float diff, int trucknum)
-{
-	int i;
-	this->trucknum=trucknum;
+BeamEngine::BeamEngine(
+float iddle
+, float max
+, float torque
+, std::vector<float> gears
+, float diff
+, int trucknum)
+
+: clutch_time(0.2f)
+, shift_time(0.5f)
+, post_shift_time(0.2f)
+
+, numGears(gears.size() - 2)
+, gearsRatio( gears )
+, inertia(10.0)
+, clutchForce(10000.0f)
+
+, curGear(0)
+
+, curEngineRPM(0.0f)
+, curGearboxRPM(0.0f)
+, curClutch(0.0f)
+, curAcc(0.0f)
+, curClutchTorque(0.0f)
+
+, shifting(0)
+, postshifting(0)
+
+, autocurAcc(0)
+, starter(0)
+, autoselect(DRIVE)
+
+, curTurboRPM(0.0f)
+, apressure(0)
+, automode(AUTOMATIC)
+, trucknum(trucknum)
+
 #ifdef USE_OPENAL
-	ssm=SoundScriptManager::getSingleton();
+,	ssm(SoundScriptManager::getSingleton())
 #endif //OPENAL
-	torqueCurve = new TorqueCurve();
-	automode=AUTOMATIC;
-	iddleRPM=iddle;
-	maxRPM=max;
-	engineTorque=torque;
-	brakingTorque=-engineTorque/5.0f;
-	engineTorque-=brakingTorque;
-	reverseRatio=rear*diff;
-	numGears=numgears;
-	numGearsRanges = numGears/6+1; 
-	gearsRatio = new float[numGears + 1];
-	for (i=1; i<numGears+1; i++) gearsRatio[i]=gears[i]*diff;
-	curGear=0;
-	curEngineRPM=0;
-	curGearboxRPM=0;
-	curTurboRPM=0;
-	curClutch=0;
-	running=0;
-	contact=0;
-	curAcc=0;
-	autocurAcc=0;
-	curClutchTorque=0.0f;
-	inertia=10.0;
-	clutchForce=10000.0f;
-	stallRPM=300.0f;
-	shifting=0;
-	postshifting=0;
-	starter=0;
-	prime=0;
-	hydropump=0.0;
-	apressure=0;
-	autoselect=DRIVE;
-	hasturbo=true;
-	hasair=true;
-	type='t';
+, torqueCurve (new TorqueCurve())
 
-	// are there any startup shifter settings?
-	Ogre::String gearboxMode = SETTINGS.getSetting("GearboxMode");
-	if (gearboxMode == "Manual shift - Auto clutch")
-		automode = SEMIAUTO;
-	else if (gearboxMode == "Fully Manual: sequential shift")
-		automode = MANUAL;
-	else if (gearboxMode == "Fully Manual: stick shift")
-		automode = MANUAL_STICK;
-	else if (gearboxMode == "Fully Manual: stick shift with ranges")
-		automode = MANUAL_RANGES;
 
-	// set previous hardcoded clutch/shift time defaults
-	clutch_time     = 0.2f;
-	shift_time      = 0.5f;
-	post_shift_time = 0.2f;
+, iddleRPM(iddle)
+, maxRPM(max)
+, stallRPM(300.0f)
+, brakingTorque(-torque/5.0f)
+, engineTorque(torque - brakingTorque)
+
+, hasturbo(true)
+, hasair(true)
+, type('t')
+, running(0)
+, contact(0)
+, hydropump(0.0)
+, prime(0)
+{
+	gearsRatio[0] = -gearsRatio[0];
+	for(std::vector< float >::iterator it = gearsRatio.begin(); it != gearsRatio.end(); it++)
+	{
+		(*it) *= diff;
+	}
 }
 
 void BeamEngine::setOptions(float einertia, char etype, float eclutch, float ctime, float stime, float pstime)
@@ -151,7 +154,7 @@ void BeamEngine::update(float dt, int doUpdate)
 	float rpmRatio = curEngineRPM / maxRPM;
 	if (rpmRatio > 1.0f) rpmRatio = 1.0f;
 	if (torqueCurve) tqValue = torqueCurve->getEngineTorque(rpmRatio);
-	if (contact && running && curEngineRPM<(maxRPM*1.25) && curEngineRPM>stallRPM)
+	if (running && contact && curEngineRPM<(maxRPM*1.25) && curEngineRPM>stallRPM)
 		totaltorque += engineTorque * curAcc * tqValue;
 	if (running && curEngineRPM<stallRPM) stop();
 	//starter
@@ -166,21 +169,20 @@ void BeamEngine::update(float dt, int doUpdate)
 	}
 	//clutch
 	float retorque=0.0f;
-	if (curGear<0) 
-		retorque=-curClutchTorque/reverseRatio;
-	else if (curGear>0)
-		retorque=curClutchTorque/gearsRatio[curGear];
-	totaltorque-=retorque;
+	if (curGear)
+		retorque=curClutchTorque/gearsRatio[curGear + 1];
+	
+	totaltorque -= retorque;
+	
 	//integration
-	curEngineRPM+=dt*totaltorque/inertia;
+	curEngineRPM += dt*totaltorque/inertia;
 
 	//update clutch torque
 	float gearboxspinner=0.0f;
-	if (curGear<0) 
-		gearboxspinner=-curEngineRPM/reverseRatio;
-	else if (curGear>0)
-		gearboxspinner=curEngineRPM/gearsRatio[curGear];
-	if (curGear!=0) curClutchTorque=(gearboxspinner-curGearboxRPM)*curClutch*clutchForce;
+	if (curGear){
+		gearboxspinner = curEngineRPM/gearsRatio[curGear + 1];
+		curClutchTorque = (gearboxspinner-curGearboxRPM)*curClutch*clutchForce;
+	}	
 	else curClutchTorque=0.0f;
 
 	if (curEngineRPM<0.0f) curEngineRPM=0.0f;
@@ -190,23 +192,31 @@ void BeamEngine::update(float dt, int doUpdate)
 		//autoshift
 		if (shifting)
 		{
-			shiftclock+=dt;
+			shiftclock += dt;
+			
 			//clutch
-			if (shiftclock<clutch_time) curClutch=1.0f-(shiftclock/clutch_time);
-			else if (shiftclock>(shift_time-clutch_time)) curClutch=1.0f-(shift_time-shiftclock)/clutch_time;
-			else curClutch=0.0f;
+			if (shiftclock < clutch_time)
+				curClutch = 1.0f - (shiftclock/clutch_time);
+			else if (shiftclock > (shift_time - clutch_time))
+				curClutch = 1.0f - (shift_time - shiftclock)/clutch_time;
+			else curClutch = 0.0f;
+			
 			//shift
 			if (shiftval && shiftclock>clutch_time/2)
 			{
 #ifdef USE_OPENAL
 				if(ssm) ssm->trigStart(trucknum, SS_TRIG_SHIFT);
 #endif //OPENAL
-				curGear+=shiftval;
-				if (automode==AUTOMATIC) while (curGear>2 && curGearboxRPM*gearsRatio[curGear]<iddleRPM) curGear-=2;
-				if (curGear<-1) curGear=-1;
-				if (curGear>numGears) curGear=numGears;
-				shiftval=0;
+				curGear += shiftval;
+				if (automode == AUTOMATIC)
+					while (curGear > 2 && curGearboxRPM * gearsRatio[curGear + 1] < iddleRPM)
+						curGear -= 2;
+				
+				if (curGear < -1) curGear = -1;
+				if (curGear > numGears) curGear = numGears;
+				shiftval = 0;
 			};
+			
 			//end of shifting
 			if (shiftclock>shift_time)
 			{
@@ -220,6 +230,7 @@ void BeamEngine::update(float dt, int doUpdate)
 				postshiftclock=0.0;
 			}
 		}
+		
 		if (postshifting)
 		{
 			postshiftclock+=dt;
@@ -234,47 +245,64 @@ void BeamEngine::update(float dt, int doUpdate)
 		} else if (postshifting)
 		{
 			//we are postshifting, no gear change
-			if (curEngineRPM<stallRPM*1.2 && curAcc<0.5) curClutch=0; else curClutch=1.0;
-		} else
+			if (curEngineRPM<stallRPM*1.2 && curAcc<0.5) curClutch=0;
+			else curClutch=1.0;
+		} else if (curEngineRPM<stallRPM*1.2 && curAcc<0.5)
 		{
-			//we are normal
-			if (curEngineRPM<stallRPM*1.2 && curAcc<0.5) {curClutch=0; /*curGear=0;*/} else
+			curClutch=0; /*curGear=0;*/
+		} else if (curGear==1 || curGear==-1)
+		{
+			//1st gear : special
+			if (curEngineRPM>iddleRPM)
 			{
-				//if (curGear==0 && curEngineRPM>iddleRPM && curAcc>0.5) curGear=1;
-				if (curGear==1 || curGear==-1)
-				{
-					//1st gear : special
-					if (curEngineRPM>iddleRPM) {curClutch=((curEngineRPM-iddleRPM)/(maxRPM-iddleRPM));if (curClutch>1.0) curClutch=1.0;}
-					else curClutch=0.0;
-				}
-				else curClutch=1.0;
+				curClutch = ((curEngineRPM - iddleRPM)/(maxRPM - iddleRPM));
+				if (curClutch>1.0) curClutch=1.0;
 			}
+			else curClutch=0.0;
 		}
+		else curClutch=1.0;
 	}
-	//audio stuff
+
+	//audio stuff	
+	updateAudio(doUpdate);
+}
+
+void BeamEngine::updateAudio(int doUpdate)
+{
 #ifdef USE_OPENAL
-	if (hasturbo && ssm) ssm->modulate(trucknum, SS_MOD_TURBO, curTurboRPM);
+	
+	// check if we have audio now instead of multiple places
+	if( !ssm ) return;
+	
+	if (hasturbo) ssm->modulate(trucknum, SS_MOD_TURBO, curTurboRPM);
 	if (doUpdate)
 	{
-		if(ssm) ssm->modulate(trucknum, SS_MOD_ENGINE, curEngineRPM);
-		if(ssm) ssm->modulate(trucknum, SS_MOD_TORQUE, curClutchTorque);
-		if(ssm) ssm->modulate(trucknum, SS_MOD_GEARBOX, curGearboxRPM);
+		ssm->modulate(trucknum, SS_MOD_ENGINE, curEngineRPM);
+		ssm->modulate(trucknum, SS_MOD_TORQUE, curClutchTorque);
+		ssm->modulate(trucknum, SS_MOD_GEARBOX, curGearboxRPM);
 		//gear hack
 		if (curGear<0 || automode!=AUTOMATIC) return;
-		if (!shifting && !postshifting && curEngineRPM>maxRPM-100.0 && curGear<numGears && autoselect==DRIVE) shift(1);
-		if (!shifting && !postshifting && curEngineRPM<iddleRPM && curGear>1 && autoselect==DRIVE) shift(-1);
+		
+		if (!shifting && !postshifting && autoselect == DRIVE)
+		{
+			if(curEngineRPM > maxRPM-100.0 && curGear < numGears ) shift(1);
+			else if(curEngineRPM < iddleRPM && curGear > 1 ) shift(-1);
+		}
+		
 	}
 	// reverse gear beep
-	if (curGear==-1 && running && ssm) 
+	if (curGear==-1 && running) 
 	{
 		ssm->trigStart(trucknum, SS_TRIG_REVERSE_GEAR);
 	}
-	else if(ssm)
+	else
 	{
 		ssm->trigStop(trucknum, SS_TRIG_REVERSE_GEAR);
 	}
 #endif //OPENAL
+	
 }
+
 
 float BeamEngine::getRPM()
 {
@@ -305,6 +333,11 @@ void BeamEngine::toggleAutoMode()
 int BeamEngine::getAutoMode()
 {
 	return automode;
+}
+
+void BeamEngine::setAutoMode(int mode)
+{
+	automode = mode;
 }
 
 void BeamEngine::setAcc(float val)
@@ -588,6 +621,6 @@ void BeamEngine::setManualClutch(float val)
 BeamEngine::~BeamEngine()
 {
 	// delete NULL is safe
-	delete gearsRatio; gearsRatio = NULL;
+	//delete gearsRatio; gearsRatio = NULL;
 	delete torqueCurve; torqueCurve = NULL;
 }
