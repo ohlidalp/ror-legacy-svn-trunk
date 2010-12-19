@@ -2620,6 +2620,14 @@ Cache_Entry CacheSystem::getResourceInfo(Ogre::String &filename)
 
 bool CacheSystem::checkResourceLoaded(Ogre::String &filename, Ogre::String &group)
 {
+	// check if we already loaded it via ogre ...
+	bool exists = ResourceGroupManager::getSingleton().resourceExistsInAnyGroup(filename);
+	if(exists)
+	{
+		group = ResourceGroupManager::getSingleton().findGroupContainingResource(filename);
+		return true;
+	}
+
 	std::vector<Cache_Entry>::iterator it;
 	//int counter=0;
 	for(it = entries.begin(); it != entries.end(); it++)
