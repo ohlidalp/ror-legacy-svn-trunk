@@ -104,26 +104,28 @@ Collisions::Collisions(
 #ifdef USE_LUA
   LuaSystem *mlua,
 #endif
-  RoRFrameListener *efl, bool _debugMode) : mefl(efl), ground_models()
-{
-	landuse=0;
-	debugMode=_debugMode;
-	debugModeEvents = SETTINGS.getSetting("Debug Event Boxes") == "Yes";
-	last_used_ground_model=0;
+  RoRFrameListener *efl, bool _debugMode)
+: free_collision_box(0)
+, free_collision_tri(0)
+, free_cell(0)
+, free_eventsource(0)
 #ifdef USE_LUA
-	lua=mlua;
+, lua(mlua)
 #endif
-	free_collision_box=0;
-	free_collision_tri=0;
-	free_eventsource=0;
-	free_cell=0;
-	forcecam=false;
-	hashmask=0;
-	hfinder=0;
-	collision_count=0;
-	largest_cellcount=0;
+, mefl(efl)
+, hashmask(0)
+, hfinder(0)
+, collision_count(0)
+, largest_cellcount(0)
+, debugMode(_debugMode)
+, debugModeEvents ( SETTINGS.getSetting("Debug Event Boxes") == "Yes")
+, landuse(0)
+, forcecam(false)
+, last_used_ground_model(0)
+{
 	for (int i=0; i<HASH_SIZE; i++) {hashmask=hashmask<<1; hashmask++;};
 	for (int i=0; i<(1<<HASH_SIZE); i++) hashtable[i].cellid=UNUSED_CELLID;
+	
 	loadDefaultModels();
 	defaultgm = getGroundModelByString("concrete");
 	defaultgroundgm = getGroundModelByString("gravel");
@@ -360,12 +362,12 @@ void Collisions::hash_free(int cell_x, int cell_z, int value)
 	{
 		cell_t *cell = hashtable[pos].cell;
 		// cell has content, search it
-		for(int i=0;i<cell->free;i++)
+		for(int i=0;i<cell->size();i++)
 		{
-			if(cell->element[i] == value)
+			if((*cell)[i] == value)
 			{
 				// remove that element
-				cell->element[i] = UNUSED_CELLID;
+				cell->erase(cell->begin() + i);
 				break;
 			}
 		}
@@ -391,85 +393,22 @@ void Collisions::hash_add(int cell_x, int cell_z, int value)
 
 	if (hashtable[pos].cellid==UNUSED_CELLID)
 	{
-		if (free_cell<MAX_CELLS)
-		{
-			//create a new cell
-			hashtable[pos].cellid=cellid;
-			hashtable[pos].cell=&cells[free_cell];
-			cells[free_cell].free=1;
-			cells[free_cell].element[0]=value;
-			cells[free_cell].next=0;
-			if (pos!=hashfunc(cellid)) collision_count++;
-			if (cells[free_cell].free>largest_cellcount) largest_cellcount=cells[free_cell].free;
-			free_cell++;
-		}
-		else
-		{
-			if(debugMode)
-				Ogre::LogManager::getSingleton().logMessage("COLL: not enough cells available");
-		}
+		//create a new cell
+		cell_t* newcell = new cell_t;
+		
+		hashtable[pos].cellid=cellid;
+		hashtable[pos].cell=newcell;
+		newcell->push_back(value);
+		cells.push_back(newcell);
+		if (pos!=hashfunc(cellid)) collision_count++;
+		if (newcell->size()>largest_cellcount) largest_cellcount=newcell->size();
 	}
 	else if (hashtable[pos].cellid==cellid)
 	{
 		//there is already a cell ready
 		cell_t *cell=hashtable[pos].cell;
-
-		// check for re-usable cellelements
-		bool found=false;
-hash_add_next_cell:
-		for(int i=0;i<CELL_BLOCKSIZE;i++)
-		{
-			if(cell->element[i] == (int)UNUSED_CELLELEMENT)
-			{
-				// found free cellelement, using it!
-				cell->element[i]=value;
-				found=true;
-				if(debugMode)
-					Ogre::LogManager::getSingleton().logMessage("COLL: reused cell element!");
-				break;
-			}
-		}
-		if(!found && cell->next)
-		{
-			// ugly recursive cell search
-			cell = (cell_t*) cell->next;
-			goto hash_add_next_cell;
-		}
-		if(!found)
-		{
-			// no reusable cellelement found, creating new one
-			if (cell->free<CELL_BLOCKSIZE)
-			{
-				cell->element[cell->free]=value;
-				cell->free++;
-				//Ogre::LogManager::getSingleton().logMessage("COLL: created new cell element!");
-				if (cell->free>largest_cellcount) largest_cellcount=cell->free;
-			}
-			else if (cell->free >= CELL_BLOCKSIZE && !cell->next)
-			{
-				// create new linked cell
-
-				// find empty cell
-				int pos2=pos;
-				while (pos2!=(int)stop && hashtable[pos2].cellid!=(unsigned int)UNUSED_CELLID)
-					pos2++;
-
-				// allocate that cell and link it to the current cell
-				if (hashtable[pos2].cellid==UNUSED_CELLID)
-				{
-					//create a new cell
-					hashtable[pos2].cellid=cellid;
-					hashtable[pos2].cell=&cells[free_cell];
-					cells[free_cell].free=1;
-					cells[free_cell].element[0]=value;
-					cells[free_cell].next=0;
-					if (pos!=hashfunc(cellid)) collision_count++;
-					if (cells[free_cell].free>largest_cellcount) largest_cellcount=cells[free_cell].free;
-					free_cell++;
-					cell->next = hashtable[pos2].cell;
-				}
-			}
-		}
+		cell->push_back(value);
+		if (cell->size()>largest_cellcount) largest_cellcount=cell->size();
 	}
 	else
 	{
@@ -755,9 +694,9 @@ void Collisions::printStats()
 {
 	LogManager::getSingleton().logMessage("COLL: Collision system statistics:");
 	LogManager::getSingleton().logMessage("COLL: Cell size: "+StringConverter::toString((float)CELL_SIZE)+" m");
-	LogManager::getSingleton().logMessage("COLL: Hashtable occupation: "+StringConverter::toString(free_cell)+"/"+StringConverter::toString(MAX_CELLS)+" ("+StringConverter::toString(100.0f*free_cell/(MAX_CELLS))+"%)");
+	LogManager::getSingleton().logMessage("COLL: Hashtable occupation: "+StringConverter::toString(cells.size()));
 	LogManager::getSingleton().logMessage("COLL: Hashtable collisions: "+StringConverter::toString(collision_count));
-	LogManager::getSingleton().logMessage("COLL: Largest cell: "+StringConverter::toString(largest_cellcount)+"/"+StringConverter::toString(CELL_BLOCKSIZE)+" ("+StringConverter::toString(100.0f*largest_cellcount/CELL_BLOCKSIZE)+"%)");
+	LogManager::getSingleton().logMessage("COLL: Largest cell: "+StringConverter::toString(largest_cellcount));
 
 }
 
@@ -781,12 +720,11 @@ bool Collisions::collisionCorrect(Vector3 *refpos)
 
 	if (cell)
 	{
-coll_corr_resume_cell:
-		for (k=0; k<cell->free; k++)
+		for (k=0; k<cell->size(); k++)
 		{
-			if (cell->element[k] != (int)UNUSED_CELLELEMENT && cell->element[k]<MAX_COLLISION_BOXES)
+			if ((*cell)[k] != (int)UNUSED_CELLELEMENT && (*cell)[k]<MAX_COLLISION_BOXES)
 			{
-				collision_box_t *cbox=&collision_boxes[cell->element[k]];
+				collision_box_t *cbox=&collision_boxes[(*cell)[k]];
 				if (refpos->x>cbox->lo_x && refpos->x<cbox->hi_x && refpos->y>cbox->lo_y && refpos->y<cbox->hi_y && refpos->z>cbox->lo_z && refpos->z<cbox->hi_z)
 				{
 					if (cbox->refined || cbox->selfrotated)
@@ -916,7 +854,7 @@ coll_corr_resume_cell:
 			}
 			else
 			{
-				collision_tri_t *ctri=&collision_tris[cell->element[k]-MAX_COLLISION_BOXES];
+				collision_tri_t *ctri=&collision_tris[(*cell)[k]-MAX_COLLISION_BOXES];
 				if(!ctri->enabled)
 					continue;
 				//check if this tri is minimal
@@ -933,12 +871,6 @@ coll_corr_resume_cell:
 					}
 				}
 			}
-		}
-		if(cell->next)
-		{
-			// continue with next cell
-			cell=(cell_t*)cell->next;
-			goto coll_corr_resume_cell;
 		}
 	}
 	//process minctri collision
@@ -996,12 +928,11 @@ bool Collisions::nodeCollision(node_t *node, bool iscinecam, int contacted, floa
 
 	if (cell)
 	{
-node_coll_resume_cell:
-		for (k=0; k<cell->free; k++)
+		for (k=0; k<cell->size(); k++)
 		{
-			if (cell->element[k] != (int)UNUSED_CELLELEMENT && cell->element[k]<MAX_COLLISION_BOXES)
+			if ((*cell)[k] != (int)UNUSED_CELLELEMENT && (*cell)[k]<MAX_COLLISION_BOXES)
 			{
-				collision_box_t *cbox=&collision_boxes[cell->element[k]];
+				collision_box_t *cbox=&collision_boxes[(*cell)[k]];
 				if (node->AbsPosition.x>cbox->lo_x && node->AbsPosition.x<cbox->hi_x && node->AbsPosition.y>cbox->lo_y && node->AbsPosition.y<cbox->hi_y && node->AbsPosition.z>cbox->lo_z && node->AbsPosition.z<cbox->hi_z)
 				{
 					if (cbox->refined || cbox->selfrotated)
@@ -1156,7 +1087,7 @@ node_coll_resume_cell:
 			else
 			{
 				//tri collision
-				collision_tri_t *ctri=&collision_tris[cell->element[k]-MAX_COLLISION_BOXES];
+				collision_tri_t *ctri=&collision_tris[(*cell)[k]-MAX_COLLISION_BOXES];
 				//check if this tri is minimal
 				//transform
 				Vector3 point=ctri->forward*(node->AbsPosition-ctri->a);
@@ -1171,12 +1102,6 @@ node_coll_resume_cell:
 					}
 				}
 			}
-		}
-		if(cell->next)
-		{
-			// continue with next cell
-			cell=(cell_t*)cell->next;
-			goto node_coll_resume_cell;
 		}
 	}
 	//process minctri collision
@@ -1525,10 +1450,7 @@ int Collisions::createCollisionDebugVisualization()
 				groundheight+=0.1; // 10 cm hover
 				// ground height should fit
 
-				int deep = 0, cc=cell->free;
-				if(cell->next) { deep++; cc+=((cell_t*)cell->next)->free; };
-				if(cell->next && ((cell_t*)cell->next)->next) { deep++; cc+=((cell_t*)((cell_t*)cell->next)->next)->free; };
-				if(cell->next && ((cell_t*)cell->next)->next && ((cell_t*)((cell_t*)cell->next)->next)->next) { deep++; cc+=((cell_t*)((cell_t*)((cell_t*)cell->next)->next)->next)->free; };
+				int deep = 0, cc=cell->size();
 				float percent = cc / (float)CELL_BLOCKSIZE;
 
 				float percentd = percent;

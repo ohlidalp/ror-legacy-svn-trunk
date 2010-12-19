@@ -21,6 +21,7 @@ along with Rigs of Rods.  If not, see <http://www.gnu.org/licenses/>.
 #define __Collisions_H__
 
 #include "Ogre.h"
+#include <vector>
 //using namespace Ogre;
 #include "OgreTextAreaOverlayElement.h"
 #if OGRE_PLATFORM == OGRE_PLATFORM_WIN32
@@ -39,8 +40,8 @@ along with Rigs of Rods.  If not, see <http://www.gnu.org/licenses/>.
 #define UNUSED_CELLID 0xFFFFFFFF
 #define UNUSED_CELLELEMENT 0xFFFFFFFF
 //terrain size is limited to 327km x 327km:
-#define CELL_SIZE 10.0
-#define inverse_CELL_SIZE 0.1
+#define CELL_SIZE 2.0
+#define inverse_CELL_SIZE 0.5
 #define MAXIMUM_CELL 0x7FFF
 
 #define MAX_EVENTSOURCE 500
@@ -89,12 +90,11 @@ typedef struct _collision_tri
 	bool enabled;
 } collision_tri_t;
 
-typedef struct _cell
-{
-	int free;
-	int element[CELL_BLOCKSIZE];
-	void *next;
-} cell_t;
+//typedef struct _cell
+//{
+//	std::vector<int> element;//[CELL_BLOCKSIZE]; //value is stored in here...
+//} cell_t;
+typedef std::vector<int> cell_t;
 
 typedef struct _hash
 {
@@ -116,7 +116,7 @@ private:
 	//collision hashtable
 	hash_t hashtable[1<<HASH_SIZE];
 	//cell pool
-	cell_t cells[MAX_CELLS];
+	std::vector<cell_t*> cells;//[MAX_CELLS];
 	int free_cell;
 
 	eventsource_t eventsources[MAX_EVENTSOURCE];
@@ -137,6 +137,7 @@ private:
 	Landusemap *landuse;
 
 private:
+	/// What is value for?? seams to be the array location where the items are stored
 	void hash_add(int cell_x, int cell_z, int value);
 	void hash_free(int cell_x, int cell_z, int value);
 	cell_t *hash_find(int cell_x, int cell_z);
