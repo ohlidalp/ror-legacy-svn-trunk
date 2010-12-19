@@ -757,8 +757,8 @@ void Beam::calcForcesEuler(int doUpdate, Real dt, int step, int maxstep, Beam** 
 				int contacted = collisions->groundCollision(&nodes[i], nodes[i].colltesttimer, &gm, &ns);
 
 				int handlernum = -1;
-				//TODO is this supposed to be a binary operator, or a logical operator?
-				if ( contacted ||
+				//Tlooks like this needs to remain a binary operator otherwise the terrain material appears to be wrong
+				if ( contacted |
 					collisions->nodeCollision(&nodes[i], i==cinecameranodepos[currentcamera], contacted, nodes[i].colltesttimer, &ns, &gm, &handlernum))
 				{
 					//FX
