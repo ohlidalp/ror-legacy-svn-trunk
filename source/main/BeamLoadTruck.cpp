@@ -1481,29 +1481,53 @@ int Beam::loadTruck(const char* fname, SceneManager *manager, SceneNode *parent,
 		else if (mode==9)
 		{
 			//parse engine
-			float minrpm, maxrpm, torque, dratio, rear;
-			float gears[16];
-			int numgears;
 			if(driveable == MACHINE)
 				continue;
 
 			driveable=TRUCK;
-			int result = sscanf(line,"%f, %f, %f, %f, %f, %f, %f, %f, %f, %f, %f, %f, %f, %f, %f, %f, %f, %f, %f, %f, %f", &minrpm, &maxrpm, &torque, &dratio, &rear, &gears[0],&gears[1],&gears[2],&gears[3],&gears[4],&gears[5],&gears[6],&gears[7],&gears[8],&gears[9],&gears[10],&gears[11],&gears[12],&gears[13],&gears[14],&gears[15]);
-			if (result < 7 || result == EOF) {
+			Ogre::vector<Ogre::String>::type tmp = Ogre::StringUtil::split(line, ", ");
+			if (tmp.size() < 7) {
 				LogManager::getSingleton().logMessage("Error parsing File (Engine) " + String(fname) +" line " + StringConverter::toString(linecounter) + ". trying to continue ...");
 				continue;
 			}
-			for (numgears=0; numgears<16; numgears++)
-				if (gears[numgears]<=0)
-					break;
-			if (numgears < 3)
+
+			float minrpm = Ogre::StringConverter::parseReal(tmp[0]);
+			tmp.erase(tmp.begin());
+			float maxrpm = Ogre::StringConverter::parseReal(tmp[0]);
+			tmp.erase(tmp.begin());
+			float torque = Ogre::StringConverter::parseReal(tmp[0]);
+			tmp.erase(tmp.begin());
+			float dratio = Ogre::StringConverter::parseReal(tmp[0]);
+			tmp.erase(tmp.begin());
+
+			std::vector<float> gears;
+
+			for(Ogre::vector< Ogre::String >::type::iterator it = tmp.begin(); it != tmp.end(); it++)
+			{
+				float tmpf = Ogre::StringConverter::parseReal((*it), -1.0);
+				if( tmpf <= 0.0f ) break;
+				gears.push_back(tmpf);
+			}
+			if (gears.size() < 5) // 5 -2 = 3, 2 extra gears that don't count, one for reverse and one for neutral
 			{
 				LogManager::getSingleton().logMessage("Trucks with less than 3 gears are not supported! " + String(fname) +" line " + StringConverter::toString(linecounter) + ". trying to continue ...");
 				continue;
 			}
 			//if (audio) audio->setupEngine();
 
-			engine = new BeamEngine(minrpm, maxrpm, torque, rear, numgears - 1, gears, dratio, trucknum);
+			engine = new BeamEngine(minrpm, maxrpm, torque, gears, dratio, trucknum);
+
+			// are there any startup shifter settings?
+			Ogre::String gearboxMode = SETTINGS.getSetting("GearboxMode");
+			if (gearboxMode == "Manual shift - Auto clutch")
+				engine->setAutoMode(SEMIAUTO);
+			else if (gearboxMode == "Fully Manual: sequential shift")
+				engine->setAutoMode(MANUAL);
+			else if (gearboxMode == "Fully Manual: stick shift")
+				engine->setAutoMode(MANUAL_STICK);
+			else if (gearboxMode == "Fully Manual: stick shift with ranges")
+				engine->setAutoMode(MANUAL_RANGES);
+			
 			//engine->start();
 		}
 
