@@ -26,6 +26,7 @@ along with Rigs of Rods.  If not, see <http://www.gnu.org/licenses/>.
 
 #include "OgreTerrain.h"
 #include "OgreTerrainGroup.h"
+#include "DotSceneLoader.h"
 
 //using namespace Ogre;
 /**
@@ -68,6 +69,28 @@ public:
 		return mTerrainGroup->getHeightAtWorldPosition(x, 1000, z);
 	}
 };
+
+// new terrain height finder adapted to Ogitor scene loading
+class OgitorSceneHeightFinder : public HeightFinder, public MemoryAllocatedObject
+{
+protected:
+	DotSceneLoader *mLoader;
+public:
+	OgitorSceneHeightFinder(DotSceneLoader *loader) : mLoader(loader)
+	{
+	}
+	
+	~OgitorSceneHeightFinder()
+	{
+	}
+
+	float getHeightAt(float x, float z)
+	{
+		return mLoader->getTerrainGroup()->getHeightAtWorldPosition(x, 1000, z);
+	}
+};
+
+
 
 // Scene-Manager Specific implementations
 

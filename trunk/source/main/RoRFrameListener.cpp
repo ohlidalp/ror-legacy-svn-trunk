@@ -47,6 +47,7 @@ along with Rigs of Rods.  If not, see <http://www.gnu.org/licenses/>.
 #include "OverlayWrapper.h"
 #include "ShadowManager.h"
 #include "TruckHUD.h"
+#include "DotSceneLoader.h"
 
 #ifdef USE_MPLATFORM
 #include "mplatform_fd.h"
@@ -1247,20 +1248,17 @@ RoRFrameListener::RoRFrameListener(RenderWindow* win, Camera* cam, SceneManager*
 	// now continue to load everything...
 	if(preselected_map != "")
 	{
-		char mapname_cstr[1024];
-		sprintf(mapname_cstr, "%s.terrn", preselected_map.c_str());
-		String mapname = String(mapname_cstr);
-		if(!CACHE.checkResourceLoaded(mapname))
+		if(!CACHE.checkResourceLoaded(preselected_map))
 		{
-			LogManager::getSingleton().logMessage("Terrain not found: " + mapname);
-			showError(_L("Terrain loading error"), _L("Terrain not found: ") + mapname);
+			LogManager::getSingleton().logMessage("Terrain not found: " + preselected_map);
+			showError(_L("Terrain loading error"), _L("Terrain not found: ") + preselected_map);
 			exit(123);
 		}
 
 		// set the terrain cache entry
-		loaded_terrain = CACHE.getResourceInfo(mapname);
+		loaded_terrain = CACHE.getResourceInfo(preselected_map);
 
-		loadTerrain(mapname);
+		loadTerrain(preselected_map);
 		//miniature map stuff
 		//char ppname[1024];
 		//sprintf(ppname, "%s-mini.png", preselected_map);
@@ -1311,7 +1309,7 @@ RoRFrameListener::RoRFrameListener(RenderWindow* win, Camera* cam, SceneManager*
 #endif // MYGUI
 			} else {
 				// init no trucks, as there were found some
-				initTrucks(false, mapname);
+				initTrucks(false, preselected_map);
 			}
 		}
 	} else
@@ -4577,23 +4575,9 @@ void RoRFrameListener::processConsoleInput()
 	//NETCHAT.noScroll();
 }
 
-void RoRFrameListener::loadTerrain(String terrainfile)
+void RoRFrameListener::initializeCompontents()
 {
-	ScopeLog log("terrain_"+terrainfile);
-
-	// check if the resource is loaded
-	if(!CACHE.checkResourceLoaded(terrainfile))
-	{
-		LogManager::getSingleton().logMessage("Terrain not found: " + terrainfile);
-		showError(_L("Terrain loading error"), _L("Terrain not found: ") + terrainfile);
-		exit(123);
-	}
-
-	loadedTerrain = terrainfile;
-#ifdef USE_XFIRE
-	updateXFire();
-#endif
-
+	// load map
 #ifdef USE_MYGUI
 	LoadingWindow::get()->setProgress(0, _L("Loading Terrain"));
 	bool disableMap = (SETTINGS.getSetting("disableOverViewMap") == "Yes");
@@ -4615,6 +4599,7 @@ void RoRFrameListener::loadTerrain(String terrainfile)
 	}
 #endif // MYGUI
 
+	// load lua and collisions
 #ifdef USE_LUA
 	//setup lua
 	LogManager::getSingleton().logMessage("Loading LUA Script engine." );
@@ -4623,18 +4608,18 @@ void RoRFrameListener::loadTerrain(String terrainfile)
 	collisions=new Collisions(lua, this, debugCollisions);
 
 	if(!netmode && lua)
-		lua->loadTerrain(terrainfile);
+		lua->loadTerrain(loadedTerrain);
 #else
 	collisions=new Collisions(this, debugCollisions);
 #endif
-
+	// load AS
 #ifdef USE_ANGELSCRIPT
 	ScriptEngine::getSingleton().setCollisions(collisions);
 	if(!netmode)
 	{
 		LogManager::getSingleton().logMessage("Loading Angelscript Script engine." );
-		if(ResourceGroupManager::getSingleton().resourceExistsInAnyGroup(terrainfile+".as"))
-			ScriptEngine::getSingleton().loadTerrainScript(terrainfile+".as");
+		if(ResourceGroupManager::getSingleton().resourceExistsInAnyGroup(loadedTerrain+".as"))
+			ScriptEngine::getSingleton().loadTerrainScript(loadedTerrain+".as");
 	}
 #endif
 
@@ -4650,7 +4635,80 @@ void RoRFrameListener::loadTerrain(String terrainfile)
 	mCollisionTools = new MOC::CollisionTools(mSceneMgr);
 	// set how far we want the camera to be above ground
 	mCollisionTools->setHeightAdjust(0.2f);
-	//we load terrain
+
+#ifdef USE_XFIRE
+	updateXFire();
+#endif
+
+}
+
+void RoRFrameListener::loadOgitorTerrain(String terrainfile)
+{
+	// find the group the terrain is in
+	Ogre::String group = "";
+	CACHE.checkResourceLoaded(terrainfile, group);
+
+	// start up the dotsceneloader
+    mLoader = new DotSceneLoader();
+    mLoader->parseDotScene(terrainfile, group, mSceneMgr);
+
+	// next, setup the heightfinder
+	{
+		hfinder = new OgitorSceneHeightFinder(mLoader);
+		collisions->setHfinder(hfinder);
+		if(person) person->setHFinder(hfinder);
+		// update hfinder instance in factory
+		BeamFactory::getSingleton().mfinder = hfinder;
+	}
+
+
+
+}
+
+void RoRFrameListener::loadTerrain(String terrainfile)
+{
+	ScopeLog log("terrain_"+terrainfile);
+
+	// check if the resource is loaded
+	if(!CACHE.checkResourceLoaded(terrainfile))
+	{
+		LogManager::getSingleton().logMessage("Terrain not found: " + terrainfile);
+		showError(_L("Terrain loading error"), _L("Terrain not found: ") + terrainfile);
+		exit(123);
+	}
+
+	loadedTerrain = terrainfile;
+
+	initializeCompontents();
+
+	if(terrainfile.find(".scene") != String::npos)
+	{
+		LogManager::getSingleton().logMessage("Loading Ogitor scene format: " + terrainfile);
+		loadOgitorTerrain(terrainfile);
+
+		LoadingWindow::get()->hide();
+		return;
+	}
+
+	if(terrainfile.find(".terrn") != String::npos)
+	{
+		LogManager::getSingleton().logMessage("Loading classic terrain format: " + terrainfile);
+		loadClassicTerrain(terrainfile);
+		
+		LoadingWindow::get()->hide();
+		return;
+	}
+
+	// exit on unkown terrain handler
+	LogManager::getSingleton().logMessage("Terrain not supported, unknown format: " + terrainfile);
+	showError(_L("Terrain loading error"), _L("Terrain not supported, unknown format: ") + terrainfile);
+	exit(123);
+
+}
+
+void RoRFrameListener::loadClassicTerrain(String terrainfile)
+{	
+	//we load a classic terrain
 	//FILE *fd;
 	char geom[1024];
 	char sandstormcubemap[255]="";
@@ -4876,7 +4934,7 @@ void RoRFrameListener::loadTerrain(String terrainfile)
 		if (tmpSize != String(""))
 			mapsizez = atof(tmpSize.c_str());
 #ifdef USE_MYGUI
-		if(!disableMap && bigMap)
+		if(bigMap)
 			bigMap->setWorldSize(mapsizex, mapsizez);
 #endif //MYGUI
 

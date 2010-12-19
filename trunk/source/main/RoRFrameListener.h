@@ -71,6 +71,7 @@ class Editor;
 class Water;
 class HeatHaze;
 class Dashboard;
+class DotSceneLoader;
 #ifdef HAS_EDITOR
 class TruckEditor;
 #endif
@@ -195,6 +196,7 @@ class RoRFrameListener: public FrameListener, public Ogre::WindowEventListener
 {
 	friend class BeamFactory;
 protected:
+	void initializeCompontents();
 	OverlayWrapper *ow;
 	int setupBenchmark();
 	void benchStep(float dt);
@@ -389,6 +391,8 @@ public:
 	void shutdown_final();
 
 	void loadTerrain(Ogre::String terrainfile);
+	void loadClassicTerrain(Ogre::String terrainfile);
+	void loadOgitorTerrain(Ogre::String terrainfile);
 
 	OverlayWrapper *getOverlayWrapper() { return ow; };
 
@@ -413,6 +417,8 @@ protected:
 	double rtime;
 	float terrainxsize;
 	float terrainzsize;
+
+	DotSceneLoader* mLoader;
 
 
 

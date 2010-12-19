@@ -522,9 +522,18 @@ void RigsOfRods::exploreTerrains()
 		//trying to get the full path
 		String fullpath=(*iterFiles).archive->getName()+dirsep;
 		rgm.addResourceLocation(fullpath+(*iterFiles).filename, "FileSystem", "TerrainFolders");
-		//add textures/temp for unpacked ddx support
 		rgm.addResourceLocation(fullpath+(*iterFiles).filename+dirsep+"textures"+dirsep+"temp", "FileSystem", "TerrainFolders");
-		//add objects
 		rgm.addResourceLocation(fullpath+(*iterFiles).filename+dirsep+"objects", "FileSystem", "TerrainFolders");
+		// ogitor support below
+		rgm.addResourceLocation(fullpath+(*iterFiles).filename+dirsep+"Caelum", "FileSystem", "TerrainFolders");
+		rgm.addResourceLocation(fullpath+(*iterFiles).filename+dirsep+"Hydrax", "FileSystem", "TerrainFolders");
+		rgm.addResourceLocation(fullpath+(*iterFiles).filename+dirsep+"Materials", "FileSystem", "TerrainFolders");
+		rgm.addResourceLocation(fullpath+(*iterFiles).filename+dirsep+"Models", "FileSystem", "TerrainFolders");
+		rgm.addResourceLocation(fullpath+(*iterFiles).filename+dirsep+"Scripts", "FileSystem", "TerrainFolders");
+		rgm.addResourceLocation(fullpath+(*iterFiles).filename+dirsep+"SkyX", "FileSystem", "TerrainFolders");
+		rgm.addResourceLocation(fullpath+(*iterFiles).filename+dirsep+"Temp", "FileSystem", "TerrainFolders");
+		rgm.addResourceLocation(fullpath+(*iterFiles).filename+dirsep+"Templates", "FileSystem", "TerrainFolders");
+		rgm.addResourceLocation(fullpath+(*iterFiles).filename+dirsep+"Terrain", "FileSystem", "TerrainFolders");
+		
 	}
 }

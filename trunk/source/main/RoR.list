@@ -116,10 +116,12 @@ set (HEADER_FILES
   resource.h
   SkyManager.h
   ShadowManager.h
+  DotSceneLoader.h
 )
 set (SOURCE_FILES
   gui_friction.cpp
   gui_mp.cpp
+  DotSceneLoader.cpp
   gui_inputmanager.cpp
   gui_manager.cpp
   gui_menu.cpp
