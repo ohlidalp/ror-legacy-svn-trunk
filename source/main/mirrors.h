@@ -21,29 +21,25 @@ along with Rigs of Rods.  If not, see <http://www.gnu.org/licenses/>.
 #ifndef __Mirrors_H__
 #define __Mirrors_H__
 
-#include "Ogre.h"
-#include "rormemory.h"
+#include <OgrePrerequisites.h>
+#include <OgreMaterial.h>
 
-using namespace Ogre;
+#include "rormemory.h"
 
 class Mirrors : public MemoryAllocatedObject
 {
 private:
-	Camera *mCamera;
-	Camera *mMirrorCam;
-	RenderTexture* rttTex;
-	//Plane mirrorPlane;
-	SceneNode *tnodeo;
-	SceneNode *tnoden;
-	MaterialPtr mat;
+	Ogre::Camera *mCamera;
+	Ogre::Camera *mMirrorCam;
+	Ogre::RenderTexture* rttTex;
+	Ogre::MaterialPtr mat;
 
 public:
 
-	Mirrors(SceneManager *mSceneMgr, RenderWindow *mWindow, Camera *camera);
-void setActive(bool state);
-
-void update(Vector3 normal, Vector3 center, Ogre::Radian rollangle);
-void prepareShutdown();
+	Mirrors(Ogre::SceneManager *mSceneMgr, Ogre::RenderWindow *mWindow, Ogre::Camera *camera);
+	void setActive(bool state);
+	
+	void update(Ogre::Vector3 normal, Ogre::Vector3 center, Ogre::Radian rollangle);
 
 };
 
