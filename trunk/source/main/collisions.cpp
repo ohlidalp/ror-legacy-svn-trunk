@@ -362,7 +362,7 @@ void Collisions::hash_free(int cell_x, int cell_z, int value)
 	{
 		cell_t *cell = hashtable[pos].cell;
 		// cell has content, search it
-		for(int i=0;i<cell->size();i++)
+		for(unsigned int i=0;i<cell->size();i++)
 		{
 			if((*cell)[i] == value)
 			{
@@ -401,14 +401,14 @@ void Collisions::hash_add(int cell_x, int cell_z, int value)
 		newcell->push_back(value);
 		cells.push_back(newcell);
 		if (pos!=hashfunc(cellid)) collision_count++;
-		if (newcell->size()>largest_cellcount) largest_cellcount=newcell->size();
+		if ((int)newcell->size()>largest_cellcount) largest_cellcount=newcell->size();
 	}
 	else if (hashtable[pos].cellid==cellid)
 	{
 		//there is already a cell ready
 		cell_t *cell=hashtable[pos].cell;
 		cell->push_back(value);
-		if (cell->size()>largest_cellcount) largest_cellcount=cell->size();
+		if ((int)cell->size()>largest_cellcount) largest_cellcount=cell->size();
 	}
 	else
 	{
@@ -706,7 +706,7 @@ bool Collisions::collisionCorrect(Vector3 *refpos)
 	//find the correct cell
 	bool contacted=false;
 	int refx, refz;
-	int k;
+	unsigned int k;
 
 	if (!(refpos->x>0 && refpos->x<mefl->mapsizex && refpos->z>0 && refpos->z<mefl->mapsizex)) return false;
 
@@ -914,7 +914,7 @@ bool Collisions::nodeCollision(node_t *node, bool iscinecam, int contacted, floa
 	bool smoky=false;
 	//float corrf=1.0;
 	Vector3 oripos=node->AbsPosition;
-	int k;
+	unsigned int k;
 	//find the correct cell
 	int refx, refz;
 	refx=(int)(node->AbsPosition.x*inverse_CELL_SIZE);
