@@ -61,7 +61,7 @@ ${Index_RemoveFilesAndSubDirs}-done:
 
 ; HM NIS Edit Wizard helper defines
 !define PRODUCT_NAME "Rigs of Rods"
-!define PRODUCT_VERSION "0.36.3"
+!define PRODUCT_VERSION "0.37.126"
 !define PRODUCT_PUBLISHER "Rigs of Rods Team"
 !define PRODUCT_WEB_SITE "http://www.rigsofrods.com"
 !define PRODUCT_UNINST_KEY "Software\Microsoft\Windows\CurrentVersion\Uninstall\${PRODUCT_NAME}"
@@ -257,7 +257,7 @@ Section "!RoR" SEC02
 	#File ..\..\doc\keysheet.pdf
 	#File "..\..\doc\Things you can do in Rigs of Rods.pdf"
 	; data
-	File /r /x installerfiles\*
+	File /r /x .svn installerfiles\*
 
 SectionEnd
 
