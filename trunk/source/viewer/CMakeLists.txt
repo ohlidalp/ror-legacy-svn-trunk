@@ -1,8 +1,11 @@
 project(RoR_Viewer)
 
 # find wxWidgets
-include_directories(${WXWIDGETS_SHARED_INCLUDE_DIRS})
-link_directories   (${WXWIDGETS_SHARED_LIBRARY_DIRS})
+SET(wxWidgets_USE_UNICODE ON)
+FIND_PACKAGE(wxWidgets REQUIRED COMPONENTS base core html net adv propgrid aui)
+include_directories(${wxWidgets_INCLUDE_DIRS})
+add_definitions("-D${wxWidgets_DEFINITIONS}" ${wxWidgets_CXX_FLAGS})
+link_directories (${wxWidgets_LIB_DIR})
 
 IF(WIN32)
  include_directories(${BOOST_INCLUDE_DIRS})
@@ -27,14 +30,6 @@ ELSEIF(UNIX)
 
  PKG_CHECK_MODULES  (Ogre OGRE REQUIRED)
  PKG_CHECK_MODULES  (Ois OIS REQUIRED)
-
- # find wxwidgets
- SET(wxWidgets_USE_UNICODE ON)
- FIND_PACKAGE(wxWidgets REQUIRED COMPONENTS base core html net adv propgrid aui)
- include_directories(${wxWidgets_INCLUDE_DIRS})
- add_definitions("-D${wxWidgets_DEFINITIONS}" ${wxWidgets_CXX_FLAGS})
- link_directories (${wxWidgets_LIB_DIR})
- set(OS_LIBS "${OS_LIBS};${wxWidgets_LIBRARIES}")
 
  set(OS_SOURCE "")
 ENDIF(WIN32)
@@ -119,6 +114,6 @@ include_directories(../main)
 
 add_executable(RoRViewer ${viewer_sources} ${viewer_headers} ${OS_SOURCE} ${additional_sources} ${HEADER_FILES} ${SOURCE_FILES} ../main/Settings.cpp ../main/errorutils.cpp)
 
-TARGET_LINK_LIBRARIES(RoRViewer ${WXWIDGETS_SHARED_LIBRARIES} ${Ogre_LIBRARIES} ${Ois_LIBRARIES} ${OS_LIBS} ${optional_libs})
+TARGET_LINK_LIBRARIES(RoRViewer ${wxWidgets_LIBRARIES} ${Ogre_LIBRARIES} ${Ois_LIBRARIES} ${OS_LIBS} ${optional_libs})
 
 
