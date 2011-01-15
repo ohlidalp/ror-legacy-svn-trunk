@@ -1,3 +1,5 @@
+#ifdef USE_ANGELSCRIPT
+
 #include <string.h>
 #include "scripthelper.h"
 #include <string>
@@ -344,3 +346,5 @@ void PrintException(asIScriptContext *ctx, bool printStack)
 }
 
 END_AS_NAMESPACE
+
+#endif // USE_ANGELSCRIPT

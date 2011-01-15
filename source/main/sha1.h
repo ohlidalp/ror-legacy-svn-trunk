@@ -35,7 +35,8 @@
 #ifndef ___SHA1_HDR___
 #define ___SHA1_HDR___
 
-#include "pstdint.h" // Needed for uint32_t, uint8_t
+#include <stdint.h> //"pstdint.h" // Needed for uint32_t, uint8_t
+#define uint8_t char
 
 #if !defined(SHA1_UTILITY_FUNCTIONS) && !defined(SHA1_NO_UTILITY_FUNCTIONS)
 #define SHA1_UTILITY_FUNCTIONS
@@ -80,7 +81,6 @@ typedef union
 
 namespace RoR
 {
-
 class CSHA1
 {
 public:
@@ -130,6 +130,5 @@ private:
 	uint8_t m_workspace[64];
 	SHA1_WORKSPACE_BLOCK *m_block; // SHA1 pointer to the byte array above
 };
-
 }; //namespace RigsOfRods
 #endif

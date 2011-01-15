@@ -1,3 +1,5 @@
+#ifdef USE_ANGELSCRIPT
+
 #include <assert.h>
 #include <math.h>
 #include <string.h>
@@ -275,4 +277,4 @@ void RegisterScriptMath(asIScriptEngine *engine)
 
 END_AS_NAMESPACE
 
-
+#endif // USE_ANGELSCRIPT

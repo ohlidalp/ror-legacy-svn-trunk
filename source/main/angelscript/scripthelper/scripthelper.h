@@ -1,6 +1,8 @@
 #ifndef SCRIPTHELPER_H
 #define SCRIPTHELPER_H
 
+#ifdef USE_ANGELSCRIPT
+
 #include <angelscript.h>
 
 BEGIN_AS_NAMESPACE
@@ -25,4 +27,6 @@ void PrintException(asIScriptContext *ctx, bool printStack = false);
 
 END_AS_NAMESPACE
 
-#endif
+#endif // USE_ANGELSCRIPT
+
+#endif // SCRIPTHELPER_H

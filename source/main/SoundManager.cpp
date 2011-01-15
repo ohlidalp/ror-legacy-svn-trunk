@@ -22,14 +22,13 @@ along with Rigs of Rods.  If not, see <http://www.gnu.org/licenses/>.
 #include "Ogre.h"
 #include "SoundManager.h"
 #include "Settings.h"
-#include "pstdint.h"
+//#include "pstdint.h"
 #include "rormemory.h"
 
 // some gcc fixes
 #if OGRE_PLATFORM == OGRE_PLATFORM_LINUX
 #pragma GCC diagnostic ignored "-Wfloat-equal"
 #endif //OGRE_PLATFORM_LINUX
-
 
 using namespace Ogre;
 
@@ -481,8 +480,6 @@ int SoundManager::loadWAVFile(String filename, ALuint buffer)
 
 	return 0;
 }
-
-
 
 //-----------------------------------------------------------------------------------
 
