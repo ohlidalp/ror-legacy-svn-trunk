@@ -18,15 +18,20 @@ macro(setup_lib name)
    endif(ROR_USE_${name})
 endmacro(setup_lib)
 
+# find wxwidgets
+SET(wxWidgets_USE_UNICODE ON)
+FIND_PACKAGE(wxWidgets REQUIRED COMPONENTS base core html net adv)
+include_directories(${wxWidgets_INCLUDE_DIRS})
+add_definitions("-D${wxWidgets_DEFINITIONS}" ${wxWidgets_CXX_FLAGS})
+link_directories (${wxWidgets_LIB_DIR})
+
 IF(WIN32)
    include_directories(${BOOST_INCLUDE_DIRS})
    link_directories   (${BOOST_LIBRARY_DIRS})
    include_directories(${PThread_INCLUDE_DIRS})
    link_directories   (${PThread_LIBRARY_DIRS})
-   include_directories(${WXWIDGETS_SHARED_INCLUDE_DIRS})
-   link_directories   (${WXWIDGETS_SHARED_LIBRARY_DIRS})
 
-   set(OS_LIBS "${PThread_LIBRARIES} dinput8.lib dxguid.lib")
+   set(OS_LIBS "${PThread_LIBRARIES};dinput8.lib;dxguid.lib")
    set(OS_SOURCE "icon.rc")
 
    # disable some annoying VS warnings:
@@ -52,14 +57,7 @@ ELSEIF(UNIX)
    PKG_CHECK_MODULES  (Ogre OGRE REQUIRED)
    PKG_CHECK_MODULES  (Ois OIS REQUIRED)
 
-   # find wxwidgets
-   SET(wxWidgets_USE_UNICODE ON)
-   FIND_PACKAGE(wxWidgets REQUIRED COMPONENTS base core html net adv)
-   include_directories(${wxWidgets_INCLUDE_DIRS})
-   add_definitions("-D${wxWidgets_DEFINITIONS}" ${wxWidgets_CXX_FLAGS})
-   link_directories (${wxWidgets_LIB_DIR})
-
-   set(OS_LIBS "${wxWidgets_LIBRARIES}")
+   set(OS_LIBS "")
 
    setup_lib(CRASHRPT)
 ENDIF(WIN32)
@@ -77,9 +75,14 @@ include_directories(../main)
 
 FILE(GLOB sources "*.cpp")
 FILE(GLOB headers "*.h")
-add_executable(rorconfig WIN32 ${sources} ${headers} ${OS_SOURCE} ../main/InputEngine.cpp)
 
-TARGET_LINK_LIBRARIES(rorconfig ${WXWIDGETS_SHARED_LIBRARIES} ${Ogre_LIBRARIES} ${Ois_LIBRARIES} ${OS_LIBS} ${optional_libs})
+IF(WIN32)
+	add_executable(rorconfig WIN32 ${sources} ${headers} ${OS_SOURCE} ../main/InputEngine.cpp)
+ELSE(WIN32)
+	add_executable(rorconfig ${sources} ${headers} ${OS_SOURCE} ../main/InputEngine.cpp)
+ENDIF(WIN32)
+
+TARGET_LINK_LIBRARIES(rorconfig ${Ogre_LIBRARIES} ${Ois_LIBRARIES} ${OS_LIBS} ${optional_libs} ${wxWidgets_LIBRARIES})
 
 
 

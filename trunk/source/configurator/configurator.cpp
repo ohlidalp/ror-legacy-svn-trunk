@@ -73,9 +73,9 @@ using namespace std;
 #include <wx/log.h>
 #include <wx/timer.h>
 #include <wx/version.h>
+#include <wx/log.h>
 //#include "joysticks.h"
 #include "utils.h"
-
 
 #include "ImprovedConfigFile.h"
 
@@ -89,7 +89,6 @@ extern eventInfo_t eventInfo[]; // defines all input events
 #if OGRE_PLATFORM == OGRE_PLATFORM_APPLE
 #define strnlen(str, len) strlen(str)
 #endif
-
 
 #if OGRE_PLATFORM == OGRE_PLATFORM_WIN32
 #include <direct.h> // for getcwd
@@ -112,13 +111,11 @@ wxLocale lang_locale;
 wxLanguageInfo *language=0;
 std::vector<wxLanguageInfo*> avLanguages;
 
-
 std::map<std::string, std::string> settings;
 
 #ifdef USE_OPENCL
 #include <delayimp.h>
 #endif // USE_OPENCL
-
 
 #ifdef __WXGTK__
 #include <gtk/gtk.h>
@@ -162,7 +159,6 @@ static const wxCmdLineEntryDesc g_cmdLineDesc [] =
 #endif
 	{ wxCMD_LINE_NONE }
 };
-
 
 // from wxWidetgs wiki: http://wiki.wxwidgets.org/Calling_The_Default_Browser_In_WxHtmlWindow
 class HtmlWindow: public wxHtmlWindow
@@ -544,7 +540,6 @@ public:
 
 		timer = new wxTimer(this, 2);
 		timer->Start(50);
-
 	}
 	~KeyTestDialog()
 	{
@@ -616,7 +611,6 @@ private:
 	DECLARE_EVENT_TABLE()
 };
 
-
 class KeySelectDialog : public wxDialog
 {
 protected:
@@ -635,7 +629,6 @@ protected:
 	float joySliderMaxState[MAX_JOYSTICKS][2][MAX_JOYSTICK_SLIDERS];
 	void OnEraseBackGround(wxEraseEvent& event) { event.Skip(); };
 
-
 public:
 	KeySelectDialog(MyDialog *_dlg, event_trigger_t *_t) : wxDialog(NULL, wxID_ANY, wxString(), wxDefaultPosition, wxSize(300,600), wxSTAY_ON_TOP|wxDOUBLE_BORDER|wxCLOSE_BOX), t(_t), dlg(_dlg)
 	{
@@ -645,7 +638,6 @@ public:
 		bool captureMouse = false;
 		if(t->eventtype == ET_MouseAxisX || t->eventtype == ET_MouseAxisY || t->eventtype == ET_MouseAxisZ || t->eventtype == ET_MouseButton)
 			captureMouse = true;
-
 
 		for(int i=0;i<MAX_JOYSTICKS;i++)
 		{
@@ -694,10 +686,8 @@ public:
 
 		SetBackgroundColour(wxColour(conv("white")));
 
-
 		// centers dialog window on the screen
 		Centre();
-
 	}
 
 	~KeySelectDialog()
@@ -793,7 +783,6 @@ public:
 				lastPov = joyPov;
 				lastJoy = joyNum;
 				lastPovDir = povDir;
-
 			} else if (!res)
 			{
 				wxString s = _("(Please use your POV)");
@@ -1035,7 +1024,6 @@ public:
 	int id;
 };
 
-
 enum
 {
 	// command buttons
@@ -1175,7 +1163,6 @@ END_EVENT_TABLE()
 // static object for many reasons) and also implements the accessor function
 // wxGetApp() which will return the reference of the right type (i.e. MyApp and
 // not wxApp)
-
 
 #ifdef USE_CONSOLE
 IMPLEMENT_APP_CONSOLE(MyApp)
@@ -1331,8 +1318,6 @@ void initLanguage(wxString languagePath, wxString userpath)
 		{
 			wxLogStatus(wxT("error while loading language!"));
 		}
-
-
 	}
 	else
 	{
@@ -1495,7 +1480,6 @@ bool MyApp::filesystemBootstrap()
 	recurseCopy(SkeletonPath, UserPath);
 
 	return true;
-
 }
 
 void MyApp::initLogging()
@@ -1524,7 +1508,6 @@ void MyApp::initLogging()
 // 'Main program' equivalent: the program execution "starts" here
 bool MyApp::OnInit()
 {
-
 	buildmode=false;
 	if (argc==2 && wxString(argv[1])==wxT("/buildmode")) buildmode=true;
 	//setup the user filesystem
@@ -1609,7 +1592,6 @@ MyDialog::MyDialog(const wxString& title, MyApp *_app) : wxDialog(NULL, wxID_ANY
 	wxLogStatus(wxT("InputEngine started"));
 	kd=0;
 	controlItemCounter = 0;
-
 
 //	SandStormFogStart = 500;
 //	caelumFogDensity = 0.005;
@@ -1965,7 +1947,6 @@ MyDialog::MyDialog(const wxString& title, MyApp *_app) : wxDialog(NULL, wxID_ANY
     network_enable=new wxCheckBox(panel_net_top, -1, _("Enable network mode"), wxPoint(5, 5));
 	network_enable->SetToolTip(_("This switches RoR into network mode.\nBe aware that many features are not available in network mode.\nFor example, you not be able to leave your vehicle or hook objects."));
 
-
     dText = new wxStaticText(panel_net_top, -1, _("Nickname: "), wxPoint(230,7));
 	nickname=new wxTextCtrl(panel_net_top, -1, _("Anonymous"), wxPoint(300, 2), wxSize(170, -1));
 	nickname->SetToolTip(_("Your network name. Maximum 20 Characters."));
@@ -2017,7 +1998,6 @@ MyDialog::MyDialog(const wxString& title, MyApp *_app) : wxDialog(NULL, wxID_ANY
 	y = 10;
 	dText = new wxStaticText(advancedPanel, -1, _("You do not need to change these settings unless you experience problems"), wxPoint(10, y));
 	y+=20;
-
 
 	dText = new wxStaticText(advancedPanel, -1, _("Light source effects:"), wxPoint(10, y));
 	flaresMode=new wxChoice(advancedPanel, -1, wxPoint(115, y), wxSize(200, -1), 0);
@@ -2146,7 +2126,7 @@ MyDialog::MyDialog(const wxString& title, MyApp *_app) : wxDialog(NULL, wxID_ANY
 
 #ifdef USE_OPENCL
 	wxSizer *sizer_gpu = new wxBoxSizer(wxVERTICAL);
-	
+
 	wxSizer *sizer_gpu2 = new wxBoxSizer(wxHORIZONTAL);
 	const wxBitmap bm_ocl(opencllogo_xpm);
 	wxStaticPicture *openCLImagePanel = new wxStaticPicture(GPUPanel, wxID_ANY, bm_ocl, wxPoint(0, 0), wxSize(200, 200), wxNO_BORDER);
@@ -2165,7 +2145,6 @@ MyDialog::MyDialog(const wxString& title, MyApp *_app) : wxDialog(NULL, wxID_ANY
 
 	GPUPanel->SetSizer(sizer_gpu);
 #endif // USE_OPENCL
-
 
 	//	controlstimer=new wxTimer(this, CONTROLS_TIMER_ID);
 	timer1=new wxTimer(this, UPDATE_RESET_TIMER_ID);
@@ -2186,7 +2165,6 @@ MyDialog::MyDialog(const wxString& title, MyApp *_app) : wxDialog(NULL, wxID_ANY
 	// important: show before we load ogre, since ogre loading can take some time
 	loadOgre();
 }
-
 
 void MyDialog::loadOgre()
 {
@@ -2244,8 +2222,6 @@ void MyDialog::onChangeShadowChoice(wxCommandEvent &e)
 		shadowDistance->Disable();
 		shadowOptimizations->Disable();
 	}
-
-
 }
 
 void MyDialog::onChangeLanguageChoice(wxCommandEvent& event)
@@ -2340,7 +2316,6 @@ void MyDialog::loadInputControls()
 			cTree->SetItemData(item, new IDData(evt.suid));
 			updateItemText(item, (event_trigger_t *)&(evt));
 			treeItems[evt.suid] = item;
-
 		}
 	}
 	INPUTENGINE.destroy();
@@ -2591,7 +2566,7 @@ void MyDialog::getSettingsControls()
 	sprintf(tmp, "%d", shadowDistance->GetValue());
 	settings["Shadow distance"] = tmp;
 	settings["Shadow optimizations"] = (shadowOptimizations->GetValue()) ? "Yes" : "No";
-	
+
 	settings["Water effects"] = conv(water->GetStringSelection());
 	settings["Waves"] = (waves->GetValue()) ? "Yes" : "No";
 	settings["Engine smoke"] = (smoke->GetValue()) ? "Yes" : "No";
@@ -2672,7 +2647,6 @@ void MyDialog::getSettingsControls()
 			if((*it)->Description == languageMode->GetStringSelection())
 				settings["Language Short"] = conv((*it)->CanonicalName);
 		}
-
 	}
 }
 
@@ -2730,7 +2704,6 @@ void MyDialog::updateSettingsControls()
 	st = settings["Lights"]; if (st.length()>0) flaresMode->SetStringSelection(conv(st));
 	st = settings["Vegetation"]; if (st.length()>0) vegetationMode->SetStringSelection(conv(st));
 	st = settings["Screenshot Format"]; if (st.length()>0) screenShotFormat->SetStringSelection(conv(st));
-
 
 	st = settings["Configurator Size"];
 	if (st.length()>0)
@@ -2793,7 +2766,6 @@ bool MyDialog::LoadConfig()
 	return false;
 }
 
-
 void MyDialog::SaveConfig()
 {
 	// first, update the settings map with the actual control values
@@ -2805,7 +2777,6 @@ void MyDialog::SaveConfig()
 		wxMessageDialog(this, wxString(_("Could not write to input.map file")), wxString(_("Write error")),wxOK||wxICON_ERROR).ShowModal();
 		return;
 	}
-
 
 	//save Ogre stuff if we loaded ogre in the first place
 	if(ogreRoot)
@@ -2848,7 +2819,6 @@ void MyDialog::SaveConfig()
 
 	fclose(fd);
 }
-
 
 void MyDialog::onRightClickItem(wxTreeEvent& event)
 {
@@ -2942,7 +2912,6 @@ void MyDialog::onRightClickItem(wxTreeEvent& event)
 			i->Check(t->joystickAxisLinearity > 0.69f && t->joystickAxisLinearity < 0.71f);
 
 			i = m->AppendSubMenu(iLinear, _("Linearity"));
-
 		}
 
 		this->PopupMenu(m);
@@ -3011,8 +2980,6 @@ void MyDialog::testEvents()
 	delete kt;
 }
 
-
-
 /*
 void MyDialog::OnButRemap(wxCommandEvent& event)
 {
@@ -3030,7 +2997,6 @@ bool MyDialog::isSelectedControlGroup(wxTreeItemId *item)
 		return true;
 	return false;
 }
-
 
 event_trigger_t *MyDialog::getSelectedControlEvent()
 {
@@ -3099,7 +3065,6 @@ void MyDialog::OnChangeRenderer(wxCommandEvent& ev)
 		wxLogStatus(wxT("Unable to change to new rendersystem(2)"));
 	}
 }
-
 
 void MyDialog::OnMenuJoystickOptionsClick(wxCommandEvent& ev)
 {
@@ -3440,7 +3405,6 @@ void MyDialog::OnButUpdateRoR(wxCommandEvent& event)
 #include "ocl_bwtest.h"
 #endif // USE_OPENCL
 
-
 #ifdef USE_OPENCL
 // late loading DLLs
 // see http://msdn.microsoft.com/en-us/library/8yfshtha.aspx
@@ -3467,7 +3431,7 @@ int tryLoadOpenCL2()
 void MyDialog::tryLoadOpenCL()
 {
 	if(openCLAvailable != 0) return;
-	
+
 	openCLAvailable = tryLoadOpenCL2();
 	if(openCLAvailable != 1)
 	{
@@ -3479,7 +3443,6 @@ void MyDialog::tryLoadOpenCL()
 }
 #endif // USE_OPENCL
 
-
 void MyDialog::OnButCheckOpenCLBW(wxCommandEvent& event)
 {
 #ifdef USE_OPENCL
@@ -3490,7 +3453,6 @@ void MyDialog::OnButCheckOpenCLBW(wxCommandEvent& event)
 	OpenCLTestBandwidth bw_test(tstream);
 #endif // USE_OPENCL
 }
-
 
 void MyDialog::OnButCheckOpenCL(wxCommandEvent& event)
 {
@@ -3504,7 +3466,7 @@ void MyDialog::OnButCheckOpenCL(wxCommandEvent& event)
     // Get OpenCL platform ID for NVIDIA if avaiable, otherwise default
     tstream << "OpenCL Software Information:" << endl;
     char cBuffer[1024];
-    cl_platform_id clSelectedPlatformID = NULL; 
+    cl_platform_id clSelectedPlatformID = NULL;
     cl_int ciErrNum = oclGetPlatformID (&clSelectedPlatformID);
     if(ciErrNum != CL_SUCCESS)
 	{
@@ -3519,18 +3481,18 @@ void MyDialog::OnButCheckOpenCL(wxCommandEvent& event)
 		if (ciErrNum == CL_SUCCESS)
 		{
 			tstream << "Platform Name: " << cBuffer << endl;
-		} 
+		}
 		else
 		{
 			tstream << "Platform Name: ERROR " << ciErrNum << endl;
 			bPassed = false;
 		}
-	    
+
 		ciErrNum = clGetPlatformInfo (clSelectedPlatformID, CL_PLATFORM_VERSION, sizeof(cBuffer), cBuffer, NULL);
 		if (ciErrNum == CL_SUCCESS)
 		{
 			tstream << "Platform Version: " << cBuffer << endl;
-		} 
+		}
 		else
 		{
 			tstream << "Platform Version: ERROR " << ciErrNum << endl;
@@ -3538,10 +3500,10 @@ void MyDialog::OnButCheckOpenCL(wxCommandEvent& event)
 		}
 		tstream.flush();
 
-		// Log OpenCL SDK Revision # 
+		// Log OpenCL SDK Revision #
 		tstream << "OpenCL SDK Revision: " << OCL_SDKREVISION << endl;
 
-		// Get and log OpenCL device info 
+		// Get and log OpenCL device info
 		cl_uint ciDeviceCount;
 		cl_device_id *devices;
 		ciErrNum = clGetDeviceIDs (clSelectedPlatformID, CL_DEVICE_TYPE_ALL, 0, NULL, &ciDeviceCount);
@@ -3551,12 +3513,12 @@ void MyDialog::OnButCheckOpenCL(wxCommandEvent& event)
 		tstream << "OpenCL Hardware Information:" << endl;
 		tstream << "Devices found: " << ciDeviceCount << endl;
 
-		// check for 0 devices found or errors... 
+		// check for 0 devices found or errors...
 		if (ciDeviceCount == 0)
 		{
 			tstream << "No devices found supporting OpenCL (return code " << ciErrNum << ")" << endl;
 			bPassed = false;
-		} 
+		}
 		else if (ciErrNum != CL_SUCCESS)
 		{
 			tstream << "Error in clGetDeviceIDs call: " << ciErrNum << endl;
@@ -3579,11 +3541,11 @@ void MyDialog::OnButCheckOpenCL(wxCommandEvent& event)
 					tstream << "ERROR in clCreateContext call: " << ciErrNum << endl;
 					bPassed = false;
 				}
-				else 
+				else
 				{
 					// show info for each device in the context
-					for(unsigned int i = 0; i < ciDeviceCount; ++i ) 
-					{  
+					for(unsigned int i = 0; i < ciDeviceCount; ++i )
+					{
 						clGetDeviceInfo(devices[i], CL_DEVICE_NAME, sizeof(cBuffer), &cBuffer, NULL);
 						tstream << (i + 1) << " : Device " << cBuffer << endl;
 						//oclPrintDevInfo(LOGBOTH, devices[i]);
@@ -3677,7 +3639,6 @@ void MyDialog::OnSightRangeScroll(wxScrollEvent & event)
 	sightrangeText->SetLabel(s);
 }
 */
-
 
 void MyDialog::OnShadowSliderScroll(wxScrollEvent &e)
 {
@@ -3825,7 +3786,7 @@ void MyDialog::OnSimpleSlider2Scroll(wxScrollEvent & event)
 		break;
 	};
 	getSettingsControls();
-	
+
 	// update slider text
 	wxScrollEvent dummye;
 	OnShadowSliderScroll(dummye);
@@ -3849,7 +3810,6 @@ void MyDialog::OnForceFeedbackScroll(wxScrollEvent & event)
 	val=ffCamera->GetValue();
 	s.Printf(wxT("%i%%"), val);
 	ffCameraText->SetLabel(s);
-
 }
 
 void MyDialog::OnLinkClicked(wxHtmlLinkEvent& event)
@@ -3882,7 +3842,6 @@ void MyDialog::OnLinkClicked(wxHtmlLinkEvent& event)
 //	wxMessageDialog *res=new wxMessageDialog(this, href, "Success", wxOK | wxICON_INFORMATION );
 //	res->ShowModal();
 }
-
 
 void MyDialog::OnLinkClickedUpdate(wxHtmlLinkEvent& event)
 {
@@ -3955,7 +3914,6 @@ void MyDialog::OnTimerReset(wxTimerEvent& event)
 {
 	btnUpdate->Enable(true);
 }
-
 
 void MyDialog::OnGetUserToken(wxCommandEvent& event)
 {
@@ -4067,7 +4025,6 @@ typedef BOOL (CALLBACK *LPDSENUMCALLBACKA)(LPGUID, LPCSTR, LPCSTR, LPVOID);
 
 static HRESULT (WINAPI *pDirectSoundEnumerateA)(LPDSENUMCALLBACKA pDSEnumCallback, LPVOID pContext);
 
-
 void MyDialog::DSoundEnumerate(wxChoice *wxc)
 {
     size_t iter = 1;
@@ -4099,6 +4056,5 @@ LOAD_FUNC(DirectSoundEnumerateA);
     hr = pDirectSoundEnumerateA(DSoundEnumDevices, wxc);
 //    if(FAILED(hr))
 //        AL_PRINT("Error enumerating DirectSound devices (%#x)!\n", (unsigned int)hr);
-
 }
 #endif
