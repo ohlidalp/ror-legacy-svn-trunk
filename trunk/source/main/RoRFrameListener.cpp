@@ -4685,8 +4685,9 @@ void RoRFrameListener::loadTerrain(String terrainfile)
 	{
 		LogManager::getSingleton().logMessage("Loading Ogitor scene format: " + terrainfile);
 		loadOgitorTerrain(terrainfile);
-
+#ifdef USE_MYGUI
 		LoadingWindow::get()->hide();
+#endif // USE_MYGUI
 		return;
 	}
 
@@ -4695,7 +4696,9 @@ void RoRFrameListener::loadTerrain(String terrainfile)
 		LogManager::getSingleton().logMessage("Loading classic terrain format: " + terrainfile);
 		loadClassicTerrain(terrainfile);
 		
+#ifdef USE_MYGUI
 		LoadingWindow::get()->hide();
+#endif // USE_MYGUI
 		return;
 	}
 

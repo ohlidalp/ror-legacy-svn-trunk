@@ -1,3 +1,5 @@
+#ifdef USE_ANGELSCRIPT
+
 #include <assert.h>
 #include <string.h> // strstr
 #include <new> // new()
@@ -335,3 +337,4 @@ void RegisterScriptMath3D(asIScriptEngine *engine)
 END_AS_NAMESPACE
 
 
+#endif // USE_ANGELSCRIPT

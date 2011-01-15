@@ -6,7 +6,7 @@ Copyright 2007,2008,2009 Thomas Fischer
 For more information, see http://www.rigsofrods.com/
 
 Rigs of Rods is free software: you can redistribute it and/or modify
-it under the terms of the GNU General Public License version 3, as 
+it under the terms of the GNU General Public License version 3, as
 published by the Free Software Foundation.
 
 Rigs of Rods is distributed in the hope that it will be useful,
@@ -65,7 +65,6 @@ BeamEngineStats::BeamEngineStats()
 	typeDescriptions[BES_CORE_Axles]             = "Axles";
 	typeDescriptions[BES_CORE_Replay]            = "Replay";
 	typeDescriptions[BES_CORE_Skidmarks]         = "Skidmarks";
-
 
 	typeDescriptions_gfx[BES_GFX_UpdateSkeleton]            = "UpdateSkeleton";
 	typeDescriptions_gfx[BES_GFX_ScaleTruck]                = "ScaleTruck";
@@ -136,7 +135,7 @@ bool BeamEngineStats::updateGUI(float dt, int current_truck, Beam **trucks)
 		return true;
 
 	updateTimeGUI = 0;
-	
+
 	if(statClients.size() == 0)
 		return true;
 
@@ -149,7 +148,7 @@ bool BeamEngineStats::updateGUI(float dt, int current_truck, Beam **trucks)
 	char tmp_gfx[1024]="";
 	char line[1024]="";
 
-	for(int c = 0; c < statClients.size(); c++)
+	for(unsigned int c = 0; c < statClients.size(); c++)
 	{
 		//if(it->first != current_truck || trucks[it->first]->state == SLEEPING)
 		if(trucks[statClients[c].trucknum]->state == SLEEPING)
@@ -166,12 +165,12 @@ bool BeamEngineStats::updateGUI(float dt, int current_truck, Beam **trucks)
 
 		sprintf(line, "%-46s  |  %-46s\n", "============== PHYSICS ==============", "================ GFX ================");
 		msg += String(line);
-		
+
 		sum = core->getTiming(BES_CORE_WholeTruckCalc);
 		sum_gfx = core->getTiming(BES_CORE_WholeTruckCalc);
 		if(sum==0)
 			continue;
-		
+
 		sprintf(tmp, " %20s: % 10.4f%% : %1.6fs", "Whole truck", 100.0f, sum);
 		sprintf(tmp_gfx, " %20s: % 10.4f%% : %1.6fs", "FrameTime", 100.0f, sum_gfx);
 		sprintf(line, "%-46s  |  %-46s\n", tmp, tmp_gfx);
@@ -203,7 +202,6 @@ bool BeamEngineStats::updateGUI(float dt, int current_truck, Beam **trucks)
 			if(!addLine) break;
 			sprintf(line, "%-46s  |  %-46s\n", tmp, tmp_gfx);
 			msg += String(line);
-
 		}
 		// find out the rest time
 		{
@@ -222,12 +220,11 @@ bool BeamEngineStats::updateGUI(float dt, int current_truck, Beam **trucks)
 	return true;
 }
 
-
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 BeamThreadStats::BeamThreadStats(int _type) : stype(_type)
 {
-	for (int i=0; i<MAX_TIMINGS; i++) 
+	for (int i=0; i<MAX_TIMINGS; i++)
 	{
 		timings[i]=0;
 		savedTimings[i]=0;
@@ -254,7 +251,6 @@ void BeamThreadStats::frameStep(float ds)
 	framecounter++;
 }
 
-
 void BeamThreadStats::queryStart(int type)
 {
 	timings_start[type] = new PrecisionTimer();
@@ -265,7 +261,7 @@ void BeamThreadStats::queryStop(int type)
 	if(!timings_start[type]) return;
 
 	timings[type] += (timings_start[type]->elapsed());
-	
+
 	if(stype == BES_CORE && type == BES_CORE_WholeTruckCalc)
 	{
 		// secure timings
@@ -294,6 +290,4 @@ double BeamThreadStats::getTiming(int type)
 	return savedTimings[type];
 }
 
-
 #endif //FEAT_TIMING
-

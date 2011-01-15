@@ -1,4 +1,3 @@
-
 #include "Beam.h"
 
 #include "engine.h"
@@ -12,8 +11,6 @@
 #include "CmdKeyInertia.h"
 
 extern float mrtime;
-
-
 
 void Beam::calcForcesEuler(int doUpdate, Real dt, int step, int maxstep, Beam** trucks, int numtrucks)
 {
@@ -40,7 +37,6 @@ void Beam::calcForcesEuler(int doUpdate, Real dt, int step, int maxstep, Beam** 
 		BES_STOP(BES_CORE_TruckEngine);
 	}
 	//		if (doUpdate) mWindow->setDebugText(engine->status);
-
 
 	BES_START(BES_CORE_Beams);
 
@@ -143,7 +139,6 @@ void Beam::calcForcesEuler(int doUpdate, Real dt, int step, int maxstep, Beam** 
 			beams[i].stress=flen;
 			flen=fabs(flen);
 
-
 			// Fast test for deformation
 			if (flen > beams[i].minmaxposnegstress)
 			{
@@ -153,7 +148,6 @@ void Beam::calcForcesEuler(int doUpdate, Real dt, int step, int maxstep, Beam** 
 					// For compression
 					if (sflen>beams[i].maxposstress && difftoBeamL<0.0f)
 					{
-
 						increased_accuracy=1;
 						Real yield_length=beams[i].maxposstress/k;
 						Real deform=difftoBeamL+yield_length*(1.0f-beams[i].plastic_coef);
@@ -238,7 +232,6 @@ void Beam::calcForcesEuler(int doUpdate, Real dt, int step, int maxstep, Beam** 
 						{
 							LogManager::getSingleton().logMessage(" XXX Beam " + StringConverter::toString(i) + " just broke with force " + StringConverter::toString(flen) + " / " + StringConverter::toString(beams[i].strength) + ". It was between nodes " + StringConverter::toString(beams[i].p1->id) + " and " + StringConverter::toString(beams[i].p2->id) + ".");
 						}
-
 					} else beams[i].strength=2.0f*beams[i].minmaxposnegstress;
 
 					//something broke, check buoyant hull
@@ -368,7 +361,6 @@ void Beam::calcForcesEuler(int doUpdate, Real dt, int step, int maxstep, Beam** 
 							props[propi].rotaZ += cstate;
 							limiter = props[propi].rotaZ;
 						}
-
 					} else
 					{
 						if (props[propi].animMode[animnum] & ANIM_MODE_ROTA_X) rx += cstate;
@@ -541,7 +533,6 @@ void Beam::calcForcesEuler(int doUpdate, Real dt, int step, int maxstep, Beam** 
 							props[propi].orgoffsetZ = autooffset;
 					}
 				}
-
 			}
 		animnum++;
 		}
@@ -624,7 +615,6 @@ void Beam::calcForcesEuler(int doUpdate, Real dt, int step, int maxstep, Beam** 
 		rigidifiers[i].lastalpha=alphap;
 	}
 
-
 	BES_STOP(BES_CORE_Rigidifiers);
 	BES_START(BES_CORE_Hooks);
 
@@ -646,7 +636,6 @@ void Beam::calcForcesEuler(int doUpdate, Real dt, int step, int maxstep, Beam** 
 				affhydro+=beams[hydro[i]].hydroRatio*beams[hydro[i]].refL*beams[hydro[i]].stress;
 		}
 	}
-
 
 	//locks - this is not active in network mode
 	for(std::vector<hook_t>::iterator it=hooks.begin(); it!=hooks.end(); it++)
@@ -706,14 +695,12 @@ void Beam::calcForcesEuler(int doUpdate, Real dt, int step, int maxstep, Beam** 
 		nodes[mousenode].Forces += mousemoveforce * dir;
 	}
 
-
 	// START Slidenode section /////////////////////////////////////////////////
 	// these must be done before the integrator, or else the forces are not calculated properly
 	BES_START(BES_CORE_SlideNodes);
 	updateSlideNodeForces(dt);
 	BES_STOP(BES_CORE_SlideNodes);
 	// END Slidenode section   /////////////////////////////////////////////////
-
 
 	BES_START(BES_CORE_Nodes);
 
@@ -752,14 +739,12 @@ void Beam::calcForcesEuler(int doUpdate, Real dt, int step, int maxstep, Beam** 
 			nodes[i].colltesttimer+=dt;
 			if (nodes[i].contacted || nodes[i].colltesttimer>0.005 || (nodes[i].iswheel && nodes[i].colltesttimer>0.0025) || increased_accuracy )
 			{
+				int contacted=0;
 				float ns=0;
 				ground_model_t *gm = 0; // this is used as result storage, so we can use it later on
-				int contacted = collisions->groundCollision(&nodes[i], nodes[i].colltesttimer, &gm, &ns);
-
 				int handlernum = -1;
-				//Tlooks like this needs to remain a binary operator otherwise the terrain material appears to be wrong
-				if ( contacted |
-					collisions->nodeCollision(&nodes[i], i==cinecameranodepos[currentcamera], contacted, nodes[i].colltesttimer, &ns, &gm, &handlernum))
+				// reverted this construct to the old form, don't mess with it, the binary operator is intentionally!
+				if ((contacted=collisions->groundCollision(&nodes[i], nodes[i].colltesttimer, &gm, &ns)) | collisions->nodeCollision(&nodes[i], i==cinecameranodepos[currentcamera], contacted, nodes[i].colltesttimer, &ns, &gm, &handlernum))
 				{
 					//FX
 					if (gm && doUpdate && dustp)
@@ -813,7 +798,6 @@ void Beam::calcForcesEuler(int doUpdate, Real dt, int step, int maxstep, Beam** 
 			}
 		}
 
-
 		// record g forces on cameras
 		if (i==cameranodepos[0])
 		{
@@ -855,7 +839,6 @@ void Beam::calcForcesEuler(int doUpdate, Real dt, int step, int maxstep, Beam** 
 				{
 					//fasttrack drag
 					nodes[i].Forces+=nodes[i].lastdrag;
-
 				} else
 				{
 					Real speed=nodes[i].Velocity.squaredLength();//we will (not) reuse this
@@ -1034,7 +1017,6 @@ void Beam::calcForcesEuler(int doUpdate, Real dt, int step, int maxstep, Beam** 
 		{
 			nodes[i].Forces+=nodes[i].buoyanceForce;
 		}
-
 	}
 
 	BES_STOP(BES_CORE_Buoyance);
@@ -1070,7 +1052,6 @@ void Beam::calcForcesEuler(int doUpdate, Real dt, int step, int maxstep, Beam** 
 			intertorque[i*2+3]+=torque*0.5f;
 		}
 	}
-
 
 	// new-style Axles
 	// loop through all axles for interaxle torque, this is the torsion to keep
@@ -1291,7 +1272,6 @@ void Beam::calcForcesEuler(int doUpdate, Real dt, int step, int maxstep, Beam** 
 		else if (ssm)
 			ssm->trigStop(trucknum, SS_TRIG_AIR);
 #endif //OPENAL
-
 	}
 
 	BES_STOP(BES_CORE_Shocks);
@@ -1418,7 +1398,6 @@ void Beam::calcForcesEuler(int doUpdate, Real dt, int step, int maxstep, Beam** 
 	BES_STOP(BES_CORE_Hydros);
 	BES_START(BES_CORE_Commands);
 
-
 	// forward things to trailers
 	if (state==ACTIVATED && forwardcommands)
 	{
@@ -1477,7 +1456,6 @@ void Beam::calcForcesEuler(int doUpdate, Real dt, int step, int maxstep, Beam** 
 			for (int j=0; j < (int)commandkey[i].beams.size(); j++)
 				if(commandkey[i].commandValue >= 0.5)
 					beams[abs(commandkey[i].beams[j])].autoMoveLock=true;
-
 
 		// only process ties if there is enough force available
 		if(canwork)
@@ -1754,7 +1732,6 @@ void Beam::calcForcesEuler(int doUpdate, Real dt, int step, int maxstep, Beam** 
 			}
 			if(requestpower)
 				requested++;
-
 		}
 
 		if (engine)
@@ -1812,7 +1789,6 @@ void Beam::calcForcesEuler(int doUpdate, Real dt, int step, int maxstep, Beam** 
 				nodes[rotators[i].nodes2[k+2]].Forces+=(aerror*ref2len*rigidity)*dir2;
 			}
 		}
-
 	}
 
 	BES_STOP(BES_CORE_Commands);
@@ -1845,5 +1821,4 @@ void Beam::calcForcesEuler(int doUpdate, Real dt, int step, int maxstep, Beam** 
 
 	BES_STOP(BES_CORE_Replay);
 	BES_STOP(BES_CORE_WholeTruckCalc);
-
 }

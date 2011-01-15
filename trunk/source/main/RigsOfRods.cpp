@@ -39,10 +39,10 @@ public:
 		mShaderGenerator = pShaderGenerator;
 	}
 
-	virtual Technique* handleSchemeNotFound(unsigned short schemeIndex, 
-		const String& schemeName, Material* originalMaterial, unsigned short lodIndex, 
+	virtual Technique* handleSchemeNotFound(unsigned short schemeIndex,
+		const String& schemeName, Material* originalMaterial, unsigned short lodIndex,
 		const Renderable* rend)
-	{		
+	{
 		// Case this is the default shader generator scheme.
 		if (schemeName == RTShader::ShaderGenerator::DEFAULT_SCHEME_NAME)
 		{
@@ -53,9 +53,9 @@ public:
 			if (itFind == mRegisteredMaterials.end())
 			{
 				techniqueCreated = mShaderGenerator->createShaderBasedTechnique(
-					originalMaterial->getName(), 
-					MaterialManager::DEFAULT_SCHEME_NAME, 
-					schemeName);				
+					originalMaterial->getName(),
+					MaterialManager::DEFAULT_SCHEME_NAME,
+					schemeName);
 			}
 			mRegisteredMaterials[originalMaterial] = techniqueCreated;
 		}
@@ -67,12 +67,10 @@ protected:
 	typedef std::map<Material*, bool>		MaterialRegisterMap;
 	typedef MaterialRegisterMap::iterator	MaterialRegisterIterator;
 
-
 protected:
 	MaterialRegisterMap				mRegisteredMaterials;		// Registered material map.
 	RTShader::ShaderGenerator*		mShaderGenerator;			// The shader generator instance.
 };
-
 
 RigsOfRods::RigsOfRods(Ogre::String name, unsigned int hwnd) :
 	mRoot(0),
@@ -100,7 +98,7 @@ RigsOfRods::~RigsOfRods()
 		{
 			mRoot->shutdown();
 			// XXX : commented out code below crashes
-			// 
+			//
 			//if(mRoot)
 			//	delete mRoot;
 		} catch(Ogre::Exception& e)
@@ -127,7 +125,12 @@ void RigsOfRods::loadMainResource(String name, String group)
 #if OGRE_PLATFORM == OGRE_PLATFORM_WIN32
 	dirsep="\\";
 #endif
-	ResourceGroupManager::getSingleton().addResourceLocation(SETTINGS.getSetting("Resources Path")+name+".zip", "Zip", group, true);
+
+	ResourceGroupManager::getSingleton().addResourceLocation(SETTINGS.getSetting("Resources Path")+dirsep+name, "FileSystem", group, true);
+	try
+	{
+		ResourceGroupManager::getSingleton().addResourceLocation(SETTINGS.getSetting("Resources Path")+name+".zip", "Zip", group, true);
+	} catch(...) {}
 }
 
 bool RigsOfRods::setup(void)
@@ -136,7 +139,7 @@ bool RigsOfRods::setup(void)
 	//note: we don't have LogManager available yet!
 	//FIRST: Get the "program path" and the user space path
 
-	// note: this is now done in the settigns class, so set it up
+	// note: this is now done in the settings class, so set it up
 	// note: you need to set the buildmode correcty before you build the paths!
 	SETTINGS.setSetting("BuildMode", buildmode?"Yes":"No");
 	if(!SETTINGS.setupPaths())
@@ -199,7 +202,7 @@ bool RigsOfRods::setup(void)
 	// optional ones
 	if (SETTINGS.getSetting("3D Sound renderer") != "No sound")
 		loadMainResource("sounds");
-	
+
 	if (SETTINGS.getSetting("Sky effects") == "Caelum (best looking, slower)")
 		loadMainResource("caelum");
 
@@ -220,7 +223,7 @@ bool RigsOfRods::setup(void)
 
 	if(SETTINGS.getSetting("Motion blur") == "Yes")
 		loadMainResource("blur");
-	
+
 	if(SETTINGS.getSetting("HeatHaze") == "Yes")
 		loadMainResource("heathaze");
 
@@ -229,7 +232,7 @@ bool RigsOfRods::setup(void)
 
 	if (SETTINGS.getSetting("Shadow technique")=="Parallel-split Shadow Maps")
 		loadMainResource("pssm");
-	
+
 	//streams path, to be processed later by the cache system
 	LogManager::getSingleton().logMessage("Loading filesystems");
 
@@ -251,7 +254,6 @@ bool RigsOfRods::setup(void)
 
 	// add scripts folder
 	ResourceGroupManager::getSingleton().addResourceLocation(SETTINGS.getSetting("User Path")+"scripts", "FileSystem", "Scripts", true);
-
 
 	// init skin manager, important to happen before trucks resource loading!
 	LogManager::getSingleton().logMessage("registering Skin Manager");
@@ -302,7 +304,6 @@ bool RigsOfRods::setup(void)
 	// Create one viewport, entire window
 	vp = mWindow->addViewport(mCamera);
 	vp->setBackgroundColour(ColourValue(0,0,0));
-
 
 	// Set default mipmap level (NB some APIs ignore this)
 	TextureManager::getSingleton().setDefaultNumMipmaps(5);
@@ -373,14 +374,13 @@ void RigsOfRods::initRTShaderSystem()
 	// Set the scene manager.
 	mShaderGenerator->addSceneManager(mSceneMgr);
 
-
 	// Add the shader libs resource location.
 	loadMainResource("rtshader");
 
 	// Set shader cache path.
 	mShaderGenerator->setShaderCachePath(SETTINGS.getSetting("User Path")+"cache");
 
-	ShaderGeneratorTechniqueResolverListener *mMaterialMgrListener = new ShaderGeneratorTechniqueResolverListener(mShaderGenerator);				
+	ShaderGeneratorTechniqueResolverListener *mMaterialMgrListener = new ShaderGeneratorTechniqueResolverListener(mShaderGenerator);
 	MaterialManager::getSingleton().addListener(mMaterialMgrListener);
 
 	// add per pixel lighting
@@ -416,7 +416,6 @@ void RigsOfRods::createScene(void)
 
 	MaterialManager::getSingleton().setDefaultAnisotropy(8);
 	MaterialManager::getSingleton().setDefaultTextureFiltering(tfo);
-
 }
 
 bool RigsOfRods::configure(void)
@@ -534,6 +533,5 @@ void RigsOfRods::exploreTerrains()
 		rgm.addResourceLocation(fullpath+(*iterFiles).filename+dirsep+"Temp", "FileSystem", "TerrainFolders");
 		rgm.addResourceLocation(fullpath+(*iterFiles).filename+dirsep+"Templates", "FileSystem", "TerrainFolders");
 		rgm.addResourceLocation(fullpath+(*iterFiles).filename+dirsep+"Terrain", "FileSystem", "TerrainFolders");
-		
 	}
 }

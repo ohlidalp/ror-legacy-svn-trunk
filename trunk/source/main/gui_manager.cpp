@@ -49,7 +49,7 @@ GUIManager::GUIManager(Ogre::Root *root, Ogre::SceneManager *mgr, Ogre::RenderWi
 	mSceneManager(mgr),
 	mWindow(win),
 	mExit(false),
-	mResourceFileName("core.xml")
+	mResourceFileName("MyGUI_Core.xml")
 {
 	create();
 }
@@ -82,7 +82,7 @@ void GUIManager::createGui()
 	mPlatform = new MyGUI::OgrePlatform();
 	mPlatform->initialise(mWindow, mSceneManager, ResourceGroupManager::DEFAULT_RESOURCE_GROUP_NAME, gui_logfilename);
 	mGUI = new MyGUI::Gui();
-	mGUI->initialise(mResourceFileName, gui_logfilename);
+	mGUI->initialise(mResourceFileName);
 }
 
 void GUIManager::destroyGui()
@@ -161,4 +161,3 @@ void GUIManager::injectKeyRelease(MyGUI::KeyCode _key)
 	MyGUI::InputManager::getInstance().injectKeyRelease(_key);
 }
 #endif //MYGUI
-

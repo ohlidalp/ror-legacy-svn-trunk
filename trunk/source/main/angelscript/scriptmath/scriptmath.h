@@ -1,6 +1,8 @@
 #ifndef SCRIPTMATH_H
 #define SCRIPTMATH_H
 
+#ifdef USE_ANGELSCRIPT
+
 #include <angelscript.h>
 
 BEGIN_AS_NAMESPACE
@@ -19,4 +21,6 @@ void RegisterScriptMath_Generic(asIScriptEngine *engine);
 
 END_AS_NAMESPACE
 
-#endif
+#endif // USE_ANGELSCRIPT
+
+#endif // SCRIPTMATH_H
