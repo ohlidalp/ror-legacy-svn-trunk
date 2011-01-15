@@ -7,7 +7,22 @@ endif(COMMAND cmake_policy)
 
 project(RoR)
 
-include(CMakeDependenciesConfig.txt)
+macro(copy_files srcDir destDir)
+    message(STATUS "Configuring ${destDir} ...")
+    #make_directory(${destDir})
+
+    file(GLOB files RELATIVE ${srcDir} ${srcDir}/*)
+    foreach(filename ${files})
+        set(srcTemplatePath ${srcDir}/${filename})
+        if(NOT IS_DIRECTORY ${srcTemplatePath})
+            message(STATUS "Copying file ${filename}")
+            configure_file(
+                    ${srcTemplatePath}
+                    ${destDir}/${filename}
+                    COPYONLY)
+        endif(NOT IS_DIRECTORY ${srcTemplatePath})
+    endforeach(filename)
+endmacro(copy_files)
 
 #setup the default build mode
 
@@ -42,7 +57,8 @@ mark_as_advanced(
 )
 
 if(WIN32)
-  # add multi processor compilation flags
+  set(warnings /W3 /D_CRT_SECURE_NO_WARNINGS /wd4005 /wd4996 /wd4251 /nologo)
+  add_definitions(${warnings})
   set(CMAKE_CXX_FLAGS_RELEASE        "${CMAKE_CXX_FLAGS_RELEASE}        /MP /GL /Ox /Ob2 /Oi /Ot /Oy /fp:fast /GS- /MP /Zi")
   set(CMAKE_CXX_FLAGS_MINSIZEREL     "${CMAKE_CXX_FLAGS_MINSIZEREL}     /MP /Zi")
   set(CMAKE_CXX_FLAGS_RELWITHDEBINFO "${CMAKE_CXX_FLAGS_RELWITHDEBINFO} /MP /Od /Zi")
@@ -55,33 +71,25 @@ if(WIN32)
   set(CMAKE_EXE_LINKER_FLAGS_RELEASE        "${CMAKE_EXE_LINKER_FLAGS_RELEASE}        /DEBUG /LTCG /OPT:REF")
   set(CMAKE_EXE_LINKER_FLAGS_MINSIZEREL     "${CMAKE_EXE_LINKER_FLAGS_MINSIZEREL}     /DEBUG /LTCG /OPT:REF")
   set(CMAKE_EXE_LINKER_FLAGS_RELWITHDEBINFO "${CMAKE_EXE_LINKER_FLAGS_RELWITHDEBINFO} /DEBUG /LTCG /OPT:REF")
+
+  # fix executable paths for windows
+  SET(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${RUNTIME_OUTPUT_DIRECTORY})
+  SET(CMAKE_RUNTIME_OUTPUT_DIRECTORY_RELEASE ${RUNTIME_OUTPUT_DIRECTORY})
+  SET(CMAKE_RUNTIME_OUTPUT_DIRECTORY_RELWITHDEBUG ${RUNTIME_OUTPUT_DIRECTORY})
+  SET(CMAKE_RUNTIME_OUTPUT_DIRECTORY_DEBUG ${RUNTIME_OUTPUT_DIRECTORY})
+
 ELSEIF(UNIX)
-  set(CMAKE_EXE_LINKER_FLAGS_DEBUG          "${CMAKE_EXE_LINKER_FLAGS_DEBUG}    -O0 -ggdb")
-  set(CMAKE_EXE_LINKER_FLAGS_RELEASE        "${CMAKE_EXE_LINKER_FLAGS_RELEASE}      -mfpmath=sse -msse2 -mmmx -msse -msse3 -m3dnow -O2 -fomit-frame-pointer -fstrict-aliasing -ffast-math -ftracer")
+  set(CMAKE_EXE_LINKER_FLAGS_DEBUG          "${CMAKE_EXE_LINKER_FLAGS_DEBUG}          -O0 -ggdb")
+  set(CMAKE_EXE_LINKER_FLAGS_RELEASE        "${CMAKE_EXE_LINKER_FLAGS_RELEASE}        -mfpmath=sse -msse2 -mmmx -msse -msse3 -m3dnow -O2 -fomit-frame-pointer -fstrict-aliasing -ffast-math -ftracer")
   set(CMAKE_EXE_LINKER_FLAGS_RELWITHDEBINFO "${CMAKE_EXE_LINKER_FLAGS_RELWITHDEBINFO} -O0")
 
   # add additional gdb debugging stuff
   set(CMAKE_SHARED_LINKER_FLAGS_DEBUG       "${CMAKE_SHARED_LINKER_FLAGS_DEBUG} -O0 -ggdb")
   set(CMAKE_MODULE_LINKER_FLAGS_DEBUG       "${CMAKE_MODULE_LINKER_FLAGS_DEBUG} -O0 -ggdb")
-
 endif(WIN32)
 
-macro(copy_files srcDir destDir)
-    message(STATUS "Configuring ${destDir} ...")
-    #make_directory(${destDir})
+include(CMakeDependenciesConfig.txt)
 
-    file(GLOB files RELATIVE ${srcDir} ${srcDir}/*)
-    foreach(filename ${files})
-        set(srcTemplatePath ${srcDir}/${filename})
-        if(NOT IS_DIRECTORY ${srcTemplatePath})
-            message(STATUS "Copying file ${filename}")
-            configure_file(
-                    ${srcTemplatePath}
-                    ${destDir}/${filename}
-                    COPYONLY)
-        endif(NOT IS_DIRECTORY ${srcTemplatePath})
-    endforeach(filename)
-endmacro(copy_files)
 
 add_subdirectory(source)
 
