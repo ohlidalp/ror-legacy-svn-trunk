@@ -65,27 +65,6 @@ class ConfigManager
 {
 public:
 	ConfigManager();
-	bool isFirstInstall();
-	bool isLicenceAccepted();
-
-	void setAction(int ac);
-	int getAction();
-
-
-	int uninstall(bool deleteUserFolder=false);
-
-	// stream things
-	std::vector < stream_desc_t > *getStreamset();
-	int getOnlineStreams();
-	void setStreamSelection(stream_desc_t* desc, bool selection);
-	void loadStreamSubscription();
-	void saveStreamSubscription();
-	bool isStreamSubscribed(wxString stream);
-	void saveStreamSubscription(wxString streamPath, bool value);
-	void clearStreamSubscription();
-	void streamSubscriptionDebug();
-	int  associateFileTypes();
-	void associateViewerFileTypes(std::string type);
 
 	// registry things
 	wxString getPersistentConfig(wxString name);
@@ -93,13 +72,8 @@ public:
 	void setInstallPath(wxString pth);
 	wxString getInstallationPath();
 
-	void setStartupMode(int val) { this->statupMode = val; };
-	int getStartupMode() { return this->statupMode; };
-
 	static ConfigManager *getSingleton() { return instance; };
 	static ConfigManager *instance;
-
-
 
 	void updateUserConfigFile(std::string filename, boost::filesystem::path iPath, boost::filesystem::path uPath);
 	void updateUserConfigs();
@@ -110,25 +84,25 @@ public:
 	void executeBinary(wxString filename, wxString action = wxT("runas"), wxString parameters = wxString(), wxString cwDir = wxT("cwd"), bool prependCWD=true);
 	int createShortcut(wxString linkTarget, wxString workingDirectory, wxString linkFile, wxString linkDescription);
 	void createProgramLinks(bool desktop, bool startmenu);
+	int  associateFileTypes();
+	void associateViewerFileTypes(std::string type);
+
+	static wxString getExecutablePath();
+	static wxString getExecutableBasePath();
 
 	int writeVersionInfo();
 	std::string readVersionInfo();
 	int getCurrentVersionInfo();
 
 	static std::string getOwnHash();
-	void checkForNewInstaller();
+	void checkForNewUpdater();
 
 	std::string getOnlineVersion() { return currVersion; };
 
 private:
-	int statupMode;
 	wxString installPath;
 	std::string currVersion;
-	int installeraction;
 	int dlerror;
-	std::vector < stream_desc_t > streams;
-	void clearStreamset();
-	void setInstallationPath();
 };
 
 #endif // CONFIG_MANAGER_H

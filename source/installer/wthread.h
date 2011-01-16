@@ -31,9 +31,11 @@
 
 #define REPO_DOWNLOAD       "/files/mirror/geoselect/"
 
-#define WSYNC_MAIN_SERVER   "wsync.rigsofrods.com"
+// wsync (1) = old full install service with streams
+// wsync2 = new update only service
+#define WSYNC_MAIN_SERVER   "wsync2.rigsofrods.com"
 #define WSYNC_MAIN_DIR      "/"
-#define WSYNC_VERSION_INFO  "/version"
+#define WSYNC_VERSION_INFO  "/version.txt"
 
 #define CHANGELOGURL        "http://wiki.rigsofrods.com/pages/Changelog#"
 
