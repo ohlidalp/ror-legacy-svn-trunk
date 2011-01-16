@@ -49,7 +49,6 @@ along with Rigs of Rods.  If not, see <http://www.gnu.org/licenses/>.
 #define TXTWRAP 400
 
 enum {ID_BROWSE, ID_WIZARD, ID_TIMER};
-enum {IMODE_NONE=0, IMODE_UPDATE, IMODE_INSTALL, IMODE_UNINSTALL, IMODE_UPGRADE};
 
 class MyApp : public wxApp
 {
@@ -58,7 +57,6 @@ public:
 	virtual bool OnInit();
 	virtual void OnInitCmdLine(wxCmdLineParser& parser);
     virtual bool OnCmdLineParsed(wxCmdLineParser& parser);
-	static wxString getExecutablePath();
 protected:
 	int startupMode;
 	bool autoUpdateEnabled;
@@ -100,72 +98,6 @@ class PresentationPage : public wxWizardPageSimple, public EnterLeavePage
 {
 public:
 	PresentationPage(wxWizard *parent);
-};
-
-class LicencePage : public wxWizardPageSimple, public EnterLeavePage
-{
-public:
-	LicencePage(wxWizard *parent);
-};
-
-class ActionPage : public wxWizardPageSimple, public EnterLeavePage
-{
-public:
-	ActionPage(wxWizard *parent, wxWizardPage* prev, wxWizardPage* fselect, wxWizardPage* download);
-	bool OnLeave(bool forward);
-	void SetPrev(wxWizardPage *prev);
-	wxWizardPage *GetPrev() const;
-	wxWizardPage *GetNext() const;
-private:
-	wxRadioBox* arb;
-	wxWizardPage *m_prev, *m_fselect, *m_download;
-};
-
-class PathPage : public wxWizardPageSimple, public EnterLeavePage
-{
-public:
-	PathPage(wxWizard *parent);
-	void OnBrowse(wxCommandEvent&WXUNUSED(evt));
-	bool OnLeave(bool forward);
-private:
-	wxTextCtrl* sel;
-	wxChoice* src;
-	wxButton* brobut;
-	wxDirDialog *dirdial;
-	DECLARE_EVENT_TABLE()
-};
-
-class StreamsPage : public wxWizardPageSimple, public EnterLeavePage
-{
-public:
-	StreamsPage(wxWizard *parent);
-	bool OnEnter(bool forward);
-	bool OnLeave(bool forward);
-	virtual wxWizardPage *GetPrev() const;
-	void setPages(wxWizardPage* _fpath, wxWizardPage* _faction);
-private:
-	void OnBetaChange(wxCommandEvent &evt);
-	wxScrolledWindow *scrw;
-	wxSizer *scrwsz;
-	wxRadioBox* betaOption;
-	wxWizardPage* fpath, *faction;
-	bool streamset;
-	DECLARE_EVENT_TABLE()
-};
-
-class StreamsContentPage : public wxWizardPageSimple, public EnterLeavePage
-{
-public:
-	StreamsContentPage(wxWizard *parent);
-	bool OnEnter(bool forward);
-	bool OnLeave(bool forward);
-	virtual wxWizardPage *GetPrev() const;
-	void setPrevPage(wxWizardPage* fpage);
-private:
-	wxScrolledWindow *scrw;
-	wxSizer *scrwsz;
-	wxWizardPage* fpage;
-	bool streamset;
 };
 
 class DownloadPage : public wxWizardPageSimple, public EnterLeavePage

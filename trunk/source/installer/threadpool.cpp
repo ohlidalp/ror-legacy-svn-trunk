@@ -85,12 +85,16 @@ wxThread::ExitCode WsyncWorkerThread::Entry()
 	{
 		// this is the main loop: process jobs until a job handler throws
 		while(true)
+		{
 			OnJob();
+		}
+
 	} catch(WsyncJob::job_commands& i)
 	{
 		// catch return value from error condition
 		m_pQueue->Report(iErr=i, wxEmptyString, m_ID);
 	}
+	m_pQueue->Report(WsyncJob::eID_THREAD_EXIT, wxEmptyString, m_ID); // tell main thread that worker thread has successfully exited
 	return (wxThread::ExitCode)iErr; // and return exit code
 }
 
@@ -171,6 +175,11 @@ retry:
 
 void WsyncWorkerThread::OnJob()
 {
+	if(m_pQueue->Stacksize() == 0)
+	{
+		// done
+		throw WsyncJob::eID_THREAD_EXIT; // report exit of worker thread
+	}
 	WsyncJob job = m_pQueue->Pop(); // pop a job from the queue. this will block the worker thread if queue is empty
 	switch(job.getCommand())
 	{
@@ -211,7 +220,7 @@ WsyncDownloadManager::~WsyncDownloadManager()
 
 void WsyncDownloadManager::startThreads()
 {
-	int num_threads = 5;
+	int num_threads = 1;
 	for(int i=0;i<num_threads;i++)
 	{
 		int id = m_Threads.empty()?1:m_Threads.back() + 1;
@@ -232,19 +241,25 @@ void WsyncDownloadManager::addJob(int num, wxString localFile, wxString remoteDi
 
 void WsyncDownloadManager::onThread(wxCommandEvent& event) // handler for thread notifications
 {
+	int jobID = event.GetInt();
 	switch(event.GetId())
 	{
 		case WsyncJob::eID_THREAD_JOB:
+			LOG("DLFile-WSDLM| eID_THREAD_JOB %d\n", jobID);
 			//wxMessageBox(wxString::Format(wxT("[%i]: %s"), event.GetInt(), event.GetString()));
 			break;
 		case WsyncJob::eID_THREAD_EXIT:
+			LOG("DLFile-WSDLM| eID_THREAD_EXIT %d\n", jobID);
 			//wxMessageBox(wxString::Format(wxT("[%i]: Stopped."), event.GetInt()));
-			m_Threads.remove(event.GetInt()); // thread has exited: remove thread ID from list
+			m_Threads.remove(jobID); // thread has exited: remove thread ID from list
 			break;
 		case WsyncJob::eID_THREAD_STARTED:
+			LOG("DLFile-WSDLM| eID_THREAD_STARTED %d\n", jobID);
 			//wxMessageBox(wxString::Format(wxT("[%i]: Ready."), event.GetInt()));
 			break;
 		default:
+			LOG("DLFile-WSDLM| IDK %d - %d\n", event.GetId(), jobID);
+			//wxMessageBox(wxString::Format(wxT("[%i]: IDK."), event.GetInt()));
 			event.Skip();
 	}
 }

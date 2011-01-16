@@ -81,18 +81,9 @@ along with Rigs of Rods.  If not, see <http://www.gnu.org/licenses/>.
 #endif //OGRE_PLATFORM
 
 
-BEGIN_EVENT_TABLE(PathPage, wxWizardPageSimple)
-    EVT_BUTTON(ID_BROWSE, PathPage::OnBrowse)
-END_EVENT_TABLE()
-
 BEGIN_EVENT_TABLE(DownloadPage, wxWizardPageSimple)
 	EVT_TIMER(ID_TIMER, DownloadPage::OnTimer)
 	EVT_MYSTATUS(wxID_ANY, DownloadPage::OnStatusUpdate )
-END_EVENT_TABLE()
-
-BEGIN_EVENT_TABLE(StreamsPage, wxWizardPageSimple)
-	//EVT_TIMER(ID_TIMER, DownloadPage::OnTimer)
-	EVT_RADIOBOX(wxID_ANY, StreamsPage::OnBetaChange )
 END_EVENT_TABLE()
 
 BEGIN_EVENT_TABLE(MyWizard, wxWizard)
@@ -138,18 +129,10 @@ static const wxCmdLineEntryDesc g_cmdLineDesc [] =
 {
 #if wxCHECK_VERSION(2, 9, 0)
      { wxCMD_LINE_SWITCH, ("h"), ("help"),      ("displays help on the command line parameters"), wxCMD_LINE_VAL_NONE, wxCMD_LINE_OPTION_HELP },
-     { wxCMD_LINE_SWITCH, ("u"), ("update"),    ("update mode"), wxCMD_LINE_VAL_NONE },
-     { wxCMD_LINE_SWITCH, ("r"), ("uninstall"), ("uninstall mode"), wxCMD_LINE_VAL_NONE },
-     { wxCMD_LINE_SWITCH, ("i"), ("install"),   ("install mode"), wxCMD_LINE_VAL_NONE  },
-     { wxCMD_LINE_SWITCH, ("g"), ("upgrade"),   ("upgrade mode"), wxCMD_LINE_VAL_NONE  },
      { wxCMD_LINE_SWITCH, ("n"), ("noupdate"),  ("ignore available updates"), wxCMD_LINE_VAL_NONE  },
      { wxCMD_LINE_SWITCH, ("d"), ("hash"),      ("put installer hash into clipboard"), wxCMD_LINE_VAL_NONE  },
 #else
      { wxCMD_LINE_SWITCH, wxT("h"), wxT("help"),      wxT("displays help on the command line parameters"), wxCMD_LINE_VAL_NONE, wxCMD_LINE_OPTION_HELP },
-     { wxCMD_LINE_SWITCH, wxT("u"), wxT("update"),    wxT("update mode"), wxCMD_LINE_VAL_NONE },
-     { wxCMD_LINE_SWITCH, wxT("r"), wxT("uninstall"), wxT("uninstall mode"), wxCMD_LINE_VAL_NONE },
-     { wxCMD_LINE_SWITCH, wxT("i"), wxT("install"),   wxT("install mode"), wxCMD_LINE_VAL_NONE  },
-     { wxCMD_LINE_SWITCH, wxT("g"), wxT("upgrade"),   wxT("upgrade mode"), wxCMD_LINE_VAL_NONE  },
 #endif //wxCHECK_VERSION
 	 { wxCMD_LINE_NONE }
 };
@@ -183,12 +166,6 @@ void MyApp::OnInitCmdLine(wxCmdLineParser& parser)
 
 bool MyApp::OnCmdLineParsed(wxCmdLineParser& parser)
 {
-	startupMode = IMODE_NONE;
-    if(parser.Found(wxT("u"))) startupMode = IMODE_UPDATE;
-    if(parser.Found(wxT("r"))) startupMode = IMODE_UNINSTALL;
-    if(parser.Found(wxT("i"))) startupMode = IMODE_INSTALL;
-    if(parser.Found(wxT("g"))) startupMode = IMODE_UPGRADE;
-
 	// ignore auto-update function
     if(parser.Found(wxT("n"))) autoUpdateEnabled=false;
 	
@@ -199,7 +176,7 @@ bool MyApp::OnCmdLineParsed(wxCmdLineParser& parser)
 	{
 		if (wxTheClipboard->Open())
 		{
-			wxString txt = getExecutablePath() + wxT(" ") + conv(ConfigManager::getOwnHash()) + wxT(" ") + wxT(__TIME__) + wxT(" ") + wxT(__DATE__);
+			wxString txt = ConfigManager::getExecutablePath() + wxT(" ") + conv(ConfigManager::getOwnHash()) + wxT(" ") + wxT(__TIME__) + wxT(" ") + wxT(__DATE__);
 			wxTheClipboard->SetData(new wxTextDataObject(txt));
 			wxTheClipboard->Flush();
 			wxTheClipboard->Close();
@@ -211,79 +188,13 @@ bool MyApp::OnCmdLineParsed(wxCmdLineParser& parser)
 }
 
 
-wxString MyApp::getExecutablePath()
-{
-    static bool found = false;
-    static wxString path;
-
-    if (found)
-        return path;
-    else
-    {
-#ifdef __WXMSW__
-
-        TCHAR buf[512];
-        *buf = '\0';
-        GetModuleFileName(NULL, buf, 511);
-        path = buf;
-
-#elif defined(__WXMAC__)
-
-        ProcessInfoRec processinfo;
-        ProcessSerialNumber procno ;
-        FSSpec fsSpec;
-
-        procno.highLongOfPSN = NULL ;
-        procno.lowLongOfPSN = kCurrentProcess ;
-        processinfo.processInfoLength = sizeof(ProcessInfoRec);
-        processinfo.processName = NULL;
-        processinfo.processAppSpec = &fsSpec;
-
-        GetProcessInformation( &procno , &processinfo ) ;
-        path = wxMacFSSpec2MacFilename(&fsSpec);
-#else
-        wxString argv0 = wxTheApp->argv[0];
-
-        if (wxIsAbsolutePath(argv0))
-            path = argv0;
-        else
-        {
-            wxPathList pathlist;
-            pathlist.AddEnvList(wxT("PATH"));
-            path = pathlist.FindAbsoluteValidPath(argv0);
-        }
-
-        wxFileName filename(path);
-        filename.Normalize();
-        path = filename.GetFullPath();
-#endif
-        found = true;
-        return path;
-    }
-}
-
 // ----------------------------------------------------------------------------
 // MyWizard
 // ----------------------------------------------------------------------------
-void path_descend(char* path)
-{
-	// WINDOWS ONLY
-	char dirsep='\\';
-	char* pt1=path;
-	while(*pt1)
-	{
-		// normalize
-		if(*pt1 == '/') *pt1 = dirsep;
-		pt1++;
-	}
-	char* pt=path+strlen(path)-1;
-	if (pt>=path && *pt==dirsep) pt--;
-	while (pt>=path && *pt!=dirsep) pt--;
-	if (pt>=path) *(pt+1)=0;
-}
+
 
 MyWizard::MyWizard(int startupMode, wxFrame *frame, bool _autoUpdateEnabled, bool useSizer)
-        : wxWizard(frame,ID_WIZARD,_T("Rigs of Rods Installation Assistant"),
+        : wxWizard(frame,ID_WIZARD,_T("Rigs of Rods Update Assistant"),
                    wxBitmap(licence_xpm),wxDefaultPosition,
                    wxDEFAULT_DIALOG_STYLE | wxRESIZE_BORDER), startupMode(startupMode),
 				   autoUpdateEnabled(_autoUpdateEnabled)
@@ -294,7 +205,6 @@ MyWizard::MyWizard(int startupMode, wxFrame *frame, bool _autoUpdateEnabled, boo
 	// now continue with normal startup
 
 	new ConfigManager();
-	CONFIG->setStartupMode(startupMode);
 
 	// create log
 	boost::filesystem::path iPath = boost::filesystem::path(conv(CONFIG->getInstallationPath()));
@@ -302,83 +212,17 @@ MyWizard::MyWizard(int startupMode, wxFrame *frame, bool _autoUpdateEnabled, boo
 	new InstallerLog(lPath);
 	LOG("installer log created");
 
-#if OGRE_PLATFORM == OGRE_PLATFORM_WIN32
-#if 0 
-	// this is disabled since we check for the newest installer anyways
-
-	// detect wether the user should run the other installer
-	if(!CONFIG->isFirstInstall())
-	{
-		// find the current working directory of this running app
-		bool error=false;
-		char program_path[1024]="";
-		char install_path[1024]="";
-		memset(program_path, 0, 1024);
-		memset(install_path, 0, 1024);
-
-		// get our path
-		wxString myPath = MyApp::getExecutablePath();
-		strncpy(program_path, myPath.c_str(), myPath.size());
-		GetShortPathNameA(program_path, program_path, 512);
-		path_descend(program_path);
-
-		// find the installation path
-		boost::filesystem::path installPath = boost::filesystem::path(conv(CONFIG->getInstallationPath()) + std::string("installer.exe"));
-		strncpy(install_path, installPath.string().c_str(), installPath.string().size());
-		GetShortPathNameA(install_path, install_path, 512);
-		path_descend(install_path);
-
-		// compare both
-		if(!error && strcmp(program_path, install_path) && boost::filesystem::exists(installPath))
-		{
-			wxMessageBox(_T("Please try to use the installer that you downloaded during the installation:\n"+conv(installPath.string()+"\n\nPlease do not use the installer you just started, as it can get out of date.")), _T("Warning"), wxICON_WARNING | wxOK);
-			//exit(1);
-		}
-	}
-#endif //0
-#endif // OGRE_PLATFORM
-
 	// check if there is a newer installer available
 	if(autoUpdateEnabled)
-		CONFIG->checkForNewInstaller();
+		CONFIG->checkForNewUpdater();
 
     PresentationPage *presentation = new PresentationPage(this);
-	LicencePage *licence = new LicencePage(this);
-	PathPage *path = new PathPage(this);
-	StreamsPage *streams = new StreamsPage(this);
-	StreamsContentPage *streamsContent = new StreamsContentPage(this);
-    ActionPage *action = new ActionPage(this, licence, path, streams);
 	DownloadPage *download = new DownloadPage(this);
 	LastPage *last = new LastPage(this);
-	streams->setPages(path, streamsContent);
-	streamsContent->setPrevPage(streams);
-
 
 	m_page1 = presentation;
 
-	if (!CONFIG->isLicenceAccepted())
-	{
-		wxWizardPageSimple::Chain(presentation, licence);
-		licence->SetNext(action);
-		action->SetPrev(licence);
-	}
-	else
-	{
-		if(startupMode == IMODE_UPDATE)
-		{
-			presentation->SetNext(streams);
-			streams->SetPrev(presentation);
-			CONFIG->setAction(2); // 2 = update
-		} else
-		{
-			presentation->SetNext(action);
-			action->SetPrev(presentation);
-		}
-	}
-	path->SetPrev(action);
-	wxWizardPageSimple::Chain(path, streams);
-	wxWizardPageSimple::Chain(streams, streamsContent);
-	wxWizardPageSimple::Chain(streamsContent, download);
+	wxWizardPageSimple::Chain(presentation, download);
 	wxWizardPageSimple::Chain(download, last);
 
     if ( useSizer )
@@ -441,15 +285,15 @@ PresentationPage::PresentationPage(wxWizard *parent) : wxWizardPageSimple(parent
 	wxBoxSizer *mainSizer = new wxBoxSizer(wxVERTICAL);
 	wxStaticText *tst;
 	//GetParent()->SetBackgroundColour(*wxWHITE);
-	mainSizer->Add(tst=new wxStaticText(this, wxID_ANY, _T("Welcome to the online installer of Rigs of Rods\n")), 0, wxALL, 5);
+	mainSizer->Add(tst=new wxStaticText(this, wxID_ANY, _T("Welcome to the online updater of Rigs of Rods\n")), 0, wxALL, 5);
 	wxFont dfont=tst->GetFont();
 	dfont.SetWeight(wxFONTWEIGHT_BOLD);
 	dfont.SetPointSize(dfont.GetPointSize()+4);
 	tst->SetFont(dfont);
 	tst->Wrap(TXTWRAP);
-	mainSizer->Add(tst=new wxStaticText(this, wxID_ANY, _T("This program will help you install or update Rigs of Rods on your computer.\n")), 0, wxALL, 5);
+	mainSizer->Add(tst=new wxStaticText(this, wxID_ANY, _T("This program will help you update Rigs of Rods on your computer.\n")), 0, wxALL, 5);
 	tst->Wrap(TXTWRAP);
-	mainSizer->Add(tst=new wxStaticText(this, wxID_ANY, _T("Before installing, make sure Rigs of Rods is not running, and that your internet connection is available.\n")), 0, wxALL, 5);
+	mainSizer->Add(tst=new wxStaticText(this, wxID_ANY, _T("Before updating, make sure Rigs of Rods is not running, and that your internet connection is available.\n")), 0, wxALL, 5);
 	tst->Wrap(TXTWRAP);
 	mainSizer->Add(tst=new wxStaticText(this, wxID_ANY, _T("If you are using a firewall, please allow this program to access the Internet.\n")), 0, wxALL, 5);
 	tst->Wrap(TXTWRAP);
@@ -459,488 +303,6 @@ PresentationPage::PresentationPage(wxWizard *parent) : wxWizardPageSimple(parent
 	SetSizer(mainSizer);
 	mainSizer->Fit(this);
 }
-
-//// LicencePage
-LicencePage::LicencePage(wxWizard *parent) : wxWizardPageSimple(parent)
-{
-	m_bitmap = wxBitmap(licence_xpm);
-	wxBoxSizer *mainSizer = new wxBoxSizer(wxVERTICAL);
-	wxStaticText *tst;
-	mainSizer->Add(tst=new wxStaticText(this, wxID_ANY, _T("Licence\n")), 0, wxALL, 5);
-	wxFont dfont=tst->GetFont();
-	dfont.SetWeight(wxFONTWEIGHT_BOLD);
-	dfont.SetPointSize(dfont.GetPointSize()+4);
-	tst->SetFont(dfont);
-	tst->Wrap(TXTWRAP);
-	mainSizer->Add(tst=new wxStaticText(this, wxID_ANY, _T("Please review the terms of the following licence before installing:\n")), 0, wxALL, 5);
-	tst->Wrap(TXTWRAP);
-	mainSizer->Add(new wxTextCtrl(this, wxID_ANY, _T("Rigs of Rods Copyright (C) 2008 Pierre-Michel Ricordel\n\n")
-													_T("This program is a freeware which is offered to you at no cost.\n")
-													_T("You can redistribute the installer pack as long as you do not modify it in any way.\n\n")
-													_T("This program is distributed in the hope that it will entertain you, but WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.\n\n")
-													_T("By using this program, you agree that in the case you create and publish a content for it (for example a vehicle), you accept that the author can include it in the official distribution, however you still retain the copyright of your work.")
-													,wxDefaultPosition,wxDefaultSize,wxTE_MULTILINE|wxTE_READONLY)
-													, 1, wxALL|wxEXPAND , 5);
-	mainSizer->Add(tst=new wxStaticText(this, wxID_ANY, _T("If you agree to this licence, click Next. If you do not agree, you cannot install Rigs of Rods.\n")), 0, wxALL, 5);
-	tst->Wrap(TXTWRAP);
-
-	SetSizer(mainSizer);
-	mainSizer->Fit(this);
-}
-
-//// ActionPage
-ActionPage::ActionPage(wxWizard *parent, wxWizardPage* prev, wxWizardPage* fselect, wxWizardPage* download) : wxWizardPageSimple(parent)
-{
-	m_prev=prev;
-	m_fselect=fselect;
-	m_download=download;
-	bool firstInstall = CONFIG->isFirstInstall();
-	m_bitmap = wxBitmap(action_xpm);
-	wxBoxSizer *mainSizer = new wxBoxSizer(wxVERTICAL);
-	wxStaticText *tst;
-	mainSizer->Add(tst=new wxStaticText(this, wxID_ANY, _T("What do you want to do?\n")), 0, wxALL, 5);
-	wxFont dfont=tst->GetFont();
-	dfont.SetWeight(wxFONTWEIGHT_BOLD);
-	dfont.SetPointSize(dfont.GetPointSize()+4);
-	tst->SetFont(dfont);
-	tst->Wrap(TXTWRAP);
-	if(firstInstall)
-	{
-		mainSizer->Add(tst=new wxStaticText(this, wxID_ANY, _T("This is the first time you install Rigs of Rods, choose \"Install\" to download all the files of the game.\n")), 0, wxALL, 5);
-		tst->Wrap(TXTWRAP);
-	} else
-	{
-		wxString installPath = CONFIG->getInstallationPath();
-		mainSizer->Add(tst=new wxStaticText(this, wxID_ANY, _T("The game is currently installed in:\n")), 0, wxALL, 5);
-		tst->Wrap(TXTWRAP);
-
-		mainSizer->Add(tst=new wxStaticText(this, wxID_ANY, installPath), 0, wxALL, 10);
-		tst->Wrap(TXTWRAP);
-		wxFont dfont=tst->GetFont();
-		dfont.SetWeight(wxFONTWEIGHT_BOLD);
-		dfont.SetPointSize(dfont.GetPointSize()+2);
-		tst->SetFont(dfont);
-
-		mainSizer->Add(tst=new wxStaticText(this, wxID_ANY, _T("Choose \"Update\" to update Rigs of Rods to the latest version with faster download time than downloading the entire game.\n")), 0, wxALL, 5);
-		tst->Wrap(TXTWRAP);
-		mainSizer->Add(tst=new wxStaticText(this, wxID_ANY, _T("If you choose \"Uninstall\", Rigs of Rods will be deleted from your hard drive.\n")), 0, wxALL, 5);
-		tst->Wrap(TXTWRAP);
-	}
-	wxString choices[4];
-	choices[0]=_T("Install");
-	choices[1]=_T("Upgrade older Installation");
-	choices[2]=_T("Update");
-	choices[3]=_T("Uninstall");
-	arb=new wxRadioBox(this, wxID_ANY, _T("Actions"), wxDefaultPosition, wxDefaultSize, 4, choices, 1, wxRA_SPECIFY_COLS);
-	if (firstInstall)
-	{
-		arb->Enable(2, false);
-		arb->Enable(3, false);
-		arb->SetSelection(0);
-		if(CONFIG->getStartupMode() == IMODE_UPGRADE)
-			arb->SetSelection(1);
-	}
-	else
-	{
-		arb->Enable(0, false);
-		arb->Enable(1, false);
-		arb->SetSelection(2);
-		if(CONFIG->getStartupMode() == IMODE_UNINSTALL)
-			arb->SetSelection(3);
-	}
-	mainSizer->Add(arb, 0, wxALL, 5);
-
-	SetSizer(mainSizer);
-	mainSizer->Fit(this);
-
-}
-
-void ActionPage::SetPrev(wxWizardPage *prev)
-{
-	m_prev = prev;
-}
-
-wxWizardPage *ActionPage::GetPrev() const
-{
-	return m_prev;
-}
-
-wxWizardPage *ActionPage::GetNext() const
-{
-	if (arb->GetSelection()==0)
-	{
-		return m_fselect;
-	} else if (arb->GetSelection()==1)
-	{
-		return m_fselect;
-	} else if (arb->GetSelection()==3)
-	{
-		int res = wxMessageBox(_T("Do you really want to uninstall Rigs of Rods?"), _T("Uninstall?"), wxICON_QUESTION | wxYES_NO);
-		if(res == wxYES)
-		{
-			res = wxMessageBox(_T("Do you want to remove all Rigs of Rods content in the User Folder (all downloaded mods, etc)?"), _T("Uninstall User Content?"), wxICON_QUESTION | wxYES_NO);
-			res = CONFIG->uninstall((res == wxYES));
-			if(!res)
-			{
-				wxMessageBox(_T("Rigs of Rods was uninstalled successfully. Thanks for using!"), _T("Uninstalled!"), wxICON_INFORMATION | wxOK);
-				exit(0);
-			}
-		}
-		wxMessageBox(_T("Uninstall aborted!"), _T("uninstall?"), wxICON_ERROR | wxOK);
-		exit(0);
-
-		// we should never be here
-		return m_fselect;
-	} else
-	{
-		return m_download;
-	}
-}
-
-//output validation
-bool ActionPage::OnLeave(bool forward)
-{
-	if (forward && arb->GetSelection()==1)
-		wxMessageBox(_T("Please select the old installation directory."), _T("Upgrade installation"), wxICON_INFORMATION | wxOK);
-
-	if (forward) CONFIG->setAction(arb->GetSelection());
-	return true;
-}
-
-//// PathPage
-PathPage::PathPage(wxWizard *parent) : wxWizardPageSimple(parent)
-{
-	m_bitmap = wxBitmap(dest_xpm);
-	wxBoxSizer *mainSizer = new wxBoxSizer(wxVERTICAL);
-	wxStaticText *tst;
-	mainSizer->Add(tst=new wxStaticText(this, wxID_ANY, _T("Source and Destination\n")), 0, wxALL, 5);
-	wxFont dfont=tst->GetFont();
-	dfont.SetWeight(wxFONTWEIGHT_BOLD);
-	dfont.SetPointSize(dfont.GetPointSize()+4);
-	tst->SetFont(dfont);
-	tst->Wrap(TXTWRAP);
-	mainSizer->Add(tst=new wxStaticText(this, wxID_ANY, _T("Download from:")), 0, wxALL, 5);
-	tst->Wrap(TXTWRAP);
-
-	mainSizer->Add(tst=new wxStaticText(this, wxID_ANY, _T("\nChoose the installation directory:")), 0, wxTOP|wxLEFT|wxRIGHT, 5);
-	tst->Wrap(TXTWRAP);
-
-	wxString path = wxT("");
-#if OGRE_PLATFORM == OGRE_PLATFORM_WIN32
-	wxString dir;
-	if (SHGetSpecialFolderPath(0, wxStringBuffer(dir, MAX_PATH), CSIDL_PROGRAM_FILES, FALSE))
-	{
-		path = dir + wxT("\\Rigs of Rods");
-	}
-#elif OGRE_PLATFORM == OGRE_PLATFORM_LINUX
-	char homedir[255] = "";
-	strncpy(homedir, getenv ("HOME"), 250);
-	char tmp[255]="";
-	snprintf(tmp, 255, "%s/rigsofrods/", homedir);
-	path = conv(tmp);
-#elif OGRE_PLATFORM == OGRE_PLATFORM_APPLE
-	path = _T("/opt/games/rigsofrods/");
-#endif // OGRE_PLATFORM
-	mainSizer->Add(sel=new wxTextCtrl(this, wxID_ANY, path, wxDefaultPosition,wxDefaultSize, 0) , 0, wxALL|wxEXPAND , 5);
-	mainSizer->Add(brobut=new wxButton(this, ID_BROWSE, _T("Browse...")), 0, wxBOTTOM|wxLEFT|wxRIGHT , 5);
-
-	//mainSizer->Add(tst=new wxStaticText(this, wxID_ANY, _T("You should have at least 100MB of free disk space on this drive to install Rigs of Rods.\n")), 0, wxALL, 5);
-	tst->Wrap(TXTWRAP);
-
-	dirdial=new wxDirDialog(this, _T("Choose a directory"), sel->GetValue());
-
-	SetSizer(mainSizer);
-	mainSizer->Fit(this);
-}
-
-void PathPage::OnBrowse(wxCommandEvent&WXUNUSED(evt))
-{
-	dirdial->SetPath(sel->GetValue());
-	int res=dirdial->ShowModal();
-	if (res==wxID_OK) sel->SetValue(dirdial->GetPath());
-}
-
-//output validation
-bool PathPage::OnLeave(bool forward)
-{
-	if (forward)
-	{
-		wxString path=sel->GetValue();
-		if (!wxFileName(path).IsAbsolute()) //relative paths are dangerous!
-		{
-			wxMessageBox(_T("This path is invalid"), _T("Invalid path"), wxICON_ERROR | wxOK, this);
-			return false;
-		}
-		if (!wxDir::Exists(path))
-		{
-			if (!wxFileName::Mkdir(path))
-			{
-				wxMessageBox(_T("This path could not be created"), _T("Invalid path"), wxICON_ERROR | wxOK, this);
-				return false;
-			}
-		}
-		CONFIG->setInstallPath(path);
-	}
-	return true;
-}
-
-
-//// StreamsPage
-StreamsPage::StreamsPage(wxWizard *parent) : wxWizardPageSimple(parent)
-{
-	streamset=false;
-	wxBoxSizer *mainSizer = new wxBoxSizer(wxVERTICAL);
-	wxStaticText *tst;
-	m_bitmap = wxBitmap(streams_xpm);
-	mainSizer->Add(tst=new wxStaticText(this, wxID_ANY, _T("Streams selection\n")), 0, wxALL, 0);
-	wxFont dfont=tst->GetFont();
-	dfont.SetWeight(wxFONTWEIGHT_BOLD);
-	dfont.SetPointSize(dfont.GetPointSize()+4);
-	tst->SetFont(dfont);
-	tst->Wrap(TXTWRAP);
-
-	wxString choices[4];
-	choices[0]=_T("Stable");
-	choices[1]=_T("Latest");
-	betaOption=new wxRadioBox(this, wxID_ANY, _T("Version"), wxDefaultPosition, wxDefaultSize, 2, choices, 1, wxRA_SPECIFY_COLS);
-	mainSizer->Add(betaOption);
-	bool use_stable = CONFIG->getPersistentConfig(wxT("installer.use_stable")) == wxT("yes");
-	betaOption->SetSelection(1);
-	if(use_stable)
-		betaOption->SetSelection(0);
-
-	mainSizer->Add(tst=new wxStaticText(this, wxID_ANY, _T("Choose which binary pack you want to download:\n")), 0, wxALL, 0);
-	tst->Wrap(TXTWRAP);
-
-	mainSizer->Add(scrw=new wxScrolledWindow(this, wxID_ANY, wxDefaultPosition, wxDefaultSize, wxVSCROLL), 1, wxGROW, 0);
-	scrwsz=new wxBoxSizer(wxVERTICAL);
-	scrw->SetSizer(scrwsz);
-	//scrw->SetBackgroundColour(*wxWHITE);
-	scrw->SetScrollbars(0, STREL_HEIGHT+3, 100, 30);
-
-	mainSizer->Add(tst=new wxStaticText(this, wxID_ANY, _T("Click Next to select the content.")), 0, wxALL, 0);
-	tst->Wrap(TXTWRAP);
-
-	SetSizer(mainSizer);
-	scrwsz->Fit(scrw);
-	mainSizer->Fit(this);
-
-}
-void StreamsPage::OnBetaChange(wxCommandEvent &evt)
-{
-	if(betaOption->GetSelection() == 0)
-	{
-		// stable
-		CONFIG->setPersistentConfig(wxT("installer.use_stable"), wxT("yes"));
-		OnEnter(true);
-	} else
-	{
-		// beta
-		CONFIG->setPersistentConfig(wxT("installer.use_stable"), wxT("no"));
-		OnEnter(true);
-	}
-}
-
-bool StreamsPage::OnEnter(bool forward)
-{
-	int res1 = CONFIG->getCurrentVersionInfo();
-	if(res1)
-	{
-		wxMessageBox(_T("The program could not connect to the central Streams server in order to receive the latest version information.\nThe service may be temporarily unavailable, or you have no network connection."), _T("Network error"), wxICON_ERROR | wxOK, this);
-		exit(1);
-	}
-
-	int res = CONFIG->getOnlineStreams();
-	if(res)
-	{
-		wxMessageBox(_T("The program could not connect to the central Streams server.\nThe service may be temporarily unavailable, or you have no network connection."), _T("Network error"), wxICON_ERROR | wxOK, this);
-		exit(1);
-	}
-
-	wxSizerItemList::compatibility_iterator node = scrwsz->GetChildren().GetFirst();
-	while (node)
-	{
-		wxSizerItem *item = node->GetData();
-		item->Show(false);
-		node = node->GetNext();
-	}
-	//scrwsz->Clear();
-	//add the streams
-	CONFIG->loadStreamSubscription();
-	std::vector < stream_desc_t > *streams = CONFIG->getStreamset();
-	if(!streams->size())
-	{
-		wxMessageDialog *dlg = new wxMessageDialog(this, wxT("Error while downloading the streams index. Please retry later."), wxT("Error"),wxOK|wxICON_ERROR);
-		dlg->ShowModal();
-		exit(1);
-	}
-	bool use_stable = betaOption->GetSelection() == 0; // 0 == stable
-	int counter=0;
-	for(std::vector < stream_desc_t >::iterator it=streams->begin(); it!=streams->end(); it++)
-	{
-		if(it->hidden) continue; // hide hidden entries ;)
-		bool disable = false;
-		if(!it->binary && !it->resource) disable=true; // just show binaries and resources
-		if((!it->stable || it->beta )&& use_stable) disable=true; // hide non-stable in stable mode
-		if((it->stable || !it->beta )&& !use_stable) disable=true; // hide stable in beta mode
-		if(disable)	continue;
-
-		if(it->forcecheck)
-			it->checked = true;
-
-		counter++;
-		wxStrel *wst=new wxStrel(scrw, &(*it));
-		wxSizerItem *si = scrwsz->Add(wst, 0, wxALL|wxEXPAND,0);
-		si->SetUserData((wxObject *)wst);
-	}
-	scrwsz->Fit(scrw);
-	if(!counter && use_stable)
-		wxMessageBox(wxT("No stable version currently available via the installer. Please select the latest option or download the latest stable version from \nhttp://sourceforge.net/projects/rigsofrods/"), wxT("No stable stream"));
-
-	return true;
-}
-
-bool StreamsPage::OnLeave(bool forward)
-{
-	if (forward)
-	{
-		//store the user settings
-		wxSizerItemList::compatibility_iterator node = scrwsz->GetChildren().GetFirst();
-		while (node)
-		{
-			wxSizerItem *item = node->GetData();
-			if(item->IsShown())
-			{
-				wxStrel *wst = (wxStrel *)item->GetUserData();
-				if(wst)
-					CONFIG->setStreamSelection(wst->getDesc(), wst->getSelection());
-			} else
-			{
-				wxStrel *wst = (wxStrel *)item->GetUserData();
-				if(wst)
-					CONFIG->setStreamSelection(wst->getDesc(), false);
-			}
-			node = node->GetNext();
-		}
-	}
-
-	return true;
-}
-
-wxWizardPage *StreamsPage::GetPrev() const
-{
-	if(CONFIG->getAction() == 0 || CONFIG->getAction() == 1)
-		return fpath;
-	return faction;
-}
-
-void StreamsPage::setPages(wxWizardPage* _fpath, wxWizardPage* _faction)
-{
-	fpath=_fpath;
-	faction=_faction;
-}
-
-//// StreamsContentPage
-StreamsContentPage::StreamsContentPage(wxWizard *parent) : wxWizardPageSimple(parent)
-{
-	streamset=false;
-	wxBoxSizer *mainSizer = new wxBoxSizer(wxVERTICAL);
-	wxStaticText *tst;
-	m_bitmap = wxBitmap(streams_xpm);
-	mainSizer->Add(tst=new wxStaticText(this, wxID_ANY, _T("Content Streams selection\n")), 0, wxALL, 0);
-	wxFont dfont=tst->GetFont();
-	dfont.SetWeight(wxFONTWEIGHT_BOLD);
-	dfont.SetPointSize(dfont.GetPointSize()+4);
-	tst->SetFont(dfont);
-	tst->Wrap(TXTWRAP);
-
-	mainSizer->Add(tst=new wxStaticText(this, wxID_ANY, _T("Choose which content packs you want to download:\n")), 0, wxALL, 0);
-	tst->Wrap(TXTWRAP);
-
-	mainSizer->Add(scrw=new wxScrolledWindow(this, wxID_ANY, wxDefaultPosition, wxDefaultSize, wxVSCROLL), 1, wxGROW, 0);
-	scrwsz=new wxBoxSizer(wxVERTICAL);
-	scrw->SetSizer(scrwsz);
-	//scrw->SetBackgroundColour(*wxWHITE);
-	scrw->SetScrollbars(0, STREL_HEIGHT+3, 100, 30);
-
-	mainSizer->Add(tst=new wxStaticText(this, wxID_ANY, _T("Click Next to begin the download.")), 0, wxALL, 0);
-	tst->Wrap(TXTWRAP);
-
-	SetSizer(mainSizer);
-	//scrwsz->Fit(scrw);
-	mainSizer->Fit(this);
-
-}
-
-bool StreamsContentPage::OnEnter(bool forward)
-{
-	if (streamset) return true; //reloading streams do not work for the moment (GUI problem)
-	int res = CONFIG->getOnlineStreams();
-	if(res)
-	{
-		wxMessageBox(_T("The program could not connect to the central Streams server.\nThe service may be temporarily unavailable, or you have no network connection."), _T("Network error"), wxICON_ERROR | wxOK, this);
-	}
-	scrwsz->Clear(true);
-	//add the streams
-	std::vector < stream_desc_t > *streams = CONFIG->getStreamset();
-	if(!streams->size())
-	{
-		wxMessageDialog *dlg = new wxMessageDialog(this, wxT("Error while downloading the streams index. Please retry later."), wxT("Error"),wxOK|wxICON_ERROR);
-		dlg->ShowModal();
-		exit(1);
-	}
-	bool use_stable = CONFIG->getPersistentConfig(wxT("installer.use_stable")) == wxT("yes");
-	for(std::vector < stream_desc_t >::iterator it=streams->begin(); it!=streams->end(); it++)
-	{
-		if(it->hidden || !it->content) continue; // hide hidden entries and non-content things
-		bool disable=false;
-		if(it->beta && use_stable) disable=true; // hide non-stable in stable mode
-		if(disable) continue;
-
-		if(it->forcecheck)
-			it->checked = true;
-
-		wxStrel *wst=new wxStrel(scrw, &(*it));
-		wxSizerItem *si = scrwsz->Add(wst, 0, wxALL|wxEXPAND,0);
-		si->SetUserData((wxObject *)wst);
-	}
-	scrwsz->Fit(scrw);
-	streamset=true;
-	return true;
-}
-
-bool StreamsContentPage::OnLeave(bool forward)
-{
-	if (forward)
-	{
-		//store the user settings
-		wxSizerItemList::compatibility_iterator node = scrwsz->GetChildren().GetFirst();
-		while (node)
-		{
-			wxSizerItem *item = node->GetData();
-			wxStrel *wst = (wxStrel *)item->GetUserData();
-			if(!wst) continue;
-			// save the selection in the registry for the next time.
-			CONFIG->setStreamSelection(wst->getDesc(), wst->getSelection());
-			node = node->GetNext();
-		}
-		// then load the full set from the storage again and use it!
-		CONFIG->loadStreamSubscription();
-		CONFIG->streamSubscriptionDebug();
-	}
-	return true;
-}
-
-wxWizardPage *StreamsContentPage::GetPrev() const
-{
-	return fpage;
-}
-
-void StreamsContentPage::setPrevPage(wxWizardPage* _fpage)
-{
-	fpage=_fpage;
-}
-
 
 //// DownloadPage
 DownloadPage::DownloadPage(wxWizard *parent) : wxWizardPageSimple(parent), wizard(parent)
@@ -1054,9 +416,26 @@ void DownloadPage::startThread()
 	if(threadStarted) return;
 	threadStarted=true;
 	// XXX ENABLE DEBUG
-	bool debugEnabled = true;
+	bool debugEnabled = false;
 	// XXX
-	m_pThread = new WsyncThread(this, CONFIG->getInstallationPath(), *(CONFIG->getStreamset()));
+
+	// hardcoded streams for now
+	std::vector < stream_desc_t > streams;
+	stream_desc_t sd;
+	sd.platform = wxT("ALL");
+	
+	sd.path     = wxT(INSTALLER_VERSION);
+	sd.path    += wxT("/");
+	sd.path    += wxT(INSTALLER_PLATFORM);
+	
+	sd.checked  = true;
+	sd.disabled = false;
+	sd.del      = true;
+	sd.overwrite = true;
+	sd.size     = 1024;
+	streams.push_back(sd);
+
+	m_pThread = new WsyncThread(this, CONFIG->getInstallationPath(), streams);
 	if ( m_pThread->Create() != wxTHREAD_NO_ERROR )
 	{
 		wxLogError(wxT("Can't create the thread!"));
@@ -1097,14 +476,6 @@ bool DownloadPage::OnEnter(bool forward)
 	std::string versionURL  = std::string(CHANGELOGURL) + toVersion;
 	hlink->SetLabel(conv(versionText));
 	hlink->SetURL(conv(versionURL));
-
-
-	std::vector < stream_desc_t > *streams = CONFIG->getStreamset();
-	if(!streams->size())
-	{
-		// TODO: handle this case, go back?
-		return false;
-	}
 
     htmlinfo->LoadPage(wxT("http://api.rigsofrods.com/didyouknow/"));
 
@@ -1226,7 +597,6 @@ LastPage::LastPage(wxWizard *parent) : wxWizardPageSimple(parent), wizard(parent
 	dfont.SetPointSize(dfont.GetPointSize()+4);
 	tst->SetFont(dfont);
 	tst->Wrap(TXTWRAP);
-	bool firstInstall = CONFIG->isFirstInstall();
 
 #if OGRE_PLATFORM == OGRE_PLATFORM_WIN32
 	mainSizer->Add(tst=new wxStaticText(this, wxID_ANY, _T("Thank you for downloading Rigs of Rods.\nWhat do you want to do now?")), 0, wxALL, 5);
@@ -1235,21 +605,14 @@ LastPage::LastPage(wxWizard *parent) : wxWizardPageSimple(parent), wizard(parent
 
 	chk_runtime = new wxCheckBox(this, wxID_ANY, _T("Install required runtime libraries now"));
 	mainSizer->Add(chk_runtime, 0, wxALL|wxALIGN_LEFT, 5);
-	chk_runtime->SetValue(firstInstall);
-	if(firstInstall) chk_runtime->Disable();
+	chk_runtime->SetValue(false);
 
 	chk_upgrade_configs = new wxCheckBox(this, wxID_ANY, _T("Update User Configurations (important)"));
 	mainSizer->Add(chk_upgrade_configs, 0, wxALL|wxALIGN_LEFT, 5);
-	if(firstInstall)
-	{
-		chk_upgrade_configs->SetValue(false);
-		chk_upgrade_configs->Disable();
-	} else
-	{
-		// always enable this box, thus force the users to update always
-		chk_upgrade_configs->SetValue(true);
-		chk_upgrade_configs->Enable();
-	}
+
+	// always enable this box, thus force the users to update always
+	chk_upgrade_configs->SetValue(true);
+	chk_upgrade_configs->Enable();
 
 	chk_desktop = new wxCheckBox(this, wxID_ANY, _T("Create Desktop shortcuts"));
 	mainSizer->Add(chk_desktop, 0, wxALL|wxALIGN_LEFT, 5);
@@ -1284,7 +647,6 @@ bool LastPage::OnEnter(bool forward)
 	setControlEnable(wizard, wxID_CANCEL, false);
 #if OGRE_PLATFORM == OGRE_PLATFORM_WIN32
 
-	bool firstInstall = CONFIG->isFirstInstall();
 	chk_desktop->SetValue(true);
 	if(CONFIG->getPersistentConfig(wxT("installer.create_desktop_shortcuts")) == wxT("no"))
 		chk_desktop->SetValue(false);
@@ -1293,7 +655,7 @@ bool LastPage::OnEnter(bool forward)
 	if(CONFIG->getPersistentConfig(wxT("installer.create_start_menu_shortcuts")) == wxT("no"))
 		chk_startmenu->SetValue(false);
 
-	chk_viewmanual->SetValue(firstInstall);
+	chk_viewmanual->SetValue(false);
 
 	chk_configurator->SetValue(true);
 	if(CONFIG->getPersistentConfig(wxT("installer.run_configurator")) == wxT("no"))

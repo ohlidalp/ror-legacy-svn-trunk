@@ -53,28 +53,36 @@ void WsyncThread::onDownloadStatusUpdate(MyStatusEvent &ev)
 	case MSE_DOWNLOAD_START:
 	{
 		dlStatus[jobID].status = 1;
+		LOG("DLFile-TP-%04d| MSE_DOWNLOAD_START\n", jobID );
+
 		// we do this here, since its getting overwritten on the start only
 		updateCallback(MSE_UPDATE_TEXT, dlStatus[jobID].path + " (" + formatFilesize(dlStatus[jobID].filesize) + ") ...");
 		break;
 	}
 	case MSE_DOWNLOAD_PROGRESS:
+		LOG("DLFile-TP-%04d| MSE_DOWNLOAD_PROGRESS\n", jobID );
 		dlStatus[jobID].status = 1;
 		dlStatus[jobID].percent = ev.GetProgress();
 		updateCallback(MSE_DOWNLOAD_PROGRESS, dlStatus[jobID].path, ev.GetProgress());
 		break;
 	case MSE_DOWNLOAD_TIME:
+		LOG("DLFile-TP-%04d| MSE_DOWNLOAD_TIME\n", jobID );
 		dlStatus[jobID].time = ev.GetProgress();
 		break;
 	case MSE_DOWNLOAD_TIME_LEFT:
+		LOG("DLFile-TP-%04d| MSE_DOWNLOAD_TIME_LEFT\n", jobID );
 		dlStatus[jobID].time_remaining = ev.GetProgress();
 		break;
 	case MSE_DOWNLOAD_SPEED:
+		LOG("DLFile-TP-%04d| MSE_DOWNLOAD_SPEED\n", jobID );
 		dlStatus[jobID].speed = ev.GetProgress();
 		break;
 	case MSE_DOWNLOAD_DOWNLOADED:
+		LOG("DLFile-TP-%04d| MSE_DOWNLOAD_DOWNLOADED\n", jobID);
 		dlStatus[jobID].downloaded = (boost::uintmax_t)ev.GetProgress();
 		break;
 	case MSE_DOWNLOAD_DONE:
+		LOG("DLFile-TP-%04d| MSE_DOWNLOAD_DONE\n", jobID );
 		updateCallback(MSE_DOWNLOAD_DONE, dlStatus[jobID].path);
 		dlStatus[jobID].status = 3;
 		break;
@@ -90,6 +98,7 @@ void WsyncThread::onDownloadStatusUpdate(MyStatusEvent &ev)
 
 void WsyncThread::reportProgress()
 {
+	LOG("DLFile-TP| reportProgress\n");
 	boost::uintmax_t downloadedSize=0;
 	boost::uintmax_t speedSum=0;
 	float timerunning = dlStartTime.elapsed();
@@ -164,7 +173,7 @@ void WsyncThread::reportProgress()
 		updateCallback(MSE_UPDATE_TRAFFIC, formatFilesize(downloadedSize));
 
 		// we are done :D
-		updateCallback(MSE_DONE);
+		//updateCallback(MSE_DONE);
 	}
 }
 
@@ -174,15 +183,20 @@ WsyncThread::ExitCode WsyncThread::Entry()
 	// update path target
 	updateCallback(MSE_UPDATE_PATH, ipath.string());
 
+
+	LOG("DLFile-TP| getSyncData\n");
 	getSyncData();
 
 	updateCallback(MSE_UPDATE_TITLE, "Downloading ...");
+	LOG("DLFile-TP| sync\n");
 	sync();
 
+	LOG("DLFile-TP| recordDataUsage\n");
 	recordDataUsage();
 
 	updateCallback(MSE_UPDATE_TITLE, "Finished!");
 
+	LOG("DLFile-TP| DONE\n");
 	return (WsyncThread::ExitCode)0;     // success
 }
 
@@ -366,19 +380,16 @@ int WsyncThread::getSyncData()
 		}
 		delete(dl);
 
-		/*
-		// this is not usable with overlaying streams anymore :(
+		
 		string hashMyFileIndex = generateFileHash(myFileIndex);
 		string hashRemoteFileIndex = generateFileHash(remoteFileIndex);
 
-		tryRemoveFile(INDEXFILENAME);
+		WsyncDownload::tryRemoveFile(INDEXFILENAME);
 		if(hashMyFileIndex == hashRemoteFileIndex)
 		{
 			updateCallback(MSE_DONE, "Files are up to date, no sync needed");
-			delete w;
 			return 0;
 		}
-		*/
 
 		// now read in the remote index
 		std::map<string, Hashentry> temp_hashMapRemote;
@@ -461,7 +472,6 @@ int WsyncThread::sync()
 	std::map<string, Hashentry>::iterator it;
 	std::map<string, std::map<string, Hashentry> >::iterator itr;
 
-	std::string deletedKeyword = "._deleted_";
 	// walk all remote hashmaps
 	for(itr = hashMapRemote.begin(); itr != hashMapRemote.end(); itr++)
 	{
@@ -472,25 +482,21 @@ int WsyncThread::sync()
 			// filter some utility files
 			if(it->first == string("/update.temp.exe")) continue;
 			if(it->first == string("/stream.info")) continue;
-			if(it->first == string("/version")) continue;
-
-			if(it->first.find(deletedKeyword) != string::npos)
-			{
-				// check if the file is deleted already
-				std::string realfn = it->first.substr(0, it->first.size() - deletedKeyword.size());
-				path localfile = ipath / realfn;
-				if(exists(localfile))
-					deletedFiles.push_back(Fileentry(itr->first, it->first, it->second.filesize));
-				continue;
-			}
+			if(it->first == string("/version.txt")) continue;
 
 			//if(hashMapRemote[it->first] == it->second)
 				//printf("same: %s %s==%s\n", it->first.c_str(), hashMapRemote[it->first].c_str(), it->second.c_str());
 
 			// old deletion method
 			if(itr->second.find(it->first) == itr->second.end())
+			{
 				// this file is not in this stream, ignore it for now
+				// check if the file is deleted already
+				path localfile = ipath / it->first;
+				if(exists(localfile))
+					deletedFiles.push_back(Fileentry(itr->first, it->first, it->second.filesize));
 				continue;
+			}
 			else if(itr->second[it->first].hash != it->second.hash)
 				changedFiles.push_back(Fileentry(itr->first, it->first, itr->second[it->first].filesize));
 		}
@@ -500,18 +506,7 @@ int WsyncThread::sync()
 		{
 			// filter some files
 			if(it->first == string("/stream.info")) continue;
-			if(it->first == string("/version")) continue;
-
-			// add deleted files if they still exist
-			if(it->first.find(deletedKeyword) != string::npos)
-			{
-				// check if the file is deleted already
-				std::string realfn = it->first.substr(0, it->first.size() - deletedKeyword.size());
-				path localfile = ipath / realfn;
-				if(exists(localfile))
-					deletedFiles.push_back(Fileentry(itr->first, it->first, it->second.filesize));
-				continue;
-			}
+			if(it->first == string("/version.txt")) continue;
 
 			if(hashMapLocal.find(it->first) == hashMapLocal.end())
 				newFiles.push_back(Fileentry(itr->first, it->first, it->second.filesize));
@@ -641,11 +636,6 @@ int WsyncThread::sync()
 			for(itf=deletedFiles.begin();itf!=deletedFiles.end();itf++, changeCounter++)
 			{
 				string filename = itf->filename;
-				if(filename.find(deletedKeyword) != string::npos)
-				{
-					// check if the file is deleted already
-					filename = filename.substr(0, filename.size() - deletedKeyword.size());
-				}
 
 				//progressOutputShort(float(changeCounter)/float(changeMax));
 				sprintf(tmp, "deleting file: %s\n", filename.c_str()); //, formatFilesize(itf->filesize).c_str());
@@ -844,6 +834,7 @@ double WsyncThread::measureDownloadSpeed(std::string server, std::string url)
 
 void WsyncThread::addJob(wxString localFile, wxString remoteDir, wxString remoteServer, wxString remoteFile, wxString hashRemoteFile, wxString localFilename, boost::uintmax_t filesize)
 {
+	LOG("DLFile-TP| addJob %d = %s, %s\n", dlNum, conv(localFile).c_str(), conv(remoteFile).c_str());
 	dlStatus[dlNum].downloaded=0;
 	dlStatus[dlNum].percent=0;
 	dlStatus[dlNum].speed=0;

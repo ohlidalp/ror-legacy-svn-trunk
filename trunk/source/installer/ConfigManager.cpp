@@ -56,7 +56,6 @@ ConfigManager *ConfigManager::instance = 0;
 ConfigManager::ConfigManager() : currVersion()
 {
 	ConfigManager::instance = this;
-	streams.clear();
 	installPath = wxString();
 	dlerror=0;
 }
@@ -66,7 +65,9 @@ int ConfigManager::getCurrentVersionInfo()
 	// get the most recent version information
 	WsyncDownload *wsdl = new WsyncDownload();
 	std::vector< std::vector< std::string > > list;
-	int res = wsdl->downloadConfigFile(WSYNC_MAIN_SERVER, WSYNC_VERSION_INFO, list);
+	char tmp[256] = "";
+	sprintf(tmp, "%s/%s/%s", INSTALLER_VERSION, INSTALLER_PLATFORM, WSYNC_VERSION_INFO);
+	int res = wsdl->downloadConfigFile(WSYNC_MAIN_SERVER, std::string(tmp), list);
 	delete(wsdl);
 	if(!res && list.size()>0 && list[0].size()>0)
 	{
@@ -102,254 +103,18 @@ std::string ConfigManager::readVersionInfo()
 	return std::string("unkown");
 }
 
-int ConfigManager::getOnlineStreams()
-{
-	if(streams.size() > 0) return 0; // already downloaded
-	//clear list
-	clearStreamset();
-
-	// now get the available streams list
-	std::vector< std::map< std::string, std::string > > olist;
-
-	WsyncDownload *wsdl = new WsyncDownload();
-	int res = wsdl->downloadAdvancedConfigFile("wsync.rigsofrods.com", "/streams.index", olist, true);
-	if(res == -1)
-	{
-		wxMessageBox(_T("error creating tempfile for download"), _T("Error"), wxICON_ERROR | wxOK);
-	} else if (res == -2)
-	{
-		std::string errorMsg;// = w->getLastError();
-		wxMessageBox(_T("error downloading file:\n")/*+errorMsg*/, _T("Error"), wxICON_ERROR | wxOK);
-	} else if (res == -3)
-	{
-		wxMessageBox(_T("unable to open local file for reading"), _T("Error"), wxICON_ERROR | wxOK);
-	} else if (res == -4)
-	{
-		wxMessageBox(_T("unable to download file, content incorrect: http://wsync.rigsofrods.com/streams.index"), _T("Error"), wxICON_ERROR | wxOK);
-	}
-	delete wsdl;
-
-	if(!res)
-	{
-		// no error so far
-		if(olist.size() > 0)
-		{
-			for(int i=0;i<(int)olist.size();i++)
-			{
-				stream_desc_t s;
-				s.title     = conv(olist[i]["title"]);
-				s.desc      = conv(olist[i]["description"]);
-				s.conflict  = conv(olist[i]["conflict"]);
-				s.group     = conv(olist[i]["group"]);
-				s.platform  = conv(olist[i]["platform"]);
-				s.path      = conv(olist[i]["path"]);
-
-				// OLD version of getting the version, now obsolete
-				//if(olist[i]["version"].size() > 0 && currVersion.empty())
-				//	currVersion = olist[i]["version"];
-
-				s.icon      = (olist[i]["type"]=="0")?wxBitmap(mainpack_xpm):wxBitmap(extrapack_xpm);
-				s.checked   = (olist[i]["checked"] == "1");
-				s.forcecheck= (olist[i]["forcecheck"] == "1");
-				s.hidden    = (olist[i]["hidden"] == "1");
-				s.binary    = (olist[i]["binary"] == "1");
-				s.resource  = (olist[i]["resource"] == "1");
-				s.disabled  = (olist[i]["disabled"] == "1");
-				s.beta      = (olist[i]["beta"] == "1");
-				s.stable    = (olist[i]["stable"] == "1");
-				s.del       = (olist[i]["delete"] == "1");
-				s.content   = (olist[i]["content"] == "1");
-				s.overwrite = (olist[i]["overwrite"] == "1");
-				//s.overwrite = (olist[i]["overwrite"] == "1");
-				conv(olist[i]["size"]).ToULong(&s.size);
-
-				if(!s.title.size()) continue;
-
-				// check for platform
-				if(!s.platform.empty() && s.platform != wxT("all") && s.platform != wxT("ALL"))
-				{
-					// there is a platform restriction, so check it
-					if(s.platform != wxT(INSTALLER_PLATFORM))
-					{
-						//printf("discarding stream '%s' because of wrong platform: %s [%s]\n", conv(s.title).c_str(), conv(s.platform).c_str(), INSTALLER_PLATFORM);
-						// platform does not fit, ignore this stream
-
-						continue;
-					}
-				}
-
-				streams.push_back(s);
-			}
-
-		} else
-			return 1;
-	}
-
-	if(!streams.size() && dlerror < 3)
-	{
-		// try to download three times...
-		dlerror++;
-		return getOnlineStreams();
-	}
-
-
-	//add default streams
-	//appendStream(_T("Base game"), _T("The minimum you need to run the game."), wxBitmap(mainpack_xpm), true, true);
-	//appendStream(_T("Standard media pack"), _T("The best terrains and vehicles, highly recommended!"), wxBitmap(extrapack_xpm), true, false);
-	//for (int i=0; i<5; i++)
-	//	appendStream(_T("Test pack"), _T("This is a test"), wxBitmap(unknown_xpm), false, false);
-
-	loadStreamSubscription();
-
-	return 0;
-
-}
-
 wxString ConfigManager::getInstallationPath()
 {
-	if(installPath.empty())
+	wxString path = getExecutableBasePath();
+	path += wxT("\\");
+	// check if RoR.exe exists
+	bool exists = wxFileExists(path+wxT("RoR.exe"));
+	if(!exists)
 	{
-#if OGRE_PLATFORM == OGRE_PLATFORM_WIN32
-		wxString path;
-		wxRegKey *pRegKey = new wxRegKey(wxT("HKEY_LOCAL_MACHINE\\Software\\RigsOfRods"));
-		if(!pRegKey->Exists())
-			return wxString();
-
-		if(!pRegKey->HasValue(wxT("InstallPath")))
-			return wxString();
-
-		pRegKey->QueryValue(wxT("InstallPath"), path);
-		path += wxT("\\");
-		// check if RoR.exe exists
-		bool exists = wxFileExists(path+wxT("RoR.exe"));
-		if(!exists)
-			return wxString();
-		// existing, everything correct.
-		installPath = path;
-		// see http://docs.wxwidgets.org/stable/wx_wxregkey.html
-		//wxMessageBox(path,wxT("Registry Value"),0);
-#else
-		// TODO: implement
-		installPath = wxString();
-#endif //OGRE_PLATFORM
+		wxMessageBox(wxT("No RoR.exe found, please install the game before trying to update"),wxT("Update Error"),0);
+		exit(1);
 	}
-	return installPath;
-}
-
-int ConfigManager::uninstall(bool deleteUserFolder)
-{
-	// TODO: implement uninstall for non-windows versions!
-#if OGRE_PLATFORM == OGRE_PLATFORM_WIN32
-	wxString ipath = getInstallationPath();
-	if(ipath.empty())
-	{
-		wxMessageBox(_T("Installation Path empty?!"), _T("Error"), wxICON_ERROR | wxOK);
-		return 1;
-	}
-
-	wxString mtxt = _T("Will now:\n\n");
-	mtxt += wxT("remove the main installation directory recursivly:\n") + ipath + wxT("\n\n");
-
-	wxString userPath;
-	if(deleteUserFolder)
-	{
-		LPWSTR wuser_path = new wchar_t[1024];
-		if (SHGetFolderPath(NULL, CSIDL_PERSONAL, NULL, SHGFP_TYPE_CURRENT, wuser_path)!=S_OK)
-			return 3;
-		GetShortPathName(wuser_path, wuser_path, 512); //this is legal
-		std::string user_path_str = wstrtostr(std::wstring(wuser_path));
-		user_path_str += "\\Rigs of Rods\\";
-		userPath = conv(user_path_str);
-		mtxt += wxT("remove the Rigs of Rods user content directory recursivly:\n") + userPath + wxT("\n\n");
-	}
-
-
-	// remove shortcuts
-	wxString startmenuDir, desktopDir, workingDirectory = ipath, desktopLink;
-	if(!SHGetSpecialFolderPath(0, wxStringBuffer(startmenuDir, MAX_PATH), CSIDL_COMMON_PROGRAMS, FALSE))
-	{
-		wxMessageBox(_T("Error getting Startmenu directory"), _T("Error"), wxICON_ERROR | wxOK);
-		return 8;
-	}
-	if(!SHGetSpecialFolderPath(0, wxStringBuffer(desktopDir, MAX_PATH), CSIDL_DESKTOP, FALSE))
-	{
-		wxMessageBox(_T("Error getting Desktop directory"), _T("Error"), wxICON_ERROR | wxOK);
-		return 9;
-	}
-
-	if(workingDirectory.size() > 3 && workingDirectory.substr(workingDirectory.size()-1,1) != wxT("\\"))
-		workingDirectory += wxT("\\");
-
-	startmenuDir += wxT("\\Rigs of Rods");
-	if (!wxDir::Exists(startmenuDir))
-		startmenuDir = wxString();
-
-	desktopLink = desktopDir + wxT("\\Rigs of Rods.lnk");
-	if(!wxFileName::FileExists(desktopLink))
-		desktopLink = wxString();
-
-	if(!startmenuDir.empty())
-		mtxt += wxT("remove the Rigs of Rods start menu directory:\n") + startmenuDir + wxT("\n\n");
-	if(!desktopLink.empty())
-		mtxt += wxT("remove the Rigs of Rods Desktop Link:\n") + desktopLink + wxT("\n");
-
-	mtxt += wxT("remove the Rigs of Rods Registry entry:\nHKEY_LOCAL_MACHINE\\Software\\RigsOfRods \n\n");
-	mtxt += wxT("do you want to continue?");
-	int res = wxMessageBox(mtxt, _T("Uninstall?"), wxICON_QUESTION | wxYES_NO);
-	if(res != wxYES)
-	{
-		return 10;
-	}
-
-	// this is called upon uninstall to clean the system from meta things
-	wxFileName *f = new wxFileName(ipath);
-	// wxPATH_RMDIR_RECURSIVE is available in wxWidgets >= 2.9.0
-#if wxCHECK_VERSION(2, 9, 0)
-	bool rmres = f->Rmdir(wxPATH_RMDIR_RECURSIVE);
-#else
-	#error You need at least wxWidgets version 2.9.0 in order to compile the installer correctly!
-#endif
-	if(!rmres)
-	{
-		wxMessageBox("Could not remove installation directory recursively", _T("Error"), wxICON_ERROR | wxOK);
-		return 2;
-	}
-
-	if(deleteUserFolder && !userPath.empty())
-	{
-		wxFileName *f = new wxFileName(userPath);
-#if wxCHECK_VERSION(2, 9, 0)
-		bool res = f->Rmdir(wxPATH_RMDIR_RECURSIVE);
-#else
-		#error You need at least wxWidgets version 2.9.0 in order to compile the installer correctly!
-#endif
-		if(!res)
-		{
-			wxMessageBox("Could not remove user directory recursively", _T("Error"), wxICON_ERROR | wxOK);
-			return 4;
-		}
-	}
-	// remove registry keys
-	wxRegKey *pRegKey = new wxRegKey(wxT("HKEY_LOCAL_MACHINE\\Software\\RigsOfRods"));
-	if(pRegKey->Exists())
-		pRegKey->DeleteSelf();
-
-	pRegKey = new wxRegKey(wxT("HKEY_LOCAL_MACHINE\\SOFTWARE\\Microsoft\\Windows\\CurrentVersion\\Uninstall\\Rigs of Rods"));
-	if(pRegKey->Exists())
-		pRegKey->DeleteSelf();
-
-	// remove shortcuts
-	if(!startmenuDir.empty())
-#if wxCHECK_VERSION(2, 9, 0)
-		wxFileName::Rmdir(startmenuDir, wxPATH_RMDIR_RECURSIVE);
-#else
-		#error You need at least wxWidgets version 2.9.0 in order to compile the installer correctly!
-#endif
-
-	if(!desktopLink.empty())
-		wxRemoveFile(desktopLink);
-#endif // OGRE_PLATFORM
-	return 0;
+	return path;
 }
 
 void ConfigManager::associateViewerFileTypes(std::string type)
@@ -377,94 +142,6 @@ int ConfigManager::associateFileTypes()
 	associateViewerFileTypes(".mesh");
 	return 0;
 }
-
-void ConfigManager::saveStreamSubscription()
-{
-	if(!streams.size()) return;
-	for(std::vector < stream_desc_t >::iterator it=streams.begin(); it!=streams.end(); it++)
-	{
-#if OGRE_PLATFORM == OGRE_PLATFORM_WIN32
-		wxRegKey *pRegKey = new wxRegKey(wxT("HKEY_LOCAL_MACHINE\\Software\\RigsOfRods\\streams"));
-		if(!pRegKey->Exists())
-			pRegKey->Create();
-		pRegKey->SetValue(it->path, it->checked?wxT("yes"):wxT("no"));
-#else
-	// TODO: implement
-#endif //OGRE_PLATFORM
-	}
-}
-
-void ConfigManager::saveStreamSubscription(wxString streamPath, bool value)
-{
-#if OGRE_PLATFORM == OGRE_PLATFORM_WIN32
-	wxRegKey *pRegKey = new wxRegKey(wxT("HKEY_LOCAL_MACHINE\\Software\\RigsOfRods\\streams"));
-	if(!pRegKey->Exists())
-		pRegKey->Create();
-	pRegKey->SetValue(streamPath, value?wxT("yes"):wxT("no"));
-#else
-	// TODO: implement
-#endif //OGRE_PLATFORM
-}
-
-bool ConfigManager::isStreamSubscribed(wxString streamPath)
-{
-	if(!streams.size()) return false;
-#if OGRE_PLATFORM == OGRE_PLATFORM_WIN32
-	wxRegKey *pRegKey = new wxRegKey(wxT("HKEY_LOCAL_MACHINE\\Software\\RigsOfRods\\streams"));
-	if(!pRegKey->Exists())
-		return false;
-
-	wxString enabled;
-	if(!pRegKey->HasValue(streamPath)) return false;
-	pRegKey->QueryValue(streamPath, enabled);
-	if(enabled == wxT("yes"))
-		return true;
-#else
-	// TODO: implement
-#endif //OGRE_PLATFORM
-	return false;
-}
-
-void ConfigManager::clearStreamSubscription()
-{
-	if(!streams.size()) return;
-	for(std::vector < stream_desc_t >::iterator it=streams.begin(); it!=streams.end(); it++)
-		it->checked = false;
-}
-
-void ConfigManager::streamSubscriptionDebug()
-{
-	if(!streams.size()) return;
-	LOG("==== Stream Subscriptions:\n");
-	for(std::vector < stream_desc_t >::iterator it=streams.begin(); it!=streams.end(); it++)
-		LOG("  %s(%s) : %s\n", conv(it->title).c_str(), conv(it->path).c_str(), it->checked?"YES":"NO");
-}
-
-
-void ConfigManager::loadStreamSubscription()
-{
-	if(!streams.size()) return;
-	for(std::vector < stream_desc_t >::iterator it=streams.begin(); it!=streams.end(); it++)
-	{
-#if OGRE_PLATFORM == OGRE_PLATFORM_WIN32
-		if(it->forcecheck) continue; // we enforce the value of this
-		wxRegKey *pRegKey = new wxRegKey(wxT("HKEY_LOCAL_MACHINE\\Software\\RigsOfRods\\streams"));
-		if(!pRegKey->Exists())
-			return;
-
-		wxString enabled;
-		if(!pRegKey->HasValue(it->path)) continue;
-		pRegKey->QueryValue(it->path, enabled);
-		if(enabled == wxT("yes"))
-			it->checked = true;
-		else if(enabled == wxT("no"))
-			it->checked = false;
-#else
-		// TODO: implement
-#endif //OGRE_PLATFORM
-	}
-}
-
 
 void ConfigManager::setPersistentConfig(wxString name, wxString value)
 {
@@ -496,100 +173,6 @@ wxString ConfigManager::getPersistentConfig(wxString name)
 	return wxString();
 #endif //OGRE_PLATFORM
 }
-
-void ConfigManager::setInstallationPath()
-{
-#if OGRE_PLATFORM == OGRE_PLATFORM_WIN32
-	wxRegKey *pRegKey = new wxRegKey(wxT("HKEY_LOCAL_MACHINE\\Software\\RigsOfRods"));
-	if(!pRegKey->Exists())
-		pRegKey->Create();
-	pRegKey->SetValue(wxT("InstallPath"), installPath);
-
-	// add theuninstall Info
-	pRegKey = new wxRegKey(wxT("HKEY_LOCAL_MACHINE\\SOFTWARE\\Microsoft\\Windows\\CurrentVersion\\Uninstall\\Rigs of Rods"));
-	if(!pRegKey->Exists())
-		pRegKey->Create();
-	pRegKey->SetValue(wxT("DisplayName"), wxT("Rigs of Rods"));
-	pRegKey->SetValue(wxT("DisplayVersion"), wxT("installer version"));
-	pRegKey->SetValue(wxT("Publisher"), wxT("Rigs of Rods Team"));
-	pRegKey->SetValue(wxT("UninstallString"), wxT("\"") + installPath + wxT("\\installer.exe\""));
-	pRegKey->SetValue(wxT("URLInfoAbout"), wxT("http://www.rigsofrods.com"));
-	pRegKey->SetValue(wxT("URLUpdateInfo"), wxT("http://www.rigsofrods.com"));
-	pRegKey->SetValue(wxT("DisplayIcon"), wxT("\"") + installPath + wxT("\\ror.exe\""));
-	pRegKey->SetValue(wxT("HelpLink"), wxT("http://forum.rigsofrods.com/index.php?board=10.0"));
-	//pRegKey->SetValue(wxT("InstallDate"), wxT(""));
-	pRegKey->SetValue(wxT("InstallLocation"), installPath);
-
-#else
-	// TODO: implement
-#endif //OGRE_PLATFORM
-}
-
-bool ConfigManager::isFirstInstall()
-{
-	wxString path = getInstallationPath();
-	installPath = path; //dont use setter, because it would write into the registry again
-#if OGRE_PLATFORM == OGRE_PLATFORM_WIN32
-	if(path.empty())
-		return true;
-#endif //OGRE_PLATFORM
-	return !wxFileExists(path + wxT("RoR.exe"));
-}
-
-bool ConfigManager::isLicenceAccepted()
-{
-	return !isFirstInstall();
-}
-
-void ConfigManager::setAction(int ac)
-{
-	installeraction = ac;
-}
-
-int ConfigManager::getAction()
-{
-	return installeraction;
-}
-
-void ConfigManager::setInstallPath(wxString pth)
-{
-	installPath=pth;
-	setInstallationPath();
-}
-
-std::vector < stream_desc_t > *ConfigManager::getStreamset()
-{
-	return &streams;
-}
-
-void ConfigManager::clearStreamset()
-{
-	streams.clear();
-}
-
-void ConfigManager::setStreamSelection(stream_desc_t* desc, bool selection)
-{
-	for(std::vector < stream_desc_t >::iterator it=streams.begin(); it!=streams.end(); it++)
-	{
-		// we use the path, since it is unique
-		if(it->path == desc->path)
-		{
-			//if (!it->disabled)
-			it->checked=selection;
-			saveStreamSubscription(it->path, selection);
-			return;
-		}
-	}
-	//if we are here, an invalid desc has been provided! better safe than sorry.
-}
-
-
-
-
-
-
-
-
 
 void ConfigManager::updateUserConfigFile(std::string filename, boost::filesystem::path iPath, boost::filesystem::path uPath)
 {
@@ -760,7 +343,7 @@ int ConfigManager::createShortcut(wxString linkTarget, wxString workingDirectory
 std::string ConfigManager::getOwnHash()
 {
 	// now hash ourself and validate our installer version, to be sure we are using the latest installer
-	std::string myPath = conv(MyApp::getExecutablePath());
+	std::string myPath = conv(getExecutablePath());
 
 	CSHA1 sha1;
 	bool res = sha1.HashFile(const_cast<char*>(myPath.c_str()));
@@ -771,7 +354,7 @@ std::string ConfigManager::getOwnHash()
 	return std::string(resultHash);
 }
 
-void ConfigManager::checkForNewInstaller()
+void ConfigManager::checkForNewUpdater()
 {
 	std::string ourHash = getOwnHash();
 
@@ -802,7 +385,7 @@ void ConfigManager::checkForNewInstaller()
 			wsdl->setDownloadMessage(_T("downloading installer update"));
 
 			// rename ourself, so we can replace ourself
-			std::string myPath = conv(MyApp::getExecutablePath());
+			std::string myPath = conv(getExecutablePath());
 			boost::filesystem::rename(myPath, myPath+std::string(".old"));
 
 			int res = wsdl->downloadFile(0, myPath, list[0][1], list[0][2], 0, 0, true);
@@ -818,3 +401,80 @@ void ConfigManager::checkForNewInstaller()
 	}
 	delete(wsdl);
 }
+
+void path_descend(char* path)
+{
+	// WINDOWS ONLY
+	char dirsep='\\';
+	char* pt1=path;
+	while(*pt1)
+	{
+		// normalize
+		if(*pt1 == '/') *pt1 = dirsep;
+		pt1++;
+	}
+	char* pt=path+strlen(path)-1;
+	if (pt>=path && *pt==dirsep) pt--;
+	while (pt>=path && *pt!=dirsep) pt--;
+	if (pt>=path) *(pt+1)=0;
+}
+
+wxString ConfigManager::getExecutableBasePath()
+{
+	char tmp[1025] = "";
+	strncpy(tmp, getExecutablePath().mb_str(), 1024);
+	path_descend(tmp);
+	return wxString(tmp, wxConvUTF8);
+}
+
+wxString ConfigManager::getExecutablePath()
+{
+    static bool found = false;
+    static wxString path;
+
+    if (found)
+        return path;
+    else
+    {
+#ifdef __WXMSW__
+
+        TCHAR buf[512];
+        *buf = '\0';
+        GetModuleFileName(NULL, buf, 511);
+        path = buf;
+
+#elif defined(__WXMAC__)
+
+        ProcessInfoRec processinfo;
+        ProcessSerialNumber procno ;
+        FSSpec fsSpec;
+
+        procno.highLongOfPSN = NULL ;
+        procno.lowLongOfPSN = kCurrentProcess ;
+        processinfo.processInfoLength = sizeof(ProcessInfoRec);
+        processinfo.processName = NULL;
+        processinfo.processAppSpec = &fsSpec;
+
+        GetProcessInformation( &procno , &processinfo ) ;
+        path = wxMacFSSpec2MacFilename(&fsSpec);
+#else
+        wxString argv0 = wxTheApp->argv[0];
+
+        if (wxIsAbsolutePath(argv0))
+            path = argv0;
+        else
+        {
+            wxPathList pathlist;
+            pathlist.AddEnvList(wxT("PATH"));
+            path = pathlist.FindAbsoluteValidPath(argv0);
+        }
+
+        wxFileName filename(path);
+        filename.Normalize();
+        path = filename.GetFullPath();
+#endif
+        found = true;
+        return path;
+    }
+}
+

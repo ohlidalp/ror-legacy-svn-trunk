@@ -4,6 +4,9 @@ set(resource_files download.xpm action.xpm dest.xpm extrapack.xpm finished.xpm l
 set(source_files ConfigManager.cpp wizard.cpp wthread.cpp cevent.cpp symlink.cpp wxStrel.cpp utils.cpp threadpool.cpp wsyncdownload.cpp installerlog.cpp SHA1.cpp)
 set(include_files ConfigManager.h wizard.h wxStrel.h wthread.h cevent.h symlink.h utils.h)
 
+
+set(INSTALLER_VERSION "0.38" CACHE PATH "Installer version")
+
 IF(WIN32)
    set(INSTALLER_PLATFORM "win32" CACHE PATH "Installer chosen platform")
 ENDIF(WIN32)
@@ -37,6 +40,8 @@ IF(UNIX)
 ENDIF(UNIX)
 
 add_definitions("-DINSTALLER_PLATFORM=\"${INSTALLER_PLATFORM}\"")
+add_definitions("-DINSTALLER_VERSION=\"${INSTALLER_VERSION}\"")
+
 #message("the default installer platform is \"${INSTALLER_PLATFORM}\". To change this, edit INSTALLER_PLATFORM value in cmake.")
 
 include_directories(${CURL_INCLUDE_DIRS})
