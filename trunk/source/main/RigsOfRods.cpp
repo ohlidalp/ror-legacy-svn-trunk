@@ -298,6 +298,7 @@ bool RigsOfRods::setup(void)
 	mCamera->setNearClipDistance( 0.5 );
 	mCamera->setFarClipDistance( 1000.0*1.733 );
 	mCamera->setFOVy(Degree(60));
+	mCamera->setAutoAspectRatio(true);
 
 	//CREATE VIEWPORT
 	LogManager::getSingleton().logMessage("Creating Viewport");
