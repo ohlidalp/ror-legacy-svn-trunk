@@ -112,7 +112,11 @@ FILE(GLOB viewer_headers "*.h")
 include_directories(.)
 include_directories(../main)
 
-add_executable(RoRViewer ${viewer_sources} ${viewer_headers} ${OS_SOURCE} ${additional_sources} ${HEADER_FILES} ${SOURCE_FILES} ../main/Settings.cpp ../main/errorutils.cpp)
+IF(WIN32)
+	add_executable(RoRViewer WIN32 ${viewer_sources} ${viewer_headers} ${OS_SOURCE} ${additional_sources} ${HEADER_FILES} ${SOURCE_FILES} ../main/Settings.cpp ../main/errorutils.cpp)
+ELSEIF(UNIX)
+	add_executable(RoRViewer ${viewer_sources} ${viewer_headers} ${OS_SOURCE} ${additional_sources} ${HEADER_FILES} ${SOURCE_FILES} ../main/Settings.cpp ../main/errorutils.cpp)
+ENDIF(WIN32)
 
 TARGET_LINK_LIBRARIES(RoRViewer ${wxWidgets_LIBRARIES} ${Ogre_LIBRARIES} ${Ois_LIBRARIES} ${OS_LIBS} ${optional_libs})
 
