@@ -8,9 +8,13 @@ set(ROR_USE_MOFILEREADER "FALSE" CACHE BOOL "use mofilereader")
 set(ROR_USE_PAGED   "FALSE" CACHE BOOL "use paged geometry")
 set(ROR_USE_CAELUM  "FALSE" CACHE BOOL "use caelum sky")
 set(ROR_USE_ANGELSCRIPT  "FALSE" CACHE BOOL "use angel script")
-set(ROR_USE_LITESQL  "FALSE" CACHE BOOL "use sqlite")
 set(ROR_FEAT_TIMING  "FALSE" CACHE BOOL "enable beam statistics. For core development only")
-set(ROR_USE_OPENCL  "FALSE" CACHE BOOL "use opencl (highly experimental)")
+
+# disable some options for now
+#set(ROR_USE_OPENCL  "FALSE" CACHE BOOL "use opencl (highly experimental)")
+#set(ROR_USE_LITESQL  "FALSE" CACHE BOOL "use sqlite")
+set(ROR_USE_OPENCL  OFF)
+set(ROR_USE_LITESQL  OFF)
 
 
 # set some defaults
