@@ -73,6 +73,7 @@ along with Rigs of Rods.  If not, see <http://www.gnu.org/licenses/>.
 #include "action.xpm"
 #include "download.xpm"
 #include "finished.xpm"
+#include "checkedlistctrl.h"
 
 #if OGRE_PLATFORM == OGRE_PLATFORM_WIN32
 	#include <shlobj.h> // for the special path functions
@@ -217,12 +218,14 @@ MyWizard::MyWizard(int startupMode, wxFrame *frame, bool _autoUpdateEnabled, boo
 		CONFIG->checkForNewUpdater();
 
     PresentationPage *presentation = new PresentationPage(this);
+	ConfirmationPage *confirm = new ConfirmationPage(this);
 	DownloadPage *download = new DownloadPage(this);
 	LastPage *last = new LastPage(this);
 
 	m_page1 = presentation;
 
 	wxWizardPageSimple::Chain(presentation, download);
+	//wxWizardPageSimple::Chain(confirm, download);
 	wxWizardPageSimple::Chain(download, last);
 
     if ( useSizer )
@@ -281,6 +284,12 @@ inline void setControlEnable(wxWizard *wiz, int id, bool enable)
 //// PresentationPage
 PresentationPage::PresentationPage(wxWizard *parent) : wxWizardPageSimple(parent)
 {
+
+	wxString a = conv(CONFIG->readVersionInfo());
+	CONFIG->getCurrentVersionInfo();
+	wxString b = conv(CONFIG->getOnlineVersion());
+
+
 	m_bitmap = wxBitmap(welcome_xpm);
 	wxBoxSizer *mainSizer = new wxBoxSizer(wxVERTICAL);
 	wxStaticText *tst;
@@ -297,9 +306,97 @@ PresentationPage::PresentationPage(wxWizard *parent) : wxWizardPageSimple(parent
 	tst->Wrap(TXTWRAP);
 	mainSizer->Add(tst=new wxStaticText(this, wxID_ANY, _T("If you are using a firewall, please allow this program to access the Internet.\n")), 0, wxALL, 5);
 	tst->Wrap(TXTWRAP);
-	mainSizer->Add(tst=new wxStaticText(this, wxID_ANY, _T("Click on Next to continue.\n")), 0, wxALL, 5);
+
+	mainSizer->Add(tst=new wxStaticText(this, wxID_ANY, _T("Installed Version: ") + a), 0, wxALL, 5);
+	dfont=tst->GetFont();
+	dfont.SetWeight(wxFONTWEIGHT_BOLD);
+	dfont.SetPointSize(dfont.GetPointSize()+4);
+	tst->SetFont(dfont);
 	tst->Wrap(TXTWRAP);
 
+	mainSizer->Add(tst=new wxStaticText(this, wxID_ANY, _T("Online Version: ") + b), 0, wxALL, 5);
+	dfont=tst->GetFont();
+	dfont.SetWeight(wxFONTWEIGHT_BOLD);
+	dfont.SetPointSize(dfont.GetPointSize()+4);
+	tst->SetFont(dfont);
+	tst->Wrap(TXTWRAP);
+
+	if(a == b)
+	{
+		mainSizer->Add(tst=new wxStaticText(this, wxID_ANY, _T("Already up to date, no need to update")), 0, wxALL, 5);
+		dfont=tst->GetFont();
+		dfont.SetWeight(wxFONTWEIGHT_BOLD);
+		dfont.SetPointSize(dfont.GetPointSize()+4);
+		tst->SetFont(dfont);
+		tst->Wrap(TXTWRAP);
+
+		setControlEnable(parent, wxID_FORWARD, false);
+		setControlEnable(parent, wxID_BACKWARD, false);
+
+	} else
+	{
+		mainSizer->Add(tst=new wxStaticText(this, wxID_ANY, _T("Click on Next to continue.\n")), 0, wxALL, 5);
+		tst->Wrap(TXTWRAP);
+	}
+
+	SetSizer(mainSizer);
+	mainSizer->Fit(this);
+}
+
+//// ConfirmationPage
+ConfirmationPage::ConfirmationPage(wxWizard *parent) : wxWizardPageSimple(parent)
+{
+	// TBD!
+	wxBoxSizer *mainSizer = new wxBoxSizer(wxVERTICAL);
+
+	wxCheckedListCtrl *m_item_list = new wxCheckedListCtrl(this, wxID_ANY, wxDefaultPosition, wxDefaultSize, wxLC_REPORT);
+        
+    // Add first column       
+    wxListItem col0;
+    col0.SetId(0);
+    col0.SetText( _("Foo") );
+    col0.SetWidth(50);
+    m_item_list->InsertColumn(0, col0);
+
+    // Add second column
+    wxListItem col1;
+    col1.SetId(1);
+    col1.SetText( _("Name") );
+    m_item_list->InsertColumn(1, col1);
+        
+    // Add thirs column     
+    wxListItem col2;
+    col2.SetId(2);
+    col2.SetText( _("Comments") );
+    m_item_list->InsertColumn(2, col2);
+        
+        
+    const int item_amount = 5; //getItemAmount();
+    for (int n=0; n<item_amount; n++)
+    {
+        //Item* curritem = getItem(n);
+            
+        wxListItem item;
+        item.SetId(n);
+        item.SetText( "F00bar" );
+            
+        m_item_list->InsertItem( item );
+            
+        // set value in first column
+        //if (!curritem->isFoo())
+        {
+            m_item_list->SetItem(n, 0, wxT("Foo"));
+        }
+            
+        // set value in second column
+        m_item_list->SetItem(n, 1, "Voo");
+
+        // set value in third column
+        m_item_list->SetItem(n, 2, "Doo");
+            
+    }
+        
+    mainSizer->Add(m_item_list,1, wxEXPAND | wxALL, 10);
 	SetSizer(mainSizer);
 	mainSizer->Fit(this);
 }

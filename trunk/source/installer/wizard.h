@@ -100,6 +100,12 @@ public:
 	PresentationPage(wxWizard *parent);
 };
 
+class ConfirmationPage : public wxWizardPageSimple, public EnterLeavePage
+{
+public:
+	ConfirmationPage(wxWizard *parent);
+};
+
 class DownloadPage : public wxWizardPageSimple, public EnterLeavePage
 {
 	friend class WsyncThread;

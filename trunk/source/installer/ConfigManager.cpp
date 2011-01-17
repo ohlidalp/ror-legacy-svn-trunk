@@ -66,7 +66,7 @@ int ConfigManager::getCurrentVersionInfo()
 	WsyncDownload *wsdl = new WsyncDownload();
 	std::vector< std::vector< std::string > > list;
 	char tmp[256] = "";
-	sprintf(tmp, "%s/%s/%s", INSTALLER_VERSION, INSTALLER_PLATFORM, WSYNC_VERSION_INFO);
+	sprintf(tmp, "/%s/%s/%s", INSTALLER_VERSION, INSTALLER_PLATFORM, WSYNC_VERSION_INFO);
 	int res = wsdl->downloadConfigFile(WSYNC_MAIN_SERVER, std::string(tmp), list);
 	delete(wsdl);
 	if(!res && list.size()>0 && list[0].size()>0)
@@ -75,14 +75,15 @@ int ConfigManager::getCurrentVersionInfo()
 		return 0;
 	} else
 	{
-		currVersion = std::string();
+		currVersion = std::string(" unknown "); // spaces intentionally
 	}
 	return 1;
 }
 
 int ConfigManager::writeVersionInfo()
 {
-	wxString fn = getInstallationPath() + wxT("\\version");
+	if(currVersion == " unknown ") return 1;
+	wxString fn = getInstallationPath() + wxT("\\version.txt");
 	FILE *f = fopen(conv(fn).c_str(), "w");
 	if(!f) return -1;
 	fprintf(f, "%s", currVersion.c_str());
@@ -92,7 +93,7 @@ int ConfigManager::writeVersionInfo()
 
 std::string ConfigManager::readVersionInfo()
 {
-	wxString fn = getInstallationPath() + wxT("\\version");
+	wxString fn = getInstallationPath() + wxT("\\version.txt");
 	FILE *f = fopen(conv(fn).c_str(), "r");
 	if(!f) return std::string("unkown");
 	char tmp[256]="";
@@ -100,7 +101,7 @@ std::string ConfigManager::readVersionInfo()
 	fclose(f);
 	if(res>0)
 		return std::string(tmp);
-	return std::string("unkown");
+	return std::string("unknown");
 }
 
 wxString ConfigManager::getInstallationPath()
@@ -366,7 +367,7 @@ void ConfigManager::checkForNewUpdater()
 #endif
 
     char url_tmp[256]="";
-	sprintf(url_tmp, API_CHINSTALLER, ourHash.c_str(), platform_str);
+	sprintf(url_tmp, API_CHINSTALLER, ourHash.c_str(), platform_str, INSTALLER_VERSION);
 
 	WsyncDownload *wsdl = new WsyncDownload();
 	LOG("checking for installer updates...\n");
