@@ -5043,6 +5043,7 @@ void Beam::hookToggle(Beam** trucks, int trucksnum, int group)
 			// iterate over all trucks
 			for (int t=0; t<trucksnum; t++)
 			{
+				if(t == this->trucknum) continue; // dont lock to self
 				if(!trucks[t]) continue;
 				if (trucks[t]->state==SLEEPING) continue;
 
