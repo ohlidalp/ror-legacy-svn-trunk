@@ -1,3 +1,3 @@
-"%PROGRAMFILES%\Windows Installer XML v3\bin\candle.exe" VCCRT4.wxs -out VCCRT4.wixobj
-"%PROGRAMFILES%\Windows Installer XML v3\bin\light.exe" VCCRT4.wixobj -out VCCRT4.msi   
+"C:\Program Files (x86)\Windows Installer XML v3.5\bin\candle.exe" VCCRTVS2010.wxs -out VCCRTVS2010.wixobj
+"C:\Program Files (x86)\Windows Installer XML v3.5\bin\light.exe" VCCRTVS2010.wixobj -out VCCRTVS2010.msi   
 pause
