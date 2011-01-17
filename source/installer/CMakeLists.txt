@@ -85,7 +85,7 @@ IF(WIN32)
    # no more static linking :/
    #SET_TARGET_PROPERTIES(installer PROPERTIES COMPILE_FLAGS "/bigobj /MT /MP")
    # TODO: fix UAC and VS2010
-   #SET_TARGET_PROPERTIES(installer PROPERTIES LINK_FLAGS    "/MANIFESTUAC:\"level='requireAdministrator' uiAccess='false'\" /SUBSYSTEM:WINDOWS /NODEFAULTLIB:\"msvcprt.lib\" /NODEFAULTLIB:\"MSVCRT.lib\"")
+   SET_TARGET_PROPERTIES(installer PROPERTIES LINK_FLAGS    "/MANIFESTUAC:\"level='requireAdministrator' uiAccess='false'\"")
 ELSE(WIN32)
    add_executable(installer ${source_files} ${include_files} ${resource_files})
    TARGET_LINK_LIBRARIES(installer ${Boost_LIBRARIES})

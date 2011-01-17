@@ -53,36 +53,36 @@ void WsyncThread::onDownloadStatusUpdate(MyStatusEvent &ev)
 	case MSE_DOWNLOAD_START:
 	{
 		dlStatus[jobID].status = 1;
-		LOG("DLFile-TP-%04d| MSE_DOWNLOAD_START\n", jobID );
+		//LOG("DLFile-TP-%04d| MSE_DOWNLOAD_START\n", jobID );
 
 		// we do this here, since its getting overwritten on the start only
 		updateCallback(MSE_UPDATE_TEXT, dlStatus[jobID].path + " (" + formatFilesize(dlStatus[jobID].filesize) + ") ...");
 		break;
 	}
 	case MSE_DOWNLOAD_PROGRESS:
-		LOG("DLFile-TP-%04d| MSE_DOWNLOAD_PROGRESS\n", jobID );
+		//LOG("DLFile-TP-%04d| MSE_DOWNLOAD_PROGRESS\n", jobID );
 		dlStatus[jobID].status = 1;
 		dlStatus[jobID].percent = ev.GetProgress();
 		updateCallback(MSE_DOWNLOAD_PROGRESS, dlStatus[jobID].path, ev.GetProgress());
 		break;
 	case MSE_DOWNLOAD_TIME:
-		LOG("DLFile-TP-%04d| MSE_DOWNLOAD_TIME\n", jobID );
+		//LOG("DLFile-TP-%04d| MSE_DOWNLOAD_TIME\n", jobID );
 		dlStatus[jobID].time = ev.GetProgress();
 		break;
 	case MSE_DOWNLOAD_TIME_LEFT:
-		LOG("DLFile-TP-%04d| MSE_DOWNLOAD_TIME_LEFT\n", jobID );
+		//LOG("DLFile-TP-%04d| MSE_DOWNLOAD_TIME_LEFT\n", jobID );
 		dlStatus[jobID].time_remaining = ev.GetProgress();
 		break;
 	case MSE_DOWNLOAD_SPEED:
-		LOG("DLFile-TP-%04d| MSE_DOWNLOAD_SPEED\n", jobID );
+		//LOG("DLFile-TP-%04d| MSE_DOWNLOAD_SPEED\n", jobID );
 		dlStatus[jobID].speed = ev.GetProgress();
 		break;
 	case MSE_DOWNLOAD_DOWNLOADED:
-		LOG("DLFile-TP-%04d| MSE_DOWNLOAD_DOWNLOADED\n", jobID);
+		//LOG("DLFile-TP-%04d| MSE_DOWNLOAD_DOWNLOADED\n", jobID);
 		dlStatus[jobID].downloaded = (boost::uintmax_t)ev.GetProgress();
 		break;
 	case MSE_DOWNLOAD_DONE:
-		LOG("DLFile-TP-%04d| MSE_DOWNLOAD_DONE\n", jobID );
+		//LOG("DLFile-TP-%04d| MSE_DOWNLOAD_DONE\n", jobID );
 		updateCallback(MSE_DOWNLOAD_DONE, dlStatus[jobID].path);
 		dlStatus[jobID].status = 3;
 		break;
@@ -98,7 +98,7 @@ void WsyncThread::onDownloadStatusUpdate(MyStatusEvent &ev)
 
 void WsyncThread::reportProgress()
 {
-	LOG("DLFile-TP| reportProgress\n");
+	//LOG("DLFile-TP| reportProgress\n");
 	boost::uintmax_t downloadedSize=0;
 	boost::uintmax_t speedSum=0;
 	float timerunning = dlStartTime.elapsed();
@@ -184,19 +184,19 @@ WsyncThread::ExitCode WsyncThread::Entry()
 	updateCallback(MSE_UPDATE_PATH, ipath.string());
 
 
-	LOG("DLFile-TP| getSyncData\n");
+	//LOG("DLFile-TP| getSyncData\n");
 	getSyncData();
 
 	updateCallback(MSE_UPDATE_TITLE, "Downloading ...");
-	LOG("DLFile-TP| sync\n");
+	//LOG("DLFile-TP| sync\n");
 	sync();
 
-	LOG("DLFile-TP| recordDataUsage\n");
+	//LOG("DLFile-TP| recordDataUsage\n");
 	recordDataUsage();
 
 	updateCallback(MSE_UPDATE_TITLE, "Finished!");
 
-	LOG("DLFile-TP| DONE\n");
+	//LOG("DLFile-TP| DONE\n");
 	return (WsyncThread::ExitCode)0;     // success
 }
 
@@ -834,7 +834,7 @@ double WsyncThread::measureDownloadSpeed(std::string server, std::string url)
 
 void WsyncThread::addJob(wxString localFile, wxString remoteDir, wxString remoteServer, wxString remoteFile, wxString hashRemoteFile, wxString localFilename, boost::uintmax_t filesize)
 {
-	LOG("DLFile-TP| addJob %d = %s, %s\n", dlNum, conv(localFile).c_str(), conv(remoteFile).c_str());
+	//LOG("DLFile-TP| addJob %d = %s, %s\n", dlNum, conv(localFile).c_str(), conv(remoteFile).c_str());
 	dlStatus[dlNum].downloaded=0;
 	dlStatus[dlNum].percent=0;
 	dlStatus[dlNum].speed=0;
