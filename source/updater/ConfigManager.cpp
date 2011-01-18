@@ -390,6 +390,11 @@ void ConfigManager::checkForNewUpdater()
 			// rename ourself, so we can replace ourself
 			LOG("renaming self...\n");
 			std::string myPath = conv(getExecutablePath());
+			
+			// removing old, otherwise renaming trows exception
+			if(boost::filesystem::exists(myPath+std::string(".old")))
+				boost::filesystem::remove(myPath+std::string(".old"));
+			
 			boost::filesystem::rename(myPath, myPath+std::string(".old"));
 
 			LOG("downloading update...\n");
