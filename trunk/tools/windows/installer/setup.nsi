@@ -244,7 +244,7 @@ Function UninstallOld
 
     MessageBox MB_OKCANCEL|MB_ICONEXCLAMATION \
     "${PRODUCT_NAME} version $R1 is already installed. $\n$\nClick `OK` to remove the \
-    previous version or `Cancel` to cancel this upgrade.\n(The users folder is not removed)" \
+    previous version or `Cancel` to cancel this upgrade." \
     IDOK uninst
     Abort
  
