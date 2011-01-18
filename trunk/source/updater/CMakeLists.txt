@@ -81,15 +81,15 @@ add_definitions("-DNDEBUG")
 # we dont need to add ${Boost_LIBRARIES} here, could be wrong as well ...
 
 IF(WIN32)
-   add_executable(installer WIN32 ${source_files} ${include_files} ${resource_files})
+   add_executable(updater WIN32 ${source_files} ${include_files} ${resource_files})
    # no more static linking :/
    #SET_TARGET_PROPERTIES(installer PROPERTIES COMPILE_FLAGS "/bigobj /MT /MP")
    # TODO: fix UAC and VS2010
-   SET_TARGET_PROPERTIES(installer PROPERTIES LINK_FLAGS    "/MANIFESTUAC:\"level='requireAdministrator' uiAccess='false'\"")
+   SET_TARGET_PROPERTIES(updater PROPERTIES LINK_FLAGS    "/MANIFESTUAC:\"level='requireAdministrator' uiAccess='false'\"")
 ELSE(WIN32)
-   add_executable(installer ${source_files} ${include_files} ${resource_files})
-   TARGET_LINK_LIBRARIES(installer ${Boost_LIBRARIES})
+   add_executable(updater ${source_files} ${include_files} ${resource_files})
+   TARGET_LINK_LIBRARIES(updater ${Boost_LIBRARIES})
 ENDIF(WIN32)
-TARGET_LINK_LIBRARIES(installer ${wxWidgets_LIBRARIES} ${CURL_LIBRARIES})
+TARGET_LINK_LIBRARIES(updater ${wxWidgets_LIBRARIES} ${CURL_LIBRARIES})
    
 

@@ -201,8 +201,11 @@ MyWizard::MyWizard(int startupMode, wxFrame *frame, bool _autoUpdateEnabled, boo
 				   autoUpdateEnabled(_autoUpdateEnabled)
 {
 	// first thing to do: remove old installer file if possible
+	try
+	{
 	if(boost::filesystem::exists("updater.exe.old"))
 		boost::filesystem::remove("updater.exe.old");
+	} catch(...) {}
 	// now continue with normal startup
 
 	new ConfigManager();
