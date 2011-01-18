@@ -131,7 +131,7 @@ static const wxCmdLineEntryDesc g_cmdLineDesc [] =
 #if wxCHECK_VERSION(2, 9, 0)
      { wxCMD_LINE_SWITCH, ("h"), ("help"),      ("displays help on the command line parameters"), wxCMD_LINE_VAL_NONE, wxCMD_LINE_OPTION_HELP },
      { wxCMD_LINE_SWITCH, ("n"), ("noupdate"),  ("ignore available updates"), wxCMD_LINE_VAL_NONE  },
-     { wxCMD_LINE_SWITCH, ("d"), ("hash"),      ("put installer hash into clipboard"), wxCMD_LINE_VAL_NONE  },
+     { wxCMD_LINE_SWITCH, ("d"), ("hash"),      ("put updater hash into clipboard"), wxCMD_LINE_VAL_NONE  },
 #else
      { wxCMD_LINE_SWITCH, wxT("h"), wxT("help"),      wxT("displays help on the command line parameters"), wxCMD_LINE_VAL_NONE, wxCMD_LINE_OPTION_HELP },
 #endif //wxCHECK_VERSION
@@ -201,8 +201,8 @@ MyWizard::MyWizard(int startupMode, wxFrame *frame, bool _autoUpdateEnabled, boo
 				   autoUpdateEnabled(_autoUpdateEnabled)
 {
 	// first thing to do: remove old installer file if possible
-	if(boost::filesystem::exists("installer.exe.old"))
-		boost::filesystem::remove("installer.exe.old");
+	if(boost::filesystem::exists("updater.exe.old"))
+		boost::filesystem::remove("updater.exe.old");
 	// now continue with normal startup
 
 	new ConfigManager();
@@ -720,11 +720,11 @@ bool LastPage::OnEnter(bool forward)
 	setControlEnable(wizard, wxID_CANCEL, false);
 #if OGRE_PLATFORM == OGRE_PLATFORM_WIN32
 	chk_configurator->SetValue(true);
-	if(CONFIG->getPersistentConfig(wxT("installer.run_configurator")) == wxT("no"))
+	if(CONFIG->getPersistentConfig(wxT("updater.run_configurator")) == wxT("no"))
 		chk_configurator->SetValue(false);
 
 	chk_changelog->SetValue(true);
-	if(CONFIG->getPersistentConfig(wxT("installer.view_changelog")) == wxT("no"))
+	if(CONFIG->getPersistentConfig(wxT("updater.view_changelog")) == wxT("no"))
 		chk_changelog->SetValue(false);
 
 #endif // OGRE_PLATFORM
@@ -736,8 +736,8 @@ bool LastPage::OnLeave(bool forward)
 	if(!forward) return false;
 #if OGRE_PLATFORM == OGRE_PLATFORM_WIN32
 	// do last things
-	CONFIG->setPersistentConfig(wxT("installer.run_configurator"), chk_configurator->IsChecked()?wxT("yes"):wxT("no"));
-	CONFIG->setPersistentConfig(wxT("installer.view_changelog"), chk_changelog->IsChecked()?wxT("yes"):wxT("no"));
+	CONFIG->setPersistentConfig(wxT("updater.run_configurator"), chk_configurator->IsChecked()?wxT("yes"):wxT("no"));
+	CONFIG->setPersistentConfig(wxT("updater.view_changelog"), chk_changelog->IsChecked()?wxT("yes"):wxT("no"));
 
 	CONFIG->updateUserConfigs();
 	CONFIG->associateFileTypes();

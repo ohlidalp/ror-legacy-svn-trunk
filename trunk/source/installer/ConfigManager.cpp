@@ -239,6 +239,7 @@ void ConfigManager::updateUserConfigs()
 
 void ConfigManager::installRuntime()
 {
+	// obsolete
 	wxMessageBox(wxT("Will now install DirectX. Please click ok to continue"), _T("directx"), wxICON_INFORMATION | wxOK);
 	executeBinary(wxT("dxwebsetup.exe"));
 	wxMessageBox(wxT("Please wait until the DirectX installation is done and click ok to continue"), _T("directx"), wxICON_INFORMATION | wxOK);
@@ -325,7 +326,7 @@ void ConfigManager::createProgramLinks(bool desktop, bool startmenu)
 		createShortcut(workingDirectory + wxT("servergui.exe"), workingDirectory, startmenuDir + wxT("\\Multiplayer Server.lnk"), wxT("start Rigs of Rods multiplayer server"));
 		createShortcut(workingDirectory + wxT("Things_you_can_do_in_Rigs_of_Rods.pdf"), workingDirectory, startmenuDir + wxT("\\Manual.lnk"), wxT("open the RoR Manual"));
 		createShortcut(workingDirectory + wxT("keysheet.pdf"), workingDirectory, startmenuDir + wxT("\\Keysheet.lnk"), wxT("open the RoR Key Overview"));
-		createShortcut(workingDirectory + wxT("installer.exe"), workingDirectory, startmenuDir + wxT("\\Installer (update or uninstall).lnk"), wxT("open the Installer with which you can update or uninstall RoR."));
+		createShortcut(workingDirectory + wxT("updater.exe"), workingDirectory, startmenuDir + wxT("\\Updater.lnk"), wxT("open the Updater with which you can update or uninstall RoR."));
 	}
 #endif // OGRE_PLATFORM
 }
@@ -370,13 +371,13 @@ void ConfigManager::checkForNewUpdater()
 	sprintf(url_tmp, API_CHINSTALLER, ourHash.c_str(), platform_str, INSTALLER_VERSION);
 
 	WsyncDownload *wsdl = new WsyncDownload();
-	LOG("checking for installer updates...\n");
-	wsdl->setDownloadMessage(_T("checking for installer updates"));
+	LOG("checking for updates...\n");
+	wsdl->setDownloadMessage(_T("checking for updates"));
 	std::vector< std::vector< std::string > > list;
 	int res = wsdl->downloadConfigFile(API_SERVER, std::string(url_tmp), list, true);
 	if(!res && list.size()>0 && list[0].size()>0)
 	{
-		LOG("installer check update result: %s\n", list[0][0].c_str());
+		LOG("update check result: %s\n", list[0][0].c_str());
 		if(list[0][0] == std::string("ok"))
 		{
 			// no updates
