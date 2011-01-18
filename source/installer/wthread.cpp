@@ -519,7 +519,7 @@ int WsyncThread::sync()
 	bool updateInstaller = false;
 	for(std::vector<Fileentry>::iterator itf=changedFiles.begin();itf!=changedFiles.end();itf++)
 	{
-		if(itf->filename == "/installer.exe")
+		if(itf->filename == "/updater.exe")
 		{
 			LOG("* will be updating the installer\n");
 			updateInstaller=true;
@@ -528,22 +528,22 @@ int WsyncThread::sync()
 	}
 	if(updateInstaller)
 	{
-		path installer_from = ipath / "installer.exe";
-		path installer_to = ipath / "installer.exe.old";
+		path installer_from = ipath / "updater.exe";
+		path installer_to = ipath / "updater.exe.old";
 		if(exists(installer_from))
 		{
 			try
 			{
 				if(boost::filesystem::exists(installer_to))
 				{
-					// we dont need the old installer, remove it.
+					// we dont need the old updater, remove it.
 					WsyncDownload::tryRemoveFile(installer_to);
 				}
-				LOG("trying to rename installer from %s to %s\n", installer_from.string().c_str(), installer_to.string().c_str());
+				LOG("trying to rename updater from %s to %s\n", installer_from.string().c_str(), installer_to.string().c_str());
 				boost::filesystem::rename(installer_from, installer_to);
 			} catch (std::exception& e)
 			{
-				LOG("error while renaming installer: %s\n", std::string(e.what()).c_str());
+				LOG("error while renaming updater: %s\n", std::string(e.what()).c_str());
 			}
 		}
 	}
