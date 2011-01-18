@@ -220,7 +220,7 @@ WsyncDownloadManager::~WsyncDownloadManager()
 
 void WsyncDownloadManager::startThreads()
 {
-	int num_threads = 1;
+	int num_threads = 6;
 	for(int i=0;i<num_threads;i++)
 	{
 		int id = m_Threads.empty()?1:m_Threads.back() + 1;

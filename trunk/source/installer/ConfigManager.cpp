@@ -383,20 +383,27 @@ void ConfigManager::checkForNewUpdater()
 		} else if(list[0][0] == std::string("update") && list[0].size() > 2)
 		{
 			// yay, an update
+			LOG("new update available: %s %s\n", list[0][1].c_str(), list[0][2]);
 			wsdl->setDownloadMessage(_T("downloading installer update"));
 
 			// rename ourself, so we can replace ourself
+			LOG("renaming self...\n");
 			std::string myPath = conv(getExecutablePath());
 			boost::filesystem::rename(myPath, myPath+std::string(".old"));
 
+			LOG("downloading update...\n");
 			int res = wsdl->downloadFile(0, myPath, list[0][1], list[0][2], 0, 0, true);
 			if(!res)
 			{
 				wxMessageBox(_T("Installer was updated, will restart the installer now!"));
 
 				// now start the new installer and quit ourselfs
+				LOG("update downloaded, starting now...\n");
 				executeBinary(conv(myPath), wxT("runas"), wxT(""), wxT("cwd"), false);
 				exit(1);
+			} else
+			{
+				LOG("update download failed with error %d\n", res);
 			}
 		}
 	}

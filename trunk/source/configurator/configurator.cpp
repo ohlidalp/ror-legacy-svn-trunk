@@ -3360,8 +3360,8 @@ void MyDialog::updateRoR()
 	// get paths to update.exe
 	char path[2048];
 	getcwd(path, 2048);
-	strcat(path, "\\installer.exe");
-	wxLogStatus(wxT("using installer: ") + wxString(path));
+	strcat(path, "\\updater.exe");
+	wxLogStatus(wxT("using updater: ") + wxString(path));
 
 	int buffSize = (int)strlen(path) + 1;
 	LPWSTR wpath = new wchar_t[buffSize];
