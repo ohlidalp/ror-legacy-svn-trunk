@@ -218,7 +218,7 @@ MyWizard::MyWizard(int startupMode, wxFrame *frame, bool _autoUpdateEnabled, boo
 		CONFIG->checkForNewUpdater();
 
     PresentationPage *presentation = new PresentationPage(this);
-	ConfirmationPage *confirm = new ConfirmationPage(this);
+	//ConfirmationPage *confirm = new ConfirmationPage(this);
 	DownloadPage *download = new DownloadPage(this);
 	LastPage *last = new LastPage(this);
 
@@ -344,6 +344,7 @@ PresentationPage::PresentationPage(wxWizard *parent) : wxWizardPageSimple(parent
 }
 
 //// ConfirmationPage
+/*
 ConfirmationPage::ConfirmationPage(wxWizard *parent) : wxWizardPageSimple(parent)
 {
 	// TBD!
@@ -400,6 +401,7 @@ ConfirmationPage::ConfirmationPage(wxWizard *parent) : wxWizardPageSimple(parent
 	SetSizer(mainSizer);
 	mainSizer->Fit(this);
 }
+*/
 
 //// DownloadPage
 DownloadPage::DownloadPage(wxWizard *parent) : wxWizardPageSimple(parent), wizard(parent)
@@ -699,36 +701,10 @@ LastPage::LastPage(wxWizard *parent) : wxWizardPageSimple(parent), wizard(parent
 	mainSizer->Add(tst=new wxStaticText(this, wxID_ANY, _T("Thank you for downloading Rigs of Rods.\nWhat do you want to do now?")), 0, wxALL, 5);
 	tst->Wrap(TXTWRAP);
 
-
-	chk_runtime = new wxCheckBox(this, wxID_ANY, _T("Install required runtime libraries now"));
-	mainSizer->Add(chk_runtime, 0, wxALL|wxALIGN_LEFT, 5);
-	chk_runtime->SetValue(false);
-
-	chk_upgrade_configs = new wxCheckBox(this, wxID_ANY, _T("Update User Configurations (important)"));
-	mainSizer->Add(chk_upgrade_configs, 0, wxALL|wxALIGN_LEFT, 5);
-
-	// always enable this box, thus force the users to update always
-	chk_upgrade_configs->SetValue(true);
-	chk_upgrade_configs->Enable();
-
-	chk_desktop = new wxCheckBox(this, wxID_ANY, _T("Create Desktop shortcuts"));
-	mainSizer->Add(chk_desktop, 0, wxALL|wxALIGN_LEFT, 5);
-
-	chk_startmenu = new wxCheckBox(this, wxID_ANY, _T("Create Start menu shortcuts"));
-	mainSizer->Add(chk_startmenu, 0, wxALL|wxALIGN_LEFT, 5);
-
-	chk_viewmanual = new wxCheckBox(this, wxID_ANY, _T("View manual"));
-	mainSizer->Add(chk_viewmanual, 0, wxALL|wxALIGN_LEFT, 5);
-
 	chk_configurator = new wxCheckBox(this, wxID_ANY, _T("Run the Configurator"));
 	mainSizer->Add(chk_configurator, 0, wxALL|wxALIGN_LEFT, 5);
-
 	chk_changelog = new wxCheckBox(this, wxID_ANY, _T("View the Changelog"));
 	mainSizer->Add(chk_changelog, 0, wxALL|wxALIGN_LEFT, 5);
-
-	chk_filetypes = new wxCheckBox(this, wxID_ANY, _T("Associate file types"));
-	mainSizer->Add(chk_filetypes, 0, wxALL|wxALIGN_LEFT, 5);
-
 #else
 	// TODO: add linux options
 	mainSizer->Add(tst=new wxStaticText(this, wxID_ANY, _T("Thank you for downloading Rigs of Rods.\n")), 0, wxALL, 5);
@@ -743,17 +719,6 @@ bool LastPage::OnEnter(bool forward)
 	setControlEnable(wizard, wxID_BACKWARD, false);
 	setControlEnable(wizard, wxID_CANCEL, false);
 #if OGRE_PLATFORM == OGRE_PLATFORM_WIN32
-
-	chk_desktop->SetValue(true);
-	if(CONFIG->getPersistentConfig(wxT("installer.create_desktop_shortcuts")) == wxT("no"))
-		chk_desktop->SetValue(false);
-
-	chk_startmenu->SetValue(true);
-	if(CONFIG->getPersistentConfig(wxT("installer.create_start_menu_shortcuts")) == wxT("no"))
-		chk_startmenu->SetValue(false);
-
-	chk_viewmanual->SetValue(false);
-
 	chk_configurator->SetValue(true);
 	if(CONFIG->getPersistentConfig(wxT("installer.run_configurator")) == wxT("no"))
 		chk_configurator->SetValue(false);
@@ -762,11 +727,6 @@ bool LastPage::OnEnter(bool forward)
 	if(CONFIG->getPersistentConfig(wxT("installer.view_changelog")) == wxT("no"))
 		chk_changelog->SetValue(false);
 
-	chk_filetypes->SetValue(true);
-	if(CONFIG->getPersistentConfig(wxT("installer.associate_filetypes")) == wxT("no"))
-		chk_filetypes->SetValue(false);
-
-	
 #endif // OGRE_PLATFORM
 	return true;
 }
@@ -776,33 +736,17 @@ bool LastPage::OnLeave(bool forward)
 	if(!forward) return false;
 #if OGRE_PLATFORM == OGRE_PLATFORM_WIN32
 	// do last things
-	CONFIG->setPersistentConfig(wxT("installer.create_desktop_shortcuts"), chk_desktop->IsChecked()?wxT("yes"):wxT("no"));
-	CONFIG->setPersistentConfig(wxT("installer.create_start_menu_shortcuts"), chk_startmenu->IsChecked()?wxT("yes"):wxT("no"));
 	CONFIG->setPersistentConfig(wxT("installer.run_configurator"), chk_configurator->IsChecked()?wxT("yes"):wxT("no"));
 	CONFIG->setPersistentConfig(wxT("installer.view_changelog"), chk_changelog->IsChecked()?wxT("yes"):wxT("no"));
-	CONFIG->setPersistentConfig(wxT("installer.associate_filetypes"), chk_filetypes->IsChecked()?wxT("yes"):wxT("no"));
 
-	
-	if(chk_desktop->IsChecked() || chk_startmenu->IsChecked())
-		CONFIG->createProgramLinks(chk_desktop->IsChecked(), chk_startmenu->IsChecked());
-
-	if(chk_runtime->IsChecked())
-		CONFIG->installRuntime();
-
-	if(chk_upgrade_configs->IsChecked())
-		CONFIG->updateUserConfigs();
+	CONFIG->updateUserConfigs();
+	CONFIG->associateFileTypes();
 
 	if(chk_configurator->IsChecked())
 		CONFIG->startConfigurator();
-
-	if(chk_viewmanual->IsChecked())
-		CONFIG->viewManual();
-
 	if(chk_changelog->IsChecked())
 		CONFIG->viewChangelog();
 
-	if(chk_filetypes->IsChecked())
-		CONFIG->associateFileTypes();
 
 #endif // OGRE_PLATFORM
 	return true;
