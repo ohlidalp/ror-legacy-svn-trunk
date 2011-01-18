@@ -133,7 +133,7 @@ CRCCheck on
 !define MUI_FINISHPAGE_NOAUTOCLOSE
 !define MUI_FINISHPAGE_RUN
 ;!define MUI_FINISHPAGE_RUN_NOTCHECKED
-!define MUI_FINISHPAGE_RUN_TEXT "Configure and Play now!"
+!define MUI_FINISHPAGE_RUN_TEXT "Check for updates"
 !define MUI_FINISHPAGE_RUN_FUNCTION "LaunchPostInstallation"
 !insertmacro MUI_PAGE_FINISH
 
@@ -296,7 +296,7 @@ SectionEnd
 ;SectionEnd
 
 Function "LaunchPostInstallation"
-	Exec  "$INSTDIR\RoRConfig.exe /postinstall"
+	Exec  "$INSTDIR\update.exe"
 FunctionEnd
 
 Section -AdditionalIcons
@@ -307,6 +307,7 @@ Section -AdditionalIcons
 	CreateShortCut "$SMPROGRAMS\Rigs of Rods ${PRODUCT_VERSION}\Uninstall.lnk" "$INSTDIR\uninst.exe"
 	CreateShortCut "$SMPROGRAMS\Rigs of Rods ${PRODUCT_VERSION}\Rigs of Rods.lnk" "$INSTDIR\RoR.exe"
 	CreateShortCut "$SMPROGRAMS\Rigs of Rods ${PRODUCT_VERSION}\Configurator.lnk" "$INSTDIR\RoRConfig.exe"
+	CreateShortCut "$SMPROGRAMS\Rigs of Rods ${PRODUCT_VERSION}\Updater.lnk" "$INSTDIR\updater.exe"
 	CreateShortCut "$SMPROGRAMS\Rigs of Rods ${PRODUCT_VERSION}\Key Sheet.lnk" "$INSTDIR\keysheet.pdf"
 	CreateShortCut "$SMPROGRAMS\Rigs of Rods ${PRODUCT_VERSION}\Manual.lnk" "$INSTDIR\Things_you_can_do_in_Rigs_of_Rods.pdf"
 SectionEnd
