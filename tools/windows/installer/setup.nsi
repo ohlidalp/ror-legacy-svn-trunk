@@ -59,9 +59,30 @@ ${Index_RemoveFilesAndSubDirs}-done:
   !undef Index_RemoveFilesAndSubDirs
 !macroend
 
+Function WriteToFile
+ Exch $0 ;file to write to
+ Exch
+ Exch $1 ;text to write
+ 
+  FileOpen $0 $0 a #open file
+   FileSeek $0 0 END #go to end
+   FileWrite $0 $1 #write to file
+  FileClose $0
+ 
+ Pop $1
+ Pop $0
+FunctionEnd
+ 
+!macro WriteToFile String File
+ Push "${String}"
+ Push "${File}"
+  Call WriteToFile
+!macroend
+!define WriteToFile "!insertmacro WriteToFile"
+
 ; HM NIS Edit Wizard helper defines
 !define PRODUCT_NAME "Rigs of Rods"
-!define PRODUCT_VERSION "0.37.126"
+!define PRODUCT_VERSION "0.38.1"
 !define PRODUCT_PUBLISHER "Rigs of Rods Team"
 !define PRODUCT_WEB_SITE "http://www.rigsofrods.com"
 !define PRODUCT_UNINST_KEY "Software\Microsoft\Windows\CurrentVersion\Uninstall\${PRODUCT_NAME}"
@@ -193,17 +214,21 @@ Function InstallDirectX
 	InitPluginsDir
 	File /oname=$PLUGINSDIR\dxwebsetup.exe "dxwebsetup.exe"
 	Banner::show /NOUNLOAD "Installing latest DirectX"
-    ExecWait '"$PLUGINSDIR\dxwebsetup.exe"'
+	DetailPrint "Running DirectX Setup ..."
+    ExecWait '"$PLUGINSDIR\dxwebsetup.exe"' $0
+	DetailPrint "dxwebsetup returned $0"
 	Delete $PLUGINSDIR\dxwebsetup.exe
 	Banner::destroy
 FunctionEnd
 
 Function InstallVisualStudioRuntime
 	InitPluginsDir
-	File /oname=$PLUGINSDIR\VCCRT4.msi "VCCRT4.msi"
+	File /oname=$PLUGINSDIR\VCCRTVS2010.msi "VCCRTVS2010.msi"
 	Banner::show /NOUNLOAD "Installing Visual Studio Runtime"
-	ExecWait '"msiexec" /i "VCCRT4.msi"'
-	Delete $PLUGINSDIR\VCCRT4.msi
+	DetailPrint "Installing Visual Studio Runtime ..."
+	ExecWait '"msiexec" /i "VCCRTVS2010.msi"' $0
+	DetailPrint "VCCRT setup returned $0"
+	Delete $PLUGINSDIR\VCCRTVS2010.msi
 	Banner::destroy
 FunctionEnd
 
@@ -258,6 +283,9 @@ Section "!RoR" SEC02
 	#File "..\..\doc\Things you can do in Rigs of Rods.pdf"
 	; data
 	File /r /x .svn installerfiles\*
+
+	# add version text file
+	${WriteToFile} "${PRODUCT_VERSION}" "$INSTDIR\version.txt"
 
 SectionEnd
 
@@ -327,7 +355,12 @@ Section Uninstall
 	RMDir  "/r" "$SMPROGRAMS\Rigs of Rods ${PRODUCT_VERSION}"
 	Delete "$STARTMENU.lnk"
 	RMDir  "$INSTDIR"
-
 	DeleteRegKey ${PRODUCT_UNINST_ROOT_KEY} "${PRODUCT_UNINST_KEY}"
+	
+	SetShellVarContext current
+	MessageBox MB_YESNO|MB_ICONEXCLAMATION "Remove RoR user content in $DOCUMENTS/Rigs of Rods?" IDYES removedoc IDNO end
+removedoc:
+ 	RMDir  "/r" "$DOCUMENTS\Rigs of Rods"
+end:	
 	SetAutoClose false
 SectionEnd
