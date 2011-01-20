@@ -23,7 +23,7 @@ along with Rigs of Rods.  If not, see <http://www.gnu.org/licenses/>.
 #define __SELECTOR_WINDOW_H__
 
 #include "Singleton.h"
-#include <BaseLayout.h>
+#include "mygui/BaseLayout.h"
 #include <Ogre.h>
 #include "skin.h"
 

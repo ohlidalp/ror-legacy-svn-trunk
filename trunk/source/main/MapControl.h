@@ -27,7 +27,7 @@ along with Rigs of Rods.  If not, see <http://www.gnu.org/licenses/>.
 #include "OgreTextAreaOverlayElement.h"
 #include <vector>
 #include <MyGUI.h>
-#include <BaseLayout.h>
+#include "mygui/BaseLayout.h"
 #include "rormemory.h"
 
 class MapEntity;

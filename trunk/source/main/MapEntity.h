@@ -23,7 +23,7 @@ along with Rigs of Rods.  If not, see <http://www.gnu.org/licenses/>.
 #define __MAP_ENTITY_H__
 
 #include <Ogre.h>
-#include <BaseLayout.h>
+#include "mygui/BaseLayout.h"
 
 class MapControl;
 
