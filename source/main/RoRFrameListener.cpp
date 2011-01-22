@@ -5545,12 +5545,14 @@ void RoRFrameListener::loadClassicTerrain(String terrainfile)
 	int r2oldmode=0;
 
 
-	bool decalSplineMode = false;
+	// decal vars start
+	bool decalSplineMode = false, debug_spline=false;
 	Ogre::SimpleSpline *spline = 0;
 	Ogre::String splinemat = "", spline_export_fn = "";
 	float spline_width = 5;
 	int spline_segments_x = 10, spline_segments_y = 10;
 	float splinetex_u = 1, splinetex_v = 1, ground_offset=0.001f;
+	// decal vars end
 
 	int lastprogress = -1;
 	while (!ds->eof())
@@ -5581,12 +5583,15 @@ void RoRFrameListener::loadClassicTerrain(String terrainfile)
 			if (!strncmp(line,"end_spline_decal", 16))
 			{
 				// realize spline decal now
-				addTerrainSplineDecal(spline, spline_width, Vector2(spline_segments_x,spline_segments_y), Vector2(splinetex_u, splinetex_v), splinemat, ground_offset, spline_export_fn);
+				addTerrainSplineDecal(spline, spline_width, Vector2(spline_segments_x,spline_segments_y), Vector2(splinetex_u, splinetex_v), splinemat, ground_offset, spline_export_fn, debug_spline);
 				decalSplineMode = false;
 				continue;
 			}
 
-			if (!strncmp("point", line, 5))
+			if (!strncmp("debug", line, 5))
+			{
+				debug_spline = true;
+			} else if (!strncmp("point", line, 5))
 			{
 				float x=0,y=0,z=0;
 				int res = sscanf(line, "point %f, %f, %f", &x, &y, &z);
@@ -8085,9 +8090,10 @@ bool RoRFrameListener::getNetQualityChanged()
 	return res;
 }
 
-int RoRFrameListener::addTerrainSplineDecal(Ogre::SimpleSpline *spline, float width, Ogre::Vector2 numSeg, Ogre::Vector2 uvSeg, Ogre::String materialname, float ground_offset, Ogre::String export_fn)
+int RoRFrameListener::addTerrainSplineDecal(Ogre::SimpleSpline *spline, float width, Ogre::Vector2 numSeg, Ogre::Vector2 uvSeg, Ogre::String materialname, float ground_offset, Ogre::String export_fn, bool debug)
 {
 	// debug spline line
+	if(debug)
 	{
 		Ogre::ManualObject *mo_spline = mSceneMgr->createManualObject();
 		SceneNode *mo_spline_node = terrain_decals_snode->createChildSceneNode();
@@ -8284,7 +8290,7 @@ int RoRFrameListener::addTerrainDecal(Ogre::Vector3 position, Ogre::Vector2 size
 	offset+=numSeg.y+1;
 
 	mo->end();
-	//mo->setBoundingBox(*aab);
+	mo->setBoundingBox(*aab);
 	// some optimizations
 	mo->setCastShadows(false);
 	mo->setDynamic(false);
@@ -8308,7 +8314,7 @@ int RoRFrameListener::addTerrainDecal(Ogre::Vector3 position, Ogre::Vector2 size
 	mo_node->attachObject(ent);
 
 	mo_node->setVisible(true);
-	mo_node->showBoundingBox(true);
+	//mo_node->showBoundingBox(true);
 	mo_node->setPosition(Vector3::ZERO); //(position.x, 0, position.z));
 
 
