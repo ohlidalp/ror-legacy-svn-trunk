@@ -752,11 +752,12 @@ void RoRFrameListener::setGravity(float value)
 }
 
 // Constructor takes a RenderWindow because it uses that to determine input context
-RoRFrameListener::RoRFrameListener(RenderWindow* win, Camera* cam, SceneManager* scm, Root* root, bool isEmbedded) :
+RoRFrameListener::RoRFrameListener(RenderWindow* win, Camera* cam, SceneManager* scm, Root* root, bool isEmbedded, unsigned int inputhwnd) :
 	initialized(false),
 	mCollisionTools(0),
 	isEmbedded(isEmbedded),
-	ow(0)
+	ow(0),
+	inputhwnd(inputhwnd)
 {
 	for (int i=0; i<MAX_TRUCKS; i++) trucks[i]=0;
 
@@ -898,13 +899,20 @@ RoRFrameListener::RoRFrameListener(RenderWindow* win, Camera* cam, SceneManager*
 	else if(SETTINGS.getSetting("Input Grab") == "None")
 		inputGrabMode = GRAB_NONE;
 
-	// start input engine
-	size_t hWnd = 0;
-	win->getCustomAttribute("WINDOW", &hWnd);
+	if(!isEmbedded)
+	{
 
+		// start input engine
+		size_t hWnd = 0;
+		win->getCustomAttribute("WINDOW", &hWnd);
 
-	if(!benchmarking && !isEmbedded)
-		INPUTENGINE.setup(hWnd, true, true, inputGrabMode);
+		if(!benchmarking && !isEmbedded)
+			INPUTENGINE.setup(hWnd, true, true, inputGrabMode);
+	} else
+	{
+		INPUTENGINE.setup(inputhwnd, true, true, GRAB_NONE);
+	}
+
 #ifdef USE_MYGUI
 	// init GUI
 	new GUIManager(root, scm, win);
@@ -1063,6 +1071,7 @@ RoRFrameListener::RoRFrameListener(RenderWindow* win, Camera* cam, SceneManager*
 	camCollided=false;
 	camPosColl=Vector3::ZERO;
 	cameramode=0;
+	if(isEmbedded) cameramode=CAMERA_FREE;
 	road=0;
 
 	objcounter=0;
@@ -1276,7 +1285,10 @@ RoRFrameListener::RoRFrameListener(RenderWindow* win, Camera* cam, SceneManager*
 		//}
 
 		//load preselected truck
-		if(preselected_truck != "")
+		if(preselected_truck == "none")
+		{
+			// do not load truck
+		} else if(preselected_truck != "")
 		{
 			loading_state=TERRAIN_LOADED;
 			std::vector<String> *tconfig = 0;
@@ -4173,6 +4185,12 @@ bool RoRFrameListener::updateEvents(float dt)
 	{
 		//no terrain or truck loaded
 
+		// in embedded mode we wont show that loading stuff
+		if(isEmbedded)
+		{
+			loading_state=ALL_LOADED;
+			LoadingWindow::get()->hide();
+		}
 		//uiloader->updateEvents(dt);
 
 
