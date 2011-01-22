@@ -1600,8 +1600,8 @@ bool InputEngine::setup(size_t hwnd, bool capture, bool capturemouse, int _grabM
 			pl.insert(OIS::ParamList::value_type("w32_mouse", "DISCL_NONEXCLUSIVE"));
 			pl.insert(OIS::ParamList::value_type("w32_keyboard", "DISCL_FOREGROUND"));
 			pl.insert(OIS::ParamList::value_type("w32_keyboard", "DISCL_NONEXCLUSIVE"));
-		}
 #endif // LINUX
+		}
 
 #ifndef NOOGRE
 		LogManager::getSingleton().logMessage("*** OIS WINDOW: "+hwnd_str);
