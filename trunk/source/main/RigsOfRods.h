@@ -27,11 +27,13 @@ along with Rigs of Rods.  If not, see <http://www.gnu.org/licenses/>.
 #ifndef RIGSOFRODS_H__
 #define RIGSOFRODS_H__
 
-#include "Ogre.h"
-#include "OgreConfigFile.h"
+#include <Ogre.h>
+#include <OgreRTShaderSystem.h>
+#include <OgreConfigFile.h>
+#include <OgreConfigDialog.h>
+
 #include "RoRFrameListener.h"
 //#include "OgrePlatformManager.h"
-#include "OgreConfigDialog.h"
 #ifdef HAS_EDITOR
 #include "spincontrol.h"
 #endif
@@ -54,7 +56,7 @@ using namespace Ogre;
 class RigsOfRods
 {
 public:
-	RigsOfRods(Ogre::String name = Ogre::String("RoR"), unsigned int hwnd=0);
+	RigsOfRods(Ogre::String name = Ogre::String("RoR"), unsigned int hwnd=0, unsigned int mainhwnd=0);
 	~RigsOfRods();
 	// creates Ogre Root
 	bool setup(void);
@@ -72,6 +74,8 @@ public:
 	Root *getRoot() { return mRoot; };
 	RoRFrameListener *getRoRFrameListener() { return mFrameListener; };
 
+	Ogre::RTShader::ShaderGenerator *getShaderGenerator() { return mShaderGenerator; };
+
 protected:
 	Root *mRoot;
 	Camera* mCamera;
@@ -80,8 +84,9 @@ protected:
 	RenderWindow* mWindow;
 	SoundScriptManager* ssm;
 	Viewport* vp;
-	unsigned int hwnd;
+	unsigned int hwnd, mainhwnd;
 	Ogre::String name;
+	Ogre::RTShader::ShaderGenerator *mShaderGenerator;
 
 #ifdef HAS_EDITOR
 	SpinControlOverlayElementFactory* spinfact;

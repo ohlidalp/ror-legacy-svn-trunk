@@ -29,7 +29,7 @@ along with Rigs of Rods.  If not, see <http://www.gnu.org/licenses/>.
 #include "skinmanager.h"
 #include "BeamData.h"
 
-SelectorWindow::SelectorWindow()
+SelectorWindow::SelectorWindow() : mSelectedTruck(0)
 {
 	initialiseByAttributes(this);
 

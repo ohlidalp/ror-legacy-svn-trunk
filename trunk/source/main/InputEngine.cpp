@@ -34,6 +34,8 @@ freely, subject to the following restrictions:
 #include <OgreWindowEventUtilities.h>
 #include "Settings.h"
 
+#include "errorutils.h"
+
 #ifndef NOOGRE
 #include "IngameConsole.h"
 #include "gui_manager.h"
@@ -1584,9 +1586,6 @@ bool InputEngine::setup(size_t hwnd, bool capture, bool capturemouse, int _grabM
 		ParamList pl;
 		String hwnd_str = Ogre::StringConverter::toString(hwnd);
 		pl.insert(OIS::ParamList::value_type("WINDOW", hwnd_str));
-        //pl.insert(std::make_pair(std::string("w32_keyboard"), std::string("DISCL_FOREGROUND") ));
-        //pl.insert(std::make_pair(std::string("w32_keyboard"), std::string("DISCL_NONEXCLUSIVE") ));
-
 		if(grabMode == GRAB_ALL)
 		{
 		} else if(grabMode == GRAB_DYNAMICALLY || grabMode == GRAB_NONE)
@@ -1596,8 +1595,14 @@ bool InputEngine::setup(size_t hwnd, bool capture, bool capturemouse, int _grabM
 			pl.insert(OIS::ParamList::value_type("XAutoRepeatOn", "false"));
 			pl.insert(OIS::ParamList::value_type("x11_mouse_grab", "false"));
 			pl.insert(OIS::ParamList::value_type("x11_keyboard_grab", "false"));
-#endif
+#else
+			pl.insert(OIS::ParamList::value_type("w32_mouse", "DISCL_FOREGROUND"));
+			pl.insert(OIS::ParamList::value_type("w32_mouse", "DISCL_NONEXCLUSIVE"));
+			pl.insert(OIS::ParamList::value_type("w32_keyboard", "DISCL_FOREGROUND"));
+			pl.insert(OIS::ParamList::value_type("w32_keyboard", "DISCL_NONEXCLUSIVE"));
 		}
+#endif // LINUX
+
 #ifndef NOOGRE
 		LogManager::getSingleton().logMessage("*** OIS WINDOW: "+hwnd_str);
 #endif //NOOGRE
@@ -1624,8 +1629,14 @@ bool InputEngine::setup(size_t hwnd, bool capture, bool capturemouse, int _grabM
 		mKeyboard=0;
 		if(captureKbd)
 		{
-			mKeyboard = static_cast<Keyboard*>(mInputManager->createInputObject( OISKeyboard, true ));
-			mKeyboard->setTextTranslation(OIS::Keyboard::Unicode);
+			try
+			{
+				mKeyboard = static_cast<Keyboard*>(mInputManager->createInputObject( OISKeyboard, true ));
+				mKeyboard->setTextTranslation(OIS::Keyboard::Unicode);
+			} catch(OIS::Exception &ex)
+			{
+				LogManager::getSingleton().logMessage(String("Exception raised on keyboard creation: ") + String(ex.eText));
+			}
 		}
 
 
@@ -1667,21 +1678,28 @@ bool InputEngine::setup(size_t hwnd, bool capture, bool capturemouse, int _grabM
 		if(capturemouse)
 		{
 			printf(">>> MOUSE ADDED\n");
-			mMouse = static_cast<Mouse*>(mInputManager->createInputObject( OISMouse, true ));
+			try
+			{
+				mMouse = static_cast<Mouse*>(mInputManager->createInputObject( OISMouse, true ));
+			} catch(OIS::Exception &ex)
+			{
+				LogManager::getSingleton().logMessage(String("Exception raised on mouse creation: ") + String(ex.eText));
+			}
 		}
 
 		//Set initial mouse clipping size
 		//windowResized(win);
 
 		// set Callbacks
-		if(mKeyboard)
+		if(mKeyboard && mKeyboard)
 			mKeyboard->setEventCallback(this);
-		if(capturemouse)
+		if(capturemouse && mMouse)
+		{
 			mMouse->setEventCallback(this);
 
-		// init states (not required for keyboard)
-		if(capturemouse)
+			// init states (not required for keyboard)
 			mouseState = mMouse->getMouseState();
+		}
 		if(free_joysticks)
 		{
 			for(int i=0;i<free_joysticks;i++)

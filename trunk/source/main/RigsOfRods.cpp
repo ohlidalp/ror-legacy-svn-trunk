@@ -23,7 +23,6 @@ along with Rigs of Rods.  If not, see <http://www.gnu.org/licenses/>.
 #include "errorutils.h"
 
 #include <OgreHeaderPrefix.h>
-#include <OgreRTShaderSystem.h>
 
 /** This class simply demonstrates basic usage of the CRTShader system.
 It sub class the material manager listener class and when a target scheme callback
@@ -72,7 +71,7 @@ protected:
 	RTShader::ShaderGenerator*		mShaderGenerator;			// The shader generator instance.
 };
 
-RigsOfRods::RigsOfRods(Ogre::String name, unsigned int hwnd) :
+RigsOfRods::RigsOfRods(Ogre::String name, unsigned int hwnd, unsigned int mainhwnd) :
 	mRoot(0),
 	mCamera(0),
 	mSceneMgr(0),
@@ -80,6 +79,7 @@ RigsOfRods::RigsOfRods(Ogre::String name, unsigned int hwnd) :
 	mWindow(0),
 	ssm(0),
 	hwnd(hwnd),
+	mainhwnd(mainhwnd),
 	name(name)
 {
 	useogreconfig=false;
@@ -357,7 +357,7 @@ bool RigsOfRods::setup(void)
 
 	LogManager::getSingleton().logMessage("Adding Frame Listener");
 	bool isEmbedded = (hwnd != 0);
-	mFrameListener = new RoRFrameListener(mWindow, mCamera, mSceneMgr, mRoot, isEmbedded);
+	mFrameListener = new RoRFrameListener(mWindow, mCamera, mSceneMgr, mRoot, isEmbedded, mainhwnd);
 	mRoot->addFrameListener(mFrameListener);
 
 	LogManager::getSingleton().logMessage("Setup finished successfully");
@@ -370,7 +370,7 @@ void RigsOfRods::initRTShaderSystem()
 		return;
 
 	// Grab the shader generator pointer.
-	Ogre::RTShader::ShaderGenerator *mShaderGenerator = Ogre::RTShader::ShaderGenerator::getSingletonPtr();
+	mShaderGenerator = Ogre::RTShader::ShaderGenerator::getSingletonPtr();
 
 	// Set the scene manager.
 	mShaderGenerator->addSceneManager(mSceneMgr);
@@ -379,21 +379,10 @@ void RigsOfRods::initRTShaderSystem()
 	loadMainResource("rtshader");
 
 	// Set shader cache path.
-	mShaderGenerator->setShaderCachePath(SETTINGS.getSetting("User Path")+"cache");
+	mShaderGenerator->setShaderCachePath(SETTINGS.getSetting("Cache Path"));
 
 	ShaderGeneratorTechniqueResolverListener *mMaterialMgrListener = new ShaderGeneratorTechniqueResolverListener(mShaderGenerator);
 	MaterialManager::getSingleton().addListener(mMaterialMgrListener);
-
-	// add per pixel lighting
-	/*
-	RTShader::ShaderGenerator* shaderGenerator = RTShader::ShaderGenerator::getSingletonPtr();
-	RTShader::RenderState* renderState = shaderGenerator->getRenderState(RTShader::ShaderGenerator::DEFAULT_SCHEME_NAME);
-	renderState->reset();
-	RTShader::SubRenderState* perPixelLightModel = shaderGenerator->createSubRenderState(RTShader::PerPixelLighting::Type);
-	renderState->addTemplateSubRenderState(perPixelLightModel);
-	// Invalidate the scheme in order to re-generate all shaders based technique related to this scheme.
-	shaderGenerator->invalidateScheme(RTShader::ShaderGenerator::DEFAULT_SCHEME_NAME);
-	*/
 }
 
 void RigsOfRods::createScene(void)
