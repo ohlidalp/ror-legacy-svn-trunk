@@ -8125,11 +8125,14 @@ int RoRFrameListener::addTerrainSplineDecal(Ogre::SimpleSpline *spline, float wi
 		// get current position on that spline
 		Vector3 pos_cur  = spline->interpolate(steps_len * (float)l);
 		Vector3 pos_next = spline->interpolate(steps_len * (float)(l + 1));
+        Ogre::Vector3 direction = (pos_next - pos_cur);
 		if(l == numSeg.x)
+		{
 			// last segment uses previous position
 			pos_next = spline->interpolate(steps_len * (float)(l - 1));
+			direction = (pos_cur - pos_next);
+		}
 
-        Ogre::Vector3 direction = (pos_next - pos_cur);
         
 		for (int w = 0; w<=numSeg.y; w++)
 		{
@@ -8151,6 +8154,7 @@ int RoRFrameListener::addTerrainSplineDecal(Ogre::SimpleSpline *spline, float wi
 			mo->normal(Vector3::UNIT_Y);
 		}
 	}
+
 	bool reverse = false;
 	for (int n1 = 0; n1<numSeg.x; n1++)
 	{
