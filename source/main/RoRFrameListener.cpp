@@ -4773,6 +4773,14 @@ void RoRFrameListener::loadClassicTerrain(String terrainfile)
 	ds->readLine(line, 1023);
 	//geometry
 	ds->readLine(geom, 1023);
+
+	if(String(geom).find(".cfg2") != String::npos)
+	{
+		LogManager::getSingleton().logMessage("new terrain mode enabled");
+		SETTINGS.setSetting("new Terrain Mode", "Yes");
+	}
+
+	
 	//colour
 	ds->readLine(line, 1023);
 	//water stuff
@@ -5012,11 +5020,24 @@ void RoRFrameListener::loadClassicTerrain(String terrainfile)
 			// testing composite map
 			TerrainGlobalOptions::getSingleton().setCompositeMapDistance(mCamera->getFarClipDistance());//300);
 			//mTerrainGlobals->setUseRayBoxDistanceCalculation(true);
-			//mTerrainGlobals->getDefaultMaterialGenerator()->setDebugLevel(1);
-			//mTerrainGlobals->setLightMapSize(256);
+			
+			// adds strange colours for debug purposes
+			//TerrainGlobalOptions::getSingleton().getDefaultMaterialGenerator()->setDebugLevel(1);
+
+			// TBD: optimizations
+			/*
+			TerrainMaterialGeneratorA::SM2Profile* matProfile = static_cast<TerrainMaterialGeneratorA::SM2Profile*>(TerrainGlobalOptions::getSingleton().getDefaultMaterialGenerator()->getActiveProfile());
+			matProfile->setLayerNormalMappingEnabled(false);
+			matProfile->setLayerSpecularMappingEnabled(false);
+			matProfile->setLayerParallaxMappingEnabled(false);
+
+			matProfile->setGlobalColourMapEnabled(false);
+			matProfile->setReceiveDynamicShadowsDepth(false);
+			*/
 
 			TerrainGlobalOptions::getSingleton().setLightMapSize(256);
-			TerrainGlobalOptions::getSingleton().setCastsDynamicShadows(true);
+			TerrainGlobalOptions::getSingleton().setCastsDynamicShadows(false);
+			
 			// Important to set these so that the terrain knows what to use for derived (non-realtime) data
 			if(mainLight) TerrainGlobalOptions::getSingleton().setLightMapDirection(mainLight->getDerivedDirection());
 			TerrainGlobalOptions::getSingleton().setCompositeMapAmbient(mSceneMgr->getAmbientLight());
@@ -5028,6 +5049,8 @@ void RoRFrameListener::loadClassicTerrain(String terrainfile)
 			defaultimp.terrainSize  = TERRAIN_SIZE;
 			defaultimp.worldSize    = TERRAIN_WORLD_SIZE;
 
+			//TerrainGlobalOptions::getSingleton().setDefaultGlobalColourMapSize(pageSize);
+
 			defaultimp.inputScale   = pageMaxHeight;
 			if(!cfg.getSetting("minBatchSize").empty())
 				defaultimp.minBatchSize = StringConverter::parseInt(cfg.getSetting("minBatchSize"));
@@ -5038,27 +5061,38 @@ void RoRFrameListener::loadClassicTerrain(String terrainfile)
 			// TBD: properly load textures: http://www.ogre3d.org/forums/viewtopic.php?f=2&t=60302&start=0
 
 			// textures
-			defaultimp.layerList.resize(3);
-			defaultimp.layerList[0].worldSize = 10;
-			defaultimp.layerList[0].textureNames.push_back("dirt_grayrocky_diffusespecular.dds");
-			defaultimp.layerList[0].textureNames.push_back("dirt_grayrocky_normalheight.dds");
-			defaultimp.layerList[1].worldSize = 10;
-			defaultimp.layerList[1].textureNames.push_back("growth_weirdfungus-03_diffusespecular.dds");
-			defaultimp.layerList[1].textureNames.push_back("growth_weirdfungus-03_normalheight.dds");
-			defaultimp.layerList[2].worldSize = 20;
-			defaultimp.layerList[2].textureNames.push_back("grass_green-01_diffusespecular.dds");
-			defaultimp.layerList[2].textureNames.push_back("grass_green-01_normalheight.dds");
+			StringVector blendMaps, blendMode;
+			int numLayers = StringConverter::parseInt(cfg.getSetting("Layers.count"));
+			if(numLayers > 0)
+			{
+				defaultimp.layerList.resize(numLayers+1);
+				blendMaps.resize(numLayers+1);
+				blendMode.resize(numLayers+1);
+				for(int i = 1; i<numLayers+1; i++)
+				{
+					defaultimp.layerList[i].worldSize = StringConverter::parseReal(cfg.getSetting("Layers."+StringConverter::toString(i)+".size"));
+					defaultimp.layerList[i].textureNames.push_back(cfg.getSetting("Layers."+StringConverter::toString(i)+".diffuse"));
+					defaultimp.layerList[i].textureNames.push_back(cfg.getSetting("Layers."+StringConverter::toString(i)+".normal"));
+					blendMaps[i] = cfg.getSetting("Layers."+StringConverter::toString(i)+".blendmap");
+					blendMode[i] = cfg.getSetting("Layers."+StringConverter::toString(i)+".blendmapmode");
+				}
+			}
 
 			String filename = mTerrainGroup->generateFilename(0, 0);
-			bool paging = (ResourceGroupManager::getSingleton().resourceExists(mTerrainGroup->getResourceGroup(), filename));
-			if(!paging)
+			bool is_cached = (ResourceGroupManager::getSingleton().resourceExists(mTerrainGroup->getResourceGroup(), filename));
+
+			bool disableCaching = false;
+			if(!cfg.getSetting("disableCaching").empty())
+				disableCaching = StringConverter::parseBool(cfg.getSetting("disableCaching"));
+
+			if(disableCaching || !is_cached)
 			{
 				for (long x = TERRAIN_PAGE_MIN_X; x <= TERRAIN_PAGE_MAX_X; ++x)
 				{
 					for (long y = TERRAIN_PAGE_MIN_Y; y <= TERRAIN_PAGE_MAX_Y; ++y)
 					{
 						String filename = mTerrainGroup->generateFilename(x, y);
-						if (ResourceGroupManager::getSingleton().resourceExists(mTerrainGroup->getResourceGroup(), filename))
+						if (!disableCaching && ResourceGroupManager::getSingleton().resourceExists(mTerrainGroup->getResourceGroup(), filename))
 						{
 							mTerrainGroup->defineTerrain(x, y);
 						}
@@ -5104,6 +5138,7 @@ void RoRFrameListener::loadClassicTerrain(String terrainfile)
 						}
 					}
 				}
+
 				// sync load since we want everything in place when we start
 				mTerrainGroup->loadAllTerrains(true);
 
@@ -5113,37 +5148,10 @@ void RoRFrameListener::loadClassicTerrain(String terrainfile)
 					{
 						Terrain* terrain = mTerrainGroup->getTerrain(x,y);
 						if(!terrain) continue;
-						TerrainLayerBlendMap* blendMap0 = terrain->getLayerBlendMap(1);
-						TerrainLayerBlendMap* blendMap1 = terrain->getLayerBlendMap(2);
-						Real minHeight0 = 70;
-						Real fadeDist0 = 40;
-						Real minHeight1 = 70;
-						Real fadeDist1 = 15;
-						float* pBlend1 = blendMap1->getBlendPointer();
-						for (Ogre::uint16 yb = 0; yb < terrain->getLayerBlendMapSize(); ++yb)
-						{
-							for (Ogre::uint16 xb = 0; xb < terrain->getLayerBlendMapSize(); ++xb)
-							{
-								Real tx, ty;
-
-								blendMap0->convertImageToTerrainSpace(xb, yb, &tx, &ty);
-								Real height = terrain->getHeightAtTerrainPosition(tx, ty);
-								Real val = (height - minHeight0) / fadeDist0;
-								val = Math::Clamp(val, (Real)0, (Real)1);
-								//*pBlend0++ = val;
-
-								val = (height - minHeight1) / fadeDist1;
-								val = Math::Clamp(val, (Real)0, (Real)1);
-								*pBlend1++ = val;
-							}
-						}
-						blendMap0->dirty();
-						blendMap1->dirty();
-						//blendMap0->loadImage("blendmap1.png", ResourceGroupManager::DEFAULT_RESOURCE_GROUP_NAME);
-						blendMap0->update();
-						blendMap1->update();
 
 						// set up a colour map
+						/*
+						// this crashes badly!
 						String textureString = "Texture.image." + StringConverter::toString(x) + "." + StringConverter::toString(y);
 						String textureFilename = cfg.getSetting(textureString);
 						if(textureFilename.empty())
@@ -5157,11 +5165,59 @@ void RoRFrameListener::loadClassicTerrain(String terrainfile)
 							terrain->setGlobalColourMapEnabled(true);
 							Image colourMap;
 							colourMap.load(textureFilename, ResourceGroupManager::DEFAULT_RESOURCE_GROUP_NAME);
-							terrain->getGlobalColourMap()->loadImage(colourMap);
+							TexturePtr tp = terrain->getGlobalColourMap();
+							if(!tp.isNull())
+								tp->loadImage(colourMap);
+						}
+						*/
+
+						for(int b=1;b<terrain->getLayerCount();b++)
+						{
+							Ogre::Image img;
+							ResourceGroupManager& rgm = ResourceGroupManager::getSingleton();
+							String group="";
+							try
+							{
+								group = ResourceGroupManager::getSingleton().findGroupContainingResource(blendMaps[b]);
+							}catch(...)
+							{
+							}
+							if(group.empty())
+								continue;
+							img.load(blendMaps[b], group);
+
+							TerrainLayerBlendMap *bm = terrain->getLayerBlendMap(b); // starting with 1, very strange ...
+
+							int bmSize = terrain->getLayerBlendMapSize();
+							float* pBlend1 = bm->getBlendPointer();
+							for (Ogre::uint16 y = 0; y != bmSize; y++)
+							{
+								for (Ogre::uint16 x = 0; x != bmSize; x++)
+								{
+									Ogre::Real tx=(float(x)/float(bmSize));
+									Ogre::Real ty=(float(y)/float(bmSize));
+									int ix = int(img.getWidth()*tx);
+									int iy = int(img.getHeight()*ty);
+									Ogre::ColourValue c = img.getColourAt(ix, iy, 0);
+									float alpha = 1;//(1/b);
+									if(blendMode[b] == "R")
+										*pBlend1++ = c.r * alpha;
+									else if(blendMode[b] == "G")
+										*pBlend1++ = c.g * alpha;
+									else if(blendMode[b] == "B")
+										*pBlend1++ = c.b * alpha;
+									else if(blendMode[b] == "A")
+										*pBlend1++ = c.a * alpha;
+								}
+							}
+							bm->dirty();
+							bm->update();
 						}
 					}
 				}
-				mTerrainGroup->saveAllTerrains(false);
+				
+				if(disableCaching)
+					mTerrainGroup->saveAllTerrains(false);
 			} else
 			{
 				// paging, yeah!
