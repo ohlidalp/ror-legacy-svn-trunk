@@ -853,9 +853,6 @@ RoRFrameListener::RoRFrameListener(RenderWindow* win, Camera* cam, SceneManager*
 
 	mSceneMgr=scm;
 
-	terrain_decals_snode = mSceneMgr->getRootSceneNode()->createChildSceneNode();
-	terrain_decal_count = 0;
-
 
 #ifdef USE_OPENAL
 	ssm=SoundScriptManager::getSingleton();
@@ -1994,6 +1991,16 @@ void RoRFrameListener::loadObject(const char* name, float px, float py, float pz
 				// load it
 				//MaterialManager::getSingleton().load(String(mat), ResourceGroupManager::DEFAULT_RESOURCE_GROUP_NAME);
 			}
+			continue;
+		}
+		if (!strncmp("generateMaterialShaders", ptline, 23))
+		{
+			char mat[255]="";
+			sscanf(ptline, "generateMaterialShaders %s", mat);
+
+			Ogre::RTShader::ShaderGenerator::getSingleton().createShaderBasedTechnique(String(mat), Ogre::MaterialManager::DEFAULT_SCHEME_NAME, Ogre::RTShader::ShaderGenerator::DEFAULT_SCHEME_NAME);
+			Ogre::RTShader::ShaderGenerator::getSingleton().invalidateMaterial(RTShader::ShaderGenerator::DEFAULT_SCHEME_NAME, String(mat));
+
 			continue;
 		}
 		if (!strncmp("playanimation", ptline, 13))
@@ -4993,22 +5000,23 @@ void RoRFrameListener::loadClassicTerrain(String terrainfile)
 			TerrainPaging* mTerrainPaging=0;
 			PageManager* mPageManager=0;
 
-			Vector3 mTerrainPos(0,0,0);
+			Vector3 mTerrainPos(worldSize/2,0,worldSize/2);
 			mTerrainGroup = OGRE_NEW TerrainGroup(mSceneMgr, Terrain::ALIGN_X_Z, TERRAIN_SIZE, TERRAIN_WORLD_SIZE);
 			mTerrainGroup->setFilenameConvention(TERRAIN_FILE_PREFIX, TERRAIN_FILE_SUFFIX);
 			mTerrainGroup->setOrigin(mTerrainPos);
+			mTerrainGroup->setResourceGroup("cache");
 
 			new TerrainGlobalOptions();
 			// Configure global
 			TerrainGlobalOptions::getSingleton().setMaxPixelError(StringConverter::parseInt(cfg.getSetting("MaxPixelError")));
 			// testing composite map
-			TerrainGlobalOptions::getSingleton().setCompositeMapDistance(300);
+			TerrainGlobalOptions::getSingleton().setCompositeMapDistance(mCamera->getFarClipDistance());//300);
 			//mTerrainGlobals->setUseRayBoxDistanceCalculation(true);
 			//mTerrainGlobals->getDefaultMaterialGenerator()->setDebugLevel(1);
 			//mTerrainGlobals->setLightMapSize(256);
 
 			TerrainGlobalOptions::getSingleton().setLightMapSize(256);
-			TerrainGlobalOptions::getSingleton().setCastsDynamicShadows(false);
+			TerrainGlobalOptions::getSingleton().setCastsDynamicShadows(true);
 			// Important to set these so that the terrain knows what to use for derived (non-realtime) data
 			if(mainLight) TerrainGlobalOptions::getSingleton().setLightMapDirection(mainLight->getDerivedDirection());
 			TerrainGlobalOptions::getSingleton().setCompositeMapAmbient(mSceneMgr->getAmbientLight());
@@ -5021,8 +5029,14 @@ void RoRFrameListener::loadClassicTerrain(String terrainfile)
 			defaultimp.worldSize    = TERRAIN_WORLD_SIZE;
 
 			defaultimp.inputScale   = pageMaxHeight;
-			defaultimp.minBatchSize = StringConverter::parseInt(cfg.getSetting("minBatchSize"));;
-			defaultimp.maxBatchSize = StringConverter::parseInt(cfg.getSetting("maxBatchSize"));;
+			if(!cfg.getSetting("minBatchSize").empty())
+				defaultimp.minBatchSize = StringConverter::parseInt(cfg.getSetting("minBatchSize"));
+
+			if(!cfg.getSetting("maxBatchSize").empty())
+				defaultimp.maxBatchSize = StringConverter::parseInt(cfg.getSetting("maxBatchSize"));
+
+			// TBD: properly load textures: http://www.ogre3d.org/forums/viewtopic.php?f=2&t=60302&start=0
+
 			// textures
 			defaultimp.layerList.resize(3);
 			defaultimp.layerList[0].worldSize = 10;
@@ -5052,11 +5066,17 @@ void RoRFrameListener::loadClassicTerrain(String terrainfile)
 						{
 							String heightmapString = "Heightmap.image." + StringConverter::toString(x) + "." + StringConverter::toString(y);
 							String heightmapFilename = cfg.getSetting(heightmapString);
+							if(heightmapFilename.empty())
+							{
+								// try loading the old non-paged name
+								heightmapString = "Heightmap.image";
+								heightmapFilename = cfg.getSetting(heightmapString);
+							}
 							Image img;
 							if(heightmapFilename.find(".raw") != String::npos)
 							{
-								int rawSize = StringConverter::parseInt(cfg.getSetting(heightmapString + ".size"));
-								int bpp = StringConverter::parseInt(cfg.getSetting(heightmapString + ".bpp"));
+								int rawSize = StringConverter::parseInt(cfg.getSetting("Heightmap.raw.size"));
+								int bpp = StringConverter::parseInt(cfg.getSetting("Heightmap.raw.bpp"));
 
 								// load raw data
 								DataStreamPtr stream = ResourceGroupManager::getSingleton().openResource(heightmapFilename);
@@ -5069,6 +5089,10 @@ void RoRFrameListener::loadClassicTerrain(String terrainfile)
 							{
 								img.load(heightmapFilename, ResourceGroupManager::DEFAULT_RESOURCE_GROUP_NAME);
 							}
+
+							if(!cfg.getSetting("Heightmap.flip").empty()  && StringConverter::parseBool(cfg.getSetting("Heightmap.flip")))
+								img.flipAroundX();
+
 
 							//if (x % 2 != 0)
 							//	img.flipAroundY();
@@ -5122,7 +5146,13 @@ void RoRFrameListener::loadClassicTerrain(String terrainfile)
 						// set up a colour map
 						String textureString = "Texture.image." + StringConverter::toString(x) + "." + StringConverter::toString(y);
 						String textureFilename = cfg.getSetting(textureString);
-						if (!terrain->getGlobalColourMapEnabled())
+						if(textureFilename.empty())
+						{
+							// try to load traditional world texture
+							textureString="WorldTexture";
+							textureFilename = cfg.getSetting(textureString);
+						}
+						if (!textureFilename.empty() && !terrain->getGlobalColourMapEnabled())
 						{
 							terrain->setGlobalColourMapEnabled(true);
 							Image colourMap;
@@ -5149,6 +5179,8 @@ void RoRFrameListener::loadClassicTerrain(String terrainfile)
 			}
 
 			mTerrainGroup->freeTemporaryResources();
+
+			
 		}
 	}
 
@@ -5544,16 +5576,6 @@ void RoRFrameListener::loadClassicTerrain(String terrainfile)
 	po.loadingState = -1;
 	int r2oldmode=0;
 
-
-	// decal vars start
-	bool decalSplineMode = false, debug_spline=false;
-	Ogre::SimpleSpline *spline = 0;
-	Ogre::String splinemat = "", spline_export_fn = "";
-	float spline_width = 5;
-	int spline_segments_x = 10, spline_segments_y = 10;
-	float splinetex_u = 1, splinetex_v = 1, ground_offset=0.001f;
-	// decal vars end
-
 	int lastprogress = -1;
 	while (!ds->eof())
 	{
@@ -5577,58 +5599,6 @@ void RoRFrameListener::loadClassicTerrain(String terrainfile)
 		if (line[0]=='/' || line[0]==';' || ll==0) continue; //comments
 		if (!strcmp("end",line)) break;
 
-
-		if(decalSplineMode)
-		{
-			if (!strncmp(line,"end_spline_decal", 16))
-			{
-				// realize spline decal now
-				addTerrainSplineDecal(spline, spline_width, Vector2(spline_segments_x,spline_segments_y), Vector2(splinetex_u, splinetex_v), splinemat, ground_offset, spline_export_fn, debug_spline);
-				decalSplineMode = false;
-				continue;
-			}
-
-			if (!strncmp("debug", line, 5))
-			{
-				debug_spline = true;
-			} else if (!strncmp("point", line, 5))
-			{
-				float x=0,y=0,z=0;
-				int res = sscanf(line, "point %f, %f, %f", &x, &y, &z);
-				spline->addPoint(Vector3(x, y, z));
-			} else if (!strncmp("EXPORT", line, 6))
-			{
-				char fn[255] = "";
-				int res = sscanf(line, "EXPORT %s", fn);
-				spline_export_fn = String(fn);
-			}
-			continue;
-		}
-		if (!strncmp("start_spline_decal", line, 18))
-		{
-			char matname[255]="";
-			int res = sscanf(line, "start_spline_decal %d, %d, %f, %f, %f, %f, %s", &spline_segments_x, &spline_segments_y, &splinetex_u, &splinetex_v, &spline_width, &ground_offset, matname);
-			if(spline_segments_x < 1 || spline_segments_y < 1)
-			{
-				LogManager::getSingleton().logMessage("spline  segments must be at least 1");
-				continue;
-			}
-			splinemat = String(matname);
-
-			spline = new Ogre::SimpleSpline();
-			decalSplineMode = true;
-		}
-
-		//sandstorm cube texture
-		if (!strncmp(line,"sandstormcubemap", 16))
-		{
-			sscanf(line, "sandstormcubemap %s", sandstormcubemap);
-		};
-		if (!strncmp("landuse-config", line, 14))
-		{
-			collisions->setupLandUse(line+15);
-			continue;
-		}
 
 		//Caelum config
 		if (!strncmp(line,"caelumconfig", 12))
@@ -5665,6 +5635,16 @@ void RoRFrameListener::loadClassicTerrain(String terrainfile)
 			spl.pos = Vector3(x, y, z);
 			spl.rot = Quaternion(Degree(rx), Vector3::UNIT_X)*Quaternion(Degree(ry), Vector3::UNIT_Y)*Quaternion(Degree(rz), Vector3::UNIT_Z);
 			netSpawnPos[String(tmp)] = spl;
+			continue;
+		}
+		//sandstorm cube texture
+		if (!strncmp(line,"sandstormcubemap", 16))
+		{
+			sscanf(line, "sandstormcubemap %s", sandstormcubemap);
+		};
+		if (!strncmp("landuse-config", line, 14))
+		{
+			collisions->setupLandUse(line+15);
 			continue;
 		}
 		if (!strncmp("gravity", line, 7))
@@ -5761,27 +5741,6 @@ void RoRFrameListener::loadClassicTerrain(String terrainfile)
 			}
 			paged.loader = (void*)treeLoader;
 			pagedGeometry.push_back(paged);
-		}
-		//ugly stuff to parse decals :)
-		if (!strncmp("decal", line, 5))
-		{
-			float x=0, y=0, z=0, w=0, h=0, rot=0;
-			int nsx=1, nsy=1;
-
-			char decal_mat[255]="";
-			char decal_normal[255]="";
-			int res = sscanf(line, "decal %f, %f, %f, %f, %f, %f, %d, %d, %s %s", &x, &y, &z, &w, &h,  &rot, &nsx, &nsy, decal_mat, decal_normal);
-			if(rot < 0)
-				rot = Ogre::Math::RangeRandom(0.0f, 360);
-
-			addTerrainDecal(Vector3(x,y,z), Vector2(w, w), Vector2(nsx, nsy), rot, String(decal_mat), String(decal_normal));
-
-			continue;
-		}
-		if (!strncmp("bake_decals", line, 11))
-		{
-			// bake them
-			finishTerrainDecal();
 		}
 
 		//ugly stuff to parse grass :)
@@ -6106,7 +6065,7 @@ void RoRFrameListener::loadClassicTerrain(String terrainfile)
 		collisions->createCollisionDebugVisualization();
 
 	// bake the decals
-	finishTerrainDecal();
+	//finishTerrainDecal();
 
 #ifdef USE_MYGUI
 	LoadingWindow::get()->hide();
@@ -8090,246 +8049,6 @@ bool RoRFrameListener::getNetQualityChanged()
 	return res;
 }
 
-int RoRFrameListener::addTerrainSplineDecal(Ogre::SimpleSpline *spline, float width, Ogre::Vector2 numSeg, Ogre::Vector2 uvSeg, Ogre::String materialname, float ground_offset, Ogre::String export_fn, bool debug)
-{
-	// debug spline line
-	if(debug)
-	{
-		Ogre::ManualObject *mo_spline = mSceneMgr->createManualObject();
-		SceneNode *mo_spline_node = terrain_decals_snode->createChildSceneNode();
-		mo_spline->begin("tracks/transred", Ogre::RenderOperation::OT_LINE_STRIP);
-		for(float j=0;j<1;j+=0.001)
-		{
-			mo_spline->position(spline->interpolate(j));
-		}
-		mo_spline->end();
-		mo_spline_node->attachObject(mo_spline);
-	}
-
-	Ogre::ManualObject *mo = mSceneMgr->createManualObject();
-	String oname = mo->getName();
-	SceneNode *mo_node = terrain_decals_snode->createChildSceneNode();
-
-	mo->begin(materialname, Ogre::RenderOperation::OT_TRIANGLE_LIST);
-	AxisAlignedBox *aab=new AxisAlignedBox();
-
-	int offset = 0;
-
-	// how width is the road?
-	float delta_width = width / numSeg.x;
-
-	float steps_len = 1.0f / numSeg.x;
-
-	for (int l = 0; l<=numSeg.x; l++)
-	{
-		// get current position on that spline
-		Vector3 pos_cur  = spline->interpolate(steps_len * (float)l);
-		Vector3 pos_next = spline->interpolate(steps_len * (float)(l + 1));
-        Ogre::Vector3 direction = (pos_next - pos_cur);
-		if(l == numSeg.x)
-		{
-			// last segment uses previous position
-			pos_next = spline->interpolate(steps_len * (float)(l - 1));
-			direction = (pos_cur - pos_next);
-		}
-
-        
-		for (int w = 0; w<=numSeg.y; w++)
-		{
-			// build vector for the width
-			Vector3 wn = direction.normalisedCopy().crossProduct(Vector3::UNIT_Y);
-			
-			// calculate the offset, spline in the middle
-			Vector3 offset = (-0.5 * wn * width) + (w/numSeg.y) * wn * width;
-
-			// push everything together
-			Ogre::Vector3 pos = pos_cur + offset;
-			// get ground height there
-			pos.y = hfinder->getHeightAt(pos.x, pos.z) + ground_offset;
-
-			// add the position to the mesh
-			mo->position(pos);
-			aab->merge(pos);
-			mo->textureCoord(l/(Ogre::Real)numSeg.x*uvSeg.x, w/(Ogre::Real)numSeg.y*uvSeg.y);
-			mo->normal(Vector3::UNIT_Y);
-		}
-	}
-
-	bool reverse = false;
-	for (int n1 = 0; n1<numSeg.x; n1++)
-	{
-		for (int n2 = 0; n2<numSeg.y; n2++)
-		{
-			if (reverse)
-			{
-				mo->index(offset+0);
-				mo->index(offset+(numSeg.y+1));
-				mo->index(offset+1);
-				mo->index(offset+1);
-				mo->index(offset+(numSeg.y+1));
-				mo->index(offset+(numSeg.y+1)+1);
-			}
-			else
-			{
-				mo->index(offset+0);
-				mo->index(offset+1);
-				mo->index(offset+(numSeg.y+1));
-				mo->index(offset+1);
-				mo->index(offset+(numSeg.y+1)+1);
-				mo->index(offset+(numSeg.y+1));
-			}
-			offset++;
-		}
-		offset++;
-	}
-	offset+=numSeg.y+1;
-
-	mo->end();
-	mo->setBoundingBox(*aab);
-	// some optimizations
-	mo->setCastShadows(false);
-	mo->setDynamic(false);
-	delete(aab);
-
-	MeshPtr mesh = mo->convertToMesh(oname+"_mesh");
-
-	// build edgelist
-	mesh->buildEdgeList();
-
-	// remove the manualobject again, since we dont need it anymore
-	mSceneMgr->destroyManualObject(mo);
-
-	unsigned short src, dest;
-	if (!mesh->suggestTangentVectorBuildParams(VES_TANGENT, src, dest))
-	{
-		mesh->buildTangentVectors(VES_TANGENT, src, dest);
-	}
-	
-	Entity *ent = mSceneMgr->createEntity(oname+"_ent", oname+"_mesh");
-	mo_node->attachObject(ent);
-
-	mo_node->setVisible(true);
-	//mo_node->showBoundingBox(true);
-	mo_node->setPosition(Vector3::ZERO); //(position.x, 0, position.z));
-
-
-	if(!export_fn.empty())
-	{
-		MeshSerializer *ms = new MeshSerializer();
-		ms->exportMesh(mesh.get(), export_fn);
-		Ogre::LogManager::getSingleton().logMessage("spline mesh exported as " + export_fn);
-		delete(ms);
-	}
-
-	// TBD: RTSS
-	//Ogre::RTShader::ShaderGenerator::getSingleton().createShaderBasedTechnique(materialname, Ogre::MaterialManager::DEFAULT_SCHEME_NAME, Ogre::RTShader::ShaderGenerator::DEFAULT_SCHEME_NAME);
-	//Ogre::RTShader::ShaderGenerator::getSingleton().invalidateMaterial(RTShader::ShaderGenerator::DEFAULT_SCHEME_NAME, materialname);
-	RTSSgenerateShadersForMaterial(materialname, "");
-
-	return 0;
-}
-
-int RoRFrameListener::addTerrainDecal(Ogre::Vector3 position, Ogre::Vector2 size, Ogre::Vector2 numSeg, Ogre::Real rotation, Ogre::String materialname, Ogre::String normalname)
-{
-	Ogre::ManualObject *mo = mSceneMgr->createManualObject();
-	String oname = mo->getName();
-	SceneNode *mo_node = terrain_decals_snode->createChildSceneNode();
-
-	mo->begin(materialname, Ogre::RenderOperation::OT_TRIANGLE_LIST);
-	AxisAlignedBox *aab=new AxisAlignedBox();
-	float uTile = 1, vTile = 1;
-
-	Vector3 normal = Vector3(0,1,0); // UP
-	
-	int offset = 0;
-	float ground_dist = 0.001f;
-
-	Ogre::Vector3 vX = normal.perpendicular();
-	Ogre::Vector3 vY = normal.crossProduct(vX);
-	Ogre::Vector3 delta1 = size.x / numSeg.x * vX;
-	Ogre::Vector3 delta2 = size.y / numSeg.y * vY;
-	// build one corner of the square
-	Ogre::Vector3 orig = -0.5*size.x*vX - 0.5*size.y*vY;
-
-	for (int i1 = 0; i1<=numSeg.x; i1++)
-		for (int i2 = 0; i2<=numSeg.y; i2++)
-		{
-			Vector3 pos = orig+i1*delta1+i2*delta2 + position; 
-			pos.y = hfinder->getHeightAt(pos.x, pos.z) + ground_dist;
-			mo->position(pos);
-			aab->merge(pos);
-			mo->textureCoord(i1/(Ogre::Real)numSeg.x*uTile, i2/(Ogre::Real)numSeg.y*vTile);
-			mo->normal(normal);
-		}
-
-	bool reverse = false;
-	if (delta1.crossProduct(delta2).dotProduct(normal)>0)
-		reverse= true;
-	for (int n1 = 0; n1<numSeg.x; n1++)
-	{
-		for (int n2 = 0; n2<numSeg.y; n2++)
-		{
-			if (reverse)
-			{
-				mo->index(offset+0);
-				mo->index(offset+(numSeg.y+1));
-				mo->index(offset+1);
-				mo->index(offset+1);
-				mo->index(offset+(numSeg.y+1));
-				mo->index(offset+(numSeg.y+1)+1);
-			}
-			else
-			{
-				mo->index(offset+0);
-				mo->index(offset+1);
-				mo->index(offset+(numSeg.y+1));
-				mo->index(offset+1);
-				mo->index(offset+(numSeg.y+1)+1);
-				mo->index(offset+(numSeg.y+1));
-			}
-			offset++;
-		}
-		offset++;
-	}
-	offset+=numSeg.y+1;
-
-	mo->end();
-	mo->setBoundingBox(*aab);
-	// some optimizations
-	mo->setCastShadows(false);
-	mo->setDynamic(false);
-	delete(aab);
-
-	MeshPtr mesh = mo->convertToMesh(oname+"_mesh");
-
-	// build edgelist
-	mesh->buildEdgeList();
-
-	// remove the manualobject again, since we dont need it anymore
-	mSceneMgr->destroyManualObject(mo);
-
-	unsigned short src, dest;
-	if (!mesh->suggestTangentVectorBuildParams(VES_TANGENT, src, dest))
-	{
-		mesh->buildTangentVectors(VES_TANGENT, src, dest);
-	}
-	
-	Entity *ent = mSceneMgr->createEntity(oname+"_ent", oname+"_mesh");
-	mo_node->attachObject(ent);
-
-	mo_node->setVisible(true);
-	//mo_node->showBoundingBox(true);
-	mo_node->setPosition(Vector3::ZERO); //(position.x, 0, position.z));
-
-
-	// RTSS
-	//Ogre::RTShader::ShaderGenerator::getSingleton().createShaderBasedTechnique(materialname, Ogre::MaterialManager::DEFAULT_SCHEME_NAME, Ogre::RTShader::ShaderGenerator::DEFAULT_SCHEME_NAME);
-	//Ogre::RTShader::ShaderGenerator::getSingleton().invalidateMaterial(RTShader::ShaderGenerator::DEFAULT_SCHEME_NAME, materialname);
-	RTSSgenerateShadersForMaterial(materialname, normalname);
-
-	return 0;
-}
-
 bool RoRFrameListener::RTSSgenerateShadersForMaterial(Ogre::String curMaterialName, Ogre::String normalTextureName)
 {
 	bool success;
@@ -8420,28 +8139,4 @@ void RoRFrameListener::RTSSgenerateShaders(Entity* entity, Ogre::String normalTe
 	
 		RTSSgenerateShadersForMaterial(curMaterialName, normalTextureName);
 	}
-}
-
-int RoRFrameListener::finishTerrainDecal()
-{
-	// if if no decals
-	if(!terrain_decals_snode->numChildren()) return 0;
-	terrain_decal_count++;
-	terrain_decals_sg = mSceneMgr->createStaticGeometry("terrain_decals_"+StringConverter::toString(terrain_decal_count));
-	terrain_decals_sg->setCastShadows(false);
-	terrain_decals_sg->addSceneNode(terrain_decals_snode);
-	terrain_decals_sg->setRegionDimensions(Vector3(farclip/2.0, 10000.0, farclip/2.0));
-	terrain_decals_sg->setRenderingDistance(farclip);
-	try
-	{
-		terrain_decals_sg->build();
-		terrain_decals_snode->detachAllObjects();
-		//terrain_decals_snode->removeAllChildren();
-		// crash under linux:
-		//bakeNode->removeAndDestroyAllChildren();
-	} catch(Ogre::Exception& e)
-	{
-		LogManager::getSingleton().logMessage("error while baking decals: " + e.getFullDescription());
-	}
-	return 0;
 }
