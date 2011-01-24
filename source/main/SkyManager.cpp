@@ -50,7 +50,7 @@ SkyManager::~SkyManager()
 
 void SkyManager::init(Ogre::SceneManager *mScene, Ogre::RenderWindow *mWindow, Ogre::Camera *mCamera)
 {
-	// Initi5alise CaelumSystem.
+	// Initialise CaelumSystem.
 	mCaelumSystem = new Caelum::CaelumSystem (Root::getSingletonPtr(), mScene, Caelum::CaelumSystem::CAELUM_COMPONENTS_NONE);
 	mCaelumSystem->attachViewport(mCamera->getViewport());
 

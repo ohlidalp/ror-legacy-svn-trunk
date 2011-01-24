@@ -380,17 +380,8 @@ public:
 	int cameramode, lastcameramode;
 	void setCameraRotation(Ogre::Radian x, Ogre::Radian y, Ogre::Real distance) { camRotX=x; camRotY=y; camDist=distance;};
 
-	// TERRAIN DECALS START
-	int addTerrainDecal(Ogre::Vector3 position, Ogre::Vector2 size, Ogre::Vector2 numSeg, Ogre::Real rotation, Ogre::String materialname, Ogre::String normalname);
-	int addTerrainSplineDecal(Ogre::SimpleSpline *spline, float width, Ogre::Vector2 numSeg, Ogre::Vector2 uvSeg, Ogre::String materialname, float ground_offset, Ogre::String export_fn, bool debug);
-	int finishTerrainDecal();
-	StaticGeometry *terrain_decals_sg;
-	SceneNode *terrain_decals_snode;
-	int terrain_decal_count;
-
 	void RTSSgenerateShaders(Ogre::Entity *entity, Ogre::String normalTextureName);
 	bool RTSSgenerateShadersForMaterial(Ogre::String curMaterialName, Ogre::String normalTextureName);
-	// TERRAIN DECALS END
 
 
 	void hideMap();

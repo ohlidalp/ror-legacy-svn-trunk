@@ -240,7 +240,7 @@ bool RigsOfRods::setup(void)
 	ResourceGroupManager::getSingleton().addResourceLocation(SETTINGS.getSetting("Streams Path"), "FileSystem", "Streams");
 	exploreStreams(); //this will explore subdirs and register them as Packs dirs
 	//cache, flat
-	ResourceGroupManager::getSingleton().addResourceLocation(SETTINGS.getSetting("User Path")+"cache", "FileSystem", ResourceGroupManager::DEFAULT_RESOURCE_GROUP_NAME);
+	ResourceGroupManager::getSingleton().addResourceLocation(SETTINGS.getSetting("User Path")+"cache", "FileSystem", "cache");
 	//config, flat
 	ResourceGroupManager::getSingleton().addResourceLocation(SETTINGS.getSetting("User Path")+"config", "FileSystem", ResourceGroupManager::DEFAULT_RESOURCE_GROUP_NAME);
 	//packs, to be processed later by the cache system
@@ -284,9 +284,6 @@ bool RigsOfRods::setup(void)
 		mSceneMgr = mRoot->createSceneManager(ST_EXTERIOR_CLOSE);
 	}
 
-	// create RTShader System
-	initRTShaderSystem();
-
 	//CREATE CAMERA
 	LogManager::getSingleton().logMessage("Creating camera");
 	// Create the camera
@@ -305,6 +302,9 @@ bool RigsOfRods::setup(void)
 	// Create one viewport, entire window
 	vp = mWindow->addViewport(mCamera);
 	vp->setBackgroundColour(ColourValue(0,0,0));
+
+	// create RTShader System (after creating the viewport)
+	initRTShaderSystem();
 
 	// Set default mipmap level (NB some APIs ignore this)
 	TextureManager::getSingleton().setDefaultNumMipmaps(5);
@@ -369,20 +369,23 @@ void RigsOfRods::initRTShaderSystem()
 	if(!Ogre::RTShader::ShaderGenerator::initialize())
 		return;
 
-	// Grab the shader generator pointer.
-	mShaderGenerator = Ogre::RTShader::ShaderGenerator::getSingletonPtr();
-
-	// Set the scene manager.
-	mShaderGenerator->addSceneManager(mSceneMgr);
-
 	// Add the shader libs resource location.
 	loadMainResource("rtshader");
+
+	// Grab the shader generator pointer.
+	mShaderGenerator = Ogre::RTShader::ShaderGenerator::getSingletonPtr();
 
 	// Set shader cache path.
 	mShaderGenerator->setShaderCachePath(SETTINGS.getSetting("Cache Path"));
 
-	ShaderGeneratorTechniqueResolverListener *mMaterialMgrListener = new ShaderGeneratorTechniqueResolverListener(mShaderGenerator);
-	MaterialManager::getSingleton().addListener(mMaterialMgrListener);
+	// Set the scene manager.
+	mShaderGenerator->addSceneManager(mSceneMgr);
+
+	//ShaderGeneratorTechniqueResolverListener *mMaterialMgrListener = new ShaderGeneratorTechniqueResolverListener(mShaderGenerator);
+	//MaterialManager::getSingleton().addListener(mMaterialMgrListener);
+
+	// Apply the shader generated based techniques.
+	vp->setMaterialScheme(Ogre::RTShader::ShaderGenerator::DEFAULT_SCHEME_NAME);
 }
 
 void RigsOfRods::createScene(void)
