@@ -2787,26 +2787,27 @@ bool Beam::frameStep(Real dt, Beam** trucks, int numtrucks)
 			if (state!=SLEEPING && state!=NETWORKED && state!=RECYCLE)
 			{
 				// calculate average position (and smooth)
-				if(trucks[t]->freecinecamera > 0)
+				if(freecinecamera > 0)
 				{
 					// fix for detaching beams
-					trucks[t]->position = trucks[t]->nodes[cinecameranodepos[0]].AbsPosition - cinecam_avg_offset;
-					for (int n=0; n<trucks[t]->free_node; n++)
+					position = nodes[cinecameranodepos[0]].AbsPosition - cinecam_avg_offset;
+					for (int n=0; n<free_node; n++)
 					{
-						trucks[t]->nodes[n].smoothpos = trucks[t]->nodes[n].AbsPosition;
+						nodes[n].smoothpos = nodes[n].AbsPosition;
 					}
+
 				} else
 				{
 					Vector3 aposition = Vector3::ZERO;
-					for (int n=0; n<trucks[t]->free_node; n++)
+					for (int n=0; n<free_node; n++)
 					{
-						trucks[t]->nodes[n].smoothpos = trucks[t]->nodes[n].AbsPosition;
-						aposition += trucks[t]->nodes[n].smoothpos;
+						nodes[n].smoothpos = nodes[n].AbsPosition;
+						aposition += nodes[n].smoothpos;
 					}
-					trucks[t]->position = aposition / free_node;
+					position = aposition / free_node;
 				}
-
 			}
+
 			if (floating_origin_enable && nodes[0].RelPosition.length()>100.0)
 			{
 				moveOrigin(nodes[0].RelPosition);
