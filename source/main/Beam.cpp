@@ -3137,14 +3137,7 @@ void Beam::calcAnimators(int flagstate, float &cstate, int &div, Real timer, flo
 		}
 		if (shifter > 0)
 		{
-			// this is a really crappy if line, but somehow if (shifter/2 == int(shifter/2)) did not work reliable at all
-			if (shifter == 2 || shifter == 4 || shifter == 6 || shifter == 8 || shifter == 10 || shifter == 12)
-			{
-				cstate = 0.0f;
-			} else
-			{
-				cstate = 1.0f;
-			}
+			cstate = shifter % 2;
 		}
 		div++;
 	}
