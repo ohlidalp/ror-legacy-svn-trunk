@@ -226,6 +226,7 @@ public:
 	void setReplayMode(bool rm);
 	int savePosition(int position);
 	int loadPosition(int position);
+	void updateTruckPosition();
 	//! @}
 
 	//! @{ camera related functions
