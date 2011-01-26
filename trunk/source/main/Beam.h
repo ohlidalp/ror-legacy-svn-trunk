@@ -394,6 +394,7 @@ public:
 	node_t *addNode(Ogre::Vector3 pos);
 	String speedomat, tachomat;
 	float speedoMax;
+	Ogre::Vector3 cinecam_avg_offset;
 	bool useMaxRPMforGUI;
 
 	Ogre::String realtruckfilename;

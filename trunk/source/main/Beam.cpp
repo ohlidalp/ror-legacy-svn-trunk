@@ -727,6 +727,20 @@ Beam::Beam(int tnum, SceneManager *manager, SceneNode *parent, RenderWindow* win
 		sendStreamSetup();
 	}
 
+
+	// calculate average camera offset relative to cinecamera
+	if(freecinecamera > 0)
+	{
+		Vector3 apos = Vector3::ZERO;
+		for (i=0; i<free_node; i++)
+			apos += nodes[i].AbsPosition;
+		Vector3 avg_pos = apos / free_node;
+		
+		cinecam_avg_offset = nodes[cinecameranodepos[0]].AbsPosition - avg_pos;
+	}
+	LogManager::getSingleton().logMessage("cinecamera offset for external camera: " + StringConverter::toString(cinecam_avg_offset));
+
+
 	//updateDebugOverlay();
 }
 
@@ -2669,25 +2683,25 @@ bool Beam::frameStep(Real dt, Beam** trucks, int numtrucks)
 				if (trucks[t]->reset_requested) trucks[t]->SyncReset();
 				if (trucks[t]->state!=SLEEPING && trucks[t]->state!=NETWORKED && trucks[t]->state!=RECYCLE)
 				{
-					// calculate average position
-					Vector3 aposition=Vector3::ZERO;
-					int nodesnum=0;
-					for (int n=0; n<trucks[t]->free_node; n++)
+					// calculate average position (and smooth)
+					if(trucks[t]->freecinecamera > 0)
 					{
-//							trucks[t]->nodes[n].smoothpos=trucks[t]->nodes[n].tsmooth/steps;
+						// fix for detaching beams
+						trucks[t]->position = trucks[t]->nodes[cinecameranodepos[0]].AbsPosition - cinecam_avg_offset;
+						for (int n=0; n<trucks[t]->free_node; n++)
+						{
 							trucks[t]->nodes[n].smoothpos = trucks[t]->nodes[n].AbsPosition;
-							if((trucks[t]->nodes[n].AbsPosition - trucks[t]->nodes[0].AbsPosition).squaredLength() > trucks[t]->nodes[n].iDistance * 25)
-							{
-								// loose node, ignore ...
-							} else
-							{
-								// valid node
-								aposition += trucks[t]->nodes[n].smoothpos;
-								nodesnum++;
-							}
-//							trucks[t]->nodes[n].tsmooth=Vector3::ZERO;
+						}
+					} else
+					{
+						Vector3 aposition = Vector3::ZERO;
+						for (int n=0; n<trucks[t]->free_node; n++)
+						{
+							trucks[t]->nodes[n].smoothpos = trucks[t]->nodes[n].AbsPosition;
+							aposition += trucks[t]->nodes[n].smoothpos;
+						}
+						trucks[t]->position = aposition / free_node;
 					}
-					trucks[t]->position = aposition / nodesnum;
 				}
 				if (floating_origin_enable && trucks[t]->nodes[0].RelPosition.length()>100.0)
 				{
@@ -2721,17 +2735,25 @@ bool Beam::frameStep(Real dt, Beam** trucks, int numtrucks)
 				if (trucks[t]->reset_requested) trucks[t]->SyncReset();
 				if (trucks[t]->state!=SLEEPING && trucks[t]->state!=NETWORKED && trucks[t]->state!=RECYCLE)
 				{
-					// average position
-					Vector3 aposition=Vector3::ZERO;
-
-					// TODO Unused Varaible
-					//int nodesnum=0;
-					for (int n=0; n<trucks[t]->free_node; n++)
+					// calculate average position (and smooth)
+					if(trucks[t]->freecinecamera > 0)
 					{
-						trucks[t]->nodes[n].smoothpos=trucks[t]->nodes[n].AbsPosition;
-						aposition += trucks[t]->nodes[n].smoothpos;
+						// fix for detaching beams
+						trucks[t]->position = trucks[t]->nodes[cinecameranodepos[0]].AbsPosition - cinecam_avg_offset;
+						for (int n=0; n<trucks[t]->free_node; n++)
+						{
+							trucks[t]->nodes[n].smoothpos = trucks[t]->nodes[n].AbsPosition;
+						}
+					} else
+					{
+						Vector3 aposition = Vector3::ZERO;
+						for (int n=0; n<trucks[t]->free_node; n++)
+						{
+							trucks[t]->nodes[n].smoothpos = trucks[t]->nodes[n].AbsPosition;
+							aposition += trucks[t]->nodes[n].smoothpos;
+						}
+						trucks[t]->position = aposition / free_node;
 					}
-					trucks[t]->position = aposition / free_node;
 				}
 				if (floating_origin_enable && trucks[t]->nodes[0].RelPosition.length()>100.0)
 				{
@@ -2764,17 +2786,26 @@ bool Beam::frameStep(Real dt, Beam** trucks, int numtrucks)
 
 			if (state!=SLEEPING && state!=NETWORKED && state!=RECYCLE)
 			{
-				// average position
-				Vector3 aposition=Vector3::ZERO;
-
-				// TODO Unused Varaible
-				//int nodesnum=0;
-				for (int n=0; n<free_node; n++)
+				// calculate average position (and smooth)
+				if(trucks[t]->freecinecamera > 0)
 				{
-					nodes[n].smoothpos=nodes[n].AbsPosition;
-					aposition += nodes[n].smoothpos;
+					// fix for detaching beams
+					trucks[t]->position = trucks[t]->nodes[cinecameranodepos[0]].AbsPosition - cinecam_avg_offset;
+					for (int n=0; n<trucks[t]->free_node; n++)
+					{
+						trucks[t]->nodes[n].smoothpos = trucks[t]->nodes[n].AbsPosition;
+					}
+				} else
+				{
+					Vector3 aposition = Vector3::ZERO;
+					for (int n=0; n<trucks[t]->free_node; n++)
+					{
+						trucks[t]->nodes[n].smoothpos = trucks[t]->nodes[n].AbsPosition;
+						aposition += trucks[t]->nodes[n].smoothpos;
+					}
+					trucks[t]->position = aposition / free_node;
 				}
-				position = aposition / free_node;
+
 			}
 			if (floating_origin_enable && nodes[0].RelPosition.length()>100.0)
 			{
