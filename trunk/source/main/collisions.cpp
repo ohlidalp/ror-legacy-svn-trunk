@@ -281,6 +281,46 @@ void Collisions::parseGroundConfig(Ogre::ConfigFile *cfg, String groundModel)
 	}
 }
 
+Ogre::Vector3 Collisions::calcCollidedSide(const Ogre::Vector3& pos, Ogre::Vector3& lo, Ogre::Vector3& hi)
+{
+	float min = pos.z - lo.z;
+	Ogre::Vector3 newPos = Ogre::Vector3(pos.x, pos.y, lo.z);
+	
+	float t = pos.z - hi.z;
+	if (t > min) {
+		min = t;
+		newPos = Ogre::Vector3(pos.x, pos.y, hi.z);
+	};
+	
+	t = pos.x - lo.x;
+	if (t < min) {
+		min = t;
+		newPos = Ogre::Vector3(lo.x, pos.y, pos.z);
+	};
+	
+	t = pos.y - lo.y;
+	if (t < min) {
+		min=t;
+		newPos = Ogre::Vector3(pos.x, lo.y, pos.z);
+	};
+	
+	t = pos.x - hi.x;
+	if (t > min) {
+		min=t;
+		newPos = Ogre::Vector3(hi.x, pos.y, pos.z);
+	};
+	
+	t = pos.y - hi.y;
+	if (t > min) {
+		min=t;
+		newPos = Ogre::Vector3(pos.x, hi.y, pos.z);
+	};
+	
+	return newPos;
+}
+
+
+
 void Collisions::setupLandUse(const char *configfile)
 {
 #ifdef USE_PAGED
@@ -440,38 +480,42 @@ void Collisions::addCollisionBox(SceneNode *tenode, bool rotating, bool virt, fl
 {
 	Quaternion 	rotation=Quaternion(Degree(rx), Vector3::UNIT_X)*Quaternion(Degree(ry), Vector3::UNIT_Y)*Quaternion(Degree(rz), Vector3::UNIT_Z);
 	Quaternion 	direction=Quaternion(Degree(drx), Vector3::UNIT_X)*Quaternion(Degree(dry), Vector3::UNIT_Y)*Quaternion(Degree(drz), Vector3::UNIT_Z);
+	Ogre::Vector3 l(lx, ly, lz);
+	Ogre::Vector3 h(hx, hy, hz);
+	Ogre::Vector3 p(px, py, pz);
+	Ogre::Vector3 sc(scx, scy, scz);
+	collision_box_t& coll_box = collision_boxes[free_collision_box]; 
 	//set refined box anyway
-	collision_boxes[free_collision_box].relo_x=lx*scx;
-	collision_boxes[free_collision_box].rehi_x=hx*scx;
-	collision_boxes[free_collision_box].relo_y=ly*scy;
-	collision_boxes[free_collision_box].rehi_y=hy*scy;
-	collision_boxes[free_collision_box].relo_z=lz*scz;
-	collision_boxes[free_collision_box].rehi_z=hz*scz;
+	coll_box.relo = l*sc;
+	coll_box.rehi = h*sc;
 	//calculate selfcenter anyway
-	collision_boxes[free_collision_box].selfcenter=Vector3((lx*scx+hx*scx)/2.0, (ly*scy+hy*scy)/2.0,(lz*scz+hz*scz)/2.0);
+	coll_box.selfcenter = coll_box.relo;
+	coll_box.selfcenter += coll_box.rehi;
+	coll_box.selfcenter *= 0.5;
+	
 	//and center too (we need it)
-	collision_boxes[free_collision_box].center=Vector3(px, py, pz);
-	collision_boxes[free_collision_box].virt=virt;
+	coll_box.center = p;
+	coll_box.virt=virt;
 
-	collision_boxes[free_collision_box].event_filter=event_filter;
+	coll_box.event_filter=event_filter;
 	//camera stuff
-	collision_boxes[free_collision_box].camforced=forcecam;
+	coll_box.camforced=forcecam;
 	if (forcecam)
 	{
-		collision_boxes[free_collision_box].campos=collision_boxes[free_collision_box].center+rotation*campos;
+		coll_box.campos=coll_box.center+rotation*campos;
 	}
 
 	//first, selfrotate
 	if (rotating)
 	{
 		//we have a self-rotated block
-		collision_boxes[free_collision_box].selfrotated=true;
-		collision_boxes[free_collision_box].selfrot=Quaternion(Degree(srx), Vector3::UNIT_X)*Quaternion(Degree(sry), Vector3::UNIT_Y)*Quaternion(Degree(srz), Vector3::UNIT_Z);
-		collision_boxes[free_collision_box].selfunrot=collision_boxes[free_collision_box].selfrot.Inverse();
+		coll_box.selfrotated=true;
+		coll_box.selfrot=Quaternion(Degree(srx), Vector3::UNIT_X)*Quaternion(Degree(sry), Vector3::UNIT_Y)*Quaternion(Degree(srz), Vector3::UNIT_Z);
+		coll_box.selfunrot=coll_box.selfrot.Inverse();
 	}
-	else collision_boxes[free_collision_box].selfrotated=false;
+	else coll_box.selfrotated=false;
 
-	collision_boxes[free_collision_box].eventsourcenum=-1;
+	coll_box.eventsourcenum=-1;
 	if (strlen(eventname)>0)
 	{
 //Ogre::LogManager::getSingleton().logMessage("COLL: adding "+Ogre::StringConverter::toString(free_eventsource)+" "+String(instancename)+" "+String(eventname));
@@ -479,7 +523,7 @@ void Collisions::addCollisionBox(SceneNode *tenode, bool rotating, bool virt, fl
 		strcpy(eventsources[free_eventsource].boxname, eventname);
 		strcpy(eventsources[free_eventsource].instancename, instancename);
 		eventsources[free_eventsource].luahandler = luahandler;
-		collision_boxes[free_collision_box].eventsourcenum=free_eventsource;
+		coll_box.eventsourcenum=free_eventsource;
 		eventsources[free_eventsource].cbox=free_collision_box;
 		eventsources[free_eventsource].snode=tenode;
 		eventsources[free_eventsource].direction=direction;
@@ -490,80 +534,64 @@ void Collisions::addCollisionBox(SceneNode *tenode, bool rotating, bool virt, fl
 	if (fabs(rx)<0.0001f && fabs(ry)<0.0001f && fabs(rz)<0.0001f)
 	{
 		//unrefined box
-		collision_boxes[free_collision_box].refined=false;
+		coll_box.refined=false;
 	} else
 	{
 		//refined box
-		collision_boxes[free_collision_box].refined=true;
+		coll_box.refined=true;
 		//build rotation
-		collision_boxes[free_collision_box].rot=rotation;
-		collision_boxes[free_collision_box].unrot=rotation.Inverse();
+		coll_box.rot=rotation;
+		coll_box.unrot=rotation.Inverse();
 	}
 
 	//set raw box
-	if (collision_boxes[free_collision_box].selfrotated || collision_boxes[free_collision_box].refined)
+	if (coll_box.selfrotated || coll_box.refined)
 	{
-		Vector3 p[8];
-		p[0]=Vector3(lx*scx, ly*scy, lz*scz);
-		p[1]=Vector3(hx*scx, ly*scy, lz*scz);
-		p[2]=Vector3(lx*scx, hy*scy, lz*scz);
-		p[3]=Vector3(hx*scx, hy*scy, lz*scz);
-		p[4]=Vector3(lx*scx, ly*scy, hz*scz);
-		p[5]=Vector3(hx*scx, ly*scy, hz*scz);
-		p[6]=Vector3(lx*scx, hy*scy, hz*scz);
-		p[7]=Vector3(hx*scx, hy*scy, hz*scz);
+		// 8 points of a cube
+		Vector3 cube_points[8];
+		cube_points[0] = Ogre::Vector3(lx, ly, lz) * sc;
+		cube_points[1] = Ogre::Vector3(hx, ly, lz) * sc;
+		cube_points[2] = Ogre::Vector3(lx, hy, lz) * sc;
+		cube_points[3] = Ogre::Vector3(hx, hy, lz) * sc;
+		cube_points[4] = Ogre::Vector3(lx, ly, hz) * sc;
+		cube_points[5] = Ogre::Vector3(hx, ly, hz) * sc;
+		cube_points[6] = Ogre::Vector3(lx, hy, hz) * sc;
+		cube_points[7] = Ogre::Vector3(hx, hy, hz) * sc;
 		int i;
 		//rotate box
-		if (collision_boxes[free_collision_box].selfrotated)
+		if (coll_box.selfrotated)
 			for (i=0; i<8; i++)
 			{
-				p[i]=p[i]-collision_boxes[free_collision_box].selfcenter;
-				p[i]=collision_boxes[free_collision_box].selfrot*p[i];
-				p[i]=p[i]+collision_boxes[free_collision_box].selfcenter;
+				cube_points[i]=cube_points[i]-coll_box.selfcenter;
+				cube_points[i]=coll_box.selfrot*cube_points[i];
+				cube_points[i]=cube_points[i]+coll_box.selfcenter;
 			}
-			if (collision_boxes[free_collision_box].refined)
+			if (coll_box.refined)
 			{
-				for (i=0; i<8; i++) p[i]=collision_boxes[free_collision_box].rot*p[i];
-//					if (collision_boxes[free_collision_box].camerabox) collision_boxes[free_collision_box].camerapos=collision_boxes[free_collision_box].rot*collision_boxes[free_collision_box].camerapos;
+				for (i=0; i<8; i++) cube_points[i]=coll_box.rot*cube_points[i];
+//					if (coll_box.camerabox) coll_box.camerapos=coll_box.rot*coll_box.camerapos;
 			}
 			//find min/max
-			collision_boxes[free_collision_box].lo_x=p[0].x;
-			collision_boxes[free_collision_box].hi_x=p[0].x;
-			collision_boxes[free_collision_box].lo_y=p[0].y;
-			collision_boxes[free_collision_box].hi_y=p[0].y;
-			collision_boxes[free_collision_box].lo_z=p[0].z;
-			collision_boxes[free_collision_box].hi_z=p[0].z;
+			coll_box.lo = cube_points[0];
+			coll_box.hi = cube_points[0];
 			for (i=1; i<8; i++)
 			{
-				if (p[i].x<collision_boxes[free_collision_box].lo_x) collision_boxes[free_collision_box].lo_x=p[i].x;
-				if (p[i].x>collision_boxes[free_collision_box].hi_x) collision_boxes[free_collision_box].hi_x=p[i].x;
-				if (p[i].y<collision_boxes[free_collision_box].lo_y) collision_boxes[free_collision_box].lo_y=p[i].y;
-				if (p[i].y>collision_boxes[free_collision_box].hi_y) collision_boxes[free_collision_box].hi_y=p[i].y;
-				if (p[i].z<collision_boxes[free_collision_box].lo_z) collision_boxes[free_collision_box].lo_z=p[i].z;
-				if (p[i].z>collision_boxes[free_collision_box].hi_z) collision_boxes[free_collision_box].hi_z=p[i].z;
+				coll_box.lo.makeFloor(cube_points[i]);
+				coll_box.hi.makeCeil(cube_points[i]);
 			}
 			//set absolute coords
-			collision_boxes[free_collision_box].lo_x+=px;
-			collision_boxes[free_collision_box].hi_x+=px;
-			collision_boxes[free_collision_box].lo_y+=py;
-			collision_boxes[free_collision_box].hi_y+=py;
-			collision_boxes[free_collision_box].lo_z+=pz;
-			collision_boxes[free_collision_box].hi_z+=pz;
+			coll_box.lo += p;
+			coll_box.hi += p;
 	}
 	else
 	{
 		//unrefined box
-		collision_boxes[free_collision_box].lo_x=px+lx*scx;
-		collision_boxes[free_collision_box].hi_x=px+hx*scx;
-		collision_boxes[free_collision_box].lo_y=py+ly*scy;
-		collision_boxes[free_collision_box].hi_y=py+hy*scy;
-		collision_boxes[free_collision_box].lo_z=pz+lz*scz;
-		collision_boxes[free_collision_box].hi_z=pz+hz*scz;
+		coll_box.lo = p + coll_box.relo;
+		coll_box.hi = p + coll_box.rehi;
 	}
 
 	if(debugModeEvents && virt)
 	{
-		collision_box_t *cb = &collision_boxes[free_collision_box];
 		Entity *ent = mefl->getSceneMgr()->createEntity("beam.mesh");
 		SceneNode *n = mefl->getSceneMgr()->getRootSceneNode()->createChildSceneNode();
 		n->attachObject(ent);
@@ -572,16 +600,8 @@ void Collisions::addCollisionBox(SceneNode *tenode, bool rotating, bool virt, fl
 		else
 			ent->setMaterialName("tracks/transgreen");
 		// since beam.mesh origin is in its middle ...
-		n->setPosition(
-			cb->lo_x + (cb->hi_x - cb->lo_x) * 0.5f, 
-			cb->lo_y + (cb->hi_y - cb->lo_y) * 0.5f, 
-			cb->lo_z + (cb->hi_z - cb->lo_z) * 0.5f
-			);
-		n->setScale(
-			(cb->hi_x - cb->lo_x), 
-			(cb->hi_y - cb->lo_y), 
-			(cb->hi_z - cb->lo_z)
-			);
+		n->setPosition( coll_box.lo + (coll_box.hi - coll_box.lo) * 0.5f);
+		n->setScale( (coll_box.hi - coll_box.lo) );
 		n->setVisible(true);
 		n->showBoundingBox(true);
 		
@@ -595,13 +615,10 @@ void Collisions::addCollisionBox(SceneNode *tenode, bool rotating, bool virt, fl
 		mt->showOnTop(false);
 		mt->setCharacterHeight(0.3);
 		mt->setColor(ColourValue::White);
+		
 		SceneNode *n2 = mefl->getSceneMgr()->getRootSceneNode()->createChildSceneNode();
 		n2->attachObject(mt);
-		n2->setPosition(
-			cb->lo_x + (cb->hi_x - cb->lo_x) * 0.5f, 
-			cb->lo_y + (cb->hi_y - cb->lo_y) * 0.5f, 
-			cb->lo_z + (cb->hi_z - cb->lo_z) * 0.5f
-			);
+		n2->setPosition( coll_box.lo + (coll_box.hi - coll_box.lo) * 0.5f);
 
 		ManualObject* manual = mefl->getSceneMgr()->createManualObject("collision_boxes_debug_"+StringConverter::toString(free_collision_box));
 		manual->setDynamic(false);
@@ -612,34 +629,35 @@ void Collisions::addCollisionBox(SceneNode *tenode, bool rotating, bool virt, fl
 
 		// specify indexes now
 		manual->position(Vector3::ZERO);
-		manual->position(Vector3((cb->hi_x - cb->lo_x), (cb->hi_y - cb->lo_y), (cb->hi_z - cb->lo_z)));
+		manual->position(coll_box.hi - coll_box.lo);
 		manual->index(0);
 		manual->index(1);
 		manual->end();
 		SceneNode *n3 = mefl->getSceneMgr()->getRootSceneNode()->createChildSceneNode();
 		n3->attachObject(manual);
-		n3->setPosition(Vector3(cb->lo_x, cb->lo_y, cb->lo_z));
+		n3->setPosition(coll_box.lo);
 	}
 
-//		collision_boxes[free_collision_box].camerapos+=Vector3(px,py,pz);
 	//register this collision box in the index
-	int ilox, ihix, iloz, ihiz;
-	ilox=(int)(collision_boxes[free_collision_box].lo_x/(float)CELL_SIZE);
-	if (ilox<0) ilox=0; if (ilox>MAXIMUM_CELL) ilox=MAXIMUM_CELL;
-	ihix=(int)(collision_boxes[free_collision_box].hi_x/(float)CELL_SIZE);
-	if (ihix<0) ihix=0; if (ihix>MAXIMUM_CELL) ihix=MAXIMUM_CELL;
-	iloz=(int)(collision_boxes[free_collision_box].lo_z/(float)CELL_SIZE);
-	if (iloz<0) iloz=0; if (iloz>MAXIMUM_CELL) iloz=MAXIMUM_CELL;
-	ihiz=(int)(collision_boxes[free_collision_box].hi_z/(float)CELL_SIZE);
-	if (ihiz<0) ihiz=0; if (ihiz>MAXIMUM_CELL) ihiz=MAXIMUM_CELL;
-	int i,j;
-	for (i=ilox; i<=ihix; i++)
-		for (j=iloz; j<=ihiz; j++)
+	Ogre::Vector3 ilo(coll_box.lo / Ogre::Real(CELL_SIZE));
+	Ogre::Vector3 ihi(coll_box.hi / Ogre::Real(CELL_SIZE));
+	
+	// clamp between 0 and MAXIMUM_CELL;
+	ilo.makeCeil(Ogre::Vector3(0.0f));
+	ilo.makeFloor(Ogre::Vector3(MAXIMUM_CELL));
+	ihi.makeCeil(Ogre::Vector3(0.0f));
+	ihi.makeFloor(Ogre::Vector3(MAXIMUM_CELL));
+	
+	
+	for (int i = ilo.x; i <= ihi.x; i++)
+	{
+		for (int j = ilo.z; j <= ihi.z; j++)
 		{
 			//LogManager::getSingleton().logMessage("Adding a reference to cell "+StringConverter::toString(i)+" "+StringConverter::toString(j)+" at index "+StringConverter::toString(collision_index_free[i*NUM_COLLISON_CELLS+j]));
 			hash_add(i,j,free_collision_box);
 		}
-		free_collision_box++;
+	}
+	free_collision_box++;
 }
 
 int Collisions::addCollisionTri(Vector3 p1, Vector3 p2, Vector3 p3, ground_model_t* gm)
@@ -667,27 +685,26 @@ int Collisions::addCollisionTri(Vector3 p1, Vector3 p2, Vector3 p3, ground_model
 	aab.merge(p1);
 	aab.merge(p2);
 	aab.merge(p3);
+	
 	//register this collision tri in the index
-	int ilox, ihix, iloz, ihiz;
-	ilox=(int)(aab.getMinimum().x/(float)CELL_SIZE);
-	if (ilox<0) ilox=0; if (ilox>MAXIMUM_CELL) ilox=MAXIMUM_CELL;
-	ihix=(int)(aab.getMaximum().x/(float)CELL_SIZE);
-	if (ihix<0) ihix=0; if (ihix>MAXIMUM_CELL) ihix=MAXIMUM_CELL;
-	iloz=(int)(aab.getMinimum().z/(float)CELL_SIZE);
-	if (iloz<0) iloz=0; if (iloz>MAXIMUM_CELL) iloz=MAXIMUM_CELL;
-	ihiz=(int)(aab.getMaximum().z/(float)CELL_SIZE);
-	if (ihiz<0) ihiz=0; if (ihiz>MAXIMUM_CELL) ihiz=MAXIMUM_CELL;
-	int i,j;
-	for (i=ilox; i<=ihix; i++)
+	Ogre::Vector3 ilo(aab.getMinimum() / Ogre::Real(CELL_SIZE));
+	Ogre::Vector3 ihi(aab.getMaximum() / Ogre::Real(CELL_SIZE));
+	
+	// clamp between 0 and MAXIMUM_CELL;
+	ilo.makeCeil(Ogre::Vector3(0.0f));
+	ilo.makeFloor(Ogre::Vector3(MAXIMUM_CELL));
+	ihi.makeCeil(Ogre::Vector3(0.0f));
+	ihi.makeFloor(Ogre::Vector3(MAXIMUM_CELL));
+	
+	for (int i = ilo.x; i <= ihi.x; i++)
 	{
-		for (j=iloz; j<=ihiz; j++)
+		for (int j=ilo.z; j<=ihi.z; j++)
 		{
 			hash_add(i,j,free_collision_tri+MAX_COLLISION_BOXES);
 		}
 	}
-	int myid = free_collision_tri;
-	free_collision_tri++;
-	return myid;
+	
+	return free_collision_tri++;
 }
 
 void Collisions::printStats()
@@ -713,166 +730,123 @@ bool Collisions::collisionCorrect(Vector3 *refpos)
 	refx=(int)(refpos->x/(float)CELL_SIZE);
 	refz=(int)(refpos->z/(float)CELL_SIZE);
 	cell_t *cell=hash_find(refx, refz);
+	if( !cell ) return false;
 
 	collision_tri_t *minctri=0;
 	float minctridist=100.0;
 	Vector3 minctripoint;
 
-	if (cell)
+	for (k=0; k<cell->size(); k++)
 	{
-		for (k=0; k<cell->size(); k++)
+		if ((*cell)[k] != (int)UNUSED_CELLELEMENT && (*cell)[k]<MAX_COLLISION_BOXES)
 		{
-			if ((*cell)[k] != (int)UNUSED_CELLELEMENT && (*cell)[k]<MAX_COLLISION_BOXES)
+			collision_box_t *cbox=&collision_boxes[(*cell)[k]];
+			if (*refpos < cbox->lo || *refpos > cbox->hi) continue;
+
+			if (cbox->refined || cbox->selfrotated)
 			{
-				collision_box_t *cbox=&collision_boxes[(*cell)[k]];
-				if (refpos->x>cbox->lo_x && refpos->x<cbox->hi_x && refpos->y>cbox->lo_y && refpos->y<cbox->hi_y && refpos->z>cbox->lo_z && refpos->z<cbox->hi_z)
+				//we may have a collision, do a change of repere
+				Vector3 Pos=*refpos-cbox->center;
+				if (cbox->refined) Pos=cbox->unrot*Pos;
+				if (cbox->selfrotated)
 				{
-					if (cbox->refined || cbox->selfrotated)
+					Pos=Pos-cbox->selfcenter;
+					Pos=cbox->selfunrot*Pos;
+					Pos=Pos+cbox->selfcenter;
+				}
+				//now test with the inner box
+				if (Pos > cbox->relo && Pos < cbox->rehi)
+				{
+					if (cbox->eventsourcenum!=-1 && permitEvent(cbox->event_filter))
 					{
-						//we may have a collision, do a change of repere
-						Vector3 Pos=*refpos-cbox->center;
-						if (cbox->refined) Pos=cbox->unrot*Pos;
+						// prefer AS to LUA
+						bool handled = false;
+#ifdef USE_ANGELSCRIPT
+						int ret = ScriptEngine::getSingleton().envokeCallback(eventsources[cbox->eventsourcenum].luahandler, &eventsources[cbox->eventsourcenum], 0);
+						if(ret == 0)
+							handled=true;
+#endif
+#ifdef USE_LUA
+						if(!handled)
+							lua->spawnEvent(cbox->eventsourcenum, &eventsources[cbox->eventsourcenum]);
+#endif
+					}
+					if (cbox->camforced && !forcecam)
+					{
+						forcecam=true;
+						forcecampos=cbox->campos;
+					}
+					if (!cbox->virt)
+					{
+						//collision, process as usual
+						//we have a collision
+						contacted = true;
+						//determine which side collided
+						Pos = calcCollidedSide(Pos, cbox->relo, cbox->rehi);
+						
+						//resume repere
 						if (cbox->selfrotated)
 						{
 							Pos=Pos-cbox->selfcenter;
-							Pos=cbox->selfunrot*Pos;
+							Pos=cbox->selfrot*Pos;
 							Pos=Pos+cbox->selfcenter;
 						}
-						//now test with the inner box
-						if (Pos.x>cbox->relo_x && Pos.x<cbox->rehi_x && Pos.y>cbox->relo_y && Pos.y<cbox->rehi_y && Pos.z>cbox->relo_z && Pos.z<cbox->rehi_z)
-						{
-							if (cbox->eventsourcenum!=-1 && permitEvent(cbox->event_filter))
-							{
-								// prefer AS to LUA
-								bool handled = false;
-#ifdef USE_ANGELSCRIPT
-								int ret = ScriptEngine::getSingleton().envokeCallback(eventsources[cbox->eventsourcenum].luahandler, &eventsources[cbox->eventsourcenum], 0);
-								if(ret == 0)
-									handled=true;
-#endif
-#ifdef USE_LUA
-								if(!handled)
-									lua->spawnEvent(cbox->eventsourcenum, &eventsources[cbox->eventsourcenum]);
-#endif
-							}
-							if (cbox->camforced && !forcecam)
-							{
-								forcecam=true;
-								forcecampos=cbox->campos;
-							}
-							if (!cbox->virt)
-							{
-								//collision, process as usual
-								//we have a collision
-								contacted=true;
-								//determine which side collided
-								//								Vector3 normal;
-								float min=Pos.z-cbox->relo_z;
-								int mincase=0; //south
-								//								normal=Vector3(0,0,-1);
-								float t=cbox->rehi_z-Pos.z;
-								if (t<min) {min=t; mincase=2;/*normal=Vector3(0,0,1);*/}; //north
-								t=Pos.x-cbox->relo_x;
-								if (t<min) {min=t; mincase=3;/*normal=Vector3(-1,0,0);*/}; //west
-								t=cbox->rehi_x-Pos.x;
-								if (t<min) {min=t; mincase=1;/*normal=Vector3(1,0,0);*/}; //east
-								t=Pos.y-cbox->relo_y;
-								if (t<min) {min=t; mincase=4;/*normal=Vector3(0,-1,0);*/}; //down
-								t=cbox->rehi_y-Pos.y;
-								if (t<min) {min=t; mincase=5;/*normal=Vector3(0,1,0);*/}; //up
-								//okay we are in case mincase
-								//fix position
-								if (mincase==0) Pos.z=cbox->relo_z;
-								if (mincase==1) Pos.x=cbox->rehi_x;
-								if (mincase==2) Pos.z=cbox->rehi_z;
-								if (mincase==3) Pos.x=cbox->relo_x;
-								if (mincase==4) Pos.y=cbox->relo_y;
-								if (mincase==5) Pos.y=cbox->rehi_y;
-								//resume repere
-								if (cbox->selfrotated)
-								{
-									Pos=Pos-cbox->selfcenter;
-									Pos=cbox->selfrot*Pos;
-									Pos=Pos+cbox->selfcenter;
-								}
-								if (cbox->refined) Pos=cbox->rot*Pos;
-								*refpos=Pos+cbox->center;
-							}
-						}
-
-					} else
-					{
-						if (cbox->eventsourcenum!=-1 && permitEvent(cbox->event_filter))
-						{
-							// prefer AS to LUA
-							bool handled = false;
-#ifdef USE_ANGELSCRIPT
-							int ret = ScriptEngine::getSingleton().envokeCallback(eventsources[cbox->eventsourcenum].luahandler, &eventsources[cbox->eventsourcenum], 0);
-							if(ret == 0)
-								handled=true;
-#endif
-#ifdef USE_LUA
-							if(!handled)
-								lua->spawnEvent(cbox->eventsourcenum, &eventsources[cbox->eventsourcenum]);
-#endif
-						}
-						if (cbox->camforced && !forcecam)
-						{
-							forcecam=true;
-							forcecampos=cbox->campos;
-						}
-						if (!cbox->virt)
-						{
-							//we have a collision
-							contacted=true;
-							//determine which side collided
-							//							Vector3 normal;
-							float min=refpos->z-cbox->lo_z;
-							int mincase=0; //south
-							//							normal=Vector3(0,0,-1);
-							float t=cbox->hi_z-refpos->z;
-							if (t<min) {min=t; mincase=2;/*normal=Vector3(0,0,1);*/}; //north
-							t=refpos->x-cbox->lo_x;
-							if (t<min) {min=t; mincase=3;/*normal=Vector3(-1,0,0);*/}; //west
-							t=cbox->hi_x-refpos->x;
-							if (t<min) {min=t; mincase=1;/*normal=Vector3(1,0,0);*/}; //east
-							t=refpos->y-cbox->lo_y;
-							if (t<min) {min=t; mincase=4;/*normal=Vector3(0,-1,0);*/}; //down
-							t=cbox->hi_y-refpos->y;
-							if (t<min) {min=t; mincase=5;/*normal=Vector3(0,1,0);*/}; //up
-							//okay we are in case mincase
-							//fix position
-							if (mincase==0) refpos->z=cbox->lo_z;
-							if (mincase==1) refpos->x=cbox->hi_x;
-							if (mincase==2) refpos->z=cbox->hi_z;
-							if (mincase==3) refpos->x=cbox->lo_x;
-							if (mincase==4) refpos->y=cbox->lo_y;
-							if (mincase==5) refpos->y=cbox->hi_y;
-						}
+						if (cbox->refined) Pos=cbox->rot*Pos;
+						*refpos=Pos+cbox->center;
 					}
 				}
-			}
-			else
+
+			} else
 			{
-				collision_tri_t *ctri=&collision_tris[(*cell)[k]-MAX_COLLISION_BOXES];
-				if(!ctri->enabled)
-					continue;
-				//check if this tri is minimal
-				//transform
-				Vector3 point=ctri->forward*(*refpos-ctri->a);
-				//test if within tri collision volume (potential cause of bug!)
-				if (point.x>=0 && point.y>=0 && (point.x+point.y)<=1.0 && point.z<0 && point.z>-0.1)
+				if (cbox->eventsourcenum!=-1 && permitEvent(cbox->event_filter))
 				{
-					if (-point.z<minctridist)
-					{
- 						minctridist=-point.z;
-						minctri=ctri;
-						minctripoint=point;
-					}
+					// prefer AS to LUA
+					bool handled = false;
+#ifdef USE_ANGELSCRIPT
+					int ret = ScriptEngine::getSingleton().envokeCallback(eventsources[cbox->eventsourcenum].luahandler, &eventsources[cbox->eventsourcenum], 0);
+					if(ret == 0)
+						handled=true;
+#endif
+#ifdef USE_LUA
+					if(!handled)
+						lua->spawnEvent(cbox->eventsourcenum, &eventsources[cbox->eventsourcenum]);
+#endif
+				}
+				if (cbox->camforced && !forcecam)
+				{
+					forcecam=true;
+					forcecampos=cbox->campos;
+				}
+				if (!cbox->virt)
+				{
+					//we have a collision
+					contacted=true;
+					//determine which side collided
+					(*refpos) = calcCollidedSide((*refpos), cbox->lo, cbox->hi);
+				}
+			}
+		}
+		else
+		{
+			collision_tri_t *ctri=&collision_tris[(*cell)[k]-MAX_COLLISION_BOXES];
+			if(!ctri->enabled)
+				continue;
+			//check if this tri is minimal
+			//transform
+			Vector3 point=ctri->forward*(*refpos-ctri->a);
+			//test if within tri collision volume (potential cause of bug!)
+			if (point.x>=0 && point.y>=0 && (point.x+point.y)<=1.0 && point.z<0 && point.z>-0.1)
+			{
+				if (-point.z<minctridist)
+				{
+					minctridist=-point.z;
+					minctri=ctri;
+					minctripoint=point;
 				}
 			}
 		}
 	}
+		
 	//process minctri collision
 	if (minctri)
 	{
@@ -932,8 +906,9 @@ bool Collisions::nodeCollision(node_t *node, bool iscinecam, int contacted, floa
 		{
 			if ((*cell)[k] != (int)UNUSED_CELLELEMENT && (*cell)[k]<MAX_COLLISION_BOXES)
 			{
-				collision_box_t *cbox=&collision_boxes[(*cell)[k]];
-				if (node->AbsPosition.x>cbox->lo_x && node->AbsPosition.x<cbox->hi_x && node->AbsPosition.y>cbox->lo_y && node->AbsPosition.y<cbox->hi_y && node->AbsPosition.z>cbox->lo_z && node->AbsPosition.z<cbox->hi_z)
+				collision_box_t *cbox = &collision_boxes[(*cell)[k]];
+				if (node->AbsPosition > cbox->lo
+				&& node->AbsPosition < cbox->hi)
 				{
 					if (cbox->refined || cbox->selfrotated)
 					{
@@ -947,7 +922,8 @@ bool Collisions::nodeCollision(node_t *node, bool iscinecam, int contacted, floa
 							Pos=Pos+cbox->selfcenter;
 						}
 						//now test with the inner box
-						if (Pos.x>cbox->relo_x && Pos.x<cbox->rehi_x && Pos.y>cbox->relo_y && Pos.y<cbox->rehi_y && Pos.z>cbox->relo_z && Pos.z<cbox->rehi_z)
+						if (Pos > cbox->relo
+						&& Pos < cbox->rehi)
 						{
 							if (cbox->eventsourcenum!=-1 && permitEvent(cbox->event_filter))
 							{
@@ -979,19 +955,18 @@ bool Collisions::nodeCollision(node_t *node, bool iscinecam, int contacted, floa
 								smoky=true;
 								//*nso=ns;
 								//determine which side collided
-								float min=Pos.z-cbox->relo_z;
-								int mincase=0; //south
+								float min=Pos.z-cbox->relo.z;
 								Vector3 normal=Vector3(0,0,-1);
-								float t=cbox->rehi_z-Pos.z;
-								if (t<min) {min=t; mincase=2;normal=Vector3(0,0,1);}; //north
-								t=Pos.x-cbox->relo_x;
-								if (t<min) {min=t; mincase=3;normal=Vector3(-1,0,0);}; //west
-								t=cbox->rehi_x-Pos.x;
-								if (t<min) {min=t; mincase=1;normal=Vector3(1,0,0);}; //east
-								t=Pos.y-cbox->relo_y;
-								if (t<min) {min=t; mincase=4;normal=Vector3(0,-1,0);}; //down
-								t=cbox->rehi_y-Pos.y;
-								if (t<min) {min=t; mincase=5;normal=Vector3(0,1,0);}; //up
+								float t=cbox->rehi.z-Pos.z;
+								if (t<min) {min=t; normal=Vector3(0,0,1);}; //north
+								t=Pos.x-cbox->relo.x;
+								if (t<min) {min=t; normal=Vector3(-1,0,0);}; //west
+								t=cbox->rehi.x-Pos.x;
+								if (t<min) {min=t; normal=Vector3(1,0,0);}; //east
+								t=Pos.y-cbox->relo.y;
+								if (t<min) {min=t; normal=Vector3(0,-1,0);}; //down
+								t=cbox->rehi.y-Pos.y;
+								if (t<min) {min=t; normal=Vector3(0,1,0);}; //up
 
 								//we need the normal, and the depth
 								//resume repere for the normal
@@ -1035,51 +1010,24 @@ bool Collisions::nodeCollision(node_t *node, bool iscinecam, int contacted, floa
 							smoky=true;
 							//*nso=ns;
 							//determine which side collided
-							float min=node->AbsPosition.z-cbox->lo_z;
-							int mincase=0; //south
+							float min=node->AbsPosition.z-cbox->lo.z;
 							Vector3 normal=Vector3(0,0,-1);
-							float t=cbox->hi_z-node->AbsPosition.z;
-							if (t<min) {min=t; mincase=2;normal=Vector3(0,0,1);}; //north
-							t=node->AbsPosition.x-cbox->lo_x;
-							if (t<min) {min=t; mincase=3;normal=Vector3(-1,0,0);}; //west
-							t=cbox->hi_x-node->AbsPosition.x;
-							if (t<min) {min=t; mincase=1;normal=Vector3(1,0,0);}; //east
-							t=node->AbsPosition.y-cbox->lo_y;
-							if (t<min) {min=t; mincase=4;normal=Vector3(0,-1,0);}; //down
-							t=cbox->hi_y-node->AbsPosition.y;
-							if (t<min) {min=t; mincase=5;normal=Vector3(0,1,0);}; //up
+							float t=cbox->hi.z-node->AbsPosition.z;
+							if (t<min) {min=t; normal=Vector3(0,0,1);}; //north
+							t=node->AbsPosition.x-cbox->lo.x;
+							if (t<min) {min=t; normal=Vector3(-1,0,0);}; //west
+							t=cbox->hi.x-node->AbsPosition.x;
+							if (t<min) {min=t; normal=Vector3(1,0,0);}; //east
+							t=node->AbsPosition.y-cbox->lo.y;
+							if (t<min) {min=t; normal=Vector3(0,-1,0);}; //down
+							t=cbox->hi.y-node->AbsPosition.y;
+							if (t<min) {min=t; normal=Vector3(0,1,0);}; //up
 							//we need the normal
 							//resume repere for the normal
 							if (cbox->selfrotated) normal=cbox->selfrot*normal;
 							if (cbox->refined) normal=cbox->rot*normal;
 							primitiveCollision(node, node->Forces, node->Velocity, normal, dt, defaultgm, nso);
 							if (ogm) *ogm=defaultgm;
-							/*//fix position
-							Vector3 prevPos=node->AbsPosition;
-							if (mincase==0) node->AbsPosition.z=cbox->lo_z;
-							if (mincase==1) node->AbsPosition.x=cbox->hi_x;
-							if (mincase==2) node->AbsPosition.z=cbox->hi_z;
-							if (mincase==3) node->AbsPosition.x=cbox->lo_x;
-							if (mincase==4) node->AbsPosition.y=cbox->lo_y;
-							if (mincase==5) node->AbsPosition.y=cbox->hi_y;
-							float depth=(prevPos-node->AbsPosition).length();
-
-
-							//compute slip velocity vector
-							Vector3 slip=node->Velocity-node->Velocity.dotProduct(normal)*normal;
-							//remove the normal speed component
-							node->Velocity=slip;
-							float slipl=slip.length();
-							if (slipl<0.5) node->Velocity=Vector3::ZERO;
-							else
-							{
-								float loadfactor=(1.0-fabs(depth/corrf)*120.0);
-								if (loadfactor<0) loadfactor=0;
-								float slipfactor=(slipl-0.5)/10.0;
-								if (slipfactor>1) slipfactor=1;
-								node->Velocity*=loadfactor*slipfactor;
-							}
-							*/
 						}
 					}
 				}
@@ -1224,7 +1172,9 @@ bool Collisions::isInside(Vector3 pos, char* instance, char* box, float border)
 bool Collisions::isInside(Vector3 pos, collision_box_t *cbox, float border)
 {
 	if (!cbox) return false;
-	if (pos.x+border>cbox->lo_x && pos.x-border<cbox->hi_x && pos.y+border>cbox->lo_y && pos.y-border<cbox->hi_y && pos.z+border>cbox->lo_z && pos.z-border<cbox->hi_z)
+	
+	if (pos + border > cbox->lo
+	&& pos - border < cbox->hi)
 	{
 		if (cbox->refined || cbox->selfrotated)
 		{
@@ -1237,8 +1187,10 @@ bool Collisions::isInside(Vector3 pos, collision_box_t *cbox, float border)
 				rpos=cbox->selfunrot*rpos;
 				rpos=rpos+cbox->selfcenter;
 			}
+			
 			//now test with the inner box
-			if (rpos.x>cbox->relo_x && rpos.x<cbox->rehi_x && rpos.y>cbox->relo_y && rpos.y<cbox->rehi_y && rpos.z>cbox->relo_z && rpos.z<cbox->rehi_z)
+			if (rpos >cbox->relo
+			&& rpos < cbox->rehi)
 			{
 				return true;
 			}

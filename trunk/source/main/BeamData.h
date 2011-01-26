@@ -700,12 +700,8 @@ struct rig
 struct collision_box
 {
 	//absolute collision box
-	float lo_x;
-	float hi_x;
-	float lo_y;
-	float hi_y;
-	float lo_z;
-	float hi_z;
+	Ogre::Vector3 lo;
+	Ogre::Vector3 hi;
 	bool refined;
 	//rotation
 	Ogre::Quaternion rot;
@@ -713,12 +709,8 @@ struct collision_box
 	//center of rotation
 	Ogre::Vector3 center;
 	//relative collision box
-	float relo_x;
-	float rehi_x;
-	float relo_y;
-	float rehi_y;
-	float relo_z;
-	float rehi_z;
+	Ogre::Vector3 relo;
+	Ogre::Vector3 rehi;
 	//self rotation
 	bool selfrotated;
 	Ogre::Vector3 selfcenter;

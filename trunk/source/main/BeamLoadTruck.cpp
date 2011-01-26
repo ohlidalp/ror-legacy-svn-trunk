@@ -3800,7 +3800,7 @@ int Beam::loadTruck(const char* fname, SceneManager *manager, SceneNode *parent,
 		//pz=pz-(maxz-minz)/2.0;
 		pz-=(maxz+minz)/2.0-pz;
 		float miny=-9999.0;
-		if (spawnbox) miny=spawnbox->relo_y+spawnbox->center.y+0.01;
+		if (spawnbox) miny=spawnbox->relo.y+spawnbox->center.y+0.01;
 		if(freePositioned)
 			resetPosition(Vector3(px, py, pz), true);
 		else
@@ -3813,7 +3813,7 @@ int Beam::loadTruck(const char* fname, SceneManager *manager, SceneNode *parent,
 			if (!inside)
 			{
 				Vector3 gpos=Vector3(px, 0, pz);
-				gpos-=rot*Vector3((spawnbox->hi_x-spawnbox->lo_x+maxx-minx)*0.6, 0, 0);
+				gpos-=rot*Vector3((spawnbox->hi.x-spawnbox->lo.x+maxx-minx)*0.6, 0, 0);
 				resetPosition(gpos.x, gpos.z, true, miny);
 			}
 		}

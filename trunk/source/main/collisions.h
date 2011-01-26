@@ -146,6 +146,7 @@ private:
 	std::map<Ogre::String, ground_model_t> ground_models;
 	void parseGroundConfig(Ogre::ConfigFile *cfg, Ogre::String groundModel=Ogre::String());
 
+	Ogre::Vector3 calcCollidedSide(const Ogre::Vector3& pos, Ogre::Vector3& lo, Ogre::Vector3& hi);
 public:
 	bool forcecam;
 	Ogre::Vector3 forcecampos;
