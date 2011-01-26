@@ -77,9 +77,9 @@ FILE(GLOB sources "*.cpp")
 FILE(GLOB headers "*.h")
 
 IF(WIN32)
-	add_executable(rorconfig WIN32 ${sources} ${headers} ${OS_SOURCE} ../main/InputEngine.cpp)
+	add_executable(rorconfig WIN32 ${sources} ${headers} ${OS_SOURCE} ../main/InputEngine.cpp ../main/Settings.cpp ../main/errorutils.cpp)
 ELSE(WIN32)
-	add_executable(rorconfig ${sources} ${headers} ${OS_SOURCE} ../main/InputEngine.cpp)
+	add_executable(rorconfig ${sources} ${headers} ${OS_SOURCE} ../main/InputEngine.cpp ../main/Settings.cpp ../main/errorutils.cpp)
 ENDIF(WIN32)
 
 TARGET_LINK_LIBRARIES(rorconfig ${Ogre_LIBRARIES} ${Ois_LIBRARIES} ${OS_LIBS} ${optional_libs} ${wxWidgets_LIBRARIES})

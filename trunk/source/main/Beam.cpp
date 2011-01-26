@@ -2795,7 +2795,6 @@ bool Beam::frameStep(Real dt, Beam** trucks, int numtrucks)
 					{
 						nodes[n].smoothpos = nodes[n].AbsPosition;
 					}
-
 				} else
 				{
 					Vector3 aposition = Vector3::ZERO;
