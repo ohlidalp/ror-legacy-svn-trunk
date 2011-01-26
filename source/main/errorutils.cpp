@@ -21,7 +21,9 @@ along with Rigs of Rods.  If not, see <http://www.gnu.org/licenses/>.
 
 #include "errorutils.h"
 #include "Ogre.h"
-#include "language.h"
+//#include "language.h"
+
+#define _L
 
 
 #if OGRE_PLATFORM == OGRE_PLATFORM_WIN32

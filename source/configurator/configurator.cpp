@@ -84,6 +84,8 @@ extern eventInfo_t eventInfo[]; // defines all input events
 
 #include "treelistctrl.h"
 
+#include "Settings.h"
+
 #include "OISKeyboard.h"
 
 #if OGRE_PLATFORM == OGRE_PLATFORM_APPLE
@@ -1369,79 +1371,9 @@ void MyApp::recurseCopy(wxString sourceDir, wxString destinationDir)
 
 bool MyApp::filesystemBootstrap()
 {
-	//find the root of the program and user directory
-	//these routines should set ProgramPath and UserPath
-#if OGRE_PLATFORM == OGRE_PLATFORM_WIN32
-	WCHAR Wuser_path[1024];
-	WCHAR Wprogram_path[1024];
-	if (!GetModuleFileNameW(NULL, Wprogram_path, 512))
-	{
-		return false;
-	}
-	GetShortPathName(Wprogram_path, Wprogram_path, 512); //this is legal
-	ProgramPath=wxFileName(wxString(Wprogram_path)).GetPath();
+	UserPath = conv(SETTINGS.getSetting("User Path"));
+	ProgramPath = conv(SETTINGS.getSetting("Program Path"));
 
-	if (SHGetFolderPath(NULL, CSIDL_PERSONAL, NULL, SHGFP_TYPE_CURRENT, Wuser_path)!=S_OK)
-	{
-		return false;
-	}
-	GetShortPathName(Wuser_path, Wuser_path, 512); //this is legal
-	wxFileName tfn=wxFileName(Wuser_path, wxEmptyString);
-	tfn.AppendDir(wxT("Rigs of Rods"));
-	UserPath=tfn.GetPath();
-#endif
-#if OGRE_PLATFORM == OGRE_PLATFORM_LINUX
-	//true program path is impossible to get from POSIX functions
-	//lets hack!
-	pid_t pid = getpid();
-	char procpath[256];
-	char user_path[1024];
-	char program_path[1024];
-	sprintf(procpath, "/proc/%d/exe", pid);
-	int ch = readlink(procpath,program_path,240);
-	if (ch != -1)
-	{
-		program_path[ch] = 0;
-	} else return false;
-	ProgramPath=wxFileName(wxString(conv(program_path))).GetPath();
-	//user path is easy
-	strncpy(user_path, getenv ("HOME"), 240);
-	wxFileName tfn=wxFileName(conv(user_path), wxEmptyString);
-	tfn.AppendDir(_T(".rigsofrods"));
-	UserPath=tfn.GetPath();
-#endif
-#if OGRE_PLATFORM == OGRE_PLATFORM_APPLE
-	//found this code, will look later
-	std::string path = "./";
-	ProcessSerialNumber PSN;
-	ProcessInfoRec pinfo;
-	FSSpec pspec;
-	FSRef fsr;
-	OSStatus err;
-	/* set up process serial number */
-	PSN.highLongOfPSN = 0;
-	PSN.lowLongOfPSN = kCurrentProcess;
-	/* set up info block */
-	pinfo.processInfoLength = sizeof(pinfo);
-	pinfo.processName = NULL;
-	pinfo.processAppSpec = &pspec;
-	/* grab the vrefnum and directory */
-	err = GetProcessInformation(&PSN, &pinfo);
-	if (! err ) {
-	char c_path[2048];
-	FSSpec fss2;
-	int tocopy;
-	err = FSMakeFSSpec(pspec.vRefNum, pspec.parID, 0, &fss2);
-	if ( ! err ) {
-	err = FSpMakeFSRef(&fss2, &fsr);
-	if ( ! err ) {
-	char c_path[2049];
-	err = (OSErr)FSRefMakePath(&fsr, (UInt8*)c_path, 2048);
-	if (! err ) {
-	path = c_path;
-	}
-	}
-#endif
 	//skeleton
 	wxFileName tsk=wxFileName(ProgramPath, wxEmptyString);
 	tsk.AppendDir(wxT("skeleton"));
@@ -1510,7 +1442,13 @@ bool MyApp::OnInit()
 {
 	buildmode=false;
 	if (argc==2 && wxString(argv[1])==wxT("/buildmode")) buildmode=true;
+	
+	
 	//setup the user filesystem
+	SETTINGS.setSetting("BuildMode", buildmode?"Yes":"No");
+	if(!SETTINGS.setupPaths())
+		return false;
+
 	if (!filesystemBootstrap()) return false;
 
 	initLogging();

@@ -24,7 +24,10 @@ along with Rigs of Rods.  If not, see <http://www.gnu.org/licenses/>.
 #include <windows.h>
 #include <shlobj.h>
 #endif
-#include "language.h"
+
+//#include "language.h"
+#define _L
+
 #include "errorutils.h"
 
 using namespace std;
@@ -240,6 +243,7 @@ bool Settings::setupPaths()
 	char config_root[1024]="";
 	char dirsep='/';
 
+
 	if(!get_system_paths(program_path, user_path))
 		return false;
 
@@ -303,6 +307,12 @@ bool Settings::setupPaths()
 		String configfile = settings["configfile"];
 		if(!configfile.size()) configfile = "config.cfg";
 		loadSettings(configfile, true);
+
+		// fix up time things...
+		settings["Config Root"] = settings["User Path"]+"config"+dirsep;
+		settings["ogre.cfg"]    = settings["User Path"]+"config"+dirsep+"ogre.cfg";
+		settings["ogre.log"]    = settings["User Path"]+"logs"+dirsep+"ogre.log";
+
 	} catch(...)
 	{
 		// file not found or other error
