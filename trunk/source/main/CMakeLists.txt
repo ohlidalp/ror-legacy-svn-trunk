@@ -66,6 +66,7 @@ setup_lib(CRASHRPT)
 
 if(ROR_USE_ANGELSCRIPT)
 	add_definitions("-DAS_USE_NAMESPACE")
+	set(optional_libs ${optional_libs} angelscript_addons)
 endif()
 
 if(ROR_USE_OIS_G27)

@@ -23,9 +23,20 @@ along with Rigs of Rods.  If not, see <http://www.gnu.org/licenses/>.
 #include "ScriptEngine.h"
 #include "Ogre.h"
 #include "RoRFrameListener.h"
-#include "angelscript/scriptstdstring/scriptstdstring.h" // angelscript addon
-#include "angelscript/scriptmath3d/scriptmath3d.h" // angelscript addon
-#include "angelscript/scriptmath/scriptmath.h" // angelscript addon
+
+// AS addons start
+#include "scriptstdstring/scriptstdstring.h"
+#include "scriptmath3d/scriptmath3d.h"
+#include "scriptmath/scriptmath.h"
+#include "contextmgr/contextmgr.h"
+#include "scriptany/scriptany.h"
+#include "scriptarray/scriptarray.h"
+#include "scriptbuilder/scriptbuilder.h"
+#include "scriptdictionary/scriptdictionary.h"
+#include "scripthelper/scripthelper.h"
+#include "scriptstring/scriptstring.h"
+// AS addons end
+
 #include "water.h"
 #include "Beam.h"
 #include "Settings.h"
@@ -265,6 +276,11 @@ void ScriptEngine::init()
 	AngelScript::RegisterStdString(engine);
 	AngelScript::RegisterScriptMath(engine);
 	AngelScript::RegisterScriptMath3D(engine);
+	AngelScript::RegisterScriptAny(engine);
+	AngelScript::RegisterScriptArray(engine, true);
+	AngelScript::RegisterScriptDictionary(engine);
+	//AngelScript::RegisterScriptString(engine);
+	//AngelScript::RegisterScriptStringUtils(engine);
 
 	registerOgreObjects(engine);
 
