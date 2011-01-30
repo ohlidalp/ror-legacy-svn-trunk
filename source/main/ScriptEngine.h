@@ -32,6 +32,8 @@ along with Rigs of Rods.  If not, see <http://www.gnu.org/licenses/>.
 #include "Ogre.h"
 #include "rormemory.h"
 
+#include "scriptdictionary/scriptdictionary.h"
+
 #include "collisions.h"
 
 //forward decl.
@@ -39,7 +41,7 @@ class RoRFrameListener;
 class GameScript;
 class Beam;
 
-#define AS_INTERFACE_VERSION "0.1.0" //!< versioning for the scripting interface
+#define AS_INTERFACE_VERSION "0.2.0" //!< versioning for the scripting interface
 
 #ifdef USE_CURL
 
@@ -335,7 +337,8 @@ public:
 	int setMaterialEmissive(const std::string &materialName, float red, float green, float blue);
 	
 	float rangeRandom(float from, float to);
-	int useOnlineAPI(const std::string &apiquery, std::string &result);
+	int useOnlineAPI(const std::string &apiquery, const AngelScript::CScriptDictionary &dict, std::string &result);
+	int getLoadedTerrain(std::string &result);
 	Ogre::Vector3 getPersonPosition();
 };
 

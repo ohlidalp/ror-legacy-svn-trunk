@@ -50,6 +50,7 @@ protected:
 	int allocated;
 	Vector3 positions[MAX_DUSTS];
 	Vector3 velocities[MAX_DUSTS];
+	bool    visible[MAX_DUSTS];
 	ColourValue colours[MAX_DUSTS];
 	int types[MAX_DUSTS];
 	float rates[MAX_DUSTS];

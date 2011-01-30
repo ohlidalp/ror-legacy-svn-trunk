@@ -403,6 +403,8 @@ public:
 	OverlayWrapper *getOverlayWrapper() { return ow; };
 
 	Water *w;
+	Ogre::String loadedTerrain;
+
 
 public:
 	// mutex'ed data
@@ -538,8 +540,6 @@ protected:
 
 //	GUI_TruckTool *truckToolGUI;
 //	GUI_MainMenu *mainmenu;
-
-	Ogre::String loadedTerrain;
 
 	std::vector<animated_object_t> animatedObjects;
 	bool updateAnimatedObjects(float dt);

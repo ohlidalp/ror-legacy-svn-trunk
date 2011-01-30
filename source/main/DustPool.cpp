@@ -41,6 +41,8 @@ DustPool::DustPool(char* dname, int dsize, SceneNode *parent, SceneManager *smgr
 		}
 	}
 
+	// hide after creation
+	setVisible(false);
 };
 
 void DustPool::setVisible(bool s)
@@ -48,7 +50,8 @@ void DustPool::setVisible(bool s)
 	int i;
 	for (i=0; i<size; i++) 
 	{
-		pss[i]->setVisible(s ^ (types[i]==DUST_RIPPLE));
+		visible[i] = s;
+		pss[i]->setVisible(s);
 	}
 }
 
@@ -60,6 +63,7 @@ void DustPool::alloc(Vector3 pos, Vector3 vel, ColourValue col)
 	velocities[allocated]=vel;
 	colours[allocated]=col;
 	types[allocated]=DUST_NORMAL;
+	visible[allocated]=true;
 	allocated++;
 }
 
@@ -71,6 +75,7 @@ void DustPool::allocClump(Vector3 pos, Vector3 vel, ColourValue col)
 	velocities[allocated]=vel;
 	colours[allocated]=col;
 	types[allocated]=DUST_CLUMP;
+	visible[allocated]=true;
 	allocated++;
 }
 
@@ -81,6 +86,7 @@ void DustPool::allocSmoke(Vector3 pos, Vector3 vel)
 	positions[allocated]=pos;
 	velocities[allocated]=vel;
 	types[allocated]=DUST_RUBBER;
+	visible[allocated]=true;
 	allocated++;
 }
 
@@ -92,6 +98,7 @@ void DustPool::allocSparks(Vector3 pos, Vector3 vel)
 	positions[allocated]=pos;
 	velocities[allocated]=vel;
 	types[allocated]=DUST_SPARKS;
+	visible[allocated]=true;
 	allocated++;
 }
 
@@ -103,6 +110,7 @@ void DustPool::allocVapour(Vector3 pos, Vector3 vel, float time)
 	velocities[allocated]=vel;
 	types[allocated]=DUST_VAPOUR;
 	rates[allocated]=5.0-time;
+	visible[allocated]=true;
 	allocated++;
 }
 
@@ -113,6 +121,7 @@ void DustPool::allocDrip(Vector3 pos, Vector3 vel, float time)
 	velocities[allocated]=vel;
 	types[allocated]=DUST_DRIP;
 	rates[allocated]=5.0-time;
+	visible[allocated]=true;
 	allocated++;
 }
 
@@ -122,6 +131,7 @@ void DustPool::allocSplash(Vector3 pos, Vector3 vel)
 	positions[allocated]=pos;
 	velocities[allocated]=vel;
 	types[allocated]=DUST_SPLASH;
+	visible[allocated]=true;
 	allocated++;
 }
 
@@ -131,6 +141,7 @@ void DustPool::allocRipple(Vector3 pos, Vector3 vel)
 	positions[allocated]=pos;
 	velocities[allocated]=vel;
 	types[allocated]=DUST_RIPPLE;
+	visible[allocated]=true;
 	allocated++;
 }
 
@@ -140,6 +151,9 @@ void DustPool::update(float gspeed)
 	gspeed=fabs(gspeed);
 	for (i=0; i<allocated; i++)
 	{
+		// show particle if requested
+		if(pss[i] && !pss[i]->isVisible() && visible[i]) pss[i]->setVisible(true);
+
 		if (types[i]==DUST_NORMAL)
 		{
 			ParticleEmitter *emit=pss[i]->getEmitter(0);

@@ -764,8 +764,8 @@ void Beam::calcForcesEuler(int doUpdate, Real dt, int step, int maxstep, Beam** 
 							{
 								if(dustp) dustp->allocSmoke(nodes[i].AbsPosition, nodes[i].Velocity);
 #ifdef USE_OPENAL
-								ssm->modulate(trucknum, SS_MOD_SCREETCH, (ns-thresold)/thresold);
-								ssm->trigOnce(trucknum, SS_TRIG_SCREETCH);
+								if(ssm) ssm->modulate(trucknum, SS_MOD_SCREETCH, (ns-thresold)/thresold);
+								if(ssm) ssm->trigOnce(trucknum, SS_TRIG_SCREETCH);
 #endif // USE_OPENAL
 							}
 

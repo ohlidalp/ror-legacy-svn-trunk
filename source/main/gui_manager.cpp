@@ -24,6 +24,7 @@ along with Rigs of Rods.  If not, see <http://www.gnu.org/licenses/>.
 #include "Settings.h"
 #include "language.h"
 #include <MyGUI_OgrePlatform.h>
+#include <MyGUI_LanguageManager.h>
 
 #if MYGUI_PLATFORM == MYGUI_PLATFORM_WIN32
 #	include <windows.h>
@@ -128,7 +129,7 @@ void GUIManager::windowClosed(Ogre::RenderWindow* _rw)
 
 void GUIManager::eventRequestTag(const MyGUI::UString& _tag, MyGUI::UString& _result)
 {
-	_result = LanguageEngine::Instance().lookUp(_tag);
+	_result = MyGUI::LanguageManager::getInstance().getTag(_tag);
 }
 
 void GUIManager::injectMouseMove(int _absx, int _absy, int _absz)
