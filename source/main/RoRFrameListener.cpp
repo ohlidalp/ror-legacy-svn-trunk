@@ -1218,7 +1218,7 @@ RoRFrameListener::RoRFrameListener(RenderWindow* win, Camera* cam, SceneManager*
 			// so show the terrain selection
 			preselected_map = "";
 		else
-			preselected_map = String(terrn);
+			preselected_map = getASCIIFromCharString(terrn, 255);
 
 		// show chat in MP
 		NETCHAT.setMode(this, NETCHAT_LEFT_SMALL, true);
@@ -1260,9 +1260,14 @@ RoRFrameListener::RoRFrameListener(RenderWindow* win, Camera* cam, SceneManager*
 	{
 		if(!CACHE.checkResourceLoaded(preselected_map))
 		{
-			LogManager::getSingleton().logMessage("Terrain not found: " + preselected_map);
-			showError(_L("Terrain loading error"), _L("Terrain not found: ") + preselected_map);
-			exit(123);
+			// fallback to old terrain name with .terrn
+			if(!CACHE.checkResourceLoaded(preselected_map + ".terrn"))
+			{
+				LogManager::getSingleton().logMessage("Terrain not found: " + preselected_map);
+				showError(_L("Terrain loading error"), _L("Terrain not found: ") + preselected_map);
+				exit(123);
+			} else
+				preselected_map  = preselected_map + ".terrn";
 		}
 
 		// set the terrain cache entry
@@ -1395,6 +1400,7 @@ void RoRFrameListener::loadNetTerrain(char *preselected_map)
 {
 	// load preselected map
 	char mapname[1024];
+	String group="";
 	sprintf(mapname, "%s.terrn", preselected_map);
 	loadTerrain(mapname);
 	//miniature map stuff
@@ -1402,7 +1408,7 @@ void RoRFrameListener::loadNetTerrain(char *preselected_map)
 	//search if mini picture exists
 	char ppname[1024];
 	sprintf(ppname, "%s-mini.dds", preselected_map);
-	String group="";
+	group="";
 	if(group == "")
 	{
 		sprintf(ppname, "%s-mini.png", preselected_map);
@@ -4703,9 +4709,15 @@ void RoRFrameListener::loadTerrain(String terrainfile)
 	// check if the resource is loaded
 	if(!CACHE.checkResourceLoaded(terrainfile))
 	{
-		LogManager::getSingleton().logMessage("Terrain not found: " + terrainfile);
-		showError(_L("Terrain loading error"), _L("Terrain not found: ") + terrainfile);
-		exit(123);
+		// fallback for terrains, add .terrn if not found and retry
+		if(!CACHE.checkResourceLoaded(terrainfile+".terrn"))
+		{
+			LogManager::getSingleton().logMessage("Terrain not found: " + terrainfile);
+			showError(_L("Terrain loading error"), _L("Terrain not found: ") + terrainfile);
+			exit(123);
+		} else
+			terrainfile  = terrainfile + ".terrn";
+
 	}
 
 	loadedTerrain = terrainfile;

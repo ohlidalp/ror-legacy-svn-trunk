@@ -32,6 +32,8 @@ along with Rigs of Rods.  If not, see <http://www.gnu.org/licenses/>.
 #include "ColoredTextAreaOverlayElement.h"
 #include "PlayerColours.h"
 
+#include "utils.h"
+
 using namespace Ogre;
 
 unsigned int Character::characterCounter=0;
@@ -562,9 +564,14 @@ void Character::sendStreamData()
 
 	pos_netdata_t data;
 	data.command = CHARCMD_POSITION;
-	data.pos = personode->getPosition();
-	data.rot = personode->getOrientation();
-	data.animationMode = lastmode;
+	data.posx = personode->getPosition().x;
+	data.posy = personode->getPosition().y;
+	data.posz = personode->getPosition().z;
+	data.rotx = personode->getOrientation().x;
+	data.roty = personode->getOrientation().y;
+	data.rotz = personode->getOrientation().z;
+	data.rotw = personode->getOrientation().w;
+	strncpy(data.animationMode, lastmode.c_str(), 254);
 	data.animationTime = persoanim->getAnimationState(lastmode)->getTimePosition();
 
 	//LogManager::getSingleton().logMessage("sending character stream data: " + StringConverter::toString(net->getUserID()) + ":"+ StringConverter::toString(streamid));
@@ -580,9 +587,11 @@ void Character::receiveStreamData(unsigned int &type, int &source, unsigned int 
 		{
 			// position
 			pos_netdata_t *data = (pos_netdata_t *)buffer;
-			this->setPosition(data->pos);
-			this->setOrientation(data->rot);
-			setAnimationMode(data->animationMode, data->animationTime);
+			Vector3 pos(data->posx, data->posy, data->posz);
+			this->setPosition(pos);
+			Quaternion rot(data->rotw, data->rotx, data->roty, data->rotz);
+			this->setOrientation(rot);
+			setAnimationMode(getASCIIFromCharString(data->animationMode, 255), data->animationTime);
 		} else if (header->command == CHARCMD_ATTACH)
 		{
 			// attach

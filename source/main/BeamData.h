@@ -655,11 +655,11 @@ struct rig
 	int pressure_beams[MAX_PRESSURE_BEAMS];
 	int free_pressure_beam;
 
-	int free_aeroengine;
 	AeroEngine *aeroengines[MAX_AEROENGINES];
+	int free_aeroengine;
 
-	int free_screwprop;
 	Screwprop *screwprops[MAX_SCREWPROPS];
+	int free_screwprop;
 
 	int cabs[MAX_CABS*3];
 	int subisback[MAX_SUBMESHES];
@@ -684,8 +684,8 @@ struct rig
 	int buoycabtypes[MAX_CABS];
 	int free_buoycab;
 
-	int free_airbrake;
 	Airbrake *airbrakes[MAX_AIRBRAKES];
+	int free_airbrake;
 
 	Skidmark *skidtrails[MAX_WHEELS*2];
 	bool useSkidmarks;
