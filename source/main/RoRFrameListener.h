@@ -124,7 +124,7 @@ class HDRListener;
 // $Rev: 1355 $
 #define SVN_REVISION "$Rev: 1355 $"
 #define SVN_ID "$Id: RoRFrameListener.h 1355 2010-05-01 07:16:13Z rorthomas $"
-#define ROR_VERSION_STRING "0.37"
+#define ROR_VERSION_STRING "0.38"
 
 //using namespace Ogre;
 

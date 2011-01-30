@@ -182,7 +182,8 @@ Beam::~Beam()
 	// delete meshwheels
 	for(int i=0; i<free_wheel;i++)
 	{
-		if(vwheels[i].fm) delete vwheels[i].fm;
+
+		//if(vwheels[i].fm) delete vwheels[i].fm; // CRASH!
 		if(vwheels[i].cnode)
 		{
 			vwheels[i].cnode->removeAndDestroyAllChildren();
