@@ -151,6 +151,7 @@ bool BeamEngineStats::updateGUI(float dt, int current_truck, Beam **trucks)
 	for(unsigned int c = 0; c < statClients.size(); c++)
 	{
 		//if(it->first != current_truck || trucks[it->first]->state == SLEEPING)
+		if(!trucks[statClients[c].trucknum]) continue;
 		if(trucks[statClients[c].trucknum]->state == SLEEPING)
 			continue;
 
