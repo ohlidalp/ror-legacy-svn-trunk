@@ -259,7 +259,8 @@ void Beam::calcForcesEuler(int doUpdate, Real dt, int step, int maxstep, Beam** 
 	BES_START(BES_CORE_AnimatedProps);
 
 	//animate props
-	if(doUpdate)
+	// TODO: only calculate animated props every frame and not in the core routine
+	//if(doUpdate)
 	{
 		for (int propi=0; propi<free_prop; propi++)
 		{
