@@ -110,3 +110,37 @@ Ogre::String formatBytes(double bytes)
 	//	sprintf(res, "%0.2f TB", bytes / 1024.0f / 1024.0f / 1024.0f / 1024.0f);
 	return Ogre::String(tmp);
 }
+
+// replace non-ASCII characters with underscores to prevent std::string problems
+Ogre::String getASCIIFromCharString(char *str, int maxlen)
+{
+	char *ptr = str;
+	for(int i=0; i < maxlen; i++, ptr++)
+	{
+		if(*ptr == 0) break;
+		if(*ptr < 32 || *ptr > 126)
+		{
+			*ptr = 95;
+		}
+	}
+	str[maxlen] = 0;
+	return std::string(str);
+}
+
+// replace non-ASCII characters with underscores to prevent std::string problems
+Ogre::String getASCIIFromOgreString(Ogre::String s, int maxlen)
+{
+	char str[1024] = "";
+	strncpy(str, s.c_str(), 1023);
+	char *ptr = str;
+	for(int i=0; i < maxlen; i++, ptr++)
+	{
+		if(*ptr == 0) break;
+		if(*ptr < 32 || *ptr > 126)
+		{
+			*ptr = 95;
+		}
+	}
+	str[maxlen] = 0;
+	return std::string(str);
+}

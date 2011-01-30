@@ -119,10 +119,10 @@ protected:
 	typedef struct pos_netdata_t
 	{
 		int command;
-		Ogre::Vector3 pos;
-		Ogre::Quaternion rot;
-		Ogre::String animationMode;
-		Ogre::Real animationTime;
+		float posx, posy, posz;
+		float rotx, roty, rotz, rotw;
+		char animationMode[255];
+		float animationTime;
 	} pos_netdata_t;
 
 	typedef struct attach_netdata_t

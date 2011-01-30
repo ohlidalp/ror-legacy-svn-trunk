@@ -163,7 +163,7 @@ void ChatSystem::receiveStreamData(unsigned int &type, int &source, unsigned int
 		if(source == -1)
 		{
 			// server said something
-			NETCHAT.addText(String(buffer));
+			NETCHAT.addText(getASCIIFromCharString(buffer, 255));
 		} else if(source == (int)this->source && (int)streamid == this->streamid)
 		{
 			UTFString text = tryConvertUTF(buffer);

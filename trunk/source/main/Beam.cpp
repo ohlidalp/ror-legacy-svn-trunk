@@ -305,6 +305,51 @@ Beam::~Beam()
 Beam::Beam(int tnum, SceneManager *manager, SceneNode *parent, RenderWindow* win, Network *_net, float *_mapsizex, float *_mapsizez, Real px, Real py, Real pz, Quaternion rot, const char* fname, Collisions *icollisions, HeightFinder *mfinder, Water *w, Camera *pcam, Mirrors *mmirror, bool networked, bool networking, collision_box_t *spawnbox, bool ismachine, int _flaresMode, std::vector<Ogre::String> *_truckconfig, Skin *skin, bool freeposition) : \
 	deleting(false)
 {
+
+	// clear rig parent structure
+	// this is important, since we might check if we need to delete stuff and then it crashes if not initialized with zero ...
+	// this is surely ugly as hell!
+	memset(this->nodes, 0, sizeof(node_t) * MAX_NODES); free_node = 0;
+	memset(this->beams, 0, sizeof(beam_t) * MAX_BEAMS); free_beam = 0;
+	memset(this->contacters, 0, sizeof(contacter_t) * MAX_CONTACTERS); free_contacter = 0;
+	memset(this->rigidifiers, 0, sizeof(rigidifier_t) * MAX_RIGIDIFIERS); free_rigidifier = 0;
+	memset(this->wheels, 0, sizeof(wheel_t) * MAX_WHEELS); free_wheel = 0;
+	memset(this->vwheels, 0, sizeof(vwheel_t) * MAX_WHEELS);
+	ropes.clear();
+	ropables.clear();
+	ties.clear();
+	hooks.clear();
+	memset(this->wings, 0, sizeof(wing_t) * MAX_WINGS); free_wing = 0;
+	memset(this->commandkey, 0, sizeof(command_t) * (MAX_COMMANDS + 1));
+	memset(this->rotators, 0, sizeof(rotator_t) * MAX_ROTATORS); free_rotator = 0;
+	flares.clear(); free_flare = 0;
+	memset(this->props, 0, sizeof(prop_t) * MAX_PROPS); free_prop = 0;
+	driverSeat=0;
+	memset(this->shocks, 0, sizeof(shock_t) * MAX_SHOCKS); free_shock = 0; free_active_shock = 0;
+	exhausts.clear();
+	memset(this->cparticles, 0, sizeof(cparticle_t) * MAX_CPARTICLES); free_cparticle = 0;
+	nodes_debug.clear();
+	beams_debug.clear();
+	memset(this->soundsources, 0, sizeof(soundsource_t) * MAX_SOUNDSCRIPTS_PER_TRUCK); free_soundsource = 0;
+	memset(this->pressure_beams, 0, sizeof(int) * MAX_PRESSURE_BEAMS); free_pressure_beam = 0;
+	memset(this->aeroengines, 0, sizeof(AeroEngine *) * MAX_AEROENGINES); free_aeroengine = 0;
+	memset(this->cabs, 0, sizeof(int) * (MAX_CABS*3)); free_cab = 0;
+	memset(this->subisback, 0, sizeof(int) * MAX_SUBMESHES);
+	memset(this->hydro, 0, sizeof(int) * MAX_HYDROS); free_hydro = 0;
+	for(int i=0;i<MAX_TEXCOORDS;i++) this->texcoords[i] = Vector3::ZERO;
+	free_texcoord=0;
+	memset(this->subtexcoords, 0, sizeof(int) * MAX_SUBMESHES); free_sub = 0;
+	memset(this->subcabs, 0, sizeof(int) * MAX_SUBMESHES);
+	memset(this->collcabs, 0, sizeof(int) * MAX_CABS);
+	memset(this->collcabstype, 0, sizeof(int) * MAX_CABS);
+	memset(this->collcabrate, 0, sizeof(collcab_rate_t) * MAX_CABS); free_collcab = 0;
+	memset(this->buoycabs, 0, sizeof(int) * MAX_CABS); free_buoycab = 0;
+	memset(this->buoycabtypes, 0, sizeof(int) * MAX_CABS);
+	memset(this->airbrakes, 0, sizeof(Airbrake *) * MAX_AIRBRAKES); free_airbrake = 0;
+	memset(this->skidtrails, 0, sizeof(Skidmark *) * (MAX_WHEELS*2)); useSkidmarks = false;
+	memset(this->flexbodies, 0, sizeof(FlexBody *) * MAX_FLEXBODIES); free_flexbody = 0;
+	// clearing done
+
 	net=_net;
 	if(net && !networking) networking = true; // enable networking if some network class is existing
 
