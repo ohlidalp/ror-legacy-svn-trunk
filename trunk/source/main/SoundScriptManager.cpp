@@ -99,6 +99,7 @@ void SoundScriptManager::modulate(int truck, int mod, float value)
 	for (int i=0; i<free_gains[mod]; i++)
 	{
 		SoundScriptInstance* inst=gains[mod+i*SS_MAX_MOD];
+		if(!inst) continue;
 		if (inst->truck==truck)
 		{
 			//this one requires modulation
@@ -111,6 +112,7 @@ void SoundScriptManager::modulate(int truck, int mod, float value)
 	for (int i=0; i<free_pitches[mod]; i++)
 	{
 		SoundScriptInstance* inst=pitches[mod+i*SS_MAX_MOD];
+		if(!inst) continue;
 		if (inst->truck==truck)
 		{
 			//this one requires modulation

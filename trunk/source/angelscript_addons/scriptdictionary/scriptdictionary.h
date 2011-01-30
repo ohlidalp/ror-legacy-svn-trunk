@@ -55,7 +55,6 @@ public:
 	void EnumReferences(asIScriptEngine *engine);
 	void ReleaseAllReferences(asIScriptEngine *engine);
 
-protected:
 	// The structure for holding the values
     struct valueStruct
     {
@@ -67,6 +66,10 @@ protected:
         };
         int   typeId;
     };
+
+	// HACK so we can interate over the items in C++
+    std::map<std::string, valueStruct> dict;
+protected:
     
 	// We don't want anyone to call the destructor directly, it should be called through the Release method
 	virtual ~CScriptDictionary();
@@ -77,7 +80,6 @@ protected:
 	// Our properties
     asIScriptEngine *engine;
     mutable int refCount;
-    std::map<std::string, valueStruct> dict;
 };
 
 // This function will determine the configuration of the engine

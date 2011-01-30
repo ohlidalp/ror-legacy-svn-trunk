@@ -32,7 +32,6 @@ along with Rigs of Rods.  If not, see <http://www.gnu.org/licenses/>.
 #include "scriptany/scriptany.h"
 #include "scriptarray/scriptarray.h"
 #include "scriptbuilder/scriptbuilder.h"
-#include "scriptdictionary/scriptdictionary.h"
 #include "scripthelper/scripthelper.h"
 #include "scriptstring/scriptstring.h"
 // AS addons end
@@ -512,7 +511,9 @@ void ScriptEngine::init()
 	result = engine->RegisterObjectMethod("GameScriptClass", "void startTimer()", AngelScript::asMETHOD(GameScript,startTimer), AngelScript::asCALL_THISCALL); assert(result>=0);
 	result = engine->RegisterObjectMethod("GameScriptClass", "void stopTimer()", AngelScript::asMETHOD(GameScript,stopTimer), AngelScript::asCALL_THISCALL); assert(result>=0);
 	result = engine->RegisterObjectMethod("GameScriptClass", "float rangeRandom(float, float)", AngelScript::asMETHOD(GameScript,rangeRandom), AngelScript::asCALL_THISCALL); assert(result>=0);
-	result = engine->RegisterObjectMethod("GameScriptClass", "int useOnlineAPI(const string &in, string &out)", AngelScript::asMETHOD(GameScript,useOnlineAPI), AngelScript::asCALL_THISCALL); assert(result>=0);
+	result = engine->RegisterObjectMethod("GameScriptClass", "int useOnlineAPI(const string &in, const dictionary &in, string &out)", AngelScript::asMETHOD(GameScript,useOnlineAPI), AngelScript::asCALL_THISCALL); assert(result>=0);
+	result = engine->RegisterObjectMethod("GameScriptClass", "int getLoadedTerrain(string &out)", AngelScript::asMETHOD(GameScript,getLoadedTerrain), AngelScript::asCALL_THISCALL); assert(result>=0);
+	
 	
 
 	// class CacheSystem
@@ -1145,6 +1146,12 @@ float GameScript::rangeRandom(float from, float to)
 	return Ogre::Math::RangeRandom(from, to);
 }
 
+int GameScript::getLoadedTerrain(std::string &result)
+{
+	result = mefl->loadedTerrain;
+	return 0;
+}
+
 //#ifdef USE_CURL
 //hacky hack to fill memory with data for curl
 // from: http://curl.haxx.se/libcurl/c/getinmemory.html
@@ -1168,13 +1175,52 @@ static size_t curlWriteMemoryCallback(void *ptr, size_t size, size_t nmemb, void
 }
 //#endif //USE_CURL
 
-int GameScript::useOnlineAPI(const std::string &apiquery, std::string &result)
+int GameScript::useOnlineAPI(const std::string &apiquery, const AngelScript::CScriptDictionary &d, std::string &result)
 {
 //#ifdef USE_CURL
 	struct curlMemoryStruct chunk;
  
 	chunk.memory = (char *)malloc(1);  /* will be grown as needed by the realloc above */ 
 	chunk.size = 0;    /* no data at this point */ 
+
+	// construct post fields
+	struct curl_httppost *formpost=NULL;
+	struct curl_httppost *lastptr=NULL;
+	curl_global_init(CURL_GLOBAL_ALL);
+
+	std::map<std::string, AngelScript::CScriptDictionary::valueStruct>::const_iterator it;
+	for(it = d.dict.begin(); it != d.dict.end(); it++)
+	{
+		int typeId = it->second.typeId;
+		if(typeId == mse->getEngine()->GetTypeIdByDecl("string"))
+		{
+			// its a string
+			curl_formadd(&formpost, &lastptr, CURLFORM_COPYNAME, it->first.c_str(), CURLFORM_COPYCONTENTS, ((std::string *)it->second.valueObj)->c_str(), CURLFORM_END);
+		}
+		else if(typeId == AngelScript::asTYPEID_INT8 \
+			|| typeId == AngelScript::asTYPEID_INT16 \
+			|| typeId == AngelScript::asTYPEID_INT32 \
+			|| typeId == AngelScript::asTYPEID_INT64)
+		{
+			// its an integer
+			curl_formadd(&formpost, &lastptr, CURLFORM_COPYNAME, it->first.c_str(), CURLFORM_COPYCONTENTS, StringConverter::toString((int)it->second.valueInt).c_str(), CURLFORM_END);
+		}
+		else if(typeId == AngelScript::asTYPEID_UINT8 \
+			|| typeId == AngelScript::asTYPEID_UINT16 \
+			|| typeId == AngelScript::asTYPEID_UINT32 \
+			|| typeId == AngelScript::asTYPEID_UINT64)
+		{
+			// its an unsigned integer
+			curl_formadd(&formpost, &lastptr, CURLFORM_COPYNAME, it->first.c_str(), CURLFORM_COPYCONTENTS, StringConverter::toString((unsigned int)it->second.valueInt).c_str(), CURLFORM_END);
+		}
+		else if(typeId == AngelScript::asTYPEID_FLOAT || typeId == AngelScript::asTYPEID_DOUBLE)
+		{
+			// its a float or double
+			curl_formadd(&formpost, &lastptr, CURLFORM_COPYNAME, it->first.c_str(), CURLFORM_COPYCONTENTS, StringConverter::toString((float)it->second.valueFlt).c_str(), CURLFORM_END);
+		}
+	}
+
+ 
 
 	CURLcode res;
 	CURL *curl = curl_easy_init();
@@ -1196,6 +1242,8 @@ int GameScript::useOnlineAPI(const std::string &apiquery, std::string &result)
 	/* we pass our 'chunk' struct to the callback function */ 
 	curl_easy_setopt(curl, CURLOPT_WRITEDATA, (void *)&chunk);
  
+	// set post options
+	curl_easy_setopt(curl, CURLOPT_HTTPPOST, formpost);
 
 	// logging stuff
 	//curl_easy_setopt(curl, CURLOPT_STDERR,           LogManager::getsin InstallerLog::getSingleton()->getLogFilePtr());
@@ -1217,6 +1265,7 @@ int GameScript::useOnlineAPI(const std::string &apiquery, std::string &result)
 
 	//printf("%lu bytes retrieved\n", (long)chunk.size);
 
+	curl_formfree(formpost);
 
 	if(chunk.memory)
 	{

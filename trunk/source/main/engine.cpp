@@ -120,9 +120,13 @@ void BeamEngine::update(float dt, int doUpdate)
 	{
 		//air pressure
 		apressure+=dt*curEngineRPM;
+		if (apressure>50000.0 && ssm)
+		{
 #ifdef USE_OPENAL
-		if (apressure>50000.0 && ssm) {ssm->trigOnce(trucknum, SS_TRIG_AIR_PURGE); apressure=0;};
+			ssm->trigOnce(trucknum, SS_TRIG_AIR_PURGE);
 #endif //OPENAL
+			apressure=0;
+		};
 	}
 	if (hasturbo)
 	{
@@ -267,39 +271,44 @@ void BeamEngine::update(float dt, int doUpdate)
 	updateAudio(doUpdate);
 }
 
-void BeamEngine::updateAudio(int doUpdate)
+void BeamEngine::updateAudio(int doUpdate) // updates more, just not sound, misleading!
 {
 #ifdef USE_OPENAL
-	
-	// check if we have audio now instead of multiple places
-	if( !ssm ) return;
-	
-	if (hasturbo) ssm->modulate(trucknum, SS_MOD_TURBO, curTurboRPM);
+	if (hasturbo && ssm) ssm->modulate(trucknum, SS_MOD_TURBO, curTurboRPM);
+#endif //OPENAL
+
 	if (doUpdate)
 	{
-		ssm->modulate(trucknum, SS_MOD_ENGINE, curEngineRPM);
-		ssm->modulate(trucknum, SS_MOD_TORQUE, curClutchTorque);
-		ssm->modulate(trucknum, SS_MOD_GEARBOX, curGearboxRPM);
+#ifdef USE_OPENAL
+		if(ssm) ssm->modulate(trucknum, SS_MOD_ENGINE, curEngineRPM);
+		if(ssm) ssm->modulate(trucknum, SS_MOD_TORQUE, curClutchTorque);
+		if(ssm) ssm->modulate(trucknum, SS_MOD_GEARBOX, curGearboxRPM);
+#endif //OPENAL
 		//gear hack
 		if (curGear<0 || automode!=AUTOMATIC) return;
 		
 		if (!shifting && !postshifting && autoselect == DRIVE)
 		{
-			if(curEngineRPM > maxRPM-100.0 && curGear < numGears ) shift(1);
-			else if(curEngineRPM < iddleRPM && curGear > 1 ) shift(-1);
+			if(curEngineRPM > maxRPM-100.0 && curGear < numGears )
+				shift(1);
+			else if(curEngineRPM < iddleRPM && curGear > 1 )
+				shift(-1);
 		}
 		
 	}
 	// reverse gear beep
 	if (curGear==-1 && running) 
 	{
-		ssm->trigStart(trucknum, SS_TRIG_REVERSE_GEAR);
+#ifdef USE_OPENAL
+		if(ssm) ssm->trigStart(trucknum, SS_TRIG_REVERSE_GEAR);
+#endif //OPENAL
 	}
 	else
 	{
-		ssm->trigStop(trucknum, SS_TRIG_REVERSE_GEAR);
-	}
+#ifdef USE_OPENAL
+		if(ssm) ssm->trigStop(trucknum, SS_TRIG_REVERSE_GEAR);
 #endif //OPENAL
+	}
 	
 }
 
@@ -412,8 +421,10 @@ void BeamEngine::toggleContact()
 {
 	contact=!contact;
 #ifdef USE_OPENAL
-	if (contact && ssm) ssm->trigStart(trucknum, SS_TRIG_IGNITION);
-	else if(ssm) ssm->trigStop(trucknum, SS_TRIG_IGNITION);
+	if (contact && ssm)
+		ssm->trigStart(trucknum, SS_TRIG_IGNITION);
+	else if(ssm)
+		ssm->trigStop(trucknum, SS_TRIG_IGNITION);
 #endif //OPENAL
 }
 
@@ -446,9 +457,11 @@ void BeamEngine::start()
 	running=1;
 	contact=1;
 #ifdef USE_OPENAL
-	if(ssm) ssm->trigStart(trucknum, SS_TRIG_IGNITION);
+	if(ssm)
+		ssm->trigStart(trucknum, SS_TRIG_IGNITION);
 	setAcc(0);
-	if(ssm) ssm->trigStart(trucknum, SS_TRIG_ENGINE);
+	if(ssm)
+		ssm->trigStart(trucknum, SS_TRIG_ENGINE);
 #endif //OPENAL
 }
 
