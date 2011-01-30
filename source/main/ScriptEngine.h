@@ -41,6 +41,15 @@ class Beam;
 
 #define AS_INTERFACE_VERSION "0.1.0" //!< versioning for the scripting interface
 
+#ifdef USE_CURL
+
+struct curlMemoryStruct {
+  char *memory;
+  size_t size;
+};
+
+#endif // USE_CURL
+
 /**
  * @file ScriptEngine.h
  * @version 0.1.0
@@ -326,6 +335,7 @@ public:
 	int setMaterialEmissive(const std::string &materialName, float red, float green, float blue);
 	
 	float rangeRandom(float from, float to);
+	int useOnlineAPI(const std::string &apiquery, std::string &result);
 	Ogre::Vector3 getPersonPosition();
 };
 

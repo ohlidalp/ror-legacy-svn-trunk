@@ -37,6 +37,15 @@ along with Rigs of Rods.  If not, see <http://www.gnu.org/licenses/>.
 #include "scriptstring/scriptstring.h"
 // AS addons end
 
+#ifdef USE_CURL
+#define CURL_STATICLIB
+#include <stdio.h>
+#include <curl/curl.h>
+#include <curl/types.h>
+#include <curl/easy.h>
+#endif //USE_CURL
+
+#include "rornet.h"
 #include "water.h"
 #include "Beam.h"
 #include "Settings.h"
@@ -486,8 +495,8 @@ void ScriptEngine::init()
 	result = engine->RegisterObjectMethod("GameScriptClass", "void setDirectionArrow(const string &in, vector3)", AngelScript::asMETHOD(GameScript,setDirectionArrow), AngelScript::asCALL_THISCALL); assert(result>=0);
 	result = engine->RegisterObjectMethod("GameScriptClass", "void hideDirectionArrow()", AngelScript::asMETHOD(GameScript,hideDirectionArrow), AngelScript::asCALL_THISCALL); assert(result>=0);
 	result = engine->RegisterObjectMethod("GameScriptClass", "void registerForEvent(int)", AngelScript::asMETHOD(GameScript,registerForEvent), AngelScript::asCALL_THISCALL); assert(result>=0);
-	//result = engine->RegisterObjectMethod("GameScriptClass", "BeamClass @getCurrentTruck()", AngelScript::asMETHOD(GameScript,getCurrentTruck), AngelScript::asCALL_THISCALL); assert(result>=0);
-	//result = engine->RegisterObjectMethod("GameScriptClass", "BeamClass @getTruckByNum(int)", AngelScript::asMETHOD(GameScript,getTruckByNum), AngelScript::asCALL_THISCALL); assert(result>=0);
+	result = engine->RegisterObjectMethod("GameScriptClass", "BeamClass @getCurrentTruck()", AngelScript::asMETHOD(GameScript,getCurrentTruck), AngelScript::asCALL_THISCALL); assert(result>=0);
+	result = engine->RegisterObjectMethod("GameScriptClass", "BeamClass @getTruckByNum(int)", AngelScript::asMETHOD(GameScript,getTruckByNum), AngelScript::asCALL_THISCALL); assert(result>=0);
 	result = engine->RegisterObjectMethod("GameScriptClass", "int getChatFontSize()", AngelScript::asMETHOD(GameScript,getChatFontSize), AngelScript::asCALL_THISCALL); assert(result>=0);
 	result = engine->RegisterObjectMethod("GameScriptClass", "void setChatFontSize(int)", AngelScript::asMETHOD(GameScript,setChatFontSize), AngelScript::asCALL_THISCALL); assert(result>=0);
 	result = engine->RegisterObjectMethod("GameScriptClass", "void showChooser(const string &in, const string &in, const string &in)", AngelScript::asMETHOD(GameScript,showChooser), AngelScript::asCALL_THISCALL); assert(result>=0);
@@ -503,6 +512,8 @@ void ScriptEngine::init()
 	result = engine->RegisterObjectMethod("GameScriptClass", "void startTimer()", AngelScript::asMETHOD(GameScript,startTimer), AngelScript::asCALL_THISCALL); assert(result>=0);
 	result = engine->RegisterObjectMethod("GameScriptClass", "void stopTimer()", AngelScript::asMETHOD(GameScript,stopTimer), AngelScript::asCALL_THISCALL); assert(result>=0);
 	result = engine->RegisterObjectMethod("GameScriptClass", "float rangeRandom(float, float)", AngelScript::asMETHOD(GameScript,rangeRandom), AngelScript::asCALL_THISCALL); assert(result>=0);
+	result = engine->RegisterObjectMethod("GameScriptClass", "int useOnlineAPI(const string &in, string &out)", AngelScript::asMETHOD(GameScript,useOnlineAPI), AngelScript::asCALL_THISCALL); assert(result>=0);
+	
 
 	// class CacheSystem
 	result = engine->RegisterObjectType("CacheSystemClass", sizeof(CacheSystem), AngelScript::asOBJ_REF | AngelScript::asOBJ_NOHANDLE);
@@ -1132,6 +1143,102 @@ int GameScript::setMaterialEmissive(const std::string &materialName, float red, 
 float GameScript::rangeRandom(float from, float to)
 {
 	return Ogre::Math::RangeRandom(from, to);
+}
+
+//#ifdef USE_CURL
+//hacky hack to fill memory with data for curl
+// from: http://curl.haxx.se/libcurl/c/getinmemory.html
+static size_t curlWriteMemoryCallback(void *ptr, size_t size, size_t nmemb, void *data)
+{
+  size_t realsize = size * nmemb;
+  struct curlMemoryStruct *mem = (struct curlMemoryStruct *)data;
+ 
+  mem->memory = (char *)realloc(mem->memory, mem->size + realsize + 1);
+  if (mem->memory == NULL) {
+    /* out of memory! */ 
+    printf("not enough memory (realloc returned NULL)\n");
+    exit(EXIT_FAILURE);
+  }
+ 
+  memcpy(&(mem->memory[mem->size]), ptr, realsize);
+  mem->size += realsize;
+  mem->memory[mem->size] = 0;
+ 
+  return realsize;
+}
+//#endif //USE_CURL
+
+int GameScript::useOnlineAPI(const std::string &apiquery, std::string &result)
+{
+//#ifdef USE_CURL
+	struct curlMemoryStruct chunk;
+ 
+	chunk.memory = (char *)malloc(1);  /* will be grown as needed by the realloc above */ 
+	chunk.size = 0;    /* no data at this point */ 
+
+	CURLcode res;
+	CURL *curl = curl_easy_init();
+	if(!curl)
+	{
+		result = "ERROR: failed to init curl";
+		return 1;
+	}
+
+	char *curl_err_str[CURL_ERROR_SIZE];
+	memset(curl_err_str, 0, CURL_ERROR_SIZE);
+
+	string url = "http://" + string(REPO_SERVER) + apiquery;
+	curl_easy_setopt(curl, CURLOPT_URL,              url.c_str());
+
+	/* send all data to this function  */ 
+	curl_easy_setopt(curl, CURLOPT_WRITEFUNCTION, curlWriteMemoryCallback);
+ 
+	/* we pass our 'chunk' struct to the callback function */ 
+	curl_easy_setopt(curl, CURLOPT_WRITEDATA, (void *)&chunk);
+ 
+
+	// logging stuff
+	//curl_easy_setopt(curl, CURLOPT_STDERR,           LogManager::getsin InstallerLog::getSingleton()->getLogFilePtr());
+	curl_easy_setopt(curl, CURLOPT_ERRORBUFFER,      curl_err_str[0]);
+
+	// http related settings
+	curl_easy_setopt(curl, CURLOPT_FOLLOWLOCATION,   1); // follow redirects
+	curl_easy_setopt(curl, CURLOPT_AUTOREFERER,      1); // set the Referer: field in requests where it follows a Location: redirect. 
+	curl_easy_setopt(curl, CURLOPT_MAXREDIRS,        20);
+	curl_easy_setopt(curl, CURLOPT_USERAGENT,        "RoR");
+	curl_easy_setopt(curl, CURLOPT_FILETIME,         1);
+	
+	// TO BE DONE: ADD SSL
+	// see: http://curl.haxx.se/libcurl/c/simplessl.html
+	// curl_easy_setopt(curl,CURLOPT_SSL_VERIFYPEER,1L); 
+
+	res = curl_easy_perform(curl);
+	curl_easy_cleanup(curl);
+
+	//printf("%lu bytes retrieved\n", (long)chunk.size);
+
+
+	if(chunk.memory)
+	{
+		// convert memory into std::string now
+		result = string(chunk.memory);
+
+		// then free
+		free(chunk.memory);
+	}
+ 
+	/* we're done with libcurl, so clean it up */ 
+	curl_global_cleanup();
+
+	if(res != CURLE_OK)
+	{
+		const char *errstr = curl_easy_strerror(res);
+		result = "ERROR: " + string(errstr);
+		return 1;
+	}
+
+	return 0;
+//#endif //USE_CURL
 }
 
 ///////////////////////////////////////////////////////////////////////////////
