@@ -727,20 +727,6 @@ Beam::Beam(int tnum, SceneManager *manager, SceneNode *parent, RenderWindow* win
 		sendStreamSetup();
 	}
 
-
-	// calculate average camera offset relative to cinecamera
-	if(freecinecamera > 0)
-	{
-		Vector3 apos = Vector3::ZERO;
-		for (i=0; i<free_node; i++)
-			apos += nodes[i].AbsPosition;
-		Vector3 avg_pos = apos / free_node;
-		
-		cinecam_avg_offset = nodes[cinecameranodepos[0]].AbsPosition - avg_pos;
-	}
-	LogManager::getSingleton().logMessage("cinecamera offset for external camera: " + StringConverter::toString(cinecam_avg_offset));
-
-
 	//updateDebugOverlay();
 }
 
@@ -1625,7 +1611,7 @@ void Beam::updateTruckPosition()
 	if(freecinecamera > 0)
 	{
 		// fix for detaching beams
-		position = nodes[cinecameranodepos[0]].AbsPosition - cinecam_avg_offset;
+		position = nodes[cinecameranodepos[0]].AbsPosition; // - cinecam_avg_offset;
 		for (int n=0; n < free_node; n++)
 		{
 			nodes[n].smoothpos = nodes[n].AbsPosition;
