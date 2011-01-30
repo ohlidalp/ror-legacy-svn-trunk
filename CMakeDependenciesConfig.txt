@@ -9,6 +9,7 @@ set(ROR_USE_PAGED   "FALSE" CACHE BOOL "use paged geometry")
 set(ROR_USE_CAELUM  "FALSE" CACHE BOOL "use caelum sky")
 set(ROR_USE_ANGELSCRIPT  "FALSE" CACHE BOOL "use angel script")
 set(ROR_FEAT_TIMING  "FALSE" CACHE BOOL "enable beam statistics. For core development only")
+set(ROR_USE_CURL  "FALSE" CACHE BOOL "use curl, required for communication with online services")
 
 # disable some options for now
 #set(ROR_USE_OPENCL  "FALSE" CACHE BOOL "use opencl (highly experimental)")
@@ -63,9 +64,11 @@ IF(WIN32)
 	set(BOOST_LIBRARY_DIRS "${ROR_DEPENDENCIES_DIR}/lib/boost" CACHE PATH "The BOOST lib path to use")
 
 	# special include path for curl ...
-	set(CURL_INCLUDE_DIRS "${ROR_DEPENDENCIES_DIR}/include/" CACHE PATH "The curl include path to use")
-	set(CURL_LIBRARY_DIRS "${ROR_DEPENDENCIES_DIR}/lib/curl" CACHE PATH "The curl lib path to use")
-	set(CURL_LIBRARIES "libcurl.lib" CACHE STRING "The curl lib to link against")
+	if(ROR_USE_CURL)
+		set(CURL_INCLUDE_DIRS "${ROR_DEPENDENCIES_DIR}/include/" CACHE PATH "The curl include path to use")
+		set(CURL_LIBRARY_DIRS "${ROR_DEPENDENCIES_DIR}/lib/curl" CACHE PATH "The curl lib path to use")
+		set(CURL_LIBRARIES "libcurl.lib" CACHE STRING "The curl lib to link against")
+	endif(ROR_USE_CURL)
 	
 	set(PThread_INCLUDE_DIRS "${ROR_DEPENDENCIES_DIR}/include/pthread" CACHE PATH "The pthread include path to use")
 	set(PThread_LIBRARY_DIRS "${ROR_DEPENDENCIES_DIR}/lib/pthread" CACHE PATH "The pthread lib path to use")
@@ -180,12 +183,15 @@ ELSEIF(UNIX)
    PKG_CHECK_MODULES  (Ois OIS REQUIRED)
 
    find_package(CURL)
-   if(NOT CURL_FOUND)
-     message(ERROR "curl not found, please install curl")
-   else(NOT CURL_FOUND)
-      set(CURL_INCLUDE_DIRS ${CURL_INCLUDE_DIR})
-      set(CURL_LIBRARIES ${CURL_LIBRARY})   
-   endif(NOT CURL_FOUND)
+   if(ROR_USE_CURL)
+	   if(NOT CURL_FOUND)
+		 message(ERROR "curl not found, please install curl")
+	   else(NOT CURL_FOUND)
+		  set(CURL_INCLUDE_DIRS ${CURL_INCLUDE_DIR})
+		  set(CURL_LIBRARIES ${CURL_LIBRARY})   
+	   endif(NOT CURL_FOUND)
+   endif(ROR_USE_CURL)
+
    
    # using cmake fingd modules
    # Open-AL
