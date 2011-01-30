@@ -122,6 +122,7 @@ Collisions::Collisions(
 , landuse(0)
 , forcecam(false)
 , last_used_ground_model(0)
+, last_called_cbox(0)
 {
 	for (int i=0; i<HASH_SIZE; i++) {hashmask=hashmask<<1; hashmask++;};
 	for (int i=0; i<(1<<HASH_SIZE); i++) hashtable[i].cellid=UNUSED_CELLID;
@@ -717,7 +718,28 @@ void Collisions::printStats()
 
 }
 
+bool Collisions::envokeScriptCallback(collision_box_t *cbox, node_t *node)
+{
+	bool handled = false;
+	
+	// this prevents that the same callback gets called at 2k FPS all the time, serious hit on FPS ...
+	if(last_called_cbox != cbox)
+	{
+		// prefer AS to LUA
+#ifdef USE_ANGELSCRIPT
+		int ret = ScriptEngine::getSingleton().envokeCallback(eventsources[cbox->eventsourcenum].luahandler, &eventsources[cbox->eventsourcenum], node);
+		if(ret == 0)
+			handled=true;
+#endif //USE_ANGELSCRIPT
+#ifdef USE_LUA
+		if(!handled)
+			lua->spawnEvent(cbox->eventsourcenum, &eventsources[cbox->eventsourcenum]);
+#endif // USE_LUA
 
+		last_called_cbox = cbox;
+	}
+	return handled;
+}
 bool Collisions::collisionCorrect(Vector3 *refpos)
 {
 	//find the correct cell
@@ -759,17 +781,8 @@ bool Collisions::collisionCorrect(Vector3 *refpos)
 				{
 					if (cbox->eventsourcenum!=-1 && permitEvent(cbox->event_filter))
 					{
-						// prefer AS to LUA
-						bool handled = false;
-#ifdef USE_ANGELSCRIPT
-						int ret = ScriptEngine::getSingleton().envokeCallback(eventsources[cbox->eventsourcenum].luahandler, &eventsources[cbox->eventsourcenum], 0);
-						if(ret == 0)
-							handled=true;
-#endif
-#ifdef USE_LUA
-						if(!handled)
-							lua->spawnEvent(cbox->eventsourcenum, &eventsources[cbox->eventsourcenum]);
-#endif
+
+
 					}
 					if (cbox->camforced && !forcecam)
 					{
@@ -800,17 +813,7 @@ bool Collisions::collisionCorrect(Vector3 *refpos)
 			{
 				if (cbox->eventsourcenum!=-1 && permitEvent(cbox->event_filter))
 				{
-					// prefer AS to LUA
-					bool handled = false;
-#ifdef USE_ANGELSCRIPT
-					int ret = ScriptEngine::getSingleton().envokeCallback(eventsources[cbox->eventsourcenum].luahandler, &eventsources[cbox->eventsourcenum], 0);
-					if(ret == 0)
-						handled=true;
-#endif
-#ifdef USE_LUA
-					if(!handled)
-						lua->spawnEvent(cbox->eventsourcenum, &eventsources[cbox->eventsourcenum]);
-#endif
+					envokeScriptCallback(cbox);
 				}
 				if (cbox->camforced && !forcecam)
 				{
@@ -927,18 +930,7 @@ bool Collisions::nodeCollision(node_t *node, bool iscinecam, int contacted, floa
 						{
 							if (cbox->eventsourcenum!=-1 && permitEvent(cbox->event_filter))
 							{
-								// prefer AS to LUA
-								bool handled = false;
-								if(handlernum) *handlernum = cbox->eventsourcenum;
-#ifdef USE_ANGELSCRIPT
-								int ret = ScriptEngine::getSingleton().envokeCallback(eventsources[cbox->eventsourcenum].luahandler, &eventsources[cbox->eventsourcenum], node);
-								if(ret == 0)
-									handled=true;
-#endif
-#ifdef USE_LUA
-								if(!handled)
-									lua->spawnEvent(cbox->eventsourcenum, &eventsources[cbox->eventsourcenum]);
-#endif
+								envokeScriptCallback(cbox, node);
 							}
 							if (cbox->camforced && !forcecam)
 							{
@@ -983,18 +975,7 @@ bool Collisions::nodeCollision(node_t *node, bool iscinecam, int contacted, floa
 					{
 						if (cbox->eventsourcenum!=-1 && permitEvent(cbox->event_filter))
 						{
-							// prefer AS to LUA
-							bool handled = false;
-							if(handlernum) *handlernum = cbox->eventsourcenum;
-#ifdef USE_ANGELSCRIPT
-							int ret = ScriptEngine::getSingleton().envokeCallback(eventsources[cbox->eventsourcenum].luahandler, &eventsources[cbox->eventsourcenum], node);
-							if(ret == 0)
-								handled=true;
-#endif
-#ifdef USE_LUA
-							if(!handled)
-								lua->spawnEvent(cbox->eventsourcenum, &eventsources[cbox->eventsourcenum]);
-#endif
+							envokeScriptCallback(cbox, node);
 						}
 						if (cbox->camforced && !forcecam)
 						{
