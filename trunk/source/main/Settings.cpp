@@ -310,6 +310,8 @@ bool Settings::setupPaths()
 
 		// fix up time things...
 		settings["Config Root"] = settings["User Path"]+"config"+dirsep;
+		settings["Cache Path"]  = settings["User Path"]+"cache"+dirsep;
+		settings["Log Path"]    = settings["User Path"]+"logs"+dirsep;
 		settings["ogre.cfg"]    = settings["User Path"]+"config"+dirsep+"ogre.cfg";
 		settings["ogre.log"]    = settings["User Path"]+"logs"+dirsep+"ogre.log";
 
