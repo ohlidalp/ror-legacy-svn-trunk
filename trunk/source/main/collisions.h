@@ -119,10 +119,13 @@ private:
 	std::vector<cell_t*> cells;//[MAX_CELLS];
 	int free_cell;
 
+	collision_box_t *last_called_cbox;
+
 	eventsource_t eventsources[MAX_EVENTSOURCE];
 	int free_eventsource;
 
 	bool permitEvent(int filter);
+	bool envokeScriptCallback(collision_box_t *cbox, node_t *node=0);
 
 #ifdef USE_LUA
 	LuaSystem *lua;
