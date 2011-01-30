@@ -404,7 +404,7 @@ public:
 	int free_axle;
 	//! @}
 	
-	bool beambreakdebug;
+	bool beambreakdebug, beamdeformdebug;
 
 
 	// this must be in the header as the network stuff is using it...

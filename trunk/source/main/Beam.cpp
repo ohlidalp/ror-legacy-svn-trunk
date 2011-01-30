@@ -358,6 +358,7 @@ Beam::Beam(int tnum, SceneManager *manager, SceneNode *parent, RenderWindow* win
 	networkUsername = String();
 	networkAuthlevel = 0;
 	beambreakdebug = (SETTINGS.getSetting("Beam Break Debug") == "Yes");
+	beamdeformdebug = (SETTINGS.getSetting("Beam Deform Debug") == "Yes");
 	freePositioned = freeposition;
 	free_axle=0;
 	slideNodesConnectInstantly=false;
