@@ -781,8 +781,7 @@ bool Collisions::collisionCorrect(Vector3 *refpos)
 				{
 					if (cbox->eventsourcenum!=-1 && permitEvent(cbox->event_filter))
 					{
-
-
+						envokeScriptCallback(cbox);
 					}
 					if (cbox->camforced && !forcecam)
 					{
