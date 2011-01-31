@@ -7,10 +7,14 @@
 #define ror_calloc(x,y) MemoryWrapper::callocBytes(x,y)
 #define ror_free(x)     MemoryWrapper::deallocBytes(x)
 
+#include <map>
+
 class MemoryWrapper
 {
 protected:
+
 	static unsigned long memory_used;
+	static std::map<void *, unsigned long> allocations;
 public:
 	static void* allocBytes(size_t count);
 	static void* callocBytes(size_t no, size_t size);
