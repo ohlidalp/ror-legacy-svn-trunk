@@ -4722,6 +4722,22 @@ void RoRFrameListener::loadTerrain(String terrainfile)
 
 	}
 
+	// set the terrain hash
+	{
+		Cache_Entry ce = CACHE.getResourceInfo(terrainfile);
+		char hash_result[250];
+		RoR::CSHA1 sha1;
+		String fn;
+		if(ce.type == "Zip")
+			fn = ce.dirname;
+		else if(ce.type == "FileSystem")
+			fn = ce.dirname + SETTINGS.getSetting("dirsep") + ce.fname;
+		sha1.HashFile(const_cast<char*>(fn.c_str()));
+		sha1.Final();
+		sha1.ReportHash(hash_result, RoR::CSHA1::REPORT_HEX_SHORT);
+		SETTINGS.setSetting("TerrainHash", String(hash_result));
+	}
+
 	loadedTerrain = terrainfile;
 
 	initializeCompontents();

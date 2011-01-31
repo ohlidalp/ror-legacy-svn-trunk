@@ -62,6 +62,7 @@ protected:
 	void path_add(char* path, const char* dirname);
 
 	bool get_system_paths(char *program_path, char *user_path);
+	int generateBinaryHash();
 
 };
 #endif

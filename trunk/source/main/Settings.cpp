@@ -29,6 +29,7 @@ along with Rigs of Rods.  If not, see <http://www.gnu.org/licenses/>.
 #define _L
 
 #include "errorutils.h"
+#include "sha1.h"
 
 using namespace std;
 using namespace Ogre;
@@ -60,7 +61,7 @@ Ogre::String Settings::getSettingScriptSafe(Ogre::String key)
 {
 	// hide certain settings for scripts
 	if(key == "User Token" || key == "Config Root" || key == "Cache Path" || key == "Log Path" || key == "Resources Path" || key == "Streams Path" || key == "Program Path")
-		return "";
+		return "permission denied";
 
 	return settings[key];
 }
@@ -111,6 +112,7 @@ void Settings::saveSettings(Ogre::String configFile)
 	std::map<std::string, std::string>::iterator it;
 	for(it = settings.begin(); it != settings.end(); it++)
 	{
+		if(it->first == "BinaryHash") continue;
 		fprintf(fd, "%s=%s\n", it->first.c_str(), it->second.c_str());
 	}
 
@@ -136,11 +138,51 @@ void Settings::loadSettings(Ogre::String configFile, bool overwrite)
 	}
 	// add a GUID if not there
 	checkGUID();
+	generateBinaryHash();
+}
+
+int Settings::generateBinaryHash()
+{
+#ifndef NOOGRE
+#if OGRE_PLATFORM == OGRE_PLATFORM_WIN32
+	// note: we enforce usage of the non-UNICODE interfaces (since its easier to integrate here)
+	char program_path[1024]="";
+	if (!GetModuleFileNameA(NULL, program_path, 512))
+	{
+		showError(_L("Startup error"), _L("Error while retrieving program space path"));
+		return 1;
+	}
+	GetShortPathNameA(program_path, program_path, 512); //this is legal
+
+#elif OGRE_PLATFORM == OGRE_PLATFORM_LINUX
+	//true program path is impossible to get from POSIX functions
+	//lets hack!
+	pid_t pid = getpid();
+	char procpath[256];
+	sprintf(procpath, "/proc/%d/exe", pid);
+	int ch = readlink(procpath,program_path,240);
+	if (ch != -1)
+	{
+		program_path[ch] = 0;
+	} else return 1;
+#elif OGRE_PLATFORM == OGRE_PLATFORM_APPLE
+	// TO BE DONE
+#endif //OGRE_PLATFORM
+	// now hash ourself
+	{
+		char hash_result[250];
+		RoR::CSHA1 sha1;
+		sha1.HashFile(program_path);
+		sha1.Final();
+		sha1.ReportHash(hash_result, RoR::CSHA1::REPORT_HEX_SHORT);
+		setSetting("BinaryHash", String(hash_result));
+	}
+#endif //NOOGRE
+	return 0;
 }
 
 bool Settings::get_system_paths(char *program_path, char *user_path)
 {
-
 #if OGRE_PLATFORM == OGRE_PLATFORM_WIN32
 	// note: we enforce usage of the non-UNICODE interfaces (since its easier to integrate here)
 	if (!GetModuleFileNameA(NULL, program_path, 512))

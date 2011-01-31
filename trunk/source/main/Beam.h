@@ -34,6 +34,7 @@ along with Rigs of Rods.  If not, see <http://www.gnu.org/licenses/>.
 #include "BeamData.h" // for rig_t
 #include "rormemory.h"
 #include "approxmath.h"
+#include "CacheSystem.h"
 
 // system includes
 #include <vector>
@@ -340,6 +341,7 @@ public:
 	float *mapsizex, *mapsizez;
 	float refpressure;
 	PointColDetector *pointCD;
+	Cache_Entry cacheEntryInfo;
 
 	pthread_mutex_t work_mutex;
 	pthread_cond_t work_cv;
