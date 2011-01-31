@@ -1,6 +1,6 @@
 ; HM NIS Edit Wizard helper defines
 !define PRODUCT_NAME "Rigs of Rods"
-!define PRODUCT_VERSION "0.38.6"
+!define PRODUCT_VERSION "0.38.5"
 !define PRODUCT_PUBLISHER "Rigs of Rods Team"
 !define PRODUCT_WEB_SITE "http://www.rigsofrods.com"
 !define PRODUCT_UNINST_KEY "Software\Microsoft\Windows\CurrentVersion\Uninstall\${PRODUCT_NAME}"
@@ -211,31 +211,20 @@ ShowInstDetails show
 ShowUnInstDetails show
 
 Function InstallDirectX
-	InitPluginsDir
-	File /oname=$PLUGINSDIR\dxwebsetup.exe "dxwebsetup.exe"
 	Banner::show /NOUNLOAD "Installing latest DirectX"
 	DetailPrint "Running DirectX Setup ..."
-    ExecWait '"$PLUGINSDIR\dxwebsetup.exe"' $0
+    ExecWait '"$INSTDIR\dxwebsetup.exe"' $0
 	DetailPrint "dxwebsetup returned $0"
-	Delete $PLUGINSDIR\dxwebsetup.exe
 	Banner::destroy
 FunctionEnd
 
 Function InstallVisualStudioRuntime
-	InitPluginsDir
-	File /oname=$PLUGINSDIR\VCCRTVS2010.msi "VCCRTVS2010.msi"
 	Banner::show /NOUNLOAD "Installing Visual Studio Runtime"
 	DetailPrint "Installing Visual Studio Runtime ..."
-	ExecWait '"msiexec" /i "VCCRTVS2010.msi"' $0
+	ExecWait '"$INSTDIR\vcredist_x86.exe" /q:a /c:"VCREDI~1.EXE /q:a /c:""msiexec /i vcredist.msi /qb!"" "' $0
 	DetailPrint "VCCRT setup returned $0"
-	Delete $PLUGINSDIR\VCCRTVS2010.msi
 	Banner::destroy
 FunctionEnd
-
-Section -Prerequisites
-	Call InstallDirectX
-	Call InstallVisualStudioRuntime
-SectionEnd
 
 Function UninstallOld
     ReadRegStr $R0 HKCU "Software\RigsOfRods\" "directory"
@@ -313,6 +302,10 @@ Section -AdditionalIcons
 SectionEnd
 
 Section -Post
+
+	Call InstallDirectX
+	Call InstallVisualStudioRuntime
+
 	WriteUninstaller "$INSTDIR\uninst.exe"
 	WriteRegStr ${PRODUCT_UNINST_ROOT_KEY} "${PRODUCT_UNINST_KEY}" "DisplayName" "$(^Name)"
 	WriteRegStr ${PRODUCT_UNINST_ROOT_KEY} "${PRODUCT_UNINST_KEY}" "UninstallString" "$INSTDIR\uninst.exe"
