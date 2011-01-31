@@ -137,6 +137,9 @@ public:
 
 	AngelScript::asIScriptEngine *getEngine() { return engine; };
 
+	Ogre::String getTerrainName() { return terrainScriptName; };
+	Ogre::String getTerrainScriptHash() { return terrainScriptHash; };
+
 protected:
     RoRFrameListener *mefl;             //!< local RoRFrameListener instance, used as proxy for many functions
 	Collisions *coll;
@@ -145,6 +148,7 @@ protected:
 	int frameStepFunctionPtr;               //!< script function pointer to the frameStep function
 	int wheelEventFunctionPtr;               //!< script function pointer
 	int eventCallbackFunctionPtr;           //!< script function pointer to the event callback function
+	Ogre::String terrainScriptName, terrainScriptHash;
 	std::map <std::string , std::vector<int> > callbacks;
 
 	/**

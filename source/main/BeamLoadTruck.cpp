@@ -60,6 +60,8 @@ int Beam::loadTruck(const char* fname, SceneManager *manager, SceneNode *parent,
 		}
 	}
 
+	this->cacheEntryInfo = CACHE.getResourceInfo(filename);
+
 	DataStreamPtr ds = ResourceGroupManager::getSingleton().openResource(filename, group);
 	linecounter = 0;
 

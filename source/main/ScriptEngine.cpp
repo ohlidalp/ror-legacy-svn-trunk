@@ -62,7 +62,7 @@ along with Rigs of Rods.  If not, see <http://www.gnu.org/licenses/>.
 
 template<> ScriptEngine *Ogre::Singleton<ScriptEngine>::ms_Singleton=0;
 
-ScriptEngine::ScriptEngine(RoRFrameListener *efl, Collisions *_coll) : mefl(efl), coll(_coll), engine(0), context(0), frameStepFunctionPtr(-1), wheelEventFunctionPtr(-1), eventMask(0)
+ScriptEngine::ScriptEngine(RoRFrameListener *efl, Collisions *_coll) : mefl(efl), coll(_coll), engine(0), context(0), frameStepFunctionPtr(-1), wheelEventFunctionPtr(-1), eventMask(0), terrainScriptName(), terrainScriptHash()
 {
 	init();
 
@@ -78,10 +78,12 @@ ScriptEngine::~ScriptEngine()
 
 int ScriptEngine::loadTerrainScript(Ogre::String scriptname)
 {
+	terrainScriptName = scriptname;
+
 	// Load the entire script file into the buffer
 	int result=0;
-	string script, hash;
-	result = loadScriptFile(scriptname.c_str(), script, hash);
+	string script;
+	result = loadScriptFile(scriptname.c_str(), script, terrainScriptHash);
 	if( result )
 	{
 		LogManager::getSingleton().logMessage("SE| Unkown error while loading script file: "+scriptname);
@@ -1220,8 +1222,37 @@ int GameScript::useOnlineAPI(const std::string &apiquery, const AngelScript::CSc
 		}
 	}
 
- 
+	// add some hardcoded values
+	curl_formadd(&formpost, &lastptr, CURLFORM_COPYNAME, "terrain_Name", CURLFORM_COPYCONTENTS, mse->getTerrainName().c_str(), CURLFORM_END);
+	curl_formadd(&formpost, &lastptr, CURLFORM_COPYNAME, "terrain_Hash", CURLFORM_COPYCONTENTS, SETTINGS.getSetting("TerrainHash").c_str(), CURLFORM_END);
+	curl_formadd(&formpost, &lastptr, CURLFORM_COPYNAME, "terrain_ScriptHash", CURLFORM_COPYCONTENTS, mse->getTerrainScriptHash().c_str(), CURLFORM_END);
+	curl_formadd(&formpost, &lastptr, CURLFORM_COPYNAME, "User_NickName", CURLFORM_COPYCONTENTS, SETTINGS.getSetting("Nickname").c_str(), CURLFORM_END);
+	curl_formadd(&formpost, &lastptr, CURLFORM_COPYNAME, "User_Language", CURLFORM_COPYCONTENTS, SETTINGS.getSetting("Language").c_str(), CURLFORM_END);
+	curl_formadd(&formpost, &lastptr, CURLFORM_COPYNAME, "User_Token", CURLFORM_COPYCONTENTS, SETTINGS.getSetting("User Token").c_str(), CURLFORM_END);
+	curl_formadd(&formpost, &lastptr, CURLFORM_COPYNAME, "RoR_VersionString", CURLFORM_COPYCONTENTS, ROR_VERSION_STRING, CURLFORM_END);
+	curl_formadd(&formpost, &lastptr, CURLFORM_COPYNAME, "RoR_VersionSVN", CURLFORM_COPYCONTENTS, SVN_REVISION, CURLFORM_END);
+	curl_formadd(&formpost, &lastptr, CURLFORM_COPYNAME, "RoR_VersionSVNID", CURLFORM_COPYCONTENTS, SVN_ID, CURLFORM_END);
+	curl_formadd(&formpost, &lastptr, CURLFORM_COPYNAME, "RoR_ProtocolVersion", CURLFORM_COPYCONTENTS, RORNET_VERSION, CURLFORM_END);
+	curl_formadd(&formpost, &lastptr, CURLFORM_COPYNAME, "RoR_BinaryHash", CURLFORM_COPYCONTENTS, SETTINGS.getSetting("BinaryHash").c_str(), CURLFORM_END);
+	curl_formadd(&formpost, &lastptr, CURLFORM_COPYNAME, "RoR_GUID", CURLFORM_COPYCONTENTS, SETTINGS.getSetting("GUID").c_str(), CURLFORM_END);
+	curl_formadd(&formpost, &lastptr, CURLFORM_COPYNAME, "MP_ServerName", CURLFORM_COPYCONTENTS, SETTINGS.getSetting("Server name").c_str(), CURLFORM_END);
+	curl_formadd(&formpost, &lastptr, CURLFORM_COPYNAME, "MP_ServerPort", CURLFORM_COPYCONTENTS, SETTINGS.getSetting("Server port").c_str(), CURLFORM_END);
+	curl_formadd(&formpost, &lastptr, CURLFORM_COPYNAME, "MP_NetworkEnabled", CURLFORM_COPYCONTENTS, SETTINGS.getSetting("Network enable").c_str(), CURLFORM_END);
+	
+	if(mefl->getCurrentTruckNumber() >= 0 && mefl->getCurrentTruck())
+	{
+		Beam *truck = mefl->getCurrentTruck();
 
+		curl_formadd(&formpost, &lastptr, CURLFORM_COPYNAME, "Truck_Name", CURLFORM_COPYCONTENTS, truck->getTruckName().c_str(), CURLFORM_END);
+		curl_formadd(&formpost, &lastptr, CURLFORM_COPYNAME, "Truck_ModHash", CURLFORM_COPYCONTENTS, truck->cacheEntryInfo.hash.c_str(), CURLFORM_END);
+		curl_formadd(&formpost, &lastptr, CURLFORM_COPYNAME, "Truck_ModFileName", CURLFORM_COPYCONTENTS, truck->cacheEntryInfo.fname.c_str(), CURLFORM_END);
+	}
+
+	const RenderTarget::FrameStats& stats = mefl->getRenderWindow()->getStatistics();
+	curl_formadd(&formpost, &lastptr, CURLFORM_COPYNAME, "AVG_FPS", CURLFORM_COPYCONTENTS, StringConverter::toString(stats.avgFPS).c_str(), CURLFORM_END);
+
+ 
+	
 	CURLcode res;
 	CURL *curl = curl_easy_init();
 	if(!curl)
