@@ -771,6 +771,7 @@ RoRFrameListener::RoRFrameListener(RenderWindow* win, Camera* cam, SceneManager*
 	if (SETTINGS.getSetting("Threads")=="3 (multi core CPU, one thread per beam)") thread_mode=THREAD_HT2;
 
 	current_truck=-1;
+	terrainHasTruckShop=false;
 #ifdef USE_LUA
 	lua=0;
 #endif // LUASCRIPT
@@ -1309,7 +1310,7 @@ RoRFrameListener::RoRFrameListener(RenderWindow* win, Camera* cam, SceneManager*
 
 		} else {
 			// no trucks loaded?
-			if (truck_preload_num == 0 && !netmode)
+			if (truck_preload_num == 0 && (!netmode || !terrainHasTruckShop))
 			{
 #ifdef USE_MYGUI
 				// show truck selector
@@ -1916,6 +1917,9 @@ void RoRFrameListener::loadObject(const char* name, float px, float py, float pz
 			else if(!strncmp(ts, "delete", 8))
 				event_filter=EVENT_DELETE;
 			continue;
+			if(!strncmp(ts, "shoptruck", 9))
+				terrainHasTruckShop=true;
+
 		}
 		//resp=sscanf(ptline, "%f, %f, %f, %f, %f, %f, %f, %f, %f, %c",&lx,&hx,&ly, &hy,&lz, &hz, &srx, &sry, &srz,&type);
 		if (!strcmp("endbox", ptline))
@@ -2339,6 +2343,12 @@ bool RoRFrameListener::updateEvents(float dt)
 		return true;
 	}
 
+	// update characters
+	if(loading_state==ALL_LOADED && net) 
+		CharacterFactory::getSingleton().updateCharacters(dt);
+	else if(loading_state==ALL_LOADED && !net && cameramode != CAMERA_FREE) 
+		person->update(dt);
+
 	// no event handling during chatting!
 	if(chatting)
 		return true;
@@ -2680,14 +2690,6 @@ bool RoRFrameListener::updateEvents(float dt)
 
 	if (loading_state==ALL_LOADED)
 	{
-		if(net)
-		{
-			CharacterFactory::getSingleton().updateCharacters(dt);
-		} else if (!net && cameramode != CAMERA_FREE)
-		{
-				// do not move the person in free camera mode
-				person->update(dt);
-		}
 
 		bool enablegrab = true;
 		if (cameramode != CAMERA_FREE)
