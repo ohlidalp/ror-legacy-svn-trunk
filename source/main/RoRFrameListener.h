@@ -372,6 +372,7 @@ public:
 	void loadNetTerrain(char *preselected_map);
 	void exploreScripts();
 	float mapsizex, mapsizez;
+	bool terrainHasTruckShop;
 
 	float stopTimer();
 	void startTimer();
