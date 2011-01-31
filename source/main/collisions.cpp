@@ -283,38 +283,38 @@ void Collisions::parseGroundConfig(Ogre::ConfigFile *cfg, String groundModel)
 }
 
 Ogre::Vector3 Collisions::calcCollidedSide(const Ogre::Vector3& pos, Ogre::Vector3& lo, Ogre::Vector3& hi)
-{
-	float min = pos.z - lo.z;
-	Ogre::Vector3 newPos = Ogre::Vector3(pos.x, pos.y, lo.z);
+{	
+	Ogre::Real min = pos.x - lo.x;
+	Ogre::Vector3 newPos = Ogre::Vector3(lo.x, pos.y, pos.z);
 	
-	float t = pos.z - hi.z;
-	if (t > min) {
-		min = t;
-		newPos = Ogre::Vector3(pos.x, pos.y, hi.z);
-	};
-	
-	t = pos.x - lo.x;
-	if (t < min) {
-		min = t;
-		newPos = Ogre::Vector3(lo.x, pos.y, pos.z);
-	};
-	
-	t = pos.y - lo.y;
+	Ogre::Real t = pos.y - lo.y;
 	if (t < min) {
 		min=t;
 		newPos = Ogre::Vector3(pos.x, lo.y, pos.z);
 	};
 	
-	t = pos.x - hi.x;
-	if (t > min) {
+	t = pos.z - lo.z;
+	if (t < min) {
+		min=t;
+		newPos = Ogre::Vector3(pos.x, pos.y, lo.z);
+	};
+	
+	t = hi.x - pos.x;
+	if (t < min) {
 		min=t;
 		newPos = Ogre::Vector3(hi.x, pos.y, pos.z);
 	};
 	
-	t = pos.y - hi.y;
-	if (t > min) {
+	t = hi.y - pos.y;
+	if (t < min) {
 		min=t;
 		newPos = Ogre::Vector3(pos.x, hi.y, pos.z);
+	};
+	
+	t = hi.z - pos.z;
+	if (t < min) {
+		min=t;
+		newPos = Ogre::Vector3(pos.x, pos.y, hi.z);
 	};
 	
 	return newPos;
@@ -763,7 +763,7 @@ bool Collisions::collisionCorrect(Vector3 *refpos)
 		if ((*cell)[k] != (int)UNUSED_CELLELEMENT && (*cell)[k]<MAX_COLLISION_BOXES)
 		{
 			collision_box_t *cbox=&collision_boxes[(*cell)[k]];
-			if (*refpos < cbox->lo || *refpos > cbox->hi) continue;
+			if( !( (*refpos) > cbox->lo && (*refpos) < cbox->hi ) ) continue;
 
 			if (cbox->refined || cbox->selfrotated)
 			{
