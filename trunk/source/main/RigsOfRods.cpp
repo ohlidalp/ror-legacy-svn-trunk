@@ -21,6 +21,7 @@ along with Rigs of Rods.  If not, see <http://www.gnu.org/licenses/>.
 #include "OgreLineStreamOverlayElement.h"
 #include "language.h"
 #include "errorutils.h"
+#include "SoundScriptManager.h"
 
 #include <OgreHeaderPrefix.h>
 
@@ -200,6 +201,10 @@ bool RigsOfRods::setup(void)
 	loadMainResource("icons");
 
 	// optional ones
+
+	// sound iss a bit special as we mark the base sounds so we dont clear them accidentially later on
+	SoundScriptManager *ssm = SoundScriptManager::getSingleton();
+	if(ssm) ssm->setLoadingBaseSounds(true);
 	if (SETTINGS.getSetting("3D Sound renderer") != "No sound")
 		loadMainResource("sounds");
 
@@ -304,7 +309,8 @@ bool RigsOfRods::setup(void)
 	vp->setBackgroundColour(ColourValue(0,0,0));
 
 	// create RTShader System (after creating the viewport)
-	initRTShaderSystem();
+	if (SETTINGS.getSetting("Use RTShader System")=="Yes")
+		initRTShaderSystem();
 
 	// Set default mipmap level (NB some APIs ignore this)
 	TextureManager::getSingleton().setDefaultNumMipmaps(5);
@@ -341,6 +347,8 @@ bool RigsOfRods::setup(void)
 	{
 		LogManager::getSingleton().logMessage("catched error while initializing Resource groups: " + e.getFullDescription());
 	}
+
+	if(ssm) ssm->setLoadingBaseSounds(false);
 
 	//rgm.initialiseResourceGroup(ResourceGroupManager::DEFAULT_RESOURCE_GROUP_NAME);
 

@@ -2100,7 +2100,7 @@ bool InputEngine::deleteEventBySUID(int suid)
 		{
 			if(b->suid == suid)
 			{
-				a->second.erase(b);
+				b = a->second.erase(b);
 				return true;
 			}
 		}

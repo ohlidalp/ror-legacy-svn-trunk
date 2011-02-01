@@ -631,7 +631,7 @@ Beam::Beam(int tnum, SceneManager *manager, SceneNode *parent, RenderWindow* win
 	splashp = DustManager::getSingleton().getDustPool("splash");
 	ripplep = DustManager::getSingleton().getDustPool("ripple");
 
-	disable_smoke=(SETTINGS.getSetting("Engine smoke")=="No");
+	disable_smoke=(SETTINGS.getSetting("Particles")!="Yes");
 	heathaze=(SETTINGS.getSetting("HeatHaze")=="Yes");
 	if(heathaze && disable_smoke)
 		//no heathaze without smoke!
@@ -642,7 +642,7 @@ Beam::Beam(int tnum, SceneManager *manager, SceneNode *parent, RenderWindow* win
 	enable_wheel2=(SETTINGS.getSetting("Enhanced wheels")=="Yes");
 	if (networked || networking) enable_wheel2=false;
 
-	cparticle_enabled=(SETTINGS.getSetting("Custom Particles")=="Yes");
+	cparticle_enabled=(SETTINGS.getSetting("Particles")=="Yes");
 	if(strnlen(fname,200) > 0)
 		if(loadTruck(fname, manager, parent, px, py, pz, rot, spawnbox))
 			return;

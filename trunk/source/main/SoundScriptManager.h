@@ -121,7 +121,7 @@ using namespace Ogre;
 class SoundScriptTemplate : public MemoryAllocatedObject
 {
 public:
-	SoundScriptTemplate(String name, String groupname, String filename);
+	SoundScriptTemplate(String name, String groupname, String filename, bool baseTemplate);
 	bool setParameter(StringVector vec);
 	~SoundScriptTemplate();
 
@@ -149,6 +149,7 @@ public:
 	int free_sound;
 	float sound_pitches[MAX_SOUNDS_PER_SCRIPT];
 	String sound_names[MAX_SOUNDS_PER_SCRIPT];
+	bool baseTemplate;
 };
 
 class SoundScriptInstance : public MemoryAllocatedObject
@@ -188,7 +189,7 @@ public:
 
 	SoundScriptInstance* createInstance(String templatename, int truck, SceneNode *toAttach);
 	void unloadResourceGroup(String groupname);
-	void clearTemplates();
+	void clearNonBaseTemplates();
 
 	//values update
 	void trigOnce(int truck, int trig);
@@ -200,6 +201,7 @@ public:
 	void soundEnable(bool state);
 
 	void setCamera(Vector3 position, Vector3 direction, Vector3 up, Vector3 velocity);
+	void setLoadingBaseSounds(bool v) { loadingBase = v; };
 
 	float maxDistance;
 	float rolloffFactor;
@@ -207,6 +209,7 @@ public:
 private:
     StringVector mScriptPatterns;
 	int instance_counter;
+	bool loadingBase;
 
 	std::map <Ogre::String, SoundScriptTemplate*> templates;
 

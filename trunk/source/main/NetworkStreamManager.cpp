@@ -113,7 +113,7 @@ void NetworkStreamManager::removeStream(int sourceid, int streamid)
 		{
 			if(it->first == sourceid && (int)it2->first == streamid)
 			{
-				streams[it->first].erase(it2);
+				it2 = streams[it->first].erase(it2);
 				// iterator gets invalid!
 				deleted=true;
 				break;
