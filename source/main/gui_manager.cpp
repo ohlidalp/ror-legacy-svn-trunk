@@ -81,7 +81,7 @@ void GUIManager::createGui()
 {
 	String gui_logfilename = SETTINGS.getSetting("Log Path") + "mygui.log";
 	mPlatform = new MyGUI::OgrePlatform();
-	mPlatform->initialise(mWindow, mSceneManager, ResourceGroupManager::DEFAULT_RESOURCE_GROUP_NAME, gui_logfilename);
+	mPlatform->initialise(mWindow, mSceneManager, "cache", gui_logfilename); // use cache resource group so preview images are working
 	mGUI = new MyGUI::Gui();
 	mGUI->initialise(mResourceFileName);
 }

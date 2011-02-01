@@ -351,6 +351,8 @@ Beam::Beam(int tnum, SceneManager *manager, SceneNode *parent, RenderWindow* win
 	memset(this->flexbodies, 0, sizeof(FlexBody *) * MAX_FLEXBODIES); free_flexbody = 0;
 	// clearing done
 
+	externalcameramode=0;
+	externalcameranode=-1;
 	net=_net;
 	if(net && !networking) networking = true; // enable networking if some network class is existing
 
@@ -1655,14 +1657,32 @@ int Beam::loadPosition(int indexPosition)
 void Beam::updateTruckPosition()
 {
 	// calculate average position (and smooth)
-	if(freecinecamera > 0)
+	if(externalcameramode == 0)
 	{
-		// fix for detaching beams
-		position = nodes[cinecameranodepos[0]].AbsPosition; // - cinecam_avg_offset;
+		// the classic approach: average over all nodes and beams
+		Vector3 aposition = Vector3::ZERO;
+		for (int n=0; n < free_node; n++)
+		{
+			nodes[n].smoothpos = nodes[n].AbsPosition;
+			aposition += nodes[n].smoothpos;
+		}
+		position = aposition / free_node;
+	} else if(externalcameramode == 1 && freecinecamera > 0)
+	{
+		// the new (strange) approach: reuse the cinecam node
 		for (int n=0; n < free_node; n++)
 		{
 			nodes[n].smoothpos = nodes[n].AbsPosition;
 		}
+		position = nodes[cinecameranodepos[0]].AbsPosition;
+	} else if(externalcameramode == 2 && externalcameranode >= 0)
+	{
+		// the new (strange) approach #2: reuse a specified node
+		for (int n=0; n < free_node; n++)
+		{
+			nodes[n].smoothpos = nodes[n].AbsPosition;
+		}
+		position = nodes[externalcameranode].AbsPosition;
 	} else
 	{
 		Vector3 aposition = Vector3::ZERO;

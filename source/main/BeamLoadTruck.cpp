@@ -217,6 +217,23 @@ int Beam::loadTruck(const char* fname, SceneManager *manager, SceneNode *parent,
 			mode=0;
 			continue;
 		}
+		if (!strncmp("extcamera", line, 9))
+		{
+			char modestr[255] = "";
+			int nodeid=-1;
+			int result = sscanf(line,"extcamera %s %i", modestr, &nodeid);
+			if (result < 1 || result == EOF)
+			{
+				LogManager::getSingleton().logMessage("Error parsing File (extcamera) " + String(fname) +" line " + StringConverter::toString(linecounter) + ". trying to continue ...");
+				continue;
+			}
+			if(!strcmp(modestr, "classic")) externalcameramode = 0;
+			if(!strcmp(modestr, "cinecam")) externalcameramode = 1;
+			if(!strcmp(modestr, "node"))    externalcameramode = 2;
+				
+			externalcameranode = nodeid;
+			continue;
+		}
 		if (!strncmp("fileformatversion", line, 17))
 		{
 			int fileformatversion;

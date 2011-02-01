@@ -923,11 +923,17 @@ RoRFrameListener::RoRFrameListener(RenderWindow* win, Camera* cam, SceneManager*
 	// create main menu :D
 	new GUI_MainMenu(this);
 	new GUI_Friction();
+
+	MyGUI::LayoutManager::getInstance().load("wallpaper.layout");
+
 #endif //MYGUI
 
 #ifdef USE_ANGELSCRIPT
 #ifdef USE_MYGUI
-	Console::getInstance();
+	ingame_console = (SETTINGS.getSetting("Enable Ingame Console") == "Yes");
+
+	if(ingame_console)
+		Console::getInstance();
 #endif// MYGUI
 #endif
 
@@ -1158,7 +1164,7 @@ RoRFrameListener::RoRFrameListener(RenderWindow* win, Camera* cam, SceneManager*
 	// initiate player colours
 	new PlayerColours();
 
-	// hide console when not in netmode
+	// hide chat when not in netmode
 	NETCHAT.setMode(this, NETCHAT_LEFT_SMALL, false);
 
 	// you always need that, even if you are not using the network
@@ -1341,10 +1347,6 @@ RoRFrameListener::RoRFrameListener(RenderWindow* win, Camera* cam, SceneManager*
 		SelectorWindow::get()->setEnableCancel(false);
 #endif // MYGUI
 	}
-
-	// show character
-	person->setVisible(true);
-
 
 	initialized=true;
 }
@@ -4153,9 +4155,12 @@ bool RoRFrameListener::updateEvents(float dt)
 		}
 
 #ifdef USE_MYGUI
-		if (INPUTENGINE.getEventBoolValueBounce(EV_COMMON_CONSOLEDISPLAY))
+		if(ingame_console)
 		{
-			Console::get()->setVisible(!Console::get()->getVisible());
+			if (INPUTENGINE.getEventBoolValueBounce(EV_COMMON_CONSOLEDISPLAY))
+			{
+				Console::get()->setVisible(!Console::get()->getVisible());
+			}
 		}
 #endif // MYGUI
 
@@ -4748,28 +4753,28 @@ void RoRFrameListener::loadTerrain(String terrainfile)
 	{
 		LogManager::getSingleton().logMessage("Loading Ogitor scene format: " + terrainfile);
 		loadOgitorTerrain(terrainfile);
-#ifdef USE_MYGUI
-		LoadingWindow::get()->hide();
-#endif // USE_MYGUI
-		return;
 	}
-
-	if(terrainfile.find(".terrn") != String::npos)
+	else if(terrainfile.find(".terrn") != String::npos)
 	{
 		LogManager::getSingleton().logMessage("Loading classic terrain format: " + terrainfile);
 		loadClassicTerrain(terrainfile);
-		
-#ifdef USE_MYGUI
-		LoadingWindow::get()->hide();
-#endif // USE_MYGUI
-		return;
+	} else
+	{
+		// exit on unkown terrain handler
+		LogManager::getSingleton().logMessage("Terrain not supported, unknown format: " + terrainfile);
+		showError(_L("Terrain loading error"), _L("Terrain not supported, unknown format: ") + terrainfile);
+		exit(123);
 	}
 
-	// exit on unkown terrain handler
-	LogManager::getSingleton().logMessage("Terrain not supported, unknown format: " + terrainfile);
-	showError(_L("Terrain loading error"), _L("Terrain not supported, unknown format: ") + terrainfile);
-	exit(123);
+#ifdef USE_MYGUI
+	// hide loading window
+	LoadingWindow::get()->hide();
+	// hide wallpaper
+	MyGUI::Window *w = MyGUI::Gui::getInstance().findWidget<MyGUI::Window>("wallpaper");
+	if(w) w->setVisibleSmooth(false);
+#endif // USE_MYGUI
 
+	if(person) person->setVisible(true);
 }
 
 void RoRFrameListener::loadClassicTerrain(String terrainfile)

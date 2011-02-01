@@ -193,8 +193,7 @@ bool RigsOfRods::setup(void)
 	loadMainResource("meshes");
 	loadMainResource("overlays");
 	loadMainResource("particles");
-	loadMainResource("mygui");
-	loadMainResource("layouts");
+	loadMainResource("mygui", "cache"); // HACK for mygui only supporting one resource group
 	loadMainResource("scripts");
 	loadMainResource("textures");
 	loadMainResource("flags");

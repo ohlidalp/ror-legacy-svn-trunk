@@ -1888,7 +1888,7 @@ bool InputEngine::povMoved( const OIS::JoyStickEvent &arg, int )
 bool InputEngine::keyPressed( const OIS::KeyEvent &arg )
 {
 #ifdef USE_MYGUI 
-	if(Console::get()->getVisible())
+	if(Console::get() && Console::get()->getVisible())
 	{
 		GUIManager::getSingleton().keyPressed(arg);
 		return true;

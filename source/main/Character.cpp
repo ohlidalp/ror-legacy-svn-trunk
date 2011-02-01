@@ -219,12 +219,12 @@ void Character::setOrientation(Quaternion rot)
 	return personode->setOrientation(rot);
 }
 
-void Character::setVisible(bool v)
+void Character::setVisible(bool visible)
 {
-	personode->setVisible(v);
+	personode->setVisible(visible);
 #ifdef USE_MYGUI 
 	if(map)
-		map->getEntityByName(myName)->setVisibility(v);
+		map->getEntityByName(myName)->setVisibility(visible);
 #endif //MYGUI
 }
 
