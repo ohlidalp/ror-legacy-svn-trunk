@@ -46,9 +46,9 @@ private:
 	void renderOneFrame();
 private:
 	ATTRIBUTE_FIELD_WIDGET_NAME(LoadingWindow, mBarProgress, "Bar");
-	MyGUI::Progress* mBarProgress;
+	MyGUI::ProgressBar* mBarProgress;
 	ATTRIBUTE_FIELD_WIDGET_NAME(LoadingWindow, mInfoStaticText, "Info");
-	MyGUI::StaticText* mInfoStaticText;
+	MyGUI::TextBox* mInfoStaticText;
 
 	bool mFrameForced;
 };

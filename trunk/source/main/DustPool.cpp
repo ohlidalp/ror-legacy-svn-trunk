@@ -52,6 +52,7 @@ void DustPool::setVisible(bool s)
 	{
 		visible[i] = s;
 		pss[i]->setVisible(s);
+		pss[i]->setEmitting(false);
 	}
 }
 
@@ -152,7 +153,11 @@ void DustPool::update(float gspeed)
 	for (i=0; i<allocated; i++)
 	{
 		// show particle if requested
-		if(pss[i] && !pss[i]->isVisible() && visible[i]) pss[i]->setVisible(true);
+		if(pss[i] && !pss[i]->isVisible() && visible[i])
+		{
+			pss[i]->setVisible(true);
+			pss[i]->setEmitting(true);
+		}
 
 		if (types[i]==DUST_NORMAL)
 		{

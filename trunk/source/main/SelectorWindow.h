@@ -87,15 +87,15 @@ private:
 	ATTRIBUTE_FIELD_WIDGET_NAME(SelectorWindow, mTypeComboBox, "Type");
 	MyGUI::ComboBox* mTypeComboBox;
 	ATTRIBUTE_FIELD_WIDGET_NAME(SelectorWindow, mModelList, "Model");
-	MyGUI::List* mModelList;
+	MyGUI::ListBox* mModelList;
 	ATTRIBUTE_FIELD_WIDGET_NAME(SelectorWindow, mEntryNameStaticText, "EntryName");
-	MyGUI::StaticText* mEntryNameStaticText;
+	MyGUI::TextBox* mEntryNameStaticText;
 	ATTRIBUTE_FIELD_WIDGET_NAME(SelectorWindow, mEntryDescriptionStaticText, "EntryDescription");
-	MyGUI::StaticText* mEntryDescriptionStaticText;
+	MyGUI::TextBox* mEntryDescriptionStaticText;
 	ATTRIBUTE_FIELD_WIDGET_NAME(SelectorWindow, mConfigComboBox, "Config");
 	MyGUI::ComboBox* mConfigComboBox;
 	ATTRIBUTE_FIELD_WIDGET_NAME(SelectorWindow, mPreviewStaticImage, "Preview");
-	MyGUI::StaticImage* mPreviewStaticImage;
+	MyGUI::ImageBox* mPreviewStaticImage;
 	ATTRIBUTE_FIELD_WIDGET_NAME(SelectorWindow, mOkButton, "Ok");
 	MyGUI::Button* mOkButton;
 	ATTRIBUTE_FIELD_WIDGET_NAME(SelectorWindow, mCancelButton, "Cancel");
@@ -103,7 +103,7 @@ private:
 	ATTRIBUTE_FIELD_WIDGET_NAME(SelectorWindow, mSearchSheet, "Search");
 	MyGUI::Sheet* mSearchSheet;
 	ATTRIBUTE_FIELD_WIDGET_NAME(SelectorWindow, mSearchLineEdit, "SearchLine");
-	MyGUI::Edit* mSearchLineEdit;
+	MyGUI::EditBox* mSearchLineEdit;
 };
 
 #endif // __SELECTOR_WINDOW_H__

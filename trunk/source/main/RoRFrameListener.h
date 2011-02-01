@@ -310,6 +310,7 @@ protected:
 	void gridScreenshots(Ogre::RenderWindow* pRenderWindow, Ogre::Camera* pCamera, const int& pGridSize, const Ogre::String& path, const Ogre::String& pFileName, const Ogre::String& pFileExtention, const bool& pStitchGridImages);
 	void initDust();
 	unsigned int inputhwnd;
+	bool ingame_console;
 public:
 	// Constructor takes a RenderWindow because it uses that to determine input context
 	RoRFrameListener(RenderWindow* win, Camera* cam, SceneManager* scm, Root* root, bool isEmbedded=false, unsigned int inputhwnd=0);

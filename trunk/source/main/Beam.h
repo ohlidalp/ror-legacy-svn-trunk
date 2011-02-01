@@ -288,6 +288,7 @@ public:
 	int cameranodepos[MAX_CAMERAS];
 	int cameranodedir[MAX_CAMERAS];
 	int cameranoderoll[MAX_CAMERAS];
+	int externalcameramode, externalcameranode;
 	bool revroll[MAX_CAMERAS];
 	float WheelSpeed;
 	int stabcommand;
