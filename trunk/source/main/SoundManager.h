@@ -69,6 +69,11 @@ public:
 	float gain;
 	float pitch;
 	bool loop;
+	bool enabled;
+	
+	void setEnabled(bool e);
+	bool getEnabled();
+
 	Vector3 position;
 	Vector3 velocity;
 private:

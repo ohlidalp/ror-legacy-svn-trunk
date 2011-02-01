@@ -208,7 +208,7 @@ public:
 
 	//! @{ audio related functions
 	void setupDefaultSoundSources();
-	void addSoundSource(SoundScriptInstance *ssi, int nodenum);
+	void addSoundSource(SoundScriptInstance *ssi, int nodenum, int type=-1);
 	void updateSoundSources();
 	//! @}
 
@@ -387,6 +387,9 @@ public:
 	int getNodeCount();
 	node_t *getNodes();
 	int nodeBeamConnections(int nodeid);
+
+
+	void changedCamera();
 
 	float getTotalMass(bool withLocked=true);
 	void recalc_masses();

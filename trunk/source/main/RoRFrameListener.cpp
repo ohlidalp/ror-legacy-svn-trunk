@@ -3689,13 +3689,13 @@ bool RoRFrameListener::updateEvents(float dt)
 				//camera mode
 				if (INPUTENGINE.getEventBoolValueBounce(EV_CAMERA_CHANGE) && cameramode != CAMERA_FREE && cameramode != CAMERA_FREE_FIXED)
 				{
-					if (cameramode==CAMERA_INT && trucks[current_truck]->currentcamera<trucks[current_truck]->freecinecamera-1)
+					if (cameramode==CAMERA_INT && trucks[current_truck]->currentcamera < trucks[current_truck]->freecinecamera-1)
 					{
 						trucks[current_truck]->currentcamera++;
+						trucks[current_truck]->changedCamera();
 					}
 					else
 					{
-						trucks[current_truck]->currentcamera=0;
 						if (cameramode==CAMERA_INT)
 						{
 							//end of internal cam
@@ -3703,7 +3703,9 @@ bool RoRFrameListener::updateEvents(float dt)
 							camRotY=pushcamRotY;
 							trucks[current_truck]->prepareInside(false);
 							if(ow) ow->showDashboardOverlays(true, trucks[current_truck]->driveable);
+							trucks[current_truck]->currentcamera=-1;
 							//if(bigMap) bigMap->setVisibility(true);
+							trucks[current_truck]->changedCamera();
 						}
 						cameramode++;
 						if (cameramode==CAMERA_INT)
@@ -3723,8 +3725,11 @@ bool RoRFrameListener::updateEvents(float dt)
 								else
 									ow->showDashboardOverlays(false, 0);
 							}
+							trucks[current_truck]->currentcamera=0;
+							trucks[current_truck]->changedCamera();
 						}
-						if (cameramode==CAMERA_END) cameramode=0;
+						
+						if (cameramode==CAMERA_END) cameramode = CAMERA_EXT;
 					}
 				}
 				//camera mode

@@ -52,6 +52,7 @@ class FlexObj;
 class HeightFinder;
 class MaterialFunctionMapper;
 class MapTextureCreator;
+class MeshObject;
 class Mirrors;
 class Network;
 class OverlayWrapper;

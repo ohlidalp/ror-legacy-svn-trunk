@@ -520,7 +520,7 @@ Beam::Beam(int tnum, SceneManager *manager, SceneNode *parent, RenderWindow* win
 	if (networked) state=NETWORKED; //required for proper loading
 	sleepcount=0;
 	freecinecamera=0;
-	currentcamera=0;
+	currentcamera=-1; // -1 = external
 	cinecameranodepos[0]=-1;
 	cameranodepos[0]=-1;
 	cameranodedir[0]=-1;
@@ -1399,7 +1399,7 @@ int Beam::getWheelNodeCount()
 	return free_node-first_wheel_node;
 }
 
-void Beam::addSoundSource(SoundScriptInstance *ssi, int nodenum)
+void Beam::addSoundSource(SoundScriptInstance *ssi, int nodenum, int type)
 {
 	if (!ssi) return; //fizzle
 	if (free_soundsource==MAX_SOUNDSCRIPTS_PER_TRUCK)
@@ -1409,6 +1409,7 @@ void Beam::addSoundSource(SoundScriptInstance *ssi, int nodenum)
 	}
 	soundsources[free_soundsource].ssi=ssi;
 	soundsources[free_soundsource].nodenum=nodenum;
+	soundsources[free_soundsource].type=type;
 	free_soundsource++;
 }
 
@@ -5566,6 +5567,21 @@ node_t* Beam::getNode(unsigned int id)
 
 	// node not found
 	return NULL;
+}
+
+void Beam::changedCamera()
+{
+	// change sound setup
+#ifdef USE_OPENAL
+	if(ssm)
+	{
+		for (int i=0; i<free_soundsource; i++)
+		{
+			bool enabled = (soundsources[i].type == -2 || soundsources[i].type == currentcamera);
+			soundsources[i].ssi->setEnabled(enabled);
+		}
+	}
+#endif //OPENAL
 }
 
 //Returns the number of active (non bounded) beams connected to a node

@@ -177,6 +177,7 @@ int Beam::loadTruck(const char* fname, SceneManager *manager, SceneNode *parent,
 		if (!strncmp("materialflarebindings",line, 21)) {mode=46; continue;};
 		if (!strcmp("disabledefaultsounds",line)) {disable_default_sounds=true;continue;};
 		if (!strcmp("soundsources",line)) {mode=47;continue;};
+		if (!strcmp("soundsources2",line)) {mode=67;continue;};
 		if (!strcmp("envmap",line)) {mode=48;continue;};
 		if (!strcmp("managedmaterials",line)) {mode=49;continue;};
 		if (!strncmp("sectionconfig",line, 13)) {savedmode=mode;mode=50; /* NOT continue */};
@@ -282,6 +283,14 @@ int Beam::loadTruck(const char* fname, SceneManager *manager, SceneNode *parent,
 
 		if(!strcmp("slidenode_connect_instantly", line))
 			slideNodesConnectInstantly=true;
+
+		if (!strncmp("disable_shadows", line, 15))
+		{
+			// always use the last prop
+			prop_t *prop = &props[free_prop-1];
+			if(prop->mo) prop->mo->setCastShadows(false);
+
+		}
 
 		if (!strncmp("add_animation", line, 13))
 		{
@@ -2230,6 +2239,7 @@ int Beam::loadTruck(const char* fname, SceneManager *manager, SceneNode *parent,
 			mo->setSimpleMaterialColour(ColourValue(1, 1, 0));
 			mo->setSkin(usedSkin);
 			mo->setMaterialFunctionMapper(materialFunctionMapper);
+			props[free_prop].mo = mo;
 
 			//hack for the spinprops
 			if (!strncmp("spinprop", meshname, 8))
@@ -3152,6 +3162,20 @@ int Beam::loadTruck(const char* fname, SceneManager *manager, SceneNode *parent,
 			}
 #ifdef USE_OPENAL
 			if(ssm) addSoundSource(ssm->createInstance(script, trucknum, NULL), ref);
+#endif //OPENAL
+		}
+		else if (mode==67)
+		{
+			//parse soundsources2
+			int ref, type;
+			char script[256];
+			int result = sscanf(line,"%i, %i, %s", &ref, &type, script);
+			if (result < 2 || result == EOF) {
+				LogManager::getSingleton().logMessage("Error parsing File (soundsource2) " + String(fname) +" line " + StringConverter::toString(linecounter) + ". trying to continue ...");
+				continue;
+			}
+#ifdef USE_OPENAL
+			if(ssm) addSoundSource(ssm->createInstance(script, trucknum, NULL), ref, type);
 #endif //OPENAL
 		}
 		else if (mode==48)
