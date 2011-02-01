@@ -368,6 +368,7 @@ struct soundsource
 {
 	SoundScriptInstance* ssi;
 	int nodenum;
+	int type;
 };
 
 struct contacter
@@ -569,6 +570,7 @@ struct prop
 	int animKeyState[10];
 	int lastanimKS[10];
 	Ogre::Real wheelrotdegree;
+	MeshObject *mo;
 };
 
 struct exhaust

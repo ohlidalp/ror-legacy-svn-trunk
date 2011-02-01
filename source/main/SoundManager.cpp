@@ -496,10 +496,14 @@ Sound::Sound(int input_index, ALuint buffer, SoundManager *sm)
 	position=Vector3::ZERO;
 	velocity=Vector3::ZERO;
 	loop=false;
+	enabled=true;
 }
 
 void Sound::computeAudibility(Vector3 from)
 {
+	// hack to disable sounds :)
+	if(!enabled) from=Vector3(999999,999999,999999);
+
 	//mutex is supposed to be taken
 	//first check if the sound is finished!
 	if (!loop && hardware_index!=-1 && should_play)
@@ -528,6 +532,20 @@ bool Sound::isPlaying()
 	}
 	pthread_mutex_unlock(&sm->audio_mutex);
 	return false;
+}
+
+void Sound::setEnabled(bool e)
+{
+	pthread_mutex_lock(&sm->audio_mutex);
+	enabled = e;
+	pthread_mutex_unlock(&sm->audio_mutex);
+}
+
+bool Sound::getEnabled()
+{
+	pthread_mutex_lock(&sm->audio_mutex);
+	return enabled;
+	pthread_mutex_unlock(&sm->audio_mutex);
 }
 
 void Sound::play()

@@ -163,6 +163,8 @@ public:
 	void start();
 	void stop();
 	int truck;
+
+	void setEnabled(bool e);
 	SoundScriptTemplate* templ;
 private:
 	SoundManager* sm;
