@@ -163,8 +163,8 @@ FlexBody::FlexBody(SceneManager *manager, node_t *nds, int numnds, char* meshnam
 	for (size_t u = 0; u <= optimalVD->getMaxSource(); ++u) optimalBufferUsages.push_back(HardwareBuffer::HBU_DYNAMIC_WRITE_ONLY_DISCARDABLE);
 
 	//print mesh information
-	LogManager::getSingleton().logMessage("FLEXBODY Printing input mesh informations:");
-	printMeshInfo(ent->getMesh().getPointer());
+	//LogManager::getSingleton().logMessage("FLEXBODY Printing input mesh informations:");
+	//printMeshInfo(ent->getMesh().getPointer());
 
 	//adding color buffers, well get the reference later
 	if (haveblend)
