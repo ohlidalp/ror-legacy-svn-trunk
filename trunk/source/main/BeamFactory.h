@@ -37,7 +37,7 @@ class RoRFrameListener;
 
 #include "Beam.h"
 
-class BeamFactory : public StreamableFactory < BeamFactory, Beam >, public MemoryAllocatedObject
+class BeamFactory : public StreamableFactory < BeamFactory, Beam >
 {
 	friend class Network;
 	friend class RoRFrameListener;

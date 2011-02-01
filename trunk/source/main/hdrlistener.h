@@ -3,9 +3,9 @@
 
 #include "Ogre.h"
 #include "OgreCompositorInstance.h"
-#include "rormemory.h"
 
-class HDRListener: public Ogre::CompositorInstance::Listener, public MemoryAllocatedObject
+
+class HDRListener: public Ogre::CompositorInstance::Listener
 {
 protected:
 	int mVpWidth, mVpHeight;

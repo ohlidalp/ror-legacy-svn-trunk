@@ -25,7 +25,7 @@ along with Rigs of Rods.  If not, see <http://www.gnu.org/licenses/>.
 #include <OgreVector3.h>
 #include "collisions.h"
 
-class Landusemap : public MemoryAllocatedObject
+class Landusemap
 {
 protected:
 	ground_model_t **data;

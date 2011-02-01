@@ -28,9 +28,9 @@ using namespace Ogre;
 #include "Beam.h"
 #include "Airfoil.h"
 #include "aeroengine.h"
-#include "rormemory.h"
 
-class Turbojet: public AeroEngine, public MemoryAllocatedObject
+
+class Turbojet: public AeroEngine
 {
 private:
 	node_t *nodes;

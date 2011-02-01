@@ -29,7 +29,7 @@ using namespace Ogre;
 #include "DustPool.h"
 #include "DustManager.h"
 
-class Screwprop : public MemoryAllocatedObject
+class Screwprop
 {
 private:
 	node_t *nodes;

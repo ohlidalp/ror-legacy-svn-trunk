@@ -27,11 +27,11 @@ along with Rigs of Rods.  If not, see <http://www.gnu.org/licenses/>.
 #include <MyGUI.h>
 #include "OgreSingleton.h"
 #include "OgrePrerequisites.h"
-#include "rormemory.h"
+
 
 class RoRFrameListener;
 
-class GUI_MainMenu : public Ogre::Singleton< GUI_MainMenu >, public MemoryAllocatedObject
+class GUI_MainMenu : public Ogre::Singleton< GUI_MainMenu >
 {
 public:
 	GUI_MainMenu(RoRFrameListener *efl);

@@ -755,7 +755,7 @@ void Beam::calcForcesEuler(int doUpdate, Real dt, int step, int maxstep, Beam** 
 					{
 						if (gm->fx_type==FX_DUSTY)
 						{
-							if(dustp) dustp->alloc(nodes[i].AbsPosition, nodes[i].Velocity/2.0, gm->fx_colour);
+							if(dustp) dustp->malloc(nodes[i].AbsPosition, nodes[i].Velocity/2.0, gm->fx_colour);
 						}else if (gm->fx_type==FX_HARD)
 						{
 							float thresold=10.0;

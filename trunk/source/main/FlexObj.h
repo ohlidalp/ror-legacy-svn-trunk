@@ -30,7 +30,7 @@ using namespace Ogre;
 
 //class Beam;
 
-class FlexObj : public MemoryAllocatedObject
+class FlexObj
 {
 private:
 	typedef struct

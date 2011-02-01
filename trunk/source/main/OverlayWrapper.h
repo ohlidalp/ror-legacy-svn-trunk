@@ -25,7 +25,7 @@ along with Rigs of Rods.  If not, see <http://www.gnu.org/licenses/>.
 
 #include "OgrePrerequisites.h"
 #include "OgreSingleton.h"
-#include "rormemory.h"
+
 #include "RoRPrerequisites.h"
 #include <map>
 
@@ -35,7 +35,7 @@ along with Rigs of Rods.  If not, see <http://www.gnu.org/licenses/>.
 #include <OgrePanelOverlayElement.h>
 
 
-class OverlayWrapper : public MemoryAllocatedObject
+class OverlayWrapper
 {
 public:
 	OverlayWrapper(Ogre::RenderWindow* win);

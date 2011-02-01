@@ -21,9 +21,9 @@ along with Rigs of Rods.  If not, see <http://www.gnu.org/licenses/>.
 #ifndef __CmdKeyInertia_H__
 #define __CmdKeyInertia_H__
 #include "OgrePrerequisites.h"
-#include "rormemory.h"
 
-class CmdKeyInertia : public MemoryAllocatedObject
+
+class CmdKeyInertia
 {
 	
 public:

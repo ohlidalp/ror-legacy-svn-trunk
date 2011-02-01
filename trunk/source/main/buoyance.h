@@ -40,7 +40,7 @@ using namespace Ogre;
 #define BUOY_DRAGONLY 1
 #define BUOY_DRAGLESS 2
 
-class Buoyance : public MemoryAllocatedObject
+class Buoyance
 {
 private:
 	Water *w;

@@ -20,7 +20,7 @@ along with Rigs of Rods.  If not, see <http://www.gnu.org/licenses/>.
 
 #include "FlexObj.h"
 #include "ResourceBuffer.h"
-#include "rormemory.h"
+
 
 // some gcc fixes
 #if OGRE_PLATFORM == OGRE_PLATFORM_LINUX
@@ -87,7 +87,7 @@ FlexObj::FlexObj(SceneManager *manager, node_t *nds, int numtexcoords, Vector3* 
     msh = MeshManager::getSingleton().createManual(name, ResourceGroupManager::DEFAULT_RESOURCE_GROUP_NAME,new ResourceBuffer());
 
     /// Create submeshes
-	subs=(SubMesh**)ror_malloc(numsubmeshes*sizeof(SubMesh*));
+	subs=(SubMesh**)malloc(numsubmeshes*sizeof(SubMesh*));
 	for (j=0; j<numsubmeshes; j++)
 	{
 		subs[j] = msh->createSubMesh();
@@ -105,11 +105,11 @@ FlexObj::FlexObj(SceneManager *manager, node_t *nds, int numtexcoords, Vector3* 
     /// Define the vertices (8 vertices, each consisting of 3 groups of 3 floats
     nVertices = numtexcoords;
     vbufCount = (2*3+2)*nVertices;
-	vertices=(float*)ror_malloc(vbufCount*sizeof(float));
+	vertices=(float*)malloc(vbufCount*sizeof(float));
 	//shadow
-	shadownorvertices=(float*)ror_malloc(nVertices*(3+2)*sizeof(float));
-	shadowposvertices=(float*)ror_malloc(nVertices*3*2*sizeof(float));
-	nodeIDs=(int*)ror_malloc(nVertices*sizeof(int));
+	shadownorvertices=(float*)malloc(nVertices*(3+2)*sizeof(float));
+	shadowposvertices=(float*)malloc(nVertices*3*2*sizeof(float));
+	nodeIDs=(int*)malloc(nVertices*sizeof(int));
 
 	//define node ids
 	for (i=0; i<nVertices; i++)
@@ -126,13 +126,13 @@ FlexObj::FlexObj(SceneManager *manager, node_t *nds, int numtexcoords, Vector3* 
     /// Define triangles
     /// The values in this table refer to vertices in the above table
     ibufCount = 3*numtriangles;
-    faces=(unsigned short*)ror_malloc(ibufCount*sizeof(unsigned short));
+    faces=(unsigned short*)malloc(ibufCount*sizeof(unsigned short));
 	for (i=0; i<ibufCount; i++)
 	{
 		faces[i]=findID(i/3, triangles[i], numsubmeshes, subtexindex, subtriindex);
 	}
 
-	sref=(float*)ror_malloc(numtriangles*sizeof(float));
+	sref=(float*)malloc(numtriangles*sizeof(float));
 
 	for (i=0; i<(unsigned int)numtriangles;i++)
 	{

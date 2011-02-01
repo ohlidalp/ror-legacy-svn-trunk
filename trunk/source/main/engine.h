@@ -27,7 +27,7 @@ class TorqueCurve;
 #include <stdio.h>
 #include <stdlib.h>
 #include <vector>
-#include "rormemory.h"
+
 
 #define AUTOMATIC 0
 #define SEMIAUTO 1
@@ -37,7 +37,7 @@ class TorqueCurve;
 
 enum autoswitch {REAR=0, NEUTRAL=1, DRIVE=2, TWO=3, ONE=4, MANUALMODE=5};
 
-class BeamEngine : public MemoryAllocatedObject
+class BeamEngine
 {
 protected:
 	float clutch_time;

@@ -31,14 +31,14 @@ along with Rigs of Rods.  If not, see <http://www.gnu.org/licenses/>.
 #endif //SOCKETW
 #include "rornet.h"
 #include <map>
-#include "rormemory.h"
+
 
 #include "StreamableFactoryInterface.h"
 
 class Network;
 class Streamable;
 
-class NetworkStreamManager : public Ogre::Singleton< NetworkStreamManager >, public MemoryAllocatedObject
+class NetworkStreamManager : public Ogre::Singleton< NetworkStreamManager >
 {
 	friend class Network;
 public:

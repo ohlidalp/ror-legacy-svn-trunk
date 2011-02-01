@@ -23,7 +23,7 @@ along with Rigs of Rods.  If not, see <http://www.gnu.org/licenses/>.
 #include "SoundManager.h"
 #include "Settings.h"
 //#include "pstdint.h"
-#include "rormemory.h"
+
 
 // some gcc fixes
 #if OGRE_PLATFORM == OGRE_PLATFORM_LINUX
@@ -459,7 +459,7 @@ int SoundManager::loadWAVFile(String filename, ALuint buffer)
 		LogManager::getSingleton().logMessage("Invalid WAV file: the file needs to be mono, and nothing else. Will try to continue anyways ...");
 	}
 	//okay, creating buffer
-	void* bdata=ror_malloc(dataSize);
+	void* bdata=malloc(dataSize);
 	if (!bdata) {LogManager::getSingleton().logMessage("Memory error reading file "+filename);return -1;}
 	if (stream->read(bdata, dataSize)!=dataSize) {LogManager::getSingleton().logMessage("Could not read file "+filename);return -1;}
 
@@ -471,11 +471,11 @@ int SoundManager::loadWAVFile(String filename, ALuint buffer)
 	if(error!=AL_NO_ERROR)
 	{
 		LogManager::getSingleton().logMessage("OpenAL error while loading buffer for "+filename+" : "+StringConverter::toString(error));
-		ror_free(bdata);
+		free(bdata);
 		return -1;
 	}
 
-	ror_free(bdata);
+	free(bdata);
 	//stream will be closed by itself
 
 	return 0;

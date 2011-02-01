@@ -26,7 +26,7 @@ along with Rigs of Rods.  If not, see <http://www.gnu.org/licenses/>.
 
 #include <Ogre.h>
 #include <vector>
-#include "rormemory.h"
+
 
 class Road2;
 class HeightFinder;
@@ -59,7 +59,7 @@ public:
 	Road2 *road;
 };
 
-class ProceduralManager : public MemoryAllocatedObject
+class ProceduralManager
 {
 protected:
 	std::vector<ProceduralObject> pObjects;

@@ -37,7 +37,7 @@ along with Rigs of Rods.  If not, see <http://www.gnu.org/licenses/>.
 #include "utils.h"
 #include "language.h"
 #include "errorutils.h"
-#include "rormemory.h"
+
 #include "gui_mp.h"
 
 #ifdef USE_CRASHRPT
@@ -499,7 +499,7 @@ void Network::receivethreadstart()
 {
 	header_t header;
 
-	char *buffer=(char*)ror_malloc(MAX_MESSAGE_LENGTH);
+	char *buffer=(char*)malloc(MAX_MESSAGE_LENGTH);
 	bool autoDl = (SETTINGS.getSetting("AutoDownload") == "Yes");
 	std::deque < stream_reg_t > streamCreationResults;
 	LogManager::getSingleton().logMessage("Receivethread starting");

@@ -36,7 +36,7 @@ public:
 
 //class Beam;
 
-class FlexMesh: public Flexable, public MemoryAllocatedObject
+class FlexMesh: public Flexable
 {
 private:
 typedef struct

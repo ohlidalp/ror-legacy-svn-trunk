@@ -23,7 +23,7 @@ along with Rigs of Rods.  If not, see <http://www.gnu.org/licenses/>.
 
 #include "Ogre.h"
 using namespace Ogre;
-#include "rormemory.h"
+
 
 typedef struct
 {
@@ -34,7 +34,7 @@ typedef struct
 	bool laststate;
 } materialmapping_t;
 
-class MaterialFunctionMapper : public MemoryAllocatedObject
+class MaterialFunctionMapper
 {
 public:
 	MaterialFunctionMapper();

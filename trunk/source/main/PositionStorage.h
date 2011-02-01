@@ -22,9 +22,9 @@ along with Rigs of Rods.  If not, see <http://www.gnu.org/licenses/>.
 #define __PositionStorage_H__
 
 #include "OgrePrerequisites.h"
-#include "rormemory.h"
 
-class PositionStorage : public MemoryAllocatedObject
+
+class PositionStorage
 {
 protected:
 	Ogre::Vector3 *nodes;

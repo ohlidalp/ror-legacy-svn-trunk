@@ -24,9 +24,9 @@ along with Rigs of Rods.  If not, see <http://www.gnu.org/licenses/>.
 #include <OgrePrerequisites.h>
 #include <OgreMaterial.h>
 
-#include "rormemory.h"
 
-class Mirrors : public MemoryAllocatedObject
+
+class Mirrors
 {
 private:
 	Ogre::Camera *mCamera;

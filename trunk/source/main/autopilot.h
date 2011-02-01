@@ -42,7 +42,7 @@ using namespace Ogre;
 #define ALT_FIXED 1
 #define ALT_VS 2
 
-class Autopilot : public MemoryAllocatedObject
+class Autopilot
 {
 private:
 	int mode_heading;

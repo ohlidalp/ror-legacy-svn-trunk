@@ -27,7 +27,7 @@ along with Rigs of Rods.  If not, see <http://www.gnu.org/licenses/>.
 #include "OgreTextAreaOverlayElement.h"
 #include "ColoredTextAreaOverlayElement.h"
 #include "Singleton.h"
-#include "rormemory.h"
+
 
 #define NETCHAT IngameConsole::getInstance()
 
@@ -37,8 +37,7 @@ enum {NETCHAT_MSG_CHAT, NETCHAT_MSG_COMMAND};
 class RoRFrameListener;
 
 class IngameConsole :
-	public Singleton2<IngameConsole>,
-	public MemoryAllocatedObject
+	public Singleton2<IngameConsole>
 {
 	friend class Singleton2<IngameConsole>;
 	IngameConsole();

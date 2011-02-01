@@ -56,7 +56,7 @@ void DustPool::setVisible(bool s)
 }
 
 //Dust
-void DustPool::alloc(Vector3 pos, Vector3 vel, ColourValue col)
+void DustPool::malloc(Vector3 pos, Vector3 vel, ColourValue col)
 {
 	if (allocated==size) return;
 	positions[allocated]=pos;

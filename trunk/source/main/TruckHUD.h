@@ -25,7 +25,7 @@ along with Rigs of Rods.  If not, see <http://www.gnu.org/licenses/>.
 #include "Beam.h"
 #include "OgreLineStreamOverlayElement.h"
 
-class TruckHUD : public MemoryAllocatedObject
+class TruckHUD
 {
 public:
 	TruckHUD();

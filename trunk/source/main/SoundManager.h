@@ -29,7 +29,7 @@ using namespace Ogre;
 #include "AL/alc.h"
 
 #include "pthread.h"
-#include "rormemory.h"
+
 
 //maximum number of really mixed sources
 #define MAX_HARDWARE_SOURCES 32
@@ -48,7 +48,7 @@ using namespace Ogre;
 
 class SoundManager;
 
-class Sound : public MemoryAllocatedObject
+class Sound
 {
 public:
 	Sound(int input_index, ALuint buffer, SoundManager* sm);
@@ -77,7 +77,7 @@ private:
 	int input_index;
 };
 
-class SoundManager : public MemoryAllocatedObject
+class SoundManager
 {
 public:
 	SoundManager();

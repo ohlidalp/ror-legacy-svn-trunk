@@ -28,6 +28,10 @@ along with Rigs of Rods.  If not, see <http://www.gnu.org/licenses/>.
 #ifndef RORPREREQUISITES_H__
 #define RORPREREQUISITES_H__
 
+// replace standard allocations with nedmalloc
+#define REPLACE_SYSTEM_ALLOCATOR
+#include "nedmalloc.h"
+
 class AeroEngine;
 class Airfoil;
 class Airbrake;

@@ -54,7 +54,7 @@ using namespace Ogre;
 #define TEXFIT_CONCRETETOP 9
 #define TEXFIT_CONCRETEUNDER 10
 
-class Road2 : public MemoryAllocatedObject
+class Road2
 {
 protected:
 	typedef struct

@@ -32,7 +32,7 @@ along with Rigs of Rods.  If not, see <http://www.gnu.org/licenses/>.
 // ror includes
 #include "Streamable.h"
 #include "BeamData.h" // for rig_t
-#include "rormemory.h"
+
 #include "approxmath.h"
 #include "CacheSystem.h"
 
@@ -42,8 +42,7 @@ along with Rigs of Rods.  If not, see <http://www.gnu.org/licenses/>.
 
 class Beam : 
 	public rig_t, 
-	public Streamable, 
-	public MemoryAllocatedObject
+	public Streamable
 {
 public:
 	Beam() {}; // for wrapper, DO NOT USE!

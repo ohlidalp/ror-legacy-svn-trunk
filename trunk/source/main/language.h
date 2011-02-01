@@ -37,12 +37,12 @@ freely, subject to the following restrictions:
 #ifdef USE_MOFILEREADER
 #include "moFileReader.h"
 #endif //MOFILEREADER
-#include "rormemory.h"
+
 
 #define _L(str) LanguageEngine::Instance().lookUp(str)
 #define MOFILENAME "ror"
 
-class LanguageEngine : public MemoryAllocatedObject
+class LanguageEngine
 {
 public:
     static LanguageEngine & Instance();
