@@ -2007,9 +2007,11 @@ void RoRFrameListener::loadObject(const char* name, float px, float py, float pz
 		{
 			char mat[255]="";
 			sscanf(ptline, "generateMaterialShaders %s", mat);
-
-			Ogre::RTShader::ShaderGenerator::getSingleton().createShaderBasedTechnique(String(mat), Ogre::MaterialManager::DEFAULT_SCHEME_NAME, Ogre::RTShader::ShaderGenerator::DEFAULT_SCHEME_NAME);
-			Ogre::RTShader::ShaderGenerator::getSingleton().invalidateMaterial(RTShader::ShaderGenerator::DEFAULT_SCHEME_NAME, String(mat));
+			if (SETTINGS.getSetting("Use RTShader System")=="Yes")
+			{
+				Ogre::RTShader::ShaderGenerator::getSingleton().createShaderBasedTechnique(String(mat), Ogre::MaterialManager::DEFAULT_SCHEME_NAME, Ogre::RTShader::ShaderGenerator::DEFAULT_SCHEME_NAME);
+				Ogre::RTShader::ShaderGenerator::getSingleton().invalidateMaterial(RTShader::ShaderGenerator::DEFAULT_SCHEME_NAME, String(mat));
+			}
 
 			continue;
 		}
@@ -5583,16 +5585,9 @@ void RoRFrameListener::loadClassicTerrain(String terrainfile)
 	BeamFactory::getSingleton().mmirror0 = mirror;
 
 	//dashboard
-	if(SETTINGS.getSetting("Dashboard")=="Yes")
+	// always enabled
 	{
 		dashboard = new Dashboard(mSceneMgr,mWindow);
-	}
-	else
-	{
-		//we must do something to fix the texture mapping
-		MaterialPtr mat = MaterialManager::getSingleton().getByName("renderdash");
-		mat->getTechnique(0)->getPass(0)->getTextureUnitState(0)->setTextureName("virtualdashboard.dds");
-
 	}
 
 
@@ -8137,6 +8132,7 @@ bool RoRFrameListener::getNetQualityChanged()
 
 bool RoRFrameListener::RTSSgenerateShadersForMaterial(Ogre::String curMaterialName, Ogre::String normalTextureName)
 {
+	if (SETTINGS.getSetting("Use RTShader System")!="Yes") return false;
 	bool success;
 
 	// Create the shader based technique of this material.
@@ -8218,6 +8214,7 @@ bool RoRFrameListener::RTSSgenerateShadersForMaterial(Ogre::String curMaterialNa
 
 void RoRFrameListener::RTSSgenerateShaders(Entity* entity, Ogre::String normalTextureName)
 {
+	if (SETTINGS.getSetting("Use RTShader System")!="Yes") return;
 	for (unsigned int i=0; i < entity->getNumSubEntities(); ++i)
 	{
 		SubEntity* curSubEntity = entity->getSubEntity(i);

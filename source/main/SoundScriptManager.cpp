@@ -37,6 +37,7 @@ SoundScriptManager::SoundScriptManager()
 	singleton=this;
 	instance_counter=0;
 	maxDistance=500.0;
+	loadingBase=false;
 	rolloffFactor=1.0;
 	referenceDistance=7.5;
 	for (int i=0; i<SS_MAX_TRIG; i++) free_trigs[i]=0;
@@ -156,7 +157,7 @@ SoundScriptTemplate* SoundScriptManager::createTemplate(String name, String grou
 		return NULL;
 	}
 
-	SoundScriptTemplate *ssi = new SoundScriptTemplate(name, groupname, filename);
+	SoundScriptTemplate *ssi = new SoundScriptTemplate(name, groupname, filename, loadingBase);
 	templates[name] = ssi;
 	return ssi;
 }
@@ -164,16 +165,26 @@ SoundScriptTemplate* SoundScriptManager::createTemplate(String name, String grou
 void SoundScriptManager::unloadResourceGroup(String groupname)
 {
 	//first, search if there is a template name collision
-	for(std::map<Ogre::String, SoundScriptTemplate*>::iterator it = templates.begin(); it!=templates.end();)
+	for(std::map<Ogre::String, SoundScriptTemplate*>::iterator it = templates.begin(); it!=templates.end();it++)
 		if (it->second->groupname == groupname)
-			templates.erase(it++);
-		else
-			++it;
+			it = templates.erase(it);
 }
 
-void SoundScriptManager::clearTemplates()
+void SoundScriptManager::clearNonBaseTemplates()
 {
-	templates.clear();
+	int counter = 0;
+	for(std::map<Ogre::String, SoundScriptTemplate*>::iterator it = templates.begin(); it!=templates.end();it++)
+	{
+		if (it->second && !it->second->baseTemplate)
+		{
+			delete(it->second);
+			it->second=0;
+			it = templates.erase(it);
+			counter++;
+		}
+	}
+	if(counter>0)
+		LogManager::getSingleton().logMessage("SoundScriptManager: removed " + StringConverter::toString(counter) + " non-base templates");
 }
 
 SoundScriptInstance* SoundScriptManager::createInstance(Ogre::String templatename, int truck, Ogre::SceneNode *toAttach)
@@ -293,7 +304,7 @@ void SoundScriptManager::soundEnable(bool state)
 
 //=====================================================================
 
-SoundScriptTemplate::SoundScriptTemplate(String name, String groupname, String filename)
+SoundScriptTemplate::SoundScriptTemplate(String name, String groupname, String filename, bool _baseTemplate)
 {
 	this->name=name;
 	this->groupname=groupname;
@@ -313,6 +324,7 @@ SoundScriptTemplate::SoundScriptTemplate(String name, String groupname, String f
 	gain_multiplier=1;
 	gain_square=0;
 	gain_offset=0;
+	baseTemplate = _baseTemplate;
 }
 
 SoundScriptTemplate::~SoundScriptTemplate()

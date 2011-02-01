@@ -291,7 +291,7 @@ int LuaSystem::unregisterCallBack(lua_State *lua)
 			if(!strncmp(c->c_str(), luafunction, 255))
 			{
 				Ogre::LogManager::getSingleton().logMessage("LUA unregistering callback: "+String(type)+" to "+String(luafunction));
-				framestepCallbacks.erase(c);
+				c = framestepCallbacks.erase(c);
 				return 0;
 			}
 

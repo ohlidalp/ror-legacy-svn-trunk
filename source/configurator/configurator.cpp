@@ -284,15 +284,13 @@ private:
 	wxSlider *sightrange;
 	wxSlider *simpleSlider;
 	wxSlider *simpleSlider2;
-	wxCheckBox *smoke;
 	wxCheckBox *replaymode;
 	wxCheckBox *dtm;
 	wxCheckBox *dcm;
-	wxCheckBox *dust;
-	wxCheckBox *spray;
-	wxCheckBox *cpart;
+	wxCheckBox *particles;
 	wxCheckBox *heathaze;
 	wxCheckBox *hydrax;
+	wxCheckBox *rtshader;
 	wxCheckBox *dismap;
 	wxCheckBox *leds;
 	wxCheckBox *enablexfire;
@@ -300,7 +298,6 @@ private:
 	wxCheckBox *autodl;
 	wxCheckBox *posstor;
 	wxCheckBox *extcam;
-	wxCheckBox *dashboard;
 	wxCheckBox *mirror;
 	wxCheckBox *envmap;
 	wxCheckBox *sunburn;
@@ -1767,8 +1764,6 @@ MyDialog::MyDialog(const wxString& title, MyApp *_app) : wxDialog(NULL, wxID_ANY
 
 	waves=new wxCheckBox(graphicsPanel, -1, _("Enable waves"), wxPoint(x_row1, y+3));
 	waves->SetToolTip(_("Enabling waves adds a lot of fun in boats, but can have a big performance impact on some specific hardwares."));
-	spray=new wxCheckBox(graphicsPanel, -1, _("Water spray"), wxPoint(x_row2, y+3));
-	spray->SetToolTip(_("No effect unless you mess with water, looks pretty good also."));
 	y+=25;
 
 	dText = new wxStaticText(graphicsPanel, -1, _("Vegetation:"), wxPoint(10, y+3));
@@ -1781,22 +1776,15 @@ MyDialog::MyDialog(const wxString& title, MyApp *_app) : wxDialog(NULL, wxID_ANY
 	y+=25;
 
 	dText = new wxStaticText(graphicsPanel, -1, _("Particle systems:"), wxPoint(10, y));
-	dust=new wxCheckBox(graphicsPanel, -1, _("Dust"), wxPoint(x_row1, y));
-	dust->SetToolTip(_("This may hurt framerate a bit on old systems, but it looks pretty good."));
+	particles=new wxCheckBox(graphicsPanel, -1, _("Enable Particle Systems"), wxPoint(x_row1, y));
+	particles->SetToolTip(_("This may hurt framerate a bit on old systems, but it looks pretty good."));
 	heathaze=new wxCheckBox(graphicsPanel, -1, _("HeatHaze"), wxPoint(x_row2, y));
 	heathaze->SetToolTip(_("Heat Haze from engines, major slowdown. (only activate with recent hardware)"));
-	y+=15;
-	smoke=new wxCheckBox(graphicsPanel, -1, _("Engine smoke"), wxPoint(x_row1, y));
-	smoke->SetToolTip(_("Not much impact on speed."));
-	cpart=new wxCheckBox(graphicsPanel, -1, _("Custom Particles"), wxPoint(x_row2, y));
-	cpart->SetToolTip(_("Particles like water cannons or plain trails. Can be over-used in Multiplayer."));
 	y+=25;
 
 	dText = new wxStaticText(graphicsPanel, -1, _("Cockpit options:"), wxPoint(10, y));
 	mirror=new wxCheckBox(graphicsPanel, -1, _("Mirrors"), wxPoint(x_row1, y));
 	mirror->SetToolTip(_("Shows the rear view mirrors in 1st person view. May cause compatibility problems for very old video cards."));
-	dashboard=new wxCheckBox(graphicsPanel, -1, _("Dashboard"), wxPoint(x_row2, y));
-	dashboard->SetToolTip(_("Shows the dynamic dashboard in 1st person view. May cause compatibility problems for very old video cards."));
 	y+=25;
 
 	dText = new wxStaticText(graphicsPanel, -1, _("Visual effects:"), wxPoint(10, y));
@@ -1824,8 +1812,8 @@ MyDialog::MyDialog(const wxString& title, MyApp *_app) : wxDialog(NULL, wxID_ANY
 	screenShotFormat->SetToolTip(_("In what Format should screenshots be saved?"));
 
 	//sounds panel
-	dText = new wxStaticText(soundsPanel, -1, _("Sound source:"), wxPoint(20,28));
-	sound=new wxChoice(soundsPanel, -1, wxPoint(150, 25), wxSize(-1, -1), 0);
+	dText = new wxStaticText(soundsPanel, -1, _("Sound source:"), wxPoint(5,28));
+	sound=new wxChoice(soundsPanel, -1, wxPoint(100, 25), wxSize(350, -1), 0);
 	sound->Append(conv("No sound"));
 	sound->Append(conv("Default"));
 	sound->SetToolTip(_("Select the appropriate sound source.\nLeaving to Default should work most of the time."));
@@ -2012,7 +2000,10 @@ MyDialog::MyDialog(const wxString& title, MyApp *_app) : wxDialog(NULL, wxID_ANY
 	y+=15;
 	hydrax=new wxCheckBox(advancedPanel, -1, _("Hydrax Water System"), wxPoint(320, y));
 	hydrax->SetToolTip(_("Enables the new water rendering system. EXPERIMENTAL. Overrides any water settings."));
-	y+=30;
+	y+=15;
+	rtshader=new wxCheckBox(advancedPanel, -1, _("RT Shader System"), wxPoint(320, y));
+	rtshader->SetToolTip(_("Enables the Runtime Shader generation System. EXPERIMENTAL"));
+	y+=15;
 	dtm=new wxCheckBox(advancedPanel, -1, _("Debug Truck Mass"), wxPoint(320, y));
 	dtm->SetToolTip(_("Prints all node masses to the RoR.log. Only use for truck debugging!"));
 	y+=15;
@@ -2436,17 +2427,13 @@ void MyDialog::SetDefaults()
 	screenShotFormat->SetSelection(0);
 	gearBoxMode->SetSelection(0);
 
-	smoke->SetValue(true);
 	replaymode->SetValue(false);
 	dtm->SetValue(false);
 	dcm->SetValue(false);
 	//wxCheckBox *dust;
-	dust->SetValue(false);
-	//wxCheckBox *spray;
-	spray->SetValue(false);
-	cpart->SetValue(true);
 	heathaze->SetValue(false);
 	hydrax->SetValue(false);
+	rtshader->SetValue(false);
 	dismap->SetValue(false);
 	if(leds) leds->SetValue(false);
 	if(enablexfire) enablexfire->SetValue(true);
@@ -2454,8 +2441,6 @@ void MyDialog::SetDefaults()
 	posstor->SetValue(true);
 	beamdebug->SetValue(false);
 	extcam->SetValue(false);
-	//wxCheckBox *dashboard;
-	dashboard->SetValue(true);
 	//wxCheckBox *mirror;
 	mirror->SetValue(false);
 	envmap->SetValue(false);
@@ -2507,15 +2492,13 @@ void MyDialog::getSettingsControls()
 
 	settings["Water effects"] = conv(water->GetStringSelection());
 	settings["Waves"] = (waves->GetValue()) ? "Yes" : "No";
-	settings["Engine smoke"] = (smoke->GetValue()) ? "Yes" : "No";
 	settings["Replay mode"] = (replaymode->GetValue()) ? "Yes" : "No";
 	settings["Debug Truck Mass"] = (dtm->GetValue()) ? "Yes" : "No";
 	settings["Debug Collisions"] = (dcm->GetValue()) ? "Yes" : "No";
-	settings["Dust"] = (dust->GetValue()) ? "Yes" : "No";
-	settings["Spray"] = (spray->GetValue()) ? "Yes" : "No";
-	settings["Custom Particles"] = (cpart->GetValue()) ? "Yes" : "No";
+	settings["Particles"] = (particles->GetValue()) ? "Yes" : "No";
 	settings["HeatHaze"] = (heathaze->GetValue()) ? "Yes" : "No";
 	settings["Hydrax"] = (hydrax->GetValue()) ? "Yes" : "No";
+	settings["Use RTShader System"] = (rtshader->GetValue()) ? "Yes" : "No";
 	settings["disableOverViewMap"] = (dismap->GetValue()) ? "Yes" : "No";
 	if(leds) { settings["Logitech LEDs"] = (leds->GetValue()) ? "Yes" : "No"; };
 	settings["DebugBeams"] = (beamdebug->GetValue()) ? "Yes" : "No";
@@ -2524,7 +2507,6 @@ void MyDialog::getSettingsControls()
 	settings["Position Storage"] = (posstor->GetValue()) ? "Yes" : "No";
 	settings["GearboxMode"]= conv(gearBoxMode->GetStringSelection());
 	settings["External Camera Mode"] = (extcam->GetValue()) ? "Static" : "Pitching";
-	settings["Dashboard"] = (dashboard->GetValue()) ? "Yes" : "No";
 	settings["Mirrors"] = (mirror->GetValue()) ? "Yes" : "No";
 	settings["Envmap"] = (envmap->GetValue()) ? "Yes" : "No";
 	settings["Sunburn"] = (sunburn->GetValue()) ? "Yes" : "No";
@@ -2600,16 +2582,14 @@ void MyDialog::updateSettingsControls()
 	st = settings["Shadow optimizations"]; if (st.length()>0) shadowOptimizations->SetValue(st=="Yes");
 	st = settings["Water effects"]; if (st.length()>0) water->SetStringSelection(conv(st));
 	st = settings["Waves"]; if (st.length()>0) waves->SetValue(st=="Yes");
-	st = settings["Engine smoke"]; if (st.length()>0) smoke->SetValue(st=="Yes");
 	st = settings["Replay mode"]; if (st.length()>0) replaymode->SetValue(st=="Yes");
 	st = settings["Debug Truck Mass"]; if (st.length()>0) dtm->SetValue(st=="Yes");
 	st = settings["Debug Collisions"]; if (st.length()>0) dcm->SetValue(st=="Yes");
 	st = settings["GearboxMode"]; if (st.length()>0) gearBoxMode->SetStringSelection(conv(st));
-	st = settings["Dust"]; if (st.length()>0) dust->SetValue(st=="Yes");
-	st = settings["Spray"]; if (st.length()>0) spray->SetValue(st=="Yes");
-	st = settings["Custom Particles"]; if (st.length()>0) cpart->SetValue(st=="Yes");
+	st = settings["Particles"]; if (st.length()>0) particles->SetValue(st=="Yes");
 	st = settings["HeatHaze"]; if (st.length()>0) heathaze->SetValue(st=="Yes");
 	st = settings["Hydrax"]; if (st.length()>0) hydrax->SetValue(st=="Yes");
+	st = settings["Use RTShader System"]; if (st.length()>0) rtshader->SetValue(st=="Yes");
 	st = settings["disableOverViewMap"]; if (st.length()>0) dismap->SetValue(st=="Yes");
 	if(leds) { st = settings["Logitech LEDs"]; if (st.length()>0) leds->SetValue(st=="Yes"); };
 	st = settings["External Camera Mode"]; if (st.length()>0) extcam->SetValue(st=="Static");
@@ -2617,7 +2597,6 @@ void MyDialog::updateSettingsControls()
 	st = settings["Position Storage"]; if (st.length()>0) posstor->SetValue(st=="Yes");
 	st = settings["DebugBeams"]; if (st.length()>0) beamdebug->SetValue(st=="Yes");
 	if(enablexfire) { st = settings["XFire"]; if (st.length()>0) enablexfire->SetValue(st=="Yes"); };
-	st = settings["Dashboard"]; if (st.length()>0) dashboard->SetValue(st=="Yes");
 	st = settings["Mirrors"]; if (st.length()>0) mirror->SetValue(st=="Yes");
 	st = settings["Creak Sound"]; if (st.length()>0) creaksound->SetValue(st=="No");
 	st = settings["Envmap"]; if (st.length()>0) envmap->SetValue(st=="Yes");
@@ -3639,6 +3618,7 @@ void MyDialog::OnSimpleSlider2Scroll(wxScrollEvent & event)
 	// these are graphics simple settings
 	// 0 (high perf) - 2 (high quality)
 	heathaze->SetValue(false);
+	rtshader->SetValue(false);
 	switch(val)
 	{
 		case 0:
@@ -3654,13 +3634,9 @@ void MyDialog::OnSimpleSlider2Scroll(wxScrollEvent & event)
 			enableFog->SetValue(true);
 			sightrange->SetValue(20);
 			screenShotFormat->SetSelection(0);
-			smoke->SetValue(false);
-			dust->SetValue(false);
-			spray->SetValue(false);
-			cpart->SetValue(false);
+			particles->SetValue(false);
 			hydrax->SetValue(false);
 			dismap->SetValue(false);
-			dashboard->SetValue(false);
 			mirror->SetValue(false);
 			envmap->SetValue(false);
 			sunburn->SetValue(false);
@@ -3681,13 +3657,9 @@ void MyDialog::OnSimpleSlider2Scroll(wxScrollEvent & event)
 			enableFog->SetValue(true);
 			sightrange->SetValue(60);
 			screenShotFormat->SetSelection(1);
-			smoke->SetValue(true);
-			dust->SetValue(true);
-			spray->SetValue(true);
-			cpart->SetValue(true);
+			particles->SetValue(true);
 			hydrax->SetValue(false);
 			dismap->SetValue(false);
-			dashboard->SetValue(true);
 			mirror->SetValue(true);
 			envmap->SetValue(true);
 			sunburn->SetValue(false);
@@ -3708,13 +3680,9 @@ void MyDialog::OnSimpleSlider2Scroll(wxScrollEvent & event)
 			enableFog->SetValue(false);
 			sightrange->SetValue(130);
 			screenShotFormat->SetSelection(1);
-			smoke->SetValue(true);
-			dust->SetValue(true);
-			spray->SetValue(true);
-			cpart->SetValue(true);
+			particles->SetValue(true);
 			hydrax->SetValue(false);
 			dismap->SetValue(false);
-			dashboard->SetValue(true);
 			mirror->SetValue(true);
 			envmap->SetValue(true);
 			sunburn->SetValue(false);

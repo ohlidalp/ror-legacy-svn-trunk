@@ -43,17 +43,14 @@ DustManager& DustManager::getSingleton(void)
 
 DustManager::DustManager(Ogre::SceneManager *mSceneMgr) : mSceneMgr(mSceneMgr), mEnabled(false)
 {
-	mEnabled = (SETTINGS.getSetting("Dust") == "Yes");
+	mEnabled = (SETTINGS.getSetting("Particles") == "Yes");
 
 	
-	if (SETTINGS.getSetting("Dust")=="Yes")
+	if (mEnabled)
 	{
 		dustpools["dust"]   = new DustPool((char *)"tracks/Dust", 20, mSceneMgr->getRootSceneNode(), mSceneMgr, w);
 		dustpools["clump"]  = new DustPool((char *)"tracks/Clump", 20, mSceneMgr->getRootSceneNode(), mSceneMgr, w);
 		dustpools["sparks"] = new DustPool((char *)"tracks/Sparks", 10, mSceneMgr->getRootSceneNode(), mSceneMgr, w);
-	}
-	if (SETTINGS.getSetting("Spray")=="Yes")
-	{
 		dustpools["drip"]   = new DustPool((char *)"tracks/Drip", 50, mSceneMgr->getRootSceneNode(), mSceneMgr, w);
 		dustpools["splash"] = new DustPool((char *)"tracks/Splash", 20, mSceneMgr->getRootSceneNode(), mSceneMgr, w);
 		dustpools["ripple"] = new DustPool((char *)"tracks/Ripple", 20, mSceneMgr->getRootSceneNode(), mSceneMgr, w);

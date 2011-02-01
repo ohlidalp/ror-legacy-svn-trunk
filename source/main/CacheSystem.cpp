@@ -28,6 +28,7 @@ along with Rigs of Rods.  If not, see <http://www.gnu.org/licenses/>.
 #include "rormemory.h"
 #include "SoundScriptManager.h"
 #include "BeamData.h" // for authorinfo_t
+#include "ScopeLog.h"
 
 #ifdef USE_MYGUI 
 #include "LoadingWindow.h"
@@ -139,7 +140,7 @@ void CacheSystem::unloadUselessResourceGroups()
 			{
 #ifdef USE_OPENAL
 				SoundScriptManager *ssm = SoundScriptManager::getSingleton();
-				if(ssm) ssm->clearTemplates();
+				if(ssm) ssm->clearNonBaseTemplates();
 #endif //OPENAL
 				// we cannot fix this problem below Ogre version 1.7
 				//ParticleSystemManager::getSingleton().removeTemplatesByResourceGroup(*it);
@@ -2663,6 +2664,7 @@ bool CacheSystem::checkResourceLoaded(Cache_Entry t)
 		return true;
 	if(t.type == "FileSystem" || t.type == "Zip")
 	{
+		//ScopeLog log("cache_"+t.fname);
 		try
 		{
 			rgcountera++;
@@ -2731,7 +2733,7 @@ void CacheSystem::loadSingleDirectory(String dirname, String group, bool already
 
 #ifdef USE_OPENAL
 			SoundScriptManager *ssm = SoundScriptManager::getSingleton();
-			if(ssm) ssm->clearTemplates();
+			if(ssm) ssm->clearNonBaseTemplates();
 #endif //OPENAL
 			//ParticleSystemManager::getSingleton().removeTemplatesByResourceGroup(rgname);
 			ResourceGroupManager::getSingleton().clearResourceGroup(rgname);
@@ -2758,6 +2760,15 @@ void CacheSystem::loadSingleDirectory(String dirname, String group, bool already
 
 void CacheSystem::loadSingleZip(String zippath, int cfactor, bool unload, bool ownGroup)
 {
+
+	/*
+	// good for debugging:
+	String outfn;
+	String outpath;
+	StringUtil::splitFilename(zippath, outfn, outpath);
+	ScopeLog log("cache_loadzip_"+outfn);
+	*/
+
 	String realzipPath = getRealPath(zippath);
 	char hash[255];
 	memset(hash, 0, 255);
@@ -2801,7 +2812,7 @@ void CacheSystem::loadSingleZip(String zippath, int cfactor, bool unload, bool o
 			LogManager::getSingleton().logMessage("Unloading " + realzipPath);
 #ifdef USE_OPENAL
 			SoundScriptManager *ssm = SoundScriptManager::getSingleton();
-			if(ssm) ssm->clearTemplates();
+			if(ssm) ssm->clearNonBaseTemplates();
 #endif //OPENAL
 			//ParticleSystemManager::getSingleton().removeTemplatesByResourceGroup(rgname);
 			rgm.removeResourceLocation(realzipPath, rgname);
