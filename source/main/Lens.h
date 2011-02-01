@@ -10,9 +10,9 @@
 
 #include "OgrePrerequisites.h"
 #include "OgreMath.h"
-#include "rormemory.h"
 
-class Lens : public MemoryAllocatedObject
+
+class Lens
 {
 public:
   Lens(void) {};

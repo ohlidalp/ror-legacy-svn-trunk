@@ -35,7 +35,7 @@ typedef struct _ObjectType
 	bool classic;
 } ObjectType_t;
 
-class Editor : public MemoryAllocatedObject
+class Editor
 {
 protected:
 	SceneManager *mSceneMgr;

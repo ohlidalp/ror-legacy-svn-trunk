@@ -25,11 +25,11 @@ along with Rigs of Rods.  If not, see <http://www.gnu.org/licenses/>.
 #include <windows.h>
 #endif
 #include <math.h>
-#include "rormemory.h"
+
 
 #include <stdio.h>
 using namespace Ogre;
-class Airfoil : public MemoryAllocatedObject
+class Airfoil
 {
 private:
 	float cl[3601];

@@ -85,9 +85,9 @@ Vector3 Buoyance::computePressureForceSub(Vector3 a, Vector3 b, Vector3 c, Vecto
 				{
 					Vector3 fxdir=fxl*normal;
 					if (fxdir.y<0) fxdir.y=-fxdir.y;
-					if (w->getHeightWaves(a)-a.y<0.1) splashp->alloc(a, fxdir);
-					else if (w->getHeightWaves(b)-b.y<0.1) splashp->alloc(b, fxdir);
-					else if (w->getHeightWaves(c)-c.y<0.1) splashp->alloc(c, fxdir);
+					if (w->getHeightWaves(a)-a.y<0.1) splashp->malloc(a, fxdir);
+					else if (w->getHeightWaves(b)-b.y<0.1) splashp->malloc(b, fxdir);
+					else if (w->getHeightWaves(c)-c.y<0.1) splashp->malloc(c, fxdir);
 				}
 			}
 		}

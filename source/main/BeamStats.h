@@ -24,7 +24,7 @@ along with Rigs of Rods.  If not, see <http://www.gnu.org/licenses/>.
 
 #include <Ogre.h>
 #include <map>
-#include "rormemory.h"
+
 
 class Beam;
 class PrecisionTimer;
@@ -110,7 +110,7 @@ enum {
 
 
 #define BES BeamEngineStats::getInstance()
-class BeamThreadStats : public MemoryAllocatedObject
+class BeamThreadStats
 {
 public:
 	BeamThreadStats(int type);
@@ -134,7 +134,7 @@ private:
 	int stype;
 };
 
-class BeamEngineStats : public MemoryAllocatedObject
+class BeamEngineStats
 {
 public:
 	bool updateGUI(float dt, int current_truck, Beam **trucks);

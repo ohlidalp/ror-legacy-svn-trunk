@@ -31,7 +31,7 @@ along with Rigs of Rods.  If not, see <http://www.gnu.org/licenses/>.
 
 #include "water.h"
 #include "Ogre.h"
-#include "rormemory.h"
+
 
 //#include "DustPool.h"
 using namespace Ogre;
@@ -50,7 +50,7 @@ typedef struct
 	float direction;
 } wavetrain_t;
 
-class WaterOld : public Water, public MemoryAllocatedObject
+class WaterOld : public Water
 {
 private:
 	Camera *mReflectCam;

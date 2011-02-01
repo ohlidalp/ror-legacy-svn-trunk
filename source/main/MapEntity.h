@@ -29,8 +29,7 @@ class MapControl;
 
 ATTRIBUTE_CLASS_LAYOUT(MapEntity, "MapEntity.layout");
 class MapEntity :
-	public wraps::BaseLayout,
-	public MemoryAllocatedObject
+	public wraps::BaseLayout
 {
 public:
 	MapEntity(MapControl *ctrl, Ogre::String type, MyGUI::StaticImagePtr parent);

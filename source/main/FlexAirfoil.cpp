@@ -20,7 +20,7 @@ along with Rigs of Rods.  If not, see <http://www.gnu.org/licenses/>.
 #include "FlexAirfoil.h"
 #include "ResourceBuffer.h"
 #include "approxmath.h"
-#include "rormemory.h"
+
 
 float refairfoilpos[90]={
 		0.00, 0.50, 0.00,
@@ -131,10 +131,10 @@ FlexAirfoil::FlexAirfoil(SceneManager *manager, char* name, node_t *nds, int pnf
     /// Define the vertices
     nVertices = 24*2+4+2;
     vbufCount = (2*3+2)*nVertices;
-	vertices=(float*)ror_malloc(vbufCount*sizeof(float));
+	vertices=(float*)malloc(vbufCount*sizeof(float));
 	//shadow
-	shadownorvertices=(float*)ror_malloc(nVertices*(3+2)*sizeof(float));
-	shadowposvertices=(float*)ror_malloc(nVertices*3*2*sizeof(float));
+	shadownorvertices=(float*)malloc(nVertices*(3+2)*sizeof(float));
+	shadowposvertices=(float*)malloc(nVertices*3*2*sizeof(float));
 
 	//textures coordinates
 	covertices[0].texcoord=texlf;
@@ -183,10 +183,10 @@ FlexAirfoil::FlexAirfoil(SceneManager *manager, char* name, node_t *nds, int pnf
     faceibufCount = 3*20;
 	cupibufCount=3*2;
 	cdnibufCount=3*2;
-    facefaces=(unsigned short*)ror_malloc(faceibufCount*sizeof(unsigned short));
-    bandfaces=(unsigned short*)ror_malloc(bandibufCount*sizeof(unsigned short));
-    cupfaces=(unsigned short*)ror_malloc(cupibufCount*sizeof(unsigned short));
-    cdnfaces=(unsigned short*)ror_malloc(cdnibufCount*sizeof(unsigned short));
+    facefaces=(unsigned short*)malloc(faceibufCount*sizeof(unsigned short));
+    bandfaces=(unsigned short*)malloc(bandibufCount*sizeof(unsigned short));
+    cupfaces=(unsigned short*)malloc(cupibufCount*sizeof(unsigned short));
+    cdnfaces=(unsigned short*)malloc(cdnibufCount*sizeof(unsigned short));
 	
 	//attack
 	bandfaces[0]=0;

@@ -33,7 +33,7 @@ along with Rigs of Rods.  If not, see <http://www.gnu.org/licenses/>.
 
 class Collisions;
 
-class GUI_Multiplayer : public Ogre::Singleton< GUI_Multiplayer >, public MemoryAllocatedObject
+class GUI_Multiplayer : public Ogre::Singleton< GUI_Multiplayer >
 {
 public:
 	GUI_Multiplayer(Network *net, Ogre::Camera *mCamera);

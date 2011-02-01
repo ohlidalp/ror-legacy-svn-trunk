@@ -26,10 +26,10 @@ along with Rigs of Rods.  If not, see <http://www.gnu.org/licenses/>.
 #include "OgreSingleton.h"
 #include "OgrePrerequisites.h"
 #include "RoRPrerequisites.h"
-#include "rormemory.h"
 
 
-class DustManager : public Ogre::Singleton< DustManager >, public MemoryAllocatedObject
+
+class DustManager : public Ogre::Singleton< DustManager >
 {
 public:
 	DustManager(Ogre::SceneManager *mSceneMgr);

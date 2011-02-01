@@ -42,7 +42,7 @@ along with Rigs of Rods.  If not, see <http://www.gnu.org/licenses/>.
 
 #include "CharacterFactory.h"
 #include "BeamFactory.h"
-#include "rormemory.h"
+
 #include "PlayerColours.h"
 #include "OverlayWrapper.h"
 #include "ShadowManager.h"

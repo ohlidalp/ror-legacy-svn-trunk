@@ -10,7 +10,7 @@
 #include "Ogre.h"
 #include "OgreFontManager.h"
 #include "MovableText.h"
-#include "rormemory.h"
+
 
 using namespace Ogre;
 
@@ -215,7 +215,7 @@ void MovableText::_setupGeometry()
 
 	size_t charlen = mCaption.size();
 	//Real *pPCBuff = static_cast<Real*>(ptbuf->lock(HardwareBuffer::HBL_NORMAL));
-	Real *pPCBuff=(Real*)ror_malloc(ptbuf->getSizeInBytes());
+	Real *pPCBuff=(Real*)malloc(ptbuf->getSizeInBytes());
 	Real *oPCBuff=pPCBuff;
 
 	float largestWidth = 0;
@@ -430,7 +430,7 @@ void MovableText::_setupGeometry()
 	// Unlock vertex buffer
 	//ptbuf->unlock();
 	ptbuf->writeData(0, ptbuf->getSizeInBytes(), oPCBuff, true);
-	ror_free(oPCBuff);
+	free(oPCBuff);
 
 
 	// update AABB/Sphere radius
@@ -453,13 +453,13 @@ void MovableText::_updateColors(void)
 	Root::getSingleton().convertColourValue(mColor, &color);
 	HardwareVertexBufferSharedPtr vbuf = mRenderOp.vertexData->vertexBufferBinding->getBuffer(COLOUR_BINDING);
 	//RGBA *pDest = static_cast<RGBA*>(vbuf->lock(HardwareBuffer::HBL_NORMAL));
-	RGBA* pDest=(RGBA*)ror_malloc(vbuf->getSizeInBytes());
+	RGBA* pDest=(RGBA*)malloc(vbuf->getSizeInBytes());
 	RGBA* oDest=pDest;
 	for (uint i = 0; i < mRenderOp.vertexData->vertexCount; ++i)
 		*pDest++ = color;
 	//vbuf->unlock();
 	vbuf->writeData(0, vbuf->getSizeInBytes(), oDest, true);
-	ror_free(oDest);
+	free(oDest);
 	mUpdateColors = false;
 }
 

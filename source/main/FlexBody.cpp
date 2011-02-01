@@ -20,7 +20,7 @@ along with Rigs of Rods.  If not, see <http://www.gnu.org/licenses/>.
 #include "FlexBody.h"
 #include "ResourceBuffer.h"
 #include "Settings.h"
-#include "rormemory.h"
+
 #include "skin.h"
 
 FlexBody::FlexBody(SceneManager *manager, node_t *nds, int numnds, char* meshname, char* uname, int ref, int nx, int ny, Vector3 offset, Quaternion rot, char* setdef, MaterialFunctionMapper *mfm, Skin *usedSkin)
@@ -256,8 +256,8 @@ FlexBody::FlexBody(SceneManager *manager, node_t *nds, int numnds, char* meshnam
 	//getting buffers bindings and data
 	if (numsubmeshbuf>0)
 	{
-		submeshnums=(int*)ror_malloc(sizeof(int)*numsubmeshbuf);
-		subnodecounts=(int*)ror_malloc(sizeof(int)*numsubmeshbuf);
+		submeshnums=(int*)malloc(sizeof(int)*numsubmeshbuf);
+		subnodecounts=(int*)malloc(sizeof(int)*numsubmeshbuf);
 		//C++ is just dumb! 
 		//How can they manage to break such a fundamental programming mechanisms?
 		//They invented the un-initializable and un-attribuable objects you can't allocate dynamically!
@@ -268,13 +268,13 @@ FlexBody::FlexBody(SceneManager *manager, node_t *nds, int numnds, char* meshnam
 		//subnbufs[0]=HardwareVertexBufferSharedPtr(); //crash!
 		if (numsubmeshbuf>=16) 	LogManager::getSingleton().logMessage("FLEXBODY You have more than 16 submeshes! Blame Bjarne for this crash.");
 	}
-	vertices=(Vector3*)ror_malloc(sizeof(Vector3)*vertex_count);
-	dstpos=(Vector3*)ror_malloc(sizeof(Vector3)*vertex_count);
-	srcnormals=(Vector3*)ror_malloc(sizeof(Vector3)*vertex_count);
-	dstnormals=(Vector3*)ror_malloc(sizeof(Vector3)*vertex_count);
+	vertices=(Vector3*)malloc(sizeof(Vector3)*vertex_count);
+	dstpos=(Vector3*)malloc(sizeof(Vector3)*vertex_count);
+	srcnormals=(Vector3*)malloc(sizeof(Vector3)*vertex_count);
+	dstnormals=(Vector3*)malloc(sizeof(Vector3)*vertex_count);
 	if (haveblend) 
 	{
-		srccolors=(ARGB*)ror_malloc(sizeof(ARGB)*vertex_count);
+		srccolors=(ARGB*)malloc(sizeof(ARGB)*vertex_count);
 		for (int i=0; i<(int)vertex_count; i++) srccolors[i]=0x00000000;
 	}
 	Vector3* vpt=vertices;
@@ -331,7 +331,7 @@ FlexBody::FlexBody(SceneManager *manager, node_t *nds, int numnds, char* meshnam
 		vertices[i]=(orientation*vertices[i])+position;
 	}
 
-	locs=(Locator_t*)ror_malloc(sizeof(Locator_t)*vertex_count);
+	locs=(Locator_t*)malloc(sizeof(Locator_t)*vertex_count);
 	for (int i=0; i<(int)vertex_count; i++)
 	{
 		//search nearest node as the local origin

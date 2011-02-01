@@ -30,7 +30,7 @@ class Aeroengine;
 using namespace Ogre;
 
 
-class FlexAirfoil : public MemoryAllocatedObject
+class FlexAirfoil
 {
 private:
 	float airfoilpos[90];

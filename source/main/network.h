@@ -34,7 +34,7 @@ using namespace Ogre;
 
 class RoRFrameListener;
 
-class Network : public MemoryAllocatedObject
+class Network
 {
 private:
 	SWInetSocket socket;

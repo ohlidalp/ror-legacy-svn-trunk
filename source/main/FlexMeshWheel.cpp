@@ -19,7 +19,7 @@ along with Rigs of Rods.  If not, see <http://www.gnu.org/licenses/>.
 */
 #include "FlexMeshWheel.h"
 #include "ResourceBuffer.h"
-#include "rormemory.h"
+
 #include "skin.h"
 
 FlexMeshWheel::FlexMeshWheel(SceneManager *manager, char* name, node_t *nds, int n1, int n2, int nstart, int nrays, char* meshname, char* texband, float rimradius, bool rimreverse, MaterialFunctionMapper *mfm, Skin *usedSkin)
@@ -55,10 +55,10 @@ FlexMeshWheel::FlexMeshWheel(SceneManager *manager, char* name, node_t *nds, int
 	/// Define the vertices 
 	nVertices = 6*(nrays+1);
 	vbufCount = (2*3+2)*nVertices;
-	vertices=(float*)ror_malloc(vbufCount*sizeof(float));
+	vertices=(float*)malloc(vbufCount*sizeof(float));
 	//shadow
-	shadownorvertices=(float*)ror_malloc(nVertices*(3+2)*sizeof(float));
-	shadowposvertices=(float*)ror_malloc(nVertices*3*2*sizeof(float));
+	shadownorvertices=(float*)malloc(nVertices*(3+2)*sizeof(float));
+	shadowposvertices=(float*)malloc(nVertices*3*2*sizeof(float));
 
 	int i;
 	//textures coordinates
@@ -75,7 +75,7 @@ FlexMeshWheel::FlexMeshWheel(SceneManager *manager, char* name, node_t *nds, int
 	/// Define triangles
 	/// The values in this table refer to vertices in the above table
 	ibufCount = 3*10*nrays;
-	faces=(unsigned short*)ror_malloc(ibufCount*sizeof(unsigned short));
+	faces=(unsigned short*)malloc(ibufCount*sizeof(unsigned short));
 	for (i=0; i<nrays; i++)
 	{
 		faces[3*(i*10  )]=i*6;   faces[3*(i*10  )+1]=i*6+1;     faces[3*(i*10  )+2]=(i+1)*6;

@@ -25,7 +25,7 @@ along with Rigs of Rods.  If not, see <http://www.gnu.org/licenses/>.
 #include "skinmanager.h"
 #include "Settings.h"
 #include "language.h"
-#include "rormemory.h"
+
 #include "SoundScriptManager.h"
 #include "BeamData.h" // for authorinfo_t
 #include "ScopeLog.h"
@@ -2235,7 +2235,7 @@ void CacheSystem::generateFileCache(Cache_Entry &entry, Ogre::String directory)
 		{
 			DataStreamPtr ds=ResourceGroupManager::getSingleton().openResource(minifn, group);
 			fsize = ds->size();
-			buffer = (char*)ror_malloc(fsize);
+			buffer = (char*)malloc(fsize);
 			memset(buffer, 0, fsize);
 			size_t read = ds->read(buffer, fsize);
 			if(read!=fsize)
@@ -2251,7 +2251,7 @@ void CacheSystem::generateFileCache(Cache_Entry &entry, Ogre::String directory)
 			written=true;
 		}
 		if(buffer)
-			ror_free(buffer);
+			free(buffer);
 		if(written)
 		{
 			//setProgress(counter/(float)size, "Caching Mini Files ...");

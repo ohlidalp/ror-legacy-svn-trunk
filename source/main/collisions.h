@@ -104,7 +104,7 @@ typedef struct _hash
 
 class Landusemap;
 
-class Collisions : public MemoryAllocatedObject
+class Collisions
 {
 private:
 	//collision boxes pool

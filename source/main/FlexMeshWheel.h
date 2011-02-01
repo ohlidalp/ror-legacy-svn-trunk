@@ -33,7 +33,7 @@ using namespace Ogre;
 
 //class Beam;
 
-class FlexMeshWheel: public Flexable, public MemoryAllocatedObject
+class FlexMeshWheel: public Flexable
 {
 private:
 typedef struct

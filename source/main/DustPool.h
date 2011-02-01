@@ -61,7 +61,7 @@ public:
 
 	void setVisible(bool s);
 	//Dust
-	void alloc(Vector3 pos, Vector3 vel, ColourValue col=ColourValue(0.83, 0.71, 0.64, 1.0));
+	void malloc(Vector3 pos, Vector3 vel, ColourValue col=ColourValue(0.83, 0.71, 0.64, 1.0));
 	//clumps
 	void allocClump(Vector3 pos, Vector3 vel, ColourValue col=ColourValue(0.83, 0.71, 0.64, 1.0));
 	//Rubber smoke

@@ -11,14 +11,13 @@
 #include "OgreRenderTargetListener.h"
 #include "OgreFrameListener.h"
 #include "OgreRenderQueue.h"
-#include "rormemory.h"
+
 
 class Lens;
 
 class DepthOfFieldEffect : public Ogre::CompositorInstance::Listener,
 						   public Ogre::RenderTargetListener,
-						   public Ogre::RenderQueue::RenderableListener,
-						   public MemoryAllocatedObject
+						   public Ogre::RenderQueue::RenderableListener
 {
 public:
 	DepthOfFieldEffect(Ogre::Viewport* viewport);
@@ -74,7 +73,7 @@ private:
 
 };
 
-class DOFManager : public Ogre::FrameListener, public MemoryAllocatedObject
+class DOFManager : public Ogre::FrameListener
 {
 public:
 	DOFManager(Ogre::Root *mRoot, Ogre::Camera* camera, Ogre::SceneManager* sceneManager);

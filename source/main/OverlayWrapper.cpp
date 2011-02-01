@@ -612,7 +612,6 @@ void OverlayWrapper::updateStats(bool detailed)
 		if(MaterialManager::getSingleton().getMemoryUsage() > 1)
 			memoryText += "Materials: " + formatBytes(MaterialManager::getSingleton().getMemoryUsage()) + " / " + formatBytes(MaterialManager::getSingleton().getMemoryBudget()) + "\n";
 		memoryText += "\n";
-		memoryText += "RoR: " + formatBytes(MemoryWrapper::getMemoryAllocated()) + "\n";
 
 		OverlayElement* memoryDbg = OverlayManager::getSingleton().getOverlayElement("Core/MemoryText");
 		memoryDbg->setCaption(memoryText);

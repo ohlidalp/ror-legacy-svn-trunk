@@ -27,7 +27,7 @@ along with Rigs of Rods.  If not, see <http://www.gnu.org/licenses/>.
 #include <map>
 #include "sha1.h"
 #include "RoRPrerequisites.h"
-#include "rormemory.h"
+
 
 #define CACHE_FILE "mods.cache"
 #define CACHE_FILE_FORMAT "6"
@@ -190,7 +190,7 @@ public:
 
 };
 
-class CacheSystem : public MemoryAllocatedObject
+class CacheSystem
 {
 public:
 	static CacheSystem &Instance();

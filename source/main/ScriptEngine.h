@@ -30,7 +30,7 @@ along with Rigs of Rods.  If not, see <http://www.gnu.org/licenses/>.
 #include <string>
 #include "angelscript.h"
 #include "Ogre.h"
-#include "rormemory.h"
+
 
 #include "scriptdictionary/scriptdictionary.h"
 
@@ -183,7 +183,7 @@ protected:
 /**
  *  @brief Proxy class that can be called by script functions
  */
-class GameScript : public MemoryAllocatedObject
+class GameScript
 {
 protected:
 	ScriptEngine *mse;              //!< local script engine pointer, used as proxy mostly

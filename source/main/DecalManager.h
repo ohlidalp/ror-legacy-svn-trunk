@@ -26,9 +26,9 @@ along with Rigs of Rods.  If not, see <http://www.gnu.org/licenses/>.
 #include <math.h>
 #include <OgrePrerequisites.h>
 
-#include "rormemory.h"
 
-class DecalSpline : public MemoryAllocatedObject
+
+class DecalSpline
 {
 private:
 	Ogre::SceneManager *mSceneMgr;
@@ -45,7 +45,7 @@ public:
 	int showDebugLine(bool enabled);
 };
 
-class DecalManager : public MemoryAllocatedObject
+class DecalManager
 {
 private:
 	Ogre::SceneManager *mSceneMgr;

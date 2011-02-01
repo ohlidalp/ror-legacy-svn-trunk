@@ -37,10 +37,10 @@ along with Rigs of Rods.  If not, see <http://www.gnu.org/licenses/>.
 
 #include "Ogre.h"
 #include "water.h"
-#include "rormemory.h"
+
 using namespace Ogre;
 
-class HydraxWater : public Water, public MemoryAllocatedObject
+class HydraxWater : public Water
 {
 protected:
 	Hydrax::Hydrax *mHydrax;

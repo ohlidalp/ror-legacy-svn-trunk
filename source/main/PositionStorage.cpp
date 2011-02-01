@@ -19,20 +19,20 @@ along with Rigs of Rods.  If not, see <http://www.gnu.org/licenses/>.
 */
 #include "PositionStorage.h"
 #include "Ogre.h"
-#include "rormemory.h"
+
 
 using namespace Ogre;
 
 PositionStorage::PositionStorage(int _numNodes, int _numStorage) : numNodes(_numNodes), numStorage(_numStorage)
 {
-	nodes = (Vector3*)ror_calloc(numNodes * numStorage, sizeof(Vector3));
-	usage = (bool*)ror_calloc(numStorage, sizeof(bool));
+	nodes = (Vector3*)calloc(numNodes * numStorage, sizeof(Vector3));
+	usage = (bool*)calloc(numStorage, sizeof(bool));
 }
 
 PositionStorage::~PositionStorage()
 {
-	if(nodes) ror_free(nodes);
-	if(usage) ror_free(usage);
+	if(nodes) free(nodes);
+	if(usage) free(usage);
 }
 
 Vector3 *PositionStorage::getStorage(int indexNum)

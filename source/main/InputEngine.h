@@ -29,7 +29,7 @@ freely, subject to the following restrictions:
 #include "OISInputManager.h"
 #include "OISMouse.h"
 #include "OISKeyboard.h"
-#include "rormemory.h"
+
 #include "OISJoyStick.h"
 #include "OISForceFeedback.h"
 //#include <OgreFrameListener.h>
@@ -37,7 +37,7 @@ freely, subject to the following restrictions:
 #include <OgrePrerequisites.h>
 #include <OgreUTFString.h>
 #include <map>
-#include "rormemory.h"
+
 
 #ifdef USE_OIS_G27
 namespace OIS
@@ -417,12 +417,7 @@ typedef struct
 class InputEngine : 
 	public OIS::MouseListener, 
 	public OIS::KeyListener, 
-#ifndef NOOGRE
-	public OIS::JoyStickListener,
-	public MemoryAllocatedObject
-#else
 	public OIS::JoyStickListener
-#endif
 {
 public:
 	static InputEngine & Instance();

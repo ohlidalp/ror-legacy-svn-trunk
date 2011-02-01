@@ -22,7 +22,7 @@ along with Rigs of Rods.  If not, see <http://www.gnu.org/licenses/>.
 
 #include <OgrePrerequisites.h>
 #include <OgreVector3.h>
-#include "rormemory.h"
+
 
 #include "OgreTerrain.h"
 #include "OgreTerrainGroup.h"
@@ -50,7 +50,7 @@ public:
 };
 
 // new terrain height finder. For the new terrain from Ogre 1.7
-class NTHeightFinder : public HeightFinder, public MemoryAllocatedObject
+class NTHeightFinder : public HeightFinder
 {
 protected:
 	Ogre::TerrainGroup *mTerrainGroup;
@@ -71,7 +71,7 @@ public:
 };
 
 // new terrain height finder adapted to Ogitor scene loading
-class OgitorSceneHeightFinder : public HeightFinder, public MemoryAllocatedObject
+class OgitorSceneHeightFinder : public HeightFinder
 {
 protected:
 	DotSceneLoader *mLoader;
@@ -97,7 +97,7 @@ public:
 /**
  * Heightfinder for the standart Ogre Terrain Mnager
  */
-class TSMHeightFinder : public HeightFinder, public MemoryAllocatedObject
+class TSMHeightFinder : public HeightFinder
 {
 protected:
 	Ogre::Vector3 scale;

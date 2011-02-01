@@ -25,7 +25,7 @@ along with Rigs of Rods.  If not, see <http://www.gnu.org/licenses/>.
 #include <OgreVector3.h>
 #include "Streamable.h"
 #include "MovableText.h"
-#include "rormemory.h"
+
 
 class Water;
 class Beam;
@@ -37,7 +37,7 @@ class MapEntity;
 
 enum {CHARCMD_POSITION, CHARCMD_ATTACH};
 
-class Character : public Streamable, public MemoryAllocatedObject
+class Character : public Streamable
 {
 	friend class CharacterFactory;
 	friend class Network;

@@ -27,7 +27,7 @@ along with Rigs of Rods.  If not, see <http://www.gnu.org/licenses/>.
 #include "OgreScriptLoader.h"
 #include "OgreResourceGroupManager.h"
 #include "SoundManager.h"
-#include "rormemory.h"
+
 
 #define MAX_SOUNDS_PER_SCRIPT 16
 #define MAX_INSTANCES_PER_GROUP 256
@@ -118,7 +118,7 @@ along with Rigs of Rods.  If not, see <http://www.gnu.org/licenses/>.
 
 using namespace Ogre;
 
-class SoundScriptTemplate : public MemoryAllocatedObject
+class SoundScriptTemplate
 {
 public:
 	SoundScriptTemplate(String name, String groupname, String filename, bool baseTemplate);
@@ -152,7 +152,7 @@ public:
 	bool baseTemplate;
 };
 
-class SoundScriptInstance : public MemoryAllocatedObject
+class SoundScriptInstance
 {
 public:
 	SoundScriptInstance(int truck, SoundScriptTemplate* templ, SoundManager* sm, String instancename);
@@ -176,7 +176,7 @@ private:
 	float pitchgain_cutoff(float sourcepitch, float targetpitch);
 };
 
-class SoundScriptManager: public ScriptLoader, public MemoryAllocatedObject
+class SoundScriptManager: public ScriptLoader
 {
 public:
 	SoundScriptManager();

@@ -32,7 +32,7 @@ using namespace Ogre;
 
 //class Beam;
 
-class FlexBody : public MemoryAllocatedObject
+class FlexBody
 {
 private:
 

@@ -25,7 +25,7 @@ along with Rigs of Rods.  If not, see <http://www.gnu.org/licenses/>.
 using namespace Ogre;
 using namespace std;
 #include "Beam.h"
-#include "rormemory.h"
+
 
 typedef struct _pointid {
 	int nodeid;
@@ -46,7 +46,7 @@ typedef struct _kdnode {
 	int begin;
 } kdnode_t;
 
-class PointColDetector : public MemoryAllocatedObject
+class PointColDetector
 {
 public:
 	std::vector< Vector3 > *object_list;

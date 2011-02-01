@@ -22,7 +22,7 @@ along with Rigs of Rods.  If not, see <http://www.gnu.org/licenses/>.
 #include "OgreHardwarePixelBuffer.h"
 #include "OgreTexture.h"
 #include "OgreFont.h"
-#include "rormemory.h"
+
 #include "OgreTextureManager.h"
 #include "OgreMaterial.h"
 #include "OgreTechnique.h"
@@ -69,7 +69,7 @@ void WriteToTexture(const String &str, TexturePtr destTexture, Image::Box destRe
         
 		// create a buffer
 		size_t nBuffSize = fontBuffer->getSizeInBytes();
-		unsigned char* buffer = (unsigned char*)ror_calloc(nBuffSize, sizeof(unsigned char)); 
+		unsigned char* buffer = (unsigned char*)calloc(nBuffSize, sizeof(unsigned char)); 
         
 		// create pixel box using the copy of the buffer
 		PixelBox fontPb(fontBuffer->getWidth(), fontBuffer->getHeight(),fontBuffer->getDepth(), fontBuffer->getFormat(), buffer);          
@@ -214,5 +214,5 @@ stop:
 	destBuffer->unlock();
 	
 		// Free the memory allocated for the buffer
-		ror_free(buffer); buffer = 0;
+		free(buffer); buffer = 0;
 }
