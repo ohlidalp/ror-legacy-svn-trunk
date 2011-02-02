@@ -164,6 +164,7 @@ void SelectorWindow::eventMouseButtonClickCancelButton(MyGUI::WidgetPtr _sender)
 {
 	mSelectedTruck = nullptr;
 	mSelectionDone = true;
+	hide();
 }
 
 void SelectorWindow::eventComboChangePositionTypeComboBox(MyGUI::ComboBoxPtr _sender, size_t _index)

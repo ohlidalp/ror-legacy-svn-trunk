@@ -94,7 +94,7 @@ private:
 	Ogre::MeshPtr msh;
 
 public:
-	FlexBody(SceneManager *manager, node_t *nds, int numnodes, char* meshname, char* uname, int ref, int nx, int ny, Vector3 offset, Quaternion rot, char* setdef, MaterialFunctionMapper *mfm, Skin *usedSkin);
+	FlexBody(SceneManager *manager, node_t *nds, int numnodes, char* meshname, char* uname, int ref, int nx, int ny, Vector3 offset, Quaternion rot, char* setdef, MaterialFunctionMapper *mfm, Skin *usedSkin, bool forceNoShadows);
 
 /*	void getMeshInformation(Mesh* mesh,size_t &vertex_count,Vector3* &vertices,
 											  size_t &index_count, unsigned* &indices,
@@ -110,6 +110,10 @@ public:
 	void updateBlend();
 	void writeBlend();
 	SceneNode *getSceneNode() { return snode; };
+
+	int cameramode;
+	bool enabled;
+	void setEnabled(bool e);
 };
 
 

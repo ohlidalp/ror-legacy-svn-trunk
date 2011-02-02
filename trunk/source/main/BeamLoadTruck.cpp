@@ -80,6 +80,7 @@ int Beam::loadTruck(const char* fname, SceneManager *manager, SceneNode *parent,
 	// some temp vars used
 	Real inertia_startDelay=-1, inertia_stopDelay=-1;
 	char inertia_default_startFunction[50]="", inertia_default_stopFunction[50]="";
+	int shadowmode = 1;
 
 	while (!ds->eof())
 	{
@@ -284,12 +285,46 @@ int Beam::loadTruck(const char* fname, SceneManager *manager, SceneNode *parent,
 		if(!strcmp("slidenode_connect_instantly", line))
 			slideNodesConnectInstantly=true;
 
-		if (!strncmp("disable_shadows", line, 15))
+		if (!strncmp("set_shadows", line, 11))
 		{
+			int mode;
+			int result = sscanf(line,"set_shadows %i", &mode);
+			if (result < 1 || result == EOF)
+			{
+				LogManager::getSingleton().logMessage("Error parsing File (set_shadows) " + String(fname) +" line " + StringConverter::toString(linecounter) + ". trying to continue ...");
+				continue;
+			}
+			shadowmode = mode;
+		}
+
+		if (!strncmp("prop_camera_mode", line, 16))
+		{
+			int mode = -2;
+			int result = sscanf(line,"prop_camera_mode %i", &mode);
+			if (result < 1 || result == EOF)
+			{
+				LogManager::getSingleton().logMessage("Error parsing File (prop_camera_mode) " + String(fname) +" line " + StringConverter::toString(linecounter) + ". trying to continue ...");
+				continue;
+			}
+			
 			// always use the last prop
 			prop_t *prop = &props[free_prop-1];
-			if(prop->mo) prop->mo->setCastShadows(false);
+			if(prop->mo) prop->cameramode = mode;
+		}
 
+		if (!strncmp("flexbody_camera_mode", line, 20))
+		{
+			int mode = -2;
+			int result = sscanf(line,"flexbody_camera_mode %i", &mode);
+			if (result < 1 || result == EOF)
+			{
+				LogManager::getSingleton().logMessage("Error parsing File (flexbody_camera_mode) " + String(fname) +" line " + StringConverter::toString(linecounter) + ". trying to continue ...");
+				continue;
+			}
+			
+			// always use the last flexbody
+			FlexBody *flex = flexbodies[free_flexbody-1];
+			if(flex) flex->cameramode = mode;
 		}
 
 		if (!strncmp("add_animation", line, 13))
@@ -2235,17 +2270,17 @@ int Beam::loadTruck(const char* fname, SceneManager *manager, SceneNode *parent,
 			// create the meshs scenenode
 			props[free_prop].snode = manager->getRootSceneNode()->createChildSceneNode();
 			// now create the mesh
-			MeshObject *mo = new MeshObject(manager, meshname, "", props[free_prop].snode, enable_background_loading);
-			mo->setSimpleMaterialColour(ColourValue(1, 1, 0));
-			mo->setSkin(usedSkin);
-			mo->setMaterialFunctionMapper(materialFunctionMapper);
-			props[free_prop].mo = mo;
+			props[free_prop].mo = new MeshObject(manager, meshname, "", props[free_prop].snode, enable_background_loading);
+			props[free_prop].mo->setSimpleMaterialColour(ColourValue(1, 1, 0));
+			props[free_prop].mo->setSkin(usedSkin);
+			props[free_prop].mo->setMaterialFunctionMapper(materialFunctionMapper);
+			props[free_prop].mo->setCastShadows(shadowmode!=0);
 
 			//hack for the spinprops
 			if (!strncmp("spinprop", meshname, 8))
 			{
 				props[free_prop].spinner=1;
-				mo->setCastShadows(false);
+				props[free_prop].mo->setCastShadows(false);
 				props[free_prop].snode->setVisible(false);
 			}
 			if (!strncmp("pale", meshname, 4))
@@ -2256,7 +2291,7 @@ int Beam::loadTruck(const char* fname, SceneManager *manager, SceneNode *parent,
 			if (!strncmp("seat", meshname, 4) && !driversseatfound)
 			{
 				driversseatfound=true;
-				mo->setMaterialName("driversseat");
+				props[free_prop].mo->setMaterialName("driversseat");
 				driverSeat = &props[free_prop];
 			}
 			else if (!strncmp("seat2", meshname, 5) && !driversseatfound)
@@ -3092,7 +3127,7 @@ int Beam::loadTruck(const char* fname, SceneManager *manager, SceneNode *parent,
 				LogManager::getSingleton().logMessage("flexbodies limit reached ("+StringConverter::toString(MAX_FLEXBODIES)+"): " + String(fname) +" line " + StringConverter::toString(linecounter) + ". trying to continue ...");
 				continue;
 			}
-			flexbodies[free_flexbody]=new FlexBody(manager, nodes, free_node, meshname, uname, ref, nx, ny, offset, rot, line+6, materialFunctionMapper, usedSkin);
+			flexbodies[free_flexbody]=new FlexBody(manager, nodes, free_node, meshname, uname, ref, nx, ny, offset, rot, line+6, materialFunctionMapper, usedSkin, (shadowmode!=0));
 			free_flexbody++;
 		}
 		else if (mode==44)

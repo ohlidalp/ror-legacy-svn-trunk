@@ -570,6 +570,7 @@ struct prop
 	int animKeyState[10];
 	int lastanimKS[10];
 	Ogre::Real wheelrotdegree;
+	int cameramode;
 	MeshObject *mo;
 };
 
