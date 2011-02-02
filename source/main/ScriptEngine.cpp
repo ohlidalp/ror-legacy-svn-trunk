@@ -1154,7 +1154,7 @@ int GameScript::getLoadedTerrain(std::string &result)
 	return 0;
 }
 
-//#ifdef USE_CURL
+#ifdef USE_CURL
 //hacky hack to fill memory with data for curl
 // from: http://curl.haxx.se/libcurl/c/getinmemory.html
 static size_t curlWriteMemoryCallback(void *ptr, size_t size, size_t nmemb, void *data)
@@ -1175,11 +1175,11 @@ static size_t curlWriteMemoryCallback(void *ptr, size_t size, size_t nmemb, void
  
   return realsize;
 }
-//#endif //USE_CURL
+#endif //USE_CURL
 
 int GameScript::useOnlineAPI(const std::string &apiquery, const AngelScript::CScriptDictionary &d, std::string &result)
 {
-//#ifdef USE_CURL
+#ifdef USE_CURL
 	struct curlMemoryStruct chunk;
  
 	chunk.memory = (char *)malloc(1);  /* will be grown as needed by the realloc above */ 
@@ -1318,7 +1318,8 @@ int GameScript::useOnlineAPI(const std::string &apiquery, const AngelScript::CSc
 	}
 
 	return 0;
-//#endif //USE_CURL
+#endif //USE_CURL
+	return 1;
 }
 
 ///////////////////////////////////////////////////////////////////////////////

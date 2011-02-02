@@ -88,6 +88,9 @@ ELSE(WIN32)
 	add_executable(RoR ${HEADER_FILES} ${SOURCE_FILES})
 ENDIF(WIN32)
 
+#additional include dirs
+include_directories(.)
+include_directories(dof)
 
 target_link_libraries(RoR ${Ogre_LIBRARIES} ${Ogre_Terrain_LIBRARIES} ${Ogre_Paging_LIBRARIES} ${Ogre_RTShader_LIBRARIES} ${Ois_LIBRARIES} ${OS_LIBS} ${optional_libs})
 

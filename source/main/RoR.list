@@ -17,7 +17,7 @@ set (HEADER_FILES
   ColoredTextAreaOverlayElementFactory.h
   dashboard.h
   IngameConsole.h
-  DepthOfFieldEffect.h
+  dof/DepthOfFieldEffect.h
   DustManager.h
   DustPool.h
   DynamicLines.h
@@ -26,7 +26,7 @@ set (HEADER_FILES
   hdrlistener.h
   Heathaze.h
   HydraxWater.h
-  Lens.h
+  dof/Lens.h
   MovableText.h
   OgreLineStreamOverlayElement.h
   RandomTreeLoader.h
@@ -130,7 +130,7 @@ set (SOURCE_FILES
   ColoredTextAreaOverlayElement.cpp
   dashboard.cpp
   IngameConsole.cpp
-  DepthOfFieldEffect.cpp
+  dof/DepthOfFieldEffect.cpp
   DustManager.cpp
   DustPool.cpp
   DynamicLines.cpp
@@ -139,7 +139,7 @@ set (SOURCE_FILES
   hdrlistener.cpp
   Heathaze.cpp
   HydraxWater.cpp
-  Lens.cpp
+  dof/Lens.cpp
   MovableText.cpp
   OgreLineStreamOverlayElement.cpp
   Skidmark.cpp
@@ -269,8 +269,8 @@ SOURCE_GROUP("GUI-related" FILES
   OverlayWrapper.h
 )
 SOURCE_GROUP("GFX" FILES
-  DepthOfFieldEffect.cpp
-  DepthOfFieldEffect.h
+  dof/DepthOfFieldEffect.cpp
+  dof/DepthOfFieldEffect.h
   DustManager.cpp
   DustManager.h
   DustPool.cpp
@@ -291,8 +291,8 @@ SOURCE_GROUP("GFX" FILES
   Heathaze.h
   HydraxWater.cpp
   HydraxWater.h
-  Lens.cpp
-  Lens.h
+  dof/Lens.cpp
+  dof/Lens.h
   MovableText.cpp
   MovableText.h
   OgreLineStreamOverlayElement.cpp
