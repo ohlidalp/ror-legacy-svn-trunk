@@ -788,7 +788,6 @@ RoRFrameListener::RoRFrameListener(RenderWindow* win, Camera* cam, SceneManager*
 	netPointToUID=-1;
 	netcheckGUITimer=0;
 	mDOF=0;
-	mDOFDebug=false;
 	mouseGrabForce=100000.0f;
 	eflsingleton=this;
 	forcefeedback=0;
@@ -2380,24 +2379,6 @@ bool RoRFrameListener::updateEvents(float dt)
 #endif // MYGUI
 
 
-
-	if (INPUTENGINE.getEventBoolValueBounce(EV_DOF_TOGGLE, 0.5f) && mDOF)
-	{
-		bool enabled = !mDOF->getEnabled();
-		if(!enabled && mDOFDebug)
-		{
-			// turn off debug if on
-			mDOFDebug = false;
-			mDOF->setDebugEnabled(mDOFDebug);
-		}
-		mDOF->setEnabled(enabled);
-	}
-	if (INPUTENGINE.getEventBoolValueBounce(EV_DOF_DEBUG, 0.5f) && mDOF)
-	{
-		mDOFDebug = !mDOFDebug;
-		mDOF->setDebugEnabled(mDOFDebug);
-	}
-	
 	/*
 	if (INPUTENGINE.getEventBoolValueBounce(EV_TOGGLESHADERS, 0.5f))
 	{
@@ -2518,37 +2499,6 @@ bool RoRFrameListener::updateEvents(float dt)
 		camRotX = camRotX_saved;
 		camRotY = camRotY_saved;
 
-		return true;
-	}
-
-	// special keys for the debug mode
-	if(mDOF && mDOFDebug)
-	{
-		if(INPUTENGINE.getEventBoolValueBounce(EV_DOF_DEBUG_TOGGLE_FOCUS_MODE, 1.0f))
-			mDOF->toggleFocusMode();
-
-		// zoom
-		if(INPUTENGINE.getEventBoolValue(EV_DOF_DEBUG_ZOOM_IN))
-			mDOF->zoomView(-dt);
-		else if(INPUTENGINE.getEventBoolValue(EV_DOF_DEBUG_ZOOM_OUT))
-			mDOF->zoomView(dt);
-
-		// aperture
-		if(INPUTENGINE.getEventBoolValue(EV_DOF_DEBUG_APERTURE_MORE))
-			mDOF->setAperture(-5*dt);
-		else if(INPUTENGINE.getEventBoolValue(EV_DOF_DEBUG_APERTURE_LESS))
-			mDOF->setAperture(5*dt);
-
-		// focus
-		const OIS::MouseState mstate = INPUTENGINE.getMouseState();
-		Real offset = 0.05f * mstate.Z.rel;
-		if(INPUTENGINE.getEventBoolValue(EV_DOF_DEBUG_FOCUS_IN))
-			offset -= 120.0 * dt;
-		else if(INPUTENGINE.getEventBoolValue(EV_DOF_DEBUG_FOCUS_OUT))
-			offset += 120.0 * dt;
-		mDOF->moveFocus(offset);
-
-		// if in DOF debug, we wont process any other events
 		return true;
 	}
 /* -- disabled for now ... why we should check for this if it does not call anything?
@@ -5358,10 +5308,8 @@ void RoRFrameListener::loadClassicTerrain(String terrainfile)
 	bool useDOF = (SETTINGS.getSetting("DOF") == "Yes");
 	if(useDOF)
 	{
-		mDOF = new DOFManager(mRoot, mCamera, mSceneMgr);
+		mDOF = new DepthOfFieldEffect(mCamera->getViewport());
 		mDOF->setEnabled(true);
-		// debug enabled via event
-		mDOF->setDebugEnabled(false);
 	}
 
 

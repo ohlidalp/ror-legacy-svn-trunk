@@ -185,7 +185,7 @@ typedef struct
 } animated_object_t;
 
 class RoRFrameListener;
-class DOFManager;
+class DepthOfFieldEffect;
 
 class SelectorWindow;
 
@@ -222,8 +222,7 @@ protected:
 
 
 	std::map< std::string, Ogre::SceneNode *> loadedObjects;
-	DOFManager *mDOF;
-	bool mDOFDebug;
+	DepthOfFieldEffect *mDOF;
 	int mouseX;
 	int mouseY;
 	int shaderSchemeMode;
