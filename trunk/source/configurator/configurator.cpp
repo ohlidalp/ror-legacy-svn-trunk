@@ -1307,7 +1307,7 @@ void initLanguage(wxString languagePath, wxString userpath)
 			wxLogStatus(wxT("language file existing, but not found via wxLocale!"));
 			wxLogStatus(wxT("is the language installed on your system?"));
 		}
-		bool res = lang_locale.Init((wxLanguage)language->Language, wxLOCALE_CONV_ENCODING);
+		bool res = lang_locale.Init((wxLanguage)language->Language);
 		if(!res)
 		{
 			wxLogStatus(wxT("error while initializing language!"));
@@ -1320,7 +1320,7 @@ void initLanguage(wxString languagePath, wxString userpath)
 	}
 	else
 	{
-		lang_locale.Init(wxLANGUAGE_DEFAULT, wxLOCALE_CONV_ENCODING);
+		lang_locale.Init(wxLANGUAGE_DEFAULT);
 		wxLogStatus(wxT("language not existing, no lang_locale support!"));
 	}
 }

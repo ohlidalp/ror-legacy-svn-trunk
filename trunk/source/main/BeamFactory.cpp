@@ -65,7 +65,7 @@ int BeamFactory::removeBeam(Beam *b)
 
 				delete it2->second;
 				it2->second = 0;
-				it2 = it1->second.erase(it2);
+				it1->second.erase(it2);
 				UNLOCKSTREAMS();
 				return 0;
 			}

@@ -12,10 +12,7 @@ set (HEADER_FILES
   LoadingWindow.h
   Console.h
   malloc.c.h
-  memoryAllocatedObject.h
-  memoryWrapper.h
   nedmalloc.h
-  rormemory.h
   ColoredTextAreaOverlayElement.h
   ColoredTextAreaOverlayElementFactory.h
   dashboard.h
@@ -129,7 +126,6 @@ set (SOURCE_FILES
   SelectorWindow.cpp
   LoadingWindow.cpp
   Console.cpp
-  memoryWrapper.cpp
   nedmalloc.cpp
   ColoredTextAreaOverlayElement.cpp
   dashboard.cpp
@@ -258,12 +254,8 @@ SOURCE_GROUP("GUI" FILES
 )
 SOURCE_GROUP("Memory Management" FILES
   malloc.c.h
-  memoryAllocatedObject.h
-  memoryWrapper.cpp
-  memoryWrapper.h
   nedmalloc.cpp
   nedmalloc.h
-  rormemory.h
 )
 SOURCE_GROUP("GUI-related" FILES
   ColoredTextAreaOverlayElement.cpp

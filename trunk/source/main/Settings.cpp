@@ -144,9 +144,9 @@ void Settings::loadSettings(Ogre::String configFile, bool overwrite)
 int Settings::generateBinaryHash()
 {
 #ifndef NOOGRE
+	char program_path[1024]="";
 #if OGRE_PLATFORM == OGRE_PLATFORM_WIN32
 	// note: we enforce usage of the non-UNICODE interfaces (since its easier to integrate here)
-	char program_path[1024]="";
 	if (!GetModuleFileNameA(NULL, program_path, 512))
 	{
 		showError(_L("Startup error"), _L("Error while retrieving program space path"));
