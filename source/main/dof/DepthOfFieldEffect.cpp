@@ -9,7 +9,7 @@
 
 using namespace Ogre;
 
-const int DepthOfFieldEffect::BLUR_DIVISOR = 5;
+const int DepthOfFieldEffect::BLUR_DIVISOR = 2;
 
 DepthOfFieldEffect::DepthOfFieldEffect(Ogre::Viewport *v, Ogre::Camera *cam) :
 	mNearDepth(10.0)
@@ -95,7 +95,6 @@ void DepthOfFieldEffect::createDepthRenderTexture()
 	*/
 
 	mDepthViewport->setShadowsEnabled(false);
-
 
 	//re-set texture "DoF_Depth"
 	MaterialPtr p = MaterialManager::getSingleton().getByName("DoF_DepthOfField");
@@ -229,7 +228,7 @@ DOFManager::DOFManager(Ogre::SceneManager *m, Ogre::Viewport *mViewport, Ogre::R
 	//mRaySceneQuery->setQueryMask(queryMask);
 
 	debugNode = 0;
-	bool debug = true;
+	bool debug = false;
 	if(debug)
 	{
 		MaterialPtr material = MaterialManager::getSingleton().getByName("DoF_DepthDebug");

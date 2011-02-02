@@ -2226,6 +2226,7 @@ int Beam::loadTruck(const char* fname, SceneManager *manager, SceneNode *parent,
 			props[free_prop].mirror=0;
 			props[free_prop].pale=0;
 			props[free_prop].spinner=0;
+			props[free_prop].cameramode=-2;
 			props[free_prop].wheelrotdegree=160.0;
 			//set no animation by default
 			props[free_prop].animFlags[0]=0;

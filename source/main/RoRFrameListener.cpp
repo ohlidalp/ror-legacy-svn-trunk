@@ -5822,7 +5822,7 @@ void RoRFrameListener::loadClassicTerrain(String terrainfile)
 				grassLoader->setHeightFunction(&getTerrainHeight);
 
 				// render grass at first
-				grassLoader->setRenderQueueGroup(RENDER_QUEUE_MAIN);
+				grassLoader->setRenderQueueGroup(RENDER_QUEUE_MAIN+1);
 
 				GrassLayer* grassLayer = grassLoader->addLayer(grassmat);
 				grassLayer->setHeightRange(minH, maxH);
