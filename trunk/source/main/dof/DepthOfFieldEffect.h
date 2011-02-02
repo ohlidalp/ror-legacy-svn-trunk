@@ -1,4 +1,4 @@
-// "Depth of Field" demo for Ogre
+﻿// "Depth of Field" demo for Ogre
 // Copyright (C) 2006  Christian Lindequist Larsen
 //
 // This code is in the public domain. You may do whatever you want with it.
@@ -6,16 +6,20 @@
 #ifndef __DepthOfFieldEffect_H__
 #define __DepthOfFieldEffect_H__
 
-#include "RoRPrerequisites.h"
-#include <Ogre.h>
-#include <OgreCompositorInstance.h>
+#include "OgrePrerequisites.h"
+#include "OgreCompositorInstance.h"
+#include "OgreRenderTargetListener.h"
+#include "OgreFrameListener.h"
+#include "OgreRenderQueue.h"
+
+class Lens;
 
 class DepthOfFieldEffect : public Ogre::CompositorInstance::Listener,
 						   public Ogre::RenderTargetListener,
 						   public Ogre::RenderQueue::RenderableListener
 {
 public:
-	DepthOfFieldEffect(Ogre::Viewport* viewport);
+	DepthOfFieldEffect(Ogre::Viewport *mViewport, Ogre::Camera *cam);
 	~DepthOfFieldEffect();
 
 	float getNearDepth() const {return mNearDepth; }
@@ -28,29 +32,6 @@ public:
 	void setEnabled(bool value);
 
 private:
-	static const int BLUR_DIVISOR;
-	static int DoF_ID;
-
-	enum PassId
-	{
-		BlurPass,
-		OutputPass
-	};
-
-	Ogre::Viewport* mViewport;
-	Ogre::MaterialPtr mDepthMaterial;
-	Ogre::Technique* mDepthTechnique;
-	Ogre::CompositorInstance* mCompositor;
-	float mNearDepth;
-	float mFocalDepth;
-	float mFarDepth;
-	float mFarBlurCutoff;
-
-	void createDepthRenderTexture();
-	void destroyDepthRenderTexture();
-	void addCompositor();
-	void removeCompositor();
-
 	// Implementation of Ogre::CompositorInstance::Listener
 	virtual void notifyMaterialSetup(Ogre::uint32 passId, Ogre::MaterialPtr& material);
 
@@ -61,6 +42,78 @@ private:
 	// Implementation of Ogre::RenderQueue::RenderableListener
 	virtual bool renderableQueued(Ogre::Renderable* rend, Ogre::uint8 groupID, 
 				Ogre::ushort priority, Ogre::Technique** ppTech, Ogre::RenderQueue* pQueue);
+
+	int mWidth;
+	int mHeight;
+
+	static const int BLUR_DIVISOR;
+
+	enum PassId
+	{
+		BlurPass,
+		OutputPass
+	};
+
+	Ogre::Viewport* mDepthViewport;
+	Ogre::RenderTexture* mDepthTarget;
+	Ogre::TexturePtr mDepthTexture;
+	Ogre::MaterialPtr mDepthMaterial;
+	Ogre::Technique* mDepthTechnique;
+	Ogre::CompositorInstance* mCompositor;
+	Ogre::Viewport *mViewport;
+	Ogre::Camera *mCamera;
+
+	float mNearDepth;
+	float mFocalDepth;
+	float mFarDepth;
+	float mFarBlurCutoff;
+
+	void createDepthRenderTexture();
+	void destroyDepthRenderTexture();
+//	void createCompositor();
+//	void destroyCompositor();
+	void addCompositor();
+	void removeCompositor();
+};
+
+class DOFManager : public Ogre::FrameListener
+{
+public:
+	DOFManager(Ogre::SceneManager *m, Ogre::Viewport *v, Ogre::Root *r, Ogre::Camera *cam);
+	~DOFManager();
+
+
+	void setEnabled(bool enabled);
+	bool getEnabled();
+
+	// controls
+	enum FocusMode {Auto, Manual, Pinhole};
+	void setFocusMode(int mode) {mFocusMode = (FocusMode)mode;}
+	void setAutoSpeed(float f);
+	void zoomView(float delta);
+	void Aperture(float delta);
+	void moveFocus(float delta);
+	void setZoom(float f);
+	void setLensFOV(Ogre::Radian fov);
+	void setAperture(float f);
+	void setFocus(float f);
+
+protected:
+	virtual bool frameStarted(const Ogre::FrameEvent& evt);
+
+	Ogre::Root *mRoot;
+	Ogre::Camera *mCamera;
+	Ogre::RaySceneQuery *mRaySceneQuery;
+	Ogre::SceneManager *mSceneMgr;
+
+	void cleanup();
+	DepthOfFieldEffect* mDepthOfFieldEffect;
+	Lens* mLens;
+	FocusMode mFocusMode;
+	float mAutoSpeed;
+	float mAutoTime;
+	Ogre::Real targetFocalDistance;
+	Ogre::SceneNode *debugNode;
 };
 
 #endif // __DepthOfFieldEffect_H__

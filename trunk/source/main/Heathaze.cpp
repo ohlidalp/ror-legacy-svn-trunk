@@ -43,7 +43,7 @@ void HeatHazeListener::postRenderTargetUpdate(const RenderTargetEvent& evt)
 
 HeatHaze::HeatHaze(SceneManager *sceneMgr, RenderWindow *mWindow, Ogre::Camera *cam) : mSceneMgr(sceneMgr), rttTex(0), listener(0)
 {
-	TexturePtr rttTexPtr = TextureManager::getSingleton().createManual("heathaze_rtt", ResourceGroupManager::DEFAULT_RESOURCE_GROUP_NAME, TEX_TYPE_2D, 512, 512, 0, PF_R8G8B8, TU_RENDERTARGET, new ResourceBuffer());
+	TexturePtr rttTexPtr = TextureManager::getSingleton().createManual("heathaze_rtt", ResourceGroupManager::DEFAULT_RESOURCE_GROUP_NAME, TEX_TYPE_2D, cam->getViewport()->getWidth(), cam->getViewport()->getHeight(), 0, PF_R8G8B8, TU_RENDERTARGET, new ResourceBuffer());
 	rttTex = rttTexPtr->getBuffer()->getRenderTarget();
 	{
 		/*

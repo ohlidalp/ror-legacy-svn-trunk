@@ -2613,11 +2613,13 @@ bool RoRFrameListener::updateEvents(float dt)
 		{
 			// change to fixed free camera: that is working like fixed cam
 			cameramode = CAMERA_FREE_FIXED;
+			if(mDOF) mDOF->setFocusMode(DOFManager::Auto);
 			LogManager::getSingleton().logMessage("switching to fixed free camera mode");
 			if(ow) ow->flashMessage(_L("fixed free camera"));
 		} else if(cameramode == CAMERA_FREE_FIXED)
 		{
 			cameramode = CAMERA_FREE;
+			if(mDOF) mDOF->setFocusMode(DOFManager::Auto);
 			LogManager::getSingleton().logMessage("switching to free camera mode from fixed mode");
 			if(ow) ow->flashMessage(_L("free camera"));
 		}
@@ -2629,12 +2631,14 @@ bool RoRFrameListener::updateEvents(float dt)
 		if(cameramode == CAMERA_FREE || cameramode == CAMERA_FREE_FIXED)
 		{
 			// change back to normal camera
+			if(mDOF) mDOF->setFocusMode(DOFManager::Manual);
 			cameramode = storedcameramode;
 			LogManager::getSingleton().logMessage("exiting free camera mode");
 			if(ow) ow->flashMessage(_L("normal camera"));
 		} else if(cameramode != CAMERA_FREE && cameramode != CAMERA_FREE_FIXED )
 		{
 			// enter free camera mode
+			if(mDOF) mDOF->setFocusMode(DOFManager::Auto);
 			storedcameramode = cameramode;
 			cameramode = CAMERA_FREE;
 			LogManager::getSingleton().logMessage("entering free camera mode");
@@ -5308,9 +5312,10 @@ void RoRFrameListener::loadClassicTerrain(String terrainfile)
 	bool useDOF = (SETTINGS.getSetting("DOF") == "Yes");
 	if(useDOF)
 	{
-		mDOF = new DepthOfFieldEffect(mCamera->getViewport());
+		mDOF = new DOFManager(mSceneMgr, mCamera->getViewport(), mRoot, mCamera);
 		mDOF->setEnabled(true);
 	}
+
 
 
 	if (SETTINGS.getSetting("Glow") == "Yes")
@@ -6763,6 +6768,7 @@ void RoRFrameListener::moveCamera(float dt)
 				if(changeCamMode)
 					mCamera->setFOVy(Degree(80));
 				collisions->forcecam=false;
+				if(mDOF) mDOF->setFocusMode(DOFManager::Auto);
 			}
 			else
 			{
@@ -6778,6 +6784,7 @@ void RoRFrameListener::moveCamera(float dt)
 
 				camIdealPosition=camDist/2.0*Vector3(sin(angle+camRotX.valueRadians())*cos(camRotY.valueRadians()),sin(camRotY.valueRadians()),cos(angle+camRotX.valueRadians())*cos(camRotY.valueRadians()));
 
+				float real_camdist = camIdealPosition.length();
 
 				camIdealPosition=camIdealPosition+person->getPosition();
 				Vector3 newposition=(camIdealPosition+10.0*mCamera->getPosition())/11.0;
@@ -6794,6 +6801,14 @@ void RoRFrameListener::moveCamera(float dt)
 					mCamera->setFOVy(Degree(60));
 
 				lastPosition=person->getPosition();
+
+				if(mDOF)
+				{
+					mDOF->setFocusMode(DOFManager::Manual);
+					mDOF->setFocus(real_camdist);
+					mDOF->setLensFOV(Degree(60));
+				}
+
 				//lastangle=angle;
 			}
 		}
@@ -6815,7 +6830,17 @@ void RoRFrameListener::moveCamera(float dt)
 			}
 			mCamera->setPosition(Vector3(px+50.0, h+1.7, pz+50.0));
 			mCamera->lookAt(person->getPosition());
-			mCamera->setFOVy(Radian(atan2(20.0f,(mCamera->getPosition()-person->getPosition()).length())));
+			float real_camDist = (mCamera->getPosition()-person->getPosition()).length();
+			Radian fov = Radian(atan2(20.0f,real_camDist));
+			mCamera->setFOVy(fov);
+		
+			if(mDOF)
+			{
+				mDOF->setFocusMode(DOFManager::Manual);
+				mDOF->setFocus(real_camDist);
+				mDOF->setLensFOV(fov);
+			}
+
 		}
 		else if (cameramode==CAMERA_INT)
 		{
@@ -6832,6 +6857,12 @@ void RoRFrameListener::moveCamera(float dt)
 				camRotX=pushcamRotX;
 				camRotY=pushcamRotY;
 			}
+			if(mDOF)
+			{
+				mDOF->setFocusMode(DOFManager::Auto);
+				mDOF->setLensFOV(Degree(75));
+			}
+
 		}
 	}
 	else
@@ -6859,6 +6890,12 @@ void RoRFrameListener::moveCamera(float dt)
 				if(changeCamMode)
 					mCamera->setFOVy(Degree(80));
 				collisions->forcecam=false;
+
+				if(mDOF)
+				{
+					mDOF->setFocusMode(DOFManager::Auto);
+					mDOF->setLensFOV(Degree(80));
+				}
 			}
 			else
 			{
@@ -6881,6 +6918,7 @@ void RoRFrameListener::moveCamera(float dt)
 					camIdealPosition=camDist*Vector3(sin(angle+camRotX.valueRadians())*cos(camRotY.valueRadians()),sin(camRotY.valueRadians()),cos(angle+camRotX.valueRadians())*cos(camRotY.valueRadians()));
 				}
 
+				float cam_realdist = camIdealPosition.length();
 				camIdealPosition=camIdealPosition+trucks[current_truck]->getPosition();
 				Vector3 oldposition=mCamera->getPosition()+trucks[current_truck]->nodes[0].Velocity*trucks[current_truck]->ttdt;
 				float ratio=1.0/(trucks[current_truck]->tdt*4.0);
@@ -6900,6 +6938,15 @@ void RoRFrameListener::moveCamera(float dt)
 					mCamera->setFOVy(Degree(60));
 
 				lastPosition=trucks[current_truck]->getPosition();
+
+				if(mDOF)
+				{
+					mDOF->setFocusMode(DOFManager::Manual);
+					mDOF->setFocus(cam_realdist);
+					mDOF->setLensFOV(Degree(60));
+				}
+
+
 				//lastangle=angle;
 			}
 		}
@@ -6929,7 +6976,16 @@ void RoRFrameListener::moveCamera(float dt)
 					mCamera->setPosition(newposition);
 				}
 				mCamera->lookAt(trucks[current_truck]->getPosition());
-				mCamera->setFOVy(Radian(atan2(100.0f,(mCamera->getPosition()-trucks[current_truck]->getPosition()).length())));
+				float real_camDist = (mCamera->getPosition()-trucks[current_truck]->getPosition()).length();
+				Radian fov = Radian(atan2(100.0f,real_camDist));
+				mCamera->setFOVy(fov);
+				if(mDOF)
+				{
+					mDOF->setFocusMode(DOFManager::Manual);
+					mDOF->setFocus(real_camDist);
+					mDOF->setLensFOV(fov);
+				}
+
 			}
 			else
 			{
@@ -6941,7 +6997,15 @@ void RoRFrameListener::moveCamera(float dt)
 					h=w->getHeightWaves(Vector3(px+50.0,0,pz+50.0));
 				mCamera->setPosition(Vector3(px+50.0, h+1.7, pz+50.0));
 				mCamera->lookAt(trucks[current_truck]->getPosition());
-				mCamera->setFOVy(Radian(atan2(20.0f,(mCamera->getPosition()-trucks[current_truck]->getPosition()).length())));
+				float real_camDist = (mCamera->getPosition()-trucks[current_truck]->getPosition()).length();
+				Radian fov = Radian(atan2(20.0f,real_camDist));
+				mCamera->setFOVy(fov);
+				if(mDOF)
+				{
+					mDOF->setFocusMode(DOFManager::Manual);
+					mDOF->setFocus(real_camDist);
+					mDOF->setLensFOV(fov);
+				}
 			}
 		}
 		if (cameramode==CAMERA_INT)
@@ -7017,6 +7081,14 @@ void RoRFrameListener::moveCamera(float dt)
 				trucks[current_truck]->prepareInside(false);
 				if(ow) ow->showDashboardOverlays(true, trucks[current_truck]->driveable);
 			}
+
+				if(mDOF)
+				{
+					mDOF->setFocusMode(DOFManager::Manual);
+					mDOF->setFocus(2);
+					mDOF->setLensFOV(Degree(90));
+				}
+
 		}
 	}
 

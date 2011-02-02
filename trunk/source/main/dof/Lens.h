@@ -1,4 +1,4 @@
-// "Depth of Field" demo for Ogre
+﻿// "Depth of Field" demo for Ogre
 // Copyright (C) 2006  Christian Lindequist Larsen
 //
 // This code is in the public domain. You may do whatever you want with it.
@@ -8,8 +8,8 @@
 #ifndef __Lens_H__
 #define __Lens_H__
 
-#include "RoRPrerequisites.h"
-#include <Ogre.h>
+#include "OgrePrerequisites.h"
+#include "OgreMath.h"
 
 class Lens {
 public:
