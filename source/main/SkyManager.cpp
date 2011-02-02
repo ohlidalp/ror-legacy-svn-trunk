@@ -22,6 +22,8 @@ along with Rigs of Rods.  If not, see <http://www.gnu.org/licenses/>.
 
 #include "SkyManager.h"
 
+#include "Settings.h"
+
 #include "Ogre.h"
 #include "Caelum.h"
 
@@ -82,6 +84,11 @@ void SkyManager::loadScript(Ogre::String script)
 			mCaelumSystem->getMoon()->setAutoDisableThreshold(1);
 			mCaelumSystem->getMoon()->setForceDisable(true);
 			mCaelumSystem->getMoon()->getMainLight()->setCastShadows(false);
+		}
+
+		if (SETTINGS.getSetting("Fog") != "Yes")
+		{
+			mCaelumSystem->setSceneFogDensityMultiplier(0.000000000001);
 		}
 
 		mCaelumSystem->setEnsureSingleShadowSource(true);
