@@ -3197,7 +3197,7 @@ int Beam::loadTruck(const char* fname, SceneManager *manager, SceneNode *parent,
 				continue;
 			}
 #ifdef USE_OPENAL
-			if(ssm) addSoundSource(ssm->createInstance(script, trucknum, NULL), ref);
+			if(ssm) addSoundSource(ssm->createInstance(script, trucknum, NULL), ref, -2);
 #endif //OPENAL
 		}
 		else if (mode==67)

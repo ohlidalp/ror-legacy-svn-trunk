@@ -208,7 +208,7 @@ public:
 
 	//! @{ audio related functions
 	void setupDefaultSoundSources();
-	void addSoundSource(SoundScriptInstance *ssi, int nodenum, int type=-1);
+	void addSoundSource(SoundScriptInstance *ssi, int nodenum, int type=-2);
 	void updateSoundSources();
 	//! @}
 
