@@ -42,6 +42,8 @@ public:
 		, skin(0)
 		, castshadows(true)
 		, mfm(0)
+		, enabled(true)
+		, visible(true)
 	{
 		// create a new sceneNode if not existing
 		if(!sceneNode)
@@ -107,11 +109,26 @@ public:
 		{
 			sceneNode->getAttachedObject(0)->setCastShadows(b);
 		}
-
 	}
+
+	void setMeshEnabled(bool e)
+	{
+		setVisible(e);
+		enabled = e;
+	}
+
+	void setVisible(bool b)
+	{
+		if(!enabled) return;
+		visible = b;
+		if(loaded && sceneNode)
+			sceneNode->setVisible(b);
+	}
+
 
 	Ogre::MeshPtr getMesh() { return mesh; };
 	Ogre::Entity *getEntity() { return ent; };
+	//Ogre::SceneNode *getSceneNode() { return sceneNode; };
 
 protected:
 	Ogre::SceneManager *smgr;
@@ -130,6 +147,9 @@ protected:
 	Skin *skin;
 	bool castshadows;
 	MaterialFunctionMapper *mfm;
+	bool enabled;
+	bool visible;
+
 
 
 	void postProcess()
@@ -153,7 +173,7 @@ protected:
 			sceneNode->getAttachedObject(0)->setCastShadows(castshadows);
 
 
-		sceneNode->setVisible(true);
+		sceneNode->setVisible(visible);
 	}
 
 	void loadMesh()

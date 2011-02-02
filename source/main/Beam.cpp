@@ -651,6 +651,9 @@ Beam::Beam(int tnum, SceneManager *manager, SceneNode *parent, RenderWindow* win
 
 	//            printf("%i nodes, %i beams\n", free_node, free_beam);
 
+	// setup sounds properly
+	changedCamera();
+
 	// setup replay mode
 	bool enablereplay = (SETTINGS.getSetting("Replay mode")=="Yes");
 	replay=0;
@@ -4841,7 +4844,7 @@ void Beam::setMeshVisibility(bool visible)
 	int i=0;
 	for(i=0;i<free_prop;i++)
 	{
-		if(props[i].snode) props[i].snode->setVisible(visible);
+		if(props[i].mo) props[i].mo->setVisible(visible);
 		if(props[i].wheel) props[i].wheel->setVisible(visible);
 		if(props[i].bbsnode[0]) props[i].bbsnode[0]->setVisible(visible);
 		if(props[i].bbsnode[1]) props[i].bbsnode[1]->setVisible(visible);
@@ -5582,6 +5585,20 @@ void Beam::changedCamera()
 		}
 	}
 #endif //OPENAL
+
+	// look for props
+	for(int i=0;i<free_prop;i++)
+	{
+		bool enabled = (props[i].cameramode == -2 || props[i].cameramode == currentcamera);
+		if(props[i].mo) props[i].mo->setMeshEnabled(enabled);
+	}
+
+	// look for flexbodies
+	for(int i=0;i<free_flexbody;i++)
+	{
+		bool enabled = (flexbodies[i]->cameramode == -2 || flexbodies[i]->cameramode == currentcamera);
+		flexbodies[i]->setEnabled(enabled);
+	}
 }
 
 //Returns the number of active (non bounded) beams connected to a node

@@ -23,7 +23,7 @@ along with Rigs of Rods.  If not, see <http://www.gnu.org/licenses/>.
 
 #include "skin.h"
 
-FlexBody::FlexBody(SceneManager *manager, node_t *nds, int numnds, char* meshname, char* uname, int ref, int nx, int ny, Vector3 offset, Quaternion rot, char* setdef, MaterialFunctionMapper *mfm, Skin *usedSkin)
+FlexBody::FlexBody(SceneManager *manager, node_t *nds, int numnds, char* meshname, char* uname, int ref, int nx, int ny, Vector3 offset, Quaternion rot, char* setdef, MaterialFunctionMapper *mfm, Skin *usedSkin, bool enableShadows)
 {
 	nodes=nds;
 	numnodes=numnds;
@@ -31,6 +31,8 @@ FlexBody::FlexBody(SceneManager *manager, node_t *nds, int numnds, char* meshnam
 	cx=nx; nodes[cx].iIsSkin=true;
 	cy=ny; nodes[cy].iIsSkin=true;
 	coffset=offset;
+	cameramode=-2; // all cameras
+	enabled=true;
 
 	haveshadows=(manager->getShadowTechnique()==SHADOWTYPE_STENCIL_MODULATIVE || manager->getShadowTechnique()==SHADOWTYPE_STENCIL_ADDITIVE);
 	havetangents=false;
@@ -465,6 +467,7 @@ FlexBody::FlexBody(SceneManager *manager, node_t *nds, int numnds, char* meshnam
 	snode=manager->getRootSceneNode()->createChildSceneNode();
 	snode->attachObject(ent);
 	snode->setPosition(position);
+	//ent->setCastShadows(enableShadows);
 
 #if 0
 	// XXX TODO: fix 1.7 LODs
@@ -510,9 +513,17 @@ FlexBody::FlexBody(SceneManager *manager, node_t *nds, int numnds, char* meshnam
 
 }
 
+void FlexBody::setEnabled(bool e)
+{
+	setVisible(e);
+	enabled = e;
+}
+
 void FlexBody::setVisible(bool visible)
 {
-	if(snode) snode->setVisible(visible);
+	if(!enabled) return;
+	if(snode)
+		snode->setVisible(visible);
 }
 
 void FlexBody::printMeshInfo(Mesh* mesh)
@@ -563,6 +574,7 @@ bool FlexBody::isinset(int n)
 
 Vector3 FlexBody::flexit()
 {
+	if(!enabled) return Vector3::ZERO;
 	if (haveblend) updateBlend();
 	//compute the local center
 
@@ -635,6 +647,7 @@ void FlexBody::reset()
 
 void FlexBody::writeBlend()
 {
+	if(!enabled) return;
 	if (!haveblend) return;
 	ARGB *cpt=srccolors;
 	if (hasshared)
@@ -651,6 +664,7 @@ void FlexBody::writeBlend()
 
 void FlexBody::updateBlend() //so easy!
 {
+	if(!enabled) return;
 	bool changed=false;
 	for (int i=0; i<(int)vertex_count; i++)
 	{
