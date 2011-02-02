@@ -202,8 +202,11 @@ bool RigsOfRods::setup(void)
 	// optional ones
 
 	// sound iss a bit special as we mark the base sounds so we dont clear them accidentially later on
+#ifdef USE_OPENAL
+	LogManager::getSingleton().logMessage("Creating Sound Manager");
 	SoundScriptManager *ssm = SoundScriptManager::getSingleton();
 	if(ssm) ssm->setLoadingBaseSounds(true);
+#endif // USE_OPENAL
 	if (SETTINGS.getSetting("3D Sound renderer") != "No sound")
 		loadMainResource("sounds");
 
@@ -270,13 +273,6 @@ bool RigsOfRods::setup(void)
 	LogManager::getSingleton().logMessage("Configuring");
 	bool carryOn = configure();
 	if (!carryOn) return false;
-
-	LogManager::getSingleton().logMessage("Creating Sound Manager");
-	//get instance of SoundScriptManager
-	//this will create the singleton and register the parser!
-#ifdef USE_OPENAL
-	ssm=SoundScriptManager::getSingleton();
-#endif //OPENAL
 
 	//CREATE SCENE MANAGER
 	LogManager::getSingleton().logMessage("Creating Scene Manager");
@@ -346,9 +342,9 @@ bool RigsOfRods::setup(void)
 	{
 		LogManager::getSingleton().logMessage("catched error while initializing Resource groups: " + e.getFullDescription());
 	}
-
+#ifdef USE_OPENAL
 	if(ssm) ssm->setLoadingBaseSounds(false);
-
+#endif // USE_OPENAL
 	//rgm.initialiseResourceGroup(ResourceGroupManager::DEFAULT_RESOURCE_GROUP_NAME);
 
 #ifndef NOLANG

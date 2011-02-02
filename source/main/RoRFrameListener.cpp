@@ -1267,14 +1267,14 @@ RoRFrameListener::RoRFrameListener(RenderWindow* win, Camera* cam, SceneManager*
 	{
 		if(!CACHE.checkResourceLoaded(preselected_map))
 		{
+			preselected_map  = preselected_map + ".terrn";
 			// fallback to old terrain name with .terrn
-			if(!CACHE.checkResourceLoaded(preselected_map + ".terrn"))
+			if(!CACHE.checkResourceLoaded(preselected_map))
 			{
 				LogManager::getSingleton().logMessage("Terrain not found: " + preselected_map);
 				showError(_L("Terrain loading error"), _L("Terrain not found: ") + preselected_map);
 				exit(123);
-			} else
-				preselected_map  = preselected_map + ".terrn";
+			}
 		}
 
 		// set the terrain cache entry
@@ -4222,7 +4222,9 @@ bool RoRFrameListener::updateEvents(float dt)
 		if(isEmbedded)
 		{
 			loading_state=ALL_LOADED;
+#ifdef USE_MYGUI
 			LoadingWindow::get()->hide();
+#endif //USE_MYGUI
 		}
 		//uiloader->updateEvents(dt);
 
@@ -4724,13 +4726,13 @@ void RoRFrameListener::loadTerrain(String terrainfile)
 	if(!CACHE.checkResourceLoaded(terrainfile))
 	{
 		// fallback for terrains, add .terrn if not found and retry
-		if(!CACHE.checkResourceLoaded(terrainfile+".terrn"))
+		terrainfile  = terrainfile + ".terrn";
+		if(!CACHE.checkResourceLoaded(terrainfile))
 		{
 			LogManager::getSingleton().logMessage("Terrain not found: " + terrainfile);
 			showError(_L("Terrain loading error"), _L("Terrain not found: ") + terrainfile);
 			exit(123);
-		} else
-			terrainfile  = terrainfile + ".terrn";
+		}
 
 	}
 
