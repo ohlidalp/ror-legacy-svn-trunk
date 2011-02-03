@@ -303,6 +303,7 @@ private:
 	wxCheckBox *sunburn;
 	wxCheckBox *hdr;
 	wxCheckBox *glow;
+	wxCheckBox *dof;
 	wxCheckBox *mblur;
 	wxCheckBox *skidmarks;
 	wxCheckBox *creaksound;
@@ -1803,6 +1804,9 @@ MyDialog::MyDialog(const wxString& title, MyApp *_app) : wxDialog(NULL, wxID_ANY
 	y+=15;
 	glow=new wxCheckBox(graphicsPanel, -1, _("Glow"), wxPoint(x_row1, y));
 	glow->SetToolTip(_("Adds a glow effect to lights"));
+	
+	dof=new wxCheckBox(graphicsPanel, -1, _("DOF"), wxPoint(x_row2, y));
+	dof->SetToolTip(_("Adds a nice Depth of field effect to the scene."));
 	y+=25;
 
 	dText = new wxStaticText(graphicsPanel, -1, _("Screenshot Format:"), wxPoint(10, y));
@@ -2449,6 +2453,7 @@ void MyDialog::SetDefaults()
 	//wxCheckBox *hdr;
 	hdr->SetValue(false);
 	glow->SetValue(false);
+	dof->SetValue(false);
 	//wxCheckBox *mblur;
 	mblur->SetValue(false);
 	skidmarks->SetValue(false);
@@ -2512,6 +2517,7 @@ void MyDialog::getSettingsControls()
 	settings["Sunburn"] = (sunburn->GetValue()) ? "Yes" : "No";
 	settings["HDR"] = (hdr->GetValue()) ? "Yes" : "No";
 	settings["Glow"] = (glow->GetValue()) ? "Yes" : "No";
+	settings["DOF"] = (dof->GetValue()) ? "Yes" : "No";
 	settings["Motion blur"] = (mblur->GetValue()) ? "Yes" : "No";
 	settings["Skidmarks"] = (skidmarks->GetValue()) ? "Yes" : "No";
 	settings["Creak Sound"] = (creaksound->GetValue()) ? "No" : "Yes";
@@ -2603,6 +2609,7 @@ void MyDialog::updateSettingsControls()
 	st = settings["Sunburn"]; if (st.length()>0) sunburn->SetValue(st=="Yes");
 	st = settings["HDR"]; if (st.length()>0) hdr->SetValue(st=="Yes");
 	st = settings["Glow"]; if (st.length()>0) glow->SetValue(st=="Yes");
+	st = settings["DOF"]; if (st.length()>0) dof->SetValue(st=="Yes");
 	st = settings["Motion blur"]; if (st.length()>0) mblur->SetValue(st=="Yes");
 	st = settings["Skidmarks"]; if (st.length()>0) skidmarks->SetValue(st=="Yes");
 	st = settings["3D Sound renderer"]; if (st.length()>0) sound->SetStringSelection(conv(st));

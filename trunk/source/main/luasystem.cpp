@@ -48,6 +48,7 @@ static int SLUAspawnObject(lua_State *lua) {return luaInstance->spawnObject(lua)
 static int SLUAspawnBeam(lua_State *lua) {return luaInstance->spawnBeam(lua);}
 static int SLUApointArrow(lua_State *lua) {return luaInstance->pointArrow(lua);}
 static int SLUAstopTimer(lua_State *lua) {return luaInstance->stopTimer(lua);}
+static int SLUAclearEvents(lua_State *lua) {return luaInstance->clearEvents(lua);}
 static int SLUAstartTimer(lua_State *lua) {return luaInstance->startTimer(lua);}
 static int SLUAgetInterfaceVersion(lua_State *lua) {return luaInstance->getVersion(lua);}
 static int SLUAgetSetting(lua_State *lua) {return luaInstance->getSetting(lua);}
@@ -259,6 +260,8 @@ void LuaSystem::registerFunctions()
 	lua_setglobal (L, "pointArrow");
 	lua_pushcclosure (L, SLUAstopTimer, 0);
 	lua_setglobal (L, "stopTimer");
+	lua_pushcclosure (L, SLUAclearEvents, 0);
+	lua_setglobal (L, "clearEvents");
 	lua_pushcclosure (L, SLUAstartTimer, 0);
 	lua_setglobal (L, "startTimer");
 	lua_pushcclosure (L, SLUAgetSetting, 0);
@@ -278,6 +281,12 @@ int LuaSystem::registerCallBack(lua_State *lua)
 		Ogre::LogManager::getSingleton().logMessage("LUA registering callback: "+String(type)+" to "+String(luafunction));
 		framestepCallbacks.push_back(String(luafunction));
 	}
+	return 0;
+}
+
+int LuaSystem::clearEvents(lua_State *lua)
+{
+	mefl->getCollisions()->clearEventCache();
 	return 0;
 }
 
