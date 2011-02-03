@@ -19,6 +19,7 @@ along with Rigs of Rods.  If not, see <http://www.gnu.org/licenses/>.
 */
 #include "DustPool.h"
 #include "water.h"
+#include "RoRPrerequisites.h"
 
 DustPool::DustPool(char* dname, int dsize, SceneNode *parent, SceneManager *smgr, Water *mw)
 {
@@ -36,6 +37,8 @@ DustPool::DustPool(char* dname, int dsize, SceneNode *parent, SceneManager *smgr
 		{
 			sns[i]->attachObject(pss[i]);
 			pss[i]->setCastShadows(false);
+			pss[i]->setVisibilityFlags(DEPTHMAP_DISABLED);
+
 			//can't do this
 //				if (w) ((DeflectorPlaneAffector*)(pss[i]->getAffector(0)))->setPlanePoint(Vector3(0, w->getHeight(), 0));
 		}

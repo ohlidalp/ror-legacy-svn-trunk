@@ -94,6 +94,7 @@ Turbojet::Turbojet(SceneManager *manager, char* propname, int tnumber, int truck
 		smokePS=manager->createParticleSystem(paname, "tracks/TurbopropSmoke");
 		if (smokePS) 
 		{
+			smokePS->setVisibilityFlags(DEPTHMAP_DISABLED); // disable particles in depthmap
 			smokeNode->attachObject(smokePS);
 			smokePS->setCastShadows(false);
 		}
@@ -105,6 +106,7 @@ Turbojet::Turbojet(SceneManager *manager, char* propname, int tnumber, int truck
 			heathazePS=manager->createParticleSystem(paname, "tracks/JetHeatHaze");
 			smokeNode->attachObject(heathazePS);
 			heathazePS->setCastShadows(false);
+			heathazePS->setVisibilityFlags(DEPTHMAP_DISABLED); // disable particles in depthmap
 		}
 	}
 }
