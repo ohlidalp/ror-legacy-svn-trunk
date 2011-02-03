@@ -100,7 +100,7 @@ void DepthOfFieldEffect::createDepthRenderTexture()
 
 	mDepthViewport->setShadowsEnabled(false);
 	mDepthViewport->setOverlaysEnabled(false);
-	mDepthViewport->setSkiesEnabled(false);
+	//mDepthViewport->setSkiesEnabled(false);
 
 	mDepthViewport->setVisibilityMask(~DEPTHMAP_DISABLED);
 

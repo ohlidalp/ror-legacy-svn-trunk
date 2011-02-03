@@ -2091,6 +2091,7 @@ int Beam::loadTruck(const char* fname, SceneManager *manager, SceneNode *parent,
 			sprintf(flarename, "flare-%s-%i", truckname, free_flare);
 			f.bbs=manager->createBillboardSet(flarename,1);
 			f.bbs->createBillboard(0,0,0);
+			f.bbs->setVisibilityFlags(DEPTHMAP_DISABLED);
 			bool usingDefaultMaterial=true;
 			if (f.bbs && (!strncmp(matname, "default", 250) || strnlen(matname, 250) == 0))
 			{
@@ -2332,7 +2333,10 @@ int Beam::loadTruck(const char* fname, SceneManager *manager, SceneNode *parent,
 				props[free_prop].bbs[0]=manager->createBillboardSet(1); //(propname,1);
 				props[free_prop].bbs[0]->createBillboard(0,0,0);
 				if(props[free_prop].bbs[0])
+				{
 					props[free_prop].bbs[0]->setMaterialName(matname);
+					props[free_prop].bbs[0]->setVisibilityFlags(DEPTHMAP_DISABLED);
+				}
 				if(props[free_prop].bbs[0])
 					props[free_prop].bbsnode[0]->attachObject(props[free_prop].bbs[0]);
 				props[free_prop].bbsnode[0]->setVisible(false);
@@ -2356,7 +2360,10 @@ int Beam::loadTruck(const char* fname, SceneManager *manager, SceneNode *parent,
 				props[free_prop].bbs[0]=manager->createBillboardSet(1); //propname,1);
 				props[free_prop].bbs[0]->createBillboard(0,0,0);
 				if(props[free_prop].bbs[0])
+				{
 					props[free_prop].bbs[0]->setMaterialName("tracks/redbeaconflare");
+					props[free_prop].bbs[0]->setVisibilityFlags(DEPTHMAP_DISABLED);
+				}
 				if(props[free_prop].bbs[0])
 					props[free_prop].bbsnode[0]->attachObject(props[free_prop].bbs[0]);
 				props[free_prop].bbsnode[0]->setVisible(false);
@@ -2402,7 +2409,10 @@ int Beam::loadTruck(const char* fname, SceneManager *manager, SceneNode *parent,
 						else
 							props[free_prop].bbs[k]->setMaterialName("tracks/brightblueflare");
 						if(props[free_prop].bbs[k])
+						{
+							props[free_prop].bbs[k]->setVisibilityFlags(DEPTHMAP_DISABLED);
 							props[free_prop].bbsnode[k]->attachObject(props[free_prop].bbs[k]);
+						}
 					}
 					props[free_prop].bbsnode[k]->setVisible(false);
 				}
@@ -2494,6 +2504,9 @@ int Beam::loadTruck(const char* fname, SceneManager *manager, SceneNode *parent,
 			if (wingstart==-1) {wingstart=free_wing;wingarea=warea(nodes[wings[free_wing].fa->nfld].AbsPosition, nodes[wings[free_wing].fa->nfrd].AbsPosition, nodes[wings[free_wing].fa->nbld].AbsPosition, nodes[wings[free_wing].fa->nbrd].AbsPosition);}
 			else
 			{
+				// disable position lights on trucks
+				if(driveable=TRUCK) hasposlights=true;
+
 				if (nds[1]!=wings[free_wing-1].fa->nfld)
 				{
 					//discontinuity
@@ -2540,6 +2553,7 @@ int Beam::loadTruck(const char* fname, SceneManager *manager, SceneNode *parent,
 						props[free_prop].bbs[0]->createBillboard(0,0,0);
 						if(props[free_prop].bbs[0])
 						{
+							props[free_prop].bbs[0]->setVisibilityFlags(DEPTHMAP_DISABLED);
 							props[free_prop].bbs[0]->setMaterialName("tracks/greenflare");
 							props[free_prop].bbsnode[0]->attachObject(props[free_prop].bbs[0]);
 						}
@@ -2580,6 +2594,7 @@ int Beam::loadTruck(const char* fname, SceneManager *manager, SceneNode *parent,
 						props[free_prop].bbs[0]->createBillboard(0,0,0);
 						if(props[free_prop].bbs[0])
 						{
+							props[free_prop].bbs[0]->setVisibilityFlags(DEPTHMAP_DISABLED);
 							props[free_prop].bbs[0]->setMaterialName("tracks/flare");
 							props[free_prop].bbsnode[0]->attachObject(props[free_prop].bbs[0]);
 						}
@@ -2613,6 +2628,7 @@ int Beam::loadTruck(const char* fname, SceneManager *manager, SceneNode *parent,
 						props[free_prop].bbs[0]->createBillboard(0,0,0);
 						if(props[free_prop].bbs[0])
 						{
+							props[free_prop].bbs[0]->setVisibilityFlags(DEPTHMAP_DISABLED);
 							props[free_prop].bbs[0]->setMaterialName("tracks/redflare");
 							props[free_prop].bbsnode[0]->attachObject(props[free_prop].bbs[0]);
 						}
@@ -2653,6 +2669,7 @@ int Beam::loadTruck(const char* fname, SceneManager *manager, SceneNode *parent,
 						props[free_prop].bbs[0]->createBillboard(0,0,0);
 						if(props[free_prop].bbs[0])
 						{
+							props[free_prop].bbs[0]->setVisibilityFlags(DEPTHMAP_DISABLED);
 							props[free_prop].bbs[0]->setMaterialName("tracks/flare");
 							props[free_prop].bbsnode[0]->attachObject(props[free_prop].bbs[0]);
 						}
