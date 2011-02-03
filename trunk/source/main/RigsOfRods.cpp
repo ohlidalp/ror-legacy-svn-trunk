@@ -164,6 +164,10 @@ bool RigsOfRods::setup(void)
 		LogManager::getSingleton().setLogDetail(LL_LOW);
 	//FROM NOW ON WE HAVE LOGMANAGER!
 
+	// by default, display everything in the depth map
+	Ogre::MovableObject::setDefaultVisibilityFlags(DEPTHMAP_ENABLED);
+
+
 	CACHE.setLocation(SETTINGS.getSetting("Cache Path"), SETTINGS.getSetting("Config Root"));
 
 	ColoredTextAreaOverlayElementFactory *cef = new ColoredTextAreaOverlayElementFactory();

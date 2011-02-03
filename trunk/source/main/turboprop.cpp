@@ -106,6 +106,7 @@ Turboprop::Turboprop(SceneManager *manager, char* propname, node_t *nd, int nr, 
 		smokePS=manager->createParticleSystem(dename, "tracks/TurbopropSmoke");
 		if (smokePS) 
 		{
+			smokePS->setVisibilityFlags(DEPTHMAP_DISABLED); // disable particles in depthmap
 			smokeNode->attachObject(smokePS);
 			smokePS->setCastShadows(false);
 		}
@@ -117,6 +118,7 @@ Turboprop::Turboprop(SceneManager *manager, char* propname, node_t *nd, int nr, 
 			heathazePS=manager->createParticleSystem(dename, "tracks/TurbopropHeatHaze");
 			smokeNode->attachObject(heathazePS);
 			heathazePS->setCastShadows(false);
+			heathazePS->setVisibilityFlags(DEPTHMAP_DISABLED); // disable particles in depthmap
 		}
 	}
 

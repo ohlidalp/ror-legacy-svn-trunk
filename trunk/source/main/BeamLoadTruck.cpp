@@ -842,9 +842,9 @@ int Beam::loadTruck(const char* fname, SceneManager *manager, SceneNode *parent,
 							sprintf(wname, "exhaust-%d-%s", (int)exhausts.size(), truckname);
 							//if (pSysM) smoker=pSysM->createSystem(wname, "tracks/Smoke");
 							e.smoker=manager->createParticleSystem(wname, "tracks/Smoke");
+							if (!e.smoker) continue;
+							e.smoker->setVisibilityFlags(DEPTHMAP_DISABLED); // disable particles in depthmap
 							// ParticleSystem* pSys = ParticleSystemManager::getSingleton().createSystem("exhaust", "tracks/Smoke");
-							if (!e.smoker)
-								continue;
 							e.smokeNode->attachObject(e.smoker);
 							e.smokeNode->setPosition(nodes[e.emitterNode].AbsPosition);
 							exhausts.push_back(e);
@@ -870,9 +870,9 @@ int Beam::loadTruck(const char* fname, SceneManager *manager, SceneNode *parent,
 							sprintf(wname, "exhaust-%d-%s", (int)exhausts.size(), truckname);
 							//if (pSysM) smoker=pSysM->createSystem(wname, "tracks/Smoke");
 							e.smoker=manager->createParticleSystem(wname, "tracks/Smoke");
+							if (!e.smoker)  continue;
+							e.smoker->setVisibilityFlags(DEPTHMAP_DISABLED); // disable particles in depthmap
 							// ParticleSystem* pSys = ParticleSystemManager::getSingleton().createSystem("exhaust", "tracks/Smoke");
-							if (!e.smoker)
-								continue;
 							e.smokeNode->attachObject(e.smoker);
 							e.smokeNode->setPosition(nodes[e.emitterNode].AbsPosition);
 							exhausts.push_back(e);
@@ -2958,8 +2958,8 @@ int Beam::loadTruck(const char* fname, SceneManager *manager, SceneNode *parent,
 			if(usedSkin) strncpy(material, usedSkin->getReplacementForMaterial(material).c_str(), 50);
 
 			e.smoker = manager->createParticleSystem(wname, material);
-			if (!e.smoker)
-				continue;
+			if (!e.smoker) continue;
+			e.smoker->setVisibilityFlags(DEPTHMAP_DISABLED); // disable particles in depthmap
 			e.smokeNode->attachObject(e.smoker);
 			e.smokeNode->setPosition(nodes[e.emitterNode].AbsPosition);
 			nodes[id1].isHot=true;
@@ -3000,8 +3000,8 @@ int Beam::loadTruck(const char* fname, SceneManager *manager, SceneNode *parent,
 			char wname[256];
 			sprintf(wname, "cparticle-%i-%s", free_cparticle, truckname);
 			cparticles[free_cparticle].psys = manager->createParticleSystem(wname, psystem);
-			if (!cparticles[free_cparticle].psys)
-				continue;
+			if (!cparticles[free_cparticle].psys) continue;
+			cparticles[free_cparticle].psys->setVisibilityFlags(DEPTHMAP_DISABLED); // disable particles in depthmap
 			cparticles[free_cparticle].snode->attachObject(cparticles[free_cparticle].psys);
 			cparticles[free_cparticle].snode->setPosition(nodes[cparticles[free_cparticle].emitterNode].AbsPosition);
 			//shut down the emitters

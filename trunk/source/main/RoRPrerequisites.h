@@ -129,5 +129,9 @@ FWDCLSTRUCT(ground_model);
 FWDCLSTRUCT(client);
 FWDCLSTRUCT(authorinfo);
 
+enum VisibilityMasks {
+	DEPTHMAP_ENABLED  = 1,
+	DEPTHMAP_DISABLED = 2,
+};
 
 #endif //RORPREREQUISITES_H__

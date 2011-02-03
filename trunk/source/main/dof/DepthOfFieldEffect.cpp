@@ -7,6 +7,10 @@
 #include <Ogre.h>
 #include "Lens.h"
 
+#include "RoRPrerequisites.h"
+
+#include "Settings.h"
+
 using namespace Ogre;
 
 const int DepthOfFieldEffect::BLUR_DIVISOR = 2;
@@ -95,6 +99,10 @@ void DepthOfFieldEffect::createDepthRenderTexture()
 	*/
 
 	mDepthViewport->setShadowsEnabled(false);
+	mDepthViewport->setOverlaysEnabled(false);
+	mDepthViewport->setSkiesEnabled(false);
+
+	mDepthViewport->setVisibilityMask(~DEPTHMAP_DISABLED);
 
 	//re-set texture "DoF_Depth"
 	MaterialPtr p = MaterialManager::getSingleton().getByName("DoF_DepthOfField");
@@ -188,6 +196,8 @@ void DepthOfFieldEffect::preViewportUpdate(const Ogre::RenderTargetViewportEvent
 	if((!fragParams.isNull())&&(fragParams->_findNamedConstantDefinition("dofParams")))
 		fragParams->setNamedConstant("dofParams", dofParams,1,4);		
 
+	evt.source->setVisibilityMask(~DEPTHMAP_DISABLED);
+
 	// Add 'this' as a RenderableListener to replace the technique for all renderables
 	RenderQueue* queue = evt.source->getCamera()->getSceneManager()->getRenderQueue();
 	queue->setRenderableListener(this);
@@ -228,7 +238,7 @@ DOFManager::DOFManager(Ogre::SceneManager *m, Ogre::Viewport *mViewport, Ogre::R
 	//mRaySceneQuery->setQueryMask(queryMask);
 
 	debugNode = 0;
-	bool debug = false;
+	bool debug = (SETTINGS.getSetting("DOFDebug") == "Yes");
 	if(debug)
 	{
 		MaterialPtr material = MaterialManager::getSingleton().getByName("DoF_DepthDebug");
