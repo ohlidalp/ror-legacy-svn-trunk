@@ -65,6 +65,7 @@ public:
 	int flashMessage(lua_State *lua);
 	int log(lua_State *lua);
 	int showChooser(lua_State *lua);
+	int clearEvents(lua_State *lua);
 	int repairVehicle(lua_State *lua);
 	int removeVehicle(lua_State *lua);
 	int getTime(lua_State *lua);

@@ -740,6 +740,12 @@ bool Collisions::envokeScriptCallback(collision_box_t *cbox, node_t *node)
 	}
 	return handled;
 }
+
+void Collisions::clearEventCache()
+{
+	last_called_cbox = 0;
+}
+
 bool Collisions::collisionCorrect(Vector3 *refpos)
 {
 	//find the correct cell

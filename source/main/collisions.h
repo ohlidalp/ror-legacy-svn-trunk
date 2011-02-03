@@ -157,6 +157,8 @@ public:
 
 	eventsource_t *getEvent(int eventID) { return &eventsources[eventID]; };
 
+	void clearEventCache();
+
 	Collisions() {}; // for wrapper, DO NOT USE!
 
   Collisions(
