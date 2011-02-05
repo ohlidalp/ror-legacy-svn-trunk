@@ -1,7 +1,8 @@
 project(RoR_Main)
 
 # sources
-include (RoR.list)
+FILE(GLOB_RECURSE SOURCE_FILES *.cpp)
+FILE(GLOB_RECURSE HEADER_FILES *.h)
 
 #setup libraries
 macro(setup_lib name)
@@ -20,6 +21,12 @@ macro(setup_lib name)
       message(STATUS "${name} Enabled:      \tNO")
    endif(ROR_USE_${name})
 endmacro(setup_lib)
+
+macro(add_sub_dir dir)
+	FILE(GLOB_RECURSE files ${dir}/*.cpp ${dir}/*.h)
+	SOURCE_GROUP("${dir}" FILES ${files})
+	include_directories(${dir})
+endmacro(add_sub_dir)
 
 # config below
 IF(WIN32)
@@ -90,7 +97,15 @@ ENDIF(WIN32)
 
 #additional include dirs
 include_directories(.)
-include_directories(dof)
+add_sub_dir(audio)
+add_sub_dir(dof)
+add_sub_dir(gameplay)
+add_sub_dir(gfx)
+add_sub_dir(gui)
+add_sub_dir(mygui)
+add_sub_dir(physics)
+add_sub_dir(scripting)
+add_sub_dir(utils)
 
 target_link_libraries(RoR ${Ogre_LIBRARIES} ${Ogre_Terrain_LIBRARIES} ${Ogre_Paging_LIBRARIES} ${Ogre_RTShader_LIBRARIES} ${Ois_LIBRARIES} ${OS_LIBS} ${optional_libs})
 
