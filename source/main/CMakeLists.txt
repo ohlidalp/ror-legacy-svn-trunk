@@ -106,6 +106,8 @@ add_sub_dir(mygui)
 add_sub_dir(physics)
 add_sub_dir(scripting)
 add_sub_dir(utils)
+add_sub_dir(main_sim)
+add_sub_dir(network)
 
 target_link_libraries(RoR ${Ogre_LIBRARIES} ${Ogre_Terrain_LIBRARIES} ${Ogre_Paging_LIBRARIES} ${Ogre_RTShader_LIBRARIES} ${Ois_LIBRARIES} ${OS_LIBS} ${optional_libs})
 
