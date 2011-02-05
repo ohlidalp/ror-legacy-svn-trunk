@@ -247,21 +247,10 @@ bool RigsOfRods::setup(void)
 	//streams path, to be processed later by the cache system
 	LogManager::getSingleton().logMessage("Loading filesystems");
 
-	//main synced streams
-	ResourceGroupManager::getSingleton().addResourceLocation(SETTINGS.getSetting("Streams Path"), "FileSystem", "Streams");
-	exploreStreams(); //this will explore subdirs and register them as Packs dirs
-	//cache, flat
 	ResourceGroupManager::getSingleton().addResourceLocation(SETTINGS.getSetting("User Path")+"cache", "FileSystem", "cache");
 	//config, flat
 	ResourceGroupManager::getSingleton().addResourceLocation(SETTINGS.getSetting("User Path")+"config", "FileSystem", ResourceGroupManager::DEFAULT_RESOURCE_GROUP_NAME);
 	//packs, to be processed later by the cache system
-	ResourceGroupManager::getSingleton().addResourceLocation(SETTINGS.getSetting("User Path")+"packs", "FileSystem", "Packs", true);
-	//user vehicles, to be processed later by the cache system
-	ResourceGroupManager::getSingleton().addResourceLocation(SETTINGS.getSetting("User Path")+"vehicles", "FileSystem", "VehicleFolders");
-	exploreVehicles(); //this will add subdirs contents into General
-	//user terrains, to be processed later by the cache system
-	ResourceGroupManager::getSingleton().addResourceLocation(SETTINGS.getSetting("User Path")+"terrains", "FileSystem", "TerrainFolders");
-	exploreTerrains(); //this will add subdirs contents into General
 
 	// add scripts folder
 	ResourceGroupManager::getSingleton().addResourceLocation(SETTINGS.getSetting("User Path")+"scripts", "FileSystem", "Scripts", true);
@@ -349,6 +338,29 @@ bool RigsOfRods::setup(void)
 #ifdef USE_OPENAL
 	if(ssm) ssm->setLoadingBaseSounds(false);
 #endif // USE_OPENAL
+
+
+	// and the content
+	//main synced streams
+	ResourceGroupManager::getSingleton().addResourceLocation(SETTINGS.getSetting("Streams Path"), "FileSystem", "Streams");
+	exploreStreams(); //this will explore subdirs and register them as Packs dirs
+	//cache, flat
+	ResourceGroupManager::getSingleton().addResourceLocation(SETTINGS.getSetting("User Path")+"packs", "FileSystem", "Packs", true);
+	//user vehicles, to be processed later by the cache system
+	ResourceGroupManager::getSingleton().addResourceLocation(SETTINGS.getSetting("User Path")+"vehicles", "FileSystem", "VehicleFolders");
+	exploreVehicles(); //this will add subdirs contents into General
+	//user terrains, to be processed later by the cache system
+	ResourceGroupManager::getSingleton().addResourceLocation(SETTINGS.getSetting("User Path")+"terrains", "FileSystem", "TerrainFolders");
+	exploreTerrains(); //this will add subdirs contents into General
+	LogManager::getSingleton().logMessage("initialiseAllResourceGroups() - Content");
+	try
+	{
+		ResourceGroupManager::getSingleton().initialiseAllResourceGroups();
+	} catch(Ogre::Exception& e)
+	{
+		LogManager::getSingleton().logMessage("catched error while initializing Content Resource groups: " + e.getFullDescription());
+	}
+
 	//rgm.initialiseResourceGroup(ResourceGroupManager::DEFAULT_RESOURCE_GROUP_NAME);
 
 #ifndef NOLANG
@@ -479,8 +491,16 @@ void RigsOfRods::exploreStreams()
 		rgm.addResourceLocation(filename, "FileSystem", "Packs");
 
 		// HACK: add subfolders
-		rgm.addResourceLocation(filename+dirsep+"vehicles", "FileSystem", "VehicleFolders");
-		rgm.addResourceLocation(filename+dirsep+"terrains", "FileSystem", "TerrainFolders");
+		rgm.addResourceLocation(filename+dirsep+"vehicles", "FileSystem", "streams");
+		rgm.addResourceLocation(filename+dirsep+"terrains", "FileSystem", "streams");
+	}
+	LogManager::getSingleton().logMessage("initialiseResourceGroups: streams");
+	try
+	{
+		ResourceGroupManager::getSingleton().initialiseResourceGroup("streams");
+	} catch(Ogre::Exception& e)
+	{
+		LogManager::getSingleton().logMessage("catched error while initializing streams Resource groups: " + e.getFullDescription());
 	}
 }
 
@@ -502,6 +522,14 @@ void RigsOfRods::exploreVehicles()
 		rgm.addResourceLocation(fullpath+(*iterFiles).filename, "FileSystem", "VehicleFolders");
 		//add textures/temp for unpacked ddx support
 		rgm.addResourceLocation(fullpath+(*iterFiles).filename+dirsep+"textures"+dirsep+"temp", "FileSystem", "VehicleFolders");
+	}
+	LogManager::getSingleton().logMessage("initialiseResourceGroups: VehicleFolders");
+	try
+	{
+		ResourceGroupManager::getSingleton().initialiseResourceGroup("VehicleFolders");
+	} catch(Ogre::Exception& e)
+	{
+		LogManager::getSingleton().logMessage("catched error while initializing VehicleFolders Resource groups: " + e.getFullDescription());
 	}
 }
 
@@ -533,5 +561,13 @@ void RigsOfRods::exploreTerrains()
 		rgm.addResourceLocation(fullpath+(*iterFiles).filename+dirsep+"Temp", "FileSystem", "TerrainFolders");
 		rgm.addResourceLocation(fullpath+(*iterFiles).filename+dirsep+"Templates", "FileSystem", "TerrainFolders");
 		rgm.addResourceLocation(fullpath+(*iterFiles).filename+dirsep+"Terrain", "FileSystem", "TerrainFolders");
+	}
+	LogManager::getSingleton().logMessage("initialiseResourceGroups: TerrainFolders");
+	try
+	{
+		ResourceGroupManager::getSingleton().initialiseResourceGroup("TerrainFolders");
+	} catch(Ogre::Exception& e)
+	{
+		LogManager::getSingleton().logMessage("catched error while initializing TerrainFolders Resource groups: " + e.getFullDescription());
 	}
 }
