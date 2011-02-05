@@ -2505,7 +2505,8 @@ int Beam::loadTruck(const char* fname, SceneManager *manager, SceneNode *parent,
 			else
 			{
 				// disable position lights on trucks
-				if(driveable=TRUCK) hasposlights=true;
+				// NOT WORKING CORRECTLY:
+				//if(driveable=TRUCK) hasposlights=true;
 
 				if (nds[1]!=wings[free_wing-1].fa->nfld)
 				{
