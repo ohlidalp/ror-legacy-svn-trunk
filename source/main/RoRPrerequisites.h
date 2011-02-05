@@ -32,8 +32,10 @@ along with Rigs of Rods.  If not, see <http://www.gnu.org/licenses/>.
 #define RORPREREQUISITES_H__
 
 // replace standard allocations with nedmalloc
-#define REPLACE_SYSTEM_ALLOCATOR
-#include "nedmalloc.h"
+//#define REPLACE_SYSTEM_ALLOCATOR
+//#include "nedmalloc.h"
+//CAUTION, do not try to use normal free on nedmalloc'ed memory and the other way round
+// if you are not sure that this replacement is consistent, better leave it out.
 
 class AeroEngine;
 class Airfoil;
