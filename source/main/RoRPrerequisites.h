@@ -1,7 +1,7 @@
 /*
 This source file is part of Rigs of Rods
-Copyright 2005,2006,2007,2008,2009,2010 Pierre-Michel Ricordel
-Copyright 2007,2008,2009,2010 Thomas Fischer
+Copyright 2005-2011 Pierre-Michel Ricordel
+Copyright 2007-2011 Thomas Fischer
 
 For more information, see http://www.rigsofrods.com/
 
@@ -17,25 +17,33 @@ GNU General Public License for more details.
 You should have received a copy of the GNU General Public License
 along with Rigs of Rods.  If not, see <http://www.gnu.org/licenses/>.
 */
-
 // created on 30th of April 2010 by Thomas Fischer
+#ifndef RORPREREQUISITES_H__
+#define RORPREREQUISITES_H__
+
+// add some ogre headers
+#include <OgrePrerequisites.h>
+#include <OgreVector3.h>
+#include <OgreVector2.h>
+#include <OgreColourValue.h>
+#include <OgreQuaternion.h>
+
 
 // macro that checks for the correct ogre version and aborts compilation if not correct
-
-#include <OgrePrerequisites.h>
-
 #if OGRE_VERSION < 0x010701
 #error You need at least Ogre version 1.7.1, older versions are not supported
 #endif
-
-#ifndef RORPREREQUISITES_H__
-#define RORPREREQUISITES_H__
 
 // replace standard allocations with nedmalloc
 //#define REPLACE_SYSTEM_ALLOCATOR
 //#include "nedmalloc.h"
 //CAUTION, do not try to use normal free on nedmalloc'ed memory and the other way round
 // if you are not sure that this replacement is consistent, better leave it out.
+
+// some tool to define the bitmasks. We use this, as it it far better readable (prevents errors)
+#define BITMASK(x) (1 << (x-1)) 
+// BITMASK(1) = 0x00000001 = 0b00....0001
+// BITMASK(2) = 0x00000002 = 0b00....0010
 
 class AeroEngine;
 class Airfoil;
@@ -126,10 +134,10 @@ FWDCLSTRUCT(rig);
 FWDCLSTRUCT(collision_box);
 FWDCLSTRUCT(tie);
 FWDCLSTRUCT(hook);
-
 FWDCLSTRUCT(ground_model);
 FWDCLSTRUCT(client);
 FWDCLSTRUCT(authorinfo);
+FWDCLSTRUCT(localizer);
 
 enum VisibilityMasks {
 	DEPTHMAP_ENABLED  = 1,
