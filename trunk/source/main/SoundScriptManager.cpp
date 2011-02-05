@@ -710,6 +710,8 @@ void SoundScriptInstance::stop()
 
 void SoundScriptInstance::setEnabled(bool e)
 {
+	if(startSound) startSound->setEnabled(e);
+	if(stopSound)  stopSound->setEnabled(e);
 	for (int i=0; i<templ->free_sound; i++)
 	{
 		sounds[i]->setEnabled(e);
