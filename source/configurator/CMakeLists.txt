@@ -71,15 +71,16 @@ link_directories   (${Ois_LIBRARY_DIRS})
 include_directories(${RoR_SOURCE_DIR}/source/protocol)
 
 add_definitions("-DNOOGRE -D_UNICODE")
-include_directories(../main)
+include_directories(../main/utils/)
+include_directories(../main/network/protocol)
 
 FILE(GLOB sources "*.cpp")
 FILE(GLOB headers "*.h")
 
 IF(WIN32)
-	add_executable(rorconfig WIN32 ${sources} ${headers} ${OS_SOURCE} ../main/InputEngine.cpp ../main/Settings.cpp ../main/errorutils.cpp)
+	add_executable(rorconfig WIN32 ${sources} ${headers} ${OS_SOURCE} ../main/utils/InputEngine.cpp ../main/utils/Settings.cpp ../main/utils/errorutils.cpp)
 ELSE(WIN32)
-	add_executable(rorconfig ${sources} ${headers} ${OS_SOURCE} ../main/InputEngine.cpp ../main/Settings.cpp ../main/errorutils.cpp)
+	add_executable(rorconfig ${sources} ${headers} ${OS_SOURCE} ../main/utils/InputEngine.cpp ../main/utils/Settings.cpp ../main/utils/errorutils.cpp)
 ENDIF(WIN32)
 
 TARGET_LINK_LIBRARIES(rorconfig ${Ogre_LIBRARIES} ${Ois_LIBRARIES} ${OS_LIBS} ${optional_libs} ${wxWidgets_LIBRARIES})
