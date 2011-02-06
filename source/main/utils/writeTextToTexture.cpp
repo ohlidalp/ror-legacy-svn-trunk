@@ -1,7 +1,7 @@
 /*
 This source file is part of Rigs of Rods
-Copyright 2005,2006,2007,2008,2009 Pierre-Michel Ricordel
-Copyright 2007,2008,2009 Thomas Fischer
+Copyright 2005-2011 Pierre-Michel Ricordel
+Copyright 2007-2011 Thomas Fischer
 
 For more information, see http://www.rigsofrods.com/
 
@@ -17,7 +17,6 @@ GNU General Public License for more details.
 You should have received a copy of the GNU General Public License
 along with Rigs of Rods.  If not, see <http://www.gnu.org/licenses/>.
 */
-
 #include "writeTextToTexture.h"
 #include "OgreHardwarePixelBuffer.h"
 #include "OgreTexture.h"
