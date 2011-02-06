@@ -1645,7 +1645,7 @@ MyDialog::MyDialog(const wxString& title, MyApp *_app) : wxDialog(NULL, wxID_ANY
 	cTree->SetWindowStyle(style);
 	eventsSizer->Add(cTree, 2, wxGROW);
 
-	wxPanel *controlsInfoPanel = new wxPanel(eventsPanel, wxID_ANY, wxPoint(0, 0 ), wxSize( maxTreeWidth, 390 ));
+	wxPanel *controlsInfoPanel = new wxPanel(eventsPanel, wxID_ANY, wxPoint(0, 0 ), wxSize( maxTreeWidth, 60 ));
 	eventsSizer->Add(controlsInfoPanel, 0, wxGROW);
 	wxButton *wizBtn = new wxButton(controlsInfoPanel, command_joywizard, _("Wizard"), wxPoint(5,5), wxSize(80, 50));
 	// XXX TOFIX: disable until fixed!
@@ -1781,6 +1781,7 @@ MyDialog::MyDialog(const wxString& title, MyApp *_app) : wxDialog(NULL, wxID_ANY
 	particles->SetToolTip(_("This may hurt framerate a bit on old systems, but it looks pretty good."));
 	heathaze=new wxCheckBox(graphicsPanel, -1, _("HeatHaze"), wxPoint(x_row2, y));
 	heathaze->SetToolTip(_("Heat Haze from engines, major slowdown. (only activate with recent hardware)"));
+	heathaze->Disable();
 	y+=25;
 
 	dText = new wxStaticText(graphicsPanel, -1, _("Cockpit options:"), wxPoint(10, y));
@@ -1791,19 +1792,28 @@ MyDialog::MyDialog(const wxString& title, MyApp *_app) : wxDialog(NULL, wxID_ANY
 	dText = new wxStaticText(graphicsPanel, -1, _("Visual effects:"), wxPoint(10, y));
 	sunburn=new wxCheckBox(graphicsPanel, -1, _("Sunburn"), wxPoint(x_row1, y));
 	sunburn->SetToolTip(_("Requires a recent video card. Adds a bluish blinding effect."));
+	sunburn->Disable();
+
 	hdr=new wxCheckBox(graphicsPanel, -1, _("HDR"), wxPoint(x_row2, y));
 	hdr->SetToolTip(_("Requires a recent video card. Add a lightning effect that simulates the light sensitivity of the human eye."));
 	y+=15;
+	
 	mblur=new wxCheckBox(graphicsPanel, -1, _("Motion blur"), wxPoint(x_row1, y));
 	mblur->SetToolTip(_("Requires a recent video card. Adds a motion blur effect."));
+	mblur->Disable();
+
 	skidmarks=new wxCheckBox(graphicsPanel, -1, _("Skidmarks"), wxPoint(x_row2, y));
 	skidmarks->SetToolTip(_("Adds tire tracks to the ground."));
+	skidmarks->Disable();
 	y+=15;
+	
 	envmap=new wxCheckBox(graphicsPanel, -1, _("High quality reflective effects"), wxPoint(x_row1, y));
 	envmap->SetToolTip(_("Enable high quality reflective effects. Causes a slowdown."));
 	y+=15;
+	
 	glow=new wxCheckBox(graphicsPanel, -1, _("Glow"), wxPoint(x_row1, y));
 	glow->SetToolTip(_("Adds a glow effect to lights"));
+	glow->Disable();
 	
 	dof=new wxCheckBox(graphicsPanel, -1, _("DOF"), wxPoint(x_row2, y));
 	dof->SetToolTip(_("Adds a nice Depth of field effect to the scene."));
@@ -1995,6 +2005,7 @@ MyDialog::MyDialog(const wxString& title, MyApp *_app) : wxDialog(NULL, wxID_ANY
 	y+=15;
 	autodl=new wxCheckBox(advancedPanel, -1, _("Enable Auto-Downloader"), wxPoint(320, y));
 	autodl->SetToolTip(_("This enables the automatic downloading of missing mods when using Multiplayer"));
+	autodl->Disable();
 	y+=15;
 	enablexfire=0;
 #if OGRE_PLATFORM == OGRE_PLATFORM_WIN32
@@ -2007,6 +2018,7 @@ MyDialog::MyDialog(const wxString& title, MyApp *_app) : wxDialog(NULL, wxID_ANY
 	y+=15;
 	rtshader=new wxCheckBox(advancedPanel, -1, _("RT Shader System"), wxPoint(320, y));
 	rtshader->SetToolTip(_("Enables the Runtime Shader generation System. EXPERIMENTAL"));
+	rtshader->Disable();
 	y+=15;
 	dtm=new wxCheckBox(advancedPanel, -1, _("Debug Truck Mass"), wxPoint(320, y));
 	dtm->SetToolTip(_("Prints all node masses to the RoR.log. Only use for truck debugging!"));
@@ -2501,25 +2513,25 @@ void MyDialog::getSettingsControls()
 	settings["Debug Truck Mass"] = (dtm->GetValue()) ? "Yes" : "No";
 	settings["Debug Collisions"] = (dcm->GetValue()) ? "Yes" : "No";
 	settings["Particles"] = (particles->GetValue()) ? "Yes" : "No";
-	settings["HeatHaze"] = (heathaze->GetValue()) ? "Yes" : "No";
+	settings["HeatHaze"] = "No"; //(heathaze->GetValue()) ? "Yes" : "No";
 	settings["Hydrax"] = (hydrax->GetValue()) ? "Yes" : "No";
-	settings["Use RTShader System"] = (rtshader->GetValue()) ? "Yes" : "No";
+	//settings["Use RTShader System"] = (rtshader->GetValue()) ? "Yes" : "No";
 	settings["disableOverViewMap"] = (dismap->GetValue()) ? "Yes" : "No";
 	if(leds) { settings["Logitech LEDs"] = (leds->GetValue()) ? "Yes" : "No"; };
 	settings["DebugBeams"] = (beamdebug->GetValue()) ? "Yes" : "No";
 	if(enablexfire) { settings["XFire"] = (enablexfire->GetValue()) ? "Yes" : "No"; };
-	settings["AutoDownload"] = (autodl->GetValue()) ? "Yes" : "No";
+	//settings["AutoDownload"] = (autodl->GetValue()) ? "Yes" : "No";
 	settings["Position Storage"] = (posstor->GetValue()) ? "Yes" : "No";
 	settings["GearboxMode"]= conv(gearBoxMode->GetStringSelection());
 	settings["External Camera Mode"] = (extcam->GetValue()) ? "Static" : "Pitching";
 	settings["Mirrors"] = (mirror->GetValue()) ? "Yes" : "No";
 	settings["Envmap"] = (envmap->GetValue()) ? "Yes" : "No";
-	settings["Sunburn"] = (sunburn->GetValue()) ? "Yes" : "No";
+	settings["Sunburn"] = "No"; //(sunburn->GetValue()) ? "Yes" : "No";
 	settings["HDR"] = (hdr->GetValue()) ? "Yes" : "No";
-	settings["Glow"] = (glow->GetValue()) ? "Yes" : "No";
+	settings["Glow"] = "No"; //(glow->GetValue()) ? "Yes" : "No";
 	settings["DOF"] = (dof->GetValue()) ? "Yes" : "No";
-	settings["Motion blur"] = (mblur->GetValue()) ? "Yes" : "No";
-	settings["Skidmarks"] = (skidmarks->GetValue()) ? "Yes" : "No";
+	settings["Motion blur"] = "No"; //(mblur->GetValue()) ? "Yes" : "No";
+	settings["Skidmarks"] = "No"; //(skidmarks->GetValue()) ? "Yes" : "No";
 	settings["Creak Sound"] = (creaksound->GetValue()) ? "No" : "Yes";
 	settings["Enhanced wheels"] = (wheel2->GetValue()) ? "Yes" : "No";
 	settings["Fog"] = (enableFog->GetValue()) ? "Yes" : "No";
@@ -2599,19 +2611,19 @@ void MyDialog::updateSettingsControls()
 	st = settings["disableOverViewMap"]; if (st.length()>0) dismap->SetValue(st=="Yes");
 	if(leds) { st = settings["Logitech LEDs"]; if (st.length()>0) leds->SetValue(st=="Yes"); };
 	st = settings["External Camera Mode"]; if (st.length()>0) extcam->SetValue(st=="Static");
-	st = settings["AutoDownload"]; if (st.length()>0) autodl->SetValue(st=="Yes");
+	//st = settings["AutoDownload"]; if (st.length()>0) autodl->SetValue(st=="Yes");
 	st = settings["Position Storage"]; if (st.length()>0) posstor->SetValue(st=="Yes");
 	st = settings["DebugBeams"]; if (st.length()>0) beamdebug->SetValue(st=="Yes");
 	if(enablexfire) { st = settings["XFire"]; if (st.length()>0) enablexfire->SetValue(st=="Yes"); };
 	st = settings["Mirrors"]; if (st.length()>0) mirror->SetValue(st=="Yes");
 	st = settings["Creak Sound"]; if (st.length()>0) creaksound->SetValue(st=="No");
 	st = settings["Envmap"]; if (st.length()>0) envmap->SetValue(st=="Yes");
-	st = settings["Sunburn"]; if (st.length()>0) sunburn->SetValue(st=="Yes");
+	//st = settings["Sunburn"]; if (st.length()>0) sunburn->SetValue(st=="Yes");
 	st = settings["HDR"]; if (st.length()>0) hdr->SetValue(st=="Yes");
-	st = settings["Glow"]; if (st.length()>0) glow->SetValue(st=="Yes");
+	//st = settings["Glow"]; if (st.length()>0) glow->SetValue(st=="Yes");
 	st = settings["DOF"]; if (st.length()>0) dof->SetValue(st=="Yes");
-	st = settings["Motion blur"]; if (st.length()>0) mblur->SetValue(st=="Yes");
-	st = settings["Skidmarks"]; if (st.length()>0) skidmarks->SetValue(st=="Yes");
+	//st = settings["Motion blur"]; if (st.length()>0) mblur->SetValue(st=="Yes");
+	//st = settings["Skidmarks"]; if (st.length()>0) skidmarks->SetValue(st=="Yes");
 	st = settings["3D Sound renderer"]; if (st.length()>0) sound->SetStringSelection(conv(st));
 	st = settings["Threads"]; if (st.length()>0) thread->SetStringSelection(conv(st));
 	st = settings["Enhanced wheels"]; if (st.length()>0) wheel2->SetValue(st=="Yes");
@@ -3789,7 +3801,7 @@ void MyDialog::OnNoteBookPageChange(wxNotebookEvent& event)
 	{
 		// try to find our version
 		Ogre::String ver = "";
-		FILE *f = fopen("version", "r");
+		FILE *f = fopen("version.txt", "r");
 		if(f)
 		{
 			char line[30];
