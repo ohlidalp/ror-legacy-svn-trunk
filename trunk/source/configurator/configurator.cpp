@@ -2607,7 +2607,7 @@ void MyDialog::updateSettingsControls()
 	st = settings["Particles"]; if (st.length()>0) particles->SetValue(st=="Yes");
 	st = settings["HeatHaze"]; if (st.length()>0) heathaze->SetValue(st=="Yes");
 	st = settings["Hydrax"]; if (st.length()>0) hydrax->SetValue(st=="Yes");
-	st = settings["Use RTShader System"]; if (st.length()>0) rtshader->SetValue(st=="Yes");
+	//st = settings["Use RTShader System"]; if (st.length()>0) rtshader->SetValue(st=="Yes");
 	st = settings["disableOverViewMap"]; if (st.length()>0) dismap->SetValue(st=="Yes");
 	if(leds) { st = settings["Logitech LEDs"]; if (st.length()>0) leds->SetValue(st=="Yes"); };
 	st = settings["External Camera Mode"]; if (st.length()>0) extcam->SetValue(st=="Static");

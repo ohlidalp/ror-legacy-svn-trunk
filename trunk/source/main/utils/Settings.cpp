@@ -171,6 +171,7 @@ int Settings::generateBinaryHash()
 	// now hash ourself
 	{
 		char hash_result[250];
+		memset(hash_result, 0, 249);
 		RoR::CSHA1 sha1;
 		sha1.HashFile(program_path);
 		sha1.Final();
