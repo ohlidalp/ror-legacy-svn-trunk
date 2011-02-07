@@ -600,6 +600,7 @@ int ScriptEngine::loadScriptFile(const char *fileName, string &script, string &h
 		// using SHA1 here is stupid, we need to replace it with something better
 		// then hash it
 		char hash_result[250];
+		memset(hash_result, 0, 249);
 		RoR::CSHA1 sha1;
 		sha1.UpdateHash((uint8_t *)script.c_str(), script.size());
 		sha1.Final();

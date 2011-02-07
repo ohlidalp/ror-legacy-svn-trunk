@@ -50,6 +50,7 @@ along with Rigs of Rods.  If not, see <http://www.gnu.org/licenses/>.
 #include "ShadowManager.h"
 #include "TruckHUD.h"
 #include "DotSceneLoader.h"
+#include "AdvancedScreen.h"
 
 #ifdef USE_MPLATFORM
 #include "mplatform_fd.h"
@@ -2425,17 +2426,54 @@ bool RoRFrameListener::updateEvents(float dt)
 	} else if (INPUTENGINE.getEventBoolValueBounce(EV_COMMON_SCREENSHOT, 0.5f))
 	{
 		int mNumScreenShots=0;
-		String tmp = SETTINGS.getSetting("User Path") + String("screenshot_") + StringConverter::toString(++mNumScreenShots) + String(".") + String(screenshotformat);
-		while(fileExists(tmp.c_str()))
-			tmp = SETTINGS.getSetting("User Path") + String("screenshot_") + StringConverter::toString(++mNumScreenShots) + String(".") + String(screenshotformat);
+		String tmpfn = SETTINGS.getSetting("User Path") + String("screenshot_") + StringConverter::toString(++mNumScreenShots) + String(".") + String(screenshotformat);
+		while(fileExists(tmpfn.c_str()))
+			tmpfn = SETTINGS.getSetting("User Path") + String("screenshot_") + StringConverter::toString(++mNumScreenShots) + String(".") + String(screenshotformat);
 
-		LogManager::getSingleton().logMessage("Wrote screenshot : " + tmp);
-		// hide any flash message
+		if(String(screenshotformat) == "png")
+		{
+			// add some more data into the image
+			AdvancedScreen *as = new AdvancedScreen(mWindow, tmpfn);
+			as->addData("terrain_Name", loadedTerrain);
+			as->addData("terrain_Hash", SETTINGS.getSetting("TerrainHash"));
+			as->addData("Truck_Num", StringConverter::toString(current_truck));
+			if(current_truck>=0 && trucks[current_truck])
+			{
+				as->addData("Truck_fname", trucks[current_truck]->realtruckfilename);
+				as->addData("Truck_name", trucks[current_truck]->getTruckName());
+				as->addData("Truck_beams", StringConverter::toString(trucks[current_truck]->getBeamCount()));
+				as->addData("Truck_nodes", StringConverter::toString(trucks[current_truck]->getNodeCount()));
+			}
+			as->addData("User_NickName", SETTINGS.getSetting("Nickname"));
+			as->addData("User_Language", SETTINGS.getSetting("Language"));
+			as->addData("RoR_VersionString", String(ROR_VERSION_STRING));
+			as->addData("RoR_VersionSVN", String(SVN_REVISION));
+			as->addData("RoR_VersionSVNID", String(SVN_ID));
+			as->addData("RoR_ProtocolVersion", String(RORNET_VERSION));
+			as->addData("RoR_BinaryHash", SETTINGS.getSetting("BinaryHash"));
+			as->addData("MP_ServerName", SETTINGS.getSetting("Server name"));
+			as->addData("MP_ServerPort", SETTINGS.getSetting("Server port"));
+			as->addData("MP_NetworkEnabled", SETTINGS.getSetting("Network enable"));
+			as->addData("Camera_Mode", StringConverter::toString(cameramode));
+			as->addData("Camera_Position", StringConverter::toString(mCamera->getPosition()));
+
+			const RenderTarget::FrameStats& stats = mWindow->getStatistics();
+			as->addData("AVGFPS", StringConverter::toString(stats.avgFPS));
+			
+			as->write();
+			delete(as);
+		} else
+		{
+			mWindow->update();
+			mWindow->writeContentsToFile(tmpfn);
+		}
+		LogManager::getSingleton().logMessage("Wrote screenshot : " + tmpfn);
+		
+		// hide any old flash message
 		if(ow) ow->hideFlashMessage();
 
-		mWindow->update();
 
-		mWindow->writeContentsToFile(tmp);
+		// show new flash message
 		char tmp1[255];
 		String ssmsg = _L("wrote screenshot:");
 		sprintf(tmp1, "%s %d", ssmsg.c_str(), mNumScreenShots);
@@ -4696,6 +4734,7 @@ void RoRFrameListener::loadTerrain(String terrainfile)
 	{
 		Cache_Entry ce = CACHE.getResourceInfo(terrainfile);
 		char hash_result[250];
+		memset(hash_result, 0, 249);
 		RoR::CSHA1 sha1;
 		String fn;
 		if(ce.type == "Zip")
@@ -8257,3 +8296,4 @@ void RoRFrameListener::RTSSgenerateShaders(Entity* entity, Ogre::String normalTe
 		RTSSgenerateShadersForMaterial(curMaterialName, normalTextureName);
 	}
 }
+
