@@ -327,10 +327,6 @@ public:
 	float getFogDensity() { return fogdensity; };
 	bool frameEnded(const FrameEvent& evt);
 	void showLoad(int type, char* instance, char* box);
-	void getMeshInformation(Mesh* mesh,size_t &vertex_count,Vector3* &vertices,
-			size_t &index_count, unsigned* &indices,
-			const Vector3 &position = Vector3::ZERO,
-			const Quaternion &orient = Quaternion::IDENTITY,const Vector3 &scale = Vector3::UNIT_SCALE);
 	void showspray(bool s);
 	int getNetPointToUID() { return netPointToUID; };
 	void setNetPointToUID(int uid);
