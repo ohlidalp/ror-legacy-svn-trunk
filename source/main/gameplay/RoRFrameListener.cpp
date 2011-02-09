@@ -1509,120 +1509,6 @@ int RoRFrameListener::setupBenchmark()
 	return 0;
 }
 
-void RoRFrameListener::getMeshInformation(Mesh* mesh,size_t &vertex_count,Vector3* &vertices,
-											  size_t &index_count, unsigned* &indices,
-											  const Vector3 &position,
-											  const Quaternion &orient,const Vector3 &scale)
-{
-	vertex_count = index_count = 0;
-
-	bool added_shared = false;
-	size_t current_offset = vertex_count;
-	size_t shared_offset = vertex_count;
-	size_t next_offset = vertex_count;
-	size_t index_offset = index_count;
-	size_t prev_vert = vertex_count;
-	size_t prev_ind = index_count;
-
-	// Calculate how many vertices and indices we're going to need
-	for(int i = 0;i < mesh->getNumSubMeshes();i++)
-	{
-		SubMesh* submesh = mesh->getSubMesh(i);
-
-		// We only need to add the shared vertices once
-		if(submesh->useSharedVertices)
-		{
-			if(!added_shared)
-			{
-				VertexData* vertex_data = mesh->sharedVertexData;
-				vertex_count += vertex_data->vertexCount;
-				added_shared = true;
-			}
-		}
-		else
-		{
-			VertexData* vertex_data = submesh->vertexData;
-			vertex_count += vertex_data->vertexCount;
-		}
-
-		// Add the indices
-		Ogre::IndexData* index_data = submesh->indexData;
-		index_count += index_data->indexCount;
-	}
-
-	// Allocate space for the vertices and indices
-	vertices = new Vector3[vertex_count];
-	indices = new unsigned[index_count];
-
-	added_shared = false;
-
-	// Run through the submeshes again, adding the data into the arrays
-	for(int i = 0;i < mesh->getNumSubMeshes();i++)
-	{
-		SubMesh* submesh = mesh->getSubMesh(i);
-
-		Ogre::VertexData* vertex_data = submesh->useSharedVertices ? mesh->sharedVertexData : submesh->vertexData;
-		if((!submesh->useSharedVertices)||(submesh->useSharedVertices && !added_shared))
-		{
-			if(submesh->useSharedVertices)
-			{
-				added_shared = true;
-				shared_offset = current_offset;
-			}
-
-			const Ogre::VertexElement* posElem = vertex_data->vertexDeclaration->findElementBySemantic(Ogre::VES_POSITION);
-			Ogre::HardwareVertexBufferSharedPtr vbuf = vertex_data->vertexBufferBinding->getBuffer(posElem->getSource());
-			unsigned char* vertex = static_cast<unsigned char*>(vbuf->lock(Ogre::HardwareBuffer::HBL_READ_ONLY));
-			Ogre::Real* pReal;
-
-			for(size_t j = 0; j < vertex_data->vertexCount; ++j, vertex += vbuf->getVertexSize())
-			{
-				posElem->baseVertexPointerToElement(vertex, &pReal);
-
-				Vector3 pt;
-
-				pt.x = (*pReal++);
-				pt.y = (*pReal++);
-				pt.z = (*pReal++);
-
-				pt = (orient * (pt * scale)) + position;
-
-				vertices[current_offset + j].x = pt.x;
-				vertices[current_offset + j].y = pt.y;
-				vertices[current_offset + j].z = pt.z;
-			}
-			vbuf->unlock();
-			next_offset += vertex_data->vertexCount;
-		}
-
-		Ogre::IndexData* index_data = submesh->indexData;
-
-		size_t numTris = index_data->indexCount / 3;
-		unsigned short* pShort = 0;
-		unsigned int* pInt = 0;
-		Ogre::HardwareIndexBufferSharedPtr ibuf = index_data->indexBuffer;
-		bool use32bitindexes = (ibuf->getType() == Ogre::HardwareIndexBuffer::IT_32BIT);
-		if (use32bitindexes) pInt = static_cast<unsigned int*>(ibuf->lock(Ogre::HardwareBuffer::HBL_READ_ONLY));
-		else pShort = static_cast<unsigned short*>(ibuf->lock(Ogre::HardwareBuffer::HBL_READ_ONLY));
-
-		for(size_t k = 0; k < numTris; ++k)
-		{
-			size_t offset = (submesh->useSharedVertices)?shared_offset:current_offset;
-
-			unsigned int vindex = use32bitindexes? *pInt++ : *pShort++;
-			indices[index_offset + 0] = vindex + offset;
-			vindex = use32bitindexes? *pInt++ : *pShort++;
-			indices[index_offset + 1] = vindex + offset;
-			vindex = use32bitindexes? *pInt++ : *pShort++;
-			indices[index_offset + 2] = vindex + offset;
-
-			index_offset += 3;
-		}
-		ibuf->unlock();
-		current_offset = next_offset;
-	}
-}
-
 String RoRFrameListener::saveTerrainMesh()
 {
 	LogManager::getSingleton().logMessage("saving Terrain Mesh to file...");
@@ -1928,71 +1814,13 @@ void RoRFrameListener::loadObject(const char* name, float px, float py, float pz
 		//resp=sscanf(ptline, "%f, %f, %f, %f, %f, %f, %f, %f, %f, %c",&lx,&hx,&ly, &hy,&lz, &hz, &srx, &sry, &srz,&type);
 		if (!strcmp("endbox", ptline))
 		{
-			if (enable_collisions) collisions->addCollisionBox(tenode, rotating, virt,px,py,pz,rx,ry,rz,lx,hx,ly,hy,lz,hz,srx,sry,srz,eventname, instancename, forcecam, Vector3(fcx, fcy, fcz), scx, scy, scz, drx, dry, drz, event_filter, luahandler);
+			if (enable_collisions)
+				collisions->addCollisionBox(tenode, rotating, virt,px,py,pz,rx,ry,rz,lx,hx,ly,hy,lz,hz,srx,sry,srz,eventname, instancename, forcecam, Vector3(fcx, fcy, fcz), scx, scy, scz, drx, dry, drz, event_filter, luahandler);
 			continue;
 		}
 		if (!strcmp("endmesh", ptline))
 		{
-			// check if this is an event box:
-			if((SETTINGS.getSetting("Debug Event Boxes") == "Yes") && virt && event_filter != EVENT_NONE)
-			{
-				// load mesh, find bounds, add collision box, discard mesh
-				Entity *ent = mSceneMgr->createEntity(collmesh);
-				AxisAlignedBox bounds = ent->getBoundingBox();
-
-				Vector3 min = bounds.getMinimum();
-				Vector3 max = bounds.getMaximum();
-				
-				// add event box
-				collisions->addCollisionBox(tenode, rotating, virt, px,py,pz,rx,ry,rz,min.x,max.x,min.y,max.y,min.z,max.z,srx,sry,srz,eventname, instancename, forcecam, Vector3(fcx, fcy, fcz), scx, scy, scz, drx, dry, drz, event_filter, luahandler);
-
-				if(debugCollisions)
-				{
-					ent->setMaterialName("tracks/transred");
-					SceneNode *colbakenode=mSceneMgr->getRootSceneNode()->createChildSceneNode();
-					colbakenode->attachObject(ent);
-					colbakenode->setPosition(Vector3(px,py,pz));
-					colbakenode->setOrientation(tenode->getOrientation());
-					colbakenode->showBoundingBox(true);
-				} else
-				{
-					mSceneMgr->destroyEntity(ent);
-				}
-				
-
-				
-
-			}
-			// normal, non virtual collision box
-			Entity *ent = mSceneMgr->createEntity(collmesh);
-			ent->setMaterialName("tracks/transred");
-
-			size_t vertex_count,index_count;
-			Vector3* vertices;
-			unsigned* indices;
-
-			getMeshInformation(ent->getMesh().getPointer(),vertex_count,vertices,index_count,indices, Vector3(px,py,pz), tenode->getOrientation(), Vector3(scx, scy, scz));
-
-			//LogManager::getSingleton().logMessage(LML_NORMAL,"Vertices in mesh: %u",vertex_count);
-			//LogManager::getSingleton().logMessage(LML_NORMAL,"Triangles in mesh: %u",index_count / 3);
-			for (int i=0; i<(int)index_count/3; i++)
-			{
-				if (enable_collisions) collisions->addCollisionTri(vertices[indices[i*3]], vertices[indices[i*3+1]], vertices[indices[i*3+2]], gm);
-			}
-
-			delete[] vertices;
-			delete[] indices;
-			if(!debugCollisions)
-			{
-				mSceneMgr->destroyEntity(ent);
-			} else
-			{
-				SceneNode *colbakenode=mSceneMgr->getRootSceneNode()->createChildSceneNode();
-				colbakenode->attachObject(ent);
-				colbakenode->setPosition(Vector3(px,py,pz));
-				colbakenode->setOrientation(tenode->getOrientation());
-			}
-
+			collisions->addCollisionMesh(collmesh, Vector3(px,py,pz), tenode->getOrientation(), Vector3(scx, scy, scz), gm);
 			continue;
 		}
 		if (!strncmp("setMeshMaterial", ptline, 15))
@@ -4652,12 +4480,12 @@ void RoRFrameListener::initializeCompontents()
 	LogManager::getSingleton().logMessage("Loading LUA Script engine." );
 	lua=new LuaSystem(this);
 	//setup collision system
-	collisions=new Collisions(lua, this, debugCollisions);
+	collisions=new Collisions(lua, this, mSceneMgr, debugCollisions);
 
 	if(!netmode && lua)
 		lua->loadTerrain(loadedTerrain);
 #else
-	collisions=new Collisions(this, debugCollisions);
+	collisions=new Collisions(this, mSceneMgr, debugCollisions);
 #endif
 	// load AS
 #ifdef USE_ANGELSCRIPT
@@ -6164,6 +5992,9 @@ void RoRFrameListener::loadClassicTerrain(String terrainfile)
 		bigMap->setPosition(0, 0.81, 0.14, 0.1901, mWindow);
 	}
 #endif //MYGUI
+
+
+	collisions->finishLoadingTerrain();
 
 	//okay, taking a picture of the scene for the envmap
 	// SAY CHEESE!

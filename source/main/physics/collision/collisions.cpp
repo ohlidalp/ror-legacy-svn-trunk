@@ -104,25 +104,24 @@ Collisions::Collisions(
 #ifdef USE_LUA
   LuaSystem *mlua,
 #endif
-  RoRFrameListener *efl, bool _debugMode)
-: free_collision_box(0)
-, free_collision_tri(0)
-, free_cell(0)
-, free_eventsource(0)
+  RoRFrameListener *efl, Ogre::SceneManager *mgr, bool _debugMode) : smgr(mgr)
+	, free_collision_box(0)
+	, free_collision_tri(0)
+	, free_cell(0)
+	, free_eventsource(0)
 #ifdef USE_LUA
-, lua(mlua)
+	, lua(mlua)
 #endif
-, mefl(efl)
-, hashmask(0)
-, hfinder(0)
-, collision_count(0)
-, largest_cellcount(0)
-, debugMode(_debugMode)
-, debugModeEvents ( SETTINGS.getSetting("Debug Event Boxes") == "Yes")
-, landuse(0)
-, forcecam(false)
-, last_used_ground_model(0)
-, last_called_cbox(0)
+	, mefl(efl)
+	, hashmask(0)
+	, hfinder(0)
+	, collision_count(0)
+	, largest_cellcount(0)
+	, debugMode(_debugMode)
+	, landuse(0)
+	, forcecam(false)
+	, last_used_ground_model(0)
+	, last_called_cbox(0)
 {
 	for (int i=0; i<HASH_SIZE; i++) {hashmask=hashmask<<1; hashmask++;};
 	for (int i=0; i<(1<<HASH_SIZE); i++) hashtable[i].cellid=UNUSED_CELLID;
@@ -130,6 +129,13 @@ Collisions::Collisions(
 	loadDefaultModels();
 	defaultgm = getGroundModelByString("concrete");
 	defaultgroundgm = getGroundModelByString("gravel");
+
+	if(debugMode)
+	{
+		debugmo = mefl->getSceneMgr()->createManualObject();
+		debugmo->begin("tracks/debug/collision/triangle", RenderOperation::OT_TRIANGLE_LIST);
+	}
+
 }
 
 int Collisions::loadDefaultModels()
@@ -545,11 +551,15 @@ void Collisions::addCollisionBox(SceneNode *tenode, bool rotating, bool virt, fl
 		coll_box.unrot=rotation.Inverse();
 	}
 
+	SceneNode *debugsn = 0;
+	if(debugMode) debugsn = mefl->getSceneMgr()->getRootSceneNode()->createChildSceneNode();
+
+
 	//set raw box
+	// 8 points of a cube
+	Vector3 cube_points[8];
 	if (coll_box.selfrotated || coll_box.refined)
 	{
-		// 8 points of a cube
-		Vector3 cube_points[8];
 		cube_points[0] = Ogre::Vector3(lx, ly, lz) * sc;
 		cube_points[1] = Ogre::Vector3(hx, ly, lz) * sc;
 		cube_points[2] = Ogre::Vector3(lx, hy, lz) * sc;
@@ -589,54 +599,112 @@ void Collisions::addCollisionBox(SceneNode *tenode, bool rotating, bool virt, fl
 		//unrefined box
 		coll_box.lo = p + coll_box.relo;
 		coll_box.hi = p + coll_box.rehi;
+		Vector3 d = (coll_box.rehi - coll_box.relo);
+		cube_points[0] = coll_box.relo;
+		cube_points[1] = coll_box.relo;	                         cube_points[1].x += d.x;
+		cube_points[2] = coll_box.relo;                                                   cube_points[2].y += d.y;
+		cube_points[3] = coll_box.relo;                          cube_points[3].x += d.x; cube_points[3].y += d.y;
+		cube_points[4] = coll_box.relo; cube_points[4].z += d.z;
+		cube_points[5] = coll_box.relo; cube_points[5].z += d.z; cube_points[5].x += d.x;
+		cube_points[6] = coll_box.relo; cube_points[6].z += d.z;                          cube_points[6].y += d.y;
+		cube_points[7] = coll_box.relo; cube_points[7].z += d.z; cube_points[7].x += d.x; cube_points[7].y += d.y;
 	}
 
-	if(debugModeEvents && virt)
+	if(debugsn)
 	{
-		Entity *ent = mefl->getSceneMgr()->createEntity("beam.mesh");
-		SceneNode *n = mefl->getSceneMgr()->getRootSceneNode()->createChildSceneNode();
-		n->attachObject(ent);
-		if(luahandler == -1)
-			ent->setMaterialName("tracks/transred");
-		else
-			ent->setMaterialName("tracks/transgreen");
-		// since beam.mesh origin is in its middle ...
-		n->setPosition( coll_box.lo + (coll_box.hi - coll_box.lo) * 0.5f);
-		n->setScale( (coll_box.hi - coll_box.lo) );
-		n->setVisible(true);
-		n->showBoundingBox(true);
-		
-		// setup the label
-		String labelName = "collision_box_label_"+StringConverter::toString(free_collision_box);
-		String labelCaption = String(eventname) + " / " + String(instancename) + " / " + StringConverter::toString(luahandler);
-		MovableText *mt = new MovableText(labelName, labelCaption);
-		mt->setFontName("highcontrast_black");
-		mt->setTextAlignment(MovableText::H_CENTER, MovableText::V_ABOVE);
-		mt->setAdditionalHeight(1);
-		mt->showOnTop(false);
-		mt->setCharacterHeight(0.3);
-		mt->setColor(ColourValue::White);
-		
-		SceneNode *n2 = mefl->getSceneMgr()->getRootSceneNode()->createChildSceneNode();
-		n2->attachObject(mt);
-		n2->setPosition( coll_box.lo + (coll_box.hi - coll_box.lo) * 0.5f);
+		debugsn->setPosition(p);
+		// box content
+		ManualObject *mo =  mefl->getSceneMgr()->createManualObject();
+		String matName = "tracks/debug/collision/box";
+		if(virt && luahandler == -1)
+			matName = "tracks/debug/eventbox/unused";
+		else if (virt)
+			matName = "tracks/debug/eventbox/used";
+		AxisAlignedBox *aa = new AxisAlignedBox();
+		for(int i=0;i<8;i++)
+			aa->merge(cube_points[i]);
+		mo->begin(matName, Ogre::RenderOperation::OT_TRIANGLE_LIST);
+		mo->position(cube_points[0]);
+		mo->position(cube_points[1]);
+		mo->position(cube_points[2]);
+		mo->position(cube_points[3]);
+		mo->position(cube_points[4]);
+		mo->position(cube_points[5]);
+		mo->position(cube_points[6]);
+		mo->position(cube_points[7]);
 
-		ManualObject* manual = mefl->getSceneMgr()->createManualObject("collision_boxes_debug_"+StringConverter::toString(free_collision_box));
-		manual->setDynamic(false);
-		if(luahandler == -1)
-			manual->begin("tracks/transred", RenderOperation::OT_LINE_LIST);
-		else
-			manual->begin("tracks/transgreen", RenderOperation::OT_LINE_LIST);
+		// front
+		mo->triangle(0,1,2);
+		mo->triangle(1,3,2);
+		// right side
+		mo->triangle(3,1,5);
+		mo->triangle(5,7,3);
+		// left side
+		mo->triangle(6,4,0);
+		mo->triangle(0,2,6);
+		// back side
+		mo->triangle(7,5,4);
+		mo->triangle(4,6,7);
+		// bottom
+		mo->triangle(5,4,1);
+		mo->triangle(4,0,1);
+		// top
+		mo->triangle(2,3,6);
+		mo->triangle(3,7,6);
 
-		// specify indexes now
-		manual->position(Vector3::ZERO);
-		manual->position(coll_box.hi - coll_box.lo);
-		manual->index(0);
-		manual->index(1);
-		manual->end();
-		SceneNode *n3 = mefl->getSceneMgr()->getRootSceneNode()->createChildSceneNode();
-		n3->attachObject(manual);
-		n3->setPosition(coll_box.lo);
+		mo->end();
+		mo->setBoundingBox(*aa);
+		mo->setRenderingDistance(200);
+		debugsn->attachObject(mo);
+
+		// the border
+		mo =  mefl->getSceneMgr()->createManualObject();
+		mo->begin(matName, Ogre::RenderOperation::OT_LINE_LIST);
+		mo->position(cube_points[0]);
+		mo->position(cube_points[1]);
+		mo->position(cube_points[2]);
+		mo->position(cube_points[3]);
+		mo->position(cube_points[4]);
+		mo->position(cube_points[5]);
+		mo->position(cube_points[6]);
+		mo->position(cube_points[7]);
+		//front
+		mo->index(0);mo->index(1); mo->index(1);mo->index(3); mo->index(3);mo->index(2); mo->index(2);mo->index(0);
+		// right side
+		mo->index(1);mo->index(5); mo->index(5);mo->index(7); mo->index(7);mo->index(3); mo->index(3);mo->index(1);
+		// left side
+		mo->index(0);mo->index(2); mo->index(2);mo->index(6); mo->index(6);mo->index(4); mo->index(4);mo->index(0);
+		// back side
+		mo->index(5);mo->index(4); mo->index(4);mo->index(6); mo->index(6);mo->index(7); mo->index(7);mo->index(5);
+		// bottom and top not needed
+		mo->end();
+		mo->setBoundingBox(*aa);
+		debugsn->attachObject(mo);
+		mo->setRenderingDistance(200);
+		delete(aa);
+
+		// label
+		// setup a label
+		if(virt)
+		{
+			String labelName = "collision_box_label_"+StringConverter::toString(free_collision_box);
+			String labelCaption = "EVENTBOX\nevent:"+String(eventname) + "\ninstance:" + String(instancename);
+			if(luahandler != -1)
+				labelCaption += "\nhandler:" + StringConverter::toString(luahandler);
+			MovableText *mt = new MovableText(labelName, labelCaption);
+			mt->setFontName("highcontrast_black");
+			mt->setTextAlignment(MovableText::H_CENTER, MovableText::V_ABOVE);
+			mt->setAdditionalHeight(1);
+			mt->showOnTop(false);
+			mt->setCharacterHeight(0.3);
+			mt->setColor(ColourValue::White);
+			mt->setRenderingDistance(200);
+
+			SceneNode *n2 = mefl->getSceneMgr()->getRootSceneNode()->createChildSceneNode();
+			n2->attachObject(mt);
+			n2->setPosition( coll_box.lo + (coll_box.hi - coll_box.lo) * 0.5f);
+		}
+
 	}
 
 	//register this collision box in the index
@@ -705,6 +773,13 @@ int Collisions::addCollisionTri(Vector3 p1, Vector3 p2, Vector3 p3, ground_model
 		}
 	}
 	
+	if(debugMode)
+	{
+		debugmo->position(p1);
+		debugmo->position(p2);
+		debugmo->position(p3);
+	}
+
 	return free_collision_tri++;
 }
 
@@ -915,8 +990,7 @@ bool Collisions::nodeCollision(node_t *node, bool iscinecam, int contacted, floa
 			if ((*cell)[k] != (int)UNUSED_CELLELEMENT && (*cell)[k]<MAX_COLLISION_BOXES)
 			{
 				collision_box_t *cbox = &collision_boxes[(*cell)[k]];
-				if (node->AbsPosition > cbox->lo
-					&& node->AbsPosition < cbox->hi)
+				if (node->AbsPosition > cbox->lo - node->collRadius && node->AbsPosition < cbox->hi + node->collRadius)
 				{
 					if (cbox->refined || cbox->selfrotated)
 					{
@@ -930,8 +1004,7 @@ bool Collisions::nodeCollision(node_t *node, bool iscinecam, int contacted, floa
 							Pos=Pos+cbox->selfcenter;
 						}
 						//now test with the inner box
-						if (Pos > cbox->relo
-							&& Pos < cbox->rehi)
+						if (Pos > cbox->relo - node->collRadius && Pos < cbox->rehi + node->collRadius)
 						{
 							if (cbox->eventsourcenum!=-1 && permitEvent(cbox->event_filter))
 							{
@@ -952,17 +1025,17 @@ bool Collisions::nodeCollision(node_t *node, bool iscinecam, int contacted, floa
 								smoky=true;
 								//*nso=ns;
 								//determine which side collided
-								float min=Pos.z-cbox->relo.z;
+								float min=Pos.z-(cbox->relo - node->collRadius).z;
 								Vector3 normal=Vector3(0,0,-1);
-								float t=cbox->rehi.z-Pos.z;
-								if (t<min) {min=t; normal=Vector3(0,0,1);}; //north
-								t=Pos.x-cbox->relo.x;
+								float t=(cbox->rehi + node->collRadius).z-Pos.z;
+								if (t<min){min=t; normal=Vector3(0,0,1);}; //north
+								t=Pos.x-(cbox->relo - node->collRadius).x;
 								if (t<min) {min=t; normal=Vector3(-1,0,0);}; //west
-								t=cbox->rehi.x-Pos.x;
+								t=(cbox->rehi + node->collRadius).x-Pos.x;
 								if (t<min) {min=t; normal=Vector3(1,0,0);}; //east
-								t=Pos.y-cbox->relo.y;
+								t=Pos.y-(cbox->relo - node->collRadius).y;
 								if (t<min) {min=t; normal=Vector3(0,-1,0);}; //down
-								t=cbox->rehi.y-Pos.y;
+								t=(cbox->rehi + node->collRadius).y-Pos.y;
 								if (t<min) {min=t; normal=Vector3(0,1,0);}; //up
 
 								//we need the normal, and the depth
@@ -1320,6 +1393,7 @@ void Collisions::primitiveCollision(node_t *node, Vector3 &force, Vector3 &veloc
 
 int Collisions::createCollisionDebugVisualization()
 {
+	return 0;
 	static int loaded = 0;
 	// prevent double calling
 	if(loaded != 0)
@@ -1426,7 +1500,7 @@ int Collisions::createCollisionDebugVisualization()
 				mo_node->attachObject(mo);
 
 
-
+				/*
 				// setup the label
 				String labelName = "label_"+cell_name;
 				String labelCaption = cell_name+" "+StringConverter::toString(percent*100,2) + "% usage ("+StringConverter::toString(cc)+"/"+StringConverter::toString(CELL_BLOCKSIZE)+") DEEP: " + StringConverter::toString(deep);
@@ -1438,6 +1512,7 @@ int Collisions::createCollisionDebugVisualization()
 				mt->setCharacterHeight(0.3);
 				mt->setColor(ColourValue::White);
 				mo_node->attachObject(mt);
+				*/
 
 				mo_node->setVisible(true);
 				mo_node->setPosition(Vector3(x+CELL_SIZE/(float)2.0, groundheight, z+CELL_SIZE/(float)2.0));
@@ -1447,4 +1522,182 @@ int Collisions::createCollisionDebugVisualization()
 
 	loaded = 1;
 	return 0;
+}
+
+int Collisions::addCollisionMesh(Ogre::String meshname, Ogre::Vector3 pos, Ogre::Quaternion q, Ogre::Vector3 scale, ground_model_t *gm)
+{
+	// normal, non virtual collision box
+	Entity *ent = smgr->createEntity(meshname);
+	ent->setMaterialName("tracks/debug/collision/mesh");
+
+	if(!gm)
+	{
+		gm = getGroundModelByString("concrete");
+	}
+
+	size_t vertex_count,index_count;
+	Vector3* vertices;
+	unsigned* indices;
+
+	getMeshInformation(ent->getMesh().getPointer(),vertex_count,vertices,index_count,indices, pos, q, scale);
+
+	//LogManager::getSingleton().logMessage(LML_NORMAL,"Vertices in mesh: %u",vertex_count);
+	//LogManager::getSingleton().logMessage(LML_NORMAL,"Triangles in mesh: %u",index_count / 3);
+	for (int i=0; i<(int)index_count/3; i++)
+	{
+		addCollisionTri(vertices[indices[i*3]], vertices[indices[i*3+1]], vertices[indices[i*3+2]], gm);
+	}
+
+	delete[] vertices;
+	delete[] indices;
+	if(!debugMode)
+	{
+		smgr->destroyEntity(ent);
+	} else
+	{
+		SceneNode *n=smgr->getRootSceneNode()->createChildSceneNode();
+		n->attachObject(ent);
+		n->setPosition(pos);
+		n->setScale(scale);
+		n->setOrientation(q);
+	
+		String labelName = "collision_mesh_label_"+StringConverter::toString(free_collision_tri);
+		String labelCaption = "COLLMESH\nmeshname:"+meshname + "\ngroundmodel:" + String(gm->name);
+		MovableText *mt = new MovableText(labelName, labelCaption);
+		mt->setFontName("highcontrast_black");
+		mt->setTextAlignment(MovableText::H_CENTER, MovableText::V_ABOVE);
+		mt->setAdditionalHeight(1);
+		mt->showOnTop(false);
+		mt->setCharacterHeight(0.3);
+		mt->setColor(ColourValue::White);
+		mt->setRenderingDistance(200);
+		
+		n->attachObject(mt);
+	}
+	return 0;
+}
+
+void Collisions::getMeshInformation(Mesh* mesh,size_t &vertex_count,Vector3* &vertices,
+											  size_t &index_count, unsigned* &indices,
+											  const Vector3 &position,
+											  const Quaternion &orient,const Vector3 &scale)
+{
+	vertex_count = index_count = 0;
+
+	bool added_shared = false;
+	size_t current_offset = vertex_count;
+	size_t shared_offset = vertex_count;
+	size_t next_offset = vertex_count;
+	size_t index_offset = index_count;
+	size_t prev_vert = vertex_count;
+	size_t prev_ind = index_count;
+
+	// Calculate how many vertices and indices we're going to need
+	for(int i = 0;i < mesh->getNumSubMeshes();i++)
+	{
+		SubMesh* submesh = mesh->getSubMesh(i);
+
+		// We only need to add the shared vertices once
+		if(submesh->useSharedVertices)
+		{
+			if(!added_shared)
+			{
+				VertexData* vertex_data = mesh->sharedVertexData;
+				vertex_count += vertex_data->vertexCount;
+				added_shared = true;
+			}
+		}
+		else
+		{
+			VertexData* vertex_data = submesh->vertexData;
+			vertex_count += vertex_data->vertexCount;
+		}
+
+		// Add the indices
+		Ogre::IndexData* index_data = submesh->indexData;
+		index_count += index_data->indexCount;
+	}
+
+	// Allocate space for the vertices and indices
+	vertices = new Vector3[vertex_count];
+	indices = new unsigned[index_count];
+
+	added_shared = false;
+
+	// Run through the submeshes again, adding the data into the arrays
+	for(int i = 0;i < mesh->getNumSubMeshes();i++)
+	{
+		SubMesh* submesh = mesh->getSubMesh(i);
+
+		Ogre::VertexData* vertex_data = submesh->useSharedVertices ? mesh->sharedVertexData : submesh->vertexData;
+		if((!submesh->useSharedVertices)||(submesh->useSharedVertices && !added_shared))
+		{
+			if(submesh->useSharedVertices)
+			{
+				added_shared = true;
+				shared_offset = current_offset;
+			}
+
+			const Ogre::VertexElement* posElem = vertex_data->vertexDeclaration->findElementBySemantic(Ogre::VES_POSITION);
+			Ogre::HardwareVertexBufferSharedPtr vbuf = vertex_data->vertexBufferBinding->getBuffer(posElem->getSource());
+			unsigned char* vertex = static_cast<unsigned char*>(vbuf->lock(Ogre::HardwareBuffer::HBL_READ_ONLY));
+			Ogre::Real* pReal;
+
+			for(size_t j = 0; j < vertex_data->vertexCount; ++j, vertex += vbuf->getVertexSize())
+			{
+				posElem->baseVertexPointerToElement(vertex, &pReal);
+
+				Vector3 pt;
+
+				pt.x = (*pReal++);
+				pt.y = (*pReal++);
+				pt.z = (*pReal++);
+
+				pt = (orient * (pt * scale)) + position;
+
+				vertices[current_offset + j].x = pt.x;
+				vertices[current_offset + j].y = pt.y;
+				vertices[current_offset + j].z = pt.z;
+			}
+			vbuf->unlock();
+			next_offset += vertex_data->vertexCount;
+		}
+
+		Ogre::IndexData* index_data = submesh->indexData;
+
+		size_t numTris = index_data->indexCount / 3;
+		unsigned short* pShort = 0;
+		unsigned int* pInt = 0;
+		Ogre::HardwareIndexBufferSharedPtr ibuf = index_data->indexBuffer;
+		bool use32bitindexes = (ibuf->getType() == Ogre::HardwareIndexBuffer::IT_32BIT);
+		if (use32bitindexes) pInt = static_cast<unsigned int*>(ibuf->lock(Ogre::HardwareBuffer::HBL_READ_ONLY));
+		else pShort = static_cast<unsigned short*>(ibuf->lock(Ogre::HardwareBuffer::HBL_READ_ONLY));
+
+		for(size_t k = 0; k < numTris; ++k)
+		{
+			size_t offset = (submesh->useSharedVertices)?shared_offset:current_offset;
+
+			unsigned int vindex = use32bitindexes? *pInt++ : *pShort++;
+			indices[index_offset + 0] = vindex + offset;
+			vindex = use32bitindexes? *pInt++ : *pShort++;
+			indices[index_offset + 1] = vindex + offset;
+			vindex = use32bitindexes? *pInt++ : *pShort++;
+			indices[index_offset + 2] = vindex + offset;
+
+			index_offset += 3;
+		}
+		ibuf->unlock();
+		current_offset = next_offset;
+	}
+}
+
+void Collisions::finishLoadingTerrain()
+{
+	if(debugMode)
+	{
+		SceneNode *debugsn = mefl->getSceneMgr()->getRootSceneNode()->createChildSceneNode();
+		debugmo->end();
+		debugsn->setPosition(Vector3::ZERO);
+		debugsn->attachObject(debugmo);
+	}
 }
