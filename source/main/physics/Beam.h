@@ -20,8 +20,8 @@ along with Rigs of Rods.  If not, see <http://www.gnu.org/licenses/>.
 #ifndef BEAM_H__
 #define BEAM_H__
 
-#include "OgrePrerequisites.h"
 #include "RoRPrerequisites.h"
+#include "OgrePrerequisites.h"
 
 // includes to be removed or cleaned up
 #include "rornet.h"

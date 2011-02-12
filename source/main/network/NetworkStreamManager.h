@@ -23,6 +23,7 @@ along with Rigs of Rods.  If not, see <http://www.gnu.org/licenses/>.
 #ifndef NETWORKSTREAMMANAGER_H__
 #define NETWORKSTREAMMANAGER_H__
 
+#include "RoRPrerequisites.h"
 #include "OgrePrerequisites.h"
 #include "OgreSingleton.h"
 #include "pthread.h"

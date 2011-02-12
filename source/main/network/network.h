@@ -22,6 +22,7 @@ along with Rigs of Rods.  If not, see <http://www.gnu.org/licenses/>.
 
 #ifndef __Network_H__
 #define __Network_H__
+#include "RoRPrerequisites.h"
 #include "Ogre.h"
 using namespace Ogre;
 

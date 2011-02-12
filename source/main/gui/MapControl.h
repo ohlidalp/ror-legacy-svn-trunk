@@ -23,6 +23,7 @@ along with Rigs of Rods.  If not, see <http://www.gnu.org/licenses/>.
 #ifndef __MAP_CONTROL_H__
 #define __MAP_CONTROL_H__
 
+#include "RoRPrerequisites.h"
 #include <Ogre.h>
 #include "OgreTextAreaOverlayElement.h"
 #include <vector>

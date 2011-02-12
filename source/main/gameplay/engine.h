@@ -20,9 +20,7 @@ along with Rigs of Rods.  If not, see <http://www.gnu.org/licenses/>.
 #ifndef __Engine_H__
 #define __Engine_H__
 
-
-class SoundScriptManager;
-class TorqueCurve;
+#include "RoRPrerequisites.h"
 
 #include <stdio.h>
 #include <stdlib.h>

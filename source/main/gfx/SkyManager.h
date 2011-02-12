@@ -23,6 +23,7 @@ along with Rigs of Rods.  If not, see <http://www.gnu.org/licenses/>.
 #ifndef SKYMANAGER_H__
 #define SKYMANAGER_H__
 
+#include "RoRPrerequisites.h"
 #include "OgrePrerequisites.h"
 #include "CaelumPrerequisites.h"
 #include "OgreSingleton.h"

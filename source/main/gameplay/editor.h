@@ -20,6 +20,8 @@ along with Rigs of Rods.  If not, see <http://www.gnu.org/licenses/>.
 #ifndef __Editor_H__
 #define __Editor_H__
 
+#include "RoRPrerequisites.h"
+
 #include <stdio.h>
 #include <math.h>
 

@@ -29,6 +29,8 @@ along with Rigs of Rods.  If not, see <http://www.gnu.org/licenses/>.
 #ifndef __include_MovableText_H__
 #define __include_MovableText_H__
 
+#include "RoRPrerequisites.h"
+
 namespace Ogre {
 
 class MovableText : public MovableObject, public Renderable

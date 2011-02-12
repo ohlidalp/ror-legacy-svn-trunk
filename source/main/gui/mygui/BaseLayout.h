@@ -27,6 +27,7 @@ along with Rigs of Rods.  If not, see <http://www.gnu.org/licenses/>.
 #ifndef __BASE_LAYOUT_H__
 #define __BASE_LAYOUT_H__
 
+#include "RoRPrerequisites.h"
 #include <MyGUI.h>
 #include "WrapsAttribute.h"
 

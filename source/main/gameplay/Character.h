@@ -21,6 +21,8 @@ along with Rigs of Rods.  If not, see <http://www.gnu.org/licenses/>.
 #ifndef CHARACTER_H_
 #define CHARACTER_H_
 
+#include "RoRPrerequisites.h"
+
 #include <Ogre.h>
 #include <OgreVector3.h>
 #include "Streamable.h"

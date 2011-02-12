@@ -20,6 +20,8 @@ along with Rigs of Rods.  If not, see <http://www.gnu.org/licenses/>.
 #ifndef __Screwprop_H__
 #define __Screwprop_H__
 
+#include "RoRPrerequisites.h"
+
 #include "Ogre.h"
 #include "water.h"
 

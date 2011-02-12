@@ -110,7 +110,7 @@ int lua_run(lua_State *L, String filename)
 	return s;
 }
 
-LuaSystem::LuaSystem(RoRFrameListener *efl)
+LuaSystem::LuaSystem(RoRFrameListener *efl) : loaded(false)
 {
 	if (luaInstance) return; else luaInstance=this;
 	L = lua_open();
@@ -157,6 +157,8 @@ void LuaSystem::loadTerrain(Ogre::String terrainname)
 	int s = lua_load(L, luaFileReader, ((void *)&ds), trrn);
 	if (!s)
 		lua_run(L, trrn);
+
+	loaded=true;
 }
 
 
@@ -188,6 +190,7 @@ void LuaSystem::spawnEvent(int id, eventsource_t *source)
 
 void LuaSystem::framestep()
 {
+	if(!loaded) return;
 	//find out if there are new events
 	for (int i=0; i<MAX_EVENTSOURCE; i++)
 	{

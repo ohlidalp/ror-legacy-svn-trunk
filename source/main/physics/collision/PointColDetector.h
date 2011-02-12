@@ -21,6 +21,8 @@ along with Rigs of Rods.  If not, see <http://www.gnu.org/licenses/>.
 #ifndef __PointColDetector_H__
 #define __PointColDetector_H__
 
+#include "RoRPrerequisites.h"
+
 #include "Ogre.h"
 #include <vector>
 using namespace Ogre;

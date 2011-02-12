@@ -23,6 +23,7 @@ along with Rigs of Rods.  If not, see <http://www.gnu.org/licenses/>.
 #ifndef STREAMABLE_H__
 #define STREAMABLE_H__
 
+#include "RoRPrerequisites.h"
 #include "OgrePrerequisites.h"
 #include "rornet.h"
 #include <map>

@@ -27,6 +27,8 @@ along with Rigs of Rods.  If not, see <http://www.gnu.org/licenses/>.
 #ifndef __APPROXMATH_H__
 #define	__APPROXMATH_H__
 
+#include "RoRPrerequisites.h"
+
 static int mirand = 1;
 
 // Returns a random number in the range [0, 1]

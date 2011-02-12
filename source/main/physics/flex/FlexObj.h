@@ -20,6 +20,8 @@ along with Rigs of Rods.  If not, see <http://www.gnu.org/licenses/>.
 #ifndef __FlexObj_H__
 #define __FlexObj_H__
 
+#include "RoRPrerequisites.h"
+
 //body
 
 #include "Ogre.h"

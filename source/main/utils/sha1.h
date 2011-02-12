@@ -35,6 +35,8 @@
 #ifndef ___SHA1_HDR___
 #define ___SHA1_HDR___
 
+#include "RoRPrerequisites.h"
+
 #include <stdint.h> //"pstdint.h" // Needed for uint32_t, uint8_t
 
 #if !defined(SHA1_UTILITY_FUNCTIONS) && !defined(SHA1_NO_UTILITY_FUNCTIONS)

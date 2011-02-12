@@ -20,6 +20,7 @@ along with Rigs of Rods.  If not, see <http://www.gnu.org/licenses/>.
 #ifndef __DIFFERENTIALS_H__
 #define __DIFFERENTIALS_H__
 
+#include "RoRPrerequisites.h"
 #include "OgrePrerequisites.h"
 #include <vector>
 

@@ -21,6 +21,7 @@ along with Rigs of Rods.  If not, see <http://www.gnu.org/licenses/>.
 #ifndef IMPROVEDCONFIGFILE_H_
 #define IMPROVEDCONFIGFILE_H_
 
+#include "RoRPrerequisites.h"
 #include <OgrePrerequisites.h>
 
 namespace Ogre

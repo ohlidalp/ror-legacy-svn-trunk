@@ -21,6 +21,7 @@ along with Rigs of Rods.  If not, see <http://www.gnu.org/licenses/>.
 #ifndef RORPREREQUISITES_H__
 #define RORPREREQUISITES_H__
 
+
 // add some ogre headers
 #include <OgrePrerequisites.h>
 #include <OgreVector3.h>
@@ -83,6 +84,7 @@ class SlideNode;
 class SoundScriptInstance;
 class SoundScriptManager;
 class Turboprop;
+class TorqueCurve;
 class TruckHUD;
 class Water;
 

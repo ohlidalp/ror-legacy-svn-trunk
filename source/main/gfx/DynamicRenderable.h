@@ -20,6 +20,7 @@ along with Rigs of Rods.  If not, see <http://www.gnu.org/licenses/>.
 #ifndef DYNAMIC_RENDERABLE_H
 #define DYNAMIC_RENDERABLE_H
 
+#include "RoRPrerequisites.h"
 #include <OgreSimpleRenderable.h>
 
 /// Abstract base class providing mechanisms for dynamically growing hardware buffers.

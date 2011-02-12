@@ -20,6 +20,7 @@ along with Rigs of Rods.  If not, see <http://www.gnu.org/licenses/>.
 #ifndef _Skin_H__
 #define _Skin_H__
 
+#include "RoRPrerequisites.h"
 #include "OgrePrerequisites.h"
 #include "OgreResource.h"
 #include "OgreTexture.h"

@@ -20,6 +20,7 @@ along with Rigs of Rods.  If not, see <http://www.gnu.org/licenses/>.
 #ifndef __Collisions_H__
 #define __Collisions_H__
 
+#include "RoRPrerequisites.h"
 #include "Ogre.h"
 #include <vector>
 //using namespace Ogre;

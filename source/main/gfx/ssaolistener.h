@@ -20,6 +20,7 @@ along with Rigs of Rods.  If not, see <http://www.gnu.org/licenses/>.
 #ifndef SSAOLISTENER_H__
 #define SSAOLISTENER_H__
 
+#include "RoRPrerequisites.h"
 #include "Ogre.h"
 #include "OgreCompositorInstance.h"
 

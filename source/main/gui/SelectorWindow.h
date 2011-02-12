@@ -22,6 +22,7 @@ along with Rigs of Rods.  If not, see <http://www.gnu.org/licenses/>.
 #ifndef __SELECTOR_WINDOW_H__
 #define __SELECTOR_WINDOW_H__
 
+#include "RoRPrerequisites.h"
 #include "Singleton.h"
 #include "mygui/BaseLayout.h"
 #include <Ogre.h>

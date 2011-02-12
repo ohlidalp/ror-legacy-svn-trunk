@@ -20,6 +20,9 @@ along with Rigs of Rods.  If not, see <http://www.gnu.org/licenses/>.
 #ifndef __FlexMeshWheel_H__
 #define __FlexMeshWheel_H__
 
+
+#include "RoRPrerequisites.h"
+
 //wheels only!
 
 #include "Ogre.h"

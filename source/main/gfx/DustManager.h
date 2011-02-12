@@ -23,6 +23,7 @@ along with Rigs of Rods.  If not, see <http://www.gnu.org/licenses/>.
 #ifndef GUI_DUSTMANAGER_H__
 #define GUI_DUSTMANAGER_H__
 
+#include "RoRPrerequisites.h"
 #include "OgreSingleton.h"
 #include "OgrePrerequisites.h"
 #include "RoRPrerequisites.h"

@@ -21,6 +21,7 @@ along with Rigs of Rods.  If not, see <http://www.gnu.org/licenses/>.
 #ifndef ERRORUTILS_H__
 #define ERRORUTILS_H__
 
+#include "RoRPrerequisites.h"
 #include <OgrePrerequisites.h>
 
 /**

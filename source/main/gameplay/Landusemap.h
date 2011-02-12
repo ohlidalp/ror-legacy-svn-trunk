@@ -21,6 +21,7 @@ along with Rigs of Rods.  If not, see <http://www.gnu.org/licenses/>.
 #ifndef __Tractionmap_H__
 #define __Tractionmap_H__
 
+#include "RoRPrerequisites.h"
 #include <OgrePrerequisites.h>
 #include <OgreVector3.h>
 #include "collisions.h"

@@ -20,6 +20,7 @@ along with Rigs of Rods.  If not, see <http://www.gnu.org/licenses/>.
 #ifndef HDRLISTENER_H_
 #define HDRLISTENER_H_
 
+#include "RoRPrerequisites.h"
 #include "Ogre.h"
 #include "OgreCompositorInstance.h"
 

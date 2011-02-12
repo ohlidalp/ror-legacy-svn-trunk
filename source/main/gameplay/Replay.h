@@ -20,6 +20,7 @@ along with Rigs of Rods.  If not, see <http://www.gnu.org/licenses/>.
 #ifndef __Replay_H__
 #define __Replay_H__
 
+#include "RoRPrerequisites.h"
 #include "OgrePrerequisites.h"
 #include "Beam.h"
 

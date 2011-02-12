@@ -2,6 +2,8 @@
 #ifndef TIMER_H__
 #define TIMER_H__
 
+#include "RoRPrerequisites.h"
+
 // boost timer is awful, measures cpu time on linux only...
 // thus we have to hack together some cross platform timer :(
 

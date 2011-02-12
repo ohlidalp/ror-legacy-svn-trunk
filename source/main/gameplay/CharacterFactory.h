@@ -23,6 +23,8 @@ along with Rigs of Rods.  If not, see <http://www.gnu.org/licenses/>.
 #ifndef CHARACTERFACTORY_H__
 #define CHARACTERFACTORY_H__
 
+#include "RoRPrerequisites.h"
+
 #include "OgrePrerequisites.h"
 #include "StreamableFactory.h"
 #include <map>

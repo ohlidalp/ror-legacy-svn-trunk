@@ -110,7 +110,7 @@ add_sub_dir(network)
 add_sub_dir(network/protocol)
 
 IF(WIN32)
-	add_executable(RoR WIN32 ${headers} ${sources})
+	add_executable(RoR WIN32 ${headers} ${sources} main_sim/icon.rc)
 ELSE(WIN32)
 	add_executable(RoR ${headers} ${sources})
 ENDIF(WIN32)

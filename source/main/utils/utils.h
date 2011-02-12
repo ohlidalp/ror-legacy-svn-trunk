@@ -19,6 +19,8 @@ along with Rigs of Rods.  If not, see <http://www.gnu.org/licenses/>.
 */
 // created by Thomas Fischer thomas{AT}thomasfischer{DOT}biz, 9th of August 2009
 
+#include "RoRPrerequisites.h"
+
 #include "OgrePrerequisites.h"
 #include "OgreUTFString.h"
 

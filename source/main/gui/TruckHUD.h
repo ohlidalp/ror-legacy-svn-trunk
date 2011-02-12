@@ -20,6 +20,8 @@ along with Rigs of Rods.  If not, see <http://www.gnu.org/licenses/>.
 #ifndef __TRUCKHUD_H__
 #define __TRUCKHUD_H__
 
+#include "RoRPrerequisites.h"
+
 #define COMMANDS_VISIBLE 25
 
 #include "Beam.h"

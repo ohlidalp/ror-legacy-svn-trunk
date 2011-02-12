@@ -2198,12 +2198,10 @@ bool RoRFrameListener::updateEvents(float dt)
 
 	if(INPUTENGINE.getEventBoolValueBounce(EV_COMMON_QUIT_GAME))
 	{
-		{
-			if(!showcredits)
-				shutdown_pre();
-			else
-				shutdown_final();
-		}
+		if(!showcredits)
+			shutdown_pre();
+		else
+			shutdown_final();
 	}
 #ifdef USE_MYGUI
 	if(GUI_MainMenu::getSingleton().getVisible()) return true; // disable input events in menu mode

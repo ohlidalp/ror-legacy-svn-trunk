@@ -21,6 +21,7 @@ along with Rigs of Rods.  If not, see <http://www.gnu.org/licenses/>.
 #define DOT_SCENELOADER_H
 
 // Includes
+#include "RoRPrerequisites.h"
 #include <OgreString.h>
 #include <OgreVector3.h>
 #include <OgreQuaternion.h>

@@ -25,6 +25,7 @@ along with Rigs of Rods.  If not, see <http://www.gnu.org/licenses/>.
 #ifndef GUI_MP_H__
 #define GUI_MP_H__
 
+#include "RoRPrerequisites.h"
 #include <MyGUI.h>
 #include "OgreSingleton.h"
 #include "OgrePrerequisites.h"

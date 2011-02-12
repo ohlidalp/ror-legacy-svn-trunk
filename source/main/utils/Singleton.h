@@ -20,6 +20,8 @@ along with Rigs of Rods.  If not, see <http://www.gnu.org/licenses/>.
 #ifndef __SINGLETON_H__
 #define __SINGLETON_H__
 
+#include "RoRPrerequisites.h"
+
 // damn you "using namespace Ogre" that cause name conflict with Singleton
 
 template <class T>

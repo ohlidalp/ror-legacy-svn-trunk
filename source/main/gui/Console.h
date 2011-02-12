@@ -22,6 +22,7 @@ along with Rigs of Rods.  If not, see <http://www.gnu.org/licenses/>.
 #ifndef __CONSOLE_H__
 #define __CONSOLE_H__
 
+#include "RoRPrerequisites.h"
 #include "Singleton.h"
 #include "mygui/BaseLayout.h"
 

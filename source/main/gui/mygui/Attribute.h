@@ -27,6 +27,8 @@ along with Rigs of Rods.  If not, see <http://www.gnu.org/licenses/>.
 #ifndef __ATTRIBUTE_H__
 #define __ATTRIBUTE_H__
 
+#include "RoRPrerequisites.h"
+
 namespace attribute
 {
 

@@ -2300,6 +2300,7 @@ void Beam::init_node(int pos, Real x, Real y, Real z, int type, Real m, int iswh
 	nodes[pos].isHot=false;
 	nodes[pos].overrideMass=false;
 	nodes[pos].id = id;
+	nodes[pos].collRadius = 0;
 	nodes[pos].colltesttimer=0;
 	nodes[pos].iIsSkin=false;
 	nodes[pos].isSkin=nodes[pos].iIsSkin;
@@ -5263,7 +5264,7 @@ void Beam::updateDebugOverlay()
 				char nodeName[255]="", entName[255]="";
 				sprintf(nodeName, "%s-nodesDebug-%d", truckname, i);
 				sprintf(entName, "%s-nodesDebug-%d-Ent", truckname, i);
-				Entity *b = tsm->createEntity(entName, "beam.mesh");
+				Entity *b = tsm->createEntity(entName, "sphere.mesh");
 				t.id=i;
 				t.txt = new MovableText(nodeName, "n"+StringConverter::toString(i));
 				t.txt->setFontName("highcontrast_black");
@@ -5276,7 +5277,17 @@ void Beam::updateDebugOverlay()
 				t.node = tsm->getRootSceneNode()->createChildSceneNode();
 				t.node->attachObject(t.txt);
 				t.node->attachObject(b);
-				t.node->setScale(Vector3(0.05,0.05,0.05));
+				
+				float f = 0.05f;
+				if(nodes[i].collRadius > 0.00001)
+				{
+					b->setMaterialName("tracks/transred");
+					f = nodes[i].collRadius;
+				} else
+				{
+					b->setMaterialName("tracks/transgreen");
+				}
+				t.node->setScale(f,f,f);
 
 				t.node->setPosition(nodes[i].smoothpos);
 				nodes_debug.push_back(t);

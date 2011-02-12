@@ -21,6 +21,7 @@ along with Rigs of Rods.  If not, see <http://www.gnu.org/licenses/>.
 
 #ifndef LANGUAGE_H_
 #define LANGUAGE_H_
+#include "RoRPrerequisites.h"
 
 #ifdef NOLANG
 // no language mode
