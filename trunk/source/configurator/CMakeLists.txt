@@ -71,6 +71,7 @@ link_directories   (${Ois_LIBRARY_DIRS})
 include_directories(${RoR_SOURCE_DIR}/source/protocol)
 
 add_definitions("-DNOOGRE -D_UNICODE")
+include_directories(../main/)
 include_directories(../main/utils/)
 include_directories(../main/network/protocol)
 

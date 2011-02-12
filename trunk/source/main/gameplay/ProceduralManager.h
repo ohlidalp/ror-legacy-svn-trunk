@@ -24,6 +24,7 @@ along with Rigs of Rods.  If not, see <http://www.gnu.org/licenses/>.
 #define __ProceduralManager_H__
 
 
+#include "RoRPrerequisites.h"
 #include <Ogre.h>
 #include <vector>
 

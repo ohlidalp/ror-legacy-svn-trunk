@@ -268,7 +268,7 @@ DOFManager::DOFManager(Ogre::SceneManager *m, Ogre::Viewport *mViewport, Ogre::R
 		debugNode = mSceneMgr->getRootSceneNode()->createChildSceneNode();
 		Entity *ent = mSceneMgr->createEntity("sphere.mesh");
 		debugNode->attachObject(ent);
-		debugNode->setScale(0.001, 0.001, 0.001);
+		debugNode->setScale(0.5, 0.5, 0.5);
 	}
 }
 

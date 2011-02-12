@@ -23,6 +23,7 @@ along with Rigs of Rods.  If not, see <http://www.gnu.org/licenses/>.
 #ifndef STREAMABLEFACTORY_H__
 #define STREAMABLEFACTORY_H__
 
+#include "RoRPrerequisites.h"
 #include "OgrePrerequisites.h"
 #include "pthread.h"
 #ifdef USE_SOCKETW

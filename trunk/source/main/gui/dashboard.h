@@ -20,6 +20,7 @@ along with Rigs of Rods.  If not, see <http://www.gnu.org/licenses/>.
 #ifndef __Dashboard_H__
 #define __Dashboard_H__
 
+#include "RoRPrerequisites.h"
 #include "Ogre.h"
 
 

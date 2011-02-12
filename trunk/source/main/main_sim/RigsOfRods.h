@@ -26,6 +26,7 @@ along with Rigs of Rods.  If not, see <http://www.gnu.org/licenses/>.
 #ifndef RIGSOFRODS_H__
 #define RIGSOFRODS_H__
 
+#include "RoRPrerequisites.h"
 #include <Ogre.h>
 #include <OgreRTShaderSystem.h>
 #include <OgreConfigFile.h>

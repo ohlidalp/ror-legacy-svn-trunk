@@ -20,6 +20,7 @@ along with Rigs of Rods.  If not, see <http://www.gnu.org/licenses/>.
 #ifndef __RandomTreeLoader_H__
 #define __RandomTreeLoader_H__
 
+#include "RoRPrerequisites.h"
 #include "PagedGeometry.h"
 #include "PropertyMaps.h"
 #include "TreeLoader2D.h"

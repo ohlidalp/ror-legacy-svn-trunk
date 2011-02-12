@@ -23,6 +23,7 @@ along with Rigs of Rods.  If not, see <http://www.gnu.org/licenses/>.
 #ifndef STREAMABLEFACTORYINTERFACE_H__
 #define STREAMABLEFACTORYINTERFACE_H__
 
+#include "RoRPrerequisites.h"
 #include "OgrePrerequisites.h"
 #include "pthread.h"
 #include "rornet.h"

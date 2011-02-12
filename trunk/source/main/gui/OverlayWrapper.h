@@ -22,10 +22,11 @@ along with Rigs of Rods.  If not, see <http://www.gnu.org/licenses/>.
 #ifndef OVERLAYWRAPPER_H__
 #define OVERLAYWRAPPER_H__
 
+#include "RoRPrerequisites.h"
+
 #include "OgrePrerequisites.h"
 #include "OgreSingleton.h"
 
-#include "RoRPrerequisites.h"
 #include <map>
 
 #include "OgreOverlay.h"

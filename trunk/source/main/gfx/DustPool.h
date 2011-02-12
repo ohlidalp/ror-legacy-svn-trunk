@@ -20,6 +20,7 @@ along with Rigs of Rods.  If not, see <http://www.gnu.org/licenses/>.
 #ifndef __DustPool_H__
 #define __DustPool_H__
 
+#include "RoRPrerequisites.h"
 #include <stdio.h>
 #include <math.h>
 

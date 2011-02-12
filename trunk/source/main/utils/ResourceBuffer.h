@@ -20,6 +20,8 @@ along with Rigs of Rods.  If not, see <http://www.gnu.org/licenses/>.
 #ifndef RESOURCEBUFFER_H_
 #define RESOURCEBUFFER_H_
 
+#include "RoRPrerequisites.h"
+
 #include <Ogre.h>
 #include <OgreResource.h>
 

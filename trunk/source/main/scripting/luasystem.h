@@ -22,6 +22,8 @@ along with Rigs of Rods.  If not, see <http://www.gnu.org/licenses/>.
 #ifndef __LuaSystem_H__
 #define __LuaSystem_H__
 
+#include "RoRPrerequisites.h"
+
 #define LUA_INTERFACE_VERSION "0.1.0"
 
 extern "C" {
@@ -50,6 +52,7 @@ private:
 	std::map<String, int> beamMap;
 	int BeamExists(char *instance_name);
 	bool fileExists(const char *filename);
+	bool loaded;
 
 public:
 	LuaSystem(RoRFrameListener *efl);

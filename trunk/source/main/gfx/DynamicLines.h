@@ -20,6 +20,7 @@ along with Rigs of Rods.  If not, see <http://www.gnu.org/licenses/>.
 #ifndef _DYNAMIC_LINES_H_
 #define _DYNAMIC_LINES_H_
 
+#include "RoRPrerequisites.h"
 #include "DynamicRenderable.h"
 #include <vector>
 

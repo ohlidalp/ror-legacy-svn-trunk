@@ -24,6 +24,8 @@ along with Rigs of Rods.  If not, see <http://www.gnu.org/licenses/>.
 #ifndef __XFIREGAMECLIENT_H__
 #define __XFIREGAMECLIENT_H__
 
+#include "RoRPrerequisites.h"
+
 #ifdef __cplusplus
 extern "C" {
 #endif

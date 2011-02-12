@@ -24,6 +24,7 @@ along with Rigs of Rods.  If not, see <http://www.gnu.org/licenses/>.
 #ifndef HYDRAXWATER_H_
 #define HYDRAXWATER_H_
 
+#include "RoRPrerequisites.h"
 // this is a workaround for fixing compilation/linking issues in conjunction with Caelum
 #undef DllExport
 #include "Hydrax/Prerequisites.h"

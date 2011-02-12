@@ -22,6 +22,7 @@ along with Rigs of Rods.  If not, see <http://www.gnu.org/licenses/>.
 #define __INGAMECHAT_H__
 
 
+#include "RoRPrerequisites.h"
 #include <vector>
 #include "Ogre.h"
 #include "OgreTextAreaOverlayElement.h"

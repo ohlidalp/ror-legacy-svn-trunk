@@ -20,6 +20,8 @@ along with Rigs of Rods.  If not, see <http://www.gnu.org/licenses/>.
 #ifndef __FlexAirfoil_H__
 #define __FlexAirfoil_H__
 
+#include "RoRPrerequisites.h"
+
 #include <math.h>
 #include "Ogre.h"
 #include "Beam.h"

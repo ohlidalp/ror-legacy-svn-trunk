@@ -21,6 +21,8 @@ along with Rigs of Rods.  If not, see <http://www.gnu.org/licenses/>.
 #ifndef SCOPELOG_H
 #define SCOPELOG_H
 
+#include "RoRPrerequisites.h"
+
 #include <OgrePrerequisites.h>
 #include <OgreLog.h>
 

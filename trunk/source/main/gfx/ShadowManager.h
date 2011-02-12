@@ -21,6 +21,7 @@ along with Rigs of Rods.  If not, see <http://www.gnu.org/licenses/>.
 #ifndef SHADOWMANAGER_H__
 #define SHADOWMANAGER_H__
 
+#include "RoRPrerequisites.h"
 #include "OgrePrerequisites.h"
 #ifdef USE_CAELUM
 #include "CaelumPrerequisites.h"

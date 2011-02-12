@@ -20,6 +20,7 @@ along with Rigs of Rods.  If not, see <http://www.gnu.org/licenses/>.
 #ifndef SkidMark_H
 #define SkidMark_H
 
+#include "RoRPrerequisites.h"
 #include "OgrePrerequisites.h"
 #include "DynamicRenderable.h"
 #include <vector>

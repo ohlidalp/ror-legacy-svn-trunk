@@ -23,6 +23,7 @@ along with Rigs of Rods.  If not, see <http://www.gnu.org/licenses/>.
 #ifndef DECALMANAGER_H__
 #define DECALMANAGER_H__
 
+#include "RoRPrerequisites.h"
 #include <math.h>
 #include <OgrePrerequisites.h>
 

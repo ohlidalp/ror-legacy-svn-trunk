@@ -20,12 +20,15 @@ along with Rigs of Rods.  If not, see <http://www.gnu.org/licenses/>.
 // created on 24th of February 2009 by Thomas Fischer
 #ifdef USE_ANGELSCRIPT
 
+
 #ifndef AS_USE_NAMESPACE
 #define AS_USE_NAMESPACE
 #endif //AS_USE_NAMESPACE
 
 #ifndef SCRIPTENGINE_H__
 #define SCRIPTENGINE_H__
+
+#include "RoRPrerequisites.h"
 
 #include <string>
 #include "angelscript.h"

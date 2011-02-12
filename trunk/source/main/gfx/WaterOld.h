@@ -20,6 +20,8 @@ along with Rigs of Rods.  If not, see <http://www.gnu.org/licenses/>.
 #ifndef __WaterOld_H__
 #define __WaterOld_H__
 
+#include "RoRPrerequisites.h"
+
 #define WATER_FULL_QUALITY 0
 #define WATER_FULL_SPEED 1
 #define WATER_REFLECT 2

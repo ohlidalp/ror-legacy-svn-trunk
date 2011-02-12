@@ -27,6 +27,8 @@ along with Rigs of Rods.  If not, see <http://www.gnu.org/licenses/>.
 #ifndef MPLATFORM_BASE_H
 #define MPLATFORM_BASE_H
 
+#include "RoRPrerequisites.h"
+
 #include "Ogre.h"
 #include "rornet.h"
 

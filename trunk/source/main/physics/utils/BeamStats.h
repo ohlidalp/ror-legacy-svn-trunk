@@ -22,6 +22,7 @@ along with Rigs of Rods.  If not, see <http://www.gnu.org/licenses/>.
 #ifndef __BeamStats_H__
 #define __BeamStats_H__
 
+#include "RoRPrerequisites.h"
 #include <Ogre.h>
 #include <map>
 

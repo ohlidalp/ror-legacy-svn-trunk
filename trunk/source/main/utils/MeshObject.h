@@ -23,6 +23,8 @@ along with Rigs of Rods.  If not, see <http://www.gnu.org/licenses/>.
 #ifndef MESHOBJECT_H__
 #define MESHOBJECT_H__
 
+#include "RoRPrerequisites.h"
+
 #include "Ogre.h"
 
 #include "materialFunctionMapper.h"

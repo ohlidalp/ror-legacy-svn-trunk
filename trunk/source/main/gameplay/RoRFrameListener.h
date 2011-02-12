@@ -20,6 +20,7 @@ along with Rigs of Rods.  If not, see <http://www.gnu.org/licenses/>.
 #ifndef __RoRFrameListener_H__
 #define __RoRFrameListener_H__
 
+#include "RoRPrerequisites.h"
 #include "Ogre.h"
 #if OGRE_PLATFORM == OGRE_PLATFORM_WIN32
 #include <windows.h>

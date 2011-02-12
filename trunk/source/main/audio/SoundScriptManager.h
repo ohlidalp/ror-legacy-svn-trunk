@@ -22,6 +22,8 @@ along with Rigs of Rods.  If not, see <http://www.gnu.org/licenses/>.
 #ifndef __SoundScriptManager_H__
 #define __SoundScriptManager_H__
 
+#include "RoRPrerequisites.h"
+
 #include "Ogre.h"
 #include "Beam.h"
 #include "OgreScriptLoader.h"

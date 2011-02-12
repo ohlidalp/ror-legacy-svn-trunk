@@ -22,6 +22,7 @@ along with Rigs of Rods.  If not, see <http://www.gnu.org/licenses/>.
 #ifndef __MAP_ENTITY_H__
 #define __MAP_ENTITY_H__
 
+#include "RoRPrerequisites.h"
 #include <Ogre.h>
 #include "mygui/BaseLayout.h"
 

@@ -20,6 +20,7 @@ along with Rigs of Rods.  If not, see <http://www.gnu.org/licenses/>.
 #ifndef __HeightFinder_H__
 #define __HeightFinder_H__
 
+#include "RoRPrerequisites.h"
 #include <OgrePrerequisites.h>
 #include <OgreVector3.h>
 

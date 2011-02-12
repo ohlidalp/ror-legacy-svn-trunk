@@ -22,11 +22,12 @@ along with Rigs of Rods.  If not, see <http://www.gnu.org/licenses/>.
 #ifndef __CacheSystem_H__
 #define __CacheSystem_H__
 
+#include "RoRPrerequisites.h"
+
 #include <Ogre.h>
 #include <vector>
 #include <map>
 #include "sha1.h"
-#include "RoRPrerequisites.h"
 
 
 #define CACHE_FILE "mods.cache"

@@ -20,6 +20,7 @@ along with Rigs of Rods.  If not, see <http://www.gnu.org/licenses/>.
 #ifndef __Road2_H__
 #define __Road2_H__
 
+#include "RoRPrerequisites.h"
 #include <stdio.h>
 #include <math.h>
 #include <vector>

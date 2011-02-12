@@ -21,6 +21,8 @@ along with Rigs of Rods.  If not, see <http://www.gnu.org/licenses/>.
 #ifndef SETTINGS_H
 #define SETTINGS_H
 
+#include "RoRPrerequisites.h"
+
 #include "Ogre.h"
 #include <map>
 

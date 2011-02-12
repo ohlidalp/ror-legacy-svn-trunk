@@ -20,6 +20,9 @@ along with Rigs of Rods.  If not, see <http://www.gnu.org/licenses/>.
 #ifndef __Mirrors_H__
 #define __Mirrors_H__
 
+
+#include "RoRPrerequisites.h"
+
 #include <OgrePrerequisites.h>
 #include <OgreMaterial.h>
 

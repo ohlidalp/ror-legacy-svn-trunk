@@ -22,6 +22,7 @@ along with Rigs of Rods.  If not, see <http://www.gnu.org/licenses/>.
 #ifndef GUI_MANAGER_H__
 #define GUI_MANAGER_H__
 
+#include "RoRPrerequisites.h"
 #include <Ogre.h>
 #include <MyGUI.h>
 #include "gui_inputmanager.h"

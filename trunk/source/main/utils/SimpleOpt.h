@@ -149,6 +149,8 @@
 #ifndef INCLUDED_SimpleOpt
 #define INCLUDED_SimpleOpt
 
+#include "RoRPrerequisites.h"
+
 
 //! Error values
 typedef enum _ESOError

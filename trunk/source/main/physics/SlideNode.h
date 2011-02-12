@@ -43,7 +43,7 @@ along with Rigs of Rods.  If not, see <http://www.gnu.org/licenses/>.
 #ifndef SLIDENODE_H_
 #define SLIDENODE_H_
 
-//#include "RoRPrerequisites.h"
+#include "RoRPrerequisites.h"
 
 #include <limits>
 

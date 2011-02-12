@@ -20,6 +20,7 @@ along with Rigs of Rods.  If not, see <http://www.gnu.org/licenses/>.
 #ifndef GLOWMATERIALLISTENER_H__
 #define GLOWMATERIALLISTENER_H__
 
+#include "RoRPrerequisites.h"
 #include <Ogre.h>
 #include <OgreMaterialManager.h>
 

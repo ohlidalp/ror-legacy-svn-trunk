@@ -46,6 +46,7 @@ THE SOFTWARE.
 #ifndef COLLISIONTOOLS_H
 #define COLLISIONTOOLS_H
 
+#include "RoRPrerequisites.h"
 #include <Ogre.h>
 
 // uncomment if you want to use ETM as terrainmanager

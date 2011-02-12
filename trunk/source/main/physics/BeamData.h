@@ -279,6 +279,7 @@ struct node
 	bool isSkin;
 	bool contacter;
 	int pos;
+	float collRadius;
 };
 
 struct shock
@@ -618,7 +619,7 @@ struct rig
 	wing_t wings[MAX_WINGS];
 	int free_wing;
 		
-	command_t commandkey[MAX_COMMANDS + 1];
+	command_t commandkey[MAX_COMMANDS + 10]; // 0 for safety
 	
 	rotator_t rotators[MAX_ROTATORS];
 	int free_rotator;
