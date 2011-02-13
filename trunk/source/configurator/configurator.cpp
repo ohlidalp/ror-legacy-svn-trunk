@@ -27,7 +27,6 @@ along with Rigs of Rods.  If not, see <http://www.gnu.org/licenses/>.
 // ----------------------------------------------------------------------------
 #include "rornet.h"
 #include "Ogre.h"
-#include "joywizard.h"
 #if OGRE_PLATFORM == OGRE_PLATFORM_WIN32
 //#include "crashrpt.h"
 #include <shlobj.h>
@@ -74,15 +73,10 @@ using namespace std;
 #include <wx/timer.h>
 #include <wx/version.h>
 #include <wx/log.h>
-//#include "joysticks.h"
 #include "utils.h"
 
 #include "ImprovedConfigFile.h"
 
-#include "InputEngine.h"
-extern eventInfo_t eventInfo[]; // defines all input events
-
-#include "treelistctrl.h"
 
 #include "Settings.h"
 
@@ -100,14 +94,10 @@ extern eventInfo_t eventInfo[]; // defines all input events
 
 // xpm images
 #include "config.xpm"
-#include "joycfg.xpm"
-#include "mousecfg.xpm"
-#include "keyboardcfg.xpm"
 #include "opencllogo.xpm"
 
 // de-comment this to enable network stuff
 #define NETWORK
-#define MAX_EVENTS 2048
 
 wxLocale lang_locale;
 wxLanguageInfo *language=0;
@@ -208,8 +198,6 @@ public:
 	void updateSettingsControls(); // use after loading or after manually updating the settings map
 	void getSettingsControls(); // puts the control's status into the settings map
 	void remapControl();
-	void loadInputControls();
-	void testEvents();
 	bool isSelectedControlGroup(wxTreeItemId *item = 0);
 	// event handlers (these functions should _not_ be virtual)
 	void OnQuit(wxCloseEvent& event);
@@ -224,15 +212,9 @@ public:
 	void OnLinkClicked(wxHtmlLinkEvent& event);
 	void OnLinkClickedUpdate(wxHtmlLinkEvent& event);
 	//void OnSightRangeScroll(wxScrollEvent& event);
-	void onTreeSelChange(wxTreeEvent& event);
 	void onChangeShadowChoice(wxCommandEvent& event);
 	void onChangeLanguageChoice(wxCommandEvent& event);
 	//void OnButRemap(wxCommandEvent& event);
-	void onActivateItem(wxTreeEvent& event);
-	void OnButLoadKeymap(wxCommandEvent& event);
-	void OnButSaveKeymap(wxCommandEvent& event);
-	void onRightClickItem(wxTreeEvent& event);
-	void OnMenuJoystickOptionsClick(wxCommandEvent& event);
 	void OnChangeRenderer(wxCommandEvent& event);
 	//void OnMenuClearClick(wxCommandEvent& event);
 	//void OnMenuTestClick(wxCommandEvent& event);
@@ -240,10 +222,6 @@ public:
 	//void OnMenuDuplicateClick(wxCommandEvent& event);
 	//void OnMenuEditEventNameClick(wxCommandEvent& event);
 	//void OnMenuCheckDoublesClick(wxCommandEvent& event);
-	void OnButTestEvents(wxCommandEvent& event);
-	void OnButJoyWizard(wxCommandEvent& event);
-	void OnButAddKey(wxCommandEvent& event);
-	void OnButDeleteKey(wxCommandEvent& event);
 	void OnButRegenCache(wxCommandEvent& event);
 	void OnButClearCache(wxCommandEvent& event);
 	void OnButUpdateRoR(wxCommandEvent& event);
@@ -257,7 +235,6 @@ public:
 	void OnNoteBookPageChange(wxNotebookEvent& event);
 	void OnNoteBook2PageChange(wxNotebookEvent& event);
 
-	void updateItemText(wxTreeItemId item, event_trigger_t *t);
 	void DSoundEnumerate(wxChoice* wxc);
 //	void checkLinuxPaths();
 	MyApp *app;
@@ -324,20 +301,17 @@ private:
 	wxStaticText *ffCenterText;
 	wxSlider *ffCamera;
 	wxStaticText *ffCameraText;
-	wxTreeListCtrl *cTree;
 	wxTimer *timer1;
 	//wxStaticText *controlText;
 	//wxComboBox *ctrlTypeCombo;
 	//wxString typeChoices[11];
 	//wxButton *btnRemap;
 	wxButton *btnUpdate, *btnToken;
-	event_trigger_t *getSelectedControlEvent();
 	KeySelectDialog *kd;
 	int controlItemCounter;
 	wxButton *btnAddKey;
 	wxButton *btnDeleteKey;
 	std::map<int,wxTreeItemId> treeItems;
-	wxString InputMapFileName;
 
 #ifdef NETWORK
 	wxCheckBox *network_enable;
@@ -353,669 +327,12 @@ private:
 
 	void tryLoadOpenCL();
 	int openCLAvailable;
-	//Joysticks *joy;
 //	wxTextCtrl *deadzone;
-//	wxGauge *joygauges[256];
-//	wxSlider *joygauges[256];
 	//wxTimer *controlstimer;
 	// any class wishing to process wxWidgets events must use this macro
 	DECLARE_EVENT_TABLE()
 };
 
-class KeyAddDialog : public wxDialog
-{
-protected:
-	MyDialog *dlg;
-	event_trigger_t *t;
-	std::map<std::string, std::string> inputevents;
-	wxStaticText *desctext;
-	std::string selectedEvent;
-	std::string selectedType;
-	std::string selectedOption;
-	wxListBox *cbe;
-	wxRadioBox *cbi;
-
-	bool loadEventListing()
-	{
-		int i=0;
-		while(i!=EV_MODE_LAST)
-		{
-			std::string eventName = eventInfo[i].name;
-			std::string eventDescription = eventInfo[i].description + std::string("\n") + std::string("default mapping: ") + eventInfo[i].defaultKey;
-			inputevents[eventName] = eventDescription;
-			i++;
-		}
-
-		return true;
-	}
-
-public:
-	KeyAddDialog(MyDialog *_dlg) : wxDialog(NULL, wxID_ANY, wxString(), wxDefaultPosition, wxSize(500,400), wxSTAY_ON_TOP|wxDOUBLE_BORDER|wxCLOSE_BOX), dlg(_dlg)
-	{
-		selectedEvent="";
-		selectedType="";
-		selectedOption="  ";
-		//wxString configpath=_dlg->app->UserPath+wxFileName::GetPathSeparator()+_T("config")+wxFileName::GetPathSeparator();
-		loadEventListing(); //configpath.ToUTF8().data());
-
-		desctext = new wxStaticText(this, wxID_ANY, _("Please select an input event."), wxPoint(5,5), wxSize(380, 30), wxST_NO_AUTORESIZE);
-		desctext->Wrap(480);
-
-		wxStaticText *text = new wxStaticText(this, 4, _("Event Name: "), wxPoint(5,35), wxSize(70, 25));
-		wxString eventChoices[MAX_EVENTS];
-		std::map<std::string, std::string>::iterator it;
-		int counter=0;
-		for(it=inputevents.begin(); it!=inputevents.end(); it++, counter++)
-		{
-			if(counter>MAX_EVENTS)
-				break;
-			eventChoices[counter] = conv(it->first);
-		}
-//		cbe = new wxComboBox(this, 1, _("Keyboard"), wxPoint(80,35), wxSize(300, 25), counter, eventChoices, wxCB_READONLY);
-		cbe = new wxListBox(this, 1, wxPoint(80,35), wxSize(400, 270), counter, eventChoices, wxLB_SINGLE);
-		cbe->SetSelection(0);
-
-//		text = new wxStaticText(this, wxID_ANY, _("Input Type: "), wxPoint(5,120), wxSize(70,25));
-		wxString ch[5];
-		ch[0] = conv("Keyboard");
-		ch[1] = conv("JoystickAxis");
-		ch[2] = conv("JoystickSlider");
-		ch[3] = conv("JoystickButton");
-		ch[4] = conv("JoystickPov");
-		cbi=new wxRadioBox(this, wxID_ANY, _("Input Type: "),  wxPoint(5,310), wxSize(480,45), 5, ch);
-		cbi->SetSelection(0);
-
-		wxButton *btnOK = new wxButton(this, 2, _("Add"), wxPoint(5,365), wxSize(190,25));
-		btnOK->SetToolTip(wxString(_("Add the key")));
-
-		wxButton *btnCancel = new wxButton(this, 3, _("Cancel"), wxPoint(200,365), wxSize(190,25));
-		btnCancel->SetToolTip(wxString(_("close this dialog")));
-
-		//SetBackgroundColour(wxColour("white"));
-		Centre();
-	}
-
-	void onChangeEventComboBox(wxCommandEvent& event)
-	{
-		std::string s = inputevents[conv(cbe->GetStringSelection())];
-		desctext->SetLabel(_("Event Description: ") + conv(s));
-		selectedEvent = conv(cbe->GetStringSelection());
-	}
-
-	void onChangeTypeComboBox(wxCommandEvent& event)
-	{
-		selectedType = conv(cbi->GetStringSelection());
-	}
-	void onButCancel(wxCommandEvent& event)
-	{
-		EndModal(1);
-	}
-	void onButOK(wxCommandEvent& event)
-	{
-		selectedEvent = conv(cbe->GetStringSelection());
-		selectedType = conv(cbi->GetStringSelection());
-		// add some dummy values
-		if(conv(selectedType) == conv("Keyboard"))
-			selectedOption="";
-		else if(conv(selectedType) == conv("JoystickAxis"))
-			selectedOption=" 0 0";
-		else if(conv(selectedType) == conv("JoystickButton"))
-			selectedOption=" 0 0";
-		else if(conv(selectedType) == conv("JoystickSlider"))
-			selectedOption=" 0 X 0";
-		else if(conv(selectedType) == conv("JoystickPov"))
-			selectedOption=" 0 0";
-
-		EndModal(0);
-	}
-	std::string getEventName()
-	{
-		return selectedEvent;
-	}
-	std::string getEventType()
-	{
-		return selectedType;
-	}
-	std::string getEventOption()
-	{
-		return selectedOption;
-	}
-private:
-	DECLARE_EVENT_TABLE()
-};
-
-#define MAX_TESTABLE_EVENTS 500
-
-class KeyTestDialog : public wxDialog
-{
-protected:
-	MyDialog *dlg;
-	wxGauge *g[MAX_TESTABLE_EVENTS];
-	wxGauge *gp[MAX_TESTABLE_EVENTS];
-	wxStaticText *t[MAX_TESTABLE_EVENTS];
-	wxStaticText *tv[MAX_TESTABLE_EVENTS];
-	wxStaticText *notice;
-	wxTimer *timer;
-	wxScrolledWindow *vwin;
-	int num_items_visible;
-public:
-	KeyTestDialog(MyDialog *_dlg) : wxDialog(NULL, wxID_ANY, wxString(), wxDefaultPosition, wxSize(500,600), wxSTAY_ON_TOP|wxDOUBLE_BORDER|wxCLOSE_BOX), dlg(_dlg)
-	{
-		// fixed unsed variable warning
-		//wxStaticText *lt = new wxStaticText(this, wxID_ANY, _("Event Name"), wxPoint(5, 0), wxSize(200, 15));
-		new wxStaticText(this, wxID_ANY, _("Event Name"), wxPoint(5, 0), wxSize(200, 15));
-		new wxStaticText(this, wxID_ANY, _("Event Value (first: result, second: raw input)"), wxPoint(150, 0), wxSize(260, 15));
-		notice = new wxStaticText(this, wxID_ANY, _("Please use any mapped input device in order to test."), wxPoint(20, 60), wxSize(260, 15));
-		new wxButton(this, 1, _("ok (end test)"), wxPoint(5,575), wxSize(490,20));
-		vwin = new wxScrolledWindow(this, wxID_ANY, wxPoint(0,20), wxSize(490,550));
-
-		std::map<int, std::vector<event_trigger_t> > events = INPUTENGINE.getEvents();
-		std::map<int, std::vector<event_trigger_t> >::iterator it;
-		std::vector<event_trigger_t>::iterator it2;
-		int counter = 0;
-		for(it = events.begin(); it!= events.end(); it++)
-		{
-			for(it2 = it->second.begin(); it2!= it->second.end(); it2++, counter++)
-			{
-				if(counter >= MAX_TESTABLE_EVENTS)
-					break;
-				std::string eventName = INPUTENGINE.eventIDToName(it->first);
-				g[counter] = new wxGauge(vwin, wxID_ANY, 1000, wxPoint(280, counter*20+5), wxSize(200, 7),wxGA_HORIZONTAL|wxBORDER_NONE);
-				g[counter]->Hide();
-				gp[counter] = new wxGauge(vwin, wxID_ANY, 1000, wxPoint(280, counter*20+5+7), wxSize(200, 7),wxGA_HORIZONTAL|wxBORDER_NONE);
-				gp[counter]->Hide();
-				t[counter] = new wxStaticText(vwin, wxID_ANY, conv(eventName), wxPoint(5, counter*20+5), wxSize(200, 15), wxALIGN_RIGHT|wxST_NO_AUTORESIZE);
-				t[counter]->Hide();
-				tv[counter] = new wxStaticText(vwin, wxID_ANY, conv(eventName), wxPoint(210, counter*20+5), wxSize(60, 15), wxALIGN_RIGHT|wxST_NO_AUTORESIZE);
-				tv[counter]->Hide();
-			}
-		}
-		// resize scroll window
-		vwin->SetScrollbars(0, 20, 0, 5);
-
-		if(!INPUTENGINE.setup(getOISHandle(this), true, false))
-		{
-			wxLogStatus(wxT("Unable to open inputs!"));
-		}
-
-		timer = new wxTimer(this, 2);
-		timer->Start(50);
-	}
-	~KeyTestDialog()
-	{
-		timer->Stop();
-		delete timer;
-		timer = 0;
-		INPUTENGINE.destroy();
-		EndModal(0);
-	}
-
-	void update()
-	{
-		num_items_visible=0;
-		std::map<int, std::vector<event_trigger_t> > events = INPUTENGINE.getEvents();
-		std::map<int, std::vector<event_trigger_t> >::iterator it;
-		std::vector<event_trigger_t>::iterator it2;
-		std::map<int,int> events_shown;
-		int counter = 0;
-		for(it = events.begin(); it!= events.end(); it++)
-		{
-			for(it2 = it->second.begin(); it2!= it->second.end(); it2++, counter++)
-			{
-				if(counter >= MAX_TESTABLE_EVENTS)
-					break;
-				float v = INPUTENGINE.getEventValue(it->first) * 1000;
-				float vp = INPUTENGINE.getEventValue(it->first, true) * 1000; // pure value, without deadzone
-				bool already_shown = (events_shown.find(it->first) != events_shown.end());
-				if(!already_shown && vp>1)
-				{
-					t[counter]->SetPosition(wxPoint(5, num_items_visible*20+5));
-					t[counter]->Show();
-					tv[counter]->SetPosition(wxPoint(210, num_items_visible*20+5));
-					tv[counter]->Show();
-					tv[counter]->SetLabel(wxString::Format(wxT("(%03.0f / %03.0f)"),v*0.1f, vp * 0.1f));
-					g[counter]->Show();
-					g[counter]->SetPosition(wxPoint(280, num_items_visible*20+5));
-					g[counter]->SetValue((int)v);
-					gp[counter]->Show();
-					gp[counter]->SetPosition(wxPoint(280, num_items_visible*20+5+7));
-					gp[counter]->SetValue((int)vp);
-					num_items_visible++;
-					events_shown[it->first]=1;
-				}else
-				{
-					g[counter]->Hide();
-					gp[counter]->Hide();
-					t[counter]->Hide();
-					tv[counter]->Hide();
-				}
-			}
-		}
-		vwin->SetScrollbars(0, 20, 0, num_items_visible);
-		if(num_items_visible)
-			notice->Hide();
-		else
-			notice->Show();
-	}
-	void OnButOK(wxCommandEvent& event)
-	{
-		EndModal(0);
-	}
-	void OnTimer(wxTimerEvent& event)
-	{
-		INPUTENGINE.Capture();
-		update();
-	}
-
-private:
-	DECLARE_EVENT_TABLE()
-};
-
-class KeySelectDialog : public wxDialog
-{
-protected:
-	event_trigger_t *t;
-	MyDialog *dlg;
-	wxStaticText *text;
-	wxStaticText *text2;
-	wxButton *btnCancel;
-	wxTimer *timer;
-	std::string lastCombo;
-	int lastBtn, lastJoy, lastPov, lastPovDir;
-	int selectedJoystickLast, selectedAxisLast;
-	float joyMinState[MAX_JOYSTICKS][MAX_JOYSTICK_AXIS];
-	float joyMaxState[MAX_JOYSTICKS][MAX_JOYSTICK_AXIS];
-	float joySliderMinState[MAX_JOYSTICKS][2][MAX_JOYSTICK_SLIDERS];
-	float joySliderMaxState[MAX_JOYSTICKS][2][MAX_JOYSTICK_SLIDERS];
-	void OnEraseBackGround(wxEraseEvent& event) { event.Skip(); };
-
-public:
-	KeySelectDialog(MyDialog *_dlg, event_trigger_t *_t) : wxDialog(NULL, wxID_ANY, wxString(), wxDefaultPosition, wxSize(300,600), wxSTAY_ON_TOP|wxDOUBLE_BORDER|wxCLOSE_BOX), t(_t), dlg(_dlg)
-	{
-		selectedJoystickLast=-1;
-		selectedAxisLast=-1;
-
-		bool captureMouse = false;
-		if(t->eventtype == ET_MouseAxisX || t->eventtype == ET_MouseAxisY || t->eventtype == ET_MouseAxisZ || t->eventtype == ET_MouseButton)
-			captureMouse = true;
-
-		for(int i=0;i<MAX_JOYSTICKS;i++)
-		{
-			for(int x=0;x<MAX_JOYSTICK_AXIS;x++)
-			{
-				joyMinState[i][x]=0;
-				joyMaxState[i][x]=0;
-			}
-			for(int x=0;x<MAX_JOYSTICK_SLIDERS;x++)
-			{
-				joySliderMinState[i][0][x]=0;
-				joySliderMaxState[i][0][x]=0;
-				joySliderMinState[i][1][x]=0;
-				joySliderMaxState[i][1][x]=0;
-			}
-		}
-
-		if(!INPUTENGINE.setup(getOISHandle(this), true, captureMouse))
-		{
-			wxLogStatus(wxT("Unable to open default input map!"));
-		}
-
-		INPUTENGINE.resetKeys();
-
-		// setup GUI
-		wxBitmap bitmap;
-		//wxString imgFile=_("joycfg.bmp");
-		if(t->eventtype == ET_MouseAxisX || t->eventtype == ET_MouseAxisY || t->eventtype == ET_MouseAxisZ || t->eventtype == ET_MouseButton)
-			bitmap = wxBitmap(mousecfg_xpm);
-			//imgFile=_("mousecfg.bmp");
-		else if(t->eventtype == ET_Keyboard)
-			bitmap = wxBitmap(keyboardcfg_xpm);
-			//imgFile=_("keyboardcfg.bmp");
-		else if(t->eventtype == ET_JoystickAxisAbs || t->eventtype == ET_JoystickAxisRel || t->eventtype == ET_JoystickButton || t->eventtype == ET_JoystickPov || t->eventtype == ET_JoystickSliderX || t->eventtype == ET_JoystickSliderY)
-			bitmap = wxBitmap(joycfg_xpm);
-			//imgFile=_("joycfg.bmp");
-
-		new wxStaticPicture(this, -1, bitmap, wxPoint(0, 0), wxSize(300, 500),wxNO_BORDER);
-
-		//btnCancel = new wxButton(this, 1, "Cancel", wxPoint(50,175), wxSize(100,20));
-		wxString st = conv(t->tmp_eventname);
-		text = new wxStaticText(this, wxID_ANY, st, wxPoint(5,130), wxSize(190,20), wxALIGN_CENTRE|wxST_NO_AUTORESIZE);
-		text2 = new wxStaticText(this, wxID_ANY, wxString(), wxPoint(5,150), wxSize(290,550), wxALIGN_CENTRE|wxST_NO_AUTORESIZE);
-		timer = new wxTimer(this, 2);
-		timer->Start(50);
-
-		SetBackgroundColour(wxColour(conv("white")));
-
-		// centers dialog window on the screen
-		Centre();
-	}
-
-	~KeySelectDialog()
-	{
-	}
-
-	void closeWindow()
-	{
-		EndModal(0);
-		INPUTENGINE.destroy();
-		timer->Stop();
-		delete timer;
-		delete text;
-		delete text2;
-	}
-
-	void update()
-	{
-		if(INPUTENGINE.isKeyDown(OIS::KC_RETURN) || INPUTENGINE.isKeyDown(OIS::KC_ESCAPE))
-		{
-			// done!
-			closeWindow();
-			return;
-		}
-		if(INPUTENGINE.isKeyDown(OIS::KC_C))
-		{
-			//clear min/max
-			for(int i=0;i<MAX_JOYSTICKS;i++)
-			{
-				for(int x=0;x<MAX_JOYSTICK_AXIS;x++)
-				{
-					joyMinState[i][x]=0;
-					joyMaxState[i][x]=0;
-				}
-				for(int x=0;x<MAX_JOYSTICK_SLIDERS;x++)
-				{
-					joySliderMinState[i][0][x]=0;
-					joySliderMaxState[i][0][x]=0;
-					joySliderMinState[i][1][x]=0;
-					joySliderMaxState[i][1][x]=0;
-				}
-			}
-			if(t->eventtype == ET_JoystickAxisAbs || t->eventtype == ET_JoystickAxisRel)
-				text2->SetLabel(_("(Please move an Axis)\n"));
-			if(t->eventtype == ET_JoystickSliderX || t->eventtype == ET_JoystickSliderX)
-				text2->SetLabel(_("(Please move a Slider)\n"));
-		}
-
-		if(t->eventtype == ET_Keyboard)
-		{
-			std::string combo;
-			int keys = INPUTENGINE.getCurrentKeyCombo(&combo);
-			if(lastCombo != combo && keys != 0)
-			{
-				strcpy(t->configline, combo.c_str());
-				wxString s = conv(combo);
-				if(text2->GetLabel() != s)
-					text2->SetLabel(s);
-				lastCombo = combo;
-			} else if (lastCombo != combo && keys == 0)
-			{
-				wxString s = _("(Please press a key)");
-				if(text2->GetLabel() != s)
-					text2->SetLabel(s);
-				lastCombo = combo;
-			} else if(keys > 0)
-			{
-				closeWindow();
-				return;
-			}
-		} else if(t->eventtype == ET_JoystickPov)
-		{
-			int joyPov=-1, joyNum=-1, povDir=-1;
-			int res = INPUTENGINE.getCurrentPovValue(joyNum, joyPov, povDir);
-			if(res && joyPov != lastPov && joyNum != lastJoy && povDir != lastPovDir)
-			{
-				const char *dirStr = "North";
-				if(povDir == OIS::Pov::North)     dirStr = "North";
-				if(povDir == OIS::Pov::South)     dirStr = "South";
-				if(povDir == OIS::Pov::East)      dirStr = "East";
-				if(povDir == OIS::Pov::West)      dirStr = "West";
-				if(povDir == OIS::Pov::NorthEast) dirStr = "NorthEast";
-				if(povDir == OIS::Pov::SouthEast) dirStr = "SouthEast";
-				if(povDir == OIS::Pov::NorthWest) dirStr = "NorthWest";
-				if(povDir == OIS::Pov::SouthWest) dirStr = "SouthWest";
-				std::string str = conv(wxString::Format(_T("%d %s"), joyPov, dirStr));
-				strcpy(t->configline, str.c_str());
-				t->joystickPovNumber = joyPov;
-				t->joystickPovDirection = povDir;
-				wxString s = conv(str);
-				if(text2->GetLabel() != s)
-					text2->SetLabel(s);
-				lastPov = joyPov;
-				lastJoy = joyNum;
-				lastPovDir = povDir;
-			} else if (!res)
-			{
-				wxString s = _("(Please use your POV)");
-				if(text2->GetLabel() != s)
-					text2->SetLabel(s);
-				lastBtn = -1;
-				lastJoy = -1;
-			} else if(joyPov >= 0 && joyNum >= 0 && povDir >= 0)
-			{
-				closeWindow();
-				return;
-			}
-		} else if(t->eventtype == ET_JoystickButton)
-		{
-			int joyBtn=-1, joyNum=-1;
-			int res = INPUTENGINE.getCurrentJoyButton(joyNum, joyBtn);
-			if(res && joyBtn != lastBtn && joyNum != lastJoy)
-			{
-				std::string str = conv(wxString::Format(_T("%d"), joyBtn));
-				strcpy(t->configline, str.c_str());
-				t->joystickButtonNumber = joyBtn;
-				wxString s = conv(str);
-				if(text2->GetLabel() != s)
-					text2->SetLabel(s);
-				lastBtn = joyBtn;
-				lastJoy = joyNum;
-			} else if (!res)
-			{
-				wxString s = _("(Please press a Joystick Button)");
-				if(text2->GetLabel() != s)
-					text2->SetLabel(s);
-				lastBtn = -1;
-				lastJoy = -1;
-			} else if(joyBtn >= 0 && joyNum >= 0)
-			{
-				closeWindow();
-				return;
-			}
-		} else if(t->eventtype == ET_JoystickAxisAbs || t->eventtype == ET_JoystickAxisRel)
-		{
-			std::string str = "";
-			int selectedJoystick=-1, selectedAxis = -1, cd=0;
-			for(int i=0;i<INPUTENGINE.getNumJoysticks();i++)
-			{
-				OIS::JoyStickState *j = INPUTENGINE.getCurrentJoyState(i);
-
-				std::vector<OIS::Axis>::iterator it;
-				int counter = 0, cdi=0;
-				for(it=j->mAxes.begin();it!=j->mAxes.end();it++, counter++)
-				{
-					float value = 100*((float)it->abs/(float)OIS::JoyStick::MAX_AXIS);
-					if(value < joyMinState[i][counter]) joyMinState[i][counter] = value;
-					if(value > joyMaxState[i][counter]) joyMaxState[i][counter] = value;
-					float delta = fabs((float)(joyMaxState[i][counter]-joyMinState[i][counter]));
-					if(value > 10 || delta > 10)
-					{
-						str += std::string("Joystick ") + conv(wxString::Format(wxT("%d"), i)) + std::string(", Axis ") + conv(wxString::Format(wxT("%02d"), counter)) + std::string(": ") + conv(wxString::Format(wxT("%03d"), (int)value)) + std::string(" (DELTA:") + conv(wxString::Format(wxT("%0.2f"), delta))+ std::string(")\n");
-						cdi++;
-					}
-				}
-				if(cdi)
-					str += std::string(" ---- \nResult: ");
-				cd+=cdi;
-
-				// check for delta on each axis
-				float maxdelta=0;
-				int sAxis=-1, sJoy=-1;
-				for(int c=0;c<=counter;c++)
-				{
-					float delta = fabs((float)(joyMaxState[i][c]-joyMinState[i][c]));
-					if(delta > maxdelta && delta > 50)
-					{
-						selectedAxis = c;
-						selectedJoystick = i;
-						maxdelta = delta;
-					}
-				}
-			}
-
-			if(!cd) str = conv(_("(Please move an Axis)\n"));
-			if(selectedJoystick>=0 && selectedAxis >= 0)
-			{
-				// changed?
-				float delta = fabs((float)(joyMaxState[selectedJoystick][selectedAxis]-joyMinState[selectedJoystick][selectedAxis]));
-				if(selectedAxis != selectedAxisLast && selectedJoystick != selectedJoystickLast)
-				{
-					if(selectedAxisLast != -1)
-					{
-						// reset max/mins
-						joyMaxState[selectedJoystickLast][selectedAxisLast] = 0;
-						joyMinState[selectedJoystickLast][selectedAxisLast] = 0;
-					}
-					selectedJoystickLast = selectedJoystick;
-					selectedAxisLast = selectedAxis;
-				}
-				static float olddeta = 0;
-				bool upper = (joyMaxState[selectedJoystick][selectedAxis] > 50);
-				if(delta > 50 && delta < 120)
-				{
-					str += std::string("Joystick ") + conv(wxString::Format(_T("%d"), selectedJoystick)) + std::string(", Axis ") + conv(wxString::Format(_T("%d"), selectedAxis)) + \
-						(upper?std::string(" UPPER"):std::string(" LOWER"));
-					t->joystickAxisNumber = selectedAxis;
-					t->joystickNumber = selectedJoystick;
-					t->joystickAxisRegion = (upper?1:-1); // half axis
-					strcpy(t->configline, (upper?"UPPER":"LOWER"));
-				}
-				else if(delta > 120)
-				{
-					str += std::string("Joystick ") + conv(wxString::Format(_T("%d"), selectedJoystick)) + std::string(", Axis ") + conv(wxString::Format(_T("%d"), selectedAxis));
-					t->joystickAxisNumber = selectedAxis;
-					t->joystickNumber = selectedJoystick;
-					t->joystickAxisRegion = 0; // full axis
-					strcpy(t->configline, "");
-				}
-
-				str += std::string("\n====\nPress RETURN or ESC to complete\nPress 'c' to reset ranges\n");
-				//str = wxString::Format(_T("%f"), joyMaxState[0]) + "/" + wxString::Format(_T("%f"), joyMinState[i][0]) + " - " + wxString::Format(_T("%f"), fabs((float)(joyMaxState[0]-joyMinState[i][0])));
-			}
-			wxString s = conv(str);
-			if(!s.empty() && text2->GetLabel() != s)
-				text2->SetLabel(s);
-		} else if(t->eventtype == ET_JoystickSliderX || t->eventtype == ET_JoystickSliderY)
-		{
-			std::string str = "";
-			int sliders=0, cd=0;
-			for(int i=0;i<INPUTENGINE.getNumJoysticks();i++)
-			{
-				OIS::JoyStickState *j = INPUTENGINE.getCurrentJoyState(i);
-
-				int slidercount = INPUTENGINE.getJoyComponentCount(OIS::OIS_Slider, i);
-				if(!slidercount) continue;
-				sliders += slidercount;
-
-				std::vector<OIS::Slider>::iterator it;
-				int counter = 0, cdi=0;
-
-				for(int s=0;s<slidercount;s++, counter++)
-				{
-					for(int type=0;type<2;type++)
-					{
-						float value = ((type == 0)?j->mSliders[s].abX:j->mSliders[s].abY);
-
-						value = 100*(value/(float)OIS::JoyStick::MAX_AXIS);
-						if(value < joySliderMinState[i][type][counter]) joySliderMinState[i][type][counter] = value;
-						if(value > joySliderMaxState[i][type][counter]) joySliderMaxState[i][type][counter] = value;
-						float delta = fabs((float)(joySliderMaxState[i][type][counter]-joySliderMinState[i][type][counter]));
-						if(value > 10 || delta > 10)
-						{
-							str += std::string("Joystick ");
-							str += conv(wxString::Format(wxT("%d"), i));
-							str += std::string(", Slider ");
-							str += conv(wxString::Format(_T("%c"), type?'Y':'X'));
-							str += std::string(": ");
-							str += conv(wxString::Format(_T("%d"), counter));
-							str += std::string(": ");
-							str += conv(wxString::Format(_T("%0.2f"), value));
-							str += std::string("\n");
-							cdi++;
-						}
-					}
-				}
-				if(cdi)
-					str += std::string(" ---- \nResult: ");
-				cd+=cdi;
-
-				// check for delta on each axis
-				if(!cd) str += conv(_("(Please move a Slider)\n"));
-				float maxdelta=0;
-				int selectedSlider = -1, selectedSliderType = -1;
-				for(int c=0;c<=counter;c++)
-				{
-					float deltaX = fabs((float)(joySliderMaxState[i][0][c]-joySliderMinState[i][0][c]));
-					float deltaY = fabs((float)(joySliderMaxState[i][1][c]-joySliderMinState[i][1][c]));
-					if(deltaX > maxdelta && deltaX > 50)
-					{
-						selectedSlider = c;
-						selectedSliderType = 0;
-						maxdelta = deltaX;
-					}
-					if(deltaY > maxdelta && deltaY > 50)
-					{
-						selectedSlider = c;
-						selectedSliderType = 1;
-						maxdelta = deltaY;
-					}
-				}
-
-				if(selectedSlider >= 0 && selectedSliderType >= 0)
-				{
-					float delta = fabs((float)(joySliderMaxState[i][selectedSliderType][selectedSlider]-joySliderMinState[i][selectedSliderType][selectedSlider]));
-					static float olddeta = 0;
-
-					if(selectedSliderType == 0)
-						t->eventtype = ET_JoystickSliderX;
-					else if(selectedSliderType == 1)
-						t->eventtype = ET_JoystickSliderY;
-
-					bool upper = (joySliderMaxState[i][selectedSliderType][selectedSlider] > 50);
-					if(delta > 10)
-					{
-						str += std::string("Joystick ") + conv(wxString::Format(wxT("%d"), i)) + std::string(", Slider ") + conv(wxString::Format(_T("%d"), selectedSlider)); //+ " - " + wxString::Format(_T("%f"), lastJoyEventTime);
-						t->joystickSliderNumber = selectedSlider;
-						strcpy(t->configline, "");
-					}
-				}
-				str += std::string("\n====\nPress RETURN or ESC to complete\nPress 'c' to reset ranges\n");
-				//str = wxString::Format(_T("%f"), joyMaxState[0]) + "/" + wxString::Format(_T("%f"), joyMinState[i][0]) + " - " + wxString::Format(_T("%f"), fabs((float)(joyMaxState[0]-joyMinState[i][0])));
-				wxString s = conv(str);
-				if(!s.empty() && text2->GetLabel() != s)
-					text2->SetLabel(s);
-			}
-			if(!sliders)
-			{
-				// no sliders found!
-				closeWindow();
-			}
-		}
-	}
-
-	void OnButCancel(wxCommandEvent& event)
-	{
-		EndModal(0);
-	}
-
-	void OnTimer(wxTimerEvent& event)
-	{
-		INPUTENGINE.Capture();
-		update();
-	}
-
-private:
-	DECLARE_EVENT_TABLE()
-};
 
 class IDData : public wxTreeItemData
 {
@@ -1042,7 +359,6 @@ enum
 	command_save_keymap,
 	command_add_key,
 	command_delete_key,
-	command_testevents,
 	clear_cache,
 	regen_cache,
 	update_ror,
@@ -1054,7 +370,6 @@ enum
 	mynotebook,
 	mynotebook2,
 	mynotebook3,
-	command_joywizard,
 	FFSLIDER,
 	get_user_token,
 	check_opencl,
@@ -1099,63 +414,8 @@ BEGIN_EVENT_TABLE(MyDialog, wxDialog)
 	EVT_NOTEBOOK_PAGE_CHANGED(mynotebook, MyDialog::OnNoteBookPageChange)
 	EVT_NOTEBOOK_PAGE_CHANGED(mynotebook2, MyDialog::OnNoteBook2PageChange)
 
-	EVT_TREE_SEL_CHANGING (CTREE_ID, MyDialog::onTreeSelChange)
-	EVT_TREE_ITEM_ACTIVATED(CTREE_ID, MyDialog::onActivateItem)
-	EVT_TREE_ITEM_RIGHT_CLICK(CTREE_ID, MyDialog::onRightClickItem)
-
-	EVT_BUTTON(command_load_keymap, MyDialog::OnButLoadKeymap)
-	EVT_BUTTON(command_save_keymap, MyDialog::OnButSaveKeymap)
-
-	EVT_BUTTON(command_joywizard, MyDialog::OnButJoyWizard)
-	EVT_BUTTON(command_add_key, MyDialog::OnButAddKey)
-	EVT_BUTTON(command_delete_key, MyDialog::OnButDeleteKey)
-	EVT_BUTTON(command_testevents, MyDialog::OnButTestEvents)
-
-	EVT_MENU(1, MyDialog::OnMenuJoystickOptionsClick)
-	EVT_MENU(20, MyDialog::OnMenuJoystickOptionsClick)
-	EVT_MENU(21, MyDialog::OnMenuJoystickOptionsClick)
-	EVT_MENU(22, MyDialog::OnMenuJoystickOptionsClick)
-	EVT_MENU(23, MyDialog::OnMenuJoystickOptionsClick)
-	EVT_MENU(24, MyDialog::OnMenuJoystickOptionsClick)
-	EVT_MENU(25, MyDialog::OnMenuJoystickOptionsClick)
-	EVT_MENU(30, MyDialog::OnMenuJoystickOptionsClick)
-	EVT_MENU(31, MyDialog::OnMenuJoystickOptionsClick)
-	EVT_MENU(32, MyDialog::OnMenuJoystickOptionsClick)
-
-	EVT_MENU(50, MyDialog::OnMenuJoystickOptionsClick)
-	EVT_MENU(51, MyDialog::OnMenuJoystickOptionsClick)
-	EVT_MENU(52, MyDialog::OnMenuJoystickOptionsClick)
-	EVT_MENU(53, MyDialog::OnMenuJoystickOptionsClick)
-	EVT_MENU(54, MyDialog::OnMenuJoystickOptionsClick)
-	EVT_MENU(55, MyDialog::OnMenuJoystickOptionsClick)
-	EVT_MENU(56, MyDialog::OnMenuJoystickOptionsClick)
-	EVT_MENU(57, MyDialog::OnMenuJoystickOptionsClick)
-	EVT_MENU(58, MyDialog::OnMenuJoystickOptionsClick)
-	EVT_MENU(59, MyDialog::OnMenuJoystickOptionsClick)
-	EVT_MENU(60, MyDialog::OnMenuJoystickOptionsClick)
-	EVT_MENU(61, MyDialog::OnMenuJoystickOptionsClick)
-	EVT_MENU(62, MyDialog::OnMenuJoystickOptionsClick)
 	EVT_CHOICE(EVT_CHANGE_RENDERER, MyDialog::OnChangeRenderer)
 
-END_EVENT_TABLE()
-
-BEGIN_EVENT_TABLE(KeySelectDialog, wxDialog)
-	EVT_BUTTON(1, KeySelectDialog::OnButCancel)
-	EVT_TIMER(2, KeySelectDialog::OnTimer)
-	EVT_ERASE_BACKGROUND(KeySelectDialog::OnEraseBackGround)
-END_EVENT_TABLE()
-
-BEGIN_EVENT_TABLE(KeyAddDialog, wxDialog)
-//	EVT_COMBOBOX(1, KeyAddDialog::onChangeEventComboBox)
-	EVT_LISTBOX(1, KeyAddDialog::onChangeEventComboBox)
-	EVT_BUTTON(2, KeyAddDialog::onButOK)
-	EVT_BUTTON(3, KeyAddDialog::onButCancel)
-	EVT_COMBOBOX(4, KeyAddDialog::onChangeTypeComboBox)
-END_EVENT_TABLE()
-
-BEGIN_EVENT_TABLE(KeyTestDialog, wxDialog)
-	EVT_BUTTON(1, KeyTestDialog::OnButOK)
-	EVT_TIMER(2, KeyTestDialog::OnTimer)
 END_EVENT_TABLE()
 
 // Create a new application object: this macro will allow wxWidgets to create
@@ -1440,8 +700,8 @@ bool MyApp::OnInit()
 {
 	buildmode=false;
 	if (argc==2 && wxString(argv[1])==wxT("/buildmode")) buildmode=true;
-	
-	
+
+
 	//setup the user filesystem
 	SETTINGS.setSetting("BuildMode", buildmode?"Yes":"No");
 	if(!SETTINGS.setupPaths())
@@ -1509,25 +769,7 @@ MyDialog::MyDialog(const wxString& title, MyApp *_app) : wxDialog(NULL, wxID_ANY
 	SetWindowStyle(wxRESIZE_BORDER | wxCAPTION);
 	//SetMinSize(wxSize(300,300));
 
-	wxLogStatus(wxT("InputEngine starting"));
-	wxFileName tfn=wxFileName(app->UserPath, wxEmptyString);
-	tfn.AppendDir(_T("config"));
-	wxLogStatus(wxT("Searching input.map in ")+tfn.GetPath());
-	InputMapFileName=tfn.GetPath()+wxFileName::GetPathSeparator()+_T("input.map");
-	std::string path = ((tfn.GetPath()+wxFileName::GetPathSeparator()).ToUTF8().data());
-	if(!INPUTENGINE.setup(getOISHandle(this), false, false, 0))
-	{
-		wxLogStatus(wxT("Unable to setup inputengine!"));
-	} else
-	{
-		if (!INPUTENGINE.loadMapping(path+"input.map"))
-		{
-			wxLogStatus(wxT("Unable to open default input map!"));
-		}
-	}
-	wxLogStatus(wxT("InputEngine started"));
 	kd=0;
-	controlItemCounter = 0;
 
 //	SandStormFogStart = 500;
 //	caelumFogDensity = 0.005;
@@ -1616,11 +858,6 @@ MyDialog::MyDialog(const wxString& title, MyApp *_app) : wxDialog(NULL, wxID_ANY
 	wxNotebook *ctbook=new wxNotebook(controlsPanel, mynotebook3, wxPoint(0, 0), wxSize(100,250));
 	controlsSizer->Add(ctbook, 1, wxGROW);
 
-	wxPanel *eventsPanel=new wxPanel(ctbook, -1);
-	ctbook->AddPage(eventsPanel, _("Bindings"), true);
-	wxSizer *eventsSizer = new wxBoxSizer(wxVERTICAL);
-	eventsPanel->SetSizer(eventsSizer);
-
 	wxPanel *ffPanel=new wxPanel(ctbook, -1);
 	ctbook->AddPage(ffPanel, _("Force Feedback"), false);
 
@@ -1628,43 +865,6 @@ MyDialog::MyDialog(const wxString& title, MyApp *_app) : wxDialog(NULL, wxID_ANY
 	ctbook->AddPage(ctsetPanel, _("Advanced"), false);
 	wxSizer *ctsetSizer = new wxBoxSizer(wxVERTICAL);
 	ctsetPanel->SetSizer(ctsetSizer);
-
-	// the events page
-	int maxTreeHeight = 310;
-	int maxTreeWidth = 480;
-	cTree = new wxTreeListCtrl(eventsPanel,
-                       CTREE_ID,
-                       wxPoint(0, 0),
-					   wxSize(maxTreeWidth, maxTreeHeight));
-
-	long style = cTree->GetWindowStyle();
-	//style |= wxTR_HAS_BUTTONS;
-	style |= wxTR_FULL_ROW_HIGHLIGHT;
-	style |= wxTR_HIDE_ROOT;
-	style |= wxTR_ROW_LINES;
-	cTree->SetWindowStyle(style);
-	eventsSizer->Add(cTree, 2, wxGROW);
-
-	wxPanel *controlsInfoPanel = new wxPanel(eventsPanel, wxID_ANY, wxPoint(0, 0 ), wxSize( maxTreeWidth, 60 ));
-	eventsSizer->Add(controlsInfoPanel, 0, wxGROW);
-	wxButton *wizBtn = new wxButton(controlsInfoPanel, command_joywizard, _("Wizard"), wxPoint(5,5), wxSize(80, 50));
-	// XXX TOFIX: disable until fixed!
-	wizBtn->Disable();
-
-	btnAddKey = new wxButton(controlsInfoPanel, command_add_key, _("Add"), wxPoint(90,5), wxSize(80, 50));
-	btnDeleteKey = new wxButton(controlsInfoPanel, command_delete_key, _("Delete selected"), wxPoint(175,5), wxSize(80, 50));
-	btnDeleteKey->Enable(false);
-
-	//wxButton *btnLoadKeyMap =
-	new wxButton(controlsInfoPanel, command_load_keymap, _("Import Keymap"), wxPoint(maxTreeWidth-125,5), wxSize(120,25));
-	//wxButton *btnSaveKeyMap =
-	new wxButton(controlsInfoPanel, command_save_keymap, _("Export Keymap"), wxPoint(maxTreeWidth-125,30), wxSize(120,25));
-
-	//wxButton *btnTest =
-	new wxButton(controlsInfoPanel, command_testevents, _("Test"), wxPoint(255,5), wxSize(95, 50));
-
-	//btnRemap = new wxButton( controlsInfoPanel, BTN_REMAP, "Remap", wxPoint(maxTreeWidth-250,5), wxSize(120,45));
-	loadInputControls();
 
 #ifdef NETWORK
 	wxPanel *netPanel=new wxPanel(nbook, -1);
@@ -1797,7 +997,7 @@ MyDialog::MyDialog(const wxString& title, MyApp *_app) : wxDialog(NULL, wxID_ANY
 	hdr=new wxCheckBox(graphicsPanel, -1, _("HDR"), wxPoint(x_row2, y));
 	hdr->SetToolTip(_("Requires a recent video card. Add a lightning effect that simulates the light sensitivity of the human eye."));
 	y+=15;
-	
+
 	mblur=new wxCheckBox(graphicsPanel, -1, _("Motion blur"), wxPoint(x_row1, y));
 	mblur->SetToolTip(_("Requires a recent video card. Adds a motion blur effect."));
 	mblur->Disable();
@@ -1806,15 +1006,15 @@ MyDialog::MyDialog(const wxString& title, MyApp *_app) : wxDialog(NULL, wxID_ANY
 	skidmarks->SetToolTip(_("Adds tire tracks to the ground."));
 	skidmarks->Disable();
 	y+=15;
-	
+
 	envmap=new wxCheckBox(graphicsPanel, -1, _("High quality reflective effects"), wxPoint(x_row1, y));
 	envmap->SetToolTip(_("Enable high quality reflective effects. Causes a slowdown."));
 	y+=15;
-	
+
 	glow=new wxCheckBox(graphicsPanel, -1, _("Glow"), wxPoint(x_row1, y));
 	glow->SetToolTip(_("Adds a glow effect to lights"));
 	glow->Disable();
-	
+
 	dof=new wxCheckBox(graphicsPanel, -1, _("DOF"), wxPoint(x_row2, y));
 	dof->SetToolTip(_("Adds a nice Depth of field effect to the scene."));
 	y+=25;
@@ -2179,133 +1379,7 @@ void MyDialog::onChangeLanguageChoice(wxCommandEvent& event)
 	delete(w);
 }
 
-void MyDialog::loadInputControls()
-{
-	char curGroup[32] = "";
-	cTree->DeleteRoot();
 
-	if(cTree->GetColumnCount() < 4)
-	{
-		// only add them once
-		cTree->AddColumn (_("Event"), 180);
-		cTree->SetColumnEditable (0, false);
-		cTree->AddColumn (_("Arguments"), 320);
-		cTree->SetColumnEditable (1, false);
-	}
-	wxTreeItemId root = cTree->AddRoot(conv("Root"));
-	wxTreeItemId *curRoot = 0;
-
-	// setup control tree
-	std::map<int, std::vector<event_trigger_t> > controls = INPUTENGINE.getEvents();
-
-	/*
-	printf("--------------------------\n");
-	for(std::map < int, std::vector<event_trigger_t> >::iterator it= controls.begin(); it!=controls.end();it++)
-	{
-		printf("event map: %d\n", it->first);
-		for(std::vector<event_trigger_t>::iterator it2=it->second.begin(); it2!= it->second.end(); it2++)
-		{
-			printf(" %d\n", it2->keyCode);
-		}
-	}
-	printf("===========================\n");
-	*/
-
-	// init now here, so we get the correct device name
-	INPUTENGINE.setup(getOISHandle(this), true, false);
-
-	// clear everything
-	controlItemCounter=0;
-	std::map<std::string, std::pair<wxTreeItemId, std::map < std::string, wxTreeItemId > > > devices;
-	for(std::map<int, std::vector<event_trigger_t> >::iterator it = controls.begin(); it!=controls.end(); it++)
-	{
-		for(std::vector<event_trigger_t>::iterator it2 = it->second.begin(); it2 != it->second.end(); it2++, controlItemCounter++)
-		{
-			const event_trigger_t evt = *it2;
-
-			if(evt.eventtype == ET_NONE)
-				continue;
-
-			if(strcmp(evt.group, curGroup))
-				strcpy(curGroup, evt.group);
-
-			std::string deviceName = INPUTENGINE.getDeviceName(evt);
-			if(devices.find(deviceName) == devices.end())
-			{
-				// device not found, create now
-				devices[deviceName] = std::pair<wxTreeItemId, std::map < std::string, wxTreeItemId > >();
-
-				devices[deviceName].first = cTree->AppendItem(root, conv(deviceName));
-				cTree->SetItemData(devices[deviceName].first, new IDData(-1));
-				cTree->SetItemBold(devices[deviceName].first);
-				cTree->SetItemSpan(devices[deviceName].first);
-			}
-			if(devices[deviceName].second.find(curGroup) == devices[deviceName].second.end())
-			{
-				// group not found, create now
-				devices[deviceName].second[curGroup] = cTree->AppendItem(devices[deviceName].first, conv(curGroup));
-				cTree->SetItemData(devices[deviceName].second[curGroup], new IDData(-1));
-				cTree->SetItemBold(devices[deviceName].second[curGroup]);
-				cTree->SetItemSpan(devices[deviceName].second[curGroup]);
-			}
-
-			//strip category name if possible
-			int eventID = it->first;
-			std::string evn = INPUTENGINE.eventIDToName(eventID);
-			wxString evName = conv(evn);
-			if(strlen(evt.group)+1 < evName.size())
-				evName = conv(evn.substr(strlen(evt.group)+1));
-		    wxTreeItemId item = cTree->AppendItem(devices[deviceName].second[curGroup], evName);
-
-			// set some data beside the tree entry
-			cTree->SetItemData(item, new IDData(evt.suid));
-			updateItemText(item, (event_trigger_t *)&(evt));
-			treeItems[evt.suid] = item;
-		}
-	}
-	INPUTENGINE.destroy();
-	//cTree->ExpandAll(root);
-}
-
-void MyDialog::updateItemText(wxTreeItemId item, event_trigger_t *t)
-{
-	if(t->eventtype == ET_Keyboard)
-	{
-		wxString txt = wxString::Format(_T("Keyboard: %s"), t->configline);
-		cTree->SetItemText (item, 1, txt);
-	} else if(t->eventtype == ET_JoystickAxisAbs || t->eventtype == ET_JoystickAxisRel)
-	{
-		wxString txt = wxString::Format(_T("Joystick %d, Axis %d%c %s"), t->joystickNumber, t->joystickAxisNumber, (strlen(t->configline)>0?',':' '), t->configline);
-		cTree->SetItemText (item, 1, txt);
-	} else if(t->eventtype == ET_JoystickSliderX || t->eventtype == ET_JoystickSliderY)
-	{
-			char type = 'X';
-			if(t->eventtype == ET_JoystickSliderY)
-				type = 'Y';
-		wxString txt = wxString::Format(_T("Joystick %d, %c-Slider %d%c %s"), t->joystickNumber, type, t->joystickSliderNumber, (strlen(t->configline)>0?',':' '), t->configline);
-		cTree->SetItemText (item, 1, txt);
-	} else if(t->eventtype == ET_JoystickButton)
-	{
-		//wxString txt = wxString::Format(_T("Joystick %d, Button %d%c %s"), t->joystickNumber, t->joystickButtonNumber, (strlen(t->configline)>0?',':' '), t->configline);
-		wxString txt = wxString::Format(_T("Joystick %d, Button %d"), t->joystickNumber, t->joystickButtonNumber);
-		cTree->SetItemText (item, 1, txt);
-	} else if(t->eventtype == ET_JoystickPov)
-	{
-		const char *dirStr = "North";
-		if     (t->joystickPovDirection == OIS::Pov::Centered)  dirStr = "Centered";
-		else if(t->joystickPovDirection == OIS::Pov::North)     dirStr = "North";
-		else if(t->joystickPovDirection == OIS::Pov::South)     dirStr = "South";
-		else if(t->joystickPovDirection == OIS::Pov::East)      dirStr = "East";
-		else if(t->joystickPovDirection == OIS::Pov::West)      dirStr = "West";
-		else if(t->joystickPovDirection == OIS::Pov::NorthEast) dirStr = "NorthEast";
-		else if(t->joystickPovDirection == OIS::Pov::SouthEast) dirStr = "SouthEast";
-		else if(t->joystickPovDirection == OIS::Pov::NorthWest) dirStr = "NorthWest";
-		else if(t->joystickPovDirection == OIS::Pov::SouthWest) dirStr = "SouthWest";
-
-		wxString txt = wxString::Format(_T("Joystick %d, POV %d, Direction %s%c %s"), t->joystickNumber, t->joystickPovNumber, dirStr, (strlen(t->configline)>0?',':' '), t->configline);
-		cTree->SetItemText (item, 1, txt);
-	}
-}
 
 void MyDialog::updateRendersystems(Ogre::RenderSystem *rs)
 {
@@ -2708,12 +1782,6 @@ void MyDialog::SaveConfig()
 	getSettingsControls();
 
 	// then set stuff and write configs
-	if(!INPUTENGINE.saveMapping(conv(InputMapFileName), getOISHandle(this)))
-	{
-		wxMessageDialog(this, wxString(_("Could not write to input.map file")), wxString(_("Write error")),wxOK||wxICON_ERROR).ShowModal();
-		return;
-	}
-
 	//save Ogre stuff if we loaded ogre in the first place
 	if(ogreRoot)
 	{
@@ -2756,221 +1824,6 @@ void MyDialog::SaveConfig()
 	fclose(fd);
 }
 
-void MyDialog::onRightClickItem(wxTreeEvent& event)
-{
-	if(isSelectedControlGroup())
-		return;
-	event_trigger_t *t = getSelectedControlEvent();
-	if(!t)
-		return;
-	if(t->eventtype == ET_JoystickAxisAbs || t->eventtype == ET_JoystickAxisRel || t->eventtype == ET_JoystickSliderX || t->eventtype == ET_JoystickSliderY)
-	{
-		wxMenu *m = 0;
-		if(t->eventtype == ET_JoystickAxisAbs || t->eventtype == ET_JoystickAxisRel)
-			m = new wxMenu(_("Joystick Axis Options"));
-		else if(t->eventtype == ET_JoystickSliderX || t->eventtype == ET_JoystickSliderY)
-			m = new wxMenu(_("Joystick Slider Options"));
-
-		wxMenuItem *i = m->AppendCheckItem(1, _("Reverse"), _("reverse axis"));
-		i->Check(t->joystickAxisReverse || t->joystickSliderReverse);
-
-		if(t->eventtype != ET_JoystickSliderX && t->eventtype != ET_JoystickSliderY)
-		{
-			wxMenu *iregion = new wxMenu(_("Joystick Axis Region"));
-			i = iregion->AppendRadioItem(30, _("Upper"));
-			i->Check(t->joystickAxisRegion == 1);
-			i = iregion->AppendRadioItem(31, _("Full"));
-			i->Check(t->joystickAxisRegion == 0);
-			i = iregion->AppendRadioItem(32, _("Lower"));
-			i->Check(t->joystickAxisRegion == -1);
-			i = m->AppendSubMenu(iregion, _("Region"));
-
-			wxMenu *idead = new wxMenu(_("Joystick Axis Deadzones"));
-			i = idead->AppendRadioItem(20, _("0 % (No deadzone)"), _("no deadzone"));
-			i->Check(fabs(t->joystickAxisDeadzone)< 0.0001);
-
-			i = idead->AppendRadioItem(21, _("5 %"), _("5% deadzone"));
-			i->Check(fabs(t->joystickAxisDeadzone-0.05)< 0.0001);
-
-			i = idead->AppendRadioItem(22, _("10 %"), _("10% deadzone"));
-			i->Check(fabs(t->joystickAxisDeadzone-0.1)< 0.0001);
-
-			i = idead->AppendRadioItem(23, _("15 %"), _("15% deadzone"));
-			i->Check(fabs(t->joystickAxisDeadzone-0.15)< 0.0001);
-
-			i = idead->AppendRadioItem(24, _("20 %"), _("20% deadzone"));
-			i->Check(fabs(t->joystickAxisDeadzone-0.2)< 0.0001);
-
-			i = idead->AppendRadioItem(25, _("30 %"), _("30% deadzone"));
-			i->Check(fabs(t->joystickAxisDeadzone-0.3)< 0.0001);
-
-			i = m->AppendSubMenu(idead, _("Deadzone"));
-
-			//////////////////
-			wxMenu *iLinear = new wxMenu(_("Joystick Axis Linearity"));
-			i = iLinear->AppendRadioItem(50, _("+30 %"), _("+30% multiplication"));
-			i->Check(t->joystickAxisLinearity > 1.29f && t->joystickAxisLinearity < 1.31f);
-
-			i = iLinear->AppendRadioItem(51, _("+25 %"), _("+25% multiplication"));
-			i->Check(t->joystickAxisLinearity > 1.24f && t->joystickAxisLinearity < 1.26f);
-
-			i = iLinear->AppendRadioItem(52, _("+20 %"), _("+20% multiplication"));
-			i->Check(t->joystickAxisLinearity > 1.19f && t->joystickAxisLinearity < 1.21f);
-
-			i = iLinear->AppendRadioItem(53, _("+15 %"), _("+15% multiplication"));
-			i->Check(t->joystickAxisLinearity > 1.14f && t->joystickAxisLinearity < 1.16f);
-
-			i = iLinear->AppendRadioItem(54, _("+10 %"), _("+10% multiplication"));
-			i->Check(t->joystickAxisLinearity > 1.09f && t->joystickAxisLinearity < 1.11f);
-
-			i = iLinear->AppendRadioItem(55, _("+5 %"), _("+5% multiplication"));
-			i->Check(t->joystickAxisLinearity > 1.04f && t->joystickAxisLinearity < 1.06f);
-
-			i = iLinear->AppendRadioItem(56, _("0 % (Total Linear)"), _("Total Linear"));
-			i->Check(fabs(1.0f - t->joystickAxisLinearity) < 0.01);
-
-			i = iLinear->AppendRadioItem(57, _("-5 %"), _("-5% multiplication"));
-			i->Check(t->joystickAxisLinearity > 0.94f && t->joystickAxisLinearity < 0.96f);
-
-			i = iLinear->AppendRadioItem(58, _("-10 %"), _("-10% multiplication"));
-			i->Check(t->joystickAxisLinearity > 0.89f && t->joystickAxisLinearity < 0.91f);
-
-			i = iLinear->AppendRadioItem(59, _("-15 %"), _("-15% multiplication"));
-			i->Check(t->joystickAxisLinearity > 0.84f && t->joystickAxisLinearity < 0.86f);
-
-			i = iLinear->AppendRadioItem(60, _("-20 %"), _("-20% multiplication"));
-			i->Check(t->joystickAxisLinearity > 0.79f && t->joystickAxisLinearity < 0.81f);
-
-			i = iLinear->AppendRadioItem(61, _("-25 %"), _("-25% multiplication"));
-			i->Check(t->joystickAxisLinearity > 0.74f && t->joystickAxisLinearity < 0.76f);
-
-			i = iLinear->AppendRadioItem(62, _("-30 %"), _("-30% multiplication"));
-			i->Check(t->joystickAxisLinearity > 0.69f && t->joystickAxisLinearity < 0.71f);
-
-			i = m->AppendSubMenu(iLinear, _("Linearity"));
-		}
-
-		this->PopupMenu(m);
-	}
-}
-
-void MyDialog::onActivateItem(wxTreeEvent& event)
-{
-	wxTreeItemId itm = event.GetItem();
-	if(!isSelectedControlGroup(&itm))
-		remapControl();
-	else
-		// expand/collapse group otherwise
-		if(cTree->IsExpanded(event.GetItem()))
-			cTree->Collapse(event.GetItem());
-		else
-			cTree->Expand(event.GetItem());
-}
-
-/*
-void MyDialog::onChangeTypeComboBox(wxCommandEvent& event)
-{
-	if(isSelectedControlGroup())
-		return;
-	int r = 0;
-	wxString s = ctrlTypeCombo->GetValue();
-	for(int i=0;i<11;i++)
-	{
-		if(typeChoices[i] == s)
-		{
-			r = i;
-			break;
-		}
-	}
-	event_trigger_t *t = getSelectedControlEvent();
-	t->eventtype = (eventtypes)r;
-	cTree->SetItemText(cTree->GetSelection(), 1,  typeChoices[r]);
-}
-*/
-
-void MyDialog::remapControl()
-{
-	event_trigger_t *t = getSelectedControlEvent();
-	if(!t)
-		return;
-	kd = new KeySelectDialog(this, t);
-    if(kd->ShowModal()==0)
-	{
-		wxTreeItemId item = cTree->GetSelection();
-		INPUTENGINE.updateConfigline(t);
-		updateItemText(item, t);
-	}
-
-	kd->Destroy();
-	delete kd;
-	kd = 0;
-}
-
-void MyDialog::testEvents()
-{
-	KeyTestDialog *kt = new KeyTestDialog(this);
-    if(kt->ShowModal()==0)
-	{
-	}
-	kt->Destroy();
-	delete kt;
-}
-
-/*
-void MyDialog::OnButRemap(wxCommandEvent& event)
-{
-	remapControl();
-}
-*/
-
-bool MyDialog::isSelectedControlGroup(wxTreeItemId *item)
-{
-	wxTreeItemId itm = cTree->GetSelection();
-	if(!item)
-		item = &itm;
-	IDData *data = (IDData *)cTree->GetItemData(*item);
-	if(!data || data->id < 0)
-		return true;
-	return false;
-}
-
-event_trigger_t *MyDialog::getSelectedControlEvent()
-{
-	int itemId = -1;
-	wxTreeItemId item = cTree->GetSelection();
-	IDData *data = (IDData *)cTree->GetItemData(item);
-	if(!data)
-		return 0;
-	itemId = data->id;
-	if(itemId == -1)
-		return 0;
-	return INPUTENGINE.getEventBySUID(itemId);
-}
-
-void MyDialog::onTreeSelChange (wxTreeEvent &event)
-{
-	wxTreeItemId itm = event.GetItem();
-	if(isSelectedControlGroup(&itm))
-	{
-		btnDeleteKey->Disable();
-	} else
-	{
-		btnDeleteKey->Enable();
-	}
-
-	//wxTreeItemId item = event.GetItem();
-	//event_trigger_t *t = getSelectedControlEvent();
-
-	// type
-	//wxString typeStr = cTree->GetItemText(item, 1);
-	//ctrlTypeCombo->SetValue(typeStr);
-	//ctrlTypeCombo->Enable();
-
-	// description
-	//wxString descStr = cTree->GetItemText(item, 0);
-	//controlText->SetLabel((t->group + "_" + descStr.c_str()).c_str());
-}
-
 void MyDialog::OnTimer(wxTimerEvent& event)
 {
 }
@@ -3000,237 +1853,6 @@ void MyDialog::OnChangeRenderer(wxCommandEvent& ev)
 	{
 		wxLogStatus(wxT("Unable to change to new rendersystem(2)"));
 	}
-}
-
-void MyDialog::OnMenuJoystickOptionsClick(wxCommandEvent& ev)
-{
-	event_trigger_t *t = getSelectedControlEvent();
-	if(!t)
-		return;
-	if(t->eventtype != ET_JoystickAxisAbs && t->eventtype != ET_JoystickAxisRel && t->eventtype != ET_JoystickSliderX && t->eventtype != ET_JoystickSliderY)
-		return;
-	switch (ev.GetId())
-	{
-	case 1: //reverse
-		{
-			t->joystickAxisReverse = ev.IsChecked();
-			t->joystickSliderReverse = ev.IsChecked();
-			break;
-		}
-	case 20: //0% deadzone
-		{
-			t->joystickAxisDeadzone = 0;
-			break;
-		}
-	case 21: //5% deadzone
-		{
-			t->joystickAxisDeadzone = 0.05;
-			break;
-		}
-	case 22: //10% deadzone
-		{
-			t->joystickAxisDeadzone = 0.1;
-			break;
-		}
-	case 23: //15% deadzone
-		{
-			t->joystickAxisDeadzone = 0.15;
-			break;
-		}
-	case 24: //20% deadzone
-		{
-			t->joystickAxisDeadzone = 0.2;
-			break;
-		}
-	case 25: //30% deadzone
-		{
-			t->joystickAxisDeadzone = 0.3;
-			break;
-		}
-	case 30: //upper
-		{
-			t->joystickAxisRegion = 1;
-			break;
-		}
-	case 31: //full
-		{
-			t->joystickAxisRegion = 0;
-			break;
-		}
-	case 32: //lower
-		{
-			t->joystickAxisRegion = -1;
-			break;
-		}
-
-		// linearity settings below
-	case 50: t->joystickAxisLinearity = 1.3f; break;
-	case 51: t->joystickAxisLinearity = 1.25f; break;
-	case 52: t->joystickAxisLinearity = 1.2f; break;
-	case 53: t->joystickAxisLinearity = 1.15f; break;
-	case 54: t->joystickAxisLinearity = 1.10f; break;
-	case 55: t->joystickAxisLinearity = 1.05f; break;
-	case 56: t->joystickAxisLinearity = 1.0f; break;
-	case 57: t->joystickAxisLinearity = 0.95f; break;
-	case 58: t->joystickAxisLinearity = 0.90f; break;
-	case 59: t->joystickAxisLinearity = 0.85f; break;
-	case 60: t->joystickAxisLinearity = 0.80f; break;
-	case 61: t->joystickAxisLinearity = 0.75f; break;
-	case 62: t->joystickAxisLinearity = 0.70f; break;
-	}
-
-	INPUTENGINE.updateConfigline(t);
-	updateItemText(cTree->GetSelection(), t);
-}
-/*
-void MyDialog::OnMenuClearClick(wxCommandEvent& event)
-{
-}
-void MyDialog::OnMenuTestClick(wxCommandEvent& event)
-{
-}
-void MyDialog::OnMenuDeleteClick(wxCommandEvent& event)
-{
-}
-void MyDialog::OnMenuDuplicateClick(wxCommandEvent& event)
-{
-}
-void MyDialog::OnMenuEditEventNameClick(wxCommandEvent& event)
-{
-}
-void MyDialog::OnMenuCheckDoublesClick(wxCommandEvent& event)
-{
-}
-*/
-void MyDialog::OnButJoyWizard(wxCommandEvent& event)
-{
-	size_t handle = getOISHandle(this);
-	JoystickWizard wizard(handle, this);
-	wizard.RunWizard(wizard.GetFirstPage());
-}
-
-void MyDialog::OnButAddKey(wxCommandEvent& event)
-{
-	KeyAddDialog *ka = new KeyAddDialog(this);
-    if(ka->ShowModal()!=0)
-		// user pressed cancel
-		return;
-	std::string line = ka->getEventName() + " " + ka->getEventType() + " " + ka->getEventOption() + " !NEW!";
-	//std::string line = ka->getEventName() + " " + ka->getEventType() + ;
-	ka->Destroy();
-	delete ka;
-	ka = 0;
-
-	INPUTENGINE.appendLineToConfig(line, conv(InputMapFileName));
-
-	INPUTENGINE.reloadConfig(conv(InputMapFileName));
-	loadInputControls();
-
-	// find the new event now
-	std::map<int, std::vector<event_trigger_t> > events = INPUTENGINE.getEvents();
-	std::map<int, std::vector<event_trigger_t> >::iterator it;
-	std::vector<event_trigger_t>::iterator it2;
-	int counter = 0;
-	int suid = -1;
-	for(it = events.begin(); it!= events.end(); it++)
-	{
-		for(it2 = it->second.begin(); it2!= it->second.end(); it2++, counter++)
-		{
-			if(!strcmp(it2->configline, "!NEW!"))
-			{
-				strcpy(it2->configline, "");
-				suid = it2->suid;
-			}
-		}
-	}
-	if(suid != -1)
-	{
-		cTree->EnsureVisible(treeItems[suid]);
-		cTree->SelectItem(treeItems[suid]);
-		remapControl();
-		if(!INPUTENGINE.saveMapping(conv(InputMapFileName)))
-		{
-			wxMessageDialog(this, wxString(_("Could not write to input.map file")), wxString(_("Write error")),wxOK||wxICON_ERROR).ShowModal();
-		}
-	}
-}
-
-void MyDialog::OnButTestEvents(wxCommandEvent& event)
-{
-	testEvents();
-}
-
-void MyDialog::OnButDeleteKey(wxCommandEvent& event)
-{
-	wxTreeItemId item = cTree->GetSelection();
-	IDData *data = (IDData *)cTree->GetItemData(item);
-	if(!data || data->id < 0)
-		return;
-	INPUTENGINE.deleteEventBySUID(data->id);
-	cTree->Delete(item);
-	INPUTENGINE.saveMapping(conv(InputMapFileName));
-}
-
-void MyDialog::OnButLoadKeymap(wxCommandEvent& event)
-{
-	wxFileDialog *f = new wxFileDialog(this, _("Choose a file"), wxString(), wxString(), conv("*.map"), wxFD_OPEN || wxFD_FILE_MUST_EXIST);
-	if(f->ShowModal() == wxID_OK)
-	{
-		INPUTENGINE.loadMapping(conv(f->GetPath()));
-		loadInputControls();
-	}
-	delete f;
-}
-
-void MyDialog::OnButSaveKeymap(wxCommandEvent& event)
-{
-	INPUTENGINE.setup(getOISHandle(this), true, false);
-
-	int choiceCounter = 3;
-	wxString choices[MAX_JOYSTICKS+3];
-	choices[0] = wxT("All");
-	choices[1] = wxT("Keyboard");
-	choices[2] = wxT("Mouse");
-
-	int joyNums = INPUTENGINE.getNumJoysticks();
-	if(joyNums>0)
-	{
-		for(int i=0;i<joyNums;i++)
-		{
-			choices[i+3] = wxT("Joystick ") + wxString::Format(_T("%d"), i) + wxT(": ") + conv(INPUTENGINE.getJoyVendor(i));
-			choiceCounter++;
-		}
-	}
-
-	int exportType=-10;
-	wxSingleChoiceDialog *mcd = new wxSingleChoiceDialog(this, _("Please select what type of device to export"), _("Export selection"),choiceCounter, choices);
-	int res = mcd->ShowModal();
-	if(res == wxID_OK)
-	{
-		int sel = mcd->GetSelection();
-		if(sel==0) exportType = -10;
-		if(sel==1) exportType = -2;
-		if(sel==2) exportType = -3;
-		if(sel>=3) exportType = sel - 3;
-
-		wxString defaultFile = choices[sel] + wxT(".map");
-		defaultFile.Replace(wxT("("), wxT("_"));
-		defaultFile.Replace(wxT(")"), wxT("_"));
-		defaultFile.Replace(wxT(":"), wxT("_"));
-		defaultFile.Replace(wxT(" "), wxT("_"));
-		defaultFile.Replace(wxT("__"), wxT("_"));
-		defaultFile.Replace(wxT("__"), wxT("_"));
-		defaultFile.Replace(wxT("_.map"), wxT(".map"));
-		wxFileDialog *f = new wxFileDialog(this, _("Save Mapping to File"), wxString(), defaultFile, conv("*.map"), wxFD_SAVE || wxFD_OVERWRITE_PROMPT);
-		if(f->ShowModal() == wxID_OK)
-		{
-			INPUTENGINE.saveMapping(conv(f->GetPath()), getOISHandle(this), exportType);
-		}
-		delete f;
-	}
-	delete mcd;
-
-	INPUTENGINE.destroy();
 }
 
 void MyDialog::OnButCancel(wxCommandEvent& event)
