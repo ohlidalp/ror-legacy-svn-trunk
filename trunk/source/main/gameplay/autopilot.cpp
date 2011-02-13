@@ -25,6 +25,7 @@ using namespace Ogre;
 #include "SoundScriptManager.h"
 #include "heightfinder.h"
 #include "water.h"
+#include "BeamData.h"
 
 Autopilot::Autopilot(HeightFinder *hfd, Water *w, int trucknum)
 {
