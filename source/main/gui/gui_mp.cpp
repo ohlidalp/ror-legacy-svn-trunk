@@ -169,7 +169,7 @@ void GUI_Multiplayer::updateSlot(player_row_t *row, user_info_t *c, bool self)
 	x -= 18;
 	
 	// flag
-	Ogre::vector<Ogre::String>::type parts = StringUtil::split(string(c->language), "_");
+	Ogre::StringVector parts = StringUtil::split(string(c->language), "_");
 	if(parts.size() == 2)
 	{
 		String lang = parts[1];

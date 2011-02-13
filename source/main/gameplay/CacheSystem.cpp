@@ -220,7 +220,7 @@ void CacheSystem::logBadTruckAttrib(const String& line, Cache_Entry& t)
 
 void CacheSystem::parseModAttribute(const String& line, Cache_Entry& t)
 {
-	Ogre::vector<String>::type params = StringUtil::split(line, "\x09\x0a=,");
+	Ogre::StringVector params = StringUtil::split(line, "\x09\x0a=,");
 	String& attrib = params[0];
 	StringUtil::toLowerCase(attrib);
 	if (attrib == "number")
@@ -534,7 +534,7 @@ void CacheSystem::parseModAttribute(const String& line, Cache_Entry& t)
 		else
 		{
 			String mat = params[1];
-			Ogre::vector < Ogre::String >::type ar = StringUtil::split(mat," ");
+			Ogre::StringVector ar = StringUtil::split(mat," ");
 			for(Ogre::vector < Ogre::String >::type::iterator it = ar.begin(); it!=ar.end(); it++)
 				t.materials.insert(*it);
 		}
@@ -1081,8 +1081,8 @@ Ogre::String CacheSystem::formatInnerEntry(int counter, Cache_Entry t)
 Ogre::String CacheSystem::normalizeText(Ogre::String text)
 {
 	String result = "";
-	Ogre::vector <Ogre::String>::type str = Ogre::StringUtil::split(text, "\n");
-	for(Ogre::vector <Ogre::String>::type::iterator it = str.begin(); it!=str.end(); it++)
+	Ogre::StringVector str = Ogre::StringUtil::split(text, "\n");
+	for(Ogre::StringVector::iterator it = str.begin(); it!=str.end(); it++)
 		result += *it + "$";
 	return result;
 }
@@ -1090,8 +1090,8 @@ Ogre::String CacheSystem::normalizeText(Ogre::String text)
 Ogre::String CacheSystem::deNormalizeText(Ogre::String text)
 {
 	String result = "";
-	Ogre::vector <Ogre::String>::type str = Ogre::StringUtil::split(text, "$");
-	for(Ogre::vector <Ogre::String>::type::iterator it = str.begin(); it!=str.end(); it++)
+	Ogre::StringVector str = Ogre::StringUtil::split(text, "$");
+	for(Ogre::StringVector::iterator it = str.begin(); it!=str.end(); it++)
 		result += *it + "\n";
 	return result;
 }
@@ -1412,7 +1412,7 @@ void CacheSystem::fillTruckDetailInfo(Cache_Entry &entry, Ogre::DataStreamPtr ds
 			char uniquetruckid[255]="";
 			int categoryid=0, truckversion=0;
 			String lineStr = String(line);
-			Ogre::vector<String>::type args = StringUtil::split(lineStr, ", ");
+			Ogre::StringVector args = StringUtil::split(lineStr, ", ");
 			if(args.size() < 1)
 			{
 				LogManager::getSingleton().logMessage("Error parsing File (fileinfo) " + String(fname) +" line " + StringConverter::toString(linecounter) + ". trying to continue ...");

@@ -113,8 +113,8 @@ void LanguageEngine::setupCodeRanges(String codeRangesFilename, String codeRange
 		// only process valid lines
 		if(strncmp(line, "code_points ", 12) && strnlen(line, 50) > 13)
 			continue;
-		Ogre::vector<String>::type args = StringUtil::split(line + 12, " ");
-		for(Ogre::vector<String>::type::iterator it=args.begin(); it!=args.end(); it++)
+		Ogre::StringVector args = StringUtil::split(line + 12, " ");
+		for(Ogre::StringVector::iterator it=args.begin(); it!=args.end(); it++)
 		{
 			Font::CodePointRange range;
 			StringVector itemVec = StringUtil::split(*it, "-");

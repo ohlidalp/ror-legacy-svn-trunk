@@ -6,7 +6,7 @@ Copyright 2007-2011 Thomas Fischer
 For more information, see http://www.rigsofrods.com/
 
 Rigs of Rods is free software: you can redistribute it and/or modify
-it under the terms of the GNU General Public License version 3, as 
+it under the terms of the GNU General Public License version 3, as
 published by the Free Software Foundation.
 
 Rigs of Rods is distributed in the hope that it will be useful,
@@ -251,7 +251,7 @@ int Beam::loadTruck(const char* fname, SceneManager *manager, SceneNode *parent,
 			if(!strcmp(modestr, "classic")) externalcameramode = 0;
 			if(!strcmp(modestr, "cinecam")) externalcameramode = 1;
 			if(!strcmp(modestr, "node"))    externalcameramode = 2;
-				
+
 			externalcameranode = nodeid;
 			continue;
 		}
@@ -325,7 +325,7 @@ int Beam::loadTruck(const char* fname, SceneManager *manager, SceneNode *parent,
 				LogManager::getSingleton().logMessage("Error parsing File (prop_camera_mode) " + String(fname) +" line " + StringConverter::toString(linecounter) + ". trying to continue ...");
 				continue;
 			}
-			
+
 			// always use the last prop
 			prop_t *prop = &props[free_prop-1];
 			if(prop->mo) prop->cameramode = mode;
@@ -340,7 +340,7 @@ int Beam::loadTruck(const char* fname, SceneManager *manager, SceneNode *parent,
 				LogManager::getSingleton().logMessage("Error parsing File (flexbody_camera_mode) " + String(fname) +" line " + StringConverter::toString(linecounter) + ". trying to continue ...");
 				continue;
 			}
-			
+
 			// always use the last flexbody
 			FlexBody *flex = flexbodies[free_flexbody-1];
 			if(flex) flex->cameramode = mode;
@@ -348,6 +348,7 @@ int Beam::loadTruck(const char* fname, SceneManager *manager, SceneNode *parent,
 
 		if (!strncmp("add_animation", line, 13))
 		{
+		  printf(">>> add_animation\n");
 			/*
 			 * this command has several layers for splitting up the line:
 			 * 1. ',' the top level will be split up with a comma to separate the main options
@@ -357,12 +358,12 @@ int Beam::loadTruck(const char* fname, SceneManager *manager, SceneNode *parent,
 			int animnum = 0;
 			float ratio = 0.0f, opt1 = -1.0f, opt2 = -1.0f;
 			// parse the line
-			if(String(line).size() < 14)
+			if(strnlen(line, 255) < 14)
 			{
 				LogManager::getSingleton().logMessage("Error parsing File (add_animation) " + String(fname) +" line " + StringConverter::toString(linecounter) + ". Not enough Options parsed, trying to continue ...");
 				continue;
 			}
-			Ogre::vector<Ogre::String>::type options = Ogre::StringUtil::split(String(line).substr(14), ","); // "add_animation " = 14 characters
+			Ogre::StringVector options = Ogre::StringUtil::split(String(line).substr(14), ","); // "add_animation " = 14 characters
 			// check for common errors
 			if (options.size() < 4)
 			{
@@ -415,7 +416,7 @@ int Beam::loadTruck(const char* fname, SceneManager *manager, SceneNode *parent,
 				} else
 				{
 					// parse the rest
-					Ogre::vector<Ogre::String>::type args2 = Ogre::StringUtil::split(options[i], ":");
+					Ogre::StringVector args2 = Ogre::StringUtil::split(options[i], ":");
 					if(args2.size() == 0)
 						continue;
 
@@ -426,7 +427,7 @@ int Beam::loadTruck(const char* fname, SceneManager *manager, SceneNode *parent,
 					if(args2[0] == "source" && args2.size() == 2)
 					{
 						//set source identification flag
-						Ogre::vector<Ogre::String>::type args3 = Ogre::StringUtil::split(args2[1], "|");
+						Ogre::StringVector args3 = Ogre::StringUtil::split(args2[1], "|");
 						for(unsigned int j=0;j<args3.size();j++)
 						{
 							String sourceStr = args3[j];
@@ -513,7 +514,7 @@ int Beam::loadTruck(const char* fname, SceneManager *manager, SceneNode *parent,
 					else if(args2[0] == "mode" && args2.size() == 2)
 					{
 						//set mode identification flag
-						Ogre::vector<Ogre::String>::type args3 = Ogre::StringUtil::split(args2[1], "|");
+						Ogre::StringVector args3 = Ogre::StringUtil::split(args2[1], "|");
 						for(unsigned int j=0;j<args3.size();j++)
 						{
 							String modeStr = args3[j];
@@ -565,7 +566,7 @@ int Beam::loadTruck(const char* fname, SceneManager *manager, SceneNode *parent,
 
 						// now parse the keys
 						prop->animFlags[animnum] |= ANIM_FLAG_EVENT;
-						Ogre::vector<Ogre::String>::type args3 = Ogre::StringUtil::split(args2[1], "|");
+						Ogre::StringVector args3 = Ogre::StringUtil::split(args2[1], "|");
 						for(unsigned int j=0;j<args3.size();j++)
 						{
 							String eventStr = args3[j];
@@ -1332,10 +1333,11 @@ int Beam::loadTruck(const char* fname, SceneManager *manager, SceneNode *parent,
 		}
 		else if (mode==66)
 		{
+		  printf(">>> animators\n");
 			//parse animators
 			int id1, id2;
 			float ratio;
-			Ogre::vector<Ogre::String>::type options = Ogre::StringUtil::split(String(line), ",");
+			Ogre::StringVector options = Ogre::StringUtil::split(String(line), ",");
 			if (options.size() < 4)
 			{
 				LogManager::getSingleton().logMessage("Error parsing File (Animator) " + String(fname) +" line " + StringConverter::toString(linecounter) + ". trying to continue ...");
@@ -1346,7 +1348,7 @@ int Beam::loadTruck(const char* fname, SceneManager *manager, SceneNode *parent,
 			id2 = StringConverter::parseInt(options[1]);
 			ratio = StringConverter::parseReal(options[2]);
 			String optionStr = options[3];
-			Ogre::vector<Ogre::String>::type optionArgs = Ogre::StringUtil::split(optionStr, "|");
+			Ogre::StringVector optionArgs = Ogre::StringUtil::split(optionStr, "|");
 
 			int htype=BEAM_HYDRO;
 
@@ -1563,12 +1565,14 @@ int Beam::loadTruck(const char* fname, SceneManager *manager, SceneNode *parent,
 		else if (mode==9)
 		{
 			//parse engine
+		  printf(">>> engine\n");
 			if(driveable == MACHINE)
 				continue;
 
 			driveable=TRUCK;
-			Ogre::vector<Ogre::String>::type tmp = Ogre::StringUtil::split(line, ", ");
-			if (tmp.size() < 7) {
+			Ogre::StringVector tmp = Ogre::StringUtil::split(string(line), ", ");
+			if (tmp.size() < 7)
+			{
 				LogManager::getSingleton().logMessage("Error parsing File (Engine) " + String(fname) +" line " + StringConverter::toString(linecounter) + ". trying to continue ...");
 				continue;
 			}
@@ -1609,7 +1613,7 @@ int Beam::loadTruck(const char* fname, SceneManager *manager, SceneNode *parent,
 				engine->setAutoMode(MANUAL_STICK);
 			else if (gearboxMode == "Fully Manual: stick shift with ranges")
 				engine->setAutoMode(MANUAL_RANGES);
-			
+
 			//engine->start();
 		}
 
@@ -2977,6 +2981,7 @@ int Beam::loadTruck(const char* fname, SceneManager *manager, SceneNode *parent,
 		else if (mode==34)
 		{
 			// parse exhausts
+		  printf(">>> exhausts\n");
 			if (disable_smoke)
 				continue;
 			int id1, id2;
@@ -3664,8 +3669,8 @@ int Beam::loadTruck(const char* fname, SceneManager *manager, SceneNode *parent,
 			}
 
 			int wheel_node[2][2] = {{0, 0}, {0, 0}};
-			Ogre::vector<Ogre::String>::type options = Ogre::StringUtil::split(line, ",");
-			Ogre::vector<Ogre::String>::type::iterator cur = options.begin();
+			Ogre::StringVector options = Ogre::StringUtil::split(line, ",");
+			Ogre::StringVector::iterator cur = options.begin();
 
 			for(; cur != options.end(); ++cur)
 			{
@@ -3793,7 +3798,7 @@ int Beam::loadTruck(const char* fname, SceneManager *manager, SceneNode *parent,
 			}
 			if(nodenum >= free_node || nodenum < 0)
 				continue;
-			
+
 			nodes[nodenum].collRadius = radius;
 		}
 

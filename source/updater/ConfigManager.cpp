@@ -384,17 +384,17 @@ void ConfigManager::checkForNewUpdater()
 		} else if(list[0][0] == std::string("update") && list[0].size() > 2)
 		{
 			// yay, an update
-			LOG("new update available: %s %s\n", list[0][1].c_str(), list[0][2]);
+			LOG("new update available: %s %s\n", list[0][1].c_str(), list[0][2].c_str());
 			wsdl->setDownloadMessage(_T("downloading installer update"));
 
 			// rename ourself, so we can replace ourself
 			LOG("renaming self...\n");
 			std::string myPath = conv(getExecutablePath());
-			
+
 			// removing old, otherwise renaming trows exception
 			if(boost::filesystem::exists(myPath+std::string(".old")))
 				boost::filesystem::remove(myPath+std::string(".old"));
-			
+
 			boost::filesystem::rename(myPath, myPath+std::string(".old"));
 
 			LOG("downloading update...\n");

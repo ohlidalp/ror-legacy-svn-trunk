@@ -72,7 +72,7 @@ int SkidmarkManager::loadDefaultModels()
 		if (line.empty() || line[0]==';')
 			continue;
 
-		Ogre::vector< Ogre::String >::type args = Ogre::StringUtil::split(line, ",");
+		Ogre::StringVector args = Ogre::StringUtil::split(line, ",");
 		
 		if (args.size() == 1)
 		{

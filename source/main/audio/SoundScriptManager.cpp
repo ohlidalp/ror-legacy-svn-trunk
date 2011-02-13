@@ -272,7 +272,7 @@ void SoundScriptManager::parseScript(DataStreamPtr& stream, const String& groupN
 				{
 					// Attribute
 					// Split params on space
-					Ogre::vector<String>::type vecparams = StringUtil::split(line, "\t ", 0);
+					Ogre::StringVector vecparams = StringUtil::split(line, "\t ", 0);
 
 					if (!sst->setParameter(vecparams))
 					{

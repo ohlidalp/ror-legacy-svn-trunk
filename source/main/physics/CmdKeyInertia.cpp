@@ -155,7 +155,7 @@ int CmdKeyInertia::loadDefaultInertiaModels()
 		if (line.empty() || line[0]==';')
 			continue;
 
-		Ogre::vector< String >::type args = StringUtil::split(line, ",");
+		Ogre::StringVector args = StringUtil::split(line, ",");
 
 		if (args.size() == 1)
 		{
