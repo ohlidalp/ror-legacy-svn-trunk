@@ -1,6 +1,6 @@
 ; HM NIS Edit Wizard helper defines
 !define PRODUCT_NAME "Rigs of Rods"
-!define PRODUCT_VERSION "0.38.5"
+!define PRODUCT_VERSION "0.38.13"
 !define PRODUCT_PUBLISHER "Rigs of Rods Team"
 !define PRODUCT_WEB_SITE "http://www.rigsofrods.com"
 !define PRODUCT_UNINST_KEY "Software\Microsoft\Windows\CurrentVersion\Uninstall\${PRODUCT_NAME}"
@@ -353,6 +353,8 @@ Section Uninstall
 	SetShellVarContext current
 	MessageBox MB_YESNO|MB_ICONEXCLAMATION "Remove RoR user content in $DOCUMENTS/Rigs of Rods?" IDYES removedoc IDNO end
 removedoc:
+	MessageBox MB_YESNO|MB_ICONEXCLAMATION "Are you really sure to remove all user content in $DOCUMENTS/Rigs of Rods?" IDYES removedoc2 IDNO end
+removedoc2:
  	RMDir  "/r" "$DOCUMENTS\Rigs of Rods"
 end:	
 	SetAutoClose false
