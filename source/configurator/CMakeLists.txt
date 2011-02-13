@@ -39,7 +39,7 @@ IF(WIN32)
    # warning C4305: 'initializing' : truncation from 'double' to 'const float'
    add_definitions("/wd4305 /wd4244")
 
-   
+
    #now: delay loading for opencl
    if(ROR_USE_OPENCL)
       set(CMAKE_EXE_LINKER_FLAGS_DEBUG          "${CMAKE_EXE_LINKER_FLAGS_DEBUG}          /DELAYLOAD:OpenCL.dll")
@@ -79,9 +79,9 @@ FILE(GLOB sources "*.cpp")
 FILE(GLOB headers "*.h")
 
 IF(WIN32)
-	add_executable(rorconfig WIN32 ${sources} ${headers} ${OS_SOURCE} ../main/utils/InputEngine.cpp ../main/utils/Settings.cpp ../main/utils/errorutils.cpp)
+	add_executable(rorconfig WIN32 ${sources} ${headers} ${OS_SOURCE} ../main/utils/Settings.cpp)
 ELSE(WIN32)
-	add_executable(rorconfig ${sources} ${headers} ${OS_SOURCE} ../main/utils/InputEngine.cpp ../main/utils/Settings.cpp ../main/utils/errorutils.cpp)
+	add_executable(rorconfig ${sources} ${headers} ${OS_SOURCE} ../main/utils/Settings.cpp)
 ENDIF(WIN32)
 
 TARGET_LINK_LIBRARIES(rorconfig ${Ogre_LIBRARIES} ${Ois_LIBRARIES} ${OS_LIBS} ${optional_libs} ${wxWidgets_LIBRARIES})
