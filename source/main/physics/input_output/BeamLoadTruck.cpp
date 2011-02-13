@@ -210,6 +210,7 @@ int Beam::loadTruck(const char* fname, SceneManager *manager, SceneNode *parent,
 		if (!strcmp("slidenodes",line)) {mode=64;continue;}
 		if (!strcmp("flares2",line)) {mode=65;continue;};
 		if (!strcmp("animators",line)) {mode=66;continue;};
+		if (!strcmp("nodecollision",line)) {mode=68;continue;};
 		if (!strncmp("enable_advanced_deformation", line, 27))
 		{
 			// parse the optional threshold value
@@ -1714,6 +1715,13 @@ int Beam::loadTruck(const char* fname, SceneManager *manager, SceneNode *parent,
 				//LogManager::getSingleton().logMessage(String(line));
 			}
 
+			//verify array limits so we dont overflow
+			if(keys >= MAX_COMMANDS || keyl >= MAX_COMMANDS)
+			{
+					LogManager::getSingleton().logMessage("Error parsing File (Command) " + String(fname) +" line " + StringConverter::toString(linecounter) + ". Command key invalid. trying to continue ...");
+					continue;
+			}
+
 			int htype=BEAM_HYDRO;
 
 			char *options_pointer = options;
@@ -1783,7 +1791,6 @@ int Beam::loadTruck(const char* fname, SceneManager *manager, SceneNode *parent,
 			}
 
 			beams[pos].Lhydro=beams[pos].L;
-
 			//add short key
 			commandkey[keys].beams.push_back(-pos);
 			char *descr_pointer = descr;
@@ -3773,6 +3780,22 @@ int Beam::loadTruck(const char* fname, SceneManager *manager, SceneNode *parent,
 
 		else if (mode==63) parseRailGroupLine(line);
 		else if (mode==64) parseSlideNodeLine(line);
+		else if (mode==68)
+		{
+			// parse nodecollision
+			int nodenum  = -1;
+			float radius =  0;
+			int result = sscanf(line,"%d, %f", &nodenum, &radius);
+			if (result < 2 || result == EOF)
+			{
+				LogManager::getSingleton().logMessage("Error parsing File (nodecollision) " + String(fname) +" line " + StringConverter::toString(linecounter) + ". trying to continue ...");
+				continue;
+			}
+			if(nodenum >= free_node || nodenum < 0)
+				continue;
+			
+			nodes[nodenum].collRadius = radius;
+		}
 
 	};
 	if(!loading_finished) {

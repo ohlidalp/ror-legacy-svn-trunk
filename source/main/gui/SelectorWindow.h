@@ -6,7 +6,7 @@ Copyright 2007-2011 Thomas Fischer
 For more information, see http://www.rigsofrods.com/
 
 Rigs of Rods is free software: you can redistribute it and/or modify
-it under the terms of the GNU General Public License version 3, as 
+it under the terms of the GNU General Public License version 3, as
 published by the Free Software Foundation.
 
 Rigs of Rods is distributed in the hope that it will be useful,
@@ -17,7 +17,7 @@ GNU General Public License for more details.
 You should have received a copy of the GNU General Public License
 along with Rigs of Rods.  If not, see <http://www.gnu.org/licenses/>.
 */
-#ifdef USE_MYGUI 
+#ifdef USE_MYGUI
 
 #ifndef __SELECTOR_WINDOW_H__
 #define __SELECTOR_WINDOW_H__
@@ -59,16 +59,16 @@ private:
 	void eventComboAcceptConfigComboBox(MyGUI::ComboBoxPtr _sender, size_t _index);
 	void eventMouseButtonClickOkButton(MyGUI::WidgetPtr _sender);
 	void eventMouseButtonClickCancelButton(MyGUI::WidgetPtr _sender);
-	void eventSearchTextChange(MyGUI::WidgetPtr _sender);
+	void eventSearchTextChange(MyGUI::EditBox *_sender);
 	void eventSearchTextGotFocus(MyGUI::WidgetPtr _sender, MyGUI::WidgetPtr oldWidget);
-	
+
 
 	// other functions
 	void getData();
 	void onCategorySelected(int categoryID);
 	void onEntrySelected(int entryID);
 	void selectionDone();
-	
+
 	void updateControls(Cache_Entry *entry);
 	void setPreviewImage(Ogre::String texture);
 

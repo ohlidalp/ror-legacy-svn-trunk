@@ -165,22 +165,32 @@ SoundScriptTemplate* SoundScriptManager::createTemplate(String name, String grou
 void SoundScriptManager::unloadResourceGroup(String groupname)
 {
 	//first, search if there is a template name collision
-	for(std::map<Ogre::String, SoundScriptTemplate*>::iterator it = templates.begin(); it!=templates.end();it++)
+	for(std::map<Ogre::String, SoundScriptTemplate*>::iterator it = templates.begin(); it!=templates.end();)
+	{
 		if (it->second->groupname == groupname)
-			it = templates.erase(it);
+		{
+			templates.erase(it++);
+		} else
+		{
+			++it;
+		}
+	}
 }
 
 void SoundScriptManager::clearNonBaseTemplates()
 {
 	int counter = 0;
-	for(std::map<Ogre::String, SoundScriptTemplate*>::iterator it = templates.begin(); it!=templates.end();it++)
+	for(std::map<Ogre::String, SoundScriptTemplate*>::iterator it = templates.begin(); it!=templates.end();)
 	{
 		if (it->second && !it->second->baseTemplate)
 		{
 			delete(it->second);
 			it->second=0;
-			it = templates.erase(it);
+			templates.erase(it++);
 			counter++;
+		} else
+		{
+			++it;
 		}
 	}
 	if(counter>0)

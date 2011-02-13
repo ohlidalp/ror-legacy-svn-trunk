@@ -20,6 +20,7 @@ along with Rigs of Rods.  If not, see <http://www.gnu.org/licenses/>.
 #ifndef __ForceFeedback_H__
 #define __ForceFeedback_H__
 
+#include "RoRPrerequisites.h"
 #include "Ogre.h"
 #include <math.h>
 #include "OISForceFeedback.h"
