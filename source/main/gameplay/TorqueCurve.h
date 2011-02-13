@@ -95,7 +95,7 @@ protected:
 	 * @param model Torque model name (i.e. 'turbodiesel')
 	 * @return setTorqueModel() called if one argument given, 1 on error, 0 on success
 	 */
-	int processLine(Ogre::vector< Ogre::String >::type args, Ogre::String model);
+	int processLine(Ogre::StringVector args, Ogre::String model);
 };
 
 

@@ -58,7 +58,7 @@ public:
 protected:
 	int loadDefaultModels();
 	std::map <Ogre::String, std::vector<skidmark_config_t> > models;
-	int processLine(Ogre::vector< Ogre::String >::type args,  Ogre::String model);
+	int processLine(Ogre::StringVector args,  Ogre::String model);
 };
 
 class Skidmark

@@ -87,7 +87,7 @@ int SkidmarkManager::loadDefaultModels()
 	return 0;
 }
 
-int SkidmarkManager::processLine(Ogre::vector< Ogre::String >::type args,  Ogre::String modelName)
+int SkidmarkManager::processLine(Ogre::StringVector args,  Ogre::String modelName)
 {
 	// we only accept 4 arguments
 	if (args.size() != 4)

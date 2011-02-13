@@ -720,7 +720,7 @@ protected:
 	 * @param railStrings list of node id's in string format
 	 * @return same as getRails
 	 */
-	Rail* parseRailString( const Ogre::vector<Ogre::String>::type& railStrings);
+	Rail* parseRailString( const Ogre::StringVector &railStrings);
 
 	/**
 	 * parses an array of nodes id's to generate a Rail

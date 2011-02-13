@@ -170,7 +170,7 @@ int CmdKeyInertia::loadDefaultInertiaModels()
 	return 0;
 }
 
-int CmdKeyInertia::processLine(Ogre::vector< String >::type args,  String model)
+int CmdKeyInertia::processLine(Ogre::StringVector args,  String model)
 {
 	// we only accept 2 arguments
 	if (args.size() != 2)

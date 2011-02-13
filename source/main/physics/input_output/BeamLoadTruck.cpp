@@ -1588,7 +1588,7 @@ int Beam::loadTruck(const char* fname, SceneManager *manager, SceneNode *parent,
 
 			std::vector<float> gears;
 
-			for(Ogre::vector< Ogre::String >::type::iterator it = tmp.begin(); it != tmp.end(); it++)
+			for(Ogre::StringVector::iterator it = tmp.begin(); it != tmp.end(); it++)
 			{
 				float tmpf = Ogre::StringConverter::parseReal(*it);
 				if( tmpf <= 0.0f ) break;

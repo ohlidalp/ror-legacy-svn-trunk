@@ -318,7 +318,7 @@ RailGroup* Beam::getRailFromID(unsigned int id)
 	return NULL;
 }
 
-Rail* Beam::parseRailString( const Ogre::vector<Ogre::String>::type & railStrings)
+Rail* Beam::parseRailString( const Ogre::StringVector & railStrings)
 {
 	std::vector<int> nodeids;
     

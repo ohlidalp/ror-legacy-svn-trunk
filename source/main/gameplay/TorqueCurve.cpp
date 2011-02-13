@@ -93,7 +93,7 @@ int TorqueCurve::processLine(String line, String model)
 	return processLine(StringUtil::split(line, ","), model);
 }
 
-int TorqueCurve::processLine(Ogre::vector< String >::type args, String model)
+int TorqueCurve::processLine(Ogre::StringVector args, String model)
 {
 	// if its just one arguments, it must be a known model
 	if (args.size() == 1)
