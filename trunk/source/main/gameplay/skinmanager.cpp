@@ -154,7 +154,7 @@ String SkinManager::joinString(Ogre::vector<String>::type params, String del, in
 //---------------------------------------------------------------------
 void SkinManager::parseAttribute(const String& line, Skin *pSkin)
 {
-	Ogre::vector<String>::type params = StringUtil::split(line, "\x09\x0a\x20\x3d"); // 0x9 = tab, 0xa = \n, 0x20 = space, 0x3d = '='
+	Ogre::StringVector params = StringUtil::split(line, "\x09\x0a\x20\x3d"); // 0x9 = tab, 0xa = \n, 0x20 = space, 0x3d = '='
 	String& attrib = params[0];
 	StringUtil::toLowerCase(attrib);
 

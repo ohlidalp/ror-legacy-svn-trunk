@@ -48,7 +48,7 @@ along with Rigs of Rods.  If not, see <http://www.gnu.org/licenses/>.
 bool Beam::parseRailGroupLine(const Ogre::String& line)
 {
 
-	Ogre::vector<Ogre::String>::type options = Ogre::StringUtil::split(line, ",");
+	Ogre::StringVector options = Ogre::StringUtil::split(line, ",");
     
 	if( options.size() < 3)
 	{
@@ -72,7 +72,7 @@ bool Beam::parseRailGroupLine(const Ogre::String& line)
 bool Beam::parseSlideNodeLine(const Ogre::String& line)
 {
 	// add spaces as a separator to remove them 
-	Ogre::vector<Ogre::String>::type options = Ogre::StringUtil::split(line, ", ");
+	Ogre::StringVector options = Ogre::StringUtil::split(line, ", ");
     
 	if( options.size() < 2)
 	{

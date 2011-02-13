@@ -1116,12 +1116,12 @@ RoRFrameListener::RoRFrameListener(RenderWindow* win, Camera* cam, SceneManager*
 	Vector3 spawnLocation = Vector3::ZERO;
 	if(cmd != "")
 	{
-		Ogre::vector<String>::type str = StringUtil::split(cmd, "/");
+		Ogre::StringVector str = StringUtil::split(cmd, "/");
 		// process args now
 		for(Ogre::vector<String>::type::iterator it = str.begin(); it!=str.end(); it++)
 		{
 			String argstr = *it;
-			Ogre::vector<String>::type args = StringUtil::split(argstr, ":");
+			Ogre::StringVector args = StringUtil::split(argstr, ":");
 			if(args.size()<2) continue;
 			if(args[0] == "action" && args.size() == 2) cmdAction = args[1];
 			if(args[0] == "serverpass" && args.size() == 2) SETTINGS.setSetting("Server password", args[1]);

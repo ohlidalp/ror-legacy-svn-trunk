@@ -232,7 +232,7 @@ int WsyncThread::buildFileIndex(boost::filesystem::path &outfilename, boost::fil
 	listFiles(path, files);
 	char tmp[256] = "";
 	updateCallback(MSE_UPDATE_TITLE, "Indexing local files ..");
-	sprintf(tmp, "indexing %d files ...", files.size());
+	sprintf(tmp, "indexing %d files ...", (int)files.size());
 	LOG("%s\n", tmp);
 	updateCallback(MSE_STARTING, string(tmp));
 	int counter = 0, counterMax = files.size();
@@ -380,7 +380,7 @@ int WsyncThread::getSyncData()
 		}
 		delete(dl);
 
-		
+
 		string hashMyFileIndex = generateFileHash(myFileIndex);
 		string hashRemoteFileIndex = generateFileHash(remoteFileIndex);
 
