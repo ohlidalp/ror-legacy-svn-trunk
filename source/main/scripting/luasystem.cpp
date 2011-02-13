@@ -190,7 +190,12 @@ void LuaSystem::spawnEvent(int id, eventsource_t *source)
 
 void LuaSystem::framestep()
 {
-	if(!loaded) return;
+	// not working:
+	//if(!loaded) return;
+	// as we also execute the base scripts for spawning
+	// solution dont touch LUA anymore until we replace it fully with AS
+
+
 	//find out if there are new events
 	for (int i=0; i<MAX_EVENTSOURCE; i++)
 	{
