@@ -348,7 +348,6 @@ int Beam::loadTruck(const char* fname, SceneManager *manager, SceneNode *parent,
 
 		if (!strncmp("add_animation", line, 13))
 		{
-		  printf(">>> add_animation\n");
 			/*
 			 * this command has several layers for splitting up the line:
 			 * 1. ',' the top level will be split up with a comma to separate the main options
@@ -1333,7 +1332,6 @@ int Beam::loadTruck(const char* fname, SceneManager *manager, SceneNode *parent,
 		}
 		else if (mode==66)
 		{
-		  printf(">>> animators\n");
 			//parse animators
 			int id1, id2;
 			float ratio;
@@ -1565,7 +1563,6 @@ int Beam::loadTruck(const char* fname, SceneManager *manager, SceneNode *parent,
 		else if (mode==9)
 		{
 			//parse engine
-		  printf(">>> engine\n");
 			if(driveable == MACHINE)
 				continue;
 
@@ -1803,14 +1800,14 @@ int Beam::loadTruck(const char* fname, SceneManager *manager, SceneNode *parent,
 
 			if(strlen(descr) != 0)
 				commandkey[keys].description = String(descr);
-			else if (strlen(descr) == 0 && commandkey[keys].description.size() == 0)
+			else if (strlen(descr) == 0 && commandkey[keys].description.empty())
 				commandkey[keys].description = "";
 
 			//add long key
 			commandkey[keyl].beams.push_back(pos);
 			if(strlen(descr) != 0)
 				commandkey[keyl].description = String(descr);
-			else if (strlen(descr) == 0 && commandkey[keyl].description.size() == 0)
+			else if (strlen(descr) == 0 && commandkey[keyl].description.empty())
 				commandkey[keyl].description = "";
 
 			LogManager::getSingleton().logMessage("added command: short=" + StringConverter::toString(keys)+ ", long=" + StringConverter::toString(keyl) + ", descr=" + (descr));
@@ -2981,7 +2978,6 @@ int Beam::loadTruck(const char* fname, SceneManager *manager, SceneNode *parent,
 		else if (mode==34)
 		{
 			// parse exhausts
-		  printf(">>> exhausts\n");
 			if (disable_smoke)
 				continue;
 			int id1, id2;

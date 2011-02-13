@@ -6,7 +6,7 @@ Copyright 2007-2011 Thomas Fischer
 For more information, see http://www.rigsofrods.com/
 
 Rigs of Rods is free software: you can redistribute it and/or modify
-it under the terms of the GNU General Public License version 3, as 
+it under the terms of the GNU General Public License version 3, as
 published by the Free Software Foundation.
 
 Rigs of Rods is distributed in the hope that it will be useful,
@@ -321,7 +321,16 @@ Beam::Beam(int tnum, SceneManager *manager, SceneNode *parent, RenderWindow* win
 	ties.clear();
 	hooks.clear();
 	memset(this->wings, 0, sizeof(wing_t) * MAX_WINGS); free_wing = 0;
-	memset(this->commandkey, 0, sizeof(command_t) * (MAX_COMMANDS + 1));
+
+	// commands contain complex data structures, do not memset them ...
+	for(int i=0;i<MAX_COMMANDS+1;i++)
+	{
+		this->commandkey[i].commandValue=-1;
+		this->commandkey[i].beams.clear();
+		this->commandkey[i].rotators.clear();
+		this->commandkey[i].description = String();
+	}
+
 	memset(this->rotators, 0, sizeof(rotator_t) * MAX_ROTATORS); free_rotator = 0;
 	flares.clear(); free_flare = 0;
 	memset(this->props, 0, sizeof(prop_t) * MAX_PROPS); free_prop = 0;
@@ -1697,7 +1706,7 @@ void Beam::updateTruckPosition()
 		}
 		position = aposition / free_node;
 	}
-	
+
 }
 
 void Beam::resetAngle(float rot)
@@ -5277,7 +5286,7 @@ void Beam::updateDebugOverlay()
 				t.node = tsm->getRootSceneNode()->createChildSceneNode();
 				t.node->attachObject(t.txt);
 				t.node->attachObject(b);
-				
+
 				float f = 0.05f;
 				if(nodes[i].collRadius > 0.00001)
 				{
