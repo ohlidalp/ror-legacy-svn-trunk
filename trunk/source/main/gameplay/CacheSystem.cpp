@@ -535,7 +535,7 @@ void CacheSystem::parseModAttribute(const String& line, Cache_Entry& t)
 		{
 			String mat = params[1];
 			Ogre::StringVector ar = StringUtil::split(mat," ");
-			for(Ogre::vector < Ogre::String >::type::iterator it = ar.begin(); it!=ar.end(); it++)
+			for(Ogre::StringVector::iterator it = ar.begin(); it!=ar.end(); it++)
 				t.materials.insert(*it);
 		}
 }

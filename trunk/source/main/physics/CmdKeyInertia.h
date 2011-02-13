@@ -48,7 +48,7 @@ protected:
 	};
 
 	Ogre::Real calculateCmdOutput(Ogre::Real time,Ogre::SimpleSpline *spline);
-	int processLine(Ogre::vector< Ogre::String >::type args,  Ogre::String model);
+	int processLine(Ogre::StringVector args,  Ogre::String model);
 
 	cmdKeyInertia_s *cmdKeyInertia;
 	std::map < Ogre::String, Ogre::SimpleSpline > splines;

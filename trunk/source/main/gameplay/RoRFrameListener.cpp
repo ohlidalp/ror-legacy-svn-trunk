@@ -1118,7 +1118,7 @@ RoRFrameListener::RoRFrameListener(RenderWindow* win, Camera* cam, SceneManager*
 	{
 		Ogre::StringVector str = StringUtil::split(cmd, "/");
 		// process args now
-		for(Ogre::vector<String>::type::iterator it = str.begin(); it!=str.end(); it++)
+		for(Ogre::StringVector::iterator it = str.begin(); it!=str.end(); it++)
 		{
 			String argstr = *it;
 			Ogre::StringVector args = StringUtil::split(argstr, ":");

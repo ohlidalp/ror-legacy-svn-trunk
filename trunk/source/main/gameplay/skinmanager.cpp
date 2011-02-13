@@ -139,11 +139,11 @@ void SkinManager::parseScript(DataStreamPtr& stream, const String& groupName)
 }
 
 //---------------------------------------------------------------------
-String SkinManager::joinString(Ogre::vector<String>::type params, String del, int skipNo)
+String SkinManager::joinString(Ogre::StringVector params, String del, int skipNo)
 {
 	String res="";
 	int i=0;
-	for(Ogre::vector<String>::type::iterator it=params.begin(); it!=params.end(); it++, i++)
+	for(Ogre::StringVector::iterator it=params.begin(); it!=params.end(); it++, i++)
 	{
 		if(i < skipNo) continue;
 		res += *it;
