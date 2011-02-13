@@ -6,7 +6,7 @@ Copyright 2007-2011 Thomas Fischer
 For more information, see http://www.rigsofrods.com/
 
 Rigs of Rods is free software: you can redistribute it and/or modify
-it under the terms of the GNU General Public License version 3, as 
+it under the terms of the GNU General Public License version 3, as
 published by the Free Software Foundation.
 
 Rigs of Rods is distributed in the hope that it will be useful,
@@ -30,7 +30,7 @@ along with Rigs of Rods.  If not, see <http://www.gnu.org/licenses/>.
 #include "BeamData.h" // for authorinfo_t
 #include "ScopeLog.h"
 
-#ifdef USE_MYGUI 
+#ifdef USE_MYGUI
 #include "LoadingWindow.h"
 #endif //MYGUI
 
@@ -705,7 +705,7 @@ int CacheSystem::incrementalCacheUpdate()
 
 	LogManager::getSingleton().logMessage("* incremental check starting ...");
 	LogManager::getSingleton().logMessage("* incremental check (1/5): deleted and changed files ...");
-#ifdef USE_MYGUI 
+#ifdef USE_MYGUI
 	LoadingWindow::get()->setProgress(20, _L("incremental check: deleted and changed files"));
 #endif //MYGUI
 	std::vector<Cache_Entry>::iterator it;
@@ -714,7 +714,7 @@ int CacheSystem::incrementalCacheUpdate()
 	for(it = entries.begin(); it != entries.end(); it++, counter++)
 	{
 		int progress = ((float)counter/(float)(entries.size()))*100;
-#ifdef USE_MYGUI 
+#ifdef USE_MYGUI
 		LoadingWindow::get()->setProgress(progress, _L("incremental check: deleted and changed files\n" + it->type + ": " + it->fname));
 #endif //MYGUI
 		if(it->type == "FileSystem")
@@ -723,7 +723,7 @@ int CacheSystem::incrementalCacheUpdate()
 			if(!fileExists(fn))
 			{
 				LogManager::getSingleton().logMessage("- "+fn+" is not existing");
-#ifdef USE_MYGUI 
+#ifdef USE_MYGUI
 				LoadingWindow::get()->setProgress(20, _L("incremental check: deleted and changed files\n")+it->fname+_L(" not existing"));
 #endif // MYGUI
 				removeFileFromFileCache(it);
@@ -741,7 +741,7 @@ int CacheSystem::incrementalCacheUpdate()
 			if(!fileExists(fn))
 			{
 				LogManager::getSingleton().logMessage("- "+fn+_L(" not existing"));
-#ifdef USE_MYGUI 
+#ifdef USE_MYGUI
 				LoadingWindow::get()->setProgress(20, _L("incremental check: deleted and changed files\n")+it->fname+_L(" not existing"));
 #endif //MYGUI
 				removeFileFromFileCache(it);
@@ -789,7 +789,7 @@ int CacheSystem::incrementalCacheUpdate()
 	std::vector<Ogre::String> reloaded_zips;
 	std::vector<Ogre::String>::iterator sit;
 	LogManager::getSingleton().logMessage("* incremental check (2/5): processing changed zips ...");
-#ifdef USE_MYGUI 
+#ifdef USE_MYGUI
 	LoadingWindow::get()->setProgress(40, _L("incremental check: processing changed zips\n"));
 #endif //MYGUI
 	for(it = changed_entries.begin(); it != changed_entries.end(); it++)
@@ -805,7 +805,7 @@ int CacheSystem::incrementalCacheUpdate()
 		}
 		if (!found)
 		{
-#ifdef USE_MYGUI 
+#ifdef USE_MYGUI
 			LoadingWindow::get()->setProgress(40, _L("incremental check: processing changed zips\n")+it->fname);
 #endif //MYGUI
 			loadSingleZip(*it);
@@ -813,19 +813,19 @@ int CacheSystem::incrementalCacheUpdate()
 		}
 	}
 	LogManager::getSingleton().logMessage("* incremental check (3/5): new content ...");
-#ifdef USE_MYGUI 
+#ifdef USE_MYGUI
 	LoadingWindow::get()->setProgress(60, _L("incremental check: new content\n"));
 #endif //MYGUI
 	checkForNewContent();
 
 	LogManager::getSingleton().logMessage("* incremental check (4/5): new files ...");
-#ifdef USE_MYGUI 
+#ifdef USE_MYGUI
 	LoadingWindow::get()->setProgress(80, _L("incremental check: new files\n"));
 #endif //MYGUI
 	checkForNewKnownFiles();
 
 	LogManager::getSingleton().logMessage("* incremental check (5/5): duplicates ...");
-#ifdef USE_MYGUI 
+#ifdef USE_MYGUI
 	LoadingWindow::get()->setProgress(90, _L("incremental check: duplicates\n"));
 #endif //MYGUI
 	std::vector<Cache_Entry>::iterator it2;
@@ -905,7 +905,7 @@ int CacheSystem::incrementalCacheUpdate()
 			}
 		}
 	}
-#ifdef USE_MYGUI 
+#ifdef USE_MYGUI
 	LoadingWindow::get()->setAutotrack(_L("loading...\n"));
 #endif //MYGUI
 
@@ -914,7 +914,7 @@ int CacheSystem::incrementalCacheUpdate()
 
 	writeGeneratedCache();
 
-#ifdef USE_MYGUI 
+#ifdef USE_MYGUI
 	LoadingWindow::get()->hide();
 #endif // MYGUI
 	LogManager::getSingleton().logMessage("* incremental check done.");
@@ -1126,7 +1126,7 @@ void CacheSystem::writeGeneratedCache()
 	if(!f)
 		return;
 	fprintf(f, "shaone=%s\n", const_cast<char*>(currentSHA1.c_str()));
-	fprintf(f, "modcount=%d\n", entries.size());
+	fprintf(f, "modcount=%d\n", (int)entries.size());
 	fprintf(f, "skincount=%d\n", SkinManager::getSingleton().getSkinCount());
 	fprintf(f, "cacheformat=%s\n", CACHE_FILE_FORMAT);
 
@@ -2854,7 +2854,7 @@ void CacheSystem::loadAllZipsInResourceGroup(String group)
 		}
 		// update loader
 		int progress = ((float)i/(float)filecount)*100;
-#ifdef USE_MYGUI 
+#ifdef USE_MYGUI
 		LoadingWindow::get()->setProgress(progress, _L("Loading zips in group ") + group + "\n" + iterFiles->filename + "\n" + StringConverter::toString(i) + "/" + StringConverter::toString(filecount));
 #endif //MYGUI
 
@@ -2862,7 +2862,7 @@ void CacheSystem::loadAllZipsInResourceGroup(String group)
 		loadedZips[iterFiles->filename] = true;
 	}
 	// hide loader again
-#ifdef USE_MYGUI 
+#ifdef USE_MYGUI
 	LoadingWindow::get()->hide();
 #endif //MYGUI
 }
@@ -2877,13 +2877,13 @@ void CacheSystem::loadAllDirectoriesInResourceGroup(String group)
 		String dirname = listitem->archive->getName() + SETTINGS.getSetting("dirsep") + listitem->filename;
 		// update loader
 		int progress = ((float)i/(float)filecount)*100;
-#ifdef USE_MYGUI 
+#ifdef USE_MYGUI
 		LoadingWindow::get()->setProgress(progress, _L("Loading directory\n") + listitem->filename);
 #endif //MYGUI
 		loadSingleDirectory(dirname, group, true);
 	}
 	// hide loader again
-#ifdef USE_MYGUI 
+#ifdef USE_MYGUI
 	LoadingWindow::get()->hide();
 #endif //MYGUI
 }
@@ -2926,12 +2926,12 @@ void CacheSystem::checkForNewZipsInResourceGroup(String group)
 		zippath=zippath2;
 		#endif
 		int progress = ((float)i/(float)filecount)*100;
-#ifdef USE_MYGUI 
+#ifdef USE_MYGUI
 		LoadingWindow::get()->setProgress(progress, _L("checking for new zips in ") + group + "\n" + iterFiles->filename + "\n" + StringConverter::toString(i) + "/" + StringConverter::toString(filecount));
 #endif //MYGUI
 		if(!isZipUsedInEntries(zippath2))
 		{
-#ifdef USE_MYGUI 
+#ifdef USE_MYGUI
 			LoadingWindow::get()->setProgress(progress, _L("checking for new zips in ") + group + "\n" + _L("loading new zip: ") + iterFiles->filename + "\n" + StringConverter::toString(i) + "/" + StringConverter::toString(filecount));
 #endif //MYGUI
 			LogManager::getSingleton().logMessage("- "+zippath+" is new");
@@ -2939,7 +2939,7 @@ void CacheSystem::checkForNewZipsInResourceGroup(String group)
 			loadSingleZip((Ogre::FileInfo)*iterFiles);
 		}
 	}
-#ifdef USE_MYGUI 
+#ifdef USE_MYGUI
 	LoadingWindow::get()->hide();
 #endif //MYGUI
 }
@@ -2953,19 +2953,19 @@ void CacheSystem::checkForNewDirectoriesInResourceGroup(String group)
 		if(!listitem->archive) continue;
 		String dirname = listitem->archive->getName() + SETTINGS.getSetting("dirsep") + listitem->filename;
 		int progress = ((float)i/(float)filecount)*100;
-#ifdef USE_MYGUI 
+#ifdef USE_MYGUI
 		LoadingWindow::get()->setProgress(progress, _L("checking for new directories in ") + group + "\n" + listitem->filename + "\n" + StringConverter::toString(i) + "/" + StringConverter::toString(filecount));
 #endif // MYGUI
 		if(!isDirectoryUsedInEntries(dirname))
 		{
-#ifdef USE_MYGUI 
+#ifdef USE_MYGUI
 			LoadingWindow::get()->setProgress(progress, _L("checking for new directories in ") + group + "\n" + _L("loading new directory: ") + listitem->filename + "\n" + StringConverter::toString(i) + "/" + StringConverter::toString(filecount));
 #endif //MYGUI
 			LogManager::getSingleton().logMessage("- "+dirname+" is new");
 			loadSingleDirectory(dirname, group, true);
 		}
 	}
-#ifdef USE_MYGUI 
+#ifdef USE_MYGUI
 	LoadingWindow::get()->hide();
 #endif //MYGUI
 }

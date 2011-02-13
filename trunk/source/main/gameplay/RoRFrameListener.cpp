@@ -6,7 +6,7 @@ Copyright 2007-2011 Thomas Fischer
 For more information, see http://www.rigsofrods.com/
 
 Rigs of Rods is free software: you can redistribute it and/or modify
-it under the terms of the GNU General Public License version 3, as 
+it under the terms of the GNU General Public License version 3, as
 published by the Free Software Foundation.
 
 Rigs of Rods is distributed in the hope that it will be useful,
@@ -926,7 +926,7 @@ RoRFrameListener::RoRFrameListener(RenderWindow* win, Camera* cam, SceneManager*
 	new GUI_MainMenu(this);
 	new GUI_Friction();
 
-	MyGUI::LayoutManager::getInstance().load("wallpaper.layout");
+	MyGUI::VectorWidgetPtr v = MyGUI::LayoutManager::getInstance().loadLayout("wallpaper.layout");
 
 #endif //MYGUI
 
@@ -1656,7 +1656,7 @@ void RoRFrameListener::loadObject(const char* name, float px, float py, float pz
 	sscanf(line, "%f, %f, %f",&scx,&scy,&scz);
 	sprintf(oname,"object%i(%s)", objcounter,name);
 	objcounter++;
-	
+
 
 	SceneNode *tenode = mSceneMgr->getRootSceneNode()->createChildSceneNode();
 	MeshObject *mo = new MeshObject(mScene, mesh, oname, tenode);
@@ -2178,9 +2178,9 @@ bool RoRFrameListener::updateEvents(float dt)
 	}
 
 	// update characters
-	if(loading_state==ALL_LOADED && net) 
+	if(loading_state==ALL_LOADED && net)
 		CharacterFactory::getSingleton().updateCharacters(dt);
-	else if(loading_state==ALL_LOADED && !net && cameramode != CAMERA_FREE) 
+	else if(loading_state==ALL_LOADED && !net && cameramode != CAMERA_FREE)
 		person->update(dt);
 
 	// no event handling during chatting!
@@ -2285,7 +2285,7 @@ bool RoRFrameListener::updateEvents(float dt)
 
 			const RenderTarget::FrameStats& stats = mWindow->getStatistics();
 			as->addData("AVGFPS", StringConverter::toString(stats.avgFPS));
-			
+
 			as->write();
 			delete(as);
 		} else
@@ -2294,7 +2294,7 @@ bool RoRFrameListener::updateEvents(float dt)
 			mWindow->writeContentsToFile(tmpfn);
 		}
 		LogManager::getSingleton().logMessage("Wrote screenshot : " + tmpfn);
-		
+
 		// hide any old flash message
 		if(ow) ow->hideFlashMessage();
 
@@ -2808,9 +2808,9 @@ bool RoRFrameListener::updateEvents(float dt)
 						if(sum > 1) sum = 1;
 
 						trucks[current_truck]->hydrodircommand = sum;
-						
+
 						if ((tmp_left_digital<tmp_left_analog) || (tmp_right_digital<tmp_right_analog))
-							trucks[current_truck]->hydroSpeedCoupling=false; 
+							trucks[current_truck]->hydroSpeedCoupling=false;
 						else
 							trucks[current_truck]->hydroSpeedCoupling=true;
 
@@ -3548,7 +3548,7 @@ bool RoRFrameListener::updateEvents(float dt)
 							trucks[current_truck]->currentcamera=0;
 							trucks[current_truck]->changedCamera();
 						}
-						
+
 						if (cameramode==CAMERA_END) cameramode = CAMERA_EXT;
 					}
 				}
@@ -4606,7 +4606,7 @@ void RoRFrameListener::loadTerrain(String terrainfile)
 }
 
 void RoRFrameListener::loadClassicTerrain(String terrainfile)
-{	
+{
 	//we load a classic terrain
 	//FILE *fd;
 	char geom[1024];
@@ -4645,7 +4645,7 @@ void RoRFrameListener::loadClassicTerrain(String terrainfile)
 		SETTINGS.setSetting("new Terrain Mode", "Yes");
 	}
 
-	
+
 	//colour
 	ds->readLine(line, 1023);
 	//water stuff
@@ -4885,7 +4885,7 @@ void RoRFrameListener::loadClassicTerrain(String terrainfile)
 			// testing composite map
 			TerrainGlobalOptions::getSingleton().setCompositeMapDistance(mCamera->getFarClipDistance());//300);
 			//mTerrainGlobals->setUseRayBoxDistanceCalculation(true);
-			
+
 			// adds strange colours for debug purposes
 			//TerrainGlobalOptions::getSingleton().getDefaultMaterialGenerator()->setDebugLevel(1);
 
@@ -4902,7 +4902,7 @@ void RoRFrameListener::loadClassicTerrain(String terrainfile)
 
 			TerrainGlobalOptions::getSingleton().setLightMapSize(256);
 			TerrainGlobalOptions::getSingleton().setCastsDynamicShadows(false);
-			
+
 			// Important to set these so that the terrain knows what to use for derived (non-realtime) data
 			if(mainLight) TerrainGlobalOptions::getSingleton().setLightMapDirection(mainLight->getDerivedDirection());
 			TerrainGlobalOptions::getSingleton().setCompositeMapAmbient(mSceneMgr->getAmbientLight());
@@ -5080,7 +5080,7 @@ void RoRFrameListener::loadClassicTerrain(String terrainfile)
 						}
 					}
 				}
-				
+
 				if(disableCaching)
 					mTerrainGroup->saveAllTerrains(false);
 			} else
@@ -5101,7 +5101,7 @@ void RoRFrameListener::loadClassicTerrain(String terrainfile)
 
 			mTerrainGroup->freeTemporaryResources();
 
-			
+
 		}
 	}
 
@@ -6703,7 +6703,7 @@ void RoRFrameListener::moveCamera(float dt)
 			float real_camDist = (mCamera->getPosition()-person->getPosition()).length();
 			Radian fov = Radian(atan2(20.0f,real_camDist));
 			mCamera->setFOVy(fov);
-		
+
 			if(mDOF)
 			{
 				mDOF->setFocusMode(DOFManager::Manual);
@@ -8038,18 +8038,18 @@ bool RoRFrameListener::RTSSgenerateShadersForMaterial(Ogre::String curMaterialNa
 	bool success;
 
 	// Create the shader based technique of this material.
-	success = Ogre::RTShader::ShaderGenerator::getSingleton().createShaderBasedTechnique(curMaterialName, 
+	success = Ogre::RTShader::ShaderGenerator::getSingleton().createShaderBasedTechnique(curMaterialName,
 			 			MaterialManager::DEFAULT_SCHEME_NAME,
 			 			RTShader::ShaderGenerator::DEFAULT_SCHEME_NAME);
 	if(!success)
 		return false;
-		
+
 	// Setup custom shader sub render states according to current setup.
 	MaterialPtr curMaterial = MaterialManager::getSingleton().getByName(curMaterialName);
 	Pass* curPass = curMaterial->getTechnique(0)->getPass(0);
 
 
-	// Grab the first pass render state. 
+	// Grab the first pass render state.
 	// NOTE: For more complicated samples iterate over the passes and build each one of them as desired.
 	RTShader::RenderState* renderState = Ogre::RTShader::ShaderGenerator::getSingleton().getRenderState(RTShader::ShaderGenerator::DEFAULT_SCHEME_NAME, curMaterialName, 0);
 
@@ -8062,7 +8062,7 @@ bool RoRFrameListener::RTSSgenerateShadersForMaterial(Ogre::String curMaterialNa
 	/*
 	{
 		RTShader::SubRenderState* perPerVertexLightModel = Ogre::RTShader::ShaderGenerator::getSingleton().createSubRenderState(RTShader::FFPLighting::Type);
-		renderState->addTemplateSubRenderState(perPerVertexLightModel);	
+		renderState->addTemplateSubRenderState(perPerVertexLightModel);
 	}
 	*/
 #endif
@@ -8071,16 +8071,16 @@ bool RoRFrameListener::RTSSgenerateShadersForMaterial(Ogre::String curMaterialNa
 	{
 		// SSLM_PerPixelLighting
 		RTShader::SubRenderState* perPixelLightModel = Ogre::RTShader::ShaderGenerator::getSingleton().createSubRenderState(RTShader::PerPixelLighting::Type);
-				
-		renderState->addTemplateSubRenderState(perPixelLightModel);				
+
+		renderState->addTemplateSubRenderState(perPixelLightModel);
 	} else
 	{
 		// SSLM_NormalMapLightingTangentSpace
 		RTShader::SubRenderState* subRenderState = Ogre::RTShader::ShaderGenerator::getSingleton().createSubRenderState(RTShader::NormalMapLighting::Type);
 		RTShader::NormalMapLighting* normalMapSubRS = static_cast<RTShader::NormalMapLighting*>(subRenderState);
-					
+
 		normalMapSubRS->setNormalMapSpace(RTShader::NormalMapLighting::NMS_TANGENT);
-		normalMapSubRS->setNormalMapTextureName(normalTextureName);	
+		normalMapSubRS->setNormalMapTextureName(normalTextureName);
 
 		renderState->addTemplateSubRenderState(normalMapSubRS);
 	}
@@ -8092,26 +8092,26 @@ bool RoRFrameListener::RTSSgenerateShadersForMaterial(Ogre::String curMaterialNa
 		{
 			RTShader::SubRenderState* subRenderState = mShaderGenerator->createSubRenderState(RTShader::NormalMapLighting::Type);
 			RTShader::NormalMapLighting* normalMapSubRS = static_cast<RTShader::NormalMapLighting*>(subRenderState);
-				
+
 			normalMapSubRS->setNormalMapSpace(RTShader::NormalMapLighting::NMS_OBJECT);
-			normalMapSubRS->setNormalMapTextureName("Panels_Normal_Obj.png");	
+			normalMapSubRS->setNormalMapTextureName("Panels_Normal_Obj.png");
 
 			renderState->addTemplateSubRenderState(normalMapSubRS);
 		}
-				
+
 		// It is secondary entity -> use simple per pixel lighting.
 		else
 		{
 			RTShader::SubRenderState* perPixelLightModel = mShaderGenerator->createSubRenderState(RTShader::PerPixelLighting::Type);
 			renderState->addTemplateSubRenderState(perPixelLightModel);
-		}				
+		}
 	} */
 
 #endif
 
 	// Invalidate this material in order to re-generate its shaders.
 	Ogre::RTShader::ShaderGenerator::getSingleton().invalidateMaterial(RTShader::ShaderGenerator::DEFAULT_SCHEME_NAME, curMaterialName);
-	return true;						
+	return true;
 }
 
 void RoRFrameListener::RTSSgenerateShaders(Entity* entity, Ogre::String normalTextureName)
@@ -8121,7 +8121,7 @@ void RoRFrameListener::RTSSgenerateShaders(Entity* entity, Ogre::String normalTe
 	{
 		SubEntity* curSubEntity = entity->getSubEntity(i);
 		const String& curMaterialName = curSubEntity->getMaterialName();
-	
+
 		RTSSgenerateShadersForMaterial(curMaterialName, normalTextureName);
 	}
 }

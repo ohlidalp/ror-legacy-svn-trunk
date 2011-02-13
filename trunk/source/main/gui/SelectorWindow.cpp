@@ -6,7 +6,7 @@ Copyright 2007-2011 Thomas Fischer
 For more information, see http://www.rigsofrods.com/
 
 Rigs of Rods is free software: you can redistribute it and/or modify
-it under the terms of the GNU General Public License version 3, as 
+it under the terms of the GNU General Public License version 3, as
 published by the Free Software Foundation.
 
 Rigs of Rods is distributed in the hope that it will be useful,
@@ -17,7 +17,7 @@ GNU General Public License for more details.
 You should have received a copy of the GNU General Public License
 along with Rigs of Rods.  If not, see <http://www.gnu.org/licenses/>.
 */
-#ifdef USE_MYGUI 
+#ifdef USE_MYGUI
 
 #include "SelectorWindow.h"
 #include "LoadingWindow.h"
@@ -43,22 +43,22 @@ SelectorWindow::SelectorWindow() : mSelectedTruck(0)
 	mMainWidget->setRealPosition(0.1, 0.1);
 	mMainWidget->setRealSize(0.8, 0.8);
 
-	mMainWidget->eventKeyButtonPressed      += MyGUI::newDelegate(this, &SelectorWindow::eventKeyButtonPressed_Main); 
+	mMainWidget->eventKeyButtonPressed      += MyGUI::newDelegate(this, &SelectorWindow::eventKeyButtonPressed_Main);
 	mTypeComboBox->eventComboChangePosition += MyGUI::newDelegate(this, &SelectorWindow::eventComboChangePositionTypeComboBox);
-	mTypeComboBox->eventKeyButtonPressed    += MyGUI::newDelegate(this, &SelectorWindow::eventKeyButtonPressed_Main); 
+	mTypeComboBox->eventKeyButtonPressed    += MyGUI::newDelegate(this, &SelectorWindow::eventKeyButtonPressed_Main);
 	mModelList->eventListChangePosition     += MyGUI::newDelegate(this, &SelectorWindow::eventListChangePositionModelList);
-	//mModelList->eventKeyButtonPressed       += MyGUI::newDelegate(this, &SelectorWindow::eventKeyButtonPressed_Main); 
+	//mModelList->eventKeyButtonPressed       += MyGUI::newDelegate(this, &SelectorWindow::eventKeyButtonPressed_Main);
 	mConfigComboBox->eventComboAccept       += MyGUI::newDelegate(this, &SelectorWindow::eventComboAcceptConfigComboBox);
-	//mConfigComboBox->eventKeyButtonPressed  += MyGUI::newDelegate(this, &SelectorWindow::eventKeyButtonPressed_Main); 
+	//mConfigComboBox->eventKeyButtonPressed  += MyGUI::newDelegate(this, &SelectorWindow::eventKeyButtonPressed_Main);
 	mOkButton->eventMouseButtonClick        += MyGUI::newDelegate(this, &SelectorWindow::eventMouseButtonClickOkButton);
 	mCancelButton->eventMouseButtonClick    += MyGUI::newDelegate(this, &SelectorWindow::eventMouseButtonClickCancelButton);
-	
+
 	// search stuff
 	mSearchLineEdit->eventEditTextChange    += MyGUI::newDelegate(this, &SelectorWindow::eventSearchTextChange);
 	mSearchLineEdit->eventMouseSetFocus     += MyGUI::newDelegate(this, &SelectorWindow::eventSearchTextGotFocus);
 	mSearchLineEdit->eventKeySetFocus       += MyGUI::newDelegate(this, &SelectorWindow::eventSearchTextGotFocus);
-	mSearchLineEdit->eventKeyButtonPressed  += MyGUI::newDelegate(this, &SelectorWindow::eventKeyButtonPressed_Main); 
-	
+	mSearchLineEdit->eventKeyButtonPressed  += MyGUI::newDelegate(this, &SelectorWindow::eventKeyButtonPressed_Main);
+
 	mSelectedSkin=0;
 }
 
@@ -73,7 +73,7 @@ void SelectorWindow::eventKeyButtonPressed_Main(MyGUI::WidgetPtr _sender, MyGUI:
 	int iid = mModelList->getIndexSelected();
 
 	bool searching = (mTypeComboBox->getCaption() == _L("Search Results"));
-	
+
 	// search
 	if(_key == MyGUI::KeyCode::Slash)
 	{
@@ -235,7 +235,7 @@ void SelectorWindow::getData()
 		mTypeComboBox->setEnabled(true);
 		mCancelButton->setEnabled(true);
 	}
-	
+
 	int ts = CACHE.getTimeStamp();
 
 	std::vector<Cache_Entry> *entries = CACHE.getEntries();
@@ -261,13 +261,13 @@ void SelectorWindow::getData()
 			add = (mLoaderType == LT_Trailer || mLoaderType == LT_Extension);
 		else if(it->fext=="load")
 			add = (mLoaderType == LT_Load || mLoaderType == LT_Extension);
-		
+
 		if(mLoaderType == LT_AllBeam && (it->fext == "truck" || it->fext == "car" ||  it->fext == "airplane" ||  it->fext == "trailer" ||  it->fext == "boat" || it->fext == "load"))
 			add = true;
 
 		if(!add)
 			continue;
-		
+
 		// remove invalid ID's
 		if(it->categoryid >= 9000)
 			it->categoryid = -1;
@@ -275,12 +275,12 @@ void SelectorWindow::getData()
 		// unsorted
 		if(it->categoryid == -1)
 			it->categoryid = 9990;
-		
+
 		mCategoryUsage[it->categoryid] = mCategoryUsage[it->categoryid] + 1;
-		
+
 		// all
 		mCategoryUsage[9991] = mCategoryUsage[9991] + 1;
-		
+
 		// fresh, 24 hours = 86400
 		if(ts - it->addtimestamp < 86400)
 			mCategoryUsage[9992] = mCategoryUsage[9992] + 1;
@@ -290,7 +290,7 @@ void SelectorWindow::getData()
 		// search results
 		mCategoryUsage[9994] = 0;
 
-		
+
 		mEntries.push_back(*it);
 	}
 	int counter=0, counter2=0;
@@ -307,7 +307,7 @@ void SelectorWindow::getData()
 		if(usage == 0)
 			continue;
 		counter2++;
-		
+
 		String title = itc->second.title;
 		if(title.empty())
 			title = _L("unkown");
@@ -342,7 +342,7 @@ void SelectorWindow::onCategorySelected(int categoryID)
 	{
 		if(it->categoryid == categoryID || (categoryID == 9991) || (categoryID == 9992 && (ts - it->addtimestamp < 86400)))
 			counter++;
-		
+
 		// search results
 		if(categoryID == 9994)
 		{
@@ -421,7 +421,7 @@ void SelectorWindow::onEntrySelected(int entryID)
 		}
 		entryID -= 1; // remove default skin :)
 		Skin *skin = mCurrentSkins[entryID];
-		
+
 		// check if loaded
 		if(!skin->loaded && skin->sourcetype == "FileSystem")
 		{
@@ -507,7 +507,7 @@ void SelectorWindow::updateControls(Cache_Entry *entry)
 	String outBasename = "";
 	String outPath = "";
 	StringUtil::splitFilename(entry->filecachename, outBasename, outPath);
-	
+
 	setPreviewImage(outBasename);
 
 	if(entry->sectionconfigs.size())
@@ -525,7 +525,7 @@ void SelectorWindow::updateControls(Cache_Entry *entry)
 			}
 		}
 		mConfigComboBox->setIndexSelected(0);
-		
+
 		mTruckConfigs.clear();
 		String configstr = *mConfigComboBox->getItemDataAt<String>(0);
 		mTruckConfigs.push_back(configstr);
@@ -654,11 +654,11 @@ void SelectorWindow::setEnableCancel(bool enabled)
 	mCancelButton->setEnabled(enabled);
 }
 
-void SelectorWindow::eventSearchTextChange(MyGUI::WidgetPtr _sender)
+void SelectorWindow::eventSearchTextChange(MyGUI::EditBox *_sender)
 {
 	if(!mMainWidget->getVisible()) return;
 	onCategorySelected(9994);
-	mTypeComboBox->setCaption(_L("Search Results"));	
+	mTypeComboBox->setCaption(_L("Search Results"));
 }
 
 void SelectorWindow::eventSearchTextGotFocus(MyGUI::WidgetPtr _sender, MyGUI::WidgetPtr oldWidget)

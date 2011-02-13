@@ -6,7 +6,7 @@ Copyright 2007-2011 Thomas Fischer
 For more information, see http://www.rigsofrods.com/
 
 Rigs of Rods is free software: you can redistribute it and/or modify
-it under the terms of the GNU General Public License version 3, as 
+it under the terms of the GNU General Public License version 3, as
 published by the Free Software Foundation.
 
 Rigs of Rods is distributed in the hope that it will be useful,
@@ -135,7 +135,7 @@ int ScriptEngine::loadTerrainScript(Ogre::String scriptname)
 	// get some other optional functions
 	frameStepFunctionPtr = mod->GetFunctionIdByDecl("void frameStep(float)");
 	wheelEventFunctionPtr = mod->GetFunctionIdByDecl("void wheelEvents(int, string, string, string)");
-	
+
 	eventCallbackFunctionPtr = mod->GetFunctionIdByDecl("void eventCallback(int, int)");
 
 	// Create our context, prepare it, and then execute
@@ -515,8 +515,8 @@ void ScriptEngine::init()
 	result = engine->RegisterObjectMethod("GameScriptClass", "float rangeRandom(float, float)", AngelScript::asMETHOD(GameScript,rangeRandom), AngelScript::asCALL_THISCALL); assert(result>=0);
 	result = engine->RegisterObjectMethod("GameScriptClass", "int useOnlineAPI(const string &in, const dictionary &in, string &out)", AngelScript::asMETHOD(GameScript,useOnlineAPI), AngelScript::asCALL_THISCALL); assert(result>=0);
 	result = engine->RegisterObjectMethod("GameScriptClass", "int getLoadedTerrain(string &out)", AngelScript::asMETHOD(GameScript,getLoadedTerrain), AngelScript::asCALL_THISCALL); assert(result>=0);
-	
-	
+
+
 
 	// class CacheSystem
 	result = engine->RegisterObjectType("CacheSystemClass", sizeof(CacheSystem), AngelScript::asOBJ_REF | AngelScript::asOBJ_NOHANDLE);
@@ -661,7 +661,7 @@ int ScriptEngine::framestep(Ogre::Real dt, Beam **trucks, int free_truck)
 				{
 				  // The return value is only valid if the execution finished successfully
 					AngelScript::asDWORD ret = context->GetReturnDWord();
-				}				
+				}
 			}
 		}
 	}
@@ -1162,18 +1162,18 @@ static size_t curlWriteMemoryCallback(void *ptr, size_t size, size_t nmemb, void
 {
   size_t realsize = size * nmemb;
   struct curlMemoryStruct *mem = (struct curlMemoryStruct *)data;
- 
+
   mem->memory = (char *)realloc(mem->memory, mem->size + realsize + 1);
   if (mem->memory == NULL) {
-    /* out of memory! */ 
+    /* out of memory! */
     printf("not enough memory (realloc returned NULL)\n");
     exit(EXIT_FAILURE);
   }
- 
+
   memcpy(&(mem->memory[mem->size]), ptr, realsize);
   mem->size += realsize;
   mem->memory[mem->size] = 0;
- 
+
   return realsize;
 }
 #endif //USE_CURL
@@ -1182,9 +1182,9 @@ int GameScript::useOnlineAPI(const std::string &apiquery, const AngelScript::CSc
 {
 #ifdef USE_CURL
 	struct curlMemoryStruct chunk;
- 
-	chunk.memory = (char *)malloc(1);  /* will be grown as needed by the realloc above */ 
-	chunk.size = 0;    /* no data at this point */ 
+
+	chunk.memory = (char *)malloc(1);  /* will be grown as needed by the realloc above */
+	chunk.size = 0;    /* no data at this point */
 
 	// construct post fields
 	struct curl_httppost *formpost=NULL;
@@ -1239,7 +1239,7 @@ int GameScript::useOnlineAPI(const std::string &apiquery, const AngelScript::CSc
 	curl_formadd(&formpost, &lastptr, CURLFORM_COPYNAME, "MP_ServerName", CURLFORM_COPYCONTENTS, SETTINGS.getSetting("Server name").c_str(), CURLFORM_END);
 	curl_formadd(&formpost, &lastptr, CURLFORM_COPYNAME, "MP_ServerPort", CURLFORM_COPYCONTENTS, SETTINGS.getSetting("Server port").c_str(), CURLFORM_END);
 	curl_formadd(&formpost, &lastptr, CURLFORM_COPYNAME, "MP_NetworkEnabled", CURLFORM_COPYCONTENTS, SETTINGS.getSetting("Network enable").c_str(), CURLFORM_END);
-	
+
 	if(mefl->getCurrentTruckNumber() >= 0 && mefl->getCurrentTruck())
 	{
 		Beam *truck = mefl->getCurrentTruck();
@@ -1252,8 +1252,8 @@ int GameScript::useOnlineAPI(const std::string &apiquery, const AngelScript::CSc
 	const RenderTarget::FrameStats& stats = mefl->getRenderWindow()->getStatistics();
 	curl_formadd(&formpost, &lastptr, CURLFORM_COPYNAME, "AVG_FPS", CURLFORM_COPYCONTENTS, StringConverter::toString(stats.avgFPS).c_str(), CURLFORM_END);
 
- 
-	
+
+
 	CURLcode res;
 	CURL *curl = curl_easy_init();
 	if(!curl)
@@ -1268,12 +1268,12 @@ int GameScript::useOnlineAPI(const std::string &apiquery, const AngelScript::CSc
 	string url = "http://" + string(REPO_SERVER) + apiquery;
 	curl_easy_setopt(curl, CURLOPT_URL,              url.c_str());
 
-	/* send all data to this function  */ 
+	/* send all data to this function  */
 	curl_easy_setopt(curl, CURLOPT_WRITEFUNCTION, curlWriteMemoryCallback);
- 
-	/* we pass our 'chunk' struct to the callback function */ 
+
+	/* we pass our 'chunk' struct to the callback function */
 	curl_easy_setopt(curl, CURLOPT_WRITEDATA, (void *)&chunk);
- 
+
 	// set post options
 	curl_easy_setopt(curl, CURLOPT_HTTPPOST, formpost);
 
@@ -1283,14 +1283,14 @@ int GameScript::useOnlineAPI(const std::string &apiquery, const AngelScript::CSc
 
 	// http related settings
 	curl_easy_setopt(curl, CURLOPT_FOLLOWLOCATION,   1); // follow redirects
-	curl_easy_setopt(curl, CURLOPT_AUTOREFERER,      1); // set the Referer: field in requests where it follows a Location: redirect. 
+	curl_easy_setopt(curl, CURLOPT_AUTOREFERER,      1); // set the Referer: field in requests where it follows a Location: redirect.
 	curl_easy_setopt(curl, CURLOPT_MAXREDIRS,        20);
 	curl_easy_setopt(curl, CURLOPT_USERAGENT,        "RoR");
 	curl_easy_setopt(curl, CURLOPT_FILETIME,         1);
-	
+
 	// TO BE DONE: ADD SSL
 	// see: http://curl.haxx.se/libcurl/c/simplessl.html
-	// curl_easy_setopt(curl,CURLOPT_SSL_VERIFYPEER,1L); 
+	// curl_easy_setopt(curl,CURLOPT_SSL_VERIFYPEER,1L);
 
 	res = curl_easy_perform(curl);
 	curl_easy_cleanup(curl);
@@ -1307,8 +1307,8 @@ int GameScript::useOnlineAPI(const std::string &apiquery, const AngelScript::CSc
 		// then free
 		free(chunk.memory);
 	}
- 
-	/* we're done with libcurl, so clean it up */ 
+
+	/* we're done with libcurl, so clean it up */
 	curl_global_cleanup();
 
 	if(res != CURLE_OK)
