@@ -352,11 +352,11 @@ bool Settings::setupPaths()
 		loadSettings(configfile, true);
 
 		// fix up time things...
-		settings["Config Root"] = settings["User Path"]+"config"+dirsep;
-		settings["Cache Path"]  = settings["User Path"]+"cache"+dirsep;
-		settings["Log Path"]    = settings["User Path"]+"logs"+dirsep;
-		settings["ogre.cfg"]    = settings["User Path"]+"config"+dirsep+"ogre.cfg";
-		settings["ogre.log"]    = settings["User Path"]+"logs"+dirsep+"ogre.log";
+		settings["Config Root"] = settings["User Path"]+dsStr+"config"+dirsep;
+		settings["Cache Path"]  = settings["User Path"]+dsStr+"cache"+dirsep;
+		settings["Log Path"]    = settings["User Path"]+dsStr+"logs"+dirsep;
+		settings["ogre.cfg"]    = settings["User Path"]+dsStr+"config"+dirsep+"ogre.cfg";
+		settings["ogre.log"]    = settings["User Path"]+dsStr+"logs"+dirsep+"ogre.log";
 
 	} catch(...)
 	{
