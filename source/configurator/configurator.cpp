@@ -1937,7 +1937,7 @@ void MyDialog::updateRoR()
 	sei.hwnd = NULL;
 	sei.lpVerb = _T("runas");
 	sei.lpFile = wpath;
-	sei.lpParameters = wxT("--update");
+	sei.lpParameters = NULL;//wxT("--update");
 	sei.lpDirectory = cwpath;
 	sei.nShow = SW_NORMAL;
 

@@ -7574,6 +7574,7 @@ void RoRFrameListener::showLoad(int type, char* instance, char* box)
 			{
 				//boy, thats bad
 				if(ow) ow->flashMessage(_L("Please clear the place first"), 4);
+				collisions->clearEventCache();
 				return;
 			}
 		}
