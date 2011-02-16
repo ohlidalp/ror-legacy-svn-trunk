@@ -250,6 +250,7 @@ bool RigsOfRods::setup(void)
 	ResourceGroupManager::getSingleton().addResourceLocation(SETTINGS.getSetting("User Path")+"cache", "FileSystem", "cache");
 	//config, flat
 	ResourceGroupManager::getSingleton().addResourceLocation(SETTINGS.getSetting("User Path")+"config", "FileSystem", ResourceGroupManager::DEFAULT_RESOURCE_GROUP_NAME);
+	ResourceGroupManager::getSingleton().addResourceLocation(SETTINGS.getSetting("User Path")+"alwaysload", "FileSystem", ResourceGroupManager::DEFAULT_RESOURCE_GROUP_NAME);
 	//packs, to be processed later by the cache system
 
 	// add scripts folder

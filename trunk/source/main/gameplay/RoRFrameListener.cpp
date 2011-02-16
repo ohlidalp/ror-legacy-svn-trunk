@@ -517,13 +517,13 @@ void RoRFrameListener::updateGUI(float dt)
 
 		//fire
 		if (trucks[current_truck]->aeroengines[0]->isFailed()) ow->engfireo1->setMaterialName("tracks/engfire-on"); else ow->engfireo1->setMaterialName("tracks/engfire-off");
-		if (ftp>1 && trucks[current_truck]->aeroengines[1]->isFailed()) ow->engfireo2->setMaterialName("tracks/engfire-on"); else ow->engfireo2->setMaterialName("tracks/engfire-off");
-		if (ftp>2 && trucks[current_truck]->aeroengines[2]->isFailed()) ow->engfireo3->setMaterialName("tracks/engfire-on"); else ow->engfireo3->setMaterialName("tracks/engfire-off");
-		if (ftp>3 && trucks[current_truck]->aeroengines[3]->isFailed()) ow->engfireo4->setMaterialName("tracks/engfire-on"); else ow->engfireo4->setMaterialName("tracks/engfire-off");
+		if (ftp > 1 && trucks[current_truck]->aeroengines[1]->isFailed()) ow->engfireo2->setMaterialName("tracks/engfire-on"); else ow->engfireo2->setMaterialName("tracks/engfire-off");
+		if (ftp > 2 && trucks[current_truck]->aeroengines[2]->isFailed()) ow->engfireo3->setMaterialName("tracks/engfire-on"); else ow->engfireo3->setMaterialName("tracks/engfire-off");
+		if (ftp > 3 && trucks[current_truck]->aeroengines[3]->isFailed()) ow->engfireo4->setMaterialName("tracks/engfire-on"); else ow->engfireo4->setMaterialName("tracks/engfire-off");
 
 		//airspeed
 		float angle=0.0;
-		float ground_speed_kt=trucks[current_truck]->nodes[0].Velocity.length()*1.9438;
+		float ground_speed_kt=trucks[current_truck]->nodes[0].Velocity.length()*1.9438; // 1.943 = m/s in knots/s
 
 		//tropospheric model valid up to 11.000m (33.000ft)
 		float altitude=trucks[current_truck]->nodes[0].AbsPosition.y;
