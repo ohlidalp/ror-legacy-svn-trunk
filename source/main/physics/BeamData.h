@@ -235,6 +235,10 @@ enum {
 	SHOCK_FLAG_SOFTBUMP     = BITMASK(6),
 };
 
+enum { 
+	DEFAULT_DETACHER_GROUP  = 0, // default for detaching beam group
+};
+
 /* some info holding arrays */
 static const float flapangles[6] = {0.0, -0.07, -0.17, -0.33, -0.67, -1.0};
 
@@ -336,6 +340,7 @@ struct beam
 	Ogre::Real commandLong;
 	Ogre::Real maxtiestress;
 	Ogre::Real diameter;
+	int detacher_group;	// detacher group number (integer)
 	Ogre::Vector3 lastforce;
 	bool iscentering;
 	int isOnePressMode;

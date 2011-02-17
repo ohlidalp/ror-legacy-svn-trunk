@@ -197,6 +197,7 @@ public:
 		, Real strength
 		, Real spring
 		, Real damp
+		, int detachgroupstate=DEFAULT_DETACHER_GROUP
 		, Real length=-1.0
 		, float shortbound=-1.0
 		, float longbound=-1.0
@@ -485,6 +486,7 @@ protected:
 	blinktype blinkingtype;
 	Light *cablight;
 
+	int detacher_group_state; // current detacher group for the next beam generated
 	bool enable_wheel2;
 	bool deleting;
 
