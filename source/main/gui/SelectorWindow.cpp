@@ -150,8 +150,14 @@ void SelectorWindow::eventKeyButtonPressed_Main(MyGUI::WidgetPtr _sender, MyGUI:
 	}
 
 	// select key
-	else if(_key == MyGUI::KeyCode::Return && mSelectedTruck)
+	else if(mLoaderType != LT_SKIN && _key == MyGUI::KeyCode::Return && mSelectedTruck)
+	{
 		selectionDone();
+
+	} else if(mLoaderType == LT_SKIN && _key == MyGUI::KeyCode::Return && mSelectedSkin)
+	{
+		selectionDone();
+	}
 
 }
 
@@ -422,23 +428,7 @@ void SelectorWindow::onEntrySelected(int entryID)
 		entryID -= 1; // remove default skin :)
 		Skin *skin = mCurrentSkins[entryID];
 
-		// check if loaded
-		if(!skin->loaded && skin->sourcetype == "FileSystem")
-		{
-			try
-			{
-				ResourceGroupManager::getSingleton().addResourceLocation(skin->source, "FileSystem", ResourceGroupManager::DEFAULT_RESOURCE_GROUP_NAME);
-				ResourceGroupManager::getSingleton().initialiseResourceGroup(ResourceGroupManager::DEFAULT_RESOURCE_GROUP_NAME);
-			}catch(...)
-			{
-			}
-			skin->loaded = true;
-		} else if(!skin->loaded && skin->sourcetype == "Zip")
-		{
-			CACHE.loadSingleZip(skin->source, -1, false, false);
-			skin->loaded=true;
-		}
-
+		// we assume its already loaded
 		// set selected skin as current
 		mSelectedSkin = skin;
 
@@ -477,7 +467,7 @@ void SelectorWindow::selectionDone()
 		CACHE.checkResourceLoaded(*mSelectedTruck);
 
 		this->mCurrentSkins.clear();
-		int res = SkinManager::getSingleton().getUsableSkins(mSelectedTruck, this->mCurrentSkins);
+		int res = SkinManager::getSingleton().getUsableSkins(mSelectedTruck->guid, this->mCurrentSkins);
 		if(!res && this->mCurrentSkins.size()>0)
 		{
 			// show skin selection dialog!
@@ -633,6 +623,7 @@ void SelectorWindow::show(LoaderType type)
 	else
 		mMainWidget->castType<MyGUI::Window>()->setVisibleSmooth(true);
 	if (type != LT_SKIN) mSelectedTruck = nullptr; // when in skin, we still need the info
+
 	mLoaderType = type;
 	mSelectionDone = false;
 	getData();

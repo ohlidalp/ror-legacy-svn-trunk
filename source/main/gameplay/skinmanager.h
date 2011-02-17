@@ -40,7 +40,8 @@ public:
 	static SkinManager* getSingletonPtr(void);
 
 	int getMaterialAlternatives(Ogre::String materialName, std::vector<Skin *> &skin);
-	int getUsableSkins(Cache_Entry *e, std::vector<Skin *> &skins);
+	int getUsableSkins(Ogre::String guid, std::vector<Skin *> &skins);
+	bool hasSkinForGUID(Ogre::String guid);
 
 	int getSkinCount();
 	int serialize(Ogre::String &dst);

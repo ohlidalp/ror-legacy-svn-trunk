@@ -163,24 +163,34 @@ void SkinManager::parseAttribute(const String& line, Skin *pSkin)
 	else if (attrib == "description"        && params.size() >= 2) pSkin->description = joinString(params);
 	else if (attrib == "authorname"         && params.size() >= 2) pSkin->authorName = joinString(params);
 	else if (attrib == "authorid"           && params.size() == 2) pSkin->authorID = StringConverter::parseInt(params[1]);
-	else if (attrib == "skintype"           && params.size() >= 2) pSkin->skintype = joinString(params);
+	else if (attrib == "guid"               && params.size() >= 2) { pSkin->guid = joinString(params); StringUtil::trim(pSkin->guid); }
 	else if (attrib == "name"               && params.size() >= 2)
 	{
 		pSkin->name = joinString(params);
 		StringUtil::trim(pSkin->name);
 	}
-	else if (attrib == "origin"             && params.size() >= 2) pSkin->origin = joinString(params);
-	else if (attrib == "source"             && params.size() >= 2) pSkin->source = joinString(params);
-	else if (attrib == "sourcetype"         && params.size() == 2) pSkin->sourcetype = params[1];
 }
 
 //---------------------------------------------------------------------
 void SkinManager::logBadAttrib(const String& line, Skin *pSkin)
 {
-	LogManager::getSingleton().logMessage("Bad attribute line: " + line +
-		" in skin " + pSkin->getName());
+	LogManager::getSingleton().logMessage("Bad attribute line: " + line + " in skin " + pSkin->getName());
 
 }
+
+bool SkinManager::hasSkinForGUID(Ogre::String guid)
+{
+	Ogre::ResourceManager::ResourceMapIterator it = SkinManager::getSingleton().getResourceIterator();
+	while (it.hasMoreElements())
+	{
+		Skin *skin = (Skin *)it.getNext().getPointer();
+
+		if (skin->guid == guid)
+			return true;
+	}
+	return false;
+}
+
 
 int SkinManager::getMaterialAlternatives(Ogre::String materialName, std::vector<Skin *> &skinVector)
 {
@@ -198,63 +208,22 @@ int SkinManager::getMaterialAlternatives(Ogre::String materialName, std::vector<
 }
 
 
-int SkinManager::getUsableSkins(Cache_Entry *e, std::vector<Skin *> &skins)
+int SkinManager::getUsableSkins(String guid, std::vector<Skin *> &skins)
 {
 	Ogre::ResourceManager::ResourceMapIterator it = SkinManager::getSingleton().getResourceIterator();
 	while (it.hasMoreElements())
 	{
 		Skin *skin = (Skin *)it.getNext().getPointer();
-		std::set < Ogre::String >::iterator mit;
-		for(mit = e->materials.begin(); mit != e->materials.end(); mit++)
-		{
-			if(skin->hasReplacementForMaterial(*mit))
-			{
-				bool found=false;
-				for(std::vector<Skin *>::iterator sit = skins.begin(); sit != skins.end(); sit++)
-				{
-					if(*sit == skin) // operator== implemented
-					{
-						found=true;
-						break;
-					}
-				}
-				if(found)
-					// already in there
-					continue;
-				skins.push_back(skin);
-			}
-		}
+
+		if (skin->guid == guid)
+			skins.push_back(skin);
 	}
-	return 0; // no errors
+	return 0;
 }
 
 int SkinManager::getSkinCount()
 {
 	return (int)mResourcesByHandle.size();
-}
-
-int SkinManager::serialize(Ogre::String &dst)
-{
-	ResourceManager::ResourceHandleMap::iterator it;
-	for(it = mResourcesByHandle.begin(); it != mResourcesByHandle.end(); it++)
-	{
-
-		String source = CACHE.getSkinSource(it->second->getOrigin());
-		if(!source.size()) continue;
-
-		std::string::size_type loc = source.find(".zip", 0);
-		if( loc != std::string::npos )
-			((Skin *)(it->second.getPointer()))->sourcetype = "Zip";
-		else
-			((Skin *)(it->second.getPointer()))->sourcetype = "FileSystem";
-
-		dst += "skin " + ((Skin *)(it->second.getPointer()))->name + "\n{\n";
-		int sres = ((Skin *)(it->second.getPointer()))->serialize(dst);
-		dst += "\torigin=" + it->second->getOrigin() + "\n";
-		dst += "\tsource=" + source + "\n";
-		dst += "}\n\n";
-	}
-	return 0;
 }
 
 int SkinManager::clear()

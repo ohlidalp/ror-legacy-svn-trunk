@@ -605,6 +605,17 @@ int Beam::loadTruck(const char* fname, SceneManager *manager, SceneNode *parent,
 			}
 			continue;
 		}
+		
+		if (!strncmp("guid", line, 4))
+		{
+			int result = sscanf(line,"guid %s", guid);
+			if (result < 1 || result == EOF)
+			{
+				LogManager::getSingleton().logMessage("Error parsing File (guid) " + String(fname) +" line " + StringConverter::toString(linecounter) + ". trying to continue ...");
+				continue;
+			}
+		}
+
 		if (!strncmp("set_beam_defaults", line, 17))
 		{
 			char default_beam_material2[256]="";
@@ -2289,18 +2300,16 @@ int Beam::loadTruck(const char* fname, SceneManager *manager, SceneNode *parent,
 				// create the meshs scenenode
 				props[free_prop].wheel = manager->getRootSceneNode()->createChildSceneNode();
 				// now create the mesh
-				MeshObject *mo = new MeshObject(manager, diwmeshname, "", props[free_prop].wheel, enable_background_loading);
+				MeshObject *mo = new MeshObject(manager, diwmeshname, "", props[free_prop].wheel, usedSkin, enable_background_loading);
 				mo->setSimpleMaterialColour(ColourValue(0, 0.5, 0.5));
-				mo->setSkin(usedSkin);
 				mo->setMaterialFunctionMapper(materialFunctionMapper);
 			}
 
 			// create the meshs scenenode
 			props[free_prop].snode = manager->getRootSceneNode()->createChildSceneNode();
 			// now create the mesh
-			props[free_prop].mo = new MeshObject(manager, meshname, "", props[free_prop].snode, enable_background_loading);
+			props[free_prop].mo = new MeshObject(manager, meshname, "", props[free_prop].snode, usedSkin, enable_background_loading);
 			props[free_prop].mo->setSimpleMaterialColour(ColourValue(1, 1, 0));
-			props[free_prop].mo->setSkin(usedSkin);
 			props[free_prop].mo->setMaterialFunctionMapper(materialFunctionMapper);
 			props[free_prop].mo->setCastShadows(shadowmode!=0);
 

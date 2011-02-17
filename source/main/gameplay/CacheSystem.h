@@ -60,6 +60,7 @@ public:
 	int addtimestamp;					// timestamp when this file was added to the cache
 	
 	Ogre::String uniqueid;				// file's unique id
+	Ogre::String guid;                  // global unique id
 	int version;						// file's version
 	
 	Ogre::String fext;					// file's extension
@@ -228,8 +229,6 @@ public:
 	//these location MUST include a path separator at the end!
 	void setLocation(String cachepath, String configpath);
 	
-	Ogre::String getSkinSource(Ogre::String filename);
-
 	// this is for stats only, maybe protect it by getter later
 	int changedFiles, newFiles, deletedFiles;
 	bool fileExists(Ogre::String);
@@ -260,8 +259,6 @@ protected:
 
 	int addUniqueString(std::set<Ogre::String> &list, Ogre::String str);
 
-	// map for skins and zips
-	std::map<Ogre::String, Ogre::String> skins_map;
 
 	// parses all files loaded with a certain extension
 	void parseFilesAllRG(Ogre::String ext);
@@ -301,7 +298,6 @@ protected:
 	void generateCache(bool forcefull=false);
 	Ogre::String formatEntry(int counter, Cache_Entry t);
 	Ogre::String formatInnerEntry(int counter, Cache_Entry t);
-	Ogre::String formatSkinEntry(int counter, Skin *skin);
 	void updateSingleTruckEntryCache(int number, Cache_Entry t);
 	void parseModAttribute(const Ogre::String& line, Cache_Entry& t);
 	void logBadTruckAttrib(const Ogre::String& line, Cache_Entry& t);
