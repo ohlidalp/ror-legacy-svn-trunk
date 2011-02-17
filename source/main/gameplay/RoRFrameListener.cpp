@@ -559,7 +559,7 @@ void RoRFrameListener::updateGUI(float dt)
 			ssm->modulate(current_truck, SS_MOD_AOA, absangle);
 		if (absangle>18.0 && ssm)
 			ssm->trigStart(current_truck, SS_TRIG_AOA);
-		else
+		else if(ssm)
 			ssm->trigStop(current_truck, SS_TRIG_AOA);
 #endif // OPENAL
 		if (angle>25.0) angle=25.0;
@@ -4409,7 +4409,15 @@ void RoRFrameListener::shutdown_pre()
 #endif //SOCKETW
 	showcredits=1;
 	loading_state=EXITING;
-	if(ow) OverlayManager::getSingleton().getByName("tracks/CreditsOverlay")->show();
+	if(ow)
+	{
+		OverlayManager::getSingleton().getByName("tracks/CreditsOverlay")->show();
+		// enforce 4:3 for credits screen
+		float w = mWindow->getWidth();
+		float h = mWindow->getHeight();
+		float sx = (4/3) / (w/h);
+		OverlayManager::getSingleton().getByName("tracks/CreditsOverlay")->setScale(sx, 1);
+	}
 #ifdef USE_OPENAL
 	if(ssm) ssm->soundEnable(false);
 #endif // OPENAL
@@ -7652,6 +7660,8 @@ void RoRFrameListener::windowResized(RenderWindow* rw)
 	rw->getMetrics(width, height, depth, left, top);
 	screenWidth = width;
 	screenHeight = height;
+
+	ow->windowResized(rw);
 
 	//update mouse area
 	INPUTENGINE.windowResized(rw);

@@ -34,6 +34,12 @@ along with Rigs of Rods.  If not, see <http://www.gnu.org/licenses/>.
 #include "OgreLineStreamOverlayElement.h"
 #include <OgrePanelOverlayElement.h>
 
+struct loadedOverlay_t
+{
+	float orgScaleX;
+	float orgScaleY;
+	Ogre::Overlay *o;
+};
 
 class OverlayWrapper
 {
@@ -51,6 +57,9 @@ public:
 	void hideFlashMessage();
 	void flashMessage(const char* txt, float time=1, float charHeight=-1);
 	void flashMessage(Ogre::String txt, float time=1, float charHeight=-1);
+
+	void windowResized(Ogre::RenderWindow* rw);
+	void resizeOverlay(struct loadedOverlay_t);
 
 
 //protected:
@@ -170,6 +179,9 @@ public:
 	float thrtop;
 	float thrheight;
 	float throffset;
+
+protected:
+	std::vector<struct loadedOverlay_t> overlays;
 
 };
 

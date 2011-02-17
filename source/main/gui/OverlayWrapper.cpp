@@ -64,9 +64,45 @@ void OverlayWrapper::placeNeedle(SceneNode *node, float x, float y, float len)
 
 Ogre::Overlay *OverlayWrapper::loadOverlay(Ogre::String name)
 {
-	return OverlayManager::getSingleton().getByName(name);
+	Overlay *o = OverlayManager::getSingleton().getByName(name);
+
+	struct loadedOverlay_t lo;
+	lo.o = o;
+	lo.orgScaleX = o->getScaleX();
+	lo.orgScaleY = o->getScaleY();
+
+	overlays.push_back(lo);
+	resizeOverlay(lo);
+	return o;
 }
 
+void OverlayWrapper::resizeOverlay(struct loadedOverlay_t lo)
+{
+	// enforce 4:3 for overlays
+	float w = win->getWidth();
+	float h = win->getHeight();
+	float s = (4.0f/3.0f) / (w/h);
+
+	// window is higher than wide
+	if(s > 1)
+		s = (3.0f/4.0f) / (h/w);
+
+	// originals
+	lo.o->setScale(lo.orgScaleX, lo.orgScaleY);
+	lo.o->setScroll(0, 0);
+
+	// now the new values
+	lo.o->setScale(s, s);
+	lo.o->scroll(1 - s, s - 1);
+}
+
+void OverlayWrapper::windowResized(Ogre::RenderWindow *rw)
+{
+	for(std::vector<struct loadedOverlay_t>::iterator it = overlays.begin(); it != overlays.end(); it++)
+	{
+		resizeOverlay(*it);
+	}
+}
 
 Ogre::OverlayElement *OverlayWrapper::loadOverlayElement(Ogre::String name)
 {
