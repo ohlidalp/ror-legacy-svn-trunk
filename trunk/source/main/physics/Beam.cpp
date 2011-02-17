@@ -474,6 +474,7 @@ Beam::Beam(int tnum, SceneManager *manager, SceneNode *parent, RenderWindow* win
 	default_node_volume=NODE_VOLUME_COEF_DEFAULT;
 	default_node_surface=NODE_SURFACE_COEF_DEFAULT;
 	default_node_loadweight=NODE_LOADWEIGHT_DEFAULT;
+	detacher_group_state=DEFAULT_DETACHER_GROUP; // initialize default(0) var for detacher_group_state
 	default_plastic_coef=0.0f;
 	strcpy(default_beam_material, "tracks/beam");
 	driversseatfound=false;
@@ -976,7 +977,7 @@ beam_t *Beam::addBeam(int id1, int id2)
 
 	int pos=add_beam(&nodes[id1], &nodes[id2], tsm, \
 			beamsRoot, type, default_break * default_break_scale, default_spring * default_spring_scale, \
-			default_damp * default_damp_scale, -1, -1, -1, 1, \
+			default_damp * default_damp_scale, detacher_group_state,-1, -1, -1, 1, \
 			default_beam_diameter);
 
 	beams[pos].type=BEAM_NORMAL;
@@ -1956,9 +1957,9 @@ void Beam::addWheel(SceneManager *manager, SceneNode *parent, Real radius, Real 
 	for (i=0; i<rays; i++)
 	{
 		//bounded
-		add_beam(&nodes[node1], &nodes[nodebase+i*2], manager, parent, BEAM_INVISIBLE, default_break, wspring, wdamp, -1.0, 0.66, 0.0);
+		add_beam(&nodes[node1], &nodes[nodebase+i*2], manager, parent, BEAM_INVISIBLE, default_break, wspring, wdamp, DEFAULT_DETACHER_GROUP, -1.0, 0.66, 0.0);
 		//bounded
-		add_beam(&nodes[node2], &nodes[nodebase+i*2+1], manager, parent, BEAM_INVISIBLE, default_break, wspring, wdamp, -1.0, 0.66, 0.0);
+		add_beam(&nodes[node2], &nodes[nodebase+i*2+1], manager, parent, BEAM_INVISIBLE, default_break, wspring, wdamp, DEFAULT_DETACHER_GROUP, -1.0, 0.66, 0.0);
 		add_beam(&nodes[node2], &nodes[nodebase+i*2], manager, parent, BEAM_INVISIBLE, default_break, wspring, wdamp);
 		add_beam(&nodes[node1], &nodes[nodebase+i*2+1], manager, parent, BEAM_INVISIBLE, default_break, wspring, wdamp);
 		//reinforcement
@@ -2166,8 +2167,8 @@ void Beam::addWheel2(SceneManager *manager, SceneNode *parent, Real radius, Real
 	{
 		//rim
 		//bounded
-		add_beam(&nodes[node1], &nodes[nodebase+i*2], manager, parent, BEAM_INVISIBLE, default_break, wspring, wdamp, -1.0, 0.66, 0.0);
-		add_beam(&nodes[node2], &nodes[nodebase+i*2+1], manager, parent, BEAM_INVISIBLE, default_break, wspring, wdamp, -1.0, 0.66, 0.0);
+		add_beam(&nodes[node1], &nodes[nodebase+i*2], manager, parent, BEAM_INVISIBLE, default_break, wspring, wdamp, DEFAULT_DETACHER_GROUP, -1.0, 0.66, 0.0);
+		add_beam(&nodes[node2], &nodes[nodebase+i*2+1], manager, parent, BEAM_INVISIBLE, default_break, wspring, wdamp, DEFAULT_DETACHER_GROUP, -1.0, 0.66, 0.0);
 		add_beam(&nodes[node2], &nodes[nodebase+i*2], manager, parent, BEAM_INVISIBLE, default_break, wspring, wdamp);
 		add_beam(&nodes[node1], &nodes[nodebase+i*2+1], manager, parent, BEAM_INVISIBLE, default_break, wspring, wdamp);
 		//reinforcement
@@ -2215,9 +2216,9 @@ void Beam::addWheel2(SceneManager *manager, SceneNode *parent, Real radius, Real
 		pos=add_beam(&nodes[nodebase+2*rays+i*2+1], &nodes[nodebase+((i+1)%rays)*2], manager, parent, BEAM_INVISIBLE, default_break, wspring2, wdamp2);
 		pressure_beams[free_pressure_beam]=pos; free_pressure_beam++;
 		//backpressure, bounded
-		pos=add_beam(&nodes[node1], &nodes[nodebase+2*rays+i*2], manager, parent, BEAM_INVISIBLE, default_break, wspring2, wdamp2, -1.0, radius/radius2, 0.0);
+		pos=add_beam(&nodes[node1], &nodes[nodebase+2*rays+i*2], manager, parent, BEAM_INVISIBLE, default_break, wspring2, wdamp2, DEFAULT_DETACHER_GROUP, -1.0, radius/radius2, 0.0);
 		pressure_beams[free_pressure_beam]=pos; free_pressure_beam++;
-		pos=add_beam(&nodes[node2], &nodes[nodebase+2*rays+i*2+1], manager, parent, BEAM_INVISIBLE, default_break, wspring2, wdamp2, -1.0, radius/radius2, 0.0);
+		pos=add_beam(&nodes[node2], &nodes[nodebase+2*rays+i*2+1], manager, parent, BEAM_INVISIBLE, default_break, wspring2, wdamp2, DEFAULT_DETACHER_GROUP, -1.0, radius/radius2, 0.0);
 		pressure_beams[free_pressure_beam]=pos; free_pressure_beam++;
 	}
 	//wheel object
@@ -2318,7 +2319,7 @@ void Beam::init_node(int pos, Real x, Real y, Real z, int type, Real m, int iswh
 	if (type==NODE_LOADED) masscount++;
 }
 
-int Beam::add_beam(node_t *p1, node_t *p2, SceneManager *manager, SceneNode *parent, int type, Real strength, Real spring, Real damp, Real length, float shortbound, float longbound, float precomp,float diameter)
+int Beam::add_beam(node_t *p1, node_t *p2, SceneManager *manager, SceneNode *parent, int type, Real strength, Real spring, Real damp, int detachgroupstate, Real length, float shortbound, float longbound, float precomp,float diameter)
 {
 	int pos=free_beam;
 
@@ -2326,6 +2327,7 @@ int Beam::add_beam(node_t *p1, node_t *p2, SceneManager *manager, SceneNode *par
 	beams[pos].p2=p2;
 	beams[pos].p2truck=0;
 	beams[pos].type=type;
+	beams[pos].detacher_group=detachgroupstate;
 	if (length<0.0)
 	{
 		//calculate the length

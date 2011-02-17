@@ -241,15 +241,35 @@ void Beam::calcForcesEuler(int doUpdate, Real dt, int step, int maxstep, Beam** 
 					//connected to it.
 					if (!((beams[i].p1->contacter && nodeBeamConnections(beams[i].p1->pos)<3) || (beams[i].p2->contacter && nodeBeamConnections(beams[i].p2->pos)<3)))
 					{
-						beams[i].broken=1;
-						beams[i].disabled=true;
-						sflen=0.0f;
-						beams[i].p1->isSkin=true;
-						beams[i].p2->isSkin=true;
+						sflen = 0.0f;
+						beams[i].broken     = true;
+						beams[i].disabled   = true;
+						beams[i].p1->isSkin = true;
+						beams[i].p2->isSkin = true;
 
 						if(beambreakdebug)
 						{
 							LogManager::getSingleton().logMessage(" XXX Beam " + StringConverter::toString(i) + " just broke with force " + StringConverter::toString(flen) + " / " + StringConverter::toString(beams[i].strength) + ". It was between nodes " + StringConverter::toString(beams[i].p1->id) + " and " + StringConverter::toString(beams[i].p2->id) + ".");
+						}
+						//detachergroup check: beam[i] is already broken, check detacher group# == 0/default skip the check ( performance bypass for beams with default setting )
+						if (beams[i].detacher_group)
+						{
+							//cycle once through the other beams
+							for (int j = 0; j < free_beam; j++)
+							{
+								// beam[i] detacher group# == checked beams detacher group# -> delete & disable checked beam
+								if (beams[j].detacher_group == beams[i].detacher_group)
+								{
+									beams[j].broken     = true;
+									beams[j].disabled   = true;
+									beams[j].p1->isSkin = true;
+									beams[j].p2->isSkin = true;
+									if(beambreakdebug)
+									{
+										LogManager::getSingleton().logMessage("Deleting Detacher BeamID: " + StringConverter::toString(j) + ", Detacher Group: " + StringConverter::toString(beams[i].detacher_group)+  ", trucknum: " + StringConverter::toString(trucknum));
+									}
+								}
+							}
 						}
 					} else beams[i].strength=2.0f*beams[i].minmaxposnegstress;
 

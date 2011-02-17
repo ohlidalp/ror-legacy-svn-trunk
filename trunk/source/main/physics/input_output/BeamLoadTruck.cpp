@@ -211,6 +211,20 @@ int Beam::loadTruck(const char* fname, SceneManager *manager, SceneNode *parent,
 		if (!strcmp("flares2",line)) {mode=65;continue;};
 		if (!strcmp("animators",line)) {mode=66;continue;};
 		if (!strcmp("nodecollision",line)) {mode=68;continue;};
+		if (!strncmp("detacher_group", line, 14))
+		{
+			int detgroup = DEFAULT_DETACHER_GROUP;
+			int result = sscanf(line,"detacher_group %i", &detgroup);
+			if (result < 1 || result == EOF) 
+			{
+				// set default (0) as var for the add_beam(detacher_group) until a new valid detacher group# is parsed
+				detacher_group_state = DEFAULT_DETACHER_GROUP;
+				continue;
+			}
+			// valid truck line input ( int >= 1 ), set it as var for the add_beam(detacher_group) until a new valid detacher group# is parsed
+			detacher_group_state = detgroup;
+			continue;
+		}
 		if (!strncmp("enable_advanced_deformation", line, 27))
 		{
 			// parse the optional threshold value
@@ -1006,7 +1020,7 @@ int Beam::loadTruck(const char* fname, SceneManager *manager, SceneNode *parent,
 
 			int pos=add_beam(&nodes[id1], &nodes[id2], manager, \
 				parent, type, default_break * default_break_scale, default_spring * default_spring_scale, \
-				default_damp * default_damp_scale, -1, -1, -1, 1, \
+				default_damp * default_damp_scale, detacher_group_state, -1, -1, -1, 1, \
 				default_beam_diameter);
 
 			// now 'parse' the options
@@ -1099,7 +1113,7 @@ int Beam::loadTruck(const char* fname, SceneManager *manager, SceneNode *parent,
 				}
 				options_pointer++;
 			}
-			int pos = add_beam(&nodes[id1], &nodes[id2], manager, parent, htype, default_break*4.0, s, d, -1.0, sbound, lbound, precomp);
+			int pos = add_beam(&nodes[id1], &nodes[id2], manager, parent, htype, default_break*4.0, s, d, detacher_group_state, -1.0, sbound, lbound, precomp);
 			beams[pos].shock = &shocks[free_shock];
 			shocks[free_shock].beamid = pos;
 			shocks[free_shock].flags = shockflag;
@@ -1192,7 +1206,7 @@ int Beam::loadTruck(const char* fname, SceneManager *manager, SceneNode *parent,
 				}
 				options_pointer++;
 			}
-			int pos=add_beam(&nodes[id1], &nodes[id2], manager, parent, htype, default_break*4.0, sin, din, -1.0, sbound, lbound, precomp);
+			int pos=add_beam(&nodes[id1], &nodes[id2], manager, parent, htype, default_break*4.0, sin, din, detacher_group_state, -1.0, sbound, lbound, precomp);
 			beams[pos].bounded=SHOCK2;
 			beams[pos].shock = &shocks[free_shock];
 			shocks[free_shock].springin = sin;
@@ -1284,7 +1298,7 @@ int Beam::loadTruck(const char* fname, SceneManager *manager, SceneNode *parent,
 				hydroInertia->setCmdKeyDelay(free_hydro,inertia_startDelay,inertia_stopDelay, String (inertia_default_startFunction), String (inertia_default_stopFunction));
 
 
-			int pos=add_beam(&nodes[id1], &nodes[id2], manager, parent, htype, default_break * default_break_scale, default_spring * default_spring_scale, default_damp * default_damp_scale);
+			int pos=add_beam(&nodes[id1], &nodes[id2], manager, parent, htype, default_break * default_break_scale, default_spring * default_spring_scale, default_damp * default_damp_scale, detacher_group_state);
 			hydro[free_hydro]=pos;free_hydro++;
 			beams[pos].Lhydro=beams[pos].L;
 			beams[pos].hydroRatio=ratio;
@@ -1390,7 +1404,7 @@ int Beam::loadTruck(const char* fname, SceneManager *manager, SceneNode *parent,
 			if(hydroInertia && (inertia_startDelay > 0 || inertia_stopDelay > 0))
 				hydroInertia->setCmdKeyDelay(free_hydro,inertia_startDelay,inertia_stopDelay, String (inertia_default_startFunction), String (inertia_default_stopFunction));
 
-			int pos=add_beam(&nodes[id1], &nodes[id2], manager, parent, htype, default_break * default_break_scale, default_spring * default_spring_scale, default_damp * default_damp_scale);
+			int pos=add_beam(&nodes[id1], &nodes[id2], manager, parent, htype, default_break * default_break_scale, default_spring * default_spring_scale, default_damp * default_damp_scale, detacher_group_state);
 			hydro[free_hydro]=pos;
 			free_hydro++;
 			beams[pos].Lhydro=beams[pos].L;
@@ -1751,7 +1765,7 @@ int Beam::loadTruck(const char* fname, SceneManager *manager, SceneNode *parent,
 				continue;
 			}
 
-			int pos=add_beam(&nodes[id1], &nodes[id2], manager, parent, htype, default_break * default_break_scale, default_spring * default_spring_scale, default_damp * default_damp_scale, -1, -1, -1, 1, default_beam_diameter);
+			int pos=add_beam(&nodes[id1], &nodes[id2], manager, parent, htype, default_break * default_break_scale, default_spring * default_spring_scale, default_damp * default_damp_scale, detacher_group_state, -1, -1, -1, 1, default_beam_diameter);
 			// now 'parse' the options
 			options_pointer = options;
 			while (*options_pointer != 0)
@@ -1889,7 +1903,7 @@ int Beam::loadTruck(const char* fname, SceneManager *manager, SceneNode *parent,
 				LogManager::getSingleton().logMessage("cannot create rope: beams limit reached ("+StringConverter::toString(MAX_BEAMS)+"): " + String(fname) +" line " + StringConverter::toString(linecounter) + ". trying to continue ...");
 				continue;
 			}
-			int pos=add_beam(&nodes[id1], &nodes[id2], manager, parent, BEAM_NORMAL, default_break * default_break_scale, default_spring * default_spring_scale, default_damp * default_damp_scale);
+			int pos=add_beam(&nodes[id1], &nodes[id2], manager, parent, BEAM_NORMAL, default_break * default_break_scale, default_spring * default_spring_scale, default_damp * default_damp_scale, detacher_group_state);
 			beams[pos].bounded=ROPE;
 
 			rope_t r;
