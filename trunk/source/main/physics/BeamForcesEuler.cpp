@@ -186,8 +186,10 @@ void Beam::calcForcesEuler(int doUpdate, Real dt, int step, int maxstep, Beam** 
 
 						//Sound effect
 						//Sound volume depends on the energy lost due to deformation (which gets converted to sound (and thermal) energy)
-						/*ssm->modulate(trucknum, SS_MOD_CREAK, deform*k*(difftoBeamL+deform*0.5f));
-						ssm->trigOnce(trucknum, SS_TRIG_CREAK);*/
+						/*
+						if(ssm) ssm->modulate(trucknum, SS_MOD_CREAK, deform*k*(difftoBeamL+deform*0.5f));
+						if(ssm) ssm->trigOnce(trucknum, SS_TRIG_CREAK);
+						*/
 
 						beams[i].minmaxposnegstress=std::min(beams[i].maxposstress, -beams[i].maxnegstress);
 						beams[i].minmaxposnegstress=std::min(beams[i].minmaxposnegstress, beams[i].strength);
@@ -213,8 +215,10 @@ void Beam::calcForcesEuler(int doUpdate, Real dt, int step, int maxstep, Beam** 
 
 						//Sound effect
 						//Sound volume depends on the energy lost due to deformation (which gets converted to sound (and thermal) energy)
-						/*ssm->modulate(trucknum, SS_MOD_CREAK, deform*k*(difftoBeamL+deform*0.5f));
-						ssm->trigOnce(trucknum, SS_TRIG_CREAK);*/
+						/*
+						if(ssm) ssm->modulate(trucknum, SS_MOD_CREAK, deform*k*(difftoBeamL+deform*0.5f));
+						if(ssm) ssm->trigOnce(trucknum, SS_TRIG_CREAK);
+						*/
 
 						beams[i].minmaxposnegstress=std::min(beams[i].maxposstress, -beams[i].maxnegstress);
 						beams[i].minmaxposnegstress=std::min(beams[i].minmaxposnegstress, beams[i].strength);
