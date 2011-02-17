@@ -41,12 +41,8 @@ public:
 	Ogre::String thumbnail;
 	Ogre::String description;
 	Ogre::String authorName;
-	Ogre::String skintype;
-	Ogre::String source;
-	Ogre::String sourcetype;
-	Ogre::String origin;
+	Ogre::String guid;
 	int authorID;
-	bool loaded;
 
 	int addMaterialReplace(Ogre::String from, Ogre::String to);
 	int hasReplacementForMaterial(Ogre::String material);

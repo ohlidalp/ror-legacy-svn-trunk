@@ -686,6 +686,8 @@ struct rig
 	FlexBody *flexbodies[MAX_FLEXBODIES];
 	int free_flexbody;
 
+
+	char guid[128];
 };
 
 // some non-beam structs

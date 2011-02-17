@@ -22,7 +22,6 @@ along with Rigs of Rods.  If not, see <http://www.gnu.org/licenses/>.
 #include "CacheSystem.h"
 #include "sha1.h"
 #include "ImprovedConfigFile.h"
-#include "skinmanager.h"
 #include "Settings.h"
 #include "language.h"
 
@@ -64,8 +63,6 @@ CacheSystem::CacheSystem()
 	known_extensions.push_back("airplane");
 	known_extensions.push_back("trailer");
 	known_extensions.push_back("load");
-	// skins:
-	known_extensions.push_back("skin");
 
 	if(SETTINGS.getSetting("streamCacheGenerationOnly") == "Yes")
 	{
@@ -401,6 +398,18 @@ void CacheSystem::parseModAttribute(const String& line, Cache_Entry& t)
 		// Set
 		t.uniqueid = params[1];
 	}
+	else if (attrib == "guid")
+	{
+		// Check params
+		if (params.size() != 2)
+		{
+			logBadTruckAttrib(line, t);
+			return;
+		}
+		// Set
+		t.guid = params[1];
+		StringUtil::trim(t.guid);
+	}
 	else if (attrib == "version")
 	{
 		// Check params
@@ -561,12 +570,11 @@ bool CacheSystem::loadCache()
 	LogManager::getSingleton().logMessage("CacheSystem::loadCache2");
 
 	Cache_Entry t;
-	Skin *pSkin;
 	int mode = 0;
 	while( !stream->eof() )
 	{
 		line = stream->getLine();
-		if(StringUtil::startsWith(line, "shaone=") || StringUtil::startsWith(line, "modcount=") || StringUtil::startsWith(line, "cacheformat=") || StringUtil::startsWith(line, "skincount="))
+		if(StringUtil::startsWith(line, "shaone=") || StringUtil::startsWith(line, "modcount=") || StringUtil::startsWith(line, "cacheformat="))
 			// ignore here
 			continue;
 
@@ -590,27 +598,6 @@ bool CacheSystem::loadCache()
 					// Skip to and over next {
 					stream->skipLine("{");
 				}
-				if(line.substr(0,4) == "skin")
-				{
-					String sname = "skin";
-					if(line.size() > 7)
-					{
-						sname = line.substr(5);
-						StringUtil::trim(sname);
-					}
-					// "skin" + StringConverter::toString(SkinManager::getSingleton().getSkinCount())
-					try
-					{
-						pSkin = (Skin *)SkinManager::getSingleton().create(sname, ResourceGroupManager::DEFAULT_RESOURCE_GROUP_NAME).getPointer();
-						pSkin->_notifyOrigin(stream->getName());
-						// Skip to and over next {
-						stream->skipLine("{");
-						mode = 2;
-					} catch(...)
-					{
-						continue;
-					}
-				}
 			} else if(mode == 1)
 			{
 				// Already in mod
@@ -624,19 +611,6 @@ bool CacheSystem::loadCache()
 				else
 				{
 					parseModAttribute(line, t);
-				}
-			} else if(mode == 2)
-			{
-				// skin
-				if (line == "}")
-				{
-					// Finished
-					pSkin = 0;
-					mode = 0;
-				}
-				else
-				{
-					SkinManager::getSingleton().parseAttribute(line, pSkin);
 				}
 			}
 		}
@@ -981,6 +955,8 @@ Ogre::String CacheSystem::formatInnerEntry(int counter, Cache_Entry t)
 			t.hash = "none";
 		if(t.uniqueid.empty())
 			t.uniqueid = "no-uid";
+		if(t.guid.empty())
+			t.guid = "no-guid";
 		if(t.fname_without_uid.empty())
 			t.fname_without_uid = "unkown";
 		if(t.filecachename.empty())
@@ -999,6 +975,7 @@ Ogre::String CacheSystem::formatInnerEntry(int counter, Cache_Entry t)
 		result += "\thash="+t.hash+"\n";
 		result += "\tcategoryid="+StringConverter::toString(t.categoryid)+"\n";
 		result += "\tuniqueid="+t.uniqueid+"\n";
+		result += "\tguid="+t.guid+"\n";
 		result += "\tversion="+StringConverter::toString(t.version)+"\n";
 		result += "\tfilecachename="+t.filecachename+"\n";
 		//result += "\tnumauthors="+StringConverter::toString(t.authors.size())+"\n";
@@ -1106,17 +1083,6 @@ Ogre::String CacheSystem::formatEntry(int counter, Cache_Entry t)
 	return result;
 }
 
-Ogre::String CacheSystem::formatSkinEntry(int counter, Skin *skin)
-{
-	String result = "skin\n";
-	result += "{\n";
-	result += "\tname="+skin->name+"\n";
-	result += "\tthumbimg="+skin->thumbnail+"\n";
-	// todo: finish implementation ...
-	result += "}\n\n";
-	return result;
-}
-
 void CacheSystem::writeGeneratedCache()
 {
 	String path = getCacheConfigFilename(true);
@@ -1127,7 +1093,6 @@ void CacheSystem::writeGeneratedCache()
 		return;
 	fprintf(f, "shaone=%s\n", const_cast<char*>(currentSHA1.c_str()));
 	fprintf(f, "modcount=%d\n", (int)entries.size());
-	fprintf(f, "skincount=%d\n", SkinManager::getSingleton().getSkinCount());
 	fprintf(f, "cacheformat=%s\n", CACHE_FILE_FORMAT);
 
 	// mods
@@ -1139,12 +1104,6 @@ void CacheSystem::writeGeneratedCache()
 		fprintf(f, "%s", formatEntry(counter, *it).c_str());
 		counter++;
 	}
-
-
-	// skins
-	String skinString = "";
-	SkinManager::getSingleton().serialize(skinString);
-	fprintf(f, "%s", skinString.c_str());
 
 	// close
 	fclose(f);
@@ -1248,11 +1207,6 @@ void CacheSystem::addFile(String filename, String archiveType, String archiveDir
 {
 	LogManager::getSingleton().logMessage("Preparing to add " + filename);
 
-	if(ext == "skin")
-	{
-		skins_map[filename] = archiveDirectory;
-		return;
-	}
 	//read first line
 	Cache_Entry entry;
 	if(!resourceExistsInAllGroups(filename))
@@ -1404,6 +1358,16 @@ void CacheSystem::fillTruckDetailInfo(Cache_Entry &entry, Ogre::DataStreamPtr ds
 		if (!strncmp("section",line, 7) && mode!=50) {mode=51; /* NOT continue */};
 		/* 52 = reserved for ignored section */
 
+
+		
+		if (!strncmp("guid", line, 4))
+		{
+			char guid[128]="";
+			int result = sscanf(line,"guid %s", guid);
+			entry.guid = String(guid);
+			StringUtil::trim(entry.guid);
+			continue;
+		}
 
 		if (!strcmp("commandlist",line))
 			continue;
@@ -1748,24 +1712,7 @@ void CacheSystem::fillTruckDetailInfo(Cache_Entry &entry, Ogre::DataStreamPtr ds
 					LogManager::getSingleton().logMessage("Error parsing File (Prop) " + String(fname) +" line " + StringConverter::toString(linecounter) + ". trying to continue ...");
 					continue;
 				}
-				/*
-				// XXX TODO fix for skins at some point
-				Entity *te=0;
-				String propMats="";
-				try
-				{
-					if(smgr)
-					{
-						te = smgr->createEntity("CacheEntityMaterialTest", String(meshname));
-						if(!te) continue;
-						addMeshMaterials(entry, te);
-						smgr->destroyEntity(te);
-					}
-				}catch(...)
-				{
-					LogManager::getSingleton().logMessage("error loading mesh: "+String(meshname));
-				}
-				*/
+
 				entry.propscount++;
 				continue;
 			}
@@ -1986,24 +1933,6 @@ void CacheSystem::fillTruckDetailInfo(Cache_Entry &entry, Ogre::DataStreamPtr ds
 					LogManager::getSingleton().logMessage("Error parsing File (Flexbodies) " + String(fname) +" line " + StringConverter::toString(linecounter) + ". trying to continue ...");
 					continue;
 				}
-				/*
-				// XXX TODO fix for skins at some point
-				Entity *te=0;
-				String propMats="";
-				try
-				{
-					if(smgr)
-					{
-						te = smgr->createEntity("CacheEntityMaterialTest", String(meshname));
-						if(!te) continue;
-						addMeshMaterials(entry, te);
-						smgr->destroyEntity(te);
-					}
-				}catch(...)
-				{
-					LogManager::getSingleton().logMessage("error loading mesh: "+String(meshname));
-				}
-				*/
 				entry.flexbodiescount++;
 				continue;
 			}
@@ -2123,12 +2052,6 @@ Ogre::String CacheSystem::addMeshMaterials(Cache_Entry &entry, Ogre::Entity *e)
 		addUniqueString(entry.materials, subent->getMaterialName());
 	}
 	return materials;
-}
-
-
-Ogre::String CacheSystem::getSkinSource(Ogre::String filename)
-{
-	return skins_map[filename];
 }
 
 int CacheSystem::getTimeStamp()

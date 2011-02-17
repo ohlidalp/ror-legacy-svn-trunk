@@ -106,6 +106,7 @@ protected:
 	void exploreStreams();
 	void exploreTerrains();
 	void exploreVehicles();
+	void explorePacks();
 };
 
 #endif //RIGSOFRODS_H__

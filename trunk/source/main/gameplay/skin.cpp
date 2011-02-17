@@ -27,47 +27,47 @@ along with Rigs of Rods.  If not, see <http://www.gnu.org/licenses/>.
 using namespace Ogre;
 
 Skin::Skin(ResourceManager* creator, const String& name, ResourceHandle handle, const String& group, bool isManual, ManualResourceLoader* loader) : 
-Ogre::Resource(creator, name, handle, group, isManual, loader), loaded(false)
+	Ogre::Resource(creator, name, handle, group, isManual, loader)
 {
 	this->name = name;
 	this->thumbnail = "";
 	this->description = "";
 	this->authorName = "";
 	this->authorID = -1;
-	LogManager::getSingleton().logMessage("Skin::Skin("+name+")");
+	//LogManager::getSingleton().logMessage("Skin::Skin("+name+")");
 }
 
 Skin::~Skin()
 {
-	LogManager::getSingleton().logMessage("Skin::~Skin("+name+")");
+	//LogManager::getSingleton().logMessage("Skin::~Skin("+name+")");
 }
 
 void Skin::loadImpl()
 {
-	LogManager::getSingleton().logMessage("Skin::loadImpl("+name+")");
+	//LogManager::getSingleton().logMessage("Skin::loadImpl("+name+")");
 }
 
 void Skin::unloadImpl()
 {
-	LogManager::getSingleton().logMessage("Skin::unloadImpl("+name+")");
+	//LogManager::getSingleton().logMessage("Skin::unloadImpl("+name+")");
 }
 
 size_t Skin::calculateSize() const
 {
-	LogManager::getSingleton().logMessage("Skin::calculateSize("+name+")");
+	//LogManager::getSingleton().logMessage("Skin::calculateSize("+name+")");
 	return 0;
 }
 
 int Skin::addMaterialReplace(Ogre::String from, Ogre::String to)
 {
-	LogManager::getSingleton().logMessage("Skin::addMaterialReplace("+from+","+to+")");
+	//LogManager::getSingleton().logMessage("Skin::addMaterialReplace("+from+","+to+")");
 	replaceMaterials[from] = to;
 	return 0;
 }
 
 int Skin::hasReplacementForMaterial(Ogre::String material)
 {
-	LogManager::getSingleton().logMessage("Skin::hasReplacementForMaterial("+material+") = " + StringConverter::toString((int)replaceMaterials.count(material)));
+	//LogManager::getSingleton().logMessage("Skin::hasReplacementForMaterial("+material+") = " + StringConverter::toString((int)replaceMaterials.count(material)));
 	int res = (int)replaceMaterials.count(material);
 	if(!res)
 		return (int)replaceMaterials.count(CACHE.stripUIDfromString(material));
@@ -76,7 +76,7 @@ int Skin::hasReplacementForMaterial(Ogre::String material)
 
 Ogre::String Skin::getReplacementForMaterial(Ogre::String material)
 {
-	LogManager::getSingleton().logMessage("Skin::getReplacementForMaterial("+material+") = " + replaceMaterials[material]);
+	//LogManager::getSingleton().logMessage("Skin::getReplacementForMaterial("+material+") = " + replaceMaterials[material]);
 	String res = replaceMaterials[material];
 	if(res.empty())
 		return replaceMaterials[CACHE.stripUIDfromString(material)];
@@ -91,7 +91,6 @@ int Skin::serialize(Ogre::String &dst)
 	if(this->authorID != -1)       dst += "\tAuthorID=" + StringConverter::toString(this->authorID) + "\n";
 	if(!this->authorName.empty())  dst += "\tAuthorName=" + this->authorName + "\n";
 	if(!this->description.empty()) dst += "\tDescription=" + this->description + "\n";
-	if(!this->sourcetype.empty())  dst += "\tSourceType=" + this->sourcetype + "\n";
 
 	for(it = replaceMaterials.begin(); it != replaceMaterials.end(); it++)
 		dst += "\tReplaceMaterial=" + it->first + " " + it->second + "\n";
@@ -115,7 +114,7 @@ void Skin::replaceMeshMaterials(Ogre::Entity *e)
 			if(this->hasReplacementForMaterial(sm->getMaterialName()))
 			{
 				String newMat = this->getReplacementForMaterial(sm->getMaterialName());
-				LogManager::getSingleton().logMessage("Skin: replaced mesh material " + sm->getMaterialName() + " with new new material " + newMat + " on entity " + e->getName());
+				//LogManager::getSingleton().logMessage("Skin: replaced mesh material " + sm->getMaterialName() + " with new new material " + newMat + " on entity " + e->getName());
 				sm->setMaterialName(newMat);
 			}
 		}
@@ -127,7 +126,7 @@ void Skin::replaceMeshMaterials(Ogre::Entity *e)
 		if(this->hasReplacementForMaterial(subent->getMaterialName()))
 		{
 			String newMat = this->getReplacementForMaterial(subent->getMaterialName());
-			LogManager::getSingleton().logMessage("Skin: replaced mesh material " + subent->getMaterialName() + " with new new material " + newMat + " on entity " + e->getName());
+			//LogManager::getSingleton().logMessage("Skin: replaced mesh material " + subent->getMaterialName() + " with new new material " + newMat + " on entity " + e->getName());
 			subent->setMaterialName(newMat);
 		}
 	}

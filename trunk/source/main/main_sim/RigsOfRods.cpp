@@ -345,8 +345,13 @@ bool RigsOfRods::setup(void)
 	//main synced streams
 	ResourceGroupManager::getSingleton().addResourceLocation(SETTINGS.getSetting("Streams Path"), "FileSystem", "Streams");
 	exploreStreams(); //this will explore subdirs and register them as Packs dirs
-	//cache, flat
+
+
 	ResourceGroupManager::getSingleton().addResourceLocation(SETTINGS.getSetting("User Path")+"packs", "FileSystem", "Packs", true);
+	ResourceGroupManager::getSingleton().addResourceLocation(SETTINGS.getSetting("User Path")+"mods", "FileSystem", "Packs", true);
+	explorePacks(); //this will explore subdirs and register them as Packs dirs
+
+
 	//user vehicles, to be processed later by the cache system
 	ResourceGroupManager::getSingleton().addResourceLocation(SETTINGS.getSetting("User Path")+"vehicles", "FileSystem", "VehicleFolders");
 	exploreVehicles(); //this will add subdirs contents into General
@@ -505,6 +510,25 @@ void RigsOfRods::exploreStreams()
 	}
 }
 
+void RigsOfRods::explorePacks()
+{
+	String dirsep="/";
+#if OGRE_PLATFORM == OGRE_PLATFORM_WIN32
+	dirsep="\\";
+#endif
+	// load all skins
+	ResourceGroupManager& rgm = ResourceGroupManager::getSingleton();
+	
+	FileInfoListPtr files = rgm.findResourceFileInfo("Packs", "*.skinzip");
+	FileInfoList::iterator iterFiles = files->begin();
+	for (; iterFiles!= files->end(); ++iterFiles)
+	{
+		// always load skin zips
+		String fullpath=iterFiles->archive->getName()+dirsep;
+		rgm.addResourceLocation(fullpath+iterFiles->filename, "Zip", "Cache", false);
+	}
+}
+
 void RigsOfRods::exploreVehicles()
 {
 	String dirsep="/";
@@ -520,9 +544,10 @@ void RigsOfRods::exploreVehicles()
 		if ((*iterFiles).filename==String(".svn")) continue;
 		//trying to get the full path
 		String fullpath=(*iterFiles).archive->getName()+dirsep;
-		rgm.addResourceLocation(fullpath+(*iterFiles).filename, "FileSystem", "VehicleFolders");
+		// new: recursive
+		rgm.addResourceLocation(fullpath+(*iterFiles).filename, "FileSystem", "VehicleFolders", true);
 		//add textures/temp for unpacked ddx support
-		rgm.addResourceLocation(fullpath+(*iterFiles).filename+dirsep+"textures"+dirsep+"temp", "FileSystem", "VehicleFolders");
+		//rgm.addResourceLocation(fullpath+(*iterFiles).filename+dirsep+"textures"+dirsep+"temp", "FileSystem", "VehicleFolders", true);
 	}
 	LogManager::getSingleton().logMessage("initialiseResourceGroups: VehicleFolders");
 	try

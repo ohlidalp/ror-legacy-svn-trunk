@@ -33,7 +33,7 @@ along with Rigs of Rods.  If not, see <http://www.gnu.org/licenses/>.
 class MeshObject : public Ogre::ResourceBackgroundQueue::Listener, public Ogre::Resource::Listener
 {
 public:
-	MeshObject(Ogre::SceneManager *smgr, Ogre::String meshName, Ogre::String entityName, Ogre::SceneNode *sceneNode=0, bool backgroundLoading=false)
+	MeshObject(Ogre::SceneManager *smgr, Ogre::String meshName, Ogre::String entityName, Ogre::SceneNode *sceneNode=0, Skin *s=0, bool backgroundLoading=false)
 		: smgr(smgr)
 		, meshName(meshName)
 		, entityName(entityName)
@@ -43,7 +43,7 @@ public:
 		, loaded(false)
 		, enableSimpleMaterial(false)
 		, materialName()
-		, skin(0)
+		, skin(s)
 		, castshadows(true)
 		, mfm(0)
 		, enabled(true)
@@ -71,18 +71,6 @@ public:
 			// already loaded, so do it afterwards manually
 			MaterialFunctionMapper::replaceSimpleMeshMaterials(ent, simpleMatColour);
 		}
-	}
-
-	void setSkin(Skin *s)
-	{
-		if(!s) return;
-		skin = s;
-		if(loaded && ent)
-		{
-			// already loaded, so do it afterwards manually
-			skin->replaceMeshMaterials(ent);
-		}
-
 	}
 
 	void setMaterialFunctionMapper(MaterialFunctionMapper *m)
