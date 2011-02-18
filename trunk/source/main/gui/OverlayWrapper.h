@@ -70,7 +70,7 @@ public:
 	void placeNeedle(Ogre::SceneNode *node, float x, float y, float len);
 	void updateStats(bool detailed=false);
 
-	Ogre::Overlay *loadOverlay(Ogre::String name);
+	Ogre::Overlay *loadOverlay(Ogre::String name, bool autoResizeRation=true);
 	Ogre::OverlayElement *loadOverlayElement(Ogre::String name);
 
 	Ogre::RenderWindow* win;
