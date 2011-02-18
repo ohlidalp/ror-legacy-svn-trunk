@@ -168,7 +168,7 @@ bool RigsOfRods::setup(void)
 	Ogre::MovableObject::setDefaultVisibilityFlags(DEPTHMAP_ENABLED);
 
 
-	CACHE.setLocation(SETTINGS.getSetting("Cache Path"), SETTINGS.getSetting("Config Root"));
+	//CACHE.setLocation(SETTINGS.getSetting("Cache Path"), SETTINGS.getSetting("Config Root"));
 
 	ColoredTextAreaOverlayElementFactory *cef = new ColoredTextAreaOverlayElementFactory();
 	OverlayManager::getSingleton().addOverlayElementFactory(cef);

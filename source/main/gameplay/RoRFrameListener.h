@@ -202,7 +202,6 @@ protected:
 	MapControl *bigMap;
 	StaticGeometry *bakesg;
 	int interactivemap;
-    bool xfire_enabled;
 	int externalCameraMode;
 	int netPointToUID;
 
@@ -280,7 +279,6 @@ protected:
 	int changeGrassBuffer(unsigned char *data, int relchange);
 	void updateGrass(Vector3 pos);
 	void initSoftShadows();
-	void initSSAO();
 	void initHDR();
 
 	// WindowEventListener
@@ -469,7 +467,6 @@ protected:
 
 	int objcounter;
 	char terrainmap[256];
-	Cache_Entry loaded_terrain;
 
 	Ogre::String terrainUID;
 	Road *road;
@@ -497,9 +494,6 @@ protected:
 
 	Network *net;
 	ProceduralManager *proceduralManager;
-
-
-	void updateXFire();
 	int gameStartTime;
 
 #ifdef USE_PAGED

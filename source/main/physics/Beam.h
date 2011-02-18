@@ -342,7 +342,6 @@ public:
 	float *mapsizex, *mapsizez;
 	float refpressure;
 	PointColDetector *pointCD;
-	Cache_Entry cacheEntryInfo;
 
 	pthread_mutex_t work_mutex;
 	pthread_cond_t work_cv;

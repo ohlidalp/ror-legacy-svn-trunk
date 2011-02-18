@@ -38,4 +38,6 @@ Ogre::String formatBytes(double bytes);
 Ogre::String getASCIIFromCharString(char *str, int maxlen);
 Ogre::String getASCIIFromOgreString(Ogre::String s, int maxlen);
 
+int getTimeStamp();
+
 #endif //UTILS_H_

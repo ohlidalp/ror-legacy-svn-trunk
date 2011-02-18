@@ -22,12 +22,12 @@ along with Rigs of Rods.  If not, see <http://www.gnu.org/licenses/>.
 #define IMPROVEDCONFIGFILE_H_
 
 #include "RoRPrerequisites.h"
-#include <OgrePrerequisites.h>
+#include <Ogre.h>
 
 namespace Ogre
 {
 
-class ImprovedConfigFile : public ConfigFile
+class ImprovedConfigFile : public Ogre::ConfigFile
 {
 public:
 	ImprovedConfigFile() : separators(), filename()
