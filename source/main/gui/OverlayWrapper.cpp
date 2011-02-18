@@ -62,17 +62,20 @@ void OverlayWrapper::placeNeedle(SceneNode *node, float x, float y, float len)
 	node->setScale(0.0025, 0.007*len, 0.007);
 }
 
-Ogre::Overlay *OverlayWrapper::loadOverlay(Ogre::String name)
+Ogre::Overlay *OverlayWrapper::loadOverlay(Ogre::String name, bool autoResizeRation)
 {
 	Overlay *o = OverlayManager::getSingleton().getByName(name);
 
-	struct loadedOverlay_t lo;
-	lo.o = o;
-	lo.orgScaleX = o->getScaleX();
-	lo.orgScaleY = o->getScaleY();
+	if(autoResizeRation)
+	{
+		struct loadedOverlay_t lo;
+		lo.o = o;
+		lo.orgScaleX = o->getScaleX();
+		lo.orgScaleY = o->getScaleY();
 
-	overlays.push_back(lo);
-	resizeOverlay(lo);
+		overlays.push_back(lo);
+		resizeOverlay(lo);
+	}
 	return o;
 }
 
@@ -116,7 +119,7 @@ int OverlayWrapper::init()
 	directionOverlay = loadOverlay("tracks/DirectionArrow");
 	directionArrowText = (TextAreaOverlayElement*)loadOverlayElement("tracks/DirectionArrow/Text");
 	directionArrowDistance = (TextAreaOverlayElement*)loadOverlayElement("tracks/DirectionArrow/Distance");
-	mouseOverlay = loadOverlay("tracks/MouseOverlay");
+	mouseOverlay = loadOverlay("tracks/MouseOverlay", false);
 #ifdef HAS_EDITOR
 	truckeditorOverlay = loadOverlay("tracks/TruckEditorOverlay");
 #endif
