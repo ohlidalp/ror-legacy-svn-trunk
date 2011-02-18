@@ -143,3 +143,8 @@ Ogre::String getASCIIFromOgreString(Ogre::String s, int maxlen)
 	str[maxlen] = 0;
 	return std::string(str);
 }
+
+int getTimeStamp()
+{
+	return (int)time(NULL); //this will overflow in 2038
+}

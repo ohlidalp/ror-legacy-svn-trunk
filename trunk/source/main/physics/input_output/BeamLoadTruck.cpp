@@ -62,6 +62,7 @@ int Beam::loadTruck(const char* fname, SceneManager *manager, SceneNode *parent,
 	String group = "";
 	String filename = String(fname);
 
+	/*
 	try
 	{
 		if(!CACHE.checkResourceLoaded(filename, group))
@@ -77,8 +78,9 @@ int Beam::loadTruck(const char* fname, SceneManager *manager, SceneNode *parent,
 			return -1;
 		}
 	}
+	*/
 
-	this->cacheEntryInfo = CACHE.getResourceInfo(filename);
+	//this->cacheEntryInfo = CACHE.getResourceInfo(filename);
 
 	DataStreamPtr ds = ResourceGroupManager::getSingleton().openResource(filename, group);
 	linecounter = 0;

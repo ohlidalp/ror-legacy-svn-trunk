@@ -213,6 +213,7 @@ void SelectorWindow::eventComboAcceptConfigComboBox(MyGUI::ComboBoxPtr _sender, 
 
 void SelectorWindow::getData()
 {
+	/*
 	mTypeComboBox->removeAllItems();
 	if(mModelList->getItemCount() != 0) mModelList->setIndexSelected(0);
 	mModelList->removeAllItems();
@@ -242,8 +243,7 @@ void SelectorWindow::getData()
 		mCancelButton->setEnabled(true);
 	}
 
-	int ts = CACHE.getTimeStamp();
-
+	int ts = getTimeStamp();
 	std::vector<Cache_Entry> *entries = CACHE.getEntries();
 	std::vector<Cache_Entry>::iterator it;
 	for(it = entries->begin(); it!=entries->end(); it++)
@@ -334,10 +334,12 @@ void SelectorWindow::getData()
 		}
 		onCategorySelected(*mTypeComboBox->getItemDataAt<int>(0));
 	}
+	*/
 }
 
 void SelectorWindow::onCategorySelected(int categoryID)
 {
+	/*
 	if(mLoaderType == LT_SKIN) return;
 	int ts = CACHE.getTimeStamp();
 	mModelList->removeAllItems();
@@ -412,10 +414,12 @@ void SelectorWindow::onCategorySelected(int categoryID)
 		}
 		onEntrySelected(*mModelList->getItemDataAt<int>(0));
 	}
+	*/
 }
 
 void SelectorWindow::onEntrySelected(int entryID)
 {
+	/*
 	if(mLoaderType == LT_SKIN)
 	{
 		// special skin handling
@@ -453,10 +457,12 @@ void SelectorWindow::onEntrySelected(int entryID)
 	if(!entry) return;
 	mSelectedTruck = entry;
 	updateControls(mSelectedTruck);
+	*/
 }
 
 void SelectorWindow::selectionDone()
 {
+	/*
 	if(!mSelectedTruck || mSelectionDone)
 		return;
 
@@ -487,10 +493,12 @@ void SelectorWindow::selectionDone()
 		mSelectionDone = true;
 		hide();
 	}
+	*/
 }
 
 void SelectorWindow::updateControls(Cache_Entry *entry)
 {
+	/*
 	int modnumber = entry->number;
 	String minitype = entry->minitype;
 
@@ -580,10 +588,12 @@ void SelectorWindow::updateControls(Cache_Entry *entry)
 	{
 		mEntryDescriptionStaticText->setCaption("ENCODING ERROR");
 	}
+	*/
 }
 
 void SelectorWindow::setPreviewImage(Ogre::String texture)
 {
+	/*
 	if(texture == "" || texture == "none")
 		texture = _L("unknown.dds");
 
@@ -598,6 +608,7 @@ void SelectorWindow::setPreviewImage(Ogre::String texture)
 		texture = ("unknown.dds"); // without _L() !
 
 	mPreviewStaticImage->setImageTexture(texture);
+	*/
 }
 
 bool SelectorWindow::isFinishedSelecting()
@@ -607,8 +618,6 @@ bool SelectorWindow::isFinishedSelecting()
 
 void SelectorWindow::show(LoaderType type)
 {
-	if (SETTINGS.getSetting("GaussianBlur") == "Yes")
-		CompositorManager::getSingleton().setCompositorEnabled(mCamera->getViewport(), "Gaussian Blur", true);
 	mSelectionDone=false;
 	LoadingWindow::get()->hide();
 	// show mouse cursor
@@ -632,8 +641,6 @@ void SelectorWindow::show(LoaderType type)
 
 void SelectorWindow::hide()
 {
-	if (SETTINGS.getSetting("GaussianBlur") == "Yes")
-		CompositorManager::getSingleton().setCompositorEnabled(mCamera->getViewport(), "Gaussian Blur", false);
 	mMainWidget->setVisible(false);
 	mMainWidget->setEnabledSilent(false);
 	// hide cursor

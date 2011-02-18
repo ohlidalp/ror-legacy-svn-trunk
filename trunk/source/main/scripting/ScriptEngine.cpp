@@ -410,68 +410,6 @@ void ScriptEngine::init()
 	result = engine->RegisterObjectBehaviour("SettingsClass", AngelScript::asBEHAVE_ADDREF, "void f()",AngelScript::asMETHOD(Settings,addRef), AngelScript::asCALL_THISCALL); assert(result>=0);
 	result = engine->RegisterObjectBehaviour("SettingsClass", AngelScript::asBEHAVE_RELEASE, "void f()",AngelScript::asMETHOD(Settings,release), AngelScript::asCALL_THISCALL); assert(result>=0);
 
-	// class Cache_Entry
-	result = engine->RegisterObjectType("Cache_EntryClass", sizeof(Cache_Entry), AngelScript::asOBJ_REF); assert(result>=0);
-	result = engine->RegisterObjectProperty("Cache_EntryClass", "string minitype", offsetof(Cache_Entry, minitype)); assert(result>=0);
-	result = engine->RegisterObjectProperty("Cache_EntryClass", "string fname", offsetof(Cache_Entry, fname)); assert(result>=0);
-	result = engine->RegisterObjectProperty("Cache_EntryClass", "string fname_without_uid", offsetof(Cache_Entry, fname_without_uid)); assert(result>=0);
-	result = engine->RegisterObjectProperty("Cache_EntryClass", "string dname", offsetof(Cache_Entry, dname)); assert(result>=0);
-	result = engine->RegisterObjectProperty("Cache_EntryClass", "int categoryid", offsetof(Cache_Entry, categoryid)); assert(result>=0);
-	result = engine->RegisterObjectProperty("Cache_EntryClass", "string categoryname", offsetof(Cache_Entry, categoryname)); assert(result>=0);
-	result = engine->RegisterObjectProperty("Cache_EntryClass", "int addtimestamp", offsetof(Cache_Entry, addtimestamp)); assert(result>=0);
-	result = engine->RegisterObjectProperty("Cache_EntryClass", "string uniqueid", offsetof(Cache_Entry, uniqueid)); assert(result>=0);
-	result = engine->RegisterObjectProperty("Cache_EntryClass", "int version", offsetof(Cache_Entry, version)); assert(result>=0);
-	result = engine->RegisterObjectProperty("Cache_EntryClass", "string fext", offsetof(Cache_Entry, fext)); assert(result>=0);
-	result = engine->RegisterObjectProperty("Cache_EntryClass", "string type", offsetof(Cache_Entry, type)); assert(result>=0);
-	result = engine->RegisterObjectProperty("Cache_EntryClass", "string dirname", offsetof(Cache_Entry, dirname)); assert(result>=0);
-	result = engine->RegisterObjectProperty("Cache_EntryClass", "string hash", offsetof(Cache_Entry, hash)); assert(result>=0);
-	result = engine->RegisterObjectProperty("Cache_EntryClass", "bool resourceLoaded", offsetof(Cache_Entry, resourceLoaded)); assert(result>=0);
-	result = engine->RegisterObjectProperty("Cache_EntryClass", "int number", offsetof(Cache_Entry, number)); assert(result>=0);
-	result = engine->RegisterObjectProperty("Cache_EntryClass", "bool changedornew", offsetof(Cache_Entry, changedornew)); assert(result>=0);
-	result = engine->RegisterObjectProperty("Cache_EntryClass", "bool deleted", offsetof(Cache_Entry, deleted)); assert(result>=0);
-	result = engine->RegisterObjectProperty("Cache_EntryClass", "int usagecounter", offsetof(Cache_Entry, usagecounter)); assert(result>=0);
-	// TODO: add Cache_Entry::authors
-	result = engine->RegisterObjectProperty("Cache_EntryClass", "string filecachename", offsetof(Cache_Entry, filecachename)); assert(result>=0);
-	result = engine->RegisterObjectProperty("Cache_EntryClass", "string description", offsetof(Cache_Entry, description)); assert(result>=0);
-	result = engine->RegisterObjectProperty("Cache_EntryClass", "string tags", offsetof(Cache_Entry, tags)); assert(result>=0);
-	result = engine->RegisterObjectProperty("Cache_EntryClass", "int fileformatversion", offsetof(Cache_Entry, fileformatversion)); assert(result>=0);
-	result = engine->RegisterObjectProperty("Cache_EntryClass", "bool hasSubmeshs", offsetof(Cache_Entry, hasSubmeshs)); assert(result>=0);
-	result = engine->RegisterObjectProperty("Cache_EntryClass", "int nodecount", offsetof(Cache_Entry, nodecount)); assert(result>=0);
-	result = engine->RegisterObjectProperty("Cache_EntryClass", "int beamcount", offsetof(Cache_Entry, beamcount)); assert(result>=0);
-	result = engine->RegisterObjectProperty("Cache_EntryClass", "int shockcount", offsetof(Cache_Entry, shockcount)); assert(result>=0);
-	result = engine->RegisterObjectProperty("Cache_EntryClass", "int fixescount", offsetof(Cache_Entry, fixescount)); assert(result>=0);
-	result = engine->RegisterObjectProperty("Cache_EntryClass", "int hydroscount", offsetof(Cache_Entry, hydroscount)); assert(result>=0);
-	result = engine->RegisterObjectProperty("Cache_EntryClass", "int wheelcount", offsetof(Cache_Entry, wheelcount)); assert(result>=0);
-	result = engine->RegisterObjectProperty("Cache_EntryClass", "int propwheelcount", offsetof(Cache_Entry, propwheelcount)); assert(result>=0);
-	result = engine->RegisterObjectProperty("Cache_EntryClass", "int commandscount", offsetof(Cache_Entry, commandscount)); assert(result>=0);
-	result = engine->RegisterObjectProperty("Cache_EntryClass", "int flarescount", offsetof(Cache_Entry, flarescount)); assert(result>=0);
-	result = engine->RegisterObjectProperty("Cache_EntryClass", "int propscount", offsetof(Cache_Entry, propscount)); assert(result>=0);
-	result = engine->RegisterObjectProperty("Cache_EntryClass", "int wingscount", offsetof(Cache_Entry, wingscount)); assert(result>=0);
-	result = engine->RegisterObjectProperty("Cache_EntryClass", "int turbopropscount", offsetof(Cache_Entry, turbopropscount)); assert(result>=0);
-	result = engine->RegisterObjectProperty("Cache_EntryClass", "int turbojetcount", offsetof(Cache_Entry, turbojetcount)); assert(result>=0);
-	result = engine->RegisterObjectProperty("Cache_EntryClass", "int rotatorscount", offsetof(Cache_Entry, rotatorscount)); assert(result>=0);
-	result = engine->RegisterObjectProperty("Cache_EntryClass", "int exhaustscount", offsetof(Cache_Entry, exhaustscount)); assert(result>=0);
-	result = engine->RegisterObjectProperty("Cache_EntryClass", "int flexbodiescount", offsetof(Cache_Entry, flexbodiescount)); assert(result>=0);
-	result = engine->RegisterObjectProperty("Cache_EntryClass", "int materialflarebindingscount", offsetof(Cache_Entry, materialflarebindingscount)); assert(result>=0);
-	result = engine->RegisterObjectProperty("Cache_EntryClass", "int soundsourcescount", offsetof(Cache_Entry, soundsourcescount)); assert(result>=0);
-	result = engine->RegisterObjectProperty("Cache_EntryClass", "int managedmaterialscount", offsetof(Cache_Entry, managedmaterialscount)); assert(result>=0);
-	result = engine->RegisterObjectProperty("Cache_EntryClass", "float truckmass", offsetof(Cache_Entry, truckmass)); assert(result>=0);
-	result = engine->RegisterObjectProperty("Cache_EntryClass", "float loadmass", offsetof(Cache_Entry, loadmass)); assert(result>=0);
-	result = engine->RegisterObjectProperty("Cache_EntryClass", "float minrpm", offsetof(Cache_Entry, minrpm)); assert(result>=0);
-	result = engine->RegisterObjectProperty("Cache_EntryClass", "float maxrpm", offsetof(Cache_Entry, maxrpm)); assert(result>=0);
-	result = engine->RegisterObjectProperty("Cache_EntryClass", "float torque", offsetof(Cache_Entry, torque)); assert(result>=0);
-	result = engine->RegisterObjectProperty("Cache_EntryClass", "bool customtach", offsetof(Cache_Entry, customtach)); assert(result>=0);
-	result = engine->RegisterObjectProperty("Cache_EntryClass", "bool custom_particles", offsetof(Cache_Entry, custom_particles)); assert(result>=0);
-	result = engine->RegisterObjectProperty("Cache_EntryClass", "bool forwardcommands", offsetof(Cache_Entry, forwardcommands)); assert(result>=0);
-	result = engine->RegisterObjectProperty("Cache_EntryClass", "bool importcommands", offsetof(Cache_Entry, importcommands)); assert(result>=0);
-	result = engine->RegisterObjectProperty("Cache_EntryClass", "bool rollon", offsetof(Cache_Entry, rollon)); assert(result>=0);
-	result = engine->RegisterObjectProperty("Cache_EntryClass", "bool rescuer", offsetof(Cache_Entry, rescuer)); assert(result>=0);
-	result = engine->RegisterObjectProperty("Cache_EntryClass", "int driveable", offsetof(Cache_Entry, driveable)); assert(result>=0);
-	result = engine->RegisterObjectProperty("Cache_EntryClass", "int numgears", offsetof(Cache_Entry, numgears)); assert(result>=0);
-	result = engine->RegisterObjectProperty("Cache_EntryClass", "uint8 enginetype", offsetof(Cache_Entry, enginetype)); assert(result>=0);
-	result = engine->RegisterObjectBehaviour("Cache_EntryClass", AngelScript::asBEHAVE_ADDREF, "void f()",AngelScript::asMETHOD(Cache_Entry,addRef), AngelScript::asCALL_THISCALL); assert(result>=0);
-	result = engine->RegisterObjectBehaviour("Cache_EntryClass", AngelScript::asBEHAVE_RELEASE, "void f()",AngelScript::asMETHOD(Cache_Entry,release), AngelScript::asCALL_THISCALL); assert(result>=0);
-	// TODO: add Cache_Entry::sectionconfigs
 
 	// todo: add Vector3 classes and other utility classes!
 
@@ -515,22 +453,6 @@ void ScriptEngine::init()
 	result = engine->RegisterObjectMethod("GameScriptClass", "float rangeRandom(float, float)", AngelScript::asMETHOD(GameScript,rangeRandom), AngelScript::asCALL_THISCALL); assert(result>=0);
 	result = engine->RegisterObjectMethod("GameScriptClass", "int useOnlineAPI(const string &in, const dictionary &in, string &out)", AngelScript::asMETHOD(GameScript,useOnlineAPI), AngelScript::asCALL_THISCALL); assert(result>=0);
 	result = engine->RegisterObjectMethod("GameScriptClass", "int getLoadedTerrain(string &out)", AngelScript::asMETHOD(GameScript,getLoadedTerrain), AngelScript::asCALL_THISCALL); assert(result>=0);
-
-
-
-	// class CacheSystem
-	result = engine->RegisterObjectType("CacheSystemClass", sizeof(CacheSystem), AngelScript::asOBJ_REF | AngelScript::asOBJ_NOHANDLE);
-	result = engine->RegisterObjectMethod("CacheSystemClass", "bool checkResourceLoaded(string &in)", AngelScript::asMETHODPR(CacheSystem, checkResourceLoaded, (Ogre::String &), bool), AngelScript::asCALL_THISCALL); assert(result>=0);
-	result = engine->RegisterObjectMethod("CacheSystemClass", "bool checkResourceLoaded(string &in, string &in)", AngelScript::asMETHODPR(CacheSystem, checkResourceLoaded, (Ogre::String &, Ogre::String &), bool), AngelScript::asCALL_THISCALL); assert(result>=0);
-	// unable to register the following:
-	//result = engine->RegisterObjectMethod("CacheSystemClass", "bool checkResourceLoaded(Cache_EntryClass)", AngelScript::asMETHODPR(CacheSystem, checkResourceLoaded, (Cache_Entry), bool), AngelScript::asCALL_THISCALL); assert_net(result>=0);
-	//result = engine->RegisterObjectMethod("CacheSystemClass", "Cache_EntryClass &getResourceInfo(string)", AngelScript::asMETHODPR(CacheSystem, getResourceInfo, (Cache_Entry), bool), AngelScript::asCALL_THISCALL); assert_net(result>=0);
-	//result = engine->RegisterObjectMethod("CacheSystemClass", "Cache_EntryClass &getResourceInfo(string)", AngelScript::asMETHODPR(CacheSystem, getResourceInfo, (Cache_Entry), bool), AngelScript::asCALL_THISCALL); assert_net(result>=0);
-	//result = engine->RegisterObjectMethod("CacheSystemClass", "Cache_EntryClass &getResourceInfo(string)", AngelScript::asMETHODPR(CacheSystem, getResourceInfo, (Cache_Entry), bool), AngelScript::asCALL_THISCALL); assert_net(result>=0);
-	// these are static methods, special handling for them :)
-	result = engine->RegisterGlobalFunction("string stripUIDfromString(string)", AngelScript::asFUNCTION(CacheSystem::stripUIDfromString), AngelScript::asCALL_CDECL); assert(result>=0);
-	result = engine->RegisterGlobalFunction("string getUIDfromString(string)", AngelScript::asFUNCTION(CacheSystem::getUIDfromString), AngelScript::asCALL_CDECL); assert(result>=0);
-	result = engine->RegisterGlobalFunction("bool stringHasUID(string)", AngelScript::asFUNCTION(CacheSystem::stringHasUID), AngelScript::asCALL_CDECL); assert(result>=0);
 
 	// enum scriptEvents
 	result = engine->RegisterEnum("scriptEvents"); assert(result>=0);

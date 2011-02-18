@@ -72,7 +72,7 @@ private:
 	void updateControls(Cache_Entry *entry);
 	void setPreviewImage(Ogre::String texture);
 
-	std::vector<Cache_Entry> mEntries;
+	//std::vector<Cache_Entry> mEntries;
 	std::map<int, int> mCategoryUsage;
 	std::vector<Skin *> mCurrentSkins;
 	LoaderType mLoaderType;

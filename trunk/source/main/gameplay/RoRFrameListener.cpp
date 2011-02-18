@@ -29,8 +29,6 @@ along with Rigs of Rods.  If not, see <http://www.gnu.org/licenses/>.
 //#include "joystick.h"
 #include "ProceduralManager.h"
 #include "hdrlistener.h"
-#include "softshadowlistener.h"
-#include "ssaolistener.h"
 #include "RigsOfRods.h"
 #include "utils.h"
 #include "ScopeLog.h"
@@ -134,10 +132,6 @@ along with Rigs of Rods.  If not, see <http://www.gnu.org/licenses/>.
 
 #if OGRE_PLATFORM == OGRE_PLATFORM_WIN32
 	#include <Windows.h>
-# ifdef XFIRE
-	// XFire support under windows only!
-	#include "xfiregameclient.h"
-# endif //XFIRE
 #endif
 
 // some gcc fixes
@@ -814,7 +808,7 @@ RoRFrameListener::RoRFrameListener(RenderWindow* win, Camera* cam, SceneManager*
 
 	externalCameraMode=0;
 	lastcameramode=0;
-	gameStartTime = CACHE.getTimeStamp();
+	gameStartTime = getTimeStamp();
 	loadedTerrain="none";
 	creditsviewtime=5;
 	terrainUID="";
@@ -942,22 +936,7 @@ RoRFrameListener::RoRFrameListener(RenderWindow* win, Camera* cam, SceneManager*
 	// setup particle manager
 	new DustManager(mSceneMgr);
 
-	CACHE.startup(scm);
-
-	if(SETTINGS.getSetting("regen-cache-only") != "")
-	{
-		CACHE.startup(scm, true);
-		String str = _L("Cache regeneration done.\n");
-		if(CACHE.newFiles > 0) str += StringConverter::toString(CACHE.newFiles) + " new files\n";
-		if(CACHE.changedFiles > 0) str += StringConverter::toString(CACHE.changedFiles) + " changed files\n";
-		if(CACHE.deletedFiles > 0) str += StringConverter::toString(CACHE.deletedFiles) + " deleted files\n";
-		if(CACHE.newFiles + CACHE.changedFiles + CACHE.deletedFiles == 0) str += "no changes";
-		str += _L("\n(These stats can be imprecise)");
-		showError(_L("Cache regeneration done"), str.c_str());
-		exit(0);
-	}
-
-
+	new CacheSystem(scm);
 
 	screenWidth=win->getWidth();
 	screenHeight=win->getHeight();
@@ -974,15 +953,7 @@ RoRFrameListener::RoRFrameListener(RenderWindow* win, Camera* cam, SceneManager*
 
 	debugCollisions = (SETTINGS.getSetting("Debug Collisions") == "Yes");
 
-    xfire_enabled = (SETTINGS.getSetting("XFire") == "Yes");
-
-	externalCameraMode = (SETTINGS.getSetting("External Camera Mode") == "Static")? 1 : 0;
-
-#ifndef XFIRE
-	xfire_enabled = false;
-#endif
-
-
+    externalCameraMode = (SETTINGS.getSetting("External Camera Mode") == "Static")? 1 : 0;
 
 	// get lights mode
 	flaresMode = 0; //None
@@ -1267,6 +1238,7 @@ RoRFrameListener::RoRFrameListener(RenderWindow* win, Camera* cam, SceneManager*
 	// now continue to load everything...
 	if(preselected_map != "")
 	{
+		/*
 		if(!CACHE.checkResourceLoaded(preselected_map))
 		{
 			preselected_map  = preselected_map + ".terrn";
@@ -1281,6 +1253,8 @@ RoRFrameListener::RoRFrameListener(RenderWindow* win, Camera* cam, SceneManager*
 
 		// set the terrain cache entry
 		loaded_terrain = CACHE.getResourceInfo(preselected_map);
+
+		*/
 
 		loadTerrain(preselected_map);
 		//miniature map stuff
@@ -1610,7 +1584,8 @@ void RoRFrameListener::loadObject(const char* name, float px, float py, float pz
 	// try to load with UID first!
 	String odefgroup = "";
 	String odefname = "";
-	bool odefFound = false;
+	bool odefFound = true;
+	/*
 	if(terrainUID != "" && !CACHE.stringHasUID(name))
 	{
 		sprintf(fname,"%s-%s.odef", terrainUID.c_str(), name);
@@ -1634,6 +1609,7 @@ void RoRFrameListener::loadObject(const char* name, float px, float py, float pz
 			odefFound = true;
 		}
 	}
+	*/
 
 	//if(!CACHE.checkResourceLoaded(odefname, odefgroup))
 	if(!odefFound)
@@ -4050,6 +4026,7 @@ bool RoRFrameListener::updateEvents(float dt)
 
 
 #ifdef USE_MYGUI
+		/*
 		if (SelectorWindow::get()->isFinishedSelecting())
 		{
 			if (loading_state==NONE_LOADED)
@@ -4057,7 +4034,7 @@ bool RoRFrameListener::updateEvents(float dt)
 				Cache_Entry *sel = SelectorWindow::get()->getSelection();
 				if(sel)
 				{
-					terrainUID = sel->uniqueid;
+					//terrainUID = sel->uniqueid;
 					loadTerrain(sel->fname);
 
 					// no trucks loaded?
@@ -4144,6 +4121,7 @@ bool RoRFrameListener::updateEvents(float dt)
 			}
 
 		}
+		*/
 #endif //MYGUI
 	}
 
@@ -4517,17 +4495,13 @@ void RoRFrameListener::initializeCompontents()
 	// set how far we want the camera to be above ground
 	mCollisionTools->setHeightAdjust(0.2f);
 
-#ifdef USE_XFIRE
-	updateXFire();
-#endif
-
 }
 
 void RoRFrameListener::loadOgitorTerrain(String terrainfile)
 {
 	// find the group the terrain is in
 	Ogre::String group = "";
-	CACHE.checkResourceLoaded(terrainfile, group);
+	//CACHE.checkResourceLoaded(terrainfile, group);
 
 	// start up the dotsceneloader
     mLoader = new DotSceneLoader();
@@ -4545,11 +4519,11 @@ void RoRFrameListener::loadOgitorTerrain(String terrainfile)
 
 
 }
-
 void RoRFrameListener::loadTerrain(String terrainfile)
 {
 	ScopeLog log("terrain_"+terrainfile);
 
+	/*
 	// check if the resource is loaded
 	if(!CACHE.checkResourceLoaded(terrainfile))
 	{
@@ -4563,8 +4537,62 @@ void RoRFrameListener::loadTerrain(String terrainfile)
 		}
 
 	}
+	*/
+
+	if(terrainfile == "simple.terrn")
+	{
+		Ogre::ColourValue BackgroundColour = Ogre::ColourValue::White;//Ogre::ColourValue(0.1337f, 0.1337f, 0.1337f, 1.0f);
+		Ogre::ColourValue GridColour = Ogre::ColourValue(0.2000f, 0.2000f, 0.2000f, 1.0f);
+		
+		Ogre::ManualObject *mReferenceObject = new Ogre::ManualObject("ReferenceGrid");
+
+		mReferenceObject->begin("BaseWhiteNoLighting", Ogre::RenderOperation::OT_LINE_LIST);
+   
+		Ogre::Real step = 1.0f;
+		unsigned int count = 200;
+		unsigned int halfCount = count / 2;
+		Ogre::Real full = (step * count);
+		Ogre::Real half = full / 2;
+		Ogre::Real y = 0;
+		Ogre::ColourValue c;
+		for (unsigned i=0;i < count+1;i++)
+		{
+    
+			if (i == halfCount)
+				c = Ogre::ColourValue(0.5f,0.3f,0.3f,1.0f);
+			else
+				c = GridColour;
+    
+			mReferenceObject->position(-half,y,-half+(step*i));
+			mReferenceObject->colour(BackgroundColour);
+			mReferenceObject->position(0,y,-half+(step*i));
+			mReferenceObject->colour(c);
+			mReferenceObject->position(0,y,-half+(step*i));
+			mReferenceObject->colour(c);
+			mReferenceObject->position(half,y,-half+(step*i));
+			mReferenceObject->colour(BackgroundColour);
+
+			if (i == halfCount)
+				c = Ogre::ColourValue(0.3f,0.3f,0.5f,1.0f);
+			else
+				c = GridColour;
+    
+			mReferenceObject->position(-half+(step*i),y,-half);
+			mReferenceObject->colour(BackgroundColour);
+			mReferenceObject->position(-half+(step*i),y,0);
+			mReferenceObject->colour(c);
+			mReferenceObject->position(-half+(step*i),y,0);
+			mReferenceObject->colour(c);
+			mReferenceObject->position(-half+(step*i),y, half);
+			mReferenceObject->colour(BackgroundColour);
+		}
+   
+		mReferenceObject->end();
+		mSceneMgr->getRootSceneNode()->attachObject(mReferenceObject);
+	}
 
 	// set the terrain hash
+	/*
 	{
 		Cache_Entry ce = CACHE.getResourceInfo(terrainfile);
 		char hash_result[250];
@@ -4580,6 +4608,7 @@ void RoRFrameListener::loadTerrain(String terrainfile)
 		sha1.ReportHash(hash_result, RoR::CSHA1::REPORT_HEX_SHORT);
 		SETTINGS.setSetting("TerrainHash", String(hash_result));
 	}
+	*/
 
 	loadedTerrain = terrainfile;
 
@@ -4640,7 +4669,7 @@ void RoRFrameListener::loadClassicTerrain(String terrainfile)
 
 
 	// set the terrain cache entry
-	loaded_terrain = CACHE.getResourceInfo(terrainfile);
+	//loaded_terrain = CACHE.getResourceInfo(terrainfile);
 
 	DataStreamPtr ds=ResourceGroupManager::getSingleton().openResource(terrainfile, group);
 	ds->readLine(line, 1023);
@@ -5178,11 +5207,6 @@ void RoRFrameListener::loadClassicTerrain(String terrainfile)
 	if(useHDR)
 		initHDR();
 
-	// SSAO?
-	bool useSSAO = (SETTINGS.getSetting("SSAO") == "Yes");
-	if(useSSAO)
-		initSSAO();
-
 	// DOF?
 	bool useDOF = (SETTINGS.getSetting("DOF") == "Yes");
 	if(useDOF)
@@ -5199,14 +5223,6 @@ void RoRFrameListener::loadClassicTerrain(String terrainfile)
 		CompositorManager::getSingleton().setCompositorEnabled(mCamera->getViewport(), "Glow", true);
 		GlowMaterialListener *gml = new GlowMaterialListener();
 		Ogre::MaterialManager::getSingleton().addListener(gml);
-	}
-
-	// for menu effects
-	// not working currently :(
-	if (SETTINGS.getSetting("GaussianBlur") == "Yes")
-	{
-		CompositorManager::getSingleton().addCompositor(mCamera->getViewport(),"Gaussian Blur");
-		CompositorManager::getSingleton().setCompositorEnabled(mCamera->getViewport(), "Gaussian Blur", false);
 	}
 
 	// Motion blur stuff :)
@@ -5826,11 +5842,13 @@ void RoRFrameListener::loadClassicTerrain(String terrainfile)
 				continue;
 			String group="";
 			String truckname=String(type);
+			/*
 			if(!CACHE.checkResourceLoaded(truckname, group))
 			{
 				LogManager::getSingleton().logMessage("error while loading terrain: truck " + String(type) + " not found. ignoring.");
 				continue;
 			}
+			*/
 			//this is a truck or load declaration
 			truck_preload[truck_preload_num].px=ox;
 			truck_preload[truck_preload_num].py=oy;
@@ -6007,105 +6025,6 @@ void RoRFrameListener::loadClassicTerrain(String terrainfile)
 	//no, not yet, Caelum is not ready!
 	//if (envmap) envmap->update(Vector3(terrainxsize/2.0, hfinder->getHeightAt(terrainxsize/2.0, terrainzsize/2.0)+50.0, terrainzsize/2.0));
 
-}
-
-void RoRFrameListener::updateXFire()
-{
-#if OGRE_PLATFORM == OGRE_PLATFORM_WIN32
-    if(!xfire_enabled)
-        // user mus explicitly enable it
-        return;
-	// ----
-#ifdef USE_XFIRE
-	char terrainname[100]="";
-	strncpy(terrainname, const_cast<char*>(loadedTerrain.c_str()), 99);
-
-	// ----
-	String gameState = "unkown";
-	switch(loading_state)
-	{
-		case NONE_LOADED: gameState = "in menu"; break;
-		case TERRAIN_LOADED: gameState = "selecting vehicle"; break;
-		case ALL_LOADED: gameState = "playing"; break;
-		case EXITING: gameState = "exiting the game"; break;
-		case EDITING: gameState = "editing"; break;
-		case RELOADING: gameState = "selecting additional vehicle"; break;
-		case EDITOR_PAUSE: gameState = "pause mode"; break;
-	}
-
-	// ----
-	String vehicleName = "unkown";
-	if(loading_state == ALL_LOADED)
-	{
-		if(current_truck == -1)
-			vehicleName = "person";
-		else if(current_truck != -1 && current_truck <= free_truck)
-				vehicleName = trucks[current_truck]->getTruckName();
-	}
-
-	// ----
-	char playingTime[100]="";
-	int minutes = (CACHE.getTimeStamp() - gameStartTime) / 60;
-	int hours = minutes / 60;
-	if (minutes > 60)
-		sprintf(playingTime, "%d hour(s), %d minutes", hours, minutes-60*hours);
-	else
-		sprintf(playingTime, "%d minute(s)", minutes);
-
-	// ----
-	char gameType[100]="";
-	if (!netmode)
-		strcpy(gameType, "Single Player");
-	else
-		strcpy(gameType, "Multi Player");
-
-	// ----
-	static String servername = "unkown";
-	static int serverport=0;
-	if(netmode && servername == "unkown" && serverport == 0)
-	{
-		servername = SETTINGS.getSetting("Server name").c_str();
-		serverport=StringConverter::parseLong(SETTINGS.getSetting("Server port"));
-	}
-	int players = 0;
-	//if(net) players = net->getConnectedClientCount();
-
-	char serverString[100]="";
-	if(netmode)
-		sprintf(serverString, "%s:%d (%d players)", servername.c_str(), serverport, players);
-	else
-		strcpy(serverString, "Playing Offline");
-
-	// ----
-	String gameVersion = "RoR: "+String(ROR_VERSION_STRING) + " / protocol: " + String(RORNET_VERSION);
-
-	// ----
-	const char *key[] = {
-		"Game State",
-		"Terrain",
-		"Used Vehicle",
-		"Playing since",
-		"Game Type",
-		"Server",
-		"Game Version",
-	};
-	const char *value[] = {
-		const_cast<char*>(gameState.c_str()),
-		(const char *)terrainname,
-		const_cast<char*>(vehicleName.c_str()),
-		(const char *)playingTime,
-		(const char *)gameType,
-		(const char *)serverString,
-		const_cast<char*>(gameVersion.c_str()),
-	};
-	if(XfireIsLoaded() == 1)
-	{
-		int res = XfireSetCustomGameData(7, key, value);
-		LogManager::getSingleton().logMessage("XFire GameData updated, result code: "+StringConverter::toString(res));
-	}
-
-#endif // XFIRE
-#endif // WIN32
 }
 
 void RoRFrameListener::setGrassDensity(float x, float y, int density, bool relative)
@@ -7708,71 +7627,6 @@ void RoRFrameListener::pauseSim(bool value)
 	}
 }
 
-void RoRFrameListener::initSoftShadows()
-{
-	// we'll be self shadowing
-	mSceneMgr->setShadowTextureSelfShadow(true);
-
-	// our caster material
-	mSceneMgr->setShadowTextureCasterMaterial("shadow_caster");
-	// note we have no "receiver".  all the "receivers" are integrated.
-
-	// get the shadow texture count from the cfg file
-	String tempData = SETTINGS.getSetting("shadowTextureCount");
-	if(tempData.empty()) tempData = "4";
-	// (each light needs a shadow texture)
-	mSceneMgr->setShadowTextureCount(Ogre::StringConverter::parseInt(tempData));
-
-	// the size, too (1024 looks good with 3x3 or more filtering)
-	tempData = SETTINGS.getSetting("shadowTextureRes");
-	if(tempData.empty()) tempData = "256";
-	mSceneMgr->setShadowTextureSize(Ogre::StringConverter::parseInt(tempData));
-
-	// float 16 here.  we need the R and G channels.
-	// float 32 works a lot better with a low/none VSM epsilon (wait till the shaders)
-	// but float 16 is good enough and supports bilinear filtering on a lot of cards
-	// (we should use _GR, but OpenGL doesn't really like it for some reason)
-	mSceneMgr->setShadowTexturePixelFormat(Ogre::PF_FLOAT16_RGB);
-
-	// big NONO to render back faces for VSM.  it doesn't need any biasing
-	// so it's worthless (and rather problematic) to use the back face hack that
-	// works so well for normal depth shadow mapping (you know, so you don't
-	// get surface acne)
-	mSceneMgr->setShadowCasterRenderBackFaces(false);
-
-	const unsigned numShadowRTTs = mSceneMgr->getShadowTextureCount();
-	for (unsigned i = 0; i < numShadowRTTs; ++i)
-	{
-		Ogre::TexturePtr tex = mSceneMgr->getShadowTexture(i);
-		Ogre::Viewport *vp = tex->getBuffer()->getRenderTarget()->getViewport(0);
-		vp->setBackgroundColour(Ogre::ColourValue(1, 1, 1, 1));
-		vp->setClearEveryFrame(true);
-	}
-
-	// enable integrated additive shadows
-	// actually, since we render the shadow map ourselves, it doesn't
-	// really matter whether they are additive or modulative
-	// as long as they are integrated v(O_o)v
-	mSceneMgr->setShadowTechnique(Ogre::SHADOWTYPE_TEXTURE_ADDITIVE_INTEGRATED);
-
-	// and add the shader listener
-	SoftShadowListener *ssl = new SoftShadowListener();
-#if OGRE_VERSION<0x010602
-	mSceneMgr->addShadowListener(ssl);
-#else
-	mSceneMgr->addListener(ssl);
-#endif //OGRE_VERSION
-}
-
-void RoRFrameListener::initSSAO()
-{
-	Viewport *vp = mCamera->getViewport();
-    CompositorInstance *ssao = Ogre::CompositorManager::getSingleton().addCompositor(vp, "ssao");
-    ssao->setEnabled(true);
-	SSAOListener *ssaol = new SSAOListener(mSceneMgr, mCamera);
-    ssao->addListener(ssaol);
-}
-
 void RoRFrameListener::initHDR()
 {
 	Viewport *vp = mCamera->getViewport();
@@ -7897,11 +7751,13 @@ void RoRFrameListener::gridScreenshots(Ogre::RenderWindow* pRenderWindow, Ogre::
       if(pStitchGridImages)
       {
         // Automatically stitch the grid screenshots
+		  /*
 		if(!CacheSystem::resourceExistsInAllGroups(gridFilename))
 		{
 			LogManager::getSingleton().logMessage("Unable to stich image. Image not found: "+gridFilename);
 			return ;
 		}
+		*/
 
 		String group = ResourceGroupManager::getSingleton().findGroupContainingResource(gridFilename);
 

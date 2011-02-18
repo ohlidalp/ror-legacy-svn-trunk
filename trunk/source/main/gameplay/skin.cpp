@@ -70,7 +70,7 @@ int Skin::hasReplacementForMaterial(Ogre::String material)
 	//LogManager::getSingleton().logMessage("Skin::hasReplacementForMaterial("+material+") = " + StringConverter::toString((int)replaceMaterials.count(material)));
 	int res = (int)replaceMaterials.count(material);
 	if(!res)
-		return (int)replaceMaterials.count(CACHE.stripUIDfromString(material));
+		return (int)replaceMaterials.count(material);
 	return res;
 }
 
@@ -79,7 +79,7 @@ Ogre::String Skin::getReplacementForMaterial(Ogre::String material)
 	//LogManager::getSingleton().logMessage("Skin::getReplacementForMaterial("+material+") = " + replaceMaterials[material]);
 	String res = replaceMaterials[material];
 	if(res.empty())
-		return replaceMaterials[CACHE.stripUIDfromString(material)];
+		return replaceMaterials[material];
 	return res;
 }
 
