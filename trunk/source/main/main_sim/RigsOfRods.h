@@ -27,86 +27,23 @@ along with Rigs of Rods.  If not, see <http://www.gnu.org/licenses/>.
 #define RIGSOFRODS_H__
 
 #include "RoRPrerequisites.h"
-#include <Ogre.h>
-#include <OgreRTShaderSystem.h>
-#include <OgreConfigFile.h>
-#include <OgreConfigDialog.h>
 
-#include "RoRFrameListener.h"
-//#include "OgrePlatformManager.h"
-#ifdef HAS_EDITOR
-#include "spincontrol.h"
-#endif
-#include "Skidmark.h"
-#include "ColoredTextAreaOverlayElementFactory.h"
-#include "CacheSystem.h"
-#include "skinmanager.h"
-#include "Settings.h"
-
-using namespace Ogre;
-
-//#include "FlexMesh.h"
-#include "Beam.h"
-#include "OgreSceneManager.h"
-
-#if OGRE_PLATFORM == OGRE_PLATFORM_APPLE
-//#include <CFUserNotification.h>
-#endif
+#include "AdvancedOgreFramework.hpp"
+#include "AppStateManager.hpp"
 
 class RigsOfRods
 {
 public:
 	RigsOfRods(Ogre::String name = Ogre::String("RoR"), unsigned int hwnd=0, unsigned int mainhwnd=0);
 	~RigsOfRods();
-	// creates Ogre Root
-	bool setup(void);
-	// setup and start game
+
 	void go();
 	void shutdown(void);
 
-	bool useogreconfig;
-	bool buildmode;
-
-	SceneManager *getSceneManager() { return mSceneMgr; };
-	RenderWindow *getRenderWindow() { return mWindow; };
-	Camera *getCamera() { return mCamera; };
-	Viewport *getViewport() { return vp; };
-	Root *getRoot() { return mRoot; };
-	RoRFrameListener *getRoRFrameListener() { return mFrameListener; };
-
-	Ogre::RTShader::ShaderGenerator *getShaderGenerator() { return mShaderGenerator; };
-
 protected:
-	Root *mRoot;
-	Camera* mCamera;
-	SceneManager* mSceneMgr;
-	RoRFrameListener* mFrameListener;
-	RenderWindow* mWindow;
-	SoundScriptManager* ssm;
-	Viewport* vp;
+	AppStateManager *stateManager;
 	unsigned int hwnd, mainhwnd;
 	Ogre::String name;
-	Ogre::RTShader::ShaderGenerator *mShaderGenerator;
-
-#ifdef HAS_EDITOR
-	SpinControlOverlayElementFactory* spinfact;
-#endif
-
-	void loadMainResource(String name, String group=ResourceGroupManager::DEFAULT_RESOURCE_GROUP_NAME);
-
-	void initRTShaderSystem();
-
-	// create scene
-	void createScene(void);
-
-	/** Configures the application - returns false if the user chooses to abandon configuration. */
-	bool configure(void);
-
-	//resource utilities
-	void exploreStreams();
-	void exploreTerrains();
-	void exploreVehicles();
-	void explorePacks();
 };
 
 #endif //RIGSOFRODS_H__

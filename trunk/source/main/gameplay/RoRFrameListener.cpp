@@ -69,6 +69,8 @@ along with Rigs of Rods.  If not, see <http://www.gnu.org/licenses/>.
 #include "WaterOld.h"
 #include "Replay.h"
 
+#include "Settings.h"
+
 #ifdef USE_HYDRAX
 # include "HydraxWater.h"
 #endif
@@ -261,6 +263,7 @@ void RoRFrameListener::updateIO(float dt)
 	if (current_truck != -1 && trucks[current_truck] && trucks[current_truck]->driveable == TRUCK)
 	{
 #ifdef USE_OIS_G27
+		/*
 		//logitech G27 LEDs tachometer
 		if (leds)
 		{
@@ -268,6 +271,7 @@ void RoRFrameListener::updateIO(float dt)
 				trucks[current_truck]->engine->getMaxRPM()*0.75,
 				trucks[current_truck]->engine->getMaxRPM());
 		}
+		*/
 #endif //OIS_G27
 
 		// force feedback
@@ -789,11 +793,8 @@ RoRFrameListener::RoRFrameListener(RenderWindow* win, Camera* cam, SceneManager*
 	eflsingleton=this;
 	forcefeedback=0;
 #ifdef USE_OIS_G27
-	leds=0;
+//	leds=0;
 #endif //OIS_G27
-
-	if(SETTINGS.getSetting("Skidmarks") == "Yes")
-		new SkidmarkManager();
 
 #ifdef USE_MPLATFORM
 	mplatform = new MPlatform_FD();
@@ -1009,7 +1010,7 @@ RoRFrameListener::RoRFrameListener(RenderWindow* win, Camera* cam, SceneManager*
 #ifdef USE_OIS_G27
 	if (SETTINGS.getSetting("Logitech LEDs")=="Yes")
 	{
-		leds = INPUTENGINE.getLogitechLEDsDevice();
+//		leds = INPUTENGINE.getLogitechLEDsDevice();
 	}
 #endif //OIS_G27
 
@@ -4401,10 +4402,12 @@ void RoRFrameListener::shutdown_pre()
 #endif // OPENAL
 #ifdef USE_OIS_G27
 	//logitech G27 LEDs tachometer
+	/*
 	if (leds)
 	{
 		leds->play(0, 10, 20);//stop the LEDs
 	}
+	*/
 #endif //OIS_G27
 }
 
@@ -6289,10 +6292,12 @@ void RoRFrameListener::setCurrentTruck(int v)
 		//LEDs
 #ifdef USE_OIS_G27
 		//logitech G27 LEDs tachometer
+		/*
 		if (leds)
 		{
 			leds->play(0, 10, 20);//stop the LEDs
 		}
+		*/
 #endif //OIS_G27
 
 		// hide truckhud
@@ -6397,10 +6402,12 @@ void RoRFrameListener::setCurrentTruck(int v)
 		//LEDs
 #ifdef USE_OIS_G27
 		//logitech G27 LEDs tachometer
+		/*
 		if (leds && trucks[current_truck]->driveable!=TRUCK)
 		{
 			leds->play(0, 10, 20);//stop the LEDs
 		}
+		*/
 #endif //OIS_G27
 
 

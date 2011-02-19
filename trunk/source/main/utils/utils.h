@@ -19,13 +19,14 @@ along with Rigs of Rods.  If not, see <http://www.gnu.org/licenses/>.
 */
 // created by Thomas Fischer thomas{AT}thomasfischer{DOT}biz, 9th of August 2009
 
-#include "RoRPrerequisites.h"
-
-#include "OgrePrerequisites.h"
-#include "OgreUTFString.h"
-
 #ifndef UTILS_H_
 #define UTILS_H_
+
+#include "RoRPrerequisites.h"
+
+#include <OgrePrerequisites.h>
+#include <OgreUTFString.h>
+
 
 // from http://stahlforce.com/dev/index.php?tool=csc01
 Ogre::String hexdump(void *pAddressIn, long  lSize);
@@ -39,5 +40,7 @@ Ogre::String getASCIIFromCharString(char *str, int maxlen);
 Ogre::String getASCIIFromOgreString(Ogre::String s, int maxlen);
 
 int getTimeStamp();
+
+Ogre::String getVersionString();
 
 #endif //UTILS_H_

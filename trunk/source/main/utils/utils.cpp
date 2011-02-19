@@ -18,7 +18,11 @@ You should have received a copy of the GNU General Public License
 along with Rigs of Rods.  If not, see <http://www.gnu.org/licenses/>.
 */
 #include "utils.h"
-#include "Ogre.h"
+
+#include <Ogre.h>
+
+#include "RoRPrerequisites.h"
+#include "rornet.h"
 
 using namespace Ogre;
 
@@ -147,4 +151,17 @@ Ogre::String getASCIIFromOgreString(Ogre::String s, int maxlen)
 int getTimeStamp()
 {
 	return (int)time(NULL); //this will overflow in 2038
+}
+
+Ogre::String getVersionString()
+{
+	char tmp[1024] = "";
+	sprintf(tmp, "Rigs of Rods\n"
+		" version: %s\n"
+		" revision: %s\n"
+		" full revision: %s\n"
+		" protocol version: %s\n"
+		" build time: %s, %s\n"
+		, ROR_VERSION_STRING, SVN_REVISION, SVN_ID, RORNET_VERSION, __DATE__, __TIME__);
+	return Ogre::String(tmp);
 }
