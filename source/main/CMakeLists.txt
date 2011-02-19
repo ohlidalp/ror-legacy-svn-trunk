@@ -109,6 +109,7 @@ add_sub_dir(main_sim)
 add_sub_dir(network)
 add_sub_dir(network/protocol)
 add_sub_dir(sqlite)
+add_sub_dir(framework)
 
 IF(WIN32)
 	add_executable(RoR WIN32 ${headers} ${sources} main_sim/icon.rc)

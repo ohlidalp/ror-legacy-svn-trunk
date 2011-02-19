@@ -32,7 +32,10 @@ class Settings
 {
 public:
 	static Settings & Instance();
+
 	Ogre::String getSetting(Ogre::String key);
+	bool getBooleanSetting(Ogre::String key);
+	
 	Ogre::String getSettingScriptSafe(Ogre::String key);
 	void setSetting(Ogre::String key, Ogre::String value);
 	bool setupPaths();

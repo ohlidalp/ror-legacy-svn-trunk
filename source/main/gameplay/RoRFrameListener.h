@@ -117,18 +117,6 @@ class HDRListener;
 
 #define MAX_PLAYLIST_ENTRIES 20
 
-// this defines the version that is used for the scripts and console stuff.
-// $LastChangedDate: 2010-05-01 09:16:13 +0200 (Sat, 01 May 2010) $
-// $LastChangedRevision: 1355 $
-// $LastChangedBy: rorthomas $
-// $Id: RoRFrameListener.h 1355 2010-05-01 07:16:13Z rorthomas $
-// $Rev: 1355 $
-#define SVN_REVISION "$Rev: 1355 $"
-#define SVN_ID "$Id: RoRFrameListener.h 1355 2010-05-01 07:16:13Z rorthomas $"
-#define ROR_VERSION_STRING "0.38"
-
-//using namespace Ogre;
-
 #ifdef USE_PAGED
 using namespace Forests;
 #endif
@@ -243,9 +231,7 @@ protected:
 	//bool useforce;
 	//BeamJoystick *joy;
 	ForceFeedback *forcefeedback;
-#ifdef USE_OIS_G27
-	OIS::Win32LogitechLEDs* leds;
-#endif //OIS_G27
+
 	bool flipflop;
 	HDRListener *hdrListener;
 

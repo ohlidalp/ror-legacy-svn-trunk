@@ -57,6 +57,13 @@ Ogre::String Settings::getSetting(Ogre::String key)
 	return settings[key];
 }
 
+bool Settings::getBooleanSetting(Ogre::String key)
+{
+	String value = settings[key];
+	StringUtil::toLowerCase(value);
+	return value == "yes";
+}
+
 Ogre::String Settings::getSettingScriptSafe(Ogre::String key)
 {
 	// hide certain settings for scripts

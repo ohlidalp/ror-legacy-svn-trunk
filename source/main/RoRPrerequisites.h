@@ -35,6 +35,16 @@ along with Rigs of Rods.  If not, see <http://www.gnu.org/licenses/>.
 #error You need at least Ogre version 1.7.1, older versions are not supported
 #endif
 
+// this defines the version that is used for the scripts and console stuff.
+// $LastChangedDate$
+// $LastChangedRevision$
+// $LastChangedBy$
+// $Id$
+// $Rev$
+#define SVN_REVISION "$Rev$"
+#define SVN_ID "$Id$"
+#define ROR_VERSION_STRING "0.38"
+
 // replace standard allocations with nedmalloc
 //#define REPLACE_SYSTEM_ALLOCATOR
 //#include "nedmalloc.h"
