@@ -19,11 +19,13 @@ along with Rigs of Rods.  If not, see <http://www.gnu.org/licenses/>.
 */
 #ifndef ROR_EMBEDDED
 
+#include "RoRPrerequisites.h"
 #include "RigsOfRods.h"
 #include "language.h"
 #include "errorutils.h"
 #include "utils.h"
 #include "Settings.h"
+#include "rornet.h"
 
 using namespace Ogre;
 
