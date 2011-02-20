@@ -1,6 +1,6 @@
 //|||||||||||||||||||||||||||||||||||||||||||||||
 
-#include "AdvancedOgreFramework.hpp"
+#include "AdvancedOgreFramework.h"
 
 #include "Settings.h"
 #include "errorutils.h"
@@ -21,7 +21,6 @@ OgreFramework::OgreFramework() : hwnd(0), mainhwnd(0), name()
     m_pRoot				= 0;
     m_pRenderWnd		= 0;
     m_pViewport			= 0;
-    m_pLog				= 0;
     m_pTimer			= 0;
 }
 
@@ -29,9 +28,9 @@ OgreFramework::OgreFramework() : hwnd(0), mainhwnd(0), name()
 
 OgreFramework::~OgreFramework()
 {
-    OgreFramework::getSingletonPtr()->m_pLog->logMessage("Shutdown OGRE...");
+	LogManager::getSingleton().logMessage("Shutdown OGRE...");
     //if(m_pTrayMgr)      delete m_pTrayMgr;
-    if(m_pRoot)			delete m_pRoot;
+    //if(m_pRoot)			delete m_pRoot;
 }
 
 //|||||||||||||||||||||||||||||||||||||||||||||||
@@ -87,12 +86,16 @@ bool OgreFramework::initOgre(Ogre::String name, unsigned int hwnd, unsigned int 
 	this->hwnd     = hwnd;
 	this->mainhwnd = mainhwnd;
 
-    Ogre::LogManager* logMgr = new Ogre::LogManager();
+	if(!SETTINGS.setupPaths())
+		return false;
 
-    m_pLog = Ogre::LogManager::getSingleton().createLog(name + ".log", true, true, false);
-    m_pLog->setDebugOutputEnabled(true);
+	// load RoR.cfg directly after setting up paths
+	SETTINGS.loadSettings(SETTINGS.getSetting("Config Root")+"RoR.cfg");
 
-    m_pRoot = new Ogre::Root();
+	String logFilename   = SETTINGS.getSetting("Log Path") + name + Ogre::String(".log");
+	String pluginsConfig = SETTINGS.getSetting("plugins.cfg");
+	String ogreConfig    = SETTINGS.getSetting("ogre.cfg");
+    m_pRoot = new Ogre::Root(pluginsConfig, ogreConfig, logFilename);
 
 	// configure RoR
 	configure();
@@ -101,12 +104,16 @@ bool OgreFramework::initOgre(Ogre::String name, unsigned int hwnd, unsigned int 
     m_pViewport->setBackgroundColour(ColourValue(0.5f, 0.5f, 0.5f, 1.0f));
 
     m_pViewport->setCamera(0);
+	m_pViewport->setBackgroundColour(ColourValue::Black);
+
+	//
+	//mRoot->setFrameSmoothingPeriod(2.0);
 
 	// init inputsystem
 
 
     Ogre::TextureManager::getSingleton().setDefaultNumMipmaps(5);
-    Ogre::ResourceGroupManager::getSingleton().initialiseAllResourceGroups();
+    //Ogre::ResourceGroupManager::getSingleton().initialiseAllResourceGroups();
 
     //m_pTrayMgr = new OgreBites::SdkTrayManager("AOFTrayMgr", m_pRenderWnd, m_pMouse, 0);
 
@@ -114,6 +121,29 @@ bool OgreFramework::initOgre(Ogre::String name, unsigned int hwnd, unsigned int 
     m_pTimer->reset();
 
     m_pRenderWnd->setActive(true);
+
+	// set window icon correctly
+#if OGRE_PLATFORM == OGRE_PLATFORM_WIN32
+#ifndef _UNICODE
+	if(hwnd == 0)
+	{
+		// only in non-embedded mode
+		size_t hWnd = 0;
+		m_pRenderWnd->getCustomAttribute("WINDOW", &hWnd);
+
+		char buf[MAX_PATH];
+		::GetModuleFileNameA(0, (LPCH)&buf, MAX_PATH);
+
+		HINSTANCE instance = ::GetModuleHandleA(buf);
+		HICON hIcon = ::LoadIconA(instance, MAKEINTRESOURCE(1001));
+		if (hIcon)
+		{
+			::SendMessageA((HWND)hWnd, WM_SETICON, 1, (LPARAM)hIcon);
+			::SendMessageA((HWND)hWnd, WM_SETICON, 0, (LPARAM)hIcon);
+		}
+	}
+#endif //_UNICODE
+#endif //OGRE_PLATFORM_WIN32
 
     return true;
 }

@@ -5,18 +5,10 @@
 
 //|||||||||||||||||||||||||||||||||||||||||||||||
 
-#include "AppState.hpp"
+#include "AppState.h"
 
 #include <OgreSubEntity.h>
 #include <OgreMaterialManager.h>
-
-//|||||||||||||||||||||||||||||||||||||||||||||||
-
-enum QueryFlags
-{
-	OGRE_HEAD_MASK	= 1<<0,
-    CUBE_MASK		= 1<<1
-};
 
 //|||||||||||||||||||||||||||||||||||||||||||||||
 
@@ -33,7 +25,6 @@ public:
 	bool pause();
 	void resume();
 
-	void moveCamera();
 	void getInput();
     void buildGUI();
 

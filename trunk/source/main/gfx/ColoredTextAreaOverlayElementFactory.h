@@ -22,22 +22,24 @@ along with Rigs of Rods.  If not, see <http://www.gnu.org/licenses/>.
 
 #include "RoRPrerequisites.h"
 
+#include <OgreString.h>
+#include <OgreOverlayElement.h>
 #include <OgreOverlayElementFactory.h>
 #include "ColoredTextAreaOverlayElement.h"
 
 /** Factory for creating TextAreaOverlayElement instances. */
-class ColoredTextAreaOverlayElementFactory : public OverlayElementFactory
+class ColoredTextAreaOverlayElementFactory : public Ogre::OverlayElementFactory
 {
 public:
 	/** See OverlayElementFactory */
-	OverlayElement* createOverlayElement(const String& instanceName)
+	Ogre::OverlayElement* createOverlayElement(const Ogre::String& instanceName)
 	{
 		return new ColoredTextAreaOverlayElement(instanceName);
 	}
 	/** See OverlayElementFactory */
-	const String& getTypeName() const
+	const Ogre::String& getTypeName() const
 	{
-		static String name = "ColoredTextArea";
+		static Ogre::String name = "ColoredTextArea";
 		return name;
 	}
 };
