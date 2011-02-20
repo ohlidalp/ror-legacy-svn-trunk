@@ -937,7 +937,7 @@ RoRFrameListener::RoRFrameListener(RenderWindow* win, Camera* cam, SceneManager*
 	// setup particle manager
 	new DustManager(mSceneMgr);
 
-	new CacheSystem(scm);
+	CACHE.startup(mSceneMgr);
 
 	screenWidth=win->getWidth();
 	screenHeight=win->getHeight();
@@ -1239,7 +1239,6 @@ RoRFrameListener::RoRFrameListener(RenderWindow* win, Camera* cam, SceneManager*
 	// now continue to load everything...
 	if(preselected_map != "")
 	{
-		/*
 		if(!CACHE.checkResourceLoaded(preselected_map))
 		{
 			preselected_map  = preselected_map + ".terrn";
@@ -1253,9 +1252,7 @@ RoRFrameListener::RoRFrameListener(RenderWindow* win, Camera* cam, SceneManager*
 		}
 
 		// set the terrain cache entry
-		loaded_terrain = CACHE.getResourceInfo(preselected_map);
-
-		*/
+		//loaded_terrain = CACHE.getResourceInfo(preselected_map);
 
 		loadTerrain(preselected_map);
 		//miniature map stuff
@@ -1586,7 +1583,6 @@ void RoRFrameListener::loadObject(const char* name, float px, float py, float pz
 	String odefgroup = "";
 	String odefname = "";
 	bool odefFound = true;
-	/*
 	if(terrainUID != "" && !CACHE.stringHasUID(name))
 	{
 		sprintf(fname,"%s-%s.odef", terrainUID.c_str(), name);
@@ -1610,9 +1606,8 @@ void RoRFrameListener::loadObject(const char* name, float px, float py, float pz
 			odefFound = true;
 		}
 	}
-	*/
 
-	//if(!CACHE.checkResourceLoaded(odefname, odefgroup))
+	if(!CACHE.checkResourceLoaded(odefname, odefgroup))
 	if(!odefFound)
 	{
 		LogManager::getSingleton().logMessage("Error while loading Terrain: could not find required .odef file: " + odefname + ". Ignoring entry.");
@@ -4526,7 +4521,6 @@ void RoRFrameListener::loadTerrain(String terrainfile)
 {
 	ScopeLog log("terrain_"+terrainfile);
 
-	/*
 	// check if the resource is loaded
 	if(!CACHE.checkResourceLoaded(terrainfile))
 	{
@@ -4540,7 +4534,6 @@ void RoRFrameListener::loadTerrain(String terrainfile)
 		}
 
 	}
-	*/
 
 	if(terrainfile == "simple.terrn")
 	{
@@ -4595,7 +4588,6 @@ void RoRFrameListener::loadTerrain(String terrainfile)
 	}
 
 	// set the terrain hash
-	/*
 	{
 		Cache_Entry ce = CACHE.getResourceInfo(terrainfile);
 		char hash_result[250];
@@ -4611,7 +4603,6 @@ void RoRFrameListener::loadTerrain(String terrainfile)
 		sha1.ReportHash(hash_result, RoR::CSHA1::REPORT_HEX_SHORT);
 		SETTINGS.setSetting("TerrainHash", String(hash_result));
 	}
-	*/
 
 	loadedTerrain = terrainfile;
 
@@ -5845,13 +5836,11 @@ void RoRFrameListener::loadClassicTerrain(String terrainfile)
 				continue;
 			String group="";
 			String truckname=String(type);
-			/*
 			if(!CACHE.checkResourceLoaded(truckname, group))
 			{
 				LogManager::getSingleton().logMessage("error while loading terrain: truck " + String(type) + " not found. ignoring.");
 				continue;
 			}
-			*/
 			//this is a truck or load declaration
 			truck_preload[truck_preload_num].px=ox;
 			truck_preload[truck_preload_num].py=oy;

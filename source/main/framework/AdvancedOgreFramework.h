@@ -33,10 +33,12 @@ public:
 	Ogre::Root*					m_pRoot;
 	Ogre::RenderWindow*			m_pRenderWnd;
 	Ogre::Viewport*				m_pViewport;
-	Ogre::Log*					m_pLog;
 	Ogre::Timer*				m_pTimer;
 
     //OgreBites::SdkTrayManager*	m_pTrayMgr;
+
+	bool isEmbedded(void) { return (hwnd != 0); };
+	unsigned int getMainHWND() { return mainhwnd; };
 
 private:
 	OgreFramework(const OgreFramework&);

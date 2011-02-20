@@ -1,8 +1,11 @@
 //|||||||||||||||||||||||||||||||||||||||||||||||
 
-#include "AppStateManager.hpp"
+#include "AppStateManager.h"
 
 #include <OgreWindowEventUtilities.h>
+#include <OgreLogManager.h>
+
+using namespace Ogre;
 
 //|||||||||||||||||||||||||||||||||||||||||||||||
 
@@ -101,7 +104,7 @@ void AppStateManager::start(AppState* state)
 		}
 	}
 
-	OgreFramework::getSingletonPtr()->m_pLog->logMessage("Main loop quit");
+	LogManager::getSingleton().logMessage("Main loop quit");
 }
 
 //|||||||||||||||||||||||||||||||||||||||||||||||

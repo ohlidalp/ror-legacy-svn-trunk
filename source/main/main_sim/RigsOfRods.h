@@ -28,8 +28,8 @@ along with Rigs of Rods.  If not, see <http://www.gnu.org/licenses/>.
 
 #include "RoRPrerequisites.h"
 
-#include "AdvancedOgreFramework.hpp"
-#include "AppStateManager.hpp"
+#include "AdvancedOgreFramework.h"
+#include "AppStateManager.h"
 
 class RigsOfRods
 {

@@ -26,6 +26,7 @@ along with Rigs of Rods.  If not, see <http://www.gnu.org/licenses/>.
 #include "language.h"
 #include "CacheSystem.h"
 #include "skin.h"
+#include "utils.h"
 #include "skinmanager.h"
 #include "BeamData.h"
 
@@ -213,7 +214,6 @@ void SelectorWindow::eventComboAcceptConfigComboBox(MyGUI::ComboBoxPtr _sender, 
 
 void SelectorWindow::getData()
 {
-	/*
 	mTypeComboBox->removeAllItems();
 	if(mModelList->getItemCount() != 0) mModelList->setIndexSelected(0);
 	mModelList->removeAllItems();
@@ -334,14 +334,12 @@ void SelectorWindow::getData()
 		}
 		onCategorySelected(*mTypeComboBox->getItemDataAt<int>(0));
 	}
-	*/
 }
 
 void SelectorWindow::onCategorySelected(int categoryID)
 {
-	/*
 	if(mLoaderType == LT_SKIN) return;
-	int ts = CACHE.getTimeStamp();
+	int ts = getTimeStamp();
 	mModelList->removeAllItems();
 	std::vector<Cache_Entry>::iterator it;
 	int counter=0, counter2=0;
@@ -414,12 +412,10 @@ void SelectorWindow::onCategorySelected(int categoryID)
 		}
 		onEntrySelected(*mModelList->getItemDataAt<int>(0));
 	}
-	*/
 }
 
 void SelectorWindow::onEntrySelected(int entryID)
 {
-	/*
 	if(mLoaderType == LT_SKIN)
 	{
 		// special skin handling
@@ -457,12 +453,10 @@ void SelectorWindow::onEntrySelected(int entryID)
 	if(!entry) return;
 	mSelectedTruck = entry;
 	updateControls(mSelectedTruck);
-	*/
 }
 
 void SelectorWindow::selectionDone()
 {
-	/*
 	if(!mSelectedTruck || mSelectionDone)
 		return;
 
@@ -493,12 +487,10 @@ void SelectorWindow::selectionDone()
 		mSelectionDone = true;
 		hide();
 	}
-	*/
 }
 
 void SelectorWindow::updateControls(Cache_Entry *entry)
 {
-	/*
 	int modnumber = entry->number;
 	String minitype = entry->minitype;
 
@@ -588,12 +580,10 @@ void SelectorWindow::updateControls(Cache_Entry *entry)
 	{
 		mEntryDescriptionStaticText->setCaption("ENCODING ERROR");
 	}
-	*/
 }
 
 void SelectorWindow::setPreviewImage(Ogre::String texture)
 {
-	/*
 	if(texture == "" || texture == "none")
 		texture = _L("unknown.dds");
 
@@ -608,7 +598,6 @@ void SelectorWindow::setPreviewImage(Ogre::String texture)
 		texture = ("unknown.dds"); // without _L() !
 
 	mPreviewStaticImage->setImageTexture(texture);
-	*/
 }
 
 bool SelectorWindow::isFinishedSelecting()

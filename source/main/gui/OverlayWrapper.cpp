@@ -65,6 +65,7 @@ void OverlayWrapper::placeNeedle(SceneNode *node, float x, float y, float len)
 Ogre::Overlay *OverlayWrapper::loadOverlay(Ogre::String name, bool autoResizeRation)
 {
 	Overlay *o = OverlayManager::getSingleton().getByName(name);
+	if(!o) return NULL;
 
 	if(autoResizeRation)
 	{

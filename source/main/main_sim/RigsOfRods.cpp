@@ -21,7 +21,9 @@ along with Rigs of Rods.  If not, see <http://www.gnu.org/licenses/>.
 
 #include <Ogre.h>
 
-#include "GameState.hpp"
+#include "GameState.h"
+#include "Settings.h"
+#include "ContentManager.h"
 
 using namespace Ogre;
 
@@ -42,15 +44,22 @@ RigsOfRods::~RigsOfRods()
 
 void RigsOfRods::go(void)
 {
+	// init ogre
 	new OgreFramework();
 	if(!OgreFramework::getSingletonPtr()->initOgre(name, hwnd, mainhwnd))
 		return;
 
+	// then the base content setup
+	new ContentManager();
+	ContentManager::getSingleton().init();
+
+	// now add the game states
 	stateManager = new AppStateManager();
 
 	GameState::create(stateManager,  "GameState");
 
+	// select the first one
 	stateManager->start(stateManager->findByName("GameState"));
 
-	OgreFramework::getSingletonPtr()->m_pLog->logMessage("Rigs of Rods initialized!");
+	LogManager::getSingleton().logMessage("Rigs of Rods initialized!");
 }
