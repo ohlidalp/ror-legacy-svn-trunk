@@ -206,6 +206,7 @@ int Beam::loadTruck(const char* fname, SceneManager *manager, SceneNode *parent,
 		if (!strcmp("advdrag",line)) {mode=54;continue;};
 		if (!strcmp("axles",line)) {mode=55;continue;};
 		if (!strcmp("shocks2",line)) {mode=56;continue;};
+		if (!strcmp("triggers",line)) {mode=57;continue;};
 		if (!strcmp("railgroups",line)) {mode=63;continue;}
 		if (!strcmp("slidenodes",line)) {mode=64;continue;}
 		if (!strcmp("flares2",line)) {mode=65;continue;};
@@ -1045,6 +1046,107 @@ int Beam::loadTruck(const char* fname, SceneManager *manager, SceneNode *parent,
 				options_pointer++;
 			}
 		}
+		else if (mode==57)
+		{
+			//parse triggers
+			int id1, id2, triggershort, triggerlong;
+			float sbound, lbound, boundarytimer = 1.0f;
+			char options[50]="n";
+			int result = sscanf(line,"%i, %i, %f, %f, %i, %i, %s &f", &id1, &id2, &sbound, &lbound, &triggershort, &triggerlong, options, boundarytimer);
+			if (result < 6 || result == EOF)
+			{
+				LogManager::getSingleton().logMessage("Error parsing File (Triggers) " + String(fname) +" line " + StringConverter::toString(linecounter) + ". trying to continue ...");
+				continue;
+			}
+			// checks ...
+			if(free_beam >= MAX_BEAMS)
+			{
+				LogManager::getSingleton().logMessage("Triggers, beams limit reached ("+StringConverter::toString(MAX_BEAMS)+"): " + String(fname) +" line " + StringConverter::toString(linecounter) + ". trying to continue ...");
+				continue;
+			}
+			if(free_shock >= MAX_BEAMS)
+			{
+				LogManager::getSingleton().logMessage("Triggers limit reached ("+StringConverter::toString(MAX_SHOCKS)+"): " + String(fname) +" line " + StringConverter::toString(linecounter) + ". trying to continue ...");
+				continue;
+			}
+			if (id1>=free_node || id2>=free_node)
+			{
+				LogManager::getSingleton().logMessage("Error: unknown node number in Triggers section ("+StringConverter::toString(id1)+","+StringConverter::toString(id2)+")");
+				exit(576);
+			}
+			if ((triggershort < 1 || triggershort > MAX_COMMANDS) || ((triggerlong < 1 || triggerlong > MAX_COMMANDS) && triggerlong !=-1 && triggerlong !=0))
+			{
+				LogManager::getSingleton().logMessage("Error: Wrong command-eventnumber (Triggers) line " + StringConverter::toString(linecounter) + ". Trigger deactivated.");
+				continue;
+			}
+			// options
+			int htype=BEAM_HYDRO;
+			int shockflag = SHOCK_FLAG_NORMAL | SHOCK_FLAG_ISTRIGGER;
+			shocks[free_shock].trigger_enabled = true;
+			bool triggerblocker = false;
+			bool cmdkeyblock = false;
+			commandkey[triggershort].trigger_cmdkeyblock_state = false;
+			if (triggerlong != -1) commandkey[triggerlong].trigger_cmdkeyblock_state = false;
+
+			// now 'parse' the options
+			char *options_pointer = options;
+			while (*options_pointer != 0)
+			{
+				switch (*options_pointer)
+				{
+					case 'i':	// invisible
+						htype=BEAM_INVISIBLE_HYDRO;
+						shockflag |= SHOCK_FLAG_INVISIBLE;
+						break;
+					case 'x':	// this trigger is disabled on startup, default is enabled
+						shocks[free_shock].trigger_enabled = false;
+						break;
+					case 'B':	// Blocker that enable/disable other triggers
+						shockflag |= SHOCK_FLAG_TRG_BLOCKER;
+						triggerblocker = true;
+						break;
+					case 'b':	// Set the CommandKeys that are set in a commandkeyblocker or trigger to blocked on startup, default is released
+						cmdkeyblock = true;
+						break;
+					case 's':	// switch that exchanges cmdshort/cmdshort for all triggers with the same commandnumbers, default false
+						shockflag |= SHOCK_FLAG_TRG_CMD_SWITCH;
+						break;
+					case 'c':	// trigger is set with commandstyle boundaries instead of shocksytle
+						sbound = abs(sbound-1);
+						lbound = lbound-1;
+						break;
+				}
+				options_pointer++;
+			}
+			int pos=add_beam(&nodes[id1], &nodes[id2], manager, parent, htype, default_break, 0.0f, 0.0f, -1.0, sbound, lbound, 1.0f);
+
+			if (triggerdebug)
+				LogManager::getSingleton().logMessage("Trigger added. BeamID " + StringConverter::toString(pos) +  " Line#: " + StringConverter::toString(linecounter));
+			beams[pos].shock = &shocks[free_shock];
+			shocks[free_shock].beamid = pos;
+			shocks[free_shock].trigger_switch_state = 0.0f;   // used as bool and countdowntimer, dont touch!
+			if (!triggerblocker) // this is no triggerblocker (B)
+			{
+				shocks[free_shock].trigger_cmdshort = triggershort;
+
+				if (triggerlong != -1)	// this is a trigger
+					shocks[free_shock].trigger_cmdlong = triggerlong;
+				else // this is a commandkeyblocker
+					shockflag |= SHOCK_FLAG_TRG_CMD_BLOCKER;
+			}
+			if (cmdkeyblock && !triggerblocker)
+			{
+				commandkey[triggershort].trigger_cmdkeyblock_state = true;
+				if (triggerlong != -1) commandkey[triggerlong].trigger_cmdkeyblock_state = true;
+			}
+			if (boundarytimer > 0)
+				shocks[free_shock].trigger_boundary_t = boundarytimer;
+			else
+				shocks[free_shock].trigger_boundary_t = 1.0f;
+			shocks[free_shock].flags = shockflag;
+			free_shock++;
+		}
+		
 		else if (mode==4)
 		{
 			//parse shocks
