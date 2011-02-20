@@ -118,7 +118,7 @@ void Beam::calcForcesEuler(int doUpdate, Real dt, int step, int maxstep, Beam** 
 					}
 					else // We assume the bounded=SHOCK2 case
 					{
- 						calcShocks2(i, difftoBeamL, k, d);
+ 						calcShocks2(i, difftoBeamL, k, d, dt);
 					}
 				}
 				else

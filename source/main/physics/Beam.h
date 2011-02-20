@@ -129,7 +129,7 @@ public:
 	int truckSteps;
 	void calcForcesEuler(int doUpdate, Real dt, int step, int maxsteps, Beam** trucks, int numtrucks);
 	void truckTruckCollisions(Real dt, Beam** trucks, int numtrucks);
-	void calcShocks2(int beam_i, Real difftoBeamL, Real &k, Real &d);
+	void calcShocks2(int beam_i, Real difftoBeamL, Real &k, Real &d, Real dt);
 	void calcAnimators(int flagstate, float &cstate, int &div, float timer, float opt1, float opt2, float opt3);
 	//! @}
 
@@ -409,7 +409,7 @@ public:
 	int free_axle;
 	//! @}
 	
-	bool beambreakdebug, beamdeformdebug;
+	bool beambreakdebug, beamdeformdebug, triggerdebug;
 
 
 	// this must be in the header as the network stuff is using it...

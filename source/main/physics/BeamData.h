@@ -227,12 +227,17 @@ enum {
 };
 
 enum { 
-	SHOCK_FLAG_NORMAL       = BITMASK(1),
-	SHOCK_FLAG_INVISIBLE    = BITMASK(2),
-	SHOCK_FLAG_LACTIVE      = BITMASK(3),
-	SHOCK_FLAG_RACTIVE      = BITMASK(4),
-	SHOCK_FLAG_ISSHOCK2     = BITMASK(5),
-	SHOCK_FLAG_SOFTBUMP     = BITMASK(6),
+	SHOCK_FLAG_NORMAL			= BITMASK(1),
+	SHOCK_FLAG_INVISIBLE		= BITMASK(2),
+	SHOCK_FLAG_LACTIVE			= BITMASK(3),
+	SHOCK_FLAG_RACTIVE			= BITMASK(4),
+	SHOCK_FLAG_ISSHOCK2			= BITMASK(5),
+	SHOCK_FLAG_SOFTBUMP			= BITMASK(6),
+	SHOCK_FLAG_ISTRIGGER		= BITMASK(7),
+	SHOCK_FLAG_TRG_BLOCKER		= BITMASK(8),
+	SHOCK_FLAG_TRG_CMD_SWITCH	= BITMASK(9),
+	SHOCK_FLAG_TRG_CMD_BLOCKER	= BITMASK(10),
+
 };
 
 enum { 
@@ -299,7 +304,11 @@ struct shock
 	float dampout;
 	float sprogout;
 	float dprogout;
-
+	int trigger_cmdlong;			// F-key for trigger injection longbound-check
+	int trigger_cmdshort;			// F-key for trigger injection shortbound-check
+	bool trigger_enabled;			// general trigger,switch and blocker state
+	float trigger_switch_state;		// needed to avoid doubleswitch, bool and timer in one
+	float trigger_boundary_t;		// optional value to tune trigger_switch_state autorelease
 };
 
 struct collcab_rate
@@ -483,6 +492,7 @@ struct wing
 struct command
 {
 	float commandValue;
+	bool trigger_cmdkeyblock_state;  //identifies blocked F-commands for triggers
 	std::vector<int> beams;
 	std::vector<int> rotators;
 	Ogre::String description;

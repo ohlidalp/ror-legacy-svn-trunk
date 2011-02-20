@@ -371,6 +371,7 @@ Beam::Beam(int tnum, SceneManager *manager, SceneNode *parent, RenderWindow* win
 	networkAuthlevel = 0;
 	beambreakdebug = (SETTINGS.getSetting("Beam Break Debug") == "Yes");
 	beamdeformdebug = (SETTINGS.getSetting("Beam Deform Debug") == "Yes");
+	triggerdebug = (SETTINGS.getSetting("Trigger Debug") == "Yes");
 	freePositioned = freeposition;
 	free_axle=0;
 	slideNodesConnectInstantly=false;
@@ -3425,7 +3426,7 @@ void Beam::calcAnimators(int flagstate, float &cstate, int &div, Real timer, flo
 }
 
 
-void Beam::calcShocks2(int beam_i, Real difftoBeamL, Real &k, Real &d)
+void Beam::calcShocks2(int beam_i, Real difftoBeamL, Real &k, Real &d, Real dt)
 {
 	if(!beams[beam_i].shock) return;
 
@@ -3557,12 +3558,109 @@ void Beam::calcShocks2(int beam_i, Real difftoBeamL, Real &k, Real &d)
 	{
 		if (difftoBeamL > beams[i].longbound*beams[i].L || difftoBeamL < -beams[i].shortbound*beams[i].L)
 		{
-			// hard (normal) shock bump
-			k=DEFAULT_SPRING;
-			d=DEFAULT_DAMP;
+			if (beams[i].shock && beams[i].shock->flags & !SHOCK_FLAG_ISTRIGGER) // this is NOT a trigger beam
+			{
+				// hard (normal) shock bump
+				k=DEFAULT_SPRING;
+				d=DEFAULT_DAMP;
+			}
+		}
+		if (beams[i].shock && beams[i].shock->flags & SHOCK_FLAG_ISTRIGGER && beams[i].shock->trigger_enabled)  // this is a trigger and its enabled
+		{
+			if (difftoBeamL > beams[i].longbound*beams[i].L || difftoBeamL < -beams[i].shortbound*beams[i].L) // that has hit boundary
+			{
+				beams[i].shock->trigger_switch_state -= dt;
+				if (beams[i].shock->trigger_switch_state <= 0.0f) // emergency release for deadswitched trigger
+					beams[i].shock->trigger_switch_state = 0.0f;
+				if (beams[i].shock->flags & SHOCK_FLAG_TRG_BLOCKER) // this is an enabled blocker and past boundary
+				{
+					for (int scount = i + 1; scount <= i + beams[i].shock->trigger_cmdshort; scount++)   // (cylce blockerbeamID +1) to (blockerbeamID + beams tob lock)
+					{
+						if (beams[scount].shock && beams[scount].shock->flags & SHOCK_FLAG_ISTRIGGER)  // dont mess anything up if the user set the number too big
+						{
+							if (triggerdebug && !beams[scount].shock->trigger_enabled)
+								LogManager::getSingleton().logMessage(" Trigger enabled. Blocker BeamID " + StringConverter::toString(i) + " enabled trigger " + StringConverter::toString(scount));
+							beams[scount].shock->trigger_enabled = true;	// enable the trigger
+						}
+					}
+				} else
+				if (beams[i].shock->flags & SHOCK_FLAG_TRG_CMD_BLOCKER) // this an enabled cmd-key-blocker and past a boundary
+				{
+					commandkey[beams[i].shock->trigger_cmdshort].trigger_cmdkeyblock_state = false; // Release the cmdKey
+					if (triggerdebug)
+						LogManager::getSingleton().logMessage(" F-key trigger block released. Blocker BeamID " + StringConverter::toString(i) + " Released F" + StringConverter::toString(beams[i].shock->trigger_cmdshort));
+				} else
+				if (beams[i].shock->flags & SHOCK_FLAG_TRG_CMD_SWITCH) // this is an enabled cmdkey swictch and past a boundary
+				{
+					if (!beams[i].shock->trigger_switch_state)// this switch is triggered first time in this boundary
+					{
+						for (int scount=0; scount<free_shock; scount++)
+						{
+							int short1 = beams[shocks[scount].beamid].shock->trigger_cmdshort;  // cmdshort of checked trigger beam
+							int short2 = beams[i].shock->trigger_cmdshort;						// cmdshort of switch beam
+							int long1 = beams[shocks[scount].beamid].shock->trigger_cmdlong;	// cmdlong of checked trigger beam
+							int long2 = beams[i].shock->trigger_cmdlong;						// cmdlong of switch beam
+							int tmpi = beams[shocks[scount].beamid].shock->beamid;				// beamID global of checked trigger beam
+							if (((short1 == short2 && long1 == long2) || (short1 == long2 && long1 == short2)) && i != tmpi)  // found both command triggers then swap if its not the switching trigger
+							{
+								int tmpcmdkey = beams[shocks[scount].beamid].shock->trigger_cmdlong;
+								beams[shocks[scount]. beamid].shock->trigger_cmdlong = beams[shocks[scount].beamid].shock->trigger_cmdshort;
+								beams[shocks[scount].beamid].shock->trigger_cmdshort = tmpcmdkey;
+								beams[i].shock->trigger_switch_state = beams[i].shock->trigger_boundary_t ;  //prevent trigger switching again before leaving boundaries or timeout
+								if(triggerdebug)
+									LogManager::getSingleton().logMessage(" Trigger F-key commands switched. Switch BeamID "  + StringConverter::toString(i)+ " switched commands of Trigger BeamID " + StringConverter::toString(beams[shocks[scount].beamid].shock->beamid) + " to cmdShort: F" + StringConverter::toString(beams[shocks[scount].beamid].shock->trigger_cmdshort) + ", cmdlong: F" + StringConverter::toString(beams[shocks[scount].beamid].shock->trigger_cmdlong));
+							}
+						}
+					} 
+				} else
+				{ // just a trigger, check high/low boundary and set action
+					if (difftoBeamL > beams[i].longbound*beams[i].L) // trigger past longbound
+					{
+						if (!commandkey[beams[i].shock->trigger_cmdlong].trigger_cmdkeyblock_state)	// related cmdkey is not blocked
+						 {
+							 commandkey[beams[i].shock->trigger_cmdlong].commandValue = 1;
+							 if(triggerdebug)
+								 LogManager::getSingleton().logMessage(" Trigger Longbound activated. Trigger BeamID " + StringConverter::toString(i) + " Triggered F" + StringConverter::toString(beams[i].shock->trigger_cmdlong));
+						 }
+					} else // trigger past short bound
+					{
+						if (!commandkey[beams[i].shock->trigger_cmdshort].trigger_cmdkeyblock_state)	// related cmdkey is not blocked
+						{
+							commandkey[beams[i].shock->trigger_cmdshort].commandValue = 1;
+							if(triggerdebug)
+								LogManager::getSingleton().logMessage(" Trigger Shortbound activated. Trigger BeamID " + StringConverter::toString(i) + " Triggered F" + StringConverter::toString(beams[i].shock->trigger_cmdshort));
+						}
+					}
+				}
+			} else // this is a trigger inside boundaries and its enabled
+			{
+				if (beams[i].shock->flags & SHOCK_FLAG_TRG_BLOCKER) // this is an enabled blocker and inside boundary
+				{
+					for (int scount = i + 1; scount <= i + beams[i].shock->trigger_cmdlong; scount++)   // (cylce blockerbeamID + 1) to (blockerbeamID + beams to release)
+					{
+						if (beams[scount].shock && beams[scount].shock->flags & SHOCK_FLAG_ISTRIGGER)  // dont mess anything up if the user set the number too big
+						{									
+							if(triggerdebug && beams[scount].shock->trigger_enabled)
+								LogManager::getSingleton().logMessage(" Trigger disabled. Blocker BeamID " + StringConverter::toString(i) + " disabled trigger " + StringConverter::toString(scount));
+							beams[scount].shock->trigger_enabled = false;	// disable the triggers
+						}
+					}
+				} else
+				if (beams[i].shock->flags & SHOCK_FLAG_TRG_CMD_SWITCH && beams[i].shock->trigger_switch_state) // this is a switch that was activated and is back inside boundaries again
+				{
+					beams[i].shock->trigger_switch_state = 0.0f;  //trigger_switch resetted
+					if(triggerdebug)
+						LogManager::getSingleton().logMessage(" Trigger switch resetted. Switch BeamID " + StringConverter::toString(i));
+				} else
+				if (beams[i].shock->flags & SHOCK_FLAG_TRG_CMD_BLOCKER && !commandkey[beams[i].shock->trigger_cmdshort].trigger_cmdkeyblock_state) // this cmdkeyblocker is inside boundaries and cmdkeystate is diabled
+				{
+					if(triggerdebug)
+						LogManager::getSingleton().logMessage(" F-key trigger blocked. Blocker BeamID " + StringConverter::toString(i) + " Blocked F" + StringConverter::toString(beams[i].shock->trigger_cmdshort));
+						commandkey[beams[i].shock->trigger_cmdshort].trigger_cmdkeyblock_state = true; // activate trigger blocking
+				}
+			}
 		}
 	}
-
 	// save beam position for next sim cycle
 	beams[i].shock->lastpos=difftoBeamL;
 }
