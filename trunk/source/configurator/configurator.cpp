@@ -1181,7 +1181,7 @@ MyDialog::MyDialog(const wxString& title, MyApp *_app) : wxDialog(NULL, wxID_ANY
 	dText = new wxStaticText(advancedPanel, -1, _("minimum visibility range in percent"), wxPoint(10,y));
 	y+=20;
 	//this makes a visual bug in macosx
-	sightrange=new wxSlider(advancedPanel, -1, 30, 5, 500, wxPoint(30, y), wxSize(200, 40), wxSL_LABELS|wxSL_AUTOTICKS);
+	sightrange=new wxSlider(advancedPanel, -1, 30, 1, 500, wxPoint(30, y), wxSize(200, 40), wxSL_LABELS|wxSL_AUTOTICKS);
 	sightrange->SetToolTip(_("This sets the minimum sight range Setting. It determines how far the terrain should be drawn. \n100% means you can view the whole terrain. \nWith 130% you can view everything across the diagonal Axis."));
 	sightrange->SetTickFreq(10, 0);
 	sightrange->SetPageSize(10);
