@@ -4762,10 +4762,6 @@ void RoRFrameListener::loadClassicTerrain(String terrainfile)
 		terrainzsize=fval;
 		//we take farclip=1/3rd the terrain size (default)
 		farclip = farclip * farclipPercent / 100.0f;
-		if (farclip<1000.0)
-			//cap for small terrains
-			farclip=1000.0;
-
 		disableTetrrain = (config.getSetting("disable") != "");
 	}
 
