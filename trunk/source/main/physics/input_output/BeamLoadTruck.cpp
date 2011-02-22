@@ -1992,9 +1992,9 @@ int Beam::loadTruck(const char* fname, SceneManager *manager, SceneNode *parent,
 		else if (mode==14)
 		{
 			//parse ropes
-			int id1=0, id2=0, key=0, group=0;
+			int id1=0, id2=0, group=0;
 			char option = 'n';
-			int result = sscanf(line,"%i, %i, %i, %i, %c", &id1, &id2, &key, &option);
+			int result = sscanf(line,"%i, %i, %c", &id1, &id2, &option);
 			if (result < 2 || result == EOF) {
 				LogManager::getSingleton().logMessage("Error parsing File (Ropes) " + String(fname) +" line " + StringConverter::toString(linecounter) + ". trying to continue ...");
 				continue;
