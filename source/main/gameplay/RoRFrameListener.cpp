@@ -4022,7 +4022,6 @@ bool RoRFrameListener::updateEvents(float dt)
 
 
 #ifdef USE_MYGUI
-		/*
 		if (SelectorWindow::get()->isFinishedSelecting())
 		{
 			if (loading_state==NONE_LOADED)
@@ -4117,7 +4116,6 @@ bool RoRFrameListener::updateEvents(float dt)
 			}
 
 		}
-		*/
 #endif //MYGUI
 	}
 
