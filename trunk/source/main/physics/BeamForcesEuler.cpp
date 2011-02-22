@@ -103,8 +103,17 @@ void Beam::calcForcesEuler(int doUpdate, Real dt, int step, int maxstep, Beam** 
 							float interp_ratio=difftoBeamL-beams[i].longbound*beams[i].L;
 
 							// hard (normal) shock bump
-							k=k+(DEFAULT_SPRING-k)*interp_ratio;
-							d=d+(DEFAULT_DAMP-d)*interp_ratio;
+							float tspring = DEFAULT_SPRING;
+							float tdamp = DEFAULT_DAMP;
+
+							//skip camera, wheels or any other shocks wich are not generated in a shocks or shocks2 section
+							if (beams[i].type == BEAM_HYDRO || beams[i].type == BEAM_INVISIBLE_HYDRO)
+							{
+								tspring = beams[i].shock->sbd_spring;
+								tdamp = beams[i].shock->sbd_damp;
+							}
+							k=k+(tspring - k)*interp_ratio;
+							d=d+(tdamp - d)*interp_ratio;
 						}
 						else if (difftoBeamL < -beams[i].shortbound*beams[i].L)
 						{
@@ -112,8 +121,16 @@ void Beam::calcForcesEuler(int doUpdate, Real dt, int step, int maxstep, Beam** 
 							float interp_ratio=-beams[i].shortbound*beams[i].L-difftoBeamL;
 
 							// hard (normal) shock bump
-							k=k+(DEFAULT_SPRING-k)*interp_ratio;
-							d=d+(DEFAULT_DAMP-d)*interp_ratio;
+							float tspring = DEFAULT_SPRING;
+							float tdamp = DEFAULT_DAMP;
+							//skip camera, wheels or any other shocks wich are not generated in a shocks section
+							if (beams[i].type == BEAM_HYDRO || beams[i].type == BEAM_INVISIBLE_HYDRO)
+							{
+								tspring = beams[i].shock->sbd_spring;
+								tdamp = beams[i].shock->sbd_damp;
+							}
+							k=k+(tspring - k)*interp_ratio;
+							d=d+(tdamp - d)*interp_ratio;	
 						}
 					}
 					else // We assume the bounded=SHOCK2 case
@@ -373,7 +390,7 @@ void Beam::calcForcesEuler(int doUpdate, Real dt, int step, int maxstep, Beam** 
 					if (props[propi].animFlags[animnum] & ANIM_FLAG_AILERONS) cstate += hydroaileronstate;
 					//elevator
 					if (props[propi].animFlags[animnum] & ANIM_FLAG_ELEVATORS) cstate += hydroelevatorstate;
-					//rudder Liftec
+					//rudder
 					if (props[propi].animFlags[animnum] & ANIM_FLAG_ARUDDER) cstate += hydrorudderstate;
 					//permanent
 					if (props[propi].animFlags[animnum] & ANIM_FLAG_PERMANENT) cstate += 1.0f;

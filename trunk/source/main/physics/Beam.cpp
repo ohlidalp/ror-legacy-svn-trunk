@@ -3549,8 +3549,8 @@ void Beam::calcShocks2(int beam_i, Real difftoBeamL, Real &k, Real &d, Real dt)
 		if (difftoBeamL > beams[i].longbound*beams[i].L || difftoBeamL < -beams[i].shortbound*beams[i].L)
 		{
 			// block reached...hard bump in soft mode with 4x default damping
-			if (k < DEFAULT_SPRING) k=DEFAULT_SPRING;
-			if (d < DEFAULT_DAMP*4.0f) d = DEFAULT_DAMP*4.0f;
+			if (k < beams[i].shock->sbd_spring) k = beams[i].shock->sbd_spring;
+			if (d < beams[i].shock->sbd_damp) d = beams[i].shock->sbd_damp;
 		}
 	}
 
@@ -3561,8 +3561,8 @@ void Beam::calcShocks2(int beam_i, Real difftoBeamL, Real &k, Real &d, Real dt)
 			if (beams[i].shock && beams[i].shock->flags & !SHOCK_FLAG_ISTRIGGER) // this is NOT a trigger beam
 			{
 				// hard (normal) shock bump
-				k=DEFAULT_SPRING;
-				d=DEFAULT_DAMP;
+				k = beams[i].shock->sbd_spring;
+				d = beams[i].shock->sbd_damp;
 			}
 		}
 		if (beams[i].shock && beams[i].shock->flags & SHOCK_FLAG_ISTRIGGER && beams[i].shock->trigger_enabled)  // this is a trigger and its enabled

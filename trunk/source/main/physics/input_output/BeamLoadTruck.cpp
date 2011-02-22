@@ -1144,6 +1144,8 @@ int Beam::loadTruck(const char* fname, SceneManager *manager, SceneNode *parent,
 			else
 				shocks[free_shock].trigger_boundary_t = 1.0f;
 			shocks[free_shock].flags = shockflag;
+			shocks[free_shock].sbd_spring = default_spring;
+			shocks[free_shock].sbd_damp = default_damp;
 			free_shock++;
 		}
 		
@@ -1219,6 +1221,8 @@ int Beam::loadTruck(const char* fname, SceneManager *manager, SceneNode *parent,
 			beams[pos].shock = &shocks[free_shock];
 			shocks[free_shock].beamid = pos;
 			shocks[free_shock].flags = shockflag;
+			shocks[free_shock].sbd_spring = default_spring;
+			shocks[free_shock].sbd_damp = default_damp;
 			free_shock++;
 		}
 		else if (mode==56)
@@ -1321,6 +1325,8 @@ int Beam::loadTruck(const char* fname, SceneManager *manager, SceneNode *parent,
 			shocks[free_shock].dprogout = pdout;
 			shocks[free_shock].beamid = pos;
 			shocks[free_shock].flags = shockflag;
+			shocks[free_shock].sbd_spring = default_spring;
+			shocks[free_shock].sbd_damp = default_damp;
 			free_shock++;
 		}
 
