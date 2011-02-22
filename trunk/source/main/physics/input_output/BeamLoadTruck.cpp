@@ -1993,7 +1993,8 @@ int Beam::loadTruck(const char* fname, SceneManager *manager, SceneNode *parent,
 		{
 			//parse ropes
 			int id1=0, id2=0, key=0, group=0;
-			int result = sscanf(line,"%i, %i, %i, %i", &id1, &id2, &key, &group);
+			char option = 'n';
+			int result = sscanf(line,"%i, %i, %i, %i, %c", &id1, &id2, &key, &option);
 			if (result < 2 || result == EOF) {
 				LogManager::getSingleton().logMessage("Error parsing File (Ropes) " + String(fname) +" line " + StringConverter::toString(linecounter) + ". trying to continue ...");
 				continue;
@@ -2011,7 +2012,9 @@ int Beam::loadTruck(const char* fname, SceneManager *manager, SceneNode *parent,
 				LogManager::getSingleton().logMessage("cannot create rope: beams limit reached ("+StringConverter::toString(MAX_BEAMS)+"): " + String(fname) +" line " + StringConverter::toString(linecounter) + ". trying to continue ...");
 				continue;
 			}
-			int pos=add_beam(&nodes[id1], &nodes[id2], manager, parent, BEAM_NORMAL, default_break * default_break_scale, default_spring * default_spring_scale, default_damp * default_damp_scale, detacher_group_state);
+			int htype = BEAM_NORMAL;
+			if (option=='i') htype = BEAM_INVISIBLE;
+			int pos=add_beam(&nodes[id1], &nodes[id2], manager, parent, htype, default_break * default_break_scale, default_spring * default_spring_scale, default_damp * default_damp_scale, detacher_group_state);
 			beams[pos].bounded=ROPE;
 
 			rope_t r;
