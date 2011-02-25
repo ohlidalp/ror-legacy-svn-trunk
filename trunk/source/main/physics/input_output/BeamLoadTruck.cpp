@@ -1118,7 +1118,8 @@ int Beam::loadTruck(const char* fname, SceneManager *manager, SceneNode *parent,
 				}
 				options_pointer++;
 			}
-			int pos=add_beam(&nodes[id1], &nodes[id2], manager, parent, htype, default_break, 0.0f, 0.0f, -1.0, sbound, lbound, 1.0f);
+			int pos=add_beam(&nodes[id1], &nodes[id2], manager, parent, htype, default_break,    0.0f, 0.0f, detacher_group_state, -1.0, sbound, lbound, 1.0f);
+			beams[pos].bounded=SHOCK2;
 
 			if (triggerdebug)
 				LogManager::getSingleton().logMessage("Trigger added. BeamID " + StringConverter::toString(pos) +  " Line#: " + StringConverter::toString(linecounter));
@@ -1133,7 +1134,13 @@ int Beam::loadTruck(const char* fname, SceneManager *manager, SceneNode *parent,
 					shocks[free_shock].trigger_cmdlong = triggerlong;
 				else // this is a commandkeyblocker
 					shockflag |= SHOCK_FLAG_TRG_CMD_BLOCKER;
+			} else // this is a triggerblocker
+			{
+				shockflag |= SHOCK_FLAG_TRG_BLOCKER;
+				shocks[free_shock].trigger_cmdshort = triggershort;
+				shocks[free_shock].trigger_cmdlong = triggerlong;
 			}
+
 			if (cmdkeyblock && !triggerblocker)
 			{
 				commandkey[triggershort].trigger_cmdkeyblock_state = true;
@@ -1143,6 +1150,7 @@ int Beam::loadTruck(const char* fname, SceneManager *manager, SceneNode *parent,
 				shocks[free_shock].trigger_boundary_t = boundarytimer;
 			else
 				shocks[free_shock].trigger_boundary_t = 1.0f;
+
 			shocks[free_shock].flags = shockflag;
 			shocks[free_shock].sbd_spring = default_spring;
 			shocks[free_shock].sbd_damp = default_damp;
