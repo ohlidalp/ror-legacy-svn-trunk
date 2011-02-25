@@ -3931,8 +3931,21 @@ int Beam::loadTruck(const char* fname, SceneManager *manager, SceneNode *parent,
 
 			nodes[nodenum].collRadius = radius;
 		}
-
 	};
+	
+	
+	// we should post-process the torque curve if existing
+	if(engine)
+	{
+		int result=engine->getTorqueCurve()->spaceCurveEvenly(engine->getTorqueCurve()->getUsedSpline());
+		if (result==1)
+		{
+			LogManager::getSingleton().logMessage("TorqueCurve: Points (rpm) must be in an ascending order. Using default curve");
+			engine->getTorqueCurve()->setTorqueModel("default");
+		}
+	}
+	
+	
 	if(!loading_finished) {
 		LogManager::getSingleton().logMessage("Reached end of file "+ String(fname)+ ". No 'end' was found! Did you forgot it? Trying to continue...");
 	}

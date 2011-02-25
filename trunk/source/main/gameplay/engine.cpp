@@ -155,7 +155,7 @@ void BeamEngine::update(float dt, int doUpdate)
 	//engine power
 	//with limiter
 	float tqValue = 1.0f;
-	float rpmRatio = curEngineRPM / maxRPM;
+	float rpmRatio = curEngineRPM / (maxRPM*1.25);
 	if (rpmRatio > 1.0f) rpmRatio = 1.0f;
 	if (torqueCurve) tqValue = torqueCurve->getEngineTorque(rpmRatio);
 	if (running && contact && curEngineRPM<(maxRPM*1.25) && curEngineRPM>stallRPM)

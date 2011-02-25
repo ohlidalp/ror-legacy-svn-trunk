@@ -78,6 +78,13 @@ public:
 	 */
 	Ogre::String getTorqueModel() { return usedModel; };
 
+	/**
+	 * Spaces the points of a spline evenly; this is needed for the correct calculation of the Ogre simple spline.
+	 * @param spline Pointer to the spline which should be processed.
+	 * @return 0 on success, 1 on error
+	 */
+	int spaceCurveEvenly(Ogre::SimpleSpline *spline);	
+
 protected:
 	Ogre::SimpleSpline *usedSpline;                        //!< spline which is used for calculating the torque, set by setTorqueModel().
 	Ogre::String usedModel;                                //!< name of the torque model used by the truck.
