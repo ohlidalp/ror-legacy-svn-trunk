@@ -3580,7 +3580,7 @@ void Beam::calcShocks2(int beam_i, Real difftoBeamL, Real &k, Real &d, Real dt)
 						{
 							if (triggerdebug && !beams[scount].shock->trigger_enabled)
 								LogManager::getSingleton().logMessage(" Trigger enabled. Blocker BeamID " + StringConverter::toString(i) + " enabled trigger " + StringConverter::toString(scount));
-							beams[scount].shock->trigger_enabled = true;	// enable the trigger
+							beams[scount].shock->trigger_enabled = false;	// disable the trigger
 						}
 					}
 				} else
@@ -3642,7 +3642,7 @@ void Beam::calcShocks2(int beam_i, Real difftoBeamL, Real &k, Real &d, Real dt)
 						{									
 							if(triggerdebug && beams[scount].shock->trigger_enabled)
 								LogManager::getSingleton().logMessage(" Trigger disabled. Blocker BeamID " + StringConverter::toString(i) + " disabled trigger " + StringConverter::toString(scount));
-							beams[scount].shock->trigger_enabled = false;	// disable the triggers
+							beams[scount].shock->trigger_enabled = true;	// enable the triggers
 						}
 					}
 				} else
