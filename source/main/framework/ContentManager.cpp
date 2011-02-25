@@ -28,6 +28,9 @@ along with Rigs of Rods.  If not, see <http://www.gnu.org/licenses/>.
 #include "skinmanager.h"
 #include "language.h"
 
+#include "CacheSystem.h"
+
+
 using namespace Ogre;
 using namespace std;
 
