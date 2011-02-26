@@ -3579,7 +3579,7 @@ void Beam::calcShocks2(int beam_i, Real difftoBeamL, Real &k, Real &d, Real dt)
 						if (beams[scount].shock && beams[scount].shock->flags & SHOCK_FLAG_ISTRIGGER)  // dont mess anything up if the user set the number too big
 						{
 							if (triggerdebug && !beams[scount].shock->trigger_enabled)
-								LogManager::getSingleton().logMessage(" Trigger enabled. Blocker BeamID " + StringConverter::toString(i) + " enabled trigger " + StringConverter::toString(scount));
+								LogManager::getSingleton().logMessage(" Trigger disabled. Blocker BeamID " + StringConverter::toString(i) + " enabled trigger " + StringConverter::toString(scount));
 							beams[scount].shock->trigger_enabled = false;	// disable the trigger
 						}
 					}
@@ -3641,7 +3641,7 @@ void Beam::calcShocks2(int beam_i, Real difftoBeamL, Real &k, Real &d, Real dt)
 						if (beams[scount].shock && beams[scount].shock->flags & SHOCK_FLAG_ISTRIGGER)  // dont mess anything up if the user set the number too big
 						{									
 							if(triggerdebug && beams[scount].shock->trigger_enabled)
-								LogManager::getSingleton().logMessage(" Trigger disabled. Blocker BeamID " + StringConverter::toString(i) + " disabled trigger " + StringConverter::toString(scount));
+								LogManager::getSingleton().logMessage(" Trigger enabled. Blocker BeamID " + StringConverter::toString(i) + " disabled trigger " + StringConverter::toString(scount));
 							beams[scount].shock->trigger_enabled = true;	// enable the triggers
 						}
 					}
