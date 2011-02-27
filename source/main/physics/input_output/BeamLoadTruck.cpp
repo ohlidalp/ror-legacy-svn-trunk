@@ -963,9 +963,10 @@ int Beam::loadTruck(const char* fname, SceneManager *manager, SceneNode *parent,
 		{
 			//parse beams
 			int id1, id2;
+			float support_break_factor = -1.0f;
 			char options[50] = "v";
 			int type=BEAM_NORMAL;
-			int result = sscanf(line,"%i, %i, %s",&id1,&id2,options);
+			int result = sscanf(line,"%i, %i, %s %f",&id1,&id2,options,&support_break_factor);
 			if (result < 2 || result == EOF) {
 				LogManager::getSingleton().logMessage("Error parsing File (Beam) " + String(fname) +" line " + StringConverter::toString(linecounter) + ". trying to continue ...");
 				continue;
@@ -1019,7 +1020,7 @@ int Beam::loadTruck(const char* fname, SceneManager *manager, SceneNode *parent,
 			}
 			*/
 
-			int pos=add_beam(&nodes[id1], &nodes[id2], manager, \
+				int pos=add_beam(&nodes[id1], &nodes[id2], manager, \
 				parent, type, default_break * default_break_scale, default_spring * default_spring_scale, \
 				default_damp * default_damp_scale, detacher_group_state, -1, -1, -1, 1, \
 				default_beam_diameter);
@@ -1041,6 +1042,10 @@ int Beam::loadTruck(const char* fname, SceneManager *manager, SceneNode *parent,
 						break;
 					case 's':
 						beams[pos].bounded=SUPPORTBEAM;
+						float support_break_limit = 0.0f;
+						if (support_break_factor > 0.0f)
+							support_break_limit = support_break_factor;
+						beams[pos].longbound = support_break_limit;
 						break;
 				}
 				options_pointer++;

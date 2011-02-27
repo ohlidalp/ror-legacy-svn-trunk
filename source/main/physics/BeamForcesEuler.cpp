@@ -154,11 +154,20 @@ void Beam::calcForcesEuler(int doUpdate, Real dt, int step, int maxstep, Beam** 
 						{
 							k=0.0f;
 							d=d*0.1f;
-							// If support beam is extended more than hundred original beam lengths, break it
-							if (difftoBeamL>beams[i].L*100.0f)
+							float break_limit = SUPPORT_BEAM_LIMIT_DEFAULT;
+							if (beams[i].longbound > 0.0f)
+								//this is a supportbeam with a user set break limit, get the user set limit
+								break_limit = beams[i].longbound;
+
+							// If support beam is extended the originallength * break_limit, break and disable it
+							if (difftoBeamL > beams[i].L*break_limit)
 							{
 								beams[i].broken=1;
 								beams[i].disabled=true;
+								if(beambreakdebug)
+								{
+									LogManager::getSingleton().logMessage(" XXX Support-Beam " + StringConverter::toString(i) + " limit extended and broke. Length: " + StringConverter::toString(difftoBeamL) + " / max. Length: " + StringConverter::toString(beams[i].L*break_limit) + ". It was between nodes " + StringConverter::toString(beams[i].p1->id) + " and " + StringConverter::toString(beams[i].p2->id) + ".");
+								}
 							}
 						}
 					}

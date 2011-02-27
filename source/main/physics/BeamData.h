@@ -106,6 +106,7 @@ static const float NODE_FRICTION_COEF_DEFAULT   = 1.0f;
 static const float NODE_VOLUME_COEF_DEFAULT     = 1.0f;
 static const float NODE_SURFACE_COEF_DEFAULT    = 1.0f;
 static const float NODE_LOADWEIGHT_DEFAULT      = -1.0f;
+static const float SUPPORT_BEAM_LIMIT_DEFAULT   = 4.0f;
 
 /* Enumerations */
 enum {
