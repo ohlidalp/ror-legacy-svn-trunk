@@ -26,6 +26,7 @@ along with Rigs of Rods.  If not, see <http://www.gnu.org/licenses/>.
 #include <Ogre.h>
 #include <map>
 
+// BES = Beam Engine Statistics
 
 class Beam;
 class PrecisionTimer;
