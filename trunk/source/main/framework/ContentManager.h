@@ -26,7 +26,7 @@ along with Rigs of Rods.  If not, see <http://www.gnu.org/licenses/>.
 #include <OgreResourceGroupManager.h>
 //#include "RoR
 
-class ContentManager : public Ogre::Singleton<ContentManager>
+class ContentManager : public Ogre::Singleton<ContentManager>, public Ogre::ResourceLoadingListener
 {
 public:
 	ContentManager();
@@ -34,11 +34,17 @@ public:
 
 	bool init(void);
 
-private:
+protected:
 	ContentManager(const ContentManager&);
 	ContentManager& operator= (const ContentManager&);
 
 	void loadMainResource(Ogre::String name, Ogre::String group=Ogre::ResourceGroupManager::DEFAULT_RESOURCE_GROUP_NAME);
+
+
+	// implementation for resource loading listener
+	Ogre::DataStreamPtr resourceLoading(const Ogre::String &name, const Ogre::String &group, Ogre::Resource *resource);
+	void resourceStreamOpened(const Ogre::String &name, const Ogre::String &group, Ogre::Resource *resource, Ogre::DataStreamPtr& dataStream);
+	bool resourceCollision(Ogre::Resource *resource, Ogre::ResourceManager *resourceManager);
 };
 
 #endif // CONTENTMANAGER_H__

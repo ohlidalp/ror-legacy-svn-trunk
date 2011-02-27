@@ -30,6 +30,7 @@ along with Rigs of Rods.  If not, see <http://www.gnu.org/licenses/>.
 
 #include "CacheSystem.h"
 
+#include "utils.h"
 
 using namespace Ogre;
 using namespace std;
@@ -51,15 +52,24 @@ void ContentManager::loadMainResource(String name, String group)
 	dirsep="\\";
 #endif
 
-	ResourceGroupManager::getSingleton().addResourceLocation(SETTINGS.getSetting("Resources Path")+dirsep+name, "FileSystem", group, true);
-	try
+	String zipFilename = SETTINGS.getSetting("Resources Path")+name+".zip";
+	if(fileExists(zipFilename))
 	{
-		ResourceGroupManager::getSingleton().addResourceLocation(SETTINGS.getSetting("Resources Path")+name+".zip", "Zip", group, true);
-	} catch(...) {}
+		ResourceGroupManager::getSingleton().addResourceLocation(zipFilename, "Zip", group, true);
+	} else
+	{
+		String dirname = SETTINGS.getSetting("Resources Path")+dirsep+name;
+		ResourceGroupManager::getSingleton().addResourceLocation(dirname, "FileSystem", group, true);
+	}
 }
 
 bool ContentManager::init(void)
 {
+
+    //Set listener if none has already been set
+    if (!Ogre::ResourceGroupManager::getSingleton().getLoadingListener())
+        Ogre::ResourceGroupManager::getSingleton().setLoadingListener(this);
+
 	//try to get correct paths
 	//note: we don't have LogManager available yet!
 	//FIRST: Get the "program path" and the user space path
@@ -212,3 +222,16 @@ bool ContentManager::init(void)
 	return true;
 }
 
+Ogre::DataStreamPtr ContentManager::resourceLoading(const Ogre::String &name, const Ogre::String &group, Ogre::Resource *resource)
+{
+	return Ogre::DataStreamPtr();
+}
+
+void ContentManager::resourceStreamOpened(const Ogre::String &name, const Ogre::String &group, Ogre::Resource *resource, Ogre::DataStreamPtr& dataStream)
+{
+}
+
+bool ContentManager::resourceCollision(Ogre::Resource *resource, Ogre::ResourceManager *resourceManager)
+{
+	return false;
+}

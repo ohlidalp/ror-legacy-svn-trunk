@@ -1582,14 +1582,14 @@ void RoRFrameListener::loadObject(const char* name, float px, float py, float pz
 	// try to load with UID first!
 	String odefgroup = "";
 	String odefname = "";
-	bool odefFound = true;
+	bool odefFound = false;
 	if(terrainUID != "" && !CACHE.stringHasUID(name))
 	{
 		sprintf(fname,"%s-%s.odef", terrainUID.c_str(), name);
 		odefname = String(fname);
 		bool exists = ResourceGroupManager::getSingleton().resourceExistsInAnyGroup(odefname);
 		if(exists)
-		{
+		{	
 			odefgroup = ResourceGroupManager::getSingleton().findGroupContainingResource(odefname);
 			odefFound = true;
 		}
