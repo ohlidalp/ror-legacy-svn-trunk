@@ -154,8 +154,8 @@ void Beam::calcForcesEuler(int doUpdate, Real dt, int step, int maxstep, Beam** 
 						{
 							k=0.0f;
 							d=d*0.1f;
-							// If support beam is extended more than four beam lengths, break it
-							if (difftoBeamL>beams[i].L*4.0f)
+							// If support beam is extended more than hundred original beam lengths, break it
+							if (difftoBeamL>beams[i].L*100.0f)
 							{
 								beams[i].broken=1;
 								beams[i].disabled=true;
