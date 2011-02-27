@@ -195,7 +195,10 @@ bool ContentManager::init(void)
 	LogManager::getSingleton().logMessage("initialiseAllResourceGroups() - Content");
 	try
 	{
-		ResourceGroupManager::getSingleton().initialiseAllResourceGroups();
+		ResourceGroupManager::getSingleton().initialiseResourceGroup("Streams");
+		ResourceGroupManager::getSingleton().initialiseResourceGroup("Packs");
+		ResourceGroupManager::getSingleton().initialiseResourceGroup("VehicleFolders");
+		ResourceGroupManager::getSingleton().initialiseResourceGroup("TerrainFolders");
 	} catch(Ogre::Exception& e)
 	{
 		LogManager::getSingleton().logMessage("catched error while initializing Content Resource groups: " + e.getFullDescription());

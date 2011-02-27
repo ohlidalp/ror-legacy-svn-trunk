@@ -28,6 +28,7 @@ along with Rigs of Rods.  If not, see <http://www.gnu.org/licenses/>.
 //#include "language.h"
 #define _L
 
+#include "utils.h"
 #include "errorutils.h"
 #include "sha1.h"
 
@@ -291,11 +292,18 @@ bool Settings::setupPaths()
 	char streams_path[1024]="";
 	char user_path[1024]="";
 	char config_root[1024]="";
-	char dirsep='/';
-
+	char *dsStr = "\\";
+#if OGRE_PLATFORM != OGRE_PLATFORM_WIN32
+	char *dsStr="/";
+#endif
 
 	if(!get_system_paths(program_path, user_path))
 		return false;
+
+	char local_config[1024]="";
+	sprintf(local_config, "%s%sconfig%sconfig%sRoR.cfg",program_path, dsStr, dsStr, dsStr);
+	if(fileExists(string(local_config)))
+		sprintf(user_path, "%s%sconfig%s",program_path, dsStr, dsStr);
 
 	//NEXT, derive the resources and stream paths from the base paths (depends on configuration)
 	//from now we are mostly platform neutral
@@ -325,13 +333,10 @@ bool Settings::setupPaths()
 	strcat(ogrelog_fname, "RoR.log");
 
 	// now update our settings with the results:
-	String dsStr = "\\";
-#if OGRE_PLATFORM != OGRE_PLATFORM_WIN32
-	dsStr="/";
-#endif
-	settings["dirsep"] = dsStr;
+
+	settings["dirsep"] = String(dsStr);
 	settings["Config Root"] = String(config_root);
-	settings["Cache Path"] = String(user_path) + "cache" + dsStr;
+	settings["Cache Path"] = String(user_path) + "cache" + String(dsStr);
 	settings["Log Path"] = String(ogrelog_path);
 	settings["Resources Path"] = String(resources_path);
 	settings["Streams Path"] = String(streams_path);
@@ -352,22 +357,16 @@ bool Settings::setupPaths()
 	StringUtil::toLowerCase(settings["Program Path"]);
 #endif
 	// now enable the user to override that:
-	try
+	if(fileExists(string("config.cfg")))
 	{
-		String configfile = settings["configfile"];
-		if(!configfile.size()) configfile = "config.cfg";
-		loadSettings(configfile, true);
+		loadSettings("config.cfg", true);
 
 		// fix up time things...
-		settings["Config Root"] = settings["User Path"]+dsStr+"config"+dirsep;
-		settings["Cache Path"]  = settings["User Path"]+dsStr+"cache"+dirsep;
-		settings["Log Path"]    = settings["User Path"]+dsStr+"logs"+dirsep;
-		settings["ogre.cfg"]    = settings["User Path"]+dsStr+"config"+dirsep+"ogre.cfg";
-		settings["ogre.log"]    = settings["User Path"]+dsStr+"logs"+dirsep+"ogre.log";
-
-	} catch(...)
-	{
-		// file not found or other error
+		settings["Config Root"] = settings["User Path"]+string(dsStr)+"config"+string(dsStr);
+		settings["Cache Path"]  = settings["User Path"]+string(dsStr)+"cache"+string(dsStr);
+		settings["Log Path"]    = settings["User Path"]+string(dsStr)+"logs"+string(dsStr);
+		settings["ogre.cfg"]    = settings["User Path"]+string(dsStr)+"config"+string(dsStr)+"ogre.cfg";
+		settings["ogre.log"]    = settings["User Path"]+string(dsStr)+"logs"+string(dsStr)+"ogre.log";
 	}
 
 	printf(" * config path:      %s\n", settings["Config Root"].c_str());

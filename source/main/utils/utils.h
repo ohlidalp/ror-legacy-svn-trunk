@@ -43,4 +43,6 @@ int getTimeStamp();
 
 Ogre::String getVersionString();
 
+bool fileExists(std::string filename);
+
 #endif //UTILS_H_
