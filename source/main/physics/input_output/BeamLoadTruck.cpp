@@ -46,7 +46,7 @@ int Beam::loadTruck(const char* fname, SceneManager *manager, SceneNode *parent,
 	//FILE *fd;
 	char line[1024];
 	int linecounter = 0;
-	int mode=0, savedmode=0;
+	int mode=BTS_NONE, savedmode=BTS_NONE;
 	int hasfixes=0;
 	int wingstart=-1;
 	int leftlight=0;
@@ -98,33 +98,28 @@ int Beam::loadTruck(const char* fname, SceneManager *manager, SceneNode *parent,
 	// some temp vars used
 	Real inertia_startDelay=-1, inertia_stopDelay=-1;
 	char inertia_default_startFunction[50]="", inertia_default_stopFunction[50]="";
-	int shadowmode = 1;
+	int shadowmode = BTS_NODES;
 
 	while (!ds->eof())
 	{
 		size_t ll=ds->readLine(line, 1023);
 		linecounter++;
-//			fscanf(fd," %[^\n\r]",line);
-		//LogManager::getSingleton().logMessage(line);
-		//        printf("Mode %i Line:'%s'\n",mode, line);
+
 		if (ll==0 || line[0]==';' || line[0]=='/')
-		{
-			//    printf("%s\n", line+1);
 			continue;
-		};
 
 		if (!strcmp("end",line))
 		{
 			LogManager::getSingleton().logMessage("BEAM: End of truck loading");
-			loading_finished=1;break;
-		};
+			loading_finished=1;
+			break;
+		}
 
-		if (!strcmp("patchEngineTorque",line)) {patchEngineTorque=true;continue;};
-		if (!strcmp("end_commandlist",line) && mode == 35) {mode=0;continue;};
-		if (!strcmp("end_description",line) && mode == 29) {mode=0;continue;};
-		if (!strcmp("end_comment",line)  && mode == 30) {mode=savedmode;continue;};
-		if (!strcmp("end_section",line)  && mode == 52) {mode=savedmode;continue;};
-		if (mode==29)
+		if (!strcmp("patchEngineTorque",line)) { patchEngineTorque=true; continue; };
+		if (!strcmp("end_description",line) && mode == BTS_DESCRIPTION) {mode=BTS_NONE;continue;};
+		if (!strcmp("end_comment",line)  && mode == BTS_COMMENT) {mode=savedmode;continue;};
+		if (!strcmp("end_section",line)  && mode == BTS_IN_SECTION) {mode=savedmode;continue;};
+		if (mode==BTS_DESCRIPTION)
 		{
 			// description
 			//parse dscription, and ignore every possible keyword
@@ -133,85 +128,84 @@ int Beam::loadTruck(const char* fname, SceneManager *manager, SceneNode *parent,
 			continue;
 		}
 
-		if (mode==30)
+		if (mode==BTS_COMMENT)
 		{
 			// comment
 			// ignore everything
 			continue;
 		}
-		if (mode==52)
+		if (mode==BTS_IN_SECTION)
 		{
 			// ignored truck section
 			continue;
 		}
-		if (!strcmp("nodes",line)) {mode=1;continue;};
-		if (!strcmp("beams",line)) {mode=2;continue;};
-		if (!strcmp("fixes",line)) {mode=3;continue;};
-		if (!strcmp("shocks",line)) {mode=4;continue;};
-		if (!strcmp("hydros",line)) {mode=5;continue;};
-		if (!strcmp("wheels",line)) {mode=6;continue;};
-		if (!strcmp("globals",line)) {mode=7;continue;};
-		if (!strcmp("cameras",line)) {mode=8;continue;};
-		if (!strcmp("engine",line)) {mode=9;continue;};
-		if (!strcmp("texcoords",line)) {mode=10;continue;};
-		if (!strcmp("cab",line)) {mode=11;continue;};
-		if (!strcmp("commands",line)) {mode=12;continue;};
-		if (!strcmp("commands2",line)) {mode=120;continue;};
+		if (!strcmp("nodes",line))   {mode=BTS_NODES;continue;};
+		if (!strcmp("beams",line))   {mode=BTS_BEAMS;continue;};
+		if (!strcmp("fixes",line))   {mode=BTS_FIXES;continue;};
+		if (!strcmp("shocks",line))  {mode=BTS_SHOCKS;continue;};
+		if (!strcmp("hydros",line))  {mode=BTS_HYDROS;continue;};
+		if (!strcmp("wheels",line))  {mode=BTS_WHEELS;continue;};
+		if (!strcmp("globals",line)) {mode=BTS_GLOBALS;continue;};
+		if (!strcmp("cameras",line)) {mode=BTS_CAMERAS;continue;};
+		if (!strcmp("engine",line))    {mode=BTS_ENGINE;continue;};
+		if (!strcmp("texcoords",line)) {mode=BTS_TEXCOORDS;continue;};
+		if (!strcmp("cab",line))       {mode=BTS_CAB;continue;};
+		if (!strcmp("commands",line))  {mode=BTS_COMMANDS;continue;};
+		if (!strcmp("commands2",line)) {mode=BTS_COMMANDS2;continue;};
 		if (!strcmp("forwardcommands",line)) {forwardcommands=1;continue;};
 		if (!strcmp("importcommands",line)) {importcommands=1;continue;};
 		if (!strcmp("rollon",line)) {wheel_contact_requested=true;continue;};
 		if (!strcmp("rescuer",line)) {rescuer=true;continue;};
-		if (!strcmp("contacters",line)) {mode=13;continue;};
-		if (!strcmp("ropes",line)) {mode=14;continue;};
-		if (!strcmp("ropables",line)) {mode=15;continue;};
-		if (!strcmp("ties",line)) {mode=16;continue;};
-		if (!strcmp("help",line)) {mode=17;continue;};
-		if (!strcmp("cinecam",line)) {mode=18;continue;};
-		if (!strcmp("flares",line)) {mode=19;continue;};
-		if (!strcmp("props",line)) {mode=20;continue;};
-		if (!strcmp("globeams",line)) {mode=21;continue;};
-		if (!strcmp("wings",line)) {mode=22;continue;};
-		if (!strcmp("turboprops",line)) {mode=23;continue;};
-		if (!strcmp("fusedrag",line)) {mode=24;continue;};
-		if (!strcmp("engoption",line)) {mode=25;continue;};
-		if (!strcmp("brakes",line)) {mode=26;continue;};
-		if (!strcmp("rotators",line)) {mode=27;continue;};
-		if (!strcmp("screwprops",line)) {mode=28;continue;};
-		if (!strcmp("description",line)) {mode=29;continue;};
-		if (!strcmp("comment",line)) {mode=30; savedmode=mode; continue;};
-		if (!strcmp("wheels2",line)) {mode=31;continue;};
-		if (!strcmp("guisettings",line)) {mode=32;continue;};
-		if (!strcmp("minimass",line)) {mode=33;continue;};
-		if (!strcmp("exhausts",line)) {mode=34;continue;};
-		if (!strcmp("turboprops2",line)) {mode=35;continue;};
-		if (!strcmp("pistonprops",line)) {mode=36;continue;};
-		//apparently mode 37 is reserved for other use
-		if (!strcmp("particles",line)) {mode=38;continue;};
-		if (!strcmp("turbojets",line)) {mode=39;continue;};
-		if (!strcmp("rigidifiers",line)) {mode=40;continue;};
-		if (!strcmp("airbrakes",line)) {mode=41;continue;};
-		if (!strcmp("meshwheels",line)) {mode=42;continue;};
-		if (!strcmp("flexbodies",line)) {mode=43;continue;};
-		if (!strcmp("hookgroup",line)) {mode=44; continue;};
-		if (!strncmp("materialflarebindings",line, 21)) {mode=46; continue;};
+		if (!strcmp("contacters",line)) {mode=BTS_CONTACTERS;continue;};
+		if (!strcmp("ropes",line)) {mode=BTS_ROPES;continue;};
+		if (!strcmp("ropables",line)) {mode=BTS_ROPABLES;continue;};
+		if (!strcmp("ties",line)) {mode=BTS_TIES;continue;};
+		if (!strcmp("help",line)) {mode=BTS_HELP;continue;};
+		if (!strcmp("cinecam",line)) {mode=BTS_CINECAM;continue;};
+		if (!strcmp("flares",line)) {mode=BTS_FLARES;continue;};
+		if (!strcmp("props",line)) {mode=BTS_PROPS;continue;};
+		if (!strcmp("globeams",line)) {mode=BTS_GLOBEAMS;continue;};
+		if (!strcmp("wings",line)) {mode=BTS_WINGS;continue;};
+		if (!strcmp("turboprops",line)) {mode=BTS_TURBOPROPS;continue;};
+		if (!strcmp("fusedrag",line)) {mode=BTS_FUSEDRAG;continue;};
+		if (!strcmp("engoption",line)) {mode=BTS_ENGOPTION;continue;};
+		if (!strcmp("brakes",line)) {mode=BTS_BRAKES;continue;};
+		if (!strcmp("rotators",line)) {mode=BTS_ROTATORS;continue;};
+		if (!strcmp("screwprops",line)) {mode=BTS_SCREWPROPS;continue;};
+		if (!strcmp("description",line)) {mode=BTS_DESCRIPTION;continue;};
+		if (!strcmp("comment",line)) {mode=BTS_COMMENT; savedmode=mode; continue;};
+		if (!strcmp("wheels2",line)) {mode=BTS_WHEELS2;continue;};
+		if (!strcmp("guisettings",line)) {mode=BTS_GUISETTINGS;continue;};
+		if (!strcmp("minimass",line)) {mode=BTS_MINIMASS;continue;};
+		if (!strcmp("exhausts",line)) {mode=BTS_EXHAUSTS;continue;};
+		if (!strcmp("turboprops2",line)) {mode=BTS_TURBOPROPS2;continue;};
+		if (!strcmp("pistonprops",line)) {mode=BTS_PISTONPROPS;continue;};
+		if (!strcmp("particles",line)) {mode=BTS_PARTICLES;continue;};
+		if (!strcmp("turbojets",line)) {mode=BTS_TURBOJETS;continue;};
+		if (!strcmp("rigidifiers",line)) {mode=BTS_RIGIDIFIERS;continue;};
+		if (!strcmp("airbrakes",line)) {mode=BTS_AIRBRAKES;continue;};
+		if (!strcmp("meshwheels",line)) {mode=BTS_MESHWHEELS;continue;};
+		if (!strcmp("flexbodies",line)) {mode=BTS_FLEXBODIES;continue;};
+		if (!strcmp("hookgroup",line)) {mode=BTS_HOOKGROUP; continue;};
+		if (!strncmp("materialflarebindings",line, 21)) {mode=BTS_MATERIALFLAREBINDINGS; continue;};
 		if (!strcmp("disabledefaultsounds",line)) {disable_default_sounds=true;continue;};
-		if (!strcmp("soundsources",line)) {mode=47;continue;};
-		if (!strcmp("soundsources2",line)) {mode=67;continue;};
-		if (!strcmp("envmap",line)) {mode=48;continue;};
-		if (!strcmp("managedmaterials",line)) {mode=49;continue;};
-		if (!strncmp("sectionconfig",line, 13)) {savedmode=mode;mode=50; /* NOT continue */};
-		if (!strncmp("section",line, 7) && mode!=50) {mode=51; /* NOT continue */};
-		/* 52 = reserved for ignored section */
-		if (!strcmp("torquecurve",line)) {mode=53;continue;};
-		if (!strcmp("advdrag",line)) {mode=54;continue;};
-		if (!strcmp("axles",line)) {mode=55;continue;};
-		if (!strcmp("shocks2",line)) {mode=56;continue;};
-		if (!strcmp("triggers",line)) {mode=57;continue;};
-		if (!strcmp("railgroups",line)) {mode=63;continue;}
-		if (!strcmp("slidenodes",line)) {mode=64;continue;}
-		if (!strcmp("flares2",line)) {mode=65;continue;};
-		if (!strcmp("animators",line)) {mode=66;continue;};
-		if (!strcmp("nodecollision",line)) {mode=68;continue;};
+		if (!strcmp("soundsources",line)) {mode=BTS_SOUNDSOURCES;continue;};
+		if (!strcmp("soundsources2",line)) {mode=BTS_SOUNDSOURCES2;continue;};
+		if (!strcmp("envmap",line)) {mode=BTS_ENVMAP;continue;};
+		if (!strcmp("managedmaterials",line)) {mode=BTS_MANAGEDMATERIALS;continue;};
+		if (!strncmp("sectionconfig",line, 13)) {savedmode=mode;mode=BTS_SECTIONCONFIG; /* NOT continue */};
+		if (!strncmp("section",line, 7) && mode!=BTS_SECTIONCONFIG) {mode=BTS_SECTION; /* NOT continue */};
+		/* BTS_IN_SECTION = reserved for ignored section */
+		if (!strcmp("torquecurve",line)) {mode=BTS_TORQUECURVE;continue;};
+		if (!strcmp("advdrag",line)) {mode=BTS_ADVANCEDDRAG;continue;};
+		if (!strcmp("axles",line)) {mode=BTS_AXLES;continue;};
+		if (!strcmp("shocks2",line)) {mode=BTS_SHOCKS2;continue;};
+		if (!strcmp("triggers",line)) {mode=BTS_TRIGGER;continue;};
+		if (!strcmp("railgroups",line)) {mode=BTS_RAILGROUPS;continue;}
+		if (!strcmp("slidenodes",line)) {mode=BTS_SLIDENODES;continue;}
+		if (!strcmp("flares2",line)) {mode=BTS_FLARES2;continue;};
+		if (!strcmp("animators",line)) {mode=BTS_ANIMATORS;continue;};
+		if (!strcmp("nodecollision",line)) {mode=BTS_NODECOLLISION;continue;};
 		if (!strncmp("detacher_group", line, 14))
 		{
 			int detgroup = DEFAULT_DETACHER_GROUP;
@@ -233,16 +227,6 @@ int Beam::loadTruck(const char* fname, SceneManager *manager, SceneNode *parent,
 			LogManager::getSingleton().logMessage("Advanced deformation beam physics enabled");
 			continue;
 		}
-		if (!strcmp("commandlist",line))
-		{
-			int result = sscanf(line,"commandlist %d", &currentScriptCommandNumber);
-			if (result < 1 || result == EOF) {
-				LogManager::getSingleton().logMessage("Error parsing File (commandlist) " + String(fname) +" line " + StringConverter::toString(linecounter) + ". trying to continue ...");
-				continue;
-			}
-			mode=37;
-			continue;
-		};
 		if (!strncmp("fileinfo", line, 8))
 		{
 			int result = sscanf(line,"fileinfo %s, %i, %i", uniquetruckid, &categoryid, &truckversion);
@@ -282,7 +266,7 @@ int Beam::loadTruck(const char* fname, SceneManager *manager, SceneNode *parent,
 				LogManager::getSingleton().logMessage("The Truck File " + String(fname) +" is for a newer version or RoR! trying to continue ...");
 				continue;
 			}
-			mode=0;
+			mode=BTS_NONE;
 			continue;
 		}
 		if (!strncmp("author", line, 6))
@@ -312,7 +296,7 @@ int Beam::loadTruck(const char* fname, SceneManager *manager, SceneNode *parent,
 			if(strnlen(authoremail, 250) > 0)
 				strncpy(author.email, authoremail, 255);
 			authors.push_back(author);
-			mode=0;
+			mode=BTS_NONE;
 			continue;
 		}
 
@@ -333,7 +317,7 @@ int Beam::loadTruck(const char* fname, SceneManager *manager, SceneNode *parent,
 
 		if (!strncmp("prop_camera_mode", line, 16))
 		{
-			int mode = -2;
+			int pmode = -2;
 			int result = sscanf(line,"prop_camera_mode %i", &mode);
 			if (result < 1 || result == EOF)
 			{
@@ -343,12 +327,12 @@ int Beam::loadTruck(const char* fname, SceneManager *manager, SceneNode *parent,
 
 			// always use the last prop
 			prop_t *prop = &props[free_prop-1];
-			if(prop->mo) prop->cameramode = mode;
+			if(prop->mo) prop->cameramode = pmode;
 		}
 
 		if (!strncmp("flexbody_camera_mode", line, 20))
 		{
-			int mode = -2;
+			int pmode = -2;
 			int result = sscanf(line,"flexbody_camera_mode %i", &mode);
 			if (result < 1 || result == EOF)
 			{
@@ -358,7 +342,7 @@ int Beam::loadTruck(const char* fname, SceneManager *manager, SceneNode *parent,
 
 			// always use the last flexbody
 			FlexBody *flex = flexbodies[free_flexbody-1];
-			if(flex) flex->cameramode = mode;
+			if(flex) flex->cameramode = pmode;
 		}
 
 		if (!strncmp("add_animation", line, 13))
@@ -812,7 +796,7 @@ int Beam::loadTruck(const char* fname, SceneManager *manager, SceneNode *parent,
 			continue;
 		};
 
-		if (mode==1)
+		if (mode==BTS_NODES)
 		{
 			//parse nodes
 			int id=0;
@@ -959,7 +943,7 @@ int Beam::loadTruck(const char* fname, SceneManager *manager, SceneNode *parent,
 			}
 			free_node++;
 		}
-		else if (mode==2)
+		else if (mode==BTS_BEAMS)
 		{
 			//parse beams
 			int id1, id2;
@@ -1051,7 +1035,7 @@ int Beam::loadTruck(const char* fname, SceneManager *manager, SceneNode *parent,
 				options_pointer++;
 			}
 		}
-		else if (mode==57)
+		else if (mode==BTS_TRIGGER)
 		{
 			//parse triggers
 			int id1, id2, triggershort, triggerlong;
@@ -1162,7 +1146,7 @@ int Beam::loadTruck(const char* fname, SceneManager *manager, SceneNode *parent,
 			free_shock++;
 		}
 		
-		else if (mode==4)
+		else if (mode==BTS_SHOCKS)
 		{
 			//parse shocks
 			int id1, id2;
@@ -1238,7 +1222,7 @@ int Beam::loadTruck(const char* fname, SceneManager *manager, SceneNode *parent,
 			shocks[free_shock].sbd_damp = default_damp;
 			free_shock++;
 		}
-		else if (mode==56)
+		else if (mode==BTS_SHOCKS2)
 		{
 			//parse shocks2
 			int id1, id2;
@@ -1343,7 +1327,7 @@ int Beam::loadTruck(const char* fname, SceneManager *manager, SceneNode *parent,
 			free_shock++;
 		}
 
-		else if (mode==3)
+		else if (mode==BTS_FIXES)
 		{
 			//parse fixes
 			int id;
@@ -1361,7 +1345,7 @@ int Beam::loadTruck(const char* fname, SceneManager *manager, SceneNode *parent,
 			nodes[id].locked=1;
 			hasfixes=1;
 		}
-		else if (mode==5)
+		else if (mode==BTS_HYDROS)
 		{
 			//parse hydros
 			int id1, id2;
@@ -1476,7 +1460,7 @@ int Beam::loadTruck(const char* fname, SceneManager *manager, SceneNode *parent,
 					beams[pos].hydroFlags |= HYDRO_FLAG_DIR;
 			}
 		}
-		else if (mode==66)
+		else if (mode==BTS_ANIMATORS)
 		{
 			//parse animators
 			int id1, id2;
@@ -1612,7 +1596,7 @@ int Beam::loadTruck(const char* fname, SceneManager *manager, SceneNode *parent,
 
 		}
 
-		else if (mode==6)
+		else if (mode==BTS_WHEELS)
 		{
 			//parse wheels
 			float radius, width, mass, spring, damp;
@@ -1626,7 +1610,7 @@ int Beam::loadTruck(const char* fname, SceneManager *manager, SceneNode *parent,
 			}
 			addWheel(manager, parent, radius,width,rays,node1,node2,snode,braked,propulsed, torquenode, mass, spring, damp, texf, texb);
 		}
-		else if (mode==31)
+		else if (mode==BTS_WHEELS2)
 		{
 			//parse wheels2
 			char texf[256];
@@ -1643,7 +1627,7 @@ int Beam::loadTruck(const char* fname, SceneManager *manager, SceneNode *parent,
 			else
 				addWheel(manager, parent, radius2,width,rays,node1,node2,snode,braked,propulsed, torquenode, mass, spring2, damp2, texf, texb);
 		}
-		else if (mode==42)
+		else if (mode==BTS_MESHWHEELS)
 		{
 			//parse meshwheels
 			char meshw[256];
@@ -1658,7 +1642,7 @@ int Beam::loadTruck(const char* fname, SceneManager *manager, SceneNode *parent,
 			}
 			addWheel(manager, parent, radius,width,rays,node1,node2,snode,braked,propulsed, torquenode, mass, spring, damp, meshw, texb, true, rimradius, side!='r');
 		}
-		else if (mode==7)
+		else if (mode==BTS_GLOBALS)
 		{
 			//parse globals
 			int result = sscanf(line,"%f, %f, %s",&truckmass, &loadmass, texname);
@@ -1695,7 +1679,7 @@ int Beam::loadTruck(const char* fname, SceneManager *manager, SceneNode *parent,
 			mat->clone(clonetex);
 			strcpy(texname, clonetex);
 		}
-		else if (mode==8)
+		else if (mode==BTS_CAMERAS)
 		{
 			//parse cameras
 			int nodepos, nodedir, dir;
@@ -1706,7 +1690,7 @@ int Beam::loadTruck(const char* fname, SceneManager *manager, SceneNode *parent,
 			}
 			addCamera(nodepos, nodedir, dir);
 		}
-		else if (mode==9)
+		else if (mode==BTS_ENGINE)
 		{
 			//parse engine
 			if(driveable == MACHINE)
@@ -1760,7 +1744,7 @@ int Beam::loadTruck(const char* fname, SceneManager *manager, SceneNode *parent,
 			//engine->start();
 		}
 
-		else if (mode==10)
+		else if (mode==BTS_TEXCOORDS)
 		{
 			//parse texcoords
 			int id;
@@ -1779,7 +1763,7 @@ int Beam::loadTruck(const char* fname, SceneManager *manager, SceneNode *parent,
 			free_texcoord++;
 		}
 
-		else if (mode==11)
+		else if (mode==BTS_CAB)
 		{
 			//parse cab
 			char type='n';
@@ -1826,7 +1810,7 @@ int Beam::loadTruck(const char* fname, SceneManager *manager, SceneNode *parent,
 			free_cab++;
 		}
 
-		else if (mode==12 || mode==120)
+		else if (mode==BTS_COMMANDS || mode==BTS_COMMANDS2)
 		{
 			//parse commands
 			int id1, id2,keys,keyl;
@@ -1839,7 +1823,7 @@ int Beam::loadTruck(const char* fname, SceneManager *manager, SceneNode *parent,
 			char startFunction[50]="";
 			char stopFunction[50]="";
 			int result = 0;
-			if(mode == 12)
+			if(mode == BTS_COMMANDS)
 			{
 				char opt='n';
 				result = sscanf(line,"%i, %i, %f, %f, %f, %i, %i, %c, %s %f, %f, %s %s", &id1, &id2, &rateShort, &shortl, &longl, &keys, &keyl, &opt, descr, &startDelay, &stopDelay, startFunction, stopFunction);
@@ -1851,7 +1835,7 @@ int Beam::loadTruck(const char* fname, SceneManager *manager, SceneNode *parent,
 				options[1] = 0;
 				rateLong = rateShort;
 			}
-			else if(mode == 120)
+			else if(mode == BTS_COMMANDS2)
 			{
 				result = sscanf(line,"%i, %i, %f, %f, %f, %f, %i, %i, %s %s %f,%f,%s %s", &id1, &id2, &rateShort, &rateLong, &shortl, &longl, &keys, &keyl, options, descr, &startDelay, &stopDelay, startFunction, stopFunction);
 				if (result < 8 || result == EOF) {
@@ -1980,7 +1964,7 @@ int Beam::loadTruck(const char* fname, SceneManager *manager, SceneNode *parent,
 			}
 
 		}
-		else if (mode==13)
+		else if (mode==BTS_CONTACTERS)
 		{
 			//parse contacters
 			int id1;
@@ -2002,7 +1986,7 @@ int Beam::loadTruck(const char* fname, SceneManager *manager, SceneNode *parent,
 			nodes[id1].iIsSkin=true;
 			free_contacter++;;
 		}
-		else if (mode==14)
+		else if (mode==BTS_ROPES)
 		{
 			//parse ropes
 			int id1=0, id2=0, group=0;
@@ -2040,7 +2024,7 @@ int Beam::loadTruck(const char* fname, SceneManager *manager, SceneNode *parent,
 			nodes[id1].iIsSkin=true;
 			nodes[id2].iIsSkin=true;
 		}
-		else if (mode==15)
+		else if (mode==BTS_ROPABLES)
 		{
 			//parse ropables
 			int id1=0, group=-1, multilock=0;
@@ -2064,7 +2048,7 @@ int Beam::loadTruck(const char* fname, SceneManager *manager, SceneNode *parent,
 
 			nodes[id1].iIsSkin=true;
 		}
-		else if (mode==16)
+		else if (mode==BTS_TIES)
 		{
 			//parse ties
 			int id1=0, group=-1;
@@ -2108,13 +2092,13 @@ int Beam::loadTruck(const char* fname, SceneManager *manager, SceneNode *parent,
 			ties.push_back(t);
 		}
 
-		else if (mode==17)
+		else if (mode==BTS_HELP)
 		{
 			//help material
 			strcpy(helpmat,line);
 			hashelp=1;
 		}
-		else if (mode==18)
+		else if (mode==BTS_CINECAM)
 		{
 			//cinecam
 			float x,y,z;
@@ -2179,7 +2163,7 @@ int Beam::loadTruck(const char* fname, SceneManager *manager, SceneNode *parent,
 			freecinecamera++;
 		}
 
-		else if (mode==19 || mode==65)
+		else if (mode==BTS_FLARES || mode==BTS_FLARES2)
 		{
 			if(flaresMode==0)
 				continue;
@@ -2189,7 +2173,7 @@ int Beam::loadTruck(const char* fname, SceneManager *manager, SceneNode *parent,
 			char type='f';
 			char matname[255]="";
 			int result=-1;
-			if(mode == 19)
+			if(mode == BTS_FLARES)
 			{
 				// original flares
 				result = sscanf(line,"%i, %i, %i, %f, %f, %c, %i, %i, %f %s", &ref, &nx, &ny, &ox, &oy, &type, &controlnumber, &blinkdelay, &size, matname);
@@ -2198,7 +2182,7 @@ int Beam::loadTruck(const char* fname, SceneManager *manager, SceneNode *parent,
 					LogManager::getSingleton().logMessage("Error parsing File (Flares) " + String(fname) +" line " + StringConverter::toString(linecounter) + ". trying to continue ...");
 					continue;
 				}
-			} else if(mode == 65)
+			} else if(mode == BTS_FLARES2)
 			{
 				// flares 2
 				result = sscanf(line,"%i, %i, %i, %f, %f, %f, %c, %i, %i, %f %s", &ref, &nx, &ny, &ox, &oy, &oz, &type, &controlnumber, &blinkdelay, &size, matname);
@@ -2363,7 +2347,7 @@ int Beam::loadTruck(const char* fname, SceneManager *manager, SceneNode *parent,
 			flares.push_back(f);
 			free_flare++;
 		}
-		else if (mode==20)
+		else if (mode==BTS_PROPS)
 		{
 			//parse props
 			int ref, nx, ny;
@@ -2597,7 +2581,7 @@ int Beam::loadTruck(const char* fname, SceneManager *manager, SceneNode *parent,
 
 			free_prop++;
 		}
-		else if (mode==21)
+		else if (mode==BTS_GLOBEAMS)
 		{
 			//parse globeams
 			int result = sscanf(line,"%f, %f, %f, %s", &default_deform,&default_break,&default_beam_diameter, default_beam_material);
@@ -2607,7 +2591,7 @@ int Beam::loadTruck(const char* fname, SceneManager *manager, SceneNode *parent,
 			}
 			fadeDist=1000.0;
 		}
-		else if (mode==22)
+		else if (mode==BTS_WINGS)
 		{
 			//parse wings
 			int nds[8];
@@ -2862,7 +2846,7 @@ int Beam::loadTruck(const char* fname, SceneManager *manager, SceneNode *parent,
 
 			free_wing++;
 		}
-		else if (mode==23 || mode==35 || mode==36) //turboprops, turboprops2, pistonprops
+		else if (mode==BTS_TURBOPROPS || mode==BTS_TURBOPROPS2 || mode==BTS_PISTONPROPS) //turboprops, turboprops2, pistonprops
 		{
 			//parse turboprops
 			int ref,back,p1,p2,p3,p4;
@@ -2871,7 +2855,7 @@ int Beam::loadTruck(const char* fname, SceneManager *manager, SceneNode *parent,
 			bool isturboprops=true;
 			float power;
 			char propfoil[256];
-			if (mode==23)
+			if (mode==BTS_TURBOPROPS)
 			{
 				int result = sscanf(line,"%i, %i, %i, %i, %i, %i, %f, %s", &ref, &back, &p1, &p2, &p3, &p4, &power, propfoil);
 				if (result < 8 || result == EOF) {
@@ -2879,7 +2863,7 @@ int Beam::loadTruck(const char* fname, SceneManager *manager, SceneNode *parent,
 					continue;
 				}
 			}
-			if (mode==35)
+			if (mode==BTS_TURBOPROPS2)
 			{
 				int result = sscanf(line,"%i, %i, %i, %i, %i, %i, %i, %f, %s", &ref, &back, &p1, &p2, &p3, &p4, &couplenode, &power, propfoil);
 				if (result < 9 || result == EOF) {
@@ -2887,7 +2871,7 @@ int Beam::loadTruck(const char* fname, SceneManager *manager, SceneNode *parent,
 					continue;
 				}
 			}
-			if (mode==36)
+			if (mode==BTS_PISTONPROPS)
 			{
 				int result = sscanf(line,"%i, %i, %i, %i, %i, %i, %i, %f, %f, %s", &ref, &back, &p1, &p2, &p3, &p4, &couplenode, &power, &pitch, propfoil);
 				if (result < 10 || result == EOF) {
@@ -2930,7 +2914,7 @@ int Beam::loadTruck(const char* fname, SceneManager *manager, SceneNode *parent,
 			}
 			free_aeroengine++;
 		}
-		else if (mode==24)
+		else if (mode==BTS_FUSEDRAG)
 		{
 			//parse fusedrag
 			int front,back;
@@ -2946,7 +2930,7 @@ int Beam::loadTruck(const char* fname, SceneManager *manager, SceneNode *parent,
 			fuseBack=&nodes[front];
 			fuseWidth=width;
 		}
-		else if (mode==25)
+		else if (mode==BTS_ENGOPTION)
 		{
 			//parse engoption
 			float inertia;
@@ -2960,7 +2944,7 @@ int Beam::loadTruck(const char* fname, SceneManager *manager, SceneNode *parent,
 			}
 			if (engine) engine->setOptions(inertia, type, clutch, shifttime, clutchtime, postshifttime);
 		}
-		else if (mode==26)
+		else if (mode==BTS_BRAKES)
 		{
 			// parse brakes
 			int result = sscanf(line,"%f, %f", &brakeforce, &hbrakeforce);
@@ -2968,7 +2952,7 @@ int Beam::loadTruck(const char* fname, SceneManager *manager, SceneNode *parent,
 			if (result == 1)
 				hbrakeforce = 2.0f * brakeforce;
 		}
-		else if (mode==27)
+		else if (mode==BTS_ROTATORS)
 		{
 			//parse rotators
 			int axis1, axis2,keys,keyl;
@@ -3020,7 +3004,7 @@ int Beam::loadTruck(const char* fname, SceneManager *manager, SceneNode *parent,
 
 			free_rotator++;
 		}
-		else if (mode==28)
+		else if (mode==BTS_SCREWPROPS)
 		{
 			//parse screwprops
 			int ref,back,up;
@@ -3042,7 +3026,7 @@ int Beam::loadTruck(const char* fname, SceneManager *manager, SceneNode *parent,
 			driveable=BOAT;
 			free_screwprop++;
 		}
-		else if (mode==32)
+		else if (mode==BTS_GUISETTINGS)
 		{
 			// guisettings
 			char keyword[255];
@@ -3115,14 +3099,14 @@ int Beam::loadTruck(const char* fname, SceneManager *manager, SceneNode *parent,
 			}
 
 		}
-		else if (mode==33)
+		else if (mode==BTS_MINIMASS)
 		{
 			//parse minimass
 			//sets the minimum node mass
 			//usefull for very light vehicles with lots of nodes (e.g. small airplanes)
 			sscanf(line,"%f", &minimass);
 		}
-		else if (mode==34)
+		else if (mode==BTS_EXHAUSTS)
 		{
 			// parse exhausts
 			if (disable_smoke)
@@ -3159,12 +3143,7 @@ int Beam::loadTruck(const char* fname, SceneManager *manager, SceneNode *parent,
 			nodes[id2].iIsSkin=true;
 			exhausts.push_back(e);
 		}
-		else if (mode==37)
-		{
-			// command lists
-			//truckScript->addCommand(line, currentScriptCommandNumber);
-		}
-		else if (mode==38)
+		else if (mode==BTS_PARTICLES)
 		{
 			//particles
 			if(!cparticle_enabled)
@@ -3200,7 +3179,7 @@ int Beam::loadTruck(const char* fname, SceneManager *manager, SceneNode *parent,
 			for (int i=0; i<cparticles[free_cparticle].psys->getNumEmitters(); i++) cparticles[free_cparticle].psys->getEmitter(i)->setEnabled(false);
 			free_cparticle++;
 		}
-		else if (mode==39) //turbojets
+		else if (mode==BTS_TURBOJETS) //turbojets
 		{
 			//parse turbojets
 			int front,back,ref, rev;
@@ -3227,7 +3206,7 @@ int Beam::loadTruck(const char* fname, SceneManager *manager, SceneNode *parent,
 			//if (audio) audio->setupAeroengines(TURBOJETS);
 			free_aeroengine++;
 		}
-		else if (mode==40)
+		else if (mode==BTS_RIGIDIFIERS)
 		{
 			//parse rigidifiers
 			int na,nb,nc;
@@ -3262,7 +3241,7 @@ int Beam::loadTruck(const char* fname, SceneManager *manager, SceneNode *parent,
 			}
 			free_rigidifier++;
 		}
-		else if (mode==41)
+		else if (mode==BTS_AIRBRAKES)
 		{
 			//parse airbrakes
 			int ref, nx, ny, na;
@@ -3287,7 +3266,7 @@ int Beam::loadTruck(const char* fname, SceneManager *manager, SceneNode *parent,
 			airbrakes[free_airbrake]=new Airbrake(manager, truckname, free_airbrake, &nodes[ref], &nodes[nx], &nodes[ny], &nodes[na], Vector3(ox,oy,oz), wd, len, maxang, texname, tx1,tx2,tx3,tx4,liftcoef);
 			free_airbrake++;
 		}
-		else if (mode==43)
+		else if (mode==BTS_FLEXBODIES)
 		{
 			//parse flexbodies
 			int ref, nx, ny;
@@ -3322,7 +3301,7 @@ int Beam::loadTruck(const char* fname, SceneManager *manager, SceneNode *parent,
 			flexbodies[free_flexbody]=new FlexBody(manager, nodes, free_node, meshname, uname, ref, nx, ny, offset, rot, line+6, materialFunctionMapper, usedSkin, (shadowmode!=0));
 			free_flexbody++;
 		}
-		else if (mode==44)
+		else if (mode==BTS_HOOKGROUP)
 		{
 			//parse hookgroups
 			int id1=0, group=-1, lockNodes=1;
@@ -3347,7 +3326,7 @@ int Beam::loadTruck(const char* fname, SceneManager *manager, SceneNode *parent,
 			hooks.push_back(h);
 
 		}
-		else if (mode==46)
+		else if (mode==BTS_MATERIALFLAREBINDINGS)
 		{
 			// parse materialflarebindings
 			int flareid;
@@ -3377,7 +3356,7 @@ int Beam::loadTruck(const char* fname, SceneManager *manager, SceneNode *parent,
 			if(materialFunctionMapper)
 				materialFunctionMapper->addMaterial(flareid, t);
 		}
-		else if (mode==47)
+		else if (mode==BTS_SOUNDSOURCES)
 		{
 			//parse soundsources
 			int ref;
@@ -3391,7 +3370,7 @@ int Beam::loadTruck(const char* fname, SceneManager *manager, SceneNode *parent,
 			if(ssm) addSoundSource(ssm->createInstance(script, trucknum, NULL), ref, -2);
 #endif //OPENAL
 		}
-		else if (mode==67)
+		else if (mode==BTS_SOUNDSOURCES2)
 		{
 			//parse soundsources2
 			int ref, type;
@@ -3405,12 +3384,12 @@ int Beam::loadTruck(const char* fname, SceneManager *manager, SceneNode *parent,
 			if(ssm) addSoundSource(ssm->createInstance(script, trucknum, NULL), ref, type);
 #endif //OPENAL
 		}
-		else if (mode==48)
+		else if (mode==BTS_ENVMAP)
 		{
 			// parse envmap
 			// we do nothing of this for the moment
 		}
-		else if (mode==49)
+		else if (mode==BTS_MANAGEDMATERIALS)
 		{
 			// parse managedmaterials
 			char material[255];
@@ -3745,13 +3724,13 @@ int Beam::loadTruck(const char* fname, SceneManager *manager, SceneNode *parent,
 			}
 
 		}
-		else if (mode==50)
+		else if (mode==BTS_SECTIONCONFIG)
 		{
 			// parse sectionconfig
 			// not used here ...
 			mode=savedmode;
 		}
-		else if (mode==51)
+		else if (mode==BTS_SECTION)
 		{
 			// parse section
 			int version=0;
@@ -3779,15 +3758,15 @@ int Beam::loadTruck(const char* fname, SceneManager *manager, SceneNode *parent,
 				continue;
 			else
 				// wait for end_section otherwise
-				mode=52;
+				mode=BTS_IN_SECTION;
 		}
-		/* mode 52 is reserved */
-		else if (mode==53)
+		/* mode BTS_IN_SECTION is reserved */
+		else if (mode==BTS_TORQUECURVE)
 		{
 			// parse torquecurve
 			if (engine && engine->getTorqueCurve())
 				engine->getTorqueCurve()->processLine(String(line));
-		} else if (mode==54)
+		} else if (mode==BTS_ADVANCEDDRAG)
 		{
 			//parse advanced drag
 			float drag;
@@ -3800,7 +3779,7 @@ int Beam::loadTruck(const char* fname, SceneManager *manager, SceneNode *parent,
 			advanced_total_drag=drag;
 			advanced_drag=true;
 		}
-		else if (mode==55)
+		else if (mode==BTS_AXLES)
 		{
 			// parse axle section
 			// search for wheel
@@ -3926,9 +3905,9 @@ int Beam::loadTruck(const char* fname, SceneManager *manager, SceneNode *parent,
 			++free_axle;
 		}
 
-		else if (mode==63) parseRailGroupLine(line);
-		else if (mode==64) parseSlideNodeLine(line);
-		else if (mode==68)
+		else if (mode==BTS_RAILGROUPS) parseRailGroupLine(line);
+		else if (mode==BTS_SLIDENODES) parseSlideNodeLine(line);
+		else if (mode==BTS_NODECOLLISION)
 		{
 			// parse nodecollision
 			int nodenum  = -1;
