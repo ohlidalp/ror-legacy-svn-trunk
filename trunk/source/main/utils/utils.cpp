@@ -24,6 +24,8 @@ along with Rigs of Rods.  If not, see <http://www.gnu.org/licenses/>.
 #include "RoRPrerequisites.h"
 #include "rornet.h"
 
+#include <fstream>
+
 using namespace Ogre;
 
 String hexdump(void *pAddressIn, long  lSize)
@@ -153,6 +155,7 @@ int getTimeStamp()
 	return (int)time(NULL); //this will overflow in 2038
 }
 
+
 Ogre::String getVersionString()
 {
 	char tmp[1024] = "";
@@ -164,4 +167,11 @@ Ogre::String getVersionString()
 		" build time: %s, %s\n"
 		, ROR_VERSION_STRING, SVN_REVISION, SVN_ID, RORNET_VERSION, __DATE__, __TIME__);
 	return Ogre::String(tmp);
+}
+
+bool fileExists(std::string filename)
+{
+	std::fstream file;
+	file.open(filename.c_str());
+	return file.is_open();
 }
