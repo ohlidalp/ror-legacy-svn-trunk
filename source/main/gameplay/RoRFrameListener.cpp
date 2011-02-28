@@ -753,7 +753,8 @@ void RoRFrameListener::setGravity(float value)
 }
 
 // Constructor takes a RenderWindow because it uses that to determine input context
-RoRFrameListener::RoRFrameListener(RenderWindow* win, Camera* cam, SceneManager* scm, Root* root, bool isEmbedded, unsigned int inputhwnd) :
+RoRFrameListener::RoRFrameListener(AppState *parentState, RenderWindow* win, Camera* cam, SceneManager* scm, Root* root, bool isEmbedded, unsigned int inputhwnd) :
+	parentState(parentState),
 	initialized(false),
 	mCollisionTools(0),
 	isEmbedded(isEmbedded),
@@ -1326,6 +1327,7 @@ RoRFrameListener::RoRFrameListener(RenderWindow* win, Camera* cam, SceneManager*
 
 RoRFrameListener::~RoRFrameListener()
 {
+	mWindow->removeListener(&disableListener);
 #ifdef USE_MYGUI
 	LoadingWindow::FreeInstance();
 	SelectorWindow::FreeInstance();
@@ -4367,6 +4369,8 @@ void RoRFrameListener::shutdown_final()
 	//mInputManager->destroyInputObject(mKeyboard); mKeyboard = 0;
 	//OIS::InputManager::destroyInputSystem(mInputManager); mInputManager = 0;
 
+	
+	
 	shutdownall=true;
 	//terrainmaterial->getBestTechnique()->getPass(0)->getTextureUnitState(0)->setTextureName(terrainoriginalmaterial);
 }
@@ -5471,13 +5475,13 @@ void RoRFrameListener::loadClassicTerrain(String terrainfile)
 			Vector3 pos = Vector3(px,py,pz);
 
 			Ogre::ColourValue BackgroundColour = Ogre::ColourValue::White;//Ogre::ColourValue(0.1337f, 0.1337f, 0.1337f, 1.0f);
-			Ogre::ColourValue GridColour = Ogre::ColourValue(0.2000f, 0.2000f, 0.2000f, 1.0f);
+			Ogre::ColourValue GridColour = Ogre::ColourValue(0.9f, 0.9f, 0.9f, 1.0f);
 		
 			Ogre::ManualObject *mReferenceObject = new Ogre::ManualObject("ReferenceGrid");
 
 			mReferenceObject->begin("BaseWhiteNoLighting", Ogre::RenderOperation::OT_LINE_LIST);
    
-			Ogre::Real step = 1.0f;
+			Ogre::Real step = 10.0f;
 			unsigned int count = 200;
 			unsigned int halfCount = count / 2;
 			Ogre::Real full = (step * count);
@@ -5519,7 +5523,7 @@ void RoRFrameListener::loadClassicTerrain(String terrainfile)
 			mReferenceObject->end();
 			mReferenceObject->setCastShadows(false);
 			SceneNode *n = mSceneMgr->getRootSceneNode()->createChildSceneNode();
-			n->setPosition(pos - Vector3(count / 2, 0, count / 2));
+			n->setPosition(pos);
 			n->attachObject(mReferenceObject);
 			n->setVisible(true);
 		}
@@ -7066,7 +7070,10 @@ bool RoRFrameListener::frameStarted(const FrameEvent& evt)
 		return false;
 
 	if(shutdownall) // shortcut: press ESC in credits
+	{
+		parentState->exit();
 		return false;
+	}
 
 	// the truck we use got deleted D:
 	if(current_truck != -1 && trucks[current_truck] == 0)

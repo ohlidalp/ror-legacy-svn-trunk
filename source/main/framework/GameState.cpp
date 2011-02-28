@@ -4,6 +4,8 @@
 
 using namespace Ogre;
 
+RoRFrameListener *mFrameListener = 0;
+
 GameState::GameState()
 {
 }
@@ -32,7 +34,7 @@ void GameState::enter()
 	LogManager::getSingleton().logMessage("Adding Frame Listener");
 	bool isEmbedded = OgreFramework::getSingleton().isEmbedded();
 	
-	RoRFrameListener *mFrameListener = new RoRFrameListener(
+	mFrameListener = new RoRFrameListener(this, 
 		OgreFramework::getSingleton().m_pRenderWnd,
 		m_pCamera,
 		m_pSceneMgr,
@@ -64,9 +66,19 @@ void GameState::exit()
 {
     LogManager::getSingleton().logMessage("Leaving GameState...");
 
+	if(mFrameListener)
+	{
+		OgreFramework::getSingleton().m_pRoot->removeFrameListener(mFrameListener);
+		delete mFrameListener;
+	}
+
     m_pSceneMgr->destroyCamera(m_pCamera);
     if(m_pSceneMgr)
         OgreFramework::getSingletonPtr()->m_pRoot->destroySceneManager(m_pSceneMgr);
+
+	// hack: leave game here
+
+	std::exit(0);
 }
 
 void GameState::createScene()

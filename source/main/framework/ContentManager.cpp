@@ -234,6 +234,20 @@ void ContentManager::resourceStreamOpened(const Ogre::String &name, const Ogre::
 
 bool ContentManager::resourceCollision(Ogre::Resource *resource, Ogre::ResourceManager *resourceManager)
 {
+	/*
+	// TODO: do something useful here
+	if(resourceManager->getResourceType() == "Material")
+	{
+		if(instanceCountMap.find(resource->getName()) == instanceCountMap.end())
+		{
+			instanceCountMap[resource->getName()] = 1;
+		}
+		int count = instanceCountMap[resource->getName()]++;
+		MaterialPtr mat = (MaterialPtr)resourceManager->create(resource->getName() + StringConverter::toString(count), resource->getGroup());
+		resource = (Ogre::Resource *)mat.getPointer();
+		return true;
+	}
+	*/
 	return false;
 }
 
