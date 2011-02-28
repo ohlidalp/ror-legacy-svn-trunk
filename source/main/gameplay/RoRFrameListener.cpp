@@ -158,8 +158,6 @@ along with Rigs of Rods.  If not, see <http://www.gnu.org/licenses/>.
 
 using namespace std;
 
-bool disableRendering=false;
-
 Camera *gCamera;
 
 /// This class just pretends to provide prcedural page content to avoid page loading
@@ -172,24 +170,6 @@ public:
 	bool unprepareProceduralPage(Page* page, PagedWorldSection* section) { return true; }
 };
 DummyPageProvider mDummyPageProvider;
-
-class disableRenderingListener : public RenderTargetListener
-{
-private:
-
-public:
-	void preRenderTargetUpdate(const RenderTargetEvent& evt)
-	{
-		if (disableRendering) mScene->setFindVisibleObjects(false);
-	}
-	void postRenderTargetUpdate(const RenderTargetEvent& evt)
-	{
-		mScene->setFindVisibleObjects(true);
-	}
-
-};
-
-disableRenderingListener disableListener;
 
 Material *terrainmaterial = 0;
 
@@ -782,7 +762,6 @@ RoRFrameListener::RoRFrameListener(AppState *parentState, RenderWindow* win, Cam
 	if(!isEmbedded)
 		ow = new OverlayWrapper(win);
 
-	benchmarking = !(SETTINGS.getSetting("Benchmark").empty());
 	enablePosStor = (SETTINGS.getSetting("Position Storage")=="Yes");
 	objectCounter=0;
 	hdrListener=0;
@@ -832,7 +811,6 @@ RoRFrameListener::RoRFrameListener(AppState *parentState, RenderWindow* win, Cam
 	person=0;
 	netChat=0;
 	reload_pos=Vector3::ZERO;
-	win->addListener(&disableListener);
 	free_truck=0;
 	//dirt=0;
 	editorfd=0;
@@ -905,7 +883,7 @@ RoRFrameListener::RoRFrameListener(AppState *parentState, RenderWindow* win, Cam
 		size_t hWnd = 0;
 		win->getCustomAttribute("WINDOW", &hWnd);
 
-		if(!benchmarking && !isEmbedded)
+		if(!isEmbedded)
 			INPUTENGINE.setup(hWnd, true, true, inputGrabMode);
 	} else
 	{
@@ -1232,10 +1210,6 @@ RoRFrameListener::RoRFrameListener(AppState *parentState, RenderWindow* win, Cam
 	new BeamFactory(this, trucks, mSceneMgr, mSceneMgr->getRootSceneNode(), mWindow, net, &mapsizex, &mapsizez, collisions, hfinder, w, mCamera);
 
 
-	// setup a benchmark if required
-	if(setupBenchmark())
-		return;
-
 	// now continue to load everything...
 	if(preselected_map != "")
 	{
@@ -1327,7 +1301,6 @@ RoRFrameListener::RoRFrameListener(AppState *parentState, RenderWindow* win, Cam
 
 RoRFrameListener::~RoRFrameListener()
 {
-	mWindow->removeListener(&disableListener);
 #ifdef USE_MYGUI
 	LoadingWindow::FreeInstance();
 	SelectorWindow::FreeInstance();
@@ -1410,122 +1383,6 @@ void RoRFrameListener::loadNetTerrain(char *preselected_map)
 	}
 }
 
-
-int RoRFrameListener::setupBenchmark()
-{
-	String benchmark = SETTINGS.getSetting("Benchmark");
-	if(benchmark.empty()) return 0;
-
-	if(benchmark == "simple")
-	{
-		// very simple benchmark: a simple truck driving
-		benchmarking=true;
-#ifdef USE_MYGUI
-		LoadingWindow::get()->hide();
-#endif //MYGUI
-
-		// load a simple terrain
-		loadTerrain("simple.terrn");
-
-		// get truck name to test
-		int trucknums = 6;
-		if(!SETTINGS.getSetting("BenchmarkTrucks").empty())
-			trucknums = StringConverter::parseInt(SETTINGS.getSetting("BenchmarkTrucks"));
-		String truckname = SETTINGS.getSetting("Preselected Truck");
-		if(truckname.empty())
-		{
-			showError(_L("please specify truck to benchmark"), _L("Benchmark truck not specified"));
-			exit(1);
-		}
-
-		// load trucks
-		float radius = 10;
-		for(int i=0;i<trucknums;i++)
-		{
-			Vector3 pos = Vector3(500,0,250+3.5f*i);
-			Ogre::Quaternion dir = Ogre::Quaternion::ZERO;
-			Beam *truck = BeamFactory::getSingleton().createLocal(pos, dir, truckname);
-			truck->reset();
-			radius = truck->getMinimalCameraRadius() * 3.5f;
-			setCurrentTruck(truck->trucknum);
-		}
-
-		// activate them all
-		for(int i=0;i<trucknums;i++)
-			trucks[i]->activate();
-
-		// setup the camera
-		cameramode=CAMERA_EXT;
-		camRotX = Degree(-120);
-		camDist = radius;
-
-		// start the simulation
-		loading_state=ALL_LOADED;
-
-		// modify the gui
-		if(ow)
-		{
-			ow->truckhud->show(false);
-			ow->showDashboardOverlays(false,0);
-			ow->showDebugOverlay(1);
-		}
-		startTimer();
-
-		// return 1 to skip the normal loading
-		return 1;
-	} else
-	{
-		// unkown benchmark
-		showError(_L("Benchmark loading error"), _L("Benchmark not known: ") + benchmark);
-		exit(1);
-	}
-	return 0;
-}
-
-String RoRFrameListener::saveTerrainMesh()
-{
-	LogManager::getSingleton().logMessage("saving Terrain Mesh to file...");
-	ManualObject* mMan = mSceneMgr->createManualObject("Terrain");
-	mMan->estimateIndexCount(mapsizex*mapsizez*3);
-	mMan->estimateVertexCount(mapsizex*mapsizez*7);
-	//mMan->setDynamic(false);
-	mMan->begin("TerrainMaterial",RenderOperation::OT_TRIANGLE_LIST);
-	int i = 0;
-	int step = (mapsizex / 256);
-	if(step == 0) step = 1;
-	step *= 3;
-	LogManager::getSingleton().logMessage("saving with steps: " + StringConverter::toString(step));
-	for(int x = 1;x<mapsizex;x+=step)
-	{
-		for(int z = 1;z<mapsizez;z+=step)
-		{
-			mMan->index(i);
-			mMan->position(Vector3(x-step, hfinder->getHeightAt(x-step, z-step), z-step));
-			mMan->position(Vector3(x  , hfinder->getHeightAt(x, z)    , z));
-			mMan->position(Vector3(x-step, hfinder->getHeightAt(x-step, z)  , z));
-			i++;
-
-			mMan->index(i);
-			mMan->position(Vector3(x-step, hfinder->getHeightAt(x-step, z-step), z-step));
-			mMan->position(Vector3(x  , hfinder->getHeightAt(x, z-step)  , z-step));
-			mMan->position(Vector3(x  , hfinder->getHeightAt(x, z)    , z));
-			i++;
-		}
-		LogManager::getSingleton().logMessage("x: " + StringConverter::toString(x));
-	}
-	mMan->end();
-	Ogre::MeshPtr mMeshPtr = mMan->convertToMesh("TerrainMesh");
-	Ogre::Mesh* mMesh = mMeshPtr.getPointer();
-	Ogre::MeshSerializer* mMeshSeri = new Ogre::MeshSerializer();
-	//String mfilename = mFolder + "/" + mFolder + ".mesh";
-	String mfilename = loadedTerrain + ".mesh";
-	LogManager::getSingleton().logMessage("saved Terrain Mesh to file:" + mfilename);
-	mMeshSeri->exportMesh(mMesh, mfilename);
-	mSceneMgr->destroyManualObject(mMan);
-	delete mMesh;
-	delete mMeshSeri;
-	return mfilename;
-}
 
 void RoRFrameListener::unloadObject(const char* instancename)
 {
@@ -2023,79 +1880,11 @@ void RoRFrameListener::removeTruck(char* inst, char* box)
 }
 
 
-bool RoRFrameListener::benchmarkStep(float dt)
-{
-	// accelerate the truck a bit
-	//if(current_truck != -1 && trucks[current_truck] && trucks[current_truck]->engine)
-	for (int i=0; i<free_truck; i++)
-	{
-		if(!trucks[i]) continue;
-		trucks[i]->engine->autoSetAcc(0.5f);
 
-	}
-
-#if 0
-	if(rtime > 10.0f && rtime < 15.0f)
-		trucks[current_truck]->brake = 1;
-
-	// toggle parking brake around 20 and 25 sec
-	if(fabs(20.0f - rtime) < 0.1f)
-		trucks[current_truck]->parkingbrake=1;
-
-	if(fabs(22.0f - rtime) < 0.1f)
-		trucks[current_truck]->parkingbrake=0;
-#endif //0
-
-	// end the benchmark after some time
-	if(rtime > 30.0f)
-	{
-		Vector3 pos = trucks[current_truck]->nodes[0].AbsPosition;
-		LogManager::getSingleton().logMessage("Benchmark final Position: " + StringConverter::toString(pos));
-
-		String finalpos_str = SETTINGS.getSetting("BenchmarkFinalPosition");
-		String finalpos_error_str = SETTINGS.getSetting("BenchmarkFinalPositionError");
-		if(!finalpos_str.empty() && !finalpos_error_str.empty())
-		{
-			// check if we are at the wished position
-			Real finalpos_error = StringConverter::parseReal(finalpos_error_str);
-			Vector3 finalPos = StringConverter::parseVector3(finalpos_str);
-			LogManager::getSingleton().logMessage("Benchmark target Position: " + StringConverter::toString(finalPos));
-			Real targetDistance = fabs(pos.distance(finalPos));
-			LogManager::getSingleton().logMessage("Benchmark target distance: " + StringConverter::toString(targetDistance));
-			LogManager::getSingleton().logMessage("Benchmark error allowance: " + StringConverter::toString(finalpos_error));
-
-			if(targetDistance < finalpos_error)
-			{
-				LogManager::getSingleton().logMessage("Benchmark succeeding, inside of error radius");
-				exit(0);
-			} else
-			{
-				LogManager::getSingleton().logMessage("Benchmark failing, out of allowance error radius");
-				exit(1);
-			}
-		} else
-		{
-			// exit gracefully
-			exit(0);
-		}
-	}
-
-	// rotate camera slowly
-	//camRotX += Degree(-0.03f);
-
-	// update timer
-	updateRacingGUI();
-
-	return true;
-}
 
 bool RoRFrameListener::updateEvents(float dt)
 {
 	if (dt==0.0f) return true;
-
-	// when in benchmark mode, do not process user events, rather execute some hardcoded actions
-	if(benchmarking)
-		return benchmarkStep(dt);
 
 	INPUTENGINE.updateKeyBounces(dt);
 	if(!INPUTENGINE.getInputsChanged()) return true;
@@ -2358,13 +2147,6 @@ bool RoRFrameListener::updateEvents(float dt)
 		}
 	}
 
-	if (INPUTENGINE.getEventBoolValueBounce(EV_COMMON_SAVE_TERRAIN, 0.5f))
-	{
-		if(ow) ow->flashMessage("saving terrain, please wait...");
-		mWindow->update();
-		String fn = saveTerrainMesh();
-		if(ow) ow->flashMessage("terrain saved to file: " + fn);
-	}
 
 	// position storage
 	if(enablePosStor && current_truck != -1)
