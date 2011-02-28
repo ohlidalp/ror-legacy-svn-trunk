@@ -47,6 +47,7 @@ protected:
 	void resourceStreamOpened(const Ogre::String &name, const Ogre::String &group, Ogre::Resource *resource, Ogre::DataStreamPtr& dataStream);
 	bool resourceCollision(Ogre::Resource *resource, Ogre::ResourceManager *resourceManager);
 
+	//std::map<Ogre::String,int> instanceCountMap;
 };
 
 #endif // CONTENTMANAGER_H__

@@ -53,6 +53,7 @@ along with Rigs of Rods.  If not, see <http://www.gnu.org/licenses/>.
 #include "ChatSystem.h"
 #include "envmap.h"
 #include "ForceFeedback.h"
+#include "AppState.h"
 
 #ifdef USE_PAGED
 # include "PagedGeometry.h"
@@ -282,9 +283,10 @@ protected:
 	void initDust();
 	unsigned int inputhwnd;
 	bool ingame_console;
+	AppState *parentState;
 public:
 	// Constructor takes a RenderWindow because it uses that to determine input context
-	RoRFrameListener(RenderWindow* win, Camera* cam, SceneManager* scm, Root* root, bool isEmbedded=false, unsigned int inputhwnd=0);
+	RoRFrameListener(AppState *parent, RenderWindow* win, Camera* cam, SceneManager* scm, Root* root, bool isEmbedded=false, unsigned int inputhwnd=0);
 	virtual ~RoRFrameListener();
 
 	void removeBeam(Beam *);
