@@ -1,4 +1,4 @@
-project(RoR_Main)
+project(RoR)
 
 #setup libraries
 macro(setup_lib name)
@@ -88,7 +88,7 @@ endif(ROR_FEAT_TIMING)
 add_definitions("-DBOOST_ALL_NO_LIB")
 add_definitions("-DUSE_RTSHADER_SYSTEM")
 
-include_directories(.)
+include_directories(${RoR_Main_SOURCE_DIR})
 add_sub_dir(audio)
 add_sub_dir(gameplay)
 add_sub_dir(gfx)

@@ -29,7 +29,6 @@ along with Rigs of Rods.  If not, see <http://www.gnu.org/licenses/>.
 //#include "joystick.h"
 #include "ProceduralManager.h"
 #include "hdrlistener.h"
-#include "RigsOfRods.h"
 #include "utils.h"
 #include "ScopeLog.h"
 #include "DepthOfFieldEffect.h"

@@ -88,7 +88,7 @@ endif(ROR_FEAT_TIMING)
 add_definitions("-DBOOST_ALL_NO_LIB")
 add_definitions("-DUSE_RTSHADER_SYSTEM")
 
-include_directories(.)
+include_directories(${RoR_Main_SOURCE_DIR})
 add_sub_dir(audio)
 add_sub_dir(gameplay)
 add_sub_dir(gfx)
@@ -109,7 +109,15 @@ add_sub_dir(network)
 add_sub_dir(network/protocol)
 add_sub_dir(sqlite)
 add_sub_dir(framework)
-add_sub_dir(main_sim)
+add_sub_dir(main_viewer)
+
+
+# find wxWidgets
+SET(wxWidgets_USE_UNICODE ON)
+FIND_PACKAGE(wxWidgets REQUIRED COMPONENTS base core html net adv propgrid aui)
+include_directories(${wxWidgets_INCLUDE_DIRS})
+add_definitions("-D${wxWidgets_DEFINITIONS}" ${wxWidgets_CXX_FLAGS})
+link_directories (${wxWidgets_LIB_DIR})
 
 
 IF(WIN32)
@@ -118,5 +126,5 @@ ELSE(WIN32)
 	add_executable(RoREditor ${headers} ${sources})
 ENDIF(WIN32)
 
-target_link_libraries(RoREditor ${Ogre_LIBRARIES} ${Ogre_Terrain_LIBRARIES} ${Ogre_Paging_LIBRARIES} ${Ogre_RTShader_LIBRARIES} ${Ois_LIBRARIES} ${OS_LIBS} ${optional_libs})
+target_link_libraries(RoREditor ${wxWidgets_LIBRARIES} ${Ogre_LIBRARIES} ${Ogre_Terrain_LIBRARIES} ${Ogre_Paging_LIBRARIES} ${Ogre_RTShader_LIBRARIES} ${Ois_LIBRARIES} ${OS_LIBS} ${optional_libs})
 
