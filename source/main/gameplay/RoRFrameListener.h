@@ -79,7 +79,6 @@ class TruckEditor;
 class Network;
 //class BeamJoystick;
 class Collisions;
-class Mirrors;
 class Beam;
 class MapControl;
 class HDRListener;
@@ -456,7 +455,6 @@ protected:
 
 	Ogre::String terrainUID;
 	Road *road;
-	Mirrors *mirror;
 	Dashboard *dashboard;
 	FILE *editorfd;
 	//	Dirt *dirt;

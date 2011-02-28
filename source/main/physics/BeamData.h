@@ -145,6 +145,7 @@ enum TRUCK_SECTIONS {
 	BTS_COMMENT,
 	BTS_SECTION,
 	BTS_IN_SECTION,
+	BTS_VIDCAM,
 };
 
 
@@ -771,6 +772,7 @@ struct rig
 	FlexBody *flexbodies[MAX_FLEXBODIES];
 	int free_flexbody;
 
+	std::vector <VideoCamera *> vidcams;
 
 	char guid[128];
 };

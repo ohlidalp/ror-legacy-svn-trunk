@@ -73,7 +73,6 @@ public:
 		, HeightFinder *mfinder
 		, Water *w
 		, Camera *pcam
-		, Mirrors *mmirror
 		, bool networked=false
 		, bool networking=false
 		, collision_box_t *spawnbox=NULL
@@ -543,7 +542,6 @@ protected:
 	char texname[1024];
 	int hasEmissivePass;
 	bool isInside;
-	Mirrors *mirror;
 	bool beacon;
 	bool driversseatfound;
 	float totalmass;

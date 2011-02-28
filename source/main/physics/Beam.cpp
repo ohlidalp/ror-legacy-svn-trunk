@@ -32,7 +32,7 @@ along with Rigs of Rods.  If not, see <http://www.gnu.org/licenses/>.
 #include "DustPool.h"
 #include "errorutils.h"
 #include "Replay.h"
-#include "mirrors.h"
+#include "vidcam.h"
 #include "autopilot.h"
 #include "ScopeLog.h"
 #include "network.h"
@@ -303,7 +303,7 @@ Beam::~Beam()
 
 }
 
-Beam::Beam(int tnum, SceneManager *manager, SceneNode *parent, RenderWindow* win, Network *_net, float *_mapsizex, float *_mapsizez, Real px, Real py, Real pz, Quaternion rot, const char* fname, Collisions *icollisions, HeightFinder *mfinder, Water *w, Camera *pcam, Mirrors *mmirror, bool networked, bool networking, collision_box_t *spawnbox, bool ismachine, int _flaresMode, std::vector<Ogre::String> *_truckconfig, Skin *skin, bool freeposition) : \
+Beam::Beam(int tnum, SceneManager *manager, SceneNode *parent, RenderWindow* win, Network *_net, float *_mapsizex, float *_mapsizez, Real px, Real py, Real pz, Quaternion rot, const char* fname, Collisions *icollisions, HeightFinder *mfinder, Water *w, Camera *pcam, bool networked, bool networking, collision_box_t *spawnbox, bool ismachine, int _flaresMode, std::vector<Ogre::String> *_truckconfig, Skin *skin, bool freeposition) : \
 	deleting(false)
 {
 
@@ -358,6 +358,8 @@ Beam::Beam(int tnum, SceneManager *manager, SceneNode *parent, RenderWindow* win
 	memset(this->airbrakes, 0, sizeof(Airbrake *) * MAX_AIRBRAKES); free_airbrake = 0;
 	memset(this->skidtrails, 0, sizeof(Skidmark *) * (MAX_WHEELS*2)); useSkidmarks = false;
 	memset(this->flexbodies, 0, sizeof(FlexBody *) * MAX_FLEXBODIES); free_flexbody = 0;
+	vidcams.clear();
+
 	// clearing done
 
 	externalcameramode=0;
@@ -479,7 +481,6 @@ Beam::Beam(int tnum, SceneManager *manager, SceneNode *parent, RenderWindow* win
 	default_plastic_coef=0.0f;
 	strcpy(default_beam_material, "tracks/beam");
 	driversseatfound=false;
-	mirror=mmirror;
 	leftMirrorAngle=0.52;
 	rightMirrorAngle=-0.52;
 	if(ismachine)
@@ -3981,7 +3982,7 @@ void Beam::prepareInside(bool inside)
 		//setting camera
 		mCamera->setNearClipDistance( 0.1 );
 		//activate mirror
-		if (mirror) mirror->setActive(true);
+		//if (mirror) mirror->setActive(true);
 		//enable transparent seat
 		MaterialPtr seatmat=(MaterialPtr)(MaterialManager::getSingleton().getByName("driversseat"));
 		seatmat->setDepthWriteEnabled(false);
@@ -4022,7 +4023,7 @@ void Beam::prepareInside(bool inside)
 		//setting camera
 		mCamera->setNearClipDistance( 0.5 );
 		//desactivate mirror
-		if (mirror) mirror->setActive(false);
+		//if (mirror) mirror->setActive(false);
 		//disable transparent seat
 		MaterialPtr seatmat=(MaterialPtr)(MaterialManager::getSingleton().getByName("driversseat"));
 		seatmat->setDepthWriteEnabled(true);

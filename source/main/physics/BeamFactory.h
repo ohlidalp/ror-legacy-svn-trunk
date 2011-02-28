@@ -34,7 +34,7 @@ class BeamFactory : public StreamableFactory < BeamFactory, Beam >
 	friend class Network;
 	friend class RoRFrameListener;
 	public:
-	BeamFactory(RoRFrameListener *efl, Beam **trucks, SceneManager *manager, SceneNode *parent, RenderWindow* win, Network *net, float *mapsizex, float *mapsizez, Collisions *icollisions, HeightFinder *mfinder, Water *w, Camera *pcam, Mirrors *mmirror0);
+	BeamFactory(RoRFrameListener *efl, Beam **trucks, SceneManager *manager, SceneNode *parent, RenderWindow* win, Network *net, float *mapsizex, float *mapsizez, Collisions *icollisions, HeightFinder *mfinder, Water *w, Camera *pcam);
 	~BeamFactory();
 
 	Beam *createLocal(int slotid);
@@ -55,7 +55,6 @@ protected:
 	HeightFinder *mfinder;
 	Water *w;
 	Ogre::Camera *pcam;
-	Mirrors *mmirror0;
 	Beam **trucks;
 
 
