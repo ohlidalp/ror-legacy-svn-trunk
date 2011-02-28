@@ -4581,6 +4581,7 @@ void RoRFrameListener::loadTerrain(String terrainfile)
 		}
    
 		mReferenceObject->end();
+		mReferenceObject->setCastShadows(false);
 		mSceneMgr->getRootSceneNode()->attachObject(mReferenceObject);
 	}
 
@@ -6931,11 +6932,9 @@ bool RoRFrameListener::updateTruckMirrors(float dt)
 	if(current_truck == -1 || !trucks[current_truck]) return false;
 
 	Beam *t = trucks[current_truck];
-	for(int i=0;i=t->vidcams.size(); i++)
+	for(std::vector<VideoCamera *>::iterator it=t->vidcams.begin(); it!=t->vidcams.end(); it++)
 	{
-		VideoCamera *v = t->vidcams[i];
-		if(!v) continue;
-		v->update();
+		(*it)->update(dt);
 	}
 #if 0
 	//mirror
