@@ -88,8 +88,8 @@ void VideoCamera::update(float dt)
 	
 	Vector3 refy=refx.crossProduct(normal);
 	
-	//Quaternion rot = Quaternion(refx, normal, refy) * driverSeat->rot * Quaternion(Degree(180), Vector3::UNIT_Y); // rotate towards the driving direction
-	Quaternion rot = Quaternion(refx, normal, refy);
+	Quaternion rot = Quaternion(refx, normal, refy); // rotate towards the driving direction
+	//Quaternion rot = Quaternion(refx, normal, refy);
 
 	// set the new position / orientation to the camera
 	mVidCam->setPosition(pos);

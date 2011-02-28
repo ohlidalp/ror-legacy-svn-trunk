@@ -4532,59 +4532,6 @@ void RoRFrameListener::loadTerrain(String terrainfile)
 
 	}
 
-	if(terrainfile == "simple.terrn")
-	{
-		Ogre::ColourValue BackgroundColour = Ogre::ColourValue::White;//Ogre::ColourValue(0.1337f, 0.1337f, 0.1337f, 1.0f);
-		Ogre::ColourValue GridColour = Ogre::ColourValue(0.2000f, 0.2000f, 0.2000f, 1.0f);
-		
-		Ogre::ManualObject *mReferenceObject = new Ogre::ManualObject("ReferenceGrid");
-
-		mReferenceObject->begin("BaseWhiteNoLighting", Ogre::RenderOperation::OT_LINE_LIST);
-   
-		Ogre::Real step = 1.0f;
-		unsigned int count = 200;
-		unsigned int halfCount = count / 2;
-		Ogre::Real full = (step * count);
-		Ogre::Real half = full / 2;
-		Ogre::Real y = 0;
-		Ogre::ColourValue c;
-		for (unsigned i=0;i < count+1;i++)
-		{
-    
-			if (i == halfCount)
-				c = Ogre::ColourValue(0.5f,0.3f,0.3f,1.0f);
-			else
-				c = GridColour;
-    
-			mReferenceObject->position(-half,y,-half+(step*i));
-			mReferenceObject->colour(BackgroundColour);
-			mReferenceObject->position(0,y,-half+(step*i));
-			mReferenceObject->colour(c);
-			mReferenceObject->position(0,y,-half+(step*i));
-			mReferenceObject->colour(c);
-			mReferenceObject->position(half,y,-half+(step*i));
-			mReferenceObject->colour(BackgroundColour);
-
-			if (i == halfCount)
-				c = Ogre::ColourValue(0.3f,0.3f,0.5f,1.0f);
-			else
-				c = GridColour;
-    
-			mReferenceObject->position(-half+(step*i),y,-half);
-			mReferenceObject->colour(BackgroundColour);
-			mReferenceObject->position(-half+(step*i),y,0);
-			mReferenceObject->colour(c);
-			mReferenceObject->position(-half+(step*i),y,0);
-			mReferenceObject->colour(c);
-			mReferenceObject->position(-half+(step*i),y, half);
-			mReferenceObject->colour(BackgroundColour);
-		}
-   
-		mReferenceObject->end();
-		mReferenceObject->setCastShadows(false);
-		mSceneMgr->getRootSceneNode()->attachObject(mReferenceObject);
-	}
-
 	// set the terrain hash
 	{
 		Cache_Entry ce = CACHE.getResourceInfo(terrainfile);
@@ -5516,6 +5463,66 @@ void RoRFrameListener::loadClassicTerrain(String terrainfile)
 		size_t ll=ds->readLine(line, 1023);
 		if (line[0]=='/' || line[0]==';' || ll==0) continue; //comments
 		if (!strcmp("end",line)) break;
+
+		if (!strncmp(line,"grid", 4))
+		{
+			float px=0,py=0,pz=0;
+			int res = sscanf(line, "grid %f, %f, %f", &px, &py, &pz);
+			Vector3 pos = Vector3(px,py,pz);
+
+			Ogre::ColourValue BackgroundColour = Ogre::ColourValue::White;//Ogre::ColourValue(0.1337f, 0.1337f, 0.1337f, 1.0f);
+			Ogre::ColourValue GridColour = Ogre::ColourValue(0.2000f, 0.2000f, 0.2000f, 1.0f);
+		
+			Ogre::ManualObject *mReferenceObject = new Ogre::ManualObject("ReferenceGrid");
+
+			mReferenceObject->begin("BaseWhiteNoLighting", Ogre::RenderOperation::OT_LINE_LIST);
+   
+			Ogre::Real step = 1.0f;
+			unsigned int count = 200;
+			unsigned int halfCount = count / 2;
+			Ogre::Real full = (step * count);
+			Ogre::Real half = full / 2;
+			Ogre::Real y = 0;
+			Ogre::ColourValue c;
+			for (unsigned i=0;i < count+1;i++)
+			{
+    
+				if (i == halfCount)
+					c = Ogre::ColourValue(0.5f,0.3f,0.3f,1.0f);
+				else
+					c = GridColour;
+    
+				mReferenceObject->position(-half,y,-half+(step*i));
+				mReferenceObject->colour(BackgroundColour);
+				mReferenceObject->position(0,y,-half+(step*i));
+				mReferenceObject->colour(c);
+				mReferenceObject->position(0,y,-half+(step*i));
+				mReferenceObject->colour(c);
+				mReferenceObject->position(half,y,-half+(step*i));
+				mReferenceObject->colour(BackgroundColour);
+
+				if (i == halfCount)
+					c = Ogre::ColourValue(0.3f,0.3f,0.5f,1.0f);
+				else
+					c = GridColour;
+    
+				mReferenceObject->position(-half+(step*i),y,-half);
+				mReferenceObject->colour(BackgroundColour);
+				mReferenceObject->position(-half+(step*i),y,0);
+				mReferenceObject->colour(c);
+				mReferenceObject->position(-half+(step*i),y,0);
+				mReferenceObject->colour(c);
+				mReferenceObject->position(-half+(step*i),y, half);
+				mReferenceObject->colour(BackgroundColour);
+			}
+   
+			mReferenceObject->end();
+			mReferenceObject->setCastShadows(false);
+			SceneNode *n = mSceneMgr->getRootSceneNode()->createChildSceneNode();
+			n->setPosition(pos - Vector3(count / 2, 0, count / 2));
+			n->attachObject(mReferenceObject);
+			n->setVisible(true);
+		}
 
 
 		//Caelum config

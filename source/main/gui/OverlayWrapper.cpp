@@ -117,15 +117,15 @@ int OverlayWrapper::init()
 {
 	fpsLineStream = netLineStream = netlagLineStream = 0;
 
-	directionOverlay = loadOverlay("tracks/DirectionArrow");
+	directionOverlay = loadOverlay("tracks/DirectionArrow", false);
 	directionArrowText = (TextAreaOverlayElement*)loadOverlayElement("tracks/DirectionArrow/Text");
 	directionArrowDistance = (TextAreaOverlayElement*)loadOverlayElement("tracks/DirectionArrow/Distance");
 	mouseOverlay = loadOverlay("tracks/MouseOverlay", false);
 #ifdef HAS_EDITOR
 	truckeditorOverlay = loadOverlay("tracks/TruckEditorOverlay");
 #endif
-	mDebugOverlay = loadOverlay("Core/DebugOverlay");
-	mTimingDebugOverlay = loadOverlay("tracks/DebugBeamTiming");
+	mDebugOverlay = loadOverlay("Core/DebugOverlay", false);
+	mTimingDebugOverlay = loadOverlay("tracks/DebugBeamTiming", false);
 	mTimingDebugOverlay->hide();
 
 
@@ -407,7 +407,7 @@ int OverlayWrapper::init()
 	pressureNeedleOverlay = loadOverlay("tracks/PressureNeedleOverlay");
 	editorOverlay = loadOverlay("tracks/EditorOverlay");
 
-	racing = loadOverlay("tracks/Racing");
+	racing = loadOverlay("tracks/Racing", false);
 	laptimemin = (TextAreaOverlayElement*)loadOverlayElement("tracks/LapTimemin");
 	laptimes = (TextAreaOverlayElement*)loadOverlayElement("tracks/LapTimes");
 	laptimems = (TextAreaOverlayElement*)loadOverlayElement("tracks/LapTimems");
