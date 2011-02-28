@@ -28,7 +28,6 @@ along with Rigs of Rods.  If not, see <http://www.gnu.org/licenses/>.
 #include "sha1.h"
 #include "pthread.h"
 #include "RoRFrameListener.h"
-#include "mirrors.h"
 
 #ifdef USE_MYGUI
 #include "gui_mp.h"
@@ -39,7 +38,7 @@ using namespace Ogre;
 
 template<> BeamFactory *StreamableFactory < BeamFactory, Beam >::ms_Singleton = 0;
 
-BeamFactory::BeamFactory(RoRFrameListener *efl, Beam **trucks, SceneManager *manager, SceneNode *parent, RenderWindow* win, Network *net, float *mapsizex, float *mapsizez, Collisions *icollisions, HeightFinder *mfinder, Water *w, Camera *pcam, Mirrors *mmirror0) : efl(efl), trucks(trucks), manager(manager), parent(parent), win(win), net(net), mapsizex(mapsizex), mapsizez(mapsizez), icollisions(icollisions), mfinder(mfinder), pcam(pcam), mmirror0(mmirror0)
+BeamFactory::BeamFactory(RoRFrameListener *efl, Beam **trucks, SceneManager *manager, SceneNode *parent, RenderWindow* win, Network *net, float *mapsizex, float *mapsizez, Collisions *icollisions, HeightFinder *mfinder, Water *w, Camera *pcam) : efl(efl), trucks(trucks), manager(manager), parent(parent), win(win), net(net), mapsizex(mapsizex), mapsizez(mapsizez), icollisions(icollisions), mfinder(mfinder), pcam(pcam)
 {
 }
 
@@ -103,7 +102,6 @@ Beam *BeamFactory::createLocal(Ogre::Vector3 pos, Ogre::Quaternion rot, Ogre::St
 		mfinder,
 		w,
 		pcam,
-		mmirror0,
 		networked,
 		networking,
 		spawnbox,
@@ -188,7 +186,6 @@ Beam *BeamFactory::createRemoteInstance(stream_reg_t *reg)
 		mfinder,
 		w,
 		pcam,
-		mmirror0,
 		networked,
 		networking,
 		0,

@@ -49,6 +49,7 @@ along with Rigs of Rods.  If not, see <http://www.gnu.org/licenses/>.
 #include "TruckHUD.h"
 #include "DotSceneLoader.h"
 #include "AdvancedScreen.h"
+#include "vidcam.h"
 
 #ifdef USE_MPLATFORM
 #include "mplatform_fd.h"
@@ -96,7 +97,6 @@ along with Rigs of Rods.  If not, see <http://www.gnu.org/licenses/>.
 #include "LoadingWindow.h"
 #endif //MYGUI
 
-#include "mirrors.h"
 #include "autopilot.h"
 #include "ResourceBuffer.h"
 #include "CacheSystem.h"
@@ -846,7 +846,6 @@ RoRFrameListener::RoRFrameListener(RenderWindow* win, Camera* cam, SceneManager*
 	hidegui=false;
 	collisions=0;
 	editor=0;
-	mirror=0;
 	dashboard=0;//new Dashboard(scm,win);
 
 	mSceneMgr=scm;
@@ -1229,7 +1228,7 @@ RoRFrameListener::RoRFrameListener(RenderWindow* win, Camera* cam, SceneManager*
 #endif //SOCKETW
 
 	// new beam factory
-	new BeamFactory(this, trucks, mSceneMgr, mSceneMgr->getRootSceneNode(), mWindow, net, &mapsizex, &mapsizez, collisions, hfinder, w, mCamera, mirror);
+	new BeamFactory(this, trucks, mSceneMgr, mSceneMgr->getRootSceneNode(), mWindow, net, &mapsizex, &mapsizez, collisions, hfinder, w, mCamera);
 
 
 	// setup a benchmark if required
@@ -4078,7 +4077,7 @@ bool RoRFrameListener::updateEvents(float dt)
 					if(config.size() == 0) configptr = 0;
 
 					localTruck = BeamFactory::getSingleton().createLocal(reload_pos, reload_dir, selected, reload_box, false, flaresMode, configptr, skin);
-					//trucks[free_truck] = new Beam(free_truck, mSceneMgr, mSceneMgr->getRootSceneNode(), mWindow, net, &mapsizex, &mapsizez, reload_pos.x, reload_pos.y, reload_pos.z, reload_dir, selected, collisions, dustp, clumpp, sparksp, dripp, splashp, ripplep, hfinder, w, mCamera, mirror, true, false, false, reload_box, false, flaresMode, configptr, skin);
+					//trucks[free_truck] = new Beam(free_truck, mSceneMgr, mSceneMgr->getRootSceneNode(), mWindow, net, &mapsizex, &mapsizez, reload_pos.x, reload_pos.y, reload_pos.z, reload_dir, selected, collisions, dustp, clumpp, sparksp, dripp, splashp, ripplep, hfinder, w, mCamera, true, false, false, reload_box, false, flaresMode, configptr, skin);
 				}
 
 
@@ -5421,13 +5420,6 @@ void RoRFrameListener::loadClassicTerrain(String terrainfile)
 		envmap=new Envmap(mSceneMgr, mWindow, mCamera, SETTINGS.getSetting("Envmap")=="Yes");
 	}
 
-	//mirrors!
-	if(SETTINGS.getSetting("Mirrors")=="Yes")
-	{
-		mirror = new Mirrors(mSceneMgr, mWindow, mCamera);
-	}
-	BeamFactory::getSingleton().mmirror0 = mirror;
-
 	//dashboard
 	// always enabled
 	{
@@ -6158,9 +6150,7 @@ void RoRFrameListener::initTrucks(bool loadmanual, Ogre::String selected, Ogre::
 					}
 				}
 			}
-			//trucks[free_truck]=new Beam(free_truck, mSceneMgr, mSceneMgr->getRootSceneNode(), mWindow, net, &mapsizex, &mapsizez, spawnpos.x, spawnpos.y, spawnpos.z, spawnrot, selectedchr, collisions, dustp, clumpp, sparksp, dripp, splashp, ripplep, hfinder, w, mCamera, mirror, false, false, netmode,0,false,flaresMode, truckconfig);
 			b = BeamFactory::getSingleton().createLocal(spawnpos, spawnrot, selectedchr, 0, false, flaresMode, truckconfig);
-//IMI - on network mode we should be directly jump in
 			if (b && enterTruck)
 			{
 					cameramode = CAMERA_INT;
@@ -6171,7 +6161,6 @@ void RoRFrameListener::initTrucks(bool loadmanual, Ogre::String selected, Ogre::
 		} else
 		{
 			Beam *b = BeamFactory::getSingleton().createLocal(Vector3(truckx, trucky, truckz), Quaternion::ZERO, selectedchr, 0, false, flaresMode, truckconfig);
-			//trucks[free_truck]=new Beam(free_truck, mSceneMgr, mSceneMgr->getRootSceneNode(), mWindow, net, &mapsizex, &mapsizez, truckx, trucky, truckz, Quaternion::ZERO, selectedchr, collisions, dustp, clumpp, sparksp, dripp, splashp, ripplep, hfinder, w, mCamera, mirror, false, false, netmode,0,false,flaresMode, truckconfig);
 			if(b && enterTruck)
 			{
 				setCurrentTruck(b->trucknum);
@@ -6205,9 +6194,6 @@ void RoRFrameListener::initTrucks(bool loadmanual, Ogre::String selected, Ogre::
 		for (i=0; i<truck_preload_num; i++)
 		{
 			Beam *b = BeamFactory::getSingleton().createLocal(Vector3(truck_preload[i].px, truck_preload[i].py, truck_preload[i].pz), truck_preload[i].rotation, truck_preload[i].name, 0, truck_preload[i].ismachine, flaresMode, truckconfig, 0, truck_preload[i].freePosition);
-
-			//trucks[free_truck]=new Beam(free_truck, mSceneMgr, mSceneMgr->getRootSceneNode(), mWindow, net,
-			//	&mapsizex, &mapsizez, truck_preload[i].px, truck_preload[i].py, truck_preload[i].pz, truck_preload[i].rotation, truck_preload[i].name, collisions, dustp, clumpp, sparksp, dripp, splashp, ripplep, hfinder, w, mCamera, mirror,false,false,false,0,truck_preload[i].ismachine,flaresMode, truckconfig);
 #ifdef USE_MYGUI
 			if(b && bigMap)
 			{
@@ -6939,9 +6925,19 @@ bool RoRFrameListener::updateAnimatedObjects(float dt)
 	return true;
 }
 
-
 bool RoRFrameListener::updateTruckMirrors(float dt)
 {
+	// TODO: improve this so its usable from the outside as well
+	if(current_truck == -1 || !trucks[current_truck]) return false;
+
+	Beam *t = trucks[current_truck];
+	for(int i=0;i=t->vidcams.size(); i++)
+	{
+		VideoCamera *v = t->vidcams[i];
+		if(!v) continue;
+		v->update();
+	}
+#if 0
 	//mirror
 	if (mirror && current_truck!=-1)
 	{
@@ -7028,6 +7024,8 @@ bool RoRFrameListener::updateTruckMirrors(float dt)
 		}
 	}
 	return true;
+#endif //0
+	return true;
 }
 
 // Override frameStarted event to process that (don't care about frameEnded)
@@ -7093,8 +7091,11 @@ bool RoRFrameListener::frameStarted(const FrameEvent& evt)
 	}
 
 	// updating mirrors fixes its shaking!
-	if (cameramode==CAMERA_INT)
-		updateTruckMirrors(dt);
+	// TODO
+	//if (cameramode==CAMERA_INT)
+	updateTruckMirrors(dt);
+
+
 
 	moveCamera(dt); //antishaking
 

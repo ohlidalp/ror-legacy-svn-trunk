@@ -40,11 +40,13 @@ protected:
 
 	void loadMainResource(Ogre::String name, Ogre::String group=Ogre::ResourceGroupManager::DEFAULT_RESOURCE_GROUP_NAME);
 
+	void exploreFolders(Ogre::String rg);
 
 	// implementation for resource loading listener
 	Ogre::DataStreamPtr resourceLoading(const Ogre::String &name, const Ogre::String &group, Ogre::Resource *resource);
 	void resourceStreamOpened(const Ogre::String &name, const Ogre::String &group, Ogre::Resource *resource, Ogre::DataStreamPtr& dataStream);
 	bool resourceCollision(Ogre::Resource *resource, Ogre::ResourceManager *resourceManager);
+
 };
 
 #endif // CONTENTMANAGER_H__

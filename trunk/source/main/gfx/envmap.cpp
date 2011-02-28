@@ -19,25 +19,8 @@ along with Rigs of Rods.  If not, see <http://www.gnu.org/licenses/>.
 */
 #include "envmap.h"
 #include "Beam.h"
-/*
-Camera *mloCamera;
 
-class MirrorsListener : public RenderTargetListener
-{
-public:
-void preRenderTargetUpdate(const RenderTargetEvent& evt)
-{
-//mloCamera->setFOVy(mloCamera->getFOVy()/2.0);
-}
-void postRenderTargetUpdate(const RenderTargetEvent& evt)
-{
-//mloCamera->setFOVy(mloCamera->getFOVy()*2.0);
-}
 
-};
-
-MirrorsListener mMirrorsListener;
-*/
 Envmap::Envmap(SceneManager *mSceneMgr, RenderWindow *mWindow, Camera *incam, bool dynamic)
 {
 	isDynamic=dynamic;
@@ -141,6 +124,5 @@ void Envmap::forceUpdate(Vector3 center)
 
 void Envmap::prepareShutdown()
 {
-	//if (rttTex) rttTex->removeListener(&mMirrorsListener);
 }
 

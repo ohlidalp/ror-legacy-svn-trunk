@@ -34,6 +34,7 @@ along with Rigs of Rods.  If not, see <http://www.gnu.org/licenses/>.
 #include "Settings.h"
 #include "CmdKeyInertia.h"
 #include "MeshObject.h"
+#include "vidcam.h"
 
 // TODO not really needed for truck loading, or used very rarely
 #include "collisions.h"
@@ -206,6 +207,8 @@ int Beam::loadTruck(const char* fname, SceneManager *manager, SceneNode *parent,
 		if (!strcmp("flares2",line)) {mode=BTS_FLARES2;continue;};
 		if (!strcmp("animators",line)) {mode=BTS_ANIMATORS;continue;};
 		if (!strcmp("nodecollision",line)) {mode=BTS_NODECOLLISION;continue;};
+		if (!strcmp("videocamera",line)) {mode=BTS_VIDCAM;continue;};
+		
 		if (!strncmp("detacher_group", line, 14))
 		{
 			int detgroup = DEFAULT_DETACHER_GROUP;
@@ -3922,6 +3925,15 @@ int Beam::loadTruck(const char* fname, SceneManager *manager, SceneNode *parent,
 				continue;
 
 			nodes[nodenum].collRadius = radius;
+		}
+		else if (mode==BTS_VIDCAM)
+		{
+			VideoCamera *v = VideoCamera::parseLine(manager, mCamera, this, fname, line, linecounter);
+			if(v)
+			{
+				vidcams.push_back(v);
+			}
+			continue;
 		}
 	};
 	

@@ -96,6 +96,7 @@ class SoundScriptManager;
 class Turboprop;
 class TorqueCurve;
 class TruckHUD;
+class VideoCamera;
 class Water;
 
 namespace Ogre

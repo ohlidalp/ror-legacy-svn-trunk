@@ -195,20 +195,21 @@ bool ContentManager::init(void)
 
 	// and the content
 	//main synced streams
-	ResourceGroupManager::getSingleton().addResourceLocation(SETTINGS.getSetting("Streams Path"),      "FileSystem", "Streams", true);
+	ResourceGroupManager::getSingleton().addResourceLocation(SETTINGS.getSetting("Streams Path"),      "FileSystem", "Streams");
 	ResourceGroupManager::getSingleton().addResourceLocation(SETTINGS.getSetting("User Path")+"packs", "FileSystem", "Packs", true);
 	ResourceGroupManager::getSingleton().addResourceLocation(SETTINGS.getSetting("User Path")+"mods",  "FileSystem", "Packs", true);
 
-	ResourceGroupManager::getSingleton().addResourceLocation(SETTINGS.getSetting("User Path")+"vehicles", "FileSystem", "VehicleFolders", true);
-	ResourceGroupManager::getSingleton().addResourceLocation(SETTINGS.getSetting("User Path")+"terrains", "FileSystem", "TerrainFolders", true);
+	ResourceGroupManager::getSingleton().addResourceLocation(SETTINGS.getSetting("User Path")+"vehicles", "FileSystem", "VehicleFolders");
+	ResourceGroupManager::getSingleton().addResourceLocation(SETTINGS.getSetting("User Path")+"terrains", "FileSystem", "TerrainFolders");
+
+	exploreFolders("VehicleFolders");
+	exploreFolders("TerrainFolders");
+	exploreFolders("Streams");
 
 	LogManager::getSingleton().logMessage("initialiseAllResourceGroups() - Content");
 	try
 	{
-		ResourceGroupManager::getSingleton().initialiseResourceGroup("Streams");
 		ResourceGroupManager::getSingleton().initialiseResourceGroup("Packs");
-		ResourceGroupManager::getSingleton().initialiseResourceGroup("VehicleFolders");
-		ResourceGroupManager::getSingleton().initialiseResourceGroup("TerrainFolders");
 	} catch(Ogre::Exception& e)
 	{
 		LogManager::getSingleton().logMessage("catched error while initializing Content Resource groups: " + e.getFullDescription());
@@ -234,4 +235,32 @@ void ContentManager::resourceStreamOpened(const Ogre::String &name, const Ogre::
 bool ContentManager::resourceCollision(Ogre::Resource *resource, Ogre::ResourceManager *resourceManager)
 {
 	return false;
+}
+
+	
+void ContentManager::exploreFolders(Ogre::String rg)
+{
+	String dirsep="/";
+#if OGRE_PLATFORM == OGRE_PLATFORM_WIN32
+	dirsep="\\";
+#endif
+	ResourceGroupManager& rgm = ResourceGroupManager::getSingleton();
+
+	FileInfoListPtr files= rgm.findResourceFileInfo(rg, "*", true); //searching for dirs
+	FileInfoList::iterator iterFiles = files->begin();
+	for (; iterFiles!= files->end(); ++iterFiles)
+	{
+		if ((*iterFiles).filename==String(".svn")) continue;
+		//trying to get the full path
+		String fullpath=(*iterFiles).archive->getName() + dirsep;
+		rgm.addResourceLocation(fullpath+(*iterFiles).filename, "FileSystem", rg);
+	}
+	LogManager::getSingleton().logMessage("initialiseResourceGroups: VehicleFolders");
+	try
+	{
+		ResourceGroupManager::getSingleton().initialiseResourceGroup(rg);
+	} catch(Ogre::Exception& e)
+	{
+		LogManager::getSingleton().logMessage("catched error while initializing Resource group '" + rg + "' : " + e.getFullDescription());
+	}
 }
