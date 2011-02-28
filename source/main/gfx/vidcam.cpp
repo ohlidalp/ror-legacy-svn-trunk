@@ -73,7 +73,7 @@ void VideoCamera::setActive(bool state)
 		mat->getTechnique(0)->getPass(0)->getTextureUnitState(0)->setTextureName(disabledTexture);
 }
 
-void VideoCamera::update()
+void VideoCamera::update(float dt)
 {
 	// get the normal of the camera plane now
 	Vector3 normal=(truck->nodes[nx].smoothpos - truck->nodes[nref].smoothpos).crossProduct(truck->nodes[ny].smoothpos - truck->nodes[nref].smoothpos);
