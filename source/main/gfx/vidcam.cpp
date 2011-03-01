@@ -22,16 +22,20 @@ along with Rigs of Rods.  If not, see <http://www.gnu.org/licenses/>.
 #include <Ogre.h>
 
 #include "utils.h"
+#include "Settings.h"
 
 using namespace Ogre;
 
 int VideoCamera::counter = 0;
 
-VideoCamera::VideoCamera(Ogre::SceneManager *mSceneMgr, Ogre::Camera *camera, Beam *truck) : mSceneMgr(mSceneMgr), camera(camera), truck(truck)
+VideoCamera::VideoCamera(Ogre::SceneManager *mSceneMgr, Ogre::Camera *camera, Beam *truck) : mSceneMgr(mSceneMgr), mCamera(camera), truck(truck)
 	, mVidCam()
 	, rttTex(0)
 	, mat()
+	, debugMode(false)
+	, debugNode(0)
 {
+	debugMode = SETTINGS.getBooleanSetting("VideoCameraDebug");
 }
 
 void VideoCamera::init()
@@ -45,7 +49,7 @@ void VideoCamera::init()
 			, Ogre::TEX_TYPE_2D
 			, textureSize.x
 			, textureSize.y
-			, 0
+			, 0 // no mip maps
 			, Ogre::PF_R8G8B8
 			, Ogre::TU_RENDERTARGET
 			, new ResourceBuffer());
@@ -55,15 +59,34 @@ void VideoCamera::init()
 	mVidCam->setFarClipDistance(maxclip);
 	mVidCam->setFOVy(Ogre::Degree(fov));
 	mVidCam->setAspectRatio((float)textureSize.x/(float)textureSize.y);
-	Ogre::Viewport *v = rttTex->addViewport(mVidCam);
-	v->setClearEveryFrame(true);
-	v->setBackgroundColour(camera->getViewport()->getBackgroundColour());
+	
+	Ogre::Viewport *vp = rttTex->addViewport(mVidCam);
+	vp->setClearEveryFrame(true);
+	vp->setBackgroundColour(mCamera->getViewport()->getBackgroundColour());
+	vp->setVisibilityMask(~HIDE_MIRROR);
+	vp->setOverlaysEnabled(false);
 
 	disabledTexture = mat->getTechnique(0)->getPass(0)->getTextureUnitState(0)->getTextureName();
 
 	mat->getTechnique(0)->getPass(0)->getTextureUnitState(0)->setTextureName(materialName + "_texture");
 	mat->getTechnique(0)->getPass(0)->setLightingEnabled(false);
-	v->setOverlaysEnabled(false);
+	
+	if (cammode != -1)
+	{
+		// flip the image left<>right to have a mirror and not a cam
+		mat->getTechnique(0)->getPass(0)->getTextureUnitState(0)->setTextureUScale (-1);
+	}
+
+	vp->setVisibilityMask(~DEPTHMAP_DISABLED);
+
+	if(debugMode)
+	{
+		Entity *ent = mSceneMgr->createEntity("axes.mesh");
+		debugNode = mSceneMgr->getRootSceneNode()->createChildSceneNode();
+		ent->setMaterialName("tracks/beam");
+		debugNode->attachObject(ent);
+		debugNode->setScale(0.1,0.1,0.1);
+	}
 }
 
 void VideoCamera::setActive(bool state)
@@ -87,27 +110,36 @@ void VideoCamera::update(float dt)
 		(offset.y * (truck->nodes[nref].smoothpos - truck->nodes[ny].smoothpos)) + 
 		(offset.z * (truck->nodes[nref].smoothpos - truck->nodes[nx].smoothpos));
 
-	//orientation of camera
-	Vector3 refx = truck->nodes[nx].smoothpos - truck->nodes[nref].smoothpos;
-	refx.normalise();
-	Vector3 refy = -(refx.crossProduct(normal));
-	refx *= -1.0f;
-	Quaternion rot = Quaternion(refx, refy, -normal); // rotate towards the cam direction
-
-	// add mirror reflectionangle by cam position
 	// cammode 1 = mirror
-	if (cammode != -1)
+
+	Quaternion q;
+	if (cammode == 1)
 	{
-		// flip the image left<>right to have a mirror and not a cam
-		mat->getTechnique(0)->getPass(0)->getTextureUnitState(0)->setTextureUScale (-1);
+		// merge camera direction and reflect it on our plane
+		mVidCam->setDirection((pos - mCamera->getPosition()).reflect(normal));
+		
+		// now add the user rotation to this
+		mVidCam->setOrientation(mVidCam->getOrientation() * rotation);
+	} else
+	{
+		// rotate the camera according to the nodes orientation and user rotation
+		Vector3 refx = truck->nodes[nx].smoothpos - truck->nodes[nref].smoothpos;
+		refx.normalise();
+		Vector3 refy = -(refx.crossProduct(normal));
+		refx *= -1.0f;
+		Quaternion rot = Quaternion(refx, refy, -normal); // rotate towards the cam direction
+		mVidCam->setOrientation(rot * rotation); // add the user rotation to this
 	}
+
+	if(debugMode)
+	{
+		debugNode->setPosition(pos);
+		debugNode->setOrientation(mVidCam->getOrientation().Inverse());
+	} 
 
 	// set the new position / orientation to the camera
 	mVidCam->setPosition(pos);
-	mVidCam->setOrientation(rot * rotation); // add the user rotation to this
 }
-
-
 
 VideoCamera *VideoCamera::parseLine(Ogre::SceneManager *mSceneMgr, Ogre::Camera *camera, Beam *truck, const char *fname, char *line, int linecounter)
 {
@@ -159,7 +191,7 @@ VideoCamera *VideoCamera::parseLine(Ogre::SceneManager *mSceneMgr, Ogre::Camera 
 		v->camNode = nref;
 
 	v->offset      = Vector3(offx, offy, offz);
-	v->rotation    = Quaternion(Degree(rotz+180), Vector3::UNIT_Z) * Quaternion(Degree(roty), Vector3::UNIT_Y) * Quaternion(Degree(rotx), Vector3::UNIT_X);
+	v->rotation    = Quaternion(Degree(rotz), Vector3::UNIT_Z) * Quaternion(Degree(roty), Vector3::UNIT_Y) * Quaternion(Degree(rotx), Vector3::UNIT_X);
 	v->textureSize = Vector2(texx, texy);
 
 	v->cammode = cammode;
