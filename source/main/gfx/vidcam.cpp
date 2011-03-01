@@ -70,26 +70,33 @@ void VideoCamera::setActive(bool state)
 	if (state)
 		mat->getTechnique(0)->getPass(0)->getTextureUnitState(0)->setTextureName(materialName + "_texture");
 	else
+	{
 		mat->getTechnique(0)->getPass(0)->getTextureUnitState(0)->setTextureName(disabledTexture);
+		// mat->getTechnique(0)->getPass(0)->getTextureUnitState(0)->setTextureRotate(Degree(180));
+	}
 }
 
 void VideoCamera::update(float dt)
 {
 	// get the normal of the camera plane now
-	Vector3 normal=(truck->nodes[nx].smoothpos - truck->nodes[nref].smoothpos).crossProduct(truck->nodes[ny].smoothpos - truck->nodes[nref].smoothpos);
+	Vector3 normal=(-(truck->nodes[nref].smoothpos - truck->nodes[nx].smoothpos)).crossProduct(-(truck->nodes[nref].smoothpos - truck->nodes[ny].smoothpos));
 	normal.normalise();
 
-	Vector3 mposition = truck->nodes[nref].smoothpos + offx *(truck->nodes[nx].smoothpos - truck->nodes[nref].smoothpos) + offy * (truck->nodes[ny].smoothpos - truck->nodes[nref].smoothpos);
-	Vector3 pos = mposition + normal * offz;
+	// add user set offset
+	Vector3 pos = truck->nodes[nx].smoothpos + 
+		(offx * normal) + 
+		(offy * (truck->nodes[nref].smoothpos - truck->nodes[ny].smoothpos)) + 
+		(offz * (truck->nodes[nref].smoothpos - truck->nodes[nx].smoothpos));
 
-	//orientation
+	//orientation of camera
 	Vector3 refx = truck->nodes[nx].smoothpos - truck->nodes[nref].smoothpos;
 	refx.normalise();
-	
-	Vector3 refy=refx.crossProduct(normal);
-	
-	Quaternion rot = Quaternion(refx, normal, refy); // rotate towards the driving direction
-	//Quaternion rot = Quaternion(refx, normal, refy);
+	Vector3 refy = -(refx.crossProduct(normal));
+	refx *= -1.0f;
+	Quaternion rot = Quaternion(refx, refy, -normal); // rotate towards the cam direction
+
+	// add user set rotation
+	rot = rot* Quaternion(Degree(rotz), Vector3::UNIT_Z) * Quaternion(Degree(roty), Vector3::UNIT_Y) * Quaternion(Degree(rotx), Vector3::UNIT_X);
 
 	// set the new position / orientation to the camera
 	mVidCam->setPosition(pos);
@@ -100,11 +107,12 @@ void VideoCamera::update(float dt)
 
 VideoCamera *VideoCamera::parseLine(Ogre::SceneManager *mSceneMgr, Ogre::Camera *camera, Beam *truck, const char *fname, char *line, int linecounter)
 {
-	int nx=-1, ny=-1, nref=-1, offx=0, offy=0, offz=0, texx=256, texy=256, cammode=-1;
-	float fov=-1, minclip=-1, maxclip=-1;
+	// sample rate / isMirror / rotxyz ???
+	int nx=-1, ny=-1, nref=-1, texx=256, texy=256, cammode=-1;
+	float fov=-1.0f, minclip=-1.0f, maxclip=-1.0f, offx=0.0f, offy=0.0f, offz=0.0f, rotx=0.0f, roty=0.0f, rotz=0.0f;
 	char materialname[255] = "";
-	int result = sscanf(line,"%d, %d, %d, %d, %d, %d, %f, %d, %d, %f, %f, %d, %s", &nx, &ny, &nref, &offx, &offy, &offz, &fov, &texx, &texy, &minclip, &maxclip, &cammode, materialname);
-	if (result < 11 || result == EOF)
+	int result = sscanf(line,"%i, %i, %i, %f, %f, %f, %f, %f, %f, %f, %i, %i, %f, %f, %i, %s", &nx, &ny, &nref, &offx, &offy, &offz, &rotx, &roty, &rotz, &fov, &texx, &texy, &minclip, &maxclip, &cammode, materialname);
+	if (result < 16 || result == EOF)
 	{
 		LogManager::getSingleton().logMessage("Error parsing File (videocamera) " + String(fname) +" line " + StringConverter::toString(linecounter) + ". trying to continue ...");
 		return 0;
@@ -123,6 +131,10 @@ VideoCamera *VideoCamera::parseLine(Ogre::SceneManager *mSceneMgr, Ogre::Camera 
 	v->offx = offx;
 	v->offy = offy;
 	v->offz = offz;
+
+	v->rotx = rotx;
+	v->roty = roty;
+	v->rotz = rotz;
 
 	v->texx = texx;
 	v->texy = texy;

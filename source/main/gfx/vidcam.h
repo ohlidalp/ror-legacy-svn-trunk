@@ -39,8 +39,8 @@ public:
 	
 	static VideoCamera *parseLine(Ogre::SceneManager *mSceneMgr, Ogre::Camera *camera, Beam *truck, const char *fname, char *line, int linecounter);
 
-	float fov, minclip, maxclip;
-	int nx, ny, nref, offx, offy, offz, texx, texy, cammode;
+	float fov, minclip, maxclip, offx, offy, offz, rotx, roty, rotz;
+	int nx, ny, nref, texx, texy, cammode;
 	Ogre::String materialName, disabledTexture;
 
 protected:
