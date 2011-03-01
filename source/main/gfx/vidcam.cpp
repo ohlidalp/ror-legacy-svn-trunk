@@ -114,24 +114,6 @@ VideoCamera *VideoCamera::parseLine(Ogre::SceneManager *mSceneMgr, Ogre::Camera 
 		return 0;
 	}
 
-<<<<<<< .mine
-	// check for correct and resonable values
-	if(nref < 0 || nref > truck->free_node || (nx < 0 || nx > truck->free_node) || ny < 0 || ny > truck->free_node || ncam < -1 || ncam > truck->free_node)
-	{
-		LogManager::getSingleton().logMessage("Error parsing File (videocamera) " + String(fname) +" line " + StringConverter::toString(linecounter) + ". Unknown node number, trying to continue ...");
-		return 0;
-	}
-	if(fov < 0 || fov > 360)
-	{
-		LogManager::getSingleton().logMessage("Error parsing File (videocamera) " + String(fname) +" line " + StringConverter::toString(linecounter) + ". Field of view setting incorrect, trying to continue ...");
-		return 0;
-	}
-	if(minclip < 0 || maxclip < 0 || maxclip <= minclip)
-	{
-		LogManager::getSingleton().logMessage("Error parsing File (videocamera) " + String(fname) +" line " + StringConverter::toString(linecounter) + ". Min/Max clip setting incorrect, trying to continue ...");
-		return 0;
-	}
-=======
 	if (nx < 0 || nx >= truck->free_node || ny < 0 || ny >= truck->free_node || nref < 0 || nref >= truck->free_node)
 	{
 		LogManager::getSingleton().logMessage("Error parsing File (videocamera) " + String(fname) +" line " + StringConverter::toString(linecounter) + ". Wrong node definition. trying to continue ...");
@@ -150,15 +132,11 @@ VideoCamera *VideoCamera::parseLine(Ogre::SceneManager *mSceneMgr, Ogre::Camera 
 		return 0;
 	}
 
-	// TODO check for correct and resonable values
->>>>>>> .r1715
-
 	if(cammode < -2 )
 	{
 		LogManager::getSingleton().logMessage("Error parsing File (videocamera) " + String(fname) +" line " + StringConverter::toString(linecounter) + ". CamMode setting incorrect, trying to continue ...");
 		return 0;
 	}
-
 
 	VideoCamera *v = new VideoCamera(mSceneMgr, camera, truck);
 	v->fov = fov;
