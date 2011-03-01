@@ -41,8 +41,8 @@ void VideoCamera::init()
 	Ogre::TexturePtr rttTexPtr = Ogre::TextureManager::getSingleton().createManual(materialName + "_texture"
 			, Ogre::ResourceGroupManager::DEFAULT_RESOURCE_GROUP_NAME
 			, Ogre::TEX_TYPE_2D
-			, texx
-			, texy
+			, textureSize.x
+			, textureSize.y
 			, 0
 			, Ogre::PF_R8G8B8
 			, Ogre::TU_RENDERTARGET
@@ -52,7 +52,7 @@ void VideoCamera::init()
 	mVidCam->setNearClipDistance(minclip);
 	mVidCam->setFarClipDistance(maxclip);
 	mVidCam->setFOVy(Ogre::Degree(fov));
-	mVidCam->setAspectRatio((float)texx/(float)texy);
+	mVidCam->setAspectRatio((float)textureSize.x/(float)textureSize.y);
 	Ogre::Viewport *v = rttTex->addViewport(mVidCam);
 	v->setClearEveryFrame(true);
 	v->setBackgroundColour(camera->getViewport()->getBackgroundColour());
@@ -84,9 +84,9 @@ void VideoCamera::update(float dt)
 
 	// add user set offset
 	Vector3 pos = truck->nodes[nx].smoothpos + 
-		(offx * normal) + 
-		(offy * (truck->nodes[nref].smoothpos - truck->nodes[ny].smoothpos)) + 
-		(offz * (truck->nodes[nref].smoothpos - truck->nodes[nx].smoothpos));
+		(offset.x * normal) + 
+		(offset.y * (truck->nodes[nref].smoothpos - truck->nodes[ny].smoothpos)) + 
+		(offset.z * (truck->nodes[nref].smoothpos - truck->nodes[nx].smoothpos));
 
 	//orientation of camera
 	Vector3 refx = truck->nodes[nx].smoothpos - truck->nodes[nref].smoothpos;
@@ -95,12 +95,9 @@ void VideoCamera::update(float dt)
 	refx *= -1.0f;
 	Quaternion rot = Quaternion(refx, refy, -normal); // rotate towards the cam direction
 
-	// add user set rotation
-	rot = rot* Quaternion(Degree(rotz), Vector3::UNIT_Z) * Quaternion(Degree(roty), Vector3::UNIT_Y) * Quaternion(Degree(rotx), Vector3::UNIT_X);
-
 	// set the new position / orientation to the camera
 	mVidCam->setPosition(pos);
-	mVidCam->setOrientation(rot);
+	mVidCam->setOrientation(rot * rotation); // add the user rotation to this
 }
 
 
@@ -128,16 +125,10 @@ VideoCamera *VideoCamera::parseLine(Ogre::SceneManager *mSceneMgr, Ogre::Camera 
 	v->ny = ny;
 	v->nref = nref;
 
-	v->offx = offx;
-	v->offy = offy;
-	v->offz = offz;
+	v->offset      = Vector3(offx, offy, offz);
+	v->rotation    = Quaternion(Degree(rotz), Vector3::UNIT_Z) * Quaternion(Degree(roty), Vector3::UNIT_Y) * Quaternion(Degree(rotx), Vector3::UNIT_X);
+	v->textureSize = Vector2(texx, texy);
 
-	v->rotx = rotx;
-	v->roty = roty;
-	v->rotz = rotz;
-
-	v->texx = texx;
-	v->texy = texy;
 	v->cammode = cammode;
 	v->materialName = String(materialname);
 
