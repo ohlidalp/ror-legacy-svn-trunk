@@ -175,3 +175,8 @@ bool fileExists(std::string filename)
 	file.open(filename.c_str());
 	return file.is_open();
 }
+
+int isPowerOfTwo (unsigned int x)
+{
+  return ((x != 0) && ((x & (~x + 1)) == x));
+}

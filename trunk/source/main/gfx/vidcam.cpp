@@ -21,6 +21,8 @@ along with Rigs of Rods.  If not, see <http://www.gnu.org/licenses/>.
 #include "ResourceBuffer.h"
 #include <Ogre.h>
 
+#include "utils.h"
+
 using namespace Ogre;
 
 int VideoCamera::counter = 0;
@@ -112,6 +114,24 @@ VideoCamera *VideoCamera::parseLine(Ogre::SceneManager *mSceneMgr, Ogre::Camera 
 	if (result < 16 || result == EOF)
 	{
 		LogManager::getSingleton().logMessage("Error parsing File (videocamera) " + String(fname) +" line " + StringConverter::toString(linecounter) + ". trying to continue ...");
+		return 0;
+	}
+
+	if (nx < 0 || nx >= truck->free_node || ny < 0 || ny >= truck->free_node || nref < 0 || nref >= truck->free_node)
+	{
+		LogManager::getSingleton().logMessage("Error parsing File (videocamera) " + String(fname) +" line " + StringConverter::toString(linecounter) + ". Wrong node definition. trying to continue ...");
+		return 0;
+	}
+
+	if (texx <= 0 || !isPowerOfTwo(texx) || texy <= 0 || !isPowerOfTwo(texy))
+	{
+		LogManager::getSingleton().logMessage("Error parsing File (videocamera) " + String(fname) +" line " + StringConverter::toString(linecounter) + ". Wrong texture size definition (needs to be 2^n). trying to continue ...");
+		return 0;
+	}
+
+	if (minclip < 0 || minclip > maxclip || maxclip < 0)
+	{
+		LogManager::getSingleton().logMessage("Error parsing File (videocamera) " + String(fname) +" line " + StringConverter::toString(linecounter) + ". Wrong clipping definition. trying to continue ...");
 		return 0;
 	}
 

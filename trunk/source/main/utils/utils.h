@@ -45,4 +45,6 @@ Ogre::String getVersionString();
 
 bool fileExists(std::string filename);
 
+int isPowerOfTwo (unsigned int x);
+
 #endif //UTILS_H_
