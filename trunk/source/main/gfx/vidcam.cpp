@@ -72,10 +72,7 @@ void VideoCamera::setActive(bool state)
 	if (state)
 		mat->getTechnique(0)->getPass(0)->getTextureUnitState(0)->setTextureName(materialName + "_texture");
 	else
-	{
 		mat->getTechnique(0)->getPass(0)->getTextureUnitState(0)->setTextureName(disabledTexture);
-		// mat->getTechnique(0)->getPass(0)->getTextureUnitState(0)->setTextureRotate(Degree(180));
-	}
 }
 
 void VideoCamera::update(float dt)
@@ -85,7 +82,7 @@ void VideoCamera::update(float dt)
 	normal.normalise();
 
 	// add user set offset
-	Vector3 pos = truck->nodes[nx].smoothpos + 
+	Vector3 pos = truck->nodes[camNode].smoothpos + 
 		(offset.x * normal) + 
 		(offset.y * (truck->nodes[nref].smoothpos - truck->nodes[ny].smoothpos)) + 
 		(offset.z * (truck->nodes[nref].smoothpos - truck->nodes[nx].smoothpos));
@@ -106,17 +103,35 @@ void VideoCamera::update(float dt)
 
 VideoCamera *VideoCamera::parseLine(Ogre::SceneManager *mSceneMgr, Ogre::Camera *camera, Beam *truck, const char *fname, char *line, int linecounter)
 {
-	// sample rate / isMirror / rotxyz ???
-	int nx=-1, ny=-1, nref=-1, texx=256, texy=256, cammode=-1;
+	// sample rate / isMirror
+	int nx=-1, ny=-1, nref=-1, ncam=-1, texx=256, texy=256, cammode=-1;
 	float fov=-1.0f, minclip=-1.0f, maxclip=-1.0f, offx=0.0f, offy=0.0f, offz=0.0f, rotx=0.0f, roty=0.0f, rotz=0.0f;
 	char materialname[255] = "";
-	int result = sscanf(line,"%i, %i, %i, %f, %f, %f, %f, %f, %f, %f, %i, %i, %f, %f, %i, %s", &nx, &ny, &nref, &offx, &offy, &offz, &rotx, &roty, &rotz, &fov, &texx, &texy, &minclip, &maxclip, &cammode, materialname);
-	if (result < 16 || result == EOF)
+	int result = sscanf(line,"%i, %i, %i, %i, %f, %f, %f, %f, %f, %f, %f, %i, %i, %f, %f, %i, %s", &nref, &nx, &ny, &ncam, &offx, &offy, &offz, &rotx, &roty, &rotz, &fov, &texx, &texy, &minclip, &maxclip, &cammode, materialname);
+	if (result < 17 || result == EOF)
 	{
 		LogManager::getSingleton().logMessage("Error parsing File (videocamera) " + String(fname) +" line " + StringConverter::toString(linecounter) + ". trying to continue ...");
 		return 0;
 	}
 
+<<<<<<< .mine
+	// check for correct and resonable values
+	if(nref < 0 || nref > truck->free_node || (nx < 0 || nx > truck->free_node) || ny < 0 || ny > truck->free_node || ncam < -1 || ncam > truck->free_node)
+	{
+		LogManager::getSingleton().logMessage("Error parsing File (videocamera) " + String(fname) +" line " + StringConverter::toString(linecounter) + ". Unknown node number, trying to continue ...");
+		return 0;
+	}
+	if(fov < 0 || fov > 360)
+	{
+		LogManager::getSingleton().logMessage("Error parsing File (videocamera) " + String(fname) +" line " + StringConverter::toString(linecounter) + ". Field of view setting incorrect, trying to continue ...");
+		return 0;
+	}
+	if(minclip < 0 || maxclip < 0 || maxclip <= minclip)
+	{
+		LogManager::getSingleton().logMessage("Error parsing File (videocamera) " + String(fname) +" line " + StringConverter::toString(linecounter) + ". Min/Max clip setting incorrect, trying to continue ...");
+		return 0;
+	}
+=======
 	if (nx < 0 || nx >= truck->free_node || ny < 0 || ny >= truck->free_node || nref < 0 || nref >= truck->free_node)
 	{
 		LogManager::getSingleton().logMessage("Error parsing File (videocamera) " + String(fname) +" line " + StringConverter::toString(linecounter) + ". Wrong node definition. trying to continue ...");
@@ -136,6 +151,14 @@ VideoCamera *VideoCamera::parseLine(Ogre::SceneManager *mSceneMgr, Ogre::Camera 
 	}
 
 	// TODO check for correct and resonable values
+>>>>>>> .r1715
+
+	if(cammode < -2 )
+	{
+		LogManager::getSingleton().logMessage("Error parsing File (videocamera) " + String(fname) +" line " + StringConverter::toString(linecounter) + ". CamMode setting incorrect, trying to continue ...");
+		return 0;
+	}
+
 
 	VideoCamera *v = new VideoCamera(mSceneMgr, camera, truck);
 	v->fov = fov;
@@ -144,9 +167,13 @@ VideoCamera *VideoCamera::parseLine(Ogre::SceneManager *mSceneMgr, Ogre::Camera 
 	v->nx = nx;
 	v->ny = ny;
 	v->nref = nref;
+	if (ncam>=0)
+		v->camNode = ncam;
+	else
+		v->camNode = nref;
 
 	v->offset      = Vector3(offx, offy, offz);
-	v->rotation    = Quaternion(Degree(rotz), Vector3::UNIT_Z) * Quaternion(Degree(roty), Vector3::UNIT_Y) * Quaternion(Degree(rotx), Vector3::UNIT_X);
+	v->rotation    = Quaternion(Degree(rotz+180), Vector3::UNIT_Z) * Quaternion(Degree(roty), Vector3::UNIT_Y) * Quaternion(Degree(rotx), Vector3::UNIT_X);
 	v->textureSize = Vector2(texx, texy);
 
 	v->cammode = cammode;
