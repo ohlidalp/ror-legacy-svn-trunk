@@ -94,6 +94,14 @@ void VideoCamera::update(float dt)
 	refx *= -1.0f;
 	Quaternion rot = Quaternion(refx, refy, -normal); // rotate towards the cam direction
 
+	// add mirror reflectionangle by cam position
+	// cammode 1 = mirror
+	if (cammode != -1)
+	{
+		// flip the image left<>right to have a mirror and not a cam
+		mat->getTechnique(0)->getPass(0)->getTextureUnitState(0)->setTextureUScale (-1);
+	}
+
 	// set the new position / orientation to the camera
 	mVidCam->setPosition(pos);
 	mVidCam->setOrientation(rot * rotation); // add the user rotation to this
