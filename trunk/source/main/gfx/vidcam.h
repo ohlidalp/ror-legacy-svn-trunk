@@ -50,14 +50,14 @@ public:
 
 protected:
 	Ogre::SceneManager *mSceneMgr;
-	Ogre::Camera *camera;
 	Beam *truck;
 	static int counter;
 	Ogre::Camera *mCamera;
 	Ogre::Camera *mVidCam;
 	Ogre::RenderTexture* rttTex;
 	Ogre::MaterialPtr mat;
-
+	bool debugMode;
+	Ogre::SceneNode *debugNode;
 };
 
 

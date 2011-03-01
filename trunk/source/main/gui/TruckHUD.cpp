@@ -274,6 +274,9 @@ bool TruckHUD::update(float dt, Beam *truck, SceneManager *mSceneMgr, Camera* mC
 		descl = OverlayManager::getSingleton().getOverlayElement("tracks/TruckInfoBox/CurrentRPM");
 		descl->setCaption(rpmstring);
 		checkOverflow(descl);
+
+		/*
+		// TODO: FIX
 		if(visible && truck->engine->getTorqueCurve())
 		{
 			// torque curve handling
@@ -314,6 +317,7 @@ bool TruckHUD::update(float dt, Beam *truck, SceneManager *mSceneMgr, Camera* mC
 				lastTorqueRatio = ratio;
 			}
 		}
+		*/
 	} else if (truck->driveable == AIRPLANE){
 		char rpmstring[255];
 
@@ -487,6 +491,8 @@ bool TruckHUD::update(float dt, Beam *truck, SceneManager *mSceneMgr, Camera* mC
 
 void TruckHUD::initTorqueOverlay()
 {
+	// TODO: fix
+	return;
 	OverlayContainer *lineStreamContainer = (OverlayContainer *) (OverlayManager::getSingleton().createOverlayElement("LineStream", "TorqueCurveLineStream"));
 	lineStreamContainer->_setPosition(0.37f,  0.6f);
 	lineStreamContainer->_setDimensions(0.62f, 0.2f);
