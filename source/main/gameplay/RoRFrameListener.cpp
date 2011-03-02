@@ -6720,7 +6720,6 @@ bool RoRFrameListener::updateAnimatedObjects(float dt)
 
 bool RoRFrameListener::updateTruckMirrors(float dt)
 {
-	// TODO: improve this so its usable from the outside as well
 	if(current_truck == -1 || !trucks[current_truck]) return false;
 
 	Beam *t = trucks[current_truck];
@@ -6728,94 +6727,6 @@ bool RoRFrameListener::updateTruckMirrors(float dt)
 	{
 		(*it)->update(dt);
 	}
-#if 0
-	//mirror
-	if (mirror && current_truck!=-1)
-	{
-		//searching the best mirror=the nearest in the fov
-		int i,j;
-		float minlen=10000.0;
-		SceneNode *mirrornode=0;
-		int mirrortype=0;
-		//simplify
-		//for (i=0; i<free_truck; i++)
-		i=current_truck;
-		{
-			for (j=0; j<trucks[i]->free_prop; j++)
-			{
-				if (trucks[i]->props[j].mirror)
-				{
-					Vector3 dist=trucks[i]->props[j].snode->getPosition()-mCamera->getPosition();
-					//is it in the fov?
-					//						if (dist.directionEquals(mCamera->getDirection(), mCamera->getFOVy()*mCamera->getAspectRatio()/2.0))
-					//(enlarged FOV)
-					if (dist.directionEquals(mCamera->getDirection(), mCamera->getFOVy()*mCamera->getAspectRatio()/1.2)) // 1.6 -> 1.2
-					{
-						//yes maam
-						float fdist=dist.length();
-						if (fdist<minlen)
-						{
-							minlen=fdist;
-							mirrornode=trucks[i]->props[j].snode;
-							mirrortype=trucks[i]->props[j].mirror;
-						};
-					}
-				}
-			}
-
-		}
-		if (mirrornode)
-		{
-			/*
-			static SceneNode *sn=0;
-			static Entity *mda=0;
-			if (sn == 0)
-			{
-				mda = mSceneMgr->createEntity("MirrorAxesDebug", "axes.mesh");
-				sn = mSceneMgr->getRootSceneNode()->createChildSceneNode();
-				sn->attachObject(mda);
-				sn->setScale(0.1, 0.1, 0.1);
-			}
-			*/
-
-			//woohee, we have found it
-			//mirrornode->showBoundingBox(!mirrornode->getShowBoundingBox());
-			//				mirror->update(Plane(mirrornode->getOrientation()*Vector3(0.947,0.316,0), mirrornode->getPosition()+mirrornode->getOrientation()*Vector3(0.07,-0.22,0)));
-			//				mirror->update(Plane(mirrornode->getOrientation()*Vector3(1,0,0), mirrornode->getPosition()));
-			//				mirror->update(Plane(Vector3(1,0,0), mirrornode->getPosition()));
-			//				mirror->update(mirrornode->getOrientation()*Vector3(1,0,0), mirrornode->getPosition());
-
-			//				if (mirrortype==1) mirror->update(mirrornode->getOrientation()*Vector3(0.866,0.5,0), mirrornode->getPosition()+mirrornode->getOrientation()*Vector3(0.07,-0.22,0));
-			//				if (mirrortype==-1) mirror->update(mirrornode->getOrientation()*Vector3(0.866,-0.5,0), mirrornode->getPosition()+mirrornode->getOrientation()*Vector3(0.07,0.22,0));
-			Vector3 updateNormal = Vector3::ZERO, updateCenter = Vector3::ZERO;
-
-			// calculate truck roll
-			Vector3 dir=trucks[current_truck]->nodes[trucks[current_truck]->cameranodepos[0]].RelPosition-trucks[current_truck]->nodes[trucks[current_truck]->cameranoderoll[0]].RelPosition;
-			dir.normalise();
-			Radian rollangle = Degree(360) - Radian(asin(dir.dotProduct(Vector3::UNIT_Y)));
-
-			// two mirror types: left and right
-			if (mirrortype==1)
-			{
-				updateNormal = mirrornode->getOrientation() * Vector3(cos(trucks[current_truck]->leftMirrorAngle),sin(trucks[current_truck]->leftMirrorAngle),0);
-				updateCenter = mirrornode->getPosition()+mirrornode->getOrientation()*Vector3(0.07,-0.22,0);
-			}
-			if (mirrortype==-1)
-			{
-				updateNormal = mirrornode->getOrientation()*Vector3(cos(trucks[current_truck]->rightMirrorAngle),sin(trucks[current_truck]->rightMirrorAngle),0);
-				updateCenter = mirrornode->getPosition()+mirrornode->getOrientation()*Vector3(0.07,0.22,0);
-			}
-			if(updateNormal != Vector3::ZERO && updateCenter != Vector3::ZERO)
-			{
-				//sn->setPosition(updateCenter);
-				//sn->setDirection(updateNormal,Node::TS_WORLD);
-				mirror->update(updateNormal, updateCenter, rollangle);
-			}
-
-		}
-	}
-	return true;
-#endif //0
 	return true;
 }
 
@@ -6884,14 +6795,10 @@ bool RoRFrameListener::frameStarted(const FrameEvent& evt)
 #endif // USE_SOCKETW
 	}
 
-	// updating mirrors fixes its shaking!
-	// TODO
-	//if (cameramode==CAMERA_INT)
-	updateTruckMirrors(dt);
-
-
-
 	moveCamera(dt); //antishaking
+
+	// update mirrors after moving the camera as we use the camera position in mirrors
+	updateTruckMirrors(dt);
 
 	// update water after the camera!
 	if(loading_state==ALL_LOADED && w) w->framestep(dt);
