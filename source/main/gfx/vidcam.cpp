@@ -111,8 +111,6 @@ void VideoCamera::update(float dt)
 		(offset.z * (truck->nodes[nref].smoothpos - truck->nodes[nx].smoothpos));
 
 	// cammode 1 = mirror
-
-	Quaternion q;
 	if (cammode == 1)
 	{
 		// merge camera direction and reflect it on our plane
