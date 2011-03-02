@@ -81,9 +81,9 @@ void VideoCamera::init()
 
 	if(debugMode)
 	{
-		Entity *ent = mSceneMgr->createEntity("axes.mesh");
+		Entity *ent = mSceneMgr->createEntity("debug-camera.mesh");
 		debugNode = mSceneMgr->getRootSceneNode()->createChildSceneNode();
-		ent->setMaterialName("tracks/beam");
+		ent->setMaterialName("ror-camera");
 		debugNode->attachObject(ent);
 		debugNode->setScale(0.1,0.1,0.1);
 	}
@@ -131,10 +131,10 @@ void VideoCamera::update(float dt)
 	if(debugMode)
 	{
 		debugNode->setPosition(pos);
-		debugNode->setOrientation(mVidCam->getOrientation().Inverse());
+		debugNode->setOrientation(mVidCam->getOrientation());
 	} 
 
-	// set the new position / orientation to the camera
+	// set the new position
 	mVidCam->setPosition(pos);
 }
 
@@ -188,6 +188,11 @@ VideoCamera *VideoCamera::parseLine(Ogre::SceneManager *mSceneMgr, Ogre::Camera 
 		v->camNode = nref;
 
 	v->offset      = Vector3(offx, offy, offz);
+	
+	//rotate camera picture 180°
+	if(cammode != 1) 
+		rotz += 180;
+
 	v->rotation    = Quaternion(Degree(rotz), Vector3::UNIT_Z) * Quaternion(Degree(roty), Vector3::UNIT_Y) * Quaternion(Degree(rotx), Vector3::UNIT_X);
 	v->textureSize = Vector2(texx, texy);
 
