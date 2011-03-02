@@ -113,11 +113,10 @@ void VideoCamera::update(float dt)
 	// cammode 1 = mirror
 	if (cammode == 1)
 	{
+		//rotate the normal of the mirror by user rotation setting so it reflects correct ( easy truck file setup )
+		normal = rotation * normal;
 		// merge camera direction and reflect it on our plane
 		mVidCam->setDirection((pos - mCamera->getPosition()).reflect(normal));
-		
-		// now add the user rotation to this
-		mVidCam->setOrientation(mVidCam->getOrientation() * rotation);
 	} else
 	{
 		// rotate the camera according to the nodes orientation and user rotation
