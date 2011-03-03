@@ -101,28 +101,27 @@ void VideoCamera::setActive(bool state)
 void VideoCamera::update(float dt)
 {
 	// get the normal of the camera plane now
-	Vector3 normal=(-(truck->nodes[nref].smoothpos - truck->nodes[nx].smoothpos)).crossProduct(-(truck->nodes[nref].smoothpos - truck->nodes[ny].smoothpos));
+	Vector3 normal=(-(truck->nodes[nref].smoothpos - truck->nodes[nz].smoothpos)).crossProduct(-(truck->nodes[nref].smoothpos - truck->nodes[ny].smoothpos));
 	normal.normalise();
 
 	// add user set offset
 	Vector3 pos = truck->nodes[camNode].smoothpos + 
 		(offset.x * normal) + 
 		(offset.y * (truck->nodes[nref].smoothpos - truck->nodes[ny].smoothpos)) + 
-		(offset.z * (truck->nodes[nref].smoothpos - truck->nodes[nx].smoothpos));
+		(offset.z * (truck->nodes[nref].smoothpos - truck->nodes[nz].smoothpos));
 
-	// camrole 1 = mirror
+	//avoid the camera roll
+	// camup orientates to frustrum of world by default -> rotating the cam related to trucks yaw, lets bind cam rotation videocamera base (nref,ny,nz) as frustum
+	// could this be done faster&better with a plane setFrustumExtents ?
+	Vector3 frustumUP = truck->nodes[nref].smoothpos - truck->nodes[ny].smoothpos;
+	frustumUP.normalise();
+	mVidCam->setFixedYawAxis(true, frustumUP);
+
+	// camRole 1 = mirror
 	if (camRole == 1)
 	{
-		//avoid the camera roll ( camup orientates to frustrum by default rotating the cam related to truck yaw )
-		Vector3 rol=truck->nodes[truck->cameranodepos[0]].smoothpos - truck->nodes[truck->cameranoderoll[0]].smoothpos;
-		rol.normalise();
-		Vector3 dir=truck->nodes[truck->cameranodepos[0]].smoothpos - truck->nodes[truck->cameranodedir[0]].smoothpos;
-		Vector3 truckupright = dir.crossProduct(-rol);
-		mVidCam->setFixedYawAxis(true, truckupright);
-
-		//rotate the normal of the mirror by user rotation setting so it reflects correct ( easy truck file setup )
+		//rotate the normal of the mirror by user rotation setting so it reflects correct
 		normal = rotation * normal;
-
 		// merge camera direction and reflect it on our plane
 		mVidCam->setDirection((pos - mCamera->getPosition()).reflect(normal));
 	} else
@@ -131,16 +130,25 @@ void VideoCamera::update(float dt)
 		if (camRole == -1)
 		{
 			// rotate the camera according to the nodes orientation and user rotation
-			Vector3 refx = truck->nodes[nx].smoothpos - truck->nodes[nref].smoothpos;
+			Vector3 refx = truck->nodes[nz].smoothpos - truck->nodes[nref].smoothpos;
 			refx.normalise();
-			Vector3 refy = -(refx.crossProduct(normal));
-			refx *= -1.0f;
-			Quaternion rot = Quaternion(refx, refy, -normal); // rotate towards the cam direction
-			mVidCam->setOrientation(rot * rotation); // add the user rotation to this
+			Vector3 refy = truck->nodes[nref].smoothpos - truck->nodes[ny].smoothpos;
+			refy.normalise();
+			Quaternion rot = Quaternion(-refx, -refy, -normal); 
+			mVidCam->setOrientation(rot * rotation); // rotate the camera orientation towards the calculated cam direction plus user rotation
 		} else
 		{
 			// we assume this is a tracking videocamera
-			mVidCam->lookAt(truck->nodes[lookat].smoothpos);
+			normal = truck->nodes[lookat].smoothpos - pos;
+			normal.normalise();
+			Vector3 refx = truck->nodes[nz].smoothpos - truck->nodes[nref].smoothpos;
+			refx.normalise();
+			// why does this flip ~2-3° around zero orientation and only with trackercam. back to slower crossproduct calc, a bit slower but better .. sigh
+			// Vector3 refy = truck->nodes[nref].smoothpos - truck->nodes[ny].smoothpos;  
+			Vector3 refy = refx.crossProduct(normal);
+			refy.normalise();
+			Quaternion rot = Quaternion(-refx, -refy, -normal);
+			mVidCam->setOrientation(rot*rotation); // rotate the camera orientation towards the calculated cam direction plus user rotation
 		}
 	}
 
@@ -157,17 +165,17 @@ void VideoCamera::update(float dt)
 VideoCamera *VideoCamera::parseLine(Ogre::SceneManager *mSceneMgr, Ogre::Camera *camera, Beam *truck, const char *fname, char *line, int linecounter)
 {
 	// sample rate /
-	int nx=-1, ny=-1, nref=-1, ncam=-1, lookto=-1, texx=256, texy=256, crole=-1, cmode=-1;
+	int nz=-1, ny=-1, nref=-1, ncam=-1, lookto=-1, texx=256, texy=256, crole=-1, cmode=-1;
 	float fov=-1.0f, minclip=-1.0f, maxclip=-1.0f, offx=0.0f, offy=0.0f, offz=0.0f, rotx=0.0f, roty=0.0f, rotz=0.0f;
 	char materialname[255] = "";
-	int result = sscanf(line,"%i, %i, %i, %i, %i, %f, %f, %f, %f, %f, %f, %f, %i, %i, %f, %f, %i, %i, %s", &nref, &nx, &ny, &ncam, &lookto, &offx, &offy, &offz, &rotx, &roty, &rotz, &fov, &texx, &texy, &minclip, &maxclip, &crole, &cmode, materialname);
+	int result = sscanf(line,"%i, %i, %i, %i, %i, %f, %f, %f, %f, %f, %f, %f, %i, %i, %f, %f, %i, %i, %s", &nref, &nz, &ny, &ncam, &lookto, &offx, &offy, &offz, &rotx, &roty, &rotz, &fov, &texx, &texy, &minclip, &maxclip, &crole, &cmode, materialname);
 	if (result < 19 || result == EOF)
 	{
 		LogManager::getSingleton().logMessage("Error parsing File (videocamera) " + String(fname) +" line " + StringConverter::toString(linecounter) + ". trying to continue ...");
 		return 0;
 	}
 
-	if (nx < 0 || nx >= truck->free_node || ny < 0 || ny >= truck->free_node || nref < 0 || nref >= truck->free_node || ncam < -1 || ncam >= truck->free_node || lookto < -1 || lookto >= truck->free_node)
+	if (nz < 0 || nz >= truck->free_node || ny < 0 || ny >= truck->free_node || nref < 0 || nref >= truck->free_node || ncam < -1 || ncam >= truck->free_node || lookto < -1 || lookto >= truck->free_node)
 	{
 		LogManager::getSingleton().logMessage("Error parsing File (videocamera) " + String(fname) +" line " + StringConverter::toString(linecounter) + ". Wrong node definition. trying to continue ...");
 		return 0;
@@ -201,7 +209,7 @@ VideoCamera *VideoCamera::parseLine(Ogre::SceneManager *mSceneMgr, Ogre::Camera 
 	v->fov          = fov;
 	v->minclip      = minclip;
 	v->maxclip      = maxclip;
-	v->nx           = nx;
+	v->nz           = nz;
 	v->ny           = ny;
 	v->nref         = nref;
 	v->offset       = Vector3(offx, offy, offz);

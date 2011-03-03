@@ -46,7 +46,7 @@ public:
 	Ogre::Vector2 textureSize;
 	Ogre::Quaternion rotation;
 	
-	int nx, ny, nref, camRole;
+	int nz, ny, nref, camRole;
 	Ogre::String materialName, disabledTexture;
 
 protected:
