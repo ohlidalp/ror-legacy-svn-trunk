@@ -36,16 +36,17 @@ public:
 	void update(float dt);
 
 	void setActive(bool state);
+	//static VideoCamera *setActive(bool state);
 	
 	static VideoCamera *parseLine(Ogre::SceneManager *mSceneMgr, Ogre::Camera *camera, Beam *truck, const char *fname, char *line, int linecounter);
 
-	int camNode;
+	int camNode, lookat, switchoff;
 	float fov, minclip, maxclip;
 	Ogre::Vector3 offset;
 	Ogre::Vector2 textureSize;
 	Ogre::Quaternion rotation;
 	
-	int nx, ny, nref, cammode;
+	int nx, ny, nref, camRole;
 	Ogre::String materialName, disabledTexture;
 
 protected:

@@ -5707,6 +5707,10 @@ void Beam::changedCamera()
 	}
 #endif //OPENAL
 
+	// change videocamera mode needs for-loop through all video(mirror)cams, check cmode against currentcamera and then send the right bool
+	// bool state = true;
+	// VideoCamera *v = VideoCamera::setActive(state);
+
 	// look for props
 	for(int i=0;i<free_prop;i++)
 	{

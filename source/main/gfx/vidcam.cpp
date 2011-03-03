@@ -71,9 +71,9 @@ void VideoCamera::init()
 	mat->getTechnique(0)->getPass(0)->getTextureUnitState(0)->setTextureName(materialName + "_texture");
 	mat->getTechnique(0)->getPass(0)->setLightingEnabled(false);
 	
-	if (cammode != -1)
+	if (camRole == 1)
 	{
-		// flip the image left<>right to have a mirror and not a cameraimage
+		// this is a mirror, flip the image left<>right to have a mirror and not a cameraimage
 		mat->getTechnique(0)->getPass(0)->getTextureUnitState(0)->setTextureUScale (-1);
 	}
 
@@ -110,8 +110,8 @@ void VideoCamera::update(float dt)
 		(offset.y * (truck->nodes[nref].smoothpos - truck->nodes[ny].smoothpos)) + 
 		(offset.z * (truck->nodes[nref].smoothpos - truck->nodes[nx].smoothpos));
 
-	// cammode 1 = mirror
-	if (cammode == 1)
+	// camrole 1 = mirror
+	if (camRole == 1)
 	{
 		//avoid the camera roll ( camup orientates to frustrum by default rotating the cam related to truck yaw )
 		Vector3 rol=truck->nodes[truck->cameranodepos[0]].smoothpos - truck->nodes[truck->cameranoderoll[0]].smoothpos;
@@ -127,13 +127,21 @@ void VideoCamera::update(float dt)
 		mVidCam->setDirection((pos - mCamera->getPosition()).reflect(normal));
 	} else
 	{
-		// rotate the camera according to the nodes orientation and user rotation
-		Vector3 refx = truck->nodes[nx].smoothpos - truck->nodes[nref].smoothpos;
-		refx.normalise();
-		Vector3 refy = -(refx.crossProduct(normal));
-		refx *= -1.0f;
-		Quaternion rot = Quaternion(refx, refy, -normal); // rotate towards the cam direction
-		mVidCam->setOrientation(rot * rotation); // add the user rotation to this
+		// this is a videocamera
+		if (camRole == -1)
+		{
+			// rotate the camera according to the nodes orientation and user rotation
+			Vector3 refx = truck->nodes[nx].smoothpos - truck->nodes[nref].smoothpos;
+			refx.normalise();
+			Vector3 refy = -(refx.crossProduct(normal));
+			refx *= -1.0f;
+			Quaternion rot = Quaternion(refx, refy, -normal); // rotate towards the cam direction
+			mVidCam->setOrientation(rot * rotation); // add the user rotation to this
+		} else
+		{
+			// we assume this is a tracking videocamera
+			mVidCam->lookAt(truck->nodes[lookat].smoothpos);
+		}
 	}
 
 	if(debugMode)
@@ -148,18 +156,18 @@ void VideoCamera::update(float dt)
 
 VideoCamera *VideoCamera::parseLine(Ogre::SceneManager *mSceneMgr, Ogre::Camera *camera, Beam *truck, const char *fname, char *line, int linecounter)
 {
-	// sample rate / isMirror
-	int nx=-1, ny=-1, nref=-1, ncam=-1, texx=256, texy=256, cammode=-1;
+	// sample rate /
+	int nx=-1, ny=-1, nref=-1, ncam=-1, lookto=-1, texx=256, texy=256, crole=-1, cmode=-1;
 	float fov=-1.0f, minclip=-1.0f, maxclip=-1.0f, offx=0.0f, offy=0.0f, offz=0.0f, rotx=0.0f, roty=0.0f, rotz=0.0f;
 	char materialname[255] = "";
-	int result = sscanf(line,"%i, %i, %i, %i, %f, %f, %f, %f, %f, %f, %f, %i, %i, %f, %f, %i, %s", &nref, &nx, &ny, &ncam, &offx, &offy, &offz, &rotx, &roty, &rotz, &fov, &texx, &texy, &minclip, &maxclip, &cammode, materialname);
-	if (result < 17 || result == EOF)
+	int result = sscanf(line,"%i, %i, %i, %i, %i, %f, %f, %f, %f, %f, %f, %f, %i, %i, %f, %f, %i, %i, %s", &nref, &nx, &ny, &ncam, &lookto, &offx, &offy, &offz, &rotx, &roty, &rotz, &fov, &texx, &texy, &minclip, &maxclip, &crole, &cmode, materialname);
+	if (result < 19 || result == EOF)
 	{
 		LogManager::getSingleton().logMessage("Error parsing File (videocamera) " + String(fname) +" line " + StringConverter::toString(linecounter) + ". trying to continue ...");
 		return 0;
 	}
 
-	if (nx < 0 || nx >= truck->free_node || ny < 0 || ny >= truck->free_node || nref < 0 || nref >= truck->free_node)
+	if (nx < 0 || nx >= truck->free_node || ny < 0 || ny >= truck->free_node || nref < 0 || nref >= truck->free_node || ncam < -1 || ncam >= truck->free_node || lookto < -1 || lookto >= truck->free_node)
 	{
 		LogManager::getSingleton().logMessage("Error parsing File (videocamera) " + String(fname) +" line " + StringConverter::toString(linecounter) + ". Wrong node definition. trying to continue ...");
 		return 0;
@@ -177,35 +185,49 @@ VideoCamera *VideoCamera::parseLine(Ogre::SceneManager *mSceneMgr, Ogre::Camera 
 		return 0;
 	}
 
-	if(cammode < -2 )
+	if(cmode < -2 )
 	{
-		LogManager::getSingleton().logMessage("Error parsing File (videocamera) " + String(fname) +" line " + StringConverter::toString(linecounter) + ". CamMode setting incorrect, trying to continue ...");
+		LogManager::getSingleton().logMessage("Error parsing File (videocamera) " + String(fname) +" line " + StringConverter::toString(linecounter) + ". Camera Mode setting incorrect, trying to continue ...");
 		return 0;
 	}
 
-	VideoCamera *v = new VideoCamera(mSceneMgr, camera, truck);
-	v->fov = fov;
-	v->minclip = minclip;
-	v->maxclip = maxclip;
-	v->nx = nx;
-	v->ny = ny;
-	v->nref = nref;
-	if (ncam>=0)
-		v->camNode = ncam;
-	else
-		v->camNode = nref;
+	if(crole < -1 || crole >1)
+	{
+		LogManager::getSingleton().logMessage("Error parsing File (videocamera) " + String(fname) +" line " + StringConverter::toString(linecounter) + ". Camera Role (camera, trace, mirror) setting incorrect, trying to continue ...");
+		return 0;
+	}
 
-	v->offset      = Vector3(offx, offy, offz);
-	
-	//rotate camera picture 180°
-	if(cammode != 1) 
+	VideoCamera *v  = new VideoCamera(mSceneMgr, camera, truck);
+	v->fov          = fov;
+	v->minclip      = minclip;
+	v->maxclip      = maxclip;
+	v->nx           = nx;
+	v->ny           = ny;
+	v->nref         = nref;
+	v->offset       = Vector3(offx, offy, offz);
+	v->switchoff    = cmode;            // add performance switch off  ->meeds fix, only "always on" supported yet
+	v->materialName = String(materialname);
+	v->textureSize  = Vector2(texx, texy);
+
+	if(crole != 1)                     //rotate camera picture 180°, skip for mirrors
 		rotz += 180;
 
-	v->rotation    = Quaternion(Degree(rotz), Vector3::UNIT_Z) * Quaternion(Degree(roty), Vector3::UNIT_Y) * Quaternion(Degree(rotx), Vector3::UNIT_X);
-	v->textureSize = Vector2(texx, texy);
+	v->rotation     = Quaternion(Degree(rotz), Vector3::UNIT_Z) * Quaternion(Degree(roty), Vector3::UNIT_Y) * Quaternion(Degree(rotx), Vector3::UNIT_X);
 
-	v->cammode = cammode;
-	v->materialName = String(materialname);
+	if (ncam >= 0)                     // set alternative camposition (optional)
+		v->camNode  = ncam;
+	else
+		v->camNode  = nref;
+
+	if (lookto >= 0)                   // set alternative lookat position (optional)
+	{
+		v->lookat   = lookto;
+		crole       = 0;               // this is a tracecam, overwrite mode setting
+	}
+	else
+		v->lookat   = -1;
+
+	v->camRole      = crole;	        // -1= camera, 0 = trackcam, 1 = mirror
 
 	v->init();
 
