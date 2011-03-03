@@ -73,7 +73,7 @@ void VideoCamera::init()
 	
 	if (cammode != -1)
 	{
-		// flip the image left<>right to have a mirror and not a cam
+		// flip the image left<>right to have a mirror and not a cameraimage
 		mat->getTechnique(0)->getPass(0)->getTextureUnitState(0)->setTextureUScale (-1);
 	}
 
@@ -113,8 +113,16 @@ void VideoCamera::update(float dt)
 	// cammode 1 = mirror
 	if (cammode == 1)
 	{
+		//avoid the camera roll ( camup orientates to frustrum by default rotating the cam related to truck yaw )
+		Vector3 rol=truck->nodes[truck->cameranodepos[0]].smoothpos - truck->nodes[truck->cameranoderoll[0]].smoothpos;
+		rol.normalise();
+		Vector3 dir=truck->nodes[truck->cameranodepos[0]].smoothpos - truck->nodes[truck->cameranodedir[0]].smoothpos;
+		Vector3 truckupright = dir.crossProduct(-rol);
+		mVidCam->setFixedYawAxis(true, truckupright);
+
 		//rotate the normal of the mirror by user rotation setting so it reflects correct ( easy truck file setup )
 		normal = rotation * normal;
+
 		// merge camera direction and reflect it on our plane
 		mVidCam->setDirection((pos - mCamera->getPosition()).reflect(normal));
 	} else
