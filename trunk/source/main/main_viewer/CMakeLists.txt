@@ -1,4 +1,6 @@
-project(RoREditor)
+set(BINNAME RoRMeshViewer)
+
+project(${BINNAME})
 
 #setup libraries
 macro(setup_lib name)
@@ -121,10 +123,10 @@ link_directories (${wxWidgets_LIB_DIR})
 
 
 IF(WIN32)
-	add_executable(RoREditor WIN32 ${headers} ${sources} icon.rc)
+	add_executable(${BINNAME} WIN32 ${headers} ${sources} icon.rc)
 ELSE(WIN32)
-	add_executable(RoREditor ${headers} ${sources})
+	add_executable(${BINNAME} ${headers} ${sources})
 ENDIF(WIN32)
 
-target_link_libraries(RoREditor ${wxWidgets_LIBRARIES} ${Ogre_LIBRARIES} ${Ogre_Terrain_LIBRARIES} ${Ogre_Paging_LIBRARIES} ${Ogre_RTShader_LIBRARIES} ${Ois_LIBRARIES} ${OS_LIBS} ${optional_libs})
+target_link_libraries(${BINNAME} ${wxWidgets_LIBRARIES} ${Ogre_LIBRARIES} ${Ogre_Terrain_LIBRARIES} ${Ogre_Paging_LIBRARIES} ${Ogre_RTShader_LIBRARIES} ${Ois_LIBRARIES} ${OS_LIBS} ${optional_libs})
 
