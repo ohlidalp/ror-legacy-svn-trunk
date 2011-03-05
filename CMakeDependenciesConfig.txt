@@ -1,5 +1,4 @@
 # components
-set(ROR_BUILD_VIEWER "TRUE" CACHE BOOL "build the RoR Viewer Application")
 set(ROR_USE_MYGUI   "FALSE" CACHE BOOL "use MyGUI")
 set(ROR_USE_OPENAL  "FALSE" CACHE BOOL "use OPENAL")
 set(ROR_USE_LUA     "FALSE" CACHE BOOL "use LUA")
@@ -10,6 +9,7 @@ set(ROR_USE_CAELUM  "FALSE" CACHE BOOL "use caelum sky")
 set(ROR_USE_ANGELSCRIPT  "FALSE" CACHE BOOL "use angel script")
 set(ROR_FEAT_TIMING  "FALSE" CACHE BOOL "enable beam statistics. For core development only")
 set(ROR_USE_CURL  "FALSE" CACHE BOOL "use curl, required for communication with online services")
+set(ROR_BUILD_TOOLS "FALSE" CACHE BOOL "build the RoR tools Application (viewers and editors), completely separate and optional")
 
 # disable some options for now
 #set(ROR_USE_OPENCL  "FALSE" CACHE BOOL "use opencl (highly experimental)")
