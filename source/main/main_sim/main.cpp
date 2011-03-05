@@ -278,7 +278,7 @@ int main(int argc, char *argv[])
 		//	INPUTENGINE.prepareShutdown();
 
 		String url = "http://wiki.rigsofrods.com/index.php?title=Error_" + StringConverter::toString(e.getNumber())+"#"+e.getSource();
-		showWebError("An exception has occured!", e.getFullDescription(), url);
+		showOgreWebError("An exception has occured!", e.getFullDescription(), url);
 		return 1;
 	}
 
