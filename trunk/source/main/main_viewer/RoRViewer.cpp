@@ -40,93 +40,111 @@ RoRViewer::~RoRViewer(void)
 
 bool RoRViewer::Initialize(std::string hwndStr)
 {
-	if(!SETTINGS.setupPaths())
-		return false;
-
-	// load RoR.cfg directly after setting up paths
-	SETTINGS.loadSettings(SETTINGS.getSetting("Config Root")+"RoR.cfg");
-
-	String logFilename   = SETTINGS.getSetting("Log Path") + Ogre::String("RoRViewer.log");
-	String programPath   = SETTINGS.getSetting("Program Path");
-	String pluginsConfig = SETTINGS.getSetting("plugins.cfg");
-	
-	String ogreConfig    = SETTINGS.getSetting("ogre.cfg");
-	ogre_root = new Ogre::Root(pluginsConfig, ogreConfig, logFilename);
-
-	ogre_root->restoreConfig();
-	ogre_root->initialise(false);
-
-
-	Ogre::NameValuePairList param;
-	param["externalWindowHandle"] = hwndStr;
-
-	window    = ogre_root->createRenderWindow("viewer", 320, 240, false, &param);
-	scene_mgr = ogre_root->createSceneManager(ST_GENERIC);
-	camera    = scene_mgr->createCamera("ViewerCam");
-	viewport  = window->addViewport(camera);
-
-	camera->setNearClipDistance(0.1);
-	camera->setFarClipDistance(1000);
-	camera->setFOVy(Ogre::Radian(Ogre::Degree(60)));
-	camera->setAutoAspectRatio(true);
-	camera->lookAt(0, 0, 0);
-	camera->setPosition(Ogre::Vector3(0,12,0));
-
-	mCameraCS = new CCS::CameraControlSystem(scene_mgr, "CameraControlSystem", camera);
-	camModeOrbital = new CCS::OrbitalCameraMode(mCameraCS, 1);
-	mCameraCS->registerCameraMode("Orbital",camModeOrbital);
-
-	viewport->setBackgroundColour(ColourValue(0.35, 0.35, 0.35));
-
-	timer = new Ogre::Timer();
-	timer->reset();
-
-
-	light = scene_mgr->createLight("Lamp01");
-	light->setType(Light::LT_DIRECTIONAL);
-	light->setPosition(0, 50, 0);
-	light_node = scene_mgr->createSceneNode("RoRViewerLightNode");
-	light_node->attachObject(light);
-	scene_mgr->getRootSceneNode()->addChild(light_node);
-	light_node->lookAt(Vector3::NEGATIVE_UNIT_Y, Node::TS_WORLD, Vector3::UNIT_Z);
-
-	scene_mgr->setAmbientLight(ColourValue(0.5, 0.5, 0.5));
-
-	// figure out the files path
-	Ogre::String filename, filepath;
-	Ogre::StringUtil::splitFilename(meshPath, filename, filepath);
-
-	// add the file path to the resource lookup path
-	Ogre::ResourceGroupManager::getSingleton().addResourceLocation(filepath, "FileSystem");
-
-	// add default RoR resources, not too bad if this fails
 	try
 	{
-		Ogre::ResourceGroupManager::getSingleton().addResourceLocation(programPath + "resources/OgreCore.zip", "Zip");
-		Ogre::ResourceGroupManager::getSingleton().addResourceLocation(programPath + "resources/materials.zip", "Zip");
-		Ogre::ResourceGroupManager::getSingleton().addResourceLocation(programPath + "resources/textures.zip", "Zip");
-	} catch(...)
+		if(!SETTINGS.setupPaths())
+			return false;
+
+		// load RoR.cfg directly after setting up paths
+		SETTINGS.loadSettings(SETTINGS.getSetting("Config Root")+"RoR.cfg");
+
+		String logFilename   = SETTINGS.getSetting("Log Path") + Ogre::String("RoRViewer.log");
+		String programPath   = SETTINGS.getSetting("Program Path");
+		String pluginsConfig = String(); //SETTINGS.getSetting("plugins.cfg"); // beware of this, plugins.cfg is using relative paths
+	
+		String ogreConfig    = SETTINGS.getSetting("ogre.cfg");
+		ogre_root = new Ogre::Root(pluginsConfig, ogreConfig, logFilename);
+
+		ogre_root->loadPlugin(SETTINGS.getSetting("Program Path") + SETTINGS.getSetting("dirsep") + "RenderSystem_Direct3D9");
+		ogre_root->loadPlugin(SETTINGS.getSetting("Program Path") + SETTINGS.getSetting("dirsep") + "RenderSystem_GL");
+		ogre_root->loadPlugin(SETTINGS.getSetting("Program Path") + SETTINGS.getSetting("dirsep") + "Plugin_OctreeSceneManager");
+		ogre_root->loadPlugin(SETTINGS.getSetting("Program Path") + SETTINGS.getSetting("dirsep") + "Plugin_CgProgramManager");
+		ogre_root->loadPlugin(SETTINGS.getSetting("Program Path") + SETTINGS.getSetting("dirsep") + "caelum");
+		
+		ogre_root->restoreConfig();
+		ogre_root->initialise(false);
+
+
+		Ogre::NameValuePairList param;
+		param["externalWindowHandle"] = hwndStr;
+
+		window    = ogre_root->createRenderWindow("viewer", 320, 240, false, &param);
+		scene_mgr = ogre_root->createSceneManager(ST_GENERIC);
+		camera    = scene_mgr->createCamera("ViewerCam");
+		viewport  = window->addViewport(camera);
+
+		camera->setNearClipDistance(0.1);
+		camera->setFarClipDistance(1000);
+		camera->setFOVy(Ogre::Radian(Ogre::Degree(60)));
+		camera->setAutoAspectRatio(true);
+		camera->lookAt(0, 0, 0);
+		camera->setPosition(Ogre::Vector3(0,12,0));
+
+		mCameraCS = new CCS::CameraControlSystem(scene_mgr, "CameraControlSystem", camera);
+		camModeOrbital = new CCS::OrbitalCameraMode(mCameraCS, 1);
+		mCameraCS->registerCameraMode("Orbital",camModeOrbital);
+
+		viewport->setBackgroundColour(ColourValue(0.35, 0.35, 0.35));
+
+		timer = new Ogre::Timer();
+		timer->reset();
+
+
+		light = scene_mgr->createLight("Lamp01");
+		light->setType(Light::LT_DIRECTIONAL);
+		light->setPosition(0, 50, 0);
+		light_node = scene_mgr->createSceneNode("RoRViewerLightNode");
+		light_node->attachObject(light);
+		scene_mgr->getRootSceneNode()->addChild(light_node);
+		light_node->lookAt(Vector3::NEGATIVE_UNIT_Y, Node::TS_WORLD, Vector3::UNIT_Z);
+
+		scene_mgr->setAmbientLight(ColourValue(0.5, 0.5, 0.5));
+
+		// figure out the files path
+		Ogre::String filename, filepath;
+		Ogre::StringUtil::splitFilename(meshPath, filename, filepath);
+
+		// add the file path to the resource lookup path
+		Ogre::ResourceGroupManager::getSingleton().addResourceLocation(filepath, "FileSystem");
+
+		// add default RoR resources, not too bad if this fails
+		try
+		{
+			Ogre::ResourceGroupManager::getSingleton().addResourceLocation(programPath + "resources/OgreCore.zip", "Zip");
+			Ogre::ResourceGroupManager::getSingleton().addResourceLocation(programPath + "resources/materials.zip", "Zip");
+			Ogre::ResourceGroupManager::getSingleton().addResourceLocation(programPath + "resources/textures.zip", "Zip");
+		} catch(Ogre::Exception& e)
+		{
+			String url = "http://wiki.rigsofrods.com/index.php?title=Error_" + StringConverter::toString(e.getNumber())+"#"+e.getSource();
+			showWebError("An exception has occured!", e.getFullDescription(), url);
+			exit(1);
+		}
+		// init all resource locations
+		Ogre::ResourceGroupManager::getSingleton().initialiseAllResourceGroups();
+
+
+		// load the mesh
+		String group = Ogre::ResourceGroupManager::getSingleton().findGroupContainingResource(filename);
+		active_mesh = Ogre::MeshManager::getSingleton().load(filename, group);
+		active_entity = scene_mgr->createEntity(filepath, active_mesh->getName());
+
+		active_node = scene_mgr->getRootSceneNode()->createChildSceneNode();
+		active_node->attachObject(active_entity);
+
+		active_node->setPosition(0,0,0);
+
+		mCameraCS->setFixedYawAxis(true);
+
+		mCameraCS->setCameraTarget(active_node);
+		mCameraCS->setCurrentCameraMode(camModeOrbital);
+		camModeOrbital->setZoom(active_mesh->getBoundingSphereRadius());
+
+	} catch(Exception &e)
 	{
+		String url = "http://wiki.rigsofrods.com/index.php?title=Error_" + StringConverter::toString(e.getNumber())+"#"+e.getSource();
+		showWebError("An exception has occured!", e.getFullDescription(), url);
+		exit(1);
 	}
-	// init all resource locations
-	Ogre::ResourceGroupManager::getSingleton().initialiseAllResourceGroups();
-
-
-	// load the mesh
-	String group = Ogre::ResourceGroupManager::getSingleton().findGroupContainingResource(filename);
-	active_mesh = Ogre::MeshManager::getSingleton().load(filename, group);
-	active_entity = scene_mgr->createEntity(filepath, active_mesh->getName());
-
-	active_node = scene_mgr->getRootSceneNode()->createChildSceneNode();
-	active_node->attachObject(active_entity);
-
-	active_node->setPosition(0,0,0);
-
-	mCameraCS->setFixedYawAxis(true);
-
-	mCameraCS->setCameraTarget(active_node);
-	mCameraCS->setCurrentCameraMode(camModeOrbital);
-	camModeOrbital->setZoom(active_mesh->getBoundingSphereRadius());
 	return true;
 }
 
