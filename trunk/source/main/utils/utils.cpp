@@ -174,6 +174,7 @@ bool fileExists(std::string filename)
 	try
 	{
 		std::fstream file;
+		file.exceptions(std::ifstream::failbit | std::ifstream::badbit);
 		file.open(filename.c_str());
 		return file.is_open();
 	} catch(...)

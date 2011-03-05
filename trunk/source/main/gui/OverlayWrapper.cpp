@@ -25,6 +25,7 @@ along with Rigs of Rods.  If not, see <http://www.gnu.org/licenses/>.
 #include "TruckHUD.h"
 #include "language.h"
 #include "utils.h"
+#include "errorutils.h"
 #include "ColoredTextAreaOverlayElement.h"
 #include "OgreFontManager.h"
 
@@ -118,7 +119,14 @@ int OverlayWrapper::init()
 	fpsLineStream = netLineStream = netlagLineStream = 0;
 
 	directionOverlay = loadOverlay("tracks/DirectionArrow", false);
-	directionArrowText = (TextAreaOverlayElement*)loadOverlayElement("tracks/DirectionArrow/Text");
+	try
+	{
+		directionArrowText = (TextAreaOverlayElement*)loadOverlayElement("tracks/DirectionArrow/Text");
+	} catch(...)
+	{
+		String url = "http://wiki.rigsofrods.com/index.php?title=Error_Resources_Not_Found";
+		showWebError("Resources not found!", "please ensure that your installation is complete and the resources are installed properly. If this error persists please re-install RoR.", url);
+	}
 	directionArrowDistance = (TextAreaOverlayElement*)loadOverlayElement("tracks/DirectionArrow/Distance");
 	mouseOverlay = loadOverlay("tracks/MouseOverlay", false);
 #ifdef HAS_EDITOR
