@@ -24,6 +24,7 @@ along with Rigs of Rods.  If not, see <http://www.gnu.org/licenses/>.
 #include "ImprovedConfigFile.h"
 #include "Settings.h"
 #include "language.h"
+#include "errorutils.h"
 
 #include "SoundScriptManager.h"
 #include "BeamData.h" // for authorinfo_t
@@ -102,7 +103,7 @@ void CacheSystem::startup(SceneManager *smgr, bool forcecheck)
 		// generate the cache
 		generateCache((valid < -1));
 
-		LogManager::getSingleton().logMessage("unloading unused resource groups ...");
+		//LogManager::getSingleton().logMessage("unloading unused resource groups ...");
 		// important: unload everything again!
 		//unloadUselessResourceGroups();
 	}
@@ -110,6 +111,13 @@ void CacheSystem::startup(SceneManager *smgr, bool forcecheck)
 	LogManager::getSingleton().logMessage("loading cache...");
 	// load the cache finally!
 	loadCache();
+
+	// show error on zero content
+	if(!entries.size())
+	{
+		showOgreWebError(_L("No content installed"), _L("You have no content installed"), "http://www.rigsofrods.com/wiki/pages/Install_Content");
+		exit(1337);
+	}
 
 	LogManager::getSingleton().logMessage("cache loaded!");
 }

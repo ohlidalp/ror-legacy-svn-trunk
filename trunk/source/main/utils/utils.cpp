@@ -171,16 +171,12 @@ Ogre::String getVersionString()
 
 bool fileExists(std::string filename)
 {
-	try
-	{
-		std::fstream file;
-		file.exceptions(std::ifstream::failbit | std::ifstream::badbit);
-		file.open(filename.c_str());
-		return file.is_open();
-	} catch(...)
-	{
-	}
-	return false;
+	// be careful about what you use here...
+	FILE *f = fopen(filename.c_str(), "r");
+	if(!f)
+		return false;
+	fclose(f);
+	return true;
 }
 
 int isPowerOfTwo (unsigned int x)

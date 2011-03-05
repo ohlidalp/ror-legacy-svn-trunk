@@ -59,4 +59,16 @@ int showMsgBox(Ogre::String title, Ogre::String err, int type);
  */
 int showWebError(Ogre::String title, Ogre::String message, Ogre::String url);
 
+
+/**
+ * shows a simple error message box, and allows the user to open a website to help further and tries to exit Ogre fullscreen mode
+ * May not be implemented so that the browers opens for all platforms.
+ * @param title very short summar of the error
+ * @param msg error text
+ * @param url the URL to open if the user wishs
+ * @return 0 on success, everything else on error
+ */
+int showOgreWebError(Ogre::String title, Ogre::String err, Ogre::String url);
+
+
 #endif //ERRORUTILS_H__

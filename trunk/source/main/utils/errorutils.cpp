@@ -62,6 +62,24 @@ int showMsgBox(Ogre::String title, Ogre::String err, int type)
 	return 0;
 }
 
+int showOgreWebError(Ogre::String title, Ogre::String err, Ogre::String url)
+{
+	// this only works in non-embedded mode
+	// make no sense in embedded mode anyways ...
+	Ogre::Root *r = Ogre::Root::getSingletonPtr();
+	if(r && r->isInitialised())
+	{
+		Ogre::RenderWindow *rw = r->getAutoCreatedWindow();
+		if(rw)
+		{
+			Ogre::RenderSystem *rs =  r->getRenderSystem();
+			if(rs)
+				rs->destroyRenderWindow(rw->getName());
+		}
+	}
+	return showWebError(Ogre::String("Rigs of Rods: ") + title, err, url);
+}
+
 int showWebError(Ogre::String title, Ogre::String err, Ogre::String url)
 {
 	// NO logmanager use, because it could be that its not initialized yet!
@@ -69,9 +87,9 @@ int showWebError(Ogre::String title, Ogre::String err, Ogre::String url)
 #if OGRE_PLATFORM == OGRE_PLATFORM_WIN32
 	Ogre::String additional = _L("\n\nYou can eventually get help here:\n\n") + url + _L("\n\nDo you want to open that address in your default browser now?");
 	err += additional;
-	int Response = MessageBoxA( NULL, err.c_str(), title.c_str(), MB_YESNO | MB_ICONERROR | MB_TOPMOST);
-	// 6 = yes, 7 = no
-	if(Response == 6)
+	int Response = MessageBoxA( NULL, err.c_str(), title.c_str(), MB_YESNO | MB_ICONERROR | MB_TOPMOST | MB_SYSTEMMODAL | MB_SETFOREGROUND );
+	// 6 (IDYES) = yes, 7 (IDNO) = no
+	if(Response == IDYES)
 	{
 		// Microsoft conversion hell follows :|
 		char tmp[255], tmp2[255];

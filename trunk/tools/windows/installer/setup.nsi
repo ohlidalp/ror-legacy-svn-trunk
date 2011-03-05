@@ -1,11 +1,11 @@
-; HM NIS Edit Wizard helper defines
 !define PRODUCT_NAME "Rigs of Rods"
-!define PRODUCT_VERSION "0.38.13"
+!define PRODUCT_VERSION "0.38.19"
 !define PRODUCT_PUBLISHER "Rigs of Rods Team"
 !define PRODUCT_WEB_SITE "http://www.rigsofrods.com"
 !define PRODUCT_UNINST_KEY "Software\Microsoft\Windows\CurrentVersion\Uninstall\${PRODUCT_NAME}"
 !define PRODUCT_UNINST_ROOT_KEY "HKLM"
 
+!include "FileAssociation.nsh"
 
 ; ################################################################
 ; appends \ to the path if missing
@@ -304,6 +304,8 @@ Section -Post
 
 	Call InstallDirectX
 	Call InstallVisualStudioRuntime
+	
+	${registerExtension} "$INSTDIR\RoRMeshViewer.exe" ".mesh" "Ogre Mesh"
 
 	WriteUninstaller "$INSTDIR\uninst.exe"
 	WriteRegStr ${PRODUCT_UNINST_ROOT_KEY} "${PRODUCT_UNINST_KEY}" "DisplayName" "$(^Name)"
@@ -349,6 +351,8 @@ Section Uninstall
 	Delete "$STARTMENU.lnk"
 	RMDir  "$INSTDIR"
 	DeleteRegKey ${PRODUCT_UNINST_ROOT_KEY} "${PRODUCT_UNINST_KEY}"
+	 
+	${unregisterExtension} ".mesh" "Ogre Mesh"
 	
 	SetShellVarContext current
 	MessageBox MB_YESNO|MB_ICONEXCLAMATION "Remove RoR user content in $DOCUMENTS/Rigs of Rods?" IDYES removedoc IDNO end

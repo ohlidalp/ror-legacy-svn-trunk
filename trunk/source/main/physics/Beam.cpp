@@ -5638,7 +5638,7 @@ void *threadstart(void* vid)
 			INPUTENGINE.prepareShutdown();
 
 		String url = "http://wiki.rigsofrods.com/index.php?title=Error_" + StringConverter::toString(e.getNumber())+"#"+e.getSource();
-		showWebError("An exception has occured!", e.getFullDescription(), url);
+		showOgreWebError("An exception has occured!", e.getFullDescription(), url);
 	}
 	pthread_exit(NULL);
 	return NULL;

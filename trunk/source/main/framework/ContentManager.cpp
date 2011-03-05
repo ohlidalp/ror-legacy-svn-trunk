@@ -55,11 +55,12 @@ void ContentManager::loadMainResource(String name, String group)
 	String zipFilename = SETTINGS.getSetting("Resources Path")+name+".zip";
 	if(fileExists(zipFilename))
 	{
-		ResourceGroupManager::getSingleton().addResourceLocation(zipFilename, "Zip", group, true);
+		ResourceGroupManager::getSingleton().addResourceLocation(zipFilename, "Zip", group);
 	} else
 	{
-		String dirname = SETTINGS.getSetting("Resources Path")+dirsep+name;
-		ResourceGroupManager::getSingleton().addResourceLocation(dirname, "FileSystem", group, true);
+		String dirname = SETTINGS.getSetting("Resources Path")+name;
+		Ogre::LogManager::getSingleton().logMessage("resource zip '"+zipFilename+"' not existing, using directory instead: " + dirname);
+		ResourceGroupManager::getSingleton().addResourceLocation(dirname, "FileSystem", group);
 	}
 }
 
@@ -159,7 +160,7 @@ bool ContentManager::init(void)
 	//packs, to be processed later by the cache system
 
 	// add scripts folder
-	ResourceGroupManager::getSingleton().addResourceLocation(SETTINGS.getSetting("User Path")+"scripts", "FileSystem", "Scripts", true);
+	ResourceGroupManager::getSingleton().addResourceLocation(SETTINGS.getSetting("User Path")+"scripts", "FileSystem", "Scripts");
 
 	// init skin manager, important to happen before trucks resource loading!
 	LogManager::getSingleton().logMessage("registering Skin Manager");
@@ -196,8 +197,8 @@ bool ContentManager::init(void)
 	// and the content
 	//main synced streams
 	ResourceGroupManager::getSingleton().addResourceLocation(SETTINGS.getSetting("Streams Path"),      "FileSystem", "Streams");
-	ResourceGroupManager::getSingleton().addResourceLocation(SETTINGS.getSetting("User Path")+"packs", "FileSystem", "Packs", true);
-	ResourceGroupManager::getSingleton().addResourceLocation(SETTINGS.getSetting("User Path")+"mods",  "FileSystem", "Packs", true);
+	ResourceGroupManager::getSingleton().addResourceLocation(SETTINGS.getSetting("User Path")+"packs", "FileSystem", "Packs");
+	ResourceGroupManager::getSingleton().addResourceLocation(SETTINGS.getSetting("User Path")+"mods",  "FileSystem", "Packs");
 
 	ResourceGroupManager::getSingleton().addResourceLocation(SETTINGS.getSetting("User Path")+"vehicles", "FileSystem", "VehicleFolders");
 	ResourceGroupManager::getSingleton().addResourceLocation(SETTINGS.getSetting("User Path")+"terrains", "FileSystem", "TerrainFolders");
