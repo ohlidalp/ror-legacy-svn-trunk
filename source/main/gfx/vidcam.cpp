@@ -205,6 +205,14 @@ VideoCamera *VideoCamera::parseLine(Ogre::SceneManager *mSceneMgr, Ogre::Camera 
 		return 0;
 	}
 
+	MaterialPtr mat = MaterialManager::getSingleton().getByName(materialname);
+	if(mat.isNull())
+	{
+		LogManager::getSingleton().logMessage("Error parsing File (videocamera) " + String(fname) +" line " + StringConverter::toString(linecounter) + ". unkown material: '"+materialname+"', trying to continue ...");
+		return 0;
+	}
+	
+
 	VideoCamera *v  = new VideoCamera(mSceneMgr, camera, truck);
 	v->fov          = fov;
 	v->minclip      = minclip;
