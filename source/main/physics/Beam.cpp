@@ -306,64 +306,6 @@ Beam::~Beam()
 Beam::Beam(int tnum, SceneManager *manager, SceneNode *parent, RenderWindow* win, Network *_net, float *_mapsizex, float *_mapsizez, Real px, Real py, Real pz, Quaternion rot, const char* fname, Collisions *icollisions, HeightFinder *mfinder, Water *w, Camera *pcam, bool networked, bool networking, collision_box_t *spawnbox, bool ismachine, int _flaresMode, std::vector<Ogre::String> *_truckconfig, Skin *skin, bool freeposition) : \
 	deleting(false)
 {
-
-	// clear rig parent structure
-	// this is important, since we might check if we need to delete stuff and then it crashes if not initialized with zero ...
-	// this is surely ugly as hell!
-	memset(this->nodes, 0, sizeof(node_t) * MAX_NODES); free_node = 0;
-	memset(this->beams, 0, sizeof(beam_t) * MAX_BEAMS); free_beam = 0;
-	memset(this->contacters, 0, sizeof(contacter_t) * MAX_CONTACTERS); free_contacter = 0;
-	memset(this->rigidifiers, 0, sizeof(rigidifier_t) * MAX_RIGIDIFIERS); free_rigidifier = 0;
-	memset(this->wheels, 0, sizeof(wheel_t) * MAX_WHEELS); free_wheel = 0;
-	memset(this->vwheels, 0, sizeof(vwheel_t) * MAX_WHEELS);
-	ropes.clear();
-	ropables.clear();
-	ties.clear();
-	hooks.clear();
-	memset(this->wings, 0, sizeof(wing_t) * MAX_WINGS); free_wing = 0;
-
-	// commands contain complex data structures, do not memset them ...
-	for(int i=0;i<MAX_COMMANDS+1;i++)
-	{
-		this->commandkey[i].commandValue=-1;
-		this->commandkey[i].beams.clear();
-		this->commandkey[i].rotators.clear();
-		this->commandkey[i].description = String();
-	}
-
-	memset(this->rotators, 0, sizeof(rotator_t) * MAX_ROTATORS); free_rotator = 0;
-	flares.clear(); free_flare = 0;
-	memset(this->props, 0, sizeof(prop_t) * MAX_PROPS); free_prop = 0;
-	driverSeat=0;
-	memset(this->shocks, 0, sizeof(shock_t) * MAX_SHOCKS); free_shock = 0; free_active_shock = 0;
-	exhausts.clear();
-	memset(this->cparticles, 0, sizeof(cparticle_t) * MAX_CPARTICLES); free_cparticle = 0;
-	nodes_debug.clear();
-	beams_debug.clear();
-	memset(this->soundsources, 0, sizeof(soundsource_t) * MAX_SOUNDSCRIPTS_PER_TRUCK); free_soundsource = 0;
-	memset(this->pressure_beams, 0, sizeof(int) * MAX_PRESSURE_BEAMS); free_pressure_beam = 0;
-	memset(this->aeroengines, 0, sizeof(AeroEngine *) * MAX_AEROENGINES); free_aeroengine = 0;
-	memset(this->cabs, 0, sizeof(int) * (MAX_CABS*3)); free_cab = 0;
-	memset(this->subisback, 0, sizeof(int) * MAX_SUBMESHES);
-	memset(this->hydro, 0, sizeof(int) * MAX_HYDROS); free_hydro = 0;
-	for(int i=0;i<MAX_TEXCOORDS;i++) this->texcoords[i] = Vector3::ZERO;
-	free_texcoord=0;
-	memset(this->subtexcoords, 0, sizeof(int) * MAX_SUBMESHES); free_sub = 0;
-	memset(this->subcabs, 0, sizeof(int) * MAX_SUBMESHES);
-	memset(this->collcabs, 0, sizeof(int) * MAX_CABS);
-	memset(this->collcabstype, 0, sizeof(int) * MAX_CABS);
-	memset(this->collcabrate, 0, sizeof(collcab_rate_t) * MAX_CABS); free_collcab = 0;
-	memset(this->buoycabs, 0, sizeof(int) * MAX_CABS); free_buoycab = 0;
-	memset(this->buoycabtypes, 0, sizeof(int) * MAX_CABS);
-	memset(this->airbrakes, 0, sizeof(Airbrake *) * MAX_AIRBRAKES); free_airbrake = 0;
-	memset(this->skidtrails, 0, sizeof(Skidmark *) * (MAX_WHEELS*2)); useSkidmarks = false;
-	memset(this->flexbodies, 0, sizeof(FlexBody *) * MAX_FLEXBODIES); free_flexbody = 0;
-	vidcams.clear();
-
-	// clearing done
-
-	externalcameramode=0;
-	externalcameranode=-1;
 	net=_net;
 	if(net && !networking) networking = true; // enable networking if some network class is existing
 
@@ -371,17 +313,12 @@ Beam::Beam(int tnum, SceneManager *manager, SceneNode *parent, RenderWindow* win
 	driverSeat=0;
 	networkUsername = String();
 	networkAuthlevel = 0;
-	beambreakdebug = (SETTINGS.getSetting("Beam Break Debug") == "Yes");
-	beamdeformdebug = (SETTINGS.getSetting("Beam Deform Debug") == "Yes");
-	triggerdebug = (SETTINGS.getSetting("Trigger Debug") == "Yes");
 	freePositioned = freeposition;
 	free_axle=0;
-	slideNodesConnectInstantly=false;
 	replayTimer=0;
 	minCameraRadius=0;
 	last_net_time=0;
 	lastFuzzyGroundModel=0;
-	patchEngineTorque=false;
 	usedSkin = skin;
 	LogManager::getSingleton().logMessage("BEAM: loading new truck: " + String(fname));
 	trucknum=tnum;
@@ -401,10 +338,7 @@ Beam::Beam(int tnum, SceneManager *manager, SceneNode *parent, RenderWindow* win
 	nodedebugstate=-1;
 	debugVisuals=0;
 	netMT = 0;
-	beam_creak=BEAM_CREAK_DEFAULT;
-	dynamicMapMode=0;
 	meshesVisible=true;
-	disable_default_sounds=false;
 
 #ifdef FEAT_TIMING
 	// this enables beam engine timing statistics
@@ -427,32 +361,21 @@ Beam::Beam(int tnum, SceneManager *manager, SceneNode *parent, RenderWindow* win
 	lockSkeletonchange=false;
 	reset_requested=0;
 	mrtime=0.0;
-	shadowOptimizations = (SETTINGS.getSetting("Shadow optimizations") == "Yes");
 	free_flexbody=0;
 	netLabelNode=0;
 	free_rigidifier=0;
-	autopilot=0;
 	free_rotator=0;
 	free_cparticle=0;
 	free_airbrake=0;
 	cparticle_mode=false;
-	cparticle_enabled=false;
 	mousenode=-1;
 	mousemoveforce=0.0f;
 	mousepos=Vector3::ZERO;
-	ispolice=false;
 	cablight=0;
 	cablightNode=0;
-	brakeforce=30000.0;
-	hbrakeforce = 2*brakeforce;
-	hasposlights=false;
 	disableDrag=false;
-	advanced_drag=false;
-	fuseAirfoil=0;
-	fadeDist=150.0;
 	fusedrag=Vector3::ZERO;
 	elevator=0;
-	minimass=50.0;
 	rudder=0;
 	aileron=0;
 	flap=0;
@@ -461,26 +384,6 @@ Beam::Beam(int tnum, SceneManager *manager, SceneNode *parent, RenderWindow* win
 	free_wing=0;
 	refpressure=50.0;
 	free_pressure_beam=0;
-	default_beam_diameter=DEFAULT_BEAM_DIAMETER;
-	skeleton_beam_diameter=BEAM_SKELETON_DIAMETER;
-
-	default_spring=DEFAULT_SPRING;
-	default_spring_scale=1;
-	default_damp=DEFAULT_DAMP;
-	default_damp_scale=1;
-	default_deform=BEAM_DEFORM;
-	default_deform_scale=1;
-	default_break=BEAM_BREAK;
-	default_break_scale=1;
-
-	default_node_friction=NODE_FRICTION_COEF_DEFAULT;
-	default_node_volume=NODE_VOLUME_COEF_DEFAULT;
-	default_node_surface=NODE_SURFACE_COEF_DEFAULT;
-	default_node_loadweight=NODE_LOADWEIGHT_DEFAULT;
-	detacher_group_state=DEFAULT_DETACHER_GROUP; // initialize default(0) var for detacher_group_state
-	default_plastic_coef=0.0f;
-	strcpy(default_beam_material, "tracks/beam");
-	driversseatfound=false;
 	leftMirrorAngle=0.52;
 	rightMirrorAngle=-0.52;
 	if(ismachine)
@@ -491,21 +394,15 @@ Beam::Beam(int tnum, SceneManager *manager, SceneNode *parent, RenderWindow* win
 	previousCrank = 0.0f;
 	animTimer = 0.0f;
 	engine=0;
-	truckversion=-1;
-	editorId=-1;
-	hasEmissivePass=0;
 	isInside=false;
 	beacon=false;
 	realtruckfilename = String(fname);
 	sprintf(truckname, "t%i", tnum);
 	simpleSkeletonManualObject=0;
 	simpleSkeletonInitiated=false;
-	loading_finished=0;
 	strcpy(uniquetruckid,"-1");
-	categoryid=-1;
-	truckversion=-1;
 	tsm=manager;
-	simpleSkeletonNode = tsm->getRootSceneNode()->createChildSceneNode(String(truckname)+"_simpleskeleton_node");
+	simpleSkeletonNode = tsm->getRootSceneNode()->createChildSceneNode();
 	deletion_sceneNodes.push_back(simpleSkeletonNode);
 
 	tdt=0.1;
@@ -531,19 +428,11 @@ Beam::Beam(int tnum, SceneManager *manager, SceneNode *parent, RenderWindow* win
 	state=SLEEPING;
 	if (networked) state=NETWORKED; //required for proper loading
 	sleepcount=0;
-	freecinecamera=0;
 	currentcamera=-1; // -1 = external
-	cinecameranodepos[0]=-1;
-	cameranodepos[0]=-1;
-	cameranodedir[0]=-1;
-	cameranoderoll[0]=-1;
-	rescuer=false;
-	freecamera=0;
+	
 	requires_wheel_contact=false;
-	wheel_contact_requested=false;
 	subisback[0]=0;
 	canwork=1;
-	hashelp=0;
 	totalmass=0;
 	parkingbrake=0;
 	lights=1;
@@ -557,44 +446,26 @@ Beam::Beam(int tnum, SceneManager *manager, SceneNode *parent, RenderWindow* win
 	free_texcoord=0;
 	free_cab=0;
 	free_collcab=0;
-	collrange=0.02f;
 	free_buoycab=0;
-	buoyance=0;
 	free_shock=0;
 	free_flare=0;
 	free_prop=0;
-	forwardcommands=0;
-	importcommands=0;
-	masscount=0;
 	lastwspeed=0.0;
 	stabcommand=0;
 	stabratio=0.0;
 	stabsleep=0.0;
 	cabMesh=NULL;
 	smokeNode=NULL;
-	smokeId=0;
-	smokeRef=0;
 	smoker=NULL;
 	brake=0.0;
 	abs_timer=0.0;
 	abs_state=false;
 	blinktreshpassed=false;
 	blinkingtype=BLINK_NONE;
-	netCustomLightArray[0] = -1;
-	netCustomLightArray[1] = -1;
-	netCustomLightArray[2] = -1;
-	netCustomLightArray[3] = -1;
-	netCustomLightArray_counter = 0;
 	mTimeUntilNextToggle = 0;
 	netBrakeLight = false;
 	netReverseLight = false;
-	tachomat="";
-	speedomat="";
-	speedoMax=140;
-	useMaxRPMforGUI=false;
 	skeleton=0;
-	proped_wheels=0;
-	braked_wheels=0;
 	fasted=1;
 	slowed=1;
 	hydrodircommand=0;
@@ -614,7 +485,6 @@ Beam::Beam(int tnum, SceneManager *manager, SceneNode *parent, RenderWindow* win
 	watercontactold=0;
 	//			lastdt=0.1;
 	//for (i=0; i<MAX_COMMANDS; i++) {commandkey[i].bfree=0;commandkey[i].rotfree=0;commandkey[i].kpressed=0;};
-	hascommands=0;
 	ipy=py;
 	position=Vector3(px,py,pz);
 	lastposition=Vector3(px,py,pz);
@@ -645,20 +515,18 @@ Beam::Beam(int tnum, SceneManager *manager, SceneNode *parent, RenderWindow* win
 	splashp = DustManager::getSingleton().getDustPool("splash");
 	ripplep = DustManager::getSingleton().getDustPool("ripple");
 
-	disable_smoke=(SETTINGS.getSetting("Particles")!="Yes");
 	heathaze=(SETTINGS.getSetting("HeatHaze")=="Yes");
 	if(heathaze && disable_smoke)
 		//no heathaze without smoke!
 		heathaze=false;
 
-	debugVisuals=(SETTINGS.getSetting("DebugBeams")=="Yes");
 
 	enable_wheel2=(SETTINGS.getSetting("Enhanced wheels")=="Yes");
 	if (networked || networking) enable_wheel2=false;
 
 	cparticle_enabled=(SETTINGS.getSetting("Particles")=="Yes");
 	if(strnlen(fname,200) > 0)
-		if(loadTruck(fname, manager, parent, px, py, pz, rot, spawnbox))
+		if(loadTruck2(String(fname), manager, parent, Vector3(px, py, pz), rot, spawnbox))
 			return;
 
 	//            printf("%i nodes, %i beams\n", free_node, free_beam);
@@ -875,7 +743,7 @@ void Beam::scaleTruck(float value)
 void Beam::initSimpleSkeleton()
 {
 	// create
-	simpleSkeletonManualObject =  tsm->createManualObject(String(truckname)+"_simpleskeleton");
+	simpleSkeletonManualObject =  tsm->createManualObject();
 
 	simpleSkeletonManualObject->estimateIndexCount(free_beam*2);
 	simpleSkeletonManualObject->setCastShadows(false);
@@ -1414,20 +1282,6 @@ int Beam::getWheelNodeCount()
 	return free_node-first_wheel_node;
 }
 
-void Beam::addSoundSource(SoundScriptInstance *ssi, int nodenum, int type)
-{
-	if (!ssi) return; //fizzle
-	if (free_soundsource==MAX_SOUNDSCRIPTS_PER_TRUCK)
-	{
-		LogManager::getSingleton().logMessage("BEAM: Error, too many sound sources per vehicle!");
-		return;
-	}
-	soundsources[free_soundsource].ssi=ssi;
-	soundsources[free_soundsource].nodenum=nodenum;
-	soundsources[free_soundsource].type=type;
-	free_soundsource++;
-}
-
 void Beam::setupDefaultSoundSources()
 {
 #ifdef USE_OPENAL
@@ -1515,41 +1369,6 @@ void Beam::setupDefaultSoundSources()
 #endif //OPENAL
 }
 
-void Beam::calcBox()
-{
-	BES_GFX_START(BES_GFX_calcBox);
-
-	minx=nodes[0].AbsPosition.x;
-	maxx=nodes[0].AbsPosition.x;
-	miny=nodes[0].AbsPosition.y;
-	maxy=nodes[0].AbsPosition.y;
-	minz=nodes[0].AbsPosition.z;
-	maxz=nodes[0].AbsPosition.z;
-	lowestnode=-1;
-	int i;
-	for (i=1; i<free_node; i++)
-	{
-		if (nodes[i].AbsPosition.x>maxx) maxx=nodes[i].AbsPosition.x;
-		if (nodes[i].AbsPosition.x<minx) minx=nodes[i].AbsPosition.x;
-		if (nodes[i].AbsPosition.y>maxy) maxy=nodes[i].AbsPosition.y;
-		if (nodes[i].AbsPosition.y<miny)
-		{
-			miny=nodes[i].AbsPosition.y;
-			lowestnode=i;
-		}
-		if (nodes[i].AbsPosition.z>maxz) maxz=nodes[i].AbsPosition.z;
-		if (nodes[i].AbsPosition.z<minz) minz=nodes[i].AbsPosition.z;
-	}
-	minx-=0.3;
-	maxx+=0.3;
-	miny-=0.3;
-	maxy+=0.3;
-	minz-=0.3;
-	maxz+=0.3;
-
-	BES_GFX_STOP(BES_GFX_calcBox);
-}
-
 void Beam::calcNodeConnectivityGraph()
 {
 	BES_GFX_START(BES_GFX_calcNodeConnectivityGraph);
@@ -1582,51 +1401,6 @@ void Beam::updateContacterNodes()
 	}
 }
 
-float Beam::warea(Vector3 ref, Vector3 x, Vector3 y, Vector3 aref)
-{
-	return (((x-ref).crossProduct(y-ref)).length()+((x-aref).crossProduct(y-aref)).length())*0.5f;
-}
-
-void Beam::wash_calculator(Quaternion rot)
-{
-	Quaternion invrot=rot.Inverse();
-	//we will compute wash
-	int w,p;
-	for (p=0; p<free_aeroengine; p++)
-	{
-		Vector3 prop=invrot*nodes[aeroengines[p]->getNoderef()].RelPosition;
-		float radius=aeroengines[p]->getRadius();
-		for (w=0; w<free_wing; w++)
-		{
-			//left wash
-			Vector3 wcent=invrot*((nodes[wings[w].fa->nfld].RelPosition+nodes[wings[w].fa->nfrd].RelPosition)/2.0);
-			//check if wing is near enough along X (less than 15m back)
-			if (wcent.x>prop.x && wcent.x<prop.x+15.0)
-			{
-				//check if it's okay vertically
-				if (wcent.y>prop.y-radius && wcent.y<prop.y+radius)
-				{
-					//okay, compute wash coverage ratio along Z
-					float wleft=(invrot*nodes[wings[w].fa->nfld].RelPosition).z;
-					float wright=(invrot*nodes[wings[w].fa->nfrd].RelPosition).z;
-					float pleft=prop.z+radius;
-					float pright=prop.z-radius;
-					float aleft=wleft;
-					if (pleft<aleft) aleft=pleft;
-					float aright=wright;
-					if (pright>aright) aright=pright;
-					if (aright<aleft)
-					{
-						//we have a wash
-						float wratio=(aleft-aright)/(wleft-wright);
-						wings[w].fa->addwash(p, wratio);
-						LogManager::getSingleton().logMessage("BEAM: Wing "+StringConverter::toString(w)+" is washed by prop "+StringConverter::toString(p)+" at "+StringConverter::toString((float)(wratio*100.0))+"%");
-					}
-				}
-			}
-		}
-	}
-}
 
 int Beam::savePosition(int indexPosition)
 {
@@ -1857,13 +1631,6 @@ void Beam::mouseMove(int node, Vector3 pos, float force)
 	mousepos = pos;
 }
 
-void Beam::addCamera(int nodepos, int nodedir, int noderoll)
-{
-	cameranodepos[freecamera]=nodepos;
-	cameranodedir[freecamera]=nodedir;
-	cameranoderoll[freecamera]=noderoll;
-	freecamera++;
-}
 
 int Beam::calculateDriverPos(Vector3 &pos, Quaternion &rot)
 {
@@ -1882,561 +1649,6 @@ int Beam::calculateDriverPos(Vector3 &pos, Quaternion &rot)
 	rot = Quaternion(refx, normal, refy) * driverSeat->rot * Quaternion(Degree(180), Vector3::UNIT_Y); // rotate towards the driving direction
 	BES_GFX_STOP(BES_GFX_calculateDriverPos);
 	return 0;
-}
-
-void Beam::addWheel(SceneManager *manager, SceneNode *parent, Real radius, Real width, int rays, int node1, int node2, int snode, int braked, int propulsed, int torquenode, float mass, float wspring, float wdamp, char* texf, char* texb, bool meshwheel, float rimradius, bool rimreverse)
-{
-	int i;
-	int nodebase=free_node;
-	int node3;
-	int contacter_wheel=1;
-	//ignore the width parameter
-	width=(nodes[node1].RelPosition-nodes[node2].RelPosition).length();
-	//enforce the "second node must have a larger Z coordinate than the first" constraint
-	if (nodes[node1].RelPosition.z>nodes[node2].RelPosition.z)
-	{
-		//swap
-		node3=node1;
-		node1=node2;
-		node2=node3;
-	}
-	//ignore the sign of snode, just do the thing automatically
-	//if (snode<0) node3=-snode; else node3=snode;
-	if (snode<0) snode=-snode;
-	bool closest1=false;
-	if (snode!=9999) closest1=(nodes[snode].RelPosition-nodes[node1].RelPosition).length()<(nodes[snode].RelPosition-nodes[node2].RelPosition).length();
-
-	//unused:
-	//Real px=nodes[node1].Position.x;
-	//Real py=nodes[node1].Position.y;
-	//Real pz=nodes[node1].Position.z;
-
-	Vector3 axis=nodes[node2].RelPosition-nodes[node1].RelPosition;
-	axis.normalise();
-	Vector3 rayvec = axis.perpendicular() * radius;
-	// old rayvec:
-	//Vector3 rayvec=Vector3(0, radius, 0);
-	Quaternion rayrot=Quaternion(Degree(-360.0/(Real)(rays*2)), axis);
-	for (i=0; i<rays; i++)
-	{
-		//with propnodes and variable friction
-//			init_node(nodebase+i*2, px+radius*sin((Real)i*6.283185307179/(Real)rays), py+radius*cos((Real)i*6.283185307179/(Real)rays), pz, NODE_NORMAL, mass/(2.0*rays),1, WHEEL_FRICTION_COEF*width);
-		Vector3 raypoint;
-		raypoint=nodes[node1].RelPosition+rayvec;
-		rayvec=rayrot*rayvec;
-		init_node(nodebase+i*2, raypoint.x, raypoint.y, raypoint.z, NODE_NORMAL, mass/(2.0*rays),1, WHEEL_FRICTION_COEF*width, -1, free_wheel, default_node_friction, default_node_volume, default_node_surface, NODE_LOADWEIGHT_DEFAULT);
-
-		// outer ring has wheelid%2 != 0
-		nodes[nodebase+i*2].iswheel = free_wheel*2+1;
-
-		if (contacter_wheel)
-		{
-			contacters[free_contacter].nodeid=nodebase+i*2;
-			contacters[free_contacter].contacted=0;
-			contacters[free_contacter].opticontact=0;
-			free_contacter++;;
-		}
-//			init_node(nodebase+i*2+1, px+radius*sin((Real)i*6.283185307179/(Real)rays), py+radius*cos((Real)i*6.283185307179/(Real)rays), pz+width, NODE_NORMAL, mass/(2.0*rays),1, WHEEL_FRICTION_COEF*width);
-		raypoint=nodes[node2].RelPosition+rayvec;
-
-		rayvec=rayrot*rayvec;
-		init_node(nodebase+i*2+1, raypoint.x, raypoint.y, raypoint.z, NODE_NORMAL, mass/(2.0*rays),1, WHEEL_FRICTION_COEF*width, -1, free_wheel, default_node_friction, default_node_volume, default_node_surface, NODE_LOADWEIGHT_DEFAULT);
-
-		// inner ring has wheelid%2 == 0
-		nodes[nodebase+i*2+1].iswheel = free_wheel*2+2;
-		if (contacter_wheel)
-		{
-			contacters[free_contacter].nodeid=nodebase+i*2+1;
-			contacters[free_contacter].contacted=0;
-			contacters[free_contacter].opticontact=0;
-			free_contacter++;;
-		}
-		//wheel object
-		wheels[free_wheel].nodes[i*2]=&nodes[nodebase+i*2];
-		wheels[free_wheel].nodes[i*2+1]=&nodes[nodebase+i*2+1];
-	}
-	free_node+=2*rays;
-	for (i=0; i<rays; i++)
-	{
-		//bounded
-		add_beam(&nodes[node1], &nodes[nodebase+i*2], manager, parent, BEAM_INVISIBLE, default_break, wspring, wdamp, DEFAULT_DETACHER_GROUP, -1.0, 0.66, 0.0);
-		//bounded
-		add_beam(&nodes[node2], &nodes[nodebase+i*2+1], manager, parent, BEAM_INVISIBLE, default_break, wspring, wdamp, DEFAULT_DETACHER_GROUP, -1.0, 0.66, 0.0);
-		add_beam(&nodes[node2], &nodes[nodebase+i*2], manager, parent, BEAM_INVISIBLE, default_break, wspring, wdamp);
-		add_beam(&nodes[node1], &nodes[nodebase+i*2+1], manager, parent, BEAM_INVISIBLE, default_break, wspring, wdamp);
-		//reinforcement
-		add_beam(&nodes[node1], &nodes[nodebase+i*2], manager, parent, BEAM_INVISIBLE, default_break, wspring, wdamp);
-		add_beam(&nodes[nodebase+i*2], &nodes[nodebase+i*2+1], manager, parent, BEAM_INVISIBLE, default_break, wspring, wdamp);
-		add_beam(&nodes[nodebase+i*2], &nodes[nodebase+((i+1)%rays)*2], manager, parent, BEAM_INVISIBLE, default_break, wspring, wdamp);
-		add_beam(&nodes[nodebase+i*2+1], &nodes[nodebase+((i+1)%rays)*2+1], manager, parent, BEAM_INVISIBLE, default_break, wspring, wdamp);
-		add_beam(&nodes[nodebase+i*2+1], &nodes[nodebase+((i+1)%rays)*2], manager, parent, BEAM_INVISIBLE, default_break, wspring, wdamp);
-		//reinforcement
-		//add_beam(&nodes[nodebase+i*2], &nodes[nodebase+((i+1)%rays)*2+1], manager, parent, BEAM_INVISIBLE, default_break, wspring, wdamp);
-
-		if (snode!=9999)
-		{
-			//back beams //BEAM_VIRTUAL
-
-			if (closest1) {add_beam(&nodes[snode], &nodes[nodebase+i*2], manager, parent, BEAM_VIRTUAL, default_break, wspring, wdamp);}
-			else         {add_beam(&nodes[snode], &nodes[nodebase+i*2+1], manager, parent, BEAM_VIRTUAL, default_break, wspring, wdamp);};
-			/* THIS ALMOST WORKS BUT IT IS INSTABLE AT SPEED !!!!
-			//rigidifier version
-			if(free_rigidifier >= MAX_RIGIDIFIERS)
-			{
-				LogManager::getSingleton().logMessage("rigidifiers limit reached ...");
-			}
-
-			int na=(closest1)?node2:node1;
-			int nb=(closest1)?node1:node2;
-			int nc=snode;
-			rigidifiers[free_rigidifier].a=&nodes[na];
-			rigidifiers[free_rigidifier].b=&nodes[nb];
-			rigidifiers[free_rigidifier].c=&nodes[nc];
-			rigidifiers[free_rigidifier].k=wspring;
-			rigidifiers[free_rigidifier].d=wdamp;
-			rigidifiers[free_rigidifier].alpha=2.0*acos((nodes[na].RelPosition-nodes[nb].RelPosition).getRotationTo(nodes[nc].RelPosition-nodes[nb].RelPosition).w);
-			rigidifiers[free_rigidifier].lastalpha=rigidifiers[free_rigidifier].alpha;
-			rigidifiers[free_rigidifier].beama=0;
-			rigidifiers[free_rigidifier].beamc=0;
-			//searching for associated beams
-			for (int i=0; i<free_beam; i++)
-			{
-				if ((beams[i].p1==&nodes[na] && beams[i].p2==&nodes[nb]) || (beams[i].p2==&nodes[na] && beams[i].p1==&nodes[nb])) rigidifiers[free_rigidifier].beama=&beams[i];
-				if ((beams[i].p1==&nodes[nc] && beams[i].p2==&nodes[nb]) || (beams[i].p2==&nodes[nc] && beams[i].p1==&nodes[nb])) rigidifiers[free_rigidifier].beamc=&beams[i];
-			}
-			free_rigidifier++;
-			*/
-		}
-	}
-	//wheel object
-	wheels[free_wheel].braked=braked;
-	wheels[free_wheel].propulsed=propulsed;
-	wheels[free_wheel].nbnodes=2*rays;
-	wheels[free_wheel].refnode0=&nodes[node1];
-	wheels[free_wheel].refnode1=&nodes[node2];
-	wheels[free_wheel].radius=radius;
-	wheels[free_wheel].speed=0.0;
-	wheels[free_wheel].rp=0;
-	wheels[free_wheel].rp1=0;
-	wheels[free_wheel].rp2=0;
-	wheels[free_wheel].rp3=0;
-	wheels[free_wheel].width=width;
-	wheels[free_wheel].arm=&nodes[torquenode];
-	wheels[free_wheel].lastContactInner=Vector3::ZERO;
-	wheels[free_wheel].lastContactOuter=Vector3::ZERO;
-	if (propulsed>0)
-	{
-		//for inter-differential locking
-		proppairs[proped_wheels]=free_wheel;
-		proped_wheels++;
-	}
-	if (braked) braked_wheels++;
-	//find near attach
-	Real l1=(nodes[node1].RelPosition-nodes[torquenode].RelPosition).length();
-	Real l2=(nodes[node2].RelPosition-nodes[torquenode].RelPosition).length();
-	if (l1<l2) wheels[free_wheel].near_attach=&nodes[node1]; else wheels[free_wheel].near_attach=&nodes[node2];
-	//visuals
-	char wname[256];
-	sprintf(wname, "wheel-%s-%i",truckname, free_wheel);
-	char wnamei[256];
-	sprintf(wnamei, "wheelobj-%s-%i",truckname, free_wheel);
-	//	strcpy(texf, "tracks/wheelface,");
-	vwheels[free_wheel].meshwheel = meshwheel;
-	if (meshwheel)
-	{
-		vwheels[free_wheel].fm=new FlexMeshWheel(manager, wname, nodes, node1, node2, nodebase, rays, texf, texb, rimradius, rimreverse, materialFunctionMapper, usedSkin);
-		try
-		{
-			Entity *ec = manager->createEntity(wnamei, wname);
-			vwheels[free_wheel].cnode = manager->getRootSceneNode()->createChildSceneNode();
-			if(ec)
-				vwheels[free_wheel].cnode->attachObject(ec);
-			MaterialFunctionMapper::replaceSimpleMeshMaterials(ec, ColourValue(0, 0.5, 0.5));
-			if(materialFunctionMapper) materialFunctionMapper->replaceMeshMaterials(ec);
-			if(usedSkin) usedSkin->replaceMeshMaterials(ec);
-		}catch(...)
-		{
-			LogManager::getSingleton().logMessage("error loading mesh: "+String(wname));
-		}
-	}
-	else
-	{
-		vwheels[free_wheel].fm=new FlexMesh(manager, wname, nodes, node1, node2, nodebase, rays, texf, texb);
-		try
-		{
-			Entity *ec = manager->createEntity(wnamei, wname);
-			MaterialFunctionMapper::replaceSimpleMeshMaterials(ec, ColourValue(0, 0.5, 0.5));
-			if(materialFunctionMapper) materialFunctionMapper->replaceMeshMaterials(ec);
-			if(usedSkin) usedSkin->replaceMeshMaterials(ec);
-			vwheels[free_wheel].cnode = manager->getRootSceneNode()->createChildSceneNode();
-			if(ec)
-				vwheels[free_wheel].cnode->attachObject(ec);
-		} catch(...)
-		{
-			LogManager::getSingleton().logMessage("error loading mesh: "+String(wname));
-		}
-	}
-	free_wheel++;
-}
-
-void Beam::addWheel2(SceneManager *manager, SceneNode *parent, Real radius, Real radius2, Real width, int rays, int node1, int node2, int snode, int braked, int propulsed, int torquenode, float mass, float wspring, float wdamp, float wspring2, float wdamp2, char* texf, char* texb)
-{
-	int i;
-	int nodebase=free_node;
-	int node3;
-	int contacter_wheel=1;
-	//ignore the width parameter
-	width=(nodes[node1].RelPosition-nodes[node2].RelPosition).length();
-	//enforce the "second node must have a larger Z coordinate than the first" constraint
-	if (nodes[node1].RelPosition.z>nodes[node2].RelPosition.z)
-	{
-		//swap
-		node3=node1;
-		node1=node2;
-		node2=node3;
-	}
-	//ignore the sign of snode, just do the thing automatically
-	//if (snode<0) node3=-snode; else node3=snode;
-	if (snode<0) snode=-snode;
-	bool closest1=false;
-	if (snode!=9999) closest1=(nodes[snode].RelPosition-nodes[node1].RelPosition).length()<(nodes[snode].RelPosition-nodes[node2].RelPosition).length();
-
-	//unused:
-	//Real px=nodes[node1].Position.x;
-	//Real py=nodes[node1].Position.y;
-	//Real pz=nodes[node1].Position.z;
-
-	Vector3 axis=nodes[node2].RelPosition-nodes[node1].RelPosition;
-	axis.normalise();
-	Vector3 rayvec=Vector3(0, radius, 0);
-	Quaternion rayrot=Quaternion(Degree(-360.0/(Real)rays), axis);
-	Quaternion rayrot2=Quaternion(Degree(-180.0/(Real)rays), axis);
-	Vector3 rayvec2=Vector3(0, radius2, 0);
-	rayvec2=rayrot2*rayvec2;
-	//rim nodes
-	for (i=0; i<rays; i++)
-	{
-		//with propnodes
-		Vector3 raypoint=nodes[node1].RelPosition+rayvec;
-		init_node(nodebase+i*2, raypoint.x, raypoint.y, raypoint.z, NODE_NORMAL, mass/(4.0*rays),1, -1, -1, free_wheel, default_node_friction, default_node_volume, default_node_surface, NODE_LOADWEIGHT_DEFAULT);
-		// outer ring has wheelid%2 != 0
-		nodes[nodebase+i*2].iswheel = free_wheel*2+1;
-
-		raypoint=nodes[node2].RelPosition+rayvec;
-		init_node(nodebase+i*2+1, raypoint.x, raypoint.y, raypoint.z, NODE_NORMAL, mass/(4.0*rays),1, -1, -1, free_wheel, default_node_friction, default_node_volume, default_node_surface, NODE_LOADWEIGHT_DEFAULT);
-
-		// inner ring has wheelid%2 == 0
-		nodes[nodebase+i*2+1].iswheel = free_wheel*2+2;
-		//wheel object
-		wheels[free_wheel].nodes[i*2]=&nodes[nodebase+i*2];
-		wheels[free_wheel].nodes[i*2+1]=&nodes[nodebase+i*2+1];
-		rayvec=rayrot*rayvec;
-	}
-	//tire nodes
-	for (i=0; i<rays; i++)
-	{
-		//with propnodes and variable friction
-		Vector3 raypoint=nodes[node1].RelPosition+rayvec2;
-		init_node(nodebase+2*rays+i*2, raypoint.x, raypoint.y, raypoint.z, NODE_NORMAL, 0.67*mass/(2.0*rays),1, WHEEL_FRICTION_COEF*width, -1, free_wheel, default_node_friction, default_node_volume, default_node_surface);
-		// outer ring has wheelid%2 != 0
-		nodes[nodebase+2*rays+i*2].iswheel = free_wheel*2+1;
-		if (contacter_wheel)
-		{
-			contacters[free_contacter].nodeid=nodebase+2*rays+i*2;
-			contacters[free_contacter].contacted=0;
-			contacters[free_contacter].opticontact=0;
-			free_contacter++;;
-		}
-		raypoint=nodes[node2].RelPosition+rayvec2;
-		init_node(nodebase+2*rays+i*2+1, raypoint.x, raypoint.y, raypoint.z, NODE_NORMAL, 0.33*mass/(2.0*rays),1, WHEEL_FRICTION_COEF*width, -1,  free_wheel, default_node_friction, default_node_volume, default_node_surface);
-
-		// inner ring has wheelid%2 == 0
-		nodes[nodebase+2*rays+i*2+1].iswheel = free_wheel*2+2;
-		if (contacter_wheel)
-		{
-			contacters[free_contacter].nodeid=nodebase+2*rays+i*2+1;
-			contacters[free_contacter].contacted=0;
-			contacters[free_contacter].opticontact=0;
-			free_contacter++;;
-		}
-		//wheel object
-//			wheels[free_wheel].nodes[i*2]=&nodes[nodebase+i*2];
-//			wheels[free_wheel].nodes[i*2+1]=&nodes[nodebase+i*2+1];
-		rayvec2=rayrot*rayvec2; //this is not a bug
-	}
-	free_node+=4*rays;
-	for (i=0; i<rays; i++)
-	{
-		//rim
-		//bounded
-		add_beam(&nodes[node1], &nodes[nodebase+i*2], manager, parent, BEAM_INVISIBLE, default_break, wspring, wdamp, DEFAULT_DETACHER_GROUP, -1.0, 0.66, 0.0);
-		add_beam(&nodes[node2], &nodes[nodebase+i*2+1], manager, parent, BEAM_INVISIBLE, default_break, wspring, wdamp, DEFAULT_DETACHER_GROUP, -1.0, 0.66, 0.0);
-		add_beam(&nodes[node2], &nodes[nodebase+i*2], manager, parent, BEAM_INVISIBLE, default_break, wspring, wdamp);
-		add_beam(&nodes[node1], &nodes[nodebase+i*2+1], manager, parent, BEAM_INVISIBLE, default_break, wspring, wdamp);
-		//reinforcement
-		add_beam(&nodes[node1], &nodes[nodebase+i*2], manager, parent, BEAM_INVISIBLE, default_break, wspring, wdamp);
-		add_beam(&nodes[nodebase+i*2], &nodes[nodebase+i*2+1], manager, parent, BEAM_INVISIBLE, default_break, wspring, wdamp);
-		add_beam(&nodes[nodebase+i*2], &nodes[nodebase+((i+1)%rays)*2], manager, parent, BEAM_INVISIBLE, default_break, wspring, wdamp);
-		add_beam(&nodes[nodebase+i*2+1], &nodes[nodebase+((i+1)%rays)*2+1], manager, parent, BEAM_INVISIBLE, default_break, wspring, wdamp);
-		add_beam(&nodes[nodebase+i*2], &nodes[nodebase+((i+1)%rays)*2+1], manager, parent, BEAM_INVISIBLE, default_break, wspring, wdamp);
-		//reinforcement
-		add_beam(&nodes[nodebase+i*2+1], &nodes[nodebase+((i+1)%rays)*2], manager, parent, BEAM_INVISIBLE, default_break, wspring, wdamp);
-		if (snode!=9999)
-		{
-			//back beams
-			if (closest1) {add_beam(&nodes[snode], &nodes[nodebase+i*2], manager, parent, BEAM_VIRTUAL, default_break, wspring, wdamp);}
-			else         {add_beam(&nodes[snode], &nodes[nodebase+i*2+1], manager, parent, BEAM_VIRTUAL, default_break, wspring, wdamp);};
-		}
-		//tire
-		//band
-		//init_beam(free_beam , &nodes[nodebase+2*rays+i*2], &nodes[nodebase+2*rays+i*2+1], manager, parent, BEAM_INVISIBLE, default_break, wspring2, wdamp2);
-		//pressure_beams[free_pressure_beam]=free_beam-1; free_pressure_beam++;
-		int pos;
-		pos=add_beam(&nodes[nodebase+2*rays+i*2], &nodes[nodebase+2*rays+((i+1)%rays)*2], manager, parent, BEAM_INVISIBLE, default_break, wspring2, wdamp2);
-		pressure_beams[free_pressure_beam]=pos; free_pressure_beam++;
-		pos=add_beam(&nodes[nodebase+2*rays+i*2], &nodes[nodebase+2*rays+((i+1)%rays)*2+1], manager, parent, BEAM_INVISIBLE, default_break, wspring2, wdamp2);
-		pressure_beams[free_pressure_beam]=pos; free_pressure_beam++;
-		pos=add_beam(&nodes[nodebase+2*rays+i*2+1], &nodes[nodebase+2*rays+((i+1)%rays)*2], manager, parent, BEAM_INVISIBLE, default_break, wspring2, wdamp2);
-		pressure_beams[free_pressure_beam]=pos; free_pressure_beam++;
-		pos=add_beam(&nodes[nodebase+2*rays+i*2+1], &nodes[nodebase+2*rays+((i+1)%rays)*2+1], manager, parent, BEAM_INVISIBLE, default_break, wspring2, wdamp2);
-		//walls
-		pos=add_beam(&nodes[nodebase+2*rays+i*2], &nodes[nodebase+i*2], manager, parent, BEAM_INVISIBLE, default_break, wspring2, wdamp2);
-		pressure_beams[free_pressure_beam]=pos; free_pressure_beam++;
-		pos=add_beam(&nodes[nodebase+2*rays+i*2], &nodes[nodebase+((i+1)%rays)*2], manager, parent, BEAM_INVISIBLE, default_break, wspring2, wdamp2);
-		pressure_beams[free_pressure_beam]=pos; free_pressure_beam++;
-		pos=add_beam(&nodes[nodebase+2*rays+i*2+1], &nodes[nodebase+i*2+1], manager, parent, BEAM_INVISIBLE, default_break, wspring2, wdamp2);
-		pressure_beams[free_pressure_beam]=pos; free_pressure_beam++;
-		pos=add_beam(&nodes[nodebase+2*rays+i*2+1], &nodes[nodebase+((i+1)%rays)*2+1], manager, parent, BEAM_INVISIBLE, default_break, wspring2, wdamp2);
-		pressure_beams[free_pressure_beam]=pos; free_pressure_beam++;
-		//reinforcement
-		pos=add_beam(&nodes[nodebase+2*rays+i*2], &nodes[nodebase+i*2+1], manager, parent, BEAM_INVISIBLE, default_break, wspring2, wdamp2);
-		pressure_beams[free_pressure_beam]=pos; free_pressure_beam++;
-		pos=add_beam(&nodes[nodebase+2*rays+i*2], &nodes[nodebase+((i+1)%rays)*2+1], manager, parent, BEAM_INVISIBLE, default_break, wspring2, wdamp2);
-		pressure_beams[free_pressure_beam]=pos; free_pressure_beam++;
-		pos=add_beam(&nodes[nodebase+2*rays+i*2+1], &nodes[nodebase+i*2], manager, parent, BEAM_INVISIBLE, default_break, wspring2, wdamp2);
-		pressure_beams[free_pressure_beam]=pos; free_pressure_beam++;
-		pos=add_beam(&nodes[nodebase+2*rays+i*2+1], &nodes[nodebase+((i+1)%rays)*2], manager, parent, BEAM_INVISIBLE, default_break, wspring2, wdamp2);
-		pressure_beams[free_pressure_beam]=pos; free_pressure_beam++;
-		//backpressure, bounded
-		pos=add_beam(&nodes[node1], &nodes[nodebase+2*rays+i*2], manager, parent, BEAM_INVISIBLE, default_break, wspring2, wdamp2, DEFAULT_DETACHER_GROUP, -1.0, radius/radius2, 0.0);
-		pressure_beams[free_pressure_beam]=pos; free_pressure_beam++;
-		pos=add_beam(&nodes[node2], &nodes[nodebase+2*rays+i*2+1], manager, parent, BEAM_INVISIBLE, default_break, wspring2, wdamp2, DEFAULT_DETACHER_GROUP, -1.0, radius/radius2, 0.0);
-		pressure_beams[free_pressure_beam]=pos; free_pressure_beam++;
-	}
-	//wheel object
-	wheels[free_wheel].braked=braked;
-	wheels[free_wheel].propulsed=propulsed;
-	wheels[free_wheel].nbnodes=2*rays;
-	wheels[free_wheel].refnode0=&nodes[node1];
-	wheels[free_wheel].refnode1=&nodes[node2];
-	wheels[free_wheel].radius=radius;
-	wheels[free_wheel].speed=0.0;
-	wheels[free_wheel].width=width;
-	wheels[free_wheel].rp=0;
-	wheels[free_wheel].rp1=0;
-	wheels[free_wheel].rp2=0;
-	wheels[free_wheel].rp3=0;
-	wheels[free_wheel].arm=&nodes[torquenode];
-	if (propulsed)
-	{
-		//for inter-differential locking
-		proppairs[proped_wheels]=free_wheel;
-		proped_wheels++;
-	}
-	if (braked) braked_wheels++;
-	//find near attach
-	Real l1=(nodes[node1].RelPosition-nodes[torquenode].RelPosition).length();
-	Real l2=(nodes[node2].RelPosition-nodes[torquenode].RelPosition).length();
-	if (l1<l2) wheels[free_wheel].near_attach=&nodes[node1]; else wheels[free_wheel].near_attach=&nodes[node2];
-	//visuals
-	char wname[256];
-	sprintf(wname, "wheel-%s-%i",truckname, free_wheel);
-	char wnamei[256];
-	sprintf(wnamei, "wheelobj-%s-%i",truckname, free_wheel);
-	//	strcpy(texf, "tracks/wheelface,");
-	vwheels[free_wheel].fm=new FlexMesh(manager, wname, nodes, node1, node2, nodebase, rays, texf, texb, true, radius/radius2);
-	try
-	{
-		Entity *ec = manager->createEntity(wnamei, wname);
-		MaterialFunctionMapper::replaceSimpleMeshMaterials(ec, ColourValue(0, 0.5, 0.5));
-		if(materialFunctionMapper) materialFunctionMapper->replaceMeshMaterials(ec);
-		if(usedSkin) usedSkin->replaceMeshMaterials(ec);
-		//	ec->setMaterialName("tracks/wheel");
-		//ec->setMaterialName("Test/ColourTest");
-		vwheels[free_wheel].cnode = manager->getRootSceneNode()->createChildSceneNode();
-		if(ec)
-			vwheels[free_wheel].cnode->attachObject(ec);
-		//	cnode->setPosition(1000,2,940);
-		free_wheel++;
-	}catch(...)
-	{
-		LogManager::getSingleton().logMessage("error loading mesh: "+String(wname));
-	}
-}
-
-void Beam::init_node(int pos, Real x, Real y, Real z, int type, Real m, int iswheel, Real friction, int id, int wheelid, Real nfriction, Real nvolume, Real nsurface, Real nloadweight)
-{
-	nodes[pos].AbsPosition=Vector3(x,y,z);
-	nodes[pos].RelPosition=Vector3(x,y,z)-origin;
-	nodes[pos].smoothpos=nodes[pos].AbsPosition;
-	nodes[pos].iPosition=Vector3(x,y,z);
-	if(pos != 0)
-		nodes[pos].iDistance=(nodes[0].AbsPosition - Vector3(x,y,z)).squaredLength();
-	else
-		nodes[pos].iDistance=0;
-	nodes[pos].Velocity=Vector3::ZERO;
-	nodes[pos].Forces=Vector3::ZERO;
-	nodes[pos].locked=m<0.0;
-	nodes[pos].mass=m;
-	nodes[pos].iswheel=iswheel;
-	nodes[pos].wheelid=wheelid;
-	nodes[pos].friction_coef=nfriction;
-	nodes[pos].volume_coef=nvolume;
-	nodes[pos].surface_coef=nsurface;
-	if (nloadweight >=0.0f)
-	{
-		nodes[pos].masstype=NODE_LOADED;
-		nodes[pos].overrideMass=true;
-		nodes[pos].mass=nloadweight;
-	}
-	nodes[pos].disable_particles=false;
-	nodes[pos].masstype=type;
-	nodes[pos].contactless=0;
-	nodes[pos].contacted=0;
-	nodes[pos].lockednode=0;
-	nodes[pos].buoyanceForce=Vector3::ZERO;
-	nodes[pos].buoyancy=truckmass/15.0;//DEFAULT_BUOYANCY;
-	nodes[pos].lastdrag=Vector3(0,0,0);
-	nodes[pos].gravimass=Vector3(0,RoRFrameListener::getGravity()*m,0);
-	nodes[pos].wetstate=DRY;
-	nodes[pos].isHot=false;
-	nodes[pos].overrideMass=false;
-	nodes[pos].id = id;
-	nodes[pos].collRadius = 0;
-	nodes[pos].colltesttimer=0;
-	nodes[pos].iIsSkin=false;
-	nodes[pos].isSkin=nodes[pos].iIsSkin;
-	nodes[pos].pos=pos;
-//		nodes[pos].tsmooth=Vector3::ZERO;
-	if (type==NODE_LOADED) masscount++;
-}
-
-int Beam::add_beam(node_t *p1, node_t *p2, SceneManager *manager, SceneNode *parent, int type, Real strength, Real spring, Real damp, int detachgroupstate, Real length, float shortbound, float longbound, float precomp,float diameter)
-{
-	int pos=free_beam;
-
-	beams[pos].p1=p1;
-	beams[pos].p2=p2;
-	beams[pos].p2truck=0;
-	beams[pos].type=type;
-	beams[pos].detacher_group=detachgroupstate;
-	if (length<0.0)
-	{
-		//calculate the length
-		Vector3 t;
-		t=p1->RelPosition;
-		t=t-p2->RelPosition;
-		beams[pos].L=precomp*t.length();
-	} else
-	{
-		beams[pos].L=length;
-	}
-	beams[pos].k=spring;
-	beams[pos].d=damp;
-	beams[pos].broken=0;
-	beams[pos].Lhydro=beams[pos].L;
-	beams[pos].refL=beams[pos].L;
-	beams[pos].hydroRatio=0.0;
-	beams[pos].hydroFlags=0;
-	beams[pos].animFlags=0;
-	beams[pos].stress=0.0;
-	beams[pos].lastforce=Vector3(0,0,0);
-	beams[pos].iscentering=false;
-	beams[pos].isOnePressMode=0;
-	beams[pos].isforcerestricted=false;
-	beams[pos].autoMovingMode=0;
-	beams[pos].autoMoveLock=false;
-	beams[pos].pressedCenterMode=false;
-	beams[pos].disabled=false;
-	beams[pos].shock=0;
-	if (default_deform<beam_creak) default_deform=beam_creak;
-	beams[pos].default_deform=default_deform * default_deform_scale;
-	beams[pos].minmaxposnegstress=default_deform * default_deform_scale;
-	beams[pos].maxposstress=default_deform * default_deform_scale;
-	beams[pos].maxnegstress=-default_deform * default_deform_scale;
-	beams[pos].plastic_coef=default_plastic_coef;
-	beams[pos].default_plastic_coef=default_plastic_coef;
-	beams[pos].strength=strength;
-	beams[pos].iStrength=strength;
-	beams[pos].diameter=default_beam_diameter;
-	beams[pos].minendmass=1.0;
-	beams[pos].diameter = diameter;
-	beams[pos].scale=0.0;
-	if (shortbound!=-1.0)
-	{
-		beams[pos].bounded    = SHOCK1;
-		beams[pos].shortbound = shortbound;
-		beams[pos].longbound  = longbound;
-
-	} else
-	{
-		beams[pos].bounded = NOSHOCK;
-	}
-
-	/*
-	if (beams[pos].L<0.01)
-	{
-		LogManager::getSingleton().logMessage("Error: beam "+StringConverter::toString(pos)+" is too short ("+StringConverter::toString(beams[pos].L)+"m)");
-		LogManager::getSingleton().logMessage("Error: beam "+StringConverter::toString(pos)+" is between node "+StringConverter::toString(beams[pos].p1->id)+" and node "+StringConverter::toString(beams[pos].p2->id)+".");
-		// this causes crash to desktop in MP!
-		//exit(8);
-	};
-	*/
-
-	//        if (type!=BEAM_VIRTUAL && type!=BEAM_INVISIBLE)
-	if (type!=BEAM_VIRTUAL)
-	{
-		//setup visuals
-		//the cube is 100x100x100
-		char bname[255];
-		sprintf(bname, "beam-%s-%i", truckname, pos);
-		try
-		{
-			beams[pos].mEntity = manager->createEntity(bname, "beam.mesh");
-		}catch(...)
-		{
-			LogManager::getSingleton().logMessage("error loading mesh: beam.mesh");
-		}
-
-		// no materialmapping for beams!
-		//		ec->setCastShadows(false);
-
-		if (beams[pos].mEntity && (type==BEAM_HYDRO || type==BEAM_MARKED))
-			beams[pos].mEntity->setMaterialName("tracks/Chrome");
-		else if(beams[pos].mEntity)
-			beams[pos].mEntity->setMaterialName(default_beam_material);
-		beams[pos].mSceneNode = beamsRoot->createChildSceneNode();
-		//            beams[pos].mSceneNode->attachObject(ec);
-		//            beams[pos].mSceneNode->setScale(default_beam_diameter/100.0,length/100.0,default_beam_diameter/100.0);
-		beams[pos].mSceneNode->setScale(beams[pos].diameter, length, beams[pos].diameter);
-
-		// colourize beams in simple mode
-		ColourValue c = ColourValue::Blue;
-		if(type == BEAM_HYDRO)
-			c = ColourValue::Red;
-		else if(type == BEAM_HYDRO)
-			c = ColourValue::Red;
-		MaterialFunctionMapper::replaceSimpleMeshMaterials(beams[pos].mEntity, c);
-
-	} else
-	{
-		beams[pos].mSceneNode=0;beams[pos].mEntity=0;
-	}
- 	if (beams[pos].mSceneNode && beams[pos].mEntity && !(type==BEAM_VIRTUAL || type==BEAM_INVISIBLE || type==BEAM_INVISIBLE_HYDRO))
-		beams[pos].mSceneNode->attachObject(beams[pos].mEntity);//beams[pos].mSceneNode->setVisible(0);
-
-	free_beam++;
-	return pos;
 }
 
 void Beam::resetAutopilot()
@@ -2471,7 +1683,8 @@ void Beam::toggleAxleLock()
 {
 	for(int i = 0; i < free_axle; ++i)
 	{
-		axles[i].toggleDiff();
+		if(!axles[i]) continue;
+		axles[i]->toggleDiff();
 	}
 }
 
@@ -2482,7 +1695,8 @@ int Beam::getAxleLockCount()
 
 Ogre::String Beam::getAxleLockName()
 {
-	return axles[0].getDiffTypeName();
+	if(!axles[0]) return String();
+	return axles[0]->getDiffTypeName();
 }
 
 void Beam::reset(bool keepPosition)
@@ -5664,35 +4878,6 @@ bool Beam::getReverseLightVisible()
 	return false;
 }
 
-// Utility functions ///////////////////////////////////////////////////////////
-beam_t* Beam::getBeam(unsigned int node1ID, unsigned int node2ID)
-{
-
-	for(unsigned  int j = 0; j < (unsigned  int)free_beam; ++j)
-		if( (beams[j].p1->id == (int)node1ID && beams[j].p2->id == (int)node2ID) ||
-			(beams[j].p2->id == (int)node1ID && beams[j].p1->id == (int)node2ID) )
-			return &beams[j];
-
-	return NULL;
-}
-
-beam_t* Beam::getBeam(node_t* node1, node_t* node2)
-{
-	// check for nulls
-	if( !node1 || !node2 ) return NULL;
-	return getBeam( node1->id, node2->id);
-}
-
-node_t* Beam::getNode(unsigned int id)
-{
-	for( unsigned int i = 0 ; i < (unsigned  int)free_node; ++i)
-		if( nodes[i].id == (int)id )
-			return &nodes[i];
-
-	// node not found
-	return NULL;
-}
-
 void Beam::changedCamera()
 {
 	// change sound setup
@@ -5751,4 +4936,87 @@ bool Beam::isLocked()
 		if(it->locked==LOCKED)
 			return true;
 	return false;
+}
+
+int Beam::loadTruck2(Ogre::String filename, Ogre::SceneManager *manager, Ogre::SceneNode *parent, Ogre::Vector3 pos, Ogre::Quaternion rot, collision_box_t *spawnbox)
+{
+	int res = loadTruck(filename, manager, parent, pos, rot, spawnbox);
+	if(res) return res;
+
+	//place correctly
+	if (!hasfixes)
+	{
+		//check if oversized
+		calcBox();
+		//px=px-(maxx-minx)/2.0;
+		pos.x-=(maxx+minx)/2.0-pos.x;
+		//pz=pz-(maxz-minz)/2.0;
+		pos.z-=(maxz+minz)/2.0-pos.z;
+		float miny=-9999.0;
+		if (spawnbox) miny=spawnbox->relo.y+spawnbox->center.y+0.01;
+		if(freePositioned)
+			resetPosition(pos, true);
+		else
+			resetPosition(pos.x, pos.z, true, miny);
+
+		if (spawnbox)
+		{
+			bool inside=true;
+			for (int i=0; i<free_node; i++) inside=inside && collisions->isInside(nodes[i].AbsPosition, spawnbox, 0.2f);
+			if (!inside)
+			{
+				Vector3 gpos=Vector3(pos.x, 0, pos.z);
+				gpos-=rot*Vector3((spawnbox->hi.x-spawnbox->lo.x+maxx-minx)*0.6, 0, 0);
+				resetPosition(gpos.x, gpos.z, true, miny);
+			}
+		}
+	}
+	//compute final mass
+	calc_masses2(truckmass);
+	//setup default sounds
+	if (!disable_default_sounds) setupDefaultSoundSources();
+	//compute collision box
+	calcBox();
+
+	//compute node connectivity graph
+	calcNodeConnectivityGraph();
+
+	//update contacter nodes
+	updateContacterNodes();
+
+	// print some truck memory stats
+	int mem = 0, memr = 0, tmpmem = 0;
+	LogManager::getSingleton().logMessage("BEAM: memory stats following");
+
+	tmpmem = free_beam * sizeof(beam_t); mem += tmpmem;
+	memr += MAX_BEAMS * sizeof(beam_t);
+	LogManager::getSingleton().logMessage("BEAM: beam memory: " + StringConverter::toString(tmpmem) + " B (" + StringConverter::toString(free_beam) + " x " + StringConverter::toString(sizeof(beam_t)) + " B) / " + StringConverter::toString(MAX_BEAMS * sizeof(beam_t)));
+
+	tmpmem = free_node * sizeof(node_t); mem += tmpmem;
+	memr += MAX_NODES * sizeof(beam_t);
+	LogManager::getSingleton().logMessage("BEAM: node memory: " + StringConverter::toString(tmpmem) + " B (" + StringConverter::toString(free_node) + " x " + StringConverter::toString(sizeof(node_t)) + " B) / " + StringConverter::toString(MAX_NODES * sizeof(node_t)));
+
+	tmpmem = free_shock * sizeof(shock_t); mem += tmpmem;
+	memr += MAX_SHOCKS * sizeof(beam_t);
+	LogManager::getSingleton().logMessage("BEAM: shock memory: " + StringConverter::toString(tmpmem) + " B (" + StringConverter::toString(free_shock) + " x " + StringConverter::toString(sizeof(shock_t)) + " B) / " + StringConverter::toString(MAX_SHOCKS * sizeof(shock_t)));
+
+	tmpmem = free_prop * sizeof(prop_t); mem += tmpmem;
+	memr += MAX_PROPS * sizeof(beam_t);
+	LogManager::getSingleton().logMessage("BEAM: prop memory: " + StringConverter::toString(tmpmem) + " B (" + StringConverter::toString(free_prop) + " x " + StringConverter::toString(sizeof(prop_t)) + " B) / " + StringConverter::toString(MAX_PROPS * sizeof(prop_t)));
+
+	tmpmem = free_wheel * sizeof(wheel_t); mem += tmpmem;
+	memr += MAX_WHEELS * sizeof(beam_t);
+	LogManager::getSingleton().logMessage("BEAM: wheel memory: " + StringConverter::toString(tmpmem) + " B (" + StringConverter::toString(free_wheel) + " x " + StringConverter::toString(sizeof(wheel_t)) + " B) / " + StringConverter::toString(MAX_WHEELS * sizeof(wheel_t)));
+
+	tmpmem = free_rigidifier * sizeof(rigidifier_t); mem += tmpmem;
+	memr += MAX_RIGIDIFIERS * sizeof(beam_t);
+	LogManager::getSingleton().logMessage("BEAM: rigidifier memory: " + StringConverter::toString(tmpmem) + " B (" + StringConverter::toString(free_rigidifier) + " x " + StringConverter::toString(sizeof(rigidifier_t)) + " B) / " + StringConverter::toString(MAX_RIGIDIFIERS * sizeof(rigidifier_t)));
+
+	tmpmem = free_flare * sizeof(flare_t); mem += tmpmem;
+	memr += free_flare * sizeof(beam_t);
+	LogManager::getSingleton().logMessage("BEAM: flare memory: " + StringConverter::toString(tmpmem) + " B (" + StringConverter::toString(free_flare) + " x " + StringConverter::toString(sizeof(flare_t)) + " B)");
+
+	LogManager::getSingleton().logMessage("BEAM: truck memory used: " + StringConverter::toString(mem)  + " B (" + StringConverter::toString(mem/1024)  + " kB)");
+	LogManager::getSingleton().logMessage("BEAM: truck memory allocated: " + StringConverter::toString(memr)  + " B (" + StringConverter::toString(memr/1024)  + " kB)");
+	return res;
 }

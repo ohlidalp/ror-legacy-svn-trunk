@@ -31,7 +31,8 @@ along with Rigs of Rods.  If not, see <http://www.gnu.org/licenses/>.
 
 // ror includes
 #include "Streamable.h"
-#include "BeamData.h" // for rig_t
+#include "SerializedRig.h"
+#include "BeamData.h"
 
 #include "approxmath.h"
 #include "CacheSystem.h"
@@ -41,7 +42,7 @@ along with Rigs of Rods.  If not, see <http://www.gnu.org/licenses/>.
 #include <pthread.h>
 
 class Beam : 
-	public rig_t, 
+	public SerializedRig, 
 	public Streamable
 {
 public:
@@ -82,17 +83,6 @@ public:
 		, Skin *skin=0
 		, bool freeposition=false);
 
-	//! @{ Input/Output related functions
-	int loadTruck(const char* fname
-		, SceneManager *manager
-		, SceneNode *parent
-		, Real px
-		, Real py
-		, Real pz
-		, Quaternion rot
-		, collision_box_t *spawnbox);
-	//! @}
-
 	//! @{ network related functions
 	void pushNetwork(char* data, int size);
 	void calcNetwork();
@@ -105,14 +95,11 @@ public:
 	void addPressure(float v);
 	float getPressure();
 	void calc_masses2(Real total, bool reCalc=false);
-	void calcBox();
 	void calcNodeConnectivityGraph();
 	void updateContacterNodes();
 	void moveOrigin(Vector3 offset); //move physics origin
 	void changeOrigin(Vector3 newOrigin); //change physics origin
 	Vector3 getPosition();
-	float warea(Vector3 ref, Vector3 x, Vector3 y, Vector3 aref);
-	void wash_calculator(Quaternion rot);
 	void resetAngle(float rot);
 	void resetPosition(float px, float pz, bool setInitPosition, float miny=-9999.0);
 	void resetPosition(Ogre::Vector3 translation, bool setInitPosition);
@@ -132,83 +119,8 @@ public:
 	void calcAnimators(int flagstate, float &cstate, int &div, float timer, float opt1, float opt2, float opt3);
 	//! @}
 
-	//! @{ truck specific physics functions
-	void addWheel(SceneManager *manager
-		, SceneNode *parent
-		, Real radius
-		, Real width
-		, int rays
-		, int node1
-		, int node2
-		, int snode
-		, int braked
-		, int propulsed
-		, int torquenode
-		, float mass
-		, float wspring
-		, float wdamp
-		, char* texf
-		, char* texb
-		, bool meshwheel=false
-		, float rimradius=0.0
-		, bool rimreverse=false);
-	
-	void addWheel2(SceneManager *manager
-		, SceneNode *parent
-		, Real radius
-		, Real radius2
-		, Real width
-		, int rays
-		, int node1
-		, int node2
-		, int snode
-		, int braked
-		, int propulsed
-		, int torquenode
-		, float mass
-		, float wspring
-		, float wdamp
-		, float wspring2
-		, float wdamp2
-		, char* texf
-		, char* texb);
-	
-	void init_node(int pos
-		, Real x
-		, Real y
-		, Real z
-		, int type=NODE_NORMAL
-		, Real m=10.0
-		, int iswheel=0
-		, Real friction=CHASSIS_FRICTION_COEF
-		, int id=-1
-		, int wheelid=-1
-		, Real nfriction=NODE_FRICTION_COEF_DEFAULT
-		, Real nvolume=NODE_VOLUME_COEF_DEFAULT
-		, Real nsurface=NODE_SURFACE_COEF_DEFAULT
-		, Real nloadweight=NODE_LOADWEIGHT_DEFAULT);
-	
-	int add_beam(node_t *p1
-		, node_t *p2
-		, SceneManager *manager
-		, SceneNode *parent
-		, int type
-		, Real strength
-		, Real spring
-		, Real damp
-		, int detachgroupstate=DEFAULT_DETACHER_GROUP
-		, Real length=-1.0
-		, float shortbound=-1.0
-		, float longbound=-1.0
-		, float precomp=1.0
-		, float diameter=DEFAULT_BEAM_DIAMETER);
-	
-	BeamEngine *engine;
-	//! @}
-
 	//! @{ audio related functions
 	void setupDefaultSoundSources();
-	void addSoundSource(SoundScriptInstance *ssi, int nodenum, int type=-2);
 	void updateSoundSources();
 	//! @}
 
@@ -227,10 +139,6 @@ public:
 	int savePosition(int position);
 	int loadPosition(int position);
 	void updateTruckPosition();
-	//! @}
-
-	//! @{ camera related functions
-	void addCamera(int nodepos, int nodedir, int noderoll);
 	//! @}
 
 	//! @{ ground
@@ -255,7 +163,6 @@ public:
 	float currentScale;
 	void updateDebugOverlay();
 	int nodedebugstate;
-	int debugVisuals;
 	SceneManager *tsm;
 	//! @}
 
@@ -269,7 +176,6 @@ public:
 	Vector3 ffforce;
 	Real affhydro;
 	Real ffhydro;
-	bool patchEngineTorque;
 	//! @}
 
 	/* functions to be sorted */
@@ -278,18 +184,8 @@ public:
 	int getAxleLockCount();
 	std::vector< std::vector< int > > nodetonodeconnections;
 	std::vector< std::vector< int > > nodebeamconnections;
-	bool freePositioned;
-	bool networking;
 	int label;
-	int trucknum;
-	Skin *usedSkin;
 
-	int cinecameranodepos[MAX_CAMERAS];
-	int cameranodepos[MAX_CAMERAS];
-	int cameranodedir[MAX_CAMERAS];
-	int cameranoderoll[MAX_CAMERAS];
-	int externalcameramode, externalcameranode;
-	bool revroll[MAX_CAMERAS];
 	float WheelSpeed;
 	int stabcommand;
 	int skeleton;
@@ -313,29 +209,16 @@ public:
 	int oldreplaypos;
 	int watercontact;
 	int watercontactold;
-	bool cparticle_enabled;
-	int dynamicMapMode;
 	int canwork;
-	int hashelp;
-	char helpmat[256];
-	float minx, maxx, miny, maxy, minz, maxz;
-	int state;
 	int sleepcount;
 	//can this be drived?
-	int driveable;
 	int previousGear;
 	float previousCrank;
 	float animTimer;
-	int importcommands;
 	bool requires_wheel_contact;
-	bool wheel_contact_requested;
-	bool rescuer;
 	int parkingbrake;
 	int lights;
 	bool reverselight;
-	int smokeId;
-	int editorId;
-	bool shadowOptimizations;
 	float leftMirrorAngle;
 	float rightMirrorAngle;
 	float *mapsizex, *mapsizez;
@@ -350,9 +233,6 @@ public:
 	int done_count;
 	int calculateDriverPos(Vector3 &pos, Quaternion &rot);
 	float getSteeringAngle();
-	float default_beam_diameter;
-	float default_plastic_coef;
-	float skeleton_beam_diameter;
 
 	float elevator;
 	float rudder;
@@ -360,16 +240,10 @@ public:
 	int flap;
 
 	Vector3 fusedrag;
-	float fadeDist;
+	
 	bool disableDrag;
 	int currentcamera;
-	int freecinecamera;
-	float brakeforce;
-	float hbrakeforce;
-	bool ispolice;
-	float beam_creak;
-	int loading_finished;
-	int freecamera;
+	
 	int first_wheel_node;
 	int netbuffersize;
 	int nodebuffersize;
@@ -397,18 +271,9 @@ public:
 
 	beam_t *addBeam(int id1, int id2);
 	node_t *addNode(Ogre::Vector3 pos);
-	String speedomat, tachomat;
-	float speedoMax;
-	bool useMaxRPMforGUI;
 
 	Ogre::String realtruckfilename;
 
-	//! @{ Axle variables and methods  
-	Axle axles[MAX_WHEELS/2];
-	int free_axle;
-	//! @}
-	
-	bool beambreakdebug, beamdeformdebug, triggerdebug;
 
 
 	// this must be in the header as the network stuff is using it...
@@ -425,14 +290,12 @@ public:
 	blinktype getBlinkType();
 	void deleteNetTruck();
 	
-	Autopilot *autopilot;
 	
 	float getHeadingDirectionAngle();
 	bool getCustomParticleMode();
 	int getLowestNode();
 	void preMapLabelRenderUpdate(bool mode, float cheight=0);
 	
-	SceneNode *cablightNode;
 	float tdt;
 	float ttdt;
 	int airbrakeval;
@@ -441,7 +304,6 @@ public:
 	bool abs_state;
 	float abs_timer;
 
-	Vector3 origin;
 	void setMeshVisibility(bool visible);
 	bool meshesVisible;
 	bool inRange(float num, float min, float max);
@@ -463,17 +325,12 @@ protected:
 
 	void updateSimpleSkeleton();
 	SceneNode *simpleSkeletonNode;
-	std::vector<Ogre::String> truckconfig;
-
-	std::vector<Ogre::SceneNode*> deletion_sceneNodes;
-	std::vector<Ogre::MovableObject *> deletion_Objects;
 
 	Vector3 position;
 	Vector3 lastposition;
 	Vector3 lastlastposition;
 	Real minCameraRadius;
 
-	MaterialFunctionMapper *materialFunctionMapper;
 	Real replayTimer;
 	Real replayPrecision;
 
@@ -482,48 +339,24 @@ protected:
 
 	// this is for managing the blinkers on the truck:
 	blinktype blinkingtype;
-	Light *cablight;
 
-	int detacher_group_state; // current detacher group for the next beam generated
-	bool enable_wheel2;
 	bool deleting;
 
-	char default_node_options[50];
-	char truckname[256];
-	char realtruckname[256];
-	std::vector<authorinfo_t> authors;
+	
 
-	int truckversion;
-	char uniquetruckid[255];
-	int categoryid;
 
-	std::vector<std::string> description;
-	int hascommands;
-	int forwardcommands;
+	
 	RenderWindow* mWindow;
 	Real hydrolen;
-	Real truckmass;
-	Real loadmass;
-	int masscount;
+	
 	//number of torque points
 	//    int torquenum;
 	Real lastwspeed;
-	float collrange;
-	FlexObj *cabMesh;
-	SceneNode *cabNode;
-	bool disable_smoke;
-	bool heathaze;
 	SceneNode *smokeNode;
-	int smokeRef;
 	ParticleSystem* smoker;
 	float stabsleep;
-	int proped_wheels;
-	int braked_wheels;
-	//for inter-diffential locking
-	int proppairs[MAX_WHEELS];
 	//	float lastdt;
 	Collisions *collisions;
-	HeightFinder *hfinder;
 	int fasted;
 	int slowed;
 	Replay *replay;
@@ -535,46 +368,17 @@ protected:
 	Beam** ttrucks;
 	int tnumtrucks;
 	SceneNode *parentNode;
-	SceneNode *beamsRoot;
 	int detailLevel;
-	Water *water;
-	Camera *mCamera;
-	char texname[1024];
-	int hasEmissivePass;
 	bool isInside;
 	bool beacon;
-	bool driversseatfound;
 	float totalmass;
-	float default_node_friction;
-	float default_node_volume;
-	float default_node_surface;
-	float default_node_loadweight;
 
-	float default_spring;
-	float default_spring_scale;
-	float default_damp;
-	float default_damp_scale;
-	float default_deform;
-	float default_deform_scale;
-	float default_break;
-	float default_break_scale;
-
-	bool advanced_drag;
-	float advanced_node_drag;
-	float advanced_total_drag;
-	char default_beam_material[256];
-	Airfoil *fuseAirfoil;
-	node_t *fuseFront;
-	node_t *fuseBack;
-	float fuseWidth;
-	bool hasposlights;
 	int mousenode;
 	Vector3 mousepos;
 	float mousemoveforce;
 	int reset_requested;
 
 
-	Buoyance *buoyance;
 	float ipy;
 
 	pthread_t netthread;
@@ -589,20 +393,16 @@ protected:
 	int net_toffset;
 	int netcounter;
 	MovableText *netMT; //, *netDist;
-	float minimass;
 
 	// network properties
 	String networkUsername;
 	int networkAuthlevel;
 
-	int netCustomLightArray[4];
-	unsigned char netCustomLightArray_counter;
 	bool netBrakeLight, netReverseLight;
 	Real mTimeUntilNextToggle;
 
 
 	void checkBeamMaterial();
-	int flaresMode;
 
 	//TruckCommandScheduler *truckScript;
 
@@ -619,26 +419,20 @@ protected:
 	int cabFadeMode;
 	// cab fading stuff - end
 	bool lockSkeletonchange;
-	int lowestnode;
 	bool floating_origin_enable;
 
 	Ogre::ManualObject *simpleSkeletonManualObject;
 	bool simpleSkeletonInitiated;
 	void initSimpleSkeleton();
 
-	SoundScriptManager *ssm;
-	
+	int loadTruck2(Ogre::String filename, Ogre::SceneManager *manager, Ogre::SceneNode *parent, Ogre::Vector3 pos, Ogre::Quaternion rot, collision_box_t *spawnbox);
 
-	bool disable_default_sounds;
 	/**
 	 * Resets the turn signal when the steering wheel is turned back.
 	 */
 	void autoBlinkReset();
 	bool blinktreshpassed;
 
-	CmdKeyInertia *rotaInertia;
-	CmdKeyInertia *hydroInertia;
-	CmdKeyInertia *cmdInertia;
 #ifdef FEAT_TIMING
 	BeamThreadStats *statistics, *statistics_gfx;
 #endif
@@ -660,19 +454,10 @@ protected:
 
 
 	// SLIDE NODES /////////////////////////////////////////////////////////////
-	//! Stores all the SlideNodes available on this truck
-	std::vector< SlideNode > mSlideNodes;
 	//! true if SlideNodes are locked, false if not
 	bool SlideNodesLocked;
 
-	//! try to connect slidenodes directly after spawning
-	bool slideNodesConnectInstantly;
 
-	/**
-	 * @param line line in configuration file
-	 * @return true if line was successfully parsed, false if not
-	 */
-	bool parseSlideNodeLine(const Ogre::String& line);
 
 	/**
 	 * calculate and apply Corrective forces
@@ -695,61 +480,7 @@ protected:
 	std::pair<RailGroup*, Ogre::Real> getClosestRailOnTruck( Beam* truck, const SlideNode& node);
 
 
-	// RAIL GROUPS /////////////////////////////////////////////////////////////
-	//! Stores all the available RailGroups for this truck
-	std::vector< RailGroup* > mRailGroups;
 
-	/**
-	 * @param line line in configuration file
-	 * @return true if line was successfully parsed, false if not
-	 */
-	bool parseRailGroupLine(const Ogre::String& line);
-
-	// utility methods /////////////////////////////////////////////////////////
-
-	/**
-	 * searches the RailGRoup array for a rail with the corresponding id value
-	 * @param id of rail group to search for
-	 * @return NULL if no rail group is found, otherwise the corresponding rail group.
-	 */
-	RailGroup* getRailFromID(unsigned int id);
-
-	/**
-	 * wrapper for getRails, converts the list of strings to a compatible format
-	 * @param railStrings list of node id's in string format
-	 * @return same as getRails
-	 */
-	Rail* parseRailString( const Ogre::StringVector &railStrings);
-
-	/**
-	 * parses an array of nodes id's to generate a Rail
-	 * @param nodeids a list of node id's
-	 * @return NULL if nodes do not form a continuous beam structure
-	 */
-	Rail* getRails(const std::vector<int>& nodeids);
-
-	/**
-	 * Finds the beam instance based on the node IDs
-	 * @param node1ID node id of one node
-	 * @param node2ID node id of the other node
-	 * @return pointer to beam instance, NULL if no beam is found
-	 */
-	beam_t* getBeam(unsigned int node1ID, unsigned int node2ID);
-
-	/**
-	 * Finds the beam based on actual node instances
-	 * @param node1 first node of the beam
-	 * @param node2 second node of the beam
-	 * @return pointer to beam instance, NULL if no beam is found
-	 */
-	beam_t* getBeam(node_t* node1, node_t* node2);
-
-	/**
-	 * Find node instance baed on the id
-	 * @param id of the node we are looking for
-	 * @return pointer to node instance, NULL if no beam is found
-	 */
-	node_t* getNode(unsigned int id);
 };
 
 

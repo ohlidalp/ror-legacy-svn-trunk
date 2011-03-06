@@ -29,7 +29,7 @@ along with Rigs of Rods.  If not, see <http://www.gnu.org/licenses/>.
 class VideoCamera
 {
 public:
-	VideoCamera(Ogre::SceneManager *mSceneMgr, Ogre::Camera *camera, Beam *truck);
+	VideoCamera(Ogre::SceneManager *mSceneMgr, Ogre::Camera *camera, rig_t *truck);
 
 	void init();
 
@@ -38,7 +38,7 @@ public:
 	void setActive(bool state);
 	//static VideoCamera *setActive(bool state);
 	
-	static VideoCamera *parseLine(Ogre::SceneManager *mSceneMgr, Ogre::Camera *camera, Beam *truck, const char *fname, char *line, int linecounter);
+	static VideoCamera *parseLine(Ogre::SceneManager *mSceneMgr, Ogre::Camera *camera, rig_t *truck, Ogre::String fname, char *line, int linecounter);
 
 	int camNode, lookat, switchoff;
 	float fov, minclip, maxclip;
@@ -51,7 +51,7 @@ public:
 
 protected:
 	Ogre::SceneManager *mSceneMgr;
-	Beam *truck;
+	rig_t *truck;
 	static int counter;
 	Ogre::Camera *mCamera;
 	Ogre::Camera *mVidCam;
