@@ -317,7 +317,7 @@ void SelectorWindow::getData()
 		String title = itc->second.title;
 		if(title.empty())
 			title = _L("unkown");
-		String txt = "["+StringConverter::toString(counter2)+"/"+StringConverter::toString(counter)+"] (" + StringConverter::toString(usage)+") " + title;
+		String txt = "["+TOSTRING(counter2)+"/"+TOSTRING(counter)+"] (" + TOSTRING(usage)+") " + title;
 
 		mTypeComboBox->addItem(txt, itc->second.number);
 	}
@@ -368,7 +368,7 @@ void SelectorWindow::onCategorySelected(int categoryID)
 		{
 			counter2++;
 			//printf("adding item %d\n", counter2);
-			String txt = StringConverter::toString(counter2)+". " + it->dname;
+			String txt = TOSTRING(counter2)+". " + it->dname;
 
 			try
 			{
@@ -388,7 +388,7 @@ void SelectorWindow::onCategorySelected(int categoryID)
 			{
 				counter2++;
 				//printf("adding item %d\n", counter2);
-				String txt = StringConverter::toString(counter2)+". " + it->dname;
+				String txt = TOSTRING(counter2)+". " + it->dname;
 				try
 				{
 					mModelList->addItem(txt, it->number);
@@ -563,10 +563,10 @@ void SelectorWindow::updateControls(Cache_Entry *entry)
 
 	String descriptiontxt = entry->description + "\n";
 	descriptiontxt += _L("Authors: ") + authorstxt + "\n";
-	if(entry->wheelcount > 0) descriptiontxt += _L("Wheels: ") + StringConverter::toString(entry->wheelcount) + "x" + StringConverter::toString(entry->propwheelcount) + "\n";
-	if(entry->truckmass > 0) descriptiontxt += _L("Mass: ") + StringConverter::toString((int)(entry->truckmass/1000.0f)) + " " + _L("tons") + "\n";
-	if(entry->nodecount > 0) descriptiontxt += _L("Nodes: ") + StringConverter::toString(entry->nodecount) + "\n";
-	if(entry->nodecount > 0) descriptiontxt += _L("Torque: ") + StringConverter::toString(entry->torque) + "\n";
+	if(entry->wheelcount > 0) descriptiontxt += _L("Wheels: ") + TOSTRING(entry->wheelcount) + "x" + TOSTRING(entry->propwheelcount) + "\n";
+	if(entry->truckmass > 0) descriptiontxt += _L("Mass: ") + TOSTRING((int)(entry->truckmass/1000.0f)) + " " + _L("tons") + "\n";
+	if(entry->nodecount > 0) descriptiontxt += _L("Nodes: ") + TOSTRING(entry->nodecount) + "\n";
+	if(entry->nodecount > 0) descriptiontxt += _L("Torque: ") + TOSTRING(entry->torque) + "\n";
 
 	String driveableStr[5] = {_L("Non-Driveable"), _L("Truck"), _L("Airplane"), _L("Boat"), _L("Machine")};
 	if(entry->nodecount > 0) descriptiontxt += _L("Vehicle Type: ") + driveableStr[entry->driveable] + "\n";

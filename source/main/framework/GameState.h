@@ -5,6 +5,7 @@
 
 //|||||||||||||||||||||||||||||||||||||||||||||||
 
+#include "RoRPrerequisites.h"
 #include "AppState.h"
 
 #include <OgreSubEntity.h>

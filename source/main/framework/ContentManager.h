@@ -21,6 +21,7 @@ along with Rigs of Rods.  If not, see <http://www.gnu.org/licenses/>.
 #ifndef CONTENTMANAGER_H__
 #define CONTENTMANAGER_H__
 
+#include "RoRPrerequisites.h"
 #include <OgreSingleton.h>
 
 #include <OgreResourceGroupManager.h>

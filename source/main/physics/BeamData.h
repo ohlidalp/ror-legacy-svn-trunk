@@ -488,6 +488,8 @@ struct parsecontext
 	unsigned int warnings;
 	unsigned int errors;
 	char line[2048];
+	int mode;
+	int savedmode;
 };
 
 struct rigidifier

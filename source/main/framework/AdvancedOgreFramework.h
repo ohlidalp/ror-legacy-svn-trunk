@@ -5,6 +5,8 @@
 
 //|||||||||||||||||||||||||||||||||||||||||||||||
 
+#include "RoRPrerequisites.h"
+
 #include <OgreCamera.h>
 #include <OgreEntity.h>
 #include <OgreLogManager.h>

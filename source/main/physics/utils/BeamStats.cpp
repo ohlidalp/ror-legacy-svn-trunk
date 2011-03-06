@@ -161,9 +161,9 @@ bool BeamEngineStats::updateGUI(float dt, int current_truck, Beam **trucks)
 
 		double sum=0, sum_gfx=0, t=0, perc=0;
 		msg += "Stats Timestep: 5 Seconds\n";
-		msg += "Truck "+StringConverter::toString(statClients[c].trucknum) + "\n";
-		msg += "  Graphic Frames: " + StringConverter::toString(core->getFramecount()) + "\n";
-		msg += "  Physic Frames:  " + StringConverter::toString(core->getPhysFrameCount()) + "\n";
+		msg += "Truck "+TOSTRING(statClients[c].trucknum) + "\n";
+		msg += "  Graphic Frames: " + TOSTRING(core->getFramecount()) + "\n";
+		msg += "  Physic Frames:  " + TOSTRING(core->getPhysFrameCount()) + "\n";
 
 		sprintf(line, "%-46s  |  %-46s\n", "============== PHYSICS ==============", "================ GFX ================");
 		msg += String(line);

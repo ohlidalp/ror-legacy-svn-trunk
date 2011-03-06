@@ -34,7 +34,7 @@ ScopeLog::ScopeLog(String name) : orgLog(0), logFileName()
 	orgLog = LogManager::getSingleton().getDefaultLog();
 
 	// determine a filename
-	logFileName = SETTINGS.getSetting("Log Path") + SETTINGS.getSetting("dirsep") + "_" + name + ".log";
+	logFileName = SSETTING("Log Path") + SSETTING("dirsep") + "_" + name + ".log";
 	
 	// create a new log file
 	ourLog = LogManager::getSingleton().createLog(logFileName); // do not replace the default

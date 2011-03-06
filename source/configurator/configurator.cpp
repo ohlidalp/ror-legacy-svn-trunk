@@ -628,8 +628,8 @@ void MyApp::recurseCopy(wxString sourceDir, wxString destinationDir)
 
 bool MyApp::filesystemBootstrap()
 {
-	UserPath = conv(SETTINGS.getSetting("User Path"));
-	ProgramPath = conv(SETTINGS.getSetting("Program Path"));
+	UserPath = conv(SSETTING("User Path"));
+	ProgramPath = conv(SSETTING("Program Path"));
 
 	//skeleton
 	wxFileName tsk=wxFileName(ProgramPath, wxEmptyString);
