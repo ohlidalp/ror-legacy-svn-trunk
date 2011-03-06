@@ -64,7 +64,8 @@ protected:
 		, float shortbound=-1.0
 		, float longbound=-1.0
 		, float precomp=1.0
-		, float diameter=DEFAULT_BEAM_DIAMETER);
+		, float diameter=DEFAULT_BEAM_DIAMETER
+		, parsecontext_t *c=0);
 
 	void addWheel(Ogre::SceneManager *manager
 		, Ogre::SceneNode *parent
@@ -84,7 +85,8 @@ protected:
 		, char* texb
 		, bool meshwheel=false
 		, float rimradius=0.0
-		, bool rimreverse=false);
+		, bool rimreverse=false
+		, parsecontext_t *c=0);
 	
 	void addWheel2(Ogre::SceneManager *manager
 		, Ogre::SceneNode *parent
@@ -104,20 +106,26 @@ protected:
 		, float wspring2
 		, float wdamp2
 		, char* texf
-		, char* texb);
+		, char* texb
+		, parsecontext_t *c=0);
 		
 	void addCamera(int nodepos, int nodedir, int noderoll);
 	float warea(Ogre::Vector3 ref, Ogre::Vector3 x, Ogre::Vector3 y, Ogre::Vector3 aref);
 
-	void addSoundSource(SoundScriptInstance *ssi, int nodenum, int type=-2);
+	void addSoundSource(SoundScriptInstance *ssi, int nodenum, int type=-2, parsecontext_t *c=0);
 
-	// RAIL GROUPS /////////////////////////////////////////////////////////////
 
 	/**
 	 * @param line line in configuration file
 	 * @return true if line was successfully parsed, false if not
 	 */
-	bool parseRailGroupLine(const Ogre::String& line);
+	bool parseRailGroupLine(parsecontext_t c);
+
+	/**
+	 * @param line line in configuration file
+	 * @return true if line was successfully parsed, false if not
+	 */
+	bool parseSlideNodeLine(parsecontext_t c);
 
 	// utility methods /////////////////////////////////////////////////////////
 
@@ -133,14 +141,14 @@ protected:
 	 * @param railStrings list of node id's in string format
 	 * @return same as getRails
 	 */
-	Rail* parseRailString( const Ogre::StringVector &railStrings);
+	Rail* parseRailString( const Ogre::StringVector &railStrings, parsecontext_t c);
 
 	/**
 	 * parses an array of nodes id's to generate a Rail
 	 * @param nodeids a list of node id's
 	 * @return NULL if nodes do not form a continuous beam structure
 	 */
-	Rail* getRails(const std::vector<int>& nodeids);
+	Rail* getRails(const std::vector<int>& nodeids, parsecontext_t c);
 
 	/**
 	 * Finds the beam instance based on the node IDs
@@ -165,15 +173,12 @@ protected:
 	 */
 	node_t* getNode(unsigned int id);
 
-	/**
-	 * @param line line in configuration file
-	 * @return true if line was successfully parsed, false if not
-	 */
-	bool parseSlideNodeLine(const Ogre::String& line);
-	void wash_calculator(Ogre::Quaternion rot);
+	void wash_calculator(Ogre::Quaternion rot, parsecontext_t c);
 	void calcBox();
 
-
+	void parser_warning(parsecontext_t context, Ogre::String text);
+	void parser_warning(parsecontext_t *context, Ogre::String text);
+	bool checkResults(int res, int min, parsecontext_t context);
 };
 
 

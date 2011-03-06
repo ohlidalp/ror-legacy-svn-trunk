@@ -95,7 +95,7 @@ WaterOld::WaterOld(int type, Camera *camera, SceneManager *mSceneMgr, RenderWind
 	free_wavetrain=0;
 	FILE *fd;
 	char line[1024];
-	fd=fopen((SETTINGS.getSetting("Config Root")+"wavefield.cfg").c_str(), "r");
+	fd=fopen((SSETTING("Config Root")+"wavefield.cfg").c_str(), "r");
 	if (fd)
 	{
 		while (!feof(fd))

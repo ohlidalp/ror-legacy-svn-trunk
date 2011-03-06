@@ -245,9 +245,8 @@ int SerializedRig::loadTruck(String fname, SceneManager *manager, SceneNode *par
 	parsecontext_t c;
 	memset(&c, 0, sizeof(parsecontext_t));
 	c.filename = filename;
-	
-	// parse modes
-	int mode=BTS_NONE, savedmode=BTS_NONE;
+	c.mode = BTS_NONE;
+	c.savedmode = BTS_NONE;
 	
 	// some temp varialbes
 	int leftlight=0;
@@ -261,20 +260,20 @@ int SerializedRig::loadTruck(String fname, SceneManager *manager, SceneNode *par
 	// load truck configuration settings
 	bool enable_background_loading = BSETTING("Background Loading");
 
-	LOG("BEAM: Start of truck loading: " + filename);
+	parser_warning(c, "Start of truck loading: " + filename);
 	String group = "";
 	try
 	{
 		if(!CACHE.checkResourceLoaded(filename, group))
 		{
-			LOG("Can't open truck file '"+filename+"'");
+			parser_warning(c, "Can't open truck file '"+filename+"'");
 			return -1;
 		}
 	} catch(Ogre::Exception& e)
 	{
 		if(e.getNumber() == Ogre::Exception::ERR_ITEM_NOT_FOUND)
 		{
-			LOG("Can't open truck file '"+filename+"'");
+			parser_warning(c, "Can't open truck file '"+filename+"'");
 			return -1;
 		}
 	}
@@ -298,7 +297,7 @@ int SerializedRig::loadTruck(String fname, SceneManager *manager, SceneNode *par
 
 		if (!strcmp("end", c.line))
 		{
-			LOG("BEAM: End of truck loading");
+			parser_warning(c, "End of truck loading");
 			loading_finished = 1;
 			break;
 		}
@@ -309,24 +308,24 @@ int SerializedRig::loadTruck(String fname, SceneManager *manager, SceneNode *par
 			continue;
 		}
 
-		if (!strcmp("end_description", c.line) && mode == BTS_DESCRIPTION)
+		if (!strcmp("end_description", c.line) && c.mode == BTS_DESCRIPTION)
 		{
-			mode = BTS_NONE;
+			c.mode = BTS_NONE;
 			continue;
 		}
 
-		if (!strcmp("end_comment", c.line)  && mode == BTS_COMMENT)
+		if (!strcmp("end_comment", c.line)  && c.mode == BTS_COMMENT)
 		{
-			mode = savedmode;
+			c.mode = c.savedmode;
 			continue;
 		}
-		if (!strcmp("end_section", c.line)  && mode == BTS_IN_SECTION)
+		if (!strcmp("end_section", c.line)  && c.mode == BTS_IN_SECTION)
 		{
-			mode=savedmode;
+			c.mode=c.savedmode;
 			continue;
 		}
 
-		if (mode==BTS_DESCRIPTION)
+		if (c.mode==BTS_DESCRIPTION)
 		{
 			// description
 			//parse dscription, and ignore every possible keyword
@@ -335,97 +334,91 @@ int SerializedRig::loadTruck(String fname, SceneManager *manager, SceneNode *par
 			continue;
 		}
 
-		if (mode==BTS_COMMENT)
+		if (c.mode==BTS_COMMENT)
 		{
 			// comment
 			// ignore everything
 			continue;
 		}
-		if (mode==BTS_IN_SECTION)
+		if (c.mode==BTS_IN_SECTION)
 		{
 			// ignored truck section
 			continue;
 		}
-		if (!strcmp("nodes",c.line))   {mode=BTS_NODES;continue;};
-		if (!strcmp("beams",c.line))   {mode=BTS_BEAMS;continue;};
-		if (!strcmp("fixes",c.line))   {mode=BTS_FIXES;continue;};
-		if (!strcmp("shocks",c.line))  {mode=BTS_SHOCKS;continue;};
-		if (!strcmp("hydros",c.line))  {mode=BTS_HYDROS;continue;};
-		if (!strcmp("wheels",c.line))  {mode=BTS_WHEELS;continue;};
-		if (!strcmp("globals",c.line)) {mode=BTS_GLOBALS;continue;};
-		if (!strcmp("cameras",c.line)) {mode=BTS_CAMERAS;continue;};
-		if (!strcmp("engine",c.line))    {mode=BTS_ENGINE;continue;};
-		if (!strcmp("texcoords",c.line)) {mode=BTS_TEXCOORDS;continue;};
-		if (!strcmp("cab",c.line))       {mode=BTS_CAB;continue;};
-		if (!strcmp("commands",c.line))  {mode=BTS_COMMANDS;continue;};
-		if (!strcmp("commands2",c.line)) {mode=BTS_COMMANDS2;continue;};
+		if (!strcmp("nodes",c.line))   {c.mode=BTS_NODES;continue;};
+		if (!strcmp("beams",c.line))   {c.mode=BTS_BEAMS;continue;};
+		if (!strcmp("fixes",c.line))   {c.mode=BTS_FIXES;continue;};
+		if (!strcmp("shocks",c.line))  {c.mode=BTS_SHOCKS;continue;};
+		if (!strcmp("hydros",c.line))  {c.mode=BTS_HYDROS;continue;};
+		if (!strcmp("wheels",c.line))  {c.mode=BTS_WHEELS;continue;};
+		if (!strcmp("globals",c.line)) {c.mode=BTS_GLOBALS;continue;};
+		if (!strcmp("cameras",c.line)) {c.mode=BTS_CAMERAS;continue;};
+		if (!strcmp("engine",c.line))    {c.mode=BTS_ENGINE;continue;};
+		if (!strcmp("texcoords",c.line)) {c.mode=BTS_TEXCOORDS;continue;};
+		if (!strcmp("cab",c.line))       {c.mode=BTS_CAB;continue;};
+		if (!strcmp("commands",c.line))  {c.mode=BTS_COMMANDS;continue;};
+		if (!strcmp("commands2",c.line)) {c.mode=BTS_COMMANDS2;continue;};
 		if (!strcmp("forwardcommands",c.line)) {forwardcommands=1;continue;};
 		if (!strcmp("importcommands",c.line)) {importcommands=1;continue;};
 		if (!strcmp("rollon",c.line)) {wheel_contact_requested=true;continue;};
 		if (!strcmp("rescuer",c.line)) {rescuer=true;continue;};
-		if (!strcmp("contacters",c.line)) {mode=BTS_CONTACTERS;continue;};
-		if (!strcmp("ropes",c.line)) {mode=BTS_ROPES;continue;};
-		if (!strcmp("ropables",c.line)) {mode=BTS_ROPABLES;continue;};
-		if (!strcmp("ties",c.line)) {mode=BTS_TIES;continue;};
-		if (!strcmp("help",c.line)) {mode=BTS_HELP;continue;};
-		if (!strcmp("cinecam",c.line)) {mode=BTS_CINECAM;continue;};
-		if (!strcmp("flares",c.line)) {mode=BTS_FLARES;continue;};
-		if (!strcmp("props",c.line)) {mode=BTS_PROPS;continue;};
-		if (!strcmp("globeams",c.line)) {mode=BTS_GLOBEAMS;continue;};
-		if (!strcmp("wings",c.line)) {mode=BTS_WINGS;continue;};
-		if (!strcmp("turboprops",c.line)) {mode=BTS_TURBOPROPS;continue;};
-		if (!strcmp("fusedrag",c.line)) {mode=BTS_FUSEDRAG;continue;};
-		if (!strcmp("engoption",c.line)) {mode=BTS_ENGOPTION;continue;};
-		if (!strcmp("brakes",c.line)) {mode=BTS_BRAKES;continue;};
-		if (!strcmp("rotators",c.line)) {mode=BTS_ROTATORS;continue;};
-		if (!strcmp("screwprops",c.line)) {mode=BTS_SCREWPROPS;continue;};
-		if (!strcmp("description",c.line)) {mode=BTS_DESCRIPTION;continue;};
-		if (!strcmp("comment",c.line)) {mode=BTS_COMMENT; savedmode=mode; continue;};
-		if (!strcmp("wheels2",c.line)) {mode=BTS_WHEELS2;continue;};
-		if (!strcmp("guisettings",c.line)) {mode=BTS_GUISETTINGS;continue;};
-		if (!strcmp("minimass",c.line)) {mode=BTS_MINIMASS;continue;};
-		if (!strcmp("exhausts",c.line)) {mode=BTS_EXHAUSTS;continue;};
-		if (!strcmp("turboprops2",c.line)) {mode=BTS_TURBOPROPS2;continue;};
-		if (!strcmp("pistonprops",c.line)) {mode=BTS_PISTONPROPS;continue;};
-		if (!strcmp("particles",c.line)) {mode=BTS_PARTICLES;continue;};
-		if (!strcmp("turbojets",c.line)) {mode=BTS_TURBOJETS;continue;};
-		if (!strcmp("rigidifiers",c.line)) {mode=BTS_RIGIDIFIERS;continue;};
-		if (!strcmp("airbrakes",c.line)) {mode=BTS_AIRBRAKES;continue;};
-		if (!strcmp("meshwheels",c.line)) {mode=BTS_MESHWHEELS;continue;};
-		if (!strcmp("flexbodies",c.line)) {mode=BTS_FLEXBODIES;continue;};
-		if (!strcmp("hookgroup",c.line)) {mode=BTS_HOOKGROUP; continue;};
-		if (!strncmp("materialflarebindings",c.line, 21)) {mode=BTS_MATERIALFLAREBINDINGS; continue;};
+		if (!strcmp("contacters",c.line)) {c.mode=BTS_CONTACTERS;continue;};
+		if (!strcmp("ropes",c.line)) {c.mode=BTS_ROPES;continue;};
+		if (!strcmp("ropables",c.line)) {c.mode=BTS_ROPABLES;continue;};
+		if (!strcmp("ties",c.line)) {c.mode=BTS_TIES;continue;};
+		if (!strcmp("help",c.line)) {c.mode=BTS_HELP;continue;};
+		if (!strcmp("cinecam",c.line)) {c.mode=BTS_CINECAM;continue;};
+		if (!strcmp("flares",c.line)) {c.mode=BTS_FLARES;continue;};
+		if (!strcmp("props",c.line)) {c.mode=BTS_PROPS;continue;};
+		if (!strcmp("globeams",c.line)) {c.mode=BTS_GLOBEAMS;continue;};
+		if (!strcmp("wings",c.line)) {c.mode=BTS_WINGS;continue;};
+		if (!strcmp("turboprops",c.line)) {c.mode=BTS_TURBOPROPS;continue;};
+		if (!strcmp("fusedrag",c.line)) {c.mode=BTS_FUSEDRAG;continue;};
+		if (!strcmp("engoption",c.line)) {c.mode=BTS_ENGOPTION;continue;};
+		if (!strcmp("brakes",c.line)) {c.mode=BTS_BRAKES;continue;};
+		if (!strcmp("rotators",c.line)) {c.mode=BTS_ROTATORS;continue;};
+		if (!strcmp("screwprops",c.line)) {c.mode=BTS_SCREWPROPS;continue;};
+		if (!strcmp("description",c.line)) {c.mode=BTS_DESCRIPTION;continue;};
+		if (!strcmp("comment",c.line)) {c.mode=BTS_COMMENT; c.savedmode=c.mode; continue;};
+		if (!strcmp("wheels2",c.line)) {c.mode=BTS_WHEELS2;continue;};
+		if (!strcmp("guisettings",c.line)) {c.mode=BTS_GUISETTINGS;continue;};
+		if (!strcmp("minimass",c.line)) {c.mode=BTS_MINIMASS;continue;};
+		if (!strcmp("exhausts",c.line)) {c.mode=BTS_EXHAUSTS;continue;};
+		if (!strcmp("turboprops2",c.line)) {c.mode=BTS_TURBOPROPS2;continue;};
+		if (!strcmp("pistonprops",c.line)) {c.mode=BTS_PISTONPROPS;continue;};
+		if (!strcmp("particles",c.line)) {c.mode=BTS_PARTICLES;continue;};
+		if (!strcmp("turbojets",c.line)) {c.mode=BTS_TURBOJETS;continue;};
+		if (!strcmp("rigidifiers",c.line)) {c.mode=BTS_RIGIDIFIERS;continue;};
+		if (!strcmp("airbrakes",c.line)) {c.mode=BTS_AIRBRAKES;continue;};
+		if (!strcmp("meshwheels",c.line)) {c.mode=BTS_MESHWHEELS;continue;};
+		if (!strcmp("flexbodies",c.line)) {c.mode=BTS_FLEXBODIES;continue;};
+		if (!strcmp("hookgroup",c.line)) {c.mode=BTS_HOOKGROUP; continue;};
+		if (!strncmp("materialflarebindings",c.line, 21)) {c.mode=BTS_MATERIALFLAREBINDINGS; continue;};
 		if (!strcmp("disabledefaultsounds",c.line)) {disable_default_sounds=true;continue;};
-		if (!strcmp("soundsources",c.line)) {mode=BTS_SOUNDSOURCES;continue;};
-		if (!strcmp("soundsources2",c.line)) {mode=BTS_SOUNDSOURCES2;continue;};
-		if (!strcmp("envmap",c.line)) {mode=BTS_ENVMAP;continue;};
-		if (!strcmp("managedmaterials",c.line)) {mode=BTS_MANAGEDMATERIALS;continue;};
-		if (!strncmp("sectionconfig",c.line, 13)) {savedmode=mode;mode=BTS_SECTIONCONFIG; /* NOT continue */};
-		if (!strncmp("section",c.line, 7) && mode!=BTS_SECTIONCONFIG) {mode=BTS_SECTION; /* NOT continue */};
+		if (!strcmp("soundsources",c.line)) {c.mode=BTS_SOUNDSOURCES;continue;};
+		if (!strcmp("soundsources2",c.line)) {c.mode=BTS_SOUNDSOURCES2;continue;};
+		if (!strcmp("envmap",c.line)) {c.mode=BTS_ENVMAP;continue;};
+		if (!strcmp("managedmaterials",c.line)) {c.mode=BTS_MANAGEDMATERIALS;continue;};
+		if (!strncmp("sectionconfig",c.line, 13)) {c.savedmode=c.mode;c.mode=BTS_SECTIONCONFIG; /* NOT continue */};
+		if (!strncmp("section",c.line, 7) && c.mode!=BTS_SECTIONCONFIG) {c.mode=BTS_SECTION; /* NOT continue */};
 		/* BTS_IN_SECTION = reserved for ignored section */
-		if (!strcmp("torquecurve",c.line)) {mode=BTS_TORQUECURVE;continue;};
-		if (!strcmp("advdrag",c.line)) {mode=BTS_ADVANCEDDRAG;continue;};
-		if (!strcmp("axles",c.line)) {mode=BTS_AXLES;continue;};
-		if (!strcmp("shocks2",c.line)) {mode=BTS_SHOCKS2;continue;};
-		if (!strcmp("triggers",c.line)) {mode=BTS_TRIGGER;continue;};
-		if (!strcmp("railgroups",c.line)) {mode=BTS_RAILGROUPS;continue;}
-		if (!strcmp("slidenodes",c.line)) {mode=BTS_SLIDENODES;continue;}
-		if (!strcmp("flares2",c.line)) {mode=BTS_FLARES2;continue;};
-		if (!strcmp("animators",c.line)) {mode=BTS_ANIMATORS;continue;};
-		if (!strcmp("nodecollision",c.line)) {mode=BTS_NODECOLLISION;continue;};
-		if (!strcmp("videocamera",c.line)) {mode=BTS_VIDCAM;continue;};
+		if (!strcmp("torquecurve",c.line)) {c.mode=BTS_TORQUECURVE;continue;};
+		if (!strcmp("advdrag",c.line)) {c.mode=BTS_ADVANCEDDRAG;continue;};
+		if (!strcmp("axles",c.line)) {c.mode=BTS_AXLES;continue;};
+		if (!strcmp("shocks2",c.line)) {c.mode=BTS_SHOCKS2;continue;};
+		if (!strcmp("triggers",c.line)) {c.mode=BTS_TRIGGER;continue;};
+		if (!strcmp("railgroups",c.line)) {c.mode=BTS_RAILGROUPS;continue;}
+		if (!strcmp("slidenodes",c.line)) {c.mode=BTS_SLIDENODES;continue;}
+		if (!strcmp("flares2",c.line)) {c.mode=BTS_FLARES2;continue;};
+		if (!strcmp("animators",c.line)) {c.mode=BTS_ANIMATORS;continue;};
+		if (!strcmp("nodecollision",c.line)) {c.mode=BTS_NODECOLLISION;continue;};
+		if (!strcmp("videocamera",c.line)) {c.mode=BTS_VIDCAM;continue;};
 		
 		if (!strncmp("detacher_group", c.line, 14))
 		{
 			int detgroup = DEFAULT_DETACHER_GROUP;
-			int result = sscanf(c.line,"detacher_group %i", &detgroup);
-			if (result < 1 || result == EOF) 
-			{
-				// set default (0) as var for the add_beam(detacher_group) until a new valid detacher group# is parsed
-				detacher_group_state = DEFAULT_DETACHER_GROUP;
-				continue;
-			}
-			// valid truck c.line input ( int >= 1 ), set it as var for the add_beam(detacher_group) until a new valid detacher group# is parsed
+			if(!checkResults(sscanf(c.line,"detacher_group %i", &detgroup), 1, c)) continue;
+			// valid truck line input ( int >= 1 ), set it as var for the add_beam(detacher_group) until a new valid detacher group# is parsed
 			detacher_group_state = detgroup;
 			continue;
 		}
@@ -433,29 +426,20 @@ int SerializedRig::loadTruck(String fname, SceneManager *manager, SceneNode *par
 		{
 			// parse the optional threshold value
 			beam_creak = 0.0f;
-			LOG("Advanced deformation beam physics enabled");
+			parser_warning(c, "Advanced deformation beam physics enabled");
 			continue;
 		}
 		if (!strncmp("fileinfo", c.line, 8))
 		{
-			int result = sscanf(c.line,"fileinfo %s, %i, %i", uniquetruckid, &categoryid, &truckversion);
-			if (result < 1 || result == EOF) {
-				LOG("Error parsing File (fileinfo) " + String(fname) +" c.line " + TOSTRING(c.linecounter) + ". trying to continue ...");
-				continue;
-			}
-			mode=0;
+			if(!checkResults(sscanf(c.line,"fileinfo %s, %i, %i", uniquetruckid, &categoryid, &truckversion), 1, c)) continue;
+			c.mode=0;
 			continue;
 		}
 		if (!strncmp("extcamera", c.line, 9))
 		{
 			char modestr[255] = "";
 			int nodeid=-1;
-			int result = sscanf(c.line,"extcamera %s %i", modestr, &nodeid);
-			if (result < 1 || result == EOF)
-			{
-				LOG("Error parsing File (extcamera) " + String(fname) +" c.line " + TOSTRING(c.linecounter) + ". trying to continue ...");
-				continue;
-			}
+			if(!checkResults(sscanf(c.line,"extcamera %s %i", modestr, &nodeid), 1, c)) continue;
 			if(!strcmp(modestr, "classic")) externalcameramode = 0;
 			if(!strcmp(modestr, "cinecam")) externalcameramode = 1;
 			if(!strcmp(modestr, "node"))    externalcameramode = 2;
@@ -466,16 +450,13 @@ int SerializedRig::loadTruck(String fname, SceneManager *manager, SceneNode *par
 		if (!strncmp("fileformatversion", c.line, 17))
 		{
 			int fileformatversion;
-			int result = sscanf(c.line,"fileformatversion %i", &fileformatversion);
-			if (result < 1 || result == EOF) {
-				LOG("Error parsing File (fileformatversion) " + String(fname) +" c.line " + TOSTRING(c.linecounter) + ". trying to continue ...");
+			if(!checkResults(sscanf(c.line,"fileformatversion %i", &fileformatversion), 1, c)) continue;
+			if (fileformatversion > TRUCKFILEFORMATVERSION)
+			{
+				parser_warning(c, "The file is for a newer RoR version");
 				continue;
 			}
-			if (fileformatversion > TRUCKFILEFORMATVERSION) {
-				LOG("The Truck File " + String(fname) +" is for a newer version or RoR! trying to continue ...");
-				continue;
-			}
-			mode=BTS_NONE;
+			c.mode=BTS_NONE;
 			continue;
 		}
 		if (!strncmp("author", c.line, 6))
@@ -488,11 +469,8 @@ int SerializedRig::loadTruck(String fname, SceneManager *manager, SceneNode *par
 			strcpy(author.name,  "unknown");
 			strcpy(author.type,  "unknown");
 
-			int result = sscanf(c.line,"author %s %i %s %s", authortype, &authorid, authorname, authoremail);
-			if (result < 1 || result == EOF) {
-				LOG("Error parsing File (author) " + String(fname) +" c.line " + TOSTRING(c.linecounter) + ". trying to continue ...");
-				continue;
-			}
+			if(!checkResults(sscanf(c.line,"author %s %i %s %s", authortype, &authorid, authorname, authoremail), 1, c)) continue;
+
 			//replace '_' with ' '
 			char *tmp = authorname;
 			while (*tmp!=0) {if (*tmp=='_') *tmp=' ';tmp++;};
@@ -505,7 +483,7 @@ int SerializedRig::loadTruck(String fname, SceneManager *manager, SceneNode *par
 			if(strnlen(authoremail, 250) > 0)
 				strncpy(author.email, authoremail, 255);
 			authors.push_back(author);
-			mode=BTS_NONE;
+			c.mode=BTS_NONE;
 			continue;
 		}
 
@@ -514,25 +492,15 @@ int SerializedRig::loadTruck(String fname, SceneManager *manager, SceneNode *par
 
 		if (!strncmp("set_shadows", c.line, 11))
 		{
-			int mode;
-			int result = sscanf(c.line,"set_shadows %i", &mode);
-			if (result < 1 || result == EOF)
-			{
-				LOG("Error parsing File (set_shadows) " + String(fname) +" c.line " + TOSTRING(c.linecounter) + ". trying to continue ...");
-				continue;
-			}
-			shadowmode = mode;
+			int temp_shadowmode;
+			if(!checkResults(sscanf(c.line,"set_shadows %i", &temp_shadowmode), 1, c)) continue;
+			shadowmode = temp_shadowmode;
 		}
 
 		if (!strncmp("prop_camera_mode", c.line, 16))
 		{
 			int pmode = -2;
-			int result = sscanf(c.line,"prop_camera_mode %i", &mode);
-			if (result < 1 || result == EOF)
-			{
-				LOG("Error parsing File (prop_camera_mode) " + String(fname) +" c.line " + TOSTRING(c.linecounter) + ". trying to continue ...");
-				continue;
-			}
+			if(!checkResults(sscanf(c.line,"prop_camera_mode %i", &c.mode), 1, c)) continue;
 
 			// always use the last prop
 			prop_t *prop = &props[free_prop-1];
@@ -542,12 +510,7 @@ int SerializedRig::loadTruck(String fname, SceneManager *manager, SceneNode *par
 		if (!strncmp("flexbody_camera_mode", c.line, 20))
 		{
 			int pmode = -2;
-			int result = sscanf(c.line,"flexbody_camera_mode %i", &mode);
-			if (result < 1 || result == EOF)
-			{
-				LOG("Error parsing File (flexbody_camera_mode) " + String(fname) +" c.line " + TOSTRING(c.linecounter) + ". trying to continue ...");
-				continue;
-			}
+			if(!checkResults(sscanf(c.line,"flexbody_camera_mode %i", &c.mode), 1, c)) continue;
 
 			// always use the last flexbody
 			FlexBody *flex = flexbodies[free_flexbody-1];
@@ -567,19 +530,19 @@ int SerializedRig::loadTruck(String fname, SceneManager *manager, SceneNode *par
 			// parse the c.line
 			if(strnlen(c.line, 255) < 14)
 			{
-				LOG("Error parsing File (add_animation) " + String(fname) +" c.line " + TOSTRING(c.linecounter) + ". Not enough Options parsed, trying to continue ...");
+				parser_warning(c, "Not enough Arguments provided");
 				continue;
 			}
 			Ogre::StringVector options = Ogre::StringUtil::split(String(c.line).substr(14), ","); // "add_animation " = 14 characters
 			// check for common errors
 			if (options.size() < 4)
 			{
-				LOG("Error parsing File (add_animation) " + String(fname) +" c.line " + TOSTRING(c.linecounter) + ". Not enough Options parsed, trying to continue ...");
+				parser_warning(c, "Not enough Arguments provided, supply at minimum 4");
 				continue;
 			}
 			if (!free_prop)
 			{
-				LOG("Error parsing File (add_animation) " + String(fname) +" c.line " + TOSTRING(c.linecounter) + ". No prop to animate existing, trying to continue ...");
+				parser_warning(c, "No prop to animate existing");
 				continue;
 			}
 
@@ -593,7 +556,7 @@ int SerializedRig::loadTruck(String fname, SceneManager *manager, SceneNode *par
 			// all slots used?
 			if (animnum >= 10)
 			{
-				LOG("Error parsing File (add_animation) " + String(fname) +" c.line " + TOSTRING(c.linecounter) + ". Cant animate a prop more then 10 times. Trying to continue...");
+				parser_warning(c, "Cant animate a prop more then 10 times");
 				continue;
 			}
 
@@ -607,7 +570,7 @@ int SerializedRig::loadTruck(String fname, SceneManager *manager, SceneNode *par
 					if (ratio)
 						prop->animratio[animnum]=ratio;
 					else
-						LOG("Error parsing File (add_animation) " + String(fname) +" c.line " + TOSTRING(c.linecounter) + ". Animation-Ratio = 0 ?");
+						parser_warning(c, "Animation-Ratio = 0 ?");
 				} else if(i == 1)
 				{
 					opt1 = StringConverter::parseReal(options[i]);
@@ -714,13 +677,13 @@ int SerializedRig::loadTruck(String fname, SceneManager *manager, SceneNode *par
 						}
 
 						if (prop->animFlags[animnum] == 0)
-							LOG("Error parsing File (add_animation) " + String(fname) +" c.line " + TOSTRING(c.linecounter) + ". Failed to identify source.");
+							parser_warning(c, "Failed to identify source.");
 						else
-							LOG("Animation source set to prop#: " + TOSTRING(free_prop-1) + ", flag " +TOSTRING(prop->animFlags[animnum]) + ", Animationnumber: " + TOSTRING(animnum));
+							parser_warning(c, "Animation source set to prop#: " + TOSTRING(free_prop-1) + ", flag " +TOSTRING(prop->animFlags[animnum]) + ", Animationnumber: " + TOSTRING(animnum));
 					}
 					else if(args2[0] == "mode" && args2.size() == 2)
 					{
-						//set mode identification flag
+						//set c.mode identification flag
 						Ogre::StringVector args3 = Ogre::StringUtil::split(args2[1], "|");
 						for(unsigned int j=0;j<args3.size();j++)
 						{
@@ -735,9 +698,9 @@ int SerializedRig::loadTruck(String fname, SceneManager *manager, SceneNode *par
 						}
 
 						if (prop->animMode[animnum] == 0)
-							LOG("Error parsing File (add_animation) " + String(fname) +" c.line " + TOSTRING(c.linecounter) + ". Failed to identify animation mode.");
+							parser_warning(c, "Failed to identify animation c.mode.");
 						else
-							LOG("Animation mode set to prop#: " + TOSTRING(free_prop-1)+ ", mode " +TOSTRING(prop->animMode[animnum]) + ", Animationnumber: " + TOSTRING(animnum));
+							parser_warning(c, "Animation mode set to prop#: " + TOSTRING(free_prop-1)+ ", mode " +TOSTRING(prop->animMode[animnum]) + ", Animationnumber: " + TOSTRING(animnum));
 					}
 					else if (args2[0] == "autoanimate" && args2.size() == 1)
 					{
@@ -750,7 +713,7 @@ int SerializedRig::loadTruck(String fname, SceneManager *manager, SceneNode *par
 						else if(prop->animMode[animnum] & ANIM_MODE_OFFSET_X) { prop->animOpt1[animnum] = opt1 + prop->orgoffsetX; prop->animOpt2[animnum] = opt2 + prop->orgoffsetX; prop->animOpt4[animnum] = prop->orgoffsetX; }
 						else if(prop->animMode[animnum] & ANIM_MODE_OFFSET_Y) { prop->animOpt1[animnum] = opt1 + prop->orgoffsetY; prop->animOpt2[animnum] = opt2 + prop->orgoffsetY; prop->animOpt4[animnum] = prop->orgoffsetY; }
 						else if(prop->animMode[animnum] & ANIM_MODE_OFFSET_Z) { prop->animOpt1[animnum] = opt1 + prop->orgoffsetZ; prop->animOpt2[animnum] = opt2 + prop->orgoffsetZ; prop->animOpt4[animnum] = prop->orgoffsetZ; }
-						LOG("Animation mode Autoanimation added to prop#: " + TOSTRING(free_prop-1) + " , Animationnumber: " + TOSTRING(animnum));
+						parser_warning(c, "Animation mode Autoanimation added to prop#: " + TOSTRING(free_prop-1) + " , Animationnumber: " + TOSTRING(animnum));
 					}
 					else if (args2[0] == "noflip" && args2.size() == 1)
 					{
@@ -783,7 +746,7 @@ int SerializedRig::loadTruck(String fname, SceneManager *manager, SceneNode *par
 							if(evtID != -1)
 								prop->animKey[animnum] = evtID;
 							else
-								LOG("Animation event unkown: " + eventStr);
+								parser_warning(c, "Animation event unkown: " + eventStr);
 						}
 					}
 
@@ -795,51 +758,32 @@ int SerializedRig::loadTruck(String fname, SceneManager *manager, SceneNode *par
 
 		if (!strncmp("set_managedmaterials_options", c.line, 28))
 		{
-			int result = sscanf(c.line,"set_managedmaterials_options %d", &managedmaterials_doublesided);
-			if (result < 1 || result == EOF)
-			{
-				LOG("Error parsing File (set_managedmaterials_options) " + String(fname) +" c.line " + TOSTRING(c.linecounter) + ". trying to continue ...");
-				continue;
-			}
+			if(!checkResults(sscanf(c.line,"set_managedmaterials_options %d", &managedmaterials_doublesided), 1, c)) continue;
 			continue;
 		}
 		if (!strncmp("set_beam_defaults_scale", c.line, 23))
 		{
-			int result = sscanf(c.line,"set_beam_defaults_scale %f, %f, %f, %f", &default_spring_scale, &default_damp_scale, &default_deform_scale, &default_break_scale);
-			if (result < 4 || result == EOF)
-			{
-				LOG("Error parsing File (set_beam_defaults_scale) " + String(fname) +" c.line " + TOSTRING(c.linecounter) + ". trying to continue ...");
-				continue;
-			}
-			continue;
+			if(!checkResults(sscanf(c.line,"set_beam_defaults_scale %f, %f, %f, %f", &default_spring_scale, &default_damp_scale, &default_deform_scale, &default_break_scale), 4, c)) continue;
 		}
 		
 		if (!strncmp("guid", c.line, 4))
 		{
-			int result = sscanf(c.line,"guid %s", guid);
-			if (result < 1 || result == EOF)
-			{
-				LOG("Error parsing File (guid) " + String(fname) +" c.line " + TOSTRING(c.linecounter) + ". trying to continue ...");
-				continue;
-			}
+			if(!checkResults(sscanf(c.line,"guid %s", guid),1 , c)) continue;
 		}
 
 		if (!strncmp("set_beam_defaults", c.line, 17))
 		{
 			char default_beam_material2[256]="";
 			float tmpdefault_plastic_coef=-1.0f;
-			int result = sscanf(c.line,"set_beam_defaults %f, %f, %f, %f, %f, %s, %f", &default_spring, &default_damp, &default_deform,&default_break,&default_beam_diameter, default_beam_material2, &tmpdefault_plastic_coef);
-			if (result < 1 || result == EOF) {
-				LOG("Error parsing File (set_beam_defaults) " + String(fname) +" c.line " + TOSTRING(c.linecounter) + ". trying to continue ...");
-				continue;
-			}
+			if(!checkResults(sscanf(c.line,"set_beam_defaults %f, %f, %f, %f, %f, %s, %f", &default_spring, &default_damp, &default_deform,&default_break,&default_beam_diameter, default_beam_material2, &tmpdefault_plastic_coef), 1, c)) continue;
+
 			if(strnlen(default_beam_material2, 255))
 			{
 				MaterialPtr mat = MaterialManager::getSingleton().getByName(String(default_beam_material2));
 				if(!mat.isNull())
 					strncpy(default_beam_material, default_beam_material2, 256);
 				else
-					LOG("beam material '" + String(default_beam_material2) + "' not found!");
+					parser_warning(c, "beam material '" + String(default_beam_material2) + "' not found!");
 			}
 			if (default_spring<0) default_spring=DEFAULT_SPRING;
 			if (default_damp<0) default_damp=DEFAULT_DAMP;
@@ -853,24 +797,18 @@ int SerializedRig::loadTruck(String fname, SceneManager *manager, SceneNode *par
 			}
 			if(default_spring_scale != 1 || default_damp_scale != 1 || default_deform_scale != 1 || default_break_scale != 1)
 			{
-				LOG("Due to using set_beam_defaults_scale, this set_beam_defaults was interpreted as  " + \
+				parser_warning(c, "Due to using set_beam_defaults_scale, this set_beam_defaults was interpreted as  " + \
 					TOSTRING(default_spring * default_spring_scale) + ", " + \
 					TOSTRING(default_damp   * default_damp_scale) + ", " + \
 					TOSTRING(default_deform * default_deform_scale) + ", " + \
-					TOSTRING(default_break  * default_break_scale) + ". In " + \
-					String(fname) +" c.line " + TOSTRING(c.linecounter) + ".");
+					TOSTRING(default_break  * default_break_scale));
 
 			}
 			continue;
 		}
 		if (!strncmp("set_inertia_defaults", c.line, 20))
 		{
-			int result = sscanf(c.line,"set_inertia_defaults %f, %f, %s %s",&inertia_startDelay, &inertia_stopDelay, inertia_default_startFunction, inertia_default_stopFunction);
-			if (result < 1 || result == EOF)
-			{
-				LOG("Error parsing File (set_inertia_defaults) " + String(fname) +" c.line " + TOSTRING(c.linecounter) + ". trying to continue ...");
-				continue;
-			}
+			if(!checkResults(sscanf(c.line,"set_inertia_defaults %f, %f, %s %s",&inertia_startDelay, &inertia_stopDelay, inertia_default_startFunction, inertia_default_stopFunction), 1, c)) continue;
 			if (inertia_startDelay < 0 || inertia_stopDelay < 0)
 			{
 				// reset it
@@ -884,10 +822,11 @@ int SerializedRig::loadTruck(String fname, SceneManager *manager, SceneNode *par
 
 		if (!strncmp("set_node_defaults", c.line, 17))
 		{
+			// result needed here!
 			int result = sscanf(c.line,"set_node_defaults %f, %f, %f, %f, %s", &default_node_loadweight, &default_node_friction, &default_node_volume, &default_node_surface, default_node_options);
 			if (result < 1 || result == EOF)
 			{
-				LOG("Error parsing File (set_node_defaults) " + String(fname) +" c.line " + TOSTRING(c.linecounter) + ". trying to continue ...");
+				parser_warning(c, "too less arguments");
 				continue;
 			}
 			if (default_node_friction < 0)   default_node_friction=NODE_FRICTION_COEF_DEFAULT;
@@ -900,13 +839,9 @@ int SerializedRig::loadTruck(String fname, SceneManager *manager, SceneNode *par
 
 		if (!strncmp("set_skeleton_settings", c.line, 21))
 		{
-			int result = sscanf(c.line,"set_skeleton_settings %f, %f", &fadeDist, &skeleton_beam_diameter);
-			if (result < 2 || result == EOF)
-			{
-				LOG("Error parsing File (set_skeleton_settings) " + String(fname) +" c.line " + TOSTRING(c.linecounter) + ". trying to continue ...");
-				continue;
-			}
-			if(fadeDist<0)
+			if(!checkResults(sscanf(c.line,"set_skeleton_settings %f, %f", &fadeDist, &skeleton_beam_diameter), 2, c)) continue;
+
+if(fadeDist<0)
 				fadeDist=150;
 			if(skeleton_beam_diameter<0)
 				skeleton_beam_diameter=BEAM_SKELETON_DIAMETER;
@@ -920,7 +855,7 @@ int SerializedRig::loadTruck(String fname, SceneManager *manager, SceneNode *par
 			subcabs[free_sub]=free_cab;
 			if(free_sub >= MAX_SUBMESHES)
 			{
-				LOG("submesh limit reached ("+TOSTRING(MAX_SUBMESHES)+"): " + String(fname) +" c.line " + TOSTRING(c.linecounter) + ". trying to continue ...");
+				parser_warning(c, "submesh limit reached ("+TOSTRING(MAX_SUBMESHES)+")");
 				continue;
 			}
 			//make it normal
@@ -982,7 +917,7 @@ int SerializedRig::loadTruck(String fname, SceneManager *manager, SceneNode *par
 			subcabs[free_sub]=free_cab;
 			if(free_sub >= MAX_SUBMESHES)
 			{
-				LOG("submesh limit reached ("+TOSTRING(MAX_SUBMESHES)+"): " + String(fname) +" c.line " + TOSTRING(c.linecounter) + ". trying to continue ...");
+				parser_warning(c, "submesh limit reached ("+TOSTRING(MAX_SUBMESHES)+")");
 				continue;
 			}
 			free_sub++;
@@ -993,41 +928,29 @@ int SerializedRig::loadTruck(String fname, SceneManager *manager, SceneNode *par
 
 		if (!strncmp("set_collision_range", c.line, 21))
 		{
-			int result = sscanf(c.line,"set_collision_range %f", &collrange);
-			if (result < 2 || result == EOF)
-			{
-				LOG("Error parsing File (set_collision_range) " + String(fname) +" c.line " + TOSTRING(c.linecounter) + ". trying to continue ...");
-				continue;
-			}
+			if(!checkResults(sscanf(c.line,"set_collision_range %f", &collrange), 2, c)) continue;
 
 			if(collrange<0)
 				collrange=DEFAULT_COLLISION_RANGE;
 			continue;
 		};
 
-		if (mode==BTS_NODES)
+		if (c.mode==BTS_NODES)
 		{
 			//parse nodes
 			int id=0;
 			float x=0, y=0, z=0, mass=0;
 			char options[255] = "n";
-			int result = sscanf(c.line,"%i, %f, %f, %f, %s %f",&id,&x,&y,&z,options, &mass);
-			// catch some errors
-			if (result < 4 || result == EOF) {
-				LOG("Error parsing File " + String(fname) +" c.line " + TOSTRING(c.linecounter) + ". trying to continue ...");
-				//LOG(strerror(errno));
-				continue;
-			}
+			if(!checkResults(sscanf(c.line,"%i, %f, %f, %f, %s %f",&id,&x,&y,&z,options, &mass), 4, c)) continue;
 			if (id != free_node)
 			{
-				LOG("Error parsing File (Node) " + String(fname) +" c.line " + TOSTRING(c.linecounter) + ":");
-				LOG("Error: lost sync in nodes numbers after node " + TOSTRING(free_node) + "(got " + TOSTRING(id) + " instead)");
+				parser_warning(c, "lost sync in nodes numbers after node " + TOSTRING(free_node) + "(got " + TOSTRING(id) + " instead)");
 				exit(2);
 			};
 
 			if(free_node >= MAX_NODES)
 			{
-				LOG("nodes limit reached ("+TOSTRING(MAX_NODES)+"): " + String(fname) +" c.line " + TOSTRING(c.linecounter) + ". trying to continue ...");
+				parser_warning(c, "nodes limit reached ("+TOSTRING(MAX_NODES)+")");
 				continue;
 			}
 
@@ -1145,36 +1068,31 @@ int SerializedRig::loadTruck(String fname, SceneManager *manager, SceneNode *par
 						nodes[id].disable_particles=true;
 					break;
 					case 'L':	//Log data:
-						LOG("Node " + TOSTRING(id) + "  settings. Node load mass: " + TOSTRING(nodes[id].mass) + ", friction coefficient: " + TOSTRING(default_node_friction) + " and buoyancy volume coefficient: " + TOSTRING(default_node_volume) + " Fluid drag surface coefficient: " + TOSTRING(default_node_surface)+ " Particle mode: " + TOSTRING(nodes[id].disable_particles));
+						parser_warning(c, "Node " + TOSTRING(id) + "  settings. Node load mass: " + TOSTRING(nodes[id].mass) + ", friction coefficient: " + TOSTRING(default_node_friction) + " and buoyancy volume coefficient: " + TOSTRING(default_node_volume) + " Fluid drag surface coefficient: " + TOSTRING(default_node_surface)+ " Particle mode: " + TOSTRING(nodes[id].disable_particles));
 					break;
 				}
 				options_pointer++;
 			}
 			free_node++;
 		}
-		else if (mode==BTS_BEAMS)
+		else if (c.mode==BTS_BEAMS)
 		{
 			//parse beams
 			int id1, id2;
 			float support_break_factor = -1.0f;
 			char options[50] = "v";
 			int type=BEAM_NORMAL;
-			int result = sscanf(c.line,"%i, %i, %s %f",&id1,&id2,options,&support_break_factor);
-			if (result < 2 || result == EOF) {
-				LOG("Error parsing File (Beam) " + String(fname) +" c.line " + TOSTRING(c.linecounter) + ". trying to continue ...");
-				continue;
-			}
+			if(!checkResults(sscanf(c.line,"%i, %i, %s %f",&id1,&id2,options,&support_break_factor), 2, c)) continue;
 
 			if (id1>=free_node || id2>=free_node)
 			{
-				LOG("Error: unknown node number in beams section ("
-					+TOSTRING(id1)+","+TOSTRING(id2)+")");
+				parser_warning(c, "Error: unknown node number in beams section ("+TOSTRING(id1)+","+TOSTRING(id2)+")");
 				exit(3);
 			};
 
 			if(free_beam >= MAX_BEAMS)
 			{
-				LOG("beams limit reached ("+TOSTRING(MAX_BEAMS)+"): " + String(fname) +" c.line " + TOSTRING(c.linecounter) + ". trying to continue ...");
+				parser_warning(c, "beams limit reached ("+TOSTRING(MAX_BEAMS)+")");
 				continue;
 			}
 
@@ -1184,7 +1102,7 @@ int SerializedRig::loadTruck(String fname, SceneManager *manager, SceneNode *par
 			{
 				if ((beams[i].p1==&nodes[id1] && beams[i].p2==&nodes[id2]) || (beams[i].p1==&nodes[id2] && beams[i].p2==&nodes[id1]))
 				{
-					LOG("Skipping duplicate beams: from node "+TOSTRING(id1)+" to node "+TOSTRING(id2));
+					parser_warning(c, "Skipping duplicate beams: from node "+TOSTRING(id1)+" to node "+TOSTRING(id2));
 					continue;
 				}
 			}
@@ -1200,23 +1118,10 @@ int SerializedRig::loadTruck(String fname, SceneManager *manager, SceneNode *par
 				options_pointer++;
 			}
 
-
-			// TODO Unused Varaible
-			//float beam_length = nodes[id1].AbsPosition.distance(nodes[id2].AbsPosition);
-			/*
-			if(beam_length < 0.01f)
-			{
-				LOG("Error: beam "+TOSTRING(free_beam)+" is too short ("+TOSTRING(beam_length)+"m)");
-				LOG("Error: beam "+TOSTRING(free_beam)+" is between node "+TOSTRING(id1)+" and node "+TOSTRING(id2)+".");
-				//LOG("will ignore this beam.");
-				exit(8);
-			}
-			*/
-
-				int pos=add_beam(&nodes[id1], &nodes[id2], manager, \
-				parent, type, default_break * default_break_scale, default_spring * default_spring_scale, \
-				default_damp * default_damp_scale, detacher_group_state, -1, -1, -1, 1, \
-				default_beam_diameter);
+			int pos=add_beam(&nodes[id1], &nodes[id2], manager, \
+			parent, type, default_break * default_break_scale, default_spring * default_spring_scale, \
+			default_damp * default_damp_scale, detacher_group_state, -1, -1, -1, 1, \
+			default_beam_diameter);
 
 			// now 'parse' the options
 			options_pointer = options;
@@ -1244,37 +1149,33 @@ int SerializedRig::loadTruck(String fname, SceneManager *manager, SceneNode *par
 				options_pointer++;
 			}
 		}
-		else if (mode==BTS_TRIGGER)
+		else if (c.mode==BTS_TRIGGER)
 		{
 			//parse triggers
 			int id1, id2, triggershort, triggerlong;
 			float sbound, lbound, boundarytimer = 1.0f;
 			char options[50]="n";
-			int result = sscanf(c.line,"%i, %i, %f, %f, %i, %i, %s &f", &id1, &id2, &sbound, &lbound, &triggershort, &triggerlong, options, boundarytimer);
-			if (result < 6 || result == EOF)
-			{
-				LOG("Error parsing File (Triggers) " + String(fname) +" c.line " + TOSTRING(c.linecounter) + ". trying to continue ...");
-				continue;
-			}
+			if(!checkResults(sscanf(c.line,"%i, %i, %f, %f, %i, %i, %s &f", &id1, &id2, &sbound, &lbound, &triggershort, &triggerlong, options, boundarytimer), 6, c)) continue;
+
 			// checks ...
 			if(free_beam >= MAX_BEAMS)
 			{
-				LOG("Triggers, beams limit reached ("+TOSTRING(MAX_BEAMS)+"): " + String(fname) +" c.line " + TOSTRING(c.linecounter) + ". trying to continue ...");
+				parser_warning(c, "Triggers, beams limit reached ("+TOSTRING(MAX_BEAMS)+")");
 				continue;
 			}
 			if(free_shock >= MAX_BEAMS)
 			{
-				LOG("Triggers limit reached ("+TOSTRING(MAX_SHOCKS)+"): " + String(fname) +" c.line " + TOSTRING(c.linecounter) + ". trying to continue ...");
+				parser_warning(c, "Triggers limit reached ("+TOSTRING(MAX_SHOCKS)+")");
 				continue;
 			}
 			if (id1>=free_node || id2>=free_node)
 			{
-				LOG("Error: unknown node number in Triggers section ("+TOSTRING(id1)+","+TOSTRING(id2)+")");
+				parser_warning(c, "Error: unknown node number in Triggers section ("+TOSTRING(id1)+","+TOSTRING(id2)+")");
 				exit(576);
 			}
 			if ((triggershort < 1 || triggershort > MAX_COMMANDS) || ((triggerlong < 1 || triggerlong > MAX_COMMANDS) && triggerlong !=-1 && triggerlong !=0))
 			{
-				LOG("Error: Wrong command-eventnumber (Triggers) c.line " + TOSTRING(c.linecounter) + ". Trigger deactivated.");
+				parser_warning(c, "Error: Wrong command-eventnumber (Triggers). Trigger deactivated.");
 				continue;
 			}
 			// options
@@ -1320,7 +1221,7 @@ int SerializedRig::loadTruck(String fname, SceneManager *manager, SceneNode *par
 			beams[pos].bounded=SHOCK2;
 
 			if (triggerdebug)
-				LOG("Trigger added. BeamID " + TOSTRING(pos) +  " c.line#: " + TOSTRING(c.linecounter));
+				parser_warning(c, "Trigger added. BeamID " + TOSTRING(pos));
 			beams[pos].shock = &shocks[free_shock];
 			shocks[free_shock].beamid = pos;
 			shocks[free_shock].trigger_switch_state = 0.0f;   // used as bool and countdowntimer, dont touch!
@@ -1355,33 +1256,28 @@ int SerializedRig::loadTruck(String fname, SceneManager *manager, SceneNode *par
 			free_shock++;
 		}
 		
-		else if (mode==BTS_SHOCKS)
+		else if (c.mode==BTS_SHOCKS)
 		{
 			//parse shocks
 			int id1, id2;
 			float s, d, sbound,lbound,precomp;
 			char options[50]="n";
-			int result = sscanf(c.line,"%i, %i, %f, %f, %f, %f, %f, %s", &id1, &id2, &s, &d, &sbound, &lbound, &precomp, options);
-			if (result < 7 || result == EOF)
-			{
-				LOG("Error parsing File (Shock) " + String(fname) +" c.line " + TOSTRING(c.linecounter) + ". trying to continue ...");
-				continue;
-			}
+			if(!checkResults(sscanf(c.line,"%i, %i, %f, %f, %f, %f, %f, %s", &id1, &id2, &s, &d, &sbound, &lbound, &precomp, options), 7, c)) continue;
 
 			// checks ...
 			if(free_beam >= MAX_BEAMS)
 			{
-				LOG("beams limit reached ("+TOSTRING(MAX_BEAMS)+"): " + String(fname) +" c.line " + TOSTRING(c.linecounter) + ". trying to continue ...");
+				parser_warning(c, "beams limit reached ("+TOSTRING(MAX_BEAMS)+")");
 				continue;
 			}
 			if(free_shock >= MAX_BEAMS)
 			{
-				LOG("shock limit reached ("+TOSTRING(MAX_SHOCKS)+"): " + String(fname) +" c.line " + TOSTRING(c.linecounter) + ". trying to continue ...");
+				parser_warning(c, "shock limit reached ("+TOSTRING(MAX_SHOCKS)+")");
 				continue;
 			}
 			if (id1>=free_node || id2>=free_node)
 			{
-				LOG("Error: unknown node number in shocks section ("+TOSTRING(id1)+","+TOSTRING(id2)+")");
+				parser_warning(c, "Error: unknown node number in shocks section ("+TOSTRING(id1)+","+TOSTRING(id2)+")");
 				exit(4);
 			}
 
@@ -1431,40 +1327,34 @@ int SerializedRig::loadTruck(String fname, SceneManager *manager, SceneNode *par
 			shocks[free_shock].sbd_damp = default_damp;
 			free_shock++;
 		}
-		else if (mode==BTS_SHOCKS2)
+		else if (c.mode==BTS_SHOCKS2)
 		{
 			//parse shocks2
 			int id1, id2;
 			float sin=-1.0f,din=-1.0f,psin=-1.0f,pdin=-1.0f,sout=-1.0f,dout=-1.0f,psout=-1.0f,pdout=-1.0f,sbound=-1.0f,lbound=-1.0f,precomp=-1.0f;
 			char options[50]="n";
-			int result = sscanf(c.line,"%i, %i, %f, %f, %f, %f, %f, %f, %f, %f, %f, %f, %f, %s", &id1, &id2, &sin, &din, &psin, &pdin, &sout, &dout, &psout, &pdout, &sbound, &lbound, &precomp, options);
-
-			if (result < 13 || result == EOF)
-			{
-				LOG("Error parsing File (Shock) " + String(fname) +" c.line " + TOSTRING(c.linecounter) + ". trying to continue ...");
-				continue;
-			}
+			if(!checkResults(sscanf(c.line,"%i, %i, %f, %f, %f, %f, %f, %f, %f, %f, %f, %f, %f, %s", &id1, &id2, &sin, &din, &psin, &pdin, &sout, &dout, &psout, &pdout, &sbound, &lbound, &precomp, options), 13, c)) continue;
 
 			// checks ...
 			if(free_beam >= MAX_BEAMS)
 			{
-				LOG("beams limit reached ("+TOSTRING(MAX_BEAMS)+"): " + String(fname) +" c.line " + TOSTRING(c.linecounter) + ". trying to continue ...");
+				parser_warning(c, "beams limit reached ("+TOSTRING(MAX_BEAMS)+")");
 				continue;
 			}
 			if(free_shock >= MAX_BEAMS)
 			{
-				LOG("shock limit reached ("+TOSTRING(MAX_SHOCKS)+"): " + String(fname) +" c.line " + TOSTRING(c.linecounter) + ". trying to continue ...");
+				parser_warning(c, "shock limit reached ("+TOSTRING(MAX_SHOCKS)+")");
 				continue;
 			}
 			if (id1>=free_node || id2>=free_node)
 			{
-				LOG("Error: unknown node number in shocks2 section ("+TOSTRING(id1)+","+TOSTRING(id2)+")");
+				parser_warning(c, "Error: unknown node number in shocks2 section ("+TOSTRING(id1)+","+TOSTRING(id2)+")");
 				exit(4);
 			}
 
 			if ( sin == -1.0f || din == -1.0f || psin == -1.0f || pdin == -1.0f || sout == -1.0f || dout == -1.0f || psout == -1.0f || pdout == -1.0f || sbound == -1.0f || lbound == -1.0f || precomp == -1.0f)
 			{
-				LOG("Error: Wrong values in shocks2 section ("+TOSTRING(id1)+","+TOSTRING(id2)+")");
+				parser_warning(c, "Error: Wrong values in shocks2 section ("+TOSTRING(id1)+","+TOSTRING(id2)+")");
 				exit(123);
 			}
 
@@ -1504,13 +1394,13 @@ int SerializedRig::loadTruck(String fname, SceneManager *manager, SceneNode *par
 
 							if (lbound < 0)
 							{
-								LOG("Error parsing File (Shocks) " + String(fname) +" c.line " + TOSTRING(c.linecounter) + ". Metric shock length calculation failed, longbound less then beams spawn length, reset to beams spawn length (longbound=0).");
+								parser_warning(c, "Metric shock length calculation failed, longbound less then beams spawn length, reset to beams spawn length (longbound=0).");
 								lbound = 0.0f;
 							}
 
 							if (sbound > 1)
 							{
-								LOG("Error parsing File (Shocks) " + String(fname) +" c.line " + TOSTRING(c.linecounter) + ". Metric shock length calculation failed, shortbound less then 0 meters, reset to 0 meters (shortbound=1).");
+								parser_warning(c, "Metric shock length calculation failed, shortbound less then 0 meters, reset to 0 meters (shortbound=1).");
 								sbound = 1.0f;
 							}
 						}
@@ -1536,25 +1426,21 @@ int SerializedRig::loadTruck(String fname, SceneManager *manager, SceneNode *par
 			free_shock++;
 		}
 
-		else if (mode==BTS_FIXES)
+		else if (c.mode==BTS_FIXES)
 		{
 			//parse fixes
 			int id;
-			int result = sscanf(c.line,"%i",&id);
-			if (result < 1 || result == EOF) {
-				LOG("Error parsing File (Fixes) " + String(fname) +" c.line " + TOSTRING(c.linecounter) + ". trying to continue ...");
-				continue;
-			}
+			if(!checkResults(sscanf(c.line,"%i",&id), 1, c)) continue;
+
 			if (id>=free_node)
 			{
-				LOG("Error: unknown node number in fixes section ("
-					+TOSTRING(id)+")");
+				parser_warning(c, "Error: unknown node number in fixes section ("+TOSTRING(id)+")");
 				exit(5);
 			};
 			nodes[id].locked=1;
 			hasfixes=1;
 		}
-		else if (mode==BTS_HYDROS)
+		else if (c.mode==BTS_HYDROS)
 		{
 			//parse hydros
 			int id1, id2;
@@ -1565,12 +1451,7 @@ int SerializedRig::loadTruck(String fname, SceneManager *manager, SceneNode *par
 			char startFunction[50]="";
 			char stopFunction[50]="";
 
-			int result = sscanf(c.line,"%i, %i, %f, %s %f, %f, %s %s",&id1,&id2,&ratio,options,&startDelay,&stopDelay,startFunction,stopFunction);
-			if (result < 3 || result == EOF)
-			{
-				LOG("Error parsing File (Hydro) " + String(fname) +" c.line " + TOSTRING(c.linecounter) + ". trying to continue ...");
-				continue;
-			}
+			if(!checkResults(sscanf(c.line,"%i, %i, %f, %s %f, %f, %s %s",&id1,&id2,&ratio,options,&startDelay,&stopDelay,startFunction,stopFunction), 3, c)) continue;
 
 			int htype=BEAM_HYDRO;
 
@@ -1589,22 +1470,20 @@ int SerializedRig::loadTruck(String fname, SceneManager *manager, SceneNode *par
 
 			if (id1>=free_node || id2>=free_node)
 			{
-				LOG("Error: unknown node number in hydros section ("
-					+TOSTRING(id1)+","+TOSTRING(id2)+")");
+				parser_warning(c, "Error: unknown node number in hydros section ("+TOSTRING(id1)+","+TOSTRING(id2)+")");
 				exit(6);
 			};
 
 			if(free_beam >= MAX_BEAMS)
 			{
-				LOG("beams limit reached ("+TOSTRING(MAX_BEAMS)+"): " + String(fname) +" c.line " + TOSTRING(c.linecounter) + ". trying to continue ...");
+				parser_warning(c, "beams limit reached ("+TOSTRING(MAX_BEAMS)+")");
 				continue;
 			}
 			if(free_hydro >= MAX_HYDROS)
 			{
-				LOG("hydros limit reached ("+TOSTRING(MAX_HYDROS)+"): " + String(fname) +" c.line " + TOSTRING(c.linecounter) + ". trying to continue ...");
+				parser_warning(c, "hydros limit reached ("+TOSTRING(MAX_HYDROS)+")");
 				continue;
 			}
-			//            printf("beam : %i %i\n", id1, id2);
 
 			if(hydroInertia && startDelay != 0 && stopDelay != 0)
 				hydroInertia->setCmdKeyDelay(free_hydro,startDelay,stopDelay,String (startFunction), String (stopFunction));
@@ -1669,7 +1548,7 @@ int SerializedRig::loadTruck(String fname, SceneManager *manager, SceneNode *par
 					beams[pos].hydroFlags |= HYDRO_FLAG_DIR;
 			}
 		}
-		else if (mode==BTS_ANIMATORS)
+		else if (c.mode==BTS_ANIMATORS)
 		{
 			//parse animators
 			int id1, id2;
@@ -1677,7 +1556,7 @@ int SerializedRig::loadTruck(String fname, SceneManager *manager, SceneNode *par
 			Ogre::StringVector options = Ogre::StringUtil::split(String(c.line), ",");
 			if (options.size() < 4)
 			{
-				LOG("Error parsing File (Animator) " + String(fname) +" c.line " + TOSTRING(c.linecounter) + ". trying to continue ...");
+				parser_warning(c, "Too less arguments, you need at least 4");
 				continue;
 			}
 			// the required values
@@ -1700,18 +1579,18 @@ int SerializedRig::loadTruck(String fname, SceneManager *manager, SceneNode *par
 
 			if (id1>=free_node || id2>=free_node)
 			{
-				LOG("Error: unknown node number in animators section ("+TOSTRING(id1)+","+TOSTRING(id2)+")");
+				parser_warning(c, "Error: unknown node number in animators section ("+TOSTRING(id1)+","+TOSTRING(id2)+")");
 				exit(6);
 			}
 
 			if(free_beam >= MAX_BEAMS)
 			{
-				LOG("beams limit reached ("+TOSTRING(MAX_BEAMS)+"): " + String(fname) +" c.line " + TOSTRING(c.linecounter) + ". trying to continue ...");
+				parser_warning(c, "beams limit reached ("+TOSTRING(MAX_BEAMS)+")");
 				continue;
 			}
 			if(free_hydro >= MAX_HYDROS)
 			{
-				LOG("hydros limit reached (via animators) ("+TOSTRING(MAX_HYDROS)+"): " + String(fname) +" c.line " + TOSTRING(c.linecounter) + ". trying to continue ...");
+				parser_warning(c, "hydros limit reached (via animators) ("+TOSTRING(MAX_HYDROS)+")");
 				continue;
 			}
 
@@ -1798,45 +1677,39 @@ int SerializedRig::loadTruck(String fname, SceneManager *manager, SceneNode *par
 				else if (arg == "rudderboat")     { beam->animFlags |= (ANIM_FLAG_BRUDDER); }
 
 				if (beam->animFlags == 0)
-					LOG("Error parsing File (animators) " + String(fname) +" c.line " + TOSTRING(c.linecounter) + ". Failed to identify source.");
+					parser_warning(c, "Failed to identify source.");
 				else
-					LOG("Animator source set: with flag " +TOSTRING(beams[pos].animFlags));
+					parser_warning(c, "Animator source set: with flag "+TOSTRING(beams[pos].animFlags));
 			}
 
 		}
 
-		else if (mode==BTS_WHEELS)
+		else if (c.mode==BTS_WHEELS)
 		{
 			//parse wheels
 			float radius, width, mass, spring, damp;
 			char texf[256];
 			char texb[256];
 			int rays, node1, node2, snode, braked, propulsed, torquenode;
-			int result = sscanf(c.line,"%f, %f, %i, %i, %i, %i, %i, %i, %i, %f, %f, %f, %s %s",&radius,&width,&rays,&node1,&node2,&snode,&braked,&propulsed,&torquenode,&mass,&spring,&damp, texf, texb);
-			if (result < 14 || result == EOF) {
-				LOG("Error parsing File (Wheel) " + String(fname) +" c.line " + TOSTRING(c.linecounter) + ". trying to continue ...");
-				continue;
-			}
+			if(!checkResults(sscanf(c.line,"%f, %f, %i, %i, %i, %i, %i, %i, %i, %f, %f, %f, %s %s",&radius,&width,&rays,&node1,&node2,&snode,&braked,&propulsed,&torquenode,&mass,&spring,&damp, texf, texb), 14, c)) continue;
+
 			addWheel(manager, parent, radius,width,rays,node1,node2,snode,braked,propulsed, torquenode, mass, spring, damp, texf, texb);
 		}
-		else if (mode==BTS_WHEELS2)
+		else if (c.mode==BTS_WHEELS2)
 		{
 			//parse wheels2
 			char texf[256];
 			char texb[256];
 			float radius, radius2, width, mass, spring, damp, spring2, damp2;
 			int rays, node1, node2, snode, braked, propulsed, torquenode;
-			int result = sscanf(c.line,"%f, %f, %f, %i, %i, %i, %i, %i, %i, %i, %f, %f, %f, %f, %f, %s %s",&radius,&radius2,&width,&rays,&node1,&node2,&snode,&braked,&propulsed,&torquenode,&mass,&spring,&damp,&spring2,&damp2, texf, texb);
-			if (result < 17 || result == EOF) {
-				LOG("Error parsing File (Wheel2) " + String(fname) +" c.line " + TOSTRING(c.linecounter) + ". trying to continue ...");
-				continue;
-			}
+			if(!checkResults(sscanf(c.line,"%f, %f, %f, %i, %i, %i, %i, %i, %i, %i, %f, %f, %f, %f, %f, %s %s",&radius,&radius2,&width,&rays,&node1,&node2,&snode,&braked,&propulsed,&torquenode,&mass,&spring,&damp,&spring2,&damp2, texf, texb), 17, c)) continue;
+
 			if (enable_wheel2)
 				addWheel2(manager, parent, radius,radius2,width,rays,node1,node2,snode,braked,propulsed, torquenode, mass, spring, damp, spring2, damp2, texf, texb);
 			else
 				addWheel(manager, parent, radius2,width,rays,node1,node2,snode,braked,propulsed, torquenode, mass, spring2, damp2, texf, texb);
 		}
-		else if (mode==BTS_MESHWHEELS)
+		else if (c.mode==BTS_MESHWHEELS)
 		{
 			//parse meshwheels
 			char meshw[256];
@@ -1844,25 +1717,13 @@ int SerializedRig::loadTruck(String fname, SceneManager *manager, SceneNode *par
 			float radius, rimradius, width, mass, spring, damp;
 			char side;
 			int rays, node1, node2, snode, braked, propulsed, torquenode;
-			int result = sscanf(c.line,"%f, %f, %f, %i, %i, %i, %i, %i, %i, %i, %f, %f, %f, %c, %s %s",&radius,&rimradius,&width,&rays,&node1,&node2,&snode,&braked,&propulsed,&torquenode,&mass,&spring,&damp, &side, meshw, texb);
-			if (result < 16 || result == EOF) {
-				LOG("Error parsing File (MeshWheel) " + String(fname) +" c.line " + TOSTRING(c.linecounter) + ". trying to continue ...");
-				continue;
-			}
+			if(!checkResults(sscanf(c.line,"%f, %f, %f, %i, %i, %i, %i, %i, %i, %i, %f, %f, %f, %c, %s %s",&radius,&rimradius,&width,&rays,&node1,&node2,&snode,&braked,&propulsed,&torquenode,&mass,&spring,&damp, &side, meshw, texb), 16, c)) continue;
 			addWheel(manager, parent, radius,width,rays,node1,node2,snode,braked,propulsed, torquenode, mass, spring, damp, meshw, texb, true, rimradius, side!='r');
 		}
-		else if (mode==BTS_GLOBALS)
+		else if (c.mode==BTS_GLOBALS)
 		{
 			//parse globals
-			int result = sscanf(c.line,"%f, %f, %s",&truckmass, &loadmass, texname);
-			if (result < 2 || result == EOF) {
-				LOG("Error parsing File (Globals) " + String(fname) +" c.line " + TOSTRING(c.linecounter) + ". trying to continue ...");
-				continue;
-			}
-			//
-			LOG("BEAM: c.line: '"+String(c.line)+"'");
-			LOG("BEAM: texname: '"+String(texname)+"'");
-
+			if(!checkResults(sscanf(c.line,"%f, %f, %s",&truckmass, &loadmass, texname), 2, c)) continue;
 
 			// check for skins
 			if(usedSkin && usedSkin->hasReplacementForMaterial(texname))
@@ -1877,29 +1738,25 @@ int SerializedRig::loadTruck(String fname, SceneManager *manager, SceneNode *par
 			MaterialPtr mat=(MaterialPtr)(MaterialManager::getSingleton().getByName(texname));
 			if(mat.getPointer() == 0)
 			{
-				LOG("Material '" + String(texname) + "' used in Section 'globals' not found! We will try to use the material 'tracks/black' instead." + String(fname) +" c.line " + TOSTRING(c.linecounter) + ". trying to continue ...");
+				parser_warning(c, "Material '" + String(texname) + "' used in Section 'globals' not found! We will try to use the material 'tracks/black' instead.");
 				mat=(MaterialPtr)(MaterialManager::getSingleton().getByName("tracks/black"));
 				if(mat.getPointer() == 0)
 				{
-					LOG("Material not found! Try to ensure that tracks/black exists and retry.");
+					parser_warning(c, "Material not found! Try to ensure that tracks/black exists and retry.");
 					exit(124);
 				}
 			}
 			mat->clone(clonetex);
 			strcpy(texname, clonetex);
 		}
-		else if (mode==BTS_CAMERAS)
+		else if (c.mode==BTS_CAMERAS)
 		{
 			//parse cameras
 			int nodepos, nodedir, dir;
-			int result = sscanf(c.line,"%i, %i, %i",&nodepos,&nodedir,&dir);
-			if (result < 3 || result == EOF) {
-				LOG("Error parsing File (Camera) " + String(fname) +" c.line " + TOSTRING(c.linecounter) + ". trying to continue ...");
-				continue;
-			}
+			if(!checkResults(sscanf(c.line,"%i, %i, %i",&nodepos,&nodedir,&dir), 3, c)) continue;
 			addCamera(nodepos, nodedir, dir);
 		}
-		else if (mode==BTS_ENGINE)
+		else if (c.mode==BTS_ENGINE)
 		{
 			//parse engine
 			if(driveable == MACHINE)
@@ -1909,7 +1766,7 @@ int SerializedRig::loadTruck(String fname, SceneManager *manager, SceneNode *par
 			Ogre::StringVector tmp = Ogre::StringUtil::split(string(c.line), ", ");
 			if (tmp.size() < 7)
 			{
-				LOG("Error parsing File (Engine) " + String(fname) +" c.line " + TOSTRING(c.linecounter) + ". trying to continue ...");
+				parser_warning(c, "provide at least 7 arguments for the engine section");
 				continue;
 			}
 
@@ -1932,7 +1789,7 @@ int SerializedRig::loadTruck(String fname, SceneManager *manager, SceneNode *par
 			}
 			if (gears.size() < 5) // 5 -2 = 3, 2 extra gears that don't count, one for reverse and one for neutral
 			{
-				LOG("Trucks with less than 3 gears are not supported! " + String(fname) +" c.line " + TOSTRING(c.linecounter) + ". trying to continue ...");
+				parser_warning(c, "Trucks with less than 3 gears are not supported!");
 				continue;
 			}
 			//if (audio) audio->setupEngine();
@@ -1953,38 +1810,31 @@ int SerializedRig::loadTruck(String fname, SceneManager *manager, SceneNode *par
 			//engine->start();
 		}
 
-		else if (mode==BTS_TEXCOORDS)
+		else if (c.mode==BTS_TEXCOORDS)
 		{
 			//parse texcoords
 			int id;
 			float x, y;
-			int result = sscanf(c.line,"%i, %f, %f", &id, &x, &y);
-			if (result < 3 || result == EOF) {
-				LOG("Error parsing File (TexCoords) " + String(fname) +" c.line " + TOSTRING(c.linecounter) + ". trying to continue ...");
-				continue;
-			}
+			if(!checkResults(sscanf(c.line,"%i, %f, %f", &id, &x, &y), 3, c)) continue;
+
 			if(free_texcoord >= MAX_BEAMS)
 			{
-				LOG("texcoords limit reached ("+TOSTRING(MAX_TEXCOORDS)+"): " + String(fname) +" c.line " + TOSTRING(c.linecounter) + ". trying to continue ...");
+				parser_warning(c, "texcoords limit reached ("+TOSTRING(MAX_TEXCOORDS)+")");
 				continue;
 			}
 			texcoords[free_texcoord]=Vector3(id, x, y);
 			free_texcoord++;
 		}
 
-		else if (mode==BTS_CAB)
+		else if (c.mode==BTS_CAB)
 		{
 			//parse cab
 			char type='n';
 			int id1, id2, id3;
-			int result = sscanf(c.line,"%i, %i, %i, %c", &id1, &id2, &id3,&type);
-			if (result < 3 || result == EOF) {
-				LOG("Error parsing File (Cab) " + String(fname) +" c.line " + TOSTRING(c.linecounter) + ". trying to continue ...");
-				continue;
-			}
+			if(!checkResults(sscanf(c.line,"%i, %i, %i, %c", &id1, &id2, &id3,&type), 3, c)) continue;
 			if(free_cab >= MAX_CABS)
 			{
-				LOG("cabs limit reached ("+TOSTRING(MAX_CABS)+"): " + String(fname) +" c.line " + TOSTRING(c.linecounter) + ". trying to continue ...");
+				parser_warning(c, "cabs limit reached ("+TOSTRING(MAX_CABS)+")");
 				continue;
 			}
 			cabs[free_cab*3]=id1;
@@ -1992,7 +1842,7 @@ int SerializedRig::loadTruck(String fname, SceneManager *manager, SceneNode *par
 			cabs[free_cab*3+2]=id3;
 			if(free_collcab >= MAX_CABS)
 			{
-				LOG("unable to create cabs: cabs limit reached ("+TOSTRING(MAX_CABS)+"): " + String(fname) +" c.line " + TOSTRING(c.linecounter) + ". trying to continue ...");
+				parser_warning(c, "unable to create cabs: cabs limit reached ("+TOSTRING(MAX_CABS)+")");
 				continue;
 			}
 			if (type=='c') {collcabs[free_collcab]=free_cab; collcabstype[free_collcab]=0; free_collcab++;};
@@ -2006,7 +1856,7 @@ int SerializedRig::loadTruck(String fname, SceneManager *manager, SceneNode *par
 
 				if(free_collcab >= MAX_CABS || free_buoycab >= MAX_CABS)
 				{
-					LOG("unable to create buoycabs: cabs limit reached ("+TOSTRING(MAX_CABS)+"): " + String(fname) +" c.line " + TOSTRING(c.linecounter) + ". trying to continue ...");
+					parser_warning(c, "unable to create buoycabs: cabs limit reached ("+TOSTRING(MAX_CABS)+")");
 					continue;
 				}
 				collcabs[free_collcab]=free_cab;
@@ -2019,7 +1869,7 @@ int SerializedRig::loadTruck(String fname, SceneManager *manager, SceneNode *par
 			free_cab++;
 		}
 
-		else if (mode==BTS_COMMANDS || mode==BTS_COMMANDS2)
+		else if (c.mode==BTS_COMMANDS || c.mode==BTS_COMMANDS2)
 		{
 			//parse commands
 			int id1, id2,keys,keyl;
@@ -2031,34 +1881,23 @@ int SerializedRig::loadTruck(String fname, SceneManager *manager, SceneNode *par
 			Real stopDelay=0;
 			char startFunction[50]="";
 			char stopFunction[50]="";
-			int result = 0;
-			if(mode == BTS_COMMANDS)
+			if(c.mode == BTS_COMMANDS)
 			{
 				char opt='n';
-				result = sscanf(c.line,"%i, %i, %f, %f, %f, %i, %i, %c, %s %f, %f, %s %s", &id1, &id2, &rateShort, &shortl, &longl, &keys, &keyl, &opt, descr, &startDelay, &stopDelay, startFunction, stopFunction);
-				if (result < 7 || result == EOF) {
-					LOG("Error parsing File (Command) " + String(fname) +" c.line " + TOSTRING(c.linecounter) + ". trying to continue ...");
-					continue;
-				}
+				if(!checkResults(sscanf(c.line,"%i, %i, %f, %f, %f, %i, %i, %c, %s %f, %f, %s %s", &id1, &id2, &rateShort, &shortl, &longl, &keys, &keyl, &opt, descr, &startDelay, &stopDelay, startFunction, stopFunction), 7, c)) continue;
 				options[0] = opt;
 				options[1] = 0;
 				rateLong = rateShort;
 			}
-			else if(mode == BTS_COMMANDS2)
+			else if(c.mode == BTS_COMMANDS2)
 			{
-				result = sscanf(c.line,"%i, %i, %f, %f, %f, %f, %i, %i, %s %s %f,%f,%s %s", &id1, &id2, &rateShort, &rateLong, &shortl, &longl, &keys, &keyl, options, descr, &startDelay, &stopDelay, startFunction, stopFunction);
-				if (result < 8 || result == EOF) {
-					LOG("Error parsing File (Command) " + String(fname) +" c.line " + TOSTRING(c.linecounter) + ". trying to continue ...");
-					continue;
-				}
-				//LOG("added command2: " + String(options)+ ", " + String(descr));
-				//LOG(String(c.line));
+				if(!checkResults(sscanf(c.line,"%i, %i, %f, %f, %f, %f, %i, %i, %s %s %f,%f,%s %s", &id1, &id2, &rateShort, &rateLong, &shortl, &longl, &keys, &keyl, options, descr, &startDelay, &stopDelay, startFunction, stopFunction), 8, c)) continue;
 			}
 
 			//verify array limits so we dont overflow
 			if(keys >= MAX_COMMANDS || keyl >= MAX_COMMANDS)
 			{
-					LOG("Error parsing File (Command) " + String(fname) +" c.line " + TOSTRING(c.linecounter) + ". Command key invalid. trying to continue ...");
+					parser_warning(c, "Command key invalid");
 					continue;
 			}
 
@@ -2075,7 +1914,7 @@ int SerializedRig::loadTruck(String fname, SceneManager *manager, SceneNode *par
 
 			if(free_beam >= MAX_BEAMS)
 			{
-				LOG("cannot create command: beams limit reached ("+TOSTRING(MAX_BEAMS)+"): " + String(fname) +" c.line " + TOSTRING(c.linecounter) + ". trying to continue ...");
+				parser_warning(c, "cannot create command: beams limit reached ("+TOSTRING(MAX_BEAMS)+")");
 				continue;
 			}
 
@@ -2092,7 +1931,7 @@ int SerializedRig::loadTruck(String fname, SceneManager *manager, SceneNode *par
 					case 'c':
 						if(beams[pos].isOnePressMode>0)
 						{
-							LOG("Command cannot be one-pressed and self centering at the same time!" + String(fname) +" c.line " + TOSTRING(c.linecounter) + ". trying to continue ...");
+							parser_warning(c, "Command cannot be one-pressed and self centering at the same time!");
 							break;
 						}
 						beams[pos].iscentering=true;
@@ -2100,12 +1939,12 @@ int SerializedRig::loadTruck(String fname, SceneManager *manager, SceneNode *par
 					case 'p':
 						if(beams[pos].iscentering)
 						{
-							LOG("Command cannot be one-pressed and self centering at the same time!" + String(fname) +" c.line " + TOSTRING(c.linecounter) + ". trying to continue ...");
+							parser_warning(c, "Command cannot be one-pressed and self centering at the same time!");
 							break;
 						}
 						if(beams[pos].isOnePressMode>0)
 						{
-							LOG("Command already has a one-pressed mode! All after the first are ignored!" + String(fname) +" c.line " + TOSTRING(c.linecounter) + ". trying to continue ...");
+							parser_warning(c, "Command already has a one-pressed c.mode! All after the first are ignored!");
 							break;
 						}
 						beams[pos].isOnePressMode=1;
@@ -2113,12 +1952,12 @@ int SerializedRig::loadTruck(String fname, SceneManager *manager, SceneNode *par
 					case 'o':
 						if(beams[pos].iscentering)
 						{
-							LOG("Command cannot be one-pressed and self centering at the same time!" + String(fname) +" c.line " + TOSTRING(c.linecounter) + ". trying to continue ...");
+							parser_warning(c, "Command cannot be one-pressed and self centering at the same time!");
 							break;
 						}
 						if(beams[pos].isOnePressMode>0)
 						{
-							LOG("Command already has a one-pressed mode! All after the first are ignored!" + String(fname) +" c.line " + TOSTRING(c.linecounter) + ". trying to continue ...");
+							parser_warning(c, "Command already has a one-pressed c.mode! All after the first are ignored!");
 							break;
 						}
 						beams[pos].isOnePressMode=2;
@@ -2149,7 +1988,7 @@ int SerializedRig::loadTruck(String fname, SceneManager *manager, SceneNode *par
 			else if (strlen(descr) == 0 && commandkey[keyl].description.empty())
 				commandkey[keyl].description = "";
 
-			LOG("added command: short=" + TOSTRING(keys)+ ", long=" + TOSTRING(keyl) + ", descr=" + (descr));
+			parser_warning(c, "added command: short=" + TOSTRING(keys)+ ", long=" + TOSTRING(keyl) + ", descr=" + (descr));
 			beams[pos].commandRatioShort=rateShort;
 			beams[pos].commandRatioLong=rateLong;
 			beams[pos].commandShort=shortl;
@@ -2173,19 +2012,15 @@ int SerializedRig::loadTruck(String fname, SceneManager *manager, SceneNode *par
 			}
 
 		}
-		else if (mode==BTS_CONTACTERS)
+		else if (c.mode==BTS_CONTACTERS)
 		{
 			//parse contacters
 			int id1;
-			int result = sscanf(c.line,"%i", &id1);
-			if (result < 1 || result == EOF) {
-				LOG("Error parsing File (Contacters) " + String(fname) +" c.line " + TOSTRING(c.linecounter) + ". trying to continue ...");
-				continue;
-			}
+			if(!checkResults(sscanf(c.line,"%i", &id1), 1, c)) continue;
 
 			if(free_contacter >= MAX_CONTACTERS)
 			{
-				LOG("contacters limit reached ("+TOSTRING(MAX_CONTACTERS)+"): " + String(fname) +" c.line " + TOSTRING(c.linecounter) + ". trying to continue ...");
+				parser_warning(c, "contacters limit reached ("+TOSTRING(MAX_CONTACTERS)+")");
 				continue;
 			}
 
@@ -2195,27 +2030,23 @@ int SerializedRig::loadTruck(String fname, SceneManager *manager, SceneNode *par
 			nodes[id1].iIsSkin=true;
 			free_contacter++;;
 		}
-		else if (mode==BTS_ROPES)
+		else if (c.mode==BTS_ROPES)
 		{
 			//parse ropes
 			int id1=0, id2=0, group=0;
 			char option = 'n';
-			int result = sscanf(c.line,"%i, %i, %c", &id1, &id2, &option);
-			if (result < 2 || result == EOF) {
-				LOG("Error parsing File (Ropes) " + String(fname) +" c.line " + TOSTRING(c.linecounter) + ". trying to continue ...");
-				continue;
-			}
+			if(!checkResults(sscanf(c.line,"%i, %i, %c", &id1, &id2, &option), 2, c)) continue;
+
 			//add beam
 			if (id1>=free_node || id2>=free_node)
 			{
-				LOG("Error: unknown node number in ropes section ("
-					+TOSTRING(id1)+","+TOSTRING(id2)+")");
+				parser_warning(c, "Error: unknown node number in ropes section ("+TOSTRING(id1)+","+TOSTRING(id2)+")");
 				exit(7);
 			};
 
 			if(free_beam >= MAX_BEAMS)
 			{
-				LOG("cannot create rope: beams limit reached ("+TOSTRING(MAX_BEAMS)+"): " + String(fname) +" c.line " + TOSTRING(c.linecounter) + ". trying to continue ...");
+				parser_warning(c, "cannot create rope: beams limit reached ("+TOSTRING(MAX_BEAMS)+")");
 				continue;
 			}
 			int htype = BEAM_NORMAL;
@@ -2233,18 +2064,15 @@ int SerializedRig::loadTruck(String fname, SceneManager *manager, SceneNode *par
 			nodes[id1].iIsSkin=true;
 			nodes[id2].iIsSkin=true;
 		}
-		else if (mode==BTS_ROPABLES)
+		else if (c.mode==BTS_ROPABLES)
 		{
 			//parse ropables
 			int id1=0, group=-1, multilock=0;
-			int result = sscanf(c.line,"%i, %i, %i", &id1, &group, &multilock);
-			if (result < 1 || result == EOF) {
-				LOG("Error parsing File (Ropeable) " + String(fname) +" c.line " + TOSTRING(c.linecounter) + ". trying to continue ...");
-				continue;
-			}
+			if(!checkResults(sscanf(c.line,"%i, %i, %i", &id1, &group, &multilock), 1, c)) continue;
+
 			if (id1>=free_node)
 			{
-				LOG("Error: unknown node number in ropables section ("+TOSTRING(id1)+")");
+				parser_warning(c, "Error: unknown node number in ropables section ("+TOSTRING(id1)+")");
 				exit(7);
 			}
 
@@ -2257,7 +2085,7 @@ int SerializedRig::loadTruck(String fname, SceneManager *manager, SceneNode *par
 
 			nodes[id1].iIsSkin=true;
 		}
-		else if (mode==BTS_TIES)
+		else if (c.mode==BTS_TIES)
 		{
 			//parse ties
 			int id1=0, group=-1;
@@ -2265,15 +2093,11 @@ int SerializedRig::loadTruck(String fname, SceneManager *manager, SceneNode *par
 			char option='n';
 			maxstress=100000.0f;
 			hascommands=1;
-			int result = sscanf(c.line,"%i, %f, %f, %f, %f, %c, %f, %i", &id1, &maxl, &rate, &shortl, &longl, &option, &maxstress, &group);
-			if (result < 5 || result == EOF) {
-				LOG("Error parsing File (Ties) " + String(fname) +" c.line " + TOSTRING(c.linecounter) + ". trying to continue ...");
-				continue;
-			}
+			if(!checkResults(sscanf(c.line,"%i, %f, %f, %f, %f, %c, %f, %i", &id1, &maxl, &rate, &shortl, &longl, &option, &maxstress, &group), 5, c)) continue;
 
 			if(free_beam >= MAX_BEAMS)
 			{
-				LOG("cannot create tie: beams limit reached ("+TOSTRING(MAX_BEAMS)+"): " + String(fname) +" c.line " + TOSTRING(c.linecounter) + ". trying to continue ...");
+				parser_warning(c, "cannot create tie: beams limit reached ("+TOSTRING(MAX_BEAMS)+")");
 				continue;
 			}
 
@@ -2301,34 +2125,30 @@ int SerializedRig::loadTruck(String fname, SceneManager *manager, SceneNode *par
 			ties.push_back(t);
 		}
 
-		else if (mode==BTS_HELP)
+		else if (c.mode==BTS_HELP)
 		{
 			//help material
 			strcpy(helpmat,c.line);
 			hashelp=1;
 		}
-		else if (mode==BTS_CINECAM)
+		else if (c.mode==BTS_CINECAM)
 		{
 			//cinecam
 			float x,y,z;
 			int n1, n2, n3, n4, n5, n6, n7, n8;
 			float spring=8000.0;
 			float damp=800.0;
-			int result = sscanf(c.line,"%f, %f, %f, %i, %i, %i, %i, %i, %i, %i, %i, %f, %f", &x,&y,&z,&n1,&n2,&n3,&n4,&n5,&n6,&n7,&n8, &spring, &damp);
-			if (result < 11 || result == EOF) {
-				LOG("Error parsing File (Cinecam) " + String(fname) +" c.line " + TOSTRING(c.linecounter) + ". trying to continue ...");
-				continue;
-			}
+			if(!checkResults(sscanf(c.line,"%f, %f, %f, %i, %i, %i, %i, %i, %i, %i, %i, %f, %f", &x,&y,&z,&n1,&n2,&n3,&n4,&n5,&n6,&n7,&n8, &spring, &damp), 11, c)) continue;
 
 			if(free_beam >= MAX_BEAMS)
 			{
-				LOG("cannot create cinecam: beams limit reached ("+TOSTRING(MAX_BEAMS)+"): " + String(fname) +" c.line " + TOSTRING(c.linecounter) + ". trying to continue ...");
+				parser_warning(c, "cannot create cinecam: beams limit reached ("+TOSTRING(MAX_BEAMS)+")");
 				continue;
 			}
 
 			if(free_node >= MAX_NODES)
 			{
-				LOG("cannot create cinecam: nodes limit reached ("+TOSTRING(MAX_NODES)+"): " + String(fname) +" c.line " + TOSTRING(c.linecounter) + ". trying to continue ...");
+				parser_warning(c, "cannot create cinecam: nodes limit reached ("+TOSTRING(MAX_NODES)+")");
 				continue;
 			}
 
@@ -2372,7 +2192,7 @@ int SerializedRig::loadTruck(String fname, SceneManager *manager, SceneNode *par
 			freecinecamera++;
 		}
 
-		else if (mode==BTS_FLARES || mode==BTS_FLARES2)
+		else if (c.mode==BTS_FLARES || c.mode==BTS_FLARES2)
 		{
 			if(flaresMode==0)
 				continue;
@@ -2381,26 +2201,14 @@ int SerializedRig::loadTruck(String fname, SceneManager *manager, SceneNode *par
 			float ox=0, oy=0, oz=1, size=-2;
 			char type='f';
 			char matname[255]="";
-			int result=-1;
-			if(mode == BTS_FLARES)
+			if(c.mode == BTS_FLARES)
 			{
 				// original flares
-				result = sscanf(c.line,"%i, %i, %i, %f, %f, %c, %i, %i, %f %s", &ref, &nx, &ny, &ox, &oy, &type, &controlnumber, &blinkdelay, &size, matname);
-				if (result < 5 || result == EOF)
-				{
-					LOG("Error parsing File (Flares) " + String(fname) +" c.line " + TOSTRING(c.linecounter) + ". trying to continue ...");
-					continue;
-				}
-			} else if(mode == BTS_FLARES2)
+				if(!checkResults(sscanf(c.line,"%i, %i, %i, %f, %f, %c, %i, %i, %f %s", &ref, &nx, &ny, &ox, &oy, &type, &controlnumber, &blinkdelay, &size, matname), 5, c)) continue;
+			} else if(c.mode == BTS_FLARES2)
 			{
 				// flares 2
-				result = sscanf(c.line,"%i, %i, %i, %f, %f, %f, %c, %i, %i, %f %s", &ref, &nx, &ny, &ox, &oy, &oz, &type, &controlnumber, &blinkdelay, &size, matname);
-				if (result < 5 || result == EOF)
-				{
-					LOG("Error parsing File (Flares) " + String(fname) +" c.line " + TOSTRING(c.linecounter) + ". trying to continue ...");
-					continue;
-				}
-
+				if(!checkResults(sscanf(c.line,"%i, %i, %i, %f, %f, %f, %c, %i, %i, %f %s", &ref, &nx, &ny, &ox, &oy, &oz, &type, &controlnumber, &blinkdelay, &size, matname), 5, c)) continue;
 			}
 
 			// check validity
@@ -2425,16 +2233,14 @@ int SerializedRig::loadTruck(String fname, SceneManager *manager, SceneNode *par
 			else if ((size == -2 && type != 'f') || size == -1)
 				size = 0.5;
 
-			//LOG(TOSTRING(controlnumber));
 			if(controlnumber < -1 || controlnumber > 500)
 			{
-				LOG("Error parsing File (Flares) " + String(fname) +" c.line " + TOSTRING(c.linecounter) + ". Controlnumber must be between -1 and 500! trying to continue ...");
+				parser_warning(c, "Controlnumber must be between -1 and 500!");
 				continue;
 			}
-			//LOG(TOSTRING(blinkdelay));
 			if(blinkdelay < -1 || blinkdelay > 60000)
 			{
-				LOG("Error parsing File (Flares) " + String(fname) +" c.line " + TOSTRING(c.linecounter) + ". Blinkdelay must be between 0 and 60000! trying to continue ...");
+				parser_warning(c, "Blinkdelay must be between 0 and 60000!");
 				continue;
 			}
 			flare_t f;
@@ -2479,7 +2285,6 @@ int SerializedRig::loadTruck(String fname, SceneManager *manager, SceneNode *par
 				f.snode->attachObject(f.bbs);
 			f.isVisible=true;
 			f.light=NULL;
-			//LOG("Blinkdelay2: " + TOSTRING(blinkdelay));
 			if (type == 'f' && usingDefaultMaterial && flaresMode >=2 && size > 0.001)
 			{
 				// front light
@@ -2556,7 +2361,7 @@ int SerializedRig::loadTruck(String fname, SceneManager *manager, SceneNode *par
 			flares.push_back(f);
 			free_flare++;
 		}
-		else if (mode==BTS_PROPS)
+		else if (c.mode==BTS_PROPS)
 		{
 			//parse props
 			int ref, nx, ny;
@@ -2564,14 +2369,15 @@ int SerializedRig::loadTruck(String fname, SceneManager *manager, SceneNode *par
 			float rx, ry, rz;
 			char meshname[256];
 			int result = sscanf(c.line,"%i, %i, %i, %f, %f, %f, %f, %f, %f, %s", &ref, &nx, &ny, &ox, &oy, &oz, &rx, &ry, &rz, meshname);
-			if (result < 10 || result == EOF) {
-				LOG("Error parsing File (Prop) " + String(fname) +" c.line " + TOSTRING(c.linecounter) + ". trying to continue ...");
+			if (result < 10 || result == EOF)
+			{
+				parser_warning(c, "too less arguments");
 				continue;
 			}
 
 			if(free_prop >= MAX_PROPS)
 			{
-				LOG("props limit reached ("+TOSTRING(MAX_PROPS)+"): " + String(fname) +" c.line " + TOSTRING(c.linecounter) + ". trying to continue ...");
+				parser_warning(c, "props limit reached ("+TOSTRING(MAX_PROPS)+")");
 				continue;
 			}
 			/* Initialize prop memory to avoid invalid pointers. */
@@ -2790,17 +2596,13 @@ int SerializedRig::loadTruck(String fname, SceneManager *manager, SceneNode *par
 
 			free_prop++;
 		}
-		else if (mode==BTS_GLOBEAMS)
+		else if (c.mode==BTS_GLOBEAMS)
 		{
 			//parse globeams
-			int result = sscanf(c.line,"%f, %f, %f, %s", &default_deform,&default_break,&default_beam_diameter, default_beam_material);
-			if (result < 1 || result == EOF) {
-				LOG("Error parsing File (globeams) " + String(fname) +" c.line " + TOSTRING(c.linecounter) + ". trying to continue ...");
-				continue;
-			}
+			if(!checkResults(sscanf(c.line,"%f, %f, %f, %s", &default_deform,&default_break,&default_beam_diameter, default_beam_material), 1, c)) continue;
 			fadeDist=1000.0;
 		}
-		else if (mode==BTS_WINGS)
+		else if (c.mode==BTS_WINGS)
 		{
 			//parse wings
 			int nds[8];
@@ -2808,7 +2610,7 @@ int SerializedRig::loadTruck(String fname, SceneManager *manager, SceneNode *par
 			char type;
 			float cratio, mind, maxd, liftcoef = 1.0f;
 			char afname[256];
-			int result = sscanf(c.line,"%i, %i, %i, %i, %i, %i, %i, %i, %f, %f, %f, %f, %f, %f, %f, %f, %c, %f, %f, %f, %s %f",
+			if(!checkResults(sscanf(c.line,"%i, %i, %i, %i, %i, %i, %i, %i, %f, %f, %f, %f, %f, %f, %f, %f, %c, %f, %f, %f, %s %f",
 				&nds[0],
 				&nds[1],
 				&nds[2],
@@ -2831,17 +2633,11 @@ int SerializedRig::loadTruck(String fname, SceneManager *manager, SceneNode *par
 				&maxd,
 				afname,
 				&liftcoef
-				);
-
-			//visuals
-			if (result < 13 || result == EOF) {
-				LOG("Error parsing File (Wing) " + String(fname) +" c.line " + TOSTRING(c.linecounter) + ". trying to continue ...");
-				continue;
-			}
+				), 13, c)) continue;
 
 			if(free_wing >= MAX_WINGS)
 			{
-				LOG("wings limit reached ("+TOSTRING(MAX_WINGS)+"): " + String(fname) +" c.line " + TOSTRING(c.linecounter) + ". trying to continue ...");
+				parser_warning(c, "wings limit reached ("+TOSTRING(MAX_WINGS)+")");
 				continue;
 			}
 
@@ -2849,7 +2645,7 @@ int SerializedRig::loadTruck(String fname, SceneManager *manager, SceneNode *par
 			sprintf(wname, "wing-%s-%i",truckname, free_wing);
 			char wnamei[256];
 			sprintf(wnamei, "wingobj-%s-%i",truckname, free_wing);
-			if (liftcoef != 1.0f) LOG("Wing liftforce coefficent: " + TOSTRING(liftcoef));
+			if (liftcoef != 1.0f) parser_warning(c, "Wing liftforce coefficent: " + TOSTRING(liftcoef));
 			wings[free_wing].fa=new FlexAirfoil(manager, wname, nodes, nds[0], nds[1], nds[2], nds[3], nds[4], nds[5], nds[6], nds[7], texname, Vector2(txes[0], txes[1]), Vector2(txes[2], txes[3]), Vector2(txes[4], txes[5]), Vector2(txes[6], txes[7]), type, cratio, mind, maxd, afname, liftcoef, aeroengines, state!=NETWORKED);
 			Entity *ec=0;
 			try
@@ -2857,7 +2653,7 @@ int SerializedRig::loadTruck(String fname, SceneManager *manager, SceneNode *par
 				ec = manager->createEntity(wnamei, wname);
 			}catch(...)
 			{
-				LOG("error loading mesh: "+String(wname));
+				parser_warning(c, "error loading mesh: "+String(wname));
 				continue;
 			}
 			MaterialFunctionMapper::replaceSimpleMeshMaterials(ec, ColourValue(0.5, 1, 0));
@@ -2880,7 +2676,7 @@ int SerializedRig::loadTruck(String fname, SceneManager *manager, SceneNode *par
 					//inform wing segments
 					float span=(nodes[wings[wingstart].fa->nfrd].RelPosition-nodes[wings[free_wing-1].fa->nfld].RelPosition).length();
 					//					float chord=(nodes[wings[wingstart].fa->nfrd].Position-nodes[wings[wingstart].fa->nbrd].Position).length();
-					LOG("BEAM: Full Wing "+TOSTRING(wingstart)+"-"+TOSTRING(free_wing-1)+" SPAN="+TOSTRING(span)+" AREA="+TOSTRING(wingarea));
+					parser_warning(c, "Full Wing "+TOSTRING(wingstart)+"-"+TOSTRING(free_wing-1)+" SPAN="+TOSTRING(span)+" AREA="+TOSTRING(wingarea));
 					wings[wingstart].fa->enableInducedDrag(span,wingarea, false);
 					wings[free_wing-1].fa->enableInducedDrag(span,wingarea, true);
 					//we want also to add positional lights for first wing
@@ -2889,7 +2685,7 @@ int SerializedRig::loadTruck(String fname, SceneManager *manager, SceneNode *par
 
 						if(free_prop+4 >= MAX_PROPS)
 						{
-							LOG("cannot create wing props: props limit reached ("+TOSTRING(MAX_PROPS)+"): " + String(fname) +" c.line " + TOSTRING(c.linecounter) + ". trying to continue ...");
+							parser_warning(c, "cannot create wing props: props limit reached ("+TOSTRING(MAX_PROPS)+")");
 							continue;
 						}
 						//Left green
@@ -3055,7 +2851,7 @@ int SerializedRig::loadTruck(String fname, SceneManager *manager, SceneNode *par
 
 			free_wing++;
 		}
-		else if (mode==BTS_TURBOPROPS || mode==BTS_TURBOPROPS2 || mode==BTS_PISTONPROPS) //turboprops, turboprops2, pistonprops
+		else if (c.mode==BTS_TURBOPROPS || c.mode==BTS_TURBOPROPS2 || c.mode==BTS_PISTONPROPS) //turboprops, turboprops2, pistonprops
 		{
 			//parse turboprops
 			int ref,back,p1,p2,p3,p4;
@@ -3064,35 +2860,23 @@ int SerializedRig::loadTruck(String fname, SceneManager *manager, SceneNode *par
 			bool isturboprops=true;
 			float power;
 			char propfoil[256];
-			if (mode==BTS_TURBOPROPS)
+			if (c.mode==BTS_TURBOPROPS)
 			{
-				int result = sscanf(c.line,"%i, %i, %i, %i, %i, %i, %f, %s", &ref, &back, &p1, &p2, &p3, &p4, &power, propfoil);
-				if (result < 8 || result == EOF) {
-					LOG("Error parsing File (Turboprop) " + String(fname) +" c.line " + TOSTRING(c.linecounter) + ". trying to continue ...");
-					continue;
-				}
+				if(!checkResults(sscanf(c.line,"%i, %i, %i, %i, %i, %i, %f, %s", &ref, &back, &p1, &p2, &p3, &p4, &power, propfoil), 8, c)) continue;
 			}
-			if (mode==BTS_TURBOPROPS2)
+			if (c.mode==BTS_TURBOPROPS2)
 			{
-				int result = sscanf(c.line,"%i, %i, %i, %i, %i, %i, %i, %f, %s", &ref, &back, &p1, &p2, &p3, &p4, &couplenode, &power, propfoil);
-				if (result < 9 || result == EOF) {
-					LOG("Error parsing File (Turboprop2) " + String(fname) +" c.line " + TOSTRING(c.linecounter) + ". trying to continue ...");
-					continue;
-				}
+				if(!checkResults(sscanf(c.line,"%i, %i, %i, %i, %i, %i, %i, %f, %s", &ref, &back, &p1, &p2, &p3, &p4, &couplenode, &power, propfoil), 9, c)) continue;
 			}
-			if (mode==BTS_PISTONPROPS)
+			if (c.mode==BTS_PISTONPROPS)
 			{
-				int result = sscanf(c.line,"%i, %i, %i, %i, %i, %i, %i, %f, %f, %s", &ref, &back, &p1, &p2, &p3, &p4, &couplenode, &power, &pitch, propfoil);
-				if (result < 10 || result == EOF) {
-					LOG("Error parsing File (Pistonprop) " + String(fname) +" c.line " + TOSTRING(c.linecounter) + ". trying to continue ...");
-					continue;
-				}
+				if(!checkResults(sscanf(c.line,"%i, %i, %i, %i, %i, %i, %i, %f, %f, %s", &ref, &back, &p1, &p2, &p3, &p4, &couplenode, &power, &pitch, propfoil), 10, c)) continue;
 				isturboprops=false;
 			}
 
 			if(free_aeroengine >= MAX_AEROENGINES)
 			{
-				LOG("airoengine limit reached ("+TOSTRING(MAX_AEROENGINES)+"): " + String(fname) +" c.line " + TOSTRING(c.linecounter) + ". trying to continue ...");
+				parser_warning(c, "airoengine limit reached ("+TOSTRING(MAX_AEROENGINES)+")");
 				continue;
 			}
 
@@ -3123,45 +2907,37 @@ int SerializedRig::loadTruck(String fname, SceneManager *manager, SceneNode *par
 			}
 			free_aeroengine++;
 		}
-		else if (mode==BTS_FUSEDRAG)
+		else if (c.mode==BTS_FUSEDRAG)
 		{
 			//parse fusedrag
 			int front,back;
 			float width;
 			char fusefoil[256];
-			int result = sscanf(c.line,"%i, %i, %f, %s", &front,&back,&width, fusefoil);
-			if (result < 4 || result == EOF) {
-				LOG("Error parsing File (Fusedrag) " + String(fname) +" c.line " + TOSTRING(c.linecounter) + ". trying to continue ...");
-				continue;
-			}
+			if(!checkResults(sscanf(c.line,"%i, %i, %f, %s", &front,&back,&width, fusefoil), 4, c)) continue;
 			fuseAirfoil=new Airfoil(fusefoil);
 			fuseFront=&nodes[front];
 			fuseBack=&nodes[front];
 			fuseWidth=width;
 		}
-		else if (mode==BTS_ENGOPTION)
+		else if (c.mode==BTS_ENGOPTION)
 		{
 			//parse engoption
 			float inertia;
 			char type;
 			float clutch = -1.0f, shifttime = -1.0f, clutchtime = -1.0f, postshifttime = -1.0f;
-			int result = sscanf(c.line,"%f, %c, %f, %f, %f, %f", &inertia, &type, &clutch, &shifttime, &clutchtime, &postshifttime);
-			if (result < 1 || result == EOF)
-			{
-				LOG("Error parsing File (Engoption) " + String(fname) +" c.line " + TOSTRING(c.linecounter) + ". trying to continue ...");
-				continue;
-			}
+			if(!checkResults(sscanf(c.line,"%f, %c, %f, %f, %f, %f", &inertia, &type, &clutch, &shifttime, &clutchtime, &postshifttime), 1, c)) continue;
+
 			if (engine) engine->setOptions(inertia, type, clutch, shifttime, clutchtime, postshifttime);
 		}
-		else if (mode==BTS_BRAKES)
+		else if (c.mode==BTS_BRAKES)
 		{
 			// parse brakes
-			int result = sscanf(c.line,"%f, %f", &brakeforce, &hbrakeforce);
+			int result =sscanf(c.line,"%f, %f", &brakeforce, &hbrakeforce);
 			// Read in footbrake force and handbrake force. If handbrakeforce is not present, set it to the default value 2*footbrake force to preserve older functionality
 			if (result == 1)
 				hbrakeforce = 2.0f * brakeforce;
 		}
-		else if (mode==BTS_ROTATORS)
+		else if (c.mode==BTS_ROTATORS)
 		{
 			//parse rotators
 			int axis1, axis2,keys,keyl;
@@ -3172,15 +2948,11 @@ int SerializedRig::loadTruck(String fname, SceneManager *manager, SceneNode *par
 			Real stopDelay=0;
 			char startFunction[50]="";
 			char stopFunction[50]="";
-			int result = sscanf(c.line,"%i, %i, %i, %i, %i, %i, %i, %i, %i, %i, %f, %i, %i, %f, %f, %s %s", &axis1, &axis2, &p1[0], &p1[1], &p1[2], &p1[3], &p2[0], &p2[1], &p2[2], &p2[3], &rate, &keys, &keyl, &startDelay, &stopDelay, startFunction, stopFunction);
-			if (result < 13 || result == EOF) {
-				LOG("Error parsing File (Rotators) " + String(fname) +" c.line " + TOSTRING(c.linecounter) + ". trying to continue ...");
-				continue;
-			}
+			if(!checkResults(sscanf(c.line,"%i, %i, %i, %i, %i, %i, %i, %i, %i, %i, %f, %i, %i, %f, %f, %s %s", &axis1, &axis2, &p1[0], &p1[1], &p1[2], &p1[3], &p2[0], &p2[1], &p2[2], &p2[3], &rate, &keys, &keyl, &startDelay, &stopDelay, startFunction, stopFunction), 13, c)) continue;
 
 			if(free_rotator >= MAX_ROTATORS)
 			{
-				LOG("rotators limit reached ("+TOSTRING(MAX_ROTATORS)+"): " + String(fname) +" c.line " + TOSTRING(c.linecounter) + ". trying to continue ...");
+				parser_warning(c, "rotators limit reached ("+TOSTRING(MAX_ROTATORS)+")");
 				continue;
 			}
 			rotators[free_rotator].angle=0;
@@ -3213,21 +2985,18 @@ int SerializedRig::loadTruck(String fname, SceneManager *manager, SceneNode *par
 
 			free_rotator++;
 		}
-		else if (mode==BTS_SCREWPROPS)
+		else if (c.mode==BTS_SCREWPROPS)
 		{
 			//parse screwprops
 			int ref,back,up;
 			float power;
-			int result = sscanf(c.line,"%i, %i, %i, %f", &ref,&back,&up, &power);
-			if (result < 4 || result == EOF) {
-				LOG("Error parsing File (Screwprops) " + String(fname) +" c.line " + TOSTRING(c.linecounter) + ". trying to continue ...");
-				continue;
-			}
+			if(!checkResults(sscanf(c.line,"%i, %i, %i, %f", &ref,&back,&up, &power), 4, c)) continue;
+
 			//if (audio) audio->setupBoat(truckmass);
 
 			if(free_screwprop >= MAX_SCREWPROPS)
 			{
-				LOG("screwprops limit reached ("+TOSTRING(MAX_SCREWPROPS)+"): " + String(fname) +" c.line " + TOSTRING(c.linecounter) + ". trying to continue ...");
+				parser_warning(c, "screwprops limit reached ("+TOSTRING(MAX_SCREWPROPS)+")");
 				continue;
 			}
 
@@ -3235,16 +3004,13 @@ int SerializedRig::loadTruck(String fname, SceneManager *manager, SceneNode *par
 			driveable=BOAT;
 			free_screwprop++;
 		}
-		else if (mode==BTS_GUISETTINGS)
+		else if (c.mode==BTS_GUISETTINGS)
 		{
 			// guisettings
 			char keyword[255];
 			char value[255];
-			int result = sscanf(c.line,"%s %s", keyword, value);
-			if (result < 2 || result == EOF) {
-				LOG("Error parsing File (guisettings) " + String(fname) +" c.line " + TOSTRING(c.linecounter) + ". trying to continue ...");
-				continue;
-			}
+			if(!checkResults(sscanf(c.line,"%s %s", keyword, value), 2, c)) continue;
+
 			if(!strncmp(keyword, "interactiveOverviewMap", 255) && strnlen(value, 255) > 0)
 			{
 				dynamicMapMode = 0;
@@ -3308,14 +3074,14 @@ int SerializedRig::loadTruck(String fname, SceneManager *manager, SceneNode *par
 			}
 
 		}
-		else if (mode==BTS_MINIMASS)
+		else if (c.mode==BTS_MINIMASS)
 		{
 			//parse minimass
 			//sets the minimum node mass
 			//usefull for very light vehicles with lots of nodes (e.g. small airplanes)
 			sscanf(c.line,"%f", &minimass);
 		}
-		else if (mode==BTS_EXHAUSTS)
+		else if (c.mode==BTS_EXHAUSTS)
 		{
 			// parse exhausts
 			if (disable_smoke)
@@ -3323,12 +3089,8 @@ int SerializedRig::loadTruck(String fname, SceneManager *manager, SceneNode *par
 			int id1, id2;
 			float factor;
 			char material[50] = "";
-			int result = sscanf(c.line,"%i, %i, %f %s", &id1, &id2, &factor, material);
-			// catch some errors
-			if (result < 4 || result == EOF) {
-				LOG("Error parsing File " + String(fname) +" c.line " + TOSTRING(c.linecounter) + ". trying to continue ...");
-				continue;
-			}
+			if(!checkResults(sscanf(c.line,"%i, %i, %f %s", &id1, &id2, &factor, material), 4, c)) continue;
+
 			exhaust_t e;
 			e.emitterNode = id1;
 			e.directionNode = id2;
@@ -3352,7 +3114,7 @@ int SerializedRig::loadTruck(String fname, SceneManager *manager, SceneNode *par
 			nodes[id2].iIsSkin=true;
 			exhausts.push_back(e);
 		}
-		else if (mode==BTS_PARTICLES)
+		else if (c.mode==BTS_PARTICLES)
 		{
 			//particles
 			if(!cparticle_enabled)
@@ -3360,16 +3122,11 @@ int SerializedRig::loadTruck(String fname, SceneManager *manager, SceneNode *par
 			// parse particle
 			int id1, id2;
 			char psystem[250] = "";
-			int result = sscanf(c.line,"%i, %i, %s", &id1, &id2, psystem);
-			// catch some errors
-			if (result < 3 || result == EOF) {
-				LOG("Error parsing File " + String(fname) +" c.line " + TOSTRING(c.linecounter) + ". trying to continue ...");
-				continue;
-			}
+			if(!checkResults(sscanf(c.line,"%i, %i, %s", &id1, &id2, psystem), 3, c)) continue;
 
 			if(free_cparticle >= MAX_CPARTICLES)
 			{
-				LOG("custom particles limit reached ("+TOSTRING(MAX_CPARTICLES)+"): " + String(fname) +" c.line " + TOSTRING(c.linecounter) + ". trying to continue ...");
+				parser_warning(c, "custom particles limit reached ("+TOSTRING(MAX_CPARTICLES)+")");
 				continue;
 			}
 
@@ -3388,20 +3145,16 @@ int SerializedRig::loadTruck(String fname, SceneManager *manager, SceneNode *par
 			for (int i=0; i<cparticles[free_cparticle].psys->getNumEmitters(); i++) cparticles[free_cparticle].psys->getEmitter(i)->setEnabled(false);
 			free_cparticle++;
 		}
-		else if (mode==BTS_TURBOJETS) //turbojets
+		else if (c.mode==BTS_TURBOJETS) //turbojets
 		{
 			//parse turbojets
 			int front,back,ref, rev;
 			float len, fdiam, bdiam, drthrust, abthrust;
-			int result = sscanf(c.line,"%i, %i, %i, %i, %f, %f, %f, %f, %f", &front, &back, &ref, &rev, &drthrust, &abthrust, &fdiam, &bdiam, &len);
-			if (result < 9 || result == EOF) {
-				LOG("Error parsing File (Turbojet) " + String(fname) +" c.line " + TOSTRING(c.linecounter) + ". trying to continue ...");
-				continue;
-			}
+			if(!checkResults(sscanf(c.line,"%i, %i, %i, %i, %f, %f, %f, %f, %f", &front, &back, &ref, &rev, &drthrust, &abthrust, &fdiam, &bdiam, &len), 9, c)) continue;
 
 			if(free_aeroengine >= MAX_AEROENGINES)
 			{
-				LOG("airoengine limit reached ("+TOSTRING(MAX_AEROENGINES)+"): " + String(fname) +" c.line " + TOSTRING(c.linecounter) + ". trying to continue ...");
+				parser_warning(c, "airoengine limit reached ("+TOSTRING(MAX_AEROENGINES)+")");
 				continue;
 			}
 
@@ -3415,21 +3168,17 @@ int SerializedRig::loadTruck(String fname, SceneManager *manager, SceneNode *par
 			//if (audio) audio->setupAeroengines(TURBOJETS);
 			free_aeroengine++;
 		}
-		else if (mode==BTS_RIGIDIFIERS)
+		else if (c.mode==BTS_RIGIDIFIERS)
 		{
 			//parse rigidifiers
 			int na,nb,nc;
 			float k=DEFAULT_RIGIDIFIER_SPRING;
 			float d=DEFAULT_RIGIDIFIER_DAMP;
-			int result = sscanf(c.line,"%i, %i, %i, %f, %f", &na, &nb, &nc, &k, &d);
-			if (result < 3 || result == EOF) {
-				LOG("Error parsing File (rigidifier) " + String(fname) +" c.line " + TOSTRING(c.linecounter) + ". trying to continue ...");
-				continue;
-			}
+			if(!checkResults(sscanf(c.line,"%i, %i, %i, %f, %f", &na, &nb, &nc, &k, &d), 3, c)) continue;
 
 			if(free_rigidifier >= MAX_RIGIDIFIERS)
 			{
-				LOG("rigidifiers limit reached ("+TOSTRING(MAX_RIGIDIFIERS)+"): " + String(fname) +" c.line " + TOSTRING(c.linecounter) + ". trying to continue ...");
+				parser_warning(c, "rigidifiers limit reached ("+TOSTRING(MAX_RIGIDIFIERS)+")");
 				continue;
 			}
 
@@ -3450,7 +3199,7 @@ int SerializedRig::loadTruck(String fname, SceneManager *manager, SceneNode *par
 			}
 			free_rigidifier++;
 		}
-		else if (mode==BTS_AIRBRAKES)
+		else if (c.mode==BTS_AIRBRAKES)
 		{
 			//parse airbrakes
 			int ref, nx, ny, na;
@@ -3458,71 +3207,60 @@ int SerializedRig::loadTruck(String fname, SceneManager *manager, SceneNode *par
 			float tx1, tx2, tx3, tx4;
 			float wd, len, liftcoef = 1.0f;
 			float maxang;
-			int result = sscanf(c.line,"%i, %i, %i, %i, %f, %f, %f, %f, %f, %f, %f, %f, %f, %f, %f", &ref, &nx, &ny, &na, &ox, &oy, &oz, &wd, &len, &maxang, &tx1, &tx2, &tx3, &tx4, &liftcoef);
-			if (result < 14 || result == EOF) {
-				LOG("Error parsing File (Airbrakes) " + String(fname) +" c.line " + TOSTRING(c.linecounter) + ". trying to continue ...");
-				continue;
-			}
+			if(!checkResults(sscanf(c.line,"%i, %i, %i, %i, %f, %f, %f, %f, %f, %f, %f, %f, %f, %f, %f", &ref, &nx, &ny, &na, &ox, &oy, &oz, &wd, &len, &maxang, &tx1, &tx2, &tx3, &tx4, &liftcoef), 14, c)) continue;
 
 			if(free_airbrake >= MAX_AIRBRAKES)
 			{
-				LOG("airbrakes limit reached ("+TOSTRING(MAX_AIRBRAKES)+"): " + String(fname) +" c.line " + TOSTRING(c.linecounter) + ". trying to continue ...");
+				parser_warning(c, "airbrakes limit reached ("+TOSTRING(MAX_AIRBRAKES)+")");
 				continue;
 			}
 			if (liftcoef != 1.0f)
-				LOG("Airbrakes force coefficent: " + TOSTRING(liftcoef));
+				parser_warning(c, "Airbrakes force coefficent: " + TOSTRING(liftcoef));
 
 			airbrakes[free_airbrake]=new Airbrake(manager, truckname, free_airbrake, &nodes[ref], &nodes[nx], &nodes[ny], &nodes[na], Vector3(ox,oy,oz), wd, len, maxang, texname, tx1,tx2,tx3,tx4,liftcoef);
 			free_airbrake++;
 		}
-		else if (mode==BTS_FLEXBODIES)
+		else if (c.mode==BTS_FLEXBODIES)
 		{
 			//parse flexbodies
 			int ref, nx, ny;
 			float ox, oy, oz;
 			float rx, ry, rz;
 			char meshname[256];
-			int result = sscanf(c.line,"%i, %i, %i, %f, %f, %f, %f, %f, %f, %s", &ref, &nx, &ny, &ox, &oy, &oz, &rx, &ry, &rz, meshname);
-			if (result < 10 || result == EOF) {
-				LOG("Error parsing File (Flexbodies) " + String(fname) +" c.line " + TOSTRING(c.linecounter) + ". trying to continue ...");
-				continue;
-			}
+			if(!checkResults(sscanf(c.line,"%i, %i, %i, %f, %f, %f, %f, %f, %f, %s", &ref, &nx, &ny, &ox, &oy, &oz, &rx, &ry, &rz, meshname), 10, c)) continue;
+
 			Vector3 offset=Vector3(ox, oy, oz);
 			Quaternion rot=Quaternion(Degree(rz), Vector3::UNIT_Z);
 			rot=rot*Quaternion(Degree(ry), Vector3::UNIT_Y);
 			rot=rot*Quaternion(Degree(rx), Vector3::UNIT_X);
 			char uname[256];
 			sprintf(uname, "flexbody-%s-%i", truckname, free_flexbody);
-			//read an extra c.line!
+			//read an extra line!
 			ds->readLine(c.line, 1023);
 			c.linecounter++;
 			if (strncmp(c.line, "forset", 6))
 			{
-				LOG("Error parsing File (Flexbodies/forset) " + String(fname) +" c.line " + TOSTRING(c.linecounter) + ". No forset statement after a flexbody. trying to continue ...");
+				parser_warning(c, "No forset statement after a flexbody");
 				continue;
 			}
 
 			if(free_flexbody >= MAX_FLEXBODIES)
 			{
-				LOG("flexbodies limit reached ("+TOSTRING(MAX_FLEXBODIES)+"): " + String(fname) +" c.line " + TOSTRING(c.linecounter) + ". trying to continue ...");
+				parser_warning(c, "flexbodies limit reached ("+TOSTRING(MAX_FLEXBODIES)+")");
 				continue;
 			}
 			flexbodies[free_flexbody]=new FlexBody(manager, nodes, free_node, meshname, uname, ref, nx, ny, offset, rot, c.line+6, materialFunctionMapper, usedSkin, (shadowmode!=0));
 			free_flexbody++;
 		}
-		else if (mode==BTS_HOOKGROUP)
+		else if (c.mode==BTS_HOOKGROUP)
 		{
 			//parse hookgroups
 			int id1=0, group=-1, lockNodes=1;
-			int result = sscanf(c.line,"%i, %i, %i", &id1, &group, &lockNodes);
-			if (result < 2 || result == EOF)
-			{
-				LOG("Error parsing File (hookgroup) " + String(fname) +" c.line " + TOSTRING(c.linecounter) + ". Too less arguments. trying to continue ...");
-				continue;
-			}
+			if(!checkResults(sscanf(c.line,"%i, %i, %i", &id1, &group, &lockNodes), 2, c)) continue;
+
 			if (id1>=free_node)
 			{
-				LOG("Error: unknown node number in hookgroup section ("+TOSTRING(id1)+")");
+				parser_warning(c, "Error: unknown node number in hookgroup section ("+TOSTRING(id1)+")");
 				exit(7);
 			};
 			hook_t h;
@@ -3535,24 +3273,20 @@ int SerializedRig::loadTruck(String fname, SceneManager *manager, SceneNode *par
 			hooks.push_back(h);
 
 		}
-		else if (mode==BTS_MATERIALFLAREBINDINGS)
+		else if (c.mode==BTS_MATERIALFLAREBINDINGS)
 		{
 			// parse materialflarebindings
 			int flareid;
 			char material[255]="";
 			memset(material, 0, 255);
-			int result = sscanf(c.line,"%d, %s", &flareid, material);
-			if (result < 2 || result == EOF)
-			{
-				LOG("Error parsing File (materialbindings) " + String(fname) +" c.line " + TOSTRING(c.linecounter) + ". trying to continue ...");
-				continue;
-			}
+			if(!checkResults(sscanf(c.line,"%d, %s", &flareid, material), 2, c)) continue;
+
 			String materialName = String(material);
 			String newMaterialName = materialName + "_mfb_" + String(truckname);
 			MaterialPtr mat = MaterialManager::getSingleton().getByName(materialName);
 			if(mat.isNull())
 			{
-				LOG("Error in materialbindings: material " + materialName + " was not found! " + String(fname) +" c.line " + TOSTRING(c.linecounter) + ". trying to continue ...");
+				parser_warning(c, "Error in materialbindings: material " + materialName + " was not found");
 				continue;
 			}
 			//clone the material
@@ -3565,58 +3299,48 @@ int SerializedRig::loadTruck(String fname, SceneManager *manager, SceneNode *par
 			if(materialFunctionMapper)
 				materialFunctionMapper->addMaterial(flareid, t);
 		}
-		else if (mode==BTS_SOUNDSOURCES)
+		else if (c.mode==BTS_SOUNDSOURCES)
 		{
 			//parse soundsources
 			int ref;
 			char script[256];
-			int result = sscanf(c.line,"%i, %s", &ref, script);
-			if (result < 2 || result == EOF) {
-				LOG("Error parsing File (soundsource) " + String(fname) +" c.line " + TOSTRING(c.linecounter) + ". trying to continue ...");
-				continue;
-			}
+			if(!checkResults(sscanf(c.line,"%i, %s", &ref, script), 2, c)) continue;
+
 #ifdef USE_OPENAL
-			if(ssm) addSoundSource(ssm->createInstance(script, trucknum, NULL), ref, -2);
+			if(ssm) addSoundSource(ssm->createInstance(script, trucknum, NULL), ref, -2, &c);
 #endif //OPENAL
 		}
-		else if (mode==BTS_SOUNDSOURCES2)
+		else if (c.mode==BTS_SOUNDSOURCES2)
 		{
 			//parse soundsources2
 			int ref, type;
 			char script[256];
-			int result = sscanf(c.line,"%i, %i, %s", &ref, &type, script);
-			if (result < 2 || result == EOF) {
-				LOG("Error parsing File (soundsource2) " + String(fname) +" c.line " + TOSTRING(c.linecounter) + ". trying to continue ...");
-				continue;
-			}
+			if(!checkResults(sscanf(c.line,"%i, %i, %s", &ref, &type, script), 2, c)) continue;
+
 #ifdef USE_OPENAL
-			if(ssm) addSoundSource(ssm->createInstance(script, trucknum, NULL), ref, type);
+			if(ssm) addSoundSource(ssm->createInstance(script, trucknum, NULL), ref, type, &c);
 #endif //OPENAL
 		}
-		else if (mode==BTS_ENVMAP)
+		else if (c.mode==BTS_ENVMAP)
 		{
 			// parse envmap
 			// we do nothing of this for the moment
 		}
-		else if (mode==BTS_MANAGEDMATERIALS)
+		else if (c.mode==BTS_MANAGEDMATERIALS)
 		{
 			// parse managedmaterials
 			char material[255];
 			material[0]=0;
 			char type[255];
 			type[0]=0;
-			int result = sscanf(c.line,"%s %s", material, type);
-			if (result < 2 || result == EOF)
-			{
-				LOG("Error parsing File (managedmaterials) " + String(fname) +" c.line " + TOSTRING(c.linecounter) + ". trying to continue ...");
-				continue;
-			}
+			if(!checkResults(sscanf(c.line,"%s %s", material, type), 2, c)) continue;
+
 			//first, check if work has already been done
 			MaterialPtr tstmat=(MaterialPtr)(MaterialManager::getSingleton().getByName(material));
 			if (!tstmat.isNull())
 			{
 				//material already exists, probably because the vehicle was already spawned previously
-				LOG("Warning: managed material '" + String(material) +"' already exists");
+				parser_warning(c, "Warning: managed material '" + String(material) +"' already exists");
 				continue;
 			}
 
@@ -3628,12 +3352,8 @@ int SerializedRig::loadTruck(String fname, SceneManager *manager, SceneNode *par
 				dmgtex[0]=0;
 				char spectex[255];
 				spectex[0]=0;
-				result = sscanf(c.line,"%s %s %s %s %s", material, type, maintex, dmgtex, spectex);
-				if (result < 3 || result == EOF)
-				{
-					LOG("Error parsing File (managedmaterials) " + String(fname) +" c.line " + TOSTRING(c.linecounter) + ". trying to continue ...");
-					continue;
-				}
+				if(!checkResults(sscanf(c.line,"%s %s %s %s %s", material, type, maintex, dmgtex, spectex), 3, c)) continue;
+
 				//different cases
 				//caution, this is hardwired against the managed.material file
 				if (strlen(dmgtex)==0 || dmgtex[0]=='-')
@@ -3645,7 +3365,7 @@ int SerializedRig::loadTruck(String fname, SceneManager *manager, SceneNode *par
 						MaterialPtr srcmat=(MaterialPtr)(MaterialManager::getSingleton().getByName("managed/flexmesh_standard/simple"));
 						if(srcmat.isNull())
 						{
-							LOG("Material 'managed/flexmesh_standard/simple' missing!");
+							parser_warning(c, "Material 'managed/flexmesh_standard/simple' missing!");
 							continue;
 						}
 
@@ -3661,7 +3381,7 @@ int SerializedRig::loadTruck(String fname, SceneManager *manager, SceneNode *par
 						MaterialPtr srcmat=(MaterialPtr)(MaterialManager::getSingleton().getByName("managed/flexmesh_standard/specularonly"));
 						if(srcmat.isNull())
 						{
-							LOG("Material 'managed/flexmesh_standard/specularonly' missing!");
+							parser_warning(c, "Material 'managed/flexmesh_standard/specularonly' missing!");
 							continue;
 						}
 
@@ -3686,7 +3406,7 @@ int SerializedRig::loadTruck(String fname, SceneManager *manager, SceneNode *par
 						MaterialPtr srcmat=(MaterialPtr)(MaterialManager::getSingleton().getByName("managed/flexmesh_standard/damageonly"));
 						if(srcmat.isNull())
 						{
-							LOG("Material 'managed/flexmesh_standard/damageonly' missing!");
+							parser_warning(c, "Material 'managed/flexmesh_standard/damageonly' missing!");
 							continue;
 						}
 
@@ -3703,7 +3423,7 @@ int SerializedRig::loadTruck(String fname, SceneManager *manager, SceneNode *par
 						MaterialPtr srcmat=(MaterialPtr)(MaterialManager::getSingleton().getByName("managed/flexmesh_standard/speculardamage"));
 						if(srcmat.isNull())
 						{
-							LOG("Material 'managed/flexmesh_standard/speculardamage' missing!");
+							parser_warning(c, "Material 'managed/flexmesh_standard/speculardamage' missing!");
 							continue;
 						}
 
@@ -3729,12 +3449,8 @@ int SerializedRig::loadTruck(String fname, SceneManager *manager, SceneNode *par
 				dmgtex[0]=0;
 				char spectex[255];
 				spectex[0]=0;
-				result = sscanf(c.line,"%s %s %s %s %s", material, type, maintex, dmgtex, spectex);
-				if (result < 3 || result == EOF)
-				{
-					LOG("Error parsing File (managedmaterials) " + String(fname) +" c.line " + TOSTRING(c.linecounter) + ". trying to continue ...");
-					continue;
-				}
+				if(!checkResults(sscanf(c.line,"%s %s %s %s %s", material, type, maintex, dmgtex, spectex), 3, c)) continue;
+
 				//different cases
 				//caution, this is hardwired against the managed.material file
 				if (strlen(dmgtex)==0 || dmgtex[0]=='-')
@@ -3746,7 +3462,7 @@ int SerializedRig::loadTruck(String fname, SceneManager *manager, SceneNode *par
 						MaterialPtr srcmat=(MaterialPtr)(MaterialManager::getSingleton().getByName("managed/flexmesh_transparent/simple"));
 						if(srcmat.isNull())
 						{
-							LOG("Material 'managed/flexmesh_transparent/simple' missing!");
+							parser_warning(c, "Material 'managed/flexmesh_transparent/simple' missing!");
 							continue;
 						}
 
@@ -3762,7 +3478,7 @@ int SerializedRig::loadTruck(String fname, SceneManager *manager, SceneNode *par
 						MaterialPtr srcmat=(MaterialPtr)(MaterialManager::getSingleton().getByName("managed/flexmesh_transparent/specularonly"));
 						if(srcmat.isNull())
 						{
-							LOG("Material 'managed/flexmesh_transparent/specularonly' missing!");
+							parser_warning(c, "Material 'managed/flexmesh_transparent/specularonly' missing!");
 							continue;
 						}
 
@@ -3787,7 +3503,7 @@ int SerializedRig::loadTruck(String fname, SceneManager *manager, SceneNode *par
 						MaterialPtr srcmat=(MaterialPtr)(MaterialManager::getSingleton().getByName("managed/flexmesh_transparent/damageonly"));
 						if(srcmat.isNull())
 						{
-							LOG("Material 'managed/flexmesh_transparent/damageonly' missing!");
+							parser_warning(c, "Material 'managed/flexmesh_transparent/damageonly' missing!");
 							continue;
 						}
 
@@ -3804,7 +3520,7 @@ int SerializedRig::loadTruck(String fname, SceneManager *manager, SceneNode *par
 						MaterialPtr srcmat=(MaterialPtr)(MaterialManager::getSingleton().getByName("managed/flexmesh_transparent/speculardamage"));
 						if(srcmat.isNull())
 						{
-							LOG("Material 'managed/flexmesh_transparent/speculardamage' missing!");
+							parser_warning(c, "Material 'managed/flexmesh_transparent/speculardamage' missing!");
 							continue;
 						}
 
@@ -3828,12 +3544,8 @@ int SerializedRig::loadTruck(String fname, SceneManager *manager, SceneNode *par
 				maintex[0]=0;
 				char spectex[255];
 				spectex[0]=0;
-				result = sscanf(c.line,"%s %s %s %s", material, type, maintex, spectex);
-				if (result < 3 || result == EOF)
-				{
-					LOG("Error parsing File (managedmaterials) " + String(fname) +" c.line " + TOSTRING(c.linecounter) + ". trying to continue ...");
-					continue;
-				}
+				if(!checkResults(sscanf(c.line,"%s %s %s %s", material, type, maintex, spectex), 3, c)) continue;
+
 				//different cases
 				//caution, this is hardwired against the managed.material file
 				if (strlen(spectex)==0 || spectex[0]=='-')
@@ -3842,7 +3554,7 @@ int SerializedRig::loadTruck(String fname, SceneManager *manager, SceneNode *par
 					MaterialPtr srcmat=(MaterialPtr)(MaterialManager::getSingleton().getByName("managed/mesh_standard/simple"));
 					if(srcmat.isNull())
 					{
-						LOG("Material 'managed/mesh_standard/simple' missing!");
+						parser_warning(c, "Material 'managed/mesh_standard/simple' missing!");
 						continue;
 					}
 
@@ -3858,7 +3570,7 @@ int SerializedRig::loadTruck(String fname, SceneManager *manager, SceneNode *par
 					MaterialPtr srcmat=(MaterialPtr)(MaterialManager::getSingleton().getByName("managed/mesh_standard/specular"));
 					if(srcmat.isNull())
 					{
-						LOG("Material 'managed/mesh_standard/specular' missing!");
+						parser_warning(c, "Material 'managed/mesh_standard/specular' missing!");
 						continue;
 					}
 
@@ -3880,12 +3592,8 @@ int SerializedRig::loadTruck(String fname, SceneManager *manager, SceneNode *par
 				maintex[0]=0;
 				char spectex[255];
 				spectex[0]=0;
-				result = sscanf(c.line,"%s %s %s %s", material, type, maintex, spectex);
-				if (result < 3 || result == EOF)
-				{
-					LOG("Error parsing File (managedmaterials) " + String(fname) +" c.line " + TOSTRING(c.linecounter) + ". trying to continue ...");
-					continue;
-				}
+				if(!checkResults(sscanf(c.line,"%s %s %s %s", material, type, maintex, spectex), 3, c)) continue;
+
 				//different cases
 				//caution, this is hardwired against the managed.material file
 				if (strlen(spectex)==0 || spectex[0]=='-')
@@ -3894,7 +3602,7 @@ int SerializedRig::loadTruck(String fname, SceneManager *manager, SceneNode *par
 					MaterialPtr srcmat=(MaterialPtr)(MaterialManager::getSingleton().getByName("managed/mesh_transparent/simple"));
 					if(srcmat.isNull())
 					{
-						LOG("Material 'managed/mesh_transparent/simple' missing!");
+						parser_warning(c, "Material 'managed/mesh_transparent/simple' missing!");
 						continue;
 					}
 
@@ -3910,7 +3618,7 @@ int SerializedRig::loadTruck(String fname, SceneManager *manager, SceneNode *par
 					MaterialPtr srcmat=(MaterialPtr)(MaterialManager::getSingleton().getByName("managed/mesh_transparent/specular"));
 					if(srcmat.isNull())
 					{
-						LOG("Material 'managed/mesh_transparent/specular' missing!");
+						parser_warning(c, "Material 'managed/mesh_transparent/specular' missing!");
 						continue;
 					}
 
@@ -3928,29 +3636,26 @@ int SerializedRig::loadTruck(String fname, SceneManager *manager, SceneNode *par
 			}
 			else
 			{
-				LOG("Error parsing File (managedmaterials) " + String(fname) +" c.line " + TOSTRING(c.linecounter) + ". Unknown effect. trying to continue ...");
+				parser_warning(c, "Unknown effect");
 				continue;
 			}
 
 		}
-		else if (mode==BTS_SECTIONCONFIG)
+		else if (c.mode==BTS_SECTIONCONFIG)
 		{
 			// parse sectionconfig
 			// not used here ...
-			mode=savedmode;
+			c.mode=c.savedmode;
 		}
-		else if (mode==BTS_SECTION)
+		else if (c.mode==BTS_SECTION)
 		{
 			// parse section
 			int version=0;
 			char sectionName[10][256];
 			for(int i=0;i<10;i++) memset(sectionName, 0, 255); // clear
 			if(strnlen(c.line,9)<8) continue;
-			int result = sscanf(c.line+7,"%d %s %s %s %s %s %s %s %s %s %s", &version, sectionName[0], sectionName[1], sectionName[2], sectionName[3], sectionName[4], sectionName[5], sectionName[6], sectionName[7], sectionName[8], sectionName[9]);
-			if (result < 2 || result == EOF) {
-				LOG("Error parsing File (section) " + String(fname) +" c.line " + TOSTRING(c.linecounter) + ". trying to continue ...");
-				continue;
-			}
+			if(!checkResults(sscanf(c.line+7,"%d %s %s %s %s %s %s %s %s %s %s", &version, sectionName[0], sectionName[1], sectionName[2], sectionName[3], sectionName[4], sectionName[5], sectionName[6], sectionName[7], sectionName[8], sectionName[9]), 2, c)) continue;
+
 			bool found = false;
 			for(int i=0;i<10;i++)
 			{
@@ -3967,35 +3672,30 @@ int SerializedRig::loadTruck(String fname, SceneManager *manager, SceneNode *par
 				continue;
 			else
 				// wait for end_section otherwise
-				mode=BTS_IN_SECTION;
+				c.mode=BTS_IN_SECTION;
 		}
-		/* mode BTS_IN_SECTION is reserved */
-		else if (mode==BTS_TORQUECURVE)
+		/* c.mode BTS_IN_SECTION is reserved */
+		else if (c.mode==BTS_TORQUECURVE)
 		{
 			// parse torquecurve
 			if (engine && engine->getTorqueCurve())
 				engine->getTorqueCurve()->processLine(String(c.line));
-		} else if (mode==BTS_ADVANCEDDRAG)
+		} else if (c.mode==BTS_ADVANCEDDRAG)
 		{
 			//parse advanced drag
 			float drag;
-			int result = sscanf(c.line,"%f", &drag);
-			if (result < 4 || result == EOF)
-			{
-				LOG("Error parsing File (advdrag) " + String(fname) +" c.line " + TOSTRING(c.linecounter) + ". trying to continue ...");
-				continue;
-			}
+			if(!checkResults(sscanf(c.line,"%f", &drag), 4, c)) continue;
 			advanced_total_drag=drag;
 			advanced_drag=true;
 		}
-		else if (mode==BTS_AXLES)
+		else if (c.mode==BTS_AXLES)
 		{
 			// parse axle section
 			// search for wheel
 
 			if(!free_wheel)
 			{
-				LOG("AXLE ERROR: the axle section must come AFTER some wheels");
+				parser_warning(c, "AXLE ERROR: the axle section must come AFTER some wheels");
 				continue;
 			}
 
@@ -4009,7 +3709,7 @@ int SerializedRig::loadTruck(String fname, SceneManager *manager, SceneNode *par
 			{
 				Ogre::StringUtil::trim(*cur);
 
-				LOG("AXLE: Parsing property: [" + *cur + "]" );
+				parser_warning(c, "AXLE: Parsing property: [" + *cur + "]" );
 
 				switch(cur->at(0))
 				{
@@ -4018,23 +3718,11 @@ int SerializedRig::loadTruck(String fname, SceneManager *manager, SceneNode *par
 					// dirty repetitive method, could stand to be cleaned up
 					if( cur->at(1) == '1')
 					{
-						int result = sscanf(cur->c_str(), "w1(%d %d)", &wheel_node[0][0], &wheel_node[0][1]);
-
-						if (result < 2 )
-						{
-							LOG("AXLE: c.line did not contain enough points: " + *cur);
-							continue;
-						}
+						if(!checkResults(sscanf(cur->c_str(), "w1(%d %d)", &wheel_node[0][0], &wheel_node[0][1]), 2, c)) continue;
 					}
 					else if( cur->at(1) == '2')
 					{
-						int result = sscanf(cur->c_str(), "w2(%d %d)", &wheel_node[1][0], &wheel_node[1][1]);
-
-						if (result < 2 )
-						{
-							LOG("AXLE: c.line did not contain enough points: " + *cur);
-							continue;
-						}
+						if(!checkResults(sscanf(cur->c_str(), "w2(%d %d)", &wheel_node[1][0], &wheel_node[1][1]), 2, c)) continue;
 					}
 					break;
 				case 'd':
@@ -4056,13 +3744,13 @@ int SerializedRig::loadTruck(String fname, SceneManager *manager, SceneNode *par
 					break;
 				}
 				case 's':
-					LOG("AXLE: selection property not yet available");
+					parser_warning(c, "AXLE: selection property not yet available");
 					break;
 				case 'r':
-					LOG("AXLE: Gear ratio property not yet available");
+					parser_warning(c, "AXLE: Gear ratio property not yet available");
 					break;
 				default:
-					LOG("AXLE: malformed property: " + *cur);
+					parser_warning(c, "AXLE: malformed property: " + *cur);
 					break;
 				}
 
@@ -4089,13 +3777,13 @@ int SerializedRig::loadTruck(String fname, SceneManager *manager, SceneNode *par
 				// if one or the other is null
 				if( axles[free_axle]->wheel_1 < 0)
 				{
-					LOG("AXLE: could not find wheel 1 nodes: " +
+					parser_warning(c, "AXLE: could not find wheel 1 nodes: " +
 						TOSTRING(wheel_node[0][0]) + " " +
 						TOSTRING(wheel_node[0][1]) );
 				}
 				if( axles[free_axle]->wheel_2 < 0)
 				{
-					LOG("AXLE: could not find wheel 2 nodes: " +
+					parser_warning(c, "AXLE: could not find wheel 2 nodes: " +
 					TOSTRING(wheel_node[1][0]) + " " +
 					TOSTRING(wheel_node[1][1]) );
 				}
@@ -4105,36 +3793,32 @@ int SerializedRig::loadTruck(String fname, SceneManager *manager, SceneNode *par
 			// test if any differentials have been defined
 			if( axles[free_axle]->availableDiffs().empty() )
 			{
-				LOG("AXLE: nodiffs defined, defaulting to Open and Locked");
+				parser_warning(c, "AXLE: nodiffs defined, defaulting to Open and Locked");
 				axles[free_axle]->addDiffType(OPEN_DIFF);
 				axles[free_axle]->addDiffType(LOCKED_DIFF);
 			}
 
-			LOG("AXLE: Created: w1(" + TOSTRING(wheel_node[0][0]) + ") " +
+			parser_warning(c, "AXLE: Created: w1(" + TOSTRING(wheel_node[0][0]) + ") " +
 				TOSTRING(wheel_node[0][1]) + ", w2(" + TOSTRING(wheel_node[1][0]) + " " +
 				TOSTRING(wheel_node[1][1]) + ")");
 			++free_axle;
 		}
 
-		else if (mode==BTS_RAILGROUPS) parseRailGroupLine(c.line);
-		else if (mode==BTS_SLIDENODES) parseSlideNodeLine(c.line);
-		else if (mode==BTS_NODECOLLISION)
+		else if (c.mode==BTS_RAILGROUPS) parseRailGroupLine(c);
+		else if (c.mode==BTS_SLIDENODES) parseSlideNodeLine(c);
+		else if (c.mode==BTS_NODECOLLISION)
 		{
 			// parse nodecollision
 			int nodenum  = -1;
 			float radius =  0;
-			int result = sscanf(c.line,"%d, %f", &nodenum, &radius);
-			if (result < 2 || result == EOF)
-			{
-				LOG("Error parsing File (nodecollision) " + String(fname) +" c.line " + TOSTRING(c.linecounter) + ". trying to continue ...");
-				continue;
-			}
+			if(!checkResults(sscanf(c.line,"%d, %f", &nodenum, &radius), 2, c)) continue;
+
 			if(nodenum >= free_node || nodenum < 0)
 				continue;
 
 			nodes[nodenum].collRadius = radius;
 		}
-		else if (mode==BTS_VIDCAM)
+		else if (c.mode==BTS_VIDCAM)
 		{
 			VideoCamera *v = VideoCamera::parseLine(manager, mCamera, this, fname, c.line, c.linecounter);
 			if(v)
@@ -4152,28 +3836,26 @@ int SerializedRig::loadTruck(String fname, SceneManager *manager, SceneNode *par
 		int result=engine->getTorqueCurve()->spaceCurveEvenly(engine->getTorqueCurve()->getUsedSpline());
 		if (result==1)
 		{
-			LOG("TorqueCurve: Points (rpm) must be in an ascending order. Using default curve");
+			parser_warning(c, "TorqueCurve: Points (rpm) must be in an ascending order. Using default curve");
 			engine->getTorqueCurve()->setTorqueModel("default");
 		}
 	}
 	
 	
 	if(!loading_finished) {
-		LOG("Reached end of file "+ String(fname)+ ". No 'end' was found! Did you forgot it? Trying to continue...");
+		parser_warning(c, "Reached end of file "+ String(fname)+ ". No 'end' was found! Did you forgot it? ");
 	}
 
-	// ds closes automatically, so do not close it explicitly here:
-	//ds->close();
-//cameras workaround
+	//cameras workaround
 	{
 		for (int i=0; i<freecamera; i++)
 		{
-//LOG("Camera dir="+TOSTRING(nodes[cameranodedir[i]].RelPosition-nodes[cameranodepos[i]].RelPosition)+" roll="+TOSTRING(nodes[cameranoderoll[i]].RelPosition-nodes[cameranodepos[i]].RelPosition));
+			//parser_warning(c, "Camera dir="+TOSTRING(nodes[cameranodedir[i]].RelPosition-nodes[cameranodepos[i]].RelPosition)+" roll="+TOSTRING(nodes[cameranoderoll[i]].RelPosition-nodes[cameranodepos[i]].RelPosition));
 			revroll[i]=(nodes[cameranodedir[i]].RelPosition-nodes[cameranodepos[i]].RelPosition).crossProduct(nodes[cameranoderoll[i]].RelPosition-nodes[cameranodepos[i]].RelPosition).y>0;
-			if (revroll[i]) LOG("Warning: camera definition is probably invalid and has been corrected. It should be center, back, left");
+			if (revroll[i]) parser_warning(c, "Warning: camera definition is probably invalid and has been corrected. It should be center, back, left");
 		}
 	}
-//		fclose(fd);
+
 	//wing closure
 	if (wingstart!=-1)
 	{
@@ -4181,14 +3863,14 @@ int SerializedRig::loadTruck(String fname, SceneManager *manager, SceneNode *par
 		//inform wing segments
 		float span=(nodes[wings[wingstart].fa->nfrd].RelPosition-nodes[wings[free_wing-1].fa->nfld].RelPosition).length();
 		//		float chord=(nodes[wings[wingstart].fa->nfrd].Position-nodes[wings[wingstart].fa->nbrd].Position).length();
-		LOG("BEAM: Full Wing "+TOSTRING(wingstart)+"-"+TOSTRING(free_wing-1)+" SPAN="+TOSTRING(span)+" AREA="+TOSTRING(wingarea));
+		parser_warning(c, "Full Wing "+TOSTRING(wingstart)+"-"+TOSTRING(free_wing-1)+" SPAN="+TOSTRING(span)+" AREA="+TOSTRING(wingarea));
 		wings[wingstart].fa->enableInducedDrag(span,wingarea, false);
 		wings[free_wing-1].fa->enableInducedDrag(span,wingarea, true);
 		//wash calculator
-		wash_calculator(rot);
+		wash_calculator(rot, c);
 	}
 	//add the cab visual
-	LOG("BEAM: creating cab");
+	parser_warning(c, "creating cab");
 	if (free_texcoord>0 && free_cab>0)
 	{
 		//closure
@@ -4218,7 +3900,7 @@ int SerializedRig::loadTruck(String fname, SceneManager *manager, SceneNode *par
 		MaterialPtr mat=(MaterialPtr)(MaterialManager::getSingleton().getByName(texname));
 		if(mat.isNull())
 		{
-			LOG("Material '"+String(texname)+"' missing!");
+			parser_warning(c, "Material '"+String(texname)+"' missing!");
 			exit(123);
 		}
 
@@ -4262,30 +3944,30 @@ int SerializedRig::loadTruck(String fname, SceneManager *manager, SceneNode *par
 		//	mat->compile();
 
 
-		LOG("BEAM: creating mesh");
+		parser_warning(c, "creating mesh");
 		cabMesh=new FlexObj(manager, nodes, free_texcoord, texcoords, free_cab, cabs, free_sub, subtexcoords, subcabs, texname, wname, subisback, backmatname, transmatname);
-		LOG("BEAM: creating entity");
+		parser_warning(c, "creating entity");
 
-		LOG("BEAM: creating cabnode");
+		parser_warning(c, "creating cabnode");
 		cabNode = manager->getRootSceneNode()->createChildSceneNode();
 		Entity *ec = 0;
 		try
 		{
-			LOG("BEAM: loading cab");
+			parser_warning(c, "loading cab");
 			ec = manager->createEntity(wnamei, wname);
 			//		ec->setRenderQueueGroup(RENDER_QUEUE_6);
-			LOG("BEAM: attaching cab");
+			parser_warning(c, "attaching cab");
 			if(ec)
 				cabNode->attachObject(ec);
 		}catch(...)
 		{
-			LOG("error loading mesh: "+String(wname));
+			parser_warning(c, "error loading mesh: "+String(wname));
 		}
 		MaterialFunctionMapper::replaceSimpleMeshMaterials(ec, ColourValue(0.5, 1, 0.5));
 		if(materialFunctionMapper) materialFunctionMapper->replaceMeshMaterials(ec);
 		if(usedSkin) usedSkin->replaceMeshMaterials(ec);
 	};
-	LOG("BEAM: cab ok");
+	parser_warning(c, "cab ok");
 	//	mWindow->setDebugText("Beam number:"+ TOSTRING(free_beam));
 
 	return 0;
@@ -4339,7 +4021,7 @@ void SerializedRig::init_node(int pos, Real x, Real y, Real z, int type, Real m,
 	if (type==NODE_LOADED) masscount++;
 }
 
-int SerializedRig::add_beam(node_t *p1, node_t *p2, SceneManager *manager, SceneNode *parent, int type, Real strength, Real spring, Real damp, int detachgroupstate, Real length, float shortbound, float longbound, float precomp,float diameter)
+int SerializedRig::add_beam(node_t *p1, node_t *p2, SceneManager *manager, SceneNode *parent, int type, Real strength, Real spring, Real damp, int detachgroupstate, Real length, float shortbound, float longbound, float precomp,float diameter, parsecontext_t *c)
 {
 	int pos=free_beam;
 
@@ -4401,16 +4083,6 @@ int SerializedRig::add_beam(node_t *p1, node_t *p2, SceneManager *manager, Scene
 		beams[pos].bounded = NOSHOCK;
 	}
 
-	/*
-	if (beams[pos].L<0.01)
-	{
-		LOG("Error: beam "+TOSTRING(pos)+" is too short ("+TOSTRING(beams[pos].L)+"m)");
-		LOG("Error: beam "+TOSTRING(pos)+" is between node "+TOSTRING(beams[pos].p1->id)+" and node "+TOSTRING(beams[pos].p2->id)+".");
-		// this causes crash to desktop in MP!
-		//exit(8);
-	};
-	*/
-
 	//        if (type!=BEAM_VIRTUAL && type!=BEAM_INVISIBLE)
 	if (type!=BEAM_VIRTUAL)
 	{
@@ -4423,7 +4095,7 @@ int SerializedRig::add_beam(node_t *p1, node_t *p2, SceneManager *manager, Scene
 			beams[pos].mEntity = manager->createEntity(bname, "beam.mesh");
 		}catch(...)
 		{
-			LOG("error loading mesh: beam.mesh");
+			parser_warning(c, "error loading mesh: beam.mesh");
 		}
 
 		// no materialmapping for beams!
@@ -4438,7 +4110,7 @@ int SerializedRig::add_beam(node_t *p1, node_t *p2, SceneManager *manager, Scene
 		//            beams[pos].mSceneNode->setScale(default_beam_diameter/100.0,length/100.0,default_beam_diameter/100.0);
 		beams[pos].mSceneNode->setScale(beams[pos].diameter, length, beams[pos].diameter);
 
-		// colourize beams in simple mode
+		// colourize beams in simple c.mode
 		ColourValue c = ColourValue::Blue;
 		if(type == BEAM_HYDRO)
 			c = ColourValue::Red;
@@ -4457,7 +4129,7 @@ int SerializedRig::add_beam(node_t *p1, node_t *p2, SceneManager *manager, Scene
 	return pos;
 }
 
-void SerializedRig::addWheel(SceneManager *manager, SceneNode *parent, Real radius, Real width, int rays, int node1, int node2, int snode, int braked, int propulsed, int torquenode, float mass, float wspring, float wdamp, char* texf, char* texb, bool meshwheel, float rimradius, bool rimreverse)
+void SerializedRig::addWheel(SceneManager *manager, SceneNode *parent, Real radius, Real width, int rays, int node1, int node2, int snode, int braked, int propulsed, int torquenode, float mass, float wspring, float wdamp, char* texf, char* texb, bool meshwheel, float rimradius, bool rimreverse, parsecontext_t *c)
 {
 	int i;
 	int nodebase=free_node;
@@ -4556,7 +4228,7 @@ void SerializedRig::addWheel(SceneManager *manager, SceneNode *parent, Real radi
 			//rigidifier version
 			if(free_rigidifier >= MAX_RIGIDIFIERS)
 			{
-				LOG("rigidifiers limit reached ...");
+				parser_warning(c, "rigidifiers limit reached ...");
 			}
 
 			int na=(closest1)?node2:node1;
@@ -4629,7 +4301,7 @@ void SerializedRig::addWheel(SceneManager *manager, SceneNode *parent, Real radi
 			if(usedSkin) usedSkin->replaceMeshMaterials(ec);
 		}catch(...)
 		{
-			LOG("error loading mesh: "+String(wname));
+			parser_warning(c, "error loading mesh: "+String(wname));
 		}
 	}
 	else
@@ -4646,13 +4318,13 @@ void SerializedRig::addWheel(SceneManager *manager, SceneNode *parent, Real radi
 				vwheels[free_wheel].cnode->attachObject(ec);
 		} catch(...)
 		{
-			LOG("error loading mesh: "+String(wname));
+			parser_warning(c, "error loading mesh: "+String(wname));
 		}
 	}
 	free_wheel++;
 }
 
-void SerializedRig::addWheel2(SceneManager *manager, SceneNode *parent, Real radius, Real radius2, Real width, int rays, int node1, int node2, int snode, int braked, int propulsed, int torquenode, float mass, float wspring, float wdamp, float wspring2, float wdamp2, char* texf, char* texb)
+void SerializedRig::addWheel2(SceneManager *manager, SceneNode *parent, Real radius, Real radius2, Real width, int rays, int node1, int node2, int snode, int braked, int propulsed, int torquenode, float mass, float wspring, float wdamp, float wspring2, float wdamp2, char* texf, char* texb, parsecontext_t *c)
 {
 	int i;
 	int nodebase=free_node;
@@ -4843,7 +4515,7 @@ void SerializedRig::addWheel2(SceneManager *manager, SceneNode *parent, Real rad
 		free_wheel++;
 	}catch(...)
 	{
-		LOG("error loading mesh: "+String(wname));
+		parser_warning(c, "error loading mesh: "+String(wname));
 	}
 }
 
@@ -4860,21 +4532,21 @@ float SerializedRig::warea(Vector3 ref, Vector3 x, Vector3 y, Vector3 aref)
 	return (((x-ref).crossProduct(y-ref)).length()+((x-aref).crossProduct(y-aref)).length())*0.5f;
 }
 
-bool SerializedRig::parseRailGroupLine(const Ogre::String& line)
+bool SerializedRig::parseRailGroupLine(parsecontext_t c)
 {
-
+	const Ogre::String line = String(c.line);
 	Ogre::StringVector options = Ogre::StringUtil::split(line, ",");
     
 	if( options.size() < 3)
 	{
-		LOG("RAILGROUP: not enough nodes: " + String(line));
+		parser_warning(c, "RAILGROUP: not enough nodes: " + String(line));
 		return false;
 	}
     
 	unsigned int railID = StringConverter::parseInt(options[0]);
 	options.erase( options.begin() );
     
-	Rail* newRail = parseRailString( options );
+	Rail* newRail = parseRailString( options , c);
 	if( !newRail ) return false;
 	RailGroup* newGroup = new RailGroup( newRail, railID );
         
@@ -4882,14 +4554,15 @@ bool SerializedRig::parseRailGroupLine(const Ogre::String& line)
 	return true;
 }
 
-bool SerializedRig::parseSlideNodeLine(const Ogre::String& line)
+bool SerializedRig::parseSlideNodeLine(parsecontext_t c)
 {
+	const Ogre::String line = String(c.line);
 	// add spaces as a separator to remove them 
 	Ogre::StringVector options = Ogre::StringUtil::split(line, ", ");
     
 	if( options.size() < 2)
 	{
-		LOG("SLIDENODE: not enough options provided: " + String(line));
+		parser_warning(c, "SLIDENODE: not enough options provided: " + String(line));
 		return false;
 	}
 
@@ -4901,7 +4574,7 @@ bool SerializedRig::parseSlideNodeLine(const Ogre::String& line)
 
 	if( !node )
 	{
-		LOG("SLIDENODE: invalid node id: " +
+		parser_warning(c, "SLIDENODE: invalid node id: " +
 				TOSTRING( nodeid ) );
 		return false;
 	}
@@ -4911,7 +4584,7 @@ bool SerializedRig::parseSlideNodeLine(const Ogre::String& line)
 	//if ends are open or closed ends, ie can node slide right off the end of a Rail
 	// attachment constraints, none, self, foreign, all 
 
-	//LOG("SLIDENODE: making new SlideNode");
+	//parser_warning(c, "SLIDENODE: making new SlideNode");
 	SlideNode newSlideNode = SlideNode(node, NULL);
 	//unsigned int quantity = 1;
 	
@@ -4926,7 +4599,7 @@ bool SerializedRig::parseSlideNodeLine(const Ogre::String& line)
 		// tolerance in meters, default 0.0f
 		case 't': case 'T':
 		{			
-			//LOG("SLIDENODE: setting tolerance to : " + option.second );
+			//parser_warning(c, "SLIDENODE: setting tolerance to : " + option.second );
 			newSlideNode.setThreshold( StringConverter::parseReal( option.second ) );
 		} 
 		break;
@@ -4938,7 +4611,7 @@ bool SerializedRig::parseSlideNodeLine(const Ogre::String& line)
 			rgGroup = getRailFromID( StringConverter::parseReal( option.second ) );
 			if( !rgGroup )
 			{
-				LOG("RAILGROUP: warning could not find "
+				parser_warning(c, "RAILGROUP: warning could not find "
 						"a Railgroup with corresponding ID: " + 
 						option.second + ". Will check for anonymous rail");
 			}
@@ -4996,14 +4669,14 @@ bool SerializedRig::parseSlideNodeLine(const Ogre::String& line)
 	// rail builder allocates the memory for each rail, it will not free it,
 	if( !rgGroup && options.size() > 0 )
 	{
-		Rail* newRail = parseRailString( options );
+		Rail* newRail = parseRailString( options , c);
 		rgGroup = (newRail) ? new RailGroup(newRail) : NULL;
 
 		newSlideNode.setDefaultRail( rgGroup );
 		mRailGroups.push_back(rgGroup); // keep track of all allocated Rails
 	}
 
-	//LOG("SLIDENODE: Adding Slide Rail");
+	//parser_warning(c, "SLIDENODE: Adding Slide Rail");
 	mSlideNodes.push_back( newSlideNode );
 	return true;
 }
@@ -5047,7 +4720,7 @@ RailGroup* SerializedRig::getRailFromID(unsigned int id)
 	return NULL;
 }
 
-Rail* SerializedRig::parseRailString( const Ogre::StringVector & railStrings)
+Rail* SerializedRig::parseRailString( const Ogre::StringVector & railStrings, parsecontext_t c)
 {
 	std::vector<int> nodeids;
     
@@ -5088,10 +4761,10 @@ Rail* SerializedRig::parseRailString( const Ogre::StringVector & railStrings)
 		nodeids.push_back(StringConverter::parseInt(railStrings[i]));
 	}
     
-	return getRails( nodeids );
+	return getRails( nodeids,  c);
 }
 
-Rail* SerializedRig::getRails(const std::vector<int>& nodeids)
+Rail* SerializedRig::getRails(const std::vector<int>& nodeids, parsecontext_t c)
 {
 	// find beam ///////////////////////////////////////////////////////////////    
 	// rail builder allocates the memory for each rail, it will not free it
@@ -5099,7 +4772,7 @@ Rail* SerializedRig::getRails(const std::vector<int>& nodeids)
     
 	if( nodeids.front() == nodeids.back() )
 	{
-		LOG("RAIL: Looping SlideRail");
+		parser_warning(c, "RAIL: Looping SlideRail");
 			builder.loopRail();
 	} 
     
@@ -5110,7 +4783,7 @@ Rail* SerializedRig::getRails(const std::vector<int>& nodeids)
 		// Verify Beam
 		if( !beam )
 		{
-			LOG("RAIL: invalid beam: " +
+			parser_warning(c, "RAIL: invalid beam: " +
 					TOSTRING(nodeids[i]) + ", " +
 					TOSTRING(nodeids[i + 1]) );
 			return NULL;
@@ -5122,12 +4795,12 @@ Rail* SerializedRig::getRails(const std::vector<int>& nodeids)
 	return builder.getCompletedRail();
 }
 
-void SerializedRig::addSoundSource(SoundScriptInstance *ssi, int nodenum, int type)
+void SerializedRig::addSoundSource(SoundScriptInstance *ssi, int nodenum, int type, parsecontext_t *c)
 {
 	if (!ssi) return; //fizzle
 	if (free_soundsource==MAX_SOUNDSCRIPTS_PER_TRUCK)
 	{
-		LOG("BEAM: Error, too many sound sources per vehicle!");
+		parser_warning(c, "Error, too many sound sources per vehicle!");
 		return;
 	}
 	soundsources[free_soundsource].ssi=ssi;
@@ -5136,7 +4809,7 @@ void SerializedRig::addSoundSource(SoundScriptInstance *ssi, int nodenum, int ty
 	free_soundsource++;
 }
 
-void SerializedRig::wash_calculator(Quaternion rot)
+void SerializedRig::wash_calculator(Quaternion rot, parsecontext_t c)
 {
 	Quaternion invrot=rot.Inverse();
 	//we will compute wash
@@ -5169,7 +4842,7 @@ void SerializedRig::wash_calculator(Quaternion rot)
 						//we have a wash
 						float wratio=(aleft-aright)/(wleft-wright);
 						wings[w].fa->addwash(p, wratio);
-						LOG("BEAM: Wing "+TOSTRING(w)+" is washed by prop "+TOSTRING(p)+" at "+TOSTRING((float)(wratio*100.0))+"%");
+						parser_warning(c, "Wing "+TOSTRING(w)+" is washed by prop "+TOSTRING(p)+" at "+TOSTRING((float)(wratio*100.0))+"%");
 					}
 				}
 			}
@@ -5210,4 +4883,27 @@ void SerializedRig::calcBox()
 	maxz+=0.3;
 
 	//BES_GFX_STOP(BES_GFX_calcBox);
+}
+
+bool SerializedRig::checkResults(int result, int min, parsecontext_t context)
+{
+	if (result < min || result == EOF)
+	{
+		parser_warning(context, "Too less arguments: "+TOSTRING(result)+" provided, "+TOSTRING(min)+" required. ");
+		return false;
+	}
+	return true;
+}
+
+void SerializedRig::parser_warning(parsecontext_t context, Ogre::String text)
+{
+	LOG("BIO|"+context.filename+":"+TOSTRING(context.linecounter)+" | "+String(context.line)+" | " + text);
+}
+
+void SerializedRig::parser_warning(parsecontext_t *context, Ogre::String text)
+{
+	if(context)
+		parser_warning(*context, text);
+	else
+		LOG(text);
 }

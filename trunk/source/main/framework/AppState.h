@@ -5,6 +5,8 @@
 
 //|||||||||||||||||||||||||||||||||||||||||||||||
 
+#include "RoRPrerequisites.h"
+
 #include "AdvancedOgreFramework.h"
 
 class AppState;

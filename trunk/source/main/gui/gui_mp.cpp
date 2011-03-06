@@ -90,7 +90,7 @@ GUI_Multiplayer::GUI_Multiplayer(Network *_net, Ogre::Camera *cam) : net(_net), 
 		x=100; // space for icons
 		player_row_t *row = &player_rows[i];
 		row->playername = mpPanel->createWidget<MyGUI::StaticText>("StaticText", x, y+1, 200, lineheight,  MyGUI::Align::Default, "Main");
-		row->playername->setCaption("Player " + StringConverter::toString(i));
+		row->playername->setCaption("Player " + TOSTRING(i));
 		row->playername->setFontName("VeraMoBd");
 		row->playername->setUserString("tooltip", "user name");
 		row->playername->eventToolTip += MyGUI::newDelegate(this, &GUI_Multiplayer::openToolTip);
@@ -131,7 +131,7 @@ GUI_Multiplayer::GUI_Multiplayer(Network *_net, Ogre::Camera *cam) : net(_net), 
 		
 		x -= 18;
 		row->usergoimg = mpPanel->createWidget<MyGUI::StaticImage>("StaticImage", x, y, 16, 16,  MyGUI::Align::Default, "Main");
-		row->usergoimg->setUserString("num", StringConverter::toString(i));
+		row->usergoimg->setUserString("num", TOSTRING(i));
 		row->usergoimg->setUserString("tooltip", "go to user");
 		row->usergoimg->setImageTexture("user_go.png");
 		row->usergoimg->eventToolTip += MyGUI::newDelegate(this, &GUI_Multiplayer::openToolTip);
@@ -145,7 +145,7 @@ GUI_Multiplayer::GUI_Multiplayer(Network *_net, Ogre::Camera *cam) : net(_net), 
 		img->eventMouseButtonClick += MyGUI::newDelegate(this, &GUI_Multiplayer::clickInfoIcon);
 		img->eventToolTip += MyGUI::newDelegate(this, &GUI_Multiplayer::openToolTip);
 		img->setNeedToolTip(true);
-		img->setUserString("info", StringConverter::toString(i));
+		img->setUserString("info", TOSTRING(i));
 		img->setUserString("tooltip", "information about the user");
 		*/
 
@@ -216,8 +216,8 @@ void GUI_Multiplayer::updateSlot(player_row_t *row, user_info_t *c, bool self)
 	{
 		row->userTruckOKImg->setVisible(true);
 		row->userTruckOKRemoteImg->setVisible(true);
-		row->userTruckOKImg->setUserString("uid", StringConverter::toString(c->uniqueid));
-		row->userTruckOKRemoteImg->setUserString("uid", StringConverter::toString(c->uniqueid));
+		row->userTruckOKImg->setUserString("uid", TOSTRING(c->uniqueid));
+		row->userTruckOKRemoteImg->setUserString("uid", TOSTRING(c->uniqueid));
 		row->userTruckOKImg->setPosition(x, y);
 		x -= 10;
 		row->userTruckOKRemoteImg->setPosition(x, y);
@@ -267,7 +267,7 @@ void GUI_Multiplayer::updateSlot(player_row_t *row, user_info_t *c, bool self)
 		row->usergoimg->setVisible(true);
 		row->usergoimg->setPosition(x, y);
 		x -= 18;
-		row->usergoimg->setUserString("uid", StringConverter::toString(c->uniqueid));
+		row->usergoimg->setUserString("uid", TOSTRING(c->uniqueid));
 		if (eflsingleton && eflsingleton->getNetPointToUID() == c->uniqueid)
 		{
 			// active for this user

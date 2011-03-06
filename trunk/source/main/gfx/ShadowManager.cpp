@@ -52,7 +52,7 @@ ShadowManager::~ShadowManager()
 
 void ShadowManager::loadConfiguration()
 {
-	Ogre::String s = SETTINGS.getSetting("Shadow technique");
+	Ogre::String s = SSETTING("Shadow technique");
 	if (s == "Stencil shadows")            changeShadowTechnique(Ogre::SHADOWTYPE_STENCIL_MODULATIVE);
 	if (s == "Texture shadows")            changeShadowTechnique(Ogre::SHADOWTYPE_TEXTURE_MODULATIVE);
 	if (s == "Parallel-split Shadow Maps") changeShadowTechnique(Ogre::SHADOWTYPE_TEXTURE_ADDITIVE_INTEGRATED);
@@ -60,7 +60,7 @@ void ShadowManager::loadConfiguration()
 
 int ShadowManager::changeShadowTechnique(Ogre::ShadowTechnique tech)
 {
-	float shadowFarDistance = Ogre::StringConverter::parseInt(SETTINGS.getSetting("Shadow distance"));
+	float shadowFarDistance = Ogre::StringConverter::parseInt(SSETTING("Shadow distance"));
 	float scoef=0.2;
 	mSceneMgr->setShadowColour(Ogre::ColourValue(0.563+scoef, 0.578+scoef, 0.625+scoef));
 

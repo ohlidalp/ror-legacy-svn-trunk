@@ -42,7 +42,7 @@ DustManager& DustManager::getSingleton(void)
 
 DustManager::DustManager(Ogre::SceneManager *mSceneMgr) : mSceneMgr(mSceneMgr), mEnabled(false)
 {
-	mEnabled = (SETTINGS.getSetting("Particles") == "Yes");
+	mEnabled = BSETTING("Particles");
 
 	
 	if (mEnabled)

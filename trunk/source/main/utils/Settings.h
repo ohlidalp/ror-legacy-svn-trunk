@@ -26,7 +26,10 @@ along with Rigs of Rods.  If not, see <http://www.gnu.org/licenses/>.
 #include "Ogre.h"
 #include <map>
 
+// some shortcuts to improve code readability
 #define SETTINGS Settings::Instance()
+#define SSETTING(x) Settings::Instance().getSetting(x) //<! get string setting
+#define BSETTING(x) Settings::Instance().getBooleanSetting(x) //<! get boolean setting
 
 class Settings
 {

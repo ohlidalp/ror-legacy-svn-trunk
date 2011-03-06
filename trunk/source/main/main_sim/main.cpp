@@ -39,19 +39,19 @@ BOOL WINAPI crashCallback(LPVOID /*lpvState*/)
 	// Now add these two files to the error report
 	
 	// logs
-	crAddFile((SETTINGS.getSetting("Log Path") + "RoR.log").c_str(), "Rigs of Rods Log");
-	crAddFile((SETTINGS.getSetting("Log Path") + "mygui.log").c_str(), "Rigs of Rods GUI Log");
-	crAddFile((SETTINGS.getSetting("Log Path") + "configlog.txt").c_str(), "Rigs of Rods Configurator Log");
-	crAddFile((SETTINGS.getSetting("Program Path") + "wizard.log").c_str(), "Rigs of Rods Installer Log");
+	crAddFile((SSETTING("Log Path") + "RoR.log").c_str(), "Rigs of Rods Log");
+	crAddFile((SSETTING("Log Path") + "mygui.log").c_str(), "Rigs of Rods GUI Log");
+	crAddFile((SSETTING("Log Path") + "configlog.txt").c_str(), "Rigs of Rods Configurator Log");
+	crAddFile((SSETTING("Program Path") + "wizard.log").c_str(), "Rigs of Rods Installer Log");
 
 	// cache
-	crAddFile((SETTINGS.getSetting("Cache Path") + "mods.cache").c_str(), "Rigs of Rods Cache File");
+	crAddFile((SSETTING("Cache Path") + "mods.cache").c_str(), "Rigs of Rods Cache File");
 
 	// configs
-	crAddFile((SETTINGS.getSetting("Config Root") + "ground_models.cfg").c_str(), "Rigs of Rods Ground Configuration");
-	crAddFile((SETTINGS.getSetting("Config Root") + "input.map").c_str(), "Rigs of Rods Input Configuration");
-	crAddFile((SETTINGS.getSetting("Config Root") + "ogre.cfg").c_str(), "Rigs of Rods Renderer Configuration");
-	crAddFile((SETTINGS.getSetting("Config Root") + "RoR.cfg").c_str(), "Rigs of Rods Configuration");
+	crAddFile((SSETTING("Config Root") + "ground_models.cfg").c_str(), "Rigs of Rods Ground Configuration");
+	crAddFile((SSETTING("Config Root") + "input.map").c_str(), "Rigs of Rods Input Configuration");
+	crAddFile((SSETTING("Config Root") + "ogre.cfg").c_str(), "Rigs of Rods Renderer Configuration");
+	crAddFile((SSETTING("Config Root") + "RoR.cfg").c_str(), "Rigs of Rods Configuration");
 
 	crAddProperty("Version", ROR_VERSION_STRING);
 	crAddProperty("Revision", SVN_REVISION);
@@ -60,8 +60,8 @@ BOOL WINAPI crashCallback(LPVOID /*lpvState*/)
 	crAddProperty("build_date", __DATE__);
 	crAddProperty("build_time", __TIME__);
 
-	crAddProperty("System_GUID", SETTINGS.getSetting("GUID").c_str());
-	crAddProperty("Multiplayer", (SETTINGS.getSetting("Network enable")=="Yes")?"1":"0");
+	crAddProperty("System_GUID", SSETTING("GUID").c_str());
+	crAddProperty("Multiplayer", (BSETTING("Network enable"))?"1":"0");
 	
 	crAddScreenshot(CR_AS_MAIN_WINDOW);
 	// Return TRUE to allow crash report generation
@@ -263,7 +263,7 @@ int main(int argc, char *argv[])
 #endif
 
 #ifdef USE_CRASHRPT
-	if(SETTINGS.getSetting("NoCrashRpt").empty())
+	if(SSETTING("NoCrashRpt").empty())
 		install_crashrpt();
 
 	//test_crashrpt();
@@ -277,13 +277,13 @@ int main(int argc, char *argv[])
 		//if(InputEngine::instanceExists()) // this prevents the creating of it, if not existing
 		//	INPUTENGINE.prepareShutdown();
 
-		String url = "http://wiki.rigsofrods.com/index.php?title=Error_" + StringConverter::toString(e.getNumber())+"#"+e.getSource();
+		String url = "http://wiki.rigsofrods.com/index.php?title=Error_" + TOSTRING(e.getNumber())+"#"+e.getSource();
 		showOgreWebError("An exception has occured!", e.getFullDescription(), url);
 		return 1;
 	}
 
 #ifdef USE_CRASHRPT
-	if(SETTINGS.getSetting("NoCrashRpt").empty())
+	if(SSETTING("NoCrashRpt").empty())
 		uninstall_crashrpt();
 #endif //USE_CRASHRPT
 

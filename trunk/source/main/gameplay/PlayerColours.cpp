@@ -69,7 +69,7 @@ PlayerColours::~PlayerColours()
 
 Ogre::String PlayerColours::getColourMaterial(int colourNum)
 {
-	return "tracks/PlayerColours/"+StringConverter::toString(colourNum);
+	return "tracks/PlayerColours/"+TOSTRING(colourNum);
 }
 
 Ogre::ColourValue PlayerColours::getColour(int colourNum)
@@ -101,7 +101,7 @@ void PlayerColours::updatePlayerColours()
 	for(int i=0;i<numColours;i++)
 	{
 		ColourValue cval = cvals[i];
-		MaterialPtr mat = MaterialManager::getSingleton().getByName("tracks/PlayerColours/"+StringConverter::toString(i));
+		MaterialPtr mat = MaterialManager::getSingleton().getByName("tracks/PlayerColours/"+TOSTRING(i));
         if(mat.isNull()) continue;
 		if(mat->getNumTechniques()>0 && mat->getTechnique(0)->getNumPasses()>0 && mat->getTechnique(0)->getPass(0)->getNumTextureUnitStates() > 0)
 		{

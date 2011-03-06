@@ -297,7 +297,7 @@ namespace Ogre {
 		}
 		mCurrentVtxBuffer->unlock();
 
-		if(legendTop) legendTop->setCaption(StringConverter::toString((int)maxValue));
+		if(legendTop) legendTop->setCaption(TOSTRING((int)maxValue));
 
 		if(moveMode==1)
 			mPosInStream++;
@@ -333,7 +333,7 @@ namespace Ogre {
 	//---------------------------------------------------------------------
 	void LineStreamOverlayElement::setTraceInfo( const uint32 traceIndex, const ColourValue & traceColour, const String &name )
 	{
-		String elName = "StreamTraceInfo"+mName+StringConverter::toString(traceIndex);
+		String elName = "StreamTraceInfo"+mName+TOSTRING(traceIndex);
 		bool existing = false;
 		try
 		{
