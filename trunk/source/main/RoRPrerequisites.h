@@ -60,6 +60,7 @@ class AeroEngine;
 class Airfoil;
 class Airbrake;
 class Autopilot;
+class Axle;
 class Beam;
 class BeamEngine;
 class BeamThreadStats;
@@ -151,6 +152,7 @@ FWDCLSTRUCT(ground_model);
 FWDCLSTRUCT(client);
 FWDCLSTRUCT(authorinfo);
 FWDCLSTRUCT(localizer);
+FWDCLSTRUCT(parsecontext);
 
 enum VisibilityMasks {
 	DEPTHMAP_ENABLED  = BITMASK(1),

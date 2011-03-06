@@ -148,6 +148,34 @@ enum TRUCK_SECTIONS {
 	BTS_VIDCAM,
 };
 
+enum event_types {
+	EVENT_NONE=0,
+	EVENT_ALL,
+	EVENT_AVATAR,
+	EVENT_TRUCK,
+	EVENT_AIRPLANE,
+	EVENT_DELETE
+};
+
+enum camera_modes {
+	CAMERA_EXT=0,
+	CAMERA_FIX,
+	CAMERA_INT,
+	CAMERA_END,
+	// the free modes are on purpose behind end, so they require a special key to be triggered
+	CAMERA_FREE,
+	CAMERA_FREE_FIXED
+};
+
+enum game_states {
+	NONE_LOADED=0,
+	TERRAIN_LOADED,
+	ALL_LOADED,
+	EXITING,
+	EDITING,
+	RELOADING,
+	EDITOR_PAUSE,
+};
 
 /* physics defaults */
 static const float DEFAULT_RIGIDIFIER_SPRING    = 1000000.0f;
@@ -453,6 +481,15 @@ struct contacter
 	int opticontact;
 };
 
+struct parsecontext
+{
+	Ogre::String filename;
+	unsigned int linecounter;
+	unsigned int warnings;
+	unsigned int errors;
+	char line[2048];
+};
+
 struct rigidifier
 {
 	node_t* a;
@@ -681,6 +718,7 @@ struct debugtext
 
 struct rig
 {
+	// TODO: sort these a bit more ...
 	node_t nodes[MAX_NODES];
 	int free_node;
 
@@ -774,11 +812,147 @@ struct rig
 
 	std::vector <VideoCamera *> vidcams;
 
+	std::vector<std::string> description;
+
 	char guid[128];
+	int hasfixes;
+	int wingstart;
+	
+	char realtruckname[256];
+	bool patchEngineTorque;
+	bool loading_finished;
+
+	int forwardcommands;
+	int importcommands;
+	bool wheel_contact_requested;
+	bool rescuer;
+	bool disable_default_sounds;
+	int detacher_group_state; // current detacher group for the next beam generated
+	float beam_creak;
+	char uniquetruckid[255];
+	int categoryid;
+	int truckversion;
+	int externalcameramode, externalcameranode;
+	std::vector<authorinfo_t> authors;
+	float fadeDist;
+	float collrange;
+	int masscount;
+	bool disable_smoke;
+	int smokeId;
+	int smokeRef;
+	char truckname[256];
+	bool networking;
+	int editorId;
+	bool beambreakdebug, beamdeformdebug, triggerdebug;
+	CmdKeyInertia *rotaInertia;
+	CmdKeyInertia *hydroInertia;
+	CmdKeyInertia *cmdInertia;
+	bool enable_wheel2;
+	float truckmass;
+	float loadmass;
+	char texname[1024];
+	int trucknum;
+	Skin *usedSkin;
+	Buoyance *buoyance;
+	Water *water;
+	int driveable;
+	BeamEngine *engine;
+	int hascommands;
+	int hashelp;
+	char helpmat[256];
+	int cinecameranodepos[MAX_CAMERAS];
+	int freecinecamera;
+	int flaresMode;
+	Ogre::Light *cablight;
+	Ogre::SceneNode *cablightNode;
+	std::vector<Ogre::SceneNode*> deletion_sceneNodes;
+	std::vector<Ogre::MovableObject *> deletion_Objects;
+	int netCustomLightArray[4];
+	unsigned char netCustomLightArray_counter;
+	MaterialFunctionMapper *materialFunctionMapper;
+	bool driversseatfound;
+	bool ispolice;
+	int state;
+	bool hasposlights;
+	bool heathaze;
+	Autopilot *autopilot;
+	HeightFinder *hfinder;
+	Airfoil *fuseAirfoil;
+	node_t *fuseFront;
+	node_t *fuseBack;
+	float fuseWidth;
+	float brakeforce;
+	float hbrakeforce;
+	int dynamicMapMode;
+	int debugVisuals;
+	Ogre::String speedomat, tachomat;
+	float speedoMax;
+	bool useMaxRPMforGUI;
+	float minimass;
+	bool cparticle_enabled;
+	SoundScriptManager *ssm;
+	std::vector<Ogre::String> truckconfig;
+	bool advanced_drag;
+	float advanced_node_drag;
+	float advanced_total_drag;
+
+	Axle *axles[MAX_WHEELS/2];
+	int free_axle;
+
+	Ogre::Vector3 origin;
+	Ogre::SceneNode *beamsRoot;
+	//! Stores all the SlideNodes available on this truck
+	std::vector< SlideNode > mSlideNodes;
+
+	int proped_wheels;
+	int braked_wheels;
+	//for inter-diffential locking
+	int proppairs[MAX_WHEELS];
+
+	//! try to connect slidenodes directly after spawning
+	bool slideNodesConnectInstantly;
+
+	//! Stores all the available RailGroups for this truck
+	std::vector< RailGroup* > mRailGroups;
+
+	Ogre::Camera *mCamera;
+	int freecamera;
+	int cameranodepos[MAX_CAMERAS];
+	int cameranodedir[MAX_CAMERAS];
+	int cameranoderoll[MAX_CAMERAS];
+	bool revroll[MAX_CAMERAS];
+	bool shadowOptimizations;
+	int hasEmissivePass;
+	FlexObj *cabMesh;
+	Ogre::SceneNode *cabNode;
+	float minx, maxx, miny, maxy, minz, maxz;
+	bool freePositioned;
+	int lowestnode;
+
+	float default_spring;
+	float default_spring_scale;
+	float default_damp;
+	float default_damp_scale;
+	float default_deform;
+	float default_deform_scale;
+	float default_break;
+	float default_break_scale;
+
+	float default_beam_diameter;
+	float default_plastic_coef;
+	float skeleton_beam_diameter;
+
+	char default_beam_material[256];
+	float default_node_friction;
+	float default_node_volume;
+	float default_node_surface;
+	float default_node_loadweight;
+	char default_node_options[50];
+
+
 };
 
 // some non-beam structs
-
 struct collision_box
 {
 	//absolute collision box

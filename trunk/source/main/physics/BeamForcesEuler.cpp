@@ -1131,14 +1131,15 @@ void Beam::calcForcesEuler(int doUpdate, Real dt, int step, int maxstep, Beam** 
 	// the axles aligned with each other as if they connected by a shaft
 	for (i = 1; i < free_axle; ++i)
 	{
+		if(!axles[i]) continue;
 		Ogre::Real axle_torques[2] = {0.0f, 0.0f};
 		differential_data_t diff_data =
 		{
 			{
-				(wheels[axles[i-1].wheel_1].speed + wheels[axles[i-1].wheel_2].speed) * 0.5f,
-				(wheels[axles[i].wheel_1].speed + wheels[axles[i].wheel_2].speed) * 0.5f
+				(wheels[axles[i-1]->wheel_1].speed + wheels[axles[i-1]->wheel_2].speed) * 0.5f,
+				(wheels[axles[i]->wheel_1].speed + wheels[axles[i]->wheel_2].speed) * 0.5f
 			},
-			axles[i-1].delta_rotation,
+			axles[i-1]->delta_rotation,
 			{ axle_torques[0], axle_torques[1] },
 			0, // no input torque, just calculate forces from different axle positions
 			dt
@@ -1152,20 +1153,21 @@ void Beam::calcForcesEuler(int doUpdate, Real dt, int step, int maxstep, Beam** 
 		Axle::calcLockedDiff( diff_data );
 #endif
 
-		axles[i-1].delta_rotation = diff_data.delta_rotation;
-		axles[i].delta_rotation = -diff_data.delta_rotation;
+		axles[i-1]->delta_rotation = diff_data.delta_rotation;
+		axles[i]->delta_rotation = -diff_data.delta_rotation;
 
-		intertorque[axles[i-1].wheel_1] = diff_data.out_torque[0];
-		intertorque[axles[i-1].wheel_2] = diff_data.out_torque[0];
-		intertorque[axles[i].wheel_1] = diff_data.out_torque[1];
-		intertorque[axles[i].wheel_2] = diff_data.out_torque[1];
+		intertorque[axles[i-1]->wheel_1] = diff_data.out_torque[0];
+		intertorque[axles[i-1]->wheel_2] = diff_data.out_torque[0];
+		intertorque[axles[i]->wheel_1] = diff_data.out_torque[1];
+		intertorque[axles[i]->wheel_2] = diff_data.out_torque[1];
 	}
 
 	// loop through all the wheels (new style again)
 	for (i = 0; i < free_axle; ++i)
 	{
+		if(!axles[i]) continue;
 		Ogre::Real axle_torques[2] = {0.0f, 0.0f};
-		wheel_t *axle_wheels[2] = { &wheels[axles[i].wheel_1], &wheels[axles[i].wheel_2] };
+		wheel_t *axle_wheels[2] = { &wheels[axles[i]->wheel_1], &wheels[axles[i]->wheel_2] };
 
 		differential_data_t diff_data =
 		{
@@ -1174,17 +1176,17 @@ void Beam::calcForcesEuler(int doUpdate, Real dt, int step, int maxstep, Beam** 
 			{ axle_torques[0], axle_torques[1] },
 			// twice the torque since this is for two wheels, plus extra torque from
 			// inter-axle torsion
-			2.0f * engine_torque + intertorque[axles[i].wheel_1],
+			2.0f * engine_torque + intertorque[axles[i]->wheel_1],
 			dt
 		};
 
-		axles[i].calcTorque( diff_data );
+		axles[i]->calcTorque( diff_data );
 
 		axle_wheels[0]->delta_rotation = diff_data.delta_rotation;
 		axle_wheels[1]->delta_rotation = -diff_data.delta_rotation;
 
-		intertorque[axles[i].wheel_1] = diff_data.out_torque[0];
-		intertorque[axles[i].wheel_2] = diff_data.out_torque[1];
+		intertorque[axles[i]->wheel_1] = diff_data.out_torque[0];
+		intertorque[axles[i]->wheel_2] = diff_data.out_torque[1];
 	}
 	BES_STOP(BES_CORE_Axles);
 	BES_START(BES_CORE_Wheels);
