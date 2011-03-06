@@ -193,7 +193,7 @@ inline float getTerrainHeight(Ogre::Real x, Ogre::Real z, void *unused=0)
 
 void RoRFrameListener::startTimer()
 {
-	//LogManager::getSingleton().logMessage("LUA: startTimer()");
+	//LOG("LUA: startTimer()");
 	raceStartTime = (int)rtime;
 	if(ow)
 	{
@@ -206,7 +206,7 @@ void RoRFrameListener::startTimer()
 
 float RoRFrameListener::stopTimer()
 {
-	//LogManager::getSingleton().logMessage("LUA: stopTimer()");
+	//LOG("LUA: stopTimer()");
 	float time=rtime - raceStartTime;
 	// let the display on
 	if(ow)
@@ -303,7 +303,7 @@ void RoRFrameListener::updateGUI(float dt)
 		for (int i=0; i<free_truck; i++)
 		{
 			if(!trucks[i]) continue;
-			MapEntity *e = bigMap->getEntityByName("Truck"+StringConverter::toString(i));
+			MapEntity *e = bigMap->getEntityByName("Truck"+TOSTRING(i));
 			if(!e) continue;
 			if (trucks[i]->state != RECYCLE && !interactivemap)
 			{
@@ -328,13 +328,13 @@ void RoRFrameListener::updateGUI(float dt)
 		if (trucks[current_truck]->editorId>=0 && editor)
 		{
 			ow->editor_pos->setCaption("Position: X=" +
-				StringConverter::toString(trucks[current_truck]->nodes[trucks[current_truck]->editorId].AbsPosition.x)+
-				"  Y="+StringConverter::toString(trucks[current_truck]->nodes[trucks[current_truck]->editorId].AbsPosition.y)+
-				"  Z="+StringConverter::toString(trucks[current_truck]->nodes[trucks[current_truck]->editorId].AbsPosition.z)
+				TOSTRING(trucks[current_truck]->nodes[trucks[current_truck]->editorId].AbsPosition.x)+
+				"  Y="+TOSTRING(trucks[current_truck]->nodes[trucks[current_truck]->editorId].AbsPosition.y)+
+				"  Z="+TOSTRING(trucks[current_truck]->nodes[trucks[current_truck]->editorId].AbsPosition.z)
 				);
 			ow->editor_angles->setCaption("Angles: 0.0 " +
-				StringConverter::toString(editor->pturn)+
-				"  "+StringConverter::toString(editor->ppitch)
+				TOSTRING(editor->pturn)+
+				"  "+TOSTRING(editor->ppitch)
 				);
 			char type[256];
 			sprintf(type, "Object: %s", editor->curtype);
@@ -346,7 +346,7 @@ void RoRFrameListener::updateGUI(float dt)
 		if (truck_getgear>0)
 		{
 			int numgears = trucks[current_truck]->engine->getNumGears();
-			String gearstr = StringConverter::toString(truck_getgear) + "/" + StringConverter::toString(numgears);
+			String gearstr = TOSTRING(truck_getgear) + "/" + TOSTRING(numgears);
 			ow->guiGear->setCaption(gearstr);
 			ow->guiGear3D->setCaption(gearstr);
 		} else if (truck_getgear==0)
@@ -747,9 +747,9 @@ RoRFrameListener::RoRFrameListener(AppState *parentState, RenderWindow* win, Cam
 	net_quality_changed=false;
 
 	thread_mode=THREAD_MONO;
-	if (SETTINGS.getSetting("Threads")=="1 (Standard CPU)")thread_mode=THREAD_MONO;
-	if (SETTINGS.getSetting("Threads")=="2 (Hyper-Threading or Dual core CPU)") thread_mode=THREAD_HT;
-	if (SETTINGS.getSetting("Threads")=="3 (multi core CPU, one thread per beam)") thread_mode=THREAD_HT2;
+	if (SSETTING("Threads")=="1 (Standard CPU)")thread_mode=THREAD_MONO;
+	if (SSETTING("Threads")=="2 (Hyper-Threading or Dual core CPU)") thread_mode=THREAD_HT;
+	if (SSETTING("Threads")=="3 (multi core CPU, one thread per beam)") thread_mode=THREAD_HT2;
 
 	current_truck=-1;
 	terrainHasTruckShop=false;
@@ -761,7 +761,7 @@ RoRFrameListener::RoRFrameListener(AppState *parentState, RenderWindow* win, Cam
 	if(!isEmbedded)
 		ow = new OverlayWrapper(win);
 
-	enablePosStor = (SETTINGS.getSetting("Position Storage")=="Yes");
+	enablePosStor = (BSETTING("Position Storage"));
 	objectCounter=0;
 	hdrListener=0;
 	shaderSchemeMode=1;
@@ -862,17 +862,17 @@ RoRFrameListener::RoRFrameListener(AppState *parentState, RenderWindow* win, Cam
 	// on apple, switch by default
 	switchMouseButtons=true;
 #endif
-	if(SETTINGS.getSetting("Switch Mouse Buttons") == "Yes")
+	if(BSETTING("Switch Mouse Buttons"))
 		switchMouseButtons=true;
-	else if(SETTINGS.getSetting("Switch Mouse Buttons") == "No")
+	else if(BSETTING("Switch Mouse Buttons"))
 		switchMouseButtons=false;
 
 	mouseGrabState=0; // 0 = not grabbed
-	if(SETTINGS.getSetting("Input Grab") == "All")
+	if(SSETTING("Input Grab") == "All")
 		inputGrabMode = GRAB_ALL;
-	else if(SETTINGS.getSetting("Input Grab") == "Dynamically")
+	else if(SSETTING("Input Grab") == "Dynamically")
 		inputGrabMode = GRAB_DYNAMICALLY;
-	else if(SETTINGS.getSetting("Input Grab") == "None")
+	else if(SSETTING("Input Grab") == "None")
 		inputGrabMode = GRAB_NONE;
 
 	if(!isEmbedded)
@@ -904,7 +904,7 @@ RoRFrameListener::RoRFrameListener(AppState *parentState, RenderWindow* win, Cam
 
 #ifdef USE_ANGELSCRIPT
 #ifdef USE_MYGUI
-	ingame_console = (SETTINGS.getSetting("Enable Ingame Console") == "Yes");
+	ingame_console = (BSETTING("Enable Ingame Console"));
 
 	if(ingame_console)
 		Console::getInstance();
@@ -929,55 +929,55 @@ RoRFrameListener::RoRFrameListener(AppState *parentState, RenderWindow* win, Cam
 	Ogre::WindowEventUtilities::addWindowEventListener(win, this);
 
 
-	debugCollisions = (SETTINGS.getSetting("Debug Collisions") == "Yes");
+	debugCollisions = BSETTING("Debug Collisions");
 
-    externalCameraMode = (SETTINGS.getSetting("External Camera Mode") == "Static")? 1 : 0;
+    externalCameraMode = (SSETTING("External Camera Mode") == "Static")? 1 : 0;
 
 	// get lights mode
 	flaresMode = 0; //None
-	if(SETTINGS.getSetting("Lights") == "None (fastest)")
+	if(SSETTING("Lights") == "None (fastest)")
 		flaresMode = 0;
-	else if(SETTINGS.getSetting("Lights") == "No light sources")
+	else if(SSETTING("Lights") == "No light sources")
 		flaresMode = 1;
-	else if(SETTINGS.getSetting("Lights") == "Only current vehicle, main lights")
+	else if(SSETTING("Lights") == "Only current vehicle, main lights")
 		flaresMode = 2;
-	else if(SETTINGS.getSetting("Lights") == "All vehicles, main lights")
+	else if(SSETTING("Lights") == "All vehicles, main lights")
 		flaresMode = 3;
-	else if(SETTINGS.getSetting("Lights") == "All vehicles, all lights")
+	else if(SSETTING("Lights") == "All vehicles, all lights")
 		flaresMode = 4;
 
 
 	// heathaze effect
 	heathaze=0;
-	if(SETTINGS.getSetting("HeatHaze") == "Yes")
+	if(BSETTING("HeatHaze"))
 	{
 		heathaze=new HeatHaze(scm, win,cam);
 		heathaze->setEnable(true);
 	}
 
 	// no more force feedback
-	// useforce=(SETTINGS.getSetting("Controler Force Feedback")=="Enable");
+	// useforce=(SSETTING("Controler Force Feedback")=="Enable");
 	// force feedback is ...back :)
-	if (SETTINGS.getSetting("Force Feedback")=="Yes")
+	if (BSETTING("Force Feedback"))
 	{
 		//check if a device has been detected
 		if (INPUTENGINE.getForceFeedbackDevice())
 		{
 			//retrieve gain values
 			float ogain=1.0;
-			String tmpstring = SETTINGS.getSetting("Force Feedback Gain");
+			String tmpstring = SSETTING("Force Feedback Gain");
 			if (tmpstring != String("")) ogain = atof(tmpstring.c_str())/100.0;
 
 			float stressg=1.0;
-			tmpstring = SETTINGS.getSetting("Force Feedback Stress");
+			tmpstring = SSETTING("Force Feedback Stress");
 			if (tmpstring != String("")) stressg = atof(tmpstring.c_str())/100.0;
 
 			float centg=0.0;
-			tmpstring = SETTINGS.getSetting("Force Feedback Centering");
+			tmpstring = SSETTING("Force Feedback Centering");
 			if (tmpstring != String("")) centg = atof(tmpstring.c_str())/100.0;
 
 			float camg=0.0;
-			tmpstring = SETTINGS.getSetting("Force Feedback Camera");
+			tmpstring = SSETTING("Force Feedback Camera");
 			if (tmpstring != String("")) camg = atof(tmpstring.c_str())/100.0;
 
 			forcefeedback=new ForceFeedback(INPUTENGINE.getForceFeedbackDevice(), ogain, stressg, centg, camg);
@@ -985,24 +985,24 @@ RoRFrameListener::RoRFrameListener(AppState *parentState, RenderWindow* win, Cam
 	}
 
 #ifdef USE_OIS_G27
-	if (SETTINGS.getSetting("Logitech LEDs")=="Yes")
+	if (BSETTING("Logitech LEDs"))
 	{
 //		leds = INPUTENGINE.getLogitechLEDsDevice();
 	}
 #endif //OIS_G27
 
 
-	if(SETTINGS.getSetting("Screenshot Format")=="" || SETTINGS.getSetting("Screenshot Format")=="jpg (smaller, default)")
+	if(SSETTING("Screenshot Format")=="" || SSETTING("Screenshot Format")=="jpg (smaller, default)")
 		strcpy(screenshotformat, "jpg");
-	else if(SETTINGS.getSetting("Screenshot Format")=="png (bigger, no quality loss)")
+	else if(SSETTING("Screenshot Format")=="png (bigger, no quality loss)")
 		strcpy(screenshotformat, "png");
 	else
-		strncpy(screenshotformat, SETTINGS.getSetting("Screenshot Format").c_str(), 10);
+		strncpy(screenshotformat, SSETTING("Screenshot Format").c_str(), 10);
 
 	//Joystick
 	/*
 	float deadzone=0.1;
-	String deadzone_string = SETTINGS.getSetting("Controler Deadzone");
+	String deadzone_string = SSETTING("Controler Deadzone");
 	if (deadzone_string != String("")) {
 		deadzone = atof(deadzone_string.c_str());
 	}
@@ -1054,10 +1054,10 @@ RoRFrameListener::RoRFrameListener(AppState *parentState, RenderWindow* win, Cam
 	pickLineNode->setVisible(false);
 
 	//network
-	netmode=(SETTINGS.getSetting("Network enable")=="Yes");
+	netmode=(BSETTING("Network enable"));
 
 	// check command line args
-	String cmd = SETTINGS.getSetting("cmdline CMD");
+	String cmd = SSETTING("cmdline CMD");
 	String cmdAction = "";
 	String cmdServerIP = "";
 	String modName = "";
@@ -1083,7 +1083,7 @@ RoRFrameListener::RoRFrameListener(AppState *parentState, RenderWindow* win, Cam
 			if(args[0] == "loc" && args.size() == 4)
 			{
 				spawnLocation = Vector3(StringConverter::parseInt(args[1]), StringConverter::parseInt(args[2]), StringConverter::parseInt(args[3]));
-				SETTINGS.setSetting("net spawn location", Ogre::StringConverter::toString(spawnLocation));
+				SETTINGS.setSetting("net spawn location", TOSTRING(spawnLocation));
 			}
 		}
 	}
@@ -1101,16 +1101,16 @@ RoRFrameListener::RoRFrameListener(AppState *parentState, RenderWindow* win, Cam
 	net=0;
 
 	// preselected map or truck?
-	String preselected_map = SETTINGS.getSetting("Preselected Map");
-	String preselected_truck = SETTINGS.getSetting("Preselected Truck");
-	String preselected_truckConfig = SETTINGS.getSetting("Preselected TruckConfig");
-	bool enterTruck = (SETTINGS.getSetting("Enter Preselected Truck") == "Yes");
+	String preselected_map = SSETTING("Preselected Map");
+	String preselected_truck = SSETTING("Preselected Truck");
+	String preselected_truckConfig = SSETTING("Preselected TruckConfig");
+	bool enterTruck = (BSETTING("Enter Preselected Truck"));
 
-	if(preselected_map != "") LogManager::getSingleton().logMessage("Preselected Map: " + (preselected_map));
-	if(preselected_truck != "") LogManager::getSingleton().logMessage("Preselected Truck: " + (preselected_truck));
-	if(preselected_truckConfig != "") LogManager::getSingleton().logMessage("Preselected Truck Config: " + (preselected_truckConfig));
+	if(preselected_map != "") LOG("Preselected Map: " + (preselected_map));
+	if(preselected_truck != "") LOG("Preselected Truck: " + (preselected_truck));
+	if(preselected_truckConfig != "") LOG("Preselected Truck Config: " + (preselected_truckConfig));
 
-	//LogManager::getSingleton().logMessage("huette debug 1");
+	//LOG("huette debug 1");
 
 	// initiate player colours
 	new PlayerColours();
@@ -1130,11 +1130,11 @@ RoRFrameListener::RoRFrameListener(AppState *parentState, RenderWindow* win, Cam
 	if(netmode)
 	{
 		// cmdline overrides config
-		std::string sname = SETTINGS.getSetting("Server name").c_str();
+		std::string sname = SSETTING("Server name").c_str();
 		if(cmdAction == "joinserver" && !cmdServerIP.empty())
 			sname = cmdServerIP;
 
-		long sport = StringConverter::parseLong(SETTINGS.getSetting("Server port"));
+		long sport = StringConverter::parseLong(SSETTING("Server port"));
 		if(cmdAction == "joinserver" && cmdServerPort)
 			sport = cmdServerPort;
 
@@ -1144,7 +1144,7 @@ RoRFrameListener::RoRFrameListener(AppState *parentState, RenderWindow* win, Cam
 			exit(123);
 			return;
 		}
-		LogManager::getSingleton().logMessage("trying to join server '" + String(sname) + "' on port " + StringConverter::toString(sport) + "'...");
+		LOG("trying to join server '" + String(sname) + "' on port " + TOSTRING(sport) + "'...");
 
 #ifdef USE_MYGUI
 		LoadingWindow::get()->setAutotrack(_L("Trying to connect to server ..."));
@@ -1166,7 +1166,7 @@ RoRFrameListener::RoRFrameListener(AppState *parentState, RenderWindow* win, Cam
 #endif //USE_MYGUI
 		if(!connres)
 		{
-			LogManager::getSingleton().logMessage("connection failed. server down?");
+			LOG("connection failed. server down?");
 			showError(_L("Unable to connect to server"), _L("Unable to connect to the server. It is certainly down or you have network problems."));
 			//fatal
 			exit(1);
@@ -1218,7 +1218,7 @@ RoRFrameListener::RoRFrameListener(AppState *parentState, RenderWindow* win, Cam
 			// fallback to old terrain name with .terrn
 			if(!CACHE.checkResourceLoaded(preselected_map))
 			{
-				LogManager::getSingleton().logMessage("Terrain not found: " + preselected_map);
+				LOG("Terrain not found: " + preselected_map);
 				showError(_L("Terrain loading error"), _L("Terrain not found: ") + preselected_map);
 				exit(123);
 			}
@@ -1289,7 +1289,7 @@ RoRFrameListener::RoRFrameListener(AppState *parentState, RenderWindow* win, Cam
 #ifdef USE_MYGUI
 		// show terrain selector
 		hideMap();
-		//LogManager::getSingleton().logMessage("huette debug 3");
+		//LOG("huette debug 3");
 		SelectorWindow::get()->show(SelectorWindow::LT_Terrain);
 		SelectorWindow::get()->setEnableCancel(false);
 #endif // MYGUI
@@ -1387,7 +1387,7 @@ void RoRFrameListener::unloadObject(const char* instancename)
 {
 	if(loadedObjects.find(std::string(instancename)) == loadedObjects.end())
 	{
-		LogManager::getSingleton().logMessage("unable to unload object: " + std::string(instancename));
+		LOG("unable to unload object: " + std::string(instancename));
 		return;
 	}
 
@@ -1467,7 +1467,7 @@ void RoRFrameListener::loadObject(const char* name, float px, float py, float pz
 	if(!CACHE.checkResourceLoaded(odefname, odefgroup))
 	if(!odefFound)
 	{
-		LogManager::getSingleton().logMessage("Error while loading Terrain: could not find required .odef file: " + odefname + ". Ignoring entry.");
+		LOG("Error while loading Terrain: could not find required .odef file: " + odefname + ". Ignoring entry.");
 		return;
 	}
 
@@ -1508,7 +1508,7 @@ void RoRFrameListener::loadObject(const char* name, float px, float py, float pz
 			SubEntity *se = mo->getEntity()->getSubEntity(i);
 			String matname = se->getMaterialName();
 			String newmatname = matname + "/" + String(instancename);
-			//LogManager::getSingleton().logMessage("subentity " + StringConverter::toString(i) + ": "+ matname + " -> " + newmatname);
+			//LOG("subentity " + TOSTRING(i) + ": "+ matname + " -> " + newmatname);
 			se->getMaterial()->clone(newmatname);
 			se->setMaterialName(newmatname);
 		}
@@ -1668,7 +1668,7 @@ void RoRFrameListener::loadObject(const char* name, float px, float py, float pz
 		{
 			char mat[255]="";
 			sscanf(ptline, "generateMaterialShaders %s", mat);
-			if (SETTINGS.getSetting("Use RTShader System")=="Yes")
+			if (BSETTING("Use RTShader System"))
 			{
 				Ogre::RTShader::ShaderGenerator::getSingleton().createShaderBasedTechnique(String(mat), Ogre::MaterialManager::DEFAULT_SCHEME_NAME, Ogre::RTShader::ShaderGenerator::DEFAULT_SCHEME_NAME);
 				Ogre::RTShader::ShaderGenerator::getSingleton().invalidateMaterial(RTShader::ShaderGenerator::DEFAULT_SCHEME_NAME, String(mat));
@@ -1686,7 +1686,7 @@ void RoRFrameListener::loadObject(const char* name, float px, float py, float pz
 				AnimationStateSet *s = mo->getEntity()->getAllAnimationStates();
 				if(!s->hasAnimationState(String(animname)))
 				{
-					LogManager::getSingleton().logMessage("ODEF: animation '" + String(animname) + "' for mesh: '" + String(mesh) + "' in odef file '" + String(name) + ".odef' not found!");
+					LOG("ODEF: animation '" + String(animname) + "' for mesh: '" + String(mesh) + "' in odef file '" + String(name) + ".odef' not found!");
 					continue;
 				}
 				animated_object_t ao;
@@ -1705,7 +1705,7 @@ void RoRFrameListener::loadObject(const char* name, float px, float py, float pz
 				}
 				if(!ao.anim)
 				{
-					LogManager::getSingleton().logMessage("ODEF: animation '" + String(animname) + "' for mesh: '" + String(mesh) + "' in odef file '" + String(name) + ".odef' not found!");
+					LOG("ODEF: animation '" + String(animname) + "' for mesh: '" + String(mesh) + "' in odef file '" + String(name) + ".odef' not found!");
 					continue;
 				}
 				ao.anim->setEnabled(true);
@@ -1721,14 +1721,14 @@ void RoRFrameListener::loadObject(const char* name, float px, float py, float pz
 			MaterialPtr m = MaterialManager::getSingleton().getByName(matName);
 			if(m.getPointer() == 0)
 			{
-				LogManager::getSingleton().logMessage("ODEF: problem with drawTextOnMeshTexture command: mesh material not found: "+String(fname)+" : "+String(ptline));
+				LOG("ODEF: problem with drawTextOnMeshTexture command: mesh material not found: "+String(fname)+" : "+String(ptline));
 				continue;
 			}
 			String texName = m->getTechnique(0)->getPass(0)->getTextureUnitState(0)->getTextureName();
 			Texture* background = (Texture *)TextureManager::getSingleton().getByName(texName).getPointer();
 			if(!background)
 			{
-				LogManager::getSingleton().logMessage("ODEF: problem with drawTextOnMeshTexture command: mesh texture not found: "+String(fname)+" : "+String(ptline));
+				LOG("ODEF: problem with drawTextOnMeshTexture command: mesh texture not found: "+String(fname)+" : "+String(ptline));
 				continue;
 			}
 
@@ -1740,7 +1740,7 @@ void RoRFrameListener::loadObject(const char* name, float px, float py, float pz
 			TexturePtr texture = TextureManager::getSingleton().createManual(tmpTextName, ResourceGroupManager::DEFAULT_RESOURCE_GROUP_NAME, TEX_TYPE_2D, (Ogre::uint)background->getWidth(), (Ogre::uint)background->getHeight(), MIP_UNLIMITED , PF_X8R8G8B8, Ogre::TU_STATIC|Ogre::TU_AUTOMIPMAP, new ResourceBuffer());
 			if(texture.getPointer() == 0)
 			{
-				LogManager::getSingleton().logMessage("ODEF: problem with drawTextOnMeshTexture command: could not create texture: "+String(fname)+" : "+String(ptline));
+				LOG("ODEF: problem with drawTextOnMeshTexture command: could not create texture: "+String(fname)+" : "+String(ptline));
 				continue;
 			}
 
@@ -1752,7 +1752,7 @@ void RoRFrameListener::loadObject(const char* name, float px, float py, float pz
 			int res = sscanf(ptline, "drawTextOnMeshTexture %f, %f, %f, %f, %f, %f, %f, %f, %c, %s %s", &x, &y, &w, &h, &r, &g, &b, &a, &option, fontname, text);
 			if(res < 11)
 			{
-				LogManager::getSingleton().logMessage("ODEF: problem with drawTextOnMeshTexture command: "+String(fname)+" : "+String(ptline));
+				LOG("ODEF: problem with drawTextOnMeshTexture command: "+String(fname)+" : "+String(ptline));
 				continue;
 			}
 
@@ -1767,7 +1767,7 @@ void RoRFrameListener::loadObject(const char* name, float px, float py, float pz
 			Font* font = (Font *)FontManager::getSingleton().getByName(String(fontname)).getPointer();
 			if(!font)
 			{
-				LogManager::getSingleton().logMessage("ODEF: problem with drawTextOnMeshTexture command: font not found: "+String(fname)+" : "+String(ptline));
+				LOG("ODEF: problem with drawTextOnMeshTexture command: font not found: "+String(fname)+" : "+String(ptline));
 				continue;
 			}
 
@@ -1794,7 +1794,7 @@ void RoRFrameListener::loadObject(const char* name, float px, float py, float pz
 			continue;
 		}
 
-		LogManager::getSingleton().logMessage("ODEF: unknown command in "+String(fname)+" : "+String(ptline));
+		LOG("ODEF: unknown command in "+String(fname)+" : "+String(ptline));
 	}
 
 	//add icons if type is set
@@ -1976,13 +1976,13 @@ bool RoRFrameListener::updateEvents(float dt)
 		{
 			shaderSchemeMode=0;
 			mCamera->getViewport()->setMaterialScheme(MaterialManager::DEFAULT_SCHEME_NAME);
-			LogManager::getSingleton().logMessage("shaders disabled");
+			LOG("shaders disabled");
 			if(ow) ow->flashMessage("shaders disabled");
 		} else
 		{
 			shaderSchemeMode=1;
 			mCamera->getViewport()->setMaterialScheme(RTShader::ShaderGenerator::DEFAULT_SCHEME_NAME);
-			LogManager::getSingleton().logMessage("shaders enabled");
+			LOG("shaders enabled");
 			if(ow) ow->flashMessage("shaders enabled");
 		}
 	}
@@ -1994,12 +1994,12 @@ bool RoRFrameListener::updateEvents(float dt)
 		if(ow) ow->hideFlashMessage();
 
 		int mNumScreenShots=0;
-		String path = SETTINGS.getSetting("User Path");
-		String tmp = path + String("screenshot_big_") + StringConverter::toString(++mNumScreenShots) + String(".") + String(screenshotformat);
+		String path = SSETTING("User Path");
+		String tmp = path + String("screenshot_big_") + TOSTRING(++mNumScreenShots) + String(".") + String(screenshotformat);
 		while(fileExists(tmp.c_str()))
-			tmp = path + String("screenshot_big_") + StringConverter::toString(++mNumScreenShots) + String(".") + String(screenshotformat);
+			tmp = path + String("screenshot_big_") + TOSTRING(++mNumScreenShots) + String(".") + String(screenshotformat);
 
-		tmp = String("screenshot_big_") + StringConverter::toString(++mNumScreenShots);
+		tmp = String("screenshot_big_") + TOSTRING(++mNumScreenShots);
 
 		hideGUI(true);
 
@@ -2007,45 +2007,45 @@ bool RoRFrameListener::updateEvents(float dt)
 
 		hideGUI(false);
 
-		LogManager::getSingleton().logMessage("Wrote big screenshot : " + tmp);
+		LOG("Wrote big screenshot : " + tmp);
 		if(ow) ow->flashMessage(String("Wrote big screenshot : ") + tmp);
 
 	} else if (INPUTENGINE.getEventBoolValueBounce(EV_COMMON_SCREENSHOT, 0.5f))
 	{
 		int mNumScreenShots=0;
-		String tmpfn = SETTINGS.getSetting("User Path") + String("screenshot_") + StringConverter::toString(++mNumScreenShots) + String(".") + String(screenshotformat);
+		String tmpfn = SSETTING("User Path") + String("screenshot_") + TOSTRING(++mNumScreenShots) + String(".") + String(screenshotformat);
 		while(fileExists(tmpfn.c_str()))
-			tmpfn = SETTINGS.getSetting("User Path") + String("screenshot_") + StringConverter::toString(++mNumScreenShots) + String(".") + String(screenshotformat);
+			tmpfn = SSETTING("User Path") + String("screenshot_") + TOSTRING(++mNumScreenShots) + String(".") + String(screenshotformat);
 
 		if(String(screenshotformat) == "png")
 		{
 			// add some more data into the image
 			AdvancedScreen *as = new AdvancedScreen(mWindow, tmpfn);
 			as->addData("terrain_Name", loadedTerrain);
-			as->addData("terrain_Hash", SETTINGS.getSetting("TerrainHash"));
-			as->addData("Truck_Num", StringConverter::toString(current_truck));
+			as->addData("terrain_Hash", SSETTING("TerrainHash"));
+			as->addData("Truck_Num", TOSTRING(current_truck));
 			if(current_truck>=0 && trucks[current_truck])
 			{
 				as->addData("Truck_fname", trucks[current_truck]->realtruckfilename);
 				as->addData("Truck_name", trucks[current_truck]->getTruckName());
-				as->addData("Truck_beams", StringConverter::toString(trucks[current_truck]->getBeamCount()));
-				as->addData("Truck_nodes", StringConverter::toString(trucks[current_truck]->getNodeCount()));
+				as->addData("Truck_beams", TOSTRING(trucks[current_truck]->getBeamCount()));
+				as->addData("Truck_nodes", TOSTRING(trucks[current_truck]->getNodeCount()));
 			}
-			as->addData("User_NickName", SETTINGS.getSetting("Nickname"));
-			as->addData("User_Language", SETTINGS.getSetting("Language"));
+			as->addData("User_NickName", SSETTING("Nickname"));
+			as->addData("User_Language", SSETTING("Language"));
 			as->addData("RoR_VersionString", String(ROR_VERSION_STRING));
 			as->addData("RoR_VersionSVN", String(SVN_REVISION));
 			as->addData("RoR_VersionSVNID", String(SVN_ID));
 			as->addData("RoR_ProtocolVersion", String(RORNET_VERSION));
-			as->addData("RoR_BinaryHash", SETTINGS.getSetting("BinaryHash"));
-			as->addData("MP_ServerName", SETTINGS.getSetting("Server name"));
-			as->addData("MP_ServerPort", SETTINGS.getSetting("Server port"));
-			as->addData("MP_NetworkEnabled", SETTINGS.getSetting("Network enable"));
-			as->addData("Camera_Mode", StringConverter::toString(cameramode));
-			as->addData("Camera_Position", StringConverter::toString(mCamera->getPosition()));
+			as->addData("RoR_BinaryHash", SSETTING("BinaryHash"));
+			as->addData("MP_ServerName", SSETTING("Server name"));
+			as->addData("MP_ServerPort", SSETTING("Server port"));
+			as->addData("MP_NetworkEnabled", SSETTING("Network enable"));
+			as->addData("Camera_Mode", TOSTRING(cameramode));
+			as->addData("Camera_Position", TOSTRING(mCamera->getPosition()));
 
 			const RenderTarget::FrameStats& stats = mWindow->getStatistics();
-			as->addData("AVGFPS", StringConverter::toString(stats.avgFPS));
+			as->addData("AVGFPS", TOSTRING(stats.avgFPS));
 
 			as->write();
 			delete(as);
@@ -2054,7 +2054,7 @@ bool RoRFrameListener::updateEvents(float dt)
 			mWindow->update();
 			mWindow->writeContentsToFile(tmpfn);
 		}
-		LogManager::getSingleton().logMessage("Wrote screenshot : " + tmpfn);
+		LOG("Wrote screenshot : " + tmpfn);
 
 		// hide any old flash message
 		if(ow) ow->hideFlashMessage();
@@ -2113,7 +2113,7 @@ bool RoRFrameListener::updateEvents(float dt)
 		// * other minor stati
 
 		// notice the user about the amount of possible reloads
-		String msg = StringConverter::toString(newBeam->trucknum) + String(" of ") + StringConverter::toString(MAX_TRUCKS) + String(" possible reloads.");
+		String msg = TOSTRING(newBeam->trucknum) + String(" of ") + TOSTRING(MAX_TRUCKS) + String(" possible reloads.");
 		if(ow) ow->flashMessage(msg, 10.0f);
 
 		// dislocate the old truck, so its out of sight
@@ -2162,9 +2162,9 @@ bool RoRFrameListener::updateEvents(float dt)
 		if (INPUTENGINE.getEventBoolValueBounce(EV_TRUCK_SAVE_POS9, 0.5f)) { slot=8; res = trucks[current_truck]->savePosition(slot); };
 		if (INPUTENGINE.getEventBoolValueBounce(EV_TRUCK_SAVE_POS10, 0.5f)) { slot=9; res = trucks[current_truck]->savePosition(slot); };
 		if(slot != -1 && !res)
-			if(ow) ow->flashMessage("Position saved under slot " + StringConverter::toString(slot+1), 3);
+			if(ow) ow->flashMessage("Position saved under slot " + TOSTRING(slot+1), 3);
 		else if(slot != -1 && res)
-			if(ow) ow->flashMessage("Error while saving position saved under slot " + StringConverter::toString(slot+1)+" : "+StringConverter::toString(res), 3);
+			if(ow) ow->flashMessage("Error while saving position saved under slot " + TOSTRING(slot+1)+" : "+TOSTRING(res), 3);
 
 		if(res == -10)
 		{
@@ -2179,9 +2179,9 @@ bool RoRFrameListener::updateEvents(float dt)
 			if (INPUTENGINE.getEventBoolValueBounce(EV_TRUCK_LOAD_POS9, 0.5f)) { slot=8; res = trucks[current_truck]->loadPosition(slot); };
 			if (INPUTENGINE.getEventBoolValueBounce(EV_TRUCK_LOAD_POS10, 0.5f)) { slot=9; res = trucks[current_truck]->loadPosition(slot); };
 			if(slot != -1 && res==0)
-				if(ow) ow->flashMessage("Loaded position from slot " + StringConverter::toString(slot+1), 3);
+				if(ow) ow->flashMessage("Loaded position from slot " + TOSTRING(slot+1), 3);
 			else if(slot != -1 && res!=0)
-				if(ow) ow->flashMessage("Could not load position from slot " + StringConverter::toString(slot+1) + "", 3);
+				if(ow) ow->flashMessage("Could not load position from slot " + TOSTRING(slot+1) + "", 3);
 		}
 	}
 
@@ -2192,7 +2192,7 @@ bool RoRFrameListener::updateEvents(float dt)
 		if(fov>10)
 			fov -= 2;
 		mCamera->setFOVy(Degree(fov));
-		if(ow) ow->flashMessage(_L("FOV: ") + StringConverter::toString(fov));
+		if(ow) ow->flashMessage(_L("FOV: ") + TOSTRING(fov));
 	}
 
 	if (INPUTENGINE.getEventBoolValueBounce(EV_COMMON_FOV_MORE))
@@ -2201,7 +2201,7 @@ bool RoRFrameListener::updateEvents(float dt)
 		if(fov<160)
 			fov += 2;
 		mCamera->setFOVy(Degree(fov));
-		if(ow) ow->flashMessage(_L("FOV: ") + StringConverter::toString(fov));
+		if(ow) ow->flashMessage(_L("FOV: ") + TOSTRING(fov));
 	}
 
 	// full screen/windowed screen switching
@@ -2218,12 +2218,12 @@ bool RoRFrameListener::updateEvents(float dt)
 		if(!mode)
 		{
 			mWindow->setFullscreen(true, org_width, org_height);
-			LogManager::getSingleton().logMessage(" ** switched to fullscreen: "+StringConverter::toString(width)+"x"+StringConverter::toString(height));
+			LOG(" ** switched to fullscreen: "+TOSTRING(width)+"x"+TOSTRING(height));
 		} else
 		{
 			mWindow->setFullscreen(false, 640, 480);
 			mWindow->setFullscreen(false, org_width, org_height);
-			LogManager::getSingleton().logMessage(" ** switched to windowed mode: ");
+			LOG(" ** switched to windowed mode: ");
 		}
 	}
 
@@ -2234,13 +2234,13 @@ bool RoRFrameListener::updateEvents(float dt)
 			// change to fixed free camera: that is working like fixed cam
 			cameramode = CAMERA_FREE_FIXED;
 			if(mDOF) mDOF->setFocusMode(DOFManager::Auto);
-			LogManager::getSingleton().logMessage("switching to fixed free camera mode");
+			LOG("switching to fixed free camera mode");
 			if(ow) ow->flashMessage(_L("fixed free camera"));
 		} else if(cameramode == CAMERA_FREE_FIXED)
 		{
 			cameramode = CAMERA_FREE;
 			if(mDOF) mDOF->setFocusMode(DOFManager::Auto);
-			LogManager::getSingleton().logMessage("switching to free camera mode from fixed mode");
+			LOG("switching to free camera mode from fixed mode");
 			if(ow) ow->flashMessage(_L("free camera"));
 		}
 	}
@@ -2253,7 +2253,7 @@ bool RoRFrameListener::updateEvents(float dt)
 			// change back to normal camera
 			if(mDOF) mDOF->setFocusMode(DOFManager::Manual);
 			cameramode = storedcameramode;
-			LogManager::getSingleton().logMessage("exiting free camera mode");
+			LOG("exiting free camera mode");
 			if(ow) ow->flashMessage(_L("normal camera"));
 		} else if(cameramode != CAMERA_FREE && cameramode != CAMERA_FREE_FIXED )
 		{
@@ -2261,7 +2261,7 @@ bool RoRFrameListener::updateEvents(float dt)
 			if(mDOF) mDOF->setFocusMode(DOFManager::Auto);
 			storedcameramode = cameramode;
 			cameramode = CAMERA_FREE;
-			LogManager::getSingleton().logMessage("entering free camera mode");
+			LOG("entering free camera mode");
 			if(ow) ow->flashMessage(_L("free camera"));
 		}
 	}
@@ -2315,7 +2315,7 @@ bool RoRFrameListener::updateEvents(float dt)
 				// oldstate = 0 : dragging view to rotate
 				// oldstate = 1 : moving mouse
 				// oldstate = 2 : picking node
-				//LogManager::getSingleton().logMessage("oldstate="+StringConverter::toString(oldstate));
+				//LOG("oldstate="+TOSTRING(oldstate));
 
 				// this is a workaround to bea able to release mouse buttons in the dynamic mode
 				buttonsPressed = (mstate.buttons > 0);
@@ -2506,18 +2506,18 @@ bool RoRFrameListener::updateEvents(float dt)
 									{
 										if (!editorfd)
 											{
-												String editorfn = SETTINGS.getSetting("Log Path") + "editor_out.txt";
+												String editorfn = SSETTING("Log Path") + "editor_out.txt";
 												editorfd = fopen(editorfn.c_str(), "a");
 												fprintf(editorfd, " ==== new session\n");
 											}
 										road->append();
 										fprintf(editorfd, "%f, %f, %f, %f, %f, %f, %s\n", road->rpos.x, road->rpos.y, road->rpos.z, road->rrot.x, road->rrot.y, road->rrot.z, road->curtype);
-										LogManager::getSingleton().logMessage(StringConverter::toString(road->rpos.x)+", "+
-										StringConverter::toString(road->rpos.y)+", "+
-										StringConverter::toString(road->rpos.z)+", "+
-										StringConverter::toString(road->rrot.x)+", "+
-										StringConverter::toString(road->rrot.y)+", "+
-										StringConverter::toString(road->rrot.z)+", "+road->curtype);
+										LOG(TOSTRING(road->rpos.x)+", "+
+										TOSTRING(road->rpos.y)+", "+
+										TOSTRING(road->rpos.z)+", "+
+										TOSTRING(road->rrot.x)+", "+
+										TOSTRING(road->rrot.y)+", "+
+										TOSTRING(road->rrot.z)+", "+road->curtype);
 
 										loadObject(road->curtype, road->rpos.x, road->rpos.y, road->rpos.z, road->rrot.x, road->rrot.y, road->rrot.z, 0, "generic");
 									}
@@ -2526,18 +2526,18 @@ bool RoRFrameListener::updateEvents(float dt)
 									{
 										if (!editorfd)
 											{
-												String editorfn = SETTINGS.getSetting("Log Path") + "editor_out.txt";
+												String editorfn = SSETTING("Log Path") + "editor_out.txt";
 												editorfd = fopen(editorfn.c_str(), "a");
 												fprintf(editorfd, " ==== new session\n");
 											}
 
 										fprintf(editorfd, "%f, %f, %f, %f, %f, %f, %s\n", editor->ppos.x, editor->ppos.y, editor->ppos.z, 0.0, editor->pturn, editor->ppitch, editor->curtype);
-										LogManager::getSingleton().logMessage(StringConverter::toString(editor->ppos.x)+", "+
-										StringConverter::toString(editor->ppos.y)+", "+
-										StringConverter::toString(editor->ppos.z)+", "+
-										StringConverter::toString(0)+", "+
-										StringConverter::toString(editor->pturn)+", "+
-										StringConverter::toString(editor->ppitch)+", "+editor->curtype);
+										LOG(TOSTRING(editor->ppos.x)+", "+
+										TOSTRING(editor->ppos.y)+", "+
+										TOSTRING(editor->ppos.z)+", "+
+										TOSTRING(0)+", "+
+										TOSTRING(editor->pturn)+", "+
+										TOSTRING(editor->ppitch)+", "+editor->curtype);
 										loadObject(editor->curtype, editor->ppos.x, editor->ppos.y, editor->ppos.z, 0, editor->pturn, editor->ppitch, 0, "generic", false);
 									}
 							}
@@ -2801,7 +2801,7 @@ bool RoRFrameListener::updateEvents(float dt)
 							enablegrab=false;
 							char name[256];
 							strcpy(name,element2->getName().c_str());
-							//LogManager::getSingleton().logMessage("element "+element2->getName());
+							//LOG("element "+element2->getName());
 							if (!strncmp(name, "tracks/engstart1", 16)) trucks[current_truck]->aeroengines[0]->flipStart();
 							if (!strncmp(name, "tracks/engstart2", 16) && trucks[current_truck]->free_aeroengine>1) trucks[current_truck]->aeroengines[1]->flipStart();
 							if (!strncmp(name, "tracks/engstart3", 16) && trucks[current_truck]->free_aeroengine>2) trucks[current_truck]->aeroengines[2]->flipStart();
@@ -3363,7 +3363,7 @@ bool RoRFrameListener::updateEvents(float dt)
 								if(mouseGrabForce < 0.0f)
 									mouseGrabForce = 0.0f;
 
-								//LogManager::getSingleton().logMessage("mouse force: " + StringConverter::toString(mouseGrabForce));
+								//LOG("mouse force: " + TOSTRING(mouseGrabForce));
 							}
 							//exert forces
 							//find pointed position
@@ -3564,7 +3564,7 @@ bool RoRFrameListener::updateEvents(float dt)
 			camDist=20;
 		}
 #ifdef USE_CAELUM
-		if (SETTINGS.getSetting("Sky effects")=="Caelum (best looking, slower)")
+		if (SSETTING("Sky effects")=="Caelum (best looking, slower)")
 		{
 			Ogre::Real time_factor = 1000.0f;
 			Ogre::Real multiplier = 10;
@@ -3766,7 +3766,7 @@ bool RoRFrameListener::updateEvents(float dt)
 						continue;
 					if (trucks[i]->cinecameranodepos[0]==-1)
 					{
-						LogManager::getSingleton().logMessage("cinecam missing, cannot enter truck!");
+						LOG("cinecam missing, cannot enter truck!");
 						continue;
 					}
 					float len=(trucks[i]->nodes[trucks[i]->cinecameranodepos[0]].AbsPosition-(person->getPosition()+Vector3(0.0, 2.0, 0.0))).length();
@@ -3867,7 +3867,7 @@ bool RoRFrameListener::updateEvents(float dt)
 
 				if(bigMap && localTruck)
 				{
-					MapEntity *e = bigMap->createNamedMapEntity("Truck"+StringConverter::toString(localTruck->trucknum), MapControl::getTypeByDriveable(localTruck->driveable));
+					MapEntity *e = bigMap->createNamedMapEntity("Truck"+TOSTRING(localTruck->trucknum), MapControl::getTypeByDriveable(localTruck->driveable));
 					if(e)
 					{
 						e->setState(DESACTIVATED);
@@ -3966,20 +3966,20 @@ bool RoRFrameListener::updateEvents(float dt)
 				mtc->setCamPosition(Vector3(mapsizex/2, hfinder->getHeightAt(mapsizex/2, mapsizez/2) , mapsizez/2), Quaternion(Degree(0), Vector3::UNIT_X));
 				mtc->update();
 				bigMap->setEntitiesVisibility(true);
-				LogManager::getSingleton().logMessage("disabled interactive Map");
+				LOG("disabled interactive Map");
 			} else
 			{
 				mtc->setCamZoom(30); // zoom very near
 				bigMap->setEntitiesVisibility(false);
 				interactivemap=1;
-				LogManager::getSingleton().logMessage("enabled interactive Map");
+				LOG("enabled interactive Map");
 			}
 		}
 	}
 
 	if (INPUTENGINE.getEventBoolValueBounce(EV_MAP_IN) && interactivemap && mtc)
 	{
-		//LogManager::getSingleton().logMessage("zoom in");
+		//LOG("zoom in");
 		if(INPUTENGINE.isKeyDown(OIS::KC_LSHIFT) || INPUTENGINE.isKeyDown(OIS::KC_RSHIFT))
 			mtc->setCamZoomRel(4);
 		else
@@ -3988,7 +3988,7 @@ bool RoRFrameListener::updateEvents(float dt)
 	}
 	if (INPUTENGINE.getEventBoolValueBounce(EV_MAP_OUT) && interactivemap && mtc)
 	{
-		//LogManager::getSingleton().logMessage("zoom out");
+		//LOG("zoom out");
 		if(INPUTENGINE.isKeyDown(OIS::KC_LSHIFT) || INPUTENGINE.isKeyDown(OIS::KC_RSHIFT))
 			mtc->setCamZoomRel(-4);
 		else
@@ -4067,7 +4067,7 @@ bool RoRFrameListener::updateEvents(float dt)
 			rotz = atan2(idir.dotProduct(Vector3::UNIT_X), idir.dotProduct(-Vector3::UNIT_Z));
 			rotz = -Radian(rotz).valueDegrees();
 		}
-		LogManager::getSingleton().logMessage("position-x " + StringConverter::toString(pos.x) + ", "+ StringConverter::toString(pos.y) + ", " + StringConverter::toString(pos.z) + ", 0, " + StringConverter::toString(rotz)+", 0");
+		LOG("position-x " + TOSTRING(pos.x) + ", "+ TOSTRING(pos.y) + ", " + TOSTRING(pos.z) + ", 0, " + TOSTRING(rotz)+", 0");
 
 	}
 
@@ -4119,7 +4119,7 @@ int RoRFrameListener::addTruck(char *fname, Vector3 pos)
 #ifdef USE_MYGUI
 	if(b && bigMap)
 	{
-		MapEntity *e = bigMap->createNamedMapEntity("Truck"+StringConverter::toString(b->trucknum), MapControl::getTypeByDriveable(b->driveable));
+		MapEntity *e = bigMap->createNamedMapEntity("Truck"+TOSTRING(b->trucknum), MapControl::getTypeByDriveable(b->driveable));
 		if(e)
 		{
 			e->setState(DESACTIVATED);
@@ -4137,7 +4137,7 @@ int RoRFrameListener::addTruck(char *fname, Vector3 pos)
 
 void RoRFrameListener::shutdown_final()
 {
-	LogManager::getSingleton().logMessage(" ** Shutdown final");
+	LOG(" ** Shutdown final");
 	if (editorfd) fclose(editorfd);
 	if (w) w->prepareShutdown();
 	if (dashboard) dashboard->prepareShutdown();
@@ -4158,7 +4158,7 @@ void RoRFrameListener::shutdown_final()
 
 void RoRFrameListener::shutdown_pre()
 {
-	LogManager::getSingleton().logMessage(" ** Shutdown preparation");
+	LOG(" ** Shutdown preparation");
 	//GUIManager::getSingleton().shutdown();
 #ifdef USE_SOCKETW
 	if (net) net->disconnect();
@@ -4219,7 +4219,7 @@ void RoRFrameListener::initializeCompontents()
 	// load map
 #ifdef USE_MYGUI
 	LoadingWindow::get()->setProgress(0, _L("Loading Terrain"));
-	bool disableMap = (SETTINGS.getSetting("disableOverViewMap") == "Yes");
+	bool disableMap = (BSETTING("disableOverViewMap"));
 
 	// map must be loaded before lua!
 	// init the map
@@ -4241,7 +4241,7 @@ void RoRFrameListener::initializeCompontents()
 	// load lua and collisions
 #ifdef USE_LUA
 	//setup lua
-	LogManager::getSingleton().logMessage("Loading LUA Script engine." );
+	LOG("Loading LUA Script engine." );
 	lua=new LuaSystem(this);
 	//setup collision system
 	collisions=new Collisions(lua, this, mSceneMgr, debugCollisions);
@@ -4256,7 +4256,7 @@ void RoRFrameListener::initializeCompontents()
 	ScriptEngine::getSingleton().setCollisions(collisions);
 	if(!netmode)
 	{
-		LogManager::getSingleton().logMessage("Loading Angelscript Script engine." );
+		LOG("Loading Angelscript Script engine." );
 		if(ResourceGroupManager::getSingleton().resourceExistsInAnyGroup(loadedTerrain+".as"))
 			ScriptEngine::getSingleton().loadTerrainScript(loadedTerrain+".as");
 	}
@@ -4310,7 +4310,7 @@ void RoRFrameListener::loadTerrain(String terrainfile)
 		terrainfile  = terrainfile + ".terrn";
 		if(!CACHE.checkResourceLoaded(terrainfile))
 		{
-			LogManager::getSingleton().logMessage("Terrain not found: " + terrainfile);
+			LOG("Terrain not found: " + terrainfile);
 			showError(_L("Terrain loading error"), _L("Terrain not found: ") + terrainfile);
 			exit(123);
 		}
@@ -4327,7 +4327,7 @@ void RoRFrameListener::loadTerrain(String terrainfile)
 		if(ce.type == "Zip")
 			fn = ce.dirname;
 		else if(ce.type == "FileSystem")
-			fn = ce.dirname + SETTINGS.getSetting("dirsep") + ce.fname;
+			fn = ce.dirname + SSETTING("dirsep") + ce.fname;
 		sha1.HashFile(const_cast<char*>(fn.c_str()));
 		sha1.Final();
 		sha1.ReportHash(hash_result, RoR::CSHA1::REPORT_HEX_SHORT);
@@ -4340,17 +4340,17 @@ void RoRFrameListener::loadTerrain(String terrainfile)
 
 	if(terrainfile.find(".scene") != String::npos)
 	{
-		LogManager::getSingleton().logMessage("Loading Ogitor scene format: " + terrainfile);
+		LOG("Loading Ogitor scene format: " + terrainfile);
 		loadOgitorTerrain(terrainfile);
 	}
 	else if(terrainfile.find(".terrn") != String::npos)
 	{
-		LogManager::getSingleton().logMessage("Loading classic terrain format: " + terrainfile);
+		LOG("Loading classic terrain format: " + terrainfile);
 		loadClassicTerrain(terrainfile);
 	} else
 	{
 		// exit on unkown terrain handler
-		LogManager::getSingleton().logMessage("Terrain not supported, unknown format: " + terrainfile);
+		LOG("Terrain not supported, unknown format: " + terrainfile);
 		showError(_L("Terrain loading error"), _L("Terrain not supported, unknown format: ") + terrainfile);
 		exit(123);
 	}
@@ -4386,7 +4386,7 @@ void RoRFrameListener::loadClassicTerrain(String terrainfile)
 	if(group == "")
 	{
 		// we need to do a bit more here, since this can also happen on joining a MP server, in that case the user should get a better error message ...
-		LogManager::getSingleton().logMessage("Terrain not found: " + String(terrainfile));
+		LOG("Terrain not found: " + String(terrainfile));
 		showError(_L("Terrain loading error"), _L("Terrain not found: ") + terrainfile);
 		exit(125);
 	}
@@ -4402,7 +4402,7 @@ void RoRFrameListener::loadClassicTerrain(String terrainfile)
 
 	if(String(geom).find(".cfg2") != String::npos)
 	{
-		LogManager::getSingleton().logMessage("new terrain mode enabled");
+		LOG("new terrain mode enabled");
 		SETTINGS.setSetting("new Terrain Mode", "Yes");
 	}
 
@@ -4449,15 +4449,15 @@ void RoRFrameListener::loadClassicTerrain(String terrainfile)
 	ColourValue fadeColour(r,g,b);
 
 	bool fogEnable = true;
-	if (SETTINGS.getSetting("Fog") == "No")
+	if (SSETTING("Fog") == "No")
 	{
 		fogEnable = false;
 		fogmode=0;
 	}
 
 	float farclipPercent = 0.3;
-	if (SETTINGS.getSetting("FarClip Percent") != "")
-		farclipPercent = StringConverter::parseInt(SETTINGS.getSetting("FarClip Percent"));
+	if (SSETTING("FarClip Percent") != "")
+		farclipPercent = StringConverter::parseInt(SSETTING("FarClip Percent"));
 
 	float farclip = 1000;
 	terrainxsize=1000;
@@ -4497,18 +4497,18 @@ void RoRFrameListener::loadClassicTerrain(String terrainfile)
 		disableTetrrain = (config.getSetting("disable") != "");
 	}
 
-	String fcos = SETTINGS.getSetting("Farclip");
+	String fcos = SSETTING("Farclip");
 	if(fcos != "")
 		farclip = atof(fcos.c_str());
 
-	LogManager::getSingleton().logMessage("Farclip computed:" + StringConverter::toString(farclip));
+	LOG("Farclip computed:" + TOSTRING(farclip));
 
 	float fogstart = 0;
 
 
 	Light *mainLight = 0;
 #ifdef USE_CAELUM
-	bool useCaelum = SETTINGS.getSetting("Sky effects")=="Caelum (best looking, slower)";
+	bool useCaelum = SSETTING("Sky effects")=="Caelum (best looking, slower)";
 	if(!useCaelum)
 	{
 		mainLight = mSceneMgr->createLight("MainLight");
@@ -4539,8 +4539,8 @@ void RoRFrameListener::loadClassicTerrain(String terrainfile)
 	{
 		fogmode=3;
 		fogstart = farclip * 0.8;
-//		if (SETTINGS.getSetting("Sandstorm Fog Start") != "")
-//			fogstart = StringConverter::parseLong(SETTINGS.getSetting("Sandstorm Fog Start"));
+//		if (SSETTING("Sandstorm Fog Start") != "")
+//			fogstart = StringConverter::parseLong(SSETTING("Sandstorm Fog Start"));
 
 		// Create a light
 		if(mainLight)
@@ -4571,7 +4571,7 @@ void RoRFrameListener::loadClassicTerrain(String terrainfile)
 		mCamera->getViewport()->setBackgroundColour(fadeColour);
 	}
 
-	bool newTerrainMode = (SETTINGS.getSetting("new Terrain Mode") == "Yes");
+	bool newTerrainMode = (BSETTING("new Terrain Mode"));
 
 	MaterialPtr terMat = (MaterialPtr)(MaterialManager::getSingleton().getByName("TerrainSceneManager/Terrain"));
 	{
@@ -4692,11 +4692,11 @@ void RoRFrameListener::loadClassicTerrain(String terrainfile)
 				blendMode.resize(numLayers+1);
 				for(int i = 1; i<numLayers+1; i++)
 				{
-					defaultimp.layerList[i].worldSize = StringConverter::parseReal(cfg.getSetting("Layers."+StringConverter::toString(i)+".size"));
-					defaultimp.layerList[i].textureNames.push_back(cfg.getSetting("Layers."+StringConverter::toString(i)+".diffuse"));
-					defaultimp.layerList[i].textureNames.push_back(cfg.getSetting("Layers."+StringConverter::toString(i)+".normal"));
-					blendMaps[i] = cfg.getSetting("Layers."+StringConverter::toString(i)+".blendmap");
-					blendMode[i] = cfg.getSetting("Layers."+StringConverter::toString(i)+".blendmapmode");
+					defaultimp.layerList[i].worldSize = StringConverter::parseReal(cfg.getSetting("Layers."+TOSTRING(i)+".size"));
+					defaultimp.layerList[i].textureNames.push_back(cfg.getSetting("Layers."+TOSTRING(i)+".diffuse"));
+					defaultimp.layerList[i].textureNames.push_back(cfg.getSetting("Layers."+TOSTRING(i)+".normal"));
+					blendMaps[i] = cfg.getSetting("Layers."+TOSTRING(i)+".blendmap");
+					blendMode[i] = cfg.getSetting("Layers."+TOSTRING(i)+".blendmapmode");
 				}
 			}
 
@@ -4720,7 +4720,7 @@ void RoRFrameListener::loadClassicTerrain(String terrainfile)
 						}
 						else
 						{
-							String heightmapString = "Heightmap.image." + StringConverter::toString(x) + "." + StringConverter::toString(y);
+							String heightmapString = "Heightmap.image." + TOSTRING(x) + "." + TOSTRING(y);
 							String heightmapFilename = cfg.getSetting(heightmapString);
 							if(heightmapFilename.empty())
 							{
@@ -4736,7 +4736,7 @@ void RoRFrameListener::loadClassicTerrain(String terrainfile)
 
 								// load raw data
 								DataStreamPtr stream = ResourceGroupManager::getSingleton().openResource(heightmapFilename);
-								LogManager::getSingleton().logMessage(" loading RAW image: " + StringConverter::toString(stream->size()) + " / " + StringConverter::toString(rawSize*rawSize*bpp));
+								LOG(" loading RAW image: " + TOSTRING(stream->size()) + " / " + TOSTRING(rawSize*rawSize*bpp));
 								PixelFormat pformat = PF_L8;
 								if(bpp == 2)
 									pformat = PF_L16;
@@ -4774,7 +4774,7 @@ void RoRFrameListener::loadClassicTerrain(String terrainfile)
 						// set up a colour map
 						/*
 						// this crashes badly!
-						String textureString = "Texture.image." + StringConverter::toString(x) + "." + StringConverter::toString(y);
+						String textureString = "Texture.image." + TOSTRING(x) + "." + TOSTRING(y);
 						String textureFilename = cfg.getSetting(textureString);
 						if(textureFilename.empty())
 						{
@@ -4866,22 +4866,22 @@ void RoRFrameListener::loadClassicTerrain(String terrainfile)
 	// get vegetation mode
 	int pagedMode = 0; //None
 	float pagedDetailFactor = 0;
-	if(SETTINGS.getSetting("Vegetation") == "None (fastest)")
+	if(SSETTING("Vegetation") == "None (fastest)")
 	{
 		pagedMode = 0;
 		pagedDetailFactor = 0.001;
 	}
-	else if(SETTINGS.getSetting("Vegetation") == "20%")
+	else if(SSETTING("Vegetation") == "20%")
 	{
 		pagedMode = 1;
 		pagedDetailFactor = 0.2;
 	}
-	else if(SETTINGS.getSetting("Vegetation") == "50%")
+	else if(SSETTING("Vegetation") == "50%")
 	{
 		pagedMode = 2;
 		pagedDetailFactor = 0.5;
 	}
-	else if(SETTINGS.getSetting("Vegetation") == "Full (best looking, slower)")
+	else if(SSETTING("Vegetation") == "Full (best looking, slower)")
 	{
 		pagedMode = 3;
 		pagedDetailFactor = 1;
@@ -4898,7 +4898,7 @@ void RoRFrameListener::loadClassicTerrain(String terrainfile)
 	if(!terMat.isNull())
 		terrainmaterial = terMat.get();
 	if(terrainmaterial)
-		LogManager::getSingleton().logMessage("using Terrain Material '"+terrainmaterial->getName()+"'");
+		LOG("using Terrain Material '"+terrainmaterial->getName()+"'");
 
 	//create sky material
 	//			MaterialPtr skmat=(MaterialPtr)(MaterialManager::getSingleton().create("Skycol", "Standard"));
@@ -4915,7 +4915,7 @@ void RoRFrameListener::loadClassicTerrain(String terrainfile)
 	//bloom effect
 	/*
 	// replaced by HDR
-	if (SETTINGS.getSetting("Bloom")=="Yes")
+	if (BSETTING("Bloom"))
 	{
 		CompositorManager::getSingleton().addCompositor(mCamera->getViewport(),"Bloom");
 		CompositorManager::getSingleton().setCompositorEnabled(mCamera->getViewport(), "Bloom", true);
@@ -4923,12 +4923,12 @@ void RoRFrameListener::loadClassicTerrain(String terrainfile)
 
 	// first compositor: HDR!
 	// HDR if wished
-	bool useHDR = (SETTINGS.getSetting("HDR") == "Yes");
+	bool useHDR = (BSETTING("HDR"));
 	if(useHDR)
 		initHDR();
 
 	// DOF?
-	bool useDOF = (SETTINGS.getSetting("DOF") == "Yes");
+	bool useDOF = (BSETTING("DOF"));
 	if(useDOF)
 	{
 		mDOF = new DOFManager(mSceneMgr, mCamera->getViewport(), mRoot, mCamera);
@@ -4937,7 +4937,7 @@ void RoRFrameListener::loadClassicTerrain(String terrainfile)
 
 
 
-	if (SETTINGS.getSetting("Glow") == "Yes")
+	if (BSETTING("Glow"))
 	{
 		CompositorManager::getSingleton().addCompositor(mCamera->getViewport(), "Glow");
 		CompositorManager::getSingleton().setCompositorEnabled(mCamera->getViewport(), "Glow", true);
@@ -4946,7 +4946,7 @@ void RoRFrameListener::loadClassicTerrain(String terrainfile)
 	}
 
 	// Motion blur stuff :)
-	if (SETTINGS.getSetting("Motion blur")=="Yes")
+	if (BSETTING("Motion blur"))
 	{
 		/// Motion blur effect
 		CompositorPtr comp3 = CompositorManager::getSingleton().create(
@@ -5037,7 +5037,7 @@ void RoRFrameListener::loadClassicTerrain(String terrainfile)
 	// End of motion blur :(
 
 	//SUNBURN
-	if (SETTINGS.getSetting("Sunburn")=="Yes")
+	if (BSETTING("Sunburn"))
 	{
 		CompositorManager::getSingleton().addCompositor(mCamera->getViewport(),"Sunburn");
 		CompositorManager::getSingleton().setCompositorEnabled(mCamera->getViewport(), "Sunburn", true);
@@ -5107,12 +5107,12 @@ void RoRFrameListener::loadClassicTerrain(String terrainfile)
 	mCamera->setPosition(Vector3(cx,cy,cz));
 
 	//water!
-	bool useHydrax = (SETTINGS.getSetting("Hydrax") == "Yes");
+	bool useHydrax = (BSETTING("Hydrax"));
 	String hydraxConfig = "hydrax_default.hdx";
 
 	if (waterline != -9999)
 	{
-		bool usewaves=(SETTINGS.getSetting("Waves")=="Yes");
+		bool usewaves=(BSETTING("Waves"));
 
 		// disable waves in multiplayer
 		if(net)
@@ -5130,15 +5130,15 @@ void RoRFrameListener::loadClassicTerrain(String terrainfile)
 	}
     else if(!useHydrax)
 		{
-			if (SETTINGS.getSetting("Water effects")=="None")
+			if (SSETTING("Water effects")=="None")
 				w=0;
-			else if (SETTINGS.getSetting("Water effects")=="Basic (fastest)")
+			else if (SSETTING("Water effects")=="Basic (fastest)")
 				w=new WaterOld(WATER_BASIC, mCamera, mSceneMgr, mWindow, waterline, &mapsizex, &mapsizez, usewaves);
-			else if (SETTINGS.getSetting("Water effects")=="Reflection")
+			else if (SSETTING("Water effects")=="Reflection")
 				w=new WaterOld(WATER_REFLECT, mCamera, mSceneMgr, mWindow, waterline, &mapsizex, &mapsizez, usewaves);
-			else if (SETTINGS.getSetting("Water effects")=="Reflection + refraction (speed optimized)")
+			else if (SSETTING("Water effects")=="Reflection + refraction (speed optimized)")
 				w=new WaterOld(WATER_FULL_SPEED, mCamera, mSceneMgr, mWindow, waterline, &mapsizex, &mapsizez, usewaves);
-			else if (SETTINGS.getSetting("Water effects")=="Reflection + refraction (quality optimized)")
+			else if (SSETTING("Water effects")=="Reflection + refraction (quality optimized)")
 				w=new WaterOld(WATER_FULL_QUALITY, mCamera, mSceneMgr, mWindow, waterline, &mapsizex, &mapsizez, usewaves);
 		}
 	}
@@ -5148,9 +5148,9 @@ void RoRFrameListener::loadClassicTerrain(String terrainfile)
 	DustManager::getSingleton().setWater(w);
 
 	//environment map
-	if (SETTINGS.getSetting("Envmapdisable")!="Yes")
+	if (!BSETTING("Envmapdisable"))
 	{
-		envmap=new Envmap(mSceneMgr, mWindow, mCamera, SETTINGS.getSetting("Envmap")=="Yes");
+		envmap=new Envmap(mSceneMgr, mWindow, mCamera, BSETTING("Envmap"));
 	}
 
 	//dashboard
@@ -5323,7 +5323,7 @@ void RoRFrameListener::loadClassicTerrain(String terrainfile)
 			int res = sscanf(line, "hydraxconfig %s", tmp);
 			if(res < 1)
 			{
-				LogManager::getSingleton().logMessage("error reading hydraxconfig command!");
+				LOG("error reading hydraxconfig command!");
 				continue;
 			}
 			hydraxConfig=String(tmp);
@@ -5339,7 +5339,7 @@ void RoRFrameListener::loadClassicTerrain(String terrainfile)
 			int res = sscanf(line, "mpspawn %s %f %f %f %f %f %f", tmp, &x, &y, &z, &rx, &ry, &rz);
 			if(res < 7)
 			{
-				LogManager::getSingleton().logMessage("error reading mpspawn command!");
+				LOG("error reading mpspawn command!");
 				continue;
 			}
 			spl.pos = Vector3(x, y, z);
@@ -5362,7 +5362,7 @@ void RoRFrameListener::loadClassicTerrain(String terrainfile)
 			int res = sscanf(line, "gravity %f", &gravity);
 			if(res < 1)
 			{
-				LogManager::getSingleton().logMessage("error reading gravity command!");
+				LOG("error reading gravity command!");
 			}
 			continue;
 		}
@@ -5387,18 +5387,18 @@ void RoRFrameListener::loadClassicTerrain(String terrainfile)
 			sscanf(line, "trees %f, %f, %f, %f, %f, %d, %d, %s %s %s", &yawfrom, &yawto, &scalefrom, &scaleto, &highdens, &minDist, &maxDist, treemesh, ColorMap, DensityMap);
 			if(strnlen(ColorMap, 3) == 0)
 			{
-				LogManager::getSingleton().logMessage("tree ColorMap map zero!");
+				LOG("tree ColorMap map zero!");
 				continue;
 			}
 			if(strnlen(DensityMap, 3) == 0)
 			{
-				LogManager::getSingleton().logMessage("tree DensityMap zero!");
+				LOG("tree DensityMap zero!");
 				continue;
 			}
 			Forests::DensityMap *densityMap = Forests::DensityMap::load(DensityMap, CHANNEL_COLOR);
 			if(!densityMap)
 			{
-				LogManager::getSingleton().logMessage("could not load densityMap: "+String(DensityMap));
+				LOG("could not load densityMap: "+String(DensityMap));
 				continue;
 			}
 			densityMap->setFilter(Forests::MAPFILTER_BILINEAR);
@@ -5406,7 +5406,7 @@ void RoRFrameListener::loadClassicTerrain(String terrainfile)
 
 			paged_geometry_t paged;
 			paged.geom = new PagedGeometry();
-			//paged.geom->setTempDir(SETTINGS.getSetting("User Path") + "cache" + SETTINGS.getSetting("dirsep"));
+			//paged.geom->setTempDir(SSETTING("User Path") + "cache" + SSETTING("dirsep"));
 			paged.geom->setCamera(mCamera);
 			paged.geom->setPageSize(50);
 			paged.geom->setInfinite();
@@ -5427,7 +5427,7 @@ void RoRFrameListener::loadClassicTerrain(String terrainfile)
 			if(String(ColorMap) != "none")
 				treeLoader->setColorMap(ColorMap);
 
-			curTree = mSceneMgr->createEntity(String("paged_")+treemesh+StringConverter::toString(pagedGeometry.size()), treemesh);
+			curTree = mSceneMgr->createEntity(String("paged_")+treemesh+TOSTRING(pagedGeometry.size()), treemesh);
 
 			float density = 0, yaw=0, scale=0;
 			int numTreesToPlace=0;
@@ -5537,7 +5537,7 @@ void RoRFrameListener::loadClassicTerrain(String terrainfile)
 				pagedGeometry.push_back(paged);
 			} catch(...)
 			{
-				LogManager::getSingleton().logMessage("error loading grass!");
+				LOG("error loading grass!");
 			}
 
 			continue;
@@ -5617,7 +5617,7 @@ void RoRFrameListener::loadClassicTerrain(String terrainfile)
 			String truckname=String(type);
 			if(!CACHE.checkResourceLoaded(truckname, group))
 			{
-				LogManager::getSingleton().logMessage("error while loading terrain: truck " + String(type) + " not found. ignoring.");
+				LOG("error while loading terrain: truck " + String(type) + " not found. ignoring.");
 				continue;
 			}
 			//this is a truck or load declaration
@@ -5740,7 +5740,7 @@ void RoRFrameListener::loadClassicTerrain(String terrainfile)
 		//bakeNode->removeAndDestroyAllChildren();
 	}catch(...)
 	{
-		LogManager::getSingleton().logMessage("error while baking roads. ignoring.");
+		LOG("error while baking roads. ignoring.");
 
 	}
 
@@ -5754,13 +5754,13 @@ void RoRFrameListener::loadClassicTerrain(String terrainfile)
 	loading_state=TERRAIN_LOADED;
 
 	// we set the sky this late, so the user can configure it ...
-	if (SETTINGS.getSetting("Sky effects")!="Caelum (best looking, slower)" && strlen(sandstormcubemap)>0)
+	if (SSETTING("Sky effects")!="Caelum (best looking, slower)" && strlen(sandstormcubemap)>0)
 	{
 		mSceneMgr->setSkyBox(true, sandstormcubemap, farclip);
 	}
 #ifdef USE_CAELUM
 	// load caelum config
-	if (SETTINGS.getSetting("Sky effects")=="Caelum (best looking, slower)")
+	if (SSETTING("Sky effects")=="Caelum (best looking, slower)")
 	{
 		SkyManager::getSingleton().loadScript(String(caelumconfig));
 	}
@@ -5850,10 +5850,10 @@ void RoRFrameListener::setGrassDensity(float x, float y, int density, bool relat
 		changeGrassBuffer(data+1+gwidth, valuechange);
 	}
 
-	LogManager::getSingleton().logMessage("setting grass: "+ \
-		StringConverter::toString(gwidth)+"x"+StringConverter::toString(gheight)+", "+ \
-		"("+StringConverter::toString(nx)+"x"+StringConverter::toString(ny)+") = " + \
-		StringConverter::toString(*data)+" / " + StringConverter::toString(value)+", "+StringConverter::toString(valuechange));
+	LOG("setting grass: "+ \
+		TOSTRING(gwidth)+"x"+TOSTRING(gheight)+", "+ \
+		"("+TOSTRING(nx)+"x"+TOSTRING(ny)+") = " + \
+		TOSTRING(*data)+" / " + TOSTRING(value)+", "+TOSTRING(valuechange));
 	grass->reloadGeometryPage(Vector3(x, 0, y));
 #endif
 #endif //USE_PAGED
@@ -5904,7 +5904,7 @@ void RoRFrameListener::saveGrassDensity()
 
 	String filename = String("data/terrains/") + grassdensityTextureFilename;
 	img.save(filename.c_str());
-	LogManager::getSingleton().logMessage("saving grass to "+filename);
+	LOG("saving grass to "+filename);
 #endif
 #endif //USE_PAGED
 }
@@ -5923,7 +5923,7 @@ void RoRFrameListener::initTrucks(bool loadmanual, Ogre::String selected, Ogre::
 			Quaternion spawnrot = Quaternion::ZERO;
 			if(selectedExtension.size() > 0)
 			{
-				String nsp = SETTINGS.getSetting("net spawn location");
+				String nsp = SSETTING("net spawn location");
 				if(!nsp.empty())
 				{
 					// override-able by cmdline
@@ -5964,7 +5964,7 @@ void RoRFrameListener::initTrucks(bool loadmanual, Ogre::String selected, Ogre::
 #ifdef USE_MYGUI
 		if(b && bigMap)
 		{
-			MapEntity *e = bigMap->createNamedMapEntity("Truck"+StringConverter::toString(b->trucknum), MapControl::getTypeByDriveable(b->driveable));
+			MapEntity *e = bigMap->createNamedMapEntity("Truck"+TOSTRING(b->trucknum), MapControl::getTypeByDriveable(b->driveable));
 			if(e)
 			{
 				e->setState(DESACTIVATED);
@@ -5990,7 +5990,7 @@ void RoRFrameListener::initTrucks(bool loadmanual, Ogre::String selected, Ogre::
 #ifdef USE_MYGUI
 			if(b && bigMap)
 			{
-				MapEntity *e = bigMap->createNamedMapEntity("Truck"+StringConverter::toString(b->trucknum), MapControl::getTypeByDriveable(b->driveable));
+				MapEntity *e = bigMap->createNamedMapEntity("Truck"+TOSTRING(b->trucknum), MapControl::getTypeByDriveable(b->driveable));
 				if(e)
 				{
 					e->setState(DESACTIVATED);
@@ -6003,7 +6003,7 @@ void RoRFrameListener::initTrucks(bool loadmanual, Ogre::String selected, Ogre::
 		}
 
 	}
-	LogManager::getSingleton().logMessage("EFL: beam instanciated");
+	LOG("EFL: beam instanciated");
 
 	if(!enterTruck) setCurrentTruck(-1);
 
@@ -6023,7 +6023,7 @@ void RoRFrameListener::initTrucks(bool loadmanual, Ogre::String selected, Ogre::
 	loading_state=ALL_LOADED;
 	//uiloader->hide();
 	showcredits=0;
-	LogManager::getSingleton().logMessage("initTrucks done");
+	LOG("initTrucks done");
 
 #ifdef USE_MYGUI
 	if(mtc)
@@ -6821,7 +6821,7 @@ bool RoRFrameListener::frameStarted(const FrameEvent& evt)
 
 	if(!updateEvents(dt))
 	{
-		LogManager::getSingleton().logMessage("exiting...");
+		LOG("exiting...");
 		return false;
 	}
 
@@ -7175,7 +7175,7 @@ void RoRFrameListener::showLoad(int type, char* instance, char* box)
 {
 	// check for water
 	/*
-	if ((SETTINGS.getSetting("Water effects")=="None") && type == LOADER_BOAT)
+	if ((SSETTING("Water effects")=="None") && type == LOADER_BOAT)
 	{
 		if(ow) ow->flashMessage("Closed (No water)", 4);
 		return;
@@ -7233,7 +7233,7 @@ void RoRFrameListener::setDirectionArrow(char *text, Vector3 position)
 		ow->directionOverlay->show();
 		ow->directionArrowText->setCaption(String(text));
 		float w = ow->directionArrowText->getWidth();
-		//LogManager::getSingleton().logMessage("*** new pointed position: " + StringConverter::toString(position));
+		//LOG("*** new pointed position: " + TOSTRING(position));
 		ow->directionArrowDistance->setCaption("");
 		dirvisible = true;
 		dirArrowPointed = position;
@@ -7250,7 +7250,7 @@ void RoRFrameListener::netDisconnectTruck(int number)
 #ifdef USE_MYGUI
 	if(bigMap)
 	{
-		MapEntity *e = bigMap->getEntityByName("Truck"+StringConverter::toString(number));
+		MapEntity *e = bigMap->getEntityByName("Truck"+TOSTRING(number));
 		if(e)
 			e->setVisibility(false);
 	}
@@ -7263,7 +7263,7 @@ void RoRFrameListener::windowResized(RenderWindow* rw)
 {
 	if(!rw)
 		return;
-	LogManager::getSingleton().logMessage("*** windowResized");
+	LOG("*** windowResized");
 
 	// Update mouse screen width/height
 	unsigned int width, height, depth;
@@ -7281,17 +7281,17 @@ void RoRFrameListener::windowResized(RenderWindow* rw)
 //Unattach OIS before window shutdown (very important under Linux)
 void RoRFrameListener::windowClosed(RenderWindow* rw)
 {
-	LogManager::getSingleton().logMessage("*** windowClosed");
+	LOG("*** windowClosed");
 }
 
 void RoRFrameListener::windowMoved(RenderWindow* rw)
 {
-	LogManager::getSingleton().logMessage("*** windowMoved");
+	LOG("*** windowMoved");
 }
 
 void RoRFrameListener::windowFocusChange(RenderWindow* rw)
 {
-	LogManager::getSingleton().logMessage("*** windowFocusChange");
+	LOG("*** windowFocusChange");
 	INPUTENGINE.resetKeys();
 }
 
@@ -7311,11 +7311,11 @@ void RoRFrameListener::pauseSim(bool value)
 	{
 		savedmode = loading_state;
 		loading_state = EDITOR_PAUSE;
-		LogManager::getSingleton().logMessage("** pausing game");
+		LOG("** pausing game");
 	} else if (!value && savedmode != -1)
 	{
 		loading_state = savedmode;
-		LogManager::getSingleton().logMessage("** unpausing game");
+		LOG("** unpausing game");
 	}
 }
 
@@ -7434,7 +7434,7 @@ void RoRFrameListener::gridScreenshots(Ogre::RenderWindow* pRenderWindow, Ogre::
         0, 0, 0, 1);
       pCamera->setCustomProjectionMatrix(true, standard * shearing * scale);
       Ogre::Root::getSingletonPtr()->renderOneFrame();
-      gridFilename = pFileName + Ogre::StringConverter::toString(nbScreenshots) + pFileExtention;
+      gridFilename = pFileName + TOSTRING(nbScreenshots) + pFileExtention;
 
 
       // Screenshot of the current grid
@@ -7446,7 +7446,7 @@ void RoRFrameListener::gridScreenshots(Ogre::RenderWindow* pRenderWindow, Ogre::
 		  /*
 		if(!CacheSystem::resourceExistsInAllGroups(gridFilename))
 		{
-			LogManager::getSingleton().logMessage("Unable to stich image. Image not found: "+gridFilename);
+			LOG("Unable to stich image. Image not found: "+gridFilename);
 			return ;
 		}
 		*/
@@ -7593,7 +7593,7 @@ bool RoRFrameListener::getNetQualityChanged()
 
 bool RoRFrameListener::RTSSgenerateShadersForMaterial(Ogre::String curMaterialName, Ogre::String normalTextureName)
 {
-	if (SETTINGS.getSetting("Use RTShader System")!="Yes") return false;
+	if (!BSETTING("Use RTShader System")) return false;
 	bool success;
 
 	// Create the shader based technique of this material.
@@ -7675,7 +7675,7 @@ bool RoRFrameListener::RTSSgenerateShadersForMaterial(Ogre::String curMaterialNa
 
 void RoRFrameListener::RTSSgenerateShaders(Entity* entity, Ogre::String normalTextureName)
 {
-	if (SETTINGS.getSetting("Use RTShader System")!="Yes") return;
+	if (!BSETTING("Use RTShader System")) return;
 	for (unsigned int i=0; i < entity->getNumSubEntities(); ++i)
 	{
 		SubEntity* curSubEntity = entity->getSubEntity(i);

@@ -46,7 +46,7 @@ Airfoil::Airfoil(char* fname)
 	}
 	if(group == "")
 	{
-		LogManager::getSingleton().logMessage(String("Airfoil error: could not load airfoil ")+fname);
+		LOG(String("Airfoil error: could not load airfoil ")+fname);
 		return;
 	}
 

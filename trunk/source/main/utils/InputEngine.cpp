@@ -1520,7 +1520,7 @@ InputEngine::InputEngine() : mInputManager(0), mMouse(0), mKeyboard(0), mForceFe
 {
 	for(int i=0;i<MAX_JOYSTICKS;i++) mJoy[i]=0;
 #ifndef NOOGRE
-	LogManager::getSingleton().logMessage("*** Loading OIS ***");
+	LOG("*** Loading OIS ***");
 #endif
 	initAllKeys();
 }
@@ -1528,7 +1528,7 @@ InputEngine::InputEngine() : mInputManager(0), mMouse(0), mKeyboard(0), mForceFe
 InputEngine::~InputEngine()
 {
 #ifndef NOOGRE
-	LogManager::getSingleton().logMessage("*** Terminating destructor ***");
+	LOG("*** Terminating destructor ***");
 #endif
 	destroy();
 }
@@ -1538,7 +1538,7 @@ void InputEngine::destroy()
 	if( mInputManager )
 	{
 #ifndef NOOGRE
-		LogManager::getSingleton().logMessage("*** Terminating OIS ***");
+		LOG("*** Terminating OIS ***");
 #endif
 		if(mMouse)
 		{
@@ -1570,7 +1570,7 @@ bool InputEngine::setup(size_t hwnd, bool capture, bool capturemouse, int _grabM
 {
 	grabMode = _grabMode;
 #ifndef NOOGRE
-	LogManager::getSingleton().logMessage("*** Initializing OIS ***");
+	LOG("*** Initializing OIS ***");
 #endif
 	//try to delete old ones first (linux can only handle one at a time)
 	destroy();
@@ -1581,7 +1581,7 @@ bool InputEngine::setup(size_t hwnd, bool capture, bool capturemouse, int _grabM
 		//size_t hWnd = 0;
 		//win->getCustomAttribute("WINDOW", &hWnd);
 		ParamList pl;
-		String hwnd_str = Ogre::StringConverter::toString(hwnd);
+		String hwnd_str = TOSTRING(hwnd);
 		pl.insert(OIS::ParamList::value_type("WINDOW", hwnd_str));
 		if(grabMode == GRAB_ALL)
 		{
@@ -1601,7 +1601,7 @@ bool InputEngine::setup(size_t hwnd, bool capture, bool capturemouse, int _grabM
 		}
 
 #ifndef NOOGRE
-		LogManager::getSingleton().logMessage("*** OIS WINDOW: "+hwnd_str);
+		LOG("*** OIS WINDOW: "+hwnd_str);
 #endif //NOOGRE
 
 		mInputManager = OIS::InputManager::createInputSystem(pl);
@@ -1609,17 +1609,17 @@ bool InputEngine::setup(size_t hwnd, bool capture, bool capturemouse, int _grabM
 #ifndef NOOGRE
 		//Print debugging information
 		unsigned int v = mInputManager->getVersionNumber();
-		LogManager::getSingleton().logMessage("OIS Version: " + StringConverter::toString(v>>16) + String(".") + StringConverter::toString((v>>8) & 0x000000FF) + String(".") + StringConverter::toString(v & 0x000000FF));
-		LogManager::getSingleton().logMessage("+ Release Name: " + mInputManager->getVersionName());
-		LogManager::getSingleton().logMessage("+ Manager: " + mInputManager->inputSystemName());
-		LogManager::getSingleton().logMessage("+ Total Keyboards: " + StringConverter::toString(mInputManager->getNumberOfDevices(OISKeyboard)));
-		LogManager::getSingleton().logMessage("+ Total Mice: " + StringConverter::toString(mInputManager->getNumberOfDevices(OISMouse)));
-		LogManager::getSingleton().logMessage("+ Total JoySticks: " + StringConverter::toString(mInputManager->getNumberOfDevices(OISJoyStick)));
+		LOG("OIS Version: " + TOSTRING(v>>16) + String(".") + TOSTRING((v>>8) & 0x000000FF) + String(".") + TOSTRING(v & 0x000000FF));
+		LOG("+ Release Name: " + mInputManager->getVersionName());
+		LOG("+ Manager: " + mInputManager->inputSystemName());
+		LOG("+ Total Keyboards: " + TOSTRING(mInputManager->getNumberOfDevices(OISKeyboard)));
+		LOG("+ Total Mice: " + TOSTRING(mInputManager->getNumberOfDevices(OISMouse)));
+		LOG("+ Total JoySticks: " + TOSTRING(mInputManager->getNumberOfDevices(OISJoyStick)));
 
 		//List all devices
 		OIS::DeviceList list = mInputManager->listFreeDevices();
 		for(OIS::DeviceList::iterator i = list.begin(); i != list.end(); ++i )
-			LogManager::getSingleton().logMessage("* Device: " + String(mOISDeviceType[i->first]) + String(" Vendor: ") + i->second);
+			LOG("* Device: " + String(mOISDeviceType[i->first]) + String(" Vendor: ") + i->second);
 #endif //NOOGRE
 
 		//Create all devices (We only catch joystick exceptions here, as, most people have Key/Mouse)
@@ -1632,7 +1632,7 @@ bool InputEngine::setup(size_t hwnd, bool capture, bool capturemouse, int _grabM
 				mKeyboard->setTextTranslation(OIS::Keyboard::Unicode);
 			} catch(OIS::Exception &ex)
 			{
-				LogManager::getSingleton().logMessage(String("Exception raised on keyboard creation: ") + String(ex.eText));
+				LOG(String("Exception raised on keyboard creation: ") + String(ex.eText));
 			}
 		}
 
@@ -1652,19 +1652,19 @@ bool InputEngine::setup(size_t hwnd, bool capture, bool capturemouse, int _grabM
 				if (!mForceFeedback) mForceFeedback = (OIS::ForceFeedback*)mJoy[i]->queryInterface(OIS::Interface::ForceFeedback );
 
 #ifndef NOOGRE
-				LogManager::getSingleton().logMessage("Creating Joystick " + StringConverter::toString(i + 1) + " (" + mJoy[i]->vendor() + ")");
-				LogManager::getSingleton().logMessage("* Axes: " + StringConverter::toString(mJoy[i]->getNumberOfComponents(OIS_Axis)));
-				LogManager::getSingleton().logMessage("* Sliders: " + StringConverter::toString(mJoy[i]->getNumberOfComponents(OIS_Slider)));
-				LogManager::getSingleton().logMessage("* POV/HATs: " + StringConverter::toString(mJoy[i]->getNumberOfComponents(OIS_POV)));
-				LogManager::getSingleton().logMessage("* Buttons: " + StringConverter::toString(mJoy[i]->getNumberOfComponents(OIS_Button)));
-				LogManager::getSingleton().logMessage("* Vector3: " + StringConverter::toString(mJoy[i]->getNumberOfComponents(OIS_Vector3)));
+				LOG("Creating Joystick " + TOSTRING(i + 1) + " (" + mJoy[i]->vendor() + ")");
+				LOG("* Axes: " + TOSTRING(mJoy[i]->getNumberOfComponents(OIS_Axis)));
+				LOG("* Sliders: " + TOSTRING(mJoy[i]->getNumberOfComponents(OIS_Slider)));
+				LOG("* POV/HATs: " + TOSTRING(mJoy[i]->getNumberOfComponents(OIS_POV)));
+				LOG("* Buttons: " + TOSTRING(mJoy[i]->getNumberOfComponents(OIS_Button)));
+				LOG("* Vector3: " + TOSTRING(mJoy[i]->getNumberOfComponents(OIS_Vector3)));
 #endif //NOOGRE
 			}
 		}
 #ifndef NOOGRE
 		catch(OIS::Exception &ex)
 		{
-			LogManager::getSingleton().logMessage(String("Exception raised on joystick creation: ") + String(ex.eText));
+			LOG(String("Exception raised on joystick creation: ") + String(ex.eText));
 		}
 #else  //NOOGRE
 		catch(...)
@@ -1680,7 +1680,7 @@ bool InputEngine::setup(size_t hwnd, bool capture, bool capturemouse, int _grabM
 				mMouse = static_cast<Mouse*>(mInputManager->createInputObject( OISMouse, true ));
 			} catch(OIS::Exception &ex)
 			{
-				LogManager::getSingleton().logMessage(String("Exception raised on mouse creation: ") + String(ex.eText));
+				LOG(String("Exception raised on mouse creation: ") + String(ex.eText));
 			}
 		}
 
@@ -1724,7 +1724,7 @@ void InputEngine::grabMouse(bool enable)
 #if OGRE_PLATFORM == OGRE_PLATFORM_LINUX
 	if((enable && lastmode == 0) || (!enable && lastmode == 1) || (lastmode == -1))
 	{
-		LogManager::getSingleton().logMessage("*** mouse grab: " + StringConverter::toString(enable));
+		LOG("*** mouse grab: " + TOSTRING(enable));
 		//((LinuxMouse *)mMouse)->grab(enable);
 		lastmode = enable?1:0;
 	}
@@ -1763,10 +1763,10 @@ OIS::MouseState InputEngine::getMouseState()
 	{
 #ifndef NOOGRE
 		// try to find the correct location!
-		mX = StringConverter::parseReal(SETTINGS.getSetting("MouseSensX"));
-		mY = StringConverter::parseReal(SETTINGS.getSetting("MouseSensY"));
-		LogManager::getSingleton().logMessage("Mouse X sens: " + StringConverter::toString((Real)mX));
-		LogManager::getSingleton().logMessage("Mouse Y sens: " + StringConverter::toString((Real)mY));
+		mX = StringConverter::parseReal(SSETTING("MouseSensX"));
+		mY = StringConverter::parseReal(SSETTING("MouseSensY"));
+		LOG("Mouse X sens: " + TOSTRING((Real)mX));
+		LOG("Mouse Y sens: " + TOSTRING((Real)mY));
 		mode = 1;
 		if(mX == 0 || mY ==0)
 			mode = 2;
@@ -1834,7 +1834,7 @@ void InputEngine::windowResized(RenderWindow* rw)
 bool InputEngine::buttonPressed( const OIS::JoyStickEvent &arg, int button )
 {
 	inputsChanged=true;
-	//LogManager::getSingleton().logMessage("*** buttonPressed " + StringConverter::toString(button));
+	//LOG("*** buttonPressed " + TOSTRING(button));
 	int i = arg.device->getID();
 	if (i < 0 || i >= MAX_JOYSTICKS) i = 0;
 	joyState[i] = arg.state;
@@ -1844,7 +1844,7 @@ bool InputEngine::buttonPressed( const OIS::JoyStickEvent &arg, int button )
 bool InputEngine::buttonReleased( const OIS::JoyStickEvent &arg, int button )
 {
 	inputsChanged=true;
-	//LogManager::getSingleton().logMessage("*** buttonReleased " + StringConverter::toString(button));
+	//LOG("*** buttonReleased " + TOSTRING(button));
 	int i = arg.device->getID();
 	if (i < 0 || i >= MAX_JOYSTICKS) i = 0;
 	joyState[i] = arg.state;
@@ -1854,7 +1854,7 @@ bool InputEngine::buttonReleased( const OIS::JoyStickEvent &arg, int button )
 bool InputEngine::axisMoved( const OIS::JoyStickEvent &arg, int axis )
 {
 	inputsChanged=true;
-	//LogManager::getSingleton().logMessage("*** axisMoved " + StringConverter::toString(axis) + " / " + StringConverter::toString((int)(arg.state.mAxes[axis].abs / (float)(mJoy->MAX_AXIS/100))));
+	//LOG("*** axisMoved " + TOSTRING(axis) + " / " + TOSTRING((int)(arg.state.mAxes[axis].abs / (float)(mJoy->MAX_AXIS/100))));
 	int i = arg.device->getID();
 	if (i < 0 || i >= MAX_JOYSTICKS) i = 0;
 	joyState[i] = arg.state;
@@ -1864,7 +1864,7 @@ bool InputEngine::axisMoved( const OIS::JoyStickEvent &arg, int axis )
 bool InputEngine::sliderMoved( const OIS::JoyStickEvent &arg, int )
 {
 	inputsChanged=true;
-	//LogManager::getSingleton().logMessage("*** sliderMoved");
+	//LOG("*** sliderMoved");
 	int i = arg.device->getID();
 	if (i < 0 || i >= MAX_JOYSTICKS) i = 0;
 	joyState[i] = arg.state;
@@ -1874,7 +1874,7 @@ bool InputEngine::sliderMoved( const OIS::JoyStickEvent &arg, int )
 bool InputEngine::povMoved( const OIS::JoyStickEvent &arg, int )
 {
 	inputsChanged=true;
-	//LogManager::getSingleton().logMessage("*** povMoved");
+	//LOG("*** povMoved");
 	int i = arg.device->getID();
 	if (i < 0 || i >= MAX_JOYSTICKS) i = 0;
 	joyState[i] = arg.state;
@@ -1893,7 +1893,7 @@ bool InputEngine::keyPressed( const OIS::KeyEvent &arg )
 	GUIManager::getSingleton().keyPressed(arg);
 #endif //MYGUI
 
-	//LogManager::getSingleton().logMessage("*** keyPressed");
+	//LOG("*** keyPressed");
 	if(keyState[arg.key] != 1)
 		inputsChanged=true;
 	keyState[arg.key] = 1;
@@ -1929,7 +1929,7 @@ bool InputEngine::keyReleased( const OIS::KeyEvent &arg )
 #ifdef USE_MYGUI 
 	GUIManager::getSingleton().keyReleased(arg);
 #endif //MYGUI
-	//LogManager::getSingleton().logMessage("*** keyReleased");
+	//LOG("*** keyReleased");
 	if(keyState[arg.key] != 0)
 		inputsChanged=true;
 	keyState[arg.key] = 0;
@@ -1942,7 +1942,7 @@ bool InputEngine::mouseMoved( const OIS::MouseEvent &arg )
 #ifdef USE_MYGUI 
 	GUIManager::getSingleton().mouseMoved(arg);
 #endif //MYGUI
-	//LogManager::getSingleton().logMessage("*** mouseMoved");
+	//LOG("*** mouseMoved");
 	inputsChanged=true;
 	mouseState = arg.state;
 	return true;
@@ -1953,7 +1953,7 @@ bool InputEngine::mousePressed( const OIS::MouseEvent &arg, OIS::MouseButtonID i
 #ifdef USE_MYGUI 
 	GUIManager::getSingleton().mousePressed(arg, id);
 #endif //MYGUI
-	//LogManager::getSingleton().logMessage("*** mousePressed");
+	//LOG("*** mousePressed");
 	inputsChanged=true;
 	mouseState = arg.state;
 	return true;
@@ -1964,7 +1964,7 @@ bool InputEngine::mouseReleased( const OIS::MouseEvent &arg, OIS::MouseButtonID 
 #ifdef USE_MYGUI 
 	GUIManager::getSingleton().mouseReleased(arg, id);
 #endif //MYGUI
-	//LogManager::getSingleton().logMessage("*** mouseReleased");
+	//LOG("*** mouseReleased");
 	inputsChanged=true;
 	mouseState = arg.state;
 	return true;
@@ -1974,7 +1974,7 @@ bool InputEngine::mouseReleased( const OIS::MouseEvent &arg, OIS::MouseButtonID 
 void InputEngine::prepareShutdown()
 {
 #ifndef NOOGRE
-	LogManager::getSingleton().logMessage("*** Inputsystem prepare for shutdown ***");
+	LOG("*** Inputsystem prepare for shutdown ***");
 #endif
 	destroy();
 }
@@ -2230,7 +2230,7 @@ float InputEngine::getEventValue(int eventID, bool pure, int valueSource)
 						if(t.joystickButtonNumber >= (int)mJoy[t.joystickNumber]->getNumberOfComponents(OIS_Button))
 						{
 #ifndef NOOGRE
-							LogManager::getSingleton().logMessage("*** Joystick has not enough buttons for mapping: need button "+StringConverter::toString(t.joystickButtonNumber) + ", availabe buttons: "+StringConverter::toString(mJoy[t.joystickNumber]->getNumberOfComponents(OIS_Button)));
+							LOG("*** Joystick has not enough buttons for mapping: need button "+TOSTRING(t.joystickButtonNumber) + ", availabe buttons: "+TOSTRING(mJoy[t.joystickNumber]->getNumberOfComponents(OIS_Button)));
 #endif
 							value=0;
 							continue;
@@ -2248,7 +2248,7 @@ float InputEngine::getEventValue(int eventID, bool pure, int valueSource)
 						if(t.joystickPovNumber >= (int)mJoy[t.joystickNumber]->getNumberOfComponents(OIS_POV))
 						{
 #ifndef NOOGRE
-							LogManager::getSingleton().logMessage("*** Joystick has not enough POVs for mapping: need POV "+StringConverter::toString(t.joystickPovNumber) + ", availabe POVs: "+StringConverter::toString(mJoy[t.joystickNumber]->getNumberOfComponents(OIS_POV)));
+							LOG("*** Joystick has not enough POVs for mapping: need POV "+TOSTRING(t.joystickPovNumber) + ", availabe POVs: "+TOSTRING(mJoy[t.joystickNumber]->getNumberOfComponents(OIS_POV)));
 #endif
 							value=0;
 							continue;
@@ -2287,7 +2287,7 @@ float InputEngine::getEventValue(int eventID, bool pure, int valueSource)
 						if(t.joystickAxisNumber >= (int)joyState[t.joystickNumber].mAxes.size())
 						{
 	#ifndef NOOGRE
-							LogManager::getSingleton().logMessage("*** Joystick has not enough axis for mapping: need axe "+StringConverter::toString(t.joystickAxisNumber) + ", availabe axis: "+StringConverter::toString(joyState[t.joystickNumber].mAxes.size()));
+							LOG("*** Joystick has not enough axis for mapping: need axe "+TOSTRING(t.joystickAxisNumber) + ", availabe axis: "+TOSTRING(joyState[t.joystickNumber].mAxes.size()));
 	#endif
 							value=0;
 							continue;
@@ -2326,7 +2326,7 @@ float InputEngine::getEventValue(int eventID, bool pure, int valueSource)
 								// XXX: TODO: write this
 								//float a = (double)((value+1.0)/2.0);
 								//float b = (double)(1.0-(value+1.0)/2.0);
-								//LogManager::getSingleton().logMessage("half: "+StringConverter::toString(value)+" / "+StringConverter::toString(a)+" / "+StringConverter::toString(b));
+								//LOG("half: "+TOSTRING(value)+" / "+TOSTRING(a)+" / "+TOSTRING(b));
 								//no dead zone in half axis
 								value = (1.0 + value) / 2.0;
 								if (t.joystickAxisReverse)
@@ -2335,7 +2335,7 @@ float InputEngine::getEventValue(int eventID, bool pure, int valueSource)
 									value = axisLinearity(value, t.joystickAxisLinearity);
 							}else
 							{
-								//LogManager::getSingleton().logMessage("not half: "+StringConverter::toString(value)+" / "+StringConverter::toString(deadZone(value, t.joystickAxisDeadzone)) +" / "+StringConverter::toString(t.joystickAxisDeadzone) );
+								//LOG("not half: "+TOSTRING(value)+" / "+TOSTRING(deadZone(value, t.joystickAxisDeadzone)) +" / "+TOSTRING(t.joystickAxisDeadzone) );
 								if (t.joystickAxisReverse)
 									value = 1-value;
 								if(!pure)
@@ -2489,7 +2489,7 @@ bool InputEngine::processLine(char *line)
 			OIS::KeyCode key = KC_UNASSIGNED;
 			sscanf(line, "%s %s %s", eventName, evtype, keycodes);
 			// seperate all keys and construct the key combination
-			//LogManager::getSingleton().logMessage("try to add key: " + String(keyname)+","+ String(evtype)+","+String(keycodes));
+			//LOG("try to add key: " + String(keyname)+","+ String(evtype)+","+String(keycodes));
 			bool alt=false;
 			bool shift=false;
 			bool ctrl=false;
@@ -2515,11 +2515,11 @@ bool InputEngine::processLine(char *line)
 			if(allit == allkeys.end())
 			{
 #ifndef NOOGRE
-				LogManager::getSingleton().logMessage("unkown key: " + string(keycodes));
+				LOG("unkown key: " + string(keycodes));
 #endif
 				key = KC_UNASSIGNED;
 			} else {
-				//LogManager::getSingleton().logMessage("found key: " + string(keycode) + " = " + StringConverter::toString((int)key));
+				//LOG("found key: " + string(keycode) + " = " + TOSTRING((int)key));
 				key = allit->second;
 			}
 			int eventID = resolveEventName(String(eventName));
@@ -2541,7 +2541,7 @@ bool InputEngine::processLine(char *line)
 			addEvent(eventID, t_key);
 
 #ifndef NOOGRE
-			//LogManager::getSingleton().logMessage("adding: " + String(eventName) + ": "+StringConverter::toString((int)key));
+			//LOG("adding: " + String(eventName) + ": "+TOSTRING((int)key));
 #endif
 			return true;
 		}
@@ -2619,7 +2619,7 @@ bool InputEngine::processLine(char *line)
 					char tmp2[255];
 					strcpy(tmp2,token+9);
 					deadzone = atof(tmp2);
-					//LogManager::getSingleton().logMessage("got deadzone: " + StringConverter::toString(deadzone)+", "+String(tmp2));
+					//LOG("got deadzone: " + TOSTRING(deadzone)+", "+String(tmp2));
 				}
 				else if (strncmp(token, "LINEARITY", 9) == 0 && strnlen(token, 250) > 10)
 				{
@@ -2650,7 +2650,7 @@ bool InputEngine::processLine(char *line)
 			strncpy(t_joy.comments, cur_comment.c_str(), 1024);
 			cur_comment = "";
 			addEvent(eventID, t_joy);
-			//LogManager::getSingleton().logMessage("added axis: " + StringConverter::toString(axisNo));
+			//LOG("added axis: " + TOSTRING(axisNo));
 			return true;
 		}
 	case ET_NONE:
@@ -2703,7 +2703,7 @@ bool InputEngine::processLine(char *line)
 			strncpy(t_pov.comments, cur_comment.c_str(), 1024);
 			cur_comment = "";
 			addEvent(eventID, t_pov);
-			//LogManager::getSingleton().logMessage("added axis: " + StringConverter::toString(axisNo));
+			//LOG("added axis: " + TOSTRING(axisNo));
 			return true;
 		}
 	case ET_JoystickSliderX:
@@ -2748,7 +2748,7 @@ bool InputEngine::processLine(char *line)
 			strncpy(t_slider.comments, cur_comment.c_str(), 1024);
 			cur_comment = "";
 			addEvent(eventID, t_slider);
-			//LogManager::getSingleton().logMessage("added axis: " + StringConverter::toString(axisNo));
+			//LOG("added axis: " + TOSTRING(axisNo));
 			return true;
 		}
 	default:
@@ -3115,7 +3115,7 @@ void InputEngine::completeMissingEvents()
 			if(eventInfo[i].defaultKey.empty()) continue;
 			if(eventInfo[i].defaultKey == "None") continue;
 #ifndef NOOGRE
-			LogManager::getSingleton().logMessage("event mapping not existing, using default: " + eventInfo[i].name);
+			LOG("event mapping not existing, using default: " + eventInfo[i].name);
 #endif
 			// not existing, insert default
 			char tmp[255] = "";
@@ -3138,7 +3138,7 @@ bool InputEngine::loadMapping(Ogre::String outfile, bool append)
 	}
 
 #ifndef NOOGRE
-	LogManager::getSingleton().logMessage("Loading input mapping...");
+	LOG("Loading input mapping...");
 	{
 		DataStreamPtr ds = ResourceGroupManager::getSingleton().openResource(outfile, ResourceGroupManager::DEFAULT_RESOURCE_GROUP_NAME);
 		while (!ds->eof())
@@ -3169,7 +3169,7 @@ bool InputEngine::loadMapping(Ogre::String outfile, bool append)
 	mappingLoaded = true;
 
 #ifndef NOOGRE
-	LogManager::getSingleton().logMessage("key map successfully loaded!");
+	LOG("key map successfully loaded!");
 #endif
 	completeMissingEvents();
 	return true;
@@ -3185,7 +3185,7 @@ int InputEngine::resolveEventName(Ogre::String eventName)
 		i++;
 	}
 #ifndef NOOGRE
-	LogManager::getSingleton().logMessage("unkown event (ignored): " + eventName);
+	LOG("unkown event (ignored): " + eventName);
 #endif
 	return -1;
 }

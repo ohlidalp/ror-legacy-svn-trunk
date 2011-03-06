@@ -82,7 +82,7 @@ Beam *BeamFactory::createLocal(Ogre::Vector3 pos, Ogre::Quaternion rot, Ogre::St
 	int truck_num = efl->getFreeTruckSlot();
 	if(truck_num == -1)
 	{
-		LogManager::getSingleton().logMessage("ERROR: could not add beam to main list");
+		LOG("ERROR: could not add beam to main list");
 		return 0;
 	}
 
@@ -131,7 +131,7 @@ Beam *BeamFactory::createRemoteInstance(stream_reg_t *reg)
 
 	stream_register_trucks_t *treg = (stream_register_trucks_t *)&reg->reg;
 
-	LogManager::getSingleton().logMessage(" new beam truck for " + StringConverter::toString(reg->sourceid) + ":" + StringConverter::toString(reg->streamid));
+	LOG(" new beam truck for " + TOSTRING(reg->sourceid) + ":" + TOSTRING(reg->streamid));
 
 	bool networked=true, networking=false;
 	if(net) networking = true;
@@ -141,7 +141,7 @@ Beam *BeamFactory::createRemoteInstance(stream_reg_t *reg)
 	String group = "";
 	if(!CACHE.checkResourceLoaded(filename, group))
 	{
-		LogManager::getSingleton().logMessage("wont add remote stream (truck not existing): '"+filename+"'");
+		LOG("wont add remote stream (truck not existing): '"+filename+"'");
 
 		// add 0 to the map so we know its stream is existing but not usable for us
 		std::map < int, std::map < unsigned int, Beam *> > &streamables = getStreams();
@@ -166,7 +166,7 @@ Beam *BeamFactory::createRemoteInstance(stream_reg_t *reg)
 	int truck_num = efl->getFreeTruckSlot();
 	if(truck_num == -1)
 	{
-		LogManager::getSingleton().logMessage("ERROR: could not add beam to main list");
+		LOG("ERROR: could not add beam to main list");
 		return 0;
 	}
 

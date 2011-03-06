@@ -62,7 +62,7 @@ Character::Character(Camera *cam,Collisions *c, Network *net, HeightFinder *h, W
 
 
 	myNumber = characterCounter++;
-	myName = "character"+Ogre::StringConverter::toString(myNumber);
+	myName = "character"+TOSTRING(myNumber);
 	persoangle=0;
 	persospeed=2;
 	persovspeed=0;
@@ -163,7 +163,7 @@ void Character::updateNetLabel()
 		networkAuthLevel = info->authstatus;
 	}
 
-	//LogManager::getSingleton().logMessage(" * updateNetLabel : " + StringConverter::toString(this->source));
+	//LOG(" * updateNetLabel : " + TOSTRING(this->source));
 	if(!netMT)
 	{
 		netMT = new MovableText("netlabel-"+myName, ColoredTextAreaOverlayElement::StripColors(networkUsername));
@@ -176,8 +176,8 @@ void Character::updateNetLabel()
 		netMT->setColor(ColourValue::White);
 	}
 
-	//LogManager::getSingleton().logMessage(" *label caption: " + String(networkUsername));
-	//LogManager::getSingleton().logMessage(" *label caption: " + ColoredTextAreaOverlayElement::StripColors(networkUsername));
+	//LOG(" *label caption: " + String(networkUsername));
+	//LOG(" *label caption: " + ColoredTextAreaOverlayElement::StripColors(networkUsername));
 	netMT->setCaption(ColoredTextAreaOverlayElement::StripColors(networkUsername));
 	if(networkAuthLevel & AUTH_ADMIN)
 	{
@@ -501,7 +501,7 @@ void Character::update(float dt)
 			setAnimationMode("driving", 0);
 			Real lenght = persoanim->getAnimationState("driving")->getLength();
 			float timePos = ((angle + 1.0f) * 0.5f) * lenght;
-			//LogManager::getSingleton().logMessage("angle: " + StringConverter::toString(angle) + " / " + StringConverter::toString(timePos));
+			//LOG("angle: " + TOSTRING(angle) + " / " + TOSTRING(timePos));
 			//prevent animation flickering on the borders:
 			if(timePos < 0.01f) timePos = 0.01f;
 			if(timePos > lenght - 0.01f) timePos = lenght - 0.01f;
@@ -574,7 +574,7 @@ void Character::sendStreamData()
 	strncpy(data.animationMode, lastmode.c_str(), 254);
 	data.animationTime = persoanim->getAnimationState(lastmode)->getTimePosition();
 
-	//LogManager::getSingleton().logMessage("sending character stream data: " + StringConverter::toString(net->getUserID()) + ":"+ StringConverter::toString(streamid));
+	//LOG("sending character stream data: " + TOSTRING(net->getUserID()) + ":"+ TOSTRING(streamid));
 	this->addPacket(MSG2_STREAM_DATA, sizeof(pos_netdata_t), (char*)&data);
 }
 
@@ -607,7 +607,7 @@ void Character::receiveStreamData(unsigned int &type, int &source, unsigned int 
 		}
 	}
 	//else
-	//	LogManager::getSingleton().logMessage("character stream data wrong: " + StringConverter::toString(source) + ":"+ StringConverter::toString(streamid));
+	//	LOG("character stream data wrong: " + TOSTRING(source) + ":"+ TOSTRING(streamid));
 }
 
 void Character::updateNetLabelSize()
@@ -621,9 +621,9 @@ void Character::updateNetLabelSize()
 		h=9;
 	netMT->setCharacterHeight(h);
 	if(vlen>1000)
-		netMT->setCaption(networkUsername + "  (" + StringConverter::toString( (float)(ceil(vlen/100)/10.0) )+ " km)");
+		netMT->setCaption(networkUsername + "  (" + TOSTRING( (float)(ceil(vlen/100)/10.0) )+ " km)");
 	else if (vlen>20 && vlen <= 1000)
-		netMT->setCaption(networkUsername + "  (" + StringConverter::toString((int)vlen)+ " m)");
+		netMT->setCaption(networkUsername + "  (" + TOSTRING((int)vlen)+ " m)");
 	else
 		netMT->setCaption(networkUsername);
 

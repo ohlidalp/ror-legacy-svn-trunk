@@ -111,7 +111,7 @@ public:
 			}
 		}
 		//float used_per = ((float)(dsize * 8 + 40) / (float)isize) * 100.0f;
-		//Ogre::LogManager::getSingleton().logMessage("used " + Ogre::StringConverter::toString(used_per) + " %");
+		//LOG("used " + TOSTRING(used_per) + " %");
 
 		//save it
 		Ogre::Image img;

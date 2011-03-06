@@ -90,7 +90,7 @@ void SkinManager::parseScript(DataStreamPtr& stream, const String& groupName)
 	{
 		String line;
 		Skin *pSkin=0;
-		LogManager::getSingleton().logMessage("SkinManager::parseScript");
+		LOG("SkinManager::parseScript");
 
 		while( !stream->eof() )
 		{
@@ -174,7 +174,7 @@ void SkinManager::parseAttribute(const String& line, Skin *pSkin)
 //---------------------------------------------------------------------
 void SkinManager::logBadAttrib(const String& line, Skin *pSkin)
 {
-	LogManager::getSingleton().logMessage("Bad attribute line: " + line + " in skin " + pSkin->getName());
+	LOG("Bad attribute line: " + line + " in skin " + pSkin->getName());
 
 }
 

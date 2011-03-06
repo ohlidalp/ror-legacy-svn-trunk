@@ -40,7 +40,7 @@ Landusemap::Landusemap(String configFilename, Collisions *c, int _mapsizex, int 
 {
 	loadConfig(configFilename);
 #ifndef USE_PAGED
-	LogManager::getSingleton().logMessage("RoR was not compiled with PagedGeometry support. You cannot use Landuse maps with it.");
+	LOG("RoR was not compiled with PagedGeometry support. You cannot use Landuse maps with it.");
 #endif //USE_PAGED
 }
 
@@ -70,7 +70,7 @@ int Landusemap::loadConfig(Ogre::String filename)
 	int version = 1;
 	String textureFilename = "";
 
-	LogManager::getSingleton().logMessage("Parsing landuse config: '"+filename+"'");
+	LOG("Parsing landuse config: '"+filename+"'");
 
 	String group = "";
 	try
@@ -123,7 +123,7 @@ int Landusemap::loadConfig(Ogre::String filename)
 			{
 				if(kname.size() != 10)
 				{
-					LogManager::getSingleton().logMessage("invalid color in landuse line in " + filename);
+					LOG("invalid color in landuse line in " + filename);
 					continue;
 				}
 				char *ptr; //not used

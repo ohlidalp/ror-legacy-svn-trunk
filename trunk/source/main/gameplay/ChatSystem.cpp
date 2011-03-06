@@ -65,7 +65,7 @@ ChatSystem *ChatSystemFactory::createRemoteInstance(stream_reg_t *reg)
 {
 	// NO LOCKS IN HERE, already locked
 
-	LogManager::getSingleton().logMessage(" new chat system for " + StringConverter::toString(reg->sourceid) + ":" + StringConverter::toString(reg->streamid) + ", colour: " + StringConverter::toString(reg->colour));
+	LOG(" new chat system for " + TOSTRING(reg->sourceid) + ":" + TOSTRING(reg->streamid) + ", colour: " + TOSTRING(reg->colour));
 	ChatSystem *ch = new ChatSystem(net, reg->sourceid, reg->streamid, reg->colour, true);
 
 	std::map < int, std::map < unsigned int, ChatSystem *> > &streamables = getStreams();
@@ -122,7 +122,7 @@ ChatSystem::ChatSystem(Network *net, int source, unsigned int streamid, int colo
 			if(c->user.authstatus & AUTH_MOD)    nickColour = 1; // red
 			if(c->user.authstatus & AUTH_ADMIN)  nickColour = 1; // red
 
-			mNickColour = String("^") + StringConverter::toString(nickColour);
+			mNickColour = String("^") + TOSTRING(nickColour);
 			username = mNickColour + ColoredTextAreaOverlayElement::StripColors(username);
 		}
 

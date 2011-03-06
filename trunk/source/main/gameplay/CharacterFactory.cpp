@@ -54,7 +54,7 @@ Character *CharacterFactory::createRemoteInstance(stream_reg_t *reg)
 {
 	// NO LOCKS IN HERE, already locked
 
-	LogManager::getSingleton().logMessage(" new character for " + StringConverter::toString(reg->sourceid) + ":" + StringConverter::toString(reg->streamid) + ", colour: " + StringConverter::toString(reg->colour));
+	LOG(" new character for " + TOSTRING(reg->sourceid) + ":" + TOSTRING(reg->streamid) + ", colour: " + TOSTRING(reg->colour));
 	Character *ch = new Character(cam, c, net, h, w, m, scm, reg->sourceid, reg->streamid, reg->colour, true);
 
 	std::map < int, std::map < unsigned int, Character *> > &streamables = getStreams();

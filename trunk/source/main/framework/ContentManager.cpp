@@ -52,14 +52,14 @@ void ContentManager::loadMainResource(String name, String group)
 	dirsep="\\";
 #endif
 
-	String zipFilename = SETTINGS.getSetting("Resources Path")+name+".zip";
+	String zipFilename = SSETTING("Resources Path")+name+".zip";
 	if(fileExists(zipFilename))
 	{
 		ResourceGroupManager::getSingleton().addResourceLocation(zipFilename, "Zip", group);
 	} else
 	{
-		String dirname = SETTINGS.getSetting("Resources Path")+name;
-		Ogre::LogManager::getSingleton().logMessage("resource zip '"+zipFilename+"' not existing, using directory instead: " + dirname);
+		String dirname = SSETTING("Resources Path")+name;
+		LOG("resource zip '"+zipFilename+"' not existing, using directory instead: " + dirname);
 		ResourceGroupManager::getSingleton().addResourceLocation(dirname, "FileSystem", group);
 	}
 }
@@ -81,7 +81,7 @@ bool ContentManager::init(void)
 	// by default, display everything in the depth map
 	Ogre::MovableObject::setDefaultVisibilityFlags(DEPTHMAP_ENABLED);
 
-	CACHE.setLocation(SETTINGS.getSetting("Cache Path"), SETTINGS.getSetting("Config Root"));
+	CACHE.setLocation(SSETTING("Cache Path"), SSETTING("Config Root"));
 
 	ColoredTextAreaOverlayElementFactory *cef = new ColoredTextAreaOverlayElementFactory();
 	OverlayManager::getSingleton().addOverlayElementFactory(cef);
@@ -94,10 +94,10 @@ bool ContentManager::init(void)
 	dirsep="\\";
 #endif
 	//bootstrap
-	LogManager::getSingleton().logMessage("Loading Bootstrap");
+	LOG("Loading Bootstrap");
 	loadMainResource("OgreCore", "Bootstrap");
 	//main game resources
-	LogManager::getSingleton().logMessage("Loading main resources");
+	LOG("Loading main resources");
 	loadMainResource("airfoils");
 	loadMainResource("materials");
 	loadMainResource("meshes");
@@ -113,66 +113,66 @@ bool ContentManager::init(void)
 
 	// sound iss a bit special as we mark the base sounds so we dont clear them accidentially later on
 #ifdef USE_OPENAL
-	LogManager::getSingleton().logMessage("Creating Sound Manager");
+	LOG("Creating Sound Manager");
 	SoundScriptManager *ssm = SoundScriptManager::getSingleton();
 	if(ssm) ssm->setLoadingBaseSounds(true);
 #endif // USE_OPENAL
-	if (SETTINGS.getSetting("3D Sound renderer") != "No sound")
+	if (SSETTING("3D Sound renderer") != "No sound")
 		loadMainResource("sounds");
 
-	if (SETTINGS.getSetting("Sky effects") == "Caelum (best looking, slower)")
+	if (SSETTING("Sky effects") == "Caelum (best looking, slower)")
 		loadMainResource("caelum");
 
-	if(SETTINGS.getSetting("Hydrax") == "Yes")
+	if(BSETTING("Hydrax"))
 		loadMainResource("hydrax", "Hydrax"); // special resourcegroup required!
 
-	if(SETTINGS.getSetting("Vegetation") != "None (fastest)")
+	if(SSETTING("Vegetation") != "None (fastest)")
 		loadMainResource("paged");
 
-	if(SETTINGS.getSetting("HDR") == "Yes")
+	if(BSETTING("HDR"))
 		loadMainResource("hdr");
 
-	if(SETTINGS.getSetting("DOF") == "Yes")
+	if(BSETTING("DOF"))
 		loadMainResource("dof");
 
-	if(SETTINGS.getSetting("Glow") == "Yes")
+	if(BSETTING("Glow"))
 		loadMainResource("glow");
 
-	if(SETTINGS.getSetting("Motion blur") == "Yes")
+	if(BSETTING("Motion blur"))
 		loadMainResource("blur");
 
-	if(SETTINGS.getSetting("HeatHaze") == "Yes")
+	if(BSETTING("HeatHaze"))
 		loadMainResource("heathaze");
 
-	if (SETTINGS.getSetting("Sunburn")!="Yes")
+	if (BSETTING("Sunburn"))
 		loadMainResource("sunburn");
 
-	if (SETTINGS.getSetting("Shadow technique")=="Parallel-split Shadow Maps")
+	if (SSETTING("Shadow technique")=="Parallel-split Shadow Maps")
 		loadMainResource("pssm");
 
 	//streams path, to be processed later by the cache system
-	LogManager::getSingleton().logMessage("Loading filesystems");
+	LOG("Loading filesystems");
 
-	ResourceGroupManager::getSingleton().addResourceLocation(SETTINGS.getSetting("User Path")+"cache", "FileSystem", "cache");
+	ResourceGroupManager::getSingleton().addResourceLocation(SSETTING("User Path")+"cache", "FileSystem", "cache");
 	//config, flat
-	ResourceGroupManager::getSingleton().addResourceLocation(SETTINGS.getSetting("User Path")+"config", "FileSystem", ResourceGroupManager::DEFAULT_RESOURCE_GROUP_NAME);
-	ResourceGroupManager::getSingleton().addResourceLocation(SETTINGS.getSetting("User Path")+"alwaysload", "FileSystem", ResourceGroupManager::DEFAULT_RESOURCE_GROUP_NAME);
+	ResourceGroupManager::getSingleton().addResourceLocation(SSETTING("User Path")+"config", "FileSystem", ResourceGroupManager::DEFAULT_RESOURCE_GROUP_NAME);
+	ResourceGroupManager::getSingleton().addResourceLocation(SSETTING("User Path")+"alwaysload", "FileSystem", ResourceGroupManager::DEFAULT_RESOURCE_GROUP_NAME);
 	//packs, to be processed later by the cache system
 
 	// add scripts folder
-	ResourceGroupManager::getSingleton().addResourceLocation(SETTINGS.getSetting("User Path")+"scripts", "FileSystem", "Scripts");
+	ResourceGroupManager::getSingleton().addResourceLocation(SSETTING("User Path")+"scripts", "FileSystem", "Scripts");
 
 	// init skin manager, important to happen before trucks resource loading!
-	LogManager::getSingleton().logMessage("registering Skin Manager");
+	LOG("registering Skin Manager");
 	new SkinManager();
 
-	LogManager::getSingleton().logMessage("registering colored text overlay factory");
+	LOG("registering colored text overlay factory");
 	ColoredTextAreaOverlayElementFactory *pCT = new ColoredTextAreaOverlayElementFactory();
 	OverlayManager::getSingleton().addOverlayElementFactory(pCT);
 
 	// Set default mipmap level (NB some APIs ignore this)
 	TextureManager::getSingleton().setDefaultNumMipmaps(5);
-	String tft=SETTINGS.getSetting("Texture Filtering");
+	String tft=SSETTING("Texture Filtering");
 	TextureFilterOptions tfo=TFO_NONE;
 	if (tft=="Bilinear") tfo=TFO_BILINEAR;
 	if (tft=="Trilinear") tfo=TFO_TRILINEAR;
@@ -181,13 +181,13 @@ bool ContentManager::init(void)
 	MaterialManager::getSingleton().setDefaultTextureFiltering(tfo);
 
 	// load all resources now, so the zip files are also initiated
-	LogManager::getSingleton().logMessage("initialiseAllResourceGroups()");
+	LOG("initialiseAllResourceGroups()");
 	try
 	{
 		ResourceGroupManager::getSingleton().initialiseAllResourceGroups();
 	} catch(Ogre::Exception& e)
 	{
-		LogManager::getSingleton().logMessage("catched error while initializing Resource groups: " + e.getFullDescription());
+		LOG("catched error while initializing Resource groups: " + e.getFullDescription());
 	}
 #ifdef USE_OPENAL
 	if(ssm) ssm->setLoadingBaseSounds(false);
@@ -196,24 +196,24 @@ bool ContentManager::init(void)
 
 	// and the content
 	//main synced streams
-	ResourceGroupManager::getSingleton().addResourceLocation(SETTINGS.getSetting("Streams Path"),      "FileSystem", "Streams");
-	ResourceGroupManager::getSingleton().addResourceLocation(SETTINGS.getSetting("User Path")+"packs", "FileSystem", "Packs");
-	ResourceGroupManager::getSingleton().addResourceLocation(SETTINGS.getSetting("User Path")+"mods",  "FileSystem", "Packs");
+	ResourceGroupManager::getSingleton().addResourceLocation(SSETTING("Streams Path"),      "FileSystem", "Streams");
+	ResourceGroupManager::getSingleton().addResourceLocation(SSETTING("User Path")+"packs", "FileSystem", "Packs");
+	ResourceGroupManager::getSingleton().addResourceLocation(SSETTING("User Path")+"mods",  "FileSystem", "Packs");
 
-	ResourceGroupManager::getSingleton().addResourceLocation(SETTINGS.getSetting("User Path")+"vehicles", "FileSystem", "VehicleFolders");
-	ResourceGroupManager::getSingleton().addResourceLocation(SETTINGS.getSetting("User Path")+"terrains", "FileSystem", "TerrainFolders");
+	ResourceGroupManager::getSingleton().addResourceLocation(SSETTING("User Path")+"vehicles", "FileSystem", "VehicleFolders");
+	ResourceGroupManager::getSingleton().addResourceLocation(SSETTING("User Path")+"terrains", "FileSystem", "TerrainFolders");
 
 	exploreFolders("VehicleFolders");
 	exploreFolders("TerrainFolders");
 	exploreFolders("Streams");
 
-	LogManager::getSingleton().logMessage("initialiseAllResourceGroups() - Content");
+	LOG("initialiseAllResourceGroups() - Content");
 	try
 	{
 		ResourceGroupManager::getSingleton().initialiseResourceGroup("Packs");
 	} catch(Ogre::Exception& e)
 	{
-		LogManager::getSingleton().logMessage("catched error while initializing Content Resource groups: " + e.getFullDescription());
+		LOG("catched error while initializing Content Resource groups: " + e.getFullDescription());
 	}
 
 #ifndef NOLANG
@@ -244,7 +244,7 @@ bool ContentManager::resourceCollision(Ogre::Resource *resource, Ogre::ResourceM
 			instanceCountMap[resource->getName()] = 1;
 		}
 		int count = instanceCountMap[resource->getName()]++;
-		MaterialPtr mat = (MaterialPtr)resourceManager->create(resource->getName() + StringConverter::toString(count), resource->getGroup());
+		MaterialPtr mat = (MaterialPtr)resourceManager->create(resource->getName() + TOSTRING(count), resource->getGroup());
 		resource = (Ogre::Resource *)mat.getPointer();
 		return true;
 	}
@@ -270,12 +270,12 @@ void ContentManager::exploreFolders(Ogre::String rg)
 		String fullpath=(*iterFiles).archive->getName() + dirsep;
 		rgm.addResourceLocation(fullpath+(*iterFiles).filename, "FileSystem", rg);
 	}
-	LogManager::getSingleton().logMessage("initialiseResourceGroups: VehicleFolders");
+	LOG("initialiseResourceGroups: VehicleFolders");
 	try
 	{
 		ResourceGroupManager::getSingleton().initialiseResourceGroup(rg);
 	} catch(Ogre::Exception& e)
 	{
-		LogManager::getSingleton().logMessage("catched error while initializing Resource group '" + rg + "' : " + e.getFullDescription());
+		LOG("catched error while initializing Resource group '" + rg + "' : " + e.getFullDescription());
 	}
 }

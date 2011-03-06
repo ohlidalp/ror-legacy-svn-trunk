@@ -48,7 +48,7 @@ SoundScriptManager::SoundScriptManager()
 	}
 	for (int i=0; i<SS_MAX_TRIG*MAX_TRUCKS; i++) statemap[i]=false;
 	sm=new SoundManager(); //we can give a device name if we want here
-	LogManager::getSingleton().logMessage("SoundScriptManager: Sound Manager started with "+StringConverter::toString(sm->maxSources())+" sources");
+	LOG("SoundScriptManager: Sound Manager started with "+TOSTRING(sm->maxSources())+" sources");
 	mScriptPatterns.push_back("*.soundscript");
 	ResourceGroupManager::getSingleton()._registerScriptLoader(this);
 }
@@ -131,7 +131,7 @@ void SoundScriptManager::setCamera(Vector3 position, Vector3 direction, Vector3 
 
 SoundScriptManager *SoundScriptManager::getSingleton()
 {
-	if (SETTINGS.getSetting("3D Sound renderer") == "No sound") return 0;
+	if (SSETTING("3D Sound renderer") == "No sound") return 0;
 	if (!singleton) singleton=new SoundScriptManager();
 	return singleton;
 }
@@ -194,7 +194,7 @@ void SoundScriptManager::clearNonBaseTemplates()
 		}
 	}
 	if(counter>0)
-		LogManager::getSingleton().logMessage("SoundScriptManager: removed " + StringConverter::toString(counter) + " non-base templates");
+		LOG("SoundScriptManager: removed " + TOSTRING(counter) + " non-base templates");
 }
 
 SoundScriptInstance* SoundScriptManager::createInstance(Ogre::String templatename, int truck, Ogre::SceneNode *toAttach)
@@ -208,7 +208,7 @@ SoundScriptInstance* SoundScriptManager::createInstance(Ogre::String templatenam
 	templ = templates[templatename];
 	if (templ->trigger_source==SS_TRIG_NONE) return NULL; //invalid template!
 	//ok create instance
-	SoundScriptInstance* inst=new SoundScriptInstance(truck, templ, sm, templ->filename+"-"+StringConverter::toString(truck)+"-"+StringConverter::toString(instance_counter));
+	SoundScriptInstance* inst=new SoundScriptInstance(truck, templ, sm, templ->filename+"-"+TOSTRING(truck)+"-"+TOSTRING(instance_counter));
 	instance_counter++;
 	//register to lookup tables
 	trigs[templ->trigger_source+free_trigs[templ->trigger_source]*SS_MAX_TRIG]=inst;
@@ -234,7 +234,7 @@ void SoundScriptManager::parseScript(DataStreamPtr& stream, const String& groupN
 	SoundScriptTemplate* sst;
 	std::vector<String> vecparams;
 
-	LogManager::getSingleton().logMessage("SoundScriptManager: Parsing script "+stream->getName());
+	LOG("SoundScriptManager: Parsing script "+stream->getName());
 	sst = 0;
 
 	while(!stream->eof())
@@ -247,12 +247,12 @@ void SoundScriptManager::parseScript(DataStreamPtr& stream, const String& groupN
 			{
 				// No current SoundScript
 				// So first valid data should be a SoundScript name
-				LogManager::getSingleton().logMessage("SoundScriptManager: creating template "+line);
+				LOG("SoundScriptManager: creating template "+line);
 				sst = createTemplate(line, groupName, stream->getName());
 				if (!sst)
 				{
 					//there is a name collision for this Sound Script
-					LogManager::getSingleton().logMessage("SoundScriptManager: Error, this sound script is already defined: "+line);
+					LOG("SoundScriptManager: Error, this sound script is already defined: "+line);
 					skipToNextOpenBrace(stream);
 					skipToNextCloseBrace(stream);
 					continue;
@@ -276,7 +276,7 @@ void SoundScriptManager::parseScript(DataStreamPtr& stream, const String& groupN
 
 					if (!sst->setParameter(vecparams))
 					{
-						LogManager::getSingleton().logMessage("Bad SoundScript attribute line: '"
+						LOG("Bad SoundScript attribute line: '"
 							+ line + "' in " + stream->getName());
 					}
 				}
@@ -343,7 +343,7 @@ SoundScriptTemplate::~SoundScriptTemplate()
 
 bool SoundScriptTemplate::setParameter(Ogre::StringVector vec)
 {
-//	for (int i=0; i<vec.size(); i++) LogManager::getSingleton().logMessage("SoundScriptManager: Parsing line '"+vec[i]+"'");
+//	for (int i=0; i<vec.size(); i++) LOG("SoundScriptManager: Parsing line '"+vec[i]+"'");
 
 	if (vec.size()<1) return false;
 	if (vec[0]==String("trigger_source"))
@@ -377,7 +377,7 @@ bool SoundScriptTemplate::setParameter(Ogre::StringVector vec)
 		if (vec[1]==String("air_purge")) {trigger_source=SS_TRIG_AIR_PURGE;return true;};
 		if (vec[1]==String("shift")) {trigger_source=SS_TRIG_SHIFT;return true;};
 		if (vec[1]==String("gear_slide")) {trigger_source=SS_TRIG_GEARSLIDE;return true;};
-		if (vec[1]==String("creak") && (SETTINGS.getSetting("Creak Sound")=="Yes")) {trigger_source=SS_TRIG_CREAK;return true;};
+		if (vec[1]==String("creak") && BSETTING("Creak Sound")) {trigger_source=SS_TRIG_CREAK;return true;};
 		if (vec[1]==String("break")) {trigger_source=SS_TRIG_BREAK;return true;};
 		if (vec[1]==String("screetch")) {trigger_source=SS_TRIG_SCREETCH;return true;};
 		if (vec[1]==String("parking_brake")) {trigger_source=SS_TRIG_PARK;return true;};
@@ -507,7 +507,7 @@ SoundScriptInstance::SoundScriptInstance(int truck, SoundScriptTemplate *templ, 
 	lastgain=1.0;
 	setPitch(0.0);
 	setGain(1.0);
-	LogManager::getSingleton().logMessage("SoundScriptInstance: instance created: "+instancename);
+	LOG("SoundScriptInstance: instance created: "+instancename);
 }
 
 void SoundScriptInstance::setPitch(float value)

@@ -30,7 +30,7 @@ class ResourceBuffer : public Ogre::ManualResourceLoader
 public:
 	void loadResource(Ogre::Resource *resource)
 	{
-		Ogre::LogManager::getSingleton().logMessage("* Resource reload requested: "+resource->getName());
+		LOG("* Resource reload requested: "+resource->getName());
 	}
 };
 

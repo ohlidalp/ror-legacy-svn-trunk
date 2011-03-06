@@ -229,7 +229,7 @@ protected:
 		StringUtil::splitBaseFilename(meshName, basename, ext);
 		for(int i=0; i<4;i++)
 		{
-			String fn = basename + "_lod" + StringConverter::toString(i+1) + ".mesh";
+			String fn = basename + "_lod" + TOSTRING(i+1) + ".mesh";
 			bool exists = ResourceGroupManager::getSingleton().resourceExistsInAnyGroup(fn);
 			if(!exists) continue;
 
@@ -254,7 +254,7 @@ protected:
 				sceneNode->attachObject(ent);
 		} catch(Ogre::Exception& e)
 		{
-			LogManager::getSingleton().logMessage("error loading mesh: " + meshName + ": " + e.getFullDescription());
+			LOG("error loading mesh: " + meshName + ": " + e.getFullDescription());
 			return;
 		}
 		
@@ -265,7 +265,7 @@ protected:
 	void operationCompleted(BackgroundProcessTicket ticket, const BackgroundProcessResult& result)
 	{
                 // NOT USED ATM
-		LogManager::getSingleton().logMessage("operationCompleted: " + meshName);
+		LOG("operationCompleted: " + meshName);
 		if(ticket == this->ticket)
 			postProcess();
 	}
@@ -282,18 +282,18 @@ protected:
 
 	void loadingComplete(Resource *r)
 	{
-		LogManager::getSingleton().logMessage("loadingComplete: " + r->getName());
+		LOG("loadingComplete: " + r->getName());
 		postProcess();
 	}
 
 	void preparingComplete(Resource *r)
 	{
-		LogManager::getSingleton().logMessage("preparingComplete: " + r->getName());
+		LOG("preparingComplete: " + r->getName());
 	}
 
 	void unloadingComplete(Resource *r)
 	{
-		LogManager::getSingleton().logMessage("unloadingComplete: " + r->getName());
+		LOG("unloadingComplete: " + r->getName());
 	}
 };
 

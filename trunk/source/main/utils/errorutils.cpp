@@ -47,7 +47,7 @@ int showInfo(Ogre::String title, Ogre::String err)
 int showMsgBox(Ogre::String title, Ogre::String err, int type)
 {
 	// we might call the showMsgBox without having ogre created yet!
-	//Ogre::LogManager::getSingleton().logMessage("message box: " + title + ": " + err);
+	//LOG("message box: " + title + ": " + err);
 #if OGRE_PLATFORM == OGRE_PLATFORM_WIN32
 	int mtype = MB_ICONERROR;
 	if(type == 1) mtype = MB_ICONINFORMATION;
@@ -83,7 +83,7 @@ int showOgreWebError(Ogre::String title, Ogre::String err, Ogre::String url)
 int showWebError(Ogre::String title, Ogre::String err, Ogre::String url)
 {
 	// NO logmanager use, because it could be that its not initialized yet!
-	//Ogre::LogManager::getSingleton().logMessage("web message box: " + title + ": " + err + " / url: " + url);
+	//LOG("web message box: " + title + ": " + err + " / url: " + url);
 #if OGRE_PLATFORM == OGRE_PLATFORM_WIN32
 	Ogre::String additional = _L("\n\nYou can eventually get help here:\n\n") + url + _L("\n\nDo you want to open that address in your default browser now?");
 	err += additional;

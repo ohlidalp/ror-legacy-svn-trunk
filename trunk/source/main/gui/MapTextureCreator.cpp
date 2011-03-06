@@ -37,7 +37,7 @@ MapTextureCreator::MapTextureCreator(Ogre::SceneManager *mgr, Ogre::Camera *main
 
 void MapTextureCreator::init()
 {
-	Ogre::TexturePtr texture = Ogre::TextureManager::getSingleton().createManual("MapRttTex"+Ogre::StringConverter::toString(mCounter), Ogre::ResourceGroupManager::DEFAULT_RESOURCE_GROUP_NAME, Ogre::TEX_TYPE_2D, 1024, 1024, 0, Ogre::PF_R8G8B8, Ogre::TU_RENDERTARGET, new ResourceBuffer());
+	Ogre::TexturePtr texture = Ogre::TextureManager::getSingleton().createManual("MapRttTex"+TOSTRING(mCounter), Ogre::ResourceGroupManager::DEFAULT_RESOURCE_GROUP_NAME, Ogre::TEX_TYPE_2D, 1024, 1024, 0, Ogre::PF_R8G8B8, Ogre::TU_RENDERTARGET, new ResourceBuffer());
 	mRttTex = texture->getBuffer()->getRenderTarget();
 	mRttTex->setAutoUpdated(true);
 	mCamera = mSceneManager->createCamera("MapRenderCam");
@@ -46,9 +46,9 @@ void MapTextureCreator::init()
 	mViewport->setBackgroundColour(Ogre::ColourValue::Black);
 	mViewport->setOverlaysEnabled(false);
 
-	mMaterial = Ogre::MaterialManager::getSingleton().create("MapRttMat"+Ogre::StringConverter::toString(mCounter), Ogre::ResourceGroupManager::DEFAULT_RESOURCE_GROUP_NAME);
+	mMaterial = Ogre::MaterialManager::getSingleton().create("MapRttMat"+TOSTRING(mCounter), Ogre::ResourceGroupManager::DEFAULT_RESOURCE_GROUP_NAME);
 
-	mTextureUnitState = mMaterial->getTechnique(0)->getPass(0)->createTextureUnitState("MapRttTex"+Ogre::StringConverter::toString(mCounter));
+	mTextureUnitState = mMaterial->getTechnique(0)->getPass(0)->createTextureUnitState("MapRttTex"+TOSTRING(mCounter));
 
 	mRttTex->addListener(this);
 	//mCamera->setProjectionType(PT_ORTHOGRAPHIC);
@@ -108,14 +108,14 @@ void MapTextureCreator::update()
 	float height = mEfl->mapsizez;
 	float zoomfactor = mZoom * ((width+height)/2) * 0.002;
 
-	//LogManager::getSingleton().logMessage(StringConverter::toString(mZoom));
+	//LOG(TOSTRING(mZoom));
 	mCamera->setNearClipDistance(mZoom);
 	mCamera->setPosition(mCampos + Ogre::Vector3(0, zoomfactor, 0));
 	if(mCamdir != Ogre::Quaternion::ZERO) mCamera->setOrientation(mCamdir);
 	mCamera->lookAt(mCampos - Ogre::Vector3(0, zoomfactor, 0));
 
 	// output the zoom factor for debug purposes
-	//LogManager::getSingleton().logMessage(StringConverter::toString(mZoom));
+	//LOG(TOSTRING(mZoom));
 
 	/*
 	// this is bugged, so deactivated for now
@@ -153,7 +153,7 @@ void MapTextureCreator::update()
 void MapTextureCreator::setFogVisible(bool value)
 {
 	int fogmode = mEfl->getFogMode();
-	//LogManager::getSingleton().logMessage("fogswitch: "+StringConverter::toString(fogmode)+" / "+StringConverter::toString(value));
+	//LOG("fogswitch: "+TOSTRING(fogmode)+" / "+TOSTRING(value));
 	if(!fogmode || fogmode == 2)
 		return;
 
@@ -192,12 +192,12 @@ void MapTextureCreator::setAutoUpdated(bool value)
 
 Ogre::String MapTextureCreator::getMaterialName()
 {
-	return "MapRttMat"+Ogre::StringConverter::toString(mCounter);
+	return "MapRttMat"+TOSTRING(mCounter);
 }
 
 Ogre::String MapTextureCreator::getRTName()
 {
-	return "MapRttTex"+Ogre::StringConverter::toString(mCounter);
+	return "MapRttTex"+TOSTRING(mCounter);
 }
 
 void MapTextureCreator::preRenderTargetUpdate(const RenderTargetEvent& evt)

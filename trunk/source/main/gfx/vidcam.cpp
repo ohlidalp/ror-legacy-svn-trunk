@@ -171,44 +171,44 @@ VideoCamera *VideoCamera::parseLine(Ogre::SceneManager *mSceneMgr, Ogre::Camera 
 	int result = sscanf(line,"%i, %i, %i, %i, %i, %f, %f, %f, %f, %f, %f, %f, %i, %i, %f, %f, %i, %i, %s", &nref, &nz, &ny, &ncam, &lookto, &offx, &offy, &offz, &rotx, &roty, &rotz, &fov, &texx, &texy, &minclip, &maxclip, &crole, &cmode, materialname);
 	if (result < 19 || result == EOF)
 	{
-		LogManager::getSingleton().logMessage("Error parsing File (videocamera) " + (fname) +" line " + StringConverter::toString(linecounter) + ". trying to continue ...");
+		LOG("Error parsing File (videocamera) " + (fname) +" line " + TOSTRING(linecounter) + ". trying to continue ...");
 		return 0;
 	}
 
 	if (nz < 0 || nz >= truck->free_node || ny < 0 || ny >= truck->free_node || nref < 0 || nref >= truck->free_node || ncam < -1 || ncam >= truck->free_node || lookto < -1 || lookto >= truck->free_node)
 	{
-		LogManager::getSingleton().logMessage("Error parsing File (videocamera) " + fname +" line " + StringConverter::toString(linecounter) + ". Wrong node definition. trying to continue ...");
+		LOG("Error parsing File (videocamera) " + fname +" line " + TOSTRING(linecounter) + ". Wrong node definition. trying to continue ...");
 		return 0;
 	}
 
 	if (texx <= 0 || !isPowerOfTwo(texx) || texy <= 0 || !isPowerOfTwo(texy))
 	{
-		LogManager::getSingleton().logMessage("Error parsing File (videocamera) " + (fname) +" line " + StringConverter::toString(linecounter) + ". Wrong texture size definition (needs to be 2^n). trying to continue ...");
+		LOG("Error parsing File (videocamera) " + (fname) +" line " + TOSTRING(linecounter) + ". Wrong texture size definition (needs to be 2^n). trying to continue ...");
 		return 0;
 	}
 
 	if (minclip < 0 || minclip > maxclip || maxclip < 0)
 	{
-		LogManager::getSingleton().logMessage("Error parsing File (videocamera) " + (fname) +" line " + StringConverter::toString(linecounter) + ". Wrong clipping definition. trying to continue ...");
+		LOG("Error parsing File (videocamera) " + (fname) +" line " + TOSTRING(linecounter) + ". Wrong clipping definition. trying to continue ...");
 		return 0;
 	}
 
 	if(cmode < -2 )
 	{
-		LogManager::getSingleton().logMessage("Error parsing File (videocamera) " + (fname) +" line " + StringConverter::toString(linecounter) + ". Camera Mode setting incorrect, trying to continue ...");
+		LOG("Error parsing File (videocamera) " + (fname) +" line " + TOSTRING(linecounter) + ". Camera Mode setting incorrect, trying to continue ...");
 		return 0;
 	}
 
 	if(crole < -1 || crole >1)
 	{
-		LogManager::getSingleton().logMessage("Error parsing File (videocamera) " + (fname) +" line " + StringConverter::toString(linecounter) + ". Camera Role (camera, trace, mirror) setting incorrect, trying to continue ...");
+		LOG("Error parsing File (videocamera) " + (fname) +" line " + TOSTRING(linecounter) + ". Camera Role (camera, trace, mirror) setting incorrect, trying to continue ...");
 		return 0;
 	}
 
 	MaterialPtr mat = MaterialManager::getSingleton().getByName(materialname);
 	if(mat.isNull())
 	{
-		LogManager::getSingleton().logMessage("Error parsing File (videocamera) " + (fname) +" line " + StringConverter::toString(linecounter) + ". unkown material: '"+materialname+"', trying to continue ...");
+		LOG("Error parsing File (videocamera) " + (fname) +" line " + TOSTRING(linecounter) + ". unkown material: '"+materialname+"', trying to continue ...");
 		return 0;
 	}
 	

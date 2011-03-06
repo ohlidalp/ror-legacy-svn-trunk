@@ -179,7 +179,7 @@ bool TruckHUD::update(float dt, Beam *truck, SceneManager *mSceneMgr, Camera* mC
 		char beambrokenstr[255];
 		sprintf(beambrokenstr, "%0.2f", ((float)beambroken/(float)beamCount)*100);
 		descl = OverlayManager::getSingleton().getOverlayElement("tracks/TruckInfoBox/BeamBroken");
-		descl->setCaption(_L("broken: ") + StringConverter::toString(beambroken) + string(" (") + beambrokenstr + string("%)"));
+		descl->setCaption(_L("broken: ") + TOSTRING(beambroken) + string(" (") + beambrokenstr + string("%)"));
 		checkOverflow(descl);
 
 		char beamhealthstr[255];
@@ -209,7 +209,7 @@ bool TruckHUD::update(float dt, Beam *truck, SceneManager *mSceneMgr, Camera* mC
 		char beamdeformedstr[255];
 		sprintf(beamdeformedstr, "%0.2f", ((float)beamdeformed/(float)beamCount)*100);
 		descl = OverlayManager::getSingleton().getOverlayElement("tracks/TruckInfoBox/BeamDeformed");
-		descl->setCaption(_L("deformed: ") + StringConverter::toString(beamdeformed) + string(" (") + beamdeformedstr + string("%)"));
+		descl->setCaption(_L("deformed: ") + TOSTRING(beamdeformed) + string(" (") + beamdeformedstr + string("%)"));
 		checkOverflow(descl);
 
 		char beamavdeformedstr[255];
@@ -257,7 +257,7 @@ bool TruckHUD::update(float dt, Beam *truck, SceneManager *mSceneMgr, Camera* mC
 	hdir.normalise();
 	float g_along_hdir=hdir.dotProduct(truck->ffforce/10000.0);
 
-	//LogManager::getSingleton().logMessage("ffforce: " + StringConverter::toString(truck->ffforce.x) + ", " + StringConverter::toString(truck->ffforce.y) + ", " + StringConverter::toString(truck->ffforce.z) + " / direction: " + StringConverter::toString(hdir.x) + ", " + StringConverter::toString(hdir.y) + ", " + StringConverter::toString(hdir.z));
+	//LOG("ffforce: " + TOSTRING(truck->ffforce.x) + ", " + TOSTRING(truck->ffforce.y) + ", " + TOSTRING(truck->ffforce.z) + " / direction: " + TOSTRING(hdir.x) + ", " + TOSTRING(hdir.y) + ", " + TOSTRING(hdir.z));
 
 
 	// TODO: FIX THIS!
@@ -290,12 +290,12 @@ bool TruckHUD::update(float dt, Beam *truck, SceneManager *mSceneMgr, Camera* mC
 			if(lastTorqueModel != model && usedSpline)
 			{
 				// update the torque curve
-				LogManager::getSingleton().logMessage("regenerating torque displayed curve");
+				LOG("regenerating torque displayed curve");
 				for(int i=0;i<1000;i++)
 				{
 					float factor = i/1000.0f;
 					float res = usedSpline->interpolate(factor).y;
-					//LogManager::getSingleton().logMessage(StringConverter::toString(i)+ " - "+StringConverter::toString(res)+ " - "+StringConverter::toString(factor));
+					//LOG(TOSTRING(i)+ " - "+TOSTRING(res)+ " - "+TOSTRING(factor));
 					torqueLineStream->setExactValue(0, i, res);
 				}
 				lastTorqueModel = model;

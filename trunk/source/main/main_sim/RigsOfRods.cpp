@@ -61,5 +61,5 @@ void RigsOfRods::go(void)
 	// select the first one
 	stateManager->start(stateManager->findByName("GameState"));
 
-	LogManager::getSingleton().logMessage("Rigs of Rods initialized!");
+	LOG("Rigs of Rods initialized!");
 }

@@ -42,14 +42,14 @@ class Streamable;
 // this is the master swith to debug the stream locking/unlocking
 //#define DEBUGSTREAMFACTORIES
 
-#define OGREFUNCTIONSTRING  String(__FUNCTION__)+" @ "+String(__FILE__)+":"+StringConverter::toString(__LINE__)
+#define OGREFUNCTIONSTRING  String(__FUNCTION__)+" @ "+String(__FILE__)+":"+TOSTRING(__LINE__)
 
 #ifdef FEAT_DEBUGSTREAMFACTORIES
-# define LOCKSTREAMS()       do { LogManager::getSingleton().logMessage("***LOCK:   "+OGREFUNCTIONSTRING); lockStreams();   } while(0)
-# define UNLOCKSTREAMS()     do { LogManager::getSingleton().logMessage("***UNLOCK: "+OGREFUNCTIONSTRING); unlockStreams(); } while(0)
+# define LOCKSTREAMS()       do { LOG("***LOCK:   "+OGREFUNCTIONSTRING); lockStreams();   } while(0)
+# define UNLOCKSTREAMS()     do { LOG("***UNLOCK: "+OGREFUNCTIONSTRING); unlockStreams(); } while(0)
 # ifdef WIN32
 // __debugbreak will break into the debugger in visual studio
-#  define MYASSERT(x)       do { if(!x) { LogManager::getSingleton().logMessage("***ASSERT FAILED: "+OGREFUNCTIONSTRING); __debugbreak(); }; } while(0)
+#  define MYASSERT(x)       do { if(!x) { LOG("***ASSERT FAILED: "+OGREFUNCTIONSTRING); __debugbreak(); }; } while(0)
 # else //!WIN32
 #  define MYASSERT(x)       assert(x)
 # endif //WIN32
@@ -326,9 +326,9 @@ public:
 				{
 					it2->second->addStreamRegistrationResult(sourceid, *reg);
 					if(reg->status == 1)
-						Ogre::LogManager::getSingleton().logMessage("Client " + Ogre::StringConverter::toString(sourceid) + " successfully loaded stream " + Ogre::StringConverter::toString(reg->origin_streamid) + " with name '" + reg->name + "', result code: " + Ogre::StringConverter::toString(reg->status));
+						LOG("Client " + TOSTRING(sourceid) + " successfully loaded stream " + TOSTRING(reg->origin_streamid) + " with name '" + reg->name + "', result code: " + TOSTRING(reg->status));
 					else
-						Ogre::LogManager::getSingleton().logMessage("Client " + Ogre::StringConverter::toString(sourceid) + " could not load stream " + Ogre::StringConverter::toString(reg->origin_streamid) + " with name '" + reg->name + "', result code: " + Ogre::StringConverter::toString(reg->status));
+						LOG("Client " + TOSTRING(sourceid) + " could not load stream " + TOSTRING(reg->origin_streamid) + " with name '" + reg->name + "', result code: " + TOSTRING(reg->status));
 					res++;
 					break;
 				}

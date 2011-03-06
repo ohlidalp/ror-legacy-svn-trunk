@@ -107,10 +107,10 @@ int generateFontTexture(Ogre::String fontName, bool load=false)
 			sprintf(tmp, "%c", i);
 #endif
 			out_text.append("\tglyph " + Ogre::UTFString(tmp) + " " + \
-						Ogre::StringConverter::toString(gi.uvRect.left)+" "+ \
-						Ogre::StringConverter::toString(gi.uvRect.top)+" "+ \
-						Ogre::StringConverter::toString(gi.uvRect.right)+" "+ \
-						Ogre::StringConverter::toString(gi.uvRect.bottom)+"\n");
+						TOSTRING(gi.uvRect.left)+" "+ \
+						TOSTRING(gi.uvRect.top)+" "+ \
+						TOSTRING(gi.uvRect.right)+" "+ \
+						TOSTRING(gi.uvRect.bottom)+"\n");
 
 		}
 	}
@@ -121,7 +121,7 @@ int generateFontTexture(Ogre::String fontName, bool load=false)
 	f.open(defFileName.c_str());
 	f << out_text;
 	f.close();
-	Ogre::LogManager::getSingleton().logMessage("generated font cache for font "+fontName+" ("+outImageName+", "+defFileName+")");
+	LOG("generated font cache for font "+fontName+" ("+outImageName+", "+defFileName+")");
 
 	if(load)
 	{
@@ -163,7 +163,7 @@ int generateAllFontTextures()
 	while (itf2.hasMoreElements())
 		generateFontTexture(itf2.getNext()->getName(), true);
 
-	Ogre::LogManager::getSingleton().logMessage("all font textures generated");
+	LOG("all font textures generated");
 	return 0;
 }
 

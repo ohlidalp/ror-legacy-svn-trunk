@@ -166,7 +166,7 @@ void Beam::calcForcesEuler(int doUpdate, Real dt, int step, int maxstep, Beam** 
 								beams[i].disabled=true;
 								if(beambreakdebug)
 								{
-									LogManager::getSingleton().logMessage(" XXX Support-Beam " + StringConverter::toString(i) + " limit extended and broke. Length: " + StringConverter::toString(difftoBeamL) + " / max. Length: " + StringConverter::toString(beams[i].L*break_limit) + ". It was between nodes " + StringConverter::toString(beams[i].p1->id) + " and " + StringConverter::toString(beams[i].p2->id) + ".");
+									LOG(" XXX Support-Beam " + TOSTRING(i) + " limit extended and broke. Length: " + TOSTRING(difftoBeamL) + " / max. Length: " + TOSTRING(beams[i].L*break_limit) + ". It was between nodes " + TOSTRING(beams[i].p1->id) + " and " + TOSTRING(beams[i].p2->id) + ".");
 								}
 							}
 						}
@@ -221,7 +221,7 @@ void Beam::calcForcesEuler(int doUpdate, Real dt, int step, int maxstep, Beam** 
 						beams[i].minmaxposnegstress=std::min(beams[i].minmaxposnegstress, beams[i].strength);
 						if(beamdeformdebug)
 						{
-							LogManager::getSingleton().logMessage(" YYY Beam " + StringConverter::toString(i) + " just deformed with compression force " + StringConverter::toString(flen) + " / " + StringConverter::toString(beams[i].strength) + ". It was between nodes " + StringConverter::toString(beams[i].p1->id) + " and " + StringConverter::toString(beams[i].p2->id) + ".");
+							LOG(" YYY Beam " + TOSTRING(i) + " just deformed with compression force " + TOSTRING(flen) + " / " + TOSTRING(beams[i].strength) + ". It was between nodes " + TOSTRING(beams[i].p1->id) + " and " + TOSTRING(beams[i].p2->id) + ".");
 						}
 					} else	// For expansion
 					if (sflen<beams[i].maxnegstress && difftoBeamL>0.0f)
@@ -250,7 +250,7 @@ void Beam::calcForcesEuler(int doUpdate, Real dt, int step, int maxstep, Beam** 
 						beams[i].minmaxposnegstress=std::min(beams[i].minmaxposnegstress, beams[i].strength);
 						if(beamdeformdebug)
 						{
-							LogManager::getSingleton().logMessage(" YYY Beam " + StringConverter::toString(i) + " just deformed with extension force " + StringConverter::toString(flen) + " / " + StringConverter::toString(beams[i].strength) + ". It was between nodes " + StringConverter::toString(beams[i].p1->id) + " and " + StringConverter::toString(beams[i].p2->id) + ".");
+							LOG(" YYY Beam " + TOSTRING(i) + " just deformed with extension force " + TOSTRING(flen) + " / " + TOSTRING(beams[i].strength) + ". It was between nodes " + TOSTRING(beams[i].p1->id) + " and " + TOSTRING(beams[i].p2->id) + ".");
 						}
 					}
 				}
@@ -279,7 +279,7 @@ void Beam::calcForcesEuler(int doUpdate, Real dt, int step, int maxstep, Beam** 
 
 						if(beambreakdebug)
 						{
-							LogManager::getSingleton().logMessage(" XXX Beam " + StringConverter::toString(i) + " just broke with force " + StringConverter::toString(flen) + " / " + StringConverter::toString(beams[i].strength) + ". It was between nodes " + StringConverter::toString(beams[i].p1->id) + " and " + StringConverter::toString(beams[i].p2->id) + ".");
+							LOG(" XXX Beam " + TOSTRING(i) + " just broke with force " + TOSTRING(flen) + " / " + TOSTRING(beams[i].strength) + ". It was between nodes " + TOSTRING(beams[i].p1->id) + " and " + TOSTRING(beams[i].p2->id) + ".");
 						}
 						//detachergroup check: beam[i] is already broken, check detacher group# == 0/default skip the check ( performance bypass for beams with default setting )
 						if (beams[i].detacher_group)
@@ -296,7 +296,7 @@ void Beam::calcForcesEuler(int doUpdate, Real dt, int step, int maxstep, Beam** 
 									beams[j].p2->isSkin = true;
 									if(beambreakdebug)
 									{
-										LogManager::getSingleton().logMessage("Deleting Detacher BeamID: " + StringConverter::toString(j) + ", Detacher Group: " + StringConverter::toString(beams[i].detacher_group)+  ", trucknum: " + StringConverter::toString(trucknum));
+										LOG("Deleting Detacher BeamID: " + TOSTRING(j) + ", Detacher Group: " + TOSTRING(beams[i].detacher_group)+  ", trucknum: " + TOSTRING(trucknum));
 									}
 								}
 							}
@@ -785,7 +785,7 @@ void Beam::calcForcesEuler(int doUpdate, Real dt, int step, int maxstep, Beam** 
 	float tmaxz=tminz;
 	for (i=0; i<free_node; i++)
 	{
-		//if (_isnan(nodes[i].Position.length())) LogManager::getSingleton().logMessage("Node is NaN "+StringConverter::toString(i));
+		//if (_isnan(nodes[i].Position.length())) LOG("Node is NaN "+TOSTRING(i));
 
 		//wetness
 		if (nodes[i].wetstate==DRIPPING && !nodes[i].contactless)
@@ -1285,7 +1285,7 @@ void Beam::calcForcesEuler(int doUpdate, Real dt, int step, int maxstep, Beam** 
 			wheels[i].near_attach->Forces+=cforce;
 		}
 	}
-	//LogManager::getSingleton().logMessage("torque "+StringConverter::toString(torques[0])+" "+StringConverter::toString(torques[1])+" "+StringConverter::toString(torques[2])+" "+StringConverter::toString(torques[3])+" speed "+StringConverter::toString(newspeeds[0])+" "+StringConverter::toString(newspeeds[1])+" "+StringConverter::toString(newspeeds[2])+" "+StringConverter::toString(newspeeds[3]));
+	//LOG("torque "+TOSTRING(torques[0])+" "+TOSTRING(torques[1])+" "+TOSTRING(torques[2])+" "+TOSTRING(torques[3])+" speed "+TOSTRING(newspeeds[0])+" "+TOSTRING(newspeeds[1])+" "+TOSTRING(newspeeds[2])+" "+TOSTRING(newspeeds[3]));
 	for (i=0; i<free_wheel; i++) wheels[i].speed=newspeeds[i];
 	//wheel speed
 	if (proped_wheels) wspeed/=(float)proped_wheels;
@@ -1332,7 +1332,7 @@ void Beam::calcForcesEuler(int doUpdate, Real dt, int step, int maxstep, Beam** 
 		Vector3 dir=nodes[cameranodepos[0]].RelPosition-nodes[cameranoderoll[0]].RelPosition;
 		dir.normalise();
 		float roll=asin(dir.dotProduct(Vector3::UNIT_Y));
-		//			mWindow->setDebugText("Roll:"+ StringConverter::toString(roll));
+		//			mWindow->setDebugText("Roll:"+ TOSTRING(roll));
 		if (fabs(roll)>0.2) stabsleep=-1.0; //emergency timeout stop
 		if (fabs(roll)>0.03 && stabsleep<0.0)
 		{
@@ -1586,7 +1586,7 @@ void Beam::calcForcesEuler(int doUpdate, Real dt, int step, int maxstep, Beam** 
 				float v = commandkey[i].commandValue;
 				/*
 				if(i==1)
-				LogManager::getSingleton().logMessage(StringConverter::toString(v) + "/" + StringConverter::toString(beams[bbeam].autoMovingMode));
+				LOG(TOSTRING(v) + "/" + TOSTRING(beams[bbeam].autoMovingMode));
 				*/
 
 				// self centering
@@ -1599,10 +1599,10 @@ void Beam::calcForcesEuler(int doUpdate, Real dt, int step, int maxstep, Beam** 
 					float current = (beams[bbeam_abs].L/beams[bbeam_abs].refL);
 					/*
 					if(i==1)
-					LogManager::getSingleton().logMessage("centering: "+ \
-					StringConverter::toString(current)+" / "+ \
-					StringConverter::toString(beams[bbeam_abs].centerLength)+ " / " + \
-					StringConverter::toString(v)+" / ");
+					LOG("centering: "+ \
+					TOSTRING(current)+" / "+ \
+					TOSTRING(beams[bbeam_abs].centerLength)+ " / " + \
+					TOSTRING(v)+" / ");
 					*/
 
 					// hold condition
@@ -1611,7 +1611,7 @@ void Beam::calcForcesEuler(int doUpdate, Real dt, int step, int maxstep, Beam** 
 						beams[bbeam_abs].autoMovingMode = 0;
 						/*
 						if(i==1)
-						LogManager::getSingleton().logMessage("centering complete");
+						LOG("centering complete");
 						*/
 					}
 					else
@@ -1637,7 +1637,7 @@ void Beam::calcForcesEuler(int doUpdate, Real dt, int step, int maxstep, Beam** 
 							{
 								// one press + centering
 								//String sMode = (beams[bbeam].pressedCenterMode?"YES":"NO");
-								//LogManager::getSingleton().logMessage(sMode+"|"+StringConverter::toString(clen)+" / "+StringConverter::toString(beams[bbeam].centerLength));
+								//LOG(sMode+"|"+TOSTRING(clen)+" / "+TOSTRING(beams[bbeam].centerLength));
 								if(beams[bbeam].autoMovingMode > 0 && clen > beams[bbeam].centerLength && !beams[bbeam].pressedCenterMode)
 								{
 									beams[bbeam].pressedCenterMode = true;
@@ -1651,22 +1651,22 @@ void Beam::calcForcesEuler(int doUpdate, Real dt, int step, int maxstep, Beam** 
 								bool key = (v > 0.5);
 								if(beams[bbeam].autoMovingMode <= 0 && key)
 								{
-									//LogManager::getSingleton().logMessage("LONG auto-moving-start!");
+									//LOG("LONG auto-moving-start!");
 									beams[bbeam].autoMovingMode=1;
 								}
 								else if(beams[bbeam].autoMovingMode==1 && !key)
 								{
-									//LogManager::getSingleton().logMessage("LONG auto-moving step2!");
+									//LOG("LONG auto-moving step2!");
 									beams[bbeam].autoMovingMode=2;
 								}
 								else if(beams[bbeam].autoMovingMode==2 && key)
 								{
-									//LogManager::getSingleton().logMessage("LONG auto-moving-end step1!");
+									//LOG("LONG auto-moving-end step1!");
 									beams[bbeam].autoMovingMode=3;
 								}
 								else if(beams[bbeam].autoMovingMode==3 && !key)
 								{
-									//LogManager::getSingleton().logMessage("LONG auto-moving-end step2!");
+									//LOG("LONG auto-moving-end step2!");
 									beams[bbeam].autoMovingMode=0;
 								}
 							}
@@ -1695,7 +1695,7 @@ void Beam::calcForcesEuler(int doUpdate, Real dt, int step, int maxstep, Beam** 
 							// beyond lenght
 							if(beams[bbeam].isOnePressMode>0 && beams[bbeam].autoMovingMode > 0)
 							{
-								//LogManager::getSingleton().logMessage("LONG auto-moving-end!");
+								//LOG("LONG auto-moving-end!");
 								beams[bbeam].autoMovingMode=0;
 							}
 						}
@@ -1711,7 +1711,7 @@ void Beam::calcForcesEuler(int doUpdate, Real dt, int step, int maxstep, Beam** 
 							{
 								// one press + centering
 								//String sMode = (beams[bbeam].pressedCenterMode?"YES":"NO");
-								//LogManager::getSingleton().logMessage(sMode+"|"+StringConverter::toString(clen)+" / "+StringConverter::toString(beams[bbeam].centerLength));
+								//LOG(sMode+"|"+TOSTRING(clen)+" / "+TOSTRING(beams[bbeam].centerLength));
 								if(beams[bbeam].autoMovingMode < 0 && clen < beams[bbeam].centerLength && !beams[bbeam].pressedCenterMode)
 								{
 									beams[bbeam].pressedCenterMode = true;
@@ -1725,22 +1725,22 @@ void Beam::calcForcesEuler(int doUpdate, Real dt, int step, int maxstep, Beam** 
 								bool key = (v > 0.5);
 								if(beams[bbeam].autoMovingMode >=0 && key)
 								{
-									//LogManager::getSingleton().logMessage("SHORT auto-moving-start!");
+									//LOG("SHORT auto-moving-start!");
 									beams[bbeam].autoMovingMode=-1;
 								}
 								else if(beams[bbeam].autoMovingMode==-1 && !key)
 								{
-									//LogManager::getSingleton().logMessage("SHORT auto-moving step2!");
+									//LOG("SHORT auto-moving step2!");
 									beams[bbeam].autoMovingMode=-2;
 								}
 								else if(beams[bbeam].autoMovingMode==-2 && key)
 								{
-									//LogManager::getSingleton().logMessage("SHORT auto-moving-end step1!");
+									//LOG("SHORT auto-moving-end step1!");
 									beams[bbeam].autoMovingMode=-3;
 								}
 								else if(beams[bbeam].autoMovingMode==-3 && !key)
 								{
-									//LogManager::getSingleton().logMessage("SHORT auto-moving-end step2!");
+									//LOG("SHORT auto-moving-end step2!");
 									beams[bbeam].autoMovingMode=0;
 								}
 							}
@@ -1770,7 +1770,7 @@ void Beam::calcForcesEuler(int doUpdate, Real dt, int step, int maxstep, Beam** 
 							// beyond lenght
 							if(beams[bbeam].isOnePressMode>0 && beams[bbeam].autoMovingMode < 0)
 							{
-								//LogManager::getSingleton().logMessage("SHORT auto-moving-end!");
+								//LOG("SHORT auto-moving-end!");
 								beams[bbeam].autoMovingMode=0;
 							}
 						}
@@ -1846,7 +1846,7 @@ void Beam::calcForcesEuler(int doUpdate, Real dt, int step, int maxstep, Beam** 
 				Vector3 th1=Quaternion(Radian(rotators[i].angle+3.14159/2.0), axis)*ref1;
 				//find the angle error
 				float aerror=asin((th1.normalisedCopy()).dotProduct(ref2.normalisedCopy()));
-				//			mWindow->setDebugText("Error:"+ StringConverter::toString(aerror));
+				//			mWindow->setDebugText("Error:"+ TOSTRING(aerror));
 				//exert forces
 				float rigidity=10000000.0;
 				Vector3 dir1=ref1.crossProduct(axis);

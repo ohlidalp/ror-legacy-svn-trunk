@@ -289,7 +289,7 @@ bool CollisionTools::raycast(const Ogre::Ray &ray, Ogre::Vector3 &result,Ogre::M
 		}
 #if 0
 		if (query_result[qr_idx].movable != NULL)
-			Ogre::LogManager::getSingleton().logMessage(Ogre::StringConverter::toString(qr_idx) + ": " + query_result[qr_idx].movable->getMovableType() + " : " + query_result[qr_idx].movable->getName());
+			LOG(TOSTRING(qr_idx) + ": " + query_result[qr_idx].movable->getMovableType() + " : " + query_result[qr_idx].movable->getName());
 #endif
 		// mesh data to retrieve
 		bool valid = false;

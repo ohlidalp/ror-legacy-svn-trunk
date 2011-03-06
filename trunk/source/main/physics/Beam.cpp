@@ -320,7 +320,7 @@ Beam::Beam(int tnum, SceneManager *manager, SceneNode *parent, RenderWindow* win
 	last_net_time=0;
 	lastFuzzyGroundModel=0;
 	usedSkin = skin;
-	LogManager::getSingleton().logMessage("BEAM: loading new truck: " + String(fname));
+	LOG("BEAM: loading new truck: " + String(fname));
 	trucknum=tnum;
 	currentScale=1;
 	// copy truck config
@@ -496,7 +496,7 @@ Beam::Beam(int tnum, SceneManager *manager, SceneNode *parent, RenderWindow* win
 	cabFadeTime=0.3;
 
 	// skidmark stuff
-	useSkidmarks = (SETTINGS.getSetting("Skidmarks") == "Yes");
+	useSkidmarks = BSETTING("Skidmarks");
 
 	// always init skidmarks with 0
 	for(int i=0; i<MAX_WHEELS*2; i++) skidtrails[i] = 0;
@@ -515,16 +515,16 @@ Beam::Beam(int tnum, SceneManager *manager, SceneNode *parent, RenderWindow* win
 	splashp = DustManager::getSingleton().getDustPool("splash");
 	ripplep = DustManager::getSingleton().getDustPool("ripple");
 
-	heathaze=(SETTINGS.getSetting("HeatHaze")=="Yes");
+	heathaze=BSETTING("HeatHaze");
 	if(heathaze && disable_smoke)
 		//no heathaze without smoke!
 		heathaze=false;
 
 
-	enable_wheel2=(SETTINGS.getSetting("Enhanced wheels")=="Yes");
+	enable_wheel2=BSETTING("Enhanced wheels");
 	if (networked || networking) enable_wheel2=false;
 
-	cparticle_enabled=(SETTINGS.getSetting("Particles")=="Yes");
+	cparticle_enabled=BSETTING("Particles");
 	if(strnlen(fname,200) > 0)
 		if(loadTruck2(String(fname), manager, parent, Vector3(px, py, pz), rot, spawnbox))
 			return;
@@ -535,17 +535,17 @@ Beam::Beam(int tnum, SceneManager *manager, SceneNode *parent, RenderWindow* win
 	changedCamera();
 
 	// setup replay mode
-	bool enablereplay = (SETTINGS.getSetting("Replay mode")=="Yes");
+	bool enablereplay = BSETTING("Replay mode");
 	replay=0;
 	replaylen = 10000;
 	if(enablereplay && state != NETWORKED && !networking)
 	{
-		String rpl = SETTINGS.getSetting("Replay length");
+		String rpl = SSETTING("Replay length");
 		if(!rpl.empty())
 			replaylen = StringConverter::parseInt(rpl);
 		replay = new Replay(this, replaylen);
 
-		rpl = SETTINGS.getSetting("Replay Steps per second");
+		rpl = SSETTING("Replay Steps per second");
 		int steps = 0;
 		if(!rpl.empty())
 			steps = StringConverter::parseInt(rpl);
@@ -557,7 +557,7 @@ Beam::Beam(int tnum, SceneManager *manager, SceneNode *parent, RenderWindow* win
 
 	// add storage
 	posStorage=0;
-	bool enablePosStor = (SETTINGS.getSetting("Position Storage")=="Yes");
+	bool enablePosStor = BSETTING("Position Storage");
 	if(enablePosStor)
 	{
 		posStorage = new PositionStorage(free_node, 10);
@@ -586,9 +586,9 @@ Beam::Beam(int tnum, SceneManager *manager, SceneNode *parent, RenderWindow* win
 	addPressure(0.0);
 	//thread start
 	//get parameters
-	if (SETTINGS.getSetting("Threads")=="1 (Standard CPU)")thread_mode=THREAD_MONO;
-	if (SETTINGS.getSetting("Threads")=="2 (Hyper-Threading or Dual core CPU)") thread_mode=THREAD_HT;
-	if (SETTINGS.getSetting("Threads")=="3 (multi core CPU, one thread per beam)") thread_mode=THREAD_HT2;
+	if (SSETTING("Threads")=="1 (Standard CPU)")thread_mode=THREAD_MONO;
+	if (SSETTING("Threads")=="2 (Hyper-Threading or Dual core CPU)") thread_mode=THREAD_HT;
+	if (SSETTING("Threads")=="3 (multi core CPU, one thread per beam)") thread_mode=THREAD_HT2;
 
 	checkBeamMaterial();
 
@@ -614,7 +614,7 @@ Beam::Beam(int tnum, SceneManager *manager, SceneNode *parent, RenderWindow* win
 		{
 			int rc;
 			rc=pthread_create(&threads[i], NULL, threadstart, (void*)(free_tb-1));
-			if (rc) LogManager::getSingleton().logMessage("BEAM: Can not start a thread");
+			if (rc) LOG("BEAM: Can not start a thread");
 		}
 
 		//we must wait the threads to be ready
@@ -627,7 +627,7 @@ Beam::Beam(int tnum, SceneManager *manager, SceneNode *parent, RenderWindow* win
 		// just create ONE thread for this beam
 		int rc;
 		rc=pthread_create(&threads[i], NULL, threadstart, (void*)(free_tb-1));
-		if (rc) LogManager::getSingleton().logMessage("BEAM: Can not start a thread");
+		if (rc) LOG("BEAM: Can not start a thread");
 
 		//we must wait the threads to be ready
 		pthread_mutex_lock(&done_count_mutex);
@@ -829,18 +829,18 @@ beam_t *Beam::addBeam(int id1, int id2)
 	int type=BEAM_NORMAL;
 	if (id1>=free_node || id2>=free_node)
 	{
-		LogManager::getSingleton().logMessage("Error: unknown node number in beams section ("
-			+StringConverter::toString(id1)+","+StringConverter::toString(id2)+")");
+		LOG("Error: unknown node number in beams section ("
+			+TOSTRING(id1)+","+TOSTRING(id2)+")");
 		exit(3);
 	};
 	//skip if a beam already exists
-	LogManager::getSingleton().logMessage(StringConverter::toString(nodes[id1].AbsPosition)+" -> "+StringConverter::toString(nodes[id2].AbsPosition));
+	LOG(TOSTRING(nodes[id1].AbsPosition)+" -> "+TOSTRING(nodes[id2].AbsPosition));
 	int i;
 	for (i=0; i<free_beam; i++)
 	{
 		if ((beams[i].p1==&nodes[id1] && beams[i].p2==&nodes[id2]) || (beams[i].p1==&nodes[id2] && beams[i].p2==&nodes[id1]))
 		{
-			LogManager::getSingleton().logMessage("Skipping duplicate beams: from node "+StringConverter::toString(id1)+" to node "+StringConverter::toString(id2));
+			LOG("Skipping duplicate beams: from node "+TOSTRING(id1)+" to node "+TOSTRING(id2));
 			return NULL;
 		}
 	}
@@ -942,7 +942,7 @@ void Beam::pushNetwork(char* data, int size)
 		for (int i=0; i<free_wheel; i++) wheels[i].rp3=*(float*)(data+sizeof(oob_t)+nodebuffersize+i*4);
 	} else
 	{
-		LogManager::getSingleton().logMessage("WRONG network size: we expected " + StringConverter::toString(netbuffersize+sizeof(oob_t)) + " but got " + StringConverter::toString(size) + " for vehicle " + String(truckname));
+		LOG("WRONG network size: we expected " + TOSTRING(netbuffersize+sizeof(oob_t)) + " but got " + TOSTRING(size) + " for vehicle " + String(truckname));
 		state=SLEEPING;
 		return;
 	};
@@ -988,7 +988,7 @@ void Beam::calcNetwork()
 	//if we receive last data from the past, we must correct the offset
 	if (oob2->time<rnow) {net_toffset=oob2->time-tnow; rnow=tnow+net_toffset;}
 	float tratio=(float)(rnow-oob1->time)/(float)(oob2->time-oob1->time);
-	//LogManager::getSingleton().logMessage(" network time diff: "+ StringConverter::toString(net_toffset));
+	//LOG(" network time diff: "+ TOSTRING(net_toffset));
 	Vector3 p1ref = Vector3::ZERO;
 	Vector3 p2ref = Vector3::ZERO;
 	short *sp1=(short*)(netb1+4*3);
@@ -1138,7 +1138,7 @@ void Beam::calc_masses2(Real total, bool reCalc)
 {
 	BES_GFX_START(BES_GFX_calc_masses2);
 
-	bool debugMass=(SETTINGS.getSetting("Debug Truck Mass")=="Yes");
+	bool debugMass=BSETTING("Debug Truck Mass");
 
 
 	int i;
@@ -1199,12 +1199,12 @@ void Beam::calc_masses2(Real total, bool reCalc)
 	//update gravimass
 	for (i=0; i<free_node; i++)
 	{
-		//LogManager::getSingleton().logMessage("Nodemass "+StringConverter::toString(i)+"-"+StringConverter::toString(nodes[i].mass));
+		//LOG("Nodemass "+TOSTRING(i)+"-"+TOSTRING(nodes[i].mass));
 		//for stability
 		if (!nodes[i].iswheel && nodes[i].mass<minimass)
 		{
 			if(debugMass)
-				LogManager::getSingleton().logMessage("Node " + StringConverter::toString(i) +" mass ("+StringConverter::toString(nodes[i].mass)+"kg) too light. Resetting to minimass ("+ StringConverter::toString(minimass) +"kg).");
+				LOG("Node " + TOSTRING(i) +" mass ("+TOSTRING(nodes[i].mass)+"kg) too light. Resetting to minimass ("+ TOSTRING(minimass) +"kg).");
 			nodes[i].mass=minimass;
 		}
 		nodes[i].gravimass=Vector3(0, RoRFrameListener::getGravity() * nodes[i].mass, 0);
@@ -1228,19 +1228,19 @@ void Beam::calc_masses2(Real total, bool reCalc)
 	{
 		if(debugMass)
 		{
-			String msg = "Node " + StringConverter::toString(i) +" : "+ StringConverter::toString((int)nodes[i].mass) +" kg";
+			String msg = "Node " + TOSTRING(i) +" : "+ TOSTRING((int)nodes[i].mass) +" kg";
 			if (nodes[i].masstype==NODE_LOADED)
 			{
 				if (nodes[i].overrideMass)
 					msg +=  " (overriden by node mass)";
 				else
-					msg +=  " (normal load node: "+StringConverter::toString(loadmass)+" kg / "+StringConverter::toString(masscount)+" nodes)";
+					msg +=  " (normal load node: "+TOSTRING(loadmass)+" kg / "+TOSTRING(masscount)+" nodes)";
 			}
-			LogManager::getSingleton().logMessage(msg);
+			LOG(msg);
 		}
 		totalmass+=nodes[i].mass;
 	}
-	LogManager::getSingleton().logMessage("TOTAL VEHICLE MASS: " + StringConverter::toString((int)totalmass) +" kg");
+	LOG("TOTAL VEHICLE MASS: " + TOSTRING((int)totalmass) +" kg");
 	//now a special stuff
 	int unst=0;
 	int st=0;
@@ -1250,7 +1250,7 @@ void Beam::calc_masses2(Real total, bool reCalc)
 		float mass=beams[i].p1->mass;
 		if (beams[i].p2->mass<mass) mass=beams[i].p2->mass;
 	}
-	LogManager::getSingleton().logMessage("Beams status: unstable:"+StringConverter::toString(unst)+" wheel:"+StringConverter::toString(wunst)+" normal:"+StringConverter::toString(free_beam-unst-wunst-st)+" superstable:"+StringConverter::toString(st));
+	LOG("Beams status: unstable:"+TOSTRING(unst)+" wheel:"+TOSTRING(wunst)+" normal:"+TOSTRING(free_beam-unst-wunst-st)+" superstable:"+TOSTRING(st));
 
 	BES_GFX_STOP(BES_GFX_calc_masses2);
 }
@@ -1343,25 +1343,25 @@ void Beam::setupDefaultSoundSources()
 	{
 		if (aeroengines[i]->getType()==AeroEngine::AEROENGINE_TYPE_TURBOJET)
 		{
-			addSoundSource(ssm->createInstance(String("tracks/default_turbojet_start")+StringConverter::toString(i+1), trucknum, NULL), aeroengines[i]->getNoderef());
-			addSoundSource(ssm->createInstance(String("tracks/default_turbojet_lopower")+StringConverter::toString(i+1), trucknum, NULL), aeroengines[i]->getNoderef());
-			addSoundSource(ssm->createInstance(String("tracks/default_turbojet_hipower")+StringConverter::toString(i+1), trucknum, NULL), aeroengines[i]->getNoderef());
+			addSoundSource(ssm->createInstance(String("tracks/default_turbojet_start")+TOSTRING(i+1), trucknum, NULL), aeroengines[i]->getNoderef());
+			addSoundSource(ssm->createInstance(String("tracks/default_turbojet_lopower")+TOSTRING(i+1), trucknum, NULL), aeroengines[i]->getNoderef());
+			addSoundSource(ssm->createInstance(String("tracks/default_turbojet_hipower")+TOSTRING(i+1), trucknum, NULL), aeroengines[i]->getNoderef());
 			if (((Turbojet*)(aeroengines[i]))->afterburnable)
-				addSoundSource(ssm->createInstance(String("tracks/default_turbojet_afterburner")+StringConverter::toString(i+1), trucknum, NULL), aeroengines[i]->getNoderef());
+				addSoundSource(ssm->createInstance(String("tracks/default_turbojet_afterburner")+TOSTRING(i+1), trucknum, NULL), aeroengines[i]->getNoderef());
 		}
 		else if (aeroengines[i]->getType()==AeroEngine::AEROENGINE_TYPE_TURBOPROP)
 		{
 			if (((Turboprop*)aeroengines[i])->is_piston)
 			{
-				addSoundSource(ssm->createInstance(String("tracks/default_pistonprop_start")+StringConverter::toString(i+1), trucknum, NULL), aeroengines[i]->getNoderef());
-				addSoundSource(ssm->createInstance(String("tracks/default_pistonprop_lopower")+StringConverter::toString(i+1), trucknum, NULL), aeroengines[i]->getNoderef());
-				addSoundSource(ssm->createInstance(String("tracks/default_pistonprop_hipower")+StringConverter::toString(i+1), trucknum, NULL), aeroengines[i]->getNoderef());
+				addSoundSource(ssm->createInstance(String("tracks/default_pistonprop_start")+TOSTRING(i+1), trucknum, NULL), aeroengines[i]->getNoderef());
+				addSoundSource(ssm->createInstance(String("tracks/default_pistonprop_lopower")+TOSTRING(i+1), trucknum, NULL), aeroengines[i]->getNoderef());
+				addSoundSource(ssm->createInstance(String("tracks/default_pistonprop_hipower")+TOSTRING(i+1), trucknum, NULL), aeroengines[i]->getNoderef());
 			}
 			else
 			{
-				addSoundSource(ssm->createInstance(String("tracks/default_turboprop_start")+StringConverter::toString(i+1), trucknum, NULL), aeroengines[i]->getNoderef());
-				addSoundSource(ssm->createInstance(String("tracks/default_turboprop_lopower")+StringConverter::toString(i+1), trucknum, NULL), aeroengines[i]->getNoderef());
-				addSoundSource(ssm->createInstance(String("tracks/default_turboprop_hipower")+StringConverter::toString(i+1), trucknum, NULL), aeroengines[i]->getNoderef());
+				addSoundSource(ssm->createInstance(String("tracks/default_turboprop_start")+TOSTRING(i+1), trucknum, NULL), aeroengines[i]->getNoderef());
+				addSoundSource(ssm->createInstance(String("tracks/default_turboprop_lopower")+TOSTRING(i+1), trucknum, NULL), aeroengines[i]->getNoderef());
+				addSoundSource(ssm->createInstance(String("tracks/default_turboprop_hipower")+TOSTRING(i+1), trucknum, NULL), aeroengines[i]->getNoderef());
 			}
 		}
 	}
@@ -1847,13 +1847,13 @@ void Beam::threadentry(int id)
 bool Beam::frameStep(Real dt, Beam** trucks, int numtrucks)
 {
 	BES_GFX_START(BES_GFX_framestep);
-	/*LogManager::getSingleton().logMessage("BEAM: frame starting dt="+StringConverter::toString(dt)
-	+"minx"+StringConverter::toString(minx)
-	+"maxx"+StringConverter::toString(maxx)
-	+"miny"+StringConverter::toString(miny)
-	+"maxy"+StringConverter::toString(maxy)
-	+"minz"+StringConverter::toString(minz)
-	+"maxz"+StringConverter::toString(maxz)
+	/*LOG("BEAM: frame starting dt="+TOSTRING(dt)
+	+"minx"+TOSTRING(minx)
+	+"maxx"+TOSTRING(maxx)
+	+"miny"+TOSTRING(miny)
+	+"maxy"+TOSTRING(maxy)
+	+"minz"+TOSTRING(minz)
+	+"maxz"+TOSTRING(maxz)
 	);
 	*/
 	if (!loading_finished) return true;
@@ -1875,11 +1875,11 @@ bool Beam::frameStep(Real dt, Beam** trucks, int numtrucks)
 	if (dt>1.0/20.0)
 	{
 		dt=1.0/20.0;
-		debugText="RT - Fasttrack: "+StringConverter::toString(fasted*100/(fasted+slowed))+"% "+StringConverter::toString(steps)+" steps";
+		debugText="RT - Fasttrack: "+TOSTRING(fasted*100/(fasted+slowed))+"% "+TOSTRING(steps)+" steps";
 	}
 	else
 	{
-		debugText="SL - Fasttrack: "+StringConverter::toString(fasted*100/(fasted+slowed))+"% "+StringConverter::toString(steps)+" steps";
+		debugText="SL - Fasttrack: "+TOSTRING(fasted*100/(fasted+slowed))+"% "+TOSTRING(steps)+" steps";
 	};
 	//update visual - antishaking
 	//	int t;
@@ -1890,7 +1890,7 @@ bool Beam::frameStep(Real dt, Beam** trucks, int numtrucks)
 	//	}
 
 //if (free_aeroengine) debugText=String(aeroengines[0]->debug);
-//debugText="Origin: "+StringConverter::toString(origin.x)+", "+StringConverter::toString(origin.y)+", "+StringConverter::toString(origin.z);
+//debugText="Origin: "+TOSTRING(origin.x)+", "+TOSTRING(origin.y)+", "+TOSTRING(origin.z);
 
 
 	// some scripting stuff:
@@ -1947,7 +1947,7 @@ bool Beam::frameStep(Real dt, Beam** trucks, int numtrucks)
 				beams[i].broken = bbuff[i].broken;
 				beams[i].disabled = bbuff[i].disabled;
 			}
-			//LogManager::getSingleton().logMessage("replay: " + StringConverter::toString(time));
+			//LOG("replay: " + TOSTRING(time));
 			oldreplaypos = replaypos;
 		}
 	}
@@ -2794,7 +2794,7 @@ void Beam::calcShocks2(int beam_i, Real difftoBeamL, Real &k, Real &d, Real dt)
 						if (beams[scount].shock && beams[scount].shock->flags & SHOCK_FLAG_ISTRIGGER)  // dont mess anything up if the user set the number too big
 						{
 							if (triggerdebug && !beams[scount].shock->trigger_enabled)
-								LogManager::getSingleton().logMessage(" Trigger disabled. Blocker BeamID " + StringConverter::toString(i) + " enabled trigger " + StringConverter::toString(scount));
+								LOG(" Trigger disabled. Blocker BeamID " + TOSTRING(i) + " enabled trigger " + TOSTRING(scount));
 							beams[scount].shock->trigger_enabled = false;	// disable the trigger
 						}
 					}
@@ -2803,7 +2803,7 @@ void Beam::calcShocks2(int beam_i, Real difftoBeamL, Real &k, Real &d, Real dt)
 				{
 					commandkey[beams[i].shock->trigger_cmdshort].trigger_cmdkeyblock_state = false; // Release the cmdKey
 					if (triggerdebug)
-						LogManager::getSingleton().logMessage(" F-key trigger block released. Blocker BeamID " + StringConverter::toString(i) + " Released F" + StringConverter::toString(beams[i].shock->trigger_cmdshort));
+						LOG(" F-key trigger block released. Blocker BeamID " + TOSTRING(i) + " Released F" + TOSTRING(beams[i].shock->trigger_cmdshort));
 				} else
 				if (beams[i].shock->flags & SHOCK_FLAG_TRG_CMD_SWITCH) // this is an enabled cmdkey swictch and past a boundary
 				{
@@ -2823,7 +2823,7 @@ void Beam::calcShocks2(int beam_i, Real difftoBeamL, Real &k, Real &d, Real dt)
 								beams[shocks[scount].beamid].shock->trigger_cmdshort = tmpcmdkey;
 								beams[i].shock->trigger_switch_state = beams[i].shock->trigger_boundary_t ;  //prevent trigger switching again before leaving boundaries or timeout
 								if(triggerdebug)
-									LogManager::getSingleton().logMessage(" Trigger F-key commands switched. Switch BeamID "  + StringConverter::toString(i)+ " switched commands of Trigger BeamID " + StringConverter::toString(beams[shocks[scount].beamid].shock->beamid) + " to cmdShort: F" + StringConverter::toString(beams[shocks[scount].beamid].shock->trigger_cmdshort) + ", cmdlong: F" + StringConverter::toString(beams[shocks[scount].beamid].shock->trigger_cmdlong));
+									LOG(" Trigger F-key commands switched. Switch BeamID "  + TOSTRING(i)+ " switched commands of Trigger BeamID " + TOSTRING(beams[shocks[scount].beamid].shock->beamid) + " to cmdShort: F" + TOSTRING(beams[shocks[scount].beamid].shock->trigger_cmdshort) + ", cmdlong: F" + TOSTRING(beams[shocks[scount].beamid].shock->trigger_cmdlong));
 							}
 						}
 					} 
@@ -2835,7 +2835,7 @@ void Beam::calcShocks2(int beam_i, Real difftoBeamL, Real &k, Real &d, Real dt)
 						 {
 							 commandkey[beams[i].shock->trigger_cmdlong].commandValue = 1;
 							 if(triggerdebug)
-								 LogManager::getSingleton().logMessage(" Trigger Longbound activated. Trigger BeamID " + StringConverter::toString(i) + " Triggered F" + StringConverter::toString(beams[i].shock->trigger_cmdlong));
+								 LOG(" Trigger Longbound activated. Trigger BeamID " + TOSTRING(i) + " Triggered F" + TOSTRING(beams[i].shock->trigger_cmdlong));
 						 }
 					} else // trigger past short bound
 					{
@@ -2843,7 +2843,7 @@ void Beam::calcShocks2(int beam_i, Real difftoBeamL, Real &k, Real &d, Real dt)
 						{
 							commandkey[beams[i].shock->trigger_cmdshort].commandValue = 1;
 							if(triggerdebug)
-								LogManager::getSingleton().logMessage(" Trigger Shortbound activated. Trigger BeamID " + StringConverter::toString(i) + " Triggered F" + StringConverter::toString(beams[i].shock->trigger_cmdshort));
+								LOG(" Trigger Shortbound activated. Trigger BeamID " + TOSTRING(i) + " Triggered F" + TOSTRING(beams[i].shock->trigger_cmdshort));
 						}
 					}
 				}
@@ -2856,7 +2856,7 @@ void Beam::calcShocks2(int beam_i, Real difftoBeamL, Real &k, Real &d, Real dt)
 						if (beams[scount].shock && beams[scount].shock->flags & SHOCK_FLAG_ISTRIGGER)  // dont mess anything up if the user set the number too big
 						{									
 							if(triggerdebug && beams[scount].shock->trigger_enabled)
-								LogManager::getSingleton().logMessage(" Trigger enabled. Blocker BeamID " + StringConverter::toString(i) + " disabled trigger " + StringConverter::toString(scount));
+								LOG(" Trigger enabled. Blocker BeamID " + TOSTRING(i) + " disabled trigger " + TOSTRING(scount));
 							beams[scount].shock->trigger_enabled = true;	// enable the triggers
 						}
 					}
@@ -2865,12 +2865,12 @@ void Beam::calcShocks2(int beam_i, Real difftoBeamL, Real &k, Real &d, Real dt)
 				{
 					beams[i].shock->trigger_switch_state = 0.0f;  //trigger_switch resetted
 					if(triggerdebug)
-						LogManager::getSingleton().logMessage(" Trigger switch resetted. Switch BeamID " + StringConverter::toString(i));
+						LOG(" Trigger switch resetted. Switch BeamID " + TOSTRING(i));
 				} else
 				if (beams[i].shock->flags & SHOCK_FLAG_TRG_CMD_BLOCKER && !commandkey[beams[i].shock->trigger_cmdshort].trigger_cmdkeyblock_state) // this cmdkeyblocker is inside boundaries and cmdkeystate is diabled
 				{
 					if(triggerdebug)
-						LogManager::getSingleton().logMessage(" F-key trigger blocked. Blocker BeamID " + StringConverter::toString(i) + " Blocked F" + StringConverter::toString(beams[i].shock->trigger_cmdshort));
+						LOG(" F-key trigger blocked. Blocker BeamID " + TOSTRING(i) + " Blocked F" + TOSTRING(beams[i].shock->trigger_cmdshort));
 						commandkey[beams[i].shock->trigger_cmdshort].trigger_cmdkeyblock_state = true; // activate trigger blocking
 				}
 			}
@@ -3103,7 +3103,7 @@ void Beam::updateSkidmarks()
 		skidtrails[i]->updatePoint();
 	}
 
-	//LogManager::getSingleton().logMessage("updating skidmark visuals");
+	//LOG("updating skidmark visuals");
 	for(int i=0;i<free_wheel;i++)
 		if(skidtrails[i]) skidtrails[i]->update();
 
@@ -3482,7 +3482,7 @@ void Beam::updateFlares(float dt, bool isCurrent)
 		{
 			flares[i].blinkdelay_state = true;
 		}
-		//LogManager::getSingleton().logMessage(StringConverter::toString(flares[i].blinkdelay_curr));
+		//LOG(TOSTRING(flares[i].blinkdelay_curr));
 		// manage light states
 		bool isvisible = true; //this must be true to be able to switch on the frontlight
 		if (flares[i].type == 'f') {
@@ -3858,9 +3858,9 @@ void Beam::updateVisual(float dt)
 			h=0.6;
 		netMT->setCharacterHeight(h);
 		if(vlen>1000)
-			netMT->setCaption(networkUsername + "  (" + StringConverter::toString( (float)(ceil(vlen/100)/10.0) )+ " km)");
+			netMT->setCaption(networkUsername + "  (" + TOSTRING( (float)(ceil(vlen/100)/10.0) )+ " km)");
 		else if (vlen>20 && vlen <= 1000)
-			netMT->setCaption(networkUsername + "  (" + StringConverter::toString((int)vlen)+ " m)");
+			netMT->setCaption(networkUsername + "  (" + TOSTRING((int)vlen)+ " m)");
 		else
 			netMT->setCaption(networkUsername);
 
@@ -4578,7 +4578,7 @@ void Beam::updateDebugOverlay()
 	if(!debugVisuals) return;
 	if(nodedebugstate<0)
 	{
-		LogManager::getSingleton().logMessage("initializing debugVisuals with mode "+StringConverter::toString(debugVisuals));
+		LOG("initializing debugVisuals with mode "+TOSTRING(debugVisuals));
 		if(debugVisuals == 1 || (debugVisuals >= 3 && debugVisuals <= 5))
 		{
 			// add node labels
@@ -4590,7 +4590,7 @@ void Beam::updateDebugOverlay()
 				sprintf(entName, "%s-nodesDebug-%d-Ent", truckname, i);
 				Entity *b = tsm->createEntity(entName, "sphere.mesh");
 				t.id=i;
-				t.txt = new MovableText(nodeName, "n"+StringConverter::toString(i));
+				t.txt = new MovableText(nodeName, "n"+TOSTRING(i));
 				t.txt->setFontName("highcontrast_black");
 				t.txt->setTextAlignment(MovableText::H_LEFT, MovableText::V_BELOW);
 				//t.txt->setAdditionalHeight(0);
@@ -4625,7 +4625,7 @@ void Beam::updateDebugOverlay()
 				char nodeName[255]="";
 				sprintf(nodeName, "%s-beamsDebug-%d", truckname, i);
 				t.id=i;
-				t.txt = new MovableText(nodeName, "b"+StringConverter::toString(i));
+				t.txt = new MovableText(nodeName, "b"+TOSTRING(i));
 				t.txt->setFontName("highcontrast_black");
 				t.txt->setTextAlignment(MovableText::H_LEFT, MovableText::V_BELOW);
 				//t.txt->setAdditionalHeight(0);
@@ -4671,7 +4671,7 @@ void Beam::updateDebugOverlay()
 		for(std::vector<debugtext_t>::iterator it=nodes_debug.begin(); it!=nodes_debug.end();it++)
 		{
 			it->node->setPosition(nodes[it->id].smoothpos);
-			it->txt->setCaption(StringConverter::toString(nodes[it->id].mass));
+			it->txt->setCaption(TOSTRING(nodes[it->id].mass));
 		}
 		break;
 	case 5: // node-locked
@@ -4686,7 +4686,7 @@ void Beam::updateDebugOverlay()
 		{
 			it->node->setPosition(beams[it->id].p1->smoothpos - (beams[it->id].p1->smoothpos - beams[it->id].p2->smoothpos)/2);
 			int scale=(int)(beams[it->id].scale * 100);
-			it->txt->setCaption(StringConverter::toString(scale));
+			it->txt->setCaption(TOSTRING(scale));
 		}
 		break;
 	case 7: // beam-broken
@@ -4700,14 +4700,14 @@ void Beam::updateDebugOverlay()
 		for(std::vector<debugtext_t>::iterator it=beams_debug.begin(); it!=beams_debug.end();it++)
 		{
 			it->node->setPosition(beams[it->id].p1->smoothpos - (beams[it->id].p1->smoothpos - beams[it->id].p2->smoothpos)/2);
-			it->txt->setCaption(StringConverter::toString((float) fabs(beams[it->id].stress)));
+			it->txt->setCaption(TOSTRING((float) fabs(beams[it->id].stress)));
 		}
 		break;
 	case 9: // beam-strength
 		for(std::vector<debugtext_t>::iterator it=beams_debug.begin(); it!=beams_debug.end();it++)
 		{
 			it->node->setPosition(beams[it->id].p1->smoothpos - (beams[it->id].p1->smoothpos - beams[it->id].p2->smoothpos)/2);
-			it->txt->setCaption(StringConverter::toString(beams[it->id].strength));
+			it->txt->setCaption(TOSTRING(beams[it->id].strength));
 		}
 		break;
 	case 10: // beam-hydros
@@ -4715,7 +4715,7 @@ void Beam::updateDebugOverlay()
 		{
 			it->node->setPosition(beams[it->id].p1->smoothpos - (beams[it->id].p1->smoothpos - beams[it->id].p2->smoothpos)/2);
 			int v = (beams[it->id].L / beams[it->id].Lhydro) * 100;
-			it->txt->setCaption(StringConverter::toString(v));
+			it->txt->setCaption(TOSTRING(v));
 		}
 		break;
 	case 11: // beam-commands
@@ -4723,7 +4723,7 @@ void Beam::updateDebugOverlay()
 		{
 			it->node->setPosition(beams[it->id].p1->smoothpos - (beams[it->id].p1->smoothpos - beams[it->id].p2->smoothpos)/2);
 			int v = (beams[it->id].L / beams[it->id].commandLong) * 100;
-			it->txt->setCaption(StringConverter::toString(v));
+			it->txt->setCaption(TOSTRING(v));
 		}
 		break;
 	}
@@ -4813,7 +4813,7 @@ void Beam::deleteNetTruck()
 void *threadstart(void* vid)
 {
 #ifdef USE_CRASHRPT
-	if(SETTINGS.getSetting("NoCrashRpt").empty())
+	if(SSETTING("NoCrashRpt").empty())
 	{
 		// add the crash handler for this thread
 		CrThreadAutoInstallHelper cr_thread_install_helper;
@@ -4851,7 +4851,7 @@ void *threadstart(void* vid)
 		if(InputEngine::instanceExists()) // this prevents the creating of it, if not existing
 			INPUTENGINE.prepareShutdown();
 
-		String url = "http://wiki.rigsofrods.com/index.php?title=Error_" + StringConverter::toString(e.getNumber())+"#"+e.getSource();
+		String url = "http://wiki.rigsofrods.com/index.php?title=Error_" + TOSTRING(e.getNumber())+"#"+e.getSource();
 		showOgreWebError("An exception has occured!", e.getFullDescription(), url);
 	}
 	pthread_exit(NULL);
@@ -4986,37 +4986,37 @@ int Beam::loadTruck2(Ogre::String filename, Ogre::SceneManager *manager, Ogre::S
 
 	// print some truck memory stats
 	int mem = 0, memr = 0, tmpmem = 0;
-	LogManager::getSingleton().logMessage("BEAM: memory stats following");
+	LOG("BEAM: memory stats following");
 
 	tmpmem = free_beam * sizeof(beam_t); mem += tmpmem;
 	memr += MAX_BEAMS * sizeof(beam_t);
-	LogManager::getSingleton().logMessage("BEAM: beam memory: " + StringConverter::toString(tmpmem) + " B (" + StringConverter::toString(free_beam) + " x " + StringConverter::toString(sizeof(beam_t)) + " B) / " + StringConverter::toString(MAX_BEAMS * sizeof(beam_t)));
+	LOG("BEAM: beam memory: " + TOSTRING(tmpmem) + " B (" + TOSTRING(free_beam) + " x " + TOSTRING(sizeof(beam_t)) + " B) / " + TOSTRING(MAX_BEAMS * sizeof(beam_t)));
 
 	tmpmem = free_node * sizeof(node_t); mem += tmpmem;
 	memr += MAX_NODES * sizeof(beam_t);
-	LogManager::getSingleton().logMessage("BEAM: node memory: " + StringConverter::toString(tmpmem) + " B (" + StringConverter::toString(free_node) + " x " + StringConverter::toString(sizeof(node_t)) + " B) / " + StringConverter::toString(MAX_NODES * sizeof(node_t)));
+	LOG("BEAM: node memory: " + TOSTRING(tmpmem) + " B (" + TOSTRING(free_node) + " x " + TOSTRING(sizeof(node_t)) + " B) / " + TOSTRING(MAX_NODES * sizeof(node_t)));
 
 	tmpmem = free_shock * sizeof(shock_t); mem += tmpmem;
 	memr += MAX_SHOCKS * sizeof(beam_t);
-	LogManager::getSingleton().logMessage("BEAM: shock memory: " + StringConverter::toString(tmpmem) + " B (" + StringConverter::toString(free_shock) + " x " + StringConverter::toString(sizeof(shock_t)) + " B) / " + StringConverter::toString(MAX_SHOCKS * sizeof(shock_t)));
+	LOG("BEAM: shock memory: " + TOSTRING(tmpmem) + " B (" + TOSTRING(free_shock) + " x " + TOSTRING(sizeof(shock_t)) + " B) / " + TOSTRING(MAX_SHOCKS * sizeof(shock_t)));
 
 	tmpmem = free_prop * sizeof(prop_t); mem += tmpmem;
 	memr += MAX_PROPS * sizeof(beam_t);
-	LogManager::getSingleton().logMessage("BEAM: prop memory: " + StringConverter::toString(tmpmem) + " B (" + StringConverter::toString(free_prop) + " x " + StringConverter::toString(sizeof(prop_t)) + " B) / " + StringConverter::toString(MAX_PROPS * sizeof(prop_t)));
+	LOG("BEAM: prop memory: " + TOSTRING(tmpmem) + " B (" + TOSTRING(free_prop) + " x " + TOSTRING(sizeof(prop_t)) + " B) / " + TOSTRING(MAX_PROPS * sizeof(prop_t)));
 
 	tmpmem = free_wheel * sizeof(wheel_t); mem += tmpmem;
 	memr += MAX_WHEELS * sizeof(beam_t);
-	LogManager::getSingleton().logMessage("BEAM: wheel memory: " + StringConverter::toString(tmpmem) + " B (" + StringConverter::toString(free_wheel) + " x " + StringConverter::toString(sizeof(wheel_t)) + " B) / " + StringConverter::toString(MAX_WHEELS * sizeof(wheel_t)));
+	LOG("BEAM: wheel memory: " + TOSTRING(tmpmem) + " B (" + TOSTRING(free_wheel) + " x " + TOSTRING(sizeof(wheel_t)) + " B) / " + TOSTRING(MAX_WHEELS * sizeof(wheel_t)));
 
 	tmpmem = free_rigidifier * sizeof(rigidifier_t); mem += tmpmem;
 	memr += MAX_RIGIDIFIERS * sizeof(beam_t);
-	LogManager::getSingleton().logMessage("BEAM: rigidifier memory: " + StringConverter::toString(tmpmem) + " B (" + StringConverter::toString(free_rigidifier) + " x " + StringConverter::toString(sizeof(rigidifier_t)) + " B) / " + StringConverter::toString(MAX_RIGIDIFIERS * sizeof(rigidifier_t)));
+	LOG("BEAM: rigidifier memory: " + TOSTRING(tmpmem) + " B (" + TOSTRING(free_rigidifier) + " x " + TOSTRING(sizeof(rigidifier_t)) + " B) / " + TOSTRING(MAX_RIGIDIFIERS * sizeof(rigidifier_t)));
 
 	tmpmem = free_flare * sizeof(flare_t); mem += tmpmem;
 	memr += free_flare * sizeof(beam_t);
-	LogManager::getSingleton().logMessage("BEAM: flare memory: " + StringConverter::toString(tmpmem) + " B (" + StringConverter::toString(free_flare) + " x " + StringConverter::toString(sizeof(flare_t)) + " B)");
+	LOG("BEAM: flare memory: " + TOSTRING(tmpmem) + " B (" + TOSTRING(free_flare) + " x " + TOSTRING(sizeof(flare_t)) + " B)");
 
-	LogManager::getSingleton().logMessage("BEAM: truck memory used: " + StringConverter::toString(mem)  + " B (" + StringConverter::toString(mem/1024)  + " kB)");
-	LogManager::getSingleton().logMessage("BEAM: truck memory allocated: " + StringConverter::toString(memr)  + " B (" + StringConverter::toString(memr/1024)  + " kB)");
+	LOG("BEAM: truck memory used: " + TOSTRING(mem)  + " B (" + TOSTRING(mem/1024)  + " kB)");
+	LOG("BEAM: truck memory allocated: " + TOSTRING(memr)  + " B (" + TOSTRING(memr/1024)  + " kB)");
 	return res;
 }

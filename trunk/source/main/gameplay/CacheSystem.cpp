@@ -65,7 +65,7 @@ CacheSystem::CacheSystem()
 	known_extensions.push_back("trailer");
 	known_extensions.push_back("load");
 
-	if(SETTINGS.getSetting("streamCacheGenerationOnly") == "Yes")
+	if(BSETTING("streamCacheGenerationOnly"))
 	{
 		writeStreamCache();
 		exit(0);
@@ -99,16 +99,16 @@ void CacheSystem::startup(SceneManager *smgr, bool forcecheck)
 	// valid == -2 : must update fully
 	if(valid<0)
 	{
-		LogManager::getSingleton().logMessage("cache invalid, updating ...");
+		LOG("cache invalid, updating ...");
 		// generate the cache
 		generateCache((valid < -1));
 
-		//LogManager::getSingleton().logMessage("unloading unused resource groups ...");
+		//LOG("unloading unused resource groups ...");
 		// important: unload everything again!
 		//unloadUselessResourceGroups();
 	}
 
-	LogManager::getSingleton().logMessage("loading cache...");
+	LOG("loading cache...");
 	// load the cache finally!
 	loadCache();
 
@@ -119,7 +119,7 @@ void CacheSystem::startup(SceneManager *smgr, bool forcecheck)
 		exit(1337);
 	}
 
-	LogManager::getSingleton().logMessage("cache loaded!");
+	LOG("cache loaded!");
 }
 
 std::map<int, Category_Entry> *CacheSystem::getCategories()
@@ -154,8 +154,8 @@ void CacheSystem::unloadUselessResourceGroups()
 				ResourceGroupManager::getSingleton().destroyResourceGroup(*it);
 			} catch(Ogre::Exception& e)
 			{
-				LogManager::getSingleton().logMessage("error while unloading resource groups: " + e.getFullDescription());
-				LogManager::getSingleton().logMessage("trying to continue ...");
+				LOG("error while unloading resource groups: " + e.getFullDescription());
+				LOG("trying to continue ...");
 			}
 		}
 	}
@@ -192,7 +192,7 @@ int CacheSystem::isCacheValid()
 	ConfigFile ff;
 	if(!resourceExistsInAllGroups(cfgfilename))
 	{
-		LogManager::getSingleton().logMessage("unable to load config file: "+cfgfilename);
+		LOG("unable to load config file: "+cfgfilename);
 		return -2;
 	}
 
@@ -204,23 +204,23 @@ int CacheSystem::isCacheValid()
 
 	if(shaone == "" || shaone != currentSHA1)
 	{
-		LogManager::getSingleton().logMessage("* mod cache is invalid (not up to date), regenerating new one ...");
+		LOG("* mod cache is invalid (not up to date), regenerating new one ...");
 		return -1;
 	}
 	if(cacheformat != String(CACHE_FILE_FORMAT))
 	{
 		entries.clear();
-		LogManager::getSingleton().logMessage("* mod cache has invalid format, trying to regenerate");
+		LOG("* mod cache has invalid format, trying to regenerate");
 		return -1;
 	}
-	LogManager::getSingleton().logMessage("* mod cache is valid, using it.");
+	LOG("* mod cache is valid, using it.");
 	return 0;
 }
 
 
 void CacheSystem::logBadTruckAttrib(const String& line, Cache_Entry& t)
 {
-	LogManager::getSingleton().logMessage("Bad Mod attribute line: " + line + " in mod " + t.dname);
+	LOG("Bad Mod attribute line: " + line + " in mod " + t.dname);
 }
 
 void CacheSystem::parseModAttribute(const String& line, Cache_Entry& t)
@@ -567,7 +567,7 @@ bool CacheSystem::loadCache()
 
 	if(!resourceExistsInAllGroups(cfgfilename))
 	{
-		LogManager::getSingleton().logMessage("unable to load config file: "+cfgfilename);
+		LOG("unable to load config file: "+cfgfilename);
 		return false;
 	}
 
@@ -575,7 +575,7 @@ bool CacheSystem::loadCache()
 	DataStreamPtr stream=ResourceGroupManager::getSingleton().openResource(cfgfilename, group);
 
 	String line;
-	LogManager::getSingleton().logMessage("CacheSystem::loadCache2");
+	LOG("CacheSystem::loadCache2");
 
 	Cache_Entry t;
 	int mode = 0;
@@ -685,8 +685,8 @@ int CacheSystem::incrementalCacheUpdate()
 		//error loading cache!
 		return -1;
 
-	LogManager::getSingleton().logMessage("* incremental check starting ...");
-	LogManager::getSingleton().logMessage("* incremental check (1/5): deleted and changed files ...");
+	LOG("* incremental check starting ...");
+	LOG("* incremental check (1/5): deleted and changed files ...");
 #ifdef USE_MYGUI
 	LoadingWindow::get()->setProgress(20, _L("incremental check: deleted and changed files"));
 #endif //MYGUI
@@ -704,7 +704,7 @@ int CacheSystem::incrementalCacheUpdate()
 			String fn = getRealPath(it->dirname + "/" + it->fname);
 			if(!fileExists(fn))
 			{
-				LogManager::getSingleton().logMessage("- "+fn+" is not existing");
+				LOG("- "+fn+" is not existing");
 #ifdef USE_MYGUI
 				LoadingWindow::get()->setProgress(20, _L("incremental check: deleted and changed files\n")+it->fname+_L(" not existing"));
 #endif // MYGUI
@@ -722,7 +722,7 @@ int CacheSystem::incrementalCacheUpdate()
 			String fn = getRealPath(it->dirname);
 			if(!fileExists(fn))
 			{
-				LogManager::getSingleton().logMessage("- "+fn+_L(" not existing"));
+				LOG("- "+fn+_L(" not existing"));
 #ifdef USE_MYGUI
 				LoadingWindow::get()->setProgress(20, _L("incremental check: deleted and changed files\n")+it->fname+_L(" not existing"));
 #endif //MYGUI
@@ -758,7 +758,7 @@ int CacheSystem::incrementalCacheUpdate()
 			if(check)
 			{
 				changedFiles++;
-				LogManager::getSingleton().logMessage("- "+fn+_L(" changed"));
+				LOG("- "+fn+_L(" changed"));
 				it->changedornew = true;
 				it->deleted = true; // see below
 				changed_entries.push_back(*it);
@@ -770,7 +770,7 @@ int CacheSystem::incrementalCacheUpdate()
 	// we try to reload one zip only one time, not multiple times if it contains more resources at once
 	std::vector<Ogre::String> reloaded_zips;
 	std::vector<Ogre::String>::iterator sit;
-	LogManager::getSingleton().logMessage("* incremental check (2/5): processing changed zips ...");
+	LOG("* incremental check (2/5): processing changed zips ...");
 #ifdef USE_MYGUI
 	LoadingWindow::get()->setProgress(40, _L("incremental check: processing changed zips\n"));
 #endif //MYGUI
@@ -794,19 +794,19 @@ int CacheSystem::incrementalCacheUpdate()
 			reloaded_zips.push_back(it->dirname);
 		}
 	}
-	LogManager::getSingleton().logMessage("* incremental check (3/5): new content ...");
+	LOG("* incremental check (3/5): new content ...");
 #ifdef USE_MYGUI
 	LoadingWindow::get()->setProgress(60, _L("incremental check: new content\n"));
 #endif //MYGUI
 	checkForNewContent();
 
-	LogManager::getSingleton().logMessage("* incremental check (4/5): new files ...");
+	LOG("* incremental check (4/5): new files ...");
 #ifdef USE_MYGUI
 	LoadingWindow::get()->setProgress(80, _L("incremental check: new files\n"));
 #endif //MYGUI
 	checkForNewKnownFiles();
 
-	LogManager::getSingleton().logMessage("* incremental check (5/5): duplicates ...");
+	LOG("* incremental check (5/5): duplicates ...");
 #ifdef USE_MYGUI
 	LoadingWindow::get()->setProgress(90, _L("incremental check: duplicates\n"));
 #endif //MYGUI
@@ -854,7 +854,7 @@ int CacheSystem::incrementalCacheUpdate()
 			if(dira == dirb && dnameA == dnameB && filenameA == filenameB)
 			{
 				if(it->number == it2->number) continue; // do not delete self
-				LogManager::getSingleton().logMessage("- "+ it2->dirname+"/" + it->fname + " hard duplicate");
+				LOG("- "+ it2->dirname+"/" + it->fname + " hard duplicate");
 				it2->deleted=true;
 				continue;
 			}
@@ -862,7 +862,7 @@ int CacheSystem::incrementalCacheUpdate()
 			else if(dira == dirb && dnameA == dnameB && filenameWUIDA == filenameWUIDB)
 			{
 				if(it->number == it2->number) continue; // do not delete self
-				LogManager::getSingleton().logMessage("- "+ it2->dirname+"/" + it->fname + " soft duplicate, resolving ...");
+				LOG("- "+ it2->dirname+"/" + it->fname + " soft duplicate, resolving ...");
 				// create sha1 and see whats the correct entry :)
 				CSHA1 sha1;
 				sha1.HashFile(const_cast<char*>(it2->dirname.c_str()));
@@ -872,15 +872,15 @@ int CacheSystem::incrementalCacheUpdate()
 				String hashstr = String(hashres);
 				if(hashstr == it->hash)
 				{
-					LogManager::getSingleton().logMessage("  - entry 2 removed");
+					LOG("  - entry 2 removed");
 					it2->deleted=true;
 				} else if(hashstr == it2->hash)
 				{
-					LogManager::getSingleton().logMessage("  - entry 1 removed");
+					LOG("  - entry 1 removed");
 					it->deleted=true;
 				} else
 				{
-					LogManager::getSingleton().logMessage("  - entry 1 and 2 removed");
+					LOG("  - entry 1 and 2 removed");
 					it->deleted=true;
 					it2->deleted=true;
 				}
@@ -891,7 +891,7 @@ int CacheSystem::incrementalCacheUpdate()
 	LoadingWindow::get()->setAutotrack(_L("loading...\n"));
 #endif //MYGUI
 
-	//LogManager::getSingleton().logMessage("* incremental check (5/5): regenerating file cache ...");
+	//LOG("* incremental check (5/5): regenerating file cache ...");
 	//generateFileCache(true);
 
 	writeGeneratedCache();
@@ -899,7 +899,7 @@ int CacheSystem::incrementalCacheUpdate()
 #ifdef USE_MYGUI
 	LoadingWindow::get()->hide();
 #endif // MYGUI
-	LogManager::getSingleton().logMessage("* incremental check done.");
+	LOG("* incremental check done.");
 	return 0;
 }
 
@@ -933,15 +933,15 @@ void CacheSystem::generateCache(bool forcefull)
 
 	writeGeneratedCache();
 
-	//setProgress(1, "Loaded " + StringConverter::toString(entries.size()) + " mods. Saving Cache ...");
+	//setProgress(1, "Loaded " + TOSTRING(entries.size()) + " mods. Saving Cache ...");
 
 }
 
 Ogre::String CacheSystem::formatInnerEntry(int counter, Cache_Entry t)
 {
 	String result = "";
-	result += "\tnumber="+StringConverter::toString(counter)+"\n"; // always count linear!
-	result += "\tdeleted="+StringConverter::toString(t.deleted)+"\n";
+	result += "\tnumber="+TOSTRING(counter)+"\n"; // always count linear!
+	result += "\tdeleted="+TOSTRING(t.deleted)+"\n";
 	if(!t.deleted)
 	{
 		// this ensures that we wont break the format with empty ("") values
@@ -970,8 +970,8 @@ Ogre::String CacheSystem::formatInnerEntry(int counter, Cache_Entry t)
 		if(t.filecachename.empty())
 			t.filecachename = "none";
 
-		result += "\tusagecounter="+StringConverter::toString(t.usagecounter)+"\n";
-		result += "\taddtimestamp="+StringConverter::toString(t.addtimestamp)+"\n";
+		result += "\tusagecounter="+TOSTRING(t.usagecounter)+"\n";
+		result += "\taddtimestamp="+TOSTRING(t.addtimestamp)+"\n";
 		result += "\tminitype="+t.minitype+"\n";
 		result += "\ttype="+t.type+"\n";
 		result += "\tdirname="+t.dirname+"\n";
@@ -981,12 +981,12 @@ Ogre::String CacheSystem::formatInnerEntry(int counter, Cache_Entry t)
 		result += "\tfiletime="+t.filetime+"\n";
 		result += "\tdname="+t.dname+"\n";
 		result += "\thash="+t.hash+"\n";
-		result += "\tcategoryid="+StringConverter::toString(t.categoryid)+"\n";
+		result += "\tcategoryid="+TOSTRING(t.categoryid)+"\n";
 		result += "\tuniqueid="+t.uniqueid+"\n";
 		result += "\tguid="+t.guid+"\n";
-		result += "\tversion="+StringConverter::toString(t.version)+"\n";
+		result += "\tversion="+TOSTRING(t.version)+"\n";
 		result += "\tfilecachename="+t.filecachename+"\n";
-		//result += "\tnumauthors="+StringConverter::toString(t.authors.size())+"\n";
+		//result += "\tnumauthors="+TOSTRING(t.authors.size())+"\n";
 
 		if(t.authors.size() > 0)
 		{
@@ -999,7 +999,7 @@ Ogre::String CacheSystem::formatInnerEntry(int counter, Cache_Entry t)
 				if(strnlen(t.authors[i]->email, 3) == 0)
 					strcpy(t.authors[i]->email, "unkown");
 				result += "\tauthor=" + String(t.authors[i]->type) + \
-					"," + StringConverter::toString(t.authors[i]->id) + \
+					"," + TOSTRING(t.authors[i]->id) + \
 					"," + String(t.authors[i]->name) + "," + String(t.authors[i]->email) + "\n";
 			}
 		}
@@ -1007,41 +1007,41 @@ Ogre::String CacheSystem::formatInnerEntry(int counter, Cache_Entry t)
 		// now add the truck details if existing
 		if(t.description!="") result += "\tdescription="+normalizeText(t.description)+"\n";
 		if(t.tags!="") result += "\ttags="+t.tags+"\n";
-		if(t.fileformatversion!=0) result += "\tfileformatversion="+StringConverter::toString(t.fileformatversion)+"\n";
+		if(t.fileformatversion!=0) result += "\tfileformatversion="+TOSTRING(t.fileformatversion)+"\n";
 		if(t.hasSubmeshs) result += "\thasSubmeshs=1\n";
-		if(t.nodecount!=0) result += "\tnodecount="+StringConverter::toString(t.nodecount)+"\n";
-		if(t.beamcount!=0) result += "\tbeamcount="+StringConverter::toString(t.beamcount)+"\n";
-		if(t.shockcount!=0) result += "\tshockcount="+StringConverter::toString(t.shockcount)+"\n";
-		if(t.fixescount!=0) result += "\tfixescount="+StringConverter::toString(t.fixescount)+"\n";
-		if(t.hydroscount!=0) result += "\thydroscount="+StringConverter::toString(t.hydroscount)+"\n";
-		if(t.wheelcount!=0) result += "\twheelcount="+StringConverter::toString(t.wheelcount)+"\n";
-		if(t.propwheelcount!=0) result += "\tpropwheelcount="+StringConverter::toString(t.propwheelcount)+"\n";
-		if(t.commandscount!=0) result += "\tcommandscount="+StringConverter::toString(t.commandscount)+"\n";
-		if(t.flarescount!=0) result += "\tflarescount="+StringConverter::toString(t.flarescount)+"\n";
-		if(t.propscount!=0) result += "\tpropscount="+StringConverter::toString(t.propscount)+"\n";
-		if(t.wingscount!=0) result += "\twingscount="+StringConverter::toString(t.wingscount)+"\n";
-		if(t.turbopropscount!=0) result += "\tturbopropscount="+StringConverter::toString(t.turbopropscount)+"\n";
-		if(t.turbojetcount!=0) result += "\tturbojetcount="+StringConverter::toString(t.turbojetcount)+"\n";
-		if(t.rotatorscount!=0) result += "\trotatorscount="+StringConverter::toString(t.rotatorscount)+"\n";
-		if(t.exhaustscount!=0) result += "\texhaustscount="+StringConverter::toString(t.exhaustscount)+"\n";
-		if(t.flexbodiescount!=0) result += "\tflexbodiescount="+StringConverter::toString(t.flexbodiescount)+"\n";
-		if(t.materialflarebindingscount!=0) result += "\tmaterialflarebindingscount="+StringConverter::toString(t.materialflarebindingscount)+"\n";
-		if(t.soundsourcescount!=0) result += "\tsoundsourcescount="+StringConverter::toString(t.soundsourcescount)+"\n";
-		if(t.managedmaterialscount!=0) result += "\tmanagedmaterialscount="+StringConverter::toString(t.managedmaterialscount)+"\n";
-		if(t.truckmass>1) result += "\ttruckmass="+StringConverter::toString(t.truckmass)+"\n";
-		if(t.loadmass>1) result += "\tloadmass="+StringConverter::toString(t.loadmass)+"\n";
-		if(t.minrpm>1) result += "\tminrpm="+StringConverter::toString(t.minrpm)+"\n";
-		if(t.maxrpm>1) result += "\tmaxrpm="+StringConverter::toString(t.maxrpm)+"\n";
-		if(t.torque>1) result += "\ttorque="+StringConverter::toString(t.torque)+"\n";
+		if(t.nodecount!=0) result += "\tnodecount="+TOSTRING(t.nodecount)+"\n";
+		if(t.beamcount!=0) result += "\tbeamcount="+TOSTRING(t.beamcount)+"\n";
+		if(t.shockcount!=0) result += "\tshockcount="+TOSTRING(t.shockcount)+"\n";
+		if(t.fixescount!=0) result += "\tfixescount="+TOSTRING(t.fixescount)+"\n";
+		if(t.hydroscount!=0) result += "\thydroscount="+TOSTRING(t.hydroscount)+"\n";
+		if(t.wheelcount!=0) result += "\twheelcount="+TOSTRING(t.wheelcount)+"\n";
+		if(t.propwheelcount!=0) result += "\tpropwheelcount="+TOSTRING(t.propwheelcount)+"\n";
+		if(t.commandscount!=0) result += "\tcommandscount="+TOSTRING(t.commandscount)+"\n";
+		if(t.flarescount!=0) result += "\tflarescount="+TOSTRING(t.flarescount)+"\n";
+		if(t.propscount!=0) result += "\tpropscount="+TOSTRING(t.propscount)+"\n";
+		if(t.wingscount!=0) result += "\twingscount="+TOSTRING(t.wingscount)+"\n";
+		if(t.turbopropscount!=0) result += "\tturbopropscount="+TOSTRING(t.turbopropscount)+"\n";
+		if(t.turbojetcount!=0) result += "\tturbojetcount="+TOSTRING(t.turbojetcount)+"\n";
+		if(t.rotatorscount!=0) result += "\trotatorscount="+TOSTRING(t.rotatorscount)+"\n";
+		if(t.exhaustscount!=0) result += "\texhaustscount="+TOSTRING(t.exhaustscount)+"\n";
+		if(t.flexbodiescount!=0) result += "\tflexbodiescount="+TOSTRING(t.flexbodiescount)+"\n";
+		if(t.materialflarebindingscount!=0) result += "\tmaterialflarebindingscount="+TOSTRING(t.materialflarebindingscount)+"\n";
+		if(t.soundsourcescount!=0) result += "\tsoundsourcescount="+TOSTRING(t.soundsourcescount)+"\n";
+		if(t.managedmaterialscount!=0) result += "\tmanagedmaterialscount="+TOSTRING(t.managedmaterialscount)+"\n";
+		if(t.truckmass>1) result += "\ttruckmass="+TOSTRING(t.truckmass)+"\n";
+		if(t.loadmass>1) result += "\tloadmass="+TOSTRING(t.loadmass)+"\n";
+		if(t.minrpm>1) result += "\tminrpm="+TOSTRING(t.minrpm)+"\n";
+		if(t.maxrpm>1) result += "\tmaxrpm="+TOSTRING(t.maxrpm)+"\n";
+		if(t.torque>1) result += "\ttorque="+TOSTRING(t.torque)+"\n";
 		if(t.customtach) result += "\tcustomtach=1\n";
 		if(t.custom_particles) result += "\tcustom_particles=1\n";
 		if(t.forwardcommands) result += "\tforwardcommands=1\n";
 		if(t.importcommands) result += "\timportcommands=1\n";
 		if(t.rollon) result += "\trollon=1\n";
 		if(t.rescuer) result += "\trescuer=1\n";
-		if(t.driveable!=0) result += "\tdriveable="+StringConverter::toString(t.driveable)+"\n";
-		if(t.numgears!=0) result += "\tnumgears="+StringConverter::toString(t.numgears)+"\n";
-		if(t.enginetype!=0) result += "\tenginetype="+StringConverter::toString(t.enginetype)+"\n";
+		if(t.driveable!=0) result += "\tdriveable="+TOSTRING(t.driveable)+"\n";
+		if(t.numgears!=0) result += "\tnumgears="+TOSTRING(t.numgears)+"\n";
+		if(t.enginetype!=0) result += "\tenginetype="+TOSTRING(t.enginetype)+"\n";
 		if(t.materials.size())
 		{
 			String matStr = "";
@@ -1094,7 +1094,7 @@ Ogre::String CacheSystem::formatEntry(int counter, Cache_Entry t)
 void CacheSystem::writeGeneratedCache()
 {
 	String path = getCacheConfigFilename(true);
-	LogManager::getSingleton().logMessage("writing cache to file ("+path+")...");
+	LOG("writing cache to file ("+path+")...");
 
 	FILE *f = fopen(path.c_str(), "w");
 	if(!f)
@@ -1115,7 +1115,7 @@ void CacheSystem::writeGeneratedCache()
 
 	// close
 	fclose(f);
-	LogManager::getSingleton().logMessage("...done!");
+	LOG("...done!");
 }
 
 
@@ -1131,7 +1131,7 @@ void CacheSystem::writeStreamCache()
 	for (FileInfoList::iterator itDir = dirs->begin(); itDir!= dirs->end(); ++itDir)
 	{
 		if (itDir->filename == String(".svn")) continue;
-		String dirName = SETTINGS.getSetting("Streams Path") + (*itDir).filename;
+		String dirName = SSETTING("Streams Path") + (*itDir).filename;
 		String cacheFilename = dirName + dirsep + "stream.cache";
 		FILE *f = fopen(cacheFilename.c_str(), "w");
 
@@ -1213,7 +1213,7 @@ void CacheSystem::addFile(Ogre::FileInfo f, String ext)
 
 void CacheSystem::addFile(String filename, String archiveType, String archiveDirectory, String ext)
 {
-	LogManager::getSingleton().logMessage("Preparing to add " + filename);
+	LOG("Preparing to add " + filename);
 
 	//read first line
 	Cache_Entry entry;
@@ -1225,7 +1225,7 @@ void CacheSystem::addFile(String filename, String archiveType, String archiveDir
 	{
 		try
 		{
-			//LogManager::getSingleton().logMessage("Read to add "+String(entry.dname)+" filename "+String(filename));
+			//LOG("Read to add "+String(entry.dname)+" filename "+String(filename));
 			DataStreamPtr ds = ResourceGroupManager::getSingleton().openResource(filename, group);
 			entry.dname = ds->getLine();
 
@@ -1263,13 +1263,13 @@ void CacheSystem::addFile(String filename, String archiveType, String archiveDir
 		{
 			if(e.getNumber() == Ogre::Exception::ERR_DUPLICATE_ITEM)
 			{
-				LogManager::getSingleton().logMessage(" *** error opening archive '"+filename+"': some files are duplicates of existing files. The file will be ignored.");
-				LogManager::getSingleton().logMessage("error while opening resource: " + e.getFullDescription());
+				LOG(" *** error opening archive '"+filename+"': some files are duplicates of existing files. The file will be ignored.");
+				LOG("error while opening resource: " + e.getFullDescription());
 			}else
 			{
-				LogManager::getSingleton().logMessage("error while opening resource: " + e.getFullDescription());
-				LogManager::getSingleton().logMessage("error opening archive '"+String(filename)+"'. Is it corrupt?");
-				LogManager::getSingleton().logMessage("trying to continue ...");
+				LOG("error while opening resource: " + e.getFullDescription());
+				LOG("error opening archive '"+String(filename)+"'. Is it corrupt?");
+				LOG("trying to continue ...");
 			}
 		}
 	}
@@ -1387,7 +1387,7 @@ void CacheSystem::fillTruckDetailInfo(Cache_Entry &entry, Ogre::DataStreamPtr ds
 			Ogre::StringVector args = StringUtil::split(lineStr, ", ");
 			if(args.size() < 1)
 			{
-				LogManager::getSingleton().logMessage("Error parsing File (fileinfo) " + String(fname) +" line " + StringConverter::toString(linecounter) + ". trying to continue ...");
+				LOG("Error parsing File (fileinfo) " + String(fname) +" line " + TOSTRING(linecounter) + ". trying to continue ...");
 				continue;
 			}
 			mode=0;
@@ -1401,7 +1401,7 @@ void CacheSystem::fillTruckDetailInfo(Cache_Entry &entry, Ogre::DataStreamPtr ds
 			int fileformatversion;
 			int result = sscanf(line,"fileformatversion %i", &fileformatversion);
 			if (result < 1 || result == EOF) {
-				LogManager::getSingleton().logMessage("Error parsing File (fileformatversion) " + String(fname) +" line " + StringConverter::toString(linecounter) + ". trying to continue ...");
+				LOG("Error parsing File (fileformatversion) " + String(fname) +" line " + TOSTRING(linecounter) + ". trying to continue ...");
 				continue;
 			}
 			mode=0;
@@ -1420,7 +1420,7 @@ void CacheSystem::fillTruckDetailInfo(Cache_Entry &entry, Ogre::DataStreamPtr ds
 
 				int result = sscanf(line,"author %s %i %s %s", authortype, &authorid, authorname, authoremail);
 				if (result < 1 || result == EOF) {
-					LogManager::getSingleton().logMessage("Error parsing File (author) " + String(fname) +" line " + StringConverter::toString(linecounter) + ". trying to continue ...");
+					LOG("Error parsing File (author) " + String(fname) +" line " + TOSTRING(linecounter) + ". trying to continue ...");
 					continue;
 				}
 				//replace '_' with ' '
@@ -1462,8 +1462,8 @@ void CacheSystem::fillTruckDetailInfo(Cache_Entry &entry, Ogre::DataStreamPtr ds
 				int result = sscanf(line,"%i, %f, %f, %f, %s %f",&id,&x,&y,&z,options, &mass);
 				// catch some errors
 				if (result < 4 || result == EOF) {
-					LogManager::getSingleton().logMessage("Error parsing File " + String(fname) +" line " + StringConverter::toString(linecounter) + ". trying to continue ...");
-					//LogManager::getSingleton().logMessage(strerror(errno));
+					LOG("Error parsing File " + String(fname) +" line " + TOSTRING(linecounter) + ". trying to continue ...");
+					//LOG(strerror(errno));
 					continue;
 				}
 				entry.nodecount++;
@@ -1477,7 +1477,7 @@ void CacheSystem::fillTruckDetailInfo(Cache_Entry &entry, Ogre::DataStreamPtr ds
 				int type=0;
 				int result = sscanf(line,"%i, %i, %s",&id1,&id2,options);
 				if (result < 2 || result == EOF) {
-					LogManager::getSingleton().logMessage("Error parsing File (Beam) " + String(fname) +" line " + StringConverter::toString(linecounter) + ". trying to continue ...");
+					LOG("Error parsing File (Beam) " + String(fname) +" line " + TOSTRING(linecounter) + ". trying to continue ...");
 					continue;
 				}
 				entry.beamcount++;
@@ -1491,7 +1491,7 @@ void CacheSystem::fillTruckDetailInfo(Cache_Entry &entry, Ogre::DataStreamPtr ds
 				char type='n';
 				int result = sscanf(line,"%i, %i, %f, %f, %f, %f, %f, %c",&id1,&id2, &s, &d, &sbound, &lbound,&precomp,&type);
 				if (result < 7 || result == EOF) {
-					LogManager::getSingleton().logMessage("Error parsing File (Shock) " + String(fname) +" line " + StringConverter::toString(linecounter) + ". trying to continue ...");
+					LOG("Error parsing File (Shock) " + String(fname) +" line " + TOSTRING(linecounter) + ". trying to continue ...");
 					continue;
 				}
 				entry.shockcount++;
@@ -1503,7 +1503,7 @@ void CacheSystem::fillTruckDetailInfo(Cache_Entry &entry, Ogre::DataStreamPtr ds
 				int id;
 				int result = sscanf(line,"%i",&id);
 				if (result < 1 || result == EOF) {
-					LogManager::getSingleton().logMessage("Error parsing File (Fixes) " + String(fname) +" line " + StringConverter::toString(linecounter) + ". trying to continue ...");
+					LOG("Error parsing File (Fixes) " + String(fname) +" line " + TOSTRING(linecounter) + ". trying to continue ...");
 					continue;
 				}
 				entry.fixescount++;
@@ -1516,7 +1516,7 @@ void CacheSystem::fillTruckDetailInfo(Cache_Entry &entry, Ogre::DataStreamPtr ds
 				char options[50] = "n";
 				int result = sscanf(line,"%i, %i, %f, %s",&id1,&id2,&ratio, options);
 				if (result < 3 || result == EOF) {
-					LogManager::getSingleton().logMessage("Error parsing File (Hydro) " + String(fname) +" line " + StringConverter::toString(linecounter) + ". trying to continue ...");
+					LOG("Error parsing File (Hydro) " + String(fname) +" line " + TOSTRING(linecounter) + ". trying to continue ...");
 					continue;
 				}
 				entry.hydroscount++;
@@ -1531,7 +1531,7 @@ void CacheSystem::fillTruckDetailInfo(Cache_Entry &entry, Ogre::DataStreamPtr ds
 				int rays, node1, node2, snode, braked, propulsed, torquenode;
 				int result = sscanf(line,"%f, %f, %i, %i, %i, %i, %i, %i, %i, %f, %f, %f, %s %s",&radius,&width,&rays,&node1,&node2,&snode,&braked,&propulsed,&torquenode,&mass,&spring,&damp, texf, texb);
 				if (result < 14 || result == EOF) {
-					LogManager::getSingleton().logMessage("Error parsing File (Wheel) " + String(fname) +" line " + StringConverter::toString(linecounter) + ". trying to continue ...");
+					LOG("Error parsing File (Wheel) " + String(fname) +" line " + TOSTRING(linecounter) + ". trying to continue ...");
 					continue;
 				}
 				entry.wheelcount++;
@@ -1547,7 +1547,7 @@ void CacheSystem::fillTruckDetailInfo(Cache_Entry &entry, Ogre::DataStreamPtr ds
 				int rays, node1, node2, snode, braked, propulsed, torquenode;
 				int result = sscanf(line,"%f, %f, %f, %i, %i, %i, %i, %i, %i, %i, %f, %f, %f, %f, %f, %s %s",&radius,&radius2,&width,&rays,&node1,&node2,&snode,&braked,&propulsed,&torquenode,&mass,&spring,&damp,&spring2,&damp2, texf, texb);
 				if (result < 17 || result == EOF) {
-					LogManager::getSingleton().logMessage("Error parsing File (Wheel2) " + String(fname) +" line " + StringConverter::toString(linecounter) + ". trying to continue ...");
+					LOG("Error parsing File (Wheel2) " + String(fname) +" line " + TOSTRING(linecounter) + ". trying to continue ...");
 					continue;
 				}
 				if(propulsed) entry.propwheelcount++;
@@ -1564,7 +1564,7 @@ void CacheSystem::fillTruckDetailInfo(Cache_Entry &entry, Ogre::DataStreamPtr ds
 				int rays, node1, node2, snode, braked, propulsed, torquenode;
 				int result = sscanf(line,"%f, %f, %f, %i, %i, %i, %i, %i, %i, %i, %f, %f, %f, %c, %s %s",&radius,&rimradius,&width,&rays,&node1,&node2,&snode,&braked,&propulsed,&torquenode,&mass,&spring,&damp, &side, meshw, texb);
 				if (result < 16 || result == EOF) {
-					LogManager::getSingleton().logMessage("Error parsing File (MeshWheel) " + String(fname) +" line " + StringConverter::toString(linecounter) + ". trying to continue ...");
+					LOG("Error parsing File (MeshWheel) " + String(fname) +" line " + TOSTRING(linecounter) + ". trying to continue ...");
 					continue;
 				}
 				if(propulsed) entry.propwheelcount++;
@@ -1579,7 +1579,7 @@ void CacheSystem::fillTruckDetailInfo(Cache_Entry &entry, Ogre::DataStreamPtr ds
 				//parse globals
 				int result = sscanf(line,"%f, %f, %s",&truckmass, &loadmass, texname);
 				if (result < 2 || result == EOF) {
-					LogManager::getSingleton().logMessage("Error parsing File (Globals) " + String(fname) +" line " + StringConverter::toString(linecounter) + ". trying to continue ...");
+					LOG("Error parsing File (Globals) " + String(fname) +" line " + TOSTRING(linecounter) + ". trying to continue ...");
 					continue;
 				}
 				entry.truckmass = truckmass;
@@ -1603,7 +1603,7 @@ void CacheSystem::fillTruckDetailInfo(Cache_Entry &entry, Ogre::DataStreamPtr ds
 				entry.driveable = 1; // 1 = TRUCK
 				int result = sscanf(line,"%f, %f, %f, %f, %f, %f, %f, %f, %f, %f, %f, %f, %f, %f, %f, %f, %f, %f, %f, %f, %f", &minrpm, &maxrpm, &torque, &dratio, &rear, &gears[0],&gears[1],&gears[2],&gears[3],&gears[4],&gears[5],&gears[6],&gears[7],&gears[8],&gears[9],&gears[10],&gears[11],&gears[12],&gears[13],&gears[14],&gears[15]);
 				if (result < 7 || result == EOF) {
-					LogManager::getSingleton().logMessage("Error parsing File (Engine) " + String(fname) +" line " + StringConverter::toString(linecounter) + ". trying to continue ...");
+					LOG("Error parsing File (Engine) " + String(fname) +" line " + TOSTRING(linecounter) + ". trying to continue ...");
 					continue;
 				}
 				for (numgears=0; numgears<16; numgears++)
@@ -1611,7 +1611,7 @@ void CacheSystem::fillTruckDetailInfo(Cache_Entry &entry, Ogre::DataStreamPtr ds
 						break;
 				if (numgears < 3)
 				{
-					LogManager::getSingleton().logMessage("Trucks with less than 3 gears are not supported! " + String(fname) +" line " + StringConverter::toString(linecounter) + ". trying to continue ...");
+					LOG("Trucks with less than 3 gears are not supported! " + String(fname) +" line " + TOSTRING(linecounter) + ". trying to continue ...");
 					continue;
 				}
 				entry.numgears = numgears;
@@ -1646,7 +1646,7 @@ void CacheSystem::fillTruckDetailInfo(Cache_Entry &entry, Ogre::DataStreamPtr ds
 					char opt='n';
 					result = sscanf(line,"%i, %i, %f, %f, %f, %i, %i, %c, %s", &id1, &id2, &rateShort, &shortl, &longl, &keys, &keyl, &opt, descr);
 					if (result < 7 || result == EOF) {
-						LogManager::getSingleton().logMessage("Error parsing File (Command) " + String(fname) +" line " + StringConverter::toString(linecounter) + ". trying to continue ...");
+						LOG("Error parsing File (Command) " + String(fname) +" line " + TOSTRING(linecounter) + ". trying to continue ...");
 						continue;
 					}
 				}
@@ -1654,7 +1654,7 @@ void CacheSystem::fillTruckDetailInfo(Cache_Entry &entry, Ogre::DataStreamPtr ds
 				{
 					result = sscanf(line,"%i, %i, %f, %f, %f, %f, %i, %i, %s %s", &id1, &id2, &rateShort, &rateLong, &shortl, &longl, &keys, &keyl, options, descr);
 					if (result < 8 || result == EOF) {
-						LogManager::getSingleton().logMessage("Error parsing File (Command) " + String(fname) +" line " + StringConverter::toString(linecounter) + ". trying to continue ...");
+						LOG("Error parsing File (Command) " + String(fname) +" line " + TOSTRING(linecounter) + ". trying to continue ...");
 						continue;
 					}
 				}
@@ -1702,7 +1702,7 @@ void CacheSystem::fillTruckDetailInfo(Cache_Entry &entry, Ogre::DataStreamPtr ds
 				char matname[255]="";
 				int result = sscanf(line,"%i, %i, %i, %f, %f, %c, %i, %i, %f %s", &ref, &nx, &ny, &ox, &oy, &type, &controlnumber, &blinkdelay, &size, matname);
 				if (result < 5 || result == EOF) {
-					LogManager::getSingleton().logMessage("Error parsing File (Flares) " + String(fname) +" line " + StringConverter::toString(linecounter) + ". trying to continue ...");
+					LOG("Error parsing File (Flares) " + String(fname) +" line " + TOSTRING(linecounter) + ". trying to continue ...");
 					continue;
 				}
 				entry.flarescount++;
@@ -1717,7 +1717,7 @@ void CacheSystem::fillTruckDetailInfo(Cache_Entry &entry, Ogre::DataStreamPtr ds
 				char meshname[256];
 				int result = sscanf(line,"%i, %i, %i, %f, %f, %f, %f, %f, %f, %s", &ref, &nx, &ny, &ox, &oy, &oz, &rx, &ry, &rz, meshname);
 				if (result < 10 || result == EOF) {
-					LogManager::getSingleton().logMessage("Error parsing File (Prop) " + String(fname) +" line " + StringConverter::toString(linecounter) + ". trying to continue ...");
+					LOG("Error parsing File (Prop) " + String(fname) +" line " + TOSTRING(linecounter) + ". trying to continue ...");
 					continue;
 				}
 
@@ -1762,7 +1762,7 @@ void CacheSystem::fillTruckDetailInfo(Cache_Entry &entry, Ogre::DataStreamPtr ds
 					);
 				//visuals
 				if (result < 13 || result == EOF) {
-					LogManager::getSingleton().logMessage("Error parsing File (Wing) " + String(fname) +" line " + StringConverter::toString(linecounter) + ". trying to continue ...");
+					LOG("Error parsing File (Wing) " + String(fname) +" line " + TOSTRING(linecounter) + ". trying to continue ...");
 					continue;
 				}
 				entry.wingscount++;
@@ -1781,7 +1781,7 @@ void CacheSystem::fillTruckDetailInfo(Cache_Entry &entry, Ogre::DataStreamPtr ds
 				{
 					int result = sscanf(line,"%i, %i, %i, %i, %i, %i, %f, %s", &ref, &back, &p1, &p2, &p3, &p4, &power, propfoil);
 					if (result < 8 || result == EOF) {
-						LogManager::getSingleton().logMessage("Error parsing File (Turboprop) " + String(fname) +" line " + StringConverter::toString(linecounter) + ". trying to continue ...");
+						LOG("Error parsing File (Turboprop) " + String(fname) +" line " + TOSTRING(linecounter) + ". trying to continue ...");
 						continue;
 					}
 				}
@@ -1789,7 +1789,7 @@ void CacheSystem::fillTruckDetailInfo(Cache_Entry &entry, Ogre::DataStreamPtr ds
 				{
 					int result = sscanf(line,"%i, %i, %i, %i, %i, %i, %i, %f, %s", &ref, &back, &p1, &p2, &p3, &p4, &couplenode, &power, propfoil);
 					if (result < 9 || result == EOF) {
-						LogManager::getSingleton().logMessage("Error parsing File (Turboprop2) " + String(fname) +" line " + StringConverter::toString(linecounter) + ". trying to continue ...");
+						LOG("Error parsing File (Turboprop2) " + String(fname) +" line " + TOSTRING(linecounter) + ". trying to continue ...");
 						continue;
 					}
 				}
@@ -1797,7 +1797,7 @@ void CacheSystem::fillTruckDetailInfo(Cache_Entry &entry, Ogre::DataStreamPtr ds
 				{
 					int result = sscanf(line,"%i, %i, %i, %i, %i, %i, %i, %f, %f, %s", &ref, &back, &p1, &p2, &p3, &p4, &couplenode, &power, &pitch, propfoil);
 					if (result < 10 || result == EOF) {
-						LogManager::getSingleton().logMessage("Error parsing File (Pistonprop) " + String(fname) +" line " + StringConverter::toString(linecounter) + ". trying to continue ...");
+						LOG("Error parsing File (Pistonprop) " + String(fname) +" line " + TOSTRING(linecounter) + ". trying to continue ...");
 						continue;
 					}
 				}
@@ -1817,7 +1817,7 @@ void CacheSystem::fillTruckDetailInfo(Cache_Entry &entry, Ogre::DataStreamPtr ds
 				char type;
 				int result = sscanf(line,"%f, %c", &inertia, &type);
 				if (result < 1 || result == EOF) {
-					LogManager::getSingleton().logMessage("Error parsing File (Engoption) " + String(fname) +" line " + StringConverter::toString(linecounter) + ". trying to continue ...");
+					LOG("Error parsing File (Engoption) " + String(fname) +" line " + TOSTRING(linecounter) + ". trying to continue ...");
 					continue;
 				}
 				entry.enginetype=type;
@@ -1836,7 +1836,7 @@ void CacheSystem::fillTruckDetailInfo(Cache_Entry &entry, Ogre::DataStreamPtr ds
 				float rate;
 				int result = sscanf(line,"%i, %i, %i, %i, %i, %i, %i, %i, %i, %i, %f, %i, %i", &axis1, &axis2, &p1[0], &p1[1], &p1[2], &p1[3], &p2[0], &p2[1], &p2[2], &p2[3], &rate, &keys, &keyl);
 				if (result < 13 || result == EOF) {
-					LogManager::getSingleton().logMessage("Error parsing File (Rotators) " + String(fname) +" line " + StringConverter::toString(linecounter) + ". trying to continue ...");
+					LOG("Error parsing File (Rotators) " + String(fname) +" line " + TOSTRING(linecounter) + ". trying to continue ...");
 					continue;
 				}
 				entry.rotatorscount++;
@@ -1849,7 +1849,7 @@ void CacheSystem::fillTruckDetailInfo(Cache_Entry &entry, Ogre::DataStreamPtr ds
 				float power;
 				int result = sscanf(line,"%i, %i, %i, %f", &ref,&back,&up, &power);
 				if (result < 4 || result == EOF) {
-					LogManager::getSingleton().logMessage("Error parsing File (Screwprops) " + String(fname) +" line " + StringConverter::toString(linecounter) + ". trying to continue ...");
+					LOG("Error parsing File (Screwprops) " + String(fname) +" line " + TOSTRING(linecounter) + ". trying to continue ...");
 					continue;
 				}
 				entry.driveable=3; // 3 = BOAT;
@@ -1862,7 +1862,7 @@ void CacheSystem::fillTruckDetailInfo(Cache_Entry &entry, Ogre::DataStreamPtr ds
 				char value[255];
 				int result = sscanf(line,"%s %s", keyword, value);
 				if (result < 2 || result == EOF) {
-					LogManager::getSingleton().logMessage("Error parsing File (guisettings) " + String(fname) +" line " + StringConverter::toString(linecounter) + ". trying to continue ...");
+					LOG("Error parsing File (guisettings) " + String(fname) +" line " + TOSTRING(linecounter) + ". trying to continue ...");
 					continue;
 				}
 				entry.customtach=true;
@@ -1882,7 +1882,7 @@ void CacheSystem::fillTruckDetailInfo(Cache_Entry &entry, Ogre::DataStreamPtr ds
 				int result = sscanf(line,"%i, %i, %f %s", &id1, &id2, &factor, material);
 				// catch some errors
 				if (result < 4 || result == EOF) {
-					LogManager::getSingleton().logMessage("Error parsing File " + String(fname) +" line " + StringConverter::toString(linecounter) + ". trying to continue ...");
+					LOG("Error parsing File " + String(fname) +" line " + TOSTRING(linecounter) + ". trying to continue ...");
 					continue;
 				}
 				entry.exhaustscount++;
@@ -1900,7 +1900,7 @@ void CacheSystem::fillTruckDetailInfo(Cache_Entry &entry, Ogre::DataStreamPtr ds
 				int result = sscanf(line,"%i, %i, %s", &id1, &id2, psystem);
 				// catch some errors
 				if (result < 3 || result == EOF) {
-					LogManager::getSingleton().logMessage("Error parsing File " + String(fname) +" line " + StringConverter::toString(linecounter) + ". trying to continue ...");
+					LOG("Error parsing File " + String(fname) +" line " + TOSTRING(linecounter) + ". trying to continue ...");
 					continue;
 				}
 				entry.custom_particles++;
@@ -1913,7 +1913,7 @@ void CacheSystem::fillTruckDetailInfo(Cache_Entry &entry, Ogre::DataStreamPtr ds
 				float len, fdiam, bdiam, drthrust, abthrust;
 				int result = sscanf(line,"%i, %i, %i, %i, %f, %f, %f, %f, %f", &front, &back, &ref, &rev, &drthrust, &abthrust, &fdiam, &bdiam, &len);
 				if (result < 9 || result == EOF) {
-					LogManager::getSingleton().logMessage("Error parsing File (Turbojet) " + String(fname) +" line " + StringConverter::toString(linecounter) + ". trying to continue ...");
+					LOG("Error parsing File (Turbojet) " + String(fname) +" line " + TOSTRING(linecounter) + ". trying to continue ...");
 					continue;
 				}
 				entry.turbojetcount++;
@@ -1938,7 +1938,7 @@ void CacheSystem::fillTruckDetailInfo(Cache_Entry &entry, Ogre::DataStreamPtr ds
 				char meshname[256];
 				int result = sscanf(line,"%i, %i, %i, %f, %f, %f, %f, %f, %f, %s", &ref, &nx, &ny, &ox, &oy, &oz, &rx, &ry, &rz, meshname);
 				if (result < 10 || result == EOF) {
-					LogManager::getSingleton().logMessage("Error parsing File (Flexbodies) " + String(fname) +" line " + StringConverter::toString(linecounter) + ". trying to continue ...");
+					LOG("Error parsing File (Flexbodies) " + String(fname) +" line " + TOSTRING(linecounter) + ". trying to continue ...");
 					continue;
 				}
 				entry.flexbodiescount++;
@@ -1963,7 +1963,7 @@ void CacheSystem::fillTruckDetailInfo(Cache_Entry &entry, Ogre::DataStreamPtr ds
 				int result = sscanf(line,"%d, %s", &flareid, material);
 				if (result < 2 || result == EOF)
 				{
-					LogManager::getSingleton().logMessage("Error parsing File (materialbindings) " + String(fname) +" line " + StringConverter::toString(linecounter) + ". trying to continue ...");
+					LOG("Error parsing File (materialbindings) " + String(fname) +" line " + TOSTRING(linecounter) + ". trying to continue ...");
 					continue;
 				}
 				entry.materialflarebindingscount++;
@@ -1976,7 +1976,7 @@ void CacheSystem::fillTruckDetailInfo(Cache_Entry &entry, Ogre::DataStreamPtr ds
 				char script[256];
 				int result = sscanf(line,"%i, %s", &ref, script);
 				if (result < 2 || result == EOF) {
-					LogManager::getSingleton().logMessage("Error parsing File (soundsource) " + String(fname) +" line " + StringConverter::toString(linecounter) + ". trying to continue ...");
+					LOG("Error parsing File (soundsource) " + String(fname) +" line " + TOSTRING(linecounter) + ". trying to continue ...");
 					continue;
 				}
 				entry.soundsourcescount++;
@@ -1997,7 +1997,7 @@ void CacheSystem::fillTruckDetailInfo(Cache_Entry &entry, Ogre::DataStreamPtr ds
 				int result = sscanf(line,"%s %s", material, type);
 				if (result < 2 || result == EOF)
 				{
-					LogManager::getSingleton().logMessage("Error parsing File (managedmaterials) " + String(fname) +" line " + StringConverter::toString(linecounter) + ". trying to continue ...");
+					LOG("Error parsing File (managedmaterials) " + String(fname) +" line " + TOSTRING(linecounter) + ". trying to continue ...");
 					continue;
 				}
 				entry.managedmaterialscount++;
@@ -2012,7 +2012,7 @@ void CacheSystem::fillTruckDetailInfo(Cache_Entry &entry, Ogre::DataStreamPtr ds
 					continue;
 				int result = sscanf(line+13,"%i %s", &version, sectionName);
 				if (result < 2 || result == EOF) {
-					LogManager::getSingleton().logMessage("Error parsing File (soundsource) " + String(fname) +" line " + StringConverter::toString(linecounter) + ". trying to continue ...");
+					LOG("Error parsing File (soundsource) " + String(fname) +" line " + TOSTRING(linecounter) + ". trying to continue ...");
 					continue;
 				}
 				entry.sectionconfigs.push_back(sectionName);
@@ -2071,7 +2071,7 @@ void CacheSystem::deleteFileCache(char *filename)
 {
 	int res = remove(filename);
 	if(res!=0)
-		LogManager::getSingleton().logMessage("error deleting file '"+String(filename)+"'");
+		LOG("error deleting file '"+String(filename)+"'");
 }
 
 Ogre::String CacheSystem::detectFilesMiniType(String filename)
@@ -2089,7 +2089,7 @@ Ogre::String CacheSystem::detectFilesMiniType(String filename)
 
 void CacheSystem::removeFileFromFileCache(std::vector<Cache_Entry>::iterator iter)
 {
-	//LogManager::getSingleton().logMessage("removing file cache number "+StringConverter::toString(iter->number));
+	//LOG("removing file cache number "+TOSTRING(iter->number));
 	if(iter->minitype != "none")
 	{
 		String fn = location + iter->filecachename;
@@ -2109,7 +2109,7 @@ void CacheSystem::generateFileCache(Cache_Entry &entry, Ogre::String directory)
 		if(entry.fname == "")
 			return;
 
-		LogManager::getSingleton().logMessage(" -"+entry.fname+" ...");
+		LOG(" -"+entry.fname+" ...");
 		if(entry.minitype == "none")
 		{
 			entry.filecachename = "none";
@@ -2192,10 +2192,10 @@ void CacheSystem::generateFileCache(Cache_Entry &entry, Ogre::String directory)
 		}
 	}catch(Ogre::Exception& e)
 	{
-		LogManager::getSingleton().logMessage("error while generating File cache: " + e.getFullDescription());
-		LogManager::getSingleton().logMessage("trying to continue ...");
+		LOG("error while generating File cache: " + e.getFullDescription());
+		LOG("trying to continue ...");
 	}
-	LogManager::getSingleton().logMessage("done generating file cache!");
+	LOG("done generating file cache!");
 }
 
 void CacheSystem::parseKnownFilesAllRG()
@@ -2211,7 +2211,7 @@ void CacheSystem::parseFilesAllRG(Ogre::String ext)
 	for(it = sv.begin(); it!=sv.end(); it++)
 		parseFilesOneRG(ext, *it);
 
-	LogManager::getSingleton().logMessage("* parsing files of all Resource Groups (" + ext + ") finished!");
+	LOG("* parsing files of all Resource Groups (" + ext + ") finished!");
 }
 
 void CacheSystem::parseKnownFilesOneRG(Ogre::String rg)
@@ -2242,7 +2242,7 @@ void CacheSystem::parseKnownFilesOneRGDirectory(Ogre::String rg, Ogre::String di
 
 void CacheSystem::parseFilesOneRG(Ogre::String ext, Ogre::String rg)
 {
-	//LogManager::getSingleton().logMessage("* parsing files ... (" + ext + ")");
+	//LOG("* parsing files ... (" + ext + ")");
 	FileInfoListPtr files = ResourceGroupManager::getSingleton().findResourceFileInfo(rg, String("*.")+ext);
 	FileInfoList::iterator iterFiles = files->begin();
 	int i=0;
@@ -2268,7 +2268,7 @@ void CacheSystem::generateZipList()
 	for(std::vector<Cache_Entry>::iterator it = entries.begin(); it!=entries.end(); it++)
 	{
 		zipCacheList.insert(getVirtualPath(it->dirname));
-		//LogManager::getSingleton().logMessage("zip path added: "+getVirtualPath(it->dirname));
+		//LOG("zip path added: "+getVirtualPath(it->dirname));
 	}
 }
 
@@ -2276,7 +2276,7 @@ bool CacheSystem::isZipUsedInEntries(Ogre::String filename)
 {
 	if(zipCacheList.empty())
 		generateZipList();
-	//LogManager::getSingleton().logMessage("isZipUsedInEntries: "+getVirtualPath(filename));
+	//LOG("isZipUsedInEntries: "+getVirtualPath(filename));
 
 	return (zipCacheList.find(getVirtualPath(filename)) != zipCacheList.end());
 }
@@ -2325,9 +2325,9 @@ void CacheSystem::checkForNewFiles(Ogre::String ext)
 			if(!isFileInEntries(fn))
 			{
 				if(iterFiles->archive->getType() == "Zip")
-					LogManager::getSingleton().logMessage("- " + fn + " is new (in zip)");
+					LOG("- " + fn + " is new (in zip)");
 				else
-					LogManager::getSingleton().logMessage("- " + fn + " is new");
+					LOG("- " + fn + " is new");
 				newFiles++;
 				addFile(*iterFiles, ext);
 			}
@@ -2391,7 +2391,7 @@ String CacheSystem::filenamesSHA1()
 		}
 	}
 
-	//LogManager::getSingleton().logMessage("hash string: "+filenames);
+	//LOG("hash string: "+filenames);
 	char result[255]="";
 
 	CSHA1 sha1;
@@ -2412,8 +2412,8 @@ void CacheSystem::fillTerrainDetailInfo(Cache_Entry &entry, Ogre::DataStreamPtr 
 
 	//parsing the current file
 	entry.authors.clear();
-	LogManager::getSingleton().logMessage("Parsing terrain for detail information: '"+String(fname)+"'");
-	//LogManager::getSingleton().logMessage("Parsing for authors: '"+String(d.fname)+"'");
+	LOG("Parsing terrain for detail information: '"+String(fname)+"'");
+	//LOG("Parsing for authors: '"+String(d.fname)+"'");
 	char line[1024];
 	int linecounter = 0;
 	int categoryid=-1, version=-1;
@@ -2439,7 +2439,7 @@ void CacheSystem::fillTerrainDetailInfo(Cache_Entry &entry, Ogre::DataStreamPtr 
 			int result = sscanf(line, authorformat, &authortype, &authorid, &authorname, &authoremail);
 			if (result < 1 || result == EOF)
 			{
-				LogManager::getSingleton().logMessage("Error parsing File (author) " + String(fname) +" line " + StringConverter::toString(linecounter) + ". trying to continue ...");
+				LOG("Error parsing File (author) " + String(fname) +" line " + TOSTRING(linecounter) + ". trying to continue ...");
 				continue;
 			}
 			//replace '_' with ' '
@@ -2458,7 +2458,7 @@ void CacheSystem::fillTerrainDetailInfo(Cache_Entry &entry, Ogre::DataStreamPtr 
 			int result = sscanf(line, categoryformat, uidtmp, &categoryid, &version);
 			if (result < 3 || result == EOF)
 			{
-				LogManager::getSingleton().logMessage("Error parsing File (fileinfo) " + String(fname) +" line " + StringConverter::toString(linecounter) + ". trying to continue ...");
+				LOG("Error parsing File (fileinfo) " + String(fname) +" line " + TOSTRING(linecounter) + ". trying to continue ...");
 				continue;
 			}
 
@@ -2488,14 +2488,14 @@ int CacheSystem::getCategoryUsage(int category)
 
 void CacheSystem::readCategoryTitles()
 {
-	LogManager::getSingleton().logMessage("Loading category titles from "+configlocation+"categories.cfg");
+	LOG("Loading category titles from "+configlocation+"categories.cfg");
 	FILE *fd;
 	char line[1024];
 	String filename = configlocation + String("categories.cfg");
 	fd=fopen(filename.c_str(), "r");
 	if(!fd)
 	{
-		LogManager::getSingleton().logMessage("error opening file: "+configlocation+"categories.cfg");
+		LOG("error opening file: "+configlocation+"categories.cfg");
 		return;
 	}
 	while (!feof(fd))
@@ -2525,7 +2525,7 @@ void CacheSystem::readCategoryTitles()
 		}
 		else
 			continue;
-		//LogManager::getSingleton().logMessage(String(title));
+		//LOG(String(title));
 		Category_Entry ce;
 		ce.title = Ogre::String(title);
 		ce.number = number;
@@ -2599,7 +2599,7 @@ bool CacheSystem::checkResourceLoaded(Cache_Entry t)
 		try
 		{
 			rgcountera++;
-			String name = "General-Reloaded-"+StringConverter::toString(rgcountera);
+			String name = "General-Reloaded-"+TOSTRING(rgcountera);
 			ResourceGroupManager::getSingleton().addResourceLocation(t.dirname, t.type, name);
 			loaded[t.dirname]=true;
 			ResourceGroupManager::getSingleton().initialiseResourceGroup(name);
@@ -2608,15 +2608,15 @@ bool CacheSystem::checkResourceLoaded(Cache_Entry t)
 		{
 			if(e.getNumber() == Ogre::Exception::ERR_DUPLICATE_ITEM)
 			{
-				LogManager::getSingleton().logMessage(" *** error opening '"+t.dirname+"': some files are duplicates of existing files. The archive/directory will be ignored.");
-				LogManager::getSingleton().logMessage("error while opening resource: " + e.getFullDescription());
+				LOG(" *** error opening '"+t.dirname+"': some files are duplicates of existing files. The archive/directory will be ignored.");
+				LOG("error while opening resource: " + e.getFullDescription());
 			} else
 			{
-				LogManager::getSingleton().logMessage("error opening '"+t.dirname+"'.");
+				LOG("error opening '"+t.dirname+"'.");
 				if(t.type == "Zip")
-					LogManager::getSingleton().logMessage("Is the zip archive corrupt? Error: " + e.getFullDescription());
-				LogManager::getSingleton().logMessage("Error description : " + e.getFullDescription());
-				LogManager::getSingleton().logMessage("trying to continue ...");
+					LOG("Is the zip archive corrupt? Error: " + e.getFullDescription());
+				LOG("Error description : " + e.getFullDescription());
+				LOG("trying to continue ...");
 			}
 		}
 	}
@@ -2642,10 +2642,10 @@ void CacheSystem::loadSingleDirectory(String dirname, String group, bool already
 	char hash[255];
 	memset(hash, 0, 255);
 
-	LogManager::getSingleton().logMessage("Adding directory " + dirname);
+	LOG("Adding directory " + dirname);
 
 	rgcounter++;
-	String rgname = "General-"+StringConverter::toString(rgcounter);
+	String rgname = "General-"+TOSTRING(rgcounter);
 
 	try
 	{
@@ -2654,13 +2654,13 @@ void CacheSystem::loadSingleDirectory(String dirname, String group, bool already
 			parseKnownFilesOneRGDirectory(group, dirname);
 		} else
 		{
-			LogManager::getSingleton().logMessage("Loading " + dirname);
+			LOG("Loading " + dirname);
 			ResourceGroupManager::getSingleton().addResourceLocation(dirname, "FileSystem", rgname);
 			ResourceGroupManager::getSingleton().initialiseResourceGroup(rgname);
 			// parse everything
 			parseKnownFilesOneRG(rgname);
 			// unload it again
-			LogManager::getSingleton().logMessage("UnLoading " + dirname);
+			LOG("UnLoading " + dirname);
 
 #ifdef USE_OPENAL
 			SoundScriptManager *ssm = SoundScriptManager::getSingleton();
@@ -2677,14 +2677,14 @@ void CacheSystem::loadSingleDirectory(String dirname, String group, bool already
 	{
 		if(e.getNumber() == Ogre::Exception::ERR_DUPLICATE_ITEM)
 		{
-			LogManager::getSingleton().logMessage(" *** error opening directory '"+dirname+"': some files are duplicates of existing files. The directory will be ignored.");
-			LogManager::getSingleton().logMessage("error while opening resource: " + e.getFullDescription());
+			LOG(" *** error opening directory '"+dirname+"': some files are duplicates of existing files. The directory will be ignored.");
+			LOG("error while opening resource: " + e.getFullDescription());
 
 		} else
 		{
-			LogManager::getSingleton().logMessage("error while loading directory: " + e.getFullDescription());
-			LogManager::getSingleton().logMessage("error opening directory '"+dirname+"'");
-			LogManager::getSingleton().logMessage("trying to continue ...");
+			LOG("error while loading directory: " + e.getFullDescription());
+			LOG("error opening directory '"+dirname+"'");
+			LOG("trying to continue ...");
 		}
 	}
 }
@@ -2715,11 +2715,11 @@ void CacheSystem::loadSingleZip(String zippath, int cfactor, bool unload, bool o
 	if(cfactor > 99)
 		compr = "(No Compression)";
 	else if (cfactor > 0)
-		compr = "(Compression: " + StringConverter::toString(cfactor) + ")";
-	LogManager::getSingleton().logMessage("Adding archive " + realzipPath + " (hash: "+String(hash)+") " + compr);
+		compr = "(Compression: " + TOSTRING(cfactor) + ")";
+	LOG("Adding archive " + realzipPath + " (hash: "+String(hash)+") " + compr);
 
 	rgcounter++;
-	String rgname = "General-"+StringConverter::toString(rgcounter);
+	String rgname = "General-"+TOSTRING(rgcounter);
 
 	// use general group?
 	if(!ownGroup)
@@ -2730,7 +2730,7 @@ void CacheSystem::loadSingleZip(String zippath, int cfactor, bool unload, bool o
 		ResourceGroupManager &rgm = ResourceGroupManager::getSingleton();
 
 		// load it into a new resource group
-		LogManager::getSingleton().logMessage("Loading " + realzipPath);
+		LOG("Loading " + realzipPath);
 		rgm.addResourceLocation(realzipPath, "Zip", rgname);
 		rgm.initialiseResourceGroup(rgname);
 
@@ -2740,7 +2740,7 @@ void CacheSystem::loadSingleZip(String zippath, int cfactor, bool unload, bool o
 		// unload it again
 		if(unload)
 		{
-			LogManager::getSingleton().logMessage("Unloading " + realzipPath);
+			LOG("Unloading " + realzipPath);
 #ifdef USE_OPENAL
 			SoundScriptManager *ssm = SoundScriptManager::getSingleton();
 			if(ssm) ssm->clearNonBaseTemplates();
@@ -2755,14 +2755,14 @@ void CacheSystem::loadSingleZip(String zippath, int cfactor, bool unload, bool o
 	{
 		if(e.getNumber() == Ogre::Exception::ERR_DUPLICATE_ITEM)
 		{
-			LogManager::getSingleton().logMessage(" *** error opening archive '"+realzipPath+"': some files are duplicates of existing files. The archive will be ignored.");
-			LogManager::getSingleton().logMessage("error while opening resource: " + e.getFullDescription());
+			LOG(" *** error opening archive '"+realzipPath+"': some files are duplicates of existing files. The archive will be ignored.");
+			LOG("error while opening resource: " + e.getFullDescription());
 
 		}else
 		{
-			LogManager::getSingleton().logMessage("error while loading single Zip: " + e.getFullDescription());
-			LogManager::getSingleton().logMessage("error opening archive '"+realzipPath+"'. Is it corrupt? Ignoring that archive ...");
-			LogManager::getSingleton().logMessage("trying to continue ...");
+			LOG("error while loading single Zip: " + e.getFullDescription());
+			LOG("error opening archive '"+realzipPath+"'. Is it corrupt? Ignoring that archive ...");
+			LOG("trying to continue ...");
 		}
 	}
 }
@@ -2779,14 +2779,14 @@ void CacheSystem::loadAllZipsInResourceGroup(String group)
 	{
 		if(loadedZips[iterFiles->filename])
 		{
-			LogManager::getSingleton().logMessage(" zip already loaded: " + iterFiles->filename);
+			LOG(" zip already loaded: " + iterFiles->filename);
 			// already loaded for some strange reason
 			continue;
 		}
 		// update loader
 		int progress = ((float)i/(float)filecount)*100;
 #ifdef USE_MYGUI
-		LoadingWindow::get()->setProgress(progress, _L("Loading zips in group ") + group + "\n" + iterFiles->filename + "\n" + StringConverter::toString(i) + "/" + StringConverter::toString(filecount));
+		LoadingWindow::get()->setProgress(progress, _L("Loading zips in group ") + group + "\n" + iterFiles->filename + "\n" + TOSTRING(i) + "/" + TOSTRING(filecount));
 #endif //MYGUI
 
 		loadSingleZip((Ogre::FileInfo)*iterFiles);
@@ -2805,7 +2805,7 @@ void CacheSystem::loadAllDirectoriesInResourceGroup(String group)
 	for (FileInfoList::iterator listitem = list->begin(); listitem!= list->end(); ++listitem,i++)
 	{
 		if(!listitem->archive) continue;
-		String dirname = listitem->archive->getName() + SETTINGS.getSetting("dirsep") + listitem->filename;
+		String dirname = listitem->archive->getName() + SSETTING("dirsep") + listitem->filename;
 		// update loader
 		int progress = ((float)i/(float)filecount)*100;
 #ifdef USE_MYGUI
@@ -2858,14 +2858,14 @@ void CacheSystem::checkForNewZipsInResourceGroup(String group)
 		#endif
 		int progress = ((float)i/(float)filecount)*100;
 #ifdef USE_MYGUI
-		LoadingWindow::get()->setProgress(progress, _L("checking for new zips in ") + group + "\n" + iterFiles->filename + "\n" + StringConverter::toString(i) + "/" + StringConverter::toString(filecount));
+		LoadingWindow::get()->setProgress(progress, _L("checking for new zips in ") + group + "\n" + iterFiles->filename + "\n" + TOSTRING(i) + "/" + TOSTRING(filecount));
 #endif //MYGUI
 		if(!isZipUsedInEntries(zippath2))
 		{
 #ifdef USE_MYGUI
-			LoadingWindow::get()->setProgress(progress, _L("checking for new zips in ") + group + "\n" + _L("loading new zip: ") + iterFiles->filename + "\n" + StringConverter::toString(i) + "/" + StringConverter::toString(filecount));
+			LoadingWindow::get()->setProgress(progress, _L("checking for new zips in ") + group + "\n" + _L("loading new zip: ") + iterFiles->filename + "\n" + TOSTRING(i) + "/" + TOSTRING(filecount));
 #endif //MYGUI
-			LogManager::getSingleton().logMessage("- "+zippath+" is new");
+			LOG("- "+zippath+" is new");
 			newFiles++;
 			loadSingleZip((Ogre::FileInfo)*iterFiles);
 		}
@@ -2882,17 +2882,17 @@ void CacheSystem::checkForNewDirectoriesInResourceGroup(String group)
 	for (FileInfoList::iterator listitem = list->begin(); listitem!= list->end(); ++listitem, i++)
 	{
 		if(!listitem->archive) continue;
-		String dirname = listitem->archive->getName() + SETTINGS.getSetting("dirsep") + listitem->filename;
+		String dirname = listitem->archive->getName() + SSETTING("dirsep") + listitem->filename;
 		int progress = ((float)i/(float)filecount)*100;
 #ifdef USE_MYGUI
-		LoadingWindow::get()->setProgress(progress, _L("checking for new directories in ") + group + "\n" + listitem->filename + "\n" + StringConverter::toString(i) + "/" + StringConverter::toString(filecount));
+		LoadingWindow::get()->setProgress(progress, _L("checking for new directories in ") + group + "\n" + listitem->filename + "\n" + TOSTRING(i) + "/" + TOSTRING(filecount));
 #endif // MYGUI
 		if(!isDirectoryUsedInEntries(dirname))
 		{
 #ifdef USE_MYGUI
-			LoadingWindow::get()->setProgress(progress, _L("checking for new directories in ") + group + "\n" + _L("loading new directory: ") + listitem->filename + "\n" + StringConverter::toString(i) + "/" + StringConverter::toString(filecount));
+			LoadingWindow::get()->setProgress(progress, _L("checking for new directories in ") + group + "\n" + _L("loading new directory: ") + listitem->filename + "\n" + TOSTRING(i) + "/" + TOSTRING(filecount));
 #endif //MYGUI
-			LogManager::getSingleton().logMessage("- "+dirname+" is new");
+			LOG("- "+dirname+" is new");
 			loadSingleDirectory(dirname, group, true);
 		}
 	}

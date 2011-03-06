@@ -54,7 +54,7 @@ NetworkStreamManager& NetworkStreamManager::getSingleton(void)
 void NetworkStreamManager::addLocalStream(Streamable *stream, stream_register_t *reg, unsigned int size)
 {
 #ifdef USE_SOCKETW
-	//LogManager::getSingleton().logMessage("LLL addLocalStream - lock");
+	//LOG("LLL addLocalStream - lock");
 	pthread_mutex_lock(&stream_mutex);
 	// for own streams: count stream id up ...
 	int mysourceid = net->getUserID();
@@ -76,7 +76,7 @@ void NetworkStreamManager::addLocalStream(Streamable *stream, stream_register_t 
 		streams[mysourceid] = std::map < unsigned int, Streamable *>();
 	// map the stream
 	streams[mysourceid][streamid] = stream;
-	LogManager::getSingleton().logMessage("adding local stream: " + StringConverter::toString(mysourceid) + ":"+ StringConverter::toString(streamid) + ", type: " + StringConverter::toString(reg->type));
+	LOG("adding local stream: " + TOSTRING(mysourceid) + ":"+ TOSTRING(streamid) + ", type: " + TOSTRING(reg->type));
 	// send stream setup notice to server
 	if(size == 0) size = sizeof(stream_register_t);
 	stream->addPacket(MSG2_STREAM_REGISTER, size, (char*)reg);
@@ -84,18 +84,18 @@ void NetworkStreamManager::addLocalStream(Streamable *stream, stream_register_t 
 	// increase stream counter
 	streamid++;
 	pthread_mutex_unlock(&stream_mutex);
-	//LogManager::getSingleton().logMessage("UUU addLocalStream - unlock");
+	//LOG("UUU addLocalStream - unlock");
 #endif //SOCKETW
 }
 
 void NetworkStreamManager::addRemoteStream(Streamable *stream, int rsource, int rstreamid)
 {
-	//LogManager::getSingleton().logMessage("LLL addRemoteStream - lock");
+	//LOG("LLL addRemoteStream - lock");
 	//pthread_mutex_lock(&stream_mutex);
 	streams[rsource][rstreamid] = stream;
-	LogManager::getSingleton().logMessage("adding remote stream: " + StringConverter::toString(rsource) + ":"+ StringConverter::toString(rstreamid));
+	LOG("adding remote stream: " + TOSTRING(rsource) + ":"+ TOSTRING(rstreamid));
 	//pthread_mutex_unlock(&stream_mutex);
-	//LogManager::getSingleton().logMessage("UUU addRemoteStream - unlock");
+	//LOG("UUU addRemoteStream - unlock");
 }
 
 void NetworkStreamManager::removeStream(int sourceid, int streamid)
@@ -126,7 +126,7 @@ void NetworkStreamManager::removeStream(int sourceid, int streamid)
 		(*it)->deleteRemote(sourceid, streamid);
 	}
 	pthread_mutex_unlock(&stream_mutex);
-	//LogManager::getSingleton().logMessage("UUU removeUser - unlock");
+	//LOG("UUU removeUser - unlock");
 }
 
 
@@ -141,7 +141,7 @@ void NetworkStreamManager::resumeStream(Streamable *stream)
 #ifdef USE_SOCKETW
 void NetworkStreamManager::removeUser(int sourceID)
 {
-	//LogManager::getSingleton().logMessage("LLL removeUser - lock");
+	//LOG("LLL removeUser - lock");
 	pthread_mutex_lock(&stream_mutex);
 	if(streams.find(sourceID) == streams.end())
 	{
@@ -159,18 +159,18 @@ void NetworkStreamManager::removeUser(int sourceID)
 		(*it)->deleteRemote(sourceID, -1); // -1 = all streams
 	}
 	pthread_mutex_unlock(&stream_mutex);
-	//LogManager::getSingleton().logMessage("UUU removeUser - unlock");
+	//LOG("UUU removeUser - unlock");
 }
 #endif //SOCKETW
 
 void NetworkStreamManager::pushReceivedStreamMessage(header_t header, char *buffer)
 {
-	//LogManager::getSingleton().logMessage("LLL pushReceivedStreamMessage - lock");
+	//LOG("LLL pushReceivedStreamMessage - lock");
 	pthread_mutex_lock(&stream_mutex);
 	if(streams.find(header.source) == streams.end())
 	{
 		// no such stream?!
-		LogManager::getSingleton().logMessage("EEE Source not found: "+StringConverter::toString(header.source)+":"+StringConverter::toString(header.streamid));
+		LOG("EEE Source not found: "+TOSTRING(header.source)+":"+TOSTRING(header.streamid));
 		pthread_mutex_unlock(&stream_mutex);
 		return;
 	}
@@ -178,13 +178,13 @@ void NetworkStreamManager::pushReceivedStreamMessage(header_t header, char *buff
 	{
 		// no such stream?!
 		if(header.streamid != 0)
-			LogManager::getSingleton().logMessage("EEE Stream not found: "+StringConverter::toString(header.source)+":"+StringConverter::toString(header.streamid));
+			LOG("EEE Stream not found: "+TOSTRING(header.source)+":"+TOSTRING(header.streamid));
 		pthread_mutex_unlock(&stream_mutex);
 		return;
 	}
 	streams[header.source][header.streamid]->addReceivedPacket(header, buffer);
 	pthread_mutex_unlock(&stream_mutex);
-	//LogManager::getSingleton().logMessage("UUU pushReceivedStreamMessage - unlock");
+	//LOG("UUU pushReceivedStreamMessage - unlock");
 }
 
 void NetworkStreamManager::triggerSend()
@@ -201,7 +201,7 @@ void NetworkStreamManager::sendStreams(Network *net, SWInetSocket *socket)
 	pthread_cond_wait(&send_work_cv, &send_work_mutex);
 	pthread_mutex_unlock(&send_work_mutex);
 
-	//LogManager::getSingleton().logMessage("LLL sendStreams - lock");
+	//LOG("LLL sendStreams - lock");
 	pthread_mutex_lock(&stream_mutex);
 	char *buffer = 0;
 	int bufferSize=0;
@@ -236,7 +236,7 @@ void NetworkStreamManager::sendStreams(Network *net, SWInetSocket *socket)
 		}
 	}
 	pthread_mutex_unlock(&stream_mutex);
-	//LogManager::getSingleton().logMessage("UUU sendStreams - unlock");
+	//LOG("UUU sendStreams - unlock");
 }
 #else
 void NetworkStreamManager::sendStreams(Network *net, void *socket)
@@ -254,7 +254,7 @@ void NetworkStreamManager::update()
 
 void NetworkStreamManager::syncRemoteStreams()
 {
-	//LogManager::getSingleton().logMessage("LLL syncRemoteStreams - lock");
+	//LOG("LLL syncRemoteStreams - lock");
 	pthread_mutex_lock(&stream_mutex);
 	// iterate over all factories
 	std::vector < StreamableFactoryInterface * >::iterator it;
@@ -263,12 +263,12 @@ void NetworkStreamManager::syncRemoteStreams()
 		(*it)->syncRemoteStreams();
 	}
 	pthread_mutex_unlock(&stream_mutex);
-	//LogManager::getSingleton().logMessage("UUU syncRemoteStreams - unlock");
+	//LOG("UUU syncRemoteStreams - unlock");
 }
 
 void NetworkStreamManager::receiveStreams()
 {
-	//LogManager::getSingleton().logMessage("LLL receiveStreams - lock");
+	//LOG("LLL receiveStreams - lock");
 	pthread_mutex_lock(&stream_mutex);
 	char *buffer = 0;
 	int bufferSize=0;
@@ -297,15 +297,15 @@ void NetworkStreamManager::receiveStreams()
 		}
 	}
 	pthread_mutex_unlock(&stream_mutex);
-	//LogManager::getSingleton().logMessage("UUU receiveStreams - unlock");
+	//LOG("UUU receiveStreams - unlock");
 }
 
 void NetworkStreamManager::addFactory(StreamableFactoryInterface *factory)
 {
-	//LogManager::getSingleton().logMessage("LLL addFactory - lock");
+	//LOG("LLL addFactory - lock");
 	pthread_mutex_lock(&stream_mutex);
 	this->factories.push_back(factory);
 	pthread_mutex_unlock(&stream_mutex);
-	//LogManager::getSingleton().logMessage("UUU addFactory - unlock");
+	//LOG("UUU addFactory - unlock");
 }
 

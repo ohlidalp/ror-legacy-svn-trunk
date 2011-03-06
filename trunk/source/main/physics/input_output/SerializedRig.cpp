@@ -170,7 +170,7 @@ SerializedRig::SerializedRig()
 	origin=Vector3::ZERO;
 	mSlideNodes.clear();
 
-	enable_wheel2=(SETTINGS.getSetting("Enhanced wheels")=="Yes");
+	enable_wheel2=BSETTING("Enhanced wheels");
 
 	engine=0;
 	water=0;
@@ -259,22 +259,22 @@ int SerializedRig::loadTruck(String fname, SceneManager *manager, SceneNode *par
 	int shadowmode = BTS_NODES;
 
 	// load truck configuration settings
-	bool enable_background_loading = (SETTINGS.getSetting("Background Loading") == "Yes");
+	bool enable_background_loading = BSETTING("Background Loading");
 
-	LogManager::getSingleton().logMessage("BEAM: Start of truck loading: " + filename);
+	LOG("BEAM: Start of truck loading: " + filename);
 	String group = "";
 	try
 	{
 		if(!CACHE.checkResourceLoaded(filename, group))
 		{
-			LogManager::getSingleton().logMessage("Can't open truck file '"+filename+"'");
+			LOG("Can't open truck file '"+filename+"'");
 			return -1;
 		}
 	} catch(Ogre::Exception& e)
 	{
 		if(e.getNumber() == Ogre::Exception::ERR_ITEM_NOT_FOUND)
 		{
-			LogManager::getSingleton().logMessage("Can't open truck file '"+filename+"'");
+			LOG("Can't open truck file '"+filename+"'");
 			return -1;
 		}
 	}
@@ -298,7 +298,7 @@ int SerializedRig::loadTruck(String fname, SceneManager *manager, SceneNode *par
 
 		if (!strcmp("end", c.line))
 		{
-			LogManager::getSingleton().logMessage("BEAM: End of truck loading");
+			LOG("BEAM: End of truck loading");
 			loading_finished = 1;
 			break;
 		}
@@ -433,14 +433,14 @@ int SerializedRig::loadTruck(String fname, SceneManager *manager, SceneNode *par
 		{
 			// parse the optional threshold value
 			beam_creak = 0.0f;
-			LogManager::getSingleton().logMessage("Advanced deformation beam physics enabled");
+			LOG("Advanced deformation beam physics enabled");
 			continue;
 		}
 		if (!strncmp("fileinfo", c.line, 8))
 		{
 			int result = sscanf(c.line,"fileinfo %s, %i, %i", uniquetruckid, &categoryid, &truckversion);
 			if (result < 1 || result == EOF) {
-				LogManager::getSingleton().logMessage("Error parsing File (fileinfo) " + String(fname) +" c.line " + StringConverter::toString(c.linecounter) + ". trying to continue ...");
+				LOG("Error parsing File (fileinfo) " + String(fname) +" c.line " + TOSTRING(c.linecounter) + ". trying to continue ...");
 				continue;
 			}
 			mode=0;
@@ -453,7 +453,7 @@ int SerializedRig::loadTruck(String fname, SceneManager *manager, SceneNode *par
 			int result = sscanf(c.line,"extcamera %s %i", modestr, &nodeid);
 			if (result < 1 || result == EOF)
 			{
-				LogManager::getSingleton().logMessage("Error parsing File (extcamera) " + String(fname) +" c.line " + StringConverter::toString(c.linecounter) + ". trying to continue ...");
+				LOG("Error parsing File (extcamera) " + String(fname) +" c.line " + TOSTRING(c.linecounter) + ". trying to continue ...");
 				continue;
 			}
 			if(!strcmp(modestr, "classic")) externalcameramode = 0;
@@ -468,11 +468,11 @@ int SerializedRig::loadTruck(String fname, SceneManager *manager, SceneNode *par
 			int fileformatversion;
 			int result = sscanf(c.line,"fileformatversion %i", &fileformatversion);
 			if (result < 1 || result == EOF) {
-				LogManager::getSingleton().logMessage("Error parsing File (fileformatversion) " + String(fname) +" c.line " + StringConverter::toString(c.linecounter) + ". trying to continue ...");
+				LOG("Error parsing File (fileformatversion) " + String(fname) +" c.line " + TOSTRING(c.linecounter) + ". trying to continue ...");
 				continue;
 			}
 			if (fileformatversion > TRUCKFILEFORMATVERSION) {
-				LogManager::getSingleton().logMessage("The Truck File " + String(fname) +" is for a newer version or RoR! trying to continue ...");
+				LOG("The Truck File " + String(fname) +" is for a newer version or RoR! trying to continue ...");
 				continue;
 			}
 			mode=BTS_NONE;
@@ -490,7 +490,7 @@ int SerializedRig::loadTruck(String fname, SceneManager *manager, SceneNode *par
 
 			int result = sscanf(c.line,"author %s %i %s %s", authortype, &authorid, authorname, authoremail);
 			if (result < 1 || result == EOF) {
-				LogManager::getSingleton().logMessage("Error parsing File (author) " + String(fname) +" c.line " + StringConverter::toString(c.linecounter) + ". trying to continue ...");
+				LOG("Error parsing File (author) " + String(fname) +" c.line " + TOSTRING(c.linecounter) + ". trying to continue ...");
 				continue;
 			}
 			//replace '_' with ' '
@@ -518,7 +518,7 @@ int SerializedRig::loadTruck(String fname, SceneManager *manager, SceneNode *par
 			int result = sscanf(c.line,"set_shadows %i", &mode);
 			if (result < 1 || result == EOF)
 			{
-				LogManager::getSingleton().logMessage("Error parsing File (set_shadows) " + String(fname) +" c.line " + StringConverter::toString(c.linecounter) + ". trying to continue ...");
+				LOG("Error parsing File (set_shadows) " + String(fname) +" c.line " + TOSTRING(c.linecounter) + ". trying to continue ...");
 				continue;
 			}
 			shadowmode = mode;
@@ -530,7 +530,7 @@ int SerializedRig::loadTruck(String fname, SceneManager *manager, SceneNode *par
 			int result = sscanf(c.line,"prop_camera_mode %i", &mode);
 			if (result < 1 || result == EOF)
 			{
-				LogManager::getSingleton().logMessage("Error parsing File (prop_camera_mode) " + String(fname) +" c.line " + StringConverter::toString(c.linecounter) + ". trying to continue ...");
+				LOG("Error parsing File (prop_camera_mode) " + String(fname) +" c.line " + TOSTRING(c.linecounter) + ". trying to continue ...");
 				continue;
 			}
 
@@ -545,7 +545,7 @@ int SerializedRig::loadTruck(String fname, SceneManager *manager, SceneNode *par
 			int result = sscanf(c.line,"flexbody_camera_mode %i", &mode);
 			if (result < 1 || result == EOF)
 			{
-				LogManager::getSingleton().logMessage("Error parsing File (flexbody_camera_mode) " + String(fname) +" c.line " + StringConverter::toString(c.linecounter) + ". trying to continue ...");
+				LOG("Error parsing File (flexbody_camera_mode) " + String(fname) +" c.line " + TOSTRING(c.linecounter) + ". trying to continue ...");
 				continue;
 			}
 
@@ -567,19 +567,19 @@ int SerializedRig::loadTruck(String fname, SceneManager *manager, SceneNode *par
 			// parse the c.line
 			if(strnlen(c.line, 255) < 14)
 			{
-				LogManager::getSingleton().logMessage("Error parsing File (add_animation) " + String(fname) +" c.line " + StringConverter::toString(c.linecounter) + ". Not enough Options parsed, trying to continue ...");
+				LOG("Error parsing File (add_animation) " + String(fname) +" c.line " + TOSTRING(c.linecounter) + ". Not enough Options parsed, trying to continue ...");
 				continue;
 			}
 			Ogre::StringVector options = Ogre::StringUtil::split(String(c.line).substr(14), ","); // "add_animation " = 14 characters
 			// check for common errors
 			if (options.size() < 4)
 			{
-				LogManager::getSingleton().logMessage("Error parsing File (add_animation) " + String(fname) +" c.line " + StringConverter::toString(c.linecounter) + ". Not enough Options parsed, trying to continue ...");
+				LOG("Error parsing File (add_animation) " + String(fname) +" c.line " + TOSTRING(c.linecounter) + ". Not enough Options parsed, trying to continue ...");
 				continue;
 			}
 			if (!free_prop)
 			{
-				LogManager::getSingleton().logMessage("Error parsing File (add_animation) " + String(fname) +" c.line " + StringConverter::toString(c.linecounter) + ". No prop to animate existing, trying to continue ...");
+				LOG("Error parsing File (add_animation) " + String(fname) +" c.line " + TOSTRING(c.linecounter) + ". No prop to animate existing, trying to continue ...");
 				continue;
 			}
 
@@ -593,7 +593,7 @@ int SerializedRig::loadTruck(String fname, SceneManager *manager, SceneNode *par
 			// all slots used?
 			if (animnum >= 10)
 			{
-				LogManager::getSingleton().logMessage("Error parsing File (add_animation) " + String(fname) +" c.line " + StringConverter::toString(c.linecounter) + ". Cant animate a prop more then 10 times. Trying to continue...");
+				LOG("Error parsing File (add_animation) " + String(fname) +" c.line " + TOSTRING(c.linecounter) + ". Cant animate a prop more then 10 times. Trying to continue...");
 				continue;
 			}
 
@@ -607,7 +607,7 @@ int SerializedRig::loadTruck(String fname, SceneManager *manager, SceneNode *par
 					if (ratio)
 						prop->animratio[animnum]=ratio;
 					else
-						LogManager::getSingleton().logMessage("Error parsing File (add_animation) " + String(fname) +" c.line " + StringConverter::toString(c.linecounter) + ". Animation-Ratio = 0 ?");
+						LOG("Error parsing File (add_animation) " + String(fname) +" c.line " + TOSTRING(c.linecounter) + ". Animation-Ratio = 0 ?");
 				} else if(i == 1)
 				{
 					opt1 = StringConverter::parseReal(options[i]);
@@ -714,9 +714,9 @@ int SerializedRig::loadTruck(String fname, SceneManager *manager, SceneNode *par
 						}
 
 						if (prop->animFlags[animnum] == 0)
-							LogManager::getSingleton().logMessage("Error parsing File (add_animation) " + String(fname) +" c.line " + StringConverter::toString(c.linecounter) + ". Failed to identify source.");
+							LOG("Error parsing File (add_animation) " + String(fname) +" c.line " + TOSTRING(c.linecounter) + ". Failed to identify source.");
 						else
-							LogManager::getSingleton().logMessage("Animation source set to prop#: " + StringConverter::toString(free_prop-1) + ", flag " +StringConverter::toString(prop->animFlags[animnum]) + ", Animationnumber: " + StringConverter::toString(animnum));
+							LOG("Animation source set to prop#: " + TOSTRING(free_prop-1) + ", flag " +TOSTRING(prop->animFlags[animnum]) + ", Animationnumber: " + TOSTRING(animnum));
 					}
 					else if(args2[0] == "mode" && args2.size() == 2)
 					{
@@ -735,9 +735,9 @@ int SerializedRig::loadTruck(String fname, SceneManager *manager, SceneNode *par
 						}
 
 						if (prop->animMode[animnum] == 0)
-							LogManager::getSingleton().logMessage("Error parsing File (add_animation) " + String(fname) +" c.line " + StringConverter::toString(c.linecounter) + ". Failed to identify animation mode.");
+							LOG("Error parsing File (add_animation) " + String(fname) +" c.line " + TOSTRING(c.linecounter) + ". Failed to identify animation mode.");
 						else
-							LogManager::getSingleton().logMessage("Animation mode set to prop#: " + StringConverter::toString(free_prop-1)+ ", mode " +StringConverter::toString(prop->animMode[animnum]) + ", Animationnumber: " + StringConverter::toString(animnum));
+							LOG("Animation mode set to prop#: " + TOSTRING(free_prop-1)+ ", mode " +TOSTRING(prop->animMode[animnum]) + ", Animationnumber: " + TOSTRING(animnum));
 					}
 					else if (args2[0] == "autoanimate" && args2.size() == 1)
 					{
@@ -750,7 +750,7 @@ int SerializedRig::loadTruck(String fname, SceneManager *manager, SceneNode *par
 						else if(prop->animMode[animnum] & ANIM_MODE_OFFSET_X) { prop->animOpt1[animnum] = opt1 + prop->orgoffsetX; prop->animOpt2[animnum] = opt2 + prop->orgoffsetX; prop->animOpt4[animnum] = prop->orgoffsetX; }
 						else if(prop->animMode[animnum] & ANIM_MODE_OFFSET_Y) { prop->animOpt1[animnum] = opt1 + prop->orgoffsetY; prop->animOpt2[animnum] = opt2 + prop->orgoffsetY; prop->animOpt4[animnum] = prop->orgoffsetY; }
 						else if(prop->animMode[animnum] & ANIM_MODE_OFFSET_Z) { prop->animOpt1[animnum] = opt1 + prop->orgoffsetZ; prop->animOpt2[animnum] = opt2 + prop->orgoffsetZ; prop->animOpt4[animnum] = prop->orgoffsetZ; }
-						LogManager::getSingleton().logMessage("Animation mode Autoanimation added to prop#: " + StringConverter::toString(free_prop-1) + " , Animationnumber: " + StringConverter::toString(animnum));
+						LOG("Animation mode Autoanimation added to prop#: " + TOSTRING(free_prop-1) + " , Animationnumber: " + TOSTRING(animnum));
 					}
 					else if (args2[0] == "noflip" && args2.size() == 1)
 					{
@@ -783,7 +783,7 @@ int SerializedRig::loadTruck(String fname, SceneManager *manager, SceneNode *par
 							if(evtID != -1)
 								prop->animKey[animnum] = evtID;
 							else
-								LogManager::getSingleton().logMessage("Animation event unkown: " + eventStr);
+								LOG("Animation event unkown: " + eventStr);
 						}
 					}
 
@@ -798,7 +798,7 @@ int SerializedRig::loadTruck(String fname, SceneManager *manager, SceneNode *par
 			int result = sscanf(c.line,"set_managedmaterials_options %d", &managedmaterials_doublesided);
 			if (result < 1 || result == EOF)
 			{
-				LogManager::getSingleton().logMessage("Error parsing File (set_managedmaterials_options) " + String(fname) +" c.line " + StringConverter::toString(c.linecounter) + ". trying to continue ...");
+				LOG("Error parsing File (set_managedmaterials_options) " + String(fname) +" c.line " + TOSTRING(c.linecounter) + ". trying to continue ...");
 				continue;
 			}
 			continue;
@@ -808,7 +808,7 @@ int SerializedRig::loadTruck(String fname, SceneManager *manager, SceneNode *par
 			int result = sscanf(c.line,"set_beam_defaults_scale %f, %f, %f, %f", &default_spring_scale, &default_damp_scale, &default_deform_scale, &default_break_scale);
 			if (result < 4 || result == EOF)
 			{
-				LogManager::getSingleton().logMessage("Error parsing File (set_beam_defaults_scale) " + String(fname) +" c.line " + StringConverter::toString(c.linecounter) + ". trying to continue ...");
+				LOG("Error parsing File (set_beam_defaults_scale) " + String(fname) +" c.line " + TOSTRING(c.linecounter) + ". trying to continue ...");
 				continue;
 			}
 			continue;
@@ -819,7 +819,7 @@ int SerializedRig::loadTruck(String fname, SceneManager *manager, SceneNode *par
 			int result = sscanf(c.line,"guid %s", guid);
 			if (result < 1 || result == EOF)
 			{
-				LogManager::getSingleton().logMessage("Error parsing File (guid) " + String(fname) +" c.line " + StringConverter::toString(c.linecounter) + ". trying to continue ...");
+				LOG("Error parsing File (guid) " + String(fname) +" c.line " + TOSTRING(c.linecounter) + ". trying to continue ...");
 				continue;
 			}
 		}
@@ -830,7 +830,7 @@ int SerializedRig::loadTruck(String fname, SceneManager *manager, SceneNode *par
 			float tmpdefault_plastic_coef=-1.0f;
 			int result = sscanf(c.line,"set_beam_defaults %f, %f, %f, %f, %f, %s, %f", &default_spring, &default_damp, &default_deform,&default_break,&default_beam_diameter, default_beam_material2, &tmpdefault_plastic_coef);
 			if (result < 1 || result == EOF) {
-				LogManager::getSingleton().logMessage("Error parsing File (set_beam_defaults) " + String(fname) +" c.line " + StringConverter::toString(c.linecounter) + ". trying to continue ...");
+				LOG("Error parsing File (set_beam_defaults) " + String(fname) +" c.line " + TOSTRING(c.linecounter) + ". trying to continue ...");
 				continue;
 			}
 			if(strnlen(default_beam_material2, 255))
@@ -839,7 +839,7 @@ int SerializedRig::loadTruck(String fname, SceneManager *manager, SceneNode *par
 				if(!mat.isNull())
 					strncpy(default_beam_material, default_beam_material2, 256);
 				else
-					LogManager::getSingleton().logMessage("beam material '" + String(default_beam_material2) + "' not found!");
+					LOG("beam material '" + String(default_beam_material2) + "' not found!");
 			}
 			if (default_spring<0) default_spring=DEFAULT_SPRING;
 			if (default_damp<0) default_damp=DEFAULT_DAMP;
@@ -853,12 +853,12 @@ int SerializedRig::loadTruck(String fname, SceneManager *manager, SceneNode *par
 			}
 			if(default_spring_scale != 1 || default_damp_scale != 1 || default_deform_scale != 1 || default_break_scale != 1)
 			{
-				LogManager::getSingleton().logMessage("Due to using set_beam_defaults_scale, this set_beam_defaults was interpreted as  " + \
-					StringConverter::toString(default_spring * default_spring_scale) + ", " + \
-					StringConverter::toString(default_damp   * default_damp_scale) + ", " + \
-					StringConverter::toString(default_deform * default_deform_scale) + ", " + \
-					StringConverter::toString(default_break  * default_break_scale) + ". In " + \
-					String(fname) +" c.line " + StringConverter::toString(c.linecounter) + ".");
+				LOG("Due to using set_beam_defaults_scale, this set_beam_defaults was interpreted as  " + \
+					TOSTRING(default_spring * default_spring_scale) + ", " + \
+					TOSTRING(default_damp   * default_damp_scale) + ", " + \
+					TOSTRING(default_deform * default_deform_scale) + ", " + \
+					TOSTRING(default_break  * default_break_scale) + ". In " + \
+					String(fname) +" c.line " + TOSTRING(c.linecounter) + ".");
 
 			}
 			continue;
@@ -868,7 +868,7 @@ int SerializedRig::loadTruck(String fname, SceneManager *manager, SceneNode *par
 			int result = sscanf(c.line,"set_inertia_defaults %f, %f, %s %s",&inertia_startDelay, &inertia_stopDelay, inertia_default_startFunction, inertia_default_stopFunction);
 			if (result < 1 || result == EOF)
 			{
-				LogManager::getSingleton().logMessage("Error parsing File (set_inertia_defaults) " + String(fname) +" c.line " + StringConverter::toString(c.linecounter) + ". trying to continue ...");
+				LOG("Error parsing File (set_inertia_defaults) " + String(fname) +" c.line " + TOSTRING(c.linecounter) + ". trying to continue ...");
 				continue;
 			}
 			if (inertia_startDelay < 0 || inertia_stopDelay < 0)
@@ -887,7 +887,7 @@ int SerializedRig::loadTruck(String fname, SceneManager *manager, SceneNode *par
 			int result = sscanf(c.line,"set_node_defaults %f, %f, %f, %f, %s", &default_node_loadweight, &default_node_friction, &default_node_volume, &default_node_surface, default_node_options);
 			if (result < 1 || result == EOF)
 			{
-				LogManager::getSingleton().logMessage("Error parsing File (set_node_defaults) " + String(fname) +" c.line " + StringConverter::toString(c.linecounter) + ". trying to continue ...");
+				LOG("Error parsing File (set_node_defaults) " + String(fname) +" c.line " + TOSTRING(c.linecounter) + ". trying to continue ...");
 				continue;
 			}
 			if (default_node_friction < 0)   default_node_friction=NODE_FRICTION_COEF_DEFAULT;
@@ -903,7 +903,7 @@ int SerializedRig::loadTruck(String fname, SceneManager *manager, SceneNode *par
 			int result = sscanf(c.line,"set_skeleton_settings %f, %f", &fadeDist, &skeleton_beam_diameter);
 			if (result < 2 || result == EOF)
 			{
-				LogManager::getSingleton().logMessage("Error parsing File (set_skeleton_settings) " + String(fname) +" c.line " + StringConverter::toString(c.linecounter) + ". trying to continue ...");
+				LOG("Error parsing File (set_skeleton_settings) " + String(fname) +" c.line " + TOSTRING(c.linecounter) + ". trying to continue ...");
 				continue;
 			}
 			if(fadeDist<0)
@@ -920,7 +920,7 @@ int SerializedRig::loadTruck(String fname, SceneManager *manager, SceneNode *par
 			subcabs[free_sub]=free_cab;
 			if(free_sub >= MAX_SUBMESHES)
 			{
-				LogManager::getSingleton().logMessage("submesh limit reached ("+StringConverter::toString(MAX_SUBMESHES)+"): " + String(fname) +" c.line " + StringConverter::toString(c.linecounter) + ". trying to continue ...");
+				LOG("submesh limit reached ("+TOSTRING(MAX_SUBMESHES)+"): " + String(fname) +" c.line " + TOSTRING(c.linecounter) + ". trying to continue ...");
 				continue;
 			}
 			//make it normal
@@ -982,7 +982,7 @@ int SerializedRig::loadTruck(String fname, SceneManager *manager, SceneNode *par
 			subcabs[free_sub]=free_cab;
 			if(free_sub >= MAX_SUBMESHES)
 			{
-				LogManager::getSingleton().logMessage("submesh limit reached ("+StringConverter::toString(MAX_SUBMESHES)+"): " + String(fname) +" c.line " + StringConverter::toString(c.linecounter) + ". trying to continue ...");
+				LOG("submesh limit reached ("+TOSTRING(MAX_SUBMESHES)+"): " + String(fname) +" c.line " + TOSTRING(c.linecounter) + ". trying to continue ...");
 				continue;
 			}
 			free_sub++;
@@ -996,7 +996,7 @@ int SerializedRig::loadTruck(String fname, SceneManager *manager, SceneNode *par
 			int result = sscanf(c.line,"set_collision_range %f", &collrange);
 			if (result < 2 || result == EOF)
 			{
-				LogManager::getSingleton().logMessage("Error parsing File (set_collision_range) " + String(fname) +" c.line " + StringConverter::toString(c.linecounter) + ". trying to continue ...");
+				LOG("Error parsing File (set_collision_range) " + String(fname) +" c.line " + TOSTRING(c.linecounter) + ". trying to continue ...");
 				continue;
 			}
 
@@ -1014,20 +1014,20 @@ int SerializedRig::loadTruck(String fname, SceneManager *manager, SceneNode *par
 			int result = sscanf(c.line,"%i, %f, %f, %f, %s %f",&id,&x,&y,&z,options, &mass);
 			// catch some errors
 			if (result < 4 || result == EOF) {
-				LogManager::getSingleton().logMessage("Error parsing File " + String(fname) +" c.line " + StringConverter::toString(c.linecounter) + ". trying to continue ...");
-				//LogManager::getSingleton().logMessage(strerror(errno));
+				LOG("Error parsing File " + String(fname) +" c.line " + TOSTRING(c.linecounter) + ". trying to continue ...");
+				//LOG(strerror(errno));
 				continue;
 			}
 			if (id != free_node)
 			{
-				LogManager::getSingleton().logMessage("Error parsing File (Node) " + String(fname) +" c.line " + StringConverter::toString(c.linecounter) + ":");
-				LogManager::getSingleton().logMessage("Error: lost sync in nodes numbers after node " + StringConverter::toString(free_node) + "(got " + StringConverter::toString(id) + " instead)");
+				LOG("Error parsing File (Node) " + String(fname) +" c.line " + TOSTRING(c.linecounter) + ":");
+				LOG("Error: lost sync in nodes numbers after node " + TOSTRING(free_node) + "(got " + TOSTRING(id) + " instead)");
 				exit(2);
 			};
 
 			if(free_node >= MAX_NODES)
 			{
-				LogManager::getSingleton().logMessage("nodes limit reached ("+StringConverter::toString(MAX_NODES)+"): " + String(fname) +" c.line " + StringConverter::toString(c.linecounter) + ". trying to continue ...");
+				LOG("nodes limit reached ("+TOSTRING(MAX_NODES)+"): " + String(fname) +" c.line " + TOSTRING(c.linecounter) + ". trying to continue ...");
 				continue;
 			}
 
@@ -1145,7 +1145,7 @@ int SerializedRig::loadTruck(String fname, SceneManager *manager, SceneNode *par
 						nodes[id].disable_particles=true;
 					break;
 					case 'L':	//Log data:
-						LogManager::getSingleton().logMessage("Node " + StringConverter::toString(id) + "  settings. Node load mass: " + StringConverter::toString(nodes[id].mass) + ", friction coefficient: " + StringConverter::toString(default_node_friction) + " and buoyancy volume coefficient: " + StringConverter::toString(default_node_volume) + " Fluid drag surface coefficient: " + StringConverter::toString(default_node_surface)+ " Particle mode: " + StringConverter::toString(nodes[id].disable_particles));
+						LOG("Node " + TOSTRING(id) + "  settings. Node load mass: " + TOSTRING(nodes[id].mass) + ", friction coefficient: " + TOSTRING(default_node_friction) + " and buoyancy volume coefficient: " + TOSTRING(default_node_volume) + " Fluid drag surface coefficient: " + TOSTRING(default_node_surface)+ " Particle mode: " + TOSTRING(nodes[id].disable_particles));
 					break;
 				}
 				options_pointer++;
@@ -1161,20 +1161,20 @@ int SerializedRig::loadTruck(String fname, SceneManager *manager, SceneNode *par
 			int type=BEAM_NORMAL;
 			int result = sscanf(c.line,"%i, %i, %s %f",&id1,&id2,options,&support_break_factor);
 			if (result < 2 || result == EOF) {
-				LogManager::getSingleton().logMessage("Error parsing File (Beam) " + String(fname) +" c.line " + StringConverter::toString(c.linecounter) + ". trying to continue ...");
+				LOG("Error parsing File (Beam) " + String(fname) +" c.line " + TOSTRING(c.linecounter) + ". trying to continue ...");
 				continue;
 			}
 
 			if (id1>=free_node || id2>=free_node)
 			{
-				LogManager::getSingleton().logMessage("Error: unknown node number in beams section ("
-					+StringConverter::toString(id1)+","+StringConverter::toString(id2)+")");
+				LOG("Error: unknown node number in beams section ("
+					+TOSTRING(id1)+","+TOSTRING(id2)+")");
 				exit(3);
 			};
 
 			if(free_beam >= MAX_BEAMS)
 			{
-				LogManager::getSingleton().logMessage("beams limit reached ("+StringConverter::toString(MAX_BEAMS)+"): " + String(fname) +" c.line " + StringConverter::toString(c.linecounter) + ". trying to continue ...");
+				LOG("beams limit reached ("+TOSTRING(MAX_BEAMS)+"): " + String(fname) +" c.line " + TOSTRING(c.linecounter) + ". trying to continue ...");
 				continue;
 			}
 
@@ -1184,7 +1184,7 @@ int SerializedRig::loadTruck(String fname, SceneManager *manager, SceneNode *par
 			{
 				if ((beams[i].p1==&nodes[id1] && beams[i].p2==&nodes[id2]) || (beams[i].p1==&nodes[id2] && beams[i].p2==&nodes[id1]))
 				{
-					LogManager::getSingleton().logMessage("Skipping duplicate beams: from node "+StringConverter::toString(id1)+" to node "+StringConverter::toString(id2));
+					LOG("Skipping duplicate beams: from node "+TOSTRING(id1)+" to node "+TOSTRING(id2));
 					continue;
 				}
 			}
@@ -1206,9 +1206,9 @@ int SerializedRig::loadTruck(String fname, SceneManager *manager, SceneNode *par
 			/*
 			if(beam_length < 0.01f)
 			{
-				LogManager::getSingleton().logMessage("Error: beam "+StringConverter::toString(free_beam)+" is too short ("+StringConverter::toString(beam_length)+"m)");
-				LogManager::getSingleton().logMessage("Error: beam "+StringConverter::toString(free_beam)+" is between node "+StringConverter::toString(id1)+" and node "+StringConverter::toString(id2)+".");
-				//LogManager::getSingleton().logMessage("will ignore this beam.");
+				LOG("Error: beam "+TOSTRING(free_beam)+" is too short ("+TOSTRING(beam_length)+"m)");
+				LOG("Error: beam "+TOSTRING(free_beam)+" is between node "+TOSTRING(id1)+" and node "+TOSTRING(id2)+".");
+				//LOG("will ignore this beam.");
 				exit(8);
 			}
 			*/
@@ -1253,28 +1253,28 @@ int SerializedRig::loadTruck(String fname, SceneManager *manager, SceneNode *par
 			int result = sscanf(c.line,"%i, %i, %f, %f, %i, %i, %s &f", &id1, &id2, &sbound, &lbound, &triggershort, &triggerlong, options, boundarytimer);
 			if (result < 6 || result == EOF)
 			{
-				LogManager::getSingleton().logMessage("Error parsing File (Triggers) " + String(fname) +" c.line " + StringConverter::toString(c.linecounter) + ". trying to continue ...");
+				LOG("Error parsing File (Triggers) " + String(fname) +" c.line " + TOSTRING(c.linecounter) + ". trying to continue ...");
 				continue;
 			}
 			// checks ...
 			if(free_beam >= MAX_BEAMS)
 			{
-				LogManager::getSingleton().logMessage("Triggers, beams limit reached ("+StringConverter::toString(MAX_BEAMS)+"): " + String(fname) +" c.line " + StringConverter::toString(c.linecounter) + ". trying to continue ...");
+				LOG("Triggers, beams limit reached ("+TOSTRING(MAX_BEAMS)+"): " + String(fname) +" c.line " + TOSTRING(c.linecounter) + ". trying to continue ...");
 				continue;
 			}
 			if(free_shock >= MAX_BEAMS)
 			{
-				LogManager::getSingleton().logMessage("Triggers limit reached ("+StringConverter::toString(MAX_SHOCKS)+"): " + String(fname) +" c.line " + StringConverter::toString(c.linecounter) + ". trying to continue ...");
+				LOG("Triggers limit reached ("+TOSTRING(MAX_SHOCKS)+"): " + String(fname) +" c.line " + TOSTRING(c.linecounter) + ". trying to continue ...");
 				continue;
 			}
 			if (id1>=free_node || id2>=free_node)
 			{
-				LogManager::getSingleton().logMessage("Error: unknown node number in Triggers section ("+StringConverter::toString(id1)+","+StringConverter::toString(id2)+")");
+				LOG("Error: unknown node number in Triggers section ("+TOSTRING(id1)+","+TOSTRING(id2)+")");
 				exit(576);
 			}
 			if ((triggershort < 1 || triggershort > MAX_COMMANDS) || ((triggerlong < 1 || triggerlong > MAX_COMMANDS) && triggerlong !=-1 && triggerlong !=0))
 			{
-				LogManager::getSingleton().logMessage("Error: Wrong command-eventnumber (Triggers) c.line " + StringConverter::toString(c.linecounter) + ". Trigger deactivated.");
+				LOG("Error: Wrong command-eventnumber (Triggers) c.line " + TOSTRING(c.linecounter) + ". Trigger deactivated.");
 				continue;
 			}
 			// options
@@ -1320,7 +1320,7 @@ int SerializedRig::loadTruck(String fname, SceneManager *manager, SceneNode *par
 			beams[pos].bounded=SHOCK2;
 
 			if (triggerdebug)
-				LogManager::getSingleton().logMessage("Trigger added. BeamID " + StringConverter::toString(pos) +  " c.line#: " + StringConverter::toString(c.linecounter));
+				LOG("Trigger added. BeamID " + TOSTRING(pos) +  " c.line#: " + TOSTRING(c.linecounter));
 			beams[pos].shock = &shocks[free_shock];
 			shocks[free_shock].beamid = pos;
 			shocks[free_shock].trigger_switch_state = 0.0f;   // used as bool and countdowntimer, dont touch!
@@ -1364,24 +1364,24 @@ int SerializedRig::loadTruck(String fname, SceneManager *manager, SceneNode *par
 			int result = sscanf(c.line,"%i, %i, %f, %f, %f, %f, %f, %s", &id1, &id2, &s, &d, &sbound, &lbound, &precomp, options);
 			if (result < 7 || result == EOF)
 			{
-				LogManager::getSingleton().logMessage("Error parsing File (Shock) " + String(fname) +" c.line " + StringConverter::toString(c.linecounter) + ". trying to continue ...");
+				LOG("Error parsing File (Shock) " + String(fname) +" c.line " + TOSTRING(c.linecounter) + ". trying to continue ...");
 				continue;
 			}
 
 			// checks ...
 			if(free_beam >= MAX_BEAMS)
 			{
-				LogManager::getSingleton().logMessage("beams limit reached ("+StringConverter::toString(MAX_BEAMS)+"): " + String(fname) +" c.line " + StringConverter::toString(c.linecounter) + ". trying to continue ...");
+				LOG("beams limit reached ("+TOSTRING(MAX_BEAMS)+"): " + String(fname) +" c.line " + TOSTRING(c.linecounter) + ". trying to continue ...");
 				continue;
 			}
 			if(free_shock >= MAX_BEAMS)
 			{
-				LogManager::getSingleton().logMessage("shock limit reached ("+StringConverter::toString(MAX_SHOCKS)+"): " + String(fname) +" c.line " + StringConverter::toString(c.linecounter) + ". trying to continue ...");
+				LOG("shock limit reached ("+TOSTRING(MAX_SHOCKS)+"): " + String(fname) +" c.line " + TOSTRING(c.linecounter) + ". trying to continue ...");
 				continue;
 			}
 			if (id1>=free_node || id2>=free_node)
 			{
-				LogManager::getSingleton().logMessage("Error: unknown node number in shocks section ("+StringConverter::toString(id1)+","+StringConverter::toString(id2)+")");
+				LOG("Error: unknown node number in shocks section ("+TOSTRING(id1)+","+TOSTRING(id2)+")");
 				exit(4);
 			}
 
@@ -1441,30 +1441,30 @@ int SerializedRig::loadTruck(String fname, SceneManager *manager, SceneNode *par
 
 			if (result < 13 || result == EOF)
 			{
-				LogManager::getSingleton().logMessage("Error parsing File (Shock) " + String(fname) +" c.line " + StringConverter::toString(c.linecounter) + ". trying to continue ...");
+				LOG("Error parsing File (Shock) " + String(fname) +" c.line " + TOSTRING(c.linecounter) + ". trying to continue ...");
 				continue;
 			}
 
 			// checks ...
 			if(free_beam >= MAX_BEAMS)
 			{
-				LogManager::getSingleton().logMessage("beams limit reached ("+StringConverter::toString(MAX_BEAMS)+"): " + String(fname) +" c.line " + StringConverter::toString(c.linecounter) + ". trying to continue ...");
+				LOG("beams limit reached ("+TOSTRING(MAX_BEAMS)+"): " + String(fname) +" c.line " + TOSTRING(c.linecounter) + ". trying to continue ...");
 				continue;
 			}
 			if(free_shock >= MAX_BEAMS)
 			{
-				LogManager::getSingleton().logMessage("shock limit reached ("+StringConverter::toString(MAX_SHOCKS)+"): " + String(fname) +" c.line " + StringConverter::toString(c.linecounter) + ". trying to continue ...");
+				LOG("shock limit reached ("+TOSTRING(MAX_SHOCKS)+"): " + String(fname) +" c.line " + TOSTRING(c.linecounter) + ". trying to continue ...");
 				continue;
 			}
 			if (id1>=free_node || id2>=free_node)
 			{
-				LogManager::getSingleton().logMessage("Error: unknown node number in shocks2 section ("+StringConverter::toString(id1)+","+StringConverter::toString(id2)+")");
+				LOG("Error: unknown node number in shocks2 section ("+TOSTRING(id1)+","+TOSTRING(id2)+")");
 				exit(4);
 			}
 
 			if ( sin == -1.0f || din == -1.0f || psin == -1.0f || pdin == -1.0f || sout == -1.0f || dout == -1.0f || psout == -1.0f || pdout == -1.0f || sbound == -1.0f || lbound == -1.0f || precomp == -1.0f)
 			{
-				LogManager::getSingleton().logMessage("Error: Wrong values in shocks2 section ("+StringConverter::toString(id1)+","+StringConverter::toString(id2)+")");
+				LOG("Error: Wrong values in shocks2 section ("+TOSTRING(id1)+","+TOSTRING(id2)+")");
 				exit(123);
 			}
 
@@ -1504,13 +1504,13 @@ int SerializedRig::loadTruck(String fname, SceneManager *manager, SceneNode *par
 
 							if (lbound < 0)
 							{
-								LogManager::getSingleton().logMessage("Error parsing File (Shocks) " + String(fname) +" c.line " + StringConverter::toString(c.linecounter) + ". Metric shock length calculation failed, longbound less then beams spawn length, reset to beams spawn length (longbound=0).");
+								LOG("Error parsing File (Shocks) " + String(fname) +" c.line " + TOSTRING(c.linecounter) + ". Metric shock length calculation failed, longbound less then beams spawn length, reset to beams spawn length (longbound=0).");
 								lbound = 0.0f;
 							}
 
 							if (sbound > 1)
 							{
-								LogManager::getSingleton().logMessage("Error parsing File (Shocks) " + String(fname) +" c.line " + StringConverter::toString(c.linecounter) + ". Metric shock length calculation failed, shortbound less then 0 meters, reset to 0 meters (shortbound=1).");
+								LOG("Error parsing File (Shocks) " + String(fname) +" c.line " + TOSTRING(c.linecounter) + ". Metric shock length calculation failed, shortbound less then 0 meters, reset to 0 meters (shortbound=1).");
 								sbound = 1.0f;
 							}
 						}
@@ -1542,13 +1542,13 @@ int SerializedRig::loadTruck(String fname, SceneManager *manager, SceneNode *par
 			int id;
 			int result = sscanf(c.line,"%i",&id);
 			if (result < 1 || result == EOF) {
-				LogManager::getSingleton().logMessage("Error parsing File (Fixes) " + String(fname) +" c.line " + StringConverter::toString(c.linecounter) + ". trying to continue ...");
+				LOG("Error parsing File (Fixes) " + String(fname) +" c.line " + TOSTRING(c.linecounter) + ". trying to continue ...");
 				continue;
 			}
 			if (id>=free_node)
 			{
-				LogManager::getSingleton().logMessage("Error: unknown node number in fixes section ("
-					+StringConverter::toString(id)+")");
+				LOG("Error: unknown node number in fixes section ("
+					+TOSTRING(id)+")");
 				exit(5);
 			};
 			nodes[id].locked=1;
@@ -1568,7 +1568,7 @@ int SerializedRig::loadTruck(String fname, SceneManager *manager, SceneNode *par
 			int result = sscanf(c.line,"%i, %i, %f, %s %f, %f, %s %s",&id1,&id2,&ratio,options,&startDelay,&stopDelay,startFunction,stopFunction);
 			if (result < 3 || result == EOF)
 			{
-				LogManager::getSingleton().logMessage("Error parsing File (Hydro) " + String(fname) +" c.line " + StringConverter::toString(c.linecounter) + ". trying to continue ...");
+				LOG("Error parsing File (Hydro) " + String(fname) +" c.line " + TOSTRING(c.linecounter) + ". trying to continue ...");
 				continue;
 			}
 
@@ -1589,19 +1589,19 @@ int SerializedRig::loadTruck(String fname, SceneManager *manager, SceneNode *par
 
 			if (id1>=free_node || id2>=free_node)
 			{
-				LogManager::getSingleton().logMessage("Error: unknown node number in hydros section ("
-					+StringConverter::toString(id1)+","+StringConverter::toString(id2)+")");
+				LOG("Error: unknown node number in hydros section ("
+					+TOSTRING(id1)+","+TOSTRING(id2)+")");
 				exit(6);
 			};
 
 			if(free_beam >= MAX_BEAMS)
 			{
-				LogManager::getSingleton().logMessage("beams limit reached ("+StringConverter::toString(MAX_BEAMS)+"): " + String(fname) +" c.line " + StringConverter::toString(c.linecounter) + ". trying to continue ...");
+				LOG("beams limit reached ("+TOSTRING(MAX_BEAMS)+"): " + String(fname) +" c.line " + TOSTRING(c.linecounter) + ". trying to continue ...");
 				continue;
 			}
 			if(free_hydro >= MAX_HYDROS)
 			{
-				LogManager::getSingleton().logMessage("hydros limit reached ("+StringConverter::toString(MAX_HYDROS)+"): " + String(fname) +" c.line " + StringConverter::toString(c.linecounter) + ". trying to continue ...");
+				LOG("hydros limit reached ("+TOSTRING(MAX_HYDROS)+"): " + String(fname) +" c.line " + TOSTRING(c.linecounter) + ". trying to continue ...");
 				continue;
 			}
 			//            printf("beam : %i %i\n", id1, id2);
@@ -1677,7 +1677,7 @@ int SerializedRig::loadTruck(String fname, SceneManager *manager, SceneNode *par
 			Ogre::StringVector options = Ogre::StringUtil::split(String(c.line), ",");
 			if (options.size() < 4)
 			{
-				LogManager::getSingleton().logMessage("Error parsing File (Animator) " + String(fname) +" c.line " + StringConverter::toString(c.linecounter) + ". trying to continue ...");
+				LOG("Error parsing File (Animator) " + String(fname) +" c.line " + TOSTRING(c.linecounter) + ". trying to continue ...");
 				continue;
 			}
 			// the required values
@@ -1700,18 +1700,18 @@ int SerializedRig::loadTruck(String fname, SceneManager *manager, SceneNode *par
 
 			if (id1>=free_node || id2>=free_node)
 			{
-				LogManager::getSingleton().logMessage("Error: unknown node number in animators section ("+StringConverter::toString(id1)+","+StringConverter::toString(id2)+")");
+				LOG("Error: unknown node number in animators section ("+TOSTRING(id1)+","+TOSTRING(id2)+")");
 				exit(6);
 			}
 
 			if(free_beam >= MAX_BEAMS)
 			{
-				LogManager::getSingleton().logMessage("beams limit reached ("+StringConverter::toString(MAX_BEAMS)+"): " + String(fname) +" c.line " + StringConverter::toString(c.linecounter) + ". trying to continue ...");
+				LOG("beams limit reached ("+TOSTRING(MAX_BEAMS)+"): " + String(fname) +" c.line " + TOSTRING(c.linecounter) + ". trying to continue ...");
 				continue;
 			}
 			if(free_hydro >= MAX_HYDROS)
 			{
-				LogManager::getSingleton().logMessage("hydros limit reached (via animators) ("+StringConverter::toString(MAX_HYDROS)+"): " + String(fname) +" c.line " + StringConverter::toString(c.linecounter) + ". trying to continue ...");
+				LOG("hydros limit reached (via animators) ("+TOSTRING(MAX_HYDROS)+"): " + String(fname) +" c.line " + TOSTRING(c.linecounter) + ". trying to continue ...");
 				continue;
 			}
 
@@ -1798,9 +1798,9 @@ int SerializedRig::loadTruck(String fname, SceneManager *manager, SceneNode *par
 				else if (arg == "rudderboat")     { beam->animFlags |= (ANIM_FLAG_BRUDDER); }
 
 				if (beam->animFlags == 0)
-					LogManager::getSingleton().logMessage("Error parsing File (animators) " + String(fname) +" c.line " + StringConverter::toString(c.linecounter) + ". Failed to identify source.");
+					LOG("Error parsing File (animators) " + String(fname) +" c.line " + TOSTRING(c.linecounter) + ". Failed to identify source.");
 				else
-					LogManager::getSingleton().logMessage("Animator source set: with flag " +StringConverter::toString(beams[pos].animFlags));
+					LOG("Animator source set: with flag " +TOSTRING(beams[pos].animFlags));
 			}
 
 		}
@@ -1814,7 +1814,7 @@ int SerializedRig::loadTruck(String fname, SceneManager *manager, SceneNode *par
 			int rays, node1, node2, snode, braked, propulsed, torquenode;
 			int result = sscanf(c.line,"%f, %f, %i, %i, %i, %i, %i, %i, %i, %f, %f, %f, %s %s",&radius,&width,&rays,&node1,&node2,&snode,&braked,&propulsed,&torquenode,&mass,&spring,&damp, texf, texb);
 			if (result < 14 || result == EOF) {
-				LogManager::getSingleton().logMessage("Error parsing File (Wheel) " + String(fname) +" c.line " + StringConverter::toString(c.linecounter) + ". trying to continue ...");
+				LOG("Error parsing File (Wheel) " + String(fname) +" c.line " + TOSTRING(c.linecounter) + ". trying to continue ...");
 				continue;
 			}
 			addWheel(manager, parent, radius,width,rays,node1,node2,snode,braked,propulsed, torquenode, mass, spring, damp, texf, texb);
@@ -1828,7 +1828,7 @@ int SerializedRig::loadTruck(String fname, SceneManager *manager, SceneNode *par
 			int rays, node1, node2, snode, braked, propulsed, torquenode;
 			int result = sscanf(c.line,"%f, %f, %f, %i, %i, %i, %i, %i, %i, %i, %f, %f, %f, %f, %f, %s %s",&radius,&radius2,&width,&rays,&node1,&node2,&snode,&braked,&propulsed,&torquenode,&mass,&spring,&damp,&spring2,&damp2, texf, texb);
 			if (result < 17 || result == EOF) {
-				LogManager::getSingleton().logMessage("Error parsing File (Wheel2) " + String(fname) +" c.line " + StringConverter::toString(c.linecounter) + ". trying to continue ...");
+				LOG("Error parsing File (Wheel2) " + String(fname) +" c.line " + TOSTRING(c.linecounter) + ". trying to continue ...");
 				continue;
 			}
 			if (enable_wheel2)
@@ -1846,7 +1846,7 @@ int SerializedRig::loadTruck(String fname, SceneManager *manager, SceneNode *par
 			int rays, node1, node2, snode, braked, propulsed, torquenode;
 			int result = sscanf(c.line,"%f, %f, %f, %i, %i, %i, %i, %i, %i, %i, %f, %f, %f, %c, %s %s",&radius,&rimradius,&width,&rays,&node1,&node2,&snode,&braked,&propulsed,&torquenode,&mass,&spring,&damp, &side, meshw, texb);
 			if (result < 16 || result == EOF) {
-				LogManager::getSingleton().logMessage("Error parsing File (MeshWheel) " + String(fname) +" c.line " + StringConverter::toString(c.linecounter) + ". trying to continue ...");
+				LOG("Error parsing File (MeshWheel) " + String(fname) +" c.line " + TOSTRING(c.linecounter) + ". trying to continue ...");
 				continue;
 			}
 			addWheel(manager, parent, radius,width,rays,node1,node2,snode,braked,propulsed, torquenode, mass, spring, damp, meshw, texb, true, rimradius, side!='r');
@@ -1856,12 +1856,12 @@ int SerializedRig::loadTruck(String fname, SceneManager *manager, SceneNode *par
 			//parse globals
 			int result = sscanf(c.line,"%f, %f, %s",&truckmass, &loadmass, texname);
 			if (result < 2 || result == EOF) {
-				LogManager::getSingleton().logMessage("Error parsing File (Globals) " + String(fname) +" c.line " + StringConverter::toString(c.linecounter) + ". trying to continue ...");
+				LOG("Error parsing File (Globals) " + String(fname) +" c.line " + TOSTRING(c.linecounter) + ". trying to continue ...");
 				continue;
 			}
 			//
-			LogManager::getSingleton().logMessage("BEAM: c.line: '"+String(c.line)+"'");
-			LogManager::getSingleton().logMessage("BEAM: texname: '"+String(texname)+"'");
+			LOG("BEAM: c.line: '"+String(c.line)+"'");
+			LOG("BEAM: texname: '"+String(texname)+"'");
 
 
 			// check for skins
@@ -1877,11 +1877,11 @@ int SerializedRig::loadTruck(String fname, SceneManager *manager, SceneNode *par
 			MaterialPtr mat=(MaterialPtr)(MaterialManager::getSingleton().getByName(texname));
 			if(mat.getPointer() == 0)
 			{
-				LogManager::getSingleton().logMessage("Material '" + String(texname) + "' used in Section 'globals' not found! We will try to use the material 'tracks/black' instead." + String(fname) +" c.line " + StringConverter::toString(c.linecounter) + ". trying to continue ...");
+				LOG("Material '" + String(texname) + "' used in Section 'globals' not found! We will try to use the material 'tracks/black' instead." + String(fname) +" c.line " + TOSTRING(c.linecounter) + ". trying to continue ...");
 				mat=(MaterialPtr)(MaterialManager::getSingleton().getByName("tracks/black"));
 				if(mat.getPointer() == 0)
 				{
-					LogManager::getSingleton().logMessage("Material not found! Try to ensure that tracks/black exists and retry.");
+					LOG("Material not found! Try to ensure that tracks/black exists and retry.");
 					exit(124);
 				}
 			}
@@ -1894,7 +1894,7 @@ int SerializedRig::loadTruck(String fname, SceneManager *manager, SceneNode *par
 			int nodepos, nodedir, dir;
 			int result = sscanf(c.line,"%i, %i, %i",&nodepos,&nodedir,&dir);
 			if (result < 3 || result == EOF) {
-				LogManager::getSingleton().logMessage("Error parsing File (Camera) " + String(fname) +" c.line " + StringConverter::toString(c.linecounter) + ". trying to continue ...");
+				LOG("Error parsing File (Camera) " + String(fname) +" c.line " + TOSTRING(c.linecounter) + ". trying to continue ...");
 				continue;
 			}
 			addCamera(nodepos, nodedir, dir);
@@ -1909,7 +1909,7 @@ int SerializedRig::loadTruck(String fname, SceneManager *manager, SceneNode *par
 			Ogre::StringVector tmp = Ogre::StringUtil::split(string(c.line), ", ");
 			if (tmp.size() < 7)
 			{
-				LogManager::getSingleton().logMessage("Error parsing File (Engine) " + String(fname) +" c.line " + StringConverter::toString(c.linecounter) + ". trying to continue ...");
+				LOG("Error parsing File (Engine) " + String(fname) +" c.line " + TOSTRING(c.linecounter) + ". trying to continue ...");
 				continue;
 			}
 
@@ -1932,7 +1932,7 @@ int SerializedRig::loadTruck(String fname, SceneManager *manager, SceneNode *par
 			}
 			if (gears.size() < 5) // 5 -2 = 3, 2 extra gears that don't count, one for reverse and one for neutral
 			{
-				LogManager::getSingleton().logMessage("Trucks with less than 3 gears are not supported! " + String(fname) +" c.line " + StringConverter::toString(c.linecounter) + ". trying to continue ...");
+				LOG("Trucks with less than 3 gears are not supported! " + String(fname) +" c.line " + TOSTRING(c.linecounter) + ". trying to continue ...");
 				continue;
 			}
 			//if (audio) audio->setupEngine();
@@ -1940,7 +1940,7 @@ int SerializedRig::loadTruck(String fname, SceneManager *manager, SceneNode *par
 			engine = new BeamEngine(minrpm, maxrpm, torque, gears, dratio, trucknum);
 
 			// are there any startup shifter settings?
-			Ogre::String gearboxMode = SETTINGS.getSetting("GearboxMode");
+			Ogre::String gearboxMode = SSETTING("GearboxMode");
 			if (gearboxMode == "Manual shift - Auto clutch")
 				engine->setAutoMode(SEMIAUTO);
 			else if (gearboxMode == "Fully Manual: sequential shift")
@@ -1960,12 +1960,12 @@ int SerializedRig::loadTruck(String fname, SceneManager *manager, SceneNode *par
 			float x, y;
 			int result = sscanf(c.line,"%i, %f, %f", &id, &x, &y);
 			if (result < 3 || result == EOF) {
-				LogManager::getSingleton().logMessage("Error parsing File (TexCoords) " + String(fname) +" c.line " + StringConverter::toString(c.linecounter) + ". trying to continue ...");
+				LOG("Error parsing File (TexCoords) " + String(fname) +" c.line " + TOSTRING(c.linecounter) + ". trying to continue ...");
 				continue;
 			}
 			if(free_texcoord >= MAX_BEAMS)
 			{
-				LogManager::getSingleton().logMessage("texcoords limit reached ("+StringConverter::toString(MAX_TEXCOORDS)+"): " + String(fname) +" c.line " + StringConverter::toString(c.linecounter) + ". trying to continue ...");
+				LOG("texcoords limit reached ("+TOSTRING(MAX_TEXCOORDS)+"): " + String(fname) +" c.line " + TOSTRING(c.linecounter) + ". trying to continue ...");
 				continue;
 			}
 			texcoords[free_texcoord]=Vector3(id, x, y);
@@ -1979,12 +1979,12 @@ int SerializedRig::loadTruck(String fname, SceneManager *manager, SceneNode *par
 			int id1, id2, id3;
 			int result = sscanf(c.line,"%i, %i, %i, %c", &id1, &id2, &id3,&type);
 			if (result < 3 || result == EOF) {
-				LogManager::getSingleton().logMessage("Error parsing File (Cab) " + String(fname) +" c.line " + StringConverter::toString(c.linecounter) + ". trying to continue ...");
+				LOG("Error parsing File (Cab) " + String(fname) +" c.line " + TOSTRING(c.linecounter) + ". trying to continue ...");
 				continue;
 			}
 			if(free_cab >= MAX_CABS)
 			{
-				LogManager::getSingleton().logMessage("cabs limit reached ("+StringConverter::toString(MAX_CABS)+"): " + String(fname) +" c.line " + StringConverter::toString(c.linecounter) + ". trying to continue ...");
+				LOG("cabs limit reached ("+TOSTRING(MAX_CABS)+"): " + String(fname) +" c.line " + TOSTRING(c.linecounter) + ". trying to continue ...");
 				continue;
 			}
 			cabs[free_cab*3]=id1;
@@ -1992,7 +1992,7 @@ int SerializedRig::loadTruck(String fname, SceneManager *manager, SceneNode *par
 			cabs[free_cab*3+2]=id3;
 			if(free_collcab >= MAX_CABS)
 			{
-				LogManager::getSingleton().logMessage("unable to create cabs: cabs limit reached ("+StringConverter::toString(MAX_CABS)+"): " + String(fname) +" c.line " + StringConverter::toString(c.linecounter) + ". trying to continue ...");
+				LOG("unable to create cabs: cabs limit reached ("+TOSTRING(MAX_CABS)+"): " + String(fname) +" c.line " + TOSTRING(c.linecounter) + ". trying to continue ...");
 				continue;
 			}
 			if (type=='c') {collcabs[free_collcab]=free_cab; collcabstype[free_collcab]=0; free_collcab++;};
@@ -2006,7 +2006,7 @@ int SerializedRig::loadTruck(String fname, SceneManager *manager, SceneNode *par
 
 				if(free_collcab >= MAX_CABS || free_buoycab >= MAX_CABS)
 				{
-					LogManager::getSingleton().logMessage("unable to create buoycabs: cabs limit reached ("+StringConverter::toString(MAX_CABS)+"): " + String(fname) +" c.line " + StringConverter::toString(c.linecounter) + ". trying to continue ...");
+					LOG("unable to create buoycabs: cabs limit reached ("+TOSTRING(MAX_CABS)+"): " + String(fname) +" c.line " + TOSTRING(c.linecounter) + ". trying to continue ...");
 					continue;
 				}
 				collcabs[free_collcab]=free_cab;
@@ -2037,7 +2037,7 @@ int SerializedRig::loadTruck(String fname, SceneManager *manager, SceneNode *par
 				char opt='n';
 				result = sscanf(c.line,"%i, %i, %f, %f, %f, %i, %i, %c, %s %f, %f, %s %s", &id1, &id2, &rateShort, &shortl, &longl, &keys, &keyl, &opt, descr, &startDelay, &stopDelay, startFunction, stopFunction);
 				if (result < 7 || result == EOF) {
-					LogManager::getSingleton().logMessage("Error parsing File (Command) " + String(fname) +" c.line " + StringConverter::toString(c.linecounter) + ". trying to continue ...");
+					LOG("Error parsing File (Command) " + String(fname) +" c.line " + TOSTRING(c.linecounter) + ". trying to continue ...");
 					continue;
 				}
 				options[0] = opt;
@@ -2048,17 +2048,17 @@ int SerializedRig::loadTruck(String fname, SceneManager *manager, SceneNode *par
 			{
 				result = sscanf(c.line,"%i, %i, %f, %f, %f, %f, %i, %i, %s %s %f,%f,%s %s", &id1, &id2, &rateShort, &rateLong, &shortl, &longl, &keys, &keyl, options, descr, &startDelay, &stopDelay, startFunction, stopFunction);
 				if (result < 8 || result == EOF) {
-					LogManager::getSingleton().logMessage("Error parsing File (Command) " + String(fname) +" c.line " + StringConverter::toString(c.linecounter) + ". trying to continue ...");
+					LOG("Error parsing File (Command) " + String(fname) +" c.line " + TOSTRING(c.linecounter) + ". trying to continue ...");
 					continue;
 				}
-				//LogManager::getSingleton().logMessage("added command2: " + String(options)+ ", " + String(descr));
-				//LogManager::getSingleton().logMessage(String(c.line));
+				//LOG("added command2: " + String(options)+ ", " + String(descr));
+				//LOG(String(c.line));
 			}
 
 			//verify array limits so we dont overflow
 			if(keys >= MAX_COMMANDS || keyl >= MAX_COMMANDS)
 			{
-					LogManager::getSingleton().logMessage("Error parsing File (Command) " + String(fname) +" c.line " + StringConverter::toString(c.linecounter) + ". Command key invalid. trying to continue ...");
+					LOG("Error parsing File (Command) " + String(fname) +" c.line " + TOSTRING(c.linecounter) + ". Command key invalid. trying to continue ...");
 					continue;
 			}
 
@@ -2075,7 +2075,7 @@ int SerializedRig::loadTruck(String fname, SceneManager *manager, SceneNode *par
 
 			if(free_beam >= MAX_BEAMS)
 			{
-				LogManager::getSingleton().logMessage("cannot create command: beams limit reached ("+StringConverter::toString(MAX_BEAMS)+"): " + String(fname) +" c.line " + StringConverter::toString(c.linecounter) + ". trying to continue ...");
+				LOG("cannot create command: beams limit reached ("+TOSTRING(MAX_BEAMS)+"): " + String(fname) +" c.line " + TOSTRING(c.linecounter) + ". trying to continue ...");
 				continue;
 			}
 
@@ -2092,7 +2092,7 @@ int SerializedRig::loadTruck(String fname, SceneManager *manager, SceneNode *par
 					case 'c':
 						if(beams[pos].isOnePressMode>0)
 						{
-							LogManager::getSingleton().logMessage("Command cannot be one-pressed and self centering at the same time!" + String(fname) +" c.line " + StringConverter::toString(c.linecounter) + ". trying to continue ...");
+							LOG("Command cannot be one-pressed and self centering at the same time!" + String(fname) +" c.line " + TOSTRING(c.linecounter) + ". trying to continue ...");
 							break;
 						}
 						beams[pos].iscentering=true;
@@ -2100,12 +2100,12 @@ int SerializedRig::loadTruck(String fname, SceneManager *manager, SceneNode *par
 					case 'p':
 						if(beams[pos].iscentering)
 						{
-							LogManager::getSingleton().logMessage("Command cannot be one-pressed and self centering at the same time!" + String(fname) +" c.line " + StringConverter::toString(c.linecounter) + ". trying to continue ...");
+							LOG("Command cannot be one-pressed and self centering at the same time!" + String(fname) +" c.line " + TOSTRING(c.linecounter) + ". trying to continue ...");
 							break;
 						}
 						if(beams[pos].isOnePressMode>0)
 						{
-							LogManager::getSingleton().logMessage("Command already has a one-pressed mode! All after the first are ignored!" + String(fname) +" c.line " + StringConverter::toString(c.linecounter) + ". trying to continue ...");
+							LOG("Command already has a one-pressed mode! All after the first are ignored!" + String(fname) +" c.line " + TOSTRING(c.linecounter) + ". trying to continue ...");
 							break;
 						}
 						beams[pos].isOnePressMode=1;
@@ -2113,12 +2113,12 @@ int SerializedRig::loadTruck(String fname, SceneManager *manager, SceneNode *par
 					case 'o':
 						if(beams[pos].iscentering)
 						{
-							LogManager::getSingleton().logMessage("Command cannot be one-pressed and self centering at the same time!" + String(fname) +" c.line " + StringConverter::toString(c.linecounter) + ". trying to continue ...");
+							LOG("Command cannot be one-pressed and self centering at the same time!" + String(fname) +" c.line " + TOSTRING(c.linecounter) + ". trying to continue ...");
 							break;
 						}
 						if(beams[pos].isOnePressMode>0)
 						{
-							LogManager::getSingleton().logMessage("Command already has a one-pressed mode! All after the first are ignored!" + String(fname) +" c.line " + StringConverter::toString(c.linecounter) + ". trying to continue ...");
+							LOG("Command already has a one-pressed mode! All after the first are ignored!" + String(fname) +" c.line " + TOSTRING(c.linecounter) + ". trying to continue ...");
 							break;
 						}
 						beams[pos].isOnePressMode=2;
@@ -2149,7 +2149,7 @@ int SerializedRig::loadTruck(String fname, SceneManager *manager, SceneNode *par
 			else if (strlen(descr) == 0 && commandkey[keyl].description.empty())
 				commandkey[keyl].description = "";
 
-			LogManager::getSingleton().logMessage("added command: short=" + StringConverter::toString(keys)+ ", long=" + StringConverter::toString(keyl) + ", descr=" + (descr));
+			LOG("added command: short=" + TOSTRING(keys)+ ", long=" + TOSTRING(keyl) + ", descr=" + (descr));
 			beams[pos].commandRatioShort=rateShort;
 			beams[pos].commandRatioLong=rateLong;
 			beams[pos].commandShort=shortl;
@@ -2179,13 +2179,13 @@ int SerializedRig::loadTruck(String fname, SceneManager *manager, SceneNode *par
 			int id1;
 			int result = sscanf(c.line,"%i", &id1);
 			if (result < 1 || result == EOF) {
-				LogManager::getSingleton().logMessage("Error parsing File (Contacters) " + String(fname) +" c.line " + StringConverter::toString(c.linecounter) + ". trying to continue ...");
+				LOG("Error parsing File (Contacters) " + String(fname) +" c.line " + TOSTRING(c.linecounter) + ". trying to continue ...");
 				continue;
 			}
 
 			if(free_contacter >= MAX_CONTACTERS)
 			{
-				LogManager::getSingleton().logMessage("contacters limit reached ("+StringConverter::toString(MAX_CONTACTERS)+"): " + String(fname) +" c.line " + StringConverter::toString(c.linecounter) + ". trying to continue ...");
+				LOG("contacters limit reached ("+TOSTRING(MAX_CONTACTERS)+"): " + String(fname) +" c.line " + TOSTRING(c.linecounter) + ". trying to continue ...");
 				continue;
 			}
 
@@ -2202,20 +2202,20 @@ int SerializedRig::loadTruck(String fname, SceneManager *manager, SceneNode *par
 			char option = 'n';
 			int result = sscanf(c.line,"%i, %i, %c", &id1, &id2, &option);
 			if (result < 2 || result == EOF) {
-				LogManager::getSingleton().logMessage("Error parsing File (Ropes) " + String(fname) +" c.line " + StringConverter::toString(c.linecounter) + ". trying to continue ...");
+				LOG("Error parsing File (Ropes) " + String(fname) +" c.line " + TOSTRING(c.linecounter) + ". trying to continue ...");
 				continue;
 			}
 			//add beam
 			if (id1>=free_node || id2>=free_node)
 			{
-				LogManager::getSingleton().logMessage("Error: unknown node number in ropes section ("
-					+StringConverter::toString(id1)+","+StringConverter::toString(id2)+")");
+				LOG("Error: unknown node number in ropes section ("
+					+TOSTRING(id1)+","+TOSTRING(id2)+")");
 				exit(7);
 			};
 
 			if(free_beam >= MAX_BEAMS)
 			{
-				LogManager::getSingleton().logMessage("cannot create rope: beams limit reached ("+StringConverter::toString(MAX_BEAMS)+"): " + String(fname) +" c.line " + StringConverter::toString(c.linecounter) + ". trying to continue ...");
+				LOG("cannot create rope: beams limit reached ("+TOSTRING(MAX_BEAMS)+"): " + String(fname) +" c.line " + TOSTRING(c.linecounter) + ". trying to continue ...");
 				continue;
 			}
 			int htype = BEAM_NORMAL;
@@ -2239,12 +2239,12 @@ int SerializedRig::loadTruck(String fname, SceneManager *manager, SceneNode *par
 			int id1=0, group=-1, multilock=0;
 			int result = sscanf(c.line,"%i, %i, %i", &id1, &group, &multilock);
 			if (result < 1 || result == EOF) {
-				LogManager::getSingleton().logMessage("Error parsing File (Ropeable) " + String(fname) +" c.line " + StringConverter::toString(c.linecounter) + ". trying to continue ...");
+				LOG("Error parsing File (Ropeable) " + String(fname) +" c.line " + TOSTRING(c.linecounter) + ". trying to continue ...");
 				continue;
 			}
 			if (id1>=free_node)
 			{
-				LogManager::getSingleton().logMessage("Error: unknown node number in ropables section ("+StringConverter::toString(id1)+")");
+				LOG("Error: unknown node number in ropables section ("+TOSTRING(id1)+")");
 				exit(7);
 			}
 
@@ -2267,13 +2267,13 @@ int SerializedRig::loadTruck(String fname, SceneManager *manager, SceneNode *par
 			hascommands=1;
 			int result = sscanf(c.line,"%i, %f, %f, %f, %f, %c, %f, %i", &id1, &maxl, &rate, &shortl, &longl, &option, &maxstress, &group);
 			if (result < 5 || result == EOF) {
-				LogManager::getSingleton().logMessage("Error parsing File (Ties) " + String(fname) +" c.line " + StringConverter::toString(c.linecounter) + ". trying to continue ...");
+				LOG("Error parsing File (Ties) " + String(fname) +" c.line " + TOSTRING(c.linecounter) + ". trying to continue ...");
 				continue;
 			}
 
 			if(free_beam >= MAX_BEAMS)
 			{
-				LogManager::getSingleton().logMessage("cannot create tie: beams limit reached ("+StringConverter::toString(MAX_BEAMS)+"): " + String(fname) +" c.line " + StringConverter::toString(c.linecounter) + ". trying to continue ...");
+				LOG("cannot create tie: beams limit reached ("+TOSTRING(MAX_BEAMS)+"): " + String(fname) +" c.line " + TOSTRING(c.linecounter) + ". trying to continue ...");
 				continue;
 			}
 
@@ -2316,19 +2316,19 @@ int SerializedRig::loadTruck(String fname, SceneManager *manager, SceneNode *par
 			float damp=800.0;
 			int result = sscanf(c.line,"%f, %f, %f, %i, %i, %i, %i, %i, %i, %i, %i, %f, %f", &x,&y,&z,&n1,&n2,&n3,&n4,&n5,&n6,&n7,&n8, &spring, &damp);
 			if (result < 11 || result == EOF) {
-				LogManager::getSingleton().logMessage("Error parsing File (Cinecam) " + String(fname) +" c.line " + StringConverter::toString(c.linecounter) + ". trying to continue ...");
+				LOG("Error parsing File (Cinecam) " + String(fname) +" c.line " + TOSTRING(c.linecounter) + ". trying to continue ...");
 				continue;
 			}
 
 			if(free_beam >= MAX_BEAMS)
 			{
-				LogManager::getSingleton().logMessage("cannot create cinecam: beams limit reached ("+StringConverter::toString(MAX_BEAMS)+"): " + String(fname) +" c.line " + StringConverter::toString(c.linecounter) + ". trying to continue ...");
+				LOG("cannot create cinecam: beams limit reached ("+TOSTRING(MAX_BEAMS)+"): " + String(fname) +" c.line " + TOSTRING(c.linecounter) + ". trying to continue ...");
 				continue;
 			}
 
 			if(free_node >= MAX_NODES)
 			{
-				LogManager::getSingleton().logMessage("cannot create cinecam: nodes limit reached ("+StringConverter::toString(MAX_NODES)+"): " + String(fname) +" c.line " + StringConverter::toString(c.linecounter) + ". trying to continue ...");
+				LOG("cannot create cinecam: nodes limit reached ("+TOSTRING(MAX_NODES)+"): " + String(fname) +" c.line " + TOSTRING(c.linecounter) + ". trying to continue ...");
 				continue;
 			}
 
@@ -2388,7 +2388,7 @@ int SerializedRig::loadTruck(String fname, SceneManager *manager, SceneNode *par
 				result = sscanf(c.line,"%i, %i, %i, %f, %f, %c, %i, %i, %f %s", &ref, &nx, &ny, &ox, &oy, &type, &controlnumber, &blinkdelay, &size, matname);
 				if (result < 5 || result == EOF)
 				{
-					LogManager::getSingleton().logMessage("Error parsing File (Flares) " + String(fname) +" c.line " + StringConverter::toString(c.linecounter) + ". trying to continue ...");
+					LOG("Error parsing File (Flares) " + String(fname) +" c.line " + TOSTRING(c.linecounter) + ". trying to continue ...");
 					continue;
 				}
 			} else if(mode == BTS_FLARES2)
@@ -2397,7 +2397,7 @@ int SerializedRig::loadTruck(String fname, SceneManager *manager, SceneNode *par
 				result = sscanf(c.line,"%i, %i, %i, %f, %f, %f, %c, %i, %i, %f %s", &ref, &nx, &ny, &ox, &oy, &oz, &type, &controlnumber, &blinkdelay, &size, matname);
 				if (result < 5 || result == EOF)
 				{
-					LogManager::getSingleton().logMessage("Error parsing File (Flares) " + String(fname) +" c.line " + StringConverter::toString(c.linecounter) + ". trying to continue ...");
+					LOG("Error parsing File (Flares) " + String(fname) +" c.line " + TOSTRING(c.linecounter) + ". trying to continue ...");
 					continue;
 				}
 
@@ -2425,16 +2425,16 @@ int SerializedRig::loadTruck(String fname, SceneManager *manager, SceneNode *par
 			else if ((size == -2 && type != 'f') || size == -1)
 				size = 0.5;
 
-			//LogManager::getSingleton().logMessage(StringConverter::toString(controlnumber));
+			//LOG(TOSTRING(controlnumber));
 			if(controlnumber < -1 || controlnumber > 500)
 			{
-				LogManager::getSingleton().logMessage("Error parsing File (Flares) " + String(fname) +" c.line " + StringConverter::toString(c.linecounter) + ". Controlnumber must be between -1 and 500! trying to continue ...");
+				LOG("Error parsing File (Flares) " + String(fname) +" c.line " + TOSTRING(c.linecounter) + ". Controlnumber must be between -1 and 500! trying to continue ...");
 				continue;
 			}
-			//LogManager::getSingleton().logMessage(StringConverter::toString(blinkdelay));
+			//LOG(TOSTRING(blinkdelay));
 			if(blinkdelay < -1 || blinkdelay > 60000)
 			{
-				LogManager::getSingleton().logMessage("Error parsing File (Flares) " + String(fname) +" c.line " + StringConverter::toString(c.linecounter) + ". Blinkdelay must be between 0 and 60000! trying to continue ...");
+				LOG("Error parsing File (Flares) " + String(fname) +" c.line " + TOSTRING(c.linecounter) + ". Blinkdelay must be between 0 and 60000! trying to continue ...");
 				continue;
 			}
 			flare_t f;
@@ -2479,7 +2479,7 @@ int SerializedRig::loadTruck(String fname, SceneManager *manager, SceneNode *par
 				f.snode->attachObject(f.bbs);
 			f.isVisible=true;
 			f.light=NULL;
-			//LogManager::getSingleton().logMessage("Blinkdelay2: " + StringConverter::toString(blinkdelay));
+			//LOG("Blinkdelay2: " + TOSTRING(blinkdelay));
 			if (type == 'f' && usingDefaultMaterial && flaresMode >=2 && size > 0.001)
 			{
 				// front light
@@ -2565,13 +2565,13 @@ int SerializedRig::loadTruck(String fname, SceneManager *manager, SceneNode *par
 			char meshname[256];
 			int result = sscanf(c.line,"%i, %i, %i, %f, %f, %f, %f, %f, %f, %s", &ref, &nx, &ny, &ox, &oy, &oz, &rx, &ry, &rz, meshname);
 			if (result < 10 || result == EOF) {
-				LogManager::getSingleton().logMessage("Error parsing File (Prop) " + String(fname) +" c.line " + StringConverter::toString(c.linecounter) + ". trying to continue ...");
+				LOG("Error parsing File (Prop) " + String(fname) +" c.line " + TOSTRING(c.linecounter) + ". trying to continue ...");
 				continue;
 			}
 
 			if(free_prop >= MAX_PROPS)
 			{
-				LogManager::getSingleton().logMessage("props limit reached ("+StringConverter::toString(MAX_PROPS)+"): " + String(fname) +" c.line " + StringConverter::toString(c.linecounter) + ". trying to continue ...");
+				LOG("props limit reached ("+TOSTRING(MAX_PROPS)+"): " + String(fname) +" c.line " + TOSTRING(c.linecounter) + ". trying to continue ...");
 				continue;
 			}
 			/* Initialize prop memory to avoid invalid pointers. */
@@ -2795,7 +2795,7 @@ int SerializedRig::loadTruck(String fname, SceneManager *manager, SceneNode *par
 			//parse globeams
 			int result = sscanf(c.line,"%f, %f, %f, %s", &default_deform,&default_break,&default_beam_diameter, default_beam_material);
 			if (result < 1 || result == EOF) {
-				LogManager::getSingleton().logMessage("Error parsing File (globeams) " + String(fname) +" c.line " + StringConverter::toString(c.linecounter) + ". trying to continue ...");
+				LOG("Error parsing File (globeams) " + String(fname) +" c.line " + TOSTRING(c.linecounter) + ". trying to continue ...");
 				continue;
 			}
 			fadeDist=1000.0;
@@ -2835,13 +2835,13 @@ int SerializedRig::loadTruck(String fname, SceneManager *manager, SceneNode *par
 
 			//visuals
 			if (result < 13 || result == EOF) {
-				LogManager::getSingleton().logMessage("Error parsing File (Wing) " + String(fname) +" c.line " + StringConverter::toString(c.linecounter) + ". trying to continue ...");
+				LOG("Error parsing File (Wing) " + String(fname) +" c.line " + TOSTRING(c.linecounter) + ". trying to continue ...");
 				continue;
 			}
 
 			if(free_wing >= MAX_WINGS)
 			{
-				LogManager::getSingleton().logMessage("wings limit reached ("+StringConverter::toString(MAX_WINGS)+"): " + String(fname) +" c.line " + StringConverter::toString(c.linecounter) + ". trying to continue ...");
+				LOG("wings limit reached ("+TOSTRING(MAX_WINGS)+"): " + String(fname) +" c.line " + TOSTRING(c.linecounter) + ". trying to continue ...");
 				continue;
 			}
 
@@ -2849,7 +2849,7 @@ int SerializedRig::loadTruck(String fname, SceneManager *manager, SceneNode *par
 			sprintf(wname, "wing-%s-%i",truckname, free_wing);
 			char wnamei[256];
 			sprintf(wnamei, "wingobj-%s-%i",truckname, free_wing);
-			if (liftcoef != 1.0f) LogManager::getSingleton().logMessage("Wing liftforce coefficent: " + StringConverter::toString(liftcoef));
+			if (liftcoef != 1.0f) LOG("Wing liftforce coefficent: " + TOSTRING(liftcoef));
 			wings[free_wing].fa=new FlexAirfoil(manager, wname, nodes, nds[0], nds[1], nds[2], nds[3], nds[4], nds[5], nds[6], nds[7], texname, Vector2(txes[0], txes[1]), Vector2(txes[2], txes[3]), Vector2(txes[4], txes[5]), Vector2(txes[6], txes[7]), type, cratio, mind, maxd, afname, liftcoef, aeroengines, state!=NETWORKED);
 			Entity *ec=0;
 			try
@@ -2857,7 +2857,7 @@ int SerializedRig::loadTruck(String fname, SceneManager *manager, SceneNode *par
 				ec = manager->createEntity(wnamei, wname);
 			}catch(...)
 			{
-				LogManager::getSingleton().logMessage("error loading mesh: "+String(wname));
+				LOG("error loading mesh: "+String(wname));
 				continue;
 			}
 			MaterialFunctionMapper::replaceSimpleMeshMaterials(ec, ColourValue(0.5, 1, 0));
@@ -2880,7 +2880,7 @@ int SerializedRig::loadTruck(String fname, SceneManager *manager, SceneNode *par
 					//inform wing segments
 					float span=(nodes[wings[wingstart].fa->nfrd].RelPosition-nodes[wings[free_wing-1].fa->nfld].RelPosition).length();
 					//					float chord=(nodes[wings[wingstart].fa->nfrd].Position-nodes[wings[wingstart].fa->nbrd].Position).length();
-					LogManager::getSingleton().logMessage("BEAM: Full Wing "+StringConverter::toString(wingstart)+"-"+StringConverter::toString(free_wing-1)+" SPAN="+StringConverter::toString(span)+" AREA="+StringConverter::toString(wingarea));
+					LOG("BEAM: Full Wing "+TOSTRING(wingstart)+"-"+TOSTRING(free_wing-1)+" SPAN="+TOSTRING(span)+" AREA="+TOSTRING(wingarea));
 					wings[wingstart].fa->enableInducedDrag(span,wingarea, false);
 					wings[free_wing-1].fa->enableInducedDrag(span,wingarea, true);
 					//we want also to add positional lights for first wing
@@ -2889,7 +2889,7 @@ int SerializedRig::loadTruck(String fname, SceneManager *manager, SceneNode *par
 
 						if(free_prop+4 >= MAX_PROPS)
 						{
-							LogManager::getSingleton().logMessage("cannot create wing props: props limit reached ("+StringConverter::toString(MAX_PROPS)+"): " + String(fname) +" c.line " + StringConverter::toString(c.linecounter) + ". trying to continue ...");
+							LOG("cannot create wing props: props limit reached ("+TOSTRING(MAX_PROPS)+"): " + String(fname) +" c.line " + TOSTRING(c.linecounter) + ". trying to continue ...");
 							continue;
 						}
 						//Left green
@@ -3068,7 +3068,7 @@ int SerializedRig::loadTruck(String fname, SceneManager *manager, SceneNode *par
 			{
 				int result = sscanf(c.line,"%i, %i, %i, %i, %i, %i, %f, %s", &ref, &back, &p1, &p2, &p3, &p4, &power, propfoil);
 				if (result < 8 || result == EOF) {
-					LogManager::getSingleton().logMessage("Error parsing File (Turboprop) " + String(fname) +" c.line " + StringConverter::toString(c.linecounter) + ". trying to continue ...");
+					LOG("Error parsing File (Turboprop) " + String(fname) +" c.line " + TOSTRING(c.linecounter) + ". trying to continue ...");
 					continue;
 				}
 			}
@@ -3076,7 +3076,7 @@ int SerializedRig::loadTruck(String fname, SceneManager *manager, SceneNode *par
 			{
 				int result = sscanf(c.line,"%i, %i, %i, %i, %i, %i, %i, %f, %s", &ref, &back, &p1, &p2, &p3, &p4, &couplenode, &power, propfoil);
 				if (result < 9 || result == EOF) {
-					LogManager::getSingleton().logMessage("Error parsing File (Turboprop2) " + String(fname) +" c.line " + StringConverter::toString(c.linecounter) + ". trying to continue ...");
+					LOG("Error parsing File (Turboprop2) " + String(fname) +" c.line " + TOSTRING(c.linecounter) + ". trying to continue ...");
 					continue;
 				}
 			}
@@ -3084,7 +3084,7 @@ int SerializedRig::loadTruck(String fname, SceneManager *manager, SceneNode *par
 			{
 				int result = sscanf(c.line,"%i, %i, %i, %i, %i, %i, %i, %f, %f, %s", &ref, &back, &p1, &p2, &p3, &p4, &couplenode, &power, &pitch, propfoil);
 				if (result < 10 || result == EOF) {
-					LogManager::getSingleton().logMessage("Error parsing File (Pistonprop) " + String(fname) +" c.line " + StringConverter::toString(c.linecounter) + ". trying to continue ...");
+					LOG("Error parsing File (Pistonprop) " + String(fname) +" c.line " + TOSTRING(c.linecounter) + ". trying to continue ...");
 					continue;
 				}
 				isturboprops=false;
@@ -3092,7 +3092,7 @@ int SerializedRig::loadTruck(String fname, SceneManager *manager, SceneNode *par
 
 			if(free_aeroengine >= MAX_AEROENGINES)
 			{
-				LogManager::getSingleton().logMessage("airoengine limit reached ("+StringConverter::toString(MAX_AEROENGINES)+"): " + String(fname) +" c.line " + StringConverter::toString(c.linecounter) + ". trying to continue ...");
+				LOG("airoengine limit reached ("+TOSTRING(MAX_AEROENGINES)+"): " + String(fname) +" c.line " + TOSTRING(c.linecounter) + ". trying to continue ...");
 				continue;
 			}
 
@@ -3131,7 +3131,7 @@ int SerializedRig::loadTruck(String fname, SceneManager *manager, SceneNode *par
 			char fusefoil[256];
 			int result = sscanf(c.line,"%i, %i, %f, %s", &front,&back,&width, fusefoil);
 			if (result < 4 || result == EOF) {
-				LogManager::getSingleton().logMessage("Error parsing File (Fusedrag) " + String(fname) +" c.line " + StringConverter::toString(c.linecounter) + ". trying to continue ...");
+				LOG("Error parsing File (Fusedrag) " + String(fname) +" c.line " + TOSTRING(c.linecounter) + ". trying to continue ...");
 				continue;
 			}
 			fuseAirfoil=new Airfoil(fusefoil);
@@ -3148,7 +3148,7 @@ int SerializedRig::loadTruck(String fname, SceneManager *manager, SceneNode *par
 			int result = sscanf(c.line,"%f, %c, %f, %f, %f, %f", &inertia, &type, &clutch, &shifttime, &clutchtime, &postshifttime);
 			if (result < 1 || result == EOF)
 			{
-				LogManager::getSingleton().logMessage("Error parsing File (Engoption) " + String(fname) +" c.line " + StringConverter::toString(c.linecounter) + ". trying to continue ...");
+				LOG("Error parsing File (Engoption) " + String(fname) +" c.line " + TOSTRING(c.linecounter) + ". trying to continue ...");
 				continue;
 			}
 			if (engine) engine->setOptions(inertia, type, clutch, shifttime, clutchtime, postshifttime);
@@ -3174,13 +3174,13 @@ int SerializedRig::loadTruck(String fname, SceneManager *manager, SceneNode *par
 			char stopFunction[50]="";
 			int result = sscanf(c.line,"%i, %i, %i, %i, %i, %i, %i, %i, %i, %i, %f, %i, %i, %f, %f, %s %s", &axis1, &axis2, &p1[0], &p1[1], &p1[2], &p1[3], &p2[0], &p2[1], &p2[2], &p2[3], &rate, &keys, &keyl, &startDelay, &stopDelay, startFunction, stopFunction);
 			if (result < 13 || result == EOF) {
-				LogManager::getSingleton().logMessage("Error parsing File (Rotators) " + String(fname) +" c.line " + StringConverter::toString(c.linecounter) + ". trying to continue ...");
+				LOG("Error parsing File (Rotators) " + String(fname) +" c.line " + TOSTRING(c.linecounter) + ". trying to continue ...");
 				continue;
 			}
 
 			if(free_rotator >= MAX_ROTATORS)
 			{
-				LogManager::getSingleton().logMessage("rotators limit reached ("+StringConverter::toString(MAX_ROTATORS)+"): " + String(fname) +" c.line " + StringConverter::toString(c.linecounter) + ". trying to continue ...");
+				LOG("rotators limit reached ("+TOSTRING(MAX_ROTATORS)+"): " + String(fname) +" c.line " + TOSTRING(c.linecounter) + ". trying to continue ...");
 				continue;
 			}
 			rotators[free_rotator].angle=0;
@@ -3220,14 +3220,14 @@ int SerializedRig::loadTruck(String fname, SceneManager *manager, SceneNode *par
 			float power;
 			int result = sscanf(c.line,"%i, %i, %i, %f", &ref,&back,&up, &power);
 			if (result < 4 || result == EOF) {
-				LogManager::getSingleton().logMessage("Error parsing File (Screwprops) " + String(fname) +" c.line " + StringConverter::toString(c.linecounter) + ". trying to continue ...");
+				LOG("Error parsing File (Screwprops) " + String(fname) +" c.line " + TOSTRING(c.linecounter) + ". trying to continue ...");
 				continue;
 			}
 			//if (audio) audio->setupBoat(truckmass);
 
 			if(free_screwprop >= MAX_SCREWPROPS)
 			{
-				LogManager::getSingleton().logMessage("screwprops limit reached ("+StringConverter::toString(MAX_SCREWPROPS)+"): " + String(fname) +" c.line " + StringConverter::toString(c.linecounter) + ". trying to continue ...");
+				LOG("screwprops limit reached ("+TOSTRING(MAX_SCREWPROPS)+"): " + String(fname) +" c.line " + TOSTRING(c.linecounter) + ". trying to continue ...");
 				continue;
 			}
 
@@ -3242,7 +3242,7 @@ int SerializedRig::loadTruck(String fname, SceneManager *manager, SceneNode *par
 			char value[255];
 			int result = sscanf(c.line,"%s %s", keyword, value);
 			if (result < 2 || result == EOF) {
-				LogManager::getSingleton().logMessage("Error parsing File (guisettings) " + String(fname) +" c.line " + StringConverter::toString(c.linecounter) + ". trying to continue ...");
+				LOG("Error parsing File (guisettings) " + String(fname) +" c.line " + TOSTRING(c.linecounter) + ". trying to continue ...");
 				continue;
 			}
 			if(!strncmp(keyword, "interactiveOverviewMap", 255) && strnlen(value, 255) > 0)
@@ -3326,7 +3326,7 @@ int SerializedRig::loadTruck(String fname, SceneManager *manager, SceneNode *par
 			int result = sscanf(c.line,"%i, %i, %f %s", &id1, &id2, &factor, material);
 			// catch some errors
 			if (result < 4 || result == EOF) {
-				LogManager::getSingleton().logMessage("Error parsing File " + String(fname) +" c.line " + StringConverter::toString(c.linecounter) + ". trying to continue ...");
+				LOG("Error parsing File " + String(fname) +" c.line " + TOSTRING(c.linecounter) + ". trying to continue ...");
 				continue;
 			}
 			exhaust_t e;
@@ -3363,13 +3363,13 @@ int SerializedRig::loadTruck(String fname, SceneManager *manager, SceneNode *par
 			int result = sscanf(c.line,"%i, %i, %s", &id1, &id2, psystem);
 			// catch some errors
 			if (result < 3 || result == EOF) {
-				LogManager::getSingleton().logMessage("Error parsing File " + String(fname) +" c.line " + StringConverter::toString(c.linecounter) + ". trying to continue ...");
+				LOG("Error parsing File " + String(fname) +" c.line " + TOSTRING(c.linecounter) + ". trying to continue ...");
 				continue;
 			}
 
 			if(free_cparticle >= MAX_CPARTICLES)
 			{
-				LogManager::getSingleton().logMessage("custom particles limit reached ("+StringConverter::toString(MAX_CPARTICLES)+"): " + String(fname) +" c.line " + StringConverter::toString(c.linecounter) + ". trying to continue ...");
+				LOG("custom particles limit reached ("+TOSTRING(MAX_CPARTICLES)+"): " + String(fname) +" c.line " + TOSTRING(c.linecounter) + ". trying to continue ...");
 				continue;
 			}
 
@@ -3395,13 +3395,13 @@ int SerializedRig::loadTruck(String fname, SceneManager *manager, SceneNode *par
 			float len, fdiam, bdiam, drthrust, abthrust;
 			int result = sscanf(c.line,"%i, %i, %i, %i, %f, %f, %f, %f, %f", &front, &back, &ref, &rev, &drthrust, &abthrust, &fdiam, &bdiam, &len);
 			if (result < 9 || result == EOF) {
-				LogManager::getSingleton().logMessage("Error parsing File (Turbojet) " + String(fname) +" c.line " + StringConverter::toString(c.linecounter) + ". trying to continue ...");
+				LOG("Error parsing File (Turbojet) " + String(fname) +" c.line " + TOSTRING(c.linecounter) + ". trying to continue ...");
 				continue;
 			}
 
 			if(free_aeroengine >= MAX_AEROENGINES)
 			{
-				LogManager::getSingleton().logMessage("airoengine limit reached ("+StringConverter::toString(MAX_AEROENGINES)+"): " + String(fname) +" c.line " + StringConverter::toString(c.linecounter) + ". trying to continue ...");
+				LOG("airoengine limit reached ("+TOSTRING(MAX_AEROENGINES)+"): " + String(fname) +" c.line " + TOSTRING(c.linecounter) + ". trying to continue ...");
 				continue;
 			}
 
@@ -3423,13 +3423,13 @@ int SerializedRig::loadTruck(String fname, SceneManager *manager, SceneNode *par
 			float d=DEFAULT_RIGIDIFIER_DAMP;
 			int result = sscanf(c.line,"%i, %i, %i, %f, %f", &na, &nb, &nc, &k, &d);
 			if (result < 3 || result == EOF) {
-				LogManager::getSingleton().logMessage("Error parsing File (rigidifier) " + String(fname) +" c.line " + StringConverter::toString(c.linecounter) + ". trying to continue ...");
+				LOG("Error parsing File (rigidifier) " + String(fname) +" c.line " + TOSTRING(c.linecounter) + ". trying to continue ...");
 				continue;
 			}
 
 			if(free_rigidifier >= MAX_RIGIDIFIERS)
 			{
-				LogManager::getSingleton().logMessage("rigidifiers limit reached ("+StringConverter::toString(MAX_RIGIDIFIERS)+"): " + String(fname) +" c.line " + StringConverter::toString(c.linecounter) + ". trying to continue ...");
+				LOG("rigidifiers limit reached ("+TOSTRING(MAX_RIGIDIFIERS)+"): " + String(fname) +" c.line " + TOSTRING(c.linecounter) + ". trying to continue ...");
 				continue;
 			}
 
@@ -3460,17 +3460,17 @@ int SerializedRig::loadTruck(String fname, SceneManager *manager, SceneNode *par
 			float maxang;
 			int result = sscanf(c.line,"%i, %i, %i, %i, %f, %f, %f, %f, %f, %f, %f, %f, %f, %f, %f", &ref, &nx, &ny, &na, &ox, &oy, &oz, &wd, &len, &maxang, &tx1, &tx2, &tx3, &tx4, &liftcoef);
 			if (result < 14 || result == EOF) {
-				LogManager::getSingleton().logMessage("Error parsing File (Airbrakes) " + String(fname) +" c.line " + StringConverter::toString(c.linecounter) + ". trying to continue ...");
+				LOG("Error parsing File (Airbrakes) " + String(fname) +" c.line " + TOSTRING(c.linecounter) + ". trying to continue ...");
 				continue;
 			}
 
 			if(free_airbrake >= MAX_AIRBRAKES)
 			{
-				LogManager::getSingleton().logMessage("airbrakes limit reached ("+StringConverter::toString(MAX_AIRBRAKES)+"): " + String(fname) +" c.line " + StringConverter::toString(c.linecounter) + ". trying to continue ...");
+				LOG("airbrakes limit reached ("+TOSTRING(MAX_AIRBRAKES)+"): " + String(fname) +" c.line " + TOSTRING(c.linecounter) + ". trying to continue ...");
 				continue;
 			}
 			if (liftcoef != 1.0f)
-				LogManager::getSingleton().logMessage("Airbrakes force coefficent: " + StringConverter::toString(liftcoef));
+				LOG("Airbrakes force coefficent: " + TOSTRING(liftcoef));
 
 			airbrakes[free_airbrake]=new Airbrake(manager, truckname, free_airbrake, &nodes[ref], &nodes[nx], &nodes[ny], &nodes[na], Vector3(ox,oy,oz), wd, len, maxang, texname, tx1,tx2,tx3,tx4,liftcoef);
 			free_airbrake++;
@@ -3484,7 +3484,7 @@ int SerializedRig::loadTruck(String fname, SceneManager *manager, SceneNode *par
 			char meshname[256];
 			int result = sscanf(c.line,"%i, %i, %i, %f, %f, %f, %f, %f, %f, %s", &ref, &nx, &ny, &ox, &oy, &oz, &rx, &ry, &rz, meshname);
 			if (result < 10 || result == EOF) {
-				LogManager::getSingleton().logMessage("Error parsing File (Flexbodies) " + String(fname) +" c.line " + StringConverter::toString(c.linecounter) + ". trying to continue ...");
+				LOG("Error parsing File (Flexbodies) " + String(fname) +" c.line " + TOSTRING(c.linecounter) + ". trying to continue ...");
 				continue;
 			}
 			Vector3 offset=Vector3(ox, oy, oz);
@@ -3498,13 +3498,13 @@ int SerializedRig::loadTruck(String fname, SceneManager *manager, SceneNode *par
 			c.linecounter++;
 			if (strncmp(c.line, "forset", 6))
 			{
-				LogManager::getSingleton().logMessage("Error parsing File (Flexbodies/forset) " + String(fname) +" c.line " + StringConverter::toString(c.linecounter) + ". No forset statement after a flexbody. trying to continue ...");
+				LOG("Error parsing File (Flexbodies/forset) " + String(fname) +" c.line " + TOSTRING(c.linecounter) + ". No forset statement after a flexbody. trying to continue ...");
 				continue;
 			}
 
 			if(free_flexbody >= MAX_FLEXBODIES)
 			{
-				LogManager::getSingleton().logMessage("flexbodies limit reached ("+StringConverter::toString(MAX_FLEXBODIES)+"): " + String(fname) +" c.line " + StringConverter::toString(c.linecounter) + ". trying to continue ...");
+				LOG("flexbodies limit reached ("+TOSTRING(MAX_FLEXBODIES)+"): " + String(fname) +" c.line " + TOSTRING(c.linecounter) + ". trying to continue ...");
 				continue;
 			}
 			flexbodies[free_flexbody]=new FlexBody(manager, nodes, free_node, meshname, uname, ref, nx, ny, offset, rot, c.line+6, materialFunctionMapper, usedSkin, (shadowmode!=0));
@@ -3517,12 +3517,12 @@ int SerializedRig::loadTruck(String fname, SceneManager *manager, SceneNode *par
 			int result = sscanf(c.line,"%i, %i, %i", &id1, &group, &lockNodes);
 			if (result < 2 || result == EOF)
 			{
-				LogManager::getSingleton().logMessage("Error parsing File (hookgroup) " + String(fname) +" c.line " + StringConverter::toString(c.linecounter) + ". Too less arguments. trying to continue ...");
+				LOG("Error parsing File (hookgroup) " + String(fname) +" c.line " + TOSTRING(c.linecounter) + ". Too less arguments. trying to continue ...");
 				continue;
 			}
 			if (id1>=free_node)
 			{
-				LogManager::getSingleton().logMessage("Error: unknown node number in hookgroup section ("+StringConverter::toString(id1)+")");
+				LOG("Error: unknown node number in hookgroup section ("+TOSTRING(id1)+")");
 				exit(7);
 			};
 			hook_t h;
@@ -3544,7 +3544,7 @@ int SerializedRig::loadTruck(String fname, SceneManager *manager, SceneNode *par
 			int result = sscanf(c.line,"%d, %s", &flareid, material);
 			if (result < 2 || result == EOF)
 			{
-				LogManager::getSingleton().logMessage("Error parsing File (materialbindings) " + String(fname) +" c.line " + StringConverter::toString(c.linecounter) + ". trying to continue ...");
+				LOG("Error parsing File (materialbindings) " + String(fname) +" c.line " + TOSTRING(c.linecounter) + ". trying to continue ...");
 				continue;
 			}
 			String materialName = String(material);
@@ -3552,7 +3552,7 @@ int SerializedRig::loadTruck(String fname, SceneManager *manager, SceneNode *par
 			MaterialPtr mat = MaterialManager::getSingleton().getByName(materialName);
 			if(mat.isNull())
 			{
-				LogManager::getSingleton().logMessage("Error in materialbindings: material " + materialName + " was not found! " + String(fname) +" c.line " + StringConverter::toString(c.linecounter) + ". trying to continue ...");
+				LOG("Error in materialbindings: material " + materialName + " was not found! " + String(fname) +" c.line " + TOSTRING(c.linecounter) + ". trying to continue ...");
 				continue;
 			}
 			//clone the material
@@ -3572,7 +3572,7 @@ int SerializedRig::loadTruck(String fname, SceneManager *manager, SceneNode *par
 			char script[256];
 			int result = sscanf(c.line,"%i, %s", &ref, script);
 			if (result < 2 || result == EOF) {
-				LogManager::getSingleton().logMessage("Error parsing File (soundsource) " + String(fname) +" c.line " + StringConverter::toString(c.linecounter) + ". trying to continue ...");
+				LOG("Error parsing File (soundsource) " + String(fname) +" c.line " + TOSTRING(c.linecounter) + ". trying to continue ...");
 				continue;
 			}
 #ifdef USE_OPENAL
@@ -3586,7 +3586,7 @@ int SerializedRig::loadTruck(String fname, SceneManager *manager, SceneNode *par
 			char script[256];
 			int result = sscanf(c.line,"%i, %i, %s", &ref, &type, script);
 			if (result < 2 || result == EOF) {
-				LogManager::getSingleton().logMessage("Error parsing File (soundsource2) " + String(fname) +" c.line " + StringConverter::toString(c.linecounter) + ". trying to continue ...");
+				LOG("Error parsing File (soundsource2) " + String(fname) +" c.line " + TOSTRING(c.linecounter) + ". trying to continue ...");
 				continue;
 			}
 #ifdef USE_OPENAL
@@ -3608,7 +3608,7 @@ int SerializedRig::loadTruck(String fname, SceneManager *manager, SceneNode *par
 			int result = sscanf(c.line,"%s %s", material, type);
 			if (result < 2 || result == EOF)
 			{
-				LogManager::getSingleton().logMessage("Error parsing File (managedmaterials) " + String(fname) +" c.line " + StringConverter::toString(c.linecounter) + ". trying to continue ...");
+				LOG("Error parsing File (managedmaterials) " + String(fname) +" c.line " + TOSTRING(c.linecounter) + ". trying to continue ...");
 				continue;
 			}
 			//first, check if work has already been done
@@ -3616,7 +3616,7 @@ int SerializedRig::loadTruck(String fname, SceneManager *manager, SceneNode *par
 			if (!tstmat.isNull())
 			{
 				//material already exists, probably because the vehicle was already spawned previously
-				LogManager::getSingleton().logMessage("Warning: managed material '" + String(material) +"' already exists");
+				LOG("Warning: managed material '" + String(material) +"' already exists");
 				continue;
 			}
 
@@ -3631,7 +3631,7 @@ int SerializedRig::loadTruck(String fname, SceneManager *manager, SceneNode *par
 				result = sscanf(c.line,"%s %s %s %s %s", material, type, maintex, dmgtex, spectex);
 				if (result < 3 || result == EOF)
 				{
-					LogManager::getSingleton().logMessage("Error parsing File (managedmaterials) " + String(fname) +" c.line " + StringConverter::toString(c.linecounter) + ". trying to continue ...");
+					LOG("Error parsing File (managedmaterials) " + String(fname) +" c.line " + TOSTRING(c.linecounter) + ". trying to continue ...");
 					continue;
 				}
 				//different cases
@@ -3645,7 +3645,7 @@ int SerializedRig::loadTruck(String fname, SceneManager *manager, SceneNode *par
 						MaterialPtr srcmat=(MaterialPtr)(MaterialManager::getSingleton().getByName("managed/flexmesh_standard/simple"));
 						if(srcmat.isNull())
 						{
-							LogManager::getSingleton().logMessage("Material 'managed/flexmesh_standard/simple' missing!");
+							LOG("Material 'managed/flexmesh_standard/simple' missing!");
 							continue;
 						}
 
@@ -3661,7 +3661,7 @@ int SerializedRig::loadTruck(String fname, SceneManager *manager, SceneNode *par
 						MaterialPtr srcmat=(MaterialPtr)(MaterialManager::getSingleton().getByName("managed/flexmesh_standard/specularonly"));
 						if(srcmat.isNull())
 						{
-							LogManager::getSingleton().logMessage("Material 'managed/flexmesh_standard/specularonly' missing!");
+							LOG("Material 'managed/flexmesh_standard/specularonly' missing!");
 							continue;
 						}
 
@@ -3686,7 +3686,7 @@ int SerializedRig::loadTruck(String fname, SceneManager *manager, SceneNode *par
 						MaterialPtr srcmat=(MaterialPtr)(MaterialManager::getSingleton().getByName("managed/flexmesh_standard/damageonly"));
 						if(srcmat.isNull())
 						{
-							LogManager::getSingleton().logMessage("Material 'managed/flexmesh_standard/damageonly' missing!");
+							LOG("Material 'managed/flexmesh_standard/damageonly' missing!");
 							continue;
 						}
 
@@ -3703,7 +3703,7 @@ int SerializedRig::loadTruck(String fname, SceneManager *manager, SceneNode *par
 						MaterialPtr srcmat=(MaterialPtr)(MaterialManager::getSingleton().getByName("managed/flexmesh_standard/speculardamage"));
 						if(srcmat.isNull())
 						{
-							LogManager::getSingleton().logMessage("Material 'managed/flexmesh_standard/speculardamage' missing!");
+							LOG("Material 'managed/flexmesh_standard/speculardamage' missing!");
 							continue;
 						}
 
@@ -3732,7 +3732,7 @@ int SerializedRig::loadTruck(String fname, SceneManager *manager, SceneNode *par
 				result = sscanf(c.line,"%s %s %s %s %s", material, type, maintex, dmgtex, spectex);
 				if (result < 3 || result == EOF)
 				{
-					LogManager::getSingleton().logMessage("Error parsing File (managedmaterials) " + String(fname) +" c.line " + StringConverter::toString(c.linecounter) + ". trying to continue ...");
+					LOG("Error parsing File (managedmaterials) " + String(fname) +" c.line " + TOSTRING(c.linecounter) + ". trying to continue ...");
 					continue;
 				}
 				//different cases
@@ -3746,7 +3746,7 @@ int SerializedRig::loadTruck(String fname, SceneManager *manager, SceneNode *par
 						MaterialPtr srcmat=(MaterialPtr)(MaterialManager::getSingleton().getByName("managed/flexmesh_transparent/simple"));
 						if(srcmat.isNull())
 						{
-							LogManager::getSingleton().logMessage("Material 'managed/flexmesh_transparent/simple' missing!");
+							LOG("Material 'managed/flexmesh_transparent/simple' missing!");
 							continue;
 						}
 
@@ -3762,7 +3762,7 @@ int SerializedRig::loadTruck(String fname, SceneManager *manager, SceneNode *par
 						MaterialPtr srcmat=(MaterialPtr)(MaterialManager::getSingleton().getByName("managed/flexmesh_transparent/specularonly"));
 						if(srcmat.isNull())
 						{
-							LogManager::getSingleton().logMessage("Material 'managed/flexmesh_transparent/specularonly' missing!");
+							LOG("Material 'managed/flexmesh_transparent/specularonly' missing!");
 							continue;
 						}
 
@@ -3787,7 +3787,7 @@ int SerializedRig::loadTruck(String fname, SceneManager *manager, SceneNode *par
 						MaterialPtr srcmat=(MaterialPtr)(MaterialManager::getSingleton().getByName("managed/flexmesh_transparent/damageonly"));
 						if(srcmat.isNull())
 						{
-							LogManager::getSingleton().logMessage("Material 'managed/flexmesh_transparent/damageonly' missing!");
+							LOG("Material 'managed/flexmesh_transparent/damageonly' missing!");
 							continue;
 						}
 
@@ -3804,7 +3804,7 @@ int SerializedRig::loadTruck(String fname, SceneManager *manager, SceneNode *par
 						MaterialPtr srcmat=(MaterialPtr)(MaterialManager::getSingleton().getByName("managed/flexmesh_transparent/speculardamage"));
 						if(srcmat.isNull())
 						{
-							LogManager::getSingleton().logMessage("Material 'managed/flexmesh_transparent/speculardamage' missing!");
+							LOG("Material 'managed/flexmesh_transparent/speculardamage' missing!");
 							continue;
 						}
 
@@ -3831,7 +3831,7 @@ int SerializedRig::loadTruck(String fname, SceneManager *manager, SceneNode *par
 				result = sscanf(c.line,"%s %s %s %s", material, type, maintex, spectex);
 				if (result < 3 || result == EOF)
 				{
-					LogManager::getSingleton().logMessage("Error parsing File (managedmaterials) " + String(fname) +" c.line " + StringConverter::toString(c.linecounter) + ". trying to continue ...");
+					LOG("Error parsing File (managedmaterials) " + String(fname) +" c.line " + TOSTRING(c.linecounter) + ". trying to continue ...");
 					continue;
 				}
 				//different cases
@@ -3842,7 +3842,7 @@ int SerializedRig::loadTruck(String fname, SceneManager *manager, SceneNode *par
 					MaterialPtr srcmat=(MaterialPtr)(MaterialManager::getSingleton().getByName("managed/mesh_standard/simple"));
 					if(srcmat.isNull())
 					{
-						LogManager::getSingleton().logMessage("Material 'managed/mesh_standard/simple' missing!");
+						LOG("Material 'managed/mesh_standard/simple' missing!");
 						continue;
 					}
 
@@ -3858,7 +3858,7 @@ int SerializedRig::loadTruck(String fname, SceneManager *manager, SceneNode *par
 					MaterialPtr srcmat=(MaterialPtr)(MaterialManager::getSingleton().getByName("managed/mesh_standard/specular"));
 					if(srcmat.isNull())
 					{
-						LogManager::getSingleton().logMessage("Material 'managed/mesh_standard/specular' missing!");
+						LOG("Material 'managed/mesh_standard/specular' missing!");
 						continue;
 					}
 
@@ -3883,7 +3883,7 @@ int SerializedRig::loadTruck(String fname, SceneManager *manager, SceneNode *par
 				result = sscanf(c.line,"%s %s %s %s", material, type, maintex, spectex);
 				if (result < 3 || result == EOF)
 				{
-					LogManager::getSingleton().logMessage("Error parsing File (managedmaterials) " + String(fname) +" c.line " + StringConverter::toString(c.linecounter) + ". trying to continue ...");
+					LOG("Error parsing File (managedmaterials) " + String(fname) +" c.line " + TOSTRING(c.linecounter) + ". trying to continue ...");
 					continue;
 				}
 				//different cases
@@ -3894,7 +3894,7 @@ int SerializedRig::loadTruck(String fname, SceneManager *manager, SceneNode *par
 					MaterialPtr srcmat=(MaterialPtr)(MaterialManager::getSingleton().getByName("managed/mesh_transparent/simple"));
 					if(srcmat.isNull())
 					{
-						LogManager::getSingleton().logMessage("Material 'managed/mesh_transparent/simple' missing!");
+						LOG("Material 'managed/mesh_transparent/simple' missing!");
 						continue;
 					}
 
@@ -3910,7 +3910,7 @@ int SerializedRig::loadTruck(String fname, SceneManager *manager, SceneNode *par
 					MaterialPtr srcmat=(MaterialPtr)(MaterialManager::getSingleton().getByName("managed/mesh_transparent/specular"));
 					if(srcmat.isNull())
 					{
-						LogManager::getSingleton().logMessage("Material 'managed/mesh_transparent/specular' missing!");
+						LOG("Material 'managed/mesh_transparent/specular' missing!");
 						continue;
 					}
 
@@ -3928,7 +3928,7 @@ int SerializedRig::loadTruck(String fname, SceneManager *manager, SceneNode *par
 			}
 			else
 			{
-				LogManager::getSingleton().logMessage("Error parsing File (managedmaterials) " + String(fname) +" c.line " + StringConverter::toString(c.linecounter) + ". Unknown effect. trying to continue ...");
+				LOG("Error parsing File (managedmaterials) " + String(fname) +" c.line " + TOSTRING(c.linecounter) + ". Unknown effect. trying to continue ...");
 				continue;
 			}
 
@@ -3948,7 +3948,7 @@ int SerializedRig::loadTruck(String fname, SceneManager *manager, SceneNode *par
 			if(strnlen(c.line,9)<8) continue;
 			int result = sscanf(c.line+7,"%d %s %s %s %s %s %s %s %s %s %s", &version, sectionName[0], sectionName[1], sectionName[2], sectionName[3], sectionName[4], sectionName[5], sectionName[6], sectionName[7], sectionName[8], sectionName[9]);
 			if (result < 2 || result == EOF) {
-				LogManager::getSingleton().logMessage("Error parsing File (section) " + String(fname) +" c.line " + StringConverter::toString(c.linecounter) + ". trying to continue ...");
+				LOG("Error parsing File (section) " + String(fname) +" c.line " + TOSTRING(c.linecounter) + ". trying to continue ...");
 				continue;
 			}
 			bool found = false;
@@ -3982,7 +3982,7 @@ int SerializedRig::loadTruck(String fname, SceneManager *manager, SceneNode *par
 			int result = sscanf(c.line,"%f", &drag);
 			if (result < 4 || result == EOF)
 			{
-				LogManager::getSingleton().logMessage("Error parsing File (advdrag) " + String(fname) +" c.line " + StringConverter::toString(c.linecounter) + ". trying to continue ...");
+				LOG("Error parsing File (advdrag) " + String(fname) +" c.line " + TOSTRING(c.linecounter) + ". trying to continue ...");
 				continue;
 			}
 			advanced_total_drag=drag;
@@ -3995,7 +3995,7 @@ int SerializedRig::loadTruck(String fname, SceneManager *manager, SceneNode *par
 
 			if(!free_wheel)
 			{
-				LogManager::getSingleton().logMessage("AXLE ERROR: the axle section must come AFTER some wheels");
+				LOG("AXLE ERROR: the axle section must come AFTER some wheels");
 				continue;
 			}
 
@@ -4009,7 +4009,7 @@ int SerializedRig::loadTruck(String fname, SceneManager *manager, SceneNode *par
 			{
 				Ogre::StringUtil::trim(*cur);
 
-				LogManager::getSingleton().logMessage("AXLE: Parsing property: [" + *cur + "]" );
+				LOG("AXLE: Parsing property: [" + *cur + "]" );
 
 				switch(cur->at(0))
 				{
@@ -4022,7 +4022,7 @@ int SerializedRig::loadTruck(String fname, SceneManager *manager, SceneNode *par
 
 						if (result < 2 )
 						{
-							LogManager::getSingleton().logMessage("AXLE: c.line did not contain enough points: " + *cur);
+							LOG("AXLE: c.line did not contain enough points: " + *cur);
 							continue;
 						}
 					}
@@ -4032,7 +4032,7 @@ int SerializedRig::loadTruck(String fname, SceneManager *manager, SceneNode *par
 
 						if (result < 2 )
 						{
-							LogManager::getSingleton().logMessage("AXLE: c.line did not contain enough points: " + *cur);
+							LOG("AXLE: c.line did not contain enough points: " + *cur);
 							continue;
 						}
 					}
@@ -4056,13 +4056,13 @@ int SerializedRig::loadTruck(String fname, SceneManager *manager, SceneNode *par
 					break;
 				}
 				case 's':
-					LogManager::getSingleton().logMessage("AXLE: selection property not yet available");
+					LOG("AXLE: selection property not yet available");
 					break;
 				case 'r':
-					LogManager::getSingleton().logMessage("AXLE: Gear ratio property not yet available");
+					LOG("AXLE: Gear ratio property not yet available");
 					break;
 				default:
-					LogManager::getSingleton().logMessage("AXLE: malformed property: " + *cur);
+					LOG("AXLE: malformed property: " + *cur);
 					break;
 				}
 
@@ -4089,15 +4089,15 @@ int SerializedRig::loadTruck(String fname, SceneManager *manager, SceneNode *par
 				// if one or the other is null
 				if( axles[free_axle]->wheel_1 < 0)
 				{
-					LogManager::getSingleton().logMessage("AXLE: could not find wheel 1 nodes: " +
-						StringConverter::toString(wheel_node[0][0]) + " " +
-						StringConverter::toString(wheel_node[0][1]) );
+					LOG("AXLE: could not find wheel 1 nodes: " +
+						TOSTRING(wheel_node[0][0]) + " " +
+						TOSTRING(wheel_node[0][1]) );
 				}
 				if( axles[free_axle]->wheel_2 < 0)
 				{
-					LogManager::getSingleton().logMessage("AXLE: could not find wheel 2 nodes: " +
-					StringConverter::toString(wheel_node[1][0]) + " " +
-					StringConverter::toString(wheel_node[1][1]) );
+					LOG("AXLE: could not find wheel 2 nodes: " +
+					TOSTRING(wheel_node[1][0]) + " " +
+					TOSTRING(wheel_node[1][1]) );
 				}
 				continue;
 			}
@@ -4105,14 +4105,14 @@ int SerializedRig::loadTruck(String fname, SceneManager *manager, SceneNode *par
 			// test if any differentials have been defined
 			if( axles[free_axle]->availableDiffs().empty() )
 			{
-				LogManager::getSingleton().logMessage("AXLE: nodiffs defined, defaulting to Open and Locked");
+				LOG("AXLE: nodiffs defined, defaulting to Open and Locked");
 				axles[free_axle]->addDiffType(OPEN_DIFF);
 				axles[free_axle]->addDiffType(LOCKED_DIFF);
 			}
 
-			LogManager::getSingleton().logMessage("AXLE: Created: w1(" + StringConverter::toString(wheel_node[0][0]) + ") " +
-				StringConverter::toString(wheel_node[0][1]) + ", w2(" + StringConverter::toString(wheel_node[1][0]) + " " +
-				StringConverter::toString(wheel_node[1][1]) + ")");
+			LOG("AXLE: Created: w1(" + TOSTRING(wheel_node[0][0]) + ") " +
+				TOSTRING(wheel_node[0][1]) + ", w2(" + TOSTRING(wheel_node[1][0]) + " " +
+				TOSTRING(wheel_node[1][1]) + ")");
 			++free_axle;
 		}
 
@@ -4126,7 +4126,7 @@ int SerializedRig::loadTruck(String fname, SceneManager *manager, SceneNode *par
 			int result = sscanf(c.line,"%d, %f", &nodenum, &radius);
 			if (result < 2 || result == EOF)
 			{
-				LogManager::getSingleton().logMessage("Error parsing File (nodecollision) " + String(fname) +" c.line " + StringConverter::toString(c.linecounter) + ". trying to continue ...");
+				LOG("Error parsing File (nodecollision) " + String(fname) +" c.line " + TOSTRING(c.linecounter) + ". trying to continue ...");
 				continue;
 			}
 			if(nodenum >= free_node || nodenum < 0)
@@ -4152,14 +4152,14 @@ int SerializedRig::loadTruck(String fname, SceneManager *manager, SceneNode *par
 		int result=engine->getTorqueCurve()->spaceCurveEvenly(engine->getTorqueCurve()->getUsedSpline());
 		if (result==1)
 		{
-			LogManager::getSingleton().logMessage("TorqueCurve: Points (rpm) must be in an ascending order. Using default curve");
+			LOG("TorqueCurve: Points (rpm) must be in an ascending order. Using default curve");
 			engine->getTorqueCurve()->setTorqueModel("default");
 		}
 	}
 	
 	
 	if(!loading_finished) {
-		LogManager::getSingleton().logMessage("Reached end of file "+ String(fname)+ ". No 'end' was found! Did you forgot it? Trying to continue...");
+		LOG("Reached end of file "+ String(fname)+ ". No 'end' was found! Did you forgot it? Trying to continue...");
 	}
 
 	// ds closes automatically, so do not close it explicitly here:
@@ -4168,9 +4168,9 @@ int SerializedRig::loadTruck(String fname, SceneManager *manager, SceneNode *par
 	{
 		for (int i=0; i<freecamera; i++)
 		{
-//LogManager::getSingleton().logMessage("Camera dir="+StringConverter::toString(nodes[cameranodedir[i]].RelPosition-nodes[cameranodepos[i]].RelPosition)+" roll="+StringConverter::toString(nodes[cameranoderoll[i]].RelPosition-nodes[cameranodepos[i]].RelPosition));
+//LOG("Camera dir="+TOSTRING(nodes[cameranodedir[i]].RelPosition-nodes[cameranodepos[i]].RelPosition)+" roll="+TOSTRING(nodes[cameranoderoll[i]].RelPosition-nodes[cameranodepos[i]].RelPosition));
 			revroll[i]=(nodes[cameranodedir[i]].RelPosition-nodes[cameranodepos[i]].RelPosition).crossProduct(nodes[cameranoderoll[i]].RelPosition-nodes[cameranodepos[i]].RelPosition).y>0;
-			if (revroll[i]) LogManager::getSingleton().logMessage("Warning: camera definition is probably invalid and has been corrected. It should be center, back, left");
+			if (revroll[i]) LOG("Warning: camera definition is probably invalid and has been corrected. It should be center, back, left");
 		}
 	}
 //		fclose(fd);
@@ -4181,14 +4181,14 @@ int SerializedRig::loadTruck(String fname, SceneManager *manager, SceneNode *par
 		//inform wing segments
 		float span=(nodes[wings[wingstart].fa->nfrd].RelPosition-nodes[wings[free_wing-1].fa->nfld].RelPosition).length();
 		//		float chord=(nodes[wings[wingstart].fa->nfrd].Position-nodes[wings[wingstart].fa->nbrd].Position).length();
-		LogManager::getSingleton().logMessage("BEAM: Full Wing "+StringConverter::toString(wingstart)+"-"+StringConverter::toString(free_wing-1)+" SPAN="+StringConverter::toString(span)+" AREA="+StringConverter::toString(wingarea));
+		LOG("BEAM: Full Wing "+TOSTRING(wingstart)+"-"+TOSTRING(free_wing-1)+" SPAN="+TOSTRING(span)+" AREA="+TOSTRING(wingarea));
 		wings[wingstart].fa->enableInducedDrag(span,wingarea, false);
 		wings[free_wing-1].fa->enableInducedDrag(span,wingarea, true);
 		//wash calculator
 		wash_calculator(rot);
 	}
 	//add the cab visual
-	LogManager::getSingleton().logMessage("BEAM: creating cab");
+	LOG("BEAM: creating cab");
 	if (free_texcoord>0 && free_cab>0)
 	{
 		//closure
@@ -4218,7 +4218,7 @@ int SerializedRig::loadTruck(String fname, SceneManager *manager, SceneNode *par
 		MaterialPtr mat=(MaterialPtr)(MaterialManager::getSingleton().getByName(texname));
 		if(mat.isNull())
 		{
-			LogManager::getSingleton().logMessage("Material '"+String(texname)+"' missing!");
+			LOG("Material '"+String(texname)+"' missing!");
 			exit(123);
 		}
 
@@ -4262,31 +4262,31 @@ int SerializedRig::loadTruck(String fname, SceneManager *manager, SceneNode *par
 		//	mat->compile();
 
 
-		LogManager::getSingleton().logMessage("BEAM: creating mesh");
+		LOG("BEAM: creating mesh");
 		cabMesh=new FlexObj(manager, nodes, free_texcoord, texcoords, free_cab, cabs, free_sub, subtexcoords, subcabs, texname, wname, subisback, backmatname, transmatname);
-		LogManager::getSingleton().logMessage("BEAM: creating entity");
+		LOG("BEAM: creating entity");
 
-		LogManager::getSingleton().logMessage("BEAM: creating cabnode");
+		LOG("BEAM: creating cabnode");
 		cabNode = manager->getRootSceneNode()->createChildSceneNode();
 		Entity *ec = 0;
 		try
 		{
-			LogManager::getSingleton().logMessage("BEAM: loading cab");
+			LOG("BEAM: loading cab");
 			ec = manager->createEntity(wnamei, wname);
 			//		ec->setRenderQueueGroup(RENDER_QUEUE_6);
-			LogManager::getSingleton().logMessage("BEAM: attaching cab");
+			LOG("BEAM: attaching cab");
 			if(ec)
 				cabNode->attachObject(ec);
 		}catch(...)
 		{
-			LogManager::getSingleton().logMessage("error loading mesh: "+String(wname));
+			LOG("error loading mesh: "+String(wname));
 		}
 		MaterialFunctionMapper::replaceSimpleMeshMaterials(ec, ColourValue(0.5, 1, 0.5));
 		if(materialFunctionMapper) materialFunctionMapper->replaceMeshMaterials(ec);
 		if(usedSkin) usedSkin->replaceMeshMaterials(ec);
 	};
-	LogManager::getSingleton().logMessage("BEAM: cab ok");
-	//	mWindow->setDebugText("Beam number:"+ StringConverter::toString(free_beam));
+	LOG("BEAM: cab ok");
+	//	mWindow->setDebugText("Beam number:"+ TOSTRING(free_beam));
 
 	return 0;
 }
@@ -4404,8 +4404,8 @@ int SerializedRig::add_beam(node_t *p1, node_t *p2, SceneManager *manager, Scene
 	/*
 	if (beams[pos].L<0.01)
 	{
-		LogManager::getSingleton().logMessage("Error: beam "+StringConverter::toString(pos)+" is too short ("+StringConverter::toString(beams[pos].L)+"m)");
-		LogManager::getSingleton().logMessage("Error: beam "+StringConverter::toString(pos)+" is between node "+StringConverter::toString(beams[pos].p1->id)+" and node "+StringConverter::toString(beams[pos].p2->id)+".");
+		LOG("Error: beam "+TOSTRING(pos)+" is too short ("+TOSTRING(beams[pos].L)+"m)");
+		LOG("Error: beam "+TOSTRING(pos)+" is between node "+TOSTRING(beams[pos].p1->id)+" and node "+TOSTRING(beams[pos].p2->id)+".");
 		// this causes crash to desktop in MP!
 		//exit(8);
 	};
@@ -4423,7 +4423,7 @@ int SerializedRig::add_beam(node_t *p1, node_t *p2, SceneManager *manager, Scene
 			beams[pos].mEntity = manager->createEntity(bname, "beam.mesh");
 		}catch(...)
 		{
-			LogManager::getSingleton().logMessage("error loading mesh: beam.mesh");
+			LOG("error loading mesh: beam.mesh");
 		}
 
 		// no materialmapping for beams!
@@ -4556,7 +4556,7 @@ void SerializedRig::addWheel(SceneManager *manager, SceneNode *parent, Real radi
 			//rigidifier version
 			if(free_rigidifier >= MAX_RIGIDIFIERS)
 			{
-				LogManager::getSingleton().logMessage("rigidifiers limit reached ...");
+				LOG("rigidifiers limit reached ...");
 			}
 
 			int na=(closest1)?node2:node1;
@@ -4629,7 +4629,7 @@ void SerializedRig::addWheel(SceneManager *manager, SceneNode *parent, Real radi
 			if(usedSkin) usedSkin->replaceMeshMaterials(ec);
 		}catch(...)
 		{
-			LogManager::getSingleton().logMessage("error loading mesh: "+String(wname));
+			LOG("error loading mesh: "+String(wname));
 		}
 	}
 	else
@@ -4646,7 +4646,7 @@ void SerializedRig::addWheel(SceneManager *manager, SceneNode *parent, Real radi
 				vwheels[free_wheel].cnode->attachObject(ec);
 		} catch(...)
 		{
-			LogManager::getSingleton().logMessage("error loading mesh: "+String(wname));
+			LOG("error loading mesh: "+String(wname));
 		}
 	}
 	free_wheel++;
@@ -4843,7 +4843,7 @@ void SerializedRig::addWheel2(SceneManager *manager, SceneNode *parent, Real rad
 		free_wheel++;
 	}catch(...)
 	{
-		LogManager::getSingleton().logMessage("error loading mesh: "+String(wname));
+		LOG("error loading mesh: "+String(wname));
 	}
 }
 
@@ -4867,7 +4867,7 @@ bool SerializedRig::parseRailGroupLine(const Ogre::String& line)
     
 	if( options.size() < 3)
 	{
-		LogManager::getSingleton().logMessage("RAILGROUP: not enough nodes: " + String(line));
+		LOG("RAILGROUP: not enough nodes: " + String(line));
 		return false;
 	}
     
@@ -4889,7 +4889,7 @@ bool SerializedRig::parseSlideNodeLine(const Ogre::String& line)
     
 	if( options.size() < 2)
 	{
-		LogManager::getSingleton().logMessage("SLIDENODE: not enough options provided: " + String(line));
+		LOG("SLIDENODE: not enough options provided: " + String(line));
 		return false;
 	}
 
@@ -4901,8 +4901,8 @@ bool SerializedRig::parseSlideNodeLine(const Ogre::String& line)
 
 	if( !node )
 	{
-		LogManager::getSingleton().logMessage("SLIDENODE: invalid node id: " +
-				StringConverter::toString( nodeid ) );
+		LOG("SLIDENODE: invalid node id: " +
+				TOSTRING( nodeid ) );
 		return false;
 	}
     
@@ -4911,7 +4911,7 @@ bool SerializedRig::parseSlideNodeLine(const Ogre::String& line)
 	//if ends are open or closed ends, ie can node slide right off the end of a Rail
 	// attachment constraints, none, self, foreign, all 
 
-	//LogManager::getSingleton().logMessage("SLIDENODE: making new SlideNode");
+	//LOG("SLIDENODE: making new SlideNode");
 	SlideNode newSlideNode = SlideNode(node, NULL);
 	//unsigned int quantity = 1;
 	
@@ -4926,7 +4926,7 @@ bool SerializedRig::parseSlideNodeLine(const Ogre::String& line)
 		// tolerance in meters, default 0.0f
 		case 't': case 'T':
 		{			
-			//LogManager::getSingleton().logMessage("SLIDENODE: setting tolerance to : " + option.second );
+			//LOG("SLIDENODE: setting tolerance to : " + option.second );
 			newSlideNode.setThreshold( StringConverter::parseReal( option.second ) );
 		} 
 		break;
@@ -4938,7 +4938,7 @@ bool SerializedRig::parseSlideNodeLine(const Ogre::String& line)
 			rgGroup = getRailFromID( StringConverter::parseReal( option.second ) );
 			if( !rgGroup )
 			{
-				LogManager::getSingleton().logMessage("RAILGROUP: warning could not find "
+				LOG("RAILGROUP: warning could not find "
 						"a Railgroup with corresponding ID: " + 
 						option.second + ". Will check for anonymous rail");
 			}
@@ -5003,7 +5003,7 @@ bool SerializedRig::parseSlideNodeLine(const Ogre::String& line)
 		mRailGroups.push_back(rgGroup); // keep track of all allocated Rails
 	}
 
-	//LogManager::getSingleton().logMessage("SLIDENODE: Adding Slide Rail");
+	//LOG("SLIDENODE: Adding Slide Rail");
 	mSlideNodes.push_back( newSlideNode );
 	return true;
 }
@@ -5099,7 +5099,7 @@ Rail* SerializedRig::getRails(const std::vector<int>& nodeids)
     
 	if( nodeids.front() == nodeids.back() )
 	{
-		LogManager::getSingleton().logMessage("RAIL: Looping SlideRail");
+		LOG("RAIL: Looping SlideRail");
 			builder.loopRail();
 	} 
     
@@ -5110,9 +5110,9 @@ Rail* SerializedRig::getRails(const std::vector<int>& nodeids)
 		// Verify Beam
 		if( !beam )
 		{
-			LogManager::getSingleton().logMessage("RAIL: invalid beam: " +
-					StringConverter::toString(nodeids[i]) + ", " +
-					StringConverter::toString(nodeids[i + 1]) );
+			LOG("RAIL: invalid beam: " +
+					TOSTRING(nodeids[i]) + ", " +
+					TOSTRING(nodeids[i + 1]) );
 			return NULL;
 		}
 
@@ -5127,7 +5127,7 @@ void SerializedRig::addSoundSource(SoundScriptInstance *ssi, int nodenum, int ty
 	if (!ssi) return; //fizzle
 	if (free_soundsource==MAX_SOUNDSCRIPTS_PER_TRUCK)
 	{
-		LogManager::getSingleton().logMessage("BEAM: Error, too many sound sources per vehicle!");
+		LOG("BEAM: Error, too many sound sources per vehicle!");
 		return;
 	}
 	soundsources[free_soundsource].ssi=ssi;
@@ -5169,7 +5169,7 @@ void SerializedRig::wash_calculator(Quaternion rot)
 						//we have a wash
 						float wratio=(aleft-aright)/(wleft-wright);
 						wings[w].fa->addwash(p, wratio);
-						LogManager::getSingleton().logMessage("BEAM: Wing "+StringConverter::toString(w)+" is washed by prop "+StringConverter::toString(p)+" at "+StringConverter::toString((float)(wratio*100.0))+"%");
+						LOG("BEAM: Wing "+TOSTRING(w)+" is washed by prop "+TOSTRING(p)+" at "+TOSTRING((float)(wratio*100.0))+"%");
 					}
 				}
 			}
