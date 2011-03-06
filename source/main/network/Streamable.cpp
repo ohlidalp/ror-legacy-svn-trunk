@@ -94,8 +94,8 @@ void Streamable::addPacket(int type, unsigned int len, char* content)
 	String header_hex = hexdump(buffer, sizeof(header_t));
 	String content_hex = hexdump((buffer + sizeof(header_t)), len);
 
-	LogManager::getSingleton().logMessage("header:  " + header_hex);
-	LogManager::getSingleton().logMessage("content: " + content_hex);
+	LOG("header:  " + header_hex);
+	LOG("content: " + content_hex);
 	*/
 
 	/*
@@ -104,7 +104,7 @@ void Streamable::addPacket(int type, unsigned int len, char* content)
 	sha1.UpdateHash((uint8_t *)bufferContent, len);
 	sha1.Final();
 	sha1.ReportHash(hash, RoR::CSHA1::REPORT_HEX_SHORT);
-	LogManager::getSingleton().logMessage("S|HASH: " + String(hash));
+	LOG("S|HASH: " + String(hash));
 	*/
 
 	packets.push_back(packet);

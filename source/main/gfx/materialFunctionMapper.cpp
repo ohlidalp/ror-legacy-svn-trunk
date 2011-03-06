@@ -109,7 +109,7 @@ void MaterialFunctionMapper::replaceMeshMaterials(Ogre::Entity *e)
 {
 	if(!e)
 	{
-		LogManager::getSingleton().logMessage("MaterialFunctionMapper: got invalid Entity in replaceMeshMaterials");
+		LOG("MaterialFunctionMapper: got invalid Entity in replaceMeshMaterials");
 		return;
 	}
 	// this is not nice, but required (its not so much performance relevant ...
@@ -126,7 +126,7 @@ void MaterialFunctionMapper::replaceMeshMaterials(Ogre::Entity *e)
 					if(sm->getMaterialName() ==  mm->originalmaterial)
 					{
 						sm->setMaterialName(mm->material);
-						LogManager::getSingleton().logMessage("MaterialFunctionMapper: replaced mesh material " + mm->originalmaterial + " with new new material " + mm->material + " on entity " + e->getName());
+						LOG("MaterialFunctionMapper: replaced mesh material " + mm->originalmaterial + " with new new material " + mm->material + " on entity " + e->getName());
 					}
 				}
 			}
@@ -137,7 +137,7 @@ void MaterialFunctionMapper::replaceMeshMaterials(Ogre::Entity *e)
 				if(subent->getMaterialName() ==  mm->originalmaterial)
 				{
 					subent->setMaterialName(mm->material);
-					LogManager::getSingleton().logMessage("MaterialFunctionMapper: replaced entity material " + mm->originalmaterial + " with new new material " + mm->material + " on entity " + e->getName());
+					LOG("MaterialFunctionMapper: replaced entity material " + mm->originalmaterial + " with new new material " + mm->material + " on entity " + e->getName());
 				}
 			}
 		}
@@ -149,15 +149,15 @@ void MaterialFunctionMapper::replaceSimpleMeshMaterials(Ogre::Entity *e, Ogre::C
 {
 	if(!e)
 	{
-		LogManager::getSingleton().logMessage("MaterialFunctionMapper: got invalid Entity in replaceSimpleMeshMaterials");
+		LOG("MaterialFunctionMapper: got invalid Entity in replaceSimpleMeshMaterials");
 		return;
 	}
-	if (SETTINGS.getSetting("SimpleMaterials") != "Yes") return;
+	if (!BSETTING("SimpleMaterials")) return;
 
 	MaterialPtr mat = MaterialManager::getSingleton().getByName("tracks/simple");
 	if(mat.isNull()) return;
 
-	String newMatName = "tracks/simple/" + StringConverter::toString(simpleMaterialCounter);
+	String newMatName = "tracks/simple/" + TOSTRING(simpleMaterialCounter);
 	MaterialPtr newmat = mat->clone(newMatName);
 
 	newmat->getTechnique(0)->getPass(0)->setAmbient(c);

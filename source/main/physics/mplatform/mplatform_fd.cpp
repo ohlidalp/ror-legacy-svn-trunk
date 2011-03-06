@@ -32,12 +32,12 @@ bool MPlatform_FD::connect()
 	
 	if (mySocket.connect(12345, "127.0.0.1"))
 	{
-		Ogre::LogManager::getSingleton().logMessage("Connected to feedback server: ");
+		LOG("Connected to feedback server: ");
 		return true;
 	}
 	else
 	{
-		Ogre::LogManager::getSingleton().logMessage("Unable to connect to feedback server: ");
+		LOG("Unable to connect to feedback server: ");
 		return false;
 	}
 }

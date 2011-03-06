@@ -63,27 +63,27 @@ void LanguageEngine::setup()
 #ifdef USE_MOFILEREADER
 	reader = new moFileReader();
 
-	String language = SETTINGS.getSetting("Language");
-	String language_short = SETTINGS.getSetting("Language Short").substr(0, 2); // only first two characters are important
+	String language = SSETTING("Language");
+	String language_short = SSETTING("Language Short").substr(0, 2); // only first two characters are important
 
 	// Load a .mo-File.
-	Ogre::LogManager::getSingleton().logMessage("*** Loading Language ***");
-	String langfile = SETTINGS.getSetting("Program Path") + String("languages/") + language_short + String("/") + String(MOFILENAME) + String(".mo");
+	LOG("*** Loading Language ***");
+	String langfile = SSETTING("Program Path") + String("languages/") + language_short + String("/") + String(MOFILENAME) + String(".mo");
 	if (reader->ReadFile(langfile.c_str()) != moFileLib::moFileReader::EC_SUCCESS )
 	{
-			Ogre::LogManager::getSingleton().logMessage("* error loading language file " + langfile);
+			LOG("* error loading language file " + langfile);
 			return;
 	}
 	working=true;
 
 	// add resource path
-	ResourceGroupManager::getSingleton().addResourceLocation(SETTINGS.getSetting("Program Path") + "languages/" + language_short, "FileSystem", "LanguageRanges");
+	ResourceGroupManager::getSingleton().addResourceLocation(SSETTING("Program Path") + "languages/" + language_short, "FileSystem", "LanguageRanges");
 
 	// now load the code ranges
 	// be aware, that this approach only works if we load just one language, and not multiple
 	setupCodeRanges("codes.txt", "LanguageRanges");
 
-	Ogre::LogManager::getSingleton().logMessage("* Language successfully loaded");
+	LOG("* Language successfully loaded");
 #endif //MOFILEREADER
 }
 
@@ -101,10 +101,10 @@ void LanguageEngine::setupCodeRanges(String codeRangesFilename, String codeRange
 	DataStreamPtr ds = ResourceGroupManager::getSingleton().openResource(codeRangesFilename, codeRangesGroupname);
 	if(ds.isNull())
 	{
-		Ogre::LogManager::getSingleton().logMessage("unable to load language code points file: " + codeRangesFilename);
+		LOG("unable to load language code points file: " + codeRangesFilename);
 		return;
 	}
-	Ogre::LogManager::getSingleton().logMessage("loading code_range file: " + codeRangesFilename);
+	LOG("loading code_range file: " + codeRangesFilename);
 
 	char line[1024] = "";
 	while (!ds->eof())

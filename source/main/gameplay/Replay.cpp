@@ -42,7 +42,7 @@ Replay::Replay(Beam *b, int _numFrames)
 	times = 0;
 
 	unsigned long bsize = (numNodes * numFrames * sizeof(node_simple_t) + numBeams * numFrames * sizeof(beam_simple_t) + numFrames * sizeof(unsigned long)) / 1024.0f;
-	LogManager::getSingleton().logMessage("replay buffer size: " + StringConverter::toString(bsize) + " kB");
+	LOG("replay buffer size: " + TOSTRING(bsize) + " kB");
 
 	writeIndex = 0;
 	firstRun = 1;
@@ -150,7 +150,7 @@ void Replay::updateGUI()
 	unsigned long t = curFrameTime;
 	sprintf(tmp, "Position: %0.6f s, frame %i / %i", ((float)t)/1000000.0f, curOffset, numFrames);
 	txt->setCaption(String(tmp));
-	//LogManager::getSingleton().logMessage(">>>2>"+StringConverter::toString(times[writeIndex]) + " /3> "+StringConverter::toString(curFrameTime));
+	//LOG(">>>2>"+TOSTRING(times[writeIndex]) + " /3> "+TOSTRING(curFrameTime));
 	pr->setProgressPosition(abs(curOffset));
 #endif // MYGUI
 }

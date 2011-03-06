@@ -32,18 +32,18 @@ template<> SkidmarkManager *Ogre::Singleton<SkidmarkManager>::ms_Singleton=0;
 
 SkidmarkManager::SkidmarkManager()
 {
-	Ogre::LogManager::getSingleton().logMessage("SkidmarkManager created");
+	LOG("SkidmarkManager created");
 	loadDefaultModels();
 }
 
 SkidmarkManager::~SkidmarkManager()
 {
-	Ogre::LogManager::getSingleton().logMessage("SkidmarkManager destroyed");
+	LOG("SkidmarkManager destroyed");
 }
 
 int SkidmarkManager::loadDefaultModels()
 {
-	Ogre::LogManager::getSingleton().logMessage("SkidmarkManager loading default models");
+	LOG("SkidmarkManager loading default models");
 	// check if we have a config file
 	Ogre::String group = "";
 	try
@@ -55,7 +55,7 @@ int SkidmarkManager::loadDefaultModels()
 	// emit a warning if we did not found the file
 	if (group.empty())
 	{
-		Ogre::LogManager::getSingleton().logMessage("skidmarks| skidmarks.cfg not found");
+		LOG("skidmarks| skidmarks.cfg not found");
 		return 1;
 	}
 
@@ -156,7 +156,7 @@ Skidmark::~Skidmark()
 
 void Skidmark::addObject(Ogre::Vector3 start, Ogre::String texture)
 {
-	//LogManager::getSingleton().logMessage("new skidmark section");
+	//LOG("new skidmark section");
 	skidmark_t skid;
 	skid.pos=0;
 	skid.lastPointAv=start;
@@ -180,7 +180,7 @@ void Skidmark::addObject(Ogre::Vector3 start, Ogre::String texture)
 	skid.points.resize(lenght);
 	skid.facesizes.resize(lenght);
 	skid.ground_texture.resize(lenght);
-	skid.obj = scm->createManualObject("skidmark" + StringConverter::toString(instancecounter++));
+	skid.obj = scm->createManualObject("skidmark" + TOSTRING(instancecounter++));
 	skid.obj->setDynamic(true);
 	skid.obj->setRenderingDistance(2000); //2km sight range
 	skid.obj->begin(bname, RenderOperation::OT_TRIANGLE_STRIP);
@@ -205,7 +205,7 @@ void Skidmark::limitObjects()
 {
 	if((int)objects.size() > bucketCount)
 	{
-		//LogManager::getSingleton().logMessage("deleting first skidmarks section to keep the limits");
+		//LOG("deleting first skidmarks section to keep the limits");
 		objects.front().points.clear();
 		objects.front().facesizes.clear();
 		scm->destroyManualObject(objects.front().obj);
@@ -250,7 +250,7 @@ void Skidmark::updatePoint()
 		// too near to update?
 		if(distance < minDistance)
 		{
-			//LogManager::getSingleton().logMessage("E: too near for update");
+			//LOG("E: too near for update");
 			return;
 		}
 		
@@ -309,19 +309,19 @@ void Skidmark::updatePoint()
 	//Ogre::Vector3 groundNormal = Vector3::ZERO;
 	//hfinder->getNormalAt(thisPoint.x, thisPoint.y, thisPoint.z, &groundNormal);
 
-	//Ogre::LogManager::getSingleton().logMessage("ground normal: "+StringConverter::toString(wheel->refnode1->RelPosition.dotProduct(groundNormal)));
+	//LOG("ground normal: "+TOSTRING(wheel->refnode1->RelPosition.dotProduct(groundNormal)));
 
 	// choose node wheel by the latest added point
 	if(!wheel->lastContactType)
 	{
 		// choose inner
-		//LogManager::getSingleton().logMessage("inner");
+		//LOG("inner");
 		addPoint(wheel->lastContactInner - (axis * overaxis), distance, texture);
 		addPoint(wheel->lastContactInner + axis + (axis * overaxis), distance, texture);
 	} else
 	{
 		// choose outer
-		//LogManager::getSingleton().logMessage("outer");
+		//LOG("outer");
 		addPoint(wheel->lastContactOuter + axis + (axis * overaxis), distance, texture);
 		addPoint(wheel->lastContactOuter - (axis * overaxis), distance, texture);
 	}
@@ -332,7 +332,7 @@ void Skidmark::updatePoint()
 	/*
 	// debug code: adds boxes to the average point
 	SceneNode *sn = mNode->getParentSceneNode()->createChildSceneNode();
-	sn->attachObject(scm->createEntity("addPointTRACK"+StringConverter::toString(objects.back().lastPointAv) +StringConverter::toString(axis), "beam.mesh"));
+	sn->attachObject(scm->createEntity("addPointTRACK"+TOSTRING(objects.back().lastPointAv) +TOSTRING(axis), "beam.mesh"));
 	sn->setPosition(thisPointAV);
 	sn->setScale(0.1f, 0.01f, 0.1f);
 	*/
@@ -343,7 +343,7 @@ void Skidmark::addPoint(const Vector3 &value, Real fsize, String texture)
 {
 	if(objects.back().pos >= lenght)
 	{
-		//LogManager::getSingleton().logMessage("E: boundary protection hit");
+		//LOG("E: boundary protection hit");
 		return;
 	}
 	setPointInt(objects.back().pos, value, fsize, texture);

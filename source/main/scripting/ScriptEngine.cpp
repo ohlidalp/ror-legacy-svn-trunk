@@ -86,7 +86,7 @@ int ScriptEngine::loadTerrainScript(Ogre::String scriptname)
 	result = loadScriptFile(scriptname.c_str(), script, terrainScriptHash);
 	if( result )
 	{
-		LogManager::getSingleton().logMessage("SE| Unkown error while loading script file: "+scriptname);
+		LOG("SE| Unkown error while loading script file: "+scriptname);
 		return 1;
 	}
 
@@ -97,7 +97,7 @@ int ScriptEngine::loadTerrainScript(Ogre::String scriptname)
 	result = mod->AddScriptSection(scriptname.c_str(), script.c_str(), script.length());
 	if( result < 0 )
 	{
-		LogManager::getSingleton().logMessage("SE| Unkown error while adding script section");
+		LOG("SE| Unkown error while adding script section");
 		return 1;
 	}
 
@@ -107,18 +107,18 @@ int ScriptEngine::loadTerrainScript(Ogre::String scriptname)
 	{
 		if(result == AngelScript::asINVALID_CONFIGURATION)
 		{
-			LogManager::getSingleton().logMessage("SE| The engine configuration is invalid.");
+			LOG("SE| The engine configuration is invalid.");
 			return 1;
 		} else if(result == AngelScript::asERROR)
 		{
-			LogManager::getSingleton().logMessage("SE| The script failed to build. ");
+			LOG("SE| The script failed to build. ");
 			return 1;
 		} else if(result == AngelScript::asBUILD_IN_PROGRESS)
 		{
-			LogManager::getSingleton().logMessage("SE| Another thread is currently building.");
+			LOG("SE| Another thread is currently building.");
 			return 1;
 		}
-		LogManager::getSingleton().logMessage("SE| Unkown error while building the script");
+		LOG("SE| Unkown error while building the script");
 		return 1;
 	}
 
@@ -128,7 +128,7 @@ int ScriptEngine::loadTerrainScript(Ogre::String scriptname)
 	{
 		// The function couldn't be found. Instruct the script writer to include the
 		// expected function in the script.
-		LogManager::getSingleton().logMessage("SE| The script must have the function 'void main()'. Please add it and try again.");
+		LOG("SE| The script must have the function 'void main()'. Please add it and try again.");
 		return 1;
 	}
 
@@ -147,7 +147,7 @@ int ScriptEngine::loadTerrainScript(Ogre::String scriptname)
 	context->SetExceptionCallback(AngelScript::asMETHOD(ScriptEngine,ExceptionCallback), this, AngelScript::asCALL_THISCALL);
 
 	context->Prepare(funcId);
-	LogManager::getSingleton().logMessage("SE| Executing main()");
+	LOG("SE| Executing main()");
 	result = context->Execute();
 	if( result != AngelScript::asEXECUTION_FINISHED )
 	{
@@ -155,7 +155,7 @@ int ScriptEngine::loadTerrainScript(Ogre::String scriptname)
 		if( result == AngelScript::asEXECUTION_EXCEPTION )
 		{
 			// An exception occurred, let the script writer know what happened so it can be corrected.
-			LogManager::getSingleton().logMessage("SE| An exception '" + String(context->GetExceptionString()) + "' occurred. Please correct the code in file '" + scriptname + "' and try again.");
+			LOG("SE| An exception '" + String(context->GetExceptionString()) + "' occurred. Please correct the code in file '" + scriptname + "' and try again.");
 		}
 	}
 
@@ -167,25 +167,25 @@ void ScriptEngine::ExceptionCallback(AngelScript::asIScriptContext *ctx, void *p
 	AngelScript::asIScriptEngine *engine = ctx->GetEngine();
 	int funcID = ctx->GetExceptionFunction();
 	const AngelScript::asIScriptFunction *function = engine->GetFunctionDescriptorById(funcID);
-	LogManager::getSingleton().logMessage("--- exception ---");
-	LogManager::getSingleton().logMessage("desc: " + String(ctx->GetExceptionString()));
-	LogManager::getSingleton().logMessage("func: " + String(function->GetDeclaration()));
-	LogManager::getSingleton().logMessage("modl: " + String(function->GetModuleName()));
-	LogManager::getSingleton().logMessage("sect: " + String(function->GetScriptSectionName()));
+	LOG("--- exception ---");
+	LOG("desc: " + String(ctx->GetExceptionString()));
+	LOG("func: " + String(function->GetDeclaration()));
+	LOG("modl: " + String(function->GetModuleName()));
+	LOG("sect: " + String(function->GetScriptSectionName()));
 	int col, line = ctx->GetExceptionLineNumber(&col);
-	LogManager::getSingleton().logMessage("line: "+StringConverter::toString(line)+","+StringConverter::toString(col));
+	LOG("line: "+TOSTRING(line)+","+TOSTRING(col));
 
 	// Print the variables in the current function
 	//PrintVariables(ctx, -1);
 
 	// Show the call stack with the variables
-	LogManager::getSingleton().logMessage("--- call stack ---");
+	LOG("--- call stack ---");
 	char tmp[2048]="";
     for( AngelScript::asUINT n = 1; n < ctx->GetCallstackSize(); n++ )
     {
     	function = ctx->GetFunction(n);
 		sprintf(tmp, "%s (%d): %s\n", function->GetScriptSectionName(), ctx->GetLineNumber(n), function->GetDeclaration());
-		LogManager::getSingleton().logMessage(String(tmp));
+		LOG(String(tmp));
 		//PrintVariables(ctx, n);
     }
 }
@@ -206,7 +206,7 @@ void ScriptEngine::LineCallback(asIScriptContext *ctx, void *param)
 	                    function->GetDeclaration(),
 	                    line, col);
 
-	LogManager::getSingleton().logMessage(tmp);
+	LOG(tmp);
 
 //	PrintVariables(ctx, -1);
 }
@@ -221,7 +221,7 @@ void ScriptEngine::PrintVariables(asIScriptContext *ctx, int stackLevel)
 	if( typeId )
 	{
 		sprintf(tmp," this = %p", varPointer);
-		LogManager::getSingleton().logMessage(tmp);
+		LOG(tmp);
 	}
 
 	int numVars = ctx->GetVarCount(stackLevel);
@@ -232,7 +232,7 @@ void ScriptEngine::PrintVariables(asIScriptContext *ctx, int stackLevel)
 		if( typeId == engine->GetTypeIdByDecl("int") )
 		{
 			sprintf(tmp, " %s = %d", ctx->GetVarDeclaration(n, stackLevel), *(int*)varPointer);
-			LogManager::getSingleton().logMessage(tmp);
+			LOG(tmp);
 		}
 		else if( typeId == engine->GetTypeIdByDecl("string") )
 		{
@@ -240,13 +240,13 @@ void ScriptEngine::PrintVariables(asIScriptContext *ctx, int stackLevel)
 			if( str )
 			{
 				sprintf(tmp, " %s = '%s'", ctx->GetVarDeclaration(n, stackLevel), str->c_str());
-				LogManager::getSingleton().logMessage(tmp);
+				LOG(tmp);
 			} else
 			{
 				sprintf(tmp, " %s = <null>", ctx->GetVarDeclaration(n, stackLevel));
-				LogManager::getSingleton().logMessage(tmp);
+				LOG(tmp);
 			}
-		LogManager::getSingleton().logMessage(tmp);
+		LOG(tmp);
 		}
 	}
 };
@@ -268,14 +268,14 @@ void ScriptEngine::init()
 	{
 		if(result == AngelScript::asINVALID_ARG)
 		{
-			LogManager::getSingleton().logMessage("SE| One of the arguments is incorrect, e.g. obj is null for a class method.");
+			LOG("SE| One of the arguments is incorrect, e.g. obj is null for a class method.");
 			return;
 		} else if(result == AngelScript::asNOT_SUPPORTED)
 		{
-			LogManager::getSingleton().logMessage("SE| 	The arguments are not supported, e.g. asCALL_GENERIC.");
+			LOG("SE| 	The arguments are not supported, e.g. asCALL_GENERIC.");
 			return;
 		}
-		LogManager::getSingleton().logMessage("SE| Unkown error while setting up message callback");
+		LOG("SE| Unkown error while setting up message callback");
 		return;
 	}
 
@@ -494,7 +494,7 @@ void ScriptEngine::init()
 	result = engine->RegisterGlobalProperty("CacheSystemClass cache", &CacheSystem::Instance()); assert(result>=0);
 	result = engine->RegisterGlobalProperty("SettingsClass settings", &SETTINGS); assert(result>=0);
 
-	LogManager::getSingleton().logMessage("SE| Registration done");
+	LOG("SE| Registration done");
 }
 
 void ScriptEngine::msgCallback(const AngelScript::asSMessageInfo *msg)
@@ -507,7 +507,7 @@ void ScriptEngine::msgCallback(const AngelScript::asSMessageInfo *msg)
 
 	char tmp[1024]="";
 	sprintf(tmp, "SE| %s (%d, %d): %s = %s", msg->section, msg->row, msg->col, type, msg->message);
-	LogManager::getSingleton().logMessage(tmp);
+	LOG(tmp);
 }
 
 int ScriptEngine::loadScriptFile(const char *fileName, string &script, string &hash)
@@ -577,7 +577,7 @@ int ScriptEngine::framestep(Ogre::Real dt, Beam **trucks, int free_truck)
 				context->SetArgObject(2, &std::string(source->instancename));
 				context->SetArgObject(3, &std::string(source->boxname));
 
-				//LogManager::getSingleton().logMessage("SE| Executing framestep()");
+				//LOG("SE| Executing framestep()");
 				int r = context->Execute();
 				if( r == AngelScript::asEXECUTION_FINISHED )
 				{
@@ -605,7 +605,7 @@ int ScriptEngine::framestep(Ogre::Real dt, Beam **trucks, int free_truck)
 	// Set the function arguments
 	context->SetArgFloat(0, dt);
 
-	//LogManager::getSingleton().logMessage("SE| Executing framestep()");
+	//LOG("SE| Executing framestep()");
 	int r = context->Execute();
 	if( r == AngelScript::asEXECUTION_FINISHED )
 	{
@@ -652,7 +652,7 @@ int ScriptEngine::executeString(Ogre::String command)
 	int result = engine->ExecuteString("terrainScript", command.c_str(), &context);
 	if(result<0)
 	{
-		LogManager::getSingleton().logMessage("error " + StringConverter::toString(result) + " while executing string: " + command + ".");
+		LOG("error " + TOSTRING(result) + " while executing string: " + command + ".");
 	}
 	return result;
 	*/
@@ -691,7 +691,7 @@ int ScriptEngine::loadScript(Ogre::String scriptname)
 	result = loadScriptFile(scriptname.c_str(), script, hash);
 	if( result )
 	{
-		LogManager::getSingleton().logMessage("SE| Unkown error while loading script file: "+scriptname);
+		LOG("SE| Unkown error while loading script file: "+scriptname);
 		return 1;
 	}
 
@@ -705,7 +705,7 @@ int ScriptEngine::loadScript(Ogre::String scriptname)
 	{
 		// the code below should load a compilation result but it crashes for some reason atm ...
 		/*
-		String fn = SETTINGS.getSetting("Cache Path") + "script" + hash + "_" + scriptname + "c";
+		String fn = SSETTING("Cache Path") + "script" + hash + "_" + scriptname + "c";
 		CBytecodeStream bstream(fn);
 		if(bstream.Existing())
 		{
@@ -721,7 +721,7 @@ int ScriptEngine::loadScript(Ogre::String scriptname)
 		result = mod->AddScriptSection(scriptname.c_str(), script.c_str(), script.length());
 		if( result < 0 )
 		{
-			LogManager::getSingleton().logMessage("SE| Unkown error while adding script section");
+			LOG("SE| Unkown error while adding script section");
 			return 1;
 		}
 
@@ -731,24 +731,24 @@ int ScriptEngine::loadScript(Ogre::String scriptname)
 		{
 			if(result == AngelScript::asINVALID_CONFIGURATION)
 			{
-				LogManager::getSingleton().logMessage("SE| The engine configuration is invalid.");
+				LOG("SE| The engine configuration is invalid.");
 				return 1;
 			} else if(result == AngelScript::asERROR)
 			{
-				LogManager::getSingleton().logMessage("SE| The script failed to build. ");
+				LOG("SE| The script failed to build. ");
 				return 1;
 			} else if(result == AngelScript::asBUILD_IN_PROGRESS)
 			{
-				LogManager::getSingleton().logMessage("SE| Another thread is currently building.");
+				LOG("SE| Another thread is currently building.");
 				return 1;
 			}
-			LogManager::getSingleton().logMessage("SE| Unkown error while building the script");
+			LOG("SE| Unkown error while building the script");
 			return 1;
 		}
 
 		// save bytecode
 		{
-			String fn = SETTINGS.getSetting("Cache Path") + "script" + hash + "_" + scriptname + "c";
+			String fn = SSETTING("Cache Path") + "script" + hash + "_" + scriptname + "c";
 			CBytecodeStream bstream(fn);
 			mod->SaveByteCode(&bstream);
 		}
@@ -760,7 +760,7 @@ int ScriptEngine::loadScript(Ogre::String scriptname)
 	{
 		// The function couldn't be found. Instruct the script writer to include the
 		// expected function in the script.
-		LogManager::getSingleton().logMessage("SE| The script must have the function 'void main()'. Please add it and try again.");
+		LOG("SE| The script must have the function 'void main()'. Please add it and try again.");
 		return 1;
 	}
 
@@ -778,7 +778,7 @@ int ScriptEngine::loadScript(Ogre::String scriptname)
 	//context->SetExceptionCallback(AngelScript::asMETHOD(ScriptEngine,ExceptionCallback), this, AngelScript::asCALL_THISCALL);
 
 	context->Prepare(funcId);
-	LogManager::getSingleton().logMessage("SE| Executing main()");
+	LOG("SE| Executing main()");
 	result = context->Execute();
 	if( result != AngelScript::asEXECUTION_FINISHED )
 	{
@@ -786,7 +786,7 @@ int ScriptEngine::loadScript(Ogre::String scriptname)
 		if( result == AngelScript::asEXECUTION_EXCEPTION )
 		{
 			// An exception occurred, let the script writer know what happened so it can be corrected.
-			LogManager::getSingleton().logMessage("SE| An exception '" + String(context->GetExceptionString()) + "' occurred. Please correct the code in file '" + scriptname + "' and try again.");
+			LOG("SE| An exception '" + String(context->GetExceptionString()) + "' occurred. Please correct the code in file '" + scriptname + "' and try again.");
 		}
 	}
 
@@ -804,7 +804,7 @@ GameScript::~GameScript()
 
 void GameScript::log(std::string &msg)
 {
-	Ogre::LogManager::getSingleton().logMessage("SE| " + msg);
+	LOG("SE| " + msg);
 }
 
 double GameScript::getTime()
@@ -1128,7 +1128,7 @@ int GameScript::useOnlineAPI(const std::string &apiquery, const AngelScript::CSc
 			|| typeId == AngelScript::asTYPEID_INT64)
 		{
 			// its an integer
-			curl_formadd(&formpost, &lastptr, CURLFORM_COPYNAME, it->first.c_str(), CURLFORM_COPYCONTENTS, StringConverter::toString((int)it->second.valueInt).c_str(), CURLFORM_END);
+			curl_formadd(&formpost, &lastptr, CURLFORM_COPYNAME, it->first.c_str(), CURLFORM_COPYCONTENTS, TOSTRING((int)it->second.valueInt).c_str(), CURLFORM_END);
 		}
 		else if(typeId == AngelScript::asTYPEID_UINT8 \
 			|| typeId == AngelScript::asTYPEID_UINT16 \
@@ -1136,31 +1136,31 @@ int GameScript::useOnlineAPI(const std::string &apiquery, const AngelScript::CSc
 			|| typeId == AngelScript::asTYPEID_UINT64)
 		{
 			// its an unsigned integer
-			curl_formadd(&formpost, &lastptr, CURLFORM_COPYNAME, it->first.c_str(), CURLFORM_COPYCONTENTS, StringConverter::toString((unsigned int)it->second.valueInt).c_str(), CURLFORM_END);
+			curl_formadd(&formpost, &lastptr, CURLFORM_COPYNAME, it->first.c_str(), CURLFORM_COPYCONTENTS, TOSTRING((unsigned int)it->second.valueInt).c_str(), CURLFORM_END);
 		}
 		else if(typeId == AngelScript::asTYPEID_FLOAT || typeId == AngelScript::asTYPEID_DOUBLE)
 		{
 			// its a float or double
-			curl_formadd(&formpost, &lastptr, CURLFORM_COPYNAME, it->first.c_str(), CURLFORM_COPYCONTENTS, StringConverter::toString((float)it->second.valueFlt).c_str(), CURLFORM_END);
+			curl_formadd(&formpost, &lastptr, CURLFORM_COPYNAME, it->first.c_str(), CURLFORM_COPYCONTENTS, TOSTRING((float)it->second.valueFlt).c_str(), CURLFORM_END);
 		}
 	}
 
 	// add some hardcoded values
 	curl_formadd(&formpost, &lastptr, CURLFORM_COPYNAME, "terrain_Name", CURLFORM_COPYCONTENTS, mse->getTerrainName().c_str(), CURLFORM_END);
-	curl_formadd(&formpost, &lastptr, CURLFORM_COPYNAME, "terrain_Hash", CURLFORM_COPYCONTENTS, SETTINGS.getSetting("TerrainHash").c_str(), CURLFORM_END);
+	curl_formadd(&formpost, &lastptr, CURLFORM_COPYNAME, "terrain_Hash", CURLFORM_COPYCONTENTS, SSETTING("TerrainHash").c_str(), CURLFORM_END);
 	curl_formadd(&formpost, &lastptr, CURLFORM_COPYNAME, "terrain_ScriptHash", CURLFORM_COPYCONTENTS, mse->getTerrainScriptHash().c_str(), CURLFORM_END);
-	curl_formadd(&formpost, &lastptr, CURLFORM_COPYNAME, "User_NickName", CURLFORM_COPYCONTENTS, SETTINGS.getSetting("Nickname").c_str(), CURLFORM_END);
-	curl_formadd(&formpost, &lastptr, CURLFORM_COPYNAME, "User_Language", CURLFORM_COPYCONTENTS, SETTINGS.getSetting("Language").c_str(), CURLFORM_END);
-	curl_formadd(&formpost, &lastptr, CURLFORM_COPYNAME, "User_Token", CURLFORM_COPYCONTENTS, SETTINGS.getSetting("User Token").c_str(), CURLFORM_END);
+	curl_formadd(&formpost, &lastptr, CURLFORM_COPYNAME, "User_NickName", CURLFORM_COPYCONTENTS, SSETTING("Nickname").c_str(), CURLFORM_END);
+	curl_formadd(&formpost, &lastptr, CURLFORM_COPYNAME, "User_Language", CURLFORM_COPYCONTENTS, SSETTING("Language").c_str(), CURLFORM_END);
+	curl_formadd(&formpost, &lastptr, CURLFORM_COPYNAME, "User_Token", CURLFORM_COPYCONTENTS, SSETTING("User Token").c_str(), CURLFORM_END);
 	curl_formadd(&formpost, &lastptr, CURLFORM_COPYNAME, "RoR_VersionString", CURLFORM_COPYCONTENTS, ROR_VERSION_STRING, CURLFORM_END);
 	curl_formadd(&formpost, &lastptr, CURLFORM_COPYNAME, "RoR_VersionSVN", CURLFORM_COPYCONTENTS, SVN_REVISION, CURLFORM_END);
 	curl_formadd(&formpost, &lastptr, CURLFORM_COPYNAME, "RoR_VersionSVNID", CURLFORM_COPYCONTENTS, SVN_ID, CURLFORM_END);
 	curl_formadd(&formpost, &lastptr, CURLFORM_COPYNAME, "RoR_ProtocolVersion", CURLFORM_COPYCONTENTS, RORNET_VERSION, CURLFORM_END);
-	curl_formadd(&formpost, &lastptr, CURLFORM_COPYNAME, "RoR_BinaryHash", CURLFORM_COPYCONTENTS, SETTINGS.getSetting("BinaryHash").c_str(), CURLFORM_END);
-	curl_formadd(&formpost, &lastptr, CURLFORM_COPYNAME, "RoR_GUID", CURLFORM_COPYCONTENTS, SETTINGS.getSetting("GUID").c_str(), CURLFORM_END);
-	curl_formadd(&formpost, &lastptr, CURLFORM_COPYNAME, "MP_ServerName", CURLFORM_COPYCONTENTS, SETTINGS.getSetting("Server name").c_str(), CURLFORM_END);
-	curl_formadd(&formpost, &lastptr, CURLFORM_COPYNAME, "MP_ServerPort", CURLFORM_COPYCONTENTS, SETTINGS.getSetting("Server port").c_str(), CURLFORM_END);
-	curl_formadd(&formpost, &lastptr, CURLFORM_COPYNAME, "MP_NetworkEnabled", CURLFORM_COPYCONTENTS, SETTINGS.getSetting("Network enable").c_str(), CURLFORM_END);
+	curl_formadd(&formpost, &lastptr, CURLFORM_COPYNAME, "RoR_BinaryHash", CURLFORM_COPYCONTENTS, SSETTING("BinaryHash").c_str(), CURLFORM_END);
+	curl_formadd(&formpost, &lastptr, CURLFORM_COPYNAME, "RoR_GUID", CURLFORM_COPYCONTENTS, SSETTING("GUID").c_str(), CURLFORM_END);
+	curl_formadd(&formpost, &lastptr, CURLFORM_COPYNAME, "MP_ServerName", CURLFORM_COPYCONTENTS, SSETTING("Server name").c_str(), CURLFORM_END);
+	curl_formadd(&formpost, &lastptr, CURLFORM_COPYNAME, "MP_ServerPort", CURLFORM_COPYCONTENTS, SSETTING("Server port").c_str(), CURLFORM_END);
+	curl_formadd(&formpost, &lastptr, CURLFORM_COPYNAME, "MP_NetworkEnabled", CURLFORM_COPYCONTENTS, SSETTING("Network enable").c_str(), CURLFORM_END);
 
 	if(mefl->getCurrentTruckNumber() >= 0 && mefl->getCurrentTruck())
 	{
@@ -1172,7 +1172,7 @@ int GameScript::useOnlineAPI(const std::string &apiquery, const AngelScript::CSc
 	}
 
 	const RenderTarget::FrameStats& stats = mefl->getRenderWindow()->getStatistics();
-	curl_formadd(&formpost, &lastptr, CURLFORM_COPYNAME, "AVG_FPS", CURLFORM_COPYCONTENTS, StringConverter::toString(stats.avgFPS).c_str(), CURLFORM_END);
+	curl_formadd(&formpost, &lastptr, CURLFORM_COPYNAME, "AVG_FPS", CURLFORM_COPYCONTENTS, TOSTRING(stats.avgFPS).c_str(), CURLFORM_END);
 
 
 

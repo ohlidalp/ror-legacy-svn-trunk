@@ -140,7 +140,7 @@ Collisions::Collisions(
 
 int Collisions::loadDefaultModels()
 {
-	return loadGroundModelsConfigFile(SETTINGS.getSetting("Config Root")+"ground_models.cfg");
+	return loadGroundModelsConfigFile(SSETTING("Config Root")+"ground_models.cfg");
 }
 
 int Collisions::loadGroundModelsConfigFile(Ogre::String filename)
@@ -191,7 +191,7 @@ int Collisions::loadGroundModelsConfigFile(Ogre::String filename)
 	if(this->collisionVersion != LATEST_GROUND_MODEL_VERSION)
 	{
 		// message box
-		String url = "http://wiki.rigsofrods.com/index.php?title=Error_Old_ground_model#"+StringConverter::toString(this->collisionVersion)+"to"+StringConverter::toString(LATEST_GROUND_MODEL_VERSION);
+		String url = "http://wiki.rigsofrods.com/index.php?title=Error_Old_ground_model#"+TOSTRING(this->collisionVersion)+"to"+TOSTRING(LATEST_GROUND_MODEL_VERSION);
 		showOgreWebError(_L("Configuration error"), _L("Your ground configuration is too old, please copy skeleton/config/ground_models.cfg to My Documents/Rigs of Rods/config"), url);
 		exit(124);
 	}
@@ -334,7 +334,7 @@ void Collisions::setupLandUse(const char *configfile)
 	if(landuse) return;
 	landuse = new Landusemap(configfile, this, mefl->mapsizex, mefl->mapsizez);
 #else
-	LogManager::getSingleton().logMessage("RoR was not compiled with PagedGeometry support. You cannot use Landuse maps with it.");
+	LOG("RoR was not compiled with PagedGeometry support. You cannot use Landuse maps with it.");
 #endif //USE_PAGED
 }
 
@@ -430,7 +430,7 @@ void Collisions::hash_add(int cell_x, int cell_z, int value)
 	unsigned int pos=hash;
 	unsigned int stop=hash-1;
 	if (hash==0) stop=(1<<HASH_SIZE)-1;
-//Ogre::LogManager::getSingleton().logMessage("COLL: adding "+Ogre::StringConverter::toString(cell_x)+", "+Ogre::StringConverter::toString(cell_z)+" hash="+Ogre::StringConverter::toString(hash));
+//LOG("COLL: adding "+TOSTRING(cell_x)+", "+TOSTRING(cell_z)+" hash="+TOSTRING(hash));
 
 	while (pos!=stop && hashtable[pos].cellid!=UNUSED_CELLID && hashtable[pos].cellid!=cellid)
 	{
@@ -460,7 +460,7 @@ void Collisions::hash_add(int cell_x, int cell_z, int value)
 	else
 	{
 		//the hash table is full!!!
-		Ogre::LogManager::getSingleton().logMessage("COLL: the hashtable is full!!!");
+		LOG("COLL: the hashtable is full!!!");
 	}
 }
 
@@ -525,7 +525,7 @@ void Collisions::addCollisionBox(SceneNode *tenode, bool rotating, bool virt, fl
 	coll_box.eventsourcenum=-1;
 	if (strlen(eventname)>0)
 	{
-//Ogre::LogManager::getSingleton().logMessage("COLL: adding "+Ogre::StringConverter::toString(free_eventsource)+" "+String(instancename)+" "+String(eventname));
+//LOG("COLL: adding "+TOSTRING(free_eventsource)+" "+String(instancename)+" "+String(eventname));
 		//this is envent-generating
 		strcpy(eventsources[free_eventsource].boxname, eventname);
 		strcpy(eventsources[free_eventsource].instancename, instancename);
@@ -687,10 +687,10 @@ void Collisions::addCollisionBox(SceneNode *tenode, bool rotating, bool virt, fl
 		// setup a label
 		if(virt)
 		{
-			String labelName = "collision_box_label_"+StringConverter::toString(free_collision_box);
+			String labelName = "collision_box_label_"+TOSTRING(free_collision_box);
 			String labelCaption = "EVENTBOX\nevent:"+String(eventname) + "\ninstance:" + String(instancename);
 			if(luahandler != -1)
-				labelCaption += "\nhandler:" + StringConverter::toString(luahandler);
+				labelCaption += "\nhandler:" + TOSTRING(luahandler);
 			MovableText *mt = new MovableText(labelName, labelCaption);
 			mt->setFontName("highcontrast_black");
 			mt->setTextAlignment(MovableText::H_CENTER, MovableText::V_ABOVE);
@@ -722,7 +722,7 @@ void Collisions::addCollisionBox(SceneNode *tenode, bool rotating, bool virt, fl
 	{
 		for (int j = ilo.z; j <= ihi.z; j++)
 		{
-			//LogManager::getSingleton().logMessage("Adding a reference to cell "+StringConverter::toString(i)+" "+StringConverter::toString(j)+" at index "+StringConverter::toString(collision_index_free[i*NUM_COLLISON_CELLS+j]));
+			//LOG("Adding a reference to cell "+TOSTRING(i)+" "+TOSTRING(j)+" at index "+TOSTRING(collision_index_free[i*NUM_COLLISON_CELLS+j]));
 			hash_add(i,j,free_collision_box);
 		}
 	}
@@ -785,11 +785,11 @@ int Collisions::addCollisionTri(Vector3 p1, Vector3 p2, Vector3 p3, ground_model
 
 void Collisions::printStats()
 {
-	LogManager::getSingleton().logMessage("COLL: Collision system statistics:");
-	LogManager::getSingleton().logMessage("COLL: Cell size: "+StringConverter::toString((float)CELL_SIZE)+" m");
-	LogManager::getSingleton().logMessage("COLL: Hashtable occupation: "+StringConverter::toString(cells.size()));
-	LogManager::getSingleton().logMessage("COLL: Hashtable collisions: "+StringConverter::toString(collision_count));
-	LogManager::getSingleton().logMessage("COLL: Largest cell: "+StringConverter::toString(largest_cellcount));
+	LOG("COLL: Collision system statistics:");
+	LOG("COLL: Cell size: "+TOSTRING((float)CELL_SIZE)+" m");
+	LOG("COLL: Hashtable occupation: "+TOSTRING(cells.size()));
+	LOG("COLL: Hashtable collisions: "+TOSTRING(collision_count));
+	LOG("COLL: Largest cell: "+TOSTRING(largest_cellcount));
 
 }
 
@@ -977,7 +977,7 @@ bool Collisions::nodeCollision(node_t *node, bool iscinecam, int contacted, floa
 	refx=(int)(node->AbsPosition.x*inverse_CELL_SIZE);
 	refz=(int)(node->AbsPosition.z*inverse_CELL_SIZE);
 	cell_t *cell=hash_find(refx, refz);
-	//LogManager::getSingleton().logMessage("Checking cell "+StringConverter::toString(refx)+" "+StringConverter::toString(refz)+" total indexes: "+StringConverter::toString(num_cboxes_index[refp]));
+	//LOG("Checking cell "+TOSTRING(refx)+" "+TOSTRING(refz)+" total indexes: "+TOSTRING(num_cboxes_index[refp]));
 
 	collision_tri_t *minctri=0;
 	float minctridist=100.0;
@@ -1467,8 +1467,8 @@ int Collisions::createCollisionDebugVisualization()
 
 				float percentd = percent;
 				if(percentd > 1) percentd = 1;
-				String matName = "mat-coll-dbg-"+StringConverter::toString((int)(percentd*100));
-				String cell_name="("+StringConverter::toString(cellx)+","+ StringConverter::toString(cellz)+")";
+				String matName = "mat-coll-dbg-"+TOSTRING((int)(percentd*100));
+				String cell_name="("+TOSTRING(cellx)+","+ TOSTRING(cellz)+")";
 
 				ManualObject *mo =  mSceneMgr->createManualObject("collisionDebugVisualization"+cell_name);
 				SceneNode *mo_node = mSceneMgr->getRootSceneNode()->createChildSceneNode("collisionDebugVisualization_node"+cell_name);
@@ -1503,7 +1503,7 @@ int Collisions::createCollisionDebugVisualization()
 				/*
 				// setup the label
 				String labelName = "label_"+cell_name;
-				String labelCaption = cell_name+" "+StringConverter::toString(percent*100,2) + "% usage ("+StringConverter::toString(cc)+"/"+StringConverter::toString(CELL_BLOCKSIZE)+") DEEP: " + StringConverter::toString(deep);
+				String labelCaption = cell_name+" "+TOSTRING(percent*100,2) + "% usage ("+TOSTRING(cc)+"/"+TOSTRING(CELL_BLOCKSIZE)+") DEEP: " + TOSTRING(deep);
 				MovableText *mt = new MovableText(labelName, labelCaption);
 				mt->setFontName("highcontrast_black");
 				mt->setTextAlignment(MovableText::H_CENTER, MovableText::V_ABOVE);
@@ -1541,8 +1541,8 @@ int Collisions::addCollisionMesh(Ogre::String meshname, Ogre::Vector3 pos, Ogre:
 
 	getMeshInformation(ent->getMesh().getPointer(),vertex_count,vertices,index_count,indices, pos, q, scale);
 
-	//LogManager::getSingleton().logMessage(LML_NORMAL,"Vertices in mesh: %u",vertex_count);
-	//LogManager::getSingleton().logMessage(LML_NORMAL,"Triangles in mesh: %u",index_count / 3);
+	//LOG(LML_NORMAL,"Vertices in mesh: %u",vertex_count);
+	//LOG(LML_NORMAL,"Triangles in mesh: %u",index_count / 3);
 	for (int i=0; i<(int)index_count/3; i++)
 	{
 		addCollisionTri(vertices[indices[i*3]], vertices[indices[i*3+1]], vertices[indices[i*3+2]], gm);
@@ -1561,7 +1561,7 @@ int Collisions::addCollisionMesh(Ogre::String meshname, Ogre::Vector3 pos, Ogre:
 		n->setScale(scale);
 		n->setOrientation(q);
 	
-		String labelName = "collision_mesh_label_"+StringConverter::toString(free_collision_tri);
+		String labelName = "collision_mesh_label_"+TOSTRING(free_collision_tri);
 		String labelCaption = "COLLMESH\nmeshname:"+meshname + "\ngroundmodel:" + String(gm->name);
 		MovableText *mt = new MovableText(labelName, labelCaption);
 		mt->setFontName("highcontrast_black");

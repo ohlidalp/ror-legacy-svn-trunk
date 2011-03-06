@@ -267,7 +267,7 @@ int DecalManager::addTerrainSplineDecal(Ogre::SimpleSpline *spline, float width,
 	{
 		MeshSerializer *ms = new MeshSerializer();
 		ms->exportMesh(mesh.get(), export_fn);
-		Ogre::LogManager::getSingleton().logMessage("spline mesh exported as " + export_fn);
+		LOG("spline mesh exported as " + export_fn);
 		delete(ms);
 	}
 
@@ -287,7 +287,7 @@ int DecalManager::finishTerrainDecal()
 	// if if no decals
 	if(!terrain_decals_snode->numChildren()) return 0;
 	terrain_decal_count++;
-	terrain_decals_sg = mSceneMgr->createStaticGeometry("terrain_decals_"+StringConverter::toString(terrain_decal_count));
+	terrain_decals_sg = mSceneMgr->createStaticGeometry("terrain_decals_"+TOSTRING(terrain_decal_count));
 	terrain_decals_sg->setCastShadows(false);
 	terrain_decals_sg->addSceneNode(terrain_decals_snode);
 	terrain_decals_sg->setRegionDimensions(Vector3(farclip/2.0, 10000.0, farclip/2.0));
@@ -301,7 +301,7 @@ int DecalManager::finishTerrainDecal()
 		//bakeNode->removeAndDestroyAllChildren();
 	} catch(Ogre::Exception& e)
 	{
-		LogManager::getSingleton().logMessage("error while baking decals: " + e.getFullDescription());
+		LOG("error while baking decals: " + e.getFullDescription());
 	}
 #endif
 	return 0;

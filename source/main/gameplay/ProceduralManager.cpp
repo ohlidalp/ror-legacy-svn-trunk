@@ -77,7 +77,7 @@ int ProceduralManager::updateObject(ProceduralObject &po)
 
 int ProceduralManager::updateAllObjects()
 {
-	LogManager::getSingleton().logMessage(" *** ProceduralManager::updateAllObjects");
+	LOG(" *** ProceduralManager::updateAllObjects");
 	std::vector<ProceduralObject>::iterator it;
 	for(it=pObjects.begin();it!=pObjects.end();it++)
 	{
@@ -88,7 +88,7 @@ int ProceduralManager::updateAllObjects()
 
 int ProceduralManager::deleteAllObjects()
 {
-	LogManager::getSingleton().logMessage(" *** ProceduralManager::deleteAllObjects");
+	LOG(" *** ProceduralManager::deleteAllObjects");
 	std::vector<ProceduralObject>::iterator it;
 	for(it=pObjects.begin();it!=pObjects.end();it++)
 	{

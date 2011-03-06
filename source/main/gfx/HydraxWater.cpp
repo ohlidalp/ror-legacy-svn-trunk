@@ -24,7 +24,7 @@ along with Rigs of Rods.  If not, see <http://www.gnu.org/licenses/>.
 
 HydraxWater::HydraxWater(int type, Camera *camera, SceneManager *mSceneMgr, RenderWindow *mWindow, float _wheight, float *mapsizex, float *mapsizez, bool usewaves) : waternoise(0), mHydrax(0)
 {
-	LogManager::getSingleton().logMessage("* loading Hydrax...");
+	LOG("* loading Hydrax...");
 	mCamera = camera;
 	wheight = _wheight;
 	waveStrength = 30.5f;
@@ -121,7 +121,7 @@ int HydraxWater::loadConfig(Ogre::String configfile)
 		mDecal->setTransparency(0.8);
 	}
 	*/
-	LogManager::getSingleton().logMessage("* Hydrax loaded with config "+configfile);
+	LOG("* Hydrax loaded with config "+configfile);
 	return 0;
 }
 

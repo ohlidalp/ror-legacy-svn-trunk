@@ -55,7 +55,7 @@ Network *net_instance;
 void *s_sendthreadstart(void* vid)
 {
 #ifdef USE_CRASHRPT
-	if(SETTINGS.getSetting("NoCrashRpt").empty())
+	if(SSETTING("NoCrashRpt").empty())
 	{
 		// add the crash handler for this thread
 		CrThreadAutoInstallHelper cr_thread_install_helper;
@@ -69,7 +69,7 @@ void *s_sendthreadstart(void* vid)
 void *s_receivethreadstart(void* vid)
 {
 #ifdef USE_CRASHRPT
-	if(SETTINGS.getSetting("NoCrashRpt").empty())
+	if(SSETTING("NoCrashRpt").empty())
 	{
 		// add the crash handler for this thread
 		CrThreadAutoInstallHelper cr_thread_install_helper(0);
@@ -204,7 +204,7 @@ bool Network::connect()
 	socket.set_timeout(0, 0);
 
 	//send credencials
-	nickname = SETTINGS.getSetting("Nickname");
+	nickname = SSETTING("Nickname");
 	String nick = nickname;
 	StringUtil::toLowerCase(nick);
 	if (nick==String("pricorde") || nick==String("thomas"))
@@ -212,7 +212,7 @@ bool Network::connect()
 
 	char pwbuffer[250];
 	memset(pwbuffer, 0, 250);
-	strncpy(pwbuffer, SETTINGS.getSetting("Server password").c_str(), 250);
+	strncpy(pwbuffer, SSETTING("Server password").c_str(), 250);
 
 	char sha1pwresult[250];
 	memset(sha1pwresult, 0, 250);
@@ -224,7 +224,7 @@ bool Network::connect()
 		sha1.ReportHash(sha1pwresult, CSHA1::REPORT_HEX_SHORT);
 	}
 
-	String usertoken = SETTINGS.getSetting("User Token");
+	String usertoken = SSETTING("User Token");
 	char usertokensha1result[250];
 	memset(usertokensha1result, 0, 250);
 	if(usertoken.size()>0)
@@ -243,9 +243,9 @@ bool Network::connect()
 	strncpy(c.usertoken, usertokensha1result, 40);
 	strncpy(c.clientversion, ROR_VERSION_STRING, strnlen(ROR_VERSION_STRING, 25));
 	strcpy(c.clientname, "RoR");
-	String lang = SETTINGS.getSetting("Language Short");
+	String lang = SSETTING("Language Short");
 	strncpy(c.language, lang.c_str(), std::min<int>(lang.size(), 10));
-	String guid = SETTINGS.getSetting("GUID");
+	String guid = SSETTING("GUID");
 	strncpy(c.clientGUID, guid.c_str(), std::min<int>(guid.size(), 10));
 	strcpy(c.sessiontype, "normal");
 	if (sendmessage(&socket, MSG2_USER_INFO, 0, sizeof(user_info_t), (char*)&c))
@@ -326,14 +326,14 @@ Ogre::String Network::getNickname(bool colour)
 
 	String nick = ColoredTextAreaOverlayElement::StripColors(nickname);
 	if(colour)
-		return String("^") + StringConverter::toString(nickColour) + nick + String("^7");
+		return String("^") + TOSTRING(nickColour) + nick + String("^7");
 
 	return nick;
 }
 
 int Network::sendMessageRaw(SWInetSocket *socket, char *buffer, unsigned int msgsize)
 {
-	//LogManager::getSingleton().logMessage("* sending raw message: " + StringConverter::toString(msgsize));
+	//LOG("* sending raw message: " + TOSTRING(msgsize));
 
 	pthread_mutex_lock(&msgsend_mutex); //we use a mutex because a chat message can be sent asynchronously
 	SWBaseSocket::SWBaseError error;
@@ -344,7 +344,7 @@ int Network::sendMessageRaw(SWInetSocket *socket, char *buffer, unsigned int msg
 		int sendnum=socket->send(buffer+rlen, msgsize-rlen, &error);
 		if (sendnum<0)
 		{
-			LogManager::getSingleton().logMessage("NET send error: " + StringConverter::toString(sendnum));
+			LOG("NET send error: " + TOSTRING(sendnum));
 			return -1;
 		}
 		rlen+=sendnum;
@@ -385,7 +385,7 @@ int Network::sendmessage(SWInetSocket *socket, int type, unsigned int streamid, 
 		int sendnum=socket->send(buffer+rlen, msgsize-rlen, &error);
 		if (sendnum<0)
 		{
-			LogManager::getSingleton().logMessage("NET send error: " + StringConverter::toString(sendnum));
+			LOG("NET send error: " + TOSTRING(sendnum));
 			return -1;
 		}
 		rlen+=sendnum;
@@ -409,7 +409,7 @@ int Network::receivemessage(SWInetSocket *socket, header_t *head, char* content,
 		int recvnum=socket->recv(buffer+hlen, sizeof(header_t)-hlen,&error);
 		if (recvnum<0)
 		{
-			LogManager::getSingleton().logMessage("NET receive error 1: " + StringConverter::toString(recvnum));
+			LOG("NET receive error 1: " + TOSTRING(recvnum));
 			return -1;
 		}
 		hlen+=recvnum;
@@ -430,7 +430,7 @@ int Network::receivemessage(SWInetSocket *socket, header_t *head, char* content,
 			int recvnum=socket->recv(buffer+hlen, (head->size+sizeof(header_t))-hlen,&error);
 			if (recvnum<0)
 			{
-				LogManager::getSingleton().logMessage("NET receive error 2: "+ StringConverter::toString(recvnum));
+				LOG("NET receive error 2: "+ TOSTRING(recvnum));
 				return -1;
 			}
 			hlen+=recvnum;
@@ -470,7 +470,7 @@ void Network::calcSpeed()
 
 void Network::sendthreadstart()
 {
-	LogManager::getSingleton().logMessage("Sendthread starting");
+	LOG("Sendthread starting");
 	while (!shutdown)
 	{
 		// wait for data...
@@ -486,7 +486,7 @@ void Network::disconnect()
 	SWBaseSocket::SWBaseError error;
 	socket.set_timeout(1, 1000);
 	socket.disconnect(&error);
-	LogManager::getSingleton().logMessage("Network error while disconnecting: ");
+	LOG("Network error while disconnecting: ");
 }
 
 
@@ -500,9 +500,9 @@ void Network::receivethreadstart()
 	header_t header;
 
 	char *buffer=(char*)malloc(MAX_MESSAGE_LENGTH);
-	bool autoDl = (SETTINGS.getSetting("AutoDownload") == "Yes");
+	bool autoDl = (BSETTING("AutoDownload"));
 	std::deque < stream_reg_t > streamCreationResults;
-	LogManager::getSingleton().logMessage("Receivethread starting");
+	LOG("Receivethread starting");
 	// unlimited timeout, important!
 
 	// wait for beamfactory to be existant before doing anything
@@ -521,7 +521,7 @@ void Network::receivethreadstart()
 	{
 		//get one message
 		int err=receivemessage(&socket, &header, buffer, MAX_MESSAGE_LENGTH);
-		//LogManager::getSingleton().logMessage("received data: " + StringConverter::toString(header.command) + ", source: "+StringConverter::toString(header.source) + ":"+StringConverter::toString(header.streamid) + ", size: "+StringConverter::toString(header.size));
+		//LOG("received data: " + TOSTRING(header.command) + ", source: "+TOSTRING(header.source) + ":"+TOSTRING(header.streamid) + ", size: "+TOSTRING(header.size));
 		if (err)
 		{
 			//this is an error!
@@ -561,7 +561,7 @@ void Network::receivethreadstart()
 				case 1: typeStr="character"; break;
 				case 3: typeStr="chat"; break;
 			};
-			LogManager::getSingleton().logMessage(" * received stream registration: " + StringConverter::toString(header.source) + ": "+StringConverter::toString(header.streamid) + ", type: "+typeStr);
+			LOG(" * received stream registration: " + TOSTRING(header.source) + ": "+TOSTRING(header.streamid) + ", type: "+typeStr);
 
 			if(reg->type == 0)
 			{
@@ -585,7 +585,7 @@ void Network::receivethreadstart()
 		{
 			stream_register_t *reg = (stream_register_t *)buffer;
 			BeamFactory::getSingleton().addStreamRegistrationResults(header.source, reg);
-			LogManager::getSingleton().logMessage(" * received stream registration result: " + StringConverter::toString(header.source) + ": "+StringConverter::toString(header.streamid));
+			LOG(" * received stream registration result: " + TOSTRING(header.source) + ": "+TOSTRING(header.streamid));
 		}
 		else if(header.command == MSG2_CHAT && header.source == -1)
 		{
@@ -708,9 +708,9 @@ void Network::debugPacket(const char *name, header_t *header, char *buffer)
 
 	char tmp[256]="";
 	sprintf(tmp, "++ %s: %d:%d, %d, %d, hash: %s", name, header->source, header->streamid, header->command, header->size, sha1result);
-	LogManager::getSingleton().logMessage(tmp);
+	LOG(tmp);
 	//String hex = hexdump(buffer, header->size);
-	//LogManager::getSingleton().logMessage(hex);
+	//LOG(hex);
 }
 
 #endif //SOCKETW

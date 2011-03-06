@@ -123,7 +123,7 @@ void GUI_MainMenu::onMenuBtn(MyGUI::MenuCtrlPtr _sender, MyGUI::MenuItemPtr _ite
 		mefl->shutdown_pre();
 	}
 
-	//LogManager::getSingleton().logMessage(" menu button pressed: " + _item->getCaption());
+	//LOG(" menu button pressed: " + _item->getCaption());
 }
 
 void GUI_MainMenu::setVisible(bool value)

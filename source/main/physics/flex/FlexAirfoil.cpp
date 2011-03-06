@@ -748,7 +748,7 @@ void FlexAirfoil::updateForces()
 {
 	if(!airfoil) return;
 	if (broken) return;
-//	if (innan) {LogManager::getSingleton().logMessage("STEP "+StringConverter::toString(innan)+" "+StringConverter::toString(nblu));innan++;}
+//	if (innan) {LOG("STEP "+TOSTRING(innan)+" "+TOSTRING(nblu));innan++;}
 	//evaluate wind direction
 	Vector3 wind=-(nodes[nfld].Velocity+nodes[nfrd].Velocity)/2.0;
 	//add wash
@@ -763,11 +763,11 @@ void FlexAirfoil::updateForces()
 	Vector3 spanv=((nodes[nfrd].RelPosition-nodes[nfld].RelPosition)+(nodes[nbrd].RelPosition-nodes[nbld].RelPosition))/2.0;
 	float span=spanv.length();
 	//lift vector
-//if (_isnan(spanv.x) || _isnan(spanv.y) || _isnan(spanv.z)) LogManager::getSingleton().logMessage("spanv is NaN "+StringConverter::toString(nblu));
-//if (_isnan(wind.x) || _isnan(wind.y) || _isnan(wind.z)) LogManager::getSingleton().logMessage("wind is NaN "+StringConverter::toString(nblu));
+//if (_isnan(spanv.x) || _isnan(spanv.y) || _isnan(spanv.z)) LOG("spanv is NaN "+TOSTRING(nblu));
+//if (_isnan(wind.x) || _isnan(wind.y) || _isnan(wind.z)) LOG("wind is NaN "+TOSTRING(nblu));
 	Vector3 liftv=spanv.crossProduct(-wind);
-//if (_isnan(liftv.x) || _isnan(liftv.y) || _isnan(liftv.z)) LogManager::getSingleton().logMessage("liftv0 is NaN "+StringConverter::toString(nblu));
-//if (_isnan(liftv.x) || _isnan(liftv.y) || _isnan(liftv.z)) LogManager::getSingleton().logMessage("liftv1 is NaN "+StringConverter::toString(nblu));
+//if (_isnan(liftv.x) || _isnan(liftv.y) || _isnan(liftv.z)) LOG("liftv0 is NaN "+TOSTRING(nblu));
+//if (_isnan(liftv.x) || _isnan(liftv.y) || _isnan(liftv.z)) LOG("liftv1 is NaN "+TOSTRING(nblu));
 
 	//wing normal
 	float s=span*chord;
@@ -783,7 +783,7 @@ void FlexAirfoil::updateForces()
 	float raoa=daoa.valueRadians();
 	if (dumb.dotProduct(spanv)>0) {aoa=-aoa; raoa=-raoa;};
 
-//if (_isnan(aoa)) LogManager::getSingleton().logMessage("aoa is NaN "+StringConverter::toString(nblu));
+//if (_isnan(aoa)) LOG("aoa is NaN "+TOSTRING(nblu));
 	//get airfoil data
 	float cz, cx, cm;
 	if (isstabilator)
@@ -791,7 +791,7 @@ void FlexAirfoil::updateForces()
 	else
 		airfoil->getparams(aoa, chordratio, deflection, &cz, &cx, &cm);
 	//compute surface
-//if (_isnan(cz)) LogManager::getSingleton().logMessage("cz is NaN "+StringConverter::toString(nblu));
+//if (_isnan(cz)) LOG("cz is NaN "+TOSTRING(nblu));
 	//float fs=span*(fabs(thickness*cos(raoa))+fabs(chord*sin(raoa)));
 	//float ts=span*(fabs(chord*cos(raoa))+fabs(thickness*sin(raoa)));
 
@@ -807,12 +807,12 @@ void FlexAirfoil::updateForces()
 	//drag
 	wforce=(cx*0.5*airdensity*wspeed*s)*wind;
 
-//if (_isnan(wforce.x) || _isnan(wforce.y) || _isnan(wforce.z)) LogManager::getSingleton().logMessage("wforce1 is NaN "+StringConverter::toString(nblu));
+//if (_isnan(wforce.x) || _isnan(wforce.y) || _isnan(wforce.z)) LOG("wforce1 is NaN "+TOSTRING(nblu));
 	//induced drag
 	if (useInducedDrag) 
 	{
 		Vector3 idf=(cx*cx*0.25*airdensity*wspeed*idArea*idArea/(3.14159*idSpan*idSpan))*wind;
-//if (_isnan(idf.length())) LogManager::getSingleton().logMessage("idf is NaN "+StringConverter::toString(nblu));
+//if (_isnan(idf.length())) LOG("idf is NaN "+TOSTRING(nblu));
 
 		if (idLeft)
 		{
@@ -826,12 +826,12 @@ void FlexAirfoil::updateForces()
 		}
 	}
 
-//if (_isnan(wforce.x) || _isnan(wforce.y) || _isnan(wforce.z)) LogManager::getSingleton().logMessage("wforce1a is NaN "+StringConverter::toString(nblu));
-//if (_isnan(cz)) LogManager::getSingleton().logMessage("cz is NaN "+StringConverter::toString(nblu));
-//if (_isnan(wspeed)) LogManager::getSingleton().logMessage("wspeed is NaN "+StringConverter::toString(nblu));
-//if (_isnan(airdensity)) LogManager::getSingleton().logMessage("airdensity is NaN "+StringConverter::toString(nblu));
-//if (_isnan(s)) LogManager::getSingleton().logMessage("s is NaN "+StringConverter::toString(nblu));
-//if (_isnan(liftv.x) || _isnan(liftv.y) || _isnan(liftv.z)) LogManager::getSingleton().logMessage("liftv is NaN "+StringConverter::toString(nblu));
+//if (_isnan(wforce.x) || _isnan(wforce.y) || _isnan(wforce.z)) LOG("wforce1a is NaN "+TOSTRING(nblu));
+//if (_isnan(cz)) LOG("cz is NaN "+TOSTRING(nblu));
+//if (_isnan(wspeed)) LOG("wspeed is NaN "+TOSTRING(nblu));
+//if (_isnan(airdensity)) LOG("airdensity is NaN "+TOSTRING(nblu));
+//if (_isnan(s)) LOG("s is NaN "+TOSTRING(nblu));
+//if (_isnan(liftv.x) || _isnan(liftv.y) || _isnan(liftv.z)) LOG("liftv is NaN "+TOSTRING(nblu));
 	//lift
 	wforce+=(cz*0.5*airdensity*wspeed*chord)*liftv;
 
@@ -839,7 +839,7 @@ void FlexAirfoil::updateForces()
 /*if (_isnan(wforce.x) || _isnan(wforce.y) || _isnan(wforce.z)) 
 {
 	if (innan==0) innan=1;
-	LogManager::getSingleton().logMessage("wforce2 is NaN "+StringConverter::toString(nblu));
+	LOG("wforce2 is NaN "+TOSTRING(nblu));
 }
 */
 	//moment

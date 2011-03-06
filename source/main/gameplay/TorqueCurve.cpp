@@ -44,7 +44,7 @@ Real TorqueCurve::getEngineTorque(Real rpmRatio)
 
 int TorqueCurve::loadDefaultTorqueModels()
 {
-	LogManager::getSingleton().logMessage("loading default torque Curves");
+	LOG("loading default torque Curves");
 	// check if we have a config file
 	String group = "";
 	try
@@ -56,7 +56,7 @@ int TorqueCurve::loadDefaultTorqueModels()
 	// emit a warning if we did not found the file
 	if (group.empty())
 	{
-		LogManager::getSingleton().logMessage("torque_models.cfg not found");
+		LOG("torque_models.cfg not found");
 		return 1;
 	}
 
@@ -112,7 +112,7 @@ int TorqueCurve::processLine(Ogre::StringVector args, String model)
 		splines[model] = SimpleSpline();
 
 	// attach the points to the spline
-	// LogManager::getSingleton().logMessage("curve "+model+" : " + StringConverter::toString(point));
+	// LOG("curve "+model+" : " + TOSTRING(point));
 	splines[model].addPoint(point);
 
 	// special case for custom model:
@@ -125,11 +125,11 @@ int TorqueCurve::processLine(Ogre::StringVector args, String model)
 
 int TorqueCurve::setTorqueModel(String name)
 {
-	//LogManager::getSingleton().logMessage("using torque curve: " + name);
+	//LOG("using torque curve: " + name);
 	// check if we have such a model loaded
 	if (splines.find(name) == splines.end())
 	{
-		LogManager::getSingleton().logMessage("Torquemodel "+String(name)+" not found! ignoring that and using default model...");
+		LOG("Torquemodel "+String(name)+" not found! ignoring that and using default model...");
 		return 1;
 	}
 	// use the model

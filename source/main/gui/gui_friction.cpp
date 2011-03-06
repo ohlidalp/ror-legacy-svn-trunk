@@ -450,7 +450,7 @@ void GUI_Friction::updateControls(ground_model_t *gm, bool setCombo)
 	}
 
 	MyGUI::EditPtr e = (MyGUI::EditPtr)win->findWidget("solid_adhension_velo");
-	if(e) e->setCaption(StringConverter::toString(gm->va));
+	if(e) e->setCaption(TOSTRING(gm->va));
 	MyGUI::HScrollPtr h = (MyGUI::HScrollPtr)win->findWidget("solid_adhension_velo_scroll");
 	MyGUI::StaticTextPtr edt = (MyGUI::StaticTextPtr)win->findWidget("solid_adhension_velo_edited"); if(edt) edt->setCaption("");
 	std::pair<Real,Real> f = minMaxs["solid_adhension_velo"];
@@ -458,7 +458,7 @@ void GUI_Friction::updateControls(ground_model_t *gm, bool setCombo)
 	if(h) h->setScrollPosition(fa);
 	
 	e = (MyGUI::EditPtr)win->findWidget("solid_level");
-	if(e) e->setCaption(StringConverter::toString(gm->solid_ground_level));
+	if(e) e->setCaption(TOSTRING(gm->solid_ground_level));
 	h = (MyGUI::HScrollPtr)win->findWidget("solid_adhension_velo_scroll");
 	edt = (MyGUI::StaticTextPtr)win->findWidget("solid_level_edited"); if(edt) edt->setCaption("");
 	f = minMaxs["solid_level"];
@@ -466,7 +466,7 @@ void GUI_Friction::updateControls(ground_model_t *gm, bool setCombo)
 	if(h) h->setScrollPosition(fa);
 
 	e = (MyGUI::EditPtr)win->findWidget("solid_static_friction");
-	if(e) e->setCaption(StringConverter::toString(gm->ms));
+	if(e) e->setCaption(TOSTRING(gm->ms));
 	h = (MyGUI::HScrollPtr)win->findWidget("solid_static_friction_scroll");
 	edt = (MyGUI::StaticTextPtr)win->findWidget("solid_static_friction_edited"); if(edt) edt->setCaption("");
 	f = minMaxs["solid_static_friction"];
@@ -474,7 +474,7 @@ void GUI_Friction::updateControls(ground_model_t *gm, bool setCombo)
 	if(h) h->setScrollPosition(fa);
 
 	e = (MyGUI::EditPtr)win->findWidget("solid_dynamic_friction");
-	if(e) e->setCaption(StringConverter::toString(gm->mc));
+	if(e) e->setCaption(TOSTRING(gm->mc));
 	h = (MyGUI::HScrollPtr)win->findWidget("solid_dynamic_friction_scroll");
 	edt = (MyGUI::StaticTextPtr)win->findWidget("solid_dynamic_friction_edited"); if(edt) edt->setCaption("");
 	f = minMaxs["solid_dynamic_friction"];
@@ -482,7 +482,7 @@ void GUI_Friction::updateControls(ground_model_t *gm, bool setCombo)
 	if(h) h->setScrollPosition(fa);
 
 	e = (MyGUI::EditPtr)win->findWidget("solid_hydrodynamic");
-	if(e) e->setCaption(StringConverter::toString(gm->t2));
+	if(e) e->setCaption(TOSTRING(gm->t2));
 	h = (MyGUI::HScrollPtr)win->findWidget("solid_hydrodynamic_scroll");
 	edt = (MyGUI::StaticTextPtr)win->findWidget("solid_hydrodynamic_edited"); if(edt) edt->setCaption("");
 	f = minMaxs["solid_hydrodynamic"];
@@ -490,7 +490,7 @@ void GUI_Friction::updateControls(ground_model_t *gm, bool setCombo)
 	if(h) h->setScrollPosition(fa);
 
 	e = (MyGUI::EditPtr)win->findWidget("solid_stribeck");
-	if(e) e->setCaption(StringConverter::toString(gm->vs));
+	if(e) e->setCaption(TOSTRING(gm->vs));
 	h = (MyGUI::HScrollPtr)win->findWidget("solid_stribeck_scroll");
 	edt = (MyGUI::StaticTextPtr)win->findWidget("solid_stribeck_edited"); if(edt) edt->setCaption("");
 	f = minMaxs["solid_stribeck"];
@@ -498,7 +498,7 @@ void GUI_Friction::updateControls(ground_model_t *gm, bool setCombo)
 	if(h) h->setScrollPosition(fa);
 
 	e = (MyGUI::EditPtr)win->findWidget("solid_alpha");
-	if(e) e->setCaption(StringConverter::toString(gm->alpha));
+	if(e) e->setCaption(TOSTRING(gm->alpha));
 	h = (MyGUI::HScrollPtr)win->findWidget("solid_alpha_scroll");
 	edt = (MyGUI::StaticTextPtr)win->findWidget("solid_alpha_edited"); if(edt) edt->setCaption("");
 	f = minMaxs["solid_alpha"];
@@ -506,7 +506,7 @@ void GUI_Friction::updateControls(ground_model_t *gm, bool setCombo)
 	if(h) h->setScrollPosition(fa);
 
 	e = (MyGUI::EditPtr)win->findWidget("solid_strength");
-	if(e) e->setCaption(StringConverter::toString(gm->strength));
+	if(e) e->setCaption(TOSTRING(gm->strength));
 	h = (MyGUI::HScrollPtr)win->findWidget("solid_strength_scroll");
 	edt = (MyGUI::StaticTextPtr)win->findWidget("solid_strength_edited"); if(edt) edt->setCaption("");
 	f = minMaxs["solid_strength"];
@@ -515,7 +515,7 @@ void GUI_Friction::updateControls(ground_model_t *gm, bool setCombo)
 
 	// fluid
 	e = (MyGUI::EditPtr)win->findWidget("fluid_flowbeh");
-	if(e) e->setCaption(StringConverter::toString(gm->flow_behavior_index));
+	if(e) e->setCaption(TOSTRING(gm->flow_behavior_index));
 	h = (MyGUI::HScrollPtr)win->findWidget("fluid_flowbeh_scroll");
 	edt = (MyGUI::StaticTextPtr)win->findWidget("fluid_flowbeh_edited"); if(edt) edt->setCaption("");
 	f = minMaxs["fluid_flowbeh"];
@@ -523,7 +523,7 @@ void GUI_Friction::updateControls(ground_model_t *gm, bool setCombo)
 	if(h) h->setScrollPosition(fa);
 
 	e = (MyGUI::EditPtr)win->findWidget("fluid_flowcon");
-	if(e) e->setCaption(StringConverter::toString(gm->flow_consistency_index));
+	if(e) e->setCaption(TOSTRING(gm->flow_consistency_index));
 	h = (MyGUI::HScrollPtr)win->findWidget("fluid_flowcon_scroll");
 	edt = (MyGUI::StaticTextPtr)win->findWidget("fluid_flowcon_edited"); if(edt) edt->setCaption("");
 	f = minMaxs["fluid_flowcon"];
@@ -531,7 +531,7 @@ void GUI_Friction::updateControls(ground_model_t *gm, bool setCombo)
 	if(h) h->setScrollPosition(fa);
 
 	e = (MyGUI::EditPtr)win->findWidget("fluid_density");
-	if(e) e->setCaption(StringConverter::toString(gm->fluid_density));
+	if(e) e->setCaption(TOSTRING(gm->fluid_density));
 	h = (MyGUI::HScrollPtr)win->findWidget("fluid_density_scroll");
 	edt = (MyGUI::StaticTextPtr)win->findWidget("fluid_density_edited"); if(edt) edt->setCaption("");
 	f = minMaxs["fluid_density"];
@@ -539,7 +539,7 @@ void GUI_Friction::updateControls(ground_model_t *gm, bool setCombo)
 	if(h) h->setScrollPosition(fa);
 
 	e = (MyGUI::EditPtr)win->findWidget("fluid_drag_anisotropy");
-	if(e) e->setCaption(StringConverter::toString(gm->drag_anisotropy));
+	if(e) e->setCaption(TOSTRING(gm->drag_anisotropy));
 	h = (MyGUI::HScrollPtr)win->findWidget("fluid_drag_anisotropy_scroll");
 	edt = (MyGUI::StaticTextPtr)win->findWidget("fluid_drag_anisotropy_edited"); if(edt) edt->setCaption("");
 	f = minMaxs["fluid_drag_anisotropy"];
@@ -553,7 +553,7 @@ void GUI_Friction::updateControls(ground_model_t *gm, bool setCombo)
 	edt = (MyGUI::StaticTextPtr)win->findWidget("combo_fx_type_edited"); if(edt) edt->setCaption("");
 
 	MyGUI::StaticTextPtr t = (MyGUI::StaticTextPtr)win->findWidget("fx_color_text");
-	if(t) t->setCaption(StringConverter::toString(gm->fx_colour));
+	if(t) t->setCaption(TOSTRING(gm->fx_colour));
 	edt = (MyGUI::StaticTextPtr)win->findWidget("fx_color_text_edited"); if(edt) edt->setCaption("");
 */
 
@@ -592,7 +592,7 @@ void GUI_Friction::event_btn_MouseButtonClick(MyGUI::WidgetPtr _sender)
 		String mTitle = hText.first;
 		String mTxt = hText.second;
 		if(fabs(minmax.first - minmax.second) > 0.001f)
-			mTxt += "\nParameter range: " + StringConverter::toString(minmax.first) + " to " + StringConverter::toString(minmax.second) + "";
+			mTxt += "\nParameter range: " + TOSTRING(minmax.first) + " to " + TOSTRING(minmax.second) + "";
 		MyGUI::IntPoint p = _sender->getAbsolutePosition();
 		MyGUI::IntSize s = _sender->getSize();
 		showHelp(mTitle, mTxt, p.left + s.width, p.top + s.height*0.5f);
@@ -608,7 +608,7 @@ void GUI_Friction::event_btn_MouseButtonClick(MyGUI::WidgetPtr _sender)
 	}
 
 
-	//LogManager::getSingleton().logMessage(" Friction GUI button pressed: " + _sender->getName());
+	//LOG(" Friction GUI button pressed: " + _sender->getName());
 }
 
 void GUI_Friction::event_scroll_value(MyGUI::VScrollPtr _sender, size_t _value)
@@ -622,7 +622,7 @@ void GUI_Friction::event_scroll_value(MyGUI::VScrollPtr _sender, size_t _value)
 		MyGUI::HScrollPtr h = (MyGUI::HScrollPtr)_sender;
 		Real rvalue = ((((float)_value) / (float)(h->getScrollRange())) * (f.second - f.first)) + f.first;
 		if(e)
-			e->setCaption(StringConverter::toString(rvalue));
+			e->setCaption(TOSTRING(rvalue));
 		
 		MyGUI::StaticTextPtr edt = (MyGUI::StaticTextPtr)win->findWidget(wName + "_edited");
 		if(edt)
@@ -700,7 +700,7 @@ void GUI_Friction::applyChanges()
 
 void GUI_Friction::notifyWindowButtonPressed(MyGUI::WindowPtr _sender, const std::string& _name)
 {
-	//LogManager::getSingleton().logMessage("notifyWindowButtonPressed: " + String(_name));
+	//LOG("notifyWindowButtonPressed: " + String(_name));
 	if (_name == "close")
 		setVisible(false);
 }

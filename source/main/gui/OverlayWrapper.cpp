@@ -613,17 +613,17 @@ void OverlayWrapper::updateStats(bool detailed)
 		OverlayElement* guiWorst = OverlayManager::getSingleton().getOverlayElement("Core/WorstFps");
 
 
-		guiAvg->setCaption(avgFps + StringConverter::toString(stats.avgFPS));
-		guiCurr->setCaption(currFps + StringConverter::toString(stats.lastFPS));
-		guiBest->setCaption(bestFps + StringConverter::toString(stats.bestFPS) + " " + StringConverter::toString(stats.bestFrameTime)+" ms");
-		guiWorst->setCaption(worstFps + StringConverter::toString(stats.worstFPS) + " " + StringConverter::toString(stats.worstFrameTime)+" ms");
+		guiAvg->setCaption(avgFps + TOSTRING(stats.avgFPS));
+		guiCurr->setCaption(currFps + TOSTRING(stats.lastFPS));
+		guiBest->setCaption(bestFps + TOSTRING(stats.bestFPS) + " " + TOSTRING(stats.bestFrameTime)+" ms");
+		guiWorst->setCaption(worstFps + TOSTRING(stats.worstFPS) + " " + TOSTRING(stats.worstFrameTime)+" ms");
 
 		OverlayElement* guiTris = OverlayManager::getSingleton().getOverlayElement("Core/NumTris");
-		String triss = tris + StringConverter::toString(stats.triangleCount);
+		String triss = tris + TOSTRING(stats.triangleCount);
 		if(stats.triangleCount > 1000000)
-			triss = tris + StringConverter::toString(stats.triangleCount/1000000.0f) + " M";
+			triss = tris + TOSTRING(stats.triangleCount/1000000.0f) + " M";
 		else if(stats.triangleCount > 1000)
-			triss = tris + StringConverter::toString(stats.triangleCount/1000.0f) + " k";
+			triss = tris + TOSTRING(stats.triangleCount/1000.0f) + " k";
 		guiTris->setCaption(triss);
 
 		OverlayElement* guiDbg = OverlayManager::getSingleton().getOverlayElement("Core/DebugText");
@@ -634,7 +634,7 @@ void OverlayWrapper::updateStats(bool detailed)
 		{
 			if(!trucks[t]) continue;
 			if(!trucks[t]->debugText.empty())
-				debugText += StringConverter::toString(t) + ": " + trucks[t]->debugText + "\n";
+				debugText += TOSTRING(t) + ": " + trucks[t]->debugText + "\n";
 		}
 		guiDbg->setCaption(debugText);
 		*/
@@ -776,7 +776,7 @@ void OverlayWrapper::updateStats(bool detailed)
 				sprintf(tmp, "%0.0f", fps);
 
 				fpsLineStream->setTraceInfo(0, cr, "FPS: " + String(tmp));
-				//fpsLineStream->setTraceInfo(1, cg, "Physic Lag: " + StringConverter::toString(truckSteps));
+				//fpsLineStream->setTraceInfo(1, cg, "Physic Lag: " + TOSTRING(truckSteps));
 
 				fpsLineStream->setTraceValue(0, fpscount/6.0f);
 				//fpsLineStream->setTraceValue(1, truckSteps);
@@ -810,7 +810,7 @@ void OverlayWrapper::updateStats(bool detailed)
 					{
 						int n = it->first;
 						float lag = fabs(it->second);
-						//LogManager::getSingleton().logMessage("lag("+StringConverter::toString(c)+")="+StringConverter::toString(lag));
+						//LOG("lag("+TOSTRING(c)+")="+TOSTRING(lag));
 						sum += lag;
 						c++;
 						netlagLineStream->setTraceValue(c, lag);

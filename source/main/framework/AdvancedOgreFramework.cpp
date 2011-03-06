@@ -28,7 +28,7 @@ OgreFramework::OgreFramework() : hwnd(0), mainhwnd(0), name()
 
 OgreFramework::~OgreFramework()
 {
-	LogManager::getSingleton().logMessage("Shutdown OGRE...");
+	LOG("Shutdown OGRE...");
     //if(m_pTrayMgr)      delete m_pTrayMgr;
     //if(m_pRoot)			delete m_pRoot;
 }
@@ -73,7 +73,7 @@ bool OgreFramework::configure(void)
 		m_pRoot->initialise(false);
 
 		Ogre::NameValuePairList param;
-		param["externalWindowHandle"] = Ogre::StringConverter::toString(hwnd);
+		param["externalWindowHandle"] = TOSTRING(hwnd);
 		m_pRenderWnd = m_pRoot->createRenderWindow(name, 320, 240, false, &param);
 		return true;
 	}
@@ -90,11 +90,11 @@ bool OgreFramework::initOgre(Ogre::String name, unsigned int hwnd, unsigned int 
 		return false;
 
 	// load RoR.cfg directly after setting up paths
-	SETTINGS.loadSettings(SETTINGS.getSetting("Config Root")+"RoR.cfg");
+	SETTINGS.loadSettings(SSETTING("Config Root")+"RoR.cfg");
 
-	String logFilename   = SETTINGS.getSetting("Log Path") + name + Ogre::String(".log");
-	String pluginsConfig = SETTINGS.getSetting("plugins.cfg");
-	String ogreConfig    = SETTINGS.getSetting("ogre.cfg");
+	String logFilename   = SSETTING("Log Path") + name + Ogre::String(".log");
+	String pluginsConfig = SSETTING("plugins.cfg");
+	String ogreConfig    = SSETTING("ogre.cfg");
     m_pRoot = new Ogre::Root(pluginsConfig, ogreConfig, logFilename);
 
 	// configure RoR

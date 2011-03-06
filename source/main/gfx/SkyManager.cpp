@@ -86,7 +86,7 @@ void SkyManager::loadScript(Ogre::String script)
 			mCaelumSystem->getMoon()->getMainLight()->setCastShadows(false);
 		}
 
-		if (SETTINGS.getSetting("Fog") != "Yes")
+		if (BSETTING("Fog"))
 		{
 			mCaelumSystem->setSceneFogDensityMultiplier(0.000000000001);
 		}
@@ -96,7 +96,7 @@ void SkyManager::loadScript(Ogre::String script)
 
 	} catch(Ogre::Exception& e)
 	{
-		LogManager::getSingleton().logMessage("exception upon loading sky script: " + e.getFullDescription());
+		LOG("exception upon loading sky script: " + e.getFullDescription());
 	}
 }
 

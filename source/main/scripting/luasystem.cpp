@@ -59,7 +59,7 @@ const char *luaFileReader(lua_State * L, void * data, size_t * size)
 	static char buffer[255] = "";
 	DataStreamPtr ds = *(DataStreamPtr *)data;
 	*size = ds->read(buffer, 255);
-	//Ogre::LogManager::getSingleton().logMessage("reading LUA chunk" + StringConverter::toString(*size));
+	//LOG("reading LUA chunk" + TOSTRING(*size));
 	buffer[*size] = '\0';
 	return (const char *) buffer;
 }
@@ -75,34 +75,34 @@ int lua_run(lua_State *L, String filename)
 		break;
 	case LUA_ERRRUN:
 		{
-			Ogre::LogManager::getSingleton().logMessage("LUA runtime error while executing file "+filename);
+			LOG("LUA runtime error while executing file "+filename);
 			if(lua_isstring(L, -1))
-				Ogre::LogManager::getSingleton().logMessage("LUA original error: " + String(lua_tostring (L, -1)));
+				LOG("LUA original error: " + String(lua_tostring (L, -1)));
 			return s;
 		}
 		break;
 	case LUA_ERRSYNTAX:
 		{
-			Ogre::LogManager::getSingleton().logMessage("LUA syntax error in file "+filename);
+			LOG("LUA syntax error in file "+filename);
 			if(lua_isstring(L, -1))
-				Ogre::LogManager::getSingleton().logMessage("LUA original error: " + String(lua_tostring (L, -1)));
+				LOG("LUA original error: " + String(lua_tostring (L, -1)));
 			break;
 		}
 	case LUA_ERRMEM:
 		{
-			Ogre::LogManager::getSingleton().logMessage("LUA memory allocation error while executing file "+filename);
+			LOG("LUA memory allocation error while executing file "+filename);
 			break;
 		}
 	case LUA_ERRERR:
 		{
-			Ogre::LogManager::getSingleton().logMessage("LUA error while running the error handler function while executing file "+filename);
+			LOG("LUA error while running the error handler function while executing file "+filename);
 			break;
 		}
 	default:
 		{
-			Ogre::LogManager::getSingleton().logMessage("LUA unkown error " + StringConverter::toString(s) + " in file "+filename);
+			LOG("LUA unkown error " + TOSTRING(s) + " in file "+filename);
 			if(lua_isstring(L, -1))
-				Ogre::LogManager::getSingleton().logMessage("LUA original error: " + String(lua_tostring (L, -1)));
+				LOG("LUA original error: " + String(lua_tostring (L, -1)));
 			return s;
 		}
 		//error("terrain lua", s);
@@ -141,7 +141,7 @@ void LuaSystem::loadTerrain(Ogre::String terrainname)
 	strcat(trrn,".lua");
 	if(!fileExists(trrn))
 	{
-		Ogre::LogManager::getSingleton().logMessage(String(trrn)+" not found.");
+		LOG(String(trrn)+" not found.");
 		return;
 	}
 	String group="";
@@ -170,7 +170,7 @@ LuaSystem::~LuaSystem()
 
 void LuaSystem::spawnEvent(int id, eventsource_t *source)
 {
-	//Ogre::LogManager::getSingleton().logMessage("LUA spawning: "+Ogre::StringConverter::toString(id)+" "+Ogre::String(source->instancename)+"("+Ogre::String(source->boxname)+")");
+	//LOG("LUA spawning: "+TOSTRING(id)+" "+Ogre::String(source->instancename)+"("+Ogre::String(source->boxname)+")");
 	//log the event
 	if (curevents[id]==-1)
 	{
@@ -228,18 +228,18 @@ void LuaSystem::framestep()
 	for (std::vector<String>::const_iterator c = framestepCallbacks.begin(); c != framestepCallbacks.end(); ++c)
 	{
 		// try to call the lua function
-		Ogre::LogManager::getSingleton().logMessage(String(*c));
+		LOG(String(*c));
 		lua_getglobal(L, c->c_str());
 		if (lua_pcall(L, 0, 0, 0) != 0)
-			Ogre::LogManager::getSingleton().logMessage("LUA error running callback function "+String(*c));
-			Ogre::LogManager::getSingleton().logMessage(String(lua_tostring(L, -1)));
+			LOG("LUA error running callback function "+String(*c));
+			LOG(String(lua_tostring(L, -1)));
 	}
 }
 
 void LuaSystem::error(char* msg, int err)
 {
-	Ogre::LogManager::getSingleton().logMessage("LUA error: "+Ogre::String(msg)+"("+Ogre::StringConverter::toString(err)+")");
-	throw Exception(50,Ogre::String(msg)+"("+Ogre::StringConverter::toString(err)+")","lua file");
+	LOG("LUA error: "+Ogre::String(msg)+"("+TOSTRING(err)+")");
+	throw Exception(50,Ogre::String(msg)+"("+TOSTRING(err)+")","lua file");
 }
 
 void LuaSystem::registerFunctions()
@@ -286,7 +286,7 @@ int LuaSystem::registerCallBack(lua_State *lua)
 		for (std::vector<String>::iterator c = framestepCallbacks.begin();c != framestepCallbacks.end(); ++c)
 			if(!strncmp(c->c_str(), luafunction, 255))
 				return 0;
-		Ogre::LogManager::getSingleton().logMessage("LUA registering callback: "+String(type)+" to "+String(luafunction));
+		LOG("LUA registering callback: "+String(type)+" to "+String(luafunction));
 		framestepCallbacks.push_back(String(luafunction));
 	}
 	return 0;
@@ -307,7 +307,7 @@ int LuaSystem::unregisterCallBack(lua_State *lua)
 		for (std::vector<String>::iterator c = framestepCallbacks.begin();c != framestepCallbacks.end(); ++c)
 			if(!strncmp(c->c_str(), luafunction, 255))
 			{
-				Ogre::LogManager::getSingleton().logMessage("LUA unregistering callback: "+String(type)+" to "+String(luafunction));
+				LOG("LUA unregistering callback: "+String(type)+" to "+String(luafunction));
 				c = framestepCallbacks.erase(c);
 				return 0;
 			}
@@ -325,7 +325,7 @@ int LuaSystem::getVersion (lua_State *lua)
 int LuaSystem::panic (lua_State *lua)
 {
 	const char *msg = lua_tostring (lua, 1);
-	Ogre::LogManager::getSingleton().logMessage("LUA PANIC: "+Ogre::String(msg));
+	LOG("LUA PANIC: "+Ogre::String(msg));
 	return 0; //this is the number of return values
 }
 
@@ -361,7 +361,7 @@ int LuaSystem::getTime(lua_State *lua)
 int LuaSystem::log(lua_State *lua)
 {
 	const char *msg = lua_tostring (lua, 1);
-	Ogre::LogManager::getSingleton().logMessage("LUA log: "+Ogre::String(msg));
+	LOG("LUA log: "+Ogre::String(msg));
 	return 0;
 }
 
@@ -439,10 +439,10 @@ int LuaSystem::spawnBeam(lua_State *lua)
 	if(num == -1)
 	{
 		// non existent, create
-		Ogre::LogManager::getSingleton().logMessage("LUA truck-create");
+		LOG("LUA truck-create");
 		num = mefl->addTruck(truckname, pos);
 	}
-	Ogre::LogManager::getSingleton().logMessage("LUA using trucknum "+Ogre::StringConverter::toString(num));
+	LOG("LUA using trucknum "+TOSTRING(num));
 	beamMap[instancename] = num;
 	Beam *truck = mefl->getTruck(num);
 	truck->resetPosition(px, pz, false, py);
@@ -467,7 +467,7 @@ int LuaSystem::getSetting(lua_State *lua)
 {
 	char *text = const_cast<char*>(lua_tostring(lua, 1));
 	if(!text) return 0;
-	String res = SETTINGS.getSetting(String(text));
+	String res = SSETTING(String(text));
 
 	lua_pushlstring(lua, res.c_str(), res.size()); // return value
 	return 1; // number of return values

@@ -30,11 +30,11 @@ Editor::Editor(SceneManager *scm, RoRFrameListener *efl)
 	pturn=0;
 	ppos=Vector3(0,0,0);
 	FILE *fd;
-	String editorcfg = SETTINGS.getSetting("Config Root")+"editor.cfg";
+	String editorcfg = SSETTING("Config Root")+"editor.cfg";
 	fd=fopen(editorcfg.c_str(), "r");
 	if (!fd)
 	{
-		LogManager::getSingleton().logMessage("Can not open editr.cfg file: "+editorcfg);
+		LOG("Can not open editr.cfg file: "+editorcfg);
 		if(efl->getOverlayWrapper())
 			efl->getOverlayWrapper()->flashMessage((char *)"Can not find editor.cfg", 3);
 		return;

@@ -47,13 +47,13 @@ SoundManager::SoundManager()
 
 	for (int i=0; i<MAX_HARDWARE_SOURCES; i++) hardware_sources_input_map[i]=-1;
 
-	if (SETTINGS.getSetting("3D Sound renderer") == "No sound") return;
+	if (SSETTING("3D Sound renderer") == "No sound") return;
 
     char str[256];
-	if (SETTINGS.getSetting("3D Sound renderer") == "Default") str[0]=0;
-	else sprintf(str, "DirectSound Software on %s", SETTINGS.getSetting("3D Sound renderer").c_str());
+	if (SSETTING("3D Sound renderer") == "Default") str[0]=0;
+	else sprintf(str, "DirectSound Software on %s", SSETTING("3D Sound renderer").c_str());
 
-	LogManager::getSingleton().logMessage("Opening Device: '"+String(str)+"'");
+	LOG("Opening Device: '"+String(str)+"'");
 
 	//we loop alcOpenDevice() because there is a potential race condition with the asynchronous DSound enumeration callback
 	for (int i=0; i<100; i++)
@@ -67,7 +67,7 @@ SoundManager::SoundManager()
 			if (error!=ALC_INVALID_VALUE)
 			{
 				//this is unexpected error
-				LogManager::getSingleton().logMessage("Could not create OpenAL device, error code: "+StringConverter::toString(error));
+				LOG("Could not create OpenAL device, error code: "+TOSTRING(error));
 				return;
 			} //else just loop
 		}
@@ -78,18 +78,18 @@ SoundManager::SoundManager()
 		device=alcOpenDevice("");
 		if (!device)
 		{
-			LogManager::getSingleton().logMessage("Could not create OpenAL device after many tries.");
+			LOG("Could not create OpenAL device after many tries.");
 			return;
 		}
 		else
-			LogManager::getSingleton().logMessage("Warning: invalid sound device configuration, I will use the default sound source. Run configurator!");
+			LOG("Warning: invalid sound device configuration, I will use the default sound source. Run configurator!");
 	}
 	context=alcCreateContext(device, NULL);
 	if (!context)
 	{
 		ALint error;
 		error=alGetError();
-		LogManager::getSingleton().logMessage("Could not create OpenAL context, error code: "+StringConverter::toString(error));
+		LOG("Could not create OpenAL context, error code: "+TOSTRING(error));
 		alcCloseDevice(device);
 		device=NULL;
 		return;
@@ -198,9 +198,9 @@ int SoundManager::maxSources()
 void SoundManager::recomputeAllSources()
 {
 	if (!device) return;
-	/*LogManager::getSingleton().logMessage("==========Table dump===================");
+	/*LOG("==========Table dump===================");
 	for (int i=0; i<num_hardware_sources; i++)
-		LogManager::getSingleton().logMessage("   "+StringConverter::toString(hardware_sources_input_map[i]));
+		LOG("   "+TOSTRING(hardware_sources_input_map[i]));
 		*/
 	//mutex is supposed to be already taken
 
@@ -377,7 +377,7 @@ void SoundManager::retire(int input_index)
 int SoundManager::loadWAVFile(String filename, ALuint buffer)
 {
 	if (!device) return -1;
-	LogManager::getSingleton().logMessage("Loading WAV file "+filename);
+	LOG("Loading WAV file "+filename);
 	//creating Stream
 	ResourceGroupManager *rgm=ResourceGroupManager::getSingletonPtr();
 	String group=rgm->findGroupContainingResource(filename);
@@ -389,48 +389,48 @@ int SoundManager::loadWAVFile(String filename, ALuint buffer)
 	uint16_t sbuf;
 
 	// check magic
-	if (stream->read(magic, 4)!=4) {LogManager::getSingleton().logMessage("Could not read file "+filename);return -1;}
-	if (String(magic)!=String("RIFF")) {LogManager::getSingleton().logMessage("Invalid WAV file (no RIFF): "+filename);return -1;}
+	if (stream->read(magic, 4)!=4) {LOG("Could not read file "+filename);return -1;}
+	if (String(magic)!=String("RIFF")) {LOG("Invalid WAV file (no RIFF): "+filename);return -1;}
 	//skip filesize
 	stream->skip(4);
 	// check file format
-	if (stream->read(magic, 4)!=4) {LogManager::getSingleton().logMessage("Could not read file "+filename);return -1;}
-	if (String(magic)!=String("WAVE")) {LogManager::getSingleton().logMessage("Invalid WAV file (no WAVE): "+filename);return -1;}
+	if (stream->read(magic, 4)!=4) {LOG("Could not read file "+filename);return -1;}
+	if (String(magic)!=String("WAVE")) {LOG("Invalid WAV file (no WAVE): "+filename);return -1;}
 	// check 'fmt ' sub chunk (1)
-	if (stream->read(magic, 4)!=4) {LogManager::getSingleton().logMessage("Could not read file "+filename);return -1;}
-	if (String(magic)!=String("fmt ")) {LogManager::getSingleton().logMessage("Invalid WAV file (no fmt): "+filename);return -1;}
+	if (stream->read(magic, 4)!=4) {LOG("Could not read file "+filename);return -1;}
+	if (String(magic)!=String("fmt ")) {LOG("Invalid WAV file (no fmt): "+filename);return -1;}
 	// read (1)'s size
-	if (stream->read(&lbuf, 4)!=4) {LogManager::getSingleton().logMessage("Could not read file "+filename);return -1;}
+	if (stream->read(&lbuf, 4)!=4) {LOG("Could not read file "+filename);return -1;}
 	unsigned long subChunk1Size=lbuf;
-	if (subChunk1Size<16) {LogManager::getSingleton().logMessage("Invalid WAV file (invalid subChunk1Size): "+filename);return -1;}
+	if (subChunk1Size<16) {LOG("Invalid WAV file (invalid subChunk1Size): "+filename);return -1;}
 	// check PCM audio format
-	if (stream->read(&sbuf, 2)!=2) {LogManager::getSingleton().logMessage("Could not read file "+filename);return -1;}
+	if (stream->read(&sbuf, 2)!=2) {LOG("Could not read file "+filename);return -1;}
 	unsigned short audioFormat=sbuf;
-	if (audioFormat!=1) {LogManager::getSingleton().logMessage("Invalid WAV file (invalid audioformat "+StringConverter::toString(audioFormat)+"): "+filename);return -1;}
+	if (audioFormat!=1) {LOG("Invalid WAV file (invalid audioformat "+TOSTRING(audioFormat)+"): "+filename);return -1;}
 	// read number of channels
-	if (stream->read(&sbuf, 2)!=2) {LogManager::getSingleton().logMessage("Could not read file "+filename);return -1;}
+	if (stream->read(&sbuf, 2)!=2) {LOG("Could not read file "+filename);return -1;}
 	unsigned short channels=sbuf;
 	// read frequency (sample rate)
-	if (stream->read(&lbuf, 4)!=4) {LogManager::getSingleton().logMessage("Could not read file "+filename);return -1;}
+	if (stream->read(&lbuf, 4)!=4) {LOG("Could not read file "+filename);return -1;}
 	unsigned long freq=lbuf;
 	// skip 6 bytes (Byte rate (4), Block align (2))
 	stream->skip(6);
 	// read bits per sample
-	if (stream->read(&sbuf, 2)!=2) {LogManager::getSingleton().logMessage("Could not read file "+filename);return -1;}
+	if (stream->read(&sbuf, 2)!=2) {LOG("Could not read file "+filename);return -1;}
 	unsigned short bps=sbuf;
 	// check 'data' sub chunk (2)
-	if (stream->read(magic, 4)!=4) {LogManager::getSingleton().logMessage("Could not read file "+filename);return -1;}
-	if (String(magic)!=String("data") && String(magic)!=String("fact")) {LogManager::getSingleton().logMessage("Invalid WAV file (no data/fact): "+filename);return -1;}
+	if (stream->read(magic, 4)!=4) {LOG("Could not read file "+filename);return -1;}
+	if (String(magic)!=String("data") && String(magic)!=String("fact")) {LOG("Invalid WAV file (no data/fact): "+filename);return -1;}
 	// fact is an option section we don't need to worry about
 	if(String(magic)==String("fact"))
 	{
 		stream->skip(8);
 		// Now we shoudl hit the data chunk
-		if (stream->read(magic, 4)!=4) {LogManager::getSingleton().logMessage("Could not read file "+filename);return -1;}
-		if (String(magic)!=String("data")) {LogManager::getSingleton().logMessage("Invalid WAV file (no data): "+filename);return -1;}
+		if (stream->read(magic, 4)!=4) {LOG("Could not read file "+filename);return -1;}
+		if (String(magic)!=String("data")) {LOG("Invalid WAV file (no data): "+filename);return -1;}
 	}
 	// The next four bytes are the remaining size of the file
-	if (stream->read(&lbuf, 4)!=4) {LogManager::getSingleton().logMessage("Could not read file "+filename);return -1;}
+	if (stream->read(&lbuf, 4)!=4) {LOG("Could not read file "+filename);return -1;}
 	unsigned long dataSize=lbuf;
 
 	int format;
@@ -451,26 +451,26 @@ int SoundManager::loadWAVFile(String filename, ALuint buffer)
 		format=AL_FORMAT_STEREO16;
 	} else
 	{
-		LogManager::getSingleton().logMessage("Invalid WAV file (wrong channels/bps): "+filename);
+		LOG("Invalid WAV file (wrong channels/bps): "+filename);
 		return -1;
 	}
 	if(channels != 1)
 	{
-		LogManager::getSingleton().logMessage("Invalid WAV file: the file needs to be mono, and nothing else. Will try to continue anyways ...");
+		LOG("Invalid WAV file: the file needs to be mono, and nothing else. Will try to continue anyways ...");
 	}
 	//okay, creating buffer
 	void* bdata=malloc(dataSize);
-	if (!bdata) {LogManager::getSingleton().logMessage("Memory error reading file "+filename);return -1;}
-	if (stream->read(bdata, dataSize)!=dataSize) {LogManager::getSingleton().logMessage("Could not read file "+filename);return -1;}
+	if (!bdata) {LOG("Memory error reading file "+filename);return -1;}
+	if (stream->read(bdata, dataSize)!=dataSize) {LOG("Could not read file "+filename);return -1;}
 
-//	LogManager::getSingleton().logMessage("alBufferData: format "+StringConverter::toString(format)+" size "+StringConverter::toString(dataSize)+" freq "+StringConverter::toString(freq));
+//	LOG("alBufferData: format "+TOSTRING(format)+" size "+TOSTRING(dataSize)+" freq "+TOSTRING(freq));
 	alGetError(); //reset errors
 	ALint error;
 	alBufferData(buffer, format, bdata, dataSize, freq);
 	error=alGetError();
 	if(error!=AL_NO_ERROR)
 	{
-		LogManager::getSingleton().logMessage("OpenAL error while loading buffer for "+filename+" : "+StringConverter::toString(error));
+		LOG("OpenAL error while loading buffer for "+filename+" : "+TOSTRING(error));
 		free(bdata);
 		return -1;
 	}

@@ -55,7 +55,7 @@ void IngameConsole::setFontSize(int size)
 void IngameConsole::setMode(RoRFrameListener *efl, int mode, bool visible)
 {
 	this->mefl=efl;
-	//LogManager::getSingleton().logMessage("CONSOLE setmode (" + StringConverter::toString(mode) + ") ...");
+	//LOG("CONSOLE setmode (" + TOSTRING(mode) + ") ...");
 
 	// visibility
 	if(visible != isvisible && !visible && consoleOverlay)
@@ -101,7 +101,7 @@ void IngameConsole::setMode(RoRFrameListener *efl, int mode, bool visible)
 		resize(205, (int)(((float)screenHeight) * 0.56), screenWidth-210, (int)(ceil(((float)screenHeight) * 0.2)));
 	}
 	
-	//LogManager::getSingleton().logMessage("CONSOLE mode set.");
+	//LOG("CONSOLE mode set.");
 }
 
 void IngameConsole::resize(int _left, int _top, int _width, int _height)
@@ -110,11 +110,11 @@ void IngameConsole::resize(int _left, int _top, int _width, int _height)
 	left=_left;
 	width=_width;
 	height=_height;
-	//LogManager::getSingleton().logMessage("CONSOLE resizing (" + StringConverter::toString(left) + ", " + StringConverter::toString(top) + ", " + StringConverter::toString(width) + ", " + StringConverter::toString(height) + ") ...");
+	//LOG("CONSOLE resizing (" + TOSTRING(left) + ", " + TOSTRING(top) + ", " + TOSTRING(width) + ", " + TOSTRING(height) + ") ...");
 	destroyOverlays();
 	createOverlays();
 	updateDisplay();
-	//LogManager::getSingleton().logMessage("CONSOLE resized.");
+	//LOG("CONSOLE resized.");
 }
 
 void IngameConsole::setVisible(bool visible)
@@ -185,7 +185,7 @@ bool IngameConsole::createOverlays()
 		textArea->setValueBottom(0.7);
 		textArea->setValueTop(0.9);
 		textArea->setCaption("");
-		//textArea->setCaption(UTFString("^1Line^7 ")+StringConverter::toString(i));
+		//textArea->setCaption(UTFString("^1Line^7 ")+TOSTRING(i));
 		textArea->show();
 		chatLines.push_back(textArea);
 		// Add the text area to the panel
@@ -270,7 +270,7 @@ void IngameConsole::updateDisplay()
 	// chatLines + 1 because last line is for entering something!
 	for(i = chatLines.rbegin() + 1, ib = chatBuffer.rbegin() + (scrollOffset); i!=chatLines.rend() && ib != chatBuffer.rend(); i++, ib++)
 	{
-		//LogManager::getSingleton().logMessage(*ib);
+		//LOG(*ib);
 		try
 		{
 			(*i)->setCaption(*ib);
@@ -293,7 +293,7 @@ void IngameConsole::scrollPageUp()
 	scrollOffset++;
 	if(scrollOffset > max)
 		scrollOffset = max;
-	LogManager::getSingleton().logMessage(StringConverter::toString(scrollOffset));
+	LOG(TOSTRING(scrollOffset));
 	scrolling=true;
 	updateDisplay();
 }
@@ -306,7 +306,7 @@ void IngameConsole::scrollPageDown()
 	scrollOffset--;
 	if(scrollOffset < 0)
 		scrollOffset = 0;
-	LogManager::getSingleton().logMessage(StringConverter::toString(scrollOffset));
+	LOG(TOSTRING(scrollOffset));
 	scrolling=true;
 	updateDisplay();
 }

@@ -45,6 +45,11 @@ along with Rigs of Rods.  If not, see <http://www.gnu.org/licenses/>.
 #define SVN_ID "$Id$"
 #define ROR_VERSION_STRING "0.38"
 
+
+// some shortcuts for us
+#define LOG(x)      Ogre::LogManager::getSingleton().logMessage(x)
+#define TOSTRING(x) Ogre::StringConverter::toString(x)
+
 // replace standard allocations with nedmalloc
 //#define REPLACE_SYSTEM_ALLOCATOR
 //#include "nedmalloc.h"

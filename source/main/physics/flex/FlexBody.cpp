@@ -68,7 +68,7 @@ FlexBody::FlexBody(SceneManager *manager, node_t *nds, int numnds, char* meshnam
 	/*
 	// too verbose, removed
 	for (int i=0; i<freenodeset; i++)
-		LogManager::getSingleton().logMessage("FLEXBODY node interval "+StringConverter::toString(i)+": "+StringConverter::toString(nodeset[i].from)+"-"+StringConverter::toString(nodeset[i].to));
+		LOG("FLEXBODY node interval "+TOSTRING(i)+": "+TOSTRING(nodeset[i].from)+"-"+TOSTRING(nodeset[i].to));
 	*/
 
 	Vector3 normal = Vector3::UNIT_Y;
@@ -106,7 +106,7 @@ FlexBody::FlexBody(SceneManager *manager, node_t *nds, int numnds, char* meshnam
 	}
 	if(groupname == "")
 	{
-		LogManager::getSingleton().logMessage("FLEXBODY mesh not found: "+String(meshname));
+		LOG("FLEXBODY mesh not found: "+String(meshname));
 		return;
 	}
 	// build new unique mesh name
@@ -122,7 +122,7 @@ FlexBody::FlexBody(SceneManager *manager, node_t *nds, int numnds, char* meshnam
 	StringUtil::splitBaseFilename(String(meshname), basename, ext);
 	for(int i=0; i<4;i++)
 	{
-		String fn = basename + "_" + StringConverter::toString(i) + ".mesh";
+		String fn = basename + "_" + TOSTRING(i) + ".mesh";
 		bool exists = ResourceGroupManager::getSingleton().resourceExistsInAnyGroup(fn);
 		if(!exists) continue;
 
@@ -137,7 +137,7 @@ FlexBody::FlexBody(SceneManager *manager, node_t *nds, int numnds, char* meshnam
 	MaterialFunctionMapper::replaceSimpleMeshMaterials(ent, ColourValue(0.5, 0.5, 1));
 	if(mfm) mfm->replaceMeshMaterials(ent);
 	if(usedSkin) usedSkin->replaceMeshMaterials(ent);
-	//LogManager::getSingleton().logMessage("FLEXBODY unique mesh created: "+String(meshname)+" -> "+String(uname_mesh));
+	//LOG("FLEXBODY unique mesh created: "+String(meshname)+" -> "+String(uname_mesh));
 
 	msh=ent->getMesh();
 
@@ -145,14 +145,14 @@ FlexBody::FlexBody(SceneManager *manager, node_t *nds, int numnds, char* meshnam
 	havetexture=true;
 	if (msh->sharedVertexData && msh->sharedVertexData->vertexDeclaration->findElementBySemantic(VES_TEXTURE_COORDINATES)==0) havetexture=false;
 	for (int i=0; i<msh->getNumSubMeshes(); i++) if (!msh->getSubMesh(i)->useSharedVertices && msh->getSubMesh(i)->vertexData->vertexDeclaration->findElementBySemantic(VES_TEXTURE_COORDINATES)==0) havetexture=false;
-	if (!havetexture) LogManager::getSingleton().logMessage("FLEXBODY Warning: at least one part of this mesh does not have texture coordinates, switching off texturing!");
+	if (!havetexture) LOG("FLEXBODY Warning: at least one part of this mesh does not have texture coordinates, switching off texturing!");
 	if (!havetexture) {havetangents=false;haveblend=false;}; //we can't do this
 
 	//detect the anomalous case where a mesh is exported without normal vectors
 	bool havenormal=true;
 	if (msh->sharedVertexData && msh->sharedVertexData->vertexDeclaration->findElementBySemantic(VES_NORMAL)==0) havenormal=false;
 	for (int i=0; i<msh->getNumSubMeshes(); i++) if (!msh->getSubMesh(i)->useSharedVertices && msh->getSubMesh(i)->vertexData->vertexDeclaration->findElementBySemantic(VES_NORMAL)==0) havenormal=false;
-	if (!havenormal) LogManager::getSingleton().logMessage("FLEXBODY Error: at least one part of this mesh does not have normal vectors, export your mesh with normal vectors! THIS WILL CRASH IN 3.2.1...");
+	if (!havenormal) LOG("FLEXBODY Error: at least one part of this mesh does not have normal vectors, export your mesh with normal vectors! THIS WILL CRASH IN 3.2.1...");
 
 	//create optimal VertexDeclaration
 	VertexDeclaration* optimalVD=HardwareBufferManager::getSingleton().createVertexDeclaration();
@@ -168,7 +168,7 @@ FlexBody::FlexBody(SceneManager *manager, node_t *nds, int numnds, char* meshnam
 	for (size_t u = 0; u <= optimalVD->getMaxSource(); ++u) optimalBufferUsages.push_back(HardwareBuffer::HBU_DYNAMIC_WRITE_ONLY_DISCARDABLE);
 
 	//print mesh information
-	//LogManager::getSingleton().logMessage("FLEXBODY Printing input mesh informations:");
+	//LOG("FLEXBODY Printing input mesh informations:");
 	//printMeshInfo(ent->getMesh().getPointer());
 
 	//adding color buffers, well get the reference later
@@ -205,14 +205,14 @@ FlexBody::FlexBody(SceneManager *manager, node_t *nds, int numnds, char* meshnam
 	//tangents for envmapping
 	if (havetangents)
 	{
-		LogManager::getSingleton().logMessage("FLEXBODY preparing for tangents");
+		LOG("FLEXBODY preparing for tangents");
 		unsigned short srcTex, destTex;
 		bool existing = msh->suggestTangentVectorBuildParams(VES_TANGENT, srcTex, destTex);
 		if (!existing) msh->buildTangentVectors(VES_TANGENT, srcTex, destTex);
 	}
 
 	//reorg
-	//LogManager::getSingleton().logMessage("FLEXBODY reorganizing buffers");
+	//LOG("FLEXBODY reorganizing buffers");
 	if (msh->sharedVertexData)
 	{
 		msh->sharedVertexData->reorganiseBuffers(optimalVD, optimalBufferUsages);
@@ -233,7 +233,7 @@ FlexBody::FlexBody(SceneManager *manager, node_t *nds, int numnds, char* meshnam
 	}
 
 	//print mesh information
-	//LogManager::getSingleton().logMessage("FLEXBODY Printing modififed mesh informations:");
+	//LOG("FLEXBODY Printing modififed mesh informations:");
 	//printMeshInfo(ent->getMesh().getPointer());
 
 	//get the buffers
@@ -255,8 +255,8 @@ FlexBody::FlexBody(SceneManager *manager, node_t *nds, int numnds, char* meshnam
 			numsubmeshbuf++;
 		}
 
-	LogManager::getSingleton().logMessage("FLEXBODY Vertices in mesh "+String(meshname)+": "+ StringConverter::toString(vertex_count));
-	//LogManager::getSingleton().logMessage("Triangles in mesh: %u",index_count / 3);
+	LOG("FLEXBODY Vertices in mesh "+String(meshname)+": "+ TOSTRING(vertex_count));
+	//LOG("Triangles in mesh: %u",index_count / 3);
 
 	//getting buffers bindings and data
 	if (numsubmeshbuf>0)
@@ -271,7 +271,7 @@ FlexBody::FlexBody(SceneManager *manager, node_t *nds, int numnds, char* meshnam
 		//subpbufs[0]=HardwareVertexBufferSharedPtr(); //crash!
 		//subnbufs=(HardwareVertexBufferSharedPtr*)malloc(sizeof(HardwareVertexBufferSharedPtr)*numsubmeshbuf);
 		//subnbufs[0]=HardwareVertexBufferSharedPtr(); //crash!
-		if (numsubmeshbuf>=16) 	LogManager::getSingleton().logMessage("FLEXBODY You have more than 16 submeshes! Blame Bjarne for this crash.");
+		if (numsubmeshbuf>=16) 	LOG("FLEXBODY You have more than 16 submeshes! Blame Bjarne for this crash.");
 	}
 	vertices=(Vector3*)malloc(sizeof(Vector3)*vertex_count);
 	dstpos=(Vector3*)malloc(sizeof(Vector3)*vertex_count);
@@ -349,11 +349,11 @@ FlexBody::FlexBody(SceneManager *manager, node_t *nds, int numnds, char* meshnam
 			float dist=(vertices[i]-nodes[k].smoothpos).length();
 			if (dist<mindist) {mindist=dist;minnode=k;};
 		}
-		if (minnode==-1) LogManager::getSingleton().logMessage("FLEXBODY ERROR on mesh "+String(meshname)+": REF node not found");
+		if (minnode==-1) LOG("FLEXBODY ERROR on mesh "+String(meshname)+": REF node not found");
 		locs[i].ref=minnode;
 		nodes[minnode].iIsSkin=true;
 
-//	LogManager::getSingleton().logMessage("FLEXBODY distance to "+StringConverter::toString(minnode)+" "+StringConverter::toString(mindist));
+//	LOG("FLEXBODY distance to "+TOSTRING(minnode)+" "+TOSTRING(mindist));
 
 		//search the second nearest node as the X vector
 		mindist=100000.0;
@@ -366,7 +366,7 @@ FlexBody::FlexBody(SceneManager *manager, node_t *nds, int numnds, char* meshnam
 			float dist=(vertices[i]-nodes[k].smoothpos).length();
 			if (dist<mindist) {mindist=dist;minnode=k;};
 		}
-		if (minnode==-1) LogManager::getSingleton().logMessage("FLEXBODY ERROR on mesh "+String(meshname)+": VX node not found");
+		if (minnode==-1) LOG("FLEXBODY ERROR on mesh "+String(meshname)+": VX node not found");
 		locs[i].nx=minnode;
 		nodes[minnode].iIsSkin=true;
 
@@ -388,7 +388,7 @@ FlexBody::FlexBody(SceneManager *manager, node_t *nds, int numnds, char* meshnam
 			float dist=(vertices[i]-nodes[k].smoothpos).length();
 			if (dist<mindist) {mindist=dist;minnode=k;};
 		}
-		if (minnode==-1) LogManager::getSingleton().logMessage("FLEXBODY ERROR on mesh "+String(meshname)+": VY node not found");
+		if (minnode==-1) LOG("FLEXBODY ERROR on mesh "+String(meshname)+": VY node not found");
 		locs[i].ny=minnode;
 		nodes[minnode].iIsSkin=true;
 /*
@@ -412,7 +412,7 @@ FlexBody::FlexBody(SceneManager *manager, node_t *nds, int numnds, char* meshnam
 			float dist=(vertices[i]-nodes[k].smoothpos).length();
 			if (dist<mindist) {mindist=dist;minnode=k;};
 		}
-		if (minnode==-1) LogManager::getSingleton().logMessage("FLEXBODY ERROR on mesh "+String(meshname)+": VZ node not found");
+		if (minnode==-1) LOG("FLEXBODY ERROR on mesh "+String(meshname)+": VZ node not found");
 		locs[i].nz=minnode;
 
 		//rright, check orientation
@@ -443,7 +443,7 @@ FlexBody::FlexBody(SceneManager *manager, node_t *nds, int numnds, char* meshnam
 	//shadow
 	if (haveshadows)
 	{
-		LogManager::getSingleton().logMessage("FLEXBODY preparing for shadow volume");
+		LOG("FLEXBODY preparing for shadow volume");
 		msh->prepareForShadowVolume(); //we do this always so we have only one datastructure format to manage
 		msh->buildEdgeList();
 	}
@@ -465,7 +465,7 @@ FlexBody::FlexBody(SceneManager *manager, node_t *nds, int numnds, char* meshnam
 	aab.setMaximum(Vector3(ma,ma,ma));
 	msh->_setBounds(aab, true);
 
-	LogManager::getSingleton().logMessage("FLEXBODY show mesh");
+	LOG("FLEXBODY show mesh");
 	//okay, show the mesh now
 	snode=manager->getRootSceneNode()->createChildSceneNode();
 	snode->attachObject(ent);
@@ -480,18 +480,18 @@ FlexBody::FlexBody(SceneManager *manager, node_t *nds, int numnds, char* meshnam
 		for(int i=0;i<msh->getNumLodLevels();i++)
 		{
 			if(i) lodstr += ", ";
-			lodstr += StringConverter::toString(Real(sqrt(msh->getLodLevel(i).fromDepthSquared))) + "m";
+			lodstr += TOSTRING(Real(sqrt(msh->getLodLevel(i).fromDepthSquared))) + "m";
 
 			if(msh->getLodLevel(i).edgeData)
 			{
-				lodstr += "(" + StringConverter::toString(msh->getLodLevel(i).edgeData->triangles.size()) + " triangles)";
+				lodstr += "(" + TOSTRING(msh->getLodLevel(i).edgeData->triangles.size()) + " triangles)";
 			} else
 			{
 				if(msh->getEdgeList(i))
-					lodstr += "(" + StringConverter::toString(msh->getEdgeList(i)->triangles.size()) +" triangles)";
+					lodstr += "(" + TOSTRING(msh->getEdgeList(i)->triangles.size()) +" triangles)";
 			}
 		}
-		LogManager::getSingleton().logMessage(lodstr);
+		LOG(lodstr);
 	}
 #endif //0
 
@@ -512,7 +512,7 @@ FlexBody::FlexBody(SceneManager *manager, node_t *nds, int numnds, char* meshnam
 	}
 
 
-	LogManager::getSingleton().logMessage("FLEXBODY ready");
+	LOG("FLEXBODY ready");
 
 }
 
@@ -533,36 +533,36 @@ void FlexBody::printMeshInfo(Mesh* mesh)
 {
 	if (mesh->sharedVertexData)
 	{
-		LogManager::getSingleton().logMessage("FLEXBODY Mesh has Shared Vertices:");
+		LOG("FLEXBODY Mesh has Shared Vertices:");
 		VertexData* vt=mesh->sharedVertexData;
-		LogManager::getSingleton().logMessage("FLEXBODY element count:"+StringConverter::toString(vt->vertexDeclaration->getElementCount()));
+		LOG("FLEXBODY element count:"+TOSTRING(vt->vertexDeclaration->getElementCount()));
 		for (int j=0; j<(int)vt->vertexDeclaration->getElementCount(); j++)
 		{
 			const VertexElement* ve=vt->vertexDeclaration->getElement(j);
-			LogManager::getSingleton().logMessage("FLEXBODY element "+StringConverter::toString(j)+" source "+StringConverter::toString(ve->getSource()));
-			LogManager::getSingleton().logMessage("FLEXBODY element "+StringConverter::toString(j)+" offset "+StringConverter::toString(ve->getOffset()));
-			LogManager::getSingleton().logMessage("FLEXBODY element "+StringConverter::toString(j)+" type "+StringConverter::toString(ve->getType()));
-			LogManager::getSingleton().logMessage("FLEXBODY element "+StringConverter::toString(j)+" semantic "+StringConverter::toString(ve->getSemantic()));
-			LogManager::getSingleton().logMessage("FLEXBODY element "+StringConverter::toString(j)+" size "+StringConverter::toString(ve->getSize()));
+			LOG("FLEXBODY element "+TOSTRING(j)+" source "+TOSTRING(ve->getSource()));
+			LOG("FLEXBODY element "+TOSTRING(j)+" offset "+TOSTRING(ve->getOffset()));
+			LOG("FLEXBODY element "+TOSTRING(j)+" type "+TOSTRING(ve->getType()));
+			LOG("FLEXBODY element "+TOSTRING(j)+" semantic "+TOSTRING(ve->getSemantic()));
+			LOG("FLEXBODY element "+TOSTRING(j)+" size "+TOSTRING(ve->getSize()));
 		}
 	}
-	LogManager::getSingleton().logMessage("FLEXBODY Mesh has "+StringConverter::toString(mesh->getNumSubMeshes())+" submesh(es)");
+	LOG("FLEXBODY Mesh has "+TOSTRING(mesh->getNumSubMeshes())+" submesh(es)");
 	for (int i=0; i<mesh->getNumSubMeshes(); i++)
 	{
 		SubMesh* submesh = mesh->getSubMesh(i);
-		LogManager::getSingleton().logMessage("FLEXBODY SubMesh "+StringConverter::toString(i)+": uses shared?:"+StringConverter::toString(submesh->useSharedVertices));
+		LOG("FLEXBODY SubMesh "+TOSTRING(i)+": uses shared?:"+TOSTRING(submesh->useSharedVertices));
 		if (!submesh->useSharedVertices)
 		{
 			VertexData* vt=submesh->vertexData;
-			LogManager::getSingleton().logMessage("FLEXBODY element count:"+StringConverter::toString(vt->vertexDeclaration->getElementCount()));
+			LOG("FLEXBODY element count:"+TOSTRING(vt->vertexDeclaration->getElementCount()));
 			for (int j=0; j<(int)vt->vertexDeclaration->getElementCount(); j++)
 			{
 				const VertexElement* ve=vt->vertexDeclaration->getElement(j);
-				LogManager::getSingleton().logMessage("FLEXBODY element "+StringConverter::toString(j)+" source "+StringConverter::toString(ve->getSource()));
-				LogManager::getSingleton().logMessage("FLEXBODY element "+StringConverter::toString(j)+" offset "+StringConverter::toString(ve->getOffset()));
-				LogManager::getSingleton().logMessage("FLEXBODY element "+StringConverter::toString(j)+" type "+StringConverter::toString(ve->getType()));
-				LogManager::getSingleton().logMessage("FLEXBODY element "+StringConverter::toString(j)+" semantic "+StringConverter::toString(ve->getSemantic()));
-				LogManager::getSingleton().logMessage("FLEXBODY element "+StringConverter::toString(j)+" size "+StringConverter::toString(ve->getSize()));
+				LOG("FLEXBODY element "+TOSTRING(j)+" source "+TOSTRING(ve->getSource()));
+				LOG("FLEXBODY element "+TOSTRING(j)+" offset "+TOSTRING(ve->getOffset()));
+				LOG("FLEXBODY element "+TOSTRING(j)+" type "+TOSTRING(ve->getType()));
+				LOG("FLEXBODY element "+TOSTRING(j)+" semantic "+TOSTRING(ve->getSemantic()));
+				LOG("FLEXBODY element "+TOSTRING(j)+" size "+TOSTRING(ve->getSize()));
 			}
 		}
 	}

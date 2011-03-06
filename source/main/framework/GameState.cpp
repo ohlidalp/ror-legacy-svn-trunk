@@ -12,12 +12,12 @@ GameState::GameState()
 
 void GameState::enter()
 {
-    LogManager::getSingleton().logMessage("Entering GameState...");
+    LOG("Entering GameState...");
 
 	m_pSceneMgr = OgreFramework::getSingletonPtr()->m_pRoot->createSceneManager(ST_EXTERIOR_CLOSE);
 
 	//CREATE CAMERA
-	LogManager::getSingleton().logMessage("Creating camera");
+	LOG("Creating camera");
 	// Create the camera
 	m_pCamera = m_pSceneMgr->createCamera("PlayerCam");
 	// Position it at 500 in Z direction
@@ -31,7 +31,7 @@ void GameState::enter()
 	OgreFramework::getSingletonPtr()->m_pViewport->setCamera(m_pCamera);
 
 
-	LogManager::getSingleton().logMessage("Adding Frame Listener");
+	LOG("Adding Frame Listener");
 	bool isEmbedded = OgreFramework::getSingleton().isEmbedded();
 	
 	mFrameListener = new RoRFrameListener(this, 
@@ -49,14 +49,14 @@ void GameState::enter()
 
 bool GameState::pause()
 {
-    LogManager::getSingleton().logMessage("Pausing GameState...");
+    LOG("Pausing GameState...");
 
     return true;
 }
 
 void GameState::resume()
 {
-    LogManager::getSingleton().logMessage("Resuming GameState...");
+    LOG("Resuming GameState...");
 
     OgreFramework::getSingletonPtr()->m_pViewport->setCamera(m_pCamera);
     m_bQuit = false;
@@ -64,7 +64,7 @@ void GameState::resume()
 
 void GameState::exit()
 {
-    LogManager::getSingleton().logMessage("Leaving GameState...");
+    LOG("Leaving GameState...");
 
 	if(mFrameListener)
 	{

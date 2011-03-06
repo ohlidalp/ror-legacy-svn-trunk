@@ -66,7 +66,7 @@ void DotSceneLoader::parseDotScene(const Ogre::String &SceneName, const Ogre::St
     // Validate the File
     if( getAttrib(XMLRoot, "formatVersion", "") == "")
     {
-        Ogre::LogManager::getSingleton().logMessage( "[DotSceneLoader] Error: Invalid .scene File. Missing <scene>" );
+        LOG( "[DotSceneLoader] Error: Invalid .scene File. Missing <scene>" );
         delete scene;
         return;
     }
@@ -97,7 +97,7 @@ void DotSceneLoader::processScene(rapidxml::xml_node<>* XMLRoot)
     if(XMLRoot->first_attribute("author"))
         message += ", author " + Ogre::String(XMLRoot->first_attribute("author")->value());
 
-    Ogre::LogManager::getSingleton().logMessage(message);
+    LOG(message);
 
     rapidxml::xml_node<>* pElement;
 
@@ -628,7 +628,7 @@ void DotSceneLoader::processLookTarget(rapidxml::xml_node<>* XMLNode, Ogre::Scen
     }
     catch(Ogre::Exception &/*e*/)
     {
-        Ogre::LogManager::getSingleton().logMessage("[DotSceneLoader] Error processing a look target!");
+        LOG("[DotSceneLoader] Error processing a look target!");
     }
 }
 
@@ -659,7 +659,7 @@ void DotSceneLoader::processTrackTarget(rapidxml::xml_node<>* XMLNode, Ogre::Sce
     }
     catch(Ogre::Exception &/*e*/)
     {
-        Ogre::LogManager::getSingleton().logMessage("[DotSceneLoader] Error processing a track target!");
+        LOG("[DotSceneLoader] Error processing a track target!");
     }
 }
 
@@ -705,7 +705,7 @@ void DotSceneLoader::processEntity(rapidxml::xml_node<>* XMLNode, Ogre::SceneNod
     }
     catch(Ogre::Exception &/*e*/)
     {
-        Ogre::LogManager::getSingleton().logMessage("[DotSceneLoader] Error loading an entity!");
+        LOG("[DotSceneLoader] Error loading an entity!");
     }
 
     // Process userDataReference (?)
@@ -731,7 +731,7 @@ void DotSceneLoader::processParticleSystem(rapidxml::xml_node<>* XMLNode, Ogre::
     }
     catch(Ogre::Exception &/*e*/)
     {
-        Ogre::LogManager::getSingleton().logMessage("[DotSceneLoader] Error creating a particle system!");
+        LOG("[DotSceneLoader] Error creating a particle system!");
     }
 }
 

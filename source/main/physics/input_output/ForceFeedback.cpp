@@ -26,19 +26,19 @@ ForceFeedback::ForceFeedback(OIS::ForceFeedback* ffdevice, Real overall_gain, Re
 	this->stress_gain=stress_gain;
 	this->centering_gain=centering_gain;
 	this->camera_gain=camera_gain;
-	LogManager::getSingleton().logMessage(String("ForceFeedback: ")+StringConverter::toString(ffdevice->getFFAxesNumber())+" axe(s)");
+	LOG(String("ForceFeedback: ")+TOSTRING(ffdevice->getFFAxesNumber())+" axe(s)");
 	const OIS::ForceFeedback::SupportedEffectList &supEffects=ffdevice->getSupportedEffects();
 	if (supEffects.size()>0)
 	{
-		LogManager::getSingleton().logMessage("ForceFeedback: supported effects:");
+		LOG("ForceFeedback: supported effects:");
 		OIS::ForceFeedback::SupportedEffectList::const_iterator efit;
 #ifdef OISHEAD
 		for(efit=supEffects.begin(); efit!=supEffects.end(); ++efit)
-			LogManager::getSingleton().logMessage(String("ForceFeedback: ")+OIS::Effect::getEffectTypeName(efit->second));
+			LOG(String("ForceFeedback: ")+OIS::Effect::getEffectTypeName(efit->second));
 #endif //OISHEAD
 	}
 	else
-		LogManager::getSingleton().logMessage("ForceFeedback: no supported effect found!");
+		LOG("ForceFeedback: no supported effect found!");
 	ffdevice->setAutoCenterMode(false);
 	ffdevice->setMasterGain(0.0);
 	enabled_state=false;
@@ -50,7 +50,7 @@ ForceFeedback::ForceFeedback(OIS::ForceFeedback* ffdevice, Real overall_gain, Re
 
 void ForceFeedback::setForces(Real roll, Real pitch, Real wspeed, Real dircommand, Real stress)
 {
-	//LogManager::getSingleton().logMessage(String("ForceFeedback: R=")+StringConverter::toString(roll)+" D="+StringConverter::toString(dir)+" S="+StringConverter::toString(wspeed)+" H="+StringConverter::toString(stress));
+	//LOG(String("ForceFeedback: R=")+TOSTRING(roll)+" D="+TOSTRING(dir)+" S="+TOSTRING(wspeed)+" H="+TOSTRING(stress));
 	if (!hydroEffect)
 	{
 		//we create effect at the last moment, because it does not works otherwise

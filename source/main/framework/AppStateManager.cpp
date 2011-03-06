@@ -104,7 +104,7 @@ void AppStateManager::start(AppState* state)
 #endif
 		}
 	}
-	LogManager::getSingleton().logMessage("Main loop quit");
+	LOG("Main loop quit");
 }
 
 //|||||||||||||||||||||||||||||||||||||||||||||||

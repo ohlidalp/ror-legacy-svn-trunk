@@ -85,7 +85,7 @@ void TSMHeightFinder::loadSettings()
 	DataStreamPtr ds = ResourceGroupManager::getSingleton().openResource(String(cfgfilename), ResourceGroupManager::DEFAULT_RESOURCE_GROUP_NAME);
 	cfg.load(ds, "\t:=", false);
 	flipped=(cfg.getSetting("Heightmap.flip")=="true");
-	LogManager::getSingleton().logMessage("loading HeightFinder configuration from " + String(cfgfilename) + " flipped: " + StringConverter::toString(flipped));
+	LOG("loading HeightFinder configuration from " + String(cfgfilename) + " flipped: " + TOSTRING(flipped));
 }
 
 TSMHeightFinder::~TSMHeightFinder()
