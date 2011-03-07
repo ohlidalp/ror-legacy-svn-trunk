@@ -428,7 +428,7 @@ int SerializedRig::loadTruck(String fname, SceneManager *manager, SceneNode *par
 		for(int i=0; i < BTS_END; i++)
 		{
 			// check for classical sections
-			if (!strncmp(c.line, truck_sections[i].name, strnlen(truck_sections[i].name, 255)))
+			if (!strcmp(c.line, truck_sections[i].name))
 			{
 				foundSection = &truck_sections[i];
 				break;
@@ -1141,6 +1141,7 @@ if(fadeDist<0)
 			}
 
 			//skip if a beam already exists
+			/*
 			int i;
 			for (i=0; i<free_beam; i++)
 			{
@@ -1150,6 +1151,7 @@ if(fadeDist<0)
 					continue;
 				}
 			}
+			*/
 
 			// FIXME: separate init_beam and setup_beam to be able to set all parameters after creation
 			// this is just ugly:
