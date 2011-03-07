@@ -293,9 +293,9 @@ bool Settings::setupPaths()
 	char user_path[1024]="";
 	char config_root[1024]="";
 #if OGRE_PLATFORM == OGRE_PLATFORM_WIN32
-	char *dsStr = "\\";
+	const char *dsStr = "\\";
 #else
-	char *dsStr="/";
+	const char *dsStr="/";
 #endif
 
 	if(!get_system_paths(program_path, user_path))
