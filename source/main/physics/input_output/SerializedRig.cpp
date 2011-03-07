@@ -989,7 +989,7 @@ if(fadeDist<0)
 			if (id != free_node)
 			{
 				parser_warning(c, "lost sync in nodes numbers after node " + TOSTRING(free_node) + "(got " + TOSTRING(id) + " instead)");
-				exit(2);
+				return -2;
 			};
 
 			if(free_node >= MAX_NODES)
@@ -1131,7 +1131,7 @@ if(fadeDist<0)
 			if (id1>=free_node || id2>=free_node)
 			{
 				parser_warning(c, "Error: unknown node number in beams section ("+TOSTRING(id1)+","+TOSTRING(id2)+")");
-				exit(3);
+				return -3;
 			};
 
 			if(free_beam >= MAX_BEAMS)
@@ -1215,7 +1215,7 @@ if(fadeDist<0)
 			if (id1>=free_node || id2>=free_node)
 			{
 				parser_warning(c, "Error: unknown node number in Triggers section ("+TOSTRING(id1)+","+TOSTRING(id2)+")");
-				exit(576);
+				return -4;
 			}
 			if ((triggershort < 1 || triggershort > MAX_COMMANDS) || ((triggerlong < 1 || triggerlong > MAX_COMMANDS) && triggerlong !=-1 && triggerlong !=0))
 			{
@@ -1322,7 +1322,7 @@ if(fadeDist<0)
 			if (id1>=free_node || id2>=free_node)
 			{
 				parser_warning(c, "Error: unknown node number in shocks section ("+TOSTRING(id1)+","+TOSTRING(id2)+")");
-				exit(4);
+				return -5;
 			}
 
 
@@ -1393,13 +1393,13 @@ if(fadeDist<0)
 			if (id1>=free_node || id2>=free_node)
 			{
 				parser_warning(c, "Error: unknown node number in shocks2 section ("+TOSTRING(id1)+","+TOSTRING(id2)+")");
-				exit(4);
+				return -6;
 			}
 
 			if ( sin == -1.0f || din == -1.0f || psin == -1.0f || pdin == -1.0f || sout == -1.0f || dout == -1.0f || psout == -1.0f || pdout == -1.0f || sbound == -1.0f || lbound == -1.0f || precomp == -1.0f)
 			{
 				parser_warning(c, "Error: Wrong values in shocks2 section ("+TOSTRING(id1)+","+TOSTRING(id2)+")");
-				exit(123);
+				return -7;
 			}
 
 			// options
@@ -1479,7 +1479,7 @@ if(fadeDist<0)
 			if (id>=free_node)
 			{
 				parser_warning(c, "Error: unknown node number in fixes section ("+TOSTRING(id)+")");
-				exit(5);
+				return -7;
 			};
 			nodes[id].locked=1;
 			hasfixes=1;
@@ -1515,7 +1515,7 @@ if(fadeDist<0)
 			if (id1>=free_node || id2>=free_node)
 			{
 				parser_warning(c, "Error: unknown node number in hydros section ("+TOSTRING(id1)+","+TOSTRING(id2)+")");
-				exit(6);
+				return -7;
 			};
 
 			if(free_beam >= MAX_BEAMS)
@@ -1624,7 +1624,7 @@ if(fadeDist<0)
 			if (id1>=free_node || id2>=free_node)
 			{
 				parser_warning(c, "Error: unknown node number in animators section ("+TOSTRING(id1)+","+TOSTRING(id2)+")");
-				exit(6);
+				return -8;
 			}
 
 			if(free_beam >= MAX_BEAMS)
@@ -1787,7 +1787,7 @@ if(fadeDist<0)
 				if(mat.getPointer() == 0)
 				{
 					parser_warning(c, "Material not found! Try to ensure that tracks/black exists and retry.");
-					exit(124);
+					return -9;
 				}
 			}
 			mat->clone(clonetex);
@@ -2085,7 +2085,7 @@ if(fadeDist<0)
 			if (id1>=free_node || id2>=free_node)
 			{
 				parser_warning(c, "Error: unknown node number in ropes section ("+TOSTRING(id1)+","+TOSTRING(id2)+")");
-				exit(7);
+				return -10;
 			};
 
 			if(free_beam >= MAX_BEAMS)
@@ -2117,7 +2117,7 @@ if(fadeDist<0)
 			if (id1>=free_node)
 			{
 				parser_warning(c, "Error: unknown node number in ropables section ("+TOSTRING(id1)+")");
-				exit(7);
+				return -11;
 			}
 
 			ropable_t r;
@@ -3305,7 +3305,7 @@ if(fadeDist<0)
 			if (id1>=free_node)
 			{
 				parser_warning(c, "Error: unknown node number in hookgroup section ("+TOSTRING(id1)+")");
-				exit(7);
+				return -12;
 			};
 			hook_t h;
 			h.hookNode=&nodes[id1];
@@ -3945,7 +3945,7 @@ if(fadeDist<0)
 		if(mat.isNull())
 		{
 			parser_warning(c, "Material '"+String(texname)+"' missing!");
-			exit(123);
+			return -13;
 		}
 
 		//-trans
