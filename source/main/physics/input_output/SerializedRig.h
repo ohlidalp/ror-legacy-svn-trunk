@@ -31,7 +31,7 @@ along with Rigs of Rods.  If not, see <http://www.gnu.org/licenses/>.
 typedef struct trucksection_t
 {
 	int sectionID;
-	char *name;
+	const char *name;
 	bool titleContainsInfo;
 } trucksection_t;
 
