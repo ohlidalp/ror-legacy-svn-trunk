@@ -27,6 +27,24 @@ along with Rigs of Rods.  If not, see <http://www.gnu.org/licenses/>.
 
 #include <OgreStringVector.h>
 
+// parser specific helping structs, no need to export those for the whole sources
+typedef struct trucksection_t
+{
+	int sectionID;
+	char *name;
+	bool titleContainsInfo;
+} trucksection_t;
+
+typedef struct parsecontext_t
+{
+	Ogre::String filename;
+	Ogre::String modeString;
+	Ogre::String warningText;
+	unsigned int linecounter;
+	char line[2048];
+	int mode;
+} parsecontext_t;
+
 class SerializedRig : public rig_t
 {
 public:
@@ -36,6 +54,9 @@ public:
 	int loadTruck(Ogre::String filename, Ogre::SceneManager *manager, Ogre::SceneNode *parent, Ogre::Vector3 pos, Ogre::Quaternion rot, collision_box_t *spawnbox);	
 
 protected:
+	std::vector <parsecontext_t> warnings;
+	std::vector <parsecontext_t> modehistory;
+
 	void init_node(int pos
 		, float x
 		, float y
@@ -176,9 +197,9 @@ protected:
 	void wash_calculator(Ogre::Quaternion rot, parsecontext_t c);
 	void calcBox();
 
-	void parser_warning(parsecontext_t context, Ogre::String text);
+	void parser_warning(parsecontext_t &context, Ogre::String text);
 	void parser_warning(parsecontext_t *context, Ogre::String text);
-	bool checkResults(int res, int min, parsecontext_t context);
+	bool checkResults(int res, int min, parsecontext_t &context);
 };
 
 

@@ -45,6 +45,75 @@ along with Rigs of Rods.  If not, see <http://www.gnu.org/licenses/>.
 
 using namespace Ogre;
 
+// important: keep this in sync with TRUCK_SECTIONS enum as we iterate through this until we reach BTS_END
+trucksection_t truck_sections[] = {
+	{BTS_NONE, "NONE", false},
+	{BTS_NODES, "nodes", false},
+	{BTS_BEAMS, "beams", false},
+	{BTS_FIXES, "fixes", false},
+	{BTS_SHOCKS, "shocks", false},
+	{BTS_HYDROS, "hydros", false},
+	{BTS_WHEELS, "wheels", false},
+	{BTS_WHEELS2, "wheels2", false},
+	{BTS_GLOBALS, "globals", false},
+	{BTS_CAMERAS, "cameras", false},
+	{BTS_ENGINE, "engine", false},
+	{BTS_TEXCOORDS, "texcoords", false},
+	{BTS_CAB, "cab", false},
+	{BTS_COMMANDS, "commands", false},
+	{BTS_COMMANDS2, "commands2", false},
+	{BTS_CONTACTERS, "contacters", false},
+	{BTS_ROPES, "ropes", false},
+	{BTS_ROPABLES, "ropables", false},
+	{BTS_TIES, "ties", false},
+	{BTS_HELP, "help", false},
+	{BTS_CINECAM, "cinecam", false},
+	{BTS_FLARES, "flares", false},
+	{BTS_PROPS, "props", false},
+	{BTS_GLOBEAMS, "globeams", false},
+	{BTS_WINGS, "wings", false},
+	{BTS_TURBOPROPS, "turboprops", false},
+	{BTS_TURBOPROPS2, "turboprops2", false},
+	{BTS_PISTONPROPS, "pistonprops", false},
+	{BTS_FUSEDRAG, "fusedrag", false},
+	{BTS_ENGOPTION, "engoption", false},
+	{BTS_BRAKES, "brakes", false},
+	{BTS_ROTATORS, "rotators", false},
+	{BTS_SCREWPROPS, "screwprops", false},
+	{BTS_GUISETTINGS, "guisettings", false},
+	{BTS_MINIMASS, "minimass", false},
+	{BTS_EXHAUSTS, "exhausts", false},
+	{BTS_PARTICLES, "particles", false},
+	{BTS_TURBOJETS, "turbojets", false},
+	{BTS_RIGIDIFIERS, "rigidifiers", false},
+	{BTS_AIRBRAKES, "airbrakes", false},
+	{BTS_MESHWHEELS, "meshwheels", false},
+	{BTS_FLEXBODIES, "flexbodies", false},
+	{BTS_HOOKGROUP, "hookgroup", false},
+	{BTS_MATERIALFLAREBINDINGS, "materialflarebindings", false},
+	{BTS_SOUNDSOURCES, "soundsources", false},
+	{BTS_SOUNDSOURCES2, "soundsources2", false},
+	{BTS_ENVMAP, "envmap", false},
+	{BTS_MANAGEDMATERIALS, "managedmaterials", false},
+	{BTS_SECTIONCONFIG, "BTS_SECTIONCONFIG", false}, // NOT TO BE PARSED
+	{BTS_TORQUECURVE, "torquecurve", false},
+	{BTS_ADVANCEDDRAG, "advdrag", false},
+	{BTS_AXLES, "axles", false},
+	{BTS_SHOCKS2, "shocks2", false},
+	{BTS_TRIGGER, "triggers", false},
+	{BTS_RAILGROUPS, "railgroups", false},
+	{BTS_SLIDENODES, "slidenodes", false},
+	{BTS_FLARES2, "flares2", false},
+	{BTS_ANIMATORS, "animators", false},
+	{BTS_NODECOLLISION, "nodecollision", false},
+	{BTS_DESCRIPTION, "description", false},
+	{BTS_COMMENT, "BTS_COMMENT", false}, // NOT TO BE PARSED
+	{BTS_SECTION, "BTS_SECTION", false}, // NOT TO BE PARSED
+	{BTS_IN_SECTION, "BTS_IN_SECTION", false}, // NOT TO BE PARSED
+	{BTS_VIDCAM, "videocamera", false},
+	{BTS_END, "end", false},
+};
+
 SerializedRig::SerializedRig()
 {
 	mCamera=0;
@@ -243,10 +312,17 @@ int SerializedRig::loadTruck(String fname, SceneManager *manager, SceneNode *par
 
 	// create parsing context that we use for loading the truck
 	parsecontext_t c;
-	memset(&c, 0, sizeof(parsecontext_t));
-	c.filename = filename;
-	c.mode = BTS_NONE;
-	c.savedmode = BTS_NONE;
+	c.filename     = filename;
+	c.modeString   = "none";
+	c.warningText  = String();
+	c.linecounter  = 0;
+	c.line[0]      = 0;
+	c.mode         = BTS_NONE;
+
+	warnings.clear();
+	modehistory.clear();
+
+	int savedmode = BTS_NONE;
 	
 	// some temp varialbes
 	int leftlight=0;
@@ -282,11 +358,12 @@ int SerializedRig::loadTruck(String fname, SceneManager *manager, SceneNode *par
 
 	// open the stream and start reading :)
 	DataStreamPtr ds = ResourceGroupManager::getSingleton().openResource(filename, group);
-	//skip first c.line
+
+	// read in truckname on first line
 	ds->readLine(c.line, 2047);
-	// read in truckname for real
 	strncpy(realtruckname, c.line, 255);
 
+	// then loop through the rest of the lines
 	while (!ds->eof())
 	{
 		size_t ll = ds->readLine(c.line, 2047);
@@ -316,12 +393,12 @@ int SerializedRig::loadTruck(String fname, SceneManager *manager, SceneNode *par
 
 		if (!strcmp("end_comment", c.line)  && c.mode == BTS_COMMENT)
 		{
-			c.mode = c.savedmode;
+			c.mode = savedmode;
 			continue;
 		}
 		if (!strcmp("end_section", c.line)  && c.mode == BTS_IN_SECTION)
 		{
-			c.mode=c.savedmode;
+			c.mode = savedmode;
 			continue;
 		}
 
@@ -345,74 +422,41 @@ int SerializedRig::loadTruck(String fname, SceneManager *manager, SceneNode *par
 			// ignored truck section
 			continue;
 		}
-		if (!strcmp("nodes",c.line))   {c.mode=BTS_NODES;continue;};
-		if (!strcmp("beams",c.line))   {c.mode=BTS_BEAMS;continue;};
-		if (!strcmp("fixes",c.line))   {c.mode=BTS_FIXES;continue;};
-		if (!strcmp("shocks",c.line))  {c.mode=BTS_SHOCKS;continue;};
-		if (!strcmp("hydros",c.line))  {c.mode=BTS_HYDROS;continue;};
-		if (!strcmp("wheels",c.line))  {c.mode=BTS_WHEELS;continue;};
-		if (!strcmp("globals",c.line)) {c.mode=BTS_GLOBALS;continue;};
-		if (!strcmp("cameras",c.line)) {c.mode=BTS_CAMERAS;continue;};
-		if (!strcmp("engine",c.line))    {c.mode=BTS_ENGINE;continue;};
-		if (!strcmp("texcoords",c.line)) {c.mode=BTS_TEXCOORDS;continue;};
-		if (!strcmp("cab",c.line))       {c.mode=BTS_CAB;continue;};
-		if (!strcmp("commands",c.line))  {c.mode=BTS_COMMANDS;continue;};
-		if (!strcmp("commands2",c.line)) {c.mode=BTS_COMMANDS2;continue;};
+
+		// now check if we are in a new section
+		trucksection_t *foundSection = 0;
+		for(int i=0; i < BTS_END; i++)
+		{
+			// check for classical sections
+			if (!strncmp(c.line, truck_sections[i].name, strnlen(truck_sections[i].name, 255)))
+			{
+				foundSection = &truck_sections[i];
+				break;
+			}
+		}
+
+		if(foundSection)
+		{
+			// save the current mode in the history
+			modehistory.push_back(c);
+			// then set the new one
+			c.mode = foundSection->sectionID;
+			c.modeString = String(foundSection->name);
+			if(!foundSection->titleContainsInfo)
+				continue;
+
+		}
+
+		// check for commands (one line sections)
 		if (!strcmp("forwardcommands",c.line)) {forwardcommands=1;continue;};
 		if (!strcmp("importcommands",c.line)) {importcommands=1;continue;};
 		if (!strcmp("rollon",c.line)) {wheel_contact_requested=true;continue;};
 		if (!strcmp("rescuer",c.line)) {rescuer=true;continue;};
-		if (!strcmp("contacters",c.line)) {c.mode=BTS_CONTACTERS;continue;};
-		if (!strcmp("ropes",c.line)) {c.mode=BTS_ROPES;continue;};
-		if (!strcmp("ropables",c.line)) {c.mode=BTS_ROPABLES;continue;};
-		if (!strcmp("ties",c.line)) {c.mode=BTS_TIES;continue;};
-		if (!strcmp("help",c.line)) {c.mode=BTS_HELP;continue;};
-		if (!strcmp("cinecam",c.line)) {c.mode=BTS_CINECAM;continue;};
-		if (!strcmp("flares",c.line)) {c.mode=BTS_FLARES;continue;};
-		if (!strcmp("props",c.line)) {c.mode=BTS_PROPS;continue;};
-		if (!strcmp("globeams",c.line)) {c.mode=BTS_GLOBEAMS;continue;};
-		if (!strcmp("wings",c.line)) {c.mode=BTS_WINGS;continue;};
-		if (!strcmp("turboprops",c.line)) {c.mode=BTS_TURBOPROPS;continue;};
-		if (!strcmp("fusedrag",c.line)) {c.mode=BTS_FUSEDRAG;continue;};
-		if (!strcmp("engoption",c.line)) {c.mode=BTS_ENGOPTION;continue;};
-		if (!strcmp("brakes",c.line)) {c.mode=BTS_BRAKES;continue;};
-		if (!strcmp("rotators",c.line)) {c.mode=BTS_ROTATORS;continue;};
-		if (!strcmp("screwprops",c.line)) {c.mode=BTS_SCREWPROPS;continue;};
-		if (!strcmp("description",c.line)) {c.mode=BTS_DESCRIPTION;continue;};
-		if (!strcmp("comment",c.line)) {c.mode=BTS_COMMENT; c.savedmode=c.mode; continue;};
-		if (!strcmp("wheels2",c.line)) {c.mode=BTS_WHEELS2;continue;};
-		if (!strcmp("guisettings",c.line)) {c.mode=BTS_GUISETTINGS;continue;};
-		if (!strcmp("minimass",c.line)) {c.mode=BTS_MINIMASS;continue;};
-		if (!strcmp("exhausts",c.line)) {c.mode=BTS_EXHAUSTS;continue;};
-		if (!strcmp("turboprops2",c.line)) {c.mode=BTS_TURBOPROPS2;continue;};
-		if (!strcmp("pistonprops",c.line)) {c.mode=BTS_PISTONPROPS;continue;};
-		if (!strcmp("particles",c.line)) {c.mode=BTS_PARTICLES;continue;};
-		if (!strcmp("turbojets",c.line)) {c.mode=BTS_TURBOJETS;continue;};
-		if (!strcmp("rigidifiers",c.line)) {c.mode=BTS_RIGIDIFIERS;continue;};
-		if (!strcmp("airbrakes",c.line)) {c.mode=BTS_AIRBRAKES;continue;};
-		if (!strcmp("meshwheels",c.line)) {c.mode=BTS_MESHWHEELS;continue;};
-		if (!strcmp("flexbodies",c.line)) {c.mode=BTS_FLEXBODIES;continue;};
-		if (!strcmp("hookgroup",c.line)) {c.mode=BTS_HOOKGROUP; continue;};
-		if (!strncmp("materialflarebindings",c.line, 21)) {c.mode=BTS_MATERIALFLAREBINDINGS; continue;};
+		if (!strcmp("comment",c.line)) {savedmode=c.mode; c.mode=BTS_COMMENT; continue;};
 		if (!strcmp("disabledefaultsounds",c.line)) {disable_default_sounds=true;continue;};
-		if (!strcmp("soundsources",c.line)) {c.mode=BTS_SOUNDSOURCES;continue;};
-		if (!strcmp("soundsources2",c.line)) {c.mode=BTS_SOUNDSOURCES2;continue;};
-		if (!strcmp("envmap",c.line)) {c.mode=BTS_ENVMAP;continue;};
-		if (!strcmp("managedmaterials",c.line)) {c.mode=BTS_MANAGEDMATERIALS;continue;};
-		if (!strncmp("sectionconfig",c.line, 13)) {c.savedmode=c.mode;c.mode=BTS_SECTIONCONFIG; /* NOT continue */};
+		if (!strncmp("sectionconfig",c.line, 13)) {savedmode=c.mode;c.mode=BTS_SECTIONCONFIG; /* NOT continue */};
 		if (!strncmp("section",c.line, 7) && c.mode!=BTS_SECTIONCONFIG) {c.mode=BTS_SECTION; /* NOT continue */};
 		/* BTS_IN_SECTION = reserved for ignored section */
-		if (!strcmp("torquecurve",c.line)) {c.mode=BTS_TORQUECURVE;continue;};
-		if (!strcmp("advdrag",c.line)) {c.mode=BTS_ADVANCEDDRAG;continue;};
-		if (!strcmp("axles",c.line)) {c.mode=BTS_AXLES;continue;};
-		if (!strcmp("shocks2",c.line)) {c.mode=BTS_SHOCKS2;continue;};
-		if (!strcmp("triggers",c.line)) {c.mode=BTS_TRIGGER;continue;};
-		if (!strcmp("railgroups",c.line)) {c.mode=BTS_RAILGROUPS;continue;}
-		if (!strcmp("slidenodes",c.line)) {c.mode=BTS_SLIDENODES;continue;}
-		if (!strcmp("flares2",c.line)) {c.mode=BTS_FLARES2;continue;};
-		if (!strcmp("animators",c.line)) {c.mode=BTS_ANIMATORS;continue;};
-		if (!strcmp("nodecollision",c.line)) {c.mode=BTS_NODECOLLISION;continue;};
-		if (!strcmp("videocamera",c.line)) {c.mode=BTS_VIDCAM;continue;};
 		
 		if (!strncmp("detacher_group", c.line, 14))
 		{
@@ -3645,7 +3689,7 @@ if(fadeDist<0)
 		{
 			// parse sectionconfig
 			// not used here ...
-			c.mode=c.savedmode;
+			c.mode=savedmode;
 		}
 		else if (c.mode==BTS_SECTION)
 		{
@@ -4885,7 +4929,7 @@ void SerializedRig::calcBox()
 	//BES_GFX_STOP(BES_GFX_calcBox);
 }
 
-bool SerializedRig::checkResults(int result, int min, parsecontext_t context)
+bool SerializedRig::checkResults(int result, int min, parsecontext_t &context)
 {
 	if (result < min || result == EOF)
 	{
@@ -4895,9 +4939,15 @@ bool SerializedRig::checkResults(int result, int min, parsecontext_t context)
 	return true;
 }
 
-void SerializedRig::parser_warning(parsecontext_t context, Ogre::String text)
+void SerializedRig::parser_warning(parsecontext_t &context, Ogre::String text)
 {
-	LOG("BIO|"+context.filename+":"+TOSTRING(context.linecounter)+" | "+String(context.line)+" | " + text);
+	String txt = "BIO|"+context.filename+":"+Ogre::StringConverter::toString(context.linecounter, 4, '0')+" | "+String(context.modeString)+" | " + text;
+	LOG(txt);
+
+	// add the warning to the vector
+	parsecontext_t context_copy = context;
+	context_copy.warningText = txt;
+	warnings.push_back(context_copy);
 }
 
 void SerializedRig::parser_warning(parsecontext_t *context, Ogre::String text)

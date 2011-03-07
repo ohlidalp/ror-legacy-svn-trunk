@@ -81,9 +81,10 @@ static const int   MAX_PRESSURE_BEAMS         = 4000;            //!< maximum nu
 static const int   TRUCKFILEFORMATVERSION     = 3;               //!< truck file format version number
 
 
+// warning, we iterate through this, no jumps in the numbers allowed!
 enum TRUCK_SECTIONS {
 	BTS_NONE=0, // beam truck section nodes
-	BTS_NODES=10, 
+	BTS_NODES, 
 	BTS_BEAMS,
 	BTS_FIXES,
 	BTS_SHOCKS,
@@ -146,6 +147,7 @@ enum TRUCK_SECTIONS {
 	BTS_SECTION,
 	BTS_IN_SECTION,
 	BTS_VIDCAM,
+	BTS_END,
 };
 
 enum event_types {
@@ -479,17 +481,6 @@ struct contacter
 	int nodeid;
 	int contacted;
 	int opticontact;
-};
-
-struct parsecontext
-{
-	Ogre::String filename;
-	unsigned int linecounter;
-	unsigned int warnings;
-	unsigned int errors;
-	char line[2048];
-	int mode;
-	int savedmode;
 };
 
 struct rigidifier
