@@ -1920,7 +1920,7 @@ bool Beam::frameStep(Real dt, Beam** trucks, int numtrucks)
 	fasted=1;
 	slowed=1;
 	stabsleep-=dt;
-	if (replaymode && replay)
+	if (replaymode && replay && replay->isValid())
 	{
 		// no replay update needed if position was not changed
 		if(replaypos != oldreplaypos)
@@ -1928,27 +1928,30 @@ bool Beam::frameStep(Real dt, Beam** trucks, int numtrucks)
 			unsigned long time=0;
 			//replay update
 			node_simple_t *nbuff = (node_simple_t *)replay->getReadBuffer(replaypos, 0, time);
-			Vector3 pos = Vector3::ZERO;
-			for (i=0; i<free_node; i++)
+			if(nbuff)
 			{
-				nodes[i].AbsPosition = nbuff[i].pos;
-				nodes[i].RelPosition = nbuff[i].pos - origin;
-				nodes[i].smoothpos = nbuff[i].pos;
-				pos = pos + nbuff[i].pos;
-			}
-			updateSlideNodePositions();
+				Vector3 pos = Vector3::ZERO;
+				for (i=0; i<free_node; i++)
+				{
+					nodes[i].AbsPosition = nbuff[i].pos;
+					nodes[i].RelPosition = nbuff[i].pos - origin;
+					nodes[i].smoothpos = nbuff[i].pos;
+					pos = pos + nbuff[i].pos;
+				}
+				updateSlideNodePositions();
 
-			position=pos/(float)(free_node);
-			// now beams
-			beam_simple_t *bbuff = (beam_simple_t *)replay->getReadBuffer(replaypos, 1, time);
-			for (i=0; i<free_beam; i++)
-			{
-				beams[i].scale = bbuff[i].scale;
-				beams[i].broken = bbuff[i].broken;
-				beams[i].disabled = bbuff[i].disabled;
+				position=pos/(float)(free_node);
+				// now beams
+				beam_simple_t *bbuff = (beam_simple_t *)replay->getReadBuffer(replaypos, 1, time);
+				for (i=0; i<free_beam; i++)
+				{
+					beams[i].scale = bbuff[i].scale;
+					beams[i].broken = bbuff[i].broken;
+					beams[i].disabled = bbuff[i].disabled;
+				}
+				//LOG("replay: " + TOSTRING(time));
+				oldreplaypos = replaypos;
 			}
-			//LOG("replay: " + TOSTRING(time));
-			oldreplaypos = replaypos;
 		}
 	}
 	else
@@ -4561,7 +4564,8 @@ void Beam::beaconsToggle()
 
 void Beam::setReplayMode(bool rm)
 {
-	if (!replay) return;
+	if (!replay || !replay->isValid()) return;
+
 	if (replaymode && !rm)
 	{
 		replaypos=0;

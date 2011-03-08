@@ -1870,27 +1870,30 @@ void Beam::calcForcesEuler(int doUpdate, Real dt, int step, int maxstep, Beam** 
 	BES_START(BES_CORE_Replay);
 
 	//we also store a new replay frame
-	if(replay)
+	if(replay && replay->isValid())
 	{
 		replayTimer += dt;
 		if(replayTimer > replayPrecision)
 		{
 			// store nodes
 			node_simple_t *nbuff = (node_simple_t *)replay->getWriteBuffer(0);
-			for (i=0; i<free_node; i++)
-				nbuff[i].pos = nodes[i].AbsPosition;
-
-			// store beams
-			beam_simple_t *bbuff = (beam_simple_t *)replay->getWriteBuffer(1);
-			for (i=0; i<free_beam; i++)
+			if(nbuff)
 			{
-				bbuff[i].scale = beams[i].scale;
-				bbuff[i].broken = beams[i].broken;
-				bbuff[i].disabled = beams[i].disabled;
-			}
+				for (i=0; i<free_node; i++)
+					nbuff[i].pos = nodes[i].AbsPosition;
 
-			replay->writeDone();
-			replayTimer = 0.0f;
+				// store beams
+				beam_simple_t *bbuff = (beam_simple_t *)replay->getWriteBuffer(1);
+				for (i=0; i<free_beam; i++)
+				{
+					bbuff[i].scale = beams[i].scale;
+					bbuff[i].broken = beams[i].broken;
+					bbuff[i].disabled = beams[i].disabled;
+				}
+
+				replay->writeDone();
+				replayTimer = 0.0f;
+			}
 		}
 	}
 

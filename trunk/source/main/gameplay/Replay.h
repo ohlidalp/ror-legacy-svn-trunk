@@ -55,11 +55,13 @@ public:
 	void setVisible(bool value);
 	bool getVisible();
 
+	bool isValid() { return !outOfMemory; };
 protected:
 	Ogre::Timer *replayTimer;
 	int numNodes;
 	int numBeams;
 	int numFrames;
+	bool outOfMemory;
 
 
 	int writeIndex;
