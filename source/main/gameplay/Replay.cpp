@@ -41,6 +41,8 @@ Replay::Replay(Beam *b, int _numFrames)
 	beams = 0;
 	times = 0;
 
+	outOfMemory = false;
+
 	unsigned long bsize = (numNodes * numFrames * sizeof(node_simple_t) + numBeams * numFrames * sizeof(beam_simple_t) + numFrames * sizeof(unsigned long)) / 1024.0f;
 	LOG("replay buffer size: " + TOSTRING(bsize) + " kB");
 
@@ -83,12 +85,31 @@ Replay::~Replay()
 
 void *Replay::getWriteBuffer(int type)
 {
+	if(outOfMemory) return 0;
 	if(!nodes)
 	{
 		// get memory
 		nodes = (node_simple_t*)calloc(numNodes * numFrames, sizeof(node_simple_t));
+		if(!nodes)
+		{
+			outOfMemory=true;
+			return 0;
+		}
 		beams = (beam_simple_t*)calloc(numBeams * numFrames, sizeof(beam_simple_t));	
+		if(!beams)
+		{
+			free(nodes); nodes=0;
+			outOfMemory=true;
+			return 0;
+		}
 		times = (unsigned long*)calloc(numFrames, sizeof(unsigned long));
+		if(!times)
+		{
+			free(nodes); nodes=0;
+			free(beams); beams=0;
+			outOfMemory=true;
+			return 0;
+		}
 	}
 	void *ptr = 0;
 	times[writeIndex] = replayTimer->getMicroseconds();
@@ -106,6 +127,7 @@ void *Replay::getWriteBuffer(int type)
 
 void Replay::writeDone()
 {
+	if(outOfMemory) return;
 	writeIndex++;
 	if(writeIndex == numFrames)
 	{
@@ -135,6 +157,8 @@ void *Replay::getReadBuffer(int offset, int type, unsigned long &time)
 	curOffset = offset;
 	updateGUI();
 	
+	if(outOfMemory) return 0;
+
 	// return buffer pointer
 	if(type == 0)
 		return (void *)(nodes + delta * numNodes);
@@ -146,12 +170,18 @@ void *Replay::getReadBuffer(int offset, int type, unsigned long &time)
 void Replay::updateGUI()
 {
 #ifdef USE_MYGUI 
-	char tmp[128]="";
-	unsigned long t = curFrameTime;
-	sprintf(tmp, "Position: %0.6f s, frame %i / %i", ((float)t)/1000000.0f, curOffset, numFrames);
-	txt->setCaption(String(tmp));
-	//LOG(">>>2>"+TOSTRING(times[writeIndex]) + " /3> "+TOSTRING(curFrameTime));
-	pr->setProgressPosition(abs(curOffset));
+	if(outOfMemory)
+	{
+		txt->setCaption("Out of Memory");
+		pr->setProgressPosition(0);
+	} else
+	{
+		char tmp[128]="";
+		unsigned long t = curFrameTime;
+		sprintf(tmp, "Position: %0.6f s, frame %i / %i", ((float)t)/1000000.0f, curOffset, numFrames);
+		txt->setCaption(String(tmp));
+		pr->setProgressPosition(abs(curOffset));
+	}
 #endif // MYGUI
 }
 
