@@ -211,7 +211,10 @@ VideoCamera *VideoCamera::parseLine(Ogre::SceneManager *mSceneMgr, Ogre::Camera 
 		LOG("Error parsing File (videocamera) " + (fname) +" line " + TOSTRING(linecounter) + ". unkown material: '"+materialname+"', trying to continue ...");
 		return 0;
 	}
-	
+
+	// clone the material to stay unique
+	MaterialPtr matNew = mat->clone(String(truck->truckname) + materialname);
+	String newMaterialName = matNew->getName();
 
 	VideoCamera *v  = new VideoCamera(mSceneMgr, camera, truck);
 	v->fov          = fov;
@@ -222,7 +225,7 @@ VideoCamera *VideoCamera::parseLine(Ogre::SceneManager *mSceneMgr, Ogre::Camera 
 	v->nref         = nref;
 	v->offset       = Vector3(offx, offy, offz);
 	v->switchoff    = cmode;            // add performance switch off  ->meeds fix, only "always on" supported yet
-	v->materialName = String(materialname);
+	v->materialName = newMaterialName;
 	v->textureSize  = Vector2(texx, texy);
 
 	if(crole != 1)                     //rotate camera picture 180°, skip for mirrors
