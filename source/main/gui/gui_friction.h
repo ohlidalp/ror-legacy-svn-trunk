@@ -62,7 +62,7 @@ protected:
 	void event_combo_grounds_eventComboAccept(MyGUI::ComboBoxPtr _sender, size_t _index);
 	void event_btn_MouseButtonClick(MyGUI::WidgetPtr _sender);
 	void event_edit_TextChange(MyGUI::EditPtr _sender);
-	void event_scroll_value(MyGUI::VScrollPtr _sender, size_t _value);
+	void event_scroll_value(MyGUI::ScrollBar *_sender, size_t _value);
 	void notifyWindowButtonPressed(MyGUI::WindowPtr _sender, const std::string& _name);
 	void notifyHelpWindowButtonPressed(MyGUI::WindowPtr _sender, const std::string& _name);
 	void applyChanges();

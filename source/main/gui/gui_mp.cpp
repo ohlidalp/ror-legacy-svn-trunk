@@ -48,8 +48,8 @@ GUI_Multiplayer::GUI_Multiplayer(Network *_net, Ogre::Camera *cam) : net(_net), 
 	lineheight=16;
 
 	// tooltip window
-	tooltipPanel = MyGUI::Gui::getInstance().createWidget<MyGUI::Widget>("PanelSmall", 0, 0, 200, 20,  MyGUI::Align::Default, "ToolTip");
-	tooltipText = tooltipPanel->createWidget<MyGUI::StaticText>("StaticText", 4, 2, 200, 16,  MyGUI::Align::Default);
+	tooltipPanel = MyGUI::Gui::getInstance().createWidget<MyGUI::Widget>("PanelSkin", 0, 0, 200, 20,  MyGUI::Align::Default, "ToolTip");
+	tooltipText = tooltipPanel->createWidget<MyGUI::TextBox>("TextBox", 4, 2, 200, 16,  MyGUI::Align::Default);
 	tooltipText->setFontName("VeraMono");
 	//tooltipPanel->setAlpha(0.9f);
 	tooltipText->setFontHeight(16);
@@ -68,9 +68,9 @@ GUI_Multiplayer::GUI_Multiplayer(Network *_net, Ogre::Camera *cam) : net(_net), 
 	// network quality warning
 	netmsgwin = MyGUI::Gui::getInstance().createWidget<MyGUI::Window>("FlowContainer", 5, 30, 300, 40,  MyGUI::Align::Default, "Main");
 	netmsgwin->setAlpha(0.8f);
-	MyGUI::StaticImagePtr nimg = netmsgwin->createWidget<MyGUI::StaticImage>("StaticImage", 0, 0, 16, 16,  MyGUI::Align::Default, "Main");
+	MyGUI::ImageBox *nimg = netmsgwin->createWidget<MyGUI::ImageBox>("ImageBox", 0, 0, 16, 16,  MyGUI::Align::Default, "Main");
 	nimg->setImageTexture("error.png");
-	netmsgtext = netmsgwin->createWidget<MyGUI::StaticText>("StaticText", 18, 2, 300, 40,  MyGUI::Align::Default, "helptext");
+	netmsgtext = netmsgwin->createWidget<MyGUI::TextBox>("TextBox", 18, 2, 300, 40,  MyGUI::Align::Default, "helptext");
 	netmsgtext->setCaption(_L("Slow  Network  Download"));
 	netmsgtext->setFontName("VeraMoBd");
 	netmsgtext->setTextColour(MyGUI::Colour::Red);
@@ -89,7 +89,7 @@ GUI_Multiplayer::GUI_Multiplayer(Network *_net, Ogre::Camera *cam) : net(_net), 
 	{
 		x=100; // space for icons
 		player_row_t *row = &player_rows[i];
-		row->playername = mpPanel->createWidget<MyGUI::StaticText>("StaticText", x, y+1, 200, lineheight,  MyGUI::Align::Default, "Main");
+		row->playername = mpPanel->createWidget<MyGUI::TextBox>("TextBox", x, y+1, 200, lineheight,  MyGUI::Align::Default, "Main");
 		row->playername->setCaption("Player " + TOSTRING(i));
 		row->playername->setFontName("VeraMoBd");
 		row->playername->setUserString("tooltip", "user name");
@@ -100,21 +100,21 @@ GUI_Multiplayer::GUI_Multiplayer(Network *_net, Ogre::Camera *cam) : net(_net), 
 		row->playername->setAlpha(1);
 
 		x -= 18;
-		row->flagimg = mpPanel->createWidget<MyGUI::StaticImage>("StaticImage", x, y + 3, 16, 11,  MyGUI::Align::Default, "Main");
+		row->flagimg = mpPanel->createWidget<MyGUI::ImageBox>("ImageBox", x, y + 3, 16, 11,  MyGUI::Align::Default, "Main");
 		row->flagimg->setUserString("tooltip", "user country");
 		row->flagimg->eventToolTip += MyGUI::newDelegate(this, &GUI_Multiplayer::openToolTip);
 		row->flagimg->setNeedToolTip(true);
 		row->flagimg->setVisible(false);
 
 		x -= 18;
-		row->statimg = mpPanel->createWidget<MyGUI::StaticImage>("StaticImage", x, y, 16, 16,  MyGUI::Align::Default, "Main");
+		row->statimg = mpPanel->createWidget<MyGUI::ImageBox>("ImageBox", x, y, 16, 16,  MyGUI::Align::Default, "Main");
 		row->statimg->setUserString("tooltip", "user authentication level");
 		row->statimg->eventToolTip += MyGUI::newDelegate(this, &GUI_Multiplayer::openToolTip);
 		row->statimg->setNeedToolTip(true);
 		row->statimg->setVisible(false);
 
 		x -= 18;
-		row->userTruckOKImg = mpPanel->createWidget<MyGUI::StaticImage>("StaticImage", x, y, 16, 16,  MyGUI::Align::Default, "Main");
+		row->userTruckOKImg = mpPanel->createWidget<MyGUI::ImageBox>("ImageBox", x, y, 16, 16,  MyGUI::Align::Default, "Main");
 		row->userTruckOKImg->setUserString("tooltip", "truck loading state");
 		row->userTruckOKImg->eventToolTip += MyGUI::newDelegate(this, &GUI_Multiplayer::openToolTip);
 		row->userTruckOKImg->setNeedToolTip(true);
@@ -122,7 +122,7 @@ GUI_Multiplayer::GUI_Multiplayer(Network *_net, Ogre::Camera *cam) : net(_net), 
 		row->userTruckOKImg->eventMouseButtonClick += MyGUI::newDelegate(this, &GUI_Multiplayer::clickInfoIcon);
 
 		x -= 18;
-		row->userTruckOKRemoteImg = mpPanel->createWidget<MyGUI::StaticImage>("StaticImage", x, y, 16, 16,  MyGUI::Align::Default, "Main");
+		row->userTruckOKRemoteImg = mpPanel->createWidget<MyGUI::ImageBox>("ImageBox", x, y, 16, 16,  MyGUI::Align::Default, "Main");
 		row->userTruckOKRemoteImg->setUserString("tooltip", "remote truck loading state");
 		row->userTruckOKRemoteImg->eventToolTip += MyGUI::newDelegate(this, &GUI_Multiplayer::openToolTip);
 		row->userTruckOKRemoteImg->setNeedToolTip(true);
@@ -130,7 +130,7 @@ GUI_Multiplayer::GUI_Multiplayer(Network *_net, Ogre::Camera *cam) : net(_net), 
 		row->userTruckOKRemoteImg->eventMouseButtonClick += MyGUI::newDelegate(this, &GUI_Multiplayer::clickInfoIcon);
 		
 		x -= 18;
-		row->usergoimg = mpPanel->createWidget<MyGUI::StaticImage>("StaticImage", x, y, 16, 16,  MyGUI::Align::Default, "Main");
+		row->usergoimg = mpPanel->createWidget<MyGUI::ImageBox>("ImageBox", x, y, 16, 16,  MyGUI::Align::Default, "Main");
 		row->usergoimg->setUserString("num", TOSTRING(i));
 		row->usergoimg->setUserString("tooltip", "go to user");
 		row->usergoimg->setImageTexture("user_go.png");
@@ -140,7 +140,7 @@ GUI_Multiplayer::GUI_Multiplayer(Network *_net, Ogre::Camera *cam) : net(_net), 
 		row->usergoimg->eventMouseButtonClick += MyGUI::newDelegate(this, &GUI_Multiplayer::clickUserGoIcon);
 
 		/*
-		img = MyGUI::Gui::getInstance().createWidget<MyGUI::StaticImage>("StaticImage", x-36, y, 16, 16,  MyGUI::Align::Default, "Overlapped");
+		img = MyGUI::Gui::getInstance().createWidget<MyGUI::ImageBox>("ImageBox", x-36, y, 16, 16,  MyGUI::Align::Default, "Overlapped");
 		img->setImageTexture("information.png");
 		img->eventMouseButtonClick += MyGUI::newDelegate(this, &GUI_Multiplayer::clickInfoIcon);
 		img->eventToolTip += MyGUI::newDelegate(this, &GUI_Multiplayer::openToolTip);
