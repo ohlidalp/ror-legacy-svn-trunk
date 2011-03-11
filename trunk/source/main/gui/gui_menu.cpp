@@ -45,7 +45,7 @@ GUI_MainMenu::GUI_MainMenu(RoRFrameListener *efl) : mefl(efl)
 {
 	//MyGUI::WidgetPtr back = createWidget<MyGUI::Widget>("Panel", 0, 0, 912, 652,MyGUI::Align::Default, "Back");
 	mainmenu = MyGUI::Gui::getInstance().createWidget<MyGUI::MenuBar>("MenuBar", 0, 0, 300, 26,  MyGUI::Align::HStretch | MyGUI::Align::Top, "Back"); 
-	mainmenu->setRealCoord(0,0,100,0.001);
+	mainmenu->setCoord(0, 0, 800, 20);
 	
 	// File menu
 	MyGUI::MenuItemPtr mi = mainmenu->createWidget<MyGUI::MenuItem>("MenuBarButton", 0, 0, 60, 22,  MyGUI::Align::Default); 
@@ -54,7 +54,7 @@ GUI_MainMenu::GUI_MainMenu(RoRFrameListener *efl) : mefl(efl)
 	mi->setCaption("File");
 
 	pop->addItem("Hide Menu", MyGUI::MenuItemType::Normal);
-	pop->addItem("entry3", MyGUI::MenuItemType::Normal);
+	pop->addItem("Browser", MyGUI::MenuItemType::Normal);
 	pop->addItem("-", MyGUI::MenuItemType::Separator);
 	pop->addItem("Exit Game", MyGUI::MenuItemType::Normal);
 
