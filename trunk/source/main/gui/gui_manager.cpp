@@ -84,6 +84,8 @@ void GUIManager::createGui()
 	mPlatform->initialise(mWindow, mSceneManager, Ogre::ResourceGroupManager::AUTODETECT_RESOURCE_GROUP_NAME, gui_logfilename); // use cache resource group so preview images are working
 	mGUI = new MyGUI::Gui();
 	mGUI->initialise(mResourceFileName);
+	//MyGUI::PluginManager::getInstance().loadPlugin("Plugin_BerkeliumWidget.dll");
+
 }
 
 void GUIManager::destroyGui()
