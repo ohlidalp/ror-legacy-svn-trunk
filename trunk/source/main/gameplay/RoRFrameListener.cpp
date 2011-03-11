@@ -25,8 +25,6 @@ along with Rigs of Rods.  If not, see <http://www.gnu.org/licenses/>.
 #include "OgreTerrainMaterialGeneratorA.h"
 #include "OgreTerrainPaging.h"
 
-
-//#include "joystick.h"
 #include "ProceduralManager.h"
 #include "hdrlistener.h"
 #include "utils.h"
@@ -36,6 +34,7 @@ along with Rigs of Rods.  If not, see <http://www.gnu.org/licenses/>.
 #include "ChatSystem.h"
 #include "GlowMaterialListener.h"
 #include "MeshObject.h"
+#include "SceneMouse.h"
 
 #include "CharacterFactory.h"
 #include "BeamFactory.h"
@@ -768,7 +767,6 @@ RoRFrameListener::RoRFrameListener(AppState *parentState, RenderWindow* win, Cam
 	netPointToUID=-1;
 	netcheckGUITimer=0;
 	mDOF=0;
-	mouseGrabForce=100000.0f;
 	eflsingleton=this;
 	forcefeedback=0;
 #ifdef USE_OIS_G27
@@ -857,17 +855,7 @@ RoRFrameListener::RoRFrameListener(AppState *parentState, RenderWindow* win, Cam
 
 	// setup input
 	inputGrabMode=GRAB_ALL;
-	switchMouseButtons=false;
-#if OGRE_PLATFORM == OGRE_PLATFORM_APPLE
-	// on apple, switch by default
-	switchMouseButtons=true;
-#endif
-	if(BSETTING("Switch Mouse Buttons"))
-		switchMouseButtons=true;
-	else if(BSETTING("Switch Mouse Buttons"))
-		switchMouseButtons=false;
 
-	mouseGrabState=0; // 0 = not grabbed
 	if(SSETTING("Input Grab") == "All")
 		inputGrabMode = GRAB_ALL;
 	else if(SSETTING("Input Grab") == "Dynamically")
@@ -891,6 +879,7 @@ RoRFrameListener::RoRFrameListener(AppState *parentState, RenderWindow* win, Cam
 
 #ifdef USE_MYGUI
 	// init GUI
+	new SceneMouse(scm, this);
 	new GUIManager(root, scm, win);
 	LoadingWindow::getInstance();
 	SelectorWindow::getInstance();
@@ -918,8 +907,6 @@ RoRFrameListener::RoRFrameListener(AppState *parentState, RenderWindow* win, Cam
 
 	screenWidth=win->getWidth();
 	screenHeight=win->getHeight();
-	mouseX=screenWidth-20;
-	mouseY=screenHeight-20;
 	isnodegrabbed=false;
 
 	mRotateSpeed = 100;
@@ -1034,24 +1021,6 @@ RoRFrameListener::RoRFrameListener(AppState *parentState, RenderWindow* win, Cam
 	road=0;
 
 	objcounter=0;
-
-	// load 3d line for mouse picking
-	pickLine =  mSceneMgr->createManualObject("PickLineObject");
-	pickLineNode = mSceneMgr->getRootSceneNode()->createChildSceneNode("PickLineNode");
-
-	MaterialPtr pickLineMaterial = MaterialManager::getSingleton().create("PickLineMaterial",ResourceGroupManager::DEFAULT_RESOURCE_GROUP_NAME);
-	pickLineMaterial->setReceiveShadows(false);
-	pickLineMaterial->getTechnique(0)->setLightingEnabled(true);
-	pickLineMaterial->getTechnique(0)->getPass(0)->setDiffuse(0,0,1,0);
-	pickLineMaterial->getTechnique(0)->getPass(0)->setAmbient(0,0,1);
-	pickLineMaterial->getTechnique(0)->getPass(0)->setSelfIllumination(0,0,1);
-
-	pickLine->begin("PickLineMaterial", Ogre::RenderOperation::OT_LINE_LIST);
-	pickLine->position(0, 0, 0);
-	pickLine->position(0, 0, 0);
-	pickLine->end();
-	pickLineNode->attachObject(pickLine);
-	pickLineNode->setVisible(false);
 
 	//network
 	netmode=(BSETTING("Network enable"));
@@ -1948,15 +1917,6 @@ bool RoRFrameListener::updateEvents(float dt)
 	if(chatting)
 		return true;
 
-#ifdef USE_MYGUI
-	if(INPUTENGINE.getEventBoolValueBounce(EV_COMMON_SHOW_MENU))
-	{
-		bool newvalue = !GUI_MainMenu::getSingleton().getVisible();
-		GUI_MainMenu::getSingleton().setVisible(newvalue);
-		GUI_Friction::getSingleton().setShaded(newvalue);
-	}
-#endif //MYGUI
-
 	if(INPUTENGINE.getEventBoolValueBounce(EV_COMMON_QUIT_GAME))
 	{
 		if(!showcredits)
@@ -1964,29 +1924,6 @@ bool RoRFrameListener::updateEvents(float dt)
 		else
 			shutdown_final();
 	}
-#ifdef USE_MYGUI
-	if(GUI_MainMenu::getSingleton().getVisible()) return true; // disable input events in menu mode
-#endif // MYGUI
-
-
-	/*
-	if (INPUTENGINE.getEventBoolValueBounce(EV_TOGGLESHADERS, 0.5f))
-	{
-		if(shaderSchemeMode)
-		{
-			shaderSchemeMode=0;
-			mCamera->getViewport()->setMaterialScheme(MaterialManager::DEFAULT_SCHEME_NAME);
-			LOG("shaders disabled");
-			if(ow) ow->flashMessage("shaders disabled");
-		} else
-		{
-			shaderSchemeMode=1;
-			mCamera->getViewport()->setMaterialScheme(RTShader::ShaderGenerator::DEFAULT_SCHEME_NAME);
-			LOG("shaders enabled");
-			if(ow) ow->flashMessage("shaders enabled");
-		}
-	}
-	*/
 
 	if (INPUTENGINE.getEventBoolValueBounce(EV_COMMON_SCREENSHOT_BIG, 0.5f))
 	{
@@ -2272,7 +2209,6 @@ bool RoRFrameListener::updateEvents(float dt)
 		bool enablegrab = true;
 		if (cameramode != CAMERA_FREE)
 		{
-			//GUIManager::getSingleton().setCursorPosition(mouseX, mouseY);
 			if (current_truck==-1)
 			{
 				if(person)
@@ -2302,85 +2238,6 @@ bool RoRFrameListener::updateEvents(float dt)
 			}
 			else //we are in a vehicle
 			{
-				//the mouse stuff
-				const OIS::MouseState mstate = INPUTENGINE.getMouseState();
-				static bool buttonsPressed = false;
-				int click=-1;
-				// click = -1 = nothing clicked
-				// click = 0 left click (windows)
-				// click = 1 right click (linux)
-
-				// do not move the mouse while rotating the view
-				static int oldstate = 0;
-				// oldstate = 0 : dragging view to rotate
-				// oldstate = 1 : moving mouse
-				// oldstate = 2 : picking node
-				//LOG("oldstate="+TOSTRING(oldstate));
-
-				// this is a workaround to bea able to release mouse buttons in the dynamic mode
-				buttonsPressed = (mstate.buttons > 0);
-
-				if(inputGrabMode == GRAB_DYNAMICALLY)
-				{
-					// we do not use this anymore, as we can set the mouse's position instead of grabbing it
-					//INPUTENGINE.grabMouse(buttonsPressed);
-
-					// Hide the mouse if we press any mouse buttons of if we are in mouse mode
-					INPUTENGINE.hideMouse((buttonsPressed||(oldstate==1)));
-
-					// if we are rotating, fix the mouse cursor
-					if(oldstate == 0)
-						INPUTENGINE.setMousePosition(mouseX, mouseY);
-				}
-
-				//if(inputGrabMode == GRAB_ALL || (inputGrabMode == GRAB_DYNAMICALLY &&  (mstate.buttons != 0 || buttonsPressed)))
-
-				if(!mstate.buttonDown((switchMouseButtons?(OIS::MB_Left):(OIS::MB_Right))))
-				{
-					if(oldstate != 1)
-					{
-						if(ow) ow->mouseOverlay->getChild("mouse/pointer")->setMaterialName("mouse");
-						oldstate = 1;
-					}
-
-					if(inputGrabMode == GRAB_DYNAMICALLY)
-					{
-						// using absolute positions!
-						mouseX=mstate.X.abs;
-						mouseY=mstate.Y.abs;
-					} else
-					{
-						mouseX+=mstate.X.rel;
-						mouseY+=mstate.Y.rel;
-					}
-					if (mouseX<0) mouseX=0;
-					if (mouseX>screenWidth-1) mouseX=screenWidth-1;
-					if (mouseY<0) mouseY=0;
-					if (mouseY>screenHeight-1) mouseY=screenHeight-1;
-
-					// set the final position of the ingame cursor
-					if(ow) ow->mouseElement->setPosition(mouseX, mouseY);
-
-					//action
-					if(switchMouseButtons)
-					{
-						if (mstate.buttonDown(OIS::MB_Right)) click=0;
-						if (mstate.buttonDown(OIS::MB_Left)) click=1;
-					} else
-					{
-						if (mstate.buttonDown(OIS::MB_Left)) click=0;
-						if (mstate.buttonDown(OIS::MB_Right)) click=1;
-					}
-
-				}else {
-					if(oldstate != 0)
-					{
-						if(ow) ow->mouseOverlay->getChild("mouse/pointer")->setMaterialName("mouse-rotate");
-						oldstate = 0;
-					}
-				}
-
-
 				// get commands
 				int i;
 // -- maxbe here we should define a maximum numbers per trucks. Some trucks does not have that much commands
@@ -2413,9 +2270,6 @@ bool RoRFrameListener::updateEvents(float dt)
 					{
 						trucks[current_truck]->replaypos-=10;
 					}
-
-					if(INPUTENGINE.isKeyDown(OIS::KC_LMENU))
-						trucks[current_truck]->replaypos += mstate.X.rel;
 
 				}
 
@@ -2779,184 +2633,6 @@ bool RoRFrameListener::updateEvents(float dt)
 					if (trucks[current_truck]->autopilot && trucks[current_truck]->autopilot->wantsdisconnect)
 					{
 						trucks[current_truck]->disconnectAutopilot();
-					}
-					//left mouse click
-					if (ow && click==0)
-					{
-						OverlayElement *element=ow->airneedlesOverlay->findElementAt((float)mouseX/(float)screenWidth,(float)mouseY/(float)screenHeight);
-						if (element)
-						{
-							char name[256];
-							strcpy(name,element->getName().c_str());
-							if (!strncmp(name, "tracks/thrust1", 14)) trucks[current_truck]->aeroengines[0]->setThrotle(1.0f-((((float)mouseY/(float)screenHeight)-ow->thrtop-ow->throffset)/ow->thrheight));
-							if (!strncmp(name, "tracks/thrust2", 14) && trucks[current_truck]->free_aeroengine>1) trucks[current_truck]->aeroengines[1]->setThrotle(1.0f-((((float)mouseY/(float)screenHeight)-ow->thrtop-ow->throffset)/ow->thrheight));
-							if (!strncmp(name, "tracks/thrust3", 14) && trucks[current_truck]->free_aeroengine>2) trucks[current_truck]->aeroengines[2]->setThrotle(1.0f-((((float)mouseY/(float)screenHeight)-ow->thrtop-ow->throffset)/ow->thrheight));
-							if (!strncmp(name, "tracks/thrust4", 14) && trucks[current_truck]->free_aeroengine>3) trucks[current_truck]->aeroengines[3]->setThrotle(1.0f-((((float)mouseY/(float)screenHeight)-ow->thrtop-ow->throffset)/ow->thrheight));
-							enablegrab=false;
-						}
-						//also for main dashboard
-						OverlayElement *element2=ow->airdashboardOverlay->findElementAt((float)mouseX/(float)screenWidth,(float)mouseY/(float)screenHeight);
-						if (element2)
-						{
-							enablegrab=false;
-							char name[256];
-							strcpy(name,element2->getName().c_str());
-							//LOG("element "+element2->getName());
-							if (!strncmp(name, "tracks/engstart1", 16)) trucks[current_truck]->aeroengines[0]->flipStart();
-							if (!strncmp(name, "tracks/engstart2", 16) && trucks[current_truck]->free_aeroengine>1) trucks[current_truck]->aeroengines[1]->flipStart();
-							if (!strncmp(name, "tracks/engstart3", 16) && trucks[current_truck]->free_aeroengine>2) trucks[current_truck]->aeroengines[2]->flipStart();
-							if (!strncmp(name, "tracks/engstart4", 16) && trucks[current_truck]->free_aeroengine>3) trucks[current_truck]->aeroengines[3]->flipStart();
-							//heading group
-							if (!strcmp(name, "tracks/ap_hdg_but") && trucks[current_truck]->autopilot && mTimeUntilNextToggle <= 0)
-							{
-								mTimeUntilNextToggle = 0.2;
-								if(trucks[current_truck]->autopilot->toggleHeading(Autopilot::HEADING_FIXED)==Autopilot::HEADING_FIXED)
-									OverlayManager::getSingleton().getOverlayElement("tracks/ap_hdg_but")->setMaterialName("tracks/hdg-on");
-								else
-									OverlayManager::getSingleton().getOverlayElement("tracks/ap_hdg_but")->setMaterialName("tracks/hdg-off");
-								OverlayManager::getSingleton().getOverlayElement("tracks/ap_wlv_but")->setMaterialName("tracks/wlv-off");
-								OverlayManager::getSingleton().getOverlayElement("tracks/ap_nav_but")->setMaterialName("tracks/nav-off");
-							}
-							if (!strcmp(name, "tracks/ap_wlv_but") && trucks[current_truck]->autopilot && mTimeUntilNextToggle <= 0)
-							{
-								mTimeUntilNextToggle = 0.2;
-								if(trucks[current_truck]->autopilot->toggleHeading(Autopilot::HEADING_WLV)==Autopilot::HEADING_WLV)
-									OverlayManager::getSingleton().getOverlayElement("tracks/ap_wlv_but")->setMaterialName("tracks/wlv-on");
-								else
-									OverlayManager::getSingleton().getOverlayElement("tracks/ap_wlv_but")->setMaterialName("tracks/wlv-off");
-								OverlayManager::getSingleton().getOverlayElement("tracks/ap_hdg_but")->setMaterialName("tracks/hdg-off");
-								OverlayManager::getSingleton().getOverlayElement("tracks/ap_nav_but")->setMaterialName("tracks/nav-off");
-							}
-							if (!strcmp(name, "tracks/ap_nav_but") && trucks[current_truck]->autopilot && mTimeUntilNextToggle <= 0)
-							{
-								mTimeUntilNextToggle = 0.2;
-								if(trucks[current_truck]->autopilot->toggleHeading(Autopilot::HEADING_NAV)==Autopilot::HEADING_NAV)
-									OverlayManager::getSingleton().getOverlayElement("tracks/ap_nav_but")->setMaterialName("tracks/nav-on");
-								else
-									OverlayManager::getSingleton().getOverlayElement("tracks/ap_nav_but")->setMaterialName("tracks/nav-off");
-								OverlayManager::getSingleton().getOverlayElement("tracks/ap_wlv_but")->setMaterialName("tracks/wlv-off");
-								OverlayManager::getSingleton().getOverlayElement("tracks/ap_hdg_but")->setMaterialName("tracks/hdg-off");
-							}
-							//altitude group
-							if (!strcmp(name, "tracks/ap_alt_but") && trucks[current_truck]->autopilot && mTimeUntilNextToggle <= 0)
-							{
-								mTimeUntilNextToggle = 0.2;
-								if(trucks[current_truck]->autopilot->toggleAlt(Autopilot::ALT_FIXED)==Autopilot::ALT_FIXED)
-									OverlayManager::getSingleton().getOverlayElement("tracks/ap_alt_but")->setMaterialName("tracks/hold-on");
-								else
-									OverlayManager::getSingleton().getOverlayElement("tracks/ap_alt_but")->setMaterialName("tracks/hold-off");
-								OverlayManager::getSingleton().getOverlayElement("tracks/ap_vs_but")->setMaterialName("tracks/vs-off");
-							}
-							if (!strcmp(name, "tracks/ap_vs_but") && trucks[current_truck]->autopilot && mTimeUntilNextToggle <= 0)
-							{
-								mTimeUntilNextToggle = 0.2;
-								if(trucks[current_truck]->autopilot->toggleAlt(Autopilot::ALT_VS)==Autopilot::ALT_VS)
-									OverlayManager::getSingleton().getOverlayElement("tracks/ap_vs_but")->setMaterialName("tracks/vs-on");
-								else
-									OverlayManager::getSingleton().getOverlayElement("tracks/ap_vs_but")->setMaterialName("tracks/vs-off");
-								OverlayManager::getSingleton().getOverlayElement("tracks/ap_alt_but")->setMaterialName("tracks/hold-off");
-							}
-							//IAS
-							if (!strcmp(name, "tracks/ap_ias_but") && trucks[current_truck]->autopilot && mTimeUntilNextToggle <= 0)
-							{
-								mTimeUntilNextToggle = 0.2;
-								if(trucks[current_truck]->autopilot->toggleIAS())
-									OverlayManager::getSingleton().getOverlayElement("tracks/ap_ias_but")->setMaterialName("tracks/athr-on");
-								else
-									OverlayManager::getSingleton().getOverlayElement("tracks/ap_ias_but")->setMaterialName("tracks/athr-off");
-							}
-							//GPWS
-							if (!strcmp(name, "tracks/ap_gpws_but") && trucks[current_truck]->autopilot && mTimeUntilNextToggle <= 0)
-							{
-								mTimeUntilNextToggle = 0.2;
-								if(trucks[current_truck]->autopilot->toggleGPWS())
-									OverlayManager::getSingleton().getOverlayElement("tracks/ap_gpws_but")->setMaterialName("tracks/gpws-on");
-								else
-									OverlayManager::getSingleton().getOverlayElement("tracks/ap_gpws_but")->setMaterialName("tracks/gpws-off");
-							}
-							//BRKS
-							if (!strcmp(name, "tracks/ap_brks_but") && trucks[current_truck]->autopilot && mTimeUntilNextToggle <= 0)
-							{
-								trucks[current_truck]->parkingbrakeToggle();
-								if(trucks[current_truck]->parkingbrake)
-									OverlayManager::getSingleton().getOverlayElement("tracks/ap_brks_but")->setMaterialName("tracks/brks-on");
-								else
-									OverlayManager::getSingleton().getOverlayElement("tracks/ap_brks_but")->setMaterialName("tracks/brks-off");
-								mTimeUntilNextToggle = 0.2;
-							}
-							//trims
-							if (!strcmp(name, "tracks/ap_hdg_up") && trucks[current_truck]->autopilot && mTimeUntilNextToggle <= 0)
-							{
-								mTimeUntilNextToggle = 0.1;
-								int val=trucks[current_truck]->autopilot->adjHDG(1);
-								char str[10];
-								sprintf(str, "%.3u", val);
-								OverlayManager::getSingleton().getOverlayElement("tracks/ap_hdg_val")->setCaption(str);
-							}
-							if (!strcmp(name, "tracks/ap_hdg_dn") && trucks[current_truck]->autopilot && mTimeUntilNextToggle <= 0)
-							{
-								mTimeUntilNextToggle = 0.1;
-								int val=trucks[current_truck]->autopilot->adjHDG(-1);
-								char str[10];
-								sprintf(str, "%.3u", val);
-								OverlayManager::getSingleton().getOverlayElement("tracks/ap_hdg_val")->setCaption(str);
-							}
-							if (!strcmp(name, "tracks/ap_alt_up") && trucks[current_truck]->autopilot && mTimeUntilNextToggle <= 0)
-							{
-								mTimeUntilNextToggle = 0.1;
-								int val=trucks[current_truck]->autopilot->adjALT(100);
-								char str[10];
-								sprintf(str, "%i00", val/100);
-								OverlayManager::getSingleton().getOverlayElement("tracks/ap_alt_val")->setCaption(str);
-							}
-							if (!strcmp(name, "tracks/ap_alt_dn") && trucks[current_truck]->autopilot && mTimeUntilNextToggle <= 0)
-							{
-								mTimeUntilNextToggle = 0.1;
-								int val=trucks[current_truck]->autopilot->adjALT(-100);
-								char str[10];
-								sprintf(str, "%i00", val/100);
-								OverlayManager::getSingleton().getOverlayElement("tracks/ap_alt_val")->setCaption(str);
-							}
-							if (!strcmp(name, "tracks/ap_vs_up") && trucks[current_truck]->autopilot && mTimeUntilNextToggle <= 0)
-							{
-								mTimeUntilNextToggle = 0.1;
-								int val=trucks[current_truck]->autopilot->adjVS(100);
-								char str[10];
-								if (val<0)
-									sprintf(str, "%i00", val/100);
-								else if (val==0) strcpy(str, "000");
-								else sprintf(str, "+%i00", val/100);
-								OverlayManager::getSingleton().getOverlayElement("tracks/ap_vs_val")->setCaption(str);
-							}
-							if (!strcmp(name, "tracks/ap_vs_dn") && trucks[current_truck]->autopilot && mTimeUntilNextToggle <= 0)
-							{
-								mTimeUntilNextToggle = 0.1;
-								int val=trucks[current_truck]->autopilot->adjVS(-100);
-								char str[10];
-								if (val<0)
-									sprintf(str, "%i00", val/100);
-								else if (val==0) strcpy(str, "000");
-								else sprintf(str, "+%i00", val/100);
-								OverlayManager::getSingleton().getOverlayElement("tracks/ap_vs_val")->setCaption(str);
-							}
-							if (!strcmp(name, "tracks/ap_ias_up") && trucks[current_truck]->autopilot && mTimeUntilNextToggle <= 0)
-							{
-								mTimeUntilNextToggle = 0.1;
-								int val=trucks[current_truck]->autopilot->adjIAS(1);
-								char str[10];
-								sprintf(str, "%.3u", val);
-								OverlayManager::getSingleton().getOverlayElement("tracks/ap_ias_val")->setCaption(str);
-							}
-							if (!strcmp(name, "tracks/ap_ias_dn") && trucks[current_truck]->autopilot && mTimeUntilNextToggle <= 0)
-							{
-								mTimeUntilNextToggle = 0.1;
-								int val=trucks[current_truck]->autopilot->adjIAS(-1);
-								char str[10];
-								sprintf(str, "%.3u", val);
-								OverlayManager::getSingleton().getOverlayElement("tracks/ap_ias_val")->setCaption(str);
-							}
-						}
-
 					}
 					//AIRPLANE KEYS
 					float commandrate=4.0;
@@ -3333,177 +3009,13 @@ bool RoRFrameListener::updateEvents(float dt)
 					if(ow) ow->showPressureOverlay(false);
 				}
 
-				if(enablegrab && ow)
-				{
-					//node grabbing
-					bool ctrldown = INPUTENGINE.isKeyDown(OIS::KC_LCONTROL) || INPUTENGINE.isKeyDown(OIS::KC_RCONTROL);
-					//node grabbing
-					if (isnodegrabbed)
-					{
-						if(oldstate != 2)
-						{
-							if(ctrldown)
-								ow->mouseOverlay->getChild("mouse/pointer")->setMaterialName("mouse-locked-heavy");
-							else
-								ow->mouseOverlay->getChild("mouse/pointer")->setMaterialName("mouse-locked");
-							pickLineNode->setVisible(true);
-							oldstate = 2;
-						}
 
-						if (click==0)
-						{
-							// allow the grab force to change
-							if(fabs((float)(mstate.Z.rel)) > 0.01)
-							{
-								if(INPUTENGINE.isKeyDown(OIS::KC_LSHIFT) || INPUTENGINE.isKeyDown(OIS::KC_RSHIFT))
-									mouseGrabForce += mstate.Z.rel * 100.0f;
-								else
-									mouseGrabForce += mstate.Z.rel * 10.0f;
-								// do not allow negative forces, looks weird
-								if(mouseGrabForce < 0.0f)
-									mouseGrabForce = 0.0f;
-
-								//LOG("mouse force: " + TOSTRING(mouseGrabForce));
-							}
-							//exert forces
-							//find pointed position
-							Ray mouseRay=mCamera->getCameraToViewportRay((float)mouseX/(float)screenWidth, (float)mouseY/(float)screenHeight);
-							Vector3 pos=mouseRay.getPoint(distgrabbed);
-
-							// update pickline
-							pickLine->beginUpdate(0);
-							pickLine->position(trucks[truckgrabbed]->nodes[nodegrabbed].AbsPosition);
-							pickLine->position(pos);
-							pickLine->end();
-
-							// add forces
-
-							trucks[truckgrabbed]->mouseMove(nodegrabbed,pos, mouseGrabForce);
-						}
-						else
-						{
-							pickLineNode->setVisible(false);
-							isnodegrabbed=false;
-							trucks[truckgrabbed]->mouseMove(-1,Vector3::ZERO, 0);
-						}
-					}
-					else
-					{
-						if (click==0)
-						{
-							//try to grab something
-							Ray mouseRay=mCamera->getCameraToViewportRay((float)mouseX/(float)screenWidth, (float)mouseY/(float)screenHeight);
-							int t;
-							int mindist=30000;
-							int mintruck=-1;
-							int minnode=-1;
-							for (t=0; t<free_truck; t++)
-							{
-								if(!trucks[t]) continue;
-								int i;
-								for (i=0; i<trucks[t]->free_node; i++)
-								{
-									std::pair<bool,Real> pair=mouseRay.intersects(Sphere(trucks[t]->nodes[i].AbsPosition, 0.1));
-									if (pair.first)
-									{
-										if (pair.second<mindist)
-										{
-											mindist=(int)pair.second;
-											mintruck=t;
-											minnode=i;
-										}
-									}
-								}
-							}
-							//okay see if we got a match
-							if (mintruck!=-1)
-							{
-#ifdef USE_ANGELSCRIPT
-								ScriptEngine::getSingleton().triggerEvent(ScriptEngine::SE_GENERIC_MOUSE_BEAM_INTERACTION, current_truck);
-#endif //ANGELSCRIPT
-								truckgrabbed=mintruck;
-								nodegrabbed=minnode;
-								distgrabbed=mindist;
-								isnodegrabbed=true;
-							}
-						}
-					}
-				}
 			}//end of truck!=-1
 		}
 
 
 		static unsigned char brushNum=0;
 
-		const OIS::MouseState mstate = INPUTENGINE.getMouseState();
-		static bool buttonsPressed = false;
-		if(ow && inputGrabMode == GRAB_ALL || (inputGrabMode == GRAB_DYNAMICALLY &&  (mstate.buttons != 0 || buttonsPressed)))
-		{
-			if ((cameramode==CAMERA_INT || cameramode==CAMERA_EXT || cameramode==CAMERA_FIX || cameramode==CAMERA_FREE_FIXED) && current_truck == -1)
-			{
-				bool btnview = mstate.buttonDown((switchMouseButtons?OIS::MB_Left:OIS::MB_Right));
-				if(inputGrabMode == GRAB_DYNAMICALLY)
-				{
-					if(!buttonsPressed && btnview)
-					{
-						// set mouse position on the first click
-						mouseX = mstate.X.abs;
-						mouseY = mstate.Y.abs;
-						// display cursor
-						ow->mouseElement->setPosition(mouseX, mouseY);
-						ow->mouseOverlay->getChild("mouse/pointer")->setMaterialName("mouse-rotate");
-						ow->mouseOverlay->show();
-						INPUTENGINE.hideMouse(true);
-					} else if (buttonsPressed && !btnview)
-					{
-						// release event
-						ow->mouseOverlay->getChild("mouse/pointer")->setMaterialName("mouse");
-						ow->mouseOverlay->hide();
-						INPUTENGINE.hideMouse(false);
-					}
-					if(btnview)
-						INPUTENGINE.setMousePosition(mouseX, mouseY);
-
-				}
-				if(inputGrabMode == GRAB_ALL || (inputGrabMode == GRAB_DYNAMICALLY &&  btnview))
-				{
-					// 'First person' mode :)
-					// x rotation = automatically by rotating the character
-					if (mstate.Y.rel != 0)
-						camRotY += Degree(-mstate.Y.rel / 10.0);
-					if (mstate.Z.rel != 0)
-						if(INPUTENGINE.isKeyDown(OIS::KC_LSHIFT) || INPUTENGINE.isKeyDown(OIS::KC_RSHIFT))
-							camDist += -mstate.Z.rel / 12.0;
-						else
-							camDist += -mstate.Z.rel / 120.0;
-
-					// rather hacked workaround :|
-					float angle = person->getAngle() + (float)(mstate.X.rel) / 120.0;
-					person->getSceneNode()->resetOrientation();
-					person->getSceneNode()->yaw(-Radian(angle));
-					person->setAngle(angle);
-					person->updateMapIcon();
-				}
-			} else
-			{
-				if(mstate.buttonDown((switchMouseButtons?OIS::MB_Left:OIS::MB_Right)))
-				{
-					// fix mouse at the current place :)
-					if(inputGrabMode == GRAB_DYNAMICALLY)
-						INPUTENGINE.setMousePosition(mouseX, mouseY);
-					if (mstate.X.rel != 0)
-						camRotX += Degree(mstate.X.rel / 10.0);
-					if (mstate.Y.rel != 0)
-						camRotY += Degree(-mstate.Y.rel / 10.0);
-					if (mstate.Z.rel != 0)
-						if(INPUTENGINE.isKeyDown(OIS::KC_LSHIFT) || INPUTENGINE.isKeyDown(OIS::KC_RSHIFT))
-							camDist += -mstate.Z.rel / 12.0;
-						else
-							camDist += -mstate.Z.rel / 120.0;
-				}
-			}
-			buttonsPressed = (mstate.buttons > 0);
-		}
 
 		if (INPUTENGINE.getEventBoolValueBounce(EV_CAMERA_LOOKBACK))
 		{
@@ -3787,7 +3299,6 @@ bool RoRFrameListener::updateEvents(float dt)
 				mTimeUntilNextToggle = 0.0; //No delay in this case: the truck must brake like braking normally
 			}
 		}
-
 	} else
 	{
 		//no terrain or truck loaded
@@ -4144,11 +3655,6 @@ void RoRFrameListener::shutdown_final()
 	if (heathaze) heathaze->prepareShutdown();
 	if (current_truck!=-1) trucks[current_truck]->prepareShutdown();
 	INPUTENGINE.prepareShutdown();
-
-	// destroy input things properly
-	//mInputManager->destroyInputObject(mMouse); mMouse = 0;
-	//mInputManager->destroyInputObject(mKeyboard); mKeyboard = 0;
-	//OIS::InputManager::destroyInputSystem(mInputManager); mInputManager = 0;
 
 	
 	
@@ -6076,7 +5582,6 @@ void RoRFrameListener::setCurrentTruck(int v)
 #endif //MYGUI
 
 		//getting outside
-		if(ow) ow->mouseOverlay->hide();
 		Vector3 position = Vector3::ZERO;
 		if(trucks[previous_truck])
 		{
@@ -6123,7 +5628,6 @@ void RoRFrameListener::setCurrentTruck(int v)
 	{
 		//getting inside
 		if(netmode && NETCHAT.getVisible()) NETCHAT.setMode(this, NETCHAT_LEFT_SMALL, true);
-		if(ow) ow->mouseOverlay->show();
 		//person->setVisible(false);
 		if(ow &&!hidegui)
 		{
@@ -6231,10 +5735,6 @@ void RoRFrameListener::moveCamera(float dt)
 	if(!hfinder) return;
 	if (loading_state!=ALL_LOADED && loading_state != EDITOR_PAUSE) return;
 
-#ifdef USE_MYGUI
-	if(GUI_MainMenu::getSingleton().getVisible()) return; // disable camera movement in menu mode
-#endif // MYGUI
-
 	if (isnodegrabbed) return; //freeze camera
 
 	bool changeCamMode = (lastcameramode != cameramode);
@@ -6267,17 +5767,6 @@ void RoRFrameListener::moveCamera(float dt)
 			mMoveScale *= 0.05;
 		}
 
-		const OIS::MouseState &ms = INPUTENGINE.getMouseState();
-		if( ms.buttonDown(OIS::MB_Right) )
-		{
-			mTranslateVector.x += ms.X.rel * 0.13;
-			mTranslateVector.y -= ms.Y.rel * 0.13;
-		}
-		else
-		{
-			mRotX = Degree(-ms.X.rel * 0.13);
-			mRotY = Degree(-ms.Y.rel * 0.13);
-		}
 
 		if(INPUTENGINE.getEventBoolValue(EV_CHARACTER_SIDESTEP_LEFT))
 			mTranslateVector.x = -mMoveScale;	// Move camera left
@@ -7295,11 +6784,6 @@ void RoRFrameListener::windowFocusChange(RenderWindow* rw)
 	INPUTENGINE.resetKeys();
 }
 
-Ogre::Ray RoRFrameListener::getMouseRay()
-{
-	return mCamera->getCameraToViewportRay((float)mouseX/(float)screenWidth, (float)mouseY/(float)screenHeight);
-}
-
 void RoRFrameListener::pauseSim(bool value)
 {
 	// TODO: implement this (how to do so?)
@@ -7336,7 +6820,6 @@ void RoRFrameListener::hideGUI(bool visible)
 {
 	if(visible)
 	{
-		if(ow) ow->mouseOverlay->hide();
 		if (netmode && NETCHAT.getVisible())
 			NETCHAT.toggleVisible(this);
 
@@ -7356,7 +6839,6 @@ void RoRFrameListener::hideGUI(bool visible)
 			NETCHAT.toggleVisible(this);
 		if(current_truck != -1 && cameramode!=CAMERA_INT)
 		{
-			if(ow) ow->mouseOverlay->show();
 			if(ow) ow->showDashboardOverlays(true, trucks[current_truck]->driveable);
 			//if(bigMap) bigMap->setVisibility(true);
 		}

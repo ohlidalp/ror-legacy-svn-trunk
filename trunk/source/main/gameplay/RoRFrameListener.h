@@ -25,13 +25,6 @@ along with Rigs of Rods.  If not, see <http://www.gnu.org/licenses/>.
 #if OGRE_PLATFORM == OGRE_PLATFORM_WIN32
 #include <windows.h>
 #endif
-//#include "OgreKeyEvent.h"
-//#include "OgreEventListeners.h"
-//#include "OISEvents.h"
-//#include "OISInputManager.h"
-//#include "OISMouse.h"
-//#include "OISKeyboard.h"
-//#include "OISJoyStick.h"
 
 #ifdef USE_MPLATFORM
 #include "mplatform_base.h"
@@ -199,12 +192,9 @@ protected:
 
 	std::map< std::string, Ogre::SceneNode *> loadedObjects;
 	DOFManager *mDOF;
-	int mouseX;
-	int mouseY;
 	int shaderSchemeMode;
 	int inputGrabMode;
 	int mouseGrabState;
-	bool switchMouseButtons;
 	int screenWidth;
 	int screenHeight;
 	bool isnodegrabbed;
@@ -276,8 +266,6 @@ protected:
 	MapTextureCreator *mtc;
 	int fogmode;
 	float fogdensity;
-	ManualObject *pickLine;
-	SceneNode *pickLineNode;
 	bool updateTruckMirrors(float dt);
 	void gridScreenshots(Ogre::RenderWindow* pRenderWindow, Ogre::Camera* pCamera, const int& pGridSize, const Ogre::String& path, const Ogre::String& pFileName, const Ogre::String& pFileExtention, const bool& pStitchGridImages);
 	void initDust();
@@ -299,11 +287,11 @@ public:
 	bool benchmarkStep(float dt);
 	void initTrucks(bool loadmanual, Ogre::String selected, Ogre::String selectedExtension = Ogre::String(), std::vector<Ogre::String> *truckconfig=0, bool enterTruck=false);
 	void setCurrentTruck(int v);
-	//bool processUnbufferedMouseInput(const FrameEvent& evt);
+
 	void moveCamera(float dt);
 	void hideGUI(bool visible);
 	Ogre::String saveTerrainMesh();
-	//void showBigMap(bool show);
+
 	// Override frameStarted event to process that (don't care about frameEnded)
 	bool frameStarted(const FrameEvent& evt);
 	void recursiveActivation(int j);
@@ -321,7 +309,6 @@ public:
 
 	Character *person;
 	ChatSystem *netChat;
-	bool getSwitchButtons() { return switchMouseButtons; };
 	static HeightFinder *hfinder;
 	double getTime() {return rtime;};
 	SceneManager *getSceneMgr() { return mSceneMgr; };
@@ -334,8 +321,6 @@ public:
 	Beam *getCurrentTruck() { return (current_truck<0)?0:trucks[current_truck]; };
 	Water *getWater() { return w; };
 	Camera *getCamera() { return mCamera; };
-	//SceneNode *getPersonNode() { return personode; };
-	//OIS::Mouse *getMouse() { return  mMouse; };
 	int getLoadingState() { return loading_state; };
 	void setLoadingState(int value);
 	void pauseSim(bool value);
@@ -363,7 +348,6 @@ public:
 	static float getGravity() { return gravity; };
 	static void setGravity(float value);
 
-	Ogre::Ray getMouseRay();
 	void shutdown_pre();
 	void shutdown_final();
 
@@ -383,6 +367,7 @@ public:
 	int getNetQuality(bool ack=false);
 	bool getNetQualityChanged();
 	pthread_mutex_t mutex_data;
+	Radian camRotX, camRotY;
 private:
 	int net_quality; 
 	bool net_quality_changed; 
@@ -399,10 +384,6 @@ protected:
 
 	DotSceneLoader* mLoader;
 
-
-
-	//OIS::InputManager* mInputManager;
-	//OIS::Mouse* mMouse;
 	Camera* mCamera;
 	Vector3 cdoppler;
 	Vector3 reload_pos;
@@ -421,7 +402,6 @@ protected:
 
 	//camera
 	Vector3 camIdealPosition;
-	Radian camRotX, camRotY;
 	bool camCollided;
 	Vector3 camPosColl;
 	Radian pushcamRotX, pushcamRotY;

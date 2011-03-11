@@ -28,9 +28,6 @@ along with Rigs of Rods.  If not, see <http://www.gnu.org/licenses/>.
 class InputEngine;
 
 class GUIInputManager
-// DO NOT use the listeners here, it will conflict with the real listeners in the inputmanager!
-// rather forward the events from the inputmanager
-//: public OIS::MouseListener, public OIS::KeyListener
 {
 	friend class InputEngine;
 public:
@@ -39,14 +36,7 @@ public:
 
     void setInputViewSize(int _width, int _height);
 
-    virtual void injectMouseMove(int _absx, int _absy, int _absz) { }
-    virtual void injectMousePress(int _absx, int _absy, MyGUI::MouseButton _id) { }
-    virtual void injectMouseRelease(int _absx, int _absy, MyGUI::MouseButton _id) { }
-    virtual void injectKeyPress(MyGUI::KeyCode _key, MyGUI::Char _text) { }
-    virtual void injectKeyRelease(MyGUI::KeyCode _key) { }
-
     void setMousePosition(int _x, int _y);
-    void updateCursorPosition();
 
 protected:
     virtual bool mouseMoved(const OIS::MouseEvent& _arg);

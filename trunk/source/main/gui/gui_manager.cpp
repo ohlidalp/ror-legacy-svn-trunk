@@ -85,7 +85,7 @@ void GUIManager::createGui()
 	mGUI = new MyGUI::Gui();
 	mGUI->initialise(mResourceFileName);
 	//MyGUI::PluginManager::getInstance().loadPlugin("Plugin_BerkeliumWidget.dll");
-
+	MyGUI::PointerManager::getInstance().setVisible(true);
 }
 
 void GUIManager::destroyGui()
@@ -134,33 +134,4 @@ void GUIManager::eventRequestTag(const MyGUI::UString& _tag, MyGUI::UString& _re
 	_result = MyGUI::LanguageManager::getInstance().getTag(_tag);
 }
 
-void GUIManager::injectMouseMove(int _absx, int _absy, int _absz)
-{
-	if (!mGUI) return;
-	MyGUI::InputManager::getInstance().injectMouseMove(_absx, _absy, _absz);
-}
-
-void GUIManager::injectMousePress(int _absx, int _absy, MyGUI::MouseButton _id)
-{
-	if (!mGUI) return;
-	MyGUI::InputManager::getInstance().injectMousePress(_absx, _absy, _id);
-}
-
-void GUIManager::injectMouseRelease(int _absx, int _absy, MyGUI::MouseButton _id)
-{
-	if (!mGUI) return;
-	MyGUI::InputManager::getInstance().injectMouseRelease(_absx, _absy, _id);
-}
-
-void GUIManager::injectKeyPress(MyGUI::KeyCode _key, MyGUI::Char _text)
-{
-	if (!mGUI) return;
-	MyGUI::InputManager::getInstance().injectKeyPress(_key, _text);
-}
-
-void GUIManager::injectKeyRelease(MyGUI::KeyCode _key)
-{
-	if (!mGUI) return;
-	MyGUI::InputManager::getInstance().injectKeyRelease(_key);
-}
 #endif //MYGUI

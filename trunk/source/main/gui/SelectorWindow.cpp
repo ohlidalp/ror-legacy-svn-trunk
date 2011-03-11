@@ -618,7 +618,7 @@ void SelectorWindow::show(LoaderType type)
 	mSelectionDone=false;
 	LoadingWindow::get()->hide();
 	// show mouse cursor
-	MyGUI::PointerManager::getInstance().setVisible(true);
+	//MyGUI::PointerManager::getInstance().setVisible(true);
 	// focus main mMainWidget (for key input)
 	mTruckConfigs.clear();
 	MyGUI::InputManager::getInstance().setKeyFocusWidget(mMainWidget);
@@ -640,8 +640,6 @@ void SelectorWindow::hide()
 {
 	mMainWidget->setVisible(false);
 	mMainWidget->setEnabledSilent(false);
-	// hide cursor
-	MyGUI::PointerManager::getInstance().setVisible(false);
 }
 
 void SelectorWindow::setEnableCancel(bool enabled)
