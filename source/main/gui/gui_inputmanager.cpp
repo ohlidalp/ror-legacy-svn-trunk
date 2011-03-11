@@ -21,6 +21,8 @@ along with Rigs of Rods.  If not, see <http://www.gnu.org/licenses/>.
 
 #include "gui_inputmanager.h"
 
+#include "SceneMouse.h"
+
 #if MYGUI_PLATFORM == MYGUI_PLATFORM_WIN32
 #include <windows.h>
 #endif
@@ -85,9 +87,6 @@ MyGUI::Char translateWin32Text(MyGUI::KeyCode kc)
 #endif
 
 GUIInputManager::GUIInputManager() :
-    //mInputManager(0),
-    //mKeyboard(0),
-    //mMouse(0),
     mCursorX(0),
     mCursorY(0),
     width(0),
@@ -102,23 +101,38 @@ GUIInputManager::~GUIInputManager()
 
 bool GUIInputManager::mouseMoved(const OIS::MouseEvent& _arg)
 {
+	MyGUI::PointerManager::getInstance().setPointer("arrow");
+
+	// fallback, handle by GUI, then by SceneMouse
+	if(!MyGUI::InputManager::getInstance().injectMouseMove(mCursorX, mCursorY, _arg.state.Z.abs))
+	{
+		bool fixed = SceneMouse::getSingleton().mouseMoved(_arg);
+		if(fixed)
+			return true;
+	}
 	mCursorX = _arg.state.X.abs;
 	mCursorY = _arg.state.Y.abs;
     checkPosition();
-
-    injectMouseMove(mCursorX, mCursorY, _arg.state.Z.abs);
     return true;
 }
 
 bool GUIInputManager::mousePressed(const OIS::MouseEvent& _arg, OIS::MouseButtonID _id)
 {
-    injectMousePress(mCursorX, mCursorY, MyGUI::MouseButton::Enum(_id));
+	// fallback, handle by GUI, then by SceneMouse
+    if(!MyGUI::InputManager::getInstance().injectMousePress(mCursorX, mCursorY, MyGUI::MouseButton::Enum(_id)))
+	{
+		return SceneMouse::getSingleton().mousePressed(_arg, _id);
+	}
     return true;
 }
 
 bool GUIInputManager::mouseReleased(const OIS::MouseEvent& _arg, OIS::MouseButtonID _id)
 {
-    injectMouseRelease(mCursorX, mCursorY, MyGUI::MouseButton::Enum(_id));
+	// fallback, handle by GUI, then by SceneMouse
+	if(!MyGUI::InputManager::getInstance().injectMouseRelease(mCursorX, mCursorY, MyGUI::MouseButton::Enum(_id)))
+	{
+		return SceneMouse::getSingleton().mouseReleased(_arg, _id);
+	}
     return true;
 }
 
@@ -143,14 +157,22 @@ bool GUIInputManager::keyPressed(const OIS::KeyEvent& _arg)
         text = translateWin32Text(key);
 #endif
     }
-
-    injectKeyPress(key, text);
+	
+	// fallback, handle by GUI, then by SceneMouse
+	if(!MyGUI::InputManager::getInstance().injectKeyPress(key, text))
+	{
+		return SceneMouse::getSingleton().keyPressed(_arg);
+	}
     return true;
 }
 
 bool GUIInputManager::keyReleased(const OIS::KeyEvent& _arg)
 {
-    injectKeyRelease(MyGUI::KeyCode::Enum(_arg.key));
+	// fallback, handle by GUI, then by SceneMouse
+    if(!MyGUI::InputManager::getInstance().injectKeyRelease(MyGUI::KeyCode::Enum(_arg.key)))
+	{
+		return SceneMouse::getSingleton().keyReleased(_arg);
+	}
     return true;
 }
 
@@ -181,13 +203,6 @@ void GUIInputManager::checkPosition()
         mCursorY = 0;
     else if (mCursorY >= this->height)
         mCursorY = this->height - 1;
-}
-
-void GUIInputManager::updateCursorPosition()
-{
-    //if(!mMouse) return;
-    //const OIS::MouseState &ms = mMouse->getMouseState();
-    //injectMouseMove(mCursorX, mCursorY, ms.Z.abs);
 }
 
 #endif //MYGUI

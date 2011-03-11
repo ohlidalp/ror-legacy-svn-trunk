@@ -409,7 +409,7 @@ void GUI_Friction::setVisible(bool value)
 	}
 	win->setVisibleSmooth(value);
 	//win->setVisible(value);
-	MyGUI::PointerManager::getInstance().setVisible(value);
+	//MyGUI::PointerManager::getInstance().setVisible(value);
 }
 
 bool GUI_Friction::getVisible()

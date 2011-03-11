@@ -97,12 +97,6 @@ GUI_MainMenu::GUI_MainMenu(RoRFrameListener *efl) : mefl(efl)
 	pop->addItem("Friction Settings", MyGUI::MenuItemType::Normal, "frictiongui");
 	
 	mainmenu->eventMenuCtrlAccept += MyGUI::newDelegate(this, &GUI_MainMenu::onMenuBtn);
-
-
-
-	//MyGUI::PointerManager::getInstance().setVisible(true);
-	//UILOADER.setProgress(UI_PROGRESSBAR_HIDE);
-	setVisible(false);
 }
 
 GUI_MainMenu::~GUI_MainMenu()
@@ -129,7 +123,7 @@ void GUI_MainMenu::onMenuBtn(MyGUI::MenuCtrlPtr _sender, MyGUI::MenuItemPtr _ite
 void GUI_MainMenu::setVisible(bool value)
 {
 	mainmenu->setVisible(value);
-	MyGUI::PointerManager::getInstance().setVisible(value);
+	//MyGUI::PointerManager::getInstance().setVisible(value);
 }
 
 bool GUI_MainMenu::getVisible()

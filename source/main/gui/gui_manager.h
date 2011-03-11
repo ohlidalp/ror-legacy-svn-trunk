@@ -46,12 +46,6 @@ public:
 	MyGUI::Gui* getGUI() { return mGUI; }
 
 protected:
-	virtual void injectMouseMove(int _absx, int _absy, int _absz);
-	virtual void injectMousePress(int _absx, int _absy, MyGUI::MouseButton _id);
-	virtual void injectMouseRelease(int _absx, int _absy, MyGUI::MouseButton _id);
-	virtual void injectKeyPress(MyGUI::KeyCode _key, MyGUI::Char _text);
-	virtual void injectKeyRelease(MyGUI::KeyCode _key);
-
 private:
 	bool create();
 	void createGui();

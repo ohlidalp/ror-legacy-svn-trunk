@@ -24,8 +24,8 @@ along with Rigs of Rods.  If not, see <http://www.gnu.org/licenses/>.
 #define PLAYERCOLOURS_H__
 
 #include "RoRPrerequisites.h"
-#include "OgrePrerequisites.h"
-#include "OgreSingleton.h"
+#include <OgrePrerequisites.h>
+#include <OgreSingleton.h>
 
 
 class PlayerColours : public Ogre::Singleton < PlayerColours >
