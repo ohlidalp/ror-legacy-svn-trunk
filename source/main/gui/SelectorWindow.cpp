@@ -585,7 +585,10 @@ void SelectorWindow::updateControls(Cache_Entry *entry)
 void SelectorWindow::setPreviewImage(Ogre::String texture)
 {
 	if(texture == "" || texture == "none")
-		texture = _L("unknown.dds");
+	{
+		mPreviewStaticImage->setVisible(false);
+		return;
+	}
 
 	String group="";
 	try
@@ -595,9 +598,14 @@ void SelectorWindow::setPreviewImage(Ogre::String texture)
 	{
 	}
 	if(group == "")
-		texture = ("unknown.dds"); // without _L() !
+	{
+		// texture not found, hide widget
+		mPreviewStaticImage->setVisible(false);
+		return;
+	}
 
 	mPreviewStaticImage->setImageTexture(texture);
+	mPreviewStaticImage->setVisible(true);
 }
 
 bool SelectorWindow::isFinishedSelecting()
