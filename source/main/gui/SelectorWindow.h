@@ -31,6 +31,7 @@ along with Rigs of Rods.  If not, see <http://www.gnu.org/licenses/>.
 class Cache_Entry;
 
 ATTRIBUTE_CLASS_LAYOUT(SelectorWindow, "SelectorWindow.layout");
+
 class SelectorWindow :
 	public wraps::BaseLayout,
 	public Singleton2<SelectorWindow>
@@ -83,8 +84,6 @@ private:
 	int visibleCounter;
 	Skin *mSelectedSkin;
 private:
-	ATTRIBUTE_FIELD_WIDGET_NAME(SelectorWindow, mCacheSheet, "Cache");
-	MyGUI::Sheet* mCacheSheet;
 	ATTRIBUTE_FIELD_WIDGET_NAME(SelectorWindow, mTypeComboBox, "Type");
 	MyGUI::ComboBox* mTypeComboBox;
 	ATTRIBUTE_FIELD_WIDGET_NAME(SelectorWindow, mModelList, "Model");
@@ -101,8 +100,6 @@ private:
 	MyGUI::Button* mOkButton;
 	ATTRIBUTE_FIELD_WIDGET_NAME(SelectorWindow, mCancelButton, "Cancel");
 	MyGUI::Button* mCancelButton;
-	ATTRIBUTE_FIELD_WIDGET_NAME(SelectorWindow, mSearchSheet, "Search");
-	MyGUI::Sheet* mSearchSheet;
 	ATTRIBUTE_FIELD_WIDGET_NAME(SelectorWindow, mSearchLineEdit, "SearchLine");
 	MyGUI::EditBox* mSearchLineEdit;
 };

@@ -103,7 +103,7 @@ bool ContentManager::init(void)
 	loadMainResource("meshes");
 	loadMainResource("overlays");
 	loadMainResource("particles");
-	loadMainResource("mygui", "cache"); // HACK for mygui only supporting one resource group
+	loadMainResource("mygui");
 	loadMainResource("scripts");
 	loadMainResource("textures");
 	loadMainResource("flags");
