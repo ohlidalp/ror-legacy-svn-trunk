@@ -27,7 +27,7 @@ along with Rigs of Rods.  If not, see <http://www.gnu.org/licenses/>.
 
 using namespace Ogre;
 
-RigsOfRods::RigsOfRods(Ogre::String name, unsigned int hwnd, unsigned int mainhwnd) : 
+RigsOfRods::RigsOfRods(Ogre::String name, Ogre::String hwnd, Ogre::String mainhwnd) : 
 	stateManager(0),
 	hwnd(hwnd),
 	mainhwnd(mainhwnd),

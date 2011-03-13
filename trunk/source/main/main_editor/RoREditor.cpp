@@ -46,7 +46,8 @@ bool RoREditor::Initialize(std::string hwndStr, std::string mainhwndStr)
 	SETTINGS.setSetting("Preselected Truck", "agoras.truck");
 	SETTINGS.setSetting("Preselected Map",   "simple.terrn");
 
-	app = new RigsOfRods("RoREditor", Ogre::StringConverter::parseInt(hwndStr), Ogre::StringConverter::parseInt(mainhwndStr));
+	//printf("#>>>>>>> %s # %s\n", hwndStr.c_str(), mainhwndStr.c_str());
+	app = new RigsOfRods("RoREditor", hwndStr, mainhwndStr);
 
 	app->go();
 

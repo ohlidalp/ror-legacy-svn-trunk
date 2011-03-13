@@ -16,9 +16,9 @@ template<> OgreFramework* Ogre::Singleton<OgreFramework>::ms_Singleton = 0;
 
 //|||||||||||||||||||||||||||||||||||||||||||||||
 
-OgreFramework::OgreFramework() : hwnd(0), mainhwnd(0), name()
+OgreFramework::OgreFramework() : hwnd(), mainhwnd(), name()
 {
-    m_pRoot				= 0;
+    m_pRoot			= 0;
     m_pRenderWnd		= 0;
     m_pViewport			= 0;
     m_pTimer			= 0;
@@ -41,7 +41,7 @@ bool OgreFramework::configure(void)
 	// You can skip this and use root.restoreConfig() to load configuration
 	// settings if you were sure there are valid ones saved in ogre.cfg
 	bool useogreconfig = SETTINGS.getBooleanSetting("USE_OGRE_CONFIG");
-	if(hwnd == 0)
+	if(hwnd.empty())
 	{
 		//default mode
 		bool ok = false;
@@ -73,14 +73,14 @@ bool OgreFramework::configure(void)
 		m_pRoot->initialise(false);
 
 		Ogre::NameValuePairList param;
-		param["externalWindowHandle"] = TOSTRING(hwnd);
+		param["externalWindowHandle"] = hwnd;
 		m_pRenderWnd = m_pRoot->createRenderWindow(name, 320, 240, false, &param);
 		return true;
 	}
 	return false;
 }
 
-bool OgreFramework::initOgre(Ogre::String name, unsigned int hwnd, unsigned int mainhwnd)
+bool OgreFramework::initOgre(Ogre::String name, Ogre::String hwnd, Ogre::String mainhwnd)
 {
 	this->name     = name;
 	this->hwnd     = hwnd;
@@ -125,7 +125,7 @@ bool OgreFramework::initOgre(Ogre::String name, unsigned int hwnd, unsigned int 
 	// set window icon correctly
 #if OGRE_PLATFORM == OGRE_PLATFORM_WIN32
 #ifndef _UNICODE
-	if(hwnd == 0)
+	if(StringConverter::parseInt(hwnd) == 0)
 	{
 		// only in non-embedded mode
 		size_t hWnd = 0;

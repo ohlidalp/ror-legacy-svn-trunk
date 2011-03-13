@@ -87,7 +87,7 @@ std::string getWindowHandle(wxWindow *window)
     /* Put all together */
     printf("using display: %s\n", displayStr.c_str());
     printf("using screen: %d\n", screenNum);
-    printf("using window: 0x%x\n", wid);
+    //printf("using window: 0x%x\n", wid);
 
     // old format:
     sstr << displayStr << ':' << screenNum << ':' << wid;

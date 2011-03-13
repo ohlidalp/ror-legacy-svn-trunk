@@ -731,7 +731,7 @@ void RoRFrameListener::setGravity(float value)
 }
 
 // Constructor takes a RenderWindow because it uses that to determine input context
-RoRFrameListener::RoRFrameListener(AppState *parentState, RenderWindow* win, Camera* cam, SceneManager* scm, Root* root, bool isEmbedded, unsigned int inputhwnd) :
+RoRFrameListener::RoRFrameListener(AppState *parentState, RenderWindow* win, Camera* cam, SceneManager* scm, Root* root, bool isEmbedded, Ogre::String inputhwnd) :
 	parentState(parentState),
 	initialized(false),
 	mCollisionTools(0),
@@ -871,7 +871,7 @@ RoRFrameListener::RoRFrameListener(AppState *parentState, RenderWindow* win, Cam
 		win->getCustomAttribute("WINDOW", &hWnd);
 
 		if(!isEmbedded)
-			INPUTENGINE.setup(hWnd, true, true, inputGrabMode);
+			INPUTENGINE.setup(TOSTRING(hWnd), true, true, inputGrabMode);
 	} else
 	{
 		INPUTENGINE.setup(inputhwnd, true, true, GRAB_NONE);

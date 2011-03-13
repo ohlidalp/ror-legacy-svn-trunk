@@ -31,6 +31,7 @@ along with Rigs of Rods.  If not, see <http://www.gnu.org/licenses/>.
 #include <OgreWindowEventUtilities.h>
 #include "Settings.h"
 
+#include "AdvancedOgreFramework.h"
 #include "errorutils.h"
 
 #ifndef NOOGRE
@@ -1566,9 +1567,19 @@ void InputEngine::destroy()
 }
 
 
-bool InputEngine::setup(size_t hwnd, bool capture, bool capturemouse, int _grabMode, bool captureKbd)
+bool InputEngine::setup(Ogre::String hwnd, bool capture, bool capturemouse, int _grabMode, bool captureKbd)
 {
 	grabMode = _grabMode;
+	
+	// grab mode override in embedded mode
+	if(OgreFramework::getSingleton().isEmbedded())
+	{
+		grabMode = GRAB_DYNAMICALLY;
+#ifndef NOOGRE
+		LOG("*** EMBEDDED INPUT MODE ***");
+#endif
+	}
+	
 #ifndef NOOGRE
 	LOG("*** Initializing OIS ***");
 #endif
@@ -1581,8 +1592,7 @@ bool InputEngine::setup(size_t hwnd, bool capture, bool capturemouse, int _grabM
 		//size_t hWnd = 0;
 		//win->getCustomAttribute("WINDOW", &hWnd);
 		ParamList pl;
-		String hwnd_str = TOSTRING(hwnd);
-		pl.insert(OIS::ParamList::value_type("WINDOW", hwnd_str));
+		pl.insert(OIS::ParamList::value_type("WINDOW", hwnd));
 		if(grabMode == GRAB_ALL)
 		{
 		} else if(grabMode == GRAB_DYNAMICALLY || grabMode == GRAB_NONE)
@@ -1601,7 +1611,7 @@ bool InputEngine::setup(size_t hwnd, bool capture, bool capturemouse, int _grabM
 		}
 
 #ifndef NOOGRE
-		LOG("*** OIS WINDOW: "+hwnd_str);
+		LOG("*** OIS WINDOW: "+hwnd);
 #endif //NOOGRE
 
 		mInputManager = OIS::InputManager::createInputSystem(pl);
@@ -2968,7 +2978,7 @@ bool InputEngine::updateConfigline(event_trigger_t *t)
 	return true;
 }
 
-bool InputEngine::saveMapping(Ogre::String outfile, size_t hwnd, int joyNum)
+bool InputEngine::saveMapping(Ogre::String outfile, Ogre::String hwnd, int joyNum)
 {
 	// -10 = all
 	// -2  = keyboard
@@ -2988,7 +2998,7 @@ bool InputEngine::saveMapping(Ogre::String outfile, size_t hwnd, int joyNum)
 		created=true;
 	}
 	*/
-	if(!mInputManager && hwnd>0)
+	if(!mInputManager && !hwnd.empty())
 	{
 		destroy();
 		setup(hwnd, false, false);
