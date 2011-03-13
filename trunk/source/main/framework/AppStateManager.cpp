@@ -68,6 +68,16 @@ AppState* AppStateManager::findByName(Ogre::String stateName)
 }
 
 //|||||||||||||||||||||||||||||||||||||||||||||||
+void AppStateManager::update(double dt)
+{
+	if(OgreFramework::getSingletonPtr()->m_pRenderWnd->isClosed())
+		m_bShutdown = true;
+
+	m_ActiveStateStack.back()->update(dt);
+
+	OgreFramework::getSingletonPtr()->updateOgre(dt);
+	OgreFramework::getSingletonPtr()->m_pRoot->renderOneFrame();
+}
 
 void AppStateManager::start(AppState* state)
 {
@@ -78,31 +88,23 @@ void AppStateManager::start(AppState* state)
 
 	while(!m_bShutdown)
 	{
-		if(OgreFramework::getSingletonPtr()->m_pRenderWnd->isClosed())
-			m_bShutdown = true;
-
+		startTime = OgreFramework::getSingletonPtr()->m_pTimer->getMillisecondsCPU();
 #if OGRE_PLATFORM == OGRE_PLATFORM_WIN32 || OGRE_PLATFORM == OGRE_PLATFORM_LINUX
-		Ogre::WindowEventUtilities::messagePump();
+	Ogre::WindowEventUtilities::messagePump();
 #endif
 		if(OgreFramework::getSingletonPtr()->m_pRenderWnd->isActive())
 		{
-			startTime = OgreFramework::getSingletonPtr()->m_pTimer->getMillisecondsCPU();
-
-			m_ActiveStateStack.back()->update(timeSinceLastFrame);
-
-			OgreFramework::getSingletonPtr()->updateOgre(timeSinceLastFrame);
-			OgreFramework::getSingletonPtr()->m_pRoot->renderOneFrame();
-
-			timeSinceLastFrame = OgreFramework::getSingletonPtr()->m_pTimer->getMillisecondsCPU() - startTime;
-		}
-		else
+			update(timeSinceLastFrame);
+		} else
 		{
 #if OGRE_PLATFORM == OGRE_PLATFORM_WIN32
-            Sleep(1000);
+			Sleep(1000);
 #else
-            sleep(1);
+			sleep(1);
 #endif
 		}
+
+		timeSinceLastFrame = OgreFramework::getSingletonPtr()->m_pTimer->getMillisecondsCPU() - startTime;
 	}
 	LOG("Main loop quit");
 }

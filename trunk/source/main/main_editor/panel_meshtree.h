@@ -25,7 +25,7 @@ along with Rigs of Rods.  If not, see <http://www.gnu.org/licenses/>.
 
 #include <wx/treectrl.h> // for treectrl
 
-#include "RoRViewer.h"
+#include "RoREditor.h"
 
 #include "panel_meshprop.h"
 
@@ -48,7 +48,7 @@ class PanelMeshTree : public wxPanel
 {
 protected:
 	wxTreeCtrl *tree;
-	RoRViewer *viewer;
+	RoREditor *editor;
 	PanelMeshProp *meshProp;
 	Ogre::MeshPtr current_mesh;
 	enum { 
@@ -56,9 +56,9 @@ protected:
 	};
 
 public:
-	void setViewer(RoRViewer *_viewer)
+	void setViewer(RoREditor *_editor)
 	{
-		viewer = _viewer;
+		editor = _editor;
 	}
 	
 	void setPropGrid(PanelMeshProp *_meshProp)
@@ -66,13 +66,13 @@ public:
 		meshProp = _meshProp;
 	}
 
-    PanelMeshTree(RoRViewer *_viewer, wxWindow *parent,
+    PanelMeshTree(RoREditor *editor, wxWindow *parent,
             wxWindowID winid = wxID_ANY,
             const wxPoint& pos = wxDefaultPosition,
             const wxSize& size = wxDefaultSize,
             long style = wxTAB_TRAVERSAL | wxNO_BORDER,
             const wxString& name = wxPanelNameStr) :
-		wxPanel(parent, winid, pos, size, style, name), viewer(_viewer), current_mesh(0)
+		wxPanel(parent, winid, pos, size, style, name), editor(editor), current_mesh(0)
     {
 		// create sizer and tree
 		wxBoxSizer *vsizer = new wxBoxSizer ( wxVERTICAL );
@@ -86,8 +86,13 @@ public:
 	
 	void updateData()
 	{
-		if(!viewer) return;
-		Ogre::MeshPtr mesh = viewer->GetMesh();
+		if(!editor) return;
+
+
+
+		return;
+		/*
+		Ogre::MeshPtr mesh = editor->GetMesh();
 		if(mesh.isNull())
 			return;
 
@@ -120,6 +125,7 @@ public:
 		// update PG
 		if(meshProp)
 			meshProp->updatePG(0);
+			*/
 	}
 
 	void OnTreeItemChange(wxTreeEvent &event)
@@ -132,7 +138,8 @@ public:
 			return;
 		
 		// update 3d viewport :)
-		Ogre::Entity *e = viewer->GetEntity();
+		/*
+		Ogre::Entity *e = editor->GetEntity();
 		if(e && data->value == 0)
 		{
 			// show full mesh
@@ -153,6 +160,7 @@ public:
 		
 		// update PG
 		meshProp->updatePG(data->value);
+		*/
 	}
 
 private:

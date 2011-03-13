@@ -2,6 +2,7 @@ set(BINNAME RoREditor)
 
 project(${BINNAME})
 
+
 #setup libraries
 macro(setup_lib name)
    if(ROR_USE_${name})
@@ -111,16 +112,14 @@ add_sub_dir(network)
 add_sub_dir(network/protocol)
 add_sub_dir(sqlite)
 add_sub_dir(framework)
-add_sub_dir(main_viewer)
-
+add_sub_dir(main_editor)
 
 # find wxWidgets
-SET(wxWidgets_USE_UNICODE ON)
+SET(wxWidgets_USE_UNICODE OFF)
 FIND_PACKAGE(wxWidgets REQUIRED COMPONENTS base core html net adv propgrid aui)
 include_directories(${wxWidgets_INCLUDE_DIRS})
 add_definitions("-D${wxWidgets_DEFINITIONS}" ${wxWidgets_CXX_FLAGS})
 link_directories (${wxWidgets_LIB_DIR})
-
 
 IF(WIN32)
 	add_executable(${BINNAME} WIN32 ${headers} ${sources} icon.rc)

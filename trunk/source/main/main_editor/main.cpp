@@ -26,30 +26,25 @@ along with Rigs of Rods.  If not, see <http://www.gnu.org/licenses/>.
 #include "wxutils.h"
 #include "Settings.h"
 
+#include "AdvancedOgreFramework.h"
+
 #include "display_mode.xpm"
 
 Window3D::Window3D(wxWindow* parent, wxWindowID id) : wxPanel(parent, id, wxDefaultPosition, wxDefaultSize, wxTRANSPARENT_WINDOW | wxBORDER_NONE | wxNO_FULL_REPAINT_ON_RESIZE)
 {
-	wnd = NULL;
-	cam = NULL;
 	handler = NULL;
 }
 
 void Window3D::OnSize(wxSizeEvent& e)
 {
-	if (!wnd || !cam) return;
 
 	// Setting new size;
 	int width;
 	int height;
 	GetSize(&width, &height);
-	wnd->resize(width, height);
 
-	// Letting Ogre know the window has been resized;
-	wnd->windowMovedOrResized();
-
-	// Set the aspect ratio for the new size;
-	cam->setAspectRatio(Ogre::Real(width) / Ogre::Real(height));
+	if(OgreFramework::getSingletonPtr())
+		OgreFramework::getSingletonPtr()->resized(Vector2(width, height));
 }
 
 void Window3D::OnLeftUp(wxMouseEvent& e)
@@ -72,7 +67,7 @@ bool RoRViewerApp::OnInit(void)
 	if (!wxApp::OnInit())
 		return false;
 
-	frame = new RoRViewerFrame(L"RoR Viewer");
+	frame = new RoRViewerFrame(L"RoR editor");
 	SetTopWindow(frame);
 	frame->Show();
 	
@@ -88,13 +83,13 @@ bool RoRViewerApp::OnInit(void)
 
 void RoRViewerApp::OnInitCmdLine(wxCmdLineParser& parser)
 {
-	parser.AddParam(_T("<file>"), wxCMD_LINE_VAL_STRING, wxCMD_LINE_OPTION_MANDATORY);
+	//parser.AddParam(_T("<file>"), wxCMD_LINE_VAL_STRING, wxCMD_LINE_OPTION_MANDATORY);
 }
 
 bool RoRViewerApp::OnCmdLineParsed(wxCmdLineParser& parser)
 {
-	meshPath = parser.GetParam();
-	return !meshPath.empty();
+	//meshPath = parser.GetParam();
+	return true; //!meshPath.empty();
 }
 
 int RoRViewerApp::OnExit(void)
@@ -108,7 +103,7 @@ RoRViewerFrame::RoRViewerFrame(wxString title) : wxFrame(NULL, wxID_ANY, title)
 	msy = 0;
 	msw = 0;
 
-	viewer = NULL;
+	editor = NULL;
 
 	SetMinSize(wxSize(640, 480));
 	SetClientSize(640, 480);
@@ -127,13 +122,13 @@ void RoRViewerFrame::OnViewToolClick(wxCommandEvent& e)
 	switch(e.GetId())
 	{
 		case ID_TOOL_MODE_TEXTURE:
-			viewer->GetCamera()->setPolygonMode(Ogre::PM_SOLID);
+			editor->GetCamera()->setPolygonMode(Ogre::PM_SOLID);
 			break;
 		case ID_TOOL_MODE_WIREFRAME:
-			viewer->GetCamera()->setPolygonMode(Ogre::PM_WIREFRAME);
+			editor->GetCamera()->setPolygonMode(Ogre::PM_WIREFRAME);
 			break;
 		case ID_TOOL_MODE_POINT:
-			viewer->GetCamera()->setPolygonMode(Ogre::PM_POINTS);
+			editor->GetCamera()->setPolygonMode(Ogre::PM_POINTS);
 			break;
 	};
 }
@@ -216,7 +211,7 @@ void RoRViewerFrame::InitializeAUI(void)
 	aui_mgr->Update();
 
 	// try to load the old window layout
-	String perspective_str = SETTINGS.getSetting("ViewerPerspective");
+	String perspective_str = SETTINGS.getSetting("EditorPerspective");
 	if(!perspective_str.empty())
 	{
 		aui_mgr->LoadPerspective(wxString(perspective_str.c_str()));
@@ -227,7 +222,7 @@ void RoRViewerFrame::DeinitializeAUI(void)
 {
 	// save the window layout
 	string perspective_str = std::string(aui_mgr->SavePerspective().mb_str());
-	SETTINGS.setSetting("ViewerPerspective",perspective_str);
+	SETTINGS.setSetting("EditorPerspective",perspective_str);
 	SETTINGS.saveSettings();
 
 	aui_mgr->UnInit();
@@ -236,32 +231,26 @@ void RoRViewerFrame::DeinitializeAUI(void)
 bool RoRViewerFrame::InitializeRoRViewer(wxString meshPath)
 {
 	string mstr = std::string(meshPath.mb_str());
-	viewer = new RoRViewer(mstr);
-	if (!viewer->Initialize(getWindowHandle(panel_viewport)))
+	editor = new RoREditor(mstr);
+	if (!editor->Initialize(getWindowHandle(panel_viewport), getWindowHandle(this)))
 	{
-		delete viewer;
-		viewer = NULL;
+		delete editor;
+		editor = NULL;
 		return false;
 	}
-	panel_meshprop->setViewer(viewer);
-	panel_meshtree->setViewer(viewer);
-
-	panel_viewport->wnd = viewer->GetOgreWindow();
-	panel_viewport->cam = viewer->GetCamera();
+	panel_meshprop->setViewer(editor);
+	panel_meshtree->setViewer(editor);
 
 	return true;
 }
 
 void RoRViewerFrame::DenitializeRoRViewer(void)
 {
-	panel_viewport->handler = NULL;
-	panel_viewport->wnd = NULL;
-
-	if (viewer)
+	if (editor)
 	{
-		viewer->Deinitialize();
-		delete viewer;
-		viewer = NULL;
+		editor->Deinitialize();
+		delete editor;
+		editor = NULL;
 	}
 }
 
@@ -273,7 +262,7 @@ void RoRViewerFrame::updatePanelData()
 
 void RoRViewerFrame::OnIdle(wxIdleEvent& e)
 {
-	viewer->Update();
+	editor->Update();
 	updatePanelData();
 
 	e.RequestMore();
@@ -294,7 +283,7 @@ void RoRViewerFrame::OnMouseMove(wxMouseEvent& e)
 	/// shit behaves badly, to be fixed!
 	if (e.LeftIsDown() || wp != 0)
 	{
-		viewer->TurnCamera(Vector3(xp, yp, wp*0.02f));
+		//editor->TurnCamera(Vector3(xp, yp, wp*0.02f));
 	}
 }
 

@@ -39,7 +39,7 @@ along with Rigs of Rods.  If not, see <http://www.gnu.org/licenses/>.
 #include <wx/spinctrl.h>
 #include <wx/cmdline.h>
 
-#include "RoRViewer.h"
+#include "RoREditor.h"
 
 // RoR includes
 #include "Settings.h"
@@ -77,8 +77,6 @@ public:
 	void OnMouseMove(wxMouseEvent& e);
 	void OnKeyDown(wxKeyEvent& event);
 	Window3DHandler* handler;
-	Ogre::RenderWindow* wnd;
-	Ogre::Camera* cam;
 
 private:
 	 DECLARE_EVENT_TABLE()
@@ -130,7 +128,7 @@ private:
 	PanelMeshTree* panel_meshtree;
 	wxAuiPaneInfo* pane_meshtree;
 
-	RoRViewer* viewer;
+	RoREditor* editor;
     DECLARE_EVENT_TABLE()
 };
 
