@@ -30,7 +30,6 @@ public:
 	~OgreFramework();
 
 	bool initOgre(Ogre::String name, unsigned int hwnd, unsigned int mainhwnd);
-	void updateOgre(Ogre::Real timeSinceLastFrame);
     void resized(Ogre::Vector2 size);
 
 	Ogre::Root*					m_pRoot;

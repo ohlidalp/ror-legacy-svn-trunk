@@ -29,7 +29,6 @@ along with Rigs of Rods.  If not, see <http://www.gnu.org/licenses/>.
 
 RoREditor::RoREditor(string _meshPath)
 {
-	timer = NULL;
 	initialized=false;
 	timeSinceLastFrame = 1;
 	startTime = 0;
@@ -44,12 +43,10 @@ bool RoREditor::Initialize(std::string hwndStr, std::string mainhwndStr)
 	if(!SETTINGS.setupPaths())
 		return false;
 	
-	SETTINGS.setSetting("Preselected Truck", "none");
+	SETTINGS.setSetting("Preselected Truck", "agoras.truck");
 	SETTINGS.setSetting("Preselected Map",   "simple.terrn");
 
 	app = new RigsOfRods("RoREditor", Ogre::StringConverter::parseInt(hwndStr), Ogre::StringConverter::parseInt(mainhwndStr));
-
-	timer = new Ogre::Timer();
 
 	app->go();
 
@@ -59,8 +56,6 @@ bool RoREditor::Initialize(std::string hwndStr, std::string mainhwndStr)
 void RoREditor::Deinitialize(void)
 {
 	if (!initialized) return;
-
-	if(timer) delete timer;
 
 	initialized = false;
 }

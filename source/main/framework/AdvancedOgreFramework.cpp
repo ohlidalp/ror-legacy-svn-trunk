@@ -148,11 +148,6 @@ bool OgreFramework::initOgre(Ogre::String name, unsigned int hwnd, unsigned int 
     return true;
 }
 
-void OgreFramework::updateOgre(Real timeSinceLastFrame)
-{
-	if(m_pRoot)
-		m_pRoot->renderOneFrame(timeSinceLastFrame);
-}
 
 void OgreFramework::resized(Ogre::Vector2 size)
 {
