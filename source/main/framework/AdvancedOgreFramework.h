@@ -29,24 +29,23 @@ public:
 	OgreFramework();
 	~OgreFramework();
 
-	bool initOgre(Ogre::String name, unsigned int hwnd, unsigned int mainhwnd);
-    void resized(Ogre::Vector2 size);
+	bool initOgre(Ogre::String name, Ogre::String hwnd, Ogre::String mainhwnd);
+	void resized(Ogre::Vector2 size);
 
-	Ogre::Root*					m_pRoot;
-	Ogre::RenderWindow*			m_pRenderWnd;
-	Ogre::Viewport*				m_pViewport;
-	Ogre::Timer*				m_pTimer;
+	Ogre::Root*		m_pRoot;
+	Ogre::RenderWindow*	m_pRenderWnd;
+	Ogre::Viewport*		m_pViewport;
+	Ogre::Timer*		m_pTimer;
 
 
-	bool isEmbedded(void) { return (hwnd != 0); };
-	unsigned int getMainHWND() { return mainhwnd; };
+	bool isEmbedded(void) { return (hwnd.empty()); };
+	Ogre::String getMainHWND() { return mainhwnd; };
 
 private:
 	OgreFramework(const OgreFramework&);
 	OgreFramework& operator= (const OgreFramework&);
 
-	unsigned int hwnd;
-	unsigned int mainhwnd;
+	Ogre::String hwnd, mainhwnd;
 	Ogre::String name;
 
 	bool configure();

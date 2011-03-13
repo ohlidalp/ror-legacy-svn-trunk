@@ -269,12 +269,12 @@ protected:
 	bool updateTruckMirrors(float dt);
 	void gridScreenshots(Ogre::RenderWindow* pRenderWindow, Ogre::Camera* pCamera, const int& pGridSize, const Ogre::String& path, const Ogre::String& pFileName, const Ogre::String& pFileExtention, const bool& pStitchGridImages);
 	void initDust();
-	unsigned int inputhwnd;
+	Ogre::String inputhwnd;
 	bool ingame_console;
 	AppState *parentState;
 public:
 	// Constructor takes a RenderWindow because it uses that to determine input context
-	RoRFrameListener(AppState *parent, RenderWindow* win, Camera* cam, SceneManager* scm, Root* root, bool isEmbedded=false, unsigned int inputhwnd=0);
+	RoRFrameListener(AppState *parent, RenderWindow* win, Camera* cam, SceneManager* scm, Root* root, bool isEmbedded=false, Ogre::String inputhwnd=0);
 	virtual ~RoRFrameListener();
 
 	void removeBeam(Beam *);

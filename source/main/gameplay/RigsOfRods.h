@@ -34,7 +34,7 @@ along with Rigs of Rods.  If not, see <http://www.gnu.org/licenses/>.
 class RigsOfRods
 {
 public:
-	RigsOfRods(Ogre::String name = Ogre::String("RoR"), unsigned int hwnd=0, unsigned int mainhwnd=0);
+	RigsOfRods(Ogre::String name = Ogre::String("RoR"), Ogre::String hwnd=Ogre::String(), Ogre::String mainhwnd=Ogre::String());
 	~RigsOfRods();
 
 	void go();
@@ -43,7 +43,7 @@ public:
 	void update(double dt);
 protected:
 	AppStateManager *stateManager;
-	unsigned int hwnd, mainhwnd;
+	Ogre::String hwnd, mainhwnd;
 	Ogre::String name;
 };
 
