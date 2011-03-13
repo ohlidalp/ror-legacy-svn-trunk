@@ -52,9 +52,6 @@ private:
 
 	int timeSinceLastFrame;
 	int startTime;
-
-
-	Ogre::Timer*	timer;
 };
 
 #endif //RORVIEWER_H__

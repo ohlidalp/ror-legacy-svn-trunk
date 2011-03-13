@@ -70,12 +70,14 @@ AppState* AppStateManager::findByName(Ogre::String stateName)
 //|||||||||||||||||||||||||||||||||||||||||||||||
 void AppStateManager::update(double dt)
 {
+#if OGRE_PLATFORM == OGRE_PLATFORM_WIN32 || OGRE_PLATFORM == OGRE_PLATFORM_LINUX
+	Ogre::WindowEventUtilities::messagePump();
+#endif
 	if(OgreFramework::getSingletonPtr()->m_pRenderWnd->isClosed())
 		m_bShutdown = true;
 
 	m_ActiveStateStack.back()->update(dt);
 
-	OgreFramework::getSingletonPtr()->updateOgre(dt);
 	OgreFramework::getSingletonPtr()->m_pRoot->renderOneFrame();
 }
 
@@ -89,9 +91,6 @@ void AppStateManager::start(AppState* state)
 	while(!m_bShutdown)
 	{
 		startTime = OgreFramework::getSingletonPtr()->m_pTimer->getMillisecondsCPU();
-#if OGRE_PLATFORM == OGRE_PLATFORM_WIN32 || OGRE_PLATFORM == OGRE_PLATFORM_LINUX
-	Ogre::WindowEventUtilities::messagePump();
-#endif
 		if(OgreFramework::getSingletonPtr()->m_pRenderWnd->isActive())
 		{
 			update(timeSinceLastFrame);
