@@ -27,11 +27,12 @@ along with Rigs of Rods.  If not, see <http://www.gnu.org/licenses/>.
 
 using namespace Ogre;
 
-RigsOfRods::RigsOfRods(Ogre::String name, Ogre::String hwnd, Ogre::String mainhwnd) : 
+RigsOfRods::RigsOfRods(Ogre::String name, Ogre::String hwnd, Ogre::String mainhwnd, bool embedded) : 
 	stateManager(0),
 	hwnd(hwnd),
 	mainhwnd(mainhwnd),
-	name(name)
+	name(name),
+	embedded(embedded)
 {
 }
 
@@ -46,7 +47,7 @@ void RigsOfRods::go(void)
 {
 	// init ogre
 	new OgreFramework();
-	if(!OgreFramework::getSingletonPtr()->initOgre(name, hwnd, mainhwnd))
+	if(!OgreFramework::getSingletonPtr()->initOgre(name, hwnd, mainhwnd, embedded))
 		return;
 
 	// then the base content setup
@@ -59,18 +60,15 @@ void RigsOfRods::go(void)
 	GameState::create(stateManager,  "GameState");
 
 	// select the first one
-	if(OgreFramework::getSingleton().isEmbedded())
+	if(embedded)
 	{
-
 		stateManager->changeAppState(stateManager->findByName("GameState"));
+		LOG("Rigs of Rods initialized!");
 	} else
 	{
+		LOG("Rigs of Rods main loop starting ...");
 		stateManager->start(stateManager->findByName("GameState"));
 	}
-
-	
-
-	LOG("Rigs of Rods initialized!");
 }
 
 void RigsOfRods::update(double dt)

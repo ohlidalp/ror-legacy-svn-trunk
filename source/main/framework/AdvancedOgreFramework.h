@@ -29,7 +29,7 @@ public:
 	OgreFramework();
 	~OgreFramework();
 
-	bool initOgre(Ogre::String name, Ogre::String hwnd, Ogre::String mainhwnd);
+	bool initOgre(Ogre::String name, Ogre::String hwnd, Ogre::String mainhwnd, bool embedded=false);
 	void resized(Ogre::Vector2 size);
 
 	Ogre::Root*		m_pRoot;
@@ -38,10 +38,11 @@ public:
 	Ogre::Timer*		m_pTimer;
 
 
-	bool isEmbedded(void) { return (hwnd.empty()); };
+	bool isEmbedded(void) { return embedded; };
 	Ogre::String getMainHWND() { return mainhwnd; };
 
 private:
+	bool embedded;
 	OgreFramework(const OgreFramework&);
 	OgreFramework& operator= (const OgreFramework&);
 
