@@ -2,7 +2,6 @@ set(BINNAME RoR)
 
 project(${BINNAME})
 
-
 #setup libraries
 macro(setup_lib name)
    if(ROR_USE_${name})
@@ -121,4 +120,3 @@ ELSE(WIN32)
 ENDIF(WIN32)
 
 target_link_libraries(${BINNAME} ${Ogre_LIBRARIES} ${Ogre_Terrain_LIBRARIES} ${Ogre_Paging_LIBRARIES} ${Ogre_RTShader_LIBRARIES} ${Ois_LIBRARIES} ${OS_LIBS} ${optional_libs})
-

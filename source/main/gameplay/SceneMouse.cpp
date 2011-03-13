@@ -20,7 +20,10 @@ along with Rigs of Rods.  If not, see <http://www.gnu.org/licenses/>.
 #include "SceneMouse.h"
 #include "RoRFrameListener.h"
 #include <Ogre.h>
-#include <MyGUI.h>
+
+#ifdef USE_MYGUI
+# include <MyGUI.h>
+#endif //USE_MYGUI
 
 using namespace Ogre;
 
@@ -62,7 +65,9 @@ bool SceneMouse::mouseMoved(const OIS::MouseEvent& _arg)
 	{
 		rfl->camRotX += Degree(-(float)ms.X.rel * 0.13f);
 		rfl->camRotY += Degree(-(float)ms.Y.rel * 0.13f);
+#ifdef USE_MYGUI
 		MyGUI::PointerManager::getInstance().setPointer("hand");
+#endif // USE_MYGUI
 		return true;
 	}
 	return false;
