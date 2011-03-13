@@ -32,12 +32,12 @@ along with Rigs of Rods.  If not, see <http://www.gnu.org/licenses/>.
 // This defines wxPropertyGridManager.
 #include <wx/propgrid/manager.h>
 
-#include "RoRViewer.h"
+#include "RoREditor.h"
 
 class PanelMeshProp : public wxPanel
 {
 protected:
-	RoRViewer *viewer;
+	RoREditor *editor;
 	Ogre::MeshPtr current_mesh;
 	int current_item;
 	wxPropertyGrid  *pg;
@@ -48,18 +48,18 @@ protected:
 	};
 
 public:
-	void setViewer(RoRViewer *_viewer)
+	void setViewer(RoREditor *_editor)
 	{
-		viewer = _viewer;
+		editor = _editor;
 	}
 
-    PanelMeshProp(RoRViewer *_viewer, wxWindow *parent,
+    PanelMeshProp(RoREditor *_editor, wxWindow *parent,
             wxWindowID winid = wxID_ANY,
             const wxPoint& pos = wxDefaultPosition,
             const wxSize& size = wxDefaultSize,
             long style = wxTAB_TRAVERSAL | wxNO_BORDER,
             const wxString& name = wxPanelNameStr) :
-		wxPanel(parent, winid, pos, size, style, name), viewer(_viewer), current_mesh(0), current_item(-1)
+		wxPanel(parent, winid, pos, size, style, name), editor(_editor), current_mesh(0), current_item(-1)
     {
 		// create sizer and PG
 		wxBoxSizer *vsizer = new wxBoxSizer ( wxVERTICAL );
@@ -86,8 +86,9 @@ public:
 	
 	void updateData()
 	{
-		if(!viewer) return;
-		Ogre::MeshPtr mesh = viewer->GetMesh();
+		if(!editor) return;
+		/*
+		Ogre::MeshPtr mesh = editor->GetMesh();
 		if(mesh.isNull())
 			return;
 
@@ -96,6 +97,7 @@ public:
 			return;
 
 		current_mesh = mesh;
+		*/
 	}
 
 	void OnPropertyChange(wxPropertyGridEvent &ev)

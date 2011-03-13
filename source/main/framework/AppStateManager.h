@@ -26,6 +26,9 @@ public:
 
 	AppState* findByName(Ogre::String stateName);
 
+
+	void update(double dt);
+
 	void start(AppState* state);
 	void changeAppState(AppState* state);
 	bool pushAppState(AppState* state);

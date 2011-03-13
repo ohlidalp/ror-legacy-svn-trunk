@@ -148,7 +148,30 @@ bool OgreFramework::initOgre(Ogre::String name, unsigned int hwnd, unsigned int 
     return true;
 }
 
-void OgreFramework::updateOgre(double timeSinceLastFrame)
+void OgreFramework::updateOgre(Real timeSinceLastFrame)
 {
+	if(m_pRoot)
+		m_pRoot->renderOneFrame(timeSinceLastFrame);
+}
+
+void OgreFramework::resized(Ogre::Vector2 size)
+{
+	if(m_pRenderWnd)
+	{
+		m_pRenderWnd->resize(size.x, size.y);
+
+		// Letting Ogre know the window has been resized;
+		m_pRenderWnd->windowMovedOrResized();
+	}
+
+	// Set the aspect ratio for the new size
+	if(m_pViewport->getCamera())
+		m_pViewport->getCamera()->setAspectRatio(Ogre::Real(size.x) / Ogre::Real(size.y));
 }
 //|||||||||||||||||||||||||||||||||||||||||||||||
+
+
+
+
+
+

@@ -1,4 +1,7 @@
-project(RoR)
+set(BINNAME RoR)
+
+project(${BINNAME})
+
 
 #setup libraries
 macro(setup_lib name)
@@ -112,10 +115,10 @@ add_sub_dir(framework)
 add_sub_dir(main_sim)
 
 IF(WIN32)
-	add_executable(RoR WIN32 ${headers} ${sources} icon.rc)
+	add_executable(${BINNAME} WIN32 ${headers} ${sources} icon.rc)
 ELSE(WIN32)
-	add_executable(RoR ${headers} ${sources})
+	add_executable(${BINNAME} ${headers} ${sources})
 ENDIF(WIN32)
 
-target_link_libraries(RoR ${Ogre_LIBRARIES} ${Ogre_Terrain_LIBRARIES} ${Ogre_Paging_LIBRARIES} ${Ogre_RTShader_LIBRARIES} ${Ois_LIBRARIES} ${OS_LIBS} ${optional_libs})
+target_link_libraries(${BINNAME} ${Ogre_LIBRARIES} ${Ogre_Terrain_LIBRARIES} ${Ogre_Paging_LIBRARIES} ${Ogre_RTShader_LIBRARIES} ${Ois_LIBRARIES} ${OS_LIBS} ${optional_libs})
 

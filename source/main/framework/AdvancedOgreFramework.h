@@ -30,14 +30,14 @@ public:
 	~OgreFramework();
 
 	bool initOgre(Ogre::String name, unsigned int hwnd, unsigned int mainhwnd);
-	void updateOgre(double timeSinceLastFrame);
+	void updateOgre(Ogre::Real timeSinceLastFrame);
+    void resized(Ogre::Vector2 size);
 
 	Ogre::Root*					m_pRoot;
 	Ogre::RenderWindow*			m_pRenderWnd;
 	Ogre::Viewport*				m_pViewport;
 	Ogre::Timer*				m_pTimer;
 
-    //OgreBites::SdkTrayManager*	m_pTrayMgr;
 
 	bool isEmbedded(void) { return (hwnd != 0); };
 	unsigned int getMainHWND() { return mainhwnd; };

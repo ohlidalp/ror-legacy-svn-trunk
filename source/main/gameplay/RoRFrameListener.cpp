@@ -884,8 +884,11 @@ RoRFrameListener::RoRFrameListener(AppState *parentState, RenderWindow* win, Cam
 	LoadingWindow::getInstance();
 	SelectorWindow::getInstance();
 	// create main menu :D
-	new GUI_MainMenu(this);
-	new GUI_Friction();
+	if(!isEmbedded)
+	{
+		new GUI_MainMenu(this);
+		new GUI_Friction();
+	}
 
 	MyGUI::VectorWidgetPtr v = MyGUI::LayoutManager::getInstance().loadLayout("wallpaper.layout");
 
@@ -1878,7 +1881,7 @@ bool RoRFrameListener::updateEvents(float dt)
 	if(ow) ow->update(dt);
 
 #ifdef USE_MYGUI
-	if(GUI_Friction::getSingleton().getVisible() && current_truck >= 0 && trucks[current_truck])
+	if(GUI_Friction::getSingletonPtr() && GUI_Friction::getSingleton().getVisible() && current_truck >= 0 && trucks[current_truck])
 	{
 		// friction GUI active
 		ground_model_t *gm = trucks[current_truck]->getLastFuzzyGroundModel();
@@ -3773,7 +3776,8 @@ void RoRFrameListener::initializeCompontents()
 
 	if(person) person->setCollisions(collisions);
 #ifdef USE_MYGUI
-	GUI_Friction::getSingleton().setCollisions(collisions);
+	if(GUI_Friction::getSingletonPtr())
+		GUI_Friction::getSingleton().setCollisions(collisions);
 #endif //MYGUI
 
 	// advanced camera collision tools
@@ -6761,7 +6765,7 @@ void RoRFrameListener::windowResized(RenderWindow* rw)
 	screenWidth = width;
 	screenHeight = height;
 
-	ow->windowResized(rw);
+	if(ow) ow->windowResized(rw);
 
 	//update mouse area
 	INPUTENGINE.windowResized(rw);

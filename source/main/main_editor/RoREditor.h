@@ -23,55 +23,38 @@ along with Rigs of Rods.  If not, see <http://www.gnu.org/licenses/>.
 #include <string>
 #include <Ogre.h>
 
-#include <CCSCameraControlSystem.h>
-#include <CCSOrbitalCameraMode.h>
+class RigsOfRods;
 
 using namespace std;
 using namespace Ogre;
 
-class RoRViewer
+class RoREditor
 {
 public:
-	RoRViewer(string meshPath);
-	~RoRViewer(void);
+	RoREditor(string meshPath);
+	~RoREditor(void);
 
-	bool Initialize(std::string hwndStr);
+	bool Initialize(std::string hwndStr, std::string mainhwndStr);
 	void Deinitialize(void);
 	void Update(void);
 	
 	RenderWindow* GetOgreWindow(void){return window;}
-	SceneManager* GetSceneManager(void){return scene_mgr;}
 	Viewport* GetViewport(void){return viewport;}
 	Camera* GetCamera(void){return camera;}
-	MeshPtr GetMesh(void){return active_mesh;}
-	Entity* GetEntity(void){return active_entity;}
-	SceneNode* GetSceneNode(void){return active_node;}
-
-	void TurnCamera(Vector3 speed);
-	void MoveCamera(Vector3 speed);
 
 private:
 	bool			initialized;
 	Root*			ogre_root;
-	SceneManager*	scene_mgr;
 	RenderWindow*	window;
 	Camera*			camera;
-	SceneNode*		camera_node;
 	Viewport*		viewport;
+	RigsOfRods*     app;
 
-	MeshPtr			active_mesh;
-	Entity*			active_entity;
-	SceneNode*		active_node;
+	int timeSinceLastFrame;
+	int startTime;
 
-	SceneNode*		light_node;
-	Light*			light;
 
 	Ogre::Timer*	timer;
-
-	CCS::CameraControlSystem *mCameraCS;
-	CCS::OrbitalCameraMode *camModeOrbital;
-	
-	string          meshPath;
 };
 
 #endif //RORVIEWER_H__
