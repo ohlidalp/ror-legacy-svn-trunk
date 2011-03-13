@@ -47,7 +47,7 @@ bool RoREditor::Initialize(std::string hwndStr, std::string mainhwndStr)
 	SETTINGS.setSetting("Preselected Map",   "simple.terrn");
 
 	//printf("#>>>>>>> %s # %s\n", hwndStr.c_str(), mainhwndStr.c_str());
-	app = new RigsOfRods("RoREditor", hwndStr, mainhwndStr);
+	app = new RigsOfRods("RoREditor", hwndStr, mainhwndStr, true);
 
 	app->go();
 

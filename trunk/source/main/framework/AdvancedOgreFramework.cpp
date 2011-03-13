@@ -16,7 +16,7 @@ template<> OgreFramework* Ogre::Singleton<OgreFramework>::ms_Singleton = 0;
 
 //|||||||||||||||||||||||||||||||||||||||||||||||
 
-OgreFramework::OgreFramework() : hwnd(), mainhwnd(), name()
+OgreFramework::OgreFramework() : hwnd(Ogre::String()), mainhwnd(Ogre::String()), name(), embedded(false)
 {
     m_pRoot			= 0;
     m_pRenderWnd		= 0;
@@ -80,11 +80,12 @@ bool OgreFramework::configure(void)
 	return false;
 }
 
-bool OgreFramework::initOgre(Ogre::String name, Ogre::String hwnd, Ogre::String mainhwnd)
+bool OgreFramework::initOgre(Ogre::String name, Ogre::String hwnd, Ogre::String mainhwnd, bool embedded)
 {
 	this->name     = name;
 	this->hwnd     = hwnd;
 	this->mainhwnd = mainhwnd;
+	this->embedded = embedded;
 
 	if(!SETTINGS.setupPaths())
 		return false;
