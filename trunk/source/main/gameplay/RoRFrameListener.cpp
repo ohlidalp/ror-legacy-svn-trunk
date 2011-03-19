@@ -874,7 +874,13 @@ RoRFrameListener::RoRFrameListener(AppState *parentState, RenderWindow* win, Cam
 			INPUTENGINE.setup(TOSTRING(hWnd), true, true, inputGrabMode);
 	} else
 	{
-		INPUTENGINE.setup(inputhwnd, true, true, GRAB_NONE);
+	  
+		size_t windowHnd = 0;
+		std::ostringstream windowHndStr; 
+		win->getCustomAttribute( "GLXWINDOW", &windowHnd ); 
+		windowHndStr << windowHnd; 
+		printf("#### GLXWINDOW = %s\n", windowHndStr.str().c_str());
+		INPUTENGINE.setup(windowHndStr.str(), true, true, GRAB_NONE);
 	}
 
 #ifdef USE_MYGUI

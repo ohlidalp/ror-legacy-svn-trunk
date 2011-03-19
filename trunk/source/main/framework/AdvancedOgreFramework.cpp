@@ -73,7 +73,8 @@ bool OgreFramework::configure(void)
 		m_pRoot->initialise(false);
 
 		Ogre::NameValuePairList param;
-		param["externalWindowHandle"] = hwnd;
+		param["parentWindowHandle"] = hwnd;
+		printf("### parentWindowHandle =  %s\n", hwnd.c_str());
 		m_pRenderWnd = m_pRoot->createRenderWindow(name, 320, 240, false, &param);
 		return true;
 	}
