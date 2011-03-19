@@ -25,6 +25,7 @@ along with Rigs of Rods.  If not, see <http://www.gnu.org/licenses/>.
 #include <OgreMaterial.h>
 
 #include "Beam.h"
+#include "SerializedRig.h"
 
 class VideoCamera
 {
@@ -38,7 +39,7 @@ public:
 	void setActive(bool state);
 	//static VideoCamera *setActive(bool state);
 	
-	static VideoCamera *parseLine(Ogre::SceneManager *mSceneMgr, Ogre::Camera *camera, rig_t *truck, Ogre::String fname, char *line, int linecounter);
+	static VideoCamera *parseLine(Ogre::SceneManager *mSceneMgr, Ogre::Camera *camera, SerializedRig *truck, parsecontext_t &c);
 
 	int camNode, lookat, switchoff;
 	float fov, minclip, maxclip;

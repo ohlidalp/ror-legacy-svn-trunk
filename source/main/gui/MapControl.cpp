@@ -88,7 +88,7 @@ Ogre::String MapControl::getTypeByDriveable(int driveable)
 		return "boat";
 	else if(driveable == MACHINE)
 		return "machine";
-	return "unkown";
+	return "unknown";
 }
 
 void MapControl::deleteMapEntity(MapEntity *ent)

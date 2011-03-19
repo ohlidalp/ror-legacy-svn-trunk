@@ -316,7 +316,7 @@ void SelectorWindow::getData()
 
 		String title = itc->second.title;
 		if(title.empty())
-			title = _L("unkown");
+			title = _L("unknown");
 		String txt = "["+TOSTRING(counter2)+"/"+TOSTRING(counter)+"] (" + TOSTRING(usage)+") " + title;
 
 		mTypeComboBox->addItem(txt, itc->second.number);
@@ -528,9 +528,9 @@ void SelectorWindow::updateControls(Cache_Entry *entry)
 	{
 		std::vector<authorinfo_t *>::iterator it;
 		for(it=entry->authors.begin(); it!=entry->authors.end(); it++)
-			if(strnlen((*it)->type, 3) > 2 && strnlen((*it)->name, 3) > 2)
+			if(!(*it)->type.empty() && !(*it)->name.empty())
 			{
-				String name = String((*it)->name);
+				String name = (*it)->name;
 				Ogre::StringUtil::trim(name);
 
 				// check if already used

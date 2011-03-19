@@ -41,9 +41,11 @@ typedef struct parsecontext_t
 	Ogre::String modeString;
 	Ogre::String warningText;
 	unsigned int linecounter;
-	char line[2048];
+	Ogre::String line;
 	int mode;
 } parsecontext_t;
+
+struct ParseException : std::exception { char const* what() const throw(); };
 
 class SerializedRig : public rig_t
 {
@@ -52,6 +54,11 @@ public:
 	~SerializedRig();
 
 	int loadTruck(Ogre::String filename, Ogre::SceneManager *manager, Ogre::SceneNode *parent, Ogre::Vector3 pos, Ogre::Quaternion rot, collision_box_t *spawnbox);	
+
+	int parse_args(parsecontext_t &context, Ogre::StringVector &v, int minArgNum);
+	int parse_node_number(parsecontext_t &context, Ogre::String s);
+	void parser_warning(parsecontext_t &context, Ogre::String text);
+	void parser_warning(parsecontext_t *context, Ogre::String text);
 
 protected:
 	std::vector <parsecontext_t> warnings;
@@ -195,11 +202,7 @@ protected:
 	node_t* getNode(unsigned int id);
 
 	void wash_calculator(Ogre::Quaternion rot, parsecontext_t c);
-	void calcBox();
-
-	void parser_warning(parsecontext_t &context, Ogre::String text);
-	void parser_warning(parsecontext_t *context, Ogre::String text);
-	bool checkResults(int res, int min, parsecontext_t &context);
+	void calcBox();	
 };
 
 

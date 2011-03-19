@@ -44,7 +44,9 @@ bool RoREditor::Initialize(std::string hwndStr, std::string mainhwndStr)
 		return false;
 	
 	SETTINGS.setSetting("Preselected Truck", "agoras.truck");
-	SETTINGS.setSetting("Preselected Map",   "simple.terrn");
+	SETTINGS.setSetting("Preselected Map",   "grenoble.terrn");
+	SETTINGS.setSetting("Enter Preselected Truck",   "Yes");
+	
 
 	//printf("#>>>>>>> %s # %s\n", hwndStr.c_str(), mainhwndStr.c_str());
 	app = new RigsOfRods("RoREditor", hwndStr, mainhwndStr, true);

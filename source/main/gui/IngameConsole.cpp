@@ -277,7 +277,7 @@ void IngameConsole::updateDisplay()
 		}
 		catch(...)
 		{
-			(*i)->setCaption(_L("unkown encoding problem"));
+			(*i)->setCaption(_L("unknown encoding problem"));
 		}
 	}
 }

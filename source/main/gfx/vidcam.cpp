@@ -162,93 +162,109 @@ void VideoCamera::update(float dt)
 	mVidCam->setPosition(pos);
 }
 
-VideoCamera *VideoCamera::parseLine(Ogre::SceneManager *mSceneMgr, Ogre::Camera *camera, rig_t *truck, Ogre::String fname, char *line, int linecounter)
+VideoCamera *VideoCamera::parseLine(Ogre::SceneManager *mSceneMgr, Ogre::Camera *camera, SerializedRig *truck, parsecontext_t &c)
 {
-	// sample rate /
-	int nz=-1, ny=-1, nref=-1, ncam=-1, lookto=-1, texx=256, texy=256, crole=-1, cmode=-1;
-	float fov=-1.0f, minclip=-1.0f, maxclip=-1.0f, offx=0.0f, offy=0.0f, offz=0.0f, rotx=0.0f, roty=0.0f, rotz=0.0f;
-	char materialname[255] = "";
-	int result = sscanf(line,"%i, %i, %i, %i, %i, %f, %f, %f, %f, %f, %f, %f, %i, %i, %f, %f, %i, %i, %s", &nref, &nz, &ny, &ncam, &lookto, &offx, &offy, &offz, &rotx, &roty, &rotz, &fov, &texx, &texy, &minclip, &maxclip, &crole, &cmode, materialname);
-	if (result < 19 || result == EOF)
+	try
 	{
-		LOG("Error parsing File (videocamera) " + (fname) +" line " + TOSTRING(linecounter) + ". trying to continue ...");
+		int nz=-1, ny=-1, nref=-1, ncam=-1, lookto=-1, texx=256, texy=256, crole=-1, cmode=-1;
+		float fov=-1.0f, minclip=-1.0f, maxclip=-1.0f, offx=0.0f, offy=0.0f, offz=0.0f, rotx=0.0f, roty=0.0f, rotz=0.0f;
+		char materialname[255] = "";
+		
+		Ogre::StringVector args;
+		int n = truck->parse_args(c, args, 19);
+		nref    = truck->parse_node_number(c, args[0]);
+		nz      = truck->parse_node_number(c, args[1]);
+		ny      = truck->parse_node_number(c, args[2]);
+		ncam    = truck->parse_node_number(c, args[3]);
+		lookto  = truck->parse_node_number(c, args[4]);
+		offx    = PARSEREAL(args[5]);
+		offy    = PARSEREAL(args[6]);
+		offz    = PARSEREAL(args[7]);
+		rotx    = PARSEREAL(args[8]);
+		roty    = PARSEREAL(args[9]);
+		rotz    = PARSEREAL(args[10]);
+		fov     = PARSEREAL(args[11]);
+		texx    = PARSEINT (args[12]);
+		texy    = PARSEINT (args[13]);
+		minclip = PARSEREAL(args[14]);
+		maxclip = PARSEREAL(args[15]);
+		crole   = PARSEINT (args[16]);
+		cmode   = PARSEINT (args[17]);
+		strncpy(materialname, args[18].c_str(), 255);
+
+		if (texx <= 0 || !isPowerOfTwo(texx) || texy <= 0 || !isPowerOfTwo(texy))
+		{
+			truck->parser_warning(c, "Wrong texture size definition (needs to be 2^n). trying to continue ...");
+			return 0;
+		}
+
+		if (minclip < 0 || minclip > maxclip || maxclip < 0)
+		{
+			truck->parser_warning(c, "Wrong clipping definition. trying to continue ...");
+			return 0;
+		}
+
+		if(cmode < -2 )
+		{
+			truck->parser_warning(c, "Camera Mode setting incorrect, trying to continue ...");
+			return 0;
+		}
+
+		if(crole < -1 || crole >1)
+		{
+			truck->parser_warning(c, "Camera Role (camera, trace, mirror) setting incorrect, trying to continue ...");
+			return 0;
+		}
+
+		MaterialPtr mat = MaterialManager::getSingleton().getByName(materialname);
+		if(mat.isNull())
+		{
+			truck->parser_warning(c, "unknown material: '"+String(materialname)+"', trying to continue ...");
+			return 0;
+		}
+
+		// clone the material to stay unique
+		MaterialPtr matNew = mat->clone(String(truck->truckname) + materialname);
+		String newMaterialName = matNew->getName();
+
+		VideoCamera *v  = new VideoCamera(mSceneMgr, camera, truck);
+		v->fov          = fov;
+		v->minclip      = minclip;
+		v->maxclip      = maxclip;
+		v->nz           = nz;
+		v->ny           = ny;
+		v->nref         = nref;
+		v->offset       = Vector3(offx, offy, offz);
+		v->switchoff    = cmode;            // add performance switch off  ->meeds fix, only "always on" supported yet
+		v->materialName = newMaterialName;
+		v->textureSize  = Vector2(texx, texy);
+
+		if(crole != 1)                     //rotate camera picture 180°, skip for mirrors
+			rotz += 180;
+
+		v->rotation     = Quaternion(Degree(rotz), Vector3::UNIT_Z) * Quaternion(Degree(roty), Vector3::UNIT_Y) * Quaternion(Degree(rotx), Vector3::UNIT_X);
+
+		if (ncam >= 0)                     // set alternative camposition (optional)
+			v->camNode  = ncam;
+		else
+			v->camNode  = nref;
+
+		if (lookto >= 0)                   // set alternative lookat position (optional)
+		{
+			v->lookat   = lookto;
+			crole       = 0;               // this is a tracecam, overwrite mode setting
+		}
+		else
+			v->lookat   = -1;
+
+		v->camRole      = crole;	        // -1= camera, 0 = trackcam, 1 = mirror
+
+		v->init();
+
+		return v;
+	} catch(ParseException &e)
+	{
 		return 0;
 	}
-
-	if (nz < 0 || nz >= truck->free_node || ny < 0 || ny >= truck->free_node || nref < 0 || nref >= truck->free_node || ncam < -1 || ncam >= truck->free_node || lookto < -1 || lookto >= truck->free_node)
-	{
-		LOG("Error parsing File (videocamera) " + fname +" line " + TOSTRING(linecounter) + ". Wrong node definition. trying to continue ...");
-		return 0;
-	}
-
-	if (texx <= 0 || !isPowerOfTwo(texx) || texy <= 0 || !isPowerOfTwo(texy))
-	{
-		LOG("Error parsing File (videocamera) " + (fname) +" line " + TOSTRING(linecounter) + ". Wrong texture size definition (needs to be 2^n). trying to continue ...");
-		return 0;
-	}
-
-	if (minclip < 0 || minclip > maxclip || maxclip < 0)
-	{
-		LOG("Error parsing File (videocamera) " + (fname) +" line " + TOSTRING(linecounter) + ". Wrong clipping definition. trying to continue ...");
-		return 0;
-	}
-
-	if(cmode < -2 )
-	{
-		LOG("Error parsing File (videocamera) " + (fname) +" line " + TOSTRING(linecounter) + ". Camera Mode setting incorrect, trying to continue ...");
-		return 0;
-	}
-
-	if(crole < -1 || crole >1)
-	{
-		LOG("Error parsing File (videocamera) " + (fname) +" line " + TOSTRING(linecounter) + ". Camera Role (camera, trace, mirror) setting incorrect, trying to continue ...");
-		return 0;
-	}
-
-	MaterialPtr mat = MaterialManager::getSingleton().getByName(materialname);
-	if(mat.isNull())
-	{
-		LOG("Error parsing File (videocamera) " + (fname) +" line " + TOSTRING(linecounter) + ". unkown material: '"+materialname+"', trying to continue ...");
-		return 0;
-	}
-
-	// clone the material to stay unique
-	MaterialPtr matNew = mat->clone(String(truck->truckname) + materialname);
-	String newMaterialName = matNew->getName();
-
-	VideoCamera *v  = new VideoCamera(mSceneMgr, camera, truck);
-	v->fov          = fov;
-	v->minclip      = minclip;
-	v->maxclip      = maxclip;
-	v->nz           = nz;
-	v->ny           = ny;
-	v->nref         = nref;
-	v->offset       = Vector3(offx, offy, offz);
-	v->switchoff    = cmode;            // add performance switch off  ->meeds fix, only "always on" supported yet
-	v->materialName = newMaterialName;
-	v->textureSize  = Vector2(texx, texy);
-
-	if(crole != 1)                     //rotate camera picture 180°, skip for mirrors
-		rotz += 180;
-
-	v->rotation     = Quaternion(Degree(rotz), Vector3::UNIT_Z) * Quaternion(Degree(roty), Vector3::UNIT_Y) * Quaternion(Degree(rotx), Vector3::UNIT_X);
-
-	if (ncam >= 0)                     // set alternative camposition (optional)
-		v->camNode  = ncam;
-	else
-		v->camNode  = nref;
-
-	if (lookto >= 0)                   // set alternative lookat position (optional)
-	{
-		v->lookat   = lookto;
-		crole       = 0;               // this is a tracecam, overwrite mode setting
-	}
-	else
-		v->lookat   = -1;
-
-	v->camRole      = crole;	        // -1= camera, 0 = trackcam, 1 = mirror
-
-	v->init();
-
-	return v;
+	return 0;
 }

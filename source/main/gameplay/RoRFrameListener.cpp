@@ -1020,7 +1020,7 @@ RoRFrameListener::RoRFrameListener(AppState *parentState, RenderWindow* win, Cam
 	camCollided=false;
 	camPosColl=Vector3::ZERO;
 	cameramode=0;
-	if(isEmbedded) cameramode=CAMERA_FREE;
+	//if(isEmbedded) cameramode=CAMERA_FREE;
 	road=0;
 
 	objcounter=0;
@@ -3307,6 +3307,7 @@ bool RoRFrameListener::updateEvents(float dt)
 		//no terrain or truck loaded
 
 		// in embedded mode we wont show that loading stuff
+		/*
 		if(isEmbedded)
 		{
 			loading_state=ALL_LOADED;
@@ -3314,6 +3315,7 @@ bool RoRFrameListener::updateEvents(float dt)
 			LoadingWindow::get()->hide();
 #endif //USE_MYGUI
 		}
+		*/
 		//uiloader->updateEvents(dt);
 
 
@@ -3859,7 +3861,7 @@ void RoRFrameListener::loadTerrain(String terrainfile)
 		loadClassicTerrain(terrainfile);
 	} else
 	{
-		// exit on unkown terrain handler
+		// exit on unknown terrain handler
 		LOG("Terrain not supported, unknown format: " + terrainfile);
 		showError(_L("Terrain loading error"), _L("Terrain not supported, unknown format: ") + terrainfile);
 		exit(123);
@@ -6520,10 +6522,7 @@ END OF OLD CODE */
 #endif //USE_LUA
 		updateIO(dt);
 
-		if(!isEmbedded)
-		{
-			updateGUI(dt);
-		}
+		updateGUI(dt);
 	}
 
 

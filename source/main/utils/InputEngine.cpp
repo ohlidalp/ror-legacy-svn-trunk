@@ -1812,7 +1812,7 @@ Ogre::String InputEngine::getKeyNameForKeyCode(OIS::KeyCode keycode)
 		if(allit->second == keycode)
 			return allit->first;
 	}
-	return "unkown";
+	return "unknown";
 }
 
 void InputEngine::Capture()
@@ -2416,7 +2416,7 @@ Ogre::String InputEngine::getDeviceName(event_trigger_t evt)
 	case ET_JoystickSliderY:
 		return "Joystick: " + getJoyVendor(evt.joystickNumber);
 	}
-	return "unkown";
+	return "unknown";
 }
 
 Ogre::String InputEngine::getEventTypeName(int type)
@@ -2436,7 +2436,7 @@ Ogre::String InputEngine::getEventTypeName(int type)
 	case ET_JoystickSliderX: return "JoystickSliderX";
 	case ET_JoystickSliderY: return "JoystickSliderY";
 	}
-	return "unkown";
+	return "unknown";
 }
 
 void InputEngine::addEvent(int eventID, event_trigger_t t)
@@ -2446,7 +2446,7 @@ void InputEngine::addEvent(int eventID, event_trigger_t t)
 	t.suid = counter;
 
 	if(eventID == -1)
-		//unkown event, discard
+		//unknown event, discard
 		return;
 	if(events.find(eventID) == events.end())
 	{
@@ -2525,7 +2525,7 @@ bool InputEngine::processLine(char *line)
 			if(allit == allkeys.end())
 			{
 #ifndef NOOGRE
-				LOG("unkown key: " + string(keycodes));
+				LOG("unknown key: " + string(keycodes));
 #endif
 				key = KC_UNASSIGNED;
 			} else {
@@ -2818,7 +2818,7 @@ int InputEngine::getJoyComponentCount(OIS::ComponentType type, int joystickNumbe
 
 std::string InputEngine::getJoyVendor(int joystickNumber)
 {
-	if(joystickNumber > free_joysticks || !mJoy[joystickNumber]) return "unkown";
+	if(joystickNumber > free_joysticks || !mJoy[joystickNumber]) return "unknown";
 	return mJoy[joystickNumber]->vendor();
 }
 
@@ -3195,7 +3195,7 @@ int InputEngine::resolveEventName(Ogre::String eventName)
 		i++;
 	}
 #ifndef NOOGRE
-	LOG("unkown event (ignored): " + eventName);
+	LOG("unknown event (ignored): " + eventName);
 #endif
 	return -1;
 }
@@ -3209,7 +3209,7 @@ Ogre::String InputEngine::eventIDToName(int eventID)
 			return eventInfo[i].name;
 		i++;
 	}
-	return "Unkown";
+	return "unknown";
 }
 
 void InputEngine::initAllKeys()

@@ -554,7 +554,7 @@ void Network::receivethreadstart()
 			int playerColour = 0;
 			if(client) playerColour = client->user.colournum;
 
-			String typeStr = "unkown";
+			String typeStr = "unknown";
 			switch(reg->type)
 			{
 				case 0: typeStr="truck"; break;

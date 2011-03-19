@@ -451,12 +451,12 @@ void CacheSystem::parseModAttribute(const String& line, Cache_Entry& t)
 			return;
 		}
 		// Set
-		authorinfo_t *ai = new authorinfo_t();
-		ai->id = StringConverter::parseInt(params[2]);
-		strncpy(ai->type, params[1].c_str(), 255);
-		strncpy(ai->name, params[3].c_str(), 255);
-		strncpy(ai->email, params[4].c_str(), 255);
-		t.authors.push_back(ai);
+		//authorinfo_t *ai = new authorinfo_t();
+		//ai->id = StringConverter::parseInt(params[2]);
+		//strncpy(ai->type, params[1].c_str(), 255);
+		//strncpy(ai->name, params[3].c_str(), 255);
+		//strncpy(ai->email, params[4].c_str(), 255);
+		//t.authors.push_back(ai);
 	}
 	else if (attrib == "sectionconfig")
 	{
@@ -738,7 +738,7 @@ int CacheSystem::incrementalCacheUpdate()
 			// check file time, if that fails, fall back to sha1 (needed for platforms where filetime is not yet implemented!
 			bool check = false;
 			String ft = fileTime(fn);
-			if(ft.empty() || it->filetime.empty() || it->filetime == "unkown")
+			if(ft.empty() || it->filetime.empty() || it->filetime == "unknown")
 			{
 				// slow sha1 check
 				char hash[255];
@@ -946,19 +946,19 @@ Ogre::String CacheSystem::formatInnerEntry(int counter, Cache_Entry t)
 	{
 		// this ensures that we wont break the format with empty ("") values
 		if(t.minitype.empty())
-			t.minitype = "unkown";
+			t.minitype = "unknown";
 		if(t.type.empty())
-			t.type = "unkown";
+			t.type = "unknown";
 		if(t.dirname.empty())
-			t.dirname = "unkown";
+			t.dirname = "unknown";
 		if(t.fname.empty())
-			t.fname = "unkown";
+			t.fname = "unknown";
 		if(t.fext.empty())
-			t.fext = "unkown";
+			t.fext = "unknown";
 		if(t.filetime.empty())
-			t.filetime = "unkown";
+			t.filetime = "unknown";
 		if(t.dname.empty())
-			t.dname = "unkown";
+			t.dname = "unknown";
 		if(t.hash.empty())
 			t.hash = "none";
 		if(t.uniqueid.empty())
@@ -966,7 +966,7 @@ Ogre::String CacheSystem::formatInnerEntry(int counter, Cache_Entry t)
 		if(t.guid.empty())
 			t.guid = "no-guid";
 		if(t.fname_without_uid.empty())
-			t.fname_without_uid = "unkown";
+			t.fname_without_uid = "unknown";
 		if(t.filecachename.empty())
 			t.filecachename = "none";
 
@@ -992,15 +992,12 @@ Ogre::String CacheSystem::formatInnerEntry(int counter, Cache_Entry t)
 		{
 			for(int i=0;i<(int)t.authors.size();i++)
 			{
-				if(strnlen(t.authors[i]->type, 3) == 0)
-					strcpy(t.authors[i]->type, "unkown");
-				if(strnlen(t.authors[i]->name, 3) == 0)
-					strcpy(t.authors[i]->name, "unkown");
-				if(strnlen(t.authors[i]->email, 3) == 0)
-					strcpy(t.authors[i]->email, "unkown");
-				result += "\tauthor=" + String(t.authors[i]->type) + \
+				if(t.authors[i]->type.empty())  t.authors[i]->type = "unknown";
+				if(t.authors[i]->name.empty())  t.authors[i]->name = "unknown";
+				if(t.authors[i]->email.empty()) t.authors[i]->email = "unknown";
+				result += "\tauthor=" + (t.authors[i]->type) + \
 					"," + TOSTRING(t.authors[i]->id) + \
-					"," + String(t.authors[i]->name) + "," + String(t.authors[i]->email) + "\n";
+					"," + (t.authors[i]->name) + "," + (t.authors[i]->email) + "\n";
 			}
 		}
 
@@ -1231,8 +1228,8 @@ void CacheSystem::addFile(String filename, String archiveType, String archiveDir
 
 			if(ext == "terrn")
 				fillTerrainDetailInfo(entry, ds, filename);
-			else
-				fillTruckDetailInfo(entry, ds, filename);
+			//else
+			//	fillTruckDetailInfo(entry, ds, filename);
 
 			// ds closes automatically, so do _not_ close it explicitly below
 			entry.fname = filename;
@@ -1277,7 +1274,8 @@ void CacheSystem::addFile(String filename, String archiveType, String archiveDir
 
 void CacheSystem::fillTruckDetailInfo(Cache_Entry &entry, Ogre::DataStreamPtr ds, Ogre::String fname)
 {
-
+	// obsolete
+#if 0
 	// done initializing, now fill everything!
 	// this is a stripped (and cleaned) version of Beam::loadtruck()
 	char line[1024];
@@ -1414,9 +1412,9 @@ void CacheSystem::fillTruckDetailInfo(Cache_Entry &entry, Ogre::DataStreamPtr ds
 				char authorname[255], authoremail[255], authortype[255];
 				authorinfo_t *author = new authorinfo_t();
 				author->id = -1;
-				strcpy(author->email, "unkown");
-				strcpy(author->name,  "unkown");
-				strcpy(author->type,  "unkown");
+				strcpy(author->email, "unknown");
+				strcpy(author->name,  "unknown");
+				strcpy(author->type,  "unknown");
 
 				int result = sscanf(line,"author %s %i %s %s", authortype, &authorid, authorname, authoremail);
 				if (result < 1 || result == EOF) {
@@ -2023,6 +2021,7 @@ void CacheSystem::fillTruckDetailInfo(Cache_Entry &entry, Ogre::DataStreamPtr ds
 				// not used here, we wont respect sections for a quick parsing ...
 			}
 		};
+#endif //0
 }
 
 int CacheSystem::addUniqueString(std::set<Ogre::String> &list, Ogre::String str)
@@ -2443,6 +2442,7 @@ void CacheSystem::fillTerrainDetailInfo(Cache_Entry &entry, Ogre::DataStreamPtr 
 				continue;
 			}
 			//replace '_' with ' '
+			/*
 			authorinfo_t *author = new authorinfo_t();
 			char *tmp = authorname;
 			while (*tmp!=0) {if (*tmp=='_') *tmp=' ';tmp++;};
@@ -2452,6 +2452,7 @@ void CacheSystem::fillTerrainDetailInfo(Cache_Entry &entry, Ogre::DataStreamPtr 
 			strncpy(author->name, authorname, 255);
 			strncpy(author->email, authoremail, 255);
 			entry.authors.push_back(author);
+			*/
 		} else if (!strncmp(categorytag, line, strnlen(categorytag, 254)))
 		{
 			char uidtmp[255] = "";
