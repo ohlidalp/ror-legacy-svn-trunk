@@ -103,7 +103,7 @@ ChatSystem::ChatSystem(Network *net, int source, unsigned int streamid, int colo
 	streamid(streamid),
 	colourNumber(colourNumber),
 	remote(remote),
-	username("unkown"),
+	username("unknown"),
 	mNickColour("^0")
 {
 	sendStreamSetup();

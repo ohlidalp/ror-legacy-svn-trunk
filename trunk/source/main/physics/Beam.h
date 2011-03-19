@@ -498,7 +498,7 @@ inline float Beam::getSteeringAngle()
 
 inline std::string Beam::getTruckName()
 {
-	return std::string(realtruckname);
+	return realtruckname;
 }
 
 inline std::vector<authorinfo_t> Beam::getAuthors()

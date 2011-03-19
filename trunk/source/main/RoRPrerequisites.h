@@ -47,8 +47,10 @@ along with Rigs of Rods.  If not, see <http://www.gnu.org/licenses/>.
 
 
 // some shortcuts for us
-#define LOG(x)      Ogre::LogManager::getSingleton().logMessage(x)
-#define TOSTRING(x) Ogre::StringConverter::toString(x)
+#define LOG(x)       Ogre::LogManager::getSingleton().logMessage(x)
+#define TOSTRING(x)  Ogre::StringConverter::toString(x)
+#define PARSEINT(x)  Ogre::StringConverter::parseInt(x)
+#define PARSEREAL(x) Ogre::StringConverter::parseReal(x)
 
 // replace standard allocations with nedmalloc
 //#define REPLACE_SYSTEM_ALLOCATOR

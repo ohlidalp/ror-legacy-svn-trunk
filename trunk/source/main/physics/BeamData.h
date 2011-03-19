@@ -811,7 +811,7 @@ struct rig
 	int hasfixes;
 	int wingstart;
 	
-	char realtruckname[256];
+	Ogre::String realtruckname;
 	bool patchEngineTorque;
 	bool loading_finished;
 
@@ -1019,9 +1019,9 @@ struct client
 struct authorinfo
 {
 	int id;
-	char type[255];
-	char name[255];
-	char email[255];
+	Ogre::String type;
+	Ogre::String name;
+	Ogre::String email;
 };
 
 struct localizer
