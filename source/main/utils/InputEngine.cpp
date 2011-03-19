@@ -1592,6 +1592,15 @@ bool InputEngine::setup(Ogre::String hwnd, bool capture, bool capturemouse, int 
 		//size_t hWnd = 0;
 		//win->getCustomAttribute("WINDOW", &hWnd);
 		ParamList pl;
+		
+#if 0 //OGRE_PLATFORM == OGRE_PLATFORM_LINUX
+		// we get the ogre way of defining the handle, extract the window HWND only
+		int screen=0,app=0,windowhandle=0;
+		sscanf(hwnd.c_str(), "%d:%d:%d", &screen, &app, &windowhandle);
+		hwnd = TOSTRING(windowhandle);
+		printf("OIS windowhandle = %s\n", hwnd.c_str());
+#endif // LINUX
+		
 		pl.insert(OIS::ParamList::value_type("WINDOW", hwnd));
 		if(grabMode == GRAB_ALL)
 		{
@@ -1684,7 +1693,6 @@ bool InputEngine::setup(Ogre::String hwnd, bool capture, bool capturemouse, int 
 
 		if(capturemouse)
 		{
-			printf(">>> MOUSE ADDED\n");
 			try
 			{
 				mMouse = static_cast<Mouse*>(mInputManager->createInputObject( OISMouse, true ));
