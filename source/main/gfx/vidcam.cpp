@@ -262,7 +262,7 @@ VideoCamera *VideoCamera::parseLine(Ogre::SceneManager *mSceneMgr, Ogre::Camera 
 		v->init();
 
 		return v;
-	} catch(ParseException &e)
+	} catch(ParseException &)
 	{
 		return 0;
 	}
