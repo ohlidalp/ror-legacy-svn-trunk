@@ -29,6 +29,12 @@ along with Rigs of Rods.  If not, see <http://www.gnu.org/licenses/>.
 
 using namespace Ogre;
 
+#if WIN32
+#include <tchar.h>
+#else
+#define _T
+#endif // WIN32
+
 #ifdef USE_CRASHRPT
 // see http://code.google.com/p/crashrpt/
 #include "crashrpt.h"
@@ -137,27 +143,27 @@ enum { OPT_HELP, OPT_MAP, OPT_TRUCK, OPT_SETUP, OPT_CMD, OPT_WDIR, OPT_ETM, OPT_
 
 // option array
 CSimpleOpt::SOption cmdline_options[] = {
-	{ OPT_MAP,            ((char *)"-map"),         SO_REQ_SEP },
-	{ OPT_MAP,            ((char *)"-terrain"),     SO_REQ_SEP },
-	{ OPT_TRUCK,          ((char *)"-truck"),       SO_REQ_SEP },
-	{ OPT_ENTERTRUCK,     ((char *)"-enter"),       SO_NONE },
-	{ OPT_CMD,            ((char *)"-cmd"),         SO_REQ_SEP },
-	{ OPT_WDIR,           ((char *)"-wd"),          SO_REQ_SEP },
-	{ OPT_SETUP,          ((char *)"-setup"),       SO_NONE    },
-	{ OPT_CONFIG,         ((char *)"-config"),      SO_NONE    },
-	{ OPT_TRUCKCONFIG,    ((char *)"-truckconfig"), SO_REQ_SEP    },
-	{ OPT_HELP,           ((char *)"--help"),       SO_NONE    },
-	{ OPT_HELP,           ((char *)"-help"),        SO_NONE    },
-	{ OPT_CHECKCACHE,     ((char *)"-checkcache"),  SO_NONE    },
-	{ OPT_VER,            ((char *)"-version"),     SO_NONE    },
-	{ OPT_USERPATH,       ((char *)"-userpath"),   SO_REQ_SEP    },
-	{ OPT_BENCH,          ((char *)"-benchmark"),   SO_REQ_SEP    },
-	{ OPT_BENCHPOS,       ((char *)"-benchmark-final-position"),   SO_REQ_SEP    },
-	{ OPT_BENCHPOSERR,    ((char *)"-benchmark-final-position-error"),   SO_REQ_SEP    },
-	{ OPT_BENCHNUM,       ((char *)"-benchmarktrucks"),       SO_REQ_SEP },
-	{ OPT_BENCHNUM,       ((char *)"-benchmark-trucks"),       SO_REQ_SEP },
-	{ OPT_STREAMCACHEGEN, ((char *)"-streamcachegen"),   SO_NONE    },
-	{ OPT_NOCRASHCRPT,    ((char *)"-nocrashrpt"),   SO_NONE    },
+	{ OPT_MAP,            _T("-map"),         SO_REQ_SEP },
+	{ OPT_MAP,            _T("-terrain"),     SO_REQ_SEP },
+	{ OPT_TRUCK,          _T("-truck"),       SO_REQ_SEP },
+	{ OPT_ENTERTRUCK,     _T("-enter"),       SO_NONE },
+	{ OPT_CMD,            _T("-cmd"),         SO_REQ_SEP },
+	{ OPT_WDIR,           _T("-wd"),          SO_REQ_SEP },
+	{ OPT_SETUP,          _T("-setup"),       SO_NONE    },
+	{ OPT_CONFIG,         _T("-config"),      SO_NONE    },
+	{ OPT_TRUCKCONFIG,    _T("-truckconfig"), SO_REQ_SEP    },
+	{ OPT_HELP,           _T("--help"),       SO_NONE    },
+	{ OPT_HELP,           _T("-help"),        SO_NONE    },
+	{ OPT_CHECKCACHE,     _T("-checkcache"),  SO_NONE    },
+	{ OPT_VER,            _T("-version"),     SO_NONE    },
+	{ OPT_USERPATH,       _T("-userpath"),   SO_REQ_SEP    },
+	{ OPT_BENCH,          _T("-benchmark"),   SO_REQ_SEP    },
+	{ OPT_BENCHPOS,       _T("-benchmark-final-position"),   SO_REQ_SEP    },
+	{ OPT_BENCHPOSERR,    _T("-benchmark-final-position-error"),   SO_REQ_SEP    },
+	{ OPT_BENCHNUM,       _T("-benchmarktrucks"),       SO_REQ_SEP },
+	{ OPT_BENCHNUM,       _T("-benchmark-trucks"),       SO_REQ_SEP },
+	{ OPT_STREAMCACHEGEN, _T("-streamcachegen"),   SO_NONE    },
+	{ OPT_NOCRASHCRPT,    _T("-nocrashrpt"),   SO_NONE    },
 SO_END_OF_OPTIONS
 };
 
