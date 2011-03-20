@@ -92,8 +92,8 @@ int showWebError(Ogre::String title, Ogre::String err, Ogre::String url)
 	if(Response == IDYES)
 	{
 		// Microsoft conversion hell follows :|
-		char tmp[255], tmp2[255];
-		wchar_t ws1[255], ws2[255];
+		char tmp[256], tmp2[256];
+		wchar_t ws1[256], ws2[256];
 		strncpy(tmp, "open", 255);
 		mbstowcs(ws1, tmp, 255);
 		strncpy(tmp2, url.c_str(), 255);

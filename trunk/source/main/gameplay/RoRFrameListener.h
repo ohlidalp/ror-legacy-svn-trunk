@@ -478,7 +478,7 @@ protected:
 
 	RenderWindow* renderwin;
 
-	char screenshotformat[255];
+	char screenshotformat[256];
 	float globalFogDensity;
 	bool useCaelumSky;
 	float farclip;

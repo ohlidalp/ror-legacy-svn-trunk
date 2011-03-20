@@ -776,7 +776,7 @@ void Beam::updateSimpleSkeleton()
 		int scale=(int)(beams[i].scale * 100);
 		if(scale>100) scale=100;
 		if(scale<-100) scale=-100;
-		char bname[255];
+		char bname[256];
 		sprintf(bname, "mat-beam-%d", scale);
 
 		simpleSkeletonManualObject->setMaterialName(i, bname);
@@ -860,7 +860,7 @@ void Beam::checkBeamMaterial()
 	if(MaterialManager::getSingleton().resourceExists("mat-beam-0"))
 		return;
 	int i = 0;
-	char bname[255];
+	char bname[256];
 	for(i=-100;i<=100;i++)
 	{
 		//register a material for skeleton view
@@ -4589,7 +4589,7 @@ void Beam::updateDebugOverlay()
 			for(int i=0; i<free_node; i++)
 			{
 				debugtext_t t;
-				char nodeName[255]="", entName[255]="";
+				char nodeName[256]="", entName[256]="";
 				sprintf(nodeName, "%s-nodesDebug-%d", truckname, i);
 				sprintf(entName, "%s-nodesDebug-%d-Ent", truckname, i);
 				Entity *b = tsm->createEntity(entName, "sphere.mesh");
@@ -4626,7 +4626,7 @@ void Beam::updateDebugOverlay()
 			for(int i=0; i<free_beam; i++)
 			{
 				debugtext_t t;
-				char nodeName[255]="";
+				char nodeName[256]="";
 				sprintf(nodeName, "%s-beamsDebug-%d", truckname, i);
 				t.id=i;
 				t.txt = new MovableText(nodeName, "b"+TOSTRING(i));

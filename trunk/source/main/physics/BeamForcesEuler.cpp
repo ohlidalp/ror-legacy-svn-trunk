@@ -637,7 +637,7 @@ void Beam::calcForcesEuler(int doUpdate, Real dt, int step, int maxstep, Beam** 
 					int scale=(int)beams[i].scale * 100;
 					if(scale>100) scale=100;
 					if(scale<-100) scale=-100;
-					char bname[255];
+					char bname[256];
 					sprintf(bname, "mat-beam-%d", scale);
 					beams[i].mEntity->setMaterialName(bname);
 				}

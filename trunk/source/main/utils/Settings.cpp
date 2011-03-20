@@ -229,7 +229,7 @@ bool Settings::get_system_paths(char *program_path, char *user_path)
 		path_descend(program_path);
 	} else return false;
 	//user path is easy
-	char home_path[255];
+	char home_path[256];
 	strncpy(home_path, getenv ("HOME"), 240);
 	//sprintf(user_path, "%s/RigsOfRods/", home_path); // old version
 	sprintf(user_path, "%s/.rigsofrods/", home_path);

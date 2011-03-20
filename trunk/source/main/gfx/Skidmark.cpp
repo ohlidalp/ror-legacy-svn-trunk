@@ -166,7 +166,7 @@ void Skidmark::addObject(Ogre::Vector3 start, Ogre::String texture)
 
 
 	// new material
-	char bname[255]="";
+	char bname[256]="";
 	sprintf(bname, "mat-skidmark-%d", instancecounter);
 	Ogre::MaterialPtr mat=(Ogre::MaterialPtr)(Ogre::MaterialManager::getSingleton().create(bname, Ogre::ResourceGroupManager::DEFAULT_RESOURCE_GROUP_NAME));
 	Ogre::Pass *p = mat->getTechnique(0)->getPass(0);

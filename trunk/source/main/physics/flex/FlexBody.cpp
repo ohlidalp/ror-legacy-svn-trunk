@@ -110,7 +110,7 @@ FlexBody::FlexBody(SceneManager *manager, node_t *nds, int numnds, char* meshnam
 		return;
 	}
 	// build new unique mesh name
-	char uname_mesh[255];
+	char uname_mesh[256];
 	memset(uname_mesh, 0, 254);
 	strcpy(uname_mesh, uname);
 	strcat(uname_mesh, "_mesh");

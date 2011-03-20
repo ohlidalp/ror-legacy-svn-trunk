@@ -45,7 +45,7 @@ typedef struct parsecontext_t
 	int mode;
 } parsecontext_t;
 
-struct ParseException : std::exception { char const* what() const throw(); };
+struct ParseException : std::exception { char const* what() const throw() { return "ParserException"; }; };
 
 class SerializedRig : public rig_t
 {

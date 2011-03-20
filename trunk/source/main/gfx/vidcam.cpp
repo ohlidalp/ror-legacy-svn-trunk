@@ -168,7 +168,7 @@ VideoCamera *VideoCamera::parseLine(Ogre::SceneManager *mSceneMgr, Ogre::Camera 
 	{
 		int nz=-1, ny=-1, nref=-1, ncam=-1, lookto=-1, texx=256, texy=256, crole=-1, cmode=-1;
 		float fov=-1.0f, minclip=-1.0f, maxclip=-1.0f, offx=0.0f, offy=0.0f, offz=0.0f, rotx=0.0f, roty=0.0f, rotz=0.0f;
-		char materialname[255] = "";
+		char materialname[256] = "";
 		
 		Ogre::StringVector args;
 		int n = truck->parse_args(c, args, 19);

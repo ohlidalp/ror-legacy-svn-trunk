@@ -970,7 +970,7 @@ int SerializedRig::loadTruck(String fname, SceneManager *manager, SceneNode *par
 				//parse nodes
 				int id=0;
 				float x=0, y=0, z=0, mass=0;
-				char options[255] = "n";
+				char options[256] = "n";
 				int n = parse_args(c, args, 4);
 				id = PARSEINT (args[0]);
 				x  = PARSEREAL(args[1]);
@@ -2332,7 +2332,6 @@ int SerializedRig::loadTruck(String fname, SceneManager *manager, SceneNode *par
 
 				freecinecamera++;
 			}
-
 			else if (c.mode == BTS_FLARES || c.mode == BTS_FLARES2)
 			{
 				if(flaresMode==0)
@@ -2341,15 +2340,36 @@ int SerializedRig::loadTruck(String fname, SceneManager *manager, SceneNode *par
 				int ref=-1, nx=0, ny=0, controlnumber=-1, blinkdelay=-2;
 				float ox=0, oy=0, oz=1, size=-2;
 				char type='f';
-				char matname[255]="";
+				char matname[256]="";
 				if(c.mode == BTS_FLARES)
 				{
 					// original flares
-					if(!checkResults(sscanf(c.line,"%i, %i, %i, %f, %f, %c, %i, %i, %f %s", &ref, &nx, &ny, &ox, &oy, &type, &controlnumber, &blinkdelay, &size, matname), 5, c)) continue;
+					int n = parse_args(c, args, 5);
+					ref = parse_node_number(c, args[0]);
+					nx  = parse_node_number(c, args[1]);
+					ny  = parse_node_number(c, args[2]);
+					ox  = PARSEREAL(args[3]);
+					oy  = PARSEREAL(args[4]);
+					if(n > 5) type          = args[5][0];
+					if(n > 6) controlnumber = PARSEINT (args[6]);
+					if(n > 7) blinkdelay    = PARSEINT (args[7]);
+					if(n > 8) size          = PARSEREAL (args[8]);
+					if(n > 9) strncpy(matname, args[9].c_str(), 255);
 				} else if(c.mode == BTS_FLARES2)
 				{
 					// flares 2
-					if(!checkResults(sscanf(c.line,"%i, %i, %i, %f, %f, %f, %c, %i, %i, %f %s", &ref, &nx, &ny, &ox, &oy, &oz, &type, &controlnumber, &blinkdelay, &size, matname), 5, c)) continue;
+					int n = parse_args(c, args, 6);
+					ref = parse_node_number(c, args[0]);
+					nx  = parse_node_number(c, args[1]);
+					ny  = parse_node_number(c, args[2]);
+					ox  = PARSEREAL(args[3]);
+					oy  = PARSEREAL(args[4]);
+					oz  = PARSEREAL(args[5]);
+					if(n > 6) type          = args[6][0];
+					if(n > 7) controlnumber = PARSEINT (args[7]);
+					if(n > 8) blinkdelay    = PARSEINT (args[8]);
+					if(n > 9) size          = PARSEREAL (args[9]);
+					if(n > 10) strncpy(matname, args[10].c_str(), 255);
 				}
 
 				// check validity
@@ -2509,12 +2529,18 @@ int SerializedRig::loadTruck(String fname, SceneManager *manager, SceneNode *par
 				float ox, oy, oz;
 				float rx, ry, rz;
 				char meshname[256];
-				int result = sscanf(c.line,"%i, %i, %i, %f, %f, %f, %f, %f, %f, %s", &ref, &nx, &ny, &ox, &oy, &oz, &rx, &ry, &rz, meshname);
-				if (result < 10 || result == EOF)
-				{
-					parser_warning(c, "too less arguments");
-					continue;
-				}
+
+				int n = parse_args(c, args, 10);
+				ref = parse_node_number(c, args[0]);
+				nx  = parse_node_number(c, args[1]);
+				ny  = parse_node_number(c, args[2]);
+				ox  = PARSEREAL(args[3]);
+				oy  = PARSEREAL(args[4]);
+				oz  = PARSEREAL(args[5]);
+				rx  = PARSEREAL(args[6]);
+				ry  = PARSEREAL(args[7]);
+				rz  = PARSEREAL(args[8]);
+				strncpy(meshname, args[9].c_str(), 255);
 
 				if(free_prop >= MAX_PROPS)
 				{
@@ -2566,13 +2592,17 @@ int SerializedRig::loadTruck(String fname, SceneManager *manager, SceneNode *par
 					if (!strncmp("dashboard-rh", meshname, 12))
 						stdpos=Vector3(0.67, -0.61,0.24);
 					String diwmeshname = "dirwheel.mesh";
-					int result2 = sscanf(c.line,"%i, %i, %i, %f, %f, %f, %f, %f, %f, %s %s %f, %f, %f, %f", &ref, &nx, &ny, &ox, &oy, &oz, &rx, &ry, &rz, meshname, dirwheelmeshname, &dwx, &dwy, &dwz, &rotdegrees);
-					if(result2 != result && result2 >= 14)
+					if(n > 10) strncpy(dirwheelmeshname, args[10].c_str(), 255);
+					if(n > 11) dwx = PARSEREAL(args[11]);
+					if(n > 12) dwy = PARSEREAL(args[12]);
+					if(n > 13) dwz = PARSEREAL(args[13]);
+					if(n > 14) rotdegrees = PARSEREAL(args[14]);
+					if(n >= 14)
 					{
 						stdpos = Vector3(dwx, dwy, dwz);
 						diwmeshname = String(dirwheelmeshname);
 					}
-					if(result2 != result && result2 >= 15) props[free_prop].wheelrotdegree=rotdegrees;
+					if(n >= 15) props[free_prop].wheelrotdegree = rotdegrees;
 					props[free_prop].wheelpos=stdpos;
 
 					// create the meshs scenenode
@@ -2621,8 +2651,12 @@ int SerializedRig::loadTruck(String fname, SceneManager *manager, SceneNode *par
 					String matname = "tracks/beaconflare";
 					char beaconmaterial[256];
 					float br=0, bg=0, bb=0;
-					int result2 = sscanf(c.line,"%i, %i, %i, %f, %f, %f, %f, %f, %f, %s %s %f, %f, %f", &ref, &nx, &ny, &ox, &oy, &oz, &rx, &ry, &rz, meshname, beaconmaterial, &br, &bg, &bb);
-					if(result2 != result && result2 >= 14)
+
+					if(n > 10) strncpy(beaconmaterial, args[10].c_str(), 255);
+					if(n > 11) br = PARSEREAL(args[11]);
+					if(n > 12) bg = PARSEREAL(args[12]);
+					if(n > 13) bb = PARSEREAL(args[13]);
+					if(n >= 14)
 					{
 						color = ColourValue(br, bg, bb);
 						matname = String(beaconmaterial);
@@ -2740,8 +2774,15 @@ int SerializedRig::loadTruck(String fname, SceneManager *manager, SceneNode *par
 			else if (c.mode == BTS_GLOBEAMS)
 			{
 				//parse globeams
-				if(!checkResults(sscanf(c.line,"%f, %f, %f, %s", &default_deform,&default_break,&default_beam_diameter, default_beam_material), 1, c)) continue;
-				fadeDist=1000.0;
+				int n = parse_args(c, args, 1);
+				default_deform = PARSEREAL(args[0]);
+				if(n > 1) default_deform        = PARSEREAL(args[1]);
+				if(n > 2) default_break         = PARSEREAL(args[2]);
+				if(n > 3) default_beam_diameter = PARSEREAL(args[3]);
+				if(n > 4) strncpy(default_beam_material, args[4].c_str(), 255);
+
+				// hacky hack there ...
+				fadeDist = 1000;
 			}
 			else if (c.mode == BTS_WINGS)
 			{
@@ -2751,30 +2792,17 @@ int SerializedRig::loadTruck(String fname, SceneManager *manager, SceneNode *par
 				char type;
 				float cratio, mind, maxd, liftcoef = 1.0f;
 				char afname[256];
-				if(!checkResults(sscanf(c.line,"%i, %i, %i, %i, %i, %i, %i, %i, %f, %f, %f, %f, %f, %f, %f, %f, %c, %f, %f, %f, %s %f",
-					&nds[0],
-					&nds[1],
-					&nds[2],
-					&nds[3],
-					&nds[4],
-					&nds[5],
-					&nds[6],
-					&nds[7],
-					&txes[0],
-					&txes[1],
-					&txes[2],
-					&txes[3],
-					&txes[4],
-					&txes[5],
-					&txes[6],
-					&txes[7],
-					&type,
-					&cratio,
-					&mind,
-					&maxd,
-					afname,
-					&liftcoef
-					), 13, c)) continue;
+				int n = parse_args(c, args, 16);
+				for(int i = 0;i < 8; i++)
+					nds[i]  = PARSEINT (args[i]);
+				for(int i = 0;i < 8; i++)
+					txes[i] = PARSEREAL(args[i + 8]);
+				if(n > 16) type     = args[16][0];
+				if(n > 17) cratio   = PARSEREAL(args[17]);
+				if(n > 18) mind     = PARSEREAL(args[18]);
+				if(n > 19) maxd     = PARSEREAL(args[19]);
+				if(n > 20) strncpy(afname, args[20].c_str(), 255);
+				if(n > 21) liftcoef = PARSEREAL(args[21]);
 
 				if(free_wing >= MAX_WINGS)
 				{
@@ -3003,16 +3031,43 @@ int SerializedRig::loadTruck(String fname, SceneManager *manager, SceneNode *par
 				char propfoil[256];
 				if (c.mode == BTS_TURBOPROPS)
 				{
-					if(!checkResults(sscanf(c.line,"%i, %i, %i, %i, %i, %i, %f, %s", &ref, &back, &p1, &p2, &p3, &p4, &power, propfoil), 8, c)) continue;
+					int n = parse_args(c, args, 8);
+					ref    = parse_node_number(c, args[0]);
+					back   = parse_node_number(c, args[1]);
+					p1     = parse_node_number(c, args[2]);
+					p2     = parse_node_number(c, args[3]);
+					p3     = parse_node_number(c, args[4]);
+					p4     = parse_node_number(c, args[5]);
+					power  = PARSEREAL(args[6]);
+					strncpy(propfoil, args[7].c_str(),  255);
 				}
 				if (c.mode == BTS_TURBOPROPS2)
 				{
-					if(!checkResults(sscanf(c.line,"%i, %i, %i, %i, %i, %i, %i, %f, %s", &ref, &back, &p1, &p2, &p3, &p4, &couplenode, &power, propfoil), 9, c)) continue;
+					int n = parse_args(c, args, 9);
+					ref    = parse_node_number(c, args[0]);
+					back   = parse_node_number(c, args[1]);
+					p1     = parse_node_number(c, args[2]);
+					p2     = parse_node_number(c, args[3]);
+					p3     = parse_node_number(c, args[4]);
+					p4     = parse_node_number(c, args[5]);
+					couplenode = parse_node_number(c, args[6]);
+					power  = PARSEREAL(args[7]);
+					strncpy(propfoil, args[8].c_str(),  255);
 				}
 				if (c.mode == BTS_PISTONPROPS)
 				{
-					if(!checkResults(sscanf(c.line,"%i, %i, %i, %i, %i, %i, %i, %f, %f, %s", &ref, &back, &p1, &p2, &p3, &p4, &couplenode, &power, &pitch, propfoil), 10, c)) continue;
-					isturboprops=false;
+					int n = parse_args(c, args, 10);
+					ref    = parse_node_number(c, args[0]);
+					back   = parse_node_number(c, args[1]);
+					p1     = parse_node_number(c, args[2]);
+					p2     = parse_node_number(c, args[3]);
+					p3     = parse_node_number(c, args[4]);
+					p4     = parse_node_number(c, args[5]);
+					couplenode = parse_node_number(c, args[6]);
+					power  = PARSEREAL(args[7]);
+					pitch  = PARSEREAL(args[8]);
+					strncpy(propfoil, args[9].c_str(),  255);
+					isturboprops = false;
 				}
 
 				if(free_aeroengine >= MAX_AEROENGINES)
@@ -3054,11 +3109,16 @@ int SerializedRig::loadTruck(String fname, SceneManager *manager, SceneNode *par
 				int front,back;
 				float width;
 				char fusefoil[256];
-				if(!checkResults(sscanf(c.line,"%i, %i, %f, %s", &front,&back,&width, fusefoil), 4, c)) continue;
-				fuseAirfoil=new Airfoil(fusefoil);
-				fuseFront=&nodes[front];
-				fuseBack=&nodes[front];
-				fuseWidth=width;
+				int n = parse_args(c, args, 4);
+				front  = parse_node_number(c, args[0]);
+				back   = parse_node_number(c, args[1]);
+				width  = PARSEREAL(args[2]);
+				strncpy(fusefoil, args[3].c_str(), 255);
+
+				fuseAirfoil = new Airfoil(fusefoil);
+				fuseFront   = &nodes[front];
+				fuseBack    = &nodes[front];
+				fuseWidth   = width;
 			}
 			else if (c.mode == BTS_ENGOPTION)
 			{
@@ -3066,17 +3126,24 @@ int SerializedRig::loadTruck(String fname, SceneManager *manager, SceneNode *par
 				float inertia;
 				char type;
 				float clutch = -1.0f, shifttime = -1.0f, clutchtime = -1.0f, postshifttime = -1.0f;
-				if(!checkResults(sscanf(c.line,"%f, %c, %f, %f, %f, %f", &inertia, &type, &clutch, &shifttime, &clutchtime, &postshifttime), 1, c)) continue;
+				int n = parse_args(c, args, 1);
+				inertia = PARSEREAL(args[0]);
+				if(n > 1) type = args[1][0];
+				if(n > 2) clutch = PARSEREAL(args[2]);
+				if(n > 3) shifttime = PARSEREAL(args[3]);
+				if(n > 4) clutchtime = PARSEREAL(args[4]);
+				if(n > 5) postshifttime = PARSEREAL(args[5]);
 
 				if (engine) engine->setOptions(inertia, type, clutch, shifttime, clutchtime, postshifttime);
 			}
 			else if (c.mode == BTS_BRAKES)
 			{
 				// parse brakes
-				int result =sscanf(c.line,"%f, %f", &brakeforce, &hbrakeforce);
+				int n = parse_args(c, args, 1);
+				brakeforce = PARSEREAL(args[0]);
 				// Read in footbrake force and handbrake force. If handbrakeforce is not present, set it to the default value 2*footbrake force to preserve older functionality
-				if (result == 1)
-					hbrakeforce = 2.0f * brakeforce;
+				hbrakeforce = 2.0f * brakeforce;
+				if(n > 1) hbrakeforce = PARSEREAL(args[1]);;
 			}
 			else if (c.mode == BTS_ROTATORS)
 			{
@@ -3089,7 +3156,24 @@ int SerializedRig::loadTruck(String fname, SceneManager *manager, SceneNode *par
 				Real stopDelay=0;
 				char startFunction[50]="";
 				char stopFunction[50]="";
-				if(!checkResults(sscanf(c.line,"%i, %i, %i, %i, %i, %i, %i, %i, %i, %i, %f, %i, %i, %f, %f, %s %s", &axis1, &axis2, &p1[0], &p1[1], &p1[2], &p1[3], &p2[0], &p2[1], &p2[2], &p2[3], &rate, &keys, &keyl, &startDelay, &stopDelay, startFunction, stopFunction), 13, c)) continue;
+				int n = parse_args(c, args, 13);
+				axis1 = parse_node_number(c, args[0]);
+				axis2 = parse_node_number(c, args[1]);
+				p1[0] = parse_node_number(c, args[2]);
+				p1[1] = parse_node_number(c, args[3]);
+				p1[2] = parse_node_number(c, args[4]);
+				p1[3] = parse_node_number(c, args[5]);
+				p2[0] = parse_node_number(c, args[6]);
+				p2[1] = parse_node_number(c, args[7]);
+				p2[2] = parse_node_number(c, args[8]);
+				p2[3] = parse_node_number(c, args[9]);
+				rate = PARSEREAL(args[10]);
+				keys = PARSEINT(args[11]);
+				keyl = PARSEINT(args[12]);
+				if(n > 13) startDelay = PARSEREAL(args[13]);
+				if(n > 14) stopDelay = PARSEREAL(args[14]);
+				if(n > 15) strncpy(startFunction, args[15].c_str(), 50);
+				if(n > 16) strncpy(stopFunction, args[16].c_str(), 50);
 
 				if(free_rotator >= MAX_ROTATORS)
 				{
@@ -3131,7 +3215,12 @@ int SerializedRig::loadTruck(String fname, SceneManager *manager, SceneNode *par
 				//parse screwprops
 				int ref,back,up;
 				float power;
-				if(!checkResults(sscanf(c.line,"%i, %i, %i, %f", &ref,&back,&up, &power), 4, c)) continue;
+
+				int n = parse_args(c, args, 4);
+				ref   = parse_node_number(c, args[0]);
+				back  = parse_node_number(c, args[1]);
+				up    = parse_node_number(c, args[2]);
+				power = PARSEREAL(args[3]);
 
 				//if (audio) audio->setupBoat(truckmass);
 
@@ -3148,9 +3237,11 @@ int SerializedRig::loadTruck(String fname, SceneManager *manager, SceneNode *par
 			else if (c.mode == BTS_GUISETTINGS)
 			{
 				// guisettings
-				char keyword[255];
-				char value[255];
-				if(!checkResults(sscanf(c.line,"%s %s", keyword, value), 2, c)) continue;
+				char keyword[256];
+				char value[256];
+				int n = parse_args(c, args, 2);
+				strncpy(keyword, args[0].c_str(), 255);
+				strncpy(value,   args[1].c_str(), 255);
 
 				if(!strncmp(keyword, "interactiveOverviewMap", 255) && strnlen(value, 255) > 0)
 				{
@@ -3230,8 +3321,13 @@ int SerializedRig::loadTruck(String fname, SceneManager *manager, SceneNode *par
 					continue;
 				int id1, id2;
 				float factor;
-				char material[50] = "";
-				if(!checkResults(sscanf(c.line,"%i, %i, %f %s", &id1, &id2, &factor, material), 4, c)) continue;
+				char material[256] = "";
+
+				int n = parse_args(c, args, 2);
+				id1 = parse_node_number(c, args[0]);
+				id2 = parse_node_number(c, args[1]);
+				if(n > 2) factor = PARSEREAL(args[2]);
+				if(n > 3) strncpy(material, args[3].c_str(), 255);
 
 				exhaust_t e;
 				e.emitterNode = id1;
@@ -3263,8 +3359,12 @@ int SerializedRig::loadTruck(String fname, SceneManager *manager, SceneNode *par
 					continue;
 				// parse particle
 				int id1, id2;
-				char psystem[250] = "";
-				if(!checkResults(sscanf(c.line,"%i, %i, %s", &id1, &id2, psystem), 3, c)) continue;
+				char psystem[256] = "";
+
+				int n = parse_args(c, args, 3);
+				id1 = parse_node_number(c, args[0]);
+				id2 = parse_node_number(c, args[1]);
+				strncpy(psystem, args[2].c_str(), 255);
 
 				if(free_cparticle >= MAX_CPARTICLES)
 				{
@@ -3292,7 +3392,16 @@ int SerializedRig::loadTruck(String fname, SceneManager *manager, SceneNode *par
 				//parse turbojets
 				int front,back,ref, rev;
 				float len, fdiam, bdiam, drthrust, abthrust;
-				if(!checkResults(sscanf(c.line,"%i, %i, %i, %i, %f, %f, %f, %f, %f", &front, &back, &ref, &rev, &drthrust, &abthrust, &fdiam, &bdiam, &len), 9, c)) continue;
+				int n = parse_args(c, args, 9);
+				front = parse_node_number(c, args[0]);
+				back  = parse_node_number(c, args[1]);
+				ref   = parse_node_number(c, args[2]);
+				rev   = PARSEINT(args[3]);
+				drthrust = PARSEREAL(args[4]);
+				abthrust = PARSEREAL(args[5]);
+				fdiam = PARSEREAL(args[6]);
+				bdiam = PARSEREAL(args[7]);
+				len   = PARSEREAL(args[8]);
 
 				if(free_aeroengine >= MAX_AEROENGINES)
 				{
@@ -3314,9 +3423,14 @@ int SerializedRig::loadTruck(String fname, SceneManager *manager, SceneNode *par
 			{
 				//parse rigidifiers
 				int na,nb,nc;
-				float k=DEFAULT_RIGIDIFIER_SPRING;
-				float d=DEFAULT_RIGIDIFIER_DAMP;
-				if(!checkResults(sscanf(c.line,"%i, %i, %i, %f, %f", &na, &nb, &nc, &k, &d), 3, c)) continue;
+				float k = DEFAULT_RIGIDIFIER_SPRING;
+				float d = DEFAULT_RIGIDIFIER_DAMP;
+				int n = parse_args(c, args, 3);
+				na = parse_node_number(c, args[0]);
+				nb = parse_node_number(c, args[1]);
+				nc = parse_node_number(c, args[2]);
+				if(n > 3) k  = PARSEREAL(args[3]);
+				if(n > 4) d  = PARSEREAL(args[4]);
 
 				if(free_rigidifier >= MAX_RIGIDIFIERS)
 				{
@@ -3349,7 +3463,22 @@ int SerializedRig::loadTruck(String fname, SceneManager *manager, SceneNode *par
 				float tx1, tx2, tx3, tx4;
 				float wd, len, liftcoef = 1.0f;
 				float maxang;
-				if(!checkResults(sscanf(c.line,"%i, %i, %i, %i, %f, %f, %f, %f, %f, %f, %f, %f, %f, %f, %f", &ref, &nx, &ny, &na, &ox, &oy, &oz, &wd, &len, &maxang, &tx1, &tx2, &tx3, &tx4, &liftcoef), 14, c)) continue;
+				int n = parse_args(c, args, 14);
+				ref = parse_node_number(c, args[0]);
+				nx = parse_node_number(c, args[1]);
+				ny = parse_node_number(c, args[2]);
+				na = parse_node_number(c, args[3]);
+				ox = PARSEREAL(args[4]);
+				oy = PARSEREAL(args[5]);
+				oz = PARSEREAL(args[6]);
+				wd = PARSEREAL(args[7]);
+				len = PARSEREAL(args[8]);
+				maxang = PARSEREAL(args[9]);
+				tx1 = PARSEREAL(args[10]);
+				tx2 = PARSEREAL(args[11]);
+				tx3 = PARSEREAL(args[12]);
+				tx4 = PARSEREAL(args[13]);
+				if(n > 14) liftcoef = PARSEREAL(args[14]);
 
 				if(free_airbrake >= MAX_AIRBRAKES)
 				{
@@ -3369,7 +3498,17 @@ int SerializedRig::loadTruck(String fname, SceneManager *manager, SceneNode *par
 				float ox, oy, oz;
 				float rx, ry, rz;
 				char meshname[256];
-				if(!checkResults(sscanf(c.line,"%i, %i, %i, %f, %f, %f, %f, %f, %f, %s", &ref, &nx, &ny, &ox, &oy, &oz, &rx, &ry, &rz, meshname), 10, c)) continue;
+				int n = parse_args(c, args, 10);
+				ref = parse_node_number(c, args[0]);
+				nx = parse_node_number(c, args[1]);
+				ny = parse_node_number(c, args[2]);
+				ox = PARSEREAL(args[3]);
+				oy = PARSEREAL(args[4]);
+				oz = PARSEREAL(args[5]);
+				rx = PARSEREAL(args[6]);
+				ry = PARSEREAL(args[7]);
+				rz = PARSEREAL(args[8]);
+				strncpy(meshname, args[9].c_str(), 255);
 
 				Vector3 offset=Vector3(ox, oy, oz);
 				Quaternion rot=Quaternion(Degree(rz), Vector3::UNIT_Z);
@@ -3392,27 +3531,26 @@ int SerializedRig::loadTruck(String fname, SceneManager *manager, SceneNode *par
 					parser_warning(c, "flexbodies limit reached ("+TOSTRING(MAX_FLEXBODIES)+")");
 					continue;
 				}
-				flexbodies[free_flexbody]=new FlexBody(manager, nodes, free_node, meshname, uname, ref, nx, ny, offset, rot, c.line.substr(6), materialFunctionMapper, usedSkin, (shadowmode!=0));
+				flexbodies[free_flexbody]=new FlexBody(manager, nodes, free_node, meshname, uname, ref, nx, ny, offset, rot, const_cast<char *>(c.line.substr(6).c_str()), materialFunctionMapper, usedSkin, (shadowmode!=0));
 				free_flexbody++;
 			}
 			else if (c.mode == BTS_HOOKGROUP)
 			{
 				//parse hookgroups
-				int id1=0, group=-1, lockNodes=1;
-				if(!checkResults(sscanf(c.line,"%i, %i, %i", &id1, &group, &lockNodes), 2, c)) continue;
+				int id1=0, group=-1;
+				bool lockNodes = true;
+				int n = parse_args(c, args, 2);
+				id1       = parse_node_number(c, args[0]);
+				group     = PARSEINT(args[1]);
+				if(n > 2) lockNodes = (PARSEINT(args[2]) != 0);
 
-				if (id1>=free_node)
-				{
-					parser_warning(c, "Error: unknown node number in hookgroup section ("+TOSTRING(id1)+")");
-					return -12;
-				};
 				hook_t h;
-				h.hookNode=&nodes[id1];
-				h.group=group;
-				h.locked=UNLOCKED;
-				h.lockNode=0;
-				h.lockTruck=0;
-				h.lockNodes=(bool)(lockNodes != 0);
+				h.hookNode  = &nodes[id1];
+				h.group     = group;
+				h.locked    = UNLOCKED;
+				h.lockNode  = 0;
+				h.lockTruck = 0;
+				h.lockNodes = lockNodes;
 				hooks.push_back(h);
 
 			}
@@ -3420,9 +3558,12 @@ int SerializedRig::loadTruck(String fname, SceneManager *manager, SceneNode *par
 			{
 				// parse materialflarebindings
 				int flareid;
-				char material[255]="";
+				char material[256]="";
 				memset(material, 0, 255);
-				if(!checkResults(sscanf(c.line,"%d, %s", &flareid, material), 2, c)) continue;
+
+				int n = parse_args(c, args, 2);
+				flareid = PARSEINT(args[0]);
+				strncpy(material, args[1].c_str(), 255);
 
 				String materialName = String(material);
 				String newMaterialName = materialName + "_mfb_" + String(truckname);
@@ -3447,7 +3588,9 @@ int SerializedRig::loadTruck(String fname, SceneManager *manager, SceneNode *par
 				//parse soundsources
 				int ref;
 				char script[256];
-				if(!checkResults(sscanf(c.line,"%i, %s", &ref, script), 2, c)) continue;
+				int n = parse_args(c, args, 2);
+				ref = parse_node_number(c, args[0]);
+				strncpy(script, args[1].c_str(), 255);
 
 	#ifdef USE_OPENAL
 				if(ssm) addSoundSource(ssm->createInstance(script, trucknum, NULL), ref, -2, &c);
@@ -3458,7 +3601,10 @@ int SerializedRig::loadTruck(String fname, SceneManager *manager, SceneNode *par
 				//parse soundsources2
 				int ref, type;
 				char script[256];
-				if(!checkResults(sscanf(c.line,"%i, %i, %s", &ref, &type, script), 2, c)) continue;
+				int n = parse_args(c, args, 3);
+				ref = parse_node_number(c, args[0]);
+				type = PARSEINT(args[1]);
+				strncpy(script, args[2].c_str(), 255);
 
 	#ifdef USE_OPENAL
 				if(ssm) addSoundSource(ssm->createInstance(script, trucknum, NULL), ref, type, &c);
@@ -3472,11 +3618,13 @@ int SerializedRig::loadTruck(String fname, SceneManager *manager, SceneNode *par
 			else if (c.mode == BTS_MANAGEDMATERIALS)
 			{
 				// parse managedmaterials
-				char material[255];
+				char material[256];
 				material[0]=0;
-				char type[255];
+				char type[256];
 				type[0]=0;
-				if(!checkResults(sscanf(c.line,"%s %s", material, type), 2, c)) continue;
+				int n = parse_args(c, args, 2);
+				strncpy(material, args[0].c_str(), 255);
+				strncpy(type, args[1].c_str(), 255);
 
 				//first, check if work has already been done
 				MaterialPtr tstmat=(MaterialPtr)(MaterialManager::getSingleton().getByName(material));
@@ -3489,13 +3637,18 @@ int SerializedRig::loadTruck(String fname, SceneManager *manager, SceneNode *par
 
 				if (!strcmp(type, "flexmesh_standard"))
 				{
-					char maintex[255];
+					char maintex[256];
 					maintex[0]=0;
-					char dmgtex[255];
+					char dmgtex[256];
 					dmgtex[0]=0;
-					char spectex[255];
+					char spectex[256];
 					spectex[0]=0;
-					if(!checkResults(sscanf(c.line,"%s %s %s %s %s", material, type, maintex, dmgtex, spectex), 3, c)) continue;
+					n = parse_args(c, args, 3);
+					strncpy(material, args[0].c_str(), 255);
+					strncpy(type, args[1].c_str(), 255);
+					strncpy(maintex, args[2].c_str(), 255);
+					if(n > 3) strncpy(dmgtex, args[3].c_str(), 255);
+					if(n > 4) strncpy(spectex, args[4].c_str(), 255);
 
 					//different cases
 					//caution, this is hardwired against the managed.material file
@@ -3586,13 +3739,18 @@ int SerializedRig::loadTruck(String fname, SceneManager *manager, SceneNode *par
 				}
 				else if (!strcmp(type, "flexmesh_transparent"))
 				{
-					char maintex[255];
+					char maintex[256];
 					maintex[0]=0;
-					char dmgtex[255];
+					char dmgtex[256];
 					dmgtex[0]=0;
-					char spectex[255];
+					char spectex[256];
 					spectex[0]=0;
-					if(!checkResults(sscanf(c.line,"%s %s %s %s %s", material, type, maintex, dmgtex, spectex), 3, c)) continue;
+					n = parse_args(c, args, 3);
+					strncpy(material, args[0].c_str(), 255);
+					strncpy(type, args[1].c_str(), 255);
+					strncpy(maintex, args[2].c_str(), 255);
+					if(n > 3) strncpy(dmgtex, args[3].c_str(), 255);
+					if(n > 4) strncpy(spectex, args[4].c_str(), 255);
 
 					//different cases
 					//caution, this is hardwired against the managed.material file
@@ -3683,11 +3841,15 @@ int SerializedRig::loadTruck(String fname, SceneManager *manager, SceneNode *par
 				}
 				else if (!strcmp(type, "mesh_standard"))
 				{
-					char maintex[255];
+					char maintex[256];
 					maintex[0]=0;
-					char spectex[255];
+					char spectex[256];
 					spectex[0]=0;
-					if(!checkResults(sscanf(c.line,"%s %s %s %s", material, type, maintex, spectex), 3, c)) continue;
+					n = parse_args(c, args, 3);
+					strncpy(material, args[0].c_str(), 255);
+					strncpy(type, args[1].c_str(), 255);
+					strncpy(maintex, args[2].c_str(), 255);
+					if(n > 3) strncpy(spectex, args[3].c_str(), 255);
 
 					//different cases
 					//caution, this is hardwired against the managed.material file
@@ -3731,11 +3893,15 @@ int SerializedRig::loadTruck(String fname, SceneManager *manager, SceneNode *par
 				}
 				else if (!strcmp(type, "mesh_transparent"))
 				{
-					char maintex[255];
+					char maintex[256];
 					maintex[0]=0;
-					char spectex[255];
+					char spectex[256];
 					spectex[0]=0;
-					if(!checkResults(sscanf(c.line,"%s %s %s %s", material, type, maintex, spectex), 3, c)) continue;
+					n = parse_args(c, args, 3);
+					strncpy(material, args[0].c_str(), 255);
+					strncpy(type, args[1].c_str(), 255);
+					strncpy(maintex, args[2].c_str(), 255);
+					if(n > 3) strncpy(spectex, args[3].c_str(), 255);
 
 					//different cases
 					//caution, this is hardwired against the managed.material file
@@ -3796,8 +3962,14 @@ int SerializedRig::loadTruck(String fname, SceneManager *manager, SceneNode *par
 				int version=0;
 				char sectionName[10][256];
 				for(int i=0;i<10;i++) memset(sectionName, 0, 255); // clear
-				if(strnlen(c.line,9)<8) continue;
-				if(!checkResults(sscanf(c.line+7,"%d %s %s %s %s %s %s %s %s %s %s", &version, sectionName[0], sectionName[1], sectionName[2], sectionName[3], sectionName[4], sectionName[5], sectionName[6], sectionName[7], sectionName[8], sectionName[9]), 2, c)) continue;
+				if(c.line.size() < 8) continue;
+				int n = parse_args(c, args, 2);
+				version = PARSEINT(args[0]);
+				for(int i = 0; i < 10; i++)
+				{
+					if(n > (i + 1))
+						strncpy(sectionName[i], args[i + 1].c_str(), 255);
+				}
 
 				bool found = false;
 				for(int i=0;i<10;i++)
@@ -3827,9 +3999,10 @@ int SerializedRig::loadTruck(String fname, SceneManager *manager, SceneNode *par
 			{
 				//parse advanced drag
 				float drag;
-				if(!checkResults(sscanf(c.line,"%f", &drag), 4, c)) continue;
-				advanced_total_drag=drag;
-				advanced_drag=true;
+				int n = parse_args(c, args, 1);
+				drag = PARSEREAL(args[0]);
+				advanced_total_drag = drag;
+				advanced_drag       = true;
 			}
 			else if (c.mode == BTS_AXLES)
 			{
@@ -3861,11 +4034,13 @@ int SerializedRig::loadTruck(String fname, SceneManager *manager, SceneNode *par
 						// dirty repetitive method, could stand to be cleaned up
 						if( cur->at(1) == '1')
 						{
-							if(!checkResults(sscanf(cur->c_str(), "w1(%d %d)", &wheel_node[0][0], &wheel_node[0][1]), 2, c)) continue;
+							int results = sscanf(cur->c_str(), "w1(%d %d)", &wheel_node[0][0], &wheel_node[0][1]);
+							if(results != 2 ) break;
 						}
 						else if( cur->at(1) == '2')
 						{
-							if(!checkResults(sscanf(cur->c_str(), "w2(%d %d)", &wheel_node[1][0], &wheel_node[1][1]), 2, c)) continue;
+							int results = sscanf(cur->c_str(), "w2(%d %d)", &wheel_node[1][0], &wheel_node[1][1]);
+							if(results != 2) break;
 						}
 						break;
 					case 'd':
@@ -3954,7 +4129,9 @@ int SerializedRig::loadTruck(String fname, SceneManager *manager, SceneNode *par
 				// parse nodecollision
 				int nodenum  = -1;
 				float radius =  0;
-				if(!checkResults(sscanf(c.line,"%d, %f", &nodenum, &radius), 2, c)) continue;
+				int n = parse_args(c, args, 2);
+				nodenum = parse_node_number(c, args[0]);
+				radius = PARSEREAL(args[1]);
 
 				if(nodenum >= free_node || nodenum < 0)
 					continue;
@@ -3963,7 +4140,7 @@ int SerializedRig::loadTruck(String fname, SceneManager *manager, SceneNode *par
 			}
 			else if (c.mode == BTS_VIDCAM)
 			{
-				VideoCamera *v = VideoCamera::parseLine(manager, mCamera, this, fname, c.line, c.linecounter);
+				VideoCamera *v = VideoCamera::parseLine(manager, mCamera, this, c);
 				if(v)
 				{
 					vidcams.push_back(v);
@@ -3971,7 +4148,7 @@ int SerializedRig::loadTruck(String fname, SceneManager *manager, SceneNode *par
 				continue;
 			}
 
-		} catch(ParseException &e)
+		} catch(ParseException &)
 		{
 			// we use this catcher to continue after an error was thrown, cleans up the code a lot
 			continue;
@@ -4237,7 +4414,7 @@ int SerializedRig::add_beam(node_t *p1, node_t *p2, SceneManager *manager, Scene
 	{
 		//setup visuals
 		//the cube is 100x100x100
-		char bname[255];
+		char bname[256];
 		sprintf(bname, "beam-%s-%i", truckname, pos);
 		try
 		{
@@ -5053,7 +5230,7 @@ void SerializedRig::parser_warning(parsecontext_t *context, Ogre::String text)
 		LOG(text);
 }
 
-void SerializedRig::parse_args(parsecontext_t &context, Ogre::StringVector &args, int minArgNum)
+int SerializedRig::parse_args(parsecontext_t &context, Ogre::StringVector &args, int minArgNum)
 {
 	try
 	{
@@ -5064,6 +5241,7 @@ void SerializedRig::parse_args(parsecontext_t &context, Ogre::StringVector &args
 		args.clear();
 		throw(ParseException());
 	}
+	int n = args.size();
 	if(n < minArgNum)
 	{
 		parser_warning(context, "Too less arguments: "+TOSTRING(n)+" provided, "+TOSTRING(minArgNum)+" required. ");
