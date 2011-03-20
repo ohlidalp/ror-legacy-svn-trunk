@@ -2468,7 +2468,7 @@ bool InputEngine::processLine(char *line)
 {
 	static Ogre::String cur_comment = "";
 
-	char eventName[255]="", evtype[255]="";
+	char eventName[256]="", evtype[256]="";
 	const char delimiters[] = "+";
 	size_t linelen = strnlen(line, 1024);
 	enum eventtypes eventtype = ET_NONE;
@@ -2503,7 +2503,7 @@ bool InputEngine::processLine(char *line)
 	{
 	case ET_Keyboard:
 		{
-			char keycodes[255], *keycode=0;
+			char keycodes[256], *keycode=0;
 			OIS::KeyCode key = KC_UNASSIGNED;
 			sscanf(line, "%s %s %s", eventName, evtype, keycodes);
 			// seperate all keys and construct the key combination
@@ -2512,7 +2512,7 @@ bool InputEngine::processLine(char *line)
 			bool shift=false;
 			bool ctrl=false;
 			bool expl=false;
-			char keycodes_work[255] = "";
+			char keycodes_work[256] = "";
 			strncpy(keycodes_work, keycodes, 255);
 			char *token = strtok(keycodes_work, delimiters);
 			while (token != NULL)
@@ -2566,7 +2566,7 @@ bool InputEngine::processLine(char *line)
 	case ET_JoystickButton:
 		{
 			int buttonNo=0;
-			char tmp2[255];
+			char tmp2[256];
 			memset(tmp2, 0 ,255);
 			sscanf(line, "%s %s %d %d %s", eventName, evtype, &joyNo, &buttonNo, tmp2);
 			event_trigger_t t_joy = newEvent();
@@ -2581,7 +2581,7 @@ bool InputEngine::processLine(char *line)
 				strncpy(t_joy.configline, tmp2, 128);
 			} else
 			{
-				char tmp[255];
+				char tmp[256];
 				sprintf(tmp, "%d", buttonNo);
 				strncpy(t_joy.configline, tmp, 128);
 			}
@@ -2634,14 +2634,14 @@ bool InputEngine::processLine(char *line)
 					usedigital=true;
 				else if (strncmp(token, "DEADZONE", 8) == 0 && strnlen(token, 250) > 9)
 				{
-					char tmp2[255];
+					char tmp2[256];
 					strcpy(tmp2,token+9);
 					deadzone = atof(tmp2);
 					//LOG("got deadzone: " + TOSTRING(deadzone)+", "+String(tmp2));
 				}
 				else if (strncmp(token, "LINEARITY", 9) == 0 && strnlen(token, 250) > 10)
 				{
-					char tmp2[255];
+					char tmp2[256];
 					strcpy(tmp2,token+10);
 					linearity = atof(tmp2);
 				}
@@ -2959,7 +2959,7 @@ bool InputEngine::updateConfigline(event_trigger_t *t)
 
 	if(fabs(t->joystickAxisDeadzone-0.1) > 0.0001f)
 	{
-		char tmp[255]="";
+		char tmp[256]="";
 		memset(tmp, 0, 255);
 		sprintf(tmp, "DEADZONE=%0.2f", t->joystickAxisDeadzone);
 		if(strlen(t->configline))
@@ -2972,7 +2972,7 @@ bool InputEngine::updateConfigline(event_trigger_t *t)
 	}
 	if(fabs(1.0f - t->joystickAxisLinearity) > 0.01f)
 	{
-		char tmp[255]="";
+		char tmp[256]="";
 		memset(tmp, 0, 255);
 		sprintf(tmp, "LINEARITY=%0.2f", t->joystickAxisLinearity);
 		if(strlen(t->configline))
@@ -3136,7 +3136,7 @@ void InputEngine::completeMissingEvents()
 			LOG("event mapping not existing, using default: " + eventInfo[i].name);
 #endif
 			// not existing, insert default
-			char tmp[255] = "";
+			char tmp[256] = "";
 			sprintf(tmp, "%s %s", eventInfo[i].name.c_str(), eventInfo[i].defaultKey.c_str());
 			processLine(tmp);
 		}

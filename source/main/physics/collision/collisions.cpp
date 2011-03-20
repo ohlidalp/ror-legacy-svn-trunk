@@ -1403,7 +1403,7 @@ int Collisions::createCollisionDebugVisualization()
 
 	// create materials
 	int i = 0;
-	char bname[255];
+	char bname[256];
 	for(i=0;i<=100;i++)
 	{
 		//register a material for skeleton view

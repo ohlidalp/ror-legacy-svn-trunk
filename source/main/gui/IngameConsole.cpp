@@ -174,7 +174,7 @@ bool IngameConsole::createOverlays()
 	// Create the chatlines
 	for(int i=0;i<chatlines;i++)
 	{
-		char tmp[255];
+		char tmp[256];
 		sprintf(tmp,"tracks/ConsoleOverlay/Chatline%d",i);
 		ColoredTextAreaOverlayElement *textArea = static_cast<ColoredTextAreaOverlayElement*>(overlayManager.createOverlayElement("ColoredTextArea", tmp));
 		textArea->setMetricsMode(Ogre::GMM_PIXELS);

@@ -684,7 +684,7 @@ struct exhaust
 {
 	int emitterNode;
 	int directionNode;
-	char material[255];
+	char material[256];
 	float factor;
 	bool isOldFormat;
 	Ogre::SceneNode *smokeNode;
@@ -822,7 +822,7 @@ struct rig
 	bool disable_default_sounds;
 	int detacher_group_state; // current detacher group for the next beam generated
 	float beam_creak;
-	char uniquetruckid[255];
+	char uniquetruckid[256];
 	int categoryid;
 	int truckversion;
 	int externalcameramode, externalcameranode;
@@ -996,9 +996,9 @@ struct ground_model
 
 	int fx_type;
 	Ogre::ColourValue fx_colour;
-	char name[255];
-	char basename[255];
-	char particle_name[255];
+	char name[256];
+	char basename[256];
+	char particle_name[256];
 
 	int fx_particle_amount;         //!< amount of particles
 

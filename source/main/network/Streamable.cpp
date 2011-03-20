@@ -99,7 +99,7 @@ void Streamable::addPacket(int type, unsigned int len, char* content)
 	*/
 
 	/*
-	char hash[255] = "";
+	char hash[256] = "";
 	RoR::CSHA1 sha1;
 	sha1.UpdateHash((uint8_t *)bufferContent, len);
 	sha1.Final();

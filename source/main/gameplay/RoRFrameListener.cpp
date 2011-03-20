@@ -210,7 +210,7 @@ float RoRFrameListener::stopTimer()
 	// let the display on
 	if(ow)
 	{
-		char txt[255];
+		char txt[256];
 		sprintf(txt, "Last lap: %.2i'%.2i.%.2i", ((int)(time))/60,((int)(time))%60, ((int)(time*100.0))%100);
 		ow->lasttime->setCaption(txt);
 		//ow->racing->hide();
@@ -1632,7 +1632,7 @@ void RoRFrameListener::loadObject(const char* name, float px, float py, float pz
 		}
 		if (!strncmp("setMeshMaterial", ptline, 15))
 		{
-			char mat[255]="";
+			char mat[256]="";
 			sscanf(ptline, "setMeshMaterial %s", mat);
 			if(mo->getEntity() && strnlen(mat,250)>0)
 			{
@@ -1644,7 +1644,7 @@ void RoRFrameListener::loadObject(const char* name, float px, float py, float pz
 		}
 		if (!strncmp("generateMaterialShaders", ptline, 23))
 		{
-			char mat[255]="";
+			char mat[256]="";
 			sscanf(ptline, "generateMaterialShaders %s", mat);
 			if (BSETTING("Use RTShader System"))
 			{
@@ -1656,7 +1656,7 @@ void RoRFrameListener::loadObject(const char* name, float px, float py, float pz
 		}
 		if (!strncmp("playanimation", ptline, 13))
 		{
-			char animname[255]="";
+			char animname[256]="";
 			float speedfactorMin = 0, speedfactorMax = 0;
 			sscanf(ptline, "playanimation %f, %f, %s", &speedfactorMin, &speedfactorMax, animname);
 			if(tenode && mo->getEntity() && strnlen(animname,250)>0)
@@ -1712,7 +1712,7 @@ void RoRFrameListener::loadObject(const char* name, float px, float py, float pz
 
 			static int textureNumber = 0;
 			textureNumber++;
-			char tmpTextName[255]="", tmpMatName[255]="";
+			char tmpTextName[256]="", tmpMatName[256]="";
 			sprintf(tmpTextName, "TextOnTexture_%d_Texture", textureNumber);
 			sprintf(tmpMatName, "TextOnTexture_%d_Material", textureNumber);			// Make sure the texture is not WRITE_ONLY, we need to read the buffer to do the blending with the font (get the alpha for example)
 			TexturePtr texture = TextureManager::getSingleton().createManual(tmpTextName, ResourceGroupManager::DEFAULT_RESOURCE_GROUP_NAME, TEX_TYPE_2D, (Ogre::uint)background->getWidth(), (Ogre::uint)background->getHeight(), MIP_UNLIMITED , PF_X8R8G8B8, Ogre::TU_STATIC|Ogre::TU_AUTOMIPMAP, new ResourceBuffer());
@@ -1724,8 +1724,8 @@ void RoRFrameListener::loadObject(const char* name, float px, float py, float pz
 
 			float x=0, y=0, w=0, h=0;
 			float a=0, r=0, g=0, b=0;
-			char fontname[255]="";
-			char text[255]="";
+			char fontname[256]="";
+			char text[256]="";
 			char option='l';
 			int res = sscanf(ptline, "drawTextOnMeshTexture %f, %f, %f, %f, %f, %f, %f, %f, %c, %s %s", &x, &y, &w, &h, &r, &g, &b, &a, &option, fontname, text);
 			if(res < 11)
@@ -2007,7 +2007,7 @@ bool RoRFrameListener::updateEvents(float dt)
 
 
 		// show new flash message
-		char tmp1[255];
+		char tmp1[256];
 		String ssmsg = _L("wrote screenshot:");
 		sprintf(tmp1, "%s %d", ssmsg.c_str(), mNumScreenShots);
 		if(ow) ow->flashMessage(tmp1);
@@ -3889,8 +3889,8 @@ void RoRFrameListener::loadClassicTerrain(String terrainfile)
 	//we load a classic terrain
 	//FILE *fd;
 	char geom[1024];
-	char sandstormcubemap[255]="";
-	char caelumconfig[255]="ror_default_sky"; // setup some default
+	char sandstormcubemap[256]="";
+	char caelumconfig[256]="ror_default_sky"; // setup some default
 	char line[1024];
 	float r,g,b;
 	float cx,cy,cz;
@@ -4837,7 +4837,7 @@ void RoRFrameListener::loadClassicTerrain(String terrainfile)
 #ifdef USE_HYDRAX
 		if (!strncmp("hydraxconfig", line, 12))
 		{
-			char tmp[255]="";
+			char tmp[256]="";
 			int res = sscanf(line, "hydraxconfig %s", tmp);
 			if(res < 1)
 			{
@@ -4852,7 +4852,7 @@ void RoRFrameListener::loadClassicTerrain(String terrainfile)
 			spawn_location_t spl;
 			memset(&spl, 0, sizeof(spawn_location_t));
 
-			char tmp[255]="";
+			char tmp[256]="";
 			float x=0,y=0,z=0, rx=0, ry=0, rz=0;
 			int res = sscanf(line, "mpspawn %s %f %f %f %f %f %f", tmp, &x, &y, &z, &rx, &ry, &rz);
 			if(res < 7)
@@ -4897,9 +4897,9 @@ void RoRFrameListener::loadClassicTerrain(String terrainfile)
 		{
 			if(pagedMode==0)
 				continue;
-			char ColorMap[255]="";
-			char DensityMap[255]="";
-			char treemesh[255]="";
+			char ColorMap[256]="";
+			char DensityMap[256]="";
+			char treemesh[256]="";
 			float yawfrom=0, yawto=0, scalefrom=0, scaleto=0, highdens=1;
 			int minDist=90, maxDist=700;
 			sscanf(line, "trees %f, %f, %f, %f, %f, %d, %d, %s %s %s", &yawfrom, &yawto, &scalefrom, &scaleto, &highdens, &minDist, &maxDist, treemesh, ColorMap, DensityMap);
@@ -4979,9 +4979,9 @@ void RoRFrameListener::loadClassicTerrain(String terrainfile)
 				continue;
 			int range=80;
 			float SwaySpeed=0.5, SwayLength=0.05, SwayDistribution=10.0, minx=0.2, miny=0.2, maxx=1, maxy=0.6, Density=0.6, minH=-9999, maxH=9999;
-			char grassmat[255]="";
-			char ColorMap[255]="";
-			char DensityMap[255]="";
+			char grassmat[256]="";
+			char ColorMap[256]="";
+			char DensityMap[256]="";
 			int growtechnique = 0;
 			int techn = GRASSTECH_CROSSQUADS;
 			if(!strncmp("grass2", line, 6))
@@ -6330,7 +6330,7 @@ bool RoRFrameListener::frameStarted(const FrameEvent& evt)
 	if(ow && dirvisible && loading_state==ALL_LOADED)
 	{
 		dirArrowNode->lookAt(dirArrowPointed, Node::TS_WORLD,Vector3::UNIT_Y);
-		char tmp[255];
+		char tmp[256];
 		Real distance = 0;
 		if(current_truck != -1 && trucks[current_truck]->state == ACTIVATED)
 			distance = trucks[current_truck]->getPosition().distance(dirArrowPointed);

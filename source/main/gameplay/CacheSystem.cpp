@@ -741,7 +741,7 @@ int CacheSystem::incrementalCacheUpdate()
 			if(ft.empty() || it->filetime.empty() || it->filetime == "unknown")
 			{
 				// slow sha1 check
-				char hash[255];
+				char hash[256];
 				memset(hash, 0, 255);
 
 				CSHA1 sha1;
@@ -867,7 +867,7 @@ int CacheSystem::incrementalCacheUpdate()
 				CSHA1 sha1;
 				sha1.HashFile(const_cast<char*>(it2->dirname.c_str()));
 				sha1.Final();
-				char hashres[255]="";
+				char hashres[256]="";
 				sha1.ReportHash(hashres, CSHA1::REPORT_HEX_SHORT);
 				String hashstr = String(hashres);
 				if(hashstr == it->hash)
@@ -1379,7 +1379,7 @@ void CacheSystem::fillTruckDetailInfo(Cache_Entry &entry, Ogre::DataStreamPtr ds
 			continue;
 		if (!strncmp("fileinfo", line, 8))
 		{
-			char uniquetruckid[255]="";
+			char uniquetruckid[256]="";
 			int categoryid=0, truckversion=0;
 			String lineStr = String(line);
 			Ogre::StringVector args = StringUtil::split(lineStr, ", ");
@@ -1409,7 +1409,7 @@ void CacheSystem::fillTruckDetailInfo(Cache_Entry &entry, Ogre::DataStreamPtr ds
 			if (!strncmp("author", line, 6))
 			{
 				int authorid;
-				char authorname[255], authoremail[255], authortype[255];
+				char authorname[256], authoremail[256], authortype[256];
 				authorinfo_t *author = new authorinfo_t();
 				author->id = -1;
 				strcpy(author->email, "unknown");
@@ -1572,7 +1572,7 @@ void CacheSystem::fillTruckDetailInfo(Cache_Entry &entry, Ogre::DataStreamPtr ds
 			else if (mode==7)
 			{
 				float truckmass=0, loadmass=0;
-				char texname[255];
+				char texname[256];
 				memset(texname,0, 255);
 				//parse globals
 				int result = sscanf(line,"%f, %f, %s",&truckmass, &loadmass, texname);
@@ -1697,7 +1697,7 @@ void CacheSystem::fillTruckDetailInfo(Cache_Entry &entry, Ogre::DataStreamPtr ds
 				int ref=-1, nx=0, ny=0, controlnumber=-1, blinkdelay=-2;
 				float ox=0, oy=0, size=-2;
 				char type='f';
-				char matname[255]="";
+				char matname[256]="";
 				int result = sscanf(line,"%i, %i, %i, %f, %f, %c, %i, %i, %f %s", &ref, &nx, &ny, &ox, &oy, &type, &controlnumber, &blinkdelay, &size, matname);
 				if (result < 5 || result == EOF) {
 					LOG("Error parsing File (Flares) " + String(fname) +" line " + TOSTRING(linecounter) + ". trying to continue ...");
@@ -1856,8 +1856,8 @@ void CacheSystem::fillTruckDetailInfo(Cache_Entry &entry, Ogre::DataStreamPtr ds
 			else if (mode==32)
 			{
 				// guisettings
-				char keyword[255];
-				char value[255];
+				char keyword[256];
+				char value[256];
 				int result = sscanf(line,"%s %s", keyword, value);
 				if (result < 2 || result == EOF) {
 					LOG("Error parsing File (guisettings) " + String(fname) +" line " + TOSTRING(linecounter) + ". trying to continue ...");
@@ -1956,7 +1956,7 @@ void CacheSystem::fillTruckDetailInfo(Cache_Entry &entry, Ogre::DataStreamPtr ds
 			{
 				// parse materialflarebindings
 				int flareid;
-				char material[255]="";
+				char material[256]="";
 				memset(material, 0, 255);
 				int result = sscanf(line,"%d, %s", &flareid, material);
 				if (result < 2 || result == EOF)
@@ -1988,9 +1988,9 @@ void CacheSystem::fillTruckDetailInfo(Cache_Entry &entry, Ogre::DataStreamPtr ds
 			else if (mode==49)
 			{
 				// parse managedmaterials
-				char material[255];
+				char material[256];
 				material[0]=0;
-				char type[255];
+				char type[256];
 				type[0]=0;
 				int result = sscanf(line,"%s %s", material, type);
 				if (result < 2 || result == EOF)
@@ -2391,7 +2391,7 @@ String CacheSystem::filenamesSHA1()
 	}
 
 	//LOG("hash string: "+filenames);
-	char result[255]="";
+	char result[256]="";
 
 	CSHA1 sha1;
 	char *data = const_cast<char*>(filenames.c_str());
@@ -2403,11 +2403,11 @@ String CacheSystem::filenamesSHA1()
 
 void CacheSystem::fillTerrainDetailInfo(Cache_Entry &entry, Ogre::DataStreamPtr ds, Ogre::String fname)
 {
-	char authorformat[255] = "//author %s %i %s %s";
-	char authortag[255] = "//author";
+	char authorformat[256] = "//author %s %i %s %s";
+	char authortag[256] = "//author";
 
-	char categoryformat[255] = "//fileinfo %s %i, %i";
-	char categorytag[255] = "//fileinfo";
+	char categoryformat[256] = "//fileinfo %s %i, %i";
+	char categorytag[256] = "//fileinfo";
 
 	//parsing the current file
 	entry.authors.clear();
@@ -2431,7 +2431,7 @@ void CacheSystem::fillTerrainDetailInfo(Cache_Entry &entry, Ogre::DataStreamPtr 
 		linecounter++;
 		if (!strncmp(authortag, line, strnlen(authortag, 254))) {
 			int authorid;
-			char authorname[255], authoremail[255], authortype[255];
+			char authorname[256], authoremail[256], authortype[256];
 			memset(authorname, 0, 255);
 			memset(authoremail, 0, 255);
 			memset(authortype, 0, 255);
@@ -2455,7 +2455,7 @@ void CacheSystem::fillTerrainDetailInfo(Cache_Entry &entry, Ogre::DataStreamPtr 
 			*/
 		} else if (!strncmp(categorytag, line, strnlen(categorytag, 254)))
 		{
-			char uidtmp[255] = "";
+			char uidtmp[256] = "";
 			int result = sscanf(line, categoryformat, uidtmp, &categoryid, &version);
 			if (result < 3 || result == EOF)
 			{
@@ -2507,7 +2507,7 @@ void CacheSystem::readCategoryTitles()
 			continue;
 		};
 		int number=0;
-		char title[255];
+		char title[256];
 		const char delimiters[] = ",";
 		char *token, str_work[1024]="";
 		strncpy(str_work, line, 1024);
@@ -2640,7 +2640,7 @@ void CacheSystem::loadSingleZip(Ogre::FileInfo f, bool unload, bool ownGroup)
 
 void CacheSystem::loadSingleDirectory(String dirname, String group, bool alreadyLoaded)
 {
-	char hash[255];
+	char hash[256];
 	memset(hash, 0, 255);
 
 	LOG("Adding directory " + dirname);
@@ -2702,7 +2702,7 @@ void CacheSystem::loadSingleZip(String zippath, int cfactor, bool unload, bool o
 	*/
 
 	String realzipPath = getRealPath(zippath);
-	char hash[255];
+	char hash[256];
 	memset(hash, 0, 255);
 
 	CSHA1 sha1;

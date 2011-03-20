@@ -123,7 +123,7 @@ protected:
 		int command;
 		float posx, posy, posz;
 		float rotx, roty, rotz, rotw;
-		char animationMode[255];
+		char animationMode[256];
 		float animationTime;
 	} pos_netdata_t;
 

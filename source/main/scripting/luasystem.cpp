@@ -56,7 +56,7 @@ static int SLUAgetSetting(lua_State *lua) {return luaInstance->getSetting(lua);}
 // this enables LUA to load files through Ogre's Resource Manager in chunks
 const char *luaFileReader(lua_State * L, void * data, size_t * size)
 {
-	static char buffer[255] = "";
+	static char buffer[256] = "";
 	DataStreamPtr ds = *(DataStreamPtr *)data;
 	*size = ds->read(buffer, 255);
 	//LOG("reading LUA chunk" + TOSTRING(*size));
@@ -136,7 +136,7 @@ bool LuaSystem::fileExists(const char *filename)
 
 void LuaSystem::loadTerrain(Ogre::String terrainname)
 {
-	char trrn[255]="";
+	char trrn[256]="";
 	strncpy(trrn,terrainname.c_str(), 240);
 	strcat(trrn,".lua");
 	if(!fileExists(trrn))
