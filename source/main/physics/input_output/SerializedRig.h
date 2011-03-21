@@ -56,7 +56,7 @@ public:
 	int loadTruck(Ogre::String filename, Ogre::SceneManager *manager, Ogre::SceneNode *parent, Ogre::Vector3 pos, Ogre::Quaternion rot, collision_box_t *spawnbox);	
 
 	int parse_args(parsecontext_t &context, Ogre::StringVector &v, int minArgNum);
-	int parse_node_number(parsecontext_t &context, Ogre::String s);
+	int parse_node_number(parsecontext_t &context, Ogre::String s, bool enableSpecial=false);
 	void parser_warning(parsecontext_t &context, Ogre::String text);
 	void parser_warning(parsecontext_t *context, Ogre::String text);
 

@@ -374,11 +374,12 @@ int SerializedRig::loadTruck(String fname, SceneManager *manager, SceneNode *par
 		StringUtil::trim(c.line);
 		c.linecounter++;
 
+		if (c.line.size() == 0 || c.line[0]==';' || c.line[0]=='/')
+			continue;
+
 		// try for parsing exceptions
 		try
 		{
-			if (c.line.size() == 0 || c.line[0]==';' || c.line[0]=='/')
-				continue;
 
 			if (c.line == "end")
 			{
@@ -462,17 +463,17 @@ int SerializedRig::loadTruck(String fname, SceneManager *manager, SceneNode *par
 			if (c.line == "rescuer") {rescuer=true;continue;};
 			if (c.line == "comment") {savedmode=c.mode; c.mode=BTS_COMMENT; continue;};
 			if (c.line == "disabledefaultsounds") {disable_default_sounds=true;continue;};
-			if (c.line.size() > 13 && c.line.substr(13) == "sectionconfig") {savedmode=c.mode;c.mode=BTS_SECTIONCONFIG; /* NOT continue */};
-			if (c.line.size() > 7 && c.line.substr(7) == "section" && c.mode!=BTS_SECTIONCONFIG) {c.mode=BTS_SECTION; /* NOT continue */};
+			if (c.line.size() > 13 && c.line.substr(0, 13) == "sectionconfig") {savedmode=c.mode;c.mode=BTS_SECTIONCONFIG; /* NOT continue */};
+			if (c.line.size() > 7 && c.line.substr(0, 7) == "section" && c.mode!=BTS_SECTIONCONFIG) {c.mode=BTS_SECTION; /* NOT continue */};
 			/* BTS_IN_SECTION = reserved for ignored section */
 		
-			if (c.line.size() > 14 && c.line.substr(14) == "detacher_group")
+			if (c.line.size() > 14 && c.line.substr(0, 14) == "detacher_group")
 			{
 				parse_args(c, args, 1);
 				detacher_group_state = PARSEINT(args[0]);
 				continue;
 			}
-			if (c.line.size() > 8 && c.line.substr(8) == "fileinfo")
+			if (c.line.size() > 8 && c.line.substr(0, 8) == "fileinfo")
 			{
 				int n =parse_args(c, args, 1);
 				strncpy(uniquetruckid, args[0].c_str(), 254);
@@ -480,7 +481,7 @@ int SerializedRig::loadTruck(String fname, SceneManager *manager, SceneNode *par
 				if(n > 2) truckversion = PARSEINT(args[2]);
 				continue;
 			}
-			if (c.line.size() > 9 && c.line.substr(9) == "extcamera")
+			if (c.line.size() > 9 && c.line.substr(0, 9) == "extcamera")
 			{
 				int n = parse_args(c, args, 2);
 				if(args[1] == "classic") externalcameramode = 0;
@@ -489,7 +490,7 @@ int SerializedRig::loadTruck(String fname, SceneManager *manager, SceneNode *par
 				if(n > 2 && args[1] == "node") externalcameranode = PARSEINT(args[2]);
 				continue;
 			}
-			if (c.line.size() > 17 && c.line.substr(17) == "fileformatversion")
+			if (c.line.size() > 17 && c.line.substr(0, 17) == "fileformatversion")
 			{
 				parse_args(c, args, 2);
 				int fileformatversion = PARSEINT(args[1]);
@@ -500,7 +501,7 @@ int SerializedRig::loadTruck(String fname, SceneManager *manager, SceneNode *par
 				}
 				continue;
 			}
-			if (c.line.size() > 6 && c.line.substr(6) == "author")
+			if (c.line.size() > 6 && c.line.substr(0, 6) == "author")
 			{
 				int n = parse_args(c, args, 2);
 				authorinfo_t author;
@@ -518,6 +519,12 @@ int SerializedRig::loadTruck(String fname, SceneManager *manager, SceneNode *par
 				continue;
 			}
 
+			if (c.line == "enable_advanced_deformation")
+			{
+				// TODO: FIX
+				continue;
+			}
+
 			if (c.line == "set_shadows")
 			{
 				parse_args(c, args, 2);
@@ -525,7 +532,7 @@ int SerializedRig::loadTruck(String fname, SceneManager *manager, SceneNode *par
 				continue;
 			}
 
-			if (c.line.size() > 16 && c.line.substr(16) == "prop_camera_mode")
+			if (c.line.size() > 16 && c.line.substr(0, 16) == "prop_camera_mode")
 			{
 				parse_args(c, args, 2);
 				int pmode = PARSEINT(args[1]);
@@ -536,7 +543,7 @@ int SerializedRig::loadTruck(String fname, SceneManager *manager, SceneNode *par
 				continue;
 			}
 
-			if (c.line.size() > 20 && c.line.substr(20) == "flexbody_camera_mode")
+			if (c.line.size() > 20 && c.line.substr(0, 20) == "flexbody_camera_mode")
 			{
 				parse_args(c, args, 2);
 				int pmode = PARSEINT(args[1]);
@@ -547,7 +554,7 @@ int SerializedRig::loadTruck(String fname, SceneManager *manager, SceneNode *par
 				continue;
 			}
 
-			if (c.line == "add_animation")
+			if (c.line.size() > 13 && c.line.substr(0, 13) == "add_animation")
 			{
 				int n = parse_args(c, args, 5);
 
@@ -774,13 +781,13 @@ int SerializedRig::loadTruck(String fname, SceneManager *manager, SceneNode *par
 				}
 				continue;
 			}
-			if (c.line.size() > 28 && c.line.substr(28) == "set_managedmaterials_options")
+			if (c.line.size() > 28 && c.line.substr(0, 28) == "set_managedmaterials_options")
 			{
 				parse_args(c, args, 2);
 				managedmaterials_doublesided = PARSEINT(args[1]);
 				continue;
 			}
-			if (c.line.size() > 23 && c.line.substr(23) == "set_beam_defaults_scale")
+			if (c.line.size() > 23 && c.line.substr(0, 23) == "set_beam_defaults_scale")
 			{
 				int n = parse_args(c, args, 5);
 				default_spring_scale = PARSEREAL(args[1]);
@@ -793,8 +800,9 @@ int SerializedRig::loadTruck(String fname, SceneManager *manager, SceneNode *par
 			{
 				parse_args(c, args, 2);
 				strncpy(guid, args[1].c_str(), 128);
+				continue;
 			}
-			if (c.line.size() > 17 && c.line.substr(17) == "set_beam_defaults")
+			if (c.line.size() > 17 && c.line.substr(0, 17) == "set_beam_defaults")
 			{
 				String default_beam_material2;
 				float tmpdefault_plastic_coef=-1.0f;
@@ -836,7 +844,7 @@ int SerializedRig::loadTruck(String fname, SceneManager *manager, SceneNode *par
 				}
 				continue;
 			}
-			if (c.line.size() > 20 && c.line.substr(20) == "set_inertia_defaults")
+			if (c.line.size() > 20 && c.line.substr(0, 20) == "set_inertia_defaults")
 			{
 				int n = parse_args(c, args, 2);
 				inertia_startDelay = PARSEREAL(args[1]);
@@ -855,7 +863,7 @@ int SerializedRig::loadTruck(String fname, SceneManager *manager, SceneNode *par
 				continue;
 			}
 
-			if (c.line.size() > 17 && c.line.substr(17) == "set_node_defaults")
+			if (c.line.size() > 17 && c.line.substr(0, 17) == "set_node_defaults")
 			{
 				int n = parse_args(c, args, 2);
 				default_node_loadweight = PARSEREAL(args[1]);
@@ -866,7 +874,7 @@ int SerializedRig::loadTruck(String fname, SceneManager *manager, SceneNode *par
 				continue;
 			}
 
-			if (c.line.size() > 21 && c.line.substr(21) == "set_skeleton_settings")
+			if (c.line.size() > 21 && c.line.substr(0, 21) == "set_skeleton_settings")
 			{
 				int n = parse_args(c, args, 2);
 				fadeDist = PARSEREAL(args[1]);
@@ -956,7 +964,7 @@ int SerializedRig::loadTruck(String fname, SceneManager *manager, SceneNode *par
 				continue;
 			};
 
-			if (c.line.size() > 21 && c.line.substr(21) == "set_collision_range")
+			if (c.line.size() > 21 && c.line.substr(0, 21) == "set_collision_range")
 			{
 				parse_args(c, args, 2);
 				collrange = PARSEREAL(args[1]);
@@ -1712,8 +1720,8 @@ int SerializedRig::loadTruck(String fname, SceneManager *manager, SceneNode *par
 
 					if (beam->animFlags == 0)
 						parser_warning(c, "Failed to identify source.");
-					else
-						parser_warning(c, "Animator source set: with flag "+TOSTRING(beams[pos].animFlags));
+					//else
+					//	parser_warning(c, "Animator source set: with flag "+TOSTRING(beams[pos].animFlags));
 				}
 				continue;
 			}
@@ -1731,7 +1739,7 @@ int SerializedRig::loadTruck(String fname, SceneManager *manager, SceneNode *par
 				rays       = PARSEINT (args[2]);
 				node1      = parse_node_number(c, args[3]);
 				node2      = parse_node_number(c, args[4]);
-				snode      = parse_node_number(c, args[5]);
+				snode      = PARSEINT (args[5]); // special behavior, beware
 				braked     = PARSEINT (args[6]);
 				propulsed  = PARSEINT (args[7]);
 				torquenode = parse_node_number(c, args[8]);
@@ -1757,7 +1765,7 @@ int SerializedRig::loadTruck(String fname, SceneManager *manager, SceneNode *par
 				rays       = PARSEINT (args[3]);
 				node1      = parse_node_number(c, args[4]);
 				node2      = parse_node_number(c, args[5]);
-				snode      = parse_node_number(c, args[6]);
+				snode      = PARSEINT (args[6]); // special behavior, beware
 				braked     = PARSEINT (args[7]);
 				propulsed  = PARSEINT (args[8]);
 				torquenode = parse_node_number(c, args[9]);
@@ -1792,7 +1800,7 @@ int SerializedRig::loadTruck(String fname, SceneManager *manager, SceneNode *par
 				rays       = PARSEINT (args[3]);
 				node1      = parse_node_number(c, args[4]);
 				node2      = parse_node_number(c, args[5]);
-				snode      = parse_node_number(c, args[6]);
+				snode      = PARSEINT (args[6]); // special behavior, beware
 				braked     = PARSEINT (args[7]);
 				propulsed  = PARSEINT (args[8]);
 				torquenode = parse_node_number(c, args[9]);
@@ -2115,7 +2123,7 @@ int SerializedRig::loadTruck(String fname, SceneManager *manager, SceneNode *par
 				else if (strlen(descr) == 0 && commandkey[keyl].description.empty())
 					commandkey[keyl].description = "";
 
-				parser_warning(c, "added command: short=" + TOSTRING(keys)+ ", long=" + TOSTRING(keyl) + ", descr=" + (descr));
+				//parser_warning(c, "added command: short=" + TOSTRING(keys)+ ", long=" + TOSTRING(keyl) + ", descr=" + (descr));
 				beams[pos].commandRatioShort=rateShort;
 				beams[pos].commandRatioLong=rateLong;
 				beams[pos].commandShort=shortl;
@@ -3050,7 +3058,7 @@ int SerializedRig::loadTruck(String fname, SceneManager *manager, SceneNode *par
 					p2     = parse_node_number(c, args[3]);
 					p3     = parse_node_number(c, args[4]);
 					p4     = parse_node_number(c, args[5]);
-					couplenode = parse_node_number(c, args[6]);
+					couplenode = parse_node_number(c, args[6], true);
 					power  = PARSEREAL(args[7]);
 					strncpy(propfoil, args[8].c_str(),  255);
 				}
@@ -3063,7 +3071,7 @@ int SerializedRig::loadTruck(String fname, SceneManager *manager, SceneNode *par
 					p2     = parse_node_number(c, args[3]);
 					p3     = parse_node_number(c, args[4]);
 					p4     = parse_node_number(c, args[5]);
-					couplenode = parse_node_number(c, args[6]);
+					couplenode = parse_node_number(c, args[6], true);
 					power  = PARSEREAL(args[7]);
 					pitch  = PARSEREAL(args[8]);
 					strncpy(propfoil, args[9].c_str(),  255);
@@ -3589,7 +3597,7 @@ int SerializedRig::loadTruck(String fname, SceneManager *manager, SceneNode *par
 				int ref;
 				char script[256];
 				int n = parse_args(c, args, 2);
-				ref = parse_node_number(c, args[0]);
+				ref = PARSEINT(args[0]); // DO NOT check nodes here, they may come afterwards
 				strncpy(script, args[1].c_str(), 255);
 
 	#ifdef USE_OPENAL
@@ -3602,7 +3610,7 @@ int SerializedRig::loadTruck(String fname, SceneManager *manager, SceneNode *par
 				int ref, type;
 				char script[256];
 				int n = parse_args(c, args, 3);
-				ref = parse_node_number(c, args[0]);
+				ref = PARSEINT(args[0]); // DO NOT check nodes here, they may come afterwards
 				type = PARSEINT(args[1]);
 				strncpy(script, args[2].c_str(), 255);
 
@@ -5251,9 +5259,14 @@ int SerializedRig::parse_args(parsecontext_t &context, Ogre::StringVector &args,
 	return n;
 }
 
-int SerializedRig::parse_node_number(parsecontext_t &context, Ogre::String s)
+int SerializedRig::parse_node_number(parsecontext_t &context, Ogre::String s, bool enableSpecial)
 {
 	int id = PARSEINT(s);
+	// fix special case
+	if(enableSpecial && (id == 9999 || id == -1))
+	{
+		return id;
+	}
 	if (id >= free_node)
 	{
 		parser_warning(context, "Error: invalid node number "+s+", bigger than existing nodes ("+TOSTRING(free_node)+")");
