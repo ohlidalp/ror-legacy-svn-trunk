@@ -30,8 +30,6 @@ endmacro(add_sub_dir)
 macro(add_ror_project BINNAME folder useWxWidgets)
   # config below
   IF(WIN32)
-    include_directories(${BOOST_INCLUDE_DIRS})
-    link_directories   (${BOOST_LIBRARY_DIRS})
     include_directories(${PThread_INCLUDE_DIRS})
     link_directories   (${PThread_LIBRARY_DIRS})
     set(OS_LIBS "${PThread_LIBRARIES};dinput8.lib;dxguid.lib")
@@ -50,6 +48,9 @@ macro(add_ror_project BINNAME folder useWxWidgets)
   # required components
   include_directories(${Ogre_INCLUDE_DIRS})
   link_directories   (${Ogre_LIBRARY_DIRS})
+  include_directories(${Boost_INCLUDE_DIRS})
+  link_directories   (${Boost_LIBRARY_DIRS})
+  
   include_directories(${Ogre_Terrain_INCLUDE_DIRS})
   link_directories   (${Ogre_Terrain_LIBRARY_DIRS})
   include_directories(${Ogre_Paging_INCLUDE_DIRS})
@@ -132,7 +133,7 @@ macro(add_ror_project BINNAME folder useWxWidgets)
     add_executable(${BINNAME}       ${${BINNAME}_headers} ${${BINNAME}_sources})
   ENDIF(WIN32)
 
-  target_link_libraries(${BINNAME} ${Ogre_LIBRARIES} ${Ogre_Terrain_LIBRARIES} ${Ogre_Paging_LIBRARIES} ${Ogre_RTShader_LIBRARIES} ${Ois_LIBRARIES} ${OS_LIBS} ${optional_libs})
+  target_link_libraries(${BINNAME} ${Boost_LIBRARIES} ${Ogre_LIBRARIES} ${Ogre_Terrain_LIBRARIES} ${Ogre_Paging_LIBRARIES} ${Ogre_RTShader_LIBRARIES} ${Ois_LIBRARIES} ${OS_LIBS} ${optional_libs})
 endmacro(add_ror_project)
 
 

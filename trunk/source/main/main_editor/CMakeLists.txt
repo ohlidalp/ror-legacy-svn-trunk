@@ -1,3 +1,3 @@
 project(RoR_MainEditor)
 
-add_ror_project(RoR main_editor 1)
+add_ror_project(RoREditor main_editor 1)
