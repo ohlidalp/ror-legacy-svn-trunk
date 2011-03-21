@@ -60,8 +60,8 @@ IF(WIN32)
 	set(Ois_LIBRARY_DIRS "${ROR_DEPENDENCIES_DIR}/lib/ois" CACHE PATH "The OIS lib path to use")
 	set(Ois_LIBRARIES "ois" CACHE STRING "The ogre lib to link against")
 
-	set(BOOST_INCLUDE_DIRS "${ROR_DEPENDENCIES_DIR}/include/boost" CACHE PATH "The BOOST include path to use")
-	set(BOOST_LIBRARY_DIRS "${ROR_DEPENDENCIES_DIR}/lib/boost" CACHE PATH "The BOOST lib path to use")
+	
+	find_package(Boost 1.44 REQUIRED COMPONENTS date_time filesystem)
 
 	# special include path for curl ...
 	if(ROR_USE_CURL)

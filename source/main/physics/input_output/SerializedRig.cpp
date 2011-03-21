@@ -1989,8 +1989,8 @@ int SerializedRig::loadTruck(String fname, SceneManager *manager, SceneNode *par
 				hascommands=1;
 				Real startDelay=0;
 				Real stopDelay=0;
-				char startFunction[50]="";
-				char stopFunction[50]="";
+				char startFunction[256]="";
+				char stopFunction[256]="";
 				if(c.mode == BTS_COMMANDS)
 				{
 					char opt='n';
@@ -2000,14 +2000,14 @@ int SerializedRig::loadTruck(String fname, SceneManager *manager, SceneNode *par
 					rateShort  = PARSEREAL(args[2]);
 					shortl     = PARSEREAL(args[3]);
 					longl      = PARSEREAL(args[4]);
-					keys       = PARSEINT(args[5]);
-					keyl       = PARSEINT(args[6]);
+					keys       = PARSEINT (args[5]);
+					keyl       = PARSEINT (args[6]);
 					if(n > 7)  opt = args[7][0];
 					if(n > 8)  strncpy(descr, args[8].c_str(), 250);
 					if(n > 9)  startDelay = PARSEREAL(args[9]);
 					if(n > 10) stopDelay  = PARSEREAL(args[10]);
-					if(n > 11) strncpy(startFunction, args[11].c_str(), 50);
-					if(n > 12) strncpy(stopFunction,  args[12].c_str(), 50);
+					if(n > 11) strncpy(startFunction, args[11].c_str(), 255);
+					if(n > 12) strncpy(stopFunction,  args[12].c_str(), 255);
 
 					options[0] = opt;
 					options[1] = 0;
@@ -2022,14 +2022,14 @@ int SerializedRig::loadTruck(String fname, SceneManager *manager, SceneNode *par
 					rateLong   = PARSEREAL(args[3]);
 					shortl     = PARSEREAL(args[4]);
 					longl      = PARSEREAL(args[5]);
-					keys       = PARSEINT(args[6]);
-					keyl       = PARSEINT(args[7]);
+					keys       = PARSEINT (args[6]);
+					keyl       = PARSEINT (args[7]);
 					if(n > 8)  strncpy(options, args[8].c_str(), 250);
 					if(n > 9)  strncpy(descr, args[9].c_str(), 250);
-					if(n > 10)  startDelay = PARSEREAL(args[10]);
+					if(n > 10) startDelay = PARSEREAL(args[10]);
 					if(n > 11) stopDelay  = PARSEREAL(args[11]);
-					if(n > 12) strncpy(startFunction, args[12].c_str(), 50);
-					if(n > 13) strncpy(stopFunction,  args[13].c_str(), 50);
+					if(n > 12) strncpy(startFunction, args[12].c_str(), 255);
+					if(n > 13) strncpy(stopFunction,  args[13].c_str(), 255);
 				}
 
 				//verify array limits so we dont overflow

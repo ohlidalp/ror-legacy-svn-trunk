@@ -46,8 +46,8 @@ add_definitions("-DINSTALLER_VERSION=\"${INSTALLER_VERSION}\"")
 
 include_directories(${CURL_INCLUDE_DIRS})
 link_directories   (${CURL_LIBRARY_DIRS})
-include_directories(${BOOST_INCLUDE_DIRS})
-link_directories   (${BOOST_LIBRARY_DIRS})
+include_directories(${Boost_INCLUDE_DIRS})
+link_directories   (${Boost_LIBRARY_DIRS})
 
 # find wxwidgets
 SET(wxWidgets_USE_UNICODE ON)
@@ -77,9 +77,6 @@ add_definitions("-DNDEBUG")
 
 #add_definitions("${CMAKE_WXWINDOWS_CXX_FLAGS}")
 
-
-# we dont need to add ${Boost_LIBRARIES} here, could be wrong as well ...
-
 IF(WIN32)
    add_executable(updater WIN32 ${source_files} ${include_files} ${resource_files})
    # no more static linking :/
@@ -88,8 +85,7 @@ IF(WIN32)
    SET_TARGET_PROPERTIES(updater PROPERTIES LINK_FLAGS    "/MANIFESTUAC:\"level='requireAdministrator' uiAccess='false'\"")
 ELSE(WIN32)
    add_executable(updater ${source_files} ${include_files} ${resource_files})
-   TARGET_LINK_LIBRARIES(updater ${Boost_LIBRARIES})
 ENDIF(WIN32)
-TARGET_LINK_LIBRARIES(updater ${wxWidgets_LIBRARIES} ${CURL_LIBRARIES})
+TARGET_LINK_LIBRARIES(updater ${wxWidgets_LIBRARIES} ${Boost_LIBRARIES} ${CURL_LIBRARIES})
    
 
