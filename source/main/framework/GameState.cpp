@@ -30,6 +30,8 @@ void GameState::enter()
 	m_pCamera->setAutoAspectRatio(true);
 	OgreFramework::getSingletonPtr()->m_pViewport->setCamera(m_pCamera);
 
+	// TO BE DONE:
+	//m_pSceneMgr->setCameraRelativeRendering(true);
 
 	LOG("Adding Frame Listener");
 	bool isEmbedded = OgreFramework::getSingleton().isEmbedded();
