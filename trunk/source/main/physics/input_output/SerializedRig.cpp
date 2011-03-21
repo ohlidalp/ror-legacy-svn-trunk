@@ -462,17 +462,17 @@ int SerializedRig::loadTruck(String fname, SceneManager *manager, SceneNode *par
 			if (c.line == "rescuer") {rescuer=true;continue;};
 			if (c.line == "comment") {savedmode=c.mode; c.mode=BTS_COMMENT; continue;};
 			if (c.line == "disabledefaultsounds") {disable_default_sounds=true;continue;};
-			if (c.line.substr(13) == "sectionconfig") {savedmode=c.mode;c.mode=BTS_SECTIONCONFIG; /* NOT continue */};
-			if (c.line.substr(7) == "section" && c.mode!=BTS_SECTIONCONFIG) {c.mode=BTS_SECTION; /* NOT continue */};
+			if (c.line.size() > 13 && c.line.substr(13) == "sectionconfig") {savedmode=c.mode;c.mode=BTS_SECTIONCONFIG; /* NOT continue */};
+			if (c.line.size() > 7 && c.line.substr(7) == "section" && c.mode!=BTS_SECTIONCONFIG) {c.mode=BTS_SECTION; /* NOT continue */};
 			/* BTS_IN_SECTION = reserved for ignored section */
 		
-			if (c.line.substr(14) == "detacher_group")
+			if (c.line.size() > 14 && c.line.substr(14) == "detacher_group")
 			{
 				parse_args(c, args, 1);
 				detacher_group_state = PARSEINT(args[0]);
 				continue;
 			}
-			if (c.line.substr(8) == "fileinfo")
+			if (c.line.size() > 8 && c.line.substr(8) == "fileinfo")
 			{
 				int n =parse_args(c, args, 1);
 				strncpy(uniquetruckid, args[0].c_str(), 254);
@@ -480,7 +480,7 @@ int SerializedRig::loadTruck(String fname, SceneManager *manager, SceneNode *par
 				if(n > 2) truckversion = PARSEINT(args[2]);
 				continue;
 			}
-			if (c.line.substr(9) == "extcamera")
+			if (c.line.size() > 9 && c.line.substr(9) == "extcamera")
 			{
 				int n = parse_args(c, args, 2);
 				if(args[1] == "classic") externalcameramode = 0;
@@ -489,7 +489,7 @@ int SerializedRig::loadTruck(String fname, SceneManager *manager, SceneNode *par
 				if(n > 2 && args[1] == "node") externalcameranode = PARSEINT(args[2]);
 				continue;
 			}
-			if (c.line.substr(17) == "fileformatversion")
+			if (c.line.size() > 17 && c.line.substr(17) == "fileformatversion")
 			{
 				parse_args(c, args, 2);
 				int fileformatversion = PARSEINT(args[1]);
@@ -500,7 +500,7 @@ int SerializedRig::loadTruck(String fname, SceneManager *manager, SceneNode *par
 				}
 				continue;
 			}
-			if (c.line.substr(6) == "author")
+			if (c.line.size() > 6 && c.line.substr(6) == "author")
 			{
 				int n = parse_args(c, args, 2);
 				authorinfo_t author;
@@ -525,7 +525,7 @@ int SerializedRig::loadTruck(String fname, SceneManager *manager, SceneNode *par
 				continue;
 			}
 
-			if (c.line.substr(16) == "prop_camera_mode")
+			if (c.line.size() > 16 && c.line.substr(16) == "prop_camera_mode")
 			{
 				parse_args(c, args, 2);
 				int pmode = PARSEINT(args[1]);
@@ -536,7 +536,7 @@ int SerializedRig::loadTruck(String fname, SceneManager *manager, SceneNode *par
 				continue;
 			}
 
-			if (c.line.substr(20) == "flexbody_camera_mode")
+			if (c.line.size() > 20 && c.line.substr(20) == "flexbody_camera_mode")
 			{
 				parse_args(c, args, 2);
 				int pmode = PARSEINT(args[1]);
@@ -774,13 +774,13 @@ int SerializedRig::loadTruck(String fname, SceneManager *manager, SceneNode *par
 				}
 				continue;
 			}
-			if (c.line.substr(28) == "set_managedmaterials_options")
+			if (c.line.size() > 28 && c.line.substr(28) == "set_managedmaterials_options")
 			{
 				parse_args(c, args, 2);
 				managedmaterials_doublesided = PARSEINT(args[1]);
 				continue;
 			}
-			if (c.line.substr(23) == "set_beam_defaults_scale")
+			if (c.line.size() > 23 && c.line.substr(23) == "set_beam_defaults_scale")
 			{
 				int n = parse_args(c, args, 5);
 				default_spring_scale = PARSEREAL(args[1]);
@@ -794,7 +794,7 @@ int SerializedRig::loadTruck(String fname, SceneManager *manager, SceneNode *par
 				parse_args(c, args, 2);
 				strncpy(guid, args[1].c_str(), 128);
 			}
-			if (c.line.substr(17) == "set_beam_defaults")
+			if (c.line.size() > 17 && c.line.substr(17) == "set_beam_defaults")
 			{
 				String default_beam_material2;
 				float tmpdefault_plastic_coef=-1.0f;
@@ -836,7 +836,7 @@ int SerializedRig::loadTruck(String fname, SceneManager *manager, SceneNode *par
 				}
 				continue;
 			}
-			if (c.line.substr(20) == "set_inertia_defaults")
+			if (c.line.size() > 20 && c.line.substr(20) == "set_inertia_defaults")
 			{
 				int n = parse_args(c, args, 2);
 				inertia_startDelay = PARSEREAL(args[1]);
@@ -855,7 +855,7 @@ int SerializedRig::loadTruck(String fname, SceneManager *manager, SceneNode *par
 				continue;
 			}
 
-			if (c.line.substr(17) == "set_node_defaults")
+			if (c.line.size() > 17 && c.line.substr(17) == "set_node_defaults")
 			{
 				int n = parse_args(c, args, 2);
 				default_node_loadweight = PARSEREAL(args[1]);
@@ -866,7 +866,7 @@ int SerializedRig::loadTruck(String fname, SceneManager *manager, SceneNode *par
 				continue;
 			}
 
-			if (c.line.substr(21) == "set_skeleton_settings")
+			if (c.line.size() > 21 && c.line.substr(21) == "set_skeleton_settings")
 			{
 				int n = parse_args(c, args, 2);
 				fadeDist = PARSEREAL(args[1]);
@@ -956,7 +956,7 @@ int SerializedRig::loadTruck(String fname, SceneManager *manager, SceneNode *par
 				continue;
 			};
 
-			if (c.line.substr(21) == "set_collision_range")
+			if (c.line.size() > 21 && c.line.substr(21) == "set_collision_range")
 			{
 				parse_args(c, args, 2);
 				collrange = PARSEREAL(args[1]);
