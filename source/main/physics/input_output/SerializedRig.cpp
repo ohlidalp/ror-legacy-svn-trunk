@@ -373,6 +373,9 @@ int SerializedRig::loadTruck(String fname, SceneManager *manager, SceneNode *par
 		c.line = ds->getLine(true);
 		StringUtil::trim(c.line);
 		c.linecounter++;
+		
+		// clear arguments, just to be sure
+		args.clear();
 
 		if (c.line.size() == 0 || c.line[0]==';' || c.line[0]=='/')
 			continue;
@@ -475,7 +478,7 @@ int SerializedRig::loadTruck(String fname, SceneManager *manager, SceneNode *par
 			}
 			if (c.line.size() > 8 && c.line.substr(0, 8) == "fileinfo")
 			{
-				int n =parse_args(c, args, 1);
+				int n = parse_args(c, args, 1);
 				strncpy(uniquetruckid, args[0].c_str(), 254);
 				if(n > 1) categoryid   = PARSEINT(args[1]);
 				if(n > 2) truckversion = PARSEINT(args[2]);
@@ -4158,6 +4161,8 @@ int SerializedRig::loadTruck(String fname, SceneManager *manager, SceneNode *par
 
 		} catch(ParseException &)
 		{
+			c.mode = BTS_NONE;
+			parser_warning(c, "got parsing exception, falling back to no section");
 			// we use this catcher to continue after an error was thrown, cleans up the code a lot
 			continue;
 		}
