@@ -47,11 +47,20 @@ bool RoREditor::Initialize(std::string hwndStr, std::string mainhwndStr)
 	SETTINGS.setSetting("Preselected Map",   "grenoble.terrn");
 	SETTINGS.setSetting("Enter Preselected Truck",   "Yes");
 	
+	try
+	{
+		app = new RigsOfRods("RoREditor", hwndStr, mainhwndStr, true);
+		app->go();
+	} catch(Ogre::Exception& e)
+	{
+		// try to shutdown input system upon an error
+		//if(InputEngine::instanceExists()) // this prevents the creating of it, if not existing
+		//	INPUTENGINE.prepareShutdown();
 
-	//printf("#>>>>>>> %s # %s\n", hwndStr.c_str(), mainhwndStr.c_str());
-	app = new RigsOfRods("RoREditor", hwndStr, mainhwndStr, true);
-
-	app->go();
+		String url = "http://wiki.rigsofrods.com/index.php?title=Error_" + TOSTRING(e.getNumber())+"#"+e.getSource();
+		showOgreWebError("An exception has occured!", e.getFullDescription(), url);
+		return 1;
+	}
 
 	return true;
 }
@@ -65,10 +74,21 @@ void RoREditor::Deinitialize(void)
 
 void RoREditor::Update()
 {
-	startTime = OgreFramework::getSingletonPtr()->m_pTimer->getMillisecondsCPU();
+	try
+	{
+		startTime = OgreFramework::getSingletonPtr()->m_pTimer->getMillisecondsCPU();
 	
-	if(app)
-		app->update(timeSinceLastFrame);
+		if(app)
+			app->update(timeSinceLastFrame);
 
-	timeSinceLastFrame = OgreFramework::getSingletonPtr()->m_pTimer->getMillisecondsCPU() - startTime;
+		timeSinceLastFrame = OgreFramework::getSingletonPtr()->m_pTimer->getMillisecondsCPU() - startTime;
+	} catch(Ogre::Exception& e)
+	{
+		// try to shutdown input system upon an error
+		//if(InputEngine::instanceExists()) // this prevents the creating of it, if not existing
+		//	INPUTENGINE.prepareShutdown();
+
+		String url = "http://wiki.rigsofrods.com/index.php?title=Error_" + TOSTRING(e.getNumber())+"#"+e.getSource();
+		showOgreWebError("An exception has occured!", e.getFullDescription(), url);
+	}
 }

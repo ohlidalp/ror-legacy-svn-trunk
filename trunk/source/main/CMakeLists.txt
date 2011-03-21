@@ -127,7 +127,7 @@ macro(add_ror_project BINNAME folder useWxWidgets)
   endif()
 
   IF(WIN32)
-    add_executable(${BINNAME} WIN32 ${${BINNAME}_headers} ${${BINNAME}_sources} ${folder}/icon.rc)
+    add_executable(${BINNAME} WIN32 ${${BINNAME}_headers} ${${BINNAME}_sources} ${RoR_Main_SOURCE_DIR}/${folder}/icon.rc)
   ELSE(WIN32)
     add_executable(${BINNAME}       ${${BINNAME}_headers} ${${BINNAME}_sources})
   ENDIF(WIN32)
@@ -135,9 +135,11 @@ macro(add_ror_project BINNAME folder useWxWidgets)
   target_link_libraries(${BINNAME} ${Ogre_LIBRARIES} ${Ogre_Terrain_LIBRARIES} ${Ogre_Paging_LIBRARIES} ${Ogre_RTShader_LIBRARIES} ${Ois_LIBRARIES} ${OS_LIBS} ${optional_libs})
 endmacro(add_ror_project)
 
-add_ror_project(RoR main_sim 0)
+
+add_subdirectory(main_sim)
+
 
 IF(ROR_BUILD_TOOLS)
-  add_ror_project(RoRMeshViewer main_viewer 1)
-  add_ror_project(RoREditor     main_editor 1)
+	add_subdirectory(main_viewer)
+	add_subdirectory(main_editor)
 ENDIF(ROR_BUILD_TOOLS)

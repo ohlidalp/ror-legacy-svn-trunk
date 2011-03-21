@@ -877,7 +877,11 @@ RoRFrameListener::RoRFrameListener(AppState *parentState, RenderWindow* win, Cam
 	  
 		size_t windowHnd = 0;
 		std::ostringstream windowHndStr; 
-		win->getCustomAttribute( "GLXWINDOW", &windowHnd ); 
+#if OGRE_PLATFORM == OGRE_PLATFORM_LINUX
+		win->getCustomAttribute("GLXWINDOW", &windowHnd ); 
+#else
+		win->getCustomAttribute("WINDOW", &windowHnd);
+#endif
 		windowHndStr << windowHnd; 
 		printf("#### GLXWINDOW = %s\n", windowHndStr.str().c_str());
 		INPUTENGINE.setup(windowHndStr.str(), true, true, GRAB_NONE);
