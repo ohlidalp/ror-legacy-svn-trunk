@@ -985,7 +985,7 @@ int SerializedRig::loadTruck(String fname, SceneManager *manager, SceneNode *par
 				y  = PARSEREAL(args[2]);
 				z  = PARSEREAL(args[3]);
 				if(n > 4) strncpy(options, args[4].c_str(), 255);
-				if(n > 5) PARSEREAL(args[5]);
+				if(n > 5) mass = PARSEREAL(args[5]);
 				if (id != free_node)
 				{
 					parser_warning(c, "lost sync in nodes numbers after node " + TOSTRING(free_node) + "(got " + TOSTRING(id) + " instead)");
