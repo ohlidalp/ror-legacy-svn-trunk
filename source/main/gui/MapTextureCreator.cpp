@@ -152,7 +152,9 @@ void MapTextureCreator::update()
 
 void MapTextureCreator::setFogVisible(bool value)
 {
-	int fogmode = mEfl->getFogMode();
+#if 0
+	return;
+	int fogmode = 0; //mEfl->getFogMode();
 	//LOG("fogswitch: "+TOSTRING(fogmode)+" / "+TOSTRING(value));
 	if(!fogmode || fogmode == 2)
 		return;
@@ -160,7 +162,6 @@ void MapTextureCreator::setFogVisible(bool value)
 	// this refuses to work, somehow:
 	if(fogmode == 1)
 	{
-#if 0
 		// TODO: tofix: caelum
 		// USE_CAELUM
 		if(value)
@@ -173,7 +174,6 @@ void MapTextureCreator::setFogVisible(bool value)
 			mEfl->getCaelumSystem()->setLocalTime(mEfl->getCaelumSystem()->getLocalTime()+1);
 		else
 			mEfl->getCaelumSystem()->setLocalTime(mEfl->getCaelumSystem()->getLocalTime()-1);
-#endif //0
 	}
 	else if(fogmode == 3)
 	{
@@ -183,6 +183,7 @@ void MapTextureCreator::setFogVisible(bool value)
 			mSceneManager->setFog(Ogre::FOG_NONE, mSceneManager->getFogColour(), mEfl->getFogDensity(), mSceneManager->getFogStart(), mSceneManager->getFogEnd());
 	}
 
+#endif //0
 }
 
 void MapTextureCreator::setAutoUpdated(bool value)
