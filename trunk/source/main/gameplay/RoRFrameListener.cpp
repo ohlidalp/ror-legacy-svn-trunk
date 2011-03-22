@@ -790,8 +790,6 @@ RoRFrameListener::RoRFrameListener(AppState *parentState, RenderWindow* win, Cam
 	loadedTerrain="none";
 	creditsviewtime=5;
 	terrainUID="";
-	fogmode=-1;
-	fogdensity=0;
 	mtc=0;
 	bigMap=0;
 	envmap=0;
@@ -3970,12 +3968,7 @@ void RoRFrameListener::loadClassicTerrain(String terrainfile)
 
 	ColourValue fadeColour(r,g,b);
 
-	bool fogEnable = true;
-	if (SSETTING("Fog") == "No")
-	{
-		fogEnable = false;
-		fogmode=0;
-	}
+	bool fogEnable = !BSETTING("Fog");
 
 	float farclipPercent = 0.3;
 	if (SSETTING("FarClip Percent") != "")
@@ -4025,72 +4018,49 @@ void RoRFrameListener::loadClassicTerrain(String terrainfile)
 
 	LOG("Farclip computed:" + TOSTRING(farclip));
 
-	float fogstart = 0;
 
+	//mCamera->setNearClipDistance (0.01);
+	mCamera->setFarClipDistance( farclip*1.733 );
 
 	Light *mainLight = 0;
-#ifdef USE_CAELUM
-	bool useCaelum = SSETTING("Sky effects")=="Caelum (best looking, slower)";
-	if(!useCaelum)
-	{
-		mainLight = mSceneMgr->createLight("MainLight");
-		//directional light for shadow
-		mainLight->setType(Light::LT_DIRECTIONAL);
-		mainLight->setDirection(0.785, -0.423, 0.453);
-	}
-#else // USE_CAELUM
-	mainLight = mSceneMgr->createLight("MainLight");
-	//directional light for shadow
-	mainLight->setType(Light::LT_DIRECTIONAL);
-	mainLight->setDirection(0.785, -0.423, 0.453);
-#endif // USE_CAELUM
 
 #ifdef USE_CAELUM
 	//Caelum skies
+	bool useCaelum = SSETTING("Sky effects")=="Caelum (best looking, slower)";
 	if (useCaelum)
 	{
-		//mCamera->setNearClipDistance (0.01);
-		mCamera->setFarClipDistance( farclip*1.733 );
 		new SkyManager();
 
 		SkyManager::getSingleton().init(mScene, mWindow, mCamera);
 		mainLight = SkyManager::getSingleton().getMainLight();
-	}
-	else
+	} else
 #endif //CAELUM
 	{
-		fogmode=3;
-		fogstart = farclip * 0.8;
-//		if (SSETTING("Sandstorm Fog Start") != "")
-//			fogstart = StringConverter::parseLong(SSETTING("Sandstorm Fog Start"));
-
 		// Create a light
-		if(mainLight)
-		{
-			//directional light for shadow
-			mainLight->setType(Light::LT_DIRECTIONAL);
-			mainLight->setDirection(0.785, -0.423, 0.453);
+		mainLight = mSceneMgr->createLight("MainLight");
+		//directional light for shadow
+		mainLight->setType(Light::LT_DIRECTIONAL);
+		mainLight->setDirection(0.785, -0.423, 0.453);
 
-			mainLight->setDiffuseColour(fadeColour);
-			mainLight->setSpecularColour(fadeColour);
-		}
-
-		mCamera->setFarClipDistance( farclip*1.733 );
-
-		// Fog
-		// NB it's VERY important to set this before calling setWorldGeometry
-		// because the vertex program picked will be different
-		if(fogEnable)
-		{
-			fogdensity = 0.001;
-			mSceneMgr->setFog(FOG_LINEAR, fadeColour, fogdensity, fogstart, farclip);
-		} else
-			mSceneMgr->setFog(FOG_LINEAR, fadeColour, 0, 999998, 999999);
+		mainLight->setDiffuseColour(fadeColour);
+		mainLight->setSpecularColour(fadeColour);
 
 		//mSceneMgr->setSkyBox(true, sandstormcubemap, farclip);
 		//mSceneMgr->setSkyDome(true, "Examples/CloudySky", 5, 8);
+	}
 
-		mCamera->getViewport()->setBackgroundColour(fadeColour);
+	mCamera->getViewport()->setBackgroundColour(fadeColour);
+	
+	// Fog
+	// NB it's VERY important to set this before calling setWorldGeometry
+	// because the vertex program picked will be different
+	float fogstart = farclip * 0.8;
+	if(fogEnable)
+	{
+		mSceneMgr->setFog(FOG_LINEAR, fadeColour,  0.001, fogstart, farclip);
+	} else
+	{
+		mSceneMgr->setFog(FOG_LINEAR, fadeColour, 0, 999998, 999999);
 	}
 
 	bool newTerrainMode = (BSETTING("new Terrain Mode"));

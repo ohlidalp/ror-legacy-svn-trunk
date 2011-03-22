@@ -264,8 +264,6 @@ protected:
 	void windowFocusChange(Ogre::RenderWindow* rw);
 	int flaresMode;
 	MapTextureCreator *mtc;
-	int fogmode;
-	float fogdensity;
 	bool updateTruckMirrors(float dt);
 	void gridScreenshots(Ogre::RenderWindow* pRenderWindow, Ogre::Camera* pCamera, const int& pGridSize, const Ogre::String& path, const Ogre::String& pFileName, const Ogre::String& pFileExtention, const bool& pStitchGridImages);
 	void initDust();
@@ -297,8 +295,6 @@ public:
 	void recursiveActivation(int j);
 	bool setCameraPositionWithCollision(Ogre::Vector3 newPos);
 	bool checkForActive(int j, bool *sleepyList);
-	int getFogMode() { return fogmode; };
-	float getFogDensity() { return fogdensity; };
 	bool frameEnded(const FrameEvent& evt);
 	void showLoad(int type, char* instance, char* box);
 	void showspray(bool s);
@@ -479,7 +475,6 @@ protected:
 	RenderWindow* renderwin;
 
 	char screenshotformat[256];
-	float globalFogDensity;
 	bool useCaelumSky;
 	float farclip;
 	ColourValue fadeColour;
