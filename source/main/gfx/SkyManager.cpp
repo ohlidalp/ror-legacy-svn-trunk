@@ -76,7 +76,9 @@ void SkyManager::loadScript(Ogre::String script)
 	try
 	{
 		CaelumPlugin::getSingleton().loadCaelumSystemFromScript (mCaelumSystem, script);
-		mCaelumSystem->setManageSceneFog(false);
+		
+		mCaelumSystem->setSceneFogDensityMultiplier(0.0008f); // or some other small value.
+		mCaelumSystem->setManageSceneFog(true);
 
 		// overwrite some settings
 		if(mCaelumSystem->getMoon())

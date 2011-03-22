@@ -3968,7 +3968,7 @@ void RoRFrameListener::loadClassicTerrain(String terrainfile)
 
 	ColourValue fadeColour(r,g,b);
 
-	bool fogEnable = !BSETTING("Fog");
+	bool fogEnable = BSETTING("Fog");
 
 	float farclipPercent = 0.3;
 	if (SSETTING("FarClip Percent") != "")
@@ -4023,6 +4023,7 @@ void RoRFrameListener::loadClassicTerrain(String terrainfile)
 	mCamera->setFarClipDistance( farclip*1.733 );
 
 	Light *mainLight = 0;
+	mSceneMgr->setFog(FOG_NONE);
 
 #ifdef USE_CAELUM
 	//Caelum skies
@@ -4047,21 +4048,12 @@ void RoRFrameListener::loadClassicTerrain(String terrainfile)
 
 		//mSceneMgr->setSkyBox(true, sandstormcubemap, farclip);
 		//mSceneMgr->setSkyDome(true, "Examples/CloudySky", 5, 8);
+		
+		if(fogEnable)
+			mSceneMgr->setFog(FOG_LINEAR, fadeColour,  0, farclip * 0.7, farclip * 0.9);
 	}
-
 	mCamera->getViewport()->setBackgroundColour(fadeColour);
 	
-	// Fog
-	// NB it's VERY important to set this before calling setWorldGeometry
-	// because the vertex program picked will be different
-	float fogstart = farclip * 0.8;
-	if(fogEnable)
-	{
-		mSceneMgr->setFog(FOG_LINEAR, fadeColour,  0.001, fogstart, farclip);
-	} else
-	{
-		mSceneMgr->setFog(FOG_LINEAR, fadeColour, 0, 999998, 999999);
-	}
 
 	bool newTerrainMode = (BSETTING("new Terrain Mode"));
 
