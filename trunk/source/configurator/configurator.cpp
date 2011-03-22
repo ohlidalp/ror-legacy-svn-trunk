@@ -211,7 +211,6 @@ public:
 	void OnGetUserToken(wxCommandEvent& event);
 	void OnLinkClicked(wxHtmlLinkEvent& event);
 	void OnLinkClickedUpdate(wxHtmlLinkEvent& event);
-	//void OnSightRangeScroll(wxScrollEvent& event);
 	void onChangeShadowChoice(wxCommandEvent& event);
 	void onChangeLanguageChoice(wxCommandEvent& event);
 	//void OnButRemap(wxCommandEvent& event);
@@ -228,7 +227,7 @@ public:
 	void OnButCheckOpenCL(wxCommandEvent& event);
 	void OnButCheckOpenCLBW(wxCommandEvent& event);
 	void updateRoR();
-	void OnShadowSliderScroll(wxScrollEvent& event);
+	void OnsightrangesliderScroll(wxScrollEvent& event);
 	void OnSimpleSliderScroll(wxScrollEvent& event);
 	void OnSimpleSlider2Scroll(wxScrollEvent& event);
 	void OnForceFeedbackScroll(wxScrollEvent& event);
@@ -239,7 +238,6 @@ public:
 //	void checkLinuxPaths();
 	MyApp *app;
 private:
-//	float caelumFogDensity, SandStormFogStart;
 	//bool postinstall;
 	Ogre::Root *ogreRoot;
 	wxPanel *graphicsPanel;
@@ -253,12 +251,10 @@ private:
 	wxChoice *sky;
 	wxChoice *shadow;
 	wxCheckBox *shadowOptimizations;
-	wxSlider *shadowDistance;
-	wxStaticText *shadowDistanceText;
+	wxSlider *sightRange;
+	wxStaticText *sightRangeText;
 	wxChoice *water;
 	wxCheckBox *waves;
-	wxCheckBox *enableFog;
-	wxSlider *sightrange;
 	wxSlider *simpleSlider;
 	wxSlider *simpleSlider2;
 	wxCheckBox *replaymode;
@@ -373,7 +369,7 @@ enum
 	get_user_token,
 	check_opencl,
 	check_opencl_bw,
-	shadowslider,
+	sightrangeslider,
 	shadowschoice,
 	shadowopt,
 };
@@ -401,9 +397,8 @@ BEGIN_EVENT_TABLE(MyDialog, wxDialog)
 	EVT_BUTTON(check_opencl_bw, MyDialog::OnButCheckOpenCLBW)
 	EVT_HTML_LINK_CLICKED(main_html, MyDialog::OnLinkClicked)
 	EVT_HTML_LINK_CLICKED(update_html, MyDialog::OnLinkClickedUpdate)
-	//EVT_SCROLL(MyDialog::OnSightRangeScroll)
 	EVT_CHOICE(shadowschoice, MyDialog::onChangeShadowChoice)
-	EVT_COMMAND_SCROLL_CHANGED(shadowslider, MyDialog::OnShadowSliderScroll)
+	EVT_COMMAND_SCROLL(sightrangeslider, MyDialog::OnsightrangesliderScroll)
 	EVT_COMMAND_SCROLL_CHANGED(SCROLL1, MyDialog::OnSimpleSliderScroll)
 	EVT_COMMAND_SCROLL_CHANGED(SCROLL2, MyDialog::OnSimpleSlider2Scroll)
 	EVT_COMMAND_SCROLL(FFSLIDER, MyDialog::OnForceFeedbackScroll)
@@ -770,8 +765,6 @@ MyDialog::MyDialog(const wxString& title, MyApp *_app) : wxDialog(NULL, wxID_ANY
 
 	kd=0;
 
-//	SandStormFogStart = 500;
-//	caelumFogDensity = 0.005;
 
 	//postinstall = _postinstall;
 
@@ -942,10 +935,10 @@ MyDialog::MyDialog(const wxString& title, MyApp *_app) : wxDialog(NULL, wxID_ANY
 	shadow->SetToolTip(_("Texture shadows are fast but limited: jagged edges, no object self-shadowing, limited shadow distance.\nStencil shadows are slow but gives perfect shadows."));
 	y+=25;
 
-	dText = new wxStaticText(graphicsPanel, wxID_ANY, _("Shadow Distance:"), wxPoint(10,y+3));
-	shadowDistance=new wxSlider(graphicsPanel, shadowslider, 50, 5, 200,wxPoint(x_row1, y), wxSize(200, -1));
-	shadowDistance->SetToolTip(_("Adjusts how far the shadows will be drawn"));
-	shadowDistanceText = new wxStaticText(graphicsPanel, wxID_ANY, _("50 m"), wxPoint(x_row1 + 210,y+3));
+	dText = new wxStaticText(graphicsPanel, wxID_ANY, _("Sightrange:"), wxPoint(10,y+3));
+	sightRange=new wxSlider(graphicsPanel, sightrangeslider, 2000, 1, 2000, wxPoint(x_row1, y), wxSize(200, -1));
+	sightRange->SetToolTip(_("determines how far you can see in meters"));
+	sightRangeText = new wxStaticText(graphicsPanel, wxID_ANY, _("Unlimited"), wxPoint(x_row1 + 210,y+3));
 	y+=25;
 
 	shadowOptimizations=new wxCheckBox(graphicsPanel, shadowopt, _("Shadow Performance Optimizations"), wxPoint(x_row1, y), wxSize(200, -1), 0);
@@ -1180,21 +1173,11 @@ MyDialog::MyDialog(const wxString& title, MyApp *_app) : wxDialog(NULL, wxID_ANY
 
 	dText = new wxStaticText(advancedPanel, -1, _("minimum visibility range in percent"), wxPoint(10,y));
 	y+=20;
-	//this makes a visual bug in macosx
-	sightrange=new wxSlider(advancedPanel, -1, 30, 1, 500, wxPoint(30, y), wxSize(200, 40), wxSL_LABELS|wxSL_AUTOTICKS);
-	sightrange->SetToolTip(_("This sets the minimum sight range Setting. It determines how far the terrain should be drawn. \n100% means you can view the whole terrain. \nWith 130% you can view everything across the diagonal Axis."));
-	sightrange->SetTickFreq(10, 0);
-	sightrange->SetPageSize(10);
-	sightrange->SetLineSize(100);
-	y+=50;
 
 	// second column
 	y=30;
 	extcam=new wxCheckBox(advancedPanel, -1, _("Disable Camera Pitching"), wxPoint(320, y));
 	extcam->SetToolTip(_("If you dislike the pitching external vehicle camera, you can disable it here."));
-	y+=15;
-	enableFog=new wxCheckBox(advancedPanel, -1, _("Fog"), wxPoint(320, y));
-	enableFog->SetToolTip(_("If you dont want fog, uncheck this."));
 	y+=15;
 	replaymode=new wxCheckBox(advancedPanel, -1, _("Replay Mode"), wxPoint(320, y));
 	replaymode->SetToolTip(_("Replay mode. (Can affect your frame rate)"));
@@ -1354,11 +1337,9 @@ void MyDialog::onChangeShadowChoice(wxCommandEvent &e)
 
 	if(enable)
 	{
-		shadowDistance->Enable();
 		shadowOptimizations->Enable();
 	} else
 	{
-		shadowDistance->Disable();
 		shadowOptimizations->Disable();
 	}
 }
@@ -1487,7 +1468,7 @@ void MyDialog::SetDefaults()
 	//wxChoice *shadow;
 	shadow->SetSelection(0);//no shadows
 	shadowOptimizations->SetValue(true);
-	shadowDistance->SetValue(50);
+	sightRange->SetValue(2000);
 	//wxChoice *water;
 	water->SetSelection(0);//basic water
 	waves->SetValue(false);
@@ -1495,9 +1476,6 @@ void MyDialog::SetDefaults()
 
 	flaresMode->SetSelection(2); // all trucks
 	//languageMode->SetSelection(0);
-	enableFog->SetValue(true);
-
-	sightrange->SetValue(30);
 
 	ffEnable->SetValue(false);
 	ffOverall->SetValue(100);
@@ -1542,8 +1520,6 @@ void MyDialog::SetDefaults()
 	//wxChoice *thread;
 	thread->SetSelection(1);//2 CPUs is now the norm (incl. HyperThreading)
 	wheel2->SetValue(true);
-//	SandStormFogStart = 500;
-//	caelumFogDensity = 0.005;
 
 #ifdef NETWORK
 	//wxCheckBox *network_enable;
@@ -1570,8 +1546,8 @@ void MyDialog::getSettingsControls()
 	settings["Sky effects"] = conv(sky->GetStringSelection());
 
 	settings["Shadow technique"] = conv(shadow->GetStringSelection());
-	sprintf(tmp, "%d", shadowDistance->GetValue());
-	settings["Shadow distance"] = tmp;
+	sprintf(tmp, "%d", sightRange->GetValue());
+	settings["SightRange"] = tmp;
 	settings["Shadow optimizations"] = (shadowOptimizations->GetValue()) ? "Yes" : "No";
 
 	settings["Water effects"] = conv(water->GetStringSelection());
@@ -1600,13 +1576,9 @@ void MyDialog::getSettingsControls()
 	settings["Skidmarks"] = "No"; //(skidmarks->GetValue()) ? "Yes" : "No";
 	settings["Creak Sound"] = (creaksound->GetValue()) ? "No" : "Yes";
 	settings["Enhanced wheels"] = (wheel2->GetValue()) ? "Yes" : "No";
-	settings["Fog"] = (enableFog->GetValue()) ? "Yes" : "No";
 	settings["Envmap"] = (envmap->GetValue()) ? "Yes" : "No";
 	settings["3D Sound renderer"] = conv(sound->GetStringSelection());
 	settings["Threads"] = conv(thread->GetStringSelection());
-
-	sprintf(tmp, "%d", sightrange->GetValue());
-	settings["FarClip Percent"] = tmp;
 
 	settings["Force Feedback"] = (ffEnable->GetValue()) ? "Yes" : "No";
 	sprintf(tmp, "%d", ffOverall->GetValue());
@@ -1662,7 +1634,7 @@ void MyDialog::updateSettingsControls()
 	st = settings["Texture Filtering"]; if (st.length()>0) textfilt->SetStringSelection(conv(st));
 	st = settings["Sky effects"]; if (st.length()>0) sky->SetStringSelection(conv(st));
 	st = settings["Shadow technique"]; if (st.length()>0) shadow->SetStringSelection(conv(st));
-	st = settings["Shadow distance"]; if (st.length()>0) shadowDistance->SetValue((int)atof(st.c_str()));
+	st = settings["SightRange"]; if (st.length()>0) sightRange->SetValue((int)atof(st.c_str()));
 	st = settings["Shadow optimizations"]; if (st.length()>0) shadowOptimizations->SetValue(st=="Yes");
 	st = settings["Water effects"]; if (st.length()>0) water->SetStringSelection(conv(st));
 	st = settings["Waves"]; if (st.length()>0) waves->SetValue(st=="Yes");
@@ -1692,7 +1664,6 @@ void MyDialog::updateSettingsControls()
 	st = settings["3D Sound renderer"]; if (st.length()>0) sound->SetStringSelection(conv(st));
 	st = settings["Threads"]; if (st.length()>0) thread->SetStringSelection(conv(st));
 	st = settings["Enhanced wheels"]; if (st.length()>0) wheel2->SetValue(st=="Yes");
-	st = settings["FarClip Percent"]; if (st.length()>0) sightrange->SetValue((int)atof(st.c_str()));
 	st = settings["Force Feedback"]; if (st.length()>0) ffEnable->SetValue(st=="Yes");
 	st = settings["Force Feedback Gain"]; if (st.length()>0) ffOverall->SetValue((int)atof(st.c_str()));
 	st = settings["Force Feedback Stress"]; if (st.length()>0) ffHydro->SetValue((int)atof(st.c_str()));
@@ -1701,7 +1672,6 @@ void MyDialog::updateSettingsControls()
 	//update textboxes
 	wxScrollEvent dummye;
 	OnForceFeedbackScroll(dummye);
-	st = settings["Fog"]; if (st.length()>0) enableFog->SetValue(st=="Yes");
 	st = settings["Lights"]; if (st.length()>0) flaresMode->SetStringSelection(conv(st));
 	st = settings["Vegetation"]; if (st.length()>0) vegetationMode->SetStringSelection(conv(st));
 	st = settings["Screenshot Format"]; if (st.length()>0) screenShotFormat->SetStringSelection(conv(st));
@@ -1729,7 +1699,7 @@ void MyDialog::updateSettingsControls()
 	st = settings["Simple Settings Graphics"]; if (st.length()>0) simpleSlider2->SetValue(atoi(st.c_str()));
 
 	// update slider text
-	OnShadowSliderScroll(dummye);
+	OnsightrangesliderScroll(dummye);
 }
 
 bool MyDialog::LoadConfig()
@@ -2178,22 +2148,19 @@ void MyDialog::OnButClearCache(wxCommandEvent& event)
 		}
 	} while (srcd.GetNext(&src));
 }
-/*
-void MyDialog::OnSightRangeScroll(wxScrollEvent & event)
-{
-	int val = sightrange->GetValue();
-	wxString s;
-	s << val;
-	s << " meters";
-	sightrangeText->SetLabel(s);
-}
-*/
 
-void MyDialog::OnShadowSliderScroll(wxScrollEvent &e)
+void MyDialog::OnsightrangesliderScroll(wxScrollEvent &e)
 {
 	wxString s;
-	s.Printf(wxT("%i m"), shadowDistance->GetValue());
-	shadowDistanceText->SetLabel(s);
+	int v = sightRange->GetValue();
+	if(v == sightRange->GetMax())
+	{
+		s = "Unlimited";
+	} else
+	{
+		s.Printf(wxT("%i m"), v);
+	}
+	sightRangeText->SetLabel(s);
 }
 
 void MyDialog::OnSimpleSliderScroll(wxScrollEvent & event)
@@ -2254,14 +2221,12 @@ void MyDialog::OnSimpleSlider2Scroll(wxScrollEvent & event)
 			textfilt->SetSelection(0);
 			sky->SetSelection(0);//sandstorm
 			shadow->SetSelection(0);//no shadows
-			shadowDistance->SetValue(5);
+			sightRange->SetValue(50);
 			shadowOptimizations->SetValue(true);
 			water->SetSelection(0);//basic water
 			waves->SetValue(false);
 			vegetationMode->SetSelection(0); // None
 			flaresMode->SetSelection(0); // all trucks
-			enableFog->SetValue(true);
-			sightrange->SetValue(20);
 			screenShotFormat->SetSelection(0);
 			particles->SetValue(false);
 			hydrax->SetValue(false);
@@ -2277,14 +2242,12 @@ void MyDialog::OnSimpleSlider2Scroll(wxScrollEvent & event)
 			textfilt->SetSelection(2);
 			sky->SetSelection(0);//sandstorm
 			shadow->SetSelection(1);
-			shadowDistance->SetValue(50);
+			sightRange->SetValue(500);
 			shadowOptimizations->SetValue(true);
 			water->SetSelection(1);
 			waves->SetValue(false);
 			vegetationMode->SetSelection(1);
 			flaresMode->SetSelection(1);
-			enableFog->SetValue(true);
-			sightrange->SetValue(60);
 			screenShotFormat->SetSelection(1);
 			particles->SetValue(true);
 			hydrax->SetValue(false);
@@ -2300,14 +2263,12 @@ void MyDialog::OnSimpleSlider2Scroll(wxScrollEvent & event)
 			textfilt->SetSelection(3);
 			sky->SetSelection(1);
 			shadow->SetSelection(1);
-			shadowDistance->SetValue(100);
+			sightRange->SetValue(2000);
 			shadowOptimizations->SetValue(false);
 			water->SetSelection(3);
 			waves->SetValue(true);
 			vegetationMode->SetSelection(3);
 			flaresMode->SetSelection(3);
-			enableFog->SetValue(false);
-			sightrange->SetValue(130);
 			screenShotFormat->SetSelection(1);
 			particles->SetValue(true);
 			hydrax->SetValue(false);
@@ -2324,7 +2285,7 @@ void MyDialog::OnSimpleSlider2Scroll(wxScrollEvent & event)
 
 	// update slider text
 	wxScrollEvent dummye;
-	OnShadowSliderScroll(dummye);
+	OnsightrangesliderScroll(dummye);
 }
 
 void MyDialog::OnForceFeedbackScroll(wxScrollEvent & event)

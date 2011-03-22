@@ -55,7 +55,6 @@ void SkyManager::init(Ogre::SceneManager *mScene, Ogre::RenderWindow *mWindow, O
 	// Initialise CaelumSystem.
 	mCaelumSystem = new Caelum::CaelumSystem (Root::getSingletonPtr(), mScene, Caelum::CaelumSystem::CAELUM_COMPONENTS_NONE);
 	mCaelumSystem->attachViewport(mCamera->getViewport());
-	mCaelumSystem->setManageSceneFog(false);
 
 	/*
 	// TODO: set real time, and let the user select his true location
@@ -77,7 +76,8 @@ void SkyManager::loadScript(Ogre::String script)
 	{
 		CaelumPlugin::getSingleton().loadCaelumSystemFromScript (mCaelumSystem, script);
 		
-		mCaelumSystem->setSceneFogDensityMultiplier(0.0008f); // or some other small value.
+		// reduce fog
+		mCaelumSystem->setSceneFogDensityMultiplier(0.0001f); // or some other small value.
 		mCaelumSystem->setManageSceneFog(true);
 
 		// overwrite some settings

@@ -3968,20 +3968,12 @@ void RoRFrameListener::loadClassicTerrain(String terrainfile)
 
 	ColourValue fadeColour(r,g,b);
 
-	bool fogEnable = BSETTING("Fog");
-
-	float farclipPercent = 0.3;
-	if (SSETTING("FarClip Percent") != "")
-		farclipPercent = StringConverter::parseInt(SSETTING("FarClip Percent"));
-
-	float farclip = 1000;
 	terrainxsize=1000;
 	terrainzsize=1000;
 
 	bool disableTetrrain=false;
 
 	{
-		//compute farclip from terrain size
 	    ConfigFile config;
 		ResourceGroupManager& rgm = ResourceGroupManager::getSingleton();
 		String group="";
@@ -4000,27 +3992,21 @@ void RoRFrameListener::loadClassicTerrain(String terrainfile)
 		val = config.getSetting("PageWorldX");
 		if ( !val.empty() )
 			fval = atof( val.c_str() );
-		farclip=fval;
 		terrainxsize=fval;
 		val = config.getSetting("PageWorldZ");
 		if ( !val.empty() )
 			fval = atof( val.c_str() );
-		if (fval>farclip) farclip=fval;
 		terrainzsize=fval;
-		//we take farclip=1/3rd the terrain size (default)
-		farclip = farclip * farclipPercent / 100.0f;
 		disableTetrrain = (config.getSetting("disable") != "");
 	}
 
-	String fcos = SSETTING("Farclip");
-	if(fcos != "")
-		farclip = atof(fcos.c_str());
-
-	LOG("Farclip computed:" + TOSTRING(farclip));
-
-
 	//mCamera->setNearClipDistance (0.01);
-	mCamera->setFarClipDistance( farclip*1.733 );
+	//mCamera->setFarClipDistance( farclip*1.733 );
+	int farclip = Ogre::StringConverter::parseInt(SSETTING("SightRange"));
+	if(farclip == 2000) farclip = 0;
+
+	farclip = std::min((float)farclip, terrainzsize * 1.8f);
+	mCamera->setFarClipDistance(farclip);
 
 	Light *mainLight = 0;
 	mSceneMgr->setFog(FOG_NONE);
@@ -4049,8 +4035,8 @@ void RoRFrameListener::loadClassicTerrain(String terrainfile)
 		//mSceneMgr->setSkyBox(true, sandstormcubemap, farclip);
 		//mSceneMgr->setSkyDome(true, "Examples/CloudySky", 5, 8);
 		
-		if(fogEnable)
-			mSceneMgr->setFog(FOG_LINEAR, fadeColour,  0, farclip * 0.7, farclip * 0.9);
+		mSceneMgr->setFog(FOG_LINEAR, fadeColour,  0, farclip * 0.7, farclip * 0.9);
+		//mSceneMgr->setFog(FOG_EXP2, fadeColour, 0.001f);
 	}
 	mCamera->getViewport()->setBackgroundColour(fadeColour);
 	
