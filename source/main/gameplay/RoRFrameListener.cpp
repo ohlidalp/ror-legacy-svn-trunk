@@ -3892,7 +3892,6 @@ void RoRFrameListener::loadClassicTerrain(String terrainfile)
 	//FILE *fd;
 	char geom[1024];
 	char sandstormcubemap[256]="";
-	char caelumconfig[256]="ror_default_sky"; // setup some default
 	char line[1024];
 	float r,g,b;
 	float cx,cy,cz;
@@ -4798,13 +4797,6 @@ void RoRFrameListener::loadClassicTerrain(String terrainfile)
 			n->attachObject(mReferenceObject);
 			n->setVisible(true);
 		}
-
-
-		//Caelum config
-		if (!strncmp(line,"caelumconfig", 12))
-		{
-			sscanf(line, "caelumconfig %s", caelumconfig);
-		};
 
 #ifdef USE_HYDRAX
 		if (!strncmp("hydraxconfig", line, 12))
