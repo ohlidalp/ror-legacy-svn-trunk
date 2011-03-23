@@ -4003,10 +4003,17 @@ void RoRFrameListener::loadClassicTerrain(String terrainfile)
 	//mCamera->setNearClipDistance (0.01);
 	//mCamera->setFarClipDistance( farclip*1.733 );
 	int farclip = Ogre::StringConverter::parseInt(SSETTING("SightRange"));
-	if(farclip == 2000) farclip = 0;
-
-	farclip = std::min((float)farclip, terrainzsize * 1.8f);
-	mCamera->setFarClipDistance(farclip);
+	bool inifite_farclip = false;
+	
+	if (farclip == 5000 && mRoot->getRenderSystem()->getCapabilities()->hasCapability(Ogre::RSC_INFINITE_FAR_PLANE))
+	{
+		mCamera->setFarClipDistance(0);   // enable infinite far clip distance if we can
+		inifite_farclip = true;
+	} else
+	{
+		farclip = std::min((float)farclip, terrainzsize * 1.8f);
+		mCamera->setFarClipDistance(farclip);
+	}
 
 	Light *mainLight = 0;
 	mSceneMgr->setFog(FOG_NONE);
@@ -4035,11 +4042,24 @@ void RoRFrameListener::loadClassicTerrain(String terrainfile)
 		//mSceneMgr->setSkyBox(true, sandstormcubemap, farclip);
 		//mSceneMgr->setSkyDome(true, "Examples/CloudySky", 5, 8);
 		
-		mSceneMgr->setFog(FOG_LINEAR, fadeColour,  0, farclip * 0.7, farclip * 0.9);
-		//mSceneMgr->setFog(FOG_EXP2, fadeColour, 0.001f);
+		if(!inifite_farclip)
+			mSceneMgr->setFog(FOG_LINEAR, fadeColour,  0, farclip * 0.7, farclip * 0.9);
 	}
 	mCamera->getViewport()->setBackgroundColour(fadeColour);
 	
+
+#ifdef USE_CAELUM
+	// load caelum config
+	if (SSETTING("Sky effects")=="Caelum (best looking, slower)")
+	{
+		String cfn = terrainfile + ".os";
+		if(ResourceGroupManager::getSingleton().resourceExistsInAnyGroup(cfn))
+			SkyManager::getSingleton().loadScript(cfn);
+		else
+			SkyManager::getSingleton().loadScript("ror_default_sky");
+	}
+#endif //USE_CAELUM
+
 
 	bool newTerrainMode = (BSETTING("new Terrain Mode"));
 
@@ -4107,8 +4127,12 @@ void RoRFrameListener::loadClassicTerrain(String terrainfile)
 			new TerrainGlobalOptions();
 			// Configure global
 			TerrainGlobalOptions::getSingleton().setMaxPixelError(StringConverter::parseInt(cfg.getSetting("MaxPixelError")));
+			
 			// testing composite map
-			TerrainGlobalOptions::getSingleton().setCompositeMapDistance(std::min(1000.0f, mCamera->getFarClipDistance()));
+			if(mCamera->getFarClipDistance() == 0)
+				TerrainGlobalOptions::getSingleton().setCompositeMapDistance(1000.0f);
+			else
+				TerrainGlobalOptions::getSingleton().setCompositeMapDistance(std::min(1000.0f, mCamera->getFarClipDistance()));
 			//mTerrainGlobals->setUseRayBoxDistanceCalculation(true);
 
 			// adds strange colours for debug purposes
@@ -5224,13 +5248,6 @@ void RoRFrameListener::loadClassicTerrain(String terrainfile)
 	{
 		mSceneMgr->setSkyBox(true, sandstormcubemap, farclip);
 	}
-#ifdef USE_CAELUM
-	// load caelum config
-	if (SSETTING("Sky effects")=="Caelum (best looking, slower)")
-	{
-		SkyManager::getSingleton().loadScript(String(caelumconfig));
-	}
-#endif //USE_CAELUM
 
 #ifdef USE_HYDRAX
 	if(w && useHydrax)

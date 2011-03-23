@@ -42,7 +42,7 @@ SkyManager& SkyManager::getSingleton(void)
 	assert( ms_Singleton );  return ( *ms_Singleton );
 }
 
-SkyManager::SkyManager()
+SkyManager::SkyManager() : mCamera(0), mCaelumSystem(0)
 {
 }
 
@@ -53,6 +53,7 @@ SkyManager::~SkyManager()
 void SkyManager::init(Ogre::SceneManager *mScene, Ogre::RenderWindow *mWindow, Ogre::Camera *mCamera)
 {
 	// Initialise CaelumSystem.
+	this->mCamera = mCamera;
 	mCaelumSystem = new Caelum::CaelumSystem (Root::getSingletonPtr(), mScene, Caelum::CaelumSystem::CAELUM_COMPONENTS_NONE);
 	mCaelumSystem->attachViewport(mCamera->getViewport());
 
@@ -69,18 +70,36 @@ void SkyManager::init(Ogre::SceneManager *mScene, Ogre::RenderWindow *mWindow, O
 	Root::getSingletonPtr()->addFrameListener(mCaelumSystem);
 }
 
+void SkyManager::forceUpdate(float dt)
+{
+	if(mCaelumSystem)
+		mCaelumSystem->updateSubcomponents(dt);
+}
+
 void SkyManager::loadScript(Ogre::String script)
 {
 	// load the caelum config
 	try
 	{
 		CaelumPlugin::getSingleton().loadCaelumSystemFromScript (mCaelumSystem, script);
-		
-		// reduce fog
-		mCaelumSystem->setSceneFogDensityMultiplier(0.0001f); // or some other small value.
-		mCaelumSystem->setManageSceneFog(true);
 
 		// overwrite some settings
+		
+		// important: overwrite fog setings if not using infinite farclip
+		if(mCamera->getFarClipDistance() > 0)
+		{
+			// non infinite farclip
+			Real farclip = mCamera->getFarClipDistance();
+			mCaelumSystem->setManageSceneFog(Ogre::FOG_LINEAR);
+			mCaelumSystem->setManageSceneFogStart(farclip * 0.7f);
+			mCaelumSystem->setManageSceneFogEnd(farclip * 0.9f);
+		} else
+		{
+			// no fog in infinite farclip
+			mCaelumSystem->setManageSceneFog(Ogre::FOG_NONE);
+		}
+
+		// now optimize the moon a bit
 		if(mCaelumSystem->getMoon())
 		{
 			mCaelumSystem->getMoon()->setAutoDisable(true);
@@ -92,6 +111,8 @@ void SkyManager::loadScript(Ogre::String script)
 		mCaelumSystem->setEnsureSingleShadowSource(true);
 		mCaelumSystem->setEnsureSingleLightSource(true);
 
+		// enforcing update, so shadows are set correctly before creating the terrain
+		forceUpdate(0.1);
 
 	} catch(Ogre::Exception& e)
 	{

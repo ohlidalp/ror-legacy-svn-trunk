@@ -50,8 +50,9 @@ public:
 	/// prints the current time of the simulation inthe format of HH:MM:SS
 	Ogre::String getPrettyTime();
 	
-
+	void forceUpdate(float dt);
 protected:
+	Ogre::Camera *mCamera;
     Caelum::CaelumSystem *mCaelumSystem;
 	Caelum::CaelumSystem *getCaelumSystem() { return mCaelumSystem; };
 };

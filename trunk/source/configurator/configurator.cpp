@@ -936,7 +936,7 @@ MyDialog::MyDialog(const wxString& title, MyApp *_app) : wxDialog(NULL, wxID_ANY
 	y+=25;
 
 	dText = new wxStaticText(graphicsPanel, wxID_ANY, _("Sightrange:"), wxPoint(10,y+3));
-	sightRange=new wxSlider(graphicsPanel, sightrangeslider, 2000, 1, 2000, wxPoint(x_row1, y), wxSize(200, -1));
+	sightRange=new wxSlider(graphicsPanel, sightrangeslider, 5000, 1, 5000, wxPoint(x_row1, y), wxSize(200, -1));
 	sightRange->SetToolTip(_("determines how far you can see in meters"));
 	sightRangeText = new wxStaticText(graphicsPanel, wxID_ANY, _("Unlimited"), wxPoint(x_row1 + 210,y+3));
 	y+=25;
@@ -1468,7 +1468,7 @@ void MyDialog::SetDefaults()
 	//wxChoice *shadow;
 	shadow->SetSelection(0);//no shadows
 	shadowOptimizations->SetValue(true);
-	sightRange->SetValue(2000);
+	sightRange->SetValue(5000);
 	//wxChoice *water;
 	water->SetSelection(0);//basic water
 	waves->SetValue(false);
@@ -2263,7 +2263,7 @@ void MyDialog::OnSimpleSlider2Scroll(wxScrollEvent & event)
 			textfilt->SetSelection(3);
 			sky->SetSelection(1);
 			shadow->SetSelection(1);
-			sightRange->SetValue(2000);
+			sightRange->SetValue(5000);
 			shadowOptimizations->SetValue(false);
 			water->SetSelection(3);
 			waves->SetValue(true);
