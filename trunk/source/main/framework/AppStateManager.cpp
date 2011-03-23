@@ -92,6 +92,9 @@ void AppStateManager::start(AppState* state)
 	{
 		startTime = OgreFramework::getSingletonPtr()->m_pTimer->getMillisecondsCPU();
 #if OGRE_PLATFORM == OGRE_PLATFORM_WIN32
+		update(timeSinceLastFrame);
+		/*
+		// BUGGY:
 		if(OgreFramework::getSingletonPtr()->m_pRenderWnd->isActive())
 		{
 			update(timeSinceLastFrame);
@@ -100,6 +103,7 @@ void AppStateManager::start(AppState* state)
 			Sleep(1000);
 			// linux: sleep(1);
 		}
+		*/
 #else
 		// BUG: somehow, OgreFramework::getSingletonPtr()->m_pRenderWnd->isActive()) returns always false under linux, even if window is active. Removed this optimization for now
 		update(timeSinceLastFrame);

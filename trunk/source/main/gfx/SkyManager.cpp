@@ -92,6 +92,7 @@ void SkyManager::loadScript(Ogre::String script)
 		mCaelumSystem->setEnsureSingleShadowSource(true);
 		mCaelumSystem->setEnsureSingleLightSource(true);
 
+
 	} catch(Ogre::Exception& e)
 	{
 		LOG("exception upon loading sky script: " + e.getFullDescription());

@@ -4090,12 +4090,10 @@ void RoRFrameListener::loadClassicTerrain(String terrainfile)
 			int TERRAIN_SIZE            = pageSize;
 			int TERRAIN_PAGE_MIN_X=0, TERRAIN_PAGE_MAX_X=0;
 			int TERRAIN_PAGE_MIN_Y=0, TERRAIN_PAGE_MAX_Y=0;
-			bool usepaging = (cfg.getSetting("UsePaging") == "1");
-			if(usepaging)
-			{
-				TERRAIN_PAGE_MAX_X = StringConverter::parseInt(cfg.getSetting("Pages_X"));
-				TERRAIN_PAGE_MAX_Y = StringConverter::parseInt(cfg.getSetting("Pages_Y"));
-			}
+
+			TERRAIN_PAGE_MAX_X = StringConverter::parseInt(cfg.getSetting("Pages_X"));
+			TERRAIN_PAGE_MAX_Y = StringConverter::parseInt(cfg.getSetting("Pages_Y"));
+
 			bool mTerrainsImported=false;
 			TerrainPaging* mTerrainPaging=0;
 			PageManager* mPageManager=0;
@@ -4110,25 +4108,23 @@ void RoRFrameListener::loadClassicTerrain(String terrainfile)
 			// Configure global
 			TerrainGlobalOptions::getSingleton().setMaxPixelError(StringConverter::parseInt(cfg.getSetting("MaxPixelError")));
 			// testing composite map
-			TerrainGlobalOptions::getSingleton().setCompositeMapDistance(mCamera->getFarClipDistance());//300);
+			TerrainGlobalOptions::getSingleton().setCompositeMapDistance(std::min(1000.0f, mCamera->getFarClipDistance()));
 			//mTerrainGlobals->setUseRayBoxDistanceCalculation(true);
 
 			// adds strange colours for debug purposes
 			//TerrainGlobalOptions::getSingleton().getDefaultMaterialGenerator()->setDebugLevel(1);
 
 			// TBD: optimizations
-			/*
 			TerrainMaterialGeneratorA::SM2Profile* matProfile = static_cast<TerrainMaterialGeneratorA::SM2Profile*>(TerrainGlobalOptions::getSingleton().getDefaultMaterialGenerator()->getActiveProfile());
 			matProfile->setLayerNormalMappingEnabled(false);
 			matProfile->setLayerSpecularMappingEnabled(false);
 			matProfile->setLayerParallaxMappingEnabled(false);
 
 			matProfile->setGlobalColourMapEnabled(false);
-			matProfile->setReceiveDynamicShadowsDepth(false);
-			*/
+			matProfile->setReceiveDynamicShadowsDepth(true);
 
 			TerrainGlobalOptions::getSingleton().setLightMapSize(256);
-			TerrainGlobalOptions::getSingleton().setCastsDynamicShadows(false);
+			TerrainGlobalOptions::getSingleton().setCastsDynamicShadows(true);
 
 			// Important to set these so that the terrain knows what to use for derived (non-realtime) data
 			if(mainLight) TerrainGlobalOptions::getSingleton().setLightMapDirection(mainLight->getDerivedDirection());
