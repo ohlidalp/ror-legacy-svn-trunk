@@ -26,8 +26,8 @@ add_definitions("-D${wxWidgets_DEFINITIONS}" ${wxWidgets_CXX_FLAGS})
 link_directories (${wxWidgets_LIB_DIR})
 
 IF(WIN32)
-   include_directories(${BOOST_INCLUDE_DIRS})
-   link_directories   (${BOOST_LIBRARY_DIRS})
+   include_directories(${Boost_INCLUDE_DIRS})
+   link_directories   (${Boost_LIBRARY_DIRS})
    include_directories(${PThread_INCLUDE_DIRS})
    link_directories   (${PThread_LIBRARY_DIRS})
 
