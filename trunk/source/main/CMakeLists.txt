@@ -38,6 +38,9 @@ macro(add_ror_project BINNAME folder useWxWidgets)
     # warning C4244: 'initializing' : conversion from 'const float' to 'int', possible loss of data
     # warning C4305: 'initializing' : truncation from 'double' to 'const float'
     add_definitions("/wd4305 /wd4244 -DNOMINMAX")
+	
+    # enable mumble on the windows platform for now only, has no dependencies as its only using shared memory and URLs
+    add_definitions("-DUSE_MUMBLE")	
   ELSEIF(UNIX)
     include_directories(${GTK_INCLUDE_DIRS})
     set(OS_LIBS "X11")
@@ -89,7 +92,7 @@ macro(add_ror_project BINNAME folder useWxWidgets)
 
   add_definitions("-DBOOST_ALL_NO_LIB")
   add_definitions("-DUSE_RTSHADER_SYSTEM")
-
+  
   include_directories(${RoR_Main_SOURCE_DIR})
   add_sub_dir(${BINNAME} audio)
   add_sub_dir(${BINNAME} gameplay)
