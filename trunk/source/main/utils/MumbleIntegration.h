@@ -31,10 +31,10 @@ along with Rigs of Rods.  If not, see <http://www.gnu.org/licenses/>.
 class MumbleIntegration : public Ogre::Singleton<MumbleIntegration>
 {
 public:
+	MumbleIntegration();
     void update(Ogre::Vector3 cameraPos, Ogre::Vector3 avatarPos);
     
 protected:
-	MumbleIntegration();
 	~MumbleIntegration();
 	
 	void initMumble();

@@ -49,6 +49,8 @@ along with Rigs of Rods.  If not, see <http://www.gnu.org/licenses/>.
 #include "AdvancedScreen.h"
 #include "vidcam.h"
 
+#include "MumbleIntegration.h"
+
 #ifdef USE_MPLATFORM
 #include "mplatform_fd.h"
 #endif
@@ -1168,6 +1170,10 @@ RoRFrameListener::RoRFrameListener(AppState *parentState, RenderWindow* win, Cam
 
 		// network chat stuff
 		netChat = ChatSystemFactory::getSingleton().createLocal(colourNum);
+
+#ifdef USE_MUMBLE
+		new MumbleIntegration();
+#endif // USE_MUMBLE
 
 	} else
 #endif //SOCKETW
@@ -6251,6 +6257,12 @@ bool RoRFrameListener::frameStarted(const FrameEvent& evt)
 		}
 #endif // USE_MYGUI
 #endif // USE_SOCKETW
+
+		// now update mumble 3d audio things
+#ifdef USE_MUMBLE
+		MumbleIntegration::getSingleton().update(mCamera->getPosition(), person->getPosition() + Vector3(0, 1.8f, 0));
+#endif // USE_MUMBLE
+
 	}
 
 	moveCamera(dt); //antishaking

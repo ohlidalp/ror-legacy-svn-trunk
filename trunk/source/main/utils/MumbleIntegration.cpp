@@ -20,6 +20,7 @@ along with Rigs of Rods.  If not, see <http://www.gnu.org/licenses/>.
 // created: 26th of March 2011, thomas fischer thomas{AT}thomasfischer{DOT}biz
 
 #ifdef USE_MUMBLE
+
 #include "MumbleIntegration.h"
 
 #include <Ogre.h>
