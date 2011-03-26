@@ -207,8 +207,11 @@ bool Network::connect()
 	nickname = SSETTING("Nickname");
 	String nick = nickname;
 	StringUtil::toLowerCase(nick);
-	if (nick==String("pricorde") || nick==String("thomas"))
+	if (nick==String("pricorde") || nick==String("thomas") || nick == String("tdev"))
+	{
 		nickname = "Anonymous";
+		SETTINGS.setSetting("Nickname", nickname);
+	}
 
 	char pwbuffer[250];
 	memset(pwbuffer, 0, 250);
@@ -628,6 +631,8 @@ void Network::receivethreadstart()
 				CharacterFactory::getSingleton().localUserAttributesChanged(myuid);
 				// update our nickname
 				nickname = String(userdata.username);
+				// save it in the Settings as well
+				SETTINGS.setSetting("Nickname", nickname);
 				// update auth status
 				myauthlevel = userdata.authstatus;
 			} else
