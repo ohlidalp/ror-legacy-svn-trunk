@@ -1858,9 +1858,10 @@ int SerializedRig::loadTruck(String fname, SceneManager *manager, SceneNode *par
 				//parse cameras
 				int n = parse_args(c, args, 3);
 				
-				int nodepos = parse_node_number(c, args[0]);
-				int nodedir = parse_node_number(c, args[1]);
-				int dir     = parse_node_number(c, args[2]);
+				// node usage before node section ... 
+				int nodepos = PARSEINT(args[0]); //parse_node_number(c, args[0]);
+				int nodedir = PARSEINT(args[1]); //parse_node_number(c, args[1]);
+				int dir     = PARSEINT(args[2]); //parse_node_number(c, args[2]);
 
 				addCamera(nodepos, nodedir, dir);
 				continue;
