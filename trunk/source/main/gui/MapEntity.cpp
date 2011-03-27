@@ -54,7 +54,7 @@ void MapEntity::init()
 
 	if(Ogre::ResourceGroupManager::getSingleton().resourceExists(group, imageFile))
 	{
-		LOG("static map icon found: " + imageFile);
+		//LOG("static map icon found: " + imageFile);
 		mIsStatic=true;
 	}
 	else
