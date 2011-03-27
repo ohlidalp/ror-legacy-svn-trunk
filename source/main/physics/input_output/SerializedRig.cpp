@@ -708,8 +708,8 @@ int SerializedRig::loadTruck(String fname, SceneManager *manager, SceneNode *par
 
 							if (prop->animFlags[animnum] == 0)
 								parser_warning(c, "Failed to identify source.");
-							else
-								parser_warning(c, "Animation source set to prop#: " + TOSTRING(free_prop-1) + ", flag " +TOSTRING(prop->animFlags[animnum]) + ", Animationnumber: " + TOSTRING(animnum));
+							//else
+							//	parser_warning(c, "Animation source set to prop#: " + TOSTRING(free_prop-1) + ", flag " +TOSTRING(prop->animFlags[animnum]) + ", Animationnumber: " + TOSTRING(animnum));
 						}
 						else if(args2[0] == "mode" && args2.size() == 2)
 						{
@@ -729,8 +729,8 @@ int SerializedRig::loadTruck(String fname, SceneManager *manager, SceneNode *par
 
 							if (prop->animMode[animnum] == 0)
 								parser_warning(c, "Failed to identify animation c.mode.");
-							else
-								parser_warning(c, "Animation mode set to prop#: " + TOSTRING(free_prop-1)+ ", mode " +TOSTRING(prop->animMode[animnum]) + ", Animationnumber: " + TOSTRING(animnum));
+							//else
+							//	parser_warning(c, "Animation mode set to prop#: " + TOSTRING(free_prop-1)+ ", mode " +TOSTRING(prop->animMode[animnum]) + ", Animationnumber: " + TOSTRING(animnum));
 						}
 						else if (args2[0] == "autoanimate" && args2.size() == 1)
 						{
@@ -743,7 +743,7 @@ int SerializedRig::loadTruck(String fname, SceneManager *manager, SceneNode *par
 							else if(prop->animMode[animnum] & ANIM_MODE_OFFSET_X) { prop->animOpt1[animnum] = opt1 + prop->orgoffsetX; prop->animOpt2[animnum] = opt2 + prop->orgoffsetX; prop->animOpt4[animnum] = prop->orgoffsetX; }
 							else if(prop->animMode[animnum] & ANIM_MODE_OFFSET_Y) { prop->animOpt1[animnum] = opt1 + prop->orgoffsetY; prop->animOpt2[animnum] = opt2 + prop->orgoffsetY; prop->animOpt4[animnum] = prop->orgoffsetY; }
 							else if(prop->animMode[animnum] & ANIM_MODE_OFFSET_Z) { prop->animOpt1[animnum] = opt1 + prop->orgoffsetZ; prop->animOpt2[animnum] = opt2 + prop->orgoffsetZ; prop->animOpt4[animnum] = prop->orgoffsetZ; }
-							parser_warning(c, "Animation mode Autoanimation added to prop#: " + TOSTRING(free_prop-1) + " , Animationnumber: " + TOSTRING(animnum));
+							//parser_warning(c, "Animation mode Autoanimation added to prop#: " + TOSTRING(free_prop-1) + " , Animationnumber: " + TOSTRING(animnum));
 						}
 						else if (args2[0] == "noflip" && args2.size() == 1)
 						{
@@ -4037,7 +4037,7 @@ int SerializedRig::loadTruck(String fname, SceneManager *manager, SceneNode *par
 				{
 					Ogre::StringUtil::trim(*cur);
 
-					parser_warning(c, "AXLE: Parsing property: [" + *cur + "]" );
+					//parser_warning(c, "AXLE: Parsing property: [" + *cur + "]" );
 
 					switch(cur->at(0))
 					{
@@ -4128,9 +4128,11 @@ int SerializedRig::loadTruck(String fname, SceneManager *manager, SceneNode *par
 					axles[free_axle]->addDiffType(LOCKED_DIFF);
 				}
 
+				/*
 				parser_warning(c, "AXLE: Created: w1(" + TOSTRING(wheel_node[0][0]) + ") " +
 					TOSTRING(wheel_node[0][1]) + ", w2(" + TOSTRING(wheel_node[1][0]) + " " +
 					TOSTRING(wheel_node[1][1]) + ")");
+				*/
 				++free_axle;
 			}
 
@@ -4210,7 +4212,7 @@ int SerializedRig::loadTruck(String fname, SceneManager *manager, SceneNode *par
 		wash_calculator(rot, c);
 	}
 	//add the cab visual
-	parser_warning(c, "creating cab");
+	//parser_warning(c, "creating cab");
 	if (free_texcoord>0 && free_cab>0)
 	{
 		//closure
@@ -4284,19 +4286,19 @@ int SerializedRig::loadTruck(String fname, SceneManager *manager, SceneNode *par
 		//	mat->compile();
 
 
-		parser_warning(c, "creating mesh");
+		//parser_warning(c, "creating mesh");
 		cabMesh=new FlexObj(manager, nodes, free_texcoord, texcoords, free_cab, cabs, free_sub, subtexcoords, subcabs, texname, wname, subisback, backmatname, transmatname);
-		parser_warning(c, "creating entity");
+		//parser_warning(c, "creating entity");
 
-		parser_warning(c, "creating cabnode");
+		//parser_warning(c, "creating cabnode");
 		cabNode = manager->getRootSceneNode()->createChildSceneNode();
 		Entity *ec = 0;
 		try
 		{
-			parser_warning(c, "loading cab");
+			//parser_warning(c, "loading cab");
 			ec = manager->createEntity(wnamei, wname);
 			//		ec->setRenderQueueGroup(RENDER_QUEUE_6);
-			parser_warning(c, "attaching cab");
+			//parser_warning(c, "attaching cab");
 			if(ec)
 				cabNode->attachObject(ec);
 		}catch(...)
@@ -4307,7 +4309,7 @@ int SerializedRig::loadTruck(String fname, SceneManager *manager, SceneNode *par
 		if(materialFunctionMapper) materialFunctionMapper->replaceMeshMaterials(ec);
 		if(usedSkin) usedSkin->replaceMeshMaterials(ec);
 	};
-	parser_warning(c, "cab ok");
+	//parser_warning(c, "cab ok");
 	//	mWindow->setDebugText("Beam number:"+ TOSTRING(free_beam));
 
 	return 0;

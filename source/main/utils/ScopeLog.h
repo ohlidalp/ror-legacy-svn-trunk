@@ -34,8 +34,9 @@ class ScopeLog : Ogre::LogListener
 {
 protected:
 	Ogre::Log *orgLog;
-	Ogre::Log *ourLog;
-	Ogre::String logFileName;
+	FILE *f;
+	bool headerWritten;
+	Ogre::String logFileName, name;
 	int getFileSize(Ogre::String filename);
 	void messageLogged(const Ogre::String &message, Ogre::LogMessageLevel lml, bool maskDebug, const Ogre::String &logName);
 

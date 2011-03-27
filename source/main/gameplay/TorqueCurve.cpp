@@ -44,7 +44,7 @@ Real TorqueCurve::getEngineTorque(Real rpmRatio)
 
 int TorqueCurve::loadDefaultTorqueModels()
 {
-	LOG("loading default torque Curves");
+	//LOG("loading default torque Curves");
 	// check if we have a config file
 	String group = "";
 	try
