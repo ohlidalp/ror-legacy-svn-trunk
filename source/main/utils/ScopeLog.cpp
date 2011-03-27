@@ -108,6 +108,12 @@ void ScopeLog::messageLogged(const String &message, LogMessageLevel lml, bool ma
 		sprintf(style, "CompilerError");
 	else if(message.find("Invalid WAV file: ") != String::npos)
 		sprintf(style, "GeneralError");
+	else if(message.find("error while loading terrain: ") != String::npos)
+		sprintf(style, "GeneralError");
+	else if(message.find("Error loading texture ") != String::npos)
+		sprintf(style, "GeneralError");
+	else if(message.find("ODEF: ") != String::npos)
+		sprintf(style, "BeamInputOutput");
 	else if(message.find("BIO|") != String::npos)
 		sprintf(style, "BeamInputOutput");
 	else if(message.find("Inertia|") != String::npos)
