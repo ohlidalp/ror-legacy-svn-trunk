@@ -5105,7 +5105,7 @@ void RoRFrameListener::loadClassicTerrain(String terrainfile)
 			String truckname=String(type);
 			if(!CACHE.checkResourceLoaded(truckname, group))
 			{
-				LOG("error while loading terrain: truck " + String(type) + " not found. ignoring.");
+				LOG("Error while loading Terrain: truck " + String(type) + " not found. ignoring.");
 				continue;
 			}
 			//this is a truck or load declaration

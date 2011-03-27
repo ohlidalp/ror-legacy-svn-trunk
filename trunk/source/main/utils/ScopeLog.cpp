@@ -90,7 +90,7 @@ void ScopeLog::messageLogged(const String &message, LogMessageLevel lml, bool ma
 		fprintf(f, ".BeamInputOutput   { font-size:1.2em;color:OrangeRed; }\n");
 		fprintf(f, ".tableheader       { font-weight:bold; }\n");
 		fprintf(f, ".logtable          { border-collapse:collapse;font-family:monospace;border:1px solid #aaaaaa; }\n");
-		fprintf(f, ".logtd             { border:1px solid #aaaaaa }\n");
+		fprintf(f, ".logtd             { border:1px solid #aaaaaa;vertical-align:top; }\n");
 		fprintf(f, "</style>\n");
 		fprintf(f, "</header><body>\n");
 		fprintf(f, "Log for <b>%s</b> created on <b>%s</b> with <b>Rigs of Rods %s</b> ", name.c_str(), ctime(&t), ROR_VERSION_STRING);
@@ -116,7 +116,7 @@ void ScopeLog::messageLogged(const String &message, LogMessageLevel lml, bool ma
 		sprintf(type, "CompilerError");
 	else if(message.find("Invalid WAV file: ") != String::npos)
 		sprintf(type, "GeneralError");
-	else if(message.find("error while loading terrain: ") != String::npos)
+	else if(message.find("Error while loading Terrain: ") != String::npos)
 		sprintf(type, "GeneralError");
 	else if(message.find("Error loading texture ") != String::npos)
 		sprintf(type, "GeneralError");
