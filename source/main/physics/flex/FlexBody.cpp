@@ -23,7 +23,7 @@ along with Rigs of Rods.  If not, see <http://www.gnu.org/licenses/>.
 
 #include "skin.h"
 
-FlexBody::FlexBody(SceneManager *manager, node_t *nds, int numnds, char* meshname, char* uname, int ref, int nx, int ny, Vector3 offset, Quaternion rot, char* setdef, MaterialFunctionMapper *mfm, Skin *usedSkin, bool enableShadows)
+FlexBody::FlexBody(SceneManager *manager, node_t *nds, int numnds, char* meshname, char* uname, int ref, int nx, int ny, Vector3 offset, Quaternion rot, char* setdef, MaterialFunctionMapper *mfm, Skin *usedSkin, bool enableShadows) : snode(0), faulty(false)
 {
 	nodes=nds;
 	numnodes=numnds;
@@ -107,6 +107,7 @@ FlexBody::FlexBody(SceneManager *manager, node_t *nds, int numnds, char* meshnam
 	if(groupname == "")
 	{
 		LOG("FLEXBODY mesh not found: "+String(meshname));
+		faulty=true;
 		return;
 	}
 	// build new unique mesh name
@@ -518,12 +519,14 @@ FlexBody::FlexBody(SceneManager *manager, node_t *nds, int numnds, char* meshnam
 
 void FlexBody::setEnabled(bool e)
 {
+	if(faulty) return;
 	setVisible(e);
 	enabled = e;
 }
 
 void FlexBody::setVisible(bool visible)
 {
+	if(faulty) return;
 	if(!enabled) return;
 	if(snode)
 		snode->setVisible(visible);
@@ -531,6 +534,7 @@ void FlexBody::setVisible(bool visible)
 
 void FlexBody::printMeshInfo(Mesh* mesh)
 {
+	if(faulty) return;
 	if (mesh->sharedVertexData)
 	{
 		LOG("FLEXBODY Mesh has Shared Vertices:");
@@ -577,6 +581,7 @@ bool FlexBody::isinset(int n)
 
 Vector3 FlexBody::flexit()
 {
+	if(faulty) return Vector3::ZERO;
 	if(!enabled) return Vector3::ZERO;
 	if (haveblend) updateBlend();
 	//compute the local center
@@ -641,6 +646,7 @@ Vector3 FlexBody::flexit()
 
 void FlexBody::reset()
 {
+	if(faulty) return;
 	if (haveblend) 
 	{
 		for (int i=0; i<(int)vertex_count; i++) srccolors[i]=0x00000000;
