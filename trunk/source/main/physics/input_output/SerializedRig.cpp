@@ -4204,16 +4204,6 @@ int SerializedRig::loadTruck(String fname, SceneManager *manager, SceneNode *par
 		parser_warning(c, "Reached end of file "+ String(fname)+ ". No 'end' was found! Did you forgot it? ");
 	}
 
-	//cameras workaround
-	{
-		for (int i=0; i<freecamera; i++)
-		{
-			//parser_warning(c, "Camera dir="+TOSTRING(nodes[cameranodedir[i]].RelPosition-nodes[cameranodepos[i]].RelPosition)+" roll="+TOSTRING(nodes[cameranoderoll[i]].RelPosition-nodes[cameranodepos[i]].RelPosition));
-			revroll[i]=(nodes[cameranodedir[i]].RelPosition-nodes[cameranodepos[i]].RelPosition).crossProduct(nodes[cameranoderoll[i]].RelPosition-nodes[cameranodepos[i]].RelPosition).y>0;
-			if (revroll[i]) parser_warning(c, "Warning: camera definition is probably invalid and has been corrected. It should be center, back, left");
-		}
-	}
-
 	//wing closure
 	if (wingstart!=-1)
 	{
@@ -5266,7 +5256,7 @@ int SerializedRig::parse_args(parsecontext_t &context, Ogre::StringVector &args,
 {
 	try
 	{
-		args = Ogre::StringUtil::split(context.line, ", ");
+		args = Ogre::StringUtil::split(context.line, ", \t");
 	} catch(Exception &e)
 	{
 		parser_warning(context, "Exception on parsing: "+e.getFullDescription());
