@@ -881,6 +881,13 @@ int SerializedRig::loadTruck(String fname, SceneManager *manager, SceneNode *par
 				if(n > 3) default_node_volume   = PARSEREAL(args[3]);
 				if(n > 4) default_node_surface  = PARSEREAL(args[4]);
 				if(n > 5) strncpy(default_node_options, args[5].c_str(), 50);
+				
+				if (default_node_friction < 0)   default_node_friction=NODE_FRICTION_COEF_DEFAULT;
+				if (default_node_volume < 0)     default_node_volume=NODE_VOLUME_COEF_DEFAULT;
+				if (default_node_surface < 0)    default_node_surface=NODE_SURFACE_COEF_DEFAULT;
+				if (default_node_loadweight < 0) default_node_loadweight=NODE_LOADWEIGHT_DEFAULT;
+				if (n <= 4) memset(default_node_options, 0, sizeof default_node_options);
+
 				continue;
 			}
 
@@ -1427,42 +1434,46 @@ int SerializedRig::loadTruck(String fname, SceneManager *manager, SceneNode *par
 					switch (*options_pointer)
 					{
 						case 'i':
+						{
 							// invisible
 							htype=BEAM_INVISIBLE_HYDRO;
 							shockflag |= SHOCK_FLAG_INVISIBLE;
 							break;
+						}
 						case 's':
+						{
 							// passive shock
 							shockflag &= ~SHOCK_FLAG_NORMAL; // not normal anymore
 							shockflag |= SHOCK_FLAG_SOFTBUMP;
 							break;
+						}
 						case 'm':
-							{
-								// metric values: calculate sbound and lbound now
-								float beam_length = nodes[id1].AbsPosition.distance(nodes[id2].AbsPosition);
-								sbound = sbound / beam_length;
-								lbound = lbound / beam_length;
-							}
+						{
+							// metric values: calculate sbound and lbound now
+							float beam_length = nodes[id1].AbsPosition.distance(nodes[id2].AbsPosition);
+							sbound = sbound / beam_length;
+							lbound = lbound / beam_length;
+						}
 						case 'M':
+						{
+							// metric values: calculate sbound and lbound now
+							float beam_length = nodes[id1].AbsPosition.distance(nodes[id2].AbsPosition);
+							sbound = (beam_length - sbound) / beam_length;
+							lbound = (lbound - beam_length) / beam_length;
+
+							if (lbound < 0)
 							{
-								// metric values: calculate sbound and lbound now
-								float beam_length = nodes[id1].AbsPosition.distance(nodes[id2].AbsPosition);
-								sbound = (beam_length - sbound) / beam_length;
-								lbound = (lbound - beam_length) / beam_length;
-
-								if (lbound < 0)
-								{
-									parser_warning(c, "Metric shock length calculation failed, longbound less then beams spawn length, reset to beams spawn length (longbound=0).");
-									lbound = 0.0f;
-								}
-
-								if (sbound > 1)
-								{
-									parser_warning(c, "Metric shock length calculation failed, shortbound less then 0 meters, reset to 0 meters (shortbound=1).");
-									sbound = 1.0f;
-								}
+								parser_warning(c, "Metric shock length calculation failed, longbound less then beams spawn length, reset to beams spawn length (longbound=0).");
+								lbound = 0.0f;
 							}
-							break;
+
+							if (sbound > 1)
+							{
+								parser_warning(c, "Metric shock length calculation failed, shortbound less then 0 meters, reset to 0 meters (shortbound=1).");
+								sbound = 1.0f;
+							}
+						}
+						break;
 					}
 					options_pointer++;
 				}
