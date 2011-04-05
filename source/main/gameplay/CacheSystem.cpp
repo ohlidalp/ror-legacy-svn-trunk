@@ -1422,8 +1422,8 @@ void CacheSystem::fillTruckDetailInfo(Cache_Entry &entry, Ogre::DataStreamPtr ds
 					continue;
 				}
 				//replace '_' with ' '
-				char *tmp = authorname;
-				while (*tmp!=0) {if (*tmp=='_') *tmp=' ';tmp++;};
+				//char *tmp = authorname;
+				//while (*tmp!=0) {if (*tmp=='_') *tmp=' ';tmp++;};
 				//fill the struct now
 				author->id = authorid;
 				if(strnlen(authortype, 250) > 0)

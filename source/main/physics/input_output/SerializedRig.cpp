@@ -559,7 +559,14 @@ int SerializedRig::loadTruck(String fname, SceneManager *manager, SceneNode *par
 
 			if (c.line.size() > 13 && c.line.substr(0, 13) == "add_animation")
 			{
-				int n = parse_args(c, args, 5);
+
+				Ogre::StringVector options = Ogre::StringUtil::split(c.line.substr(14), ","); // "add_animation " = 14 characters
+
+				if (options.size() < 4)
+				{
+					LogManager::getSingleton().logMessage("Error parsing File (add_animation) " + String(fname) +" line " + StringConverter::toString(c.linecounter) + ". Not enough Options parsed, trying to continue ...");
+					continue;
+				}
 
 				/*
 				 * this command has several layers for splitting up the c.line:
@@ -591,11 +598,11 @@ int SerializedRig::loadTruck(String fname, SceneManager *manager, SceneNode *par
 				}
 
 				// parse the arguments individually
-				for(int i=0;i<n;i++)
+				for(unsigned int i=0;i<options.size();i++)
 				{
 					if(i == 0)
 					{
-						ratio = StringConverter::parseReal(args[i]);
+						ratio = StringConverter::parseReal(options[i]);
 						//set ratio
 						if (ratio)
 							prop->animratio[animnum]=ratio;
@@ -603,11 +610,11 @@ int SerializedRig::loadTruck(String fname, SceneManager *manager, SceneNode *par
 							parser_warning(c, "Animation-Ratio = 0 ?");
 					} else if(i == 1)
 					{
-						opt1 = StringConverter::parseReal(args[i]);
+						opt1 = StringConverter::parseReal(options[i]);
 						prop->animOpt1[animnum] = opt1;
 					} else if(i == 2)
 					{
-						opt2 = StringConverter::parseReal(args[i]);
+						opt2 = StringConverter::parseReal(options[i]);
 						prop->animOpt2[animnum] = opt2;
 						prop->animOpt3[animnum] = 0.0f;
 						prop->animOpt4[animnum] = 0.0f;
@@ -616,7 +623,7 @@ int SerializedRig::loadTruck(String fname, SceneManager *manager, SceneNode *par
 					} else
 					{
 						// parse the rest
-						Ogre::StringVector args2 = Ogre::StringUtil::split(args[i], ":");
+						Ogre::StringVector args2 = Ogre::StringUtil::split(options[i], ":");
 						if(args2.size() == 0)
 							continue;
 
@@ -1603,12 +1610,18 @@ int SerializedRig::loadTruck(String fname, SceneManager *manager, SceneNode *par
 				//parse animators
 				int id1, id2;
 				float ratio;
-				int n = parse_args(c, args, 4);
+				Ogre::StringVector options = Ogre::StringUtil::split(c.line, ",");
+				if (options.size() < 4)
+				{
+					LOG("Error parsing File (Animator) " + String(fname) +" line " + StringConverter::toString(c.linecounter) + ". trying to continue ...");
+					continue;
+				}
+
 				// the required values
-				id1 = parse_node_number(c, args[0]);
-				id2 = parse_node_number(c, args[1]);
-				ratio = StringConverter::parseReal(args[2]);
-				String optionStr = args[3];
+				id1 = parse_node_number(c, options[0]);
+				id2 = parse_node_number(c, options[1]);
+				ratio = StringConverter::parseReal(options[2]);
+				String optionStr = options[3];
 				Ogre::StringVector optionArgs = Ogre::StringUtil::split(optionStr, "|");
 
 				int htype=BEAM_HYDRO;
