@@ -92,6 +92,7 @@ private:
 	bool havetangents;
 	bool havetexture;
 	bool haveblend;
+	bool faulty;
 
 	Ogre::MeshPtr msh;
 

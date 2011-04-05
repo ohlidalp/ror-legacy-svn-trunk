@@ -175,8 +175,8 @@ VideoCamera *VideoCamera::parseLine(Ogre::SceneManager *mSceneMgr, Ogre::Camera 
 		nref    = truck->parse_node_number(c, args[0]);
 		nz      = truck->parse_node_number(c, args[1]);
 		ny      = truck->parse_node_number(c, args[2]);
-		ncam    = truck->parse_node_number(c, args[3]);
-		lookto  = truck->parse_node_number(c, args[4]);
+		ncam    = PARSEINT(args[3]);
+		lookto  = PARSEINT(args[4]);
 		offx    = PARSEREAL(args[5]);
 		offy    = PARSEREAL(args[6]);
 		offz    = PARSEREAL(args[7]);
