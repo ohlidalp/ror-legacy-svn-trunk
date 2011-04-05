@@ -1986,7 +1986,8 @@ int SerializedRig::loadTruck(String fname, SceneManager *manager, SceneNode *par
 				int id1, id2,keys,keyl;
 				float rateShort, rateLong, shortl, longl;
 				char options[250]="";
-				char descr[200] = "";
+				memset(options, 0, 249);
+				String descr = String();
 				hascommands=1;
 				Real startDelay=0;
 				Real stopDelay=0;
@@ -2004,7 +2005,7 @@ int SerializedRig::loadTruck(String fname, SceneManager *manager, SceneNode *par
 					keys       = PARSEINT (args[5]);
 					keyl       = PARSEINT (args[6]);
 					if(n > 7)  opt = args[7][0];
-					if(n > 8)  strncpy(descr, args[8].c_str(), 250);
+					if(n > 8)  descr = args[8];
 					if(n > 9)  startDelay = PARSEREAL(args[9]);
 					if(n > 10) stopDelay  = PARSEREAL(args[10]);
 					if(n > 11) strncpy(startFunction, args[11].c_str(), 255);
@@ -2026,7 +2027,7 @@ int SerializedRig::loadTruck(String fname, SceneManager *manager, SceneNode *par
 					keys       = PARSEINT (args[6]);
 					keyl       = PARSEINT (args[7]);
 					if(n > 8)  strncpy(options, args[8].c_str(), 250);
-					if(n > 9)  strncpy(descr, args[9].c_str(), 250);
+					if(n > 9)  descr = args[9];
 					if(n > 10) startDelay = PARSEREAL(args[10]);
 					if(n > 11) stopDelay  = PARSEREAL(args[11]);
 					if(n > 12) strncpy(startFunction, args[12].c_str(), 255);
@@ -2043,8 +2044,10 @@ int SerializedRig::loadTruck(String fname, SceneManager *manager, SceneNode *par
 				int htype=BEAM_HYDRO;
 
 				char *options_pointer = options;
-				while (*options_pointer != 0) {
-					if(*options_pointer=='i') {
+				while (*options_pointer != 0)
+				{
+					if(*options_pointer=='i')
+					{
 						htype=BEAM_INVISIBLE_HYDRO;
 						break;
 					}
@@ -2065,9 +2068,12 @@ int SerializedRig::loadTruck(String fname, SceneManager *manager, SceneNode *par
 					switch (*options_pointer)
 					{
 						case 'r':
+						{
 							beams[pos].bounded=ROPE;
 							break;
+						}
 						case 'c':
+						{
 							if(beams[pos].isOnePressMode>0)
 							{
 								parser_warning(c, "Command cannot be one-pressed and self centering at the same time!");
@@ -2075,7 +2081,9 @@ int SerializedRig::loadTruck(String fname, SceneManager *manager, SceneNode *par
 							}
 							beams[pos].iscentering=true;
 							break;
+						}
 						case 'p':
+						{
 							if(beams[pos].iscentering)
 							{
 								parser_warning(c, "Command cannot be one-pressed and self centering at the same time!");
@@ -2088,7 +2096,9 @@ int SerializedRig::loadTruck(String fname, SceneManager *manager, SceneNode *par
 							}
 							beams[pos].isOnePressMode=1;
 							break;
+						}
 						case 'o':
+						{
 							if(beams[pos].iscentering)
 							{
 								parser_warning(c, "Command cannot be one-pressed and self centering at the same time!");
@@ -2101,9 +2111,12 @@ int SerializedRig::loadTruck(String fname, SceneManager *manager, SceneNode *par
 							}
 							beams[pos].isOnePressMode=2;
 							break;
+						}
 						case 'f':
+						{
 							beams[pos].isforcerestricted=true;
 							break;
+						}
 					}
 					options_pointer++;
 				}
@@ -2111,23 +2124,13 @@ int SerializedRig::loadTruck(String fname, SceneManager *manager, SceneNode *par
 				beams[pos].Lhydro=beams[pos].L;
 				//add short key
 				commandkey[keys].beams.push_back(-pos);
-				char *descr_pointer = descr;
-				//replace '_' with ' '
-				while (*descr_pointer!=0) {if (*descr_pointer=='_') *descr_pointer=' ';descr_pointer++;};
-
-				if(strlen(descr) != 0)
-					commandkey[keys].description = String(descr);
-				else if (strlen(descr) == 0 && commandkey[keys].description.empty())
-					commandkey[keys].description = "";
+				commandkey[keys].description = descr;
+					
 
 				//add long key
 				commandkey[keyl].beams.push_back(pos);
-				if(strlen(descr) != 0)
-					commandkey[keyl].description = String(descr);
-				else if (strlen(descr) == 0 && commandkey[keyl].description.empty())
-					commandkey[keyl].description = "";
+				commandkey[keyl].description = descr;
 
-				//parser_warning(c, "added command: short=" + TOSTRING(keys)+ ", long=" + TOSTRING(keyl) + ", descr=" + (descr));
 				beams[pos].commandRatioShort=rateShort;
 				beams[pos].commandRatioLong=rateLong;
 				beams[pos].commandShort=shortl;

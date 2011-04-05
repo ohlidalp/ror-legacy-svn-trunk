@@ -1683,7 +1683,7 @@ void Beam::calcForcesEuler(int doUpdate, Real dt, int step, int maxstep, Beam** 
 							if(!canwork)
 								continue;
 
-							beams[bbeam].L *= (1.0 + beams[bbeam].commandRatioLong * v * crankfactor * dt / beams[bbeam].L);;
+							beams[bbeam].L *= (1.0 + beams[bbeam].commandRatioLong * v * crankfactor * dt / beams[bbeam].L);
 							dl=fabs(dl-beams[bbeam].L);
 							if(v>0.5)
 							{
