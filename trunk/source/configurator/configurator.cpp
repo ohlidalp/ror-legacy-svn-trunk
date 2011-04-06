@@ -990,7 +990,7 @@ MyDialog::MyDialog(const wxString& title, MyApp *_app) : wxDialog(NULL, wxID_ANY
 	addAboutEntry("priotr", "several linux fixes", "", x_row1, y);
 	addAboutEntry("cptf", "several linux gcc fixes", "", x_row1, y);
 	addAboutEntry("88Toyota", "clutch force patches", "", x_row1, y);
-	
+	addAboutEntry("synthead", "minor linux fixes", "", x_row1, y);
 	y+=20;
 
 	addAboutTitle(_("Content Contributors"), x_row1, y);
@@ -1023,7 +1023,7 @@ MyDialog::MyDialog(const wxString& title, MyApp *_app) : wxDialog(NULL, wxID_ANY
 	y+=20;
 
 	addAboutTitle(_("Missing someone?"), x_row1, y);
-	addAboutEntry("missing someone?", "if you are missing someone on this list, please drop us a line: support@rigsofrods.com", "mailto:support@rigsofrods.com", x_row1, y);
+	addAboutEntry("missing someone?", "if you are missing someone on this list, please drop us a line:\nsupport@rigsofrods.com", "mailto:support@rigsofrods.com", x_row1, y);
 
 	wxSize size = nbook->GetBestVirtualSize();
 	size.x = 400;
