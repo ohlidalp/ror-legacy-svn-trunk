@@ -255,6 +255,7 @@ private:
 	std::vector<wxStaticText *> renderer_text;
 	std::vector<wxChoice *> renderer_choice;
 	wxChoice *textfilt;
+	wxChoice *inputgrab;
 	wxChoice *sky;
 	wxChoice *shadow;
 	wxCheckBox *shadowOptimizations;
@@ -267,12 +268,14 @@ private:
 	wxCheckBox *advanced_logging;
 	wxCheckBox *ingame_console;
 	wxCheckBox *dofdebug;
+	wxCheckBox *nocrashrpt;
 	wxCheckBox *debug_vidcam;
 	wxCheckBox *debug_triggers;
 	wxCheckBox *beam_break_debug;
 	wxCheckBox *beam_deform_debug;
 	wxCheckBox *dcm;
 	wxTextCtrl *fovint, *fovext;
+	wxTextCtrl *presel_map, *presel_truck;
 	wxCheckBox *particles;
 	wxCheckBox *heathaze;
 	wxCheckBox *hydrax;
@@ -1077,7 +1080,30 @@ MyDialog::MyDialog(const wxString& title, MyApp *_app) : wxDialog(NULL, wxID_ANY
 	dofdebug=new wxCheckBox(debugPanel, -1, _("Enable Depth of Field Debug"), wxPoint(10, y));
 	dofdebug->SetToolTip(_("Shows the DOF debug display on the screen in order to identify DOF problems"));
 	y+=15;
+
+	nocrashrpt=new wxCheckBox(debugPanel, -1, _("Disable Crash Reporting"), wxPoint(10, y));
+	nocrashrpt->SetToolTip(_("Disables the crash handling system. Only use for debugging purposes"));
+	y+=25;
 	
+	dText = new wxStaticText(debugPanel, -1, _("Input Grabbing:"), wxPoint(10,y+3));
+	inputgrab=new wxChoice(debugPanel, -1, wxPoint(x_row1, y), wxSize(200, -1), 0);
+	inputgrab->Append(conv("All"));
+	inputgrab->Append(conv("Dynamically"));
+	inputgrab->Append(conv("None"));
+	inputgrab->SetToolTip(_("Determines the input capture mode. All is the default, Dynamically is good for windowed mode."));
+	inputgrab->SetSelection(0); // All
+	y+=35;
+
+    dText = new wxStaticText(debugPanel, -1, _("Preselected Map: "), wxPoint(10, y));
+	presel_map=new wxTextCtrl(debugPanel, -1, wxString(), wxPoint(x_row1, y), wxSize(170, -1));
+	presel_map->SetToolTip(_("The terrain you want to load upon RoR startup. Might remove the startup selection menu."));
+	y+=25;
+
+    dText = new wxStaticText(debugPanel, -1, _("Preselected Truck: "), wxPoint(10,y));
+	presel_truck=new wxTextCtrl(debugPanel, -1, wxString(), wxPoint(x_row1, y), wxSize(170, -1));
+	presel_truck->SetToolTip(_("The truck you want to load upon RoR startup. Might remove the startup selection menu."));
+	y+=25;
+
 	y+=35;
 	wxHyperlinkCtrl *link = new wxHyperlinkCtrl(debugPanel, -1, _("(read more on how to use these options here)"), "http://www.rigsofrods.com/wiki/pages/Debugging_Trucks", wxPoint(10, y));
 
@@ -1642,6 +1668,7 @@ void MyDialog::updateRendersystems(Ogre::RenderSystem *rs)
 
 void MyDialog::SetDefaults()
 {
+	inputgrab->SetSelection(0); //All
 	textfilt->SetSelection(3); //anisotropic
 	sky->SetSelection(1);//caelum
 	shadow->SetSelection(1);//texture shadows
@@ -1669,11 +1696,14 @@ void MyDialog::SetDefaults()
 
 	replaymode->SetValue(false);
 	dtm->SetValue(false);
+	presel_map->SetValue(wxString());
+	presel_truck->SetValue(wxString());
 	fovint->SetValue("75");
 	fovext->SetValue("60");
 	advanced_logging->SetValue(false);
 	ingame_console->SetValue(false);
 	dofdebug->SetValue(false);
+	nocrashrpt->SetValue(false);
 	debug_triggers->SetValue(false);
 	debug_vidcam->SetValue(false);
 	beam_break_debug->SetValue(false);
@@ -1693,7 +1723,7 @@ void MyDialog::SetDefaults()
 	sunburn->SetValue(false);
 	hdr->SetValue(false);
 	glow->SetValue(false);
-	dof->SetValue(true);
+	dof->SetValue(false);
 	mblur->SetValue(false);
 	skidmarks->SetValue(false);
 	creaksound->SetValue(true);
@@ -1717,12 +1747,18 @@ void MyDialog::getSettingsControls()
 {
 	char tmp[255]="";
 	settings["Texture Filtering"] = conv(textfilt->GetStringSelection());
+	settings["Input Grab"] = conv(inputgrab->GetStringSelection());
+
+	
 	settings["Sky effects"] = conv(sky->GetStringSelection());
 
 	settings["Shadow technique"] = conv(shadow->GetStringSelection());
 	sprintf(tmp, "%d", sightRange->GetValue());
 	settings["SightRange"] = tmp;
 	settings["Shadow optimizations"] = (shadowOptimizations->GetValue()) ? "Yes" : "No";
+
+	settings["Preselected Map"] = presel_map->GetValue();
+	settings["Preselected Truck"] = presel_truck->GetValue();
 
 	settings["FOV Internal"] = fovint->GetValue();
 	settings["FOV External"] = fovext->GetValue();
@@ -1734,6 +1770,7 @@ void MyDialog::getSettingsControls()
 	settings["Advanced Logging"] = (advanced_logging->GetValue()) ? "Yes" : "No";
 	settings["Enable Ingame Console"] = (ingame_console->GetValue()) ? "Yes" : "No";
 	settings["DOFDebug"] = (dofdebug->GetValue()) ? "Yes" : "No";
+	settings["NoCrashRpt"] = (nocrashrpt->GetValue()) ? "Yes" : "No";
 	settings["Trigger Debug"] = (debug_triggers->GetValue()) ? "Yes" : "No";
 	settings["VideoCameraDebug"] = (debug_vidcam->GetValue()) ? "Yes" : "No";
 	settings["Beam Break Debug"] = (beam_break_debug->GetValue()) ? "Yes" : "No";
@@ -1809,6 +1846,7 @@ void MyDialog::updateSettingsControls()
 
 	Ogre::String st;
 	st = settings["Texture Filtering"]; if (st.length()>0) textfilt->SetStringSelection(conv(st));
+	st = settings["Input Grab"]; if (st.length()>0) inputgrab->SetStringSelection(conv(st));
 	st = settings["Sky effects"]; if (st.length()>0) sky->SetStringSelection(conv(st));
 	st = settings["Shadow technique"]; if (st.length()>0) shadow->SetStringSelection(conv(st));
 	st = settings["SightRange"]; if (st.length()>0) sightRange->SetValue((int)atof(st.c_str()));
@@ -1822,6 +1860,7 @@ void MyDialog::updateSettingsControls()
 	st = settings["Advanced Logging"]; if (st.length()>0) advanced_logging->SetValue(st=="Yes");
 	st = settings["Enable Ingame Console"]; if (st.length()>0) ingame_console->SetValue(st=="Yes");
 	st = settings["DOFDebug"]; if (st.length()>0) dofdebug->SetValue(st=="Yes");
+	st = settings["NoCrashRpt"]; if (st.length()>0) nocrashrpt->SetValue(st=="Yes");
 	st = settings["Trigger Debug"]; if (st.length()>0) debug_triggers->SetValue(st=="Yes");
 	st = settings["VideoCameraDebug"]; if (st.length()>0) debug_vidcam->SetValue(st=="Yes");
 	st = settings["Debug Collisions"]; if (st.length()>0) dcm->SetValue(st=="Yes");
@@ -1854,6 +1893,9 @@ void MyDialog::updateSettingsControls()
 
 	st = settings["FOV Internal"]; if (st.length()>0) fovint->SetValue(st);
 	st = settings["FOV External"]; if (st.length()>0) fovext->SetValue(st);
+
+	st = settings["Preselected Map"]; if (st.length()>0) presel_map->SetValue(st);
+	st = settings["Preselected Truck"]; if (st.length()>0) presel_truck->SetValue(st);
 
 	//update textboxes
 	wxScrollEvent dummye;

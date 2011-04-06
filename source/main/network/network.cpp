@@ -55,7 +55,7 @@ Network *net_instance;
 void *s_sendthreadstart(void* vid)
 {
 #ifdef USE_CRASHRPT
-	if(SSETTING("NoCrashRpt").empty())
+	if(!BSETTING("NoCrashRpt"))
 	{
 		// add the crash handler for this thread
 		CrThreadAutoInstallHelper cr_thread_install_helper;
@@ -69,7 +69,7 @@ void *s_sendthreadstart(void* vid)
 void *s_receivethreadstart(void* vid)
 {
 #ifdef USE_CRASHRPT
-	if(SSETTING("NoCrashRpt").empty())
+	if(!BSETTING("NoCrashRpt"))
 	{
 		// add the crash handler for this thread
 		CrThreadAutoInstallHelper cr_thread_install_helper(0);
