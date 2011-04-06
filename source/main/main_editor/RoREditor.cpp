@@ -44,7 +44,7 @@ bool RoREditor::Initialize(std::string hwndStr, std::string mainhwndStr)
 		return false;
 	
 	SETTINGS.setSetting("Preselected Truck", "agoras.truck");
-	SETTINGS.setSetting("Preselected Map",   "grenoble.terrn");
+	SETTINGS.setSetting("Preselected Map",   "simple.terrn");
 	SETTINGS.setSetting("Enter Preselected Truck",   "Yes");
 	
 	try
