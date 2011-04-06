@@ -344,9 +344,6 @@ public:
 	static float getGravity() { return gravity; };
 	static void setGravity(float value);
 
-	void shutdown_pre();
-	void shutdown_final();
-
 	void loadTerrain(Ogre::String terrainfile);
 	void loadClassicTerrain(Ogre::String terrainfile);
 	void loadOgitorTerrain(Ogre::String terrainfile);
@@ -358,6 +355,9 @@ public:
 
 
 public:
+
+	void shutdown_final();
+
 	// mutex'ed data
 	void setNetQuality(int q);
 	int getNetQuality(bool ack=false);
@@ -408,8 +408,7 @@ protected:
 	//	float lastangle;
 	float clutch;
 	Editor *editor;
-	int showcredits;
-	float creditsviewtime;
+
 	static float gravity;
 
 	bool netmode;
