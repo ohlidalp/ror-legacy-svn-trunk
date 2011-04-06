@@ -195,8 +195,6 @@ bool ContentManager::init(void)
 
 
 	// and the content
-	//main synced streams
-	ResourceGroupManager::getSingleton().addResourceLocation(SSETTING("Streams Path"),      "FileSystem", "Streams");
 	ResourceGroupManager::getSingleton().addResourceLocation(SSETTING("User Path")+"packs", "FileSystem", "Packs");
 	ResourceGroupManager::getSingleton().addResourceLocation(SSETTING("User Path")+"mods",  "FileSystem", "Packs");
 
@@ -205,7 +203,6 @@ bool ContentManager::init(void)
 
 	exploreFolders("VehicleFolders");
 	exploreFolders("TerrainFolders");
-	exploreFolders("Streams");
 
 	LOG("initialiseAllResourceGroups() - Content");
 	try
