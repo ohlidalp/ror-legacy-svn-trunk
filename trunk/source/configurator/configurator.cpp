@@ -73,6 +73,7 @@ using namespace std;
 #include <wx/timer.h>
 #include <wx/version.h>
 #include <wx/log.h>
+#include <wx/statline.h>
 #include "utils.h"
 
 #include "ImprovedConfigFile.h"
@@ -228,8 +229,6 @@ public:
 	void OnButCheckOpenCLBW(wxCommandEvent& event);
 	void updateRoR();
 	void OnsightrangesliderScroll(wxScrollEvent& event);
-	void OnSimpleSliderScroll(wxScrollEvent& event);
-	void OnSimpleSlider2Scroll(wxScrollEvent& event);
 	void OnForceFeedbackScroll(wxScrollEvent& event);
 	void OnNoteBookPageChange(wxNotebookEvent& event);
 	void OnNoteBook2PageChange(wxNotebookEvent& event);
@@ -241,6 +240,8 @@ private:
 	//bool postinstall;
 	Ogre::Root *ogreRoot;
 	wxPanel *graphicsPanel;
+	wxPanel *gamePanel;
+	wxPanel *debugPanel;
 	wxPanel *settingsPanel;
 	wxPanel *rsPanel;
 	wxTextCtrl *gputext;
@@ -255,10 +256,15 @@ private:
 	wxStaticText *sightRangeText;
 	wxChoice *water;
 	wxCheckBox *waves;
-	wxSlider *simpleSlider;
-	wxSlider *simpleSlider2;
 	wxCheckBox *replaymode;
 	wxCheckBox *dtm;
+	wxCheckBox *advanced_logging;
+	wxCheckBox *ingame_console;
+	wxCheckBox *dofdebug;
+	wxCheckBox *debug_vidcam;
+	wxCheckBox *debug_triggers;
+	wxCheckBox *beam_break_debug;
+	wxCheckBox *beam_deform_debug;
 	wxCheckBox *dcm;
 	wxCheckBox *particles;
 	wxCheckBox *heathaze;
@@ -286,7 +292,6 @@ private:
 	wxChoice *vegetationMode;
 	wxChoice *screenShotFormat;
 	wxChoice *gearBoxMode;
-	wxCheckBox *wheel2;
 	wxCheckBox *ffEnable;
 	wxSlider *ffOverall;
 	wxStaticText *ffOverallText;
@@ -399,8 +404,6 @@ BEGIN_EVENT_TABLE(MyDialog, wxDialog)
 	EVT_HTML_LINK_CLICKED(update_html, MyDialog::OnLinkClickedUpdate)
 	EVT_CHOICE(shadowschoice, MyDialog::onChangeShadowChoice)
 	EVT_COMMAND_SCROLL(sightrangeslider, MyDialog::OnsightrangesliderScroll)
-	EVT_COMMAND_SCROLL_CHANGED(SCROLL1, MyDialog::OnSimpleSliderScroll)
-	EVT_COMMAND_SCROLL_CHANGED(SCROLL2, MyDialog::OnSimpleSlider2Scroll)
 	EVT_COMMAND_SCROLL(FFSLIDER, MyDialog::OnForceFeedbackScroll)
 	EVT_CHOICE(EVC_LANG, MyDialog::onChangeLanguageChoice)
 	//EVT_BUTTON(BTN_REMAP, MyDialog::OnButRemap)
@@ -815,10 +818,6 @@ MyDialog::MyDialog(const wxString& title, MyApp *_app) : wxDialog(NULL, wxID_ANY
 	mainsizer->Add(btnsizer, 0, wxGROW);
 	this->SetSizer(mainsizer);
 
-	//adding notebook elements
-	wxPanel *simpleSettingsPanel=new wxPanel(nbook, -1);
-	nbook->AddPage(simpleSettingsPanel, _("Simple Settings"), true);
-
 	// settings
 	settingsPanel=new wxPanel(nbook, -1);
 	nbook->AddPage(settingsPanel, _("Settings"), true);
@@ -834,6 +833,9 @@ MyDialog::MyDialog(const wxString& title, MyApp *_app) : wxDialog(NULL, wxID_ANY
 
 	graphicsPanel=new wxPanel(snbook, -1);
 	snbook->AddPage(graphicsPanel, _("Graphics"), true);
+
+	gamePanel=new wxPanel(snbook, -1);
+	snbook->AddPage(gamePanel, _("Gameplay"), true);
 
 	wxPanel *soundsPanel=new wxPanel(snbook, -1);
 	snbook->AddPage(soundsPanel, _("Sounds"), false);
@@ -865,6 +867,10 @@ MyDialog::MyDialog(const wxString& title, MyApp *_app) : wxDialog(NULL, wxID_ANY
 	wxPanel *advancedPanel=new wxPanel(snbook, -1);
 	snbook->AddPage(advancedPanel, _("Advanced"), false);
 
+	debugPanel=new wxPanel(snbook, -1);
+	snbook->AddPage(debugPanel, _("Debug"), true);
+
+
 #if OGRE_PLATFORM == OGRE_PLATFORM_WIN32
 	// this is removed for now
 	wxPanel *updatePanel=new wxPanel(nbook, -1);
@@ -880,34 +886,108 @@ MyDialog::MyDialog(const wxString& title, MyApp *_app) : wxDialog(NULL, wxID_ANY
 
 	wxStaticText *dText = 0;
 
-	// simple settings panel
-	dText = new wxStaticText(simpleSettingsPanel, -1, _("This can help you to set the Configurations in a simple way.\nJust move the slider below and press save and play."), wxPoint(10,10));
-
-	dText = new wxStaticText(simpleSettingsPanel, -1, _("CPU Settings"), wxPoint(10,80));
-
-	simpleSlider=new wxSlider(simpleSettingsPanel, SCROLL1, 1, 0, 2, wxPoint(10, 100), wxSize(450, 40));
-	simpleSlider->SetToolTip(_("Sets all settings in a simple way"));
-
-	dText = new wxStaticText(simpleSettingsPanel, -1, _("High Performance"), wxPoint(10,140));
-	dText = new wxStaticText(simpleSettingsPanel, -1, _("Balanced"), wxPoint(220,140));
-	dText = new wxStaticText(simpleSettingsPanel, -1, _("High Quality"), wxPoint(400,140));
-
-	dText = new wxStaticText(simpleSettingsPanel, -1, _("Graphics Settings"), wxPoint(10,240));
-
-	simpleSlider2=new wxSlider(simpleSettingsPanel, SCROLL2, 1, 0, 2, wxPoint(10, 260), wxSize(450, 40));
-	simpleSlider2->SetToolTip(_("Sets all settings in a simple way"));
-
-	dText = new wxStaticText(simpleSettingsPanel, -1, _("High Performance"), wxPoint(10,300));
-	dText = new wxStaticText(simpleSettingsPanel, -1, _("Balanced"), wxPoint(220,300));
-	dText = new wxStaticText(simpleSettingsPanel, -1, _("High Quality"), wxPoint(400,300));
-
 	// clear the renderer settings and fill them later
 	dText = new wxStaticText(rsPanel, -1, _("Render System"), wxPoint(10, 28));
 	renderer = new wxChoice(rsPanel, EVT_CHANGE_RENDERER, wxPoint(220, 25), wxSize(220, -1), 0);
-
 	// renderer options done, do the rest
+
+	// gamePanel
 	int y = 10;
 	int x_row1 = 150, x_row2 = 300;
+
+	dText = new wxStaticText(gamePanel, -1, _("Language:"), wxPoint(10, y));
+	wxArrayString choices;
+	int sel = 0;
+	if(avLanguages.size() > 0)
+	{
+		int counter = 0;
+		std::vector<wxLanguageInfo*>::iterator it;
+		for(it = avLanguages.begin(); it!=avLanguages.end(); it++, counter++)
+		{
+			if(*it == language)
+				sel = counter;
+			choices.Add((*it)->Description);
+		}
+	} else
+	{
+		choices.Add(_("English"));
+	}
+	languageMode=new wxChoice(gamePanel, EVC_LANG, wxPoint(x_row1, y), wxSize(200, -1), choices, wxCB_READONLY);
+	languageMode->SetSelection(sel);
+	languageMode->SetToolTip(_("This setting overrides the system's default language. You need to restart the configurator to apply the changes."));
+	y+=35;
+
+
+	dText = new wxStaticText(gamePanel, -1, _("FoV:"), wxPoint(10,y+3));
+	wxTextCtrl *fov_int = new wxTextCtrl(gamePanel, -1, "60", wxPoint(x_row1, y), wxSize(200, -1), 0);
+	y+=35;
+
+	extcam=new wxCheckBox(gamePanel, -1, _("Disable Camera Pitching"), wxPoint(x_row1, y));
+	extcam->SetToolTip(_("If you dislike the pitching external vehicle camera, you can disable it here."));
+	y+=25;
+
+	dText = new wxStaticText(gamePanel, -1, _("User Token: "), wxPoint(10,y+3));
+	usertoken=new wxTextCtrl(gamePanel, -1, wxString(), wxPoint(x_row1, y), wxSize(200, -1));
+	usertoken->SetToolTip(_("Your rigsofrods.com User Token."));
+	btnToken = new wxButton(gamePanel, get_user_token, _("Get Token"), wxPoint(x_row1+210, y), wxSize(90,25));
+	y+=35;
+
+	// creak sound?
+	creaksound=new wxCheckBox(gamePanel, -1, _("disable creak sound"), wxPoint(x_row1, y));
+	creaksound->SetToolTip(_("You can disable the default creak sound by checking this box"));
+
+	// debugPanel
+	y = 10;
+	x_row1 = 150;
+	x_row2 = 300;
+	
+	ingame_console=new wxCheckBox(debugPanel, -1, _("Ingame Console"), wxPoint(10, y));
+	ingame_console->SetToolTip(_(""));
+	y+=15;
+
+	dtm=new wxCheckBox(debugPanel, -1, _("Debug Truck Mass"), wxPoint(10, y));
+	dtm->SetToolTip(_("Prints all node masses to the RoR.log"));
+	y+=15;
+
+	advanced_logging=new wxCheckBox(debugPanel, -1, _("Advanced Logging"), wxPoint(10, y));
+	advanced_logging->SetToolTip(_(""));
+	y+=15;
+
+	
+
+	beam_break_debug=new wxCheckBox(debugPanel, -1, _("Beam Break Debug"), wxPoint(10, y));
+	beam_break_debug->SetToolTip(_(""));
+	y+=15;
+
+	beam_deform_debug=new wxCheckBox(debugPanel, -1, _("Beam Deform Debug"), wxPoint(10, y));
+	beam_deform_debug->SetToolTip(_(""));
+	y+=15;
+
+	debug_vidcam=new wxCheckBox(debugPanel, -1, _("Debug VideoCameras"), wxPoint(10, y)); //VideoCameraDebug
+	debug_vidcam->SetToolTip(_(""));
+	y+=15;
+
+	debug_triggers=new wxCheckBox(debugPanel, -1, _("Trigger Debug"), wxPoint(10, y)); //VideoCameraDebug
+	debug_triggers->SetToolTip(_(""));
+	y+=15;
+	
+	dcm=new wxCheckBox(debugPanel, -1, _("Debug Collision Meshes"), wxPoint(10, y));
+	dcm->SetToolTip(_("Shows all Collision meshes in Red to be able to position them correctly. Only use for debugging!"));
+	y+=15;
+
+	beamdebug=new wxCheckBox(debugPanel, -1, _("Enable Visual Beam Debug"), wxPoint(10, y));
+	beamdebug->SetToolTip(_("Displays node numbers and more info along nodes and beams."));
+	y+=15;
+
+	dofdebug=new wxCheckBox(debugPanel, -1, _("Enable Depth of Field Debug"), wxPoint(10, y));
+	dofdebug->SetToolTip(_(""));
+	y+=15;
+	
+
+	// graphics panel
+	y = 10;
+	x_row1 = 150;
+	x_row2 = 300;
 	dText = new wxStaticText(graphicsPanel, -1, _("Texture filtering:"), wxPoint(10,y+3));
 	textfilt=new wxChoice(graphicsPanel, -1, wxPoint(x_row1, y), wxSize(200, -1), 0);
 	textfilt->Append(conv("None (fastest)"));
@@ -1018,7 +1098,7 @@ MyDialog::MyDialog(const wxString& title, MyApp *_app) : wxDialog(NULL, wxID_ANY
 	screenShotFormat->SetToolTip(_("In what Format should screenshots be saved?"));
 
 	//sounds panel
-	dText = new wxStaticText(soundsPanel, -1, _("Sound source:"), wxPoint(5,28));
+	dText = new wxStaticText(soundsPanel, -1, _("Sound device:"), wxPoint(5,28));
 	sound=new wxChoice(soundsPanel, -1, wxPoint(100, 25), wxSize(350, -1), 0);
 	sound->Append(conv("No sound"));
 	sound->Append(conv("Default"));
@@ -1028,10 +1108,6 @@ MyDialog::MyDialog(const wxString& title, MyApp *_app) : wxDialog(NULL, wxID_ANY
 	DSoundEnumerate(sound);
 #endif
 
-	// creak sound?
-	creaksound=new wxCheckBox(soundsPanel, -1, _("disable creak sound"), wxPoint(150, 70));
-	creaksound->SetToolTip(_("You can disable the default creak sound by checking this box"));
-
 	//cpu panel
 	dText = new wxStaticText(cpuPanel, -1, _("Thread number:"), wxPoint(20,28));
 	thread=new wxChoice(cpuPanel, -1, wxPoint(150, 25), wxSize(200, -1), 0);
@@ -1039,9 +1115,6 @@ MyDialog::MyDialog(const wxString& title, MyApp *_app) : wxDialog(NULL, wxID_ANY
 	thread->Append(conv("2 (Hyper-Threading or Dual core CPU)"));
 	//thread->Append(conv("3 (multi core CPU, one thread per beam)"));
 	thread->SetToolTip(_("If you have a Hyper-Threading, or Dual core or multiprocessor computer,\nyou will have a huge gain in speed by choosing the second option.\nBut this mode has some camera shaking issues.\n"));
-
-	wheel2=new wxCheckBox(cpuPanel, -1, _("Enable advanced wheel model"), wxPoint(150, 70));
-	wheel2->SetToolTip(_("Some vehicles may include an advanced wheel model that is CPU intensive.\nYou can force these vehicles to use a simpler model by unchecking this box."));
 
 	//force feedback panel
 	ffEnable=new wxCheckBox(ffPanel, -1, _("Enable Force Feedback"), wxPoint(150, 25));
@@ -1109,12 +1182,6 @@ MyDialog::MyDialog(const wxString& title, MyApp *_app) : wxDialog(NULL, wxID_ANY
 	serverpassword->SetToolTip(_("The server password, if required."));
 	sizer_net->Add(panel_net_bottom, 0, wxGROW);
 
-	dText = new wxStaticText(panel_net_bottom, -1, _("User Token: "), wxPoint(10,80));
-	usertoken=new wxTextCtrl(panel_net_bottom, -1, wxString(), wxPoint(150, 80), wxSize(200, -1));
-	usertoken->SetToolTip(_("Your rigsofrods.com User Token."));
-
-	btnToken = new wxButton(panel_net_bottom, get_user_token, _("Get Token"), wxPoint(360, 78), wxSize(110,25));
-
 	btnUpdate = new wxButton(panel_net_bottom, net_test, _("Update"), wxPoint(360, 5), wxSize(110,65));
 
 	netPanel->SetSizer(sizer_net);
@@ -1141,28 +1208,6 @@ MyDialog::MyDialog(const wxString& title, MyApp *_app) : wxDialog(NULL, wxID_ANY
 	flaresMode->SetToolTip(_("Determines which lights will project light on the environment.\nThe more light sources are used, the slowest it will be."));
 	y+=25;
 
-	dText = new wxStaticText(advancedPanel, -1, _("Language:"), wxPoint(10, y));
-	wxArrayString choices;
-	int sel = 0;
-	if(avLanguages.size() > 0)
-	{
-		int counter = 0;
-		std::vector<wxLanguageInfo*>::iterator it;
-		for(it = avLanguages.begin(); it!=avLanguages.end(); it++, counter++)
-		{
-			if(*it == language)
-				sel = counter;
-			choices.Add((*it)->Description);
-		}
-	} else
-	{
-		choices.Add(_("(No Languages found)"));
-	}
-	languageMode=new wxChoice(advancedPanel, EVC_LANG, wxPoint(115, y), wxSize(200, -1), choices, wxCB_READONLY);
-	languageMode->SetSelection(sel);
-	languageMode->SetToolTip(_("This setting overrides the system's default language. You need to restart the configurator to apply the changes."));
-	y+=25;
-
 	dText = new wxStaticText(advancedPanel, -1, _("In case the mods cache becomes corrupted, \nuse these buttons to fix the cache."), wxPoint(10, y));
 	y+=40;
 	wxButton *btn = new wxButton(advancedPanel, regen_cache, _("Regen cache"), wxPoint(35, y));
@@ -1176,9 +1221,6 @@ MyDialog::MyDialog(const wxString& title, MyApp *_app) : wxDialog(NULL, wxID_ANY
 
 	// second column
 	y=30;
-	extcam=new wxCheckBox(advancedPanel, -1, _("Disable Camera Pitching"), wxPoint(320, y));
-	extcam->SetToolTip(_("If you dislike the pitching external vehicle camera, you can disable it here."));
-	y+=15;
 	replaymode=new wxCheckBox(advancedPanel, -1, _("Replay Mode"), wxPoint(320, y));
 	replaymode->SetToolTip(_("Replay mode. (Can affect your frame rate)"));
 	y+=15;
@@ -1196,15 +1238,6 @@ MyDialog::MyDialog(const wxString& title, MyApp *_app) : wxDialog(NULL, wxID_ANY
 	rtshader=new wxCheckBox(advancedPanel, -1, _("RT Shader System"), wxPoint(320, y));
 	rtshader->SetToolTip(_("Enables the Runtime Shader generation System. EXPERIMENTAL"));
 	rtshader->Disable();
-	y+=15;
-	dtm=new wxCheckBox(advancedPanel, -1, _("Debug Truck Mass"), wxPoint(320, y));
-	dtm->SetToolTip(_("Prints all node masses to the RoR.log. Only use for truck debugging!"));
-	y+=15;
-	dcm=new wxCheckBox(advancedPanel, -1, _("Debug Collision Meshes"), wxPoint(320, y));
-	dcm->SetToolTip(_("Shows all Collision meshes in Red to be able to position them correctly. Only use for debugging!"));
-	y+=15;
-	beamdebug=new wxCheckBox(advancedPanel, -1, _("Enable Visual Beam Debug"), wxPoint(320, y));
-	beamdebug->SetToolTip(_("Displays node numbers and more info along nodes and beams."));
 	y+=15;
 	dismap=new wxCheckBox(advancedPanel, -1, _("Disable Overview Map"), wxPoint(320, y));
 	dismap->SetToolTip(_("Disabled the map. This is for testing purposes only, you should not gain any FPS with that."));
@@ -1362,6 +1395,10 @@ void MyDialog::updateRendersystems(Ogre::RenderSystem *rs)
 	std::map<Ogre::String, bool> filterOptions;
 	filterOptions["Allow NVPerfHUD"]=true;
 	filterOptions["Floating-point mode"]=true;
+	filterOptions["Resource Creation Policy"]=true;
+	filterOptions["VSync Interval"]=true;
+	filterOptions["sRGB Gamma Conversion"]=true;
+	filterOptions["Colour Depth"]=true;
 
 	if(renderer->GetCount() == 0)
 	{
@@ -1383,7 +1420,11 @@ void MyDialog::updateRendersystems(Ogre::RenderSystem *rs)
 	}
 
 	int x = 10;
-	int y = 50;
+	int y = 55;
+	
+	wxStaticLine *w = new wxStaticLine(rsPanel, -1, wxPoint(x, y+3), wxSize(440, 2));
+	y += 15;
+
 	int counter = 0;
 	if(!rs)
 	{
@@ -1423,10 +1464,31 @@ void MyDialog::updateRendersystems(Ogre::RenderSystem *rs)
 		// add all values and select current value
 		int selection = 0;
 		int valueCounter = 0;
-		for(Ogre::StringVector::iterator valIt = optIt->second.possibleValues.begin(); valIt != optIt->second.possibleValues.end(); valIt++, valueCounter++)
+		for(Ogre::StringVector::iterator valIt = optIt->second.possibleValues.begin(); valIt != optIt->second.possibleValues.end(); valIt++)
 		{
 			if(*valIt == optIt->second.currentValue)
 				selection = valueCounter;
+
+			// filter video modes
+			if(optIt->first == "Video Mode")
+			{
+				int res_x=-1, res_y=-1, res_d=-1;
+				sscanf(valIt->c_str(), "%d x %d @ %d-bit colour", &res_x, &res_y, &res_d);
+				
+				// discard low resolutions and 16 bit modes
+				if(res_d != -1 && res_d < 32)
+				{
+					wxLogStatus(wxT("discarding resolution as it is below 32 bits: ") + conv(valIt->c_str()));
+					continue;
+				}
+				if(res_x < 800)
+				{
+					wxLogStatus(wxT("discarding resolution as the x res is below 800 pixels: ") + conv(valIt->c_str()));
+					continue;
+				}
+			}
+
+			valueCounter++;
 			renderer_choice[counter]->Append(conv(valIt->c_str()));
 		}
 		renderer_choice[counter]->SetSelection(selection);
@@ -1491,6 +1553,13 @@ void MyDialog::SetDefaults()
 
 	replaymode->SetValue(false);
 	dtm->SetValue(false);
+	advanced_logging->SetValue(false);
+	ingame_console->SetValue(false);
+	dofdebug->SetValue(false);
+	debug_triggers->SetValue(false);
+	debug_vidcam->SetValue(false);
+	beam_break_debug->SetValue(false);
+	beam_deform_debug->SetValue(false);
 	dcm->SetValue(false);
 	//wxCheckBox *dust;
 	heathaze->SetValue(false);
@@ -1519,7 +1588,6 @@ void MyDialog::SetDefaults()
 	sound->SetSelection(1);//default
 	//wxChoice *thread;
 	thread->SetSelection(1);//2 CPUs is now the norm (incl. HyperThreading)
-	wheel2->SetValue(true);
 
 #ifdef NETWORK
 	//wxCheckBox *network_enable;
@@ -1554,6 +1622,13 @@ void MyDialog::getSettingsControls()
 	settings["Waves"] = (waves->GetValue()) ? "Yes" : "No";
 	settings["Replay mode"] = (replaymode->GetValue()) ? "Yes" : "No";
 	settings["Debug Truck Mass"] = (dtm->GetValue()) ? "Yes" : "No";
+	settings["Advanced Logging"] = (advanced_logging->GetValue()) ? "Yes" : "No";
+	settings["Enable Ingame Console"] = (ingame_console->GetValue()) ? "Yes" : "No";
+	settings["DOFDebug"] = (dofdebug->GetValue()) ? "Yes" : "No";
+	settings["Trigger Debug"] = (debug_triggers->GetValue()) ? "Yes" : "No";
+	settings["VideoCameraDebug"] = (debug_vidcam->GetValue()) ? "Yes" : "No";
+	settings["Beam Break Debug"] = (beam_break_debug->GetValue()) ? "Yes" : "No";
+	settings["Beam Deform Debug"] = (beam_deform_debug->GetValue()) ? "Yes" : "No";
 	settings["Debug Collisions"] = (dcm->GetValue()) ? "Yes" : "No";
 	settings["Particles"] = (particles->GetValue()) ? "Yes" : "No";
 	settings["HeatHaze"] = "No"; //(heathaze->GetValue()) ? "Yes" : "No";
@@ -1575,7 +1650,6 @@ void MyDialog::getSettingsControls()
 	settings["Motion blur"] = "No"; //(mblur->GetValue()) ? "Yes" : "No";
 	settings["Skidmarks"] = "No"; //(skidmarks->GetValue()) ? "Yes" : "No";
 	settings["Creak Sound"] = (creaksound->GetValue()) ? "No" : "Yes";
-	settings["Enhanced wheels"] = (wheel2->GetValue()) ? "Yes" : "No";
 	settings["Envmap"] = (envmap->GetValue()) ? "Yes" : "No";
 	settings["3D Sound renderer"] = conv(sound->GetStringSelection());
 	settings["Threads"] = conv(thread->GetStringSelection());
@@ -1607,11 +1681,6 @@ void MyDialog::getSettingsControls()
 	settings["User Token"] = conv(usertoken->GetValue());
 #endif
 
-	sprintf(tmp, "%d", simpleSlider->GetValue());
-	settings["Simple Settings CPU"] = tmp;
-	sprintf(tmp, "%d", simpleSlider2->GetValue());
-	settings["Simple Settings Graphics"] = tmp;
-
 	// save language, if one is set
 	if(avLanguages.size() > 0 && languageMode->GetStringSelection() != _("(No Languages found)"))
 	{
@@ -1639,7 +1708,14 @@ void MyDialog::updateSettingsControls()
 	st = settings["Water effects"]; if (st.length()>0) water->SetStringSelection(conv(st));
 	st = settings["Waves"]; if (st.length()>0) waves->SetValue(st=="Yes");
 	st = settings["Replay mode"]; if (st.length()>0) replaymode->SetValue(st=="Yes");
+	st = settings["Beam Break Debug"]; if (st.length()>0) beam_break_debug->SetValue(st=="Yes");
+	st = settings["Beam Deform Debug"]; if (st.length()>0) beam_deform_debug->SetValue(st=="Yes");
 	st = settings["Debug Truck Mass"]; if (st.length()>0) dtm->SetValue(st=="Yes");
+	st = settings["Advanced Logging"]; if (st.length()>0) advanced_logging->SetValue(st=="Yes");
+	st = settings["Enable Ingame Console"]; if (st.length()>0) ingame_console->SetValue(st=="Yes");
+	st = settings["DOFDebug"]; if (st.length()>0) dofdebug->SetValue(st=="Yes");
+	st = settings["Trigger Debug"]; if (st.length()>0) debug_triggers->SetValue(st=="Yes");
+	st = settings["VideoCameraDebug"]; if (st.length()>0) debug_vidcam->SetValue(st=="Yes");
 	st = settings["Debug Collisions"]; if (st.length()>0) dcm->SetValue(st=="Yes");
 	st = settings["GearboxMode"]; if (st.length()>0) gearBoxMode->SetStringSelection(conv(st));
 	st = settings["Particles"]; if (st.length()>0) particles->SetValue(st=="Yes");
@@ -1663,7 +1739,6 @@ void MyDialog::updateSettingsControls()
 	//st = settings["Skidmarks"]; if (st.length()>0) skidmarks->SetValue(st=="Yes");
 	st = settings["3D Sound renderer"]; if (st.length()>0) sound->SetStringSelection(conv(st));
 	st = settings["Threads"]; if (st.length()>0) thread->SetStringSelection(conv(st));
-	st = settings["Enhanced wheels"]; if (st.length()>0) wheel2->SetValue(st=="Yes");
 	st = settings["Force Feedback"]; if (st.length()>0) ffEnable->SetValue(st=="Yes");
 	st = settings["Force Feedback Gain"]; if (st.length()>0) ffOverall->SetValue((int)atof(st.c_str()));
 	st = settings["Force Feedback Stress"]; if (st.length()>0) ffHydro->SetValue((int)atof(st.c_str()));
@@ -1695,9 +1770,6 @@ void MyDialog::updateSettingsControls()
 	st = settings["Server password"]; if (st.length()>0) serverpassword->SetValue(conv(st));
 	st = settings["User Token"]; if (st.length()>0) usertoken->SetValue(conv(st));
 #endif
-	st = settings["Simple Settings CPU"]; if (st.length()>0) simpleSlider->SetValue(atoi(st.c_str()));
-	st = settings["Simple Settings Graphics"]; if (st.length()>0) simpleSlider2->SetValue(atoi(st.c_str()));
-
 	// update slider text
 	OnsightrangesliderScroll(dummye);
 }
@@ -1728,9 +1800,11 @@ bool MyDialog::LoadConfig()
 		settings[sname] = svalue;
 	}
 
+
 	// enforce default settings
 	if(settings["Allow NVPerfHUD"] == "") settings["Allow NVPerfHUD"] = "No";
 	if(settings["Floating-point mode"] == "") settings["Floating-point mode"] = "Fastest";
+	if(settings["Colour Depth"] == "") settings["Colour Depth"] = "32";
 
 	// then update the controls!
 	updateSettingsControls();
@@ -2161,131 +2235,6 @@ void MyDialog::OnsightrangesliderScroll(wxScrollEvent &e)
 		s.Printf(wxT("%i m"), v);
 	}
 	sightRangeText->SetLabel(s);
-}
-
-void MyDialog::OnSimpleSliderScroll(wxScrollEvent & event)
-{
-	int val = simpleSlider->GetValue();
-	// these are processor simple settings
-	// 0 (high perf) - 2 (high quality)
-	creaksound->SetValue(true); // disable creak sound
-	autodl->SetValue(true);
-	replaymode->SetValue(false);
-	switch(val)
-	{
-		case 0:
-			beamdebug->SetValue(false);
-
-			dtm->SetValue(false); // debug truck mass
-			dcm->SetValue(false); //debug collision meshes
-			extcam->SetValue(false);
-			sound->SetSelection(1);//default
-			thread->SetSelection(1);//2 CPUs is now the norm (incl. HyperThreading)
-			wheel2->SetValue(false);
-			posstor->SetValue(false);
-			break;
-		case 1:
-			beamdebug->SetValue(false);
-			dtm->SetValue(false); // debug truck mass
-			dcm->SetValue(false); //debug collision meshes
-			extcam->SetValue(false);
-			sound->SetSelection(1);//default
-			thread->SetSelection(1);//2 CPUs is now the norm (incl. HyperThreading)
-			wheel2->SetValue(true);
-			posstor->SetValue(true);
-			break;
-		case 2:
-			beamdebug->SetValue(false);
-			dtm->SetValue(false); // debug truck mass
-			dcm->SetValue(false); //debug collision meshes
-			extcam->SetValue(false);
-			sound->SetSelection(1);//default
-			thread->SetSelection(1);//2 CPUs is now the norm (incl. HyperThreading)
-			wheel2->SetValue(true);
-			posstor->SetValue(true);
-			break;
-	};
-	getSettingsControls();
-}
-
-void MyDialog::OnSimpleSlider2Scroll(wxScrollEvent & event)
-{
-	int val = simpleSlider2->GetValue();
-	// these are graphics simple settings
-	// 0 (high perf) - 2 (high quality)
-	heathaze->SetValue(false);
-	rtshader->SetValue(false);
-	switch(val)
-	{
-		case 0:
-			textfilt->SetSelection(0);
-			sky->SetSelection(0);//sandstorm
-			shadow->SetSelection(0);//no shadows
-			sightRange->SetValue(50);
-			shadowOptimizations->SetValue(true);
-			water->SetSelection(0);//basic water
-			waves->SetValue(false);
-			vegetationMode->SetSelection(0); // None
-			flaresMode->SetSelection(0); // all trucks
-			screenShotFormat->SetSelection(0);
-			particles->SetValue(false);
-			hydrax->SetValue(false);
-			dismap->SetValue(false);
-			mirror->SetValue(false);
-			envmap->SetValue(false);
-			sunburn->SetValue(false);
-			hdr->SetValue(false);
-			mblur->SetValue(false);
-			skidmarks->SetValue(false);
-	break;
-		case 1:
-			textfilt->SetSelection(2);
-			sky->SetSelection(0);//sandstorm
-			shadow->SetSelection(1);
-			sightRange->SetValue(500);
-			shadowOptimizations->SetValue(true);
-			water->SetSelection(1);
-			waves->SetValue(false);
-			vegetationMode->SetSelection(1);
-			flaresMode->SetSelection(1);
-			screenShotFormat->SetSelection(1);
-			particles->SetValue(true);
-			hydrax->SetValue(false);
-			dismap->SetValue(false);
-			mirror->SetValue(true);
-			envmap->SetValue(true);
-			sunburn->SetValue(false);
-			hdr->SetValue(false);
-			mblur->SetValue(false);
-			skidmarks->SetValue(false);
-	break;
-		case 2:
-			textfilt->SetSelection(3);
-			sky->SetSelection(1);
-			shadow->SetSelection(1);
-			sightRange->SetValue(5000);
-			shadowOptimizations->SetValue(false);
-			water->SetSelection(3);
-			waves->SetValue(true);
-			vegetationMode->SetSelection(3);
-			flaresMode->SetSelection(3);
-			screenShotFormat->SetSelection(1);
-			particles->SetValue(true);
-			hydrax->SetValue(false);
-			dismap->SetValue(false);
-			mirror->SetValue(true);
-			envmap->SetValue(true);
-			sunburn->SetValue(false);
-			hdr->SetValue(true);
-			mblur->SetValue(false);
-			skidmarks->SetValue(false);
-		break;
-	};
-	getSettingsControls();
-
-	// update slider text
-	wxScrollEvent dummye;
-	OnsightrangesliderScroll(dummye);
 }
 
 void MyDialog::OnForceFeedbackScroll(wxScrollEvent & event)

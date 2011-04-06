@@ -36,6 +36,7 @@ protected:
 	Ogre::Log *orgLog;
 	FILE *f;
 	unsigned int counter;
+	bool disabled;
 	bool headerWritten;
 	Ogre::String logFileName, name;
 	int getFileSize(Ogre::String filename);

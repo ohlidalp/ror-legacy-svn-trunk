@@ -29,8 +29,13 @@ along with Rigs of Rods.  If not, see <http://www.gnu.org/licenses/>.
 
 using namespace Ogre;
 
-ScopeLog::ScopeLog(String name) : orgLog(0), logFileName(), name(name), f(0), headerWritten(false), counter(0)
+ScopeLog::ScopeLog(String name) : orgLog(0), logFileName(), name(name), f(0), headerWritten(false), counter(0), disabled(false)
 {
+	if(!BSETTING("Advanced Logging"))
+	{
+		disabled=true;
+		return;
+	}
 	// get original log file
 	orgLog = LogManager::getSingleton().getDefaultLog();
 
@@ -46,6 +51,7 @@ ScopeLog::ScopeLog(String name) : orgLog(0), logFileName(), name(name), f(0), he
 
 ScopeLog::~ScopeLog()
 {
+	if(disabled) return;
 	// remove self as listener
 	orgLog->removeListener(this);
 
