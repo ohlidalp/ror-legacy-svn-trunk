@@ -74,7 +74,11 @@ using namespace std;
 #include <wx/version.h>
 #include <wx/log.h>
 #include <wx/statline.h>
-#include "utils.h"
+#include <wx/hyperlink.h>
+
+#include "utils.h" // RoR utils
+
+#include "wxutils.h"
 
 #include "ImprovedConfigFile.h"
 
@@ -192,6 +196,8 @@ public:
 	// ctor(s)
 	MyDialog(const wxString& title, MyApp *_app);
 	void loadOgre();
+	void addAboutEntry(wxString name, wxString desc, wxString url, int &x, int &y);
+	void addAboutTitle(wxString name, int &x, int &y);
 	void updateRendersystems(Ogre::RenderSystem *rs);
 	void SetDefaults();
 	bool LoadConfig();
@@ -302,6 +308,8 @@ private:
 	wxSlider *ffCamera;
 	wxStaticText *ffCameraText;
 	wxTimer *timer1;
+	wxNotebook *nbook;
+	wxScrolledWindow *aboutPanel;
 	//wxStaticText *controlText;
 	//wxComboBox *ctrlTypeCombo;
 	//wxString typeChoices[11];
@@ -787,7 +795,7 @@ MyDialog::MyDialog(const wxString& title, MyApp *_app) : wxDialog(NULL, wxID_ANY
 	mainsizer->Add(imagePanel, 0, wxGROW);
 
 	//notebook
-	wxNotebook *nbook=new wxNotebook(this, mynotebook, wxPoint(3, 100), wxSize(490, 415));
+	nbook=new wxNotebook(this, mynotebook, wxPoint(3, 100), wxSize(490, 415));
 	mainsizer->Add(nbook, 1, wxGROW);
 
 	wxSizer *btnsizer = new wxBoxSizer(wxHORIZONTAL);
@@ -802,9 +810,9 @@ MyDialog::MyDialog(const wxString& title, MyApp *_app) : wxDialog(NULL, wxID_ANY
 		btnPlay->SetToolTip(_("Save the current configuration and start RoR."));
 		btnsizer->Add(btnPlay, 1, wxGROW | wxALL, 5);
 
-		wxButton *btnAbout = new wxButton( this, command_save, _("Save and Exit"), wxPoint(245,520), wxSize(100,25));
-		btnAbout->SetToolTip(_("Save the current configuration and close the configuration program."));
-		btnsizer->Add(btnAbout, 1, wxGROW | wxALL, 5);
+		wxButton *btnsaveAndExit = new wxButton( this, command_save, _("Save and Exit"), wxPoint(245,520), wxSize(100,25));
+		btnsaveAndExit->SetToolTip(_("Save the current configuration and close the configuration program."));
+		btnsizer->Add(btnsaveAndExit, 1, wxGROW | wxALL, 5);
 
 		wxButton *btnClose = new wxButton( this, command_cancel, _("Cancel"), wxPoint(350,520), wxSize(100,25));
 		btnClose->SetToolTip(_("Cancel the configuration changes and close the configuration program."));
@@ -836,12 +844,6 @@ MyDialog::MyDialog(const wxString& title, MyApp *_app) : wxDialog(NULL, wxID_ANY
 
 	gamePanel=new wxPanel(snbook, -1);
 	snbook->AddPage(gamePanel, _("Gameplay"), true);
-
-	wxPanel *soundsPanel=new wxPanel(snbook, -1);
-	snbook->AddPage(soundsPanel, _("Sounds"), false);
-
-	wxPanel *cpuPanel=new wxPanel(snbook, -1);
-	snbook->AddPage(cpuPanel, _("CPU"), false);
 
 	// Controls
 	wxPanel *controlsPanel=new wxPanel(nbook, -1);
@@ -876,8 +878,8 @@ MyDialog::MyDialog(const wxString& title, MyApp *_app) : wxDialog(NULL, wxID_ANY
 	wxPanel *updatePanel=new wxPanel(nbook, -1);
 	nbook->AddPage(updatePanel, _("Updates"), false);
 #endif
-//	wxPanel *aboutPanel=new wxPanel(nbook, -1);
-//	nbook->AddPage(aboutPanel, "About", false);
+	aboutPanel=new wxScrolledWindow (nbook, -1);
+	nbook->AddPage(aboutPanel, "About", false);
 
 #ifdef USE_OPENCL
 	wxPanel *GPUPanel=new wxPanel(nbook, -1);
@@ -936,13 +938,89 @@ MyDialog::MyDialog(const wxString& title, MyApp *_app) : wxDialog(NULL, wxID_ANY
 	creaksound=new wxCheckBox(gamePanel, -1, _("disable creak sound"), wxPoint(x_row1, y));
 	creaksound->SetToolTip(_("You can disable the default creak sound by checking this box"));
 
+	// aboutPanel
+	y = 10;
+	x_row1 = 10;
+	x_row2 = 300;
+
+	addAboutTitle(_("Version"), x_row1, y);
+	dText = new wxStaticText(aboutPanel, -1, conv(getVersionString()), wxPoint(10, y));
+	y+= 120;
+
+	addAboutTitle(_("THIS LIST IS WIP!"), x_row1, y);
+
+	addAboutTitle(_("Authors"), x_row1, y);
+	
+	// Looong list following
+	addAboutEntry("Pierre-Michel-Ricordel (pricorde)", "Physics Genius, Original Author, Core Developer, retired", "http://www.rigsofrods.com/members/18658-pricorde", x_row1, y);
+	addAboutEntry("Thomas Fischer (tdev)", "Core Developer", "http://www.rigsofrods.com/members/18656-tdev", x_row1, y);
+	y+=20;
+
+	addAboutTitle(_("Code Contributors"), x_row1, y);
+	addAboutEntry("Estama", "Physics Core Optimizations, Collision/Friction code, Support Beams", "http://www.rigsofrods.com/members/26673-estama", x_row1, y);
+	addAboutEntry("Lifter", "Triggers, Animators, Shocks2", "http://www.rigsofrods.com/members/22371-Lifter", x_row1, y);
+	addAboutEntry("Aperion", "Slidesnodes, Rigidifiers, Networking code", "http://www.rigsofrods.com/members/18734-Aperion", x_row1, y);
+	addAboutEntry("FlyPiper", "Inertia Code, minor patches", "http://www.rigsofrods.com/members/19789-flypiper", x_row1, y);
+	addAboutEntry("knied", "MacOSX Patches", "http://www.rigsofrods.com/members/32234-knied", x_row1, y);
+	addAboutEntry("altren", "coded some MyGUI windows", "", x_row1, y);
+	addAboutEntry("petern", "repair on spot, linux patches", "", x_row1, y);
+	addAboutEntry("imrenagy", "moving chair hardware support, several fixes", "", x_row1, y);
+	addAboutEntry("priotr", "several linux fixes", "", x_row1, y);
+	addAboutEntry("cptf", "several linux gcc fixes", "", x_row1, y);
+	addAboutEntry("88Toyota", "clutch force patches", "", x_row1, y);
+	
+	y+=20;
+
+	addAboutTitle(_("Content Contributors"), x_row1, y);
+	addAboutEntry("kevinmce", "character", "http://www.rigsofrods.com/members/18956-kevinmce", x_row1, y);
+	y+=20;
+
+	addAboutTitle(_("Testers"), x_row1, y);
+	addAboutEntry("Adeodat", "testing", "http://www.rigsofrods.com/members/18668-adeodat", x_row1, y);
+	addAboutEntry("Bonehead", "testing", "http://www.rigsofrods.com/members/18665-Bonehead", x_row1, y);
+	addAboutEntry("Box5diesel", "great content creator", "http://www.rigsofrods.com/members/19484-Box5diesel", x_row1, y);
+	y+=20;
+
+	addAboutTitle(_("Used Software"), x_row1, y);
+	addAboutEntry("Ogre3D", "3D rendering engine", "http://www.ogre3d.org", x_row1, y);
+	addAboutEntry("Caelum", "Atmospheric effects", "http://code.google.com/p/caelum/", x_row1, y);
+	addAboutEntry("Angelscript", "Scripting Backend", "http://www.angelcode.com/angelscript/", x_row1, y);
+	addAboutEntry("LUA", "Scripting Backend", "http://www.lua.org", x_row1, y);
+	addAboutEntry("OpenAL Soft", "Sound engine", "http://kcat.strangesoft.net/openal.html", x_row1, y);
+	addAboutEntry("MyGUI", "GUI System", "http://www.mygui.info", x_row1, y);
+	addAboutEntry("CrashRpt", "Crash Reporting system", "http://code.google.com/p/crashrpt/", x_row1, y);
+	addAboutEntry("Hydrax", "Advanced Water System", "http://www.ogre3d.org/addonforums/viewforum.php?f=20", x_row1, y);
+	addAboutEntry("mofilereader", "used for Internationalization", "http://code.google.com/p/mofilereader/", x_row1, y);
+	addAboutEntry("OIS", "used as Input System", "http://sourceforge.net/projects/wgois/", x_row1, y);
+	addAboutEntry("pagedGeometry", "used for foliage (grass, trees, etc)", "http://code.google.com/p/ogre-paged/", x_row1, y);
+	addAboutEntry("pthreads", "used for threading", "", x_row1, y);
+	addAboutEntry("curl", "used for www-server communication", "http://curl.haxx.se/", x_row1, y);
+	addAboutEntry("SocketW", "used as cross-platform socket abstraction", "http://www.digitalfanatics.org/cal/socketw/index.html", x_row1, y);
+	addAboutEntry("boost", "used as glue inbetween the components", "http://www.boost.org", x_row1, y);
+	addAboutEntry("wxWidgets", "used as cross platform user interface toolkit", "http://www.wxwidgets.org", x_row1, y);
+	y+=20;
+
+	addAboutTitle(_("Missing someone?"), x_row1, y);
+	addAboutEntry("missing someone?", "if you are missing someone on this list, please drop us a line: support@rigsofrods.com", "mailto:support@rigsofrods.com", x_row1, y);
+
+	wxSize size = nbook->GetBestVirtualSize();
+	size.x = 400;
+	aboutPanel->SetVirtualSize(size);
+	aboutPanel->SetScrollRate(20, 25);
+	
+	// complete about panel
+	//aboutPanel->FitInside();
+
 	// debugPanel
 	y = 10;
 	x_row1 = 150;
 	x_row2 = 300;
-	
+
+	dText = new wxStaticText(debugPanel, -1, _("These settings are for debugging RoR in various ways.\nIf you dont know how to use, stay away from these."), wxPoint(10, y));
+	y+=45;
+
 	ingame_console=new wxCheckBox(debugPanel, -1, _("Ingame Console"), wxPoint(10, y));
-	ingame_console->SetToolTip(_(""));
+	ingame_console->SetToolTip(_("Enables the Scripting Console ingame. Use the ~ key."));
 	y+=15;
 
 	dtm=new wxCheckBox(debugPanel, -1, _("Debug Truck Mass"), wxPoint(10, y));
@@ -950,25 +1028,23 @@ MyDialog::MyDialog(const wxString& title, MyApp *_app) : wxDialog(NULL, wxID_ANY
 	y+=15;
 
 	advanced_logging=new wxCheckBox(debugPanel, -1, _("Advanced Logging"), wxPoint(10, y));
-	advanced_logging->SetToolTip(_(""));
+	advanced_logging->SetToolTip(_("Enables fancy HTML logs for loaded terrains, objects and trucks"));
 	y+=15;
 
-	
-
 	beam_break_debug=new wxCheckBox(debugPanel, -1, _("Beam Break Debug"), wxPoint(10, y));
-	beam_break_debug->SetToolTip(_(""));
+	beam_break_debug->SetToolTip(_("Logs the beam info to RoR.log whenever a beam breaks"));
 	y+=15;
 
 	beam_deform_debug=new wxCheckBox(debugPanel, -1, _("Beam Deform Debug"), wxPoint(10, y));
-	beam_deform_debug->SetToolTip(_(""));
+	beam_deform_debug->SetToolTip(_("Logs the beam info to RoR.log whenever a beam deforms"));
 	y+=15;
 
 	debug_vidcam=new wxCheckBox(debugPanel, -1, _("Debug VideoCameras"), wxPoint(10, y)); //VideoCameraDebug
-	debug_vidcam->SetToolTip(_(""));
+	debug_vidcam->SetToolTip(_("Adds a virtuals camera mesh that should help you position the camera correctly"));
 	y+=15;
 
 	debug_triggers=new wxCheckBox(debugPanel, -1, _("Trigger Debug"), wxPoint(10, y)); //VideoCameraDebug
-	debug_triggers->SetToolTip(_(""));
+	debug_triggers->SetToolTip(_("Enables Trigger debug messages"));
 	y+=15;
 	
 	dcm=new wxCheckBox(debugPanel, -1, _("Debug Collision Meshes"), wxPoint(10, y));
@@ -980,9 +1056,11 @@ MyDialog::MyDialog(const wxString& title, MyApp *_app) : wxDialog(NULL, wxID_ANY
 	y+=15;
 
 	dofdebug=new wxCheckBox(debugPanel, -1, _("Enable Depth of Field Debug"), wxPoint(10, y));
-	dofdebug->SetToolTip(_(""));
+	dofdebug->SetToolTip(_("Shows the DOF debug display on the screen in order to identify DOF problems"));
 	y+=15;
 	
+	y+=35;
+	wxHyperlinkCtrl *link = new wxHyperlinkCtrl(debugPanel, -1, _("(read more on how to use these options here)"), "http://www.rigsofrods.com/wiki/pages/Debugging_Trucks", wxPoint(10, y));
 
 	// graphics panel
 	y = 10;
@@ -1097,25 +1175,6 @@ MyDialog::MyDialog(const wxString& title, MyApp *_app) : wxDialog(NULL, wxID_ANY
 	screenShotFormat->Append(conv("png (bigger, no quality loss)"));
 	screenShotFormat->SetToolTip(_("In what Format should screenshots be saved?"));
 
-	//sounds panel
-	dText = new wxStaticText(soundsPanel, -1, _("Sound device:"), wxPoint(5,28));
-	sound=new wxChoice(soundsPanel, -1, wxPoint(100, 25), wxSize(350, -1), 0);
-	sound->Append(conv("No sound"));
-	sound->Append(conv("Default"));
-	sound->SetToolTip(_("Select the appropriate sound source.\nLeaving to Default should work most of the time."));
-#if OGRE_PLATFORM == OGRE_PLATFORM_WIN32
-	//add the rest
-	DSoundEnumerate(sound);
-#endif
-
-	//cpu panel
-	dText = new wxStaticText(cpuPanel, -1, _("Thread number:"), wxPoint(20,28));
-	thread=new wxChoice(cpuPanel, -1, wxPoint(150, 25), wxSize(200, -1), 0);
-	thread->Append(conv("1 (Standard CPU)"));
-	thread->Append(conv("2 (Hyper-Threading or Dual core CPU)"));
-	//thread->Append(conv("3 (multi core CPU, one thread per beam)"));
-	thread->SetToolTip(_("If you have a Hyper-Threading, or Dual core or multiprocessor computer,\nyou will have a huge gain in speed by choosing the second option.\nBut this mode has some camera shaking issues.\n"));
-
 	//force feedback panel
 	ffEnable=new wxCheckBox(ffPanel, -1, _("Enable Force Feedback"), wxPoint(150, 25));
 
@@ -1196,50 +1255,58 @@ MyDialog::MyDialog(const wxString& title, MyApp *_app) : wxDialog(NULL, wxID_ANY
 	//advanced panel
 	y = 10;
 	dText = new wxStaticText(advancedPanel, -1, _("You do not need to change these settings unless you experience problems"), wxPoint(10, y));
-	y+=20;
+	y+=30;
 
-	dText = new wxStaticText(advancedPanel, -1, _("Light source effects:"), wxPoint(10, y));
-	flaresMode=new wxChoice(advancedPanel, -1, wxPoint(115, y), wxSize(200, -1), 0);
+	dText = new wxStaticText(advancedPanel, -1, _("Sound device:"), wxPoint(10,y+3));
+	sound=new wxChoice(advancedPanel, -1, wxPoint(x_row1, y), wxSize(280, -1), 0);
+	sound->Append(conv("No sound"));
+	sound->Append(conv("Default"));
+	sound->SetToolTip(_("Select the appropriate sound source.\nLeaving to Default should work most of the time."));
+#if OGRE_PLATFORM == OGRE_PLATFORM_WIN32
+	//add the rest
+	DSoundEnumerate(sound);
+#endif
+	y+=35;
+
+	dText = new wxStaticText(advancedPanel, -1, _("Thread number:"), wxPoint(10,y+3));
+	thread=new wxChoice(advancedPanel, -1, wxPoint(x_row1, y), wxSize(280, -1), 0);
+	thread->Append(conv("1 (Standard CPU)"));
+	thread->Append(conv("2 (Hyper-Threading or Dual core CPU)"));
+	//thread->Append(conv("3 (multi core CPU, one thread per beam)"));
+	thread->SetToolTip(_("If you have a Hyper-Threading, or Dual core or multiprocessor computer,\nyou will have a huge gain in speed by choosing the second option.\nBut this mode has some camera shaking issues.\n"));
+	y+=35;
+
+	dText = new wxStaticText(advancedPanel, -1, _("Light source effects:"), wxPoint(10, y+3));
+	flaresMode=new wxChoice(advancedPanel, -1, wxPoint(x_row1, y), wxSize(280, -1), 0);
 //	flaresMode->Append(_("None (fastest)")); //this creates a bug in the autopilot
 	flaresMode->Append(conv("No light sources"));
 	flaresMode->Append(conv("Only current vehicle, main lights"));
 	flaresMode->Append(conv("All vehicles, main lights"));
 	flaresMode->Append(conv("All vehicles, all lights"));
 	flaresMode->SetToolTip(_("Determines which lights will project light on the environment.\nThe more light sources are used, the slowest it will be."));
-	y+=25;
+	y+=35;
 
-	dText = new wxStaticText(advancedPanel, -1, _("In case the mods cache becomes corrupted, \nuse these buttons to fix the cache."), wxPoint(10, y));
-	y+=40;
-	wxButton *btn = new wxButton(advancedPanel, regen_cache, _("Regen cache"), wxPoint(35, y));
-	btn->SetToolTip(_("Use this to regenerate the cache outside of RoR. If this does not work, use the clear cache button."));
-	btn = new wxButton(advancedPanel, clear_cache, _("Clear cache"), wxPoint(145, y));
-	btn->SetToolTip(_("Use this to remove the whole cache and force the generation from ground up."));
-	y+=30;
-
-	dText = new wxStaticText(advancedPanel, -1, _("minimum visibility range in percent"), wxPoint(10,y));
-	y+=20;
-
-	// second column
-	y=30;
-	replaymode=new wxCheckBox(advancedPanel, -1, _("Replay Mode"), wxPoint(320, y));
-	replaymode->SetToolTip(_("Replay mode. (Can affect your frame rate)"));
+	dText = new wxStaticText(advancedPanel, -1, _("Various Settings:"), wxPoint(10,y+3));
+	replaymode=new wxCheckBox(advancedPanel, -1, _("Replay Mode"), wxPoint(x_row1, y));
+	replaymode->SetToolTip(_("Replay mode. (Will affect your frame rate)"));
 	y+=15;
-	posstor=new wxCheckBox(advancedPanel, -1, _("Enable Position Storage"), wxPoint(320, y));
+	posstor=new wxCheckBox(advancedPanel, -1, _("Enable Position Storage"), wxPoint(x_row1, y));
 	posstor->SetToolTip(_("Can be used to quick save and load positions of trucks"));
 	y+=15;
-	autodl=new wxCheckBox(advancedPanel, -1, _("Enable Auto-Downloader"), wxPoint(320, y));
+
+	autodl=new wxCheckBox(advancedPanel, -1, _("Enable Auto-Downloader"), wxPoint(x_row1, y));
 	autodl->SetToolTip(_("This enables the automatic downloading of missing mods when using Multiplayer"));
 	autodl->Disable();
 	y+=15;
 
-	hydrax=new wxCheckBox(advancedPanel, -1, _("Hydrax Water System"), wxPoint(320, y));
+	hydrax=new wxCheckBox(advancedPanel, -1, _("Hydrax Water System"), wxPoint(x_row1, y));
 	hydrax->SetToolTip(_("Enables the new water rendering system. EXPERIMENTAL. Overrides any water settings."));
 	y+=15;
-	rtshader=new wxCheckBox(advancedPanel, -1, _("RT Shader System"), wxPoint(320, y));
+	rtshader=new wxCheckBox(advancedPanel, -1, _("RT Shader System"), wxPoint(x_row1, y));
 	rtshader->SetToolTip(_("Enables the Runtime Shader generation System. EXPERIMENTAL"));
 	rtshader->Disable();
 	y+=15;
-	dismap=new wxCheckBox(advancedPanel, -1, _("Disable Overview Map"), wxPoint(320, y));
+	dismap=new wxCheckBox(advancedPanel, -1, _("Disable Overview Map"), wxPoint(x_row1, y));
 	dismap->SetToolTip(_("Disabled the map. This is for testing purposes only, you should not gain any FPS with that."));
 	y+=15;
 
@@ -1319,6 +1386,49 @@ MyDialog::MyDialog(const wxString& title, MyApp *_app) : wxDialog(NULL, wxID_ANY
 
 	// important: show before we load ogre, since ogre loading can take some time
 	loadOgre();
+}
+
+void MyDialog::addAboutTitle(wxString name, int &x, int &y)
+{
+	wxStaticText *dText = new wxStaticText(aboutPanel, wxID_ANY, name, wxPoint(x, y));
+	wxFont dfont=dText->GetFont();
+	dfont.SetWeight(wxFONTWEIGHT_BOLD);
+	dfont.SetPointSize(dfont.GetPointSize()+3);
+	dText->SetFont(dfont);
+	y += dText->GetSize().y;
+}
+
+void MyDialog::addAboutEntry(wxString name, wxString desc, wxString url, int &x, int &y)
+{
+
+	wxSize s;
+	if(!url.empty())
+	{
+		wxHyperlinkCtrl *link = new wxHyperlinkCtrl(aboutPanel, wxID_ANY, name, url, wxPoint(x+15, y), wxSize(250, 25), wxHL_ALIGN_LEFT|wxHL_CONTEXTMENU);
+		link->SetNormalColour(wxColour("BLACK"));
+		link->SetHoverColour(wxColour("LIGHT GREY'"));
+		link->SetVisitedColour(wxColour("ORANGE"));
+		wxFont dfont=link->GetFont();
+		dfont.SetWeight(wxFONTWEIGHT_BOLD);
+		dfont.SetPointSize(dfont.GetPointSize()+1);
+		link->SetFont(dfont);
+		s = link->GetSize();
+	} else
+	{
+		wxStaticText *dText = new wxStaticText(aboutPanel, wxID_ANY, name, wxPoint(x+15, y));
+		wxFont dfont=dText->GetFont();
+		dfont.SetWeight(wxFONTWEIGHT_BOLD);
+		dfont.SetPointSize(dfont.GetPointSize()+1);
+		dText->SetFont(dfont);
+		s = dText->GetSize();
+	}
+	y += s.y - 2;
+	wxStaticText *dText = new wxStaticText(aboutPanel, wxID_ANY, desc, wxPoint(x+30, y));
+	wxFont dfont=dText->GetFont();
+	dfont.SetPointSize(dfont.GetPointSize()-1);
+	dText->SetFont(dfont);
+	y += dText->GetSize().y + 2;
+
 }
 
 void MyDialog::loadOgre()
@@ -2317,7 +2427,8 @@ void MyDialog::OnNoteBook2PageChange(wxNotebookEvent& event)
 
 void MyDialog::OnNoteBookPageChange(wxNotebookEvent& event)
 {
-	if(event.GetSelection() == 4) // updates page
+	wxString tabname = nbook->GetPageText(event.GetSelection());
+	if(tabname == "Updates")
 	{
 		// try to find our version
 		Ogre::String ver = "";
@@ -2339,19 +2450,6 @@ void MyDialog::OnNoteBookPageChange(wxNotebookEvent& event)
 						   wxString(conv("&lang="))+
 						   conv(conv(language->CanonicalName))
 						   );
-	} else if(event.GetSelection() == 6)
-	{
-		// this is unpracticable in LAN mode, thus deactivated
-		/*
-		btnUpdate->Enable(false);
-		timer1->Start(10000);
-		std::string lshort = conv(language->CanonicalName).substr(0, 2);
-		networkhtmw->LoadPage(wxString(wxT(REPO_HTML_SERVERLIST))+
-							  wxString(conv("?version="))+
-							  wxString(wxT(RORNET_VERSION))+
-							  wxString(conv("&lang="))+
-							  conv(lshort));
-		*/
 	}
 }
 

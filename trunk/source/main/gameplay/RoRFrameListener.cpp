@@ -790,7 +790,6 @@ RoRFrameListener::RoRFrameListener(AppState *parentState, RenderWindow* win, Cam
 	lastcameramode=0;
 	gameStartTime = getTimeStamp();
 	loadedTerrain="none";
-	creditsviewtime=5;
 	terrainUID="";
 	mtc=0;
 	bigMap=0;
@@ -814,7 +813,6 @@ RoRFrameListener::RoRFrameListener(AppState *parentState, RenderWindow* win, Cam
 #ifdef HAS_EDITOR
 	trucked=0;
 #endif
-	showcredits=0;
 	current_truck=-1;
 	w=0;
 	mapsizex = 3000;
@@ -1936,10 +1934,7 @@ bool RoRFrameListener::updateEvents(float dt)
 
 	if(INPUTENGINE.getEventBoolValueBounce(EV_COMMON_QUIT_GAME))
 	{
-		if(!showcredits)
-			shutdown_pre();
-		else
-			shutdown_final();
+		shutdown_final();
 	}
 
 	if (INPUTENGINE.getEventBoolValueBounce(EV_COMMON_SCREENSHOT_BIG, 0.5f))
@@ -3433,14 +3428,14 @@ bool RoRFrameListener::updateEvents(float dt)
 
 
 
-	if(INPUTENGINE.getEventBoolValueBounce(EV_COMMON_TRUCK_INFO) && !showcredits && current_truck != -1)
+	if(INPUTENGINE.getEventBoolValueBounce(EV_COMMON_TRUCK_INFO) && current_truck != -1)
 	{
 		mTruckInfoOn = ! mTruckInfoOn;
 		dirty=true;
 		if(ow) ow->truckhud->show(mTruckInfoOn);
 	}
 
-	if(INPUTENGINE.getEventBoolValueBounce(EV_COMMON_HIDE_GUI) && !showcredits)
+	if(INPUTENGINE.getEventBoolValueBounce(EV_COMMON_HIDE_GUI))
 	{
 		hidegui = !hidegui;
 		hideGUI(hidegui);
@@ -3667,38 +3662,12 @@ int RoRFrameListener::addTruck(char *fname, Vector3 pos)
 
 void RoRFrameListener::shutdown_final()
 {
-	LOG(" ** Shutdown final");
-	if (editorfd) fclose(editorfd);
-	if (w) w->prepareShutdown();
-	if (dashboard) dashboard->prepareShutdown();
-	if (heathaze) heathaze->prepareShutdown();
-	if (current_truck!=-1) trucks[current_truck]->prepareShutdown();
-	INPUTENGINE.prepareShutdown();
-
-	
-	
-	shutdownall=true;
-	//terrainmaterial->getBestTechnique()->getPass(0)->getTextureUnitState(0)->setTextureName(terrainoriginalmaterial);
-}
-
-void RoRFrameListener::shutdown_pre()
-{
 	LOG(" ** Shutdown preparation");
 	//GUIManager::getSingleton().shutdown();
 #ifdef USE_SOCKETW
 	if (net) net->disconnect();
 #endif //SOCKETW
-	showcredits=1;
 	loading_state=EXITING;
-	if(ow)
-	{
-		OverlayManager::getSingleton().getByName("tracks/CreditsOverlay")->show();
-		// enforce 4:3 for credits screen
-		float w = mWindow->getWidth();
-		float h = mWindow->getHeight();
-		float sx = (4/3) / (w/h);
-		OverlayManager::getSingleton().getByName("tracks/CreditsOverlay")->setScale(sx, 1);
-	}
 #ifdef USE_OPENAL
 	if(ssm) ssm->soundEnable(false);
 #endif // OPENAL
@@ -3711,6 +3680,20 @@ void RoRFrameListener::shutdown_pre()
 	}
 	*/
 #endif //OIS_G27
+
+	LOG(" ** Shutdown final");
+	if (editorfd) fclose(editorfd);
+	if (w) w->prepareShutdown();
+	if (dashboard) dashboard->prepareShutdown();
+	if (heathaze) heathaze->prepareShutdown();
+	if (current_truck!=-1) trucks[current_truck]->prepareShutdown();
+	INPUTENGINE.prepareShutdown();
+
+	// hard exit
+	exit(0);
+
+	shutdownall=true;
+	//terrainmaterial->getBestTechnique()->getPass(0)->getTextureUnitState(0)->setTextureName(terrainoriginalmaterial);
 }
 
 void RoRFrameListener::hideMap()
@@ -5503,7 +5486,6 @@ void RoRFrameListener::initTrucks(bool loadmanual, Ogre::String selected, Ogre::
 	*/
 	loading_state=ALL_LOADED;
 	//uiloader->hide();
-	showcredits=0;
 	LOG("initTrucks done");
 
 #ifdef USE_MYGUI
@@ -6215,14 +6197,7 @@ bool RoRFrameListener::frameStarted(const FrameEvent& evt)
 		return true;
 #endif //MYGUI
 
-	if(showcredits && creditsviewtime > 0)
-		creditsviewtime-= dt;
-	if(showcredits && creditsviewtime < 0 && !shutdownall)
-	{
-		shutdown_final();
-		return true;
-	}
-	else if(showcredits && creditsviewtime < 0 && shutdownall)
+	if(shutdownall)
 		return false;
 
 	if(shutdownall) // shortcut: press ESC in credits

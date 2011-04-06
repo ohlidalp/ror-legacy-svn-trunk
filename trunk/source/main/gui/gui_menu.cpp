@@ -114,7 +114,7 @@ void GUI_MainMenu::onMenuBtn(MyGUI::MenuCtrlPtr _sender, MyGUI::MenuItemPtr _ite
 		GUI_Friction::getSingleton().setVisible(true);
 	} else if(miname == "Exit Game")
 	{
-		mefl->shutdown_pre();
+		mefl->shutdown_final();
 	}
 
 	//LOG(" menu button pressed: " + _item->getCaption());
