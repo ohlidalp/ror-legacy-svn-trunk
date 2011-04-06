@@ -1118,6 +1118,7 @@ void CacheSystem::writeGeneratedCache()
 
 void CacheSystem::writeStreamCache()
 {
+#if 0
 	String dirsep="/";
 #if OGRE_PLATFORM == OGRE_PLATFORM_WIN32
 	dirsep="\\";
@@ -1150,6 +1151,7 @@ void CacheSystem::writeStreamCache()
 		}
 		if(f) fclose(f);
 	}
+#endif
 }
 
 void CacheSystem::updateSingleTruckEntryCache(int number, Cache_Entry t)

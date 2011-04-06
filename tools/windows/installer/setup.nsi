@@ -1,5 +1,5 @@
 !define PRODUCT_NAME "Rigs of Rods"
-!define PRODUCT_VERSION "0.38.19"
+!define PRODUCT_VERSION "0.38.20"
 !define PRODUCT_PUBLISHER "Rigs of Rods Team"
 !define PRODUCT_WEB_SITE "http://www.rigsofrods.com"
 !define PRODUCT_UNINST_KEY "Software\Microsoft\Windows\CurrentVersion\Uninstall\${PRODUCT_NAME}"

@@ -272,12 +272,12 @@ private:
 	wxCheckBox *beam_break_debug;
 	wxCheckBox *beam_deform_debug;
 	wxCheckBox *dcm;
+	wxTextCtrl *fovint, *fovext;
 	wxCheckBox *particles;
 	wxCheckBox *heathaze;
 	wxCheckBox *hydrax;
 	wxCheckBox *rtshader;
 	wxCheckBox *dismap;
-	wxCheckBox *leds;
 	wxCheckBox *beamdebug;
 	wxCheckBox *autodl;
 	wxCheckBox *posstor;
@@ -854,13 +854,14 @@ MyDialog::MyDialog(const wxString& title, MyApp *_app) : wxDialog(NULL, wxID_ANY
 	wxNotebook *ctbook=new wxNotebook(controlsPanel, mynotebook3, wxPoint(0, 0), wxSize(100,250));
 	controlsSizer->Add(ctbook, 1, wxGROW);
 
+	wxPanel *ctsetPanel=new wxPanel(ctbook, -1);
+	ctbook->AddPage(ctsetPanel, _("Info"), false);
+	wxStaticText *dText2 = new wxStaticText(ctsetPanel, -1, _("Please edit the input mappings by hand by using a texteditor.\nThe input mappings are stored in the following file:\nMy Documents\\Rigs of Rods\\config\\input.map"), wxPoint(10,10));
+
+	wxHyperlinkCtrl *link1 = new wxHyperlinkCtrl(ctsetPanel, -1, _("(more help here)"), "http://www.rigsofrods.com/wiki/pages/Input.map", wxPoint(10, 100));
+
 	wxPanel *ffPanel=new wxPanel(ctbook, -1);
 	ctbook->AddPage(ffPanel, _("Force Feedback"), false);
-
-	wxPanel *ctsetPanel=new wxPanel(ctbook, -1);
-	ctbook->AddPage(ctsetPanel, _("Advanced"), false);
-	wxSizer *ctsetSizer = new wxBoxSizer(wxVERTICAL);
-	ctsetPanel->SetSizer(ctsetSizer);
 
 #ifdef NETWORK
 	wxPanel *netPanel=new wxPanel(nbook, -1);
@@ -919,14 +920,32 @@ MyDialog::MyDialog(const wxString& title, MyApp *_app) : wxDialog(NULL, wxID_ANY
 	languageMode->SetToolTip(_("This setting overrides the system's default language. You need to restart the configurator to apply the changes."));
 	y+=35;
 
-
-	dText = new wxStaticText(gamePanel, -1, _("FoV:"), wxPoint(10,y+3));
-	wxTextCtrl *fov_int = new wxTextCtrl(gamePanel, -1, "60", wxPoint(x_row1, y), wxSize(200, -1), 0);
-	y+=35;
-
-	extcam=new wxCheckBox(gamePanel, -1, _("Disable Camera Pitching"), wxPoint(x_row1, y));
-	extcam->SetToolTip(_("If you dislike the pitching external vehicle camera, you can disable it here."));
+	// Gearbox
+	dText = new wxStaticText(gamePanel, -1, _("DefaultGearbox mode:"), wxPoint(10,y));
+	gearBoxMode=new wxChoice(gamePanel, -1, wxPoint(x_row1, y), wxSize(200, -1), 0);
+	gearBoxMode->Append(wxT("Automatic shift"));
+	gearBoxMode->Append(wxT("Manual shift - Auto clutch"));
+	gearBoxMode->Append(wxT("Fully Manual: sequential shift"));
+	gearBoxMode->Append(wxT("Fully Manual: stick shift"));
+	gearBoxMode->Append(wxT("Fully Manual: stick shift with ranges"));
+	gearBoxMode->SetToolTip(_("The default mode for the gearbox when a new vehicle is loaded."));
 	y+=25;
+
+	int y1=15;
+	wxStaticBox *sb = new wxStaticBox(gamePanel, wxID_ANY, _("Camera Settings"),  wxPoint(10, y), wxSize(450, 150));
+	
+	dText = new wxStaticText(sb, -1, _("FOV External:"), wxPoint(10,y1+3));
+	fovext = new wxTextCtrl(sb, -1, "60", wxPoint(x_row1, y1), wxSize(200, -1), 0);
+	y1+=35;
+
+	dText = new wxStaticText(sb, -1, _("FOV Internal:"), wxPoint(10,y1+3));
+	fovint = new wxTextCtrl(sb, -1, "75", wxPoint(x_row1, y1), wxSize(200, -1), 0);
+	y1+=35;
+
+	extcam=new wxCheckBox(sb, -1, _("Disable Camera Pitching"), wxPoint(x_row1, y1));
+	extcam->SetToolTip(_("If you dislike the pitching external vehicle camera, you can disable it here."));
+	y1+=25;
+	y+=155;
 
 	dText = new wxStaticText(gamePanel, -1, _("User Token: "), wxPoint(10,y+3));
 	usertoken=new wxTextCtrl(gamePanel, -1, wxString(), wxPoint(x_row1, y), wxSize(200, -1));
@@ -1073,6 +1092,7 @@ MyDialog::MyDialog(const wxString& title, MyApp *_app) : wxDialog(NULL, wxID_ANY
 	textfilt->Append(conv("Trilinear"));
 	textfilt->Append(conv("Anisotropic (best looking)"));
 	textfilt->SetToolTip(_("Most recent hardware can do Anisotropic filtering without significant slowdown.\nUse lower settings only on old or poor video chipsets."));
+	textfilt->SetSelection(3); //anisotropic
 	y+=25;
 
 	dText = new wxStaticText(graphicsPanel, -1, _("Sky type:"), wxPoint(10,y+3));
@@ -1080,6 +1100,7 @@ MyDialog::MyDialog(const wxString& title, MyApp *_app) : wxDialog(NULL, wxID_ANY
 	sky->Append(conv("Sandstorm (fastest)"));
 	sky->Append(conv("Caelum (best looking, slower)"));
 	sky->SetToolTip(_("Caelum sky is nice but quite slow unless you have a high-powered GPU."));
+	sky->SetSelection(1); //Caelum
 	y+=25;
 
 	dText = new wxStaticText(graphicsPanel, wxID_ANY, _("Shadow type:"), wxPoint(10,y+3));
@@ -1091,6 +1112,7 @@ MyDialog::MyDialog(const wxString& title, MyApp *_app) : wxDialog(NULL, wxID_ANY
 	shadow->Append(conv("Parallel-split Shadow Maps"));
 #endif //OGRE_VERSION
 	shadow->SetToolTip(_("Texture shadows are fast but limited: jagged edges, no object self-shadowing, limited shadow distance.\nStencil shadows are slow but gives perfect shadows."));
+	sky->SetSelection(1); //Texture shadows
 	y+=25;
 
 	dText = new wxStaticText(graphicsPanel, wxID_ANY, _("Sightrange:"), wxPoint(10,y+3));
@@ -1124,6 +1146,7 @@ MyDialog::MyDialog(const wxString& title, MyApp *_app) : wxDialog(NULL, wxID_ANY
 	vegetationMode->Append(conv("50%"));
 	vegetationMode->Append(conv("Full (best looking, slower)"));
 	vegetationMode->SetToolTip(_("This determines how much grass and how many trees (and such objects) should get displayed."));
+	vegetationMode->SetSelection(3); // full
 	y+=25;
 
 	dText = new wxStaticText(graphicsPanel, -1, _("Particle systems:"), wxPoint(10, y));
@@ -1311,25 +1334,6 @@ MyDialog::MyDialog(const wxString& title, MyApp *_app) : wxDialog(NULL, wxID_ANY
 	y+=15;
 
 	// controls settings panel
-	leds = 0;
-#if OGRE_PLATFORM == OGRE_PLATFORM_WIN32
-	y=10;
-	leds=new wxCheckBox(ctsetPanel, -1, _("Enable Logitech G27 LEDs"), wxPoint(115, y));
-	leds->SetToolTip(_("Enable support for the Logitech G27 LED tachometer (Windows only)."));
-	y+=25;
-#endif //WINDOWS
-
-	// Gearbox
-	dText = new wxStaticText(ctsetPanel, -1, _("Gearbox mode:"), wxPoint(10,y));
-	gearBoxMode=new wxChoice(ctsetPanel, -1, wxPoint(115, y), wxSize(200, -1), 0);
-	gearBoxMode->Append(wxT("Automatic shift"));
-	gearBoxMode->Append(wxT("Manual shift - Auto clutch"));
-	gearBoxMode->Append(wxT("Fully Manual: sequential shift"));
-	gearBoxMode->Append(wxT("Fully Manual: stick shift"));
-	gearBoxMode->Append(wxT("Fully Manual: stick shift with ranges"));
-	gearBoxMode->SetToolTip(_("The default mode for the gearbox when a new vehicle is loaded."));
-	y+=25;
-
 #if OGRE_PLATFORM == OGRE_PLATFORM_WIN32
 	wxSizer *sizer_updates = new wxBoxSizer(wxVERTICAL);
 	helphtmw = new wxHtmlWindow(updatePanel, update_html, wxPoint(0, 0), wxSize(480, 380));
@@ -1373,6 +1377,11 @@ MyDialog::MyDialog(const wxString& title, MyApp *_app) : wxDialog(NULL, wxID_ANY
 
 	// inititalize ogre only when we really need it due to long startup times
 	ogreRoot = 0;
+
+	// select default tabs
+	// default is settings -> gameplay
+	nbook->SetSelection(0);
+	snbook->SetSelection(2);
 
 	wxLogStatus(wxT("Setting default values"));
 	SetDefaults();
@@ -1633,23 +1642,20 @@ void MyDialog::updateRendersystems(Ogre::RenderSystem *rs)
 
 void MyDialog::SetDefaults()
 {
-	//wxChoice *textfilt;
 	textfilt->SetSelection(3); //anisotropic
-	//wxChoice *sky;
-	sky->SetSelection(0);//sandstorm
-	//wxChoice *shadow;
-	shadow->SetSelection(0);//no shadows
+	sky->SetSelection(1);//caelum
+	shadow->SetSelection(1);//texture shadows
 	shadowOptimizations->SetValue(true);
-	sightRange->SetValue(5000);
-	//wxChoice *water;
+	sightRange->SetValue(5000); //5k = unlimited
 	water->SetSelection(0);//basic water
-	waves->SetValue(false);
-	vegetationMode->SetSelection(0); // None
+	waves->SetValue(false); // no waves
+	vegetationMode->SetSelection(3); // Full
+	particles->SetValue(true);
 
 	flaresMode->SetSelection(2); // all trucks
 	//languageMode->SetSelection(0);
 
-	ffEnable->SetValue(false);
+	ffEnable->SetValue(true);
 	ffOverall->SetValue(100);
 	ffHydro->SetValue(100);
 	ffCenter->SetValue(50);
@@ -1663,6 +1669,8 @@ void MyDialog::SetDefaults()
 
 	replaymode->SetValue(false);
 	dtm->SetValue(false);
+	fovint->SetValue("75");
+	fovext->SetValue("60");
 	advanced_logging->SetValue(false);
 	ingame_console->SetValue(false);
 	dofdebug->SetValue(false);
@@ -1676,41 +1684,29 @@ void MyDialog::SetDefaults()
 	hydrax->SetValue(false);
 	rtshader->SetValue(false);
 	dismap->SetValue(false);
-	if(leds) leds->SetValue(false);
-	autodl->SetValue(true);
-	posstor->SetValue(true);
+	autodl->SetValue(false);
+	posstor->SetValue(false);
 	beamdebug->SetValue(false);
 	extcam->SetValue(false);
-	//wxCheckBox *mirror;
-	mirror->SetValue(false);
-	envmap->SetValue(false);
-	//wxCheckBox *sunburn;
+	mirror->SetValue(true);
+	envmap->SetValue(true);
 	sunburn->SetValue(false);
-	//wxCheckBox *hdr;
 	hdr->SetValue(false);
 	glow->SetValue(false);
-	dof->SetValue(false);
-	//wxCheckBox *mblur;
+	dof->SetValue(true);
 	mblur->SetValue(false);
 	skidmarks->SetValue(false);
 	creaksound->SetValue(true);
-	//wxChoice *sound;
 	sound->SetSelection(1);//default
-	//wxChoice *thread;
 	thread->SetSelection(1);//2 CPUs is now the norm (incl. HyperThreading)
 
 #ifdef NETWORK
-	//wxCheckBox *network_enable;
 	network_enable->SetValue(false);
-	//wxTextCtrl *nickname;
 	nickname->SetValue(_("Anonymous"));
-	//wxTextCtrl *servername;
 	servername->SetValue(_("127.0.0.1"));
-	//wxTextCtrl *serverport;
 	serverport->SetValue(_("12333"));
 	serverpassword->SetValue(wxString());
 	usertoken->SetValue(wxString());
-//	p2pport->SetValue("12334");
 #endif
 
 	// update settings
@@ -1727,6 +1723,9 @@ void MyDialog::getSettingsControls()
 	sprintf(tmp, "%d", sightRange->GetValue());
 	settings["SightRange"] = tmp;
 	settings["Shadow optimizations"] = (shadowOptimizations->GetValue()) ? "Yes" : "No";
+
+	settings["FOV Internal"] = fovint->GetValue();
+	settings["FOV External"] = fovext->GetValue();
 
 	settings["Water effects"] = conv(water->GetStringSelection());
 	settings["Waves"] = (waves->GetValue()) ? "Yes" : "No";
@@ -1745,7 +1744,6 @@ void MyDialog::getSettingsControls()
 	settings["Hydrax"] = (hydrax->GetValue()) ? "Yes" : "No";
 	//settings["Use RTShader System"] = (rtshader->GetValue()) ? "Yes" : "No";
 	settings["disableOverViewMap"] = (dismap->GetValue()) ? "Yes" : "No";
-	if(leds) { settings["Logitech LEDs"] = (leds->GetValue()) ? "Yes" : "No"; };
 	settings["DebugBeams"] = (beamdebug->GetValue()) ? "Yes" : "No";
 	//settings["AutoDownload"] = (autodl->GetValue()) ? "Yes" : "No";
 	settings["Position Storage"] = (posstor->GetValue()) ? "Yes" : "No";
@@ -1833,7 +1831,6 @@ void MyDialog::updateSettingsControls()
 	st = settings["Hydrax"]; if (st.length()>0) hydrax->SetValue(st=="Yes");
 	//st = settings["Use RTShader System"]; if (st.length()>0) rtshader->SetValue(st=="Yes");
 	st = settings["disableOverViewMap"]; if (st.length()>0) dismap->SetValue(st=="Yes");
-	if(leds) { st = settings["Logitech LEDs"]; if (st.length()>0) leds->SetValue(st=="Yes"); };
 	st = settings["External Camera Mode"]; if (st.length()>0) extcam->SetValue(st=="Static");
 	//st = settings["AutoDownload"]; if (st.length()>0) autodl->SetValue(st=="Yes");
 	st = settings["Position Storage"]; if (st.length()>0) posstor->SetValue(st=="Yes");
@@ -1854,6 +1851,10 @@ void MyDialog::updateSettingsControls()
 	st = settings["Force Feedback Stress"]; if (st.length()>0) ffHydro->SetValue((int)atof(st.c_str()));
 	st = settings["Force Feedback Centering"]; if (st.length()>0) ffCenter->SetValue((int)atof(st.c_str()));
 	st = settings["Force Feedback Camera"]; if (st.length()>0) ffCamera->SetValue((int)atof(st.c_str()));
+
+	st = settings["FOV Internal"]; if (st.length()>0) fovint->SetValue(st);
+	st = settings["FOV External"]; if (st.length()>0) fovext->SetValue(st);
+
 	//update textboxes
 	wxScrollEvent dummye;
 	OnForceFeedbackScroll(dummye);

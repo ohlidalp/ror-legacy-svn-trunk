@@ -68,7 +68,7 @@ bool Settings::getBooleanSetting(Ogre::String key)
 Ogre::String Settings::getSettingScriptSafe(Ogre::String key)
 {
 	// hide certain settings for scripts
-	if(key == "User Token" || key == "Config Root" || key == "Cache Path" || key == "Log Path" || key == "Resources Path" || key == "Streams Path" || key == "Program Path")
+	if(key == "User Token" || key == "Config Root" || key == "Cache Path" || key == "Log Path" || key == "Resources Path" || key == "Program Path")
 		return "permission denied";
 
 	return settings[key];
@@ -311,8 +311,6 @@ bool Settings::setupPaths()
 	//default mode (released)
 	strcpy(resources_path, program_path);
 	path_add(resources_path, "resources");
-	strcpy(streams_path, program_path);
-	path_add(streams_path, "streams");
 
 	//setup config files names
 	char plugins_fname[1024];
@@ -340,7 +338,6 @@ bool Settings::setupPaths()
 	settings["Cache Path"] = String(user_path) + "cache" + String(dsStr);
 	settings["Log Path"] = String(ogrelog_path);
 	settings["Resources Path"] = String(resources_path);
-	settings["Streams Path"] = String(streams_path);
 	settings["User Path"] = String(user_path);
 	settings["Program Path"] = String(program_path);
 	settings["plugins.cfg"] = String(plugins_fname);
@@ -354,7 +351,6 @@ bool Settings::setupPaths()
 	StringUtil::toLowerCase(settings["Cache Path"]);
 	StringUtil::toLowerCase(settings["Log Path"]);
 	StringUtil::toLowerCase(settings["Resources Path"]);
-	StringUtil::toLowerCase(settings["Streams Path"]);
 	StringUtil::toLowerCase(settings["Program Path"]);
 #endif
 	// now enable the user to override that:
