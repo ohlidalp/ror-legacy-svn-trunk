@@ -353,7 +353,7 @@ public:
 	Water *w;
 	Ogre::String loadedTerrain;
 
-
+	OIS::Win32LogitechLEDs *leds;
 public:
 
 	void shutdown_final();

@@ -554,6 +554,7 @@ protected:
 	Ogre::UTFString keyInput;
 	bool recordChat;
 	bool inputsChanged;
+	bool ingame_console;
 	int grabMode;
 
 	event_trigger_t newEvent();

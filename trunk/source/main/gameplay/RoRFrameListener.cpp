@@ -243,7 +243,6 @@ void RoRFrameListener::updateIO(float dt)
 	if (current_truck != -1 && trucks[current_truck] && trucks[current_truck]->driveable == TRUCK)
 	{
 #ifdef USE_OIS_G27
-		/*
 		//logitech G27 LEDs tachometer
 		if (leds)
 		{
@@ -251,7 +250,6 @@ void RoRFrameListener::updateIO(float dt)
 				trucks[current_truck]->engine->getMaxRPM()*0.75,
 				trucks[current_truck]->engine->getMaxRPM());
 		}
-		*/
 #endif //OIS_G27
 
 		// force feedback
@@ -771,9 +769,7 @@ RoRFrameListener::RoRFrameListener(AppState *parentState, RenderWindow* win, Cam
 	mDOF=0;
 	eflsingleton=this;
 	forcefeedback=0;
-#ifdef USE_OIS_G27
-//	leds=0;
-#endif //OIS_G27
+	leds=0;
 
 #ifdef USE_MPLATFORM
 	mplatform = new MPlatform_FD();
@@ -983,10 +979,7 @@ RoRFrameListener::RoRFrameListener(AppState *parentState, RenderWindow* win, Cam
 	}
 
 #ifdef USE_OIS_G27
-	if (BSETTING("Logitech LEDs"))
-	{
-//		leds = INPUTENGINE.getLogitechLEDsDevice();
-	}
+	leds = INPUTENGINE.getLogitechLEDsDevice();
 #endif //OIS_G27
 
 
@@ -3673,12 +3666,10 @@ void RoRFrameListener::shutdown_final()
 #endif // OPENAL
 #ifdef USE_OIS_G27
 	//logitech G27 LEDs tachometer
-	/*
 	if (leds)
 	{
 		leds->play(0, 10, 20);//stop the LEDs
 	}
-	*/
 #endif //OIS_G27
 
 	LOG(" ** Shutdown final");
@@ -5517,12 +5508,10 @@ void RoRFrameListener::setCurrentTruck(int v)
 		//LEDs
 #ifdef USE_OIS_G27
 		//logitech G27 LEDs tachometer
-		/*
 		if (leds)
 		{
 			leds->play(0, 10, 20);//stop the LEDs
 		}
-		*/
 #endif //OIS_G27
 
 		// hide truckhud
@@ -5625,12 +5614,10 @@ void RoRFrameListener::setCurrentTruck(int v)
 		//LEDs
 #ifdef USE_OIS_G27
 		//logitech G27 LEDs tachometer
-		/*
 		if (leds && trucks[current_truck]->driveable!=TRUCK)
 		{
 			leds->play(0, 10, 20);//stop the LEDs
 		}
-		*/
 #endif //OIS_G27
 
 
@@ -5777,7 +5764,7 @@ void RoRFrameListener::moveCamera(float dt)
 			{
 				mCamera->setPosition(collisions->forcecampos);
 				mCamera->lookAt(person->getPosition()+Vector3(0.0,1.0,0.0));
-				float fov = StringConverter::parseReal(SETTINGS.getSetting("FOV External"));
+				float fov = StringConverter::parseReal(SSETTING("FOV External"));
 				if(changeCamMode)
 					mCamera->setFOVy(Degree(fov+20));
 				collisions->forcecam=false;
@@ -5811,7 +5798,7 @@ void RoRFrameListener::moveCamera(float dt)
 				setCameraPositionWithCollision(newposition);
 				mCamera->lookAt(person->getPosition()+Vector3(0.0,1.1f,0.0));
 
-				float fov = StringConverter::parseReal(SETTINGS.getSetting("FOV External"));
+				float fov = StringConverter::parseReal(SSETTING("FOV External"));
 
 				if(changeCamMode)
 					mCamera->setFOVy(Degree(fov));
@@ -5822,7 +5809,7 @@ void RoRFrameListener::moveCamera(float dt)
 				{
 					mDOF->setFocusMode(DOFManager::Manual);
 					mDOF->setFocus(real_camdist);
-					mDOF->setLensFOV(mCamera->getFOVy());
+					mDOF->setLensFOV(Degree(fov));
 				}
 
 				//lastangle=angle;
@@ -5860,7 +5847,7 @@ void RoRFrameListener::moveCamera(float dt)
 		}
 		else if (cameramode==CAMERA_INT)
 		{
-			float fov = StringConverter::parseReal(SETTINGS.getSetting("FOV Internal"));
+			float fov = StringConverter::parseReal(SSETTING("FOV Internal"));
 			if(changeCamMode)
 				mCamera->setFOVy(Degree(fov));
 			mCamera->setPosition(person->getPosition()+Vector3(0,1.7,0));
@@ -5877,7 +5864,7 @@ void RoRFrameListener::moveCamera(float dt)
 			if(mDOF)
 			{
 				mDOF->setFocusMode(DOFManager::Auto);
-				mDOF->setLensFOV(mCamera->getFOVy());
+				mDOF->setLensFOV(Degree(fov));
 			}
 
 		}
@@ -5912,7 +5899,7 @@ void RoRFrameListener::moveCamera(float dt)
 				if(mDOF)
 				{
 					mDOF->setFocusMode(DOFManager::Auto);
-					mDOF->setLensFOV(mCamera->getFOVy());
+					mDOF->setLensFOV(Degree(80));
 				}
 			}
 			else
@@ -5953,7 +5940,7 @@ void RoRFrameListener::moveCamera(float dt)
 				setCameraPositionWithCollision(newposition);
 				mCamera->lookAt(trucks[current_truck]->getPosition());
 
-				float fov = StringConverter::parseReal(SETTINGS.getSetting("FOV External"));
+				float fov = StringConverter::parseReal(SSETTING("FOV External"));
 
 				if(changeCamMode)
 					mCamera->setFOVy(Degree(fov));
@@ -5964,7 +5951,7 @@ void RoRFrameListener::moveCamera(float dt)
 				{
 					mDOF->setFocusMode(DOFManager::Manual);
 					mDOF->setFocus(cam_realdist);
-					mDOF->setLensFOV(mCamera->getFOVy());
+					mDOF->setLensFOV(Degree(80));
 				}
 
 
@@ -6033,7 +6020,7 @@ void RoRFrameListener::moveCamera(float dt)
 		{
 			int currentcamera=trucks[current_truck]->currentcamera;
 
-			float fov = StringConverter::parseReal(SETTINGS.getSetting("FOV Internal"));
+			float fov = StringConverter::parseReal(SSETTING("FOV Internal"));
 
 			if(changeCamMode)
 				mCamera->setFOVy(Degree(fov));
@@ -6111,7 +6098,7 @@ void RoRFrameListener::moveCamera(float dt)
 				{
 					mDOF->setFocusMode(DOFManager::Manual);
 					mDOF->setFocus(2);
-					mDOF->setLensFOV(mCamera->getFOVy());
+					mDOF->setLensFOV(Degree(fov));
 				}
 
 		}
