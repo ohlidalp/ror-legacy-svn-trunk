@@ -239,7 +239,7 @@ SerializedRig::SerializedRig()
 	origin=Vector3::ZERO;
 	mSlideNodes.clear();
 
-	enable_wheel2=BSETTING("Enhanced wheels");
+	enable_wheel2=true; //BSETTING("Enhanced wheels");
 
 	engine=0;
 	water=0;

@@ -521,7 +521,7 @@ Beam::Beam(int tnum, SceneManager *manager, SceneNode *parent, RenderWindow* win
 		heathaze=false;
 
 
-	enable_wheel2=BSETTING("Enhanced wheels");
+	enable_wheel2=true; // since 0.38, enabled wheels2 by default // BSETTING("Enhanced wheels");
 	if (networked || networking) enable_wheel2=false;
 
 	cparticle_enabled=BSETTING("Particles");
