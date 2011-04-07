@@ -46,7 +46,7 @@ SoundScriptManager::SoundScriptManager()
 		free_pitches[i]=0;
 		free_gains[i]=0;
 	}
-	for (int i=0; i<SS_MAX_TRIG*MAX_TRUCKS; i++) statemap[i]=false;
+	for (int i=0; i<SS_MAX_TRIG*(MAX_TRUCKS+2); i++) statemap[i]=false;
 	sm=new SoundManager(); //we can give a device name if we want here
 	LOG("SoundScriptManager: Sound Manager started with "+TOSTRING(sm->maxSources())+" sources");
 	mScriptPatterns.push_back("*.soundscript");

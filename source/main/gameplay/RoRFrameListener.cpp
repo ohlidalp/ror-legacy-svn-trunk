@@ -1547,6 +1547,18 @@ void RoRFrameListener::loadObject(const char* name, float px, float py, float pz
 			continue;
 		}
 		if (!strcmp("standard", ptline)) {classic_ref=false;tenode->pitch(Degree(90));continue;};
+		if (!strncmp("sound", ptline, 5))
+		{
+			if(ssm)
+			{
+				char tmp[255]="";
+				sscanf(ptline, "sound %s", tmp);
+				SoundScriptInstance *sound = ssm->createInstance(tmp, SoundScriptManager::TERRAINSOUND, tenode);
+				sound->setPosition(tenode->getPosition(), Vector3::ZERO);
+				sound->start();
+			}
+			continue;
+		}
 		if (!strcmp("beginbox", ptline) || !strcmp("beginmesh", ptline))
 		{
 			drx=dry=drz=0.0;
