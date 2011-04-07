@@ -37,6 +37,7 @@ using namespace Ogre;
 class FlexBody
 {
 private:
+	MaterialReplacer *mr;
 
 	typedef struct
 	{
@@ -97,7 +98,7 @@ private:
 	Ogre::MeshPtr msh;
 
 public:
-	FlexBody(SceneManager *manager, node_t *nds, int numnodes, char* meshname, char* uname, int ref, int nx, int ny, Vector3 offset, Quaternion rot, char* setdef, MaterialFunctionMapper *mfm, Skin *usedSkin, bool forceNoShadows);
+	FlexBody(SceneManager *manager, node_t *nds, int numnodes, char* meshname, char* uname, int ref, int nx, int ny, Vector3 offset, Quaternion rot, char* setdef, MaterialFunctionMapper *mfm, Skin *usedSkin, bool forceNoShadows, MaterialReplacer *mr);
 
 /*	void getMeshInformation(Mesh* mesh,size_t &vertex_count,Vector3* &vertices,
 											  size_t &index_count, unsigned* &indices,

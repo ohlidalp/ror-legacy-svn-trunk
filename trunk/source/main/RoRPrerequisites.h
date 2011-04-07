@@ -82,6 +82,7 @@ class FlexBody;
 class FlexMesh;
 class FlexObj;
 class HeightFinder;
+class MaterialReplacer;
 class MaterialFunctionMapper;
 class MapTextureCreator;
 class MeshObject;

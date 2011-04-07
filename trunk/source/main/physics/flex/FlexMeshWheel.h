@@ -39,25 +39,27 @@ using namespace Ogre;
 class FlexMeshWheel: public Flexable
 {
 private:
-typedef struct
-{
-	Vector3 vertex;
-	Vector3 normal;
-//	Vector3 color;
-	Vector2 texcoord;
-} CoVertice_t;
+	MaterialReplacer *mr;
+	
+	typedef struct
+	{
+		Vector3 vertex;
+		Vector3 normal;
+	//	Vector3 color;
+		Vector2 texcoord;
+	} CoVertice_t;
 
-typedef struct
-{
-	Vector3 vertex;
-} posVertice_t;
+	typedef struct
+	{
+		Vector3 vertex;
+	} posVertice_t;
 
-typedef struct
-{
-	Vector3 normal;
-//	Vector3 color;
-	Vector2 texcoord;
-} norVertice_t;
+	typedef struct
+	{
+		Vector3 normal;
+	//	Vector3 color;
+		Vector2 texcoord;
+	} norVertice_t;
 
 	Ogre::MeshPtr msh;
 	SubMesh* sub;
@@ -66,22 +68,24 @@ typedef struct
 
 	size_t nVertices;
 	size_t vbufCount;
+
 	//shadow
 	union
 	{
-	float *shadowposvertices;
-	posVertice_t *coshadowposvertices;
+		float *shadowposvertices;
+		posVertice_t *coshadowposvertices;
 	};
 	union
 	{
-	float *shadownorvertices;
-	norVertice_t *coshadownorvertices;
+		float *shadownorvertices;
+		norVertice_t *coshadownorvertices;
 	};
 	union
 	{
-	float *vertices;
-	CoVertice_t *covertices;
+		float *vertices;
+		CoVertice_t *covertices;
 	};
+
 	//nodes
 	//int *nodeIDs;
 	int id0;
@@ -99,7 +103,7 @@ typedef struct
 	bool revrim;
 	Entity *rimEnt;
 public:
-	FlexMeshWheel(SceneManager *manager, char* name, node_t *nds, int n1, int n2, int nstart, int nrays, char* meshname, char* texband, float rimradius, bool rimreverse, MaterialFunctionMapper *mfm, Skin *usedSkin);
+	FlexMeshWheel(SceneManager *manager, char* name, node_t *nds, int n1, int n2, int nstart, int nrays, char* meshname, char* texband, float rimradius, bool rimreverse, MaterialFunctionMapper *mfm, Skin *usedSkin, MaterialReplacer *mr);
 
 	Vector3 updateVertices();
 	Vector3 updateShadowVertices();

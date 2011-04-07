@@ -34,6 +34,7 @@ using namespace Ogre;
 class Turbojet: public AeroEngine
 {
 private:
+	MaterialReplacer *mr;
 	node_t *nodes;
 	int number;
 	bool reverse;
@@ -76,7 +77,7 @@ private:
 public:
 	bool afterburnable;
 
-	Turbojet(SceneManager *manager, char* propname, int tnumber, int trucknum, node_t *nd, int tnodefront, int tnodeback, int tnoderef, float tmaxdrythrust, bool treversable, bool tafterburnable, float tafterburnthrust, float diskdiam, float nozdiam, float nozlength, bool disable_smoke, bool heathaze, MaterialFunctionMapper *mfm, Skin *usedSkin);
+	Turbojet(SceneManager *manager, char* propname, int tnumber, int trucknum, node_t *nd, int tnodefront, int tnodeback, int tnoderef, float tmaxdrythrust, bool treversable, bool tafterburnable, float tafterburnthrust, float diskdiam, float nozdiam, float nozlength, bool disable_smoke, bool heathaze, MaterialFunctionMapper *mfm, Skin *usedSkin, MaterialReplacer *mr);
 
 	void updateVisuals();
 	void updateForces(float dt, int doUpdate);

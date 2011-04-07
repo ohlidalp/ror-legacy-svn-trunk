@@ -29,13 +29,15 @@ along with Rigs of Rods.  If not, see <http://www.gnu.org/licenses/>.
 
 #include "materialFunctionMapper.h"
 #include "skin.h"
+#include "MaterialReplacer.h"
 
 
 class MeshObject : public Ogre::ResourceBackgroundQueue::Listener, public Ogre::Resource::Listener
 {
 public:
 	MeshObject(Ogre::SceneManager *smgr, Ogre::String meshName, Ogre::String entityName, Ogre::SceneNode *sceneNode=0, Skin *s=0, bool backgroundLoading=false)
-		: smgr(smgr)
+		: mr(0)
+		, smgr(smgr)
 		, meshName(meshName)
 		, entityName(entityName)
 		, sceneNode(sceneNode)
@@ -74,14 +76,16 @@ public:
 		}
 	}
 
-	void setMaterialFunctionMapper(MaterialFunctionMapper *m)
+	void setMaterialFunctionMapper(MaterialFunctionMapper *m, MaterialReplacer *mr)
 	{
 		if(!m) return;
 		mfm = m;
+		this->mr = mr;
 		if(loaded && ent)
 		{
 			// already loaded, so do it afterwards manually
 			mfm->replaceMeshMaterials(ent);
+			mr->replaceMeshMaterials(ent);
 		}
 	}
 
@@ -124,6 +128,7 @@ public:
 	//Ogre::SceneNode *getSceneNode() { return sceneNode; };
 
 protected:
+	MaterialReplacer *mr;
 	Ogre::SceneManager *smgr;
 	Ogre::String meshName;
 	Ogre::String entityName;

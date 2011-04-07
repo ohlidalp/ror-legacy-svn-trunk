@@ -942,7 +942,7 @@ struct rig
 	float default_node_loadweight;
 	char default_node_options[50];
 
-
+	MaterialReplacer *materialReplacer;
 };
 
 // some non-beam structs
