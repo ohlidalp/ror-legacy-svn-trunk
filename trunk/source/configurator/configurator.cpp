@@ -1497,7 +1497,7 @@ void MyDialog::loadOgre()
 		ogreRoot->restoreConfig();
 	} catch (Ogre::Exception& e)
 	{
-		if(e.getSource() == "D3D9RenderSystem::setConfigOption" && e.getDescription() == "Option named 'Anti aliasing' does not exist.")
+		if(e.getSource() == "D3D9RenderSystem::setConfigOption")
 		{
 			// this is a normal error that happens when the suers switch from ogre 1.6 to 1.7
 		} else
