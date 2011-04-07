@@ -483,6 +483,9 @@ int WsyncThread::sync()
 			if(it->first == string("/update.temp.exe")) continue;
 			if(it->first == string("/stream.info")) continue;
 			if(it->first == string("/version.txt")) continue;
+			if(it->first == string("/config.cfg")) continue;
+			if(it->first == string("/uninst.exe")) continue;
+			if(it->first == string("/forums.url")) continue;
 
 			//if(hashMapRemote[it->first] == it->second)
 				//printf("same: %s %s==%s\n", it->first.c_str(), hashMapRemote[it->first].c_str(), it->second.c_str());
@@ -507,6 +510,9 @@ int WsyncThread::sync()
 			// filter some files
 			if(it->first == string("/stream.info")) continue;
 			if(it->first == string("/version.txt")) continue;
+			if(it->first == string("/config.cfg")) continue;
+			if(it->first == string("/uninst.exe")) continue;
+			if(it->first == string("/forums.url")) continue;
 
 			if(hashMapLocal.find(it->first) == hashMapLocal.end())
 				newFiles.push_back(Fileentry(itr->first, it->first, it->second.filesize));
