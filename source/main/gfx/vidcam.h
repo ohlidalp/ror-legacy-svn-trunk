@@ -60,6 +60,7 @@ protected:
 	Ogre::MaterialPtr mat;
 	bool debugMode;
 	Ogre::SceneNode *debugNode;
+	MaterialReplacer *mr;
 };
 
 

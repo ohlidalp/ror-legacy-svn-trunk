@@ -23,6 +23,8 @@ along with Rigs of Rods.  If not, see <http://www.gnu.org/licenses/>.
 
 #include "utils.h"
 #include "Settings.h"
+#include "SkyManager.h"
+#include "MaterialReplacer.h"
 
 using namespace Ogre;
 
@@ -54,12 +56,15 @@ void VideoCamera::init()
 			, Ogre::TU_RENDERTARGET
 			, new ResourceBuffer());
 	rttTex = rttTexPtr->getBuffer()->getRenderTarget();
+
+	// disable automatic rendering
+	rttTex->setAutoUpdated(false);
 		
 	mVidCam->setNearClipDistance(minclip);
 	mVidCam->setFarClipDistance(maxclip);
 	mVidCam->setFOVy(Ogre::Degree(fov));
 	mVidCam->setAspectRatio((float)textureSize.x/(float)textureSize.y);
-	
+
 	Ogre::Viewport *vp = rttTex->addViewport(mVidCam);
 	vp->setClearEveryFrame(true);
 	vp->setBackgroundColour(mCamera->getViewport()->getBackgroundColour());
@@ -100,6 +105,13 @@ void VideoCamera::setActive(bool state)
 
 void VideoCamera::update(float dt)
 {
+	// caelum needs to know that we changed the cameras
+	if(SkyManager::getSingletonPtr())
+		SkyManager::getSingleton().notifyCameraChanged(mVidCam);
+
+	// update the texture now, otherwise shuttering
+	rttTex->update();
+
 	// get the normal of the camera plane now
 	Vector3 normal=(-(truck->nodes[nref].smoothpos - truck->nodes[nz].smoothpos)).crossProduct(-(truck->nodes[nref].smoothpos - truck->nodes[ny].smoothpos));
 	normal.normalise();
@@ -227,6 +239,10 @@ VideoCamera *VideoCamera::parseLine(Ogre::SceneManager *mSceneMgr, Ogre::Camera 
 		MaterialPtr matNew = mat->clone(String(truck->truckname) + materialname);
 		String newMaterialName = matNew->getName();
 
+		// we need to find and replace any materials that could come afterwards
+		if(truck && truck->materialReplacer)
+			truck->materialReplacer->addMaterialReplace(mat->getName(), newMaterialName);
+
 		VideoCamera *v  = new VideoCamera(mSceneMgr, camera, truck);
 		v->fov          = fov;
 		v->minclip      = minclip;
@@ -268,3 +284,5 @@ VideoCamera *VideoCamera::parseLine(Ogre::SceneManager *mSceneMgr, Ogre::Camera 
 	}
 	return 0;
 }
+
+

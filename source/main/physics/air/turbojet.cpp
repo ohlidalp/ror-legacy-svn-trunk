@@ -19,8 +19,9 @@ along with Rigs of Rods.  If not, see <http://www.gnu.org/licenses/>.
 */
 #include "turbojet.h"
 #include "skin.h"
+#include "MaterialReplacer.h"
 
-Turbojet::Turbojet(SceneManager *manager, char* propname, int tnumber, int trucknum, node_t *nd, int tnodefront, int tnodeback, int tnoderef, float tmaxdrythrust, bool treversable, bool tafterburnable, float tafterburnthrust, float diskdiam, float nozdiam, float nozlength, bool disable_smoke, bool _heathaze, MaterialFunctionMapper *mfm, Skin *usedSkin)
+Turbojet::Turbojet(SceneManager *manager, char* propname, int tnumber, int trucknum, node_t *nd, int tnodefront, int tnodeback, int tnoderef, float tmaxdrythrust, bool treversable, bool tafterburnable, float tafterburnthrust, float diskdiam, float nozdiam, float nozlength, bool disable_smoke, bool _heathaze, MaterialFunctionMapper *mfm, Skin *usedSkin, MaterialReplacer *mr) : mr(mr)
 {
 	heathaze=_heathaze;
 	nodes=nd;
@@ -65,6 +66,7 @@ Turbojet::Turbojet(SceneManager *manager, char* propname, int tnumber, int truck
 	Entity *te = manager->createEntity(paname, "nozzle.mesh");
 	MaterialFunctionMapper::replaceSimpleMeshMaterials(te, ColourValue(1, 0.5, 0.5));
 	if(mfm) mfm->replaceMeshMaterials(te);
+	if(mr) mr->replaceMeshMaterials(te);
 	if(usedSkin) usedSkin->replaceMeshMaterials(te);
 	nzsnode=manager->getRootSceneNode()->createChildSceneNode();
 	nzsnode->attachObject(te);
@@ -75,6 +77,7 @@ Turbojet::Turbojet(SceneManager *manager, char* propname, int tnumber, int truck
 		Entity *te = manager->createEntity(paname, "abflame.mesh");
 		MaterialFunctionMapper::replaceSimpleMeshMaterials(te, ColourValue(1, 1, 0));
 		if(mfm) mfm->replaceMeshMaterials(te);
+		if(mr) mr->replaceMeshMaterials(te);
 		if(usedSkin) usedSkin->replaceMeshMaterials(te);
 		absnode=manager->getRootSceneNode()->createChildSceneNode();
 		absnode->attachObject(te);

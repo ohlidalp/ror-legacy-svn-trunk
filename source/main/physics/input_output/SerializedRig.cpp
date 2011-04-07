@@ -38,6 +38,7 @@ along with Rigs of Rods.  If not, see <http://www.gnu.org/licenses/>.
 #include "Settings.h"
 #include "FlexMesh.h"
 #include "FlexMeshWheel.h"
+#include "MaterialReplacer.h"
 
 // TODO not really needed for truck loading, or used very rarely
 #include "collisions.h"
@@ -258,6 +259,7 @@ SerializedRig::SerializedRig()
 	netCustomLightArray[3] = -1;
 	netCustomLightArray_counter = 0;
 	materialFunctionMapper=0;
+
 	driversseatfound=false;
 	ispolice=false;
 	state=SLEEPING;
@@ -299,6 +301,8 @@ SerializedRig::SerializedRig()
 	freePositioned=false;
 	lowestnode = -1;
 	beamsRoot=0;
+
+	materialReplacer = new MaterialReplacer();
 }
 
 SerializedRig::~SerializedRig()
@@ -2649,7 +2653,7 @@ int SerializedRig::loadTruck(String fname, SceneManager *manager, SceneNode *par
 					// now create the mesh
 					MeshObject *mo = new MeshObject(manager, diwmeshname, "", props[free_prop].wheel, usedSkin, enable_background_loading);
 					mo->setSimpleMaterialColour(ColourValue(0, 0.5, 0.5));
-					mo->setMaterialFunctionMapper(materialFunctionMapper);
+					mo->setMaterialFunctionMapper(materialFunctionMapper, materialReplacer);
 				}
 
 				// create the meshs scenenode
@@ -2657,7 +2661,7 @@ int SerializedRig::loadTruck(String fname, SceneManager *manager, SceneNode *par
 				// now create the mesh
 				props[free_prop].mo = new MeshObject(manager, meshname, "", props[free_prop].snode, usedSkin, enable_background_loading);
 				props[free_prop].mo->setSimpleMaterialColour(ColourValue(1, 1, 0));
-				props[free_prop].mo->setMaterialFunctionMapper(materialFunctionMapper);
+				props[free_prop].mo->setMaterialFunctionMapper(materialFunctionMapper, materialReplacer);
 				props[free_prop].mo->setCastShadows(shadowmode!=0);
 
 				//hack for the spinprops
@@ -2866,6 +2870,7 @@ int SerializedRig::loadTruck(String fname, SceneManager *manager, SceneNode *par
 				}
 				MaterialFunctionMapper::replaceSimpleMeshMaterials(ec, ColourValue(0.5, 1, 0));
 				if(materialFunctionMapper) materialFunctionMapper->replaceMeshMaterials(ec);
+				if(materialReplacer) materialReplacer->replaceMeshMaterials(ec);
 				if(usedSkin) usedSkin->replaceMeshMaterials(ec);
 				wings[free_wing].cnode = manager->getRootSceneNode()->createChildSceneNode();
 				if(ec)
@@ -3450,7 +3455,7 @@ int SerializedRig::loadTruck(String fname, SceneManager *manager, SceneNode *par
 
 				char propname[256];
 				sprintf(propname, "turbojet-%s-%i", truckname, free_aeroengine);
-				Turbojet *tj=new Turbojet(manager, propname, free_aeroengine, trucknum, nodes, front, back, ref, drthrust, rev!=0, abthrust>0, abthrust, fdiam, bdiam, len, disable_smoke, heathaze, materialFunctionMapper, usedSkin);
+				Turbojet *tj=new Turbojet(manager, propname, free_aeroengine, trucknum, nodes, front, back, ref, drthrust, rev!=0, abthrust>0, abthrust, fdiam, bdiam, len, disable_smoke, heathaze, materialFunctionMapper, usedSkin, materialReplacer);
 				aeroengines[free_aeroengine]=tj;
 				driveable=AIRPLANE;
 				if (!autopilot && state != NETWORKED)
@@ -3570,7 +3575,7 @@ int SerializedRig::loadTruck(String fname, SceneManager *manager, SceneNode *par
 					parser_warning(c, "flexbodies limit reached ("+TOSTRING(MAX_FLEXBODIES)+")");
 					continue;
 				}
-				flexbodies[free_flexbody]=new FlexBody(manager, nodes, free_node, meshname, uname, ref, nx, ny, offset, rot, const_cast<char *>(c.line.substr(6).c_str()), materialFunctionMapper, usedSkin, (shadowmode!=0));
+				flexbodies[free_flexbody]=new FlexBody(manager, nodes, free_node, meshname, uname, ref, nx, ny, offset, rot, const_cast<char *>(c.line.substr(6).c_str()), materialFunctionMapper, usedSkin, (shadowmode!=0), materialReplacer);
 				free_flexbody++;
 			}
 			else if (c.mode == BTS_HOOKGROUP)
@@ -4324,6 +4329,7 @@ int SerializedRig::loadTruck(String fname, SceneManager *manager, SceneNode *par
 		}
 		MaterialFunctionMapper::replaceSimpleMeshMaterials(ec, ColourValue(0.5, 1, 0.5));
 		if(materialFunctionMapper) materialFunctionMapper->replaceMeshMaterials(ec);
+		if(materialReplacer) materialReplacer->replaceMeshMaterials(ec);
 		if(usedSkin) usedSkin->replaceMeshMaterials(ec);
 	};
 	//parser_warning(c, "cab ok");
@@ -4648,7 +4654,7 @@ void SerializedRig::addWheel(SceneManager *manager, SceneNode *parent, Real radi
 	vwheels[free_wheel].meshwheel = meshwheel;
 	if (meshwheel)
 	{
-		vwheels[free_wheel].fm=new FlexMeshWheel(manager, wname, nodes, node1, node2, nodebase, rays, texf, texb, rimradius, rimreverse, materialFunctionMapper, usedSkin);
+		vwheels[free_wheel].fm=new FlexMeshWheel(manager, wname, nodes, node1, node2, nodebase, rays, texf, texb, rimradius, rimreverse, materialFunctionMapper, usedSkin, materialReplacer);
 		try
 		{
 			Entity *ec = manager->createEntity(wnamei, wname);
@@ -4657,6 +4663,7 @@ void SerializedRig::addWheel(SceneManager *manager, SceneNode *parent, Real radi
 				vwheels[free_wheel].cnode->attachObject(ec);
 			MaterialFunctionMapper::replaceSimpleMeshMaterials(ec, ColourValue(0, 0.5, 0.5));
 			if(materialFunctionMapper) materialFunctionMapper->replaceMeshMaterials(ec);
+			if(materialReplacer) materialReplacer->replaceMeshMaterials(ec);
 			if(usedSkin) usedSkin->replaceMeshMaterials(ec);
 		}catch(...)
 		{
@@ -4671,6 +4678,7 @@ void SerializedRig::addWheel(SceneManager *manager, SceneNode *parent, Real radi
 			Entity *ec = manager->createEntity(wnamei, wname);
 			MaterialFunctionMapper::replaceSimpleMeshMaterials(ec, ColourValue(0, 0.5, 0.5));
 			if(materialFunctionMapper) materialFunctionMapper->replaceMeshMaterials(ec);
+			if(materialReplacer) materialReplacer->replaceMeshMaterials(ec);
 			if(usedSkin) usedSkin->replaceMeshMaterials(ec);
 			vwheels[free_wheel].cnode = manager->getRootSceneNode()->createChildSceneNode();
 			if(ec)
@@ -4864,6 +4872,7 @@ void SerializedRig::addWheel2(SceneManager *manager, SceneNode *parent, Real rad
 		Entity *ec = manager->createEntity(wnamei, wname);
 		MaterialFunctionMapper::replaceSimpleMeshMaterials(ec, ColourValue(0, 0.5, 0.5));
 		if(materialFunctionMapper) materialFunctionMapper->replaceMeshMaterials(ec);
+		if(materialReplacer) materialReplacer->replaceMeshMaterials(ec);
 		if(usedSkin) usedSkin->replaceMeshMaterials(ec);
 		//	ec->setMaterialName("tracks/wheel");
 		//ec->setMaterialName("Test/ColourTest");

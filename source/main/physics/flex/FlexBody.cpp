@@ -22,8 +22,9 @@ along with Rigs of Rods.  If not, see <http://www.gnu.org/licenses/>.
 #include "Settings.h"
 
 #include "skin.h"
+#include "MaterialReplacer.h"
 
-FlexBody::FlexBody(SceneManager *manager, node_t *nds, int numnds, char* meshname, char* uname, int ref, int nx, int ny, Vector3 offset, Quaternion rot, char* setdef, MaterialFunctionMapper *mfm, Skin *usedSkin, bool enableShadows) : snode(0), faulty(false)
+FlexBody::FlexBody(SceneManager *manager, node_t *nds, int numnds, char* meshname, char* uname, int ref, int nx, int ny, Vector3 offset, Quaternion rot, char* setdef, MaterialFunctionMapper *mfm, Skin *usedSkin, bool enableShadows, MaterialReplacer *mr) : snode(0), faulty(false), mr(mr)
 {
 	nodes=nds;
 	numnodes=numnds;
@@ -137,6 +138,7 @@ FlexBody::FlexBody(SceneManager *manager, node_t *nds, int numnds, char* meshnam
 	Entity *ent = manager->createEntity(uname, uname_mesh);
 	MaterialFunctionMapper::replaceSimpleMeshMaterials(ent, ColourValue(0.5, 0.5, 1));
 	if(mfm) mfm->replaceMeshMaterials(ent);
+	if(mr) mr->replaceMeshMaterials(ent);
 	if(usedSkin) usedSkin->replaceMeshMaterials(ent);
 	//LOG("FLEXBODY unique mesh created: "+String(meshname)+" -> "+String(uname_mesh));
 

@@ -21,8 +21,9 @@ along with Rigs of Rods.  If not, see <http://www.gnu.org/licenses/>.
 #include "ResourceBuffer.h"
 
 #include "skin.h"
+#include "Materialreplacer.h"
 
-FlexMeshWheel::FlexMeshWheel(SceneManager *manager, char* name, node_t *nds, int n1, int n2, int nstart, int nrays, char* meshname, char* texband, float rimradius, bool rimreverse, MaterialFunctionMapper *mfm, Skin *usedSkin)
+FlexMeshWheel::FlexMeshWheel(SceneManager *manager, char* name, node_t *nds, int n1, int n2, int nstart, int nrays, char* meshname, char* texband, float rimradius, bool rimreverse, MaterialFunctionMapper *mfm, Skin *usedSkin, MaterialReplacer *mr) : mr(mr)
 {
 	rim_radius=rimradius;
 	revrim=rimreverse;
@@ -39,6 +40,7 @@ FlexMeshWheel::FlexMeshWheel(SceneManager *manager, char* name, node_t *nds, int
 	rimEnt = manager->createEntity(rimname, meshname);
 	MaterialFunctionMapper::replaceSimpleMeshMaterials(rimEnt, ColourValue(0, 0.5, 0.8));
 	if(mfm) mfm->replaceMeshMaterials(rimEnt);
+	if(mr) mr->replaceMeshMaterials(rimEnt);
 	if(usedSkin) usedSkin->replaceMeshMaterials(rimEnt);
 	rnode=manager->getRootSceneNode()->createChildSceneNode();
 	rnode->attachObject(rimEnt);
