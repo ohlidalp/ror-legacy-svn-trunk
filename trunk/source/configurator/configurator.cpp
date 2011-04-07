@@ -925,7 +925,7 @@ MyDialog::MyDialog(const wxString& title, MyApp *_app) : wxDialog(NULL, wxID_ANY
 	y+=35;
 
 	// Gearbox
-	dText = new wxStaticText(gamePanel, -1, _("DefaultGearbox mode:"), wxPoint(10,y));
+	dText = new wxStaticText(gamePanel, -1, _("Default Gearbox mode:"), wxPoint(10,y));
 	gearBoxMode=new wxChoice(gamePanel, -1, wxPoint(x_row1, y), wxSize(200, -1), 0);
 	gearBoxMode->Append(wxT("Automatic shift"));
 	gearBoxMode->Append(wxT("Manual shift - Auto clutch"));
@@ -970,8 +970,6 @@ MyDialog::MyDialog(const wxString& title, MyApp *_app) : wxDialog(NULL, wxID_ANY
 	dText = new wxStaticText(aboutPanel, -1, conv(getVersionString()), wxPoint(10, y));
 	y+= 120;
 
-	addAboutTitle(_("THIS LIST IS WIP!"), x_row1, y);
-
 	addAboutTitle(_("Authors"), x_row1, y);
 	
 	// Looong list following
@@ -981,8 +979,8 @@ MyDialog::MyDialog(const wxString& title, MyApp *_app) : wxDialog(NULL, wxID_ANY
 
 	addAboutTitle(_("Code Contributors"), x_row1, y);
 	addAboutEntry("Estama", "Physics Core Optimizations, Collision/Friction code, Support Beams", "http://www.rigsofrods.com/members/26673-estama", x_row1, y);
-	addAboutEntry("Lifter", "Triggers, Animators, Shocks2", "http://www.rigsofrods.com/members/22371-Lifter", x_row1, y);
-	addAboutEntry("Aperion", "Slidesnodes, Rigidifiers, Networking code", "http://www.rigsofrods.com/members/18734-Aperion", x_row1, y);
+	addAboutEntry("Lifter", "Triggers, Animators, Animated Props, Shocks2", "http://www.rigsofrods.com/members/22371-Lifter", x_row1, y);
+	addAboutEntry("Aperion", "Slidesnodes, Axles, Improved Engine code, Rigidifiers, Networking code", "http://www.rigsofrods.com/members/18734-Aperion", x_row1, y);
 	addAboutEntry("FlyPiper", "Inertia Code, minor patches", "http://www.rigsofrods.com/members/19789-flypiper", x_row1, y);
 	addAboutEntry("knied", "MacOSX Patches", "http://www.rigsofrods.com/members/32234-knied", x_row1, y);
 	addAboutEntry("altren", "coded some MyGUI windows", "", x_row1, y);
@@ -994,14 +992,17 @@ MyDialog::MyDialog(const wxString& title, MyApp *_app) : wxDialog(NULL, wxID_ANY
 	addAboutEntry("synthead", "minor linux fixes", "", x_row1, y);
 	y+=20;
 
-	addAboutTitle(_("Content Contributors"), x_row1, y);
+	addAboutTitle(_("Core Content Contributors"), x_row1, y);
+	addAboutEntry("donoteat", "improved spawner models, terrain work", "http://www.rigsofrods.com/members/18779", x_row1, y);
 	addAboutEntry("kevinmce", "character", "http://www.rigsofrods.com/members/18956-kevinmce", x_row1, y);
 	y+=20;
 
+	addAboutTitle(_("Mod Contributors"), x_row1, y);
+	addAboutEntry("the rigs of rods community", "provided us with lots of mods to play with", "http://www.rigsofrods.com/repository/", x_row1, y);
+	y+=20;
+
 	addAboutTitle(_("Testers"), x_row1, y);
-	addAboutEntry("Adeodat", "testing", "http://www.rigsofrods.com/members/18668-adeodat", x_row1, y);
-	addAboutEntry("Bonehead", "testing", "http://www.rigsofrods.com/members/18665-Bonehead", x_row1, y);
-	addAboutEntry("Box5diesel", "great content creator", "http://www.rigsofrods.com/members/19484-Box5diesel", x_row1, y);
+	addAboutEntry("invited core team", "the invited members helped us a lot along the way at various corners", "", x_row1, y);
 	y+=20;
 
 	addAboutTitle(_("Used Software"), x_row1, y);
@@ -1461,7 +1462,7 @@ void MyDialog::addAboutEntry(wxString name, wxString desc, wxString url, int &x,
 		dText->SetFont(dfont);
 		s = dText->GetSize();
 	}
-	y += s.y - 2;
+	y += s.y;
 	wxStaticText *dText = new wxStaticText(aboutPanel, wxID_ANY, desc, wxPoint(x+30, y));
 	wxFont dfont=dText->GetFont();
 	dfont.SetPointSize(dfont.GetPointSize()-1);
