@@ -51,6 +51,8 @@ public:
 	Ogre::String getPrettyTime();
 	
 	void forceUpdate(float dt);
+
+	void notifyCameraChanged(Ogre::Camera *cam);
 protected:
 	Ogre::Camera *mCamera;
     Caelum::CaelumSystem *mCaelumSystem;

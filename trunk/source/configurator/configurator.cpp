@@ -270,6 +270,7 @@ private:
 	wxCheckBox *dofdebug;
 	wxCheckBox *nocrashrpt;
 	wxCheckBox *debug_vidcam;
+	wxCheckBox *debug_envmap;
 	wxCheckBox *debug_triggers;
 	wxCheckBox *beam_break_debug;
 	wxCheckBox *beam_deform_debug;
@@ -1065,7 +1066,11 @@ MyDialog::MyDialog(const wxString& title, MyApp *_app) : wxDialog(NULL, wxID_ANY
 	debug_vidcam->SetToolTip(_("Adds a virtuals camera mesh that should help you position the camera correctly"));
 	y+=15;
 
-	debug_triggers=new wxCheckBox(debugPanel, -1, _("Trigger Debug"), wxPoint(10, y)); //VideoCameraDebug
+	debug_envmap=new wxCheckBox(debugPanel, -1, _("Debug EnvironmentMapping / Chrome"), wxPoint(10, y));
+	debug_envmap->SetToolTip(_("Displays an unwrapped cube on what is used to project the reflections on vehicles"));
+	y+=15;
+
+	debug_triggers=new wxCheckBox(debugPanel, -1, _("Trigger Debug"), wxPoint(10, y));
 	debug_triggers->SetToolTip(_("Enables Trigger debug messages"));
 	y+=15;
 	
@@ -1104,7 +1109,6 @@ MyDialog::MyDialog(const wxString& title, MyApp *_app) : wxDialog(NULL, wxID_ANY
 	presel_truck->SetToolTip(_("The truck you want to load upon RoR startup. Might remove the startup selection menu."));
 	y+=25;
 
-	y+=35;
 	wxHyperlinkCtrl *link = new wxHyperlinkCtrl(debugPanel, -1, _("(read more on how to use these options here)"), "http://www.rigsofrods.com/wiki/pages/Debugging_Trucks", wxPoint(10, y));
 
 	// graphics panel
@@ -1706,6 +1710,7 @@ void MyDialog::SetDefaults()
 	nocrashrpt->SetValue(false);
 	debug_triggers->SetValue(false);
 	debug_vidcam->SetValue(false);
+	debug_envmap->SetValue(false);
 	beam_break_debug->SetValue(false);
 	beam_deform_debug->SetValue(false);
 	dcm->SetValue(false);
@@ -1773,6 +1778,7 @@ void MyDialog::getSettingsControls()
 	settings["NoCrashRpt"] = (nocrashrpt->GetValue()) ? "Yes" : "No";
 	settings["Trigger Debug"] = (debug_triggers->GetValue()) ? "Yes" : "No";
 	settings["VideoCameraDebug"] = (debug_vidcam->GetValue()) ? "Yes" : "No";
+	settings["EnvMapDebug"] = (debug_envmap->GetValue()) ? "Yes" : "No";
 	settings["Beam Break Debug"] = (beam_break_debug->GetValue()) ? "Yes" : "No";
 	settings["Beam Deform Debug"] = (beam_deform_debug->GetValue()) ? "Yes" : "No";
 	settings["Debug Collisions"] = (dcm->GetValue()) ? "Yes" : "No";
@@ -1863,6 +1869,7 @@ void MyDialog::updateSettingsControls()
 	st = settings["NoCrashRpt"]; if (st.length()>0) nocrashrpt->SetValue(st=="Yes");
 	st = settings["Trigger Debug"]; if (st.length()>0) debug_triggers->SetValue(st=="Yes");
 	st = settings["VideoCameraDebug"]; if (st.length()>0) debug_vidcam->SetValue(st=="Yes");
+	st = settings["EnvMapDebug"]; if (st.length()>0) debug_envmap->SetValue(st=="Yes");
 	st = settings["Debug Collisions"]; if (st.length()>0) dcm->SetValue(st=="Yes");
 	st = settings["GearboxMode"]; if (st.length()>0) gearBoxMode->SetStringSelection(conv(st));
 	st = settings["Particles"]; if (st.length()>0) particles->SetValue(st=="Yes");

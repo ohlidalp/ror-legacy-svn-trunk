@@ -37,6 +37,7 @@ private:
 	SceneNode *snode;
 	int round;
 	bool isDynamic;
+	SceneNode *debug_sn;
 
 public:
 
