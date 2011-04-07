@@ -183,6 +183,8 @@ private:
 class SoundScriptManager: public ScriptLoader
 {
 public:
+	const static int TERRAINSOUND = MAX_TRUCKS+1;
+
 	SoundScriptManager();
 	static SoundScriptManager *getSingleton();
 
@@ -228,7 +230,7 @@ private:
 	int free_gains[SS_MAX_MOD];
 	SoundScriptInstance* gains[SS_MAX_MOD*MAX_INSTANCES_PER_GROUP];
 	//state map
-	bool statemap[SS_MAX_TRIG*MAX_TRUCKS];
+	bool statemap[SS_MAX_TRIG*(MAX_TRUCKS+2)];
 
 	SoundManager* sm;
 
