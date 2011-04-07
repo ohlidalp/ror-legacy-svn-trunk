@@ -6118,9 +6118,18 @@ void RoRFrameListener::moveCamera(float dt)
 	if (envmap)
 	{
 		if (!envmap->inited)
+		{
 			envmap->forceUpdate(Vector3(terrainxsize/2.0, hfinder->getHeightAt(terrainxsize/2.0, terrainzsize/2.0)+50.0, terrainzsize/2.0));
+		}
 		if (current_truck != -1)
+		{
 			envmap->update(trucks[current_truck]->getPosition(), trucks[current_truck]);
+
+			// important: switch back to normal camera
+			if(SkyManager::getSingletonPtr())
+				SkyManager::getSingleton().notifyCameraChanged(mCamera);
+
+		}
 	}
 
 	//position audio listener

@@ -68,6 +68,14 @@ void SkyManager::init(Ogre::SceneManager *mScene, Ogre::RenderWindow *mWindow, O
 	// Register caelum as a listener.
 	mWindow->addListener (mCaelumSystem);
 	Root::getSingletonPtr()->addFrameListener(mCaelumSystem);
+
+	
+}
+
+void SkyManager::notifyCameraChanged(Camera *cam)
+{
+	if(mCaelumSystem)
+		mCaelumSystem->notifyCameraChanged(cam);
 }
 
 void SkyManager::forceUpdate(float dt)
