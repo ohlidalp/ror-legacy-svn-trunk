@@ -35,6 +35,7 @@ public:
 	void popAppState();
 	void pauseAppState();
 	void shutdown();
+	void resized(Ogre::RenderWindow *r);
     void popAllAndPushAppState(AppState* state);
 
 protected:

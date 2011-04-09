@@ -22,6 +22,7 @@ along with Rigs of Rods.  If not, see <http://www.gnu.org/licenses/>.
 
 #include "panel_meshprop.h"
 #include "panel_meshtree.h"
+#include "panel_log.h"
 
 #include "wxutils.h"
 #include "Settings.h"
@@ -142,8 +143,8 @@ void RoRViewerFrame::InitializeAUI(void)
 	pane_viewport->PaneBorder(false);
 	pane_viewport->CaptionVisible(false);
 	pane_viewport->Caption(L"3D Viewport");
-	pane_viewport->FloatingSize(wxSize(200, 300));
-	pane_viewport->MinSize(wxSize(200, 300));
+	pane_viewport->FloatingSize(wxSize(50, 50));
+	pane_viewport->MinSize(wxSize(10, 10));
 	pane_viewport->Center();
 	pane_viewport->Dock();
 	panel_viewport = new Window3D(this, ID_VIEWPORT);
@@ -156,9 +157,9 @@ void RoRViewerFrame::InitializeAUI(void)
 	pane_meshprop->CaptionVisible(true);
 	pane_meshprop->Caption(L"Properties");
 	pane_meshprop->FloatingSize(wxSize(200, 150));
-	pane_meshprop->MinSize(wxSize(200, 250));
+	pane_meshprop->MinSize(wxSize(200, 150));
 	//pane_meshprop->MaxSize(wxSize(200, 150));
-	pane_meshprop->BestSize(wxSize(200, 250));
+	pane_meshprop->BestSize(wxSize(200, 150));
 	pane_meshprop->Resizable(true);
 	pane_meshprop->TopDockable(false);
 	pane_meshprop->BottomDockable(false);
@@ -185,6 +186,25 @@ void RoRViewerFrame::InitializeAUI(void)
 	panel_meshtree = new PanelMeshTree(0, this, wxID_ANY);
 	panel_meshtree->setPropGrid(panel_meshprop);
 	aui_mgr->AddPane(panel_meshtree, *pane_meshtree);
+
+	// the log
+	pane_log = new wxAuiPaneInfo();
+	pane_log->CaptionVisible(true);
+	pane_log->Caption(L"Log");
+	pane_log->FloatingSize(wxSize(150, 80));
+	pane_log->MinSize(wxSize(150, 80));
+	//pane_log->MaxSize(wxSize(150, 150));
+	pane_log->BestSize(wxSize(150, 80));
+	pane_log->Resizable(true);
+	pane_log->TopDockable(true);
+	pane_log->LeftDockable(false);
+	pane_log->RightDockable(false);
+	pane_log->BottomDockable(true);
+	pane_log->Bottom();
+	pane_log->Position(2);
+	pane_log->Dock();
+	panel_log = new PanelLog(0, this, wxID_ANY);
+	aui_mgr->AddPane(panel_log, *pane_log);
 
 	// toolbars
 	wxAuiToolBar *view_toolbar = new wxAuiToolBar(this, wxID_ANY, wxDefaultPosition, wxDefaultSize, wxAUI_TB_HORZ_LAYOUT);
@@ -240,6 +260,7 @@ bool RoRViewerFrame::InitializeRoRViewer(wxString meshPath)
 	}
 	panel_meshprop->setViewer(editor);
 	panel_meshtree->setViewer(editor);
+	panel_log->setViewer(editor);
 
 	return true;
 }

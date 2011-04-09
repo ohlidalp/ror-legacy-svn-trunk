@@ -31,6 +31,8 @@ public:
 
 	void update(double timeSinceLastFrame);
 
+	void resized(Ogre::RenderWindow *r);
+
 private:
 	Ogre::SceneNode*			m_pOgreHeadNode;
 	Ogre::Entity*				m_pOgreHeadEntity;

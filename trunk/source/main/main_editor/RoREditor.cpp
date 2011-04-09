@@ -79,7 +79,7 @@ void RoREditor::Update()
 		startTime = OgreFramework::getSingletonPtr()->m_pTimer->getMillisecondsCPU();
 	
 		if(app)
-			app->update(timeSinceLastFrame);
+			app->update(timeSinceLastFrame * 0.01f);
 
 		timeSinceLastFrame = OgreFramework::getSingletonPtr()->m_pTimer->getMillisecondsCPU() - startTime;
 	} catch(Ogre::Exception& e)

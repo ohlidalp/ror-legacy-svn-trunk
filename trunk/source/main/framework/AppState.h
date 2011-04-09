@@ -28,6 +28,7 @@ public:
 	virtual void		pauseAppState() = 0;
 	virtual void		shutdown() = 0;
     virtual void        popAllAndPushAppState(AppState* state) = 0;
+	virtual void        resized(Ogre::RenderWindow *r) = 0;
 };
 
 //|||||||||||||||||||||||||||||||||||||||||||||||
@@ -44,6 +45,7 @@ public:
 	virtual bool pause(){return true;}
 	virtual void resume(){};
 	virtual void update(double timeSinceLastFrame) = 0;
+	virtual void resized(Ogre::RenderWindow *r) = 0;
 
 protected:
 	AppState(){};

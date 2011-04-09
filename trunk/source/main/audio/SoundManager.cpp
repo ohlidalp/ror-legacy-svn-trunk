@@ -518,9 +518,12 @@ void Sound::computeAudibility(Vector3 from)
 	}
 	if (!should_play) {audibility=0.0; return;}
 	if (gain==0.0) {audibility=0.0; return;}
+	
 	float distance=(from-position).length();
-	if (distance>sm->maxDistance) {audibility=0.0; return;}
-	if (distance<sm->referenceDistance) {audibility=gain; return;}
+	
+	if (distance > sm->maxDistance) {audibility=0.0; return;}
+	if (distance < sm->referenceDistance) {audibility=gain; return;}
+	
 	audibility=gain*(sm->referenceDistance/(sm->referenceDistance+ (sm->rolloffFactor*(distance-sm->referenceDistance))));
 }
 

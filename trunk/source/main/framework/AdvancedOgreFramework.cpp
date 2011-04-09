@@ -1,6 +1,7 @@
 //|||||||||||||||||||||||||||||||||||||||||||||||
 
 #include "AdvancedOgreFramework.h"
+#include "AppStateManager.h"
 
 #include "Settings.h"
 #include "errorutils.h"
@@ -18,7 +19,8 @@ template<> OgreFramework* Ogre::Singleton<OgreFramework>::ms_Singleton = 0;
 
 OgreFramework::OgreFramework() : hwnd(Ogre::String()), mainhwnd(Ogre::String()), name(), embedded(false)
 {
-    m_pRoot			= 0;
+	stateManager        = 0;
+    m_pRoot			    = 0;
     m_pRenderWnd		= 0;
     m_pViewport			= 0;
     m_pTimer			= 0;
@@ -73,8 +75,13 @@ bool OgreFramework::configure(void)
 		m_pRoot->initialise(false);
 
 		Ogre::NameValuePairList param;
+
+#if OGRE_PLATFORM == OGRE_PLATFORM_WIN32
+		param["externalWindowHandle"] = hwnd;
+#else
 		param["parentWindowHandle"] = hwnd;
 		printf("### parentWindowHandle =  %s\n", hwnd.c_str());
+#endif
 		m_pRenderWnd = m_pRoot->createRenderWindow(name, 320, 240, false, &param);
 		return true;
 	}
@@ -160,6 +167,9 @@ void OgreFramework::resized(Ogre::Vector2 size)
 		// Letting Ogre know the window has been resized;
 		m_pRenderWnd->windowMovedOrResized();
 	}
+
+	if(stateManager)
+		stateManager->resized(m_pRenderWnd);
 
 	// Set the aspect ratio for the new size
 	if(m_pViewport->getCamera())

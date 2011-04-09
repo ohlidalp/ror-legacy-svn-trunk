@@ -48,6 +48,7 @@ using namespace std;
 
 class PanelMeshProp;
 class PanelMeshTree;
+class PanelLog;
 
 enum
 {
@@ -127,6 +128,9 @@ private:
 
 	PanelMeshTree* panel_meshtree;
 	wxAuiPaneInfo* pane_meshtree;
+
+	PanelLog* panel_log;
+	wxAuiPaneInfo* pane_log;
 
 	RoREditor* editor;
     DECLARE_EVENT_TABLE()

@@ -259,7 +259,6 @@ protected:
 
 	// WindowEventListener
 	void windowMoved(Ogre::RenderWindow* rw);
-	void windowResized(Ogre::RenderWindow* rw);
 	void windowClosed(Ogre::RenderWindow* rw);
 	void windowFocusChange(Ogre::RenderWindow* rw);
 	int flaresMode;
@@ -285,6 +284,9 @@ public:
 	bool benchmarkStep(float dt);
 	void initTrucks(bool loadmanual, Ogre::String selected, Ogre::String selectedExtension = Ogre::String(), std::vector<Ogre::String> *truckconfig=0, bool enterTruck=false);
 	void setCurrentTruck(int v);
+
+	// this needs to be public so we can call it manually in embedded mode
+	void windowResized(Ogre::RenderWindow* rw);
 
 	void moveCamera(float dt);
 	void hideGUI(bool visible);

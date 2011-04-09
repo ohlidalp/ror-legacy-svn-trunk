@@ -45,6 +45,7 @@ public:
 
 	MyGUI::Gui* getGUI() { return mGUI; }
 
+	void windowResized(Ogre::RenderWindow* _rw);
 protected:
 private:
 	bool create();
@@ -53,7 +54,6 @@ private:
 
 	virtual bool frameStarted(const Ogre::FrameEvent& _evt);
 	virtual bool frameEnded(const Ogre::FrameEvent& _evt);
-	virtual void windowResized(Ogre::RenderWindow* _rw);
 	virtual void windowClosed(Ogre::RenderWindow* _rw);
 
 	void eventRequestTag(const MyGUI::UString& _tag, MyGUI::UString& _result);

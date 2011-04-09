@@ -89,3 +89,9 @@ void GameState::createScene()
 void GameState::update(double timeSinceLastFrame)
 {
 }
+
+
+void GameState::resized(Ogre::RenderWindow *r)
+{
+	mFrameListener->windowResized(r);
+}
