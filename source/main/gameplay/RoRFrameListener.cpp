@@ -919,7 +919,7 @@ RoRFrameListener::RoRFrameListener(AppState *parentState, RenderWindow* win, Cam
 	mMoveSpeed = 50;
 
 	windowResized(win);
-	Ogre::WindowEventUtilities::addWindowEventListener(win, this);
+	RoRWindowEventUtilities::addWindowEventListener(win, this);
 
 
 	debugCollisions = BSETTING("Debug Collisions");

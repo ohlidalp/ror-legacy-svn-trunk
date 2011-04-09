@@ -1,11 +1,12 @@
 //|||||||||||||||||||||||||||||||||||||||||||||||
 
 #include "AdvancedOgreFramework.h"
-#include "AppStateManager.h"
 
 #include "Settings.h"
 #include "errorutils.h"
 #include "language.h"
+
+#include "RoRWindowEventUtilities.h"
 
 //|||||||||||||||||||||||||||||||||||||||||||||||
 
@@ -19,7 +20,6 @@ template<> OgreFramework* Ogre::Singleton<OgreFramework>::ms_Singleton = 0;
 
 OgreFramework::OgreFramework() : hwnd(Ogre::String()), mainhwnd(Ogre::String()), name(), embedded(false)
 {
-	stateManager        = 0;
     m_pRoot			    = 0;
     m_pRenderWnd		= 0;
     m_pViewport			= 0;
@@ -168,8 +168,8 @@ void OgreFramework::resized(Ogre::Vector2 size)
 		m_pRenderWnd->windowMovedOrResized();
 	}
 
-	if(stateManager)
-		stateManager->resized(m_pRenderWnd);
+	// trigger resizing of all sub-components
+	RoRWindowEventUtilities::triggerResize(m_pRenderWnd);
 
 	// Set the aspect ratio for the new size
 	if(m_pViewport->getCamera())

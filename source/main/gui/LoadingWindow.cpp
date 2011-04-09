@@ -20,6 +20,7 @@ along with Rigs of Rods.  If not, see <http://www.gnu.org/licenses/>.
 #ifdef USE_MYGUI 
 
 #include "LoadingWindow.h"
+#include "RoRWindowEventUtilities.h"
 
 LoadingWindow::LoadingWindow() :
 	mFrameForced(false)
@@ -72,7 +73,7 @@ void LoadingWindow::renderOneFrame()
 {
 	mFrameForced=true;
 	// we must pump the window messages, otherwise the window will get white on Vista ...
-	Ogre::WindowEventUtilities::messagePump();
+	RoRWindowEventUtilities::messagePump();
 	Ogre::Root::getSingleton().renderOneFrame();
 }
 #endif //MYGUI

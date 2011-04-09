@@ -23,6 +23,7 @@ along with Rigs of Rods.  If not, see <http://www.gnu.org/licenses/>.
 #include "gui_manager.h"
 #include "Settings.h"
 #include "language.h"
+#include "RoRWindowEventUtilities.h"
 #include <MyGUI_OgrePlatform.h>
 #include <MyGUI_LanguageManager.h>
 
@@ -62,7 +63,7 @@ GUIManager::~GUIManager()
 bool GUIManager::create()
 {
 	mRoot->addFrameListener(this);
-	Ogre::WindowEventUtilities::addWindowEventListener(mWindow, this);
+	RoRWindowEventUtilities::addWindowEventListener(mWindow, this);
 
 	windowResized(mWindow);
 	createGui();

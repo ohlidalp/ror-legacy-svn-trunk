@@ -2,7 +2,7 @@
 
 #include "AppStateManager.h"
 
-#include <OgreWindowEventUtilities.h>
+#include "RoRWindowEventUtilities.h"
 #include <OgreLogManager.h>
 
 using namespace Ogre;
@@ -71,7 +71,7 @@ AppState* AppStateManager::findByName(Ogre::String stateName)
 void AppStateManager::update(double dt)
 {
 #if OGRE_PLATFORM == OGRE_PLATFORM_WIN32 || OGRE_PLATFORM == OGRE_PLATFORM_LINUX
-	Ogre::WindowEventUtilities::messagePump();
+	RoRWindowEventUtilities::messagePump();
 #endif
 	if(OgreFramework::getSingletonPtr()->m_pRenderWnd->isClosed())
 		m_bShutdown = true;

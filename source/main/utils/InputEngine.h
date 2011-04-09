@@ -31,7 +31,7 @@ along with Rigs of Rods.  If not, see <http://www.gnu.org/licenses/>.
 #include "OISJoyStick.h"
 #include "OISForceFeedback.h"
 //#include <OgreFrameListener.h>
-#include <OgreWindowEventUtilities.h>
+#include "RoRWindowEventUtilities.h"
 #include <OgrePrerequisites.h>
 #include <OgreUTFString.h>
 #include <map>
