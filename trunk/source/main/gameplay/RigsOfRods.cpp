@@ -56,9 +56,6 @@ void RigsOfRods::go(void)
 
 	// now add the game states
 	stateManager = new AppStateManager();
-	// inform ogre about the statemanager
-	// they need to communicate when resizing the window or such
-	OgreFramework::getSingletonPtr()->setStateManger(stateManager);
 
 	GameState::create(stateManager,  "GameState");
 
