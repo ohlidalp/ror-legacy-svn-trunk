@@ -209,4 +209,9 @@ void AppStateManager::init(AppState* state)
 	OgreFramework::getSingletonPtr()->m_pRenderWnd->resetStatistics();
 }
 
+void AppStateManager::resized(Ogre::RenderWindow *r)
+{
+	m_ActiveStateStack.back()->resized(r);
+}
+
 //|||||||||||||||||||||||||||||||||||||||||||||||

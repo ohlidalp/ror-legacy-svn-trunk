@@ -23,6 +23,8 @@
 
 //|||||||||||||||||||||||||||||||||||||||||||||||
 
+class AppStateManager;
+
 class OgreFramework : public Ogre::Singleton<OgreFramework>
 {
 public:
@@ -41,8 +43,10 @@ public:
 	bool isEmbedded(void) { return embedded; };
 	Ogre::String getMainHWND() { return mainhwnd; };
 
+	void setStateManger(AppStateManager *s) { stateManager=s; };
 private:
 	bool embedded;
+	AppStateManager *stateManager;
 	OgreFramework(const OgreFramework&);
 	OgreFramework& operator= (const OgreFramework&);
 

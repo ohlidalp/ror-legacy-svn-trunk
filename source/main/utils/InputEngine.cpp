@@ -1845,8 +1845,8 @@ void InputEngine::windowResized(RenderWindow* rw)
 	const OIS::MouseState &ms = mMouse->getMouseState();
 	ms.width = width;
 	ms.height = height;
-#ifdef USE_MYGUI 
-	GUIManager::getSingleton().setInputViewSize(width, height);
+#ifdef USE_MYGUI
+	GUIManager::getSingleton().windowResized(rw);
 #endif //MYGUI
 }
 

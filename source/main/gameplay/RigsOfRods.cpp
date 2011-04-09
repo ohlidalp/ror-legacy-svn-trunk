@@ -56,14 +56,17 @@ void RigsOfRods::go(void)
 
 	// now add the game states
 	stateManager = new AppStateManager();
+	// inform ogre about the statemanager
+	// they need to communicate when resizing the window or such
+	OgreFramework::getSingletonPtr()->setStateManger(stateManager);
 
 	GameState::create(stateManager,  "GameState");
 
 	// select the first one
 	if(embedded)
 	{
+		LOG("Rigs of Rods embedded initialized!");
 		stateManager->changeAppState(stateManager->findByName("GameState"));
-		LOG("Rigs of Rods initialized!");
 	} else
 	{
 		LOG("Rigs of Rods main loop starting ...");

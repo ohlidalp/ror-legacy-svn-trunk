@@ -864,21 +864,20 @@ RoRFrameListener::RoRFrameListener(AppState *parentState, RenderWindow* win, Cam
 		size_t hWnd = 0;
 		win->getCustomAttribute("WINDOW", &hWnd);
 
-		if(!isEmbedded)
-			INPUTENGINE.setup(TOSTRING(hWnd), true, true, inputGrabMode);
+		INPUTENGINE.setup(TOSTRING(hWnd), true, true, inputGrabMode);
 	} else
 	{
 	  
+#if OGRE_PLATFORM == OGRE_PLATFORM_LINUX
 		size_t windowHnd = 0;
 		std::ostringstream windowHndStr; 
-#if OGRE_PLATFORM == OGRE_PLATFORM_LINUX
 		win->getCustomAttribute("GLXWINDOW", &windowHnd ); 
-#else
-		win->getCustomAttribute("WINDOW", &windowHnd);
-#endif
 		windowHndStr << windowHnd; 
 		printf("#### GLXWINDOW = %s\n", windowHndStr.str().c_str());
 		INPUTENGINE.setup(windowHndStr.str(), true, true, GRAB_NONE);
+#else
+		INPUTENGINE.setup(inputhwnd, true, true, GRAB_NONE);
+#endif
 	}
 
 #ifdef USE_MYGUI
