@@ -477,7 +477,7 @@ int SerializedRig::loadTruck(String fname, SceneManager *manager, SceneNode *par
 			if (c.line.size() > 14 && c.line.substr(0, 14) == "detacher_group")
 			{
 				parse_args(c, args, 1);
-				detacher_group_state = PARSEINT(args[0]);
+				detacher_group_state = PARSEINT(args[1]);
 				continue;
 			}
 			if (c.line.size() > 8 && c.line.substr(0, 8) == "fileinfo")
