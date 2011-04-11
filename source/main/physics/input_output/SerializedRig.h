@@ -112,6 +112,7 @@ protected:
 		, char* texf
 		, char* texb
 		, bool meshwheel=false
+		, bool meshwheel2=false
 		, float rimradius=0.0
 		, bool rimreverse=false
 		, parsecontext_t *c=0);

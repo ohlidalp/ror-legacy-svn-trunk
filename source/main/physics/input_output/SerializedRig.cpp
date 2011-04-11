@@ -89,6 +89,7 @@ trucksection_t truck_sections[] = {
 	{BTS_RIGIDIFIERS, "rigidifiers", false},
 	{BTS_AIRBRAKES, "airbrakes", false},
 	{BTS_MESHWHEELS, "meshwheels", false},
+	{BTS_MESHWHEELS2, "meshwheels2", false},
 	{BTS_FLEXBODIES, "flexbodies", false},
 	{BTS_HOOKGROUP, "hookgroup", false},
 	{BTS_MATERIALFLAREBINDINGS, "materialflarebindings", false},
@@ -1842,7 +1843,38 @@ int SerializedRig::loadTruck(String fname, SceneManager *manager, SceneNode *par
 				strncpy(meshw, args[14].c_str(), 255);
 				strncpy(texb, args[15].c_str(), 255);
 
-				addWheel(manager, parent, radius,width,rays,node1,node2,snode,braked,propulsed, torquenode, mass, spring, damp, meshw, texb, true, rimradius, side!='r');
+				addWheel(manager, parent, radius,width,rays,node1,node2,snode,braked,propulsed, torquenode, mass, spring, damp, meshw, texb, true, false, rimradius, side!='r');
+				continue;
+			}
+			else if (c.mode == BTS_MESHWHEELS2)
+			{
+				//parse meshwheels
+				char meshw[256];
+				char texb[256];
+				float radius, rimradius, width, mass, spring, damp;
+				char side;
+				int rays, node1, node2, snode, braked, propulsed, torquenode;
+
+				int n = parse_args(c, args, 16);
+
+				radius     = PARSEREAL(args[0]);
+				rimradius  = PARSEREAL(args[1]);
+				width      = PARSEREAL(args[2]);
+				rays       = PARSEINT (args[3]);
+				node1      = parse_node_number(c, args[4]);
+				node2      = parse_node_number(c, args[5]);
+				snode      = PARSEINT (args[6]); // special behavior, beware
+				braked     = PARSEINT (args[7]);
+				propulsed  = PARSEINT (args[8]);
+				torquenode = parse_node_number(c, args[9]);
+				mass       = PARSEREAL(args[10]);
+				spring     = PARSEREAL(args[11]);
+				damp       = PARSEREAL(args[12]);
+				side       = args[13][0];
+				strncpy(meshw, args[14].c_str(), 255);
+				strncpy(texb, args[15].c_str(), 255);
+
+				addWheel(manager, parent, radius,width,rays,node1,node2,snode,braked,propulsed, torquenode, mass, spring, damp, meshw, texb, true, true, rimradius, side!='r');
 				continue;
 			}
 			else if (c.mode == BTS_GLOBALS)
@@ -4494,7 +4526,7 @@ int SerializedRig::add_beam(node_t *p1, node_t *p2, SceneManager *manager, Scene
 	return pos;
 }
 
-void SerializedRig::addWheel(SceneManager *manager, SceneNode *parent, Real radius, Real width, int rays, int node1, int node2, int snode, int braked, int propulsed, int torquenode, float mass, float wspring, float wdamp, char* texf, char* texb, bool meshwheel, float rimradius, bool rimreverse, parsecontext_t *c)
+void SerializedRig::addWheel(SceneManager *manager, SceneNode *parent, Real radius, Real width, int rays, int node1, int node2, int snode, int braked, int propulsed, int torquenode, float mass, float wspring, float wdamp, char* texf, char* texb, bool meshwheel, bool meshwheel2, float rimradius, bool rimreverse, parsecontext_t *c)
 {
 	int i;
 	int nodebase=free_node;
@@ -4574,14 +4606,24 @@ void SerializedRig::addWheel(SceneManager *manager, SceneNode *parent, Real radi
 		add_beam(&nodes[node2], &nodes[nodebase+i*2+1], manager, parent, BEAM_INVISIBLE, default_break, wspring, wdamp, DEFAULT_DETACHER_GROUP, -1.0, 0.66, 0.0);
 		add_beam(&nodes[node2], &nodes[nodebase+i*2], manager, parent, BEAM_INVISIBLE, default_break, wspring, wdamp);
 		add_beam(&nodes[node1], &nodes[nodebase+i*2+1], manager, parent, BEAM_INVISIBLE, default_break, wspring, wdamp);
-		//reinforcement
-		add_beam(&nodes[node1], &nodes[nodebase+i*2], manager, parent, BEAM_INVISIBLE, default_break, wspring, wdamp);
-		add_beam(&nodes[nodebase+i*2], &nodes[nodebase+i*2+1], manager, parent, BEAM_INVISIBLE, default_break, wspring, wdamp);
-		add_beam(&nodes[nodebase+i*2], &nodes[nodebase+((i+1)%rays)*2], manager, parent, BEAM_INVISIBLE, default_break, wspring, wdamp);
-		add_beam(&nodes[nodebase+i*2+1], &nodes[nodebase+((i+1)%rays)*2+1], manager, parent, BEAM_INVISIBLE, default_break, wspring, wdamp);
-		add_beam(&nodes[nodebase+i*2+1], &nodes[nodebase+((i+1)%rays)*2], manager, parent, BEAM_INVISIBLE, default_break, wspring, wdamp);
-		//reinforcement
-		//add_beam(&nodes[nodebase+i*2], &nodes[nodebase+((i+1)%rays)*2+1], manager, parent, BEAM_INVISIBLE, default_break, wspring, wdamp);
+			add_beam(&nodes[node1], &nodes[nodebase+i*2], manager, parent, BEAM_INVISIBLE, default_break, wspring, wdamp);
+		if (!meshwheel2)
+		{
+			//reinforcement
+			add_beam(&nodes[nodebase+i*2], &nodes[nodebase+i*2+1], manager, parent, BEAM_INVISIBLE, default_break, wspring, wdamp);
+			add_beam(&nodes[nodebase+i*2], &nodes[nodebase+((i+1)%rays)*2], manager, parent, BEAM_INVISIBLE, default_break, wspring, wdamp);
+			add_beam(&nodes[nodebase+i*2+1], &nodes[nodebase+((i+1)%rays)*2+1], manager, parent, BEAM_INVISIBLE, default_break, wspring, wdamp);
+			add_beam(&nodes[nodebase+i*2+1], &nodes[nodebase+((i+1)%rays)*2], manager, parent, BEAM_INVISIBLE, default_break, wspring, wdamp);
+			//reinforcemeent
+		} else
+		{
+			add_beam(&nodes[nodebase+i*2], &nodes[nodebase+i*2+1], manager, parent, BEAM_INVISIBLE, default_break, default_spring, default_damp);
+			add_beam(&nodes[nodebase+i*2], &nodes[nodebase+((i+1)%rays)*2], manager, parent, BEAM_INVISIBLE, default_break, default_spring, default_damp);
+			add_beam(&nodes[nodebase+i*2+1], &nodes[nodebase+((i+1)%rays)*2+1], manager, parent, BEAM_INVISIBLE, default_break, default_spring, default_damp);
+			add_beam(&nodes[nodebase+i*2+1], &nodes[nodebase+((i+1)%rays)*2], manager, parent, BEAM_INVISIBLE, default_break, default_spring, default_damp);
+		}
+
+			//add_beam(&nodes[nodebase+i*2], &nodes[nodebase+((i+1)%rays)*2+1], manager, parent, BEAM_INVISIBLE, default_break, wspring, wdamp);
 
 		if (snode!=9999)
 		{
