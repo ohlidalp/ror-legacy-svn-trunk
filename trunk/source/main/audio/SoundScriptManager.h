@@ -83,7 +83,9 @@ along with Rigs of Rods.  If not, see <http://www.gnu.org/licenses/>.
 #define SS_TRIG_IGNITION	41
 #define SS_TRIG_REVERSE_GEAR 42
 #define SS_TRIG_TURN_SIGNAL  43
-#define SS_MAX_TRIG			44
+#define SS_TRIG_ALB_ACTIVE  44	
+#define SS_TRIG_TC_ACTIVE  45
+#define SS_MAX_TRIG			46
 
 //list of modulation sources
 #define SS_MOD_NONE			0

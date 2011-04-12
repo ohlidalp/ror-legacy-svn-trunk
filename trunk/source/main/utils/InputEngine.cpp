@@ -1098,6 +1098,18 @@ eventInfo_t eventInfo[] = {
 		_L("toggle parking brake")
 	},
 	{
+		"TRUCK_ANTILOCK_BRAKE",
+		EV_TRUCK_ANTILOCK_BRAKE,
+		"Keyboard EXPL+SHIFT+B",
+		_L("toggle antilock brake")
+	},
+		{
+		"TRUCK_TRACTION_CONTROL",
+		EV_TRUCK_TRACTION_CONTROL,
+		"Keyboard EXPL+SHIFT+T",
+		_L("toggle traction control")
+	},
+	{
 		"TRUCK_SHIFT_DOWN",
 		EV_TRUCK_SHIFT_DOWN,
 		"Keyboard Z",

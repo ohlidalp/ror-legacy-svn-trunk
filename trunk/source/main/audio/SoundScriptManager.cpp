@@ -381,6 +381,8 @@ bool SoundScriptTemplate::setParameter(Ogre::StringVector vec)
 		if (vec[1]==String("break")) {trigger_source=SS_TRIG_BREAK;return true;};
 		if (vec[1]==String("screetch")) {trigger_source=SS_TRIG_SCREETCH;return true;};
 		if (vec[1]==String("parking_brake")) {trigger_source=SS_TRIG_PARK;return true;};
+		if (vec[1]==String("antilock")) {trigger_source=SS_TRIG_ALB_ACTIVE;return true;};
+		if (vec[1]==String("tractioncontrol")) {trigger_source=SS_TRIG_TC_ACTIVE;return true;};
 		if (vec[1]==String("afterburner1")) {trigger_source=SS_TRIG_AFTERBURNER1;return true;};
 		if (vec[1]==String("afterburner2")) {trigger_source=SS_TRIG_AFTERBURNER2;return true;};
 		if (vec[1]==String("afterburner3")) {trigger_source=SS_TRIG_AFTERBURNER3;return true;};

@@ -167,6 +167,8 @@ int OverlayWrapper::init()
 	resizePanel(igno=loadOverlayElement("tracks/ign"));
 	resizePanel(batto=loadOverlayElement("tracks/batt"));
 	resizePanel(pbrakeo=loadOverlayElement("tracks/pbrake"));
+	resizePanel(tcontrolo=loadOverlayElement("tracks/tcontrol"));
+	resizePanel(antilocko=loadOverlayElement("tracks/antilock"));
 	resizePanel(lockedo=loadOverlayElement("tracks/locked"));
 	resizePanel(securedo=loadOverlayElement("tracks/secured"));
 	resizePanel(lopresso=loadOverlayElement("tracks/lopress"));

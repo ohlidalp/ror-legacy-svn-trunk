@@ -105,6 +105,8 @@ public:
 	Ogre::OverlayElement* guipedacc;
 	Ogre::OverlayElement* mouseElement;
 	Ogre::OverlayElement *pbrakeo;
+	Ogre::OverlayElement *tcontrolo;
+	Ogre::OverlayElement *antilocko;
 	Ogre::OverlayElement *lockedo;
 	Ogre::OverlayElement *securedo;
 	Ogre::OverlayElement *lopresso;

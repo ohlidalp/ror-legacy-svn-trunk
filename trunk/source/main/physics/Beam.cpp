@@ -391,6 +391,13 @@ Beam::Beam(int tnum, SceneManager *manager, SceneNode *parent, RenderWindow* win
 	else
 		driveable=NOT_DRIVEABLE;
 	previousGear = 0;
+	alb_ratio = alb_minspeed = alb_mode = 0.0f;
+	tc_ratio = tc_fade = tc_mode = tc_wheelslip = 0.0f;
+	tc_pulse = 1;
+	alb_pulse = 1;
+	tc_present = alb_present = alb_notoggle = false;
+	tc_pulse_state = alb_pulse_state = alb_notoggle = false;
+	tcalb_timer = 0.0f;
 	previousCrank = 0.0f;
 	animTimer = 0.0f;
 	engine=0;
@@ -435,6 +442,8 @@ Beam::Beam(int tnum, SceneManager *manager, SceneNode *parent, RenderWindow* win
 	canwork=1;
 	totalmass=0;
 	parkingbrake=0;
+	antilockbrake = 0;
+	tractioncontrol = 0;
 	lights=1;
 	reverselight=false;
 	free_node=0;
@@ -1321,6 +1330,12 @@ void Beam::setupDefaultSoundSources()
 	//pump
 	if (hascommands)
 		addSoundSource(ssm->createInstance("tracks/default_pump", trucknum, NULL), 0);
+	//antilock brake
+	if (alb_present)
+		addSoundSource(ssm->createInstance("tracks/default_antilock", trucknum, NULL), 0);
+	//tractioncontrol
+	if (tc_present)
+		addSoundSource(ssm->createInstance("tracks/default_tractioncontrol", trucknum, NULL), 0);
 	//screetch
 	if ((driveable==TRUCK || driveable==AIRPLANE) && free_wheel)
 		addSoundSource(ssm->createInstance("tracks/default_screetch", trucknum, NULL), 0);
@@ -4501,6 +4516,16 @@ void Beam::parkingbrakeToggle()
 	//ScriptEvent - Parking Brake toggle
 	ScriptEngine::getSingleton().triggerEvent(ScriptEngine::SE_TRUCK_PARKINGBREAK_TOGGLE, trucknum);
 #endif
+}
+
+void Beam::antilockbrakeToggle()
+{
+	alb_mode=!alb_mode;
+}
+
+void Beam::tractioncontrolToggle()
+{
+	tc_mode=!tc_mode;
 }
 
 void Beam::beaconsToggle()

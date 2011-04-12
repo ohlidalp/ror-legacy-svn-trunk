@@ -462,6 +462,44 @@ void RoRFrameListener::updateGUI(float dt)
 		ow->clutcho->setMaterialName(String("tracks/clutch-")   + ((fabs(trucks[current_truck]->engine->getTorque())>=trucks[current_truck]->engine->getClutchForce()*10.0f)?"on":"off"));
 		ow->lightso->setMaterialName(String("tracks/lights-")   + ((trucks[current_truck]->lights)?"on":"off"));
 
+		if (trucks[current_truck]->tc_present)
+		{
+			if (trucks[current_truck]->tc_mode)
+				if (trucks[current_truck]->tractioncontrol) 
+				{
+							ow->tcontrolo->setMaterialName(String("tracks/tcontrol-act"));
+					} else 
+				{
+					ow->tcontrolo->setMaterialName(String("tracks/tcontrol-on"));
+				}
+			else 
+			{
+				ow->tcontrolo->setMaterialName(String("tracks/tcontrol-off"));
+			}
+		} else
+		{
+			ow->tcontrolo->setMaterialName(String("tracks/trans"));
+		}
+ 
+		if (trucks[current_truck]->alb_present)
+		{
+			if (trucks[current_truck]->alb_mode)
+				if (trucks[current_truck]->antilockbrake)
+				{
+							ow->antilocko->setMaterialName(String("tracks/antilock-act"));
+				} else 
+				{
+					ow->antilocko->setMaterialName(String("tracks/antilock-on"));
+				}
+			else 
+			{
+				ow->antilocko->setMaterialName(String("tracks/antilock-off"));
+			}
+		} else 
+		{
+			ow->antilocko->setMaterialName(String("tracks/trans"));
+		}
+
 		if (trucks[current_truck]->isTied())
 		{
 			if (fabs(trucks[current_truck]->commandkey[0].commandValue) > 0.000001f)
@@ -2642,6 +2680,18 @@ bool RoRFrameListener::updateEvents(float dt)
 						trucks[current_truck]->parkingbrakeToggle();
 					}
 
+					if (INPUTENGINE.getEventBoolValueBounce(EV_TRUCK_ANTILOCK_BRAKE))
+					{
+						if (trucks[current_truck]->alb_present && !trucks[current_truck]->alb_notoggle) 
+						{
+							trucks[current_truck]->antilockbrakeToggle();
+						}
+					}
+
+					if (INPUTENGINE.getEventBoolValueBounce(EV_TRUCK_TRACTION_CONTROL))
+					{
+						if (trucks[current_truck]->tc_present && !trucks[current_truck]->tc_notoggle) trucks[current_truck]->tractioncontrolToggle();
+					}
 				}
 				if (trucks[current_truck]->driveable==AIRPLANE)
 				{
