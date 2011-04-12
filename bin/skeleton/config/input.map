@@ -244,3 +244,5 @@ TRUCK_STEER_RIGHT              Keyboard             RIGHT
 TRUCK_SWITCH_SHIFT_MODES       Keyboard             Q 
 TRUCK_TOGGLE_CONTACT           Keyboard             X 
 TRUCK_TOGGLE_AXLE_LOCK         Keyboard             W
+TRUCK_ANTILOCK_BRAKE           Keyboard             EXPL+SHIFT+B
+TRUCK_TRACTION_CONTROL         Keyboard             EXPL+SHIFT+V 

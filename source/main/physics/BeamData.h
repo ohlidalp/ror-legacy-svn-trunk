@@ -528,6 +528,8 @@ struct wheel
 	// for skidmarks
 	Ogre::Vector3 lastContactInner;
 	Ogre::Vector3 lastContactOuter;
+	Ogre::Vector3 lastRotationVec;
+	bool firstLock;
 	float lastSlip;
 	int lastContactType;
 	ground_model_t *lastGroundModel;
@@ -822,6 +824,33 @@ struct rig
 	bool rescuer;
 	bool disable_default_sounds;
 	int detacher_group_state; // current detacher group for the next beam generated
+
+	//antilockbrakes+tractioncontrol
+	bool slopeBrake;
+	float slopeBrakeFactor;
+	float slopeBrakeAttAngle;
+	float slopeBrakeRelAngle;
+	float previousCrank;
+	float alb_ratio;
+	float alb_minspeed;
+	float alb_mode;
+	unsigned int alb_pulse;
+	bool alb_pulse_state;
+	bool alb_present;
+	bool alb_notoggle;
+	float tc_ratio;
+	float tc_wheelslip;
+	float tc_fade;
+	float tc_mode;
+	unsigned int tc_pulse;
+	bool tc_pulse_state;
+	bool tc_present;
+	bool tc_notoggle;
+	float tcalb_timer;
+	int antilockbrake;
+	int tractioncontrol;
+	float animTimer;
+
 	float beam_creak;
 	char uniquetruckid[256];
 	int categoryid;

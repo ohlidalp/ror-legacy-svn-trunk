@@ -187,6 +187,7 @@ SerializedRig::SerializedRig()
 	rescuer = false;
 	disable_default_sounds=false;
 	detacher_group_state=DEFAULT_DETACHER_GROUP; // initialize default(0) var for detacher_group_state
+	slopeBrake=false;
 	beam_creak=BEAM_CREAK_DEFAULT;
 	categoryid=-1;
 	truckversion=-1;
@@ -498,6 +499,233 @@ int SerializedRig::loadTruck(String fname, SceneManager *manager, SceneNode *par
 				if(n > 2 && args[1] == "node") externalcameranode = PARSEINT(args[2]);
 				continue;
 			}
+			if (c.line.size() > 9 && c.line.substr(0, 10) == "SlopeBrake")
+			{
+				slopeBrake=true;
+				slopeBrakeFactor   = 6.0f;
+				slopeBrakeAttAngle = 5.0f;
+				slopeBrakeRelAngle = 10.0f;
+				c.modeString       = "slopebrake";
+				if (c.line.size() == 18)
+				{
+					parser_warning(c, "Slope-Brake enhancment added with default settings.");
+					continue;
+				}
+				int n = parse_args(c, args, 1);
+				if(n > 1) slopeBrakeFactor      = PARSEINT(args[1]);
+				if(n > 2) slopeBrakeAttAngle    = PARSEINT(args[2]);
+				if(n > 3) slopeBrakeRelAngle    = PARSEINT(args[3]);
+
+				if (slopeBrakeFactor   < 1.0f)  slopeBrakeFactor   = 1.0f;
+				if (slopeBrakeFactor   > 20.0f) slopeBrakeFactor   = 20.0f;
+				if (slopeBrakeAttAngle < 1.0f)  slopeBrakeAttAngle = 1.0f;
+				if (slopeBrakeAttAngle > 45.0f) slopeBrakeAttAngle = 45.0f;
+				if (slopeBrakeRelAngle < 1.0f)  slopeBrakeRelAngle = 1.0f;
+				if (slopeBrakeRelAngle > 45.0f) slopeBrakeRelAngle = 45.0f;
+				slopeBrakeRelAngle += slopeBrakeAttAngle;
+				parser_warning(c,"Slope-Brake enhancment added. " + String(fname) +" line " + StringConverter::toString(c.linecounter) + ". Slopebrake-Factor: " + StringConverter::toString(slopeBrakeFactor) + ". Free Rollback Offset: " + StringConverter::toString(slopeBrakeAttAngle) + "°. Release at Offset: " + StringConverter::toString(slopeBrakeRelAngle) + "°.");
+				continue;
+			}
+			if (c.line.size() > 14 && c.line.substr(0, 14) == "AntiLockBrakes")
+			{
+				float ratio  = -1.0f;
+				c.modeString = "antilockbrake";
+
+				Ogre::StringVector options = Ogre::StringUtil::split(String(c.line).substr(15), ","); // "AntiLockBrakes " = 15 characters
+				// check for common errors
+				if (options.size() < 2)
+				{
+					parser_warning(c, "Error parsing File (Antilockbrakes) " + String(fname) +" line " + StringConverter::toString(c.linecounter) + ". Not enough Options parsed, trying to continue ...");
+					continue;
+				}
+
+				for(unsigned int i=0;i<options.size();i++)
+				{
+					if(i == 0)
+					{
+						ratio = StringConverter::parseReal(options[i]);
+						//set ratio
+						if (ratio)
+						{
+							alb_ratio = ratio;
+							if (alb_ratio < 0.0f) alb_ratio = 0.0f;
+							if (alb_ratio > 20.0f) alb_ratio = 20.0f;
+						} else
+						{
+							parser_warning(c, "Error parsing File " + String(fname) +" line " + StringConverter::toString(c.linecounter) + ". Mode not parsed, trying to continue....");
+							continue;
+						}
+					} else if(i == 1)
+					{
+						// wheelspeed adaption: 60 sec * 60 mins / 1000(kilometer) = 3.6 to get meter per sec 
+						alb_minspeed = (StringConverter::parseReal(options[i])/3.6f);
+						if (alb_minspeed < 0.5f) alb_minspeed = 0.5f;
+
+					} else if(i == 2)
+					{
+						float pulse = (StringConverter::parseReal(options[i]));
+						if (!pulse)
+							alb_pulse=1.0f;
+						else
+						{
+							//determine how many simcycles to skip before activation (simcycles per second = 2k, fix: create a default var for this ?)
+							alb_pulse = int(2000.0f / fabs(pulse));
+							if (alb_pulse < 1)
+								alb_pulse = 1;
+						}
+					} else
+					{
+						// parse the rest
+						Ogre::StringVector args2 = Ogre::StringUtil::split(options[i], ":");
+						if(args2.size() == 0)
+						{
+							parser_warning(c, "Error parsing File (Antilockbrakes) " + String(fname) +" line " + StringConverter::toString(c.linecounter) + ". Antilockbrakes disabeld.");
+							continue;
+						}
+						// trim spaces from the entry
+						Ogre::StringUtil::trim(args2[0]);
+						if(args2.size() >= 2) Ogre::StringUtil::trim(args2[1]);
+
+						if(args2[0] == "mode" && args2.size() == 2)
+						{
+							//set source identification flag
+							Ogre::StringVector args3 = Ogre::StringUtil::split(args2[1], "&");
+							for(unsigned int j=0;j<args3.size();j++)
+							{
+								String sourceStr = args3[j];
+								Ogre::StringUtil::trim(sourceStr);
+								if (sourceStr == "ON" || sourceStr == "on")	
+								{
+									alb_mode = 1.0f;
+									alb_present = true;
+								}
+								else if (sourceStr == "OFF" || sourceStr == "off")
+								{ 
+									alb_mode = 0.0f;
+									alb_present = true;
+								}
+								else if (sourceStr == "NODASH" || sourceStr == "nodash" || sourceStr == "Nodash" || sourceStr == "NoDash")
+								{ 
+									alb_present = false;
+								}
+								else if (sourceStr == "NOTOGGLE" || sourceStr == "notoggle" || sourceStr == "Notoggle" || sourceStr == "NoToggle")
+								{ 
+									alb_notoggle = true;
+								}
+
+							}
+
+						} else
+						{
+							parser_warning(c, "Antilockbrakes Mode: missing " + String(fname) +" line " + StringConverter::toString(c.linecounter) + ". Antilockbrakes Mode = ON.");
+							alb_present = true;
+							alb_mode = 1.0f;
+						}
+					}
+				}
+				continue;
+			}
+			if (c.line.size() > 14 && c.line.substr(0, 15) == "TractionControl")
+			{
+				float ratio = 0.0f;
+				c.modeString = "tractioncontrol";
+				// parse the line
+				Ogre::StringVector options = Ogre::StringUtil::split(String(c.line).substr(16), ","); // "TractionControl " = 16 characters
+				// check for common errors
+				if (options.size() < 2)
+				{
+					parser_warning(c,"Error parsing File (TractionControl) " + String(fname) +" line " + StringConverter::toString(c.linecounter) + ". Not enough Options parsed, trying to continue ...");
+					continue;
+				}
+
+				for(unsigned int i=0;i<options.size();i++)
+				{
+					if(i == 0)
+					{
+						ratio = StringConverter::parseReal(options[i]);
+						//set ratio
+						if (ratio)
+						{
+							tc_ratio = ratio;
+							if (tc_ratio < 0.0f) tc_ratio = 0.0f;
+							if (tc_ratio > 20.0f) tc_ratio = 20.0f;
+						}
+						else
+							parser_warning(c,"Error parsing File (TractionControl) " + String(fname) +" line " + StringConverter::toString(c.linecounter) + ". TractionControl disabeld.");
+					} else if(i == 1)
+					{
+						tc_wheelslip = (StringConverter::parseReal(options[i]));
+						if (tc_wheelslip < 0.0f) tc_wheelslip = 0.0f;
+					} else if(i == 2)
+					{
+						// wheelspeed adaption
+						tc_fade = (StringConverter::parseReal(options[i]));
+						if (tc_fade <= 0.1f) tc_fade = 0.1f;
+
+					} else if(i == 3)
+					{
+						float pulse = (StringConverter::parseReal(options[i]));
+						if (!pulse)
+							tc_pulse=1;
+						else
+						{
+							tc_pulse = int( 2000.0f / fabs(pulse));
+							if (tc_pulse < 1) 
+								tc_pulse = 1;
+						}
+					} else
+					{
+						// parse the rest
+						Ogre::StringVector args2 = Ogre::StringUtil::split(options[i], ":");
+						if(args2.size() == 0)
+						{
+							parser_warning(c,"Error parsing File (TractionControl) " + String(fname) +" line " + StringConverter::toString(c.linecounter) + ". Mode not parsed, trying to continue....");
+							continue;
+						}
+
+					
+						// trim spaces from the entry
+						Ogre::StringUtil::trim(args2[0]);
+						if(args2.size() >= 2) Ogre::StringUtil::trim(args2[1]);
+
+						if(args2[0] == "mode" && args2.size() == 2)
+						{
+							//set source identification flag
+							Ogre::StringVector args3 = Ogre::StringUtil::split(args2[1], "&");
+							for(unsigned int j=0;j<args3.size();j++)
+							{
+								String sourceStr = args3[j];
+								Ogre::StringUtil::trim(sourceStr);
+								if (sourceStr == "ON" || sourceStr == "on" || sourceStr == "On")	
+								{ 
+									tc_mode = 1.0f;
+									tc_present = true;
+								}
+								else if (sourceStr == "OFF" || sourceStr == "off" || sourceStr == "Off")
+								{ 
+									tc_mode = 0.0f;
+									tc_present = true;
+								}
+								else if (sourceStr == "NODASH" || sourceStr == "nodash" || sourceStr == "Nodash" || sourceStr == "NoDash")
+								{ 
+									tc_present = false;
+								}
+								else if (sourceStr == "NOTOGGLE" || sourceStr == "notoggle" || sourceStr == "Notoggle" || sourceStr == "NoToggle")
+								{ 
+									tc_notoggle = true;
+								}
+							}
+
+						} else
+						{
+							parser_warning(c,"TractionControl Mode: missing " + String(fname) +" line " + StringConverter::toString(c.linecounter) + ". TractionControl Mode = ON.");
+							tc_present = true;
+							tc_mode = 1.0f;
+						}
+					}
+				}
+				continue;
+			}
 			if (c.line.size() > 17 && c.line.substr(0, 17) == "fileformatversion")
 			{
 				parse_args(c, args, 2);
@@ -564,12 +792,12 @@ int SerializedRig::loadTruck(String fname, SceneManager *manager, SceneNode *par
 
 			if (c.line.size() > 13 && c.line.substr(0, 13) == "add_animation")
 			{
-
+				c.modeString = "add_animation";
 				Ogre::StringVector options = Ogre::StringUtil::split(c.line.substr(14), ","); // "add_animation " = 14 characters
 
 				if (options.size() < 4)
 				{
-					LogManager::getSingleton().logMessage("Error parsing File (add_animation) " + String(fname) +" line " + StringConverter::toString(c.linecounter) + ". Not enough Options parsed, trying to continue ...");
+					parser_warning(c,"Error parsing File (add_animation) " + String(fname) +" line " + StringConverter::toString(c.linecounter) + ". Not enough Options parsed, trying to continue ...");
 					continue;
 				}
 
@@ -4681,6 +4909,7 @@ void SerializedRig::addWheel(SceneManager *manager, SceneNode *parent, Real radi
 	wheels[free_wheel].arm=&nodes[torquenode];
 	wheels[free_wheel].lastContactInner=Vector3::ZERO;
 	wheels[free_wheel].lastContactOuter=Vector3::ZERO;
+	wheels[free_wheel].firstLock=false;
 	if (propulsed>0)
 	{
 		//for inter-differential locking

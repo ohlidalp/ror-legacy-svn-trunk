@@ -134,6 +134,8 @@ public:
 	void toggleCustomParticles();
 	void toggleAxleLock();	//! diff lock on or off
 	void parkingbrakeToggle();
+	void antilockbrakeToggle();
+	void tractioncontrolToggle();
 	void beaconsToggle();
 	void setReplayMode(bool rm);
 	int savePosition(int position);
@@ -213,10 +215,10 @@ public:
 	int sleepcount;
 	//can this be drived?
 	int previousGear;
-	float previousCrank;
-	float animTimer;
 	bool requires_wheel_contact;
 	int parkingbrake;
+	int tractioncontrol;
+	int antilockbrake;
 	int lights;
 	bool reverselight;
 	float leftMirrorAngle;
