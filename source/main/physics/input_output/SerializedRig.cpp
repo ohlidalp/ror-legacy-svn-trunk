@@ -479,8 +479,15 @@ int SerializedRig::loadTruck(String fname, SceneManager *manager, SceneNode *par
 			if (c.line.size() > 14 && c.line.substr(0, 14) == "detacher_group")
 			{
 				parse_args(c, args, 1);
-				detacher_group_state = PARSEINT(args[1]);
-				continue;
+				if(args[1] == "end")
+				{
+					detacher_group_state = 0;
+					continue;
+				} else
+				{
+					detacher_group_state = PARSEINT(args[1]);
+					continue;
+				}
 			}
 			if (c.line.size() > 8 && c.line.substr(0, 8) == "fileinfo")
 			{
@@ -3447,7 +3454,7 @@ int SerializedRig::loadTruck(String fname, SceneManager *manager, SceneNode *par
 				brakeforce = PARSEREAL(args[0]);
 				// Read in footbrake force and handbrake force. If handbrakeforce is not present, set it to the default value 2*footbrake force to preserve older functionality
 				hbrakeforce = 2.0f * brakeforce;
-				if(n > 1) hbrakeforce = PARSEREAL(args[1]);;
+				if(n > 1) hbrakeforce = PARSEREAL(args[1]);
 			}
 			else if (c.mode == BTS_ROTATORS)
 			{
