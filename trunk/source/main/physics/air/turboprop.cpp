@@ -306,7 +306,7 @@ void Turboprop::updateForces(float dt, int doUpdate)
 	for (int i=0; i<numblades; i++)
 	{
 		float dragfactor=0.01;
-		if (!failed)
+		if (!failed && ignition)
 		{
 			Vector3 totaltipforce=Vector3::ZERO;
 			//span vector, left to right
@@ -374,7 +374,8 @@ void Turboprop::updateForces(float dt, int doUpdate)
 			//failed case
 			//add drag
 			Vector3 wind=-nodes[nodep[i]].Velocity;
-			float wspeed=wind.length();
+			// determine nodes speed and divide by engines speed (with some magic numbers for tuning) to keep it rotating longer when shutoff in flight and stop after a while when plane is stopped (on the ground)
+			float wspeed= (wind.length()/15.0f) / (nodes[noderef].Velocity.length()/2.0f);
 			nodes[nodep[i]].Forces+=airdensity*wspeed*wind;
 		}
 	}
