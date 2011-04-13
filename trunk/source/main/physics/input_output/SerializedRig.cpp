@@ -1368,6 +1368,9 @@ int SerializedRig::loadTruck(String fname, SceneManager *manager, SceneNode *par
 						case 'p':	//diasble particles
 							nodes[id].disable_particles=true;
 						break;
+						case 'f':	//diasble particles
+							nodes[id].disable_sparks=true;
+						break;
 						case 'L':	//Log data:
 							parser_warning(c, "Node " + TOSTRING(id) + "  settings. Node load mass: " + TOSTRING(nodes[id].mass) + ", friction coefficient: " + TOSTRING(default_node_friction) + " and buoyancy volume coefficient: " + TOSTRING(default_node_volume) + " Fluid drag surface coefficient: " + TOSTRING(default_node_surface)+ " Particle mode: " + TOSTRING(nodes[id].disable_particles));
 						break;
@@ -4632,6 +4635,7 @@ void SerializedRig::init_node(int pos, Real x, Real y, Real z, int type, Real m,
 		nodes[pos].mass=nloadweight;
 	}
 	nodes[pos].disable_particles=false;
+	nodes[pos].disable_sparks=false;
 	nodes[pos].masstype=type;
 	nodes[pos].contactless=0;
 	nodes[pos].contacted=0;

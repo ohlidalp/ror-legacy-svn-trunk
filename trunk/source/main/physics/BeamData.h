@@ -378,6 +378,7 @@ struct node
 	bool isHot;
 	bool overrideMass;
 	bool disable_particles;
+	bool disable_sparks;
 	Ogre::Vector3 buoyanceForce;
 	int id;
 	float colltesttimer;

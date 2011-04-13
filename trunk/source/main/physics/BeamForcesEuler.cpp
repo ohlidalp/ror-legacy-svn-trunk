@@ -790,7 +790,7 @@ void Beam::calcForcesEuler(int doUpdate, Real dt, int step, int maxstep, Beam** 
 		//if (_isnan(nodes[i].Position.length())) LOG("Node is NaN "+TOSTRING(i));
 
 		//wetness
-		if (nodes[i].wetstate==DRIPPING && !nodes[i].contactless)
+		if (nodes[i].wetstate==DRIPPING && !nodes[i].contactless && !nodes[i].disable_particles)
 		{
 			nodes[i].wettime+=dt;
 			if (nodes[i].wettime>5.0) nodes[i].wetstate=DRY; //dry!
@@ -824,10 +824,10 @@ void Beam::calcForcesEuler(int doUpdate, Real dt, int step, int maxstep, Beam** 
 					//FX
 					if (gm && doUpdate && dustp)
 					{
-						if (gm->fx_type==FX_DUSTY)
+						if (gm->fx_type==FX_DUSTY && !nodes[i].disable_particles)
 						{
 							if(dustp) dustp->malloc(nodes[i].AbsPosition, nodes[i].Velocity/2.0, gm->fx_colour);
-						}else if (gm->fx_type==FX_HARD)
+						}else if (gm->fx_type==FX_HARD && !nodes[i].disable_particles)
 						{
 							float thresold=10.0;
 							//smokey
@@ -841,12 +841,12 @@ void Beam::calcForcesEuler(int doUpdate, Real dt, int step, int maxstep, Beam** 
 							}
 
 							//sparks
-							if (!nodes[i].iswheel && ns>1.0 && !nodes[i].disable_particles)
+							if (!nodes[i].iswheel && ns>1.0 && !nodes[i].disable_sparks)
 							{
 								// friction < 10 will remove the 'f' nodes from the spark generation nodes
 								if(sparksp) sparksp->allocSparks(nodes[i].AbsPosition, nodes[i].Velocity);
 							}
-						} else if (gm->fx_type==FX_CLUMPY)
+						} else if (gm->fx_type==FX_CLUMPY && !nodes[i].disable_particles)
 						{
 							if (clumpp && nodes[i].Velocity.squaredLength()>1.0) clumpp->allocClump(nodes[i].AbsPosition, nodes[i].Velocity/2.0, gm->fx_colour);
 						}
@@ -943,7 +943,7 @@ void Beam::calcForcesEuler(int doUpdate, Real dt, int step, int maxstep, Beam** 
 					nodes[i].Forces-=(DEFAULT_WATERDRAG*velocityLength)*nodes[i].Velocity;
 					nodes[i].Forces+=nodes[i].buoyancy*Vector3::UNIT_Y;
 					//basic splashing
-					if (splashp && water->getHeight()-nodes[i].AbsPosition.y<0.2 && nodes[i].Velocity.squaredLength()>4.0)
+					if (splashp && water->getHeight()-nodes[i].AbsPosition.y<0.2 && nodes[i].Velocity.squaredLength()>4.0 && !nodes[i].disable_particles)
 					{
 						splashp->allocSplash(nodes[i].AbsPosition, nodes[i].Velocity);
 						ripplep->allocRipple(nodes[i].AbsPosition, nodes[i].Velocity);
