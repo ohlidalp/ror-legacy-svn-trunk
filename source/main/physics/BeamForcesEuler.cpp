@@ -904,8 +904,7 @@ void Beam::calcForcesEuler(int doUpdate, Real dt, int step, int maxstep, Beam** 
 		{
 			//aerodynamics on steroids!
 			nodes[i].Forces+=fusedrag;
-		}
-		else
+		} else
 		{
 			if (!disableDrag)
 			{
