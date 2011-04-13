@@ -3150,8 +3150,7 @@ int SerializedRig::loadTruck(String fname, SceneManager *manager, SceneNode *par
 				else
 				{
 					// disable position lights on trucks
-					// NOT WORKING CORRECTLY:
-					//if(driveable=TRUCK) hasposlights=true;
+					if(driveable==TRUCK) hasposlights=true;
 
 					if (nds[1]!=wings[free_wing-1].fa->nfld)
 					{
