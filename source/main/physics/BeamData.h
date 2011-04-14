@@ -555,6 +555,7 @@ struct hook
 	bool lockNodes;
 	node_t *hookNode;
 	node_t *lockNode;
+	beam_t *beam;
 	Beam *lockTruck;
 };
 

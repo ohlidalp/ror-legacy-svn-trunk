@@ -1201,9 +1201,9 @@ void Beam::calc_masses2(Real total, bool reCalc)
 		nodes[cinecameranodepos[i]].mass=20;
 
 	//hooks must be heavy
-	for(std::vector<hook_t>::iterator it=hooks.begin(); it!=hooks.end(); it++)
-		if(!it->hookNode->overrideMass)
-			it->hookNode->mass = 500.0f;
+	//for(std::vector<hook_t>::iterator it=hooks.begin(); it!=hooks.end(); it++)
+	//	if(!it->hookNode->overrideMass)
+	//		it->hookNode->mass = 500.0f;
 
 	//update gravimass
 	for (i=0; i<free_node; i++)
@@ -1772,6 +1772,18 @@ void Beam::SyncReset()
 			if (beams[i].mSceneNode->numAttachedObjects()==0) beams[i].mSceneNode->attachObject(beams[i].mEntity);
 		}
 	}
+
+	//this is a hook assistance beam and needs to be disabled after reset
+	for(std::vector <hook_t>::iterator it = hooks.begin(); it!=hooks.end(); it++)
+	{
+		it->beam->disabled = true;
+		it->locked    = UNLOCKED;
+		it->group     = -1;
+		it->lockNodes = true;
+		it->lockNode  = 0;
+		it->lockTruck = 0;
+	}
+
 	for (i=0; i<free_contacter; i++) contacters[i].contacted=0;
 	for(std::vector <rope_t>::iterator it = ropes.begin(); it!=ropes.end(); it++) it->lockedto=0;
 	for(std::vector <tie_t>::iterator it = ties.begin(); it!=ties.end(); it++)
@@ -4426,6 +4438,13 @@ void Beam::hookToggle(Beam** trucks, int trucksnum, int group)
 			if (it->lockNode) it->lockNode->lockednode=0;
 			it->lockNode = 0;
 			it->lockTruck = 0;
+
+			//disable hook-assistance beam
+			it->beam->p2       = 0;
+			it->beam->p2truck  = 0;
+			it->beam->L = (nodes[0].AbsPosition - it->hookNode->AbsPosition).length();
+			it->beam->disabled = 1;
+			beams->mSceneNode->detachAllObjects();
 		} else
 		{
 			// we lock hooks
