@@ -715,30 +715,29 @@ void Beam::calcForcesEuler(int doUpdate, Real dt, int step, int maxstep, Beam** 
 	//locks - this is not active in network mode
 	for(std::vector<hook_t>::iterator it=hooks.begin(); it!=hooks.end(); it++)
 	{
-		if (it->lockNode && it->locked == LOCKED)
+		if (it->lockNode && it->locked == PRELOCK)
 		{
-			it->lockNode->lockedPosition = it->hookNode->AbsPosition;
-			it->lockNode->lockedVelocity = it->hookNode->Velocity;
-			it->hookNode->Forces         = it->hookNode->Forces + it->lockNode->lockedForces;
-		}
-		if (it->lockNode && it->locked==PRELOCK)
-		{
-			//check for locking
-			if ((it->hookNode->AbsPosition - it->lockNode->AbsPosition).squaredLength() < 0.00001f)
+			if (it->beam->disabled)
 			{
-				it->lockNode->lockednode=1;
-				it->lockNode->lockedPosition = it->lockNode->AbsPosition;
-				it->lockNode->lockedVelocity = it->lockNode->Velocity;
-				it->lockNode->lockedForces   = it->lockNode->Forces;
-				it->locked = LOCKED;
-			}
-			else
+				//enable beam if not enabled yet between those 2 nodes
+				it->beam->p2       = it->lockNode;
+				it->beam->p2truck  = it->lockTruck;
+				it->beam->L = (it->hookNode->AbsPosition - it->lockNode->AbsPosition).length();
+				it->beam->disabled = false;
+				if (beams->mSceneNode->numAttachedObjects() == 0)
+					beams->mSceneNode->attachObject(beams->mEntity);
+			} else
 			{
-				//add attraction forces
-				Vector3 f = it->hookNode->AbsPosition - it->lockNode->AbsPosition;
-				f.normalise();
-				it->hookNode->Forces -= 100000.0 * f;
-				it->lockNode->Forces += 100000.0 * f;
+				//shorten the connecting beam slowly to locking minrange
+				if (it->beam->L > 0.000251f)
+				{
+					it->beam->L = (it->beam->L - 0.00025f);
+				} else
+				{
+					it->beam->L = 0.001f;
+					//locking minrange -> status LOCKED
+					it->locked = LOCKED;
+				}
 			}
 		}
 	}

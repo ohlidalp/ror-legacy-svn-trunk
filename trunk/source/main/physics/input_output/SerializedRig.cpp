@@ -1269,6 +1269,7 @@ int SerializedRig::loadTruck(String fname, SceneManager *manager, SceneNode *par
 				// merge options and default_node_options
 				strncpy(options, ((String(default_node_options) + String(options)).c_str()), 250);
 
+				int pos;
 				// now 'parse' the options
 				char *options_pointer = options;
 				while (*options_pointer != 0)
@@ -1349,15 +1350,20 @@ int SerializedRig::loadTruck(String fname, SceneManager *manager, SceneNode *par
 							break;
 						case 'h':	//hook
 							// emulate the old behaviour using new fancy hookgroups
+							pos=add_beam(&nodes[id], &nodes[0], manager, parent, BEAM_INVISIBLE, default_break * default_break_scale * 100.0f, default_spring * default_spring_scale, default_damp * default_damp_scale * 0.1f);
+							beams[pos].disabled=true;
+							beams[pos].mSceneNode->detachAllObjects();
+	
 							hook_t h;
-							h.hookNode=&nodes[id];
-							h.locked=UNLOCKED;
-							h.lockNode=0;
-							h.lockTruck=0;
-							h.lockNodes=true;
-							h.group=-1;
+							h.hookNode  = &nodes[id];
+							h.group     = -1;
+							h.locked    = UNLOCKED;
+							h.lockNode  = 0;
+							h.lockTruck = 0;
+							h.lockNodes = true;
+							h.beam = &beams[pos];
 							hooks.push_back(h);
-							break;
+						break;
 						case 'e':	//editor
 							if (!networking)
 								editorId=id;
