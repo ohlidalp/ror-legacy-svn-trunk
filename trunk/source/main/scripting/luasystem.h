@@ -75,7 +75,6 @@ public:
 	int registerCallBack(lua_State *lua);
 	int unregisterCallBack(lua_State *lua);
 	int spawnObject(lua_State *lua);
-	int spawnBeam(lua_State *lua);
 	int pointArrow(lua_State *lua);
 	int startTimer(lua_State *lua);
 	int stopTimer(lua_State *lua);

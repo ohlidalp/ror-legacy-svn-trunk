@@ -190,6 +190,17 @@ void ScriptEngine::ExceptionCallback(AngelScript::asIScriptContext *ctx, void *p
     }
 }
 
+void ScriptEngine::exploreScripts()
+{
+#if USE_ANGELSCRIPT
+	FileInfoListPtr files= ResourceGroupManager::getSingleton().findResourceFileInfo("Scripts", "*.rs", false);
+	for (FileInfoList::iterator iterFiles = files->begin(); iterFiles!= files->end(); ++iterFiles)
+	{
+		loadScript(iterFiles->filename);
+	}
+#endif //USE_ANGELSCRIPT
+}
+
 /*
 void ScriptEngine::LineCallback(asIScriptContext *ctx, void *param)
 {

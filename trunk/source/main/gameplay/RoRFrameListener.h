@@ -169,7 +169,6 @@ protected:
 	void initializeCompontents();
 	OverlayWrapper *ow;
 	int setupBenchmark();
-	void benchStep(float dt);
 	truck_prepare_t truck_preload[100];
 	int truck_preload_num;
 	localizer_t localizers[64];
@@ -250,9 +249,6 @@ protected:
 	std::vector<paged_geometry_t> pagedGeometry;
 #endif
 	String grassdensityTextureFilename;
-	void setGrassDensity(float x, float y, int density, bool relative=false);
-	void saveGrassDensity();
-	int changeGrassBuffer(unsigned char *data, int relchange);
 	void updateGrass(Vector3 pos);
 	void initSoftShadows();
 	void initHDR();
@@ -281,7 +277,6 @@ public:
 	void repairTruck(char* inst, char* box);
 	void removeTruck(char* inst, char* box);
 	bool updateEvents(float dt);
-	bool benchmarkStep(float dt);
 	void initTrucks(bool loadmanual, Ogre::String selected, Ogre::String selectedExtension = Ogre::String(), std::vector<Ogre::String> *truckconfig=0, bool enterTruck=false);
 	void setCurrentTruck(int v);
 
@@ -312,7 +307,6 @@ public:
 	SceneManager *getSceneMgr() { return mSceneMgr; };
 	RenderWindow *getRenderWindow() { return mWindow; };
 	Collisions *getCollisions() { return collisions; };
-	int addTruck(char* fname, Vector3 pos);
 	Beam *getTruck(int number) { return trucks[number]; };
 	int getCurrentTruckNumber() { return current_truck; };
 	int getTruckCount() { return free_truck; };
@@ -323,7 +317,6 @@ public:
 	void setLoadingState(int value);
 	void pauseSim(bool value);
 	void loadNetTerrain(char *preselected_map);
-	void exploreScripts();
 	float mapsizex, mapsizez;
 	bool terrainHasTruckShop;
 
@@ -348,7 +341,6 @@ public:
 
 	void loadTerrain(Ogre::String terrainfile);
 	void loadClassicTerrain(Ogre::String terrainfile);
-	void loadOgitorTerrain(Ogre::String terrainfile);
 
 	OverlayWrapper *getOverlayWrapper() { return ow; };
 
@@ -445,7 +437,6 @@ protected:
 
 	/** adds a truck to the main array
 	  */
-	int addTruck(Beam *b);
 	int getFreeTruckSlot();
 	int free_truck;
 	int current_truck;
