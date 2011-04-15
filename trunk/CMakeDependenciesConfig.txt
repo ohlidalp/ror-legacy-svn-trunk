@@ -61,6 +61,9 @@ IF(WIN32)
 	set(Ois_LIBRARIES "ois" CACHE STRING "The ogre lib to link against")
 
 	
+    set(Boost_USE_STATIC_LIBS        ON)
+    set(Boost_USE_MULTITHREADED      ON)
+    set(Boost_USE_STATIC_RUNTIME    OFF)
 	find_package(Boost 1.44 REQUIRED COMPONENTS date_time filesystem)
 
 	# special include path for curl ...
