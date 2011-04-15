@@ -217,8 +217,6 @@ public:
 	int previousGear;
 	bool requires_wheel_contact;
 	int parkingbrake;
-	int tractioncontrol;
-	int antilockbrake;
 	int lights;
 	bool reverselight;
 	float leftMirrorAngle;
