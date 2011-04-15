@@ -45,7 +45,6 @@ static int SLUAgetTime (lua_State *lua) {return luaInstance->getTime(lua);}
 static int SLUAregisterCallBack(lua_State *lua) {return luaInstance->registerCallBack(lua);}
 static int SLUAunregisterCallBack(lua_State *lua) {return luaInstance->unregisterCallBack(lua);}
 static int SLUAspawnObject(lua_State *lua) {return luaInstance->spawnObject(lua);}
-static int SLUAspawnBeam(lua_State *lua) {return luaInstance->spawnBeam(lua);}
 static int SLUApointArrow(lua_State *lua) {return luaInstance->pointArrow(lua);}
 static int SLUAstopTimer(lua_State *lua) {return luaInstance->stopTimer(lua);}
 static int SLUAclearEvents(lua_State *lua) {return luaInstance->clearEvents(lua);}
@@ -262,8 +261,6 @@ void LuaSystem::registerFunctions()
 	lua_setglobal (L, "unregisterCallBack");
 	lua_pushcclosure (L, SLUAspawnObject, 0);
 	lua_setglobal (L, "spawnObject");
-	lua_pushcclosure (L, SLUAspawnBeam, 0);
-	lua_setglobal (L, "spawnBeam");
 	lua_pushcclosure (L, SLUApointArrow, 0);
 	lua_setglobal (L, "pointArrow");
 	lua_pushcclosure (L, SLUAstopTimer, 0);
@@ -419,34 +416,6 @@ int LuaSystem::spawnObject(lua_State *lua)
 	// trying to create the new object
 	SceneNode *bakeNode=mefl->getSceneMgr()->getRootSceneNode()->createChildSceneNode();
 	mefl->loadObject(objectname, px, py, pz, rx, ry, rz, bakeNode, instancename, true, luahandler, objectname);
-	return 0;
-}
-
-int LuaSystem::spawnBeam(lua_State *lua)
-{
-	char *truckname = const_cast<char*>(lua_tostring(lua, 1));
-	char *instancename = const_cast<char*>(lua_tostring(lua, 2));
-	float px = lua_tonumber (lua, 3);
-	float py = lua_tonumber (lua, 4);
-	float pz = lua_tonumber (lua, 5);
-	float rx = lua_tonumber (lua, 6);
-	float ry = lua_tonumber (lua, 7);
-	float rz = lua_tonumber (lua, 8);
-
-	// trying to create the new object
-	Vector3 pos = Vector3(px, py, pz);
-	int num = BeamExists(instancename);
-	if(num == -1)
-	{
-		// non existent, create
-		LOG("LUA truck-create");
-		num = mefl->addTruck(truckname, pos);
-	}
-	LOG("LUA using trucknum "+TOSTRING(num));
-	beamMap[instancename] = num;
-	Beam *truck = mefl->getTruck(num);
-	truck->resetPosition(px, pz, false, py);
-	truck->updateVisual();
 	return 0;
 }
 

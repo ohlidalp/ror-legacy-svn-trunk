@@ -817,7 +817,7 @@ RoRFrameListener::RoRFrameListener(AppState *parentState, RenderWindow* win, Cam
 
 #ifdef USE_ANGELSCRIPT
 	new ScriptEngine(this, 0);
-	exploreScripts();
+	ScriptEngine::getSingleton().exploreScripts();
 #endif
 
 	externalCameraMode=0;
@@ -1349,16 +1349,7 @@ RoRFrameListener::~RoRFrameListener()
 
 }
 
-void RoRFrameListener::exploreScripts()
-{
-#if USE_ANGELSCRIPT
-	FileInfoListPtr files= ResourceGroupManager::getSingleton().findResourceFileInfo("Scripts", "*.rs", false);
-	for (FileInfoList::iterator iterFiles = files->begin(); iterFiles!= files->end(); ++iterFiles)
-	{
-		ScriptEngine::getSingleton().loadScript(iterFiles->filename);
-	}
-#endif //USE_ANGELSCRIPT
-}
+
 
 void RoRFrameListener::loadNetTerrain(char *preselected_map)
 {
@@ -3521,18 +3512,6 @@ bool RoRFrameListener::updateEvents(float dt)
 		if(ow) ow->showDebugOverlay(mStatsOn);
 	}
 
-#ifdef USE_PAGED
-	if (INPUTENGINE.getEventBoolValueBounce(EV_GRASS_MORE))
-	{
-		Vector3 pos = Vector3::ZERO;
-		if(current_truck == -1)
-			pos = person->getPosition();
-		else
-			pos = trucks[current_truck]->getPosition();
-		setGrassDensity(pos.x, pos.z, 20, true);
-	}
-#endif //USE_PAGED
-
 #ifdef USE_MYGUI
 	if (INPUTENGINE.getEventBoolValueBounce(EV_MAP_INTERACTIVE_TOGGLE, 0.5f) && mtc)
 	{
@@ -3575,61 +3554,7 @@ bool RoRFrameListener::updateEvents(float dt)
 		mtc->update();
 	}
 #endif //MYGUI
-#ifdef USE_PAGED
-//TODO: fix code below
-#if 0
-	if (INPUTENGINE.getEventBoolValue(EV_GRASS_LESS) && mTimeUntilNextToggle <= 0)
-	{
-		if(grass)
-		{
-			Vector3 pos = Vector3::ZERO;
-			if(current_truck == -1)
-				pos = person->getPosition();
-			else
-				pos = trucks[current_truck]->getPosition();
-			setGrassDensity(pos.x, pos.z, -20, true);
-			mTimeUntilNextToggle = 0.2;
-		}
-	}
 
-	if (INPUTENGINE.getEventBoolValue(EV_GRASS_SAVE) && mTimeUntilNextToggle <= 0)
-	{
-		if(grass)
-		{
-			saveGrassDensity();
-			mTimeUntilNextToggle = 1;
-		}
-	}
-
-	if (INPUTENGINE.getEventBoolValue(EV_GRASS_MOST) && mTimeUntilNextToggle <= 0)
-	{
-		if(grass)
-		{
-			Vector3 pos = Vector3::ZERO;
-			if(current_truck == -1)
-				pos = person->getPosition();
-			else
-				pos = trucks[current_truck]->getPosition();
-			setGrassDensity(pos.x, pos.z, 255);
-			mTimeUntilNextToggle = 0.2;
-		}
-	}
-
-	if (INPUTENGINE.getEventBoolValue(EV_GRASS_NONE) && mTimeUntilNextToggle <= 0)
-	{
-		if(grass)
-		{
-			Vector3 pos = Vector3::ZERO;
-			if(current_truck == -1)
-				pos = person->getPosition();
-			else
-				pos = trucks[current_truck]->getPosition();
-			setGrassDensity(pos.x, pos.z, 0);
-			mTimeUntilNextToggle = 0.2;
-		}
-	}
-#endif //0
-#endif //USE_PAGED
 	if (INPUTENGINE.getEventBoolValueBounce(EV_COMMON_OUTPUT_POSITION) && loading_state == ALL_LOADED)
 	{
 		Vector3 pos = Vector3::ZERO;
@@ -3689,29 +3614,6 @@ void RoRFrameListener::removeTruck(int truck)
 		// then set the array to zero, so it wont be used anymore
 		trucks[truck] = 0;
 	}
-}
-
-int RoRFrameListener::addTruck(char *fname, Vector3 pos)
-{
-	Beam *b = BeamFactory::getSingleton().createLocal(pos, Quaternion::ZERO, fname, 0, false, flaresMode);
-
-#ifdef USE_MYGUI
-	if(b && bigMap)
-	{
-		MapEntity *e = bigMap->createNamedMapEntity("Truck"+TOSTRING(b->trucknum), MapControl::getTypeByDriveable(b->driveable));
-		if(e)
-		{
-			e->setState(DESACTIVATED);
-			e->setVisibility(true);
-			e->setPosition(reload_pos);
-			e->setRotation(-Radian(b->getHeadingDirectionAngle()));
-		}
-		return b->trucknum;
-	}
-#else
-	if(b) return b->trucknum;
-#endif //MYGUI
-	return -1;
 }
 
 void RoRFrameListener::shutdown_final()
@@ -3838,28 +3740,7 @@ void RoRFrameListener::initializeCompontents()
 
 }
 
-void RoRFrameListener::loadOgitorTerrain(String terrainfile)
-{
-	// find the group the terrain is in
-	Ogre::String group = "";
-	//CACHE.checkResourceLoaded(terrainfile, group);
 
-	// start up the dotsceneloader
-    mLoader = new DotSceneLoader();
-    mLoader->parseDotScene(terrainfile, group, mSceneMgr);
-
-	// next, setup the heightfinder
-	{
-		hfinder = new OgitorSceneHeightFinder(mLoader);
-		collisions->setHfinder(hfinder);
-		if(person) person->setHFinder(hfinder);
-		// update hfinder instance in factory
-		BeamFactory::getSingleton().mfinder = hfinder;
-	}
-
-
-
-}
 void RoRFrameListener::loadTerrain(String terrainfile)
 {
 	ScopeLog log("terrain_"+terrainfile);
@@ -3899,12 +3780,7 @@ void RoRFrameListener::loadTerrain(String terrainfile)
 
 	initializeCompontents();
 
-	if(terrainfile.find(".scene") != String::npos)
-	{
-		LOG("Loading Ogitor scene format: " + terrainfile);
-		loadOgitorTerrain(terrainfile);
-	}
-	else if(terrainfile.find(".terrn") != String::npos)
+	if(terrainfile.find(".terrn") != String::npos)
 	{
 		LOG("Loading classic terrain format: " + terrainfile);
 		loadClassicTerrain(terrainfile);
@@ -5313,118 +5189,6 @@ void RoRFrameListener::loadClassicTerrain(String terrainfile)
 	//if (envmap) envmap->update(Vector3(terrainxsize/2.0, hfinder->getHeightAt(terrainxsize/2.0, terrainzsize/2.0)+50.0, terrainzsize/2.0));
 
 }
-
-void RoRFrameListener::setGrassDensity(float x, float y, int density, bool relative)
-{
-#ifdef USE_PAGED
-// todo to fix
-#if 0
-	if(!grassLoader)
-		return;
-	GrassLayer *grassLayer = grassLoader->getLayerList().front();
-	PixelBox *b = grassLayer->getDensityMapData();
-	if(!b || ! grassLayer)
-		return;
-	int gwidth = (int)b->getWidth();
-	int gheight = (int)b->getHeight();
-	int nx = (int)(x / mapsizex * gwidth);
-	int ny = (int)(y / mapsizez * gwidth);
-	unsigned char *data = ((unsigned char*)b->data) + nx + ny * gwidth;
-	int value=0, valuechange=0;
-	if(relative)
-	{
-		value = changeGrassBuffer(data, density);
-		valuechange = density/2;
-	}
-	else
-	{
-		value = density;
-		valuechange = (value - *data);
-	}
-	// surrounding value of the pixel (brush like)
-	if(valuechange != 0)
-		valuechange /= 2;
-	// so set some data, like a brush, to make everything smoother :)
-	/* pixels:
-	1 2 3
-	4 5 6
-	7 8 9
-	*/
-	if(ny > 1 && nx > 1)
-	{
-		// set 1,2,3
-		changeGrassBuffer(data-1-gwidth, valuechange);
-		changeGrassBuffer(data-gwidth, valuechange);
-		changeGrassBuffer(data+1-gwidth, valuechange);
-		// set 4,5,6
-		changeGrassBuffer(data-1, valuechange);
-		changeGrassBuffer(data, valuechange);
-		changeGrassBuffer(data+1, valuechange);
-		// set 7,8,9
-		changeGrassBuffer(data-1+gwidth, valuechange);
-		changeGrassBuffer(data+gwidth, valuechange);
-		changeGrassBuffer(data+1+gwidth, valuechange);
-	}
-
-	LOG("setting grass: "+ \
-		TOSTRING(gwidth)+"x"+TOSTRING(gheight)+", "+ \
-		"("+TOSTRING(nx)+"x"+TOSTRING(ny)+") = " + \
-		TOSTRING(*data)+" / " + TOSTRING(value)+", "+TOSTRING(valuechange));
-	grass->reloadGeometryPage(Vector3(x, 0, y));
-#endif
-#endif //USE_PAGED
-}
-
-void RoRFrameListener::updateGrass(Vector3 pos)
-{
-#if 0
-// todo: fix
-	if(!grassLoader || !grass)
-		return;
-
-	grass->reloadGeometryPage(pos);
-#endif
-}
-
-int RoRFrameListener::changeGrassBuffer(unsigned char *data, int relchange)
-{
-#ifdef USE_PAGED
-	int newdata = *data + relchange;
-	if(newdata < 0)
-		newdata = 0;
-	if(newdata > 255)
-		newdata = 255;
-	*data = newdata;
-	return newdata;
-#else
-	return 0;
-#endif
-}
-
-void RoRFrameListener::saveGrassDensity()
-{
-#ifdef USE_PAGED
-#if 0
-	if(!grassLoader)
-		return;
-	GrassLayer *grassLayer = grassLoader->getLayerList().front();
-	PixelBox *b = grassLayer->getDensityMapData();
-	if(!b || !grassLayer)
-		return;
-	int gwidth = (int)b->getWidth();
-	int gheight = (int)b->getHeight();
-	grass->reloadGeometry();
-
-	Image img;
-	img = img.loadDynamicImage ((uchar *)b->data, gwidth, gheight, PF_BYTE_L);
-
-	String filename = String("data/terrains/") + grassdensityTextureFilename;
-	img.save(filename.c_str());
-	LOG("saving grass to "+filename);
-#endif
-#endif //USE_PAGED
-}
-
 
 void RoRFrameListener::initTrucks(bool loadmanual, Ogre::String selected, Ogre::String selectedExtension, std::vector<Ogre::String> *truckconfig, bool enterTruck)
 {
@@ -7021,23 +6785,6 @@ int RoRFrameListener::getFreeTruckSlot()
 		if(trucks[i] == 0 && i >= free_truck) // XXX: TODO: remove this hack
 		{
 			// reuse slots
-			if(i >= free_truck)
-				free_truck = i + 1;
-			return i;
-		}
-	}
-	return -1;
-}
-
-int RoRFrameListener::addTruck(Beam *b)
-{
-	// find a free slot for the truck
-	for (int i=0; i<MAX_TRUCKS; i++)
-	{
-		if(trucks[i] == 0 && i >= free_truck) // XXX: TODO: remove this hack
-		{
-			// reuse old slots
-			trucks[i] = b;
 			if(i >= free_truck)
 				free_truck = i + 1;
 			return i;

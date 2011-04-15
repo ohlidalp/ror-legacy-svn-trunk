@@ -146,6 +146,9 @@ public:
 	Ogre::String getTerrainName() { return terrainScriptName; };
 	Ogre::String getTerrainScriptHash() { return terrainScriptHash; };
 
+
+	void exploreScripts();
+
 protected:
     RoRFrameListener *mefl;             //!< local RoRFrameListener instance, used as proxy for many functions
 	Collisions *coll;
