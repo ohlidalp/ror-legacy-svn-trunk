@@ -1212,7 +1212,7 @@ void Beam::calcForcesEuler(int doUpdate, Real dt, int step, int maxstep, Beam** 
 
 	//get current speed
 	float curspeed=0.0f;
-	curspeed=nodes[cameranodepos[0]].Velocity.length();
+	curspeed=nodes[cameranodepos[trucknum]].Velocity.length();
 	bool tc_active=false;
 	bool alb_active=false;
 	// fix for airplanes crashing when getAcc() is used
