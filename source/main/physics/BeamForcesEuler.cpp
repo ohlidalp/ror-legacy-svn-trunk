@@ -1211,8 +1211,10 @@ void Beam::calcForcesEuler(int doUpdate, Real dt, int step, int maxstep, Beam** 
 	}
 
 	//get current speed
-	float curspeed=0.0f;
-	curspeed=nodes[cameranodepos[trucknum]].Velocity.length();
+	float curspeed = 0;
+	if(freecamera > 0)
+		curspeed = nodes[cameranodepos[0]].Velocity.length();
+
 	bool tc_active=false;
 	bool alb_active=false;
 	// fix for airplanes crashing when getAcc() is used
@@ -1251,7 +1253,7 @@ void Beam::calcForcesEuler(int doUpdate, Real dt, int step, int maxstep, Beam** 
 					if (alb_mode && alb_pulse_state)
 					{
 						// avoid divide by zero
-						if(!curspeed) curspeed = 0.0001f;
+						if(curspeed == 0) curspeed = 0.0001f;
 						antilock_coef = fabs(wheels[i].speed) / curspeed;
 						antilock_coef = pow(antilock_coef,alb_ratio);
 						// avoid backwards acceleration but keep braking
