@@ -80,6 +80,7 @@ trucksection_t truck_sections[] = {
 	{BTS_ENGOPTION, "engoption", false},
 	{BTS_BRAKES, "brakes", false},
 	{BTS_ROTATORS, "rotators", false},
+	{BTS_ROTATORS2, "rotators2", false},
 	{BTS_SCREWPROPS, "screwprops", false},
 	{BTS_GUISETTINGS, "guisettings", false},
 	{BTS_MINIMASS, "minimass", false},
@@ -3493,17 +3494,20 @@ int SerializedRig::loadTruck(String fname, SceneManager *manager, SceneNode *par
 				hbrakeforce = 2.0f * brakeforce;
 				if(n > 1) hbrakeforce = PARSEREAL(args[1]);
 			}
-			else if (c.mode == BTS_ROTATORS)
+			else if (c.mode == BTS_ROTATORS || c.mode == BTS_ROTATORS2)
 			{
 				//parse rotators
 				int axis1, axis2,keys,keyl;
 				int p1[4], p2[4];
 				float rate;
 				hascommands=1;
-				Real startDelay=0;
-				Real stopDelay=0;
+				Real startDelay  = 0.0f;
+				Real stopDelay   = 0.0f;
+				Real force       = ROTATOR_FORCE_DEFAULT;
+				Real tolerance   = ROTATOR_TOLERANCE_DEFAULT;
 				char startFunction[50]="";
 				char stopFunction[50]="";
+				char description[50]="";
 				int n = parse_args(c, args, 13);
 				axis1 = parse_node_number(c, args[0]);
 				axis2 = parse_node_number(c, args[1]);
@@ -3518,10 +3522,24 @@ int SerializedRig::loadTruck(String fname, SceneManager *manager, SceneNode *par
 				rate = PARSEREAL(args[10]);
 				keys = PARSEINT(args[11]);
 				keyl = PARSEINT(args[12]);
-				if(n > 13) startDelay = PARSEREAL(args[13]);
-				if(n > 14) stopDelay = PARSEREAL(args[14]);
-				if(n > 15) strncpy(startFunction, args[15].c_str(), 50);
-				if(n > 16) strncpy(stopFunction, args[16].c_str(), 50);
+
+				if (c.mode == BTS_ROTATORS)
+				{
+					if(n > 13) startDelay = PARSEREAL(args[13]);
+					if(n > 14) stopDelay = PARSEREAL(args[14]);
+					if(n > 15) strncpy(startFunction, args[15].c_str(), 50);
+					if(n > 16) strncpy(stopFunction, args[16].c_str(), 50);
+				} else
+				if (c.mode == BTS_ROTATORS2)
+				{
+					if(n > 13) force = PARSEREAL(args[13]);
+					if(n > 14) tolerance = PARSEREAL(args[14]);
+					if(n > 15) strncpy(description, args[15].c_str(), 50);
+					if(n > 16) startDelay = PARSEREAL(args[16]);
+					if(n > 17) stopDelay = PARSEREAL(args[17]);
+					if(n > 18) strncpy(startFunction, args[18].c_str(), 50);
+					if(n > 19) strncpy(stopFunction, args[19].c_str(), 50);
+				}
 
 				if(free_rotator >= MAX_ROTATORS)
 				{
@@ -3532,6 +3550,8 @@ int SerializedRig::loadTruck(String fname, SceneManager *manager, SceneNode *par
 				rotators[free_rotator].rate=rate;
 				rotators[free_rotator].axis1=axis1;
 				rotators[free_rotator].axis2=axis2;
+				rotators[free_rotator].force=force;
+				rotators[free_rotator].tolerance=tolerance;
 				int i;
 				for (i=0; i<4; i++)
 				{
@@ -3540,10 +3560,14 @@ int SerializedRig::loadTruck(String fname, SceneManager *manager, SceneNode *par
 				}
 				//add short key
 				commandkey[keys].rotators.push_back(-(free_rotator+1));
-				commandkey[keys].description = "Rotate Left";
+				if (description  == "")
+					commandkey[keys].description = "Rotate_Left/Right";
+				else
+					commandkey[keys].description = description;
+
 				//add long key
 				commandkey[keyl].rotators.push_back(free_rotator+1);
-				commandkey[keyl].description = "Rotate Right";
+				commandkey[keyl].description = "";
 
 				if(rotaInertia && startDelay > 0 && stopDelay > 0)
 				{
@@ -3555,7 +3579,6 @@ int SerializedRig::loadTruck(String fname, SceneManager *manager, SceneNode *par
 					rotaInertia->setCmdKeyDelay(keys,inertia_startDelay,inertia_stopDelay, String (inertia_default_startFunction), String (inertia_default_stopFunction));
 					rotaInertia->setCmdKeyDelay(keyl,inertia_startDelay,inertia_stopDelay, String (inertia_default_startFunction), String (inertia_default_stopFunction));
 				}
-
 				free_rotator++;
 			}
 			else if (c.mode == BTS_SCREWPROPS)
