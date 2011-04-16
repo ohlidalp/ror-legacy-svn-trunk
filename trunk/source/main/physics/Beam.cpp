@@ -2823,8 +2823,11 @@ void Beam::calcShocks2(int beam_i, Real difftoBeamL, Real &k, Real &d, Real dt)
 					{
 						if (beams[scount].shock && beams[scount].shock->flags & SHOCK_FLAG_ISTRIGGER)  // dont mess anything up if the user set the number too big
 						{
-							if (triggerdebug && !beams[scount].shock->trigger_enabled)
+							if (triggerdebug && !beams[scount].shock->trigger_enabled && beams[i].shock->last_debug_state != 1)
+							{
 								LOG(" Trigger disabled. Blocker BeamID " + TOSTRING(i) + " enabled trigger " + TOSTRING(scount));
+								beams[i].shock->last_debug_state = 1;
+							}
 							beams[scount].shock->trigger_enabled = false;	// disable the trigger
 						}
 					}
@@ -2832,8 +2835,11 @@ void Beam::calcShocks2(int beam_i, Real difftoBeamL, Real &k, Real &d, Real dt)
 				if (beams[i].shock->flags & SHOCK_FLAG_TRG_CMD_BLOCKER) // this an enabled cmd-key-blocker and past a boundary
 				{
 					commandkey[beams[i].shock->trigger_cmdshort].trigger_cmdkeyblock_state = false; // Release the cmdKey
-					if (triggerdebug)
+					if (triggerdebug && beams[i].shock->last_debug_state != 2)
+					{
 						LOG(" F-key trigger block released. Blocker BeamID " + TOSTRING(i) + " Released F" + TOSTRING(beams[i].shock->trigger_cmdshort));
+						beams[i].shock->last_debug_state = 2;
+					}
 				} else
 				if (beams[i].shock->flags & SHOCK_FLAG_TRG_CMD_SWITCH) // this is an enabled cmdkey swictch and past a boundary
 				{
@@ -2852,8 +2858,11 @@ void Beam::calcShocks2(int beam_i, Real difftoBeamL, Real &k, Real &d, Real dt)
 								beams[shocks[scount]. beamid].shock->trigger_cmdlong = beams[shocks[scount].beamid].shock->trigger_cmdshort;
 								beams[shocks[scount].beamid].shock->trigger_cmdshort = tmpcmdkey;
 								beams[i].shock->trigger_switch_state = beams[i].shock->trigger_boundary_t ;  //prevent trigger switching again before leaving boundaries or timeout
-								if(triggerdebug)
+								if(triggerdebug && beams[i].shock->last_debug_state != 3)
+								{
 									LOG(" Trigger F-key commands switched. Switch BeamID "  + TOSTRING(i)+ " switched commands of Trigger BeamID " + TOSTRING(beams[shocks[scount].beamid].shock->beamid) + " to cmdShort: F" + TOSTRING(beams[shocks[scount].beamid].shock->trigger_cmdshort) + ", cmdlong: F" + TOSTRING(beams[shocks[scount].beamid].shock->trigger_cmdlong));
+									beams[i].shock->last_debug_state = 3;
+								}
 							}
 						}
 					} 
@@ -2864,16 +2873,22 @@ void Beam::calcShocks2(int beam_i, Real difftoBeamL, Real &k, Real &d, Real dt)
 						if (!commandkey[beams[i].shock->trigger_cmdlong].trigger_cmdkeyblock_state)	// related cmdkey is not blocked
 						 {
 							 commandkey[beams[i].shock->trigger_cmdlong].commandValue = 1;
-							 if(triggerdebug)
+							 if(triggerdebug && beams[i].shock->last_debug_state != 4)
+							 {
 								 LOG(" Trigger Longbound activated. Trigger BeamID " + TOSTRING(i) + " Triggered F" + TOSTRING(beams[i].shock->trigger_cmdlong));
+								 beams[i].shock->last_debug_state = 4;
+							 }
 						 }
 					} else // trigger past short bound
 					{
 						if (!commandkey[beams[i].shock->trigger_cmdshort].trigger_cmdkeyblock_state)	// related cmdkey is not blocked
 						{
 							commandkey[beams[i].shock->trigger_cmdshort].commandValue = 1;
-							if(triggerdebug)
+							if(triggerdebug  && beams[i].shock->last_debug_state != 5)
+							{
 								LOG(" Trigger Shortbound activated. Trigger BeamID " + TOSTRING(i) + " Triggered F" + TOSTRING(beams[i].shock->trigger_cmdshort));
+								beams[i].shock->last_debug_state = 5;
+							}
 						}
 					}
 				}
@@ -2885,8 +2900,11 @@ void Beam::calcShocks2(int beam_i, Real difftoBeamL, Real &k, Real &d, Real dt)
 					{
 						if (beams[scount].shock && beams[scount].shock->flags & SHOCK_FLAG_ISTRIGGER)  // dont mess anything up if the user set the number too big
 						{									
-							if(triggerdebug && beams[scount].shock->trigger_enabled)
+							if(triggerdebug && beams[scount].shock->trigger_enabled && beams[i].shock->last_debug_state != 6)
+							{
 								LOG(" Trigger enabled. Blocker BeamID " + TOSTRING(i) + " disabled trigger " + TOSTRING(scount));
+								beams[i].shock->last_debug_state = 6;
+							}
 							beams[scount].shock->trigger_enabled = true;	// enable the triggers
 						}
 					}
@@ -2894,14 +2912,20 @@ void Beam::calcShocks2(int beam_i, Real difftoBeamL, Real &k, Real &d, Real dt)
 				if (beams[i].shock->flags & SHOCK_FLAG_TRG_CMD_SWITCH && beams[i].shock->trigger_switch_state) // this is a switch that was activated and is back inside boundaries again
 				{
 					beams[i].shock->trigger_switch_state = 0.0f;  //trigger_switch resetted
-					if(triggerdebug)
+					if(triggerdebug && beams[i].shock->last_debug_state != 7)
+					{
 						LOG(" Trigger switch resetted. Switch BeamID " + TOSTRING(i));
+						beams[i].shock->last_debug_state = 7;
+					}
 				} else
 				if (beams[i].shock->flags & SHOCK_FLAG_TRG_CMD_BLOCKER && !commandkey[beams[i].shock->trigger_cmdshort].trigger_cmdkeyblock_state) // this cmdkeyblocker is inside boundaries and cmdkeystate is diabled
 				{
-					if(triggerdebug)
+					commandkey[beams[i].shock->trigger_cmdshort].trigger_cmdkeyblock_state = true; // activate trigger blocking
+					if(triggerdebug && beams[i].shock->last_debug_state != 8)
+					{
 						LOG(" F-key trigger blocked. Blocker BeamID " + TOSTRING(i) + " Blocked F" + TOSTRING(beams[i].shock->trigger_cmdshort));
-						commandkey[beams[i].shock->trigger_cmdshort].trigger_cmdkeyblock_state = true; // activate trigger blocking
+						beams[i].shock->last_debug_state = 8;
+					}
 				}
 			}
 		}

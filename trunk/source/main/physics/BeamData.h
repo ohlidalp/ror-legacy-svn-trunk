@@ -412,6 +412,7 @@ struct shock
 	bool trigger_enabled;           // general trigger,switch and blocker state
 	float trigger_switch_state;     // needed to avoid doubleswitch, bool and timer in one
 	float trigger_boundary_t;       // optional value to tune trigger_switch_state autorelease
+	int last_debug_state;           // smart debug output
 };
 
 struct collcab_rate

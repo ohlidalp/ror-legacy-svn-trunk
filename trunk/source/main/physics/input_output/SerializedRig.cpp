@@ -1556,6 +1556,7 @@ int SerializedRig::loadTruck(String fname, SceneManager *manager, SceneNode *par
 				shocks[free_shock].flags = shockflag;
 				shocks[free_shock].sbd_spring = default_spring;
 				shocks[free_shock].sbd_damp = default_damp;
+				shocks[free_shock].last_debug_state = 0;
 				free_shock++;
 				continue;
 			}
