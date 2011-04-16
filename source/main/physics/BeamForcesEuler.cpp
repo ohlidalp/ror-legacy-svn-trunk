@@ -2016,8 +2016,8 @@ void Beam::calcForcesEuler(int doUpdate, Real dt, int step, int maxstep)
 				float ref2len=ref2.length();
 
 				//simple jitter fix
-				 if (ref1len <= 0.001f) ref1len == 0.0f;
-				 if (ref2len <= 0.001f) ref2len == 0.0f;
+				if (ref1len <= rotators[i].tolerance) ref1len = 0.0f;
+				if (ref2len <= rotators[i].tolerance) ref2len = 0.0f;
 
 				nodes[rotators[i].nodes1[k]].Forces+=(aerror*ref1len*rigidity)*dir1;
 				nodes[rotators[i].nodes2[k]].Forces-=(aerror*ref2len*rigidity)*dir2;

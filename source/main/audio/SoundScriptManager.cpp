@@ -377,7 +377,7 @@ bool SoundScriptTemplate::setParameter(Ogre::StringVector vec)
 //	for (int i=0; i<vec.size(); i++) LOG("SoundScriptManager: Parsing line '"+vec[i]+"'");
 
 	if (vec.size()<1) return false;
-	if (vec[0]==String("trigger_source") && vec.size()>1)
+	if (vec[0]==String("trigger_source"))
 	{
 		if (vec.size()<2) return false;
 		if (vec[1]==String("engine")) {trigger_source=SS_TRIG_ENGINE;return true;};
