@@ -201,11 +201,18 @@ public:
 
 	//values update
 	void trigOnce(int truck, int trig);
+	void trigOnce(Beam *b, int trig);
 	void trigStart(int truck, int trig);
+	void trigStart(Beam *b, int trig);
 	void trigStop(int truck, int trig);
+	void trigStop(Beam *b, int trig);
 	void trigToggle(int truck, int trig);
+	void trigToggle(Beam *b, int trig);
 	bool getTrigState(int truck, int trig);
+	bool getTrigState(Beam *b, int trig);
 	void modulate(int truck, int mod, float value);
+	void modulate(Beam *b, int mod, float value);
+
 	void soundEnable(bool state);
 
 	void setCamera(Vector3 position, Vector3 direction, Vector3 up, Vector3 velocity);
