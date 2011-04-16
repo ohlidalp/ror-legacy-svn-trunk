@@ -26,6 +26,7 @@ along with Rigs of Rods.  If not, see <http://www.gnu.org/licenses/>.
 
 #include "Beam.h"
 #include "Timer.h"
+#include "BeamFactory.h"
 
 using namespace std;
 using namespace Ogre;
@@ -129,8 +130,11 @@ void BeamEngineStats::setup(bool enabled)
 	this->enabled = enabled;
 }
 
-bool BeamEngineStats::updateGUI(float dt, int current_truck, Beam **trucks)
+bool BeamEngineStats::updateGUI(float dt)
 {
+	int current_truck = BeamFactory::getSingleton().getCurrentTruckNumber();
+	Beam **trucks = BeamFactory::getSingleton().getTrucks();
+	
 	updateTimeGUI += dt;
 	if(updateTimeGUI < 5.0f)
 		return true;

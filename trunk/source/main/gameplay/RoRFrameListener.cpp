@@ -283,7 +283,7 @@ void RoRFrameListener::updateGUI(float dt)
 	ow->truckhud->update(dt, curr_truck, mSceneMgr, mCamera, mWindow, mTruckInfoOn);
 
 #ifdef FEAT_TIMING
-	BES.updateGUI(dt, current_truck, trucks);
+	BES.updateGUI(dt);
 #endif
 
 	if (pressure_pressed)
