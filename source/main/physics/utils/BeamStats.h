@@ -139,7 +139,7 @@ private:
 class BeamEngineStats
 {
 public:
-	bool updateGUI(float dt, int current_truck, Beam **trucks);
+	bool updateGUI(float dt);
 	void setup(bool enabled);
 	BeamThreadStats *getClient(int number, int type);
 	static BeamEngineStats & getInstance();
