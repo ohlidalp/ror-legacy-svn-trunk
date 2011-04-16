@@ -87,7 +87,7 @@ public:
 	 * @param dt time passed since the last call to this function in seconds
 	 * @return 0 on success, everything else on error
 	 */
-	int framestep(Ogre::Real dt, Beam **trucks, int free_truck);
+	int framestep(Ogre::Real dt);
 
 	/**
 	 * This enum describes what events are existing. The script can register to receive events.

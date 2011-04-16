@@ -23,6 +23,7 @@ along with Rigs of Rods.  If not, see <http://www.gnu.org/licenses/>.
 #include "ScriptEngine.h"
 #include "Ogre.h"
 #include "RoRFrameListener.h"
+#include "BeamFactory.h"
 
 // AS addons start
 #include "scriptstdstring/scriptstdstring.h"
@@ -554,8 +555,10 @@ int ScriptEngine::loadScriptFile(const char *fileName, string &script, string &h
 	return 1;
 }
 
-int ScriptEngine::framestep(Ogre::Real dt, Beam **trucks, int free_truck)
+int ScriptEngine::framestep(Ogre::Real dt)
 {
+	Beam **trucks = BeamFactory::getSingleton().getTrucks();
+	int free_truck = BeamFactory::getSingleton().getTruckCount();
 	// check for all truck wheels
 	if(coll && wheelEventFunctionPtr >= 0)
 	{
@@ -606,7 +609,7 @@ int ScriptEngine::framestep(Ogre::Real dt, Beam **trucks, int free_truck)
 	}
 
 	// check if current truck is in an event box
-	Beam *truck = mefl->getCurrentTruck();
+	Beam *truck = BeamFactory::getSingleton().getCurrentTruck();
 	if(truck)
 	{
 		eventsource_t *source = coll->isTruckInEventBox(truck);
@@ -901,8 +904,7 @@ float GameScript::getWaterHeight()
 
 Beam *GameScript::getCurrentTruck()
 {
-	if(mefl) return mefl->getCurrentTruck();
-	return 0;
+	return BeamFactory::getSingleton().getCurrentTruck();
 }
 
 float GameScript::getGravity()
@@ -918,22 +920,20 @@ void GameScript::setGravity(float value)
 
 Beam *GameScript::getTruckByNum(int num)
 {
-	if(mefl) return mefl->getTruck(num);
-	return 0;
+	return BeamFactory::getSingleton().getTruck(num);
 }
 
 int GameScript::getNumTrucks()
 {
-	if(mefl) return mefl->getTruckCount();
-	return 0;
+	return BeamFactory::getSingleton().getTruckCount();
 }
 
 int GameScript::getNumTrucksByFlag(int flag)
 {
 	int res = 0;
-	for(int i=0; i< mefl->getTruckCount(); i++)
+	for(int i=0; i< BeamFactory::getSingleton().getTruckCount(); i++)
 	{
-		Beam *truck = mefl->getTruck(i);
+		Beam *truck = BeamFactory::getSingleton().getTruck(i);
 		if(!truck && !flag)
 			res++;
 		if(!truck) continue;
@@ -945,7 +945,7 @@ int GameScript::getNumTrucksByFlag(int flag)
 
 int GameScript::getCurrentTruckNumber()
 {
-	if(mefl) return mefl->getCurrentTruckNumber();
+	if(mefl) return BeamFactory::getSingleton().getCurrentTruckNumber();
 	return -1;
 }
 
@@ -996,7 +996,7 @@ void GameScript::showChooser(string &type, string &instance, string &box)
 
 void GameScript::repairVehicle(string &instance, string &box)
 {
-	mefl->repairTruck(const_cast<char*>(instance.c_str()), const_cast<char*>(box.c_str()));
+	BeamFactory::getSingleton().repairTruck(mefl->getSSM(), mefl->getCollisions(), const_cast<char*>(instance.c_str()), const_cast<char*>(box.c_str()));
 }
 
 void GameScript::destroyObject(const std::string &instanceName)

@@ -43,7 +43,7 @@ public:
 		// Hide plane
 		pPlaneEnt->setVisible(false);
 		//hide WaterOld spray
-		if (eflsingleton) eflsingleton->showspray(false);
+		if (RoRFrameListener::eflsingleton) RoRFrameListener::eflsingleton->showspray(false);
 	}
 	void postRenderTargetUpdate(const RenderTargetEvent& evt)
 	{
@@ -51,7 +51,7 @@ public:
 		pPlaneEnt->setVisible(true);
 		waterSceneMgr->getRenderQueue()->getQueueGroup(RENDER_QUEUE_MAIN)->setShadowsEnabled(true);
 		//restore WaterOld spray
-		if (eflsingleton) eflsingleton->showspray(true);
+		if (RoRFrameListener::eflsingleton) RoRFrameListener::eflsingleton->showspray(true);
 	}
 
 };

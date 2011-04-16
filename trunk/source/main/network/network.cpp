@@ -83,7 +83,7 @@ void *s_receivethreadstart(void* vid)
 Timer Network::timer = Ogre::Timer();
 unsigned int Network::myuid=0;
 
-Network::Network(Beam **btrucks, std::string servername, long sport, RoRFrameListener *efl): lagDataClients(), initiated(false)
+Network::Network(std::string servername, long sport, RoRFrameListener *efl): lagDataClients(), initiated(false)
 {
 	// update factories network objects
 
@@ -104,7 +104,6 @@ Network::Network(Beam **btrucks, std::string servername, long sport, RoRFrameLis
 	myauthlevel = AUTH_NONE;
 	net_instance=this;
 	nickname = "";
-	trucks=btrucks;
 	myuid=0;
 
 	speed_time=0;
@@ -601,8 +600,8 @@ void Network::receivethreadstart()
 			if(header.size != sizeof(int))
 				continue;
 			int quality = *(int *)buffer;
-			if(eflsingleton)
-				eflsingleton->setNetQuality(quality);
+			if(RoRFrameListener::eflsingleton)
+				RoRFrameListener::eflsingleton->setNetQuality(quality);
 			continue;
 		}
 		else if(header.command == MSG2_USER_LEAVE)

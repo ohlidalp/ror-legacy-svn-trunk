@@ -159,9 +159,6 @@ class DOFManager;
 
 class SelectorWindow;
 
-extern RoRFrameListener *eflsingleton;
-
-
 class RoRFrameListener: public FrameListener, public Ogre::WindowEventListener
 {
 	friend class BeamFactory;
@@ -249,7 +246,6 @@ protected:
 	std::vector<paged_geometry_t> pagedGeometry;
 #endif
 	String grassdensityTextureFilename;
-	void updateGrass(Vector3 pos);
 	void initSoftShadows();
 	void initHDR();
 
@@ -270,15 +266,15 @@ public:
 	RoRFrameListener(AppState *parent, RenderWindow* win, Camera* cam, SceneManager* scm, Root* root, bool isEmbedded=false, Ogre::String inputhwnd=0);
 	virtual ~RoRFrameListener();
 
+
+	static RoRFrameListener *eflsingleton;
 	void removeBeam(Beam *);
-	void removeTruck(int truck);
+	
 	void loadObject(const char* name, float px, float py, float pz, float rx, float ry, float rz, SceneNode * bakeNode, const char* instancename, bool enable_collisions=true, int luahandler=-1, const char *type=0, bool uniquifyMaterial=false);
 	void unloadObject(const char* name);
-	void repairTruck(char* inst, char* box);
-	void removeTruck(char* inst, char* box);
 	bool updateEvents(float dt);
 	void initTrucks(bool loadmanual, Ogre::String selected, Ogre::String selectedExtension = Ogre::String(), std::vector<Ogre::String> *truckconfig=0, bool enterTruck=false);
-	void setCurrentTruck(int v);
+	
 
 	// this needs to be public so we can call it manually in embedded mode
 	void windowResized(Ogre::RenderWindow* rw);
@@ -289,7 +285,6 @@ public:
 
 	// Override frameStarted event to process that (don't care about frameEnded)
 	bool frameStarted(const FrameEvent& evt);
-	void recursiveActivation(int j);
 	bool setCameraPositionWithCollision(Ogre::Vector3 newPos);
 	bool checkForActive(int j, bool *sleepyList);
 	bool frameEnded(const FrameEvent& evt);
@@ -307,10 +302,7 @@ public:
 	SceneManager *getSceneMgr() { return mSceneMgr; };
 	RenderWindow *getRenderWindow() { return mWindow; };
 	Collisions *getCollisions() { return collisions; };
-	Beam *getTruck(int number) { return trucks[number]; };
-	int getCurrentTruckNumber() { return current_truck; };
-	int getTruckCount() { return free_truck; };
-	Beam *getCurrentTruck() { return (current_truck<0)?0:trucks[current_truck]; };
+
 	Water *getWater() { return w; };
 	Camera *getCamera() { return mCamera; };
 	int getLoadingState() { return loading_state; };
@@ -319,6 +311,8 @@ public:
 	void loadNetTerrain(char *preselected_map);
 	float mapsizex, mapsizez;
 	bool terrainHasTruckShop;
+
+	void changedCurrentTruck(Beam *previousTruck, Beam *currentTruck);
 
 	float stopTimer();
 	void startTimer();
@@ -358,6 +352,9 @@ public:
 	bool getNetQualityChanged();
 	pthread_mutex_t mutex_data;
 	Radian camRotX, camRotY;
+
+
+	SoundScriptManager* getSSM() { return ssm; };
 private:
 	int net_quality; 
 	bool net_quality_changed; 
@@ -432,14 +429,11 @@ protected:
 #ifdef HAS_EDITOR
 	TruckEditor *trucked;
 #endif
-	Beam *trucks[MAX_TRUCKS];
 	int thread_mode;
 
 	/** adds a truck to the main array
 	  */
-	int getFreeTruckSlot();
-	int free_truck;
-	int current_truck;
+	
 
 	Vector3 persostart;
 	int joyshiftlock;
@@ -461,7 +455,6 @@ protected:
 	MPlatform_Base *mplatform;
 #endif
 
-	static bool fileExists(const char* filename);
 	void processConsoleInput();
 
 	RenderWindow* renderwin;

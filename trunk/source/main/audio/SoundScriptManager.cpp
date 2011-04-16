@@ -53,6 +53,11 @@ SoundScriptManager::SoundScriptManager()
 	ResourceGroupManager::getSingleton()._registerScriptLoader(this);
 }
 
+void SoundScriptManager::trigOnce(Beam *truck, int trig)
+{
+	if(truck) trigOnce(truck, trig);
+}
+
 void SoundScriptManager::trigOnce(int truck, int trig)
 {
 	for (int i=0; i<free_trigs[trig]; i++)
@@ -60,6 +65,11 @@ void SoundScriptManager::trigOnce(int truck, int trig)
 		SoundScriptInstance* inst=trigs[trig+i*SS_MAX_TRIG];
 		if (inst->truck==truck) inst->runOnce();
 	}
+}
+
+void SoundScriptManager::trigStart(Beam *truck, int trig)
+{
+	if(truck) trigStart(truck->trucknum, trig);
 }
 
 void SoundScriptManager::trigStart(int truck, int trig)
@@ -73,6 +83,11 @@ void SoundScriptManager::trigStart(int truck, int trig)
 	}
 }
 
+void SoundScriptManager::trigStop(Beam *truck, int trig)
+{
+	if(truck) trigStop(truck->trucknum, trig);
+}
+
 void SoundScriptManager::trigStop(int truck, int trig)
 {
 	if (!getTrigState(truck, trig)) return;
@@ -84,15 +99,31 @@ void SoundScriptManager::trigStop(int truck, int trig)
 	}
 }
 
+void SoundScriptManager::trigToggle(Beam *truck, int trig)
+{
+	if(truck) trigToggle(truck->trucknum, trig);
+}
+
 void SoundScriptManager::trigToggle(int truck, int trig)
 {
 	if (getTrigState(truck, trig)) trigStop(truck, trig);
 	else trigStart(truck, trig);
 }
 
+bool SoundScriptManager::getTrigState(Beam *truck, int trig)
+{
+	if(truck) return getTrigState(truck->trucknum, trig);
+	return false;
+}
+
 bool SoundScriptManager::getTrigState(int truck, int trig)
 {
 	return statemap[truck*SS_MAX_TRIG+trig];
+}
+
+void SoundScriptManager::modulate(Beam *truck, int mod, float value)
+{
+	if(truck) modulate(truck->trucknum, mod, value);
 }
 
 void SoundScriptManager::modulate(int truck, int mod, float value)
@@ -346,7 +377,7 @@ bool SoundScriptTemplate::setParameter(Ogre::StringVector vec)
 //	for (int i=0; i<vec.size(); i++) LOG("SoundScriptManager: Parsing line '"+vec[i]+"'");
 
 	if (vec.size()<1) return false;
-	if (vec[0]==String("trigger_source"))
+	if (vec[0]==String("trigger_source") && vec.size()>1)
 	{
 		if (vec.size()<2) return false;
 		if (vec[1]==String("engine")) {trigger_source=SS_TRIG_ENGINE;return true;};

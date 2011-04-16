@@ -29,6 +29,7 @@ along with Rigs of Rods.  If not, see <http://www.gnu.org/licenses/>.
 #include "network.h"
 #include "NetworkStreamManager.h"
 #include "BeamFactory.h"
+#include "RoRFrameListener.h"
 #include "ColoredTextAreaOverlayElement.h"
 #include "PlayerColours.h"
 
@@ -39,7 +40,7 @@ using namespace Ogre;
 unsigned int Character::characterCounter=0;
 
 
-Character::Character(Camera *cam,Collisions *c, Network *net, HeightFinder *h, Water *w, MapControl *m, Ogre::SceneManager *scm, int source, unsigned int streamid, int colourNumber, bool remote)
+Character::Character(Camera *cam,Collisions *c, Network *net, HeightFinder *h, Water *w, MapControl *m, Ogre::SceneManager *scm, int source, unsigned int streamid, int colourNumber, bool remote) : personode(0)
 {
 	this->mCamera=cam;
 	this->net=net;
@@ -223,8 +224,9 @@ void Character::setVisible(bool visible)
 {
 	personode->setVisible(visible);
 #ifdef USE_MYGUI 
-	if(map)
-		map->getEntityByName(myName)->setVisibility(visible);
+	// CRASH BELOW
+	//if(map)
+	//	map->getEntityByName(myName)->setVisibility(visible);
 #endif //MYGUI
 }
 
@@ -287,7 +289,7 @@ void Character::update(float dt)
 	if(physicsEnabled && !remote)
 	{
 		// disable character movement when using the free camera mode
-		if(eflsingleton && eflsingleton->cameramode == CAMERA_FREE) return;
+		if(RoRFrameListener::eflsingleton && RoRFrameListener::eflsingleton->cameramode == CAMERA_FREE) return;
 
 		// small hack: if not visible do not apply physics
 		//mode perso

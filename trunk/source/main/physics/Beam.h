@@ -111,10 +111,10 @@ public:
 	//bool frameStarted(const FrameEvent& evt)
 	//this will be called once by frame and is responsible for animation of all the trucks!
 	//the instance called is the one of the current ACTIVATED truck
-	bool frameStep(Real dt, Beam** trucks, int numtrucks);
+	bool frameStep(Real dt);
 	int truckSteps;
-	void calcForcesEuler(int doUpdate, Real dt, int step, int maxsteps, Beam** trucks, int numtrucks);
-	void truckTruckCollisions(Real dt, Beam** trucks, int numtrucks);
+	void calcForcesEuler(int doUpdate, Real dt, int step, int maxsteps);
+	void truckTruckCollisions(Real dt);
 	void calcShocks2(int beam_i, Real difftoBeamL, Real &k, Real &d, Real dt);
 	void calcAnimators(int flagstate, float &cstate, int &div, float timer, float opt1, float opt2, float opt3);
 	//! @}
@@ -126,11 +126,11 @@ public:
 
 	//! @{ user interaction functions
 	void mouseMove(int node, Vector3 pos, float force);
-	void lightsToggle(Beam** trucks, int trucksnum);
-	void tieToggle(Beam** trucks, int trucksnum, int group=-1);
-	void ropeToggle(Beam** trucks, int trucksnum, int group=-1);
-	void hookToggle(Beam** trucks, int trucksnum, int group=-1);
-	void toggleSlideNodeLock( Beam** trucks, int trucksnum, unsigned int curTruck );
+	void lightsToggle();
+	void tieToggle(int group=-1);
+	void ropeToggle(int group=-1);
+	void hookToggle(int group=-1);
+	void toggleSlideNodeLock();
 	void toggleCustomParticles();
 	void toggleAxleLock();	//! diff lock on or off
 	void parkingbrakeToggle();

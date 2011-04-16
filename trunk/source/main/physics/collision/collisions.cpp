@@ -24,6 +24,7 @@ along with Rigs of Rods.  If not, see <http://www.gnu.org/licenses/>.
 #include "errorutils.h"
 #include "language.h"
 #include "ScriptEngine.h"
+#include "BeamFactory.h"
 
 // some gcc fixes
 #if OGRE_PLATFORM == OGRE_PLATFORM_LINUX
@@ -132,7 +133,7 @@ Collisions::Collisions(
 
 	if(debugMode)
 	{
-		debugmo = mefl->getSceneMgr()->createManualObject();
+		debugmo = smgr->createManualObject();
 		debugmo->begin("tracks/debug/collision/triangle", RenderOperation::OT_TRIANGLE_LIST);
 	}
 
@@ -552,7 +553,7 @@ void Collisions::addCollisionBox(SceneNode *tenode, bool rotating, bool virt, fl
 	}
 
 	SceneNode *debugsn = 0;
-	if(debugMode) debugsn = mefl->getSceneMgr()->getRootSceneNode()->createChildSceneNode();
+	if(debugMode) debugsn = smgr->getRootSceneNode()->createChildSceneNode();
 
 
 	//set raw box
@@ -614,7 +615,7 @@ void Collisions::addCollisionBox(SceneNode *tenode, bool rotating, bool virt, fl
 	{
 		debugsn->setPosition(p);
 		// box content
-		ManualObject *mo =  mefl->getSceneMgr()->createManualObject();
+		ManualObject *mo =  smgr->createManualObject();
 		String matName = "tracks/debug/collision/box";
 		if(virt && luahandler == -1)
 			matName = "tracks/debug/eventbox/unused";
@@ -658,7 +659,7 @@ void Collisions::addCollisionBox(SceneNode *tenode, bool rotating, bool virt, fl
 		debugsn->attachObject(mo);
 
 		// the border
-		mo =  mefl->getSceneMgr()->createManualObject();
+		mo =  smgr->createManualObject();
 		mo->begin(matName, Ogre::RenderOperation::OT_LINE_LIST);
 		mo->position(cube_points[0]);
 		mo->position(cube_points[1]);
@@ -700,7 +701,7 @@ void Collisions::addCollisionBox(SceneNode *tenode, bool rotating, bool virt, fl
 			mt->setColor(ColourValue::White);
 			mt->setRenderingDistance(200);
 
-			SceneNode *n2 = mefl->getSceneMgr()->getRootSceneNode()->createChildSceneNode();
+			SceneNode *n2 = smgr->getRootSceneNode()->createChildSceneNode();
 			n2->attachObject(mt);
 			n2->setPosition( coll_box.lo + (coll_box.hi - coll_box.lo) * 0.5f);
 		}
@@ -945,15 +946,16 @@ bool Collisions::collisionCorrect(Vector3 *refpos)
 
 bool Collisions::permitEvent(int filter)
 {
+	Beam *b = BeamFactory::getSingleton().getCurrentTruck();
 	if(filter == EVENT_ALL)
 		return true;
-	else if(filter == EVENT_AVATAR && mefl->getCurrentTruckNumber() == -1)
+	else if(filter == EVENT_AVATAR && !b)
 		return true;
-	else if(filter == EVENT_TRUCK && mefl->getCurrentTruckNumber() != -1 && mefl->getCurrentTruck()->driveable == TRUCK)
+	else if(filter == EVENT_TRUCK && b && b->driveable == TRUCK)
 		return true;
-	else if(filter == EVENT_AIRPLANE && mefl->getCurrentTruckNumber() != -1 && mefl->getCurrentTruck()->driveable == AIRPLANE)
+	else if(filter == EVENT_AIRPLANE && b && b->driveable == AIRPLANE)
 		return true;
-	else if(filter == EVENT_DELETE && mefl->getCurrentTruckNumber() == -1)
+	else if(filter == EVENT_DELETE && !b)
 		return true;
 	return false;
 }
@@ -1399,8 +1401,6 @@ int Collisions::createCollisionDebugVisualization()
 	if(loaded != 0)
 		return -1;
 
-	SceneManager *mSceneMgr = mefl->getSceneMgr();
-
 	// create materials
 	int i = 0;
 	char bname[256];
@@ -1470,8 +1470,8 @@ int Collisions::createCollisionDebugVisualization()
 				String matName = "mat-coll-dbg-"+TOSTRING((int)(percentd*100));
 				String cell_name="("+TOSTRING(cellx)+","+ TOSTRING(cellz)+")";
 
-				ManualObject *mo =  mSceneMgr->createManualObject("collisionDebugVisualization"+cell_name);
-				SceneNode *mo_node = mSceneMgr->getRootSceneNode()->createChildSceneNode("collisionDebugVisualization_node"+cell_name);
+				ManualObject *mo =  smgr->createManualObject("collisionDebugVisualization"+cell_name);
+				SceneNode *mo_node = smgr->getRootSceneNode()->createChildSceneNode("collisionDebugVisualization_node"+cell_name);
 
 				mo->begin(matName, Ogre::RenderOperation::OT_TRIANGLE_LIST);
 
