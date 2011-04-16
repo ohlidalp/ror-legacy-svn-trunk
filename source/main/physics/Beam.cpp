@@ -2832,6 +2832,21 @@ void Beam::calcShocks2(int beam_i, Real difftoBeamL, Real &k, Real &d, Real dt)
 						}
 					}
 				} else
+				if (beams[i].shock->flags & SHOCK_FLAG_TRG_BLOCKER_A) // this is an enabled blocker and inside boundary
+				{
+					for (int scount = i + 1; scount <= i + beams[i].shock->trigger_cmdlong; scount++)   // (cylce blockerbeamID + 1) to (blockerbeamID + beams to release)
+					{
+						if (beams[scount].shock && beams[scount].shock->flags & SHOCK_FLAG_ISTRIGGER)  // dont mess anything up if the user set the number too big
+						{									
+							if(triggerdebug && beams[scount].shock->trigger_enabled && beams[i].shock->last_debug_state != 9)
+							{
+								LOG(" Trigger enabled. Inverted Blocker BeamID " + TOSTRING(i) + " disabled trigger " + TOSTRING(scount));
+								beams[i].shock->last_debug_state = 9;
+							}
+							beams[scount].shock->trigger_enabled = true;	// enable the triggers
+						}
+					}
+				} else
 				if (beams[i].shock->flags & SHOCK_FLAG_TRG_CMD_BLOCKER) // this an enabled cmd-key-blocker and past a boundary
 				{
 					commandkey[beams[i].shock->trigger_cmdshort].trigger_cmdkeyblock_state = false; // Release the cmdKey
@@ -2906,6 +2921,21 @@ void Beam::calcShocks2(int beam_i, Real difftoBeamL, Real &k, Real &d, Real dt)
 								beams[i].shock->last_debug_state = 6;
 							}
 							beams[scount].shock->trigger_enabled = true;	// enable the triggers
+						}
+					}
+				} else
+				if (beams[i].shock->flags & SHOCK_FLAG_TRG_BLOCKER_A) // this is an enabled reverse blocker and past boundary
+				{
+					for (int scount = i + 1; scount <= i + beams[i].shock->trigger_cmdshort; scount++)   // (cylce blockerbeamID +1) to (blockerbeamID + beams tob lock)
+					{
+						if (beams[scount].shock && beams[scount].shock->flags & SHOCK_FLAG_ISTRIGGER)  // dont mess anything up if the user set the number too big
+						{
+							if (triggerdebug && !beams[scount].shock->trigger_enabled && beams[i].shock->last_debug_state != 10)
+							{
+								LOG(" Trigger disabled. Inverted Blocker BeamID " + TOSTRING(i) + " enabled trigger " + TOSTRING(scount));
+								beams[i].shock->last_debug_state = 10;
+							}
+							beams[scount].shock->trigger_enabled = false;	// disable the trigger
 						}
 					}
 				} else
