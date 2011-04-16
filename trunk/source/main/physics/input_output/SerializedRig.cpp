@@ -1476,18 +1476,12 @@ int SerializedRig::loadTruck(String fname, SceneManager *manager, SceneNode *par
 					parser_warning(c, "Triggers limit reached ("+TOSTRING(MAX_SHOCKS)+")");
 					continue;
 				}
-				//hi check (>MAXCOMMANDS) removed because BLOCKERS failed partially )
-				if ((triggershort < 1) || ((triggerlong < 1) && triggerlong !=-1 && triggerlong !=0))
-				{
-					parser_warning(c, "Error: Wrong command-eventnumber (Triggers). Trigger deactivated.");
-					continue;
-				}
 				// options
 				int htype=BEAM_HYDRO;
 				int shockflag = SHOCK_FLAG_NORMAL | SHOCK_FLAG_ISTRIGGER;
 				shocks[free_shock].trigger_enabled = true;
 				bool triggerblocker = false;
-				bool  triggerA = false;
+				bool triggerblocker_inverted = false;
 				bool cmdkeyblock = false;
 				commandkey[triggershort].trigger_cmdkeyblock_state = false;
 				if (triggerlong != -1) commandkey[triggerlong].trigger_cmdkeyblock_state = false;
@@ -1519,13 +1513,32 @@ int SerializedRig::loadTruck(String fname, SceneManager *manager, SceneNode *par
 							sbound = abs(sbound-1);
 							lbound = lbound-1;
 							break;
-						case 'A':	// Blocker that enable/disable other triggers, reversed activation method (auto-ON)
+						case 'A':	// Blocker that enable/disable other triggers, reversed activation method (inverted Blocker style, auto-ON)
 							shockflag |= SHOCK_FLAG_TRG_BLOCKER_A;
-							triggerA = true;
+							triggerblocker_inverted = true;
 							break;
 					}
 					options_pointer++;
 				}
+
+				if (!triggerblocker && !triggerblocker_inverted)
+				{
+					// this is no Trigger-Blocker, make the full check
+					if ((triggershort < 1 || triggershort > MAX_COMMANDS) || ((triggerlong < 1 || triggerlong > MAX_COMMANDS) && triggerlong !=-1 && triggerlong !=0)) 
+					{
+						parser_warning(c, "Error: Wrong command-eventnumber (Triggers). Trigger deactivated.");
+						continue;
+					}
+				} else
+				{
+					// this is a Trigger-Blocker, make special check
+					if (triggershort < 0 || triggerlong < 0)
+					{
+						parser_warning(c, "Error: Wrong command-eventnumber (Triggers). Trigger-Blocker deactivated.");
+						continue;
+					}
+				}
+
 				int pos=add_beam(&nodes[id1], &nodes[id2], manager, parent, htype, default_break,    0.0f, 0.0f, detacher_group_state, -1.0, sbound, lbound, 1.0f);
 				beams[pos].bounded=SHOCK2;
 
@@ -1534,7 +1547,7 @@ int SerializedRig::loadTruck(String fname, SceneManager *manager, SceneNode *par
 				beams[pos].shock = &shocks[free_shock];
 				shocks[free_shock].beamid = pos;
 				shocks[free_shock].trigger_switch_state = 0.0f;   // used as bool and countdowntimer, dont touch!
-				if (!triggerblocker && !triggerA) // this is no triggerblocker (A/B)
+				if (!triggerblocker && !triggerblocker_inverted) // this is no triggerblocker (A/B)
 				{
 					shocks[free_shock].trigger_cmdshort = triggershort;
 					if (triggerlong != -1)	// this is a trigger
@@ -1543,7 +1556,7 @@ int SerializedRig::loadTruck(String fname, SceneManager *manager, SceneNode *par
 						shockflag |= SHOCK_FLAG_TRG_CMD_BLOCKER;
 				} else // this is a triggerblocker
 				{
-					if (!triggerA)
+					if (!triggerblocker_inverted)
 					{
 						//normal BLOCKER
 						shockflag |= SHOCK_FLAG_TRG_BLOCKER;
@@ -1551,7 +1564,7 @@ int SerializedRig::loadTruck(String fname, SceneManager *manager, SceneNode *par
 						shocks[free_shock].trigger_cmdlong = triggerlong;
 					} else
 					{
-						//reversed BLOCKER
+						//inverted BLOCKER
 						shockflag |= SHOCK_FLAG_TRG_BLOCKER_A;
 						shocks[free_shock].trigger_cmdshort = triggershort;
 						shocks[free_shock].trigger_cmdlong = triggerlong;
