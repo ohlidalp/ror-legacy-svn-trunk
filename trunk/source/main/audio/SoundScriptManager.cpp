@@ -55,7 +55,7 @@ SoundScriptManager::SoundScriptManager()
 
 void SoundScriptManager::trigOnce(Beam *truck, int trig)
 {
-	if(truck) trigOnce(truck, trig);
+	if(truck) trigOnce(truck->trucknum, trig);
 }
 
 void SoundScriptManager::trigOnce(int truck, int trig)
