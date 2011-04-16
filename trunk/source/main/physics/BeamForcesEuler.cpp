@@ -2001,7 +2001,7 @@ void Beam::calcForcesEuler(int doUpdate, Real dt, int step, int maxstep, Beam** 
 				float aerror=asin((th1.normalisedCopy()).dotProduct(ref2.normalisedCopy()));
 				//			mWindow->setDebugText("Error:"+ TOSTRING(aerror));
 				//exert forces
-				float rigidity=10000000.0;
+				float rigidity=rotators[i].force;
 				Vector3 dir1=ref1.crossProduct(axis);
 				//dir1.normalise();
 				dir1=fast_normalise(dir1);
@@ -2010,6 +2010,11 @@ void Beam::calcForcesEuler(int doUpdate, Real dt, int step, int maxstep, Beam** 
 				dir2=fast_normalise(dir2);
 				float ref1len=ref1.length();
 				float ref2len=ref2.length();
+
+				//simple jitter fix
+				 if (ref1len <= 0.001f) ref1len == 0.0f;
+				 if (ref2len <= 0.001f) ref2len == 0.0f;
+
 				nodes[rotators[i].nodes1[k]].Forces+=(aerror*ref1len*rigidity)*dir1;
 				nodes[rotators[i].nodes2[k]].Forces-=(aerror*ref2len*rigidity)*dir2;
 				//symmetric

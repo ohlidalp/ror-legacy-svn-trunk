@@ -115,6 +115,7 @@ enum TRUCK_SECTIONS {
 	BTS_ENGOPTION,
 	BTS_BRAKES,
 	BTS_ROTATORS,
+	BTS_ROTATORS2,
 	BTS_SCREWPROPS,
 	BTS_GUISETTINGS,
 	BTS_MINIMASS,
@@ -206,6 +207,8 @@ static const float NODE_VOLUME_COEF_DEFAULT     = 1.0f;
 static const float NODE_SURFACE_COEF_DEFAULT    = 1.0f;
 static const float NODE_LOADWEIGHT_DEFAULT      = -1.0f;
 static const float SUPPORT_BEAM_LIMIT_DEFAULT   = 4.0f;
+static const float ROTATOR_FORCE_DEFAULT        = 10000000.0f;
+static const float ROTATOR_TOLERANCE_DEFAULT    = 0.0f;
 
 /* Enumerations */
 enum {
@@ -613,6 +616,8 @@ struct rotator
 	int axis2;
 	float angle;
 	float rate;
+	float force;
+	float tolerance;
 };
 
 struct flare
