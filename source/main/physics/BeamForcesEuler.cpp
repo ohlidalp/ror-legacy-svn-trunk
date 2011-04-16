@@ -28,11 +28,15 @@ along with Rigs of Rods.  If not, see <http://www.gnu.org/licenses/>.
 #include "airbrake.h"
 #include "BeamStats.h"
 #include "CmdKeyInertia.h"
+#include "BeamFactory.h"
 
 extern float mrtime;
 
-void Beam::calcForcesEuler(int doUpdate, Real dt, int step, int maxstep, Beam** trucks, int numtrucks)
+void Beam::calcForcesEuler(int doUpdate, Real dt, int step, int maxstep)
 {
+	Beam** trucks = BeamFactory::getSingleton().getTrucks();
+	int numtrucks = BeamFactory::getSingleton().getTruckCount();
+
 	// do not calc anything if we are going to get deleted
 	if(deleting) return;
 

@@ -34,7 +34,7 @@ class BeamFactory : public StreamableFactory < BeamFactory, Beam >
 	friend class Network;
 	friend class RoRFrameListener;
 	public:
-	BeamFactory(RoRFrameListener *efl, Beam **trucks, SceneManager *manager, SceneNode *parent, RenderWindow* win, Network *net, float *mapsizex, float *mapsizez, Collisions *icollisions, HeightFinder *mfinder, Water *w, Camera *pcam);
+	BeamFactory(SceneManager *manager, SceneNode *parent, RenderWindow* win, Network *net, float *mapsizex, float *mapsizez, Collisions *icollisions, HeightFinder *mfinder, Water *w, Camera *pcam);
 	~BeamFactory();
 
 	Beam *createLocal(int slotid);
@@ -44,8 +44,33 @@ class BeamFactory : public StreamableFactory < BeamFactory, Beam >
 	Beam *createRemoteInstance(stream_reg_t *reg);
 
 	Beam *getBeam(int source, int streamid); // used by character
+
+	int getTruckCount() { return free_truck; };
+	Beam *getTruck(int number) { return trucks[number]; };
+	Beam *getCurrentTruck() { return (current_truck<0)?0:trucks[current_truck]; };
+	int getCurrentTruckNumber() { return current_truck; };
+	void recalcGravityMasses();
+	void repairTruck(SoundScriptManager *ssm, Collisions *collisions, char* inst, char* box);
+	void removeTruck(Collisions *collisions, char* inst, char* box);
+	void removeTruck(int truck);
+	void removeCurrentTruck();
+	void setCurrentTruck(int v);
+	bool enterRescueTruck();
+
+	void updateVisual(float dt);
+
+	void calcPhysics(float dt);
+
+	Beam **getTrucks() { return trucks; };
+	int updateSimulation(float dt);
+
+	// beam engine functions
+	bool checkForActive(int j, bool *sleepyList);
+	void recursiveActivation(int j);
+	void checkSleepingState();
+
+
 protected:
-	RoRFrameListener *efl;
 	Ogre::SceneManager *manager;
 	Ogre::SceneNode *parent;
 	Ogre::RenderWindow* win;
@@ -55,8 +80,12 @@ protected:
 	HeightFinder *mfinder;
 	Water *w;
 	Ogre::Camera *pcam;
-	Beam **trucks;
-
+	int thread_mode;
+	
+	Beam *trucks[MAX_TRUCKS];
+	int free_truck;
+	int current_truck;
+	int getFreeTruckSlot();
 
 	// functions used by friends
 	void netUserAttributesChanged(int source, int streamid);
@@ -65,6 +94,18 @@ protected:
 
 	bool syncRemoteStreams();
 	void updateGUI();
+
+	void _deleteTruck(Beam *b);
+
+
+	pthread_mutex_t done_count_mutex;
+	pthread_cond_t done_count_cv;
+	pthread_mutex_t work_mutex;
+	pthread_cond_t work_cv;
+	int done_count;
+	pthread_t threads[32];
+
+
 };
 
 

@@ -56,7 +56,6 @@ private:
 	pthread_cond_t send_work_cv;
 	client_t clients[MAX_PEERS];
 	pthread_mutex_t clients_mutex;
-	Beam** trucks;
 	std::string mySname;
 	long mySport;
 	char sendthreadstart_buffer[MAX_MESSAGE_LENGTH];
@@ -76,7 +75,7 @@ private:
 	bool initiated;
 public:
 
-	Network(Beam **btrucks, std::string servername, long sport, RoRFrameListener *efl);
+	Network(std::string servername, long sport, RoRFrameListener *efl);
 	~Network();
 
 	// messaging functions

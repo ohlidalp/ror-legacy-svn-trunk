@@ -59,6 +59,7 @@ along with Rigs of Rods.  If not, see <http://www.gnu.org/licenses/>.
 #include "BeamStats.h"
 #include "Skidmark.h"
 #include "CmdKeyInertia.h"
+#include "BeamFactory.h"
 #include "ColoredTextAreaOverlayElement.h"
 #ifdef USE_ANGELSCRIPT
 #include "ScriptEngine.h"
@@ -95,10 +96,6 @@ Beam::~Beam()
 	// TODO: IMPROVE below: delete/destroy prop entities, etc
 
 	deleting = true;
-
-	// Very Important: remove this truck out of the trucks array, otherwise segfault
-	if (eflsingleton) eflsingleton->removeBeam(this);
-
 
 	// hide all meshes, prevents deleting stuff while drawing
 	this->setMeshVisibility(false);
@@ -586,7 +583,7 @@ Beam::Beam(int tnum, SceneManager *manager, SceneNode *parent, RenderWindow* win
 	netbuffersize=nodebuffersize+free_wheel*4;
 	updateVisual();
 	//stop lights
-	lightsToggle(0, 0);
+	lightsToggle();
 
 	updateFlares(0);
 	updateProps();
@@ -1089,7 +1086,7 @@ void Beam::calcNetwork()
 
 	// set lights
 	if (((flagmask&NETMASK_LIGHTS)!=0) != lights)
-		lightsToggle(0,0);
+		lightsToggle();
 	if (((flagmask&NETMASK_BEACONS)!=0) != beacon)
 		beaconsToggle();
 
@@ -1837,11 +1834,11 @@ void Beam::threadentry(int id)
 				//				if (trucks[t]->engine) trucks[t]->engine->update(dt/(Real)steps, i==0);
 				if (trucks[t]->state!=SLEEPING && trucks[t]->state!=NETWORKED && trucks[t]->state!=RECYCLE)
 				{
-					trucks[t]->calcForcesEuler(i==0, dtperstep, i, steps, trucks, numtrucks);
+					trucks[t]->calcForcesEuler(i==0, dtperstep, i, steps);
 					//trucks[t]->position=trucks[t]->aposition;
 				}
 			}
-			truckTruckCollisions(dtperstep, trucks, numtrucks);
+			truckTruckCollisions(dtperstep);
 		}
 		ffforce=affforce/steps;
 		ffhydro=affhydro/steps;
@@ -1859,7 +1856,7 @@ void Beam::threadentry(int id)
 
 		for (int i=0; i<tsteps; i++)
 		{
-			this->calcForcesEuler(i==0, dtperstep, i, tsteps, ttrucks, tnumtrucks);
+			this->calcForcesEuler(i==0, dtperstep, i, tsteps);
 		}
 		ffforce = affforce / tsteps;
 		ffhydro = affhydro / tsteps;
@@ -1871,7 +1868,7 @@ void Beam::threadentry(int id)
 //bool frameStarted(const FrameEvent& evt)
 //this will be called once by frame and is responsible for animation of all the trucks!
 //the instance called is the one of the current ACTIVATED truck
-bool Beam::frameStep(Real dt, Beam** trucks, int numtrucks)
+bool Beam::frameStep(Real dt)
 {
 	BES_GFX_START(BES_GFX_framestep);
 	/*LOG("BEAM: frame starting dt="+TOSTRING(dt)
@@ -1944,6 +1941,9 @@ bool Beam::frameStep(Real dt, Beam** trucks, int numtrucks)
 
 	BES_GFX_STOP(BES_GFX_framestep);
 
+	Beam **trucks = BeamFactory::getSingleton().getTrucks();
+	int numtrucks = BeamFactory::getSingleton().getTruckCount();
+
 	fasted=1;
 	slowed=1;
 	stabsleep-=dt;
@@ -2008,11 +2008,11 @@ bool Beam::frameStep(Real dt, Beam** trucks, int numtrucks)
 					//							if (trucks[t]->engine) trucks[t]->engine->update(dt/(Real)steps, i==0);
 					if (trucks[t]->state!=SLEEPING && trucks[t]->state!=NETWORKED && trucks[t]->state!=RECYCLE)
 					{
-						trucks[t]->calcForcesEuler(i==0, dtperstep, i, steps, trucks, numtrucks);
+						trucks[t]->calcForcesEuler(i==0, dtperstep, i, steps);
 //							trucks[t]->position=trucks[t]->aposition;
 					}
 				}
-				truckTruckCollisions(dtperstep, trucks, numtrucks);
+				truckTruckCollisions(dtperstep);
 			}
 			//smooth
 			for (t=0; t<numtrucks; t++)
@@ -2965,10 +2965,13 @@ void Beam::calcShocks2(int beam_i, Real difftoBeamL, Real &k, Real &d, Real dt)
 }
 
 //truck-truck collisions
-void Beam::truckTruckCollisions(Real dt, Beam** trucks, int numtrucks)
+void Beam::truckTruckCollisions(Real dt)
 {
 	if(!pointCD) return;
 	BES_START(BES_CORE_Contacters);
+
+	Beam** trucks = BeamFactory::getSingleton().getTrucks();
+	int numtrucks = BeamFactory::getSingleton().getTruckCount();
 
 	float trwidth;
 
@@ -3330,12 +3333,16 @@ void Beam::prepareInside(bool inside)
 }
 
 
-void Beam::lightsToggle(Beam** trucks, int trucksnum)
+void Beam::lightsToggle()
 {
 	// no lights toggling in skeleton mode because of possible bug with emissive texture
 	if(skeleton)
 		return;
 	int i;
+
+	Beam **trucks = BeamFactory::getSingleton().getTrucks();
+	int trucksnum = BeamFactory::getSingleton().getTruckCount();
+
 	//export light command
 	if (trucks!=0 && state==ACTIVATED && forwardcommands)
 	{
@@ -3343,7 +3350,7 @@ void Beam::lightsToggle(Beam** trucks, int trucksnum)
 		for (i=0; i<trucksnum; i++)
 		{
 			if(!trucks[i]) continue;
-			if (trucks[i]->state==DESACTIVATED && trucks[i]->importcommands) trucks[i]->lightsToggle(trucks, trucksnum);
+			if (trucks[i]->state==DESACTIVATED && trucks[i]->importcommands) trucks[i]->lightsToggle();
 		}
 	}
 	lights=!lights;
@@ -4318,9 +4325,12 @@ void Beam::cabFade(float amount)
 	}
 }
 
-void Beam::tieToggle(Beam** trucks, int trucksnum, int group)
+void Beam::tieToggle(int group)
 {
 	//export tie commands
+	Beam **trucks = BeamFactory::getSingleton().getTrucks();
+	int trucksnum = BeamFactory::getSingleton().getTruckCount();
+
 	if (state==ACTIVATED && forwardcommands)
 	{
 		int i;
@@ -4328,7 +4338,7 @@ void Beam::tieToggle(Beam** trucks, int trucksnum, int group)
 		{
 			if(!trucks[i]) continue;
 			if (trucks[i]->state==DESACTIVATED && trucks[i]->importcommands)
-				trucks[i]->tieToggle(trucks, trucksnum, group);
+				trucks[i]->tieToggle(group);
 		}
 	}
 
@@ -4412,8 +4422,11 @@ void Beam::tieToggle(Beam** trucks, int trucksnum, int group)
 #endif
 }
 
-void Beam::ropeToggle(Beam** trucks, int trucksnum, int group)
+void Beam::ropeToggle(int group)
 {
+	Beam **trucks = BeamFactory::getSingleton().getTrucks();
+	int trucksnum = BeamFactory::getSingleton().getTruckCount();
+
 	// iterate over all ropes
 	for(std::vector <rope_t>::iterator it = ropes.begin(); it!=ropes.end(); it++)
 	{
@@ -4475,8 +4488,11 @@ void Beam::ropeToggle(Beam** trucks, int trucksnum, int group)
 	}
 }
 
-void Beam::hookToggle(Beam** trucks, int trucksnum, int group)
+void Beam::hookToggle(int group)
 {
+	Beam **trucks = BeamFactory::getSingleton().getTrucks();
+	int trucksnum = BeamFactory::getSingleton().getTruckCount();
+
 	// iterate over all hooks
 	for(std::vector <hook_t>::iterator it = hooks.begin(); it!=hooks.end(); it++)
 	{

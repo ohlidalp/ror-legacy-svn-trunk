@@ -42,12 +42,15 @@ along with Rigs of Rods.  If not, see <http://www.gnu.org/licenses/>.
 
 #include "Beam.h"
 #include "Ogre.h"
+#include "BeamFactory.h"
 #include <vector>
 
 // ug... BAD PERFORMNCE, BAD!! 
-void Beam::toggleSlideNodeLock( Beam** trucks, int trucksnum, unsigned int curTruck )
+void Beam::toggleSlideNodeLock()
 {
-	
+	int trucksnum = BeamFactory::getSingleton().getTruckCount();
+	int curTruck = BeamFactory::getSingleton().getCurrentTruckNumber();
+
 	// for every slide node on this truck
 	for(std::vector< SlideNode >::iterator itNode = mSlideNodes.begin(); itNode != mSlideNodes.end(); itNode++)
 	{
@@ -71,7 +74,7 @@ void Beam::toggleSlideNodeLock( Beam** trucks, int trucksnum, unsigned int curTr
 				  ( curTruck == i && itNode->getAttachRule(ATTACH_SELF) ) ) )
 				continue;
 			
-			current = getClosestRailOnTruck( trucks[i], (*itNode) );
+			current = getClosestRailOnTruck( BeamFactory::getSingleton().getTruck(i), (*itNode) );
 			if( current.second < closest.second ) closest = current;
 			
 		} // this many

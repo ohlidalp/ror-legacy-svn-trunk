@@ -328,10 +328,10 @@ int GUI_Multiplayer::update()
 		}
 	}
 	
-	if(eflsingleton && eflsingleton->getNetQuality(true) != 0)
+	if(RoRFrameListener::eflsingleton && RoRFrameListener::eflsingleton->getNetQuality(true) != 0)
 	{
 		netmsgwin->setVisible(true);
-	} else if(eflsingleton && eflsingleton->getNetQuality(true) == 0)
+	} else if(RoRFrameListener::eflsingleton && RoRFrameListener::eflsingleton->getNetQuality(true) == 0)
 	{
 		netmsgwin->setVisible(false);
 	}
@@ -342,12 +342,12 @@ int GUI_Multiplayer::update()
 void GUI_Multiplayer::clickUserGoIcon(MyGUI::WidgetPtr sender)
 {
 	int uid = StringConverter::parseInt(sender->getUserString("uid"));
-	if (!eflsingleton)
+	if (!RoRFrameListener::eflsingleton)
 		return;
-	if(eflsingleton->getNetPointToUID() == uid)
-		eflsingleton->setNetPointToUID(-1);
+	if(RoRFrameListener::eflsingleton->getNetPointToUID() == uid)
+		RoRFrameListener::eflsingleton->setNetPointToUID(-1);
 	else
-		eflsingleton->setNetPointToUID(uid);
+		RoRFrameListener::eflsingleton->setNetPointToUID(uid);
 }
 
 void GUI_Multiplayer::clickInfoIcon(MyGUI::WidgetPtr sender)

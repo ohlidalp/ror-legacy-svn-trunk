@@ -22,6 +22,7 @@ along with Rigs of Rods.  If not, see <http://www.gnu.org/licenses/>.
 #include "luasystem.h"
 #include "Settings.h"
 #include "OverlayWrapper.h"
+#include "BeamFactory.h"
 
 #ifdef USE_MYGUI
 #include "SelectorWindow.h"
@@ -389,7 +390,7 @@ int LuaSystem::repairVehicle(lua_State *lua)
 {
 	const char *inst = lua_tostring (lua, 1);
 	const char *box = lua_tostring (lua, 2);
-	mefl->repairTruck((char*)inst, (char*)box);
+	BeamFactory::getSingleton().repairTruck(mefl->getSSM(), mefl->getCollisions(), (char*)inst, (char*)box);
 	return 0;
 }
 
@@ -397,7 +398,7 @@ int LuaSystem::removeVehicle(lua_State *lua)
 {
 	const char *inst = lua_tostring (lua, 1);
 	const char *box = lua_tostring (lua, 2);
-	mefl->removeTruck((char*)inst, (char*)box);
+	BeamFactory::getSingleton().removeTruck(mefl->getCollisions(), (char*)inst, (char*)box);
 	return 0;
 }
 
