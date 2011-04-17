@@ -5143,6 +5143,9 @@ int Beam::loadTruck2(Ogre::String filename, Ogre::SceneManager *manager, Ogre::S
 
 void Beam::updateAI(float dt)
 {
+	if(driveable != TRUCK || RoRFrameListener::eflsingleton->cameramode != CAMERA_FREE)
+		return;
+
 	// start engine if not running
 	if(engine && !engine->running)
 		engine->start();
@@ -5203,31 +5206,26 @@ void Beam::updateAI(float dt)
 	maxvelo = std::max(0.2f, 1-fabs(mYaw)) * 50;
 
 
-
-	if(mVectorToTarget.length() > minCameraRadius * 2.0f)
+	if(engine)
 	{
-		if(WheelSpeed < maxvelo)
-			engine->autoSetAcc(0.8f);
-		else
-			engine->autoSetAcc(0);
-		brake = 0;
-	} else
-	{
-		engine->autoSetAcc(0);
-		brake = brakeforce;
-
-		mrtime += dt;
-		if(mrtime>0.5)
+		if(mVectorToTarget.length() > minCameraRadius * 2.0f)
 		{
-			mrtime = 0;
-			lightsToggle();
+			if(WheelSpeed < maxvelo)
+				engine->autoSetAcc(0.8f);
+			else
+				engine->autoSetAcc(0);
+			brake = 0;
+		} else
+		{
+			engine->autoSetAcc(0);
+			brake = brakeforce;
+
+			mrtime += dt;
+			if(mrtime>0.5)
+			{
+				mrtime = 0;
+				lightsToggle();
+			}
 		}
 	}
-
-
-	// give some gas
-	/*
-	*/
-
-
 }
