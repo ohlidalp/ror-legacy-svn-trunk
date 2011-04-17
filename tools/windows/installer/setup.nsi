@@ -1,9 +1,14 @@
 !define PRODUCT_NAME "Rigs of Rods"
-!define PRODUCT_VERSION "0.38.20"
+!define PRODUCT_VERSION "0.38.23"
+!define PRODUCT_FULLNAME "${PRODUCT_NAME} ${PRODUCT_VERSION}"
 !define PRODUCT_PUBLISHER "Rigs of Rods Team"
 !define PRODUCT_WEB_SITE "http://www.rigsofrods.com"
-!define PRODUCT_UNINST_KEY "Software\Microsoft\Windows\CurrentVersion\Uninstall\${PRODUCT_NAME}"
+
+!define PRODUCT_UNINST_KEY "Software\Microsoft\Windows\CurrentVersion\Uninstall\${PRODUCT_FULLNAME}"
 !define PRODUCT_UNINST_ROOT_KEY "HKLM"
+
+; we want to be admin to install this
+RequestExecutionLevel admin
 
 !include "FileAssociation.nsh"
 
@@ -202,9 +207,9 @@ CRCCheck on
 
 ; MUI end ------
 
-Name "${PRODUCT_NAME} ${PRODUCT_VERSION}"
+Name "${PRODUCT_FULLNAME}"
 OutFile "RoR-Setup-${PRODUCT_VERSION}.exe"
-InstallDir "$PROGRAMFILES\Rigs of Rods ${PRODUCT_VERSION}"
+InstallDir "$PROGRAMFILES\${PRODUCT_FULLNAME}"
 
 
 ShowInstDetails show
@@ -262,17 +267,20 @@ Section "!RoR" SEC02
 	SetOutPath "$INSTDIR"
 	SetOverwrite try
 
+	; data
+	File /r /x .svn installerfiles\*
+
+	# user path
+	SetShellVarContext current
+	SetOutPath "$DOCUMENTS\Rigs of Rods\"
+	File /r /x .svn installerskeleton\*
+
+	; clean cache directory
 	Banner::show /NOUNLOAD "cleaning cache directory"
     ; this will empty that directory (but not delete it)
     !insertmacro RemoveFilesAndSubDirs "$DOCUMENTS\Rigs of Rods\cache\"
 	Banner::destroy
-  
-	; docs
-	#File ..\..\doc\keysheet.pdf
-	#File "..\..\doc\Things you can do in Rigs of Rods.pdf"
-	; data
-	File /r /x .svn installerfiles\*
-
+	
 	# add version text file
 	${WriteToFile} "${PRODUCT_VERSION}" "$INSTDIR\version.txt"
 
@@ -289,15 +297,16 @@ Function "LaunchPostInstallation"
 FunctionEnd
 
 Section -AdditionalIcons
+	SetShellVarContext current
 	SetOutPath $INSTDIR
 	WriteIniStr "$INSTDIR\forums.url" "InternetShortcut" "URL" "http://forum.rigsofrods.com"
-	CreateDirectory "$SMPROGRAMS\Rigs of Rods ${PRODUCT_VERSION}"
-	CreateShortCut "$SMPROGRAMS\Rigs of Rods ${PRODUCT_VERSION}\Rigs of Rods Forums.lnk" "$INSTDIR\forums.url"
-	CreateShortCut "$SMPROGRAMS\Rigs of Rods ${PRODUCT_VERSION}\Uninstall.lnk" "$INSTDIR\uninst.exe"
-	CreateShortCut "$SMPROGRAMS\Rigs of Rods ${PRODUCT_VERSION}\Rigs of Rods.lnk" "$INSTDIR\RoRConfig.exe"
-	CreateShortCut "$SMPROGRAMS\Rigs of Rods ${PRODUCT_VERSION}\Updater.lnk" "$INSTDIR\updater.exe"
-	CreateShortCut "$SMPROGRAMS\Rigs of Rods ${PRODUCT_VERSION}\Key Sheet.lnk" "$INSTDIR\keysheet.pdf"
-	CreateShortCut "$SMPROGRAMS\Rigs of Rods ${PRODUCT_VERSION}\Manual.lnk" "$INSTDIR\Things_you_can_do_in_Rigs_of_Rods.pdf"
+	CreateDirectory "$SMPROGRAMS\${PRODUCT_FULLNAME}"
+	CreateShortCut "$SMPROGRAMS\${PRODUCT_FULLNAME}\Rigs of Rods Forums.lnk" "$INSTDIR\forums.url"
+	CreateShortCut "$SMPROGRAMS\${PRODUCT_FULLNAME}\Uninstall.lnk" "$INSTDIR\uninst.exe"
+	CreateShortCut "$SMPROGRAMS\${PRODUCT_FULLNAME}\Rigs of Rods.lnk" "$INSTDIR\RoRConfig.exe"
+	CreateShortCut "$SMPROGRAMS\${PRODUCT_FULLNAME}\Updater.lnk" "$INSTDIR\updater.exe"
+	CreateShortCut "$SMPROGRAMS\${PRODUCT_FULLNAME}\Key Sheet.lnk" "$INSTDIR\keysheet.pdf"
+	CreateShortCut "$SMPROGRAMS\${PRODUCT_FULLNAME}\Manual.lnk" "$INSTDIR\Things_you_can_do_in_Rigs_of_Rods.pdf"
 SectionEnd
 
 Section -Post
@@ -323,7 +332,7 @@ Section -Post
 	WriteRegStr HKCR "rorserver\DefaultIcon" "" ""
 	WriteRegStr HKCR "rorserver\shell\open\command" "" '"$INSTDIR\RoR.exe" -wd="$INSTDIR" -join="%1"'
 	WriteRegStr ${PRODUCT_UNINST_ROOT_KEY} "${PRODUCT_UNINST_KEY}" "Publisher" "${PRODUCT_PUBLISHER}"
-	SetRebootFlag true	
+	SetRebootFlag true
 SectionEnd
 
 
@@ -341,23 +350,26 @@ yes:
 FunctionEnd
 
 Section Uninstall
-	DeleteRegKey HKCR "rorserver"
-	DeleteRegKey HKCU "Software\RigsOfRods\"
-	
-	Delete "$INSTDIR\uninst.exe"
-	RMDir  "/r" "$INSTDIR"
+	; remove installed files
+	;Delete "$INSTDIR\uninst.exe"
+	RMDir /r "$INSTDIR\*.*"   
+	RMDir "$INSTDIR"
 
-	RMDir  "/r" "$SMPROGRAMS\Rigs of Rods ${PRODUCT_VERSION}"
-	Delete "$STARTMENU.lnk"
-	RMDir  "$INSTDIR"
-	DeleteRegKey ${PRODUCT_UNINST_ROOT_KEY} "${PRODUCT_UNINST_KEY}"
-	 
-	${unregisterExtension} ".mesh" "Ogre Mesh"
-	
 	SetShellVarContext current
-	MessageBox MB_YESNO|MB_ICONEXCLAMATION "Remove RoR user content in $DOCUMENTS/Rigs of Rods?" IDYES removedoc IDNO end
+	Delete "$SMPROGRAMS\${PRODUCT_FULLNAME}\*.*"
+	RmDir  "$SMPROGRAMS\${PRODUCT_FULLNAME}"
+	
+	; remove registry entries
+	DeleteRegKey ${PRODUCT_UNINST_ROOT_KEY} "${PRODUCT_UNINST_KEY}"
+	DeleteRegKey HKCU "Software\RigsOfRods\"
+	DeleteRegKey HKCR "rorserver"
+	
+	${unregisterExtension} ".mesh" "Ogre Mesh"
+
+	SetShellVarContext current
+	MessageBox MB_YESNO|MB_ICONEXCLAMATION "Remove RoR user content in $DOCUMENTS\Rigs of Rods?" IDYES removedoc IDNO end
 removedoc:
-	MessageBox MB_YESNO|MB_ICONEXCLAMATION "Are you really sure to remove all user content in $DOCUMENTS/Rigs of Rods?" IDYES removedoc2 IDNO end
+	MessageBox MB_YESNO|MB_ICONEXCLAMATION "Are you really sure to remove all user content in $DOCUMENTS\Rigs of Rods?" IDYES removedoc2 IDNO end
 removedoc2:
  	RMDir  "/r" "$DOCUMENTS\Rigs of Rods"
 end:	

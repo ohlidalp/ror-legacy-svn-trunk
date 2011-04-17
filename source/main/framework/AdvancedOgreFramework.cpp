@@ -99,7 +99,16 @@ bool OgreFramework::initOgre(Ogre::String name, Ogre::String hwnd, Ogre::String 
 		return false;
 
 	// load RoR.cfg directly after setting up paths
-	SETTINGS.loadSettings(SSETTING("Config Root")+"RoR.cfg");
+	try
+	{
+		SETTINGS.loadSettings(SSETTING("Config Root")+"RoR.cfg");
+	} catch(Ogre::Exception& e)
+	{
+		String url = "http://wiki.rigsofrods.com/index.php?title=Error_" + TOSTRING(e.getNumber())+"#"+e.getSource();
+		showOgreWebError("A fatal exception has occured!", e.getFullDescription(), url);
+		exit(1);
+	}
+
 
 	String logFilename   = SSETTING("Log Path") + name + Ogre::String(".log");
 	String pluginsConfig = SSETTING("plugins.cfg");
