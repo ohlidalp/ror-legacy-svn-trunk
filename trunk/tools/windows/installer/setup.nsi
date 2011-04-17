@@ -1,11 +1,19 @@
 !define PRODUCT_NAME "Rigs of Rods"
-!define PRODUCT_VERSION "0.38.23"
+
+!define PRODUCT_VERSION_MAJOR "0"
+!define PRODUCT_VERSION_MINOR "38"
+!define PRODUCT_VERSION_PATCH "23"
+
+!define PRODUCT_VERSION "${PRODUCT_VERSION_MAJOR}.${PRODUCT_VERSION_MINOR}.${PRODUCT_VERSION_PATCH}"
+
 !define PRODUCT_FULLNAME "${PRODUCT_NAME} ${PRODUCT_VERSION}"
 !define PRODUCT_PUBLISHER "Rigs of Rods Team"
 !define PRODUCT_WEB_SITE "http://www.rigsofrods.com"
 
 !define PRODUCT_UNINST_KEY "Software\Microsoft\Windows\CurrentVersion\Uninstall\${PRODUCT_FULLNAME}"
 !define PRODUCT_UNINST_ROOT_KEY "HKLM"
+
+!include "FileFunc.nsh"
 
 ; we want to be admin to install this
 RequestExecutionLevel admin
@@ -204,13 +212,17 @@ CRCCheck on
 
 ; Reserve files
 !insertmacro MUI_RESERVEFILE_INSTALLOPTIONS
-
 ; MUI end ------
 
 Name "${PRODUCT_FULLNAME}"
 OutFile "RoR-Setup-${PRODUCT_VERSION}.exe"
 InstallDir "$PROGRAMFILES\${PRODUCT_FULLNAME}"
 
+!macro CreateInternetShortcut FILENAME URL ICONFILE ICONINDEX
+WriteINIStr "${FILENAME}.url" "InternetShortcut" "URL" "${URL}"
+WriteINIStr "${FILENAME}.url" "InternetShortcut" "IconFile" "${ICONFILE}"
+WriteINIStr "${FILENAME}.url" "InternetShortcut" "IconIndex" "${ICONINDEX}"
+!macroend
 
 ShowInstDetails show
 ShowUnInstDetails show
@@ -299,14 +311,17 @@ FunctionEnd
 Section -AdditionalIcons
 	SetShellVarContext current
 	SetOutPath $INSTDIR
-	WriteIniStr "$INSTDIR\forums.url" "InternetShortcut" "URL" "http://forum.rigsofrods.com"
+	
 	CreateDirectory "$SMPROGRAMS\${PRODUCT_FULLNAME}"
-	CreateShortCut "$SMPROGRAMS\${PRODUCT_FULLNAME}\Rigs of Rods Forums.lnk" "$INSTDIR\forums.url"
 	CreateShortCut "$SMPROGRAMS\${PRODUCT_FULLNAME}\Uninstall.lnk" "$INSTDIR\uninst.exe"
 	CreateShortCut "$SMPROGRAMS\${PRODUCT_FULLNAME}\Rigs of Rods.lnk" "$INSTDIR\RoRConfig.exe"
 	CreateShortCut "$SMPROGRAMS\${PRODUCT_FULLNAME}\Updater.lnk" "$INSTDIR\updater.exe"
 	CreateShortCut "$SMPROGRAMS\${PRODUCT_FULLNAME}\Key Sheet.lnk" "$INSTDIR\keysheet.pdf"
 	CreateShortCut "$SMPROGRAMS\${PRODUCT_FULLNAME}\Manual.lnk" "$INSTDIR\Things_you_can_do_in_Rigs_of_Rods.pdf"
+
+	!insertmacro CreateInternetShortcut "$SMPROGRAMS\${PRODUCT_FULLNAME}\Forums" "http://www.rigsofrods.com/forum.php" "$InstDir\cog_go.ico" "0"
+	!insertmacro CreateInternetShortcut "$SMPROGRAMS\${PRODUCT_FULLNAME}\Beginners Guide" "http://www.rigsofrods.com/wiki/pages/Beginner%27s_Guide" "$InstDir\forums.ico" "0"
+	
 SectionEnd
 
 Section -Post
@@ -317,11 +332,34 @@ Section -Post
 	${registerExtension} "$INSTDIR\RoRMeshViewer.exe" ".mesh" "Ogre Mesh"
 
 	WriteUninstaller "$INSTDIR\uninst.exe"
-	WriteRegStr ${PRODUCT_UNINST_ROOT_KEY} "${PRODUCT_UNINST_KEY}" "DisplayName" "$(^Name)"
-	WriteRegStr ${PRODUCT_UNINST_ROOT_KEY} "${PRODUCT_UNINST_KEY}" "UninstallString" "$INSTDIR\uninst.exe"
+	; add software to windows uninstaller
+	
+	WriteRegStr ${PRODUCT_UNINST_ROOT_KEY} "${PRODUCT_UNINST_KEY}" "DisplayIcon" "$INSTDIR\RoR.exe"
+	WriteRegStr ${PRODUCT_UNINST_ROOT_KEY} "${PRODUCT_UNINST_KEY}" "DisplayName" "${PRODUCT_FULLNAME}"
 	WriteRegStr ${PRODUCT_UNINST_ROOT_KEY} "${PRODUCT_UNINST_KEY}" "DisplayVersion" "${PRODUCT_VERSION}"
+	WriteRegStr ${PRODUCT_UNINST_ROOT_KEY} "${PRODUCT_UNINST_KEY}" "InstallLocation" "$INSTDIR"
+	
+	
+	${GetSize} "$INSTDIR" "/S=0K" $0 $1 $2
+	IntFmt $0 "0x%08X" $0
+	WriteRegDWORD ${PRODUCT_UNINST_ROOT_KEY} "${PRODUCT_UNINST_KEY}" "EstimatedSize" "$0"
+
+	WriteRegDWORD ${PRODUCT_UNINST_ROOT_KEY} "${PRODUCT_UNINST_KEY}" "NoModify" "1"
+	WriteRegDWORD ${PRODUCT_UNINST_ROOT_KEY} "${PRODUCT_UNINST_KEY}" "NoRepair" "1"
+	WriteRegDWORD ${PRODUCT_UNINST_ROOT_KEY} "${PRODUCT_UNINST_KEY}" "WindowsInstaller" "0"
+	WriteRegDWORD ${PRODUCT_UNINST_ROOT_KEY} "${PRODUCT_UNINST_KEY}" "VersionMajor" "${PRODUCT_VERSION_MAJOR}"
+	WriteRegDWORD ${PRODUCT_UNINST_ROOT_KEY} "${PRODUCT_UNINST_KEY}" "VersionMinor" "${PRODUCT_VERSION_MINOR}"
+	
+	 
+	WriteRegStr ${PRODUCT_UNINST_ROOT_KEY} "${PRODUCT_UNINST_KEY}" "UninstallString" "$\"$INSTDIR\uninst.exe$\""
+	WriteRegStr ${PRODUCT_UNINST_ROOT_KEY} "${PRODUCT_UNINST_KEY}" "QuietUninstallString" "$\"$INSTDIR\uninst.exe$\" /S"
+	WriteRegStr ${PRODUCT_UNINST_ROOT_KEY} "${PRODUCT_UNINST_KEY}" "HelpLink" "http://www.rigsofrods.com/forums/95-Support"
 	WriteRegStr ${PRODUCT_UNINST_ROOT_KEY} "${PRODUCT_UNINST_KEY}" "URLInfoAbout" "${PRODUCT_WEB_SITE}"
+	WriteRegStr ${PRODUCT_UNINST_ROOT_KEY} "${PRODUCT_UNINST_KEY}" "URLUpdateInfo" "http://www.rigsofrods.com/wiki/pages/Changelog"
 	WriteRegStr ${PRODUCT_UNINST_ROOT_KEY} "${PRODUCT_UNINST_KEY}" "Publisher" "${PRODUCT_PUBLISHER}"
+	WriteRegStr ${PRODUCT_UNINST_ROOT_KEY} "${PRODUCT_UNINST_KEY}" "Contact" "support@rigsofrods.com"
+	WriteRegStr ${PRODUCT_UNINST_ROOT_KEY} "${PRODUCT_UNINST_KEY}" "Comments" "Soft Body Physics Sandbox Game"
+	WriteRegStr ${PRODUCT_UNINST_ROOT_KEY} "${PRODUCT_UNINST_KEY}" "Readme" ""
 
 	; add some registry info
 	WriteRegStr HKCU "Software\RigsOfRods\" "directory" "$INSTDIR"
@@ -331,7 +369,6 @@ Section -Post
 	WriteRegStr HKCR "rorserver" "Url Protocol" ""
 	WriteRegStr HKCR "rorserver\DefaultIcon" "" ""
 	WriteRegStr HKCR "rorserver\shell\open\command" "" '"$INSTDIR\RoR.exe" -wd="$INSTDIR" -join="%1"'
-	WriteRegStr ${PRODUCT_UNINST_ROOT_KEY} "${PRODUCT_UNINST_KEY}" "Publisher" "${PRODUCT_PUBLISHER}"
 	SetRebootFlag true
 SectionEnd
 
