@@ -63,7 +63,7 @@ public:
 	void move(Ogre::Vector3 v);
 	int setBeamCoupling(bool enabled, Beam *truck=0);
 	
-	void update(float dt);
+	void update(float dt, bool inputDisabled=false);
 	Ogre::SceneNode *getSceneNode();
 
 	void setAngle(float angle) { persoangle = angle; };

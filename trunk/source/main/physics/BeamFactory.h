@@ -58,6 +58,7 @@ class BeamFactory : public StreamableFactory < BeamFactory, Beam >
 	bool enterRescueTruck();
 
 	void updateVisual(float dt);
+	void updateAI(float dt);
 
 	void calcPhysics(float dt);
 

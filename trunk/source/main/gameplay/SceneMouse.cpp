@@ -69,6 +69,14 @@ bool SceneMouse::mouseMoved(const OIS::MouseEvent& _arg)
 		MyGUI::PointerManager::getInstance().setPointer("hand");
 #endif // USE_MYGUI
 		return true;
+	} else if(rfl->cameramode == CAMERA_FREE)
+	{
+		rfl->getCamera()->yaw(Degree(-(float)ms.X.rel * 0.13f));
+		rfl->getCamera()->pitch(Degree(-(float)ms.Y.rel * 0.13f));
+#ifdef USE_MYGUI
+		MyGUI::PointerManager::getInstance().setPointer("hand");
+#endif // USE_MYGUI
+		return true;
 	}
 	return false;
 }
