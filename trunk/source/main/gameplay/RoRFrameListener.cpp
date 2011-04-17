@@ -6080,7 +6080,7 @@ bool RoRFrameListener::setCameraPositionWithCollision(Vector3 newPos)
 bool RoRFrameListener::frameEnded(const FrameEvent& evt)
 {
 	// TODO: IMPROVE STATS
-	if(ow) ow->updateStats();
+	if(ow && mStatsOn) ow->updateStats();
 
 #if OGRE_PLATFORM == OGRE_PLATFORM_WIN32
 		/*
