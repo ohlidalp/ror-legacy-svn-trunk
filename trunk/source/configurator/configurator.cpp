@@ -641,6 +641,8 @@ bool MyApp::filesystemBootstrap()
 	UserPath = conv(SSETTING("User Path"));
 	ProgramPath = conv(SSETTING("Program Path"));
 
+	/*
+	//old code: the installer copied the dir now
 	//skeleton
 	wxFileName tsk=wxFileName(ProgramPath, wxEmptyString);
 	tsk.AppendDir(wxT("skeleton"));
@@ -677,6 +679,17 @@ bool MyApp::filesystemBootstrap()
 	//okay, the folder exists
 	//copy recursively the skeleton
 	recurseCopy(SkeletonPath, UserPath);
+	*/
+
+	if (!wxFileName::DirExists(UserPath))
+	{
+		wxString warning = _("Rigs of Rods User directory missing:\n") + UserPath + _("\n\nIt is required to start RoR.\nPlease reinstall Rigs of Rods in order to restore it.");
+		wxString caption = _("error upon loading RoR user directory");
+		wxMessageDialog *w = new wxMessageDialog(NULL, warning, caption, wxOK|wxICON_ERROR|wxSTAY_ON_TOP, wxDefaultPosition);
+		w->ShowModal();
+		delete(w);
+		exit(1);
+	}
 
 	return true;
 }
