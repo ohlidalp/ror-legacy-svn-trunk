@@ -570,6 +570,17 @@ void BeamFactory::updateVisual(float dt)
 	}
 }
 
+void BeamFactory::updateAI(float dt)
+{
+	for (int t=0; t<free_truck; t++)
+	{
+		if(!trucks[t]) continue;
+		
+		trucks[t]->updateAI(dt);
+	}
+}
+
+
 void BeamFactory::calcPhysics(float dt)
 {
 	int t=0;

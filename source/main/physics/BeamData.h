@@ -250,7 +250,8 @@ enum {
 	TRUCK,          //!< its a truck
 	AIRPLANE,       //!< its an airplane
 	BOAT,           //!< its a boat
-	MACHINE         //!< its a machine
+	MACHINE,        //!< its a machine
+	AI,             //!< machine controlled by an Artificial Intelligence
 };
 enum {
 	DRY,            //!< node is dry

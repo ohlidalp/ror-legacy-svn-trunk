@@ -1897,8 +1897,8 @@ bool RoRFrameListener::updateEvents(float dt)
 	// update characters
 	if(loading_state==ALL_LOADED && net)
 		CharacterFactory::getSingleton().updateCharacters(dt);
-	else if(loading_state==ALL_LOADED && !net && cameramode != CAMERA_FREE)
-		person->update(dt);
+	else if(loading_state==ALL_LOADED && !net)
+		person->update(dt, (cameramode == CAMERA_FREE));
 
 	// no event handling during chatting!
 	if(chatting)
@@ -5122,6 +5122,7 @@ void RoRFrameListener::initTrucks(bool loadmanual, Ogre::String selected, Ogre::
 		} else
 		{
 			Beam *b = BeamFactory::getSingleton().createLocal(Vector3(truckx, trucky, truckz), Quaternion::ZERO, selectedchr, 0, false, flaresMode, truckconfig);
+
 			if(b && enterTruck)
 			{
 				BeamFactory::getSingleton().setCurrentTruck(b->trucknum);
@@ -5869,9 +5870,6 @@ void RoRFrameListener::moveCamera(float dt)
 	}
 }
 
-#define isnan(x) (x!=x)
-
-
 bool RoRFrameListener::updateAnimatedObjects(float dt)
 {
 	if(animatedObjects.size() == 0)
@@ -5976,6 +5974,10 @@ bool RoRFrameListener::frameStarted(const FrameEvent& evt)
 	if (loading_state==ALL_LOADED)
 	{
 		BeamFactory::getSingleton().updateVisual(dt);
+
+		// add some example AI
+		if(loadedTerrain == "simple.terrn")
+			BeamFactory::getSingleton().updateAI(dt);
 	}
 
 	if(!updateEvents(dt))

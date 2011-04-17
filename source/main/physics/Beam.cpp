@@ -55,6 +55,7 @@ along with Rigs of Rods.  If not, see <http://www.gnu.org/licenses/>.
 #include "Settings.h"
 #include "PositionStorage.h"
 #include "network.h"
+#include "OverlayWrapper.h"
 #include "PointColDetector.h"
 #include "BeamStats.h"
 #include "Skidmark.h"
@@ -592,7 +593,7 @@ Beam::Beam(int tnum, SceneManager *manager, SceneNode *parent, RenderWindow* win
 	addPressure(0.0);
 	//thread start
 	//get parameters
-	if (SSETTING("Threads")=="1 (Standard CPU)")thread_mode=THREAD_MONO;
+	if (SSETTING("Threads")=="1 (Single Core CPU)")thread_mode=THREAD_MONO;
 	if (SSETTING("Threads")=="2 (Hyper-Threading or Dual core CPU)") thread_mode=THREAD_HT;
 	if (SSETTING("Threads")=="3 (multi core CPU, one thread per beam)") thread_mode=THREAD_HT2;
 
@@ -632,6 +633,7 @@ Beam::Beam(int tnum, SceneManager *manager, SceneNode *parent, RenderWindow* win
 	{
 		// just create ONE thread for this beam
 		int rc;
+		i=0;
 		rc=pthread_create(&threads[i], NULL, threadstart, (void*)(free_tb-1));
 		if (rc) LOG("BEAM: Can not start a thread");
 
@@ -5137,4 +5139,95 @@ int Beam::loadTruck2(Ogre::String filename, Ogre::SceneManager *manager, Ogre::S
 	LOG("BEAM: truck memory used: " + TOSTRING(mem)  + " B (" + TOSTRING(mem/1024)  + " kB)");
 	LOG("BEAM: truck memory allocated: " + TOSTRING(memr)  + " B (" + TOSTRING(memr/1024)  + " kB)");
 	return res;
+}
+
+void Beam::updateAI(float dt)
+{
+	// start engine if not running
+	if(engine && !engine->running)
+		engine->start();
+
+	Ogre::Vector3 TargetPosition = mCamera->getPosition();
+	TargetPosition.y=0;
+	Ogre::Quaternion TargetOrientation = Quaternion::ZERO;
+
+	Ogre::Vector3 mAgentPosition        = position;
+	Ogre::Quaternion mAgentOrientation  = Quaternion(Radian(getHeadingDirectionAngle()), Vector3::NEGATIVE_UNIT_Y);
+    mAgentOrientation.normalise();
+
+	/*
+	// this is for debugging purposes
+	static SceneNode *n = 0;
+	if(!n)
+	{
+		Entity *e = tsm->createEntity("axes.mesh");
+		n = tsm->getRootSceneNode()->createChildSceneNode();
+		n->attachObject(e);
+	}
+	n->setPosition(mAgentPosition);
+	n->setOrientation(mAgentOrientation);
+	*/
+	
+	Ogre::Vector3 mVectorToTarget       = TargetPosition - mAgentPosition; // A-B = B->A
+    mAgentPosition.normalise();
+	mAgentPosition.y=0;
+
+    Ogre::Vector3 mAgentHeading         = mAgentOrientation * mAgentPosition;
+    Ogre::Vector3 mTargetHeading        = TargetOrientation * TargetPosition;
+    mAgentHeading.normalise();
+    mTargetHeading.normalise();
+
+    // Orientation control - Ogre::Vector3::UNIT_Y is common up vector.
+    Ogre::Vector3 mAgentVO        = mAgentOrientation.Inverse() * Ogre::Vector3::UNIT_Y;
+    Ogre::Vector3 mTargetVO       = TargetOrientation * Ogre::Vector3::UNIT_Y;
+
+    // Compute new torque scalar (-1.0 to 1.0) based on heading vector to target.
+    Ogre::Vector3 mSteeringForce = mAgentOrientation.Inverse() * mVectorToTarget;
+    mSteeringForce.normalise();
+
+    float mYaw    = mSteeringForce.x;
+    float mPitch  = mSteeringForce.y;
+    float mRoll   = mTargetVO.getRotationTo( mAgentVO ).getRoll().valueRadians();
+
+	/*
+	String txt = "AI:"+TOSTRING(mSteeringForce);
+	RoRFrameListener::eflsingleton->getOverlayWrapper()->flashMessage(txt, 1, -1);
+	*/
+
+	// actually steer
+	hydrodircommand = mYaw;
+
+	// accelerate / brake
+	float maxvelo = 1;
+	
+	maxvelo = std::max(0.2f, 1-fabs(mYaw)) * 50;
+
+
+
+	if(mVectorToTarget.length() > minCameraRadius * 2.0f)
+	{
+		if(WheelSpeed < maxvelo)
+			engine->autoSetAcc(0.8f);
+		else
+			engine->autoSetAcc(0);
+		brake = 0;
+	} else
+	{
+		engine->autoSetAcc(0);
+		brake = brakeforce;
+
+		mrtime += dt;
+		if(mrtime>0.5)
+		{
+			mrtime = 0;
+			lightsToggle();
+		}
+	}
+
+
+	// give some gas
+	/*
+	*/
+
+
 }
