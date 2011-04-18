@@ -2138,7 +2138,7 @@ int SerializedRig::loadTruck(String fname, SceneManager *manager, SceneNode *par
 			}
 			else if (c.mode == BTS_MESHWHEELS2)
 			{
-				//parse meshwheels
+				//parse meshwheels2
 				char meshw[256];
 				char texb[256];
 				float radius, rimradius, width, mass, spring, damp;
@@ -4932,7 +4932,7 @@ void SerializedRig::addWheel(SceneManager *manager, SceneNode *parent, Real radi
 			add_beam(&nodes[node1], &nodes[nodebase+i*2], manager, parent, BEAM_INVISIBLE, default_break, wspring, wdamp, DEFAULT_DETACHER_GROUP, -1.0, 0.66, 0.15);
 			add_beam(&nodes[node2], &nodes[nodebase+i*2+1], manager, parent, BEAM_INVISIBLE, default_break, wspring, wdamp, DEFAULT_DETACHER_GROUP, -1.0, 0.66, 0.15);
 			add_beam(&nodes[node2], &nodes[nodebase+i*2], manager, parent, BEAM_INVISIBLE, default_break, wspring, wdamp, DEFAULT_DETACHER_GROUP);
-			add_beam(&nodes[node1], &nodes[nodebase+i*2], manager, parent, BEAM_INVISIBLE, default_break, wspring, wdamp, DEFAULT_DETACHER_GROUP);
+			add_beam(&nodes[node1], &nodes[nodebase+i*2+1], manager, parent, BEAM_INVISIBLE, default_break, wspring, wdamp, DEFAULT_DETACHER_GROUP);
 			//reinforcement (tire tread)
 			add_beam(&nodes[nodebase+i*2], &nodes[nodebase+i*2+1], manager, parent, BEAM_INVISIBLE, default_break, default_spring, default_damp, DEFAULT_DETACHER_GROUP);
 			add_beam(&nodes[nodebase+i*2], &nodes[nodebase+((i+1)%rays)*2], manager, parent, BEAM_INVISIBLE, default_break, default_spring, default_damp, DEFAULT_DETACHER_GROUP);
