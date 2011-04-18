@@ -1912,7 +1912,7 @@ int SerializedRig::loadTruck(String fname, SceneManager *manager, SceneNode *par
 				id2 = parse_node_number(c, options[1]);
 				ratio = StringConverter::parseReal(options[2]);
 				String optionStr = options[3];
-				Ogre::StringVector optionArgs = Ogre::StringUtil::split(optionStr, "|");
+				Ogre::StringVector optionArgs = Ogre::StringUtil::split(optionStr, "|:");
 
 				int htype=BEAM_HYDRO;
 
@@ -1950,6 +1950,9 @@ int SerializedRig::loadTruck(String fname, SceneManager *manager, SceneNode *par
 				free_hydro++;
 				beams[pos].Lhydro=beams[pos].L;
 				beams[pos].hydroRatio=ratio;
+				// set the limits to something with sense by default
+				beams[pos].shortbound = 0.99999f;
+				beams[pos].longbound = 1000000.0f;
 
 				// parse the rest
 				for(unsigned int i=0;i<optionArgs.size();i++)
@@ -2023,8 +2026,21 @@ int SerializedRig::loadTruck(String fname, SceneManager *manager, SceneNode *par
 					else if (arg == "torque")         { beam->animFlags |= (ANIM_FLAG_TORQUE); }
 					else if (arg == "throttleboat")   { beam->animFlags |= (ANIM_FLAG_BTHROTTLE); }
 					else if (arg == "rudderboat")     { beam->animFlags |= (ANIM_FLAG_BRUDDER); }
-
-					if (beam->animFlags == 0)
+					else if (arg == "shortlimit")
+					{
+						i++;
+						String arg2 = optionArgs[i];
+						StringUtil::trim(arg2);
+						beams[pos].shortbound = StringConverter::parseReal(arg2);
+					}
+					else if (arg == "longlimit")
+					{
+						i++;
+						String arg2 = optionArgs[i];
+						StringUtil::trim(arg2);
+						beams[pos].longbound = StringConverter::parseReal(arg2);
+					}
+					if (beam->animFlags == 0 && (arg != "shortlimit" || arg != "longlimit"))
 						parser_warning(c, "Failed to identify source.");
 					//else
 					//	parser_warning(c, "Animator source set: with flag "+TOSTRING(beams[pos].animFlags));

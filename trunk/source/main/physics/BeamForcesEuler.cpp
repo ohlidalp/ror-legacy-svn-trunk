@@ -1623,7 +1623,20 @@ void Beam::calcForcesEuler(int doUpdate, Real dt, int step, int maxstep)
 
 			if (!(beams[hydro[i]].hydroFlags & HYDRO_FLAG_SPEED))
 				hydrodirwheeldisplay=cstate;
-			beams[hydro[i]].L=beams[hydro[i]].Lhydro*(1.0-cstate*beams[hydro[i]].hydroRatio);
+
+			float factor = 1.0-cstate*beams[hydro[i]].hydroRatio;
+
+			// check and apply animators limits if set
+			if(flagstate)
+			{
+				if (factor < 1.0f - beams[hydro[i]].shortbound)
+					factor = 1.0f - beams[hydro[i]].shortbound;
+				if (factor > 1.0f + beams[hydro[i]].longbound)
+					factor = 1.0f + beams[hydro[i]].longbound;
+			}
+
+			beams[hydro[i]].L=beams[hydro[i]].Lhydro * factor;
+
 		}
 	}
 
