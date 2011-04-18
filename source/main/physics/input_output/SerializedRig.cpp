@@ -330,7 +330,7 @@ int SerializedRig::loadTruck(String fname, SceneManager *manager, SceneNode *par
 	modehistory.clear();
 
 	int savedmode = BTS_NONE;
-	
+		
 	// some temp varialbes
 	int leftlight=0;
 	int rightlight=0;
@@ -344,6 +344,7 @@ int SerializedRig::loadTruck(String fname, SceneManager *manager, SceneNode *par
 
 	// load truck configuration settings
 	bool enable_background_loading = BSETTING("Background Loading");
+	bool enable_advanced_deformation = false;
 
 	parser_warning(c, "Start of truck loading: " + filename);
 	String group = "";
@@ -765,7 +766,7 @@ int SerializedRig::loadTruck(String fname, SceneManager *manager, SceneNode *par
 
 			if (c.line == "enable_advanced_deformation")
 			{
-				// TODO: FIX
+				enable_advanced_deformation = true;
 				continue;
 			}
 
@@ -1079,6 +1080,11 @@ int SerializedRig::loadTruck(String fname, SceneManager *manager, SceneNode *par
 				if (default_deform<0) default_deform=BEAM_DEFORM;
 				if (default_break<0) default_break=BEAM_BREAK;
 				if (default_beam_diameter<0) default_beam_diameter=DEFAULT_BEAM_DIAMETER;
+
+				// get the old 400k deformation limit for trucks with beams and set_beam_defaults based on old physics (pre beamv2)
+				if (!enable_advanced_deformation && default_deform < BEAM_DEFORM)
+					default_deform=BEAM_DEFORM;
+
 				if (tmpdefault_plastic_coef>=0.0f)
 				{
 					beam_creak=0.0f;
