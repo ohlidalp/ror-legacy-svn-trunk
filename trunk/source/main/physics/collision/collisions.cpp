@@ -805,14 +805,15 @@ bool Collisions::envokeScriptCallback(collision_box_t *cbox, node_t *node)
 #ifdef USE_ANGELSCRIPT
 		int ret = ScriptEngine::getSingleton().envokeCallback(eventsources[cbox->eventsourcenum].luahandler, &eventsources[cbox->eventsourcenum], node);
 		if(ret == 0)
+		{
 			handled=true;
+			last_called_cbox = cbox;
+		}
 #endif //USE_ANGELSCRIPT
 #ifdef USE_LUA
 		if(!handled)
 			lua->spawnEvent(cbox->eventsourcenum, &eventsources[cbox->eventsourcenum]);
 #endif // USE_LUA
-
-		last_called_cbox = cbox;
 	}
 	return handled;
 }
