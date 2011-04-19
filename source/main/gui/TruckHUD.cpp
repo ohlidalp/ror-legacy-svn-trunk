@@ -245,7 +245,10 @@ bool TruckHUD::update(float dt, Beam *truck, SceneManager *mSceneMgr, Camera* mC
 		truck->cameranodecount=0;
 		float longacc=accv.dotProduct((truck->nodes[truck->cameranodepos[0]].RelPosition-truck->nodes[truck->cameranodedir[0]].RelPosition).normalisedCopy());
 		float latacc=accv.dotProduct((truck->nodes[truck->cameranodepos[0]].RelPosition-truck->nodes[truck->cameranoderoll[0]].RelPosition).normalisedCopy());
-		sprintf(geesstr, "Gees: long.: %1.2fg lat.: %1.2fg", longacc/9.8, latacc/9.8);
+		Ogre::Vector3 upv=(truck->nodes[truck->cameranodepos[0]].RelPosition-truck->nodes[truck->cameranodedir[0]].RelPosition).crossProduct(-(truck->nodes[truck->cameranodepos[0]].RelPosition-truck->nodes[truck->cameranoderoll[0]].RelPosition));
+		upv.normalise();
+		float vertacc=(fabs(DEFAULT_GRAVITY))-(accv.dotProduct((truck->nodes[truck->cameranodepos[0]].RelPosition-(truck->nodes[truck->cameranodepos[0]].RelPosition + upv)).normalisedCopy()));
+		sprintf(geesstr, "Gees: Vertical %1.2fg // Saggital %1.2fg // Lateral %1.2fg", vertacc/(fabs(DEFAULT_GRAVITY)), longacc/(fabs(DEFAULT_GRAVITY)), latacc/(fabs(DEFAULT_GRAVITY)));
 		descl = OverlayManager::getSingleton().getOverlayElement("tracks/TruckInfoBox/Gees");
 		descl->setCaption(geesstr);
 		checkOverflow(descl);
