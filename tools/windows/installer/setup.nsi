@@ -317,9 +317,9 @@ SectionEnd
 
 ; section descriptions
 ;Language strings
-LangString DESC_RoRBaseGame ${LANG_ENGLISH} "Rigs of Rods Base - The main simulation"
-LangString DESC_RoRContentPack ${LANG_ENGLISH} "Rigs of Rods Content Pack - will be downloaded from the internet"
-LangString DESC_RoRServer ${LANG_ENGLISH} "Rigs of Rods Multiplayer Server - if you want to host Multiplayer games"
+LangString DESC_RoRBaseGame ${LANG_ENGLISH} "Rigs of Rods Base - The main simulation, includes Multiplayer client"
+LangString DESC_RoRContentPack ${LANG_ENGLISH} "Rigs of Rods Content Pack - will be downloaded"
+LangString DESC_RoRServer ${LANG_ENGLISH} "Rigs of Rods Multiplayer Server - if you want to host Multiplayer games yourself - will be downloaded"
 
 ;Assign language strings to sections
 !insertmacro MUI_FUNCTION_DESCRIPTION_BEGIN
@@ -413,10 +413,11 @@ FunctionEnd
 
 Section Uninstall
 	; remove installed files
-	;Delete "$INSTDIR\uninst.exe"
 	RMDir /r "$INSTDIR\*.*"   
 	RMDir "$INSTDIR"
 
+	!insertmacro MUI_STARTMENU_GETFOLDER Application $StartMenuFolder
+	
 	SetShellVarContext current
 	Delete "$SMPROGRAMS\$StartMenuFolder\*.*"
 	RmDir  "$SMPROGRAMS\$StartMenuFolder"
@@ -425,6 +426,8 @@ Section Uninstall
 	DeleteRegKey ${PRODUCT_UNINST_ROOT_KEY} "${PRODUCT_UNINST_KEY}"
 	DeleteRegKey HKCU "Software\RigsOfRods\"
 	DeleteRegKey HKCR "rorserver"
+	
+	DeleteRegKey HKLM "${ROR_REGISTRY_ENTRY}"
 	
 	${unregisterExtension} ".mesh" "Ogre Mesh"
 
