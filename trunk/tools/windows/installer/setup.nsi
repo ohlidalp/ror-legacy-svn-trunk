@@ -34,7 +34,6 @@ RequestExecutionLevel admin
 ; include macros we are going to use
 !include "FileAssociation.nsh"
 !include "utils.nsh"
-!include "zipdll.nsh"
 
 Var StartMenuFolder
 
@@ -58,8 +57,8 @@ InstType "minimal"
 VIAddVersionKey /LANG=${LANG_ENGLISH} "ProductName" "${PRODUCT_NAME}"
 VIAddVersionKey /LANG=${LANG_ENGLISH} "Comments" "The Rigs of Rods softbody simulation"
 VIAddVersionKey /LANG=${LANG_ENGLISH} "CompanyName" "www.rigsofrods.com"
-;VIAddVersionKey /LANG=${LANG_ENGLISH} "LegalTrademarks" ""
-;VIAddVersionKey /LANG=${LANG_ENGLISH} "LegalCopyright" ""
+VIAddVersionKey /LANG=${LANG_ENGLISH} "LegalTrademarks" "www.rigsofrods.com"
+VIAddVersionKey /LANG=${LANG_ENGLISH} "LegalCopyright" "www.rigsofrods.com"
 VIAddVersionKey /LANG=${LANG_ENGLISH} "FileDescription" "${PRODUCT_FULLNAME} Installer"
 VIAddVersionKey /LANG=${LANG_ENGLISH} "FileVersion" "${PRODUCT_VERSION}"
 VIAddVersionKey /LANG=${LANG_ENGLISH} "ProductVersion" "${PRODUCT_VERSION}"
@@ -100,7 +99,6 @@ VIProductVersion "${PRODUCT_VERSION}.0" ; hacky add .0 to stay compatible with w
 ; Finish page
 !define MUI_FINISHPAGE_NOAUTOCLOSE
 !define MUI_FINISHPAGE_RUN
-;!define MUI_FINISHPAGE_RUN "$INSTDIR\rortoolkit.bat"
 ;!define MUI_FINISHPAGE_RUN_PARAMETERS ""
 ;!define MUI_FINISHPAGE_RUN_NOTCHECKED
 ;!define MUI_FINISHPAGE_SHOWREADME "$INSTDIR\Example.file"
@@ -260,32 +258,66 @@ Section /o "Content Pack" RoRContentPack
 	SetShellVarContext current
 	SetOutPath "$DOCUMENTS\Rigs of Rods\"
 
-	!define URLTARGET  "0.37/content-pack-0.37.zip"
-	!define TARGETFILE "$DOCUMENTS\Rigs of Rods\content-pack-0.37.zip"
-	!define URL        "http://sourceforge.net/projects/rigsofrods/files/rigsofrods/${URLTARGET}/download?use_mirror=autoselect"
+	!define CONTENT_URLTARGET  "0.37/content-pack-0.37.zip"
+	!define CONTENT_TARGETFILE "$DOCUMENTS\Rigs of Rods\content-pack-0.37.zip"
+	!define CONTENT_URL        "http://sourceforge.net/projects/rigsofrods/files/rigsofrods/${CONTENT_URLTARGET}/download?use_mirror=autoselect"
 		
 	; attention: the useragent is crucial to get the HTTP/302 instead of the fancy webpage
-	inetc::get /TIMEOUT=30000 /USERAGENT "wget" "${URL}" "${TARGETFILE}"
+	inetc::get /TIMEOUT=30000 /USERAGENT "wget" "${CONTENT_URL}" "${CONTENT_TARGETFILE}"
 	Pop $0 ;Get the return value
 	StrCmp $0 "OK" content_pack_unzip
 	MessageBox MB_OK|MB_ICONEXCLAMATION "Download of Content Pack failed: $0" /SD IDOK
 content_pack_unzip:
-	!insertmacro ZIPDLL_EXTRACT "${TARGETFILE}" "$DOCUMENTS\Rigs of Rods\packs" <ALL>
+	ZipDLL::extractall "${CONTENT_TARGETFILE}" "$DOCUMENTS\Rigs of Rods\packs"
 	Goto content_pack_unzip_end
 content_pack_unzip_end:	
 	; remove downloaded file
-	Delete "${TARGETFILE}"
+	Delete "${CONTENT_TARGETFILE}"
+SectionEnd
+
+Section /o "Multiplayer Server" RoRServer
+	; only in full
+	SectionIn 1
+	
+	; adds 1.2 MB
+	AddSize 1228
+	
+	SetOutPath "$INSTDIR"
+
+	!define SERVER_TARGETFILE "$INSTDIR\rorserver-windows-x86-r419.zip"
+	!define SERVER_URL        "http://sourceforge.net/projects/rorserver/files/rorserver/rorserver-windows-x86-r419.zip/download?use_mirror=autoselect"
+		
+	; attention: the useragent is crucial to get the HTTP/302 instead of the fancy webpage
+	inetc::get /TIMEOUT=30000 /USERAGENT "wget" "${SERVER_URL}" "${SERVER_TARGETFILE}"
+	Pop $0 ;Get the return value
+	StrCmp $0 "OK" content_pack_unzip
+	MessageBox MB_OK|MB_ICONEXCLAMATION "Download of RoR Server failed: $0" /SD IDOK
+content_pack_unzip:
+	ZipDLL::extractall "${SERVER_TARGETFILE}" "$INSTDIR"
+	Goto content_pack_unzip_end
+content_pack_unzip_end:	
+	; remove downloaded file
+	Delete "${SERVER_TARGETFILE}"
+	
+	!insertmacro MUI_STARTMENU_WRITE_BEGIN Application
+		CreateDirectory "$SMPROGRAMS\$StartMenuFolder"
+		CreateShortCut "$SMPROGRAMS\$StartMenuFolder\Multiplayer Server.lnk" "$INSTDIR\servergui.exe"
+		!insertmacro CreateInternetShortcut "$SMPROGRAMS\$StartMenuFolder\Server Setup Tutorial" "http://www.rigsofrods.com/wiki/pages/Server_Setup_Tutorial" "$INSTDIR\servergui.exe" "0"	
+	!insertmacro MUI_STARTMENU_WRITE_END
+	
 SectionEnd
 
 ; section descriptions
 ;Language strings
 LangString DESC_RoRBaseGame ${LANG_ENGLISH} "Rigs of Rods Base - The main simulation"
 LangString DESC_RoRContentPack ${LANG_ENGLISH} "Rigs of Rods Content Pack - will be downloaded from the internet"
+LangString DESC_RoRServer ${LANG_ENGLISH} "Rigs of Rods Multiplayer Server - if you want to host Multiplayer games"
 
 ;Assign language strings to sections
 !insertmacro MUI_FUNCTION_DESCRIPTION_BEGIN
 	!insertmacro MUI_DESCRIPTION_TEXT ${RoRBaseGame} $(DESC_RoRBaseGame)
 	!insertmacro MUI_DESCRIPTION_TEXT ${RoRContentPack} $(DESC_RoRContentPack)
+	!insertmacro MUI_DESCRIPTION_TEXT ${RoRServer} $(DESC_RoRServer)
 !insertmacro MUI_FUNCTION_DESCRIPTION_END
 
 Function DownloadContentPackFromMirror
@@ -312,7 +344,7 @@ Function DownloadContentPackFromMirror
 ;SectionEnd
 
 Function "LaunchPostInstallation"
-	Exec  "$INSTDIR\update.exe"
+	Exec  "$INSTDIR\updater.exe"
 FunctionEnd
 
 Section -AdditionalIcons
