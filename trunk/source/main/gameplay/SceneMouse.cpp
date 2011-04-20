@@ -19,6 +19,8 @@ along with Rigs of Rods.  If not, see <http://www.gnu.org/licenses/>.
 */
 #include "SceneMouse.h"
 #include "RoRFrameListener.h"
+#include "Beam.h"
+#include "BeamFactory.h"
 #include <Ogre.h>
 
 #ifdef USE_MYGUI
@@ -60,6 +62,67 @@ SceneMouse::~SceneMouse()
 bool SceneMouse::mouseMoved(const OIS::MouseEvent& _arg)
 {
 	const OIS::MouseState ms = _arg.state;
+
+	// experimental mouse hack
+	if(ms.buttonDown(OIS::MB_Left))
+	{
+		// get the camera
+		Camera *cam = rfl->getCamera();
+		Viewport *vp = cam->getViewport();
+		// get a camera to scene ray
+		Ray mouseRay = cam->getCameraToViewportRay((float)ms.X.abs/(float)vp->getWidth(), (float)ms.Y.abs/(float)vp->getHeight());
+		// get current truck
+		Beam *curr_truck = BeamFactory::getSingleton().getCurrentTruck();
+		// check if its valid and not sleeping
+		if(curr_truck && curr_truck->state == ACTIVATED)
+		{
+
+			float mindist = 30000.0f;
+			int   minnode = -1;
+			// walk all nodes
+			for (int i = 0; i < curr_truck->free_node; i++)
+			{
+				// check if our ray intersects with the node
+				std::pair<bool, Real> pair = mouseRay.intersects(Sphere(curr_truck->nodes[i].smoothpos, 0.1f));
+				if (pair.first)
+				{
+					// we hit it, check if its the nearest node
+					if (pair.second < mindist)
+					{
+						mindist = pair.second;
+						minnode = i;
+					}
+				}
+			}
+
+			// check if we hit a node
+			if(minnode != -1)
+			{
+				// get correct ray
+				Ray m = cam->getCameraToViewportRay((float)ms.X.abs/(float)vp->getWidth(), (float)ms.Y.abs/(float)vp->getHeight());
+
+				// get position
+				Vector3 pos = m.getPoint(mindist);
+
+				// then display
+				pickLine->beginUpdate(0);
+				pickLine->position(curr_truck->nodes[minnode].AbsPosition);
+				pickLine->position(pos);
+				pickLine->end();
+				pickLineNode->setVisible(true);
+
+				// add forces
+				curr_truck->mouseMove(minnode, pos, 10000.0f);
+			} else
+			{
+				// hide mouse line
+				pickLineNode->setVisible(false);
+			}
+			// not fixed
+			return false;
+		}
+	}
+	
 
 	if(ms.buttonDown(OIS::MB_Right))
 	{
