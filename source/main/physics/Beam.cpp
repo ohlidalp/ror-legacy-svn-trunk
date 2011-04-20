@@ -1352,6 +1352,20 @@ void Beam::setupDefaultSoundSources()
 		ssm->trigStart(trucknum, SS_TRIG_ENGINE);
 		ssm->modulate(trucknum, SS_MOD_ENGINE, 0.5);
 	}
+	//airplane warnings
+	if (driveable==AIRPLANE)
+	{
+		addSoundSource(ssm->createInstance(String("tracks/default_gpws_10"), trucknum, NULL), 0);
+		addSoundSource(ssm->createInstance(String("tracks/default_gpws_20"), trucknum, NULL), 0);
+		addSoundSource(ssm->createInstance(String("tracks/default_gpws_30"), trucknum, NULL), 0);
+		addSoundSource(ssm->createInstance(String("tracks/default_gpws_40"), trucknum, NULL), 0);
+		addSoundSource(ssm->createInstance(String("tracks/default_gpws_50"), trucknum, NULL), 0);
+		addSoundSource(ssm->createInstance(String("tracks/default_gpws_100"), trucknum, NULL), 0);
+		addSoundSource(ssm->createInstance(String("tracks/default_gpws_pullup"), trucknum, NULL), 0);
+		addSoundSource(ssm->createInstance(String("tracks/default_gpws_minimums"), trucknum, NULL), 0);
+		addSoundSource(ssm->createInstance(String("tracks/default_gpws_apdisconnect"), trucknum, NULL), 0);
+		addSoundSource(ssm->createInstance(String("tracks/default_aoa_warning"), trucknum, NULL), 0);
+	}
 	//airplane engines
 	for (int i=0; i<free_aeroengine && i<8; i++)
 	{
@@ -3839,7 +3853,7 @@ void Beam::updateVisual(float dt)
 		autoaileron=autopilot->getAilerons();
 		autorudder=autopilot->getRudder();
 		autoelevator=autopilot->getElevator();
-		autopilot->gpws_update();
+		autopilot->gpws_update(posnode_spawn_height);
 	}
 	autoaileron+=aileron;
 	autorudder+=rudder;

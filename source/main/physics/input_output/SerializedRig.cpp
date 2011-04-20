@@ -1261,7 +1261,6 @@ int SerializedRig::loadTruck(String fname, SceneManager *manager, SceneNode *par
 					parser_warning(c, "nodes limit reached ("+TOSTRING(MAX_NODES)+")");
 					continue;
 				}
-
 				Vector3 npos = pos + rot * Vector3(x,y,z);
 				init_node(id, npos.x, npos.y, npos.z, NODE_NORMAL, 10, 0, 0, free_node, -1, default_node_friction, default_node_volume, default_node_surface, default_node_loadweight);
 				nodes[id].iIsSkin=true;
@@ -4564,6 +4563,25 @@ int SerializedRig::loadTruck(String fname, SceneManager *manager, SceneNode *par
 		}
 	}
 	
+	//calculate gwps height offset
+	//get a starting value
+	posnode_spawn_height=nodes[0].RelPosition.y;
+	//start at 0 to avoid a crash whith a 1-node truck
+	for (int i=0; i<free_node; i++)
+	{
+		// scan and store the y-coord for the lowest node of the truck
+		if (nodes[i].RelPosition.y < posnode_spawn_height)
+			posnode_spawn_height = nodes[i].RelPosition.y;
+	}
+	if (freecamera > 0)
+	{
+		// store the y-difference between the trucks lowest node and the campos-node for the gwps system
+		posnode_spawn_height = nodes[cameranodepos[0]].RelPosition.y - posnode_spawn_height;
+	} else
+	{
+		//this can not be an airplane, just set it to 0.
+		posnode_spawn_height = 0.0f;
+	}
 	
 	if(!loading_finished) {
 		parser_warning(c, "Reached end of file "+ String(fname)+ ". No 'end' was found! Did you forgot it? ");
@@ -4572,7 +4590,7 @@ int SerializedRig::loadTruck(String fname, SceneManager *manager, SceneNode *par
 	//wing closure
 	if (wingstart!=-1)
 	{
-		if (autopilot) autopilot->setInertialReferences(&nodes[leftlight], &nodes[rightlight], fuseBack);
+		if (autopilot) autopilot->setInertialReferences(&nodes[leftlight], &nodes[rightlight], fuseBack, &nodes[cameranodepos[0]]);
 		//inform wing segments
 		float span=(nodes[wings[wingstart].fa->nfrd].RelPosition-nodes[wings[free_wing-1].fa->nfld].RelPosition).length();
 		//		float chord=(nodes[wings[wingstart].fa->nfrd].Position-nodes[wings[wingstart].fa->nbrd].Position).length();

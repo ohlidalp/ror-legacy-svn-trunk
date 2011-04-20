@@ -981,6 +981,8 @@ struct rig
 	float default_node_loadweight;
 	char default_node_options[50];
 
+	float posnode_spawn_height;
+
 	MaterialReplacer *materialReplacer;
 };
 

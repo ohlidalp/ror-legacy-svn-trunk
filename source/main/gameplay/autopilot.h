@@ -35,6 +35,7 @@ private:
 	node_t *ref_l;
 	node_t *ref_r;
 	node_t *ref_b;
+	node_t *ref_c;
 	float ref_span;
 	float last_elevator;
 	float last_aileron;
@@ -63,7 +64,7 @@ public:
 	Autopilot(HeightFinder *hfd, Water *w, int trucknum);
 	void reset();
 	void disconnect();
-	void setInertialReferences(node_t *refl, node_t *refr, node_t *refb);
+	void setInertialReferences(node_t *refl, node_t *refr, node_t *refb, node_t *refc);
 	int toggleHeading(int mode);
 	int toggleAlt(int mode);
 	bool toggleIAS();
@@ -78,7 +79,7 @@ public:
 	float getRudder();
 	float getThrotle(float thrtl, float dt);
 
-	void gpws_update();
+	void gpws_update(float spawnheight);
 
 	void getRadioFix(localizer_t *localizers, int free_localizer, float *vdev, float *hdev);
 };
