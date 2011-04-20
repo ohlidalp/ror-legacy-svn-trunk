@@ -1,3 +1,10 @@
+; required NSIS plugins:
+;   Inetc   - http://nsis.sourceforge.net/Inetc_plug-in
+;   ZipDLL  - http://nsis.sourceforge.net/ZipDLL_plug-in
+
+SetCompress auto
+SetCompressor /FINAL /SOLID lzma
+
 !define PRODUCT_NAME "Rigs of Rods"
 
 !define PRODUCT_VERSION_MAJOR "0"
@@ -13,192 +20,23 @@
 !define PRODUCT_UNINST_KEY "Software\Microsoft\Windows\CurrentVersion\Uninstall\${PRODUCT_FULLNAME}"
 !define PRODUCT_UNINST_ROOT_KEY "HKLM"
 
+!define ROR_REGISTRY_ENTRY "Software\${PRODUCT_FULLNAME}"
 !include "FileFunc.nsh"
+
+Name "${PRODUCT_FULLNAME}"
+!define OUTFILE "RoR-Setup-${PRODUCT_VERSION}.exe"
+OutFile "${OUTFILE}"
+InstallDir "$PROGRAMFILES\${PRODUCT_FULLNAME}"
 
 ; we want to be admin to install this
 RequestExecutionLevel admin
 
+; include macros we are going to use
 !include "FileAssociation.nsh"
+!include "utils.nsh"
+!include "zipdll.nsh"
 
-; ################################################################
-; appends \ to the path if missing
-; example: !insertmacro GetCleanDir "c:\blabla"
-; Pop $0 => "c:\blabla\"
-!macro GetCleanDir INPUTDIR
-  ; ATTENTION: USE ON YOUR OWN RISK!
-  ; Please report bugs here: http://stefan.bertels.org/
-  !define Index_GetCleanDir 'GetCleanDir_Line${__LINE__}'
-  Push $R0
-  Push $R1
-  StrCpy $R0 "${INPUTDIR}"
-  StrCmp $R0 "" ${Index_GetCleanDir}-finish
-  StrCpy $R1 "$R0" "" -1
-  StrCmp "$R1" "\" ${Index_GetCleanDir}-finish
-  StrCpy $R0 "$R0\"
-${Index_GetCleanDir}-finish:
-  Pop $R1
-  Exch $R0
-  !undef Index_GetCleanDir
-!macroend
- 
-  ; load language from command line /L=1033
- ; foo.exe /S /L=1033 /D=C:\Program Files\Foo
- ; or:
- ; foo.exe /S "/L=1033" /D="C:\Program Files\Foo"
- ; gpv "/L=" "1033"
- !macro GETPARAMETERVALUE SWITCH DEFAULT
-   Push $0
-   Push $1
-   Push $2
-   Push $3
-   Push $4
-
- ;$CMDLINE='"My Setup\Setup.exe" /L=1033 /S'
-   Push "$CMDLINE"
-   Push '${SWITCH}"'
-   !insertmacro StrStr
-   Pop $0
-   StrCmp "$0" "" gpv_notquoted
- ;$0='/L="1033" /S'
-   StrLen $2 "$0"
-   Strlen $1 "${SWITCH}"
-   IntOp $1 $1 + 1
-   StrCpy $0 "$0" $2 $1
- ;$0='1033" /S'
-   Push "$0"
-   Push '"'
-   !insertmacro StrStr
-   Pop $1
-   StrLen $2 "$0"
-   StrLen $3 "$1"
-   IntOp $4 $2 - $3
-   StrCpy $0 $0 $4 0
-   Goto gpv_done
-
-   gpv_notquoted:
-   Push "$CMDLINE"
-   Push "${SWITCH}"
-   !insertmacro StrStr
-   Pop $0
-   StrCmp "$0" "" gpv_done
- ;$0='/L="1033" /S'
-   StrLen $2 "$0"
-   Strlen $1 "${SWITCH}"
-   StrCpy $0 "$0" $2 $1
- ;$0=1033 /S'
-   Push "$0"
-   Push ' '
-   !insertmacro StrStr
-   Pop $1
-   StrLen $2 "$0"
-   StrLen $3 "$1"
-   IntOp $4 $2 - $3
-   StrCpy $0 $0 $4 0
-   Goto gpv_done
-
-   gpv_done:
-   StrCmp "$0" "" 0 +2
-   StrCpy $0 "${DEFAULT}"
-
-   Pop $4
-   Pop $3
-   Pop $2
-   Pop $1
-   Exch $0
- !macroend
-
-; And I had to modify StrStr a tiny bit.
-; Possible upgrade switch the goto's to use ${__LINE__}
-
-!macro STRSTR
-  Exch $R1 ; st=haystack,old$R1, $R1=needle
-  Exch    ; st=old$R1,haystack
-  Exch $R2 ; st=old$R1,old$R2, $R2=haystack
-  Push $R3
-  Push $R4
-  Push $R5
-  StrLen $R3 $R1
-  StrCpy $R4 0
-  ; $R1=needle
-  ; $R2=haystack
-  ; $R3=len(needle)
-  ; $R4=cnt
-  ; $R5=tmp
- ;  loop;
-    StrCpy $R5 $R2 $R3 $R4
-    StrCmp $R5 $R1 +4
-    StrCmp $R5 "" +3
-    IntOp $R4 $R4 + 1
-    Goto -4
- ;  done;
-  StrCpy $R1 $R2 "" $R4
-  Pop $R5
-  Pop $R4
-  Pop $R3
-  Pop $R2
-  Exch $R1
-!macroend
-; ################################################################
-; similar to "RMDIR /r DIRECTORY", but does not remove DIRECTORY itself
-; example: !insertmacro RemoveFilesAndSubDirs "$INSTDIR"
-!macro RemoveFilesAndSubDirs DIRECTORY
-  ; ATTENTION: USE ON YOUR OWN RISK!
-  ; Please report bugs here: http://stefan.bertels.org/
-  !define Index_RemoveFilesAndSubDirs 'RemoveFilesAndSubDirs_${__LINE__}'
- 
-  Push $R0
-  Push $R1
-  Push $R2
- 
-  !insertmacro GetCleanDir "${DIRECTORY}"
-  Pop $R2
-  FindFirst $R0 $R1 "$R2*.*"
-${Index_RemoveFilesAndSubDirs}-loop:
-  StrCmp $R1 "" ${Index_RemoveFilesAndSubDirs}-done
-  StrCmp $R1 "." ${Index_RemoveFilesAndSubDirs}-next
-  StrCmp $R1 ".." ${Index_RemoveFilesAndSubDirs}-next
-  IfFileExists "$R2$R1\*.*" ${Index_RemoveFilesAndSubDirs}-directory
-  ; file
-  Delete "$R2$R1"
-  goto ${Index_RemoveFilesAndSubDirs}-next
-${Index_RemoveFilesAndSubDirs}-directory:
-  ; directory
-  RMDir /r "$R2$R1"
-${Index_RemoveFilesAndSubDirs}-next:
-  FindNext $R0 $R1
-  Goto ${Index_RemoveFilesAndSubDirs}-loop
-${Index_RemoveFilesAndSubDirs}-done:
-  FindClose $R0
- 
-  Pop $R2
-  Pop $R1
-  Pop $R0
-  !undef Index_RemoveFilesAndSubDirs
-!macroend
-
-Function WriteToFile
- Exch $0 ;file to write to
- Exch
- Exch $1 ;text to write
- 
-  FileOpen $0 $0 a #open file
-   FileSeek $0 0 END #go to end
-   FileWrite $0 $1 #write to file
-  FileClose $0
- 
- Pop $1
- Pop $0
-FunctionEnd
- 
-!macro WriteToFile String File
- Push "${String}"
- Push "${File}"
-  Call WriteToFile
-!macroend
-!define WriteToFile "!insertmacro WriteToFile"
-
-
-SetCompressor /FINAL /SOLID lzma
+Var StartMenuFolder
 
 BrandingText "Rigs of Rods"
 InstProgressFlags smooth colored
@@ -206,9 +44,31 @@ XPStyle on
 ShowInstDetails show
 ShowUninstDetails show
 SetDateSave on
-#SetDatablockOptimize on
-CRCCheck on
+SetDatablockOptimize on
+CRCCheck force
 #SilentInstall normal
+InstallDirRegKey HKLM "${ROR_REGISTRY_ENTRY}" "InstallLocation"
+SetOverwrite try
+
+InstType "full"
+InstType "minimal"
+
+
+; add file properties
+VIAddVersionKey /LANG=${LANG_ENGLISH} "ProductName" "${PRODUCT_NAME}"
+VIAddVersionKey /LANG=${LANG_ENGLISH} "Comments" "The Rigs of Rods softbody simulation"
+VIAddVersionKey /LANG=${LANG_ENGLISH} "CompanyName" "www.rigsofrods.com"
+;VIAddVersionKey /LANG=${LANG_ENGLISH} "LegalTrademarks" ""
+;VIAddVersionKey /LANG=${LANG_ENGLISH} "LegalCopyright" ""
+VIAddVersionKey /LANG=${LANG_ENGLISH} "FileDescription" "${PRODUCT_FULLNAME} Installer"
+VIAddVersionKey /LANG=${LANG_ENGLISH} "FileVersion" "${PRODUCT_VERSION}"
+VIAddVersionKey /LANG=${LANG_ENGLISH} "ProductVersion" "${PRODUCT_VERSION}"
+;VIAddVersionKey /LANG=${LANG_ENGLISH} "InternalName" "RoR"
+VIAddVersionKey /LANG=${LANG_ENGLISH} "InternalName" "RoR"
+VIAddVersionKey /LANG=${LANG_ENGLISH} "OriginalFilename" "${OUTFILE}"
+;VIAddVersionKey /LANG=${LANG_ENGLISH} "PrivateBuild" "${PRODUCT_VERSION}"
+;VIAddVersionKey /LANG=${LANG_ENGLISH} "SpecialBuild" "${PRODUCT_VERSION}"
+VIProductVersion "${PRODUCT_VERSION}.0" ; hacky add .0 to stay compatible with windows ...
 
 ; MUI 1.67 compatible ------
 !include "MUI.nsh"
@@ -230,25 +90,29 @@ CRCCheck on
 !insertmacro MUI_PAGE_LICENSE "readme-installer.txt"
 
 ; Components page
-;!insertmacro MUI_PAGE_COMPONENTS
+!insertmacro MUI_PAGE_COMPONENTS
 ; Directory page
 !insertmacro MUI_PAGE_DIRECTORY
+; start menu
+!insertmacro MUI_PAGE_STARTMENU Application $StartMenuFolder
 ; Instfiles page
 !insertmacro MUI_PAGE_INSTFILES
 ; Finish page
-;!define MUI_FINISHPAGE_RUN "$INSTDIR\rortoolkit.bat"
-;!define MUI_FINISHPAGE_RUN_PARAMETERS ""
-#!define MUI_FINISHPAGE_SHOWREADME "$INSTDIR\Example.file"
-
 !define MUI_FINISHPAGE_NOAUTOCLOSE
 !define MUI_FINISHPAGE_RUN
+;!define MUI_FINISHPAGE_RUN "$INSTDIR\rortoolkit.bat"
+;!define MUI_FINISHPAGE_RUN_PARAMETERS ""
 ;!define MUI_FINISHPAGE_RUN_NOTCHECKED
+;!define MUI_FINISHPAGE_SHOWREADME "$INSTDIR\Example.file"
 !define MUI_FINISHPAGE_RUN_TEXT "Check for updates"
 !define MUI_FINISHPAGE_RUN_FUNCTION "LaunchPostInstallation"
 !insertmacro MUI_PAGE_FINISH
 
 ; Uninstaller pages
+!insertmacro MUI_UNPAGE_CONFIRM
+!insertmacro MUI_UNPAGE_DIRECTORY
 !insertmacro MUI_UNPAGE_INSTFILES
+!insertmacro MUI_UNPAGE_FINISH
 
 ; Language files
 !insertmacro MUI_LANGUAGE "English" ;first language is the default language
@@ -311,18 +175,6 @@ CRCCheck on
 !insertmacro MUI_RESERVEFILE_INSTALLOPTIONS
 ; MUI end ------
 
-Name "${PRODUCT_FULLNAME}"
-OutFile "RoR-Setup-${PRODUCT_VERSION}.exe"
-InstallDir "$PROGRAMFILES\${PRODUCT_FULLNAME}"
-
-!macro CreateInternetShortcut FILENAME URL ICONFILE ICONINDEX
-WriteINIStr "${FILENAME}.url" "InternetShortcut" "URL" "${URL}"
-WriteINIStr "${FILENAME}.url" "InternetShortcut" "IconFile" "${ICONFILE}"
-WriteINIStr "${FILENAME}.url" "InternetShortcut" "IconIndex" "${ICONINDEX}"
-!macroend
-
-ShowInstDetails show
-ShowUnInstDetails show
 
 Function InstallDirectX
 	Banner::show /NOUNLOAD "Installing latest DirectX"
@@ -364,17 +216,21 @@ FunctionEnd
 ; if you dont want the splash comment out the following function:
 Function .onInit
 	InitPluginsDir
-	File /oname=$PLUGINSDIR\splash.bmp "splash.bmp"
-	advsplash::show 1000 1300 600 -1 $PLUGINSDIR\splash
-	Pop $0
-	Delete $PLUGINSDIR\splash
+	
+	; no more splash :-/
+	;File /oname=$PLUGINSDIR\splash.bmp "splash.bmp"
+	;advsplash::show 1000 1300 600 -1 $PLUGINSDIR\splash
+	;Pop $0
+	;Delete $PLUGINSDIR\splash
+	
 	!insertmacro MUI_LANGDLL_DISPLAY
     Call UninstallOld
 FunctionEnd
 
-Section "!RoR" SEC02
+Section "!Rigs of Rods Base" RoRBaseGame
+	; in full and minimal
+	SectionIn 1 2 RO
 	SetOutPath "$INSTDIR"
-	SetOverwrite try
 
 	; data
 	File /r /x .svn installerfiles\*
@@ -391,10 +247,64 @@ Section "!RoR" SEC02
 	Banner::destroy
 	
 	# add version text file
-	${WriteToFile} "${PRODUCT_VERSION}" "$INSTDIR\version.txt"
-
+	!insertmacro WriteToFile "${PRODUCT_VERSION}" "$INSTDIR\version.txt"
 SectionEnd
 
+Section /o "Content Pack" RoRContentPack
+	; only in full
+	SectionIn 1
+	
+	; adds 416 MB
+	AddSize 416692
+	
+	SetShellVarContext current
+	SetOutPath "$DOCUMENTS\Rigs of Rods\"
+
+	!define URLTARGET  "0.37/content-pack-0.37.zip"
+	!define TARGETFILE "$DOCUMENTS\Rigs of Rods\content-pack-0.37.zip"
+	!define URL        "http://sourceforge.net/projects/rigsofrods/files/rigsofrods/${URLTARGET}/download?use_mirror=autoselect"
+		
+	; attention: the useragent is crucial to get the HTTP/302 instead of the fancy webpage
+	inetc::get /TIMEOUT=30000 /USERAGENT "wget" "${URL}" "${TARGETFILE}"
+	Pop $0 ;Get the return value
+	StrCmp $0 "OK" content_pack_unzip
+	MessageBox MB_OK|MB_ICONEXCLAMATION "Download of Content Pack failed: $0" /SD IDOK
+content_pack_unzip:
+	!insertmacro ZIPDLL_EXTRACT "${TARGETFILE}" "$DOCUMENTS\Rigs of Rods\packs" <ALL>
+	Goto content_pack_unzip_end
+content_pack_unzip_end:	
+	; remove downloaded file
+	Delete "${TARGETFILE}"
+SectionEnd
+
+; section descriptions
+;Language strings
+LangString DESC_RoRBaseGame ${LANG_ENGLISH} "Rigs of Rods Base - The main simulation"
+LangString DESC_RoRContentPack ${LANG_ENGLISH} "Rigs of Rods Content Pack - will be downloaded from the internet"
+
+;Assign language strings to sections
+!insertmacro MUI_FUNCTION_DESCRIPTION_BEGIN
+	!insertmacro MUI_DESCRIPTION_TEXT ${RoRBaseGame} $(DESC_RoRBaseGame)
+	!insertmacro MUI_DESCRIPTION_TEXT ${RoRContentPack} $(DESC_RoRContentPack)
+!insertmacro MUI_FUNCTION_DESCRIPTION_END
+
+Function DownloadContentPackFromMirror
+   ; use SF mirror network and then our own as fallback
+   !define DLFILENAME "0.37/content-pack-0.37.zip"
+   !define SF_MIRROR_PATH "dl.sourceforge.net/project/rigsofrods/rigsofrods/${DLFILENAME}"
+   ;StrCmp $R0 2 0 +3
+   ;  Push "http://www.rigsofrods.com/repository/repo_files/downloadMirror/${DLFILENAME}"
+   ;  Push ""
+   
+   
+   StrCmp $R0 1 0 +3
+     Push "http://sourceforge.net/projects/rigsofrods/files/rigsofrods/0.37/content-pack-0.37.zip/download?use_mirror=autoselect"
+     Push ""
+   ;StrCmp $R0 2 0 +3
+   ;  Push "http://leaseweb.${DLPATH}"
+   ;  Push ""
+ FunctionEnd
+ 
 ;Section "Modding Tools" SEC03
 ;    SetOutPath "$INSTDIR"
 ;    SetOverwrite try
@@ -409,15 +319,18 @@ Section -AdditionalIcons
 	SetShellVarContext current
 	SetOutPath $INSTDIR
 	
-	CreateDirectory "$SMPROGRAMS\${PRODUCT_FULLNAME}"
-	CreateShortCut "$SMPROGRAMS\${PRODUCT_FULLNAME}\Uninstall.lnk" "$INSTDIR\uninst.exe"
-	CreateShortCut "$SMPROGRAMS\${PRODUCT_FULLNAME}\Rigs of Rods.lnk" "$INSTDIR\RoRConfig.exe"
-	CreateShortCut "$SMPROGRAMS\${PRODUCT_FULLNAME}\Updater.lnk" "$INSTDIR\updater.exe"
-	CreateShortCut "$SMPROGRAMS\${PRODUCT_FULLNAME}\Key Sheet.lnk" "$INSTDIR\keysheet.pdf"
-	CreateShortCut "$SMPROGRAMS\${PRODUCT_FULLNAME}\Manual.lnk" "$INSTDIR\Things_you_can_do_in_Rigs_of_Rods.pdf"
+	!insertmacro MUI_STARTMENU_WRITE_BEGIN Application
+	CreateDirectory "$SMPROGRAMS\$StartMenuFolder"
+	CreateShortCut "$SMPROGRAMS\$StartMenuFolder\Uninstall.lnk" "$INSTDIR\uninst.exe"
+	CreateShortCut "$SMPROGRAMS\$StartMenuFolder\Rigs of Rods.lnk" "$INSTDIR\RoRConfig.exe"
+	CreateShortCut "$SMPROGRAMS\$StartMenuFolder\Updater.lnk" "$INSTDIR\updater.exe"
+	CreateShortCut "$SMPROGRAMS\$StartMenuFolder\Key Sheet.lnk" "$INSTDIR\keysheet.pdf"
+	CreateShortCut "$SMPROGRAMS\$StartMenuFolder\Manual.lnk" "$INSTDIR\Things_you_can_do_in_Rigs_of_Rods.pdf"
 
-	!insertmacro CreateInternetShortcut "$SMPROGRAMS\${PRODUCT_FULLNAME}\Forums" "http://www.rigsofrods.com/forum.php" "$InstDir\cog_go.ico" "0"
-	!insertmacro CreateInternetShortcut "$SMPROGRAMS\${PRODUCT_FULLNAME}\Beginners Guide" "http://www.rigsofrods.com/wiki/pages/Beginner%27s_Guide" "$InstDir\forums.ico" "0"
+	!insertmacro CreateInternetShortcut "$SMPROGRAMS\$StartMenuFolder\Forums" "http://www.rigsofrods.com/forum.php" "$InstDir\cog_go.ico" "0"
+	!insertmacro CreateInternetShortcut "$SMPROGRAMS\$StartMenuFolder\Beginners Guide" "http://www.rigsofrods.com/wiki/pages/Beginner%27s_Guide" "$InstDir\forums.ico" "0"
+	
+	!insertmacro MUI_STARTMENU_WRITE_END
 	
 SectionEnd
 
@@ -458,6 +371,9 @@ Section -Post
 	WriteRegStr ${PRODUCT_UNINST_ROOT_KEY} "${PRODUCT_UNINST_KEY}" "Comments" "Soft Body Physics Sandbox Game"
 	WriteRegStr ${PRODUCT_UNINST_ROOT_KEY} "${PRODUCT_UNINST_KEY}" "Readme" ""
 
+	
+	WriteRegStr HKLM "${ROR_REGISTRY_ENTRY}" "InstallLocation" "$INSTDIR"
+
 	; add some registry info
 	WriteRegStr HKCU "Software\RigsOfRods\" "directory" "$INSTDIR"
 	WriteRegStr HKCU "Software\RigsOfRods\" "version" "${PRODUCT_VERSION}"
@@ -466,7 +382,9 @@ Section -Post
 	WriteRegStr HKCR "rorserver" "Url Protocol" ""
 	WriteRegStr HKCR "rorserver\DefaultIcon" "" ""
 	WriteRegStr HKCR "rorserver\shell\open\command" "" '"$INSTDIR\RoR.exe" -wd="$INSTDIR" -join="%1"'
-	SetRebootFlag true
+	
+	; no reboot
+	SetRebootFlag false
 SectionEnd
 
 
@@ -490,8 +408,8 @@ Section Uninstall
 	RMDir "$INSTDIR"
 
 	SetShellVarContext current
-	Delete "$SMPROGRAMS\${PRODUCT_FULLNAME}\*.*"
-	RmDir  "$SMPROGRAMS\${PRODUCT_FULLNAME}"
+	Delete "$SMPROGRAMS\$StartMenuFolder\*.*"
+	RmDir  "$SMPROGRAMS\$StartMenuFolder"
 	
 	; remove registry entries
 	DeleteRegKey ${PRODUCT_UNINST_ROOT_KEY} "${PRODUCT_UNINST_KEY}"
