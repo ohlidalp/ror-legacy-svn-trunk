@@ -246,6 +246,19 @@ Section "!Rigs of Rods Base" RoRBaseGame
 	
 	# add version text file
 	!insertmacro WriteToFile "${PRODUCT_VERSION}" "$INSTDIR\version.txt"
+	
+	# add shortcuts
+	!insertmacro MUI_STARTMENU_WRITE_BEGIN Application
+		CreateDirectory "$SMPROGRAMS\$StartMenuFolder"
+		CreateShortCut "$SMPROGRAMS\$StartMenuFolder\Rigs of Rods.lnk" "$INSTDIR\RoRConfig.exe"
+		CreateShortCut "$SMPROGRAMS\$StartMenuFolder\Updater.lnk" "$INSTDIR\updater.exe"
+		CreateShortCut "$SMPROGRAMS\$StartMenuFolder\Key Sheet.lnk" "$INSTDIR\keysheet.pdf"
+		CreateShortCut "$SMPROGRAMS\$StartMenuFolder\Manual.lnk" "$INSTDIR\Things_you_can_do_in_Rigs_of_Rods.pdf"
+
+		!insertmacro CreateInternetShortcut "$SMPROGRAMS\$StartMenuFolder\Forums" "http://www.rigsofrods.com/forum.php" "$InstDir\cog_go.ico" "0"
+		!insertmacro CreateInternetShortcut "$SMPROGRAMS\$StartMenuFolder\Beginners Guide" "http://www.rigsofrods.com/wiki/pages/Beginner%27s_Guide" "$InstDir\forums.ico" "0"	
+	!insertmacro MUI_STARTMENU_WRITE_END
+	
 SectionEnd
 
 Section /o "Content Pack" RoRContentPack
@@ -258,12 +271,9 @@ Section /o "Content Pack" RoRContentPack
 	SetShellVarContext current
 	SetOutPath "$DOCUMENTS\Rigs of Rods\"
 
-	!define CONTENT_URLTARGET  "0.37/content-pack-0.37.zip"
-	!define CONTENT_TARGETFILE "$DOCUMENTS\Rigs of Rods\content-pack-0.37.zip"
-	!define CONTENT_URL        "http://sourceforge.net/projects/rigsofrods/files/rigsofrods/${CONTENT_URLTARGET}/download?use_mirror=autoselect"
-		
+	!define CONTENT_TARGETFILE "$DOCUMENTS\Rigs of Rods\content-pack.zip"
 	; attention: the useragent is crucial to get the HTTP/302 instead of the fancy webpage
-	inetc::get /TIMEOUT=30000 /USERAGENT "wget" "${CONTENT_URL}" "${CONTENT_TARGETFILE}"
+	inetc::get /TIMEOUT=30000 /USERAGENT "wget" "http://download.rigsofrods.com/content/?version=${PRODUCT_VERSION}" "${CONTENT_TARGETFILE}"
 	Pop $0 ;Get the return value
 	StrCmp $0 "OK" content_pack_unzip
 	MessageBox MB_OK|MB_ICONEXCLAMATION "Download of Content Pack failed: $0" /SD IDOK
@@ -284,11 +294,9 @@ Section /o "Multiplayer Server" RoRServer
 	
 	SetOutPath "$INSTDIR"
 
-	!define SERVER_TARGETFILE "$INSTDIR\rorserver-windows-x86-r419.zip"
-	!define SERVER_URL        "http://sourceforge.net/projects/rorserver/files/rorserver/rorserver-windows-x86-r419.zip/download?use_mirror=autoselect"
-		
+	!define SERVER_TARGETFILE "$INSTDIR\rorserver.zip"
 	; attention: the useragent is crucial to get the HTTP/302 instead of the fancy webpage
-	inetc::get /TIMEOUT=30000 /USERAGENT "wget" "${SERVER_URL}" "${SERVER_TARGETFILE}"
+	inetc::get /TIMEOUT=30000 /USERAGENT "wget" "http://download.rigsofrods.com/server/?version=${PRODUCT_VERSION}" "${SERVER_TARGETFILE}"
 	Pop $0 ;Get the return value
 	StrCmp $0 "OK" content_pack_unzip
 	MessageBox MB_OK|MB_ICONEXCLAMATION "Download of RoR Server failed: $0" /SD IDOK
@@ -319,23 +327,6 @@ LangString DESC_RoRServer ${LANG_ENGLISH} "Rigs of Rods Multiplayer Server - if 
 	!insertmacro MUI_DESCRIPTION_TEXT ${RoRContentPack} $(DESC_RoRContentPack)
 	!insertmacro MUI_DESCRIPTION_TEXT ${RoRServer} $(DESC_RoRServer)
 !insertmacro MUI_FUNCTION_DESCRIPTION_END
-
-Function DownloadContentPackFromMirror
-   ; use SF mirror network and then our own as fallback
-   !define DLFILENAME "0.37/content-pack-0.37.zip"
-   !define SF_MIRROR_PATH "dl.sourceforge.net/project/rigsofrods/rigsofrods/${DLFILENAME}"
-   ;StrCmp $R0 2 0 +3
-   ;  Push "http://www.rigsofrods.com/repository/repo_files/downloadMirror/${DLFILENAME}"
-   ;  Push ""
-   
-   
-   StrCmp $R0 1 0 +3
-     Push "http://sourceforge.net/projects/rigsofrods/files/rigsofrods/0.37/content-pack-0.37.zip/download?use_mirror=autoselect"
-     Push ""
-   ;StrCmp $R0 2 0 +3
-   ;  Push "http://leaseweb.${DLPATH}"
-   ;  Push ""
- FunctionEnd
  
 ;Section "Modding Tools" SEC03
 ;    SetOutPath "$INSTDIR"
@@ -347,25 +338,6 @@ Function "LaunchPostInstallation"
 	Exec  "$INSTDIR\updater.exe"
 FunctionEnd
 
-Section -AdditionalIcons
-	SetShellVarContext current
-	SetOutPath $INSTDIR
-	
-	!insertmacro MUI_STARTMENU_WRITE_BEGIN Application
-	CreateDirectory "$SMPROGRAMS\$StartMenuFolder"
-	CreateShortCut "$SMPROGRAMS\$StartMenuFolder\Uninstall.lnk" "$INSTDIR\uninst.exe"
-	CreateShortCut "$SMPROGRAMS\$StartMenuFolder\Rigs of Rods.lnk" "$INSTDIR\RoRConfig.exe"
-	CreateShortCut "$SMPROGRAMS\$StartMenuFolder\Updater.lnk" "$INSTDIR\updater.exe"
-	CreateShortCut "$SMPROGRAMS\$StartMenuFolder\Key Sheet.lnk" "$INSTDIR\keysheet.pdf"
-	CreateShortCut "$SMPROGRAMS\$StartMenuFolder\Manual.lnk" "$INSTDIR\Things_you_can_do_in_Rigs_of_Rods.pdf"
-
-	!insertmacro CreateInternetShortcut "$SMPROGRAMS\$StartMenuFolder\Forums" "http://www.rigsofrods.com/forum.php" "$InstDir\cog_go.ico" "0"
-	!insertmacro CreateInternetShortcut "$SMPROGRAMS\$StartMenuFolder\Beginners Guide" "http://www.rigsofrods.com/wiki/pages/Beginner%27s_Guide" "$InstDir\forums.ico" "0"
-	
-	!insertmacro MUI_STARTMENU_WRITE_END
-	
-SectionEnd
-
 Section -Post
 
 	Call InstallDirectX
@@ -373,9 +345,15 @@ Section -Post
 	
 	${registerExtension} "$INSTDIR\RoRMeshViewer.exe" ".mesh" "Ogre Mesh"
 
+	; write uninstaller
 	WriteUninstaller "$INSTDIR\uninst.exe"
-	; add software to windows uninstaller
-	
+	# only add the uninstall link here
+	!insertmacro MUI_STARTMENU_WRITE_BEGIN Application
+		CreateDirectory "$SMPROGRAMS\$StartMenuFolder"
+		CreateShortCut "$SMPROGRAMS\$StartMenuFolder\Uninstall.lnk" "$INSTDIR\uninst.exe"
+	!insertmacro MUI_STARTMENU_WRITE_END
+
+	; add software to windows uninstaller	
 	WriteRegStr ${PRODUCT_UNINST_ROOT_KEY} "${PRODUCT_UNINST_KEY}" "DisplayIcon" "$INSTDIR\RoR.exe"
 	WriteRegStr ${PRODUCT_UNINST_ROOT_KEY} "${PRODUCT_UNINST_KEY}" "DisplayName" "${PRODUCT_FULLNAME}"
 	WriteRegStr ${PRODUCT_UNINST_ROOT_KEY} "${PRODUCT_UNINST_KEY}" "DisplayVersion" "${PRODUCT_VERSION}"
