@@ -77,11 +77,12 @@ void Autopilot::disconnect()
 	}
 }
 
-void Autopilot::setInertialReferences(node_t *refl, node_t *refr, node_t *refb)
+void Autopilot::setInertialReferences(node_t *refl, node_t *refr, node_t *refb, node_t *refc)
 {
 	ref_l=refl;
 	ref_r=refr;
 	ref_b=refb;
+	ref_c=refc; // cameranodepos(0)
 	ref_span=(refl->RelPosition-refr->RelPosition).length();
 }
 
@@ -270,29 +271,35 @@ int Autopilot::adjIAS(int d)
 	return ias;
 }
 
-void Autopilot::gpws_update()
+void Autopilot::gpws_update(float spawnheight)
 {
 #ifdef USE_OPENAL
 	if(!ssm) return;
 	if (mode_gpws && hf && ref_b)
 	{
-		float groundalt=hf->getHeightAt(ref_b->AbsPosition.x, ref_b->AbsPosition.z);
+		float groundalt=hf->getHeightAt(ref_c->AbsPosition.x, ref_c->AbsPosition.z);
 		if (water && groundalt<water->getHeight()) groundalt=water->getHeight();
-		float height=(ref_b->AbsPosition.y-groundalt-3.0)/0.3048; //in feet!
-		if (height<10 && last_gpws_height>10) ssm->trigOnce(trucknum, SS_TRIG_GPWS_10);
-		if (height<20 && last_gpws_height>20) ssm->trigOnce(trucknum, SS_TRIG_GPWS_20);
-		if (height<30 && last_gpws_height>30) ssm->trigOnce(trucknum, SS_TRIG_GPWS_30);
-		if (height<40 && last_gpws_height>40) ssm->trigOnce(trucknum, SS_TRIG_GPWS_40);
-		if (height<50 && last_gpws_height>50) ssm->trigOnce(trucknum, SS_TRIG_GPWS_50);
-		if (height<100 && last_gpws_height>100) ssm->trigOnce(trucknum, SS_TRIG_GPWS_100);
+		float height=(ref_c->AbsPosition.y-groundalt-spawnheight)*3.28083f; //in feet!
+		//skip height warning sounds when the plane is slower then ~10 knots
+		if (( ref_c->Velocity.length() * 1.9685f) > 10.0f)
+		{
+			if (height<10 && last_gpws_height>10) ssm->trigOnce(trucknum, SS_TRIG_GPWS_10);
+			if (height<20 && last_gpws_height>20) ssm->trigOnce(trucknum, SS_TRIG_GPWS_20);
+			if (height<30 && last_gpws_height>30) ssm->trigOnce(trucknum, SS_TRIG_GPWS_30);
+			if (height<40 && last_gpws_height>40) ssm->trigOnce(trucknum, SS_TRIG_GPWS_40);
+			if (height<50 && last_gpws_height>50) ssm->trigOnce(trucknum, SS_TRIG_GPWS_50);
+			if (height<100 && last_gpws_height>100) ssm->trigOnce(trucknum, SS_TRIG_GPWS_100);
+		}
 		last_gpws_height=height;
-		//pullup
-		Vector3 position=((ref_l->AbsPosition+ref_r->AbsPosition)/2.0)+((ref_l->Velocity+ref_r->Velocity)/2.0)*3.0;
-		float pugroundalt=hf->getHeightAt(position.x, position.z);
-		if (water && pugroundalt<water->getHeight()) pugroundalt=water->getHeight();
-		float pullup_height=position.y-groundalt; //in meter
-		if (pullup_height<0 && last_pullup_height>0 && height>30) ssm->trigOnce(trucknum, SS_TRIG_GPWS_PULLUP);
-		last_pullup_height=pullup_height;
+
+		// pullup warning calculation
+		// height to meters
+		height *= 0.3048;
+		// get the y-velocity in meters/s
+		float yVel = ref_c->Velocity.y * 1.9685f;
+		// will trigger the pullup sound when vvi is high (avoid pullup warning when landing normal) and groundcontact will be in less then 10 seconds
+		if (yVel * 10.0f < -height && yVel < -10.0f)
+			ssm->trigOnce(trucknum, SS_TRIG_GPWS_PULLUP);
 	}
 #endif //OPENAL
 }
