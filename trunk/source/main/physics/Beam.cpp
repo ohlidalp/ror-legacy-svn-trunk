@@ -4417,6 +4417,10 @@ void Beam::tieToggle(int group)
 					if(!itr->multilock && itr->used)
 						continue;
 
+					//skip if tienode is ropable too (no selflock)
+					if(itr->node->id == it->beam->p1->id)
+						continue;
+
 					// calculate the distance and record the nearest ropable
 					float dist = (it->beam->p1->AbsPosition - itr->node->AbsPosition).length();
 					if (dist < mindist)

@@ -6033,7 +6033,7 @@ bool RoRFrameListener::frameStarted(const FrameEvent& evt)
 
 #ifdef USE_OPENAL
 		//airplane radio chatter
-		if (curr_truck && curr_truck->driveable==AIRPLANE)
+		if (curr_truck && curr_truck->driveable==AIRPLANE && curr_truck->state!=SLEEPING)
 		{
 			avichatter_timer -= dt;
 			if (Math::RangeRandom(0, 100) < 2)
