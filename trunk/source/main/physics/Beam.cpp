@@ -1365,6 +1365,19 @@ void Beam::setupDefaultSoundSources()
 		addSoundSource(ssm->createInstance(String("tracks/default_gpws_minimums"), trucknum, NULL), 0);
 		addSoundSource(ssm->createInstance(String("tracks/default_gpws_apdisconnect"), trucknum, NULL), 0);
 		addSoundSource(ssm->createInstance(String("tracks/default_aoa_warning"), trucknum, NULL), 0);
+		addSoundSource(ssm->createInstance(String("tracks/default_aivionic_chat01"), trucknum, NULL), 0);
+		addSoundSource(ssm->createInstance(String("tracks/default_aivionic_chat02"), trucknum, NULL), 0);
+		addSoundSource(ssm->createInstance(String("tracks/default_aivionic_chat03"), trucknum, NULL), 0);
+		addSoundSource(ssm->createInstance(String("tracks/default_aivionic_chat04"), trucknum, NULL), 0);
+		addSoundSource(ssm->createInstance(String("tracks/default_aivionic_chat05"), trucknum, NULL), 0);
+		addSoundSource(ssm->createInstance(String("tracks/default_aivionic_chat06"), trucknum, NULL), 0);
+		addSoundSource(ssm->createInstance(String("tracks/default_aivionic_chat07"), trucknum, NULL), 0);
+		addSoundSource(ssm->createInstance(String("tracks/default_aivionic_chat08"), trucknum, NULL), 0);
+		addSoundSource(ssm->createInstance(String("tracks/default_aivionic_chat09"), trucknum, NULL), 0);
+		addSoundSource(ssm->createInstance(String("tracks/default_aivionic_chat10"), trucknum, NULL), 0);
+		addSoundSource(ssm->createInstance(String("tracks/default_aivionic_chat11"), trucknum, NULL), 0);
+		addSoundSource(ssm->createInstance(String("tracks/default_aivionic_chat12"), trucknum, NULL), 0);
+		addSoundSource(ssm->createInstance(String("tracks/default_aivionic_chat13"), trucknum, NULL), 0);
 	}
 	//airplane engines
 	for (int i=0; i<free_aeroengine && i<8; i++)
@@ -5248,4 +5261,10 @@ void Beam::updateAI(float dt)
 			}
 		}
 	}
+}
+
+void Beam::trigAviChat()
+{
+	ssm->trigOnce(trucknum, SS_TRIG_AVICHAT01 + Math::RangeRandom(0, 12));
+	return;
 }

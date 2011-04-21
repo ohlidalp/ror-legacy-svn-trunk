@@ -6031,9 +6031,22 @@ bool RoRFrameListener::frameStarted(const FrameEvent& evt)
 		}
 #endif //USE_PAGED
 
-		//airplane chatter
-		//chatter disabled for the moment
-		//if (current_truck!=-1 && trucks[current_truck]->driveable==AIRPLANE && trucks[current_truck]->audio) trucks[current_truck]->audio->playChatter(dt);
+#ifdef USE_OPENAL
+		//airplane radio chatter
+		if (curr_truck && curr_truck->driveable==AIRPLANE)
+		{
+			avichatter_timer -= dt;
+			if (Math::RangeRandom(0, 100) < 2)
+			{
+				if (avichatter_timer < 0)
+				{
+					curr_truck->trigAviChat();
+					// set the delay timer ( longest sound ) until (ssm->getTrigState(curr_truck, i)) works with trigOnce sounds -> statemap[truck*SS_MAX_TRIG+trig] never true
+					avichatter_timer = 11.0f;
+				}
+			}
+		}
+#endif //openAL
 
 		//the dirt
 		//if (dirt) dirt->update(dt);

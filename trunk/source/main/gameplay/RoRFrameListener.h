@@ -294,6 +294,7 @@ public:
 	void setNetPointToUID(int uid);
 	void checkRemoteStreamResultsChanged();
 	float netcheckGUITimer;
+	float avichatter_timer;
 
 	Character *person;
 	ChatSystem *netChat;
