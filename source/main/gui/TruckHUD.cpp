@@ -55,6 +55,39 @@ TruckHUD::TruckHUD() :
 	minVelos[MACHINE] = 9999;
 	avVelos[MACHINE] = 0;
 
+	maxPosVerG[NOT_DRIVEABLE] =  -9999;
+	maxPosVerG[TRUCK] =  -9999;
+	maxPosVerG[AIRPLANE] = -9999;
+	maxPosVerG[BOAT] = -9999;
+	maxPosVerG[MACHINE] = -9999;
+	maxNegVerG[NOT_DRIVEABLE] =  9999;
+	maxNegVerG[TRUCK] =  9999;
+	maxNegVerG[AIRPLANE] = 9999;
+	maxNegVerG[BOAT] = 9999;
+	maxNegVerG[MACHINE] = 9999;
+
+	maxPosSagG[NOT_DRIVEABLE] =  -9999;
+	maxPosSagG[TRUCK] =  -9999;
+	maxPosSagG[AIRPLANE] = -9999;
+	maxPosSagG[BOAT] = -9999;
+	maxPosSagG[MACHINE] = -9999;
+	maxNegSagG[NOT_DRIVEABLE] =  9999;
+	maxNegSagG[TRUCK] =  9999;
+	maxNegSagG[AIRPLANE] = 9999;
+	maxNegSagG[BOAT] = 9999;
+	maxNegSagG[MACHINE] = 9999;
+
+	maxPosLatG[NOT_DRIVEABLE] =  -9999;
+	maxPosLatG[TRUCK] =  -9999;
+	maxPosLatG[AIRPLANE] = -9999;
+	maxPosLatG[BOAT] = -9999;
+	maxPosLatG[MACHINE] = -9999;
+	maxNegLatG[NOT_DRIVEABLE] =  9999;
+	maxNegLatG[TRUCK] =  9999;
+	maxNegLatG[AIRPLANE] = 9999;
+	maxNegLatG[BOAT] = 9999;
+	maxNegLatG[MACHINE] = 9999;
+
 	lastTorqueModel = "";
 	lastTorqueRatio = 0;
 
@@ -252,6 +285,30 @@ bool TruckHUD::update(float dt, Beam *truck, SceneManager *mSceneMgr, Camera* mC
 		descl = OverlayManager::getSingleton().getOverlayElement("tracks/TruckInfoBox/Gees");
 		descl->setCaption(geesstr);
 		checkOverflow(descl);
+
+		//maxGees
+		if(truck->driveable == TRUCK || truck->driveable == AIRPLANE || truck->driveable == BOAT)
+		{
+			if(vertacc > maxPosVerG[truck->driveable])
+				maxPosVerG[truck->driveable] = vertacc;
+			if(vertacc < maxNegVerG[truck->driveable])
+				maxNegVerG[truck->driveable] = vertacc;
+
+			if(longacc > maxPosSagG[truck->driveable])
+				maxPosSagG[truck->driveable] = longacc;
+			if(longacc < maxNegSagG[truck->driveable])
+				maxNegSagG[truck->driveable] = longacc;
+
+			if(latacc > maxPosLatG[truck->driveable])
+				maxPosLatG[truck->driveable] = latacc;
+			if(latacc < maxNegLatG[truck->driveable])
+				maxNegLatG[truck->driveable] = latacc;
+
+			sprintf(geesstr, "maxG: V %1.2fg %1.2fg // S %1.2fg %1.2fg // L %1.2fg %1.2fg", maxPosVerG[truck->driveable]/(fabs(DEFAULT_GRAVITY)), maxNegVerG[truck->driveable]/(fabs(DEFAULT_GRAVITY)), maxPosSagG[truck->driveable]/(fabs(DEFAULT_GRAVITY)), maxNegSagG[truck->driveable]/(fabs(DEFAULT_GRAVITY)), maxPosLatG[truck->driveable]/(fabs(DEFAULT_GRAVITY)), maxNegLatG[truck->driveable]/(fabs(DEFAULT_GRAVITY)));
+			descl = OverlayManager::getSingleton().getOverlayElement("tracks/TruckInfoBox/Gees2");
+			descl->setCaption(geesstr);
+			checkOverflow(descl);
+		}
 	}
 
 	Vector3 hdir = Vector3::ZERO;
