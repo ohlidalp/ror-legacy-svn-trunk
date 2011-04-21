@@ -53,6 +53,12 @@ private:
 	std::map<int, float> maxVelos;
 	std::map<int, float> minVelos;
 	std::map<int, float> avVelos;
+	std::map<int, float> maxPosVerG;
+	std::map<int, float> maxNegVerG;
+	std::map<int, float> maxPosSagG;
+	std::map<int, float> maxNegSagG;
+	std::map<int, float> maxPosLatG;
+	std::map<int, float> maxNegLatG;
 	Ogre::Overlay *truckHUD;
 	float updatetime;
 	int width, border;
