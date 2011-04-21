@@ -85,7 +85,20 @@ along with Rigs of Rods.  If not, see <http://www.gnu.org/licenses/>.
 #define SS_TRIG_TURN_SIGNAL  43
 #define SS_TRIG_ALB_ACTIVE  44	
 #define SS_TRIG_TC_ACTIVE  45
-#define SS_MAX_TRIG			46
+#define SS_TRIG_AVICHAT01 46
+#define SS_TRIG_AVICHAT02 47
+#define SS_TRIG_AVICHAT03 48
+#define SS_TRIG_AVICHAT04 49
+#define SS_TRIG_AVICHAT05 50
+#define SS_TRIG_AVICHAT06 51
+#define SS_TRIG_AVICHAT07 52
+#define SS_TRIG_AVICHAT08 53
+#define SS_TRIG_AVICHAT09 54
+#define SS_TRIG_AVICHAT10 55
+#define SS_TRIG_AVICHAT11 56
+#define SS_TRIG_AVICHAT12 57
+#define SS_TRIG_AVICHAT13 58
+#define SS_MAX_TRIG			59
 
 //list of modulation sources
 #define SS_MOD_NONE			0
