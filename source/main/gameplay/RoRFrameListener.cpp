@@ -160,7 +160,9 @@ using namespace std;
 
 Camera *gCamera;
 
-/// This class just pretends to provide prcedural page content to avoid page loading
+float RoRFrameListener::gravity = DEFAULT_GRAVITY;
+
+/// This class just pretends to provide procedural page content to avoid page loading
 class DummyPageProvider : public PageProvider
 {
 public:
@@ -756,8 +758,6 @@ void RoRFrameListener::updateGUI(float dt)
 		ow->boatsteertexture->setTextureRotate(Degree(curr_truck->screwprops[0]->getRudder() * 170));
 	}
 }
-
-float RoRFrameListener::gravity = DEFAULT_GRAVITY;
 
 void RoRFrameListener::setGravity(float value)
 {
@@ -6030,23 +6030,6 @@ bool RoRFrameListener::frameStarted(const FrameEvent& evt)
 			if(it->geom) it->geom->update();
 		}
 #endif //USE_PAGED
-
-#ifdef USE_OPENAL
-		//airplane radio chatter
-		if (curr_truck && curr_truck->driveable==AIRPLANE && curr_truck->state!=SLEEPING)
-		{
-			avichatter_timer -= dt;
-			if (Math::RangeRandom(0, 100) < 2)
-			{
-				if (avichatter_timer < 0)
-				{
-					curr_truck->trigAviChat();
-					// set the delay timer ( longest sound ) until (ssm->getTrigState(curr_truck, i)) works with trigOnce sounds -> statemap[truck*SS_MAX_TRIG+trig] never true
-					avichatter_timer = 11.0f;
-				}
-			}
-		}
-#endif //openAL
 
 		//the dirt
 		//if (dirt) dirt->update(dt);

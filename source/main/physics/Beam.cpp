@@ -307,6 +307,7 @@ Beam::Beam(int tnum, SceneManager *manager, SceneNode *parent, RenderWindow* win
 	net=_net;
 	if(net && !networking) networking = true; // enable networking if some network class is existing
 
+	avichatter_timer=11; // some pseudo random number, doesnt matter ;)
 	tsteps=100;
 	driverSeat=0;
 	networkUsername = String();
@@ -3812,6 +3813,20 @@ void Beam::updateVisual(float dt)
 	//dust
 	DustManager::getSingleton().update(WheelSpeed);
 
+	// update chatter
+#ifdef USE_OPENAL
+	//airplane radio chatter
+	if (driveable == AIRPLANE && state != SLEEPING)
+	{
+		avichatter_timer -= dt;
+		if (avichatter_timer < 0)
+		{
+			if(ssm) ssm->trigOnce(trucknum, SS_TRIG_AVICHAT01 + Math::RangeRandom(0, 12));
+			avichatter_timer = Math::RangeRandom(11,30);
+		}
+	}
+#endif //openAL
+
 
 	//update custom particle systems
 	for (int i=0; i<free_cparticle; i++)
@@ -5265,10 +5280,4 @@ void Beam::updateAI(float dt)
 			}
 		}
 	}
-}
-
-void Beam::trigAviChat()
-{
-	ssm->trigOnce(trucknum, SS_TRIG_AVICHAT01 + Math::RangeRandom(0, 12));
-	return;
 }
