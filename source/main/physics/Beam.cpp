@@ -3811,13 +3811,14 @@ void Beam::updateVisual(float dt)
 	if(debugVisuals) updateDebugOverlay();
 
 	//dust
+	// UH - design problem, it updates every truck dust D:
 	DustManager::getSingleton().update(WheelSpeed);
 
-	// update chatter
 #ifdef USE_OPENAL
 	//airplane radio chatter
 	if (driveable == AIRPLANE && state != SLEEPING)
 	{
+		// play random chatter at random time
 		avichatter_timer -= dt;
 		if (avichatter_timer < 0)
 		{
