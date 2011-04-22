@@ -147,9 +147,6 @@ public:
 	ground_model_t *getLastFuzzyGroundModel();
 	//! @}
 
-	// sound
-	void Beam::trigAviChat();
-
 	//! @{ graphical display things */
 	void updateSkidmarks();
 	void updateAI(float dt);
@@ -324,6 +321,7 @@ public:
 	bool isTied();
 	bool isLocked();
 	int tsteps;
+	float avichatter_timer;
 
 protected:
 
