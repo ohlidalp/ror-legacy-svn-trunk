@@ -1835,6 +1835,12 @@ void Beam::SyncReset()
 		resetPosition(cur_position.x, cur_position.z, false);
 	}
 
+	// reset commands (self centering && push once/twice forced to terminate moving commands)
+	for(int i=0;i<MAX_COMMANDS;i++)
+	{
+		commandkey[i].commandValue=0;
+	}
+
 	resetSlideNodes();
 	reset_requested=0;
 }
