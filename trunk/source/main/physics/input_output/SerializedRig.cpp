@@ -2479,12 +2479,14 @@ int SerializedRig::loadTruck(String fname, SceneManager *manager, SceneNode *par
 				beams[pos].Lhydro=beams[pos].L;
 				//add short key
 				commandkey[keys].beams.push_back(-pos);
-				commandkey[keys].description = descr;
+				if (descr != "")
+					commandkey[keys].description = descr;
 					
 
 				//add long key
 				commandkey[keyl].beams.push_back(pos);
-				commandkey[keyl].description = descr;
+				if (descr != "")
+					commandkey[keyl].description = descr;
 
 				beams[pos].commandRatioShort=rateShort;
 				beams[pos].commandRatioLong=rateLong;
