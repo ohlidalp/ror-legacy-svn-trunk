@@ -1491,7 +1491,7 @@ void Beam::calcForcesEuler(int doUpdate, Real dt, int step, int maxstep)
 		float roll=asin(dir.dotProduct(Vector3::UNIT_Y));
 		//			mWindow->setDebugText("Roll:"+ TOSTRING(roll));
 		if (fabs(roll)>0.2) stabsleep=-1.0; //emergency timeout stop
-		if (fabs(roll)>0.03 && stabsleep<0.0)
+		if (fabs(roll)>0.01 && stabsleep<0.0)
 		{
 			if (roll>0.0 && stabcommand!=-1) stabcommand=1;
 			else if (roll<0.0 && stabcommand!=1) stabcommand=-1; else {stabcommand=0;stabsleep=3.0;};
