@@ -341,6 +341,10 @@ int SerializedRig::loadTruck(String fname, SceneManager *manager, SceneNode *par
 	int shadowmode = BTS_NODES;
 	Ogre::StringVector args;
 	args.resize(20);
+	float fuse_z_min = 1000.0f;
+	float fuse_z_max = -1000.0f;
+	float fuse_y_min = 1000.0f;
+	float fuse_y_max = -1000.0f;
 
 	// load truck configuration settings
 	bool enable_background_loading = BSETTING("Background Loading");
@@ -1390,6 +1394,17 @@ int SerializedRig::loadTruck(String fname, SceneManager *manager, SceneNode *par
 					options_pointer++;
 				}
 				free_node++;
+
+				// fusedrag autoclac y & z span
+				if (z < fuse_z_min)
+					fuse_z_min = z;
+				if (z > fuse_z_max)
+					fuse_z_max = z;
+				if (y < fuse_y_min)
+					fuse_y_min = y;
+				if (y > fuse_y_max)
+					fuse_y_max = y;
+
 				continue;
 			}
 			else if (c.mode == BTS_BEAMS)
@@ -3479,18 +3494,40 @@ int SerializedRig::loadTruck(String fname, SceneManager *manager, SceneNode *par
 			{
 				//parse fusedrag
 				int front,back;
-				float width;
-				char fusefoil[256];
-				int n = parse_args(c, args, 4);
-				front  = parse_node_number(c, args[0]);
-				back   = parse_node_number(c, args[1]);
-				width  = PARSEREAL(args[2]);
-				strncpy(fusefoil, args[3].c_str(), 255);
+				float width, factor = 1.0f;
+				char fusefoil[256] = "NACA0009.afl";
+				int n = parse_args(c, args, 3);
 
-				fuseAirfoil = new Airfoil(fusefoil);
-				fuseFront   = &nodes[front];
-				fuseBack    = &nodes[front];
-				fuseWidth   = width;
+				if(args[2] == "autocalc")
+				{
+					// fusedrag autocalculation
+					front  = parse_node_number(c, args[0]);
+					back   = parse_node_number(c, args[1]);
+					// calculate fusedrag by truck size
+					if (n > 3) 
+						factor  = PARSEREAL(args[3]);
+					width  =  (fuse_z_max - fuse_z_min) * (fuse_y_max - fuse_y_min) * factor;
+					if (n > 4) 
+						strncpy(fusefoil, args[4].c_str(), 255);
+					fuseAirfoil = new Airfoil(fusefoil);
+					fuseFront   = &nodes[front];
+					fuseBack    = &nodes[front];
+					fuseWidth   = width;
+					parser_warning(c, "Fusedrag autocalculation size: "+TOSTRING(width)+" m²");
+				} else
+				{
+					// original fusedrag calculation
+					front  = parse_node_number(c, args[0]);
+					back   = parse_node_number(c, args[1]);
+					width  = PARSEREAL(args[2]);
+					if (n > 3) 
+						strncpy(fusefoil, args[3].c_str(), 255);
+					
+					fuseAirfoil = new Airfoil(fusefoil);
+					fuseFront   = &nodes[front];
+					fuseBack    = &nodes[front];
+					fuseWidth   = width;
+				}
 			}
 			else if (c.mode == BTS_ENGOPTION)
 			{
@@ -4572,9 +4609,10 @@ int SerializedRig::loadTruck(String fname, SceneManager *manager, SceneNode *par
 	for (int i=0; i<free_node; i++)
 	{
 		// scan and store the y-coord for the lowest node of the truck
-		if (nodes[i].RelPosition.y < posnode_spawn_height)
+		if (nodes[i].RelPosition.y <= posnode_spawn_height)
 			posnode_spawn_height = nodes[i].RelPosition.y;
 	}
+
 	if (freecamera > 0)
 	{
 		// store the y-difference between the trucks lowest node and the campos-node for the gwps system
