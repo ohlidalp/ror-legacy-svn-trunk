@@ -4399,7 +4399,9 @@ void Beam::tieToggle(int group)
 		}
 	}
 
-	// iterate over all ties
+	//untie all ties if one is tied
+	bool istied = false;
+
 	for(std::vector<tie_t>::iterator it=ties.begin(); it!=ties.end(); it++)
 	{
 		// only handle ties with correct group
@@ -4409,20 +4411,27 @@ void Beam::tieToggle(int group)
 		// if tied, untie it. And the other way round
 		if (it->tied)
 		{
-			// tie is locked and should get unlocked
-
-			// not tied and stop tying
+			// tie is locked and should get unlocked and stop tying
 			it->tied  = false;
 			it->tying = false;
 			if(it->lockedto) it->lockedto->used--;
 			// disable the ties beam
 			it->beam->disabled = 1;
 			it->beam->mSceneNode->detachAllObjects();
-		} else
-		{
-			// tie is unlocked and should get locked
+			istied = true;
+		}
+	}
 
-			// search new remote ropable to lock to
+	// iterate over all ties
+	if (!istied)
+	{
+		for(std::vector<tie_t>::iterator it=ties.begin(); it!=ties.end(); it++)
+		{
+			// only handle ties with correct group
+			if (group != -1 && (it->group != -1 && it->group != group))
+			continue;
+			
+			// tie is unlocked and should get locked, search new remote ropable to lock to
 			float mindist = it->beam->refL;
 			node_t *shorter=0;
 			Beam *shtruck=0;
@@ -4474,9 +4483,9 @@ void Beam::tieToggle(int group)
 				it->lockedto = locktedto;
 				it->lockedto->used++;
 			}
-
 		}
 	}
+
 #ifdef USE_ANGELSCRIPT
 	//ScriptEvent - Tie toggle
 	ScriptEngine::getSingleton().triggerEvent(ScriptEngine::SE_TRUCK_TIE_TOGGLE, trucknum);
