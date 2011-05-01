@@ -209,7 +209,9 @@ static const float NODE_LOADWEIGHT_DEFAULT      = -1.0f;
 static const float SUPPORT_BEAM_LIMIT_DEFAULT   = 4.0f;
 static const float ROTATOR_FORCE_DEFAULT        = 10000000.0f;
 static const float ROTATOR_TOLERANCE_DEFAULT    = 0.0f;
-
+static const float HOOK_FORCE_DEFAULT		    = 10000000.0f;
+static const float HOOK_RANGE_DEFAULT           = 0.4f;
+static const float HOOK_SPEED_DEFAULT           = 0.00025f;
 /* Enumerations */
 enum {
 	THREAD_MONO,    //!< mono threading mode
@@ -558,6 +560,10 @@ struct hook
 	int locked;
 	int group;
 	bool lockNodes;
+	bool selflock;
+	float maxforce;
+	float lockrange;
+	float lockspeed;
 	node_t *hookNode;
 	node_t *lockNode;
 	beam_t *beam;

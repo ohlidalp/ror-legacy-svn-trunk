@@ -4592,13 +4592,14 @@ void Beam::hookToggle(int group)
 		{
 			// we lock hooks
 			// search new remote ropable to lock to
-			float mindist = 0.4f; //hardcoded max distance to target node of 40 centimeters
+			float mindist = it->lockrange;
 			node_t *shorter=0;
 			Beam *shtruck=0;
+			float distance = 100000000.0f;
 			// iterate over all trucks
 			for (int t=0; t<trucksnum; t++)
 			{
-				if(t == this->trucknum) continue; // dont lock to self
+				if(t == this->trucknum && !it->selflock) continue; // dont lock to self
 				if(!trucks[t]) continue;
 				if (trucks[t]->state==SLEEPING) continue;
 
@@ -4606,6 +4607,7 @@ void Beam::hookToggle(int group)
 				bool found = false;
 				if(it->lockNodes)
 				{
+					int last_node; // nodenumber storage
 					// all nodes, so walk them
 					for (int i=0; i<trucks[t]->free_node; i++)
 					{
@@ -4614,15 +4616,25 @@ void Beam::hookToggle(int group)
 							continue;
 
 						// measure distance
-						if ((it->hookNode->AbsPosition - trucks[t]->nodes[i].AbsPosition).length() < mindist)
+						float n2n_distance = (it->hookNode->AbsPosition - trucks[t]->nodes[i].AbsPosition).length();
+						if (n2n_distance < mindist)
 						{
-							// we found a node, lock to it
-							it->lockNode  = &(trucks[t]->nodes[i]);
-							it->lockTruck = trucks[t];
-							it->locked    = PRELOCK;
-							found         = true; // dont check the other trucks
-							break;
+							if (distance >= n2n_distance)
+							{
+								//lockated a node that is closer
+								distance = n2n_distance;
+								last_node=i;
+								found = true;
+							}
 						}
+					}
+					if (found)
+					{
+						// we found a node, lock to it
+						it->lockNode  = &(trucks[t]->nodes[last_node]);
+						it->lockTruck = trucks[t];
+						it->locked    = PRELOCK;
+						found     = true; // dont check the other trucks
 					}
 				} else
 				{
@@ -4655,9 +4667,10 @@ void Beam::hookToggle(int group)
 					found         = true; // dont check the other trucks
 				}
 
-				if(found)
+				//removed since we want to lock to the nearest node in distance
+				//if(found)
 					// if we found some lock, we wont check all other trucks
-					break;
+					//break;
 			}
 		}
 	}
