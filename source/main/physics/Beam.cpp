@@ -4431,57 +4431,60 @@ void Beam::tieToggle(int group)
 			if (group != -1 && (it->group != -1 && it->group != group))
 			continue;
 			
-			// tie is unlocked and should get locked, search new remote ropable to lock to
-			float mindist = it->beam->refL;
-			node_t *shorter=0;
-			Beam *shtruck=0;
-			ropable_t *locktedto=0;
-			// iterate over all trucks
-			for (int t=0; t<trucksnum; t++)
+			if (!it->tied)
 			{
-				if(!trucks[t]) continue;
-				if (trucks[t]->state==SLEEPING) continue;
-				// and their ropables
-				for(std::vector <ropable_t>::iterator itr = trucks[t]->ropables.begin(); itr!=trucks[t]->ropables.end(); itr++)
+				// tie is unlocked and should get locked, search new remote ropable to lock to
+				float mindist = it->beam->refL;
+				node_t *shorter=0;
+				Beam *shtruck=0;
+				ropable_t *locktedto=0;
+				// iterate over all trucks
+				for (int t=0; t<trucksnum; t++)
 				{
-					// if the ropable is not multilock and used, then discard this ropable
-					if(!itr->multilock && itr->used)
-						continue;
-
-					//skip if tienode is ropable too (no selflock)
-					if(itr->node->id == it->beam->p1->id)
-						continue;
-
-					// calculate the distance and record the nearest ropable
-					float dist = (it->beam->p1->AbsPosition - itr->node->AbsPosition).length();
-					if (dist < mindist)
+					if(!trucks[t]) continue;
+					if (trucks[t]->state==SLEEPING) continue;
+					// and their ropables
+					for(std::vector <ropable_t>::iterator itr = trucks[t]->ropables.begin(); itr!=trucks[t]->ropables.end(); itr++)
 					{
-						mindist = dist;
-						shorter = itr->node;
-						shtruck = trucks[t];
-						locktedto = &(*itr);
+						// if the ropable is not multilock and used, then discard this ropable
+						if(!itr->multilock && itr->used)
+							continue;
+
+						//skip if tienode is ropable too (no selflock)
+						if(itr->node->id == it->beam->p1->id)
+							continue;
+
+						// calculate the distance and record the nearest ropable
+						float dist = (it->beam->p1->AbsPosition - itr->node->AbsPosition).length();
+						if (dist < mindist)
+						{
+							mindist = dist;
+							shorter = itr->node;
+							shtruck = trucks[t];
+							locktedto = &(*itr);
+						}
 					}
 				}
-			}
-			// if we found a ropable, then tie towards it
-			if (shorter)
-			{
-				//okay, we have found a rope to tie
+				// if we found a ropable, then tie towards it
+				if (shorter)
+				{
+					//okay, we have found a rope to tie
 
-				// enable the beam and visually display the beam
-				it->beam->disabled = 0;
-				if (it->beam->mSceneNode->numAttachedObjects() == 0)
-					it->beam->mSceneNode->attachObject(it->beam->mEntity);
+					// enable the beam and visually display the beam
+					it->beam->disabled = 0;
+					if (it->beam->mSceneNode->numAttachedObjects() == 0)
+						it->beam->mSceneNode->attachObject(it->beam->mEntity);
 
-				// now trigger the tying action
-				it->beam->p2 = shorter;
-				it->beam->p2truck = shtruck;
-				it->beam->stress = 0;
-				it->beam->L = it->beam->refL;
-				it->tied  = true;
-				it->tying = true;
-				it->lockedto = locktedto;
-				it->lockedto->used++;
+					// now trigger the tying action
+					it->beam->p2 = shorter;
+					it->beam->p2truck = shtruck;
+					it->beam->stress = 0;
+					it->beam->L = it->beam->refL;
+					it->tied  = true;
+					it->tying = true;
+					it->lockedto = locktedto;
+					it->lockedto->used++;
+				}
 			}
 		}
 	}
