@@ -244,6 +244,9 @@ Section "!Rigs of Rods Base" RoRBaseGame
     !insertmacro RemoveFilesAndSubDirs "$DOCUMENTS\Rigs of Rods\cache\"
 	Banner::destroy
 	
+	# back to normal installation directory
+	SetOutPath $INSTDIR
+	
 	# add version text file
 	!insertmacro WriteToFile "${PRODUCT_VERSION}" "$INSTDIR\version.txt"
 	
