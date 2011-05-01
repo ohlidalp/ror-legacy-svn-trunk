@@ -733,14 +733,29 @@ void Beam::calcForcesEuler(int doUpdate, Real dt, int step, int maxstep)
 			} else
 			{
 				//shorten the connecting beam slowly to locking minrange
-				if (it->beam->L > 0.000251f)
+				if (it->beam->L > it->lockspeed && fabs(it->beam->stress) < it->maxforce)
 				{
-					it->beam->L = (it->beam->L - 0.00025f);
+					it->beam->L = (it->beam->L - it->lockspeed);
 				} else
 				{
-					it->beam->L = 0.001f;
-					//locking minrange -> status LOCKED
-					it->locked = LOCKED;
+					if ( fabs(it->beam->stress) < it->maxforce)
+					{
+						it->beam->L = 0.001f;
+						//locking minrange or stress exeeded -> status LOCKED
+						it->locked = LOCKED;
+					} else
+					{
+						//force exceeded reset the hook node
+						it->locked = UNLOCKED;
+						if (it->lockNode) it->lockNode->lockednode=0;
+						it->lockNode = 0;
+						it->lockTruck = 0;
+						it->beam->p2       = 0;
+						it->beam->p2truck  = 0;
+						it->beam->L = (nodes[0].AbsPosition - it->hookNode->AbsPosition).length();
+						it->beam->disabled = 1;
+						beams->mSceneNode->detachAllObjects();
+					}
 				}
 			}
 		}

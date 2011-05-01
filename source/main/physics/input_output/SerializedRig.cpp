@@ -1280,6 +1280,8 @@ int SerializedRig::loadTruck(String fname, SceneManager *manager, SceneNode *par
 				strncpy(options, ((String(default_node_options) + String(options)).c_str()), 250);
 
 				int pos;
+				float speedcoef = 1.0f, hookforce=HOOK_FORCE_DEFAULT, hookrange=HOOK_RANGE_DEFAULT;
+				bool hook_selflock = false;
 				// now 'parse' the options
 				char *options_pointer = options;
 				while (*options_pointer != 0)
@@ -1363,7 +1365,16 @@ int SerializedRig::loadTruck(String fname, SceneManager *manager, SceneNode *par
 							pos=add_beam(&nodes[id], &nodes[0], manager, parent, BEAM_INVISIBLE, default_break * default_break_scale * 100.0f, default_spring * default_spring_scale, default_damp * default_damp_scale * 0.1f);
 							beams[pos].disabled=true;
 							beams[pos].mSceneNode->detachAllObjects();
-	
+
+							if(n > 6 &&	args[6] != "-1" && args[6] != "default")
+								hookrange = PARSEREAL(args[6]);
+							if(n > 7 &&	args[7] != "-1" && args[7] != "default")
+								speedcoef = PARSEREAL(args[7]);
+							if(n > 8 &&	args[8] != "-1" && args[8] != "default")
+								hookforce = PARSEREAL(args[8]);
+							if(n > 9 &&	args[9] == "self-lock")
+								hook_selflock = true;
+
 							hook_t h;
 							h.hookNode  = &nodes[id];
 							h.group     = -1;
@@ -1372,6 +1383,10 @@ int SerializedRig::loadTruck(String fname, SceneManager *manager, SceneNode *par
 							h.lockTruck = 0;
 							h.lockNodes = true;
 							h.beam = &beams[pos];
+							h.maxforce = hookforce;
+							h.lockrange = hookrange;
+							h.lockspeed = speedcoef * HOOK_SPEED_DEFAULT;
+							h.selflock = hook_selflock;
 							hooks.push_back(h);
 						break;
 						case 'e':	//editor
