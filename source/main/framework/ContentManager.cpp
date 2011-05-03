@@ -21,6 +21,7 @@ along with Rigs of Rods.  If not, see <http://www.gnu.org/licenses/>.
 #include "ContentManager.h"
 
 #include <Ogre.h>
+#include <OgreResourceBackgroundQueue.h>
 
 #include "Settings.h"
 #include "ColoredTextAreaOverlayElementFactory.h"
@@ -184,7 +185,10 @@ bool ContentManager::init(void)
 	LOG("initialiseAllResourceGroups()");
 	try
 	{
-		ResourceGroupManager::getSingleton().initialiseAllResourceGroups();
+		if (BSETTING("Background Loading"))
+			ResourceBackgroundQueue::getSingleton().initialiseAllResourceGroups();
+		else
+			ResourceGroupManager::getSingleton().initialiseAllResourceGroups();
 	} catch(Ogre::Exception& e)
 	{
 		LOG("catched error while initializing Resource groups: " + e.getFullDescription());
@@ -207,7 +211,10 @@ bool ContentManager::init(void)
 	LOG("initialiseAllResourceGroups() - Content");
 	try
 	{
-		ResourceGroupManager::getSingleton().initialiseResourceGroup("Packs");
+		if (BSETTING("Background Loading"))
+			ResourceBackgroundQueue::getSingleton().initialiseResourceGroup("Packs");
+		else
+			ResourceGroupManager::getSingleton().initialiseResourceGroup("Packs");
 	} catch(Ogre::Exception& e)
 	{
 		LOG("catched error while initializing Content Resource groups: " + e.getFullDescription());
@@ -267,10 +274,13 @@ void ContentManager::exploreFolders(Ogre::String rg)
 		String fullpath=(*iterFiles).archive->getName() + dirsep;
 		rgm.addResourceLocation(fullpath+(*iterFiles).filename, "FileSystem", rg);
 	}
-	LOG("initialiseResourceGroups: VehicleFolders");
+	LOG("initialiseResourceGroups: "+rg);
 	try
 	{
-		ResourceGroupManager::getSingleton().initialiseResourceGroup(rg);
+		if (BSETTING("Background Loading"))
+			ResourceBackgroundQueue::getSingleton().initialiseResourceGroup(rg);
+		else
+			ResourceGroupManager::getSingleton().initialiseResourceGroup(rg);
 	} catch(Ogre::Exception& e)
 	{
 		LOG("catched error while initializing Resource group '" + rg + "' : " + e.getFullDescription());

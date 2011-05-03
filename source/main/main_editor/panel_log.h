@@ -23,15 +23,13 @@ along with Rigs of Rods.  If not, see <http://www.gnu.org/licenses/>.
 
 #include <wx/wx.h>
 
-#include "wxutils.h"
-
 #include "RoREditor.h"
 
 class PanelLog : public wxPanel , public Ogre::LogListener
 {
 protected:
 	RoREditor *editor;
-	wxListBox  *list;
+	wxTextCtrl  *logctrl;
 
 public:
 	void setViewer(RoREditor *_editor)
@@ -53,21 +51,14 @@ public:
 		this->SetSizer(vsizer);
 		vsizer->SetSizeHints(this);
 		
-		// then add the propertygrid
-		int pgstyle = wxPG_BOLD_MODIFIED | wxPG_SPLITTER_AUTO_CENTER | wxPG_AUTO_SORT | wxPG_TOOLBAR | wxPG_DESCRIPTION;
-		int extrastyle = wxPG_EX_MODE_BUTTONS;
-		list = new wxListBox(this,
-									1,
-									wxDefaultPosition,
-									wxDefaultSize,
-									0);
-		vsizer->Add( list, 1, wxEXPAND );
+		logctrl = new wxTextCtrl( this, wxID_ANY, wxEmptyString, wxDefaultPosition, wxSize( 500, 150 ), wxNO_BORDER | wxTE_MULTILINE );
+
+		vsizer->Add( logctrl, 1, wxEXPAND );
     }
 	
 	void messageLogged( const String& message, LogMessageLevel lml, bool maskDebug, const String &logName )
 	{
-		wxString m = wxString(message.c_str());
-		list->Append(m);
+		logctrl->AppendText( wxString( (message + "\n").c_str(), wxConvUTF8 ) );
 	}
 
 

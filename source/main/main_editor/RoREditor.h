@@ -38,16 +38,8 @@ public:
 	void Deinitialize(void);
 	void Update(void);
 	
-	RenderWindow* GetOgreWindow(void){return window;}
-	Viewport* GetViewport(void){return viewport;}
-	Camera* GetCamera(void){return camera;}
-
 private:
 	bool			initialized;
-	Root*			ogre_root;
-	RenderWindow*	window;
-	Camera*			camera;
-	Viewport*		viewport;
 	RigsOfRods*     app;
 
 	int timeSinceLastFrame;

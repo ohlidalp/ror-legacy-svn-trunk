@@ -128,6 +128,8 @@ macro(add_ror_project BINNAME folder useWxWidgets)
     endif()
     link_directories (${wxWidgets_LIB_DIR})
     set(optional_libs ${optional_libs};${wxWidgets_LIBRARIES})
+	
+	add_definitions("-DROR_EMBEDDED")
   endif()
 
   IF(WIN32)

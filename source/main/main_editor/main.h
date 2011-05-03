@@ -40,6 +40,8 @@ along with Rigs of Rods.  If not, see <http://www.gnu.org/licenses/>.
 #include <wx/cmdline.h>
 
 #include "RoREditor.h"
+#include "wxOgreRenderWindow.h"
+#include "wxOgreRenderWindowListener.h"
 
 // RoR includes
 #include "Settings.h"
@@ -60,39 +62,7 @@ enum
 
 };
 
-class Window3DHandler
-{
-public:
-	virtual void OnLeftUp(int x, int y) = 0;
-	virtual void OnMouseMove(wxMouseEvent& e) = 0;
-	virtual void OnKeyDown(bool ctrl, bool alt, bool shift, int key) = 0;
-};
-
-class Window3D : public wxPanel
-{
-public:
-	Window3D(wxWindow* parent, wxWindowID id);
-
-	void OnSize(wxSizeEvent& e);
-	void OnLeftUp(wxMouseEvent& e);
-	void OnMouseMove(wxMouseEvent& e);
-	void OnKeyDown(wxKeyEvent& event);
-	Window3DHandler* handler;
-
-private:
-	 DECLARE_EVENT_TABLE()
-};
-
-BEGIN_EVENT_TABLE(Window3D, wxPanel)
-	EVT_LEFT_UP(Window3D::OnLeftUp)
-	EVT_KEY_DOWN(Window3D::OnKeyDown)
-	EVT_MOTION(Window3D::OnMouseMove)
-	EVT_MOUSEWHEEL(Window3D::OnMouseMove)
-	EVT_SIZE(Window3D::OnSize)
-	// maybe use EVT_MOUSE_EVENTS for all events
-END_EVENT_TABLE()
-
-class RoRViewerFrame : public wxFrame, Window3DHandler
+class RoRViewerFrame : public wxFrame, public wxOgreRenderWindowListener
 {
 public:
 	RoRViewerFrame(wxString title);
@@ -110,17 +80,16 @@ public:
 
 	void OnViewToolClick(wxCommandEvent& e);
 
-	// Window3DHandler
-	void OnLeftUp(int x, int y);
-	void OnMouseMove(wxMouseEvent& e);
-	void OnKeyDown(bool ctrl, bool alt, bool shift, int key);
+	// wxOgreRenderWindowListener
+	void OnMouseEvents( wxMouseEvent &evt );
+
 private:
 	int msx, msy, msw;
 
 	// AUI elements
 	wxAuiManager* aui_mgr;
 
-	Window3D* panel_viewport;
+	wxOgreRenderWindow* panel_viewport;
 	wxAuiPaneInfo* pane_viewport;
 
 	PanelMeshProp* panel_meshprop;
