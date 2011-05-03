@@ -162,8 +162,9 @@ retry:
 	}
 	if(retrycount >= retrylimit)
 	{
-		updateCallback(jobID, MSE_ERROR, "failed to download file: " + remoteFile + "\nPlease ensure that you have internet access.");
-		wxMessageBox(_T("failed to download file: ") + conv(remoteFile) + wxT("\nPlease ensure that you have internet access."), _T("Error"), wxICON_ERROR | wxOK);
+		wxString msg = wxString::Format(_T("failed to download file: \n%s\nPlease ensure that you have internet access."),  conv(remoteFile));
+		updateCallback(jobID, MSE_ERROR, msg);
+		wxMessageBox(msg, _T("Error"), wxICON_ERROR | wxOK);
 		exit(1);
 	}
 	updateCallback(jobID, MSE_DOWNLOAD_DONE);

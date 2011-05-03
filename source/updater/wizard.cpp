@@ -102,7 +102,7 @@ class HtmlWindow: public wxHtmlWindow
 public:
 	HtmlWindow(wxWindow *parent, wxWindowID id = -1,
 		const wxPoint& pos = wxDefaultPosition, const wxSize& size = wxDefaultSize,
-		long style = wxHW_SCROLLBAR_NEVER|wxHW_NO_SELECTION|wxBORDER_SUNKEN, const wxString& name = _T("htmlWindow"));
+		long style = wxHW_SCROLLBAR_NEVER|wxHW_NO_SELECTION|wxBORDER_SUNKEN, const wxString& name = wxT("htmlWindow"));
 	void OnLinkClicked(const wxHtmlLinkInfo& link);
 };
 
@@ -324,6 +324,8 @@ PresentationPage::PresentationPage(wxWizard *parent) : wxWizardPageSimple(parent
 	tst->SetFont(dfont);
 	tst->Wrap(TXTWRAP);
 
+	// TODO: check if installed version is newer
+
 	if(a == b)
 	{
 		mainSizer->Add(tst=new wxStaticText(this, wxID_ANY, _T("Already up to date, no need to update")), 0, wxALL, 5);
@@ -495,7 +497,7 @@ DownloadPage::DownloadPage(wxWizard *parent) : wxWizardPageSimple(parent), wizar
     wxFileSystem::AddHandler( new wxInternetFSHandler );
     htmlinfo = new HtmlWindow(this, wxID_ANY, wxDefaultPosition, wxSize(50, 50), wxBORDER_NONE);
 	mainSizer->Add(htmlinfo, 0, wxALL|wxEXPAND);
-    htmlinfo->SetPage(_("."));
+    htmlinfo->SetPage(wxT("."));
     timer = new wxTimer(this, ID_TIMER);
     timer->Start(10000);
     
