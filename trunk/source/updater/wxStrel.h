@@ -57,7 +57,7 @@ public:
 
 		wxBoxSizer *mainSizer = new wxBoxSizer(wxHORIZONTAL);
 		SetSizer(mainSizer);
-		mainSizer->Add(chk=new wxCheckBox(this, wxID_ANY, _T("")), 0, wxALL|wxALIGN_CENTER, 5);
+		mainSizer->Add(chk=new wxCheckBox(this, wxID_ANY, wxString()), 0, wxALL|wxALIGN_CENTER, 5);
 		chk->SetValue(desc->checked);
 		chk->Enable(!desc->disabled);
 

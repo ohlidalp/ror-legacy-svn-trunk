@@ -240,10 +240,10 @@ void ConfigManager::updateUserConfigs()
 void ConfigManager::installRuntime()
 {
 	// obsolete
-	wxMessageBox(wxT("Will now install DirectX. Please click ok to continue"), _T("directx"), wxICON_INFORMATION | wxOK);
+	wxMessageBox(wxT("Will now install DirectX. Please click ok to continue"), wxT("directx"), wxICON_INFORMATION | wxOK);
 	executeBinary(wxT("dxwebsetup.exe"));
-	wxMessageBox(wxT("Please wait until the DirectX installation is done and click ok to continue"), _T("directx"), wxICON_INFORMATION | wxOK);
-	wxMessageBox(wxT("Will now install the Visual Studio runtime. Please click ok to continue."), _T("runtime"), wxICON_INFORMATION | wxOK);
+	wxMessageBox(wxT("Please wait until the DirectX installation is done and click ok to continue"), wxT("directx"), wxICON_INFORMATION | wxOK);
+	wxMessageBox(wxT("Will now install the Visual Studio runtime. Please click ok to continue."), wxT("runtime"), wxICON_INFORMATION | wxOK);
 	executeBinary(wxT("msiexec.exe"), wxT("runas"), wxT("/i \"") + CONFIG->getInstallationPath() + wxT("\\VCCRT4.msi\""), wxT("cwd"), false);
 }
 

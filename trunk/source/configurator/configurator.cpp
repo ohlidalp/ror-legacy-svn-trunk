@@ -163,7 +163,7 @@ class HtmlWindow: public wxHtmlWindow
 public:
 	HtmlWindow(wxWindow *parent, wxWindowID id = -1,
 		const wxPoint& pos = wxDefaultPosition, const wxSize& size = wxDefaultSize,
-		long style = wxHW_SCROLLBAR_AUTO, const wxString& name = _T("htmlWindow"));
+		long style = wxHW_SCROLLBAR_AUTO, const wxString& name = wxString("htmlWindow"));
 	void OnLinkClicked(const wxHtmlLinkInfo& link);
 };
 
@@ -176,7 +176,7 @@ HtmlWindow::HtmlWindow(wxWindow *parent, wxWindowID id, const wxPoint& pos,
 void HtmlWindow::OnLinkClicked(const wxHtmlLinkInfo& link)
 {
 	wxString linkhref = link.GetHref();
-	if (linkhref.StartsWith(_T("http://")))
+	if (linkhref.StartsWith(wxString("http://")))
 	{
 		if(!wxLaunchDefaultBrowser(linkhref))
 			// failed to launch externally, so open internally
@@ -545,7 +545,7 @@ void initLanguage(wxString languagePath, wxString userpath)
 		wxLogStatus(wxT("no Languages found!"));
 	}
 
-	wxString rorcfg=userpath + dirsep + _T("config") + dirsep + _T("RoR.cfg");
+	wxString rorcfg=userpath + dirsep + wxString("config") + dirsep + wxString("RoR.cfg");
 	Ogre::ImprovedConfigFile cfg;
 	// Don't trim whitespace
 	cfg.load(rorcfg.ToUTF8().data(), "=:\t", false);
@@ -605,7 +605,7 @@ void MyApp::recurseCopy(wxString sourceDir, wxString destinationDir)
 	do
 	{
 		//ignore files and directories beginning with "." (important, for SVN!)
-		if (src.StartsWith(_T("."))) continue;
+		if (src.StartsWith(wxString("."))) continue;
 		//check if it id a directory
 		wxFileName tsfn=wxFileName(sourceDir, wxEmptyString);
 		tsfn.AppendDir(src);
@@ -683,7 +683,7 @@ bool MyApp::filesystemBootstrap()
 
 	if (!wxFileName::DirExists(UserPath))
 	{
-		wxString warning = _("Rigs of Rods User directory missing:\n") + UserPath + _("\n\nIt is required to start RoR.\nPlease reinstall Rigs of Rods in order to restore it.");
+		wxString warning = wxString::Format(_("Rigs of Rods User directory missing:\n%s\n\nIt is required to start RoR.\nPlease reinstall Rigs of Rods in order to restore it."), UserPath);
 		wxString caption = _("error upon loading RoR user directory");
 		wxMessageDialog *w = new wxMessageDialog(NULL, warning, caption, wxOK|wxICON_ERROR|wxSTAY_ON_TOP, wxDefaultPosition);
 		w->ShowModal();
@@ -875,7 +875,7 @@ MyDialog::MyDialog(const wxString& title, MyApp *_app) : wxDialog(NULL, wxID_ANY
 	ctbook->AddPage(ctsetPanel, _("Info"), false);
 	wxStaticText *dText2 = new wxStaticText(ctsetPanel, -1, _("Please edit the input mappings by hand by using a texteditor.\nThe input mappings are stored in the following file:\nMy Documents\\Rigs of Rods\\config\\input.map"), wxPoint(10,10));
 
-	wxHyperlinkCtrl *link1 = new wxHyperlinkCtrl(ctsetPanel, -1, _("(more help here)"), "http://www.rigsofrods.com/wiki/pages/Input.map", wxPoint(10, 100));
+	wxHyperlinkCtrl *link1 = new wxHyperlinkCtrl(ctsetPanel, -1, _("(more help here)"), _("http://www.rigsofrods.com/wiki/pages/Input.map"), wxPoint(10, 100));
 
 	wxPanel *ffPanel=new wxPanel(ctbook, -1);
 	ctbook->AddPage(ffPanel, _("Force Feedback"), false);
@@ -930,7 +930,7 @@ MyDialog::MyDialog(const wxString& title, MyApp *_app) : wxDialog(NULL, wxID_ANY
 		}
 	} else
 	{
-		choices.Add(_("English"));
+		choices.Add(wxString("English"));
 	}
 	languageMode=new wxChoice(gamePanel, EVC_LANG, wxPoint(x_row1, y), wxSize(200, -1), choices, wxCB_READONLY);
 	languageMode->SetSelection(sel);
@@ -1038,7 +1038,7 @@ MyDialog::MyDialog(const wxString& title, MyApp *_app) : wxDialog(NULL, wxID_ANY
 	y+=20;
 
 	addAboutTitle(_("Missing someone?"), x_row1, y);
-	addAboutEntry("missing someone?", "if you are missing someone on this list, please drop us a line:\nsupport@rigsofrods.com", "mailto:support@rigsofrods.com", x_row1, y);
+	addAboutEntry(_("Missing someone?"), _("if you are missing someone on this list, please drop us a line:\nsupport@rigsofrods.com"), "mailto:support@rigsofrods.com", x_row1, y);
 
 	wxSize size = nbook->GetBestVirtualSize();
 	size.x = 400;
@@ -1123,7 +1123,7 @@ MyDialog::MyDialog(const wxString& title, MyApp *_app) : wxDialog(NULL, wxID_ANY
 	presel_truck->SetToolTip(_("The truck you want to load upon RoR startup. Might remove the startup selection menu."));
 	y+=25;
 
-	wxHyperlinkCtrl *link = new wxHyperlinkCtrl(debugPanel, -1, _("(read more on how to use these options here)"), "http://www.rigsofrods.com/wiki/pages/Debugging_Trucks", wxPoint(10, y));
+	wxHyperlinkCtrl *link = new wxHyperlinkCtrl(debugPanel, -1, _("(read more on how to use these options here)"), _("http://www.rigsofrods.com/wiki/pages/Debugging_Trucks"), wxPoint(10, y));
 
 	// graphics panel
 	y = 10;
@@ -1248,23 +1248,23 @@ MyDialog::MyDialog(const wxString& title, MyApp *_app) : wxDialog(NULL, wxID_ANY
 	dText = new wxStaticText(ffPanel, -1, _("Overall force level:"), wxPoint(20,53));
 	ffOverall=new wxSlider(ffPanel, FFSLIDER, 100, 0, 100, wxPoint(150, 50), wxSize(200, 40));
 	ffOverall->SetToolTip(_("Adjusts the level of all the forces."));
-	ffOverallText=new wxStaticText(ffPanel, -1, _(""), wxPoint(360,53));
+	ffOverallText=new wxStaticText(ffPanel, -1, wxString(), wxPoint(360,53));
 
 	dText = new wxStaticText(ffPanel, -1, _("Steering feedback level:"), wxPoint(20,103));
 	ffHydro=new wxSlider(ffPanel, FFSLIDER, 100, 0, 400, wxPoint(150, 100), wxSize(200, 40));
 	ffHydro->SetToolTip(_("Adjusts the contribution of forces coming from the wheels and the steering mechanism."));
-	ffHydroText=new wxStaticText(ffPanel, -1, _(""), wxPoint(360,103));
+	ffHydroText=new wxStaticText(ffPanel, -1, wxString(), wxPoint(360,103));
 
 	dText = new wxStaticText(ffPanel, -1, _("Self-centering level:"), wxPoint(20,153));
 	ffCenter=new wxSlider(ffPanel, FFSLIDER, 100, 0, 400, wxPoint(150, 150), wxSize(200, 40));
 	ffCenter->SetToolTip(_("Adjusts the self-centering effect applied to the driving wheel when driving at high speed."));
-	ffCenterText=new wxStaticText(ffPanel, -1, _(""), wxPoint(360,153));
+	ffCenterText=new wxStaticText(ffPanel, -1, wxString(), wxPoint(360,153));
 
 	dText = new wxStaticText(ffPanel, -1, _("Inertia feedback level:"), wxPoint(20,203));
 	ffCamera=new wxSlider(ffPanel, FFSLIDER, 100, 0, 400, wxPoint(150, 200), wxSize(200, 40));
 	ffCamera->SetToolTip(_("Adjusts the contribution of forces coming shocks and accelerations (this parameter is currently unused)."));
 	ffCamera->Enable(false);
-	ffCameraText=new wxStaticText(ffPanel, -1, _(""), wxPoint(360,203));
+	ffCameraText=new wxStaticText(ffPanel, -1, wxString(), wxPoint(360,203));
 
 	//update textboxes
 	wxScrollEvent dummye;
@@ -1490,7 +1490,7 @@ void MyDialog::loadOgre()
 	wxLogStatus(wxT("Creating Ogre root"));
 	//we must do this once
 	wxFileName tcfn=wxFileName(app->UserPath, wxEmptyString);
-	tcfn.AppendDir(_T("config"));
+	tcfn.AppendDir(wxString("config"));
 	wxString confdirPrefix=tcfn.GetPath()+wxFileName::GetPathSeparator();
 
 	wxFileName tlfn=wxFileName(app->UserPath, wxEmptyString);
@@ -1954,7 +1954,7 @@ bool MyDialog::LoadConfig()
 	wxLogStatus(wxT("Loading RoR.cfg"));
 	Ogre::ImprovedConfigFile cfg;
 
-	wxString rorcfg=app->UserPath + wxFileName::GetPathSeparator() + _T("config") + wxFileName::GetPathSeparator() + _T("RoR.cfg");
+	wxString rorcfg=app->UserPath + wxFileName::GetPathSeparator() + wxString("config") + wxFileName::GetPathSeparator() + wxString("RoR.cfg");
 
 	wxLogStatus(wxT("reading from Config file: ") + rorcfg);
 
@@ -2013,7 +2013,7 @@ void MyDialog::SaveConfig()
 
 	//save my stuff
 	FILE *fd;
-	wxString rorcfg=app->UserPath + wxFileName::GetPathSeparator() + _T("config") + wxFileName::GetPathSeparator() + _T("RoR.cfg");
+	wxString rorcfg=app->UserPath + wxFileName::GetPathSeparator() + wxString("config") + wxFileName::GetPathSeparator() + wxString("RoR.cfg");
 
 	wxLogStatus(wxT("saving to Config file: ") + rorcfg);
 	fd=fopen(rorcfg.ToUTF8().data(), "w");
@@ -2379,7 +2379,7 @@ void MyDialog::OnButClearCache(wxCommandEvent& event)
 	do
 	{
 		//ignore files and directories beginning with "." (important, for SVN!)
-		if (src.StartsWith(_T("."))) continue;
+		if (src.StartsWith(wxString("."))) continue;
 		//check if it id a directory
 		wxFileName tsfn=wxFileName(cachepath, wxEmptyString);
 		tsfn.AppendDir(src);
