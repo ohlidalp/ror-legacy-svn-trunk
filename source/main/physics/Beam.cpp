@@ -5174,6 +5174,9 @@ int Beam::loadTruck2(Ogre::String filename, Ogre::SceneManager *manager, Ogre::S
 				resetPosition(gpos.x, gpos.z, true, miny);
 			}
 		}
+	} else
+	{
+		resetPosition(pos, true);
 	}
 	//compute final mass
 	calc_masses2(truckmass);
