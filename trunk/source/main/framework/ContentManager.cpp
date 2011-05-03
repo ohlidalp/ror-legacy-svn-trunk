@@ -195,8 +195,8 @@ bool ContentManager::init(void)
 
 
 	// and the content
-	ResourceGroupManager::getSingleton().addResourceLocation(SSETTING("User Path")+"packs", "FileSystem", "Packs");
-	ResourceGroupManager::getSingleton().addResourceLocation(SSETTING("User Path")+"mods",  "FileSystem", "Packs");
+	ResourceGroupManager::getSingleton().addResourceLocation(SSETTING("User Path")+"packs", "FileSystem", "Packs", true);
+	ResourceGroupManager::getSingleton().addResourceLocation(SSETTING("User Path")+"mods",  "FileSystem", "Packs", true);
 
 	ResourceGroupManager::getSingleton().addResourceLocation(SSETTING("User Path")+"vehicles", "FileSystem", "VehicleFolders");
 	ResourceGroupManager::getSingleton().addResourceLocation(SSETTING("User Path")+"terrains", "FileSystem", "TerrainFolders");
