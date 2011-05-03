@@ -1481,7 +1481,7 @@ void RoRFrameListener::loadObject(const char* name, float px, float py, float pz
 
 
 	SceneNode *tenode = mSceneMgr->getRootSceneNode()->createChildSceneNode();
-	MeshObject *mo = new MeshObject(mScene, mesh, oname, tenode);
+	MeshObject *mo = new MeshObject(mScene, mesh, oname, tenode, NULL, BSETTING("Background Loading"));
 	//mo->setQueryFlags(OBJECTS_MASK);
 	//tenode->attachObject(te);
 	tenode->setScale(scx,scy,scz);
