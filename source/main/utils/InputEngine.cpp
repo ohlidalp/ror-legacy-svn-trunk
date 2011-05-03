@@ -690,6 +690,12 @@ eventInfo_t eventInfo[] = {
 		_L("connect hook node to a node in close proximity")
 	},
 	{
+		"COMMON_AUTOLOCK",
+		EV_COMMON_AUTOLOCK,
+		"Keyboard EXPL+ALT+L",
+		_L("unlock autolock hook node")
+	},
+	{
 		"COMMON_ROPELOCK",
 		EV_COMMON_ROPELOCK,
 		"Keyboard EXPL+CTRL+L",

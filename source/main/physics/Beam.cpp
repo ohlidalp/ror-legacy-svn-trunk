@@ -307,7 +307,8 @@ Beam::Beam(int tnum, SceneManager *manager, SceneNode *parent, RenderWindow* win
 	net=_net;
 	if(net && !networking) networking = true; // enable networking if some network class is existing
 
-	avichatter_timer=11; // some pseudo random number, doesnt matter ;)
+	avichatter_timer=11.0f; // some pseudo random number, doesnt matter ;)
+	autolock_timer=0.0f; // start at 0
 	tsteps=100;
 	driverSeat=0;
 	networkUsername = String();
@@ -764,6 +765,7 @@ void Beam::initSimpleSkeleton()
 		simpleSkeletonManualObject->position(beams[i].p1->smoothpos);
 		simpleSkeletonManualObject->position(beams[i].p2->smoothpos);
 		simpleSkeletonManualObject->end();
+		//hier knallts
 	}
 	simpleSkeletonNode->attachObject(simpleSkeletonManualObject);
 	simpleSkeletonNode->setVisible(false);
@@ -2868,7 +2870,7 @@ void Beam::calcShocks2(int beam_i, Real difftoBeamL, Real &k, Real &d, Real dt)
 						}
 					}
 				} else
-				if (beams[i].shock->flags & SHOCK_FLAG_TRG_BLOCKER_A) // this is an enabled blocker and inside boundary
+				if (beams[i].shock->flags & SHOCK_FLAG_TRG_BLOCKER_A) // this is an enabled inverted blocker and inside boundary
 				{
 					for (int scount = i + 1; scount <= i + beams[i].shock->trigger_cmdlong; scount++)   // (cylce blockerbeamID + 1) to (blockerbeamID + beams to release)
 					{
@@ -2921,24 +2923,40 @@ void Beam::calcShocks2(int beam_i, Real difftoBeamL, Real &k, Real &d, Real dt)
 				{ // just a trigger, check high/low boundary and set action
 					if (difftoBeamL > beams[i].longbound*beams[i].L) // trigger past longbound
 					{
-						if (!commandkey[beams[i].shock->trigger_cmdlong].trigger_cmdkeyblock_state)	// related cmdkey is not blocked
-						 {
-							 commandkey[beams[i].shock->trigger_cmdlong].commandValue = 1;
-							 if(triggerdebug && beams[i].shock->last_debug_state != 4)
+						if (beams[i].shock->flags & SHOCK_FLAG_TRG_HOOK)
+						{
+							//autolock hooktoggle
+							hookToggle(beams[i].shock->trigger_cmdlong, false, 0.0f);
+						} else
+						{
+							//just a trigger
+							if (!commandkey[beams[i].shock->trigger_cmdlong].trigger_cmdkeyblock_state)	// related cmdkey is not blocked
 							 {
-								 LOG(" Trigger Longbound activated. Trigger BeamID " + TOSTRING(i) + " Triggered F" + TOSTRING(beams[i].shock->trigger_cmdlong));
-								 beams[i].shock->last_debug_state = 4;
+								 commandkey[beams[i].shock->trigger_cmdlong].commandValue = 1;
+								 if(triggerdebug && beams[i].shock->last_debug_state != 4)
+								 {
+									 LOG(" Trigger Longbound activated. Trigger BeamID " + TOSTRING(i) + " Triggered F" + TOSTRING(beams[i].shock->trigger_cmdlong));
+									 beams[i].shock->last_debug_state = 4;
+								 }
 							 }
-						 }
+						}
 					} else // trigger past short bound
 					{
-						if (!commandkey[beams[i].shock->trigger_cmdshort].trigger_cmdkeyblock_state)	// related cmdkey is not blocked
+						if (beams[i].shock->flags & SHOCK_FLAG_TRG_HOOK)
 						{
-							commandkey[beams[i].shock->trigger_cmdshort].commandValue = 1;
-							if(triggerdebug  && beams[i].shock->last_debug_state != 5)
+							//autolock hooktoggle
+							hookToggle(beams[i].shock->trigger_cmdshort, false, 0.0f);
+						} else
+						{
+							//just a trigger
+							if (!commandkey[beams[i].shock->trigger_cmdshort].trigger_cmdkeyblock_state)	// related cmdkey is not blocked
 							{
-								LOG(" Trigger Shortbound activated. Trigger BeamID " + TOSTRING(i) + " Triggered F" + TOSTRING(beams[i].shock->trigger_cmdshort));
-								beams[i].shock->last_debug_state = 5;
+								commandkey[beams[i].shock->trigger_cmdshort].commandValue = 1;
+								if(triggerdebug  && beams[i].shock->last_debug_state != 5)
+								{
+									LOG(" Trigger Shortbound activated. Trigger BeamID " + TOSTRING(i) + " Triggered F" + TOSTRING(beams[i].shock->trigger_cmdshort));
+									beams[i].shock->last_debug_state = 5;
+								}
 							}
 						}
 					}
@@ -4561,7 +4579,7 @@ void Beam::ropeToggle(int group)
 	}
 }
 
-void Beam::hookToggle(int group)
+void Beam::hookToggle(int group, bool autolock, float timer)
 {
 	Beam **trucks = BeamFactory::getSingleton().getTrucks();
 	int trucksnum = BeamFactory::getSingleton().getTruckCount();
@@ -4569,108 +4587,146 @@ void Beam::hookToggle(int group)
 	// iterate over all hooks
 	for(std::vector <hook_t>::iterator it = hooks.begin(); it!=hooks.end(); it++)
 	{
-		// only handle hooks with correct group
-		if (group != -1 && (it->group != -1 && it->group != group))
-			continue;
+		//autolocj is only true when triggerd automatically by doupdate
+		if(!autolock)
+		{
+			// only handle hooks with correct group when triggered manually, operate all for group: -1 == all hooks, -2 == all autohooks
+			if (it->group != group)
+				if (group != -1 && group != -2)
+					continue;
+		} else
+		{
+			//only handle hooks with correct group when triggered by autolock
+			if (it->group >= -1)
+				continue;
+		}
+
+		//autolock delay timer
+		if(autolock && it->timer > 0.0f)
+			it->timer -= timer;
+		else if (it->timer < 0.0f)
+			it->timer = 0.0f;
 
 		if (it->locked == LOCKED || it->locked == PRELOCK)
 		{
-			// we unlock ropes
-			it->locked = UNLOCKED;
-			// remove node locking
-			if (it->lockNode) it->lockNode->lockednode=0;
-			it->lockNode = 0;
-			it->lockTruck = 0;
+			// only unlock if its not an autolocktrigger ( manual trigger )
+			if (!autolock)
+			{
+				//do this only for the right groups 
+				if ((group <=-2 && it->group >=-1) || (group >=-1 && it->group <=-2))
+					continue;
 
-			//disable hook-assistance beam
-			it->beam->p2       = 0;
-			it->beam->p2truck  = 0;
-			it->beam->L = (nodes[0].AbsPosition - it->hookNode->AbsPosition).length();
-			it->beam->disabled = 1;
-			beams->mSceneNode->detachAllObjects();
+				//only unlock normal hooks with EV_COMMON_LOCK or autolock hooks with EV_COMMON AUTLOCK ( timer is only 0.0f when manual key is pressed )
+				if(it->group >= -1 || (it->group <= -2 && timer == 0.0f))
+				{
+					// we unlock ropes
+					it->locked = UNLOCKED;
+					// remove node locking
+					if (it->lockNode) it->lockNode->lockednode=0;
+					it->lockNode = 0;
+					it->lockTruck = 0;
+					if (it->group <= -2)
+						it->timer = it->timer_preset;	//timer reset for autolock nodes
+
+					//disable hook-assistance beam
+					it->beam->p2       = 0;
+					it->beam->p2truck  = 0;
+					it->beam->L = (nodes[0].AbsPosition - it->hookNode->AbsPosition).length();
+					it->beam->disabled = 1;
+					beams->mSceneNode->detachAllObjects();
+				}
+			}
 		} else
 		{
-			// we lock hooks
-			// search new remote ropable to lock to
-			float mindist = it->lockrange;
-			node_t *shorter=0;
-			Beam *shtruck=0;
-			float distance = 100000000.0f;
-			// iterate over all trucks
-			for (int t=0; t<trucksnum; t++)
+			//do this only for the right groups
+			if ((group <=-2 && it->group >=-1) || (group >=-1 && it->group <=-2))
+				continue;
+
+			// do this only with hooks not blocked by timer ( default timer = 0.0f only changed by autolock )
+			if (it->timer <= 0.0f)
 			{
-				if(t == this->trucknum && !it->selflock) continue; // dont lock to self
-				if(!trucks[t]) continue;
-				if (trucks[t]->state==SLEEPING) continue;
-
-				// do we lock against all nodes or just against ropables?
-				bool found = false;
-				if(it->lockNodes)
+				// we lock hooks
+				// search new remote ropable to lock to
+				float mindist = it->lockrange;
+				node_t *shorter=0;
+				Beam *shtruck=0;
+				float distance = 100000000.0f;
+				// iterate over all trucks
+				for (int t=0; t<trucksnum; t++)
 				{
-					int last_node; // nodenumber storage
-					// all nodes, so walk them
-					for (int i=0; i<trucks[t]->free_node; i++)
-					{
-						// exclude this local truck and the current hooknode from the locking search
-						if(this == trucks[t] && i == it->hookNode->id)
-							continue;
+					if(t == this->trucknum && !it->selflock) continue; // dont lock to self
+					if(!trucks[t]) continue;
+					if (trucks[t]->state==SLEEPING) continue;
 
-						// measure distance
-						float n2n_distance = (it->hookNode->AbsPosition - trucks[t]->nodes[i].AbsPosition).length();
-						if (n2n_distance < mindist)
+					// do we lock against all nodes or just against ropables?
+					bool found = false;
+					if(it->lockNodes)
+					{
+						int last_node; // nodenumber storage
+						// all nodes, so walk them
+						for (int i=0; i<trucks[t]->free_node; i++)
 						{
-							if (distance >= n2n_distance)
+							// exclude this local truck and the current hooknode from the locking search
+							if(this == trucks[t] && i == it->hookNode->id)
+								continue;
+
+							// measure distance
+							float n2n_distance = (it->hookNode->AbsPosition - trucks[t]->nodes[i].AbsPosition).length();
+							if (n2n_distance < mindist)
 							{
-								//lockated a node that is closer
-								distance = n2n_distance;
-								last_node=i;
-								found = true;
+								if (distance >= n2n_distance)
+								{
+									//lockated a node that is closer
+									distance = n2n_distance;
+									last_node=i;
+									found = true;
+								}
+							}
+						}
+						if (found)
+						{
+							// we found a node, lock to it
+							it->lockNode  = &(trucks[t]->nodes[last_node]);
+							it->lockTruck = trucks[t];
+							it->locked    = PRELOCK;
+							found     = true; // dont check the other trucks
+						}
+					} else
+					{
+						// we lock against ropables
+
+						// and their ropables
+						for(std::vector <ropable_t>::iterator itr = trucks[t]->ropables.begin(); itr!=trucks[t]->ropables.end(); itr++)
+						{
+							// if the ropable is not multilock and used, then discard this ropable
+							if(!itr->multilock && itr->used)
+								continue;
+
+							// calculate the distance and record the nearest ropable
+							float dist = (it->hookNode->AbsPosition - itr->node->AbsPosition).length();
+							if (dist < mindist)
+							{
+								mindist = dist;
+								shorter = itr->node;
+								shtruck = trucks[t];
 							}
 						}
 					}
-					if (found)
+					// if we found a ropable, then lock it
+					if (shorter)
 					{
-						// we found a node, lock to it
-						it->lockNode  = &(trucks[t]->nodes[last_node]);
-						it->lockTruck = trucks[t];
+						// we found a ropable, lock to it
+						it->lockNode  = shorter;
+						it->lockTruck = shtruck;
 						it->locked    = PRELOCK;
-						found     = true; // dont check the other trucks
+						found         = true; // dont check the other trucks
 					}
-				} else
-				{
-					// we lock against ropables
 
-					// and their ropables
-					for(std::vector <ropable_t>::iterator itr = trucks[t]->ropables.begin(); itr!=trucks[t]->ropables.end(); itr++)
-					{
-						// if the ropable is not multilock and used, then discard this ropable
-						if(!itr->multilock && itr->used)
-							continue;
-
-						// calculate the distance and record the nearest ropable
-						float dist = (it->hookNode->AbsPosition - itr->node->AbsPosition).length();
-						if (dist < mindist)
-						{
-							mindist = dist;
-							shorter = itr->node;
-							shtruck = trucks[t];
-						}
-					}
+					//removed since we want to lock to the nearest node in distance
+					//if(found)
+						// if we found some lock, we wont check all other trucks
+						//break;
 				}
-				// if we found a ropable, then lock it
-				if (shorter)
-				{
-					// we found a ropable, lock to it
-					it->lockNode  = shorter;
-					it->lockTruck = shtruck;
-					it->locked    = PRELOCK;
-					found         = true; // dont check the other trucks
-				}
-
-				//removed since we want to lock to the nearest node in distance
-				//if(found)
-					// if we found some lock, we wont check all other trucks
-					//break;
 			}
 		}
 	}

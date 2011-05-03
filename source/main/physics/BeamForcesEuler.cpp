@@ -333,6 +333,14 @@ void Beam::calcForcesEuler(int doUpdate, Real dt, int step, int maxstep)
 	BES_STOP(BES_CORE_Beams);
 	BES_START(BES_CORE_AnimatedProps);
 
+	//autlocks ( scan just once per frame, need to use a timer(truck-based) to get
+	autolock_timer += dt;
+	if(doUpdate)
+	{
+		hookToggle(-2, true, autolock_timer);
+		autolock_timer = 0.0f;
+	}
+
 	//animate props
 	// TODO: only calculate animated props every frame and not in the core routine
 	//if(doUpdate)

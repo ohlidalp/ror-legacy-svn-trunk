@@ -1279,8 +1279,8 @@ int SerializedRig::loadTruck(String fname, SceneManager *manager, SceneNode *par
 				// merge options and default_node_options
 				strncpy(options, ((String(default_node_options) + String(options)).c_str()), 250);
 
-				int pos;
-				float speedcoef = 1.0f, hookforce=HOOK_FORCE_DEFAULT, hookrange=HOOK_RANGE_DEFAULT;
+				int pos, group =-1;
+				float speedcoef = 1.0f, hookforce=HOOK_FORCE_DEFAULT, hookrange=HOOK_RANGE_DEFAULT, hooktimer=HOOK_LOCK_TIMER;
 				bool hook_selflock = false;
 				// now 'parse' the options
 				char *options_pointer = options;
@@ -1374,10 +1374,16 @@ int SerializedRig::loadTruck(String fname, SceneManager *manager, SceneNode *par
 								hookforce = PARSEREAL(args[8]);
 							if(n > 9 &&	args[9] == "self-lock")
 								hook_selflock = true;
-
+							if(n > 10 &&	args[10] == "auto-lock")
+								group = -2;
+							if(n > 11 && args[11] != "-1" && args[11] != "default")
+								hooktimer = PARSEREAL(args[11]);
+							if(n > 12 && args[12] != "-1" && args[12] != "default")
+								group = PARSEINT(args[12]);
+							
 							hook_t h;
 							h.hookNode  = &nodes[id];
-							h.group     = -1;
+							h.group     = group;
 							h.locked    = UNLOCKED;
 							h.lockNode  = 0;
 							h.lockTruck = 0;
@@ -1387,6 +1393,8 @@ int SerializedRig::loadTruck(String fname, SceneManager *manager, SceneNode *par
 							h.lockrange = hookrange;
 							h.lockspeed = speedcoef * HOOK_SPEED_DEFAULT;
 							h.selflock = hook_selflock;
+							h.timer = 0.0f;
+							h.timer_preset = hooktimer;
 							hooks.push_back(h);
 						break;
 						case 'e':	//editor
@@ -1519,6 +1527,7 @@ int SerializedRig::loadTruck(String fname, SceneManager *manager, SceneNode *par
 				bool triggerblocker = false;
 				bool triggerblocker_inverted = false;
 				bool cmdkeyblock = false;
+				bool hooktoggle = false;
 				commandkey[triggershort].trigger_cmdkeyblock_state = false;
 				if (triggerlong != -1) commandkey[triggerlong].trigger_cmdkeyblock_state = false;
 
@@ -1553,11 +1562,15 @@ int SerializedRig::loadTruck(String fname, SceneManager *manager, SceneNode *par
 							shockflag |= SHOCK_FLAG_TRG_BLOCKER_A;
 							triggerblocker_inverted = true;
 							break;
+						case 'h':	// Blocker that enable/disable other triggers, reversed activation method (inverted Blocker style, auto-ON)
+							shockflag |= SHOCK_FLAG_TRG_HOOK;
+							hooktoggle = true;
+							break;
 					}
 					options_pointer++;
 				}
 
-				if (!triggerblocker && !triggerblocker_inverted)
+				if (!triggerblocker && !triggerblocker_inverted && !hooktoggle)
 				{
 					// this is no Trigger-Blocker, make the full check
 					if ((triggershort < 1 || triggershort > MAX_COMMANDS) || ((triggerlong < 1 || triggerlong > MAX_COMMANDS) && triggerlong !=-1 && triggerlong !=0)) 
@@ -1565,7 +1578,7 @@ int SerializedRig::loadTruck(String fname, SceneManager *manager, SceneNode *par
 						parser_warning(c, "Error: Wrong command-eventnumber (Triggers). Trigger deactivated.");
 						continue;
 					}
-				} else
+				} else if(!hooktoggle)
 				{
 					// this is a Trigger-Blocker, make special check
 					if (triggershort < 0 || triggerlong < 0)
@@ -1586,7 +1599,7 @@ int SerializedRig::loadTruck(String fname, SceneManager *manager, SceneNode *par
 				if (!triggerblocker && !triggerblocker_inverted) // this is no triggerblocker (A/B)
 				{
 					shocks[free_shock].trigger_cmdshort = triggershort;
-					if (triggerlong != -1)	// this is a trigger
+					if (triggerlong != -1 || (triggerlong == -1 && hooktoggle))	// this is a trigger or a hooktoggle
 						shocks[free_shock].trigger_cmdlong = triggerlong;
 					else // this is a commandkeyblocker
 						shockflag |= SHOCK_FLAG_TRG_CMD_BLOCKER;

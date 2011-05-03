@@ -212,6 +212,7 @@ static const float ROTATOR_TOLERANCE_DEFAULT    = 0.0f;
 static const float HOOK_FORCE_DEFAULT		    = 10000000.0f;
 static const float HOOK_RANGE_DEFAULT           = 0.4f;
 static const float HOOK_SPEED_DEFAULT           = 0.00025f;
+static const float HOOK_LOCK_TIMER              = 5.0;
 /* Enumerations */
 enum {
 	THREAD_MONO,    //!< mono threading mode
@@ -344,6 +345,7 @@ enum {
 	SHOCK_FLAG_TRG_CMD_SWITCH	= BITMASK(9),
 	SHOCK_FLAG_TRG_CMD_BLOCKER	= BITMASK(10),
 	SHOCK_FLAG_TRG_BLOCKER_A	= BITMASK(11),
+	SHOCK_FLAG_TRG_HOOK     	= BITMASK(12),
 };
 
 enum { 
@@ -564,6 +566,8 @@ struct hook
 	float maxforce;
 	float lockrange;
 	float lockspeed;
+	float timer;
+	float timer_preset;
 	node_t *hookNode;
 	node_t *lockNode;
 	beam_t *beam;
