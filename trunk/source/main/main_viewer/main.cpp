@@ -88,7 +88,7 @@ bool RoRViewerApp::OnInit(void)
 
 void RoRViewerApp::OnInitCmdLine(wxCmdLineParser& parser)
 {
-	parser.AddParam(_T("<file>"), wxCMD_LINE_VAL_STRING, wxCMD_LINE_OPTION_MANDATORY);
+	parser.AddParam(("<file>"), wxCMD_LINE_VAL_STRING, wxCMD_LINE_OPTION_MANDATORY);
 }
 
 bool RoRViewerApp::OnCmdLineParsed(wxCmdLineParser& parser)

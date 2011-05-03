@@ -24,44 +24,11 @@ along with Rigs of Rods.  If not, see <http://www.gnu.org/licenses/>.
 #include "panel_meshtree.h"
 #include "panel_log.h"
 
-#include "wxutils.h"
 #include "Settings.h"
 
 #include "AdvancedOgreFramework.h"
 
 #include "display_mode.xpm"
-
-Window3D::Window3D(wxWindow* parent, wxWindowID id) : wxPanel(parent, id, wxDefaultPosition, wxDefaultSize, wxTRANSPARENT_WINDOW | wxBORDER_NONE | wxNO_FULL_REPAINT_ON_RESIZE)
-{
-	handler = NULL;
-}
-
-void Window3D::OnSize(wxSizeEvent& e)
-{
-
-	// Setting new size;
-	int width;
-	int height;
-	GetSize(&width, &height);
-
-	if(OgreFramework::getSingletonPtr())
-		OgreFramework::getSingletonPtr()->resized(Vector2(width, height));
-}
-
-void Window3D::OnLeftUp(wxMouseEvent& e)
-{
-	if (handler) handler->OnLeftUp(e.m_x, e.m_y);
-}
-
-void Window3D::OnMouseMove(wxMouseEvent& e)
-{
-	if (handler) handler->OnMouseMove(e);
-}
-
-void Window3D::OnKeyDown(wxKeyEvent& e)
-{
-	if (handler) handler->OnKeyDown(e.ControlDown(), e.AltDown(), e.ShiftDown(), e.GetKeyCode());
-}
 
 bool RoRViewerApp::OnInit(void)
 {
@@ -120,16 +87,18 @@ RoRViewerFrame::~RoRViewerFrame()
 }
 void RoRViewerFrame::OnViewToolClick(wxCommandEvent& e)
 {
+	Ogre::Camera *cam = OgreFramework::getSingleton().m_pViewport->getCamera();
+	if(!cam) return;
 	switch(e.GetId())
 	{
 		case ID_TOOL_MODE_TEXTURE:
-			editor->GetCamera()->setPolygonMode(Ogre::PM_SOLID);
+			cam->setPolygonMode(Ogre::PM_SOLID);
 			break;
 		case ID_TOOL_MODE_WIREFRAME:
-			editor->GetCamera()->setPolygonMode(Ogre::PM_WIREFRAME);
+			cam->setPolygonMode(Ogre::PM_WIREFRAME);
 			break;
 		case ID_TOOL_MODE_POINT:
-			editor->GetCamera()->setPolygonMode(Ogre::PM_POINTS);
+			cam->setPolygonMode(Ogre::PM_POINTS);
 			break;
 	};
 }
@@ -137,20 +106,6 @@ void RoRViewerFrame::OnViewToolClick(wxCommandEvent& e)
 void RoRViewerFrame::InitializeAUI(void)
 {
 	aui_mgr = new wxAuiManager(this);
-
-	// main 3D viewport
-	pane_viewport = new wxAuiPaneInfo();
-	pane_viewport->PaneBorder(false);
-	pane_viewport->CaptionVisible(false);
-	pane_viewport->Caption(L"3D Viewport");
-	pane_viewport->FloatingSize(wxSize(50, 50));
-	pane_viewport->MinSize(wxSize(10, 10));
-	pane_viewport->Center();
-	pane_viewport->Dock();
-	panel_viewport = new Window3D(this, ID_VIEWPORT);
-	panel_viewport->SetBackgroundColour(wxColour(L"Gray"));
-	aui_mgr->AddPane(panel_viewport, *pane_viewport);
-	panel_viewport->handler = this;
 
 	// property grid
 	pane_meshprop = new wxAuiPaneInfo();
@@ -163,7 +118,8 @@ void RoRViewerFrame::InitializeAUI(void)
 	pane_meshprop->Resizable(true);
 	pane_meshprop->TopDockable(false);
 	pane_meshprop->BottomDockable(false);
-	pane_meshprop->Left();
+	pane_meshprop->Right();
+	pane_meshprop->Layer(1);
 	pane_meshprop->Position(1);
 	pane_meshprop->Dock();
 	panel_meshprop = new PanelMeshProp(0, this, wxID_ANY);
@@ -181,6 +137,7 @@ void RoRViewerFrame::InitializeAUI(void)
 	pane_meshtree->TopDockable(false);
 	pane_meshtree->BottomDockable(false);
 	pane_meshtree->Left();
+	pane_meshprop->Layer(0);
 	pane_meshtree->Position(0);
 	pane_meshtree->Dock();
 	panel_meshtree = new PanelMeshTree(0, this, wxID_ANY);
@@ -201,6 +158,7 @@ void RoRViewerFrame::InitializeAUI(void)
 	pane_log->RightDockable(false);
 	pane_log->BottomDockable(true);
 	pane_log->Bottom();
+	pane_log->Layer(0);
 	pane_log->Position(2);
 	pane_log->Dock();
 	panel_log = new PanelLog(0, this, wxID_ANY);
@@ -252,12 +210,41 @@ bool RoRViewerFrame::InitializeRoRViewer(wxString meshPath)
 {
 	string mstr = std::string(meshPath.mb_str());
 	editor = new RoREditor(mstr);
-	if (!editor->Initialize(getWindowHandle(panel_viewport), getWindowHandle(this)))
+	
+	panel_viewport = new wxOgreRenderWindow( this, ID_VIEWPORT);
+	panel_viewport->Hide();
+	
+	if (!editor->Initialize(panel_viewport->GetOgreHandle(), wxOgreRenderWindow::GetOgreHandleForWindow (this)))
 	{
 		delete editor;
 		editor = NULL;
 		return false;
 	}
+	panel_viewport->Show();
+
+	wxOgreRenderWindow::SetOgreRoot(OgreFramework::getSingleton().m_pRoot);
+	wxOgreRenderWindow::SetOgreRenderWindow(OgreFramework::getSingleton().m_pRenderWnd);
+
+	// now add our 3d window
+	// main 3D viewport
+	pane_viewport = new wxAuiPaneInfo();
+	//pane_viewport->CaptionVisible(false);
+	pane_viewport->Caption(L"Ogre 3D Render Window");
+	pane_viewport->CenterPane();
+	pane_viewport->PaneBorder(false);
+	pane_viewport->CloseButton(false);
+	//pane_viewport->FloatingSize(wxSize(50, 50));
+	//pane_viewport->MinSize(wxSize(10, 10));
+	pane_viewport->Dock();
+	panel_viewport->SetBackgroundColour(wxColour(L"Gray"));
+	panel_viewport->setRenderWindowListener( this );
+	aui_mgr->AddPane(panel_viewport, *pane_viewport);
+
+	// fit the window in the correct position
+	aui_mgr->Update();
+
+	
+
 	panel_meshprop->setViewer(editor);
 	panel_meshtree->setViewer(editor);
 	panel_log->setViewer(editor);
@@ -289,25 +276,6 @@ void RoRViewerFrame::OnIdle(wxIdleEvent& e)
 	e.RequestMore();
 }
 
-void RoRViewerFrame::OnLeftUp(int x, int y)
-{
-}
-
-void RoRViewerFrame::OnMouseMove(wxMouseEvent& e)
-{
-	int xp = msx - e.m_x;
-	int yp = msy - e.m_y;
-	int wp = e.m_wheelRotation;
-	msx = e.m_x;
-	msy = e.m_y;
-
-	/// shit behaves badly, to be fixed!
-	if (e.LeftIsDown() || wp != 0)
-	{
-		//editor->TurnCamera(Vector3(xp, yp, wp*0.02f));
-	}
-}
-
-void RoRViewerFrame::OnKeyDown(bool ctrl, bool alt, bool shift, int key)
+void RoRViewerFrame::OnMouseEvents( wxMouseEvent &evt )
 {
 }
