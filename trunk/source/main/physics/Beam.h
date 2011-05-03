@@ -129,7 +129,7 @@ public:
 	void lightsToggle();
 	void tieToggle(int group=-1);
 	void ropeToggle(int group=-1);
-	void hookToggle(int group=-1);
+	void hookToggle(int group=-1, bool autolock = false, float timer = 0.0f);
 	void toggleSlideNodeLock();
 	void toggleCustomParticles();
 	void toggleAxleLock();	//! diff lock on or off
@@ -322,6 +322,7 @@ public:
 	bool isLocked();
 	int tsteps;
 	float avichatter_timer;
+	float autolock_timer;
 
 protected:
 
