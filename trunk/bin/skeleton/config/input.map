@@ -126,7 +126,9 @@ COMMON_ENTER_CHAT              Keyboard             RETURN
 COMMON_ENTER_OR_EXIT_TRUCK     Keyboard             RETURN 
 COMMON_FULLSCREEN_TOGGLE       Keyboard             EXPL+ALT+RETURN 
 COMMON_HIDE_GUI                Keyboard             U 
-COMMON_LOCK                    Keyboard             L 
+COMMON_LOCK                    Keyboard             EXPL+L 
+COMMON_AUTOLOCK                Keyboard             EXPL+ALT+L 
+COMMON_ROPELOCK                Keyboard             EXPL+CTRL+L 
 COMMON_MAP_ALPHA               Keyboard             EXPL+CTRL+TAB 
 COMMON_OUTPUT_POSITION         Keyboard             H 
 COMMON_PRESSURE_LESS           Keyboard             LBRACKET 
