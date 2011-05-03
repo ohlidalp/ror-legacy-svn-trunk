@@ -61,8 +61,8 @@ public:
 
 	~MeshObject()
 	{
-       if(backgroundLoading && !mesh.isNull())
-           mesh->unload();
+		if(backgroundLoading && !mesh.isNull())
+			mesh->unload();
 	}
 
 	void setSimpleMaterialColour(Ogre::ColourValue c)
@@ -171,82 +171,27 @@ protected:
 			sceneNode->getAttachedObject(0)->setCastShadows(castshadows);
 
 
-		sceneNode->setVisible(visible);
-	}
-
-	void loadMesh()
-	{
-		Ogre::String resourceGroup = Ogre::ResourceGroupManager::DEFAULT_RESOURCE_GROUP_NAME;
-		Ogre::MeshPtr mesh = static_cast<Ogre::MeshPtr>(Ogre::MeshManager::getSingleton().create(meshName, resourceGroup));
-		if(backgroundLoading)
+		// now find possible LODs, needs to be done before calling createEntity()
+		if(!mesh.isNull())
 		{
-			mesh->setBackgroundLoaded(true);
-			mesh->addListener(this);
-			ticket = Ogre::ResourceBackgroundQueue::getSingleton().load(
-				Ogre::MeshManager::getSingletonPtr()->getResourceType(), 
-				mesh->getName(), 
-				resourceGroup,
-				false,
-				0,
-				0,
-				0);
+			String basename, ext;
+			StringUtil::splitBaseFilename(meshName, basename, ext);
+			for(int i=0; i<4;i++)
+			{
+				String fn = basename + "_lod" + TOSTRING(i+1) + ".mesh";
+				bool exists = ResourceGroupManager::getSingleton().resourceExistsInAnyGroup(fn);
+				if(!exists) continue;
 
-                        // try to load its textures in the background
-                        for(int i=0; i<mesh->getNumSubMeshes(); i++)
-                        {
-                            SubMesh *sm = mesh->getSubMesh(i);
-                            String materialName = sm->getMaterialName();
-                            Ogre::MaterialPtr mat = static_cast<Ogre::MaterialPtr>(Ogre::MaterialManager::getSingleton().getByName(materialName)); //, resourceGroup));
-                            if(mat.isNull()) continue;
-                            for(int tn=0; tn<mat->getNumTechniques(); tn++)
-                            {
-                                Technique *t = mat->getTechnique(tn);
-                                for(int pn=0; pn<t->getNumPasses(); pn++)
-                                {
-                                    Pass *p = t->getPass(pn);
-                                    for(int tun=0; tun<p->getNumTextureUnitStates(); tun++)
-                                    {
-                                        TextureUnitState *tu = p->getTextureUnitState(tun);
-                                        String textureName = tu->getTextureName();
-                                        // now add this texture to the background loading queue
-                                        Ogre::TexturePtr tex = static_cast<Ogre::TexturePtr>(Ogre::TextureManager::getSingleton().create(textureName, resourceGroup));
-                                        tex->setBackgroundLoaded(true);
-                                        tex->addListener(this);
-                                        ticket = Ogre::ResourceBackgroundQueue::getSingleton().load(
-                                                Ogre::TextureManager::getSingletonPtr()->getResourceType(),
-                                                tex->getName(),
-                                                resourceGroup,
-                                                false,
-                                                0,
-                                                0,
-                                                0);
 
-                                    }
-                                }
-                            
-                            }
-                        }
+				float distance = 3;
+				if(i == 1) distance = 20;
+				if(i == 2) distance = 50;
+				if(i == 3) distance = 200;
 
+				Ogre::MeshManager::getSingleton().load(fn, Ogre::ResourceGroupManager::DEFAULT_RESOURCE_GROUP_NAME),
+				mesh->createManualLodLevel(distance, fn);
+			}
 		}
-
-		// now find possible LODs
-		String basename, ext;
-		StringUtil::splitBaseFilename(meshName, basename, ext);
-		for(int i=0; i<4;i++)
-		{
-			String fn = basename + "_lod" + TOSTRING(i+1) + ".mesh";
-			bool exists = ResourceGroupManager::getSingleton().resourceExistsInAnyGroup(fn);
-			if(!exists) continue;
-
-			float distance = 3;
-			if(i == 1) distance = 20;
-			if(i == 2) distance = 50;
-			if(i == 3) distance = 200;
-			mesh->createManualLodLevel(distance, fn);
-		}
-		
-		
-
 
 		// now create an entity around the mesh and attach it to the scene graph
 		try
@@ -262,6 +207,62 @@ protected:
 			LOG("error loading mesh: " + meshName + ": " + e.getFullDescription());
 			return;
 		}
+		sceneNode->setVisible(visible);
+	}
+
+	void loadMesh()
+	{
+		Ogre::String resourceGroup = Ogre::ResourceGroupManager::DEFAULT_RESOURCE_GROUP_NAME;
+		mesh = static_cast<Ogre::MeshPtr>(Ogre::MeshManager::getSingleton().create(meshName, resourceGroup));
+		if(backgroundLoading)
+		{
+			mesh->setBackgroundLoaded(true);
+			mesh->addListener(this);
+			ticket = Ogre::ResourceBackgroundQueue::getSingleton().load(
+				Ogre::MeshManager::getSingletonPtr()->getResourceType(), 
+				mesh->getName(), 
+				resourceGroup,
+				false,
+				0,
+				0,
+				0);
+
+			// try to load its textures in the background
+			for(int i=0; i<mesh->getNumSubMeshes(); i++)
+			{
+				SubMesh *sm = mesh->getSubMesh(i);
+				String materialName = sm->getMaterialName();
+				Ogre::MaterialPtr mat = static_cast<Ogre::MaterialPtr>(Ogre::MaterialManager::getSingleton().getByName(materialName)); //, resourceGroup));
+				if(mat.isNull()) continue;
+				for(int tn=0; tn<mat->getNumTechniques(); tn++)
+				{
+					Technique *t = mat->getTechnique(tn);
+					for(int pn=0; pn<t->getNumPasses(); pn++)
+					{
+						Pass *p = t->getPass(pn);
+						for(int tun=0; tun<p->getNumTextureUnitStates(); tun++)
+						{
+							TextureUnitState *tu = p->getTextureUnitState(tun);
+							String textureName = tu->getTextureName();
+							// now add this texture to the background loading queue
+							Ogre::TexturePtr tex = static_cast<Ogre::TexturePtr>(Ogre::TextureManager::getSingleton().create(textureName, resourceGroup));
+							tex->setBackgroundLoaded(true);
+							tex->addListener(this);
+							ticket = Ogre::ResourceBackgroundQueue::getSingleton().load(
+									Ogre::TextureManager::getSingletonPtr()->getResourceType(),
+									tex->getName(),
+									resourceGroup,
+									false,
+									0,
+									0,
+									0);
+
+						}
+					}
+                            
+				}
+			}
+		}
 		
 		if(!backgroundLoading)
 			postProcess();
@@ -269,7 +270,7 @@ protected:
 
 	void operationCompleted(BackgroundProcessTicket ticket, const BackgroundProcessResult& result)
 	{
-                // NOT USED ATM
+				// NOT USED ATM
 		LOG("operationCompleted: " + meshName);
 		if(ticket == this->ticket)
 			postProcess();
