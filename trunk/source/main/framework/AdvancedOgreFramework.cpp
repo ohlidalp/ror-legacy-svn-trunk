@@ -169,14 +169,6 @@ bool OgreFramework::initOgre(Ogre::String name, Ogre::String hwnd, Ogre::String 
 
 void OgreFramework::resized(Ogre::Vector2 size)
 {
-	if(m_pRenderWnd)
-	{
-		m_pRenderWnd->resize(size.x, size.y);
-
-		// Letting Ogre know the window has been resized;
-		m_pRenderWnd->windowMovedOrResized();
-	}
-
 	// trigger resizing of all sub-components
 	RoRWindowEventUtilities::triggerResize(m_pRenderWnd);
 
