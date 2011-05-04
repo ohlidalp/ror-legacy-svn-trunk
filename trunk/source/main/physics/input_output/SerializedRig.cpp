@@ -1281,7 +1281,7 @@ int SerializedRig::loadTruck(String fname, SceneManager *manager, SceneNode *par
 
 				int pos, group =-1;
 				float speedcoef = 1.0f, hookforce=HOOK_FORCE_DEFAULT, hookrange=HOOK_RANGE_DEFAULT, hooktimer=HOOK_LOCK_TIMER;
-				bool hook_selflock = false;
+				bool hook_selflock = false, hook_autolock = false;
 				// now 'parse' the options
 				char *options_pointer = options;
 				while (*options_pointer != 0)
@@ -1372,13 +1372,16 @@ int SerializedRig::loadTruck(String fname, SceneManager *manager, SceneNode *par
 								speedcoef = PARSEREAL(args[7]);
 							if(n > 8 &&	args[8] != "-1" && args[8] != "default")
 								hookforce = PARSEREAL(args[8]);
-							if(n > 9 &&	args[9] == "self-lock")
+							if(n > 9 &&	(args[9] == "self-lock" || args[9] == "self_lock" || args[9] == "selflock"))
 								hook_selflock = true;
-							if(n > 10 &&	args[10] == "auto-lock")
+							if(n > 10 && (args[10] == "auto-lock" || args[10] == "auto_lock" || args[10] == "autolock"))
+							{
 								group = -2;
+								hook_autolock = true;
+							}
 							if(n > 11 && args[11] != "-1" && args[11] != "default")
 								hooktimer = PARSEREAL(args[11]);
-							if(n > 12 && args[12] != "-1" && args[12] != "default")
+							if(n > 12 && args[12] != "default")
 								group = PARSEINT(args[12]);
 							
 							hook_t h;
@@ -1395,6 +1398,7 @@ int SerializedRig::loadTruck(String fname, SceneManager *manager, SceneNode *par
 							h.selflock = hook_selflock;
 							h.timer = 0.0f;
 							h.timer_preset = hooktimer;
+							h.autolock = hook_autolock;
 							hooks.push_back(h);
 						break;
 						case 'e':	//editor
@@ -1563,7 +1567,11 @@ int SerializedRig::loadTruck(String fname, SceneManager *manager, SceneNode *par
 							triggerblocker_inverted = true;
 							break;
 						case 'h':	// Blocker that enable/disable other triggers, reversed activation method (inverted Blocker style, auto-ON)
-							shockflag |= SHOCK_FLAG_TRG_HOOK;
+							shockflag |= SHOCK_FLAG_TRG_HOOK_UNLOCK;
+							hooktoggle = true;
+							break;
+						case 'H':	// Blocker that enable/disable other triggers, reversed activation method (inverted Blocker style, auto-ON)
+							shockflag |= SHOCK_FLAG_TRG_HOOK_LOCK;
 							hooktoggle = true;
 							break;
 					}
@@ -2595,7 +2603,7 @@ int SerializedRig::loadTruck(String fname, SceneManager *manager, SceneNode *par
 				//register rope
 				rope_t r;
 				r.beam     = &beams[pos];
-				r.lockedto = 0;
+				r.lockedto = &nodes[0];
 				r.group    = group;
 				ropes.push_back(r);
 
