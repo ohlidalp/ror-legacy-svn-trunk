@@ -115,7 +115,7 @@ public:
 	int truckSteps;
 	void calcForcesEuler(int doUpdate, Real dt, int step, int maxsteps);
 	void truckTruckCollisions(Real dt);
-	void calcShocks2(int beam_i, Real difftoBeamL, Real &k, Real &d, Real dt);
+	void calcShocks2(int beam_i, Real difftoBeamL, Real &k, Real &d, Real dt, int update);
 	void calcAnimators(int flagstate, float &cstate, int &div, float timer, float opt1, float opt2, float opt3);
 	//! @}
 
@@ -129,7 +129,7 @@ public:
 	void lightsToggle();
 	void tieToggle(int group=-1);
 	void ropeToggle(int group=-1);
-	void hookToggle(int group=-1, bool autolock = false, float timer = 0.0f);
+	void hookToggle(int group=-1, int mode = HOOK_TOGGLE);
 	void toggleSlideNodeLock();
 	void toggleCustomParticles();
 	void toggleAxleLock();	//! diff lock on or off
@@ -322,7 +322,6 @@ public:
 	bool isLocked();
 	int tsteps;
 	float avichatter_timer;
-	float autolock_timer;
 
 protected:
 

@@ -181,6 +181,12 @@ enum game_states {
 	EDITOR_PAUSE,
 };
 
+enum hook_states {
+	HOOK_LOCK=0,
+	HOOK_UNLOCK,
+	HOOK_TOGGLE,
+};
+
 /* physics defaults */
 static const float DEFAULT_RIGIDIFIER_SPRING    = 1000000.0f;
 static const float DEFAULT_RIGIDIFIER_DAMP      = 50000.0f;
@@ -345,7 +351,8 @@ enum {
 	SHOCK_FLAG_TRG_CMD_SWITCH	= BITMASK(9),
 	SHOCK_FLAG_TRG_CMD_BLOCKER	= BITMASK(10),
 	SHOCK_FLAG_TRG_BLOCKER_A	= BITMASK(11),
-	SHOCK_FLAG_TRG_HOOK     	= BITMASK(12),
+	SHOCK_FLAG_TRG_HOOK_UNLOCK 	= BITMASK(12),
+	SHOCK_FLAG_TRG_HOOK_LOCK   	= BITMASK(13),
 };
 
 enum { 
@@ -563,6 +570,7 @@ struct hook
 	int group;
 	bool lockNodes;
 	bool selflock;
+	bool autolock;
 	float maxforce;
 	float lockrange;
 	float lockspeed;

@@ -139,7 +139,7 @@ void Beam::calcForcesEuler(int doUpdate, Real dt, int step, int maxstep)
 					}
 					else // We assume the bounded=SHOCK2 case
 					{
- 						calcShocks2(i, difftoBeamL, k, d, dt);
+ 						calcShocks2(i, difftoBeamL, k, d, dt, doUpdate);
 					}
 				}
 				else
@@ -334,11 +334,17 @@ void Beam::calcForcesEuler(int doUpdate, Real dt, int step, int maxstep)
 	BES_START(BES_CORE_AnimatedProps);
 
 	//autlocks ( scan just once per frame, need to use a timer(truck-based) to get
-	autolock_timer += dt;
+	for(std::vector <hook_t>::iterator it = hooks.begin(); it!=hooks.end(); it++)
+	{
+		//we need to do this here to avoid countdown speedup by triggers
+		it->timer -= dt;
+		if (it->timer < 0)
+			it->timer = 0.0f;
+	}
 	if(doUpdate)
 	{
-		hookToggle(-2, true, autolock_timer);
-		autolock_timer = 0.0f;
+		//just call this once per frame to avoid performance impact
+		hookToggle(-2, HOOK_LOCK);
 	}
 
 	//animate props
@@ -735,6 +741,7 @@ void Beam::calcForcesEuler(int doUpdate, Real dt, int step, int maxstep)
 				it->beam->p2       = it->lockNode;
 				it->beam->p2truck  = it->lockTruck;
 				it->beam->L = (it->hookNode->AbsPosition - it->lockNode->AbsPosition).length();
+
 				it->beam->disabled = false;
 				if (beams->mSceneNode->numAttachedObjects() == 0)
 					beams->mSceneNode->attachObject(beams->mEntity);
@@ -756,11 +763,11 @@ void Beam::calcForcesEuler(int doUpdate, Real dt, int step, int maxstep)
 						//force exceeded reset the hook node
 						it->locked = UNLOCKED;
 						if (it->lockNode) it->lockNode->lockednode=0;
-						it->lockNode = 0;
-						it->lockTruck = 0;
-						it->beam->p2       = 0;
+						it->lockNode       = 0;
+						it->lockTruck      = 0;
+						it->beam->p2       = &nodes[0];
 						it->beam->p2truck  = 0;
-						it->beam->L = (nodes[0].AbsPosition - it->hookNode->AbsPosition).length();
+						it->beam->L        = (nodes[0].AbsPosition - it->hookNode->AbsPosition).length();
 						it->beam->disabled = 1;
 						beams->mSceneNode->detachAllObjects();
 					}
