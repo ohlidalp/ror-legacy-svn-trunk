@@ -4676,8 +4676,12 @@ void Beam::hookToggle(int group, int mode)
 					// all nodes, so walk them
 					for (int i=0; i<trucks[t]->free_node; i++)
 					{
-						// exclude this local truck and the current hooknode from the locking search
+						// exclude this truck and its current hooknode from the locking search
 						if(this == trucks[t] && i == it->hookNode->id)
+							continue;
+
+						// a lockgroup for this hooknode is set -> skip all nodes that do not have the same lockgroup (-1 = default(all nodes))
+						if(it->lockgroup != -1 && it->lockgroup != trucks[t]->nodes[i].lockgroup)
 							continue;
 
 						// measure distance
