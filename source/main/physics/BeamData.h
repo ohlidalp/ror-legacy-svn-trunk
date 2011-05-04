@@ -148,6 +148,7 @@ enum TRUCK_SECTIONS {
 	BTS_COMMENT,
 	BTS_SECTION,
 	BTS_IN_SECTION,
+	BTS_HOOKS,
 	BTS_VIDCAM,
 	BTS_END,
 };
@@ -218,7 +219,7 @@ static const float ROTATOR_TOLERANCE_DEFAULT    = 0.0f;
 static const float HOOK_FORCE_DEFAULT		    = 10000000.0f;
 static const float HOOK_RANGE_DEFAULT           = 0.4f;
 static const float HOOK_SPEED_DEFAULT           = 0.00025f;
-static const float HOOK_LOCK_TIMER              = 5.0;
+static const float HOOK_LOCK_TIMER_DEFAULT      = 5.0;
 /* Enumerations */
 enum {
 	THREAD_MONO,    //!< mono threading mode
@@ -379,6 +380,7 @@ struct node
 	int wetstate;
 	int contactless;
 	int lockednode;
+	int lockgroup;
 	Ogre::Vector3 lockedPosition; //!< absolute
 	Ogre::Vector3 lockedForces;
 	Ogre::Vector3 lockedVelocity;
@@ -568,6 +570,7 @@ struct hook
 {
 	int locked;
 	int group;
+	int lockgroup;
 	bool lockNodes;
 	bool selflock;
 	bool autolock;

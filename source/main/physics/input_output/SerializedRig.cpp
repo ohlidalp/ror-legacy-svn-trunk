@@ -114,6 +114,7 @@ trucksection_t truck_sections[] = {
 	{BTS_SECTION, "BTS_SECTION", false}, // NOT TO BE PARSED
 	{BTS_IN_SECTION, "BTS_IN_SECTION", false}, // NOT TO BE PARSED
 	{BTS_VIDCAM, "videocamera", false},
+	{BTS_HOOKS, "hooks", false},
 	{BTS_END, "end", false},
 };
 
@@ -1244,7 +1245,7 @@ int SerializedRig::loadTruck(String fname, SceneManager *manager, SceneNode *par
 			if (c.mode == BTS_NODES)
 			{
 				//parse nodes
-				int id=0;
+				int id=0, lockgroup = -1;
 				float x=0, y=0, z=0, mass=0;
 				char options[256] = "n";
 				int n = parse_args(c, args, 4);
@@ -1254,6 +1255,11 @@ int SerializedRig::loadTruck(String fname, SceneManager *manager, SceneNode *par
 				z  = PARSEREAL(args[3]);
 				if(n > 4) strncpy(options, args[4].c_str(), 255);
 				if(n > 5) mass = PARSEREAL(args[5]);
+				//lockgroup parsing
+				if(n > 6 &&  (args[6] == "lock-group" || args[6] == "lock_group" || args[6] == "lockgroup"))
+					if(n > 7 && args[7] != "default" && args[7] != "-1")
+						lockgroup = PARSEINT(args[7]);
+
 				if (id != free_node)
 				{
 					parser_warning(c, "lost sync in nodes numbers after node " + TOSTRING(free_node) + "(got " + TOSTRING(id) + " instead)");
@@ -1268,6 +1274,7 @@ int SerializedRig::loadTruck(String fname, SceneManager *manager, SceneNode *par
 				Vector3 npos = pos + rot * Vector3(x,y,z);
 				init_node(id, npos.x, npos.y, npos.z, NODE_NORMAL, 10, 0, 0, free_node, -1, default_node_friction, default_node_volume, default_node_surface, default_node_loadweight);
 				nodes[id].iIsSkin=true;
+				nodes[id].lockgroup = lockgroup;
 
 				if 	(default_node_loadweight >= 0.0f)
 				{
@@ -1279,9 +1286,7 @@ int SerializedRig::loadTruck(String fname, SceneManager *manager, SceneNode *par
 				// merge options and default_node_options
 				strncpy(options, ((String(default_node_options) + String(options)).c_str()), 250);
 
-				int pos, group =-1;
-				float speedcoef = 1.0f, hookforce=HOOK_FORCE_DEFAULT, hookrange=HOOK_RANGE_DEFAULT, hooktimer=HOOK_LOCK_TIMER;
-				bool hook_selflock = false, hook_autolock = false;
+				int pos;
 				// now 'parse' the options
 				char *options_pointer = options;
 				while (*options_pointer != 0)
@@ -1365,40 +1370,22 @@ int SerializedRig::loadTruck(String fname, SceneManager *manager, SceneNode *par
 							pos=add_beam(&nodes[id], &nodes[0], manager, parent, BEAM_INVISIBLE, default_break * default_break_scale * 100.0f, default_spring * default_spring_scale, default_damp * default_damp_scale * 0.1f);
 							beams[pos].disabled=true;
 							beams[pos].mSceneNode->detachAllObjects();
-
-							if(n > 6 &&	args[6] != "-1" && args[6] != "default")
-								hookrange = PARSEREAL(args[6]);
-							if(n > 7 &&	args[7] != "-1" && args[7] != "default")
-								speedcoef = PARSEREAL(args[7]);
-							if(n > 8 &&	args[8] != "-1" && args[8] != "default")
-								hookforce = PARSEREAL(args[8]);
-							if(n > 9 &&	(args[9] == "self-lock" || args[9] == "self_lock" || args[9] == "selflock"))
-								hook_selflock = true;
-							if(n > 10 && (args[10] == "auto-lock" || args[10] == "auto_lock" || args[10] == "autolock"))
-							{
-								group = -2;
-								hook_autolock = true;
-							}
-							if(n > 11 && args[11] != "-1" && args[11] != "default")
-								hooktimer = PARSEREAL(args[11]);
-							if(n > 12 && args[12] != "default")
-								group = PARSEINT(args[12]);
-							
 							hook_t h;
-							h.hookNode  = &nodes[id];
-							h.group     = group;
-							h.locked    = UNLOCKED;
-							h.lockNode  = 0;
-							h.lockTruck = 0;
-							h.lockNodes = true;
-							h.beam = &beams[pos];
-							h.maxforce = hookforce;
-							h.lockrange = hookrange;
-							h.lockspeed = speedcoef * HOOK_SPEED_DEFAULT;
-							h.selflock = hook_selflock;
-							h.timer = 0.0f;
-							h.timer_preset = hooktimer;
-							h.autolock = hook_autolock;
+							h.hookNode     = &nodes[id];
+							h.group        = -1;
+							h.locked       = UNLOCKED;
+							h.lockNode     = 0;
+							h.lockTruck    = 0;
+							h.lockNodes    = true;
+							h.lockgroup    = -1;
+							h.beam         = &beams[pos];
+							h.maxforce     = HOOK_FORCE_DEFAULT;
+							h.lockrange    = HOOK_RANGE_DEFAULT;
+							h.lockspeed    = HOOK_SPEED_DEFAULT;
+							h.selflock     = false;
+							h.timer        = 0.0f;
+							h.timer_preset = HOOK_LOCK_TIMER_DEFAULT;
+							h.autolock     = false;
 							hooks.push_back(h);
 						break;
 						case 'e':	//editor
@@ -1432,6 +1419,107 @@ int SerializedRig::loadTruck(String fname, SceneManager *manager, SceneNode *par
 				if (y > fuse_y_max)
 					fuse_y_max = y;
 
+				continue;
+			}
+			else if (c.mode == BTS_HOOKS)
+			{
+				//parse hooks
+				float speedcoef = 1.0f, hookforce=HOOK_FORCE_DEFAULT, hookrange=HOOK_RANGE_DEFAULT, hooktimer=HOOK_LOCK_TIMER_DEFAULT;
+				int id = 0, lgroup = -1, hgroup = -1, i;
+				bool hook_selflock = false, hook_autolock = false, found = false;
+				//char options[256] = "n";
+
+				Ogre::StringVector options = Ogre::StringUtil::split(c.line," ,:|");
+
+				int n = parse_args(c, args, 1);
+				if (n>1) id = parse_node_number(c, options[0]);
+
+				//check if this is really a hook
+				std::vector <hook_t>::iterator itfound;
+				for(std::vector <hook_t>::iterator it = hooks.begin(); it!=hooks.end(); it++)
+				{
+					if (it->hookNode == &nodes[id])
+					{
+						found = true; // this is a valid hooknode
+						itfound = it;
+						break;
+					}
+				}
+
+				if (!found || id < 0 || id > free_node)
+				{
+					parser_warning(c, "Trying to parse a none existing hooknode ("+TOSTRING(id)+")");
+					continue;
+				}
+		
+
+				for(i=1; i<n;i++)
+				{
+					String arg = options[i];
+					StringUtil::trim(arg);
+
+					if      (arg == "hookrange" && n >= i+1)
+					{
+						i++;
+						String arg2 = options[i];
+						StringUtil::trim(arg2);
+						hookrange = StringConverter::parseReal(arg2);
+					}
+					else if (arg == "speedcoef" && n >= i+1)
+					{
+						i++;
+						String arg2 = options[i];
+						StringUtil::trim(arg2);
+						speedcoef = StringConverter::parseReal(arg2);
+					}
+					else if (arg == "maxforce" && n >= i+1)
+					{
+						i++;
+						String arg2 = options[i];
+						StringUtil::trim(arg2);
+						hookforce = StringConverter::parseReal(arg2);
+					}
+					else if ((arg == "hookgroup" || arg == "hgroup") && n >= i+1)
+					{
+						i++;
+						String arg2 = options[i];
+						StringUtil::trim(arg2);
+						hgroup = StringConverter::parseInt(arg2);
+					}
+					else if ((arg == "lockgroup" || arg == "lgroup") && n >= i+1)
+					{
+						i++;
+						String arg2 = options[i];
+						StringUtil::trim(arg2);
+						lgroup = StringConverter::parseInt(arg2);
+					}
+
+					else if (arg == "timer" && n >= i+1)
+					{
+						i++;
+						String arg2 = options[i];
+						StringUtil::trim(arg2);
+						hooktimer = StringConverter::parseReal(arg2);
+					}
+					else if (arg == "selflock" || arg == "self-lock" || arg == "self_lock")
+					{
+						hook_selflock = true;
+					}
+					else if (arg == "autolock" || arg == "auto-lock" || arg == "auto_lock")
+					{
+						hgroup = -2;
+						hook_autolock = true;
+					}
+				}
+				itfound->group        = hgroup;
+				itfound->lockgroup    = lgroup;
+				itfound->maxforce     = hookforce;
+				itfound->lockrange    = hookrange;
+				itfound->lockspeed    = speedcoef * HOOK_SPEED_DEFAULT;
+				itfound->selflock     = hook_selflock;
+				itfound->timer        = 0.0f;
+				itfound->timer_preset = hooktimer;
+				itfound->autolock     = hook_autolock;
 				continue;
 			}
 			else if (c.mode == BTS_BEAMS)
@@ -1956,7 +2044,7 @@ int SerializedRig::loadTruck(String fname, SceneManager *manager, SceneNode *par
 				//parse animators
 				int id1, id2;
 				float ratio;
-				Ogre::StringVector options = Ogre::StringUtil::split(c.line, ",");
+				Ogre::StringVector options = Ogre::StringUtil::split(c.line,",");
 				if (options.size() < 4)
 				{
 					LOG("Error parsing File (Animator) " + String(fname) +" line " + StringConverter::toString(c.linecounter) + ". trying to continue ...");
