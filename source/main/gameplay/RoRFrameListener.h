@@ -341,7 +341,10 @@ public:
 	Water *w;
 	Ogre::String loadedTerrain;
 
+#ifdef USE_OIS_G27
 	OIS::Win32LogitechLEDs *leds;
+#endif // USE_OIS_G27
+
 public:
 
 	void shutdown_final();

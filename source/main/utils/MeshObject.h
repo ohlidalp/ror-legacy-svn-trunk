@@ -270,7 +270,7 @@ protected:
 
 	void operationCompleted(BackgroundProcessTicket ticket, const BackgroundProcessResult& result)
 	{
-				// NOT USED ATM
+		// NOT USED ATM
 		LOG("operationCompleted: " + meshName);
 		if(ticket == this->ticket)
 			postProcess();
