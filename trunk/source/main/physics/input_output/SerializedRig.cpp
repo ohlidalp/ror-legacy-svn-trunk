@@ -1372,7 +1372,7 @@ int SerializedRig::loadTruck(String fname, SceneManager *manager, SceneNode *par
 							break;
 						case 'h':	//hook
 							// emulate the old behaviour using new fancy hookgroups
-							pos=add_beam(&nodes[id], &nodes[0], manager, parent, BEAM_INVISIBLE_HYDRO, default_break * default_break_scale * 100.0f, default_spring * default_spring_scale, default_damp * default_damp_scale * 0.1f);
+							pos=add_beam(&nodes[id], &nodes[0], manager, parent, BEAM_HYDRO, default_break * default_break_scale * 100.0f, default_spring * default_spring_scale, default_damp * default_damp_scale * 0.1f);
 							beams[pos].L                 = HOOK_RANGE_DEFAULT;
 							beams[pos].refL              = beams[pos].refL;
 							beams[pos].Lhydro            = beams[pos].refL;
@@ -1469,7 +1469,7 @@ int SerializedRig::loadTruck(String fname, SceneManager *manager, SceneNode *par
 				//parse hooks
 				float speedcoef = 1.0f, hookforce=HOOK_FORCE_DEFAULT, hookrange=HOOK_RANGE_DEFAULT, hooktimer=HOOK_LOCK_TIMER_DEFAULT, hook_shortlimit = 0.0f;
 				int id = 0, lgroup = -1, hgroup = -1, i = 0;
-				bool hook_selflock = false, hook_autolock = false, hook_nodisable = false;
+				bool hook_selflock = false, hook_autolock = false, hook_nodisable = false, hookbeam_visble = false;
 
 				int n = parse_args(c, args, 1);
 				if (n>1) id = parse_node_number(c, args[0]);
@@ -1555,6 +1555,10 @@ int SerializedRig::loadTruck(String fname, SceneManager *manager, SceneNode *par
 					{
 						hook_nodisable = true;
 					}
+					else if (arg == "visble" || arg == "vis")
+					{
+						hookbeam_visble = true;
+					}
 				}
 				itfound->group              = hgroup;
 				itfound->lockgroup          = lgroup;
@@ -1564,6 +1568,7 @@ int SerializedRig::loadTruck(String fname, SceneManager *manager, SceneNode *par
 				itfound->selflock           = hook_selflock;
 				itfound->autolock           = hook_autolock;
 				itfound->nodisable          = hook_nodisable;
+				itfound->visible            = hookbeam_visble;
 				itfound->timer              = 0.0f;
 				itfound->timer_preset       = hooktimer;
 				itfound->beam->commandShort = hook_shortlimit;
