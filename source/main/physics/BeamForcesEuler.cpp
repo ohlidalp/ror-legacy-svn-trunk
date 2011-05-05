@@ -137,7 +137,8 @@ void Beam::calcForcesEuler(int doUpdate, Real dt, int step, int maxstep)
 							d=d+(tdamp - d)*interp_ratio;	
 						}
 					}
-					else // We assume the bounded=SHOCK2 case
+					else // bounded=SHOCK2 case ( skip NOSHOCK )
+					if (beams[i].bounded==SHOCK2)
 					{
  						calcShocks2(i, difftoBeamL, k, d, dt, doUpdate);
 					}
@@ -745,40 +746,48 @@ void Beam::calcForcesEuler(int doUpdate, Real dt, int step, int maxstep)
 				it->beam->p2       = it->lockNode;
 				it->beam->p2truck  = it->lockTruck;
 				it->beam->L = (it->hookNode->AbsPosition - it->lockNode->AbsPosition).length();
-
 				it->beam->disabled = false;
 				if (beams->mSceneNode->numAttachedObjects() == 0)
 					beams->mSceneNode->attachObject(beams->mEntity);
 			} else
 			{
-				//shorten the connecting beam slowly to locking minrange
-				if (it->beam->L > it->lockspeed && fabs(it->beam->stress) < it->maxforce)
+				if (it->beam->L < it->beam->commandShort)
 				{
-					it->beam->L = (it->beam->L - it->lockspeed);
-				} else
+					//shortliomit reached -> status LOCKED
+					it->locked = LOCKED;
+				}
+				else
 				{
-					if ( fabs(it->beam->stress) < it->maxforce)
+					//shorten the connecting beam slowly to locking minrange
+					if (it->beam->L > it->lockspeed && fabs(it->beam->stress) < it->maxforce)
 					{
-						it->beam->L = 0.001f;
-						//locking minrange or stress exeeded -> status LOCKED
-						it->locked = LOCKED;
+						it->beam->L = (it->beam->L - it->lockspeed);
 					} else
 					{
-						if (it->nodisable)
-							//force exceed, but beam is set to nodisable, just lock it in this position
-							it->locked = LOCKED;
-						else
+						if ( fabs(it->beam->stress) < it->maxforce)
 						{
-							//force exceeded reset the hook node
-							it->locked = UNLOCKED;
-							if (it->lockNode) it->lockNode->lockednode=0;
-							it->lockNode       = 0;
-							it->lockTruck      = 0;
-							it->beam->p2       = &nodes[0];
-							it->beam->p2truck  = 0;
-							it->beam->L        = (nodes[0].AbsPosition - it->hookNode->AbsPosition).length();
-							it->beam->disabled = 1;
-							beams->mSceneNode->detachAllObjects();
+							it->beam->L = 0.001f;
+							//locking minrange or stress exeeded -> status LOCKED
+							it->locked = LOCKED;
+						} else
+						{
+							if (it->nodisable)
+							{
+								//force exceed, but beam is set to nodisable, just lock it in this position
+								it->locked = LOCKED;
+							} else
+							{
+								//force exceeded reset the hook node
+								it->locked = UNLOCKED;
+								if (it->lockNode) it->lockNode->lockednode=0;
+								it->lockNode       = 0;
+								it->lockTruck      = 0;
+								it->beam->p2       = &nodes[0];
+								it->beam->p2truck  = 0;
+								it->beam->L        = (nodes[0].AbsPosition - it->hookNode->AbsPosition).length();
+								it->beam->disabled = 1;
+								beams->mSceneNode->detachAllObjects();
+							}
 						}
 					}
 				}
@@ -1460,34 +1469,36 @@ void Beam::calcForcesEuler(int doUpdate, Real dt, int step, int maxstep)
 		}
 	}
 
-	//dashboard overlays for tc+alb
-	// really, at 2k FPS?!?! - tdev
-	if (!alb_active)
+	if (doUpdate)
 	{
-		antilockbrake = false;
+		//dashboard overlays for tc+alb
+		if (!alb_active)
+		{
+			antilockbrake = false;
 #ifdef USE_OPENAL
-		ssm->trigStop(trucknum, SS_TRIG_ALB_ACTIVE);
+			ssm->trigStop(trucknum, SS_TRIG_ALB_ACTIVE);
 #endif //USE_OPENAL
-	} else
-	{
-		antilockbrake = true;
+		} else
+		{
+			antilockbrake = true;
 #ifdef USE_OPENAL
-		ssm->trigStart(trucknum, SS_TRIG_ALB_ACTIVE);
+			ssm->trigStart(trucknum, SS_TRIG_ALB_ACTIVE);
 #endif //USE_OPENAL
-	}
+		}
 
-	if (!tc_active)
-	{
-		tractioncontrol = false;
+		if (!tc_active)
+		{
+			tractioncontrol = false;
 #ifdef USE_OPENAL
-		ssm->trigStop(trucknum, SS_TRIG_TC_ACTIVE);
+			ssm->trigStop(trucknum, SS_TRIG_TC_ACTIVE);
 #endif //USE_OPENAL
-	} else
-	{
-		tractioncontrol = true;
+		} else
+		{
+			tractioncontrol = true;
 #ifdef USE_OPENAL
-		ssm->trigStart(trucknum, SS_TRIG_TC_ACTIVE);
+			ssm->trigStart(trucknum, SS_TRIG_TC_ACTIVE);
 #endif //USE_OPENAL
+		}
 	}
 
 	//LOG("torque "+TOSTRING(torques[0])+" "+TOSTRING(torques[1])+" "+TOSTRING(torques[2])+" "+TOSTRING(torques[3])+" speed "+TOSTRING(newspeeds[0])+" "+TOSTRING(newspeeds[1])+" "+TOSTRING(newspeeds[2])+" "+TOSTRING(newspeeds[3]));

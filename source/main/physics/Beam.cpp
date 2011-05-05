@@ -4617,20 +4617,30 @@ void Beam::hookToggle(int group, int mode)
 			if (it->group <= -2)
 					continue;
 		}
-		else if (mode == HOOK_LOCK && group == -2)
+
+		if (HOOK_LOCK && group == -2)
 		{
 			//automatic lock attempt (cyclic with doupdate). Toggle all hooks groups with group#: -2, -3, -4 --, skip the ones wiwhich are not autlock ( triggered only )
 			if (it->group >= -1 || !it->autolock)
 				continue;
 		}
-		else if((mode == HOOK_LOCK || mode == HOOK_UNLOCK) && group <= -3)
+		if(mode == HOOK_UNLOCK && group == -2)
+		{
+			//manual unlock ALL autolock and triggerlock, do not unlock standard hooks (EV_COMMON_AUTOLOCK)
+			if (it->group >= -1 || !it->autolock)
+				continue;
+		}
+		if((mode == HOOK_LOCK || mode == HOOK_UNLOCK) && group <= -3)
+		{
 			//trigger beam lock or unlock. Toggle one hook group with group#: group
 			if (it->group != group)
 				continue;
-
-		//check relock delay timer for autolock nodes and skip if not 0
+		}
 		if(mode == HOOK_LOCK && it->timer > 0.0f)
-				continue;
+		{
+			//check relock delay timer for autolock nodes and skip if not 0
+			continue;
+		}
 
 		//this is a locked or prelocked hook and its not a locking attempt
 		if ((it->locked == LOCKED || it->locked == PRELOCK) && (mode != HOOK_LOCK))
@@ -4649,7 +4659,7 @@ void Beam::hookToggle(int group, int mode)
 			it->beam->p2       = &nodes[0];
 			it->beam->p2truck  = 0;
 			it->beam->L        = (nodes[0].AbsPosition - it->hookNode->AbsPosition).length();
-			it->beam->disabled = 1;
+			it->beam->disabled = true;
 			beams->mSceneNode->detachAllObjects();
 		} 
 		// do this only for toggle or lock attempts, skip prelocked or locked nodes for performance
