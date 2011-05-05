@@ -3619,7 +3619,7 @@ void RoRFrameListener::initializeCompontents()
 	if(!netmode)
 	{
 		if(ResourceGroupManager::getSingleton().resourceExistsInAnyGroup(loadedTerrain+".as"))
-			ScriptEngine::getSingleton().loadTerrainScript(loadedTerrain+".as");
+			ScriptEngine::getSingleton().loadScript(loadedTerrain+".as");
 	}
 #endif
 

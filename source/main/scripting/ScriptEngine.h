@@ -36,6 +36,7 @@ along with Rigs of Rods.  If not, see <http://www.gnu.org/licenses/>.
 
 
 #include "scriptdictionary/scriptdictionary.h"
+#include "scriptbuilder/scriptbuilder.h"
 
 #include "collisions.h"
 
@@ -73,14 +74,12 @@ public:
 
 	void setCollisions(Collisions *_coll) { coll=_coll; };
 
-	int loadScript(Ogre::String scriptname);
-
 	/**
-	 * Loads a script bound to a terrain
-	 * @param terrainName name of the loaded terrain. I.e. 'nhelens.terrn'
+	 * Loads a script
+	 * @param scriptname filename to load
 	 * @return 0 on success, everything else on error
 	 */
-	int loadTerrainScript(Ogre::String terrainName);
+	int loadScript(Ogre::String scriptname);
 
 	/**
 	 * Calls the script's framestep function to be able to use timed things inside the script
@@ -185,9 +184,15 @@ protected:
 	// undocumented debugging functions below, not working.
 	void ExceptionCallback(AngelScript::asIScriptContext *ctx, void *param);
 	void PrintVariables(AngelScript::asIScriptContext *ctx, int stackLevel);
-	void LineCallback(AngelScript::asIScriptContext *ctx, void *param);
+	void LineCallback(AngelScript::asIScriptContext *ctx, unsigned long *timeOut);
 };
 
+// our own class that wraps the CScriptBuilder and just overwrites the file loading parts
+// to use the ogre resource system
+class OgreScriptBuilder : public AngelScript::CScriptBuilder
+{
+	int LoadScriptSection(const char *filename);
+};
 
 /**
  *  @brief Proxy class that can be called by script functions

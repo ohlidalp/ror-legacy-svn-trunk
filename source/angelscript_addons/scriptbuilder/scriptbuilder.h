@@ -90,7 +90,7 @@ protected:
 	void ClearAll();
 	int  Build();
 	int  ProcessScriptSection(const char *script, const char *sectionname);
-	int  LoadScriptSection(const char *filename);
+	virtual int  LoadScriptSection(const char *filename) = 0;
 	bool IncludeIfNotAlreadyIncluded(const char *filename);
 
 	int  SkipStatement(int pos);

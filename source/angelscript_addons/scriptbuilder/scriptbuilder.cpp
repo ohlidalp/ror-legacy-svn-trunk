@@ -113,55 +113,6 @@ bool CScriptBuilder::IncludeIfNotAlreadyIncluded(const char *filename)
 	return true;
 }
 
-int CScriptBuilder::LoadScriptSection(const char *filename)
-{
-	// Open the script file
-	string scriptFile = filename;
-#if _MSC_VER >= 1500
-	FILE *f = 0;
-	fopen_s(&f, scriptFile.c_str(), "rb");
-#else
-	FILE *f = fopen(scriptFile.c_str(), "rb");
-#endif
-	if( f == 0 )
-	{
-		// Write a message to the engine's message callback
-		char buf[256];
-		string msg = "Failed to open script file '" + string(GetCurrentDir(buf, 256)) + scriptFile + "'";
-		engine->WriteMessage(filename, 0, 0, asMSGTYPE_ERROR, msg.c_str());
-
-		// TODO: Write the file where this one was included from
-
-		return -1;
-	}
-	
-	// Determine size of the file
-	fseek(f, 0, SEEK_END);
-	int len = ftell(f);
-	fseek(f, 0, SEEK_SET);
-
-	// On Win32 it is possible to do the following instead
-	// int len = _filelength(_fileno(f));
-
-	// Read the entire file
-	string code;
-	code.resize(len);
-	size_t c = fread(&code[0], len, 1, f);
-
-	fclose(f);
-
-	if( c == 0 ) 
-	{
-		// Write a message to the engine's message callback
-		char buf[256];
-		string msg = "Failed to load script file '" + string(GetCurrentDir(buf, 256)) + scriptFile + "'";
-		engine->WriteMessage(filename, 0, 0, asMSGTYPE_ERROR, msg.c_str());
-		return -1;
-	}
-
-	return ProcessScriptSection(code.c_str(), filename);
-}
-
 int CScriptBuilder::ProcessScriptSection(const char *script, const char *sectionname)
 {
 	vector<string> includes;

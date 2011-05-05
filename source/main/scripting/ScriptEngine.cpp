@@ -32,7 +32,6 @@ along with Rigs of Rods.  If not, see <http://www.gnu.org/licenses/>.
 #include "contextmgr/contextmgr.h"
 #include "scriptany/scriptany.h"
 #include "scriptarray/scriptarray.h"
-#include "scriptbuilder/scriptbuilder.h"
 #include "scripthelper/scripthelper.h"
 #include "scriptstring/scriptstring.h"
 // AS addons end
@@ -63,11 +62,16 @@ along with Rigs of Rods.  If not, see <http://www.gnu.org/licenses/>.
 
 template<> ScriptEngine *Ogre::Singleton<ScriptEngine>::ms_Singleton=0;
 
+// the class implementation
+
 ScriptEngine::ScriptEngine(RoRFrameListener *efl, Collisions *_coll) : mefl(efl), coll(_coll), engine(0), context(0), frameStepFunctionPtr(-1), wheelEventFunctionPtr(-1), eventMask(0), terrainScriptName(), terrainScriptHash()
 {
 	init();
 
 	callbacks["on_terrain_loading"] = std::vector<int>();
+	callbacks["frameStep"] = std::vector<int>();
+	callbacks["wheelEvents"] = std::vector<int>();
+	callbacks["eventCallback"] = std::vector<int>();
 }
 
 ScriptEngine::~ScriptEngine()
@@ -77,92 +81,6 @@ ScriptEngine::~ScriptEngine()
 	if(context) context->Release();
 }
 
-int ScriptEngine::loadTerrainScript(Ogre::String scriptname)
-{
-	terrainScriptName = scriptname;
-
-	// Load the entire script file into the buffer
-	int result=0;
-	string script;
-	LOG("SE| trying to load script file: "+scriptname);
-	result = loadScriptFile(scriptname.c_str(), script, terrainScriptHash);
-	if( result )
-	{
-		LOG("SE| Unkown error while loading script file: "+scriptname);
-		return 1;
-	}
-
-	// Add the script to the module as a section. If desired, multiple script
-	// sections can be added to the same module. They will then be compiled
-	// together as if it was one large script.
-	AngelScript::asIScriptModule *mod = engine->GetModule("terrainScript", AngelScript::asGM_ALWAYS_CREATE);
-	result = mod->AddScriptSection(scriptname.c_str(), script.c_str(), script.length());
-	if( result < 0 )
-	{
-		LOG("SE| Unkown error while adding script section");
-		return 1;
-	}
-
-	// Build the module
-	result = mod->Build();
-	if( result < 0 )
-	{
-		if(result == AngelScript::asINVALID_CONFIGURATION)
-		{
-			LOG("SE| The engine configuration is invalid.");
-			return 1;
-		} else if(result == AngelScript::asERROR)
-		{
-			LOG("SE| The script failed to build. ");
-			return 1;
-		} else if(result == AngelScript::asBUILD_IN_PROGRESS)
-		{
-			LOG("SE| Another thread is currently building.");
-			return 1;
-		}
-		LOG("SE| Unkown error while building the script");
-		return 1;
-	}
-
-	// Find the function that is to be called.
-	int funcId = mod->GetFunctionIdByDecl("void main()");
-	if( funcId < 0 )
-	{
-		// The function couldn't be found. Instruct the script writer to include the
-		// expected function in the script.
-		LOG("SE| The script must have the function 'void main()'. Please add it and try again.");
-		return 1;
-	}
-
-	// get some other optional functions
-	frameStepFunctionPtr = mod->GetFunctionIdByDecl("void frameStep(float)");
-	wheelEventFunctionPtr = mod->GetFunctionIdByDecl("void wheelEvents(int, string, string, string)");
-
-	eventCallbackFunctionPtr = mod->GetFunctionIdByDecl("void eventCallback(int, int)");
-
-	// Create our context, prepare it, and then execute
-	context = engine->CreateContext();
-
-	//context->SetLineCallback(AngelScript::asMETHOD(ScriptEngine,LineCallback), this, AngelScript::asCALL_THISCALL);
-
-	// this does not work :(
-	context->SetExceptionCallback(AngelScript::asMETHOD(ScriptEngine,ExceptionCallback), this, AngelScript::asCALL_THISCALL);
-
-	context->Prepare(funcId);
-	LOG("SE| Executing main()");
-	result = context->Execute();
-	if( result != AngelScript::asEXECUTION_FINISHED )
-	{
-		// The execution didn't complete as expected. Determine what happened.
-		if( result == AngelScript::asEXECUTION_EXCEPTION )
-		{
-			// An exception occurred, let the script writer know what happened so it can be corrected.
-			LOG("SE| An exception '" + String(context->GetExceptionString()) + "' occurred. Please correct the code in file '" + scriptname + "' and try again.");
-		}
-	}
-
-	return 0;
-}
 
 void ScriptEngine::ExceptionCallback(AngelScript::asIScriptContext *ctx, void *param)
 {
@@ -203,27 +121,19 @@ void ScriptEngine::exploreScripts()
 #endif //USE_ANGELSCRIPT
 }
 
-/*
-void ScriptEngine::LineCallback(asIScriptContext *ctx, void *param)
+void ScriptEngine::LineCallback(AngelScript::asIScriptContext *ctx, unsigned long *timeOut)
 {
-	char tmp[1024]="";
-	asIScriptEngine *engine = ctx->GetEngine();
-	int funcID = ctx->GetCurrentFunction();
-	int col;
-	int line = ctx->GetCurrentLineNumber(&col);
-	int indent = ctx->GetCallstackSize();
-	for( int n = 0; n < indent; n++ )
-		sprintf(tmp+n," ");
-	const asIScriptFunction *function = engine->GetFunctionDescriptorById(funcID);
-	sprintf(tmp+indent,"%s:%s:%d,%d", function->GetModuleName(),
-	                    function->GetDeclaration(),
-	                    line, col);
+	// If the time out is reached we abort the script
+	if(OgreFramework::getSingleton().getTimeSinceStartup() > *timeOut)
+		ctx->Abort();
 
-	LOG(tmp);
-
-//	PrintVariables(ctx, -1);
+	// It would also be possible to only suspend the script,
+	// instead of aborting it. That would allow the application
+	// to resume the execution where it left of at a later 
+	// time, by simply calling Execute() again.
 }
 
+/*
 void ScriptEngine::PrintVariables(asIScriptContext *ctx, int stackLevel)
 {
 	char tmp[1024]="";
@@ -530,33 +440,6 @@ void ScriptEngine::msgCallback(const AngelScript::asSMessageInfo *msg)
 	LOG(tmp);
 }
 
-int ScriptEngine::loadScriptFile(const char *fileName, string &script, string &hash)
-{
-	try
-	{
-		// read the file
-		DataStreamPtr ds=ResourceGroupManager::getSingleton().openResource(fileName, ResourceGroupManager::AUTODETECT_RESOURCE_GROUP_NAME);
-		script.resize(ds->size());
-		ds->read(&script[0], ds->size());
-
-		// using SHA1 here is stupid, we need to replace it with something better
-		// then hash it
-		char hash_result[250];
-		memset(hash_result, 0, 249);
-		RoR::CSHA1 sha1;
-		sha1.UpdateHash((uint8_t *)script.c_str(), script.size());
-		sha1.Final();
-		sha1.ReportHash(hash_result, RoR::CSHA1::REPORT_HEX_SHORT);
-		hash = string(hash_result);
-		return 0;
-	} catch(...)
-	{
-		return 1;
-	}
-	// DO NOT CLOSE THE STREAM (it closes automatically)
-	return 1;
-}
-
 int ScriptEngine::framestep(Ogre::Real dt)
 {
 	Beam **trucks = BeamFactory::getSingleton().getTrucks();
@@ -709,23 +592,18 @@ int ScriptEngine::loadScript(Ogre::String scriptname)
 {
 	// Load the entire script file into the buffer
 	int result=0;
-	string script, hash;
-	result = loadScriptFile(scriptname.c_str(), script, hash);
-	if( result )
-	{
-		LOG("SE| Unkown error while loading script file: "+scriptname);
-		return 1;
-	}
 
-	// Add the script to the module as a section. If desired, multiple script
-	// sections can be added to the same module. They will then be compiled
-	// together as if it was one large script.
-	AngelScript::asIScriptModule *mod = engine->GetModule("RoRScript", AngelScript::asGM_ALWAYS_CREATE);
+	// The builder is a helper class that will load the script file, 
+	// search for #include directives, and load any included files as 
+	// well.
+	OgreScriptBuilder builder;
 
+	AngelScript::asIScriptModule *mod = 0;
 	// try to load bytecode
 	bool cached = false;
 	{
 		// the code below should load a compilation result but it crashes for some reason atm ...
+		//AngelScript::asIScriptModule *mod = engine->GetModule("RoRScript", AngelScript::asGM_ALWAYS_CREATE);
 		/*
 		String fn = SSETTING("Cache Path") + "script" + hash + "_" + scriptname + "c";
 		CBytecodeStream bstream(fn);
@@ -739,42 +617,54 @@ int ScriptEngine::loadScript(Ogre::String scriptname)
 	}
 	if(!cached)
 	{
+		char *moduleName = "RoRScript";
 		// not cached so dynamically load and compile it
-		result = mod->AddScriptSection(scriptname.c_str(), script.c_str(), script.length());
+		result = builder.StartNewModule(engine, moduleName);
 		if( result < 0 )
 		{
-			LOG("SE| Unkown error while adding script section");
-			return 1;
+			LOG("SE| Failed to start new module");
+			return result;
 		}
 
-		// Build the module
-		result = mod->Build();
+		mod = engine->GetModule(moduleName, AngelScript::asGM_ONLY_IF_EXISTS);
+
+		result = builder.AddSectionFromFile(scriptname.c_str());
 		if( result < 0 )
 		{
-			if(result == AngelScript::asINVALID_CONFIGURATION)
-			{
-				LOG("SE| The engine configuration is invalid.");
-				return 1;
-			} else if(result == AngelScript::asERROR)
-			{
-				LOG("SE| The script failed to build. ");
-				return 1;
-			} else if(result == AngelScript::asBUILD_IN_PROGRESS)
-			{
-				LOG("SE| Another thread is currently building.");
-				return 1;
-			}
-			LOG("SE| Unkown error while building the script");
-			return 1;
+			LOG("SE| Unkown error while loading script file: "+scriptname);
+			LOG("SE| Failed to add script file");
+			return result;
+		}
+		result = builder.BuildModule();
+		if( result < 0 )
+		{
+			LOG("SE| Failed to build the module");
+			return result;
 		}
 
-		// save bytecode
+		// save the bytecode
+		string hash = "";
+		// TODO: fix hash!
 		{
 			String fn = SSETTING("Cache Path") + "script" + hash + "_" + scriptname + "c";
+			LOG("SE| saving script bytecode to file " + fn);
 			CBytecodeStream bstream(fn);
 			mod->SaveByteCode(&bstream);
 		}
 	}
+
+	// get some other optional functions
+	frameStepFunctionPtr = mod->GetFunctionIdByDecl("void frameStep(float)");
+	if(frameStepFunctionPtr > 0) callbacks["frameStep"].push_back(frameStepFunctionPtr);
+	
+	wheelEventFunctionPtr = mod->GetFunctionIdByDecl("void wheelEvents(int, string, string, string)");
+	if(wheelEventFunctionPtr > 0) callbacks["wheelEvents"].push_back(wheelEventFunctionPtr);
+
+	eventCallbackFunctionPtr = mod->GetFunctionIdByDecl("void eventCallback(int, int)");
+	if(eventCallbackFunctionPtr > 0) callbacks["eventCallback"].push_back(eventCallbackFunctionPtr);
+
+	int cb = mod->GetFunctionIdByDecl("void on_terrain_loading(string lines)");
+	if(cb > 0) callbacks["on_terrain_loading"].push_back(cb);
 
 	// Find the function that is to be called.
 	int funcId = mod->GetFunctionIdByDecl("void main()");
@@ -782,36 +672,87 @@ int ScriptEngine::loadScript(Ogre::String scriptname)
 	{
 		// The function couldn't be found. Instruct the script writer to include the
 		// expected function in the script.
-		LOG("SE| The script must have the function 'void main()'. Please add it and try again.");
-		return 1;
+		LOG("SE| The script should have the function 'void main()'.");
+		return 0;
 	}
-
-	// get some other optional functions
-	int cb = mod->GetFunctionIdByDecl("void on_terrain_loading(string lines)");
-	if(cb>0)
-		callbacks["on_terrain_loading"].push_back(cb);
 
 	// Create our context, prepare it, and then execute
 	context = engine->CreateContext();
 
-	//context->SetLineCallback(AngelScript::asMETHOD(ScriptEngine,LineCallback), this, AngelScript::asCALL_THISCALL);
 
-	// this does not work :(
-	//context->SetExceptionCallback(AngelScript::asMETHOD(ScriptEngine,ExceptionCallback), this, AngelScript::asCALL_THISCALL);
+	unsigned long timeOut = 0;
+	/*
+	// TOFIX: AS crashes badly when using these :-\
+	result = context->SetLineCallback(AngelScript::asMETHOD(ScriptEngine, LineCallback), &timeOut, AngelScript::asCALL_THISCALL);
+	if(result < 0)
+	{
+		LOG("SE| Failed to set the line callback function.");
+		context->Release();
+		return -1;
+	}
 
-	context->Prepare(funcId);
+	result = context->SetExceptionCallback(AngelScript::asMETHOD(ScriptEngine,ExceptionCallback), this, AngelScript::asCALL_THISCALL);
+	if(result < 0)
+	{
+		LOG("SE| Failed to set the exception callback function.");
+		context->Release();
+		return -1;
+	}
+	*/
+
+	// Prepare the script context with the function we wish to execute. Prepare()
+	// must be called on the context before each new script function that will be
+	// executed. Note, that if you intend to execute the same function several 
+	// times, it might be a good idea to store the function id returned by 
+	// GetFunctionIDByDecl(), so that this relatively slow call can be skipped.
+	result = context->Prepare(funcId);
+	if(result < 0)
+	{
+		LOG("SE| Failed to prepare the context.");
+		context->Release();
+		return -1;
+	}
+
+	// Set the timeout before executing the function. Give the function 1 sec
+	// to return before we'll abort it.
+	timeOut = OgreFramework::getSingleton().getTimeSinceStartup() + 1000;
+
 	LOG("SE| Executing main()");
 	result = context->Execute();
-	LOG("SE| Executing main() - DONE");
 	if( result != AngelScript::asEXECUTION_FINISHED )
 	{
 		// The execution didn't complete as expected. Determine what happened.
-		if( result == AngelScript::asEXECUTION_EXCEPTION )
+		if( result == AngelScript::asEXECUTION_ABORTED )
+		{
+			LOG("SE| The script was aborted before it could finish. Probably it timed out.");
+		}
+		else if( result == AngelScript::asEXECUTION_EXCEPTION )
 		{
 			// An exception occurred, let the script writer know what happened so it can be corrected.
 			LOG("SE| An exception '" + String(context->GetExceptionString()) + "' occurred. Please correct the code in file '" + scriptname + "' and try again.");
+
+			// Write some information about the script exception
+			int funcID = context->GetExceptionFunction();
+			AngelScript::asIScriptFunction *func = engine->GetFunctionDescriptorById(funcID);
+			LOG("SE| func: " + String(func->GetDeclaration()));
+			LOG("SE| modl: " + String(func->GetModuleName()));
+			LOG("SE| sect: " + String(func->GetScriptSectionName()));
+			LOG("SE| line: " + TOSTRING(context->GetExceptionLineNumber()));
+			LOG("SE| desc: " + String(context->GetExceptionString()));
+		} else
+		{
+			LOG("SE| The script ended for some unforeseen reason " + TOSTRING(result));
 		}
+	} else
+	{
+		LOG("SE| The script finished successfully.");
 	}
+
+	// We must release the contexts when no longer using them
+	context->Release();
+
+	// Release the engine
+	engine->Release();
 
 	return 0;
 }
@@ -1293,6 +1234,45 @@ void CBytecodeStream::Read(void *ptr, AngelScript::asUINT size)
 bool CBytecodeStream::Existing()
 {
 	return (f != 0);
+}
+
+
+// OgreScriptBuilder
+int OgreScriptBuilder::LoadScriptSection(const char *filename)
+{
+	// Open the script file
+	string scriptFile = filename;
+
+	DataStreamPtr ds;
+	try
+	{
+		ds = ResourceGroupManager::getSingleton().openResource(scriptFile, ResourceGroupManager::AUTODETECT_RESOURCE_GROUP_NAME);
+
+	} catch(Ogre::Exception e)
+	{
+		LOG("SE| exception upon loading script file: " + e.getFullDescription());
+		return -1;
+	}
+
+	// Read the entire file
+	string code;
+	code.resize(ds->size());
+	ds->read(&code[0], ds->size());
+
+	// TODO: fix the script hashes
+	/*
+	// using SHA1 here is stupid, we need to replace it with something better
+	// then hash it
+	char hash_result[250];
+	memset(hash_result, 0, 249);
+	RoR::CSHA1 sha1;
+	sha1.UpdateHash((uint8_t *)script.c_str(), script.size());
+	sha1.Final();
+	sha1.ReportHash(hash_result, RoR::CSHA1::REPORT_HEX_SHORT);
+	hash = string(hash_result);
+	*/
+
+	return ProcessScriptSection(code.c_str(), filename);
 }
 
 #endif //ANGELSCRIPT
