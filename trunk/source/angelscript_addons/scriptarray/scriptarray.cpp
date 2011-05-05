@@ -160,6 +160,10 @@ static void RegisterScriptArray_Native(asIScriptEngine *engine)
 	r = engine->RegisterObjectMethod("array<T>", "uint length() const", asMETHOD(CScriptArray, GetSize), asCALL_THISCALL); assert( r >= 0 );
 	r = engine->RegisterObjectMethod("array<T>", "void resize(uint)", asMETHODPR(CScriptArray, Resize, (asUINT), void), asCALL_THISCALL); assert( r >= 0 );
 
+	// ours
+	r = engine->RegisterObjectMethod("array<T>", "int find(T &in)", asMETHODPR(CScriptArray, Find, (void *), int), asCALL_THISCALL); assert( r >= 0 );
+
+
 	// Register GC behaviours in case the array needs to be garbage collected
 	r = engine->RegisterObjectBehaviour("array<T>", asBEHAVE_GETREFCOUNT, "int f()", asMETHOD(CScriptArray, GetRefCount), asCALL_THISCALL); assert( r >= 0 );
 	r = engine->RegisterObjectBehaviour("array<T>", asBEHAVE_SETGCFLAG, "void f()", asMETHOD(CScriptArray, SetFlag), asCALL_THISCALL); assert( r >= 0 );
@@ -306,6 +310,16 @@ CScriptArray::~CScriptArray()
 asUINT CScriptArray::GetSize() const
 {
 	return buffer->numElements;
+}
+
+int CScriptArray::Find(void *obj)
+{
+	for(unsigned int i=0; i < buffer->numElements; i++)
+	{
+		if(!memcmp(At(i), obj, elementSize))
+			return i;
+	}
+	return -1;
 }
 
 void CScriptArray::Resize(asUINT numElements)

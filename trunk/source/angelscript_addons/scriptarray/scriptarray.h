@@ -36,6 +36,8 @@ public:
 	void InsertLast(void *value);
 	void RemoveLast();
 
+	int  Find(void *value);
+
 	// GC methods
 	int  GetRefCount();
 	void SetFlag();
