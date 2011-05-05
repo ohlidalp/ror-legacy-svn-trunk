@@ -5852,10 +5852,11 @@ void RoRFrameListener::moveCamera(float dt)
 		{
 			envmap->update(curr_truck->getPosition(), curr_truck);
 
+#ifdef USE_CAELUM
 			// important: switch back to normal camera
 			if(SkyManager::getSingletonPtr())
 				SkyManager::getSingleton().notifyCameraChanged(mCamera);
-
+#endif // USE_CAELUM
 		}
 	}
 
