@@ -1431,12 +1431,11 @@ int SerializedRig::loadTruck(String fname, SceneManager *manager, SceneNode *par
 			{
 				//parse lockgroups
 				int lockgroup, id, i;
-				Ogre::StringVector options = Ogre::StringUtil::split(c.line," ,:|");
-
 				int n = parse_args(c, args, 1);
-				if (n>1) 
+				if (n>1)
+				{
 					lockgroup = PARSEINT(args[0]);
-				else
+				} else
 				{
 					parser_warning(c, "Trying to parse a lockgroup without nodes defined.");
 					continue;
@@ -1445,7 +1444,7 @@ int SerializedRig::loadTruck(String fname, SceneManager *manager, SceneNode *par
 				// get the node#
 				for(i=1; i<n;i++)
 				{
-					String arg = options[i];
+					String arg = args[i];
 					StringUtil::trim(arg);
 					id = StringConverter::parseInt(arg);
 					if (id >= 0 && id <= free_node-1)
