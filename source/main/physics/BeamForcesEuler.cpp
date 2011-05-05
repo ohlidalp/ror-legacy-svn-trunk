@@ -137,8 +137,7 @@ void Beam::calcForcesEuler(int doUpdate, Real dt, int step, int maxstep)
 							d=d+(tdamp - d)*interp_ratio;	
 						}
 					}
-					else // bounded=SHOCK2 case ( skip NOSHOCK )
-					if (beams[i].bounded==SHOCK2)
+					else if (beams[i].bounded==SHOCK2)       // bounded=SHOCK2 case ( skip NOSHOCK )
 					{
  						calcShocks2(i, difftoBeamL, k, d, dt, doUpdate);
 					}
