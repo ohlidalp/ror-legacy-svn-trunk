@@ -115,6 +115,7 @@ trucksection_t truck_sections[] = {
 	{BTS_IN_SECTION, "BTS_IN_SECTION", false}, // NOT TO BE PARSED
 	{BTS_VIDCAM, "videocamera", false},
 	{BTS_HOOKS, "hooks", false},
+	{BTS_LOCKGROUPS, "lockgroups", false},
 	{BTS_END, "end", false},
 };
 
@@ -350,6 +351,7 @@ int SerializedRig::loadTruck(String fname, SceneManager *manager, SceneNode *par
 	// load truck configuration settings
 	bool enable_background_loading = BSETTING("Background Loading");
 	bool enable_advanced_deformation = false;
+	int lockgroup_default = NODE_LOCKGROUP_DEFAULT;
 
 	parser_warning(c, "Start of truck loading: " + filename);
 	String group = "";
@@ -774,6 +776,13 @@ int SerializedRig::loadTruck(String fname, SceneManager *manager, SceneNode *par
 				enable_advanced_deformation = true;
 				continue;
 			}
+
+			if (c.line == "lockgroup_default_nolock")
+			{
+				lockgroup_default = 9999;
+				continue;
+			}
+
 
 			if (c.line == "set_shadows")
 			{
@@ -1245,7 +1254,7 @@ int SerializedRig::loadTruck(String fname, SceneManager *manager, SceneNode *par
 			if (c.mode == BTS_NODES)
 			{
 				//parse nodes
-				int id=0, lockgroup = -1;
+				int id = 0;
 				float x=0, y=0, z=0, mass=0;
 				char options[256] = "n";
 				int n = parse_args(c, args, 4);
@@ -1255,10 +1264,6 @@ int SerializedRig::loadTruck(String fname, SceneManager *manager, SceneNode *par
 				z  = PARSEREAL(args[3]);
 				if(n > 4) strncpy(options, args[4].c_str(), 255);
 				if(n > 5) mass = PARSEREAL(args[5]);
-				//lockgroup parsing
-				if(n > 6 &&  (args[6] == "lock-group" || args[6] == "lock_group" || args[6] == "lockgroup"))
-					if(n > 7 && args[7] != "default" && args[7] != "-1")
-						lockgroup = PARSEINT(args[7]);
 
 				if (id != free_node)
 				{
@@ -1274,7 +1279,7 @@ int SerializedRig::loadTruck(String fname, SceneManager *manager, SceneNode *par
 				Vector3 npos = pos + rot * Vector3(x,y,z);
 				init_node(id, npos.x, npos.y, npos.z, NODE_NORMAL, 10, 0, 0, free_node, -1, default_node_friction, default_node_volume, default_node_surface, default_node_loadweight);
 				nodes[id].iIsSkin=true;
-				nodes[id].lockgroup = lockgroup;
+				nodes[id].lockgroup = lockgroup_default;
 
 				if 	(default_node_loadweight >= 0.0f)
 				{
@@ -1421,6 +1426,34 @@ int SerializedRig::loadTruck(String fname, SceneManager *manager, SceneNode *par
 
 				continue;
 			}
+			else if (c.mode == BTS_LOCKGROUPS)
+			{
+				//parse lockgroups
+				int lockgroup, id, i;
+				Ogre::StringVector options = Ogre::StringUtil::split(c.line," ,:|");
+
+				int n = parse_args(c, args, 1);
+				if (n>1) 
+					lockgroup = PARSEINT(args[0]);
+				else
+				{
+					parser_warning(c, "Trying to parse a lockgroup without nodes defined.");
+					continue;
+				}
+
+				// get the node#
+				for(i=1; i<n;i++)
+				{
+					String arg = options[i];
+					StringUtil::trim(arg);
+					id = StringConverter::parseInt(arg);
+					if (id >= 0 && id <= free_node-1)
+						nodes[id].lockgroup = lockgroup;
+					else
+						parser_warning(c, "Trying to parse a lockgroup with a node that does not exist. Node#: ("+TOSTRING(id)+")");
+				}
+				continue;
+			}
 			else if (c.mode == BTS_HOOKS)
 			{
 				//parse hooks
@@ -1446,7 +1479,7 @@ int SerializedRig::loadTruck(String fname, SceneManager *manager, SceneNode *par
 					}
 				}
 
-				if (!found || id < 0 || id > free_node)
+				if (!found || id < 0 || id > free_node-1)
 				{
 					parser_warning(c, "Trying to parse a none existing hooknode ("+TOSTRING(id)+")");
 					continue;

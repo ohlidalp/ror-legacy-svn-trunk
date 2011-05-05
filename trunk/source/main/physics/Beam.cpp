@@ -4676,6 +4676,10 @@ void Beam::hookToggle(int group, int mode)
 					// all nodes, so walk them
 					for (int i=0; i<trucks[t]->free_node; i++)
 					{
+						//skip all nodes with lockgroup 9999 (denylock)
+						if(trucks[t]->nodes[i].lockgroup == 9999)
+							continue;
+
 						// exclude this truck and its current hooknode from the locking search
 						if(this == trucks[t] && i == it->hookNode->id)
 							continue;
