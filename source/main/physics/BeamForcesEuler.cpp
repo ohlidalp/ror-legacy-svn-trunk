@@ -214,12 +214,14 @@ void Beam::calcForcesEuler(int doUpdate, Real dt, int step, int maxstep)
 						//strength for structure stability reasons
 						//beams[i].strength=beams[i].strength+deform*k*0.5f;
 
+#ifdef USE_OPENAL
 						//Sound effect
 						//Sound volume depends on the energy lost due to deformation (which gets converted to sound (and thermal) energy)
 						/*
 						if(ssm) ssm->modulate(trucknum, SS_MOD_CREAK, deform*k*(difftoBeamL+deform*0.5f));
 						if(ssm) ssm->trigOnce(trucknum, SS_TRIG_CREAK);
 						*/
+#endif //USE_OPENAL
 
 						beams[i].minmaxposnegstress=std::min(beams[i].maxposstress, -beams[i].maxnegstress);
 						beams[i].minmaxposnegstress=std::min(beams[i].minmaxposnegstress, beams[i].strength);
@@ -243,12 +245,14 @@ void Beam::calcForcesEuler(int doUpdate, Real dt, int step, int maxstep)
 						}
 						beams[i].strength=beams[i].strength-deform*k;
 
+#ifdef USE_OPENAL
 						//Sound effect
 						//Sound volume depends on the energy lost due to deformation (which gets converted to sound (and thermal) energy)
 						/*
 						if(ssm) ssm->modulate(trucknum, SS_MOD_CREAK, deform*k*(difftoBeamL+deform*0.5f));
 						if(ssm) ssm->trigOnce(trucknum, SS_TRIG_CREAK);
 						*/
+#endif  //USE_OPENAL
 
 						beams[i].minmaxposnegstress=std::min(beams[i].maxposstress, -beams[i].maxnegstress);
 						beams[i].minmaxposnegstress=std::min(beams[i].minmaxposnegstress, beams[i].strength);
@@ -1457,25 +1461,33 @@ void Beam::calcForcesEuler(int doUpdate, Real dt, int step, int maxstep)
 	}
 
 	//dashboard overlays for tc+alb
+	// really, at 2k FPS?!?! - tdev
 	if (!alb_active)
 	{
 		antilockbrake = false;
+#ifdef USE_OPENAL
 		ssm->trigStop(trucknum, SS_TRIG_ALB_ACTIVE);
+#endif //USE_OPENAL
 	} else
 	{
 		antilockbrake = true;
+#ifdef USE_OPENAL
 		ssm->trigStart(trucknum, SS_TRIG_ALB_ACTIVE);
+#endif //USE_OPENAL
 	}
-
 
 	if (!tc_active)
 	{
 		tractioncontrol = false;
+#ifdef USE_OPENAL
 		ssm->trigStop(trucknum, SS_TRIG_TC_ACTIVE);
+#endif //USE_OPENAL
 	} else
 	{
 		tractioncontrol = true;
+#ifdef USE_OPENAL
 		ssm->trigStart(trucknum, SS_TRIG_TC_ACTIVE);
+#endif //USE_OPENAL
 	}
 
 	//LOG("torque "+TOSTRING(torques[0])+" "+TOSTRING(torques[1])+" "+TOSTRING(torques[2])+" "+TOSTRING(torques[3])+" speed "+TOSTRING(newspeeds[0])+" "+TOSTRING(newspeeds[1])+" "+TOSTRING(newspeeds[2])+" "+TOSTRING(newspeeds[3]));
