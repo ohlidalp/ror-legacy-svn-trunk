@@ -1430,7 +1430,7 @@ int SerializedRig::loadTruck(String fname, SceneManager *manager, SceneNode *par
 			else if (c.mode == BTS_LOCKGROUPS)
 			{
 				//parse lockgroups
-				int lockgroup, id, i;
+				int lockgroup=0, id=0, i=0;
 				int n = parse_args(c, args, 1);
 				if (n>1)
 				{
