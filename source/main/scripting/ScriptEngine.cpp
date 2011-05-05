@@ -748,12 +748,6 @@ int ScriptEngine::loadScript(Ogre::String scriptname)
 		LOG("SE| The script finished successfully.");
 	}
 
-	// We must release the contexts when no longer using them
-	context->Release();
-
-	// Release the engine
-	engine->Release();
-
 	return 0;
 }
 
