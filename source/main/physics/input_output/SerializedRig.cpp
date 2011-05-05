@@ -1559,6 +1559,10 @@ int SerializedRig::loadTruck(String fname, SceneManager *manager, SceneNode *par
 					{
 						hookbeam_visble = true;
 					}
+					else if (arg == "norope" || arg == "no-rope" || arg == "no_rope")
+					{
+						itfound->beam->bounded = NOSHOCK;
+					}
 				}
 				itfound->group              = hgroup;
 				itfound->lockgroup          = lgroup;
