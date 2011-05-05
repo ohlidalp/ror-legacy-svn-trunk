@@ -760,16 +760,22 @@ void Beam::calcForcesEuler(int doUpdate, Real dt, int step, int maxstep)
 						it->locked = LOCKED;
 					} else
 					{
-						//force exceeded reset the hook node
-						it->locked = UNLOCKED;
-						if (it->lockNode) it->lockNode->lockednode=0;
-						it->lockNode       = 0;
-						it->lockTruck      = 0;
-						it->beam->p2       = &nodes[0];
-						it->beam->p2truck  = 0;
-						it->beam->L        = (nodes[0].AbsPosition - it->hookNode->AbsPosition).length();
-						it->beam->disabled = 1;
-						beams->mSceneNode->detachAllObjects();
+						if (it->nodisable)
+							//force exceed, but beam is set to nodisable, just lock it in this position
+							it->locked = LOCKED;
+						else
+						{
+							//force exceeded reset the hook node
+							it->locked = UNLOCKED;
+							if (it->lockNode) it->lockNode->lockednode=0;
+							it->lockNode       = 0;
+							it->lockTruck      = 0;
+							it->beam->p2       = &nodes[0];
+							it->beam->p2truck  = 0;
+							it->beam->L        = (nodes[0].AbsPosition - it->hookNode->AbsPosition).length();
+							it->beam->disabled = 1;
+							beams->mSceneNode->detachAllObjects();
+						}
 					}
 				}
 			}

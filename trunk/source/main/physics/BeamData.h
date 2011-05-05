@@ -576,6 +576,7 @@ struct hook
 	bool lockNodes;
 	bool selflock;
 	bool autolock;
+	bool nodisable;
 	float maxforce;
 	float lockrange;
 	float lockspeed;
