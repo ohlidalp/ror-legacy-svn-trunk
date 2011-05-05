@@ -50,6 +50,7 @@ along with Rigs of Rods.  If not, see <http://www.gnu.org/licenses/>.
 #include "Settings.h"
 #include "IngameConsole.h"
 #include "OverlayWrapper.h"
+#include "SkyManager.h"
 #include "CacheSystem.h"
 #include "as_ogre.h"
 #include "SelectorWindow.h"
@@ -112,6 +113,8 @@ void ScriptEngine::ExceptionCallback(AngelScript::asIScriptContext *ctx, void *p
 
 void ScriptEngine::exploreScripts()
 {
+	// this shouldnt be used atm
+	return;
 #if USE_ANGELSCRIPT
 	FileInfoListPtr files= ResourceGroupManager::getSingleton().findResourceFileInfo("Scripts", "*.rs", false);
 	for (FileInfoList::iterator iterFiles = files->begin(); iterFiles!= files->end(); ++iterFiles)
@@ -349,7 +352,7 @@ void ScriptEngine::init()
 	result = engine->RegisterObjectMethod("GameScriptClass", "void loadTerrain(const string &in)", AngelScript::asMETHOD(GameScript,loadTerrain), AngelScript::asCALL_THISCALL); assert(result>=0);
 	result = engine->RegisterObjectMethod("GameScriptClass", "vector3 getPersonPosition()", AngelScript::asMETHOD(GameScript,getPersonPosition), AngelScript::asCALL_THISCALL); assert(result>=0);
 	result = engine->RegisterObjectMethod("GameScriptClass", "void movePerson(float, float, float)", AngelScript::asMETHOD(GameScript,movePerson), AngelScript::asCALL_THISCALL); assert(result>=0);
-	result = engine->RegisterObjectMethod("GameScriptClass", "float getCaelumTime()", AngelScript::asMETHOD(GameScript,getCaelumTime), AngelScript::asCALL_THISCALL); assert(result>=0);
+	result = engine->RegisterObjectMethod("GameScriptClass", "string getCaelumTime()", AngelScript::asMETHOD(GameScript,getCaelumTime), AngelScript::asCALL_THISCALL); assert(result>=0);
 	result = engine->RegisterObjectMethod("GameScriptClass", "void setCaelumTime(float)", AngelScript::asMETHOD(GameScript,setCaelumTime), AngelScript::asCALL_THISCALL); assert(result>=0);
 	result = engine->RegisterObjectMethod("GameScriptClass", "void setWaterHeight(float)", AngelScript::asMETHOD(GameScript,setWaterHeight), AngelScript::asCALL_THISCALL); assert(result>=0);
 	result = engine->RegisterObjectMethod("GameScriptClass", "float getWaterHeight()", AngelScript::asMETHOD(GameScript,getWaterHeight), AngelScript::asCALL_THISCALL); assert(result>=0);
@@ -407,6 +410,8 @@ void ScriptEngine::init()
 	result = engine->RegisterEnumValue("scriptEvents", "SE_GENERIC_DELETED_TRUCK", SE_GENERIC_DELETED_TRUCK); assert(result>=0);
 	result = engine->RegisterEnumValue("scriptEvents", "SE_GENERIC_INPUT_EVENT", SE_GENERIC_INPUT_EVENT); assert(result>=0);
 	result = engine->RegisterEnumValue("scriptEvents", "SE_GENERIC_MOUSE_BEAM_INTERACTION", SE_GENERIC_MOUSE_BEAM_INTERACTION); assert(result>=0);
+	result = engine->RegisterEnumValue("scriptEvents", "SE_ALL_EVENTS", SE_ALL_EVENTS); assert(result>=0);
+	
 
 	result = engine->RegisterEnum("truckStates"); assert(result>=0);
 	result = engine->RegisterEnumValue("truckStates", "TS_ACTIVATED", ACTIVATED); assert(result>=0);
@@ -795,21 +800,19 @@ void GameScript::movePerson(Ogre::Vector3 vec)
 	if(mefl && mefl->person) mefl->person->move(Ogre::Vector3(vec.x, vec.y, vec.z));
 }
 
-float GameScript::getCaelumTime()
+std::string GameScript::getCaelumTime()
 {
-	//if(mefl && mefl->mCaelumSystem) return mefl->mCaelumSystem->getLocalTime();
-	return 0;
+	return SkyManager::getSingleton().getPrettyTime();
 }
 
 void GameScript::setCaelumTime(float value)
 {
-	//if(mefl && mefl->mCaelumSystem) mefl->mCaelumSystem->setLocalTime(value);
+	SkyManager::getSingleton().setTimeFactor(value);
 }
 
 bool GameScript::getCaelumAvailable()
 {
-	//if(mefl && mefl->mCaelumSystem) return true;
-	return false;
+	return SkyManager::getSingletonPtr() != 0;
 }
 
 void GameScript::stopTimer()
