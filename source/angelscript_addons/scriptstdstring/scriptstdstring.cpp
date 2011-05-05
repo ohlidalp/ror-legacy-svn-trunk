@@ -2,7 +2,11 @@
 #include <sstream>
 #include "scriptstdstring.h"
 #include <string.h> // strstr
-
+#include <algorithm>
+#include <scriptarray/scriptarray.h>
+#include <vector>
+#include <functional>
+#include <locale>
 using namespace std;
 
 BEGIN_AS_NAMESPACE
@@ -487,6 +491,126 @@ static int StringCmp(const string &a, const string &b)
 	return cmp;
 }
 
+template < class ContainerT >
+void tokenize(const std::string& str, ContainerT& tokens, const std::string& delimiters = " ", const bool trimEmpty = false)
+{
+	std::string::size_type pos, lastPos = 0;
+	while(true)
+	{
+		pos = str.find_first_of(delimiters, lastPos);
+		if(pos == std::string::npos)
+		{
+			pos = str.length();
+
+			if(pos != lastPos || !trimEmpty)
+				tokens.push_back(ContainerT::value_type(str.data()+lastPos, (ContainerT::value_type::size_type)pos-lastPos ));
+
+			break;
+		}
+		else
+		{
+			if(pos != lastPos || !trimEmpty)
+				tokens.push_back(ContainerT::value_type(str.data()+lastPos, (ContainerT::value_type::size_type)pos-lastPos ));
+		}
+
+		lastPos = pos + 1;
+	}
+};
+
+static int splitString(string delimiters, CScriptArray &stringArray, string &str)
+{
+	std::vector<string> v;
+	tokenize<std::vector<string> >(str, v, delimiters, true);
+
+	//if( stringArray->GetArrayTypeId() != engine->GetTypeIdByDecl("string[]") )
+	//	return -1;
+
+	for(unsigned int i=0; i<v.size(); i++)
+		stringArray.InsertLast(&v[i]);
+
+	return v.size();
+}
+
+static string joinString(CScriptArray &a, string &d)
+{
+	stringstream ss;
+
+	for(unsigned int i=0; i<a.GetSize(); i++)
+		if(i == 0)
+			ss << *(string*)a.At(i);
+		else
+			ss << d << *(string*)a.At(i);
+
+	return ss.str();
+}
+
+static string toLower(string &d)
+{
+	string data = d;
+	std::transform(data.begin(), data.end(), data.begin(), ::tolower);
+	return data;
+}
+
+static string toUpper(string &d)
+{
+	string data = d;
+	std::transform(data.begin(), data.end(), data.begin(), ::toupper);
+	return data;
+}
+
+// trim from start
+static string ltrim(std::string &s)
+{
+	string str = s;
+	// trim leading spaces
+	size_t startpos = str.find_first_not_of(" \t");
+	if( string::npos != startpos )
+	{
+		str = str.substr( startpos );
+	}
+	return str;
+}
+
+// trim from end
+static string rtrim(std::string &s)
+{
+	string str = s;
+	// trim trailing spaces
+	size_t endpos = str.find_last_not_of(" \t");
+	if( string::npos != endpos )
+	{
+		str = str.substr( 0, endpos+1 );
+	}
+	return str;
+}
+
+static string trim(string &str)
+{
+	return ltrim(rtrim(str));
+}
+
+static float parseFloat(string &str)
+{
+	std::istringstream i(str);
+	float x;
+	if (!(i >> x))
+		//throw BadConversion("convertToDouble(\"" + s + "\")");
+		return 0;
+	return x;
+}
+
+static int parseInt(string &str)
+{
+	std::istringstream i(str);
+	int x;
+	if (!(i >> x))
+		//throw BadConversion("convertToDouble(\"" + s + "\")");
+		return 0;
+	return x;
+}
+
+
+
 void RegisterStdString_Native(asIScriptEngine *engine)
 {
 	int r;
@@ -507,11 +631,15 @@ void RegisterStdString_Native(asIScriptEngine *engine)
 	r = engine->RegisterObjectMethod("string", "int opCmp(const string &in) const", asFUNCTION(StringCmp), asCALL_CDECL_OBJFIRST); assert( r >= 0 );
 	r = engine->RegisterObjectMethod("string", "string opAdd(const string &in) const", asFUNCTIONPR(operator +, (const string &, const string &), string), asCALL_CDECL_OBJFIRST); assert( r >= 0 );
 
+	r = engine->RegisterObjectMethod("string", "bool opEquals(const string &in) const", asFUNCTIONPR(operator ==, (const string &, const string &), bool), asCALL_CDECL_OBJFIRST); assert( r >= 0 );
 	// Register the object methods
 	if( sizeof(size_t) == 4 )
 	{
 		r = engine->RegisterObjectMethod("string", "uint length() const", asMETHOD(string,size), asCALL_THISCALL); assert( r >= 0 );
 		r = engine->RegisterObjectMethod("string", "void resize(uint)", asMETHODPR(string,resize,(size_t),void), asCALL_THISCALL); assert( r >= 0 );
+		// substr, we added this
+		r = engine->RegisterObjectMethod("string", "string substr(uint, uint)", asMETHODPR(string,substr,(unsigned int, unsigned int) const, string), asCALL_THISCALL); assert( r >= 0 );
+		r = engine->RegisterObjectMethod("string", "uint   find(const string &in, uint)", asMETHODPR(string,find,(const string &, unsigned int) const, unsigned int), asCALL_THISCALL); assert( r >= 0 );
 	}
 	else
 	{
@@ -544,6 +672,21 @@ void RegisterStdString_Native(asIScriptEngine *engine)
 	r = engine->RegisterObjectMethod("string", "string &opAddAssign(bool)", asFUNCTION(AddAssignBoolToString), asCALL_CDECL_OBJLAST); assert( r >= 0 );
 	r = engine->RegisterObjectMethod("string", "string opAdd(bool) const", asFUNCTION(AddStringBool), asCALL_CDECL_OBJFIRST); assert( r >= 0 );
 	r = engine->RegisterObjectMethod("string", "string opAdd_r(bool) const", asFUNCTION(AddBoolString), asCALL_CDECL_OBJLAST); assert( r >= 0 );
+
+	// our own stuff
+	r = engine->RegisterObjectMethod("string", "int split(string, string[] &out)", asFUNCTION(splitString), asCALL_CDECL_OBJLAST); assert( r >= 0 );
+	r = engine->RegisterObjectMethod("string", "string join(string[] &in)", asFUNCTION(joinString), asCALL_CDECL_OBJLAST); assert( r >= 0 );
+	r = engine->RegisterObjectMethod("string", "string toLower()", asFUNCTION(toLower), asCALL_CDECL_OBJLAST); assert( r >= 0 );
+	r = engine->RegisterObjectMethod("string", "string toUpper()", asFUNCTION(toUpper), asCALL_CDECL_OBJLAST); assert( r >= 0 );
+	r = engine->RegisterObjectMethod("string", "string trim()", asFUNCTION(trim), asCALL_CDECL_OBJLAST); assert( r >= 0 );
+	r = engine->RegisterObjectMethod("string", "string lTrim()", asFUNCTION(ltrim), asCALL_CDECL_OBJLAST); assert( r >= 0 );
+	r = engine->RegisterObjectMethod("string", "string rTrim()", asFUNCTION(rtrim), asCALL_CDECL_OBJLAST); assert( r >= 0 );
+
+	r = engine->RegisterObjectMethod("string", "float  parseFloat()", asFUNCTION(parseFloat), asCALL_CDECL_OBJLAST); assert( r >= 0 );
+	r = engine->RegisterObjectMethod("string", "int    parseInt()", asFUNCTION(parseInt), asCALL_CDECL_OBJLAST); assert( r >= 0 );
+
+	r = engine->RegisterObjectMethod("string", "float  parse()", asFUNCTION(parseFloat), asCALL_CDECL_OBJLAST); assert( r >= 0 );
+	r = engine->RegisterObjectMethod("string", "int    parse()", asFUNCTION(parseInt), asCALL_CDECL_OBJLAST); assert( r >= 0 );
 }
 
 void RegisterStdString(asIScriptEngine * engine)
