@@ -1388,6 +1388,7 @@ int SerializedRig::loadTruck(String fname, SceneManager *manager, SceneNode *par
 							h.lockrange    = HOOK_RANGE_DEFAULT;
 							h.lockspeed    = HOOK_SPEED_DEFAULT;
 							h.selflock     = false;
+							h.nodisable    = false;
 							h.timer        = 0.0f;
 							h.timer_preset = HOOK_LOCK_TIMER_DEFAULT;
 							h.autolock     = false;
@@ -1459,7 +1460,7 @@ int SerializedRig::loadTruck(String fname, SceneManager *manager, SceneNode *par
 				//parse hooks
 				float speedcoef = 1.0f, hookforce=HOOK_FORCE_DEFAULT, hookrange=HOOK_RANGE_DEFAULT, hooktimer=HOOK_LOCK_TIMER_DEFAULT;
 				int id = 0, lgroup = -1, hgroup = -1, i;
-				bool hook_selflock = false, hook_autolock = false, found = false;
+				bool hook_selflock = false, hook_autolock = false, hook_nodisable = false, found = false;
 				//char options[256] = "n";
 
 				Ogre::StringVector options = Ogre::StringUtil::split(c.line," ,:|");
@@ -1543,6 +1544,10 @@ int SerializedRig::loadTruck(String fname, SceneManager *manager, SceneNode *par
 						hgroup = -2;
 						hook_autolock = true;
 					}
+					else if (arg == "nodisable" || arg == "no-disable" || arg == "no_disable")
+					{
+						hook_nodisable = true;
+					}
 				}
 				itfound->group        = hgroup;
 				itfound->lockgroup    = lgroup;
@@ -1550,9 +1555,11 @@ int SerializedRig::loadTruck(String fname, SceneManager *manager, SceneNode *par
 				itfound->lockrange    = hookrange;
 				itfound->lockspeed    = speedcoef * HOOK_SPEED_DEFAULT;
 				itfound->selflock     = hook_selflock;
+				itfound->autolock     = hook_autolock;
+				itfound->nodisable    = hook_nodisable;
 				itfound->timer        = 0.0f;
 				itfound->timer_preset = hooktimer;
-				itfound->autolock     = hook_autolock;
+				
 				continue;
 			}
 			else if (c.mode == BTS_BEAMS)
