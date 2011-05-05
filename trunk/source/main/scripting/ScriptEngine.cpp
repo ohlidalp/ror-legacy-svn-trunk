@@ -267,6 +267,7 @@ void ScriptEngine::PrintVariables(asIScriptContext *ctx, int stackLevel)
 // continue with initializing everything
 void ScriptEngine::init()
 {
+	LOG("SE| ScriptEngine (SE) initializing ...");
 	int result;
 	// Create the script engine
 	engine = AngelScript::asCreateScriptEngine(ANGELSCRIPT_VERSION);
@@ -509,10 +510,10 @@ void ScriptEngine::init()
 	// now the global instances
 	GameScript *gamescript = new GameScript(this, mefl);
 	result = engine->RegisterGlobalProperty("GameScriptClass game", gamescript); assert(result>=0);
-	result = engine->RegisterGlobalProperty("CacheSystemClass cache", &CacheSystem::Instance()); assert(result>=0);
+	//result = engine->RegisterGlobalProperty("CacheSystemClass cache", &CacheSystem::Instance()); assert(result>=0);
 	result = engine->RegisterGlobalProperty("SettingsClass settings", &SETTINGS); assert(result>=0);
 
-	LOG("SE| Registration done");
+	LOG("SE| Type registrations done. If you see no error above everything should be working");
 }
 
 void ScriptEngine::msgCallback(const AngelScript::asSMessageInfo *msg)
