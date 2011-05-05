@@ -682,11 +682,11 @@ void RegisterStdString_Native(asIScriptEngine *engine)
 	r = engine->RegisterObjectMethod("string", "string lTrim()", asFUNCTION(ltrim), asCALL_CDECL_OBJLAST); assert( r >= 0 );
 	r = engine->RegisterObjectMethod("string", "string rTrim()", asFUNCTION(rtrim), asCALL_CDECL_OBJLAST); assert( r >= 0 );
 
-	r = engine->RegisterObjectMethod("string", "float  parseFloat()", asFUNCTION(parseFloat), asCALL_CDECL_OBJLAST); assert( r >= 0 );
-	r = engine->RegisterObjectMethod("string", "int    parseInt()", asFUNCTION(parseInt), asCALL_CDECL_OBJLAST); assert( r >= 0 );
+	//r = engine->RegisterObjectMethod("string", "float  parseFloat()", asFUNCTION(parseFloat), asCALL_CDECL_OBJLAST); assert( r >= 0 );
+	//r = engine->RegisterObjectMethod("string", "int    parseInt()", asFUNCTION(parseInt), asCALL_CDECL_OBJLAST); assert( r >= 0 );
 
-	r = engine->RegisterObjectMethod("string", "float  parse()", asFUNCTION(parseFloat), asCALL_CDECL_OBJLAST); assert( r >= 0 );
-	r = engine->RegisterObjectMethod("string", "int    parse()", asFUNCTION(parseInt), asCALL_CDECL_OBJLAST); assert( r >= 0 );
+	//r = engine->RegisterObjectMethod("string", "float  parseFloat()", asFUNCTION(parseFloat), asCALL_CDECL_OBJLAST); assert( r >= 0 );
+	//r = engine->RegisterObjectMethod("string", "float  parseFloat()", asFUNCTION(parseFloat), asCALL_CDECL_OBJLAST); assert( r >= 0 );
 }
 
 void RegisterStdString(asIScriptEngine * engine)
