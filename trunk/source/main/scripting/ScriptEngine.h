@@ -122,6 +122,8 @@ public:
 		SE_TRUCK_TRACTIONCONTROL_TOGGLE    = 0x00200000, //!< triggered when the user toggles the tractioncontrol system, the argument refers to the truck number
 		SE_TRUCK_ANTILOCKBRAKE_TOGGLE      = 0x00400000, //!< triggered when the user toggles the antilockbrake, the argument refers to the truck number
 
+		SE_ALL_EVENTS                      = 0xffffffff,
+
 	};
 	
 	unsigned int eventMask;                              //!< filter mask for script events
@@ -247,9 +249,9 @@ public:
 
 	/**
 	 * gets the time of the day in seconds
-	 * @return day time in seconds
+	 * @return string with HH::MM::SS format
 	 */
-	float getCaelumTime();
+	std::string getCaelumTime();
 	
 	/**
 	 * sets the time of the day in seconds
