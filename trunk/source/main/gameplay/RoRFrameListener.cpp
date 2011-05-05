@@ -797,7 +797,10 @@ RoRFrameListener::RoRFrameListener(AppState *parentState, RenderWindow* win, Cam
 	netcheckGUITimer=0;
 	mDOF=0;
 	forcefeedback=0;
+
+#ifdef USE_OIS_G27
 	leds=0;
+#endif // USE_OIS_G27
 
 #ifdef USE_MPLATFORM
 	mplatform = new MPlatform_FD();
@@ -1457,6 +1460,7 @@ void RoRFrameListener::loadObject(const char* name, float px, float py, float pz
 		}
 	}
 
+
 	if(!CACHE.checkResourceLoaded(odefname, odefgroup))
 	if(!odefFound)
 	{
@@ -1566,6 +1570,7 @@ void RoRFrameListener::loadObject(const char* name, float px, float py, float pz
 		if (!strcmp("standard", ptline)) {classic_ref=false;tenode->pitch(Degree(90));continue;};
 		if (!strncmp("sound", ptline, 5))
 		{
+#ifdef USE_OPENAL
 			if(ssm)
 			{
 				char tmp[255]="";
@@ -1574,6 +1579,7 @@ void RoRFrameListener::loadObject(const char* name, float px, float py, float pz
 				sound->setPosition(tenode->getPosition(), Vector3::ZERO);
 				sound->start();
 			}
+#endif //USE_OPENAL
 			continue;
 		}
 		if (!strcmp("beginbox", ptline) || !strcmp("beginmesh", ptline))
@@ -3290,7 +3296,7 @@ bool RoRFrameListener::updateEvents(float dt)
 				Cache_Entry *sel = SelectorWindow::get()->getSelection();
 				if(sel)
 				{
-					//terrainUID = sel->uniqueid;
+					terrainUID = sel->uniqueid;
 					loadTerrain(sel->fname);
 
 					// no trucks loaded?
@@ -3612,7 +3618,6 @@ void RoRFrameListener::initializeCompontents()
 	ScriptEngine::getSingleton().setCollisions(collisions);
 	if(!netmode)
 	{
-		LOG("Loading Angelscript Script engine." );
 		if(ResourceGroupManager::getSingleton().resourceExistsInAnyGroup(loadedTerrain+".as"))
 			ScriptEngine::getSingleton().loadTerrainScript(loadedTerrain+".as");
 	}

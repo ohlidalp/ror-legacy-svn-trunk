@@ -84,6 +84,7 @@ int ScriptEngine::loadTerrainScript(Ogre::String scriptname)
 	// Load the entire script file into the buffer
 	int result=0;
 	string script;
+	LOG("SE| trying to load script file: "+scriptname);
 	result = loadScriptFile(scriptname.c_str(), script, terrainScriptHash);
 	if( result )
 	{
@@ -534,7 +535,7 @@ int ScriptEngine::loadScriptFile(const char *fileName, string &script, string &h
 	try
 	{
 		// read the file
-		DataStreamPtr ds=ResourceGroupManager::getSingleton().openResource(fileName, ResourceGroupManager::DEFAULT_RESOURCE_GROUP_NAME);
+		DataStreamPtr ds=ResourceGroupManager::getSingleton().openResource(fileName, ResourceGroupManager::AUTODETECT_RESOURCE_GROUP_NAME);
 		script.resize(ds->size());
 		ds->read(&script[0], ds->size());
 
@@ -801,6 +802,7 @@ int ScriptEngine::loadScript(Ogre::String scriptname)
 	context->Prepare(funcId);
 	LOG("SE| Executing main()");
 	result = context->Execute();
+	LOG("SE| Executing main() - DONE");
 	if( result != AngelScript::asEXECUTION_FINISHED )
 	{
 		// The execution didn't complete as expected. Determine what happened.
