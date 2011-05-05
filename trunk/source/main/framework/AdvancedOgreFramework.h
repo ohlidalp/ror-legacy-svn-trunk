@@ -41,6 +41,8 @@ public:
 	bool isEmbedded(void) { return embedded; };
 	Ogre::String getMainHWND() { return mainhwnd; };
 
+	unsigned long getTimeSinceStartup() { return m_pTimer->getMilliseconds(); };
+
 private:
 	bool embedded;
 	OgreFramework(const OgreFramework&);
