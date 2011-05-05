@@ -1810,14 +1810,15 @@ void Beam::SyncReset()
 		it->lockTruck     = 0;
 		it->beam->p2      = &nodes[0];
 		it->beam->p2truck = 0;
-		it->beam->L        = (nodes[0].AbsPosition - it->hookNode->AbsPosition).length();
+		it->beam->L       = (nodes[0].AbsPosition - it->hookNode->AbsPosition).length();
 	}
 
 	for (i=0; i<free_contacter; i++) contacters[i].contacted=0;
 	for(std::vector <rope_t>::iterator it = ropes.begin(); it!=ropes.end(); it++) it->lockedto=0;
 	for(std::vector <tie_t>::iterator it = ties.begin(); it!=ties.end(); it++)
 	{
-		it->beam->disabled=true;
+		it->beam->disabled = true;
+		it->beam->p2       = &nodes[0];
 		it->beam->mSceneNode->detachAllObjects();
 	}
 	for (i=0; i<free_aeroengine; i++) aeroengines[i]->reset();
@@ -4618,7 +4619,7 @@ void Beam::hookToggle(int group, int mode)
 					continue;
 		}
 
-		if (HOOK_LOCK && group == -2)
+		if (mode ==HOOK_LOCK && group == -2)
 		{
 			//automatic lock attempt (cyclic with doupdate). Toggle all hooks groups with group#: -2, -3, -4 --, skip the ones wiwhich are not autlock ( triggered only )
 			if (it->group >= -1 || !it->autolock)
