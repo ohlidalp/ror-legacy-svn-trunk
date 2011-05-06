@@ -106,11 +106,11 @@ bool GUIInputManager::mouseMoved(const OIS::MouseEvent& _arg)
 	// fallback, handle by GUI, then by SceneMouse
 	if(!MyGUI::InputManager::getInstance().injectMouseMove(mCursorX, mCursorY, _arg.state.Z.abs))
 	{
-		bool fixed = SceneMouse::getSingleton().mouseMoved(_arg);
-		if(fixed)
-			return true;
 	}
 
+	bool fixed = SceneMouse::getSingleton().mouseMoved(_arg);
+	if(fixed)
+		return true;
 
 	mCursorX = _arg.state.X.abs;
 	mCursorY = _arg.state.Y.abs;
