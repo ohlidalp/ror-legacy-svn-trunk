@@ -193,7 +193,6 @@ protected:
 	int mouseGrabState;
 	int screenWidth;
 	int screenHeight;
-	bool isnodegrabbed;
 	int truckgrabbed;
 	int nodegrabbed;
 	Real distgrabbed;
@@ -355,6 +354,7 @@ public:
 	bool getNetQualityChanged();
 	pthread_mutex_t mutex_data;
 	Radian camRotX, camRotY;
+	Real camDist;
 
 
 	SoundScriptManager* getSSM() { return ssm; };
@@ -395,7 +395,6 @@ protected:
 	bool camCollided;
 	Vector3 camPosColl;
 	Radian pushcamRotX, pushcamRotY;
-	Real camDist;
 	float mMoveScale;
 	Degree mRotScale;
 	Vector3 lastPosition;

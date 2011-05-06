@@ -288,6 +288,9 @@ void RoRFrameListener::updateGUI(float dt)
 	BES.updateGUI(dt);
 #endif
 
+	// update mouse picking lines, etc
+	SceneMouse::getSingleton().update(dt);
+
 	if (pressure_pressed)
 	{
 		Real angle = 135.0 - curr_truck->getPressure() * 2.7;
@@ -942,7 +945,6 @@ RoRFrameListener::RoRFrameListener(AppState *parentState, RenderWindow* win, Cam
 
 	screenWidth=win->getWidth();
 	screenHeight=win->getHeight();
-	isnodegrabbed=false;
 
 	mRotateSpeed = 100;
 	mMoveSpeed = 50;
@@ -5404,7 +5406,7 @@ void RoRFrameListener::moveCamera(float dt)
 	if(!hfinder) return;
 	if (loading_state!=ALL_LOADED && loading_state != EDITOR_PAUSE) return;
 
-	if (isnodegrabbed) return; //freeze camera
+	if (SceneMouse::getSingleton().isMouseGrabbed()) return; //freeze camera
 
 	Beam *curr_truck = BeamFactory::getSingleton().getCurrentTruck();
 
