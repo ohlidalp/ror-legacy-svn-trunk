@@ -746,8 +746,8 @@ void Beam::calcForcesEuler(int doUpdate, Real dt, int step, int maxstep)
 				it->beam->p2truck  = it->lockTruck;
 				it->beam->L = (it->hookNode->AbsPosition - it->lockNode->AbsPosition).length();
 				it->beam->disabled = false;
-				if (beams->mSceneNode->numAttachedObjects() == 0)
-					beams->mSceneNode->attachObject(beams->mEntity);
+				if (it->beam->mSceneNode->numAttachedObjects() == 0 && it->visible)
+					it->beam->mSceneNode->attachObject(it->beam->mEntity);
 			} else
 			{
 				if (it->beam->L < it->beam->commandShort)
@@ -777,6 +777,7 @@ void Beam::calcForcesEuler(int doUpdate, Real dt, int step, int maxstep)
 							} else
 							{
 								//force exceeded reset the hook node
+								it->beam->mSceneNode->detachAllObjects();
 								it->locked = UNLOCKED;
 								if (it->lockNode) it->lockNode->lockednode=0;
 								it->lockNode       = 0;
@@ -785,7 +786,6 @@ void Beam::calcForcesEuler(int doUpdate, Real dt, int step, int maxstep)
 								it->beam->p2truck  = 0;
 								it->beam->L        = (nodes[0].AbsPosition - it->hookNode->AbsPosition).length();
 								it->beam->disabled = 1;
-								beams->mSceneNode->detachAllObjects();
 							}
 						}
 					}

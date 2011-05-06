@@ -1555,9 +1555,11 @@ int SerializedRig::loadTruck(String fname, SceneManager *manager, SceneNode *par
 					{
 						hook_nodisable = true;
 					}
-					else if (arg == "visble" || arg == "vis")
+					else if (arg == "visible" || arg == "vis")
 					{
 						hookbeam_visble = true;
+						if (itfound->beam->mSceneNode->numAttachedObjects() == 0)
+							itfound->beam->mSceneNode->attachObject(itfound->beam->mEntity);
 					}
 					else if (arg == "norope" || arg == "no-rope" || arg == "no_rope")
 					{

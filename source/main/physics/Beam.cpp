@@ -1803,6 +1803,7 @@ void Beam::SyncReset()
 	//this is a hook assistance beam and needs to be disabled after reset
 	for(std::vector <hook_t>::iterator it = hooks.begin(); it!=hooks.end(); it++)
 	{
+		it->beam->mSceneNode->detachAllObjects();
 		it->beam->disabled = true;
 		it->locked        = UNLOCKED;
 		it->lockNodes     = true;
@@ -4657,11 +4658,11 @@ void Beam::hookToggle(int group, int mode)
 				it->timer = it->timer_preset;	//timer reset for autolock nodes
 
 			//disable hook-assistance beam
+			it->beam->mSceneNode->detachAllObjects();
 			it->beam->p2       = &nodes[0];
 			it->beam->p2truck  = 0;
 			it->beam->L        = (nodes[0].AbsPosition - it->hookNode->AbsPosition).length();
 			it->beam->disabled = true;
-			beams->mSceneNode->detachAllObjects();
 		} 
 		// do this only for toggle or lock attempts, skip prelocked or locked nodes for performance
 		else if (mode != HOOK_UNLOCK && it->locked == UNLOCKED)
