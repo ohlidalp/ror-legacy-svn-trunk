@@ -49,6 +49,10 @@ protected:
 	float mouseGrabForce;
 	int mouseGrabState;
 
+
+	int minnode;
+	float mindist;
+	Beam *grab_truck;
 };
 
 

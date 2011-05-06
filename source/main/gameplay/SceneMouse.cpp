@@ -36,6 +36,10 @@ SceneMouse::SceneMouse(Ogre::SceneManager *scm, RoRFrameListener *rfl) : scm(scm
 	mouseGrabForce = 100000.0f;
 	mouseGrabState = 0;
 	
+	minnode = -1;
+	grab_truck = 0;
+	mindist = 99999;
+
 	// load 3d line for mouse picking
 	pickLine =  scm->createManualObject("PickLineObject");
 	pickLineNode = scm->getRootSceneNode()->createChildSceneNode("PickLineNode");
@@ -64,21 +68,21 @@ bool SceneMouse::mouseMoved(const OIS::MouseEvent& _arg)
 	const OIS::MouseState ms = _arg.state;
 
 	// experimental mouse hack
-	if(ms.buttonDown(OIS::MB_Left))
+	if(ms.buttonDown(OIS::MB_Left) && mouseGrabState == 0)
 	{
 		// get the camera
 		Camera *cam = rfl->getCamera();
 		Viewport *vp = cam->getViewport();
 		// get a camera to scene ray
-		Ray mouseRay = cam->getCameraToViewportRay((float)ms.X.abs/(float)vp->getWidth(), (float)ms.Y.abs/(float)vp->getHeight());
+		Ray mouseRay = cam->getCameraToViewportRay((float)ms.X.abs/(float)vp->getActualWidth(),(float)ms.Y.abs/(float)vp->getActualHeight());
 		// get current truck
 		Beam *curr_truck = BeamFactory::getSingleton().getCurrentTruck();
 		// check if its valid and not sleeping
 		if(curr_truck && curr_truck->state == ACTIVATED)
 		{
 
-			float mindist = 30000.0f;
-			int   minnode = -1;
+			
+			minnode = -1;
 			// walk all nodes
 			for (int i = 0; i < curr_truck->free_node; i++)
 			{
@@ -98,32 +102,50 @@ bool SceneMouse::mouseMoved(const OIS::MouseEvent& _arg)
 			// check if we hit a node
 			if(minnode != -1)
 			{
-				// get correct ray
-				Ray m = cam->getCameraToViewportRay((float)ms.X.abs/(float)vp->getWidth(), (float)ms.Y.abs/(float)vp->getHeight());
-
-				// get position
-				Vector3 pos = m.getPoint(mindist);
-
-				// then display
-				pickLine->beginUpdate(0);
-				pickLine->position(curr_truck->nodes[minnode].AbsPosition);
-				pickLine->position(pos);
-				pickLine->end();
-				pickLineNode->setVisible(true);
-
-				// add forces
-				curr_truck->mouseMove(minnode, pos, 10000.0f);
-			} else
-			{
-				// hide mouse line
-				pickLineNode->setVisible(false);
+				mouseGrabState = 1;
+				grab_truck = curr_truck;
 			}
+
 			// not fixed
 			return false;
 		}
+	} else if(ms.buttonDown(OIS::MB_Left) && mouseGrabState == 1 && grab_truck)
+	{
+		// apply forces
+		Camera *cam = rfl->getCamera();
+		Viewport *vp = cam->getViewport();
+		Ray mouseRay = cam->getCameraToViewportRay((float)ms.X.abs/(float)vp->getActualWidth(),(float)ms.Y.abs/(float)vp->getActualHeight());
+		Vector3 pos = mouseRay.getPoint(mindist);
+
+		// then display
+		pickLine->beginUpdate(0);
+		pickLine->position(grab_truck->nodes[minnode].AbsPosition);
+		pickLine->position(pos);
+		pickLine->end();
+		pickLineNode->setVisible(true);
+
+		// add forces
+		grab_truck->mouseMove(minnode, pos, 10000.0f);
+		// not fixed
+		return false;
+
+	} else if(!ms.buttonDown(OIS::MB_Left) && mouseGrabState == 1 && grab_truck)
+	{
+		// hide mouse line
+		pickLineNode->setVisible(false);
+		// remove forces
+		grab_truck->mouseMove(minnode, Vector3::ZERO, 0);
+		// reset the variables
+		minnode = -1;
+		grab_truck = 0;
+		mindist = 99999;
+		mouseGrabState = 0;
+		// not fixed
+		return false;
 	}
 	
 
+	
 	if(ms.buttonDown(OIS::MB_Right))
 	{
 		rfl->camRotX += Degree(-(float)ms.X.rel * 0.13f);
