@@ -33,7 +33,7 @@ template<> SceneMouse *Singleton < SceneMouse >::ms_Singleton = 0;
 
 SceneMouse::SceneMouse(Ogre::SceneManager *scm, RoRFrameListener *rfl) : scm(scm), rfl(rfl)
 {
-	mouseGrabForce = 100000.0f;
+	mouseGrabForce = 30000.0f;
 	grab_truck     = NULL;
 	
 	// load 3d line for mouse picking
@@ -152,7 +152,7 @@ bool SceneMouse::mouseMoved(const OIS::MouseEvent& _arg)
 	{
 		rfl->camRotX += Degree(-(float)ms.X.rel * 0.13f);
 		rfl->camRotY += Degree(-(float)ms.Y.rel * 0.13f);
-		rfl->camDist += -(float)ms.Z.rel * 0.13f;
+		rfl->camDist += -(float)ms.Z.rel * 0.02f;
 #ifdef USE_MYGUI
 		MyGUI::PointerManager::getInstance().setPointer("hand");
 #endif // USE_MYGUI
@@ -186,7 +186,7 @@ void SceneMouse::update(float dt)
 		pickLine->end();
 
 		// add forces
-		grab_truck->mouseMove(minnode, lastgrabpos, 10000.0f);
+		grab_truck->mouseMove(minnode, lastgrabpos, mouseGrabForce);
 	}
 
 }
