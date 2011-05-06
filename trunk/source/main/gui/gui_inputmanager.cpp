@@ -103,14 +103,19 @@ bool GUIInputManager::mouseMoved(const OIS::MouseEvent& _arg)
 {
 	MyGUI::PointerManager::getInstance().setPointer("arrow");
 
+	bool fixed = SceneMouse::getSingleton().mouseMoved(_arg);
+	if(fixed)
+	{
+		// you would really need to "fix" the actual mouse position, see
+		// http://www.wreckedgames.com/forum/index.php?topic=1104.0
+		return true;
+	}
+
 	// fallback, handle by GUI, then by SceneMouse
 	if(!MyGUI::InputManager::getInstance().injectMouseMove(mCursorX, mCursorY, _arg.state.Z.abs))
 	{
+		// not handled by gui
 	}
-
-	bool fixed = SceneMouse::getSingleton().mouseMoved(_arg);
-	if(fixed)
-		return true;
 
 	mCursorX = _arg.state.X.abs;
 	mCursorY = _arg.state.Y.abs;
