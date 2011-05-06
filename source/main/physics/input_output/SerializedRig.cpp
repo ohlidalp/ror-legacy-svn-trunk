@@ -1291,7 +1291,10 @@ int SerializedRig::loadTruck(String fname, SceneManager *manager, SceneNode *par
 				// merge options and default_node_options
 				strncpy(options, ((String(default_node_options) + String(options)).c_str()), 250);
 
-				int pos;
+				//initialize case 'h' variables
+				int pos=0;
+				node_t* id_hook = &nodes[0];
+
 				// now 'parse' the options
 				char *options_pointer = options;
 				while (*options_pointer != 0)
@@ -1372,7 +1375,13 @@ int SerializedRig::loadTruck(String fname, SceneManager *manager, SceneNode *par
 							break;
 						case 'h':	//hook
 							// emulate the old behaviour using new fancy hookgroups
-							pos=add_beam(&nodes[id], &nodes[0], manager, parent, BEAM_HYDRO, default_break * default_break_scale * 100.0f, default_spring * default_spring_scale, default_damp * default_damp_scale * 0.1f);
+							//id check, avoid beam n0->n0
+							if (id == 0)
+							{
+								 id_hook = &nodes[1];
+							}
+
+							pos=add_beam(&nodes[id], id_hook, manager, parent, BEAM_HYDRO, default_break * default_break_scale * 100.0f, default_spring * default_spring_scale, default_damp * default_damp_scale * 0.1f);
 							beams[pos].L                 = HOOK_RANGE_DEFAULT;
 							beams[pos].refL              = beams[pos].refL;
 							beams[pos].Lhydro            = beams[pos].refL;
@@ -2797,9 +2806,15 @@ int SerializedRig::loadTruck(String fname, SceneManager *manager, SceneNode *par
 					continue;
 				}
 
+				node_t* id_tie = &nodes[0];
+				if (id1 == 0)
+				{
+					 id_tie = &nodes[1];
+				}
+
 				int htype=BEAM_HYDRO;
 				if (option=='i') htype=BEAM_INVISIBLE_HYDRO;
-				int pos=add_beam(&nodes[id1], &nodes[0], manager, parent, htype, default_break * default_break_scale, default_spring * default_spring_scale, default_damp * default_damp_scale);
+				int pos=add_beam(&nodes[id1], id_tie, manager, parent, htype, default_break * default_break_scale, default_spring * default_spring_scale, default_damp * default_damp_scale);
 				beams[pos].L=maxl;
 				beams[pos].refL=maxl;
 				beams[pos].Lhydro=maxl;
