@@ -41,6 +41,10 @@ public:
     bool keyPressed(const OIS::KeyEvent& _arg);
     bool keyReleased(const OIS::KeyEvent& _arg);
 
+
+	void update(float dt);
+	bool isMouseGrabbed() { return mouseGrabState != 0; };
+
 protected:
 	Ogre::SceneManager *scm;
 	RoRFrameListener *rfl;
@@ -53,6 +57,10 @@ protected:
 	int minnode;
 	float mindist;
 	Beam *grab_truck;
+	Ogre::Vector3 lastgrabpos;
+	int lastMouseX, lastMouseY;
+
+	void releaseMousePick();
 };
 
 

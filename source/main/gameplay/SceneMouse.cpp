@@ -34,12 +34,8 @@ template<> SceneMouse *Singleton < SceneMouse >::ms_Singleton = 0;
 SceneMouse::SceneMouse(Ogre::SceneManager *scm, RoRFrameListener *rfl) : scm(scm), rfl(rfl)
 {
 	mouseGrabForce = 100000.0f;
-	mouseGrabState = 0;
+	grab_truck     = NULL;
 	
-	minnode = -1;
-	grab_truck = 0;
-	mindist = 99999;
-
 	// load 3d line for mouse picking
 	pickLine =  scm->createManualObject("PickLineObject");
 	pickLineNode = scm->getRootSceneNode()->createChildSceneNode("PickLineNode");
@@ -57,10 +53,35 @@ SceneMouse::SceneMouse(Ogre::SceneManager *scm, RoRFrameListener *rfl) : scm(scm
 	pickLine->end();
 	pickLineNode->attachObject(pickLine);
 	pickLineNode->setVisible(false);
+
+	// init variables for mouse picking
+	releaseMousePick();
 }
 
 SceneMouse::~SceneMouse()
 {
+}
+
+void SceneMouse::releaseMousePick()
+{
+	// hide mouse line
+	if(pickLineNode)
+		pickLineNode->setVisible(false);
+
+	// remove forces
+	if(grab_truck)
+		grab_truck->mouseMove(minnode, Vector3::ZERO, 0);
+
+	// reset the variables
+	minnode        = -1;
+	grab_truck     = 0;
+	mindist        = 99999;
+	mouseGrabState = 0;
+	lastgrabpos    = Vector3::ZERO;
+	lastMouseX     = 0;
+	lastMouseY     = 0;
+
+	mouseGrabState = 0;
 }
 
 bool SceneMouse::mouseMoved(const OIS::MouseEvent& _arg)
@@ -104,52 +125,34 @@ bool SceneMouse::mouseMoved(const OIS::MouseEvent& _arg)
 			{
 				mouseGrabState = 1;
 				grab_truck = curr_truck;
+				lastMouseY = ms.Y.abs;
+				lastMouseX = ms.X.abs;
+				pickLineNode->setVisible(true);
 			}
 
 			// not fixed
 			return false;
 		}
-	} else if(ms.buttonDown(OIS::MB_Left) && mouseGrabState == 1 && grab_truck)
+	} else if(ms.buttonDown(OIS::MB_Left) && mouseGrabState == 1)
 	{
-		// apply forces
-		Camera *cam = rfl->getCamera();
-		Viewport *vp = cam->getViewport();
-		Ray mouseRay = cam->getCameraToViewportRay((float)ms.X.abs/(float)vp->getActualWidth(),(float)ms.Y.abs/(float)vp->getActualHeight());
-		Vector3 pos = mouseRay.getPoint(mindist);
-
-		// then display
-		pickLine->beginUpdate(0);
-		pickLine->position(grab_truck->nodes[minnode].AbsPosition);
-		pickLine->position(pos);
-		pickLine->end();
-		pickLineNode->setVisible(true);
-
-		// add forces
-		grab_truck->mouseMove(minnode, pos, 10000.0f);
+		// force applying and so forth happens in update()
+		lastMouseY = ms.Y.abs;
+		lastMouseX = ms.X.abs;
 		// not fixed
 		return false;
 
-	} else if(!ms.buttonDown(OIS::MB_Left) && mouseGrabState == 1 && grab_truck)
+	} else if(!ms.buttonDown(OIS::MB_Left) && mouseGrabState == 1)
 	{
-		// hide mouse line
-		pickLineNode->setVisible(false);
-		// remove forces
-		grab_truck->mouseMove(minnode, Vector3::ZERO, 0);
-		// reset the variables
-		minnode = -1;
-		grab_truck = 0;
-		mindist = 99999;
-		mouseGrabState = 0;
+		releaseMousePick();
 		// not fixed
 		return false;
 	}
-	
-
 	
 	if(ms.buttonDown(OIS::MB_Right))
 	{
 		rfl->camRotX += Degree(-(float)ms.X.rel * 0.13f);
 		rfl->camRotY += Degree(-(float)ms.Y.rel * 0.13f);
+		rfl->camDist += -(float)ms.Z.rel * 0.13f;
 #ifdef USE_MYGUI
 		MyGUI::PointerManager::getInstance().setPointer("hand");
 #endif // USE_MYGUI
@@ -166,6 +169,28 @@ bool SceneMouse::mouseMoved(const OIS::MouseEvent& _arg)
 	return false;
 }
 
+void SceneMouse::update(float dt)
+{
+	if(mouseGrabState == 1 && grab_truck)
+	{
+		// get values
+		Camera *cam = rfl->getCamera();
+		Viewport *vp = cam->getViewport();
+		Ray mouseRay = cam->getCameraToViewportRay((float)lastMouseX/(float)vp->getActualWidth(),(float)lastMouseY/(float)vp->getActualHeight());
+		lastgrabpos = mouseRay.getPoint(mindist);
+
+		// update visual line
+		pickLine->beginUpdate(0);
+		pickLine->position(grab_truck->nodes[minnode].AbsPosition);
+		pickLine->position(lastgrabpos);
+		pickLine->end();
+
+		// add forces
+		grab_truck->mouseMove(minnode, lastgrabpos, 10000.0f);
+	}
+
+}
+
 bool SceneMouse::mousePressed(const OIS::MouseEvent& _arg, OIS::MouseButtonID _id)
 {
 	return true;
@@ -173,6 +198,9 @@ bool SceneMouse::mousePressed(const OIS::MouseEvent& _arg, OIS::MouseButtonID _i
 
 bool SceneMouse::mouseReleased(const OIS::MouseEvent& _arg, OIS::MouseButtonID _id)
 {
+	if(mouseGrabState == 1)
+		releaseMousePick();
+
 	return true;
 }
 
