@@ -187,6 +187,7 @@ enum hook_states {
 	HOOK_LOCK=0,
 	HOOK_UNLOCK,
 	HOOK_TOGGLE,
+	MOUSE_HOOK_TOGGLE,
 };
 
 /* physics defaults */

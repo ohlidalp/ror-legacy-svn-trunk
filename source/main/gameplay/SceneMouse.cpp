@@ -128,6 +128,14 @@ bool SceneMouse::mouseMoved(const OIS::MouseEvent& _arg)
 				lastMouseY = ms.Y.abs;
 				lastMouseX = ms.X.abs;
 				pickLineNode->setVisible(true);
+
+				for(std::vector <hook_t>::iterator it = curr_truck->hooks.begin(); it!=curr_truck->hooks.end(); it++)
+				{
+					if (it->hookNode->id == minnode)
+					{
+							curr_truck->hookToggle(it->group, MOUSE_HOOK_TOGGLE, minnode);
+					}
+				}
 			}
 
 			// not fixed
