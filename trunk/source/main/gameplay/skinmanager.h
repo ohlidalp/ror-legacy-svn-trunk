@@ -26,8 +26,6 @@ along with Rigs of Rods.  If not, see <http://www.gnu.org/licenses/>.
 #include "OgreResourceManager.h"
 #include "skin.h"
 
-class Cache_Entry;
-
 /** Manages Skin resources, parsing .skin files and generally organising them.*/
 class SkinManager : public Ogre::ResourceManager, public Ogre::Singleton< SkinManager >
 {

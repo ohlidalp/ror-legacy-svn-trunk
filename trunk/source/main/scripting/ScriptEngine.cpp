@@ -63,6 +63,8 @@ along with Rigs of Rods.  If not, see <http://www.gnu.org/licenses/>.
 
 template<> ScriptEngine *Ogre::Singleton<ScriptEngine>::ms_Singleton=0;
 
+char *ScriptEngine::moduleName = "RoRScript";
+
 // the class implementation
 
 ScriptEngine::ScriptEngine(RoRFrameListener *efl, Collisions *_coll) : mefl(efl), coll(_coll), engine(0), context(0), frameStepFunctionPtr(-1), wheelEventFunctionPtr(-1), eventMask(0), terrainScriptName(), terrainScriptHash()
@@ -559,7 +561,7 @@ int ScriptEngine::executeString(Ogre::String command)
 
 	// XXX: TODO: FIXME (the function was replaced by an addon)
 	/*
-	int result = engine->ExecuteString("terrainScript", command.c_str(), &context);
+	int result = engine->ExecuteString(moduleName, command.c_str(), &context);
 	if(result<0)
 	{
 		LOG("error " + TOSTRING(result) + " while executing string: " + command + ".");
@@ -622,7 +624,6 @@ int ScriptEngine::loadScript(Ogre::String scriptname)
 	}
 	if(!cached)
 	{
-		char *moduleName = "RoRScript";
 		// not cached so dynamically load and compile it
 		result = builder.StartNewModule(engine, moduleName);
 		if( result < 0 )
@@ -950,9 +951,10 @@ void GameScript::spawnObject(const std::string &objectName, const std::string &i
 	AngelScript::asIScriptModule *mod=0;
 	try
 	{
-		mod = mse->getEngine()->GetModule("terrainScript", AngelScript::asGM_ONLY_IF_EXISTS);
-	}catch(...)
+		mod = mse->getEngine()->GetModule(mse->moduleName, AngelScript::asGM_ONLY_IF_EXISTS);
+	}catch(std::exception e)
 	{
+		LOG("SE| Exception in spawnObject(): " + String(e.what()));
 		return;
 	}
 	if(!mod) return;
@@ -975,8 +977,9 @@ int GameScript::setMaterialAmbient(const std::string &materialName, float red, f
 		MaterialPtr m = MaterialManager::getSingleton().getByName(materialName);
 		if(m.isNull()) return 0;
 		m->setAmbient(red, green, blue);
-	} catch(...)
+	} catch(Exception e)
 	{
+		LOG("SE| Exception in setMaterialAmbient(): " + e.getFullDescription());
 		return 0;
 	}
 	return 1;
@@ -989,8 +992,9 @@ int GameScript::setMaterialDiffuse(const std::string &materialName, float red, f
 		MaterialPtr m = MaterialManager::getSingleton().getByName(materialName);
 		if(m.isNull()) return 0;
 		m->setDiffuse(red, green, blue, alpha);
-	} catch(...)
+	} catch(Exception e)
 	{
+		LOG("SE| Exception in setMaterialDiffuse(): " + e.getFullDescription());
 		return 0;
 	}
 	return 1;
@@ -1003,8 +1007,9 @@ int GameScript::setMaterialSpecular(const std::string &materialName, float red, 
 		MaterialPtr m = MaterialManager::getSingleton().getByName(materialName);
 		if(m.isNull()) return 0;
 		m->setSpecular(red, green, blue, alpha);
-	} catch(...)
+	} catch(Exception e)
 	{
+		LOG("SE| Exception in setMaterialSpecular(): " + e.getFullDescription());
 		return 0;
 	}
 	return 1;
@@ -1017,8 +1022,9 @@ int GameScript::setMaterialEmissive(const std::string &materialName, float red, 
 		MaterialPtr m = MaterialManager::getSingleton().getByName(materialName);
 		if(m.isNull()) return 0;
 		m->setSelfIllumination(red, green, blue);
-	} catch(...)
+	} catch(Exception e)
 	{
+		LOG("SE| Exception in setMaterialEmissive(): " + e.getFullDescription());
 		return 0;
 	}
 	return 1;
