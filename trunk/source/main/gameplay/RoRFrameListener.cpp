@@ -2862,14 +2862,14 @@ bool RoRFrameListener::updateEvents(float dt)
 				}
 				if (INPUTENGINE.getEventBoolValueBounce(EV_COMMON_LOCK))
 				{
-					curr_truck->hookToggle(-1, HOOK_TOGGLE);
+					curr_truck->hookToggle(-1, HOOK_TOGGLE, -1);
 					//SlideNodeLock
 					curr_truck->toggleSlideNodeLock();
 				}
 				if (INPUTENGINE.getEventBoolValueBounce(EV_COMMON_AUTOLOCK))
 				{
 					//unlock all autolocks
-					curr_truck->hookToggle(-2, HOOK_UNLOCK);
+					curr_truck->hookToggle(-2, HOOK_UNLOCK, -1);
 				}
 				//strap
 				if (INPUTENGINE.getEventBoolValueBounce(EV_COMMON_SECURE_LOAD))

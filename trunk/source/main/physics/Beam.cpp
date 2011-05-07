@@ -2925,20 +2925,20 @@ void Beam::calcShocks2(int beam_i, Real difftoBeamL, Real &k, Real &d, Real dt, 
 				{ // just a trigger, check high/low boundary and set action
 					if (difftoBeamL > beams[i].longbound*beams[i].L) // trigger past longbound
 					{
-						if (beams[i].shock->flags & SHOCK_FLAG_TRG_HOOK_UNLOCK)
+						if (beams[i].shock->flags & SHOCK_FLAG_TRG_HOOK_UNLOCK, -1)
 						{
 							if(update)
 							{
 								//autolock hooktoggle unlock
-								hookToggle(beams[i].shock->trigger_cmdlong, HOOK_UNLOCK);
+								hookToggle(beams[i].shock->trigger_cmdlong, HOOK_UNLOCK, -1);
 							}
 						} else
-						if (beams[i].shock->flags & SHOCK_FLAG_TRG_HOOK_LOCK)
+						if (beams[i].shock->flags & SHOCK_FLAG_TRG_HOOK_LOCK, -1)
 						{
 							if(update)
 							{
 								//autolock hooktoggle lock
-								hookToggle(beams[i].shock->trigger_cmdlong, HOOK_LOCK);
+								hookToggle(beams[i].shock->trigger_cmdlong, HOOK_LOCK, -1);
 							}
 						} else
 						{
@@ -4605,7 +4605,7 @@ void Beam::ropeToggle(int group)
 	}
 }
 
-void Beam::hookToggle(int group, int mode)
+void Beam::hookToggle(int group, int mode, int node_number)
 {
 	Beam **trucks = BeamFactory::getSingleton().getTrucks();
 	int trucksnum = BeamFactory::getSingleton().getTruckCount();
@@ -4613,6 +4613,10 @@ void Beam::hookToggle(int group, int mode)
 	// iterate over all hooks
 	for(std::vector <hook_t>::iterator it = hooks.begin(); it!=hooks.end(); it++)
 	{
+		if(mode == MOUSE_HOOK_TOGGLE && it->hookNode->id != node_number)
+			//skip all other nodes except the one manually toggled by mouse
+			continue;
+
 		if(mode == HOOK_TOGGLE && group == -1)
 		{
 			//manually triggerd (EV_COMMON_LOCK). Toggle all hooks groups with group#: -1, 0, 1 ++
@@ -4620,7 +4624,7 @@ void Beam::hookToggle(int group, int mode)
 					continue;
 		}
 
-		if (mode ==HOOK_LOCK && group == -2)
+		if (mode == HOOK_LOCK && group == -2)
 		{
 			//automatic lock attempt (cyclic with doupdate). Toggle all hooks groups with group#: -2, -3, -4 --, skip the ones wiwhich are not autlock ( triggered only )
 			if (it->group >= -1 || !it->autolock)
@@ -4638,6 +4642,8 @@ void Beam::hookToggle(int group, int mode)
 			if (it->group != group)
 				continue;
 		}
+		if((mode == HOOK_LOCK || mode == HOOK_UNLOCK) && group >= -1)
+			continue;
 		if(mode == HOOK_LOCK && it->timer > 0.0f)
 		{
 			//check relock delay timer for autolock nodes and skip if not 0
@@ -4645,7 +4651,7 @@ void Beam::hookToggle(int group, int mode)
 		}
 
 		//this is a locked or prelocked hook and its not a locking attempt
-		if ((it->locked == LOCKED || it->locked == PRELOCK) && (mode != HOOK_LOCK))
+		if ((it->locked == LOCKED || it->locked == PRELOCK) && mode != HOOK_LOCK)
 		{
 			// we unlock ropes
 			it->locked = UNLOCKED;

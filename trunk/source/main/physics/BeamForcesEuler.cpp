@@ -348,7 +348,7 @@ void Beam::calcForcesEuler(int doUpdate, Real dt, int step, int maxstep)
 	if(doUpdate)
 	{
 		//just call this once per frame to avoid performance impact
-		hookToggle(-2, HOOK_LOCK);
+		hookToggle(-2, HOOK_LOCK, -1);
 	}
 
 	//animate props
