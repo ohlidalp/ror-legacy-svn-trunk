@@ -63,11 +63,14 @@ struct curlMemoryStruct {
  * @authors Thomas Fischer (thomas{AT}rigsofrods{DOT}com)
  */
 
+class GameScript;
+
 /**
  *  @brief This class represents the angelscript scripting interface. It can load and execute scripts.
  */
 class ScriptEngine : public Ogre::Singleton<ScriptEngine>
 {
+	friend class GameScript;
 public:
 	ScriptEngine(RoRFrameListener *efl, Collisions *_coll);
 	~ScriptEngine();
@@ -160,6 +163,9 @@ protected:
 	int eventCallbackFunctionPtr;           //!< script function pointer to the event callback function
 	Ogre::String terrainScriptName, terrainScriptHash;
 	std::map <std::string , std::vector<int> > callbacks;
+	
+	static char *moduleName;
+
 
 	/**
 	 * This function initialzies the engine and registeres all types

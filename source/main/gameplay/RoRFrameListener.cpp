@@ -1232,7 +1232,8 @@ RoRFrameListener::RoRFrameListener(AppState *parentState, RenderWindow* win, Cam
 		}
 
 		// set the terrain cache entry
-		//loaded_terrain = CACHE.getResourceInfo(preselected_map);
+		Cache_Entry ce = CACHE.getResourceInfo(preselected_map);
+		terrainUID = ce.uniqueid;
 
 		loadTerrain(preselected_map);
 		//miniature map stuff
