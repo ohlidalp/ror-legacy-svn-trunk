@@ -50,7 +50,7 @@ class BeamFactory : public StreamableFactory < BeamFactory, Beam >
 	Beam *getCurrentTruck() { return (current_truck<0)?0:trucks[current_truck]; };
 	int getCurrentTruckNumber() { return current_truck; };
 	void recalcGravityMasses();
-	void repairTruck(SoundScriptManager *ssm, Collisions *collisions, char* inst, char* box);
+	void repairTruck(SoundScriptManager *ssm, Collisions *collisions, char* inst, char* box, bool keepPosition=false);
 	void removeTruck(Collisions *collisions, char* inst, char* box);
 	void removeTruck(int truck);
 	void removeCurrentTruck();

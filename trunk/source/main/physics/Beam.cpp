@@ -408,7 +408,7 @@ Beam::Beam(int tnum, SceneManager *manager, SceneNode *parent, RenderWindow* win
 	simpleSkeletonInitiated=false;
 	strcpy(uniquetruckid,"-1");
 	tsm=manager;
-	simpleSkeletonNode = tsm->getRootSceneNode()->createChildSceneNode();
+	simpleSkeletonNode = parent->createChildSceneNode();
 	deletion_sceneNodes.push_back(simpleSkeletonNode);
 
 	tdt=0.1;
@@ -4893,7 +4893,7 @@ void Beam::updateDebugOverlay()
 				t.txt->setCharacterHeight(0.5);
 				t.txt->setColor(ColourValue::White);
 
-				t.node = tsm->getRootSceneNode()->createChildSceneNode();
+				t.node = parentNode->createChildSceneNode();
 				t.node->attachObject(t.txt);
 				t.node->attachObject(b);
 
@@ -4928,7 +4928,7 @@ void Beam::updateDebugOverlay()
 				t.txt->setCharacterHeight(1);
 				t.txt->setColor(ColourValue::White);
 
-				t.node = tsm->getRootSceneNode()->createChildSceneNode();
+				t.node = parentNode->createChildSceneNode();
 				t.node->attachObject(t.txt);
 
 				Vector3 pos = beams[i].p1->smoothpos - (beams[i].p1->smoothpos - beams[i].p2->smoothpos)/2;
@@ -5342,7 +5342,7 @@ void Beam::updateAI(float dt)
 	if(!n)
 	{
 		Entity *e = tsm->createEntity("axes.mesh");
-		n = tsm->getRootSceneNode()->createChildSceneNode();
+		n = parent->createChildSceneNode();
 		n->attachObject(e);
 	}
 	n->setPosition(mAgentPosition);

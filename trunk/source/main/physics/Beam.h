@@ -323,6 +323,8 @@ public:
 	int tsteps;
 	float avichatter_timer;
 
+	Ogre::SceneNode *getSceneNode() { return parentNode; };
+
 protected:
 
 	void updateSimpleSkeleton();
