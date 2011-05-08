@@ -1109,7 +1109,7 @@ int GameScript::useOnlineAPI(const std::string &apiquery, const AngelScript::CSc
 		}
 	}
 
-	// add some hardcoded values
+	// add some hard coded values
 	curl_formadd(&formpost, &lastptr, CURLFORM_COPYNAME, "terrain_Name", CURLFORM_COPYCONTENTS, mse->getTerrainName().c_str(), CURLFORM_END);
 	curl_formadd(&formpost, &lastptr, CURLFORM_COPYNAME, "terrain_Hash", CURLFORM_COPYCONTENTS, SSETTING("TerrainHash").c_str(), CURLFORM_END);
 	curl_formadd(&formpost, &lastptr, CURLFORM_COPYNAME, "terrain_ScriptHash", CURLFORM_COPYCONTENTS, mse->getTerrainScriptHash().c_str(), CURLFORM_END);
@@ -1126,9 +1126,9 @@ int GameScript::useOnlineAPI(const std::string &apiquery, const AngelScript::CSc
 	curl_formadd(&formpost, &lastptr, CURLFORM_COPYNAME, "MP_ServerPort", CURLFORM_COPYCONTENTS, SSETTING("Server port").c_str(), CURLFORM_END);
 	curl_formadd(&formpost, &lastptr, CURLFORM_COPYNAME, "MP_NetworkEnabled", CURLFORM_COPYCONTENTS, SSETTING("Network enable").c_str(), CURLFORM_END);
 
-	if(mefl->getCurrentTruckNumber() >= 0 && mefl->getCurrentTruck())
+	if(BeamFactory::getSingleton().getCurrentTruckNumber() >= 0 && BeamFactory::getSingleton().getCurrentTruck())
 	{
-		Beam *truck = mefl->getCurrentTruck();
+		Beam *truck = BeamFactory::getSingleton().getCurrentTruck();
 
 		curl_formadd(&formpost, &lastptr, CURLFORM_COPYNAME, "Truck_Name", CURLFORM_COPYCONTENTS, truck->getTruckName().c_str(), CURLFORM_END);
 		//curl_formadd(&formpost, &lastptr, CURLFORM_COPYNAME, "Truck_ModHash", CURLFORM_COPYCONTENTS, truck->cacheEntryInfo.hash.c_str(), CURLFORM_END);

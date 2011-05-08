@@ -71,6 +71,7 @@ IF(WIN32)
 		set(CURL_INCLUDE_DIRS "${ROR_DEPENDENCIES_DIR}/include/" CACHE PATH "The curl include path to use")
 		set(CURL_LIBRARY_DIRS "${ROR_DEPENDENCIES_DIR}/lib/curl" CACHE PATH "The curl lib path to use")
 		set(CURL_LIBRARIES "libcurl.lib" CACHE STRING "The curl lib to link against")
+		copy_files(${ROR_DEPENDENCIES_DIR}/bin/curl ${EXECUTABLE_OUTPUT_PATH})
 	endif(ROR_USE_CURL)
 	
 	set(PThread_INCLUDE_DIRS "${ROR_DEPENDENCIES_DIR}/include/pthread" CACHE PATH "The pthread include path to use")
