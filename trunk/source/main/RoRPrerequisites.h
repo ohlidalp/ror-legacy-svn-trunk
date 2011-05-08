@@ -84,6 +84,8 @@ class FlexObj;
 class HeightFinder;
 class MaterialReplacer;
 class MaterialFunctionMapper;
+class MapControl;
+class MapEntity;
 class MapTextureCreator;
 class MeshObject;
 class Mirrors;
