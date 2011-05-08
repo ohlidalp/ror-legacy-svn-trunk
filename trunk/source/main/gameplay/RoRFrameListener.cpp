@@ -55,10 +55,6 @@ along with Rigs of Rods.  If not, see <http://www.gnu.org/licenses/>.
 #include "mplatform_fd.h"
 #endif
 
-#ifdef USE_LUA
-# include "luasystem.h"
-#endif
-
 #ifdef USE_ANGELSCRIPT
 #include "ScriptEngine.h"
 #endif
@@ -196,7 +192,6 @@ inline float getTerrainHeight(Ogre::Real x, Ogre::Real z, void *unused=0)
 
 void RoRFrameListener::startTimer()
 {
-	//LOG("LUA: startTimer()");
 	raceStartTime = (int)rtime;
 	if(ow)
 	{
@@ -209,7 +204,6 @@ void RoRFrameListener::startTimer()
 
 float RoRFrameListener::stopTimer()
 {
-	//LOG("LUA: stopTimer()");
 	float time=rtime - raceStartTime;
 	// let the display on
 	if(ow)
@@ -784,9 +778,6 @@ RoRFrameListener::RoRFrameListener(AppState *parentState, RenderWindow* win, Cam
 	net_quality_changed=false;
 
 	terrainHasTruckShop=false;
-#ifdef USE_LUA
-	lua=0;
-#endif // LUASCRIPT
 
 	// we dont use overlays in embedded mode
 	if(!isEmbedded)
@@ -813,7 +804,7 @@ RoRFrameListener::RoRFrameListener(AppState *parentState, RenderWindow* win, Cam
 
 #ifdef USE_ANGELSCRIPT
 	new ScriptEngine(this, 0);
-	ScriptEngine::getSingleton().exploreScripts();
+	//ScriptEngine::getSingleton().exploreScripts();
 #endif
 
 	externalCameraMode=0;
@@ -1419,7 +1410,7 @@ void RoRFrameListener::unloadObject(const char* instancename)
 	obj.enabled = false;
 }
 
-void RoRFrameListener::loadObject(const char* name, float px, float py, float pz, float rx, float ry, float rz, SceneNode * bakeNode, const char* instancename, bool enable_collisions, int luahandler, const char *type, bool uniquifyMaterial)
+void RoRFrameListener::loadObject(const char* name, float px, float py, float pz, float rx, float ry, float rz, SceneNode * bakeNode, const char* instancename, bool enable_collisions, int scripthandler, const char *type, bool uniquifyMaterial)
 {
 	ScopeLog log("object_"+String(name));
 	if(type && !strcmp(type, "grid"))
@@ -1427,7 +1418,7 @@ void RoRFrameListener::loadObject(const char* name, float px, float py, float pz
 		// some fast grid object hacks :)
 		for(int x=0;x<500;x+=50)
 			for(int z=0;z<500;z+=50)
-				loadObject(name, px+x, py, pz+z, rx, ry, rz, bakeNode, 0, enable_collisions, luahandler, 0);
+				loadObject(name, px+x, py, pz+z, rx, ry, rz, bakeNode, 0, enable_collisions, scripthandler, 0);
 		return;
 	}
 
@@ -1687,7 +1678,7 @@ void RoRFrameListener::loadObject(const char* name, float px, float py, float pz
 		{
 			if (enable_collisions)
 			{
-				int boxnum = collisions->addCollisionBox(tenode, rotating, virt,px,py,pz,rx,ry,rz,lx,hx,ly,hy,lz,hz,srx,sry,srz,eventname, instancename, forcecam, Vector3(fcx, fcy, fcz), scx, scy, scz, drx, dry, drz, event_filter, luahandler);
+				int boxnum = collisions->addCollisionBox(tenode, rotating, virt,px,py,pz,rx,ry,rz,lx,hx,ly,hy,lz,hz,srx,sry,srz,eventname, instancename, forcecam, Vector3(fcx, fcy, fcz), scx, scy, scz, drx, dry, drz, event_filter, scripthandler);
 				obj->collBoxes.push_back((boxnum));
 			}
 			continue;
@@ -3616,7 +3607,7 @@ void RoRFrameListener::initializeCompontents()
 	LoadingWindow::get()->setProgress(0, _L("Loading Terrain"));
 	bool disableMap = (BSETTING("disableOverViewMap"));
 
-	// map must be loaded before lua!
+	// map must be loaded before the script engine
 	// init the map
 	if(!disableMap)
 	{
@@ -3633,26 +3624,21 @@ void RoRFrameListener::initializeCompontents()
 	}
 #endif // MYGUI
 
-	// load lua and collisions
-#ifdef USE_LUA
-	//setup lua
-	LOG("Loading LUA Script engine." );
-	lua=new LuaSystem(this);
-	//setup collision system
-	collisions=new Collisions(lua, this, mSceneMgr, debugCollisions);
-
-	if(!netmode && lua)
-		lua->loadTerrain(loadedTerrain);
-#else
 	collisions=new Collisions(this, mSceneMgr, debugCollisions);
-#endif
+
 	// load AS
 #ifdef USE_ANGELSCRIPT
 	ScriptEngine::getSingleton().setCollisions(collisions);
 	if(!netmode)
 	{
 		if(ResourceGroupManager::getSingleton().resourceExistsInAnyGroup(loadedTerrain+".as"))
+		{
 			ScriptEngine::getSingleton().loadScript(loadedTerrain+".as");
+		} else
+		{
+			// load a default script that does the most basic things
+			ScriptEngine::getSingleton().loadScript("default.as");
+		}
 	}
 #endif
 
@@ -6084,10 +6070,6 @@ bool RoRFrameListener::frameStarted(const FrameEvent& evt)
 		//we simulate one truck, it will take care of the others (except networked ones)
 
 		BeamFactory::getSingleton().calcPhysics(dt);
-
-#ifdef USE_LUA
-		if(lua) lua->framestep();
-#endif //USE_LUA
 
 		updateIO(dt);
 

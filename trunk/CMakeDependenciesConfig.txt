@@ -1,7 +1,6 @@
 # components
 set(ROR_USE_MYGUI   "FALSE" CACHE BOOL "use MyGUI")
 set(ROR_USE_OPENAL  "FALSE" CACHE BOOL "use OPENAL")
-set(ROR_USE_LUA     "FALSE" CACHE BOOL "use LUA")
 set(ROR_USE_SOCKETW "FALSE" CACHE BOOL "use SOCKETW")
 set(ROR_USE_MOFILEREADER "FALSE" CACHE BOOL "use mofilereader")
 set(ROR_USE_PAGED   "FALSE" CACHE BOOL "use paged geometry")
@@ -103,12 +102,6 @@ IF(WIN32)
 		copy_files(${ROR_DEPENDENCIES_DIR}/bin/openal-soft ${EXECUTABLE_OUTPUT_PATH})
 	endif(ROR_USE_OPENAL)
 
-	if(ROR_USE_LUA)
-		set(LUA_INCLUDE_DIRS "${ROR_DEPENDENCIES_DIR}/include/lua" CACHE PATH "The lua include path to use")
-		set(LUA_LIBRARY_DIRS "${ROR_DEPENDENCIES_DIR}/lib/lua" CACHE PATH "The lua lib path to use")
-		set(LUA_LIBRARIES    "lua.lib" CACHE STRING "The lua lib to link against")
-	endif(ROR_USE_LUA)
-
 	if(ROR_USE_SOCKETW)
 		set(SOCKETW_INCLUDE_DIRS "${ROR_DEPENDENCIES_DIR}/include/SocketW" CACHE PATH "The socketw include path to use")
 		set(SOCKETW_LIBRARY_DIRS "${ROR_DEPENDENCIES_DIR}/lib/SocketW" CACHE PATH "The socketw lib path to use")
@@ -208,17 +201,6 @@ ELSEIF(UNIX)
          message(" > OpenAL found, you should enable OpenAL support by setting ROR_USE_OPENAL")
       endif(OPENAL_FOUND)
    endif(ROR_USE_OPENAL)
-
-   # LUA
-   find_package(Lua51)
-   if(ROR_USE_LUA)
-      set(LUA_INCLUDE_DIRS ${LUA_INCLUDE_DIR})
-      set(LUA_LIBRARIES ${LUA_LIBRARIES})
-   else(ROR_USE_LUA)
-      if(LUA51_FOUND)
-         message(" > LUA found, you should enable LUA support by setting ROR_USE_LUA")
-      endif(LUA51_FOUND)
-   endif(ROR_USE_LUA)
 
    # using pkg-config
    # MyGUI

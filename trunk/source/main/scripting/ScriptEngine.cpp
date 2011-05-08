@@ -75,6 +75,11 @@ ScriptEngine::ScriptEngine(RoRFrameListener *efl, Collisions *_coll) : mefl(efl)
 	callbacks["frameStep"] = std::vector<int>();
 	callbacks["wheelEvents"] = std::vector<int>();
 	callbacks["eventCallback"] = std::vector<int>();
+
+	frameStepFunctionPtr = 0;
+	wheelEventFunctionPtr = 0;
+	eventCallbackFunctionPtr = 0;
+	defaultEventCallbackFunctionPtr = 0;
 }
 
 ScriptEngine::~ScriptEngine()
@@ -373,6 +378,7 @@ void ScriptEngine::init()
 	result = engine->RegisterObjectMethod("GameScriptClass", "void setChatFontSize(int)", AngelScript::asMETHOD(GameScript,setChatFontSize), AngelScript::asCALL_THISCALL); assert(result>=0);
 	result = engine->RegisterObjectMethod("GameScriptClass", "void showChooser(const string &in, const string &in, const string &in)", AngelScript::asMETHOD(GameScript,showChooser), AngelScript::asCALL_THISCALL); assert(result>=0);
 	result = engine->RegisterObjectMethod("GameScriptClass", "void repairVehicle(const string &in, const string &in)", AngelScript::asMETHOD(GameScript,repairVehicle), AngelScript::asCALL_THISCALL); assert(result>=0);
+	result = engine->RegisterObjectMethod("GameScriptClass", "void removeVehicle(const string &in, const string &in)", AngelScript::asMETHOD(GameScript,removeVehicle), AngelScript::asCALL_THISCALL); assert(result>=0);
 	result = engine->RegisterObjectMethod("GameScriptClass", "void spawnObject(const string &in, const string &in, vector3, vector3, const string &in, bool)", AngelScript::asMETHOD(GameScript,spawnObject), AngelScript::asCALL_THISCALL); assert(result>=0);
 	result = engine->RegisterObjectMethod("GameScriptClass", "void destroyObject(const string &in)", AngelScript::asMETHOD(GameScript,destroyObject), AngelScript::asCALL_THISCALL); assert(result>=0);
 	result = engine->RegisterObjectMethod("GameScriptClass", "int setMaterialAmbient(const string &in, float, float, float)", AngelScript::asMETHOD(GameScript,setMaterialAmbient), AngelScript::asCALL_THISCALL); assert(result>=0);
@@ -386,7 +392,9 @@ void ScriptEngine::init()
 	result = engine->RegisterObjectMethod("GameScriptClass", "float rangeRandom(float, float)", AngelScript::asMETHOD(GameScript,rangeRandom), AngelScript::asCALL_THISCALL); assert(result>=0);
 	result = engine->RegisterObjectMethod("GameScriptClass", "int useOnlineAPI(const string &in, const dictionary &in, string &out)", AngelScript::asMETHOD(GameScript,useOnlineAPI), AngelScript::asCALL_THISCALL); assert(result>=0);
 	result = engine->RegisterObjectMethod("GameScriptClass", "int getLoadedTerrain(string &out)", AngelScript::asMETHOD(GameScript,getLoadedTerrain), AngelScript::asCALL_THISCALL); assert(result>=0);
+	result = engine->RegisterObjectMethod("GameScriptClass", "void clearEventCache()", AngelScript::asMETHOD(GameScript,clearEventCache), AngelScript::asCALL_THISCALL); assert(result>=0);
 
+	
 	// enum scriptEvents
 	result = engine->RegisterEnum("scriptEvents"); assert(result>=0);
 	result = engine->RegisterEnumValue("scriptEvents", "SE_COLLISION_BOX_ENTER", SE_COLLISION_BOX_ENTER); assert(result>=0);
@@ -505,7 +513,7 @@ int ScriptEngine::framestep(Ogre::Real dt)
 	if(truck)
 	{
 		eventsource_t *source = coll->isTruckInEventBox(truck);
-		if(source) envokeCallback(source->luahandler, source, 0, 1);
+		if(source) envokeCallback(source->scripthandler, source, 0, 1);
 	}
 
 	// framestep stuff below
@@ -530,8 +538,16 @@ int ScriptEngine::framestep(Ogre::Real dt)
 
 int ScriptEngine::envokeCallback(int functionPtr, eventsource_t *source, node_t *node, int type)
 {
-	if(functionPtr<=0) return 1;
 	if(!engine) return 0;
+	if(functionPtr <= 0 && defaultEventCallbackFunctionPtr > 0)
+	{
+		// use the default event handler instead then
+		functionPtr = defaultEventCallbackFunctionPtr;
+	} else if (functionPtr <= 0)
+	{
+		// no default callback available, discard the event
+		return 0;
+	}
 	if(!context) context = engine->CreateContext();
 	context->Prepare(functionPtr);
 
@@ -668,6 +684,9 @@ int ScriptEngine::loadScript(Ogre::String scriptname)
 
 	eventCallbackFunctionPtr = mod->GetFunctionIdByDecl("void eventCallback(int, int)");
 	if(eventCallbackFunctionPtr > 0) callbacks["eventCallback"].push_back(eventCallbackFunctionPtr);
+
+	defaultEventCallbackFunctionPtr = mod->GetFunctionIdByDecl("void defaultEventCallback(int, string, string, int)");
+	if(defaultEventCallbackFunctionPtr > 0) callbacks["defaultEventCallback"].push_back(defaultEventCallbackFunctionPtr);
 
 	int cb = mod->GetFunctionIdByDecl("void on_terrain_loading(string lines)");
 	if(cb > 0) callbacks["on_terrain_loading"].push_back(cb);
@@ -941,6 +960,12 @@ void GameScript::repairVehicle(string &instance, string &box)
 	BeamFactory::getSingleton().repairTruck(mefl->getSSM(), mefl->getCollisions(), const_cast<char*>(instance.c_str()), const_cast<char*>(box.c_str()));
 }
 
+void GameScript::removeVehicle(string &instance, string &box)
+{
+	BeamFactory::getSingleton().removeTruck(mefl->getCollisions(), const_cast<char*>(instance.c_str()), const_cast<char*>(box.c_str()));
+}
+
+
 void GameScript::destroyObject(const std::string &instanceName)
 {
 	mefl->unloadObject(const_cast<char*>(instanceName.c_str()));
@@ -1039,6 +1064,11 @@ int GameScript::getLoadedTerrain(std::string &result)
 {
 	result = mefl->loadedTerrain;
 	return 0;
+}
+
+void GameScript::clearEventCache()
+{
+	mefl->getCollisions()->clearEventCache();
 }
 
 #ifdef USE_CURL

@@ -67,15 +67,10 @@ typedef struct _eventsource
 	char boxname[256];
 	Ogre::SceneNode *snode;
 	Ogre::Quaternion direction;
-	int luahandler;
+	int scripthandler;
 	int cbox;
 	bool enabled;
 } eventsource_t;
-
-#ifdef USE_LUA
-# include "luasystem.h"
-class LuaSystem;
-#endif
 
 #include "Beam.h"
 #include "RoRFrameListener.h"
@@ -129,9 +124,6 @@ private:
 	bool permitEvent(int filter);
 	bool envokeScriptCallback(collision_box_t *cbox, node_t *node=0);
 
-#ifdef USE_LUA
-	LuaSystem *lua;
-#endif
 	RoRFrameListener *mefl;
 	unsigned int hashmask;
 	HeightFinder *hfinder;
@@ -164,13 +156,9 @@ public:
 
 	Collisions() {}; // for wrapper, DO NOT USE!
 
-  Collisions(
-#ifdef USE_LUA
-    LuaSystem *mlua,
-#endif
-    RoRFrameListener *efl, Ogre::SceneManager *mgr, bool debugMode);
+  Collisions(RoRFrameListener *efl, Ogre::SceneManager *mgr, bool debugMode);
 
-	int addCollisionBox(SceneNode *tenode, bool rotating, bool virt, float px, float py, float pz, float rx, float ry, float rz, float lx,float hx,float ly,float hy,float lz,float hz,float srx,float sry,float srz, const char* eventname, const char* instancename, bool forcecam, Vector3 campos, float scx=1.0, float scy=1.0, float scz=1.0, float drx=0.0, float dry=0.0, float drz=0.0, int event_filter=EVENT_ALL, int luahandler=-1);
+	int addCollisionBox(SceneNode *tenode, bool rotating, bool virt, float px, float py, float pz, float rx, float ry, float rz, float lx,float hx,float ly,float hy,float lz,float hz,float srx,float sry,float srz, const char* eventname, const char* instancename, bool forcecam, Vector3 campos, float scx=1.0, float scy=1.0, float scz=1.0, float drx=0.0, float dry=0.0, float drz=0.0, int event_filter=EVENT_ALL, int scripthandler=-1);
 	int addCollisionTri(Vector3 p1, Vector3 p2, Vector3 p3, ground_model_t* gm);
 	int addCollisionMesh(Ogre::String meshname, Ogre::Vector3 pos, Ogre::Quaternion q, Ogre::Vector3 scale, ground_model_t *gm=0, std::vector<int> *collTris=0);
 	bool collisionCorrect(Vector3 *refpos);

@@ -101,18 +101,11 @@ unsigned int sbox[] =
 	0x3C034CBA, 0xACDA62FC, 0x11923B8B, 0x45EF170A,
 };
 
-Collisions::Collisions(
-#ifdef USE_LUA
-  LuaSystem *mlua,
-#endif
-  RoRFrameListener *efl, Ogre::SceneManager *mgr, bool _debugMode) : smgr(mgr)
+Collisions::Collisions(RoRFrameListener *efl, Ogre::SceneManager *mgr, bool _debugMode) : smgr(mgr)
 	, free_collision_box(0)
 	, free_collision_tri(0)
 	, free_cell(0)
 	, free_eventsource(0)
-#ifdef USE_LUA
-	, lua(mlua)
-#endif
 	, mefl(efl)
 	, hashmask(0)
 	, hfinder(0)
@@ -483,7 +476,7 @@ cell_t *Collisions::hash_find(int cell_x, int cell_z)
 }
 
 
-int Collisions::addCollisionBox(SceneNode *tenode, bool rotating, bool virt, float px, float py, float pz, float rx, float ry, float rz, float lx,float hx,float ly,float hy,float lz,float hz,float srx,float sry,float srz, const char* eventname, const char* instancename, bool forcecam, Vector3 campos, float scx, float scy, float scz, float drx, float dry, float drz, int event_filter, int luahandler)
+int Collisions::addCollisionBox(SceneNode *tenode, bool rotating, bool virt, float px, float py, float pz, float rx, float ry, float rz, float lx,float hx,float ly,float hy,float lz,float hz,float srx,float sry,float srz, const char* eventname, const char* instancename, bool forcecam, Vector3 campos, float scx, float scy, float scz, float drx, float dry, float drz, int event_filter, int scripthandler)
 {
 	Quaternion 	rotation=Quaternion(Degree(rx), Vector3::UNIT_X)*Quaternion(Degree(ry), Vector3::UNIT_Y)*Quaternion(Degree(rz), Vector3::UNIT_Z);
 	Quaternion 	direction=Quaternion(Degree(drx), Vector3::UNIT_X)*Quaternion(Degree(dry), Vector3::UNIT_Y)*Quaternion(Degree(drz), Vector3::UNIT_Z);
@@ -530,7 +523,7 @@ int Collisions::addCollisionBox(SceneNode *tenode, bool rotating, bool virt, flo
 		//this is envent-generating
 		strcpy(eventsources[free_eventsource].boxname, eventname);
 		strcpy(eventsources[free_eventsource].instancename, instancename);
-		eventsources[free_eventsource].luahandler = luahandler;
+		eventsources[free_eventsource].scripthandler = scripthandler;
 		eventsources[free_eventsource].cbox      = free_collision_box;
 		eventsources[free_eventsource].snode     = tenode;
 		eventsources[free_eventsource].direction = direction;
@@ -618,7 +611,7 @@ int Collisions::addCollisionBox(SceneNode *tenode, bool rotating, bool virt, flo
 		// box content
 		ManualObject *mo =  smgr->createManualObject();
 		String matName = "tracks/debug/collision/box";
-		if(virt && luahandler == -1)
+		if(virt && scripthandler == -1)
 			matName = "tracks/debug/eventbox/unused";
 		else if (virt)
 			matName = "tracks/debug/eventbox/used";
@@ -691,8 +684,8 @@ int Collisions::addCollisionBox(SceneNode *tenode, bool rotating, bool virt, flo
 		{
 			String labelName = "collision_box_label_"+TOSTRING(free_collision_box);
 			String labelCaption = "EVENTBOX\nevent:"+String(eventname) + "\ninstance:" + String(instancename);
-			if(luahandler != -1)
-				labelCaption += "\nhandler:" + TOSTRING(luahandler);
+			if(scripthandler != -1)
+				labelCaption += "\nhandler:" + TOSTRING(scripthandler);
 			MovableText *mt = new MovableText(labelName, labelCaption);
 			mt->setFontName("highcontrast_black");
 			mt->setTextAlignment(MovableText::H_CENTER, MovableText::V_ABOVE);
@@ -841,18 +834,11 @@ bool Collisions::envokeScriptCallback(collision_box_t *cbox, node_t *node)
 	// this prevents that the same callback gets called at 2k FPS all the time, serious hit on FPS ...
 	if(last_called_cbox != cbox)
 	{
-		// prefer AS to LUA
 #ifdef USE_ANGELSCRIPT
-		int ret = ScriptEngine::getSingleton().envokeCallback(eventsources[cbox->eventsourcenum].luahandler, &eventsources[cbox->eventsourcenum], node);
+		int ret = ScriptEngine::getSingleton().envokeCallback(eventsources[cbox->eventsourcenum].scripthandler, &eventsources[cbox->eventsourcenum], node);
 		if(ret == 0)
-			handled=true;
-
+			handled = true;
 #endif //USE_ANGELSCRIPT
-#ifdef USE_LUA
-		if(!handled)
-			lua->spawnEvent(cbox->eventsourcenum, &eventsources[cbox->eventsourcenum]);
-		last_called_cbox = cbox;
-#endif // USE_LUA
 	}
 	return handled;
 }

@@ -56,10 +56,6 @@ along with Rigs of Rods.  If not, see <http://www.gnu.org/licenses/>.
 
 #include "OgreTerrainGroup.h"
 
-#ifdef USE_LUA
-class LuaSystem;
-#endif
-
 class Road;
 class ProceduralManager;
 class Editor;
@@ -277,7 +273,7 @@ public:
 	static RoRFrameListener *eflsingleton;
 	void removeBeam(Beam *);
 	
-	void loadObject(const char* name, float px, float py, float pz, float rx, float ry, float rz, SceneNode * bakeNode, const char* instancename, bool enable_collisions=true, int luahandler=-1, const char *type=0, bool uniquifyMaterial=false);
+	void loadObject(const char* name, float px, float py, float pz, float rx, float ry, float rz, SceneNode * bakeNode, const char* instancename, bool enable_collisions=true, int scripthandler=-1, const char *type=0, bool uniquifyMaterial=false);
 	void unloadObject(const char* name);
 	bool updateEvents(float dt);
 	void initTrucks(bool loadmanual, Ogre::String selected, Ogre::String selectedExtension = Ogre::String(), std::vector<Ogre::String> *truckconfig=0, bool enterTruck=false);
@@ -418,10 +414,6 @@ protected:
 
 	bool hidegui;
 	bool debugCollisions;
-
-#ifdef USE_LUA
-	LuaSystem *lua;
-#endif
 
 	Collisions *collisions;
 	MOC::CollisionTools* mCollisionTools;

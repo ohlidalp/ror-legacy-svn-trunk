@@ -131,7 +131,7 @@ bool SceneMouse::mouseMoved(const OIS::MouseEvent& _arg)
 				{
 					if (it->hookNode->id == minnode)
 					{
-							curr_truck->hookToggle(it->group, MOUSE_HOOK_TOGGLE, minnode);
+						curr_truck->hookToggle(it->group, MOUSE_HOOK_TOGGLE, minnode);
 					}
 				}
 			}
