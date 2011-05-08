@@ -5298,7 +5298,7 @@ void RoRFrameListener::changedCurrentTruck(Beam *previousTruck, Beam *currentTru
 		camRotY=Degree(12);
 		camDist=20;
 #ifdef USE_ANGELSCRIPT
-		ScriptEngine::getSingleton().triggerEvent(ScriptEngine::SE_TRUCK_ENTER, previousTruck?previousTruck->trucknum:-1);
+		ScriptEngine::getSingleton().triggerEvent(ScriptEngine::SE_TRUCK_EXIT, previousTruck?previousTruck->trucknum:-1);
 #endif //ANGELSCRIPT
 	}
 	else

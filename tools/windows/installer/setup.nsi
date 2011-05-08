@@ -9,7 +9,7 @@ SetCompressor /FINAL /SOLID lzma
 
 !define PRODUCT_VERSION_MAJOR "0"
 !define PRODUCT_VERSION_MINOR "38"
-!define PRODUCT_VERSION_PATCH "24"
+!define PRODUCT_VERSION_PATCH "25"
 
 !define PRODUCT_VERSION "${PRODUCT_VERSION_MAJOR}.${PRODUCT_VERSION_MINOR}.${PRODUCT_VERSION_PATCH}"
 
@@ -102,7 +102,8 @@ VIProductVersion "${PRODUCT_VERSION}.0" ; hacky add .0 to stay compatible with w
 ;!define MUI_FINISHPAGE_RUN_PARAMETERS ""
 ;!define MUI_FINISHPAGE_RUN_NOTCHECKED
 ;!define MUI_FINISHPAGE_SHOWREADME "$INSTDIR\Example.file"
-!define MUI_FINISHPAGE_RUN_TEXT "Check for updates"
+
+;!define MUI_FINISHPAGE_RUN_TEXT "Check for updates"
 !define MUI_FINISHPAGE_RUN_FUNCTION "LaunchPostInstallation"
 !insertmacro MUI_PAGE_FINISH
 
@@ -236,7 +237,26 @@ Section "!Rigs of Rods Base" RoRBaseGame
 	# user path
 	SetShellVarContext current
 	SetOutPath "$DOCUMENTS\Rigs of Rods\"
+	# create some empty directories
+	CreateDirectory "$DOCUMENTS\Rigs of Rods\cache\"
+	CreateDirectory "$DOCUMENTS\Rigs of Rods\logs\"
+	CreateDirectory "$DOCUMENTS\Rigs of Rods\terrains\"
+	CreateDirectory "$DOCUMENTS\Rigs of Rods\vehicles\"
+	# no file overwriting for the user folder, important so the user can keep his configuration
+	SetOverwrite off
 	File /r /x .svn installerskeleton\*
+	# install config files without overwrite on
+	SetOverwrite try
+	# overwrite some configuration files that are required
+	SetOutPath "$DOCUMENTS\Rigs of Rods\config\"
+	File installerskeleton\config\categories.cfg
+	File installerskeleton\config\editor.cfg
+	File installerskeleton\config\ground_models.cfg
+	File installerskeleton\config\inertia_models.cfg
+	File installerskeleton\config\skidmarks.cfg
+	File installerskeleton\config\torque_models.cfg
+	File installerskeleton\config\wavefield.cfg
+	# done with configuration
 
 	; clean cache directory
 	Banner::show /NOUNLOAD "cleaning cache directory"
@@ -338,7 +358,7 @@ LangString DESC_RoRServer ${LANG_ENGLISH} "Rigs of Rods Multiplayer Server - if 
 ;SectionEnd
 
 Function "LaunchPostInstallation"
-	Exec  "$INSTDIR\updater.exe"
+	Exec  "$INSTDIR\rorconfig.exe"
 FunctionEnd
 
 Section -Post
