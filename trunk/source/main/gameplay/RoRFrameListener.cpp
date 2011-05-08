@@ -1392,9 +1392,33 @@ void RoRFrameListener::unloadObject(const char* instancename)
 
 	// TODO: proper unloading with unloading of the collision things
 
-	Ogre::SceneNode *node = loadedObjects[std::string(instancename)];
-	node->detachAllObjects();
-	node->setVisible(false);
+	loadedObject_t obj = loadedObjects[std::string(instancename)];
+
+	// check if it was already deleted
+	if(!obj.enabled)
+		return;
+
+	// unload any collision tris
+	if(obj.collTris.size() > 0)
+	{
+		for(std::vector<int>::iterator it = obj.collTris.begin(); it != obj.collTris.end(); it++)
+		{
+			collisions->removeCollisionTri(*it);
+		}
+	}
+	
+	// and any collision boxes
+	if(obj.collBoxes.size() > 0)
+	{
+		for(std::vector<int>::iterator it = obj.collBoxes.begin(); it != obj.collBoxes.end(); it++)
+		{
+			collisions->removeCollisionBox(*it);
+		}
+	}
+
+	obj.sceneNode->detachAllObjects();
+	obj.sceneNode->setVisible(false);
+	obj.enabled = false;
 }
 
 void RoRFrameListener::loadObject(const char* name, float px, float py, float pz, float rx, float ry, float rz, SceneNode * bakeNode, const char* instancename, bool enable_collisions, int luahandler, const char *type, bool uniquifyMaterial)
@@ -1499,7 +1523,12 @@ void RoRFrameListener::loadObject(const char* name, float px, float py, float pz
 	tenode->setVisible(true);
 
 	// register in map
-	loadedObjects[std::string(instancename)] = tenode;
+	loadedObject_t *obj = &loadedObjects[std::string(instancename)];
+	obj->instanceName = std::string(instancename);
+	obj->loadType     = 0;
+	obj->enabled      = true;
+	obj->sceneNode    = tenode;
+	obj->collTris.clear();
 
 
 	if(uniquifyMaterial && instancename)
@@ -1659,12 +1688,15 @@ void RoRFrameListener::loadObject(const char* name, float px, float py, float pz
 		if (!strcmp("endbox", ptline))
 		{
 			if (enable_collisions)
-				collisions->addCollisionBox(tenode, rotating, virt,px,py,pz,rx,ry,rz,lx,hx,ly,hy,lz,hz,srx,sry,srz,eventname, instancename, forcecam, Vector3(fcx, fcy, fcz), scx, scy, scz, drx, dry, drz, event_filter, luahandler);
+			{
+				int boxnum = collisions->addCollisionBox(tenode, rotating, virt,px,py,pz,rx,ry,rz,lx,hx,ly,hy,lz,hz,srx,sry,srz,eventname, instancename, forcecam, Vector3(fcx, fcy, fcz), scx, scy, scz, drx, dry, drz, event_filter, luahandler);
+				obj->collBoxes.push_back((boxnum));
+			}
 			continue;
 		}
 		if (!strcmp("endmesh", ptline))
 		{
-			collisions->addCollisionMesh(collmesh, Vector3(px,py,pz), tenode->getOrientation(), Vector3(scx, scy, scz), gm);
+			collisions->addCollisionMesh(collmesh, Vector3(px,py,pz), tenode->getOrientation(), Vector3(scx, scy, scz), gm, &(obj->collTris));
 			continue;
 		}
 		if (!strncmp("setMeshMaterial", ptline, 15))
