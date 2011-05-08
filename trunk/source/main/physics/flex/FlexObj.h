@@ -30,8 +30,6 @@ along with Rigs of Rods.  If not, see <http://www.gnu.org/licenses/>.
 using namespace Ogre;
 
 
-//class Beam;
-
 class FlexObj
 {
 private:

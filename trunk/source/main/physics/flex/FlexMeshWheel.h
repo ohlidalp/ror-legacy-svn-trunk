@@ -34,8 +34,6 @@ using namespace Ogre;
 
 #define NLIMIT 65536
 
-//class Beam;
-
 class FlexMeshWheel: public Flexable
 {
 private:

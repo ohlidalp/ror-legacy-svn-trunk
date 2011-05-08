@@ -28,9 +28,6 @@ along with Rigs of Rods.  If not, see <http://www.gnu.org/licenses/>.
 
 // BES = Beam Engine Statistics
 
-class Beam;
-class PrecisionTimer;
-
 #ifdef FEAT_TIMING
 
 #define BES_START(x)     statistics->queryStart(x)

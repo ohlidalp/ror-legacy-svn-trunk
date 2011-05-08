@@ -33,7 +33,6 @@ using namespace Ogre;
 #include "engine.h"
 #include "SoundScriptManager.h"
 
-class RoRFrameListener;
 
 class Network
 {

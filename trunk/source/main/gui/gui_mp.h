@@ -31,8 +31,6 @@ along with Rigs of Rods.  If not, see <http://www.gnu.org/licenses/>.
 #include "OgrePrerequisites.h"
 #include "Beam.h"
 
-class Collisions;
-
 class GUI_Multiplayer : public Ogre::Singleton< GUI_Multiplayer >
 {
 public:

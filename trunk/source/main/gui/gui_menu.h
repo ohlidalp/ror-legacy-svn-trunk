@@ -30,8 +30,6 @@ along with Rigs of Rods.  If not, see <http://www.gnu.org/licenses/>.
 #include "OgrePrerequisites.h"
 
 
-class RoRFrameListener;
-
 class GUI_MainMenu : public Ogre::Singleton< GUI_MainMenu >
 {
 public:

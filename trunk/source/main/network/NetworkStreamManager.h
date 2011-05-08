@@ -36,9 +36,6 @@ along with Rigs of Rods.  If not, see <http://www.gnu.org/licenses/>.
 
 #include "StreamableFactoryInterface.h"
 
-class Network;
-class Streamable;
-
 class NetworkStreamManager : public Ogre::Singleton< NetworkStreamManager >
 {
 	friend class Network;

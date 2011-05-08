@@ -28,14 +28,6 @@ along with Rigs of Rods.  If not, see <http://www.gnu.org/licenses/>.
 #include "OgrePrerequisites.h"
 #include "StreamableFactory.h"
 #include <map>
-
-class Collisions;
-class Network;
-class HeightFinder;
-class Water;
-class MapControl;
-
-//class Character;
 #include "Character.h"
 
 class CharacterFactory : public StreamableFactory < CharacterFactory, Character >

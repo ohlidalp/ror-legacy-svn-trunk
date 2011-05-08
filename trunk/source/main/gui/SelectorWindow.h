@@ -28,7 +28,6 @@ along with Rigs of Rods.  If not, see <http://www.gnu.org/licenses/>.
 #include <Ogre.h>
 #include "skin.h"
 
-class Cache_Entry;
 
 ATTRIBUTE_CLASS_LAYOUT(SelectorWindow, "SelectorWindow.layout");
 
@@ -107,4 +106,3 @@ private:
 #endif // __SELECTOR_WINDOW_H__
 
 #endif //MYGUI
-

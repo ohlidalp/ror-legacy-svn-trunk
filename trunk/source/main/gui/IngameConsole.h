@@ -35,8 +35,6 @@ along with Rigs of Rods.  If not, see <http://www.gnu.org/licenses/>.
 enum {NETCHAT_LEFT_SMALL, NETCHAT_LEFT_FULL, NETCHAT_TOP, NETCHAT_MAP, NETCHAT_END};
 enum {NETCHAT_MSG_CHAT, NETCHAT_MSG_COMMAND};
 
-class RoRFrameListener;
-
 class IngameConsole :
 	public Singleton2<IngameConsole>
 {

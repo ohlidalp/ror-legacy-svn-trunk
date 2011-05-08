@@ -32,8 +32,6 @@ using namespace Ogre;
 
 #define MAX_SET_INTERVALS 256
 
-//class Beam;
-
 class FlexBody
 {
 private:
