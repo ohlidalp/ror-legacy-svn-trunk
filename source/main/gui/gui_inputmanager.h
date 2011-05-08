@@ -25,7 +25,6 @@ along with Rigs of Rods.  If not, see <http://www.gnu.org/licenses/>.
 #include "RoRPrerequisites.h"
 #include <MyGUI.h>
 #include <OIS.h>
-class InputEngine;
 
 class GUIInputManager
 {

@@ -23,8 +23,6 @@ along with Rigs of Rods.  If not, see <http://www.gnu.org/licenses/>.
 #include "RoRPrerequisites.h"
 #include <Ogre.h>
 
-class RoRFrameListener;
-
 class MapTextureCreator : public Ogre::RenderTargetListener
 {
 public:

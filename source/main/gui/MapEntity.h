@@ -26,8 +26,6 @@ along with Rigs of Rods.  If not, see <http://www.gnu.org/licenses/>.
 #include <Ogre.h>
 #include "mygui/BaseLayout.h"
 
-class MapControl;
-
 ATTRIBUTE_CLASS_LAYOUT(MapEntity, "MapEntity.layout");
 class MapEntity :
 	public wraps::BaseLayout

@@ -40,11 +40,6 @@ along with Rigs of Rods.  If not, see <http://www.gnu.org/licenses/>.
 
 #include "collisions.h"
 
-//forward decl.
-class RoRFrameListener;
-class GameScript;
-class Beam;
-
 #define AS_INTERFACE_VERSION "0.2.0" //!< versioning for the scripting interface
 
 #ifdef USE_CURL

@@ -47,7 +47,6 @@ using namespace Ogre;
 #define REASON_POSN 5
 #define REASON_VLCT 6
 
-class SoundManager;
 
 class Sound
 {

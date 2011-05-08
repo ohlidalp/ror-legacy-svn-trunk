@@ -56,25 +56,6 @@ along with Rigs of Rods.  If not, see <http://www.gnu.org/licenses/>.
 
 #include "OgreTerrainGroup.h"
 
-class Road;
-class ProceduralManager;
-class Editor;
-class Water;
-class HeatHaze;
-class Dashboard;
-class DotSceneLoader;
-#ifdef HAS_EDITOR
-class TruckEditor;
-#endif
-class Network;
-//class BeamJoystick;
-class Collisions;
-class Beam;
-class MapControl;
-class HDRListener;
-
-//#include "dirt.h"
-
 
 #define CAMERA_EXT 0
 #define CAMERA_FIX 1
@@ -149,11 +130,6 @@ typedef struct
 	Ogre::AnimationState *anim;
 	float speedfactor;
 } animated_object_t;
-
-class RoRFrameListener;
-class DOFManager;
-
-class SelectorWindow;
 
 class RoRFrameListener: public FrameListener, public Ogre::WindowEventListener
 {

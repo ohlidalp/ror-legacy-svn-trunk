@@ -30,11 +30,6 @@ along with Rigs of Rods.  If not, see <http://www.gnu.org/licenses/>.
 #include "StreamableFactory.h"
 #include "IngameConsole.h"
 
-
-class MapControl;
-class Network;
-class ChatSystemFactory;
-
 class ChatSystem : public Streamable
 {
 	friend class ChatSystemFactory;

@@ -36,9 +36,6 @@ along with Rigs of Rods.  If not, see <http://www.gnu.org/licenses/>.
 
 #include <Ogre.h>
 
-class Network;
-class Streamable;
-
 // this is the master swith to debug the stream locking/unlocking
 //#define DEBUGSTREAMFACTORIES
 

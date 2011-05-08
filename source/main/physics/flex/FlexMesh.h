@@ -36,8 +36,6 @@ public:
 
 };
 
-//class Beam;
-
 class FlexMesh: public Flexable
 {
 private:

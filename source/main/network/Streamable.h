@@ -30,9 +30,6 @@ along with Rigs of Rods.  If not, see <http://www.gnu.org/licenses/>.
 #include "pthread.h"
 
 
-class Network;
-class NetworkStreamManager;
-
 typedef struct recvPacket_t
 {
 	header_t header;

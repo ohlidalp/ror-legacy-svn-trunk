@@ -30,8 +30,6 @@ along with Rigs of Rods.  If not, see <http://www.gnu.org/licenses/>.
 #include "OgrePrerequisites.h"
 #include "Beam.h"
 
-class Collisions;
-
 class GUI_Friction : public Ogre::Singleton< GUI_Friction >
 {
 public:

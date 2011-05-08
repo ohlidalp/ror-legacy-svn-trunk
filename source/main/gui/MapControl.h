@@ -31,8 +31,6 @@ along with Rigs of Rods.  If not, see <http://www.gnu.org/licenses/>.
 #include "mygui/BaseLayout.h"
 
 
-class MapEntity;
-
 ATTRIBUTE_CLASS_LAYOUT(MapControl, "MapControl.layout");
 class MapControl : public wraps::BaseLayout
 {
