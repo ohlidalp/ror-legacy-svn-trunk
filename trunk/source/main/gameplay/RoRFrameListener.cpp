@@ -1390,8 +1390,6 @@ void RoRFrameListener::unloadObject(const char* instancename)
 		return;
 	}
 
-	// TODO: proper unloading with unloading of the collision things
-
 	loadedObject_t obj = loadedObjects[std::string(instancename)];
 
 	// check if it was already deleted
