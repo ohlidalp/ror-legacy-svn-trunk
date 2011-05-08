@@ -410,6 +410,7 @@ struct node
 	bool contacter;
 	int pos;
 	float collRadius;
+	Ogre::SceneNode *mSceneNode; //!< visual
 };
 
 struct shock

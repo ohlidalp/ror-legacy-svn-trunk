@@ -4987,6 +4987,7 @@ void SerializedRig::init_node(int pos, Real x, Real y, Real z, int type, Real m,
 	nodes[pos].iIsSkin=false;
 	nodes[pos].isSkin=nodes[pos].iIsSkin;
 	nodes[pos].pos=pos;
+	nodes[pos].mSceneNode = NULL;
 //		nodes[pos].tsmooth=Vector3::ZERO;
 	if (type==NODE_LOADED) masscount++;
 }
