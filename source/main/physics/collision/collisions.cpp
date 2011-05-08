@@ -420,7 +420,6 @@ void Collisions::hash_free(int cell_x, int cell_z, int value)
 			}
 		}
 	}
-
 }
 
 void Collisions::hash_add(int cell_x, int cell_z, int value)
@@ -484,7 +483,7 @@ cell_t *Collisions::hash_find(int cell_x, int cell_z)
 }
 
 
-void Collisions::addCollisionBox(SceneNode *tenode, bool rotating, bool virt, float px, float py, float pz, float rx, float ry, float rz, float lx,float hx,float ly,float hy,float lz,float hz,float srx,float sry,float srz, const char* eventname, const char* instancename, bool forcecam, Vector3 campos, float scx, float scy, float scz, float drx, float dry, float drz, int event_filter, int luahandler)
+int Collisions::addCollisionBox(SceneNode *tenode, bool rotating, bool virt, float px, float py, float pz, float rx, float ry, float rz, float lx,float hx,float ly,float hy,float lz,float hz,float srx,float sry,float srz, const char* eventname, const char* instancename, bool forcecam, Vector3 campos, float scx, float scy, float scz, float drx, float dry, float drz, int event_filter, int luahandler)
 {
 	Quaternion 	rotation=Quaternion(Degree(rx), Vector3::UNIT_X)*Quaternion(Degree(ry), Vector3::UNIT_Y)*Quaternion(Degree(rz), Vector3::UNIT_Z);
 	Quaternion 	direction=Quaternion(Degree(drx), Vector3::UNIT_X)*Quaternion(Degree(dry), Vector3::UNIT_Y)*Quaternion(Degree(drz), Vector3::UNIT_Z);
@@ -493,6 +492,7 @@ void Collisions::addCollisionBox(SceneNode *tenode, bool rotating, bool virt, fl
 	Ogre::Vector3 p(px, py, pz);
 	Ogre::Vector3 sc(scx, scy, scz);
 	collision_box_t& coll_box = collision_boxes[free_collision_box]; 
+	coll_box.enabled = true;
 	//set refined box anyway
 	coll_box.relo = l*sc;
 	coll_box.rehi = h*sc;
@@ -531,10 +531,11 @@ void Collisions::addCollisionBox(SceneNode *tenode, bool rotating, bool virt, fl
 		strcpy(eventsources[free_eventsource].boxname, eventname);
 		strcpy(eventsources[free_eventsource].instancename, instancename);
 		eventsources[free_eventsource].luahandler = luahandler;
-		coll_box.eventsourcenum=free_eventsource;
-		eventsources[free_eventsource].cbox=free_collision_box;
-		eventsources[free_eventsource].snode=tenode;
-		eventsources[free_eventsource].direction=direction;
+		eventsources[free_eventsource].cbox      = free_collision_box;
+		eventsources[free_eventsource].snode     = tenode;
+		eventsources[free_eventsource].direction = direction;
+		eventsources[free_eventsource].enabled   = true;
+		coll_box.eventsourcenum                  = free_eventsource;
 		free_eventsource++;
 	}
 
@@ -709,25 +710,60 @@ void Collisions::addCollisionBox(SceneNode *tenode, bool rotating, bool virt, fl
 	}
 
 	//register this collision box in the index
-	Ogre::Vector3 ilo(coll_box.lo / Ogre::Real(CELL_SIZE));
-	Ogre::Vector3 ihi(coll_box.hi / Ogre::Real(CELL_SIZE));
+	coll_box.ilo = Ogre::Vector3(coll_box.lo / Ogre::Real(CELL_SIZE));
+	coll_box.ihi = Ogre::Vector3(coll_box.hi / Ogre::Real(CELL_SIZE));
 	
 	// clamp between 0 and MAXIMUM_CELL;
-	ilo.makeCeil(Ogre::Vector3(0.0f));
-	ilo.makeFloor(Ogre::Vector3(MAXIMUM_CELL));
-	ihi.makeCeil(Ogre::Vector3(0.0f));
-	ihi.makeFloor(Ogre::Vector3(MAXIMUM_CELL));
+	coll_box.ilo.makeCeil(Ogre::Vector3(0.0f));
+	coll_box.ilo.makeFloor(Ogre::Vector3(MAXIMUM_CELL));
+	coll_box.ihi.makeCeil(Ogre::Vector3(0.0f));
+	coll_box.ihi.makeFloor(Ogre::Vector3(MAXIMUM_CELL));
 	
 	
-	for (int i = ilo.x; i <= ihi.x; i++)
+	for (int i = coll_box.ilo.x; i <= coll_box.ihi.x; i++)
 	{
-		for (int j = ilo.z; j <= ihi.z; j++)
+		for (int j = coll_box.ilo.z; j <= coll_box.ihi.z; j++)
 		{
 			//LOG("Adding a reference to cell "+TOSTRING(i)+" "+TOSTRING(j)+" at index "+TOSTRING(collision_index_free[i*NUM_COLLISON_CELLS+j]));
 			hash_add(i,j,free_collision_box);
 		}
 	}
+	int num = free_collision_box;
 	free_collision_box++;
+
+	return num;
+}
+
+int Collisions::removeCollisionBox(int num)
+{
+	if(num < 0 || num > free_collision_box)
+		return 1;
+	
+	collision_box_t& coll_box = collision_boxes[free_collision_box]; 
+	
+	if(!coll_box.enabled)
+		return 2;
+
+	// disable the box
+	coll_box.enabled = false;
+
+	// disable the event
+	if(coll_box.eventsourcenum != -1 && coll_box.eventsourcenum >= 0 && coll_box.eventsourcenum < free_eventsource)
+	{
+		eventsource_t& es = eventsources[coll_box.eventsourcenum];
+		es.enabled = false;
+	}
+
+	// then remove it from the hashtable
+	for (int i = coll_box.ilo.x; i <= coll_box.ihi.x; i++)
+	{
+		for (int j = coll_box.ilo.z; j <= coll_box.ihi.z; j++)
+		{
+			hash_free(i,j,num);
+		}
+	}
+
+	return 0;
 }
 
 int Collisions::addCollisionTri(Vector3 p1, Vector3 p2, Vector3 p3, ground_model_t* gm)
@@ -797,6 +833,10 @@ void Collisions::printStats()
 bool Collisions::envokeScriptCallback(collision_box_t *cbox, node_t *node)
 {
 	bool handled = false;
+
+	// check if this box is active anymore
+	if(!eventsources[cbox->eventsourcenum].enabled)
+		return false;
 	
 	// this prevents that the same callback gets called at 2k FPS all the time, serious hit on FPS ...
 	if(last_called_cbox != cbox)
@@ -1202,6 +1242,10 @@ eventsource_t *Collisions::isTruckInEventBox(Beam *truck)
 	for (int i=0; i<free_eventsource; i++)
 	{
 		collision_box_t *cb = &collision_boxes[eventsources[i].cbox];
+
+		if(!cb->enabled)
+			continue;
+
 		// check all nodes
 
 		bool allInside = true;
@@ -1524,7 +1568,7 @@ int Collisions::createCollisionDebugVisualization()
 	return 0;
 }
 
-int Collisions::addCollisionMesh(Ogre::String meshname, Ogre::Vector3 pos, Ogre::Quaternion q, Ogre::Vector3 scale, ground_model_t *gm)
+int Collisions::addCollisionMesh(Ogre::String meshname, Ogre::Vector3 pos, Ogre::Quaternion q, Ogre::Vector3 scale, ground_model_t *gm, std::vector<int> *collTris)
 {
 	// normal, non virtual collision box
 	Entity *ent = smgr->createEntity(meshname);
@@ -1545,7 +1589,9 @@ int Collisions::addCollisionMesh(Ogre::String meshname, Ogre::Vector3 pos, Ogre:
 	//LOG(LML_NORMAL,"Triangles in mesh: %u",index_count / 3);
 	for (int i=0; i<(int)index_count/3; i++)
 	{
-		addCollisionTri(vertices[indices[i*3]], vertices[indices[i*3+1]], vertices[indices[i*3+2]], gm);
+		int triID = addCollisionTri(vertices[indices[i*3]], vertices[indices[i*3+1]], vertices[indices[i*3+2]], gm);
+		if(collTris)
+			collTris->push_back(triID);
 	}
 
 	delete[] vertices;

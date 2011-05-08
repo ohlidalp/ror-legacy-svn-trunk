@@ -1037,6 +1037,8 @@ struct collision_box
 	bool camforced;
 	Ogre::Vector3 campos;
 	int event_filter;
+	bool enabled;
+	Ogre::Vector3 ilo, ihi;
 };
 
 struct ground_model

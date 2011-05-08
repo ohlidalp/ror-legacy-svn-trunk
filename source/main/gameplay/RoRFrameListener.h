@@ -185,8 +185,16 @@ protected:
 	//    Beam *beam;
 	int loading_state;
 
+	typedef struct loadedObject_t {
+		bool enabled;
+		int loadType;
+		Ogre::String instanceName;
+		Ogre::SceneNode *sceneNode;
+		std::vector <int> collTris;
+		std::vector <int> collBoxes;
+	};
 
-	std::map< std::string, Ogre::SceneNode *> loadedObjects;
+	std::map< std::string, loadedObject_t> loadedObjects;
 	DOFManager *mDOF;
 	int shaderSchemeMode;
 	int inputGrabMode;
