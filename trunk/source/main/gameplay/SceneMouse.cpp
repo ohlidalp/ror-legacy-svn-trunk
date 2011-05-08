@@ -91,11 +91,11 @@ bool SceneMouse::mouseMoved(const OIS::MouseEvent& _arg)
 	// experimental mouse hack
 	if(ms.buttonDown(OIS::MB_Left) && mouseGrabState == 0)
 	{
-		// get the camera
-		Camera *cam = rfl->getCamera();
-		Viewport *vp = cam->getViewport();
-		// get a camera to scene ray
-		Ray mouseRay = cam->getCameraToViewportRay((float)ms.X.abs/(float)vp->getActualWidth(),(float)ms.Y.abs/(float)vp->getActualHeight());
+		lastMouseY = ms.Y.abs;
+		lastMouseX = ms.X.abs;
+		
+		Ray mouseRay = getMouseRay();
+
 		// get current truck
 		Beam *curr_truck = BeamFactory::getSingleton().getCurrentTruck();
 		// check if its valid and not sleeping
@@ -125,8 +125,6 @@ bool SceneMouse::mouseMoved(const OIS::MouseEvent& _arg)
 			{
 				mouseGrabState = 1;
 				grab_truck = curr_truck;
-				lastMouseY = ms.Y.abs;
-				lastMouseX = ms.X.abs;
 				pickLineNode->setVisible(true);
 
 				for(std::vector <hook_t>::iterator it = curr_truck->hooks.begin(); it!=curr_truck->hooks.end(); it++)
@@ -182,9 +180,7 @@ void SceneMouse::update(float dt)
 	if(mouseGrabState == 1 && grab_truck)
 	{
 		// get values
-		Camera *cam = rfl->getCamera();
-		Viewport *vp = cam->getViewport();
-		Ray mouseRay = cam->getCameraToViewportRay((float)lastMouseX/(float)vp->getActualWidth(),(float)lastMouseY/(float)vp->getActualHeight());
+		Ray mouseRay = getMouseRay();
 		lastgrabpos = mouseRay.getPoint(mindist);
 
 		// update visual line
@@ -220,4 +216,11 @@ bool SceneMouse::keyPressed(const OIS::KeyEvent& _arg)
 bool SceneMouse::keyReleased(const OIS::KeyEvent& _arg)
 {
 	return true;
+}
+
+Ray SceneMouse::getMouseRay()
+{
+	Camera *cam = rfl->getCamera();
+	Viewport *vp = cam->getViewport();
+	return cam->getCameraToViewportRay((float)lastMouseX/(float)vp->getActualWidth(),(float)lastMouseY/(float)vp->getActualHeight());
 }

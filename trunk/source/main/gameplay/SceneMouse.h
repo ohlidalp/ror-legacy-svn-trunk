@@ -61,6 +61,7 @@ protected:
 	int lastMouseX, lastMouseY;
 
 	void releaseMousePick();
+	Ogre::Ray getMouseRay();
 };
 
 

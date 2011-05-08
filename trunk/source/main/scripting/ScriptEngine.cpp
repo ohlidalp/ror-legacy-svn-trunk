@@ -1126,7 +1126,7 @@ int GameScript::useOnlineAPI(const std::string &apiquery, const AngelScript::CSc
 	curl_formadd(&formpost, &lastptr, CURLFORM_COPYNAME, "MP_ServerPort", CURLFORM_COPYCONTENTS, SSETTING("Server port").c_str(), CURLFORM_END);
 	curl_formadd(&formpost, &lastptr, CURLFORM_COPYNAME, "MP_NetworkEnabled", CURLFORM_COPYCONTENTS, SSETTING("Network enable").c_str(), CURLFORM_END);
 
-	if(BeamFactory::getSingleton().getCurrentTruckNumber() >= 0 && BeamFactory::getSingleton().getCurrentTruck())
+	if(BeamFactory::getSingleton().getCurrentTruck())
 	{
 		Beam *truck = BeamFactory::getSingleton().getCurrentTruck();
 
@@ -1169,7 +1169,7 @@ int GameScript::useOnlineAPI(const std::string &apiquery, const AngelScript::CSc
 
 	// http related settings
 	curl_easy_setopt(curl, CURLOPT_FOLLOWLOCATION,   1); // follow redirects
-	curl_easy_setopt(curl, CURLOPT_AUTOREFERER,      1); // set the Referer: field in requests where it follows a Location: redirect.
+	curl_easy_setopt(curl, CURLOPT_AUTOREFERER,      1); // set the Referrer: field in requests where it follows a Location: redirect.
 	curl_easy_setopt(curl, CURLOPT_MAXREDIRS,        20);
 	curl_easy_setopt(curl, CURLOPT_USERAGENT,        "RoR");
 	curl_easy_setopt(curl, CURLOPT_FILETIME,         1);
