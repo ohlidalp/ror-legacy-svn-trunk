@@ -111,7 +111,7 @@ Beam *BeamFactory::createLocal(Ogre::Vector3 pos, Ogre::Quaternion rot, Ogre::St
 
 	Beam *b = new Beam(truck_num,
 		manager,
-		manager->getRootSceneNode(),
+		manager->getRootSceneNode()->createChildSceneNode(),
 		win,
 		net,
 		mapsizex,
@@ -429,7 +429,7 @@ void BeamFactory::recalcGravityMasses()
 	}
 }
 
-void BeamFactory::repairTruck(SoundScriptManager *ssm, Collisions *collisions, char* inst, char* box)
+void BeamFactory::repairTruck(SoundScriptManager *ssm, Collisions *collisions, char* inst, char* box, bool keepPosition)
 {
 	//find the right truck (the one in the box)
 	int t;

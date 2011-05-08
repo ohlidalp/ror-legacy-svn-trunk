@@ -349,7 +349,7 @@ public:
 
 	// new things, not documented yet
 	void showChooser(std::string &type, std::string &instance, std::string &box);
-	void repairVehicle(std::string &instance, std::string &box);
+	void repairVehicle(std::string &instance, std::string &box, bool keepPosition);
 	void removeVehicle(std::string &instance, std::string &box);
 
 	void spawnObject(const std::string &objectName, const std::string &instanceName, Ogre::Vector3 pos, Ogre::Vector3 rot, const std::string &eventhandler, bool uniquifyMaterials);

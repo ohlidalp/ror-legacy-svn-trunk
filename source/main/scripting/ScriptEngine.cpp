@@ -377,7 +377,7 @@ void ScriptEngine::init()
 	result = engine->RegisterObjectMethod("GameScriptClass", "int getChatFontSize()", AngelScript::asMETHOD(GameScript,getChatFontSize), AngelScript::asCALL_THISCALL); assert(result>=0);
 	result = engine->RegisterObjectMethod("GameScriptClass", "void setChatFontSize(int)", AngelScript::asMETHOD(GameScript,setChatFontSize), AngelScript::asCALL_THISCALL); assert(result>=0);
 	result = engine->RegisterObjectMethod("GameScriptClass", "void showChooser(const string &in, const string &in, const string &in)", AngelScript::asMETHOD(GameScript,showChooser), AngelScript::asCALL_THISCALL); assert(result>=0);
-	result = engine->RegisterObjectMethod("GameScriptClass", "void repairVehicle(const string &in, const string &in)", AngelScript::asMETHOD(GameScript,repairVehicle), AngelScript::asCALL_THISCALL); assert(result>=0);
+	result = engine->RegisterObjectMethod("GameScriptClass", "void repairVehicle(const string &in, const string &in, bool)", AngelScript::asMETHOD(GameScript,repairVehicle), AngelScript::asCALL_THISCALL); assert(result>=0);
 	result = engine->RegisterObjectMethod("GameScriptClass", "void removeVehicle(const string &in, const string &in)", AngelScript::asMETHOD(GameScript,removeVehicle), AngelScript::asCALL_THISCALL); assert(result>=0);
 	result = engine->RegisterObjectMethod("GameScriptClass", "void spawnObject(const string &in, const string &in, vector3, vector3, const string &in, bool)", AngelScript::asMETHOD(GameScript,spawnObject), AngelScript::asCALL_THISCALL); assert(result>=0);
 	result = engine->RegisterObjectMethod("GameScriptClass", "void destroyObject(const string &in)", AngelScript::asMETHOD(GameScript,destroyObject), AngelScript::asCALL_THISCALL); assert(result>=0);
@@ -955,9 +955,9 @@ void GameScript::showChooser(string &type, string &instance, string &box)
 #endif //USE_MYGUI
 }
 
-void GameScript::repairVehicle(string &instance, string &box)
+void GameScript::repairVehicle(string &instance, string &box, bool keepPosition)
 {
-	BeamFactory::getSingleton().repairTruck(mefl->getSSM(), mefl->getCollisions(), const_cast<char*>(instance.c_str()), const_cast<char*>(box.c_str()));
+	BeamFactory::getSingleton().repairTruck(mefl->getSSM(), mefl->getCollisions(), const_cast<char*>(instance.c_str()), const_cast<char*>(box.c_str()), keepPosition);
 }
 
 void GameScript::removeVehicle(string &instance, string &box)
