@@ -28,15 +28,6 @@ along with Rigs of Rods.  If not, see <http://www.gnu.org/licenses/>.
 #include "Streamable.h"
 #include "MovableText.h"
 
-
-class Water;
-class Beam;
-class Collisions;
-class HeightFinder;
-class MapControl;
-class Network;
-class MapEntity;
-
 enum {CHARCMD_POSITION, CHARCMD_ATTACH};
 
 class Character : public Streamable
