@@ -3639,6 +3639,10 @@ void RoRFrameListener::initializeCompontents()
 			// load a default script that does the most basic things
 			ScriptEngine::getSingleton().loadScript("default.as");
 		}
+	} else
+	{
+		// load the default stscriptuff so spawners will work in multiplayer
+		ScriptEngine::getSingleton().loadScript("default.as");
 	}
 #endif
 

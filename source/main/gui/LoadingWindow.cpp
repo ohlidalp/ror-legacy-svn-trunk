@@ -66,7 +66,6 @@ void LoadingWindow::setAutotrack(const Ogre::String& _text, bool _updateRenderFr
 void LoadingWindow::hide()
 {
 	mMainWidget->setVisible(false);
-	renderOneFrame();
 }
 
 void LoadingWindow::renderOneFrame()
