@@ -159,6 +159,8 @@ GUI_Multiplayer::~GUI_Multiplayer()
 
 void GUI_Multiplayer::updateSlot(player_row_t *row, user_info_t *c, bool self)
 {
+	if(!row || !c) return;
+
 	int x = 100;
 	int y = row->playername->getPosition().top;
 	// name

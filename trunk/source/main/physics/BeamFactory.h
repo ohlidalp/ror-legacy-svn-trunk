@@ -95,7 +95,7 @@ protected:
 
 	bool syncRemoteStreams();
 	void updateGUI();
-
+	void removeInstance(stream_del_t *del);
 	void _deleteTruck(Beam *b);
 
 
