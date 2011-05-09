@@ -140,10 +140,9 @@ bool OgreFramework::initOgre(Ogre::String name, Ogre::String hwnd, Ogre::String 
 
     m_pRenderWnd->setActive(true);
 
+
 	// set window icon correctly
-#if OGRE_PLATFORM == OGRE_PLATFORM_WIN32
-#ifndef _UNICODE
-	if(StringConverter::parseInt(hwnd) == 0)
+#ifndef ROR_EMBEDDED
 	{
 		// only in non-embedded mode
 		size_t hWnd = 0;
@@ -153,15 +152,14 @@ bool OgreFramework::initOgre(Ogre::String name, Ogre::String hwnd, Ogre::String 
 		::GetModuleFileNameA(0, (LPCH)&buf, MAX_PATH);
 
 		HINSTANCE instance = ::GetModuleHandleA(buf);
-		HICON hIcon = ::LoadIconA(instance, MAKEINTRESOURCE(1001));
+		HICON hIcon = ::LoadIconA(instance, MAKEINTRESOURCE(101));
 		if (hIcon)
 		{
 			::SendMessageA((HWND)hWnd, WM_SETICON, 1, (LPARAM)hIcon);
 			::SendMessageA((HWND)hWnd, WM_SETICON, 0, (LPARAM)hIcon);
 		}
 	}
-#endif //_UNICODE
-#endif //OGRE_PLATFORM_WIN32
+#endif //ROR_EMBEDDED
 
     return true;
 }
