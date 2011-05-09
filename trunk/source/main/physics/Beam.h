@@ -190,6 +190,8 @@ public:
 	int label;
 
 	float WheelSpeed;
+	float getWheelSpeed() { return WheelSpeed; };
+
 	int stabcommand;
 	int skeleton;
 	float stabratio;

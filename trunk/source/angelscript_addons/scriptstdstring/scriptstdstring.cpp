@@ -22,6 +22,11 @@ static void ConstructStringGeneric(asIScriptGeneric * gen) {
   new (gen->GetObject()) string();
 }
 
+static void CopyConstructStringGeneric(asIScriptGeneric * gen) {
+  string * a = static_cast<string *>(gen->GetArgObject(0));
+  new (gen->GetObject()) string(*a);
+}
+
 static void DestructStringGeneric(asIScriptGeneric * gen) {
   string * ptr = static_cast<string *>(gen->GetObject());
   ptr->~string();
@@ -286,6 +291,7 @@ void RegisterStdString_Generic(asIScriptEngine *engine) {
 
   // Register the object operator overloads
   r = engine->RegisterObjectBehaviour("string", asBEHAVE_CONSTRUCT,  "void f()",                    asFUNCTION(ConstructStringGeneric), asCALL_GENERIC); assert( r >= 0 );
+  r = engine->RegisterObjectBehaviour("string", asBEHAVE_CONSTRUCT,  "void f(const string &in)",    asFUNCTION(CopyConstructStringGeneric), asCALL_GENERIC); assert( r >= 0 );
   r = engine->RegisterObjectBehaviour("string", asBEHAVE_DESTRUCT,   "void f()",                    asFUNCTION(DestructStringGeneric),  asCALL_GENERIC); assert( r >= 0 );
   r = engine->RegisterObjectMethod("string", "string &opAssign(const string &in)", asFUNCTION(AssignStringGeneric),    asCALL_GENERIC); assert( r >= 0 );
   r = engine->RegisterObjectMethod("string", "string &opAddAssign(const string &in)", asFUNCTION(AddAssignStringGeneric), asCALL_GENERIC); assert( r >= 0 );
@@ -339,6 +345,11 @@ static void ConstructString(string *thisPointer)
 	new(thisPointer) string();
 }
 
+static void CopyConstructString(const string &other, string *thisPointer)
+{
+	new(thisPointer) string(other);
+}
+
 static void DestructString(string *thisPointer)
 {
 	thisPointer->~string();
@@ -360,15 +371,14 @@ static string &AddAssignUIntToString(unsigned int i, string &dest)
 	return dest;
 }
 
-static string AddStringUInt(string &str, unsigned int i)
+static string AddStringUInt(const string &str, unsigned int i)
 {
 	ostringstream stream;
 	stream << i;
-	str += stream.str();
-	return str;
+	return str + stream.str();
 }
 
-static string AddIntString(int i, string &str)
+static string AddIntString(int i, const string &str)
 {
 	ostringstream stream;
 	stream << i;
@@ -391,15 +401,14 @@ static string &AddAssignIntToString(int i, string &dest)
 	return dest;
 }
 
-static string AddStringInt(string &str, int i)
+static string AddStringInt(const string &str, int i)
 {
 	ostringstream stream;
 	stream << i;
-	str += stream.str();
-	return str;
+	return str + stream.str();
 }
 
-static string AddUIntString(unsigned int i, string &str)
+static string AddUIntString(unsigned int i, const string &str)
 {
 	ostringstream stream;
 	stream << i;
@@ -438,30 +447,28 @@ static string &AddAssignBoolToString(bool b, string &dest)
 	return dest;
 }
 
-static string AddStringDouble(string &str, double f)
+static string AddStringDouble(const string &str, double f)
 {
 	ostringstream stream;
 	stream << f;
-	str += stream.str();
-	return str;
+	return str + stream.str();
 }
 
-static string AddDoubleString(double f, string &str)
+static string AddDoubleString(double f, const string &str)
 {
 	ostringstream stream;
 	stream << f;
 	return stream.str() + str;
 }
 
-static string AddStringBool(string &str, bool b)
+static string AddStringBool(const string &str, bool b)
 {
 	ostringstream stream;
 	stream << b ? "true" : "false";
-	str += stream.str();
-	return str;
+	return str + stream.str();
 }
 
-static string AddBoolString(bool b, string &str)
+static string AddBoolString(bool b, const string &str)
 {
 	ostringstream stream;
 	stream << b ? "true" : "false";
