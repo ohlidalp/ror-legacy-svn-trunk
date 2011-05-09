@@ -296,7 +296,17 @@ Beam *BeamFactory::getBeam(int source, int streamid)
 
 bool BeamFactory::syncRemoteStreams()
 {
+	//block until all threads done
+	if (thread_mode==THREAD_HT)
+	{
+		pthread_mutex_lock(&done_count_mutex);
+		while (done_count>0)
+			pthread_cond_wait(&done_count_cv, &done_count_mutex);
+		pthread_mutex_unlock(&done_count_mutex);
+	}
+
 	// we override this here, so we know if something changed and could update the player list
+	// we delete and add trucks in there, so be sure that nothing runs as we delete them ...
 	bool changes = StreamableFactory <BeamFactory, Beam>::syncRemoteStreams();
 	
 	if(changes)
@@ -658,3 +668,32 @@ void BeamFactory::calcPhysics(float dt)
 	}
 }
 
+
+void BeamFactory::removeInstance(stream_del_t *del)
+{
+	// we override this here so we can also delete the truck array content
+	std::map < int, std::map < unsigned int, Beam *> > &streamables = getStreams();
+	std::map < int, std::map < unsigned int, Beam *> >::iterator it1;
+	std::map < unsigned int, Beam *>::iterator it2;
+
+	for(it1=streamables.begin(); it1!=streamables.end();it1++)
+	{
+		if(it1->first != del->sourceid) continue;
+
+		for(it2=it1->second.begin(); it2!=it1->second.end();it2++)
+		{
+			if(del->streamid == -1 || del->streamid == (int)it2->first)
+			{
+				// clear the trucks array
+				if(it2->second)
+				{
+					trucks[it2->second->trucknum] = 0;
+					// deletes the stream
+					delete it2->second;
+					it2->second = 0;
+				}
+			}
+		}
+		break;
+	}
+}
