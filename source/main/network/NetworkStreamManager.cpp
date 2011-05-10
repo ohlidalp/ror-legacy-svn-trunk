@@ -100,6 +100,10 @@ void NetworkStreamManager::addRemoteStream(Streamable *stream, int rsource, int 
 
 void NetworkStreamManager::removeStream(int sourceid, int streamid)
 {
+	int mysourceid = net->getUserID();
+	if(sourceid == -1)
+		sourceid = mysourceid;
+
 	pthread_mutex_lock(&stream_mutex);
 
 	bool deleted=false;
@@ -120,10 +124,13 @@ void NetworkStreamManager::removeStream(int sourceid, int streamid)
 		}
 		if(deleted) break;
 	}
-	// now iterate over all factories and remove their instances (only triggers)
-	for(std::vector < StreamableFactoryInterface * >::iterator it=factories.begin(); it!=factories.end(); it++)
+	if(sourceid != mysourceid)
 	{
-		(*it)->deleteRemote(sourceid, streamid);
+		// now iterate over all factories and remove their instances (only triggers)
+		for(std::vector < StreamableFactoryInterface * >::iterator it=factories.begin(); it!=factories.end(); it++)
+		{
+			(*it)->deleteRemote(sourceid, streamid);
+		}
 	}
 	pthread_mutex_unlock(&stream_mutex);
 	//LOG("UUU removeUser - unlock");

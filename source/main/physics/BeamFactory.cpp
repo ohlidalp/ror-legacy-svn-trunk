@@ -85,7 +85,7 @@ int BeamFactory::removeBeam(Beam *b)
 		{
 			if(it2->second  == b)
 			{
-
+				NetworkStreamManager::getSingleton().removeStream(it1->first, it2->first);
 				_deleteTruck(it2->second);
 				it1->second.erase(it2);
 				UNLOCKSTREAMS();
