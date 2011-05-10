@@ -288,8 +288,8 @@ void Character::update(float dt, bool inputDisabled)
 {
 	if(physicsEnabled && !remote)
 	{
-		// disable character movement when using the free camera mode
-		if(RoRFrameListener::eflsingleton && RoRFrameListener::eflsingleton->cameramode == CAMERA_FREE) return;
+		// disable character movement when using the free camera mode or when chatting
+		if(RoRFrameListener::eflsingleton && (RoRFrameListener::eflsingleton->cameramode == CAMERA_FREE || RoRFrameListener::eflsingleton->isUserChatting())) return;
 
 		// small hack: if not visible do not apply physics
 		//mode perso

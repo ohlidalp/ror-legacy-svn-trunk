@@ -341,6 +341,8 @@ public:
 
 	void reloadCurrentTruck();
 
+	bool isUserChatting() { return chatting; };
+
 	SoundScriptManager* getSSM() { return ssm; };
 private:
 	int net_quality; 
