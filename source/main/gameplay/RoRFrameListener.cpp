@@ -285,6 +285,13 @@ void RoRFrameListener::updateGUI(float dt)
 	// update mouse picking lines, etc
 	SceneMouse::getSingleton().update(dt);
 
+	// now hise the mouse cursor if not used since a long time
+	if(GUIManager::getSingleton().getLastMouseMoveTime() > 5000)
+	{
+		MyGUI::PointerManager::getInstance().setVisible(false);
+		GUI_MainMenu::getSingleton().setVisible(false);
+	}
+
 	if (pressure_pressed)
 	{
 		Real angle = 135.0 - curr_truck->getPressure() * 2.7;
@@ -769,13 +776,15 @@ RoRFrameListener::RoRFrameListener(AppState *parentState, RenderWindow* win, Cam
 	mCollisionTools(0),
 	isEmbedded(isEmbedded),
 	ow(0),
-	inputhwnd(inputhwnd)
+	inputhwnd(inputhwnd),
+	reload_box(0)
 {
 	RoRFrameListener::eflsingleton=this;
 
 	pthread_mutex_init(&mutex_data, NULL);
 	net_quality=0;
 	net_quality_changed=false;
+	freeTruckPosition=false;
 
 	terrainHasTruckShop=false;
 
@@ -1999,62 +2008,7 @@ bool RoRFrameListener::updateEvents(float dt)
 
 	if (INPUTENGINE.getEventBoolValueBounce(EV_TRUCKEDIT_RELOAD, 0.5f) && curr_truck)
 	{
-		if(BeamFactory::getSingleton().getTruckCount() + 1 >= MAX_TRUCKS)
-		{
-			if(ow) ow->flashMessage(String("unable to load new truck: limit reached. Please restart RoR"), 30);
-			return true;
-		}
-
-		// store camera settings
-		Radian camRotX_saved = camRotX;
-		Radian camRotY_saved = camRotY;
-
-		// store current trucks node positions
-		Vector3 *nodeStorage = (Vector3 *)malloc(sizeof(Vector3) * curr_truck->free_node + 10);
-
-		// remove the old truck
-		curr_truck->state=RECYCLE;
-
-		// load the same truck again
-		Beam *newBeam = BeamFactory::getSingleton().createLocal(reload_pos, reload_dir, curr_truck->realtruckfilename);
-
-		// enter the new truck
-		BeamFactory::getSingleton().setCurrentTruck(newBeam->trucknum);
-
-		// copy over the most basic info
-		if(curr_truck->free_node == newBeam->free_node)
-		{
-			for(int i=0;i<curr_truck->free_node;i++)
-			{
-				// copy over nodes attributes if the amount of them didnt change
-				newBeam->nodes[i].AbsPosition = curr_truck->nodes[i].AbsPosition;
-				newBeam->nodes[i].RelPosition = curr_truck->nodes[i].RelPosition;
-				newBeam->nodes[i].Velocity    = curr_truck->nodes[i].Velocity;
-				newBeam->nodes[i].Forces      = curr_truck->nodes[i].Forces;
-				newBeam->nodes[i].iPosition   = curr_truck->nodes[i].iPosition;
-				newBeam->nodes[i].smoothpos   = curr_truck->nodes[i].smoothpos;
-			}
-		}
-
-		// TODO:
-		// * copy over the engine infomation
-		// * commands status
-		// * other minor stati
-
-		// notice the user about the amount of possible reloads
-		String msg = TOSTRING(newBeam->trucknum) + String(" of ") + TOSTRING(MAX_TRUCKS) + String(" possible reloads.");
-		if(ow) ow->flashMessage(msg, 10.0f);
-
-		// dislocate the old truck, so its out of sight
-		curr_truck->resetPosition(100000, 100000, false, 100000);
-		// note: in some point in the future we would delete the truck here,
-		// but since this function is buggy we dont do it yet.
-
-
-		// restore camera position
-		camRotX = camRotX_saved;
-		camRotY = camRotY_saved;
-
+		reloadCurrentTruck();
 		return true;
 	}
 /* -- disabled for now ... why we should check for this if it does not call anything?
@@ -3368,8 +3322,8 @@ bool RoRFrameListener::updateEvents(float dt)
 					std::vector<Ogre::String> *configptr = &config;
 					if(config.size() == 0) configptr = 0;
 
-					localTruck = BeamFactory::getSingleton().createLocal(reload_pos, reload_dir, selected, reload_box, false, flaresMode, configptr, skin);
-					//trucks[free_truck] = new Beam(free_truck, mSceneMgr, mSceneMgr->getRootSceneNode(), mWindow, net, &mapsizex, &mapsizez, reload_pos.x, reload_pos.y, reload_pos.z, reload_dir, selected, collisions, dustp, clumpp, sparksp, dripp, splashp, ripplep, hfinder, w, mCamera, true, false, false, reload_box, false, flaresMode, configptr, skin);
+					localTruck = BeamFactory::getSingleton().createLocal(reload_pos, reload_dir, selected, reload_box, false, flaresMode, configptr, skin, freeTruckPosition);
+					freeTruckPosition=false; // reset this, only to be used once
 				}
 
 
@@ -5243,6 +5197,10 @@ void RoRFrameListener::changedCurrentTruck(Beam *previousTruck, Beam *currentTru
 
 	if (!currentTruck)
 	{
+		// get out
+		if(previousTruck && person)
+			person->setPosition(previousTruck->getPosition());
+
 		//if(bigMap) bigMap->setVisibility(false);
 		if(netmode && NETCHAT.getVisible()) NETCHAT.setMode(this, NETCHAT_LEFT_FULL, true);
 
@@ -6465,3 +6423,65 @@ void RoRFrameListener::RTSSgenerateShaders(Entity* entity, Ogre::String normalTe
 	}
 }
 
+
+void RoRFrameListener::reloadCurrentTruck()
+{
+	Beam *curr_truck = BeamFactory::getSingleton().getCurrentTruck();
+	if (!curr_truck) return;
+
+	if(BeamFactory::getSingleton().getTruckCount() + 1 >= MAX_TRUCKS)
+	{
+		if(ow) ow->flashMessage(String("unable to load new truck: limit reached. Please restart RoR"), 30);
+		return;
+	}
+
+	// store camera settings
+	Radian camRotX_saved = camRotX;
+	Radian camRotY_saved = camRotY;
+
+	// store current trucks node positions
+	Vector3 *nodeStorage = (Vector3 *)malloc(sizeof(Vector3) * curr_truck->free_node + 10);
+
+	// remove the old truck
+	curr_truck->state=RECYCLE;
+
+	// load the same truck again
+	Beam *newBeam = BeamFactory::getSingleton().createLocal(reload_pos, reload_dir, curr_truck->realtruckfilename);
+
+	// enter the new truck
+	BeamFactory::getSingleton().setCurrentTruck(newBeam->trucknum);
+
+	// copy over the most basic info
+	if(curr_truck->free_node == newBeam->free_node)
+	{
+		for(int i=0;i<curr_truck->free_node;i++)
+		{
+			// copy over nodes attributes if the amount of them didnt change
+			newBeam->nodes[i].AbsPosition = curr_truck->nodes[i].AbsPosition;
+			newBeam->nodes[i].RelPosition = curr_truck->nodes[i].RelPosition;
+			newBeam->nodes[i].Velocity    = curr_truck->nodes[i].Velocity;
+			newBeam->nodes[i].Forces      = curr_truck->nodes[i].Forces;
+			newBeam->nodes[i].iPosition   = curr_truck->nodes[i].iPosition;
+			newBeam->nodes[i].smoothpos   = curr_truck->nodes[i].smoothpos;
+		}
+	}
+
+	// TODO:
+	// * copy over the engine infomation
+	// * commands status
+	// * other minor stati
+
+	// notice the user about the amount of possible reloads
+	String msg = TOSTRING(newBeam->trucknum) + String(" of ") + TOSTRING(MAX_TRUCKS) + String(" possible reloads.");
+	if(ow) ow->flashMessage(msg, 10.0f);
+
+	// dislocate the old truck, so its out of sight
+	curr_truck->resetPosition(100000, 100000, false, 100000);
+	// note: in some point in the future we would delete the truck here,
+	// but since this function is buggy we dont do it yet.
+
+
+	// restore camera position
+	camRotX = camRotX_saved;
+	camRotY = camRotY_saved;
+}

@@ -25,6 +25,7 @@ along with Rigs of Rods.  If not, see <http://www.gnu.org/licenses/>.
 #include "RoRPrerequisites.h"
 #include <MyGUI.h>
 #include <OIS.h>
+#include <OgreTimer.h>
 
 class GUIInputManager
 {
@@ -37,6 +38,8 @@ public:
 
     void setMousePosition(int _x, int _y);
 
+	float getLastMouseMoveTime() { return lastMouseMoveTime->getMilliseconds(); };
+
 protected:
     virtual bool mouseMoved(const OIS::MouseEvent& _arg);
     virtual bool mousePressed(const OIS::MouseEvent& _arg, OIS::MouseButtonID _id);
@@ -47,11 +50,9 @@ protected:
     void checkPosition();
 
 private:
-    //OIS::InputManager* mInputManager;
-    //OIS::Keyboard* mKeyboard;
-    //OIS::Mouse* mMouse;
-
     int mCursorX, mCursorY, width, height;
+	Ogre::Timer *lastMouseMoveTime;
+	void activateGUI();
 };
 
 #endif // GUI_INPUTMANAGER_H__

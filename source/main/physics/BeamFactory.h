@@ -57,6 +57,9 @@ class BeamFactory : public StreamableFactory < BeamFactory, Beam >
 	void setCurrentTruck(int v);
 	bool enterRescueTruck();
 
+	void activateAllTrucks();
+	void sendAllTrucksSleeping();
+
 	void updateVisual(float dt);
 	void updateAI(float dt);
 
@@ -96,7 +99,7 @@ protected:
 	bool syncRemoteStreams();
 	void updateGUI();
 	void removeInstance(stream_del_t *del);
-	void _deleteTruck(Beam *b);
+	void _deleteTruck(Beam *b, int num=-1);
 
 
 	pthread_mutex_t done_count_mutex;

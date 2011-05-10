@@ -167,7 +167,7 @@ protected:
 			ent->setMaterialName(materialName);
 
 		// only set it if different from default (true)
-		if(!castshadows)
+		if(!castshadows && sceneNode && sceneNode->numAttachedObjects() > 0)
 			sceneNode->getAttachedObject(0)->setCastShadows(castshadows);
 
 
