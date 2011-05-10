@@ -429,6 +429,33 @@ int BeamFactory::getFreeTruckSlot()
 }
 
 
+void BeamFactory::activateAllTrucks()
+{
+	for (int i=0; i<free_truck; i++)
+	{
+		if(!trucks[i]) continue;
+		if(trucks[i]->state==SLEEPING || trucks[i]->state==MAYSLEEP || trucks[i]->state==GOSLEEP || trucks[i]->state==DESACTIVATED)
+		{
+			trucks[i]->desactivate();//paradoxically, this activates the truck!
+			trucks[i]->disableDrag = trucks[current_truck]->driveable==AIRPLANE;
+			recursiveActivation(i);
+		};
+	}
+}
+
+void BeamFactory::sendAllTrucksSleeping()
+{
+	for (int i=0; i<free_truck; i++)
+	{
+		if(!trucks[i]) continue;
+		if(trucks[i]->state==ACTIVATED)
+		{
+			trucks[i]->state=GOSLEEP;
+		};
+	}
+}
+
+
 void BeamFactory::recalcGravityMasses()
 {
 	// update the mass of all trucks
@@ -501,12 +528,14 @@ void BeamFactory::removeTruck(int truck)
 	{
 		// deletion over beamfactory failed, delete by hand
 		// then delete the class
-		_deleteTruck(trucks[truck]);
+		_deleteTruck(trucks[truck], truck);
 	}
 }
 
-void BeamFactory::_deleteTruck(Beam *b)
+void BeamFactory::_deleteTruck(Beam *b, int num)
 {
+	if(num == -1 && b)
+		num = b->trucknum;
 
 	//block until all threads done
 	if (thread_mode==THREAD_HT)
@@ -518,6 +547,7 @@ void BeamFactory::_deleteTruck(Beam *b)
 	}
 
 	// synced delete
+	trucks[num] = 0;
 	delete b;
 	b = 0;
 }

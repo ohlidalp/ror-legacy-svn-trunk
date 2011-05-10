@@ -154,8 +154,6 @@ protected:
 	int externalCameraMode;
 	int netPointToUID;
 
-	//    Beam *beam;
-	int loading_state;
 
 	typedef struct loadedObject_t {
 		bool enabled;
@@ -244,6 +242,8 @@ public:
 	// Constructor takes a RenderWindow because it uses that to determine input context
 	RoRFrameListener(AppState *parent, RenderWindow* win, Camera* cam, SceneManager* scm, Root* root, bool isEmbedded=false, Ogre::String inputhwnd=0);
 	virtual ~RoRFrameListener();
+
+	int loading_state;
 
 
 	static RoRFrameListener *eflsingleton;
@@ -336,6 +336,10 @@ public:
 	Radian camRotX, camRotY;
 	Real camDist;
 
+	bool freeTruckPosition;
+	Vector3 reload_pos;
+
+	void reloadCurrentTruck();
 
 	SoundScriptManager* getSSM() { return ssm; };
 private:
@@ -356,7 +360,6 @@ protected:
 
 	Camera* mCamera;
 	Vector3 cdoppler;
-	Vector3 reload_pos;
 	collision_box_t *reload_box;
 	Quaternion reload_dir;
 

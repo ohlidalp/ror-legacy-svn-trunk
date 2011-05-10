@@ -40,10 +40,16 @@ public:
 
 	bool getVisible();
 	void setVisible(bool value);
+
+	void updatePositionUponMousePosition(int x, int y);
+
 protected:
 	RoRFrameListener *mefl;
 	MyGUI::MenuBarPtr mainmenu;
 	void onMenuBtn(MyGUI::MenuCtrlPtr _sender, MyGUI::MenuItemPtr _item);
+
+	const static int NUM_POPUPMENUS = 5;
+	MyGUI::PopupMenuPtr pop[NUM_POPUPMENUS];
 };
 
 #endif //GUI_MENU_H__

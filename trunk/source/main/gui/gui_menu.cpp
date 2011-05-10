@@ -23,9 +23,11 @@ along with Rigs of Rods.  If not, see <http://www.gnu.org/licenses/>.
 #include "gui_menu.h"
 #include "gui_friction.h"
 #include "gui_manager.h"
+#include "SelectorWindow.h"
 #include "RoRFrameListener.h"
 #include "Ogre.h"
 #include "Settings.h"
+#include "BeamFactory.h"
 
 #include "language.h"
 
@@ -46,56 +48,62 @@ GUI_MainMenu::GUI_MainMenu(RoRFrameListener *efl) : mefl(efl)
 	//MyGUI::WidgetPtr back = createWidget<MyGUI::Widget>("Panel", 0, 0, 912, 652,MyGUI::Align::Default, "Back");
 	mainmenu = MyGUI::Gui::getInstance().createWidget<MyGUI::MenuBar>("MenuBar", 0, 0, 300, 26,  MyGUI::Align::HStretch | MyGUI::Align::Top, "Back"); 
 	mainmenu->setCoord(0, 0, 800, 20);
+	int popCount = 0;
 	
-	// File menu
+	// Simulation menu
 	MyGUI::MenuItemPtr mi = mainmenu->createWidget<MyGUI::MenuItem>("MenuBarButton", 0, 0, 60, 22,  MyGUI::Align::Default); 
-	MyGUI::PopupMenuPtr pop = mi->createWidget<MyGUI::PopupMenu>(MyGUI::WidgetStyle::Popup, "PopupMenu",MyGUI::IntCoord(0,0,88,68),MyGUI::Align::Default, "Popup");
+	pop[popCount] = mi->createWidget<MyGUI::PopupMenu>(MyGUI::WidgetStyle::Popup, "PopupMenu",MyGUI::IntCoord(0,0,88,68),MyGUI::Align::Default, "Popup");
 	mi->setItemType(MyGUI::MenuItemType::Popup);
-	mi->setCaption("File");
-
-	pop->addItem("Hide Menu", MyGUI::MenuItemType::Normal);
-	pop->addItem("Browser", MyGUI::MenuItemType::Normal);
-	pop->addItem("-", MyGUI::MenuItemType::Separator);
-	pop->addItem("Exit Game", MyGUI::MenuItemType::Normal);
+	mi->setCaption("Simulation");
+	pop[popCount]->addItem("get new Vehicle", MyGUI::MenuItemType::Normal);
+	pop[popCount]->addItem("remove current Vehicle", MyGUI::MenuItemType::Normal);
+	pop[popCount]->addItem("activate all Vehicles", MyGUI::MenuItemType::Normal);
+	pop[popCount]->addItem("send all Vehicles to sleep", MyGUI::MenuItemType::Normal);
+	pop[popCount]->addItem("switch Truck", MyGUI::MenuItemType::Normal);
+	pop[popCount]->addItem("-", MyGUI::MenuItemType::Separator);
+	pop[popCount]->addItem("Exit", MyGUI::MenuItemType::Normal);
 
 	// view
+	popCount++;
 	mi = mainmenu->createWidget<MyGUI::MenuItem>("MenuBarButton", 0, 0, 60, 22,  MyGUI::Align::Default); 
-	pop = mi->createWidget<MyGUI::PopupMenu>(MyGUI::WidgetStyle::Popup, "PopupMenu",MyGUI::IntCoord(0,0,88,68),MyGUI::Align::Default, "Popup");
+	pop[popCount] = mi->createWidget<MyGUI::PopupMenu>(MyGUI::WidgetStyle::Popup, "PopupMenu",MyGUI::IntCoord(0,0,88,68),MyGUI::Align::Default, "Popup");
 	mi->setItemType(MyGUI::MenuItemType::Popup);
 	mi->setCaption("View");
-
-	MyGUI::MenuItemPtr mi2 = pop->createWidget<MyGUI::MenuItem>("MenuBarButton", 0, 0, 60, 22,  MyGUI::Align::Default); 
+	MyGUI::MenuItemPtr mi2 = pop[popCount]->createWidget<MyGUI::MenuItem>("MenuBarButton", 0, 0, 60, 22,  MyGUI::Align::Default); 
 	mi2->setItemType(MyGUI::MenuItemType::Popup);
 	mi2->setCaption("Camera Mode");
 
-	MyGUI::PopupMenuPtr pop2 = mi2->createWidget<MyGUI::PopupMenu>(MyGUI::WidgetStyle::Popup, "PopupMenu",MyGUI::IntCoord(0,0,88,68),MyGUI::Align::Default, "Popup");
-	pop2->addItem("First Person", MyGUI::MenuItemType::Normal, "camera_first_person");
-	pop2->addItem("External", MyGUI::MenuItemType::Normal, "camera_external");
-	pop2->addItem("Free Mode", MyGUI::MenuItemType::Normal, "camera_free");
-	pop2->addItem("Free fixed mode", MyGUI::MenuItemType::Normal, "camera_freefixed");
+	popCount++;
+	pop[popCount] = mi2->createWidget<MyGUI::PopupMenu>(MyGUI::WidgetStyle::Popup, "PopupMenu",MyGUI::IntCoord(0,0,88,68),MyGUI::Align::Default, "Popup");
+	pop[popCount]->addItem("First Person", MyGUI::MenuItemType::Normal, "camera_first_person");
+	pop[popCount]->addItem("External", MyGUI::MenuItemType::Normal, "camera_external");
+	pop[popCount]->addItem("Free Mode", MyGUI::MenuItemType::Normal, "camera_free");
+	pop[popCount]->addItem("Free fixed mode", MyGUI::MenuItemType::Normal, "camera_freefixed");
+	pop[popCount]->addItem("-", MyGUI::MenuItemType::Separator);
 
-	pop->addItem("-", MyGUI::MenuItemType::Separator);
-
-	mi2 = pop->createWidget<MyGUI::MenuItem>("MenuBarButton", 0, 0, 60, 22,  MyGUI::Align::Default); 
+	mi2 = pop[popCount]->createWidget<MyGUI::MenuItem>("MenuBarButton", 0, 0, 60, 22,  MyGUI::Align::Default); 
 	mi2->setItemType(MyGUI::MenuItemType::Popup);
 	mi2->setCaption("Truck Camera");
 
-	pop2 = mi2->createWidget<MyGUI::PopupMenu>(MyGUI::WidgetStyle::Popup, "PopupMenu",MyGUI::IntCoord(0,0,88,68),MyGUI::Align::Default, "Popup");
-	pop2->addItem("1. Camera", MyGUI::MenuItemType::Normal, "camera_truck_1");
-	pop2->addItem("2. Camera", MyGUI::MenuItemType::Normal, "camera_truck_2");
-	pop2->addItem("3. Camera", MyGUI::MenuItemType::Normal, "camera_truck_3");
-
-	
-
+	popCount++;
+	pop[popCount] = mi2->createWidget<MyGUI::PopupMenu>(MyGUI::WidgetStyle::Popup, "PopupMenu",MyGUI::IntCoord(0,0,88,68),MyGUI::Align::Default, "Popup");
+	pop[popCount]->addItem("1. Camera", MyGUI::MenuItemType::Normal, "camera_truck_1");
+	pop[popCount]->addItem("2. Camera", MyGUI::MenuItemType::Normal, "camera_truck_2");
+	pop[popCount]->addItem("3. Camera", MyGUI::MenuItemType::Normal, "camera_truck_3");
 
 	// windows
+	popCount++;
 	mi = mainmenu->createWidget<MyGUI::MenuItem>("MenuBarButton", 0, 0, 60, 22,  MyGUI::Align::Default); 
-	pop = mi->createWidget<MyGUI::PopupMenu>(MyGUI::WidgetStyle::Popup, "PopupMenu",MyGUI::IntCoord(0,0,88,68),MyGUI::Align::Default, "Popup");
+	pop[popCount] = mi->createWidget<MyGUI::PopupMenu>(MyGUI::WidgetStyle::Popup, "PopupMenu",MyGUI::IntCoord(0,0,88,68),MyGUI::Align::Default, "Popup");
 	mi->setItemType(MyGUI::MenuItemType::Popup);
 	mi->setCaption("Windows");
-	pop->addItem("Camera Control", MyGUI::MenuItemType::Normal, "cameratool");
-	pop->addItem("Friction Settings", MyGUI::MenuItemType::Normal, "frictiongui");
+	pop[popCount]->addItem("Camera Control", MyGUI::MenuItemType::Normal, "cameratool");
+	pop[popCount]->addItem("Friction Settings", MyGUI::MenuItemType::Normal, "frictiongui");
 	
+
+	// if you add a menu, fix NUM_POPUPMENUS
+
+	// event callbacks
 	mainmenu->eventMenuCtrlAccept += MyGUI::newDelegate(this, &GUI_MainMenu::onMenuBtn);
 }
 
@@ -106,13 +114,46 @@ GUI_MainMenu::~GUI_MainMenu()
 void GUI_MainMenu::onMenuBtn(MyGUI::MenuCtrlPtr _sender, MyGUI::MenuItemPtr _item)
 {
 	String miname = _item->getCaption();
-	if(miname == "Hide Menu")
+
+	if(miname == "get new Vehicle" && mefl->person)
 	{
-		setVisible(false);
+		// get out first
+		if(BeamFactory::getSingleton().getCurrentTruckNumber() != -1)
+			BeamFactory::getSingleton().setCurrentTruck(-1);
+		mefl->reload_pos = mefl->person->getPosition() + Vector3(0, 1, 0); // 1 meter above the character
+		mefl->freeTruckPosition=true;
+		mefl->loading_state=RELOADING;
+		SelectorWindow::get()->show(SelectorWindow::LT_AllBeam);
+
+	} else if(miname == "remove current Vehicle")
+	{
+		BeamFactory::getSingleton().removeCurrentTruck();
+
+	} else if(miname == "activate all Vehicles")
+	{
+		BeamFactory::getSingleton().activateAllTrucks();
+		
+	} else if(miname == "send all Vehicles to sleep")
+	{
+		// get out first
+		if(BeamFactory::getSingleton().getCurrentTruckNumber() != -1)
+			BeamFactory::getSingleton().setCurrentTruck(-1);
+		BeamFactory::getSingleton().sendAllTrucksSleeping();
+
+	} else if(miname == "reload Truck from File")
+	{
+		if(BeamFactory::getSingleton().getCurrentTruckNumber() != -1)
+			mefl->reloadCurrentTruck();
+
+	} else if(miname == "switch Truck")
+	{
+		// TODO
+
 	} else if(miname == "Friction Settings")
 	{
 		GUI_Friction::getSingleton().setVisible(true);
-	} else if(miname == "Exit Game")
+
+	} else if(miname == "Exit")
 	{
 		mefl->shutdown_final();
 	}
@@ -129,6 +170,26 @@ void GUI_MainMenu::setVisible(bool value)
 bool GUI_MainMenu::getVisible()
 {
 	return mainmenu->getVisible();
+}
+
+void GUI_MainMenu::updatePositionUponMousePosition(int x, int y)
+{
+	int h = mainmenu->getHeight();
+	bool focused = false;
+	for(int i=0;i<NUM_POPUPMENUS; i++)
+		focused |= pop[i]->getVisible();
+
+	if(focused)
+	{
+		mainmenu->setPosition(0, 0);
+	} else
+	{
+		if(y > 2*h)
+			mainmenu->setPosition(0, -h);
+
+		else
+			mainmenu->setPosition(0, std::min(0, -y+10));
+	}
 }
 
 #endif // MYGUI

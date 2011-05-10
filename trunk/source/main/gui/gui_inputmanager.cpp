@@ -22,6 +22,7 @@ along with Rigs of Rods.  If not, see <http://www.gnu.org/licenses/>.
 #include "gui_inputmanager.h"
 
 #include "SceneMouse.h"
+#include "gui_menu.h"
 
 #if MYGUI_PLATFORM == MYGUI_PLATFORM_WIN32
 #include <windows.h>
@@ -90,8 +91,10 @@ GUIInputManager::GUIInputManager() :
     mCursorX(0),
     mCursorY(0),
     width(0),
-    height(0)
+    height(0),
+	lastMouseMoveTime(0)
 {
+	lastMouseMoveTime = new Ogre::Timer();
 }
 
 GUIInputManager::~GUIInputManager()
@@ -101,6 +104,7 @@ GUIInputManager::~GUIInputManager()
 
 bool GUIInputManager::mouseMoved(const OIS::MouseEvent& _arg)
 {
+	activateGUI();
 	MyGUI::PointerManager::getInstance().setPointer("arrow");
 
 	bool fixed = SceneMouse::getSingleton().mouseMoved(_arg);
@@ -119,12 +123,17 @@ bool GUIInputManager::mouseMoved(const OIS::MouseEvent& _arg)
 
 	mCursorX = _arg.state.X.abs;
 	mCursorY = _arg.state.Y.abs;
+
+	GUI_MainMenu::getSingleton().updatePositionUponMousePosition(mCursorX, mCursorY);
+
     checkPosition();
     return true;
 }
 
 bool GUIInputManager::mousePressed(const OIS::MouseEvent& _arg, OIS::MouseButtonID _id)
 {
+	activateGUI();
+
 	// fallback, handle by GUI, then by SceneMouse
     if(!MyGUI::InputManager::getInstance().injectMousePress(mCursorX, mCursorY, MyGUI::MouseButton::Enum(_id)))
 	{
@@ -135,6 +144,8 @@ bool GUIInputManager::mousePressed(const OIS::MouseEvent& _arg, OIS::MouseButton
 
 bool GUIInputManager::mouseReleased(const OIS::MouseEvent& _arg, OIS::MouseButtonID _id)
 {
+	activateGUI();
+
 	// fallback, handle by GUI, then by SceneMouse
 	if(!MyGUI::InputManager::getInstance().injectMouseRelease(mCursorX, mCursorY, MyGUI::MouseButton::Enum(_id)))
 	{
@@ -145,7 +156,7 @@ bool GUIInputManager::mouseReleased(const OIS::MouseEvent& _arg, OIS::MouseButto
 
 bool GUIInputManager::keyPressed(const OIS::KeyEvent& _arg)
 {
-    MyGUI::Char text = (MyGUI::Char)_arg.text;
+	MyGUI::Char text = (MyGUI::Char)_arg.text;
     MyGUI::KeyCode key = MyGUI::KeyCode::Enum(_arg.key);
     int scan_code = key.toValue();
 
@@ -212,6 +223,15 @@ void GUIInputManager::checkPosition()
         mCursorY = this->height - 1;
 }
 
+void GUIInputManager::activateGUI()
+{
+	lastMouseMoveTime->reset();
+	MyGUI::PointerManager::getInstance().setVisible(true);
+	GUI_MainMenu::getSingleton().setVisible(true);
+
+}
+
 #endif //MYGUI
+
 
 
