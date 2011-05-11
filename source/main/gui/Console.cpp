@@ -403,8 +403,6 @@ void event_topic (irc_session_t * session, const char * event, const char * orig
 
 void event_channel (irc_session_t * session, const char * event, const char * origin, const char ** params, unsigned int count)
 {
-	char nickbuf[128];
-
 	if ( count != 2 )
 		return;
 
@@ -425,6 +423,7 @@ void event_channel (irc_session_t * session, const char * event, const char * or
 	*/
 
 	/*
+	char nickbuf[128];
 	// no special commands for now
 	if ( !origin )
 		return;
@@ -592,14 +591,16 @@ void Console::setNetwork(Network *n)
 {
 	net = n;
 
-	// we need presistent memory, so alloc
+	// we need persistent memory, so alloc
 	ctx = (irc_ctx_t *)malloc(sizeof(irc_ctx_t));
 	ctx->channel  = (char *)"#rigsofrods";
-	ctx->channel1 = (char *)"#server1";
 	ctx->nickRetry=0;
 
 
 	strcpy(ctx->nick, net->getNickname(false).c_str());
+
+	String servername = "#" + SSETTING("Server name") + ":" + SSETTING("Server port");
+	strcpy(ctx->channel1, servername.c_str());
 
 
 	initIRC(ctx);

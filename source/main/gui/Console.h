@@ -36,7 +36,7 @@ along with Rigs of Rods.  If not, see <http://www.gnu.org/licenses/>.
 typedef struct irc_ctx_t
 {
 	char 	* channel;
-	char 	* channel1;
+	char 	channel1[255];
 	char 	nick[255];
 	int nickRetry;
 
