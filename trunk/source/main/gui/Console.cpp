@@ -185,7 +185,7 @@ void Console::messageLogged( const Ogre::String& message, Ogre::LogMessageLevel 
 #if MYGUI_PLATFORM == MYGUI_PLATFORM_WIN32
 	this->print(MyGUI::UString("#988310") + ansi_to_utf16(msg), "OgreLog");
 #else
-	this->print(msg);
+	this->printUTF(msg, "OgreLog");
 #endif
 }
 
@@ -381,7 +381,6 @@ void event_connect (irc_session_t * session, const char * event, const char * or
 	dump_event (session, event, origin, params, count);
 
 	irc_cmd_join (session, ctx->channel, 0);
-	Sleep(200);
 	irc_cmd_join (session, ctx->channel1, 0);
 }
 
@@ -505,9 +504,7 @@ void event_numeric (irc_session_t * session, unsigned int eventNum, const char *
 
 		// and rejoin the channels
 		irc_cmd_join (session, ctx->channel, 0);
-		Sleep(200);
 		irc_cmd_join (session, ctx->channel1, 0);
-		Sleep(200);
 	}
 
 	dump_event (session, buf, origin, params, count);
@@ -586,12 +583,12 @@ void Console::setNetwork(Network *n)
 
 	// we need presistent memory, so alloc
 	ctx = (irc_ctx_t *)malloc(sizeof(irc_ctx_t));
-	ctx->channel  = "#rigsofrods";
-	ctx->channel1 = "#server1";
+	ctx->channel  = (char *)"#rigsofrods";
+	ctx->channel1 = (char *)"#server1";
 	ctx->nickRetry=0;
 
 
-	sprintf(ctx->nick, net->getNickname(false).c_str());
+	strcpy(ctx->nick, net->getNickname(false).c_str());
 
 
 	initIRC(ctx);

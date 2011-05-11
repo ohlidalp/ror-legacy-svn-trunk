@@ -162,7 +162,7 @@ protected:
 		Ogre::SceneNode *sceneNode;
 		std::vector <int> collTris;
 		std::vector <int> collBoxes;
-	};
+	} loadedObject_t;
 
 	std::map< std::string, loadedObject_t> loadedObjects;
 	DOFManager *mDOF;

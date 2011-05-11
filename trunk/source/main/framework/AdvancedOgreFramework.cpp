@@ -59,6 +59,7 @@ bool OgreFramework::configure(void)
 
 			// set window icon correctly
 #ifndef ROR_EMBEDDED
+#ifdef WIN32
 			{
 				// only in non-embedded mode
 				size_t hWnd = 0;
@@ -75,6 +76,7 @@ bool OgreFramework::configure(void)
 					::SendMessageA((HWND)hWnd, WM_SETICON, 0, (LPARAM)hIcon);
 				}
 			}
+#endif // WIN32
 #endif //ROR_EMBEDDED
 
 			return true;

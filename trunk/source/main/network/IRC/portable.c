@@ -15,7 +15,7 @@
 #include "RoRPrerequisites.h"
 
 #if !defined (WIN32)
-	#include "config.h"
+	#include "config_linux.h"
 	#include <stdio.h>
 	#include <stdarg.h>
 	#include <unistd.h>
