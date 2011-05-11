@@ -27,7 +27,10 @@ along with Rigs of Rods.  If not, see <http://www.gnu.org/licenses/>.
 #include "mygui/BaseLayout.h"
 
 #include <OgreLog.h>
+#include <OgreUTFString.h>
 #include <pthread.h>
+
+#define NETCHAT Console::get()
 
 ATTRIBUTE_CLASS_LAYOUT(Console, "Console.layout");
 class Console :
@@ -44,6 +47,9 @@ public:
 	bool getVisible();
 
 	void print(const MyGUI::UString &text);
+	void printUTF(const Ogre::UTFString &text);
+
+	void select();
 
 	// method from Ogre::LogListener
 	virtual void messageLogged( const Ogre::String& message, Ogre::LogMessageLevel lml, bool maskDebug, const Ogre::String &logName );
@@ -65,6 +71,8 @@ protected:
 
 	int mHistoryPosition;
 	std::vector<MyGUI::UString> mHistory;
+
+	void initIRC();
 };
 
 #endif // __CONSOLE_H__

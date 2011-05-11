@@ -71,6 +71,9 @@ protected:
 
 	Ogre::Camera *mCamera;
 	int lineheight;
+
+	static const int sidebarWidth = 250;
+
 };
 
 #endif //GUI_MP_H__

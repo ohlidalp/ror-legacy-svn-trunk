@@ -22,8 +22,7 @@ along with Rigs of Rods.  If not, see <http://www.gnu.org/licenses/>.
 #include "network.h"
 #include "NetworkStreamManager.h"
 #include "RoRFrameListener.h"
-#include "ColoredTextAreaOverlayElement.h"
-#include "IngameConsole.h"
+#include "Console.h"
 #include "CacheSystem.h"
 #include "BeamFactory.h"
 #include "CharacterFactory.h"
@@ -318,19 +317,10 @@ bool Network::connect()
 
 Ogre::String Network::getNickname(bool colour)
 {
-	// returns coloured nickname
-	int nickColour = 8;
-	if(myauthlevel & AUTH_NONE)   nickColour = 8; // grey
-	if(myauthlevel & AUTH_BOT )   nickColour = 4; // blue
-	if(myauthlevel & AUTH_RANKED) nickColour = 2; // green
-	if(myauthlevel & AUTH_MOD)    nickColour = 1; // red
-	if(myauthlevel & AUTH_ADMIN)  nickColour = 1; // red
-
-	String nick = ColoredTextAreaOverlayElement::StripColors(nickname);
 	if(colour)
-		return String("^") + TOSTRING(nickColour) + nick + String("^7");
-
-	return nick;
+		return ChatSystem::getColouredName(nickname, myauthlevel);
+	else
+		return nickname;
 }
 
 int Network::sendMessageRaw(SWInetSocket *socket, char *buffer, unsigned int msgsize)
@@ -718,4 +708,5 @@ void Network::debugPacket(const char *name, header_t *header, char *buffer)
 }
 
 #endif //SOCKETW
+
 

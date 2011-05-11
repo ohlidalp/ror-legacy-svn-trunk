@@ -72,7 +72,7 @@ GUI_Multiplayer::GUI_Multiplayer(Network *_net, Ogre::Camera *cam) : net(_net), 
 	nimg->setImageTexture("error.png");
 	netmsgtext = netmsgwin->createWidget<MyGUI::TextBox>("TextBox", 18, 2, 300, 40,  MyGUI::Align::Default, "helptext");
 	netmsgtext->setCaption(_L("Slow  Network  Download"));
-	netmsgtext->setFontName("VeraMoBd");
+	netmsgtext->setFontName("DefaultBig");
 	netmsgtext->setTextColour(MyGUI::Colour::Red);
 	netmsgtext->setFontHeight(lineheight);
 	netmsgwin->setVisible(false);
@@ -80,18 +80,22 @@ GUI_Multiplayer::GUI_Multiplayer(Network *_net, Ogre::Camera *cam) : net(_net), 
 
 	// now the main GUI
 	MyGUI::IntSize gui_area = MyGUI::RenderManager::getInstance().getViewSize();
-	int x=gui_area.width - 200, y=30;
-	mpPanel = MyGUI::Gui::getInstance().createWidget<MyGUI::Widget>("FlowContainer", x, y, 200, gui_area.height,  MyGUI::Align::Default, "Main");
+	int x=gui_area.width - 300, y=30;
+
+	MyGUI::ImageBox *ib = MyGUI::Gui::getInstance().createWidget<MyGUI::ImageBox>("ImageBox", x, y, sidebarWidth, gui_area.height,  MyGUI::Align::Default, "Main");
+	ib->setImageTexture("mpbg.png");
+
+	mpPanel = ib; //->createWidget<MyGUI::Widget>("FlowContainer", x, y, sidebarWidth, gui_area.height,  MyGUI::Align::Default, "Main");
 	mpPanel->setVisible(true);
 
-	y=0;
+	y=5;
 	for(int i = 0; i < MAX_PEERS + 1; i++) // plus 1 for local entry
 	{
 		x=100; // space for icons
 		player_row_t *row = &player_rows[i];
-		row->playername = mpPanel->createWidget<MyGUI::TextBox>("TextBox", x, y+1, 200, lineheight,  MyGUI::Align::Default, "Main");
+		row->playername = mpPanel->createWidget<MyGUI::TextBox>("TextBox", x, y+1, sidebarWidth, lineheight,  MyGUI::Align::Default, "Main");
 		row->playername->setCaption("Player " + TOSTRING(i));
-		row->playername->setFontName("VeraMoBd");
+		row->playername->setFontName("DefaultBig");
 		row->playername->setUserString("tooltip", "user name");
 		row->playername->eventToolTip += MyGUI::newDelegate(this, &GUI_Multiplayer::openToolTip);
 		row->playername->setNeedToolTip(true);
@@ -292,7 +296,7 @@ int GUI_Multiplayer::update()
 	int slotid = 0;
 	
 	MyGUI::IntSize gui_area = MyGUI::RenderManager::getInstance().getViewSize();
-	int x=gui_area.width - 200, y=30;
+	int x=gui_area.width - sidebarWidth, y=30;
 	mpPanel->setPosition(x,y);
 
 	// add local player to first slot always
@@ -329,6 +333,9 @@ int GUI_Multiplayer::update()
 			row->userTruckOKRemoteImg->setVisible(false);
 		}
 	}
+
+	int height = lineheight * (slotid + 1);
+	mpPanel->setSize(sidebarWidth, height);
 	
 	if(RoRFrameListener::eflsingleton && RoRFrameListener::eflsingleton->getNetQuality(true) != 0)
 	{
@@ -366,8 +373,12 @@ void GUI_Multiplayer::openToolTip(MyGUI::WidgetPtr sender, const MyGUI::ToolTipI
 		if(!txt.empty())
 		{
 			tooltipText->setCaption(txt);
+			MyGUI::IntSize s = tooltipText->getTextSize();
+			int newWidth = s.width + 10;
+			tooltipPanel->setPosition(t.point - MyGUI::IntPoint(newWidth + 10, 10));
+			tooltipPanel->setSize(newWidth, 20);
+			tooltipText->setSize(newWidth, 16);
 			tooltipPanel->setVisible(true);
-			tooltipPanel->setPosition(t.point - MyGUI::IntPoint(210, 8));
 		}
 	} else if(t.type == MyGUI::ToolTipInfo::Hide)
 	{

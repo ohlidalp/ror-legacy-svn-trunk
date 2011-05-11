@@ -293,6 +293,8 @@ public:
 
 	void changedCurrentTruck(Beam *previousTruck, Beam *currentTruck);
 
+	Network *getNetwork() { return net; };
+
 	float stopTimer();
 	void startTimer();
 	void updateRacingGUI();
@@ -438,7 +440,6 @@ protected:
 	MPlatform_Base *mplatform;
 #endif
 
-	void processConsoleInput();
 
 	RenderWindow* renderwin;
 
