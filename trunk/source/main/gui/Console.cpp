@@ -296,7 +296,7 @@ void Console::eventCommandAccept(MyGUI::Edit* _sender)
 	if(current_tab->name == "Angelscript")
 	{
 #ifdef USE_ANGELSCRIPT
-		Console::getInstance().print(">>>" + command, current_tab->name);
+		Console::getInstance().print(">>> " + command, current_tab->name);
 		int res = ScriptEngine::getSingleton().executeString(command);
 #endif //ANGELSCRIPT
 	}
@@ -316,6 +316,11 @@ void Console::eventChangeTab(MyGUI::TabControl* _sender, size_t _index)
 	String n = tab->getCaption();
 	if(tabs.find(n) == tabs.end())
 		return;
+
+	bool enabled = true;
+	if(n == "OgreLog")  enabled = false;
+	if(n == "IRCDebug") enabled = false;
+	mCommandEdit->setEnabled(enabled);
 
 	current_tab = &tabs[n];
 }
@@ -419,6 +424,8 @@ void event_channel (irc_session_t * session, const char * event, const char * or
 		params[0], params[1] );
 	*/
 
+	/*
+	// no special commands for now
 	if ( !origin )
 		return;
 
@@ -440,7 +447,6 @@ void event_channel (irc_session_t * session, const char * event, const char * or
 		irc_cmd_ctcp_request (session, nickbuf, "TIME");
 	}
 
-	/*
 	if ( !strcmp (params[1], "dcc chat") )
 	{
 		irc_dcc_t dccid;
@@ -454,7 +460,6 @@ void event_channel (irc_session_t * session, const char * event, const char * or
 		irc_dcc_sendfile (session, 0, nickbuf, "irctest.c", dcc_file_recv_callback, &dccid);
 		printf ("DCC send ID: %d\n", dccid);
 	}
-	*/
 
 	if ( !strcmp (params[1], "topic") )
 		irc_cmd_topic (session, params[0], 0);
@@ -469,6 +474,8 @@ void event_channel (irc_session_t * session, const char * event, const char * or
 
 	if ( strstr (params[1], "whois ") == params[1] )
 		irc_cmd_whois (session, params[1] + 5);
+
+	*/
 }
 
 void event_privmsg (irc_session_t * session, const char * event, const char * origin, const char ** params, unsigned int count)
@@ -488,7 +495,11 @@ void event_numeric (irc_session_t * session, unsigned int eventNum, const char *
 	if(eventNum == 433)
 	{
 
-		irc_ctx_t * ctx = (irc_ctx_t *) irc_get_ctx (session);
+#ifdef WIN32
+		Sleep(500);
+#else
+		sleep(500);
+#endif // WIN32		irc_ctx_t * ctx = (irc_ctx_t *) irc_get_ctx (session);
 		ctx->nickRetry++;
 		sprintf(ctx->nick, "%s_", ctx->nick);
 
@@ -496,6 +507,11 @@ void event_numeric (irc_session_t * session, unsigned int eventNum, const char *
 		char buf[1024] = "";
 		sprintf (buf, "NICK %s", ctx->nick);
 		irc_send_raw (session, buf);
+#ifdef WIN32
+		Sleep(500);
+#else
+		sleep(500);
+#endif // WIN32
 
 		// and rejoin the channels
 		irc_cmd_join (session, ctx->channel, 0);
