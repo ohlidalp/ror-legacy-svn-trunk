@@ -31,8 +31,9 @@ along with Rigs of Rods.  If not, see <http://www.gnu.org/licenses/>.
 #include "RoRPrerequisites.h"
 
 #include <string>
-#include "angelscript.h"
-#include "Ogre.h"
+#include <angelscript.h>
+#include <Ogre.h>
+#include <OgreLogManager.h>
 
 
 #include "scriptdictionary/scriptdictionary.h"
@@ -63,7 +64,7 @@ class GameScript;
 /**
  *  @brief This class represents the angelscript scripting interface. It can load and execute scripts.
  */
-class ScriptEngine : public Ogre::Singleton<ScriptEngine>
+class ScriptEngine : public Ogre::Singleton<ScriptEngine>, public Ogre::LogListener
 {
 	friend class GameScript;
 public:
@@ -145,8 +146,13 @@ public:
 	Ogre::String getTerrainName() { return terrainScriptName; };
 	Ogre::String getTerrainScriptHash() { return terrainScriptHash; };
 
+	// method from Ogre::LogListener
+	virtual void messageLogged( const Ogre::String& message, Ogre::LogMessageLevel lml, bool maskDebug, const Ogre::String &logName );
 
 	void exploreScripts();
+
+
+	Ogre::Log *scriptLog;
 
 protected:
     RoRFrameListener *mefl;             //!< local RoRFrameListener instance, used as proxy for many functions

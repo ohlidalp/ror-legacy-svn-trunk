@@ -292,22 +292,17 @@ void Console::eventCommandAccept(MyGUI::Edit* _sender)
 		MyGUI::UString msg = "<"+String(ctx->nick)+"> " + command;
 		Console::getInstance().print(msg, current_tab->name);
 	}
-/*
-	// special command
-	if(command == "hide")
-	{
-		setVisible(false);
-	}
-	else
-	{
-		print(command, current_tab->name);
-#ifdef USE_ANGELSCRIPT
-		ScriptEngine::getSingleton().executeString(command);
-#endif //ANGELSCRIPT
 
-		//if(netChat) netChat->sendChat(chatline);
+	if(current_tab->name == "Angelscript")
+	{
+#ifdef USE_ANGELSCRIPT
+		Console::getInstance().print(">>>" + command, current_tab->name);
+		int res = ScriptEngine::getSingleton().executeString(command);
+#endif //ANGELSCRIPT
 	}
-*/
+
+	//if(netChat) netChat->sendChat(chatline);
+
 	*current_tab->mHistory.rbegin() = command;
 	current_tab->mHistory.push_back(""); // new, empty last entry
 	current_tab->mHistoryPosition = current_tab->mHistory.size() - 1; // switch to the new line
