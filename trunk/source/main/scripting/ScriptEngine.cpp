@@ -65,12 +65,12 @@ template<> ScriptEngine *Ogre::Singleton<ScriptEngine>::ms_Singleton=0;
 
 char *ScriptEngine::moduleName = "RoRScript";
 
+#define SLOG(x) ScriptEngine::getSingleton().scriptLog->logMessage(x);
+
 // the class implementation
 
-ScriptEngine::ScriptEngine(RoRFrameListener *efl, Collisions *_coll) : mefl(efl), coll(_coll), engine(0), context(0), frameStepFunctionPtr(-1), wheelEventFunctionPtr(-1), eventMask(0), terrainScriptName(), terrainScriptHash()
+ScriptEngine::ScriptEngine(RoRFrameListener *efl, Collisions *_coll) : mefl(efl), coll(_coll), engine(0), context(0), frameStepFunctionPtr(-1), wheelEventFunctionPtr(-1), eventMask(0), terrainScriptName(), terrainScriptHash(), scriptLog(0)
 {
-	init();
-
 	callbacks["on_terrain_loading"] = std::vector<int>();
 	callbacks["frameStep"] = std::vector<int>();
 	callbacks["wheelEvents"] = std::vector<int>();
@@ -80,6 +80,14 @@ ScriptEngine::ScriptEngine(RoRFrameListener *efl, Collisions *_coll) : mefl(efl)
 	wheelEventFunctionPtr = 0;
 	eventCallbackFunctionPtr = 0;
 	defaultEventCallbackFunctionPtr = 0;
+
+	// create our own log
+	scriptLog = LogManager::getSingleton().createLog(SSETTING("Log Path")+"/Angelscript.log", false);
+	scriptLog->addListener(this);
+	scriptLog->logMessage("ScriptEngine initialized");
+
+	// init not earlier, otherwise crash
+	init();
 }
 
 ScriptEngine::~ScriptEngine()
@@ -89,31 +97,36 @@ ScriptEngine::~ScriptEngine()
 	if(context) context->Release();
 }
 
+void ScriptEngine::messageLogged( const Ogre::String& message, Ogre::LogMessageLevel lml, bool maskDebug, const Ogre::String &logName )
+{
+	Console *c = Console::getInstancePtrNoCreation();
+	if(c) c->printUTF(message, "Angelscript");
+}
 
 void ScriptEngine::ExceptionCallback(AngelScript::asIScriptContext *ctx, void *param)
 {
 	AngelScript::asIScriptEngine *engine = ctx->GetEngine();
 	int funcID = ctx->GetExceptionFunction();
 	const AngelScript::asIScriptFunction *function = engine->GetFunctionDescriptorById(funcID);
-	LOG("--- exception ---");
-	LOG("desc: " + String(ctx->GetExceptionString()));
-	LOG("func: " + String(function->GetDeclaration()));
-	LOG("modl: " + String(function->GetModuleName()));
-	LOG("sect: " + String(function->GetScriptSectionName()));
+	SLOG("--- exception ---");
+	SLOG("desc: " + String(ctx->GetExceptionString()));
+	SLOG("func: " + String(function->GetDeclaration()));
+	SLOG("modl: " + String(function->GetModuleName()));
+	SLOG("sect: " + String(function->GetScriptSectionName()));
 	int col, line = ctx->GetExceptionLineNumber(&col);
-	LOG("line: "+TOSTRING(line)+","+TOSTRING(col));
+	SLOG("line: "+TOSTRING(line)+","+TOSTRING(col));
 
 	// Print the variables in the current function
 	//PrintVariables(ctx, -1);
 
 	// Show the call stack with the variables
-	LOG("--- call stack ---");
+	SLOG("--- call stack ---");
 	char tmp[2048]="";
     for( AngelScript::asUINT n = 1; n < ctx->GetCallstackSize(); n++ )
     {
     	function = ctx->GetFunction(n);
 		sprintf(tmp, "%s (%d): %s\n", function->GetScriptSectionName(), ctx->GetLineNumber(n), function->GetDeclaration());
-		LOG(String(tmp));
+		SLOG(String(tmp));
 		//PrintVariables(ctx, n);
     }
 }
@@ -154,7 +167,7 @@ void ScriptEngine::PrintVariables(asIScriptContext *ctx, int stackLevel)
 	if( typeId )
 	{
 		sprintf(tmp," this = %p", varPointer);
-		LOG(tmp);
+		SLOG(tmp);
 	}
 
 	int numVars = ctx->GetVarCount(stackLevel);
@@ -165,7 +178,7 @@ void ScriptEngine::PrintVariables(asIScriptContext *ctx, int stackLevel)
 		if( typeId == engine->GetTypeIdByDecl("int") )
 		{
 			sprintf(tmp, " %s = %d", ctx->GetVarDeclaration(n, stackLevel), *(int*)varPointer);
-			LOG(tmp);
+			SLOG(tmp);
 		}
 		else if( typeId == engine->GetTypeIdByDecl("string") )
 		{
@@ -173,13 +186,13 @@ void ScriptEngine::PrintVariables(asIScriptContext *ctx, int stackLevel)
 			if( str )
 			{
 				sprintf(tmp, " %s = '%s'", ctx->GetVarDeclaration(n, stackLevel), str->c_str());
-				LOG(tmp);
+				SLOG(tmp);
 			} else
 			{
 				sprintf(tmp, " %s = <null>", ctx->GetVarDeclaration(n, stackLevel));
-				LOG(tmp);
+				SLOG(tmp);
 			}
-		LOG(tmp);
+		SLOG(tmp);
 		}
 	}
 };
@@ -188,7 +201,7 @@ void ScriptEngine::PrintVariables(asIScriptContext *ctx, int stackLevel)
 // continue with initializing everything
 void ScriptEngine::init()
 {
-	LOG("SE| ScriptEngine (SE) initializing ...");
+	SLOG("ScriptEngine (SE) initializing ...");
 	int result;
 	// Create the script engine
 	engine = AngelScript::asCreateScriptEngine(ANGELSCRIPT_VERSION);
@@ -202,14 +215,14 @@ void ScriptEngine::init()
 	{
 		if(result == AngelScript::asINVALID_ARG)
 		{
-			LOG("SE| One of the arguments is incorrect, e.g. obj is null for a class method.");
+			SLOG("One of the arguments is incorrect, e.g. obj is null for a class method.");
 			return;
 		} else if(result == AngelScript::asNOT_SUPPORTED)
 		{
-			LOG("SE| 	The arguments are not supported, e.g. asCALL_GENERIC.");
+			SLOG("	The arguments are not supported, e.g. asCALL_GENERIC.");
 			return;
 		}
-		LOG("SE| Unkown error while setting up message callback");
+		SLOG("Unkown error while setting up message callback");
 		return;
 	}
 
@@ -445,7 +458,7 @@ void ScriptEngine::init()
 	//result = engine->RegisterGlobalProperty("CacheSystemClass cache", &CacheSystem::Instance()); assert(result>=0);
 	result = engine->RegisterGlobalProperty("SettingsClass settings", &SETTINGS); assert(result>=0);
 
-	LOG("SE| Type registrations done. If you see no error above everything should be working");
+	SLOG("Type registrations done. If you see no error above everything should be working");
 }
 
 void ScriptEngine::msgCallback(const AngelScript::asSMessageInfo *msg)
@@ -457,8 +470,8 @@ void ScriptEngine::msgCallback(const AngelScript::asSMessageInfo *msg)
 		type = "Warning";
 
 	char tmp[1024]="";
-	sprintf(tmp, "SE| %s (%d, %d): %s = %s", msg->section, msg->row, msg->col, type, msg->message);
-	LOG(tmp);
+	sprintf(tmp, "%s (%d, %d): %s = %s", msg->section, msg->row, msg->col, type, msg->message);
+	SLOG(tmp);
 }
 
 int ScriptEngine::framestep(Ogre::Real dt)
@@ -503,7 +516,7 @@ int ScriptEngine::framestep(Ogre::Real dt)
 				context->SetArgObject(2, &std::string(source->instancename));
 				context->SetArgObject(3, &std::string(source->boxname));
 
-				//LOG("SE| Executing framestep()");
+				//SLOG("Executing framestep()");
 				int r = context->Execute();
 				if( r == AngelScript::asEXECUTION_FINISHED )
 				{
@@ -531,7 +544,7 @@ int ScriptEngine::framestep(Ogre::Real dt)
 	// Set the function arguments
 	context->SetArgFloat(0, dt);
 
-	//LOG("SE| Executing framestep()");
+	//SLOG("Executing framestep()");
 	int r = context->Execute();
 	if( r == AngelScript::asEXECUTION_FINISHED )
 	{
@@ -577,20 +590,15 @@ int ScriptEngine::envokeCallback(int functionPtr, eventsource_t *source, node_t 
 
 int ScriptEngine::executeString(Ogre::String command)
 {
-	// TOFIX: add proper error output
 	if(!engine) return 1;
 	if(!context) context = engine->CreateContext();
-
-	// XXX: TODO: FIXME (the function was replaced by an addon)
-	/*
-	int result = engine->ExecuteString(moduleName, command.c_str(), &context);
-	if(result<0)
+	AngelScript::asIScriptModule *mod = engine->GetModule(moduleName, AngelScript::asGM_CREATE_IF_NOT_EXISTS);
+	int result = ExecuteString(engine, command.c_str(), mod, context);
+	if(result < 0)
 	{
-		LOG("error " + TOSTRING(result) + " while executing string: " + command + ".");
+		SLOG("error " + TOSTRING(result) + " while executing string: " + command + ".");
 	}
 	return result;
-	*/
-	return 1;
 }
 
 void ScriptEngine::triggerEvent(enum scriptEvents eventnum, int value)
@@ -650,7 +658,7 @@ int ScriptEngine::loadScript(Ogre::String scriptname)
 		result = builder.StartNewModule(engine, moduleName);
 		if( result < 0 )
 		{
-			LOG("SE| Failed to start new module");
+			SLOG("Failed to start new module");
 			return result;
 		}
 
@@ -659,14 +667,14 @@ int ScriptEngine::loadScript(Ogre::String scriptname)
 		result = builder.AddSectionFromFile(scriptname.c_str());
 		if( result < 0 )
 		{
-			LOG("SE| Unkown error while loading script file: "+scriptname);
-			LOG("SE| Failed to add script file");
+			SLOG("Unkown error while loading script file: "+scriptname);
+			SLOG("Failed to add script file");
 			return result;
 		}
 		result = builder.BuildModule();
 		if( result < 0 )
 		{
-			LOG("SE| Failed to build the module");
+			SLOG("Failed to build the module");
 			return result;
 		}
 
@@ -675,7 +683,7 @@ int ScriptEngine::loadScript(Ogre::String scriptname)
 		// TODO: fix hash!
 		{
 			String fn = SSETTING("Cache Path") + "script" + hash + "_" + scriptname + "c";
-			LOG("SE| saving script bytecode to file " + fn);
+			SLOG("saving script bytecode to file " + fn);
 			CBytecodeStream bstream(fn);
 			mod->SaveByteCode(&bstream);
 		}
@@ -703,7 +711,7 @@ int ScriptEngine::loadScript(Ogre::String scriptname)
 	{
 		// The function couldn't be found. Instruct the script writer to include the
 		// expected function in the script.
-		LOG("SE| The script should have the function 'void main()'.");
+		SLOG("The script should have the function 'void main()'.");
 		return 0;
 	}
 
@@ -717,7 +725,7 @@ int ScriptEngine::loadScript(Ogre::String scriptname)
 	result = context->SetLineCallback(AngelScript::asMETHOD(ScriptEngine, LineCallback), &timeOut, AngelScript::asCALL_THISCALL);
 	if(result < 0)
 	{
-		LOG("SE| Failed to set the line callback function.");
+		SLOG("Failed to set the line callback function.");
 		context->Release();
 		return -1;
 	}
@@ -725,7 +733,7 @@ int ScriptEngine::loadScript(Ogre::String scriptname)
 	result = context->SetExceptionCallback(AngelScript::asMETHOD(ScriptEngine,ExceptionCallback), this, AngelScript::asCALL_THISCALL);
 	if(result < 0)
 	{
-		LOG("SE| Failed to set the exception callback function.");
+		SLOG("Failed to set the exception callback function.");
 		context->Release();
 		return -1;
 	}
@@ -739,7 +747,7 @@ int ScriptEngine::loadScript(Ogre::String scriptname)
 	result = context->Prepare(funcId);
 	if(result < 0)
 	{
-		LOG("SE| Failed to prepare the context.");
+		SLOG("Failed to prepare the context.");
 		context->Release();
 		return -1;
 	}
@@ -748,35 +756,35 @@ int ScriptEngine::loadScript(Ogre::String scriptname)
 	// to return before we'll abort it.
 	timeOut = OgreFramework::getSingleton().getTimeSinceStartup() + 1000;
 
-	LOG("SE| Executing main()");
+	SLOG("Executing main()");
 	result = context->Execute();
 	if( result != AngelScript::asEXECUTION_FINISHED )
 	{
 		// The execution didn't complete as expected. Determine what happened.
 		if( result == AngelScript::asEXECUTION_ABORTED )
 		{
-			LOG("SE| The script was aborted before it could finish. Probably it timed out.");
+			SLOG("The script was aborted before it could finish. Probably it timed out.");
 		}
 		else if( result == AngelScript::asEXECUTION_EXCEPTION )
 		{
 			// An exception occurred, let the script writer know what happened so it can be corrected.
-			LOG("SE| An exception '" + String(context->GetExceptionString()) + "' occurred. Please correct the code in file '" + scriptname + "' and try again.");
+			SLOG("An exception '" + String(context->GetExceptionString()) + "' occurred. Please correct the code in file '" + scriptname + "' and try again.");
 
 			// Write some information about the script exception
 			int funcID = context->GetExceptionFunction();
 			AngelScript::asIScriptFunction *func = engine->GetFunctionDescriptorById(funcID);
-			LOG("SE| func: " + String(func->GetDeclaration()));
-			LOG("SE| modl: " + String(func->GetModuleName()));
-			LOG("SE| sect: " + String(func->GetScriptSectionName()));
-			LOG("SE| line: " + TOSTRING(context->GetExceptionLineNumber()));
-			LOG("SE| desc: " + String(context->GetExceptionString()));
+			SLOG("func: " + String(func->GetDeclaration()));
+			SLOG("modl: " + String(func->GetModuleName()));
+			SLOG("sect: " + String(func->GetScriptSectionName()));
+			SLOG("line: " + TOSTRING(context->GetExceptionLineNumber()));
+			SLOG("desc: " + String(context->GetExceptionString()));
 		} else
 		{
-			LOG("SE| The script ended for some unforeseen reason " + TOSTRING(result));
+			SLOG("The script ended for some unforeseen reason " + TOSTRING(result));
 		}
 	} else
 	{
-		LOG("SE| The script finished successfully.");
+		SLOG("The script finished successfully.");
 	}
 
 	return 0;
@@ -793,7 +801,7 @@ GameScript::~GameScript()
 
 void GameScript::log(std::string &msg)
 {
-	LOG("SE| " + msg);
+	SLOG(msg);
 }
 
 double GameScript::getTime()
@@ -993,7 +1001,7 @@ void GameScript::spawnObject(const std::string &objectName, const std::string &i
 		mod = mse->getEngine()->GetModule(mse->moduleName, AngelScript::asGM_ONLY_IF_EXISTS);
 	}catch(std::exception e)
 	{
-		LOG("SE| Exception in spawnObject(): " + String(e.what()));
+		SLOG("Exception in spawnObject(): " + String(e.what()));
 		return;
 	}
 	if(!mod) return;
@@ -1018,7 +1026,7 @@ int GameScript::setMaterialAmbient(const std::string &materialName, float red, f
 		m->setAmbient(red, green, blue);
 	} catch(Exception e)
 	{
-		LOG("SE| Exception in setMaterialAmbient(): " + e.getFullDescription());
+		SLOG("Exception in setMaterialAmbient(): " + e.getFullDescription());
 		return 0;
 	}
 	return 1;
@@ -1033,7 +1041,7 @@ int GameScript::setMaterialDiffuse(const std::string &materialName, float red, f
 		m->setDiffuse(red, green, blue, alpha);
 	} catch(Exception e)
 	{
-		LOG("SE| Exception in setMaterialDiffuse(): " + e.getFullDescription());
+		SLOG("Exception in setMaterialDiffuse(): " + e.getFullDescription());
 		return 0;
 	}
 	return 1;
@@ -1048,7 +1056,7 @@ int GameScript::setMaterialSpecular(const std::string &materialName, float red, 
 		m->setSpecular(red, green, blue, alpha);
 	} catch(Exception e)
 	{
-		LOG("SE| Exception in setMaterialSpecular(): " + e.getFullDescription());
+		SLOG("Exception in setMaterialSpecular(): " + e.getFullDescription());
 		return 0;
 	}
 	return 1;
@@ -1063,7 +1071,7 @@ int GameScript::setMaterialEmissive(const std::string &materialName, float red, 
 		m->setSelfIllumination(red, green, blue);
 	} catch(Exception e)
 	{
-		LOG("SE| Exception in setMaterialEmissive(): " + e.getFullDescription());
+		SLOG("Exception in setMaterialEmissive(): " + e.getFullDescription());
 		return 0;
 	}
 	return 1;
@@ -1297,7 +1305,7 @@ int OgreScriptBuilder::LoadScriptSection(const char *filename)
 
 	} catch(Ogre::Exception e)
 	{
-		LOG("SE| exception upon loading script file: " + e.getFullDescription());
+		SLOG("exception upon loading script file: " + e.getFullDescription());
 		return -1;
 	}
 

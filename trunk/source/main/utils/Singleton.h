@@ -43,6 +43,10 @@ public:
 		if (!_self) _self = new T;
 		return _self;
 	}
+	static T* getInstancePtrNoCreation()
+	{
+		return _self;
+	}
 	// just shorter name
 	static T* get() { return getInstancePtr(); }
 	static void FreeInstance() { getInstancePtr()->_free(); }
