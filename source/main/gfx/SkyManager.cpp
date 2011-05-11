@@ -25,7 +25,9 @@ along with Rigs of Rods.  If not, see <http://www.gnu.org/licenses/>.
 #include "Settings.h"
 
 #include "Ogre.h"
-#include "Caelum.h"
+#include <Caelum.h>
+
+
 
 using namespace std;
 using namespace Ogre;
@@ -92,7 +94,7 @@ void SkyManager::loadScript(Ogre::String script)
 		CaelumPlugin::getSingleton().loadCaelumSystemFromScript (mCaelumSystem, script);
 
 		// overwrite some settings
-		
+#ifdef CAELUM_VERSION_SEC
 		// important: overwrite fog setings if not using infinite farclip
 		if(mCamera->getFarClipDistance() > 0)
 		{
@@ -106,7 +108,9 @@ void SkyManager::loadScript(Ogre::String script)
 			// no fog in infinite farclip
 			mCaelumSystem->setManageSceneFog(Ogre::FOG_NONE);
 		}
-
+#else
+#error please use a recent Caelum version, see http://www.rigsofrods.com/wiki/pages/Compiling_3rd_party_libraries#Caelum
+#endif // CAELUM_VERSION
 		// now optimize the moon a bit
 		if(mCaelumSystem->getMoon())
 		{

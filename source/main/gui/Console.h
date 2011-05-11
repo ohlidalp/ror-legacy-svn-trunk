@@ -57,7 +57,7 @@ public:
 	typedef struct msg_t {
 		MyGUI::UString txt;
 		Ogre::String channel;
-	};
+	} msg_t;
 
 	typedef struct tabctx_t {
 		Ogre::String name;
@@ -67,7 +67,7 @@ public:
 		
 		int mHistoryPosition;
 		std::vector<MyGUI::UString> mHistory;
-	};
+	} tabctx_t;
 
 
 	void setVisible(bool _visible);

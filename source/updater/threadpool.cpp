@@ -163,7 +163,7 @@ retry:
 	if(retrycount >= retrylimit)
 	{
 		wxString msg = wxString::Format(_T("failed to download file: \n%s\nPlease ensure that you have internet access."),  conv(remoteFile));
-		updateCallback(jobID, MSE_ERROR, msg);
+		updateCallback(jobID, MSE_ERROR, conv(msg), 0);
 		wxMessageBox(msg, _T("Error"), wxICON_ERROR | wxOK);
 		exit(1);
 	}

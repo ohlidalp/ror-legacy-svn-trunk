@@ -501,6 +501,8 @@ static int StringCmp(const string &a, const string &b)
 template < class ContainerT >
 void tokenize(const std::string& str, ContainerT& tokens, const std::string& delimiters = " ", const bool trimEmpty = false)
 {
+	// TODO: FIX THIS FOR LINUX
+#ifdef WIN32
 	std::string::size_type pos, lastPos = 0;
 	while(true)
 	{
@@ -522,6 +524,7 @@ void tokenize(const std::string& str, ContainerT& tokens, const std::string& del
 
 		lastPos = pos + 1;
 	}
+#endif
 };
 
 static int splitString(string delimiters, CScriptArray &stringArray, string &str)
@@ -566,7 +569,7 @@ static string toUpper(string &d)
 }
 
 // trim from start
-static string ltrim(std::string &s)
+static string ltrim(std::string s)
 {
 	string str = s;
 	// trim leading spaces
@@ -579,7 +582,7 @@ static string ltrim(std::string &s)
 }
 
 // trim from end
-static string rtrim(std::string &s)
+static string rtrim(std::string s)
 {
 	string str = s;
 	// trim trailing spaces
@@ -644,8 +647,8 @@ void RegisterStdString_Native(asIScriptEngine *engine)
 		r = engine->RegisterObjectMethod("string", "uint length() const", asMETHOD(string,size), asCALL_THISCALL); assert( r >= 0 );
 		r = engine->RegisterObjectMethod("string", "void resize(uint)", asMETHODPR(string,resize,(size_t),void), asCALL_THISCALL); assert( r >= 0 );
 		// substr, we added this
-		r = engine->RegisterObjectMethod("string", "string substr(uint, uint)", asMETHODPR(string,substr,(unsigned int, unsigned int) const, string), asCALL_THISCALL); assert( r >= 0 );
-		r = engine->RegisterObjectMethod("string", "uint   find(const string &in, uint)", asMETHODPR(string,find,(const string &, unsigned int) const, unsigned int), asCALL_THISCALL); assert( r >= 0 );
+		r = engine->RegisterObjectMethod("string", "string substr(uint, uint)", asMETHODPR(string,substr,(size_t, size_t) const, string), asCALL_THISCALL); assert( r >= 0 );
+		r = engine->RegisterObjectMethod("string", "uint   find(const string &in, uint)", asMETHODPR(string,find,(const string &, size_t) const, size_t), asCALL_THISCALL); assert( r >= 0 );
 	}
 	else
 	{
