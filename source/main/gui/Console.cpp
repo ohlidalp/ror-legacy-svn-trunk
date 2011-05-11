@@ -36,17 +36,27 @@ Console::Console()
 
 	// make it 1/3 of screen height and place over screen
 
+	/*
 	MyGUI::IntSize size = MyGUI::RenderManager::getInstance().getViewSize();
 	size.height = size.height/3;
 	mMainWidget->setCoord(0, -size.height, size.width, size.height);
+	*/
 
 	mCommandEdit->eventKeyButtonPressed += MyGUI::newDelegate(this, &Console::eventButtonPressed);
 	mCommandEdit->eventEditSelectAccept += MyGUI::newDelegate(this, &Console::eventCommandAccept);
 
-	mHistoryPosition = 0;
-	mHistory.push_back("");
+	mTabControl->eventTabChangeSelect   += MyGUI::newDelegate(this, &Console::eventChangeTab);
 
-	setVisible(false);
+	addTab("OgreLog");
+	addTab("IRCStatus");
+	addTab("IRCDebug");
+
+	// BUG: all editboxes visible on startup D:
+	mTabControl->selectSheetIndex(0, false);
+
+	current_tab = &tabs["OgreLog"];
+
+	setVisible(true);
 
 	pthread_mutex_init(&mWaitingMessagesMutex, NULL);
 
@@ -65,6 +75,50 @@ Console::~Console()
 	MyGUI::Gui::getInstance().eventFrameStart -= MyGUI::newDelegate( this, &Console::frameEntered );
 
 	pthread_mutex_destroy(&mWaitingMessagesMutex);
+}
+
+void Console::addTab(Ogre::String name)
+{
+/*
+<Widget type="TabItem" skin="" position="2 24 304 193">
+<Property key="Caption" value="Log"/>
+<Widget type="EditBox" skin="EditBoxStretch" position="0 0 306 195" align="Stretch" name="OgreLog">
+<Property key="WordWrap" value="true"/>
+<Property key="TextAlign" value="Left Bottom"/>
+<Property key="ReadOnly" value="true"/>
+<Property key="OverflowToTheLeft" value="true"/>
+<Property key="MaxTextLength" value="8192"/>
+<Property key="FontName" value="Default"/>
+</Widget>
+</Widget>
+*/
+	tabctx_t *t = &tabs[name];
+	t->name = name;
+
+	// create tab
+	t->tab = mTabControl->addItem(name);
+	t->tab->setProperty("Caption", name);
+	t->tab->setCaption(name);
+
+	// and the textbox inside
+	t->txt = MyGUI::Gui::getInstance().createWidget<MyGUI::EditBox>("EditBoxStretch", 0, 0, 304, 193,  MyGUI::Align::Stretch, name);
+	t->txt->setProperty("WordWrap", "true");
+	t->txt->setProperty("TextAlign", "Left Bottom");
+	t->txt->setProperty("ReadOnly", "true");
+	t->txt->setProperty("OverflowToTheLeft", "true");
+	t->txt->setProperty("MaxTextLength", "8192");
+	t->txt->setWidgetStyle(MyGUI::WidgetStyle::Child);
+
+	// attach it to the tab
+	t->txt->detachFromWidget();
+	t->txt->attachToWidget(t->tab);
+
+	//mTabControl->setItemData(t->tab, t);
+	t->tab->setUserData(t);
+	
+	t->mHistoryPosition = 0;
+	t->mHistory.push_back("");
+
 }
 
 void Console::setVisible(bool _visible)
@@ -87,16 +141,29 @@ bool Console::getVisible()
 	return mVisible;
 }
 
-void Console::print(const MyGUI::UString &_text)
+void Console::print(const MyGUI::UString &_text, Ogre::String channel)
 {
 	pthread_mutex_lock(&mWaitingMessagesMutex);
-	mWaitingMessages.push_back(_text);
+	msg_t t;
+	t.txt = _text;
+	t.channel = channel; 
+	mWaitingMessages.push_back(t);
 	pthread_mutex_unlock(&mWaitingMessagesMutex);
 }
 
-void Console::printUTF(const Ogre::UTFString &_text)
+void Console::printUTF(const Ogre::UTFString &_text, Ogre::String channel)
 {
-	this->print(_text.asWStr_c_str());
+	this->print(_text.asWStr_c_str(), channel);
+}
+
+void Console::newChannel(Ogre::String name)
+{
+	pthread_mutex_lock(&mWaitingMessagesMutex);
+	msg_t t;
+	t.txt = "_NEWCHANNEL_";
+	t.channel = name; 
+	mWaitingMessages.push_back(t);
+	pthread_mutex_unlock(&mWaitingMessagesMutex);
 }
 
 #if MYGUI_PLATFORM == MYGUI_PLATFORM_WIN32
@@ -120,7 +187,7 @@ void Console::messageLogged( const Ogre::String& message, Ogre::LogMessageLevel 
 	if(message.substr(0,4) == "SE| ")
 		msg = message.substr(4);
 #if MYGUI_PLATFORM == MYGUI_PLATFORM_WIN32
-	this->print(MyGUI::UString("#988310") + ansi_to_utf16(msg));
+	this->print(MyGUI::UString("#988310") + ansi_to_utf16(msg), "OgreLog");
 #else
 	this->print(msg);
 #endif
@@ -135,7 +202,7 @@ void Console::frameEntered(float _frame)
 {
 	// only copy the content and then unlock again
 	// this prevents that loggers are hung due to time consuming iteration over it
-	std::vector<MyGUI::UString> tmpWaitingMessages;
+	std::vector<msg_t> tmpWaitingMessages;
 	pthread_mutex_lock(&mWaitingMessagesMutex);
 	tmpWaitingMessages = mWaitingMessages;
 	mWaitingMessages.clear();
@@ -144,14 +211,29 @@ void Console::frameEntered(float _frame)
 	if (tmpWaitingMessages.empty())
 		return;
 	
-	for (std::vector<MyGUI::UString>::iterator iter = tmpWaitingMessages.begin(); iter != tmpWaitingMessages.end(); ++iter)
+	for (std::vector<msg_t>::iterator iter = tmpWaitingMessages.begin(); iter != tmpWaitingMessages.end(); ++iter)
 	{
-		if (!mLogEdit->getCaption().empty())
-			mLogEdit->addText("\n" + *iter);
-		else
-			mLogEdit->addText(*iter);
+		// hack to create a tab
+		if(iter->txt == "_NEWCHANNEL_")
+		{
+			addTab(iter->channel);
+			continue;
+		}
 
-		mLogEdit->setTextSelection(mLogEdit->getTextLength(), mLogEdit->getTextLength());
+		if(tabs.find(iter->channel) == tabs.end())
+		{
+			continue;
+		}
+
+		MyGUI::Edit* ec = tabs[iter->channel].txt;
+		
+		if (!ec->getCaption().empty())
+			ec->addText("\n" + iter->txt);
+		else
+			ec->addText(iter->txt);
+
+		ec->setTextSelection(ec->getTextLength(), ec->getTextLength());
+
 	}
 }
 
@@ -170,35 +252,35 @@ void Console::eventButtonPressed(MyGUI::Widget* _sender, MyGUI::KeyCode _key, My
 	switch(_key.toValue())
 	{
 	case MyGUI::KeyCode::ArrowUp:
-		if(mHistoryPosition > 0)
+		if(current_tab->mHistoryPosition > 0)
 		{
 			// first we save what we was writing
-			if (mHistoryPosition == (int)mHistory.size() - 1)
+			if (current_tab->mHistoryPosition == (int)current_tab->mHistory.size() - 1)
 			{
-				mHistory[mHistoryPosition] = mCommandEdit->getCaption();
+				current_tab->mHistory[current_tab->mHistoryPosition] = mCommandEdit->getCaption();
 			}
-			mHistoryPosition--;
-			mCommandEdit->setCaption(mHistory[mHistoryPosition]);
+			current_tab->mHistoryPosition--;
+			mCommandEdit->setCaption(current_tab->mHistory[current_tab->mHistoryPosition]);
 		}
 		break;
 
 	case MyGUI::KeyCode::ArrowDown:
-		if(mHistoryPosition < (int)mHistory.size() - 1)
+		if(current_tab->mHistoryPosition < (int)current_tab->mHistory.size() - 1)
 		{
-			mHistoryPosition++;
-			mCommandEdit->setCaption(mHistory[mHistoryPosition]);
+			current_tab->mHistoryPosition++;
+			mCommandEdit->setCaption(current_tab->mHistory[current_tab->mHistoryPosition]);
 		}
 		break;
 
 	case MyGUI::KeyCode::PageUp:
-		if (mLogEdit->getVScrollPosition() > (size_t)mLogEdit->getHeight())
-			mLogEdit->setVScrollPosition(mLogEdit->getVScrollPosition() - mLogEdit->getHeight());
+		if (current_tab->txt->getVScrollPosition() > (size_t)current_tab->txt->getHeight())
+			current_tab->txt->setVScrollPosition(current_tab->txt->getVScrollPosition() - current_tab->txt->getHeight());
 		else
-			mLogEdit->setVScrollPosition(0);
+			current_tab->txt->setVScrollPosition(0);
 		break;
 
 	case MyGUI::KeyCode::PageDown:
-		mLogEdit->setVScrollPosition(mLogEdit->getVScrollPosition() + mLogEdit->getHeight());
+		current_tab->txt->setVScrollPosition(current_tab->txt->getVScrollPosition() + current_tab->txt->getHeight());
 		break;
 	}
 }
@@ -214,7 +296,7 @@ void Console::eventCommandAccept(MyGUI::Edit* _sender)
 	}
 	else
 	{
-		print(command);
+		print(command, current_tab->name);
 #ifdef USE_ANGELSCRIPT
 		ScriptEngine::getSingleton().executeString(command);
 #endif //ANGELSCRIPT
@@ -222,10 +304,21 @@ void Console::eventCommandAccept(MyGUI::Edit* _sender)
 		//if(netChat) netChat->sendChat(chatline);
 
 	}
-	*mHistory.rbegin() = command;
-	mHistory.push_back(""); // new, empty last entry
-	mHistoryPosition = mHistory.size() - 1; // switch to the new line
-	mCommandEdit->setCaption(mHistory[mHistoryPosition]);
+	*current_tab->mHistory.rbegin() = command;
+	current_tab->mHistory.push_back(""); // new, empty last entry
+	current_tab->mHistoryPosition = current_tab->mHistory.size() - 1; // switch to the new line
+	mCommandEdit->setCaption(current_tab->mHistory[current_tab->mHistoryPosition]);
+}
+
+void Console::eventChangeTab(MyGUI::TabControl* _sender, size_t _index)
+{
+	MyGUI::TabItemPtr tab = _sender->getItemAt(_index);
+	if(!tab) return;
+	String n = tab->getCaption();
+	if(tabs.find(n) == tabs.end())
+		return;
+
+	current_tab = &tabs[n];
 }
 
 /*
@@ -245,7 +338,6 @@ typedef struct
 
 void addlog (const char * fmt, ...)
 {
-	FILE * fp;
 	char buf[1024];
 	va_list va_alist;
 
@@ -257,7 +349,7 @@ void addlog (const char * fmt, ...)
 #endif
 	va_end (va_alist);
 
-	Console::getInstance().print(MyGUI::UString(buf));
+	Console::getInstance().print(MyGUI::UString(buf), "IRCDebug");
 	LOG("IRC| " + String(buf));
 	//printf ("%s\n", buf);
 }
@@ -265,7 +357,7 @@ void addlog (const char * fmt, ...)
 void dump_event (irc_session_t * session, const char * event, const char * origin, const char ** params, unsigned int count)
 {
 	char buf[512];
-	int cnt;
+	unsigned int cnt;
 
 	buf[0] = '\0';
 
@@ -277,8 +369,13 @@ void dump_event (irc_session_t * session, const char * event, const char * origi
 		strcat (buf, params[cnt]);
 	}
 
-
 	addlog ("Event \"%s\", origin: \"%s\", params: %d [%s]", event, origin ? origin : "NULL", cnt, buf);
+}
+
+void event_notice (irc_session_t * session, const char * event, const char * origin, const char ** params, unsigned int count)
+{
+	if(count != 1) return;
+	Console::getInstance().print(MyGUI::UString(params[0]), "IRCStatus");
 }
 
 void event_connect (irc_session_t * session, const char * event, const char * origin, const char ** params, unsigned int count)
@@ -293,7 +390,17 @@ void event_join (irc_session_t * session, const char * event, const char * origi
 {
 	dump_event (session, event, origin, params, count);
 	irc_cmd_user_mode (session, "+i");
-	irc_cmd_msg (session, params[0], "Hi all");
+
+	Console::getInstance().newChannel( "#" + String(params[0]));
+	//irc_cmd_msg (session, params[0], "Hi all");
+}
+
+void event_topic (irc_session_t * session, const char * event, const char * origin, const char ** params, unsigned int count)
+{
+	if(count != 2) return;
+
+	MyGUI::UString msg = "*** Topic is " + String(params[1]);
+	Console::getInstance().print(msg, "#" + String(params[0]));
 }
 
 void event_channel (irc_session_t * session, const char * event, const char * origin, const char ** params, unsigned int count)
@@ -303,9 +410,21 @@ void event_channel (irc_session_t * session, const char * event, const char * or
 	if ( count != 2 )
 		return;
 
+	MyGUI::UString nick = MyGUI::UString(origin ? origin : "someone");
+	if(nick.find("!") != nick.npos)
+	{
+		nick = nick.substr(0, nick.find("!"));
+	}
+	MyGUI::UString msg = "<"+nick+"> " + MyGUI::UString(params[1]);
+	Console::getInstance().print(msg, "#" + String(params[0]));
+	
+	/*
+	LOG("IRC| " + String(buf));
+
 	addlog ("'%s' said in channel %s: %s\n", 
 		origin ? origin : "someone",
 		params[0], params[1] );
+	*/
 
 	if ( !origin )
 		return;
@@ -401,11 +520,11 @@ void *s_ircthreadstart(void* vid)
 	callbacks.event_quit = dump_event;
 	callbacks.event_part = dump_event;
 	callbacks.event_mode = dump_event;
-	callbacks.event_topic = dump_event;
+	callbacks.event_topic = event_topic;
 	callbacks.event_kick = dump_event;
 	callbacks.event_channel = event_channel;
 	callbacks.event_privmsg = event_privmsg;
-	callbacks.event_notice = dump_event;
+	callbacks.event_notice = event_notice;
 	callbacks.event_invite = dump_event;
 	callbacks.event_umode = dump_event;
 	callbacks.event_ctcp_rep = dump_event;

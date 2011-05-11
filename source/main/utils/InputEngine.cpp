@@ -1535,7 +1535,7 @@ bool InputEngine::instanceExists()
 	return (myInstance != 0);
 }
 // Constructor takes a RenderWindow because it uses that to determine input context
-InputEngine::InputEngine() : mInputManager(0), mMouse(0), mKeyboard(0), mForceFeedback(0), captureMode(false), mappingLoaded(false), free_joysticks(0), inputsChanged(true), ingame_console(false)
+InputEngine::InputEngine() : mInputManager(0), mMouse(0), mKeyboard(0), mForceFeedback(0), captureMode(false), mappingLoaded(false), free_joysticks(0), inputsChanged(true)
 {
 	for(int i=0;i<MAX_JOYSTICKS;i++) mJoy[i]=0;
 #ifndef NOOGRE
@@ -1589,8 +1589,6 @@ bool InputEngine::setup(Ogre::String hwnd, bool capture, bool capturemouse, int 
 {
 	grabMode = _grabMode;
 
-	ingame_console = (BSETTING("Enable Ingame Console"));
-	
 	// grab mode override in embedded mode
 	if(OgreFramework::getSingleton().isEmbedded())
 	{
@@ -1922,12 +1920,8 @@ bool InputEngine::povMoved( const OIS::JoyStickEvent &arg, int )
 bool InputEngine::keyPressed( const OIS::KeyEvent &arg )
 {
 #ifdef USE_MYGUI
-	if(ingame_console && Console::get() && Console::get()->getVisible())
-	{
-		GUIManager::getSingleton().keyPressed(arg);
+	if(GUIManager::getSingleton().keyPressed(arg))
 		return true;
-	}
-	GUIManager::getSingleton().keyPressed(arg);
 #endif //MYGUI
 
 	//LOG("*** keyPressed");

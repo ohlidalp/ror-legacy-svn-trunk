@@ -65,12 +65,6 @@ public:
 		dashOverlay->show();
 		needlesOverlay->show();
 		blendOverlay->show();
-
-		//hide unwanted overlays
-		consolevisible = NETCHAT->getVisible();
-		if(consolevisible)
-			NETCHAT->setVisible(false);
-
 	}
 	void postRenderTargetUpdate(const RenderTargetEvent& evt)
 	{
@@ -88,9 +82,6 @@ public:
 		dashOverlay->hide();
 		needlesOverlay->hide();
 		blendOverlay->hide();
-
-		if(consolevisible)
-			NETCHAT->setVisible(true);
 	}
 
 };

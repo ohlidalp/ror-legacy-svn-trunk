@@ -180,8 +180,11 @@ bool GUIInputManager::keyPressed(const OIS::KeyEvent& _arg)
 	if(!MyGUI::InputManager::getInstance().injectKeyPress(key, text))
 	{
 		return SceneMouse::getSingleton().keyPressed(_arg);
+	} else
+	{
+		return true;
 	}
-    return true;
+    return false;
 }
 
 bool GUIInputManager::keyReleased(const OIS::KeyEvent& _arg)

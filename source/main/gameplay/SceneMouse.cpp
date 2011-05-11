@@ -210,12 +210,13 @@ bool SceneMouse::mouseReleased(const OIS::MouseEvent& _arg, OIS::MouseButtonID _
 
 bool SceneMouse::keyPressed(const OIS::KeyEvent& _arg)
 {
-	return true;
+	// return false, not handled
+	return false;
 }
 
 bool SceneMouse::keyReleased(const OIS::KeyEvent& _arg)
 {
-	return true;
+	return false;
 }
 
 Ray SceneMouse::getMouseRay()
