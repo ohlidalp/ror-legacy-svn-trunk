@@ -167,7 +167,7 @@ void Character::updateNetLabel()
 	//LOG(" * updateNetLabel : " + TOSTRING(this->source));
 	if(!netMT)
 	{
-		netMT = new MovableText("netlabel-"+myName, ColoredTextAreaOverlayElement::StripColors(networkUsername));
+		netMT = new MovableText("netlabel-"+myName, networkUsername);
 		personode->attachObject(netMT);
 		netMT->setFontName("highcontrast_black");
 		netMT->setTextAlignment(MovableText::H_CENTER, MovableText::V_ABOVE);
@@ -178,8 +178,7 @@ void Character::updateNetLabel()
 	}
 
 	//LOG(" *label caption: " + String(networkUsername));
-	//LOG(" *label caption: " + ColoredTextAreaOverlayElement::StripColors(networkUsername));
-	netMT->setCaption(ColoredTextAreaOverlayElement::StripColors(networkUsername));
+	netMT->setCaption(networkUsername);
 	if(networkAuthLevel & AUTH_ADMIN)
 	{
 		netMT->setFontName("highcontrast_red");

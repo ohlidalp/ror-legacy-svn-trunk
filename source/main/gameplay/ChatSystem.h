@@ -28,7 +28,7 @@ along with Rigs of Rods.  If not, see <http://www.gnu.org/licenses/>.
 #include "Streamable.h"
 #include "MovableText.h"
 #include "StreamableFactory.h"
-#include "IngameConsole.h"
+#include "Console.h"
 
 class ChatSystem : public Streamable
 {
@@ -40,6 +40,8 @@ public:
 	~ChatSystem();
 
 	void sendChat(Ogre::UTFString chatline);
+
+	static Ogre::String getColouredName(Ogre::String nick, int auth);
 protected:
 	Network *net;
 	int source;
@@ -48,6 +50,7 @@ protected:
 	bool remote;
 	Ogre::UTFString username;
 	Ogre::String mNickColour;
+	Ogre::String mCommandColour, mNormalColour;
 	void sendStreamSetup();
 	void sendStreamData();
 	void receiveStreamData(unsigned int &type, int &source, unsigned int &streamid, char *buffer, unsigned int &len);

@@ -48,7 +48,7 @@ along with Rigs of Rods.  If not, see <http://www.gnu.org/licenses/>.
 #include "water.h"
 #include "Beam.h"
 #include "Settings.h"
-#include "IngameConsole.h"
+#include "Console.h"
 #include "OverlayWrapper.h"
 #include "SkyManager.h"
 #include "CacheSystem.h"
@@ -935,12 +935,12 @@ void GameScript::setDirectionArrow(std::string &text, Ogre::Vector3 vec)
 
 int GameScript::getChatFontSize()
 {
-	return NETCHAT.getFontSize();
+	return 0; //NETCHAT.getFontSize();
 }
 
 void GameScript::setChatFontSize(int size)
 {
-	NETCHAT.setFontSize(size);
+	//NETCHAT.setFontSize(size);
 }
 
 void GameScript::showChooser(string &type, string &instance, string &box)

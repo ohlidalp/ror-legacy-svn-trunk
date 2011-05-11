@@ -19,7 +19,7 @@ along with Rigs of Rods.  If not, see <http://www.gnu.org/licenses/>.
 */
 #include "dashboard.h"
 #include "TruckHUD.h"
-#include "IngameConsole.h"
+#include "Console.h"
 #include "ResourceBuffer.h"
 
 SceneManager* mScene;
@@ -67,9 +67,9 @@ public:
 		blendOverlay->show();
 
 		//hide unwanted overlays
-		consolevisible = NETCHAT.getVisible();
+		consolevisible = NETCHAT->getVisible();
 		if(consolevisible)
-			NETCHAT.setVisible(false);
+			NETCHAT->setVisible(false);
 
 	}
 	void postRenderTargetUpdate(const RenderTargetEvent& evt)
@@ -90,7 +90,7 @@ public:
 		blendOverlay->hide();
 
 		if(consolevisible)
-			NETCHAT.setVisible(true);
+			NETCHAT->setVisible(true);
 	}
 
 };

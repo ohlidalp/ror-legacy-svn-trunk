@@ -91,6 +91,7 @@ along with Rigs of Rods.  If not, see <http://www.gnu.org/licenses/>.
 #include "gui_mp.h"
 #include "SelectorWindow.h"
 #include "LoadingWindow.h"
+#include "Console.h"
 #endif //MYGUI
 
 #include "autopilot.h"
@@ -104,7 +105,6 @@ along with Rigs of Rods.  If not, see <http://www.gnu.org/licenses/>.
 #endif
 
 #include "MovableText.h"
-#include "IngameConsole.h"
 #ifdef FEAT_TIMING
 	#include "BeamStats.h"
 #endif
@@ -146,7 +146,6 @@ along with Rigs of Rods.  If not, see <http://www.gnu.org/licenses/>.
 //#include "OgreTerrainSceneManager.h" // = ILLEGAL to link to a plugin!
 
 #include "writeTextToTexture.h"
-#include "Console.h"
 
 #if OGRE_PLATFORM == OGRE_PLATFORM_APPLE
 //#include <CFUserNotification.h>
@@ -269,8 +268,6 @@ void RoRFrameListener::updateIO(float dt)
 void RoRFrameListener::updateGUI(float dt)
 {
 	if(!ow) return; // no gui, then skip this
-
-	NETCHAT.update(dt);
 
 	Beam *curr_truck = BeamFactory::getSingleton().getCurrentTruck();
 	if (!curr_truck) return;
@@ -777,7 +774,8 @@ RoRFrameListener::RoRFrameListener(AppState *parentState, RenderWindow* win, Cam
 	isEmbedded(isEmbedded),
 	ow(0),
 	inputhwnd(inputhwnd),
-	reload_box(0)
+	reload_box(0),
+	net(0)
 {
 	RoRFrameListener::eflsingleton=this;
 
@@ -852,6 +850,8 @@ RoRFrameListener::RoRFrameListener(AppState *parentState, RenderWindow* win, Cam
 
 	mSceneMgr=scm;
 
+	//network
+	netmode=(BSETTING("Network enable"));
 
 #ifdef USE_OPENAL
 	ssm=SoundScriptManager::getSingleton();
@@ -927,16 +927,9 @@ RoRFrameListener::RoRFrameListener(AppState *parentState, RenderWindow* win, Cam
 
 	MyGUI::VectorWidgetPtr v = MyGUI::LayoutManager::getInstance().loadLayout("wallpaper.layout");
 
+	// always create the console
+	Console::getInstance();
 #endif //MYGUI
-
-#ifdef USE_ANGELSCRIPT
-#ifdef USE_MYGUI
-	ingame_console = (BSETTING("Enable Ingame Console"));
-
-	if(ingame_console)
-		Console::getInstance();
-#endif// MYGUI
-#endif
 
 	// setup particle manager
 	new DustManager(mSceneMgr);
@@ -1056,8 +1049,6 @@ RoRFrameListener::RoRFrameListener(AppState *parentState, RenderWindow* win, Cam
 
 	objcounter=0;
 
-	//network
-	netmode=(BSETTING("Network enable"));
 
 	// check command line args
 	String cmd = SSETTING("cmdline CMD");
@@ -1119,7 +1110,7 @@ RoRFrameListener::RoRFrameListener(AppState *parentState, RenderWindow* win, Cam
 	new PlayerColours();
 
 	// hide chat when not in netmode
-	NETCHAT.setMode(this, NETCHAT_LEFT_SMALL, false);
+	//NETCHAT.setMode(this, NETCHAT_LEFT_SMALL, false);
 
 	// you always need that, even if you are not using the network
 	new NetworkStreamManager();
@@ -1182,7 +1173,7 @@ RoRFrameListener::RoRFrameListener(AppState *parentState, RenderWindow* win, Cam
 			preselected_map = getASCIIFromCharString(terrn, 255);
 
 		// show chat in MP
-		NETCHAT.setMode(this, NETCHAT_LEFT_SMALL, true);
+		//NETCHAT.setMode(this, NETCHAT_LEFT_SMALL, true);
 
 		// create person _AFTER_ network, important
 		int colourNum = 0;
@@ -1914,26 +1905,32 @@ bool RoRFrameListener::updateEvents(float dt)
 	}
 #endif // MYGUI
 
-	if (NETCHAT.getVisible() && INPUTENGINE.getEventBoolValueBounce(EV_COMMON_ENTER_CHATMODE, 0.5f) && !chatting && !hidegui)
+	if (INPUTENGINE.getEventBoolValueBounce(EV_COMMON_ENTER_CHATMODE, 0.5f) && !chatting && !hidegui)
+	{
+		NETCHAT->select();
+	}
+#if 0
+	// TODO: FIX
+	if (NETCHAT->getVisible() && INPUTENGINE.getEventBoolValueBounce(EV_COMMON_ENTER_CHATMODE, 0.5f) && !chatting && !hidegui)
 	{
 		// enter chat mode
-		INPUTENGINE.resetKeyLine();
-		INPUTENGINE.setRecordInput(true);
-		NETCHAT.setEnterText("", true, true);
+		//INPUTENGINE.resetKeyLine();
+		//INPUTENGINE.setRecordInput(true);
+		//NETCHAT.setEnterText("", true, true);
 		chatting=true;
 	}
 
 	if (NETCHAT.getVisible() && INPUTENGINE.getEventBoolValueBounce(EV_COMMON_SEND_CHAT, 0.5f) && chatting && !hidegui)
 	{
 		processConsoleInput();
-		NETCHAT.setEnterText("", false);
+		//NETCHAT.setEnterText("", false);
 		chatting=false;
 		INPUTENGINE.setRecordInput(false);
 		INPUTENGINE.resetKeyLine();
 		mTimeUntilNextToggle = 0.5; // for enter/exit truck
 		return true;
 	}
-
+#endif //0
 	// update characters
 	if(loading_state==ALL_LOADED && net)
 		CharacterFactory::getSingleton().updateCharacters(dt);
@@ -3189,7 +3186,7 @@ bool RoRFrameListener::updateEvents(float dt)
 
 		if (INPUTENGINE.getEventBoolValueBounce(EV_COMMON_NETCHATDISPLAY))
 		{
-			NETCHAT.toggleVisible(this);
+			//NETCHAT.toggleVisible(this);
 		}
 
 #ifdef USE_MYGUI
@@ -3204,7 +3201,7 @@ bool RoRFrameListener::updateEvents(float dt)
 
 		if (INPUTENGINE.getEventBoolValueBounce(EV_COMMON_NETCHATMODE))
 		{
-			NETCHAT.toggleMode(this);
+			//NETCHAT.toggleMode(this);
 		}
 
 		if (INPUTENGINE.getEventBoolValue(EV_COMMON_ENTER_OR_EXIT_TRUCK) && !chatting && mTimeUntilNextToggle <= 0)
@@ -3306,8 +3303,8 @@ bool RoRFrameListener::updateEvents(float dt)
 				if(selt)
 					initTrucks(true, selt->fname, selt->fext, configptr);
 				// show console in netmode!
-				if(netmode)
-					NETCHAT.setMode(this, NETCHAT_LEFT_SMALL, true);
+				//if(netmode)
+				//	NETCHAT.setMode(this, NETCHAT_LEFT_SMALL, true);
 
 			} else if (loading_state==RELOADING)
 			{
@@ -3536,23 +3533,6 @@ void RoRFrameListener::hideMap()
 #endif // MYGUI
 }
 
-void RoRFrameListener::processConsoleInput()
-{
-	UTFString chatline = INPUTENGINE.getKeyLine();
-
-	if (chatline.size()==0) return;
-#ifdef USE_SOCKETW
-	if(netmode)
-	{
-		NETCHAT.addText(net->getNickname(true) + ": ^7" + ColoredTextAreaOverlayElement::StripColors(chatline), false);
-		if(netChat) netChat->sendChat(chatline);
-	} else
-#endif // SOCKETW
-		NETCHAT.addText(_L("^8 Player: ^7") + chatline);
-
-	NETCHAT.setEnterText("", false);
-	//NETCHAT.noScroll();
-}
 
 void RoRFrameListener::initializeCompontents()
 {
@@ -5202,7 +5182,7 @@ void RoRFrameListener::changedCurrentTruck(Beam *previousTruck, Beam *currentTru
 			person->setPosition(previousTruck->getPosition());
 
 		//if(bigMap) bigMap->setVisibility(false);
-		if(netmode && NETCHAT.getVisible()) NETCHAT.setMode(this, NETCHAT_LEFT_FULL, true);
+		//if(netmode && NETCHAT.getVisible()) NETCHAT.setMode(this, NETCHAT_LEFT_FULL, true);
 
 		// detach person to truck
 		if(person)
@@ -5282,7 +5262,7 @@ void RoRFrameListener::changedCurrentTruck(Beam *previousTruck, Beam *currentTru
 	else
 	{
 		//getting inside
-		if(netmode && NETCHAT.getVisible()) NETCHAT.setMode(this, NETCHAT_LEFT_SMALL, true);
+		//if(netmode && NETCHAT.getVisible()) NETCHAT.setMode(this, NETCHAT_LEFT_SMALL, true);
 		//person->setVisible(false);
 		if(ow &&!hidegui)
 		{
@@ -6241,10 +6221,9 @@ void RoRFrameListener::initHDR()
 void RoRFrameListener::hideGUI(bool visible)
 {
 	Beam *curr_truck = BeamFactory::getSingleton().getCurrentTruck();
+	NETCHAT->setVisible(visible);
 	if(visible)
 	{
-		if (netmode && NETCHAT.getVisible())
-			NETCHAT.toggleVisible(this);
 
 		if(ow) ow->showDashboardOverlays(false,0);
 		if(ow) ow->showEditorOverlay(false);
@@ -6258,8 +6237,6 @@ void RoRFrameListener::hideGUI(bool visible)
 	}
 	else
 	{
-		if (netmode && !NETCHAT.getVisible())
-			NETCHAT.toggleVisible(this);
 		if(curr_truck && cameramode!=CAMERA_INT)
 		{
 			if(ow) ow->showDashboardOverlays(true, curr_truck->driveable);

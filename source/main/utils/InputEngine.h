@@ -466,9 +466,6 @@ public:
 	bool isEventDefined(int eventID);
 	void addEvent(int eventID, event_trigger_t t);
 	bool deleteEventBySUID(int suid);
-	Ogre::UTFString getKeyLine() { return keyInput; };
-	void resetKeyLine() { keyInput=""; };
-	void setRecordInput(bool value) { recordChat=value; };
 	bool getInputsChanged() { return inputsChanged; };
 	void prepareShutdown();
 	OIS::MouseState getMouseState();
@@ -554,8 +551,6 @@ protected:
 	std::string getEventGroup(Ogre::String eventName);
 	bool mappingLoaded;
 
-	Ogre::UTFString keyInput;
-	bool recordChat;
 	bool inputsChanged;
 	bool ingame_console;
 	int grabMode;

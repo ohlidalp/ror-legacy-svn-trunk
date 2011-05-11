@@ -104,7 +104,9 @@ ChatSystem::ChatSystem(Network *net, int source, unsigned int streamid, int colo
 	colourNumber(colourNumber),
 	remote(remote),
 	username("unknown"),
-	mNickColour("^0")
+	mNickColour(""),
+	mCommandColour("#e72edc"),
+	mNormalColour("#000000")
 {
 	sendStreamSetup();
 #ifdef USE_SOCKETW
@@ -113,20 +115,10 @@ ChatSystem::ChatSystem(Network *net, int source, unsigned int streamid, int colo
 		client_t *c = net->getClientInfo(source);
 		if(c)
 		{
-			username = tryConvertUTF(c->user.username);
-
-			int nickColour = 8;
-			if(c->user.authstatus & AUTH_NONE)   nickColour = 8; // grey
-			if(c->user.authstatus & AUTH_BOT )   nickColour = 4; // blue
-			if(c->user.authstatus & AUTH_RANKED) nickColour = 2; // green
-			if(c->user.authstatus & AUTH_MOD)    nickColour = 1; // red
-			if(c->user.authstatus & AUTH_ADMIN)  nickColour = 1; // red
-
-			mNickColour = String("^") + TOSTRING(nickColour);
-			username = mNickColour + ColoredTextAreaOverlayElement::StripColors(username);
+			username = getColouredName(tryConvertUTF(c->user.username), c->user.authstatus);
 		}
 
-		NETCHAT.addText(username + _L(" ^9joined the chat"));
+		NETCHAT->printUTF(username + mCommandColour + _L(" joined the chat"));
 	}
 #endif //SOCKETW
 }
@@ -135,7 +127,7 @@ ChatSystem::~ChatSystem()
 {
 	if(remote)
 	{
-		NETCHAT.addText(username + _L(" ^9left the chat"));
+		NETCHAT->printUTF(username + mCommandColour + _L(" left the chat"));
 	}
 }
 
@@ -163,11 +155,11 @@ void ChatSystem::receiveStreamData(unsigned int &type, int &source, unsigned int
 		if(source == -1)
 		{
 			// server said something
-			NETCHAT.addText(getASCIIFromCharString(buffer, 255));
+			NETCHAT->printUTF(getASCIIFromCharString(buffer, 255));
 		} else if(source == (int)this->source && (int)streamid == this->streamid)
 		{
 			UTFString text = tryConvertUTF(buffer);
-			NETCHAT.addText(username + "^7: " + text);
+			NETCHAT->printUTF(username + mNormalColour + ": " + text);
 		}
 	}
 }
@@ -177,3 +169,19 @@ void ChatSystem::sendChat(Ogre::UTFString chatline)
 	this->addPacket(MSG2_CHAT, chatline.size(), const_cast<char *>(chatline.asUTF8_c_str()));
 }
 
+String ChatSystem::getColouredName(String nick, int auth)
+{
+	String col = "";
+
+	// replace # with X so the user cannot fake colour
+	for(unsigned int i=0; i<nick.size(); i++)
+		if(nick[i] == '#') nick[i] = 'X';
+
+	if(auth & AUTH_NONE)   col = "#c9c9c9"; // grey
+	if(auth & AUTH_BOT )   col = "#0000c9"; // blue
+	if(auth & AUTH_RANKED) col = "#00c900"; // green
+	if(auth & AUTH_MOD)    col = "#c90000"; // red
+	if(auth & AUTH_ADMIN)  col = "#c97100"; // orange
+
+	return col + nick;
+}

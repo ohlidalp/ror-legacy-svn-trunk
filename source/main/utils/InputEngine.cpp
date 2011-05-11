@@ -35,7 +35,7 @@ along with Rigs of Rods.  If not, see <http://www.gnu.org/licenses/>.
 #include "errorutils.h"
 
 #ifndef NOOGRE
-#include "IngameConsole.h"
+#include "Console.h"
 #include "gui_manager.h"
 #include "language.h"
 #else
@@ -1606,7 +1606,6 @@ bool InputEngine::setup(Ogre::String hwnd, bool capture, bool capturemouse, int 
 	//try to delete old ones first (linux can only handle one at a time)
 	destroy();
 	captureMode = capture;
-	recordChat=false;
 	if(captureMode)
 	{
 		//size_t hWnd = 0;
@@ -1936,29 +1935,6 @@ bool InputEngine::keyPressed( const OIS::KeyEvent &arg )
 		inputsChanged=true;
 	keyState[arg.key] = 1;
 
-	if(recordChat)
-	{
-		// chatting stuff
-		if (keyInput.size()<255)
-		{
-			if ((arg.key==OIS::KC_DELETE || arg.key==OIS::KC_BACK) && keyInput.size()>0)
-			{
-				keyInput = keyInput.substr(0, keyInput.size()-1);
-#ifndef NOOGRE
-				NETCHAT.setEnterText("^7"+keyInput, true, true);
-#endif
-			}
-
-			// exclude control keys
-			if(arg.text > 20)
-			{
-				keyInput.push_back(arg.text);
-#ifndef NOOGRE
-				NETCHAT.setEnterText("^7"+keyInput, true, true);
-#endif
-			}
-		}
-	}
 	return true;
 }
 
