@@ -3189,16 +3189,6 @@ bool RoRFrameListener::updateEvents(float dt)
 			//NETCHAT.toggleVisible(this);
 		}
 
-#ifdef USE_MYGUI
-		if(ingame_console)
-		{
-			if (INPUTENGINE.getEventBoolValueBounce(EV_COMMON_CONSOLEDISPLAY))
-			{
-				Console::get()->setVisible(!Console::get()->getVisible());
-			}
-		}
-#endif // MYGUI
-
 		if (INPUTENGINE.getEventBoolValueBounce(EV_COMMON_NETCHATMODE))
 		{
 			//NETCHAT.toggleMode(this);

@@ -43,11 +43,28 @@ class Console :
 	~Console();
 public:
 
+	typedef struct msg_t {
+		MyGUI::UString txt;
+		Ogre::String channel;
+	};
+
+	typedef struct tabctx_t {
+		Ogre::String name;
+		
+		MyGUI::TabItemPtr tab;
+		MyGUI::EditPtr txt;
+		
+		int mHistoryPosition;
+		std::vector<MyGUI::UString> mHistory;
+	};
+
 	void setVisible(bool _visible);
 	bool getVisible();
 
-	void print(const MyGUI::UString &text);
-	void printUTF(const Ogre::UTFString &text);
+	void print(const MyGUI::UString &text, Ogre::String channel);
+	void printUTF(const Ogre::UTFString &text, Ogre::String channel = "OgreLog");
+
+	void newChannel(Ogre::String name);
 
 	void select();
 
@@ -58,21 +75,25 @@ public:
 protected:
 	void eventButtonPressed(MyGUI::Widget* _sender, MyGUI::KeyCode _key, MyGUI::Char _char);
 	void eventCommandAccept(MyGUI::Edit* _sender);
+	void eventChangeTab(MyGUI::TabControl* _sender, size_t _index);
 
-	ATTRIBUTE_FIELD_WIDGET_NAME(Console, mLogEdit, "Log");
-	MyGUI::Edit* mLogEdit;
+	ATTRIBUTE_FIELD_WIDGET_NAME(Console, mTabControl, "TabControl");
+	MyGUI::TabControl* mTabControl;
+
 	ATTRIBUTE_FIELD_WIDGET_NAME(Console, mCommandEdit, "Command");
 	MyGUI::Edit* mCommandEdit;
 
 	bool mVisible;
 
 	pthread_mutex_t mWaitingMessagesMutex;
-	std::vector<MyGUI::UString> mWaitingMessages;
+	std::vector<msg_t> mWaitingMessages;
 
-	int mHistoryPosition;
-	std::vector<MyGUI::UString> mHistory;
+	std::map<Ogre::String , tabctx_t > tabs;
+
+	tabctx_t *current_tab;
 
 	void initIRC();
+	void addTab(Ogre::String name);
 };
 
 #endif // __CONSOLE_H__

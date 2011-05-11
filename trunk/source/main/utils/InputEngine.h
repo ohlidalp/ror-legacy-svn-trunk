@@ -552,7 +552,6 @@ protected:
 	bool mappingLoaded;
 
 	bool inputsChanged;
-	bool ingame_console;
 	int grabMode;
 
 	event_trigger_t newEvent();
