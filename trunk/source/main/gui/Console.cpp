@@ -30,7 +30,13 @@ along with Rigs of Rods.  If not, see <http://www.gnu.org/licenses/>.
 
 #include "libircclient.h"
 
-Console::Console()
+// hack, hacky but works well
+irc_session_t *s   = 0;
+irc_ctx_t     *ctx = 0;
+
+// class
+
+Console::Console() : net(0)
 {
 	initialiseByAttributes(this);
 
@@ -48,7 +54,6 @@ Console::Console()
 	mTabControl->eventTabChangeSelect   += MyGUI::newDelegate(this, &Console::eventChangeTab);
 
 	addTab("OgreLog");
-	addTab("IRCStatus");
 	addTab("IRCDebug");
 
 	// BUG: all editboxes visible on startup D:
@@ -65,8 +70,6 @@ Console::Console()
 	bool ogre_log = BSETTING("Enable Ingame Console");
 	if(ogre_log)
 		Ogre::LogManager::getSingleton().getDefaultLog()->addListener(this);
-
-	initIRC();
 }
 
 Console::~Console()
@@ -113,6 +116,9 @@ void Console::addTab(Ogre::String name)
 	t->txt->detachFromWidget();
 	t->txt->attachToWidget(t->tab);
 
+
+	t->txt->setSize(t->tab->getSize().width, t->tab->getSize().height);
+
 	//mTabControl->setItemData(t->tab, t);
 	t->tab->setUserData(t);
 	
@@ -154,16 +160,6 @@ void Console::print(const MyGUI::UString &_text, Ogre::String channel)
 void Console::printUTF(const Ogre::UTFString &_text, Ogre::String channel)
 {
 	this->print(_text.asWStr_c_str(), channel);
-}
-
-void Console::newChannel(Ogre::String name)
-{
-	pthread_mutex_lock(&mWaitingMessagesMutex);
-	msg_t t;
-	t.txt = "_NEWCHANNEL_";
-	t.channel = name; 
-	mWaitingMessages.push_back(t);
-	pthread_mutex_unlock(&mWaitingMessagesMutex);
 }
 
 #if MYGUI_PLATFORM == MYGUI_PLATFORM_WIN32
@@ -213,16 +209,10 @@ void Console::frameEntered(float _frame)
 	
 	for (std::vector<msg_t>::iterator iter = tmpWaitingMessages.begin(); iter != tmpWaitingMessages.end(); ++iter)
 	{
-		// hack to create a tab
-		if(iter->txt == "_NEWCHANNEL_")
-		{
-			addTab(iter->channel);
-			continue;
-		}
-
 		if(tabs.find(iter->channel) == tabs.end())
 		{
-			continue;
+			// add a new tab
+			addTab(iter->channel);
 		}
 
 		MyGUI::Edit* ec = tabs[iter->channel].txt;
@@ -289,6 +279,20 @@ void Console::eventCommandAccept(MyGUI::Edit* _sender)
 {
 	MyGUI::UString command = _sender->getCaption();
 
+
+	if(current_tab->name.substr(0, 2) == "##" && net)
+	{
+		// its a channel, send message there
+
+		// send via IRC
+		irc_cmd_msg (s, current_tab->name.substr(1).c_str(), command.asUTF8_c_str());
+
+		// add our message to the textbox
+		String nick  = net->getNickname(false);
+		MyGUI::UString msg = "<"+String(ctx->nick)+"> " + command;
+		Console::getInstance().print(msg, current_tab->name);
+	}
+/*
 	// special command
 	if(command == "hide")
 	{
@@ -302,8 +306,8 @@ void Console::eventCommandAccept(MyGUI::Edit* _sender)
 #endif //ANGELSCRIPT
 
 		//if(netChat) netChat->sendChat(chatline);
-
 	}
+*/
 	*current_tab->mHistory.rbegin() = command;
 	current_tab->mHistory.push_back(""); // new, empty last entry
 	current_tab->mHistoryPosition = current_tab->mHistory.size() - 1; // switch to the new line
@@ -328,13 +332,6 @@ int irc_output(char* params, irc_reply_data* hostd, void* conn)
 	return 0;
 }
 */
-
-typedef struct
-{
-	char 	* channel;
-	char 	* nick;
-
-} irc_ctx_t;
 
 void addlog (const char * fmt, ...)
 {
@@ -384,6 +381,8 @@ void event_connect (irc_session_t * session, const char * event, const char * or
 	dump_event (session, event, origin, params, count);
 
 	irc_cmd_join (session, ctx->channel, 0);
+	Sleep(200);
+	irc_cmd_join (session, ctx->channel1, 0);
 }
 
 void event_join (irc_session_t * session, const char * event, const char * origin, const char ** params, unsigned int count)
@@ -391,7 +390,7 @@ void event_join (irc_session_t * session, const char * event, const char * origi
 	dump_event (session, event, origin, params, count);
 	irc_cmd_user_mode (session, "+i");
 
-	Console::getInstance().newChannel( "#" + String(params[0]));
+	Console::getInstance().print("joined channel #" + String(params[0]),  "#" + String(params[0]));
 	//irc_cmd_msg (session, params[0], "Hi all");
 }
 
@@ -487,16 +486,37 @@ void event_privmsg (irc_session_t * session, const char * event, const char * or
 		params[0], params[1] );
 }
 
-void event_numeric (irc_session_t * session, unsigned int event, const char * origin, const char ** params, unsigned int count)
+void event_numeric (irc_session_t * session, unsigned int eventNum, const char * origin, const char ** params, unsigned int count)
 {
 	char buf[24];
-	sprintf (buf, "%d", event);
+	sprintf (buf, "%d", eventNum);
+
+	if(eventNum == 433)
+	{
+
+		irc_ctx_t * ctx = (irc_ctx_t *) irc_get_ctx (session);
+		ctx->nickRetry++;
+		sprintf(ctx->nick, "%s_", ctx->nick);
+
+		// now change the nick
+		char buf[1024] = "";
+		sprintf (buf, "NICK %s", ctx->nick);
+		irc_send_raw (session, buf);
+
+		// and rejoin the channels
+		irc_cmd_join (session, ctx->channel, 0);
+		Sleep(200);
+		irc_cmd_join (session, ctx->channel1, 0);
+		Sleep(200);
+	}
 
 	dump_event (session, buf, origin, params, count);
 }
 
-void *s_ircthreadstart(void* vid)
+
+void *s_ircthreadstart(void* arg)
 {
+	irc_ctx_t *ctx = (irc_ctx_t *)arg;
 #ifdef WIN32
 	WORD wVersionRequested = MAKEWORD (1, 1);
 	WSADATA wsaData;
@@ -509,8 +529,6 @@ void *s_ircthreadstart(void* vid)
 #endif //WIN32
 
 	irc_callbacks_t	callbacks;
-	irc_ctx_t ctx;
-	irc_session_t * s;
 
 	memset (&callbacks, 0, sizeof(callbacks));
 
@@ -543,12 +561,10 @@ void *s_ircthreadstart(void* vid)
 		return 0;
 	}
 
-	ctx.channel = "#rigsofrods";
-	ctx.nick    = "testuser";
 
-	irc_set_ctx (s, &ctx);
+	irc_set_ctx (s, ctx);
 
-	if ( irc_connect (s, "irc.rigsofrods.org", 6667, 0, "testuser", 0, 0) )
+	if ( irc_connect (s, "irc.rigsofrods.org", 6667, 0, ctx->nick, ctx->nick, ctx->nick) )
 	{
 		LOG ("IRC| Could not connect: " + String(irc_strerror (irc_errno(s))));
 		return 0;
@@ -558,11 +574,27 @@ void *s_ircthreadstart(void* vid)
 	return 0;
 }
 
-void Console::initIRC()
+void Console::initIRC(irc_ctx_t *ctx)
 {
 	pthread_t ircthread;
-	pthread_create(&ircthread, NULL, s_ircthreadstart, (void*)(0));
+	pthread_create(&ircthread, NULL, s_ircthreadstart, (void *)ctx);
 }
 
+void Console::setNetwork(Network *n)
+{
+	net = n;
+
+	// we need presistent memory, so alloc
+	ctx = (irc_ctx_t *)malloc(sizeof(irc_ctx_t));
+	ctx->channel  = "#rigsofrods";
+	ctx->channel1 = "#server1";
+	ctx->nickRetry=0;
+
+
+	sprintf(ctx->nick, net->getNickname(false).c_str());
+
+
+	initIRC(ctx);
+};
 
 #endif //MYGUI

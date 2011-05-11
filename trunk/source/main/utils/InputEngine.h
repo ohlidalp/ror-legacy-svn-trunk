@@ -195,7 +195,6 @@ enum events
 	EV_COMMON_PRESSURE_LESS, //!< decrease tire pressure (note: only very few trucks support this)
 	EV_COMMON_PRESSURE_MORE, //!< increase tire pressure (note: only very few trucks support this)
 	EV_COMMON_QUIT_GAME, //!< exit the game
-	EV_COMMON_SHOW_MENU, //!< show main menu
 	EV_COMMON_REPAIR_TRUCK, //!< repair truck to original condition
 	EV_COMMON_RESCUE_TRUCK, //!< teleport to rescue truck
 	EV_COMMON_RESET_TRUCK, //!< reset truck to original starting position

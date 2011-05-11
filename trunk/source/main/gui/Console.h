@@ -32,6 +32,17 @@ along with Rigs of Rods.  If not, see <http://www.gnu.org/licenses/>.
 
 #define NETCHAT Console::get()
 
+
+typedef struct irc_ctx_t
+{
+	char 	* channel;
+	char 	* channel1;
+	char 	nick[255];
+	int nickRetry;
+
+} irc_ctx_t;
+
+
 ATTRIBUTE_CLASS_LAYOUT(Console, "Console.layout");
 class Console :
 	public wraps::BaseLayout,
@@ -58,15 +69,16 @@ public:
 		std::vector<MyGUI::UString> mHistory;
 	};
 
+
 	void setVisible(bool _visible);
 	bool getVisible();
 
 	void print(const MyGUI::UString &text, Ogre::String channel);
 	void printUTF(const Ogre::UTFString &text, Ogre::String channel = "OgreLog");
 
-	void newChannel(Ogre::String name);
-
 	void select();
+
+	void setNetwork(Network *net);
 
 	// method from Ogre::LogListener
 	virtual void messageLogged( const Ogre::String& message, Ogre::LogMessageLevel lml, bool maskDebug, const Ogre::String &logName );
@@ -85,6 +97,8 @@ protected:
 
 	bool mVisible;
 
+	Network *net;
+
 	pthread_mutex_t mWaitingMessagesMutex;
 	std::vector<msg_t> mWaitingMessages;
 
@@ -92,7 +106,7 @@ protected:
 
 	tabctx_t *current_tab;
 
-	void initIRC();
+	void initIRC(irc_ctx_t *ctx);
 	void addTab(Ogre::String name);
 };
 

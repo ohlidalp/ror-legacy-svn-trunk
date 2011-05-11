@@ -732,12 +732,6 @@ eventInfo_t eventInfo[] = {
 		_L("exit the game")
 	},
 	{
-		"COMMON_SHOW_MENU",
-		EV_COMMON_SHOW_MENU,
-		"Keyboard EXPL+ALT+M",
-		_L("show the main menu")
-	},
-	{
 		"COMMON_REPAIR_TRUCK",
 		EV_COMMON_REPAIR_TRUCK,
 		"Keyboard BACK",
@@ -1935,7 +1929,8 @@ bool InputEngine::keyPressed( const OIS::KeyEvent &arg )
 bool InputEngine::keyReleased( const OIS::KeyEvent &arg )
 {
 #ifdef USE_MYGUI 
-	GUIManager::getSingleton().keyReleased(arg);
+	if(GUIManager::getSingleton().keyReleased(arg))
+		return true;
 #endif //MYGUI
 	//LOG("*** keyReleased");
 	if(keyState[arg.key] != 0)
@@ -1948,7 +1943,8 @@ bool InputEngine::keyReleased( const OIS::KeyEvent &arg )
 bool InputEngine::mouseMoved( const OIS::MouseEvent &arg )
 {
 #ifdef USE_MYGUI 
-	GUIManager::getSingleton().mouseMoved(arg);
+	if(GUIManager::getSingleton().mouseMoved(arg))
+		return true;
 #endif //MYGUI
 	//LOG("*** mouseMoved");
 	inputsChanged=true;
@@ -1959,7 +1955,8 @@ bool InputEngine::mouseMoved( const OIS::MouseEvent &arg )
 bool InputEngine::mousePressed( const OIS::MouseEvent &arg, OIS::MouseButtonID id )
 {
 #ifdef USE_MYGUI 
-	GUIManager::getSingleton().mousePressed(arg, id);
+	if(GUIManager::getSingleton().mousePressed(arg, id))
+		return true;
 #endif //MYGUI
 	//LOG("*** mousePressed");
 	inputsChanged=true;
@@ -1970,7 +1967,8 @@ bool InputEngine::mousePressed( const OIS::MouseEvent &arg, OIS::MouseButtonID i
 bool InputEngine::mouseReleased( const OIS::MouseEvent &arg, OIS::MouseButtonID id )
 {
 #ifdef USE_MYGUI 
-	GUIManager::getSingleton().mouseReleased(arg, id);
+	if(GUIManager::getSingleton().mouseReleased(arg, id))
+		return true;
 #endif //MYGUI
 	//LOG("*** mouseReleased");
 	inputsChanged=true;

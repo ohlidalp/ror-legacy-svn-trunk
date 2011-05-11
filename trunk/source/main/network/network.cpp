@@ -624,6 +624,10 @@ void Network::receivethreadstart()
 				SETTINGS.setSetting("Nickname", nickname);
 				// update auth status
 				myauthlevel = userdata.authstatus;
+
+				// now join the chat and so forth
+				Console::getInstance().setNetwork(this);
+
 			} else
 			{
 				user_info_t *cinfo = (user_info_t*) buffer;
