@@ -828,17 +828,25 @@ void GameScript::movePerson(Ogre::Vector3 vec)
 
 std::string GameScript::getCaelumTime()
 {
+#ifdef USE_CAELUM
 	return SkyManager::getSingleton().getPrettyTime();
+#else 
+	return "";
+#endif // USE_CAELUM
 }
 
 void GameScript::setCaelumTime(float value)
 {
+#ifdef USE_CAELUM
 	SkyManager::getSingleton().setTimeFactor(value);
+#endif // USE_CAELUM
 }
 
 bool GameScript::getCaelumAvailable()
 {
+#ifdef USE_CAELUM
 	return SkyManager::getSingletonPtr() != 0;
+#endif // USE_CAELUM
 }
 
 void GameScript::stopTimer()

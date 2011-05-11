@@ -233,9 +233,10 @@ void Envmap::update(Vector3 center, Beam *beam)
 		beam->setMeshVisibility(false);
 
 	// caelum needs to know that we changed the cameras
+#ifdef USE_CAELUM
 	if(SkyManager::getSingletonPtr())
 		SkyManager::getSingleton().notifyCameraChanged(camera[round]);
-
+#endif // USE_CAELUM
 	rt[round]->update();
 
 	if(beam && togglemeshes)
