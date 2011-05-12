@@ -49,7 +49,6 @@ public:
 	int pull(std::vector < T > &res)
 	{
 		int results = 0;
-		std::vector<msg_t> tmpWaitingMessages;
 		pthread_mutex_lock(&lock);
 		res = store;
 		results = res.size();

@@ -931,7 +931,9 @@ RoRFrameListener::RoRFrameListener(AppState *parentState, RenderWindow* win, Cam
 	Console::getInstance();
 
 	// print some log message so we know angelscript is alive :)
+#ifdef USE_ANGELSCRIPT
 	ScriptEngine::getSingleton().scriptLog->logMessage("ScriptEngine running");
+#endif // USE_ANGELSCRIPT
 #endif //MYGUI
 
 	// setup particle manager

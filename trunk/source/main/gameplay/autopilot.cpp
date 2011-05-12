@@ -348,14 +348,14 @@ void Autopilot::getRadioFix(localizer_t *localizers, int free_localizer, float *
 					Vector3 normv=(localizers[i].rotation*Vector3::UNIT_Z).crossProduct(Vector3::UNIT_Y);
 					Plane vplane=Plane(normv, 0);
 					float glideslope=4; //4 degree is the norm
-					Vector3 posd=vplane.projectVector(position-localizers[i].position);
-					float d=posd.length(); if (d<0.01) d=0.01;
-					float dir=90.0;
-					d=posd.y/d;
-					if (d>=1.0) dir=90.0; else if (d<=-1.0) dir=-90.0; else dir=asin(d)*57.295779513082;
-					float diff=dir-glideslope;
+					Vector3 posd2=vplane.projectVector(position-localizers[i].position);
+					float d=posd2.length(); if (d<0.01) d=0.01;
+					float dir2=90.0;
+					d=posd2.y/d;
+					if (d>=1.0) dir2=90.0; else if (d<=-1.0) dir2=-90.0; else dir2=asin(d)*57.295779513082;
+					float diff2=dir2-glideslope;
 					closest_vdist=dist;
-					closest_vangle=diff;
+					closest_vangle=diff2;
 				}
 			}
 		}

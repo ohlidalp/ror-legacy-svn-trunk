@@ -303,9 +303,9 @@ void SoundScriptManager::parseScript(DataStreamPtr& stream, const String& groupN
 				{
 					// Attribute
 					// Split params on space
-					Ogre::StringVector vecparams = StringUtil::split(line, "\t ", 0);
+					Ogre::StringVector veclineparams = StringUtil::split(line, "\t ", 0);
 
-					if (!sst->setParameter(vecparams))
+					if (!sst->setParameter(veclineparams))
 					{
 						LOG("Bad SoundScript attribute line: '"
 							+ line + "' in " + stream->getName());

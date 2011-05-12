@@ -98,6 +98,8 @@ int showWebError(Ogre::String title, Ogre::String err, Ogre::String url)
 		mbstowcs(ws1, tmp, 255);
 		strncpy(tmp2, url.c_str(), 255);
 		mbstowcs(ws2, tmp2, 255);
+		tmp[255] = 0; // force zero termination
+		tmp2[255] = 0;
 		ShellExecuteW(NULL, ws1, ws2, NULL, NULL, SW_SHOWNORMAL);
 	}
 #elif OGRE_PLATFORM == OGRE_PLATFORM_LINUX

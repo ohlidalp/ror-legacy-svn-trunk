@@ -40,8 +40,9 @@ RigsOfRods::RigsOfRods(Ogre::String name, Ogre::String hwnd, Ogre::String mainhw
 RigsOfRods::~RigsOfRods()
 {
 	delete stateManager;
-    delete OgreFramework::getSingletonPtr();
-
+	delete OgreFramework::getSingletonPtr();
+	// TODO: delete contentmanager
+	
 }
 
 void RigsOfRods::go(void)

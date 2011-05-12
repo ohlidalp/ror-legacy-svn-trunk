@@ -1717,7 +1717,7 @@ bool InputEngine::setup(Ogre::String hwnd, bool capture, bool capturemouse, int 
 		//windowResized(win);
 
 		// set Callbacks
-		if(mKeyboard && mKeyboard)
+		if(mKeyboard)
 			mKeyboard->setEventCallback(this);
 		if(capturemouse && mMouse)
 		{
