@@ -177,7 +177,7 @@ String ChatSystem::getColouredName(String nick, int auth)
 	for(unsigned int i=0; i<nick.size(); i++)
 		if(nick[i] == '#') nick[i] = 'X';
 
-	if(auth & AUTH_NONE)   col = "#c9c9c9"; // grey
+	if(auth == AUTH_NONE)   col = "#c9c9c9"; // grey
 	if(auth & AUTH_BOT )   col = "#0000c9"; // blue
 	if(auth & AUTH_RANKED) col = "#00c900"; // green
 	if(auth & AUTH_MOD)    col = "#c90000"; // red

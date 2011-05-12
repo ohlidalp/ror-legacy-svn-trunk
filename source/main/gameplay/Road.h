@@ -47,6 +47,7 @@ typedef struct _RoadType
 class Road
 {
 protected:
+	static const int MAX_RTYPES = 10;
 //	RoadElement_t *roadlink;
 	float ppitch;
 	float pturn;
@@ -57,7 +58,7 @@ protected:
 	SceneManager *mSceneMgr;
 //	Entity *te;
 	SceneNode *tenode;
-	RoadType_t rtypes[10];
+	RoadType_t rtypes[MAX_RTYPES];
 	int free_rtype;
 	int cur_rtype;
 

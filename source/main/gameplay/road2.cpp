@@ -193,7 +193,7 @@ void Road2::addBlock(Vector3 pos, Quaternion rot, int type, float width, float b
 			middle = lpts[0] - ((lpts[0] + (pts[1] - lpts[0]) / 2) -
 							 (lpts[7] + (pts[6] - lpts[7]) / 2)) * sidefactor;
 			float len = middle.y - hfinder->getHeightAt(middle.x, middle.z) + 5;
-			float width = len / 30;
+			width = len / 30;
 
 			if(pillartype == 2 && len > 20)
 				// no over-long pillars

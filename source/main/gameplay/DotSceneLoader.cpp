@@ -26,6 +26,8 @@ along with Rigs of Rods.  If not, see <http://www.gnu.org/licenses/>.
 #pragma warning(disable:4390)
 #pragma warning(disable:4305)
 
+// problems to care about:
+// dotsceneloader.cpp(46): warning C6262: Function uses '65656' bytes of stack: exceeds /analyze:stacksize'16384'. Consider moving some data to heap
 
 DotSceneLoader::DotSceneLoader() : mSceneMgr(0), mTerrainGroup(0) 
 {

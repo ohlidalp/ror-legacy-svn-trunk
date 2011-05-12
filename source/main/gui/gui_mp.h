@@ -71,6 +71,7 @@ protected:
 
 	Ogre::Camera *mCamera;
 	int lineheight;
+	client_t *clients;
 
 	static const int sidebarWidth = 250;
 

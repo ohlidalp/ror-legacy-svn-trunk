@@ -43,9 +43,14 @@ GUI_Multiplayer& GUI_Multiplayer::getSingleton(void)
 	assert( ms_Singleton );  return ( *ms_Singleton );
 }
 
-GUI_Multiplayer::GUI_Multiplayer(Network *_net, Ogre::Camera *cam) : net(_net), msgwin(0), mCamera(cam)
+GUI_Multiplayer::GUI_Multiplayer(Network *_net, Ogre::Camera *cam) : net(_net), msgwin(0), mCamera(cam), clients(0)
 {
 	lineheight=16;
+	
+	
+	// allocate some buffers
+	clients = (client_t *)calloc(MAX_PEERS,sizeof(client_t));
+	
 
 	// tooltip window
 	tooltipPanel = MyGUI::Gui::getInstance().createWidget<MyGUI::Widget>("PanelSkin", 0, 0, 200, 20,  MyGUI::Align::Default, "ToolTip");
@@ -159,6 +164,11 @@ GUI_Multiplayer::GUI_Multiplayer(Network *_net, Ogre::Camera *cam) : net(_net), 
 
 GUI_Multiplayer::~GUI_Multiplayer()
 {
+	if(clients)
+	{
+		free(clients);
+		clients = 0;
+	}
 }
 
 void GUI_Multiplayer::updateSlot(player_row_t *row, user_info_t *c, bool self)
@@ -292,7 +302,6 @@ void GUI_Multiplayer::updateSlot(player_row_t *row, user_info_t *c, bool self)
 
 int GUI_Multiplayer::update()
 {
-	client_t clients[MAX_PEERS];
 	int slotid = 0;
 	
 	MyGUI::IntSize gui_area = MyGUI::RenderManager::getInstance().getViewSize();

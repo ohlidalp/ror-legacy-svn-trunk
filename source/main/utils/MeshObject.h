@@ -153,6 +153,7 @@ protected:
 	void postProcess()
 	{
 		loaded=true;
+		if(!sceneNode) return;
 
 		if(enableSimpleMaterial)
 			MaterialFunctionMapper::replaceSimpleMeshMaterials(ent, simpleMatColour);

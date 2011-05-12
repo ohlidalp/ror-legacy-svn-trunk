@@ -1275,10 +1275,10 @@ MyDialog::MyDialog(const wxString& title, MyApp *_app) : wxDialog(NULL, wxID_ANY
 	wxSizer *sizer_net = new wxBoxSizer(wxVERTICAL);
 
 	wxPanel *panel_net_top = new wxPanel(netPanel);
-    network_enable=new wxCheckBox(panel_net_top, -1, _("Enable network mode"), wxPoint(5, 5));
+	network_enable=new wxCheckBox(panel_net_top, -1, _("Enable network mode"), wxPoint(5, 5));
 	network_enable->SetToolTip(_("This switches RoR into network mode.\nBe aware that many features are not available in network mode.\nFor example, you not be able to leave your vehicle or hook objects."));
 
-    dText = new wxStaticText(panel_net_top, -1, _("Nickname: "), wxPoint(230,7));
+	dText = new wxStaticText(panel_net_top, -1, _("Nickname: "), wxPoint(230,7));
 	nickname=new wxTextCtrl(panel_net_top, -1, _("Anonymous"), wxPoint(300, 2), wxSize(170, -1));
 	nickname->SetToolTip(_("Your network name. Maximum 20 Characters."));
 
@@ -1593,14 +1593,14 @@ void MyDialog::updateRendersystems(Ogre::RenderSystem *rs)
 	{
 		wxString warning = _("Unable to load the render systems. Please check if all required files are there and the plugins.cfg file is correct.\nThis is a fatal error and the game will not start.");
 		wxString caption = _("Error: no rendersystems found");
-		wxMessageDialog *w = new wxMessageDialog(this, warning, caption, wxOK, wxDefaultPosition);
-		w->ShowModal();
-		delete(w);
+		wxMessageDialog *msg_dialog = new wxMessageDialog(this, warning, caption, wxOK, wxDefaultPosition);
+		msg_dialog->ShowModal();
+		delete(msg_dialog);
 		return;
 	}
 	Ogre::ConfigOptionMap opts = rs->getConfigOptions();
 	Ogre::ConfigOptionMap::iterator optIt = opts.begin();
-	for(Ogre::ConfigOptionMap::iterator optIt=opts.begin(); optIt!=opts.end(); optIt++)
+	for(optIt=opts.begin(); optIt!=opts.end(); optIt++)
 	{
 		// filter out unwanted or disabled options
 		if(filterOptions.find(optIt->first) != filterOptions.end())
@@ -1636,7 +1636,9 @@ void MyDialog::updateRendersystems(Ogre::RenderSystem *rs)
 			if(optIt->first == "Video Mode")
 			{
 				int res_x=-1, res_y=-1, res_d=-1;
-				sscanf(valIt->c_str(), "%d x %d @ %d-bit colour", &res_x, &res_y, &res_d);
+				int res = sscanf(valIt->c_str(), "%d x %d @ %d-bit colour", &res_x, &res_y, &res_d);
+				if(res != 3)
+				  continue;
 				
 				// discard low resolutions and 16 bit modes
 				if(res_d != -1 && res_d < 32)
@@ -2084,7 +2086,12 @@ void MyDialog::OnButPlay(wxCommandEvent& event)
 	si.wShowWindow  =   SW_SHOWNORMAL;
 
 	char path[2048];
-	getcwd(path, 2048);
+	if(getcwd(path, 2048) != path)
+	{
+		// error
+		return;
+	}
+	  
 	strcat(path, "\\RoR.exe");
 	wxLogStatus(wxT("using RoR: ") + wxString(path));
 
@@ -2092,7 +2099,17 @@ void MyDialog::OnButPlay(wxCommandEvent& event)
 	LPWSTR wpath = new wchar_t[buffSize];
 	MultiByteToWideChar(CP_ACP, 0, path, buffSize, wpath, buffSize);
 
-	CreateProcess(NULL, wpath, NULL, NULL, false, NORMAL_PRIORITY_CLASS, NULL, NULL, &si, &pi);
+	if(!CreateProcess(NULL, wpath, NULL, NULL, false, NORMAL_PRIORITY_CLASS, NULL, NULL, &si, &pi))
+	{
+		// error starting
+		return;
+	}
+	// intentionally leak the process handle so the
+	// process object is not destroyed
+	// do NOT wait for the process to finish
+	// close handle properly to prevent the warning
+	//CloseHandle( pi.hProcess );
+	//CloseHandle( pi.hThread );	
 #endif
 #if OGRE_PLATFORM == OGRE_PLATFORM_LINUX
 	execl("./RoR.bin", "", (char *) 0);
@@ -2126,7 +2143,11 @@ void MyDialog::updateRoR()
 
 	// get paths to update.exe
 	char path[2048];
-	getcwd(path, 2048);
+	if(getcwd(path, 2048) != path)
+	{
+		//error
+		return;
+	}
 	strcat(path, "\\updater.exe");
 	wxLogStatus(wxT("using updater: ") + wxString(path));
 
@@ -2134,7 +2155,11 @@ void MyDialog::updateRoR()
 	LPWSTR wpath = new wchar_t[buffSize];
 	MultiByteToWideChar(CP_ACP, 0, path, buffSize, wpath, buffSize);
 
-	getcwd(path, 2048);
+	if(getcwd(path, 2048) != path)
+	{
+		//error
+		return;
+	}
 	buffSize = (int)strlen(path) + 1;
 	LPWSTR cwpath = new wchar_t[buffSize];
 	MultiByteToWideChar(CP_ACP, 0, path, buffSize, cwpath, buffSize);
@@ -2346,7 +2371,8 @@ void MyDialog::OnButRegenCache(wxCommandEvent& event)
 	si.wShowWindow  =   SW_SHOWNORMAL;
 
 	char path[2048];
-	getcwd(path, 2048);
+	if(getcwd(path, 2048) != path)
+		return;
 	strcat(path, "\\RoR.exe -checkcache");
 	wxLogStatus(wxT("executing RoR: ") + wxString(path));
 
@@ -2354,7 +2380,13 @@ void MyDialog::OnButRegenCache(wxCommandEvent& event)
 	LPWSTR wpath = new wchar_t[buffSize];
 	MultiByteToWideChar(CP_ACP, 0, path, buffSize, wpath, buffSize);
 
-	CreateProcess(NULL, wpath, NULL, NULL, false, NORMAL_PRIORITY_CLASS, NULL, NULL, &si, &pi);
+	if(!CreateProcess(NULL, wpath, NULL, NULL, false, NORMAL_PRIORITY_CLASS, NULL, NULL, &si, &pi))
+	      return;
+	
+	// wait until child process exits
+	WaitForSingleObject( pi.hProcess, INFINITE );
+	CloseHandle( pi.hProcess );
+	CloseHandle( pi.hThread );	
 #endif
 #if OGRE_PLATFORM == OGRE_PLATFORM_LINUX
 	execl("./RoR.bin -checkcache", "", (char *) 0);

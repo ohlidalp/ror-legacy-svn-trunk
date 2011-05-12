@@ -1245,8 +1245,8 @@ void CacheSystem::addFile(String filename, String archiveType, String archiveDir
 			entry.usagecounter=0;
 			entry.deleted = false;
 			String basen;
-			String ext;
-			StringUtil::splitBaseFilename(entry.fname, basen, ext);
+			String fnextension;
+			StringUtil::splitBaseFilename(entry.fname, basen, fnextension);
 			entry.minitype = detectFilesMiniType(basen+"-mini");
 			entry.hash="none";
 			entry.changedornew=true;

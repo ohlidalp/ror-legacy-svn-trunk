@@ -75,9 +75,8 @@ public:
 		// now do the fancy stuff ;)
 
 		// 0. allocate enough buffer
-		char databuf[32768];
-		memset(databuf, 0, 32767);
-		char *ptr = databuf;
+		uchar *databuf = OGRE_ALLOC_T(uchar, 32768, MEMCATEGORY_RENDERSYS);
+		char *ptr = (char *)databuf;
 		// header
 		long dsize = 0;
 		int w = sprintf(ptr, "RORED\n");
@@ -87,15 +86,15 @@ public:
 		// 1. convert the std::map to something properly
 		for(std::map<Ogre::String, Ogre::String>::iterator it = map.begin(); it != map.end(); it++)
 		{
-			int w = sprintf(ptr, "%s:%s\n", it->first.c_str(), it->second.c_str());
-			ptr += w;
-			dsize += w;
+			int w2 = sprintf(ptr, "%s:%s\n", it->first.c_str(), it->second.c_str());
+			ptr += w2;
+			dsize += w2;
 		}
 
 		// now buffer ready, put it into the image
 		uchar *ptri = data;
 		// set data pointer to the start again
-		ptr = databuf;
+		ptr = (char *)databuf;
 		int bc = 7;
 		for(long b = 0; b < isize && b < dsize * 8 + 40; b++, ptri++) // 40 = 5 zero bytes
 		{
@@ -119,6 +118,7 @@ public:
 		img.save(filename);
 
 		OGRE_FREE(data, MEMCATEGORY_RENDERSYS);
+		OGRE_FREE(databuf, MEMCATEGORY_RENDERSYS);
 	}
 };
 #endif //AdvancedScreen_H__

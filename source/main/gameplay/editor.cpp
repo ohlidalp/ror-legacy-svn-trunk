@@ -42,6 +42,7 @@ Editor::Editor(SceneManager *scm, RoRFrameListener *efl)
 	while (!feof(fd))
 	{
 		int res = fscanf(fd," %[^\n]",line);
+		line[1023] = 0; // force line termination
 		if (line[0]==';')
 		{
 			continue;
