@@ -60,7 +60,6 @@ void GameState::resume()
     LOG("Resuming GameState...");
 
     OgreFramework::getSingletonPtr()->m_pViewport->setCamera(m_pCamera);
-    m_bQuit = false;
 }
 
 void GameState::exit()

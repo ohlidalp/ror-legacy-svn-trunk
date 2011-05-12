@@ -18,17 +18,17 @@ You should have received a copy of the GNU General Public License
 along with Rigs of Rods.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-#ifndef GAME_STATE_HPP
-#define GAME_STATE_HPP
+#ifndef LOBBY_STATE_HPP
+#define LOBBY_STATE_HPP
 
 #include "RoRPrerequisites.h"
 #include "AppState.h"
 
-class GameState : public AppState
+class LobbyState : public AppState
 {
 public:
-	GameState();
-	DECLARE_APPSTATE_CLASS(GameState)
+	LobbyState();
+	DECLARE_APPSTATE_CLASS(LobbyState)
 
 	void enter();
 	void createScene();
@@ -40,4 +40,4 @@ public:
 	void resized(Ogre::RenderWindow *r);
 };
 
-#endif //GAME_STATE_HPP
+#endif //LOBBY_STATE_HPP

@@ -17,27 +17,28 @@ GNU General Public License for more details.
 You should have received a copy of the GNU General Public License
 along with Rigs of Rods.  If not, see <http://www.gnu.org/licenses/>.
 */
+#ifdef USE_MYGUI 
 
-#ifndef GAME_STATE_HPP
-#define GAME_STATE_HPP
+#include "LobbyGUI.h"
+#include "ScriptEngine.h"
+#include "InputEngine.h"
+#include "OgreLogManager.h"
 
-#include "RoRPrerequisites.h"
-#include "AppState.h"
+#include "Settings.h"
+#include "RoRFrameListener.h"
+#include "network.h"
 
-class GameState : public AppState
+#include "libircclient.h"
+
+// class
+
+LobbyGUI::LobbyGUI()
 {
-public:
-	GameState();
-	DECLARE_APPSTATE_CLASS(GameState)
+	initialiseByAttributes(this);
+}
 
-	void enter();
-	void createScene();
-	void exit();
-	bool pause();
-	void resume();
+LobbyGUI::~LobbyGUI()
+{
+}
 
-	void update(double timeSinceLastFrame);
-	void resized(Ogre::RenderWindow *r);
-};
-
-#endif //GAME_STATE_HPP
+#endif //USE_MYGUI 
