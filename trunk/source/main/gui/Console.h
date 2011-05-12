@@ -26,9 +26,10 @@ along with Rigs of Rods.  If not, see <http://www.gnu.org/licenses/>.
 #include "Singleton.h"
 #include "mygui/BaseLayout.h"
 
+#include "InterThreadStoreVector.h"
+
 #include <OgreLog.h>
 #include <OgreUTFString.h>
-#include <pthread.h>
 
 #define NETCHAT Console::get()
 
@@ -43,22 +44,23 @@ typedef struct irc_ctx_t
 } irc_ctx_t;
 
 
+typedef struct msg_t {
+	MyGUI::UString txt;
+	Ogre::String channel;
+} msg_t;
+
+
 ATTRIBUTE_CLASS_LAYOUT(Console, "Console.layout");
 class Console :
 	public wraps::BaseLayout,
 	public Singleton2<Console>,
-	public Ogre::LogListener
+	public Ogre::LogListener,
+	public InterThreadStoreVector<msg_t>
 {
 	friend class Singleton2<Console>;
 	Console();
 	~Console();
 public:
-
-	typedef struct msg_t {
-		MyGUI::UString txt;
-		Ogre::String channel;
-	} msg_t;
-
 	typedef struct tabctx_t {
 		Ogre::String name;
 		
@@ -98,9 +100,6 @@ protected:
 	bool mVisible;
 
 	Network *net;
-
-	pthread_mutex_t mWaitingMessagesMutex;
-	std::vector<msg_t> mWaitingMessages;
 
 	std::map<Ogre::String , tabctx_t > tabs;
 

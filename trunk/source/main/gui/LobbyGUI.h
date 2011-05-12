@@ -17,27 +17,42 @@ GNU General Public License for more details.
 You should have received a copy of the GNU General Public License
 along with Rigs of Rods.  If not, see <http://www.gnu.org/licenses/>.
 */
+#ifdef USE_MYGUI 
 
-#ifndef GAME_STATE_HPP
-#define GAME_STATE_HPP
+#ifndef LOBBYGUI_H__
+#define LOBBYGUI_H__
 
 #include "RoRPrerequisites.h"
-#include "AppState.h"
+#include "Singleton.h"
+#include "mygui/BaseLayout.h"
 
-class GameState : public AppState
+#include <OgreLog.h>
+#include <OgreUTFString.h>
+
+ATTRIBUTE_CLASS_LAYOUT(LobbyGUI, "Lobby.layout");
+class LobbyGUI :
+	public wraps::BaseLayout,
+	public Singleton2<LobbyGUI>,
+	public Ogre::LogListener
 {
+	friend class Singleton2<LobbyGUI>;
+	LobbyGUI();
+	~LobbyGUI();
 public:
-	GameState();
-	DECLARE_APPSTATE_CLASS(GameState)
 
-	void enter();
-	void createScene();
-	void exit();
-	bool pause();
-	void resume();
+	void setVisible(bool _visible);
+	bool getVisible();
 
-	void update(double timeSinceLastFrame);
-	void resized(Ogre::RenderWindow *r);
+	void select();
+
+	void setNetwork(Network *net);
+
+	// print waiting messages
+	void frameEntered(float _frame);
+protected:
 };
 
-#endif //GAME_STATE_HPP
+#endif // LOBBYGUI_H__
+
+#endif //MYGUI
+

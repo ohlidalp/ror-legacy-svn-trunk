@@ -63,8 +63,6 @@ Console::Console() : net(0)
 
 	setVisible(true);
 
-	pthread_mutex_init(&mWaitingMessagesMutex, NULL);
-
 	MyGUI::Gui::getInstance().eventFrameStart += MyGUI::newDelegate( this, &Console::frameEntered );
 
 	bool ogre_log = BSETTING("Enable Ingame Console");
@@ -76,8 +74,6 @@ Console::~Console()
 {
 	Ogre::LogManager::getSingleton().getDefaultLog()->removeListener(this);
 	MyGUI::Gui::getInstance().eventFrameStart -= MyGUI::newDelegate( this, &Console::frameEntered );
-
-	pthread_mutex_destroy(&mWaitingMessagesMutex);
 }
 
 void Console::addTab(Ogre::String name)
@@ -149,12 +145,10 @@ bool Console::getVisible()
 
 void Console::print(const MyGUI::UString &_text, Ogre::String channel)
 {
-	pthread_mutex_lock(&mWaitingMessagesMutex);
 	msg_t t;
 	t.txt = _text;
 	t.channel = channel; 
-	mWaitingMessages.push_back(t);
-	pthread_mutex_unlock(&mWaitingMessagesMutex);
+	push(t);
 }
 
 void Console::printUTF(const Ogre::UTFString &_text, Ogre::String channel)
@@ -199,12 +193,9 @@ void Console::frameEntered(float _frame)
 	// only copy the content and then unlock again
 	// this prevents that loggers are hung due to time consuming iteration over it
 	std::vector<msg_t> tmpWaitingMessages;
-	pthread_mutex_lock(&mWaitingMessagesMutex);
-	tmpWaitingMessages = mWaitingMessages;
-	mWaitingMessages.clear();
-	pthread_mutex_unlock(&mWaitingMessagesMutex);
+	int results = pull(tmpWaitingMessages);
 
-	if (tmpWaitingMessages.empty())
+	if (results == 0)
 		return;
 	
 	for (std::vector<msg_t>::iterator iter = tmpWaitingMessages.begin(); iter != tmpWaitingMessages.end(); ++iter)

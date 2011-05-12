@@ -22,6 +22,7 @@ along with Rigs of Rods.  If not, see <http://www.gnu.org/licenses/>.
 #include <Ogre.h>
 
 #include "GameState.h"
+#include "LobbyState.h"
 #include "Settings.h"
 #include "ContentManager.h"
 
@@ -57,17 +58,19 @@ void RigsOfRods::go(void)
 	// now add the game states
 	stateManager = new AppStateManager();
 
-	GameState::create(stateManager,  "GameState");
+	Ogre::String state = "GameState"; //"LobbyState"
+
+	GameState::create(stateManager,  state);
 
 	// select the first one
 	if(embedded)
 	{
 		LOG("Rigs of Rods embedded initialized!");
-		stateManager->changeAppState(stateManager->findByName("GameState"));
+		stateManager->changeAppState(stateManager->findByName(state));
 	} else
 	{
 		LOG("Rigs of Rods main loop starting ...");
-		stateManager->start(stateManager->findByName("GameState"));
+		stateManager->start(stateManager->findByName(state));
 	}
 }
 
