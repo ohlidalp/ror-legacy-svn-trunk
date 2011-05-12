@@ -211,7 +211,7 @@ int main()
             {
                 printf("%s",start[d]);
 
-                for(int k=0;k<t;k++)
+                for(k=0;k<t;k++)
                     printf("%stypename T%d",(k||(d>0))?",":"",k+1);
 
                 printf(">\n");
