@@ -3357,4 +3357,38 @@ void InputEngine::initAllKeys()
 	allkeys["Z"] = KC_Z;
 }
 
+void InputEngine::setupDefault(Ogre::RenderWindow *win, Ogre::String inputhwnd)
+{
+	// setup input
+	int inputGrabMode=GRAB_ALL;
 
+	if(SSETTING("Input Grab") == "All")
+		inputGrabMode = GRAB_ALL;
+	else if(SSETTING("Input Grab") == "Dynamically")
+		inputGrabMode = GRAB_DYNAMICALLY;
+	else if(SSETTING("Input Grab") == "None")
+		inputGrabMode = GRAB_NONE;
+
+	if(!OgreFramework::getSingleton().isEmbedded())
+	{
+
+		// start input engine
+		size_t hWnd = 0;
+		win->getCustomAttribute("WINDOW", &hWnd);
+
+		INPUTENGINE.setup(TOSTRING(hWnd), true, true, inputGrabMode);
+	} else
+	{
+
+	#if OGRE_PLATFORM == OGRE_PLATFORM_LINUX
+		size_t windowHnd = 0;
+		std::ostringstream windowHndStr; 
+		win->getCustomAttribute("GLXWINDOW", &windowHnd ); 
+		windowHndStr << windowHnd; 
+		printf("#### GLXWINDOW = %s\n", windowHndStr.str().c_str());
+		INPUTENGINE.setup(windowHndStr.str(), true, true, GRAB_NONE);
+	#else
+		INPUTENGINE.setup(inputhwnd, true, true, GRAB_NONE);
+	#endif
+	}
+}

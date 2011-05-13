@@ -24,6 +24,7 @@ along with Rigs of Rods.  If not, see <http://www.gnu.org/licenses/>.
 
 #include "RoRPrerequisites.h"
 #include "Singleton.h"
+#include "IRCWrapper.h"
 #include "mygui/BaseLayout.h"
 
 #include <OgreLog.h>
@@ -33,7 +34,7 @@ ATTRIBUTE_CLASS_LAYOUT(LobbyGUI, "Lobby.layout");
 class LobbyGUI :
 	public wraps::BaseLayout,
 	public Singleton2<LobbyGUI>,
-	public Ogre::LogListener
+	public IRCWrapper
 {
 	friend class Singleton2<LobbyGUI>;
 	LobbyGUI();
@@ -49,7 +50,26 @@ public:
 
 	// print waiting messages
 	void frameEntered(float _frame);
+
+	void update(float dt);
+
 protected:
+	ATTRIBUTE_FIELD_WIDGET_NAME(LobbyGUI, mainWindow, "_Main");
+	MyGUI::Window* mainWindow;
+
+	ATTRIBUTE_FIELD_WIDGET_NAME(LobbyGUI, chatWindow, "chatWindow");
+	MyGUI::EditBox* chatWindow;
+
+	ATTRIBUTE_FIELD_WIDGET_NAME(LobbyGUI, commandBox, "commandBox");
+	MyGUI::EditBox* commandBox;
+
+	ATTRIBUTE_FIELD_WIDGET_NAME(LobbyGUI, playerList, "playerList");
+	MyGUI::ScrollView* playerList;
+	
+	void processIRCEvent(message_t &msg);
+	void addTextToChatWindow(std::string);
+
+	void eventCommandAccept(MyGUI::Edit* _sender);
 };
 
 #endif // LOBBYGUI_H__

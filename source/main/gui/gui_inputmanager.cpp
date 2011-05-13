@@ -110,13 +110,17 @@ bool GUIInputManager::mouseMoved(const OIS::MouseEvent& _arg)
 	// fallback, handle by GUI, then by SceneMouse
 	if(!MyGUI::InputManager::getInstance().injectMouseMove(mCursorX, mCursorY, _arg.state.Z.abs))
 	{
-		// not handled by gui
-		bool fixed = SceneMouse::getSingleton().mouseMoved(_arg);
-		if(fixed)
+		SceneMouse *sm = SceneMouse::getSingletonPtr();
+		if(sm)
 		{
-			// you would really need to "fix" the actual mouse position, see
-			// http://www.wreckedgames.com/forum/index.php?topic=1104.0
-			return true;
+			// not handled by gui
+			bool fixed = sm->mouseMoved(_arg);
+			if(fixed)
+			{
+				// you would really need to "fix" the actual mouse position, see
+				// http://www.wreckedgames.com/forum/index.php?topic=1104.0
+				return true;
+			}
 		}
 
 	}
@@ -124,7 +128,8 @@ bool GUIInputManager::mouseMoved(const OIS::MouseEvent& _arg)
 	mCursorX = _arg.state.X.abs;
 	mCursorY = _arg.state.Y.abs;
 
-	GUI_MainMenu::getSingleton().updatePositionUponMousePosition(mCursorX, mCursorY);
+	GUI_MainMenu *menu =GUI_MainMenu::getSingletonPtr();
+	if(menu) menu->updatePositionUponMousePosition(mCursorX, mCursorY);
 
     checkPosition();
     return true;
@@ -137,7 +142,8 @@ bool GUIInputManager::mousePressed(const OIS::MouseEvent& _arg, OIS::MouseButton
 	// fallback, handle by GUI, then by SceneMouse
     if(!MyGUI::InputManager::getInstance().injectMousePress(mCursorX, mCursorY, MyGUI::MouseButton::Enum(_id)))
 	{
-		return SceneMouse::getSingleton().mousePressed(_arg, _id);
+		SceneMouse *sm = SceneMouse::getSingletonPtr();
+		if(sm) return sm->mousePressed(_arg, _id);
 	}
     return true;
 }
@@ -149,7 +155,8 @@ bool GUIInputManager::mouseReleased(const OIS::MouseEvent& _arg, OIS::MouseButto
 	// fallback, handle by GUI, then by SceneMouse
 	if(!MyGUI::InputManager::getInstance().injectMouseRelease(mCursorX, mCursorY, MyGUI::MouseButton::Enum(_id)))
 	{
-		return SceneMouse::getSingleton().mouseReleased(_arg, _id);
+		SceneMouse *sm = SceneMouse::getSingletonPtr();
+		if(sm) return sm->mouseReleased(_arg, _id);
 	}
     return true;
 }
@@ -179,7 +186,8 @@ bool GUIInputManager::keyPressed(const OIS::KeyEvent& _arg)
 	// fallback, handle by GUI, then by SceneMouse
 	if(!MyGUI::InputManager::getInstance().injectKeyPress(key, text))
 	{
-		return SceneMouse::getSingleton().keyPressed(_arg);
+		SceneMouse *sm = SceneMouse::getSingletonPtr();
+		if(sm) return sm->keyPressed(_arg);
 	} else
 	{
 		return true;
@@ -192,7 +200,8 @@ bool GUIInputManager::keyReleased(const OIS::KeyEvent& _arg)
 	// fallback, handle by GUI, then by SceneMouse
     if(!MyGUI::InputManager::getInstance().injectKeyRelease(MyGUI::KeyCode::Enum(_arg.key)))
 	{
-		return SceneMouse::getSingleton().keyReleased(_arg);
+		SceneMouse *sm = SceneMouse::getSingletonPtr();
+		if(sm) return sm->keyReleased(_arg);
 	}
     return true;
 }
@@ -230,8 +239,9 @@ void GUIInputManager::activateGUI()
 {
 	lastMouseMoveTime->reset();
 	MyGUI::PointerManager::getInstance().setVisible(true);
-	GUI_MainMenu::getSingleton().setVisible(true);
 
+	GUI_MainMenu *menu =GUI_MainMenu::getSingletonPtr();
+	if(menu) menu->setVisible(true);
 }
 
 #endif //MYGUI
