@@ -476,6 +476,8 @@ void ScriptEngine::msgCallback(const AngelScript::asSMessageInfo *msg)
 
 int ScriptEngine::framestep(Ogre::Real dt)
 {
+
+#if 0
 	Beam **trucks = BeamFactory::getSingleton().getTrucks();
 	int free_truck = BeamFactory::getSingleton().getTruckCount();
 	// check for all truck wheels
@@ -526,6 +528,7 @@ int ScriptEngine::framestep(Ogre::Real dt)
 			}
 		}
 	}
+#endif // 0
 
 	// check if current truck is in an event box
 	Beam *truck = BeamFactory::getSingleton().getCurrentTruck();
