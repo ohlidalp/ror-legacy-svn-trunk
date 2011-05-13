@@ -842,6 +842,7 @@ bool Collisions::envokeScriptCallback(collision_box_t *cbox, node_t *node)
 		last_called_cbox = cbox;
 #endif //USE_ANGELSCRIPT
 	}
+
 	return handled;
 }
 

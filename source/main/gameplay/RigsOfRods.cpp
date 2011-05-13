@@ -65,7 +65,10 @@ void RigsOfRods::go(void)
 	// thats the default state it chooses to start
 	// GameState = default state, classic
 	// LobbyState = experimental Multiplayer Lobby
-	Ogre::String state = "GameState"; //"LobbyState" / "GameState"
+
+	String startState = SSETTING("StartState");
+	if(startState.empty())
+		startState = "GameState";
 
 	GameState::create(stateManager,  "GameState");
 	LobbyState::create(stateManager, "LobbyState");
@@ -74,11 +77,11 @@ void RigsOfRods::go(void)
 	if(embedded)
 	{
 		LOG("Rigs of Rods embedded initialized!");
-		stateManager->changeAppState(stateManager->findByName(state));
+		stateManager->changeAppState(stateManager->findByName(startState));
 	} else
 	{
 		LOG("Rigs of Rods main loop starting ...");
-		stateManager->start(stateManager->findByName(state));
+		stateManager->start(stateManager->findByName(startState));
 	}
 }
 
