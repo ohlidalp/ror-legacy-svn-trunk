@@ -92,18 +92,21 @@ void LobbyGUI::addTab(Ogre::String name)
 	</Widget>
 	</Widget>
 	*/
+
+	Ogre::String realName = name;
+
+	boost::algorithm::replace_all(name, "#", "##");
+
 	tabctx_t *t = &tabs[name];
-	t->name = name;
 
 	// create tab
 	t->tab = tabControl->addItem(name);
+	
+	t->name = name;
+	t->realName = realName;
 
-	Ogre::String displayName = name;
-	// escape #
-	boost::algorithm::replace_all(displayName, "#", "##");
-
-	t->tab->setProperty("Caption", displayName);
-	t->tab->setCaption(displayName);
+	t->tab->setProperty("Caption", name);
+	t->tab->setCaption(name);
 	
 	// and the textbox inside
 	t->txt = MyGUI::Gui::getInstance().createWidget<MyGUI::EditBox>("EditBoxStretch", 0, 0, 304, 193,  MyGUI::Align::Stretch, "txt"+name);
@@ -271,17 +274,20 @@ void LobbyGUI::processIRCEvent(message_t &msg)
 
 void LobbyGUI::addTextToChatWindow(std::string txt, std::string channel)
 {
-	// escape #
-	boost::algorithm::replace_all(txt, "#", "##");
-
 	//catch special case that channel is empty -> Status Channel
 	if(channel.empty())
 		channel = "Status";
+	Ogre::String realchannel = channel;
+
+	// escape #
+	boost::algorithm::replace_all(channel, "#", "##");
+	boost::algorithm::replace_all(txt, "#", "##");
+
 
 	if(tabs.find(channel) == tabs.end())
 	{
 		// add a new tab
-		addTab(channel);
+		addTab(realchannel);
 	}
 
 	MyGUI::Edit* ec = tabs[channel].txt;
@@ -377,6 +383,12 @@ void LobbyGUI::eventCommandAccept(MyGUI::Edit* _sender)
 
 	Ogre::StringUtil::trim(command);
 
+	if(command.empty())
+	{
+		commandBox->setCaption("");
+		return;
+	}
+
 	if(current_tab->name.substr(0, 1) == "#")
 	{
 		// its a channel, send message there
@@ -408,11 +420,11 @@ void LobbyGUI::eventCommandAccept(MyGUI::Edit* _sender)
 		} else
 		{
 			// no command
-			sendMessage(command, current_tab->name);
+			sendMessage(command, current_tab->realName);
 		}
 		// add our message to the textbox
 		std::string fmt = "<" + nick + "> " + command;
-		addTextToChatWindow(fmt, current_tab->name);
+		addTextToChatWindow(fmt, current_tab->realName); // use realName here!
 	}
 
 	// save some history
