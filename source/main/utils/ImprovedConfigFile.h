@@ -54,6 +54,19 @@ public:
 		ConfigFile::load(ptr, separators, trimWhitespace);
 	}
 
+	void loadFromString(const Ogre::String str, const String& separators, bool trimWhitespace)
+	{
+		Ogre::DataStreamPtr ds(DataStreamPtr(OGRE_NEW Ogre::MemoryDataStream((void*)str.c_str(), str.size(), false, true)));
+		this->separators = separators;
+		this->filename = "";
+		ConfigFile::load(ds, separators, trimWhitespace);
+	}
+
+	bool hasSetting(Ogre::String key, Ogre::String section = "")
+	{
+		return (mSettings.find(section) != mSettings.end() && mSettings[section]->find(key) != mSettings[section]->end());
+	}
+
 	bool save()
 	{
 		if(!filename.length())

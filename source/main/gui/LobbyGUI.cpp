@@ -36,7 +36,7 @@ along with Rigs of Rods.  If not, see <http://www.gnu.org/licenses/>.
 
 // class
 
-LobbyGUI::LobbyGUI() : current_tab(0)
+LobbyGUI::LobbyGUI() : current_tab(0), rotatingWait(0)
 {
 	initialiseByAttributes(this);
 
@@ -200,7 +200,7 @@ void LobbyGUI::processIRCEvent(message_t &msg)
 			addTextToChatWindow(fmt, msg.channel);
 		}
 		break;
-	case MT_GotPrivateMEssage:
+	case MT_GotPrivateMessage:
 		{
 			std::string fmt = "(private) <" + msg.nick + "> " + msg.message;
 			addTextToChatWindow(fmt, msg.nick);
@@ -229,6 +229,13 @@ void LobbyGUI::processIRCEvent(message_t &msg)
 			addTextToChatWindow(fmt, msg.channel);
 		}
 		break;
+	case MT_ErrorAuth:
+		{
+			std::string fmt = "*** ERROR: " + msg.message;
+			addTextToChatWindow(fmt, msg.channel);
+		}
+		break;
+		
 	case MT_NameList:
 		{
 			/*
@@ -240,6 +247,21 @@ void LobbyGUI::processIRCEvent(message_t &msg)
 			*/
 			std::string fmt = "*** Users are: " + msg.message;
 			addTextToChatWindow(fmt, msg.channel);
+		}
+		break;
+	case MT_StatusUpdate:
+		{
+			statusText->setCaption(msg.message);
+			if(msg.arg.empty())
+			{
+				waitingAnimation = false;
+				waitDisplay->setVisible(false);
+			} else
+			{
+				waitingAnimation = true;
+				waitDisplay->setVisible(true);
+			}
+
 		}
 		break;
 
@@ -273,6 +295,29 @@ void LobbyGUI::addTextToChatWindow(std::string txt, std::string channel)
 
 void LobbyGUI::update(float dt)
 {
+	if(!rotatingWait)
+	{
+		MyGUI::ISubWidget* waitDisplaySub = waitDisplay->getSubWidgetMain();
+		rotatingWait = waitDisplaySub->castType<MyGUI::RotatingSkin>();
+
+		/* 
+		we need to patch mygui for this D:
+		MyGUI::IntSize s = waitDisplay->getImageSize();
+		rotatingWait->setCenter(MyGUI::IntPoint(s.width*0.5f,s.height*0.5f));
+		*/
+		// so instead hardcode stuff ...
+		rotatingWait->setCenter(MyGUI::IntPoint(8,8));
+	}
+
+	if(waitingAnimation)
+	{
+		// rotate the hour glass
+		float angle = rotatingWait->getAngle();
+		angle += dt * 0.001f;
+		if(angle > 2 * Ogre::Math::PI) angle -= 2 * Ogre::Math::PI; // prevent overflowing
+		rotatingWait->setAngle(angle);
+	}
+
 	process();
 }
 
