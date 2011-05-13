@@ -838,6 +838,8 @@ bool Collisions::envokeScriptCallback(collision_box_t *cbox, node_t *node)
 		int ret = ScriptEngine::getSingleton().envokeCallback(eventsources[cbox->eventsourcenum].scripthandler, &eventsources[cbox->eventsourcenum], node);
 		if(ret == 0)
 			handled = true;
+
+		last_called_cbox = cbox;
 #endif //USE_ANGELSCRIPT
 	}
 	return handled;
