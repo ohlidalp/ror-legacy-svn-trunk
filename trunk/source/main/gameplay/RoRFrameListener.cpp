@@ -282,13 +282,6 @@ void RoRFrameListener::updateGUI(float dt)
 	// update mouse picking lines, etc
 	SceneMouse::getSingleton().update(dt);
 
-	// now hise the mouse cursor if not used since a long time
-	if(GUIManager::getSingleton().getLastMouseMoveTime() > 5000)
-	{
-		MyGUI::PointerManager::getInstance().setVisible(false);
-		GUI_MainMenu::getSingleton().setVisible(false);
-	}
-
 	if (pressure_pressed)
 	{
 		Real angle = 135.0 - curr_truck->getPressure() * 2.7;
@@ -879,38 +872,9 @@ RoRFrameListener::RoRFrameListener(AppState *parentState, RenderWindow* win, Cam
 	raceStartTime=-1;
 	truck_preload_num=0;
 
-	// setup input
-	inputGrabMode=GRAB_ALL;
 
-	if(SSETTING("Input Grab") == "All")
-		inputGrabMode = GRAB_ALL;
-	else if(SSETTING("Input Grab") == "Dynamically")
-		inputGrabMode = GRAB_DYNAMICALLY;
-	else if(SSETTING("Input Grab") == "None")
-		inputGrabMode = GRAB_NONE;
+	INPUTENGINE.setupDefault(win, inputhwnd);
 
-	if(!isEmbedded)
-	{
-
-		// start input engine
-		size_t hWnd = 0;
-		win->getCustomAttribute("WINDOW", &hWnd);
-
-		INPUTENGINE.setup(TOSTRING(hWnd), true, true, inputGrabMode);
-	} else
-	{
-	  
-#if OGRE_PLATFORM == OGRE_PLATFORM_LINUX
-		size_t windowHnd = 0;
-		std::ostringstream windowHndStr; 
-		win->getCustomAttribute("GLXWINDOW", &windowHnd ); 
-		windowHndStr << windowHnd; 
-		printf("#### GLXWINDOW = %s\n", windowHndStr.str().c_str());
-		INPUTENGINE.setup(windowHndStr.str(), true, true, GRAB_NONE);
-#else
-		INPUTENGINE.setup(inputhwnd, true, true, GRAB_NONE);
-#endif
-	}
 
 #ifdef USE_MYGUI
 	// init GUI

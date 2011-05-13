@@ -24,10 +24,10 @@ along with Rigs of Rods.  If not, see <http://www.gnu.org/licenses/>.
 #define STREAMABLE_H__
 
 #include "RoRPrerequisites.h"
-#include "OgrePrerequisites.h"
+
 #include "rornet.h"
 #include <map>
-#include "pthread.h"
+#include <pthread.h>
 
 
 typedef struct recvPacket_t

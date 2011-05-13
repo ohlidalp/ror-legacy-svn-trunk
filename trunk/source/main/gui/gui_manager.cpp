@@ -110,6 +110,15 @@ bool GUIManager::frameStarted(const Ogre::FrameEvent& evt)
 {
 	if (mExit) return false;
 	if (!mGUI) return true;
+
+
+	// now hide the mouse cursor if not used since a long time
+	if(getLastMouseMoveTime() > 5000)
+	{
+		MyGUI::PointerManager::getInstance().setVisible(false);
+		//GUI_MainMenu::getSingleton().setVisible(false);
+	}
+
 	return true;
 }
 

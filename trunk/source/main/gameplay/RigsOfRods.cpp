@@ -59,9 +59,13 @@ void RigsOfRods::go(void)
 	// now add the game states
 	stateManager = new AppStateManager();
 
-	Ogre::String state = "GameState"; //"LobbyState"
+	// thats the default state it chooses to start
+	// GameState = default state, classic
+	// LobbyState = experimental Multiplayer Lobby
+	Ogre::String state = "GameState"; //"LobbyState" / "GameState"
 
-	GameState::create(stateManager,  state);
+	GameState::create(stateManager,  "GameState");
+	LobbyState::create(stateManager, "LobbyState");
 
 	// select the first one
 	if(embedded)
