@@ -50,7 +50,6 @@ Console::Console() : net(0)
 
 	mCommandEdit->eventKeyButtonPressed += MyGUI::newDelegate(this, &Console::eventButtonPressed);
 	mCommandEdit->eventEditSelectAccept += MyGUI::newDelegate(this, &Console::eventCommandAccept);
-
 	mTabControl->eventTabChangeSelect   += MyGUI::newDelegate(this, &Console::eventChangeTab);
 
 	addTab("OgreLog");
