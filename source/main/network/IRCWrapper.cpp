@@ -293,6 +293,7 @@ int IRCWrapper::authenticate()
 
 	return 0;
 #else
+	push(constructMessage(MT_ErrorAuth, 0, 0, "you have not compiled RoR with CURL support, thus authentication and the lobby is not available to you."));
 	return 1;
 #endif //USE_CURL
 }
