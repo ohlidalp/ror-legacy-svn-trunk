@@ -24,10 +24,42 @@ along with Rigs of Rods.  If not, see <http://www.gnu.org/licenses/>.
 #include <Ogre.h> // for Ogre::String
 #include <OgreLogManager.h> // for LOG()
 
+#ifdef USE_CURL
+#define CURL_STATICLIB
+#include <stdio.h>
+#include <curl/curl.h>
+#include <curl/types.h>
+#include <curl/easy.h>
+#endif //USE_CURL
+
+#include "rornet.h"
+#include "Settings.h"
+#include "ImprovedConfigFile.h"
+
 using namespace std; // primary for string
 
 // some function forward declarations
 void *s_ircthreadstart(void* arg);
+
+// some utils
+// helps to fill our struct
+message_t constructMessage(int type, const char *channel, const char *nick, const char *message, const char *arg = 0)
+{
+	message_t t;
+	t.type    = type;
+	t.channel = std::string();
+	t.nick    = std::string();
+	t.message = std::string();
+	t.arg     = std::string();
+
+	if(channel) t.channel = std::string(channel);
+	if(nick)    t.nick    = std::string(nick);
+	if(message) t.message = std::string(message);
+	if(arg)     t.arg     = std::string(arg);
+	return t;
+}
+
+// and the class implementation
 
 IRCWrapper::IRCWrapper() : irc_session(0)
 {
@@ -35,7 +67,7 @@ IRCWrapper::IRCWrapper() : irc_session(0)
 	serverName     = "irc.rigsofrods.org";
 	serverPassword = "";
 	nick           = "foouser";
-	username       = nick;
+	userName       = nick;
 	realName       = nick;
 	channel        = "#RigsOfRods";
 	channelKey     = "";
@@ -56,6 +88,7 @@ IRCWrapper::~IRCWrapper()
 
 void IRCWrapper::initIRC()
 {
+	// authenticate before doing anything else
 	pthread_create(&ircthread, NULL, s_ircthreadstart, (void *)this);
 }
 
@@ -66,6 +99,7 @@ void IRCWrapper::process()
 		// check if we are still connected
 		if(irc_session && !irc_is_connected(irc_session))
 		{
+			push(constructMessage(MT_StatusUpdate, 0, 0, "Disconnected, reconnecting ...", "1"));
 			// disconnected, reconnect now
 			irc_disconnect(irc_session); // be sure to let the old thread end ...
 
@@ -136,30 +170,175 @@ std::string IRCWrapper::getLastErrorMessage()
 	return std::string(irc_strerror(irc_errno(irc_session)));
 }
 
-// C from libIRCClient BELOW
 
-// helps to fill our struct
-message_t constructMessage(int type, const char *channel, const char *nick, const char *message, const char *arg = 0)
+#ifdef USE_CURL
+struct curlMemoryStruct {
+	char *memory;
+	size_t size;
+};
+
+//hacky hack to fill memory with data for curl
+// from: http://curl.haxx.se/libcurl/c/getinmemory.html
+static size_t curlWriteMemoryCallback2(void *ptr, size_t size, size_t nmemb, void *data)
 {
-	message_t t;
-	t.type    = type;
-	t.channel = std::string();
-	t.nick    = std::string();
-	t.message = std::string();
-	t.arg     = std::string();
+	size_t realsize = size * nmemb;
+	struct curlMemoryStruct *mem = (struct curlMemoryStruct *)data;
 
-	if(channel) t.channel = std::string(channel);
-	if(nick)    t.nick    = std::string(nick);
-	if(message) t.message = std::string(message);
-	if(arg)     t.arg     = std::string(arg);
-	return t;
+	mem->memory = (char *)realloc(mem->memory, mem->size + realsize + 1);
+	if (mem->memory == NULL) {
+		/* out of memory! */
+		printf("not enough memory (realloc returned NULL)\n");
+		exit(EXIT_FAILURE);
+	}
+
+	memcpy(&(mem->memory[mem->size]), ptr, realsize);
+	mem->size += realsize;
+	mem->memory[mem->size] = 0;
+
+	return realsize;
 }
+#endif //USE_CURL
+
+int IRCWrapper::authenticate()
+{
+#ifdef USE_CURL
+	struct curlMemoryStruct chunk;
+
+	chunk.memory = (char *)malloc(1);  /* will be grown as needed by the realloc above */
+	chunk.size = 0;    /* no data at this point */
+
+	// construct post fields
+	struct curl_httppost *formpost=NULL;
+	struct curl_httppost *lastptr=NULL;
+	curl_global_init(CURL_GLOBAL_ALL);
+
+	// add some hard coded values
+	curl_formadd(&formpost, &lastptr, CURLFORM_COPYNAME, "User_NickName", CURLFORM_COPYCONTENTS, SSETTING("Nickname").c_str(), CURLFORM_END);
+	curl_formadd(&formpost, &lastptr, CURLFORM_COPYNAME, "User_Language", CURLFORM_COPYCONTENTS, SSETTING("Language").c_str(), CURLFORM_END);
+	curl_formadd(&formpost, &lastptr, CURLFORM_COPYNAME, "User_Token", CURLFORM_COPYCONTENTS, SSETTING("User Token").c_str(), CURLFORM_END);
+	curl_formadd(&formpost, &lastptr, CURLFORM_COPYNAME, "RoR_VersionString", CURLFORM_COPYCONTENTS, ROR_VERSION_STRING, CURLFORM_END);
+	curl_formadd(&formpost, &lastptr, CURLFORM_COPYNAME, "RoR_VersionSVN", CURLFORM_COPYCONTENTS, SVN_REVISION, CURLFORM_END);
+	curl_formadd(&formpost, &lastptr, CURLFORM_COPYNAME, "RoR_VersionSVNID", CURLFORM_COPYCONTENTS, SVN_ID, CURLFORM_END);
+	curl_formadd(&formpost, &lastptr, CURLFORM_COPYNAME, "RoR_ProtocolVersion", CURLFORM_COPYCONTENTS, RORNET_VERSION, CURLFORM_END);
+	curl_formadd(&formpost, &lastptr, CURLFORM_COPYNAME, "RoR_BinaryHash", CURLFORM_COPYCONTENTS, SSETTING("BinaryHash").c_str(), CURLFORM_END);
+	curl_formadd(&formpost, &lastptr, CURLFORM_COPYNAME, "RoR_GUID", CURLFORM_COPYCONTENTS, SSETTING("GUID").c_str(), CURLFORM_END);
+
+
+	CURLcode res;
+	CURL *curl = curl_easy_init();
+	if(!curl)
+	{
+		// "ERROR: failed to init curl";
+		return 1;
+	}
+
+	char *curl_err_str[CURL_ERROR_SIZE];
+	memset(curl_err_str, 0, CURL_ERROR_SIZE);
+
+	string url = "http://" + string(REPO_SERVER) + "/auth_lobby/";
+	curl_easy_setopt(curl, CURLOPT_URL,              url.c_str());
+
+	/* send all data to this function  */
+	curl_easy_setopt(curl, CURLOPT_WRITEFUNCTION, curlWriteMemoryCallback2);
+
+	/* we pass our 'chunk' struct to the callback function */
+	curl_easy_setopt(curl, CURLOPT_WRITEDATA, (void *)&chunk);
+
+	// set post options
+	curl_easy_setopt(curl, CURLOPT_HTTPPOST, formpost);
+
+	// logging stuff
+	//curl_easy_setopt(curl, CURLOPT_STDERR,           LogManager::getsin InstallerLog::getSingleton()->getLogFilePtr());
+	curl_easy_setopt(curl, CURLOPT_ERRORBUFFER,      curl_err_str[0]);
+
+	// http related settings
+	curl_easy_setopt(curl, CURLOPT_FOLLOWLOCATION,   1); // follow redirects
+	curl_easy_setopt(curl, CURLOPT_AUTOREFERER,      1); // set the Referrer: field in requests where it follows a Location: redirect.
+	curl_easy_setopt(curl, CURLOPT_MAXREDIRS,        20);
+	curl_easy_setopt(curl, CURLOPT_USERAGENT,        "RoR");
+	curl_easy_setopt(curl, CURLOPT_FILETIME,         1);
+
+	// TO BE DONE: ADD SSL
+	// see: http://curl.haxx.se/libcurl/c/simplessl.html
+	// curl_easy_setopt(curl,CURLOPT_SSL_VERIFYPEER,1L);
+
+	res = curl_easy_perform(curl);
+	curl_easy_cleanup(curl);
+
+	//printf("%lu bytes retrieved\n", (long)chunk.size);
+
+	curl_formfree(formpost);
+
+	if(chunk.memory)
+	{
+		// convert memory into std::string now
+		string result = string(chunk.memory);
+
+		// then free
+		free(chunk.memory);
+
+		return processAuthenticationResults(result);
+	}
+
+	/* we're done with libcurl, so clean it up */
+	curl_global_cleanup();
+
+	if(res != CURLE_OK)
+	{
+		const char *errstr = curl_easy_strerror(res);
+		//result = "ERROR: " + string(errstr);
+		return 1;
+	}
+
+	return 0;
+#else
+	return 1;
+#endif //USE_CURL
+}
+
+int IRCWrapper::processAuthenticationResults(std::string &results)
+{
+	Ogre::ImprovedConfigFile cfg;
+	cfg.loadFromString(results, "=", true);
+
+	// TODO: improve the checks if the config is valid or not ...
+
+	if(!cfg.hasSetting("serverName") || !cfg.hasSetting("serverPort"))
+		return 1;
+
+	serverName     = cfg.getSetting("serverName");
+	serverPort     = cfg.getSettingInt("serverPort");
+	serverPassword = cfg.getSetting("serverPassword");
+	nick           = cfg.getSetting("nick");
+	userName       = cfg.getSetting("userName");
+	realName       = cfg.getSetting("realName");
+	channel        = cfg.getSetting("channel");
+	reJoin         = cfg.getSettingBool("reJoin");
+	reConnect      = cfg.getSettingBool("reConnect");
+	
+	// TODO:
+	//userAuth = cfg.getSetting("userAuth");
+	//userGroups = cfg.getSetting("userGroups");
+
+	return 0;
+}
+
+// C from libIRCClient BELOW
 
 // detects if we are meant
 bool isSelf(IRCWrapper * ctx, const char *origin)
 {
 	if(!origin) return false;
-	return (!strcmp(origin, ctx->nick.c_str()));
+
+	// we store the nickname without the host information, so cut off the host to find out if its us
+	std::string org = std::string(origin);
+	size_t s = org.find("!");
+	if(s != org.npos)
+	{
+		org = org.substr(0, s);
+	}
+
+	return (org == ctx->nick);
 }
 
 void addlog (const char * fmt, ...)
@@ -200,6 +379,9 @@ void event_connect (irc_session_t * session, const char * event, const char * or
 {
 	// no params
 	IRCWrapper * ctx = (IRCWrapper *) irc_get_ctx (session);
+	
+	ctx->push(constructMessage(MT_StatusUpdate, 0, 0, "Joining Channels ...", "1"));
+	
 	// join our preset channel
 	const char *channelKey = ctx->channelKey.c_str();
 	if(ctx->channelKey.empty()) channelKey = 0;
@@ -249,6 +431,12 @@ void event_join (irc_session_t * session, const char * event, const char * origi
 	IRCWrapper * ctx = (IRCWrapper *) irc_get_ctx (session);
 	bool myself = isSelf(ctx, origin);
 	ctx->push(constructMessage(myself ? MT_JoinChannelSelf : MT_JoinChannelOther, params[0], origin, 0));
+
+	if(myself)
+	{
+		// clear status
+		ctx->push(constructMessage(MT_StatusUpdate, 0, 0, "", ""));
+	}
 }
 
 void event_part (irc_session_t * session, const char * event, const char * origin, const char ** params, unsigned int count)
@@ -344,7 +532,7 @@ void event_privmsg (irc_session_t * session, const char * event, const char * or
 	*/
 	if ( count != 2 ) return;
 	IRCWrapper * ctx = (IRCWrapper *) irc_get_ctx (session);
-	ctx->push(constructMessage(MT_GotPrivateMEssage, 0, origin, params[1], params[0]));
+	ctx->push(constructMessage(MT_GotPrivateMessage, 0, origin, params[1], params[0]));
 }
 
 void event_notice (irc_session_t * session, const char * event, const char * origin, const char ** params, unsigned int count)
@@ -432,6 +620,21 @@ void event_numeric (irc_session_t * session, unsigned int eventNum, const char *
 void *s_ircthreadstart(void* arg)
 {
 	IRCWrapper *ctx = (IRCWrapper *)arg;
+
+	ctx->push(constructMessage(MT_StatusUpdate, 0, 0, "Authenticating ...", "1"));
+	
+	// authenticate before doing anything else
+	// we are doing it in this thread so the userinteface will not lag
+	if(ctx->authenticate())
+	{
+		
+		ctx->push(constructMessage(MT_ErrorAuth, 0, 0, "Could not authenticate, please try again later"));
+		// clear status
+		ctx->push(constructMessage(MT_StatusUpdate, 0, 0, "", ""));
+		// end thread
+		return 0;
+	}
+
 #ifdef WIN32
 	// winsock startup, required
 	WORD wVersionRequested = MAKEWORD (1, 1);
@@ -491,10 +694,14 @@ void *s_ircthreadstart(void* arg)
 	// The "dcc chat" event is triggered when someone wants to send a file to you via DCC SEND request.
 	//callbacks.event_dcc_send_req = dump_event;
 
+	ctx->push(constructMessage(MT_StatusUpdate, 0, 0, "Connecting ...", "1"));
+
 	ctx->irc_session = irc_create_session (&callbacks);
 	if (!ctx->irc_session)
 	{
 		LOG ("Could not create session");
+		// clear status
+		ctx->push(constructMessage(MT_StatusUpdate, 0, 0, "", ""));
 		return 0;
 	}
 
@@ -521,12 +728,12 @@ void *s_ircthreadstart(void* arg)
 	if(ctx->serverPassword.empty()) serverPassword = 0;
 	const char *nick           = ctx->nick.c_str();
 	if(ctx->nick.empty()) nick = 0;
-	const char *username       = ctx->username.c_str();
-	if(ctx->username.empty()) username = 0;
+	const char *userName       = ctx->userName.c_str();
+	if(ctx->userName.empty()) userName = 0;
 	const char *realName       = ctx->realName.c_str();
 	if(ctx->realName.empty()) realName = 0;
 
-	if (irc_connect (ctx->irc_session, serverName, ctx->serverPort, serverPassword, nick, username, realName))
+	if (irc_connect (ctx->irc_session, serverName, ctx->serverPort, serverPassword, nick, userName, realName))
 	{
 		LOG ("Could not connect: " + Ogre::String(irc_strerror (irc_errno(ctx->irc_session))));
 		return 0;

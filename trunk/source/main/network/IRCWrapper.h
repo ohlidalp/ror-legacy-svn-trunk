@@ -47,12 +47,14 @@ enum message_types {
 	MT_ChangedChannelTopic, // someone changed the channel topic
 	MT_WeGotKicked, // we got kicked from a channel
 	MT_SomeoneGotKicked, // someone else got kicked from a channel
-	MT_GotPrivateMEssage, // we got a private message
+	MT_GotPrivateMessage, // we got a private message
 	MT_GotNotice, // we got a notice
 	MT_GotInvitation, // we got an invitation to a channel
 	MT_VerboseMessage, // a verbose message used for various things coming directly from the server
 	MT_TopicInfo, // got info about a channel topic
-	MT_NameList // got the name list of a channel
+	MT_NameList, // got the name list of a channel
+	MT_ErrorAuth, // if the authentication failed horribly
+	MT_StatusUpdate // to update the status message on the bottom right of the screen
 };
 
 typedef struct message_t
@@ -94,13 +96,17 @@ public:
 	// send notice
 	// WHOIS
 
-	std::string serverName, serverPassword, nick, username, realName, channel, channelKey;
+	int authenticate();
+
+	std::string serverName, serverPassword, nick, userName, realName, channel, channelKey;
 	unsigned int serverPort, retryCounter;
 	bool reJoin, reConnect, wasConnected;
 
 	irc_session_t *irc_session;
 protected:
 	pthread_t ircthread;
+
+	int processAuthenticationResults(std::string &results);
 };
 
 #endif //IRCWRAPPER_H__

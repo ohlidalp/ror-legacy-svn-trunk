@@ -73,11 +73,19 @@ protected:
 	ATTRIBUTE_FIELD_WIDGET_NAME(LobbyGUI, commandBox, "commandBox");
 	MyGUI::EditBox* commandBox;
 
+	ATTRIBUTE_FIELD_WIDGET_NAME(LobbyGUI, statusText, "statusText");
+	MyGUI::TextBox* statusText;
+
 	ATTRIBUTE_FIELD_WIDGET_NAME(LobbyGUI, playerList, "playerList");
 	MyGUI::ScrollView* playerList;
+
+	ATTRIBUTE_FIELD_WIDGET_NAME(LobbyGUI, waitDisplay, "waitDisplay");
+	MyGUI::ImageBox* waitDisplay;
+	MyGUI::RotatingSkin *rotatingWait;
 	
 	std::map<Ogre::String , tabctx_t > tabs;
 	tabctx_t *current_tab;
+	bool waitingAnimation;
 
 	void processIRCEvent(message_t &msg);
 	void addTextToChatWindow(std::string, std::string channel);
