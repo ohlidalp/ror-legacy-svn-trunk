@@ -229,7 +229,7 @@ int IRCWrapper::authenticate()
 	CURL *curl = curl_easy_init();
 	if(!curl)
 	{
-		// "ERROR: failed to init curl";
+		push(constructMessage(MT_ErrorAuth, 0, 0, "Error: failed to init CURL"));
 		return 1;
 	}
 
@@ -268,17 +268,17 @@ int IRCWrapper::authenticate()
 
 	//printf("%lu bytes retrieved\n", (long)chunk.size);
 
+	string result;
+
 	curl_formfree(formpost);
 
 	if(chunk.memory)
 	{
 		// convert memory into std::string now
-		string result = string(chunk.memory);
+		result = string(chunk.memory);
 
 		// then free
 		free(chunk.memory);
-
-		return processAuthenticationResults(result);
 	}
 
 	/* we're done with libcurl, so clean it up */
@@ -287,13 +287,13 @@ int IRCWrapper::authenticate()
 	if(res != CURLE_OK)
 	{
 		const char *errstr = curl_easy_strerror(res);
-		//result = "ERROR: " + string(errstr);
+		push(constructMessage(MT_ErrorAuth, 0, 0, errstr));
 		return 1;
 	}
 
-	return 0;
+	return processAuthenticationResults(result);
 #else
-	push(constructMessage(MT_ErrorAuth, 0, 0, "you have not compiled RoR with CURL support, thus authentication and the lobby is not available to you."));
+	push(constructMessage(MT_ErrorAuth, 0, 0, "you have not compiled RoR with CURL support, thus authentication and the lobby are not available to you."));
 	return 1;
 #endif //USE_CURL
 }
