@@ -78,8 +78,10 @@ void AppStateManager::update(double dt)
 #endif
 	if(OgreFramework::getSingletonPtr()->m_pRenderWnd->isClosed())
 	{
-		shutdown();
+		// unlock before shutdown
 		pthread_mutex_unlock(&lock);
+		// shutdown locks the mutex itself
+		shutdown();
 		return;
 	}
 
