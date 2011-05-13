@@ -104,7 +104,7 @@ void LobbyGUI::addTab(Ogre::String name)
 
 	t->tab->setProperty("Caption", displayName);
 	t->tab->setCaption(displayName);
-
+	
 	// and the textbox inside
 	t->txt = MyGUI::Gui::getInstance().createWidget<MyGUI::EditBox>("EditBoxStretch", 0, 0, 304, 193,  MyGUI::Align::Stretch, "txt"+name);
 	t->txt->setProperty("WordWrap", "true");
@@ -425,14 +425,13 @@ void LobbyGUI::eventCommandAccept(MyGUI::Edit* _sender)
 void LobbyGUI::eventChangeTab(MyGUI::TabControl* _sender, size_t _index)
 {
 	MyGUI::TabItemPtr tab = _sender->getItemAt(_index);
+	String n = _sender->getItemNameAt(_index);
 	if(!tab) return;
-	String n = tab->getCaption();
 	if(tabs.find(n) == tabs.end())
 		return;
 
 	bool enabled = true;
-	if(n == "OgreLog")  enabled = false;
-	if(n == "IRCDebug") enabled = false;
+	if(n == "Status")  enabled = false;
 	commandBox->setEnabled(enabled);
 
 	current_tab = &tabs[n];

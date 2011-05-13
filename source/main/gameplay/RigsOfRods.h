@@ -31,13 +31,14 @@ along with Rigs of Rods.  If not, see <http://www.gnu.org/licenses/>.
 #include "AdvancedOgreFramework.h"
 #include "AppStateManager.h"
 
-class RigsOfRods
+class RigsOfRods : public Ogre::Singleton<RigsOfRods>
 {
 public:
 	RigsOfRods(Ogre::String name = Ogre::String("RoR"), Ogre::String hwnd=Ogre::String(), Ogre::String mainhwnd=Ogre::String(), bool embedded = false);
 	~RigsOfRods();
 
 	void go();
+	void pauseRendering(void);
 	void shutdown(void);
 
 	void update(double dt);

@@ -68,7 +68,7 @@ bool Settings::getBooleanSetting(Ogre::String key)
 Ogre::String Settings::getSettingScriptSafe(Ogre::String key)
 {
 	// hide certain settings for scripts
-	if(key == "User Token" || key == "Config Root" || key == "Cache Path" || key == "Log Path" || key == "Resources Path" || key == "Program Path")
+	if(key == "User Token" || key == "User Token Hash" || key == "Config Root" || key == "Cache Path" || key == "Log Path" || key == "Resources Path" || key == "Program Path")
 		return "permission denied";
 
 	return settings[key];
@@ -147,6 +147,22 @@ void Settings::loadSettings(Ogre::String configFile, bool overwrite)
 	// add a GUID if not there
 	checkGUID();
 	generateBinaryHash();
+
+#ifndef NOOGRE
+	// generate hash of the token
+	String usertoken = SSETTING("User Token");
+	char usertokensha1result[250];
+	memset(usertokensha1result, 0, 250);
+	if(usertoken.size()>0)
+	{
+		RoR::CSHA1 sha1;
+		sha1.UpdateHash((uint8_t *)usertoken.c_str(), usertoken.size());
+		sha1.Final();
+		sha1.ReportHash(usertokensha1result, RoR::CSHA1::REPORT_HEX_SHORT);
+	}
+
+	setSetting("User Token Hash", String(usertokensha1result));
+#endif // NOOGRE
 }
 
 int Settings::generateBinaryHash()
