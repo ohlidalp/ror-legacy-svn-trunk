@@ -1967,12 +1967,12 @@ bool Beam::frameStep(Real dt)
 		if(locked == UNLOCKED) ScriptEngine::getSingleton().triggerEvent(ScriptEngine::SE_TRUCK_UNLOCKED, trucknum);
 		lockedold=locked;
 	}
-#endif //0
 	if(watercontact != watercontactold)
 	{
 		ScriptEngine::getSingleton().triggerEvent(ScriptEngine::SE_TRUCK_TOUCHED_WATER, trucknum);
 		watercontactold = watercontact;
 	}
+#endif //0
 #endif
 
 	// send data via network?
