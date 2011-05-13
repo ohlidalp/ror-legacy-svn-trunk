@@ -56,6 +56,7 @@ public:
 protected:
 	typedef struct tabctx_t {
 		Ogre::String name;
+		Ogre::String realName;
 
 		MyGUI::TabItemPtr tab;
 		MyGUI::EditPtr txt;
