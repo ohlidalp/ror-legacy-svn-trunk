@@ -69,17 +69,12 @@ char *ScriptEngine::moduleName = "RoRScript";
 
 // the class implementation
 
-ScriptEngine::ScriptEngine(RoRFrameListener *efl, Collisions *_coll) : mefl(efl), coll(_coll), engine(0), context(0), frameStepFunctionPtr(-1), wheelEventFunctionPtr(-1), eventMask(0), terrainScriptName(), terrainScriptHash(), scriptLog(0)
+ScriptEngine::ScriptEngine(RoRFrameListener *efl, Collisions *_coll) : mefl(efl), coll(_coll), engine(0), context(0), frameStepFunctionPtr(-1), wheelEventFunctionPtr(-1), eventCallbackFunctionPtr(-1), defaultEventCallbackFunctionPtr(-1), eventMask(0), terrainScriptName(), terrainScriptHash(), scriptLog(0)
 {
 	callbacks["on_terrain_loading"] = std::vector<int>();
 	callbacks["frameStep"] = std::vector<int>();
 	callbacks["wheelEvents"] = std::vector<int>();
 	callbacks["eventCallback"] = std::vector<int>();
-
-	frameStepFunctionPtr = 0;
-	wheelEventFunctionPtr = 0;
-	eventCallbackFunctionPtr = 0;
-	defaultEventCallbackFunctionPtr = 0;
 
 	// create our own log
 	scriptLog = LogManager::getSingleton().createLog(SSETTING("Log Path")+"/Angelscript.log", false);
@@ -481,7 +476,7 @@ int ScriptEngine::framestep(Ogre::Real dt)
 	Beam **trucks = BeamFactory::getSingleton().getTrucks();
 	int free_truck = BeamFactory::getSingleton().getTruckCount();
 	// check for all truck wheels
-	if(coll && wheelEventFunctionPtr >= 0)
+	if(coll && wheelEventFunctionPtr > 0)
 	{
 		for(int t = 0; t < free_truck; t++)
 		{
@@ -540,7 +535,7 @@ int ScriptEngine::framestep(Ogre::Real dt)
 #endif // 0
 
 	// framestep stuff below
-	if(frameStepFunctionPtr<0) return 1;
+	if(frameStepFunctionPtr<=0) return 1;
 	if(!engine) return 0;
 	if(!context) context = engine->CreateContext();
 	context->Prepare(frameStepFunctionPtr);
@@ -608,7 +603,7 @@ int ScriptEngine::executeString(Ogre::String command)
 void ScriptEngine::triggerEvent(enum scriptEvents eventnum, int value)
 {
 	if(!engine) return;
-	if(eventCallbackFunctionPtr<0) return;
+	if(eventCallbackFunctionPtr<=0) return;
 	if(eventMask & eventnum)
 	{
 		// script registered for that event, so sent it
