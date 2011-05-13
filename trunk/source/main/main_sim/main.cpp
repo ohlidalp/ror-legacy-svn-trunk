@@ -293,6 +293,9 @@ int main(int argc, char *argv[])
 		uninstall_crashrpt();
 #endif //USE_CRASHRPT
 
+	// show errors before we give up
+	showStoredOgreWebErrors();
+
 	return 0;
 }
 

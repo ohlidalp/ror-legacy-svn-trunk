@@ -34,6 +34,7 @@ along with Rigs of Rods.  If not, see <http://www.gnu.org/licenses/>.
 
 #include "rornet.h"
 #include "Settings.h"
+#include "errorutils.h"
 #include "ImprovedConfigFile.h"
 
 using namespace std; // primary for string
@@ -215,7 +216,7 @@ int IRCWrapper::authenticate()
 	// add some hard coded values
 	curl_formadd(&formpost, &lastptr, CURLFORM_COPYNAME, "User_NickName", CURLFORM_COPYCONTENTS, SSETTING("Nickname").c_str(), CURLFORM_END);
 	curl_formadd(&formpost, &lastptr, CURLFORM_COPYNAME, "User_Language", CURLFORM_COPYCONTENTS, SSETTING("Language").c_str(), CURLFORM_END);
-	curl_formadd(&formpost, &lastptr, CURLFORM_COPYNAME, "User_Token", CURLFORM_COPYCONTENTS, SSETTING("User Token").c_str(), CURLFORM_END);
+	curl_formadd(&formpost, &lastptr, CURLFORM_COPYNAME, "User_Token", CURLFORM_COPYCONTENTS, SSETTING("User Token Hash").c_str(), CURLFORM_END);
 	curl_formadd(&formpost, &lastptr, CURLFORM_COPYNAME, "RoR_VersionString", CURLFORM_COPYCONTENTS, ROR_VERSION_STRING, CURLFORM_END);
 	curl_formadd(&formpost, &lastptr, CURLFORM_COPYNAME, "RoR_VersionSVN", CURLFORM_COPYCONTENTS, SVN_REVISION, CURLFORM_END);
 	curl_formadd(&formpost, &lastptr, CURLFORM_COPYNAME, "RoR_VersionSVNID", CURLFORM_COPYCONTENTS, SVN_ID, CURLFORM_END);
@@ -302,6 +303,20 @@ int IRCWrapper::processAuthenticationResults(std::string &results)
 	cfg.loadFromString(results, "=", true);
 
 	// TODO: improve the checks if the config is valid or not ...
+
+	// fatal error?
+	if(cfg.hasSetting("fatalError"))
+	{
+		showOgreWebError(cfg.getSetting("fatalErrorTitle"), cfg.getSetting("fatalError"), cfg.getSetting("fatalErrorURL"));
+		return 1;
+	}
+
+	// non-fatal error?
+	if(cfg.hasSetting("error"))
+	{
+		push(constructMessage(MT_ErrorAuth, 0, 0, cfg.getSetting("error").c_str()));
+		return 1;
+	}
 
 	if(!cfg.hasSetting("serverName") || !cfg.hasSetting("serverPort"))
 		return 1;

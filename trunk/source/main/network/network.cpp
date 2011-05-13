@@ -225,23 +225,14 @@ bool Network::connect()
 		sha1.ReportHash(sha1pwresult, CSHA1::REPORT_HEX_SHORT);
 	}
 
-	String usertoken = SSETTING("User Token");
-	char usertokensha1result[250];
-	memset(usertokensha1result, 0, 250);
-	if(usertoken.size()>0)
-	{
-		CSHA1 sha1;
-		sha1.UpdateHash((uint8_t *)usertoken.c_str(), usertoken.size());
-		sha1.Final();
-		sha1.ReportHash(usertokensha1result, CSHA1::REPORT_HEX_SHORT);
-	}
+	String usertokenhash = SSETTING("User Token Hash");
 
 	// construct user credentials
 	user_info_t c;
 	memset(&c, 0, sizeof(user_info_t));
 	strncpy(c.username, nickname.c_str(), 20);
 	strncpy(c.serverpassword, sha1pwresult, 40);
-	strncpy(c.usertoken, usertokensha1result, 40);
+	strncpy(c.usertoken, usertokenhash.c_str(), 40);
 	strncpy(c.clientversion, ROR_VERSION_STRING, strnlen(ROR_VERSION_STRING, 25));
 	strcpy(c.clientname, "RoR");
 	String lang = SSETTING("Language Short");

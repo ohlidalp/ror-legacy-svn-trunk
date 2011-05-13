@@ -70,5 +70,5 @@ int showWebError(Ogre::String title, Ogre::String message, Ogre::String url);
  */
 int showOgreWebError(Ogre::String title, Ogre::String err, Ogre::String url);
 
-
+void showStoredOgreWebErrors();
 #endif //ERRORUTILS_H__

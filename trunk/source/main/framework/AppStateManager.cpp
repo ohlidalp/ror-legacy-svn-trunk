@@ -12,6 +12,8 @@ using namespace Ogre;
 AppStateManager::AppStateManager()
 {
 	m_bShutdown = false;
+	m_bNoRendering = false;
+	pthread_mutex_init(&lock, NULL);
 }
 
 //|||||||||||||||||||||||||||||||||||||||||||||||
@@ -70,15 +72,20 @@ AppState* AppStateManager::findByName(Ogre::String stateName)
 //|||||||||||||||||||||||||||||||||||||||||||||||
 void AppStateManager::update(double dt)
 {
+	pthread_mutex_lock(&lock);
 #if OGRE_PLATFORM == OGRE_PLATFORM_WIN32 || OGRE_PLATFORM == OGRE_PLATFORM_LINUX
 	RoRWindowEventUtilities::messagePump();
 #endif
 	if(OgreFramework::getSingletonPtr()->m_pRenderWnd->isClosed())
-		m_bShutdown = true;
+	{
+		shutdown();
+		pthread_mutex_unlock(&lock);
+		return;
+	}
 
 	m_ActiveStateStack.back()->update(dt);
-
 	OgreFramework::getSingletonPtr()->m_pRoot->renderOneFrame();
+	pthread_mutex_unlock(&lock);
 }
 
 void AppStateManager::start(AppState* state)
@@ -91,8 +98,21 @@ void AppStateManager::start(AppState* state)
 	while(!m_bShutdown)
 	{
 		startTime = OgreFramework::getSingletonPtr()->m_pTimer->getMillisecondsCPU();
+
+		// no more actual rendering?
 #if OGRE_PLATFORM == OGRE_PLATFORM_WIN32
-		update(timeSinceLastFrame);
+		if(m_bNoRendering)
+		{
+#ifdef WIN32
+			Sleep(100);
+#else
+			sleep(100);
+#endif // WIN32
+		} else
+		{
+			update(timeSinceLastFrame);
+		}
+
 		/*
 		// BUGGY:
 		if(OgreFramework::getSingletonPtr()->m_pRenderWnd->isActive())
@@ -198,7 +218,20 @@ void AppStateManager::pauseAppState()
 
 void AppStateManager::shutdown()
 {
+	// shutdown needs to be synced
+	pthread_mutex_lock(&lock);
 	m_bShutdown = true;
+	pthread_mutex_unlock(&lock);
+}
+
+//|||||||||||||||||||||||||||||||||||||||||||||||
+
+void AppStateManager::pauseRendering()
+{
+	// shutdown needs to be synced
+	pthread_mutex_lock(&lock);
+	m_bNoRendering = true;
+	pthread_mutex_unlock(&lock);
 }
 
 //|||||||||||||||||||||||||||||||||||||||||||||||

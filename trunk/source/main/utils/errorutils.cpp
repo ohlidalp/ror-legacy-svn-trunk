@@ -32,6 +32,10 @@ along with Rigs of Rods.  If not, see <http://www.gnu.org/licenses/>.
 #include <shellapi.h> // for ShellExecuteW
 #endif
 
+#ifndef NOOGRE
+#include "RigsOfRods.h"
+#endif //NOOGRE
+
 using namespace Ogre;
 
 int showError(Ogre::String title, Ogre::String err)
@@ -62,22 +66,31 @@ int showMsgBox(Ogre::String title, Ogre::String err, int type)
 	return 0;
 }
 
+bool storederror = false;
+Ogre::String stored_title, stored_err, stored_url;
 int showOgreWebError(Ogre::String title, Ogre::String err, Ogre::String url)
 {
+#ifndef NOOGRE
 	// this only works in non-embedded mode
 	// make no sense in embedded mode anyways ...
-	Ogre::Root *r = Ogre::Root::getSingletonPtr();
-	if(r && r->isInitialised())
-	{
-		Ogre::RenderWindow *rw = r->getAutoCreatedWindow();
-		if(rw)
-		{
-			Ogre::RenderSystem *rs =  r->getRenderSystem();
-			if(rs)
-				rs->destroyRenderWindow(rw->getName());
-		}
-	}
+
+	storederror = true;
+	stored_title = title;
+	stored_err = err;
+	stored_url = url;
+
+	RigsOfRods *ror = RigsOfRods::getSingletonPtr();
+	if(ror) ror->shutdown();
+	return 0;
+#else
 	return showWebError(Ogre::String("Rigs of Rods: ") + title, err, url);
+#endif //NOOGRE
+}
+
+void showStoredOgreWebErrors()
+{
+	if(!storederror) return;
+	showWebError(stored_title, stored_err, stored_url);
 }
 
 int showWebError(Ogre::String title, Ogre::String err, Ogre::String url)
@@ -93,7 +106,7 @@ int showWebError(Ogre::String title, Ogre::String err, Ogre::String url)
 	{
 		// Microsoft conversion hell follows :|
 		char tmp[256], tmp2[256];
-		wchar_t ws1[256], ws2[256];
+		wchar_t ws1[256], ws2[256];	
 		strncpy(tmp, "open", 255);
 		mbstowcs(ws1, tmp, 255);
 		strncpy(tmp2, url.c_str(), 255);

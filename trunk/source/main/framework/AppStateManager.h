@@ -7,6 +7,7 @@
 
 #include "RoRPrerequisites.h"
 #include "AppState.h"
+#include <pthread.h>
 
 //|||||||||||||||||||||||||||||||||||||||||||||||
 
@@ -35,15 +36,18 @@ public:
 	void popAppState();
 	void pauseAppState();
 	void shutdown();
+	void pauseRendering();
 	void resized(Ogre::RenderWindow *r);
     void popAllAndPushAppState(AppState* state);
 
 protected:
 	void init(AppState *state);
+	pthread_mutex_t lock;
 
 	std::vector<AppState*>		m_ActiveStateStack;
 	std::vector<state_info>		m_States;
-	bool						m_bShutdown;
+	bool						m_bShutdown; // exits the program
+	bool                        m_bNoRendering; // no more rendering in the main loop
 };
 
 //|||||||||||||||||||||||||||||||||||||||||||||||

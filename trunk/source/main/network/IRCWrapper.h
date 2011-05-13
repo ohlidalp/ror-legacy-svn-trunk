@@ -34,27 +34,27 @@ along with Rigs of Rods.  If not, see <http://www.gnu.org/licenses/>.
 #include <libircclient.h>
 
 enum message_types {
-	MT_Channel, // someone said something in a channel
-	MT_NickChangeOther, // someone changed his nick
-	MT_NickChangeSelf, // we changed our nick
-	MT_QuitOther,  // someone quit
-	MT_JoinChannelOther, // someone joined a channel
-	MT_JoinChannelSelf, // we joined a channel
-	MT_PartChannelOther, // someone left a channel
-	MT_PartChannelSelf, // we left a channel
-	MT_ChangedChannelMode, // someone changed the channelmode
+	MT_Channel,             // someone said something in a channel
+	MT_NickChangeOther,     // someone changed his nick
+	MT_NickChangeSelf,      // we changed our nick
+	MT_QuitOther,           // someone quit
+	MT_JoinChannelOther,    // someone joined a channel
+	MT_JoinChannelSelf,     // we joined a channel
+	MT_PartChannelOther,    // someone left a channel
+	MT_PartChannelSelf,     // we left a channel
+	MT_ChangedChannelMode , // someone changed the channelmode
 	MT_ChangedUserModeSelf, // our usermode got changed
 	MT_ChangedChannelTopic, // someone changed the channel topic
-	MT_WeGotKicked, // we got kicked from a channel
-	MT_SomeoneGotKicked, // someone else got kicked from a channel
-	MT_GotPrivateMessage, // we got a private message
-	MT_GotNotice, // we got a notice
-	MT_GotInvitation, // we got an invitation to a channel
-	MT_VerboseMessage, // a verbose message used for various things coming directly from the server
-	MT_TopicInfo, // got info about a channel topic
-	MT_NameList, // got the name list of a channel
-	MT_ErrorAuth, // if the authentication failed horribly
-	MT_StatusUpdate // to update the status message on the bottom right of the screen
+	MT_WeGotKicked,         // we got kicked from a channel
+	MT_SomeoneGotKicked,    // someone else got kicked from a channel
+	MT_GotPrivateMessage,   // we got a private message
+	MT_GotNotice,           // we got a notice
+	MT_GotInvitation,       // we got an invitation to a channel
+	MT_VerboseMessage,      // a verbose message used for various things coming directly from the server
+	MT_TopicInfo,           // got info about a channel topic
+	MT_NameList,            // got the name list of a channel
+	MT_ErrorAuth,           // if the authentication failed horribly
+	MT_StatusUpdate         // to update the status message on the bottom right of the screen
 };
 
 typedef struct message_t
