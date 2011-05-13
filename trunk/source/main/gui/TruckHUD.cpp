@@ -23,6 +23,7 @@ along with Rigs of Rods.  If not, see <http://www.gnu.org/licenses/>.
 #include "turboprop.h"
 #include "language.h"
 #include "TorqueCurve.h"
+#include "RoRFrameListener.h"
 
 using namespace std;
 using namespace Ogre;
@@ -280,8 +281,12 @@ bool TruckHUD::update(float dt, Beam *truck, SceneManager *mSceneMgr, Camera* mC
 		float latacc=accv.dotProduct((truck->nodes[truck->cameranodepos[0]].RelPosition-truck->nodes[truck->cameranoderoll[0]].RelPosition).normalisedCopy());
 		Ogre::Vector3 upv=(truck->nodes[truck->cameranodepos[0]].RelPosition-truck->nodes[truck->cameranodedir[0]].RelPosition).crossProduct(-(truck->nodes[truck->cameranodepos[0]].RelPosition-truck->nodes[truck->cameranoderoll[0]].RelPosition));
 		upv.normalise();
-		float vertacc=(fabs(DEFAULT_GRAVITY))-(accv.dotProduct((truck->nodes[truck->cameranodepos[0]].RelPosition-(truck->nodes[truck->cameranodepos[0]].RelPosition + upv)).normalisedCopy()));
-		sprintf(geesstr, "Gees: Vertical %1.2fg // Saggital %1.2fg // Lateral %1.2fg", vertacc/(fabs(DEFAULT_GRAVITY)), longacc/(fabs(DEFAULT_GRAVITY)), latacc/(fabs(DEFAULT_GRAVITY)));
+		
+		float gravity = DEFAULT_GRAVITY;
+		if(RoRFrameListener::eflsingleton)
+			gravity = RoRFrameListener::eflsingleton->getGravity();
+		float vertacc=(fabs(gravity))-(accv.dotProduct((truck->nodes[truck->cameranodepos[0]].RelPosition-(truck->nodes[truck->cameranodepos[0]].RelPosition + upv)).normalisedCopy()));
+		sprintf(geesstr, "Gees: Vertical %1.2fg // Saggital %1.2fg // Lateral %1.2fg", vertacc/(fabs(gravity)), longacc/(fabs(gravity)), latacc/(fabs(gravity)));
 		descl = OverlayManager::getSingleton().getOverlayElement("tracks/TruckInfoBox/Gees");
 		descl->setCaption(geesstr);
 		checkOverflow(descl);
@@ -304,7 +309,15 @@ bool TruckHUD::update(float dt, Beam *truck, SceneManager *mSceneMgr, Camera* mC
 			if(latacc < maxNegLatG[truck->driveable])
 				maxNegLatG[truck->driveable] = latacc;
 
-			sprintf(geesstr, "maxG: V %1.2fg %1.2fg // S %1.2fg %1.2fg // L %1.2fg %1.2fg", maxPosVerG[truck->driveable]/(fabs(DEFAULT_GRAVITY)), maxNegVerG[truck->driveable]/(fabs(DEFAULT_GRAVITY)), maxPosSagG[truck->driveable]/(fabs(DEFAULT_GRAVITY)), maxNegSagG[truck->driveable]/(fabs(DEFAULT_GRAVITY)), maxPosLatG[truck->driveable]/(fabs(DEFAULT_GRAVITY)), maxNegLatG[truck->driveable]/(fabs(DEFAULT_GRAVITY)));
+			sprintf(geesstr, "maxG: V %1.2fg %1.2fg // S %1.2fg %1.2fg // L %1.2fg %1.2fg", 
+					maxPosVerG[truck->driveable]/(fabs(gravity)), 
+					maxNegVerG[truck->driveable]/(fabs(gravity)), 
+					maxPosSagG[truck->driveable]/(fabs(gravity)), 
+					maxNegSagG[truck->driveable]/(fabs(gravity)), 
+					maxPosLatG[truck->driveable]/(fabs(gravity)), 
+					maxNegLatG[truck->driveable]/(fabs(gravity))
+				);
+
 			descl = OverlayManager::getSingleton().getOverlayElement("tracks/TruckInfoBox/Gees2");
 			descl->setCaption(geesstr);
 			checkOverflow(descl);
