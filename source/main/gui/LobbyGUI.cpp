@@ -389,6 +389,9 @@ void LobbyGUI::eventCommandAccept(MyGUI::Edit* _sender)
 		return;
 	}
 
+	// unescape #
+	boost::algorithm::replace_all(command, "##", "#");
+
 	if(current_tab->name.substr(0, 1) == "#")
 	{
 		// its a channel, send message there
