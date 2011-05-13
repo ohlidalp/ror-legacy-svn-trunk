@@ -528,7 +528,6 @@ int ScriptEngine::framestep(Ogre::Real dt)
 			}
 		}
 	}
-#endif // 0
 
 	// check if current truck is in an event box
 	Beam *truck = BeamFactory::getSingleton().getCurrentTruck();
@@ -537,6 +536,8 @@ int ScriptEngine::framestep(Ogre::Real dt)
 		eventsource_t *source = coll->isTruckInEventBox(truck);
 		if(source) envokeCallback(source->scripthandler, source, 0, 1);
 	}
+
+#endif // 0
 
 	// framestep stuff below
 	if(frameStepFunctionPtr<0) return 1;
