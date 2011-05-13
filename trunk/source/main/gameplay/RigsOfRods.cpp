@@ -62,7 +62,7 @@ void RigsOfRods::go(void)
 	// thats the default state it chooses to start
 	// GameState = default state, classic
 	// LobbyState = experimental Multiplayer Lobby
-	Ogre::String state = "LobbyState"; //"LobbyState" / "GameState"
+	Ogre::String state = "GameState"; //"LobbyState" / "GameState"
 
 	GameState::create(stateManager,  "GameState");
 	LobbyState::create(stateManager, "LobbyState");
