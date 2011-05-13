@@ -54,11 +54,21 @@ public:
 	void update(float dt);
 
 protected:
+	typedef struct tabctx_t {
+		Ogre::String name;
+
+		MyGUI::TabItemPtr tab;
+		MyGUI::EditPtr txt;
+
+		int mHistoryPosition;
+		std::vector<MyGUI::UString> mHistory;
+	} tabctx_t;
+
 	ATTRIBUTE_FIELD_WIDGET_NAME(LobbyGUI, mainWindow, "_Main");
 	MyGUI::Window* mainWindow;
 
-	ATTRIBUTE_FIELD_WIDGET_NAME(LobbyGUI, chatWindow, "chatWindow");
-	MyGUI::EditBox* chatWindow;
+	ATTRIBUTE_FIELD_WIDGET_NAME(LobbyGUI, tabControl, "tabControl");
+	MyGUI::TabControl* tabControl;
 
 	ATTRIBUTE_FIELD_WIDGET_NAME(LobbyGUI, commandBox, "commandBox");
 	MyGUI::EditBox* commandBox;
@@ -66,10 +76,16 @@ protected:
 	ATTRIBUTE_FIELD_WIDGET_NAME(LobbyGUI, playerList, "playerList");
 	MyGUI::ScrollView* playerList;
 	
+	std::map<Ogre::String , tabctx_t > tabs;
+	tabctx_t *current_tab;
+
 	void processIRCEvent(message_t &msg);
-	void addTextToChatWindow(std::string);
+	void addTextToChatWindow(std::string, std::string channel);
+	void addTab(Ogre::String name);
 
 	void eventCommandAccept(MyGUI::Edit* _sender);
+	void eventChangeTab(MyGUI::TabControl* _sender, size_t _index);
+	void eventButtonPressed(MyGUI::Widget* _sender, MyGUI::KeyCode _key, MyGUI::Char _char);
 };
 
 #endif // LOBBYGUI_H__

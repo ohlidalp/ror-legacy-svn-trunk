@@ -32,13 +32,17 @@ along with Rigs of Rods.  If not, see <http://www.gnu.org/licenses/>.
 
 #include "libircclient.h"
 
+#include <boost/algorithm/string/replace.hpp> // for replace_all
+
 // class
 
-LobbyGUI::LobbyGUI()
+LobbyGUI::LobbyGUI() : current_tab(0)
 {
 	initialiseByAttributes(this);
 
+	commandBox->eventKeyButtonPressed += MyGUI::newDelegate(this, &LobbyGUI::eventButtonPressed);
 	commandBox->eventEditSelectAccept += MyGUI::newDelegate(this, &LobbyGUI::eventCommandAccept);
+	tabControl->eventTabChangeSelect  += MyGUI::newDelegate(this, &LobbyGUI::eventChangeTab);
 
 	initIRC();
 }
@@ -57,6 +61,7 @@ bool LobbyGUI::getVisible()
 	return mainWindow->getVisible();
 }
 
+/*
 void LobbyGUI::eventCommandAccept(MyGUI::Edit* _sender)
 {
 	MyGUI::UString message = _sender->getCaption();
@@ -69,6 +74,62 @@ void LobbyGUI::eventCommandAccept(MyGUI::Edit* _sender)
 		addTextToChatWindow("cannot send to channel");
 	}
 	_sender->setCaption("");
+}
+*/
+
+void LobbyGUI::addTab(Ogre::String name)
+{
+	/*
+	<Widget type="TabItem" skin="" position="2 24 304 193">
+	<Property key="Caption" value="Log"/>
+	<Widget type="EditBox" skin="EditBoxStretch" position="0 0 306 195" align="Stretch" name="OgreLog">
+	<Property key="WordWrap" value="true"/>
+	<Property key="TextAlign" value="Left Bottom"/>
+	<Property key="ReadOnly" value="true"/>
+	<Property key="OverflowToTheLeft" value="true"/>
+	<Property key="MaxTextLength" value="8192"/>
+	<Property key="FontName" value="Default"/>
+	</Widget>
+	</Widget>
+	*/
+	tabctx_t *t = &tabs[name];
+	t->name = name;
+
+	// create tab
+	t->tab = tabControl->addItem(name);
+
+	Ogre::String displayName = name;
+	// escape #
+	boost::algorithm::replace_all(displayName, "#", "##");
+
+	t->tab->setProperty("Caption", displayName);
+	t->tab->setCaption(displayName);
+
+	// and the textbox inside
+	t->txt = MyGUI::Gui::getInstance().createWidget<MyGUI::EditBox>("EditBoxStretch", 0, 0, 304, 193,  MyGUI::Align::Stretch, "txt"+name);
+	t->txt->setProperty("WordWrap", "true");
+	t->txt->setProperty("TextAlign", "Left Bottom");
+	t->txt->setProperty("ReadOnly", "true");
+	t->txt->setProperty("OverflowToTheLeft", "true");
+	t->txt->setProperty("MaxTextLength", "8192");
+	t->txt->setWidgetStyle(MyGUI::WidgetStyle::Child);
+
+	// attach it to the tab
+	t->txt->detachFromWidget();
+	t->txt->attachToWidget(t->tab);
+
+
+	t->txt->setSize(t->tab->getSize().width, t->tab->getSize().height);
+
+	//mTabControl->setItemData(t->tab, t);
+	t->tab->setUserData(t);
+
+	t->mHistoryPosition = 0;
+	t->mHistory.push_back("");
+
+	// set focus to new tab
+	tabControl->selectSheetIndex(tabs.size()-1, false);
+	current_tab = t;
 }
 
 void LobbyGUI::processIRCEvent(message_t &msg)
@@ -83,77 +144,66 @@ void LobbyGUI::processIRCEvent(message_t &msg)
 		}
 	}
 	
-	// properly replace all # with ## in order not to confuse the GUI
-	if(!msg.message.empty())
-	{
-		string::size_type pos = 0;
-		while ( (pos = msg.message.find("#", pos)) != string::npos )
-		{
-			msg.message.replace( pos, 1, "##" );
-			pos++;
-		}
-	}
-
 	switch(msg.type)
 	{
 	case MT_Channel:
 		{
 			std::string fmt = "<" + msg.nick + "> " + msg.message;
-			addTextToChatWindow(fmt);
+			addTextToChatWindow(fmt, msg.channel);
 		}
 		break;
 	case MT_JoinChannelSelf:
 		{
 			std::string fmt = "joined channel " + msg.channel + " as " + msg.nick + "";
-			addTextToChatWindow(fmt);
+			addTextToChatWindow(fmt, msg.channel);
 		}
 		break;
 	case MT_JoinChannelOther:
 		{
 			std::string fmt = "*** " + msg.nick + " has joined " + msg.channel;
-			addTextToChatWindow(fmt);
+			addTextToChatWindow(fmt, msg.channel);
 		}
 		break;
 	case MT_PartChannelOther:
 		{
 			std::string fmt = "*** " + msg.nick + " has left " + msg.channel;
-			addTextToChatWindow(fmt);
+			addTextToChatWindow(fmt, msg.channel);
 		}
 		break;
 	case MT_QuitOther:
 		{
 			std::string fmt = "*** " + msg.nick + " has quit (" + msg.message + ")";
-			addTextToChatWindow(fmt);
+			addTextToChatWindow(fmt, msg.channel);
 		}
 		break;
 	case MT_PartChannelSelf:
 		{
 			std::string fmt = "*** you left the channel " + msg.channel;
-			addTextToChatWindow(fmt);
+			addTextToChatWindow(fmt, msg.channel);
 		}
 		break;
 	case MT_ChangedChannelTopic:
 		{
 			std::string fmt = "*** " + msg.nick + " has changed the channel topic of " + msg.channel + " to " + msg.message;
-			addTextToChatWindow(fmt);
+			addTextToChatWindow(fmt, msg.channel);
 		}
 		break;
 	case MT_WeGotKicked:
 		{
 			std::string fmt = "*** we got kicked from " + msg.channel + " with the reason " + msg.message;
-			addTextToChatWindow(fmt);
+			addTextToChatWindow(fmt, msg.channel);
 		}
 		break;
 	case MT_SomeoneGotKicked:
 		{
 			std::string fmt = "*** " + msg.nick + " got kicked from " + msg.channel + " with the reason " + msg.message;
-			addTextToChatWindow(fmt);
+			addTextToChatWindow(fmt, msg.channel);
 		}
 		break;
 	case MT_GotPrivateMEssage:
 		{
 			std::string fmt = "(private) <" + msg.nick + "> " + msg.message;
-			addTextToChatWindow(fmt);
+			addTextToChatWindow(fmt, msg.nick);
 		}
 		break;
 	case MT_GotNotice:
@@ -164,19 +214,19 @@ void LobbyGUI::processIRCEvent(message_t &msg)
 				fmt = "(NOTICE) " + msg.message;
 			else
 				fmt = "(NOTICE) <" + msg.nick + "> " + msg.message;
-			addTextToChatWindow(fmt);
+			addTextToChatWindow(fmt, msg.channel);
 		}
 		break;
 	case MT_GotInvitation:
 		{
 			std::string fmt = "*** " + msg.nick + " invited you to channel " + msg.message;
-			addTextToChatWindow(fmt);
+			addTextToChatWindow(fmt, msg.channel);
 		}
 		break;
 	case MT_TopicInfo:
 		{
 			std::string fmt = "*** Topic is " + msg.message;
-			addTextToChatWindow(fmt);
+			addTextToChatWindow(fmt, msg.channel);
 		}
 		break;
 	case MT_NameList:
@@ -189,7 +239,7 @@ void LobbyGUI::processIRCEvent(message_t &msg)
 			}
 			*/
 			std::string fmt = "*** Users are: " + msg.message;
-			addTextToChatWindow(fmt);
+			addTextToChatWindow(fmt, msg.channel);
 		}
 		break;
 
@@ -197,19 +247,152 @@ void LobbyGUI::processIRCEvent(message_t &msg)
 	}
 }
 
-void LobbyGUI::addTextToChatWindow(std::string txt)
+void LobbyGUI::addTextToChatWindow(std::string txt, std::string channel)
 {
-	if (!chatWindow->getCaption().empty())
-		chatWindow->addText("\n" + txt);
-	else
-		chatWindow->addText(txt);
+	// escape #
+	boost::algorithm::replace_all(txt, "#", "##");
 
-	chatWindow->setTextSelection(chatWindow->getTextLength(), chatWindow->getTextLength());	
+	//catch special case that channel is empty -> Status Channel
+	if(channel.empty())
+		channel = "Status";
+
+	if(tabs.find(channel) == tabs.end())
+	{
+		// add a new tab
+		addTab(channel);
+	}
+
+	MyGUI::Edit* ec = tabs[channel].txt;
+	if (!ec->getCaption().empty())
+		ec->addText("\n" + txt);
+	else
+		ec->addText(txt);
+
+	ec->setTextSelection(ec->getTextLength(), ec->getTextLength());	
 }
 
 void LobbyGUI::update(float dt)
 {
 	process();
 }
+
+void LobbyGUI::eventButtonPressed(MyGUI::Widget* _sender, MyGUI::KeyCode _key, MyGUI::Char _char)
+{
+	if(!current_tab) return;
+	if(_key == MyGUI::KeyCode::Escape || _key == MyGUI::KeyCode::Enum(INPUTENGINE.getKeboardKeyForCommand(EV_COMMON_CONSOLEDISPLAY)))
+	{
+		setVisible(false);
+		// delete last character (to avoid printing `)
+		size_t lastChar = commandBox->getTextLength() - 1;
+		if (_key != MyGUI::KeyCode::Escape && commandBox->getCaption()[lastChar] == '`')
+			commandBox->eraseText(lastChar);
+		return;
+	}
+
+	switch(_key.toValue())
+	{
+	case MyGUI::KeyCode::ArrowUp:
+		if(current_tab->mHistoryPosition > 0)
+		{
+			// first we save what we was writing
+			if (current_tab->mHistoryPosition == (int)current_tab->mHistory.size() - 1)
+			{
+				current_tab->mHistory[current_tab->mHistoryPosition] = commandBox->getCaption();
+			}
+			current_tab->mHistoryPosition--;
+			commandBox->setCaption(current_tab->mHistory[current_tab->mHistoryPosition]);
+		}
+		break;
+
+	case MyGUI::KeyCode::ArrowDown:
+		if(current_tab->mHistoryPosition < (int)current_tab->mHistory.size() - 1)
+		{
+			current_tab->mHistoryPosition++;
+			commandBox->setCaption(current_tab->mHistory[current_tab->mHistoryPosition]);
+		}
+		break;
+
+	case MyGUI::KeyCode::PageUp:
+		if (current_tab->txt->getVScrollPosition() > (size_t)current_tab->txt->getHeight())
+			current_tab->txt->setVScrollPosition(current_tab->txt->getVScrollPosition() - current_tab->txt->getHeight());
+		else
+			current_tab->txt->setVScrollPosition(0);
+		break;
+
+	case MyGUI::KeyCode::PageDown:
+		current_tab->txt->setVScrollPosition(current_tab->txt->getVScrollPosition() + current_tab->txt->getHeight());
+		break;
+	}
+}
+
+void LobbyGUI::eventCommandAccept(MyGUI::Edit* _sender)
+{
+	if(!current_tab) return;
+	Ogre::String command = _sender->getCaption();
+
+	Ogre::StringUtil::trim(command);
+
+	if(current_tab->name.substr(0, 1) == "#")
+	{
+		// its a channel, send message there
+
+		// check if its a command
+		if(command.substr(0, 1) == "/")
+		{
+			// command there!
+			Ogre::StringVector v = Ogre::StringUtil::split(command, " ");
+
+			if(v.size() >= 2 && v[0] == "/me")
+				sendMeMessage(v[1], v.size()>2?v[2]:current_tab->name);
+
+			else if(v.size() >= 2 && v[0] == "/PRIVMSG")
+				sendMessage(v[1], v.size()>2?v[2]:current_tab->name);
+
+			else if(v.size() >= 2 && (v[0] == "/join" || v[0] == "/j"))
+				joinChannel(v[1], v.size()>2?v[2]:"");
+
+			else if(v.size() >= 2 && (v[0] == "/nick" || v[0] == "/n"))
+				changeNick(v[1]);
+
+			else if(v.size() >= 2 && (v[0] == "/leave" || v[0] == "/l"))
+				leaveChannel(v[1]);
+
+			else if(v.size() >= 2 && (v[0] == "/quit" || v[0] == "/q"))
+				quit(v.size()>1?v[1]:"");
+
+		} else
+		{
+			// no command
+			sendMessage(command, current_tab->name);
+		}
+		// add our message to the textbox
+		std::string fmt = "<" + nick + "> " + command;
+		addTextToChatWindow(fmt, current_tab->name);
+	}
+
+	// save some history
+	*current_tab->mHistory.rbegin() = command;
+	current_tab->mHistory.push_back(""); // new, empty last entry
+	current_tab->mHistoryPosition = current_tab->mHistory.size() - 1; // switch to the new line
+	commandBox->setCaption(current_tab->mHistory[current_tab->mHistoryPosition]);
+}
+
+void LobbyGUI::eventChangeTab(MyGUI::TabControl* _sender, size_t _index)
+{
+	MyGUI::TabItemPtr tab = _sender->getItemAt(_index);
+	if(!tab) return;
+	String n = tab->getCaption();
+	if(tabs.find(n) == tabs.end())
+		return;
+
+	bool enabled = true;
+	if(n == "OgreLog")  enabled = false;
+	if(n == "IRCDebug") enabled = false;
+	commandBox->setEnabled(enabled);
+
+	current_tab = &tabs[n];
+}
+
+
 
 #endif //USE_MYGUI 
