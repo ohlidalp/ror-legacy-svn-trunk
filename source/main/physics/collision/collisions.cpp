@@ -23,7 +23,7 @@ along with Rigs of Rods.  If not, see <http://www.gnu.org/licenses/>.
 #include "approxmath.h"
 #include "errorutils.h"
 #include "language.h"
-#include "ScriptEngine.h"
+#include "Scripting.h"
 #include "BeamFactory.h"
 
 // some gcc fixes
