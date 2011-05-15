@@ -45,6 +45,8 @@ public:
 
 	MyGUI::Gui* getGUI() { return mGUI; }
 
+	void unfocus();
+
 	void windowResized(Ogre::RenderWindow* _rw);
 protected:
 private:

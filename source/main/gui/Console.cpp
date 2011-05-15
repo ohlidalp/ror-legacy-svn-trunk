@@ -48,12 +48,15 @@ Console::Console() : net(0)
 	mMainWidget->setCoord(0, -size.height, size.width, size.height);
 	*/
 
+	MyGUI::Window *wnd = dynamic_cast<MyGUI::Window *>(mMainWidget);
+	wnd->eventWindowButtonPressed += MyGUI::newDelegate(this, &Console::notifyWindowXPressed);
+
 	mCommandEdit->eventKeyButtonPressed += MyGUI::newDelegate(this, &Console::eventButtonPressed);
 	mCommandEdit->eventEditSelectAccept += MyGUI::newDelegate(this, &Console::eventCommandAccept);
 	mTabControl->eventTabChangeSelect   += MyGUI::newDelegate(this, &Console::eventChangeTab);
 
 	addTab("OgreLog");
-	addTab("IRCDebug");
+	//addTab("IRCDebug");
 
 	// BUG: all editboxes visible on startup D:
 	mTabControl->selectSheetIndex(0, false);
@@ -217,6 +220,14 @@ void Console::frameEntered(float _frame)
 	}
 }
 
+void Console::notifyWindowXPressed(MyGUI::WidgetPtr _widget, const std::string& _name)
+{
+	if (_name == "close")
+	{
+		MyGUI::WindowPtr window = dynamic_cast<MyGUI::WindowPtr>(_widget);
+		window->hideSmooth();
+	}
+}
 void Console::eventButtonPressed(MyGUI::Widget* _sender, MyGUI::KeyCode _key, MyGUI::Char _char)
 {
 	if(_key == MyGUI::KeyCode::Escape || _key == MyGUI::KeyCode::Enum(INPUTENGINE.getKeboardKeyForCommand(EV_COMMON_CONSOLEDISPLAY)))

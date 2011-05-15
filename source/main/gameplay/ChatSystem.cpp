@@ -118,7 +118,7 @@ ChatSystem::ChatSystem(Network *net, int source, unsigned int streamid, int colo
 			username = getColouredName(tryConvertUTF(c->user.username), c->user.authstatus);
 		}
 
-		NETCHAT->printUTF(username + mCommandColour + _L(" joined the chat"));
+		//NETCHAT->printUTF(username + mCommandColour + _L(" joined the chat"));
 	}
 #endif //SOCKETW
 }
@@ -127,7 +127,7 @@ ChatSystem::~ChatSystem()
 {
 	if(remote)
 	{
-		NETCHAT->printUTF(username + mCommandColour + _L(" left the chat"));
+		//NETCHAT->printUTF(username + mCommandColour + _L(" left the chat"));
 	}
 }
 
@@ -155,11 +155,11 @@ void ChatSystem::receiveStreamData(unsigned int &type, int &source, unsigned int
 		if(source == -1)
 		{
 			// server said something
-			NETCHAT->printUTF(getASCIIFromCharString(buffer, 255));
+			//NETCHAT->printUTF(getASCIIFromCharString(buffer, 255));
 		} else if(source == (int)this->source && (int)streamid == this->streamid)
 		{
 			UTFString text = tryConvertUTF(buffer);
-			NETCHAT->printUTF(username + mNormalColour + ": " + text);
+			//NETCHAT->printUTF(username + mNormalColour + ": " + text);
 		}
 	}
 }

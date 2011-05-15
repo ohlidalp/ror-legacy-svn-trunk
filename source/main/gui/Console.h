@@ -31,8 +31,6 @@ along with Rigs of Rods.  If not, see <http://www.gnu.org/licenses/>.
 #include <OgreLog.h>
 #include <OgreUTFString.h>
 
-#define NETCHAT Console::get()
-
 
 typedef struct irc_ctx_t
 {
@@ -87,6 +85,7 @@ public:
 	// print waiting messages
 	void frameEntered(float _frame);
 protected:
+	void notifyWindowXPressed(MyGUI::WidgetPtr _widget, const std::string& _name);
 	void eventButtonPressed(MyGUI::Widget* _sender, MyGUI::KeyCode _key, MyGUI::Char _char);
 	void eventCommandAccept(MyGUI::Edit* _sender);
 	void eventChangeTab(MyGUI::TabControl* _sender, size_t _index);
