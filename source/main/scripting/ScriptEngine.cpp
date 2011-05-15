@@ -68,7 +68,13 @@ template<> ScriptEngine *Ogre::Singleton<ScriptEngine>::ms_Singleton=0;
 
 char *ScriptEngine::moduleName = "RoRScript";
 
-#define SLOG(x) ScriptEngine::getSingleton().scriptLog->logMessage(x);
+
+// some hacky functions
+
+void logString(const std::string &str)
+{
+	SLOG(str);
+}
 
 // the class implementation
 
@@ -238,6 +244,10 @@ void ScriptEngine::init()
 	//AngelScript::RegisterScriptStringUtils(engine);
 
 	registerOgreObjects(engine);
+
+	// some useful global functions
+	result = engine->RegisterGlobalFunction("void log(const string &in)", AngelScript::asFUNCTION(logString), AngelScript::asCALL_CDECL); assert( r >= 0 );
+	result = engine->RegisterGlobalFunction("void print(const string &in)", AngelScript::asFUNCTION(logString), AngelScript::asCALL_CDECL); assert( r >= 0 );
 
 	// Register everything
 	// class Beam
@@ -603,7 +613,7 @@ int ScriptEngine::executeString(Ogre::String command)
 	return result;
 }
 
-void ScriptEngine::triggerEvent(enum scriptEvents eventnum, int value)
+void ScriptEngine::triggerEvent(int eventnum, int value)
 {
 	if(!engine) return;
 	if(eventCallbackFunctionPtr<=0) return;
