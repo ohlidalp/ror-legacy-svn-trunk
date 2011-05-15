@@ -58,6 +58,11 @@ Console::Console() : net(0)
 	addTab("OgreLog");
 	//addTab("IRCDebug");
 
+#ifdef USE_ANGELSCRIPT
+	addTab("Angelscript");
+#endif //ANGELSCRIPT
+
+
 	// BUG: all editboxes visible on startup D:
 	mTabControl->selectSheetIndex(0, false);
 
