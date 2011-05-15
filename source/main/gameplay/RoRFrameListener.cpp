@@ -890,9 +890,6 @@ RoRFrameListener::RoRFrameListener(AppState *parentState, RenderWindow* win, Cam
 
 	MyGUI::VectorWidgetPtr v = MyGUI::LayoutManager::getInstance().loadLayout("wallpaper.layout");
 
-	// always create the console
-	Console::getInstance();
-
 	// print some log message so we know angelscript is alive :)
 #ifdef USE_ANGELSCRIPT
 	ScriptEngine::getSingleton().scriptLog->logMessage("ScriptEngine running");
