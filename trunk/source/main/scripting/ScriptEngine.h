@@ -78,7 +78,7 @@ public:
 	 * triggers an event. Not to be used by the end-user
 	 * @param eventValue \see enum scriptEvents
 	 */
-	void triggerEvent(enum scriptEvents, int value=0);
+	void triggerEvent(int scriptEvents, int value=0);
 
 	/**
 	 * executes a string (useful for the console)
