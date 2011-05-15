@@ -9,9 +9,10 @@ SetCompressor /FINAL /SOLID lzma
 
 !define PRODUCT_VERSION_MAJOR "0"
 !define PRODUCT_VERSION_MINOR "38"
-!define PRODUCT_VERSION_PATCH "27"
+!define PRODUCT_VERSION_PATCH "28"
 
 !define PRODUCT_VERSION "${PRODUCT_VERSION_MAJOR}.${PRODUCT_VERSION_MINOR}.${PRODUCT_VERSION_PATCH}"
+!define PRODUCT_VERSION_SHORT "${PRODUCT_VERSION_MAJOR}.${PRODUCT_VERSION_MINOR}"
 
 !define PRODUCT_FULLNAME "${PRODUCT_NAME} ${PRODUCT_VERSION}"
 !define PRODUCT_PUBLISHER "Rigs of Rods Team"
@@ -223,7 +224,7 @@ Function .onInit
 	;Delete $PLUGINSDIR\splash
 	
 	!insertmacro MUI_LANGDLL_DISPLAY
-    Call UninstallOld
+    #Call UninstallOld
 FunctionEnd
 
 Section "!Rigs of Rods Base" RoRBaseGame
@@ -236,19 +237,19 @@ Section "!Rigs of Rods Base" RoRBaseGame
 
 	# user path
 	SetShellVarContext current
-	SetOutPath "$DOCUMENTS\Rigs of Rods\"
+	SetOutPath "$DOCUMENTS\Rigs of Rods ${PRODUCT_VERSION_SHORT}\"
 	# create some empty directories
-	CreateDirectory "$DOCUMENTS\Rigs of Rods\cache\"
-	CreateDirectory "$DOCUMENTS\Rigs of Rods\logs\"
-	CreateDirectory "$DOCUMENTS\Rigs of Rods\terrains\"
-	CreateDirectory "$DOCUMENTS\Rigs of Rods\vehicles\"
+	CreateDirectory "$DOCUMENTS\Rigs of Rods ${PRODUCT_VERSION_SHORT}\cache\"
+	CreateDirectory "$DOCUMENTS\Rigs of Rods ${PRODUCT_VERSION_SHORT}\logs\"
+	CreateDirectory "$DOCUMENTS\Rigs of Rods ${PRODUCT_VERSION_SHORT}\terrains\"
+	CreateDirectory "$DOCUMENTS\Rigs of Rods ${PRODUCT_VERSION_SHORT}\vehicles\"
 	# no file overwriting for the user folder, important so the user can keep his configuration
 	SetOverwrite off
 	File /r /x .svn installerskeleton\*
 	# install config files without overwrite on
 	SetOverwrite try
 	# overwrite some configuration files that are required
-	SetOutPath "$DOCUMENTS\Rigs of Rods\config\"
+	SetOutPath "$DOCUMENTS\Rigs of Rods ${PRODUCT_VERSION_SHORT}\config\"
 	File installerskeleton\config\categories.cfg
 	File installerskeleton\config\editor.cfg
 	File installerskeleton\config\ground_models.cfg
@@ -261,7 +262,7 @@ Section "!Rigs of Rods Base" RoRBaseGame
 	; clean cache directory
 	Banner::show /NOUNLOAD "cleaning cache directory"
     ; this will empty that directory (but not delete it)
-    !insertmacro RemoveFilesAndSubDirs "$DOCUMENTS\Rigs of Rods\cache\"
+    !insertmacro RemoveFilesAndSubDirs "$DOCUMENTS\Rigs of Rods  ${PRODUCT_VERSION_SHORT}\cache\"
 	Banner::destroy
 	
 	# back to normal installation directory
@@ -292,16 +293,16 @@ Section /o "Content Pack" RoRContentPack
 	AddSize 416692
 	
 	SetShellVarContext current
-	SetOutPath "$DOCUMENTS\Rigs of Rods\"
+	SetOutPath "$DOCUMENTS\Rigs of Rods ${PRODUCT_VERSION_SHORT}\"
 
-	!define CONTENT_TARGETFILE "$DOCUMENTS\Rigs of Rods\content-pack.zip"
+	!define CONTENT_TARGETFILE "$DOCUMENTS\Rigs of Rods ${PRODUCT_VERSION_SHORT}\content-pack.zip"
 	; attention: the useragent is crucial to get the HTTP/302 instead of the fancy webpage
 	inetc::get /TIMEOUT=30000 /USERAGENT "wget" "http://download.rigsofrods.com/content/?version=${PRODUCT_VERSION}" "${CONTENT_TARGETFILE}"
 	Pop $0 ;Get the return value
 	StrCmp $0 "OK" content_pack_unzip
 	MessageBox MB_OK|MB_ICONEXCLAMATION "Download of Content Pack failed: $0" /SD IDOK
 content_pack_unzip:
-	ZipDLL::extractall "${CONTENT_TARGETFILE}" "$DOCUMENTS\Rigs of Rods\packs"
+	ZipDLL::extractall "${CONTENT_TARGETFILE}" "$DOCUMENTS\Rigs of Rods ${PRODUCT_VERSION_SHORT}\packs"
 	Goto content_pack_unzip_end
 content_pack_unzip_end:	
 	; remove downloaded file
@@ -460,11 +461,11 @@ Section Uninstall
 	StrCmp $0 "1" end
 
 	SetShellVarContext current
-	MessageBox MB_YESNO|MB_ICONEXCLAMATION "Remove RoR user content in $DOCUMENTS\Rigs of Rods?" IDYES removedoc IDNO end
+	MessageBox MB_YESNO|MB_ICONEXCLAMATION "Remove RoR user content in $DOCUMENTS\Rigs of Rods ${PRODUCT_VERSION_SHORT}?" IDYES removedoc IDNO end
 removedoc:
-	MessageBox MB_YESNO|MB_ICONEXCLAMATION "Are you really sure to remove all user content in $DOCUMENTS\Rigs of Rods?" IDYES removedoc2 IDNO end
+	MessageBox MB_YESNO|MB_ICONEXCLAMATION "Are you really sure to remove all user content in $DOCUMENTS\Rigs of Rods ${PRODUCT_VERSION_SHORT}?" IDYES removedoc2 IDNO end
 removedoc2:
-	RMDir  "/r" "$DOCUMENTS\Rigs of Rods"
+	RMDir  "/r" "$DOCUMENTS\Rigs of Rods ${PRODUCT_VERSION_SHORT}"
 end:
 	SetAutoClose false
 SectionEnd
