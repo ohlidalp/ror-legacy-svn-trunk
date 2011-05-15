@@ -1627,10 +1627,15 @@ void RoRFrameListener::loadObject(const char* name, float px, float py, float pz
 				event_filter=EVENT_AIRPLANE;
 			else if(!strncmp(ts, "delete", 8))
 				event_filter=EVENT_DELETE;
-			continue;
+			
 			if(!strncmp(ts, "shoptruck", 9))
 				terrainHasTruckShop=true;
 
+			// fallback
+			if(strlen(ts) == 0)
+				event_filter=EVENT_ALL;
+
+			continue;
 		}
 		//resp=sscanf(ptline, "%f, %f, %f, %f, %f, %f, %f, %f, %f, %c",&lx,&hx,&ly, &hy,&lz, &hz, &srx, &sry, &srz,&type);
 		if (!strcmp("endbox", ptline))
