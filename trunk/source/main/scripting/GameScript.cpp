@@ -2,6 +2,7 @@
 #include "Ogre.h"
 #include "RoRFrameListener.h"
 #include "BeamFactory.h"
+#include "ScriptEngine.h"
 
 // AS addons start
 #include "scriptstdstring/scriptstdstring.h"
@@ -46,7 +47,7 @@ GameScript::~GameScript()
 
 void GameScript::log(std::string &msg)
 {
-	LOG(msg);
+	SLOG(msg);
 }
 
 double GameScript::getTime()
@@ -241,14 +242,13 @@ void GameScript::destroyObject(const std::string &instanceName)
 
 void GameScript::spawnObject(const std::string &objectName, const std::string &instanceName, Ogre::Vector3 pos, Ogre::Vector3 rot, const std::string &eventhandler, bool uniquifyMaterials)
 {
-	/*
 	AngelScript::asIScriptModule *mod=0;
 	try
 	{
 		mod = mse->getEngine()->GetModule(mse->moduleName, AngelScript::asGM_ONLY_IF_EXISTS);
 	}catch(std::exception e)
 	{
-		LOG("Exception in spawnObject(): " + String(e.what()));
+		SLOG("Exception in spawnObject(): " + String(e.what()));
 		return;
 	}
 	if(!mod) return;
@@ -257,7 +257,6 @@ void GameScript::spawnObject(const std::string &objectName, const std::string &i
 	// trying to create the new object
 	SceneNode *bakeNode=mefl->getSceneMgr()->getRootSceneNode()->createChildSceneNode();
 	mefl->loadObject(const_cast<char*>(objectName.c_str()), pos.x, pos.y, pos.z, rot.x, rot.y, rot.z, bakeNode, const_cast<char*>(instanceName.c_str()), true, functionPtr, const_cast<char*>(objectName.c_str()), uniquifyMaterials);
-	*/
 }
 
 void GameScript::hideDirectionArrow()
@@ -274,7 +273,7 @@ int GameScript::setMaterialAmbient(const std::string &materialName, float red, f
 		m->setAmbient(red, green, blue);
 	} catch(Exception e)
 	{
-		LOG("Exception in setMaterialAmbient(): " + e.getFullDescription());
+		SLOG("Exception in setMaterialAmbient(): " + e.getFullDescription());
 		return 0;
 	}
 	return 1;
@@ -289,7 +288,7 @@ int GameScript::setMaterialDiffuse(const std::string &materialName, float red, f
 		m->setDiffuse(red, green, blue, alpha);
 	} catch(Exception e)
 	{
-		LOG("Exception in setMaterialDiffuse(): " + e.getFullDescription());
+		SLOG("Exception in setMaterialDiffuse(): " + e.getFullDescription());
 		return 0;
 	}
 	return 1;
@@ -304,7 +303,7 @@ int GameScript::setMaterialSpecular(const std::string &materialName, float red, 
 		m->setSpecular(red, green, blue, alpha);
 	} catch(Exception e)
 	{
-		LOG("Exception in setMaterialSpecular(): " + e.getFullDescription());
+		SLOG("Exception in setMaterialSpecular(): " + e.getFullDescription());
 		return 0;
 	}
 	return 1;
@@ -319,7 +318,7 @@ int GameScript::setMaterialEmissive(const std::string &materialName, float red, 
 		m->setSelfIllumination(red, green, blue);
 	} catch(Exception e)
 	{
-		LOG("Exception in setMaterialEmissive(): " + e.getFullDescription());
+		SLOG("Exception in setMaterialEmissive(): " + e.getFullDescription());
 		return 0;
 	}
 	return 1;

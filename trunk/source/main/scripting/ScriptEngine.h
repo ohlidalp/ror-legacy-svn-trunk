@@ -37,6 +37,8 @@ along with Rigs of Rods.  If not, see <http://www.gnu.org/licenses/>.
 
 #define AS_INTERFACE_VERSION "0.2.0" //!< versioning for the scripting interface
 
+#define SLOG(x) ScriptEngine::getSingleton().scriptLog->logMessage(x);
+
 /**
  * @file ScriptEngine.h
  * @version 0.1.0
