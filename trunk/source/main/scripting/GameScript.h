@@ -1,0 +1,213 @@
+/*
+This source file is part of Rigs of Rods
+Copyright 2005-2011 Pierre-Michel Ricordel
+Copyright 2007-2011 Thomas Fischer
+
+For more information, see http://www.rigsofrods.com/
+
+Rigs of Rods is free software: you can redistribute it and/or modify
+it under the terms of the GNU General Public License version 3, as 
+published by the Free Software Foundation.
+
+Rigs of Rods is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+GNU General Public License for more details.
+
+You should have received a copy of the GNU General Public License
+along with Rigs of Rods.  If not, see <http://www.gnu.org/licenses/>.
+*/
+// created on 24th of February 2009 by Thomas Fischer
+#ifndef GAMESCRIPT_H__
+#define GAMESCRIPT_H__
+
+#include "RoRPrerequisites.h"
+
+#include <string>
+#include <angelscript.h>
+#include <Ogre.h>
+#include <OgreLogManager.h>
+
+#include "scriptdictionary/scriptdictionary.h"
+#include "scriptbuilder/scriptbuilder.h"
+
+#include "collisions.h"
+
+#include "ScriptEngine.h"
+
+struct curlMemoryStruct {
+  char *memory;
+  size_t size;
+};
+
+/**
+ *  @brief Proxy class that can be called by script functions
+ */
+class GameScript
+{
+protected:
+	ScriptEngine *mse;              //!< local script engine pointer, used as proxy mostly
+	RoRFrameListener *mefl;     //!< local pointer to the main RoRFrameListener, used as proxy mostly
+
+public:
+	/**
+	 * constructor
+	 * @param se pointer to the ScriptEngine instance
+	 * @param efl pointer to the RoRFrameListener instance
+	 */
+	GameScript(ScriptEngine *se, RoRFrameListener *efl);
+
+	/**
+	 * destructor
+	 */
+	~GameScript();
+
+	/**
+	 * writes a message to the games log (RoR.log)
+	 * @param msg string to log
+	 */
+	void log(std::string &msg);
+
+	/**
+	 * returns the time in seconds since the game was started
+	 * @return time in seconds
+	 */
+	double getTime();
+
+	/**
+	 * sets the character position
+	 * @param x X position on the terrain
+	 * @param y Y position on the terrain
+	 * @param z Z position on the terrain
+	 */
+	void setPersonPosition(Ogre::Vector3 vec);
+
+	void loadTerrain(std::string &terrain);
+	/**
+	 * moves the person relative
+	 * @param x X translation
+	 * @param y Y translation
+	 * @param z Z translation
+	 */
+	void movePerson(Ogre::Vector3);
+
+	/**
+	 * gets the time of the day in seconds
+	 * @return string with HH::MM::SS format
+	 */
+	std::string getCaelumTime();
+	
+	/**
+	 * sets the time of the day in seconds
+	 * @param value day time in seconds
+	 */
+	void setCaelumTime(float value);
+	
+	/**
+	 * returns the current base water level (without waves)
+	 * @return water height in meters
+	 */
+	float getWaterHeight();
+
+	float getGroundHeight(Ogre::Vector3 v);
+
+	/**
+	 * sets the base water height
+	 * @param value base height in meters
+	 */
+	void setWaterHeight(float value);
+
+	/**
+	 * returns the current selected truck, 0 if in person mode
+	 * @return reference to Beam object that is currently in use
+	 */
+	Beam *getCurrentTruck();
+
+	/**
+	 * returns a truck by index, get max index by calling getNumTrucks
+	 * @return reference to Beam object that the selected slot
+	 */
+	Beam *getTruckByNum(int num);
+
+	/**
+	 * returns the current amount of loaded trucks
+	 * @return integer value representing the amount of loaded trucks
+	 */
+	int getNumTrucks();
+
+	/**
+	 * returns the current truck number. >=0 when using a truck, -1 when in person mode
+	 * @return integer truck number
+	 */
+	int getCurrentTruckNumber();
+	
+	/**
+	 * returns the currently set upo gravity
+	 * @return float number describing gravity terrain wide.
+	 */
+	float getGravity();
+	
+	/**
+	 * sets the gravity terrain wide. This is an expensive call, since the masses of all trucks are recalculated.
+	 * @param value new gravity terrain wide (default is -9.81)
+	 */
+	void setGravity(float value);
+
+	/**
+	 * registers for a new event to be received by the scripting system
+	 * @param eventValue \see enum scriptEvents
+	 */
+	void registerForEvent(int eventValue);
+
+	/**
+	 * shows a message to the user
+	 */
+	void flashMessage(std::string &txt, float time, float charHeight);
+
+	/**
+	 * set direction arrow
+	 * @param text text to be displayed. "" to hide the text
+	 */
+	void setDirectionArrow(std::string &text, Ogre::Vector3 vec);
+
+
+	/**
+	 * returns the size of the font used by the chat box
+	 * @return pixel size of the chat text
+	 */
+	int getChatFontSize();
+
+	/**
+	 * changes the font size of the chat box
+	 * @param size font size in pixels
+	 */
+	void setChatFontSize(int size);
+
+
+	// new things, not documented yet
+	void showChooser(std::string &type, std::string &instance, std::string &box);
+	void repairVehicle(std::string &instance, std::string &box, bool keepPosition);
+	void removeVehicle(std::string &instance, std::string &box);
+
+	void spawnObject(const std::string &objectName, const std::string &instanceName, Ogre::Vector3 pos, Ogre::Vector3 rot, const std::string &eventhandler, bool uniquifyMaterials);
+	void destroyObject(const std::string &instanceName);
+	int getNumTrucksByFlag(int flag);
+	bool getCaelumAvailable();
+	void stopTimer();
+	void startTimer();
+	std::string getSetting(std::string str);
+	void hideDirectionArrow();
+	int setMaterialAmbient(const std::string &materialName, float red, float green, float blue);
+	int setMaterialDiffuse(const std::string &materialName, float red, float green, float blue, float alpha);
+	int setMaterialSpecular(const std::string &materialName, float red, float green, float blue, float alpha);
+	int setMaterialEmissive(const std::string &materialName, float red, float green, float blue);
+	
+	float rangeRandom(float from, float to);
+	int useOnlineAPI(const std::string &apiquery, const AngelScript::CScriptDictionary &dict, std::string &result);
+	int getLoadedTerrain(std::string &result);
+	Ogre::Vector3 getPersonPosition();
+
+	void clearEventCache();
+};
+
+#endif // GAMESCRIPT_H__

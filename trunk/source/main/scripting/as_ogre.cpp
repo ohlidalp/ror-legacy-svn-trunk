@@ -18,8 +18,6 @@ You should have received a copy of the GNU General Public License
 along with Rigs of Rods.  If not, see <http://www.gnu.org/licenses/>.
 */
 // created on 31th of July 2009 by Thomas Fischer
-#ifdef USE_ANGELSCRIPT
-
 #include "as_ogre.h"
 
 using namespace Ogre;
@@ -109,4 +107,3 @@ void registerOgreObjects(AngelScript::asIScriptEngine *engine)
 	*/
 
 }
-#endif //ANGELSCRIPT

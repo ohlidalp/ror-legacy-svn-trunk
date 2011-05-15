@@ -29,6 +29,10 @@ along with Rigs of Rods.  If not, see <http://www.gnu.org/licenses/>.
 #include <OgreColourValue.h>
 #include <OgreQuaternion.h>
 
+// some config for angelscript, doesnt matter if we compile with angelscript or not as its just a definition
+#ifndef AS_USE_NAMESPACE
+#define AS_USE_NAMESPACE
+#endif //AS_USE_NAMESPACE
 
 // macro that checks for the correct ogre version and aborts compilation if not correct
 #if OGRE_VERSION < 0x010701
