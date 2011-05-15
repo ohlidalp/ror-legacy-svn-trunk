@@ -39,7 +39,7 @@ public:
 		pthread_mutex_destroy(&lock);
 	}
 	
-	void push(T &v)
+	void push(T v)
 	{
 		pthread_mutex_lock(&lock);
 		store.push_back(v);
