@@ -99,6 +99,7 @@ GUI_MainMenu::GUI_MainMenu(RoRFrameListener *efl) : mefl(efl)
 	mi->setCaption("Windows");
 	pop[popCount]->addItem("Camera Control", MyGUI::MenuItemType::Normal, "cameratool");
 	pop[popCount]->addItem("Friction Settings", MyGUI::MenuItemType::Normal, "frictiongui");
+	pop[popCount]->addItem("Show Console", MyGUI::MenuItemType::Normal, "showConsole");
 	
 
 	// if you add a menu, fix NUM_POPUPMENUS
@@ -156,6 +157,9 @@ void GUI_MainMenu::onMenuBtn(MyGUI::MenuCtrlPtr _sender, MyGUI::MenuItemPtr _ite
 	} else if(miname == "Exit")
 	{
 		mefl->shutdown_final();
+	} else if(miname == "Show Console")
+	{
+		Console::getInstance().setVisible(true);
 	}
 
 	//LOG(" menu button pressed: " + _item->getCaption());
