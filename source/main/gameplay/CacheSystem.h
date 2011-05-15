@@ -184,12 +184,6 @@ public:
 		// driveable = 0 = NOT_DRIVEABLE
 		// enginetype = t = truck is default
 	}
-#ifdef USE_ANGELSCRIPT
-	// we have to add this to be able to use the class as reference inside scripts
-	void addRef(){};
-	void release(){};
-#endif
-
 };
 
 class CacheSystem
@@ -197,13 +191,6 @@ class CacheSystem
 public:
 	static CacheSystem &Instance();
 	
-
-#ifdef USE_ANGELSCRIPT
-	// we have to add this to be able to use the class as reference inside scripts
-	void addRef(){};
-	void release(){};
-#endif
-
 	void startup(SceneManager *smgr, bool forcecheck=false);
 	void loadAllZips();
 	

@@ -27,9 +27,7 @@ along with Rigs of Rods.  If not, see <http://www.gnu.org/licenses/>.
 #include "BeamFactory.h"
 #include "CharacterFactory.h"
 #include "ChatSystem.h"
-#ifdef USE_ANGELSCRIPT
-#include "ScriptEngine.h"
-#endif //ANGELSCRIPT
+#include "Scripting.h"
 #include "turboprop.h"
 #include "sha1.h"
 #include "Settings.h"

@@ -62,9 +62,7 @@ along with Rigs of Rods.  If not, see <http://www.gnu.org/licenses/>.
 #include "CmdKeyInertia.h"
 #include "BeamFactory.h"
 #include "ColoredTextAreaOverlayElement.h"
-#ifdef USE_ANGELSCRIPT
-#include "ScriptEngine.h"
-#endif
+#include "Scripting.h"
 
 #include "rornet.h"
 #include "MeshObject.h"
@@ -1963,13 +1961,13 @@ bool Beam::frameStep(Real dt)
 	// XXX: TO BE FIXED
 	if(lockedold != locked)
 	{
-		if(locked == LOCKED) ScriptEngine::getSingleton().triggerEvent(ScriptEngine::SE_TRUCK_LOCKED, trucknum);
-		if(locked == UNLOCKED) ScriptEngine::getSingleton().triggerEvent(ScriptEngine::SE_TRUCK_UNLOCKED, trucknum);
+		if(locked == LOCKED) ScriptEngine::getSingleton().triggerEvent(SE_TRUCK_LOCKED, trucknum);
+		if(locked == UNLOCKED) ScriptEngine::getSingleton().triggerEvent(SE_TRUCK_UNLOCKED, trucknum);
 		lockedold=locked;
 	}
 	if(watercontact != watercontactold)
 	{
-		ScriptEngine::getSingleton().triggerEvent(ScriptEngine::SE_TRUCK_TOUCHED_WATER, trucknum);
+		ScriptEngine::getSingleton().triggerEvent(SE_TRUCK_TOUCHED_WATER, trucknum);
 		watercontactold = watercontact;
 	}
 #endif //0
@@ -3491,10 +3489,8 @@ void Beam::lightsToggle()
 			}
 		}
 	};
-#ifdef USE_ANGELSCRIPT
-	ScriptEngine::getSingleton().triggerEvent(ScriptEngine::SE_TRUCK_LIGHT_TOGGLE, trucknum);
-#endif
 
+	TRIGGER_EVENT(SE_TRUCK_LIGHT_TOGGLE, trucknum);
 }
 
 void Beam::updateFlares(float dt, bool isCurrent)
@@ -3823,11 +3819,8 @@ void Beam::toggleCustomParticles()
 		}
 	}
 
-#ifdef USE_ANGELSCRIPT
 	//ScriptEvent - Particle Toggle
-	ScriptEngine::getSingleton().triggerEvent(ScriptEngine::SE_TRUCK_CPARTICLES_TOGGLE, trucknum);
-#endif
-
+	TRIGGER_EVENT(SE_TRUCK_CPARTICLES_TOGGLE, trucknum);
 }
 
 void Beam::updateSoundSources()
@@ -4188,10 +4181,7 @@ void Beam::showSkeleton(bool meshes, bool newMode)
 
 	lockSkeletonchange=false;
 
-#ifdef USE_ANGELSCRIPT
-	ScriptEngine::getSingleton().triggerEvent(ScriptEngine::SE_TRUCK_SKELETON_TOGGLE, trucknum);
-#endif
-
+	TRIGGER_EVENT(SE_TRUCK_SKELETON_TOGGLE, trucknum);
 }
 
 void Beam::hideSkeleton(bool newMode)
@@ -4533,10 +4523,8 @@ void Beam::tieToggle(int group)
 		}
 	}
 
-#ifdef USE_ANGELSCRIPT
 	//ScriptEvent - Tie toggle
-	ScriptEngine::getSingleton().triggerEvent(ScriptEngine::SE_TRUCK_TIE_TOGGLE, trucknum);
-#endif
+	TRIGGER_EVENT(SE_TRUCK_TIE_TOGGLE, trucknum);
 }
 
 void Beam::ropeToggle(int group)
@@ -4778,10 +4766,8 @@ void Beam::parkingbrakeToggle()
 		ssm->trigStop(trucknum, SS_TRIG_PARK);
 #endif // USE_OPENAL
 
-#ifdef USE_ANGELSCRIPT
 	//ScriptEvent - Parking Brake toggle
-	ScriptEngine::getSingleton().triggerEvent(ScriptEngine::SE_TRUCK_PARKINGBREAK_TOGGLE, trucknum);
-#endif
+	TRIGGER_EVENT(SE_TRUCK_PARKINGBREAK_TOGGLE, trucknum);
 }
 
 void Beam::antilockbrakeToggle()
@@ -4847,10 +4833,8 @@ void Beam::beaconsToggle()
 		}
 	}
 
-#ifdef USE_ANGELSCRIPT
 	//ScriptEvent - Beacon toggle
-	ScriptEngine::getSingleton().triggerEvent(ScriptEngine::SE_TRUCK_BEACONS_TOGGLE, trucknum);
-#endif
+	TRIGGER_EVENT(SE_TRUCK_BEACONS_TOGGLE, trucknum);
 }
 
 void Beam::setReplayMode(bool rm)

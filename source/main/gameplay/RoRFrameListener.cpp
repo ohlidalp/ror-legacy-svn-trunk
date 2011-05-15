@@ -55,9 +55,7 @@ along with Rigs of Rods.  If not, see <http://www.gnu.org/licenses/>.
 #include "mplatform_fd.h"
 #endif
 
-#ifdef USE_ANGELSCRIPT
-#include "ScriptEngine.h"
-#endif
+#include "Scripting.h"
 
 #include "Road.h"
 #include "road2.h"
@@ -5214,9 +5212,8 @@ void RoRFrameListener::changedCurrentTruck(Beam *previousTruck, Beam *currentTru
 		camRotX=0;
 		camRotY=Degree(12);
 		camDist=20;
-#ifdef USE_ANGELSCRIPT
-		ScriptEngine::getSingleton().triggerEvent(ScriptEngine::SE_TRUCK_EXIT, previousTruck?previousTruck->trucknum:-1);
-#endif //ANGELSCRIPT
+		
+		TRIGGER_EVENT(SE_TRUCK_EXIT, previousTruck?previousTruck->trucknum:-1);
 	}
 	else
 	{
@@ -5313,9 +5310,8 @@ void RoRFrameListener::changedCurrentTruck(Beam *previousTruck, Beam *currentTru
 			camRotY=DEFAULT_INTERNAL_CAM_PITCH;
 			//if(bigMap) bigMap->setVisibility(false);
 		}
-#ifdef USE_ANGELSCRIPT
-		ScriptEngine::getSingleton().triggerEvent(ScriptEngine::SE_TRUCK_ENTER, currentTruck?currentTruck->trucknum:-1);
-#endif //ANGELSCRIPT
+
+		TRIGGER_EVENT(SE_TRUCK_ENTER, currentTruck?currentTruck->trucknum:-1);
 	}
 }
 
