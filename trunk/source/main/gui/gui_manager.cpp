@@ -73,6 +73,12 @@ bool GUIManager::create()
 	return true;
 }
 
+void GUIManager::unfocus()
+{
+	MyGUI::InputManager::getInstance().resetKeyFocusWidget(); 
+	MyGUI::InputManager::getInstance().resetMouseCaptureWidget(); 
+}
+
 void GUIManager::destroy()
 {
 	destroyGui();

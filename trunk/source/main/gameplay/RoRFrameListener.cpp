@@ -1074,9 +1074,6 @@ RoRFrameListener::RoRFrameListener(AppState *parentState, RenderWindow* win, Cam
 	// initiate player colours
 	new PlayerColours();
 
-	// hide chat when not in netmode
-	//NETCHAT.setMode(this, NETCHAT_LEFT_SMALL, false);
-
 	// you always need that, even if you are not using the network
 	new NetworkStreamManager();
 
@@ -1136,9 +1133,6 @@ RoRFrameListener::RoRFrameListener(AppState *parentState, RenderWindow* win, Cam
 			preselected_map = "";
 		else
 			preselected_map = getASCIIFromCharString(terrn, 255);
-
-		// show chat in MP
-		//NETCHAT.setMode(this, NETCHAT_LEFT_SMALL, true);
 
 		// create person _AFTER_ network, important
 		int colourNum = 0;
@@ -1872,7 +1866,7 @@ bool RoRFrameListener::updateEvents(float dt)
 
 	if (INPUTENGINE.getEventBoolValueBounce(EV_COMMON_ENTER_CHATMODE, 0.5f) && !chatting && !hidegui)
 	{
-		NETCHAT->select();
+		//NETCHAT->select();
 	}
 #if 0
 	// TODO: FIX
@@ -3087,7 +3081,6 @@ bool RoRFrameListener::updateEvents(float dt)
 					// make it big
 					bigMap->updateRenderMetrics(mWindow);
 					bigMap->setPosition(0.2, 0, 0.8, 0.8, mWindow);
-					//NETCHAT.setMode(this, NETCHAT_MAP, true);
 				} else
 				{
 					bigMap->setVisibility(false);
@@ -3147,16 +3140,6 @@ bool RoRFrameListener::updateEvents(float dt)
 				curr_truck->setBlinkType(BLINK_NONE);
 			else
 				curr_truck->setBlinkType(BLINK_WARN);
-		}
-
-		if (INPUTENGINE.getEventBoolValueBounce(EV_COMMON_NETCHATDISPLAY))
-		{
-			//NETCHAT.toggleVisible(this);
-		}
-
-		if (INPUTENGINE.getEventBoolValueBounce(EV_COMMON_NETCHATMODE))
-		{
-			//NETCHAT.toggleMode(this);
 		}
 
 		if (INPUTENGINE.getEventBoolValue(EV_COMMON_ENTER_OR_EXIT_TRUCK) && !chatting && mTimeUntilNextToggle <= 0)
@@ -3257,9 +3240,6 @@ bool RoRFrameListener::updateEvents(float dt)
 				if(config.size() == 0) configptr = 0;
 				if(selt)
 					initTrucks(true, selt->fname, selt->fext, configptr);
-				// show console in netmode!
-				//if(netmode)
-				//	NETCHAT.setMode(this, NETCHAT_LEFT_SMALL, true);
 
 			} else if (loading_state==RELOADING)
 			{
@@ -3296,6 +3276,9 @@ bool RoRFrameListener::updateEvents(float dt)
 
 				SelectorWindow::get()->hide();
 				loading_state=ALL_LOADED;
+
+				GUIManager::getSingleton().unfocus();
+
 				if(localTruck && localTruck->driveable)
 				{
 					//we are supposed to be in this truck, if it is a truck
@@ -5114,10 +5097,17 @@ void RoRFrameListener::initTrucks(bool loadmanual, Ogre::String selected, Ogre::
 	camRotY=DEFAULT_INTERNAL_CAM_PITCH;
 	*/
 	loading_state=ALL_LOADED;
+
+
+
+
 	//uiloader->hide();
 	LOG("initTrucks done");
 
 #ifdef USE_MYGUI
+
+	GUIManager::getSingleton().unfocus();
+
 	if(mtc)
 		mtc->update();
 #endif // MYGUI
@@ -5135,9 +5125,6 @@ void RoRFrameListener::changedCurrentTruck(Beam *previousTruck, Beam *currentTru
 		// get out
 		if(previousTruck && person)
 			person->setPosition(previousTruck->getPosition());
-
-		//if(bigMap) bigMap->setVisibility(false);
-		//if(netmode && NETCHAT.getVisible()) NETCHAT.setMode(this, NETCHAT_LEFT_FULL, true);
 
 		// detach person to truck
 		if(person)
@@ -5216,7 +5203,7 @@ void RoRFrameListener::changedCurrentTruck(Beam *previousTruck, Beam *currentTru
 	else
 	{
 		//getting inside
-		//if(netmode && NETCHAT.getVisible()) NETCHAT.setMode(this, NETCHAT_LEFT_SMALL, true);
+
 		//person->setVisible(false);
 		if(ow &&!hidegui)
 		{
@@ -6174,7 +6161,6 @@ void RoRFrameListener::initHDR()
 void RoRFrameListener::hideGUI(bool visible)
 {
 	Beam *curr_truck = BeamFactory::getSingleton().getCurrentTruck();
-	NETCHAT->setVisible(visible);
 	if(visible)
 	{
 
