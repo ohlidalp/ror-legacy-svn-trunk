@@ -226,7 +226,7 @@ bool Settings::get_system_paths(char *program_path, char *user_path)
 			return false;
 		}
 		GetShortPathNameA(user_path, user_path, 512); //this is legal
-		sprintf(user_path, "%s\\Rigs of Rods\\", user_path);
+		sprintf(user_path, "%s\\Rigs of Rods %s\\", user_path, ROR_VERSION_STRING);
 	} else
 	{
 		strcpy(user_path, getSetting("userpath").c_str());
