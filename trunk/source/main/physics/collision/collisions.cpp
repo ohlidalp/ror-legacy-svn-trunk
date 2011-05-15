@@ -732,7 +732,7 @@ int Collisions::removeCollisionBox(int num)
 	if(num < 0 || num > free_collision_box)
 		return 1;
 	
-	collision_box_t& coll_box = collision_boxes[free_collision_box]; 
+	collision_box_t& coll_box = collision_boxes[num]; 
 	
 	if(!coll_box.enabled)
 		return 2;

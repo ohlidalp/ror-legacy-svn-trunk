@@ -753,6 +753,7 @@ void RoRFrameListener::updateGUI(float dt)
 
 void RoRFrameListener::setGravity(float value)
 {
+	gravity = value;
 	BeamFactory::getSingleton().recalcGravityMasses();
 }
 

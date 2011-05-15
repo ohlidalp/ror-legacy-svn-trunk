@@ -102,9 +102,10 @@ bool GameScript::getCaelumAvailable()
 #endif // USE_CAELUM
 }
 
-void GameScript::stopTimer()
+float GameScript::stopTimer()
 {
-	if(mefl) mefl->stopTimer();
+	if(mefl) return mefl->stopTimer();
+	return 0.0;
 }
 
 void GameScript::startTimer()

@@ -193,7 +193,7 @@ public:
 	void destroyObject(const std::string &instanceName);
 	int getNumTrucksByFlag(int flag);
 	bool getCaelumAvailable();
-	void stopTimer();
+	float stopTimer();
 	void startTimer();
 	std::string getSetting(std::string str);
 	void hideDirectionArrow();
