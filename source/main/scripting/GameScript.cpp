@@ -554,7 +554,7 @@ int GameScript::extendDict(const AngelScript::CScriptDictionary &dict, const std
 	// first, make sure we sanitize the input data
 	Ogre::String fn, ext, path;
 	Ogre::StringUtil::splitFullFilename(fileName, fn, ext, path);
-	String finalFilename = SSETTING("Cache Path") + "/" + fn;
+	String finalFilename = SSETTING("Cache Path") + fn + ".asdict";
 
 	ImprovedConfigFile cfg;
 	
@@ -619,7 +619,7 @@ int GameScript::_saveDict(ImprovedConfigFile &cfg, const AngelScript::CScriptDic
 		cfg.setSetting(it->first, TOSTRING(typeId) + "|" + val, dictName);
 	}
 	
-	String finalFilename = SSETTING("Cache Path") + "/" + fn;
+	String finalFilename = SSETTING("Cache Path") + fn + ".asdict";
 	return cfg.saveAs(finalFilename);
 }
 
@@ -629,7 +629,7 @@ int GameScript::loadDict(AngelScript::CScriptDictionary &dict, const std::string
 	Ogre::String fn, ext, path;
 	Ogre::StringUtil::splitFullFilename(fileName, fn, ext, path);
 
-	String finalFilename = SSETTING("Cache Path") + "/" + fn;
+	String finalFilename = SSETTING("Cache Path") + fn + ".asdict";
 
 	ImprovedConfigFile cfg;
 
@@ -653,7 +653,11 @@ int GameScript::loadDict(AngelScript::CScriptDictionary &dict, const std::string
 
 			if(val.size() < 3) continue;
 
-			int typeId = StringConverter::parseInt(val.substr(0, 1));
+			size_t p = val.find("|");
+			if(p == val.npos)
+				continue;
+
+			int typeId = StringConverter::parseInt(val.substr(0, p));
 
 			dict.Set(key, &val, typeId);
 		}
