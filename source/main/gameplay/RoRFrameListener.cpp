@@ -2037,6 +2037,12 @@ bool RoRFrameListener::updateEvents(float dt)
 			fov -= 2;
 		mCamera->setFOVy(Degree(fov));
 		if(ow) ow->flashMessage(_L("FOV: ") + TOSTRING(fov));
+
+		// save the settings
+		if (cameramode == CAMERA_INT)
+			SETTINGS.setSetting("FOV Internal", TOSTRING(fov));
+		else if (cameramode == CAMERA_EXT)
+			SETTINGS.setSetting("FOV External", TOSTRING(fov));
 	}
 
 	if (INPUTENGINE.getEventBoolValueBounce(EV_COMMON_FOV_MORE))
@@ -2046,6 +2052,12 @@ bool RoRFrameListener::updateEvents(float dt)
 			fov += 2;
 		mCamera->setFOVy(Degree(fov));
 		if(ow) ow->flashMessage(_L("FOV: ") + TOSTRING(fov));
+
+		// save the settings
+		if (cameramode == CAMERA_INT)
+			SETTINGS.setSetting("FOV Internal", TOSTRING(fov));
+		else if (cameramode == CAMERA_EXT)
+			SETTINGS.setSetting("FOV External", TOSTRING(fov));
 	}
 
 	// full screen/windowed screen switching
@@ -5122,6 +5134,8 @@ void RoRFrameListener::changedCurrentTruck(Beam *previousTruck, Beam *currentTru
 {
 	if (cameramode==CAMERA_FREE) return;
 
+	enforceCameraFOVUpdate = true;
+
 	if (currentTruck)
 		currentTruck->desactivate();
 
@@ -5314,7 +5328,8 @@ void RoRFrameListener::moveCamera(float dt)
 
 	Beam *curr_truck = BeamFactory::getSingleton().getCurrentTruck();
 
-	bool changeCamMode = (lastcameramode != cameramode);
+	bool changeCamMode = (lastcameramode != cameramode) || enforceCameraFOVUpdate;
+	enforceCameraFOVUpdate = false;
 	lastcameramode = cameramode;
 
 	if (cameramode==CAMERA_FREE)

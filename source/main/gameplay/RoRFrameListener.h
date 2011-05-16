@@ -333,6 +333,7 @@ public:
 	void setNetQuality(int q);
 	int getNetQuality(bool ack=false);
 	bool getNetQualityChanged();
+	bool enforceCameraFOVUpdate;
 	pthread_mutex_t mutex_data;
 	Radian camRotX, camRotY;
 	Real camDist;
