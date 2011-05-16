@@ -39,7 +39,9 @@ public:
 	Ogre::String getSetting(Ogre::String key);
 	bool getBooleanSetting(Ogre::String key);
 	
-	Ogre::String getSettingScriptSafe(Ogre::String key);
+	Ogre::String getSettingScriptSafe(const Ogre::String &key);
+	void setSettingScriptSafe(const Ogre::String &key, const Ogre::String &value);
+
 	void setSetting(Ogre::String key, Ogre::String value);
 	bool setupPaths();
 	void loadSettings(Ogre::String configFile, bool overwrite=false);
