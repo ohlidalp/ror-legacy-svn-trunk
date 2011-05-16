@@ -182,7 +182,58 @@ public:
 	 * @param size font size in pixels
 	 */
 	void setChatFontSize(int size);
+	
+	/**
+	 * Sets the camera's position.
+	 * @param pos The new position of the camera.
+	 */
+	void setCameraPosition(Ogre::Vector3 pos);
+	
+	/**
+	 * Sets the camera's direction vector.
+	 * @param vec A vector representing the direction of the vector.
+	 */
+	void setCameraDirection(Ogre::Vector3 vec);
+	
+	/**
+	 * Rolls the camera anticlockwise, around its local z axis.
+	 * @param angle The roll-angle
+	 */
+	void setCameraRoll(float angle);
 
+	/**
+	 * Rotates the camera anticlockwise around it's local y axis.
+	 * @param angle The yaw-angle 
+	 */
+	void setCameraYaw(float angle);
+
+	/**
+	 * Pitches the camera up/down anticlockwise around it's local z axis.
+	 * @param angle The pitch-angle
+	 */
+	void setCameraPitch(float angle);
+	
+	/**
+	  * Retrieves the camera's position.
+	  * @return The current position of the camera
+	 */
+	Ogre::Vector3 getCameraPosition();
+	
+	/**
+	 * Gets the camera's direction.
+	 * @return A vector representing the direction of the camera
+	 */
+	Ogre::Vector3 getCameraDirection();
+	
+	/** 
+	 * Points the camera at a location in worldspace.
+	 * @remarks
+	 *      This is a helper method to automatically generate the
+	 *      direction vector for the camera, based on it's current position
+	 *      and the supplied look-at point.
+	 * @param targetPoint A vector specifying the look at point.
+	*/
+	void cameraLookAt(Ogre::Vector3 targetPoint);
 
 	// new things, not documented yet
 	void showChooser(std::string &type, std::string &instance, std::string &box);
