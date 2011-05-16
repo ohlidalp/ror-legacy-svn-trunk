@@ -65,13 +65,22 @@ bool Settings::getBooleanSetting(Ogre::String key)
 	return value == "yes";
 }
 
-Ogre::String Settings::getSettingScriptSafe(Ogre::String key)
+Ogre::String Settings::getSettingScriptSafe(const Ogre::String &key)
 {
 	// hide certain settings for scripts
 	if(key == "User Token" || key == "User Token Hash" || key == "Config Root" || key == "Cache Path" || key == "Log Path" || key == "Resources Path" || key == "Program Path")
 		return "permission denied";
 
 	return settings[key];
+}
+
+void Settings::setSettingScriptSafe(const Ogre::String &key, const Ogre::String &value)
+{
+	// hide certain settings for scripts
+	if(key == "User Token" || key == "User Token Hash" || key == "Config Root" || key == "Cache Path" || key == "Log Path" || key == "Resources Path" || key == "Program Path")
+		return;
+
+	settings[key] = value;
 }
 
 void Settings::setSetting(Ogre::String key, Ogre::String value)

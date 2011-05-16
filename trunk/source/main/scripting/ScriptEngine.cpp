@@ -371,6 +371,7 @@ void ScriptEngine::init()
 	// class Settings
 	result = engine->RegisterObjectType("SettingsClass", sizeof(Settings), AngelScript::asOBJ_REF); assert(result>=0);
 	result = engine->RegisterObjectMethod("SettingsClass", "string getSetting(const string &in)", AngelScript::asMETHOD(Settings,getSettingScriptSafe), AngelScript::asCALL_THISCALL); assert(result>=0);
+	result = engine->RegisterObjectMethod("SettingsClass", "void setSetting(const string &in, const string &in)", AngelScript::asMETHOD(Settings,setSettingScriptSafe), AngelScript::asCALL_THISCALL); assert(result>=0);
 	result = engine->RegisterObjectBehaviour("SettingsClass", AngelScript::asBEHAVE_ADDREF, "void f()", AngelScript::asMETHOD(Settings,addRef), AngelScript::asCALL_THISCALL); assert(result>=0);
 	result = engine->RegisterObjectBehaviour("SettingsClass", AngelScript::asBEHAVE_RELEASE, "void f()", AngelScript::asMETHOD(Settings,release), AngelScript::asCALL_THISCALL); assert(result>=0);
 
@@ -427,6 +428,11 @@ void ScriptEngine::init()
 	result = engine->RegisterObjectMethod("GameScriptClass", "vector3 getCameraPosition()",      AngelScript::asMETHOD(GameScript,getCameraPosition),  AngelScript::asCALL_THISCALL); assert(result>=0);
 	result = engine->RegisterObjectMethod("GameScriptClass", "vector3 getCameraDirection()",     AngelScript::asMETHOD(GameScript,getCameraDirection), AngelScript::asCALL_THISCALL); assert(result>=0);
 	result = engine->RegisterObjectMethod("GameScriptClass", "void cameraLookAt(vector3)",       AngelScript::asMETHOD(GameScript,cameraLookAt),       AngelScript::asCALL_THISCALL); assert(result>=0);
+
+	// functions to save or load dicts
+	result = engine->RegisterObjectMethod("GameScriptClass", "int saveDict(const dictionary &in, const string &in, const string &in)", AngelScript::asMETHOD(GameScript,saveDict), AngelScript::asCALL_THISCALL); assert(result>=0);
+	result = engine->RegisterObjectMethod("GameScriptClass", "int extendDict(const dictionary &in, const string &in, const string &in)", AngelScript::asMETHOD(GameScript,extendDict), AngelScript::asCALL_THISCALL); assert(result>=0);
+	result = engine->RegisterObjectMethod("GameScriptClass", "int loadDict(dictionary &out, const string &in, const string &in)", AngelScript::asMETHOD(GameScript,loadDict), AngelScript::asCALL_THISCALL); assert(result>=0);
 
 	// enum scriptEvents
 	result = engine->RegisterEnum("scriptEvents"); assert(result>=0);

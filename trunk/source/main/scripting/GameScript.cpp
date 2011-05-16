@@ -406,7 +406,7 @@ static size_t curlWriteMemoryCallback(void *ptr, size_t size, size_t nmemb, void
 
 int GameScript::useOnlineAPI(const std::string &apiquery, const AngelScript::CScriptDictionary &d, std::string &result)
 {
-#ifdef USE_CURL1
+#ifdef USE_CURL
 	struct curlMemoryStruct chunk;
 
 	chunk.memory = (char *)malloc(1);  /* will be grown as needed by the realloc above */
@@ -546,5 +546,118 @@ int GameScript::useOnlineAPI(const std::string &apiquery, const AngelScript::CSc
 
 	return 0;
 #endif //USE_CURL
+	return 1;
+}
+
+int GameScript::extendDict(const AngelScript::CScriptDictionary &dict, const std::string &dictName, const std::string &fileName)
+{
+	// first, make sure we sanitize the input data
+	Ogre::String fn, ext, path;
+	Ogre::StringUtil::splitFullFilename(fileName, fn, ext, path);
+	String finalFilename = SSETTING("Cache Path") + "/" + fn;
+
+	ImprovedConfigFile cfg;
+	
+	cfg.load(finalFilename);
+
+	return _saveDict(cfg, dict, dictName, fileName);
+}
+
+int GameScript::saveDict(const AngelScript::CScriptDictionary &dict, const std::string &dictName, const std::string &fileName)
+{
+	ImprovedConfigFile cfg;
+	return _saveDict(cfg, dict, dictName, fileName);
+}
+
+int GameScript::_saveDict(ImprovedConfigFile &cfg, const AngelScript::CScriptDictionary &dict, const std::string &dictName, const std::string &fileName)
+{
+	// first, make sure we sanitize the input data
+	Ogre::String fn, ext, path;
+	Ogre::StringUtil::splitFullFilename(fileName, fn, ext, path);
+
+
+	std::map<std::string, AngelScript::CScriptDictionary::valueStruct>::const_iterator it;
+	for(it = dict.dict.begin(); it != dict.dict.end(); it++)
+	{
+		int typeId = it->second.typeId;
+
+		String val = "";
+		if(typeId == mse->getEngine()->GetTypeIdByDecl("string"))
+		{
+			val = *(std::string *)it->second.valueObj;
+		}
+		else if(typeId == AngelScript::asTYPEID_BOOL)
+		{
+			val = TOSTRING((bool)it->second.valueInt);
+		}
+		else if(typeId == AngelScript::asTYPEID_INT8 \
+			|| typeId == AngelScript::asTYPEID_INT16 \
+			|| typeId == AngelScript::asTYPEID_INT32 \
+			|| typeId == AngelScript::asTYPEID_INT64)
+		{
+			val = TOSTRING((int)it->second.valueInt);
+		}
+		else if(typeId == AngelScript::asTYPEID_UINT8 \
+			|| typeId == AngelScript::asTYPEID_UINT16 \
+			|| typeId == AngelScript::asTYPEID_UINT32 \
+			|| typeId == AngelScript::asTYPEID_UINT64)
+		{
+			val = TOSTRING((unsigned int)it->second.valueInt);
+		}
+		else if(typeId == AngelScript::asTYPEID_FLOAT)
+		{
+			val = TOSTRING((float)it->second.valueFlt);
+		}
+		else if(typeId == AngelScript::asTYPEID_DOUBLE)
+		{
+			val = TOSTRING((float)it->second.valueFlt);
+		} else if(typeId == mse->getEngine()->GetTypeIdByDecl("vector3"))
+		{
+			val = TOSTRING(*(Ogre::Vector3 *)it->second.valueObj);
+		}
+
+		cfg.setSetting(it->first, TOSTRING(typeId) + "|" + val, dictName);
+	}
+	
+	String finalFilename = SSETTING("Cache Path") + "/" + fn;
+	return cfg.saveAs(finalFilename);
+}
+
+int GameScript::loadDict(AngelScript::CScriptDictionary &dict, const std::string &dictName, const std::string &fileName)
+{
+	// first, make sure we sanitize the input data
+	Ogre::String fn, ext, path;
+	Ogre::StringUtil::splitFullFilename(fileName, fn, ext, path);
+
+	String finalFilename = SSETTING("Cache Path") + "/" + fn;
+
+	ImprovedConfigFile cfg;
+
+	cfg.load(finalFilename);
+
+	// Go through all sections & settings in the file
+	ConfigFile::SectionIterator seci = cfg.getSectionIterator();
+		
+	String secName, key, val;
+	while (seci.hasMoreElements())
+	{
+		secName = seci.peekNextKey();
+		if(secName != dictName) continue; // find the right dict
+
+		ConfigFile::SettingsMultiMap *settings = seci.getNext();
+		ConfigFile::SettingsMultiMap::iterator i;
+		for (i = settings->begin(); i != settings->end(); ++i)
+		{
+			key = i->first;
+			val = i->second;
+
+			if(val.size() < 3) continue;
+
+			int typeId = StringConverter::parseInt(val.substr(0, 1));
+
+			dict.Set(key, &val, typeId);
+		}
+	}
+
 	return 1;
 }

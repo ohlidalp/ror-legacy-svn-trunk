@@ -30,7 +30,7 @@ namespace Ogre
 class ImprovedConfigFile : public Ogre::ConfigFile
 {
 public:
-	ImprovedConfigFile() : separators(), filename()
+	ImprovedConfigFile() : separators("="), filename()
 	{
 		ConfigFile();
 	}
@@ -40,7 +40,7 @@ public:
 	}
     
 	// note: saving is only supported for direct loaded files atm!
-	void load(const String& filename, const String& separators, bool trimWhitespace)
+	void load(const String& filename, const String& separators = "=", bool trimWhitespace=true)
 	{
 		this->separators = separators;
 		this->filename = filename;
@@ -69,15 +69,20 @@ public:
 
 	bool save()
 	{
-		if(!filename.length())
+		saveAs(filename);
+	}
+
+	bool saveAs(Ogre::String fn)
+	{
+		if(!fn.length())
 		{
 			OGRE_EXCEPT(Exception::ERR_INTERNAL_ERROR, "Saving of the configuration File is only allowed when the configuration was not loaded using the resource system!", "ImprovedConfigFile::save");
 			return false;
 		}
-		FILE *f = fopen(filename.c_str(), "w");
+		FILE *f = fopen(fn.c_str(), "w");
 		if(!f)
 		{
-			OGRE_EXCEPT(Exception::ERR_FILE_NOT_FOUND, "Cannot open File '"+filename+"' for writing.", "ImprovedConfigFile::save");
+			OGRE_EXCEPT(Exception::ERR_FILE_NOT_FOUND, "Cannot open File '"+fn+"' for writing.", "ImprovedConfigFile::save");
 			return false;
 		}
 
