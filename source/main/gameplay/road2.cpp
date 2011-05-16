@@ -193,7 +193,7 @@ void Road2::addBlock(Vector3 pos, Quaternion rot, int type, float width, float b
 			middle = lpts[0] - ((lpts[0] + (pts[1] - lpts[0]) / 2) -
 							 (lpts[7] + (pts[6] - lpts[7]) / 2)) * sidefactor;
 			float len = middle.y - hfinder->getHeightAt(middle.x, middle.z) + 5;
-			width = len / 30;
+			float width2 = len / 30;
 
 			if(pillartype == 2 && len > 20)
 				// no over-long pillars
@@ -201,44 +201,44 @@ void Road2::addBlock(Vector3 pos, Quaternion rot, int type, float width, float b
 
 
 			// do not draw too small pillars, the bridge may hold without them ;)
-			if (width > 5) width = 5;
+			if (width2 > 5) width2 = 5;
 
 			if(pillartype == 2)
-				width=0.2;
+				width2=0.2;
 			
-			if (width >= 0.2 && builtpillars)
+			if (width2 >= 0.2 && builtpillars)
 			{
 				//top - not really required as it would never been seen
-				//addQuad(middle + Vector3(-width, 0, -width),
-				//		middle + Vector3(-width, 0, width),
-				//		middle + Vector3(width, 0, width),
-				//		middle + Vector3(width, 0, -width),
-				//		TEXFIT_CONCRETETOP, true, pos, lastpos, width);
+				//addQuad(middle + Vector3(-width2, 0, -width2),
+				//		middle + Vector3(-width2, 0, width2),
+				//		middle + Vector3(width2, 0, width2),
+				//		middle + Vector3(width2, 0, -width2),
+				//		TEXFIT_CONCRETETOP, true, pos, lastpos, width2);
 
 				//sides
-				addQuad(middle + Vector3(-width, -len, -width),
-						middle + Vector3(-width, 0, -width),
-						middle + Vector3(width, 0, -width),
-						middle + Vector3(width, -len, -width),
-						TEXFIT_CONCRETETOP, true, pos, lastpos, width);
+				addQuad(middle + Vector3(-width2, -len, -width2),
+						middle + Vector3(-width2, 0, -width2),
+						middle + Vector3(width2, 0, -width2),
+						middle + Vector3(width2, -len, -width2),
+						TEXFIT_CONCRETETOP, true, pos, lastpos, width2);
 
-				addQuad(middle + Vector3(width, -len, width),
-						middle + Vector3(width, 0, width),
-						middle + Vector3(-width, 0, width),
-						middle + Vector3(-width, -len, width),
-						TEXFIT_CONCRETETOP, true, pos, lastpos, width);
+				addQuad(middle + Vector3(width2, -len, width2),
+						middle + Vector3(width2, 0, width2),
+						middle + Vector3(-width2, 0, width2),
+						middle + Vector3(-width2, -len, width2),
+						TEXFIT_CONCRETETOP, true, pos, lastpos, width2);
 
-				addQuad(middle + Vector3(-width, -len, width),
-						middle + Vector3(-width, 0, width),
-						middle + Vector3(-width, 0, -width),
-						middle + Vector3(-width, -len, -width),
-						TEXFIT_CONCRETETOP, true, pos, lastpos, width);
+				addQuad(middle + Vector3(-width2, -len, width2),
+						middle + Vector3(-width2, 0, width2),
+						middle + Vector3(-width2, 0, -width2),
+						middle + Vector3(-width2, -len, -width2),
+						TEXFIT_CONCRETETOP, true, pos, lastpos, width2);
 
-				addQuad(middle + Vector3(width, -len, -width),
-						middle + Vector3(width, 0, -width),
-						middle + Vector3(width, 0, width),
-						middle + Vector3(width, -len, width),
-						TEXFIT_CONCRETETOP, true, pos, lastpos, width);
+				addQuad(middle + Vector3(width2, -len, -width2),
+						middle + Vector3(width2, 0, -width2),
+						middle + Vector3(width2, 0, width2),
+						middle + Vector3(width2, -len, width2),
+						TEXFIT_CONCRETETOP, true, pos, lastpos, width2);
 			}
 		}
 	}
