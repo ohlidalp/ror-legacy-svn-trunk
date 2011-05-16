@@ -106,6 +106,9 @@ GUI_MainMenu::GUI_MainMenu(RoRFrameListener *efl) : mefl(efl)
 
 	// event callbacks
 	mainmenu->eventMenuCtrlAccept += MyGUI::newDelegate(this, &GUI_MainMenu::onMenuBtn);
+
+	// initial mouse position somewhere so the menu is hidden
+	updatePositionUponMousePosition(500, 500);
 }
 
 GUI_MainMenu::~GUI_MainMenu()

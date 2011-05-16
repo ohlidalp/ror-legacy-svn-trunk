@@ -59,7 +59,7 @@ BOOL WINAPI crashCallback(LPVOID /*lpvState*/)
 	crAddFile((SSETTING("Config Root") + "ogre.cfg").c_str(), "Rigs of Rods Renderer Configuration");
 	crAddFile((SSETTING("Config Root") + "RoR.cfg").c_str(), "Rigs of Rods Configuration");
 
-	crAddProperty("Version", ROR_VERSION_STRING);
+	crAddProperty("Version", ROR_VERSION_FULL_STRING);
 	crAddProperty("Revision", SVN_REVISION);
 	crAddProperty("full_revision", SVN_ID);
 	crAddProperty("protocol_version", RORNET_VERSION);
@@ -81,7 +81,7 @@ void install_crashrpt()
 	memset(&info, 0, sizeof(CR_INSTALL_INFO));
 	info.cb = sizeof(CR_INSTALL_INFO);  
 	info.pszAppName = "Rigs of Rods";
-	info.pszAppVersion = ROR_VERSION_STRING;
+	info.pszAppVersion = ROR_VERSION_FULL_STRING;
 	info.pszEmailSubject = "Error Report for Rigs of Rods";
 	info.pszEmailTo = "thomas@rigsofrods.com";
 
