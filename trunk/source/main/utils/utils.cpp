@@ -165,7 +165,7 @@ Ogre::String getVersionString()
 		" full revision: %s\n"
 		" protocol version: %s\n"
 		" build time: %s, %s\n"
-		, ROR_VERSION_STRING, SVN_REVISION, SVN_ID, RORNET_VERSION, __DATE__, __TIME__);
+		, ROR_VERSION_FULL_STRING, SVN_REVISION, SVN_ID, RORNET_VERSION, __DATE__, __TIME__);
 	return Ogre::String(tmp);
 }
 

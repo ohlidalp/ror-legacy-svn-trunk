@@ -136,6 +136,10 @@ int OverlayWrapper::init()
 	mTimingDebugOverlay = loadOverlay("tracks/DebugBeamTiming", false);
 	mTimingDebugOverlay->hide();
 
+	OverlayElement *vere = loadOverlayElement("Core/RoRVersionString");
+	if(vere) vere->setCaption("Rigs of Rods version " + String(ROR_VERSION_FULL_STRING));
+	
+
 
 	machinedashboardOverlay = loadOverlay("tracks/MachineDashboardOverlay");
 	airdashboardOverlay = loadOverlay("tracks/AirDashboardOverlay");

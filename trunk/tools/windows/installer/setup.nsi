@@ -9,7 +9,7 @@ SetCompressor /FINAL /SOLID lzma
 
 !define PRODUCT_VERSION_MAJOR "0"
 !define PRODUCT_VERSION_MINOR "38"
-!define PRODUCT_VERSION_PATCH "28"
+!define PRODUCT_VERSION_PATCH "30"
 
 !define PRODUCT_VERSION "${PRODUCT_VERSION_MAJOR}.${PRODUCT_VERSION_MINOR}.${PRODUCT_VERSION_PATCH}"
 !define PRODUCT_VERSION_SHORT "${PRODUCT_VERSION_MAJOR}.${PRODUCT_VERSION_MINOR}"
@@ -197,10 +197,7 @@ Function UninstallOld
     StrCmp $R0 "" done
     ReadRegStr $R1 HKCU "Software\RigsOfRods\" "version"
 
-    MessageBox MB_OKCANCEL|MB_ICONEXCLAMATION \
-    "${PRODUCT_NAME} version $R1 is already installed. $\n$\nClick `OK` to remove the \
-    previous version or `Cancel` to cancel this upgrade." \
-    IDOK uninst
+    MessageBox MB_ICONQUESTION|MB_YESNO "${PRODUCT_NAME} version $R1 is already installed. Do you want to uninstall the old version before installing the new?" /SD IDYES IDNO done IDYES uninst
     Abort
  
 uninst:
@@ -224,7 +221,7 @@ Function .onInit
 	;Delete $PLUGINSDIR\splash
 	
 	!insertmacro MUI_LANGDLL_DISPLAY
-    #Call UninstallOld
+    Call UninstallOld
 FunctionEnd
 
 Section "!Rigs of Rods Base" RoRBaseGame
@@ -262,7 +259,7 @@ Section "!Rigs of Rods Base" RoRBaseGame
 	; clean cache directory
 	Banner::show /NOUNLOAD "cleaning cache directory"
     ; this will empty that directory (but not delete it)
-    !insertmacro RemoveFilesAndSubDirs "$DOCUMENTS\Rigs of Rods  ${PRODUCT_VERSION_SHORT}\cache\"
+    !insertmacro RemoveFilesAndSubDirs "$DOCUMENTS\Rigs of Rods ${PRODUCT_VERSION_SHORT}\cache\"
 	Banner::destroy
 	
 	# back to normal installation directory

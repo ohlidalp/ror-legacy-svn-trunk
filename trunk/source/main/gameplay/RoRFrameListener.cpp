@@ -1933,7 +1933,7 @@ bool RoRFrameListener::updateEvents(float dt)
 			}
 			as->addData("User_NickName", SSETTING("Nickname"));
 			as->addData("User_Language", SSETTING("Language"));
-			as->addData("RoR_VersionString", String(ROR_VERSION_STRING));
+			as->addData("RoR_VersionString", String(ROR_VERSION_FULL_STRING));
 			as->addData("RoR_VersionSVN", String(SVN_REVISION));
 			as->addData("RoR_VersionSVNID", String(SVN_ID));
 			as->addData("RoR_ProtocolVersion", String(RORNET_VERSION));
