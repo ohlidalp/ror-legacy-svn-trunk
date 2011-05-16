@@ -770,7 +770,7 @@ void SoundScriptInstance::setEnabled(bool e)
 	if(stopSound)  stopSound->setEnabled(e);
 	for (int i=0; i<templ->free_sound; i++)
 	{
-		sounds[i]->setEnabled(e);
+		if(sounds[i]) sounds[i]->setEnabled(e);
 	}
 }
 #endif //OPENAL
