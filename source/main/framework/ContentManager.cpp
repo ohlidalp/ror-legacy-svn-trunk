@@ -95,8 +95,8 @@ bool ContentManager::init(void)
 	dirsep="\\";
 #endif
 	//bootstrap
-	LOG("Loading Bootstrap");
-	loadMainResource("OgreCore", "Bootstrap");
+	// we load the bootstrap before already
+
 	//main game resources
 	LOG("Loading main resources");
 	loadMainResource("airfoils");
@@ -225,6 +225,7 @@ bool ContentManager::init(void)
 	// also it must happen after loading all basic resources!
 	LanguageEngine::Instance().setup();
 #endif //NOLANG
+
 	return true;
 }
 

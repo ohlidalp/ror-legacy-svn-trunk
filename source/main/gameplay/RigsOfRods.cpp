@@ -21,6 +21,7 @@ along with Rigs of Rods.  If not, see <http://www.gnu.org/licenses/>.
 
 #include <Ogre.h>
 
+#include "BootstrapLoadingState.h"
 #include "GameState.h"
 #include "LobbyState.h"
 #include "Settings.h"
@@ -55,12 +56,16 @@ void RigsOfRods::go(void)
 	if(!OgreFramework::getSingletonPtr()->initOgre(name, hwnd, mainhwnd, embedded))
 		return;
 
-	// then the base content setup
-	new ContentManager();
-	ContentManager::getSingleton().init();
-
-	// now add the game states
+	// now add the states
 	stateManager = new AppStateManager();
+	new ContentManager();
+
+	// dummy state to display the progress bar
+	BootstrapLoadingState::create(stateManager,  "BootstrapLoadingState");
+	stateManager->changeAppState(stateManager->findByName("BootstrapLoadingState"));
+
+	// then the base content setup
+	ContentManager::getSingleton().init();
 
 	// thats the default state it chooses to start
 	// GameState = default state, classic
