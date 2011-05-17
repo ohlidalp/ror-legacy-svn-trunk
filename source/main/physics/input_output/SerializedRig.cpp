@@ -523,10 +523,10 @@ int SerializedRig::loadTruck(String fname, SceneManager *manager, SceneNode *par
 			}
 			if (c.line.size() > 8 && c.line.substr(0, 8) == "fileinfo")
 			{
-				int n = parse_args(c, args, 1);
-				strncpy(uniquetruckid, args[0].c_str(), 254);
-				if(n > 1) categoryid   = PARSEINT(args[1]);
-				if(n > 2) truckversion = PARSEINT(args[2]);
+				int n = parse_args(c, args, 2);
+				strncpy(uniquetruckid, args[1].c_str(), 254);
+				if(n > 2) categoryid   = PARSEINT(args[2]);
+				if(n > 3) truckversion = PARSEINT(args[3]);
 				continue;
 			}
 			if (c.line.size() > 9 && c.line.substr(0, 9) == "extcamera")
