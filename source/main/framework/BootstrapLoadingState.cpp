@@ -18,7 +18,7 @@ void BootstrapLoadingState::enter()
 	ContentManager::getSingleton().loadMainResource("OgreCore", "Bootstrap");
 
 	// load all resources now, so the zip files are also initiated
-	mLoadingBar = new ExampleLoadingBar(m_pSceneMgr);
+	mLoadingBar = new ExampleLoadingBar();
 	if(mLoadingBar)
 	{
 		RenderWindow *win = OgreFramework::getSingleton().m_pRenderWnd;

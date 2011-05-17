@@ -58,11 +58,10 @@ protected:
 	OverlayElement* mLoadingBarElement;
 	OverlayElement* mLoadingDescriptionElement;
 	OverlayElement* mLoadingCommentElement;
-	Ogre::SceneManager *manager;
 
 	int counterGroups;
 public:
-	ExampleLoadingBar(Ogre::SceneManager *_manager) : manager(_manager), counterGroups(0)
+	ExampleLoadingBar() : counterGroups(0)
 	{
 
 	}
