@@ -1353,6 +1353,17 @@ MyDialog::MyDialog(const wxString& title, MyApp *_app) : wxDialog(NULL, wxID_ANY
 	flaresMode->SetToolTip(_("Determines which lights will project light on the environment.\nThe more light sources are used, the slowest it will be."));
 	y+=35;
 
+	dText = new wxStaticText(advancedPanel, -1, _("In case the mods cache becomes corrupted, \nuse these buttons to fix the cache."), wxPoint(10, y));
+	y+=40;
+	
+	wxButton *btn = new wxButton(advancedPanel, regen_cache, _("Regen cache"), wxPoint(x_row1, y));
+	btn->SetToolTip(_("Use this to regenerate the cache outside of RoR. If this does not work, use the clear cache button."));
+	
+	btn = new wxButton(advancedPanel, clear_cache, _("Clear cache"), wxPoint(x_row2, y));
+	btn->SetToolTip(_("Use this to remove the whole cache and force the generation from ground up."));
+	y+=30;
+
+
 	dText = new wxStaticText(advancedPanel, -1, _("Various Settings:"), wxPoint(10,y+3));
 	replaymode=new wxCheckBox(advancedPanel, -1, _("Replay Mode"), wxPoint(x_row1, y));
 	replaymode->SetToolTip(_("Replay mode. (Will affect your frame rate)"));

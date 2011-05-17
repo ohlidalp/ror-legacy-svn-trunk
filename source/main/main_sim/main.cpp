@@ -26,6 +26,7 @@ along with Rigs of Rods.  If not, see <http://www.gnu.org/licenses/>.
 #include "utils.h"
 #include "Settings.h"
 #include "rornet.h"
+#include "RoRVersion.h"
 
 using namespace Ogre;
 
@@ -59,7 +60,7 @@ BOOL WINAPI crashCallback(LPVOID /*lpvState*/)
 	crAddFile((SSETTING("Config Root") + "ogre.cfg").c_str(), "Rigs of Rods Renderer Configuration");
 	crAddFile((SSETTING("Config Root") + "RoR.cfg").c_str(), "Rigs of Rods Configuration");
 
-	crAddProperty("Version", ROR_VERSION_FULL_STRING);
+	crAddProperty("Version", ROR_VERSION_STRING);
 	crAddProperty("Revision", SVN_REVISION);
 	crAddProperty("full_revision", SVN_ID);
 	crAddProperty("protocol_version", RORNET_VERSION);
@@ -81,7 +82,7 @@ void install_crashrpt()
 	memset(&info, 0, sizeof(CR_INSTALL_INFO));
 	info.cb = sizeof(CR_INSTALL_INFO);  
 	info.pszAppName = "Rigs of Rods";
-	info.pszAppVersion = ROR_VERSION_FULL_STRING;
+	info.pszAppVersion = ROR_VERSION_STRING;
 	info.pszEmailSubject = "Error Report for Rigs of Rods";
 	info.pszEmailTo = "thomas@rigsofrods.com";
 
@@ -255,7 +256,7 @@ int main(int argc, char *argv[])
 				SETTINGS.setSetting("streamCacheGenerationOnly", "Yes");
 			} else if (args.OptionId() == OPT_CHECKCACHE) {
 				// just regen cache and exit
-				SETTINGS.setSetting("regen-cache-only", "True");
+				SETTINGS.setSetting("regen-cache-only", "Yes");
 			} else if (args.OptionId() == OPT_ENTERTRUCK) {
 				SETTINGS.setSetting("Enter Preselected Truck", "Yes");
 			} else if (args.OptionId() == OPT_SETUP) {

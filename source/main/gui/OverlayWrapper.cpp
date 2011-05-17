@@ -28,6 +28,7 @@ along with Rigs of Rods.  If not, see <http://www.gnu.org/licenses/>.
 #include "errorutils.h"
 #include "ColoredTextAreaOverlayElement.h"
 #include "OgreFontManager.h"
+#include "RoRVersion.h"
 
 using namespace std;
 using namespace Ogre;
@@ -137,7 +138,7 @@ int OverlayWrapper::init()
 	mTimingDebugOverlay->hide();
 
 	OverlayElement *vere = loadOverlayElement("Core/RoRVersionString");
-	if(vere) vere->setCaption("Rigs of Rods version " + String(ROR_VERSION_FULL_STRING));
+	if(vere) vere->setCaption("Rigs of Rods version " + String(ROR_VERSION_STRING));
 	
 
 

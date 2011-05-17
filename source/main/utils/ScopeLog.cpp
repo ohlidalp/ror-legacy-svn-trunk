@@ -24,6 +24,7 @@ along with Rigs of Rods.  If not, see <http://www.gnu.org/licenses/>.
 
 #include <stdio.h> // for remove
 #include <time.h>
+#include "RoRVersion.h"
 
 // created by thomas fischer thomas{AT}thomasfischer{DOT}biz, 18th of Juli 2009
 
@@ -99,7 +100,7 @@ void ScopeLog::messageLogged(const String &message, LogMessageLevel lml, bool ma
 		fprintf(f, ".logtd             { border:1px solid #aaaaaa;vertical-align:top; }\n");
 		fprintf(f, "</style>\n");
 		fprintf(f, "</header><body>\n");
-		fprintf(f, "Log for <b>%s</b> created on <b>%s</b> with <b>Rigs of Rods %s</b> ", name.c_str(), ctime(&t), ROR_VERSION_FULL_STRING);
+		fprintf(f, "Log for <b>%s</b> created on <b>%s</b> with <b>Rigs of Rods %s</b> ", name.c_str(), ctime(&t), ROR_VERSION_STRING);
 		fprintf(f, "(built at %s on %s )<br/>\n", __DATE__, __TIME__);
 
 		fprintf(f, "<table class=\"logtable\"><tr class='tableheader'><td class='logtd'>counter</td><td class='logtd'>ms since start</td><td class='logtd'>type</td><td class='logtd'>message</td></tr>\n");

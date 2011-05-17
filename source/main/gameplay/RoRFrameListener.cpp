@@ -48,6 +48,7 @@ along with Rigs of Rods.  If not, see <http://www.gnu.org/licenses/>.
 #include "DotSceneLoader.h"
 #include "AdvancedScreen.h"
 #include "vidcam.h"
+#include "RoRVersion.h"
 
 #include "MumbleIntegration.h"
 
@@ -899,6 +900,19 @@ RoRFrameListener::RoRFrameListener(AppState *parentState, RenderWindow* win, Cam
 	// setup particle manager
 	new DustManager(mSceneMgr);
 
+	if(BSETTING("regen-cache-only"))
+	{
+		CACHE.startup(scm, true);
+		String str = _L("Cache regeneration done.\n");
+		if(CACHE.newFiles > 0) str += StringConverter::toString(CACHE.newFiles) + " new files\n";
+		if(CACHE.changedFiles > 0) str += StringConverter::toString(CACHE.changedFiles) + " changed files\n";
+		if(CACHE.deletedFiles > 0) str += StringConverter::toString(CACHE.deletedFiles) + " deleted files\n";
+		if(CACHE.newFiles + CACHE.changedFiles + CACHE.deletedFiles == 0) str += "no changes";
+		str += _L("\n(These stats can be imprecise)");
+		showError(_L("Cache regeneration done"), str.c_str());
+		exit(0);
+	}
+
 	CACHE.startup(mSceneMgr);
 
 	screenWidth=win->getWidth();
@@ -1047,7 +1061,7 @@ RoRFrameListener::RoRFrameListener(AppState *parentState, RenderWindow* win, Cam
 		}
 	}
 
-	if(cmdAction == "regencache") SETTINGS.setSetting("regen-cache-only", "True");
+	if(cmdAction == "regencache") SETTINGS.setSetting("regen-cache-only", "Yes");
 	if(cmdAction == "installmod")
 	{
 		// use modname!
@@ -1933,7 +1947,7 @@ bool RoRFrameListener::updateEvents(float dt)
 			}
 			as->addData("User_NickName", SSETTING("Nickname"));
 			as->addData("User_Language", SSETTING("Language"));
-			as->addData("RoR_VersionString", String(ROR_VERSION_FULL_STRING));
+			as->addData("RoR_VersionString", String(ROR_VERSION_STRING));
 			as->addData("RoR_VersionSVN", String(SVN_REVISION));
 			as->addData("RoR_VersionSVNID", String(SVN_ID));
 			as->addData("RoR_ProtocolVersion", String(RORNET_VERSION));
