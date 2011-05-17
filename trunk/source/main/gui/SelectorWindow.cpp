@@ -348,9 +348,110 @@ void SelectorWindow::getData()
 	}
 }
 
+bool SelectorWindow::searchCompare(Ogre::String searchString, Cache_Entry *ce)
+{
+	if(searchString.find(":") == searchString.npos)
+	{
+		// normal search
+
+		// the name
+		String dname_lower = ce->dname;
+		Ogre::StringUtil::toLowerCase(dname_lower);
+		if(dname_lower.find(searchString) != String::npos)
+			return true;
+		
+		// the filename
+		String fname_lower = ce->fname;
+		Ogre::StringUtil::toLowerCase(fname_lower);
+		if(fname_lower.find(searchString) != String::npos)
+			return true;
+
+		// the description
+		String desc = ce->description;
+		Ogre::StringUtil::toLowerCase(desc);
+		if(desc.find(searchString) != String::npos)
+			return true;
+
+		// the authors
+		if(!ce->authors.empty())
+		{
+			std::vector<authorinfo_t>::const_iterator it;
+			for(it = ce->authors.begin(); it != ce->authors.end(); it++)
+			{
+				// author name
+				String aname = it->name;
+				Ogre::StringUtil::toLowerCase(aname);
+				if(aname.find(searchString) != String::npos)
+					return true;
+
+				// author email
+				String aemail = it->email;
+				Ogre::StringUtil::toLowerCase(aemail);
+				if(aemail.find(searchString) != String::npos)
+					return true;
+			}
+		}
+		return false;
+	} else
+	{
+		StringVector v = StringUtil::split(searchString, ":");
+		if(v.size() < 2) return false; //invalid syntax
+
+		if(v[0] == "hash")
+		{
+			String hash = ce->hash;
+			Ogre::StringUtil::toLowerCase(hash);
+			return (hash.find(v[1]) != String::npos);
+		} else if(v[0] == "guid")
+		{
+			String guid = ce->guid;
+			Ogre::StringUtil::toLowerCase(guid);
+			return (guid.find(v[1]) != String::npos);
+		} else if(v[0] == "author")
+		{
+			// the authors
+			if(!ce->authors.empty())
+			{
+				std::vector<authorinfo_t>::const_iterator it;
+				for(it = ce->authors.begin(); it != ce->authors.end(); it++)
+				{
+					// author name
+					String aname = it->name;
+					Ogre::StringUtil::toLowerCase(aname);
+					if(aname.find(v[1]) != String::npos)
+						return true;
+
+					// author email
+					String aemail = it->email;
+					Ogre::StringUtil::toLowerCase(aemail);
+					if(aemail.find(v[1]) != String::npos)
+						return true;
+				}
+			}
+			return false;
+		} else if(v[0] == "wheels")
+		{
+			String wheelsStr = TOSTRING(ce->wheelcount) + "x" + TOSTRING(ce->propwheelcount);
+			return (wheelsStr == v[1]);
+		} else if(v[0] == "file")
+		{
+			String fn = ce->fname;
+			Ogre::StringUtil::toLowerCase(fn);
+			return (fn.find(v[1]) != String::npos);
+		}
+
+		
+	}
+	return false;
+}
+
 void SelectorWindow::onCategorySelected(int categoryID)
 {
 	if(mLoaderType == LT_SKIN) return;
+
+	String search_cmd = mSearchLineEdit->getCaption();
+	Ogre::StringUtil::toLowerCase(search_cmd);
+
 	int ts = getTimeStamp();
 	mModelList->removeAllItems();
 	std::vector<Cache_Entry>::iterator it;
@@ -362,15 +463,9 @@ void SelectorWindow::onCategorySelected(int categoryID)
 			counter++;
 
 		// search results
-		if(categoryID == 9994)
+		if(categoryID == 9994 && searchCompare(search_cmd, &(*it)))
 		{
-			String dname_lower = it->dname;
-			Ogre::StringUtil::toLowerCase(dname_lower);
-			String search_lower = mSearchLineEdit->getCaption();
-			Ogre::StringUtil::toLowerCase(search_lower);
-
-			if(dname_lower.find(search_lower) != String::npos)
-				counter++;
+			counter++;
 		}
 	}
 
@@ -389,25 +484,17 @@ void SelectorWindow::onCategorySelected(int categoryID)
 			{
 				mModelList->addItem("ENCODING ERROR", it->number);
 			}
-		} else if(categoryID == 9994)
+		} else if(categoryID == 9994 && searchCompare(search_cmd, &(*it)))
 		{
-			String dname_lower = it->dname;
-			Ogre::StringUtil::toLowerCase(dname_lower);
-			String search_lower = mSearchLineEdit->getCaption();
-			Ogre::StringUtil::toLowerCase(search_lower);
-
-			if(dname_lower.find(search_lower) != String::npos)
+			counter2++;
+			//printf("adding item %d\n", counter2);
+			String txt = TOSTRING(counter2)+". " + it->dname;
+			try
 			{
-				counter2++;
-				//printf("adding item %d\n", counter2);
-				String txt = TOSTRING(counter2)+". " + it->dname;
-				try
-				{
-					mModelList->addItem(txt, it->number);
-				} catch(...)
-				{
-					mModelList->addItem("ENCODING ERROR", it->number);
-				}
+				mModelList->addItem(txt, it->number);
+			} catch(...)
+			{
+				mModelList->addItem("ENCODING ERROR", it->number);
 			}
 		}
 
@@ -769,7 +856,9 @@ void SelectorWindow::eventSearchTextChange(MyGUI::EditBox *_sender)
 void SelectorWindow::eventSearchTextGotFocus(MyGUI::WidgetPtr _sender, MyGUI::WidgetPtr oldWidget)
 {
 	if(!mMainWidget->getVisible()) return;
-	mSearchLineEdit->setCaption("");
+	
+	if(mSearchLineEdit->getCaption() == _L("Search ..."))
+		mSearchLineEdit->setCaption("");
 }
 #endif //MYGUI
 
