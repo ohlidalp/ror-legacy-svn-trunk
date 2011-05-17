@@ -61,7 +61,8 @@ private:
 	void eventMouseButtonClickCancelButton(MyGUI::WidgetPtr _sender);
 	void eventSearchTextChange(MyGUI::EditBox *_sender);
 	void eventSearchTextGotFocus(MyGUI::WidgetPtr _sender, MyGUI::WidgetPtr oldWidget);
-
+	void notifyWindowChangeCoord(MyGUI::Window* _sender);
+	void resizePreviewImage();
 
 	// other functions
 	void getData();
@@ -82,6 +83,7 @@ private:
 	Cache_Entry *mSelectedTruck;
 	int visibleCounter;
 	Skin *mSelectedSkin;
+	Ogre::String lastImageTextureName;
 private:
 	ATTRIBUTE_FIELD_WIDGET_NAME(SelectorWindow, mTypeComboBox, "Type");
 	MyGUI::ComboBox* mTypeComboBox;
@@ -101,6 +103,8 @@ private:
 	MyGUI::Button* mCancelButton;
 	ATTRIBUTE_FIELD_WIDGET_NAME(SelectorWindow, mSearchLineEdit, "SearchLine");
 	MyGUI::EditBox* mSearchLineEdit;
+	ATTRIBUTE_FIELD_WIDGET_NAME(SelectorWindow, mPreviewStaticImagePanel, "PreviewBox");
+	MyGUI::Widget* mPreviewStaticImagePanel;
 };
 
 #endif // __SELECTOR_WINDOW_H__

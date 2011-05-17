@@ -136,7 +136,10 @@ public:
 	int getNumGears() { return gearsRatio.size() - 2; };
 	int getNumGearsRanges() {return getNumGears()/6+1; }
 	float getMaxRPM() { return maxRPM; };
+	float getIdleRPM() { return iddleRPM; };
+	char getType() { return type; };
 	TorqueCurve *getTorqueCurve() { return torqueCurve; };
+	float getEngineTorque() { return engineTorque; };
 	~BeamEngine();
 };
 

@@ -22,6 +22,7 @@ along with Rigs of Rods.  If not, see <http://www.gnu.org/licenses/>.
 
 #include "MapControl.h"
 #include "Beam.h"
+#include "gui_manager.h"
 
 
 #include "RoRFrameListener.h"
@@ -113,6 +114,7 @@ bool MapControl::getVisibility()
 
 void MapControl::setVisibility(bool value)
 {
+	if(!value) GUIManager::getSingleton().unfocus();
 	mMainWidget->setVisible(value);
 }
 

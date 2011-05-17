@@ -98,7 +98,7 @@ trucksection_t truck_sections[] = {
 	{BTS_SOUNDSOURCES2, "soundsources2", false},
 	{BTS_ENVMAP, "envmap", false},
 	{BTS_MANAGEDMATERIALS, "managedmaterials", false},
-	{BTS_SECTIONCONFIG, "BTS_SECTIONCONFIG", false}, // NOT TO BE PARSED
+	{BTS_SECTIONCONFIG, "BTS_SECTIONCONFIG", false},
 	{BTS_TORQUECURVE, "torquecurve", false},
 	{BTS_ADVANCEDDRAG, "advdrag", false},
 	{BTS_AXLES, "axles", false},
@@ -242,6 +242,12 @@ SerializedRig::SerializedRig()
 	buoyance=0;
 	driveable=NOT_DRIVEABLE;
 
+	free_fixes=0;
+	propwheelcount=0;
+	free_commands=0;
+	fileformatversion=0;
+	sectionconfigs.clear();
+
 	origin=Vector3::ZERO;
 	mSlideNodes.clear();
 
@@ -307,11 +313,28 @@ SerializedRig::SerializedRig()
 	lowestnode = -1;
 	beamsRoot=0;
 
-	materialReplacer = new MaterialReplacer();
+	virtuallyLoaded=false;
+	ignoreProblems = false;
+
+	materialReplacer = NULL;
+	if(!virtuallyLoaded)
+		materialReplacer = new MaterialReplacer();
 }
 
 SerializedRig::~SerializedRig()
 {
+	if(engine)
+	{
+		delete(engine);
+		engine=NULL;
+	}
+}
+
+int SerializedRig::loadTruckVirtual(String fname, bool ignorep)
+{
+	virtuallyLoaded = true;
+	ignoreProblems = ignorep;
+	return loadTruck(fname, NULL, NULL, Vector3::ZERO, Quaternion::ZERO, NULL);
 }
 
 int SerializedRig::loadTruck(String fname, SceneManager *manager, SceneNode *parent, Vector3 pos, Quaternion rot, collision_box_t *spawnbox)
@@ -745,7 +768,7 @@ int SerializedRig::loadTruck(String fname, SceneManager *manager, SceneNode *par
 			if (c.line.size() > 17 && c.line.substr(0, 17) == "fileformatversion")
 			{
 				parse_args(c, args, 2);
-				int fileformatversion = PARSEINT(args[1]);
+				fileformatversion = PARSEINT(args[1]);
 				if (fileformatversion > TRUCKFILEFORMATVERSION)
 				{
 					parser_warning(c, "The file is for a newer RoR version");
@@ -1066,6 +1089,10 @@ int SerializedRig::loadTruck(String fname, SceneManager *manager, SceneNode *par
 			{
 				parse_args(c, args, 2);
 				strncpy(guid, args[1].c_str(), 128);
+				String guidstr = String(guid);
+				StringUtil::trim(guidstr);
+				strncpy(guid, guidstr.c_str(), 128);
+
 				continue;
 			}
 			if (c.line.size() > 17 && c.line.substr(0, 17) == "set_beam_defaults")
@@ -1323,18 +1350,20 @@ int SerializedRig::loadTruck(String fname, SceneManager *manager, SceneNode *par
 								e.emitterNode = id;
 								e.directionNode = smokeRef;
 								e.isOldFormat = true;
-								//smokeId=id;
-								e.smokeNode = parent->createChildSceneNode();
-								//ParticleSystemManager *pSysM=ParticleSystemManager::getSingletonPtr();
-								char wname[256];
-								sprintf(wname, "exhaust-%d-%s", (int)exhausts.size(), truckname);
-								//if (pSysM) smoker=pSysM->createSystem(wname, "tracks/Smoke");
-								e.smoker=manager->createParticleSystem(wname, "tracks/Smoke");
-								if (!e.smoker) continue;
-								e.smoker->setVisibilityFlags(DEPTHMAP_DISABLED); // disable particles in depthmap
-								// ParticleSystem* pSys = ParticleSystemManager::getSingleton().createSystem("exhaust", "tracks/Smoke");
-								e.smokeNode->attachObject(e.smoker);
-								e.smokeNode->setPosition(nodes[e.emitterNode].AbsPosition);
+								if(!virtuallyLoaded)
+								{
+									e.smokeNode = parent->createChildSceneNode();
+									//ParticleSystemManager *pSysM=ParticleSystemManager::getSingletonPtr();
+									char wname[256];
+									sprintf(wname, "exhaust-%d-%s", (int)exhausts.size(), truckname);
+									//if (pSysM) smoker=pSysM->createSystem(wname, "tracks/Smoke");
+									e.smoker=manager->createParticleSystem(wname, "tracks/Smoke");
+									if (!e.smoker) continue;
+									e.smoker->setVisibilityFlags(DEPTHMAP_DISABLED); // disable particles in depthmap
+									// ParticleSystem* pSys = ParticleSystemManager::getSingleton().createSystem("exhaust", "tracks/Smoke");
+									e.smokeNode->attachObject(e.smoker);
+									e.smokeNode->setPosition(nodes[e.emitterNode].AbsPosition);
+								}
 								exhausts.push_back(e);
 
 								nodes[smokeId].isHot=true;
@@ -1352,17 +1381,20 @@ int SerializedRig::loadTruck(String fname, SceneManager *manager, SceneNode *par
 								e.directionNode = id;
 								e.isOldFormat = true;
 								//smokeId=id;
-								e.smokeNode = parent->createChildSceneNode();
-								//ParticleSystemManager *pSysM=ParticleSystemManager::getSingletonPtr();
-								char wname[256];
-								sprintf(wname, "exhaust-%d-%s", (int)exhausts.size(), truckname);
-								//if (pSysM) smoker=pSysM->createSystem(wname, "tracks/Smoke");
-								e.smoker=manager->createParticleSystem(wname, "tracks/Smoke");
-								if (!e.smoker)  continue;
-								e.smoker->setVisibilityFlags(DEPTHMAP_DISABLED); // disable particles in depthmap
-								// ParticleSystem* pSys = ParticleSystemManager::getSingleton().createSystem("exhaust", "tracks/Smoke");
-								e.smokeNode->attachObject(e.smoker);
-								e.smokeNode->setPosition(nodes[e.emitterNode].AbsPosition);
+								if(!virtuallyLoaded)
+								{
+									e.smokeNode = parent->createChildSceneNode();
+									//ParticleSystemManager *pSysM=ParticleSystemManager::getSingletonPtr();
+									char wname[256];
+									sprintf(wname, "exhaust-%d-%s", (int)exhausts.size(), truckname);
+									//if (pSysM) smoker=pSysM->createSystem(wname, "tracks/Smoke");
+									e.smoker=manager->createParticleSystem(wname, "tracks/Smoke");
+									if (!e.smoker)  continue;
+									e.smoker->setVisibilityFlags(DEPTHMAP_DISABLED); // disable particles in depthmap
+									// ParticleSystem* pSys = ParticleSystemManager::getSingleton().createSystem("exhaust", "tracks/Smoke");
+									e.smokeNode->attachObject(e.smoker);
+									e.smokeNode->setPosition(nodes[e.emitterNode].AbsPosition);
+								}
 								exhausts.push_back(e);
 
 								nodes[smokeId].isHot=true;
@@ -1392,7 +1424,8 @@ int SerializedRig::loadTruck(String fname, SceneManager *manager, SceneNode *par
 							beams[pos].commandShort      = 0.0f;
 							beams[pos].commandLong       = 1.0f;
 							beams[pos].maxtiestress      = HOOK_FORCE_DEFAULT;
-							beams[pos].mSceneNode->detachAllObjects();
+							if(!virtuallyLoaded && beams[pos].mSceneNode)
+								beams[pos].mSceneNode->detachAllObjects();
 
 							hook_t h;
 							h.hookNode     = &nodes[id];
@@ -1564,7 +1597,7 @@ int SerializedRig::loadTruck(String fname, SceneManager *manager, SceneNode *par
 					{
 						hook_nodisable = true;
 					}
-					else if (arg == "visible" || arg == "vis")
+					else if (arg == "visible" || arg == "vis" && !virtuallyLoaded && itfound->beam->mSceneNode)
 					{
 						hookbeam_visble = true;
 						if (itfound->beam->mSceneNode->numAttachedObjects() == 0)
@@ -1993,6 +2026,7 @@ int SerializedRig::loadTruck(String fname, SceneManager *manager, SceneNode *par
 				int id = parse_node_number(c, args[0]);
 				nodes[id].locked = 1;
 				hasfixes         = 1;
+				free_fixes++;
 				continue;
 			}
 			else if (c.mode == BTS_HYDROS)
@@ -2114,7 +2148,7 @@ int SerializedRig::loadTruck(String fname, SceneManager *manager, SceneNode *par
 				Ogre::StringVector options = Ogre::StringUtil::split(c.line,",");
 				if (options.size() < 4)
 				{
-					LOG("Error parsing File (Animator) " + String(fname) +" line " + StringConverter::toString(c.linecounter) + ". trying to continue ...");
+					parser_warning(c, "Error parsing File (Animator) " + String(fname) +" line " + StringConverter::toString(c.linecounter) + ". trying to continue ...");
 					continue;
 				}
 
@@ -2520,9 +2554,9 @@ int SerializedRig::loadTruck(String fname, SceneManager *manager, SceneNode *par
 				if (type=='c') {collcabs[free_collcab]=free_cab; collcabstype[free_collcab]=0; free_collcab++;};
 				if (type=='p') {collcabs[free_collcab]=free_cab; collcabstype[free_collcab]=1; free_collcab++;};
 				if (type=='u') {collcabs[free_collcab]=free_cab; collcabstype[free_collcab]=2; free_collcab++;};
-				if (type=='b') {buoycabs[free_buoycab]=free_cab; collcabstype[free_collcab]=0; buoycabtypes[free_buoycab]=BUOY_NORMAL; free_buoycab++;   if (!buoyance) buoyance=new Buoyance(water);};
-				if (type=='r') {buoycabs[free_buoycab]=free_cab; collcabstype[free_collcab]=0; buoycabtypes[free_buoycab]=BUOY_DRAGONLY; free_buoycab++; if (!buoyance) buoyance=new Buoyance(water);};
-				if (type=='s') {buoycabs[free_buoycab]=free_cab; collcabstype[free_collcab]=0; buoycabtypes[free_buoycab]=BUOY_DRAGLESS; free_buoycab++; if (!buoyance) buoyance=new Buoyance(water);};
+				if (type=='b') {buoycabs[free_buoycab]=free_cab; collcabstype[free_collcab]=0; buoycabtypes[free_buoycab]=BUOY_NORMAL; free_buoycab++;   if (!buoyance && !virtuallyLoaded) buoyance=new Buoyance(water);};
+				if (type=='r') {buoycabs[free_buoycab]=free_cab; collcabstype[free_collcab]=0; buoycabtypes[free_buoycab]=BUOY_DRAGONLY; free_buoycab++; if (!buoyance && !virtuallyLoaded) buoyance=new Buoyance(water);};
+				if (type=='s') {buoycabs[free_buoycab]=free_cab; collcabstype[free_collcab]=0; buoycabtypes[free_buoycab]=BUOY_DRAGLESS; free_buoycab++; if (!buoyance && !virtuallyLoaded) buoyance=new Buoyance(water);};
 				if (type=='D' || type == 'F' || type == 'S')
 				{
 
@@ -2536,7 +2570,7 @@ int SerializedRig::loadTruck(String fname, SceneManager *manager, SceneNode *par
 					if(type == 'F') collcabstype[free_collcab]=1;
 					if(type == 'S') collcabstype[free_collcab]=2;
 					free_collcab++;
-					buoycabs[free_buoycab]=free_cab; buoycabtypes[free_buoycab]=BUOY_NORMAL; free_buoycab++; if (!buoyance) buoyance=new Buoyance(water);
+					buoycabs[free_buoycab]=free_cab; buoycabtypes[free_buoycab]=BUOY_NORMAL; free_buoycab++; if (!buoyance && !virtuallyLoaded) buoyance=new Buoyance(water);
 				}
 				free_cab++;
 			}
@@ -2716,6 +2750,7 @@ int SerializedRig::loadTruck(String fname, SceneManager *manager, SceneNode *par
 					cmdInertia->setCmdKeyDelay(keyl,inertia_startDelay,inertia_stopDelay, String (inertia_default_startFunction), String (inertia_default_stopFunction));
 				}
 
+				free_commands++;
 			}
 			else if (c.mode == BTS_CONTACTERS)
 			{
@@ -2820,7 +2855,8 @@ int SerializedRig::loadTruck(String fname, SceneManager *manager, SceneNode *par
 				beams[pos].Lhydro=maxl;
 				beams[pos].bounded=ROPE;
 				beams[pos].disabled=true;
-				beams[pos].mSceneNode->detachAllObjects();
+				if(!virtuallyLoaded && beams[pos].mSceneNode)
+					beams[pos].mSceneNode->detachAllObjects();
 				beams[pos].commandRatioShort=rate;
 				beams[pos].commandRatioLong=rate;
 				beams[pos].commandShort=shortl;
@@ -2900,18 +2936,21 @@ int SerializedRig::loadTruck(String fname, SceneManager *manager, SceneNode *par
 					// create cabin light :)
 					char flarename[256];
 					sprintf(flarename, "cabinglight-%s", truckname);
-					cablight=manager->createLight(flarename);
-					cablight->setType(Light::LT_POINT);
-					cablight->setDiffuseColour( ColourValue(0.4, 0.4, 0.3));
-					cablight->setSpecularColour( ColourValue(0.4, 0.4, 0.3));
-					cablight->setAttenuation(20, 1, 0, 0);
-					cablight->setCastShadows(false);
-					cablight->setVisible(true);
-					cablightNode = manager->getRootSceneNode()->createChildSceneNode();
-					deletion_sceneNodes.push_back(cablightNode);
-					if(cablight)
-						cablightNode->attachObject(cablight);
-					cablightNode->setVisible(false);
+					if(!virtuallyLoaded)
+					{
+						cablight=manager->createLight(flarename);
+						cablight->setType(Light::LT_POINT);
+						cablight->setDiffuseColour( ColourValue(0.4, 0.4, 0.3));
+						cablight->setSpecularColour( ColourValue(0.4, 0.4, 0.3));
+						cablight->setAttenuation(20, 1, 0, 0);
+						cablight->setCastShadows(false);
+						cablight->setVisible(true);
+						cablightNode = manager->getRootSceneNode()->createChildSceneNode();
+						deletion_sceneNodes.push_back(cablightNode);
+						if(cablight)
+							cablightNode->attachObject(cablight);
+						cablightNode->setVisible(false);
+					}
 				}
 
 				freecinecamera++;
@@ -3005,96 +3044,99 @@ int SerializedRig::loadTruck(String fname, SceneManager *manager, SceneNode *par
 				f.offsety=oy;
 				f.offsetz=oz;
 				f.size=size;
-				f.snode = manager->getRootSceneNode()->createChildSceneNode();
-				char flarename[256];
-				sprintf(flarename, "flare-%s-%i", truckname, free_flare);
-				f.bbs=manager->createBillboardSet(flarename,1);
-				f.bbs->createBillboard(0,0,0);
-				f.bbs->setVisibilityFlags(DEPTHMAP_DISABLED);
-				bool usingDefaultMaterial=true;
-				if (f.bbs && (!strncmp(matname, "default", 250) || strnlen(matname, 250) == 0))
+				if(!virtuallyLoaded)
 				{
-					if (type == 'b')
-						f.bbs->setMaterialName("tracks/brakeflare");
-					else if (type == 'l' || type == 'r')
-						f.bbs->setMaterialName("tracks/blinkflare");
-					else // (type == 'f' || type == 'R')
-						f.bbs->setMaterialName("tracks/flare");
-				} else
-				{
-					usingDefaultMaterial=false;
+					f.snode = manager->getRootSceneNode()->createChildSceneNode();
+					char flarename[256];
+					sprintf(flarename, "flare-%s-%i", truckname, free_flare);
+					f.bbs=manager->createBillboardSet(flarename,1);
+					f.bbs->createBillboard(0,0,0);
+					f.bbs->setVisibilityFlags(DEPTHMAP_DISABLED);
+					bool usingDefaultMaterial=true;
+					if (f.bbs && (!strncmp(matname, "default", 250) || strnlen(matname, 250) == 0))
+					{
+						if (type == 'b')
+							f.bbs->setMaterialName("tracks/brakeflare");
+						else if (type == 'l' || type == 'r')
+							f.bbs->setMaterialName("tracks/blinkflare");
+						else // (type == 'f' || type == 'R')
+							f.bbs->setMaterialName("tracks/flare");
+					} else
+					{
+						usingDefaultMaterial=false;
+						if(f.bbs)
+							f.bbs->setMaterialName(String(matname));
+					}
 					if(f.bbs)
-						f.bbs->setMaterialName(String(matname));
-				}
-				if(f.bbs)
-					f.snode->attachObject(f.bbs);
-				f.isVisible=true;
-				f.light=NULL;
-				if (type == 'f' && usingDefaultMaterial && flaresMode >=2 && size > 0.001)
-				{
-					// front light
-					f.light=manager->createLight(flarename);
-					f.light->setType(Light::LT_SPOTLIGHT);
-					f.light->setDiffuseColour( ColourValue(1, 1, 1));
-					f.light->setSpecularColour( ColourValue(1, 1, 1));
-					f.light->setAttenuation(400, 0.9, 0, 0);
-					f.light->setSpotlightRange( Degree(35), Degree(45) );
-					f.light->setCastShadows(false);
-				}
-				else if (type == 'f' && !usingDefaultMaterial && flaresMode >=4 && size > 0.001)
-				{
-					// this is a quick fix for the red backlight when frontlight is switched on
-					f.light=manager->createLight(flarename);
-					f.light->setType(Light::LT_SPOTLIGHT);
-					f.light->setDiffuseColour( ColourValue(1.0, 0, 0));
-					f.light->setSpecularColour( ColourValue(1.0, 0, 0));
-					f.light->setAttenuation(10.0, 1.0, 0, 0);
-					f.light->setSpotlightRange( Degree(35), Degree(45) );
-					f.light->setCastShadows(false);
-				}
-				else if (type == 'R' && flaresMode >= 4 && size > 0.001)
-				{
-					// brake light
-					f.light=manager->createLight(flarename);
-					f.light->setType(Light::LT_SPOTLIGHT);
-					f.light->setDiffuseColour(ColourValue(1, 1, 1));
-					f.light->setSpecularColour(ColourValue(1, 1, 1));
-					f.light->setAttenuation(20.0, 1, 0, 0);
-					f.light->setSpotlightRange( Degree(35), Degree(45) );
-					f.light->setCastShadows(false);
-				}
-				else if (type == 'b' && flaresMode >= 4 && size > 0.001)
-				{
-					// brake light
-					f.light=manager->createLight(flarename);
-					f.light->setType(Light::LT_SPOTLIGHT);
-					f.light->setDiffuseColour( ColourValue(1.0, 0, 0));
-					f.light->setSpecularColour( ColourValue(1.0, 0, 0));
-					f.light->setAttenuation(10.0, 1.0, 0, 0);
-					f.light->setSpotlightRange( Degree(35), Degree(45) );
-					f.light->setCastShadows(false);
-				}
-				else if ((type == 'l' || type == 'r') && flaresMode >= 4 && size > 0.001)
-				{
-					// blink light
-					f.light=manager->createLight(flarename);
-					f.light->setType(Light::LT_SPOTLIGHT);
-					f.light->setDiffuseColour( ColourValue(1, 1, 0));
-					f.light->setSpecularColour( ColourValue(1, 1, 0));
-					f.light->setAttenuation(10.0, 1, 1, 0);
-					f.light->setSpotlightRange( Degree(35), Degree(45) );
-					f.light->setCastShadows(false);
-				}
-				else if ((type == 'u') && flaresMode >= 4 && size > 0.001)
-				{
-					// user light always white (TODO: improve this)
-					f.light=manager->createLight(flarename);
-					f.light->setType(Light::LT_SPOTLIGHT);
-					f.light->setDiffuseColour( ColourValue(1, 1, 1));
-					f.light->setSpecularColour( ColourValue(1, 1, 1));
-					f.light->setAttenuation(50.0, 1.0, 1, 0.2);
-					f.light->setSpotlightRange( Degree(35), Degree(45) );
-					f.light->setCastShadows(false);
+						f.snode->attachObject(f.bbs);
+					f.isVisible=true;
+					f.light=NULL;
+					if (type == 'f' && usingDefaultMaterial && flaresMode >=2 && size > 0.001)
+					{
+						// front light
+						f.light=manager->createLight(flarename);
+						f.light->setType(Light::LT_SPOTLIGHT);
+						f.light->setDiffuseColour( ColourValue(1, 1, 1));
+						f.light->setSpecularColour( ColourValue(1, 1, 1));
+						f.light->setAttenuation(400, 0.9, 0, 0);
+						f.light->setSpotlightRange( Degree(35), Degree(45) );
+						f.light->setCastShadows(false);
+					}
+					else if (type == 'f' && !usingDefaultMaterial && flaresMode >=4 && size > 0.001)
+					{
+						// this is a quick fix for the red backlight when frontlight is switched on
+						f.light=manager->createLight(flarename);
+						f.light->setType(Light::LT_SPOTLIGHT);
+						f.light->setDiffuseColour( ColourValue(1.0, 0, 0));
+						f.light->setSpecularColour( ColourValue(1.0, 0, 0));
+						f.light->setAttenuation(10.0, 1.0, 0, 0);
+						f.light->setSpotlightRange( Degree(35), Degree(45) );
+						f.light->setCastShadows(false);
+					}
+					else if (type == 'R' && flaresMode >= 4 && size > 0.001)
+					{
+						// brake light
+						f.light=manager->createLight(flarename);
+						f.light->setType(Light::LT_SPOTLIGHT);
+						f.light->setDiffuseColour(ColourValue(1, 1, 1));
+						f.light->setSpecularColour(ColourValue(1, 1, 1));
+						f.light->setAttenuation(20.0, 1, 0, 0);
+						f.light->setSpotlightRange( Degree(35), Degree(45) );
+						f.light->setCastShadows(false);
+					}
+					else if (type == 'b' && flaresMode >= 4 && size > 0.001)
+					{
+						// brake light
+						f.light=manager->createLight(flarename);
+						f.light->setType(Light::LT_SPOTLIGHT);
+						f.light->setDiffuseColour( ColourValue(1.0, 0, 0));
+						f.light->setSpecularColour( ColourValue(1.0, 0, 0));
+						f.light->setAttenuation(10.0, 1.0, 0, 0);
+						f.light->setSpotlightRange( Degree(35), Degree(45) );
+						f.light->setCastShadows(false);
+					}
+					else if ((type == 'l' || type == 'r') && flaresMode >= 4 && size > 0.001)
+					{
+						// blink light
+						f.light=manager->createLight(flarename);
+						f.light->setType(Light::LT_SPOTLIGHT);
+						f.light->setDiffuseColour( ColourValue(1, 1, 0));
+						f.light->setSpecularColour( ColourValue(1, 1, 0));
+						f.light->setAttenuation(10.0, 1, 1, 0);
+						f.light->setSpotlightRange( Degree(35), Degree(45) );
+						f.light->setCastShadows(false);
+					}
+					else if ((type == 'u') && flaresMode >= 4 && size > 0.001)
+					{
+						// user light always white (TODO: improve this)
+						f.light=manager->createLight(flarename);
+						f.light->setType(Light::LT_SPOTLIGHT);
+						f.light->setDiffuseColour( ColourValue(1, 1, 1));
+						f.light->setSpecularColour( ColourValue(1, 1, 1));
+						f.light->setAttenuation(50.0, 1.0, 1, 0.2);
+						f.light->setSpotlightRange( Degree(35), Degree(45) );
+						f.light->setCastShadows(false);
+					}
 				}
 
 				// update custom light array
@@ -3190,165 +3232,170 @@ int SerializedRig::loadTruck(String fname, SceneManager *manager, SceneNode *par
 					props[free_prop].wheelpos=stdpos;
 
 					// create the meshs scenenode
-					props[free_prop].wheel = manager->getRootSceneNode()->createChildSceneNode();
+					if(!virtuallyLoaded)
+					{
+						props[free_prop].wheel = manager->getRootSceneNode()->createChildSceneNode();
+						// now create the mesh
+						MeshObject *mo = new MeshObject(manager, diwmeshname, "", props[free_prop].wheel, usedSkin, enable_background_loading);
+						mo->setSimpleMaterialColour(ColourValue(0, 0.5, 0.5));
+						mo->setMaterialFunctionMapper(materialFunctionMapper, materialReplacer);
+					}
+				}
+
+				if(!virtuallyLoaded)
+				{
+					// create the meshs scenenode
+					props[free_prop].snode = manager->getRootSceneNode()->createChildSceneNode();
 					// now create the mesh
-					MeshObject *mo = new MeshObject(manager, diwmeshname, "", props[free_prop].wheel, usedSkin, enable_background_loading);
-					mo->setSimpleMaterialColour(ColourValue(0, 0.5, 0.5));
-					mo->setMaterialFunctionMapper(materialFunctionMapper, materialReplacer);
-				}
+					props[free_prop].mo = new MeshObject(manager, meshname, "", props[free_prop].snode, usedSkin, enable_background_loading);
+					props[free_prop].mo->setSimpleMaterialColour(ColourValue(1, 1, 0));
+					props[free_prop].mo->setMaterialFunctionMapper(materialFunctionMapper, materialReplacer);
+					props[free_prop].mo->setCastShadows(shadowmode!=0);
 
-				// create the meshs scenenode
-				props[free_prop].snode = manager->getRootSceneNode()->createChildSceneNode();
-				// now create the mesh
-				props[free_prop].mo = new MeshObject(manager, meshname, "", props[free_prop].snode, usedSkin, enable_background_loading);
-				props[free_prop].mo->setSimpleMaterialColour(ColourValue(1, 1, 0));
-				props[free_prop].mo->setMaterialFunctionMapper(materialFunctionMapper, materialReplacer);
-				props[free_prop].mo->setCastShadows(shadowmode!=0);
-
-				//hack for the spinprops
-				if (!strncmp("spinprop", meshname, 8))
-				{
-					props[free_prop].spinner=1;
-					props[free_prop].mo->setCastShadows(false);
-					props[free_prop].snode->setVisible(false);
-				}
-				if (!strncmp("pale", meshname, 4))
-				{
-					props[free_prop].pale=1;
-				}
-				//detect driver seat, used to position the driver and make the seat translucent at times
-				if (!strncmp("seat", meshname, 4) && !driversseatfound)
-				{
-					driversseatfound=true;
-					props[free_prop].mo->setMaterialName("driversseat");
-					driverSeat = &props[free_prop];
-				}
-				else if (!strncmp("seat2", meshname, 5) && !driversseatfound)
-				{
-					driversseatfound=true;
-					driverSeat = &props[free_prop];
-				}
-				props[free_prop].beacontype='n';
-				if (!strncmp("beacon", meshname, 6) && flaresMode>0)
-				{
-					ColourValue color = ColourValue(1.0, 0.5, 0.0);
-					String matname = "tracks/beaconflare";
-					char beaconmaterial[256];
-					float br=0, bg=0, bb=0;
-
-					if(n > 10) strncpy(beaconmaterial, args[10].c_str(), 255);
-					if(n > 11) br = PARSEREAL(args[11]);
-					if(n > 12) bg = PARSEREAL(args[12]);
-					if(n > 13) bb = PARSEREAL(args[13]);
-					if(n >= 14)
+					//hack for the spinprops
+					if (!strncmp("spinprop", meshname, 8))
 					{
-						color = ColourValue(br, bg, bb);
-						matname = String(beaconmaterial);
+						props[free_prop].spinner=1;
+						props[free_prop].mo->setCastShadows(false);
+						props[free_prop].snode->setVisible(false);
 					}
+					if (!strncmp("pale", meshname, 4))
+					{
+						props[free_prop].pale=1;
+					}
+					//detect driver seat, used to position the driver and make the seat translucent at times
+					if (!strncmp("seat", meshname, 4) && !driversseatfound)
+					{
+						driversseatfound=true;
+						props[free_prop].mo->setMaterialName("driversseat");
+						driverSeat = &props[free_prop];
+					}
+					else if (!strncmp("seat2", meshname, 5) && !driversseatfound)
+					{
+						driversseatfound=true;
+						driverSeat = &props[free_prop];
+					}
+					props[free_prop].beacontype='n';
+					if (!strncmp("beacon", meshname, 6) && flaresMode>0)
+					{
+						ColourValue color = ColourValue(1.0, 0.5, 0.0);
+						String matname = "tracks/beaconflare";
+						char beaconmaterial[256];
+						float br=0, bg=0, bb=0;
 
-					props[free_prop].bpos[0]=2.0*3.14*((Real)rand()/(Real)RAND_MAX);
-					props[free_prop].brate[0]=4.0*3.14+((Real)rand()/(Real)RAND_MAX)-0.5;
-					props[free_prop].beacontype='b';
-					props[free_prop].bbs[0]=0;
-					//the light
-					props[free_prop].light[0]=manager->createLight(); //propname);
-					props[free_prop].light[0]->setType(Light::LT_SPOTLIGHT);
-					props[free_prop].light[0]->setDiffuseColour(color);
-					props[free_prop].light[0]->setSpecularColour(color);
-					props[free_prop].light[0]->setAttenuation(50.0, 1.0, 0.3, 0.0);
-					props[free_prop].light[0]->setSpotlightRange( Degree(35), Degree(45) );
-					props[free_prop].light[0]->setCastShadows(false);
-					props[free_prop].light[0]->setVisible(false);
-					//the flare billboard
-					props[free_prop].bbsnode[0] = manager->getRootSceneNode()->createChildSceneNode();
-					props[free_prop].bbs[0]=manager->createBillboardSet(1); //(propname,1);
-					props[free_prop].bbs[0]->createBillboard(0,0,0);
-					if(props[free_prop].bbs[0])
-					{
-						props[free_prop].bbs[0]->setMaterialName(matname);
-						props[free_prop].bbs[0]->setVisibilityFlags(DEPTHMAP_DISABLED);
-					}
-					if(props[free_prop].bbs[0])
-						props[free_prop].bbsnode[0]->attachObject(props[free_prop].bbs[0]);
-					props[free_prop].bbsnode[0]->setVisible(false);
-				}
-				if (!strncmp("redbeacon", meshname, 9) && flaresMode>0)
-				{
-					props[free_prop].bpos[0]=0.0;
-					props[free_prop].brate[0]=1.0;
-					props[free_prop].beacontype='r';
-					props[free_prop].bbs[0]=0;
-					//the light
-					props[free_prop].light[0]=manager->createLight();//propname);
-					props[free_prop].light[0]->setType(Light::LT_POINT);
-					props[free_prop].light[0]->setDiffuseColour( ColourValue(1.0, 0.0, 0.0));
-					props[free_prop].light[0]->setSpecularColour( ColourValue(1.0, 0.0, 0.0));
-					props[free_prop].light[0]->setAttenuation(50.0, 1.0, 0.3, 0.0);
-					props[free_prop].light[0]->setCastShadows(false);
-					props[free_prop].light[0]->setVisible(false);
-					//the flare billboard
-					props[free_prop].bbsnode[0] = manager->getRootSceneNode()->createChildSceneNode();
-					props[free_prop].bbs[0]=manager->createBillboardSet(1); //propname,1);
-					props[free_prop].bbs[0]->createBillboard(0,0,0);
-					if(props[free_prop].bbs[0])
-					{
-						props[free_prop].bbs[0]->setMaterialName("tracks/redbeaconflare");
-						props[free_prop].bbs[0]->setVisibilityFlags(DEPTHMAP_DISABLED);
-					}
-					if(props[free_prop].bbs[0])
-						props[free_prop].bbsnode[0]->attachObject(props[free_prop].bbs[0]);
-					props[free_prop].bbsnode[0]->setVisible(false);
-					props[free_prop].bbs[0]->setDefaultDimensions(1.0, 1.0);
-				}
-				if (!strncmp("lightbar", meshname, 6) && flaresMode>0)
-				{
-					int k;
-					ispolice=true;
-					props[free_prop].beacontype='p';
-					for (k=0; k<4; k++)
-					{
-						props[free_prop].bpos[k]=2.0*3.14*((Real)rand()/(Real)RAND_MAX);
-						props[free_prop].brate[k]=4.0*3.14+((Real)rand()/(Real)RAND_MAX)-0.5;
-						props[free_prop].bbs[k]=0;
+						if(n > 10) strncpy(beaconmaterial, args[10].c_str(), 255);
+						if(n > 11) br = PARSEREAL(args[11]);
+						if(n > 12) bg = PARSEREAL(args[12]);
+						if(n > 13) bb = PARSEREAL(args[13]);
+						if(n >= 14)
+						{
+							color = ColourValue(br, bg, bb);
+							matname = String(beaconmaterial);
+						}
+
+						props[free_prop].bpos[0]=2.0*3.14*((Real)rand()/(Real)RAND_MAX);
+						props[free_prop].brate[0]=4.0*3.14+((Real)rand()/(Real)RAND_MAX)-0.5;
+						props[free_prop].beacontype='b';
+						props[free_prop].bbs[0]=0;
 						//the light
-						//char rpname[256];
-						//sprintf(rpname,"%s-%i", propname, k);
-						props[free_prop].light[k]=manager->createLight(); //rpname);
-						props[free_prop].light[k]->setType(Light::LT_SPOTLIGHT);
-						if (k>1)
-						{
-							props[free_prop].light[k]->setDiffuseColour( ColourValue(1.0, 0.0, 0.0));
-							props[free_prop].light[k]->setSpecularColour( ColourValue(1.0, 0.0, 0.0));
-						}
-						else
-						{
-							props[free_prop].light[k]->setDiffuseColour( ColourValue(0.0, 0.5, 1.0));
-							props[free_prop].light[k]->setSpecularColour( ColourValue(0.0, 0.5, 1.0));
-						}
-						props[free_prop].light[k]->setAttenuation(50.0, 1.0, 0.3, 0.0);
-						props[free_prop].light[k]->setSpotlightRange( Degree(35), Degree(45) );
-						props[free_prop].light[k]->setCastShadows(false);
-						props[free_prop].light[k]->setVisible(false);
+						props[free_prop].light[0]=manager->createLight(); //propname);
+						props[free_prop].light[0]->setType(Light::LT_SPOTLIGHT);
+						props[free_prop].light[0]->setDiffuseColour(color);
+						props[free_prop].light[0]->setSpecularColour(color);
+						props[free_prop].light[0]->setAttenuation(50.0, 1.0, 0.3, 0.0);
+						props[free_prop].light[0]->setSpotlightRange( Degree(35), Degree(45) );
+						props[free_prop].light[0]->setCastShadows(false);
+						props[free_prop].light[0]->setVisible(false);
 						//the flare billboard
-						props[free_prop].bbsnode[k] = manager->getRootSceneNode()->createChildSceneNode();
-						props[free_prop].bbs[k]=manager->createBillboardSet(1); //rpname,1);
-						props[free_prop].bbs[k]->createBillboard(0,0,0);
-						if(props[free_prop].bbs[k])
+						props[free_prop].bbsnode[0] = manager->getRootSceneNode()->createChildSceneNode();
+						props[free_prop].bbs[0]=manager->createBillboardSet(1); //(propname,1);
+						props[free_prop].bbs[0]->createBillboard(0,0,0);
+						if(props[free_prop].bbs[0])
 						{
+							props[free_prop].bbs[0]->setMaterialName(matname);
+							props[free_prop].bbs[0]->setVisibilityFlags(DEPTHMAP_DISABLED);
+						}
+						if(props[free_prop].bbs[0])
+							props[free_prop].bbsnode[0]->attachObject(props[free_prop].bbs[0]);
+						props[free_prop].bbsnode[0]->setVisible(false);
+					}
+					if (!strncmp("redbeacon", meshname, 9) && flaresMode>0)
+					{
+						props[free_prop].bpos[0]=0.0;
+						props[free_prop].brate[0]=1.0;
+						props[free_prop].beacontype='r';
+						props[free_prop].bbs[0]=0;
+						//the light
+						props[free_prop].light[0]=manager->createLight();//propname);
+						props[free_prop].light[0]->setType(Light::LT_POINT);
+						props[free_prop].light[0]->setDiffuseColour( ColourValue(1.0, 0.0, 0.0));
+						props[free_prop].light[0]->setSpecularColour( ColourValue(1.0, 0.0, 0.0));
+						props[free_prop].light[0]->setAttenuation(50.0, 1.0, 0.3, 0.0);
+						props[free_prop].light[0]->setCastShadows(false);
+						props[free_prop].light[0]->setVisible(false);
+						//the flare billboard
+						props[free_prop].bbsnode[0] = manager->getRootSceneNode()->createChildSceneNode();
+						props[free_prop].bbs[0]=manager->createBillboardSet(1); //propname,1);
+						props[free_prop].bbs[0]->createBillboard(0,0,0);
+						if(props[free_prop].bbs[0])
+						{
+							props[free_prop].bbs[0]->setMaterialName("tracks/redbeaconflare");
+							props[free_prop].bbs[0]->setVisibilityFlags(DEPTHMAP_DISABLED);
+						}
+						if(props[free_prop].bbs[0])
+							props[free_prop].bbsnode[0]->attachObject(props[free_prop].bbs[0]);
+						props[free_prop].bbsnode[0]->setVisible(false);
+						props[free_prop].bbs[0]->setDefaultDimensions(1.0, 1.0);
+					}
+					if (!strncmp("lightbar", meshname, 6) && flaresMode>0)
+					{
+						int k;
+						ispolice=true;
+						props[free_prop].beacontype='p';
+						for (k=0; k<4; k++)
+						{
+							props[free_prop].bpos[k]=2.0*3.14*((Real)rand()/(Real)RAND_MAX);
+							props[free_prop].brate[k]=4.0*3.14+((Real)rand()/(Real)RAND_MAX)-0.5;
+							props[free_prop].bbs[k]=0;
+							//the light
+							//char rpname[256];
+							//sprintf(rpname,"%s-%i", propname, k);
+							props[free_prop].light[k]=manager->createLight(); //rpname);
+							props[free_prop].light[k]->setType(Light::LT_SPOTLIGHT);
 							if (k>1)
-								props[free_prop].bbs[k]->setMaterialName("tracks/brightredflare");
+							{
+								props[free_prop].light[k]->setDiffuseColour( ColourValue(1.0, 0.0, 0.0));
+								props[free_prop].light[k]->setSpecularColour( ColourValue(1.0, 0.0, 0.0));
+							}
 							else
-								props[free_prop].bbs[k]->setMaterialName("tracks/brightblueflare");
+							{
+								props[free_prop].light[k]->setDiffuseColour( ColourValue(0.0, 0.5, 1.0));
+								props[free_prop].light[k]->setSpecularColour( ColourValue(0.0, 0.5, 1.0));
+							}
+							props[free_prop].light[k]->setAttenuation(50.0, 1.0, 0.3, 0.0);
+							props[free_prop].light[k]->setSpotlightRange( Degree(35), Degree(45) );
+							props[free_prop].light[k]->setCastShadows(false);
+							props[free_prop].light[k]->setVisible(false);
+							//the flare billboard
+							props[free_prop].bbsnode[k] = manager->getRootSceneNode()->createChildSceneNode();
+							props[free_prop].bbs[k]=manager->createBillboardSet(1); //rpname,1);
+							props[free_prop].bbs[k]->createBillboard(0,0,0);
 							if(props[free_prop].bbs[k])
 							{
-								props[free_prop].bbs[k]->setVisibilityFlags(DEPTHMAP_DISABLED);
-								props[free_prop].bbsnode[k]->attachObject(props[free_prop].bbs[k]);
+								if (k>1)
+									props[free_prop].bbs[k]->setMaterialName("tracks/brightredflare");
+								else
+									props[free_prop].bbs[k]->setMaterialName("tracks/brightblueflare");
+								if(props[free_prop].bbs[k])
+								{
+									props[free_prop].bbs[k]->setVisibilityFlags(DEPTHMAP_DISABLED);
+									props[free_prop].bbsnode[k]->attachObject(props[free_prop].bbs[k]);
+								}
 							}
+							props[free_prop].bbsnode[k]->setVisible(false);
 						}
-						props[free_prop].bbsnode[k]->setVisible(false);
 					}
 				}
-
 				//set no animation by default
 				props[free_prop].animFlags[0]=0;
 				props[free_prop].animMode[0]=0;
@@ -3394,212 +3441,215 @@ int SerializedRig::loadTruck(String fname, SceneManager *manager, SceneNode *par
 					continue;
 				}
 
-				char wname[256];
-				sprintf(wname, "wing-%s-%i",truckname, free_wing);
-				char wnamei[256];
-				sprintf(wnamei, "wingobj-%s-%i",truckname, free_wing);
-				if (liftcoef != 1.0f) parser_warning(c, "Wing liftforce coefficent: " + TOSTRING(liftcoef));
-				wings[free_wing].fa=new FlexAirfoil(manager, wname, nodes, nds[0], nds[1], nds[2], nds[3], nds[4], nds[5], nds[6], nds[7], texname, Vector2(txes[0], txes[1]), Vector2(txes[2], txes[3]), Vector2(txes[4], txes[5]), Vector2(txes[6], txes[7]), type, cratio, mind, maxd, afname, liftcoef, aeroengines, state!=NETWORKED);
-				Entity *ec=0;
-				try
+				if(!virtuallyLoaded)
 				{
-					ec = manager->createEntity(wnamei, wname);
-				}catch(...)
-				{
-					parser_warning(c, "error loading mesh: "+String(wname));
-					continue;
-				}
-				MaterialFunctionMapper::replaceSimpleMeshMaterials(ec, ColourValue(0.5, 1, 0));
-				if(materialFunctionMapper) materialFunctionMapper->replaceMeshMaterials(ec);
-				if(materialReplacer) materialReplacer->replaceMeshMaterials(ec);
-				if(usedSkin) usedSkin->replaceMeshMaterials(ec);
-				wings[free_wing].cnode = manager->getRootSceneNode()->createChildSceneNode();
-				if(ec)
-					wings[free_wing].cnode->attachObject(ec);
-				//induced drag
-				if (wingstart==-1) {wingstart=free_wing;wingarea=warea(nodes[wings[free_wing].fa->nfld].AbsPosition, nodes[wings[free_wing].fa->nfrd].AbsPosition, nodes[wings[free_wing].fa->nbld].AbsPosition, nodes[wings[free_wing].fa->nbrd].AbsPosition);}
-				else
-				{
-					// disable position lights on trucks
-					if(driveable==TRUCK) hasposlights=true;
-
-					if (nds[1]!=wings[free_wing-1].fa->nfld)
+					char wname[256];
+					sprintf(wname, "wing-%s-%i",truckname, free_wing);
+					char wnamei[256];
+					sprintf(wnamei, "wingobj-%s-%i",truckname, free_wing);
+					if (liftcoef != 1.0f) parser_warning(c, "Wing liftforce coefficent: " + TOSTRING(liftcoef));
+					wings[free_wing].fa=new FlexAirfoil(manager, wname, nodes, nds[0], nds[1], nds[2], nds[3], nds[4], nds[5], nds[6], nds[7], texname, Vector2(txes[0], txes[1]), Vector2(txes[2], txes[3]), Vector2(txes[4], txes[5]), Vector2(txes[6], txes[7]), type, cratio, mind, maxd, afname, liftcoef, aeroengines, state!=NETWORKED);
+					Entity *ec=0;
+					try
 					{
-						//discontinuity
-						//inform wing segments
-						float span=(nodes[wings[wingstart].fa->nfrd].RelPosition-nodes[wings[free_wing-1].fa->nfld].RelPosition).length();
-						//					float chord=(nodes[wings[wingstart].fa->nfrd].Position-nodes[wings[wingstart].fa->nbrd].Position).length();
-						parser_warning(c, "Full Wing "+TOSTRING(wingstart)+"-"+TOSTRING(free_wing-1)+" SPAN="+TOSTRING(span)+" AREA="+TOSTRING(wingarea));
-						wings[wingstart].fa->enableInducedDrag(span,wingarea, false);
-						wings[free_wing-1].fa->enableInducedDrag(span,wingarea, true);
-						//we want also to add positional lights for first wing
-						if (!hasposlights && flaresMode>0)
-						{
-
-							if(free_prop+4 >= MAX_PROPS)
-							{
-								parser_warning(c, "cannot create wing props: props limit reached ("+TOSTRING(MAX_PROPS)+")");
-								continue;
-							}
-							//Left green
-							leftlight=wings[free_wing-1].fa->nfld;
-							props[free_prop].noderef=wings[free_wing-1].fa->nfld;
-							props[free_prop].nodex=wings[free_wing-1].fa->nflu;
-							props[free_prop].nodey=wings[free_wing-1].fa->nfld; //ignored
-							props[free_prop].offsetx=0.5;
-							props[free_prop].offsety=0.0;
-							props[free_prop].offsetz=0.0;
-							props[free_prop].rot=Quaternion::IDENTITY;
-							props[free_prop].wheel=0;
-							props[free_prop].wheelrotdegree=0.0;
-							props[free_prop].mirror=0;
-							props[free_prop].pale=0;
-							props[free_prop].spinner=0;
-							props[free_prop].snode=NULL; //no visible prop
-							props[free_prop].bpos[0]=0.0;
-							props[free_prop].brate[0]=1.0;
-							props[free_prop].beacontype='L';
-							//no light
-							props[free_prop].light[0]=0;
-							//the flare billboard
-							char propname[256];
-							sprintf(propname, "prop-%s-%i", truckname, free_prop);
-							props[free_prop].bbsnode[0] = manager->getRootSceneNode()->createChildSceneNode();
-							props[free_prop].bbs[0]=manager->createBillboardSet(propname,1);
-							props[free_prop].bbs[0]->createBillboard(0,0,0);
-							if(props[free_prop].bbs[0])
-							{
-								props[free_prop].bbs[0]->setVisibilityFlags(DEPTHMAP_DISABLED);
-								props[free_prop].bbs[0]->setMaterialName("tracks/greenflare");
-								props[free_prop].bbsnode[0]->attachObject(props[free_prop].bbs[0]);
-							}
-							props[free_prop].bbsnode[0]->setVisible(false);
-							props[free_prop].bbs[0]->setDefaultDimensions(0.5, 0.5);
-							props[free_prop].animFlags[0]=0;
-							props[free_prop].animMode[0]=0;
-							free_prop++;
-							//Left flash
-							props[free_prop].noderef=wings[free_wing-1].fa->nbld;
-							props[free_prop].nodex=wings[free_wing-1].fa->nblu;
-							props[free_prop].nodey=wings[free_wing-1].fa->nbld; //ignored
-							props[free_prop].offsetx=0.5;
-							props[free_prop].offsety=0.0;
-							props[free_prop].offsetz=0.0;
-							props[free_prop].rot=Quaternion::IDENTITY;
-							props[free_prop].wheel=0;
-							props[free_prop].wheelrotdegree=0.0;
-							props[free_prop].mirror=0;
-							props[free_prop].pale=0;
-							props[free_prop].spinner=0;
-							props[free_prop].snode=NULL; //no visible prop
-							props[free_prop].bpos[0]=0.5; //alt
-							props[free_prop].brate[0]=1.0;
-							props[free_prop].beacontype='w';
-							//light
-							sprintf(propname, "prop-%s-%i", truckname, free_prop);
-							props[free_prop].light[0]=manager->createLight(propname);
-							props[free_prop].light[0]->setType(Light::LT_POINT);
-							props[free_prop].light[0]->setDiffuseColour( ColourValue(1.0, 1.0, 1.0));
-							props[free_prop].light[0]->setSpecularColour( ColourValue(1.0, 1.0, 1.0));
-							props[free_prop].light[0]->setAttenuation(50.0, 1.0, 0.3, 0.0);
-							props[free_prop].light[0]->setCastShadows(false);
-							props[free_prop].light[0]->setVisible(false);
-							//the flare billboard
-							props[free_prop].bbsnode[0] = manager->getRootSceneNode()->createChildSceneNode();
-							props[free_prop].bbs[0]=manager->createBillboardSet(propname,1);
-							props[free_prop].bbs[0]->createBillboard(0,0,0);
-							if(props[free_prop].bbs[0])
-							{
-								props[free_prop].bbs[0]->setVisibilityFlags(DEPTHMAP_DISABLED);
-								props[free_prop].bbs[0]->setMaterialName("tracks/flare");
-								props[free_prop].bbsnode[0]->attachObject(props[free_prop].bbs[0]);
-							}
-							props[free_prop].bbsnode[0]->setVisible(false);
-							props[free_prop].bbs[0]->setDefaultDimensions(1.0, 1.0);
-							free_prop++;
-							//Right red
-							rightlight=wings[wingstart].fa->nfrd;
-							props[free_prop].noderef=wings[wingstart].fa->nfrd;
-							props[free_prop].nodex=wings[wingstart].fa->nfru;
-							props[free_prop].nodey=wings[wingstart].fa->nfrd; //ignored
-							props[free_prop].offsetx=0.5;
-							props[free_prop].offsety=0.0;
-							props[free_prop].offsetz=0.0;
-							props[free_prop].rot=Quaternion::IDENTITY;
-							props[free_prop].wheel=0;
-							props[free_prop].wheelrotdegree=0.0;
-							props[free_prop].mirror=0;
-							props[free_prop].pale=0;
-							props[free_prop].spinner=0;
-							props[free_prop].snode=NULL; //no visible prop
-							props[free_prop].bpos[0]=0.0;
-							props[free_prop].brate[0]=1.0;
-							props[free_prop].beacontype='R';
-							//no light
-							props[free_prop].light[0]=0;
-							//the flare billboard
-							sprintf(propname, "prop-%s-%i", truckname, free_prop);
-							props[free_prop].bbsnode[0] = manager->getRootSceneNode()->createChildSceneNode();
-							props[free_prop].bbs[0]=manager->createBillboardSet(propname,1);
-							props[free_prop].bbs[0]->createBillboard(0,0,0);
-							if(props[free_prop].bbs[0])
-							{
-								props[free_prop].bbs[0]->setVisibilityFlags(DEPTHMAP_DISABLED);
-								props[free_prop].bbs[0]->setMaterialName("tracks/redflare");
-								props[free_prop].bbsnode[0]->attachObject(props[free_prop].bbs[0]);
-							}
-							props[free_prop].bbsnode[0]->setVisible(false);
-							props[free_prop].bbs[0]->setDefaultDimensions(0.5, 0.5);
-							props[free_prop].animFlags[0]=0;
-							props[free_prop].animMode[0]=0;
-							free_prop++;
-							//Right flash
-							props[free_prop].noderef=wings[wingstart].fa->nbrd;
-							props[free_prop].nodex=wings[wingstart].fa->nbru;
-							props[free_prop].nodey=wings[wingstart].fa->nbrd; //ignored
-							props[free_prop].offsetx=0.5;
-							props[free_prop].offsety=0.0;
-							props[free_prop].offsetz=0.0;
-							props[free_prop].rot=Quaternion::IDENTITY;
-							props[free_prop].wheel=0;
-							props[free_prop].wheelrotdegree=0.0;
-							props[free_prop].mirror=0;
-							props[free_prop].pale=0;
-							props[free_prop].spinner=0;
-							props[free_prop].snode=NULL; //no visible prop
-							props[free_prop].bpos[0]=0.5; //alt
-							props[free_prop].brate[0]=1.0;
-							props[free_prop].beacontype='w';
-							//light
-							sprintf(propname, "prop-%s-%i", truckname, free_prop);
-							props[free_prop].light[0]=manager->createLight(propname);
-							props[free_prop].light[0]->setType(Light::LT_POINT);
-							props[free_prop].light[0]->setDiffuseColour( ColourValue(1.0, 1.0, 1.0));
-							props[free_prop].light[0]->setSpecularColour( ColourValue(1.0, 1.0, 1.0));
-							props[free_prop].light[0]->setAttenuation(50.0, 1.0, 0.3, 0.0);
-							props[free_prop].light[0]->setCastShadows(false);
-							props[free_prop].light[0]->setVisible(false);
-							//the flare billboard
-							props[free_prop].bbsnode[0] = manager->getRootSceneNode()->createChildSceneNode();
-							props[free_prop].bbs[0]=manager->createBillboardSet(propname,1);
-							props[free_prop].bbs[0]->createBillboard(0,0,0);
-							if(props[free_prop].bbs[0])
-							{
-								props[free_prop].bbs[0]->setVisibilityFlags(DEPTHMAP_DISABLED);
-								props[free_prop].bbs[0]->setMaterialName("tracks/flare");
-								props[free_prop].bbsnode[0]->attachObject(props[free_prop].bbs[0]);
-							}
-							props[free_prop].bbsnode[0]->setVisible(false);
-							props[free_prop].bbs[0]->setDefaultDimensions(1.0, 1.0);
-							props[free_prop].animFlags[0]=0;
-							props[free_prop].animMode[0]=0;
-							free_prop++;
-							hasposlights=true;
-						}
-						wingstart=free_wing;
-						wingarea=warea(nodes[wings[free_wing].fa->nfld].AbsPosition, nodes[wings[free_wing].fa->nfrd].AbsPosition, nodes[wings[free_wing].fa->nbld].AbsPosition, nodes[wings[free_wing].fa->nbrd].AbsPosition);
+						ec = manager->createEntity(wnamei, wname);
+					}catch(...)
+					{
+						parser_warning(c, "error loading mesh: "+String(wname));
+						continue;
 					}
-					else wingarea+=warea(nodes[wings[free_wing].fa->nfld].AbsPosition, nodes[wings[free_wing].fa->nfrd].AbsPosition, nodes[wings[free_wing].fa->nbld].AbsPosition, nodes[wings[free_wing].fa->nbrd].AbsPosition);
+					MaterialFunctionMapper::replaceSimpleMeshMaterials(ec, ColourValue(0.5, 1, 0));
+					if(materialFunctionMapper) materialFunctionMapper->replaceMeshMaterials(ec);
+					if(materialReplacer) materialReplacer->replaceMeshMaterials(ec);
+					if(usedSkin) usedSkin->replaceMeshMaterials(ec);
+					wings[free_wing].cnode = manager->getRootSceneNode()->createChildSceneNode();
+					if(ec)
+						wings[free_wing].cnode->attachObject(ec);
+					//induced drag
+					if (wingstart==-1) {wingstart=free_wing;wingarea=warea(nodes[wings[free_wing].fa->nfld].AbsPosition, nodes[wings[free_wing].fa->nfrd].AbsPosition, nodes[wings[free_wing].fa->nbld].AbsPosition, nodes[wings[free_wing].fa->nbrd].AbsPosition);}
+					else
+					{
+						// disable position lights on trucks
+						if(driveable==TRUCK) hasposlights=true;
+
+						if (nds[1]!=wings[free_wing-1].fa->nfld)
+						{
+							//discontinuity
+							//inform wing segments
+							float span=(nodes[wings[wingstart].fa->nfrd].RelPosition-nodes[wings[free_wing-1].fa->nfld].RelPosition).length();
+							//					float chord=(nodes[wings[wingstart].fa->nfrd].Position-nodes[wings[wingstart].fa->nbrd].Position).length();
+							parser_warning(c, "Full Wing "+TOSTRING(wingstart)+"-"+TOSTRING(free_wing-1)+" SPAN="+TOSTRING(span)+" AREA="+TOSTRING(wingarea));
+							wings[wingstart].fa->enableInducedDrag(span,wingarea, false);
+							wings[free_wing-1].fa->enableInducedDrag(span,wingarea, true);
+							//we want also to add positional lights for first wing
+							if (!hasposlights && flaresMode>0)
+							{
+
+								if(free_prop+4 >= MAX_PROPS)
+								{
+									parser_warning(c, "cannot create wing props: props limit reached ("+TOSTRING(MAX_PROPS)+")");
+									continue;
+								}
+								//Left green
+								leftlight=wings[free_wing-1].fa->nfld;
+								props[free_prop].noderef=wings[free_wing-1].fa->nfld;
+								props[free_prop].nodex=wings[free_wing-1].fa->nflu;
+								props[free_prop].nodey=wings[free_wing-1].fa->nfld; //ignored
+								props[free_prop].offsetx=0.5;
+								props[free_prop].offsety=0.0;
+								props[free_prop].offsetz=0.0;
+								props[free_prop].rot=Quaternion::IDENTITY;
+								props[free_prop].wheel=0;
+								props[free_prop].wheelrotdegree=0.0;
+								props[free_prop].mirror=0;
+								props[free_prop].pale=0;
+								props[free_prop].spinner=0;
+								props[free_prop].snode=NULL; //no visible prop
+								props[free_prop].bpos[0]=0.0;
+								props[free_prop].brate[0]=1.0;
+								props[free_prop].beacontype='L';
+								//no light
+								props[free_prop].light[0]=0;
+								//the flare billboard
+								char propname[256];
+								sprintf(propname, "prop-%s-%i", truckname, free_prop);
+								props[free_prop].bbsnode[0] = manager->getRootSceneNode()->createChildSceneNode();
+								props[free_prop].bbs[0]=manager->createBillboardSet(propname,1);
+								props[free_prop].bbs[0]->createBillboard(0,0,0);
+								if(props[free_prop].bbs[0])
+								{
+									props[free_prop].bbs[0]->setVisibilityFlags(DEPTHMAP_DISABLED);
+									props[free_prop].bbs[0]->setMaterialName("tracks/greenflare");
+									props[free_prop].bbsnode[0]->attachObject(props[free_prop].bbs[0]);
+								}
+								props[free_prop].bbsnode[0]->setVisible(false);
+								props[free_prop].bbs[0]->setDefaultDimensions(0.5, 0.5);
+								props[free_prop].animFlags[0]=0;
+								props[free_prop].animMode[0]=0;
+								free_prop++;
+								//Left flash
+								props[free_prop].noderef=wings[free_wing-1].fa->nbld;
+								props[free_prop].nodex=wings[free_wing-1].fa->nblu;
+								props[free_prop].nodey=wings[free_wing-1].fa->nbld; //ignored
+								props[free_prop].offsetx=0.5;
+								props[free_prop].offsety=0.0;
+								props[free_prop].offsetz=0.0;
+								props[free_prop].rot=Quaternion::IDENTITY;
+								props[free_prop].wheel=0;
+								props[free_prop].wheelrotdegree=0.0;
+								props[free_prop].mirror=0;
+								props[free_prop].pale=0;
+								props[free_prop].spinner=0;
+								props[free_prop].snode=NULL; //no visible prop
+								props[free_prop].bpos[0]=0.5; //alt
+								props[free_prop].brate[0]=1.0;
+								props[free_prop].beacontype='w';
+								//light
+								sprintf(propname, "prop-%s-%i", truckname, free_prop);
+								props[free_prop].light[0]=manager->createLight(propname);
+								props[free_prop].light[0]->setType(Light::LT_POINT);
+								props[free_prop].light[0]->setDiffuseColour( ColourValue(1.0, 1.0, 1.0));
+								props[free_prop].light[0]->setSpecularColour( ColourValue(1.0, 1.0, 1.0));
+								props[free_prop].light[0]->setAttenuation(50.0, 1.0, 0.3, 0.0);
+								props[free_prop].light[0]->setCastShadows(false);
+								props[free_prop].light[0]->setVisible(false);
+								//the flare billboard
+								props[free_prop].bbsnode[0] = manager->getRootSceneNode()->createChildSceneNode();
+								props[free_prop].bbs[0]=manager->createBillboardSet(propname,1);
+								props[free_prop].bbs[0]->createBillboard(0,0,0);
+								if(props[free_prop].bbs[0])
+								{
+									props[free_prop].bbs[0]->setVisibilityFlags(DEPTHMAP_DISABLED);
+									props[free_prop].bbs[0]->setMaterialName("tracks/flare");
+									props[free_prop].bbsnode[0]->attachObject(props[free_prop].bbs[0]);
+								}
+								props[free_prop].bbsnode[0]->setVisible(false);
+								props[free_prop].bbs[0]->setDefaultDimensions(1.0, 1.0);
+								free_prop++;
+								//Right red
+								rightlight=wings[wingstart].fa->nfrd;
+								props[free_prop].noderef=wings[wingstart].fa->nfrd;
+								props[free_prop].nodex=wings[wingstart].fa->nfru;
+								props[free_prop].nodey=wings[wingstart].fa->nfrd; //ignored
+								props[free_prop].offsetx=0.5;
+								props[free_prop].offsety=0.0;
+								props[free_prop].offsetz=0.0;
+								props[free_prop].rot=Quaternion::IDENTITY;
+								props[free_prop].wheel=0;
+								props[free_prop].wheelrotdegree=0.0;
+								props[free_prop].mirror=0;
+								props[free_prop].pale=0;
+								props[free_prop].spinner=0;
+								props[free_prop].snode=NULL; //no visible prop
+								props[free_prop].bpos[0]=0.0;
+								props[free_prop].brate[0]=1.0;
+								props[free_prop].beacontype='R';
+								//no light
+								props[free_prop].light[0]=0;
+								//the flare billboard
+								sprintf(propname, "prop-%s-%i", truckname, free_prop);
+								props[free_prop].bbsnode[0] = manager->getRootSceneNode()->createChildSceneNode();
+								props[free_prop].bbs[0]=manager->createBillboardSet(propname,1);
+								props[free_prop].bbs[0]->createBillboard(0,0,0);
+								if(props[free_prop].bbs[0])
+								{
+									props[free_prop].bbs[0]->setVisibilityFlags(DEPTHMAP_DISABLED);
+									props[free_prop].bbs[0]->setMaterialName("tracks/redflare");
+									props[free_prop].bbsnode[0]->attachObject(props[free_prop].bbs[0]);
+								}
+								props[free_prop].bbsnode[0]->setVisible(false);
+								props[free_prop].bbs[0]->setDefaultDimensions(0.5, 0.5);
+								props[free_prop].animFlags[0]=0;
+								props[free_prop].animMode[0]=0;
+								free_prop++;
+								//Right flash
+								props[free_prop].noderef=wings[wingstart].fa->nbrd;
+								props[free_prop].nodex=wings[wingstart].fa->nbru;
+								props[free_prop].nodey=wings[wingstart].fa->nbrd; //ignored
+								props[free_prop].offsetx=0.5;
+								props[free_prop].offsety=0.0;
+								props[free_prop].offsetz=0.0;
+								props[free_prop].rot=Quaternion::IDENTITY;
+								props[free_prop].wheel=0;
+								props[free_prop].wheelrotdegree=0.0;
+								props[free_prop].mirror=0;
+								props[free_prop].pale=0;
+								props[free_prop].spinner=0;
+								props[free_prop].snode=NULL; //no visible prop
+								props[free_prop].bpos[0]=0.5; //alt
+								props[free_prop].brate[0]=1.0;
+								props[free_prop].beacontype='w';
+								//light
+								sprintf(propname, "prop-%s-%i", truckname, free_prop);
+								props[free_prop].light[0]=manager->createLight(propname);
+								props[free_prop].light[0]->setType(Light::LT_POINT);
+								props[free_prop].light[0]->setDiffuseColour( ColourValue(1.0, 1.0, 1.0));
+								props[free_prop].light[0]->setSpecularColour( ColourValue(1.0, 1.0, 1.0));
+								props[free_prop].light[0]->setAttenuation(50.0, 1.0, 0.3, 0.0);
+								props[free_prop].light[0]->setCastShadows(false);
+								props[free_prop].light[0]->setVisible(false);
+								//the flare billboard
+								props[free_prop].bbsnode[0] = manager->getRootSceneNode()->createChildSceneNode();
+								props[free_prop].bbs[0]=manager->createBillboardSet(propname,1);
+								props[free_prop].bbs[0]->createBillboard(0,0,0);
+								if(props[free_prop].bbs[0])
+								{
+									props[free_prop].bbs[0]->setVisibilityFlags(DEPTHMAP_DISABLED);
+									props[free_prop].bbs[0]->setMaterialName("tracks/flare");
+									props[free_prop].bbsnode[0]->attachObject(props[free_prop].bbs[0]);
+								}
+								props[free_prop].bbsnode[0]->setVisible(false);
+								props[free_prop].bbs[0]->setDefaultDimensions(1.0, 1.0);
+								props[free_prop].animFlags[0]=0;
+								props[free_prop].animMode[0]=0;
+								free_prop++;
+								hasposlights=true;
+							}
+							wingstart=free_wing;
+							wingarea=warea(nodes[wings[free_wing].fa->nfld].AbsPosition, nodes[wings[free_wing].fa->nfrd].AbsPosition, nodes[wings[free_wing].fa->nbld].AbsPosition, nodes[wings[free_wing].fa->nbrd].AbsPosition);
+						}
+						else wingarea+=warea(nodes[wings[free_wing].fa->nfld].AbsPosition, nodes[wings[free_wing].fa->nfrd].AbsPosition, nodes[wings[free_wing].fa->nbld].AbsPosition, nodes[wings[free_wing].fa->nbrd].AbsPosition);
+					}
 				}
 
 				free_wing++;
@@ -3660,31 +3710,35 @@ int SerializedRig::loadTruck(String fname, SceneManager *manager, SceneNode *par
 					continue;
 				}
 
-				char propname[256];
-				sprintf(propname, "turboprop-%s-%i", truckname, free_aeroengine);
-				Turboprop *tp=new Turboprop(manager, propname, nodes, ref, back,p1,p2,p3,p4, couplenode, power, propfoil, free_aeroengine, trucknum, disable_smoke, !isturboprops, pitch, heathaze);
-				aeroengines[free_aeroengine]=tp;
-				driveable=AIRPLANE;
-				if (!autopilot && state != NETWORKED)
-					autopilot=new Autopilot(hfinder, water, trucknum);
-				//if (audio) audio->setupAeroengines(audiotype);
-				//setup visual
-				int i;
-				float pscale=(nodes[ref].RelPosition-nodes[p1].RelPosition).length()/2.25;
-				for (i=0; i<free_prop; i++)
+				if(!virtuallyLoaded)
 				{
-					if (props[i].pale && props[i].noderef==ref)
+					char propname[256];
+					sprintf(propname, "turboprop-%s-%i", truckname, free_aeroengine);
+					Turboprop *tp=new Turboprop(manager, propname, nodes, ref, back,p1,p2,p3,p4, couplenode, power, propfoil, free_aeroengine, trucknum, disable_smoke, !isturboprops, pitch, heathaze);
+					aeroengines[free_aeroengine]=tp;
+					driveable=AIRPLANE;
+					if (!autopilot && state != NETWORKED)
+						autopilot=new Autopilot(hfinder, water, trucknum);
+					//if (audio) audio->setupAeroengines(audiotype);
+					//setup visual
+					int i;
+					float pscale=(nodes[ref].RelPosition-nodes[p1].RelPosition).length()/2.25;
+					for (i=0; i<free_prop; i++)
 					{
-						//setup size
-						props[i].snode->scale(pscale,pscale,pscale);
-						tp->addPale(props[i].snode);
-					}
-					if (props[i].spinner && props[i].noderef==ref)
-					{
-						props[i].snode->scale(pscale,pscale,pscale);
-						tp->addSpinner(props[i].snode);
+						if (props[i].pale && props[i].noderef==ref)
+						{
+							//setup size
+							props[i].snode->scale(pscale,pscale,pscale);
+							tp->addPale(props[i].snode);
+						}
+						if (props[i].spinner && props[i].noderef==ref)
+						{
+							props[i].snode->scale(pscale,pscale,pscale);
+							tp->addSpinner(props[i].snode);
+						}
 					}
 				}
+
 				free_aeroengine++;
 			}
 			else if (c.mode == BTS_FUSEDRAG)
@@ -3706,7 +3760,8 @@ int SerializedRig::loadTruck(String fname, SceneManager *manager, SceneNode *par
 					width  =  (fuse_z_max - fuse_z_min) * (fuse_y_max - fuse_y_min) * factor;
 					if (n > 4) 
 						strncpy(fusefoil, args[4].c_str(), 255);
-					fuseAirfoil = new Airfoil(fusefoil);
+					if(!virtuallyLoaded)
+						fuseAirfoil = new Airfoil(fusefoil);
 					fuseFront   = &nodes[front];
 					fuseBack    = &nodes[front];
 					fuseWidth   = width;
@@ -3720,7 +3775,8 @@ int SerializedRig::loadTruck(String fname, SceneManager *manager, SceneNode *par
 					if (n > 3) 
 						strncpy(fusefoil, args[3].c_str(), 255);
 					
-					fuseAirfoil = new Airfoil(fusefoil);
+					if(!virtuallyLoaded)
+						fuseAirfoil = new Airfoil(fusefoil);
 					fuseFront   = &nodes[front];
 					fuseBack    = &nodes[front];
 					fuseWidth   = width;
@@ -3857,8 +3913,8 @@ int SerializedRig::loadTruck(String fname, SceneManager *manager, SceneNode *par
 					parser_warning(c, "screwprops limit reached ("+TOSTRING(MAX_SCREWPROPS)+")");
 					continue;
 				}
-
-				screwprops[free_screwprop]=new Screwprop(nodes, ref, back, up, power, water, trucknum);
+				if(!virtuallyLoaded)
+					screwprops[free_screwprop]=new Screwprop(nodes, ref, back, up, power, water, trucknum);
 				driveable=BOAT;
 				free_screwprop++;
 			}
@@ -3961,19 +4017,22 @@ int SerializedRig::loadTruck(String fname, SceneManager *manager, SceneNode *par
 				e.emitterNode = id1;
 				e.directionNode = id2;
 				e.isOldFormat = false;
-				e.smokeNode = parent->createChildSceneNode();
-				char wname[256];
-				sprintf(wname, "exhaust-%d-%s", (int)exhausts.size(), truckname);
-				if(strnlen(material,50) == 0 || String(material) == "default")
-					strcpy(material, "tracks/Smoke");
+				if(!virtuallyLoaded)
+				{
+					e.smokeNode = parent->createChildSceneNode();
+					char wname[256];
+					sprintf(wname, "exhaust-%d-%s", (int)exhausts.size(), truckname);
+					if(strnlen(material,50) == 0 || String(material) == "default")
+						strcpy(material, "tracks/Smoke");
 
-				if(usedSkin) strncpy(material, usedSkin->getReplacementForMaterial(material).c_str(), 50);
+					if(usedSkin) strncpy(material, usedSkin->getReplacementForMaterial(material).c_str(), 50);
 
-				e.smoker = manager->createParticleSystem(wname, material);
-				if (!e.smoker) continue;
-				e.smoker->setVisibilityFlags(DEPTHMAP_DISABLED); // disable particles in depthmap
-				e.smokeNode->attachObject(e.smoker);
-				e.smokeNode->setPosition(nodes[e.emitterNode].AbsPosition);
+					e.smoker = manager->createParticleSystem(wname, material);
+					if (!e.smoker) continue;
+					e.smoker->setVisibilityFlags(DEPTHMAP_DISABLED); // disable particles in depthmap
+					e.smokeNode->attachObject(e.smoker);
+					e.smokeNode->setPosition(nodes[e.emitterNode].AbsPosition);
+				}
 				nodes[id1].isHot=true;
 				nodes[id2].isHot=true;
 				nodes[id1].iIsSkin=true;
@@ -4002,17 +4061,20 @@ int SerializedRig::loadTruck(String fname, SceneManager *manager, SceneNode *par
 
 				cparticles[free_cparticle].emitterNode = id1;
 				cparticles[free_cparticle].directionNode = id2;
-				cparticles[free_cparticle].snode = parent->createChildSceneNode();
-				char wname[256];
-				sprintf(wname, "cparticle-%i-%s", free_cparticle, truckname);
-				cparticles[free_cparticle].psys = manager->createParticleSystem(wname, psystem);
-				if (!cparticles[free_cparticle].psys) continue;
-				cparticles[free_cparticle].psys->setVisibilityFlags(DEPTHMAP_DISABLED); // disable particles in depthmap
-				cparticles[free_cparticle].snode->attachObject(cparticles[free_cparticle].psys);
-				cparticles[free_cparticle].snode->setPosition(nodes[cparticles[free_cparticle].emitterNode].AbsPosition);
-				//shut down the emitters
-				cparticles[free_cparticle].active=false;
-				for (int i=0; i<cparticles[free_cparticle].psys->getNumEmitters(); i++) cparticles[free_cparticle].psys->getEmitter(i)->setEnabled(false);
+				if(!virtuallyLoaded)
+				{
+					cparticles[free_cparticle].snode = parent->createChildSceneNode();
+					char wname[256];
+					sprintf(wname, "cparticle-%i-%s", free_cparticle, truckname);
+					cparticles[free_cparticle].psys = manager->createParticleSystem(wname, psystem);
+					if (!cparticles[free_cparticle].psys) continue;
+					cparticles[free_cparticle].psys->setVisibilityFlags(DEPTHMAP_DISABLED); // disable particles in depthmap
+					cparticles[free_cparticle].snode->attachObject(cparticles[free_cparticle].psys);
+					cparticles[free_cparticle].snode->setPosition(nodes[cparticles[free_cparticle].emitterNode].AbsPosition);
+					//shut down the emitters
+					cparticles[free_cparticle].active=false;
+					for (int i=0; i<cparticles[free_cparticle].psys->getNumEmitters(); i++) cparticles[free_cparticle].psys->getEmitter(i)->setEnabled(false);
+				}
 				free_cparticle++;
 			}
 			else if (c.mode == BTS_TURBOJETS) //turbojets
@@ -4037,14 +4099,17 @@ int SerializedRig::loadTruck(String fname, SceneManager *manager, SceneNode *par
 					continue;
 				}
 
-				char propname[256];
-				sprintf(propname, "turbojet-%s-%i", truckname, free_aeroengine);
-				Turbojet *tj=new Turbojet(manager, propname, free_aeroengine, trucknum, nodes, front, back, ref, drthrust, rev!=0, abthrust>0, abthrust, fdiam, bdiam, len, disable_smoke, heathaze, materialFunctionMapper, usedSkin, materialReplacer);
-				aeroengines[free_aeroengine]=tj;
-				driveable=AIRPLANE;
-				if (!autopilot && state != NETWORKED)
-					autopilot=new Autopilot(hfinder, water, trucknum);
-				//if (audio) audio->setupAeroengines(TURBOJETS);
+				if(!virtuallyLoaded)
+				{
+					char propname[256];
+					sprintf(propname, "turbojet-%s-%i", truckname, free_aeroengine);
+					Turbojet *tj=new Turbojet(manager, propname, free_aeroengine, trucknum, nodes, front, back, ref, drthrust, rev!=0, abthrust>0, abthrust, fdiam, bdiam, len, disable_smoke, heathaze, materialFunctionMapper, usedSkin, materialReplacer);
+					aeroengines[free_aeroengine]=tj;
+					driveable=AIRPLANE;
+					if (!autopilot && state != NETWORKED)
+						autopilot=new Autopilot(hfinder, water, trucknum);
+					//if (audio) audio->setupAeroengines(TURBOJETS);
+				}
 				free_aeroengine++;
 			}
 			else if (c.mode == BTS_RIGIDIFIERS)
@@ -4116,7 +4181,8 @@ int SerializedRig::loadTruck(String fname, SceneManager *manager, SceneNode *par
 				if (liftcoef != 1.0f)
 					parser_warning(c, "Airbrakes force coefficent: " + TOSTRING(liftcoef));
 
-				airbrakes[free_airbrake]=new Airbrake(manager, truckname, free_airbrake, &nodes[ref], &nodes[nx], &nodes[ny], &nodes[na], Vector3(ox,oy,oz), wd, len, maxang, texname, tx1,tx2,tx3,tx4,liftcoef);
+				if(!virtuallyLoaded)
+					airbrakes[free_airbrake]=new Airbrake(manager, truckname, free_airbrake, &nodes[ref], &nodes[nx], &nodes[ny], &nodes[na], Vector3(ox,oy,oz), wd, len, maxang, texname, tx1,tx2,tx3,tx4,liftcoef);
 				free_airbrake++;
 			}
 			else if (c.mode == BTS_FLEXBODIES)
@@ -4159,7 +4225,8 @@ int SerializedRig::loadTruck(String fname, SceneManager *manager, SceneNode *par
 					parser_warning(c, "flexbodies limit reached ("+TOSTRING(MAX_FLEXBODIES)+")");
 					continue;
 				}
-				flexbodies[free_flexbody]=new FlexBody(manager, nodes, free_node, meshname, uname, ref, nx, ny, offset, rot, const_cast<char *>(c.line.substr(6).c_str()), materialFunctionMapper, usedSkin, (shadowmode!=0), materialReplacer);
+				if(!virtuallyLoaded)
+					flexbodies[free_flexbody]=new FlexBody(manager, nodes, free_node, meshname, uname, ref, nx, ny, offset, rot, const_cast<char *>(c.line.substr(6).c_str()), materialFunctionMapper, usedSkin, (shadowmode!=0), materialReplacer);
 				free_flexbody++;
 			}
 			else if (c.mode == BTS_HOOKGROUP)
@@ -4581,7 +4648,11 @@ int SerializedRig::loadTruck(String fname, SceneManager *manager, SceneNode *par
 			else if (c.mode == BTS_SECTIONCONFIG)
 			{
 				// parse sectionconfig
-				// not used here ...
+				int n = parse_args(c, args, 2);
+				// version unused
+				//version = args[1]
+				String sectionName = args[2];
+				sectionconfigs.push_back(sectionName);
 				c.mode=savedmode;
 			}
 			else if (c.mode == BTS_SECTION)
@@ -4636,6 +4707,12 @@ int SerializedRig::loadTruck(String fname, SceneManager *manager, SceneNode *par
 			{
 				// parse axle section
 				// search for wheel
+
+				if(virtuallyLoaded)
+				{
+					free_axle++;
+					continue;
+				}
 
 				if(!free_wheel)
 				{
@@ -4770,6 +4847,8 @@ int SerializedRig::loadTruck(String fname, SceneManager *manager, SceneNode *par
 			}
 			else if (c.mode == BTS_VIDCAM)
 			{
+				if(virtuallyLoaded) continue;
+
 				VideoCamera *v = VideoCamera::parseLine(manager, mCamera, this, c);
 				if(v)
 				{
@@ -4913,28 +4992,33 @@ int SerializedRig::loadTruck(String fname, SceneManager *manager, SceneNode *par
 
 
 		//parser_warning(c, "creating mesh");
-		cabMesh=new FlexObj(manager, nodes, free_texcoord, texcoords, free_cab, cabs, free_sub, subtexcoords, subcabs, texname, wname, subisback, backmatname, transmatname);
+		cabMesh = NULL;
+		if(!virtuallyLoaded)
+			cabMesh=new FlexObj(manager, nodes, free_texcoord, texcoords, free_cab, cabs, free_sub, subtexcoords, subcabs, texname, wname, subisback, backmatname, transmatname);
 		//parser_warning(c, "creating entity");
 
-		//parser_warning(c, "creating cabnode");
-		cabNode = manager->getRootSceneNode()->createChildSceneNode();
-		Entity *ec = 0;
-		try
+		if(!virtuallyLoaded)
 		{
-			//parser_warning(c, "loading cab");
-			ec = manager->createEntity(wnamei, wname);
-			//		ec->setRenderQueueGroup(RENDER_QUEUE_6);
-			//parser_warning(c, "attaching cab");
-			if(ec)
-				cabNode->attachObject(ec);
-		}catch(...)
-		{
-			parser_warning(c, "error loading mesh: "+String(wname));
+			//parser_warning(c, "creating cabnode");
+			cabNode = manager->getRootSceneNode()->createChildSceneNode();
+			Entity *ec = 0;
+			try
+			{
+				//parser_warning(c, "loading cab");
+				ec = manager->createEntity(wnamei, wname);
+				//		ec->setRenderQueueGroup(RENDER_QUEUE_6);
+				//parser_warning(c, "attaching cab");
+				if(ec)
+					cabNode->attachObject(ec);
+			}catch(...)
+			{
+				parser_warning(c, "error loading mesh: "+String(wname));
+			}
+			MaterialFunctionMapper::replaceSimpleMeshMaterials(ec, ColourValue(0.5, 1, 0.5));
+			if(materialFunctionMapper) materialFunctionMapper->replaceMeshMaterials(ec);
+			if(materialReplacer) materialReplacer->replaceMeshMaterials(ec);
+			if(usedSkin) usedSkin->replaceMeshMaterials(ec);
 		}
-		MaterialFunctionMapper::replaceSimpleMeshMaterials(ec, ColourValue(0.5, 1, 0.5));
-		if(materialFunctionMapper) materialFunctionMapper->replaceMeshMaterials(ec);
-		if(materialReplacer) materialReplacer->replaceMeshMaterials(ec);
-		if(usedSkin) usedSkin->replaceMeshMaterials(ec);
 	};
 	//parser_warning(c, "cab ok");
 	//	mWindow->setDebugText("Beam number:"+ TOSTRING(free_beam));
@@ -5043,6 +5127,8 @@ int SerializedRig::add_beam(node_t *p1, node_t *p2, SceneManager *manager, Scene
 	beams[pos].minendmass=1.0;
 	beams[pos].diameter = diameter;
 	beams[pos].scale=0.0;
+	beams[pos].mEntity=NULL;
+	beams[pos].mSceneNode=NULL;
 	if (shortbound!=-1.0)
 	{
 		beams[pos].bounded    = SHOCK1;
@@ -5055,7 +5141,7 @@ int SerializedRig::add_beam(node_t *p1, node_t *p2, SceneManager *manager, Scene
 	}
 
 	//        if (type!=BEAM_VIRTUAL && type!=BEAM_INVISIBLE)
-	if (type!=BEAM_VIRTUAL)
+	if (type!=BEAM_VIRTUAL && !virtuallyLoaded)
 	{
 		//setup visuals
 		//the cube is 100x100x100
@@ -5068,7 +5154,6 @@ int SerializedRig::add_beam(node_t *p1, node_t *p2, SceneManager *manager, Scene
 		{
 			parser_warning(c, "error loading mesh: beam.mesh");
 		}
-
 		// no materialmapping for beams!
 		//		ec->setCastShadows(false);
 
@@ -5087,12 +5172,11 @@ int SerializedRig::add_beam(node_t *p1, node_t *p2, SceneManager *manager, Scene
 			c = ColourValue::Red;
 		else if(type == BEAM_HYDRO)
 			c = ColourValue::Red;
-		MaterialFunctionMapper::replaceSimpleMeshMaterials(beams[pos].mEntity, c);
+		if (beams[pos].mEntity)
+			MaterialFunctionMapper::replaceSimpleMeshMaterials(beams[pos].mEntity, c);
 
-	} else
-	{
-		beams[pos].mSceneNode=0;beams[pos].mEntity=0;
 	}
+
  	if (beams[pos].mSceneNode && beams[pos].mEntity && !(type==BEAM_VIRTUAL || type==BEAM_INVISIBLE || type==BEAM_INVISIBLE_HYDRO))
 		beams[pos].mSceneNode->attachObject(beams[pos].mEntity);//beams[pos].mSceneNode->setVisible(0);
 
@@ -5102,6 +5186,8 @@ int SerializedRig::add_beam(node_t *p1, node_t *p2, SceneManager *manager, Scene
 
 void SerializedRig::addWheel(SceneManager *manager, SceneNode *parent, Real radius, Real width, int rays, int node1, int node2, int snode, int braked, int propulsed, int torquenode, float mass, float wspring, float wdamp, char* texf, char* texb, bool meshwheel, bool meshwheel2, float rimradius, bool rimreverse, parsecontext_t *c)
 {
+	if(propulsed)
+		propwheelcount++;
 	int i;
 	int nodebase=free_node;
 	int node3;
@@ -5274,40 +5360,43 @@ void SerializedRig::addWheel(SceneManager *manager, SceneNode *parent, Real radi
 	sprintf(wnamei, "wheelobj-%s-%i",truckname, free_wheel);
 	//	strcpy(texf, "tracks/wheelface,");
 	vwheels[free_wheel].meshwheel = meshwheel;
-	if (meshwheel)
+	if(!virtuallyLoaded)
 	{
-		vwheels[free_wheel].fm=new FlexMeshWheel(manager, wname, nodes, node1, node2, nodebase, rays, texf, texb, rimradius, rimreverse, materialFunctionMapper, usedSkin, materialReplacer);
-		try
+		if (meshwheel)
 		{
-			Entity *ec = manager->createEntity(wnamei, wname);
-			vwheels[free_wheel].cnode = manager->getRootSceneNode()->createChildSceneNode();
-			if(ec)
-				vwheels[free_wheel].cnode->attachObject(ec);
-			MaterialFunctionMapper::replaceSimpleMeshMaterials(ec, ColourValue(0, 0.5, 0.5));
-			if(materialFunctionMapper) materialFunctionMapper->replaceMeshMaterials(ec);
-			if(materialReplacer) materialReplacer->replaceMeshMaterials(ec);
-			if(usedSkin) usedSkin->replaceMeshMaterials(ec);
-		}catch(...)
-		{
-			parser_warning(c, "error loading mesh: "+String(wname));
+			vwheels[free_wheel].fm=new FlexMeshWheel(manager, wname, nodes, node1, node2, nodebase, rays, texf, texb, rimradius, rimreverse, materialFunctionMapper, usedSkin, materialReplacer);
+			try
+			{
+				Entity *ec = manager->createEntity(wnamei, wname);
+				vwheels[free_wheel].cnode = manager->getRootSceneNode()->createChildSceneNode();
+				if(ec)
+					vwheels[free_wheel].cnode->attachObject(ec);
+				MaterialFunctionMapper::replaceSimpleMeshMaterials(ec, ColourValue(0, 0.5, 0.5));
+				if(materialFunctionMapper) materialFunctionMapper->replaceMeshMaterials(ec);
+				if(materialReplacer) materialReplacer->replaceMeshMaterials(ec);
+				if(usedSkin) usedSkin->replaceMeshMaterials(ec);
+			}catch(...)
+			{
+				parser_warning(c, "error loading mesh: "+String(wname));
+			}
 		}
-	}
-	else
-	{
-		vwheels[free_wheel].fm=new FlexMesh(manager, wname, nodes, node1, node2, nodebase, rays, texf, texb);
-		try
+		else
 		{
-			Entity *ec = manager->createEntity(wnamei, wname);
-			MaterialFunctionMapper::replaceSimpleMeshMaterials(ec, ColourValue(0, 0.5, 0.5));
-			if(materialFunctionMapper) materialFunctionMapper->replaceMeshMaterials(ec);
-			if(materialReplacer) materialReplacer->replaceMeshMaterials(ec);
-			if(usedSkin) usedSkin->replaceMeshMaterials(ec);
-			vwheels[free_wheel].cnode = manager->getRootSceneNode()->createChildSceneNode();
-			if(ec)
-				vwheels[free_wheel].cnode->attachObject(ec);
-		} catch(...)
-		{
-			parser_warning(c, "error loading mesh: "+String(wname));
+			vwheels[free_wheel].fm=new FlexMesh(manager, wname, nodes, node1, node2, nodebase, rays, texf, texb);
+			try
+			{
+				Entity *ec = manager->createEntity(wnamei, wname);
+				MaterialFunctionMapper::replaceSimpleMeshMaterials(ec, ColourValue(0, 0.5, 0.5));
+				if(materialFunctionMapper) materialFunctionMapper->replaceMeshMaterials(ec);
+				if(materialReplacer) materialReplacer->replaceMeshMaterials(ec);
+				if(usedSkin) usedSkin->replaceMeshMaterials(ec);
+				vwheels[free_wheel].cnode = manager->getRootSceneNode()->createChildSceneNode();
+				if(ec)
+					vwheels[free_wheel].cnode->attachObject(ec);
+			} catch(...)
+			{
+				parser_warning(c, "error loading mesh: "+String(wname));
+			}
 		}
 	}
 	free_wheel++;
@@ -5488,24 +5577,27 @@ void SerializedRig::addWheel2(SceneManager *manager, SceneNode *parent, Real rad
 	char wnamei[256];
 	sprintf(wnamei, "wheelobj-%s-%i",truckname, free_wheel);
 	//	strcpy(texf, "tracks/wheelface,");
-	vwheels[free_wheel].fm=new FlexMesh(manager, wname, nodes, node1, node2, nodebase, rays, texf, texb, true, radius/radius2);
-	try
+	if(!virtuallyLoaded)
 	{
-		Entity *ec = manager->createEntity(wnamei, wname);
-		MaterialFunctionMapper::replaceSimpleMeshMaterials(ec, ColourValue(0, 0.5, 0.5));
-		if(materialFunctionMapper) materialFunctionMapper->replaceMeshMaterials(ec);
-		if(materialReplacer) materialReplacer->replaceMeshMaterials(ec);
-		if(usedSkin) usedSkin->replaceMeshMaterials(ec);
-		//	ec->setMaterialName("tracks/wheel");
-		//ec->setMaterialName("Test/ColourTest");
-		vwheels[free_wheel].cnode = manager->getRootSceneNode()->createChildSceneNode();
-		if(ec)
-			vwheels[free_wheel].cnode->attachObject(ec);
-		//	cnode->setPosition(1000,2,940);
-		free_wheel++;
-	}catch(...)
-	{
-		parser_warning(c, "error loading mesh: "+String(wname));
+		vwheels[free_wheel].fm=new FlexMesh(manager, wname, nodes, node1, node2, nodebase, rays, texf, texb, true, radius/radius2);
+		try
+		{
+			Entity *ec = manager->createEntity(wnamei, wname);
+			MaterialFunctionMapper::replaceSimpleMeshMaterials(ec, ColourValue(0, 0.5, 0.5));
+			if(materialFunctionMapper) materialFunctionMapper->replaceMeshMaterials(ec);
+			if(materialReplacer) materialReplacer->replaceMeshMaterials(ec);
+			if(usedSkin) usedSkin->replaceMeshMaterials(ec);
+			//	ec->setMaterialName("tracks/wheel");
+			//ec->setMaterialName("Test/ColourTest");
+			vwheels[free_wheel].cnode = manager->getRootSceneNode()->createChildSceneNode();
+			if(ec)
+				vwheels[free_wheel].cnode->attachObject(ec);
+			//	cnode->setPosition(1000,2,940);
+			free_wheel++;
+		}catch(...)
+		{
+			parser_warning(c, "error loading mesh: "+String(wname));
+		}
 	}
 }
 
@@ -5877,6 +5969,8 @@ void SerializedRig::calcBox()
 
 void SerializedRig::parser_warning(parsecontext_t &context, Ogre::String text)
 {
+	if(ignoreProblems) return;
+
 	String txt = "BIO|"+context.filename+":"+Ogre::StringConverter::toString(context.linecounter, 4, '0')+" | "+String(context.modeString)+" | " + text;
 	LOG(txt);
 
@@ -5888,6 +5982,8 @@ void SerializedRig::parser_warning(parsecontext_t &context, Ogre::String text)
 
 void SerializedRig::parser_warning(parsecontext_t *context, Ogre::String text)
 {
+	if(ignoreProblems) return;
+
 	if(context)
 		parser_warning(*context, text);
 	else

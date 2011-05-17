@@ -20,6 +20,7 @@ along with Rigs of Rods.  If not, see <http://www.gnu.org/licenses/>.
 #ifdef USE_MYGUI 
 
 #include "LoadingWindow.h"
+#include "gui_manager.h"
 #include "RoRWindowEventUtilities.h"
 
 LoadingWindow::LoadingWindow() :
@@ -65,6 +66,7 @@ void LoadingWindow::setAutotrack(const Ogre::String& _text, bool _updateRenderFr
 
 void LoadingWindow::hide()
 {
+	GUIManager::getSingleton().unfocus();
 	mMainWidget->setVisible(false);
 }
 

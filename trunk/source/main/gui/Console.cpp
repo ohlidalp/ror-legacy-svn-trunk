@@ -23,6 +23,7 @@ along with Rigs of Rods.  If not, see <http://www.gnu.org/licenses/>.
 #include "Scripting.h"
 #include "InputEngine.h"
 #include "OgreLogManager.h"
+#include "gui_manager.h"
 
 #include "Settings.h"
 #include "RoRFrameListener.h"
@@ -142,6 +143,7 @@ void Console::setVisible(bool _visible)
 	else
 	{
 		MyGUI::InputManager::getInstance().resetKeyFocusWidget(mCommandEdit);
+		GUIManager::getSingleton().unfocus();
 	}
 }
 
