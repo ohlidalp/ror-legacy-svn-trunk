@@ -2204,6 +2204,16 @@ bool RoRFrameListener::updateEvents(float dt)
 						curr_truck->replaypos-=10;
 					}
 
+					if(curr_truck->replaypos <= 0 && curr_truck->replaypos >= -curr_truck->replaylen)
+					{
+						if(INPUTENGINE.isKeyDown(OIS::KC_LSHIFT) || INPUTENGINE.isKeyDown(OIS::KC_RSHIFT))
+						{
+							curr_truck->replaypos += INPUTENGINE.getMouseState().X.rel * 1.5f;
+						} else
+						{
+							curr_truck->replaypos += INPUTENGINE.getMouseState().X.rel * 0.05f;
+						}
+					}
 				}
 
 				if (curr_truck->driveable==TRUCK)
