@@ -648,6 +648,7 @@ void Road2::createMesh()
 
 	/// Notify Mesh object that it has been loaded
 	msh->buildEdgeList();
+	msh->prepareForShadowVolume();
 	msh->load();
 	delete aab;
 };
