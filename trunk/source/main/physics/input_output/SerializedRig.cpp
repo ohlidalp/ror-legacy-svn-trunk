@@ -1597,7 +1597,7 @@ int SerializedRig::loadTruck(String fname, SceneManager *manager, SceneNode *par
 					{
 						hook_nodisable = true;
 					}
-					else if (arg == "visible" || arg == "vis" && !virtuallyLoaded && itfound->beam->mSceneNode)
+					else if ((arg == "visible" || arg == "vis") && !virtuallyLoaded && itfound->beam->mSceneNode)
 					{
 						hookbeam_visble = true;
 						if (itfound->beam->mSceneNode->numAttachedObjects() == 0)
