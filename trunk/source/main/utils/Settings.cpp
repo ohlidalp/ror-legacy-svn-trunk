@@ -31,6 +31,7 @@ along with Rigs of Rods.  If not, see <http://www.gnu.org/licenses/>.
 #include "utils.h"
 #include "errorutils.h"
 #include "sha1.h"
+#include "RoRVersion.h"
 
 using namespace std;
 using namespace Ogre;
@@ -180,7 +181,7 @@ void Settings::loadSettings(Ogre::String configFile, bool overwrite)
 		FILE *f = fopen(versionFilename.c_str(), "w");
 		if(f)
 		{
-			fprintf(f, "%s", ROR_VERSION_FULL_STRING);
+			fprintf(f, "%s", ROR_VERSION_STRING);
 			fclose(f);
 		}
 	}
@@ -247,7 +248,7 @@ bool Settings::get_system_paths(char *program_path, char *user_path)
 			return false;
 		}
 		GetShortPathNameA(user_path, user_path, 512); //this is legal
-		sprintf(user_path, "%s\\Rigs of Rods %s\\", user_path, ROR_VERSION_STRING);
+		sprintf(user_path, "%s\\Rigs of Rods %s\\", user_path, ROR_VERSION_STRING_SHORT); // do not use the full string, as same minor versions should share this directory
 	} else
 	{
 		strcpy(user_path, getSetting("userpath").c_str());

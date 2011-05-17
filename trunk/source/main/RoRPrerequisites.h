@@ -41,18 +41,7 @@ along with Rigs of Rods.  If not, see <http://www.gnu.org/licenses/>.
 #error You need at least Ogre version 1.7.1, older versions are not supported
 #endif
 
-// this defines the version that is used for the scripts and console stuff.
-// $LastChangedDate$
-// $LastChangedRevision$
-// $LastChangedBy$
-// $Id$
-// $Rev$
-#define SVN_REVISION "$Rev$"
-#define SVN_ID "$Id$"
-
-#define ROR_VERSION_STRING      "0.38"
-#define ROR_VERSION_FULL_STRING "0.38.31"
-
+// version information now residing in RoRVersion.h
 
 // some shortcuts for us
 #define LOG(x)       Ogre::LogManager::getSingleton().logMessage(x)

@@ -34,6 +34,7 @@ along with Rigs of Rods.  If not, see <http://www.gnu.org/licenses/>.
 #include "utils.h"
 #include "language.h"
 #include "errorutils.h"
+#include "RoRVersion.h"
 
 #include "gui_mp.h"
 
@@ -231,7 +232,7 @@ bool Network::connect()
 	strncpy(c.username, nickname.c_str(), 20);
 	strncpy(c.serverpassword, sha1pwresult, 40);
 	strncpy(c.usertoken, usertokenhash.c_str(), 40);
-	strncpy(c.clientversion, ROR_VERSION_FULL_STRING, strnlen(ROR_VERSION_FULL_STRING, 25));
+	strncpy(c.clientversion, ROR_VERSION_STRING, strnlen(ROR_VERSION_STRING, 25));
 	strcpy(c.clientname, "RoR");
 	String lang = SSETTING("Language Short");
 	strncpy(c.language, lang.c_str(), std::min<int>(lang.size(), 10));
