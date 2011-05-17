@@ -32,7 +32,7 @@ using namespace Ogre;
 TruckHUD::TruckHUD() :
 	torqueLineStream(0)
 {
-	width = 400;
+	width = 450;
 	border = 10;
 
 	// init counters
@@ -93,6 +93,8 @@ TruckHUD::TruckHUD() :
 	lastTorqueRatio = 0;
 
 	truckHUD = OverlayManager::getSingleton().getByName("tracks/TruckInfoBox");
+
+
 	updatetime=0;
 }
 

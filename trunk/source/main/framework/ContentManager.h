@@ -35,11 +35,12 @@ public:
 
 	bool init(void);
 
+	void loadMainResource(Ogre::String name, Ogre::String group=Ogre::ResourceGroupManager::DEFAULT_RESOURCE_GROUP_NAME);
+
 protected:
 	ContentManager(const ContentManager&);
 	ContentManager& operator= (const ContentManager&);
 
-	void loadMainResource(Ogre::String name, Ogre::String group=Ogre::ResourceGroupManager::DEFAULT_RESOURCE_GROUP_NAME);
 
 	void exploreFolders(Ogre::String rg);
 
