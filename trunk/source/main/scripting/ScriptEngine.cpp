@@ -244,8 +244,8 @@ void ScriptEngine::init()
 	registerOgreObjects(engine);
 
 	// some useful global functions
-	result = engine->RegisterGlobalFunction("void log(const string &in)", AngelScript::asFUNCTION(logString), AngelScript::asCALL_CDECL); assert( r >= 0 );
-	result = engine->RegisterGlobalFunction("void print(const string &in)", AngelScript::asFUNCTION(logString), AngelScript::asCALL_CDECL); assert( r >= 0 );
+	result = engine->RegisterGlobalFunction("void log(const string &in)", AngelScript::asFUNCTION(logString), AngelScript::asCALL_CDECL); assert( result >= 0 );
+	result = engine->RegisterGlobalFunction("void print(const string &in)", AngelScript::asFUNCTION(logString), AngelScript::asCALL_CDECL); assert( result >= 0 );
 
 	// Register everything
 	// class Beam
