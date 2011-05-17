@@ -25,6 +25,7 @@ along with Rigs of Rods.  If not, see <http://www.gnu.org/licenses/>.
 #include "Settings.h"
 #include "language.h"
 #include "errorutils.h"
+#include "engine.h"
 
 #include "SoundScriptManager.h"
 #include "BeamData.h" // for authorinfo_t
@@ -429,19 +430,6 @@ void CacheSystem::parseModAttribute(const String& line, Cache_Entry& t)
 		// Set
 		t.version = StringConverter::parseInt(params[1]);
 	}
-	/*
-	else if (attrib == "numauthors")
-	{
-		// Check params
-		if (params.size() != 1)
-		{
-			logBadTruckAttrib(line, t);
-			return;
-		}
-		// Set
-		t.authors.resize(StringConverter::parseInt(params[1]))
-	}
-	*/
 	else if (attrib == "author")
 	{
 		// Check params
@@ -451,12 +439,12 @@ void CacheSystem::parseModAttribute(const String& line, Cache_Entry& t)
 			return;
 		}
 		// Set
-		//authorinfo_t *ai = new authorinfo_t();
-		//ai->id = StringConverter::parseInt(params[2]);
-		//strncpy(ai->type, params[1].c_str(), 255);
-		//strncpy(ai->name, params[3].c_str(), 255);
-		//strncpy(ai->email, params[4].c_str(), 255);
-		//t.authors.push_back(ai);
+		authorinfo_t ai;
+		ai.id = StringConverter::parseInt(params[2]);
+		ai.type = params[1];
+		ai.name = params[3];
+		ai.email = params[4];
+		t.authors.push_back(ai);
 	}
 	else if (attrib == "sectionconfig")
 	{
@@ -992,12 +980,12 @@ Ogre::String CacheSystem::formatInnerEntry(int counter, Cache_Entry t)
 		{
 			for(int i=0;i<(int)t.authors.size();i++)
 			{
-				if(t.authors[i]->type.empty())  t.authors[i]->type = "unknown";
-				if(t.authors[i]->name.empty())  t.authors[i]->name = "unknown";
-				if(t.authors[i]->email.empty()) t.authors[i]->email = "unknown";
-				result += "\tauthor=" + (t.authors[i]->type) + \
-					"," + TOSTRING(t.authors[i]->id) + \
-					"," + (t.authors[i]->name) + "," + (t.authors[i]->email) + "\n";
+				if(t.authors[i].type.empty())  t.authors[i].type = "unknown";
+				if(t.authors[i].name.empty())  t.authors[i].name = "unknown";
+				if(t.authors[i].email.empty()) t.authors[i].email = "unknown";
+				result += "\tauthor=" + (t.authors[i].type) + \
+					"," + TOSTRING(t.authors[i].id) + \
+					"," + (t.authors[i].name) + "," + (t.authors[i].email) + "\n";
 			}
 		}
 
@@ -1230,8 +1218,8 @@ void CacheSystem::addFile(String filename, String archiveType, String archiveDir
 
 			if(ext == "terrn")
 				fillTerrainDetailInfo(entry, ds, filename);
-			//else
-			//	fillTruckDetailInfo(entry, ds, filename);
+			else
+				fillTruckDetailInfo(entry, ds, filename);
 
 			// ds closes automatically, so do _not_ close it explicitly below
 			entry.fname = filename;
@@ -1276,754 +1264,59 @@ void CacheSystem::addFile(String filename, String archiveType, String archiveDir
 
 void CacheSystem::fillTruckDetailInfo(Cache_Entry &entry, Ogre::DataStreamPtr ds, Ogre::String fname)
 {
-	// obsolete
-#if 0
-	// done initializing, now fill everything!
-	// this is a stripped (and cleaned) version of Beam::loadtruck()
-	char line[1024];
-	int mode=0, savedmode=0, linecounter=0;
-	while (!ds->eof())
+
+	SerializedRig r;
+
+	r.loadTruckVirtual(fname, true);
+
+	// copy over some values
+
+	for(unsigned int i=0; i<r.description.size(); i++)    entry.description += r.description[i] + "\n";
+	for(unsigned int i=0; i<r.authors.size(); i++)        entry.authors.push_back(r.authors[i]);
+	for(unsigned int i=0; i<r.sectionconfigs.size(); i++) entry.sectionconfigs.push_back(r.sectionconfigs[i]);
+
+
+	if(r.engine)
 	{
-		linecounter++;
-		size_t ll = ds->readLine(line, 1023);
-		if (ll==0 || line[0]==';' || line[0]=='/')
-			continue;
+		entry.numgears = r.engine->getNumGears();
+		entry.minrpm  = r.engine->getIdleRPM();
+		entry.maxrpm  = r.engine->getMaxRPM();
+		entry.torque  = r.engine->getEngineTorque();
+		entry.enginetype = r.engine->getType();
+	}
+	entry.uniqueid   = r.uniquetruckid;
+	entry.categoryid = r.categoryid;
+	entry.version    = r.truckversion;
+	entry.forwardcommands = r.forwardcommands;
+	entry.importcommands  = r.importcommands;
+	entry.rollon = r.wheel_contact_requested;
+	entry.rescuer = r.rescuer;
+	entry.guid = String(r.guid);
+	entry.fileformatversion = r.fileformatversion;
+	entry.hasSubmeshs = (r.free_sub > 0);
+	entry.nodecount   = r.free_node;
+	entry.beamcount   = r.free_beam;
+	entry.shockcount  = r.free_shock;
+	entry.fixescount  = r.free_fixes;
+	entry.hydroscount = r.free_hydro;
+	entry.wheelcount  = r.free_wheel;
+	entry.propwheelcount = r.propwheelcount;
+	entry.driveable   = r.driveable;
+	entry.commandscount = r.free_commands;
+	entry.flarescount = r.free_flare;
+	entry.propscount = r.free_prop;
+	entry.wingscount = r.free_wing;
+	entry.turbopropscount = r.free_aeroengine;
+	entry.rotatorscount = r.free_rotator;
+	entry.exhaustscount = r.exhausts.size();
+	entry.custom_particles = r.free_cparticle;
+	entry.turbojetcount = r.free_aeroengine;
+	entry.flexbodiescount = r.free_flexbody;
+	entry.soundsourcescount = r.free_soundsource;
+	//entry.managedmaterialscount++;
+	//entry.customtach=true;
+	//entry.materialflarebindingscount++;
 
-		if (!strcmp("end",line))
-			break;
-
-		if (!strcmp("end_commandlist",line) && mode == 35) {mode=0;continue;};
-		if (!strcmp("end_description",line) && mode == 29) {mode=0;continue;};
-		if (!strcmp("end_comment",line)  && mode == 30) {mode=savedmode;continue;};
-		if (mode==29)
-		{
-			entry.description += String(line) + "\n";
-			continue;
-		}
-
-		if (mode==30)
-		{
-			// comment
-			// ignore everything
-			continue;
-		}
-		if (!strcmp("nodes",line)) {mode=1;continue;};
-		if (!strcmp("beams",line)) {mode=2;continue;};
-		if (!strcmp("fixes",line)) {mode=3;continue;};
-		if (!strcmp("shocks",line)) {mode=4;continue;};
-		if (!strcmp("hydros",line)) {mode=5;continue;};
-		if (!strcmp("wheels",line)) {mode=6;continue;};
-		if (!strcmp("globals",line)) {mode=7;continue;};
-		if (!strcmp("cameras",line)) {mode=8;continue;};
-		if (!strcmp("engine",line)) {mode=9;continue;};
-		if (!strcmp("texcoords",line)) {mode=10;continue;};
-		if (!strcmp("cab",line)) {mode=11;continue;};
-		if (!strcmp("commands",line)) {mode=12;continue;};
-		if (!strcmp("commands2",line)) {mode=120;continue;};
-		if (!strcmp("forwardcommands",line)) {entry.forwardcommands=true;continue;};
-		if (!strcmp("importcommands",line)) {entry.importcommands=true;continue;};
-		if (!strcmp("rollon",line)) {entry.rollon=true;continue;};
-		if (!strcmp("rescuer",line)) {entry.rescuer=true;continue;};
-		if (!strcmp("contacters",line)) {mode=13;continue;};
-		if (!strcmp("ropes",line)) {mode=14;continue;};
-		if (!strcmp("ropables",line)) {mode=15;continue;};
-		if (!strcmp("ties",line)) {mode=16;continue;};
-		if (!strcmp("help",line)) {mode=17;continue;};
-		if (!strcmp("cinecam",line)) {mode=18;continue;};
-		if (!strcmp("flares",line)) {mode=19;continue;};
-		if (!strcmp("props",line)) {mode=20;continue;};
-		if (!strcmp("globeams",line)) {mode=21;continue;};
-		if (!strcmp("wings",line)) {mode=22;continue;};
-		if (!strcmp("turboprops",line)) {mode=23;continue;};
-		if (!strcmp("fusedrag",line)) {mode=24;continue;};
-		if (!strcmp("engoption",line)) {mode=25;continue;};
-		if (!strcmp("brakes",line)) {mode=26;continue;};
-		if (!strcmp("rotators",line)) {mode=27;continue;};
-		if (!strcmp("screwprops",line)) {mode=28;continue;};
-		if (!strcmp("description",line)) {mode=29;continue;};
-		if (!strcmp("comment",line)) {mode=30; savedmode=mode; continue;};
-		if (!strcmp("wheels2",line)) {mode=31;continue;};
-		if (!strcmp("guisettings",line)) {mode=32;continue;};
-		if (!strcmp("minimass",line)) {mode=33;continue;};
-		if (!strcmp("exhausts",line)) {mode=34;continue;};
-		if (!strcmp("turboprops2",line)) {mode=35;continue;};
-		if (!strcmp("pistonprops",line)) {mode=36;continue;};
-		//apparently mode 37 is reserved for other use
-		if (!strcmp("particles",line)) {mode=38;continue;};
-		if (!strcmp("turbojets",line)) {mode=39;continue;};
-		if (!strcmp("rigidifiers",line)) {mode=40;continue;};
-		if (!strcmp("airbrakes",line)) {mode=41;continue;};
-		if (!strcmp("meshwheels",line)) {mode=42;continue;};
-		if (!strcmp("flexbodies",line)) {mode=43;continue;};
-		if (!strncmp("hookgroup",line, 9)) {mode=44; /* NOT continue */;};
-		if (!strncmp("gripnodes",line, 9)) {mode=45; continue;};
-		if (!strncmp("materialflarebindings",line, 21)) {mode=46; continue;};
-		if (!strcmp("disabledefaultsounds",line)) {continue;};
-		if (!strcmp("soundsources",line)) {mode=47;continue;};
-		if (!strcmp("envmap",line)) {mode=48;continue;};
-		if (!strcmp("managedmaterials",line)) {mode=49;continue;};
-		if (!strncmp("sectionconfig",line, 13)) {savedmode=mode;mode=50; /* NOT continue */};
-		if (!strncmp("section",line, 7) && mode!=50) {mode=51; /* NOT continue */};
-		/* 52 = reserved for ignored section */
-
-
-		
-		if (!strncmp("guid", line, 4))
-		{
-			char guid[128]="";
-			int result = sscanf(line,"guid %s", guid);
-			entry.guid = String(guid);
-			StringUtil::trim(entry.guid);
-			continue;
-		}
-
-		if (!strcmp("commandlist",line))
-			continue;
-		if (!strncmp("fileinfo", line, 8))
-		{
-			char uniquetruckid[256]="";
-			int categoryid=0, truckversion=0;
-			String lineStr = String(line);
-			Ogre::StringVector args = StringUtil::split(lineStr, ", ");
-			if(args.size() < 1)
-			{
-				LOG("Error parsing File (fileinfo) " + String(fname) +" line " + TOSTRING(linecounter) + ". trying to continue ...");
-				continue;
-			}
-			mode=0;
-			if(args.size() > 1)	entry.uniqueid = args[1];
-			if(args.size() > 2) entry.categoryid = StringConverter::parseInt(args[2]);
-			if(args.size() > 3)	entry.version = StringConverter::parseInt(args[3]);
-			continue;
-		}
-		if (!strncmp("fileformatversion", line, 17))
-		{
-			int fileformatversion;
-			int result = sscanf(line,"fileformatversion %i", &fileformatversion);
-			if (result < 1 || result == EOF) {
-				LOG("Error parsing File (fileformatversion) " + String(fname) +" line " + TOSTRING(linecounter) + ". trying to continue ...");
-				continue;
-			}
-			mode=0;
-			entry.fileformatversion = fileformatversion;
-			continue;
-		}
-			if (!strncmp("author", line, 6))
-			{
-				int authorid;
-				char authorname[256], authoremail[256], authortype[256];
-				authorinfo_t *author = new authorinfo_t();
-				author->id = -1;
-				strcpy(author->email, "unknown");
-				strcpy(author->name,  "unknown");
-				strcpy(author->type,  "unknown");
-
-				int result = sscanf(line,"author %s %i %s %s", authortype, &authorid, authorname, authoremail);
-				if (result < 1 || result == EOF) {
-					LOG("Error parsing File (author) " + String(fname) +" line " + TOSTRING(linecounter) + ". trying to continue ...");
-					continue;
-				}
-				//replace '_' with ' '
-				//char *tmp = authorname;
-				//while (*tmp!=0) {if (*tmp=='_') *tmp=' ';tmp++;};
-				//fill the struct now
-				author->id = authorid;
-				if(strnlen(authortype, 250) > 0)
-					strncpy(author->type, authortype, 255);
-				if(strnlen(authorname, 250) > 0)
-					strncpy(author->name, authorname, 255);
-				if(strnlen(authoremail, 250) > 0)
-					strncpy(author->email, authoremail, 255);
-				entry.authors.push_back(author);
-				mode=0;
-				continue;
-			}
-
-
-			if (!strncmp("set_beam_defaults", line, 17))
-				continue;
-
-			if (!strncmp("set_skeleton_settings", line, 21))
-				continue;
-
-			if (!strcmp("backmesh",line))
-				continue;
-			if (!strcmp("submesh",line))
-			{
-				entry.hasSubmeshs = true;
-				continue;
-			};
-			if (mode==1)
-			{
-				//parse nodes
-				int id=0;
-				float x=0, y=0, z=0, mass=0;
-				char options[50] = "n";
-				int result = sscanf(line,"%i, %f, %f, %f, %s %f",&id,&x,&y,&z,options, &mass);
-				// catch some errors
-				if (result < 4 || result == EOF) {
-					LOG("Error parsing File " + String(fname) +" line " + TOSTRING(linecounter) + ". trying to continue ...");
-					//LOG(strerror(errno));
-					continue;
-				}
-				entry.nodecount++;
-				continue;
-			}
-			else if (mode==2)
-			{
-				//parse beams
-				int id1, id2;
-				char options[50] = "v";
-				int type=0;
-				int result = sscanf(line,"%i, %i, %s",&id1,&id2,options);
-				if (result < 2 || result == EOF) {
-					LOG("Error parsing File (Beam) " + String(fname) +" line " + TOSTRING(linecounter) + ". trying to continue ...");
-					continue;
-				}
-				entry.beamcount++;
-				continue;
-			}
-			else if (mode==4)
-			{
-				//parse shocks
-				int id1, id2;
-				float s, d, sbound,lbound,precomp;
-				char type='n';
-				int result = sscanf(line,"%i, %i, %f, %f, %f, %f, %f, %c",&id1,&id2, &s, &d, &sbound, &lbound,&precomp,&type);
-				if (result < 7 || result == EOF) {
-					LOG("Error parsing File (Shock) " + String(fname) +" line " + TOSTRING(linecounter) + ". trying to continue ...");
-					continue;
-				}
-				entry.shockcount++;
-				continue;
-			}
-			else if (mode==3)
-			{
-				//parse fixes
-				int id;
-				int result = sscanf(line,"%i",&id);
-				if (result < 1 || result == EOF) {
-					LOG("Error parsing File (Fixes) " + String(fname) +" line " + TOSTRING(linecounter) + ". trying to continue ...");
-					continue;
-				}
-				entry.fixescount++;
-			}
-			else if (mode==5)
-			{
-				//parse hydros
-				int id1, id2;
-				float ratio;
-				char options[50] = "n";
-				int result = sscanf(line,"%i, %i, %f, %s",&id1,&id2,&ratio, options);
-				if (result < 3 || result == EOF) {
-					LOG("Error parsing File (Hydro) " + String(fname) +" line " + TOSTRING(linecounter) + ". trying to continue ...");
-					continue;
-				}
-				entry.hydroscount++;
-				continue;
-			}
-			else if (mode==6)
-			{
-				//parse wheels
-				float radius, width, mass, spring, damp;
-				char texf[256];
-				char texb[256];
-				int rays, node1, node2, snode, braked, propulsed, torquenode;
-				int result = sscanf(line,"%f, %f, %i, %i, %i, %i, %i, %i, %i, %f, %f, %f, %s %s",&radius,&width,&rays,&node1,&node2,&snode,&braked,&propulsed,&torquenode,&mass,&spring,&damp, texf, texb);
-				if (result < 14 || result == EOF) {
-					LOG("Error parsing File (Wheel) " + String(fname) +" line " + TOSTRING(linecounter) + ". trying to continue ...");
-					continue;
-				}
-				entry.wheelcount++;
-				if(propulsed) entry.propwheelcount++;
-				continue;
-			}
-			else if (mode==31)
-			{
-				//parse wheels2
-				char texf[256];
-				char texb[256];
-				float radius, radius2, width, mass, spring, damp, spring2, damp2;
-				int rays, node1, node2, snode, braked, propulsed, torquenode;
-				int result = sscanf(line,"%f, %f, %f, %i, %i, %i, %i, %i, %i, %i, %f, %f, %f, %f, %f, %s %s",&radius,&radius2,&width,&rays,&node1,&node2,&snode,&braked,&propulsed,&torquenode,&mass,&spring,&damp,&spring2,&damp2, texf, texb);
-				if (result < 17 || result == EOF) {
-					LOG("Error parsing File (Wheel2) " + String(fname) +" line " + TOSTRING(linecounter) + ". trying to continue ...");
-					continue;
-				}
-				if(propulsed) entry.propwheelcount++;
-				entry.wheelcount++;
-				continue;
-			}
-			else if (mode==42)
-			{
-				//parse meshwheels
-				char meshw[256];
-				char texb[256];
-				float radius, rimradius, width, mass, spring, damp;
-				char side;
-				int rays, node1, node2, snode, braked, propulsed, torquenode;
-				int result = sscanf(line,"%f, %f, %f, %i, %i, %i, %i, %i, %i, %i, %f, %f, %f, %c, %s %s",&radius,&rimradius,&width,&rays,&node1,&node2,&snode,&braked,&propulsed,&torquenode,&mass,&spring,&damp, &side, meshw, texb);
-				if (result < 16 || result == EOF) {
-					LOG("Error parsing File (MeshWheel) " + String(fname) +" line " + TOSTRING(linecounter) + ". trying to continue ...");
-					continue;
-				}
-				if(propulsed) entry.propwheelcount++;
-				entry.wheelcount++;
-				continue;
-			}
-			else if (mode==7)
-			{
-				float truckmass=0, loadmass=0;
-				char texname[256];
-				memset(texname,0, 255);
-				//parse globals
-				int result = sscanf(line,"%f, %f, %s",&truckmass, &loadmass, texname);
-				if (result < 2 || result == EOF) {
-					LOG("Error parsing File (Globals) " + String(fname) +" line " + TOSTRING(linecounter) + ". trying to continue ...");
-					continue;
-				}
-				entry.truckmass = truckmass;
-				entry.loadmass = loadmass;
-				addUniqueString(entry.materials, texname);
-
-				continue;
-			}
-			else if (mode==8)
-			{
-				//parse cameras
-				continue;
-			}
-			else if (mode==9)
-			{
-				//parse engine
-				float minrpm, maxrpm, torque, dratio, rear;
-				float gears[16];
-				int numgears;
-
-				entry.driveable = 1; // 1 = TRUCK
-				int result = sscanf(line,"%f, %f, %f, %f, %f, %f, %f, %f, %f, %f, %f, %f, %f, %f, %f, %f, %f, %f, %f, %f, %f", &minrpm, &maxrpm, &torque, &dratio, &rear, &gears[0],&gears[1],&gears[2],&gears[3],&gears[4],&gears[5],&gears[6],&gears[7],&gears[8],&gears[9],&gears[10],&gears[11],&gears[12],&gears[13],&gears[14],&gears[15]);
-				if (result < 7 || result == EOF) {
-					LOG("Error parsing File (Engine) " + String(fname) +" line " + TOSTRING(linecounter) + ". trying to continue ...");
-					continue;
-				}
-				for (numgears=0; numgears<16; numgears++)
-					if (gears[numgears]<=0)
-						break;
-				if (numgears < 3)
-				{
-					LOG("Trucks with less than 3 gears are not supported! " + String(fname) +" line " + TOSTRING(linecounter) + ". trying to continue ...");
-					continue;
-				}
-				entry.numgears = numgears;
-				entry.minrpm = minrpm;
-				entry.maxrpm = maxrpm;
-				entry.torque = torque;
-				continue;
-			}
-
-			else if (mode==10)
-			{
-				//parse texcoords
-				continue;
-			}
-
-			else if (mode==11)
-			{
-				//parse cab
-				continue;
-			}
-
-			else if (mode==12 || mode==120)
-			{
-				//parse commands
-				int id1, id2,keys,keyl;
-				float rateShort, rateLong, shortl, longl;
-				char options[250]="";
-				char descr[200] = "";
-				int result = 0;
-				if(mode == 12)
-				{
-					char opt='n';
-					result = sscanf(line,"%i, %i, %f, %f, %f, %i, %i, %c, %s", &id1, &id2, &rateShort, &shortl, &longl, &keys, &keyl, &opt, descr);
-					if (result < 7 || result == EOF) {
-						LOG("Error parsing File (Command) " + String(fname) +" line " + TOSTRING(linecounter) + ". trying to continue ...");
-						continue;
-					}
-				}
-				else if(mode == 120)
-				{
-					result = sscanf(line,"%i, %i, %f, %f, %f, %f, %i, %i, %s %s", &id1, &id2, &rateShort, &rateLong, &shortl, &longl, &keys, &keyl, options, descr);
-					if (result < 8 || result == EOF) {
-						LOG("Error parsing File (Command) " + String(fname) +" line " + TOSTRING(linecounter) + ". trying to continue ...");
-						continue;
-					}
-				}
-				entry.commandscount++;
-				continue;
-			}
-
-			else if (mode==13)
-			{
-				//parse contacters
-				continue;
-			}
-			else if (mode==14)
-			{
-				//parse ropes
-				continue;
-			}
-			else if (mode==15)
-			{
-				//parse ropables
-				continue;
-			}
-			else if (mode==16)
-			{
-				//parse ties
-				continue;
-			}
-			else if (mode==17)
-			{
-				//help material
-				continue;
-			}
-			else if (mode==18)
-			{
-				//cinecam
-				continue;
-			}
-
-			else if (mode==19)
-			{
-				//parse flares
-				int ref=-1, nx=0, ny=0, controlnumber=-1, blinkdelay=-2;
-				float ox=0, oy=0, size=-2;
-				char type='f';
-				char matname[256]="";
-				int result = sscanf(line,"%i, %i, %i, %f, %f, %c, %i, %i, %f %s", &ref, &nx, &ny, &ox, &oy, &type, &controlnumber, &blinkdelay, &size, matname);
-				if (result < 5 || result == EOF) {
-					LOG("Error parsing File (Flares) " + String(fname) +" line " + TOSTRING(linecounter) + ". trying to continue ...");
-					continue;
-				}
-				entry.flarescount++;
-				continue;
-			}
-			else if (mode==20)
-			{
-				//parse props
-				int ref, nx, ny;
-				float ox, oy, oz;
-				float rx, ry, rz;
-				char meshname[256];
-				int result = sscanf(line,"%i, %i, %i, %f, %f, %f, %f, %f, %f, %s", &ref, &nx, &ny, &ox, &oy, &oz, &rx, &ry, &rz, meshname);
-				if (result < 10 || result == EOF) {
-					LOG("Error parsing File (Prop) " + String(fname) +" line " + TOSTRING(linecounter) + ". trying to continue ...");
-					continue;
-				}
-
-				entry.propscount++;
-				continue;
-			}
-			else if (mode==21)
-			{
-				//parse globeams
-				continue;
-			}
-			else if (mode==22)
-			{
-				//parse wings
-				int nds[8];
-				float txes[8];
-				char type;
-				float cratio, mind, maxd;
-				char afname[256];
-				int result = sscanf(line,"%i, %i, %i, %i, %i, %i, %i, %i, %f, %f, %f, %f, %f, %f, %f, %f, %c, %f, %f, %f, %s",
-					&nds[0],
-					&nds[1],
-					&nds[2],
-					&nds[3],
-					&nds[4],
-					&nds[5],
-					&nds[6],
-					&nds[7],
-					&txes[0],
-					&txes[1],
-					&txes[2],
-					&txes[3],
-					&txes[4],
-					&txes[5],
-					&txes[6],
-					&txes[7],
-					&type,
-					&cratio,
-					&mind,
-					&maxd,
-					afname
-					);
-				//visuals
-				if (result < 13 || result == EOF) {
-					LOG("Error parsing File (Wing) " + String(fname) +" line " + TOSTRING(linecounter) + ". trying to continue ...");
-					continue;
-				}
-				entry.wingscount++;
-				continue;
-			}
-			else if (mode==23 || mode==35 || mode==36) //turboprops, turboprops2, pistonprops
-			{
-				//parse turboprops
-				int ref,back,p1,p2,p3,p4;
-				int couplenode=-1;
-				float pitch=-10;
-				bool isturboprops=true;
-				float power;
-				char propfoil[256];
-				if (mode==23)
-				{
-					int result = sscanf(line,"%i, %i, %i, %i, %i, %i, %f, %s", &ref, &back, &p1, &p2, &p3, &p4, &power, propfoil);
-					if (result < 8 || result == EOF) {
-						LOG("Error parsing File (Turboprop) " + String(fname) +" line " + TOSTRING(linecounter) + ". trying to continue ...");
-						continue;
-					}
-				}
-				if (mode==35)
-				{
-					int result = sscanf(line,"%i, %i, %i, %i, %i, %i, %i, %f, %s", &ref, &back, &p1, &p2, &p3, &p4, &couplenode, &power, propfoil);
-					if (result < 9 || result == EOF) {
-						LOG("Error parsing File (Turboprop2) " + String(fname) +" line " + TOSTRING(linecounter) + ". trying to continue ...");
-						continue;
-					}
-				}
-				if (mode==36)
-				{
-					int result = sscanf(line,"%i, %i, %i, %i, %i, %i, %i, %f, %f, %s", &ref, &back, &p1, &p2, &p3, &p4, &couplenode, &power, &pitch, propfoil);
-					if (result < 10 || result == EOF) {
-						LOG("Error parsing File (Pistonprop) " + String(fname) +" line " + TOSTRING(linecounter) + ". trying to continue ...");
-						continue;
-					}
-				}
-				entry.driveable = 2; // 2 = AIRPLANE
-				entry.turbopropscount++;
-				continue;
-			}
-			else if (mode==24)
-			{
-				//parse fusedrag
-				continue;
-			}
-			else if (mode==25)
-			{
-				//parse engoption
-				float inertia;
-				char type;
-				int result = sscanf(line,"%f, %c", &inertia, &type);
-				if (result < 1 || result == EOF) {
-					LOG("Error parsing File (Engoption) " + String(fname) +" line " + TOSTRING(linecounter) + ". trying to continue ...");
-					continue;
-				}
-				entry.enginetype=type;
-				continue;
-			}
-			else if (mode==26)
-			{
-				//parse brakes
-				continue;
-			}
-			else if (mode==27)
-			{
-				//parse rotators
-				int axis1, axis2,keys,keyl;
-				int p1[4], p2[4];
-				float rate;
-				int result = sscanf(line,"%i, %i, %i, %i, %i, %i, %i, %i, %i, %i, %f, %i, %i", &axis1, &axis2, &p1[0], &p1[1], &p1[2], &p1[3], &p2[0], &p2[1], &p2[2], &p2[3], &rate, &keys, &keyl);
-				if (result < 13 || result == EOF) {
-					LOG("Error parsing File (Rotators) " + String(fname) +" line " + TOSTRING(linecounter) + ". trying to continue ...");
-					continue;
-				}
-				entry.rotatorscount++;
-				continue;
-			}
-			else if (mode==28)
-			{
-				//parse screwprops
-				int ref,back,up;
-				float power;
-				int result = sscanf(line,"%i, %i, %i, %f", &ref,&back,&up, &power);
-				if (result < 4 || result == EOF) {
-					LOG("Error parsing File (Screwprops) " + String(fname) +" line " + TOSTRING(linecounter) + ". trying to continue ...");
-					continue;
-				}
-				entry.driveable=3; // 3 = BOAT;
-				continue;
-			}
-			else if (mode==32)
-			{
-				// guisettings
-				char keyword[256];
-				char value[256];
-				int result = sscanf(line,"%s %s", keyword, value);
-				if (result < 2 || result == EOF) {
-					LOG("Error parsing File (guisettings) " + String(fname) +" line " + TOSTRING(linecounter) + ". trying to continue ...");
-					continue;
-				}
-				entry.customtach=true;
-				continue;
-			}
-			else if (mode==33)
-			{
-				//parse minimass
-				continue;
-			}
-			else if (mode==34)
-			{
-				// parse exhausts
-				int id1, id2;
-				float factor;
-				char material[50] = "";
-				int result = sscanf(line,"%i, %i, %f %s", &id1, &id2, &factor, material);
-				// catch some errors
-				if (result < 4 || result == EOF) {
-					LOG("Error parsing File " + String(fname) +" line " + TOSTRING(linecounter) + ". trying to continue ...");
-					continue;
-				}
-				entry.exhaustscount++;
-				continue;
-			}
-			else if (mode==37)
-			{
-				// command lists
-			}
-			else if (mode==38)
-			{
-				// parse particle
-				int id1, id2;
-				char psystem[250] = "";
-				int result = sscanf(line,"%i, %i, %s", &id1, &id2, psystem);
-				// catch some errors
-				if (result < 3 || result == EOF) {
-					LOG("Error parsing File " + String(fname) +" line " + TOSTRING(linecounter) + ". trying to continue ...");
-					continue;
-				}
-				entry.custom_particles++;
-				continue;
-			}
-			else if (mode==39) //turbojets
-			{
-				//parse turbojets
-				int front,back,ref, rev;
-				float len, fdiam, bdiam, drthrust, abthrust;
-				int result = sscanf(line,"%i, %i, %i, %i, %f, %f, %f, %f, %f", &front, &back, &ref, &rev, &drthrust, &abthrust, &fdiam, &bdiam, &len);
-				if (result < 9 || result == EOF) {
-					LOG("Error parsing File (Turbojet) " + String(fname) +" line " + TOSTRING(linecounter) + ". trying to continue ...");
-					continue;
-				}
-				entry.turbojetcount++;
-				continue;
-			}
-			else if (mode==40)
-			{
-				//parse rigidifiers
-				continue;
-			}
-			else if (mode==41)
-			{
-				//parse airbrakes
-				continue;
-			}
-			else if (mode==43)
-			{
-				//parse flexbodies
-				int ref, nx, ny;
-				float ox, oy, oz;
-				float rx, ry, rz;
-				char meshname[256];
-				int result = sscanf(line,"%i, %i, %i, %f, %f, %f, %f, %f, %f, %s", &ref, &nx, &ny, &ox, &oy, &oz, &rx, &ry, &rz, meshname);
-				if (result < 10 || result == EOF) {
-					LOG("Error parsing File (Flexbodies) " + String(fname) +" line " + TOSTRING(linecounter) + ". trying to continue ...");
-					continue;
-				}
-				entry.flexbodiescount++;
-				continue;
-			}
-			else if (mode==44)
-			{
-				//parse hookgroups
-				continue;
-			}
-			else if (mode==45)
-			{
-				//parse gripnodes
-				continue;
-			}
-			else if (mode==46)
-			{
-				// parse materialflarebindings
-				int flareid;
-				char material[256]="";
-				memset(material, 0, 255);
-				int result = sscanf(line,"%d, %s", &flareid, material);
-				if (result < 2 || result == EOF)
-				{
-					LOG("Error parsing File (materialbindings) " + String(fname) +" line " + TOSTRING(linecounter) + ". trying to continue ...");
-					continue;
-				}
-				entry.materialflarebindingscount++;
-				continue;
-			}
-			else if (mode==47)
-			{
-				//parse soundsources
-				int ref;
-				char script[256];
-				int result = sscanf(line,"%i, %s", &ref, script);
-				if (result < 2 || result == EOF) {
-					LOG("Error parsing File (soundsource) " + String(fname) +" line " + TOSTRING(linecounter) + ". trying to continue ...");
-					continue;
-				}
-				entry.soundsourcescount++;
-				continue;
-			}
-			else if (mode==48)
-			{
-				// parse envmap
-				// we do nothing of this for the moment
-			}
-			else if (mode==49)
-			{
-				// parse managedmaterials
-				char material[256];
-				material[0]=0;
-				char type[256];
-				type[0]=0;
-				int result = sscanf(line,"%s %s", material, type);
-				if (result < 2 || result == EOF)
-				{
-					LOG("Error parsing File (managedmaterials) " + String(fname) +" line " + TOSTRING(linecounter) + ". trying to continue ...");
-					continue;
-				}
-				entry.managedmaterialscount++;
-				continue;
-			}
-			else if (mode==50)
-			{
-				// parse sectionconfig
-				int version;
-				char sectionName[256];
-				if(strnlen(line, 16) < 13)
-					continue;
-				int result = sscanf(line+13,"%i %s", &version, sectionName);
-				if (result < 2 || result == EOF) {
-					LOG("Error parsing File (soundsource) " + String(fname) +" line " + TOSTRING(linecounter) + ". trying to continue ...");
-					continue;
-				}
-				entry.sectionconfigs.push_back(sectionName);
-				mode = savedmode;
-			}
-			else if (mode==51)
-			{
-				// not used here, we wont respect sections for a quick parsing ...
-			}
-		};
-#endif //0
 }
 
 int CacheSystem::addUniqueString(std::set<Ogre::String> &list, Ogre::String str)
@@ -2444,17 +1737,17 @@ void CacheSystem::fillTerrainDetailInfo(Cache_Entry &entry, Ogre::DataStreamPtr 
 				continue;
 			}
 			//replace '_' with ' '
-			/*
-			authorinfo_t *author = new authorinfo_t();
-			char *tmp = authorname;
-			while (*tmp!=0) {if (*tmp=='_') *tmp=' ';tmp++;};
+			authorinfo_t author;
+			//char *tmp = authorname;
+			//while (*tmp!=0) {if (*tmp=='_') *tmp=' ';tmp++;};
+			
 			//fill the struct now
-			author->id = authorid;
-			strncpy(author->type, authortype, 255);
-			strncpy(author->name, authorname, 255);
-			strncpy(author->email, authoremail, 255);
+			author.id = authorid;
+			author.type = String(authortype);
+			author.name = String(authorname);
+			author.email = String(authoremail);
 			entry.authors.push_back(author);
-			*/
+
 		} else if (!strncmp(categorytag, line, strnlen(categorytag, 254)))
 		{
 			char uidtmp[256] = "";

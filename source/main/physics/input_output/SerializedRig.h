@@ -53,6 +53,11 @@ public:
 	SerializedRig();
 	~SerializedRig();
 
+
+	// virtual truck loading - just load the data but do not add anything to the scene or load resources
+	int loadTruckVirtual(Ogre::String fname, bool ignoreProblems=false);
+
+	// real truck loading
 	int loadTruck(Ogre::String filename, Ogre::SceneManager *manager, Ogre::SceneNode *parent, Ogre::Vector3 pos, Ogre::Quaternion rot, collision_box_t *spawnbox);	
 
 	int parse_args(parsecontext_t &context, Ogre::StringVector &v, int minArgNum);
@@ -61,6 +66,9 @@ public:
 	void parser_warning(parsecontext_t *context, Ogre::String text);
 
 protected:
+	bool virtuallyLoaded;
+	bool ignoreProblems;
+
 	std::vector <parsecontext_t> warnings;
 	std::vector <parsecontext_t> modehistory;
 

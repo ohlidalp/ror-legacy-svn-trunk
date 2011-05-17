@@ -22,6 +22,8 @@ along with Rigs of Rods.  If not, see <http://www.gnu.org/licenses/>.
 #include "SelectorWindow.h"
 #include "LoadingWindow.h"
 
+#include "gui_manager.h"
+
 #include "Settings.h"
 #include "language.h"
 #include "CacheSystem.h"
@@ -29,6 +31,7 @@ along with Rigs of Rods.  If not, see <http://www.gnu.org/licenses/>.
 #include "utils.h"
 #include "skinmanager.h"
 #include "BeamData.h"
+#include "InputEngine.h"
 
 SelectorWindow::SelectorWindow() : mSelectedTruck(0)
 {
@@ -45,6 +48,10 @@ SelectorWindow::SelectorWindow() : mSelectedTruck(0)
 	mMainWidget->setRealSize(0.8, 0.8);
 
 	mMainWidget->eventKeyButtonPressed      += MyGUI::newDelegate(this, &SelectorWindow::eventKeyButtonPressed_Main);
+
+	MyGUI::WindowPtr win = dynamic_cast<MyGUI::WindowPtr>(mMainWidget);
+	win->eventWindowChangeCoord             += MyGUI::newDelegate(this, &SelectorWindow::notifyWindowChangeCoord);
+
 	mTypeComboBox->eventComboChangePosition += MyGUI::newDelegate(this, &SelectorWindow::eventComboChangePositionTypeComboBox);
 	mTypeComboBox->eventKeyButtonPressed    += MyGUI::newDelegate(this, &SelectorWindow::eventKeyButtonPressed_Main);
 	mModelList->eventListChangePosition     += MyGUI::newDelegate(this, &SelectorWindow::eventListChangePositionModelList);
@@ -65,6 +72,11 @@ SelectorWindow::SelectorWindow() : mSelectedTruck(0)
 
 SelectorWindow::~SelectorWindow()
 {
+}
+
+void SelectorWindow::notifyWindowChangeCoord(MyGUI::Window* _sender)
+{
+	resizePreviewImage();
 }
 
 void SelectorWindow::eventKeyButtonPressed_Main(MyGUI::WidgetPtr _sender, MyGUI::KeyCode _key, MyGUI::Char _char)
@@ -526,11 +538,11 @@ void SelectorWindow::updateControls(Cache_Entry *entry)
 	std::vector<String> authornames;
 	if(entry->authors.size() > 0)
 	{
-		std::vector<authorinfo_t *>::iterator it;
+		std::vector<authorinfo_t>::iterator it;
 		for(it=entry->authors.begin(); it!=entry->authors.end(); it++)
-			if(!(*it)->type.empty() && !(*it)->name.empty())
+			if(!it->type.empty() && !it->name.empty())
 			{
-				String name = (*it)->name;
+				String name = it->name;
 				Ogre::StringUtil::trim(name);
 
 				// check if already used
@@ -563,13 +575,65 @@ void SelectorWindow::updateControls(Cache_Entry *entry)
 
 	String descriptiontxt = entry->description + "\n";
 	descriptiontxt += _L("Authors: ") + authorstxt + "\n";
+	
+	if(entry->version > 0) descriptiontxt += _L("Version: ") + TOSTRING(entry->version) + "\n";
 	if(entry->wheelcount > 0) descriptiontxt += _L("Wheels: ") + TOSTRING(entry->wheelcount) + "x" + TOSTRING(entry->propwheelcount) + "\n";
 	if(entry->truckmass > 0) descriptiontxt += _L("Mass: ") + TOSTRING((int)(entry->truckmass/1000.0f)) + " " + _L("tons") + "\n";
+	if(entry->loadmass > 0) descriptiontxt += _L("Load Mass: ") + TOSTRING((int)(entry->loadmass/1000.0f)) + " " + _L("tons") + "\n";
 	if(entry->nodecount > 0) descriptiontxt += _L("Nodes: ") + TOSTRING(entry->nodecount) + "\n";
-	if(entry->nodecount > 0) descriptiontxt += _L("Torque: ") + TOSTRING(entry->torque) + "\n";
+	if(entry->beamcount > 0) descriptiontxt += _L("Beams: ") + TOSTRING(entry->beamcount) + "\n";
+	if(entry->shockcount > 0) descriptiontxt += _L("Shocks: ") + TOSTRING(entry->shockcount) + "\n";
+	if(entry->hydroscount > 0) descriptiontxt += _L("Hydros: ") + TOSTRING(entry->hydroscount) + "\n";
+	if(entry->soundsourcescount > 0) descriptiontxt += _L("SoundSources: ") + TOSTRING(entry->soundsourcescount) + "\n";
+	if(entry->commandscount > 0) descriptiontxt += _L("Commands: ") + TOSTRING(entry->commandscount) + "\n";
+	if(entry->rotatorscount > 0) descriptiontxt += _L("Rotators: ") + TOSTRING(entry->rotatorscount) + "\n";
+	if(entry->exhaustscount > 0) descriptiontxt += _L("Exhausts: ") + TOSTRING(entry->exhaustscount) + "\n";
+	if(entry->flarescount > 0) descriptiontxt += _L("Flares: ") + TOSTRING(entry->flarescount) + "\n";
+	if(entry->torque > 0) descriptiontxt += _L("Torque: ") + TOSTRING(entry->torque) + "\n";
+	if(entry->flexbodiescount > 0) descriptiontxt += _L("Flexbodies: ") + TOSTRING(entry->flexbodiescount) + "\n";
+	if(entry->propscount > 0) descriptiontxt += _L("Props: ") + TOSTRING(entry->propscount) + "\n";
+	if(entry->wingscount > 0) descriptiontxt += _L("Wings: ") + TOSTRING(entry->wingscount) + "\n";
+	if(entry->hasSubmeshs) descriptiontxt += _L("Using Submeshs: ") + TOSTRING(entry->hasSubmeshs) + "\n";
+	if(entry->numgears > 0) descriptiontxt += _L("Transmission Gear Count: ") + TOSTRING(entry->numgears) + "\n";
+	if(entry->minrpm > 0) descriptiontxt += _L("Engine RPM: ") + TOSTRING(entry->minrpm) + " - " + TOSTRING(entry->maxrpm) + "\n";
+	if(!entry->uniqueid.empty() && entry->uniqueid != "no-uid") descriptiontxt += _L("Unique ID: ") + entry->uniqueid + "\n";
+	if(!entry->guid.empty() && entry->guid != "no-guid") descriptiontxt += _L("GUID: ") + entry->guid + "\n";
+	if(entry->usagecounter > 0) descriptiontxt += _L("Times used: ") + TOSTRING(entry->usagecounter) + "\n";
+
+	if(entry->addtimestamp > 0)
+	{
+		char tmp[255] = "";
+		time_t epch = entry->addtimestamp;
+		sprintf(tmp, "%s", asctime(gmtime(&epch)));
+		if(entry->usagecounter > 0) descriptiontxt += _L("Date and Time installed: ") + String(tmp) + "\n";
+	}
 
 	String driveableStr[5] = {_L("Non-Driveable"), _L("Truck"), _L("Airplane"), _L("Boat"), _L("Machine")};
 	if(entry->nodecount > 0) descriptiontxt += _L("Vehicle Type: ") + driveableStr[entry->driveable] + "\n";
+
+	descriptiontxt += "\n";
+
+	if(entry->forwardcommands) descriptiontxt += _L("[Forwards Commands]") + "\n";
+	if(entry->importcommands) descriptiontxt += _L("[Imports Commands]") + "\n";
+	if(entry->rollon) descriptiontxt += _L("[is Rollon]") + "\n";
+	if(entry->rescuer) descriptiontxt += _L("[is Rescuer]") + "\n";
+	if(entry->custom_particles) descriptiontxt += _L("[uses custom particles]") + "\n";
+
+	if(entry->fixescount > 0) descriptiontxt += _L("[has fixes]") + "\n";
+	
+	// t is the default, do not display it
+	//if(entry->enginetype == 't') descriptiontxt += _L("[TRUCK ENGINE]") + "\n";
+	if(entry->enginetype == 'c') descriptiontxt += _L("[CAR ENGINE]") + "\n";
+
+	if(entry->type == "Zip") descriptiontxt += _L("[Zip Archive]") + "\n";
+	if(entry->type == "FileSystem") descriptiontxt += _L("[unpacked in Directory]") + "\n";
+
+	descriptiontxt += "\n";
+
+	if(!entry->dirname.empty()) descriptiontxt += _L("Source: ") + entry->dirname + "\n";
+	if(!entry->hash.empty()) descriptiontxt += _L("Hash: ") + entry->hash + "\n";
+	if(!entry->hash.empty()) descriptiontxt += _L("Mod Number: ") + TOSTRING(entry->number) + "\n";
+	
 
 	StringUtil::trim(descriptiontxt);
 
@@ -603,9 +667,54 @@ void SelectorWindow::setPreviewImage(Ogre::String texture)
 		mPreviewStaticImage->setVisible(false);
 		return;
 	}
+	mPreviewStaticImage->setVisible(true);
 
 	mPreviewStaticImage->setImageTexture(texture);
-	mPreviewStaticImage->setVisible(true);
+	lastImageTextureName = texture;
+
+	resizePreviewImage();
+}
+
+void SelectorWindow::resizePreviewImage()
+{
+	// now get the texture size
+	MyGUI::IntSize imgSize(0,0);
+	TexturePtr t = Ogre::TextureManager::getSingleton().load(lastImageTextureName,Ogre::ResourceGroupManager::AUTODETECT_RESOURCE_GROUP_NAME);
+	if(!t.isNull())
+	{
+		imgSize.width  = t->getWidth() * 10;
+		imgSize.height = t->getHeight() * 10;
+	}
+
+	if(imgSize.width != 0)
+	{
+		MyGUI::IntSize maxSize = mPreviewStaticImagePanel->getSize();
+
+		float imgRatio = imgSize.width / (float)imgSize.height;
+		float maxRatio = maxSize.width / (float)maxSize.height;
+
+		MyGUI::IntSize newSize;
+		MyGUI::IntPoint newPosition;
+
+		// now scale with aspect ratio
+		if (imgRatio > maxRatio)
+		{
+			newSize.width  = maxSize.width;
+			newSize.height = maxSize.width / imgRatio;
+			newPosition.left = 0;
+			newPosition.top  = maxSize.height - newSize.height;
+		}
+		else
+		{
+			newSize.width  = maxSize.height * imgRatio;
+			newSize.height = maxSize.height;
+			newPosition.left = maxSize.width - newSize.width;
+			newPosition.top  = 0;
+		}
+
+		mPreviewStaticImage->setSize(newSize);
+		mPreviewStaticImage->setPosition(newPosition);
+	}
 }
 
 bool SelectorWindow::isFinishedSelecting()
@@ -616,6 +725,8 @@ bool SelectorWindow::isFinishedSelecting()
 void SelectorWindow::show(LoaderType type)
 {
 	mSelectionDone=false;
+	// reset all keys
+	INPUTENGINE.resetKeys();
 	LoadingWindow::get()->hide();
 	// show mouse cursor
 	//MyGUI::PointerManager::getInstance().setVisible(true);
@@ -638,6 +749,7 @@ void SelectorWindow::show(LoaderType type)
 
 void SelectorWindow::hide()
 {
+	GUIManager::getSingleton().unfocus();
 	mMainWidget->setVisible(false);
 	mMainWidget->setEnabledSilent(false);
 }

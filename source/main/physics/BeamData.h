@@ -958,6 +958,13 @@ struct rig
 	Axle *axles[MAX_WHEELS/2];
 	int free_axle;
 
+	int free_fixes;
+	int propwheelcount;
+	int free_commands;
+	int fileformatversion;
+
+	std::vector<Ogre::String> sectionconfigs;
+
 	Ogre::Vector3 origin;
 	Ogre::SceneNode *beamsRoot;
 	//! Stores all the SlideNodes available on this truck

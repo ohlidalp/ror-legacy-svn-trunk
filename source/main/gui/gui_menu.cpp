@@ -147,7 +147,10 @@ void GUI_MainMenu::onMenuBtn(MyGUI::MenuCtrlPtr _sender, MyGUI::MenuItemPtr _ite
 	} else if(miname == "reload Truck from File")
 	{
 		if(BeamFactory::getSingleton().getCurrentTruckNumber() != -1)
+		{
 			mefl->reloadCurrentTruck();
+			GUIManager::getSingleton().unfocus();
+		}
 
 	} else if(miname == "switch Truck")
 	{
@@ -171,6 +174,7 @@ void GUI_MainMenu::onMenuBtn(MyGUI::MenuCtrlPtr _sender, MyGUI::MenuItemPtr _ite
 void GUI_MainMenu::setVisible(bool value)
 {
 	mainmenu->setVisible(value);
+	if(!value) GUIManager::getSingleton().unfocus();
 	//MyGUI::PointerManager::getInstance().setVisible(value);
 }
 

@@ -22,6 +22,7 @@ along with Rigs of Rods.  If not, see <http://www.gnu.org/licenses/>.
 #ifdef USE_MYGUI 
 
 #include "gui_friction.h"
+#include "gui_manager.h"
 #include "Settings.h"
 
 #include "collisions.h"
@@ -406,6 +407,9 @@ void GUI_Friction::setVisible(bool value)
 		selected_gm = gm;
 		if(gm)
 			updateControls(gm, false);
+	} else
+	{
+		GUIManager::getSingleton().unfocus();
 	}
 	win->setVisibleSmooth(value);
 	//win->setVisible(value);

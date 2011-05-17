@@ -29,6 +29,8 @@ along with Rigs of Rods.  If not, see <http://www.gnu.org/licenses/>.
 #include <map>
 #include "sha1.h"
 
+#include "BeamData.h"
+
 
 #define CACHE_FILE "mods.cache"
 #define CACHE_FILE_FORMAT "6"
@@ -73,7 +75,7 @@ public:
 	bool changedornew;					// is it added or changed during this runtime?
 	bool deleted;						// is this mod deleted?
 	int usagecounter;					// how much it was used already
-	std::vector<authorinfo *> authors;	// authors
+	std::vector<authorinfo_t> authors;	// authors
 	Ogre::String filecachename;			// preview image filename
 
 	// following all TRUCK detail information:
