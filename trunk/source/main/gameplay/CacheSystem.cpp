@@ -1825,7 +1825,8 @@ void CacheSystem::readCategoryTitles()
 		Category_Entry ce;
 		ce.title = Ogre::String(title);
 		ce.number = number;
-		categories[number] = ce;
+		if(!ce.title.empty())
+			categories[number] = ce;
 	}
 	fclose(fd);
 }

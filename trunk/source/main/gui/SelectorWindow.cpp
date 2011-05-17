@@ -605,7 +605,7 @@ void SelectorWindow::updateControls(Cache_Entry *entry)
 		char tmp[255] = "";
 		time_t epch = entry->addtimestamp;
 		sprintf(tmp, "%s", asctime(gmtime(&epch)));
-		if(entry->usagecounter > 0) descriptiontxt += _L("Date and Time installed: ") + String(tmp) + "\n";
+		descriptiontxt += _L("Date and Time installed: ") + String(tmp) + "\n";
 	}
 
 	String driveableStr[5] = {_L("Non-Driveable"), _L("Truck"), _L("Airplane"), _L("Boat"), _L("Machine")};
