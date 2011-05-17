@@ -96,48 +96,51 @@ bool SceneMouse::mouseMoved(const OIS::MouseEvent& _arg)
 		
 		Ray mouseRay = getMouseRay();
 
-		// get current truck
-		Beam *curr_truck = BeamFactory::getSingleton().getCurrentTruck();
-		// check if its valid and not sleeping
-		if(curr_truck && curr_truck->state == ACTIVATED)
+		// walk all trucks
+		Beam **trucks = BeamFactory::getSingleton().getTrucks();
+		int trucksnum = BeamFactory::getSingleton().getTruckCount();
+		grab_truck = NULL;
+		for(int i = 0; i < trucksnum; i++)
 		{
-
+			if(!trucks[i]) continue;
+			if(trucks[i] && trucks[i]->state == ACTIVATED || trucks[i]->state == DESACTIVATED)
+			{
+				minnode = -1;
+				// walk all nodes
+				for (int j = 0; j < trucks[i]->free_node; j++)
+				{
+					// check if our ray intersects with the node
+					std::pair<bool, Real> pair = mouseRay.intersects(Sphere(trucks[i]->nodes[j].smoothpos, 0.1f));
+					if (pair.first)
+					{
+						// we hit it, check if its the nearest node
+						if (pair.second < mindist)
+						{
+							mindist    = pair.second;
+							minnode    = j;
+							grab_truck = trucks[i];
+							break;
+						}
+					}
+				}
+			}
 			
-			minnode = -1;
-			// walk all nodes
-			for (int i = 0; i < curr_truck->free_node; i++)
+			if(grab_truck) break;
+		}
+
+		// check if we hit a node
+		if(grab_truck && minnode != -1)
+		{
+			mouseGrabState = 1;
+			pickLineNode->setVisible(true);
+
+			for(std::vector <hook_t>::iterator it = grab_truck->hooks.begin(); it!=grab_truck->hooks.end(); it++)
 			{
-				// check if our ray intersects with the node
-				std::pair<bool, Real> pair = mouseRay.intersects(Sphere(curr_truck->nodes[i].smoothpos, 0.1f));
-				if (pair.first)
+				if (it->hookNode->id == minnode)
 				{
-					// we hit it, check if its the nearest node
-					if (pair.second < mindist)
-					{
-						mindist = pair.second;
-						minnode = i;
-					}
+					grab_truck->hookToggle(it->group, MOUSE_HOOK_TOGGLE, minnode);
 				}
 			}
-
-			// check if we hit a node
-			if(minnode != -1)
-			{
-				mouseGrabState = 1;
-				grab_truck = curr_truck;
-				pickLineNode->setVisible(true);
-
-				for(std::vector <hook_t>::iterator it = curr_truck->hooks.begin(); it!=curr_truck->hooks.end(); it++)
-				{
-					if (it->hookNode->id == minnode)
-					{
-						curr_truck->hookToggle(it->group, MOUSE_HOOK_TOGGLE, minnode);
-					}
-				}
-			}
-
-			// not fixed
-			return false;
 		}
 	} else if(ms.buttonDown(OIS::MB_Left) && mouseGrabState == 1)
 	{
