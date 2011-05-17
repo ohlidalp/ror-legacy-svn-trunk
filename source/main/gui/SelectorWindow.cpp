@@ -700,25 +700,26 @@ void SelectorWindow::updateControls(Cache_Entry *entry)
 
 	descriptiontxt += "\n";
 
-	if(entry->forwardcommands) descriptiontxt += _L("[Forwards Commands]") + "\n";
-	if(entry->importcommands) descriptiontxt += _L("[Imports Commands]") + "\n";
-	if(entry->rollon) descriptiontxt += _L("[is Rollon]") + "\n";
-	if(entry->rescuer) descriptiontxt += _L("[is Rescuer]") + "\n";
+	if(entry->forwardcommands) descriptiontxt += _L("[forwards commands]") + "\n";
+	if(entry->importcommands) descriptiontxt += _L("[imports commands]") + "\n";
+	if(entry->rollon) descriptiontxt += _L("[is rollon]") + "\n";
+	if(entry->rescuer) descriptiontxt += _L("[is rescuer]") + "\n";
 	if(entry->custom_particles) descriptiontxt += _L("[uses custom particles]") + "\n";
 
 	if(entry->fixescount > 0) descriptiontxt += _L("[has fixes]") + "\n";
 	
 	// t is the default, do not display it
 	//if(entry->enginetype == 't') descriptiontxt += _L("[TRUCK ENGINE]") + "\n";
-	if(entry->enginetype == 'c') descriptiontxt += _L("[CAR ENGINE]") + "\n";
+	if(entry->enginetype == 'c') descriptiontxt += _L("[car engine]") + "\n";
 
-	if(entry->type == "Zip") descriptiontxt += _L("[Zip Archive]") + "\n";
-	if(entry->type == "FileSystem") descriptiontxt += _L("[unpacked in Directory]") + "\n";
+	if(entry->type == "Zip") descriptiontxt += _L("[zip archive]") + "\n";
+	if(entry->type == "FileSystem") descriptiontxt += _L("[unpacked in directory]") + "\n";
 
 	descriptiontxt += "\n";
 
 	if(!entry->dirname.empty()) descriptiontxt += _L("Source: ") + entry->dirname + "\n";
-	if(!entry->hash.empty()) descriptiontxt += _L("Hash: ") + entry->hash + "\n";
+	if(!entry->fname.empty()) descriptiontxt += _L("Filename: ") + entry->fname + "\n";
+	if(!entry->hash.empty() && entry->hash != "none") descriptiontxt += _L("Hash: ") + entry->hash + "\n";
 	if(!entry->hash.empty()) descriptiontxt += _L("Mod Number: ") + TOSTRING(entry->number) + "\n";
 	
 
