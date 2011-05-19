@@ -552,7 +552,7 @@ Beam::Beam(int tnum, SceneManager *manager, SceneNode *parent, RenderWindow* win
 		replay = new Replay(this, replaylen);
 
 		rpl = SSETTING("Replay Steps per second");
-		int steps = 0;
+		int steps = 240;
 		if(!rpl.empty())
 			steps = StringConverter::parseInt(rpl);
 		if(steps <= 0)
