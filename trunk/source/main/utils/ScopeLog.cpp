@@ -164,7 +164,7 @@ void ScopeLog::messageLogged(const String &message, LogMessageLevel lml, bool ma
 	unsigned long time = Ogre::Root::getSingleton().getTimer()->getMilliseconds();
 	fprintf(f, "<tr class='%s'>"\
 		"<td class='logtd'><a name='%d' href='#%d'>%d</a></td>" \
-		"<td class='logtd'>%d</td>" \
+		"<td class='logtd'>%ld</td>" \
 		"<td class='logtd'>%s</td>" \
 		"<td class='logtd'>%s</td>" \
 		"</tr>\n", type, counter, counter, counter, time, type, message.c_str());
