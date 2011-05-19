@@ -31,6 +31,10 @@ along with Rigs of Rods.  If not, see <http://www.gnu.org/licenses/>.
 
 #include "CacheSystem.h"
 
+#include "OgreShaderParticleRenderer.h"
+#include "OgreBoxEmitterFactory.h"
+
+
 #include "utils.h"
 
 using namespace Ogre;
@@ -109,6 +113,14 @@ bool ContentManager::init(void)
 	loadMainResource("textures");
 	loadMainResource("flags");
 	loadMainResource("icons");
+
+
+	// register particle classes
+	ParticleSystemRendererFactory *mParticleSystemRendererFact = OGRE_NEW ShaderParticleRendererFactory();
+	ParticleEmitterFactory *mParticleEmitterFact = OGRE_NEW BoxEmitterFactory();
+	ParticleSystemManager::getSingleton().addRendererFactory(mParticleSystemRendererFact);
+	ParticleSystemManager::getSingleton().addEmitterFactory(mParticleEmitterFact);
+
 
 	// optional ones
 

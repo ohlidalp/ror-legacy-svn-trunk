@@ -56,6 +56,7 @@ private:
 	void eventKeyButtonPressed_Main(MyGUI::WidgetPtr _sender, MyGUI::KeyCode _key, MyGUI::Char _char);
 	void eventComboChangePositionTypeComboBox(MyGUI::ComboBoxPtr _sender, size_t _index);
 	void eventListChangePositionModelList(MyGUI::ListPtr _sender, size_t _index);
+	void eventListChangePositionModelListAccept(MyGUI::ListPtr _sender, size_t _index);
 	void eventComboAcceptConfigComboBox(MyGUI::ComboBoxPtr _sender, size_t _index);
 	void eventMouseButtonClickOkButton(MyGUI::WidgetPtr _sender);
 	void eventMouseButtonClickCancelButton(MyGUI::WidgetPtr _sender);

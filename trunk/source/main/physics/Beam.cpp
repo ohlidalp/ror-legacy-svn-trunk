@@ -308,6 +308,7 @@ Beam::Beam(int tnum, SceneManager *manager, SceneNode *parent, RenderWindow* win
 	avichatter_timer=11.0f; // some pseudo random number, doesnt matter ;)
 	tsteps=100;
 	driverSeat=0;
+	submesh_ground_model = icollisions->defaultgm;
 	networkUsername = String();
 	networkAuthlevel = 0;
 	freePositioned = freeposition;
@@ -3222,7 +3223,7 @@ void Beam::truckTruckCollisions(Real dt)
 					float nso;
 
 					//Calculate the collision forces
-					collisions->primitiveCollision(hitnode, forcevec, vecrelVel, plnormal, ((float) dt), collisions->defaultgm, &nso, penetration, fl);
+					collisions->primitiveCollision(hitnode, forcevec, vecrelVel, plnormal, ((float) dt), trucks[t]->submesh_ground_model, &nso, penetration, fl);
 
 					hitnode->Forces+=forcevec;
 
@@ -5265,6 +5266,15 @@ int Beam::loadTruck2(Ogre::String filename, Ogre::SceneManager *manager, Ogre::S
 
 	//update contacter nodes
 	updateContacterNodes();
+
+	// fix up submesh collision model
+	if(!subMeshGroundModelName.empty())
+	{
+		submesh_ground_model = collisions->getGroundModelByString(subMeshGroundModelName);
+		if(!submesh_ground_model) collisions->defaultgm;
+	}
+	
+
 
 	// print some truck memory stats
 	int mem = 0, memr = 0, tmpmem = 0;
