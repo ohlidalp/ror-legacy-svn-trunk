@@ -20,7 +20,7 @@ along with Rigs of Rods.  If not, see <http://www.gnu.org/licenses/>.
 #ifdef USE_MYGUI 
 
 #include "LobbyGUI.h"
-#include "ScriptEngine.h"
+#include "Scripting.h"
 #include "InputEngine.h"
 #include "OgreLogManager.h"
 
