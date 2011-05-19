@@ -1650,14 +1650,15 @@ void MyDialog::updateRendersystems(Ogre::RenderSystem *rs)
 			{
 				int res_x=-1, res_y=-1, res_d=-1;
 				int res = sscanf(valIt->c_str(), "%d x %d @ %d-bit colour", &res_x, &res_y, &res_d);
-				if(res != 3)
-				  continue;
-				
-				// discard low resolutions and 16 bit modes
-				if(res_d != -1 && res_d < 32)
+
+				if(res == 3)
 				{
-					wxLogStatus(wxT("discarding resolution as it is below 32 bits: ") + conv(valIt->c_str()));
-					continue;
+					// discard low resolutions and 16 bit modes
+					if(res_d != -1 && res_d < 32)
+					{
+						wxLogStatus(wxT("discarding resolution as it is below 32 bits: ") + conv(valIt->c_str()));
+						continue;
+					}
 				}
 				if(res_x < 800)
 				{
