@@ -44,6 +44,8 @@ ShadowManager& ShadowManager::getSingleton(void)
 ShadowManager::ShadowManager(Ogre::SceneManager *scene, Ogre::RenderWindow *window, Ogre::Camera *camera) :
 	mSceneMgr(scene), mWindow(window), mCamera(camera), mPSSMSetup()
 {
+	mDepthShadows = true;
+
 }
 
 ShadowManager::~ShadowManager()
@@ -55,7 +57,7 @@ void ShadowManager::loadConfiguration()
 	Ogre::String s = SSETTING("Shadow technique");
 	if (s == "Stencil shadows")            changeShadowTechnique(Ogre::SHADOWTYPE_STENCIL_MODULATIVE);
 	if (s == "Texture shadows")            changeShadowTechnique(Ogre::SHADOWTYPE_TEXTURE_MODULATIVE);
-	if (s == "Parallel-split Shadow Maps") changeShadowTechnique(Ogre::SHADOWTYPE_TEXTURE_ADDITIVE_INTEGRATED);
+	if (s == "Parallel-split Shadow Maps") changeShadowTechnique(Ogre::SHADOWTYPE_TEXTURE_MODULATIVE_INTEGRATED);
 }
 
 int ShadowManager::changeShadowTechnique(Ogre::ShadowTechnique tech)
@@ -82,23 +84,18 @@ int ShadowManager::changeShadowTechnique(Ogre::ShadowTechnique tech)
 	} else if(tech == Ogre::SHADOWTYPE_TEXTURE_MODULATIVE)
 	{
 		mSceneMgr->setShadowTextureSettings(2048,2);
-	} else if(tech == Ogre::SHADOWTYPE_TEXTURE_ADDITIVE_INTEGRATED)
+	} else if(tech == Ogre::SHADOWTYPE_TEXTURE_MODULATIVE_INTEGRATED)
 	{
 #if OGRE_VERSION>0x010602
 
-		Ogre::TerrainMaterialGeneratorA::SM2Profile *matProfile  = 0;
-		if(Ogre::TerrainGlobalOptions::getSingletonPtr())
-		{
-			matProfile = static_cast<Ogre::TerrainMaterialGeneratorA::SM2Profile*>(Ogre::TerrainGlobalOptions::getSingleton().getDefaultMaterialGenerator()->getActiveProfile());
-			matProfile->setReceiveDynamicShadowsEnabled(true);
-			matProfile->setReceiveDynamicShadowsLowLod(false);
-		}
 
 
 		// General scene setup
 
 		// 3 textures per directional light (PSSM)
-		mSceneMgr->setShadowTextureCountPerLightType(Ogre::Light::LT_DIRECTIONAL, 3);
+		int num = 3;
+
+		mSceneMgr->setShadowTextureCountPerLightType(Ogre::Light::LT_DIRECTIONAL, num);
 
 		if (mPSSMSetup.isNull())
 		{
@@ -106,62 +103,29 @@ int ShadowManager::changeShadowTechnique(Ogre::ShadowTechnique tech)
 			Ogre::PSSMShadowCameraSetup* pssmSetup = new Ogre::PSSMShadowCameraSetup();
 			pssmSetup->setSplitPadding(mCamera->getNearClipDistance());
 			pssmSetup->calculateSplitPoints(3, mCamera->getNearClipDistance(), mSceneMgr->getShadowFarDistance());
-			pssmSetup->setOptimalAdjustFactor(0, 2);
-			pssmSetup->setOptimalAdjustFactor(1, 1);
-			pssmSetup->setOptimalAdjustFactor(2, 0.5);
-
+			for (int i=0; i < num; ++i)
+			{	int size = i==0 ? 2048 : 1024;
+				const Ogre::Real cAdjfA[5] = {2, 1, 0.5, 0.25, 0.125};
+				pssmSetup->setOptimalAdjustFactor(i, cAdjfA[std::min(i, 4)]);
+			}
 			mPSSMSetup.bind(pssmSetup);
 
 		}
 		mSceneMgr->setShadowCameraSetup(mPSSMSetup);
 		
-		bool depthShadows = true;
-		if (depthShadows)
-		{
-			mSceneMgr->setShadowTextureCount(3);
-			mSceneMgr->setShadowTextureConfig(0, 2048, 2048, Ogre::PF_FLOAT32_R);
-			mSceneMgr->setShadowTextureConfig(1, 1024, 1024, Ogre::PF_FLOAT32_R);
-			mSceneMgr->setShadowTextureConfig(2, 1024, 1024, Ogre::PF_FLOAT32_R);
-			mSceneMgr->setShadowTextureSelfShadow(true);
-			mSceneMgr->setShadowCasterRenderBackFaces(true);
-			mSceneMgr->setShadowTextureCasterMaterial("PSSM/shadow_caster");
-
-			/*
-			MaterialPtr houseMat = buildDepthShadowMaterial("fw12b.jpg");
-			for (EntityList::iterator i = mHouseList.begin(); i != mHouseList.end(); ++i)
-			{
-				(*i)->setMaterial(houseMat);
-			}
-			*/
-		}
-		else
-		{
-			mSceneMgr->setShadowTextureCount(3);
-			mSceneMgr->setShadowTextureConfig(0, 2048, 2048, Ogre::PF_X8B8G8R8);
-			mSceneMgr->setShadowTextureConfig(1, 1024, 1024, Ogre::PF_X8B8G8R8);
-			mSceneMgr->setShadowTextureConfig(2, 1024, 1024, Ogre::PF_X8B8G8R8);
-			mSceneMgr->setShadowTextureSelfShadow(false);
-			mSceneMgr->setShadowCasterRenderBackFaces(false);
-			mSceneMgr->setShadowTextureCasterMaterial(Ogre::StringUtil::BLANK);
+		
+		mSceneMgr->setShadowTextureCount(num);
+		for (int i=0; i < num; ++i)
+		{	int size = i==0 ? 2048 : 1024;
+			mSceneMgr->setShadowTextureConfig(i, size, size, mDepthShadows ? Ogre::PF_FLOAT32_R : Ogre::PF_X8B8G8R8);
 		}
 
-		if(matProfile)
-		{
-			matProfile->setReceiveDynamicShadowsDepth(depthShadows);
-			matProfile->setReceiveDynamicShadowsPSSM(static_cast<Ogre::PSSMShadowCameraSetup*>(mPSSMSetup.get()));
-		}
+		mSceneMgr->setShadowTextureSelfShadow(mDepthShadows);
+		mSceneMgr->setShadowCasterRenderBackFaces(false);
 
-		/*
-		Ogre::ResourceManager::ResourceMapIterator RI = Ogre::MaterialManager::getSingleton().getResourceIterator();
-		while (RI.hasMoreElements())
-		{
-			Ogre::MaterialPtr mat = RI.getNext();
-			if(mat.isNull()) continue;
-			if(!mat->getNumTechniques()) continue;
-			if (mat->getTechnique(0)->getPass("SkyLight") != NULL)
-				mat->getTechnique(0)->getPass("SkyLight")->getFragmentProgramParameters()->setNamedConstant("pssmSplitPoints", splitPoints);
-		}
-		*/
+		mSceneMgr->setShadowTextureCasterMaterial(mDepthShadows?"PSSM/shadow_caster":Ogre::StringUtil::BLANK);
+
+		updatePSSM();
 
 #else
 		showError("Parallel-split Shadow Maps as shadow technique is only available when you build with Ogre 1.6 support.", "PSSM error");
@@ -169,4 +133,51 @@ int ShadowManager::changeShadowTechnique(Ogre::ShadowTechnique tech)
 #endif //OGRE_VERSION
 	}
 	return 0;
+}
+
+void ShadowManager::updatePSSM(Ogre::Terrain* terrain)
+{
+	if (!mPSSMSetup.get())  return;
+
+	Ogre::TerrainMaterialGeneratorA::SM2Profile *matProfile  = 0;
+	if(Ogre::TerrainGlobalOptions::getSingletonPtr())
+	{
+		matProfile = static_cast<Ogre::TerrainMaterialGeneratorA::SM2Profile*>(Ogre::TerrainGlobalOptions::getSingleton().getDefaultMaterialGenerator()->getActiveProfile());
+		matProfile->setReceiveDynamicShadowsEnabled(true);
+		matProfile->setReceiveDynamicShadowsLowLod(true);
+		matProfile->setGlobalColourMapEnabled(false);
+	}
+
+
+	Ogre::PSSMShadowCameraSetup* pssmSetup = static_cast<Ogre::PSSMShadowCameraSetup*>(mPSSMSetup.get());
+	const Ogre::PSSMShadowCameraSetup::SplitPointList& splitPointList = pssmSetup->getSplitPoints();
+
+	Ogre::Vector4 splitPoints;
+	for (size_t i = 0; i < /*3*/splitPointList.size(); ++i)
+		splitPoints[i] = splitPointList[i];
+
+	setMaterialSplitPoints("road", splitPoints);
+	setMaterialSplitPoints("road2", splitPoints);
+
+
+	if (matProfile && terrain)
+	{
+		matProfile->generateForCompositeMap(terrain);
+		matProfile->setReceiveDynamicShadowsDepth(mDepthShadows);
+		matProfile->setReceiveDynamicShadowsPSSM(static_cast<Ogre::PSSMShadowCameraSetup*>(mPSSMSetup.get()));
+	}
+}
+
+void ShadowManager::setMaterialSplitPoints(Ogre::String materialName, Ogre::Vector4 &splitPoints)
+{
+	Ogre::MaterialPtr mat = Ogre::MaterialManager::getSingleton().getByName(materialName);
+	if (!mat.isNull())
+	{
+		unsigned short np = mat->getTechnique(0)->getNumPasses()-1;  // last
+		//try {
+			mat->getTechnique(0)->getPass(np)->getFragmentProgramParameters()->setNamedConstant("pssmSplitPoints", splitPoints);
+		//} catch(...)
+		//{
+		//}
+	}
 }

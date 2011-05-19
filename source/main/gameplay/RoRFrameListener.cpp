@@ -1666,6 +1666,23 @@ void RoRFrameListener::loadObject(const char* name, float px, float py, float pz
 			collisions->addCollisionMesh(collmesh, Vector3(px,py,pz), tenode->getOrientation(), Vector3(scx, scy, scz), gm, &(obj->collTris));
 			continue;
 		}
+
+		if (!strncmp("particleSystem", ptline, 14))
+		{
+			float x=0, y=0, z=0, scale=0;
+			char pname[255]="", sname[255]="";
+			int res = sscanf(ptline, "particleSystem %f, %f, %f, %f, %s %s", &scale, &x, &y, &z, pname, sname);
+			if(res != 6) continue;
+
+			// create particle system
+			ParticleSystem* pParticleSys = mSceneMgr->createParticleSystem(String(pname), String(sname));
+			SceneNode* pNode = mSceneMgr->getRootSceneNode()->createChildSceneNode();
+			pNode->attachObject(pParticleSys);
+			pNode->setPosition(px+x, py+y, pz+z);
+			pNode->setScale(scale,scale,scale);
+			pNode->setVisible(true);
+		}
+
 		if (!strncmp("setMeshMaterial", ptline, 15))
 		{
 			char mat[256]="";
@@ -3897,13 +3914,18 @@ void RoRFrameListener::loadClassicTerrain(String terrainfile)
 
 			// TBD: optimizations
 			TerrainMaterialGeneratorA::SM2Profile* matProfile = static_cast<TerrainMaterialGeneratorA::SM2Profile*>(TerrainGlobalOptions::getSingleton().getDefaultMaterialGenerator()->getActiveProfile());
-			matProfile->setLayerNormalMappingEnabled(false);
-			matProfile->setLayerSpecularMappingEnabled(false);
-			matProfile->setLayerParallaxMappingEnabled(false);
+			matProfile->setLightmapEnabled(true);
+			//matProfile->setLayerNormalMappingEnabled(false);
+			//matProfile->setLayerSpecularMappingEnabled(false);
+			//matProfile->setLayerParallaxMappingEnabled(false);
 
 			matProfile->setGlobalColourMapEnabled(false);
 			matProfile->setReceiveDynamicShadowsDepth(true);
 
+
+			TerrainGlobalOptions::getSingleton().setCompositeMapSize(1024);
+			//TerrainGlobalOptions::getSingleton().setCompositeMapDistance(100);
+			TerrainGlobalOptions::getSingleton().setSkirtSize(1);
 			TerrainGlobalOptions::getSingleton().setLightMapSize(256);
 			TerrainGlobalOptions::getSingleton().setCastsDynamicShadows(true);
 
@@ -3913,6 +3935,8 @@ void RoRFrameListener::loadClassicTerrain(String terrainfile)
 			//mTerrainGlobals->setCompositeMapAmbient(ColourValue::Red);
 			if(mainLight) TerrainGlobalOptions::getSingleton().setCompositeMapDiffuse(mainLight->getDiffuseColour());
 
+			
+
 			// Configure default import settings for if we use imported image
 			Terrain::ImportData& defaultimp = mTerrainGroup->getDefaultImportSettings();
 			defaultimp.terrainSize  = TERRAIN_SIZE;
@@ -3921,6 +3945,7 @@ void RoRFrameListener::loadClassicTerrain(String terrainfile)
 			//TerrainGlobalOptions::getSingleton().setDefaultGlobalColourMapSize(pageSize);
 
 			defaultimp.inputScale   = pageMaxHeight;
+			defaultimp.minBatchSize = 33;
 			if(!cfg.getSetting("minBatchSize").empty())
 				defaultimp.minBatchSize = StringConverter::parseInt(cfg.getSetting("minBatchSize"));
 
@@ -4013,14 +4038,15 @@ void RoRFrameListener::loadClassicTerrain(String terrainfile)
 
 				for (long x = TERRAIN_PAGE_MIN_X; x <= TERRAIN_PAGE_MAX_X; ++x)
 				{
-					for (long y = TERRAIN_PAGE_MIN_Y; y <= TERRAIN_PAGE_MAX_Y; ++y)
+					for (long py = TERRAIN_PAGE_MIN_Y; py <= TERRAIN_PAGE_MAX_Y; ++py)
 					{
-						Terrain* terrain = mTerrainGroup->getTerrain(x,y);
+						Terrain* terrain = mTerrainGroup->getTerrain(x,py);
 						if(!terrain) continue;
+
+						ShadowManager::getSingleton().updatePSSM(terrain);
 
 						// set up a colour map
 						/*
-						// this crashes badly!
 						String textureString = "Texture.image." + TOSTRING(x) + "." + TOSTRING(y);
 						String textureFilename = cfg.getSetting(textureString);
 						if(textureFilename.empty())
@@ -4031,9 +4057,11 @@ void RoRFrameListener::loadClassicTerrain(String terrainfile)
 						}
 						if (!textureFilename.empty() && !terrain->getGlobalColourMapEnabled())
 						{
-							terrain->setGlobalColourMapEnabled(true);
 							Image colourMap;
-							colourMap.load(textureFilename, ResourceGroupManager::DEFAULT_RESOURCE_GROUP_NAME);
+							colourMap.load(textureFilename, ResourceGroupManager::AUTODETECT_RESOURCE_GROUP_NAME);
+
+							terrain->setGlobalColourMapEnabled(true, 1024);
+
 							TexturePtr tp = terrain->getGlobalColourMap();
 							if(!tp.isNull())
 								tp->loadImage(colourMap);
@@ -4104,7 +4132,6 @@ void RoRFrameListener::loadClassicTerrain(String terrainfile)
 			}
 
 			mTerrainGroup->freeTemporaryResources();
-
 
 		}
 	}

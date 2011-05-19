@@ -1891,7 +1891,7 @@ bool CacheSystem::checkResourceLoaded(Cache_Entry t)
 	if(t.resourceLoaded || loaded[t.dirname])
 		// only load once
 		return true;
-	if(t.type == "FileSystem" || t.type == "Zip")
+	if(t.type == "Zip")
 	{
 		//ScopeLog log("cache_"+t.fname);
 		try
