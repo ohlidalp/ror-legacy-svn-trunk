@@ -314,7 +314,9 @@ SerializedRig::SerializedRig()
 	beamsRoot=0;
 
 	virtuallyLoaded=false;
-	ignoreProblems = false;
+	ignoreProblems=false;
+
+	subMeshGroundModelName = "";
 
 	materialReplacer = NULL;
 	if(!virtuallyLoaded)
@@ -538,6 +540,14 @@ int SerializedRig::loadTruck(String fname, SceneManager *manager, SceneNode *par
 				if(n > 2 && args[1] == "node") externalcameranode = PARSEINT(args[2]);
 				continue;
 			}
+
+
+			if (c.line.size() > 20 && c.line.substr(0, 19) == "submesh_groundmodel")
+			{
+				int n = parse_args(c, args, 2);
+				subMeshGroundModelName = args[1];
+			}
+
 			if (c.line.size() > 9 && c.line.substr(0, 10) == "SlopeBrake")
 			{
 				slopeBrake=true;

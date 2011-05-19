@@ -54,6 +54,8 @@ SelectorWindow::SelectorWindow() : mSelectedTruck(0)
 
 	mTypeComboBox->eventComboChangePosition += MyGUI::newDelegate(this, &SelectorWindow::eventComboChangePositionTypeComboBox);
 	mTypeComboBox->eventKeyButtonPressed    += MyGUI::newDelegate(this, &SelectorWindow::eventKeyButtonPressed_Main);
+	
+	mModelList->eventListSelectAccept       += MyGUI::newDelegate(this, &SelectorWindow::eventListChangePositionModelListAccept);
 	mModelList->eventListChangePosition     += MyGUI::newDelegate(this, &SelectorWindow::eventListChangePositionModelList);
 	//mModelList->eventKeyButtonPressed       += MyGUI::newDelegate(this, &SelectorWindow::eventKeyButtonPressed_Main);
 	mConfigComboBox->eventComboAccept       += MyGUI::newDelegate(this, &SelectorWindow::eventComboAcceptConfigComboBox);
@@ -197,6 +199,12 @@ void SelectorWindow::eventComboChangePositionTypeComboBox(MyGUI::ComboBoxPtr _se
 	} catch(...)
 	{
 	}
+}
+
+void SelectorWindow::eventListChangePositionModelListAccept(MyGUI::ListPtr _sender, size_t _index)
+{
+	eventListChangePositionModelList(_sender, _index);
+	selectionDone();
 }
 
 void SelectorWindow::eventListChangePositionModelList(MyGUI::ListPtr _sender, size_t _index)

@@ -218,6 +218,7 @@ public:
 	int sleepcount;
 	//can this be drived?
 	int previousGear;
+	ground_model_t *submesh_ground_model;
 	bool requires_wheel_contact;
 	int parkingbrake;
 	int lights;

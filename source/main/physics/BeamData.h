@@ -1018,6 +1018,7 @@ struct rig
 	float posnode_spawn_height;
 
 	MaterialReplacer *materialReplacer;
+	Ogre::String subMeshGroundModelName;
 };
 
 // some non-beam structs
