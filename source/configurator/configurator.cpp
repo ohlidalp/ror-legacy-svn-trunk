@@ -476,6 +476,8 @@ const wxLanguageInfo *getLanguageInfoByName(const wxString name)
 
 int getAvLang(wxString dir, std::vector<wxLanguageInfo*> &files)
 {
+	if(!wxDir::Exists(dir)) return 1;
+	
 	//WX portable version
 	wxDir dp(dir);
 	if (!dp.IsOpened())
