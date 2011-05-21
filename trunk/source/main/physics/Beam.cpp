@@ -2924,7 +2924,7 @@ void Beam::calcShocks2(int beam_i, Real difftoBeamL, Real &k, Real &d, Real dt, 
 				{ // just a trigger, check high/low boundary and set action
 					if (difftoBeamL > beams[i].longbound*beams[i].L) // trigger past longbound
 					{
-						if (beams[i].shock->flags & SHOCK_FLAG_TRG_HOOK_UNLOCK, -1)
+						if (beams[i].shock->flags & SHOCK_FLAG_TRG_HOOK_UNLOCK)
 						{
 							if(update)
 							{
@@ -2932,7 +2932,7 @@ void Beam::calcShocks2(int beam_i, Real difftoBeamL, Real &k, Real &d, Real dt, 
 								hookToggle(beams[i].shock->trigger_cmdlong, HOOK_UNLOCK, -1);
 							}
 						} else
-						if (beams[i].shock->flags & SHOCK_FLAG_TRG_HOOK_LOCK, -1)
+						if (beams[i].shock->flags & SHOCK_FLAG_TRG_HOOK_LOCK)
 						{
 							if(update)
 							{
@@ -2959,7 +2959,7 @@ void Beam::calcShocks2(int beam_i, Real difftoBeamL, Real &k, Real &d, Real dt, 
 							if (update)
 							{
 								//autolock hooktoggle unlock
-								hookToggle(beams[i].shock->trigger_cmdshort, HOOK_UNLOCK);
+								hookToggle(beams[i].shock->trigger_cmdshort, HOOK_UNLOCK, -1);
 							}
 						} else
 						if (beams[i].shock->flags & SHOCK_FLAG_TRG_HOOK_LOCK)
@@ -2967,7 +2967,7 @@ void Beam::calcShocks2(int beam_i, Real difftoBeamL, Real &k, Real &d, Real dt, 
 							if (update)
 							{
 								//autolock hooktoggle lock
-								hookToggle(beams[i].shock->trigger_cmdshort, HOOK_LOCK);
+								hookToggle(beams[i].shock->trigger_cmdshort, HOOK_LOCK, -1);
 							}
 						} else
 						{
