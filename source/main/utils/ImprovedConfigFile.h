@@ -69,7 +69,7 @@ public:
 
 	bool save()
 	{
-		saveAs(filename);
+		return saveAs(filename);
 	}
 
 	bool saveAs(Ogre::String fn)

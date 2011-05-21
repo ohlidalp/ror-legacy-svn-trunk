@@ -50,6 +50,7 @@ along with Rigs of Rods.  If not, see <http://www.gnu.org/licenses/>.
 #include "SkyManager.h"
 #include "CacheSystem.h"
 #include "as_ogre.h"
+#include "LocalStorage.h"
 #include "SelectorWindow.h"
 #include "sha1.h"
 #include "collisions.h"
@@ -241,7 +242,12 @@ void ScriptEngine::init()
 	//AngelScript::RegisterScriptString(engine);
 	//AngelScript::RegisterScriptStringUtils(engine);
 
+	// register some Ogre objects like the vector3 and the quaternion
 	registerOgreObjects(engine);
+
+	// Register the local storage object.
+	// This needs to be done after the registration of the ogre objects!
+	registerLocalStorage(engine);
 
 	// some useful global functions
 	result = engine->RegisterGlobalFunction("void log(const string &in)", AngelScript::asFUNCTION(logString), AngelScript::asCALL_CDECL); assert( result >= 0 );
