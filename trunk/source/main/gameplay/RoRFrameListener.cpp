@@ -890,6 +890,17 @@ RoRFrameListener::RoRFrameListener(AppState *parentState, RenderWindow* win, Cam
 	}
 
 	MyGUI::VectorWidgetPtr v = MyGUI::LayoutManager::getInstance().loadLayout("wallpaper.layout");
+	// load random image in the wallpaper
+	String randomWallpaper = GUIManager::getRandomWallpaperImage();
+	if(!v.empty() && !randomWallpaper.empty())
+	{
+		MyGUI::Widget *mainw = v.at(0);
+		if(mainw)
+		{
+			MyGUI::ImageBox *img = (MyGUI::ImageBox *)(mainw->getChildAt(0));
+			if(img) img->setImageTexture(randomWallpaper);
+		}
+	}
 
 	// print some log message so we know angelscript is alive :)
 #ifdef USE_ANGELSCRIPT
@@ -1036,12 +1047,13 @@ RoRFrameListener::RoRFrameListener(AppState *parentState, RenderWindow* win, Cam
 	String modName = "";
 	long cmdServerPort = 0;
 	Vector3 spawnLocation = Vector3::ZERO;
-	if(cmd != "")
+	if(!cmd.empty())
 	{
 		Ogre::StringVector str = StringUtil::split(cmd, "/");
 		// process args now
 		for(Ogre::StringVector::iterator it = str.begin(); it!=str.end(); it++)
 		{
+
 			String argstr = *it;
 			Ogre::StringVector args = StringUtil::split(argstr, ":");
 			if(args.size()<2) continue;

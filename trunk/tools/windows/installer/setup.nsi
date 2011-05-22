@@ -9,7 +9,7 @@ SetCompressor /FINAL /SOLID lzma
 
 !define PRODUCT_VERSION_MAJOR "0"
 !define PRODUCT_VERSION_MINOR "38"
-!define PRODUCT_VERSION_PATCH "30"
+!define PRODUCT_VERSION_PATCH "32"
 
 !define PRODUCT_VERSION "${PRODUCT_VERSION_MAJOR}.${PRODUCT_VERSION_MINOR}.${PRODUCT_VERSION_PATCH}"
 !define PRODUCT_VERSION_SHORT "${PRODUCT_VERSION_MAJOR}.${PRODUCT_VERSION_MINOR}"
@@ -409,10 +409,10 @@ Section -Post
 	WriteRegStr HKCU "Software\RigsOfRods\" "directory" "$INSTDIR"
 	WriteRegStr HKCU "Software\RigsOfRods\" "version" "${PRODUCT_VERSION}"
 
-	WriteRegStr HKCR "rorserver" "" "URL:Rigs of Rods Server"
-	WriteRegStr HKCR "rorserver" "Url Protocol" ""
-	WriteRegStr HKCR "rorserver\DefaultIcon" "" ""
-	WriteRegStr HKCR "rorserver\shell\open\command" "" '"$INSTDIR\RoR.exe" -wd="$INSTDIR" -join="%1"'
+	WriteRegStr HKCR "rigsofrods" "" "URL:Rigs of Rods"
+	WriteRegStr HKCR "rigsofrods" "Url Protocol" ""
+	WriteRegStr HKCR "rigsofrods\DefaultIcon" "$INSTDIR\RoR.exe" ""
+	WriteRegStr HKCR "rigsofrods\shell\open\command" "" '"$INSTDIR\RoR.exe" -wd="$INSTDIR" -cmd="%1"'
 	
 	; no reboot
 	SetRebootFlag false
@@ -446,7 +446,7 @@ Section Uninstall
 	; remove registry entries
 	DeleteRegKey ${PRODUCT_UNINST_ROOT_KEY} "${PRODUCT_UNINST_KEY}"
 	DeleteRegKey HKCU "Software\RigsOfRods\"
-	DeleteRegKey HKCR "rorserver"
+	DeleteRegKey HKCR "rigsofrods"
 	
 	DeleteRegKey HKLM "${ROR_REGISTRY_ENTRY}"
 	

@@ -156,8 +156,9 @@ void ShadowManager::updatePSSM(Ogre::Terrain* terrain)
 	for (size_t i = 0; i < /*3*/splitPointList.size(); ++i)
 		splitPoints[i] = splitPointList[i];
 
-	setMaterialSplitPoints("road", splitPoints);
-	setMaterialSplitPoints("road2", splitPoints);
+	// TODO: fix this
+	//setMaterialSplitPoints("road", splitPoints);
+	//setMaterialSplitPoints("road2", splitPoints);
 
 
 	if (matProfile && terrain)
@@ -174,10 +175,11 @@ void ShadowManager::setMaterialSplitPoints(Ogre::String materialName, Ogre::Vect
 	if (!mat.isNull())
 	{
 		unsigned short np = mat->getTechnique(0)->getNumPasses()-1;  // last
-		//try {
+		try {
 			mat->getTechnique(0)->getPass(np)->getFragmentProgramParameters()->setNamedConstant("pssmSplitPoints", splitPoints);
-		//} catch(...)
-		//{
-		//}
+		} catch(...)
+		{
+			// this material is not prepared for PSSM usage !
+		}
 	}
 }
