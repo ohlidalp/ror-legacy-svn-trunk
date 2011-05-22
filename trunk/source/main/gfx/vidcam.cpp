@@ -238,8 +238,8 @@ VideoCamera *VideoCamera::parseLine(Ogre::SceneManager *mSceneMgr, Ogre::Camera 
 		}
 
 		// clone the material to stay unique
-		MaterialPtr matNew = mat->clone(String(truck->truckname) + materialname);
-		String newMaterialName = matNew->getName();
+		String newMaterialName = String(truck->truckname) + materialname + "_" + TOSTRING(counter++);
+		MaterialPtr matNew = mat->clone(newMaterialName);
 
 		// we need to find and replace any materials that could come afterwards
 		if(truck && truck->materialReplacer)
