@@ -24,13 +24,13 @@ along with Rigs of Rods.  If not, see <http://www.gnu.org/licenses/>.
 // the version is in its own file so that you dont recompile everything when changing the version
 
 // this defines the version that is used for the scripts and console stuff.
-// $LastChangedDate: 2011-05-16 23:06:45 +0200 (Mon, 16 May 2011) $
-// $LastChangedRevision: 1957 $
-// $LastChangedBy: rorthomas $
-// $Id: RoRPrerequisites.h 1957 2011-05-16 21:06:45Z rorthomas $
-// $Rev: 1957 $
-#define SVN_REVISION "$Rev: 1957 $"
-#define SVN_ID "$Id: RoRPrerequisites.h 1957 2011-05-16 21:06:45Z rorthomas $"
+// $LastChangedDate$
+// $LastChangedRevision$
+// $LastChangedBy$
+// $Id$
+// $Rev$
+#define SVN_REVISION "$Rev$"
+#define SVN_ID "$Id$"
 
 #define ROR_VERSION_STRING_SHORT      "0.38"
 #define ROR_VERSION_STRING            "0.38.33"
