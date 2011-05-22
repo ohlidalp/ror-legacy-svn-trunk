@@ -56,25 +56,30 @@ Console::Console() : net(0)
 	mCommandEdit->eventEditSelectAccept += MyGUI::newDelegate(this, &Console::eventCommandAccept);
 	mTabControl->eventTabChangeSelect   += MyGUI::newDelegate(this, &Console::eventChangeTab);
 
-	addTab("OgreLog");
-	//addTab("IRCDebug");
+	bool enable_ingame_console = BSETTING("Enable Ingame Console");
 
+	if(enable_ingame_console)
+	{
+		addTab("OgreLog");
+	
+		//addTab("IRCDebug");
 #ifdef USE_ANGELSCRIPT
-	addTab("Angelscript");
+		addTab("Angelscript");
 #endif //ANGELSCRIPT
 
 
-	// BUG: all editboxes visible on startup D:
-	mTabControl->selectSheetIndex(0, false);
+		// BUG: all editboxes visible on startup D:
+		mTabControl->selectSheetIndex(0, false);
 
-	current_tab = &tabs["OgreLog"];
+		current_tab = &tabs["OgreLog"];
+	}
 
-	setVisible(true);
+
+	setVisible(false);
 
 	MyGUI::Gui::getInstance().eventFrameStart += MyGUI::newDelegate( this, &Console::frameEntered );
 
-	bool ogre_log = BSETTING("Enable Ingame Console");
-	if(ogre_log)
+	if(enable_ingame_console)
 		Ogre::LogManager::getSingleton().getDefaultLog()->addListener(this);
 }
 
@@ -136,6 +141,7 @@ void Console::setVisible(bool _visible)
 	mVisible = _visible;
 
 	mMainWidget->setEnabledSilent(_visible);
+	mMainWidget->setVisible(false);
 	if (_visible)
 	{
 		MyGUI::InputManager::getInstance().setKeyFocusWidget(mCommandEdit);

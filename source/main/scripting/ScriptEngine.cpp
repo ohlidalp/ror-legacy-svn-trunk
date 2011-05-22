@@ -85,9 +85,14 @@ ScriptEngine::ScriptEngine(RoRFrameListener *efl, Collisions *_coll) : mefl(efl)
 	callbacks["wheelEvents"] = std::vector<int>();
 	callbacks["eventCallback"] = std::vector<int>();
 
+	enable_ingame_console = BSETTING("Enable Ingame Console");
+
 	// create our own log
 	scriptLog = LogManager::getSingleton().createLog(SSETTING("Log Path")+"/Angelscript.log", false);
-	scriptLog->addListener(this);
+	
+	if(enable_ingame_console) 
+		scriptLog->addListener(this);
+	
 	scriptLog->logMessage("ScriptEngine initialized");
 
 	// init not earlier, otherwise crash
