@@ -210,7 +210,7 @@ void LocalStorage::saveDict()
 
 bool LocalStorage::loadDict()
 {
-	std::ifstream ifile(filename);
+	std::ifstream ifile(filename.c_str());
 	if( !ifile )
 		return false;
 

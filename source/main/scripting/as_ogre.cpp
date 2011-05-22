@@ -141,10 +141,6 @@ static void QuaternionInitConstructor3(const Vector3 &xaxis, const Vector3 &yaxi
 	new(self) Quaternion(xaxis,yaxis,zaxis);
 }
 
-static void QuaternionInitConstructor4(const Radian &rx, const Radian &ry, const Radian &rz, Quaternion *self)
-{
-	new(self) Quaternion(rx,ry,rz);
-}
 
 // not used
 static void QuaternionInitConstructor5(float val, Quaternion *self)
@@ -376,9 +372,9 @@ void registerOgreQuaternion(AngelScript::asIScriptEngine *engine)
 	r = engine->RegisterObjectProperty("quaternion", "float x", offsetof(Quaternion, x)); assert( r >= 0 );
 	r = engine->RegisterObjectProperty("quaternion", "float y", offsetof(Quaternion, y)); assert( r >= 0 );
 	r = engine->RegisterObjectProperty("quaternion", "float z", offsetof(Quaternion, z)); assert( r >= 0 );
-	r = engine->RegisterObjectProperty("quaternion", "float ms_fEpsilon", offsetof(Quaternion, ms_fEpsilon)); assert( r >= 0 );
-	r = engine->RegisterObjectProperty("quaternion", "quaternion ZERO", offsetof(Quaternion, ZERO)); assert( r >= 0 );
-	r = engine->RegisterObjectProperty("quaternion", "quaternion IDENTITY", offsetof(Quaternion, IDENTITY)); assert( r >= 0 );
+	// r = engine->RegisterObjectProperty("quaternion", "float ms_fEpsilon", offsetof(Quaternion, ms_fEpsilon)); assert( r >= 0 );
+	// r = engine->RegisterObjectProperty("quaternion", "quaternion ZERO", offsetof(Quaternion, ZERO)); assert( r >= 0 );
+	// r = engine->RegisterObjectProperty("quaternion", "quaternion IDENTITY", offsetof(Quaternion, IDENTITY)); assert( r >= 0 );
 
 
 	// Register the object constructors
@@ -386,7 +382,6 @@ void registerOgreQuaternion(AngelScript::asIScriptEngine *engine)
 	r = engine->RegisterObjectBehaviour("quaternion", asBEHAVE_CONSTRUCT,  "void f(const radian &in, const vector3 &in)", asFUNCTION(QuaternionInitConstructor1), asCALL_CDECL_OBJLAST); assert( r >= 0 );
 	r = engine->RegisterObjectBehaviour("quaternion", asBEHAVE_CONSTRUCT,  "void f(float, float, float, float)", asFUNCTION(QuaternionInitConstructor2), asCALL_CDECL_OBJLAST); assert( r >= 0 );
 	r = engine->RegisterObjectBehaviour("quaternion", asBEHAVE_CONSTRUCT,  "void f(const vector3 &in, const vector3 &in, const vector3 &in)", asFUNCTION(QuaternionInitConstructor3), asCALL_CDECL_OBJLAST); assert( r >= 0 );
-	// r = engine->RegisterObjectBehaviour("quaternion", asBEHAVE_CONSTRUCT,  "void f(const radian &in, const radian &in, const radian &in)", asFUNCTION(QuaternionInitConstructor4), asCALL_CDECL_OBJLAST); assert( r >= 0 );
 	r = engine->RegisterObjectBehaviour("quaternion", asBEHAVE_CONSTRUCT,  "void f(float)",           asFUNCTION(QuaternionInitConstructorScaler), asCALL_CDECL_OBJLAST); assert( r >= 0 );
 	r = engine->RegisterObjectBehaviour("quaternion", asBEHAVE_CONSTRUCT,  "void f(const quaternion &in)",   asFUNCTION(QuaternionCopyConstructor), asCALL_CDECL_OBJLAST); assert( r >= 0 );
 
