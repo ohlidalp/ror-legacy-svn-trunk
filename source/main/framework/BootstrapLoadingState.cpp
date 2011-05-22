@@ -16,7 +16,10 @@ void BootstrapLoadingState::enter()
 
 	LOG("Loading Bootstrap");
 	ContentManager::getSingleton().loadMainResource("OgreCore", "Bootstrap");
+	LOG("Loading Wallpapers");
+	ContentManager::getSingleton().loadMainResource("Wallpapers", "Wallpapers");
 
+	LOG("creating loading bar");
 	// load all resources now, so the zip files are also initiated
 	mLoadingBar = new ExampleLoadingBar();
 	if(mLoadingBar)

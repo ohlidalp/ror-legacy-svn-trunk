@@ -47,6 +47,8 @@ public:
 
 	void unfocus();
 
+	static Ogre::String getRandomWallpaperImage();
+
 	void windowResized(Ogre::RenderWindow* _rw);
 protected:
 private:
@@ -59,6 +61,7 @@ private:
 	virtual void windowClosed(Ogre::RenderWindow* _rw);
 
 	void eventRequestTag(const MyGUI::UString& _tag, MyGUI::UString& _result);
+
 
 private:
 	MyGUI::Gui* mGUI;

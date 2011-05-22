@@ -150,4 +150,21 @@ void GUIManager::eventRequestTag(const MyGUI::UString& _tag, MyGUI::UString& _re
 	_result = MyGUI::LanguageManager::getInstance().getTag(_tag);
 }
 
+Ogre::String GUIManager::getRandomWallpaperImage()
+{
+	
+	FileInfoListPtr files = Ogre::ResourceGroupManager::getSingleton().findResourceFileInfo("Wallpapers", "*", false);
+	if(files.isNull() || files->empty())
+	{
+		return "";
+	}
+	srand ( time(NULL) );
+
+	int num = 0;
+	for(int i = 0; i<Ogre::Math::RangeRandom(0, 10); i++)
+		num = Ogre::Math::RangeRandom(0, files->size());
+
+	return files->at(num).filename;
+}
+
 #endif //MYGUI

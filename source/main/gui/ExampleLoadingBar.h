@@ -28,6 +28,8 @@ the basic resources required for the progress bar and will be loaded automatical
 
 #include "RoRWindowEventUtilities.h"
 
+#include "gui_manager.h"
+
 using namespace Ogre;
 
 /** Defines an example loading progress bar which you can use during 
@@ -99,6 +101,18 @@ public:
 			OGRE_EXCEPT(Exception::ERR_ITEM_NOT_FOUND, 
 				"Cannot find loading overlay", "ExampleLoadingBar::start");
 		}
+
+		// use random wallpaper image
+		MaterialPtr mat = Ogre::MaterialManager::getSingleton().getByName("Core/RoRLoadingScreen");
+		String randomWallpaper = GUIManager::getRandomWallpaperImage();
+		if(!randomWallpaper.empty() && !mat.isNull())
+		{
+			if(mat->getNumTechniques() > 0 && mat->getTechnique(0)->getNumPasses() > 0 && mat->getTechnique(0)->getPass(0)->getNumTextureUnitStates() > 0)
+			{
+				mat->getTechnique(0)->getPass(0)->getTextureUnitState(0)->setTextureName(randomWallpaper);
+			}
+		}
+
 		mLoadOverlay->show();
 
 		// Save links to the bar and to the loading text, for updates as we go
