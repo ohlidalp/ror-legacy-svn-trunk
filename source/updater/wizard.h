@@ -114,6 +114,7 @@ class DownloadPage : public wxWizardPageSimple, public EnterLeavePage
 public:
 	DownloadPage(wxWizard *parent);
 	void startThread();
+	void startThreadUserContent();
 	bool OnEnter(bool forward);
 	bool OnLeave(bool forward);
 private:
