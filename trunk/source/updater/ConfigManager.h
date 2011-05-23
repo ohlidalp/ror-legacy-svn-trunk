@@ -71,6 +71,8 @@ public:
 	void setPersistentConfig(wxString name, wxString value);
 	void setInstallPath(wxString pth);
 	wxString getInstallationPath();
+	wxString getUserPath();
+	bool getUserPathExists();
 
 	static ConfigManager *getSingleton() { return instance; };
 	static ConfigManager *instance;
@@ -99,6 +101,7 @@ public:
 
 	std::string getOnlineVersion() { return currVersion; };
 
+	wxString installType;
 private:
 	wxString installPath;
 	std::string currVersion;

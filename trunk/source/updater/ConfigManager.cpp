@@ -118,6 +118,28 @@ wxString ConfigManager::getInstallationPath()
 	return path;
 }
 
+bool ConfigManager::getUserPathExists()
+{
+	return wxFileName::DirExists(getUserPath());
+}
+
+wxString ConfigManager::getUserPath()
+{
+#ifdef WIN32
+	WCHAR Wuser_path[1024];
+
+	if (SHGetFolderPath(NULL, CSIDL_PERSONAL, NULL, SHGFP_TYPE_CURRENT, Wuser_path)!=S_OK)
+	{
+		return wxString();
+	}
+	GetShortPathName(Wuser_path, Wuser_path, 512); //this is legal
+	wxFileName tfn=wxFileName(Wuser_path, wxEmptyString);
+	// TODO: fix hardcoded value here
+	tfn.AppendDir(wxT("Rigs of Rods 0.38"));
+	return tfn.GetPath();
+#endif // WIN32
+}
+
 void ConfigManager::associateViewerFileTypes(std::string type)
 {
 #if OGRE_PLATFORM == OGRE_PLATFORM_WIN32

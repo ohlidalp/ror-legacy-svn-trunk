@@ -35,6 +35,7 @@ along with Rigs of Rods.  If not, see <http://www.gnu.org/licenses/>.
 #include "wthread.h"
 #include "cevent.h"
 #include "installerlog.h"
+#include "VersionCompare.h"
 
 // for all others, include the necessary headers
 #ifndef WX_PRECOMP
@@ -220,6 +221,9 @@ MyWizard::MyWizard(int startupMode, wxFrame *frame, bool _autoUpdateEnabled, boo
 	if(autoUpdateEnabled)
 		CONFIG->checkForNewUpdater();
 
+	bool userPathExisting = CONFIG->getUserPathExists();
+	CONFIG->installType = userPathExisting ? wxString("normal") : wxString("fixuserpath");
+
     PresentationPage *presentation = new PresentationPage(this);
 	//ConfirmationPage *confirm = new ConfirmationPage(this);
 	DownloadPage *download = new DownloadPage(this);
@@ -230,6 +234,9 @@ MyWizard::MyWizard(int startupMode, wxFrame *frame, bool _autoUpdateEnabled, boo
 	wxWizardPageSimple::Chain(presentation, download);
 	//wxWizardPageSimple::Chain(confirm, download);
 	wxWizardPageSimple::Chain(download, last);
+
+
+
 
     if ( useSizer )
     {
@@ -310,38 +317,68 @@ PresentationPage::PresentationPage(wxWizard *parent) : wxWizardPageSimple(parent
 	mainSizer->Add(tst=new wxStaticText(this, wxID_ANY, _T("If you are using a firewall, please allow this program to access the Internet.\n")), 0, wxALL, 5);
 	tst->Wrap(TXTWRAP);
 
-	mainSizer->Add(tst=new wxStaticText(this, wxID_ANY, _T("Installed Version: ") + a), 0, wxALL, 5);
-	dfont=tst->GetFont();
-	dfont.SetWeight(wxFONTWEIGHT_BOLD);
-	dfont.SetPointSize(dfont.GetPointSize()+4);
-	tst->SetFont(dfont);
-	tst->Wrap(TXTWRAP);
-
-	mainSizer->Add(tst=new wxStaticText(this, wxID_ANY, _T("Online Version: ") + b), 0, wxALL, 5);
-	dfont=tst->GetFont();
-	dfont.SetWeight(wxFONTWEIGHT_BOLD);
-	dfont.SetPointSize(dfont.GetPointSize()+4);
-	tst->SetFont(dfont);
-	tst->Wrap(TXTWRAP);
-
-	// TODO: check if installed version is newer
-
-	if(a == b)
+	if(CONFIG->installType == wxString("fixuserpath"))
 	{
-		mainSizer->Add(tst=new wxStaticText(this, wxID_ANY, _T("Already up to date, no need to update")), 0, wxALL, 5);
+		// need to restore user path
+		mainSizer->Add(tst=new wxStaticText(this, wxID_ANY, _T("Your user path is not existing, please click next to restore it and try to update again after the restore.")), 0, wxALL, 5);
 		dfont=tst->GetFont();
 		dfont.SetWeight(wxFONTWEIGHT_BOLD);
 		dfont.SetPointSize(dfont.GetPointSize()+4);
 		tst->SetFont(dfont);
 		tst->Wrap(TXTWRAP);
 
-		setControlEnable(parent, wxID_FORWARD, false);
+		setControlEnable(parent, wxID_FORWARD, true);
 		setControlEnable(parent, wxID_BACKWARD, false);
-
 	} else
 	{
-		mainSizer->Add(tst=new wxStaticText(this, wxID_ANY, _T("Click on Next to continue.\n")), 0, wxALL, 5);
+		// now: compare the versions
+		mainSizer->Add(tst=new wxStaticText(this, wxID_ANY, _T("Installed Version: ") + a), 0, wxALL, 5);
+		dfont=tst->GetFont();
+		dfont.SetWeight(wxFONTWEIGHT_BOLD);
+		dfont.SetPointSize(dfont.GetPointSize()+4);
+		tst->SetFont(dfont);
 		tst->Wrap(TXTWRAP);
+
+		mainSizer->Add(tst=new wxStaticText(this, wxID_ANY, _T("Online Version: ") + b), 0, wxALL, 5);
+		dfont=tst->GetFont();
+		dfont.SetWeight(wxFONTWEIGHT_BOLD);
+		dfont.SetPointSize(dfont.GetPointSize()+4);
+		tst->SetFont(dfont);
+		tst->Wrap(TXTWRAP);
+
+		Version installed_version(conv(a));
+		Version online_version(conv(b));
+
+		if (installed_version < online_version)
+		{
+			// new version
+			mainSizer->Add(tst=new wxStaticText(this, wxID_ANY, _T("Click on Next to continue.\n")), 0, wxALL, 5);
+			tst->Wrap(TXTWRAP);
+		} else if (online_version < installed_version)
+		{
+			// local newer
+			mainSizer->Add(tst=new wxStaticText(this, wxID_ANY, _T("Your version is newer than the last public version, no need to update")), 0, wxALL, 5);
+			dfont=tst->GetFont();
+			dfont.SetWeight(wxFONTWEIGHT_BOLD);
+			dfont.SetPointSize(dfont.GetPointSize()+4);
+			tst->SetFont(dfont);
+			tst->Wrap(TXTWRAP);
+
+			setControlEnable(parent, wxID_FORWARD, false);
+			setControlEnable(parent, wxID_BACKWARD, false);
+		} else
+		{
+			// no need to update
+			mainSizer->Add(tst=new wxStaticText(this, wxID_ANY, _T("Already up to date, no need to update")), 0, wxALL, 5);
+			dfont=tst->GetFont();
+			dfont.SetWeight(wxFONTWEIGHT_BOLD);
+			dfont.SetPointSize(dfont.GetPointSize()+4);
+			tst->SetFont(dfont);
+			tst->Wrap(TXTWRAP);
+
+			setControlEnable(parent, wxID_FORWARD, false);
+			setControlEnable(parent, wxID_BACKWARD, false);
+		}
 	}
 
 	SetSizer(mainSizer);
@@ -519,27 +556,68 @@ void DownloadPage::startThread()
 {
 	if(threadStarted) return;
 	threadStarted=true;
-	// XXX ENABLE DEBUG
-	bool debugEnabled = false;
-	// XXX
 
 	// hardcoded streams for now
 	std::vector < stream_desc_t > streams;
 	stream_desc_t sd;
 	sd.platform = wxT("ALL");
-	
+
 	sd.path     = wxT(INSTALLER_VERSION);
 	sd.path    += wxT("/");
 	sd.path    += wxT(INSTALLER_PLATFORM);
-	
+
 	sd.checked  = true;
-	sd.disabled = false;
-	sd.del      = true;
+	sd.disabled  = false;
+	sd.del       = true;
 	sd.overwrite = true;
-	sd.size     = 1024;
+	sd.size      = 1024;
 	streams.push_back(sd);
 
 	m_pThread = new WsyncThread(this, CONFIG->getInstallationPath(), streams);
+	if ( m_pThread->Create() != wxTHREAD_NO_ERROR )
+	{
+		wxLogError(wxT("Can't create the thread!"));
+		delete m_pThread;
+		m_pThread = NULL;
+	}
+	else
+	{
+		if (m_pThread->Run() != wxTHREAD_NO_ERROR )
+		{
+			wxLogError(wxT("Can't create the thread!"));
+			delete m_pThread;
+			m_pThread = NULL;
+		}
+
+		// after the call to wxThread::Run(), the m_pThread pointer is "unsafe":
+		// at any moment the thread may cease to exist (because it completes its work).
+		// To avoid dangling pointers OnThreadExit() will set m_pThread
+		// to NULL when the thread dies.
+	}
+}
+
+void DownloadPage::startThreadUserContent()
+{
+	if(threadStarted) return;
+	threadStarted=true;
+
+	// hardcoded streams for now
+	std::vector < stream_desc_t > streams;
+	stream_desc_t sd;
+	sd.platform = wxT("ALL");
+
+	sd.path     = wxT(INSTALLER_VERSION);
+	sd.path    += wxT("/");
+	sd.path    += wxT(INSTALLER_PLATFORM) + wxString("-skeleton");
+
+	sd.checked  = true;
+	sd.disabled  = false;
+	sd.del       = false;
+	sd.overwrite = true;
+	sd.size      = 1024;
+	streams.push_back(sd);
+
+	m_pThread = new WsyncThread(this, CONFIG->getUserPath(), streams);
 	if ( m_pThread->Create() != wxTHREAD_NO_ERROR )
 	{
 		wxLogError(wxT("Can't create the thread!"));
@@ -583,7 +661,14 @@ bool DownloadPage::OnEnter(bool forward)
 
     htmlinfo->LoadPage(wxT("http://api.rigsofrods.com/didyouknow/"));
 
-    startThread();
+	if(!CONFIG->getUserPathExists())
+	{
+
+		startThreadUserContent();
+	} else
+	{
+		startThread();
+	}
 	return true;
 }
 
@@ -673,7 +758,8 @@ void DownloadPage::OnStatusUpdate(MyStatusEvent &ev)
 		progress->SetValue(1000);
 		txt_remaintime->SetLabel(wxT("finished!"));
 		isDone=true;
-		CONFIG->writeVersionInfo(); // write the version to the file, since we updated
+		if(CONFIG->installType != wxString("fixuserpath"))
+			CONFIG->writeVersionInfo(); // write the version to the file, since we updated
 		// enableforward button
 		txtFinish->Show();
         htmlinfo->Hide();
@@ -702,19 +788,28 @@ LastPage::LastPage(wxWizard *parent) : wxWizardPageSimple(parent), wizard(parent
 	tst->SetFont(dfont);
 	tst->Wrap(TXTWRAP);
 
-#if OGRE_PLATFORM == OGRE_PLATFORM_WIN32
-	mainSizer->Add(tst=new wxStaticText(this, wxID_ANY, _T("Thank you for downloading Rigs of Rods.\nWhat do you want to do now?")), 0, wxALL, 5);
-	tst->Wrap(TXTWRAP);
+	if(CONFIG->installType == wxString("fixuserpath"))
+	{
+		mainSizer->Add(tst=new wxStaticText(this, wxID_ANY, _T("User directory restored, please re-run this updater to update the game itself!")), 0, wxALL, 5);
+		tst->Wrap(TXTWRAP);
 
-	chk_configurator = new wxCheckBox(this, wxID_ANY, _T("Run the Configurator"));
-	mainSizer->Add(chk_configurator, 0, wxALL|wxALIGN_LEFT, 5);
-	chk_changelog = new wxCheckBox(this, wxID_ANY, _T("View the Changelog"));
-	mainSizer->Add(chk_changelog, 0, wxALL|wxALIGN_LEFT, 5);
+	} else
+	{
+#if OGRE_PLATFORM == OGRE_PLATFORM_WIN32
+		mainSizer->Add(tst=new wxStaticText(this, wxID_ANY, _T("Thank you for downloading Rigs of Rods.\nWhat do you want to do now?")), 0, wxALL, 5);
+		tst->Wrap(TXTWRAP);
+
+		chk_configurator = new wxCheckBox(this, wxID_ANY, _T("Run the Configurator"));
+		mainSizer->Add(chk_configurator, 0, wxALL|wxALIGN_LEFT, 5);
+		chk_changelog = new wxCheckBox(this, wxID_ANY, _T("View the Changelog"));
+		mainSizer->Add(chk_changelog, 0, wxALL|wxALIGN_LEFT, 5);
 #else
-	// TODO: add linux options
-	mainSizer->Add(tst=new wxStaticText(this, wxID_ANY, _T("Thank you for downloading Rigs of Rods.\n")), 0, wxALL, 5);
-	tst->Wrap(TXTWRAP);
+		// TODO: add linux options
+		mainSizer->Add(tst=new wxStaticText(this, wxID_ANY, _T("Thank you for downloading Rigs of Rods.\n")), 0, wxALL, 5);
+		tst->Wrap(TXTWRAP);
 #endif // OGRE_PLATFORM
+	}
+
 	SetSizer(mainSizer);
 	mainSizer->Fit(this);
 }
@@ -723,6 +818,10 @@ bool LastPage::OnEnter(bool forward)
 {
 	setControlEnable(wizard, wxID_BACKWARD, false);
 	setControlEnable(wizard, wxID_CANCEL, false);
+
+	if(CONFIG->installType == wxString("fixuserpath"))
+		return true;
+
 #if OGRE_PLATFORM == OGRE_PLATFORM_WIN32
 	chk_configurator->SetValue(true);
 	if(CONFIG->getPersistentConfig(wxT("updater.run_configurator")) == wxT("no"))
@@ -739,6 +838,8 @@ bool LastPage::OnEnter(bool forward)
 bool LastPage::OnLeave(bool forward)
 {
 	if(!forward) return false;
+	if(CONFIG->installType == wxString("fixuserpath"))
+		return true;
 #if OGRE_PLATFORM == OGRE_PLATFORM_WIN32
 	// do last things
 	CONFIG->setPersistentConfig(wxT("updater.run_configurator"), chk_configurator->IsChecked()?wxT("yes"):wxT("no"));
