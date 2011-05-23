@@ -76,6 +76,9 @@ public:
 	 */
 	double getTime();
 
+	//anglescript test
+	void boostCurrentTruck(float factor);
+
 	/**
 	 * sets the character position
 	 * @param x X position on the terrain

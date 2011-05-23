@@ -35,6 +35,7 @@
 #include "sha1.h"
 #include "collisions.h"
 #include "RoRVersion.h"
+#include "engine.h"
 
 /* class that implements the interface for the scripts */
 GameScript::GameScript(ScriptEngine *se, RoRFrameListener *efl) : mse(se), mefl(efl)
@@ -665,4 +666,17 @@ int GameScript::loadDict(AngelScript::CScriptDictionary &dict, const std::string
 	}
 
 	return 1;
+}
+
+void GameScript::boostCurrentTruck(float factor)
+{
+    // add C++ code here
+        Beam *b = BeamFactory::getSingleton().getCurrentTruck();
+        if(b && b->engine)
+        {
+                float rpm = b->engine->getRPM();
+				rpm += 2000.0f * factor;
+				b->engine->setRPM(rpm);
+        }
+    
 }
