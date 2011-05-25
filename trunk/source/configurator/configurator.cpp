@@ -84,6 +84,7 @@ using namespace std;
 
 
 #include "Settings.h"
+#include "RoRVersion.h"
 
 #include "OISKeyboard.h"
 
@@ -749,7 +750,7 @@ bool MyApp::OnInit()
 
 	wxLogStatus(wxT("Creating dialog"));
 	// create the main application window
-	MyDialog *dialog = new MyDialog(_("Rigs of Rods configuration"), this);
+	MyDialog *dialog = new MyDialog(_("Rigs of Rods version ") + wxString(ROR_VERSION_STRING) + _(" configuration"), this);
 
 	// and show it (the frames, unlike simple controls, are not shown when
 	// created initially)
@@ -982,8 +983,22 @@ MyDialog::MyDialog(const wxString& title, MyApp *_app) : wxDialog(NULL, wxID_ANY
 	x_row2 = 300;
 
 	addAboutTitle(_("Version"), x_row1, y);
-	dText = new wxStaticText(aboutPanel, -1, conv(getVersionString()), wxPoint(10, y));
-	y+= 120;
+	dText = new wxStaticText(aboutPanel, -1, wxT("Rigs of Rods version: ") + wxString(ROR_VERSION_STRING), wxPoint(x_row1 + 15, y));
+	y += dText->GetSize().GetHeight() + 2;
+
+	dText = new wxStaticText(aboutPanel, -1, wxT("Network Protocol version: ") + wxString(RORNET_VERSION), wxPoint(x_row1 + 15, y));
+	y += dText->GetSize().GetHeight() + 2;
+
+	dText = new wxStaticText(aboutPanel, -1, wxT("revison: ") + wxString(SVN_REVISION), wxPoint(x_row1 + 15, y));
+	y += dText->GetSize().GetHeight() + 2;
+
+	dText = new wxStaticText(aboutPanel, -1, wxT("full revison: ") + wxString(SVN_ID), wxPoint(x_row1 + 15, y));
+	y += dText->GetSize().GetHeight() + 2;
+
+	dText = new wxStaticText(aboutPanel, -1, wxT("build time: ") + wxString(__DATE__) + ", " + wxString(__TIME__), wxPoint(x_row1 + 15, y));
+	y += dText->GetSize().GetHeight() + 2;
+
+	y += 20;
 
 	addAboutTitle(_("Authors"), x_row1, y);
 	
