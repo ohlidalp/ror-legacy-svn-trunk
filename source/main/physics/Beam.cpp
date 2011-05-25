@@ -670,8 +670,8 @@ Beam::Beam(int tnum, SceneManager *manager, SceneNode *parent, RenderWindow* win
 		sendStreamSetup();
 	}
 
-	if(networked)
-		showSkeleton(true, true);
+	//if(networked)
+	//	showSkeleton(true, true);
 
 	//updateDebugOverlay();
 }
