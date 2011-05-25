@@ -1154,11 +1154,15 @@ RoRFrameListener::RoRFrameListener(AppState *parentState, RenderWindow* win, Cam
 			exit(1);
 		}
 		char *terrn = net->getTerrainName();
-		if(terrn && !strcmp(terrn, "any"))
+		bool isAnyTerrain = (terrn && !strcmp(terrn, "any"));
+		if(preselected_map.empty() && isAnyTerrain)
+		{
 			// so show the terrain selection
 			preselected_map = "";
-		else
+		} else if (!isAnyTerrain)
+		{
 			preselected_map = getASCIIFromCharString(terrn, 255);
+		}
 
 		// create person _AFTER_ network, important
 		int colourNum = 0;

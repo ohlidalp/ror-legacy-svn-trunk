@@ -536,6 +536,9 @@ Beam::Beam(int tnum, SceneManager *manager, SceneNode *parent, RenderWindow* win
 		if(loadTruck2(String(fname), manager, parent, Vector3(px, py, pz), rot, spawnbox))
 			return;
 
+
+
+
 	//            printf("%i nodes, %i beams\n", free_node, free_beam);
 
 	// setup sounds properly
@@ -666,6 +669,9 @@ Beam::Beam(int tnum, SceneManager *manager, SceneNode *parent, RenderWindow* win
 	{
 		sendStreamSetup();
 	}
+
+	if(networked)
+		showSkeleton(true, true);
 
 	//updateDebugOverlay();
 }
