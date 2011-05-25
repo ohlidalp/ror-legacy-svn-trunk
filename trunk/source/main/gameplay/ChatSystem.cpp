@@ -53,11 +53,11 @@ ChatSystemFactory::~ChatSystemFactory()
 
 ChatSystem *ChatSystemFactory::createLocal(int playerColour)
 {
-	LOCKSTREAMS();
+	lockStreams();
 	std::map < int, std::map < unsigned int, ChatSystem *> > &streamables = getStreams();
 	ChatSystem *ch = new ChatSystem(net, -1, 0, playerColour, false);
 	streamables[-1][0] = ch;
-	UNLOCKSTREAMS();
+	unlockStreams();
 	return ch;
 }
 
@@ -68,8 +68,10 @@ ChatSystem *ChatSystemFactory::createRemoteInstance(stream_reg_t *reg)
 	LOG(" new chat system for " + TOSTRING(reg->sourceid) + ":" + TOSTRING(reg->streamid) + ", colour: " + TOSTRING(reg->colour));
 	ChatSystem *ch = new ChatSystem(net, reg->sourceid, reg->streamid, reg->colour, true);
 
+	lockStreams();
 	std::map < int, std::map < unsigned int, ChatSystem *> > &streamables = getStreams();
 	streamables[reg->sourceid][reg->streamid] = ch;
+	unlockStreams();
 	return ch;
 }
 
@@ -89,9 +91,12 @@ bool ChatSystemFactory::syncRemoteStreams()
 
 ChatSystem *ChatSystemFactory::getFirstChatSystem()
 {
+	lockStreams();
 	std::map < int, std::map < unsigned int, ChatSystem *> > &streamables = getStreams();
 	if(streamables.empty() || streamables.begin()->second.empty()) return 0;
-	return streamables.begin()->second.begin()->second;
+	ChatSystem *r = streamables.begin()->second.begin()->second;
+	unlockStreams();
+	return r;
 }
 
 ///////////////////////////////////

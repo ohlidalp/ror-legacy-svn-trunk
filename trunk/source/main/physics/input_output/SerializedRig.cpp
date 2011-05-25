@@ -5850,7 +5850,7 @@ Rail* SerializedRig::parseRailString( const Ogre::StringVector & railStrings, pa
 			// multiply by the increment value (1 or -1), if we are decrmenting
 			// compare the negative value to essentially flip the <= operator to
 			// a >= operator ie
-			//assert( !!( start <= end ) == !!(-start >= -end );
+			//MYASSERT( !!( start <= end ) == !!(-start >= -end );
     		
 			for(int j = start ; inc * j <= inc * end; j += inc )
 			{

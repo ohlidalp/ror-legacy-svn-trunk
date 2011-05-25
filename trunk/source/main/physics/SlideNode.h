@@ -170,8 +170,8 @@ private:
 
 // Methods /////////////////////////////////////////////////////////////////////
 public:
-	RailGroup(Rail* start): mStart(start), mId(nextId) { assert(mStart); nextId++; }
-	RailGroup(Rail* start, unsigned int id): mStart(start), mId(id) { assert(mStart); }
+	RailGroup(Rail* start): mStart(start), mId(nextId) { MYASSERT(mStart); nextId++; }
+	RailGroup(Rail* start, unsigned int id): mStart(start), mId(id) { MYASSERT(mStart); }
 
 	const Rail* getStartRail() const { return mStart; }
 	unsigned int getID() const { return mId; }

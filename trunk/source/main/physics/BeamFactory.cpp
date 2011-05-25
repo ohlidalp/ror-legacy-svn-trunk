@@ -74,7 +74,7 @@ Beam *BeamFactory::createLocal(int slotid)
 
 int BeamFactory::removeBeam(Beam *b)
 {
-	LOCKSTREAMS();
+	lockStreams();
 	std::map < int, std::map < unsigned int, Beam *> > &streamables = getStreams();
 	std::map < int, std::map < unsigned int, Beam *> >::iterator it1;
 	std::map < unsigned int, Beam *>::iterator it2;
@@ -88,12 +88,12 @@ int BeamFactory::removeBeam(Beam *b)
 				NetworkStreamManager::getSingleton().removeStream(it1->first, it2->first);
 				_deleteTruck(it2->second);
 				it1->second.erase(it2);
-				UNLOCKSTREAMS();
+				unlockStreams();
 				return 0;
 			}
 		}
 	}
-	UNLOCKSTREAMS();
+	unlockStreams();
 	return 1;
 }
 
@@ -140,10 +140,10 @@ Beam *BeamFactory::createLocal(Ogre::Vector3 pos, Ogre::Quaternion rot, Ogre::St
 	if(b->getSlideNodesLockInstant())
 		b->toggleSlideNodeLock();
 
-	LOCKSTREAMS();
+	lockStreams();
 	std::map < int, std::map < unsigned int, Beam *> > &streamables = getStreams();
 	streamables[-1][10 + truck_num] = b; // 10 streams offset for beam constructions
-	UNLOCKSTREAMS();
+	unlockStreams();
 
 	return b;
 }
@@ -167,8 +167,10 @@ Beam *BeamFactory::createRemoteInstance(stream_reg_t *reg)
 		LOG("wont add remote stream (truck not existing): '"+filename+"'");
 
 		// add 0 to the map so we know its stream is existing but not usable for us
+		lockStreams();
 		std::map < int, std::map < unsigned int, Beam *> > &streamables = getStreams();
 		streamables[reg->sourceid][reg->streamid] = 0;
+		unlockStreams();
 
 		return 0;
 	}
@@ -222,8 +224,10 @@ Beam *BeamFactory::createRemoteInstance(stream_reg_t *reg)
 	b->setSourceID(reg->sourceid);
 	b->setStreamID(reg->streamid);
 
+	lockStreams();
 	std::map < int, std::map < unsigned int, Beam *> > &streamables = getStreams();
 	streamables[reg->sourceid][reg->streamid] = b;
+	unlockStreams();
 
 	b->updateNetworkInfo();
 
@@ -232,14 +236,14 @@ Beam *BeamFactory::createRemoteInstance(stream_reg_t *reg)
 
 void BeamFactory::localUserAttributesChanged(int newid)
 {
-	LOCKSTREAMS();
+	lockStreams();
 	std::map < int, std::map < unsigned int, Beam *> > &streamables = getStreams();
 	std::map < int, std::map < unsigned int, Beam *> >::iterator it1;
 	std::map < unsigned int, Beam *>::iterator it2;
 
 	if(streamables.find(-1) == streamables.end())
 	{
-		UNLOCKSTREAMS();
+		unlockStreams();
 		return;
 	}
 
@@ -247,12 +251,12 @@ void BeamFactory::localUserAttributesChanged(int newid)
 	streamables[newid][0] = streamables[-1][0]; // add alias :)
 	//b->setUID(newid);
 	//b->updateNetLabel();
-	UNLOCKSTREAMS();
+	unlockStreams();
 }
 
 void BeamFactory::netUserAttributesChanged(int source, int streamid)
 {
-	LOCKSTREAMS();
+	lockStreams();
 	std::map < int, std::map < unsigned int, Beam *> > &streamables = getStreams();
 	std::map < int, std::map < unsigned int, Beam *> >::iterator it1;
 	std::map < unsigned int, Beam *>::iterator it2;
@@ -269,12 +273,12 @@ void BeamFactory::netUserAttributesChanged(int source, int streamid)
 			}
 		}
 	}
-	UNLOCKSTREAMS();
+	unlockStreams();
 }
 
 Beam *BeamFactory::getBeam(int source, int streamid)
 {
-	LOCKSTREAMS();
+	lockStreams();
 	std::map < int, std::map < unsigned int, Beam *> > &streamables = getStreams();
 	std::map < int, std::map < unsigned int, Beam *> >::iterator it1;
 	std::map < unsigned int, Beam *>::iterator it2;
@@ -285,12 +289,12 @@ Beam *BeamFactory::getBeam(int source, int streamid)
 		{
 			if(it1->first == source)
 			{
-				UNLOCKSTREAMS();
+				unlockStreams();
 				return it2->second;
 			}
 		}
 	}
-	UNLOCKSTREAMS();
+	unlockStreams();
 	return 0;
 }
 
@@ -299,10 +303,10 @@ bool BeamFactory::syncRemoteStreams()
 	//block until all threads done
 	if (thread_mode==THREAD_HT)
 	{
-		pthread_mutex_lock(&done_count_mutex);
+		MUTEX_LOCK(&done_count_mutex);
 		while (done_count>0)
 			pthread_cond_wait(&done_count_cv, &done_count_mutex);
-		pthread_mutex_unlock(&done_count_mutex);
+		MUTEX_UNLOCK(&done_count_mutex);
 	}
 
 	// we override this here, so we know if something changed and could update the player list
@@ -540,10 +544,10 @@ void BeamFactory::_deleteTruck(Beam *b, int num)
 	//block until all threads done
 	if (thread_mode==THREAD_HT)
 	{
-		pthread_mutex_lock(&done_count_mutex);
+		MUTEX_LOCK(&done_count_mutex);
 		while (done_count>0)
 			pthread_cond_wait(&done_count_cv, &done_count_mutex);
-		pthread_mutex_unlock(&done_count_mutex);
+		MUTEX_UNLOCK(&done_count_mutex);
 	}
 
 	// synced delete
@@ -634,10 +638,10 @@ void BeamFactory::calcPhysics(float dt)
 			for (t=0; t<free_truck; t++)
 			{
 				if(!trucks[t]) continue;
-				pthread_mutex_lock(&trucks[t]->done_count_mutex);
+				MUTEX_LOCK(&trucks[t]->done_count_mutex);
 				while(trucks[t]->done_count > 0)
 					pthread_cond_wait(&trucks[t]->done_count_cv, &trucks[t]->done_count_mutex);
-				pthread_mutex_unlock(&trucks[t]->done_count_mutex);
+				MUTEX_UNLOCK(&trucks[t]->done_count_mutex);
 			}
 
 			// smooth the stuff
@@ -657,9 +661,9 @@ void BeamFactory::calcPhysics(float dt)
 			{
 				if(!trucks[t]) continue;
 				trucks[t]->done_count=1;
-				pthread_mutex_lock(&trucks[t]->work_mutex);
+				MUTEX_LOCK(&trucks[t]->work_mutex);
 				pthread_cond_broadcast(&trucks[t]->work_cv);
-				pthread_mutex_unlock(&trucks[t]->work_mutex);
+				MUTEX_UNLOCK(&trucks[t]->work_mutex);
 			}
 		} else
 		{
@@ -702,6 +706,7 @@ void BeamFactory::calcPhysics(float dt)
 void BeamFactory::removeInstance(stream_del_t *del)
 {
 	// we override this here so we can also delete the truck array content
+	lockStreams();
 	std::map < int, std::map < unsigned int, Beam *> > &streamables = getStreams();
 	std::map < int, std::map < unsigned int, Beam *> >::iterator it1;
 	std::map < unsigned int, Beam *>::iterator it2;
@@ -729,4 +734,5 @@ void BeamFactory::removeInstance(stream_del_t *del)
 		}
 		break;
 	}
+	unlockStreams();
 }

@@ -123,7 +123,7 @@ void Streamable::addReceivedPacket(header_t header, char *buffer)
 	if(receivedPackets.size() > packetBufferSize)
 		// buffer full, packet discarded
 		return;
-	pthread_mutex_lock(&recv_work_mutex);
+	MUTEX_LOCK(&recv_work_mutex);
 
 	// construct the data holding struct
 	recvPacket_t packet;
@@ -132,17 +132,17 @@ void Streamable::addReceivedPacket(header_t header, char *buffer)
 	memcpy(packet.buffer, buffer, header.size);
 
 	receivedPackets.push_back(packet);
-	pthread_mutex_unlock(&recv_work_mutex);
+	MUTEX_UNLOCK(&recv_work_mutex);
 }
 
 void Streamable::lockReceiveQueue()
 {
-	pthread_mutex_lock(&recv_work_mutex);
+	MUTEX_LOCK(&recv_work_mutex);
 }
 
 void Streamable::unlockReceiveQueue()
 {
-	pthread_mutex_unlock(&recv_work_mutex);
+	MUTEX_UNLOCK(&recv_work_mutex);
 }
 
 void Streamable::addStreamRegistrationResult(int sourceid, stream_register_t reg)

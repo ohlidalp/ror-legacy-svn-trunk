@@ -808,7 +808,9 @@ RoRFrameListener::RoRFrameListener(AppState *parentState, RenderWindow* win, Cam
 #endif
 
 	externalCameraMode=0;
-	lastcameramode=0;
+	lastcameramode=CAMERA_EXT;
+	cameramode=CAMERA_EXT;
+	enforceCameraFOVUpdate=true;
 	gameStartTime = getTimeStamp();
 	loadedTerrain="none";
 	terrainUID="";
@@ -1033,8 +1035,6 @@ RoRFrameListener::RoRFrameListener(AppState *parentState, RenderWindow* win, Cam
 	clutch=0;
 	camCollided=false;
 	camPosColl=Vector3::ZERO;
-	cameramode=0;
-	//if(isEmbedded) cameramode=CAMERA_FREE;
 	road=0;
 
 	objcounter=0;
@@ -6313,28 +6313,28 @@ void RoRFrameListener::checkRemoteStreamResultsChanged()
 
 void RoRFrameListener::setNetQuality(int q)
 {
-	pthread_mutex_lock(&mutex_data);
+	MUTEX_LOCK(&mutex_data);
 	net_quality = q;
 	net_quality_changed = true;
-	pthread_mutex_unlock(&mutex_data);
+	MUTEX_UNLOCK(&mutex_data);
 }
 
 int RoRFrameListener::getNetQuality(bool ack)
 {
 	int res = 0;
-	pthread_mutex_lock(&mutex_data);
+	MUTEX_LOCK(&mutex_data);
 	res = net_quality;
 	if(ack) net_quality_changed=false;
-	pthread_mutex_unlock(&mutex_data);
+	MUTEX_UNLOCK(&mutex_data);
 	return res;
 }
 
 bool RoRFrameListener::getNetQualityChanged()
 {
 	bool res = false;
-	pthread_mutex_lock(&mutex_data);
+	MUTEX_LOCK(&mutex_data);
 	res = net_quality_changed;
-	pthread_mutex_unlock(&mutex_data);
+	MUTEX_UNLOCK(&mutex_data);
 	return res;
 }
 

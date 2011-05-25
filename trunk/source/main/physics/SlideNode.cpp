@@ -190,7 +190,7 @@ SlideNode::SlideNode(node_t* slidingNode, RailGroup* slidingRail):
 	mBoolSettings( ATTACH_NONE )
 {
 	// make sure they exist
-	assert( mSlidingNode );
+	MYASSERT( mSlidingNode );
 }
 
 SlideNode::~SlideNode()

@@ -102,10 +102,10 @@ Beam::~Beam()
 	//block until all threads done
 	if (thread_mode==THREAD_HT)
 	{
-		pthread_mutex_lock(&done_count_mutex);
+		MUTEX_LOCK(&done_count_mutex);
 		while (done_count>0)
 			pthread_cond_wait(&done_count_cv, &done_count_mutex);
-		pthread_mutex_unlock(&done_count_mutex);
+		MUTEX_UNLOCK(&done_count_mutex);
 	}
 
 	// delete all classes we might have constructed
@@ -628,10 +628,10 @@ Beam::Beam(int tnum, SceneManager *manager, SceneNode *parent, RenderWindow* win
 		}
 
 		//we must wait the threads to be ready
-		pthread_mutex_lock(&done_count_mutex);
+		MUTEX_LOCK(&done_count_mutex);
 		while (done_count>0)
 			pthread_cond_wait(&done_count_cv, &done_count_mutex);
-		pthread_mutex_unlock(&done_count_mutex);
+		MUTEX_UNLOCK(&done_count_mutex);
 	} else if (thread_mode == THREAD_HT2)
 	{
 		// just create ONE thread for this beam
@@ -641,10 +641,10 @@ Beam::Beam(int tnum, SceneManager *manager, SceneNode *parent, RenderWindow* win
 		if (rc) LOG("BEAM: Can not start a thread");
 
 		//we must wait the threads to be ready
-		pthread_mutex_lock(&done_count_mutex);
+		MUTEX_LOCK(&done_count_mutex);
 		while (done_count>0)
 			pthread_cond_wait(&done_count_cv, &done_count_mutex);
-		pthread_mutex_unlock(&done_count_mutex);
+		MUTEX_UNLOCK(&done_count_mutex);
 	}
 	//all finished? so start network stuff
 	if (networked)
@@ -961,7 +961,7 @@ void Beam::pushNetwork(char* data, int size)
 		return;
 	};
 	//okay, the big switch
-	pthread_mutex_lock(&net_mutex);
+	MUTEX_LOCK(&net_mutex);
 	oob_t *ot;
 	ot=oob1;
 	oob1=oob2;
@@ -981,7 +981,7 @@ void Beam::pushNetwork(char* data, int size)
 		wheels[i].rp3=rp;
 	}
 	netcounter++;
-	pthread_mutex_unlock(&net_mutex);
+	MUTEX_UNLOCK(&net_mutex);
 	BES_GFX_STOP(BES_GFX_pushNetwork);
 }
 
@@ -992,7 +992,7 @@ void Beam::calcNetwork()
 	if (netcounter<4) return;
 	//we must update Nodes positions from available network informations
 	//we must lock as long as we use oob1, oob2, netb1, netb2
-	pthread_mutex_lock(&net_mutex);
+	MUTEX_LOCK(&net_mutex);
 	int i;
 	int tnow=nettimer->getMilliseconds();
 	//adjust offset to match remote time
@@ -1071,7 +1071,7 @@ void Beam::calcNetwork()
 	float engforce=oob1->engine_force+tratio*(oob2->engine_force-oob1->engine_force);
 	unsigned int flagmask=oob1->flagmask;
 
-	pthread_mutex_unlock(&net_mutex);
+	MUTEX_UNLOCK(&net_mutex);
 #ifdef USE_OPENAL
 	if (engine && ssm)
 	{
@@ -2081,10 +2081,10 @@ bool Beam::frameStep(Real dt)
 		} else if (thread_mode==THREAD_HT)
 		{
 			//block until all threads done
-			pthread_mutex_lock(&done_count_mutex);
+			MUTEX_LOCK(&done_count_mutex);
 			while (done_count>0)
 				pthread_cond_wait(&done_count_cv, &done_count_mutex);
-			pthread_mutex_unlock(&done_count_mutex);
+			MUTEX_UNLOCK(&done_count_mutex);
 
 			for (t=0; t<numtrucks; t++)
 			{
@@ -2114,14 +2114,14 @@ bool Beam::frameStep(Real dt)
 			ttrucks=trucks;
 			tnumtrucks=numtrucks;
 			//preparing workdone
-			pthread_mutex_lock(&done_count_mutex);
+			MUTEX_LOCK(&done_count_mutex);
 			done_count=thread_mode;
-			pthread_mutex_unlock(&done_count_mutex);
+			MUTEX_UNLOCK(&done_count_mutex);
 
 			//unblock threads
-			pthread_mutex_lock(&work_mutex);
+			MUTEX_LOCK(&work_mutex);
 			pthread_cond_broadcast(&work_cv);
-			pthread_mutex_unlock(&work_mutex);
+			MUTEX_UNLOCK(&work_mutex);
 
 		} else if (thread_mode==THREAD_HT2)
 		{
@@ -2175,10 +2175,10 @@ void Beam::prepareShutdown()
 	if (thread_mode==THREAD_HT)
 	{
 		//block until all threads done
-		pthread_mutex_lock(&done_count_mutex);
+		MUTEX_LOCK(&done_count_mutex);
 		while (done_count>0)
 			pthread_cond_wait(&done_count_cv, &done_count_mutex);
-		pthread_mutex_unlock(&done_count_mutex);
+		MUTEX_UNLOCK(&done_count_mutex);
 	};
 
 }
@@ -5103,7 +5103,7 @@ void *threadstart(void* vid)
 	{
 		// add the crash handler for this thread
 		CrThreadAutoInstallHelper cr_thread_install_helper;
-		assert(cr_thread_install_helper.m_nInstallStatus==0);
+		MYASSERT(cr_thread_install_helper.m_nInstallStatus==0);
 	}
 #endif //USE_CRASHRPT
 
@@ -5118,16 +5118,16 @@ void *threadstart(void* vid)
 		while (1)
 		{
 			//wait signal
-			pthread_mutex_lock(&beam->work_mutex);
+			MUTEX_LOCK(&beam->work_mutex);
 
 			//signal end
-			pthread_mutex_lock(&beam->done_count_mutex);
+			MUTEX_LOCK(&beam->done_count_mutex);
 			beam->done_count--;
 			pthread_cond_signal(&beam->done_count_cv);
-			pthread_mutex_unlock(&beam->done_count_mutex);
+			MUTEX_UNLOCK(&beam->done_count_mutex);
 
 			pthread_cond_wait(&beam->work_cv, &beam->work_mutex);
-			pthread_mutex_unlock(&beam->work_mutex);
+			MUTEX_UNLOCK(&beam->work_mutex);
 			//do work
 			beam->threadentry(id);
 		}
