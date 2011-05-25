@@ -998,6 +998,28 @@ MyDialog::MyDialog(const wxString& title, MyApp *_app) : wxDialog(NULL, wxID_ANY
 	dText = new wxStaticText(aboutPanel, -1, wxT("build time: ") + wxString(__DATE__) + ", " + wxString(__TIME__), wxPoint(x_row1 + 15, y));
 	y += dText->GetSize().GetHeight() + 2;
 
+#ifdef WIN32
+#ifdef _CPPRTTI
+	dText = new wxStaticText(aboutPanel, -1, wxT("Built with Run-Time Type Information (RTTI, /GR)"), wxPoint(x_row1 + 15, y)); y += dText->GetSize().GetHeight() + 2;
+#endif //_CPPRTTI
+#ifdef _CPPUNWIND
+	dText = new wxStaticText(aboutPanel, -1, wxT("Built with Enable Exception Handling (/GX)"), wxPoint(x_row1 + 15, y)); y += dText->GetSize().GetHeight() + 2;
+#endif //_CPPUNWIND
+#ifdef _DEBUG
+	dText = new wxStaticText(aboutPanel, -1, wxT("Built in DEBUG mode (/LDd, /MDd, or /MTd.)"), wxPoint(x_row1 + 15, y)); y += dText->GetSize().GetHeight() + 2;
+#endif //_DEBUG
+
+	dText = new wxStaticText(aboutPanel, -1, wxString::Format(wxT("Max Integer bit size: %d"), _INTEGRAL_MAX_BITS), wxPoint(x_row1 + 15, y)); y += dText->GetSize().GetHeight() + 2;
+#if _M_IX86_FP == 1
+	dText = new wxStaticText(aboutPanel, -1, wxT("Built for ARCH SSE (/arch:SSE)"), wxPoint(x_row1 + 15, y)); y += dText->GetSize().GetHeight() + 2;
+#elif _M_IX86_FP == 2
+	dText = new wxStaticText(aboutPanel, -1, wxT("Built for ARCH SSE2 (/arch:SSE2)"), wxPoint(x_row1 + 15, y)); y += dText->GetSize().GetHeight() + 2;
+#endif // _M_IX86_FP
+#ifdef _M_X64
+	dText = new wxStaticText(aboutPanel, -1, wxT("Built for x64 processors"), wxPoint(x_row1 + 15, y)); y += dText->GetSize().GetHeight() + 2;
+#endif // _M_IX86_FP
+#endif // WIN32
+
 	y += 20;
 
 	addAboutTitle(_("Authors"), x_row1, y);

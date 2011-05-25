@@ -24,6 +24,9 @@ along with Rigs of Rods.  If not, see <http://www.gnu.org/licenses/>.
 
 // add some ogre headers
 #include <OgrePrerequisites.h>
+#include <OgreString.h>
+#include <OgreStringConverter.h>
+#include <OgreLogManager.h>
 #include <OgreVector3.h>
 #include <OgreVector2.h>
 #include <OgreColourValue.h>
@@ -45,9 +48,36 @@ along with Rigs of Rods.  If not, see <http://www.gnu.org/licenses/>.
 
 // some shortcuts for us
 #define LOG(x)       Ogre::LogManager::getSingleton().logMessage(x)
+#define LOGSAFE(x)   do { if(Ogre::LogManager::getSingletonPtr()) Ogre::LogManager::getSingleton().logMessage(x);  } while(0) // use this if you log whenever its unsure if Ogre was started properly beforehand
 #define TOSTRING(x)  Ogre::StringConverter::toString(x)
 #define PARSEINT(x)  Ogre::StringConverter::parseInt(x)
 #define PARSEREAL(x) Ogre::StringConverter::parseReal(x)
+
+#define OGREFUNCTIONSTRING  Ogre::String(__FUNCTION__)+" @ "+Ogre::String(__FILE__)+":"+TOSTRING(__LINE__)
+
+// debug for pthread mutexes
+#define FEAT_DEBUG_MUTEX
+
+#ifdef FEAT_DEBUG_MUTEX
+# define MUTEX_LOCK(x)       do { LOGSAFE("***MUTEX-LOCK  : mutex "+TOSTRING((unsigned int)x)+" in function "+OGREFUNCTIONSTRING); pthread_mutex_lock(x);   } while(0)
+# define MUTEX_UNLOCK(x)     do { LOGSAFE("***MUTEX-UNLOCK: mutex "+TOSTRING((unsigned int)x)+" in function "+OGREFUNCTIONSTRING); pthread_mutex_unlock(x); } while(0)
+#else //!FEAT_DEBUG_MUTEX
+# define MUTEX_LOCK(x)       pthread_mutex_lock(x);
+# define MUTEX_UNLOCK(x)     pthread_mutex_unlock(x);
+#endif //FEAT_DEBUG_MUTEX
+
+// debug asserts
+#define FEAT_DEBUG_ASSERT
+
+#ifdef FEAT_DEBUG_ASSERT
+# ifdef WIN32
+// __debugbreak will break into the debugger in visual studio
+#  define MYASSERT(x)       do { if(x) { } else { LOGSAFE("***ASSERT FAILED: "+OGREFUNCTIONSTRING); __debugbreak(); }; } while(0)
+# endif //WIN32
+#else //!FEAT_DEBUG_ASSERT
+# define MYASSERT(x)         assert(x)
+#endif //FEAT_DEBUG_ASSERT
+
 
 // replace standard allocations with nedmalloc
 //#define REPLACE_SYSTEM_ALLOCATOR

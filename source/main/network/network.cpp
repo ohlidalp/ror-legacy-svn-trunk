@@ -117,13 +117,13 @@ Network::Network(std::string servername, long sport, RoRFrameListener *efl): lag
 	pthread_mutex_init(&clients_mutex, NULL);
 
 	// reset client list
-	pthread_mutex_lock(&clients_mutex);
+	MUTEX_LOCK(&clients_mutex);
 	for (int i=0; i<MAX_PEERS; i++)
 	{
 		clients[i].used=false;
 		memset(&clients[i].user, 0, sizeof(user_info_t));
 	}
-	pthread_mutex_unlock(&clients_mutex);
+	MUTEX_UNLOCK(&clients_mutex);
 
 	// direct start, no vehicle required
 	initiated = true;
@@ -317,7 +317,7 @@ int Network::sendMessageRaw(SWInetSocket *socket, char *buffer, unsigned int msg
 {
 	//LOG("* sending raw message: " + TOSTRING(msgsize));
 
-	pthread_mutex_lock(&msgsend_mutex); //we use a mutex because a chat message can be sent asynchronously
+	MUTEX_LOCK(&msgsend_mutex); //we use a mutex because a chat message can be sent asynchronously
 	SWBaseSocket::SWBaseError error;
 
 	int rlen=0;
@@ -331,13 +331,13 @@ int Network::sendMessageRaw(SWInetSocket *socket, char *buffer, unsigned int msg
 		}
 		rlen+=sendnum;
 	}
-	pthread_mutex_unlock(&msgsend_mutex);
+	MUTEX_UNLOCK(&msgsend_mutex);
 	return 0;
 }
 
 int Network::sendmessage(SWInetSocket *socket, int type, unsigned int streamid, unsigned int len, char* content)
 {
-	pthread_mutex_lock(&msgsend_mutex); //we use a mutex because a chat message can be sent asynchronously
+	MUTEX_LOCK(&msgsend_mutex); //we use a mutex because a chat message can be sent asynchronously
 	SWBaseSocket::SWBaseError error;
 	header_t head;
 	memset(&head, 0, sizeof(header_t));
@@ -372,7 +372,7 @@ int Network::sendmessage(SWInetSocket *socket, int type, unsigned int streamid, 
 		}
 		rlen+=sendnum;
 	}
-	pthread_mutex_unlock(&msgsend_mutex);
+	MUTEX_UNLOCK(&msgsend_mutex);
 	calcSpeed();
 	return 0;
 }
@@ -636,7 +636,7 @@ void Network::receivethreadstart()
 				} else
 				{
 					// find a free entry
-					pthread_mutex_lock(&clients_mutex);
+					MUTEX_LOCK(&clients_mutex);
 					for (int i=0; i<MAX_PEERS; i++)
 					{
 						if (clients[i].used)
@@ -649,7 +649,7 @@ void Network::receivethreadstart()
 						BeamFactory::getSingleton().netUserAttributesChanged(header.source, -1);
 						break;
 					}
-					pthread_mutex_unlock(&clients_mutex);
+					MUTEX_UNLOCK(&clients_mutex);
 				}
 			}
 			continue;
@@ -662,24 +662,24 @@ void Network::receivethreadstart()
 int Network::getClientInfos(client_t c[MAX_PEERS])
 {
 	if(!initiated) return 1;
-	pthread_mutex_lock(&clients_mutex);
+	MUTEX_LOCK(&clients_mutex);
 	for(int i=0;i<MAX_PEERS;i++)
 		c[i] = clients[i]; // copy the whole client list
-	pthread_mutex_unlock(&clients_mutex);
+	MUTEX_UNLOCK(&clients_mutex);
 	return 0;
 }
 
 client_t *Network::getClientInfo(unsigned int uid)
 {
 // this is a deadlock here
-//	pthread_mutex_lock(&clients_mutex);
+//	MUTEX_LOCK(&clients_mutex);
 	client_t *c = 0;
 	for (int i=0; i<MAX_PEERS; i++)
 	{
 		if (clients[i].user.uniqueid == uid)
 			c = &clients[i];
 	}
-//	pthread_mutex_unlock(&clients_mutex);
+//	MUTEX_UNLOCK(&clients_mutex);
 	return c;
 }
 

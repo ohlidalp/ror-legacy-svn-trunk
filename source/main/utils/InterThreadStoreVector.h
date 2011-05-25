@@ -41,19 +41,19 @@ public:
 	
 	void push(T v)
 	{
-		pthread_mutex_lock(&lock);
+		MUTEX_LOCK(&lock);
 		store.push_back(v);
-		pthread_mutex_unlock(&lock);	
+		MUTEX_UNLOCK(&lock);	
 	}
 	
 	int pull(std::vector < T > &res)
 	{
 		int results = 0;
-		pthread_mutex_lock(&lock);
+		MUTEX_LOCK(&lock);
 		res = store;
 		results = res.size();
 		store.clear();
-		pthread_mutex_unlock(&lock);
+		MUTEX_UNLOCK(&lock);
 		return results;
 	}
 

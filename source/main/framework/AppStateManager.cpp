@@ -72,14 +72,14 @@ AppState* AppStateManager::findByName(Ogre::String stateName)
 //|||||||||||||||||||||||||||||||||||||||||||||||
 void AppStateManager::update(double dt)
 {
-	pthread_mutex_lock(&lock);
+	MUTEX_LOCK(&lock);
 #if OGRE_PLATFORM == OGRE_PLATFORM_WIN32 || OGRE_PLATFORM == OGRE_PLATFORM_LINUX
 	RoRWindowEventUtilities::messagePump();
 #endif
 	if(OgreFramework::getSingletonPtr()->m_pRenderWnd->isClosed())
 	{
 		// unlock before shutdown
-		pthread_mutex_unlock(&lock);
+		MUTEX_UNLOCK(&lock);
 		// shutdown locks the mutex itself
 		shutdown();
 		return;
@@ -87,7 +87,7 @@ void AppStateManager::update(double dt)
 
 	m_ActiveStateStack.back()->update(dt);
 	OgreFramework::getSingletonPtr()->m_pRoot->renderOneFrame();
-	pthread_mutex_unlock(&lock);
+	MUTEX_UNLOCK(&lock);
 }
 
 void AppStateManager::start(AppState* state)
@@ -221,9 +221,9 @@ void AppStateManager::pauseAppState()
 void AppStateManager::shutdown()
 {
 	// shutdown needs to be synced
-	pthread_mutex_lock(&lock);
+	MUTEX_LOCK(&lock);
 	m_bShutdown = true;
-	pthread_mutex_unlock(&lock);
+	MUTEX_UNLOCK(&lock);
 }
 
 //|||||||||||||||||||||||||||||||||||||||||||||||
@@ -231,9 +231,9 @@ void AppStateManager::shutdown()
 void AppStateManager::pauseRendering()
 {
 	// shutdown needs to be synced
-	pthread_mutex_lock(&lock);
+	MUTEX_LOCK(&lock);
 	m_bNoRendering = true;
-	pthread_mutex_unlock(&lock);
+	MUTEX_UNLOCK(&lock);
 }
 
 //|||||||||||||||||||||||||||||||||||||||||||||||

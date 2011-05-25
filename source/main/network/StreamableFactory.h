@@ -36,26 +36,6 @@ along with Rigs of Rods.  If not, see <http://www.gnu.org/licenses/>.
 
 #include <Ogre.h>
 
-// this is the master swith to debug the stream locking/unlocking
-//#define DEBUGSTREAMFACTORIES
-
-#define OGREFUNCTIONSTRING  String(__FUNCTION__)+" @ "+String(__FILE__)+":"+TOSTRING(__LINE__)
-
-#ifdef FEAT_DEBUGSTREAMFACTORIES
-# define LOCKSTREAMS()       do { LOG("***LOCK:   "+OGREFUNCTIONSTRING); lockStreams();   } while(0)
-# define UNLOCKSTREAMS()     do { LOG("***UNLOCK: "+OGREFUNCTIONSTRING); unlockStreams(); } while(0)
-# ifdef WIN32
-// __debugbreak will break into the debugger in visual studio
-#  define MYASSERT(x)       do { if(!x) { LOG("***ASSERT FAILED: "+OGREFUNCTIONSTRING); __debugbreak(); }; } while(0)
-# else //!WIN32
-#  define MYASSERT(x)       assert(x)
-# endif //WIN32
-#else //!DEBUGSTREAMFACTORIES
-# define LOCKSTREAMS()       lockStreams();
-# define UNLOCKSTREAMS()     unlockStreams();
-# define MYASSERT(x)         ((void)0)
-#endif //DEBUGSTREAMFACTORIES
-
 template<class T, class X> class StreamableFactory : public StreamableFactoryInterface
 {
 	friend class Network;
@@ -96,7 +76,7 @@ public:
 	// common functions
 	void createRemote(int sourceid, int streamid, stream_register_t *reg, int colour)
 	{
-		LOCKSTREAMS();
+		lockStreams();
 
 		stream_reg_t registration;
 		registration.sourceid = sourceid;
@@ -105,24 +85,24 @@ public:
 		registration.colour   = colour;
 		stream_registrations.push_back(registration);
 
-		UNLOCKSTREAMS();
+		unlockStreams();
 	}
 
 	void deleteRemote(int sourceid, int streamid)
 	{
-		LOCKSTREAMS();
+		lockStreams();
 
 		stream_del_t deletion;
 		deletion.sourceid = sourceid;
 		deletion.streamid = streamid;
 		stream_deletions.push_back(deletion);
 
-		UNLOCKSTREAMS();
+		unlockStreams();
 	}
 
 	virtual bool syncRemoteStreams()
 	{
-		LOCKSTREAMS();
+		lockStreams();
 		// first registrations
 		int changes = 0;
 		while (!stream_registrations.empty())
@@ -167,12 +147,13 @@ public:
 			stream_deletions.pop_front();
 			changes++;
 		}
-		UNLOCKSTREAMS();
+		unlockStreams();
 		return (changes > 0);
 	}
 
 	void removeInstance(stream_del_t *del)
 	{
+		lockStreams();
 		typename std::map < int, std::map < unsigned int, X *> > &streamables = getStreams();
 		typename std::map < int, std::map < unsigned int, X *> >::iterator it1;
 		typename std::map < unsigned int, X *>::iterator it2;
@@ -192,11 +173,13 @@ public:
 			}
 			break;
 		}
+		unlockStreams();
 	}
 
 	int checkStreamsOK(int sourceid)
 	{
 		// walk client and the streams and checks for errors
+		lockStreams();
 		typename std::map < int, std::map < unsigned int, X *> > &streamables = getStreams();
 		typename std::map < int, std::map < unsigned int, X *> >::iterator it1;
 		typename std::map < unsigned int, X *>::iterator it2;
@@ -219,11 +202,13 @@ public:
 		}
 		if(!num)
 			ok = 2;
+		unlockStreams();
 		return ok;
 	}
 
 	int checkStreamsResultsChanged()
 	{
+		lockStreams();
 		typename std::map < int, std::map < unsigned int, X *> > &streamables = getStreams();
 		typename std::map < int, std::map < unsigned int, X *> >::iterator it1;
 		typename std::map < unsigned int, X *>::iterator it2;
@@ -235,16 +220,19 @@ public:
 				if(!it2->second) continue;
 				if(it2->second->getStreamResultsChanged())
 				{
+					unlockStreams();
 					return 1;
 				}
 			}
 		}
+		unlockStreams();
 		return 0;
 	}
 
 	int checkStreamsRemoteOK(int sourceid)
 	{
 		// walk client and the streams and checks for errors
+		lockStreams();
 		typename std::map < int, std::map < unsigned int, X *> > &streamables = getStreams();
 		typename std::map < int, std::map < unsigned int, X *> >::iterator it1;
 		typename std::map < unsigned int, X *>::iterator it2;
@@ -274,20 +262,21 @@ public:
 		}
 		if(!originstreams)
 			ok = 2;
+		unlockStreams();
 		return ok;
 	}
 
 	int clearStreamRegistrationResults()
 	{
-		LOCKSTREAMS();
+		lockStreams();
 		stream_creation_results.clear();
-		UNLOCKSTREAMS();
+		unlockStreams();
 		return 0;
 	}
 
 	int getStreamRegistrationResults(std::deque < stream_reg_t > *net_results)
 	{
-		LOCKSTREAMS();
+		lockStreams();
 		// move list entries over to the list in the networking thread
 		int res = 0;
 		while (!stream_creation_results.empty())
@@ -297,12 +286,13 @@ public:
 			stream_creation_results.pop_front();
 			res++;
 		}
-		UNLOCKSTREAMS();
+		unlockStreams();
 		return res;
 	}
 
 	int addStreamRegistrationResults(int sourceid, stream_register_t *reg)
 	{
+		lockStreams();
 		typename std::map < int, std::map < unsigned int, X *> > &streamables = getStreams();
 		typename std::map < int, std::map < unsigned int, X *> >::iterator it1;
 		typename std::map < unsigned int, X *>::iterator it2;
@@ -332,6 +322,7 @@ public:
 			}
 			break;
 		}
+		unlockStreams();
 		return res;
 	}
 
@@ -355,13 +346,13 @@ protected:
 	{
 		// double locking is not healty!
 		//MYASSERT(!this->locked);
-		pthread_mutex_lock(&stream_reg_mutex);
+		MUTEX_LOCK(&stream_reg_mutex);
 		this->locked=true;
 	}
 
 	void unlockStreams()
 	{
-		pthread_mutex_unlock(&stream_reg_mutex);
+		MUTEX_UNLOCK(&stream_reg_mutex);
 		this->locked=false;
 	}
 

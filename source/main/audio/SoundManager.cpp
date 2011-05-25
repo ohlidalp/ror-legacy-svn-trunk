@@ -111,7 +111,7 @@ SoundManager::SoundManager()
 Sound* SoundManager::createSound(String filename)
 {
 	if (!device) return NULL;
-	pthread_mutex_lock(&audio_mutex);
+	MUTEX_LOCK(&audio_mutex);
 	ALuint buffer=0;
 	//first, search if we need to create the buffer
 	for (int i=0; i<free_buffer; i++)
@@ -125,7 +125,7 @@ Sound* SoundManager::createSound(String filename)
 		//load the file
 		if (free_buffer==MAX_BUFFERS)
 		{
-			pthread_mutex_unlock(&audio_mutex);
+			MUTEX_UNLOCK(&audio_mutex);
 			return NULL;
 		}
 		alGenBuffers(1, &buffers[free_buffer]);
@@ -135,7 +135,7 @@ Sound* SoundManager::createSound(String filename)
 			//there was an error!
 			alDeleteBuffers(1, &buffers[free_buffer]);
 			buffer_filenames[free_buffer]=String("");
-			pthread_mutex_unlock(&audio_mutex);
+			MUTEX_UNLOCK(&audio_mutex);
 			return NULL;
 		}
 		buffer=buffers[free_buffer];
@@ -143,21 +143,21 @@ Sound* SoundManager::createSound(String filename)
 	}
 	if (free_input_source==MAX_INPUT_SOURCES)
 	{
-		pthread_mutex_unlock(&audio_mutex);
+		MUTEX_UNLOCK(&audio_mutex);
 		return NULL;
 	}
 	input_sources[free_input_source]=new Sound(free_input_source, buffer, this);
 	free_input_source++;
 	//don't recompute, because sounds do not play automatically
 	//recomputeSource(free_input_source-1);
-	pthread_mutex_unlock(&audio_mutex);
+	MUTEX_UNLOCK(&audio_mutex);
 	return input_sources[free_input_source-1];
 }
 
 void SoundManager::setCamera(Ogre::Vector3 position, Ogre::Vector3 direction, Ogre::Vector3 up, Ogre::Vector3 velocity)
 {
 	if (!device) return;
-	pthread_mutex_lock(&audio_mutex);
+	MUTEX_LOCK(&audio_mutex);
 	cameraPosition=position;
 	recomputeAllSources();
 	float dir[6];
@@ -172,7 +172,7 @@ void SoundManager::setCamera(Ogre::Vector3 position, Ogre::Vector3 direction, Og
 	alListener3f(AL_POSITION, position.x,position.y, position.z);
 	alListener3f(AL_VELOCITY, velocity.x,velocity.y,velocity.z);
 	alListenerfv(AL_ORIENTATION, dir);
-	pthread_mutex_unlock(&audio_mutex);
+	MUTEX_UNLOCK(&audio_mutex);
 }
 
 void SoundManager::pauseAllSounds()
@@ -529,87 +529,87 @@ void Sound::computeAudibility(Vector3 from)
 
 bool Sound::isPlaying()
 {
-	pthread_mutex_lock(&sm->audio_mutex);
+	MUTEX_LOCK(&sm->audio_mutex);
 	if (hardware_index!=-1)
 	{
 		int value;
 		alGetSourcei(sm->hardware_sources[hardware_index], AL_SOURCE_STATE, &value);
-		pthread_mutex_unlock(&sm->audio_mutex);
+		MUTEX_UNLOCK(&sm->audio_mutex);
 		return (value==AL_PLAYING);
 	}
-	pthread_mutex_unlock(&sm->audio_mutex);
+	MUTEX_UNLOCK(&sm->audio_mutex);
 	return false;
 }
 
 void Sound::setEnabled(bool e)
 {
-	pthread_mutex_lock(&sm->audio_mutex);
+	MUTEX_LOCK(&sm->audio_mutex);
 	enabled = e;
 	sm->recomputeSource(input_index, REASON_PLAY, 0, NULL);
-	pthread_mutex_unlock(&sm->audio_mutex);
+	MUTEX_UNLOCK(&sm->audio_mutex);
 }
 
 bool Sound::getEnabled()
 {
-	pthread_mutex_lock(&sm->audio_mutex);
+	MUTEX_LOCK(&sm->audio_mutex);
 	return enabled;
-	pthread_mutex_unlock(&sm->audio_mutex);
+	MUTEX_UNLOCK(&sm->audio_mutex);
 }
 
 void Sound::play()
 {
-	pthread_mutex_lock(&sm->audio_mutex);
+	MUTEX_LOCK(&sm->audio_mutex);
 	should_play=true;
 	sm->recomputeSource(input_index, REASON_PLAY, 0, NULL);
-	pthread_mutex_unlock(&sm->audio_mutex);
+	MUTEX_UNLOCK(&sm->audio_mutex);
 }
 
 void Sound::stop()
 {
-	pthread_mutex_lock(&sm->audio_mutex);
+	MUTEX_LOCK(&sm->audio_mutex);
 	should_play=false;
 	sm->recomputeSource(input_index, REASON_STOP, 0, NULL);
-	pthread_mutex_unlock(&sm->audio_mutex);
+	MUTEX_UNLOCK(&sm->audio_mutex);
 }
 
 void Sound::setGain(float gain)
 {
-	pthread_mutex_lock(&sm->audio_mutex);
+	MUTEX_LOCK(&sm->audio_mutex);
 	this->gain=gain;
 	sm->recomputeSource(input_index, REASON_GAIN, gain, NULL);
-	pthread_mutex_unlock(&sm->audio_mutex);
+	MUTEX_UNLOCK(&sm->audio_mutex);
 }
 
 void Sound::setLoop(bool loop)
 {
-	pthread_mutex_lock(&sm->audio_mutex);
+	MUTEX_LOCK(&sm->audio_mutex);
 	this->loop=loop;
 	sm->recomputeSource(input_index, REASON_LOOP, (loop)?1.0:0.0, NULL);
-	pthread_mutex_unlock(&sm->audio_mutex);
+	MUTEX_UNLOCK(&sm->audio_mutex);
 }
 
 void Sound::setPitch(float pitch)
 {
-	pthread_mutex_lock(&sm->audio_mutex);
+	MUTEX_LOCK(&sm->audio_mutex);
 	this->pitch=pitch;
 	sm->recomputeSource(input_index, REASON_PTCH, pitch, NULL);
-	pthread_mutex_unlock(&sm->audio_mutex);
+	MUTEX_UNLOCK(&sm->audio_mutex);
 }
 
 void Sound::setPosition(Ogre::Vector3 pos)
 {
-	pthread_mutex_lock(&sm->audio_mutex);
+	MUTEX_LOCK(&sm->audio_mutex);
 	this->position=pos;
 	sm->recomputeSource(input_index, REASON_POSN, 0, &pos);
-	pthread_mutex_unlock(&sm->audio_mutex);
+	MUTEX_UNLOCK(&sm->audio_mutex);
 }
 
 void Sound::setVelocity(Ogre::Vector3 vel)
 {
-	pthread_mutex_lock(&sm->audio_mutex);
+	MUTEX_LOCK(&sm->audio_mutex);
 	this->velocity=vel;
 	sm->recomputeSource(input_index, REASON_VLCT, 0, &vel);
-	pthread_mutex_unlock(&sm->audio_mutex);
+	MUTEX_UNLOCK(&sm->audio_mutex);
 }
 
 #endif //OPENAL
