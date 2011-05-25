@@ -719,7 +719,10 @@ void BeamFactory::removeInstance(stream_del_t *del)
 				{
 					trucks[it2->second->trucknum] = 0;
 					// deletes the stream
-					delete it2->second;
+					
+					
+					// TODO: fix deletion
+					//delete it2->second;
 					it2->second = 0;
 				}
 			}
