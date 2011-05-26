@@ -167,10 +167,11 @@ Beam *BeamFactory::createRemoteInstance(stream_reg_t *reg)
 		LOG("wont add remote stream (truck not existing): '"+filename+"'");
 
 		// add 0 to the map so we know its stream is existing but not usable for us
-		lockStreams();
+		// already locked
+		//lockStreams();
 		std::map < int, std::map < unsigned int, Beam *> > &streamables = getStreams();
 		streamables[reg->sourceid][reg->streamid] = 0;
-		unlockStreams();
+		//unlockStreams();
 
 		return 0;
 	}
@@ -224,10 +225,11 @@ Beam *BeamFactory::createRemoteInstance(stream_reg_t *reg)
 	b->setSourceID(reg->sourceid);
 	b->setStreamID(reg->streamid);
 
-	lockStreams();
+	// already locked
+	//lockStreams();
 	std::map < int, std::map < unsigned int, Beam *> > &streamables = getStreams();
 	streamables[reg->sourceid][reg->streamid] = b;
-	unlockStreams();
+	//unlockStreams();
 
 	b->updateNetworkInfo();
 
@@ -706,7 +708,8 @@ void BeamFactory::calcPhysics(float dt)
 void BeamFactory::removeInstance(stream_del_t *del)
 {
 	// we override this here so we can also delete the truck array content
-	lockStreams();
+	//already locked
+	//lockStreams();
 	std::map < int, std::map < unsigned int, Beam *> > &streamables = getStreams();
 	std::map < int, std::map < unsigned int, Beam *> >::iterator it1;
 	std::map < unsigned int, Beam *>::iterator it2;
@@ -734,5 +737,5 @@ void BeamFactory::removeInstance(stream_del_t *del)
 		}
 		break;
 	}
-	unlockStreams();
+	//unlockStreams();
 }

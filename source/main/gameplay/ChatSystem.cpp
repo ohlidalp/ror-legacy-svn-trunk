@@ -68,10 +68,11 @@ ChatSystem *ChatSystemFactory::createRemoteInstance(stream_reg_t *reg)
 	LOG(" new chat system for " + TOSTRING(reg->sourceid) + ":" + TOSTRING(reg->streamid) + ", colour: " + TOSTRING(reg->colour));
 	ChatSystem *ch = new ChatSystem(net, reg->sourceid, reg->streamid, reg->colour, true);
 
-	lockStreams();
+	// already locked
+	//lockStreams();
 	std::map < int, std::map < unsigned int, ChatSystem *> > &streamables = getStreams();
 	streamables[reg->sourceid][reg->streamid] = ch;
-	unlockStreams();
+	//unlockStreams();
 	return ch;
 }
 
