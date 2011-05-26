@@ -84,8 +84,8 @@ int WsyncDownload::downloadFile(int jobID, boost::filesystem::path localFile, st
 	CURL *curl = curl_easy_init();
 	if(!curl)
 	{
-		LOG("DLFile-%04d|error creating curl: %s\n", jobID, localFile.string().c_str());
-		LOG("DLFile-%04d|download URL: http://%s%s\n", jobID, server.c_str(), path.c_str());
+		LOG("DLFile-%04d| error creating curl: %s\n", jobID, localFile.string().c_str());
+		LOG("DLFile-%04d| download URL: http://%s%s\n", jobID, server.c_str(), path.c_str());
 		if(jinfo.wxp) jinfo.wxp->Update(1000, wxT("error"));
 		return 1;
 	}
@@ -95,8 +95,8 @@ int WsyncDownload::downloadFile(int jobID, boost::filesystem::path localFile, st
 	if(!outFile)
 	{
 		perror("error opening file");
-		LOG("DLFile-%04d|error opening local file: %s.\n", jobID, localFile.string().c_str());
-		LOG("DLFile-%04d|download URL: http://%s%s\n", jobID, server.c_str(), path.c_str());
+		LOG("DLFile-%04d| error opening local file: %s.\n", jobID, localFile.string().c_str());
+		LOG("DLFile-%04d| download URL: http://%s%s\n", jobID, server.c_str(), path.c_str());
 		if(jinfo.wxp) jinfo.wxp->Update(1000, wxT("error"));	
 	}
 
@@ -142,11 +142,11 @@ int WsyncDownload::downloadFile(int jobID, boost::filesystem::path localFile, st
 	boost::uintmax_t fileSize = file_size(localFile);
 	if(jinfo.predDownloadSize != 0 && fileSize != jinfo.predDownloadSize)
 	{
-		LOG("DLFile-%04d|Error: file size is different: should be %d, is %d. removing file.\n", jobID, jinfo.realDownloadSize, (int)fileSize);
-		LOG("DLFile-%04d|download URL: http://%s%s\n", jobID, server.c_str(), path.c_str());
+		LOG("DLFile-%04d| Error: file size is different: should be %d, is %d. removing file.\n", jobID, jinfo.realDownloadSize, (int)fileSize);
+		LOG("DLFile-%04d| download URL: http://%s%s\n", jobID, server.c_str(), path.c_str());
 		if(jinfo.wxp) jinfo.wxp->Update(1000, wxT("error"));
 
-		tryRemoveFile(localFile);
+		tryRemoveFile(localFile, jobID);
 		return 1;
 	}
 
@@ -187,16 +187,18 @@ void WsyncDownload::reportDownloadProgress(int jobID, Timer dlStartTime, boost::
 	updateCallback(jobID, MSE_DOWNLOAD_DOWNLOADED, "", size_done);
 }
 
-void WsyncDownload::tryRemoveFile(boost::filesystem::path filename)
+void WsyncDownload::tryRemoveFile(boost::filesystem::path filename, int jobID)
 {
-	LOG("removing file: %s ... ", filename.string().c_str());
+	LOG("tryRemoveFile-%04d| removing file: %s ... TRYING ...\n", jobID, filename.string().c_str());
 	try
 	{
 		remove(filename);
-		LOG("ok\n");
-	} catch(...)
+		LOG("tryRemoveFile-%04d| removing file: %s ... SUCCESSFULLY\n", jobID, filename.string().c_str());
+	} catch(exception& e)
 	{
-		LOG("ERROR\n");
+		LOG("tryRemoveFile-%04d| removing file: %s ... ERROR: %s\n", jobID, filename.string().c_str(), e.what());
+		wxMessageBox(wxT("Unable to delete file: \n") + conv(filename.string()) + wxT("\n\nError: ") + wxString(e.what()) + wxT("\n\nPlease close RoR and all associated applications and try again later with admin priviledges."), wxT("Update Error"),0);
+		exit(1);
 	}
 }
 
@@ -225,24 +227,24 @@ void WsyncDownload::updateCallback(int jobID, int type, std::string txt, float p
 
 
 
-int WsyncDownload::downloadAdvancedConfigFile(std::string server, std::string url, std::vector< std::map< std::string, std::string > > &list, bool showProgress)
+int WsyncDownload::downloadAdvancedConfigFile(int jobID, std::string server, std::string url, std::vector< std::map< std::string, std::string > > &list, bool showProgress)
 {
 	path tempfile;
 	if(getTempFilename(tempfile))
 	{
-		printf("error creating tempfile!\n");
+		LOG("DLACFile-%04d| error creating tempfile!\n", jobID);
 		return -1;
 	}
 
-	if(downloadFile(0, tempfile, server, url, 0, 0, showProgress))
+	if(downloadFile(jobID, tempfile, server, url, 0, 0, showProgress))
 	{
-		printf("error downloading file from %s, %s\n", server.c_str(), url.c_str());
+		LOG("DLACFile-%04d| error downloading file from %s, %s\n", jobID, server.c_str(), url.c_str());
 		return -2;
 	}
 	ifstream fin(tempfile.string().c_str());
 	if (fin.is_open() == false)
 	{
-		printf("unable to open file for reading: %s\n", tempfile.string().c_str());
+		LOG("DLACFile-%04d| unable to open file for reading: %s\n", jobID, tempfile.string().c_str());
 		return -3;
 	}
 	bool complete = false;
@@ -274,37 +276,37 @@ int WsyncDownload::downloadAdvancedConfigFile(std::string server, std::string ur
 		}
 	}
 	fin.close();
-	tryRemoveFile(tempfile);
+	tryRemoveFile(tempfile, jobID);
 
 	if(!complete)
 	{
-		LOG("error downloading file from %s, %s\n", server.c_str(), url.c_str());
+		LOG("DLACFile-%04d| error downloading file from %s, %s\n", jobID, server.c_str(), url.c_str());
 		return -4;
 	}
 	return 0;
 }
 
 
-int WsyncDownload::downloadConfigFile(std::string server, std::string url, std::vector< std::vector< std::string > > &list, bool showProgress)
+int WsyncDownload::downloadConfigFile(int jobID, std::string server, std::string url, std::vector< std::vector< std::string > > &list, bool showProgress)
 {
 	list.clear();
 
 	path tempfile;
 	if(getTempFilename(tempfile))
 	{
-		printf("error creating tempfile!\n");
+		LOG("DLCFile-%04d| error creating tempfile!\n", jobID);
 		return -1;
 	}
 
 	if(downloadFile(0, tempfile, server, url, 0, 0, showProgress))
 	{
-		printf("error downloading file from %s, %s\n", server.c_str(), url.c_str());
+		LOG("DLCFile-%04d| error downloading file from %s, %s\n", jobID, server.c_str(), url.c_str());
 		return -1;
 	}
 	ifstream fin(tempfile.string().c_str());
 	if (fin.is_open() == false)
 	{
-		printf("unable to open file for reading: %s\n", tempfile.string().c_str());
+		LOG("DLCFile-%04d| unable to open file for reading: %s\n", jobID, tempfile.string().c_str());
 		return -1;
 	}
 	string line = string();
@@ -314,6 +316,6 @@ int WsyncDownload::downloadConfigFile(std::string server, std::string url, std::
 		list.push_back(args);
 	}
 	fin.close();
-	WsyncDownload::tryRemoveFile(tempfile);
+	WsyncDownload::tryRemoveFile(tempfile, jobID);
 	return 0;
 }

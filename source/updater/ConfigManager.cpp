@@ -58,6 +58,7 @@ ConfigManager::ConfigManager() : currVersion()
 	ConfigManager::instance = this;
 	installPath = wxString();
 	dlerror=0;
+	enforceUpdate=false;
 }
 
 int ConfigManager::getCurrentVersionInfo()
@@ -67,7 +68,7 @@ int ConfigManager::getCurrentVersionInfo()
 	std::vector< std::vector< std::string > > list;
 	char tmp[256] = "";
 	sprintf(tmp, "/%s/%s/%s", INSTALLER_VERSION, INSTALLER_PLATFORM, WSYNC_VERSION_INFO);
-	int res = wsdl->downloadConfigFile(WSYNC_MAIN_SERVER, std::string(tmp), list);
+	int res = wsdl->downloadConfigFile(0, WSYNC_MAIN_SERVER, std::string(tmp), list);
 	delete(wsdl);
 	if(!res && list.size()>0 && list[0].size()>0)
 	{
@@ -108,12 +109,16 @@ wxString ConfigManager::getInstallationPath()
 {
 	wxString path = getExecutableBasePath();
 	path += wxT("\\");
-	// check if RoR.exe exists
-	bool exists = wxFileExists(path+wxT("RoR.exe"));
-	if(!exists)
+
+	if(!enforceUpdate)
 	{
-		wxMessageBox(wxT("No RoR.exe found, please install the game before trying to update"),wxT("Update Error"),0);
-		exit(1);
+		// check if RoR.exe exists
+		bool exists = wxFileExists(path+wxT("RoR.exe"));
+		if(!exists)
+		{
+			wxMessageBox(wxT("No RoR.exe found, please install the game before trying to update"),wxT("Update Error"),0);
+			exit(1);
+		}
 	}
 	return path;
 }
@@ -237,7 +242,7 @@ void ConfigManager::updateUserConfigs()
 	{
 		GetShortPathName(wuser_path, wuser_path, 512); //this is legal
 		uPath = wstrtostr(std::wstring(wuser_path));
-		uPath = uPath / std::string("Rigs of Rods") / std::string("config");;
+		uPath = uPath / std::string("Rigs of Rods 0.38") / std::string("config");;
 	}
 #else
 	// XXX : TODO
@@ -396,7 +401,7 @@ void ConfigManager::checkForNewUpdater()
 	LOG("checking for updates...\n");
 	wsdl->setDownloadMessage(_T("checking for updates"));
 	std::vector< std::vector< std::string > > list;
-	int res = wsdl->downloadConfigFile(API_SERVER, std::string(url_tmp), list, true);
+	int res = wsdl->downloadConfigFile(1, API_SERVER, std::string(url_tmp), list, true);
 	if(!res && list.size()>0 && list[0].size()>0)
 	{
 		LOG("update check result: %s\n", list[0][0].c_str());

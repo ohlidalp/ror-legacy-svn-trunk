@@ -292,7 +292,7 @@ int WsyncThread::saveHashMapToFile(boost::filesystem::path &filename, std::map<s
 	FILE *f = fopen(cfile, "wb");
 	if(!f)
 	{
-		printf("error opening file: %s\n", cfile);
+		LOG("error opening file: %s\n", cfile);
 		return -1;
 	}
 
@@ -430,7 +430,7 @@ int WsyncThread::loadHashMapFromFile(boost::filesystem::path &filename, std::map
 	FILE *f = fopen(filename.string().c_str(), "r");
 	if (!f)
 	{
-		printf("error opening file '%s'", filename.string().c_str());
+		LOG("error opening file '%s'\n", filename.string().c_str());
 		return -1;
 	}
 	while(!feof(f))
@@ -485,6 +485,7 @@ int WsyncThread::sync()
 			if(it->first == string("/version.txt")) continue;
 			if(it->first == string("/config.cfg")) continue;
 			if(it->first == string("/uninst.exe")) continue;
+			if(it->first == string("/wizard.log")) continue;
 			if(it->first == string("/forums.url")) continue;
 
 			//if(hashMapRemote[it->first] == it->second)
@@ -738,7 +739,7 @@ int WsyncThread::findMirror(bool probeForBest)
 		LOG("getting random mirror ...\n");
 		// just collect a best fitting server by geolocating this client's IP
 		WsyncDownload *wsdl = new WsyncDownload(this);
-		int res = wsdl->downloadConfigFile(API_SERVER, API_MIRROR, list);
+		int res = wsdl->downloadConfigFile(0, API_SERVER, API_MIRROR, list);
 		delete(wsdl);
 		if(!res)
 		{
@@ -764,7 +765,7 @@ int WsyncThread::findMirror(bool probeForBest)
 		// get some random servers and test their speeds
 		LOG("getting fastest mirror ...\n");
 		WsyncDownload *wsdl = new WsyncDownload(this);
-		int res = wsdl->downloadConfigFile(API_SERVER, API_MIRROR_NOGEO, list);
+		int res = wsdl->downloadConfigFile(0, API_SERVER, API_MIRROR_NOGEO, list);
 		delete(wsdl);
 
 		if(!res)
@@ -819,7 +820,7 @@ double WsyncThread::measureDownloadSpeed(std::string server, std::string url)
 	path tempfile;
 	if(getTempFilename(tempfile))
 	{
-		printf("error creating tempfile!\n");
+		LOG("error creating tempfile!\n");
 		return -1;
 	}
 

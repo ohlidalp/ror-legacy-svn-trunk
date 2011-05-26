@@ -56,7 +56,7 @@ along with Rigs of Rods.  If not, see <http://www.gnu.org/licenses/>.
 #define OGREFUNCTIONSTRING  Ogre::String(__FUNCTION__)+" @ "+Ogre::String(__FILE__)+":"+TOSTRING(__LINE__)
 
 // debug for pthread mutexes
-#define FEAT_DEBUG_MUTEX
+// #define FEAT_DEBUG_MUTEX
 
 #ifdef FEAT_DEBUG_MUTEX
 # define MUTEX_LOCK(x)       do { LOGSAFE("***MUTEX-LOCK  : mutex "+TOSTRING((unsigned int)x)+" in function "+OGREFUNCTIONSTRING); pthread_mutex_lock(x);   } while(0)
@@ -67,7 +67,7 @@ along with Rigs of Rods.  If not, see <http://www.gnu.org/licenses/>.
 #endif //FEAT_DEBUG_MUTEX
 
 // debug asserts
-#define FEAT_DEBUG_ASSERT
+// #define FEAT_DEBUG_ASSERT
 
 #ifdef FEAT_DEBUG_ASSERT
 # ifdef WIN32

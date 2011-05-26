@@ -264,14 +264,6 @@ public:
 	Ogre::Vector3 getPersonPosition();
 
 	void clearEventCache();
-
-	int saveDict(const AngelScript::CScriptDictionary &dict, const std::string &dictName, const std::string &fileName);
-	int extendDict(const AngelScript::CScriptDictionary &dict, const std::string &dictName, const std::string &fileName);
-	int loadDict(AngelScript::CScriptDictionary &dict, const std::string &dictName, const std::string &fileName);
-protected:
-	int _saveDict(Ogre::ImprovedConfigFile &cfg, const AngelScript::CScriptDictionary &dict, const std::string &dictName, const std::string &fileName);
-	
-
 };
 
 #endif // GAMESCRIPT_H__

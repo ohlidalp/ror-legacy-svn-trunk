@@ -35,11 +35,11 @@ public:
 
 	// main functions
 	int downloadFile(int jobID, boost::filesystem::path localFile, std::string server, std::string remoteDir, boost::uintmax_t predDownloadSize=0, boost::uintmax_t *fileSize=0, bool showProgress=false);
-	int downloadAdvancedConfigFile(std::string server, std::string url, std::vector< std::map< std::string, std::string > > &list, bool showProgress=false);
-	int downloadConfigFile(std::string server, std::string url, std::vector< std::vector< std::string > > &list, bool showProgress=false);
+	int downloadAdvancedConfigFile(int jobID, std::string server, std::string url, std::vector< std::map< std::string, std::string > > &list, bool showProgress=false);
+	int downloadConfigFile(int jobID, std::string server, std::string url, std::vector< std::vector< std::string > > &list, bool showProgress=false);
 
 	// utils
-	static void tryRemoveFile(boost::filesystem::path filename);
+	static void tryRemoveFile(boost::filesystem::path filename, int jobID=-1);
 
 	static void increaseServerStats(std::string server, boost::uintmax_t bytes);
 
