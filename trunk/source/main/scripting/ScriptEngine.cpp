@@ -441,11 +441,6 @@ void ScriptEngine::init()
 	result = engine->RegisterObjectMethod("GameScriptClass", "vector3 getCameraDirection()",     AngelScript::asMETHOD(GameScript,getCameraDirection), AngelScript::asCALL_THISCALL); MYASSERT(result>=0);
 	result = engine->RegisterObjectMethod("GameScriptClass", "void cameraLookAt(vector3)",       AngelScript::asMETHOD(GameScript,cameraLookAt),       AngelScript::asCALL_THISCALL); MYASSERT(result>=0);
 
-	// functions to save or load dicts
-	result = engine->RegisterObjectMethod("GameScriptClass", "int saveDict(const dictionary &in, const string &in, const string &in)", AngelScript::asMETHOD(GameScript,saveDict), AngelScript::asCALL_THISCALL); MYASSERT(result>=0);
-	result = engine->RegisterObjectMethod("GameScriptClass", "int extendDict(const dictionary &in, const string &in, const string &in)", AngelScript::asMETHOD(GameScript,extendDict), AngelScript::asCALL_THISCALL); MYASSERT(result>=0);
-	result = engine->RegisterObjectMethod("GameScriptClass", "int loadDict(dictionary &out, const string &in, const string &in)", AngelScript::asMETHOD(GameScript,loadDict), AngelScript::asCALL_THISCALL); MYASSERT(result>=0);
-
 	// enum scriptEvents
 	result = engine->RegisterEnum("scriptEvents"); MYASSERT(result>=0);
 	result = engine->RegisterEnumValue("scriptEvents", "SE_COLLISION_BOX_ENTER", SE_COLLISION_BOX_ENTER); MYASSERT(result>=0);

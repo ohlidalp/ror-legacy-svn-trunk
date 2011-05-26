@@ -351,25 +351,4 @@ public:
 	 * Clears the event cache
 	 */
 	void clearEventCache();
-
-	/**
-	 * Saves a dictionary to a file
-	 * @deprecated
-	 *      This was replaced by the LocalStorage class.
-	 */
-	int saveDict(const dictionary dict, const string dictName, const string fileName);
-
-	/**
-	 * Extends a saved dictionary
-	 * @deprecated
-	 *      This was replaced by the LocalStorage class.
-	 */
-	int extendDict(const dictionary &dict, const string dictName, const string fileName);
-
-	/**
-	 * Loads a dictionary from a file
-	 * @deprecated
-	 *      This was replaced by the LocalStorage class.
-	 */
-	int loadDict(dictionary dict, const string dictName, const string fileName);
 };

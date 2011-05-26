@@ -88,12 +88,14 @@ public:
 	WsyncDownloadManager();
 	WsyncDownloadManager(wxEvtHandler *parent);
 	~WsyncDownloadManager();
-	void startThreads();
+	void checkThreads();
 	void addJob(int num, wxString localFile, wxString remoteDir, wxString remoteServer, wxString remoteFile, wxString hashRemoteFile);
 	void onThread(wxCommandEvent& event);
 	void destroyThreads();
 
 	bool isDone();
+
+	const static int threadCounter = 6;
 
 private:
 	wxEvtHandler *m_parent;

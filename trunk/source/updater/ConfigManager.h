@@ -102,6 +102,7 @@ public:
 	std::string getOnlineVersion() { return currVersion; };
 
 	wxString installType;
+	bool enforceUpdate;
 private:
 	wxString installPath;
 	std::string currVersion;

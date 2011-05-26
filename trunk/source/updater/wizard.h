@@ -60,6 +60,7 @@ public:
 protected:
 	int startupMode;
 	bool autoUpdateEnabled;
+	bool enforceUpdate;
 
 };
 
@@ -72,7 +73,7 @@ class HtmlWindow;
 class MyWizard : public wxWizard
 {
 public:
-	MyWizard(int startupMode, wxFrame *frame, bool autoUpdateEnabled, bool useSizer = true);
+	MyWizard(int startupMode, wxFrame *frame, bool autoUpdateEnabled, bool enforceUpdate, bool useSizer = true);
 	wxWizardPage *GetFirstPage() const { return m_page1; }
 	void OnPageChanging(wxWizardEvent& event);
 
@@ -80,6 +81,7 @@ private:
 	wxWizardPageSimple *m_page1;
 	int startupMode;
 	bool autoUpdateEnabled;
+	bool enforceUpdate;
 	DECLARE_EVENT_TABLE()
 };
 
@@ -97,7 +99,8 @@ public:
 class PresentationPage : public wxWizardPageSimple, public EnterLeavePage
 {
 public:
-	PresentationPage(wxWizard *parent);
+	PresentationPage(wxWizard *parent, bool enforceUpdate);
+
 };
 
 /*

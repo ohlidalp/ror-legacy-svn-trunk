@@ -132,7 +132,8 @@ static const wxCmdLineEntryDesc g_cmdLineDesc [] =
 #if wxCHECK_VERSION(2, 9, 0)
      { wxCMD_LINE_SWITCH, ("h"), ("help"),      ("displays help on the command line parameters"), wxCMD_LINE_VAL_NONE, wxCMD_LINE_OPTION_HELP },
      { wxCMD_LINE_SWITCH, ("n"), ("noupdate"),  ("ignore available updates"), wxCMD_LINE_VAL_NONE  },
-     { wxCMD_LINE_SWITCH, ("d"), ("hash"),      ("put updater hash into clipboard"), wxCMD_LINE_VAL_NONE  },
+	 { wxCMD_LINE_SWITCH, ("d"), ("hash"),      ("put updater hash into clipboard"), wxCMD_LINE_VAL_NONE  },
+	 { wxCMD_LINE_SWITCH, ("f"), ("force"),     ("enforce the update"), wxCMD_LINE_VAL_NONE  },
 #else
      { wxCMD_LINE_SWITCH, wxT("h"), wxT("help"),      wxT("displays help on the command line parameters"), wxCMD_LINE_VAL_NONE, wxCMD_LINE_OPTION_HELP },
 #endif //wxCHECK_VERSION
@@ -143,12 +144,13 @@ static const wxCmdLineEntryDesc g_cmdLineDesc [] =
 bool MyApp::OnInit()
 {
 	autoUpdateEnabled=true;
+	enforceUpdate=false;
 
     // call default behaviour (mandatory)
     if (!wxApp::OnInit())
         return false;
 
-	MyWizard wizard(startupMode, NULL, autoUpdateEnabled);
+	MyWizard wizard(startupMode, NULL, autoUpdateEnabled, enforceUpdate);
 
 	wizard.RunWizard(wizard.GetFirstPage());
 
@@ -169,7 +171,8 @@ void MyApp::OnInitCmdLine(wxCmdLineParser& parser)
 bool MyApp::OnCmdLineParsed(wxCmdLineParser& parser)
 {
 	// ignore auto-update function
-    if(parser.Found(wxT("n"))) autoUpdateEnabled=false;
+	if(parser.Found(wxT("n"))) autoUpdateEnabled=false;
+	if(parser.Found(wxT("f"))) enforceUpdate=true;
 	
 
 #if wxCHECK_VERSION(2, 9, 0)
@@ -195,11 +198,11 @@ bool MyApp::OnCmdLineParsed(wxCmdLineParser& parser)
 // ----------------------------------------------------------------------------
 
 
-MyWizard::MyWizard(int startupMode, wxFrame *frame, bool _autoUpdateEnabled, bool useSizer)
+MyWizard::MyWizard(int startupMode, wxFrame *frame, bool _autoUpdateEnabled, bool _enforceUpdate, bool useSizer)
         : wxWizard(frame,ID_WIZARD,_T("Rigs of Rods Update Assistant"),
                    wxBitmap(licence_xpm),wxDefaultPosition,
                    wxDEFAULT_DIALOG_STYLE | wxRESIZE_BORDER), startupMode(startupMode),
-				   autoUpdateEnabled(_autoUpdateEnabled)
+				   autoUpdateEnabled(_autoUpdateEnabled), enforceUpdate(_enforceUpdate)
 {
 	// first thing to do: remove old installer file if possible
 	try
@@ -210,21 +213,36 @@ MyWizard::MyWizard(int startupMode, wxFrame *frame, bool _autoUpdateEnabled, boo
 	// now continue with normal startup
 
 	new ConfigManager();
+	CONFIG->enforceUpdate = enforceUpdate;
 
 	// create log
 	boost::filesystem::path iPath = boost::filesystem::path(conv(CONFIG->getInstallationPath()));
 	boost::filesystem::path lPath = iPath / std::string("wizard.log");
 	new InstallerLog(lPath);
-	LOG("installer log created");
+	LOG("installer log created\n");
 
 	// check if there is a newer installer available
 	if(autoUpdateEnabled)
 		CONFIG->checkForNewUpdater();
 
+	// add some versions to the log file
+	{
+		std::string ourHash = CONFIG->getOwnHash();
+		LOG("INSTALLER HASH: %s\n", ourHash.c_str());
+		char platform_str[256]="";
+#ifdef WIN32
+		sprintf(platform_str, "windows");
+#else
+		sprintf(platform_str, "linux");
+#endif
+		LOG("INSTALLER PLATFORM: %s\n", platform_str);
+		LOG("INSTALLER BUILD DATE: %s, %s\n", __DATE__, __TIME__);
+	}
+
 	bool userPathExisting = CONFIG->getUserPathExists();
 	CONFIG->installType = userPathExisting ? wxString("normal") : wxString("fixuserpath");
 
-    PresentationPage *presentation = new PresentationPage(this);
+    PresentationPage *presentation = new PresentationPage(this, enforceUpdate);
 	//ConfirmationPage *confirm = new ConfirmationPage(this);
 	DownloadPage *download = new DownloadPage(this);
 	LastPage *last = new LastPage(this);
@@ -292,7 +310,7 @@ inline void setControlEnable(wxWizard *wiz, int id, bool enable)
 // Wizard pages
 // ----------------------------------------------------------------------------
 //// PresentationPage
-PresentationPage::PresentationPage(wxWizard *parent) : wxWizardPageSimple(parent)
+PresentationPage::PresentationPage(wxWizard *parent, bool enforceUpdate) : wxWizardPageSimple(parent)
 {
 
 	wxString a = conv(CONFIG->readVersionInfo());
@@ -327,6 +345,7 @@ PresentationPage::PresentationPage(wxWizard *parent) : wxWizardPageSimple(parent
 		tst->SetFont(dfont);
 		tst->Wrap(TXTWRAP);
 
+		LOG("[FIXUSERPATH_MODE]\n");
 		setControlEnable(parent, wxID_FORWARD, true);
 		setControlEnable(parent, wxID_BACKWARD, false);
 	} else
@@ -349,11 +368,15 @@ PresentationPage::PresentationPage(wxWizard *parent) : wxWizardPageSimple(parent
 		Version installed_version(conv(a));
 		Version online_version(conv(b));
 
+		LOG("INSTALLED VERSION: '%s'\n", conv(a).c_str());
+		LOG("ONLINE VERSION:    '%s'\n", conv(b).c_str());
+
 		if (installed_version < online_version)
 		{
 			// new version
 			mainSizer->Add(tst=new wxStaticText(this, wxID_ANY, _T("Click on Next to continue.\n")), 0, wxALL, 5);
 			tst->Wrap(TXTWRAP);
+			LOG("install choice: new version available\n");
 		} else if (online_version < installed_version)
 		{
 			// local newer
@@ -366,6 +389,7 @@ PresentationPage::PresentationPage(wxWizard *parent) : wxWizardPageSimple(parent
 
 			setControlEnable(parent, wxID_FORWARD, false);
 			setControlEnable(parent, wxID_BACKWARD, false);
+			LOG("install choice: using newer version than public\n");
 		} else
 		{
 			// no need to update
@@ -378,6 +402,21 @@ PresentationPage::PresentationPage(wxWizard *parent) : wxWizardPageSimple(parent
 
 			setControlEnable(parent, wxID_FORWARD, false);
 			setControlEnable(parent, wxID_BACKWARD, false);
+			LOG("install choice: version recent, no need to update\n");
+		}
+
+		if(enforceUpdate)
+		{
+			mainSizer->Add(tst=new wxStaticText(this, wxID_ANY, _T("Update was enforced")), 0, wxALL, 5);
+			dfont=tst->GetFont();
+			dfont.SetWeight(wxFONTWEIGHT_BOLD);
+			dfont.SetPointSize(dfont.GetPointSize()+4);
+			tst->SetFont(dfont);
+			tst->Wrap(TXTWRAP);
+
+			setControlEnable(parent, wxID_FORWARD, true);
+			setControlEnable(parent, wxID_BACKWARD, true);
+			LOG("[UPDATE ENFORCED]\n");
 		}
 	}
 
@@ -845,7 +884,7 @@ bool LastPage::OnLeave(bool forward)
 	CONFIG->setPersistentConfig(wxT("updater.run_configurator"), chk_configurator->IsChecked()?wxT("yes"):wxT("no"));
 	CONFIG->setPersistentConfig(wxT("updater.view_changelog"), chk_changelog->IsChecked()?wxT("yes"):wxT("no"));
 
-	CONFIG->updateUserConfigs();
+	//CONFIG->updateUserConfigs();
 	CONFIG->associateFileTypes();
 
 	if(chk_configurator->IsChecked())

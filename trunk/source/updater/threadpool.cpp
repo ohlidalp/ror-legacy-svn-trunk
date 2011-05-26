@@ -219,11 +219,11 @@ WsyncDownloadManager::~WsyncDownloadManager()
 	delete m_pQueue;
 }
 
-void WsyncDownloadManager::startThreads()
+void WsyncDownloadManager::checkThreads()
 {
-	int num_threads = 6;
-	for(int i=0;i<num_threads;i++)
+	if(m_Threads.size() < threadCounter && m_pQueue->Stacksize() > m_Threads.size())
 	{
+		// too less threads, start one ...
 		int id = m_Threads.empty()?1:m_Threads.back() + 1;
 		m_Threads.push_back(id);
 		WsyncWorkerThread* pThread = new WsyncWorkerThread(m_pQueue, id, m_parent); // create a new worker thread, increment thread counter (this implies, thread will start OK)
@@ -236,8 +236,7 @@ void WsyncDownloadManager::addJob(int num, wxString localFile, wxString remoteDi
 	m_pQueue->addJob(WsyncJob(num, WsyncJob::eID_THREAD_JOB, localFile, remoteServer, remoteDir, remoteFile, hashRemoteFile));
 
 	// start the threads if not already done
-	if(!m_Threads.size())
-		startThreads();
+	checkThreads();
 }
 
 void WsyncDownloadManager::onThread(wxCommandEvent& event) // handler for thread notifications
