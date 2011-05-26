@@ -566,7 +566,7 @@ void SelectorWindow::selectionDone()
 {
 	if(!mSelectedTruck || mSelectionDone)
 		return;
-
+	
 	if(mLoaderType != LT_SKIN)
 	{
 		// we show the normal loader
@@ -824,6 +824,7 @@ bool SelectorWindow::isFinishedSelecting()
 
 void SelectorWindow::show(LoaderType type)
 {
+	mSearchLineEdit->setCaption(_L("Search ..."));
 	mSelectionDone=false;
 	// reset all keys
 	INPUTENGINE.resetKeys();

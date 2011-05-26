@@ -153,7 +153,8 @@ public:
 
 	void removeInstance(stream_del_t *del)
 	{
-		lockStreams();
+		// already locked
+		//lockStreams();
 		typename std::map < int, std::map < unsigned int, X *> > &streamables = getStreams();
 		typename std::map < int, std::map < unsigned int, X *> >::iterator it1;
 		typename std::map < unsigned int, X *>::iterator it2;
@@ -173,7 +174,7 @@ public:
 			}
 			break;
 		}
-		unlockStreams();
+		//unlockStreams();
 	}
 
 	int checkStreamsOK(int sourceid)
@@ -344,7 +345,7 @@ protected:
 
 	void lockStreams()
 	{
-		// double locking is not healty!
+		// double locking is not healthy!
 		//MYASSERT(!this->locked);
 		MUTEX_LOCK(&stream_reg_mutex);
 		this->locked=true;

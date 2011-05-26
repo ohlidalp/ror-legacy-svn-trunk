@@ -57,10 +57,11 @@ Character *CharacterFactory::createRemoteInstance(stream_reg_t *reg)
 	LOG(" new character for " + TOSTRING(reg->sourceid) + ":" + TOSTRING(reg->streamid) + ", colour: " + TOSTRING(reg->colour));
 	Character *ch = new Character(cam, c, net, h, w, m, scm, reg->sourceid, reg->streamid, reg->colour, true);
 
-	lockStreams();
+	// already locked
+	//lockStreams();
 	std::map < int, std::map < unsigned int, Character *> > &streamables = getStreams();
 	streamables[reg->sourceid][reg->streamid] = ch;
-	unlockStreams();
+	//unlockStreams();
 	return ch;
 }
 

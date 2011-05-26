@@ -1475,13 +1475,13 @@ void Beam::calcForcesEuler(int doUpdate, Real dt, int step, int maxstep)
 		{
 			antilockbrake = false;
 #ifdef USE_OPENAL
-			ssm->trigStop(trucknum, SS_TRIG_ALB_ACTIVE);
+			if(ssm) ssm->trigStop(trucknum, SS_TRIG_ALB_ACTIVE);
 #endif //USE_OPENAL
 		} else
 		{
 			antilockbrake = true;
 #ifdef USE_OPENAL
-			ssm->trigStart(trucknum, SS_TRIG_ALB_ACTIVE);
+			if(ssm) ssm->trigStart(trucknum, SS_TRIG_ALB_ACTIVE);
 #endif //USE_OPENAL
 		}
 
@@ -1489,13 +1489,13 @@ void Beam::calcForcesEuler(int doUpdate, Real dt, int step, int maxstep)
 		{
 			tractioncontrol = false;
 #ifdef USE_OPENAL
-			ssm->trigStop(trucknum, SS_TRIG_TC_ACTIVE);
+			if(ssm) ssm->trigStop(trucknum, SS_TRIG_TC_ACTIVE);
 #endif //USE_OPENAL
 		} else
 		{
 			tractioncontrol = true;
 #ifdef USE_OPENAL
-			ssm->trigStart(trucknum, SS_TRIG_TC_ACTIVE);
+			if(ssm) ssm->trigStart(trucknum, SS_TRIG_TC_ACTIVE);
 #endif //USE_OPENAL
 		}
 	}
