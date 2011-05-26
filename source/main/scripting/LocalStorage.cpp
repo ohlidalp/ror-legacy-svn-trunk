@@ -28,9 +28,10 @@ LocalStorage::LocalStorage(AngelScript::asIScriptEngine *engine_in, std::string 
 	this->engine = engine_in;
 	engine->NotifyGarbageCollectorOfNewObject(this, engine->GetTypeIdByDecl("LocalStorage"));
 
-	std::string forbiddenChars = "\\/:*?\"<>|";
+	// inversed logic, better use a whiteliste instead of a blacklist, so you are on the safe side ;) - tdev
+	std::string allowedChars = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789_-";
 	for (std::string::iterator it = fileName_in.begin() ; it < fileName_in.end() ; ++it){
-		if( forbiddenChars.find(*it) != std::string::npos )
+		if( allowedChars.find(*it) == std::string::npos )
 			*it = '_';
 	}
 
