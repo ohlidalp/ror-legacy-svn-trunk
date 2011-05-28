@@ -1980,10 +1980,6 @@ bool Beam::frameStep(Real dt)
 #endif //0
 #endif
 
-	// send data via network?
-	//if(networking)
-	//	sendStreamData();
-
 	BES_GFX_STOP(BES_GFX_framestep);
 
 	Beam **trucks = BeamFactory::getSingleton().getTrucks();

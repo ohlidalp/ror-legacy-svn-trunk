@@ -12,16 +12,16 @@
  * License for more details.
  */
 
-#include "portable.c"
-#include "sockets.c"
+#include "portable.c++"
+#include "sockets.c++"
 
 #include "libircclient.h"
 #include "libirc_session.h"
 
-#include "utils.c"
-#include "errors.c"
-#include "colors.c"
-#include "dcc.c"
+#include "utils.c++"
+#include "errors.c++"
+#include "colors.c++"
+#include "dcc.c++"
 
 #ifdef _MSC_VER
 	/*
