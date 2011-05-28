@@ -5110,7 +5110,7 @@ void RoRFrameListener::initTrucks(bool loadmanual, Ogre::String selected, Ogre::
 			b = BeamFactory::getSingleton().createLocal(spawnpos, spawnrot, selectedchr, 0, false, flaresMode, truckconfig);
 			if (b && enterTruck)
 			{
-					cameramode = CAMERA_INT;
+					//cameramode = CAMERA_INT;
 					BeamFactory::getSingleton().setCurrentTruck(b->trucknum);
 			} else if(!b && enterTruck)
 				BeamFactory::getSingleton().setCurrentTruck(-1);
