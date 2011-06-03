@@ -164,10 +164,10 @@ IF(WIN32)
 
 ELSEIF(UNIX)
    find_package(PkgConfig)
-   #PKG_CHECK_MODULES  (GTK gtk+-2.0 REQUIRED)
-   #PKG_CHECK_MODULES  (GTK_PIXBUF gdk-pixbuf-2.0 REQUIRED)
-   #include_directories(${GTK_INCLUDE_DIRS})
-   #include_directories(${GTK_PIXBUF_INCLUDE_DIRS})
+   PKG_CHECK_MODULES  (GTK gtk+-2.0 REQUIRED)
+   PKG_CHECK_MODULES  (GTK_PIXBUF gdk-pixbuf-2.0 REQUIRED)
+   include_directories(${GTK_INCLUDE_DIRS})
+   include_directories(${GTK_PIXBUF_INCLUDE_DIRS})
 
    # Ogre basics
    PKG_CHECK_MODULES  (Ogre OGRE REQUIRED)
