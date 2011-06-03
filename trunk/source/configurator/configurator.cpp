@@ -131,8 +131,10 @@ public:
 	// initialization (doing it here and not in the ctor allows to have an error
 	// return: if OnInit() returns false, the application terminates)
 	virtual bool OnInit();
+	virtual int OnRun();
 	virtual void OnInitCmdLine(wxCmdLineParser& parser);
 	virtual bool OnCmdLineParsed(wxCmdLineParser& parser);
+
 	bool filesystemBootstrap();
 	void recurseCopy(wxString sourceDir, wxString destinationDir);
 	void initLogging();
@@ -718,6 +720,28 @@ void MyApp::initLogging()
 		wxLogChain *logChain = new wxLogChain(logger_file);
 	}
 	wxLogStatus(wxT("log started"));
+}
+
+// this is run to enter the main loop
+int MyApp::OnRun()
+{
+	// our special run method to catch exceptions
+	int res = 0;
+	try
+	{
+		res = MainLoop();
+	}
+	catch (std::exception &e)
+	{
+		wxLogError(wxT("Cought exception:"));
+		wxLogError(wxString(e.what()));
+		wxString warning = wxString(e.what());
+		wxString caption = _("caught exception");
+		wxMessageDialog *w = new wxMessageDialog(NULL, warning, caption, wxOK|wxICON_ERROR|wxSTAY_ON_TOP, wxDefaultPosition);
+		w->ShowModal();
+		delete(w);
+	}
+	return res;
 }
 
 // 'Main program' equivalent: the program execution "starts" here
