@@ -1,4 +1,4 @@
-﻿/*
+/*
 This source file is part of Rigs of Rods
 Copyright 2005-2011 Pierre-Michel Ricordel
 Copyright 2007-2011 Thomas Fischer
