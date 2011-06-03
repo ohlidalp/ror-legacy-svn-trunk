@@ -11,6 +11,7 @@
  * FITNESS FOR A PARTICULAR PURPOSE.  See the GNU Lesser General Public 
  * License for more details.
  */
+#ifdef USE_SOCKETW
 
 #include "portable.c++"
 #include "sockets.c++"
@@ -1142,3 +1143,5 @@ int irc_cmd_whois (irc_session_t * session, const char * nick)
 
 	return irc_send_raw (session, "WHOIS %s %s", nick, nick);
 }
+
+#endif //USE_SOCKETW

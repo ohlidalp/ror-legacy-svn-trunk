@@ -103,6 +103,7 @@ public:
 		}
 
 		// use random wallpaper image
+#ifdef USE_MYGUI
 		MaterialPtr mat = Ogre::MaterialManager::getSingleton().getByName("Core/RoRLoadingScreen");
 		String randomWallpaper = GUIManager::getRandomWallpaperImage();
 		if(!randomWallpaper.empty() && !mat.isNull())
@@ -112,6 +113,7 @@ public:
 				mat->getTechnique(0)->getPass(0)->getTextureUnitState(0)->setTextureName(randomWallpaper);
 			}
 		}
+#endif //USE_MYGUI
 
 		mLoadOverlay->show();
 

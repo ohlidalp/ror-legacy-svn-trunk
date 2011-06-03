@@ -18,6 +18,7 @@ You should have received a copy of the GNU General Public License
 along with Rigs of Rods.  If not, see <http://www.gnu.org/licenses/>.
 */
 // created by Thomas Fischer thomas{AT}thomasfischer{DOT}biz, 7th of August 2009
+#ifdef USE_SOCKETW
 
 #include "IRCWrapper.h"
 
@@ -763,3 +764,5 @@ void *s_ircthreadstart(void* arg)
 	return 0;
 }
 
+
+#endif // USE_SOCKETW

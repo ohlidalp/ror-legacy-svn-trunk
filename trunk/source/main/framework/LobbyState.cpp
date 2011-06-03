@@ -33,11 +33,13 @@ void LobbyState::enter()
 	m_pCamera->setAutoAspectRatio(true);
 	OgreFramework::getSingletonPtr()->m_pViewport->setCamera(m_pCamera);
 
+#ifdef USE_MYGUI
 	new GUIManager(OgreFramework::getSingleton().m_pRoot, m_pSceneMgr, OgreFramework::getSingleton().m_pRenderWnd);
 
 	LobbyGUI::getInstance().setVisible(true);
 
 	resized(OgreFramework::getSingleton().m_pRenderWnd);
+#endif USE_MYGUI
 }
 
 bool LobbyState::pause()
@@ -65,7 +67,9 @@ void LobbyState::update(double dt)
 {
 	INPUTENGINE.Capture();
 
+#ifdef USE_MYGUI
 	LobbyGUI::getInstance().update(dt);
+#endif //USE_MYGUI
 }
 
 void LobbyState::resized(Ogre::RenderWindow *rw)
