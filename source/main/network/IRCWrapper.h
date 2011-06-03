@@ -20,6 +20,7 @@ along with Rigs of Rods.  If not, see <http://www.gnu.org/licenses/>.
 
 // created by Thomas Fischer thomas{AT}thomasfischer{DOT}biz, 12th of May 2011
 
+#ifdef USE_SOCKETW
 
 #ifndef IRCWRAPPER_H__
 #define IRCWRAPPER_H__
@@ -110,3 +111,5 @@ protected:
 };
 
 #endif //IRCWRAPPER_H__
+
+#endif //USE_SOCKETW

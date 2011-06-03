@@ -30,6 +30,7 @@ along with Rigs of Rods.  If not, see <http://www.gnu.org/licenses/>.
 #include "RoRFrameListener.h"
 #include "collisions.h"
 #include "Settings.h"
+#include "engine.h"
 
 #ifdef USE_MYGUI
 #include "gui_mp.h"

@@ -100,6 +100,7 @@ void NetworkStreamManager::addRemoteStream(Streamable *stream, int rsource, int 
 
 void NetworkStreamManager::removeStream(int sourceid, int streamid)
 {
+#ifdef USE_SOCKETW
 	int mysourceid = net->getUserID();
 	if(sourceid == -1)
 		sourceid = mysourceid;
@@ -134,6 +135,7 @@ void NetworkStreamManager::removeStream(int sourceid, int streamid)
 	}
 	MUTEX_UNLOCK(&stream_mutex);
 	//LOG("UUU removeUser - unlock");
+#endif //USE_SOCKETW
 }
 
 
