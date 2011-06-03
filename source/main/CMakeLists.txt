@@ -146,10 +146,15 @@ macro(add_ror_project BINNAME folder useWxWidgets)
 endmacro(add_ror_project)
 
 
-add_subdirectory(main_sim)
-
+IF(ROR_BUILD_SIM)
+	add_subdirectory(main_sim)
+endif()
 
 IF(ROR_BUILD_TOOLS)
 	add_subdirectory(main_viewer)
 	add_subdirectory(main_editor)
-ENDIF(ROR_BUILD_TOOLS)
+ENDIF()
+
+IF(ROR_BUILD_CONVERTER)
+	add_subdirectory(main_converter)
+endif()
