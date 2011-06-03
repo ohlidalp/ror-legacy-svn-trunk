@@ -39,7 +39,7 @@ void LobbyState::enter()
 	LobbyGUI::getInstance().setVisible(true);
 
 	resized(OgreFramework::getSingleton().m_pRenderWnd);
-#endif USE_MYGUI
+#endif //USE_MYGUI
 }
 
 bool LobbyState::pause()
