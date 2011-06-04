@@ -26,8 +26,10 @@ along with Rigs of Rods.  If not, see <http://www.gnu.org/licenses/>.
 #include "rornet.h"
 #include "RoRVersion.h"
 #include "SerializedRig.h"
-
+#include "ContentManager.h"
 #include "JSON.h"
+
+#include <OgreScriptCompiler.h>
 
 using namespace Ogre;
 
@@ -38,11 +40,11 @@ using namespace Ogre;
 #define HELPTEXT "--help (this)\n<inputvehicle> <outputfile>"
 
 // option identifiers
-enum { OPT_HELP, OPT_INPUT};
+enum { OPT_HELP, OPT_LOGPATH};
 
 // option array
 CSimpleOpt::SOption cmdline_options[] = {
-	{ OPT_INPUT,          ("-input"),       SO_REQ_SEP },
+	{ OPT_LOGPATH,          ("-logpath"),       SO_REQ_SEP },
 	{ OPT_HELP,           ("--help"),       SO_NONE    },
 	{ OPT_HELP,           ("-help"),        SO_NONE    },
 SO_END_OF_OPTIONS
@@ -68,37 +70,33 @@ void showUsage()
 	showInfo(_L("Command Line Arguments"), HELPTEXT);
 }
 
-void convert(Ogre::String input, Ogre::String output)
+void initOgre()
 {
-	if(!SETTINGS.setupPaths())
-		return;
-
 	String logFilename   = SSETTING("Log Path") + "RoRConverter" + Ogre::String(".log");
-	String pluginsConfig = "";//SSETTING("plugins.cfg");
+	String pluginsConfig = SSETTING("plugins.cfg");
 	String ogreConfig    = SSETTING("ogre.cfg");
 
-	// no plugins
 	Ogre::Root *mRoot = new Root(pluginsConfig, ogreConfig, logFilename);
-	// and no init, since no render system or render window
-	//mRoot->initialise(false);
 
-	// init some important things
-	Ogre::ResourceGroupManager * ogreRGM = new Ogre::ResourceGroupManager();
-	Ogre::Math * ogreMath = new Ogre::Math();
-	Ogre::MaterialManager * ogreMatMgr = new Ogre::MaterialManager();
-	ogreMatMgr->initialise();
-	Ogre::HighLevelGpuProgramManager * gpuman = new Ogre::HighLevelGpuProgramManager();
-	Ogre::MaterialSerializer * ogreMaterialSerializer = new Ogre::MaterialSerializer();
-   
+	mRoot->restoreConfig();
+	mRoot->initialise(true);
+
+	mRoot->getAutoCreatedWindow()->setAutoUpdated(false);
+
+	ContentManager::getSingleton().init();
+}
+
+void convert(Ogre::String input, Ogre::String output)
+{
 	// get the path info
 	Ogre::String in_basename, in_ext, in_path; 
 	Ogre::StringUtil::splitFullFilename(input, in_basename, in_ext, in_path);
 	Ogre::String out_basename, out_ext, out_path; 
 	Ogre::StringUtil::splitFullFilename(output, out_basename, out_ext, out_path);
 
-	// init the paths
-	Ogre::ResourceGroupManager::getSingleton().addResourceLocation(in_path, "FileSystem", "our");
-	Ogre::ResourceGroupManager::getSingleton().initialiseResourceGroup("our");
+	// add the paths
+	Ogre::ResourceGroupManager::getSingleton().addResourceLocation(in_path, "FileSystem", "rorconverter");
+	Ogre::ResourceGroupManager::getSingleton().initialiseResourceGroup("rorconverter");
 
 	// then load the truck
 	SerializedRig r;
@@ -160,6 +158,9 @@ void convert(Ogre::String input, Ogre::String output)
 
 int main(int argc, char *argv[])
 {
+	if(!SETTINGS.setupPaths())
+		return 1;
+
 	CSimpleOpt args(argc, argv, cmdline_options);
 	while (args.Next()) {
 		if (args.LastError() == SO_SUCCESS)
@@ -168,6 +169,9 @@ int main(int argc, char *argv[])
 			{
 				showUsage();
 				return 0;
+			} else if(args.OptionId() == OPT_LOGPATH)
+			{
+				SETTINGS.setSetting("Log Path", args.OptionArg());
 			}
 		} else {
 			showUsage();
@@ -180,6 +184,10 @@ int main(int argc, char *argv[])
 		showUsage();
 		return 1;
 	}
+
+	SETTINGS.setSetting("Advanced Logging", "Yes");
+
+	initOgre();
 
 	String input = String(args.File(0));
 	String output = String(args.File(1));
