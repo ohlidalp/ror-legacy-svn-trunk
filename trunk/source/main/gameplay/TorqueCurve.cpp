@@ -140,6 +140,7 @@ int TorqueCurve::setTorqueModel(String name)
 
 int TorqueCurve::spaceCurveEvenly(Ogre::SimpleSpline *spline)
 {
+	if(!spline) return 0;
 	SimpleSpline tmpSpline=*spline;
 	Real points=tmpSpline.getNumPoints();
 	if (points>1)
