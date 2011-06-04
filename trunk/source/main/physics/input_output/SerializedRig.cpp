@@ -6007,6 +6007,7 @@ void SerializedRig::parser_warning(parsecontext_t &context, Ogre::String text, i
 	// add the warning to the vector
 	parsecontext_t context_copy = context;
 	context_copy.warningText = txt;
+	context_copy.warningLvl = errlvl;
 	warnings.push_back(context_copy);
 }
 
