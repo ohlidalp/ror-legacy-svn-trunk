@@ -40,6 +40,7 @@ typedef struct parsecontext_t
 	Ogre::String filename;
 	Ogre::String modeString;
 	Ogre::String warningText;
+	int warningLvl;
 	unsigned int linecounter;
 	Ogre::String line;
 	int mode;
@@ -67,6 +68,8 @@ public:
 	void parser_warning(parsecontext_t &context, Ogre::String text, int errlvl = PARSER_WARNING);
 	void parser_warning(parsecontext_t *context, Ogre::String text, int errlvl = PARSER_WARNING);
 
+
+	std::vector <parsecontext_t> &getWarnings() { return warnings; };
 protected:
 	bool virtuallyLoaded;
 	bool ignoreProblems;
