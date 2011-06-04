@@ -378,20 +378,20 @@ int SerializedRig::loadTruck(String fname, SceneManager *manager, SceneNode *par
 	bool enable_advanced_deformation = false;
 	int lockgroup_default = NODE_LOCKGROUP_DEFAULT;
 
-	parser_warning(c, "Start of truck loading: " + filename);
+	parser_warning(c, "Start of truck loading: " + filename, PARSER_INFO);
 	String group = "";
 	try
 	{
 		if(!CACHE.checkResourceLoaded(filename, group))
 		{
-			parser_warning(c, "Can't open truck file '"+filename+"'");
+			parser_warning(c, "Can't open truck file '"+filename+"'", PARSER_FATAL_ERROR);
 			return -1;
 		}
 	} catch(Ogre::Exception& e)
 	{
 		if(e.getNumber() == Ogre::Exception::ERR_ITEM_NOT_FOUND)
 		{
-			parser_warning(c, "Can't open truck file '"+filename+"'");
+			parser_warning(c, "Can't open truck file '"+filename+"'", PARSER_FATAL_ERROR);
 			return -1;
 		}
 	}
@@ -426,7 +426,7 @@ int SerializedRig::loadTruck(String fname, SceneManager *manager, SceneNode *par
 
 			if (c.line == "end")
 			{
-				parser_warning(c, "End of truck loading");
+				parser_warning(c, "End of truck loading", PARSER_INFO);
 				loading_finished = 1;
 				break;
 			}
@@ -557,7 +557,7 @@ int SerializedRig::loadTruck(String fname, SceneManager *manager, SceneNode *par
 				c.modeString       = "slopebrake";
 				if (c.line.size() == 18)
 				{
-					parser_warning(c, "Slope-Brake enhancment added with default settings.");
+					parser_warning(c, "Slope-Brake enhancment added with default settings.", PARSER_INFO);
 					continue;
 				}
 				int n = parse_args(c, args, 1);
@@ -572,7 +572,7 @@ int SerializedRig::loadTruck(String fname, SceneManager *manager, SceneNode *par
 				if (slopeBrakeRelAngle < 1.0f)  slopeBrakeRelAngle = 1.0f;
 				if (slopeBrakeRelAngle > 45.0f) slopeBrakeRelAngle = 45.0f;
 				slopeBrakeRelAngle += slopeBrakeAttAngle;
-				parser_warning(c,"Slope-Brake enhancment added. " + String(fname) +" line " + StringConverter::toString(c.linecounter) + ". Slopebrake-Factor: " + StringConverter::toString(slopeBrakeFactor) + ". Free Rollback Offset: " + StringConverter::toString(slopeBrakeAttAngle) + "°. Release at Offset: " + StringConverter::toString(slopeBrakeRelAngle) + "°.");
+				parser_warning(c,"Slope-Brake enhancment added. " + String(fname) +" line " + StringConverter::toString(c.linecounter) + ". Slopebrake-Factor: " + StringConverter::toString(slopeBrakeFactor) + ". Free Rollback Offset: " + StringConverter::toString(slopeBrakeAttAngle) + "°. Release at Offset: " + StringConverter::toString(slopeBrakeRelAngle) + "°.", PARSER_INFO);
 				continue;
 			}
 			if (c.line.size() > 14 && c.line.substr(0, 14) == "AntiLockBrakes")
@@ -584,7 +584,7 @@ int SerializedRig::loadTruck(String fname, SceneManager *manager, SceneNode *par
 				// check for common errors
 				if (options.size() < 2)
 				{
-					parser_warning(c, "Error parsing File (Antilockbrakes) " + String(fname) +" line " + StringConverter::toString(c.linecounter) + ". Not enough Options parsed, trying to continue ...");
+					parser_warning(c, "Error parsing File (Antilockbrakes) " + String(fname) +" line " + StringConverter::toString(c.linecounter) + ". Not enough Options parsed, trying to continue ...", PARSER_ERROR);
 					continue;
 				}
 
@@ -628,7 +628,7 @@ int SerializedRig::loadTruck(String fname, SceneManager *manager, SceneNode *par
 						Ogre::StringVector args2 = Ogre::StringUtil::split(options[i], ":");
 						if(args2.size() == 0)
 						{
-							parser_warning(c, "Error parsing File (Antilockbrakes) " + String(fname) +" line " + StringConverter::toString(c.linecounter) + ". Antilockbrakes disabeld.");
+							parser_warning(c, "Error parsing File (Antilockbrakes) " + String(fname) +" line " + StringConverter::toString(c.linecounter) + ". Antilockbrakes disabeld.", PARSER_ERROR);
 							continue;
 						}
 						// trim spaces from the entry
@@ -666,7 +666,7 @@ int SerializedRig::loadTruck(String fname, SceneManager *manager, SceneNode *par
 
 						} else
 						{
-							parser_warning(c, "Antilockbrakes Mode: missing " + String(fname) +" line " + StringConverter::toString(c.linecounter) + ". Antilockbrakes Mode = ON.");
+							parser_warning(c, "Antilockbrakes Mode: missing " + String(fname) +" line " + StringConverter::toString(c.linecounter) + ". Antilockbrakes Mode = ON.", PARSER_ERROR);
 							alb_present = true;
 							alb_mode = 1.0f;
 						}
@@ -683,7 +683,7 @@ int SerializedRig::loadTruck(String fname, SceneManager *manager, SceneNode *par
 				// check for common errors
 				if (options.size() < 2)
 				{
-					parser_warning(c,"Error parsing File (TractionControl) " + String(fname) +" line " + StringConverter::toString(c.linecounter) + ". Not enough Options parsed, trying to continue ...");
+					parser_warning(c,"Error parsing File (TractionControl) " + String(fname) +" line " + StringConverter::toString(c.linecounter) + ". Not enough Options parsed, trying to continue ...", PARSER_ERROR);
 					continue;
 				}
 
@@ -700,7 +700,7 @@ int SerializedRig::loadTruck(String fname, SceneManager *manager, SceneNode *par
 							if (tc_ratio > 20.0f) tc_ratio = 20.0f;
 						}
 						else
-							parser_warning(c,"Error parsing File (TractionControl) " + String(fname) +" line " + StringConverter::toString(c.linecounter) + ". TractionControl disabeld.");
+							parser_warning(c,"Error parsing File (TractionControl) " + String(fname) +" line " + StringConverter::toString(c.linecounter) + ". TractionControl disabeld.", PARSER_ERROR);
 					} else if(i == 1)
 					{
 						tc_wheelslip = (StringConverter::parseReal(options[i]));
@@ -728,7 +728,7 @@ int SerializedRig::loadTruck(String fname, SceneManager *manager, SceneNode *par
 						Ogre::StringVector args2 = Ogre::StringUtil::split(options[i], ":");
 						if(args2.size() == 0)
 						{
-							parser_warning(c,"Error parsing File (TractionControl) " + String(fname) +" line " + StringConverter::toString(c.linecounter) + ". Mode not parsed, trying to continue....");
+							parser_warning(c,"Error parsing File (TractionControl) " + String(fname) +" line " + StringConverter::toString(c.linecounter) + ". Mode not parsed, trying to continue....", PARSER_ERROR);
 							continue;
 						}
 
@@ -767,7 +767,7 @@ int SerializedRig::loadTruck(String fname, SceneManager *manager, SceneNode *par
 
 						} else
 						{
-							parser_warning(c,"TractionControl Mode: missing " + String(fname) +" line " + StringConverter::toString(c.linecounter) + ". TractionControl Mode = ON.");
+							parser_warning(c,"TractionControl Mode: missing " + String(fname) +" line " + StringConverter::toString(c.linecounter) + ". TractionControl Mode = ON.", PARSER_ERROR);
 							tc_present = true;
 							tc_mode = 1.0f;
 						}
@@ -781,7 +781,7 @@ int SerializedRig::loadTruck(String fname, SceneManager *manager, SceneNode *par
 				fileformatversion = PARSEINT(args[1]);
 				if (fileformatversion > TRUCKFILEFORMATVERSION)
 				{
-					parser_warning(c, "The file is for a newer RoR version");
+					parser_warning(c, "The file is for a newer RoR version", PARSER_WARNING);
 					continue;
 				}
 				continue;
@@ -853,7 +853,7 @@ int SerializedRig::loadTruck(String fname, SceneManager *manager, SceneNode *par
 
 				if (options.size() < 4)
 				{
-					parser_warning(c,"Error parsing File (add_animation) " + String(fname) +" line " + StringConverter::toString(c.linecounter) + ". Not enough Options parsed, trying to continue ...");
+					parser_warning(c,"Error parsing File (add_animation) " + String(fname) +" line " + StringConverter::toString(c.linecounter) + ". Not enough Options parsed, trying to continue ...", PARSER_ERROR);
 					continue;
 				}
 
@@ -868,7 +868,7 @@ int SerializedRig::loadTruck(String fname, SceneManager *manager, SceneNode *par
 
 				if (!free_prop)
 				{
-					parser_warning(c, "No prop to animate existing");
+					parser_warning(c, "No prop to animate existing", PARSER_ERROR);
 					continue;
 				}
 
@@ -882,7 +882,7 @@ int SerializedRig::loadTruck(String fname, SceneManager *manager, SceneNode *par
 				// all slots used?
 				if (animnum >= 10)
 				{
-					parser_warning(c, "Cant animate a prop more then 10 times");
+					parser_warning(c, "Cant animate a prop more then 10 times", PARSER_ERROR);
 					continue;
 				}
 
@@ -896,7 +896,7 @@ int SerializedRig::loadTruck(String fname, SceneManager *manager, SceneNode *par
 						if (ratio)
 							prop->animratio[animnum]=ratio;
 						else
-							parser_warning(c, "Animation-Ratio = 0 ?");
+							parser_warning(c, "Animation-Ratio = 0 ?", PARSER_ERROR);
 					} else if(i == 1)
 					{
 						opt1 = StringConverter::parseReal(options[i]);
@@ -1003,9 +1003,9 @@ int SerializedRig::loadTruck(String fname, SceneManager *manager, SceneNode *par
 							}
 
 							if (prop->animFlags[animnum] == 0)
-								parser_warning(c, "Failed to identify source.");
-							//else
-							//	parser_warning(c, "Animation source set to prop#: " + TOSTRING(free_prop-1) + ", flag " +TOSTRING(prop->animFlags[animnum]) + ", Animationnumber: " + TOSTRING(animnum));
+								parser_warning(c, "Failed to identify source.", PARSER_ERROR);
+							else
+								parser_warning(c, "Animation source set to prop#: " + TOSTRING(free_prop-1) + ", flag " +TOSTRING(prop->animFlags[animnum]) + ", Animationnumber: " + TOSTRING(animnum), PARSER_INFO);
 						}
 						else if(args2[0] == "mode" && args2.size() == 2)
 						{
@@ -1024,9 +1024,9 @@ int SerializedRig::loadTruck(String fname, SceneManager *manager, SceneNode *par
 							}
 
 							if (prop->animMode[animnum] == 0)
-								parser_warning(c, "Failed to identify animation c.mode.");
-							//else
-							//	parser_warning(c, "Animation mode set to prop#: " + TOSTRING(free_prop-1)+ ", mode " +TOSTRING(prop->animMode[animnum]) + ", Animationnumber: " + TOSTRING(animnum));
+								parser_warning(c, "Failed to identify animation c.mode.", PARSER_ERROR);
+							else
+								parser_warning(c, "Animation mode set to prop#: " + TOSTRING(free_prop-1)+ ", mode " +TOSTRING(prop->animMode[animnum]) + ", Animationnumber: " + TOSTRING(animnum), PARSER_INFO);
 						}
 						else if (args2[0] == "autoanimate" && args2.size() == 1)
 						{
@@ -1039,7 +1039,7 @@ int SerializedRig::loadTruck(String fname, SceneManager *manager, SceneNode *par
 							else if(prop->animMode[animnum] & ANIM_MODE_OFFSET_X) { prop->animOpt1[animnum] = opt1 + prop->orgoffsetX; prop->animOpt2[animnum] = opt2 + prop->orgoffsetX; prop->animOpt4[animnum] = prop->orgoffsetX; }
 							else if(prop->animMode[animnum] & ANIM_MODE_OFFSET_Y) { prop->animOpt1[animnum] = opt1 + prop->orgoffsetY; prop->animOpt2[animnum] = opt2 + prop->orgoffsetY; prop->animOpt4[animnum] = prop->orgoffsetY; }
 							else if(prop->animMode[animnum] & ANIM_MODE_OFFSET_Z) { prop->animOpt1[animnum] = opt1 + prop->orgoffsetZ; prop->animOpt2[animnum] = opt2 + prop->orgoffsetZ; prop->animOpt4[animnum] = prop->orgoffsetZ; }
-							//parser_warning(c, "Animation mode Autoanimation added to prop#: " + TOSTRING(free_prop-1) + " , Animationnumber: " + TOSTRING(animnum));
+							parser_warning(c, "Animation mode Autoanimation added to prop#: " + TOSTRING(free_prop-1) + " , Animationnumber: " + TOSTRING(animnum), PARSER_INFO);
 						}
 						else if (args2[0] == "noflip" && args2.size() == 1)
 						{
@@ -1072,7 +1072,7 @@ int SerializedRig::loadTruck(String fname, SceneManager *manager, SceneNode *par
 								if(evtID != -1)
 									prop->animKey[animnum] = evtID;
 								else
-									parser_warning(c, "Animation event unknown: " + eventStr);
+									parser_warning(c, "Animation event unknown: " + eventStr, PARSER_ERROR);
 							}
 						}
 
@@ -1124,7 +1124,7 @@ int SerializedRig::loadTruck(String fname, SceneManager *manager, SceneNode *par
 					if(!mat.isNull())
 						strncpy(default_beam_material, default_beam_material2.c_str(), 256);
 					else
-						parser_warning(c, "beam material '" + String(default_beam_material2) + "' not found!");
+						parser_warning(c, "beam material '" + String(default_beam_material2) + "' not found!", PARSER_ERROR);
 				}
 				if (default_spring<0) default_spring=DEFAULT_SPRING;
 				if (default_damp<0) default_damp=DEFAULT_DAMP;
@@ -1147,7 +1147,7 @@ int SerializedRig::loadTruck(String fname, SceneManager *manager, SceneNode *par
 						TOSTRING(default_spring * default_spring_scale) + ", " + \
 						TOSTRING(default_damp   * default_damp_scale) + ", " + \
 						TOSTRING(default_deform * default_deform_scale) + ", " + \
-						TOSTRING(default_break  * default_break_scale));
+						TOSTRING(default_break  * default_break_scale), PARSER_INFO);
 
 				}
 				continue;
@@ -1208,7 +1208,7 @@ int SerializedRig::loadTruck(String fname, SceneManager *manager, SceneNode *par
 				subcabs[free_sub]=free_cab;
 				if(free_sub >= MAX_SUBMESHES)
 				{
-					parser_warning(c, "submesh limit reached ("+TOSTRING(MAX_SUBMESHES)+")");
+					parser_warning(c, "submesh limit reached ("+TOSTRING(MAX_SUBMESHES)+")", PARSER_ERROR);
 					continue;
 				}
 				//make it normal
@@ -1270,7 +1270,7 @@ int SerializedRig::loadTruck(String fname, SceneManager *manager, SceneNode *par
 				subcabs[free_sub]=free_cab;
 				if(free_sub >= MAX_SUBMESHES)
 				{
-					parser_warning(c, "submesh limit reached ("+TOSTRING(MAX_SUBMESHES)+")");
+					parser_warning(c, "submesh limit reached ("+TOSTRING(MAX_SUBMESHES)+")", PARSER_ERROR);
 					continue;
 				}
 				free_sub++;
@@ -1304,13 +1304,13 @@ int SerializedRig::loadTruck(String fname, SceneManager *manager, SceneNode *par
 
 				if (id != free_node)
 				{
-					parser_warning(c, "lost sync in nodes numbers after node " + TOSTRING(free_node) + "(got " + TOSTRING(id) + " instead)");
+					parser_warning(c, "lost sync in nodes numbers after node " + TOSTRING(free_node) + "(got " + TOSTRING(id) + " instead)", PARSER_FATAL_ERROR);
 					return -2;
 				};
 
 				if(free_node >= MAX_NODES)
 				{
-					parser_warning(c, "nodes limit reached ("+TOSTRING(MAX_NODES)+")");
+					parser_warning(c, "nodes limit reached ("+TOSTRING(MAX_NODES)+")", PARSER_ERROR);
 					continue;
 				}
 				Vector3 npos = pos + rot * Vector3(x,y,z);
@@ -1470,7 +1470,7 @@ int SerializedRig::loadTruck(String fname, SceneManager *manager, SceneNode *par
 							nodes[id].disable_sparks=true;
 						break;
 						case 'L':	//Log data:
-							parser_warning(c, "Node " + TOSTRING(id) + "  settings. Node load mass: " + TOSTRING(nodes[id].mass) + ", friction coefficient: " + TOSTRING(default_node_friction) + " and buoyancy volume coefficient: " + TOSTRING(default_node_volume) + " Fluid drag surface coefficient: " + TOSTRING(default_node_surface)+ " Particle mode: " + TOSTRING(nodes[id].disable_particles));
+							parser_warning(c, "Node " + TOSTRING(id) + "  settings. Node load mass: " + TOSTRING(nodes[id].mass) + ", friction coefficient: " + TOSTRING(default_node_friction) + " and buoyancy volume coefficient: " + TOSTRING(default_node_volume) + " Fluid drag surface coefficient: " + TOSTRING(default_node_surface)+ " Particle mode: " + TOSTRING(nodes[id].disable_particles), PARSER_INFO);
 						break;
 					}
 					options_pointer++;
@@ -1499,7 +1499,7 @@ int SerializedRig::loadTruck(String fname, SceneManager *manager, SceneNode *par
 					lockgroup = PARSEINT(args[0]);
 				} else
 				{
-					parser_warning(c, "Trying to parse a lockgroup without nodes defined.");
+					parser_warning(c, "Trying to parse a lockgroup without nodes defined.", PARSER_ERROR);
 					continue;
 				}
 
@@ -1512,7 +1512,7 @@ int SerializedRig::loadTruck(String fname, SceneManager *manager, SceneNode *par
 					if (id >= 0 && id <= free_node-1)
 						nodes[id].lockgroup = lockgroup;
 					else
-						parser_warning(c, "Trying to parse a lockgroup with a node that does not exist. Node#: ("+TOSTRING(id)+")");
+						parser_warning(c, "Trying to parse a lockgroup with a node that does not exist. Node#: ("+TOSTRING(id)+")", PARSER_ERROR);
 				}
 				continue;
 			}
@@ -1539,7 +1539,7 @@ int SerializedRig::loadTruck(String fname, SceneManager *manager, SceneNode *par
 
 				if (itfound == hooks.end() || id < 0 || id > free_node-1)
 				{
-					parser_warning(c, "Trying to parse a none existing hooknode ("+TOSTRING(id)+")");
+					parser_warning(c, "Trying to parse a none existing hooknode ("+TOSTRING(id)+")", PARSER_ERROR);
 					continue;
 				}
 		
@@ -1648,7 +1648,7 @@ int SerializedRig::loadTruck(String fname, SceneManager *manager, SceneNode *par
 
 				if(free_beam >= MAX_BEAMS)
 				{
-					parser_warning(c, "beams limit reached ("+TOSTRING(MAX_BEAMS)+")");
+					parser_warning(c, "beams limit reached ("+TOSTRING(MAX_BEAMS)+")", PARSER_ERROR);
 					continue;
 				}
 
@@ -1714,12 +1714,12 @@ int SerializedRig::loadTruck(String fname, SceneManager *manager, SceneNode *par
 				// checks ...
 				if(free_beam >= MAX_BEAMS)
 				{
-					parser_warning(c, "Triggers, beams limit reached ("+TOSTRING(MAX_BEAMS)+")");
+					parser_warning(c, "Triggers, beams limit reached ("+TOSTRING(MAX_BEAMS)+")", PARSER_ERROR);
 					continue;
 				}
 				if(free_shock >= MAX_BEAMS)
 				{
-					parser_warning(c, "Triggers limit reached ("+TOSTRING(MAX_SHOCKS)+")");
+					parser_warning(c, "Triggers limit reached ("+TOSTRING(MAX_SHOCKS)+")", PARSER_ERROR);
 					continue;
 				}
 				// options
@@ -1781,7 +1781,7 @@ int SerializedRig::loadTruck(String fname, SceneManager *manager, SceneNode *par
 					// this is no Trigger-Blocker, make the full check
 					if ((triggershort < 1 || triggershort > MAX_COMMANDS) || ((triggerlong < 1 || triggerlong > MAX_COMMANDS) && triggerlong !=-1 && triggerlong !=0)) 
 					{
-						parser_warning(c, "Error: Wrong command-eventnumber (Triggers). Trigger deactivated.");
+						parser_warning(c, "Error: Wrong command-eventnumber (Triggers). Trigger deactivated.", PARSER_ERROR);
 						continue;
 					}
 				} else if(!hooktoggle)
@@ -1789,7 +1789,7 @@ int SerializedRig::loadTruck(String fname, SceneManager *manager, SceneNode *par
 					// this is a Trigger-Blocker, make special check
 					if (triggershort < 0 || triggerlong < 0)
 					{
-						parser_warning(c, "Error: Wrong command-eventnumber (Triggers). Trigger-Blocker deactivated.");
+						parser_warning(c, "Error: Wrong command-eventnumber (Triggers). Trigger-Blocker deactivated.", PARSER_ERROR);
 						continue;
 					}
 				}
@@ -1798,7 +1798,7 @@ int SerializedRig::loadTruck(String fname, SceneManager *manager, SceneNode *par
 				beams[pos].bounded=SHOCK2;
 
 				if (triggerdebug)
-					parser_warning(c, "Trigger added. BeamID " + TOSTRING(pos));
+					parser_warning(c, "Trigger added. BeamID " + TOSTRING(pos), PARSER_ERROR);
 				beams[pos].shock = &shocks[free_shock];
 				shocks[free_shock].beamid = pos;
 				shocks[free_shock].trigger_switch_state = 0.0f;   // used as bool and countdowntimer, dont touch!
@@ -1862,12 +1862,12 @@ int SerializedRig::loadTruck(String fname, SceneManager *manager, SceneNode *par
 				// checks ...
 				if(free_beam >= MAX_BEAMS)
 				{
-					parser_warning(c, "beams limit reached ("+TOSTRING(MAX_BEAMS)+")");
+					parser_warning(c, "beams limit reached ("+TOSTRING(MAX_BEAMS)+")", PARSER_ERROR);
 					continue;
 				}
 				if(free_shock >= MAX_BEAMS)
 				{
-					parser_warning(c, "shock limit reached ("+TOSTRING(MAX_SHOCKS)+")");
+					parser_warning(c, "shock limit reached ("+TOSTRING(MAX_SHOCKS)+")", PARSER_ERROR);
 					continue;
 				}
 
@@ -1942,17 +1942,17 @@ int SerializedRig::loadTruck(String fname, SceneManager *manager, SceneNode *par
 				// checks ...
 				if(free_beam >= MAX_BEAMS)
 				{
-					parser_warning(c, "beams limit reached ("+TOSTRING(MAX_BEAMS)+")");
+					parser_warning(c, "beams limit reached ("+TOSTRING(MAX_BEAMS)+")", PARSER_ERROR);
 					continue;
 				}
 				if(free_shock >= MAX_BEAMS)
 				{
-					parser_warning(c, "shock limit reached ("+TOSTRING(MAX_SHOCKS)+")");
+					parser_warning(c, "shock limit reached ("+TOSTRING(MAX_SHOCKS)+")", PARSER_ERROR);
 					continue;
 				}
 				if ( sin == -1.0f || din == -1.0f || psin == -1.0f || pdin == -1.0f || sout == -1.0f || dout == -1.0f || psout == -1.0f || pdout == -1.0f || sbound == -1.0f || lbound == -1.0f || precomp == -1.0f)
 				{
-					parser_warning(c, "Error: Wrong values in shocks2 section ("+TOSTRING(id1)+","+TOSTRING(id2)+")");
+					parser_warning(c, "Error: Wrong values in shocks2 section ("+TOSTRING(id1)+","+TOSTRING(id2)+")", PARSER_FATAL_ERROR);
 					return -7;
 				}
 
@@ -1996,13 +1996,13 @@ int SerializedRig::loadTruck(String fname, SceneManager *manager, SceneNode *par
 
 							if (lbound < 0)
 							{
-								parser_warning(c, "Metric shock length calculation failed, longbound less then beams spawn length, reset to beams spawn length (longbound=0).");
+								parser_warning(c, "Metric shock length calculation failed, longbound less then beams spawn length, reset to beams spawn length (longbound=0).", PARSER_ERROR);
 								lbound = 0.0f;
 							}
 
 							if (sbound > 1)
 							{
-								parser_warning(c, "Metric shock length calculation failed, shortbound less then 0 meters, reset to 0 meters (shortbound=1).");
+								parser_warning(c, "Metric shock length calculation failed, shortbound less then 0 meters, reset to 0 meters (shortbound=1).", PARSER_ERROR);
 								sbound = 1.0f;
 							}
 						}
@@ -2077,12 +2077,12 @@ int SerializedRig::loadTruck(String fname, SceneManager *manager, SceneNode *par
 
 				if(free_beam >= MAX_BEAMS)
 				{
-					parser_warning(c, "beams limit reached ("+TOSTRING(MAX_BEAMS)+")");
+					parser_warning(c, "beams limit reached ("+TOSTRING(MAX_BEAMS)+")", PARSER_ERROR);
 					continue;
 				}
 				if(free_hydro >= MAX_HYDROS)
 				{
-					parser_warning(c, "hydros limit reached ("+TOSTRING(MAX_HYDROS)+")");
+					parser_warning(c, "hydros limit reached ("+TOSTRING(MAX_HYDROS)+")", PARSER_ERROR);
 					continue;
 				}
 
@@ -2158,7 +2158,7 @@ int SerializedRig::loadTruck(String fname, SceneManager *manager, SceneNode *par
 				Ogre::StringVector options = Ogre::StringUtil::split(c.line,",");
 				if (options.size() < 4)
 				{
-					parser_warning(c, "Error parsing File (Animator) " + String(fname) +" line " + StringConverter::toString(c.linecounter) + ". trying to continue ...");
+					parser_warning(c, "Error parsing File (Animator) " + String(fname) +" line " + StringConverter::toString(c.linecounter) + ". trying to continue ...", PARSER_ERROR);
 					continue;
 				}
 
@@ -2182,18 +2182,18 @@ int SerializedRig::loadTruck(String fname, SceneManager *manager, SceneNode *par
 
 				if (id1>=free_node || id2>=free_node)
 				{
-					parser_warning(c, "Error: unknown node number in animators section ("+TOSTRING(id1)+","+TOSTRING(id2)+")");
+					parser_warning(c, "Error: unknown node number in animators section ("+TOSTRING(id1)+","+TOSTRING(id2)+")", PARSER_FATAL_ERROR);
 					return -8;
 				}
 
 				if(free_beam >= MAX_BEAMS)
 				{
-					parser_warning(c, "beams limit reached ("+TOSTRING(MAX_BEAMS)+")");
+					parser_warning(c, "beams limit reached ("+TOSTRING(MAX_BEAMS)+")", PARSER_ERROR);
 					continue;
 				}
 				if(free_hydro >= MAX_HYDROS)
 				{
-					parser_warning(c, "hydros limit reached (via animators) ("+TOSTRING(MAX_HYDROS)+")");
+					parser_warning(c, "hydros limit reached (via animators) ("+TOSTRING(MAX_HYDROS)+")", PARSER_ERROR);
 					continue;
 				}
 
@@ -2296,9 +2296,9 @@ int SerializedRig::loadTruck(String fname, SceneManager *manager, SceneNode *par
 						beams[pos].longbound = StringConverter::parseReal(arg2);
 					}
 					if (beam->animFlags == 0 && (arg != "shortlimit" || arg != "longlimit"))
-						parser_warning(c, "Failed to identify source.");
-					//else
-					//	parser_warning(c, "Animator source set: with flag "+TOSTRING(beams[pos].animFlags));
+						parser_warning(c, "Failed to identify source.", PARSER_ERROR);
+					else
+						parser_warning(c, "Animator source set: with flag "+TOSTRING(beams[pos].animFlags), PARSER_INFO);
 				}
 				continue;
 			}
@@ -2447,11 +2447,11 @@ int SerializedRig::loadTruck(String fname, SceneManager *manager, SceneNode *par
 						MaterialPtr mat=(MaterialPtr)(MaterialManager::getSingleton().getByName(texname));
 						if(mat.getPointer() == 0)
 						{
-							parser_warning(c, "Material '" + String(texname) + "' used in Section 'globals' not found! We will try to use the material 'tracks/black' instead.");
+							parser_warning(c, "Material '" + String(texname) + "' used in Section 'globals' not found! We will try to use the material 'tracks/black' instead.", PARSER_ERROR);
 							mat=(MaterialPtr)(MaterialManager::getSingleton().getByName("tracks/black"));
 							if(mat.getPointer() == 0)
 							{
-								parser_warning(c, "Material not found! Try to ensure that tracks/black exists and retry.");
+								parser_warning(c, "Material not found! Try to ensure that tracks/black exists and retry.", PARSER_FATAL_ERROR);
 								return -9;
 							}
 						}
@@ -2502,7 +2502,7 @@ int SerializedRig::loadTruck(String fname, SceneManager *manager, SceneNode *par
 				}
 				if (gears.size() < 5) // 5 -2 = 3, 2 extra gears that don't count, one for reverse and one for neutral
 				{
-					parser_warning(c, "Trucks with less than 3 gears are not supported!");
+					parser_warning(c, "Trucks with less than 3 gears are not supported!", PARSER_ERROR);
 					continue;
 				}
 				//if (audio) audio->setupEngine();
@@ -2534,7 +2534,7 @@ int SerializedRig::loadTruck(String fname, SceneManager *manager, SceneNode *par
 
 				if(free_texcoord >= MAX_BEAMS)
 				{
-					parser_warning(c, "texcoords limit reached ("+TOSTRING(MAX_TEXCOORDS)+")");
+					parser_warning(c, "texcoords limit reached ("+TOSTRING(MAX_TEXCOORDS)+")", PARSER_ERROR);
 					continue;
 				}
 				texcoords[free_texcoord] = Vector3(id, x, y);
@@ -2553,7 +2553,7 @@ int SerializedRig::loadTruck(String fname, SceneManager *manager, SceneNode *par
 
 				if(free_cab >= MAX_CABS)
 				{
-					parser_warning(c, "cabs limit reached ("+TOSTRING(MAX_CABS)+")");
+					parser_warning(c, "cabs limit reached ("+TOSTRING(MAX_CABS)+")", PARSER_ERROR);
 					continue;
 				}
 				cabs[free_cab*3]=id1;
@@ -2561,7 +2561,7 @@ int SerializedRig::loadTruck(String fname, SceneManager *manager, SceneNode *par
 				cabs[free_cab*3+2]=id3;
 				if(free_collcab >= MAX_CABS)
 				{
-					parser_warning(c, "unable to create cabs: cabs limit reached ("+TOSTRING(MAX_CABS)+")");
+					parser_warning(c, "unable to create cabs: cabs limit reached ("+TOSTRING(MAX_CABS)+")", PARSER_ERROR);
 					continue;
 				}
 				if (type=='c') {collcabs[free_collcab]=free_cab; collcabstype[free_collcab]=0; free_collcab++;};
@@ -2575,7 +2575,7 @@ int SerializedRig::loadTruck(String fname, SceneManager *manager, SceneNode *par
 
 					if(free_collcab >= MAX_CABS || free_buoycab >= MAX_CABS)
 					{
-						parser_warning(c, "unable to create buoycabs: cabs limit reached ("+TOSTRING(MAX_CABS)+")");
+						parser_warning(c, "unable to create buoycabs: cabs limit reached ("+TOSTRING(MAX_CABS)+")", PARSER_ERROR);
 						continue;
 					}
 					collcabs[free_collcab]=free_cab;
@@ -2645,7 +2645,7 @@ int SerializedRig::loadTruck(String fname, SceneManager *manager, SceneNode *par
 				//verify array limits so we dont overflow
 				if(keys >= MAX_COMMANDS || keyl >= MAX_COMMANDS)
 				{
-						parser_warning(c, "Command key invalid");
+						parser_warning(c, "Command key invalid", PARSER_ERROR);
 						continue;
 				}
 
@@ -2664,7 +2664,7 @@ int SerializedRig::loadTruck(String fname, SceneManager *manager, SceneNode *par
 
 				if(free_beam >= MAX_BEAMS)
 				{
-					parser_warning(c, "cannot create command: beams limit reached ("+TOSTRING(MAX_BEAMS)+")");
+					parser_warning(c, "cannot create command: beams limit reached ("+TOSTRING(MAX_BEAMS)+")", PARSER_ERROR);
 					continue;
 				}
 
@@ -2684,7 +2684,7 @@ int SerializedRig::loadTruck(String fname, SceneManager *manager, SceneNode *par
 						{
 							if(beams[pos].isOnePressMode>0)
 							{
-								parser_warning(c, "Command cannot be one-pressed and self centering at the same time!");
+								parser_warning(c, "Command cannot be one-pressed and self centering at the same time!", PARSER_ERROR);
 								break;
 							}
 							beams[pos].iscentering=true;
@@ -2694,12 +2694,12 @@ int SerializedRig::loadTruck(String fname, SceneManager *manager, SceneNode *par
 						{
 							if(beams[pos].iscentering)
 							{
-								parser_warning(c, "Command cannot be one-pressed and self centering at the same time!");
+								parser_warning(c, "Command cannot be one-pressed and self centering at the same time!", PARSER_ERROR);
 								break;
 							}
 							if(beams[pos].isOnePressMode>0)
 							{
-								parser_warning(c, "Command already has a one-pressed c.mode! All after the first are ignored!");
+								parser_warning(c, "Command already has a one-pressed c.mode! All after the first are ignored!", PARSER_ERROR);
 								break;
 							}
 							beams[pos].isOnePressMode=1;
@@ -2709,12 +2709,12 @@ int SerializedRig::loadTruck(String fname, SceneManager *manager, SceneNode *par
 						{
 							if(beams[pos].iscentering)
 							{
-								parser_warning(c, "Command cannot be one-pressed and self centering at the same time!");
+								parser_warning(c, "Command cannot be one-pressed and self centering at the same time!", PARSER_ERROR);
 								break;
 							}
 							if(beams[pos].isOnePressMode>0)
 							{
-								parser_warning(c, "Command already has a one-pressed c.mode! All after the first are ignored!");
+								parser_warning(c, "Command already has a one-pressed c.mode! All after the first are ignored!", PARSER_ERROR);
 								break;
 							}
 							beams[pos].isOnePressMode=2;
@@ -2773,7 +2773,7 @@ int SerializedRig::loadTruck(String fname, SceneManager *manager, SceneNode *par
 
 				if(free_contacter >= MAX_CONTACTERS)
 				{
-					parser_warning(c, "contacters limit reached ("+TOSTRING(MAX_CONTACTERS)+")");
+					parser_warning(c, "contacters limit reached ("+TOSTRING(MAX_CONTACTERS)+")", PARSER_ERROR);
 					continue;
 				}
 
@@ -2795,7 +2795,7 @@ int SerializedRig::loadTruck(String fname, SceneManager *manager, SceneNode *par
 
 				if(free_beam >= MAX_BEAMS)
 				{
-					parser_warning(c, "cannot create rope: beams limit reached ("+TOSTRING(MAX_BEAMS)+")");
+					parser_warning(c, "cannot create rope: beams limit reached ("+TOSTRING(MAX_BEAMS)+")", PARSER_ERROR);
 					continue;
 				}
 				int htype = BEAM_NORMAL;
@@ -2850,7 +2850,7 @@ int SerializedRig::loadTruck(String fname, SceneManager *manager, SceneNode *par
 
 				if(free_beam >= MAX_BEAMS)
 				{
-					parser_warning(c, "cannot create tie: beams limit reached ("+TOSTRING(MAX_BEAMS)+")");
+					parser_warning(c, "cannot create tie: beams limit reached ("+TOSTRING(MAX_BEAMS)+")", PARSER_ERROR);
 					continue;
 				}
 
@@ -2916,13 +2916,13 @@ int SerializedRig::loadTruck(String fname, SceneManager *manager, SceneNode *par
 
 				if(free_beam >= MAX_BEAMS)
 				{
-					parser_warning(c, "cannot create cinecam: beams limit reached ("+TOSTRING(MAX_BEAMS)+")");
+					parser_warning(c, "cannot create cinecam: beams limit reached ("+TOSTRING(MAX_BEAMS)+")", PARSER_ERROR);
 					continue;
 				}
 
 				if(free_node >= MAX_NODES)
 				{
-					parser_warning(c, "cannot create cinecam: nodes limit reached ("+TOSTRING(MAX_NODES)+")");
+					parser_warning(c, "cannot create cinecam: nodes limit reached ("+TOSTRING(MAX_NODES)+")", PARSER_ERROR);
 					continue;
 				}
 
@@ -3032,12 +3032,12 @@ int SerializedRig::loadTruck(String fname, SceneManager *manager, SceneNode *par
 
 				if(controlnumber < -1 || controlnumber > 500)
 				{
-					parser_warning(c, "Controlnumber must be between -1 and 500!");
+					parser_warning(c, "Controlnumber must be between -1 and 500!", PARSER_ERROR);
 					continue;
 				}
 				if(blinkdelay < -1 || blinkdelay > 60000)
 				{
-					parser_warning(c, "Blinkdelay must be between 0 and 60000!");
+					parser_warning(c, "Blinkdelay must be between 0 and 60000!", PARSER_ERROR);
 					continue;
 				}
 				flare_t f;
@@ -3183,7 +3183,7 @@ int SerializedRig::loadTruck(String fname, SceneManager *manager, SceneNode *par
 
 				if(free_prop >= MAX_PROPS)
 				{
-					parser_warning(c, "props limit reached ("+TOSTRING(MAX_PROPS)+")");
+					parser_warning(c, "props limit reached ("+TOSTRING(MAX_PROPS)+")", PARSER_ERROR);
 					continue;
 				}
 				/* Initialize prop memory to avoid invalid pointers. */
@@ -3450,7 +3450,7 @@ int SerializedRig::loadTruck(String fname, SceneManager *manager, SceneNode *par
 
 				if(free_wing >= MAX_WINGS)
 				{
-					parser_warning(c, "wings limit reached ("+TOSTRING(MAX_WINGS)+")");
+					parser_warning(c, "wings limit reached ("+TOSTRING(MAX_WINGS)+")", PARSER_ERROR);
 					continue;
 				}
 
@@ -3460,7 +3460,7 @@ int SerializedRig::loadTruck(String fname, SceneManager *manager, SceneNode *par
 					sprintf(wname, "wing-%s-%i",truckname, free_wing);
 					char wnamei[256];
 					sprintf(wnamei, "wingobj-%s-%i",truckname, free_wing);
-					if (liftcoef != 1.0f) parser_warning(c, "Wing liftforce coefficent: " + TOSTRING(liftcoef));
+					if (liftcoef != 1.0f) parser_warning(c, "Wing liftforce coefficent: " + TOSTRING(liftcoef), PARSER_INFO);
 					wings[free_wing].fa=new FlexAirfoil(manager, wname, nodes, nds[0], nds[1], nds[2], nds[3], nds[4], nds[5], nds[6], nds[7], texname, Vector2(txes[0], txes[1]), Vector2(txes[2], txes[3]), Vector2(txes[4], txes[5]), Vector2(txes[6], txes[7]), type, cratio, mind, maxd, afname, liftcoef, aeroengines, state!=NETWORKED);
 					Entity *ec=0;
 					try
@@ -3468,7 +3468,7 @@ int SerializedRig::loadTruck(String fname, SceneManager *manager, SceneNode *par
 						ec = manager->createEntity(wnamei, wname);
 					}catch(...)
 					{
-						parser_warning(c, "error loading mesh: "+String(wname));
+						parser_warning(c, "error loading mesh: "+String(wname), PARSER_ERROR);
 						continue;
 					}
 					MaterialFunctionMapper::replaceSimpleMeshMaterials(ec, ColourValue(0.5, 1, 0));
@@ -3491,7 +3491,7 @@ int SerializedRig::loadTruck(String fname, SceneManager *manager, SceneNode *par
 							//inform wing segments
 							float span=(nodes[wings[wingstart].fa->nfrd].RelPosition-nodes[wings[free_wing-1].fa->nfld].RelPosition).length();
 							//					float chord=(nodes[wings[wingstart].fa->nfrd].Position-nodes[wings[wingstart].fa->nbrd].Position).length();
-							parser_warning(c, "Full Wing "+TOSTRING(wingstart)+"-"+TOSTRING(free_wing-1)+" SPAN="+TOSTRING(span)+" AREA="+TOSTRING(wingarea));
+							parser_warning(c, "Full Wing "+TOSTRING(wingstart)+"-"+TOSTRING(free_wing-1)+" SPAN="+TOSTRING(span)+" AREA="+TOSTRING(wingarea), PARSER_INFO);
 							wings[wingstart].fa->enableInducedDrag(span,wingarea, false);
 							wings[free_wing-1].fa->enableInducedDrag(span,wingarea, true);
 							//we want also to add positional lights for first wing
@@ -3500,7 +3500,7 @@ int SerializedRig::loadTruck(String fname, SceneManager *manager, SceneNode *par
 
 								if(free_prop+4 >= MAX_PROPS)
 								{
-									parser_warning(c, "cannot create wing props: props limit reached ("+TOSTRING(MAX_PROPS)+")");
+									parser_warning(c, "cannot create wing props: props limit reached ("+TOSTRING(MAX_PROPS)+")", PARSER_ERROR);
 									continue;
 								}
 								//Left green
@@ -3719,7 +3719,7 @@ int SerializedRig::loadTruck(String fname, SceneManager *manager, SceneNode *par
 
 				if(free_aeroengine >= MAX_AEROENGINES)
 				{
-					parser_warning(c, "airoengine limit reached ("+TOSTRING(MAX_AEROENGINES)+")");
+					parser_warning(c, "airoengine limit reached ("+TOSTRING(MAX_AEROENGINES)+")", PARSER_ERROR);
 					continue;
 				}
 
@@ -3778,7 +3778,7 @@ int SerializedRig::loadTruck(String fname, SceneManager *manager, SceneNode *par
 					fuseFront   = &nodes[front];
 					fuseBack    = &nodes[front];
 					fuseWidth   = width;
-					parser_warning(c, "Fusedrag autocalculation size: "+TOSTRING(width)+" m²");
+					parser_warning(c, "Fusedrag autocalculation size: "+TOSTRING(width)+" m²", PARSER_INFO);
 				} else
 				{
 					// original fusedrag calculation
@@ -3869,7 +3869,7 @@ int SerializedRig::loadTruck(String fname, SceneManager *manager, SceneNode *par
 
 				if(free_rotator >= MAX_ROTATORS)
 				{
-					parser_warning(c, "rotators limit reached ("+TOSTRING(MAX_ROTATORS)+")");
+					parser_warning(c, "rotators limit reached ("+TOSTRING(MAX_ROTATORS)+")", PARSER_ERROR);
 					continue;
 				}
 				rotators[free_rotator].angle=0;
@@ -3923,7 +3923,7 @@ int SerializedRig::loadTruck(String fname, SceneManager *manager, SceneNode *par
 
 				if(free_screwprop >= MAX_SCREWPROPS)
 				{
-					parser_warning(c, "screwprops limit reached ("+TOSTRING(MAX_SCREWPROPS)+")");
+					parser_warning(c, "screwprops limit reached ("+TOSTRING(MAX_SCREWPROPS)+")", PARSER_ERROR);
 					continue;
 				}
 				if(!virtuallyLoaded)
@@ -4068,7 +4068,7 @@ int SerializedRig::loadTruck(String fname, SceneManager *manager, SceneNode *par
 
 				if(free_cparticle >= MAX_CPARTICLES)
 				{
-					parser_warning(c, "custom particles limit reached ("+TOSTRING(MAX_CPARTICLES)+")");
+					parser_warning(c, "custom particles limit reached ("+TOSTRING(MAX_CPARTICLES)+")", PARSER_ERROR);
 					continue;
 				}
 
@@ -4108,7 +4108,7 @@ int SerializedRig::loadTruck(String fname, SceneManager *manager, SceneNode *par
 
 				if(free_aeroengine >= MAX_AEROENGINES)
 				{
-					parser_warning(c, "airoengine limit reached ("+TOSTRING(MAX_AEROENGINES)+")");
+					parser_warning(c, "airoengine limit reached ("+TOSTRING(MAX_AEROENGINES)+")", PARSER_ERROR);
 					continue;
 				}
 
@@ -4140,7 +4140,7 @@ int SerializedRig::loadTruck(String fname, SceneManager *manager, SceneNode *par
 
 				if(free_rigidifier >= MAX_RIGIDIFIERS)
 				{
-					parser_warning(c, "rigidifiers limit reached ("+TOSTRING(MAX_RIGIDIFIERS)+")");
+					parser_warning(c, "rigidifiers limit reached ("+TOSTRING(MAX_RIGIDIFIERS)+")", PARSER_ERROR);
 					continue;
 				}
 
@@ -4188,11 +4188,11 @@ int SerializedRig::loadTruck(String fname, SceneManager *manager, SceneNode *par
 
 				if(free_airbrake >= MAX_AIRBRAKES)
 				{
-					parser_warning(c, "airbrakes limit reached ("+TOSTRING(MAX_AIRBRAKES)+")");
+					parser_warning(c, "airbrakes limit reached ("+TOSTRING(MAX_AIRBRAKES)+")", PARSER_ERROR);
 					continue;
 				}
 				if (liftcoef != 1.0f)
-					parser_warning(c, "Airbrakes force coefficent: " + TOSTRING(liftcoef));
+					parser_warning(c, "Airbrakes force coefficent: " + TOSTRING(liftcoef), PARSER_ERROR);
 
 				if(!virtuallyLoaded)
 					airbrakes[free_airbrake]=new Airbrake(manager, truckname, free_airbrake, &nodes[ref], &nodes[nx], &nodes[ny], &nodes[na], Vector3(ox,oy,oz), wd, len, maxang, texname, tx1,tx2,tx3,tx4,liftcoef);
@@ -4229,13 +4229,13 @@ int SerializedRig::loadTruck(String fname, SceneManager *manager, SceneNode *par
 				c.linecounter++;
 				if (c.line == "forset")
 				{
-					parser_warning(c, "No forset statement after a flexbody");
+					parser_warning(c, "No forset statement after a flexbody", PARSER_ERROR);
 					continue;
 				}
 
 				if(free_flexbody >= MAX_FLEXBODIES)
 				{
-					parser_warning(c, "flexbodies limit reached ("+TOSTRING(MAX_FLEXBODIES)+")");
+					parser_warning(c, "flexbodies limit reached ("+TOSTRING(MAX_FLEXBODIES)+")", PARSER_ERROR);
 					continue;
 				}
 				if(!virtuallyLoaded)
@@ -4278,7 +4278,7 @@ int SerializedRig::loadTruck(String fname, SceneManager *manager, SceneNode *par
 				MaterialPtr mat = MaterialManager::getSingleton().getByName(materialName);
 				if(mat.isNull())
 				{
-					parser_warning(c, "Error in materialbindings: material " + materialName + " was not found");
+					parser_warning(c, "Error in materialbindings: material " + materialName + " was not found", PARSER_ERROR);
 					continue;
 				}
 				//clone the material
@@ -4339,7 +4339,7 @@ int SerializedRig::loadTruck(String fname, SceneManager *manager, SceneNode *par
 				if (!tstmat.isNull())
 				{
 					//material already exists, probably because the vehicle was already spawned previously
-					parser_warning(c, "Warning: managed material '" + String(material) +"' already exists");
+					parser_warning(c, "Warning: managed material '" + String(material) +"' already exists", PARSER_ERROR);
 					continue;
 				}
 
@@ -4369,7 +4369,7 @@ int SerializedRig::loadTruck(String fname, SceneManager *manager, SceneNode *par
 							MaterialPtr srcmat=(MaterialPtr)(MaterialManager::getSingleton().getByName("managed/flexmesh_standard/simple"));
 							if(srcmat.isNull())
 							{
-								parser_warning(c, "Material 'managed/flexmesh_standard/simple' missing!");
+								parser_warning(c, "Material 'managed/flexmesh_standard/simple' missing!", PARSER_ERROR);
 								continue;
 							}
 
@@ -4385,7 +4385,7 @@ int SerializedRig::loadTruck(String fname, SceneManager *manager, SceneNode *par
 							MaterialPtr srcmat=(MaterialPtr)(MaterialManager::getSingleton().getByName("managed/flexmesh_standard/specularonly"));
 							if(srcmat.isNull())
 							{
-								parser_warning(c, "Material 'managed/flexmesh_standard/specularonly' missing!");
+								parser_warning(c, "Material 'managed/flexmesh_standard/specularonly' missing!", PARSER_ERROR);
 								continue;
 							}
 
@@ -4410,7 +4410,7 @@ int SerializedRig::loadTruck(String fname, SceneManager *manager, SceneNode *par
 							MaterialPtr srcmat=(MaterialPtr)(MaterialManager::getSingleton().getByName("managed/flexmesh_standard/damageonly"));
 							if(srcmat.isNull())
 							{
-								parser_warning(c, "Material 'managed/flexmesh_standard/damageonly' missing!");
+								parser_warning(c, "Material 'managed/flexmesh_standard/damageonly' missing!", PARSER_ERROR);
 								continue;
 							}
 
@@ -4427,7 +4427,7 @@ int SerializedRig::loadTruck(String fname, SceneManager *manager, SceneNode *par
 							MaterialPtr srcmat=(MaterialPtr)(MaterialManager::getSingleton().getByName("managed/flexmesh_standard/speculardamage"));
 							if(srcmat.isNull())
 							{
-								parser_warning(c, "Material 'managed/flexmesh_standard/speculardamage' missing!");
+								parser_warning(c, "Material 'managed/flexmesh_standard/speculardamage' missing!", PARSER_ERROR);
 								continue;
 							}
 
@@ -4471,7 +4471,7 @@ int SerializedRig::loadTruck(String fname, SceneManager *manager, SceneNode *par
 							MaterialPtr srcmat=(MaterialPtr)(MaterialManager::getSingleton().getByName("managed/flexmesh_transparent/simple"));
 							if(srcmat.isNull())
 							{
-								parser_warning(c, "Material 'managed/flexmesh_transparent/simple' missing!");
+								parser_warning(c, "Material 'managed/flexmesh_transparent/simple' missing!", PARSER_ERROR);
 								continue;
 							}
 
@@ -4487,7 +4487,7 @@ int SerializedRig::loadTruck(String fname, SceneManager *manager, SceneNode *par
 							MaterialPtr srcmat=(MaterialPtr)(MaterialManager::getSingleton().getByName("managed/flexmesh_transparent/specularonly"));
 							if(srcmat.isNull())
 							{
-								parser_warning(c, "Material 'managed/flexmesh_transparent/specularonly' missing!");
+								parser_warning(c, "Material 'managed/flexmesh_transparent/specularonly' missing!", PARSER_ERROR);
 								continue;
 							}
 
@@ -4512,7 +4512,7 @@ int SerializedRig::loadTruck(String fname, SceneManager *manager, SceneNode *par
 							MaterialPtr srcmat=(MaterialPtr)(MaterialManager::getSingleton().getByName("managed/flexmesh_transparent/damageonly"));
 							if(srcmat.isNull())
 							{
-								parser_warning(c, "Material 'managed/flexmesh_transparent/damageonly' missing!");
+								parser_warning(c, "Material 'managed/flexmesh_transparent/damageonly' missing!", PARSER_ERROR);
 								continue;
 							}
 
@@ -4529,7 +4529,7 @@ int SerializedRig::loadTruck(String fname, SceneManager *manager, SceneNode *par
 							MaterialPtr srcmat=(MaterialPtr)(MaterialManager::getSingleton().getByName("managed/flexmesh_transparent/speculardamage"));
 							if(srcmat.isNull())
 							{
-								parser_warning(c, "Material 'managed/flexmesh_transparent/speculardamage' missing!");
+								parser_warning(c, "Material 'managed/flexmesh_transparent/speculardamage' missing!", PARSER_ERROR);
 								continue;
 							}
 
@@ -4567,7 +4567,7 @@ int SerializedRig::loadTruck(String fname, SceneManager *manager, SceneNode *par
 						MaterialPtr srcmat=(MaterialPtr)(MaterialManager::getSingleton().getByName("managed/mesh_standard/simple"));
 						if(srcmat.isNull())
 						{
-							parser_warning(c, "Material 'managed/mesh_standard/simple' missing!");
+							parser_warning(c, "Material 'managed/mesh_standard/simple' missing!", PARSER_ERROR);
 							continue;
 						}
 
@@ -4583,7 +4583,7 @@ int SerializedRig::loadTruck(String fname, SceneManager *manager, SceneNode *par
 						MaterialPtr srcmat=(MaterialPtr)(MaterialManager::getSingleton().getByName("managed/mesh_standard/specular"));
 						if(srcmat.isNull())
 						{
-							parser_warning(c, "Material 'managed/mesh_standard/specular' missing!");
+							parser_warning(c, "Material 'managed/mesh_standard/specular' missing!", PARSER_ERROR);
 							continue;
 						}
 
@@ -4619,7 +4619,7 @@ int SerializedRig::loadTruck(String fname, SceneManager *manager, SceneNode *par
 						MaterialPtr srcmat=(MaterialPtr)(MaterialManager::getSingleton().getByName("managed/mesh_transparent/simple"));
 						if(srcmat.isNull())
 						{
-							parser_warning(c, "Material 'managed/mesh_transparent/simple' missing!");
+							parser_warning(c, "Material 'managed/mesh_transparent/simple' missing!", PARSER_ERROR);
 							continue;
 						}
 
@@ -4635,7 +4635,7 @@ int SerializedRig::loadTruck(String fname, SceneManager *manager, SceneNode *par
 						MaterialPtr srcmat=(MaterialPtr)(MaterialManager::getSingleton().getByName("managed/mesh_transparent/specular"));
 						if(srcmat.isNull())
 						{
-							parser_warning(c, "Material 'managed/mesh_transparent/specular' missing!");
+							parser_warning(c, "Material 'managed/mesh_transparent/specular' missing!", PARSER_ERROR);
 							continue;
 						}
 
@@ -4653,7 +4653,7 @@ int SerializedRig::loadTruck(String fname, SceneManager *manager, SceneNode *par
 				}
 				else
 				{
-					parser_warning(c, "Unknown effect");
+					parser_warning(c, "Unknown effect", PARSER_ERROR);
 					continue;
 				}
 
@@ -4729,7 +4729,7 @@ int SerializedRig::loadTruck(String fname, SceneManager *manager, SceneNode *par
 
 				if(!free_wheel)
 				{
-					parser_warning(c, "AXLE ERROR: the axle section must come AFTER some wheels");
+					parser_warning(c, "AXLE ERROR: the axle section must come AFTER some wheels", PARSER_ERROR);
 					continue;
 				}
 
@@ -4743,7 +4743,7 @@ int SerializedRig::loadTruck(String fname, SceneManager *manager, SceneNode *par
 				{
 					Ogre::StringUtil::trim(*cur);
 
-					//parser_warning(c, "AXLE: Parsing property: [" + *cur + "]" );
+					parser_warning(c, "AXLE: Parsing property: [" + *cur + "]", PARSER_INFO );
 
 					switch(cur->at(0))
 					{
@@ -4780,13 +4780,13 @@ int SerializedRig::loadTruck(String fname, SceneManager *manager, SceneNode *par
 						break;
 					}
 					case 's':
-						parser_warning(c, "AXLE: selection property not yet available");
+						parser_warning(c, "AXLE: selection property not yet available", PARSER_ERROR);
 						break;
 					case 'r':
-						parser_warning(c, "AXLE: Gear ratio property not yet available");
+						parser_warning(c, "AXLE: Gear ratio property not yet available", PARSER_ERROR);
 						break;
 					default:
-						parser_warning(c, "AXLE: malformed property: " + *cur);
+						parser_warning(c, "AXLE: malformed property: " + *cur, PARSER_ERROR);
 						break;
 					}
 
@@ -4815,13 +4815,13 @@ int SerializedRig::loadTruck(String fname, SceneManager *manager, SceneNode *par
 					{
 						parser_warning(c, "AXLE: could not find wheel 1 nodes: " +
 							TOSTRING(wheel_node[0][0]) + " " +
-							TOSTRING(wheel_node[0][1]) );
+							TOSTRING(wheel_node[0][1]) , PARSER_ERROR);
 					}
 					if( axles[free_axle]->wheel_2 < 0)
 					{
 						parser_warning(c, "AXLE: could not find wheel 2 nodes: " +
 						TOSTRING(wheel_node[1][0]) + " " +
-						TOSTRING(wheel_node[1][1]) );
+						TOSTRING(wheel_node[1][1]) , PARSER_ERROR);
 					}
 					continue;
 				}
@@ -4829,16 +4829,14 @@ int SerializedRig::loadTruck(String fname, SceneManager *manager, SceneNode *par
 				// test if any differentials have been defined
 				if( axles[free_axle]->availableDiffs().empty() )
 				{
-					parser_warning(c, "AXLE: nodiffs defined, defaulting to Open and Locked");
+					parser_warning(c, "AXLE: nodiffs defined, defaulting to Open and Locked", PARSER_INFO);
 					axles[free_axle]->addDiffType(OPEN_DIFF);
 					axles[free_axle]->addDiffType(LOCKED_DIFF);
 				}
 
-				/*
 				parser_warning(c, "AXLE: Created: w1(" + TOSTRING(wheel_node[0][0]) + ") " +
 					TOSTRING(wheel_node[0][1]) + ", w2(" + TOSTRING(wheel_node[1][0]) + " " +
-					TOSTRING(wheel_node[1][1]) + ")");
-				*/
+					TOSTRING(wheel_node[1][1]) + ")", PARSER_INFO);
 				++free_axle;
 			}
 
@@ -4873,7 +4871,7 @@ int SerializedRig::loadTruck(String fname, SceneManager *manager, SceneNode *par
 		} catch(ParseException &)
 		{
 			c.mode = BTS_NONE;
-			parser_warning(c, "got parsing exception, falling back to no section");
+			parser_warning(c, "got parsing exception, falling back to no section", PARSER_ERROR);
 			// we use this catcher to continue after an error was thrown, cleans up the code a lot
 			continue;
 		}
@@ -4885,7 +4883,7 @@ int SerializedRig::loadTruck(String fname, SceneManager *manager, SceneNode *par
 		int result=engine->getTorqueCurve()->spaceCurveEvenly(engine->getTorqueCurve()->getUsedSpline());
 		if (result==1)
 		{
-			parser_warning(c, "TorqueCurve: Points (rpm) must be in an ascending order. Using default curve");
+			parser_warning(c, "TorqueCurve: Points (rpm) must be in an ascending order. Using default curve", PARSER_ERROR);
 			engine->getTorqueCurve()->setTorqueModel("default");
 		}
 	}
@@ -4912,7 +4910,7 @@ int SerializedRig::loadTruck(String fname, SceneManager *manager, SceneNode *par
 	}
 	
 	if(!loading_finished) {
-		parser_warning(c, "Reached end of file "+ String(fname)+ ". No 'end' was found! Did you forgot it? ");
+		parser_warning(c, "Reached end of file "+ String(fname)+ ". No 'end' was found! Did you forgot it? ", PARSER_ERROR);
 	}
 
 	//cameras workaround
@@ -4922,7 +4920,7 @@ int SerializedRig::loadTruck(String fname, SceneManager *manager, SceneNode *par
 		revroll[i]=(nodes[cameranodedir[i]].RelPosition-nodes[cameranodepos[i]].RelPosition).crossProduct(nodes[cameranoderoll[i]].RelPosition-nodes[cameranodepos[i]].RelPosition).y>0;
 		if (revroll[i])
 		{
-			parser_warning(c, "camera definition is probably invalid and has been corrected. It should be center, back, left");
+			parser_warning(c, "camera definition is probably invalid and has been corrected. It should be center, back, left", PARSER_WARNING);
 		}
 	}
 	
@@ -4933,14 +4931,14 @@ int SerializedRig::loadTruck(String fname, SceneManager *manager, SceneNode *par
 		//inform wing segments
 		float span=(nodes[wings[wingstart].fa->nfrd].RelPosition-nodes[wings[free_wing-1].fa->nfld].RelPosition).length();
 		//		float chord=(nodes[wings[wingstart].fa->nfrd].Position-nodes[wings[wingstart].fa->nbrd].Position).length();
-		parser_warning(c, "Full Wing "+TOSTRING(wingstart)+"-"+TOSTRING(free_wing-1)+" SPAN="+TOSTRING(span)+" AREA="+TOSTRING(wingarea));
+		parser_warning(c, "Full Wing "+TOSTRING(wingstart)+"-"+TOSTRING(free_wing-1)+" SPAN="+TOSTRING(span)+" AREA="+TOSTRING(wingarea), PARSER_INFO);
 		wings[wingstart].fa->enableInducedDrag(span,wingarea, false);
 		wings[free_wing-1].fa->enableInducedDrag(span,wingarea, true);
 		//wash calculator
 		wash_calculator(rot, c);
 	}
 	//add the cab visual
-	//parser_warning(c, "creating cab");
+	parser_warning(c, "creating cab", PARSER_INFO);
 	if (free_texcoord>0 && free_cab>0)
 	{
 		//closure
@@ -4970,7 +4968,7 @@ int SerializedRig::loadTruck(String fname, SceneManager *manager, SceneNode *par
 		MaterialPtr mat=(MaterialPtr)(MaterialManager::getSingleton().getByName(texname));
 		if(mat.isNull())
 		{
-			parser_warning(c, "Material '"+String(texname)+"' missing!");
+			parser_warning(c, "Material '"+String(texname)+"' missing!", PARSER_FATAL_ERROR);
 			return -13;
 		}
 
@@ -5014,23 +5012,23 @@ int SerializedRig::loadTruck(String fname, SceneManager *manager, SceneNode *par
 		//	mat->compile();
 
 
-		//parser_warning(c, "creating mesh");
+		parser_warning(c, "creating mesh", PARSER_INFO);
 		cabMesh = NULL;
 		if(!virtuallyLoaded)
 			cabMesh=new FlexObj(manager, nodes, free_texcoord, texcoords, free_cab, cabs, free_sub, subtexcoords, subcabs, texname, wname, subisback, backmatname, transmatname);
-		//parser_warning(c, "creating entity");
+		parser_warning(c, "creating entity", PARSER_INFO);
 
 		if(!virtuallyLoaded)
 		{
-			//parser_warning(c, "creating cabnode");
+			parser_warning(c, "creating cabnode", PARSER_INFO);
 			cabNode = manager->getRootSceneNode()->createChildSceneNode();
 			Entity *ec = 0;
 			try
 			{
-				//parser_warning(c, "loading cab");
+				parser_warning(c, "loading cab", PARSER_INFO);
 				ec = manager->createEntity(wnamei, wname);
 				//		ec->setRenderQueueGroup(RENDER_QUEUE_6);
-				//parser_warning(c, "attaching cab");
+				parser_warning(c, "attaching cab", PARSER_INFO);
 				if(ec)
 					cabNode->attachObject(ec);
 			}catch(...)
@@ -5043,9 +5041,10 @@ int SerializedRig::loadTruck(String fname, SceneManager *manager, SceneNode *par
 			if(usedSkin) usedSkin->replaceMeshMaterials(ec);
 		}
 	};
-	//parser_warning(c, "cab ok");
+	parser_warning(c, "cab ok", PARSER_INFO);
 	//	mWindow->setDebugText("Beam number:"+ TOSTRING(free_beam));
 
+	parser_warning(c, "parsing done", PARSER_INFO);
 	return 0;
 }
 
@@ -5175,7 +5174,7 @@ int SerializedRig::add_beam(node_t *p1, node_t *p2, SceneManager *manager, Scene
 			beams[pos].mEntity = manager->createEntity(bname, "beam.mesh");
 		}catch(...)
 		{
-			parser_warning(c, "error loading mesh: beam.mesh");
+			parser_warning(c, "error loading mesh: beam.mesh", PARSER_ERROR);
 		}
 		// no materialmapping for beams!
 		//		ec->setCastShadows(false);
@@ -5400,7 +5399,7 @@ void SerializedRig::addWheel(SceneManager *manager, SceneNode *parent, Real radi
 				if(usedSkin) usedSkin->replaceMeshMaterials(ec);
 			}catch(...)
 			{
-				parser_warning(c, "error loading mesh: "+String(wname));
+				parser_warning(c, "error loading mesh: "+String(wname), PARSER_ERROR);
 			}
 		}
 		else
@@ -5418,7 +5417,7 @@ void SerializedRig::addWheel(SceneManager *manager, SceneNode *parent, Real radi
 					vwheels[free_wheel].cnode->attachObject(ec);
 			} catch(...)
 			{
-				parser_warning(c, "error loading mesh: "+String(wname));
+				parser_warning(c, "error loading mesh: "+String(wname), PARSER_ERROR);
 			}
 		}
 	}
@@ -5619,7 +5618,7 @@ void SerializedRig::addWheel2(SceneManager *manager, SceneNode *parent, Real rad
 			free_wheel++;
 		}catch(...)
 		{
-			parser_warning(c, "error loading mesh: "+String(wname));
+			parser_warning(c, "error loading mesh: "+String(wname), PARSER_ERROR);
 		}
 	}
 }
@@ -5644,7 +5643,7 @@ bool SerializedRig::parseRailGroupLine(parsecontext_t c)
     
 	if( options.size() < 3)
 	{
-		parser_warning(c, "RAILGROUP: not enough nodes: " + String(line));
+		parser_warning(c, "RAILGROUP: not enough nodes: " + String(line), PARSER_ERROR);
 		return false;
 	}
     
@@ -5667,7 +5666,7 @@ bool SerializedRig::parseSlideNodeLine(parsecontext_t c)
     
 	if( options.size() < 2)
 	{
-		parser_warning(c, "SLIDENODE: not enough options provided: " + String(line));
+		parser_warning(c, "SLIDENODE: not enough options provided: " + String(line), PARSER_ERROR);
 		return false;
 	}
 
@@ -5680,7 +5679,7 @@ bool SerializedRig::parseSlideNodeLine(parsecontext_t c)
 	if( !node )
 	{
 		parser_warning(c, "SLIDENODE: invalid node id: " +
-				TOSTRING( nodeid ) );
+				TOSTRING( nodeid ) , PARSER_ERROR);
 		return false;
 	}
     
@@ -5689,7 +5688,7 @@ bool SerializedRig::parseSlideNodeLine(parsecontext_t c)
 	//if ends are open or closed ends, ie can node slide right off the end of a Rail
 	// attachment constraints, none, self, foreign, all 
 
-	//parser_warning(c, "SLIDENODE: making new SlideNode");
+	parser_warning(c, "SLIDENODE: making new SlideNode", PARSER_INFO);
 	SlideNode newSlideNode = SlideNode(node, NULL);
 	//unsigned int quantity = 1;
 	
@@ -5704,7 +5703,7 @@ bool SerializedRig::parseSlideNodeLine(parsecontext_t c)
 		// tolerance in meters, default 0.0f
 		case 't': case 'T':
 		{			
-			//parser_warning(c, "SLIDENODE: setting tolerance to : " + option.second );
+			parser_warning(c, "SLIDENODE: setting tolerance to : " + option.second , PARSER_INFO);
 			newSlideNode.setThreshold( StringConverter::parseReal( option.second ) );
 		} 
 		break;
@@ -5718,7 +5717,7 @@ bool SerializedRig::parseSlideNodeLine(parsecontext_t c)
 			{
 				parser_warning(c, "RAILGROUP: warning could not find "
 						"a Railgroup with corresponding ID: " + 
-						option.second + ". Will check for anonymous rail");
+						option.second + ". Will check for anonymous rail", PARSER_WARNING);
 			}
 			else
 				newSlideNode.setDefaultRail( rgGroup );
@@ -5781,7 +5780,7 @@ bool SerializedRig::parseSlideNodeLine(parsecontext_t c)
 		mRailGroups.push_back(rgGroup); // keep track of all allocated Rails
 	}
 
-	//parser_warning(c, "SLIDENODE: Adding Slide Rail");
+	parser_warning(c, "SLIDENODE: Adding Slide Rail", PARSER_INFO);
 	mSlideNodes.push_back( newSlideNode );
 	return true;
 }
@@ -5877,7 +5876,7 @@ Rail* SerializedRig::getRails(const std::vector<int>& nodeids, parsecontext_t c)
     
 	if( nodeids.front() == nodeids.back() )
 	{
-		parser_warning(c, "RAIL: Looping SlideRail");
+		parser_warning(c, "RAIL: Looping SlideRail", PARSER_INFO);
 			builder.loopRail();
 	} 
     
@@ -5890,7 +5889,7 @@ Rail* SerializedRig::getRails(const std::vector<int>& nodeids, parsecontext_t c)
 		{
 			parser_warning(c, "RAIL: invalid beam: " +
 					TOSTRING(nodeids[i]) + ", " +
-					TOSTRING(nodeids[i + 1]) );
+					TOSTRING(nodeids[i + 1]) , PARSER_ERROR);
 			return NULL;
 		}
 
@@ -5905,7 +5904,7 @@ void SerializedRig::addSoundSource(SoundScriptInstance *ssi, int nodenum, int ty
 	if (!ssi) return; //fizzle
 	if (free_soundsource==MAX_SOUNDSCRIPTS_PER_TRUCK)
 	{
-		parser_warning(c, "Error, too many sound sources per vehicle!");
+		parser_warning(c, "Error, too many sound sources per vehicle!", PARSER_ERROR);
 		return;
 	}
 	soundsources[free_soundsource].ssi=ssi;
@@ -5947,7 +5946,7 @@ void SerializedRig::wash_calculator(Quaternion rot, parsecontext_t c)
 						//we have a wash
 						float wratio=(aleft-aright)/(wleft-wright);
 						wings[w].fa->addwash(p, wratio);
-						parser_warning(c, "Wing "+TOSTRING(w)+" is washed by prop "+TOSTRING(p)+" at "+TOSTRING((float)(wratio*100.0))+"%");
+						parser_warning(c, "Wing "+TOSTRING(w)+" is washed by prop "+TOSTRING(p)+" at "+TOSTRING((float)(wratio*100.0))+"%", PARSER_INFO);
 					}
 				}
 			}
@@ -5990,11 +5989,19 @@ void SerializedRig::calcBox()
 	//BES_GFX_STOP(BES_GFX_calcBox);
 }
 
-void SerializedRig::parser_warning(parsecontext_t &context, Ogre::String text)
+void SerializedRig::parser_warning(parsecontext_t &context, Ogre::String text, int errlvl)
 {
 	if(ignoreProblems) return;
 
-	String txt = "BIO|"+context.filename+":"+Ogre::StringConverter::toString(context.linecounter, 4, '0')+" | "+String(context.modeString)+" | " + text;
+	String errstr = "INFO   ";
+	if(errlvl == PARSER_WARNING)
+		errstr    = "WARNING";
+	else if(errlvl == PARSER_ERROR)
+		errstr    = "ERROR  ";
+	else if(errlvl == PARSER_FATAL_ERROR)
+		errstr    = "FATAL  ";
+
+	String txt = "BIO|"+errstr+"|"+context.filename+":"+Ogre::StringConverter::toString(context.linecounter, 4, '0')+" | "+String(context.modeString)+" | " + text;
 	LOG(txt);
 
 	// add the warning to the vector
@@ -6003,7 +6010,7 @@ void SerializedRig::parser_warning(parsecontext_t &context, Ogre::String text)
 	warnings.push_back(context_copy);
 }
 
-void SerializedRig::parser_warning(parsecontext_t *context, Ogre::String text)
+void SerializedRig::parser_warning(parsecontext_t *context, Ogre::String text, int errlvl)
 {
 	if(ignoreProblems) return;
 
@@ -6020,14 +6027,14 @@ int SerializedRig::parse_args(parsecontext_t &context, Ogre::StringVector &args,
 		args = Ogre::StringUtil::split(context.line, ":|, \t");
 	} catch(Exception &e)
 	{
-		parser_warning(context, "Exception on parsing: "+e.getFullDescription());
+		parser_warning(context, "Exception on parsing: "+e.getFullDescription(), PARSER_ERROR);
 		args.clear();
 		throw(ParseException());
 	}
 	int n = args.size();
 	if(n < minArgNum)
 	{
-		parser_warning(context, "Too less arguments: "+TOSTRING(n)+" provided, "+TOSTRING(minArgNum)+" required. ");
+		parser_warning(context, "Too less arguments: "+TOSTRING(n)+" provided, "+TOSTRING(minArgNum)+" required. ", PARSER_ERROR);
 		args.clear();
 		throw(ParseException());
 	}
@@ -6044,12 +6051,12 @@ int SerializedRig::parse_node_number(parsecontext_t &context, Ogre::String s, bo
 	}
 	if (id >= free_node)
 	{
-		parser_warning(context, "Error: invalid node number "+s+", bigger than existing nodes ("+TOSTRING(free_node)+")");
+		parser_warning(context, "Error: invalid node number "+s+", bigger than existing nodes ("+TOSTRING(free_node)+")", PARSER_ERROR);
 		throw(ParseException());
 	}
 	else if (id < 0)
 	{
-		parser_warning(context, "Error: invalid node number "+s+", less than zero");
+		parser_warning(context, "Error: invalid node number "+s+", less than zero", PARSER_ERROR);
 		throw(ParseException());
 	}
 	return id;
