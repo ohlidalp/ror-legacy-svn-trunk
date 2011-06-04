@@ -184,7 +184,8 @@ bool ContentManager::init(void)
 	OverlayManager::getSingleton().addOverlayElementFactory(pCT);
 
 	// Set default mipmap level (NB some APIs ignore this)
-	TextureManager::getSingleton().setDefaultNumMipmaps(5);
+	if(TextureManager::getSingletonPtr())
+		TextureManager::getSingleton().setDefaultNumMipmaps(5);
 	String tft=SSETTING("Texture Filtering");
 	TextureFilterOptions tfo=TFO_NONE;
 	if (tft=="Bilinear") tfo=TFO_BILINEAR;
