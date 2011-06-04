@@ -27,6 +27,8 @@ along with Rigs of Rods.  If not, see <http://www.gnu.org/licenses/>.
 #include "RoRVersion.h"
 #include "SerializedRig.h"
 
+#include "JSON.h"
+
 using namespace Ogre;
 
 // simpleopt by http://code.jellycan.com/simpleopt/
@@ -89,21 +91,71 @@ void convert(Ogre::String input, Ogre::String output)
 	Ogre::MaterialSerializer * ogreMaterialSerializer = new Ogre::MaterialSerializer();
    
 	// get the path info
-	Ogre::String basename, ext, path; 
-	Ogre::StringUtil::splitFullFilename(input, basename, ext, path);
+	Ogre::String in_basename, in_ext, in_path; 
+	Ogre::StringUtil::splitFullFilename(input, in_basename, in_ext, in_path);
+	Ogre::String out_basename, out_ext, out_path; 
+	Ogre::StringUtil::splitFullFilename(output, out_basename, out_ext, out_path);
 
 	// init the paths
-	Ogre::ResourceGroupManager::getSingleton().addResourceLocation(path, "FileSystem", "our");
+	Ogre::ResourceGroupManager::getSingleton().addResourceLocation(in_path, "FileSystem", "our");
 	Ogre::ResourceGroupManager::getSingleton().initialiseResourceGroup("our");
 
 	// then load the truck
 	SerializedRig r;
-	r.loadTruckVirtual(basename+"."+ext, true);
+	r.loadTruckVirtual(in_basename+"."+in_ext, false);
 
-	// and write the output
-	FILE *fo = fopen(output.c_str(), "wb");
-	fwrite(&r, sizeof(r), 1, fo);
-	fclose(fo);
+	// then save
+	if(out_ext == "json")
+	{
+		// now save it
+		JSONObject root;
+		// Adding a string
+		root[L"truckname"] = new JSONValue(r.realtruckname.c_str());
+
+		// Create nodes array
+		JSONArray nodes_array;
+		for (int i = 0; i < r.free_node; i++)
+		{
+			JSONObject node;
+			node[L"id"] = new JSONValue(TOSTRING(i).c_str());
+			//node[L"options"] = new JSONValue(TOSTRING(r.nodes[i].).c_str());
+			node[L"coord"] = new JSONValue(TOSTRING(r.nodes[i].AbsPosition).c_str());
+			nodes_array.push_back(new JSONValue(node));
+		}
+		root[L"nodes"] = new JSONValue(nodes_array);
+
+		// Create beams array
+		JSONArray beams_array;
+		for (int i = 0; i < r.free_beam; i++)
+		{
+			JSONObject beam;
+			beam[L"id1"] = new JSONValue(TOSTRING(r.beams[i].p1->id).c_str());
+			beam[L"id2"] = new JSONValue(TOSTRING(r.beams[i].p2->id).c_str());
+			beams_array.push_back(new JSONValue(beam));
+		}
+		root[L"beams"] = new JSONValue(beams_array);
+
+		// Create final value
+		JSONValue *final_value = new JSONValue(root);
+
+		// Print it
+		FILE *fo = fopen(output.c_str(), "w");
+		fwprintf(fo, L"%ls", final_value->Stringify().c_str());
+		fclose(fo);
+		//print_out(value->Stringify().c_str());
+
+		// Clean up
+		delete final_value;
+	} else if(out_ext == "bin")
+	{
+		// and write the output
+		FILE *fo = fopen(output.c_str(), "wb");
+		fwrite(&r, sizeof(r), 1, fo);
+		fclose(fo);
+	} else
+	{
+		LOG("unsupported output file format: " + out_ext);
+	}
 }
 
 int main(int argc, char *argv[])

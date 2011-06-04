@@ -2439,22 +2439,25 @@ int SerializedRig::loadTruck(String fname, SceneManager *manager, SceneNode *par
 						strncpy(texname, usedSkin->getReplacementForMaterial(texname).c_str(), 1024);
 					}
 
-					//we clone the material
-					char clonetex[256];
-					sprintf(clonetex, "%s-%s",texname,truckname);
-					MaterialPtr mat=(MaterialPtr)(MaterialManager::getSingleton().getByName(texname));
-					if(mat.getPointer() == 0)
+					if(!virtuallyLoaded)
 					{
-						parser_warning(c, "Material '" + String(texname) + "' used in Section 'globals' not found! We will try to use the material 'tracks/black' instead.");
-						mat=(MaterialPtr)(MaterialManager::getSingleton().getByName("tracks/black"));
+						//we clone the material
+						char clonetex[256];
+						sprintf(clonetex, "%s-%s",texname,truckname);
+						MaterialPtr mat=(MaterialPtr)(MaterialManager::getSingleton().getByName(texname));
 						if(mat.getPointer() == 0)
 						{
-							parser_warning(c, "Material not found! Try to ensure that tracks/black exists and retry.");
-							return -9;
+							parser_warning(c, "Material '" + String(texname) + "' used in Section 'globals' not found! We will try to use the material 'tracks/black' instead.");
+							mat=(MaterialPtr)(MaterialManager::getSingleton().getByName("tracks/black"));
+							if(mat.getPointer() == 0)
+							{
+								parser_warning(c, "Material not found! Try to ensure that tracks/black exists and retry.");
+								return -9;
+							}
 						}
+						mat->clone(clonetex);
+						strcpy(texname, clonetex);
 					}
-					mat->clone(clonetex);
-					strcpy(texname, clonetex);
 				}
 				continue;
 			}
@@ -4875,7 +4878,6 @@ int SerializedRig::loadTruck(String fname, SceneManager *manager, SceneNode *par
 			continue;
 		}
 	};
-	
 	
 	// we should post-process the torque curve if existing
 	if(engine)
