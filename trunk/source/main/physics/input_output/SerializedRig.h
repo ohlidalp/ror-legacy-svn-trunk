@@ -47,6 +47,8 @@ typedef struct parsecontext_t
 
 struct ParseException : std::exception { char const* what() const throw() { return "ParserException"; }; };
 
+enum {PARSER_INFO, PARSER_WARNING, PARSER_ERROR, PARSER_FATAL_ERROR};
+
 class SerializedRig : public rig_t
 {
 public:
@@ -62,8 +64,8 @@ public:
 
 	int parse_args(parsecontext_t &context, Ogre::StringVector &v, int minArgNum);
 	int parse_node_number(parsecontext_t &context, Ogre::String s, bool enableSpecial=false);
-	void parser_warning(parsecontext_t &context, Ogre::String text);
-	void parser_warning(parsecontext_t *context, Ogre::String text);
+	void parser_warning(parsecontext_t &context, Ogre::String text, int errlvl = PARSER_WARNING);
+	void parser_warning(parsecontext_t *context, Ogre::String text, int errlvl = PARSER_WARNING);
 
 protected:
 	bool virtuallyLoaded;

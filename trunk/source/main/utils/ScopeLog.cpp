@@ -94,7 +94,10 @@ void ScopeLog::messageLogged(const String &message, LogMessageLevel lml, bool ma
 		fprintf(f, ".MaterialError     { font-size:1.2em;color:Red; }\n");
 		fprintf(f, ".GeneralError      { font-size:1.2em;color:Red; }\n");
 		fprintf(f, ".IgnoreThis        { font-size:0.8em;color:DarkGrey; }\n");
-		fprintf(f, ".BeamInputOutput   { font-size:1.2em;color:OrangeRed; }\n");
+		fprintf(f, ".BeamInputOutputInfo    { font-size:0.9em;color:DeepSkyBlue; }\n");
+		fprintf(f, ".BeamInputOutputWarning { font-size:1.2em;color:Orange; }\n");
+		fprintf(f, ".BeamInputOutputError   { font-size:1.2em;color:OrangeRed; }\n");
+		fprintf(f, ".BeamInputOutputFatal   { font-size:1.2em;color:DarkRed; }\n");
 		fprintf(f, ".tableheader       { font-weight:bold; }\n");
 		fprintf(f, ".logtable          { border-collapse:collapse;font-family:monospace;border:1px solid #aaaaaa; }\n");
 		fprintf(f, ".logtd             { border:1px solid #aaaaaa;vertical-align:top; }\n");
@@ -128,11 +131,17 @@ void ScopeLog::messageLogged(const String &message, LogMessageLevel lml, bool ma
 	else if(message.find("Error loading texture ") != String::npos)
 		sprintf(type, "GeneralError");
 	else if(message.find("ODEF: ") != String::npos)
-		sprintf(type, "BeamInputOutput");
-	else if(message.find("BIO|") != String::npos)
-		sprintf(type, "BeamInputOutput");
+		sprintf(type, "BeamInputOutputInfo");
+	else if(message.find("BIO|INFO") != String::npos)
+		sprintf(type, "BeamInputOutputInfo");
+	else if(message.find("BIO|WARNING") != String::npos)
+		sprintf(type, "BeamInputOutputWarning");
+	else if(message.find("BIO|ERROR") != String::npos)
+		sprintf(type, "BeamInputOutputError");
+	else if(message.find("BIO|FATAL") != String::npos)
+		sprintf(type, "BeamInputOutputFatal");
 	else if(message.find("Inertia|") != String::npos)
-		sprintf(type, "BeamInputOutput");
+		sprintf(type, "BeamInputOutputInfo");
 	else if(message.find("Mesh: Loading ") != String::npos)
 		sprintf(type, "OgreNotice");
 	else if(message.find("Loading 2D Texture") != String::npos)
@@ -161,6 +170,7 @@ void ScopeLog::messageLogged(const String &message, LogMessageLevel lml, bool ma
 		sprintf(type, "RoRNotice");
 
 	
+
 	unsigned long time = Ogre::Root::getSingleton().getTimer()->getMilliseconds();
 	fprintf(f, "<tr class='%s'>"\
 		"<td class='logtd'><a name='%d' href='#%d'>%d</a></td>" \
