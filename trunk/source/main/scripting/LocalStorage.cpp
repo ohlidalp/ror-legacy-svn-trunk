@@ -35,12 +35,19 @@ LocalStorage::LocalStorage(AngelScript::asIScriptEngine *engine_in, std::string 
 			*it = '_';
 	}
 
-	sectionName = sectionName_in;
+	sectionName = sectionName_in.substr(0, sectionName_in.find(".", 0));
 	
 	filename = SSETTING("Cache Path") + fileName_in + ".asdata";
-
+	separators = "=";
 	loadDict();
 	
+	saved = true;
+}
+
+LocalStorage::LocalStorage(AngelScript::asIScriptEngine *engine_in)
+{
+	this->engine = engine_in;
+	engine->NotifyGarbageCollectorOfNewObject(this, engine->GetTypeIdByDecl("LocalStorage"));	
 	saved = true;
 }
 
@@ -81,6 +88,28 @@ bool LocalStorage::GetGCFlag()
 
 void LocalStorage::EnumReferences(AngelScript::asIScriptEngine *engine){}
 void LocalStorage::ReleaseAllReferences(AngelScript::asIScriptEngine * /*engine*/){}
+
+LocalStorage &LocalStorage::operator =(LocalStorage &other)
+{
+	filename = other.getFilename();
+	sectionName = other.getSection();
+	SettingsBySection::iterator secIt;
+	SettingsBySection osettings = other.getSettings();
+	for(secIt = osettings.begin(); secIt!=osettings.end(); secIt++)
+	{
+		SettingsMultiMap::iterator setIt;
+		for(setIt = secIt->second->begin(); setIt!=secIt->second->end(); setIt++)
+		{
+			setSetting(setIt->first, setIt->second, secIt->first);
+		}
+	}
+	return *this;
+}
+
+void LocalStorage::changeSection(const std::string &section)
+{
+	sectionName = section.substr(0, section.find(".", 0));
+}
 
 // getters and setters
 std::string LocalStorage::get(std::string &key)
@@ -216,9 +245,7 @@ bool LocalStorage::loadDict()
 		return false;
 
 	load(filename);
-	
 	saved = true;
-
 	return true;
 }
 
@@ -273,6 +300,11 @@ void scriptLocalStorageFactory2_Generic(AngelScript::asIScriptGeneric *gen)
 	*(LocalStorage**)gen->GetAddressOfReturnLocation() = new LocalStorage(gen->GetEngine(), filename, "common");
 }
 
+void scriptLocalStorageFactory3_Generic(AngelScript::asIScriptGeneric *gen)
+{	
+	*(LocalStorage**)gen->GetAddressOfReturnLocation() = new LocalStorage(gen->GetEngine());
+}
+
 void registerLocalStorage(AngelScript::asIScriptEngine *engine)
 {
 	int r;
@@ -281,8 +313,12 @@ void registerLocalStorage(AngelScript::asIScriptEngine *engine)
 	// Use the generic interface to construct the object since we need the engine pointer, we could also have retrieved the engine pointer from the active context
 	r = engine->RegisterObjectBehaviour("LocalStorage", AngelScript::asBEHAVE_FACTORY, "LocalStorage@ f(const string &in, const string &in)", AngelScript::asFUNCTION(scriptLocalStorageFactory_Generic), AngelScript::asCALL_GENERIC); MYASSERT( r>= 0 );
 	r = engine->RegisterObjectBehaviour("LocalStorage", AngelScript::asBEHAVE_FACTORY, "LocalStorage@ f(const string &in)", AngelScript::asFUNCTION(scriptLocalStorageFactory2_Generic), AngelScript::asCALL_GENERIC); MYASSERT( r>= 0 );
+	r = engine->RegisterObjectBehaviour("LocalStorage", AngelScript::asBEHAVE_FACTORY, "LocalStorage@ f()", AngelScript::asFUNCTION(scriptLocalStorageFactory3_Generic), AngelScript::asCALL_GENERIC); MYASSERT( r>= 0 );
 	r = engine->RegisterObjectBehaviour("LocalStorage", AngelScript::asBEHAVE_ADDREF, "void f()",  AngelScript::asMETHOD(LocalStorage,AddRef), AngelScript::asCALL_THISCALL); MYASSERT( r >= 0 );
 	r = engine->RegisterObjectBehaviour("LocalStorage", AngelScript::asBEHAVE_RELEASE, "void f()", AngelScript::asMETHOD(LocalStorage,Release), AngelScript::asCALL_THISCALL); MYASSERT( r >= 0 );
+
+	r = engine->RegisterObjectMethod("LocalStorage", "LocalStorage &opAssign(LocalStorage &in)", AngelScript::asMETHODPR(LocalStorage, operator=, (LocalStorage &), LocalStorage&), AngelScript::asCALL_THISCALL); MYASSERT( r >= 0 );
+	r = engine->RegisterObjectMethod("LocalStorage", "void changeSection(const string &in)",     AngelScript::asMETHODPR(LocalStorage,changeSection,(const std::string&), void), AngelScript::asCALL_THISCALL); MYASSERT( r >= 0 );
 
 	r = engine->RegisterObjectMethod("LocalStorage", "string get(string &in)",                 AngelScript::asMETHODPR(LocalStorage,get,(std::string&), std::string), AngelScript::asCALL_THISCALL); MYASSERT( r >= 0 );
 	r = engine->RegisterObjectMethod("LocalStorage", "string getString(string &in)",           AngelScript::asMETHODPR(LocalStorage,get,(std::string&), std::string), AngelScript::asCALL_THISCALL); MYASSERT( r >= 0 );

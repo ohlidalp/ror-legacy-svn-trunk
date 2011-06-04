@@ -28,6 +28,7 @@ along with Rigs of Rods.  If not, see <http://www.gnu.org/licenses/>.
 void registerLocalStorage(AngelScript::asIScriptEngine *engine);
 void scriptLocalStorageFactory_Generic(AngelScript::asIScriptGeneric *gen);
 void scriptLocalStorageFactory2_Generic(AngelScript::asIScriptGeneric *gen);
+void scriptLocalStorageFactory3_Generic(AngelScript::asIScriptGeneric *gen);
 
 /**
  *  @brief A class that allows scripts to store data persistently
@@ -36,11 +37,15 @@ class LocalStorage : public Ogre::ImprovedConfigFile
 {	
 public:
 	// Memory management
-    void AddRef() const;
-    void Release() const;
+	void AddRef() const;
+	void Release() const;
 
 	LocalStorage(AngelScript::asIScriptEngine *engine, std::string fileName_in,  const std::string &sectionName_in);
+	LocalStorage(AngelScript::asIScriptEngine *engine_in);
 	~LocalStorage();
+
+	LocalStorage &operator =(LocalStorage &other);
+	void changeSection(const std::string &section);
 		
 	std::string get(std::string &key);
 	void set(std::string &key, const std::string &value);
@@ -88,6 +93,10 @@ public:
 	bool GetGCFlag();
 	void EnumReferences(AngelScript::asIScriptEngine *engine);
 	void ReleaseAllReferences(AngelScript::asIScriptEngine *engine);
+	
+	SettingsBySection getSettings() { return mSettings; }
+	std::string getFilename() { return filename; }
+	std::string getSection() { return sectionName; }
 
 protected:
 	bool saved;
