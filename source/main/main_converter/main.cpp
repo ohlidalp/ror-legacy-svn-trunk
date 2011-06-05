@@ -78,7 +78,10 @@ void initOgre()
 
 	Ogre::Root *mRoot = new Root(pluginsConfig, ogreConfig, logFilename);
 
-	mRoot->restoreConfig();
+	
+	if(!mRoot->restoreConfig())
+		mRoot->showConfigDialog();
+
 	mRoot->initialise(true);
 
 	mRoot->getAutoCreatedWindow()->setAutoUpdated(false);
