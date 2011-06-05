@@ -86,6 +86,7 @@ void initOgre()
 
 	mRoot->getAutoCreatedWindow()->setAutoUpdated(false);
 
+	new ContentManager();
 	ContentManager::getSingleton().init();
 }
 
