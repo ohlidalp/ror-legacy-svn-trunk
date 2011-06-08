@@ -36,6 +36,7 @@ along with Rigs of Rods.  If not, see <http://www.gnu.org/licenses/>.
 #include "cevent.h"
 #include "installerlog.h"
 #include "VersionCompare.h"
+#include "RoRVersion.h"
 
 // for all others, include the necessary headers
 #ifndef WX_PRECOMP
@@ -601,7 +602,7 @@ void DownloadPage::startThread()
 	stream_desc_t sd;
 	sd.platform = wxT("ALL");
 
-	sd.path     = wxT(INSTALLER_VERSION);
+	sd.path     = wxT(ROR_VERSION_STRING_SHORT);
 	sd.path    += wxT("/");
 	sd.path    += wxT(INSTALLER_PLATFORM);
 
@@ -645,7 +646,7 @@ void DownloadPage::startThreadUserContent()
 	stream_desc_t sd;
 	sd.platform = wxT("ALL");
 
-	sd.path     = wxT(INSTALLER_VERSION);
+	sd.path     = wxString(ROR_VERSION_STRING_SHORT);
 	sd.path    += wxT("/");
 	sd.path    += wxT(INSTALLER_PLATFORM) + wxString("-skeleton");
 
@@ -797,8 +798,7 @@ void DownloadPage::OnStatusUpdate(MyStatusEvent &ev)
 		progress->SetValue(1000);
 		txt_remaintime->SetLabel(wxT("finished!"));
 		isDone=true;
-		if(CONFIG->installType != wxString("fixuserpath"))
-			CONFIG->writeVersionInfo(); // write the version to the file, since we updated
+
 		// enableforward button
 		txtFinish->Show();
         htmlinfo->Hide();

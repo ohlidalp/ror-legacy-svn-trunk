@@ -241,6 +241,7 @@ public:
 	void OnForceFeedbackScroll(wxScrollEvent& event);
 	void OnNoteBookPageChange(wxNotebookEvent& event);
 	void OnNoteBook2PageChange(wxNotebookEvent& event);
+	std::string readVersionInfo();
 
 	void DSoundEnumerate(wxChoice* wxc);
 //	void checkLinuxPaths();
@@ -2596,31 +2597,88 @@ void MyDialog::OnNoteBook2PageChange(wxNotebookEvent& event)
 	}
 }
 
+#ifdef WIN32
+// code borrowed from updater
+void wxStringToTCHAR(TCHAR *tCharString, wxString &myString)
+{
+	const wxChar* myStringChars = myString.c_str();  
+	for (unsigned int i = 0; i < myString.Len(); i++) {
+		tCharString[i] = myStringChars [i];
+	}
+	tCharString[myString.Len()] = _T('\0');
+}
+
+std::string MyDialog::readVersionInfo()
+{
+	// http://stackoverflow.com/questions/940707/how-do-i-programatically-get-the-version-of-a-dll-or-exe
+
+	//wxString rorpath = getInstallationPath() + wxT("RoR.exe");
+	wxString rorpath = wxT("RoR.exe");
+
+	char buffer[4096]="";
+	TCHAR pszFilePath[MAX_PATH];
+
+	wxStringToTCHAR(pszFilePath, rorpath);
+
+	DWORD               dwSize              = 0;
+	BYTE                *pbVersionInfo      = NULL;
+	VS_FIXEDFILEINFO    *pFileInfo          = NULL;
+	UINT                puLenFileInfo       = 0;
+
+	// get the version info for the file requested
+	dwSize = GetFileVersionInfoSize( pszFilePath, NULL );
+	if ( dwSize == 0 )
+	{
+		//wxMessageBox(wxString::Format("Error in GetFileVersionInfoSize: %d\n", GetLastError()),wxT("GetFileVersionInfoSize Error"),0);
+		return "unknown";
+	}
+
+	pbVersionInfo = new BYTE[ dwSize ];
+
+	if ( !GetFileVersionInfo( pszFilePath, 0, dwSize, pbVersionInfo ) )
+	{
+		//printf( "Error in GetFileVersionInfo: %d\n", GetLastError() );
+		//delete[] pbVersionInfo;
+		return "unknown";
+	}
+
+	if ( !VerQueryValue( pbVersionInfo, TEXT("\\"), (LPVOID*) &pFileInfo, &puLenFileInfo ) )
+	{
+		//printf( "Error in VerQueryValue: %d\n", GetLastError() );
+		//delete[] pbVersionInfo;
+		return "unknown";
+	}
+
+	if (pFileInfo->dwSignature == 0xfeef04bd)
+	{
+		int major = HIWORD(pFileInfo->dwFileVersionMS);
+		int minor = LOWORD(pFileInfo->dwFileVersionMS);
+		int patch = pFileInfo->dwFileVersionLS;
+		sprintf(buffer, "%d.%d.%d", major, minor, patch);
+		return std::string(buffer);
+	}
+	return "unknown";
+}
+#endif //WIN32
+
 void MyDialog::OnNoteBookPageChange(wxNotebookEvent& event)
 {
 	wxString tabname = nbook->GetPageText(event.GetSelection());
 	if(tabname == "Updates")
 	{
 		// try to find our version
-		Ogre::String ver = "";
-		FILE *f = fopen("version.txt", "r");
-		if(f)
-		{
-			char line[30];
-			char *res = fgets(line, 30, f);
-			fclose(f);
-			if(strnlen(line, 30) > 0)
-				ver = Ogre::String(line);
-		}
-
+#ifdef WIN32
 		helphtmw->LoadPage(wxString(conv(NEWS_HTML_PAGE))+
-						   wxString(conv("?netversion="))+
-						   wxString(conv(RORNET_VERSION))+
-						   wxString(conv("&version="))+
-						   wxString(conv(ver))+
-						   wxString(conv("&lang="))+
-						   conv(conv(language->CanonicalName))
-						   );
+			wxString(conv("?netversion="))+wxString(conv(RORNET_VERSION))+
+			wxString(conv("&version="))+wxString(readVersionInfo())+
+			wxString(conv("&lang="))+conv(conv(language->CanonicalName))
+			);
+#else
+		helphtmw->LoadPage(wxString(conv(NEWS_HTML_PAGE))+
+			wxString(conv("?netversion="))+wxString(conv(RORNET_VERSION))+
+			wxString(conv("&lang="))+conv(conv(language->CanonicalName))
+			);
+#endif // WIN32
 	}
 }
 
@@ -2641,10 +2699,8 @@ void MyDialog::OnTestNet(wxCommandEvent& event)
 	timer1->Start(10000);
 	std::string lshort = conv(language->CanonicalName).substr(0, 2);
 	networkhtmw->LoadPage(wxString(conv(REPO_HTML_SERVERLIST))+
-						  wxString(conv("?version="))+
-						  wxString(conv(RORNET_VERSION))+
-						  wxString(conv("&lang="))+
-						  conv(lshort));
+						  wxString(conv("?version="))+wxString(conv(RORNET_VERSION))+
+						  wxString(conv("&lang="))+conv(lshort));
 
 //	networkhtmw->LoadPage("http://rigsofrods.blogspot.com/");
 	/*

@@ -36,6 +36,7 @@ along with Rigs of Rods.  If not, see <http://www.gnu.org/licenses/>.
 #include "installerlog.h"
 #include "SHA1.h"
 #include "wizard.h"
+#include "RoRVersion.h"
 
 #if OGRE_PLATFORM == OGRE_PLATFORM_WIN32
 	#include <shlobj.h> // for the special path functions
@@ -67,7 +68,7 @@ int ConfigManager::getCurrentVersionInfo()
 	WsyncDownload *wsdl = new WsyncDownload();
 	std::vector< std::vector< std::string > > list;
 	char tmp[256] = "";
-	sprintf(tmp, "/%s/%s/%s", INSTALLER_VERSION, INSTALLER_PLATFORM, WSYNC_VERSION_INFO);
+	sprintf(tmp, "/%s/%s/%s", ROR_VERSION_STRING_SHORT, INSTALLER_PLATFORM, WSYNC_VERSION_INFO);
 	int res = wsdl->downloadConfigFile(0, WSYNC_MAIN_SERVER, std::string(tmp), list);
 	delete(wsdl);
 	if(!res && list.size()>0 && list[0].size()>0)
@@ -81,28 +82,68 @@ int ConfigManager::getCurrentVersionInfo()
 	return 1;
 }
 
-int ConfigManager::writeVersionInfo()
+#ifdef WIN32
+void wxStringToTCHAR(TCHAR *tCharString, wxString &myString)
 {
-	if(currVersion == " unknown ") return 1;
-	wxString fn = getInstallationPath() + wxT("\\version.txt");
-	FILE *f = fopen(conv(fn).c_str(), "w");
-	if(!f) return -1;
-	fprintf(f, "%s", currVersion.c_str());
-	fclose(f);
-	return 0;
+	const wxChar* myStringChars = myString.c_str();  
+	for (unsigned int i = 0; i < myString.Len(); i++) {
+		tCharString[i] = myStringChars [i];
+	}
+	tCharString[myString.Len()] = _T('\0');
 }
 
+#endif //WIN32
 std::string ConfigManager::readVersionInfo()
 {
-	wxString fn = getInstallationPath() + wxT("\\version.txt");
-	FILE *f = fopen(conv(fn).c_str(), "r");
-	if(!f) return std::string("unkown");
-	char tmp[256]="";
-	int res = fscanf(f, "%s", tmp);
-	fclose(f);
-	if(res>0)
-		return std::string(tmp);
-	return std::string("unknown");
+#ifdef WIN32
+	// http://stackoverflow.com/questions/940707/how-do-i-programatically-get-the-version-of-a-dll-or-exe
+
+	wxString rorpath = getInstallationPath() + wxT("RoR.exe");
+
+	char buffer[4096]="";
+	TCHAR pszFilePath[MAX_PATH];
+	
+	wxStringToTCHAR(pszFilePath, rorpath);
+
+	DWORD               dwSize              = 0;
+	BYTE                *pbVersionInfo      = NULL;
+	VS_FIXEDFILEINFO    *pFileInfo          = NULL;
+	UINT                puLenFileInfo       = 0;
+
+	// get the version info for the file requested
+	dwSize = GetFileVersionInfoSize( pszFilePath, NULL );
+	if ( dwSize == 0 )
+	{
+		//wxMessageBox(wxString::Format("Error in GetFileVersionInfoSize: %d\n", GetLastError()),wxT("GetFileVersionInfoSize Error"),0);
+		return "unknown";
+	}
+
+	pbVersionInfo = new BYTE[ dwSize ];
+
+	if ( !GetFileVersionInfo( pszFilePath, 0, dwSize, pbVersionInfo ) )
+	{
+		//printf( "Error in GetFileVersionInfo: %d\n", GetLastError() );
+		//delete[] pbVersionInfo;
+		return "unknown";
+	}
+
+	if ( !VerQueryValue( pbVersionInfo, TEXT("\\"), (LPVOID*) &pFileInfo, &puLenFileInfo ) )
+	{
+		//printf( "Error in VerQueryValue: %d\n", GetLastError() );
+		//delete[] pbVersionInfo;
+		return "unknown";
+	}
+
+	if (pFileInfo->dwSignature == 0xfeef04bd)
+	{
+		int major = HIWORD(pFileInfo->dwFileVersionMS);
+		int minor = LOWORD(pFileInfo->dwFileVersionMS);
+		int patch = pFileInfo->dwFileVersionLS;
+		sprintf(buffer, "%d.%d.%d", major, minor, patch);
+		return std::string(buffer);
+	}
+#endif // WIN32
+	return "unknown";
 }
 
 wxString ConfigManager::getInstallationPath()
@@ -140,7 +181,7 @@ wxString ConfigManager::getUserPath()
 	GetShortPathName(Wuser_path, Wuser_path, 512); //this is legal
 	wxFileName tfn=wxFileName(Wuser_path, wxEmptyString);
 	// TODO: fix hardcoded value here
-	tfn.AppendDir(wxT("Rigs of Rods 0.38"));
+	tfn.AppendDir(wxT("Rigs of Rods ") + wxString(ROR_VERSION_STRING_SHORT));
 	return tfn.GetPath();
 #endif // WIN32
 }
@@ -242,7 +283,7 @@ void ConfigManager::updateUserConfigs()
 	{
 		GetShortPathName(wuser_path, wuser_path, 512); //this is legal
 		uPath = wstrtostr(std::wstring(wuser_path));
-		uPath = uPath / std::string("Rigs of Rods 0.38") / std::string("config");;
+		uPath = uPath / (std::string("Rigs of Rods ") + wxT(ROR_VERSION_STRING_SHORT)) / std::string("config");;
 	}
 #else
 	// XXX : TODO
@@ -395,7 +436,7 @@ void ConfigManager::checkForNewUpdater()
 #endif
 
     char url_tmp[256]="";
-	sprintf(url_tmp, API_CHINSTALLER, ourHash.c_str(), platform_str, INSTALLER_VERSION);
+	sprintf(url_tmp, API_CHINSTALLER, ourHash.c_str(), platform_str, ROR_VERSION_STRING_SHORT);
 
 	WsyncDownload *wsdl = new WsyncDownload();
 	LOG("checking for updates...\n");
