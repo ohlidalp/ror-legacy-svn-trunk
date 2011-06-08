@@ -173,18 +173,6 @@ void Settings::loadSettings(Ogre::String configFile, bool overwrite)
 
 	setSetting("User Token Hash", String(usertokensha1result));
 #endif // NOOGRE
-
-	// oh and try to save the version to a file named version.txt if the file is not existing already
-	String versionFilename = SSETTING("Program Path") + "/version.txt";
-	if(!fileExists(versionFilename))
-	{
-		FILE *f = fopen(versionFilename.c_str(), "w");
-		if(f)
-		{
-			fprintf(f, "%s", ROR_VERSION_STRING);
-			fclose(f);
-		}
-	}
 }
 
 int Settings::generateBinaryHash()

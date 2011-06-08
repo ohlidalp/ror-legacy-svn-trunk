@@ -80,6 +80,7 @@ FILE(GLOB headers "*.h")
 
 IF(WIN32)
 	add_executable(rorconfig WIN32 ${sources} ${headers} ${OS_SOURCE} ../main/utils/Settings.cpp ../main/utils/errorutils.cpp ../main/utils/utils.cpp)
+	TARGET_LINK_LIBRARIES(rorconfig Version.lib)
 ELSE(WIN32)
 	add_executable(rorconfig ${sources} ${headers} ${OS_SOURCE} ../main/utils/Settings.cpp ../main/utils/errorutils.cpp ../main/utils/utils.cpp)
 ENDIF(WIN32)

@@ -92,7 +92,6 @@ public:
 	static wxString getExecutablePath();
 	static wxString getExecutableBasePath();
 
-	int writeVersionInfo();
 	std::string readVersionInfo();
 	int getCurrentVersionInfo();
 

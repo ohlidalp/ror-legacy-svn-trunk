@@ -5,8 +5,6 @@ set(source_files ConfigManager.cpp wizard.cpp wthread.cpp cevent.cpp symlink.cpp
 set(include_files ConfigManager.h wizard.h wxStrel.h wthread.h cevent.h symlink.h utils.h)
 
 
-set(INSTALLER_VERSION "0.38" CACHE PATH "Installer version")
-
 IF(WIN32)
    set(INSTALLER_PLATFORM "win32" CACHE PATH "Installer chosen platform")
 ENDIF(WIN32)
@@ -40,7 +38,6 @@ IF(UNIX)
 ENDIF(UNIX)
 
 add_definitions("-DINSTALLER_PLATFORM=\"${INSTALLER_PLATFORM}\"")
-add_definitions("-DINSTALLER_VERSION=\"${INSTALLER_VERSION}\"")
 
 #message("the default installer platform is \"${INSTALLER_PLATFORM}\". To change this, edit INSTALLER_PLATFORM value in cmake.")
 
@@ -48,6 +45,8 @@ include_directories(${CURL_INCLUDE_DIRS})
 link_directories   (${CURL_LIBRARY_DIRS})
 include_directories(${Boost_INCLUDE_DIRS})
 link_directories   (${Boost_LIBRARY_DIRS})
+
+include_directories(${RoR_Installer_SOURCE_DIR}/../main)
 
 # find wxwidgets
 SET(wxWidgets_USE_UNICODE ON)
@@ -83,6 +82,8 @@ IF(WIN32)
    #SET_TARGET_PROPERTIES(installer PROPERTIES COMPILE_FLAGS "/bigobj /MT /MP")
    # TODO: fix UAC and VS2010
    SET_TARGET_PROPERTIES(updater PROPERTIES LINK_FLAGS    "/MANIFESTUAC:\"level='requireAdministrator' uiAccess='false'\"")
+   
+   TARGET_LINK_LIBRARIES(updater Version.lib)
 ELSE(WIN32)
    add_executable(updater ${source_files} ${include_files} ${resource_files})
 ENDIF(WIN32)
