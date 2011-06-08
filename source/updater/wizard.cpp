@@ -65,6 +65,7 @@ along with Rigs of Rods.  If not, see <http://www.gnu.org/licenses/>.
 #include "wxStrel.h"
 #include "wx/filename.h"
 #include <wx/clipbrd.h>
+#include <wx/evtloop.h>
 
 #include "ConfigManager.h"
 
@@ -222,9 +223,13 @@ MyWizard::MyWizard(int startupMode, wxFrame *frame, bool _autoUpdateEnabled, boo
 	new InstallerLog(lPath);
 	LOG("installer log created\n");
 
+
 	// check if there is a newer installer available
 	if(autoUpdateEnabled)
+	{
+		wxEventLoopGuarantor ensureEventLoop;
 		CONFIG->checkForNewUpdater();
+	}
 
 	// add some versions to the log file
 	{
