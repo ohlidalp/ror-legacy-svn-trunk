@@ -1,15 +1,26 @@
 ; required NSIS plugins:
-;   Inetc   - http://nsis.sourceforge.net/Inetc_plug-in
-;   ZipDLL  - http://nsis.sourceforge.net/ZipDLL_plug-in
+;   Inetc      - http://nsis.sourceforge.net/Inetc_plug-in
+;   ZipDLL     - http://nsis.sourceforge.net/ZipDLL_plug-in
+;   GetVersion - http://nsis.sourceforge.net/GetVersion_%28Windows%29_plug-in
+
+
+; instructions:
+
+; 1. get all required plugins
+; 2. compile "ExtractVersionInfo.nsi"
 
 SetCompress auto
 SetCompressor /FINAL /SOLID lzma
 
 !define PRODUCT_NAME "Rigs of Rods"
 
-!define PRODUCT_VERSION_MAJOR "0"
-!define PRODUCT_VERSION_MINOR "38"
-!define PRODUCT_VERSION_PATCH "33"
+; the version number of RoR.exe is used from now on
+;!define PRODUCT_VERSION_MAJOR "0"
+;!define PRODUCT_VERSION_MINOR "38"
+;!define PRODUCT_VERSION_PATCH "33"
+
+!system "ExtractVersionInfo.exe"
+!include "extracted-versioninfo.txt"
 
 !define PRODUCT_VERSION "${PRODUCT_VERSION_MAJOR}.${PRODUCT_VERSION_MINOR}.${PRODUCT_VERSION_PATCH}"
 !define PRODUCT_VERSION_SHORT "${PRODUCT_VERSION_MAJOR}.${PRODUCT_VERSION_MINOR}"
@@ -187,7 +198,7 @@ FunctionEnd
 Function InstallVisualStudioRuntime
 	Banner::show /NOUNLOAD "Installing Visual Studio Runtime"
 	DetailPrint "Installing Visual Studio Runtime ..."
-	ExecWait '"$INSTDIR\vcredist_x86.exe" /q:a /c:"VCREDI~1.EXE /q:a /c:""msiexec /i vcredist.msi /qb!"" "' $0
+	ExecWait '"$INSTDIR\vcredist_x86.exe" /q' $0
 	DetailPrint "VCCRT setup returned $0"
 	Banner::destroy
 FunctionEnd
