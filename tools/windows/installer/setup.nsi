@@ -277,7 +277,8 @@ Section "!Rigs of Rods Base" RoRBaseGame
 	SetOutPath $INSTDIR
 	
 	# add version text file
-	!insertmacro WriteToFile "${PRODUCT_VERSION}" "$INSTDIR\version.txt"
+	# obsolete:
+	#!insertmacro WriteToFile "${PRODUCT_VERSION}" "$INSTDIR\version.txt"
 	
 	# add shortcuts
 	!insertmacro MUI_STARTMENU_WRITE_BEGIN Application
