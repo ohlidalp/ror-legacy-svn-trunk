@@ -277,6 +277,11 @@ int WsyncThread::buildFileIndex(boost::filesystem::path &outfilename, boost::fil
 
 		string resultHash = generateFileHash(it->c_str());
 
+#ifdef WIN32
+		// case insensitive filenames (transform everything to lower case filenames
+		std::transform(respath.begin(), respath.end(), respath.begin(), ::tolower);
+#endif // WIN32
+
 		Hashentry entry(resultHash, file_size(*it));
 		hashMap[respath] = entry;
 	}
@@ -451,6 +456,13 @@ int WsyncThread::loadHashMapFromFile(boost::filesystem::path &filename, std::map
 			continue;
 		}
 		Hashentry entry(filehash, filesize);
+
+#ifdef WIN32
+		std::string file_str(file);
+		std::transform(file_str.begin(), file_str.end(), file_str.begin(), ::tolower);
+		strncpy(file, file_str.c_str(), 2047);
+#endif // WIN32
+
 		hashMap[file] = entry;
 	}
 	fclose (f);
