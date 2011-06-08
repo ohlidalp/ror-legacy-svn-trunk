@@ -138,7 +138,8 @@ std::string ConfigManager::readVersionInfo()
 	{
 		int major = HIWORD(pFileInfo->dwFileVersionMS);
 		int minor = LOWORD(pFileInfo->dwFileVersionMS);
-		int patch = pFileInfo->dwFileVersionLS;
+		int patch = HIWORD(pFileInfo->dwFileVersionLS);
+		int rev   = LOWORD(pFileInfo->dwFileVersionLS);
 		sprintf(buffer, "%d.%d.%d", major, minor, patch);
 		return std::string(buffer);
 	}
