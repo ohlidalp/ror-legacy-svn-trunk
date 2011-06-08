@@ -23,6 +23,8 @@ BEGIN_EVENT_TABLE(WsyncThread, wxEvtHandler)
 	EVT_MYSTATUS(wxID_ANY, WsyncThread::onDownloadStatusUpdate )
 END_EVENT_TABLE()
 
+
+
 WsyncThread::WsyncThread(wxEvtHandler *parent, wxString _ipath, std::vector < stream_desc_t > _streams) :
 	wxThread(wxTHREAD_DETACHED),
 	parent(parent),
@@ -226,7 +228,7 @@ void WsyncThread::listFiles(const path &dir_path, std::vector<std::string> &file
 	}
 }
 
-int WsyncThread::buildFileIndex(boost::filesystem::path &outfilename, boost::filesystem::path &path, boost::filesystem::path &rootpath, std::map<string, Hashentry> &hashMap, bool writeFile, int mode)
+int WsyncThread::buildFileIndex(boost::filesystem::path &outfilename, boost::filesystem::path &path, boost::filesystem::path &rootpath, FileHashMap &hashMap, bool writeFile, int mode)
 {
 	vector<string> files;
 	listFiles(path, files);
@@ -277,11 +279,6 @@ int WsyncThread::buildFileIndex(boost::filesystem::path &outfilename, boost::fil
 
 		string resultHash = generateFileHash(it->c_str());
 
-#ifdef WIN32
-		// case insensitive filenames (transform everything to lower case filenames
-		std::transform(respath.begin(), respath.end(), respath.begin(), ::tolower);
-#endif // WIN32
-
 		Hashentry entry(resultHash, file_size(*it));
 		hashMap[respath] = entry;
 	}
@@ -290,7 +287,7 @@ int WsyncThread::buildFileIndex(boost::filesystem::path &outfilename, boost::fil
 	return 0;
 }
 
-int WsyncThread::saveHashMapToFile(boost::filesystem::path &filename, std::map<std::string, Hashentry> &hashMap, int mode)
+int WsyncThread::saveHashMapToFile(boost::filesystem::path &filename, FileHashMap &hashMap, int mode)
 {
 	ensurePathExist(filename);
 	const char *cfile = filename.string().c_str();
@@ -301,7 +298,7 @@ int WsyncThread::saveHashMapToFile(boost::filesystem::path &filename, std::map<s
 		return -1;
 	}
 
-	for(std::map<string, Hashentry>::iterator it=hashMap.begin(); it!=hashMap.end(); it++)
+	for(FileHashMap::iterator it=hashMap.begin(); it!=hashMap.end(); it++)
 	{
 		int fsize = (int)it->second.filesize;
 		fprintf(f, "%s : %d : %s\n", it->first.c_str(), fsize, it->second.hash.c_str());
@@ -323,9 +320,9 @@ std::string WsyncThread::generateFileHash(boost::filesystem::path file)
 	return string(resultHash);
 }
 
-void WsyncThread::debugOutputHashMap(std::map<string, Hashentry> &hashMap)
+void WsyncThread::debugOutputHashMap(FileHashMap &hashMap)
 {
-	for(std::map<string, Hashentry>::iterator it=hashMap.begin(); it!=hashMap.end(); it++)
+	for(FileHashMap::iterator it=hashMap.begin(); it!=hashMap.end(); it++)
 	{
 		int fsize = (int)it->second.filesize;
 		LOG(" - %s : %d : %s\n", it->first.c_str(), fsize, it->second.hash.c_str());
@@ -397,7 +394,7 @@ int WsyncThread::getSyncData()
 		}
 
 		// now read in the remote index
-		std::map<string, Hashentry> temp_hashMapRemote;
+		FileHashMap temp_hashMapRemote;
 		int modeNumber = 0; // pseudo, not used, to be improved
 		int res = loadHashMapFromFile(remoteFileIndex, temp_hashMapRemote, modeNumber);
 		// remove that temp file
@@ -430,7 +427,7 @@ int WsyncThread::getSyncData()
 
 
 
-int WsyncThread::loadHashMapFromFile(boost::filesystem::path &filename, std::map<std::string, Hashentry> &hashMap, int &mode)
+int WsyncThread::loadHashMapFromFile(boost::filesystem::path &filename, FileHashMap &hashMap, int &mode)
 {
 	FILE *f = fopen(filename.string().c_str(), "r");
 	if (!f)
@@ -457,12 +454,6 @@ int WsyncThread::loadHashMapFromFile(boost::filesystem::path &filename, std::map
 		}
 		Hashentry entry(filehash, filesize);
 
-#ifdef WIN32
-		std::string file_str(file);
-		std::transform(file_str.begin(), file_str.end(), file_str.begin(), ::tolower);
-		strncpy(file, file_str.c_str(), 2047);
-#endif // WIN32
-
 		hashMap[file] = entry;
 	}
 	fclose (f);
@@ -481,8 +472,8 @@ int WsyncThread::sync()
 	std::vector<Fileentry> changedFiles;
 	std::vector<Fileentry> newFiles;
 
-	std::map<string, Hashentry>::iterator it;
-	std::map<string, std::map<string, Hashentry> >::iterator itr;
+	FileHashMap::iterator it;
+	std::map<string, FileHashMap>::iterator itr;
 
 	// walk all remote hashmaps
 	for(itr = hashMapRemote.begin(); itr != hashMapRemote.end(); itr++)
@@ -697,9 +688,9 @@ int WsyncThread::sync()
 	return res;
 }
 
-std::string WsyncThread::findHashInHashmap(std::map<std::string, Hashentry> hashMap, std::string filename)
+std::string WsyncThread::findHashInHashmap(FileHashMap hashMap, std::string filename)
 {
-	std::map<string, Hashentry>::iterator it;
+	FileHashMap::iterator it;
 	for(it = hashMap.begin(); it != hashMap.end(); it++)
 	{
 		if(it->first == filename)
@@ -708,10 +699,10 @@ std::string WsyncThread::findHashInHashmap(std::map<std::string, Hashentry> hash
 	return "";
 }
 
-std::string WsyncThread::findHashInHashmap(std::map < std::string, std::map < std::string, Hashentry > > hashMap, std::string filename)
+std::string WsyncThread::findHashInHashmap(std::map < std::string, FileHashMap> hashMap, std::string filename)
 {
-	std::map<string, Hashentry>::iterator it;
-	std::map<std::string, std::map<std::string, Hashentry > >::iterator itm;
+	FileHashMap::iterator it;
+	std::map<std::string, FileHashMap >::iterator itm;
 	for(itm = hashMap.begin(); itm != hashMap.end(); itm++)
 	{
 		for(it = itm->second.begin(); it != itm->second.end(); it++)

@@ -84,6 +84,35 @@ typedef struct dlstatus_t
 	boost::uintmax_t downloaded;
 } dlstatus_t;
 
+// http://stackoverflow.com/questions/1801892/making-mapfind-operation-case-insensitive
+/************************************************************************/
+/* Comparator for case-insensitive comparison in STL assos. containers  */
+/************************************************************************/
+struct ci_less : std::binary_function<std::string, std::string, bool>
+{
+	// case-independent (ci) compare_less binary function
+	struct nocase_compare : public std::binary_function<unsigned char,unsigned char,bool> 
+	{
+		bool operator() (const unsigned char& c1, const unsigned char& c2) const {
+			return tolower (c1) < tolower (c2); 
+		}
+	};
+	bool operator() (const std::string & s1, const std::string & s2) const {
+		return std::lexicographical_compare 
+			(s1.begin (), s1.end (),   // source range
+			s2.begin (), s2.end (),   // dest range
+			nocase_compare ());  // comparison
+	}
+};
+
+#ifdef WIN32
+// case insensitive
+#define FileHashMap std::map<std::string, Hashentry, ci_less>
+#else
+// case sensitive
+#define FileHashMap std::map<std::string, Hashentry>
+#endif //WIN32
+
 class WsyncThread : public wxThread, public wxEvtHandler
 {
 public:
@@ -116,8 +145,8 @@ protected:
 	// special sync with visual event feedback
 	int sync();
 
-	int buildFileIndex(boost::filesystem::path &outfilename, boost::filesystem::path &path, boost::filesystem::path &rootpath, std::map<std::string, Hashentry> &hashMap, bool writeFile, int mode);
-	void debugOutputHashMap(std::map<std::string, Hashentry> &hashMap);
+	int buildFileIndex(boost::filesystem::path &outfilename, boost::filesystem::path &path, boost::filesystem::path &rootpath, FileHashMap &hashMap, bool writeFile, int mode);
+	void debugOutputHashMap(FileHashMap &hashMap);
 
 	// wsync related functions
 	int getSyncData();
@@ -125,18 +154,18 @@ protected:
 	int findMirror(bool probeForBest=false);
 	
 	void listFiles(const boost::filesystem::path &dir_path, std::vector<std::string> &files);
-	int saveHashMapToFile(boost::filesystem::path &filename, std::map<std::string, Hashentry> &hashMap, int mode);
-	int loadHashMapFromFile(boost::filesystem::path &filename, std::map<std::string, Hashentry> &hashMap, int &mode);
-	static std::string findHashInHashmap(std::map<std::string, Hashentry> hashMap, std::string filename);
-	static std::string findHashInHashmap(std::map < std::string, std::map < std::string, Hashentry > > hashMap, std::string filename);
+	int saveHashMapToFile(boost::filesystem::path &filename, FileHashMap &hashMap, int mode);
+	int loadHashMapFromFile(boost::filesystem::path &filename, FileHashMap &hashMap, int &mode);
+	static std::string findHashInHashmap(FileHashMap hashMap, std::string filename);
+	static std::string findHashInHashmap(std::map < std::string, FileHashMap > hashMap, std::string filename);
 	double measureDownloadSpeed(std::string server, std::string url);
 
 	void onDownloadStatusUpdate(MyStatusEvent &ev);
 	void reportProgress();
 	void addJob(wxString localFile, wxString remoteDir, wxString remoteServer, wxString remoteFile, wxString hashRemoteFile, wxString localFilename, boost::uintmax_t filesize);
 
-	std::map < std::string, Hashentry> hashMapLocal;
-	std::map < std::string, std::map<std::string, Hashentry> > hashMapRemote; // stream hashmaps, first key is stream path
+	FileHashMap hashMapLocal;
+	std::map < std::string, FileHashMap> hashMapRemote; // stream hashmaps, first key is stream path
 
 	DECLARE_EVENT_TABLE();
 };
