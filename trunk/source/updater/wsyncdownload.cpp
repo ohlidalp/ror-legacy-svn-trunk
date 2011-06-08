@@ -43,11 +43,16 @@ int progress_callback(void *data, double dltotal, double dlnow, double ultotal, 
 	jinfo->filesize_left = jinfo->realDownloadSize - jinfo->downloadDoneSize;
 	
 	double tdiff = (jinfo->speedTimer->elapsed() - jinfo->lastTime);
-	if(tdiff > 1.0f)
+	if(tdiff > 0.1f)
 	{
 		// slow down the GUI updates
 		if(jinfo->wxp)
+		{
 			jinfo->wxp->Update(1000*(((float)jinfo->downloadDoneSize)/((float)jinfo->realDownloadSize)), wxT("downloading..."));
+			::wxSafeYield(jinfo->wxp);
+			::wxYield();
+			jinfo->wxp->Refresh();
+		}
 		jinfo->parent->reportDownloadProgress(jinfo->jobID, *jinfo->dlStartTime, jinfo->realDownloadSize, jinfo->downloadDoneSize);
 		jinfo->lastTime = jinfo->speedTimer->elapsed();
 	}
@@ -77,7 +82,9 @@ int WsyncDownload::downloadFile(int jobID, boost::filesystem::path localFile, st
 	jinfo.speedTimer = new Timer();
 	jinfo.wxp = 0;
 	if(showProgress)
-		jinfo.wxp = new wxProgressDialog(mDownloadMessage, conv(string("downloading http://") + server + path), 1000,0, wxPD_AUTO_HIDE|wxPD_SMOOTH|wxPD_ELAPSED_TIME|wxPD_ESTIMATED_TIME|wxPD_REMAINING_TIME|wxPD_CAN_ABORT);
+	{
+		jinfo.wxp = new wxProgressDialog(mDownloadMessage, conv(string("downloading http://") + server + path), 1000,0, wxPD_APP_MODAL|wxPD_AUTO_HIDE|wxPD_SMOOTH|wxPD_ELAPSED_TIME|wxPD_ESTIMATED_TIME|wxPD_REMAINING_TIME|wxPD_CAN_ABORT);
+	}
 
 	ensurePathExist(localFile);
 
