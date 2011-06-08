@@ -286,7 +286,7 @@ Section "!Rigs of Rods Base" RoRBaseGame
 		CreateShortCut "$SMPROGRAMS\$StartMenuFolder\Rigs of Rods.lnk" "$INSTDIR\RoRConfig.exe"
 		CreateShortCut "$SMPROGRAMS\$StartMenuFolder\Updater.lnk" "$INSTDIR\updater.exe"
 		CreateShortCut "$SMPROGRAMS\$StartMenuFolder\Key Sheet.lnk" "$INSTDIR\keysheet.pdf"
-		CreateShortCut "$SMPROGRAMS\$StartMenuFolder\Manual.lnk" "$INSTDIR\Things_you_can_do_in_Rigs_of_Rods.pdf"
+		CreateShortCut "$SMPROGRAMS\$StartMenuFolder\Manual.lnk" "$INSTDIR\manual.pdf"
 
 		!insertmacro CreateInternetShortcut "$SMPROGRAMS\$StartMenuFolder\Forums" "http://www.rigsofrods.com/forum.php" "$InstDir\cog_go.ico" "0"
 		!insertmacro CreateInternetShortcut "$SMPROGRAMS\$StartMenuFolder\Beginners Guide" "http://www.rigsofrods.com/wiki/pages/Beginner%27s_Guide" "$InstDir\forums.ico" "0"	
