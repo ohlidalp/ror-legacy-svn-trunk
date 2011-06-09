@@ -54,7 +54,6 @@ NetworkStreamManager& NetworkStreamManager::getSingleton(void)
 void NetworkStreamManager::addLocalStream(Streamable *stream, stream_register_t *reg, unsigned int size)
 {
 #ifdef USE_SOCKETW
-	//LOG("LLL addLocalStream - lock");
 	MUTEX_LOCK(&stream_mutex);
 	// for own streams: count stream id up ...
 	int mysourceid = net->getUserID();
@@ -84,18 +83,15 @@ void NetworkStreamManager::addLocalStream(Streamable *stream, stream_register_t 
 	// increase stream counter
 	streamid++;
 	MUTEX_UNLOCK(&stream_mutex);
-	//LOG("UUU addLocalStream - unlock");
 #endif //SOCKETW
 }
 
 void NetworkStreamManager::addRemoteStream(Streamable *stream, int rsource, int rstreamid)
 {
-	//LOG("LLL addRemoteStream - lock");
 	//MUTEX_LOCK(&stream_mutex);
 	streams[rsource][rstreamid] = stream;
 	LOG("adding remote stream: " + TOSTRING(rsource) + ":"+ TOSTRING(rstreamid));
 	//MUTEX_UNLOCK(&stream_mutex);
-	//LOG("UUU addRemoteStream - unlock");
 }
 
 void NetworkStreamManager::removeStream(int sourceid, int streamid)
@@ -134,7 +130,6 @@ void NetworkStreamManager::removeStream(int sourceid, int streamid)
 		}
 	}
 	MUTEX_UNLOCK(&stream_mutex);
-	//LOG("UUU removeUser - unlock");
 #endif //USE_SOCKETW
 }
 
@@ -150,7 +145,6 @@ void NetworkStreamManager::resumeStream(Streamable *stream)
 #ifdef USE_SOCKETW
 void NetworkStreamManager::removeUser(int sourceID)
 {
-	//LOG("LLL removeUser - lock");
 	MUTEX_LOCK(&stream_mutex);
 	if(streams.find(sourceID) == streams.end())
 	{
@@ -168,13 +162,11 @@ void NetworkStreamManager::removeUser(int sourceID)
 		(*it)->deleteRemote(sourceID, -1); // -1 = all streams
 	}
 	MUTEX_UNLOCK(&stream_mutex);
-	//LOG("UUU removeUser - unlock");
 }
 #endif //SOCKETW
 
 void NetworkStreamManager::pushReceivedStreamMessage(header_t header, char *buffer)
 {
-	//LOG("LLL pushReceivedStreamMessage - lock");
 	MUTEX_LOCK(&stream_mutex);
 	if(streams.find(header.source) == streams.end())
 	{
@@ -196,7 +188,6 @@ void NetworkStreamManager::pushReceivedStreamMessage(header_t header, char *buff
 	}
 	streams[header.source][header.streamid]->addReceivedPacket(header, buffer);
 	MUTEX_UNLOCK(&stream_mutex);
-	//LOG("UUU pushReceivedStreamMessage - unlock");
 }
 
 void NetworkStreamManager::triggerSend()
@@ -213,7 +204,6 @@ void NetworkStreamManager::sendStreams(Network *net, SWInetSocket *socket)
 	pthread_cond_wait(&send_work_cv, &send_work_mutex);
 	MUTEX_UNLOCK(&send_work_mutex);
 
-	//LOG("LLL sendStreams - lock");
 	MUTEX_LOCK(&stream_mutex);
 	char *buffer = 0;
 	int bufferSize=0;
@@ -248,7 +238,6 @@ void NetworkStreamManager::sendStreams(Network *net, SWInetSocket *socket)
 		}
 	}
 	MUTEX_UNLOCK(&stream_mutex);
-	//LOG("UUU sendStreams - unlock");
 }
 #else
 void NetworkStreamManager::sendStreams(Network *net, void *socket)
@@ -266,7 +255,6 @@ void NetworkStreamManager::update()
 
 void NetworkStreamManager::syncRemoteStreams()
 {
-	//LOG("LLL syncRemoteStreams - lock");
 	MUTEX_LOCK(&stream_mutex);
 	// iterate over all factories
 	std::vector < StreamableFactoryInterface * >::iterator it;
@@ -275,12 +263,10 @@ void NetworkStreamManager::syncRemoteStreams()
 		(*it)->syncRemoteStreams();
 	}
 	MUTEX_UNLOCK(&stream_mutex);
-	//LOG("UUU syncRemoteStreams - unlock");
 }
 
 void NetworkStreamManager::receiveStreams()
 {
-	//LOG("LLL receiveStreams - lock");
 	MUTEX_LOCK(&stream_mutex);
 	char *buffer = 0;
 	int bufferSize=0;
@@ -309,15 +295,12 @@ void NetworkStreamManager::receiveStreams()
 		}
 	}
 	MUTEX_UNLOCK(&stream_mutex);
-	//LOG("UUU receiveStreams - unlock");
 }
 
 void NetworkStreamManager::addFactory(StreamableFactoryInterface *factory)
 {
-	//LOG("LLL addFactory - lock");
 	MUTEX_LOCK(&stream_mutex);
 	this->factories.push_back(factory);
 	MUTEX_UNLOCK(&stream_mutex);
-	//LOG("UUU addFactory - unlock");
 }
 
