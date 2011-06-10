@@ -1224,7 +1224,7 @@ MyDialog::MyDialog(const wxString& title, MyApp *_app) : wxDialog(NULL, wxID_ANY
 	y+=25;
 
 	dText = new wxStaticText(graphicsPanel, wxID_ANY, _("Sightrange:"), wxPoint(10,y+3));
-	sightRange=new wxSlider(graphicsPanel, sightrangeslider, 5000, 1, 5000, wxPoint(x_row1, y), wxSize(200, -1));
+	sightRange=new wxSlider(graphicsPanel, sightrangeslider, 5000, 10, 5000, wxPoint(x_row1, y), wxSize(200, -1));
 	sightRange->SetToolTip(_("determines how far you can see in meters"));
 	sightRangeText = new wxStaticText(graphicsPanel, wxID_ANY, _("Unlimited"), wxPoint(x_row1 + 210,y+3));
 	y+=25;
