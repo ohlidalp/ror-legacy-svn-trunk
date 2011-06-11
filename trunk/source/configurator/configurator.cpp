@@ -143,7 +143,6 @@ public:
 	wxString ProgramPath;
 	wxString SkeletonPath;
 	wxString languagePath;
-	bool buildmode;
 
 	bool postinstall;
 };
@@ -152,10 +151,8 @@ static const wxCmdLineEntryDesc g_cmdLineDesc [] =
 {
 #if wxCHECK_VERSION(2, 9, 0)
 	{ wxCMD_LINE_SWITCH, ("postinstall"), ("postinstall"), ("do not use this")},
-	{ wxCMD_LINE_SWITCH, ("buildmode"), ("buildmode"), ("do not use this")},
 #else // old wxWidgets support
 	{ wxCMD_LINE_SWITCH, wxT("postinstall"), wxT("postinstall"), wxT("do not use this")},
-	{ wxCMD_LINE_SWITCH, wxT("buildmode"), wxT("buildmode"), wxT("do not use this")},
 #endif
 	{ wxCMD_LINE_NONE }
 };
@@ -494,7 +491,7 @@ int getAvLang(wxString dir, std::vector<wxLanguageInfo*> &files)
 	{
 		do
 		{
-			wxChar dot=_T('.');
+			wxChar dot=wxChar('.');
 			if (name.StartsWith(&dot))
 			{
 				// do not add dot directories
@@ -529,7 +526,7 @@ void initLanguage(wxString languagePath, wxString userpath)
 #if OGRE_PLATFORM == OGRE_PLATFORM_WIN32
 	dirsep = wxT("\\");
 #endif
-	//basedir = basedir + dirsep + _T("languages");
+	//basedir = basedir + dirsep + wxString("languages");
 	wxLocale::AddCatalogLookupPathPrefix(languagePath);
 
 	// get all available languages
@@ -656,26 +653,6 @@ bool MyApp::filesystemBootstrap()
 	tsk=wxFileName(ProgramPath, wxEmptyString);
 	tsk.AppendDir(wxT("languages"));
 	languagePath=tsk.GetPath();
-	//buildmode
-	if (buildmode)
-	{
-		//change the paths
-		wxFileName tfn=wxFileName(ProgramPath, wxEmptyString); // RoRdev\build\bin\release\windows
-		tfn.RemoveLastDir(); // RoRdev\build\bin\release
-		tfn.RemoveLastDir(); // RoRdev\build\bin
-		tfn.RemoveLastDir(); // RoRdev\build
-		wxFileName ttfn=tfn;
-		ttfn.AppendDir(wxT("configurator"));
-//		ProgramPath=ttfn.GetPath();
-		ttfn.AppendDir(wxT("confdata"));
-		languagePath=ttfn.GetPath();
-		ttfn=tfn;
-		ttfn.AppendDir(wxT("skeleton"));
-		SkeletonPath=ttfn.GetPath();
-		ttfn=tfn;
-		ttfn.AppendDir(wxT("userspace"));
-		UserPath=ttfn.GetPath();
-	}
 	//okay
 	if (!wxFileName::DirExists(UserPath))
 	{
@@ -748,12 +725,7 @@ int MyApp::OnRun()
 // 'Main program' equivalent: the program execution "starts" here
 bool MyApp::OnInit()
 {
-	buildmode=false;
-	if (argc==2 && wxString(argv[1])==wxT("/buildmode")) buildmode=true;
-
-
 	//setup the user filesystem
-	SETTINGS.setSetting("BuildMode", buildmode?"Yes":"No");
 	if(!SETTINGS.setupPaths())
 		return false;
 
@@ -775,7 +747,8 @@ bool MyApp::OnInit()
 
 	wxLogStatus(wxT("Creating dialog"));
 	// create the main application window
-	MyDialog *dialog = new MyDialog(_("Rigs of Rods version ") + wxString(ROR_VERSION_STRING) + _(" configuration"), this);
+	wxString title = wxString::Format(_("Rigs of Rods version %s configuration"), wxString(ROR_VERSION_STRING));
+	MyDialog *dialog = new MyDialog(title, this);
 
 	// and show it (the frames, unlike simple controls, are not shown when
 	// created initially)
@@ -800,7 +773,6 @@ void MyApp::OnInitCmdLine(wxCmdLineParser& parser)
 bool MyApp::OnCmdLineParsed(wxCmdLineParser& parser)
 {
 	postinstall = parser.Found(conv("postinstall"));
-	buildmode = parser.Found(conv("buildmode"));
 	return true;
 }
 
@@ -1008,19 +980,19 @@ MyDialog::MyDialog(const wxString& title, MyApp *_app) : wxDialog(NULL, wxID_ANY
 	x_row2 = 300;
 
 	addAboutTitle(_("Version"), x_row1, y);
-	dText = new wxStaticText(aboutPanel, -1, wxT("Rigs of Rods version: ") + wxString(ROR_VERSION_STRING), wxPoint(x_row1 + 15, y));
+	dText = new wxStaticText(aboutPanel, -1, wxString::Format(_("Rigs of Rods version: %s"), wxString(ROR_VERSION_STRING)), wxPoint(x_row1 + 15, y));
 	y += dText->GetSize().GetHeight() + 2;
 
-	dText = new wxStaticText(aboutPanel, -1, wxT("Network Protocol version: ") + wxString(RORNET_VERSION), wxPoint(x_row1 + 15, y));
+	dText = new wxStaticText(aboutPanel, -1, wxString::Format(_("Network Protocol version: %s"), wxString(RORNET_VERSION)), wxPoint(x_row1 + 15, y));
 	y += dText->GetSize().GetHeight() + 2;
 
-	dText = new wxStaticText(aboutPanel, -1, wxT("revison: ") + wxString(SVN_REVISION), wxPoint(x_row1 + 15, y));
+	dText = new wxStaticText(aboutPanel, -1, wxString::Format(_("revison: %s"), wxString(SVN_REVISION)), wxPoint(x_row1 + 15, y));
 	y += dText->GetSize().GetHeight() + 2;
 
-	dText = new wxStaticText(aboutPanel, -1, wxT("full revison: ") + wxString(SVN_ID), wxPoint(x_row1 + 15, y));
+	dText = new wxStaticText(aboutPanel, -1, wxString::Format(_("full revison: %s"), wxString(SVN_ID)), wxPoint(x_row1 + 15, y));
 	y += dText->GetSize().GetHeight() + 2;
 
-	dText = new wxStaticText(aboutPanel, -1, wxT("build time: ") + wxString(__DATE__) + ", " + wxString(__TIME__), wxPoint(x_row1 + 15, y));
+	dText = new wxStaticText(aboutPanel, -1, wxString::Format(_("build time: %s, %s"), wxString(__DATE__), wxString(__TIME__)), wxPoint(x_row1 + 15, y));
 	y += dText->GetSize().GetHeight() + 2;
 
 #ifdef WIN32
@@ -1031,17 +1003,17 @@ MyDialog::MyDialog(const wxString& title, MyApp *_app) : wxDialog(NULL, wxID_ANY
 	dText = new wxStaticText(aboutPanel, -1, wxT("Built with Enable Exception Handling (/GX)"), wxPoint(x_row1 + 15, y)); y += dText->GetSize().GetHeight() + 2;
 #endif //_CPPUNWIND
 #ifdef _DEBUG
-	dText = new wxStaticText(aboutPanel, -1, wxT("Built in DEBUG mode (/LDd, /MDd, or /MTd.)"), wxPoint(x_row1 + 15, y)); y += dText->GetSize().GetHeight() + 2;
+	dText = new wxStaticText(aboutPanel, -1, _("Built in DEBUG mode (/LDd, /MDd, or /MTd.)"), wxPoint(x_row1 + 15, y)); y += dText->GetSize().GetHeight() + 2;
 #endif //_DEBUG
 
-	dText = new wxStaticText(aboutPanel, -1, wxString::Format(wxT("Max Integer bit size: %d"), _INTEGRAL_MAX_BITS), wxPoint(x_row1 + 15, y)); y += dText->GetSize().GetHeight() + 2;
+	dText = new wxStaticText(aboutPanel, -1, wxString::Format(_T("Max Integer bit size: %d"), _INTEGRAL_MAX_BITS), wxPoint(x_row1 + 15, y)); y += dText->GetSize().GetHeight() + 2;
 #if _M_IX86_FP == 1
-	dText = new wxStaticText(aboutPanel, -1, wxT("Built for ARCH SSE (/arch:SSE)"), wxPoint(x_row1 + 15, y)); y += dText->GetSize().GetHeight() + 2;
+	dText = new wxStaticText(aboutPanel, -1, _("Built for ARCH SSE (/arch:SSE)"), wxPoint(x_row1 + 15, y)); y += dText->GetSize().GetHeight() + 2;
 #elif _M_IX86_FP == 2
-	dText = new wxStaticText(aboutPanel, -1, wxT("Built for ARCH SSE2 (/arch:SSE2)"), wxPoint(x_row1 + 15, y)); y += dText->GetSize().GetHeight() + 2;
+	dText = new wxStaticText(aboutPanel, -1, _("Built for ARCH SSE2 (/arch:SSE2)"), wxPoint(x_row1 + 15, y)); y += dText->GetSize().GetHeight() + 2;
 #endif // _M_IX86_FP
 #ifdef _M_X64
-	dText = new wxStaticText(aboutPanel, -1, wxT("Built for x64 processors"), wxPoint(x_row1 + 15, y)); y += dText->GetSize().GetHeight() + 2;
+	dText = new wxStaticText(aboutPanel, -1, _("Built for x64 processors"), wxPoint(x_row1 + 15, y)); y += dText->GetSize().GetHeight() + 2;
 #endif // _M_IX86_FP
 #endif // WIN32
 
@@ -1376,11 +1348,6 @@ MyDialog::MyDialog(const wxString& title, MyApp *_app) : wxDialog(NULL, wxID_ANY
 
 	netPanel->SetSizer(sizer_net);
 
-	//	dText = new wxStaticText(netPanel, -1, wxString("P2P port number: "), wxPoint(10,153));
-//	p2pport=new wxTextCtrl(netPanel, -1, "12334", wxPoint(150, 150), wxSize(100, -1));
-//	dText = new wxStaticText(netPanel, -1, wxString("(default is 12334)"), wxPoint(260,153));
-
-	//wxButton *testbut=
 #endif
 
 	//advanced panel
@@ -1403,7 +1370,7 @@ MyDialog::MyDialog(const wxString& title, MyApp *_app) : wxDialog(NULL, wxID_ANY
 	thread=new wxChoice(advancedPanel, -1, wxPoint(x_row1, y), wxSize(280, -1), 0);
 	thread->Append(conv("1 (Single Core CPU)"));
 	thread->Append(conv("2 (Hyper-Threading or Dual core CPU)"));
-	//thread->Append(conv("3 (multi core CPU, one thread per beam)"));
+	//thread->Append(conv("3 (multi core CPU, one thread per truck)"));
 	thread->SetToolTip(_("If you have a Hyper-Threading, or Dual core or multiprocessor computer,\nyou will have a huge gain in speed by choosing the second option.\nBut this mode has some camera shaking issues.\n"));
 	y+=35;
 
@@ -1458,12 +1425,12 @@ MyDialog::MyDialog(const wxString& title, MyApp *_app) : wxDialog(NULL, wxID_ANY
 	helphtmw = new wxHtmlWindow(updatePanel, update_html, wxPoint(0, 0), wxSize(480, 380));
 	helphtmw->SetPage(_("... loading ... (maybe you should check your internet connection)"));
 	// tooltip is confusing there, better none!
-	//helphtmw->SetToolTip(_("here you can get help"));
+	//helphtmw->SetToolTip("here you can get help");
 	sizer_updates->Add(helphtmw, 1, wxGROW);
 
 	// update button replaced with html link
 	// update button only for windows users
-	//wxButton *btnu = new wxButton(updatePanel, update_ror, _("Update now"));
+	//wxButton *btnu = new wxButton(updatePanel, update_ror, "Update now");
 	//sizer_updates->Add(btnu, 0, wxGROW);
 
 	updatePanel->SetSizer(sizer_updates);
@@ -1477,7 +1444,7 @@ MyDialog::MyDialog(const wxString& title, MyApp *_app) : wxDialog(NULL, wxID_ANY
 	wxStaticPicture *openCLImagePanel = new wxStaticPicture(GPUPanel, wxID_ANY, bm_ocl, wxPoint(0, 0), wxSize(200, 200), wxNO_BORDER);
 	sizer_gpu2->Add(openCLImagePanel, 0, wxALL|wxALIGN_CENTER_VERTICAL, 3);
 
-	gputext = new wxTextCtrl(GPUPanel, wxID_ANY, _("Please use the buttons below"), wxDefaultPosition, wxDefaultSize, wxTE_READONLY|wxTE_MULTILINE);
+	gputext = new wxTextCtrl(GPUPanel, wxID_ANY, wxString("Please use the buttons below"), wxDefaultPosition, wxDefaultSize, wxTE_READONLY|wxTE_MULTILINE);
 	sizer_gpu2->Add(gputext, 1, wxGROW, 3);
 
 	sizer_gpu->Add(sizer_gpu2, 1, wxGROW, 3);
@@ -1569,7 +1536,7 @@ void MyDialog::loadOgre()
 	wxString confdirPrefix=tcfn.GetPath()+wxFileName::GetPathSeparator();
 
 	wxFileName tlfn=wxFileName(app->UserPath, wxEmptyString);
-	tlfn.AppendDir(_T("logs"));
+	tlfn.AppendDir(wxString("logs"));
 	wxString logsdirPrefix=tlfn.GetPath()+wxFileName::GetPathSeparator();
 
 	wxString progdirPrefix=app->ProgramPath+wxFileName::GetPathSeparator();
@@ -2245,7 +2212,7 @@ void MyDialog::updateRoR()
 	sei.cbSize = sizeof(SHELLEXECUTEINFOA);
 	sei.fMask = 0;
 	sei.hwnd = NULL;
-	sei.lpVerb = _T("runas");
+	sei.lpVerb = wxString("runas");
 	sei.lpFile = wpath;
 	sei.lpParameters = NULL;//wxT("--update");
 	sei.lpDirectory = cwpath;
@@ -2480,7 +2447,7 @@ void MyDialog::OnButClearCache(wxCommandEvent& event)
 	wxFileName cfn;
 	cfn.AssignCwd();
 
-	wxString cachepath=app->UserPath+wxFileName::GetPathSeparator()+_T("cache");
+	wxString cachepath=app->UserPath+wxFileName::GetPathSeparator()+wxString("cache");
 	wxDir srcd(cachepath);
 	wxString src;
 	if (!srcd.GetFirst(&src)) return; //empty dir!
@@ -2605,7 +2572,7 @@ void wxStringToTCHAR(TCHAR *tCharString, wxString &myString)
 	for (unsigned int i = 0; i < myString.Len(); i++) {
 		tCharString[i] = myStringChars [i];
 	}
-	tCharString[myString.Len()] = _T('\0');
+	tCharString[myString.Len()] = wxChar('\0');
 }
 
 std::string MyDialog::readVersionInfo()
