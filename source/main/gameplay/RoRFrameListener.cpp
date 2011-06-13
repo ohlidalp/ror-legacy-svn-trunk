@@ -207,7 +207,8 @@ float RoRFrameListener::stopTimer()
 	if(ow)
 	{
 		char txt[256];
-		sprintf(txt, "Last lap: %.2i'%.2i.%.2i", ((int)(time))/60,((int)(time))%60, ((int)(time*100.0))%100);
+		std::string fmt = _L("Last lap: %.2i'%.2i.%.2i");
+		sprintf(txt, fmt.c_str(), ((int)(time))/60,((int)(time))%60, ((int)(time*100.0))%100);
 		ow->lasttime->setCaption(txt);
 		//ow->racing->hide();
 		ow->laptimes->hide();
@@ -917,10 +918,10 @@ RoRFrameListener::RoRFrameListener(AppState *parentState, RenderWindow* win, Cam
 	{
 		CACHE.startup(scm, true);
 		String str = _L("Cache regeneration done.\n");
-		if(CACHE.newFiles > 0) str += StringConverter::toString(CACHE.newFiles) + " new files\n";
-		if(CACHE.changedFiles > 0) str += StringConverter::toString(CACHE.changedFiles) + " changed files\n";
-		if(CACHE.deletedFiles > 0) str += StringConverter::toString(CACHE.deletedFiles) + " deleted files\n";
-		if(CACHE.newFiles + CACHE.changedFiles + CACHE.deletedFiles == 0) str += "no changes";
+		if(CACHE.newFiles > 0) str += StringConverter::toString(CACHE.newFiles) + _L(" new files\n");
+		if(CACHE.changedFiles > 0) str += StringConverter::toString(CACHE.changedFiles) + _L(" changed files\n");
+		if(CACHE.deletedFiles > 0) str += StringConverter::toString(CACHE.deletedFiles) + _L(" deleted files\n");
+		if(CACHE.newFiles + CACHE.changedFiles + CACHE.deletedFiles == 0) str += _L("no changes");
 		str += _L("\n(These stats can be imprecise)");
 		showError(_L("Cache regeneration done"), str.c_str());
 		exit(0);
@@ -3194,7 +3195,7 @@ bool RoRFrameListener::updateEvents(float dt)
 		{
 			if(!BeamFactory::getSingleton().enterRescueTruck())
 			{
-				if(ow) ow->flashMessage("No rescue truck found!", 3);
+				if(ow) ow->flashMessage(_L("No rescue truck found!"), 3);
 			}
 		}
 

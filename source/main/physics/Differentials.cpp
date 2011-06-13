@@ -18,7 +18,8 @@ You should have received a copy of the GNU General Public License
 along with Rigs of Rods.  If not, see <http://www.gnu.org/licenses/>.
 */
 #include "Differentials.h"
-#include "OgreLogManager.h"
+#include <OgreLogManager.h>
+#include "language.h"
 
 Axle::Axle() :
 	wheel_1(-1),
@@ -64,11 +65,11 @@ Ogre::String Axle::getDiffTypeName()
 
 	switch(available_diff_method[which_diff])
 	{
-		case SPLIT_DIFF: return "Split"; break;
-		case VISCOUS_DIFF: return "Fluid"; break;
-		case TC_DIFF: return "Traction Control"; break;
-		case OPEN_DIFF: return "Open"; break;
-		case LOCKED_DIFF: return "Locked"; break;
+		case SPLIT_DIFF: return _L("Split"); break;
+		case VISCOUS_DIFF: return _L("Fluid"); break;
+		case TC_DIFF: return _L("Traction Control"); break;
+		case OPEN_DIFF: return _L("Open"); break;
+		case LOCKED_DIFF: return _L("Locked"); break;
 	}
 	return "invalid";
 }

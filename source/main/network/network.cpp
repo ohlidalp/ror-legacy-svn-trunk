@@ -163,14 +163,14 @@ bool Network::connect()
 	if (error!=SWBaseSocket::ok)
 	{
 		//this is an error!
-		netFatalError("Establishing network session: ", false);
+		netFatalError(_L("Establishing network session: "), false);
 		return false;
 	}
 	//say hello to the server
 	if (sendmessage(&socket, MSG2_HELLO, 0, (unsigned int)strlen(RORNET_VERSION), (char *)RORNET_VERSION))
 	{
 		//this is an error!
-		netFatalError("Establishing network session: error sending hello", false);
+		netFatalError(_L("Establishing network session: error sending hello"), false);
 		return false;
 	}
 
@@ -180,12 +180,12 @@ bool Network::connect()
 	if (receivemessage(&socket, &header, buffer, 255))
 	{
 		//this is an error!
-		netFatalError("Establishing network session: error getting server version", false);
+		netFatalError(_L("Establishing network session: error getting server version"), false);
 		return false;
 	}
 	if(header.command != MSG2_HELLO)
 	{
-		netFatalError("Establishing network session: error getting server hello");
+		netFatalError(_L("Establishing network session: error getting server hello"));
 		return false;
 	}
 
@@ -194,7 +194,9 @@ bool Network::connect()
 
 	if (strncmp(server_settings.protocolversion, RORNET_VERSION, strlen(RORNET_VERSION)))
 	{
-		netFatalError("Establishing network session: wrong server version, you are using version '" + String(RORNET_VERSION) + "' and the server is using '"+String(server_settings.protocolversion)+"'");
+		char tmp[512] = "";
+		sprintf(tmp, _L("Establishing network session: wrong server version, you are using version '%s' and the server is using '%s'").c_str(), RORNET_VERSION, server_settings.protocolversion);
+		netFatalError(String(tmp));
 		return false;
 	}
 	// first handshake done, increase the timeout, important!
@@ -242,20 +244,20 @@ bool Network::connect()
 	if (sendmessage(&socket, MSG2_USER_INFO, 0, sizeof(user_info_t), (char*)&c))
 	{
 		//this is an error!
-		netFatalError("Establishing network session: error sending user info", false);
+		netFatalError(_L("Establishing network session: error sending user info"), false);
 		return false;
 	}
 	//now this is important, getting authorization
 	if (receivemessage(&socket, &header, buffer, 255))
 	{
 		//this is an error!
-		netFatalError("Establishing network session: error getting server authorization", false);
+		netFatalError(_L("Establishing network session: error getting server authorization"), false);
 		return false;
 	}
 	if (header.command==MSG2_FULL)
 	{
 		//this is an error!
-		netFatalError("Establishing network session: sorry, server has too many players", false);
+		netFatalError(_L("Establishing network session: sorry, server has too many players"), false);
 		return false;
 	}
 	else if (header.command==MSG2_BANNED)
@@ -265,11 +267,11 @@ bool Network::connect()
 		if(buffer && strnlen(buffer, 20)>0)
 		{
 			buffer[header.size]=0;
-			sprintf(tmp, "Establishing network session: sorry, you are banned:\n%s", buffer);
+			sprintf(tmp, _L("Establishing network session: sorry, you are banned:\n%s").c_str(), buffer);
 			netFatalError(tmp);
 		} else
 		{
-			netFatalError("Establishing network session: sorry, you are banned!", false);
+			netFatalError(_L("Establishing network session: sorry, you are banned!"), false);
 		}
 
 		return false;
@@ -277,19 +279,19 @@ bool Network::connect()
 	else if (header.command==MSG2_WRONG_PW)
 	{
 		//this is an error!
-		netFatalError("Establishing network session: sorry, wrong password!", false);
+		netFatalError(_L("Establishing network session: sorry, wrong password!"), false);
 		return false;
 	}
 	else if (header.command==MSG2_WRONG_VER)
 	{
 		//this is an error!
-		netFatalError("Establishing network session: sorry, wrong protocol version!", false);
+		netFatalError(_L("Establishing network session: sorry, wrong protocol version!"), false);
 		return false;
 	}
 	if (header.command!=MSG2_WELCOME)
 	{
 		//this is an error!
-		netFatalError("Establishing network session: sorry, unknown server response", false);
+		netFatalError(_L("Establishing network session: sorry, unknown server response"), false);
 		return false;
 	}
 	//okay keep our uid
@@ -588,7 +590,7 @@ void Network::receivethreadstart()
 		{
 			if(header.source == (int)myuid)
 			{
-				netFatalError("disconnected: remote side closed the connection", false);
+				netFatalError(_L("disconnected: remote side closed the connection"), false);
 				return;
 			}
 

@@ -84,7 +84,7 @@ void install_crashrpt()
 	info.pszAppName = "Rigs of Rods";
 	info.pszAppVersion = ROR_VERSION_STRING;
 	info.pszEmailSubject = "Error Report for Rigs of Rods";
-	info.pszEmailTo = "thomas@rigsofrods.com";
+	info.pszEmailTo = "error-report@rigsofrods.com";
 
 	char tmp[512]="";
 	sprintf(tmp, "http://api.rigsofrods.com/crashreport/?version=%s_%s", __DATE__, __TIME__);
@@ -113,7 +113,7 @@ void install_crashrpt()
 		printf("%s\n", szErrorMsg);
 
 
-		showError("Exception handling registration problem", String(szErrorMsg));
+		showError(_L("Exception handling registration problem"), String(szErrorMsg));
 
 		assert(nInstResult==0);
 	}
@@ -136,8 +136,6 @@ void test_crashrpt()
 // simpleopt by http://code.jellycan.com/simpleopt/
 // license: MIT
 #include "SimpleOpt.h"
-
-#define HELPTEXT "--help (this)\n-map <map> (loads map on startup)\n-truck <truck> (loads truck on startup)\n-setup shows the ogre configurator\n-version shows the version information\n-enter enters the selected truck\n-userpath <path> sets the user directory\nFor example: RoR.exe -map oahu -truck semi"
 
 // option identifiers
 enum { OPT_HELP, OPT_MAP, OPT_TRUCK, OPT_SETUP, OPT_CMD, OPT_WDIR, OPT_ETM, OPT_CONFIG, OPT_VER, OPT_CHECKCACHE, OPT_TRUCKCONFIG, OPT_ENTERTRUCK, OPT_BENCH, OPT_STREAMCACHEGEN, OPT_BENCHNUM, OPT_USERPATH, OPT_BENCHPOS, OPT_BENCHPOSERR, OPT_NOCRASHCRPT, OPT_STATE};
@@ -186,7 +184,7 @@ extern "C" {
 
 void showUsage()
 {
-	showInfo(_L("Command Line Arguments"), HELPTEXT);
+	showInfo(_L("Command Line Arguments"), _L("--help (this)\n-map <map> (loads map on startup)\n-truck <truck> (loads truck on startup)\n-setup shows the ogre configurator\n-version shows the version information\n-enter enters the selected truck\n-userpath <path> sets the user directory\nFor example: RoR.exe -map oahu -truck semi"));
 }
 
 void showVersion()
@@ -288,7 +286,7 @@ int main(int argc, char *argv[])
 		//	INPUTENGINE.prepareShutdown();
 
 		String url = "http://wiki.rigsofrods.com/index.php?title=Error_" + TOSTRING(e.getNumber())+"#"+e.getSource();
-		showOgreWebError("An exception has occured!", e.getFullDescription(), url);
+		showOgreWebError(_L("An exception has occured!"), e.getFullDescription(), url);
 		return 1;
 	}
 

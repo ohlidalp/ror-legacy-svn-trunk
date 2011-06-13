@@ -117,7 +117,7 @@ void CacheSystem::startup(SceneManager *smgr, bool forcecheck)
 	// show error on zero content
 	if(!entries.size())
 	{
-		showOgreWebError(_L("No content installed"), _L("You have no content installed"), "http://www.rigsofrods.com/wiki/pages/Install_Content");
+		showOgreWebError(_L("No content installed"), _L("You have no content installed"), _L("http://www.rigsofrods.com/wiki/pages/Install_Content"));
 		exit(1337);
 	}
 
