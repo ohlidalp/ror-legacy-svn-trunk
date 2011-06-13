@@ -33,6 +33,39 @@ along with Rigs of Rods.  If not, see <http://www.gnu.org/licenses/>.
 #include "BeamData.h"
 #include "InputEngine.h"
 
+#if 0
+// translation help for category entries, should be commented at all times
+_L("Other Land Vehicles");
+_L("Street Cars");
+_L("Light Racing Cars");
+_L("Offroad Cars");
+_L("Fantasy Cars");
+_L("Bikes");
+_L("Crawlers");
+_L("Towercranes");
+_L("Mobile Cranes");
+_L("Other cranes");
+_L("Buses");
+_L("Tractors");
+_L("Forklifts");
+_L("Fantasy Trucks");
+_L("Transport Trucks");
+_L("Racing Trucks");
+_L("Offroad Trucks");
+_L("Boats");
+_L("Helicopters");
+_L("Aircraft");
+_L("Trailers");
+_L("Other Loads");
+_L("Addon Terrains");
+_L("Official Terrains");
+_L("Night Terrains");
+_L("Unsorted");
+_L("All");
+_L("Fresh");
+_L("Hidden");
+#endif // 0
+
 SelectorWindow::SelectorWindow() : mSelectedTruck(0)
 {
 	initialiseByAttributes(this);
@@ -339,7 +372,7 @@ void SelectorWindow::getData()
 			continue;
 		counter2++;
 
-		String title = itc->second.title;
+		String title = _L(itc->second.title);
 		if(title.empty())
 			title = _L("unknown");
 		String txt = "["+TOSTRING(counter2)+"/"+TOSTRING(counter)+"] (" + TOSTRING(usage)+") " + title;
