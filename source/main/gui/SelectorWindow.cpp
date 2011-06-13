@@ -39,6 +39,11 @@ SelectorWindow::SelectorWindow() : mSelectedTruck(0)
 
 	visibleCounter=0;
 	mMainWidget->setVisible(false);
+	((MyGUI::Window*)mMainWidget)->setCaption(_L("Loader"));
+	mSearchLineEdit->setCaption(_L("Search ..."));
+	mOkButton->setCaption(_L("OK"));
+	mCancelButton->setCaption(_L("Cancel"));
+	
 
 	// setup controls
 	mConfigComboBox->addItem("Default", Ogre::String("Default"));

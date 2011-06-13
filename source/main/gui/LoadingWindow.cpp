@@ -23,6 +23,8 @@ along with Rigs of Rods.  If not, see <http://www.gnu.org/licenses/>.
 #include "gui_manager.h"
 #include "RoRWindowEventUtilities.h"
 
+#include "language.h"
+
 LoadingWindow::LoadingWindow() :
 	mFrameForced(false)
 {
@@ -30,6 +32,7 @@ LoadingWindow::LoadingWindow() :
 
 	MyGUI::IntSize gui_area = MyGUI::RenderManager::getInstance().getViewSize();
 	mMainWidget->setPosition(gui_area.width/2 - mMainWidget->getWidth()/2, gui_area.height/2 - mMainWidget->getHeight()/2);
+	((MyGUI::Window*)mMainWidget)->setCaption(_L("Loading ..."));
 }
 
 LoadingWindow::~LoadingWindow()
