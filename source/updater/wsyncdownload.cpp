@@ -29,7 +29,7 @@ std::map < std::string, boost::uintmax_t > WsyncDownload::traffic_stats;
 
 WsyncDownload::WsyncDownload(wxEvtHandler* parent) : parent(parent)
 {
-	mDownloadMessage = wxT("downloading file ...");
+	mDownloadMessage = _T("downloading file ...");
 }
 
 int progress_callback(void *data, double dltotal, double dlnow, double ultotal, double ulnow)
@@ -48,7 +48,7 @@ int progress_callback(void *data, double dltotal, double dlnow, double ultotal, 
 		// slow down the GUI updates
 		if(jinfo->wxp)
 		{
-			jinfo->wxp->Update(1000*(((float)jinfo->downloadDoneSize)/((float)jinfo->realDownloadSize)), wxT("downloading..."));
+			jinfo->wxp->Update(1000*(((float)jinfo->downloadDoneSize)/((float)jinfo->realDownloadSize)), _T("downloading..."));
 			::wxSafeYield(jinfo->wxp);
 			::wxYield();
 			jinfo->wxp->Refresh();
@@ -204,7 +204,7 @@ void WsyncDownload::tryRemoveFile(boost::filesystem::path filename, int jobID)
 	} catch(exception& e)
 	{
 		LOG("tryRemoveFile-%04d| removing file: %s ... ERROR: %s\n", jobID, filename.string().c_str(), e.what());
-		wxMessageBox(wxT("Unable to delete file: \n") + conv(filename.string()) + wxT("\n\nError: ") + wxString(e.what()) + wxT("\n\nPlease close RoR and all associated applications and try again later with admin priviledges."), wxT("Update Error"),0);
+		wxMessageBox(_T("Unable to delete file: \n") + conv(filename.string()) + _T("\n\nError: ") + wxString(e.what()) + _T("\n\nPlease close RoR and all associated applications and try again later with admin priviledges."), _T("Update Error"),0);
 		exit(1);
 	}
 }
