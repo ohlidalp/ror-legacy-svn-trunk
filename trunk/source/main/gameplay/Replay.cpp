@@ -172,13 +172,14 @@ void Replay::updateGUI()
 #ifdef USE_MYGUI 
 	if(outOfMemory)
 	{
-		txt->setCaption("Out of Memory");
+		txt->setCaption(_L("Out of Memory"));
 		pr->setProgressPosition(0);
 	} else
 	{
 		char tmp[128]="";
 		unsigned long t = curFrameTime;
-		sprintf(tmp, "Position: %0.6f s, frame %i / %i", ((float)t)/1000000.0f, curOffset, numFrames);
+		std::string format = _L("Position: %0.6f s, frame %i / %i");
+		sprintf(tmp, format.c_str(), ((float)t)/1000000.0f, curOffset, numFrames);
 		txt->setCaption(String(tmp));
 		pr->setProgressPosition(abs(curOffset));
 	}

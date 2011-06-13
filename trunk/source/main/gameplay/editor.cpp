@@ -20,6 +20,7 @@ along with Rigs of Rods.  If not, see <http://www.gnu.org/licenses/>.
 #include "editor.h"
 #include "Settings.h"
 #include "OverlayWrapper.h"
+#include "language.h"
 
 Editor::Editor(SceneManager *scm, RoRFrameListener *efl)
 {
@@ -36,7 +37,7 @@ Editor::Editor(SceneManager *scm, RoRFrameListener *efl)
 	{
 		LOG("Can not open editr.cfg file: "+editorcfg);
 		if(efl->getOverlayWrapper())
-			efl->getOverlayWrapper()->flashMessage((char *)"Can not find editor.cfg", 3);
+			efl->getOverlayWrapper()->flashMessage(_L("Can not find editor.cfg"), 3);
 		return;
 	};
 	while (!feof(fd))

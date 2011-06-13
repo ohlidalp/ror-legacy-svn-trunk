@@ -101,7 +101,7 @@ GUI_Friction::GUI_Friction() : col(0), active_gm(0), selected_gm(0), win(0)
 		h = p->createWidget<MyGUI::ScrollBar>("ScrollBarH", lx, ly, 60, 20,  MyGUI::Align::Default, "solid_level_scroll"); lx+=65;
 		h->eventScrollChangePosition += MyGUI::newDelegate(this, &GUI_Friction::event_scroll_value);
 		h->setScrollRange(1000);
-		helpTexts["solid_level"] = std::pair<String,String>("Solid ground level", "With this you can define how deep the solid ground is. If it is 0 then the surface will be solid. If it is 0.1 then you'll have 10 cm of fluid on top of solid ground. If it is 100 then the solid ground will be way deep (100m), with fluid on top.");
+		helpTexts["solid_level"] = std::pair<String,String>(_L("Solid ground level"), _L("With this you can define how deep the solid ground is. If it is 0 then the surface will be solid. If it is 0.1 then you'll have 10 cm of fluid on top of solid ground. If it is 100 then the solid ground will be way deep (100m), with fluid on top."));
 		minMaxs["solid_level"] = std::pair<Real,Real>(0, 200);
 		b = p->createWidget<MyGUI::Button>("Button", lx, ly, 20, 20,  MyGUI::Align::Default, "solid_level_help"); lx+=25;
 		b->eventMouseButtonClick += MyGUI::newDelegate(this, &GUI_Friction::event_btn_MouseButtonClick);
@@ -118,7 +118,7 @@ GUI_Friction::GUI_Friction() : col(0), active_gm(0), selected_gm(0), win(0)
 		h = p->createWidget<MyGUI::ScrollBar>("ScrollBarH", lx, ly, 60, 20,  MyGUI::Align::Default, "solid_strength_scroll"); lx+=65;
 		h->eventScrollChangePosition += MyGUI::newDelegate(this, &GUI_Friction::event_scroll_value);
 		h->setScrollRange(1000);
-		helpTexts["solid_strength"] = std::pair<String,String>("Strength", "This parameter raises or diminishes surface friction in a generic way. It is here so as to be able to do quick calibrations of friction. Start with having this to 1.0 and after tuning the rest of the surface variables, come back and play with this.");
+		helpTexts["solid_strength"] = std::pair<String,String>(_L("Strength"), _L("This parameter raises or diminishes surface friction in a generic way. It is here so as to be able to do quick calibrations of friction. Start with having this to 1.0 and after tuning the rest of the surface variables, come back and play with this."));
 		minMaxs["solid_strength"] = std::pair<Real,Real>(0, 2);
 		b = p->createWidget<MyGUI::Button>("Button", lx, ly, 20, 20,  MyGUI::Align::Default, "solid_strength_help"); lx+=25;
 		b->eventMouseButtonClick += MyGUI::newDelegate(this, &GUI_Friction::event_btn_MouseButtonClick);
@@ -135,7 +135,7 @@ GUI_Friction::GUI_Friction() : col(0), active_gm(0), selected_gm(0), win(0)
 		h = p->createWidget<MyGUI::ScrollBar>("ScrollBarH", lx, ly, 60, 20,  MyGUI::Align::Default, "solid_static_friction_scroll"); lx+=65;
 		h->eventScrollChangePosition += MyGUI::newDelegate(this, &GUI_Friction::event_scroll_value);
 		h->setScrollRange(1000);
-		helpTexts["solid_static_friction"] = std::pair<String,String>("Static friction coef", "Static friction keeps you in the same place when you are stopped on a hill. In the real world this friction is always bigger than dynamic friction (sliding friction). Start with 0.5 and work from there. It is better to try to find some experimentally validated values for this and the rest of surface friction variables in the net, and then to fine tune via strength.");
+		helpTexts["solid_static_friction"] = std::pair<String,String>(_L("Static friction coef"), _L("Static friction keeps you in the same place when you are stopped on a hill. In the real world this friction is always bigger than dynamic friction (sliding friction). Start with 0.5 and work from there. It is better to try to find some experimentally validated values for this and the rest of surface friction variables in the net, and then to fine tune via strength."));
 		minMaxs["solid_static_friction"] = std::pair<Real,Real>(0.1f, 2);
 		b = p->createWidget<MyGUI::Button>("Button", lx, ly, 20, 20,  MyGUI::Align::Default, "solid_static_friction_help"); lx+=20;
 		b->eventMouseButtonClick += MyGUI::newDelegate(this, &GUI_Friction::event_btn_MouseButtonClick);
@@ -152,7 +152,7 @@ GUI_Friction::GUI_Friction() : col(0), active_gm(0), selected_gm(0), win(0)
 		h = p->createWidget<MyGUI::ScrollBar>("ScrollBarH", lx, ly, 60, 20,  MyGUI::Align::Default, "solid_adhension_velo_scroll"); lx+=65;
 		h->eventScrollChangePosition += MyGUI::newDelegate(this, &GUI_Friction::event_scroll_value);
 		h->setScrollRange(1000);
-		helpTexts["solid_adhension_velo"] = std::pair<String,String>("Adhesion velocity", "Below this velocity, static friction rules, above it dynamic friction takes command. It should be something small, in the range of 0.1-0.4 . This velocity threshold is also used by the fluid physics, so you should always define it. NEVER have it at 0.");
+		helpTexts["solid_adhension_velo"] = std::pair<String,String>(_L("Adhesion velocity"), _L("Below this velocity, static friction rules, above it dynamic friction takes command. It should be something small, in the range of 0.1-0.4 . This velocity threshold is also used by the fluid physics, so you should always define it. NEVER have it at 0."));
 		minMaxs["solid_adhension_velo"] = std::pair<Real,Real>(0.1f, 0.5f);
 		b = p->createWidget<MyGUI::Button>("Button", lx, ly, 20, 20,  MyGUI::Align::Default, "solid_adhension_velo_help"); lx+=20;
 		b->eventMouseButtonClick += MyGUI::newDelegate(this, &GUI_Friction::event_btn_MouseButtonClick);
@@ -169,7 +169,7 @@ GUI_Friction::GUI_Friction() : col(0), active_gm(0), selected_gm(0), win(0)
 		h = p->createWidget<MyGUI::ScrollBar>("ScrollBarH", lx, ly, 60, 20,  MyGUI::Align::Default, "solid_dynamic_friction_scroll"); lx+=65;
 		h->eventScrollChangePosition += MyGUI::newDelegate(this, &GUI_Friction::event_scroll_value);
 		h->setScrollRange(1000);
-		helpTexts["solid_dynamic_friction"] = std::pair<String,String>("Dynamic friction coef", "Or sliding friction coef. It should be smaller than static friction coef. This parameter defines how much friction you'll have when sliding. Try to find some values for it from the net.");
+		helpTexts["solid_dynamic_friction"] = std::pair<String,String>(_L("Dynamic friction coef"), _L("Or sliding friction coef. It should be smaller than static friction coef. This parameter defines how much friction you'll have when sliding. Try to find some values for it from the net."));
 		minMaxs["solid_dynamic_friction"] = std::pair<Real,Real>(0.1f, 1.5f);
 		b = p->createWidget<MyGUI::Button>("Button", lx, ly, 20, 20,  MyGUI::Align::Default, "solid_dynamic_friction_help"); lx+=20;
 		b->eventMouseButtonClick += MyGUI::newDelegate(this, &GUI_Friction::event_btn_MouseButtonClick);
@@ -186,7 +186,7 @@ GUI_Friction::GUI_Friction() : col(0), active_gm(0), selected_gm(0), win(0)
 		h = p->createWidget<MyGUI::ScrollBar>("ScrollBarH", lx, ly, 60, 20,  MyGUI::Align::Default, "solid_hydrodynamic_scroll"); lx+=65;
 		h->eventScrollChangePosition += MyGUI::newDelegate(this, &GUI_Friction::event_scroll_value);
 		h->setScrollRange(1000);
-		helpTexts["solid_hydrodynamic"] = std::pair<String,String>("Hydrodynamic friction coef", "This friction defines the added friction that you'll feel from a surface that has a little film of fluid on it. It is kind of redundant with all the fluid physics below, but it is here so as for experimentally validated values from the net to be usable. If you decide that you'll simulate the film of fluid with the more complex fluid physics below, then just set this to 0.");
+		helpTexts["solid_hydrodynamic"] = std::pair<String,String>(_L("Hydrodynamic friction coef"), _L("This friction defines the added friction that you'll feel from a surface that has a little film of fluid on it. It is kind of redundant with all the fluid physics below, but it is here so as for experimentally validated values from the net to be usable. If you decide that you'll simulate the film of fluid with the more complex fluid physics below, then just set this to 0."));
 		minMaxs["solid_hydrodynamic"] = std::pair<Real,Real>(0, 1.5f);
 		b = p->createWidget<MyGUI::Button>("Button", lx, ly, 20, 20,  MyGUI::Align::Default, "solid_hydrodynamic_help"); lx+=25;
 		b->eventMouseButtonClick += MyGUI::newDelegate(this, &GUI_Friction::event_btn_MouseButtonClick);
@@ -201,7 +201,7 @@ GUI_Friction::GUI_Friction() : col(0), active_gm(0), selected_gm(0), win(0)
 		e->eventEditTextChange += MyGUI::newDelegate(this, &GUI_Friction::event_edit_TextChange);
 		t = p->createWidget<MyGUI::TextBox>("TextBox", lx, ly, 20, 20,  MyGUI::Align::Default, "solid_stribeck_edited"); lx+=20;
 		h = p->createWidget<MyGUI::ScrollBar>("ScrollBarH", lx, ly, 60, 20,  MyGUI::Align::Default, "solid_stribeck_scroll"); lx+=65;
-		helpTexts["solid_stribeck"] = std::pair<String,String>("Stribeck velocity", "You'll either find stribeck velocity in the net, or the inverse (1/stribeck velocity) of it described as 'stribeck coef'. It defines the shape of the dynamic friction curve. Lets leave it at that. Just find some nice values for it from the net.");
+		helpTexts["solid_stribeck"] = std::pair<String,String>(_L("Stribeck velocity"), _L("You'll either find stribeck velocity in the net, or the inverse (1/stribeck velocity) of it described as 'stribeck coef'. It defines the shape of the dynamic friction curve. Lets leave it at that. Just find some nice values for it from the net."));
 		minMaxs["solid_stribeck"] = std::pair<Real,Real>(0, 1000);
 		h->eventScrollChangePosition += MyGUI::newDelegate(this, &GUI_Friction::event_scroll_value);
 		h->setScrollRange(1000);
@@ -220,7 +220,7 @@ GUI_Friction::GUI_Friction() : col(0), active_gm(0), selected_gm(0), win(0)
 		h = p->createWidget<MyGUI::ScrollBar>("ScrollBarH", lx, ly, 60, 20,  MyGUI::Align::Default, "solid_alpha_scroll"); lx+=65;
 		h->eventScrollChangePosition += MyGUI::newDelegate(this, &GUI_Friction::event_scroll_value);
 		h->setScrollRange(1000);
-		helpTexts["solid_alpha"] = std::pair<String,String>("Alpha", "Its usual value is 2. But you can try others.");
+		helpTexts["solid_alpha"] = std::pair<String,String>(_L("Alpha"), _L("Its usual value is 2. But you can try others."));
 		minMaxs["solid_alpha"] = std::pair<Real,Real>(0, 200);
 		b = p->createWidget<MyGUI::Button>("Button", lx, ly, 20, 20,  MyGUI::Align::Default, "solid_alpha_help"); lx+=25;
 		b->eventMouseButtonClick += MyGUI::newDelegate(this, &GUI_Friction::event_btn_MouseButtonClick);
@@ -238,7 +238,7 @@ GUI_Friction::GUI_Friction() : col(0), active_gm(0), selected_gm(0), win(0)
 		cb->setEditStatic(true);
 		cb->setIndexSelected(0);
 		t = p->createWidget<MyGUI::TextBox>("TextBox", lx, ly, 20, 20,  MyGUI::Align::Default, "combo_fx_type_edited"); lx+=20;
-		helpTexts["combo_fx"] = std::pair<String,String>("FX Type", "The type of special effects that RoR will use to give the appearance of a surface. It doesn't affect the physics at all");
+		helpTexts["combo_fx"] = std::pair<String,String>(_L("FX Type"), _L("The type of special effects that RoR will use to give the appearance of a surface. It doesn't affect the physics at all"));
 		minMaxs["combo_fx"] = std::pair<Real,Real>(0, 0);
 		b = p->createWidget<MyGUI::Button>("Button", lx, ly, 20, 20,  MyGUI::Align::Default, "combo_fx_help"); lx+=25;
 		b->eventMouseButtonClick += MyGUI::newDelegate(this, &GUI_Friction::event_btn_MouseButtonClick);
@@ -256,7 +256,7 @@ GUI_Friction::GUI_Friction() : col(0), active_gm(0), selected_gm(0), win(0)
 		b = p->createWidget<MyGUI::Button>("Button", lx, ly, 20, 20,  MyGUI::Align::Default, "fx_color_help"); lx+=25;
 		b->eventMouseButtonClick += MyGUI::newDelegate(this, &GUI_Friction::event_btn_MouseButtonClick);
 		b->setCaption("?");
-		helpTexts["fx_color"] = std::pair<String,String>("FX Colour", "The color of RoR's special effects");
+		helpTexts["fx_color"] = std::pair<String,String>(_L("FX Colour"), _L("The color of RoR's special effects"));
 		minMaxs["fx_color"] = std::pair<Real,Real>(0, 0);
 		// TO BE DONE
 
@@ -286,7 +286,7 @@ GUI_Friction::GUI_Friction() : col(0), active_gm(0), selected_gm(0), win(0)
 		h = p->createWidget<MyGUI::ScrollBar>("ScrollBarH", lx, ly, 60, 20,  MyGUI::Align::Default, "fluid_flowbeh_scroll"); lx+=65;
 		h->eventScrollChangePosition += MyGUI::newDelegate(this, &GUI_Friction::event_scroll_value);
 		h->setScrollRange(1000);
-		helpTexts["fluid_flowbeh"] = std::pair<String,String>("Flow behavior index", "If it is 1.0 then the fluid will behave like water. The lower you get from 1.0, the more like mud the fluid will behave, meaning that for small velocities the fluid will resist motion and for large velocities the fluid will not resist so much. The higher you get from 1.0 the more like sand the fluid will behave. The bigger the velocity, the bigger the resistance of the fluid (try to hit sand hard it'll feel like stone).");
+		helpTexts["fluid_flowbeh"] = std::pair<String,String>(_L("Flow behavior index"), _L("If it is 1.0 then the fluid will behave like water. The lower you get from 1.0, the more like mud the fluid will behave, meaning that for small velocities the fluid will resist motion and for large velocities the fluid will not resist so much. The higher you get from 1.0 the more like sand the fluid will behave. The bigger the velocity, the bigger the resistance of the fluid (try to hit sand hard it'll feel like stone)."));
 		minMaxs["fluid_flowbeh"] = std::pair<Real,Real>(-2, 2);
 		b = p->createWidget<MyGUI::Button>("Button", lx, ly, 20, 20,  MyGUI::Align::Default, "fluid_flowbeh_help"); lx+=25;
 		b->eventMouseButtonClick += MyGUI::newDelegate(this, &GUI_Friction::event_btn_MouseButtonClick);
@@ -303,7 +303,7 @@ GUI_Friction::GUI_Friction() : col(0), active_gm(0), selected_gm(0), win(0)
 		h = p->createWidget<MyGUI::ScrollBar>("ScrollBarH", lx, ly, 60, 20,  MyGUI::Align::Default, "fluid_flowcon_scroll"); lx+=65;
 		h->eventScrollChangePosition += MyGUI::newDelegate(this, &GUI_Friction::event_scroll_value);
 		h->setScrollRange(1000);
-		helpTexts["fluid_flowcon"] = std::pair<String,String>("Flow consistency", "Think of it as default fluid resistance. Behavior index above changes it at real time. Useful values in practice are quite large.");
+		helpTexts["fluid_flowcon"] = std::pair<String,String>(_L("Flow consistency"), _L("Think of it as default fluid resistance. Behavior index above changes it at real time. Useful values in practice are quite large."));
 		minMaxs["fluid_flowcon"] = std::pair<Real,Real>(10, 100000);
 		b = p->createWidget<MyGUI::Button>("Button", lx, ly, 20, 20,  MyGUI::Align::Default, "fluid_flowcon_help"); lx+=25;
 		b->eventMouseButtonClick += MyGUI::newDelegate(this, &GUI_Friction::event_btn_MouseButtonClick);
@@ -320,7 +320,7 @@ GUI_Friction::GUI_Friction() : col(0), active_gm(0), selected_gm(0), win(0)
 		h = p->createWidget<MyGUI::ScrollBar>("ScrollBarH", lx, ly, 60, 20,  MyGUI::Align::Default, "fluid_density_scroll"); lx+=65;
 		h->eventScrollChangePosition += MyGUI::newDelegate(this, &GUI_Friction::event_scroll_value);
 		h->setScrollRange(1000);
-		helpTexts["fluid_density"] = std::pair<String,String>("Fluid density", "In mud (or sand) the resistance of the fluid described by the parameters above will stop you and so keep you from sinking. But for substances like water it isn't the drag that stops you from sinking. Its buoyancy. This parameter is here so as to keep you from sinking when you wish to simulate fluids with low drag (resistance). For fluids like mud or sand you can put it at 0, but it is best to keep it at some minimum value. For fluids with behavior index >=1 it will behave like you are in water. For fluids with behavior index <1 it'll behave like you are in mud.");
+		helpTexts["fluid_density"] = std::pair<String,String>(_L("Fluid density"), _L("In mud (or sand) the resistance of the fluid described by the parameters above will stop you and so keep you from sinking. But for substances like water it isn't the drag that stops you from sinking. Its buoyancy. This parameter is here so as to keep you from sinking when you wish to simulate fluids with low drag (resistance). For fluids like mud or sand you can put it at 0, but it is best to keep it at some minimum value. For fluids with behavior index >=1 it will behave like you are in water. For fluids with behavior index <1 it'll behave like you are in mud."));
 		minMaxs["fluid_density"] = std::pair<Real,Real>(10, 100000);
 		b = p->createWidget<MyGUI::Button>("Button", lx, ly, 20, 20,  MyGUI::Align::Default, "fluid_density_help"); lx+=25;
 		b->eventMouseButtonClick += MyGUI::newDelegate(this, &GUI_Friction::event_btn_MouseButtonClick);
@@ -337,7 +337,7 @@ GUI_Friction::GUI_Friction() : col(0), active_gm(0), selected_gm(0), win(0)
 		h = p->createWidget<MyGUI::ScrollBar>("ScrollBarH", lx, ly, 60, 20,  MyGUI::Align::Default, "fluid_drag_anisotropy_scroll"); lx+=65;
 		h->eventScrollChangePosition += MyGUI::newDelegate(this, &GUI_Friction::event_scroll_value);
 		h->setScrollRange(1000);
-		helpTexts["fluid_drag_anisotropy"] = std::pair<String,String>("Drag anisotropy", "This parameter is for making it easier(cheating) to get out from mud. To get stuck in real mud isn't fun at all, so this makes the mud push up. Ranges in this parameter are from 0 to 1 . If you set it at 1 then you'll get real mud. For values from 0 to 1, the behavior goes from real mud to easy mud depending on this parameter and the value of Adhesion velocity. For velocity 0 real mud it is. For velocity >= adhesion velocity easy mud it is.");
+		helpTexts["fluid_drag_anisotropy"] = std::pair<String,String>(_L("Drag anisotropy"), _L("This parameter is for making it easier(cheating) to get out from mud. To get stuck in real mud isn't fun at all, so this makes the mud push up. Ranges in this parameter are from 0 to 1 . If you set it at 1 then you'll get real mud. For values from 0 to 1, the behavior goes from real mud to easy mud depending on this parameter and the value of Adhesion velocity. For velocity 0 real mud it is. For velocity >= adhesion velocity easy mud it is."));
 		minMaxs["fluid_drag_anisotropy"] = std::pair<Real,Real>(0, 1);
 		b = p->createWidget<MyGUI::Button>("Button", lx, ly, 20, 20,  MyGUI::Align::Default, "fluid_drag_anisotropy_help"); lx+=25;
 		b->eventMouseButtonClick += MyGUI::newDelegate(this, &GUI_Friction::event_btn_MouseButtonClick);
@@ -352,7 +352,7 @@ GUI_Friction::GUI_Friction() : col(0), active_gm(0), selected_gm(0), win(0)
 	x=10; y+=40; 
 	b = win->createWidget<MyGUI::Button>("Button", x, y, 350, 30,  MyGUI::Align::Default, "apply_changes"); x+=25;
 	b->eventMouseButtonClick += MyGUI::newDelegate(this, &GUI_Friction::event_btn_MouseButtonClick);
-	b->setCaption("Apply Changes");
+	b->setCaption(_L("Apply Changes"));
 
 	/*
 	x=10; y+=20; 
@@ -596,7 +596,12 @@ void GUI_Friction::event_btn_MouseButtonClick(MyGUI::WidgetPtr _sender)
 		String mTitle = hText.first;
 		String mTxt = hText.second;
 		if(fabs(minmax.first - minmax.second) > 0.001f)
-			mTxt += "\nParameter range: " + TOSTRING(minmax.first) + " to " + TOSTRING(minmax.second) + "";
+		{
+			char param[512]="";
+			std::string fmt = _L("\nParameter range: %f to %f");
+			sprintf(param, fmt.c_str(), minmax.first, minmax.second);
+			mTxt += std::string(param);
+		}
 		MyGUI::IntPoint p = _sender->getAbsolutePosition();
 		MyGUI::IntSize s = _sender->getSize();
 		showHelp(mTitle, mTxt, p.left + s.width, p.top + s.height*0.5f);

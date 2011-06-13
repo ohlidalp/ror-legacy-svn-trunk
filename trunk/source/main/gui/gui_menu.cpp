@@ -54,42 +54,42 @@ GUI_MainMenu::GUI_MainMenu(RoRFrameListener *efl) : mefl(efl)
 	MyGUI::MenuItemPtr mi = mainmenu->createWidget<MyGUI::MenuItem>("MenuBarButton", 0, 0, 60, 22,  MyGUI::Align::Default); 
 	pop[popCount] = mi->createWidget<MyGUI::PopupMenu>(MyGUI::WidgetStyle::Popup, "PopupMenu",MyGUI::IntCoord(0,0,88,68),MyGUI::Align::Default, "Popup");
 	mi->setItemType(MyGUI::MenuItemType::Popup);
-	mi->setCaption("Simulation");
-	pop[popCount]->addItem("get new Vehicle", MyGUI::MenuItemType::Normal);
-	pop[popCount]->addItem("remove current Vehicle", MyGUI::MenuItemType::Normal);
-	pop[popCount]->addItem("activate all Vehicles", MyGUI::MenuItemType::Normal);
-	pop[popCount]->addItem("send all Vehicles to sleep", MyGUI::MenuItemType::Normal);
-	pop[popCount]->addItem("switch Truck", MyGUI::MenuItemType::Normal);
+	mi->setCaption(_L("Simulation"));
+	pop[popCount]->addItem(_L("get new Vehicle"), MyGUI::MenuItemType::Normal);
+	pop[popCount]->addItem(_L("remove current Vehicle"), MyGUI::MenuItemType::Normal);
+	pop[popCount]->addItem(_L("activate all Vehicles"), MyGUI::MenuItemType::Normal);
+	pop[popCount]->addItem(_L("send all Vehicles to sleep"), MyGUI::MenuItemType::Normal);
+	//pop[popCount]->addItem(_L("switch Truck"), MyGUI::MenuItemType::Normal);
 	pop[popCount]->addItem("-", MyGUI::MenuItemType::Separator);
-	pop[popCount]->addItem("Exit", MyGUI::MenuItemType::Normal);
+	pop[popCount]->addItem(_L("Exit"), MyGUI::MenuItemType::Normal);
 
 	// view
 	popCount++;
 	mi = mainmenu->createWidget<MyGUI::MenuItem>("MenuBarButton", 0, 0, 60, 22,  MyGUI::Align::Default); 
 	pop[popCount] = mi->createWidget<MyGUI::PopupMenu>(MyGUI::WidgetStyle::Popup, "PopupMenu",MyGUI::IntCoord(0,0,88,68),MyGUI::Align::Default, "Popup");
 	mi->setItemType(MyGUI::MenuItemType::Popup);
-	mi->setCaption("View");
+	mi->setCaption(_L("View"));
 	MyGUI::MenuItemPtr mi2 = pop[popCount]->createWidget<MyGUI::MenuItem>("MenuBarButton", 0, 0, 60, 22,  MyGUI::Align::Default); 
 	mi2->setItemType(MyGUI::MenuItemType::Popup);
-	mi2->setCaption("Camera Mode");
+	mi2->setCaption(_L("Camera Mode"));
 
 	popCount++;
 	pop[popCount] = mi2->createWidget<MyGUI::PopupMenu>(MyGUI::WidgetStyle::Popup, "PopupMenu",MyGUI::IntCoord(0,0,88,68),MyGUI::Align::Default, "Popup");
-	pop[popCount]->addItem("First Person", MyGUI::MenuItemType::Normal, "camera_first_person");
-	pop[popCount]->addItem("External", MyGUI::MenuItemType::Normal, "camera_external");
-	pop[popCount]->addItem("Free Mode", MyGUI::MenuItemType::Normal, "camera_free");
-	pop[popCount]->addItem("Free fixed mode", MyGUI::MenuItemType::Normal, "camera_freefixed");
+	pop[popCount]->addItem(_L("First Person"), MyGUI::MenuItemType::Normal, "camera_first_person");
+	pop[popCount]->addItem(_L("External"), MyGUI::MenuItemType::Normal, "camera_external");
+	pop[popCount]->addItem(_L("Free Mode"), MyGUI::MenuItemType::Normal, "camera_free");
+	pop[popCount]->addItem(_L("Free fixed mode"), MyGUI::MenuItemType::Normal, "camera_freefixed");
 	pop[popCount]->addItem("-", MyGUI::MenuItemType::Separator);
 
 	mi2 = pop[popCount]->createWidget<MyGUI::MenuItem>("MenuBarButton", 0, 0, 60, 22,  MyGUI::Align::Default); 
 	mi2->setItemType(MyGUI::MenuItemType::Popup);
-	mi2->setCaption("Truck Camera");
+	mi2->setCaption(_L("Truck Camera"));
 
 	popCount++;
 	pop[popCount] = mi2->createWidget<MyGUI::PopupMenu>(MyGUI::WidgetStyle::Popup, "PopupMenu",MyGUI::IntCoord(0,0,88,68),MyGUI::Align::Default, "Popup");
-	pop[popCount]->addItem("1. Camera", MyGUI::MenuItemType::Normal, "camera_truck_1");
-	pop[popCount]->addItem("2. Camera", MyGUI::MenuItemType::Normal, "camera_truck_2");
-	pop[popCount]->addItem("3. Camera", MyGUI::MenuItemType::Normal, "camera_truck_3");
+	pop[popCount]->addItem(_L("1. Camera"), MyGUI::MenuItemType::Normal, "camera_truck_1");
+	pop[popCount]->addItem(_L("2. Camera"), MyGUI::MenuItemType::Normal, "camera_truck_2");
+	pop[popCount]->addItem(_L("3. Camera"), MyGUI::MenuItemType::Normal, "camera_truck_3");
 
 	// windows
 	popCount++;
@@ -97,9 +97,9 @@ GUI_MainMenu::GUI_MainMenu(RoRFrameListener *efl) : mefl(efl)
 	pop[popCount] = mi->createWidget<MyGUI::PopupMenu>(MyGUI::WidgetStyle::Popup, "PopupMenu",MyGUI::IntCoord(0,0,88,68),MyGUI::Align::Default, "Popup");
 	mi->setItemType(MyGUI::MenuItemType::Popup);
 	mi->setCaption("Windows");
-	pop[popCount]->addItem("Camera Control", MyGUI::MenuItemType::Normal, "cameratool");
-	pop[popCount]->addItem("Friction Settings", MyGUI::MenuItemType::Normal, "frictiongui");
-	pop[popCount]->addItem("Show Console", MyGUI::MenuItemType::Normal, "showConsole");
+	pop[popCount]->addItem(_L("Camera Control"), MyGUI::MenuItemType::Normal, "cameratool");
+	pop[popCount]->addItem(_L("Friction Settings"), MyGUI::MenuItemType::Normal, "frictiongui");
+	pop[popCount]->addItem(_L("Show Console"), MyGUI::MenuItemType::Normal, "showConsole");
 	
 
 	// if you add a menu, fix NUM_POPUPMENUS
@@ -119,7 +119,7 @@ void GUI_MainMenu::onMenuBtn(MyGUI::MenuCtrlPtr _sender, MyGUI::MenuItemPtr _ite
 {
 	String miname = _item->getCaption();
 
-	if(miname == "get new Vehicle" && mefl->person)
+	if(miname == _L("get new Vehicle") && mefl->person)
 	{
 		// get out first
 		if(BeamFactory::getSingleton().getCurrentTruckNumber() != -1)
@@ -129,22 +129,22 @@ void GUI_MainMenu::onMenuBtn(MyGUI::MenuCtrlPtr _sender, MyGUI::MenuItemPtr _ite
 		mefl->loading_state=RELOADING;
 		SelectorWindow::get()->show(SelectorWindow::LT_AllBeam);
 
-	} else if(miname == "remove current Vehicle")
+	} else if(miname == _L("remove current Vehicle"))
 	{
 		BeamFactory::getSingleton().removeCurrentTruck();
 
-	} else if(miname == "activate all Vehicles")
+	} else if(miname == _L("activate all Vehicles"))
 	{
 		BeamFactory::getSingleton().activateAllTrucks();
 		
-	} else if(miname == "send all Vehicles to sleep")
+	} else if(miname == _L("send all Vehicles to sleep"))
 	{
 		// get out first
 		if(BeamFactory::getSingleton().getCurrentTruckNumber() != -1)
 			BeamFactory::getSingleton().setCurrentTruck(-1);
 		BeamFactory::getSingleton().sendAllTrucksSleeping();
 
-	} else if(miname == "reload Truck from File")
+	} else if(miname == _L("reload Truck from File"))
 	{
 		if(BeamFactory::getSingleton().getCurrentTruckNumber() != -1)
 		{
@@ -152,18 +152,18 @@ void GUI_MainMenu::onMenuBtn(MyGUI::MenuCtrlPtr _sender, MyGUI::MenuItemPtr _ite
 			GUIManager::getSingleton().unfocus();
 		}
 
-	} else if(miname == "switch Truck")
+	} else if(miname == _L("switch Truck"))
 	{
 		// TODO
 
-	} else if(miname == "Friction Settings")
+	} else if(miname == _L("Friction Settings"))
 	{
 		GUI_Friction::getSingleton().setVisible(true);
 
-	} else if(miname == "Exit")
+	} else if(miname == _L("Exit"))
 	{
 		mefl->shutdown_final();
-	} else if(miname == "Show Console")
+	} else if(miname == _L("Show Console"))
 	{
 		Console::getInstance().setVisible(true);
 	}

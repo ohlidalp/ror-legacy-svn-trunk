@@ -26,6 +26,7 @@ along with Rigs of Rods.  If not, see <http://www.gnu.org/licenses/>.
 #include "network.h"
 #include "utils.h"
 #include "sha1.h"
+#include "language.h"
 
 using namespace Ogre;
 
@@ -226,7 +227,7 @@ void NetworkStreamManager::sendStreams(Network *net, SWInetSocket *socket)
 				if (etype)
 				{
 					char emsg[256];
-					sprintf(emsg, "Error %i while sending data packet", etype);
+					sprintf(emsg, _L("Error %i while sending data packet").c_str(), etype);
 					net->netFatalError(emsg);
 					MUTEX_UNLOCK(&stream_mutex);
 					return;

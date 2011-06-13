@@ -42,6 +42,7 @@ along with Rigs of Rods.  If not, see <http://www.gnu.org/licenses/>.
 #include "FlexMeshWheel.h"
 #include "FlexObj.h"
 #include "FlexAirfoil.h"
+#include "language.h"
 #include "MovableText.h"
 #include "turboprop.h"
 #include "turbojet.h"
@@ -2216,7 +2217,7 @@ void Beam::sendStreamData()
 	int final_packet_size = sizeof(oob_t) + sizeof(float) * 3 + first_wheel_node * sizeof(float) * 3 + free_wheel * sizeof(float);
 	if(final_packet_size > (int)maxPacketLen)
 	{
-		showError("Truck is too big to be send over the net.", "Network error!");
+		showError(_L("Truck is too big to be send over the net."), _L("Network error!"));
 		exit(126);
 	}
 

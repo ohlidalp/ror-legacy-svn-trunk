@@ -3,6 +3,8 @@
 #include "AppStateManager.h"
 
 #include "RoRWindowEventUtilities.h"
+#include "language.h"
+
 #include <OgreLogManager.h>
 
 using namespace Ogre;
@@ -50,7 +52,7 @@ void AppStateManager::manageAppState(Ogre::String stateName, AppState* state)
 	catch(std::exception& e)
 	{
 		delete state;
-		throw Ogre::Exception(Ogre::Exception::ERR_INTERNAL_ERROR, "Error while trying to manage a new AppState\n" + Ogre::String(e.what()), "AppStateManager.cpp (39)");
+		throw Ogre::Exception(Ogre::Exception::ERR_INTERNAL_ERROR, _L("Error while trying to manage a new AppState\n") + Ogre::String(e.what()), "AppStateManager.cpp (39)");
 	}
 }
 

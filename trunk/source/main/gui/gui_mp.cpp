@@ -101,7 +101,7 @@ GUI_Multiplayer::GUI_Multiplayer(Network *_net, Ogre::Camera *cam) : net(_net), 
 		row->playername = mpPanel->createWidget<MyGUI::TextBox>("TextBox", x, y+1, sidebarWidth, lineheight,  MyGUI::Align::Default, "Main");
 		row->playername->setCaption("Player " + TOSTRING(i));
 		row->playername->setFontName("DefaultBig");
-		row->playername->setUserString("tooltip", "user name");
+		row->playername->setUserString("tooltip", _L("user name"));
 		row->playername->eventToolTip += MyGUI::newDelegate(this, &GUI_Multiplayer::openToolTip);
 		row->playername->setNeedToolTip(true);
 		row->playername->setVisible(false);
@@ -110,21 +110,21 @@ GUI_Multiplayer::GUI_Multiplayer(Network *_net, Ogre::Camera *cam) : net(_net), 
 
 		x -= 18;
 		row->flagimg = mpPanel->createWidget<MyGUI::ImageBox>("ImageBox", x, y + 3, 16, 11,  MyGUI::Align::Default, "Main");
-		row->flagimg->setUserString("tooltip", "user country");
+		row->flagimg->setUserString("tooltip", _L("user country"));
 		row->flagimg->eventToolTip += MyGUI::newDelegate(this, &GUI_Multiplayer::openToolTip);
 		row->flagimg->setNeedToolTip(true);
 		row->flagimg->setVisible(false);
 
 		x -= 18;
 		row->statimg = mpPanel->createWidget<MyGUI::ImageBox>("ImageBox", x, y, 16, 16,  MyGUI::Align::Default, "Main");
-		row->statimg->setUserString("tooltip", "user authentication level");
+		row->statimg->setUserString("tooltip", _L("user authentication level"));
 		row->statimg->eventToolTip += MyGUI::newDelegate(this, &GUI_Multiplayer::openToolTip);
 		row->statimg->setNeedToolTip(true);
 		row->statimg->setVisible(false);
 
 		x -= 18;
 		row->userTruckOKImg = mpPanel->createWidget<MyGUI::ImageBox>("ImageBox", x, y, 16, 16,  MyGUI::Align::Default, "Main");
-		row->userTruckOKImg->setUserString("tooltip", "truck loading state");
+		row->userTruckOKImg->setUserString("tooltip", _L("truck loading state"));
 		row->userTruckOKImg->eventToolTip += MyGUI::newDelegate(this, &GUI_Multiplayer::openToolTip);
 		row->userTruckOKImg->setNeedToolTip(true);
 		row->userTruckOKImg->setVisible(false);
@@ -132,7 +132,7 @@ GUI_Multiplayer::GUI_Multiplayer(Network *_net, Ogre::Camera *cam) : net(_net), 
 
 		x -= 18;
 		row->userTruckOKRemoteImg = mpPanel->createWidget<MyGUI::ImageBox>("ImageBox", x, y, 16, 16,  MyGUI::Align::Default, "Main");
-		row->userTruckOKRemoteImg->setUserString("tooltip", "remote truck loading state");
+		row->userTruckOKRemoteImg->setUserString("tooltip", _L("remote truck loading state"));
 		row->userTruckOKRemoteImg->eventToolTip += MyGUI::newDelegate(this, &GUI_Multiplayer::openToolTip);
 		row->userTruckOKRemoteImg->setNeedToolTip(true);
 		row->userTruckOKRemoteImg->setVisible(false);
@@ -141,7 +141,7 @@ GUI_Multiplayer::GUI_Multiplayer(Network *_net, Ogre::Camera *cam) : net(_net), 
 		x -= 18;
 		row->usergoimg = mpPanel->createWidget<MyGUI::ImageBox>("ImageBox", x, y, 16, 16,  MyGUI::Align::Default, "Main");
 		row->usergoimg->setUserString("num", TOSTRING(i));
-		row->usergoimg->setUserString("tooltip", "go to user");
+		row->usergoimg->setUserString("tooltip", _L("go to user"));
 		row->usergoimg->setImageTexture("user_go.png");
 		row->usergoimg->eventToolTip += MyGUI::newDelegate(this, &GUI_Multiplayer::openToolTip);
 		row->usergoimg->setNeedToolTip(true);
@@ -155,7 +155,7 @@ GUI_Multiplayer::GUI_Multiplayer(Network *_net, Ogre::Camera *cam) : net(_net), 
 		img->eventToolTip += MyGUI::newDelegate(this, &GUI_Multiplayer::openToolTip);
 		img->setNeedToolTip(true);
 		img->setUserString("info", TOSTRING(i));
-		img->setUserString("tooltip", "information about the user");
+		img->setUserString("tooltip", _L("information about the user"));
 		*/
 
 		y += lineheight;
@@ -191,7 +191,7 @@ void GUI_Multiplayer::updateSlot(player_row_t *row, user_info_t *c, bool self)
 		String lang = parts[1];
 		StringUtil::toLowerCase(lang);
 		row->flagimg->setImageTexture(lang + ".png");
-		row->flagimg->setUserString("tooltip", "user language: " + parts[0] + " user country: " + parts[1]);
+		row->flagimg->setUserString("tooltip", _L("user language: ") + parts[0] + _L(" user country: ") + parts[1]);
 		row->flagimg->setVisible(true);
 		row->flagimg->setPosition(x, y);
 		x -= 18;
@@ -208,21 +208,21 @@ void GUI_Multiplayer::updateSlot(player_row_t *row, user_info_t *c, bool self)
 	{
 		row->statimg->setVisible(true);
 		row->statimg->setImageTexture("flag_red.png");
-		row->statimg->setUserString("tooltip", "Server Administrator");
+		row->statimg->setUserString("tooltip", _L("Server Administrator"));
 		row->statimg->setPosition(x, y);
 		x -= 18;
 	} else if (c->authstatus & AUTH_MOD)
 	{
 		row->statimg->setVisible(true);
 		row->statimg->setImageTexture("flag_blue.png");
-		row->statimg->setUserString("tooltip", "Server Moderator");
+		row->statimg->setUserString("tooltip", _L("Server Moderator"));
 		row->statimg->setPosition(x, y);
 		x -= 18;
 	} else if (c->authstatus & AUTH_RANKED)
 	{
 		row->statimg->setVisible(true);
 		row->statimg->setImageTexture("flag_green.png");
-		row->statimg->setUserString("tooltip", "ranked user");
+		row->statimg->setUserString("tooltip", _L("ranked user"));
 		row->statimg->setPosition(x, y);
 		x -= 18;
 	}
@@ -243,30 +243,30 @@ void GUI_Multiplayer::updateSlot(player_row_t *row, user_info_t *c, bool self)
 		if(ok == 0)
 		{
 			row->userTruckOKImg->setImageTexture("arrow_down_red.png");
-			row->userTruckOKImg->setUserString("tooltip", "Truck loading errors");
+			row->userTruckOKImg->setUserString("tooltip", _L("Truck loading errors"));
 		} else if(ok == 1)
 		{
 			row->userTruckOKImg->setImageTexture("arrow_down.png");
-			row->userTruckOKImg->setUserString("tooltip", "Truck loaded correctly, no errors");
+			row->userTruckOKImg->setUserString("tooltip", _L("Truck loaded correctly, no errors"));
 		} else if(ok == 2)
 		{
 			row->userTruckOKImg->setImageTexture("arrow_down_grey.png");
-			row->userTruckOKImg->setUserString("tooltip", "no truck loaded");
+			row->userTruckOKImg->setUserString("tooltip", _L("no truck loaded"));
 		}
 
 		int rok = BeamFactory::getSingleton().checkStreamsRemoteOK(c->uniqueid);
 		if(rok == 0)
 		{
 			row->userTruckOKRemoteImg->setImageTexture("arrow_up_red.png");
-			row->userTruckOKRemoteImg->setUserString("tooltip", "Remote Truck loading errors");
+			row->userTruckOKRemoteImg->setUserString("tooltip", _L("Remote Truck loading errors"));
 		} else if(rok == 1)
 		{
 			row->userTruckOKRemoteImg->setImageTexture("arrow_up.png");
-			row->userTruckOKRemoteImg->setUserString("tooltip", "Remote Truck loaded correctly, no errors");
+			row->userTruckOKRemoteImg->setUserString("tooltip", _L("Remote Truck loaded correctly, no errors"));
 		} else if(rok == 2)
 		{
 			row->userTruckOKRemoteImg->setImageTexture("arrow_up_grey.png");
-			row->userTruckOKRemoteImg->setUserString("tooltip", "No Trucks loaded");
+			row->userTruckOKRemoteImg->setUserString("tooltip", _L("No Trucks loaded"));
 		}
 	} else
 	{
