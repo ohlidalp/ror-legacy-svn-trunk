@@ -1277,6 +1277,7 @@ MyDialog::MyDialog(const wxString& title, MyApp *_app) : wxDialog(NULL, wxID_ANY
 	screenShotFormat->Append(_("png (bigger, no quality loss)"));
 	screenShotFormat->SetToolTip(_("In what Format should screenshots be saved?"));
 
+
 	//force feedback panel
 	ffEnable=new wxCheckBox(ffPanel, -1, _("Enable Force Feedback"), wxPoint(150, 25));
 
@@ -2198,34 +2199,48 @@ void MyDialog::SaveConfig()
 
 	// then set stuff and write configs
 	//save Ogre stuff if we loaded ogre in the first place
-	if(ogreRoot)
+	try
 	{
-		Ogre::RenderSystem *rs = ogreRoot->getRenderSystem();
-		for(int i=0;i<(int)renderer_text.size();i++)
+		if(ogreRoot)
 		{
-			if(!renderer_text[i]->IsShown())
-				break;
-			std::string key = conv(renderer_text[i]->GetLabel());
-			std::string val = conv(renderer_choice[i]->GetStringSelection());
+			Ogre::RenderSystem *rs = ogreRoot->getRenderSystem();
+			for(int i=0;i<(int)renderer_text.size();i++)
+			{
+				if(!renderer_text[i]->IsShown())
+					break;
+				std::string key = conv(renderer_text[i]->GetLabel());
+				wxString keyw = (renderer_text[i]->GetLabel());
+				std::string val = conv(renderer_choice[i]->GetStringSelection());
 
-			if(key == _("FSAA")) key = ("FSAA");
-			if(key == _("Full Screen")) key = ("Full Screen");
-			if(key == _("Rendering Device")) key = ("Rendering Device");
-			if(key == _("VSync")) key = ("VSync");
-			if(key == _("Video Mode")) key = ("Video Mode");
-			if(val == _("Yes")) val = ("Yes");
-			if(val == _("No"))  val = ("No");
+				if(keyw == _("FSAA")) key = ("FSAA");
+				if(keyw == _("Full Screen")) key = ("Full Screen");
+				if(keyw == _("Rendering Device")) key = ("Rendering Device");
+				if(keyw == _("VSync")) key = ("VSync");
+				if(keyw == _("Video Mode")) key = ("Video Mode");
+				if(keyw == _("Yes")) val = ("Yes");
+				if(keyw == _("No"))  val = ("No");
 
-			rs->setConfigOption(key, val);
+				rs->setConfigOption(key, val);
+			}
+			Ogre::String err = rs->validateConfigOptions();
+			if (err.length() > 0)
+			{
+				wxMessageDialog(this, conv(err), _("Ogre config validation error"),wxOK||wxICON_ERROR).ShowModal();
+			} else
+			{
+				Ogre::Root::getSingleton().saveConfig();
+			}
 		}
-		Ogre::String err = rs->validateConfigOptions();
-		if (err.length() > 0)
-		{
-			wxMessageDialog(this, conv(err), _("Ogre config validation error"),wxOK||wxICON_ERROR).ShowModal();
-		} else
-		{
-			Ogre::Root::getSingleton().saveConfig();
-		}
+	}
+	catch (std::exception &e)
+	{
+		wxLogError(wxT("Cought exception:"));
+		wxLogError(wxString(e.what()));
+		wxString warning = wxString(e.what());
+		wxString caption = _("caught exception");
+		wxMessageDialog *w = new wxMessageDialog(NULL, warning, caption, wxOK|wxICON_ERROR|wxSTAY_ON_TOP, wxDefaultPosition);
+		w->ShowModal();
+		delete(w);
 	}
 
 	//save my stuff
@@ -2650,7 +2665,7 @@ void MyDialog::OnsightrangesliderScroll(wxScrollEvent &e)
 	int v = sightRange->GetValue();
 	if(v == sightRange->GetMax())
 	{
-		s = "Unlimited";
+		s = _("Unlimited");
 	} else
 	{
 		s.Printf(wxT("%i m"), v);
