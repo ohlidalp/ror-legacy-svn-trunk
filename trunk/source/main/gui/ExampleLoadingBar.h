@@ -29,6 +29,7 @@ the basic resources required for the progress bar and will be loaded automatical
 #include "RoRWindowEventUtilities.h"
 
 #include "gui_manager.h"
+#include "language.h"
 
 using namespace Ogre;
 
@@ -148,7 +149,7 @@ public:
 	{
 		mProgressBarInc = mProgressBarMaxSize * mInitProportion / (Real)scriptCount;
 		mProgressBarInc /= mNumGroupsInit;
-		mLoadingDescriptionElement->setCaption("Parsing scripts...");
+		mLoadingDescriptionElement->setCaption(_L("Parsing scripts..."));
 
 		counterGroups++;
 
@@ -175,7 +176,7 @@ public:
 	{
 		mProgressBarInc = mProgressBarMaxSize * (1-mInitProportion) / (Real)resourceCount;
 		mProgressBarInc /= mNumGroupsLoad;
-		mLoadingDescriptionElement->setCaption("Loading resources...");
+		mLoadingDescriptionElement->setCaption(_L("Loading resources..."));
 		mWindow->update();
 	}
 	void resourceLoadStarted(const ResourcePtr& resource)
