@@ -693,15 +693,16 @@ bool DownloadPage::OnEnter(bool forward)
 	setControlEnable(wizard, wxID_BACKWARD, false);
 
 	// fill in version information
-	std::string fromVersion = CONFIG->readVersionInfo();
-	std::string toVersion   = CONFIG->getOnlineVersion();
-	std::string versionText = std::string("updating from ") + fromVersion + std::string(" to ") + toVersion;
-	if(fromVersion == "unkown")
+	wxString fromVersion = conv(CONFIG->readVersionInfo());
+	wxString toVersion   = conv(CONFIG->getOnlineVersion());
+	wxString versionText = wxString::Format(_("updating from %s to %s"), fromVersion, toVersion);
+	
+	if(fromVersion == wxT("unknown"))
 		versionText = toVersion;
 	if(fromVersion == toVersion)
 		versionText = toVersion;
 	std::string versionURL  = std::string(CHANGELOGURL) + toVersion;
-	hlink->SetLabel(conv(versionText));
+	hlink->SetLabel(versionText);
 	hlink->SetURL(conv(versionURL));
 
     htmlinfo->LoadPage(wxT("http://api.rigsofrods.com/didyouknow/"));
