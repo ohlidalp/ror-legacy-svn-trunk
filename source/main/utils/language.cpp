@@ -68,7 +68,7 @@ void LanguageEngine::setup()
 
 	// Load a .mo-File.
 	LOG("*** Loading Language ***");
-	String langfile = SSETTING("Program Path") + String("languages/") + language_short + String("/") + String(MOFILENAME) + String(".mo");
+	String langfile = SSETTING("Program Path") + String("languages/") + language_short + String(".mo");
 	if (reader->ReadFile(langfile.c_str()) != moFileLib::moFileReader::EC_SUCCESS )
 	{
 			LOG("* error loading language file " + langfile);
@@ -98,8 +98,17 @@ Ogre::String LanguageEngine::lookUp(Ogre::String name)
 
 void LanguageEngine::setupCodeRanges(String codeRangesFilename, String codeRangesGroupname)
 {
-	DataStreamPtr ds = ResourceGroupManager::getSingleton().openResource(codeRangesFilename, codeRangesGroupname);
-	if(ds.isNull())
+	DataStreamPtr ds;
+	try
+	{
+		ds = ResourceGroupManager::getSingleton().openResource(codeRangesFilename, codeRangesGroupname);
+		if(ds.isNull())
+		{
+			LOG("unable to load language code points file: " + codeRangesFilename);
+			return;
+		}
+
+	} catch(...)
 	{
 		LOG("unable to load language code points file: " + codeRangesFilename);
 		return;
