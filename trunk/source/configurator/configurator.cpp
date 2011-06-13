@@ -487,7 +487,7 @@ int getAvLang(wxString dir, std::vector<wxLanguageInfo*> &files)
 		return -1;
 	}
 	wxString name;
-	if (dp.GetFirst(&name))
+	if (dp.GetFirst(&name, wxT("*.mo"), wxDIR_FILES))
 	{
 		do
 		{
@@ -497,12 +497,12 @@ int getAvLang(wxString dir, std::vector<wxLanguageInfo*> &files)
 				// do not add dot directories
 				continue;
 			}
-			if(name.Len() != 2)
+			if(name.Len() != 5)
 			{
-				// do not add other than language 2 letter code style directories
+				// do not add other than language 2 letter code style files
 				continue;
 			}
-			wxLanguageInfo *li = const_cast<wxLanguageInfo *>(getLanguageInfoByName(name));
+			wxLanguageInfo *li = const_cast<wxLanguageInfo *>(getLanguageInfoByName(name.substr(0,2)));
 			if(li)
 			{
 				files.push_back(li);
@@ -520,7 +520,6 @@ void initLanguage(wxString languagePath, wxString userpath)
 	// add language stuff
 
 	// Initialize the catalogs we'll be using
-	wxString langfile = wxT("ror");
 	wxString dirsep = wxT("/");
 	wxString basedir = languagePath;
 #if OGRE_PLATFORM == OGRE_PLATFORM_WIN32
@@ -570,7 +569,7 @@ void initLanguage(wxString languagePath, wxString userpath)
 	}
 	wxLogStatus(wxT("preferred language: ")+language->Description);
 	wxString lshort = language->CanonicalName.substr(0, 2);
-	wxString tmp = basedir + dirsep + lshort + dirsep + langfile + wxT(".mo");
+	wxString tmp = basedir + dirsep + lshort + wxT(".mo");
 	wxLogStatus(wxT("lang file: ") + tmp);
 	if(wxFileName::FileExists(tmp))
 	{
@@ -585,7 +584,7 @@ void initLanguage(wxString languagePath, wxString userpath)
 		{
 			wxLogStatus(wxT("error while initializing language!"));
 		}
-		res = lang_locale.AddCatalog(langfile);
+		res = lang_locale.AddCatalog(lshort + wxT(".mo"));
 		if(!res)
 		{
 			wxLogStatus(wxT("error while loading language!"));
@@ -732,7 +731,7 @@ bool MyApp::OnInit()
 	if (!filesystemBootstrap()) return false;
 
 	initLogging();
-	initLanguage(languagePath, UserPath);
+	initLanguage("languages", UserPath);
 
 #if OGRE_PLATFORM == OGRE_PLATFORM_WIN32
 	// add windows specific crash handler. It will create nice memory dumps, so we can track the error
@@ -940,11 +939,11 @@ MyDialog::MyDialog(const wxString& title, MyApp *_app) : wxDialog(NULL, wxID_ANY
 	// Gearbox
 	dText = new wxStaticText(gamePanel, -1, _("Default Gearbox mode:"), wxPoint(10,y));
 	gearBoxMode=new wxChoice(gamePanel, -1, wxPoint(x_row1, y), wxSize(200, -1), 0);
-	gearBoxMode->Append(wxT("Automatic shift"));
-	gearBoxMode->Append(wxT("Manual shift - Auto clutch"));
-	gearBoxMode->Append(wxT("Fully Manual: sequential shift"));
-	gearBoxMode->Append(wxT("Fully Manual: stick shift"));
-	gearBoxMode->Append(wxT("Fully Manual: stick shift with ranges"));
+	gearBoxMode->Append(_("Automatic shift"));
+	gearBoxMode->Append(_("Manual shift - Auto clutch"));
+	gearBoxMode->Append(_("Fully Manual: sequential shift"));
+	gearBoxMode->Append(_("Fully Manual: stick shift"));
+	gearBoxMode->Append(_("Fully Manual: stick shift with ranges"));
 	gearBoxMode->SetToolTip(_("The default mode for the gearbox when a new vehicle is loaded."));
 	y+=25;
 
@@ -1142,9 +1141,9 @@ MyDialog::MyDialog(const wxString& title, MyApp *_app) : wxDialog(NULL, wxID_ANY
 	
 	dText = new wxStaticText(debugPanel, -1, _("Input Grabbing:"), wxPoint(10,y+3));
 	inputgrab=new wxChoice(debugPanel, -1, wxPoint(x_row1, y), wxSize(200, -1), 0);
-	inputgrab->Append(conv("All"));
-	inputgrab->Append(conv("Dynamically"));
-	inputgrab->Append(conv("None"));
+	inputgrab->Append(_("All"));
+	inputgrab->Append(_("Dynamically"));
+	inputgrab->Append(_("None"));
 	inputgrab->SetToolTip(_("Determines the input capture mode. All is the default, Dynamically is good for windowed mode."));
 	inputgrab->SetSelection(0); // All
 	y+=35;
@@ -1167,29 +1166,29 @@ MyDialog::MyDialog(const wxString& title, MyApp *_app) : wxDialog(NULL, wxID_ANY
 	x_row2 = 300;
 	dText = new wxStaticText(graphicsPanel, -1, _("Texture filtering:"), wxPoint(10,y+3));
 	textfilt=new wxChoice(graphicsPanel, -1, wxPoint(x_row1, y), wxSize(200, -1), 0);
-	textfilt->Append(conv("None (fastest)"));
-	textfilt->Append(conv("Bilinear"));
-	textfilt->Append(conv("Trilinear"));
-	textfilt->Append(conv("Anisotropic (best looking)"));
+	textfilt->Append(_("None (fastest)"));
+	textfilt->Append(_("Bilinear"));
+	textfilt->Append(_("Trilinear"));
+	textfilt->Append(_("Anisotropic (best looking)"));
 	textfilt->SetToolTip(_("Most recent hardware can do Anisotropic filtering without significant slowdown.\nUse lower settings only on old or poor video chipsets."));
 	textfilt->SetSelection(3); //anisotropic
 	y+=25;
 
 	dText = new wxStaticText(graphicsPanel, -1, _("Sky type:"), wxPoint(10,y+3));
 	sky=new wxChoice(graphicsPanel, -1, wxPoint(x_row1, y), wxSize(200, -1), 0);
-	sky->Append(conv("Sandstorm (fastest)"));
-	sky->Append(conv("Caelum (best looking, slower)"));
+	sky->Append(_("Sandstorm (fastest)"));
+	sky->Append(_("Caelum (best looking, slower)"));
 	sky->SetToolTip(_("Caelum sky is nice but quite slow unless you have a high-powered GPU."));
 	sky->SetSelection(1); //Caelum
 	y+=25;
 
 	dText = new wxStaticText(graphicsPanel, wxID_ANY, _("Shadow type:"), wxPoint(10,y+3));
 	shadow=new wxChoice(graphicsPanel, shadowschoice, wxPoint(x_row1, y), wxSize(200, -1), 0);
-	shadow->Append(conv("No shadows (fastest)"));
-	shadow->Append(conv("Texture shadows"));
-	shadow->Append(conv("Stencil shadows (best looking)"));
+	shadow->Append(_("No shadows (fastest)"));
+	shadow->Append(_("Texture shadows"));
+	shadow->Append(_("Stencil shadows (best looking)"));
 #if OGRE_VERSION>0x010602
-	shadow->Append(conv("Parallel-split Shadow Maps"));
+	shadow->Append(_("Parallel-split Shadow Maps"));
 #endif //OGRE_VERSION
 	shadow->SetToolTip(_("Texture shadows are fast but limited: jagged edges, no object self-shadowing, limited shadow distance.\nStencil shadows are slow but gives perfect shadows."));
 	sky->SetSelection(1); //Texture shadows
@@ -1207,11 +1206,11 @@ MyDialog::MyDialog(const wxString& title, MyApp *_app) : wxDialog(NULL, wxID_ANY
 
 	dText = new wxStaticText(graphicsPanel, -1, _("Water type:"), wxPoint(10,y+3));
 	water=new wxChoice(graphicsPanel, -1, wxPoint(x_row1, y), wxSize(200, -1), 0);
-//	water->Append(wxString("None")); //we don't want that!
-	water->Append(conv("Basic (fastest)"));
-	water->Append(conv("Reflection"));
-	water->Append(conv("Reflection + refraction (speed optimized)"));
-	water->Append(conv("Reflection + refraction (quality optimized)"));
+	water->Append(_("None")); //we don't want that!
+	water->Append(_("Basic (fastest)"));
+	water->Append(_("Reflection"));
+	water->Append(_("Reflection + refraction (speed optimized)"));
+	water->Append(_("Reflection + refraction (quality optimized)"));
 	water->SetToolTip(_("Water reflection is slower, and requires a good GPU. In speed optimized mode you may experience excessive camera shaking."));
 	y+=25;
 
@@ -1221,10 +1220,10 @@ MyDialog::MyDialog(const wxString& title, MyApp *_app) : wxDialog(NULL, wxID_ANY
 
 	dText = new wxStaticText(graphicsPanel, -1, _("Vegetation:"), wxPoint(10, y+3));
 	vegetationMode=new wxChoice(graphicsPanel, -1, wxPoint(x_row1, y), wxSize(200, -1), 0);
-	vegetationMode->Append(conv("None (fastest)"));
-	vegetationMode->Append(conv("20%"));
-	vegetationMode->Append(conv("50%"));
-	vegetationMode->Append(conv("Full (best looking, slower)"));
+	vegetationMode->Append(_("None (fastest)"));
+	vegetationMode->Append(_("20%"));
+	vegetationMode->Append(_("50%"));
+	vegetationMode->Append(_("Full (best looking, slower)"));
 	vegetationMode->SetToolTip(_("This determines how much grass and how many trees (and such objects) should get displayed."));
 	vegetationMode->SetSelection(3); // full
 	y+=25;
@@ -1274,8 +1273,8 @@ MyDialog::MyDialog(const wxString& title, MyApp *_app) : wxDialog(NULL, wxID_ANY
 
 	dText = new wxStaticText(graphicsPanel, -1, _("Screenshot Format:"), wxPoint(10, y));
 	screenShotFormat =new wxChoice(graphicsPanel, -1, wxPoint(x_row1, y), wxSize(200, -1), 0);
-	screenShotFormat->Append(conv("jpg (smaller, default)"));
-	screenShotFormat->Append(conv("png (bigger, no quality loss)"));
+	screenShotFormat->Append(_("jpg (smaller, default)"));
+	screenShotFormat->Append(_("png (bigger, no quality loss)"));
 	screenShotFormat->SetToolTip(_("In what Format should screenshots be saved?"));
 
 	//force feedback panel
@@ -1357,8 +1356,8 @@ MyDialog::MyDialog(const wxString& title, MyApp *_app) : wxDialog(NULL, wxID_ANY
 
 	dText = new wxStaticText(advancedPanel, -1, _("Sound device:"), wxPoint(10,y+3));
 	sound=new wxChoice(advancedPanel, -1, wxPoint(x_row1, y), wxSize(280, -1), 0);
-	sound->Append(conv("No sound"));
-	sound->Append(conv("Default"));
+	sound->Append(_("No sound"));
+	sound->Append(_("Default"));
 	sound->SetToolTip(_("Select the appropriate sound source.\nLeaving to Default should work most of the time."));
 #if OGRE_PLATFORM == OGRE_PLATFORM_WIN32
 	//add the rest
@@ -1368,19 +1367,19 @@ MyDialog::MyDialog(const wxString& title, MyApp *_app) : wxDialog(NULL, wxID_ANY
 
 	dText = new wxStaticText(advancedPanel, -1, _("Thread number:"), wxPoint(10,y+3));
 	thread=new wxChoice(advancedPanel, -1, wxPoint(x_row1, y), wxSize(280, -1), 0);
-	thread->Append(conv("1 (Single Core CPU)"));
-	thread->Append(conv("2 (Hyper-Threading or Dual core CPU)"));
-	//thread->Append(conv("3 (multi core CPU, one thread per truck)"));
+	thread->Append(_("1 (Single Core CPU)"));
+	thread->Append(_("2 (Hyper-Threading or Dual core CPU)"));
+	//thread->Append(_("3 (multi core CPU, one thread per truck)"));
 	thread->SetToolTip(_("If you have a Hyper-Threading, or Dual core or multiprocessor computer,\nyou will have a huge gain in speed by choosing the second option.\nBut this mode has some camera shaking issues.\n"));
 	y+=35;
 
 	dText = new wxStaticText(advancedPanel, -1, _("Light source effects:"), wxPoint(10, y+3));
 	flaresMode=new wxChoice(advancedPanel, -1, wxPoint(x_row1, y), wxSize(280, -1), 0);
 //	flaresMode->Append(_("None (fastest)")); //this creates a bug in the autopilot
-	flaresMode->Append(conv("No light sources"));
-	flaresMode->Append(conv("Only current vehicle, main lights"));
-	flaresMode->Append(conv("All vehicles, main lights"));
-	flaresMode->Append(conv("All vehicles, all lights"));
+	flaresMode->Append(_("No light sources"));
+	flaresMode->Append(_("Only current vehicle, main lights"));
+	flaresMode->Append(_("All vehicles, main lights"));
+	flaresMode->Append(_("All vehicles, all lights"));
 	flaresMode->SetToolTip(_("Determines which lights will project light on the environment.\nThe more light sources are used, the slowest it will be."));
 	y+=35;
 
@@ -1663,7 +1662,13 @@ void MyDialog::updateRendersystems(Ogre::RenderSystem *rs)
 			//existing, remove all elements
 			renderer_choice[counter]->Clear();
 		}
-		renderer_text[counter]->SetLabel(conv(optIt->first.c_str()));
+		wxString s = conv(optIt->first.c_str());
+		if(s == wxT("FSAA")) s = _("FSAA");
+		if(s == wxT("Full Screen")) s = _("Full Screen");
+		if(s == wxT("Rendering Device")) s = _("Rendering Device");
+		if(s == wxT("VSync")) s = _("VSync");
+		if(s == wxT("Video Mode")) s = _("Video Mode");
+		renderer_text[counter]->SetLabel(s);
 		renderer_text[counter]->Show();
 
 		// add all values and select current value
@@ -1697,7 +1702,10 @@ void MyDialog::updateRendersystems(Ogre::RenderSystem *rs)
 			}
 
 			valueCounter++;
-			renderer_choice[counter]->Append(conv(valIt->c_str()));
+			s = conv(valIt->c_str());
+			if(s == wxT("Yes")) s = _("Yes");
+			if(s == wxT("No")) s = _("No");
+			renderer_choice[counter]->Append(s);
 		}
 		renderer_choice[counter]->SetSelection(selection);
 		renderer_choice[counter]->Show();
@@ -1810,13 +1818,36 @@ void MyDialog::SetDefaults()
 void MyDialog::getSettingsControls()
 {
 	char tmp[255]="";
-	settings["Texture Filtering"] = conv(textfilt->GetStringSelection());
-	settings["Input Grab"] = conv(inputgrab->GetStringSelection());
 
+	// beware of translation to US English!
+
+	wxString textf = conv(textfilt->GetStringSelection());
+	if(textf == _("None (fastest)")) textf = wxT("None (fastest)");
+	if(textf == _("Bilinear")) textf = wxT("Bilinear");
+	if(textf == _("Trilinear")) textf = wxT("Trilinear");
+	if(textf == _("Anisotropic (best looking)")) textf = wxT("Anisotropic (best looking)");
+	settings["Texture Filtering"] = textf;
 	
-	settings["Sky effects"] = conv(sky->GetStringSelection());
+	wxString ipg = conv(inputgrab->GetStringSelection());
+	if(ipg == _("All")) ipg = wxT("All");
+	if(ipg == _("Dynamically")) ipg = wxT("Dynamically");
+	if(ipg == _("None")) ipg = wxT("None");
+	settings["Input Grab"] = ipg;
+	
 
-	settings["Shadow technique"] = conv(shadow->GetStringSelection());
+	wxString skystr = conv(sky->GetStringSelection());
+	if(skystr == _("Sandstorm (fastest)")) skystr = wxT("Sandstorm (fastest)");
+	if(skystr == _("Caelum (best looking, slower)")) skystr = wxT("Caelum (best looking, slower)");
+	settings["Sky effects"] = skystr;
+
+	wxString shadowstr = conv(shadow->GetStringSelection());
+	if(shadowstr == _("No shadows (fastest)")) shadowstr = wxT("No shadows (fastest)");
+	if(shadowstr == _("Texture shadows")) shadowstr = wxT("Texture shadows");
+	if(shadowstr == _("Stencil shadows (best looking)")) shadowstr = wxT("Stencil shadows (best looking)");
+	if(shadowstr == _("Parallel-split Shadow Maps")) shadowstr = wxT("Parallel-split Shadow Maps");
+	settings["Shadow technique"] = shadowstr;
+	
+	
 	sprintf(tmp, "%d", sightRange->GetValue());
 	settings["SightRange"] = tmp;
 	settings["Shadow optimizations"] = (shadowOptimizations->GetValue()) ? "Yes" : "No";
@@ -1827,7 +1858,14 @@ void MyDialog::getSettingsControls()
 	settings["FOV Internal"] = fovint->GetValue();
 	settings["FOV External"] = fovext->GetValue();
 
-	settings["Water effects"] = conv(water->GetStringSelection());
+	wxString waterstr = conv(water->GetStringSelection());
+	if(waterstr == _("None")) waterstr = wxT("None");
+	if(waterstr == _("Basic (fastest)")) waterstr = wxT("Basic (fastest)");
+	if(waterstr == _("Reflection")) waterstr = wxT("Reflection");
+	if(waterstr == _("Reflection + refraction (speed optimized)")) waterstr = wxT("Reflection + refraction (speed optimized)");
+	if(waterstr == _("Reflection + refraction (quality optimized)")) waterstr = wxT("Reflection + refraction (quality optimized)");
+	settings["Water effects"] = waterstr;
+
 	settings["Waves"] = (waves->GetValue()) ? "Yes" : "No";
 	settings["Replay mode"] = (replaymode->GetValue()) ? "Yes" : "No";
 	settings["Debug Truck Mass"] = (dtm->GetValue()) ? "Yes" : "No";
@@ -1849,7 +1887,16 @@ void MyDialog::getSettingsControls()
 	settings["DebugBeams"] = (beamdebug->GetValue()) ? "Yes" : "No";
 	//settings["AutoDownload"] = (autodl->GetValue()) ? "Yes" : "No";
 	settings["Position Storage"] = (posstor->GetValue()) ? "Yes" : "No";
-	settings["GearboxMode"]= conv(gearBoxMode->GetStringSelection());
+	
+	wxString gbm = conv(gearBoxMode->GetStringSelection());
+	if(gbm == _("Automatic shift")) gbm = wxT("Automatic shift");
+	if(gbm == _("Manual shift - Auto clutch")) gbm = wxT("Manual shift - Auto clutch");
+	if(gbm == _("Fully Manual: sequential shift")) gbm = wxT("Fully Manual: sequential shift");
+	if(gbm == _("Fully Manual: stick shift")) gbm = wxT("Fully Manual: stick shift");
+	if(gbm == _("Fully Manual: stick shift with ranges")) gbm = wxT("Fully Manual: stick shift with ranges");
+	if(gbm == _("Automatic shift")) gbm = wxT("Automatic shift");
+	settings["GearboxMode"]= gbm;
+
 	settings["External Camera Mode"] = (extcam->GetValue()) ? "Static" : "Pitching";
 	settings["Mirrors"] = (mirror->GetValue()) ? "Yes" : "No";
 	settings["Envmap"] = (envmap->GetValue()) ? "Yes" : "No";
@@ -1861,8 +1908,18 @@ void MyDialog::getSettingsControls()
 	settings["Skidmarks"] = "No"; //(skidmarks->GetValue()) ? "Yes" : "No";
 	settings["Creak Sound"] = (creaksound->GetValue()) ? "No" : "Yes";
 	settings["Envmap"] = (envmap->GetValue()) ? "Yes" : "No";
-	settings["3D Sound renderer"] = conv(sound->GetStringSelection());
-	settings["Threads"] = conv(thread->GetStringSelection());
+	
+	wxString soundstr = conv(sound->GetStringSelection());
+	if(soundstr == _("No sound")) soundstr = wxT("No sound");
+	if(soundstr == _("Default")) soundstr = wxT("Default");
+	settings["3D Sound renderer"] = soundstr;
+
+
+	wxString threadsstr = conv(thread->GetStringSelection());
+	if(threadsstr == _("1 (Single Core CPU)")) threadsstr = wxT("1 (Single Core CPU)");
+	if(threadsstr == _("2 (Hyper-Threading or Dual core CPU)")) threadsstr = wxT("2 (Hyper-Threading or Dual core CPU)");
+	if(threadsstr == _("3 (multi core CPU, one thread per truck)")) threadsstr = wxT("3 (multi core CPU, one thread per truck)");
+	settings["Threads"] = threadsstr;
 
 	settings["Force Feedback"] = (ffEnable->GetValue()) ? "Yes" : "No";
 	sprintf(tmp, "%d", ffOverall->GetValue());
@@ -1874,9 +1931,28 @@ void MyDialog::getSettingsControls()
 	sprintf(tmp, "%d", ffCamera->GetValue());
 	settings["Force Feedback Camera"] = tmp;
 
-	settings["Lights"] = conv(flaresMode->GetStringSelection());
-	settings["Vegetation"] = conv(vegetationMode->GetStringSelection());
-	settings["Screenshot Format"] = conv(screenShotFormat->GetStringSelection());
+
+	wxString flaresstr = conv(flaresMode->GetStringSelection());
+	if(flaresstr == _("None (fastest)")) flaresstr = wxT("None (fastest)");
+	if(flaresstr == _("No light sources")) flaresstr = wxT("No light sources");
+	if(flaresstr == _("Only current vehicle, main lights")) flaresstr = wxT("Only current vehicle, main lights");
+	if(flaresstr == _("All vehicles, main lights")) flaresstr = wxT("All vehicles, main lights");
+	if(flaresstr == _("All vehicles, all lights")) flaresstr = wxT("All vehicles, all lights");
+	settings["Lights"] = flaresstr;
+
+
+	wxString vegmode = conv(vegetationMode->GetStringSelection());
+	if(vegmode == _("None (fastest)")) vegmode = wxT("None (fastest)");
+	if(vegmode == _("20%")) vegmode = wxT("20%");
+	if(vegmode == _("50%")) vegmode = wxT("50%");
+	if(vegmode == _("Full (best looking, slower)")) vegmode = wxT("Full (best looking, slower)");
+	settings["Vegetation"] = vegmode;
+
+
+	wxString ssformat = conv(screenShotFormat->GetStringSelection());
+	if(ssformat == _("jpg (smaller, default)")) ssformat = wxT("jpg (smaller, default)");
+	if(ssformat == _("png (bigger, no quality loss)")) ssformat = wxT("png (bigger, no quality loss)");
+	settings["Screenshot Format"] = ssformat;
 
 	wxSize s = this->GetSize();
 	sprintf(tmp, "%d, %d", s.x, s.y);
@@ -1910,13 +1986,52 @@ void MyDialog::updateSettingsControls()
 	// this method "applies" the settings and updates the controls
 
 	Ogre::String st;
-	st = settings["Texture Filtering"]; if (st.length()>0) textfilt->SetStringSelection(conv(st));
-	st = settings["Input Grab"]; if (st.length()>0) inputgrab->SetStringSelection(conv(st));
-	st = settings["Sky effects"]; if (st.length()>0) sky->SetStringSelection(conv(st));
-	st = settings["Shadow technique"]; if (st.length()>0) shadow->SetStringSelection(conv(st));
+	st = settings["Texture Filtering"]; if (st.length()>0)
+	{
+		wxString val = conv(st);
+		if(val == wxT("None (fastest)")) val = _("None (fastest)");
+		if(val == wxT("Bilinear")) val = _("Bilinear");
+		if(val == wxT("Trilinear")) val = _("Trilinear");
+		if(val == wxT("Anisotropic (best looking)")) val = _("Anisotropic (best looking)");
+		textfilt->SetStringSelection(val);
+	}
+	
+	st = settings["Input Grab"]; if (st.length()>0)
+	{
+		wxString val = conv(st);
+		if(val == wxT("All")) val = _("All");
+		if(val == wxT("Dynamically")) val = _("Dynamically");
+		if(val == wxT("None")) val = _("None");
+		inputgrab->SetStringSelection(val);
+	}
+	st = settings["Sky effects"]; if (st.length()>0)
+	{
+		wxString val = conv(st);
+		if(val == wxT("Sandstorm (fastest)")) val = _("Sandstorm (fastest)");
+		if(val == wxT("Caelum (best looking, slower)")) val = _("Caelum (best looking, slower)");
+		sky->SetStringSelection(val);
+	}
+	st = settings["Shadow technique"]; if (st.length()>0)
+	{
+		wxString val = conv(st);
+		if(val == wxT("No shadows (fastest)")) val = _("No shadows (fastest)");
+		if(val == wxT("Texture shadows")) val = _("Texture shadows");
+		if(val == wxT("Stencil shadows (best looking)")) val = _("Stencil shadows (best looking)");
+		if(val == wxT("Parallel-split Shadow Maps")) val = _("Parallel-split Shadow Maps");
+		shadow->SetStringSelection(val);
+	}
 	st = settings["SightRange"]; if (st.length()>0) sightRange->SetValue((int)atof(st.c_str()));
 	st = settings["Shadow optimizations"]; if (st.length()>0) shadowOptimizations->SetValue(st=="Yes");
-	st = settings["Water effects"]; if (st.length()>0) water->SetStringSelection(conv(st));
+	st = settings["Water effects"]; if (st.length()>0)
+	{
+		wxString val = conv(st);
+		if(val == wxT("None")) val = _("None");
+		if(val == wxT("Basic (fastest)")) val = _("Basic (fastest)");
+		if(val == wxT("Reflection")) val = _("Reflection");
+		if(val == wxT("Reflection + refraction (speed optimized)")) val = _("Reflection + refraction (speed optimized)");
+		if(val == wxT("Reflection + refraction (quality optimized)")) val = _("Reflection + refraction (quality optimized)");
+		water->SetStringSelection(val);
+	}
 	st = settings["Waves"]; if (st.length()>0) waves->SetValue(st=="Yes");
 	st = settings["Replay mode"]; if (st.length()>0) replaymode->SetValue(st=="Yes");
 	st = settings["Beam Break Debug"]; if (st.length()>0) beam_break_debug->SetValue(st=="Yes");
@@ -1930,7 +2045,17 @@ void MyDialog::updateSettingsControls()
 	st = settings["VideoCameraDebug"]; if (st.length()>0) debug_vidcam->SetValue(st=="Yes");
 	st = settings["EnvMapDebug"]; if (st.length()>0) debug_envmap->SetValue(st=="Yes");
 	st = settings["Debug Collisions"]; if (st.length()>0) dcm->SetValue(st=="Yes");
-	st = settings["GearboxMode"]; if (st.length()>0) gearBoxMode->SetStringSelection(conv(st));
+	st = settings["GearboxMode"]; if (st.length()>0)
+	{
+		wxString val = conv(st);
+		if(val == wxT("Automatic shift")) val = _("Automatic shift");
+		if(val == wxT("Manual shift - Auto clutch")) val = _("Manual shift - Auto clutch");
+		if(val == wxT("Fully Manual: sequential shift")) val = _("Fully Manual: sequential shift");
+		if(val == wxT("Fully Manual: stick shift")) val = _("Fully Manual: stick shift");
+		if(val == wxT("Fully Manual: stick shift with ranges")) val = _("Fully Manual: stick shift with ranges");
+		if(val == wxT("Automatic shift")) val = _("Automatic shift");
+		gearBoxMode->SetStringSelection(val);
+	}
 	st = settings["Particles"]; if (st.length()>0) particles->SetValue(st=="Yes");
 	st = settings["HeatHaze"]; if (st.length()>0) heathaze->SetValue(st=="Yes");
 	st = settings["Hydrax"]; if (st.length()>0) hydrax->SetValue(st=="Yes");
@@ -1949,8 +2074,21 @@ void MyDialog::updateSettingsControls()
 	st = settings["DOF"]; if (st.length()>0) dof->SetValue(st=="Yes");
 	//st = settings["Motion blur"]; if (st.length()>0) mblur->SetValue(st=="Yes");
 	//st = settings["Skidmarks"]; if (st.length()>0) skidmarks->SetValue(st=="Yes");
-	st = settings["3D Sound renderer"]; if (st.length()>0) sound->SetStringSelection(conv(st));
-	st = settings["Threads"]; if (st.length()>0) thread->SetStringSelection(conv(st));
+	st = settings["3D Sound renderer"]; if (st.length()>0)
+	{
+		wxString val = conv(st);
+		if(val == wxT("No sound")) val = _("No sound");
+		if(val == wxT("Default")) val = _("Default");
+		sound->SetStringSelection(val);
+	}
+	st = settings["Threads"]; if (st.length()>0)
+	{
+		wxString val = conv(st);
+		if(val == wxT("1 (Single Core CPU)")) val = _("1 (Single Core CPU)");
+		if(val == wxT("2 (Hyper-Threading or Dual core CPU)")) val = _("2 (Hyper-Threading or Dual core CPU)");
+		if(val == wxT("3 (multi core CPU, one thread per truck)")) val = _("3 (multi core CPU, one thread per truck)");
+		thread->SetStringSelection(val);
+	}
 	st = settings["Force Feedback"]; if (st.length()>0) ffEnable->SetValue(st=="Yes");
 	st = settings["Force Feedback Gain"]; if (st.length()>0) ffOverall->SetValue((int)atof(st.c_str()));
 	st = settings["Force Feedback Stress"]; if (st.length()>0) ffHydro->SetValue((int)atof(st.c_str()));
@@ -1966,9 +2104,32 @@ void MyDialog::updateSettingsControls()
 	//update textboxes
 	wxScrollEvent dummye;
 	OnForceFeedbackScroll(dummye);
-	st = settings["Lights"]; if (st.length()>0) flaresMode->SetStringSelection(conv(st));
-	st = settings["Vegetation"]; if (st.length()>0) vegetationMode->SetStringSelection(conv(st));
-	st = settings["Screenshot Format"]; if (st.length()>0) screenShotFormat->SetStringSelection(conv(st));
+	st = settings["Lights"]; if (st.length()>0)
+	{
+		wxString val = conv(st);
+		if(val == wxT("None (fastest)")) val = _("None (fastest)");
+		if(val == wxT("No light sources")) val = _("No light sources");
+		if(val == wxT("Only current vehicle, main lights")) val = _("Only current vehicle, main lights");
+		if(val == wxT("All vehicles, main lights")) val = _("All vehicles, main lights");
+		if(val == wxT("All vehicles, all lights")) val = _("All vehicles, all lights");
+		flaresMode->SetStringSelection(val);
+	}
+	st = settings["Vegetation"]; if (st.length()>0)
+	{
+		wxString val = conv(st);
+		if(val == wxT("None (fastest)")) val = _("None (fastest)");
+		if(val == wxT("20%")) val = _("20%");
+		if(val == wxT("50%")) val = _("50%");
+		if(val == wxT("Full (best looking, slower)")) val = _("Full (best looking, slower)");
+		vegetationMode->SetStringSelection(val);
+	}
+	st = settings["Screenshot Format"]; if (st.length()>0)
+	{
+		wxString val = conv(st);
+		if(val == wxT("jpg (smaller, default)")) val = _("jpg (smaller, default)");
+		if(val == wxT("png (bigger, no quality loss)")) val = _("png (bigger, no quality loss)");
+		screenShotFormat->SetStringSelection(val);
+	}
 
 	st = settings["Configurator Size"];
 	if (st.length()>0)
@@ -2044,7 +2205,18 @@ void MyDialog::SaveConfig()
 		{
 			if(!renderer_text[i]->IsShown())
 				break;
-			rs->setConfigOption(conv(renderer_text[i]->GetLabel()), conv(renderer_choice[i]->GetStringSelection()));
+			std::string key = conv(renderer_text[i]->GetLabel());
+			std::string val = conv(renderer_choice[i]->GetStringSelection());
+
+			if(key == _("FSAA")) key = ("FSAA");
+			if(key == _("Full Screen")) key = ("Full Screen");
+			if(key == _("Rendering Device")) key = ("Rendering Device");
+			if(key == _("VSync")) key = ("VSync");
+			if(key == _("Video Mode")) key = ("Video Mode");
+			if(val == _("Yes")) val = ("Yes");
+			if(val == _("No"))  val = ("No");
+
+			rs->setConfigOption(key, val);
 		}
 		Ogre::String err = rs->validateConfigOptions();
 		if (err.length() > 0)
@@ -2632,7 +2804,7 @@ std::string MyDialog::readVersionInfo()
 void MyDialog::OnNoteBookPageChange(wxNotebookEvent& event)
 {
 	wxString tabname = nbook->GetPageText(event.GetSelection());
-	if(tabname == "Updates")
+	if(tabname == _("Updates"))
 	{
 		// try to find our version
 #ifdef WIN32
