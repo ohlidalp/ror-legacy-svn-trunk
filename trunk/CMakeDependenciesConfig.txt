@@ -2,7 +2,6 @@
 set(ROR_USE_MYGUI   "FALSE" CACHE BOOL "use MyGUI")
 set(ROR_USE_OPENAL  "FALSE" CACHE BOOL "use OPENAL")
 set(ROR_USE_SOCKETW "FALSE" CACHE BOOL "use SOCKETW")
-set(ROR_USE_MOFILEREADER "FALSE" CACHE BOOL "use mofilereader")
 set(ROR_USE_PAGED   "FALSE" CACHE BOOL "use paged geometry")
 set(ROR_USE_CAELUM  "FALSE" CACHE BOOL "use caelum sky")
 set(ROR_USE_ANGELSCRIPT  "FALSE" CACHE BOOL "use angel script")
@@ -21,8 +20,10 @@ set(ROR_USE_OPENCL  OFF)
 # set some defaults
 IF(WIN32)
 	# options only available under windows
-    set(ROR_USE_HYDRAX  "FALSE" CACHE BOOL "use hydrax water system")
-    set(ROR_USE_OIS_G27 "FALSE" CACHE BOOL "use OIS With G27 patches")
+	set(ROR_USE_HYDRAX  "FALSE" CACHE BOOL "use hydrax water system")
+	set(ROR_USE_OIS_G27 "FALSE" CACHE BOOL "use OIS With G27 patches")
+	set(ROR_USE_MOFILEREADER "FALSE" CACHE BOOL "use mofilereader")
+
 	set(ROR_USE_CRASHRPT "FALSE" CACHE BOOL "use crash report tool")
 	# check if dependencies dir is in here
 	set(DEPENDENCIES_DIR_CHECK "${RoR_SOURCE_DIR}/dependencies")
@@ -216,17 +217,6 @@ ELSEIF(UNIX)
          message(" > MyGUI found, you should enable MyGUI support by setting ROR_USE_MYGUI")
       endif(MYGUI_FOUND)
    endif(ROR_USE_MYGUI)
-
-   # using custom checks
-   # MoFileReader
-   find_path(MOFILEREADER_INCLUDE_DIRS "moFileReader.h")
-   if(ROR_USE_MOFILEREADER)
-      find_library(MOFILEREADER_LIBRARIES "moFileReader")
-   else(ROR_USE_MOFILEREADER)
-      if(MOFILEREADER_INCLUDE_DIRS)
-         message(" > MoFileReader found, you should enable MoFileReader support by setting ROR_USE_MOFILEREADER")
-      endif(MOFILEREADER_INCLUDE_DIRS)
-   endif(ROR_USE_MOFILEREADER)
 
    # SocketW
    find_path(SOCKETW_INCLUDE_DIRS "SocketW.h")

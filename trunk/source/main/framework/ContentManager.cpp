@@ -234,9 +234,11 @@ bool ContentManager::init(void)
 	}
 
 #ifndef NOLANG
+#ifdef USE_MOFILEREADER
 	// load language, must happen after initializing Settings class and Ogre Root!
 	// also it must happen after loading all basic resources!
 	LanguageEngine::Instance().setup();
+#endif // USE_MOFILEREADER
 #endif //NOLANG
 
 	return true;

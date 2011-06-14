@@ -2580,7 +2580,7 @@ bool RoRFrameListener::updateEvents(float dt)
 						} else
 						{
 							curr_truck->toggleAxleLock();
-							if(ow) ow->flashMessage(_L("Differentials switched to: ") + _L(curr_truck->getAxleLockName()) );
+							if(ow) ow->flashMessage(String(_L("Differentials switched to: ")) + (curr_truck->getAxleLockName()) );
 						}
 					}
 
