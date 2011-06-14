@@ -91,6 +91,26 @@ void GUIManager::createGui()
 	mPlatform->initialise(mWindow, mSceneManager, Ogre::ResourceGroupManager::AUTODETECT_RESOURCE_GROUP_NAME, gui_logfilename); // use cache resource group so preview images are working
 	mGUI = new MyGUI::Gui();
 	mGUI->initialise(mResourceFileName);
+	
+	MyGUI::FontManager::getInstance().load(LanguageEngine::Instance().getMyGUIFontConfigFilename());
+
+	// now find that font texture and save it - for debugging purposes
+	/*
+	Ogre::ResourceManager::ResourceMapIterator it = Ogre::TextureManager::getSingleton().getResourceIterator();
+	while (it.hasMoreElements())
+	{
+		Ogre::ResourcePtr res = it.getNext();
+		if(res->getName().find("TrueTypeFont") != String::npos)
+		{
+			Ogre::Image image;
+			Ogre::TexturePtr tex = (Ogre::TexturePtr)res;
+			tex->convertToImage(image);
+			image.save(res->getName() + ".png");
+			LOG(">> saved TTF texture: " + res->getName());
+		}
+	}
+	*/
+
 	//MyGUI::PluginManager::getInstance().loadPlugin("Plugin_BerkeliumWidget.dll");
 	MyGUI::PointerManager::getInstance().setVisible(true);
 }
