@@ -546,14 +546,21 @@ void initLanguage(wxString languagePath, wxString userpath)
 		wxLogStatus(wxT("no Languages found!"));
 	}
 
-	wxString rorcfg=userpath + dirsep + wxString("config") + dirsep + wxString("RoR.cfg");
-	Ogre::ImprovedConfigFile cfg;
-	// Don't trim whitespace
-	cfg.load(rorcfg.ToUTF8().data(), "=:\t", false);
-	wxString langSavedName = conv(cfg.getSetting("Language"));
+	try
+	{
+		wxString rorcfg=userpath + dirsep + wxString("config") + dirsep + wxString("RoR.cfg");
+		Ogre::ImprovedConfigFile cfg;
+		// Don't trim whitespace
+		cfg.load(rorcfg.ToUTF8().data(), "=:\t", false);
+		wxString langSavedName = conv(cfg.getSetting("Language"));
 
-	if(langSavedName.size() > 0)
-		language = const_cast<wxLanguageInfo *>(getLanguageInfoByName(langSavedName));
+		if(langSavedName.size() > 0)
+			language = const_cast<wxLanguageInfo *>(getLanguageInfoByName(langSavedName));
+	}catch(...)
+	{
+		wxLogError(wxT(" unable to load RoR.cfg"));
+	}
+
 	if(language == 0)
 	{
 		wxLogStatus(wxT("asking system for default language."));
@@ -1968,7 +1975,7 @@ void MyDialog::getSettingsControls()
 #endif
 
 	// save language, if one is set
-	if(avLanguages.size() > 0 && languageMode->GetStringSelection() != _("(No Languages found)"))
+	if(avLanguages.size() > 0 && languageMode->GetStringSelection() != ("English"))
 	{
 		settings["Language"] = conv(languageMode->GetStringSelection());
 
@@ -1978,7 +1985,11 @@ void MyDialog::getSettingsControls()
 			if((*it)->Description == languageMode->GetStringSelection())
 				settings["Language Short"] = conv((*it)->CanonicalName);
 		}
-	}
+	} else
+	{
+		settings["Language"] = std::string("US English");
+		settings["Language Short"] = std::string("");
+	} 
 }
 
 void MyDialog::updateSettingsControls()
@@ -2157,15 +2168,21 @@ void MyDialog::updateSettingsControls()
 bool MyDialog::LoadConfig()
 {
 	//RoR config
-	wxLogStatus(wxT("Loading RoR.cfg"));
 	Ogre::ImprovedConfigFile cfg;
+	try
+	{
+		wxLogStatus(wxT("Loading RoR.cfg"));
 
-	wxString rorcfg=app->UserPath + wxFileName::GetPathSeparator() + wxString("config") + wxFileName::GetPathSeparator() + wxString("RoR.cfg");
+		wxString rorcfg=app->UserPath + wxFileName::GetPathSeparator() + wxString("config") + wxFileName::GetPathSeparator() + wxString("RoR.cfg");
+		wxLogStatus(wxT("reading from Config file: ") + rorcfg);
 
-	wxLogStatus(wxT("reading from Config file: ") + rorcfg);
-
-	// Don't trim whitespace
-	cfg.load(rorcfg.ToUTF8().data(), "=:\t", false);
+		// Don't trim whitespace
+		cfg.load(rorcfg.ToUTF8().data(), "=:\t", false);
+	} catch(...)
+	{
+		wxLogError(wxT("error loading RoR.cfg"));
+		return false;
+	}
 
 	// load all settings into a map!
 	Ogre::ConfigFile::SettingsIterator i = cfg.getSettingsIterator();
