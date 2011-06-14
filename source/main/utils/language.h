@@ -33,11 +33,17 @@ along with Rigs of Rods.  If not, see <http://www.gnu.org/licenses/>.
 
 #include "Ogre.h"
 #ifdef USE_MOFILEREADER
-#include "moFileReader.h"
+# include "moFileReader.h"
+# define _L(str) LanguageEngine::Instance().lookUp(str)
+#else
+// gettext
+#include <libintl.h>
+#include <locale.h>
+# define _L(str) gettext(str)
 #endif //MOFILEREADER
 
 
-#define _L(str) LanguageEngine::Instance().lookUp(str)
+#ifdef USE_MOFILEREADER
 #define MOFILENAME "ror"
 
 class LanguageEngine
@@ -54,10 +60,9 @@ protected:
 	LanguageEngine& operator= (const LanguageEngine&);
 	static LanguageEngine* myInstance;
 	bool working;
-#ifdef USE_MOFILEREADER
 	moFileLib::moFileReader *reader;
-#endif // MOFILEREADER
 	void setupCodeRanges(Ogre::String codeRangesFilename, Ogre::String codeRangesGroupname);
 };
+#endif // MOFILEREADER
 #endif //NOLANG
 #endif //LANGUAGE_H_

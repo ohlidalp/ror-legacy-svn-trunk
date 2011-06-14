@@ -195,7 +195,7 @@ bool Network::connect()
 	if (strncmp(server_settings.protocolversion, RORNET_VERSION, strlen(RORNET_VERSION)))
 	{
 		char tmp[512] = "";
-		sprintf(tmp, _L("Establishing network session: wrong server version, you are using version '%s' and the server is using '%s'").c_str(), RORNET_VERSION, server_settings.protocolversion);
+		sprintf(tmp, _L("Establishing network session: wrong server version, you are using version '%s' and the server is using '%s'"), RORNET_VERSION, server_settings.protocolversion);
 		netFatalError(String(tmp));
 		return false;
 	}
@@ -267,7 +267,7 @@ bool Network::connect()
 		if(buffer && strnlen(buffer, 20)>0)
 		{
 			buffer[header.size]=0;
-			sprintf(tmp, _L("Establishing network session: sorry, you are banned:\n%s").c_str(), buffer);
+			sprintf(tmp, _L("Establishing network session: sorry, you are banned:\n%s"), buffer);
 			netFatalError(tmp);
 		} else
 		{

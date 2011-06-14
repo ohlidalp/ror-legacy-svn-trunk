@@ -288,7 +288,7 @@ bool TruckHUD::update(float dt, Beam *truck, SceneManager *mSceneMgr, Camera* mC
 		if(RoRFrameListener::eflsingleton)
 			gravity = RoRFrameListener::eflsingleton->getGravity();
 		float vertacc=(fabs(gravity))-(accv.dotProduct((truck->nodes[truck->cameranodepos[0]].RelPosition-(truck->nodes[truck->cameranodepos[0]].RelPosition + upv)).normalisedCopy()));
-		sprintf(geesstr, _L("Gees: Vertical %1.2fg // Saggital %1.2fg // Lateral %1.2fg").c_str(), vertacc/(fabs(gravity)), longacc/(fabs(gravity)), latacc/(fabs(gravity)));
+		sprintf(geesstr, _L("Gees: Vertical %1.2fg // Saggital %1.2fg // Lateral %1.2fg"), vertacc/(fabs(gravity)), longacc/(fabs(gravity)), latacc/(fabs(gravity)));
 		descl = OverlayManager::getSingleton().getOverlayElement("tracks/TruckInfoBox/Gees");
 		descl->setCaption(geesstr);
 		checkOverflow(descl);
@@ -311,7 +311,7 @@ bool TruckHUD::update(float dt, Beam *truck, SceneManager *mSceneMgr, Camera* mC
 			if(latacc < maxNegLatG[truck->driveable])
 				maxNegLatG[truck->driveable] = latacc;
 
-			sprintf(geesstr, _L("maxG: V %1.2fg %1.2fg // S %1.2fg %1.2fg // L %1.2fg %1.2fg").c_str(), 
+			sprintf(geesstr, _L("maxG: V %1.2fg %1.2fg // S %1.2fg %1.2fg // L %1.2fg %1.2fg"), 
 					maxPosVerG[truck->driveable]/(fabs(gravity)), 
 					maxNegVerG[truck->driveable]/(fabs(gravity)), 
 					maxPosSagG[truck->driveable]/(fabs(gravity)), 

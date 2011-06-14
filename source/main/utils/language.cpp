@@ -19,6 +19,9 @@ along with Rigs of Rods.  If not, see <http://www.gnu.org/licenses/>.
 */
 // created: 12th of January 2009, thomas fischer thomas{AT}thomasfischer{DOT}biz
 
+#ifdef USE_MOFILEREADER
+// windows only
+
 #ifndef NOLANG
 
 #include "OgreFontManager.h"
@@ -32,9 +35,7 @@ along with Rigs of Rods.  If not, see <http://www.gnu.org/licenses/>.
 
 using namespace std;
 using namespace Ogre;
-#ifdef USE_MOFILEREADER
 using namespace moFileLib;
-#endif //MOFILEREADER
 
 #if OGRE_PLATFORM == OGRE_PLATFORM_APPLE
 #define strnlen(str,len) strlen(str)
@@ -60,7 +61,6 @@ LanguageEngine::~LanguageEngine()
 
 void LanguageEngine::setup()
 {
-#ifdef USE_MOFILEREADER
 	reader = new moFileReader();
 
 	String language = SSETTING("Language");
@@ -84,15 +84,12 @@ void LanguageEngine::setup()
 	setupCodeRanges("codes.txt", "LanguageRanges");
 
 	LOG("* Language successfully loaded");
-#endif //MOFILEREADER
 }
 
 Ogre::String LanguageEngine::lookUp(Ogre::String name)
 {
-#ifdef USE_MOFILEREADER
 	if(working)
 		return reader->Lookup(name.c_str());
-#endif // MOFILEREADER
 	return name;
 }
 
@@ -158,3 +155,5 @@ void LanguageEngine::setupCodeRanges(String codeRangesFilename, String codeRange
 	//generateAllFontTextures();
 }
 #endif //NOLANG
+#endif //USE_MOFILEREADER
+
