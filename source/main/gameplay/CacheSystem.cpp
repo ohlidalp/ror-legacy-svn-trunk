@@ -1292,8 +1292,8 @@ void CacheSystem::fillTruckDetailInfo(Cache_Entry &entry, Ogre::DataStreamPtr ds
 	entry.uniqueid   = r.uniquetruckid;
 	entry.categoryid = r.categoryid;
 	entry.version    = r.truckversion;
-	entry.forwardcommands = r.forwardcommands;
-	entry.importcommands  = r.importcommands;
+	entry.forwardcommands = (r.forwardcommands==1);
+	entry.importcommands  = (r.importcommands==1);
 	entry.rollon = r.wheel_contact_requested;
 	entry.rescuer = r.rescuer;
 	entry.guid = String(r.guid);
@@ -1314,7 +1314,7 @@ void CacheSystem::fillTruckDetailInfo(Cache_Entry &entry, Ogre::DataStreamPtr ds
 	entry.turbopropscount = r.free_aeroengine;
 	entry.rotatorscount = r.free_rotator;
 	entry.exhaustscount = r.exhausts.size();
-	entry.custom_particles = r.free_cparticle;
+	entry.custom_particles = (r.free_cparticle==1);
 	entry.turbojetcount = r.free_aeroengine;
 	entry.flexbodiescount = r.free_flexbody;
 	entry.soundsourcescount = r.free_soundsource;
