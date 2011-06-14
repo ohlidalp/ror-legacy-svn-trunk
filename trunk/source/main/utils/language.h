@@ -23,6 +23,11 @@ along with Rigs of Rods.  If not, see <http://www.gnu.org/licenses/>.
 #define LANGUAGE_H_
 #include "RoRPrerequisites.h"
 
+// three configurations currently supported:
+// #define NOLANG            = no language translations at all, removes any special parsing tags
+// #define USE_MOFILEREADER  = windows gettext replacement
+// #define !USE_MOFILEREADER = using linux gettext
+
 #ifdef NOLANG
 // no language mode
 // used when building with wxwidgets for example (as they ship their own i18n)
@@ -34,7 +39,7 @@ along with Rigs of Rods.  If not, see <http://www.gnu.org/licenses/>.
 #include "Ogre.h"
 #ifdef USE_MOFILEREADER
 # include "moFileReader.h"
-# define _L(str) LanguageEngine::Instance().lookUp(str)
+# define _L(str) LanguageEngine::Instance().lookUp(str).c_str()
 #else
 // gettext
 #include <libintl.h>
