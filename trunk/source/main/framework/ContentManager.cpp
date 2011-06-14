@@ -115,12 +115,15 @@ bool ContentManager::init(void)
 	loadMainResource("icons");
 
 
+#ifdef WIN32
+	// TODO: FIX UNDER LINUX!
 	// register particle classes
+	LOG("Registering Particle Box Emitter");
 	ParticleSystemRendererFactory *mParticleSystemRendererFact = OGRE_NEW ShaderParticleRendererFactory();
 	ParticleEmitterFactory *mParticleEmitterFact = OGRE_NEW BoxEmitterFactory();
 	ParticleSystemManager::getSingleton().addRendererFactory(mParticleSystemRendererFact);
 	ParticleSystemManager::getSingleton().addEmitterFactory(mParticleEmitterFact);
-
+#endif // WIN32
 
 	// optional ones
 
@@ -238,6 +241,30 @@ bool ContentManager::init(void)
 	// load language, must happen after initializing Settings class and Ogre Root!
 	// also it must happen after loading all basic resources!
 	LanguageEngine::Instance().setup();
+#else
+	// init gettext
+	bindtextdomain("ror","languages");
+	textdomain("ror");
+
+	char *curr_locale = setlocale(LC_ALL,NULL);
+	if(curr_locale)
+		LOG("system locale is: " + String(curr_locale));
+	else
+		LOG("unable to read system locale!");
+		
+	if(!SSETTING("Language Short").empty())
+	{
+		LOG("setting new locale to " + SSETTING("Language Short"));
+		char *newlocale = setlocale(LC_ALL, SSETTING("Language Short").c_str());
+		if(newlocale)
+			LOG("new locale is: " + String(newlocale));
+		else
+			LOG("error setting new locale");
+	} else
+	{
+		LOG("not changing locale, using system locale");
+	}
+
 #endif // USE_MOFILEREADER
 #endif //NOLANG
 
