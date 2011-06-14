@@ -46,6 +46,7 @@ public:
 protected:
 	RoRFrameListener *mefl;
 	MyGUI::MenuBarPtr mainmenu;
+	int menuWidth, menuHeight;
 	void onMenuBtn(MyGUI::MenuCtrlPtr _sender, MyGUI::MenuItemPtr _item);
 
 	const static int NUM_POPUPMENUS = 5;

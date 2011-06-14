@@ -487,7 +487,7 @@ int getAvLang(wxString dir, std::vector<wxLanguageInfo*> &files)
 		return -1;
 	}
 	wxString name;
-	if (dp.GetFirst(&name, wxT("*.mo"), wxDIR_FILES))
+	if (dp.GetFirst(&name, wxEmptyString, wxDIR_DIRS))
 	{
 		do
 		{
@@ -496,7 +496,7 @@ int getAvLang(wxString dir, std::vector<wxLanguageInfo*> &files)
 				// do not add dot directories
 				continue;
 			}
-			if(name.Len() != 5)
+			if(name.Len() != 2)
 			{
 				// do not add other than language 2 letter code style files
 				continue;
@@ -575,7 +575,7 @@ void initLanguage(wxString languagePath, wxString userpath)
 	}
 	wxLogStatus(wxT("preferred language: ")+language->Description);
 	wxString lshort = language->CanonicalName.substr(0, 2);
-	wxString tmp = basedir + dirsep + lshort + wxT(".mo");
+	wxString tmp = basedir + dirsep + lshort + dirsep + "LC_MESSAGES" + dirsep + wxT("ror.mo");
 	wxLogStatus(wxT("lang file: ") + tmp);
 	if(wxFileName::FileExists(tmp))
 	{
@@ -590,7 +590,7 @@ void initLanguage(wxString languagePath, wxString userpath)
 		{
 			wxLogStatus(wxT("error while initializing language!"));
 		}
-		res = lang_locale.AddCatalog(lshort + wxT(".mo"));
+		res = lang_locale.AddCatalog(wxT("ror.mo"));
 		if(!res)
 		{
 			wxLogStatus(wxT("error while loading language!"));

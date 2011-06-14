@@ -76,6 +76,8 @@ bool ContentManager::init(void)
     if (!Ogre::ResourceGroupManager::getSingleton().getLoadingListener())
         Ogre::ResourceGroupManager::getSingleton().setLoadingListener(this);
 
+	LanguageEngine::Instance().setup();
+
 	//try to get correct paths
 	//note: we don't have LogManager available yet!
 	//FIRST: Get the "program path" and the user space path
@@ -235,38 +237,6 @@ bool ContentManager::init(void)
 	{
 		LOG("catched error while initializing Content Resource groups: " + e.getFullDescription());
 	}
-
-#ifndef NOLANG
-#ifdef USE_MOFILEREADER
-	// load language, must happen after initializing Settings class and Ogre Root!
-	// also it must happen after loading all basic resources!
-	LanguageEngine::Instance().setup();
-#else
-	// init gettext
-	bindtextdomain("ror","languages");
-	textdomain("ror");
-
-	char *curr_locale = setlocale(LC_ALL,NULL);
-	if(curr_locale)
-		LOG("system locale is: " + String(curr_locale));
-	else
-		LOG("unable to read system locale!");
-		
-	if(!SSETTING("Language Short").empty())
-	{
-		LOG("setting new locale to " + SSETTING("Language Short"));
-		char *newlocale = setlocale(LC_ALL, SSETTING("Language Short").c_str());
-		if(newlocale)
-			LOG("new locale is: " + String(newlocale));
-		else
-			LOG("error setting new locale");
-	} else
-	{
-		LOG("not changing locale, using system locale");
-	}
-
-#endif // USE_MOFILEREADER
-#endif //NOLANG
 
 	return true;
 }

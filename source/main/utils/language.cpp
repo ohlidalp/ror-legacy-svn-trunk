@@ -18,24 +18,23 @@ You should have received a copy of the GNU General Public License
 along with Rigs of Rods.  If not, see <http://www.gnu.org/licenses/>.
 */
 // created: 12th of January 2009, thomas fischer thomas{AT}thomasfischer{DOT}biz
-
-#ifdef USE_MOFILEREADER
-// windows only
-
 #ifndef NOLANG
 
 #include "OgreFontManager.h"
 #include "language.h"
 #include "Settings.h"
 
-//#include "MyGUI_Font.h"
-//#include "MyGUI_FontManager.h"
+#ifdef USE_MYGUI
+#include <MyGUI.h>
+#include <MyGUI_IFont.h>
+#include <MyGUI_FontData.h>
+#include <MyGUI_FontManager.h>
+#endif // USE_MYGUI
 
 #include "fontTextureHelper.h"
 
 using namespace std;
 using namespace Ogre;
-using namespace moFileLib;
 
 #if OGRE_PLATFORM == OGRE_PLATFORM_APPLE
 #define strnlen(str,len) strlen(str)
@@ -51,7 +50,7 @@ LanguageEngine &LanguageEngine::Instance()
 	return *myInstance;
 }
 
-LanguageEngine::LanguageEngine() : working(false)
+LanguageEngine::LanguageEngine() : working(false), myguiConfigFilename("MyGUI_FontsEnglish.xml")
 {
 }
 
@@ -59,42 +58,91 @@ LanguageEngine::~LanguageEngine()
 {
 }
 
+Ogre::String LanguageEngine::getMyGUIFontConfigFilename()
+{
+	// this is a fallback to the default English Resource if the language specific file was not found
+	String group = "";
+	try
+	{
+		group = ResourceGroupManager::getSingleton().findGroupContainingResource(myguiConfigFilename);
+	}catch(...)
+	{
+	}
+	if(group == "")
+		return String("MyGUI_FontsEnglish.xml");
+
+	return myguiConfigFilename;
+}
+
 void LanguageEngine::setup()
 {
-	reader = new moFileReader();
+#ifdef USE_MOFILEREADER
+	// load language, must happen after initializing Settings class and Ogre Root!
+	// also it must happen after loading all basic resources!
+	reader = new moFileLib::moFileReader();
 
 	String language = SSETTING("Language");
 	String language_short = SSETTING("Language Short").substr(0, 2); // only first two characters are important
 
 	// Load a .mo-File.
 	LOG("*** Loading Language ***");
-	String langfile = SSETTING("Program Path") + String("languages/") + language_short + String(".mo");
+	String langfile = SSETTING("Program Path") + String("languages/") + language_short + String("/LC_MESSAGES/ror.mo");
 	if (reader->ReadFile(langfile.c_str()) != moFileLib::moFileReader::EC_SUCCESS )
 	{
-			LOG("* error loading language file " + langfile);
-			return;
+		LOG("* error loading language file " + langfile);
+		return;
 	}
 	working=true;
 
 	// add resource path
-	ResourceGroupManager::getSingleton().addResourceLocation(SSETTING("Program Path") + "languages/" + language_short, "FileSystem", "LanguageRanges");
+	ResourceGroupManager::getSingleton().addResourceLocation(SSETTING("Program Path") + String("languages/") + language_short + String("/LC_MESSAGES"), "FileSystem", "LanguageRanges");
 
 	// now load the code ranges
 	// be aware, that this approach only works if we load just one language, and not multiple
-	setupCodeRanges("codes.txt", "LanguageRanges");
+	setupCodeRanges("code_range.txt", "LanguageRanges");
+#else
+	// init gettext
+	bindtextdomain("ror","languages");
+	textdomain("ror");
 
+	char *curr_locale = setlocale(LC_ALL,NULL);
+	if(curr_locale)
+		LOG("system locale is: " + String(curr_locale));
+	else
+		LOG("unable to read system locale!");
+
+	if(!SSETTING("Language Short").empty())
+	{
+		LOG("setting new locale to " + SSETTING("Language Short"));
+		char *newlocale = setlocale(LC_ALL, SSETTING("Language Short").c_str());
+		if(newlocale)
+			LOG("new locale is: " + String(newlocale));
+		else
+			LOG("error setting new locale");
+	} else
+	{
+		LOG("not changing locale, using system locale");
+	}
+
+#endif // USE_MOFILEREADER
 	LOG("* Language successfully loaded");
 }
 
 Ogre::String LanguageEngine::lookUp(Ogre::String name)
 {
+#ifdef USE_MOFILEREADER
 	if(working)
 		return reader->Lookup(name.c_str());
 	return name;
+#else
+	return String(gettext(str));
+#endif //MOFILEREADER
 }
 
 void LanguageEngine::setupCodeRanges(String codeRangesFilename, String codeRangesGroupname)
 {
+	// not using the default mygui font config
+	myguiConfigFilename = "MyGUI_FontConfig.xml";
 	DataStreamPtr ds;
 	try
 	{
@@ -112,12 +160,12 @@ void LanguageEngine::setupCodeRanges(String codeRangesFilename, String codeRange
 	}
 	LOG("loading code_range file: " + codeRangesFilename);
 
-	char line[1024] = "";
+	char line[9046] = "";
 	while (!ds->eof())
 	{
-		size_t ll = ds->readLine(line, 1023);
+		size_t ll = ds->readLine(line, 9045);
 		// only process valid lines
-		if(strncmp(line, "code_points ", 12) && strnlen(line, 50) > 13)
+		if(strncmp(line, "code_points ", 12) && strlen(line) > 13)
 			continue;
 		Ogre::StringVector args = StringUtil::split(line + 12, " ");
 		for(Ogre::StringVector::iterator it=args.begin(); it!=args.end(); it++)
@@ -133,11 +181,13 @@ void LanguageEngine::setupCodeRanges(String codeRangesFilename, String codeRange
 				((FontPtr)itf.getNext())->addCodePointRange(range);
 
 			// add code points to all MyGUI fonts
-			// XXX: TOFIX: CRASH!
-			//MyGUI::Font *fp = (MyGUI::Font *)MyGUI::FontManager::getInstance().getByName("Default");
+#ifdef USE_MYGUI
+			// well, we load a reconfigured mygui font config xml file, easier for now
+			//MyGUI::IFont *fp = MyGUI::FontManager::getInstance().getByName("Default");
+			//if(fp) fp-> addCodePointRange(range.first, range.second);
+			//fp = MyGUI::FontManager::getInstance().getByName("DefaultBig");
 			//if(fp) fp->addCodePointRange(range.first, range.second);
-			//fp = (MyGUI::Font *)MyGUI::FontManager::getInstance().getByName("DefaultBig");
-			//if(fp) fp->addCodePointRange(range.first, range.second);
+#endif //USE_MYGUI
 		}
 	}
 
@@ -155,5 +205,3 @@ void LanguageEngine::setupCodeRanges(String codeRangesFilename, String codeRange
 	//generateAllFontTextures();
 }
 #endif //NOLANG
-#endif //USE_MOFILEREADER
-

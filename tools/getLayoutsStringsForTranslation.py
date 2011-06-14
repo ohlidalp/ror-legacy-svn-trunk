@@ -38,7 +38,7 @@ def createPo(layoutsDir, outputFileName):
 	outputFile.close()
 # ----------
 
-layoutsDir = "../bin/resources/layouts"
+layoutsDir = "../bin/resources/mygui"
 outputFileName = "gui_strings.po"
 
 if len(sys.argv) == 1:

@@ -31,19 +31,19 @@ along with Rigs of Rods.  If not, see <http://www.gnu.org/licenses/>.
 #ifdef NOLANG
 // no language mode
 // used when building with wxwidgets for example (as they ship their own i18n)
-
-#define _L(str) Ogre::String(str)
+# define _L(str) Ogre::String(str)
 
 #else // NOLANG
 
 #include "Ogre.h"
 #ifdef USE_MOFILEREADER
+// using mofilereader as gettext replacement
 # include "moFileReader.h"
 # define _L(str) LanguageEngine::Instance().lookUp(str).c_str()
 #else
 // gettext
-#include <libintl.h>
-#include <locale.h>
+# include <libintl.h>
+# include <locale.h>
 # define _L(str) gettext(str)
 #endif //MOFILEREADER
 
@@ -57,12 +57,15 @@ public:
     static LanguageEngine & Instance();
     void setup();
 	Ogre::String lookUp(Ogre::String name);
+
+	Ogre::String getMyGUIFontConfigFilename();
     
 protected:
 	LanguageEngine();
 	~LanguageEngine();
 	LanguageEngine(const LanguageEngine&);
 	LanguageEngine& operator= (const LanguageEngine&);
+	Ogre::String myguiConfigFilename;
 	static LanguageEngine* myInstance;
 	bool working;
 	moFileLib::moFileReader *reader;
