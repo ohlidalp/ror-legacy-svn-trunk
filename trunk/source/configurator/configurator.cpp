@@ -491,8 +491,7 @@ int getAvLang(wxString dir, std::vector<wxLanguageInfo*> &files)
 	{
 		do
 		{
-			wxChar dot=wxChar('.');
-			if (name.StartsWith(&dot))
+			if (name.StartsWith(wxT(".")))
 			{
 				// do not add dot directories
 				continue;
