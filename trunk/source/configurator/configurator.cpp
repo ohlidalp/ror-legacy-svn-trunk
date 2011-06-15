@@ -933,10 +933,9 @@ MyDialog::MyDialog(const wxString& title, MyApp *_app) : wxDialog(NULL, wxID_ANY
 				sel = counter;
 			choices.Add((*it)->Description);
 		}
-	} else
-	{
-		choices.Add(wxString("English"));
 	}
+	choices.Add(wxString("English"));
+
 	languageMode=new wxChoice(gamePanel, EVC_LANG, wxPoint(x_row1, y), wxSize(200, -1), choices, wxCB_READONLY);
 	languageMode->SetSelection(sel);
 	languageMode->SetToolTip(_("This setting overrides the system's default language. You need to restart the configurator to apply the changes."));
