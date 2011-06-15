@@ -926,7 +926,7 @@ MyDialog::MyDialog(const wxString& title, MyApp *_app) : wxDialog(NULL, wxID_ANY
 	choices.Add(wxString("English (U.S.)"));
 	if(avLanguages.size() > 0)
 	{
-		int counter = 0;
+		int counter = 1;
 		std::vector<wxLanguageInfo*>::iterator it;
 		for(it = avLanguages.begin(); it!=avLanguages.end(); it++, counter++)
 		{
