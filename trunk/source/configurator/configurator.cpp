@@ -923,6 +923,7 @@ MyDialog::MyDialog(const wxString& title, MyApp *_app) : wxDialog(NULL, wxID_ANY
 	dText = new wxStaticText(gamePanel, -1, _("Language:"), wxPoint(10, y));
 	wxArrayString choices;
 	int sel = 0;
+	choices.Add(wxString("English (U.S.)"));
 	if(avLanguages.size() > 0)
 	{
 		int counter = 0;
@@ -934,7 +935,6 @@ MyDialog::MyDialog(const wxString& title, MyApp *_app) : wxDialog(NULL, wxID_ANY
 			choices.Add((*it)->Description);
 		}
 	}
-	choices.Add(wxString("English"));
 
 	languageMode=new wxChoice(gamePanel, EVC_LANG, wxPoint(x_row1, y), wxSize(200, -1), choices, wxCB_READONLY);
 	languageMode->SetSelection(sel);
