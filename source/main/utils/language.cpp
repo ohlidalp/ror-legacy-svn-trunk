@@ -31,6 +31,8 @@ along with Rigs of Rods.  If not, see <http://www.gnu.org/licenses/>.
 #include <MyGUI_FontManager.h>
 #endif // USE_MYGUI
 
+#include <OgreTextAreaOverlayElement.h>
+
 #include "fontTextureHelper.h"
 
 using namespace std;
@@ -95,11 +97,13 @@ void LanguageEngine::setup()
 	working=true;
 
 	// add resource path
-	ResourceGroupManager::getSingleton().addResourceLocation(SSETTING("Program Path") + String("languages/") + language_short + String("/LC_MESSAGES"), "FileSystem", "LanguageRanges");
+	ResourceGroupManager::getSingleton().addResourceLocation(SSETTING("Program Path") + String("languages/") + language_short + String("/LC_MESSAGES"), "FileSystem", "LanguageFolder");
+
+	ResourceGroupManager::getSingleton().initialiseResourceGroup("LanguageFolder");
 
 	// now load the code ranges
 	// be aware, that this approach only works if we load just one language, and not multiple
-	setupCodeRanges("code_range.txt", "LanguageRanges");
+	setupCodeRanges("code_range.txt", "LanguageFolder");
 #else
 	// init gettext
 	bindtextdomain("ror","languages");
@@ -143,6 +147,8 @@ void LanguageEngine::setupCodeRanges(String codeRangesFilename, String codeRange
 {
 	// not using the default mygui font config
 	myguiConfigFilename = "MyGUI_FontConfig.xml";
+
+	/*
 	DataStreamPtr ds;
 	try
 	{
@@ -199,6 +205,15 @@ void LanguageEngine::setupCodeRanges(String codeRangesFilename, String codeRange
 		// if the font is a ttf font and loaded, then reload it in order to regenenerate the glyphs with corrected code_points
 		if(font->getType() == Ogre::FT_TRUETYPE && font->isLoaded())
 			font->reload();
+	}
+	*/
+
+	// set some overlay used fonts to the new font config
+	String newfont = "Cyberbit";
+	char *overlays[] = {"Core/CurrFps", "Core/AverageFps", "Core/WorstFps", "Core/BestFps", "Core/NumTris", "Core/DebugText", "Core/CurrMemory", "Core/MemoryText", "Core/LoadPanel/Description", "Core/LoadPanel/Comment", 0};
+	for(int i=0;overlays[i]!=0;i++)
+	{
+		((Ogre::TextAreaOverlayElement *)OverlayManager::getSingleton().getOverlayElement(overlays[i]))->setFontName(newfont);
 	}
 
 	//fontCacheInit("Cyberbit");
