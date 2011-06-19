@@ -287,7 +287,6 @@ int main(int argc, char *argv[])
 
 		String url = "http://wiki.rigsofrods.com/index.php?title=Error_" + TOSTRING(e.getNumber())+"#"+e.getSource();
 		showOgreWebError(_L("An exception has occured!"), e.getFullDescription(), url);
-		return 1;
 	}
 
 #ifdef USE_CRASHRPT
