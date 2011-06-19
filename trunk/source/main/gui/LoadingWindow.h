@@ -44,7 +44,8 @@ public:
 
 	bool getFrameForced();
 private:
-	void renderOneFrame();
+	void renderOneFrame(bool force = false);
+	Ogre::Timer *t;
 private:
 	ATTRIBUTE_FIELD_WIDGET_NAME(LoadingWindow, mBarProgress, "Bar");
 	MyGUI::ProgressBar* mBarProgress;

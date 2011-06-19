@@ -33,10 +33,14 @@ LoadingWindow::LoadingWindow() :
 	MyGUI::IntSize gui_area = MyGUI::RenderManager::getInstance().getViewSize();
 	mMainWidget->setPosition(gui_area.width/2 - mMainWidget->getWidth()/2, gui_area.height/2 - mMainWidget->getHeight()/2);
 	((MyGUI::Window*)mMainWidget)->setCaption(_L("Loading ..."));
+	t = new Ogre::Timer();
+
 }
 
 LoadingWindow::~LoadingWindow()
 {
+	delete(t);
+	t=NULL;
 }
 
 bool LoadingWindow::getFrameForced()
@@ -73,12 +77,16 @@ void LoadingWindow::hide()
 	mMainWidget->setVisible(false);
 }
 
-void LoadingWindow::renderOneFrame()
+void LoadingWindow::renderOneFrame(bool force)
 {
-	mFrameForced=true;
-	// we must pump the window messages, otherwise the window will get white on Vista ...
-	RoRWindowEventUtilities::messagePump();
-	Ogre::Root::getSingleton().renderOneFrame();
+	if(t->getMilliseconds() > 200 || force)
+	{
+		mFrameForced=true;
+		// we must pump the window messages, otherwise the window will get white on Vista ...
+		RoRWindowEventUtilities::messagePump();
+		Ogre::Root::getSingleton().renderOneFrame();
+		t->reset();
+	}
 }
 #endif //MYGUI
 

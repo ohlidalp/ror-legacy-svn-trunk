@@ -4027,11 +4027,12 @@ void Beam::updateVisual(float dt)
 	BES_GFX_START(BES_GFX_updateFlexBodies);
 	// if we are 100 times the size of the truck away from the truck, we will not calculate flexbodies anymore
 	// maybe a bit hacky solution
-	bool tooFarAway = (position - mCamera->getPosition()).length() > minCameraRadius * 100;
-	if(!tooFarAway)
-	{
-		for (i=0; i<free_flexbody; i++) flexbodies[i]->flexit();
-	}
+	//bool tooFarAway = (position - mCamera->getPosition()).length() > minCameraRadius * 100;
+	//if(!tooFarAway)
+	//{
+	// disabled optimization for now since its buggy :-/
+	for (i=0; i<free_flexbody; i++) flexbodies[i]->flexit();
+	//}
 	BES_GFX_STOP(BES_GFX_updateFlexBodies);
 
 	if (netLabelNode && netMT && netMT->isVisible())

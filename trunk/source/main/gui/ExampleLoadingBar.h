@@ -61,17 +61,19 @@ protected:
 	OverlayElement* mLoadingBarElement;
 	OverlayElement* mLoadingDescriptionElement;
 	OverlayElement* mLoadingCommentElement;
+	Ogre::Timer *t;
 
 	int counterGroups;
 public:
 	ExampleLoadingBar() : counterGroups(0)
 	{
-
+		t = new Ogre::Timer();
 	}
 	
 	virtual ~ExampleLoadingBar()
 	{
-
+		delete(t);
+		t=NULL;
 	}
 
 	/** Show the loading bar and start listening.
@@ -129,6 +131,8 @@ public:
 		mProgressBarMaxSize = barContainer->getWidth();
 		mLoadingBarElement->setWidth(0);
 
+		frameUpdate(true);
+
 		// self is listener
 		ResourceGroupManager::getSingleton().addResourceGroupListener(this);
 	}
@@ -145,6 +149,15 @@ public:
 
 	}
 
+	void frameUpdate(bool force = false)
+	{
+		if(t->getMilliseconds() > 200 || force)
+		{
+			mWindow->update();
+			RoRWindowEventUtilities::messagePump();
+			t->reset();
+		}
+	}
 
 	// ResourceGroupListener callbacks
 	void resourceGroupScriptingStarted(const String& groupName, size_t scriptCount)
@@ -154,22 +167,18 @@ public:
 		mLoadingDescriptionElement->setCaption(_L("Parsing scripts..."));
 
 		counterGroups++;
-
-		mWindow->update();
-		RoRWindowEventUtilities::messagePump();
+		frameUpdate();
 	}
 	void scriptParseStarted(const String& scriptName, bool &skipThisScript)
 	{
 		mLoadingCommentElement->setCaption(scriptName);
-		mWindow->update();
-		RoRWindowEventUtilities::messagePump();
+		frameUpdate();
 	}
 	void scriptParseEnded(const String& scriptName, bool skipped)
 	{
 		mLoadingBarElement->setWidth(
 			mLoadingBarElement->getWidth() + mProgressBarInc);
-		mWindow->update();
-		RoRWindowEventUtilities::messagePump();
+		frameUpdate();
 	}
 	void resourceGroupScriptingEnded(const String& groupName)
 	{
@@ -179,29 +188,28 @@ public:
 		mProgressBarInc = mProgressBarMaxSize * (1-mInitProportion) / (Real)resourceCount;
 		mProgressBarInc /= mNumGroupsLoad;
 		mLoadingDescriptionElement->setCaption(_L("Loading resources..."));
-		mWindow->update();
+		frameUpdate();
 	}
 	void resourceLoadStarted(const ResourcePtr& resource)
 	{
 		mLoadingCommentElement->setCaption(resource->getName());
-		mWindow->update();
-		RoRWindowEventUtilities::messagePump();
+		frameUpdate();
 	}
+	
 	void resourceLoadEnded(void)
 	{
 	}
+	
 	void worldGeometryStageStarted(const String& description)
 	{
 		mLoadingCommentElement->setCaption(description);
-		mWindow->update();
-		RoRWindowEventUtilities::messagePump();
+		frameUpdate();
 	}
 	void worldGeometryStageEnded(void)
 	{
 		mLoadingBarElement->setWidth(
 			mLoadingBarElement->getWidth() + mProgressBarInc);
-		mWindow->update();
-		RoRWindowEventUtilities::messagePump();
+		frameUpdate();
 	}
 	void resourceGroupLoadEnded(const String& groupName)
 	{

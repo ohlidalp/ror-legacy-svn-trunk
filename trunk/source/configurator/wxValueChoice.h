@@ -37,7 +37,12 @@ protected:
 	std::map <int, wxString> id_value_map;
 	
 public:
-	wxValueChoice() { wxChoice(); }
+	wxValueChoice()
+	{
+		// copied from init()
+		m_lastAcceptedSelection = wxID_NONE;
+		m_heightOwn = wxDefaultCoord;
+	}
 
 	wxValueChoice(wxWindow *parent,
 		wxWindowID id,
@@ -47,7 +52,11 @@ public:
 		const wxValidator& validator = wxDefaultValidator,
 		const wxString& name = wxChoiceNameStr)
 	{
-		wxChoice(parent, id, pos, size, 0, NULL, style, validator, name);
+		// copied from init()
+		m_lastAcceptedSelection = wxID_NONE;
+		m_heightOwn = wxDefaultCoord;
+		// create control
+		Create(parent, id, pos, size, 0, NULL, style, validator, name);
 	}
 
 	void AppendValueItem(wxString valueString, wxString caption)
