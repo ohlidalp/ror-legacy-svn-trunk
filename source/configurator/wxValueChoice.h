@@ -39,9 +39,6 @@ protected:
 public:
 	wxValueChoice()
 	{
-		// copied from init()
-		m_lastAcceptedSelection = wxID_NONE;
-		m_heightOwn = wxDefaultCoord;
 	}
 
 	wxValueChoice(wxWindow *parent,
@@ -52,9 +49,6 @@ public:
 		const wxValidator& validator = wxDefaultValidator,
 		const wxString& name = wxChoiceNameStr)
 	{
-		// copied from init()
-		m_lastAcceptedSelection = wxID_NONE;
-		m_heightOwn = wxDefaultCoord;
 		// create control
 		Create(parent, id, pos, size, 0, NULL, style, validator, name);
 	}
