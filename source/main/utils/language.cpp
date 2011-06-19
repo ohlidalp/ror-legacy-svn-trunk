@@ -135,7 +135,7 @@ Ogre::String LanguageEngine::lookUp(Ogre::String name)
 		return reader->Lookup(name.c_str());
 	return name;
 #else
-	return String(gettext(str));
+	return String(gettext(name.c_str()));
 #endif //MOFILEREADER
 }
 

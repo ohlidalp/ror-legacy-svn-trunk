@@ -48,7 +48,6 @@ along with Rigs of Rods.  If not, see <http://www.gnu.org/licenses/>.
 #endif //MOFILEREADER
 
 
-#ifdef USE_MOFILEREADER
 #define MOFILENAME "ror"
 
 class LanguageEngine
@@ -68,9 +67,10 @@ protected:
 	Ogre::String myguiConfigFilename;
 	static LanguageEngine* myInstance;
 	bool working;
+#ifdef USE_MOFILEREADER
 	moFileLib::moFileReader *reader;
+#endif // MOFILEREADER
 	void setupCodeRanges(Ogre::String codeRangesFilename, Ogre::String codeRangesGroupname);
 };
-#endif // MOFILEREADER
 #endif //NOLANG
 #endif //LANGUAGE_H_

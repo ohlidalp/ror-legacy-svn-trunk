@@ -37,7 +37,7 @@ protected:
 	std::map <int, wxString> id_value_map;
 	
 public:
-	wxValueChoice() { Init(); }
+	wxValueChoice() { wxChoice(); }
 
 	wxValueChoice(wxWindow *parent,
 		wxWindowID id,
@@ -47,8 +47,7 @@ public:
 		const wxValidator& validator = wxDefaultValidator,
 		const wxString& name = wxChoiceNameStr)
 	{
-		Init();
-		Create(parent, id, pos, size, 0, NULL, style, validator, name);
+		wxChoice(parent, id, pos, size, 0, NULL, style, validator, name);
 	}
 
 	void AppendValueItem(wxString valueString, wxString caption)
