@@ -102,7 +102,7 @@ void convert(Ogre::String input, Ogre::String output)
 	try
 	{
 		Ogre::ResourceGroupManager::getSingleton().addResourceLocation(in_path, "FileSystem", "rorconverter");
-		//Ogre::ResourceGroupManager::getSingleton().initialiseResourceGroup("rorconverter");
+		Ogre::ResourceGroupManager::getSingleton().initialiseResourceGroup("rorconverter");
 	} catch(std::exception &e)
 	{
 		LOG("EXCEPTION: " + String(e.what()));
