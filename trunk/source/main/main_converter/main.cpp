@@ -99,8 +99,15 @@ void convert(Ogre::String input, Ogre::String output)
 	Ogre::StringUtil::splitFullFilename(output, out_basename, out_ext, out_path);
 
 	// add the paths
-	Ogre::ResourceGroupManager::getSingleton().addResourceLocation(in_path, "FileSystem", "rorconverter");
-	Ogre::ResourceGroupManager::getSingleton().initialiseResourceGroup("rorconverter");
+	try
+	{
+		Ogre::ResourceGroupManager::getSingleton().addResourceLocation(in_path, "FileSystem", "rorconverter");
+		//Ogre::ResourceGroupManager::getSingleton().initialiseResourceGroup("rorconverter");
+	} catch(std::exception &e)
+	{
+		LOG("EXCEPTION: " + String(e.what()));
+		return;
+	}
 
 	// then load the truck
 	SerializedRig r;
@@ -115,6 +122,7 @@ void convert(Ogre::String input, Ogre::String output)
 		// Adding values
 		root[L"truckname"] = new JSONValue(r.realtruckname.c_str());
 
+		int infos_count = 0;
 		int warnings_count = 0;
 		int errors_count = 0;
 		int fatals_count = 0;
@@ -122,18 +130,20 @@ void convert(Ogre::String input, Ogre::String output)
 		std::vector <parsecontext_t>::iterator it;
 		for(it = warnings.begin(); it != warnings.end(); it++)
 		{
-			if(it->warningLvl = PARSER_WARNING)
+			if(it->warningLvl      == PARSER_INFO)
+				infos_count++;
+			else if(it->warningLvl == PARSER_WARNING)
 				warnings_count++;
-			else if(it->warningLvl = PARSER_ERROR)
+			else if(it->warningLvl == PARSER_ERROR)
 				errors_count++;
-			else if(it->warningLvl = PARSER_FATAL_ERROR)
+			else if(it->warningLvl == PARSER_FATAL_ERROR)
 				fatals_count++;
 		}
+		root[L"infos"]     = new JSONValue(TOSTRING(infos_count).c_str());
 		root[L"warnings"]  = new JSONValue(TOSTRING(warnings_count).c_str());
 		root[L"errors"]    = new JSONValue(TOSTRING(errors_count).c_str());
 		root[L"fatals"]    = new JSONValue(TOSTRING(fatals_count).c_str());
 
-		/*
 		// Create nodes array
 		JSONArray nodes_array;
 		for (int i = 0; i < r.free_node; i++)
@@ -156,7 +166,6 @@ void convert(Ogre::String input, Ogre::String output)
 			beams_array.push_back(new JSONValue(beam));
 		}
 		root[L"beams"] = new JSONValue(beams_array);
-		*/
 
 		// Create final value
 		JSONValue *final_value = new JSONValue(root);
