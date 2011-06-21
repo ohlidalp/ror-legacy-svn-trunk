@@ -6039,7 +6039,7 @@ void SerializedRig::parser_warning(parsecontext_t *context, Ogre::String text, i
 	if(ignoreProblems) return;
 
 	if(context)
-		parser_warning(*context, text);
+		parser_warning(*context, text, errlvl);
 	else
 		LOG(text);
 }
