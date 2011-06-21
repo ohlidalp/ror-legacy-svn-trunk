@@ -52,6 +52,8 @@ enum {PARSER_INFO, PARSER_WARNING, PARSER_ERROR, PARSER_FATAL_ERROR};
 
 class SerializedRig : public rig_t
 {
+protected:
+	std::map<Ogre::String, int> node_names;
 public:
 	SerializedRig();
 	~SerializedRig();
@@ -64,7 +66,7 @@ public:
 	int loadTruck(Ogre::String filename, Ogre::SceneManager *manager, Ogre::SceneNode *parent, Ogre::Vector3 pos, Ogre::Quaternion rot, collision_box_t *spawnbox);	
 
 	int parse_args(parsecontext_t &context, Ogre::StringVector &v, int minArgNum);
-	int parse_node_number(parsecontext_t &context, Ogre::String s, bool enableSpecial=false);
+	int parse_node_number(parsecontext_t &context, Ogre::String s, std::vector<int> *special_numbers=NULL);
 	void parser_warning(parsecontext_t &context, Ogre::String text, int errlvl = PARSER_WARNING);
 	void parser_warning(parsecontext_t *context, Ogre::String text, int errlvl = PARSER_WARNING);
 

@@ -85,6 +85,7 @@ static const int   TRUCKFILEFORMATVERSION     = 3;               //!< truck file
 enum TRUCK_SECTIONS {
 	BTS_NONE=0, // beam truck section nodes
 	BTS_NODES, 
+	BTS_NODES2, 
 	BTS_BEAMS,
 	BTS_FIXES,
 	BTS_SHOCKS,
