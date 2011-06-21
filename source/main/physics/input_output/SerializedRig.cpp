@@ -50,6 +50,7 @@ using namespace Ogre;
 trucksection_t truck_sections[] = {
 	{BTS_NONE, "NONE", false},
 	{BTS_NODES, "nodes", false},
+	{BTS_NODES2, "nodes2", false},
 	{BTS_BEAMS, "beams", false},
 	{BTS_FIXES, "fixes", false},
 	{BTS_SHOCKS, "shocks", false},
@@ -365,7 +366,7 @@ int SerializedRig::loadTruck(String fname, SceneManager *manager, SceneNode *par
 	float wingarea=0.0;
 	Real inertia_startDelay=-1, inertia_stopDelay=-1;
 	char inertia_default_startFunction[50]="", inertia_default_stopFunction[50]="";
-	int shadowmode = BTS_NODES;
+	int shadowmode = 1;
 	Ogre::StringVector args;
 	args.resize(20);
 	float fuse_z_min = 1000.0f;
@@ -427,6 +428,7 @@ int SerializedRig::loadTruck(String fname, SceneManager *manager, SceneNode *par
 			if (c.line == "end")
 			{
 				parser_warning(c, "End of truck loading", PARSER_INFO);
+				c.modeString = "end";
 				loading_finished = 1;
 				break;
 			}
@@ -1288,14 +1290,26 @@ int SerializedRig::loadTruck(String fname, SceneManager *manager, SceneNode *par
 				continue;
 			};
 
-			if (c.mode == BTS_NODES)
+			if (c.mode == BTS_NODES || c.mode == BTS_NODES2)
 			{
 				//parse nodes
 				int id = 0;
 				float x=0, y=0, z=0, mass=0;
 				char options[256] = "n";
 				int n = parse_args(c, args, 4);
-				id = PARSEINT (args[0]);
+				
+				if(c.mode == BTS_NODES)
+				{
+					// classic approach, number needs to be in sync with free node count
+					id = PARSEINT (args[0]);
+				} else if(c.mode == BTS_NODES2)
+				{
+					// named nodes, we use the free_node counter and use the first argument as name instead
+					id = free_node;
+					// add it to a dictionary
+					node_names[args[0]] = id;
+				}
+				
 				x  = PARSEREAL(args[1]);
 				y  = PARSEREAL(args[2]);
 				z  = PARSEREAL(args[3]);
@@ -3676,6 +3690,10 @@ int SerializedRig::loadTruck(String fname, SceneManager *manager, SceneNode *par
 				bool isturboprops=true;
 				float power;
 				char propfoil[256];
+				
+				std::vector<int> special_node_numbers;
+				special_node_numbers.push_back(-1);
+				
 				if (c.mode == BTS_TURBOPROPS)
 				{
 					int n = parse_args(c, args, 8);
@@ -3690,6 +3708,7 @@ int SerializedRig::loadTruck(String fname, SceneManager *manager, SceneNode *par
 				}
 				if (c.mode == BTS_TURBOPROPS2)
 				{
+
 					int n = parse_args(c, args, 9);
 					ref    = parse_node_number(c, args[0]);
 					back   = parse_node_number(c, args[1]);
@@ -3697,7 +3716,7 @@ int SerializedRig::loadTruck(String fname, SceneManager *manager, SceneNode *par
 					p2     = parse_node_number(c, args[3]);
 					p3     = parse_node_number(c, args[4]);
 					p4     = parse_node_number(c, args[5]);
-					couplenode = parse_node_number(c, args[6], true);
+					couplenode = parse_node_number(c, args[6], &special_node_numbers);
 					power  = PARSEREAL(args[7]);
 					strncpy(propfoil, args[8].c_str(),  255);
 				}
@@ -3710,7 +3729,7 @@ int SerializedRig::loadTruck(String fname, SceneManager *manager, SceneNode *par
 					p2     = parse_node_number(c, args[3]);
 					p3     = parse_node_number(c, args[4]);
 					p4     = parse_node_number(c, args[5]);
-					couplenode = parse_node_number(c, args[6], true);
+					couplenode = parse_node_number(c, args[6], &special_node_numbers);
 					power  = PARSEREAL(args[7]);
 					pitch  = PARSEREAL(args[8]);
 					strncpy(propfoil, args[9].c_str(),  255);
@@ -4205,10 +4224,14 @@ int SerializedRig::loadTruck(String fname, SceneManager *manager, SceneNode *par
 				float ox, oy, oz;
 				float rx, ry, rz;
 				char meshname[256];
+
+				std::vector<int> special_numbers;
+				special_numbers.push_back(-1);
+
 				int n = parse_args(c, args, 10);
-				ref = parse_node_number(c, args[0]);
-				nx = parse_node_number(c, args[1]);
-				ny = parse_node_number(c, args[2]);
+				ref = parse_node_number(c, args[0], &special_numbers);
+				nx = parse_node_number(c, args[1], &special_numbers);
+				ny = parse_node_number(c, args[2], &special_numbers);
 				ox = PARSEREAL(args[3]);
 				oy = PARSEREAL(args[4]);
 				oz = PARSEREAL(args[5]);
@@ -6042,23 +6065,66 @@ int SerializedRig::parse_args(parsecontext_t &context, Ogre::StringVector &args,
 	return n;
 }
 
-int SerializedRig::parse_node_number(parsecontext_t &context, Ogre::String s, bool enableSpecial)
+int SerializedRig::parse_node_number(parsecontext_t &context, Ogre::String s, std::vector<int> *special_numbers)
 {
-	int id = PARSEINT(s);
-	// fix special case
-	if(enableSpecial && (id == 9999 || id == -1))
+	// big switch between using nodes and nodes2
+	if(node_names.empty())
 	{
+		// used classic nodes, all int's
+		int id = PARSEINT(s);
+		// fix special case
+		if(special_numbers && std::find(special_numbers->begin(), special_numbers->end(), id) != special_numbers->end())
+		{
+			// in there, valid
+			return id;
+		}
+		// check if the number is roughly correct
+		if (id >= free_node)
+		{
+			parser_warning(context, "Error: invalid node number "+s+", bigger than existing nodes ("+TOSTRING(free_node)+")", PARSER_ERROR);
+			throw(ParseException());
+		}
+		else if (id < 0)
+		{
+			parser_warning(context, "Error: invalid node number "+s+", less than zero", PARSER_ERROR);
+			throw(ParseException());
+		}
+		return id;
+	} else
+	{
+		// whooo, named nodes (nodes2)
+		std::map<Ogre::String, int>::iterator it = node_names.find(s);
+		if(it != node_names.end())
+		{
+			// found it, return integer node number value
+			return it->second;
+		}
+
+		// compare with numbers now
+		int id = PARSEINT(s);
+
+		// no match, try to match with the special numbers
+		if(special_numbers && std::find(special_numbers->begin(), special_numbers->end(), id) != special_numbers->end())
+		{
+			//special, return
+			return id;
+		}
+		// still no match, is it a normal node number maybe?
+		// check if the number is roughly correct
+		if (id >= free_node)
+		{
+			parser_warning(context, "Error: invalid node number "+s+", bigger than existing nodes ("+TOSTRING(free_node)+")", PARSER_ERROR);
+			throw(ParseException());
+		}
+		else if (id < 0)
+		{
+			parser_warning(context, "Error: invalid node number "+s+", less than zero", PARSER_ERROR);
+			throw(ParseException());
+		}
+		// we assume its a normal node number then
 		return id;
 	}
-	if (id >= free_node)
-	{
-		parser_warning(context, "Error: invalid node number "+s+", bigger than existing nodes ("+TOSTRING(free_node)+")", PARSER_ERROR);
-		throw(ParseException());
-	}
-	else if (id < 0)
-	{
-		parser_warning(context, "Error: invalid node number "+s+", less than zero", PARSER_ERROR);
-		throw(ParseException());
-	}
-	return id;
+
+	parser_warning(context, "Error: invalid node "+s+", not found. You may not use nodes and nodes2 at the same time.", PARSER_ERROR);
+	return -1;
 }
