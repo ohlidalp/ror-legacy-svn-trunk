@@ -139,10 +139,11 @@ void convert(Ogre::String input, Ogre::String output)
 			else if(it->warningLvl == PARSER_FATAL_ERROR)
 				fatals_count++;
 		}
-		root[L"infos"]     = new JSONValue(TOSTRING(infos_count).c_str());
-		root[L"warnings"]  = new JSONValue(TOSTRING(warnings_count).c_str());
-		root[L"errors"]    = new JSONValue(TOSTRING(errors_count).c_str());
-		root[L"fatals"]    = new JSONValue(TOSTRING(fatals_count).c_str());
+		root[L"infos"]      = new JSONValue(TOSTRING(infos_count).c_str());
+		root[L"warnings"]   = new JSONValue(TOSTRING(warnings_count).c_str());
+		root[L"errors"]     = new JSONValue(TOSTRING(errors_count).c_str());
+		root[L"fatals"]     = new JSONValue(TOSTRING(fatals_count).c_str());
+		root[L"rorversion"] = new JSONValue(ROR_VERSION_STRING);
 
 		// Create nodes array
 		JSONArray nodes_array;
