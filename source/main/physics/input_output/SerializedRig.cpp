@@ -6099,6 +6099,13 @@ int SerializedRig::parse_args(parsecontext_t &context, Ogre::StringVector &args,
 
 int SerializedRig::parse_node_number(parsecontext_t &context, Ogre::String s, std::vector<int> *special_numbers)
 {
+	if(free_node == 0)
+	{
+		// we got this before the user added any nodes, thats bad
+		// but for compatibility reasons (soundsources, camera) we will return what was asked for and report an error only
+		parser_warning(context, "Error: using node '"+s+"' before actually declaring that node. Please move this section ("+context.modeString+") after the nodes/nodes2 section.", PARSER_ERROR);
+		return PARSEINT(s);
+	}
 	// big switch between using nodes and nodes2
 	if(node_names.empty())
 	{
