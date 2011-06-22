@@ -185,6 +185,7 @@ protected:
 
 
 				float distance = 3;
+				if(i == 0) distance = 3;
 				if(i == 1) distance = 20;
 				if(i == 2) distance = 50;
 				if(i == 3) distance = 200;
