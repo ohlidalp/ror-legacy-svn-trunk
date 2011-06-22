@@ -539,7 +539,7 @@ int SerializedRig::loadTruck(String fname, SceneManager *manager, SceneNode *par
 				if(args[1] == "classic") externalcameramode = 0;
 				if(args[1] == "cinecam") externalcameramode = 1;
 				if(args[1] == "node")    externalcameramode = 2;
-				if(n > 2 && args[1] == "node") externalcameranode = PARSEINT(args[2]);
+				if(n > 2 && args[1] == "node") externalcameranode = parse_node_number(c, args[2]);
 				continue;
 			}
 
@@ -1522,7 +1522,12 @@ int SerializedRig::loadTruck(String fname, SceneManager *manager, SceneNode *par
 				{
 					String arg = args[i];
 					StringUtil::trim(arg);
-					id = StringConverter::parseInt(arg);
+
+					std::vector<int> special_numbers;
+					special_numbers.push_back(-1);
+					special_numbers.push_back(9999);
+
+					id = parse_node_number(c, arg);
 					if (id >= 0 && id <= free_node-1)
 						nodes[id].lockgroup = lockgroup;
 					else
@@ -2330,7 +2335,13 @@ int SerializedRig::loadTruck(String fname, SceneManager *manager, SceneNode *par
 				rays       = PARSEINT (args[2]);
 				node1      = parse_node_number(c, args[3]);
 				node2      = parse_node_number(c, args[4]);
-				snode      = PARSEINT (args[5]); // special behavior, beware
+
+				std::vector<int> special_numbers;
+				special_numbers.push_back(-1);
+				special_numbers.push_back(9999);
+
+				snode = parse_node_number(c, args[5], &special_numbers); // special behavior, beware
+
 				braked     = PARSEINT (args[6]);
 				propulsed  = PARSEINT (args[7]);
 				torquenode = parse_node_number(c, args[8]);
@@ -2356,7 +2367,13 @@ int SerializedRig::loadTruck(String fname, SceneManager *manager, SceneNode *par
 				rays       = PARSEINT (args[3]);
 				node1      = parse_node_number(c, args[4]);
 				node2      = parse_node_number(c, args[5]);
-				snode      = PARSEINT (args[6]); // special behavior, beware
+				
+				std::vector<int> special_numbers;
+				special_numbers.push_back(-1);
+				special_numbers.push_back(9999);
+
+				snode = parse_node_number(c, args[6], &special_numbers); // special behavior, beware
+				
 				braked     = PARSEINT (args[7]);
 				propulsed  = PARSEINT (args[8]);
 				torquenode = parse_node_number(c, args[9]);
@@ -2391,7 +2408,13 @@ int SerializedRig::loadTruck(String fname, SceneManager *manager, SceneNode *par
 				rays       = PARSEINT (args[3]);
 				node1      = parse_node_number(c, args[4]);
 				node2      = parse_node_number(c, args[5]);
-				snode      = PARSEINT (args[6]); // special behavior, beware
+				
+				std::vector<int> special_numbers;
+				special_numbers.push_back(-1);
+				special_numbers.push_back(9999);
+
+				snode = parse_node_number(c, args[6], &special_numbers); // special behavior, beware
+				
 				braked     = PARSEINT (args[7]);
 				propulsed  = PARSEINT (args[8]);
 				torquenode = parse_node_number(c, args[9]);
@@ -2422,7 +2445,13 @@ int SerializedRig::loadTruck(String fname, SceneManager *manager, SceneNode *par
 				rays       = PARSEINT (args[3]);
 				node1      = parse_node_number(c, args[4]);
 				node2      = parse_node_number(c, args[5]);
-				snode      = PARSEINT (args[6]); // special behavior, beware
+				
+				std::vector<int> special_numbers;
+				special_numbers.push_back(-1);
+				special_numbers.push_back(9999);
+
+				snode = parse_node_number(c, args[6], &special_numbers); // special behavior, beware
+
 				braked     = PARSEINT (args[7]);
 				propulsed  = PARSEINT (args[8]);
 				torquenode = parse_node_number(c, args[9]);
@@ -2480,10 +2509,13 @@ int SerializedRig::loadTruck(String fname, SceneManager *manager, SceneNode *par
 				//parse cameras
 				int n = parse_args(c, args, 3);
 				
+				std::vector<int> special_numbers;
+				special_numbers.push_back(-1);
+
 				// node usage before node section ... 
-				int nodepos = PARSEINT(args[0]); //parse_node_number(c, args[0]);
-				int nodedir = PARSEINT(args[1]); //parse_node_number(c, args[1]);
-				int dir     = PARSEINT(args[2]); //parse_node_number(c, args[2]);
+				int nodepos = parse_node_number(c, args[0], &special_numbers); // special behavior, beware
+				int nodedir = parse_node_number(c, args[1], &special_numbers); // special behavior, beware
+				int dir     = parse_node_number(c, args[2], &special_numbers); // special behavior, beware
 
 				addCamera(nodepos, nodedir, dir);
 				continue;
@@ -2542,7 +2574,7 @@ int SerializedRig::loadTruck(String fname, SceneManager *manager, SceneNode *par
 			{
 				//parse texcoords
 				parse_args(c, args, 3);
-				int   id = PARSEINT (args[0]);
+				int   id = parse_node_number(c, args[0]);
 				float x  = PARSEREAL(args[1]);
 				float y  = PARSEREAL(args[2]);
 
@@ -3452,7 +3484,7 @@ int SerializedRig::loadTruck(String fname, SceneManager *manager, SceneNode *par
 				char afname[256];
 				int n = parse_args(c, args, 16);
 				for(int i = 0;i < 8; i++)
-					nds[i]  = PARSEINT (args[i]);
+					nds[i]  = parse_node_number(c, args[i]);
 				for(int i = 0;i < 8; i++)
 					txes[i] = PARSEREAL(args[i + 8]);
 				if(n > 16) type     = args[16][0];
