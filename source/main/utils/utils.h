@@ -47,5 +47,6 @@ bool fileExists(std::string filename);
 
 int isPowerOfTwo (unsigned int x);
 
+Ogre::String stripNonASCII(Ogre::String s);
 
 #endif //UTILS_H_
