@@ -25,6 +25,7 @@ along with Rigs of Rods.  If not, see <http://www.gnu.org/licenses/>.
 #include <stdio.h> // for remove
 #include <time.h>
 #include "RoRVersion.h"
+#include "utils.h"
 
 // created by thomas fischer thomas{AT}thomasfischer{DOT}biz, 18th of Juli 2009
 
@@ -41,6 +42,7 @@ ScopeLog::ScopeLog(String name) : orgLog(0), logFileName(), name(name), f(0), he
 	orgLog = LogManager::getSingleton().getDefaultLog();
 
 	// determine a filename
+	name = stripNonASCII(name);
 	logFileName = SSETTING("Log Path") + SSETTING("dirsep") + "_" + name + ".html";
 	
 	// create a new log file

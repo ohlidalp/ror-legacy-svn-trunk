@@ -184,3 +184,23 @@ int isPowerOfTwo (unsigned int x)
 {
   return ((x != 0) && ((x & (~x + 1)) == x));
 }
+
+// same as: return preg_replace("/[^A-Za-z0-9-_.]/", "_", $s);
+Ogre::String stripNonASCII(Ogre::String s)
+{
+	char filename[9046] = "";
+	sprintf(filename, "%s", s.c_str());
+	for(size_t i=0;i<s.size(); i++)
+	{
+		bool replace = true;
+		if     (filename[i] >= 48 && filename[i] <= 57) replace = false; // 0-9
+		else if(filename[i] >= 65 && filename[i] <= 90) replace = false; // A-Z
+		else if(filename[i] >= 97 && filename[i] <= 122) replace = false; // a-z
+		else if(filename[i] == 45 || filename[i] == 95 || filename[i] == 46) replace = false; // -_.
+		if(replace)
+			filename[i]='_';
+	}
+	return Ogre::String(filename);
+}
+	
+ 
