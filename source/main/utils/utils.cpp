@@ -204,3 +204,11 @@ Ogre::String stripNonASCII(Ogre::String s)
 }
 	
  
+bool compareCaseInsensitive(std::string strFirst, std::string strSecond)
+{
+	// Convert both strings to upper case by transfrom() before compare.
+	transform(strFirst.begin(), strFirst.end(), strFirst.begin(), toupper);
+	transform(strSecond.begin(), strSecond.end(), strSecond.begin(), toupper);
+	return (strFirst == strSecond);
+}
+
