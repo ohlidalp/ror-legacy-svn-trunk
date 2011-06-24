@@ -128,17 +128,27 @@ void convert(Ogre::String input, Ogre::String output)
 		int fatals_count = 0;
 		std::vector <parsecontext_t> &warnings = r.getWarnings();
 		std::vector <parsecontext_t>::iterator it;
+		JSONArray error_lines;
 		for(it = warnings.begin(); it != warnings.end(); it++)
 		{
 			if(it->warningLvl      == PARSER_INFO)
+			{
 				infos_count++;
+				continue;
+			}
 			else if(it->warningLvl == PARSER_WARNING)
+			{
 				warnings_count++;
+				continue;
+			}
 			else if(it->warningLvl == PARSER_ERROR)
 				errors_count++;
 			else if(it->warningLvl == PARSER_FATAL_ERROR)
 				fatals_count++;
+			error_lines.push_back(new JSONValue(TOSTRING(it->linecounter).c_str()));
 		}
+		root[L"error_lines"]     = new JSONValue(error_lines);
+
 		root[L"infos"]      = new JSONValue(TOSTRING(infos_count).c_str());
 		root[L"warnings"]   = new JSONValue(TOSTRING(warnings_count).c_str());
 		root[L"errors"]     = new JSONValue(TOSTRING(errors_count).c_str());
