@@ -35,6 +35,7 @@ along with Rigs of Rods.  If not, see <http://www.gnu.org/licenses/>.
 #include "CmdKeyInertia.h"
 #include "MeshObject.h"
 #include "vidcam.h"
+#include "utils.h"
 #include "Settings.h"
 #include "FlexMesh.h"
 #include "FlexMeshWheel.h"
@@ -486,6 +487,17 @@ int SerializedRig::loadTruck(String fname, SceneManager *manager, SceneNode *par
 				{
 					foundSection = &truck_sections[i];
 					break;
+				}
+				else if(compareCaseInsensitive(c.line, truck_sections[i].name))
+				{
+					parser_warning(c, "section has wrong character case, section names are case sensitive", PARSER_ERROR);
+					foundSection = &truck_sections[i];
+					break;
+				}
+				else
+				{
+					if(c.line[0] == ' ' || c.line[c.line.size()-1] == ' ')
+						parser_warning(c, "spaces in section declarations now allowed", PARSER_ERROR);
 				}
 			}
 
@@ -6055,7 +6067,6 @@ void SerializedRig::parser_warning(parsecontext_t &context, Ogre::String text, i
 		errstr    = "ERROR  ";
 	else if(errlvl == PARSER_FATAL_ERROR)
 		errstr    = "FATAL  ";
-
 #ifdef REPO	
 	// custom code for the repo only
 	String fn = context.filename;

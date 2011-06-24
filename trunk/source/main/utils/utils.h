@@ -49,4 +49,6 @@ int isPowerOfTwo (unsigned int x);
 
 Ogre::String stripNonASCII(Ogre::String s);
 
+bool compareCaseInsensitive(std::string strFirst, std::string strSecond);
+
 #endif //UTILS_H_
