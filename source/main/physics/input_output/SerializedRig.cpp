@@ -5743,7 +5743,7 @@ bool SerializedRig::parseSlideNodeLine(parsecontext_t c)
 	//if ends are open or closed ends, ie can node slide right off the end of a Rail
 	// attachment constraints, none, self, foreign, all 
 
-	parser_warning(c, "SLIDENODE: making new SlideNode", PARSER_INFO);
+	//parser_warning(c, "SLIDENODE: making new SlideNode", PARSER_INFO);
 	SlideNode newSlideNode = SlideNode(node, NULL);
 	//unsigned int quantity = 1;
 	
@@ -5835,7 +5835,7 @@ bool SerializedRig::parseSlideNodeLine(parsecontext_t c)
 		mRailGroups.push_back(rgGroup); // keep track of all allocated Rails
 	}
 
-	parser_warning(c, "SLIDENODE: Adding Slide Rail", PARSER_INFO);
+	//parser_warning(c, "SLIDENODE: Adding Slide Rail", PARSER_INFO);
 	mSlideNodes.push_back( newSlideNode );
 	return true;
 }
@@ -6056,9 +6056,19 @@ void SerializedRig::parser_warning(parsecontext_t &context, Ogre::String text, i
 	else if(errlvl == PARSER_FATAL_ERROR)
 		errstr    = "FATAL  ";
 
-	String txt = "BIO|"+errstr+"|"+context.filename+":"+Ogre::StringConverter::toString(context.linecounter, 4, '0')+" | "+String(context.modeString)+" | " + text;
-	LOG(txt);
+#ifdef REPO	
+	// custom code for the repo only
+	String fn = context.filename;
+	std::replace(fn.begin(), fn.end(), ' ', '_');
 
+	String link = "<a href=\""+fn+".html#L"+Ogre::StringConverter::toString(context.linecounter)+"\" >"+fn+":"+Ogre::StringConverter::toString(context.linecounter)+"</a>";
+	String txt = "BIO|"+errstr+"|"+link+" | "+String(context.modeString)+" | " + text;
+#else
+	// normal, client output
+    String txt = "BIO|"+errstr+"|"+context.filename+":"+Ogre::StringConverter::toString(context.linecounter, 4, '0')+" | "+String(context.modeString)+" | " + text;
+#endif // REPO
+
+	LOG(txt);
 	// add the warning to the vector
 	parsecontext_t context_copy = context;
 	context_copy.warningText = txt;
