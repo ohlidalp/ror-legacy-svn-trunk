@@ -497,7 +497,7 @@ int SerializedRig::loadTruck(String fname, SceneManager *manager, SceneNode *par
 				else
 				{
 					if(c.line[0] == ' ' || c.line[c.line.size()-1] == ' ')
-						parser_warning(c, "spaces in section declarations now allowed", PARSER_ERROR);
+						parser_warning(c, "spaces in section declarations not allowed", PARSER_ERROR);
 				}
 			}
 
