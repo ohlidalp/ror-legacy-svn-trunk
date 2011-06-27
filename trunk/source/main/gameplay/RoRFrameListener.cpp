@@ -279,8 +279,10 @@ void RoRFrameListener::updateGUI(float dt)
 	BES.updateGUI(dt);
 #endif
 
+#ifdef USE_MYGUI
 	// update mouse picking lines, etc
 	SceneMouse::getSingleton().update(dt);
+#endif //USE_MYGUI
 
 	if (pressure_pressed)
 	{
@@ -5400,7 +5402,9 @@ void RoRFrameListener::moveCamera(float dt)
 	if(!hfinder) return;
 	if (loading_state!=ALL_LOADED && loading_state != EDITOR_PAUSE) return;
 
+#ifdef MYGUI
 	if (SceneMouse::getSingleton().isMouseGrabbed()) return; //freeze camera
+#endif //MYGUI
 
 	Beam *curr_truck = BeamFactory::getSingleton().getCurrentTruck();
 
