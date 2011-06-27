@@ -2557,9 +2557,9 @@ int SerializedRig::loadTruck(String fname, SceneManager *manager, SceneNode *par
 					if( tmpf <= 0.0f ) break;
 					gears.push_back(tmpf);
 				}
-				if (gears.size() < 5) // 5 -2 = 3, 2 extra gears that don't count, one for reverse and one for neutral
+				if (gears.size() < 4) // 5 -2 = 3, 2 extra gears that don't count, one for reverse and one for neutral
 				{
-					parser_warning(c, "Trucks with less than 3 gears are not supported!", PARSER_ERROR);
+					parser_warning(c, "Trucks with less than 2 gears are not supported!", PARSER_ERROR);
 					continue;
 				}
 				//if (audio) audio->setupEngine();
