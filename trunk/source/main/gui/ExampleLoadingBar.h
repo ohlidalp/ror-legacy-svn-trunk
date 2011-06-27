@@ -123,9 +123,11 @@ public:
 		// Save links to the bar and to the loading text, for updates as we go
 		mLoadingBarElement = omgr.getOverlayElement("Core/LoadPanel/Bar/Progress");
 		mLoadingCommentElement = omgr.getOverlayElement("Core/LoadPanel/Comment");
-		mLoadingCommentElement->setCaption(_L("Initialising..."));
+		//mLoadingCommentElement->setCaption(_L("Initialising..."));
 		mLoadingDescriptionElement = omgr.getOverlayElement("Core/LoadPanel/Description");
-		mLoadingDescriptionElement->setCaption(_L("Loading, please wait..."));
+		//mLoadingDescriptionElement->setCaption(_L("Loading, please wait..."));
+
+		// we cannot use the translated strings as we havent loaded the languages yet
 
 		OverlayElement* barContainer = omgr.getOverlayElement("Core/LoadPanel/Bar");
 		mProgressBarMaxSize = barContainer->getWidth();

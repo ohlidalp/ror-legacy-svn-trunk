@@ -1109,14 +1109,11 @@ int SerializedRig::loadTruck(String fname, SceneManager *manager, SceneNode *par
 				if(n > 4) default_break_scale  = PARSEREAL(args[4]);
 				continue;
 			}
-			if (c.line == "guid")
+			if (c.line.size() > 4 && c.line.substr(0, 4) == "guid")
 			{
 				parse_args(c, args, 2);
+				StringUtil::trim(args[1]);
 				strncpy(guid, args[1].c_str(), 128);
-				String guidstr = String(guid);
-				StringUtil::trim(guidstr);
-				strncpy(guid, guidstr.c_str(), 128);
-
 				continue;
 			}
 			if (c.line.size() > 17 && c.line.substr(0, 17) == "set_beam_defaults")
@@ -2491,7 +2488,9 @@ int SerializedRig::loadTruck(String fname, SceneManager *manager, SceneNode *par
 					if(usedSkin && usedSkin->hasReplacementForMaterial(texname))
 					{
 						// yay, we use a skin :D
-						strncpy(texname, usedSkin->getReplacementForMaterial(texname).c_str(), 1024);
+						String newMat = usedSkin->getReplacementForMaterial(texname);
+						if(!newMat.empty())
+							strncpy(texname, newMat.c_str(), 1024);
 					}
 
 					if(!virtuallyLoaded)
@@ -4101,7 +4100,12 @@ int SerializedRig::loadTruck(String fname, SceneManager *manager, SceneNode *par
 					if(strnlen(material,50) == 0 || String(material) == "default")
 						strcpy(material, "tracks/Smoke");
 
-					if(usedSkin) strncpy(material, usedSkin->getReplacementForMaterial(material).c_str(), 50);
+					if(usedSkin)
+					{
+						String newMat = usedSkin->getReplacementForMaterial(material);
+						if(!newMat.empty())
+							strncpy(material, newMat.c_str(), 50);
+					}
 
 					e.smoker = manager->createParticleSystem(wname, material);
 					if (!e.smoker) continue;
@@ -5110,6 +5114,13 @@ int SerializedRig::loadTruck(String fname, SceneManager *manager, SceneNode *par
 	};
 	parser_warning(c, "cab ok", PARSER_INFO);
 	//	mWindow->setDebugText("Beam number:"+ TOSTRING(free_beam));
+
+
+	// check for some things
+	if(strnlen(guid, 128) == 0)
+	{
+		parser_warning(c, "vehicle uses no GUID, skinning will be impossible", PARSER_WARNING);
+	}
 
 	parser_warning(c, "parsing done", PARSER_INFO);
 	return 0;

@@ -43,6 +43,8 @@ protected:
 
 
 	void exploreFolders(Ogre::String rg);
+	void exploreZipFolders(Ogre::String rg);
+	
 
 	// implementation for resource loading listener
 	Ogre::DataStreamPtr resourceLoading(const Ogre::String &name, const Ogre::String &group, Ogre::Resource *resource);

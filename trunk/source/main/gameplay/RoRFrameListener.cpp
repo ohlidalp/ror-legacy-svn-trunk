@@ -3288,6 +3288,7 @@ bool RoRFrameListener::updateEvents(float dt)
 			if (loading_state==NONE_LOADED)
 			{
 				Cache_Entry *sel = SelectorWindow::get()->getSelection();
+				Skin *skin = SelectorWindow::get()->getSelectedSkin();
 				if(sel)
 				{
 					terrainUID = sel->uniqueid;
@@ -3310,17 +3311,18 @@ bool RoRFrameListener::updateEvents(float dt)
 					} else
 					{
 						// init no trucks, as there were found some
-						initTrucks(false, sel->fname);
+						initTrucks(false, sel->fname, String(), 0, false, skin);
 					}
 				}
 			} else if (loading_state==TERRAIN_LOADED)
 			{
 				Cache_Entry *selt = SelectorWindow::get()->getSelection();
+				Skin *skin = SelectorWindow::get()->getSelectedSkin();
 				std::vector<Ogre::String> config = SelectorWindow::get()->getTruckConfig();
 				std::vector<Ogre::String> *configptr = &config;
 				if(config.size() == 0) configptr = 0;
 				if(selt)
-					initTrucks(true, selt->fname, selt->fext, configptr);
+					initTrucks(true, selt->fname, selt->fext, configptr, false, skin);
 
 			} else if (loading_state==RELOADING)
 			{
@@ -5075,7 +5077,7 @@ void RoRFrameListener::loadClassicTerrain(String terrainfile)
 
 }
 
-void RoRFrameListener::initTrucks(bool loadmanual, Ogre::String selected, Ogre::String selectedExtension, std::vector<Ogre::String> *truckconfig, bool enterTruck)
+void RoRFrameListener::initTrucks(bool loadmanual, Ogre::String selected, Ogre::String selectedExtension, std::vector<Ogre::String> *truckconfig, bool enterTruck, Skin *skin)
 {
 	//we load truck
 	char *selectedchr = const_cast<char *>(selected.c_str());
@@ -5108,7 +5110,7 @@ void RoRFrameListener::initTrucks(bool loadmanual, Ogre::String selected, Ogre::
 					}
 				}
 			}
-			b = BeamFactory::getSingleton().createLocal(spawnpos, spawnrot, selectedchr, 0, false, flaresMode, truckconfig);
+			b = BeamFactory::getSingleton().createLocal(spawnpos, spawnrot, selectedchr, 0, false, flaresMode, truckconfig, skin);
 			if (b && enterTruck)
 			{
 					//cameramode = CAMERA_INT;
@@ -5118,7 +5120,7 @@ void RoRFrameListener::initTrucks(bool loadmanual, Ogre::String selected, Ogre::
 
 		} else
 		{
-			Beam *b = BeamFactory::getSingleton().createLocal(Vector3(truckx, trucky, truckz), Quaternion::ZERO, selectedchr, 0, false, flaresMode, truckconfig);
+			Beam *b = BeamFactory::getSingleton().createLocal(Vector3(truckx, trucky, truckz), Quaternion::ZERO, selectedchr, 0, false, flaresMode, truckconfig, skin);
 
 			if(b && enterTruck)
 			{

@@ -44,19 +44,30 @@ public:
 	Ogre::String guid;
 	int authorID;
 
+	// texture
+	int addTextureReplace(Ogre::String from, Ogre::String to);
+	int hasReplacementForTexture(Ogre::String texture);
+	Ogre::String getReplacementForTexture(Ogre::String texture);
+
+	// material
 	int addMaterialReplace(Ogre::String from, Ogre::String to);
 	int hasReplacementForMaterial(Ogre::String material);
 	Ogre::String getReplacementForMaterial(Ogre::String material);
+	
+	// common
 	void replaceMeshMaterials(Ogre::Entity *e);
+	void replaceMaterialTextures(Ogre::String materialName);
 
-	int serialize(Ogre::String &dst);
 	bool operator==(const Skin& other) const;
 protected:
+	std::map<Ogre::String, Ogre::String> replaceTextures;
 	std::map<Ogre::String, Ogre::String> replaceMaterials;
 
 	void loadImpl(void);
 	void unloadImpl(void);
 	size_t calculateSize(void) const;
+
+
 };
 
 

@@ -56,7 +56,6 @@ public:
 	void removeAll(void);
 	void reloadAll(bool reloadableOnly = true);
 	void reloadUnreferencedResources(bool reloadableOnly = true);
-	Ogre::String joinString(Ogre::StringVector params, Ogre::String del=" ", int skipNo=1);
 
 protected:
 
