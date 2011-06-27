@@ -159,7 +159,7 @@ bool SceneMouse::mouseMoved(const OIS::MouseEvent& _arg)
 	
 	if(ms.buttonDown(OIS::MB_Right))
 	{
-		rfl->camRotX += Degree(-(float)ms.X.rel * 0.13f);
+		rfl->camRotX += Degree( (float)ms.X.rel * 0.13f);
 		rfl->camRotY += Degree(-(float)ms.Y.rel * 0.13f);
 		rfl->camDist += -(float)ms.Z.rel * 0.02f;
 #ifdef USE_MYGUI
