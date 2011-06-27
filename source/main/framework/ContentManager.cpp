@@ -278,8 +278,6 @@ void ContentManager::exploreZipFolders(Ogre::String rg)
 #if OGRE_PLATFORM == OGRE_PLATFORM_WIN32
 	dirsep="\\";
 #endif
-
-	String skinRG = "skins";
 	ResourceGroupManager& rgm = ResourceGroupManager::getSingleton();
 
 	FileInfoListPtr files= rgm.findResourceFileInfo(rg, "*.skinzip"); //search for skins
@@ -288,16 +286,9 @@ void ContentManager::exploreZipFolders(Ogre::String rg)
 	{
 		if(!iterFiles->archive) continue;
 		String fullpath = iterFiles->archive->getName() + dirsep;
-		rgm.addResourceLocation(fullpath + iterFiles->filename, "Zip", skinRG);
+		rgm.addResourceLocation(fullpath + iterFiles->filename, "Zip", rg);
 	}
-	LOG("initialiseResourceGroups: "+skinRG);
-	try
-	{
-		ResourceGroupManager::getSingleton().initialiseResourceGroup(skinRG);
-	} catch(Ogre::Exception& e)
-	{
-		LOG("catched error while initializing Resource group '" + skinRG + "' : " + e.getFullDescription());
-	}
+	// DO NOT initialize ...
 }
 
 void ContentManager::exploreFolders(Ogre::String rg)
