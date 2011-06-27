@@ -225,6 +225,7 @@ bool ContentManager::init(void)
 
 	exploreFolders("VehicleFolders");
 	exploreFolders("TerrainFolders");
+	exploreZipFolders("Packs"); // this is required for skins to work
 
 	LOG("initialiseAllResourceGroups() - Content");
 	try
@@ -270,6 +271,35 @@ bool ContentManager::resourceCollision(Ogre::Resource *resource, Ogre::ResourceM
 }
 
 	
+
+void ContentManager::exploreZipFolders(Ogre::String rg)
+{
+	String dirsep="/";
+#if OGRE_PLATFORM == OGRE_PLATFORM_WIN32
+	dirsep="\\";
+#endif
+
+	String skinRG = "skins";
+	ResourceGroupManager& rgm = ResourceGroupManager::getSingleton();
+
+	FileInfoListPtr files= rgm.findResourceFileInfo(rg, "*.skinzip"); //search for skins
+	FileInfoList::iterator iterFiles = files->begin();
+	for (; iterFiles!= files->end(); ++iterFiles)
+	{
+		if(!iterFiles->archive) continue;
+		String fullpath = iterFiles->archive->getName() + dirsep;
+		rgm.addResourceLocation(fullpath + iterFiles->filename, "Zip", skinRG);
+	}
+	LOG("initialiseResourceGroups: "+skinRG);
+	try
+	{
+		ResourceGroupManager::getSingleton().initialiseResourceGroup(skinRG);
+	} catch(Ogre::Exception& e)
+	{
+		LOG("catched error while initializing Resource group '" + skinRG + "' : " + e.getFullDescription());
+	}
+}
+
 void ContentManager::exploreFolders(Ogre::String rg)
 {
 	String dirsep="/";
@@ -282,10 +312,11 @@ void ContentManager::exploreFolders(Ogre::String rg)
 	FileInfoList::iterator iterFiles = files->begin();
 	for (; iterFiles!= files->end(); ++iterFiles)
 	{
-		if ((*iterFiles).filename==String(".svn")) continue;
+		if(!iterFiles->archive) continue;
+		if (iterFiles->filename==String(".svn")) continue;
 		//trying to get the full path
-		String fullpath=(*iterFiles).archive->getName() + dirsep;
-		rgm.addResourceLocation(fullpath+(*iterFiles).filename, "FileSystem", rg);
+		String fullpath = iterFiles->archive->getName() + dirsep;
+		rgm.addResourceLocation(fullpath+iterFiles->filename, "FileSystem", rg);
 	}
 	LOG("initialiseResourceGroups: "+rg);
 	try

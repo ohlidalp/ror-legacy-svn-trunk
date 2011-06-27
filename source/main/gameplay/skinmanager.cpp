@@ -90,7 +90,7 @@ void SkinManager::parseScript(DataStreamPtr& stream, const String& groupName)
 	{
 		String line;
 		Skin *pSkin=0;
-		LOG("SkinManager::parseScript");
+		//LOG("SkinManager::parseScript");
 
 		while( !stream->eof() )
 		{
@@ -139,34 +139,27 @@ void SkinManager::parseScript(DataStreamPtr& stream, const String& groupName)
 }
 
 //---------------------------------------------------------------------
-String SkinManager::joinString(Ogre::StringVector params, String del, int skipNo)
-{
-	String res="";
-	int i=0;
-	for(Ogre::StringVector::iterator it=params.begin(); it!=params.end(); it++, i++)
-	{
-		if(i < skipNo) continue;
-		res += *it;
-		if(i) res += del;
-	}
-	return res;
-}
-//---------------------------------------------------------------------
 void SkinManager::parseAttribute(const String& line, Skin *pSkin)
 {
-	Ogre::StringVector params = StringUtil::split(line, "\x09\x0a\x20\x3d"); // 0x9 = tab, 0xa = \n, 0x20 = space, 0x3d = '='
+	Ogre::StringVector params = StringUtil::split(line, "\t=,;\n");
+	for(int i=0; i < params.size(); i++)
+	{
+		// trim all parameters
+		StringUtil::trim(params[i]);
+	}
 	String& attrib = params[0];
 	StringUtil::toLowerCase(attrib);
 
+	if      (attrib == "replacetexture"     && params.size() == 3) pSkin->addTextureReplace(params[1], params[2]);
 	if      (attrib == "replacematerial"    && params.size() == 3) pSkin->addMaterialReplace(params[1], params[2]);
-	else if (attrib == "thumbnail"          && params.size() >= 2) pSkin->thumbnail = joinString(params);
-	else if (attrib == "description"        && params.size() >= 2) pSkin->description = joinString(params);
-	else if (attrib == "authorname"         && params.size() >= 2) pSkin->authorName = joinString(params);
-	else if (attrib == "authorid"           && params.size() == 2) pSkin->authorID = StringConverter::parseInt(params[1]);
-	else if (attrib == "guid"               && params.size() >= 2) { pSkin->guid = joinString(params); StringUtil::trim(pSkin->guid); }
+	else if (attrib == "preview"            && params.size() >= 2) pSkin->thumbnail = params[1];
+	else if (attrib == "description"        && params.size() >= 2) pSkin->description = params[1];
+	else if (attrib == "authorname"         && params.size() >= 2) pSkin->authorName = params[1];
+	else if (attrib == "authorid"           && params.size() == 2) pSkin->authorID = PARSEINT(params[1]);
+	else if (attrib == "guid"               && params.size() >= 2) pSkin->guid = params[1];
 	else if (attrib == "name"               && params.size() >= 2)
 	{
-		pSkin->name = joinString(params);
+		pSkin->name = params[1];
 		StringUtil::trim(pSkin->name);
 	}
 }
@@ -215,7 +208,18 @@ int SkinManager::getUsableSkins(String guid, std::vector<Skin *> &skins)
 	{
 		Skin *skin = (Skin *)it.getNext().getPointer();
 
-		if (skin->guid == guid)
+		// fix some possible problems
+		String g1 = guid;
+		String g2 = skin->guid;
+
+		StringUtil::trim(g1);
+		StringUtil::trim(g2);
+
+		StringUtil::toLowerCase(g1);
+		StringUtil::toLowerCase(g2);
+
+		// then compare
+		if (g1 == g2)
 			skins.push_back(skin);
 	}
 	return 0;

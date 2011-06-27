@@ -155,6 +155,22 @@ protected:
 		loaded=true;
 		if(!sceneNode) return;
 
+		// now create an entity around the mesh and attach it to the scene graph
+		try
+		{
+			if(entityName.empty())
+				ent = smgr->createEntity(meshName);
+			else
+				ent = smgr->createEntity(entityName, meshName);
+			if(ent)
+				sceneNode->attachObject(ent);
+		} catch(Ogre::Exception& e)
+		{
+			LOG("error loading mesh: " + meshName + ": " + e.getFullDescription());
+			return;
+		}
+
+		// then modify some things
 		if(enableSimpleMaterial)
 			MaterialFunctionMapper::replaceSimpleMeshMaterials(ent, simpleMatColour);
 
@@ -195,20 +211,6 @@ protected:
 			}
 		}
 
-		// now create an entity around the mesh and attach it to the scene graph
-		try
-		{
-			if(entityName.empty())
-				ent = smgr->createEntity(meshName);
-			else
-				ent = smgr->createEntity(entityName, meshName);
-			if(ent)
-				sceneNode->attachObject(ent);
-		} catch(Ogre::Exception& e)
-		{
-			LOG("error loading mesh: " + meshName + ": " + e.getFullDescription());
-			return;
-		}
 		sceneNode->setVisible(visible);
 	}
 
