@@ -1541,10 +1541,13 @@ void RoRFrameListener::loadObject(const char* name, float px, float py, float pz
 	while (!ds->eof())
 	{
 		size_t ll=ds->readLine(line, 1023);
-		char* ptline=line;
+
+		// little workaround to trim it
+		String lineStr = String(line);
+		Ogre::StringUtil::trim(lineStr);
+
+		const char* ptline = lineStr.c_str();
 		if (ll==0 || line[0]=='/' || line[0]==';') continue;
-		//trim line
-		while (*ptline==' ' || *ptline=='\t') ptline++;
 
 		if (!strcmp("end",ptline)) break;
 		if (!strcmp("movable", ptline)) {ismovable=true;continue;};
@@ -5042,9 +5045,17 @@ void RoRFrameListener::loadClassicTerrain(String terrainfile)
 	loading_state=TERRAIN_LOADED;
 
 	// we set the sky this late, so the user can configure it ...
-	if (SSETTING("Sky effects")!="Caelum (best looking, slower)" && strlen(sandstormcubemap)>0)
+	if (SSETTING("Sky effects")!="Caelum (best looking, slower)")
 	{
-		mSceneMgr->setSkyBox(true, sandstormcubemap, farclip);
+		if(strlen(sandstormcubemap)>0)
+		{
+			// use custom
+			mSceneMgr->setSkyBox(true, sandstormcubemap, 100, true);
+		} else
+		{
+			// use default
+			mSceneMgr->setSkyBox(true, "tracks/skyboxcol", 100, true);
+		}
 	}
 
 #ifdef USE_HYDRAX

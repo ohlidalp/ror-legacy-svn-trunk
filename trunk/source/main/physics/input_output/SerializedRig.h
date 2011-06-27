@@ -48,7 +48,13 @@ typedef struct parsecontext_t
 
 struct ParseException : std::exception { char const* what() const throw() { return "ParserException"; }; };
 
-enum {PARSER_INFO, PARSER_WARNING, PARSER_ERROR, PARSER_FATAL_ERROR};
+enum {
+	PARSER_INFO,           //!< information messages
+	PARSER_WARNING,        //!< warnings, truck might load
+	PARSER_ERROR,          //!< errors, parts of truck will not load
+	PARSER_FATAL_ERROR,    //!< the whole truck loading will fail
+	PARSER_OBSOLETE        //!< obsolete, deprecated parts, needs fixup
+};
 
 class SerializedRig : public rig_t
 {

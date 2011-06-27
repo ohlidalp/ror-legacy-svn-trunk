@@ -30,6 +30,7 @@ along with Rigs of Rods.  If not, see <http://www.gnu.org/licenses/>.
 #include "materialFunctionMapper.h"
 #include "skin.h"
 #include "MaterialReplacer.h"
+#include "Settings.h"
 
 
 class MeshObject : public Ogre::ResourceBackgroundQueue::Listener, public Ogre::Resource::Listener
@@ -155,6 +156,45 @@ protected:
 		loaded=true;
 		if(!sceneNode) return;
 
+		// important: you need to add the LODs before creating the entity
+		// now find possible LODs, needs to be done before calling createEntity()
+		if(!mesh.isNull())
+		{
+			String basename, ext;
+			StringUtil::splitBaseFilename(meshName, basename, ext);
+			for(int i=1; i<4;i++)
+			{
+				String fn = basename + "_lod" + TOSTRING(i) + ".mesh";
+				bool exists = ResourceGroupManager::getSingleton().resourceExistsInAnyGroup(fn);
+				if(!exists) continue;
+
+
+				float distance = 3;
+
+				// we need to tune this according to our sightrange
+				float sightrange = PARSEREAL(SSETTING("SightRange"));
+
+				if(sightrange > 4999)
+				{
+					// unlimited
+					if     (i == 1) distance =  200;
+					else if(i == 2) distance =  600;
+					else if(i == 3) distance = 2000;
+					else if(i == 4) distance = 5000;
+				} else
+				{
+					// limited
+					if     (i == 1) distance = std::max(20.0f, sightrange * 0.1f);
+					else if(i == 2) distance = std::max(20.0f, sightrange * 0.2f);
+					else if(i == 3) distance = std::max(20.0f, sightrange * 0.3f);
+					else if(i == 4) distance = std::max(20.0f, sightrange * 0.4f);
+				}
+
+				Ogre::MeshManager::getSingleton().load(fn, Ogre::ResourceGroupManager::DEFAULT_RESOURCE_GROUP_NAME),
+					mesh->createManualLodLevel(distance, fn);
+			}
+		}
+
 		// now create an entity around the mesh and attach it to the scene graph
 		try
 		{
@@ -186,30 +226,6 @@ protected:
 		// only set it if different from default (true)
 		if(!castshadows && sceneNode && sceneNode->numAttachedObjects() > 0)
 			sceneNode->getAttachedObject(0)->setCastShadows(castshadows);
-
-
-		// now find possible LODs, needs to be done before calling createEntity()
-		if(!mesh.isNull())
-		{
-			String basename, ext;
-			StringUtil::splitBaseFilename(meshName, basename, ext);
-			for(int i=0; i<4;i++)
-			{
-				String fn = basename + "_lod" + TOSTRING(i+1) + ".mesh";
-				bool exists = ResourceGroupManager::getSingleton().resourceExistsInAnyGroup(fn);
-				if(!exists) continue;
-
-
-				float distance = 3;
-				if(i == 0) distance = 3;
-				if(i == 1) distance = 20;
-				if(i == 2) distance = 50;
-				if(i == 3) distance = 200;
-
-				Ogre::MeshManager::getSingleton().load(fn, Ogre::ResourceGroupManager::DEFAULT_RESOURCE_GROUP_NAME),
-				mesh->createManualLodLevel(distance, fn);
-			}
-		}
 
 		sceneNode->setVisible(visible);
 	}

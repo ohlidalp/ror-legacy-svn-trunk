@@ -5119,7 +5119,7 @@ int SerializedRig::loadTruck(String fname, SceneManager *manager, SceneNode *par
 	// check for some things
 	if(strnlen(guid, 128) == 0)
 	{
-		parser_warning(c, "vehicle uses no GUID, skinning will be impossible", PARSER_WARNING);
+		parser_warning(c, "vehicle uses no GUID, skinning will be impossible", PARSER_OBSOLETE);
 	}
 
 	parser_warning(c, "parsing done", PARSER_INFO);
@@ -6071,13 +6071,16 @@ void SerializedRig::parser_warning(parsecontext_t &context, Ogre::String text, i
 {
 	if(ignoreProblems) return;
 
-	String errstr = "INFO   ";
+	String errstr = "INFO    ";
 	if(errlvl == PARSER_WARNING)
-		errstr    = "WARNING";
+		errstr    = "WARNING ";
 	else if(errlvl == PARSER_ERROR)
-		errstr    = "ERROR  ";
+		errstr    = "ERROR   ";
 	else if(errlvl == PARSER_FATAL_ERROR)
-		errstr    = "FATAL  ";
+		errstr    = "FATAL   ";
+	else if(errlvl == PARSER_OBSOLETE)
+		errstr    = "OBSOLETE";
+	
 #ifdef REPO	
 	// custom code for the repo only
 	String fn = context.filename;
@@ -6157,8 +6160,14 @@ int SerializedRig::parse_node_number(parsecontext_t &context, Ogre::String s, st
 		}
 		else if (id < 0)
 		{
-			parser_warning(context, "Error: invalid node number "+s+", less than zero", PARSER_ERROR);
-			throw(ParseException());
+			id = -id;
+			parser_warning(context, "Error: invalid node number "+s+", less than zero, using positive number, please fix", PARSER_OBSOLETE);
+			if (id >= free_node)
+			{
+				parser_warning(context, "Error: invalid node number "+s+", bigger than existing nodes ("+TOSTRING(free_node)+")", PARSER_ERROR);
+				throw(ParseException());
+			}
+			return id;
 		}
 		return id;
 	} else
