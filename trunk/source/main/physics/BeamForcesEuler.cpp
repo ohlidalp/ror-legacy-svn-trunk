@@ -1271,7 +1271,7 @@ void Beam::calcForcesEuler(int doUpdate, Real dt, int step, int maxstep)
 	bool alb_active=false;
 	// fix for airplanes crashing when getAcc() is used
 	float currentAcc = 0.0f;
-	if(driveable == TRUCK) 
+	if(driveable == TRUCK && engine) 
 		currentAcc = engine->getAcc();
 
 	for (i=0; i<free_wheel; i++)
