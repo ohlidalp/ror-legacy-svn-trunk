@@ -215,11 +215,6 @@ bool ContentManager::init(void)
 	if(ssm) ssm->setLoadingBaseSounds(false);
 #endif // USE_OPENAL
 
-	// add custom include path
-	if(!SSETTING("resourceIncludePath").empty())
-		ResourceGroupManager::getSingleton().addResourceLocation(SSETTING("resourceIncludePath"), "FileSystem");
-
-
 	// and the content
 	ResourceGroupManager::getSingleton().addResourceLocation(SSETTING("User Path")+"packs", "FileSystem", "Packs", true);
 	ResourceGroupManager::getSingleton().addResourceLocation(SSETTING("User Path")+"mods",  "FileSystem", "Packs", true);
