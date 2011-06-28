@@ -210,7 +210,7 @@ ELSEIF(UNIX)
       find_library(MYGUI_OGRE_PLATFORM MyGUI.OgrePlatform)
       set(MYGUI_LIBRARIES ${MYGUI_LIBRARIES} ${MYGUI_OGRE_PLATFORM})
       # add our mygui BaseLayout
-      set(MYGUI_INCLUDE_DIRS ${MYGUI_INCLUDE_DIRS} ${RoR_SOURCE_DIR}/source/main/mygui)
+      set(MYGUI_INCLUDE_DIRS ${MYGUI_INCLUDE_DIRS})
       set(ROR_USE_MYGUI ON)
    else()
       set(ROR_USE_MYGUI OFF)

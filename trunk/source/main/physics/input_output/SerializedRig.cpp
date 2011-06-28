@@ -40,6 +40,9 @@ along with Rigs of Rods.  If not, see <http://www.gnu.org/licenses/>.
 #include "FlexMesh.h"
 #include "FlexMeshWheel.h"
 #include "MaterialReplacer.h"
+#include "JSON.h"
+#include "RoRVersion.h"
+
 
 // TODO not really needed for truck loading, or used very rarely
 #include "collisions.h"
@@ -586,7 +589,7 @@ int SerializedRig::loadTruck(String fname, SceneManager *manager, SceneNode *par
 				if (slopeBrakeRelAngle < 1.0f)  slopeBrakeRelAngle = 1.0f;
 				if (slopeBrakeRelAngle > 45.0f) slopeBrakeRelAngle = 45.0f;
 				slopeBrakeRelAngle += slopeBrakeAttAngle;
-				parser_warning(c,"Slope-Brake enhancment added. " + String(fname) +" line " + StringConverter::toString(c.linecounter) + ". Slopebrake-Factor: " + StringConverter::toString(slopeBrakeFactor) + ". Free Rollback Offset: " + StringConverter::toString(slopeBrakeAttAngle) + "°. Release at Offset: " + StringConverter::toString(slopeBrakeRelAngle) + "°.", PARSER_INFO);
+				parser_warning(c,"Slope-Brake enhancment added. " + String(fname) +" line " + StringConverter::toString(c.linecounter) + ". Slopebrake-Factor: " + StringConverter::toString(slopeBrakeFactor) + ". Free Rollback Offset: " + StringConverter::toString(slopeBrakeAttAngle) + "degree. Release at Offset: " + StringConverter::toString(slopeBrakeRelAngle) + "degree.", PARSER_INFO);
 				continue;
 			}
 			if (c.line.size() > 14 && c.line.substr(0, 14) == "AntiLockBrakes")
@@ -3840,7 +3843,7 @@ int SerializedRig::loadTruck(String fname, SceneManager *manager, SceneNode *par
 					fuseFront   = &nodes[front];
 					fuseBack    = &nodes[front];
 					fuseWidth   = width;
-					parser_warning(c, "Fusedrag autocalculation size: "+TOSTRING(width)+" m²", PARSER_INFO);
+					parser_warning(c, "Fusedrag autocalculation size: "+TOSTRING(width)+" m^2", PARSER_INFO);
 				} else
 				{
 					// original fusedrag calculation
@@ -5122,10 +5125,110 @@ int SerializedRig::loadTruck(String fname, SceneManager *manager, SceneNode *par
 		parser_warning(c, "vehicle uses no GUID, skinning will be impossible", PARSER_OBSOLETE);
 	}
 
+	if(!SSETTING("vehicleOutputFile").empty())
+	{
+		// serialize the truck in a special format :)
+		String fn = SSETTING("vehicleOutputFile");
+		serialize(fn);
+	}
+
+	if(BSETTING("REPO_MODE"))
+	{
+		LOG("REPO MODE, exiting after truck loading");
+		exit(0);
+	}
+
 	parser_warning(c, "parsing done", PARSER_INFO);
 	return 0;
 }
 
+void SerializedRig::serialize(Ogre::String targetFilename)
+{
+	// get the path info
+	Ogre::String out_basename, out_ext, out_path;
+	Ogre::StringUtil::splitFullFilename(targetFilename, out_basename, out_ext, out_path);
+
+	// then save
+	if(out_ext == "json")
+	{
+		// now save it
+		JSONObject root;
+
+		// Adding values
+		root[L"truckname"] = new JSONValue(realtruckname.c_str());
+
+		int infos_count = 0;
+		int warnings_count = 0;
+		int errors_count = 0;
+		int fatals_count = 0;
+		std::vector <parsecontext_t> &warnings = getWarnings();
+		std::vector <parsecontext_t>::iterator it;
+		JSONArray error_lines;
+		for(it = warnings.begin(); it != warnings.end(); it++)
+		{
+			if(it->warningLvl      == PARSER_INFO)
+			{
+				infos_count++;
+				continue;
+			}
+			else if(it->warningLvl == PARSER_WARNING)
+			{
+				warnings_count++;
+				continue;
+			}
+			else if(it->warningLvl == PARSER_ERROR)
+				errors_count++;
+			else if(it->warningLvl == PARSER_FATAL_ERROR)
+				fatals_count++;
+			error_lines.push_back(new JSONValue(TOSTRING(it->linecounter).c_str()));
+		}
+		root[L"error_lines"]     = new JSONValue(error_lines);
+
+		root[L"infos"]      = new JSONValue(TOSTRING(infos_count).c_str());
+		root[L"warnings"]   = new JSONValue(TOSTRING(warnings_count).c_str());
+		root[L"errors"]     = new JSONValue(TOSTRING(errors_count).c_str());
+		root[L"fatals"]     = new JSONValue(TOSTRING(fatals_count).c_str());
+		root[L"rorversion"] = new JSONValue(ROR_VERSION_STRING);
+
+		// Create nodes array
+		JSONArray nodes_array;
+		for (int i = 0; i < free_node; i++)
+		{
+			JSONObject node;
+			node[L"id"] = new JSONValue(TOSTRING(i).c_str());
+			//node[L"options"] = new JSONValue(TOSTRING(nodes[i].).c_str());
+			node[L"coord"] = new JSONValue(TOSTRING(nodes[i].AbsPosition).c_str());
+			nodes_array.push_back(new JSONValue(node));
+		}
+		root[L"nodes"] = new JSONValue(nodes_array);
+
+		// Create beams array
+		JSONArray beams_array;
+		for (int i = 0; i < free_beam; i++)
+		{
+			JSONObject beam;
+			beam[L"id1"] = new JSONValue(TOSTRING(beams[i].p1->id).c_str());
+			beam[L"id2"] = new JSONValue(TOSTRING(beams[i].p2->id).c_str());
+			beams_array.push_back(new JSONValue(beam));
+		}
+		root[L"beams"] = new JSONValue(beams_array);
+
+		// Create final value
+		JSONValue *final_value = new JSONValue(root);
+
+		// Print it
+		FILE *fo = fopen(targetFilename.c_str(), "w");
+		fwprintf(fo, L"%ls", final_value->Stringify().c_str());
+		fclose(fo);
+		//print_out(value->Stringify().c_str());
+
+		// Clean up
+		delete final_value;
+	} else
+	{
+		LOG("unsupported output file format: " + out_ext);
+	}
+}
 
 void SerializedRig::init_node(int pos, Real x, Real y, Real z, int type, Real m, int iswheel, Real friction, int id, int wheelid, Real nfriction, Real nvolume, Real nsurface, Real nloadweight)
 {
@@ -6081,17 +6184,20 @@ void SerializedRig::parser_warning(parsecontext_t &context, Ogre::String text, i
 	else if(errlvl == PARSER_OBSOLETE)
 		errstr    = "OBSOLETE";
 	
-#ifdef REPO	
-	// custom code for the repo only
-	String fn = context.filename;
-	std::replace(fn.begin(), fn.end(), ' ', '_');
+	String txt;
+	if(BSETTING("REPO_MODE"))
+	{
+		// custom code for the repo only
+		String fn = context.filename;
+		std::replace(fn.begin(), fn.end(), ' ', '_');
 
-	String link = "<a href=\""+fn+".html#L"+Ogre::StringConverter::toString(context.linecounter)+"\" >"+fn+":"+Ogre::StringConverter::toString(context.linecounter)+"</a>";
-	String txt = "BIO|"+errstr+"|"+link+" | "+String(context.modeString)+" | " + text;
-#else
-	// normal, client output
-    String txt = "BIO|"+errstr+"|"+context.filename+":"+Ogre::StringConverter::toString(context.linecounter, 4, '0')+" | "+String(context.modeString)+" | " + text;
-#endif // REPO
+		String link = "<a href=\""+fn+".html#L"+Ogre::StringConverter::toString(context.linecounter)+"\" >"+fn+":"+Ogre::StringConverter::toString(context.linecounter)+"</a>";
+		txt = "BIO|"+errstr+"|"+link+" | "+String(context.modeString)+" | " + text;
+	} else
+	{
+		// normal, client output
+		txt = "BIO|"+errstr+"|"+context.filename+":"+Ogre::StringConverter::toString(context.linecounter, 4, '0')+" | "+String(context.modeString)+" | " + text;
+	}
 
 	LOG(txt);
 	// add the warning to the vector
