@@ -349,6 +349,14 @@ int SerializedRig::loadTruck(String fname, SceneManager *manager, SceneNode *par
 	String filename = String(fname);
 	ScopeLog log("beam_"+filename);
 
+	// add custom include path
+	if(!SSETTING("resourceIncludePath").empty())
+	{
+		ResourceGroupManager::getSingleton().addResourceLocation(SSETTING("resourceIncludePath"), "FileSystem", "customInclude");
+		ResourceBackgroundQueue::getSingleton().initialiseResourceGroup("customInclude");
+	}
+
+
 	// create parsing context that we use for loading the truck
 	parsecontext_t c;
 	c.filename     = filename;
