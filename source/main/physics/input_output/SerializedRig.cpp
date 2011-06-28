@@ -5149,6 +5149,17 @@ int SerializedRig::loadTruck(String fname, SceneManager *manager, SceneNode *par
 	if(BSETTING("REPO_MODE"))
 	{
 		LOG("REPO MODE, exiting after truck loading");
+
+		if(!SSETTING("vehicleOutputFile").empty())
+		{
+			String fn = SSETTING("vehicleOutputFile") + ".jpg";
+
+			// create some screenshot
+			RoRWindowEventUtilities::messagePump();
+			Ogre::Root::getSingleton().renderOneFrame();
+			OgreFramework::getSingletonPtr()->m_pRenderWnd->update();
+			OgreFramework::getSingletonPtr()->m_pRenderWnd->writeContentsToFile(fn);
+		}
 		exit(0);
 	}
 
