@@ -88,6 +88,12 @@ void CacheSystem::startup(SceneManager *smgr, bool forcecheck)
 {
 	this->smgr = smgr;
 
+	if(BSETTING("NOCACHE"))
+	{
+		LOG("Cache disabled via command line switch");
+		return;
+	}
+
 	// read valid categories from file
 	readCategoryTitles();
 

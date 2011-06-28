@@ -163,7 +163,8 @@ enum {
 	OPT_LOGPATH,
 	OPT_ADVLOG,
 	OPT_REPOMODE,
-	OPT_VEHICLEOUT
+	OPT_VEHICLEOUT,
+	OPT_NOCACHE
 };
 
 // option array
@@ -194,6 +195,7 @@ CSimpleOpt::SOption cmdline_options[] = {
 	{ OPT_INCLUDEPATH,    ("-includepath"),     SO_REQ_SEP    },
 	{ OPT_LOGPATH,        ("-logpath"),       SO_REQ_SEP },
 	{ OPT_REPOMODE,       ("-repomode"),       SO_NONE },
+	{ OPT_NOCACHE,        ("-nocache"),       SO_NONE },
 	{ OPT_VEHICLEOUT,     ("-vehicleout"),       SO_REQ_SEP },
 
 SO_END_OF_OPTIONS
@@ -282,6 +284,8 @@ int main(int argc, char *argv[])
 #endif
 			} else if (args.OptionId() == OPT_STATE) {
 				SETTINGS.setSetting("StartState", args.OptionArg());
+			} else if (args.OptionId() == OPT_NOCACHE) {
+				SETTINGS.setSetting("NOCACHE", "Yes");
 			} else if (args.OptionId() == OPT_LOGPATH) {
 				SETTINGS.setSetting("Enforce Log Path", args.OptionArg());
 			} else if (args.OptionId() == OPT_ADVLOG) {
