@@ -362,6 +362,8 @@ bool Settings::setupPaths()
 	settings["dirsep"] = String(dsStr);
 	settings["Config Root"] = String(config_root);
 	settings["Cache Path"] = String(user_path) + "cache" + String(dsStr);
+
+	// only set log path if it was not set before
 	settings["Log Path"] = String(ogrelog_path);
 	settings["Resources Path"] = String(resources_path);
 	settings["User Path"] = String(user_path);
@@ -392,6 +394,10 @@ bool Settings::setupPaths()
 		settings["ogre.log"]    = settings["User Path"]+string(dsStr)+"logs"+string(dsStr)+"ogre.log";
 	}
 
+	if(!settings["Enforce Log Path"].empty())
+		settings["Log Path"] = settings["Enforce Log Path"];
+
+	printf(" * log path:         %s\n", settings["Log Path"].c_str());
 	printf(" * config path:      %s\n", settings["Config Root"].c_str());
 	printf(" * user path:        %s\n", settings["User Path"].c_str());
 	printf(" * program path:     %s\n", settings["Program Path"].c_str());
