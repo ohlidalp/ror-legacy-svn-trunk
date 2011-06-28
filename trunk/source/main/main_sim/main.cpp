@@ -283,7 +283,7 @@ int main(int argc, char *argv[])
 			} else if (args.OptionId() == OPT_STATE) {
 				SETTINGS.setSetting("StartState", args.OptionArg());
 			} else if (args.OptionId() == OPT_LOGPATH) {
-				SETTINGS.setSetting("Log Path", args.OptionArg());
+				SETTINGS.setSetting("Enforce Log Path", args.OptionArg());
 			} else if (args.OptionId() == OPT_ADVLOG) {
 				SETTINGS.setSetting("Advanced Logging", "Yes");
 			} else if (args.OptionId() == OPT_INCLUDEPATH) {
