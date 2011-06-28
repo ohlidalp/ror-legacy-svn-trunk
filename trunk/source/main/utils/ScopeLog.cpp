@@ -31,7 +31,7 @@ along with Rigs of Rods.  If not, see <http://www.gnu.org/licenses/>.
 
 using namespace Ogre;
 
-ScopeLog::ScopeLog(String name) : orgLog(0), logFileName(), name(name), f(0), headerWritten(false), counter(0), disabled(false)
+ScopeLog::ScopeLog(String name) : orgLog(0), logFileName(), name(name), f(0), headerWritten(false), counter(0), disabled(false), warning(0), error(0), obsoleteWarning(0), info(0)
 {
 	if(!BSETTING("Advanced Logging"))
 	{
@@ -120,57 +120,135 @@ void ScopeLog::messageLogged(const String &message, LogMessageLevel lml, bool ma
 
 	// reminder: this if switch is highly sorted
 	if(message.find("you should upgrade it as soon as possible using the OgreMeshUpgrade tool") != String::npos)
+	{
 		sprintf(type, "WarningMeshFormat");
+		obsoleteWarning++;
+	}
 	else if(message.find("WARNING:") != String::npos)
+	{
 		sprintf(type, "Warning");
+		warning++;
+	}
 	else if(message.find("Can't assign material ") != String::npos)
+	{
 		sprintf(type, "MaterialError");
+		error++;
+	}
 	else if(message.find("Compiler error: ") != String::npos)
+	{
 		sprintf(type, "CompilerError");
+		error++;
+	}
 	else if(message.find("Invalid WAV file: ") != String::npos)
+	{
 		sprintf(type, "GeneralError");
+		error++;
+	}
 	else if(message.find("Error while loading Terrain: ") != String::npos)
+	{
 		sprintf(type, "GeneralError");
+		error++;
+	}
 	else if(message.find("Error loading texture ") != String::npos)
+	{
 		sprintf(type, "GeneralError");
+		error++;
+	}
 	else if(message.find("ODEF: ") != String::npos)
+	{
 		sprintf(type, "BeamInputOutputInfo");
+		info++;
+	}
 	else if(message.find("BIO|INFO") != String::npos)
+	{
 		sprintf(type, "BeamInputOutputInfo");
+		info++;
+	}
 	else if(message.find("BIO|WARNING") != String::npos)
+	{
 		sprintf(type, "BeamInputOutputWarning");
+		// no counter usage, handle differently for BIO
+	}
 	else if(message.find("BIO|ERROR") != String::npos)
+	{
 		sprintf(type, "BeamInputOutputError");
+		// no counter usage, handle differently for BIO
+	}
 	else if(message.find("BIO|FATAL") != String::npos)
+	{
 		sprintf(type, "BeamInputOutputFatal");
+		// no counter usage, handle differently for BIO
+	}
 	else if(message.find("Inertia|") != String::npos)
+	{
 		sprintf(type, "BeamInputOutputInfo");
+		info++;
+	}
 	else if(message.find("Mesh: Loading ") != String::npos)
+	{
 		sprintf(type, "OgreNotice");
+		info++;
+	}
 	else if(message.find("Loading 2D Texture") != String::npos)
+	{
 		sprintf(type, "OgreNotice");
+		info++;
+	}
 	else if(message.find("Loading 2D Texture") != String::npos)
+	{
 		sprintf(type, "OgreNotice");
+		info++;
+	}
 	else if(message.find("Texture: ") != String::npos)
+	{
 		sprintf(type, "OgreNotice");
+		info++;
+	}
 	else if(message.find("Caelum: ") != String::npos)
+	{
 		sprintf(type, "OgreNotice");
+		info++;
+	}
 	else if(message.find("Info: Freetype returned ") != String::npos)
+	{
 		sprintf(type, "IgnoreThis");
+		// no counter
+	}
 	else if(message.find("static map icon not found: ") != String::npos)
+	{
 		sprintf(type, "IgnoreThis");
+		// no counter
+	}
 	else if(message.find("COLL: ") != String::npos)
+	{
 		sprintf(type, "RoRNotice");
+		info++;
+	}
 	else if(message.find("Loading WAV file ") != String::npos)
+	{
 		sprintf(type, "RoRNotice");
+		info++;
+	}
 	else if(message.find("SoundScriptInstance: instance created: ") != String::npos)
+	{
 		sprintf(type, "RoRNotice");
+		info++;
+	}
 	else if(message.find("FLEXBODY ") != String::npos)
+	{
 		sprintf(type, "RoRNotice");
+		info++;
+	}
 	else if(message.find("MaterialFunctionMapper: replaced mesh material ") != String::npos)
+	{
 		sprintf(type, "RoRNotice");
+		info++;
+	}
 	else if(message.find("MaterialFunctionMapper: replaced entity material ") != String::npos)
+	{
 		sprintf(type, "RoRNotice");
+		info++;
+	}
 
 	
 

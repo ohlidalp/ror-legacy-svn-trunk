@@ -354,7 +354,7 @@ int SerializedRig::loadTruck(String fname, SceneManager *manager, SceneNode *par
 		ResourceGroupManager::getSingleton().addResourceLocation(SSETTING("resourceIncludePath"), "FileSystem", "customInclude");
 	}
 
-	ScopeLog log("beam_"+filename);
+	ScopeLog scope_log("beam_"+filename);
 
 	// initialize custom include path
 	if(!SSETTING("resourceIncludePath").empty())
@@ -5143,7 +5143,7 @@ int SerializedRig::loadTruck(String fname, SceneManager *manager, SceneNode *par
 	{
 		// serialize the truck in a special format :)
 		String fn = SSETTING("vehicleOutputFile");
-		serialize(fn);
+		serialize(fn, &scope_log);
 	}
 
 	if(BSETTING("REPO_MODE"))
@@ -5156,7 +5156,7 @@ int SerializedRig::loadTruck(String fname, SceneManager *manager, SceneNode *par
 	return 0;
 }
 
-void SerializedRig::serialize(Ogre::String targetFilename)
+void SerializedRig::serialize(Ogre::String targetFilename, ScopeLog *scope_log)
 {
 	// get the path info
 	Ogre::String out_basename, out_ext, out_path;
@@ -5203,6 +5203,14 @@ void SerializedRig::serialize(Ogre::String targetFilename)
 		root[L"errors"]     = new JSONValue(TOSTRING(errors_count).c_str());
 		root[L"fatals"]     = new JSONValue(TOSTRING(fatals_count).c_str());
 		root[L"rorversion"] = new JSONValue(ROR_VERSION_STRING);
+
+		if(scope_log)
+		{
+			root[L"ogre_info"]       = new JSONValue(TOSTRING(scope_log->info).c_str());
+			root[L"ogre_warnings"]   = new JSONValue(TOSTRING(scope_log->warning).c_str());
+			root[L"ogre_errors"]     = new JSONValue(TOSTRING(scope_log->error).c_str());
+			root[L"ogre_obsolete"]   = new JSONValue(TOSTRING(scope_log->obsoleteWarning).c_str());
+		}
 
 		// Create nodes array
 		JSONArray nodes_array;

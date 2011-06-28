@@ -45,6 +45,8 @@ protected:
 public:
 	ScopeLog(Ogre::String filename);
 	~ScopeLog();
+
+	int warning, error, obsoleteWarning, info;
 };
 
 #endif
