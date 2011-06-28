@@ -347,12 +347,18 @@ int SerializedRig::loadTruckVirtual(String fname, bool ignorep)
 int SerializedRig::loadTruck(String fname, SceneManager *manager, SceneNode *parent, Vector3 pos, Quaternion rot, collision_box_t *spawnbox)
 {
 	String filename = String(fname);
-	ScopeLog log("beam_"+filename);
 
-	// add custom include path
+	// add custom include path now, before scopelog, hides the path ...
 	if(!SSETTING("resourceIncludePath").empty())
 	{
 		ResourceGroupManager::getSingleton().addResourceLocation(SSETTING("resourceIncludePath"), "FileSystem", "customInclude");
+	}
+
+	ScopeLog log("beam_"+filename);
+
+	// initialize custom include path
+	if(!SSETTING("resourceIncludePath").empty())
+	{
 		ResourceBackgroundQueue::getSingleton().initialiseResourceGroup("customInclude");
 	}
 
@@ -5229,7 +5235,7 @@ void SerializedRig::serialize(Ogre::String targetFilename)
 		fwprintf(fo, L"%ls", final_value->Stringify().c_str());
 		fclose(fo);
 
-		LOG("vehicle serialized to json successfully: "+targetFilename);
+		//LOG("vehicle serialized to json successfully: "+targetFilename);
 		// Clean up
 		delete final_value;
 	} else
