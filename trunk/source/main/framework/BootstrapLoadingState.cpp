@@ -14,10 +14,7 @@ void BootstrapLoadingState::enter()
 	m_pCamera = m_pSceneMgr->createCamera("PlayerCam");
 	OgreFramework::getSingletonPtr()->m_pViewport->setCamera(m_pCamera);
 
-	LOG("Loading Bootstrap");
-	ContentManager::getSingleton().loadMainResource("OgreCore", "Bootstrap");
-	LOG("Loading Wallpapers");
-	ContentManager::getSingleton().loadMainResource("Wallpapers", "Wallpapers");
+	ContentManager::getSingleton().initBootstrap();
 
 	LOG("creating loading bar");
 	// load all resources now, so the zip files are also initiated

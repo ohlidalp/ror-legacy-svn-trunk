@@ -64,6 +64,7 @@ along with Rigs of Rods.  If not, see <http://www.gnu.org/licenses/>.
 #include "BeamFactory.h"
 #include "ColoredTextAreaOverlayElement.h"
 #include "Scripting.h"
+#include "PreviewRenderer.h"
 
 #include "rornet.h"
 #include "MeshObject.h"
@@ -669,6 +670,13 @@ Beam::Beam(int tnum, SceneManager *manager, SceneNode *parent, RenderWindow* win
 	if(networking)
 	{
 		sendStreamSetup();
+	}
+	
+
+	if(BSETTING("REPO_MODE"))
+	{
+		PreviewRenderer r(this);
+		exit(0);
 	}
 
 	//if(networked)

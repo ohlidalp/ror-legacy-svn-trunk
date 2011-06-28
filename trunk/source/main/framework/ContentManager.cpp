@@ -69,6 +69,14 @@ void ContentManager::loadMainResource(String name, String group)
 	}
 }
 
+void ContentManager::initBootstrap(void)
+{
+	LOG("Loading Bootstrap");
+	loadMainResource("OgreCore", "Bootstrap");
+	LOG("Loading Wallpapers");
+	loadMainResource("Wallpapers", "Wallpapers");
+}
+
 bool ContentManager::init(void)
 {
 

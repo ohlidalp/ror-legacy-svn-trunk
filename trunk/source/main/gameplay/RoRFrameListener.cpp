@@ -894,16 +894,19 @@ RoRFrameListener::RoRFrameListener(AppState *parentState, RenderWindow* win, Cam
 		new GUI_Friction();
 	}
 
-	MyGUI::VectorWidgetPtr v = MyGUI::LayoutManager::getInstance().loadLayout("wallpaper.layout");
-	// load random image in the wallpaper
-	String randomWallpaper = GUIManager::getRandomWallpaperImage();
-	if(!v.empty() && !randomWallpaper.empty())
+	if(!BSETTING("REPO_MODE"))
 	{
-		MyGUI::Widget *mainw = v.at(0);
-		if(mainw)
+		MyGUI::VectorWidgetPtr v = MyGUI::LayoutManager::getInstance().loadLayout("wallpaper.layout");
+		// load random image in the wallpaper
+		String randomWallpaper = GUIManager::getRandomWallpaperImage();
+		if(!v.empty() && !randomWallpaper.empty())
 		{
-			MyGUI::ImageBox *img = (MyGUI::ImageBox *)(mainw->getChildAt(0));
-			if(img) img->setImageTexture(randomWallpaper);
+			MyGUI::Widget *mainw = v.at(0);
+			if(mainw)
+			{
+				MyGUI::ImageBox *img = (MyGUI::ImageBox *)(mainw->getChildAt(0));
+				if(img) img->setImageTexture(randomWallpaper);
+			}
 		}
 	}
 
@@ -3675,11 +3678,14 @@ void RoRFrameListener::loadTerrain(String terrainfile)
 	}
 
 #ifdef USE_MYGUI
-	// hide loading window
-	LoadingWindow::get()->hide();
-	// hide wallpaper
-	MyGUI::Window *w = MyGUI::Gui::getInstance().findWidget<MyGUI::Window>("wallpaper");
-	if(w) w->setVisibleSmooth(false);
+	if(!BSETTING("REPO_MODE"))
+	{
+		// hide loading window
+		LoadingWindow::get()->hide();
+		// hide wallpaper
+		MyGUI::Window *w = MyGUI::Gui::getInstance().findWidget<MyGUI::Window>("wallpaper");
+		if(w) w->setVisibleSmooth(false);
+	}
 #endif // USE_MYGUI
 
 	if(person) person->setVisible(true);
