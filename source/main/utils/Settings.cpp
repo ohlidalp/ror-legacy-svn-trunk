@@ -391,11 +391,14 @@ bool Settings::setupPaths()
 		settings["Cache Path"]  = settings["User Path"]+string(dsStr)+"cache"+string(dsStr);
 		settings["Log Path"]    = settings["User Path"]+string(dsStr)+"logs"+string(dsStr);
 		settings["ogre.cfg"]    = settings["User Path"]+string(dsStr)+"config"+string(dsStr)+"ogre.cfg";
-		settings["ogre.log"]    = settings["User Path"]+string(dsStr)+"logs"+string(dsStr)+"ogre.log";
+		settings["ogre.log"]    = settings["User Path"]+string(dsStr)+"logs"+string(dsStr)+"RoR.log";
 	}
 
 	if(!settings["Enforce Log Path"].empty())
+	{
 		settings["Log Path"] = settings["Enforce Log Path"];
+		settings["ogre.log"] = settings["Log Path"]+string(dsStr)+"RoR.log";
+	}
 
 	printf(" * log path:         %s\n", settings["Log Path"].c_str());
 	printf(" * config path:      %s\n", settings["Config Root"].c_str());
