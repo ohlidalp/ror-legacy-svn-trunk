@@ -194,7 +194,7 @@ CSimpleOpt::SOption cmdline_options[] = {
 	{ OPT_INCLUDEPATH,    ("-includepath"),     SO_REQ_SEP    },
 	{ OPT_LOGPATH,        ("-logpath"),       SO_REQ_SEP },
 	{ OPT_REPOMODE,       ("-repomode"),       SO_NONE },
-	{ OPT_VEHICLEOUT,        ("-logpath"),       SO_REQ_SEP },
+	{ OPT_VEHICLEOUT,     ("-vehicleout"),       SO_REQ_SEP },
 
 SO_END_OF_OPTIONS
 };
