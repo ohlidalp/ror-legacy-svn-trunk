@@ -137,6 +137,7 @@ class Road;
 class Road2;
 class RoRFrameListener;
 class Screwprop;
+class ScopeLog;
 class Skidmark;
 class Skin;
 class SlideNode;
