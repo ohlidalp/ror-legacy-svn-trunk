@@ -5220,8 +5220,8 @@ void SerializedRig::serialize(Ogre::String targetFilename)
 		FILE *fo = fopen(targetFilename.c_str(), "w");
 		fwprintf(fo, L"%ls", final_value->Stringify().c_str());
 		fclose(fo);
-		//print_out(value->Stringify().c_str());
 
+		LOG("vehicle serialized to json successfully: "+targetFilename);
 		// Clean up
 		delete final_value;
 	} else
