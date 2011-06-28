@@ -45,6 +45,7 @@ class Beam :
 	public SerializedRig, 
 	public Streamable
 {
+friend class PreviewRenderer;
 public:
 	Beam() {}; // for wrapper, DO NOT USE!
 

@@ -33,6 +33,7 @@ public:
 	ContentManager();
 	~ContentManager();
 
+	void initBootstrap(void);
 	bool init(void);
 
 	void loadMainResource(Ogre::String name, Ogre::String group=Ogre::ResourceGroupManager::DEFAULT_RESOURCE_GROUP_NAME);

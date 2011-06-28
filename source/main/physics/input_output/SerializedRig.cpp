@@ -5146,47 +5146,6 @@ int SerializedRig::loadTruck(String fname, SceneManager *manager, SceneNode *par
 		serialize(fn, &scope_log);
 	}
 
-	if(BSETTING("REPO_MODE"))
-	{
-		LOG("REPO MODE, exiting after truck loading");
-
-		if(!SSETTING("vehicleOutputFile").empty())
-		{
-			String fn = SSETTING("vehicleOutputFile") + ".jpg";
-
-
-			// calculate min camera radius for truck and the trucks center
-
-			// first: average pos
-			Vector3 aposition = Vector3::ZERO;
-			for (int i=0; i<free_node; i++)
-				aposition += nodes[i].AbsPosition;
-			aposition = aposition / free_node;
-
-			// then camera radius:
-			float minCameraRadius = 0;
-			for (int i=0; i<free_node; i++)
-			{
-				Real dist = nodes[i].AbsPosition.distance(aposition);
-				if(dist > minCameraRadius)
-					minCameraRadius = dist;
-			}
-			minCameraRadius *= 1.6f; // ten percent buffer
-
-			// position the camera in a good way
-			Camera *cam = RoRFrameListener::eflsingleton->getCamera();
-			cam->setPosition(Vector3(0, -minCameraRadius, 0.01f));
-			cam->lookAt(aposition);
-
-			// create some screenshot
-			RoRWindowEventUtilities::messagePump();
-			Ogre::Root::getSingleton().renderOneFrame();
-			OgreFramework::getSingletonPtr()->m_pRenderWnd->update();
-			OgreFramework::getSingletonPtr()->m_pRenderWnd->writeContentsToFile(fn);
-		}
-		exit(0);
-	}
-
 	parser_warning(c, "parsing done", PARSER_INFO);
 	return 0;
 }

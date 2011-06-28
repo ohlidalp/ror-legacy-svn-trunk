@@ -23,6 +23,8 @@ along with Rigs of Rods.  If not, see <http://www.gnu.org/licenses/>.
 #include "gui_manager.h"
 #include "RoRWindowEventUtilities.h"
 
+#include "Settings.h"
+
 #include "language.h"
 
 LoadingWindow::LoadingWindow() :
@@ -34,7 +36,7 @@ LoadingWindow::LoadingWindow() :
 	mMainWidget->setPosition(gui_area.width/2 - mMainWidget->getWidth()/2, gui_area.height/2 - mMainWidget->getHeight()/2);
 	((MyGUI::Window*)mMainWidget)->setCaption(_L("Loading ..."));
 	t = new Ogre::Timer();
-
+	mMainWidget->setVisible(false);
 }
 
 LoadingWindow::~LoadingWindow()
@@ -52,6 +54,7 @@ bool LoadingWindow::getFrameForced()
 
 void LoadingWindow::setProgress(int _percent, const Ogre::String& _text, bool _updateRenderFrame)
 {
+	if(BSETTING("REPO_MODE")) return;
 	mMainWidget->setVisible(true);
 	mInfoStaticText->setCaption(_text);
 
@@ -63,6 +66,7 @@ void LoadingWindow::setProgress(int _percent, const Ogre::String& _text, bool _u
 
 void LoadingWindow::setAutotrack(const Ogre::String& _text, bool _updateRenderFrame)
 {
+	if(BSETTING("REPO_MODE")) return;
 	mMainWidget->setVisible(true);
 	mInfoStaticText->setCaption(_text);
 	mBarProgress->setProgressPosition(0);
@@ -73,12 +77,14 @@ void LoadingWindow::setAutotrack(const Ogre::String& _text, bool _updateRenderFr
 
 void LoadingWindow::hide()
 {
+	if(BSETTING("REPO_MODE")) return;
 	GUIManager::getSingleton().unfocus();
 	mMainWidget->setVisible(false);
 }
 
 void LoadingWindow::renderOneFrame(bool force)
 {
+	if(BSETTING("REPO_MODE")) return;
 	if(t->getMilliseconds() > 200 || force)
 	{
 		mFrameForced=true;

@@ -60,9 +60,16 @@ void RigsOfRods::go(void)
 	stateManager = new AppStateManager();
 	new ContentManager();
 
-	// dummy state to display the progress bar
-	BootstrapLoadingState::create(stateManager,  "BootstrapLoadingState");
-	stateManager->changeAppState(stateManager->findByName("BootstrapLoadingState"));
+	if(!BSETTING("REPO_MODE"))
+	{
+		// dummy state to display the progress bar
+		BootstrapLoadingState::create(stateManager,  "BootstrapLoadingState");
+		stateManager->changeAppState(stateManager->findByName("BootstrapLoadingState"));
+	} else
+	{
+		// in repo mode, directly into the gamestate
+		ContentManager::getSingleton().initBootstrap();
+	}
 
 	// then the base content setup
 	ContentManager::getSingleton().init();
