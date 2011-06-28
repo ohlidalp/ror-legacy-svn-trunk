@@ -138,7 +138,33 @@ void test_crashrpt()
 #include "SimpleOpt.h"
 
 // option identifiers
-enum { OPT_HELP, OPT_MAP, OPT_TRUCK, OPT_SETUP, OPT_CMD, OPT_WDIR, OPT_ETM, OPT_CONFIG, OPT_VER, OPT_CHECKCACHE, OPT_TRUCKCONFIG, OPT_ENTERTRUCK, OPT_BENCH, OPT_STREAMCACHEGEN, OPT_BENCHNUM, OPT_USERPATH, OPT_BENCHPOS, OPT_BENCHPOSERR, OPT_NOCRASHCRPT, OPT_STATE};
+enum {
+	OPT_HELP,
+	OPT_MAP,
+	OPT_TRUCK,
+	OPT_SETUP,
+	OPT_CMD,
+	OPT_WDIR,
+	OPT_ETM,
+	OPT_CONFIG,
+	OPT_VER,
+	OPT_CHECKCACHE,
+	OPT_TRUCKCONFIG,
+	OPT_ENTERTRUCK,
+	OPT_BENCH,
+	OPT_STREAMCACHEGEN,
+	OPT_BENCHNUM,
+	OPT_USERPATH,
+	OPT_BENCHPOS,
+	OPT_BENCHPOSERR,
+	OPT_NOCRASHCRPT,
+	OPT_STATE,
+	OPT_INCLUDEPATH,
+	OPT_LOGPATH,
+	OPT_ADVLOG,
+	OPT_REPOMODE,
+	OPT_VEHICLEOUT
+};
 
 // option array
 CSimpleOpt::SOption cmdline_options[] = {
@@ -163,7 +189,13 @@ CSimpleOpt::SOption cmdline_options[] = {
 	{ OPT_BENCHNUM,       ("-benchmark-trucks"),       SO_REQ_SEP },
 	{ OPT_STREAMCACHEGEN, ("-streamcachegen"),   SO_NONE    },
 	{ OPT_NOCRASHCRPT,    ("-nocrashrpt"),   SO_NONE    },
+	{ OPT_ADVLOG,         ("-advlog"),   SO_NONE    },
 	{ OPT_STATE,          ("-state"),     SO_REQ_SEP    },
+	{ OPT_INCLUDEPATH,    ("-includepath"),     SO_REQ_SEP    },
+	{ OPT_LOGPATH,        ("-logpath"),       SO_REQ_SEP },
+	{ OPT_REPOMODE,       ("-repomode"),       SO_NONE },
+	{ OPT_VEHICLEOUT,        ("-logpath"),       SO_REQ_SEP },
+
 SO_END_OF_OPTIONS
 };
 
@@ -250,6 +282,12 @@ int main(int argc, char *argv[])
 #endif
 			} else if (args.OptionId() == OPT_STATE) {
 				SETTINGS.setSetting("StartState", args.OptionArg());
+			} else if (args.OptionId() == OPT_LOGPATH) {
+				SETTINGS.setSetting("Log Path", args.OptionArg());
+			} else if (args.OptionId() == OPT_ADVLOG) {
+				SETTINGS.setSetting("Advanced Logging", "Yes");
+			} else if (args.OptionId() == OPT_INCLUDEPATH) {
+				SETTINGS.setSetting("resourceIncludePath", args.OptionArg());
 			} else if (args.OptionId() == OPT_STREAMCACHEGEN) {
 				SETTINGS.setSetting("streamCacheGenerationOnly", "Yes");
 			} else if (args.OptionId() == OPT_CHECKCACHE) {
@@ -259,6 +297,10 @@ int main(int argc, char *argv[])
 				SETTINGS.setSetting("Enter Preselected Truck", "Yes");
 			} else if (args.OptionId() == OPT_SETUP) {
 				SETTINGS.setSetting("USE_OGRE_CONFIG", "Yes");
+			} else if (args.OptionId() == OPT_REPOMODE) {
+				SETTINGS.setSetting("REPO_MODE", "Yes");
+			} else if (args.OptionId() == OPT_VEHICLEOUT) {
+				SETTINGS.setSetting("vehicleOutputFile", args.OptionArg());
 			} else if (args.OptionId() == OPT_VER) {
 				showVersion();
 				return 0;

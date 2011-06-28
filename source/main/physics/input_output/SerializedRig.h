@@ -76,6 +76,7 @@ public:
 	void parser_warning(parsecontext_t &context, Ogre::String text, int errlvl = PARSER_WARNING);
 	void parser_warning(parsecontext_t *context, Ogre::String text, int errlvl = PARSER_WARNING);
 
+	void serialize(Ogre::String targetFilename);
 
 	std::vector <parsecontext_t> &getWarnings() { return warnings; };
 protected:
