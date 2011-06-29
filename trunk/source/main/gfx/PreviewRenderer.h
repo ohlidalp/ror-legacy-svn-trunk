@@ -36,6 +36,8 @@ protected:
 	void go();
 
 	void render(Ogre::String ext);
+	void render3dpreview(Beam *truck, Ogre::Camera *renderCamera, float minCameraRadius, Ogre::SceneNode *camNode);
+	void render2dviews(Beam *truck, Ogre::Camera *renderCamera, float minCameraRadius);
 };
 
 #endif //PREVIEWRENDERER_H__
