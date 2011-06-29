@@ -28,7 +28,7 @@ along with Rigs of Rods.  If not, see <http://www.gnu.org/licenses/>.
 
 PreviewRenderer::PreviewRenderer(Beam *b) : truck(b)
 {
-	fn = SSETTING("vehicleOutputFile");
+	fn = SSETTING("OPT_IMGPATH");
 	if(fn.empty()) return;
 
 	go();

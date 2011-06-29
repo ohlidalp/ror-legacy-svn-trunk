@@ -164,7 +164,8 @@ enum {
 	OPT_ADVLOG,
 	OPT_REPOMODE,
 	OPT_VEHICLEOUT,
-	OPT_NOCACHE
+	OPT_NOCACHE,
+	OPT_IMGPATH
 };
 
 // option array
@@ -197,7 +198,8 @@ CSimpleOpt::SOption cmdline_options[] = {
 	{ OPT_REPOMODE,       ("-repomode"),       SO_NONE },
 	{ OPT_NOCACHE,        ("-nocache"),       SO_NONE },
 	{ OPT_VEHICLEOUT,     ("-vehicleout"),       SO_REQ_SEP },
-
+	{ OPT_IMGPATH,        ("-imgpath"),       SO_REQ_SEP },
+	
 SO_END_OF_OPTIONS
 };
 
@@ -278,6 +280,8 @@ int main(int argc, char *argv[])
 				SETTINGS.setSetting("userpath", String(args.OptionArg()));
 			} else if (args.OptionId() == OPT_CONFIG) {
 				SETTINGS.setSetting("configfile", String(args.OptionArg()));
+			} else if (args.OptionId() == OPT_IMGPATH) {
+				SETTINGS.setSetting("OPT_IMGPATH", String(args.OptionArg()));
 			} else if (args.OptionId() == OPT_WDIR) {
 #if OGRE_PLATFORM == OGRE_PLATFORM_WIN32
 				SetCurrentDirectory(args.OptionArg());
