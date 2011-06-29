@@ -204,14 +204,13 @@ void PreviewRenderer::render3dpreview(Beam *truck, Camera *renderCamera, float m
 {
 	int yaw_angles = 2;
 	int pitch_angles = 30;
-	//TexturePtr renderTexture;
-	//uint32 textureSize = 512;
+	TexturePtr renderTexture;
+	uint32 textureSize = 512;
 	//renderTexture = TextureManager::getSingleton().createManual("3dpreview1", ResourceGroupManager::DEFAULT_RESOURCE_GROUP_NAME, TEX_TYPE_2D, textureSize * pitch_angles, textureSize * yaw_angles, 0, PF_A8R8G8B8, TU_RENDERTARGET);
-	//renderTexture = TextureManager::getSingleton().createManual("3dpreview1", ResourceGroupManager::DEFAULT_RESOURCE_GROUP_NAME, TEX_TYPE_2D, textureSize, textureSize, 0, PF_A8R8G8B8, TU_RENDERTARGET);
-	//renderTexture->setNumMipmaps(0);
-	//renderTexture->setFSAA(8, "Quality");
+	renderTexture = TextureManager::getSingleton().createManual("3dpreview1", ResourceGroupManager::DEFAULT_RESOURCE_GROUP_NAME, TEX_TYPE_2D, textureSize, textureSize, 0, PF_A8R8G8B8, TU_RENDERTARGET);
+	renderTexture->setNumMipmaps(0);
+	renderTexture->setFSAA(8, "Quality");
 	
-	/*
 	RenderTexture *renderTarget = renderTexture->getBuffer()->getRenderTarget();
 	renderTarget->setAutoUpdated(false);
 	Viewport *renderViewport = renderTarget->addViewport(renderCamera);
@@ -219,7 +218,6 @@ void PreviewRenderer::render3dpreview(Beam *truck, Camera *renderCamera, float m
 	renderViewport->setClearEveryFrame(true);
 	renderViewport->setShadowsEnabled(false);
 	renderViewport->setBackgroundColour(ColourValue::White);
-	*/
 
 	const float xDivFactor = 1.0f / pitch_angles;
 	const float yDivFactor = 1.0f / yaw_angles;
@@ -242,14 +240,11 @@ void PreviewRenderer::render3dpreview(Beam *truck, Camera *renderCamera, float m
 			// only when rendering all images into one texture
 			//renderViewport->setDimensions((float)(o) * xDivFactor, (float)(i) * yDivFactor, xDivFactor, yDivFactor);
 
-
-			//renderTarget->update();
+			renderTarget->update();
 
 			char tmp[56];
 			sprintf(tmp, "%03d_%03d.jpg", i, o);
-			//renderTarget->writeContentsToFile(fn + String(tmp));
-
-			render(fn + String(tmp));
+			renderTarget->writeContentsToFile(fn + String(tmp));
 		}
 	}
 
@@ -259,11 +254,11 @@ void PreviewRenderer::render3dpreview(Beam *truck, Camera *renderCamera, float m
 }
 
 
-void PreviewRenderer::render(Ogre::String fn2)
+void PreviewRenderer::render(Ogre::String ext)
 {
 	// create some screenshot
 	RoRWindowEventUtilities::messagePump();
 	Ogre::Root::getSingleton().renderOneFrame();
 	OgreFramework::getSingletonPtr()->m_pRenderWnd->update();
-	OgreFramework::getSingletonPtr()->m_pRenderWnd->writeContentsToFile(fn2);
+	OgreFramework::getSingletonPtr()->m_pRenderWnd->writeContentsToFile(fn+"."+ext+".jpg");
 }
