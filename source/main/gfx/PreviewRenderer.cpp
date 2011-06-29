@@ -96,8 +96,8 @@ void PreviewRenderer::go()
 	cam->setLodBias(1000.0f);
 	cam->setAspectRatio(1.0f);
 
-	// calculate the cameradistance
-	float fov = 45;
+	// calculate the camera-distance
+	float fov = 80;
 	Ogre::Vector3 maxVector = Vector3(truck->maxx, truck->maxy, truck->maxz);
 	Ogre::Vector3 minVector = Vector3(truck->minx, truck->miny, truck->minz);
 	int z1 = (maxVector.z-minVector.z)/2 + (((maxVector.x-minVector.x)/2) / tan(fov / 2));
