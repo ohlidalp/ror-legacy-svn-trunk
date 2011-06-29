@@ -202,10 +202,10 @@ void PreviewRenderer::render2dviews(Beam *truck, Camera *cam, float minCameraRad
 
 void PreviewRenderer::render3dpreview(Beam *truck, Camera *renderCamera, float minCameraRadius, SceneNode *camNode)
 {
-	int yaw_angles = 4;
+	int yaw_angles = 2;
 	int pitch_angles = 30;
 	TexturePtr renderTexture;
-	uint32 textureSize = 1024;
+	uint32 textureSize = 512;
 	//renderTexture = TextureManager::getSingleton().createManual("3dpreview1", ResourceGroupManager::DEFAULT_RESOURCE_GROUP_NAME, TEX_TYPE_2D, textureSize * pitch_angles, textureSize * yaw_angles, 0, PF_A8R8G8B8, TU_RENDERTARGET);
 	renderTexture = TextureManager::getSingleton().createManual("3dpreview1", ResourceGroupManager::DEFAULT_RESOURCE_GROUP_NAME, TEX_TYPE_2D, textureSize, textureSize, 0, PF_A8R8G8B8, TU_RENDERTARGET);
 	renderTexture->setNumMipmaps(0);
@@ -227,7 +227,7 @@ void PreviewRenderer::render3dpreview(Beam *truck, Camera *renderCamera, float m
 		Radian pitch = Degree((360.0f * o) * xDivFactor);
 		for (int i = 0; i < yaw_angles; ++i)
 		{
-			Radian yaw = Degree((20.0f * i) * yDivFactor - 10); //0, 45, 90, 135, 180, 225, 270, 315
+			Radian yaw = Degree(-10); //Degree((20.0f * i) * yDivFactor - 10); //0, 45, 90, 135, 180, 225, 270, 315
 
 			Ogre::Real radius = renderCamera->getPosition().length();
 			renderCamera->setPosition(Vector3::ZERO);
