@@ -98,15 +98,21 @@ void PreviewRenderer::go()
 	sceneMgr->addSpecialCaseRenderQueue(Ogre::RENDER_QUEUE_MAIN);  
 	sceneMgr->setSpecialCaseRenderQueueMode(Ogre::SceneManager::SCRQM_INCLUDE);
 
+	float ominCameraRadius = minCameraRadius;
 
 	for(int o=0;o<2;o++)
 	{
 		String oext = "ortho.";
-		if(o == 1)
+		if     (o == 0)
+		{
+			cam->setProjectionType(Ogre::PT_ORTHOGRAPHIC);
+			minCameraRadius = ominCameraRadius * 2.1f;
+		}
+		else if(o == 1)
 		{
 			oext = "3d.";
 			cam->setProjectionType(Ogre::PT_PERSPECTIVE);
-			minCameraRadius *= 1.3f;
+			minCameraRadius = ominCameraRadius * 2.4f;
 		}
 
 		for(int i=0;i<2;i++)
@@ -123,6 +129,11 @@ void PreviewRenderer::go()
 				truck->updateSimpleSkeleton();
 			}
 			ext = oext + ext;
+
+			// 3d first :)
+			cam->setPosition(Vector3(truck->position.x - minCameraRadius, truck->position.y * 1.5f, truck->position.z - minCameraRadius));
+			cam->lookAt(truck->position);
+			render(ext + "perspective");
 
 			// right
 			cam->setPosition(Vector3(truck->position.x, truck->position.y, truck->position.z - minCameraRadius));
@@ -165,5 +176,5 @@ void PreviewRenderer::render(Ogre::String ext)
 	RoRWindowEventUtilities::messagePump();
 	Ogre::Root::getSingleton().renderOneFrame();
 	OgreFramework::getSingletonPtr()->m_pRenderWnd->update();
-	OgreFramework::getSingletonPtr()->m_pRenderWnd->writeContentsToFile(fn+"."+ext+".jpg");
+	OgreFramework::getSingletonPtr()->m_pRenderWnd->writeContentsToFile(fn+"."+ext+".png");
 }
