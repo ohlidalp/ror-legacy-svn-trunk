@@ -219,32 +219,49 @@ void PreviewRenderer::render3dpreview(Beam *truck, Camera *renderCamera, float m
 	renderViewport->setShadowsEnabled(false);
 	renderViewport->setBackgroundColour(ColourValue::White);
 
+	String skelmode = "normal";
+
 	const float xDivFactor = 1.0f / pitch_angles;
 	const float yDivFactor = 1.0f / yaw_angles;
-	for (int o = 0; o < pitch_angles; ++o)
+	for (int s=0;s<2; s++)
 	{
-		//4 pitch angle renders
-		Radian pitch = Degree((360.0f * o) * xDivFactor);
-		for (int i = 0; i < yaw_angles; ++i)
+		if(s == 0)
 		{
-			Radian yaw = Degree(-10); //Degree((20.0f * i) * yDivFactor - 10); //0, 45, 90, 135, 180, 225, 270, 315
+			truck->hideSkeleton(true);
+			skelmode = "normal";
+		} else if(s == 1)
+		{
+			skelmode = "skeleton";
+			// now show the skeleton
+			truck->showSkeleton(true, true);
+			truck->updateSimpleSkeleton();
+		}
 
-			Ogre::Real radius = renderCamera->getPosition().length();
-			renderCamera->setPosition(Vector3::ZERO);
-			renderCamera->setOrientation(Ogre::Quaternion::IDENTITY);
-			renderCamera->yaw(Ogre::Degree(pitch));
-			renderCamera->pitch(Ogre::Degree(yaw));
-			renderCamera->moveRelative(Ogre::Vector3(0.0,0.0,radius));
+		for (int o = 0; o < pitch_angles; ++o)
+		{
+			//4 pitch angle renders
+			Radian pitch = Degree((360.0f * o) * xDivFactor);
+			for (int i = 0; i < yaw_angles; ++i)
+			{
+				Radian yaw = Degree(-10); //Degree((20.0f * i) * yDivFactor - 10); //0, 45, 90, 135, 180, 225, 270, 315
 
-			//Render into the texture
-			// only when rendering all images into one texture
-			//renderViewport->setDimensions((float)(o) * xDivFactor, (float)(i) * yDivFactor, xDivFactor, yDivFactor);
+				Ogre::Real radius = renderCamera->getPosition().length();
+				renderCamera->setPosition(Vector3::ZERO);
+				renderCamera->setOrientation(Ogre::Quaternion::IDENTITY);
+				renderCamera->yaw(Ogre::Degree(pitch));
+				renderCamera->pitch(Ogre::Degree(yaw));
+				renderCamera->moveRelative(Ogre::Vector3(0.0,0.0,radius));
 
-			renderTarget->update();
+				//Render into the texture
+				// only when rendering all images into one texture
+				//renderViewport->setDimensions((float)(o) * xDivFactor, (float)(i) * yDivFactor, xDivFactor, yDivFactor);
 
-			char tmp[56];
-			sprintf(tmp, "%03d_%03d.jpg", i, o);
-			renderTarget->writeContentsToFile(fn + String(tmp));
+				renderTarget->update();
+
+				char tmp[56];
+				sprintf(tmp, "%03d_%03d.jpg", i, o);
+				renderTarget->writeContentsToFile(fn + skelmode + SSETTING("dirsep") + String(tmp));
+			}
 		}
 	}
 
