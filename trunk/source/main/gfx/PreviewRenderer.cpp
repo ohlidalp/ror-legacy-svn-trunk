@@ -244,7 +244,7 @@ void PreviewRenderer::render3dpreview(Beam *truck, Camera *renderCamera, float m
 
 			char tmp[56];
 			sprintf(tmp, "%03d_%03d.jpg", i, o);
-			renderTarget->writeContentsToFile(fn + "\\" + String(tmp));
+			renderTarget->writeContentsToFile(fn + String(tmp));
 		}
 	}
 
