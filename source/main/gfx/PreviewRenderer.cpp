@@ -191,7 +191,7 @@ void PreviewRenderer::render2dviews(Beam *truck, Camera *cam, float minCameraRad
 
 void PreviewRenderer::render3dpreview(Beam *truck, Camera *renderCamera, float minCameraRadius, SceneNode *camNode)
 {
-	int yaw_angles = 2;
+	int yaw_angles = 1;
 	int pitch_angles = 30;
 	TexturePtr renderTexture;
 	uint32 textureSize = 512;
