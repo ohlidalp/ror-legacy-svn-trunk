@@ -5008,7 +5008,7 @@ int SerializedRig::loadTruck(String fname, SceneManager *manager, SceneNode *par
 		revroll[i]=(nodes[cameranodedir[i]].RelPosition-nodes[cameranodepos[i]].RelPosition).crossProduct(nodes[cameranoderoll[i]].RelPosition-nodes[cameranodepos[i]].RelPosition).y>0;
 		if (revroll[i])
 		{
-			parser_warning(c, "camera definition is probably invalid and has been corrected. It should be center, back, left", PARSER_WARNING);
+			parser_warning(c, "camera definition is probably invalid and has been corrected. It should be center, back, left", PARSER_OBSOLETE);
 		}
 	}
 	
