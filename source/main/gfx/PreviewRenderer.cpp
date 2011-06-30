@@ -84,12 +84,6 @@ void PreviewRenderer::go()
 	}
 	minCameraRadius *= 2.1f;
 
-	// position the camera in a good way
-	const Real objDist = minCameraRadius * 2;
-	const Real nearDist = objDist - (minCameraRadius + 1); 
-	const Real farDist = objDist + (minCameraRadius + 1);
-
-
 	SceneNode *camNode = sceneMgr->getRootSceneNode()->createChildSceneNode();
 
 	Camera *cam = RoRFrameListener::eflsingleton->getCamera();
@@ -97,7 +91,7 @@ void PreviewRenderer::go()
 	cam->setAspectRatio(1.0f);
 
 	// calculate the camera-distance
-	float fov = 80;
+	float fov = 60;
 	Ogre::Vector3 maxVector = Vector3(truck->maxx, truck->maxy, truck->maxz);
 	Ogre::Vector3 minVector = Vector3(truck->minx, truck->miny, truck->minz);
 	int z1 = (maxVector.z-minVector.z)/2 + (((maxVector.x-minVector.x)/2) / tan(fov / 2));
@@ -116,12 +110,6 @@ void PreviewRenderer::go()
 	cam->pitch(Ogre::Degree(-45));
 	
 	cam->moveRelative(Ogre::Vector3(0.0,0.0,radius));
-
-	/*
-	sceneMgr->clearSpecialCaseRenderQueues();
-	sceneMgr->addSpecialCaseRenderQueue(Ogre::RENDER_QUEUE_MAIN);  
-	sceneMgr->setSpecialCaseRenderQueueMode(Ogre::SceneManager::SCRQM_INCLUDE);
-	*/
 
 	//render2dviews(truck, cam, minCameraRadius);
 	render3dpreview(truck, cam, minCameraRadius, camNode);
@@ -245,7 +233,7 @@ void PreviewRenderer::render3dpreview(Beam *truck, Camera *renderCamera, float m
 			{
 				Radian yaw = Degree(-10); //Degree((20.0f * i) * yDivFactor - 10); //0, 45, 90, 135, 180, 225, 270, 315
 
-				Ogre::Real radius = renderCamera->getPosition().length();
+				Ogre::Real radius = minCameraRadius; //renderCamera->getPosition().length();
 				renderCamera->setPosition(Vector3::ZERO);
 				renderCamera->setOrientation(Ogre::Quaternion::IDENTITY);
 				renderCamera->yaw(Ogre::Degree(pitch));
