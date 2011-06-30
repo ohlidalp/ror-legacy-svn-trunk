@@ -535,8 +535,19 @@ Beam::Beam(int tnum, SceneManager *manager, SceneNode *parent, RenderWindow* win
 
 	cparticle_enabled=BSETTING("Particles");
 	if(strnlen(fname,200) > 0)
+	{
 		if(loadTruck2(String(fname), manager, parent, Vector3(px, py, pz), rot, spawnbox))
+		{
+			// failed to load, exit?
+			if(BSETTING("REPO_MODE"))
+			{
+				PreviewRenderer r(this);
+				exit(0);
+			}
+ 
 			return;
+		}
+	}
 
 
 

@@ -40,6 +40,7 @@ PreviewRenderer::~PreviewRenderer()
 
 void PreviewRenderer::go()
 {
+	LOG("starting previewRenderer...");
 	Ogre::SceneManager *sceneMgr = RoRFrameListener::eflsingleton->getSceneMgr();
 	Ogre::Viewport *vp = RoRFrameListener::eflsingleton->getRenderWindow()->getViewport(0);
 
@@ -249,6 +250,8 @@ void PreviewRenderer::render3dpreview(Beam *truck, Camera *renderCamera, float m
 				char tmp[56];
 				sprintf(tmp, "%03d_%03d.jpg", i, o);
 				renderTarget->writeContentsToFile(fn + skelmode + SSETTING("dirsep") + String(tmp));
+				
+				LOG("rendered " + fn + skelmode + SSETTING("dirsep") + String(tmp));
 			}
 		}
 	}
