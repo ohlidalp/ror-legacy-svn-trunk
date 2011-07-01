@@ -25,6 +25,7 @@ along with Rigs of Rods.  If not, see <http://www.gnu.org/licenses/>.
 #include "AdvancedOgreFramework.h"
 
 #include "Beam.h"
+#include "engine.h"
 
 PreviewRenderer::PreviewRenderer(Beam *b) : truck(b)
 {
@@ -62,12 +63,31 @@ void PreviewRenderer::go()
 	// tricky, now reset the truck to the scene's center
 	//truck->resetPosition(truck->getPosition().x, truck->getPosition().z, true);
 
-	// run the beam engine one time
+	// now switch on headlights and stuff
+	truck->reset();
+	truck->lightsToggle();
+	truck->beaconsToggle();
+	truck->setBlinkType(BLINK_WARN);
+	truck->toggleCustomParticles();
+	// accelerate
+	if(truck->engine)
+		truck->engine->autoSetAcc(0.5f);
+
+	// steer a bit
+	truck->hydrodircommand = 0.3f;
+
+	// run the beam engine for ten seconds, at 25 fps
 	int tsteps = 100; // 100 steps
-	Real dtperstep = 0.01 / (float)tsteps; // at 100 FPS
-	for (int i=0; i<tsteps; i++)
+	float time=0;
+	Real dt = 0.01; // 0.01 seconds / frame = 100 FPS
+	Real dtperstep = dt / (float)tsteps;
+	while(time < 10)
 	{
-		truck->calcForcesEuler(i==tsteps, dtperstep, i, tsteps);
+		for (int i=0; i<tsteps; i++)
+		{
+			truck->calcForcesEuler(i==tsteps, dtperstep, i, tsteps);
+		}
+		time += dt;
 	}
 
 	// calculate min camera radius for truck and the trucks center
@@ -111,6 +131,12 @@ void PreviewRenderer::go()
 	cam->pitch(Ogre::Degree(-45));
 	
 	cam->moveRelative(Ogre::Vector3(0.0,0.0,radius));
+
+
+	// only render our object
+	//sceneMgr->clearSpecialCaseRenderQueues(); 
+	//sceneMgr->addSpecialCaseRenderQueue(RENDER_QUEUE_6); 
+	//sceneMgr->setSpecialCaseRenderQueueMode(SceneManager::SCRQM_INCLUDE); 
 
 	//render2dviews(truck, cam, minCameraRadius);
 	render3dpreview(truck, cam, minCameraRadius, camNode);
@@ -194,11 +220,9 @@ void PreviewRenderer::render3dpreview(Beam *truck, Camera *renderCamera, float m
 	int yaw_angles = 1;
 	int pitch_angles = 30;
 	TexturePtr renderTexture;
-	uint32 textureSize = 512;
+	uint32 textureSize = 1024;
 	//renderTexture = TextureManager::getSingleton().createManual("3dpreview1", ResourceGroupManager::DEFAULT_RESOURCE_GROUP_NAME, TEX_TYPE_2D, textureSize * pitch_angles, textureSize * yaw_angles, 0, PF_A8R8G8B8, TU_RENDERTARGET);
-	renderTexture = TextureManager::getSingleton().createManual("3dpreview1", ResourceGroupManager::DEFAULT_RESOURCE_GROUP_NAME, TEX_TYPE_2D, textureSize, textureSize, 0, PF_A8R8G8B8, TU_RENDERTARGET);
-	renderTexture->setNumMipmaps(0);
-	renderTexture->setFSAA(8, "Quality");
+	renderTexture = TextureManager::getSingleton().createManual("3dpreview1", ResourceGroupManager::DEFAULT_RESOURCE_GROUP_NAME, TEX_TYPE_2D, textureSize, textureSize, 32, 0, PF_A8R8G8B8, TU_RENDERTARGET, 0, false, 8, "Quality");
 	
 	RenderTexture *renderTarget = renderTexture->getBuffer()->getRenderTarget();
 	renderTarget->setAutoUpdated(false);
@@ -206,7 +230,7 @@ void PreviewRenderer::render3dpreview(Beam *truck, Camera *renderCamera, float m
 	renderViewport->setOverlaysEnabled(false);
 	renderViewport->setClearEveryFrame(true);
 	renderViewport->setShadowsEnabled(false);
-	renderViewport->setBackgroundColour(ColourValue::White);
+	renderViewport->setBackgroundColour(ColourValue(1, 1, 1, 0));
 
 	String skelmode = "normal";
 
@@ -248,7 +272,7 @@ void PreviewRenderer::render3dpreview(Beam *truck, Camera *renderCamera, float m
 				renderTarget->update();
 
 				char tmp[56];
-				sprintf(tmp, "%03d_%03d.jpg", i, o);
+				sprintf(tmp, "%03d_%03d.jpg", i, o); // use .png for transparancy 
 				renderTarget->writeContentsToFile(fn + skelmode + SSETTING("dirsep") + String(tmp));
 				
 				LOG("rendered " + fn + skelmode + SSETTING("dirsep") + String(tmp));
