@@ -76,13 +76,14 @@ void PreviewRenderer::go()
 	// steer a bit
 	truck->hydrodircommand = 0.3f;
 
-	// run the beam engine for ten seconds, at 25 fps
-	int tsteps = 100; // 100 steps
+	// run the beam engine for ten seconds
+	int tsteps = 100; // 100 steps every frame
 	float time=0;
 	Real dt = 0.01; // 0.01 seconds / frame = 100 FPS
 	Real dtperstep = dt / (float)tsteps;
 	while(time < 10)
 	{
+		// run the engine for ten virtual seconds
 		for (int i=0; i<tsteps; i++)
 		{
 			truck->calcForcesEuler(i==tsteps, dtperstep, i, tsteps);
