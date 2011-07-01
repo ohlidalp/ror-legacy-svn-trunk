@@ -26,6 +26,9 @@ along with Rigs of Rods.  If not, see <http://www.gnu.org/licenses/>.
 
 using namespace Ogre;
 
+int Skin::counter = 0;
+
+
 Skin::Skin(ResourceManager* creator, const String& name, ResourceHandle handle, const String& group, bool isManual, ManualResourceLoader* loader) : 
 	Ogre::Resource(creator, name, handle, group, isManual, loader)
 {
@@ -34,33 +37,27 @@ Skin::Skin(ResourceManager* creator, const String& name, ResourceHandle handle, 
 	this->description = "";
 	this->authorName = "";
 	this->authorID = -1;
-	//LOG("Skin::Skin("+name+")");
 }
 
 Skin::~Skin()
 {
-	//LOG("Skin::~Skin("+name+")");
 }
 
 void Skin::loadImpl()
 {
-	//LOG("Skin::loadImpl("+name+")");
 }
 
 void Skin::unloadImpl()
 {
-	//LOG("Skin::unloadImpl("+name+")");
 }
 
 size_t Skin::calculateSize() const
 {
-	//LOG("Skin::calculateSize("+name+")");
 	return 0;
 }
 
 int Skin::addMaterialReplace(Ogre::String from, Ogre::String to)
 {
-	//LOG("Skin::addMaterialReplace("+from+","+to+")");
 	replaceMaterials[from] = to;
 	return 0;
 }
@@ -83,7 +80,6 @@ int Skin::hasReplacementForTexture(Ogre::String texture)
 
 Ogre::String Skin::getReplacementForTexture(Ogre::String texture)
 {
-	//LOG("Skin::getReplacementForMaterial("+material+") = " + replaceMaterials[material]);
 	String res = replaceTextures[texture];
 	if(res.empty()) res = texture;
 	return res;
@@ -91,7 +87,6 @@ Ogre::String Skin::getReplacementForTexture(Ogre::String texture)
 
 Ogre::String Skin::getReplacementForMaterial(Ogre::String material)
 {
-	//LOG("Skin::getReplacementForMaterial("+material+") = " + replaceMaterials[material]);
 	String res = replaceMaterials[material];
 	if(res.empty()) res = material;
 	return res;
@@ -136,25 +131,6 @@ void Skin::replaceMaterialTextures(Ogre::String materialName)
 void Skin::replaceMeshMaterials(Ogre::Entity *e)
 {
 	if(!e) return;
-	MeshPtr m = e->getMesh();
-	if(!m.isNull())
-	{
-		for(int n=0; n<(int)m->getNumSubMeshes();n++)
-		{
-			SubMesh *sm = m->getSubMesh(n);
-			String materialName = sm->getMaterialName();
-			std::map<Ogre::String, Ogre::String>::iterator it = replaceMaterials.find(materialName);
-			if(it != replaceMaterials.end())
-			{
-				materialName = it->second;
-				sm->setMaterialName(materialName);
-			} else
-			{
-				// look for texture replacements
-				replaceMaterialTextures(sm->getMaterialName());
-			}
-		}
-	}
 
 	for(int n=0; n<(int)e->getNumSubEntities();n++)
 	{
@@ -174,6 +150,24 @@ void Skin::replaceMeshMaterials(Ogre::Entity *e)
 
 }
 
+void Skin::uniquifyMeshMaterials(Ogre::Entity *e)
+{
+	if(!e) return;
+
+	for(int n=0; n<(int)e->getNumSubEntities();n++)
+	{
+		SubEntity *subent = e->getSubEntity(n);
+		String oldMaterialName = subent->getMaterialName();
+		String newMaterialName = oldMaterialName + "_" + TOSTRING(counter++);
+
+		MaterialPtr mat = MaterialManager::getSingleton().getByName(oldMaterialName);
+		if(!mat.isNull())
+		{
+			mat->clone(newMaterialName);
+			subent->setMaterialName(newMaterialName);
+		}
+	}
+}
 
 bool Skin::operator==(const Skin& other) const
 {

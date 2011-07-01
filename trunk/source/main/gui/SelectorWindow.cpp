@@ -863,6 +863,7 @@ bool SelectorWindow::isFinishedSelecting()
 
 void SelectorWindow::show(LoaderType type)
 {
+	mSelectedSkin=0;
 	mSearchLineEdit->setCaption(_L("Search ..."));
 	mSelectionDone=false;
 	// reset all keys
