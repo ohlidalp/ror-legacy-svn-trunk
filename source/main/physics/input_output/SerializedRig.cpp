@@ -3545,6 +3545,7 @@ int SerializedRig::loadTruck(String fname, SceneManager *manager, SceneNode *par
 						parser_warning(c, "error loading mesh: "+String(wname), PARSER_ERROR);
 						continue;
 					}
+					Skin::uniquifyMeshMaterials(ec);
 					MaterialFunctionMapper::replaceSimpleMeshMaterials(ec, ColourValue(0.5, 1, 0));
 					if(materialFunctionMapper) materialFunctionMapper->replaceMeshMaterials(ec);
 					if(materialReplacer) materialReplacer->replaceMeshMaterials(ec);
@@ -5123,6 +5124,7 @@ int SerializedRig::loadTruck(String fname, SceneManager *manager, SceneNode *par
 			{
 				parser_warning(c, "error loading mesh: "+String(wname));
 			}
+			Skin::uniquifyMeshMaterials(ec);
 			MaterialFunctionMapper::replaceSimpleMeshMaterials(ec, ColourValue(0.5, 1, 0.5));
 			if(materialFunctionMapper) materialFunctionMapper->replaceMeshMaterials(ec);
 			if(materialReplacer) materialReplacer->replaceMeshMaterials(ec);
@@ -5590,6 +5592,7 @@ void SerializedRig::addWheel(SceneManager *manager, SceneNode *parent, Real radi
 				vwheels[free_wheel].cnode = manager->getRootSceneNode()->createChildSceneNode();
 				if(ec)
 					vwheels[free_wheel].cnode->attachObject(ec);
+				Skin::uniquifyMeshMaterials(ec);
 				MaterialFunctionMapper::replaceSimpleMeshMaterials(ec, ColourValue(0, 0.5, 0.5));
 				if(materialFunctionMapper) materialFunctionMapper->replaceMeshMaterials(ec);
 				if(materialReplacer) materialReplacer->replaceMeshMaterials(ec);
@@ -5605,6 +5608,7 @@ void SerializedRig::addWheel(SceneManager *manager, SceneNode *parent, Real radi
 			try
 			{
 				Entity *ec = manager->createEntity(wnamei, wname);
+				Skin::uniquifyMeshMaterials(ec);
 				MaterialFunctionMapper::replaceSimpleMeshMaterials(ec, ColourValue(0, 0.5, 0.5));
 				if(materialFunctionMapper) materialFunctionMapper->replaceMeshMaterials(ec);
 				if(materialReplacer) materialReplacer->replaceMeshMaterials(ec);
@@ -5802,6 +5806,7 @@ void SerializedRig::addWheel2(SceneManager *manager, SceneNode *parent, Real rad
 		try
 		{
 			Entity *ec = manager->createEntity(wnamei, wname);
+			Skin::uniquifyMeshMaterials(ec);
 			MaterialFunctionMapper::replaceSimpleMeshMaterials(ec, ColourValue(0, 0.5, 0.5));
 			if(materialFunctionMapper) materialFunctionMapper->replaceMeshMaterials(ec);
 			if(materialReplacer) materialReplacer->replaceMeshMaterials(ec);

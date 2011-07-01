@@ -55,6 +55,8 @@ public:
 	Ogre::String getReplacementForMaterial(Ogre::String material);
 	
 	// common
+	static void uniquifyMeshMaterials(Ogre::Entity *e);
+
 	void replaceMeshMaterials(Ogre::Entity *e);
 	void replaceMaterialTextures(Ogre::String materialName);
 
@@ -62,6 +64,8 @@ public:
 protected:
 	std::map<Ogre::String, Ogre::String> replaceTextures;
 	std::map<Ogre::String, Ogre::String> replaceMaterials;
+
+	static int counter;
 
 	void loadImpl(void);
 	void unloadImpl(void);
