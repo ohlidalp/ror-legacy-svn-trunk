@@ -5134,6 +5134,14 @@ int SerializedRig::loadTruck(String fname, SceneManager *manager, SceneNode *par
 	parser_warning(c, "cab ok", PARSER_INFO);
 	//	mWindow->setDebugText("Beam number:"+ TOSTRING(free_beam));
 
+	if(c.mode == BTS_DESCRIPTION)
+		parser_warning(c, "description section not closed with end_description", PARSER_ERROR);
+
+	if(c.mode == BTS_COMMENT)
+		parser_warning(c, "comment section not closed with end_comment", PARSER_ERROR);
+
+	if(c.mode == BTS_SECTION)
+		parser_warning(c, "section section not closed with end_section", PARSER_ERROR);
 
 	// check for some things
 	if(strnlen(guid, 128) == 0)

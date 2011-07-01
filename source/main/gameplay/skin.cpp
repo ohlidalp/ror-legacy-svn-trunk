@@ -112,7 +112,7 @@ void Skin::replaceMaterialTextures(Ogre::String materialName)
 
 					//if(tus->getTextureType() != TEX_TYPE_2D) continue; // only replace 2d images
 					// walk the frames, usually there is only one
-					for(int fr=0; fr<tus->getNumFrames(); fr++)
+					for(unsigned int fr=0; fr<tus->getNumFrames(); fr++)
 					{
 						String textureName = tus->getFrameTextureName(fr);
 						std::map<Ogre::String, Ogre::String>::iterator it = replaceTextures.find(textureName);
