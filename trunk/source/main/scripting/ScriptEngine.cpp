@@ -599,9 +599,11 @@ int ScriptEngine::envokeCallback(int functionPtr, eventsource_t *source, node_t 
 	context->Prepare(functionPtr);
 
 	// Set the function arguments
+	std::string *instance_name = new std::string(source->instancename);
+	std::string *boxname = new std::string(source->boxname);
 	context->SetArgDWord (0, type);
-	context->SetArgObject(1, &std::string(source->instancename));
-	context->SetArgObject(2, &std::string(source->boxname));
+	context->SetArgObject(1, instance_name);
+	context->SetArgObject(2, boxname);
 	if(node)
 		context->SetArgDWord (3, node->id);
 	else
@@ -613,6 +615,9 @@ int ScriptEngine::envokeCallback(int functionPtr, eventsource_t *source, node_t 
 	  // The return value is only valid if the execution finished successfully
 		AngelScript::asDWORD ret = context->GetReturnDWord();
 	}
+	delete(instance_name);
+	delete(boxname);
+
 	return 0;
 }
 
