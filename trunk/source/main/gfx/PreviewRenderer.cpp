@@ -29,6 +29,7 @@ along with Rigs of Rods.  If not, see <http://www.gnu.org/licenses/>.
 #include "Beam.h"
 #include "BeamFactory.h"
 #include "engine.h"
+#include "utils.h"
 
 PreviewRenderer::PreviewRenderer()
 {
@@ -69,12 +70,14 @@ void PreviewRenderer::render()
 	truck->beaconsToggle();
 	truck->setBlinkType(BLINK_WARN);
 	truck->toggleCustomParticles();
-	// accelerate
-	if(truck->engine)
-		truck->engine->autoSetAcc(0.2f);
+	
+	
+	// DO NOT accelerate
+	//if(truck->engine)
+	//	truck->engine->autoSetAcc(0.2f);
 
 	// steer a bit
-	truck->hydrodircommand = -0.3f;
+	truck->hydrodircommand = -0.6f;
 
 	// run the beam engine for ten seconds
 	LOG("simulating truck for ten seconds ...");
@@ -112,11 +115,21 @@ void PreviewRenderer::render()
 
 	// calculate the camera-distance
 	float fov = 60;
-	Ogre::Vector3 maxVector = Vector3(truck->maxx, truck->maxy, truck->maxz);
-	Ogre::Vector3 minVector = Vector3(truck->minx, truck->miny, truck->minz);
+
+	// now calculate the bounds with respct of the nodes and beams
+	AxisAlignedBox aab = getWorldAABB(truck->getSceneNode());
+	AxisAlignedBox truckaab = AxisAlignedBox(truck->minx, truck->miny, truck->minz, truck->maxx, truck->maxy, truck->maxz);
+	aab.merge(truckaab);
+
+	Ogre::Vector3 maxVector = aab.getMaximum();
+	Ogre::Vector3 minVector = aab.getMinimum();
+	LOG("Object bounds: "+TOSTRING(minVector)+" - "+TOSTRING(maxVector));
+
 	int z1 = (maxVector.z-minVector.z)/2 + (((maxVector.x-minVector.x)/2) / tan(fov / 2));
 	int z2 = (maxVector.z-minVector.z)/2 + (((maxVector.y-minVector.y)/2) / tan(fov / 2));
-	camNode->setPosition(truck->position);
+	
+	//camNode->setPosition(truck->position);
+	camNode->setPosition(aab.getCenter());
 	camNode->attachObject(cam);
 
 	cam->setFOVy(Ogre::Angle(fov));

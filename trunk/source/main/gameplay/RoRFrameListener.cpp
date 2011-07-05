@@ -4561,14 +4561,14 @@ void RoRFrameListener::loadClassicTerrain(String terrainfile)
 			Vector3 pos = Vector3(px,py,pz);
 
 			Ogre::ColourValue BackgroundColour = Ogre::ColourValue::White;//Ogre::ColourValue(0.1337f, 0.1337f, 0.1337f, 1.0f);
-			Ogre::ColourValue GridColour = Ogre::ColourValue(0.7f, 0.7f, 0.7f, 1.0f);
+			Ogre::ColourValue GridColour = Ogre::ColourValue(0.2f, 0.2f, 0.2f, 1.0f);
 		
 			Ogre::ManualObject *mReferenceObject = new Ogre::ManualObject("ReferenceGrid");
 
 			mReferenceObject->begin("BaseWhiteNoLighting", Ogre::RenderOperation::OT_LINE_LIST);
    
 			Ogre::Real step = 1.0f;
-			unsigned int count = 200;
+			unsigned int count = 50;
 			unsigned int halfCount = count / 2;
 			Ogre::Real full = (step * count);
 			Ogre::Real half = full / 2;
