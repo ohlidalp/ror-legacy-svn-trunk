@@ -82,6 +82,7 @@ along with Rigs of Rods.  If not, see <http://www.gnu.org/licenses/>.
 #include "turboprop.h"
 #include "screwprop.h"
 #include "FlexAirfoil.h"
+#include "PreviewRenderer.h"
 
 #ifdef USE_MYGUI
 #include "gui_manager.h"
@@ -4560,13 +4561,13 @@ void RoRFrameListener::loadClassicTerrain(String terrainfile)
 			Vector3 pos = Vector3(px,py,pz);
 
 			Ogre::ColourValue BackgroundColour = Ogre::ColourValue::White;//Ogre::ColourValue(0.1337f, 0.1337f, 0.1337f, 1.0f);
-			Ogre::ColourValue GridColour = Ogre::ColourValue(0.9f, 0.9f, 0.9f, 1.0f);
+			Ogre::ColourValue GridColour = Ogre::ColourValue(0.7f, 0.7f, 0.7f, 1.0f);
 		
 			Ogre::ManualObject *mReferenceObject = new Ogre::ManualObject("ReferenceGrid");
 
 			mReferenceObject->begin("BaseWhiteNoLighting", Ogre::RenderOperation::OT_LINE_LIST);
    
-			Ogre::Real step = 10.0f;
+			Ogre::Real step = 1.0f;
 			unsigned int count = 200;
 			unsigned int halfCount = count / 2;
 			Ogre::Real full = (step * count);
@@ -4577,7 +4578,7 @@ void RoRFrameListener::loadClassicTerrain(String terrainfile)
 			{
     
 				if (i == halfCount)
-					c = Ogre::ColourValue(0.5f,0.3f,0.3f,1.0f);
+					c = Ogre::ColourValue(1,0,0,1.0f);
 				else
 					c = GridColour;
     
@@ -4591,7 +4592,7 @@ void RoRFrameListener::loadClassicTerrain(String terrainfile)
 				mReferenceObject->colour(BackgroundColour);
 
 				if (i == halfCount)
-					c = Ogre::ColourValue(0.3f,0.3f,0.5f,1.0f);
+					c = Ogre::ColourValue(0,0,1,1.0f);
 				else
 					c = GridColour;
     
@@ -5223,6 +5224,15 @@ void RoRFrameListener::initTrucks(bool loadmanual, Ogre::String selected, Ogre::
 	if(mtc)
 		mtc->update();
 #endif // MYGUI
+		
+
+	if(BSETTING("REPO_MODE"))
+	{
+		PreviewRenderer r;
+		r.render();
+		exit(0);
+	}
+
 }
 
 void RoRFrameListener::changedCurrentTruck(Beam *previousTruck, Beam *currentTruck)
