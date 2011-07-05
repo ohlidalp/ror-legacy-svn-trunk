@@ -24,46 +24,46 @@ along with Rigs of Rods.  If not, see <http://www.gnu.org/licenses/>.
 #include "RoRFrameListener.h"
 #include "AdvancedOgreFramework.h"
 
+#include "SkyManager.h"
+
 #include "Beam.h"
+#include "BeamFactory.h"
 #include "engine.h"
 
-PreviewRenderer::PreviewRenderer(Beam *b) : truck(b)
+PreviewRenderer::PreviewRenderer()
 {
 	fn = SSETTING("OPT_IMGPATH");
 	if(fn.empty()) return;
-
-	go();
+	LOG("previewRenderer initialized");
 }
 
 PreviewRenderer::~PreviewRenderer()
 {
 }
 
-void PreviewRenderer::go()
+void PreviewRenderer::render()
 {
 	LOG("starting previewRenderer...");
+	Beam *truck = BeamFactory::getSingleton().getCurrentTruck();
 	Ogre::SceneManager *sceneMgr = RoRFrameListener::eflsingleton->getSceneMgr();
 	Ogre::Viewport *vp = RoRFrameListener::eflsingleton->getRenderWindow()->getViewport(0);
 
 	// disable skybox
-	sceneMgr->setSkyBox(false, "");
+	//sceneMgr->setSkyBox(false, "");
 	// disable fog
-	sceneMgr->setFog(FOG_NONE);
+	//sceneMgr->setFog(FOG_NONE);
 	// disable shadows
-	vp->setShadowsEnabled(false);
+	//vp->setShadowsEnabled(false);
 	// white background
-	vp->setBackgroundColour(Ogre::ColourValue::White);
+	//vp->setBackgroundColour(Ogre::ColourValue::White);
 	vp->setClearEveryFrame(true);
 
 	// better mipmapping
 	MaterialManager::getSingleton().setDefaultAnisotropy(8);
 	MaterialManager::getSingleton().setDefaultTextureFiltering(TFO_ANISOTROPIC);
 
-
-	// tricky, now reset the truck to the scene's center
-	//truck->resetPosition(truck->getPosition().x, truck->getPosition().z, true);
-
 	// now switch on headlights and stuff
+	BeamFactory::getSingleton().setCurrentTruck(truck->trucknum);
 	truck->reset();
 	truck->lightsToggle();
 	truck->beaconsToggle();
@@ -71,30 +71,28 @@ void PreviewRenderer::go()
 	truck->toggleCustomParticles();
 	// accelerate
 	if(truck->engine)
-		truck->engine->autoSetAcc(0.5f);
+		truck->engine->autoSetAcc(0.2f);
 
 	// steer a bit
-	truck->hydrodircommand = 0.3f;
+	truck->hydrodircommand = -0.3f;
 
 	// run the beam engine for ten seconds
-	int tsteps = 100; // 100 steps every frame
+	LOG("simulating truck for ten seconds ...");
 	float time=0;
-	Real dt = 0.01; // 0.01 seconds / frame = 100 FPS
-	Real dtperstep = dt / (float)tsteps;
+	Real dt = 0.0333; // 0.0333 seconds / frame = 30 FPS
 	while(time < 10)
 	{
 		// run the engine for ten virtual seconds
-		for (int i=0; i<tsteps; i++)
-		{
-			truck->calcForcesEuler(i==tsteps, dtperstep, i, tsteps);
-		}
+		BeamFactory::getSingleton().calcPhysics(dt);
 		time += dt;
 	}
+	BeamFactory::getSingleton().updateVisual(dt);
+	LOG("simulation done");
 
 	// calculate min camera radius for truck and the trucks center
 
 	// first: average pos
-	truck->updateTruckPosition();
+	//truck->updateTruckPosition();
 
 	// then camera radius:
 	float minCameraRadius = 0;
@@ -230,8 +228,12 @@ void PreviewRenderer::render3dpreview(Beam *truck, Camera *renderCamera, float m
 	Viewport *renderViewport = renderTarget->addViewport(renderCamera);
 	renderViewport->setOverlaysEnabled(false);
 	renderViewport->setClearEveryFrame(true);
-	renderViewport->setShadowsEnabled(false);
-	renderViewport->setBackgroundColour(ColourValue(1, 1, 1, 0));
+	//renderViewport->setShadowsEnabled(false);
+	//renderViewport->setBackgroundColour(ColourValue(1, 1, 1, 0));
+
+	SkyManager::getSingleton().notifyCameraChanged(renderCamera);
+	SkyManager::getSingleton().forceUpdate(0.01f);
+
 
 	String skelmode = "normal";
 
@@ -271,6 +273,7 @@ void PreviewRenderer::render3dpreview(Beam *truck, Camera *renderCamera, float m
 				//renderViewport->setDimensions((float)(o) * xDivFactor, (float)(i) * yDivFactor, xDivFactor, yDivFactor);
 
 				renderTarget->update();
+				//SkyManager::getSingleton().forceUpdate(0.01f);
 
 				char tmp[56];
 				sprintf(tmp, "%03d_%03d.jpg", i, o); // use .png for transparancy 

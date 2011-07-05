@@ -27,13 +27,12 @@ along with Rigs of Rods.  If not, see <http://www.gnu.org/licenses/>.
 class PreviewRenderer
 {
 public:
-	PreviewRenderer(Beam *b);
+	PreviewRenderer();
 	~PreviewRenderer();
 
+	void render();
 protected:
-	Beam *truck;
 	Ogre::String fn;
-	void go();
 
 	void render(Ogre::String ext);
 	void render3dpreview(Beam *truck, Ogre::Camera *renderCamera, float minCameraRadius, Ogre::SceneNode *camNode);
