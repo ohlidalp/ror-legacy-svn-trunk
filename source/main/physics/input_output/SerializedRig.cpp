@@ -4771,6 +4771,12 @@ int SerializedRig::loadTruck(String fname, SceneManager *manager, SceneNode *par
 					if(n > (i + 1))
 						strncpy(sectionName[i], args[i + 1].c_str(), 255);
 				}
+				
+				if(truckconfig.empty() && strlen(sectionName[0]) > 0)
+				{
+					// compatibility mode: if no section was specified, use the first
+					truckconfig.push_back(sectionName[0]);
+				}
 
 				bool found = false;
 				for(int i=0;i<10;i++)

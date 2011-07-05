@@ -212,3 +212,24 @@ bool compareCaseInsensitive(std::string strFirst, std::string strSecond)
 	return (strFirst == strSecond);
 }
 
+
+Ogre::AxisAlignedBox getWorldAABB(Ogre::SceneNode* node)
+{
+	AxisAlignedBox aabb;
+
+	// merge with attached objects
+	for (int i=0; i<node->numAttachedObjects(); ++i)
+	{
+		MovableObject* o = node->getAttachedObject(i);
+		aabb.merge(o->getWorldBoundingBox(true));
+	}
+
+	// merge with child nodes
+	for (int i=0; i<node->numChildren(); ++i)
+	{
+		SceneNode* child = static_cast<SceneNode*>(node->getChild(i));
+		aabb.merge( getWorldAABB(child) );
+	}
+
+	return aabb;
+}
