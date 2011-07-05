@@ -5214,6 +5214,24 @@ void SerializedRig::serialize(Ogre::String targetFilename, ScopeLog *scope_log)
 		root[L"fatals"]     = new JSONValue(TOSTRING(fatals_count).c_str());
 		root[L"rorversion"] = new JSONValue(ROR_VERSION_STRING);
 
+		
+		if(!virtuallyLoaded) // && mSceneNode)
+		{
+	 		// now calculate the bounds with respct of the nodes and beams
+			//AxisAlignedBox aab = getWorldAABB(mSceneNode);
+			calcBox();
+			AxisAlignedBox aab = AxisAlignedBox(minx, miny, minz, maxx, maxy, maxz);
+			//aab.merge(truckaab);
+
+			root[L"minx"]     = new JSONValue(TOSTRING(aab.getMinimum().x).c_str());
+			root[L"miny"]     = new JSONValue(TOSTRING(aab.getMinimum().y).c_str());
+			root[L"minz"]     = new JSONValue(TOSTRING(aab.getMinimum().z).c_str());
+
+			root[L"maxx"]     = new JSONValue(TOSTRING(aab.getMaximum().x).c_str());
+			root[L"maxy"]     = new JSONValue(TOSTRING(aab.getMaximum().y).c_str());
+			root[L"maxz"]     = new JSONValue(TOSTRING(aab.getMaximum().z).c_str());
+		}
+ 
 		if(scope_log)
 		{
 			root[L"ogre_info"]       = new JSONValue(TOSTRING(scope_log->info).c_str());
