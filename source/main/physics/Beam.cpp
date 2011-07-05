@@ -538,14 +538,7 @@ Beam::Beam(int tnum, SceneManager *manager, SceneNode *parent, RenderWindow* win
 	{
 		if(loadTruck2(String(fname), manager, parent, Vector3(px, py, pz), rot, spawnbox))
 		{
-			// failed to load, exit?
-			if(BSETTING("REPO_MODE"))
-			{
-				PreviewRenderer r(this);
-				exit(0);
-			}
- 
-			return;
+	   		return;
 		}
 	}
 
@@ -683,13 +676,6 @@ Beam::Beam(int tnum, SceneManager *manager, SceneNode *parent, RenderWindow* win
 		sendStreamSetup();
 	}
 	
-
-	if(BSETTING("REPO_MODE"))
-	{
-		PreviewRenderer r(this);
-		exit(0);
-	}
-
 	//if(networked)
 	//	showSkeleton(true, true);
 
@@ -1980,7 +1966,6 @@ bool Beam::frameStep(Real dt)
 
 //if (free_aeroengine) debugText=String(aeroengines[0]->debug);
 //debugText="Origin: "+TOSTRING(origin.x)+", "+TOSTRING(origin.y)+", "+TOSTRING(origin.z);
-
 
 	// some scripting stuff:
 #ifdef USE_ANGELSCRIPT
