@@ -63,13 +63,18 @@ void PreviewRenderer::render()
 	MaterialManager::getSingleton().setDefaultAnisotropy(8);
 	MaterialManager::getSingleton().setDefaultTextureFiltering(TFO_ANISOTROPIC);
 
+	// now reset the truck to the scene's center
+	//Vector3 tsize = AxisAlignedBox(truck->minx, truck->miny, truck->minz, truck->maxx, truck->maxy, truck->maxz).getSize();
+	//Vector3 pos0 = truck->nodes[0].iPosition;
+	//truck->resetPosition(pos0.x + tsize.x, pos0.z + tsize.z, true);
+
 	// now switch on headlights and stuff
 	BeamFactory::getSingleton().setCurrentTruck(truck->trucknum);
 	truck->reset();
-	truck->lightsToggle();
-	truck->beaconsToggle();
-	truck->setBlinkType(BLINK_WARN);
-	truck->toggleCustomParticles();
+	//truck->lightsToggle();
+	//truck->beaconsToggle();
+	//truck->setBlinkType(BLINK_WARN);
+	//truck->toggleCustomParticles();
 	
 	
 	// DO NOT accelerate
@@ -230,7 +235,7 @@ void PreviewRenderer::render2dviews(Beam *truck, Camera *cam, float minCameraRad
 void PreviewRenderer::render3dpreview(Beam *truck, Camera *renderCamera, float minCameraRadius, SceneNode *camNode)
 {
 	int yaw_angles = 1;
-	int pitch_angles = 30;
+	int pitch_angles = 32;
 	TexturePtr renderTexture;
 	uint32 textureSize = 1024;
 	//renderTexture = TextureManager::getSingleton().createManual("3dpreview1", ResourceGroupManager::DEFAULT_RESOURCE_GROUP_NAME, TEX_TYPE_2D, textureSize * pitch_angles, textureSize * yaw_angles, 0, PF_A8R8G8B8, TU_RENDERTARGET);
