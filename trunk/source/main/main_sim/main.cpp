@@ -331,6 +331,13 @@ int main(int argc, char *argv[])
 		app.go();
 	} catch(Ogre::Exception& e)
 	{
+ 
+ 		if(BSETTING("REPO_MODE"))
+		{
+			LOG("FATAL ERROR, EXITING: "+e.getFullDescription());
+			std::exit(1);
+		}
+ 
 		// try to shutdown input system upon an error
 		//if(InputEngine::instanceExists()) // this prevents the creating of it, if not existing
 		//	INPUTENGINE.prepareShutdown();

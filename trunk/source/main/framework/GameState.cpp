@@ -1,6 +1,7 @@
 #include "GameState.h"
 
 #include "RoRFrameListener.h"
+#include "Settings.h"
 
 using namespace Ogre;
 
@@ -64,6 +65,11 @@ void GameState::resume()
 
 void GameState::exit()
 {
+	if(BSETTING("REPO_MODE"))
+	{
+		std::exit(1);
+	}
+
     LOG("Leaving GameState...");
 
 	if(mFrameListener)
