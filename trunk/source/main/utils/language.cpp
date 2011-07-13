@@ -210,7 +210,7 @@ void LanguageEngine::setupCodeRanges(String codeRangesFilename, String codeRange
 
 	// set some overlay used fonts to the new font config
 	String newfont = "Cyberbit";
-	char *overlays[] = {"Core/CurrFps", "Core/AverageFps", "Core/WorstFps", "Core/BestFps", "Core/NumTris", "Core/DebugText", "Core/CurrMemory", "Core/MemoryText", "Core/LoadPanel/Description", "Core/LoadPanel/Comment", 0};
+	const char *overlays[] = {"Core/CurrFps", "Core/AverageFps", "Core/WorstFps", "Core/BestFps", "Core/NumTris", "Core/DebugText", "Core/CurrMemory", "Core/MemoryText", "Core/LoadPanel/Description", "Core/LoadPanel/Comment", 0};
 	for(int i=0;overlays[i]!=0;i++)
 	{
 		((Ogre::TextAreaOverlayElement *)OverlayManager::getSingleton().getOverlayElement(overlays[i]))->setFontName(newfont);
