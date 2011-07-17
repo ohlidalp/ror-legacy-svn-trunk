@@ -51,6 +51,7 @@ along with Rigs of Rods.  If not, see <http://www.gnu.org/licenses/>.
 #include "RoRVersion.h"
 
 #include "MumbleIntegration.h"
+#include "OutProtocol.h"
 
 #ifdef USE_MPLATFORM
 #include "mplatform_fd.h"
@@ -5211,8 +5212,8 @@ void RoRFrameListener::initTrucks(bool loadmanual, Ogre::String selected, Ogre::
 	*/
 	loading_state=ALL_LOADED;
 
-
-
+	if(PARSEINT(SSETTING("OutGauge Mode"))>0)
+		new OutProtocol();
 
 	//uiloader->hide();
 	LOG("initTrucks done");
@@ -5967,6 +5968,10 @@ bool RoRFrameListener::frameStarted(const FrameEvent& evt)
 		parentState->exit();
 		return false;
 	}
+
+	// update OutProtocol
+	if(OutProtocol::getSingletonPtr())
+		OutProtocol::getSingleton().update(dt);
 
 	// the truck we use got deleted D:
 	//if(current_truck != -1 && trucks[current_truck] == 0)

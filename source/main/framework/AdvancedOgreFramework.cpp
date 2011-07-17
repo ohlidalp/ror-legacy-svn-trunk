@@ -84,6 +84,7 @@ bool OgreFramework::configure(void)
 		else
 		{
 			showError(_L("Configuration error"), _L("Run the RoRconfig program first."));
+			exit(1);
 			return false;
 		}
 	} else
@@ -92,6 +93,7 @@ bool OgreFramework::configure(void)
 		if(!m_pRoot->restoreConfig())
 		{
 			showError(_L("Configuration error"), _L("Run the RoRconfig program first."));
+			exit(1);
 			return false;
 		}
 

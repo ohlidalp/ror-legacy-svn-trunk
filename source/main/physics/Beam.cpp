@@ -391,8 +391,10 @@ Beam::Beam(int tnum, SceneManager *manager, SceneNode *parent, RenderWindow* win
 	else
 		driveable=NOT_DRIVEABLE;
 	previousGear = 0;
-	alb_ratio = alb_minspeed = alb_mode = 0.0f;
-	tc_ratio = tc_fade = tc_mode = tc_wheelslip = 0.0f;
+	alb_ratio = alb_minspeed = 0.0f;
+	alb_mode = 0;
+	tc_ratio = tc_fade = tc_wheelslip = 0.0f;
+	tc_mode = 0;
 	tc_pulse = 1;
 	alb_pulse = 1;
 	tc_present = alb_present = alb_notoggle = false;
