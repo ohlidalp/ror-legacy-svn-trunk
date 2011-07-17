@@ -3690,7 +3690,12 @@ void Beam::updateFlares(float dt, bool isCurrent)
 		}
 		// apply blinking
 		isvisible = isvisible && flares[i].blinkdelay_state;
+		
+		if     (flares[i].type == 'l' && blinkingtype == BLINK_LEFT)  left_blink_on  = isvisible;
+		else if(flares[i].type == 'r' && blinkingtype == BLINK_RIGHT) right_blink_on = isvisible;
+		else if(flares[i].type == 'l' && blinkingtype == BLINK_WARN)  warn_blink_on  = isvisible;
 
+		left_blink_on, right_blink_on, warn_blink_on;
 		// update material Bindings
 		materialFunctionMapper->toggleFunction(i, isvisible);
 
@@ -3751,10 +3756,20 @@ void Beam::setBlinkType(blinktype blink)
 {
 #ifdef USE_OPENAL
 	blinkingtype = blink;
+	if(blinkingtype == BLINK_NONE)
+	{
+		left_blink_on = false;
+		right_blink_on = false;
+		warn_blink_on = false;
+	}
 	if(blink == BLINK_NONE && ssm)
+	{
 		ssm->trigStop(trucknum, SS_TRIG_TURN_SIGNAL);
-	else if(ssm)
+	} else if(ssm)
+	{
 		ssm->trigStart(trucknum, SS_TRIG_TURN_SIGNAL);
+	}
+
 #endif //OPENAL
 }
 
