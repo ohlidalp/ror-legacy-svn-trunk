@@ -180,6 +180,8 @@ public:
 	Vector3 ffforce;
 	Real affhydro;
 	Real ffhydro;
+
+	bool left_blink_on, right_blink_on, warn_blink_on;
 	//! @}
 
 	/* functions to be sorted */

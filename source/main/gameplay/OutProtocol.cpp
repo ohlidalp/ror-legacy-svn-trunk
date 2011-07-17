@@ -149,14 +149,16 @@ bool OutProtocol::update(float dt)
 	if(truck->engine->hasturbo) gd.Flags |= OG_TURBO;
 
 	gd.Gear    = truck->engine->getGear() + 1;
+	if(truck->engine->getGear() + 1 < 0) gd.Gear = 0; // we only support one reverse gear :\
+
 	gd.PLID    = 0;
-	gd.Speed   = truck->WheelSpeed;
+	gd.Speed   = fabs(truck->WheelSpeed);
 	gd.RPM     = truck->engine->getRPM();
 	gd.Turbo   = truck->engine->getTurboPSI();
 	gd.EngTemp = 0; // TODO
-	gd.Fuel    = 1; // TODO
-	gd.OilPressure = 1; // TODO
-	gd.OilTemp = 30; // TODO
+	gd.Fuel    = 0; // TODO
+	gd.OilPressure = 0; // TODO
+	gd.OilTemp = 0; // TODO
 
 	gd.DashLights = 0;
 	gd.DashLights |= DL_HANDBRAKE;
@@ -172,9 +174,9 @@ bool OutProtocol::update(float dt)
 	if(truck->tc_mode)      gd.ShowLights |= DL_TC;
 	if(truck->lights)       gd.ShowLights |= DL_FULLBEAM;
 	if(truck->engine->contact && !truck->engine->running) gd.ShowLights |=  DL_BATTERY;
-	if(truck->getBlinkType() == BLINK_LEFT)  gd.ShowLights |= DL_SIGNAL_L;
-	if(truck->getBlinkType() == BLINK_RIGHT) gd.ShowLights |= DL_SIGNAL_R;
-	if(truck->getBlinkType() == BLINK_WARN)  gd.ShowLights |= DL_SIGNAL_ANY;
+	if(truck->left_blink_on)  gd.ShowLights |= DL_SIGNAL_L;
+	if(truck->right_blink_on) gd.ShowLights |= DL_SIGNAL_R;
+	if(truck->warn_blink_on)  gd.ShowLights |= DL_SIGNAL_ANY;
 	if(truck->tc_mode)     gd.DashLights |= DL_TC;
 	if(truck->alb_mode)    gd.DashLights |= DL_ABS;
 	
