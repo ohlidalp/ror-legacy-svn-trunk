@@ -164,6 +164,7 @@ bool OutProtocol::update(float dt)
 	if(truck->parkingbrake) gd.DashLights |= DL_HANDBRAKE;
 	if(truck->tc_mode)      gd.DashLights |= DL_TC;
 	if(truck->lights)       gd.DashLights |= DL_FULLBEAM;
+	if(truck->engine->contact && !truck->engine->running) gd.DashLights |=  DL_BATTERY;
 	if(truck->getBlinkType() == BLINK_LEFT)  gd.DashLights |= DL_SIGNAL_L;
 	if(truck->getBlinkType() == BLINK_RIGHT) gd.DashLights |= DL_SIGNAL_R;
 	if(truck->getBlinkType() == BLINK_WARN)  gd.DashLights |= DL_SIGNAL_ANY;
