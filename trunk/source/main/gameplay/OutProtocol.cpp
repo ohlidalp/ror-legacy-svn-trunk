@@ -148,8 +148,6 @@ bool OutProtocol::update(float dt)
 	gd.Flags |= OG_KM;
 	if(truck->engine->hasturbo) gd.Flags |= OG_TURBO;
 
-
-
 	gd.Gear    = truck->engine->getGear() + 1;
 	gd.PLID    = 0;
 	gd.Speed   = truck->WheelSpeed;
@@ -161,15 +159,25 @@ bool OutProtocol::update(float dt)
 	gd.OilTemp = 30; // TODO
 
 	gd.DashLights = 0;
-	if(truck->parkingbrake) gd.DashLights |= DL_HANDBRAKE;
-	if(truck->tc_mode)      gd.DashLights |= DL_TC;
-	if(truck->lights)       gd.DashLights |= DL_FULLBEAM;
-	if(truck->engine->contact && !truck->engine->running) gd.DashLights |=  DL_BATTERY;
-	if(truck->getBlinkType() == BLINK_LEFT)  gd.DashLights |= DL_SIGNAL_L;
-	if(truck->getBlinkType() == BLINK_RIGHT) gd.DashLights |= DL_SIGNAL_R;
-	if(truck->getBlinkType() == BLINK_WARN)  gd.DashLights |= DL_SIGNAL_ANY;
+	gd.DashLights |= DL_HANDBRAKE;
+	gd.DashLights |= DL_BATTERY;
+	gd.DashLights |= DL_SIGNAL_L;
+	gd.DashLights |= DL_SIGNAL_R;
+	gd.DashLights |= DL_SIGNAL_ANY;
+	if(truck->tc_present)   gd.DashLights |= DL_TC;
+	if(truck->alb_present)  gd.DashLights |= DL_ABS;
 
-	gd.ShowLights = gd.DashLights;
+	gd.ShowLights = 0;
+	if(truck->parkingbrake) gd.ShowLights |= DL_HANDBRAKE;
+	if(truck->tc_mode)      gd.ShowLights |= DL_TC;
+	if(truck->lights)       gd.ShowLights |= DL_FULLBEAM;
+	if(truck->engine->contact && !truck->engine->running) gd.ShowLights |=  DL_BATTERY;
+	if(truck->getBlinkType() == BLINK_LEFT)  gd.ShowLights |= DL_SIGNAL_L;
+	if(truck->getBlinkType() == BLINK_RIGHT) gd.ShowLights |= DL_SIGNAL_R;
+	if(truck->getBlinkType() == BLINK_WARN)  gd.ShowLights |= DL_SIGNAL_ANY;
+	if(truck->tc_mode)     gd.DashLights |= DL_TC;
+	if(truck->alb_mode)    gd.DashLights |= DL_ABS;
+	
 	gd.Throttle   = truck->engine->getAcc();
 	gd.Brake      = truck->brake / truck->brakeforce;
 	gd.Clutch     = truck->engine->getClutch(); // 0-1
@@ -178,7 +186,6 @@ bool OutProtocol::update(float dt)
 	strncpy(gd.Display2, truck->realtruckname.c_str(), 15);
 
 	gd.ID = id;
-
 
 	// send the package
 	send(sockfd, (const char*)&gd, sizeof(gd), NULL);
