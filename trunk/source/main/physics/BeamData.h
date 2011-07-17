@@ -870,7 +870,7 @@ struct rig
 	float previousCrank;
 	float alb_ratio;
 	float alb_minspeed;
-	float alb_mode;
+	int alb_mode;
 	unsigned int alb_pulse;
 	bool alb_pulse_state;
 	bool alb_present;
@@ -878,7 +878,7 @@ struct rig
 	float tc_ratio;
 	float tc_wheelslip;
 	float tc_fade;
-	float tc_mode;
+	int tc_mode;
 	unsigned int tc_pulse;
 	bool tc_pulse_state;
 	bool tc_present;

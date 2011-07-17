@@ -676,12 +676,12 @@ int SerializedRig::loadTruck(String fname, SceneManager *manager, SceneNode *par
 								Ogre::StringUtil::trim(sourceStr);
 								if (sourceStr == "ON" || sourceStr == "on")	
 								{
-									alb_mode = 1.0f;
+									alb_mode = 1;
 									alb_present = true;
 								}
 								else if (sourceStr == "OFF" || sourceStr == "off")
 								{ 
-									alb_mode = 0.0f;
+									alb_mode = 0;
 									alb_present = true;
 								}
 								else if (sourceStr == "NODASH" || sourceStr == "nodash" || sourceStr == "Nodash" || sourceStr == "NoDash")
@@ -699,7 +699,7 @@ int SerializedRig::loadTruck(String fname, SceneManager *manager, SceneNode *par
 						{
 							parser_warning(c, "Antilockbrakes Mode: missing " + String(fname) +" line " + StringConverter::toString(c.linecounter) + ". Antilockbrakes Mode = ON.", PARSER_ERROR);
 							alb_present = true;
-							alb_mode = 1.0f;
+							alb_mode = 1;
 						}
 					}
 				}
@@ -778,12 +778,12 @@ int SerializedRig::loadTruck(String fname, SceneManager *manager, SceneNode *par
 								Ogre::StringUtil::trim(sourceStr);
 								if (sourceStr == "ON" || sourceStr == "on" || sourceStr == "On")	
 								{ 
-									tc_mode = 1.0f;
+									tc_mode = 1;
 									tc_present = true;
 								}
 								else if (sourceStr == "OFF" || sourceStr == "off" || sourceStr == "Off")
 								{ 
-									tc_mode = 0.0f;
+									tc_mode = 0;
 									tc_present = true;
 								}
 								else if (sourceStr == "NODASH" || sourceStr == "nodash" || sourceStr == "Nodash" || sourceStr == "NoDash")
@@ -800,7 +800,7 @@ int SerializedRig::loadTruck(String fname, SceneManager *manager, SceneNode *par
 						{
 							parser_warning(c,"TractionControl Mode: missing " + String(fname) +" line " + StringConverter::toString(c.linecounter) + ". TractionControl Mode = ON.", PARSER_ERROR);
 							tc_present = true;
-							tc_mode = 1.0f;
+							tc_mode = 1;
 						}
 					}
 				}
