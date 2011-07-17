@@ -127,11 +127,6 @@ bool OutProtocol::update(float dt)
 {
 	if(!working) return false;
 
-	// not in a truck?
-	Beam *truck = BeamFactory::getSingleton().getCurrentTruck();
-	if(!truck || !truck->engine)
-		return true;
-
 	// below the set delay?
 	timer+=dt;
 	if(timer < delay)
@@ -141,58 +136,68 @@ bool OutProtocol::update(float dt)
 	// send a package
 	OutGaugePack gd;
 	memset(&gd, 0, sizeof(gd));
-	
-	gd.Time = counter;
+
+	// set some common things
+	gd.Time = counter++;
+	sprintf(gd.Display1, "RoR v %s", ROR_VERSION_STRING);
+	gd.ID = id;
 	sprintf(gd.Car, "RoR");
 	gd.Flags = 0;
 	gd.Flags |= OG_KM;
-	if(truck->engine->hasturbo) gd.Flags |= OG_TURBO;
 
-	gd.Gear    = truck->engine->getGear() + 1;
-	if(truck->engine->getGear() + 1 < 0) gd.Gear = 0; // we only support one reverse gear :\
+	Beam *truck = BeamFactory::getSingleton().getCurrentTruck();
+	if(!truck)
+	{
+		// not in a truck?
+		sprintf(gd.Display2, "not in vehicle");
+	} else if(truck && !truck->engine)
+	{
+		// no engine?
+		sprintf(gd.Display2, "no engine");
+	} else if(truck && truck->engine)
+	{
+		// truck and engine valid
+		if(truck->engine->hasturbo) gd.Flags |= OG_TURBO;
+		gd.Gear    = truck->engine->getGear() + 1;
+		if(truck->engine->getGear() + 1 < 0) gd.Gear = 0; // we only support one reverse gear :\
 
-	gd.PLID    = 0;
-	gd.Speed   = fabs(truck->WheelSpeed);
-	gd.RPM     = truck->engine->getRPM();
-	gd.Turbo   = truck->engine->getTurboPSI();
-	gd.EngTemp = 0; // TODO
-	gd.Fuel    = 0; // TODO
-	gd.OilPressure = 0; // TODO
-	gd.OilTemp = 0; // TODO
+		gd.PLID    = 0;
+		gd.Speed   = fabs(truck->WheelSpeed);
+		gd.RPM     = truck->engine->getRPM();
+		gd.Turbo   = truck->engine->getTurboPSI();
+		gd.EngTemp = 0;     // TODO
+		gd.Fuel    = 0;     // TODO
+		gd.OilPressure = 0; // TODO
+		gd.OilTemp = 0;     // TODO
 
-	gd.DashLights = 0;
-	gd.DashLights |= DL_HANDBRAKE;
-	gd.DashLights |= DL_BATTERY;
-	gd.DashLights |= DL_SIGNAL_L;
-	gd.DashLights |= DL_SIGNAL_R;
-	gd.DashLights |= DL_SIGNAL_ANY;
-	if(truck->tc_present)   gd.DashLights |= DL_TC;
-	if(truck->alb_present)  gd.DashLights |= DL_ABS;
+		gd.DashLights = 0;
+		gd.DashLights |= DL_HANDBRAKE;
+		gd.DashLights |= DL_BATTERY;
+		gd.DashLights |= DL_SIGNAL_L;
+		gd.DashLights |= DL_SIGNAL_R;
+		gd.DashLights |= DL_SIGNAL_ANY;
+		if(truck->tc_present)   gd.DashLights |= DL_TC;
+		if(truck->alb_present)  gd.DashLights |= DL_ABS;
 
-	gd.ShowLights = 0;
-	if(truck->parkingbrake) gd.ShowLights |= DL_HANDBRAKE;
-	if(truck->tc_mode)      gd.ShowLights |= DL_TC;
-	if(truck->lights)       gd.ShowLights |= DL_FULLBEAM;
-	if(truck->engine->contact && !truck->engine->running) gd.ShowLights |=  DL_BATTERY;
-	if(truck->left_blink_on)  gd.ShowLights |= DL_SIGNAL_L;
-	if(truck->right_blink_on) gd.ShowLights |= DL_SIGNAL_R;
-	if(truck->warn_blink_on)  gd.ShowLights |= DL_SIGNAL_ANY;
-	if(truck->tc_mode)     gd.DashLights |= DL_TC;
-	if(truck->alb_mode)    gd.DashLights |= DL_ABS;
-	
-	gd.Throttle   = truck->engine->getAcc();
-	gd.Brake      = truck->brake / truck->brakeforce;
-	gd.Clutch     = truck->engine->getClutch(); // 0-1
+		gd.ShowLights = 0;
+		if(truck->parkingbrake)   gd.ShowLights |= DL_HANDBRAKE;
+		if(truck->tc_mode)        gd.ShowLights |= DL_TC;
+		if(truck->lights)         gd.ShowLights |= DL_FULLBEAM;
+		if(truck->engine->contact && !truck->engine->running) gd.ShowLights |=  DL_BATTERY;
+		if(truck->left_blink_on)  gd.ShowLights |= DL_SIGNAL_L;
+		if(truck->right_blink_on) gd.ShowLights |= DL_SIGNAL_R;
+		if(truck->warn_blink_on)  gd.ShowLights |= DL_SIGNAL_ANY;
+		if(truck->tc_mode)       gd.DashLights |= DL_TC;
+		if(truck->alb_mode)      gd.DashLights |= DL_ABS;
 
-	sprintf(gd.Display1, "RoR v %s", ROR_VERSION_STRING);
-	strncpy(gd.Display2, truck->realtruckname.c_str(), 15);
+		gd.Throttle   = truck->engine->getAcc();
+		gd.Brake      = truck->brake / truck->brakeforce;
+		gd.Clutch     = truck->engine->getClutch(); // 0-1
 
-	gd.ID = id;
-
+		strncpy(gd.Display2, truck->realtruckname.c_str(), 15);
+	}
 	// send the package
 	send(sockfd, (const char*)&gd, sizeof(gd), NULL);
-
-	counter++;
 
 	return true;
 }
