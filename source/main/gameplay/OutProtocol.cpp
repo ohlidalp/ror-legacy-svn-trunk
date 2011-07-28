@@ -78,9 +78,11 @@ OutProtocol::OutProtocol(void) : sockfd(-1), delay(0.1), timer(0), mode(0), id(0
 
 OutProtocol::~OutProtocol(void)
 {
+#ifdef WIN32
 	// and close the socket again
 	if(sockfd>0)
 		closesocket(sockfd);
+#endif // WIN32
 }
 
 void OutProtocol::startup()
@@ -125,6 +127,7 @@ void OutProtocol::startup()
 
 bool OutProtocol::update(float dt)
 {
+#ifdef WIN32
 	if(!working) return false;
 
 	// below the set delay?
@@ -200,4 +203,8 @@ bool OutProtocol::update(float dt)
 	send(sockfd, (const char*)&gd, sizeof(gd), NULL);
 
 	return true;
+#else
+	// TODO: fix linux
+	return false;
+#endif //WIN32
 }
