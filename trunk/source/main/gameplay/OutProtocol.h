@@ -26,7 +26,9 @@ along with Rigs of Rods.  If not, see <http://www.gnu.org/licenses/>.
 #include "RoRPrerequisites.h"
 #include <OgreSingleton.h>
 
+#ifdef USE_SOCKETW
 #include "SocketW.h"
+#endif //USE_SOCKETW
 
 class OutProtocol : public Ogre::Singleton< OutProtocol >
 {
