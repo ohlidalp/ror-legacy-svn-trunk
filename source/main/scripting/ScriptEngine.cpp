@@ -66,7 +66,7 @@ along with Rigs of Rods.  If not, see <http://www.gnu.org/licenses/>.
 
 template<> ScriptEngine *Ogre::Singleton<ScriptEngine>::ms_Singleton=0;
 
-char *ScriptEngine::moduleName = "RoRScript";
+const char *ScriptEngine::moduleName = "RoRScript";
 
 
 // some hacky functions

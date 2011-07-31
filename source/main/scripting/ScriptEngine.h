@@ -116,7 +116,7 @@ protected:
 	std::map <std::string , std::vector<int> > callbacks;
 	bool enable_ingame_console;
 
-	static char *moduleName;
+	static const char *moduleName;
 
 
 	/**

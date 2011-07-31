@@ -249,9 +249,10 @@ void PreviewRenderer::render3dpreview(Beam *truck, Camera *renderCamera, float m
 	//renderViewport->setShadowsEnabled(false);
 	//renderViewport->setBackgroundColour(ColourValue(1, 1, 1, 0));
 
+#ifdef USE_CAELUM
 	SkyManager::getSingleton().notifyCameraChanged(renderCamera);
 	SkyManager::getSingleton().forceUpdate(0.01f);
-
+#endif // USE_CAELUM
 
 	String skelmode = "normal";
 
