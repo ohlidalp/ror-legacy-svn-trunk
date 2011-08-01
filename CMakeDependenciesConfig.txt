@@ -7,15 +7,20 @@ set(ROR_USE_CAELUM  "FALSE" CACHE BOOL "use caelum sky")
 set(ROR_USE_ANGELSCRIPT  "FALSE" CACHE BOOL "use angel script")
 set(ROR_FEAT_TIMING  "FALSE" CACHE BOOL "enable beam statistics. For core development only")
 set(ROR_USE_CURL  "FALSE" CACHE BOOL "use curl, required for communication with online services")
-set(ROR_BUILD_TOOLS "FALSE" CACHE BOOL "build the RoR tools Application (viewers and editors), completely separate and optional")
-set(ROR_BUILD_SIM "TRUE" CACHE BOOL "build RoR simulation")
-set(ROR_BUILD_CONVERTER "FALSE" CACHE BOOL "build RoR converter (experimental)")
 
-# disable some options for now
+
+# some obsolete options:
+#set(ROR_BUILD_TOOLS "FALSE" CACHE BOOL "build the RoR tools Application (viewers and editors), completely separate and optional")
+#set(ROR_BUILD_SIM "TRUE" CACHE BOOL "build RoR simulation")
+#set(ROR_BUILD_CONVERTER "FALSE" CACHE BOOL "build RoR converter (experimental)")
+# disabled some options for now
 #set(ROR_USE_OPENCL  "FALSE" CACHE BOOL "use opencl (highly experimental)")
 set(ROR_USE_LITESQL  "TRUE" CACHE BOOL "use sqlite")
 set(ROR_USE_OPENCL  OFF)
 set(ROR_BUILD_UPDATER OFF)
+set(ROR_BUILD_TOOLS OFF)
+set(ROR_BUILD_SIM ON)
+set(ROR_BUILD_CONVERTER OFF)
 
 # set some defaults
 IF(WIN32)
