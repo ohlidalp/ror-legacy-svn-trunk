@@ -252,10 +252,10 @@ ELSEIF(UNIX)
 
    # Hydrax
    # WIP!
-   find_path(HYDRAX_INCLUDE_DIRS "Hyrax/Hydrax.h")
+   find_path(HYDRAX_INCLUDE_DIRS "Hydrax/Hydrax.h")
    if(HYDRAX_INCLUDE_DIRS)
-      set(HYDRAX_INCLUDE_DIRS "${CAELUM_INCLUDE_DIRS}/Hyrax")
-      find_library(HYDRAX_LIBRARIES "Hyrax")
+      set(HYDRAX_INCLUDE_DIRS "${HYDRAX_INCLUDE_DIRS}/Hydrax")
+      find_library(HYDRAX_LIBRARIES "Hydrax" PATH /usr/local/lib)
       set(ROR_USE_HYDRAX ON)
    else()
       set(ROR_USE_HYDRAX OFF)
