@@ -137,7 +137,6 @@ FlexBody::FlexBody(SceneManager *manager, node_t *nds, int numnds, char* meshnam
 
 	Entity *ent = manager->createEntity(uname, uname_mesh);
 	MaterialFunctionMapper::replaceSimpleMeshMaterials(ent, ColourValue(0.5, 0.5, 1));
-	Skin::uniquifyMeshMaterials(ent);
 	if(mfm) mfm->replaceMeshMaterials(ent);
 	if(mr) mr->replaceMeshMaterials(ent);
 	if(usedSkin) usedSkin->replaceMeshMaterials(ent);

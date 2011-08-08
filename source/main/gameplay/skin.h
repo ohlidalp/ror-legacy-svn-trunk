@@ -55,7 +55,7 @@ public:
 	Ogre::String getReplacementForMaterial(Ogre::String material);
 	
 	// common
-	static void uniquifyMeshMaterials(Ogre::Entity *e);
+	void uniquifyMeshMaterials(Ogre::Entity *e);
 
 	void replaceMeshMaterials(Ogre::Entity *e);
 	void replaceMaterialTextures(Ogre::String materialName);
