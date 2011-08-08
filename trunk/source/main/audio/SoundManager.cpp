@@ -385,8 +385,8 @@ int SoundManager::loadWAVFile(String filename, ALuint buffer)
 	//load RIFF/WAVE
 	char magic[5];
 	magic[4]=0;
-	uint32_t lbuf;
-	uint16_t sbuf;
+	unsigned int   lbuf; // uint32_t
+	unsigned short sbuf; // uint16_t
 
 	// check magic
 	if (stream->read(magic, 4)!=4) {LOG("Could not read file "+filename);return -1;}
