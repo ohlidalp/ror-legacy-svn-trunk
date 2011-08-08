@@ -85,7 +85,7 @@ public:
 	 * @param y Y position on the terrain
 	 * @param z Z position on the terrain
 	 */
-	void setPersonPosition(Ogre::Vector3 vec);
+	void setPersonPosition(Ogre::Vector3 &vec);
 
 	void loadTerrain(std::string &terrain);
 	/**
@@ -114,7 +114,7 @@ public:
 	 */
 	float getWaterHeight();
 
-	float getGroundHeight(Ogre::Vector3 v);
+	float getGroundHeight(Ogre::Vector3 &v);
 
 	/**
 	 * sets the base water height
@@ -173,7 +173,7 @@ public:
 	 * set direction arrow
 	 * @param text text to be displayed. "" to hide the text
 	 */
-	void setDirectionArrow(std::string &text, Ogre::Vector3 vec);
+	void setDirectionArrow(std::string &text, Ogre::Vector3 &vec);
 
 
 	/**
@@ -192,13 +192,13 @@ public:
 	 * Sets the camera's position.
 	 * @param pos The new position of the camera.
 	 */
-	void setCameraPosition(Ogre::Vector3 pos);
+	void setCameraPosition(Ogre::Vector3 &pos);
 	
 	/**
 	 * Sets the camera's direction vector.
 	 * @param vec A vector representing the direction of the vector.
 	 */
-	void setCameraDirection(Ogre::Vector3 vec);
+	void setCameraDirection(Ogre::Vector3 &vec);
 	
 	/**
 	 * Rolls the camera anticlockwise, around its local z axis.
@@ -238,14 +238,14 @@ public:
 	 *      and the supplied look-at point.
 	 * @param targetPoint A vector specifying the look at point.
 	*/
-	void cameraLookAt(Ogre::Vector3 targetPoint);
+	void cameraLookAt(Ogre::Vector3 &targetPoint);
 
 	// new things, not documented yet
 	void showChooser(std::string &type, std::string &instance, std::string &box);
 	void repairVehicle(std::string &instance, std::string &box, bool keepPosition);
 	void removeVehicle(std::string &instance, std::string &box);
 
-	void spawnObject(const std::string &objectName, const std::string &instanceName, Ogre::Vector3 pos, Ogre::Vector3 rot, const std::string &eventhandler, bool uniquifyMaterials);
+	void spawnObject(const std::string &objectName, const std::string &instanceName, Ogre::Vector3 &pos, Ogre::Vector3 &rot, const std::string &eventhandler, bool uniquifyMaterials);
 	void destroyObject(const std::string &instanceName);
 	int getNumTrucksByFlag(int flag);
 	bool getCaelumAvailable();

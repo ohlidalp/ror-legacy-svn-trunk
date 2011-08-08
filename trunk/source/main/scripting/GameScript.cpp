@@ -56,7 +56,7 @@ double GameScript::getTime()
 	return this->mefl->getTime();
 }
 
-void GameScript::setPersonPosition(Ogre::Vector3 vec)
+void GameScript::setPersonPosition(Ogre::Vector3 &vec)
 {
 	if(mefl && mefl->person) mefl->person->setPosition(Ogre::Vector3(vec.x, vec.y, vec.z));
 }
@@ -120,7 +120,7 @@ void GameScript::setWaterHeight(float value)
 	if(mefl && mefl->w) mefl->w->setHeight(value);
 }
 
-float GameScript::getGroundHeight(Ogre::Vector3 v)
+float GameScript::getGroundHeight(Ogre::Vector3 &v)
 {
 	if(RoRFrameListener::hfinder)
 		return RoRFrameListener::hfinder->getHeightAt(v.x, v.z);
@@ -192,7 +192,7 @@ void GameScript::flashMessage(std::string &txt, float time, float charHeight)
 		mefl->getOverlayWrapper()->flashMessage(txt, time, charHeight);
 }
 
-void GameScript::setDirectionArrow(std::string &text, Ogre::Vector3 vec)
+void GameScript::setDirectionArrow(std::string &text, Ogre::Vector3 &vec)
 {
 	if(mefl) mefl->setDirectionArrow(const_cast<char*>(text.c_str()), Ogre::Vector3(vec.x, vec.y, vec.z));
 }
@@ -241,7 +241,7 @@ void GameScript::destroyObject(const std::string &instanceName)
 	mefl->unloadObject(const_cast<char*>(instanceName.c_str()));
 }
 
-void GameScript::spawnObject(const std::string &objectName, const std::string &instanceName, Ogre::Vector3 pos, Ogre::Vector3 rot, const std::string &eventhandler, bool uniquifyMaterials)
+void GameScript::spawnObject(const std::string &objectName, const std::string &instanceName, Ogre::Vector3 &pos, Ogre::Vector3 &rot, const std::string &eventhandler, bool uniquifyMaterials)
 {
 	AngelScript::asIScriptModule *mod=0;
 	try
@@ -341,12 +341,12 @@ void GameScript::clearEventCache()
 	mefl->getCollisions()->clearEventCache();
 }
 
-void GameScript::setCameraPosition(Ogre::Vector3 pos)
+void GameScript::setCameraPosition(Ogre::Vector3 &pos)
 {
 	mefl->getCamera()->setPosition(Ogre::Vector3(pos.x, pos.y, pos.z));
 }
 
-void GameScript::setCameraDirection(Ogre::Vector3 rot)
+void GameScript::setCameraDirection(Ogre::Vector3 &rot)
 {
 	mefl->getCamera()->setDirection(Ogre::Vector3(rot.x, rot.y, rot.z));
 }
@@ -378,7 +378,7 @@ Ogre::Vector3 GameScript::getCameraDirection()
 	return Ogre::Vector3(rot.x, rot.y, rot.z);
 }
 
-void GameScript::cameraLookAt(Ogre::Vector3 pos)
+void GameScript::cameraLookAt(Ogre::Vector3 &pos)
 {
 	mefl->getCamera()->lookAt(Ogre::Vector3(pos.x, pos.y, pos.z));
 }
