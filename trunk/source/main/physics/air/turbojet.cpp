@@ -65,7 +65,6 @@ Turbojet::Turbojet(SceneManager *manager, char* propname, int tnumber, int truck
 	sprintf(paname, "%s-nozzle", propname);
 	Entity *te = manager->createEntity(paname, "nozzle.mesh");
 	MaterialFunctionMapper::replaceSimpleMeshMaterials(te, ColourValue(1, 0.5, 0.5));
-	Skin::uniquifyMeshMaterials(te);
 	if(mfm) mfm->replaceMeshMaterials(te);
 	if(mr) mr->replaceMeshMaterials(te);
 	if(usedSkin) usedSkin->replaceMeshMaterials(te);
@@ -77,7 +76,6 @@ Turbojet::Turbojet(SceneManager *manager, char* propname, int tnumber, int truck
 		sprintf(paname, "%s-abflame", propname);
 		Entity *te = manager->createEntity(paname, "abflame.mesh");
 		MaterialFunctionMapper::replaceSimpleMeshMaterials(te, ColourValue(1, 1, 0));
-		Skin::uniquifyMeshMaterials(te);
 		if(mfm) mfm->replaceMeshMaterials(te);
 		if(mr) mr->replaceMeshMaterials(te);
 		if(usedSkin) usedSkin->replaceMeshMaterials(te);

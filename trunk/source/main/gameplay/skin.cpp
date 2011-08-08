@@ -148,6 +148,8 @@ void Skin::replaceMeshMaterials(Ogre::Entity *e)
 		}
 	}
 
+	// make it unique
+	uniquifyMeshMaterials(e);
 }
 
 void Skin::uniquifyMeshMaterials(Ogre::Entity *e)

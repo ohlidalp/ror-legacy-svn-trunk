@@ -173,8 +173,6 @@ void MeshObject::postProcess()
 		return;
 	}
 
-	Skin::uniquifyMeshMaterials(ent);
-
 	// then modify some things
 	if(enableSimpleMaterial)
 		MaterialFunctionMapper::replaceSimpleMeshMaterials(ent, simpleMatColour);

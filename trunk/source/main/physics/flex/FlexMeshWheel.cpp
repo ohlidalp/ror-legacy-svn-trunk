@@ -39,7 +39,6 @@ FlexMeshWheel::FlexMeshWheel(SceneManager *manager, char* name, node_t *nds, int
 	sprintf(rimname, "rim-%s", name);
 	rimEnt = manager->createEntity(rimname, meshname);
 	MaterialFunctionMapper::replaceSimpleMeshMaterials(rimEnt, ColourValue(0, 0.5, 0.8));
-	Skin::uniquifyMeshMaterials(rimEnt);
 	if(mfm) mfm->replaceMeshMaterials(rimEnt);
 	if(mr) mr->replaceMeshMaterials(rimEnt);
 	if(usedSkin) usedSkin->replaceMeshMaterials(rimEnt);
