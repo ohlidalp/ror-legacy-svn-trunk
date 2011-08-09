@@ -104,7 +104,8 @@ void RigsOfRods::update(double dt)
 
 void RigsOfRods::shutdown()
 {
-	stateManager->shutdown();
+	if(stateManager)
+		stateManager->shutdown();
 }
 
 void RigsOfRods::pauseRendering()
