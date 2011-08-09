@@ -106,8 +106,8 @@ Ogre::String formatBytes(double bytes)
 	char tmp[128]="";
 	const char *si_prefix[] = { "B", "KB", "MB", "GB", "TB", "EB", "ZB", "YB" };
 	int base = 1024;
-	int c = std::min((int)(log(bytes)/log(base)), (int)sizeof(si_prefix) - 1);
-	sprintf(tmp, "%1.2f %s", bytes / pow(base, c), si_prefix[c]);
+	int c = std::min((int)(log(bytes)/log((float)base)), (int)sizeof(si_prefix) - 1);
+	sprintf(tmp, "%1.2f %s", bytes / pow((float)base, c), si_prefix[c]);
 	return Ogre::String(tmp);
 }
 
