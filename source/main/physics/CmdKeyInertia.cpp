@@ -121,6 +121,8 @@ Real CmdKeyInertia::calculateCmdOutput(Real time,SimpleSpline *spline)
 {
 	if (time>1.0)
 		time=1.0;
+	if(!spline)
+		return 0;
 	Vector3 output=spline->interpolate(time);
 	return output.y*0.001;
 }
