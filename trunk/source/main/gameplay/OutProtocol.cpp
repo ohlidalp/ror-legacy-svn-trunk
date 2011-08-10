@@ -90,19 +90,19 @@ void OutProtocol::startup()
 #ifdef WIN32
 	SWBaseSocket::SWBaseError error;
 
+	// get some settings
 	string ipstr = SSETTING("OutGauge IP");
 	int port = PARSEINT(SSETTING("OutGauge Port"));
 	
-	struct sockaddr_in sendaddr;
-	memset(&sendaddr, 0, sizeof(sendaddr));
-
-	WSADATA        wsd;
+	// startup winsock
+	WSADATA wsd;
 	if (WSAStartup(MAKEWORD(2, 2), &wsd) != 0)
 	{
 		LOG("error starting up winsock");
 		return;
 	}
 
+	// open a new socket
 	if ((sockfd = socket(AF_INET, SOCK_DGRAM, 0)) < 0)
 	{
 		char tmp[9047];
@@ -110,9 +110,19 @@ void OutProtocol::startup()
 		LOG(tmp);
 		return;
 	}
+
+	// get the IP of the remote side, this function is compatible with windows 2000
+	hostent *remoteHost = gethostbyname(ipstr.c_str());
+	char *ip = inet_ntoa(*(struct in_addr *)*remoteHost->h_addr_list);
+
+	// init socket data
+	struct sockaddr_in sendaddr;
+	memset(&sendaddr, 0, sizeof(sendaddr));
 	sendaddr.sin_family      = AF_INET;
+	sendaddr.sin_addr.s_addr = inet_addr(ip);
 	sendaddr.sin_port        = htons(port);
-	inet_pton(AF_INET, ipstr.c_str(), &sendaddr.sin_addr);
+
+	// then connect
 	if(connect(sockfd, (struct sockaddr *) &sendaddr, sizeof(sendaddr)) == SOCKET_ERROR)
 	{
 		char tmp[9047];
@@ -120,8 +130,9 @@ void OutProtocol::startup()
 		LOG(tmp);
 		return;
 	}
+
 	LOG("OutGauge connected successfully");
-	working=true;
+	working = true;
 #endif // WIN32
 }
 
