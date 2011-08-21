@@ -71,9 +71,20 @@ public:
 		std::map <int, wxString>::iterator it = id_value_map.find(id);
 		if(it == id_value_map.end())
 		{
-			return wxString("error");
+			return wxT("error");
 		}
 		return it->second;
+	}
+
+	std::string getSelectedValueAsSTDString()
+	{
+		wxString s = getSelectedValue();
+		return std::string(s.mb_str());
+	}
+
+	int setSelectedValue(std::string val)
+	{
+		return setSelectedValue(wxString(val.c_str(), wxConvUTF8));
 	}
 
 	int setSelectedValue(wxString val)

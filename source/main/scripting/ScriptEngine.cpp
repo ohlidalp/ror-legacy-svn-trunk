@@ -106,7 +106,11 @@ ScriptEngine::~ScriptEngine()
 	if(context) context->Release();
 }
 
-void ScriptEngine::messageLogged( const Ogre::String& message, Ogre::LogMessageLevel lml, bool maskDebug, const Ogre::String &logName )
+#if OGRE_VERSION < ((1 << 16) | (8 << 8 ) | 0)
+void ScriptEngine::messageLogged( const Ogre::String& message, Ogre::LogMessageLevel lml, bool maskDebug, const Ogre::String &logName)
+#else
+void ScriptEngine::messageLogged( const Ogre::String& message, Ogre::LogMessageLevel lml, bool maskDebug, const Ogre::String &logName, bool& skipThisMessage)
+#endif // OGRE_VERSION
 {
 	Console *c = Console::getInstancePtrNoCreation();
 	if(c) c->printUTF(message, "Angelscript");

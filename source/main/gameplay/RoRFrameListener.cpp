@@ -1876,7 +1876,7 @@ void RoRFrameListener::loadObject(const char* name, float px, float py, float pz
 			{
 				e->setVisibility(true);
 				e->setPosition(px, pz);
-				e->setRotation(ry);
+				e->setRotation(Radian(ry));
 
 				if(String(name) != String(""))
 					e->setDescription(String(instancename));

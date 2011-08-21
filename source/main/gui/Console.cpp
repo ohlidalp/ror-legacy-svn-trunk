@@ -184,7 +184,11 @@ std::wstring ansi_to_utf16(const std::string& _source)
 }
 #endif
 
-void Console::messageLogged( const Ogre::String& message, Ogre::LogMessageLevel lml, bool maskDebug, const Ogre::String &logName )
+#if OGRE_VERSION < ((1 << 16) | (8 << 8 ) | 0)
+void Console::messageLogged( const Ogre::String& message, Ogre::LogMessageLevel lml, bool maskDebug, const Ogre::String &logName)
+#else
+void Console::messageLogged( const Ogre::String& message, Ogre::LogMessageLevel lml, bool maskDebug, const Ogre::String &logName, bool& skipThisMessage)
+#endif // OGRE_VERSION
 {
 	Ogre::String msg = message;
 	//this->print(logName+": "+message);
