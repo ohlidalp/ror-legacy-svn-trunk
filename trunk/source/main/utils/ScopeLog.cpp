@@ -75,8 +75,12 @@ ScopeLog::~ScopeLog()
 	}
 }
 
-
-void ScopeLog::messageLogged(const String &message, LogMessageLevel lml, bool maskDebug, const String &logName)
+	// method from Ogre::LogListener
+#if OGRE_VERSION < ((1 << 16) | (8 << 8 ) | 0)
+void ScopeLog::messageLogged( const Ogre::String& message, Ogre::LogMessageLevel lml, bool maskDebug, const Ogre::String &logName)
+#else
+void ScopeLog::messageLogged( const Ogre::String& message, Ogre::LogMessageLevel lml, bool maskDebug, const Ogre::String &logName, bool& skipThisMessage)
+#endif // OGRE_VERSION
 {
 	if(!f) return;
 	

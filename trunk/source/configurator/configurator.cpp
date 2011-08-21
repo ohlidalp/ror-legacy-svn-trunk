@@ -165,7 +165,7 @@ class HtmlWindow: public wxHtmlWindow
 public:
 	HtmlWindow(wxWindow *parent, wxWindowID id = -1,
 		const wxPoint& pos = wxDefaultPosition, const wxSize& size = wxDefaultSize,
-		long style = wxHW_SCROLLBAR_AUTO, const wxString& name = wxString("htmlWindow"));
+		long style = wxHW_SCROLLBAR_AUTO, const wxString& name = wxT("htmlWindow"));
 	void OnLinkClicked(const wxHtmlLinkInfo& link);
 };
 
@@ -178,7 +178,7 @@ HtmlWindow::HtmlWindow(wxWindow *parent, wxWindowID id, const wxPoint& pos,
 void HtmlWindow::OnLinkClicked(const wxHtmlLinkInfo& link)
 {
 	wxString linkhref = link.GetHref();
-	if (linkhref.StartsWith(wxString("http://")))
+	if (linkhref.StartsWith(wxT("http://")))
 	{
 		if(!wxLaunchDefaultBrowser(linkhref))
 			// failed to launch externally, so open internally
@@ -550,7 +550,7 @@ void initLanguage(wxString languagePath, wxString userpath)
 
 	try
 	{
-		wxString rorcfg=userpath + dirsep + wxString("config") + dirsep + wxString("RoR.cfg");
+		wxString rorcfg=userpath + dirsep + wxT("config") + dirsep + wxT("RoR.cfg");
 		Ogre::ImprovedConfigFile cfg;
 		// Don't trim whitespace
 		cfg.load(rorcfg.ToUTF8().data(), "=:\t", false);
@@ -577,7 +577,7 @@ void initLanguage(wxString languagePath, wxString userpath)
 	}
 	wxLogStatus(wxT("preferred language: ")+language->Description);
 	wxString lshort = language->CanonicalName.substr(0, 2);
-	wxString tmp = basedir + dirsep + lshort + dirsep + "LC_MESSAGES" + dirsep + wxT("ror.mo");
+	wxString tmp = basedir + dirsep + lshort + dirsep + wxT("LC_MESSAGES") + dirsep + wxT("ror.mo");
 	wxLogStatus(wxT("lang file: ") + tmp);
 	if(wxFileName::FileExists(tmp))
 	{
@@ -615,7 +615,7 @@ void MyApp::recurseCopy(wxString sourceDir, wxString destinationDir)
 	do
 	{
 		//ignore files and directories beginning with "." (important, for SVN!)
-		if (src.StartsWith(wxString("."))) continue;
+		if (src.StartsWith(wxT("."))) continue;
 		//check if it id a directory
 		wxFileName tsfn=wxFileName(sourceDir, wxEmptyString);
 		tsfn.AppendDir(src);
@@ -673,7 +673,7 @@ bool MyApp::filesystemBootstrap()
 
 	if (!wxFileName::DirExists(UserPath))
 	{
-		wxString warning = wxString::Format(_("Rigs of Rods User directory missing:\n%s\n\nIt is required to start RoR.\nPlease reinstall Rigs of Rods in order to restore it."), UserPath);
+		wxString warning = wxString::Format(_("Rigs of Rods User directory missing:\n%s\n\nIt is required to start RoR.\nPlease reinstall Rigs of Rods in order to restore it."), UserPath.c_str());
 		wxString caption = _("error upon loading RoR user directory");
 		wxMessageDialog *w = new wxMessageDialog(NULL, warning, caption, wxOK|wxICON_ERROR|wxSTAY_ON_TOP, wxDefaultPosition);
 		w->ShowModal();
@@ -719,8 +719,8 @@ int MyApp::OnRun()
 	catch (std::exception &e)
 	{
 		wxLogError(wxT("Cought exception:"));
-		wxLogError(wxString(e.what()));
-		wxString warning = wxString(e.what());
+		wxLogError(wxString(e.what(), wxConvUTF8));
+		wxString warning = wxString(e.what(), wxConvUTF8);
 		wxString caption = _("caught exception");
 		wxMessageDialog *w = new wxMessageDialog(NULL, warning, caption, wxOK|wxICON_ERROR|wxSTAY_ON_TOP, wxDefaultPosition);
 		w->ShowModal();
@@ -739,7 +739,7 @@ bool MyApp::OnInit()
 	if (!filesystemBootstrap()) return false;
 
 	initLogging();
-	initLanguage("languages", UserPath);
+	initLanguage(wxT("languages"), UserPath);
 
 #if OGRE_PLATFORM == OGRE_PLATFORM_WIN32
 	// add windows specific crash handler. It will create nice memory dumps, so we can track the error
@@ -754,7 +754,7 @@ bool MyApp::OnInit()
 
 	wxLogStatus(wxT("Creating dialog"));
 	// create the main application window
-	wxString title = wxString::Format(_("Rigs of Rods version %s configuration"), wxString(ROR_VERSION_STRING));
+	wxString title = wxString::Format(_("Rigs of Rods version %s configuration"), wxT(ROR_VERSION_STRING));
 	MyDialog *dialog = new MyDialog(title, this);
 
 	// and show it (the frames, unlike simple controls, are not shown when
@@ -797,7 +797,7 @@ MyDialog::MyDialog(const wxString& title, MyApp *_app) : wxDialog(NULL, wxID_ANY
 #endif
 	SetWindowStyle(wxRESIZE_BORDER | wxCAPTION);
 	//SetMinSize(wxSize(300,300));
-
+	
 	kd=0;
 
 
@@ -904,7 +904,7 @@ MyDialog::MyDialog(const wxString& title, MyApp *_app) : wxDialog(NULL, wxID_ANY
 	nbook->AddPage(updatePanel, _("Updates"), false);
 #endif
 	aboutPanel=new wxScrolledWindow (nbook, -1);
-	nbook->AddPage(aboutPanel, "About", false);
+	nbook->AddPage(aboutPanel, _("About"), false);
 
 #ifdef USE_OPENCL
 	wxPanel *GPUPanel=new wxPanel(nbook, -1);
@@ -952,23 +952,19 @@ MyDialog::MyDialog(const wxString& title, MyApp *_app) : wxDialog(NULL, wxID_ANY
 	gearBoxMode->AppendValueItem(wxT("Fully Manual: stick shift"),             _("Fully Manual: stick shift"));
 	gearBoxMode->AppendValueItem(wxT("Fully Manual: stick shift with ranges"), _("Fully Manual: stick shift with ranges"));
 	gearBoxMode->SetToolTip(_("The default mode for the gearbox when a new vehicle is loaded."));
-	y+=25;
+	y+=35;
 
-	int y1=15;
-	wxStaticBox *sb = new wxStaticBox(gamePanel, wxID_ANY, _("Camera Settings"),  wxPoint(10, y), wxSize(450, 150));
-	
-	dText = new wxStaticText(sb, -1, _("FOV External:"), wxPoint(10,y1+3));
-	fovext = new wxTextCtrl(sb, -1, "60", wxPoint(x_row1, y1), wxSize(200, -1), 0);
-	y1+=35;
+	dText = new wxStaticText(gamePanel, -1, _("FOV External:"), wxPoint(10,y+3));
+	fovext = new wxTextCtrl(gamePanel, -1, wxT("60"), wxPoint(x_row1, y), wxSize(200, -1), 0);
+	y+=35;
 
-	dText = new wxStaticText(sb, -1, _("FOV Internal:"), wxPoint(10,y1+3));
-	fovint = new wxTextCtrl(sb, -1, "75", wxPoint(x_row1, y1), wxSize(200, -1), 0);
-	y1+=35;
+	dText = new wxStaticText(gamePanel, -1, _("FOV Internal:"), wxPoint(10,y+3));
+	fovint = new wxTextCtrl(gamePanel, -1, wxT("75"), wxPoint(x_row1, y), wxSize(200, -1), 0);
+	y+=35;
 
-	extcam=new wxCheckBox(sb, -1, _("Disable Camera Pitching"), wxPoint(x_row1, y1));
+	extcam=new wxCheckBox(gamePanel, -1, _("Disable Camera Pitching"), wxPoint(x_row1, y));
 	extcam->SetToolTip(_("If you dislike the pitching external vehicle camera, you can disable it here."));
-	y1+=25;
-	y+=155;
+	y+=25;
 
 	dText = new wxStaticText(gamePanel, -1, _("User Token: "), wxPoint(10,y+3));
 	usertoken=new wxTextCtrl(gamePanel, -1, wxString(), wxPoint(x_row1, y), wxSize(200, -1));
@@ -986,20 +982,21 @@ MyDialog::MyDialog(const wxString& title, MyApp *_app) : wxDialog(NULL, wxID_ANY
 	x_row2 = 300;
 
 	addAboutTitle(_("Version"), x_row1, y);
-	dText = new wxStaticText(aboutPanel, -1, wxString::Format(_("Rigs of Rods version: %s"), wxString(ROR_VERSION_STRING)), wxPoint(x_row1 + 15, y));
+	dText = new wxStaticText(aboutPanel, -1, wxString::Format(_("Rigs of Rods version: %s"), wxT(ROR_VERSION_STRING)), wxPoint(x_row1 + 15, y));
 	y += dText->GetSize().GetHeight() + 2;
 
-	dText = new wxStaticText(aboutPanel, -1, wxString::Format(_("Network Protocol version: %s"), wxString(RORNET_VERSION)), wxPoint(x_row1 + 15, y));
+	dText = new wxStaticText(aboutPanel, -1, wxString::Format(_("Network Protocol version: %s"), wxString(RORNET_VERSION, wxConvUTF8).c_str()), wxPoint(x_row1 + 15, y));
 	y += dText->GetSize().GetHeight() + 2;
 
-	dText = new wxStaticText(aboutPanel, -1, wxString::Format(_("revison: %s"), wxString(SVN_REVISION)), wxPoint(x_row1 + 15, y));
+	dText = new wxStaticText(aboutPanel, -1, wxString::Format(_("revison: %s"), wxT(SVN_REVISION)), wxPoint(x_row1 + 15, y));
 	y += dText->GetSize().GetHeight() + 2;
 
-	dText = new wxStaticText(aboutPanel, -1, wxString::Format(_("full revison: %s"), wxString(SVN_ID)), wxPoint(x_row1 + 15, y));
+	dText = new wxStaticText(aboutPanel, -1, wxString::Format(_("full revison: %s"), wxT(SVN_ID)), wxPoint(x_row1 + 15, y));
 	y += dText->GetSize().GetHeight() + 2;
 
-	dText = new wxStaticText(aboutPanel, -1, wxString::Format(_("build time: %s, %s"), wxString(__DATE__), wxString(__TIME__)), wxPoint(x_row1 + 15, y));
+	dText = new wxStaticText(aboutPanel, -1, wxString::Format(_("build time: %s, %s"), wxT(__DATE__), wxT(__TIME__)), wxPoint(x_row1 + 15, y));
 	y += dText->GetSize().GetHeight() + 2;
+
 
 #ifdef WIN32
 #ifdef _CPPRTTI
@@ -1028,59 +1025,59 @@ MyDialog::MyDialog(const wxString& title, MyApp *_app) : wxDialog(NULL, wxID_ANY
 	addAboutTitle(_("Authors"), x_row1, y);
 	
 	// Looong list following
-	addAboutEntry("Pierre-Michel-Ricordel (pricorde)", "Physics Genius, Original Author, Core Developer, retired", "http://www.rigsofrods.com/members/18658-pricorde", x_row1, y);
-	addAboutEntry("Thomas Fischer (tdev)", "Core Developer", "http://www.rigsofrods.com/members/18656-tdev", x_row1, y);
+	addAboutEntry(wxT("Pierre-Michel-Ricordel (pricorde)"), wxT("Physics Genius, Original Author, Core Developer, retired"), wxT("http://www.rigsofrods.com/members/18658-pricorde"), x_row1, y);
+	addAboutEntry(wxT("Thomas Fischer (tdev)"), wxT("Core Developer"), wxT("http://www.rigsofrods.com/members/18656-tdev"), x_row1, y);
 	y+=20;
 
 	addAboutTitle(_("Code Contributors"), x_row1, y);
-	addAboutEntry("Estama", "Physics Core Optimizations, Collision/Friction code, Support Beams", "http://www.rigsofrods.com/members/26673-estama", x_row1, y);
-	addAboutEntry("Lifter", "Triggers, Animators, Animated Props, Shocks2", "http://www.rigsofrods.com/members/22371-Lifter", x_row1, y);
-	addAboutEntry("Aperion", "Slidesnodes, Axles, Improved Engine code, Rigidifiers, Networking code", "http://www.rigsofrods.com/members/18734-Aperion", x_row1, y);
-	addAboutEntry("FlyPiper", "Inertia Code, minor patches", "http://www.rigsofrods.com/members/19789-flypiper", x_row1, y);
-	addAboutEntry("knied", "MacOSX Patches", "http://www.rigsofrods.com/members/32234-knied", x_row1, y);
-	addAboutEntry("altren", "coded some MyGUI windows", "", x_row1, y);
-	addAboutEntry("petern", "repair on spot, linux patches", "", x_row1, y);
-	addAboutEntry("imrenagy", "moving chair hardware support, several fixes", "", x_row1, y);
-	addAboutEntry("priotr", "several linux fixes", "", x_row1, y);
-	addAboutEntry("cptf", "several linux gcc fixes", "", x_row1, y);
-	addAboutEntry("88Toyota", "clutch force patches", "", x_row1, y);
-	addAboutEntry("synthead", "minor linux fixes", "", x_row1, y);
+	addAboutEntry(wxT("Estama"),   wxT("Physics Core Optimizations, Collision/Friction code, Support Beams"), wxT("http://www.rigsofrods.com/members/26673-estama"), x_row1, y);
+	addAboutEntry(wxT("Lifter"),   wxT("Triggers, Animators, Animated Props, Shocks2"), wxT("http://www.rigsofrods.com/members/22371-Lifter"), x_row1, y);
+	addAboutEntry(wxT("Aperion"),  wxT("Slidesnodes, Axles, Improved Engine code, Rigidifiers, Networking code"), wxT("http://www.rigsofrods.com/members/18734-Aperion"), x_row1, y);
+	addAboutEntry(wxT("FlyPiper"), wxT("Inertia Code, minor patches"), wxT("http://www.rigsofrods.com/members/19789-flypiper"), x_row1, y);
+	addAboutEntry(wxT("knied"),    wxT("MacOSX Patches"), wxT("http://www.rigsofrods.com/members/32234-knied"), x_row1, y);
+	addAboutEntry(wxT("altren"),   wxT("coded some MyGUI windows"), wxString(), x_row1, y);
+	addAboutEntry(wxT("petern"),   wxT("repair on spot, linux patches"), wxString(), x_row1, y);
+	addAboutEntry(wxT("imrenagy"), wxT("moving chair hardware support, several fixes"), wxString(), x_row1, y);
+	addAboutEntry(wxT("priotr"),   wxT("several linux fixes"), wxString(), x_row1, y);
+	addAboutEntry(wxT("cptf"),     wxT("several linux gcc fixes"), wxString(), x_row1, y);
+	addAboutEntry(wxT("88Toyota"), wxT("clutch force patches"), wxString(), x_row1, y);
+	addAboutEntry(wxT("synthead"), wxT("minor linux fixes"), wxString(), x_row1, y);
 	y+=20;
 
 	addAboutTitle(_("Core Content Contributors"), x_row1, y);
-	addAboutEntry("donoteat", "improved spawner models, terrain work", "http://www.rigsofrods.com/members/18779", x_row1, y);
-	addAboutEntry("kevinmce", "character", "http://www.rigsofrods.com/members/18956-kevinmce", x_row1, y);
+	addAboutEntry(wxT("donoteat"), wxT("improved spawner models, terrain work"), wxT("http://www.rigsofrods.com/members/18779"), x_row1, y);
+	addAboutEntry(wxT("kevinmce"), wxT("character"), wxT("http://www.rigsofrods.com/members/18956-kevinmce"), x_row1, y);
 	y+=20;
 
 	addAboutTitle(_("Mod Contributors"), x_row1, y);
-	addAboutEntry("the rigs of rods community", "provided us with lots of mods to play with", "http://www.rigsofrods.com/repository/", x_row1, y);
+	addAboutEntry(wxT("the rigs of rods community"), wxT("provided us with lots of mods to play with"), wxT("http://www.rigsofrods.com/repository/"), x_row1, y);
 	y+=20;
 
 	addAboutTitle(_("Testers"), x_row1, y);
-	addAboutEntry("invited core team", "the invited members helped us a lot along the way at various corners", "", x_row1, y);
+	addAboutEntry(wxT("invited core team"), wxT("the invited members helped us a lot along the way at various corners"), wxString(), x_row1, y);
 	y+=20;
 
 	addAboutTitle(_("Used Software"), x_row1, y);
-	addAboutEntry("Ogre3D", "3D rendering engine", "http://www.ogre3d.org", x_row1, y);
-	addAboutEntry("Caelum", "Atmospheric effects", "http://code.google.com/p/caelum/", x_row1, y);
-	addAboutEntry("Angelscript", "Scripting Backend", "http://www.angelcode.com/angelscript/", x_row1, y);
-	addAboutEntry("LUA", "Scripting Backend", "http://www.lua.org", x_row1, y);
-	addAboutEntry("OpenAL Soft", "Sound engine", "http://kcat.strangesoft.net/openal.html", x_row1, y);
-	addAboutEntry("MyGUI", "GUI System", "http://www.mygui.info", x_row1, y);
-	addAboutEntry("CrashRpt", "Crash Reporting system", "http://code.google.com/p/crashrpt/", x_row1, y);
-	addAboutEntry("Hydrax", "Advanced Water System", "http://www.ogre3d.org/addonforums/viewforum.php?f=20", x_row1, y);
-	addAboutEntry("mofilereader", "used for Internationalization", "http://code.google.com/p/mofilereader/", x_row1, y);
-	addAboutEntry("OIS", "used as Input System", "http://sourceforge.net/projects/wgois/", x_row1, y);
-	addAboutEntry("pagedGeometry", "used for foliage (grass, trees, etc)", "http://code.google.com/p/ogre-paged/", x_row1, y);
-	addAboutEntry("pthreads", "used for threading", "", x_row1, y);
-	addAboutEntry("curl", "used for www-server communication", "http://curl.haxx.se/", x_row1, y);
-	addAboutEntry("SocketW", "used as cross-platform socket abstraction", "http://www.digitalfanatics.org/cal/socketw/index.html", x_row1, y);
-	addAboutEntry("boost", "used as glue inbetween the components", "http://www.boost.org", x_row1, y);
-	addAboutEntry("wxWidgets", "used as cross platform user interface toolkit", "http://www.wxwidgets.org", x_row1, y);
+	addAboutEntry(wxT("Ogre3D"),        wxT("3D rendering engine"), wxT("http://www.ogre3d.org"), x_row1, y);
+	addAboutEntry(wxT("Caelum"),        wxT("Atmospheric effects"), wxT("http://code.google.com/p/caelum/"), x_row1, y);
+	addAboutEntry(wxT("Angelscript"),   wxT("Scripting Backend"), wxT("http://www.angelcode.com/angelscript/"), x_row1, y);
+	//addAboutEntry(wxT("LUA"),           wxT("Scripting Backend"), wxT("http://www.lua.org"), x_row1, y);
+	addAboutEntry(wxT("OpenAL Soft"),   wxT("Sound engine"), wxT("http://kcat.strangesoft.net/openal.html"), x_row1, y);
+	addAboutEntry(wxT("MyGUI"),         wxT("GUI System"), wxT("http://www.mygui.info"), x_row1, y);
+	addAboutEntry(wxT("CrashRpt"),      wxT("Crash Reporting system"), wxT("http://code.google.com/p/crashrpt/"), x_row1, y);
+	addAboutEntry(wxT("Hydrax"),        wxT("Advanced Water System"), wxT("http://www.ogre3d.org/addonforums/viewforum.php?f=20"), x_row1, y);
+	addAboutEntry(wxT("mofilereader"),  wxT("used for Internationalization"), wxT("http://code.google.com/p/mofilereader/"), x_row1, y);
+	addAboutEntry(wxT("OIS"),           wxT("used as Input System"), wxT("http://sourceforge.net/projects/wgois/"), x_row1, y);
+	addAboutEntry(wxT("pagedGeometry"), wxT("used for foliage (grass, trees, etc)"), wxT("http://code.google.com/p/ogre-paged/"), x_row1, y);
+	addAboutEntry(wxT("pthreads"),      wxT("used for threading"), wxString(), x_row1, y);
+	addAboutEntry(wxT("curl"),          wxT("used for www-server communication"), wxT("http://curl.haxx.se/"), x_row1, y);
+	addAboutEntry(wxT("SocketW"),       wxT("used as cross-platform socket abstraction"), wxT("http://www.digitalfanatics.org/cal/socketw/index.html"), x_row1, y);
+	addAboutEntry(wxT("boost"),         wxT("used as glue inbetween the components"), wxT("http://www.boost.org"), x_row1, y);
+	addAboutEntry(wxT("wxWidgets"),     wxT("used as cross platform user interface toolkit"), wxT("http://www.wxwidgets.org"), x_row1, y);
 	y+=20;
 
 	addAboutTitle(_("Missing someone?"), x_row1, y);
-	addAboutEntry(_("Missing someone?"), _("if you are missing someone on this list, please drop us a line:\nsupport@rigsofrods.com"), "mailto:support@rigsofrods.com", x_row1, y);
+	addAboutEntry(_("Missing someone?"), _("if you are missing someone on this list, please drop us a line:\nsupport@rigsofrods.com"), wxT("mailto:support@rigsofrods.com"), x_row1, y);
 
 	wxSize size = nbook->GetBestVirtualSize();
 	size.x = 400;
@@ -1507,9 +1504,9 @@ void MyDialog::addAboutEntry(wxString name, wxString desc, wxString url, int &x,
 	if(!url.empty())
 	{
 		wxHyperlinkCtrl *link = new wxHyperlinkCtrl(aboutPanel, wxID_ANY, name, url, wxPoint(x+15, y), wxSize(250, 25), wxHL_ALIGN_LEFT|wxHL_CONTEXTMENU);
-		link->SetNormalColour(wxColour("BLACK"));
-		link->SetHoverColour(wxColour("LIGHT GREY'"));
-		link->SetVisitedColour(wxColour("ORANGE"));
+		link->SetNormalColour(wxColour(wxT("BLACK")));
+		link->SetHoverColour(wxColour(wxT("LIGHT GREY")));
+		link->SetVisitedColour(wxColour(wxT("ORANGE")));
 		wxFont dfont=link->GetFont();
 		dfont.SetWeight(wxFONTWEIGHT_BOLD);
 		dfont.SetPointSize(dfont.GetPointSize()+1);
@@ -1539,11 +1536,11 @@ void MyDialog::loadOgre()
 	wxLogStatus(wxT("Creating Ogre root"));
 	//we must do this once
 	wxFileName tcfn=wxFileName(app->UserPath, wxEmptyString);
-	tcfn.AppendDir(wxString("config"));
+	tcfn.AppendDir(wxT("config"));
 	wxString confdirPrefix=tcfn.GetPath()+wxFileName::GetPathSeparator();
 
 	wxFileName tlfn=wxFileName(app->UserPath, wxEmptyString);
-	tlfn.AppendDir(wxString("logs"));
+	tlfn.AppendDir(wxT("logs"));
 	wxString logsdirPrefix=tlfn.GetPath()+wxFileName::GetPathSeparator();
 
 	wxString progdirPrefix=app->ProgramPath+wxFileName::GetPathSeparator();
@@ -1686,7 +1683,11 @@ void MyDialog::updateRendersystems(Ogre::RenderSystem *rs)
 		}
 		wxString s = conv(optIt->first.c_str());
 		renderer_name[counter] = optIt->first;
+#ifdef WIN32
 		renderer_text[counter]->SetLabel(_(s));
+#else
+		renderer_text[counter]->SetLabel(wxGetTranslation(s));
+#endif // WIN32
 		renderer_text[counter]->Show();
 
 		// add all values and select current value
@@ -1721,7 +1722,11 @@ void MyDialog::updateRendersystems(Ogre::RenderSystem *rs)
 
 			valueCounter++;
 			s = conv(valIt->c_str());
+#ifdef WIN32
 			renderer_choice[counter]->AppendValueItem(s, _(s));
+#else
+			renderer_choice[counter]->AppendValueItem(s, wxGetTranslation(s));
+#endif //WIN32
 		}
 		renderer_choice[counter]->SetSelection(selection);
 		renderer_choice[counter]->Show();
@@ -1785,8 +1790,8 @@ void MyDialog::SetDefaults()
 	dtm->SetValue(false);
 	presel_map->SetValue(wxString());
 	presel_truck->SetValue(wxString());
-	fovint->SetValue("75");
-	fovext->SetValue("60");
+	fovint->SetValue(wxT("75"));
+	fovext->SetValue(wxT("60"));
 	advanced_logging->SetValue(false);
 	ingame_console->SetValue(false);
 	dofdebug->SetValue(false);
@@ -1835,23 +1840,23 @@ void MyDialog::getSettingsControls()
 {
 	char tmp[255]="";
 
-	settings["Texture Filtering"] = textfilt->getSelectedValue();
-	settings["Input Grab"] = inputgrab->getSelectedValue();
-	settings["Sky effects"] = sky->getSelectedValue();
-	settings["Shadow technique"] = shadow->getSelectedValue();
+	settings["Texture Filtering"] = textfilt->getSelectedValueAsSTDString();
+	settings["Input Grab"] = inputgrab->getSelectedValueAsSTDString();
+	settings["Sky effects"] = sky->getSelectedValueAsSTDString();
+	settings["Shadow technique"] = shadow->getSelectedValueAsSTDString();
 	
 	
 	sprintf(tmp, "%d", sightRange->GetValue());
 	settings["SightRange"] = tmp;
 	settings["Shadow optimizations"] = (shadowOptimizations->GetValue()) ? "Yes" : "No";
 
-	settings["Preselected Map"] = presel_map->GetValue();
-	settings["Preselected Truck"] = presel_truck->GetValue();
+	settings["Preselected Map"] = conv(presel_map->GetValue());
+	settings["Preselected Truck"] = conv(presel_truck->GetValue());
 
-	settings["FOV Internal"] = fovint->GetValue();
-	settings["FOV External"] = fovext->GetValue();
+	settings["FOV Internal"] = conv(fovint->GetValue());
+	settings["FOV External"] = conv(fovext->GetValue());
 
-	settings["Water effects"] = water->getSelectedValue();
+	settings["Water effects"] = water->getSelectedValueAsSTDString();
 
 	settings["Waves"] = (waves->GetValue()) ? "Yes" : "No";
 	settings["Replay mode"] = (replaymode->GetValue()) ? "Yes" : "No";
@@ -1874,7 +1879,7 @@ void MyDialog::getSettingsControls()
 	settings["DebugBeams"] = (beamdebug->GetValue()) ? "Yes" : "No";
 	//settings["AutoDownload"] = (autodl->GetValue()) ? "Yes" : "No";
 	settings["Position Storage"] = (posstor->GetValue()) ? "Yes" : "No";
-	settings["GearboxMode"]= gearBoxMode->getSelectedValue();
+	settings["GearboxMode"]= gearBoxMode->getSelectedValueAsSTDString();
 	settings["External Camera Mode"] = (extcam->GetValue()) ? "Static" : "Pitching";
 	settings["Mirrors"] = (mirror->GetValue()) ? "Yes" : "No";
 	settings["Envmap"] = (envmap->GetValue()) ? "Yes" : "No";
@@ -1886,8 +1891,8 @@ void MyDialog::getSettingsControls()
 	settings["Skidmarks"] = "No"; //(skidmarks->GetValue()) ? "Yes" : "No";
 	settings["Creak Sound"] = (creaksound->GetValue()) ? "No" : "Yes";
 	settings["Envmap"] = (envmap->GetValue()) ? "Yes" : "No";
-	settings["3D Sound renderer"] = sound->getSelectedValue();
-	settings["Threads"] = thread->getSelectedValue();
+	settings["3D Sound renderer"] = sound->getSelectedValueAsSTDString();
+	settings["Threads"] = thread->getSelectedValueAsSTDString();
 
 	settings["Force Feedback"] = (ffEnable->GetValue()) ? "Yes" : "No";
 	sprintf(tmp, "%d", ffOverall->GetValue());
@@ -1899,11 +1904,11 @@ void MyDialog::getSettingsControls()
 	sprintf(tmp, "%d", ffCamera->GetValue());
 	settings["Force Feedback Camera"] = tmp;
 
-	settings["Lights"] = flaresMode->getSelectedValue();
+	settings["Lights"] = flaresMode->getSelectedValueAsSTDString();
 
-	settings["Vegetation"] = vegetationMode->getSelectedValue();
+	settings["Vegetation"] = vegetationMode->getSelectedValueAsSTDString();
 
-	settings["Screenshot Format"] = screenShotFormat->getSelectedValue();
+	settings["Screenshot Format"] = screenShotFormat->getSelectedValueAsSTDString();
 
 	wxSize s = this->GetSize();
 	sprintf(tmp, "%d, %d", s.x, s.y);
@@ -1921,13 +1926,15 @@ void MyDialog::getSettingsControls()
 	// save language, if one is set
 	if(avLanguages.size() > 0 && languageMode->GetSelection() > 0)
 	{
-		settings["Language"] = conv(languageMode->getSelectedValue());
+		settings["Language"] = languageMode->getSelectedValueAsSTDString();
 
 		std::vector<wxLanguageInfo*>::iterator it;
 		for(it = avLanguages.begin(); it!=avLanguages.end(); it++)
 		{
 			if((*it)->Description == languageMode->getSelectedValue())
+			{
 				settings["Language Short"] = conv((*it)->CanonicalName);
+			}
 		}
 	} else
 	{
@@ -1999,11 +2006,11 @@ void MyDialog::updateSettingsControls()
 	st = settings["Force Feedback Centering"]; if (st.length()>0 && conv(st).ToDouble(&flt)) ffCenter->SetValue(flt);
 	st = settings["Force Feedback Camera"]; if (st.length()>0 && conv(st).ToDouble(&flt)) ffCamera->SetValue(flt);
 
-	st = settings["FOV Internal"]; if (st.length()>0) fovint->SetValue(st);
-	st = settings["FOV External"]; if (st.length()>0) fovext->SetValue(st);
+	st = settings["FOV Internal"]; if (st.length()>0) fovint->SetValue(conv(st));
+	st = settings["FOV External"]; if (st.length()>0) fovext->SetValue(conv(st));
 
-	st = settings["Preselected Map"]; if (st.length()>0) presel_map->SetValue(st);
-	st = settings["Preselected Truck"]; if (st.length()>0) presel_truck->SetValue(st);
+	st = settings["Preselected Map"]; if (st.length()>0) presel_map->SetValue(conv(st));
+	st = settings["Preselected Truck"]; if (st.length()>0) presel_truck->SetValue(conv(st));
 
 	//update textboxes
 	wxScrollEvent dummye;
@@ -2044,7 +2051,7 @@ bool MyDialog::LoadConfig()
 	{
 		wxLogStatus(wxT("Loading RoR.cfg"));
 
-		wxString rorcfg=app->UserPath + wxFileName::GetPathSeparator() + wxString("config") + wxFileName::GetPathSeparator() + wxString("RoR.cfg");
+		wxString rorcfg=app->UserPath + wxFileName::GetPathSeparator() + wxT("config") + wxFileName::GetPathSeparator() + wxT("RoR.cfg");
 		wxLogStatus(wxT("reading from Config file: ") + rorcfg);
 
 		// Don't trim whitespace
@@ -2096,7 +2103,7 @@ void MyDialog::SaveConfig()
 				if(!renderer_text[i]->IsShown())
 					break;
 				std::string key = renderer_name[i];
-				std::string val = conv(renderer_choice[i]->getSelectedValue());
+				std::string val = renderer_choice[i]->getSelectedValueAsSTDString();
 				try
 				{
 					rs->setConfigOption(key, val);
@@ -2118,8 +2125,8 @@ void MyDialog::SaveConfig()
 	catch (std::exception &e)
 	{
 		wxLogError(wxT("Cought exception:"));
-		wxLogError(wxString(e.what()));
-		wxString warning = wxString(e.what());
+		wxLogError(wxString(e.what(), wxConvUTF8));
+		wxString warning = wxString(e.what(), wxConvUTF8);
 		wxString caption = _("caught exception");
 		wxMessageDialog *w = new wxMessageDialog(NULL, warning, caption, wxOK|wxICON_ERROR|wxSTAY_ON_TOP, wxDefaultPosition);
 		w->ShowModal();
@@ -2128,13 +2135,13 @@ void MyDialog::SaveConfig()
 
 	//save my stuff
 	FILE *fd;
-	wxString rorcfg=app->UserPath + wxFileName::GetPathSeparator() + wxString("config") + wxFileName::GetPathSeparator() + wxString("RoR.cfg");
+	wxString rorcfg=app->UserPath + wxFileName::GetPathSeparator() + wxT("config") + wxFileName::GetPathSeparator() + wxT("RoR.cfg");
 
 	wxLogStatus(wxT("saving to Config file: ") + rorcfg);
 	fd=fopen(rorcfg.ToUTF8().data(), "w");
 	if (!fd)
 	{
-		wxMessageDialog(this, wxString(_("Could not write config file")), wxString(_("Configure error")),wxOK||wxICON_ERROR).ShowModal();
+		wxMessageDialog(this, _("Could not write config file"), _("Configure error"),wxOK||wxICON_ERROR).ShowModal();
 		return;
 	}
 
@@ -2163,7 +2170,7 @@ void MyDialog::OnChangeRenderer(wxCommandEvent& ev)
 	if(!ogreRoot) return;
 	try
 	{
-		Ogre::RenderSystem *rs = ogreRoot->getRenderSystemByName(conv(renderer->getSelectedValue()));
+		Ogre::RenderSystem *rs = ogreRoot->getRenderSystemByName(renderer->getSelectedValueAsSTDString());
 		if(rs)
 		{
 			ogreRoot->setRenderSystem(rs);
@@ -2517,14 +2524,14 @@ void MyDialog::OnButClearCache(wxCommandEvent& event)
 	wxFileName cfn;
 	cfn.AssignCwd();
 
-	wxString cachepath=app->UserPath+wxFileName::GetPathSeparator()+wxString("cache");
+	wxString cachepath=app->UserPath+wxFileName::GetPathSeparator()+wxT("cache");
 	wxDir srcd(cachepath);
 	wxString src;
 	if (!srcd.GetFirst(&src)) return; //empty dir!
 	do
 	{
 		//ignore files and directories beginning with "." (important, for SVN!)
-		if (src.StartsWith(wxString("."))) continue;
+		if (src.StartsWith(wxT("."))) continue;
 		//check if it id a directory
 		wxFileName tsfn=wxFileName(cachepath, wxEmptyString);
 		tsfn.AppendDir(src);

@@ -145,7 +145,7 @@ static void QuaternionInitConstructor3(const Vector3 &xaxis, const Vector3 &yaxi
 // not used
 static void QuaternionInitConstructor5(float val, Quaternion *self)
 {
-	new(self) Quaternion(val);
+	new(self) Quaternion((Ogre::Real *)&val);
 }
 
 static void QuaternionInitConstructorScaler(float s, Quaternion *self)
