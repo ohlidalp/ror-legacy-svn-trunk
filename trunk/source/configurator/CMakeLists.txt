@@ -21,9 +21,10 @@ endmacro(setup_lib)
 # find wxwidgets
 SET(wxWidgets_USE_UNICODE ON)
 FIND_PACKAGE(wxWidgets REQUIRED COMPONENTS base core html net adv)
-include_directories(${wxWidgets_INCLUDE_DIRS})
-add_definitions("-D${wxWidgets_DEFINITIONS}" ${wxWidgets_CXX_FLAGS})
-link_directories (${wxWidgets_LIB_DIR})
+include( ${wxWidgets_USE_FILE} )
+#include_directories(${wxWidgets_INCLUDE_DIRS})
+#add_definitions("-D${wxWidgets_DEFINITIONS}" ${wxWidgets_CXX_FLAGS})
+#link_directories (${wxWidgets_LIB_DIR})
 
 IF(WIN32)
    include_directories(${Boost_INCLUDE_DIRS})

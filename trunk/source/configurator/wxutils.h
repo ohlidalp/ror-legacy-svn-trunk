@@ -40,10 +40,14 @@ inline size_t getOISHandle(wxWindow *window)
 	hWnd = (size_t)window->GetHandle();
 #elif OGRE_PLATFORM == OGRE_PLATFORM_LINUX
 #ifdef __WXGTK__
+#if wxCHECK_VERSION(2, 8, 0)
 	if (!window->IsShownOnScreen()) {
 		wxLogStatus(wxT("getOISHandle(): Window needs to be realized before we can get its XID. Showing the window to avoid crash!"));
 		window->Show();
 	}
+#else
+	window->Show();
+#endif //wxCHECK_VERSION(2, 8, 0)
 #if GTK_CHECK_VERSION (2,14,0)
 	// GTK 2.14 includes gtk_widget_get_window()
 	hWnd = (size_t)GDK_WINDOW_XID(gtk_widget_get_window(window->GetHandle()));
