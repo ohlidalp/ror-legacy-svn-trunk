@@ -73,7 +73,10 @@ using namespace std;
 #include <wx/version.h>
 #include <wx/log.h>
 #include <wx/statline.h>
+
+#if wxCHECK_VERSION(2, 8, 0)
 #include <wx/hyperlink.h>
+#endif
 
 // a control we wrote
 #include "wxValueChoice.h"
@@ -218,8 +221,10 @@ public:
 	void OnButRestore(wxCommandEvent& event);
 	void OnTestNet(wxCommandEvent& event);
 	void OnGetUserToken(wxCommandEvent& event);
+#if wxCHECK_VERSION(2, 8, 0)
 	void OnLinkClicked(wxHtmlLinkEvent& event);
 	void OnLinkClickedUpdate(wxHtmlLinkEvent& event);
+#endif // version 2.8
 	void onChangeShadowChoice(wxCommandEvent& event);
 	void onChangeLanguageChoice(wxCommandEvent& event);
 	//void OnButRemap(wxCommandEvent& event);
@@ -415,8 +420,10 @@ BEGIN_EVENT_TABLE(MyDialog, wxDialog)
 	EVT_BUTTON(update_ror, MyDialog::OnButUpdateRoR)
 	EVT_BUTTON(check_opencl, MyDialog::OnButCheckOpenCL)
 	EVT_BUTTON(check_opencl_bw, MyDialog::OnButCheckOpenCLBW)
+#if wxCHECK_VERSION(2, 8, 0)
 	EVT_HTML_LINK_CLICKED(main_html, MyDialog::OnLinkClicked)
 	EVT_HTML_LINK_CLICKED(update_html, MyDialog::OnLinkClickedUpdate)
+#endif  // wxCHECK_VERSION(2, 8, 0)
 	EVT_CHOICE(shadowschoice, MyDialog::onChangeShadowChoice)
 	EVT_COMMAND_SCROLL(sightrangeslider, MyDialog::OnsightrangesliderScroll)
 	EVT_COMMAND_SCROLL(FFSLIDER, MyDialog::OnForceFeedbackScroll)
@@ -553,7 +560,7 @@ void initLanguage(wxString languagePath, wxString userpath)
 		wxString rorcfg=userpath + dirsep + wxT("config") + dirsep + wxT("RoR.cfg");
 		Ogre::ImprovedConfigFile cfg;
 		// Don't trim whitespace
-		cfg.load(rorcfg.ToUTF8().data(), "=:\t", false);
+		cfg.load((const char*)rorcfg.mb_str(wxConvUTF8), "=:\t", false);
 		wxString langSavedName = conv(cfg.getSetting("Language"));
 
 		if(langSavedName.size() > 0)
@@ -582,11 +589,13 @@ void initLanguage(wxString languagePath, wxString userpath)
 	if(wxFileName::FileExists(tmp))
 	{
 		wxLogStatus(wxT("language existing, using it!"));
+#if wxCHECK_VERSION(2, 8, 0)
 		if(!lang_locale.IsAvailable((wxLanguage)language->Language))
 		{
 			wxLogStatus(wxT("language file existing, but not found via wxLocale!"));
 			wxLogStatus(wxT("is the language installed on your system?"));
 		}
+#endif // version 2.8
 		bool res = lang_locale.Init((wxLanguage)language->Language);
 		if(!res)
 		{
@@ -882,7 +891,9 @@ MyDialog::MyDialog(const wxString& title, MyApp *_app) : wxDialog(NULL, wxID_ANY
 	ctbook->AddPage(ctsetPanel, _("Info"), false);
 	wxStaticText *dText2 = new wxStaticText(ctsetPanel, -1, _("Please edit the input mappings by hand by using a texteditor.\nThe input mappings are stored in the following file:\nMy Documents\\Rigs of Rods\\config\\input.map"), wxPoint(10,10));
 
+#if wxCHECK_VERSION(2, 8, 0)
 	wxHyperlinkCtrl *link1 = new wxHyperlinkCtrl(ctsetPanel, -1, _("(more help here)"), _("http://www.rigsofrods.com/wiki/pages/Input.map"), wxPoint(10, 100));
+#endif // version 2.8
 
 	wxPanel *ffPanel=new wxPanel(ctbook, -1);
 	ctbook->AddPage(ffPanel, _("Force Feedback"), false);
@@ -1162,7 +1173,9 @@ MyDialog::MyDialog(const wxString& title, MyApp *_app) : wxDialog(NULL, wxID_ANY
 	presel_truck->SetToolTip(_("The truck you want to load upon RoR startup. Might remove the startup selection menu."));
 	y+=25;
 
+#if wxCHECK_VERSION(2, 8, 0)
 	wxHyperlinkCtrl *link = new wxHyperlinkCtrl(debugPanel, -1, _("(read more on how to use these options here)"), _("http://www.rigsofrods.com/wiki/pages/Debugging_Trucks"), wxPoint(10, y));
+#endif // version 2.8
 
 	// graphics panel
 	y = 10;
@@ -1501,6 +1514,7 @@ void MyDialog::addAboutEntry(wxString name, wxString desc, wxString url, int &x,
 {
 
 	wxSize s;
+#if wxCHECK_VERSION(2, 8, 0)
 	if(!url.empty())
 	{
 		wxHyperlinkCtrl *link = new wxHyperlinkCtrl(aboutPanel, wxID_ANY, name, url, wxPoint(x+15, y), wxSize(250, 25), wxHL_ALIGN_LEFT|wxHL_CONTEXTMENU);
@@ -1513,6 +1527,7 @@ void MyDialog::addAboutEntry(wxString name, wxString desc, wxString url, int &x,
 		link->SetFont(dfont);
 		s = link->GetSize();
 	} else
+#endif // version 2.8
 	{
 		wxStaticText *dText = new wxStaticText(aboutPanel, wxID_ANY, name, wxPoint(x+15, y));
 		wxFont dfont=dText->GetFont();
@@ -1546,9 +1561,9 @@ void MyDialog::loadOgre()
 	wxString progdirPrefix=app->ProgramPath+wxFileName::GetPathSeparator();
 	const char *pluginsfile="plugins.cfg";
 	wxLogStatus(wxT(">> If it crashes after here, check your plugins.cfg (and remove the DirectX entry if under linux)!"));
-	ogreRoot = new Ogre::Root(Ogre::String(progdirPrefix.ToUTF8().data())+pluginsfile,
-									Ogre::String(confdirPrefix.ToUTF8().data())+"ogre.cfg",
-									Ogre::String(logsdirPrefix.ToUTF8().data())+"RoRConfig.log");
+	ogreRoot = new Ogre::Root(Ogre::String((const char*)progdirPrefix.mb_str(wxConvUTF8))+pluginsfile,
+									Ogre::String((const char*)confdirPrefix.mb_str(wxConvUTF8))+"ogre.cfg",
+									Ogre::String((const char*)logsdirPrefix.mb_str(wxConvUTF8))+"RoRConfig.log");
 
 	wxLogStatus(wxT("Root restore config"));
 	try
@@ -2055,7 +2070,7 @@ bool MyDialog::LoadConfig()
 		wxLogStatus(wxT("reading from Config file: ") + rorcfg);
 
 		// Don't trim whitespace
-		cfg.load(rorcfg.ToUTF8().data(), "=:\t", false);
+		cfg.load((const char *)rorcfg.mb_str(wxConvUTF8), "=:\t", false);
 	} catch(...)
 	{
 		wxLogError(wxT("error loading RoR.cfg"));
@@ -2138,7 +2153,7 @@ void MyDialog::SaveConfig()
 	wxString rorcfg=app->UserPath + wxFileName::GetPathSeparator() + wxT("config") + wxFileName::GetPathSeparator() + wxT("RoR.cfg");
 
 	wxLogStatus(wxT("saving to Config file: ") + rorcfg);
-	fd=fopen(rorcfg.ToUTF8().data(), "w");
+	fd=fopen((const char *)rorcfg.mb_str(wxConvUTF8), "w");
 	if (!fd)
 	{
 		wxMessageDialog(this, _("Could not write config file"), _("Configure error"),wxOK||wxICON_ERROR).ShowModal();
@@ -2583,6 +2598,7 @@ void MyDialog::OnForceFeedbackScroll(wxScrollEvent & event)
 	ffCameraText->SetLabel(s);
 }
 
+#if wxCHECK_VERSION(2, 8, 0)
 void MyDialog::OnLinkClicked(wxHtmlLinkEvent& event)
 {
 	wxHtmlLinkInfo linkinfo=event.GetLinkInfo();
@@ -2630,6 +2646,7 @@ void MyDialog::OnLinkClickedUpdate(wxHtmlLinkEvent& event)
 		helphtmw->OnLinkClicked(linkinfo);
 	}
 }
+#endif // version 2.8
 
 void MyDialog::OnNoteBook2PageChange(wxNotebookEvent& event)
 {
