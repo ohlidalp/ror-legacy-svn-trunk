@@ -68,10 +68,6 @@ along with Rigs of Rods.  If not, see <http://www.gnu.org/licenses/>.
 
 #include "Settings.h"
 
-#ifdef USE_HYDRAX
-# include "HydraxWater.h"
-#endif
-
 #include "dashboard.h"
 #include "Heathaze.h"
 #ifdef HAS_EDITOR
@@ -4413,9 +4409,6 @@ void RoRFrameListener::loadClassicTerrain(String terrainfile)
 	mCamera->setPosition(Vector3(cx,cy,cz));
 
 	//water!
-	bool useHydrax = (BSETTING("Hydrax"));
-	String hydraxConfig = "hydrax_default.hdx";
-
 	if (waterline != -9999)
 	{
 		bool usewaves=(BSETTING("Waves"));
@@ -4424,29 +4417,16 @@ void RoRFrameListener::loadClassicTerrain(String terrainfile)
 		if(net)
 			usewaves=false;
 
-#ifndef HYDRAX
-	useHydrax=false;
-#endif
-
-    if(useHydrax)
-    {
-#ifdef USE_HYDRAX
-      w = new HydraxWater(WATER_BASIC, mCamera, mSceneMgr, mWindow, waterline, &mapsizex, &mapsizez, usewaves);
-#endif
-	}
-    else if(!useHydrax)
-		{
-			if (SSETTING("Water effects")=="None")
-				w=0;
-			else if (SSETTING("Water effects")=="Basic (fastest)")
-				w=new WaterOld(WATER_BASIC, mCamera, mSceneMgr, mWindow, waterline, &mapsizex, &mapsizez, usewaves);
-			else if (SSETTING("Water effects")=="Reflection")
-				w=new WaterOld(WATER_REFLECT, mCamera, mSceneMgr, mWindow, waterline, &mapsizex, &mapsizez, usewaves);
-			else if (SSETTING("Water effects")=="Reflection + refraction (speed optimized)")
-				w=new WaterOld(WATER_FULL_SPEED, mCamera, mSceneMgr, mWindow, waterline, &mapsizex, &mapsizez, usewaves);
-			else if (SSETTING("Water effects")=="Reflection + refraction (quality optimized)")
-				w=new WaterOld(WATER_FULL_QUALITY, mCamera, mSceneMgr, mWindow, waterline, &mapsizex, &mapsizez, usewaves);
-		}
+		if (SSETTING("Water effects")=="None")
+			w=0;
+		else if (SSETTING("Water effects")=="Basic (fastest)")
+			w=new WaterOld(WATER_BASIC, mCamera, mSceneMgr, mWindow, waterline, &mapsizex, &mapsizez, usewaves);
+		else if (SSETTING("Water effects")=="Reflection")
+			w=new WaterOld(WATER_REFLECT, mCamera, mSceneMgr, mWindow, waterline, &mapsizex, &mapsizez, usewaves);
+		else if (SSETTING("Water effects")=="Reflection + refraction (speed optimized)")
+			w=new WaterOld(WATER_FULL_SPEED, mCamera, mSceneMgr, mWindow, waterline, &mapsizex, &mapsizez, usewaves);
+		else if (SSETTING("Water effects")=="Reflection + refraction (quality optimized)")
+			w=new WaterOld(WATER_FULL_QUALITY, mCamera, mSceneMgr, mWindow, waterline, &mapsizex, &mapsizez, usewaves);
 	}
 	if(w) w->setFadeColour(fadeColour);
 	if(person) person->setWater(w);
@@ -4615,19 +4595,6 @@ void RoRFrameListener::loadClassicTerrain(String terrainfile)
 			n->setVisible(true);
 		}
 
-#ifdef USE_HYDRAX
-		if (!strncmp("hydraxconfig", line, 12))
-		{
-			char tmp[256]="";
-			int res = sscanf(line, "hydraxconfig %s", tmp);
-			if(res < 1)
-			{
-				LOG("error reading hydraxconfig command!");
-				continue;
-			}
-			hydraxConfig=String(tmp);
-		}
-#endif //HYDRAX
 		if (!strncmp("mpspawn", line, 7))
 		{
 			spawn_location_t spl;
@@ -5065,11 +5032,6 @@ void RoRFrameListener::loadClassicTerrain(String terrainfile)
 			mSceneMgr->setSkyBox(true, "tracks/skyboxcol", 100, true);
 		}
 	}
-
-#ifdef USE_HYDRAX
-	if(w && useHydrax)
-		((HydraxWater*)w)->loadConfig(hydraxConfig);
-#endif // HYDRAX
 
 	if(debugCollisions)
 		collisions->createCollisionDebugVisualization();

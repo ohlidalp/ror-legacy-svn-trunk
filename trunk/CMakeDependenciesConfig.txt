@@ -24,8 +24,6 @@ set(ROR_BUILD_CONVERTER OFF)
 
 # set some defaults
 IF(WIN32)
-	# options only available under windows
-	set(ROR_USE_HYDRAX  "FALSE" CACHE BOOL "use hydrax water system")
 	set(ROR_USE_OIS_G27 "FALSE" CACHE BOOL "use OIS With G27 patches")
 	set(ROR_USE_MOFILEREADER "FALSE" CACHE BOOL "use mofilereader")
 	set(ROR_BUILD_UPDATER "FALSE" CACHE BOOL "build the updater")
@@ -148,13 +146,6 @@ IF(WIN32)
 		set(ANGELSCRIPT_LIBRARIES    "angelscript.lib" CACHE STRING "The AngelScript libs to link against")
 	endif(ROR_USE_ANGELSCRIPT)
 
-	if(ROR_USE_HYDRAX)
-		set(HYDRAX_INCLUDE_DIRS "${ROR_DEPENDENCIES_DIR}/include/Hydrax;${ROR_DEPENDENCIES_DIR}/include/" CACHE PATH "The Hydrax include paths to use")
-		set(HYDRAX_LIBRARY_DIRS "${ROR_DEPENDENCIES_DIR}/lib/Hydrax" CACHE PATH "The Hydrax lib path to use")
-		set(HYDRAX_LIBRARIES    "Hydrax.lib" CACHE STRING "The Hydrax lib to link against")
-		copy_files(${ROR_DEPENDENCIES_DIR}/bin/Hydrax ${EXECUTABLE_OUTPUT_PATH})
-	endif(ROR_USE_HYDRAX)
-
 	if(ROR_USE_LITESQL)
 		set(LITESQL_INCLUDE_DIRS "${ROR_DEPENDENCIES_DIR}/include/litesql" CACHE PATH "The litesql include path to use")
 		set(LITESQL_LIBRARY_DIRS "${ROR_DEPENDENCIES_DIR}/lib/litesql" CACHE PATH "The litesql lib path to use")
@@ -250,17 +241,6 @@ ELSEIF(UNIX)
       set(ROR_USE_CAELUM OFF)
    endif(CAELUM_INCLUDE_DIRS)
 
-   # Hydrax
-   # WIP!
-   find_path(HYDRAX_INCLUDE_DIRS "Hydrax/Hydrax.h")
-   if(HYDRAX_INCLUDE_DIRS)
-      set(HYDRAX_INCLUDE_DIRS "${HYDRAX_INCLUDE_DIRS}/Hydrax")
-      find_library(HYDRAX_LIBRARIES "Hydrax" PATH /usr/local/lib)
-      set(ROR_USE_HYDRAX ON)
-   else()
-      set(ROR_USE_HYDRAX OFF)
-   endif(HYDRAX_INCLUDE_DIRS)
-
    # Angelscript
    find_path(ANGELSCRIPT_INCLUDE_DIRS "angelscript.h")
    if(ANGELSCRIPT_INCLUDE_DIRS)
@@ -274,5 +254,4 @@ ELSEIF(UNIX)
 
    set(ROR_USE_CRASHRPT FALSE)
    set(ROR_USE_OIS_G27 FALSE)
-   set(ROR_USE_HYDRAX FALSE)
 ENDIF(WIN32)

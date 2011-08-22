@@ -72,7 +72,6 @@ macro(add_ror_project BINNAME folder useWxWidgets)
   setup_lib(PAGED)
   setup_lib(CAELUM)
   setup_lib(ANGELSCRIPT)
-  setup_lib(HYDRAX)
 
   if(ROR_USE_ANGELSCRIPT)
     add_definitions("-DAS_USE_NAMESPACE")
