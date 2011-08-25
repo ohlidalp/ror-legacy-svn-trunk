@@ -3695,7 +3695,7 @@ void Beam::updateFlares(float dt, bool isCurrent)
 		else if(flares[i].type == 'r' && blinkingtype == BLINK_RIGHT) right_blink_on = isvisible;
 		else if(flares[i].type == 'l' && blinkingtype == BLINK_WARN)  warn_blink_on  = isvisible;
 
-		left_blink_on, right_blink_on, warn_blink_on;
+		//left_blink_on, right_blink_on, warn_blink_on;
 		// update material Bindings
 		materialFunctionMapper->toggleFunction(i, isvisible);
 
@@ -3777,22 +3777,25 @@ void Beam::autoBlinkReset()
 {
 	blinktype blink=getBlinkType();
 
-	if(blink == BLINK_LEFT && hydrodirstate < -0.1)
-		// passed the treshold: the turn signal gets locked
+	// TODO: make this set-able per truck
+	float blink_lock_range = 0.1f;
+
+	if(blink == BLINK_LEFT && hydrodirstate < -blink_lock_range)
+		// passed the threshold: the turn signal gets locked
 		blinktreshpassed = true;
 
-	if(blink == BLINK_LEFT && blinktreshpassed && hydrodirstate > -0.1)
+	if(blink == BLINK_LEFT && blinktreshpassed && hydrodirstate > -blink_lock_range)
 	{
-		// steering wheel turned back: turn signal gets autmatically unlocked
+		// steering wheel turned back: turn signal gets automatically unlocked
 		setBlinkType(BLINK_NONE);
 		blinktreshpassed = false;
 	}
 
 	// same for the right turn signal
-	if(blink == BLINK_RIGHT && hydrodirstate > 0.1)
+	if(blink == BLINK_RIGHT && hydrodirstate > blink_lock_range)
 		blinktreshpassed = true;
 
-	if(blink == BLINK_RIGHT && blinktreshpassed && hydrodirstate < 0.1)
+	if(blink == BLINK_RIGHT && blinktreshpassed && hydrodirstate < blink_lock_range)
 	{
 		setBlinkType(BLINK_NONE);
 		blinktreshpassed = false;

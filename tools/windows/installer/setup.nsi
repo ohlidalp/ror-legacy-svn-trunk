@@ -2,7 +2,7 @@
 ;   Inetc      - http://nsis.sourceforge.net/Inetc_plug-in
 ;   ZipDLL     - http://nsis.sourceforge.net/ZipDLL_plug-in
 ;   GetVersion - http://nsis.sourceforge.net/GetVersion_%28Windows%29_plug-in
-
+;   CPUDesc    - http://nsis.sourceforge.net/CPUDesc_plug-in
 
 ; instructions:
 
@@ -11,6 +11,9 @@
 
 SetCompress auto
 SetCompressor /FINAL /SOLID lzma
+
+;!define PLATFORM "X64"
+!define PLATFORM "X86"
 
 !define PRODUCT_NAME "Rigs of Rods"
 
@@ -47,6 +50,7 @@ RequestExecutionLevel admin
 ; include macros we are going to use
 !include "FileAssociation.nsh"
 !include "utils.nsh"
+!include "WinVer.nsh"
 
 Var StartMenuFolder
 
@@ -204,6 +208,50 @@ Function InstallVisualStudioRuntime
 	Banner::destroy
 FunctionEnd
 
+Function CheckRequirements
+
+	; check 64 bits
+	System::Call "kernel32::GetCurrentProcess() i .s"
+	System::Call "kernel32::IsWow64Process(i s, *i .r0)"
+	PLATFORM
+
+	; check windows version
+	${If} ${AtLeastWin2000}
+		DetailPrint "Checking Windows Version: at least Win2k"
+	${Else}
+		MessageBox MB_OK|MB_ICONEXCLAMATION "You need at least Windows 2000 to use this software." /SD IDOK
+		Abort
+	${EndIf}
+	
+	; now check some CPU things
+	cpudesc::tell
+	Pop $0                     ;full identification string in $0
+	StrCpy $1 $0 4 90          ;pull out four characters after RAM=
+	IntOp $1 1$1 - 10000       ;ignore any leading zeros, the number is not octal
+	IntCmp $1 512 ram_ok 0 ram_ok
+	DetailPrint "Checking RAM: $1 MB is not sufficient, 512MB required"
+	MessageBox MB_OK|MB_ICONEXCLAMATION "You need at least 512MB RAM to use this software, will install anyways" /SD IDOK
+	Goto ram_done
+ram_ok:		
+	DetailPrint "Checking RAM: $1 MB, ok"
+ram_done:
+
+	; check MHz
+	StrCpy $2 $0 5 80          ;pull out five characters after MHZ=
+	IntOp $2 1$2 - 100000      ;ignore any leading zeros, the number is not octal
+	IntCmp $1 2000 cpu_ok 0 cpu_ok
+	DetailPrint "Checking CPU Speed: $1 MHz not optimal, 2GHz required"
+	MessageBox MB_OK|MB_ICONEXCLAMATION "You should use processor with at least 2GHz to run this software." /SD IDOK
+	Goto cpu_done
+cpu_ok:		
+	DetailPrint "Checking CPU Speed: $1 MHz, ok"
+cpu_done:
+
+	DetailPrint "System Checks done"
+
+
+FunctionEnd
+
 Function UninstallOld
     ReadRegStr $R0 HKCU "Software\RigsOfRods\" "directory"
     StrCmp $R0 "" done
@@ -234,6 +282,7 @@ Function .onInit
 	
 	!insertmacro MUI_LANGDLL_DISPLAY
     Call UninstallOld
+	Call CheckRequirements
 FunctionEnd
 
 Section "!Rigs of Rods Base" RoRBaseGame
@@ -242,7 +291,7 @@ Section "!Rigs of Rods Base" RoRBaseGame
 	SetOutPath "$INSTDIR"
 
 	; data
-	File /r /x .svn installerfiles\*
+	File /r /x .svn installerfiles_${PLATFORM}\*
 
 	# user path
 	SetShellVarContext current
@@ -374,10 +423,22 @@ FunctionEnd
 
 Section -Post
 
+	; check DirectX
+	Call GetDXVersion
+	Pop $R3
+	MessageBox MB_OK|MB_ICONEXCLAMATION "DirectX version: $R3" /SD IDOK	
+	
+	IntCmp $R3 1000000 directx_ok 0 directx_ok
+	DetailPrint "Checking DirectX Version: DirectX 9 required, installing now."
 	Call InstallDirectX
+	Goto directx_done
+directx_ok:		
+	DetailPrint "Checking DirectX Version: at least DirectX 9, ok"
+directx_done:
+
 	Call InstallVisualStudioRuntime
 	
-	${registerExtension} "$INSTDIR\RoRMeshViewer.exe" ".mesh" "Ogre Mesh"
+	;${registerExtension} "$INSTDIR\RoRMeshViewer.exe" ".mesh" "Ogre Mesh"
 
 	; write uninstaller
 	WriteUninstaller "$INSTDIR\uninst.exe"
