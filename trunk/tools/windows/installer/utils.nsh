@@ -181,3 +181,26 @@ WriteINIStr "${FILENAME}.url" "InternetShortcut" "URL" "${URL}"
 WriteINIStr "${FILENAME}.url" "InternetShortcut" "IconFile" "${ICONFILE}"
 WriteINIStr "${FILENAME}.url" "InternetShortcut" "IconIndex" "${ICONINDEX}"
 !macroend
+
+
+Function GetDXVersion
+	Push $0
+	Push $1
+
+	ClearErrors
+	ReadRegStr $0 HKLM "Software\Microsoft\DirectX" "Version"
+	IfErrors noDirectX
+
+	StrCpy $1 $0 2 5    ; get the minor version
+	StrCpy $0 $0 2 2    ; get the major version
+	IntOp $0 $0 * 100   ; $0 = major * 100 + minor
+	IntOp $0 $0 + $1
+	Goto done
+
+noDirectX:
+	  StrCpy $0 0
+
+done:
+	  Pop $1
+	  Exch $0
+FunctionEnd

@@ -1,12 +1,11 @@
 # components
-set(ROR_USE_MYGUI   "FALSE" CACHE BOOL "use MyGUI")
-set(ROR_USE_OPENAL  "FALSE" CACHE BOOL "use OPENAL")
-set(ROR_USE_SOCKETW "FALSE" CACHE BOOL "use SOCKETW")
-set(ROR_USE_PAGED   "FALSE" CACHE BOOL "use paged geometry")
-set(ROR_USE_CAELUM  "FALSE" CACHE BOOL "use caelum sky")
-set(ROR_USE_ANGELSCRIPT  "FALSE" CACHE BOOL "use angel script")
-set(ROR_FEAT_TIMING  "FALSE" CACHE BOOL "enable beam statistics. For core development only")
-set(ROR_USE_CURL  "FALSE" CACHE BOOL "use curl, required for communication with online services")
+set(ROR_USE_MYGUI        "TRUE" CACHE BOOL "use MyGUI")
+set(ROR_USE_OPENAL       "TRUE" CACHE BOOL "use OPENAL")
+set(ROR_USE_SOCKETW      "TRUE" CACHE BOOL "use SOCKETW")
+set(ROR_USE_PAGED        "TRUE" CACHE BOOL "use paged geometry")
+set(ROR_USE_CAELUM       "TRUE" CACHE BOOL "use caelum sky")
+set(ROR_USE_ANGELSCRIPT  "TRUE" CACHE BOOL "use angel script")
+set(ROR_USE_CURL         "TRUE" CACHE BOOL "use curl, required for communication with online services")
 
 
 # some obsolete options:
@@ -14,23 +13,25 @@ set(ROR_USE_CURL  "FALSE" CACHE BOOL "use curl, required for communication with 
 #set(ROR_BUILD_SIM "TRUE" CACHE BOOL "build RoR simulation")
 #set(ROR_BUILD_CONVERTER "FALSE" CACHE BOOL "build RoR converter (experimental)")
 # disabled some options for now
-#set(ROR_USE_OPENCL  "FALSE" CACHE BOOL "use opencl (highly experimental)")
-set(ROR_USE_LITESQL  "TRUE" CACHE BOOL "use sqlite")
-set(ROR_USE_OPENCL  OFF)
-set(ROR_BUILD_UPDATER OFF)
-set(ROR_BUILD_TOOLS OFF)
-set(ROR_BUILD_SIM ON)
+#set(ROR_USE_OPENCL      "FALSE" CACHE BOOL "use opencl (highly experimental)")
+#set(ROR_USE_LITESQL     "TRUE" CACHE BOOL "use sqlite")
+#set(ROR_FEAT_TIMING     "FALSE" CACHE BOOL "enable beam statistics. For core development only")
+set(ROR_USE_LITESQL     OFF)
+set(ROR_USE_OPENCL      OFF)
+set(ROR_BUILD_UPDATER   OFF)
 set(ROR_BUILD_CONVERTER OFF)
+set(ROR_BUILD_TOOLS     OFF)
+set(ROR_FEAT_TIMING     OFF)
+set(ROR_BUILD_SIM       ON)
 
 # set some defaults
 IF(WIN32)
-	set(ROR_USE_OIS_G27 "FALSE" CACHE BOOL "use OIS With G27 patches")
-	set(ROR_USE_MOFILEREADER "FALSE" CACHE BOOL "use mofilereader")
-	set(ROR_BUILD_UPDATER "FALSE" CACHE BOOL "build the updater")
+	set(ROR_USE_OIS_G27      "TRUE" CACHE BOOL "use OIS With G27 patches")
+	set(ROR_USE_MOFILEREADER "TRUE" CACHE BOOL "use mofilereader")
 
 	set(ROR_USE_CRASHRPT "FALSE" CACHE BOOL "use crash report tool")
 	# check if dependencies dir is in here
-	set(DEPENDENCIES_DIR_CHECK "${RoR_SOURCE_DIR}/dependencies")
+	set(DEPENDENCIES_DIR_CHECK "${RoR_SOURCE_DIR}/dependencies_x86")
 	set(DEPENDENCIES_DIR "")
 	if(IS_DIRECTORY ${DEPENDENCIES_DIR_CHECK})
 		set(DEPENDENCIES_DIR ${DEPENDENCIES_DIR_CHECK})
@@ -75,7 +76,7 @@ IF(WIN32)
 	if(ROR_USE_CURL)
 		set(CURL_INCLUDE_DIRS "${ROR_DEPENDENCIES_DIR}/include/" CACHE PATH "The curl include path to use")
 		set(CURL_LIBRARY_DIRS "${ROR_DEPENDENCIES_DIR}/lib/curl" CACHE PATH "The curl lib path to use")
-		set(CURL_LIBRARIES "libcurl.lib" CACHE STRING "The curl lib to link against")
+		set(CURL_LIBRARIES "libcurl_imp.lib" CACHE STRING "The curl lib to link against")
 		copy_files(${ROR_DEPENDENCIES_DIR}/bin/curl ${EXECUTABLE_OUTPUT_PATH})
 	endif(ROR_USE_CURL)
 	
@@ -152,14 +153,13 @@ IF(WIN32)
 		set(LITESQL_LIBRARIES    "litesql.lib;litesql-util.lib;litesql_sqlite.lib" CACHE STRING "The litesql libs to link against")
 	endif(ROR_USE_LITESQL)
 	
-	set(OPENCL_DIR  "C:\\ProgramData\\NVIDIA Corporation\\NVIDIA GPU Computing SDK\\" CACHE PATH "openCL path to use")
-
+	set(OPENCL_DIR  "C:\\ProgramData\\NVIDIA Corporation\\NVIDIA GPU Computing SDK 4.0\\" CACHE PATH "openCL path to use")
 	if(ROR_USE_OPENCL)
 		set(OPENCL_INCLUDE_DIRS "${OPENCL_DIR}/OpenCL/common/inc;${OPENCL_DIR}/shared/inc" CACHE PATH "The openCL include paths to use")
-		set(OPENCL_LIBRARY_DIRS "${OPENCL_DIR}/shared/lib;${OPENCL_DIR}/OpenCL/common/lib;${OPENCL_DIR}/OpenCL/common/lib/Win32" CACHE PATH "The openCL lib paths to use")
-		set(OPENCL_LIBRARIES    "oclUtils32.lib;shrUtils32.lib;OpenCL.lib" CACHE STRING "The openCL libs to link against")
+		set(OPENCL_LIBRARY_DIRS "${OPENCL_DIR}/shared/lib/Win32;${OPENCL_DIR}/OpenCL/common/lib;${OPENCL_DIR}/OpenCL/common/lib/Win32" CACHE PATH "The openCL lib paths to use")
+		set(OPENCL_LIBRARIES    "shrUtils32.lib;oclUtils32.lib;OpenCL.lib;" CACHE STRING "The openCL libs to link against")
 	endif(ROR_USE_OPENCL)
-
+	
 ELSEIF(UNIX)
    find_package(PkgConfig)
    PKG_CHECK_MODULES  (GTK gtk+-2.0 REQUIRED)
