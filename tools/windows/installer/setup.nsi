@@ -17,12 +17,16 @@ SetCompressor /FINAL /SOLID lzma
 
 !define PRODUCT_NAME "Rigs of Rods"
 
+!include "utils.nsh"
+
 ; the version number of RoR.exe is used from now on
 ;!define PRODUCT_VERSION_MAJOR "0"
 ;!define PRODUCT_VERSION_MINOR "38"
 ;!define PRODUCT_VERSION_PATCH "33"
 
+;!system "ExtractVersionInfo.exe $R0=installerfiles_${PLATFORM}/RoR.exe"
 !system "ExtractVersionInfo.exe"
+
 !include "extracted-versioninfo.txt"
 
 !define PRODUCT_VERSION "${PRODUCT_VERSION_MAJOR}.${PRODUCT_VERSION_MINOR}.${PRODUCT_VERSION_PATCH}"
@@ -49,7 +53,6 @@ RequestExecutionLevel admin
 
 ; include macros we are going to use
 !include "FileAssociation.nsh"
-!include "utils.nsh"
 !include "WinVer.nsh"
 
 Var StartMenuFolder
@@ -211,9 +214,10 @@ FunctionEnd
 Function CheckRequirements
 
 	; check 64 bits
-	System::Call "kernel32::GetCurrentProcess() i .s"
-	System::Call "kernel32::IsWow64Process(i s, *i .r0)"
-	PLATFORM
+	; TODO: add 32/64 bit check
+	;System::Call "kernel32::GetCurrentProcess() i .s"
+	;System::Call "kernel32::IsWow64Process(i s, *i .r0)"
+	;PLATFORM
 
 	; check windows version
 	${If} ${AtLeastWin2000}
@@ -395,7 +399,6 @@ content_pack_unzip_end:
 		CreateShortCut "$SMPROGRAMS\$StartMenuFolder\Multiplayer Server.lnk" "$INSTDIR\servergui.exe"
 		!insertmacro CreateInternetShortcut "$SMPROGRAMS\$StartMenuFolder\Server Setup Tutorial" "http://www.rigsofrods.com/wiki/pages/Server_Setup_Tutorial" "$INSTDIR\servergui.exe" "0"	
 	!insertmacro MUI_STARTMENU_WRITE_END
-	
 SectionEnd
 
 ; section descriptions
@@ -426,9 +429,9 @@ Section -Post
 	; check DirectX
 	Call GetDXVersion
 	Pop $R3
-	MessageBox MB_OK|MB_ICONEXCLAMATION "DirectX version: $R3" /SD IDOK	
+	;MessageBox MB_OK|MB_ICONEXCLAMATION "DirectX version: $R3" /SD IDOK	
 	
-	IntCmp $R3 1000000 directx_ok 0 directx_ok
+	IntCmp $R3 900 directx_ok 0 directx_ok
 	DetailPrint "Checking DirectX Version: DirectX 9 required, installing now."
 	Call InstallDirectX
 	Goto directx_done
