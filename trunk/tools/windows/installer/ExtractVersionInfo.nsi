@@ -1,4 +1,4 @@
-!define File "installerfiles\RoR.exe"
+!define File "installerfiles_x86\RoR.exe"
 
 OutFile "ExtractVersionInfo.exe"
 SilentInstall silent
