@@ -21,6 +21,12 @@ along with Rigs of Rods.  If not, see <http://www.gnu.org/licenses/>.
 #ifndef RORPREREQUISITES_H__
 #define RORPREREQUISITES_H__
 
+// Defines whether Checked Iterators are enabled. If defined as 1, unsafe iterator use causes a runtime error. If defined as 0, checked iterators are disabled.
+// TBD - tdev
+// needs to be consistent across _ALL_ libs and code, thus disabled
+//#ifdef WIN32
+//#define _SECURE_SCL 0
+//#endif //WIN32
 
 // add some ogre headers
 #include <OgrePrerequisites.h>
