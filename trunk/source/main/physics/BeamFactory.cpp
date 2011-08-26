@@ -41,7 +41,8 @@ using namespace Ogre;
 
 template<> BeamFactory *StreamableFactory < BeamFactory, Beam >::ms_Singleton = 0;
 
-BeamFactory::BeamFactory(SceneManager *manager, SceneNode *parent, RenderWindow* win, Network *net, float *mapsizex, float *mapsizez, Collisions *icollisions, HeightFinder *mfinder, Water *w, Camera *pcam) :  manager(manager)
+BeamFactory::BeamFactory(SceneManager *manager, SceneNode *parent, RenderWindow* win, Network *net, float *mapsizex, float *mapsizez, Collisions *icollisions, HeightFinder *mfinder, Water *_w, Camera *pcam) : 
+	  manager(manager)
 	, parent(parent)
 	, win(win)
 	, net(net)
@@ -49,9 +50,13 @@ BeamFactory::BeamFactory(SceneManager *manager, SceneNode *parent, RenderWindow*
 	, mapsizez(mapsizez)
 	, icollisions(icollisions)
 	, mfinder(mfinder)
+	, w(_w)
 	, pcam(pcam)
+	, thread_mode(THREAD_MONO)
+	//, trucks(0)
 	, free_truck(0)
 	, current_truck(-1)
+	, done_count(0)
 {
 	pthread_mutex_init(&done_count_mutex, NULL);
 	pthread_cond_init(&done_count_cv, NULL);
@@ -59,11 +64,9 @@ BeamFactory::BeamFactory(SceneManager *manager, SceneNode *parent, RenderWindow*
 	for (int i = 0; i < MAX_TRUCKS; i++)
 		trucks[i] = 0;
 
-
-	thread_mode=THREAD_MONO;
-	if (SSETTING("Threads")=="1 (Standard CPU)") thread_mode=THREAD_MONO;
-	if (SSETTING("Threads")=="2 (Hyper-Threading or Dual core CPU)") thread_mode=THREAD_HT;
-	if (SSETTING("Threads")=="3 (multi core CPU, one thread per beam)") thread_mode=THREAD_HT2;
+	if (SSETTING("Threads")=="1 (Standard CPU)")                        thread_mode = THREAD_MONO;
+	if (SSETTING("Threads")=="2 (Hyper-Threading or Dual core CPU)")    thread_mode = THREAD_HT;
+	if (SSETTING("Threads")=="3 (multi core CPU, one thread per beam)") thread_mode = THREAD_HT2;
 
 }
 

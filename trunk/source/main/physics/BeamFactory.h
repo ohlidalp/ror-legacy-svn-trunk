@@ -33,7 +33,7 @@ class BeamFactory : public StreamableFactory < BeamFactory, Beam >
 {
 	friend class Network;
 	friend class RoRFrameListener;
-	public:
+public:
 	BeamFactory(SceneManager *manager, SceneNode *parent, RenderWindow* win, Network *net, float *mapsizex, float *mapsizez, Collisions *icollisions, HeightFinder *mfinder, Water *w, Camera *pcam);
 	~BeamFactory();
 
@@ -89,6 +89,9 @@ protected:
 	Beam *trucks[MAX_TRUCKS];
 	int free_truck;
 	int current_truck;
+
+	int done_count;
+
 	int getFreeTruckSlot();
 
 	// functions used by friends
@@ -106,7 +109,6 @@ protected:
 	pthread_cond_t done_count_cv;
 	pthread_mutex_t work_mutex;
 	pthread_cond_t work_cv;
-	int done_count;
 	pthread_t threads[32];
 
 
