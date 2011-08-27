@@ -6117,19 +6117,22 @@ void RoRFrameListener::showLoad(int type, char* instance, char* box)
 	int free_truck    = BeamFactory::getSingleton().getTruckCount();
 	Beam **trucks     = BeamFactory::getSingleton().getTrucks();
 
-	//first, test if the place if clear
-	collision_box_t *spawnbox=collisions->getBox(instance, box);
-	for (int t=0; t<free_truck; t++)
+	//first, test if the place if clear, BUT NOT IN MULTIPLAYER
+	if(!net)
 	{
-		if(!trucks[t]) continue;
-		for (int i=0; i<trucks[t]->free_node; i++)
+		collision_box_t *spawnbox=collisions->getBox(instance, box);
+		for (int t=0; t<free_truck; t++)
 		{
-			if (collisions->isInside(trucks[t]->nodes[i].AbsPosition, spawnbox))
+			if(!trucks[t]) continue;
+			for (int i=0; i<trucks[t]->free_node; i++)
 			{
-				//boy, thats bad
-				if(ow) ow->flashMessage(_L("Please clear the place first"), 4);
-				collisions->clearEventCache();
-				return;
+				if (collisions->isInside(trucks[t]->nodes[i].AbsPosition, spawnbox))
+				{
+					//boy, thats bad
+					if(ow) ow->flashMessage(_L("Please clear the place first"), 4);
+					collisions->clearEventCache();
+					return;
+				}
 			}
 		}
 	}
