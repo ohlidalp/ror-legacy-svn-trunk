@@ -1041,43 +1041,51 @@ void Beam::calcNetwork()
 	//LOG(" network time diff: "+ TOSTRING(net_toffset));
 	Vector3 p1ref = Vector3::ZERO;
 	Vector3 p2ref = Vector3::ZERO;
-	short *sp1=(short*)(netb1+4*3);
-	short *sp2=(short*)(netb2+4*3);
+	short *sp1 = (short*)(netb1 + sizeof(float) * 3);
+	short *sp2 = (short*)(netb2 + sizeof(float) * 3);
 
 	Vector3 p1 = Vector3::ZERO;
 	Vector3 p2 = Vector3::ZERO;
-	for (i=0; i<first_wheel_node; i++)
+	for (i = 0; i < first_wheel_node; i++)
 	{
 		//linear interpolation
-		if (i==0)
+		if (i == 0)
 		{
-			p1.x=((float*)netb1)[0];
-			p1.y=((float*)netb1)[1];
-			p1.z=((float*)netb1)[2];
-			p1ref=p1;
-			p2.x=((float*)netb2)[0];
-			p2.y=((float*)netb2)[1];
-			p2.z=((float*)netb2)[2];
-			p2ref=p2;
+			// first node is uncompressed
+			p1.x  = ((float*)netb1)[0];
+			p1.y  = ((float*)netb1)[1];
+			p1.z  = ((float*)netb1)[2];
+			p1ref = p1;
+			p2.x  = ((float*)netb2)[0];
+			p2.y  = ((float*)netb2)[1];
+			p2.z  = ((float*)netb2)[2];
+			p2ref = p2;
 		}
 		else
 		{
-			p1.x=(float)(sp1[(i-1)*3])/300.0;
-			p1.y=(float)(sp1[(i-1)*3+1])/300.0;
-			p1.z=(float)(sp1[(i-1)*3+2])/300.0;
-			p1=p1+p1ref;
-			p2.x=(float)(sp2[(i-1)*3])/300.0;
-			p2.y=(float)(sp2[(i-1)*3+1])/300.0;
-			p2.z=(float)(sp2[(i-1)*3+2])/300.0;
-			p2=p2+p2ref;
+			// all other nodes are compressed:
+			// short int compared to previous node
+			p1.x = (float)(sp1[(i - 1) *3 + 0]) / 300.0f;
+			p1.y = (float)(sp1[(i - 1) *3 + 1]) / 300.0f;
+			p1.z = (float)(sp1[(i - 1) *3 + 2]) / 300.0f;
+			p1   = p1 + p1ref;
+
+			p2.x = (float)(sp2[(i - 1) *3 + 0]) / 300.0f;
+			p2.y = (float)(sp2[(i - 1) *3 + 1]) / 300.0f;
+			p2.z = (float)(sp2[(i - 1) *3 + 2]) / 300.0f;
+			p2   = p2 + p2ref;
 		}
-		nodes[i].AbsPosition=p1+tratio*(p2-p1);
-		nodes[i].smoothpos=nodes[i].AbsPosition;
-		nodes[i].RelPosition=nodes[i].AbsPosition-origin;
-		apos+=nodes[i].AbsPosition;
+		nodes[i].AbsPosition  = p1 + tratio * (p2 - p1);
+		nodes[i].smoothpos    = nodes[i].AbsPosition;
+		nodes[i].RelPosition  = nodes[i].AbsPosition - origin;
+
+		// calculate the average beside ...
+		apos += nodes[i].AbsPosition;
 	}
-	position=apos/first_wheel_node;
-	//the wheels
+	// set average position
+	position = apos / first_wheel_node;
+
+	// take care of the wheels
 	for (i=0; i<free_wheel; i++)
 	{
 		float rp=wheels[i].rp1+tratio*(wheels[i].rp2-wheels[i].rp1);
@@ -1105,7 +1113,7 @@ void Beam::calcNetwork()
 	//give some slack to the mutex
 	float engspeed=oob1->engine_speed+tratio*(oob2->engine_speed-oob1->engine_speed);
 	float engforce=oob1->engine_force+tratio*(oob2->engine_force-oob1->engine_force);
-	unsigned int flagmask=oob1->flagmask;
+	unsigned int flagmask = oob1->flagmask;
 
 	MUTEX_UNLOCK(&net_mutex);
 #ifdef USE_OPENAL
@@ -1154,7 +1162,7 @@ void Beam::calcNetwork()
 	else if(ssm)
 		ssm->trigStop(trucknum, SS_TRIG_HORN);
 #endif //OPENAL
-	netBrakeLight = ((flagmask&NETMASK_BRAKES)!=0);
+	netBrakeLight   = ((flagmask&NETMASK_BRAKES)!=0);
 	netReverseLight = ((flagmask&NETMASK_REVERSE)!=0);
 
 #ifdef USE_OPENAL

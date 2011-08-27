@@ -221,7 +221,7 @@ Beam *BeamFactory::createRemoteInstance(stream_reg_t *reg)
 		networking,
 		0,
 		false,
-		0,
+		3,
 		&truckconfig,
 		0);
 

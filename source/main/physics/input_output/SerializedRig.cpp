@@ -264,7 +264,7 @@ SerializedRig::SerializedRig()
 	hashelp=0;
 	cinecameranodepos[0]=-1;
 	freecinecamera=0;
-	flaresMode=0;
+	flaresMode=3;
 	cablight=0;
 	cablightNode=0;
 	deletion_sceneNodes.clear();
@@ -326,6 +326,21 @@ SerializedRig::SerializedRig()
 	materialReplacer = NULL;
 	if(!virtuallyLoaded)
 		materialReplacer = new MaterialReplacer();
+
+
+	// get lights mode
+	flaresMode = 3; // on by default
+	if(SSETTING("Lights") == "None (fastest)")
+		flaresMode = 0;
+	else if(SSETTING("Lights") == "No light sources")
+		flaresMode = 1;
+	else if(SSETTING("Lights") == "Only current vehicle, main lights")
+		flaresMode = 2;
+	else if(SSETTING("Lights") == "All vehicles, main lights")
+		flaresMode = 3;
+	else if(SSETTING("Lights") == "All vehicles, all lights")
+		flaresMode = 4;
+
 }
 
 SerializedRig::~SerializedRig()
