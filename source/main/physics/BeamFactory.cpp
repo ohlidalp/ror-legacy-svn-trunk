@@ -190,8 +190,9 @@ Beam *BeamFactory::createRemoteInstance(stream_reg_t *reg)
 	}
 
 
-	// spawn the truck far off anywhere
-	Vector3 pos = Vector3(1000000,1000000,1000000);
+	// DO NOT spawn the truck far off anywhere
+	// the truck parsing will break flexbodies initialization when using huge numbers here
+	Vector3 pos = Vector3::ZERO;
 
 	int truck_num = getFreeTruckSlot();
 	if(truck_num == -1)
