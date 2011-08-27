@@ -1016,10 +1016,10 @@ void Beam::calcNetwork()
 	short *sp1=(short*)(netb1+4*3);
 	short *sp2=(short*)(netb2+4*3);
 
+	Vector3 p1 = Vector3::ZERO;
+	Vector3 p2 = Vector3::ZERO;
 	for (i=0; i<first_wheel_node; i++)
 	{
-		Vector3 p1;
-		Vector3 p2;
 		//linear interpolation
 		if (i==0)
 		{
@@ -2279,14 +2279,14 @@ void Beam::sendStreamData()
 
 		// copy data into the buffer
 		int i;
-		Vector3 refpos = nodes[0].AbsPosition;
+		Vector3 &refpos = nodes[0].AbsPosition;
 		((float*)send_nodes)[0]=refpos.x;
 		((float*)send_nodes)[1]=refpos.y;
 		((float*)send_nodes)[2]=refpos.z;
 		short *sbuf=(short*)(send_buffer + sizeof(oob_t)+4*3); // plus 3 floats from above
 		for (i=1; i<first_wheel_node; i++)
 		{
-			Vector3 relpos=nodes[i].AbsPosition-refpos;
+			Vector3 &relpos=nodes[i].AbsPosition-refpos;
 			sbuf[(i-1)*3]   = (short int)(relpos.x*300.0);
 			sbuf[(i-1)*3+1] = (short int)(relpos.y*300.0);
 			sbuf[(i-1)*3+2] = (short int)(relpos.z*300.0);
