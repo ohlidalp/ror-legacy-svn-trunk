@@ -947,7 +947,7 @@ RoRFrameListener::RoRFrameListener(AppState *parentState, RenderWindow* win, Cam
     externalCameraMode = (SSETTING("External Camera Mode") == "Static")? 1 : 0;
 
 	// get lights mode
-	flaresMode = 0; //None
+	flaresMode = 3; // on by default
 	if(SSETTING("Lights") == "None (fastest)")
 		flaresMode = 0;
 	else if(SSETTING("Lights") == "No light sources")
