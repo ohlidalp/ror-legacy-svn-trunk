@@ -381,7 +381,7 @@ void BeamFactory::recursiveActivation(int j)
 
 void BeamFactory::checkSleepingState()
 {
-	if (current_truck!=-1)
+	if (current_truck!=-1 && trucks[current_truck])
 	{
 		trucks[current_truck]->disableDrag=false;
 		recursiveActivation(current_truck);

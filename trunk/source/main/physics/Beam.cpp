@@ -2298,7 +2298,6 @@ void Beam::sendStreamData()
 		}
 	}
 
-	//memcpy(send_buffer+sizeof(oob_t), (char*)send_buffer, send_buffer_len);
 	this->addPacket(MSG2_STREAM_DATA, packet_len, send_buffer);
 #endif //SOCKETW
 	BES_GFX_STOP(BES_GFX_sendStreamData);
