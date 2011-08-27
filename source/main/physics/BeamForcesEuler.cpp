@@ -1757,13 +1757,27 @@ void Beam::calcForcesEuler(int doUpdate, Real dt, int step, int maxstep)
 			crankfactor = 2;
 
 		for (i=0; i<=MAX_COMMANDS; i++)
+		{
 			for (int j=0; j < (int)commandkey[i].beams.size(); j++)
-				beams[abs(commandkey[i].beams[j])].autoMoveLock=false;
+			{
+				int k = abs(commandkey[i].beams[j]);
+				if(k>=0 && k < free_beam)
+					beams[k].autoMoveLock=false;
+			}
+		}
 
 		for (i=0; i<=MAX_COMMANDS; i++)
+		{
 			for (int j=0; j < (int)commandkey[i].beams.size(); j++)
+			{
 				if(commandkey[i].commandValue >= 0.5)
-					beams[abs(commandkey[i].beams[j])].autoMoveLock=true;
+				{
+					int k = abs(commandkey[i].beams[j]);
+					if(k>=0 && k < free_beam)
+						beams[k].autoMoveLock=true;
+				}
+			}
+		}
 
 		// only process ties if there is enough force available
 		if(canwork)
@@ -1811,6 +1825,7 @@ void Beam::calcForcesEuler(int doUpdate, Real dt, int step, int maxstep)
 			{
 				int bbeam=commandkey[i].beams[j];
 				int bbeam_abs=abs(bbeam);
+				if(bbeam_abs<0 || bbeam_abs > free_beam) continue;
 
 				// restrict forces
 				if(beams[bbeam_abs].isforcerestricted && crankfactor > 1)
