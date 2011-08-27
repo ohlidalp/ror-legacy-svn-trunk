@@ -591,8 +591,14 @@ Beam::Beam(int tnum, SceneManager *manager, SceneNode *parent, RenderWindow* win
 			break;
 		}
 	}
-	nodebuffersize=4*3+(first_wheel_node-1)*2*3;
-	netbuffersize=nodebuffersize+free_wheel*4;
+	// network buffer layout (without oob_t):
+	//
+	//  - 3 floats (x,y,z) for the reference node 0
+	//  - free_node - 1 times 3 short ints (compressed position info)
+	//  - free_wheel times a float for the wheel rotation
+	//
+	nodebuffersize = sizeof(float) * 3 + (first_wheel_node-1) * sizeof(short int) * 3;
+	netbuffersize  = nodebuffersize + free_wheel * sizeof(float);
 	updateVisual();
 	//stop lights
 	lightsToggle();
@@ -956,37 +962,59 @@ void Beam::pushNetwork(char* data, int size)
 {
 	BES_GFX_START(BES_GFX_pushNetwork);
 	if(!oob3) return;
-	if ((unsigned int)size==(netbuffersize+sizeof(oob_t)))
+	
+	// check if the size of the data matches to what we expected
+	if ((unsigned int)size == (netbuffersize + sizeof(oob_t)))
 	{
-		memcpy((char*)oob3, data, sizeof(oob_t));
-		memcpy((char*)netb3, data+sizeof(oob_t), nodebuffersize);
-		//take care of the wheels
-		for (int i=0; i<free_wheel; i++) wheels[i].rp3=*(float*)(data+sizeof(oob_t)+nodebuffersize+i*4);
+		// we walk through the incoming data and separate it a bit
+		char *ptr = data;
+
+		// put the oob_t in front, describes truck basics, engine state, flares, etc
+		memcpy((char*)oob3,  ptr, sizeof(oob_t));
+		ptr += sizeof(oob_t);
+
+		// then copy the node data
+		memcpy((char*)netb3, ptr, nodebuffersize);
+		ptr += nodebuffersize;
+
+		// then take care of the wheel speeds
+		for (int i = 0; i < free_wheel; i++)
+		{
+			float wspeed = *(float*)(ptr);
+			wheels[i].rp3 = wspeed;
+
+			ptr += sizeof(float);
+		}
 	} else
 	{
+		// TODO: show the user the problem in the GUI
 		LOG("WRONG network size: we expected " + TOSTRING(netbuffersize+sizeof(oob_t)) + " but got " + TOSTRING(size) + " for vehicle " + String(truckname));
-		state=SLEEPING;
+		state = SLEEPING;
 		return;
 	};
 	//okay, the big switch
 	MUTEX_LOCK(&net_mutex);
+	
+	// and the buffer switching to have linear smoothing
 	oob_t *ot;
-	ot=oob1;
-	oob1=oob2;
-	oob2=oob3;
-	oob3=ot;
+	ot   = oob1;
+	oob1 = oob2;
+	oob2 = oob3;
+	oob3 = ot;
+	
 	char *ft;
-	ft=netb1;
-	netb1=netb2;
-	netb2=netb3;
-	netb3=ft;
-	for (int i=0; i<free_wheel; i++)
+	ft    = netb1;
+	netb1 = netb2;
+	netb2 = netb3;
+	netb3 = ft;
+	
+	for (int i =0 ; i < free_wheel; i++)
 	{
 		float rp;
-		rp=wheels[i].rp1;
-		wheels[i].rp1=wheels[i].rp2;
-		wheels[i].rp2=wheels[i].rp3;
-		wheels[i].rp3=rp;
+		rp            = wheels[i].rp1;
+		wheels[i].rp1 = wheels[i].rp2;
+		wheels[i].rp2 = wheels[i].rp3;
+		wheels[i].rp3 = rp;
 	}
 	netcounter++;
 	MUTEX_UNLOCK(&net_mutex);
@@ -2274,27 +2302,38 @@ void Beam::sendStreamData()
 
 	// then process the contents
 	{
-		float *send_nodes = (float *)(send_buffer + sizeof(oob_t));
+		char *ptr = send_buffer + sizeof(oob_t);
+		float *send_nodes = (float *)ptr;
 		packet_len += netbuffersize;
 
 		// copy data into the buffer
 		int i;
+		
+		// reference node first
 		Vector3 &refpos = nodes[0].AbsPosition;
-		((float*)send_nodes)[0]=refpos.x;
-		((float*)send_nodes)[1]=refpos.y;
-		((float*)send_nodes)[2]=refpos.z;
-		short *sbuf=(short*)(send_buffer + sizeof(oob_t)+4*3); // plus 3 floats from above
-		for (i=1; i<first_wheel_node; i++)
+		send_nodes[0]   = refpos.x;
+		send_nodes[1]   = refpos.y;
+		send_nodes[2]   = refpos.z;
+
+		ptr += sizeof(float) * 3;// plus 3 floats from above
+
+		// then copy the other nodes into a compressed short format
+		short *sbuf = (short*)ptr;
+		for (i = 1; i < first_wheel_node; i++)
 		{
 			Vector3 &relpos=nodes[i].AbsPosition-refpos;
-			sbuf[(i-1)*3]   = (short int)(relpos.x*300.0);
-			sbuf[(i-1)*3+1] = (short int)(relpos.y*300.0);
-			sbuf[(i-1)*3+2] = (short int)(relpos.z*300.0);
+			sbuf[(i - 1) * 3 + 0] = (short int)(relpos.x * 300.0f);
+			sbuf[(i - 1) * 3 + 1] = (short int)(relpos.y * 300.0f);
+			sbuf[(i - 1) * 3 + 2] = (short int)(relpos.z * 300.0f);
+			
+			ptr += sizeof(short int) * 3; // increase pointer
 		}
-		float *wfbuf=(float*)(send_nodes+nodebuffersize);
-		for (i=0; i<free_wheel; i++)
+
+		// then to the wheels
+		float *wfbuf = (float*)ptr;
+		for (i = 0; i < free_wheel; i++)
 		{
-			wfbuf[i]=wheels[i].rp;
+			wfbuf[i] = wheels[i].rp;
 		}
 	}
 
