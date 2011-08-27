@@ -1111,8 +1111,16 @@ void Beam::calcNetwork()
 		}
 	}
 	//give some slack to the mutex
-	float engspeed=oob1->engine_speed+tratio*(oob2->engine_speed-oob1->engine_speed);
-	float engforce=oob1->engine_force+tratio*(oob2->engine_force-oob1->engine_force);
+	float engspeed  = oob1->engine_speed+tratio*(oob2->engine_speed-oob1->engine_speed);
+	float engforce  = oob1->engine_force+tratio*(oob2->engine_force-oob1->engine_force);
+	float engclutch = oob1->engine_clutch+tratio*(oob2->engine_clutch-oob1->engine_clutch);
+	float netwspeed = oob1->wheelspeed+tratio*(oob2->wheelspeed-oob1->wheelspeed);
+	float netbrake  = oob1->brake+tratio*(oob2->brake-oob1->brake);
+
+	hydrodirwheeldisplay = oob1->hydrodirstate;
+	WheelSpeed           = netwspeed;
+
+	int gear = oob1->engine_gear;
 	unsigned int flagmask = oob1->flagmask;
 
 	MUTEX_UNLOCK(&net_mutex);
@@ -1129,7 +1137,23 @@ void Beam::calcNetwork()
 		ssm->modulate(trucknum, SS_MOD_AEROENGINE4, engspeed);
 	}
 #endif //OPENAL
-	if (engine) engine->netForceSettings(engspeed, engforce); //for smoke
+
+	brake = netbrake;
+
+	if (engine) 
+	{
+		int automode = -1;
+		if ((flagmask&NETMASK_ENGINE_MODE_AUTOMATIC)!=0)          automode = AUTOMATIC;
+		else if ((flagmask&NETMASK_ENGINE_MODE_SEMIAUTO)!=0)      automode = SEMIAUTO;
+		else if ((flagmask&NETMASK_ENGINE_MODE_MANUAL)!=0)        automode = MANUAL;
+		else if ((flagmask&NETMASK_ENGINE_MODE_MANUAL_STICK)!=0)  automode = MANUAL_STICK;
+		else if ((flagmask&NETMASK_ENGINE_MODE_MANUAL_RANGES)!=0) automode = MANUAL_RANGES;
+		
+		bool contact = flagmask&NETMASK_ENGINE_CONT;
+		bool running = flagmask&NETMASK_ENGINE_RUN;
+
+		engine->netForceSettings(engspeed, engforce, engclutch, gear, running, contact, automode);
+	}
 
 
 	// set particle cannon
@@ -1141,6 +1165,11 @@ void Beam::calcNetwork()
 		lightsToggle();
 	if (((flagmask&NETMASK_BEACONS)!=0) != beacon)
 		beaconsToggle();
+
+	antilockbrake   = flagmask & NETMASK_ALB_ACTIVE;
+	tractioncontrol = flagmask & NETMASK_TC_ACTIVE;
+	parkingbrake    = flagmask & NETMASK_PBRAKE;
+		
 
 	blinktype btype = BLINK_NONE;
 	if ((flagmask&NETMASK_BLINK_LEFT)!=0)
@@ -2273,35 +2302,56 @@ void Beam::sendStreamData()
 		oob_t *send_oob = (oob_t *)send_buffer;
 		packet_len += sizeof(oob_t);
 
+		send_oob->flagmask = 0;
+
 		send_oob->time = Network::getNetTime();
 		if (engine)
 		{
-			send_oob->engine_speed=engine->getRPM();
-			send_oob->engine_force=engine->getAcc();
+			send_oob->engine_speed   = engine->getRPM();
+			send_oob->engine_force   = engine->getAcc();
+			send_oob->engine_clutch  = engine->getClutch();
+			send_oob->engine_gear    = engine->getGear();
+
+			if (engine->contact) send_oob->flagmask += NETMASK_ENGINE_CONT;
+			if (engine->running) send_oob->flagmask += NETMASK_ENGINE_RUN;
+
+			if      (engine->getAutoMode() == AUTOMATIC)     send_oob->flagmask += NETMASK_ENGINE_MODE_AUTOMATIC;
+			else if (engine->getAutoMode() == SEMIAUTO)      send_oob->flagmask += NETMASK_ENGINE_MODE_SEMIAUTO;
+			else if (engine->getAutoMode() == MANUAL)        send_oob->flagmask += NETMASK_ENGINE_MODE_MANUAL;
+			else if (engine->getAutoMode() == MANUAL_STICK)  send_oob->flagmask += NETMASK_ENGINE_MODE_MANUAL_STICK;
+			else if (engine->getAutoMode() == MANUAL_RANGES) send_oob->flagmask += NETMASK_ENGINE_MODE_MANUAL_RANGES;
+
 		}
 		if(free_aeroengine>0)
 		{
 			float rpm =aeroengines[0]->getRPM();
-			send_oob->engine_speed=rpm;
+			send_oob->engine_speed = rpm;
 		}
 
-		send_oob->flagmask = 0;
+		send_oob->hydrodirstate = hydrodirstate;
+		send_oob->brake         = brake;
+		send_oob->wheelspeed    = WheelSpeed;
 
 		blinktype b = getBlinkType();
-		if (b == BLINK_LEFT)            send_oob->flagmask+=NETMASK_BLINK_LEFT;
-		else if (b == BLINK_RIGHT)      send_oob->flagmask+=NETMASK_BLINK_RIGHT;
-		else if (b == BLINK_WARN)       send_oob->flagmask+=NETMASK_BLINK_WARN;
+		if      (b == BLINK_LEFT)       send_oob->flagmask += NETMASK_BLINK_LEFT;
+		else if (b == BLINK_RIGHT)      send_oob->flagmask += NETMASK_BLINK_RIGHT;
+		else if (b == BLINK_WARN)       send_oob->flagmask += NETMASK_BLINK_WARN;
 
-		if (lights)                     send_oob->flagmask+=NETMASK_LIGHTS;
-		if (getCustomLightVisible(0))   send_oob->flagmask+=NETMASK_CLIGHT1;
-		if (getCustomLightVisible(1))   send_oob->flagmask+=NETMASK_CLIGHT2;
-		if (getCustomLightVisible(2))   send_oob->flagmask+=NETMASK_CLIGHT3;
-		if (getCustomLightVisible(3))   send_oob->flagmask+=NETMASK_CLIGHT4;
+		if (lights)                     send_oob->flagmask += NETMASK_LIGHTS;
+		if (getCustomLightVisible(0))   send_oob->flagmask += NETMASK_CLIGHT1;
+		if (getCustomLightVisible(1))   send_oob->flagmask += NETMASK_CLIGHT2;
+		if (getCustomLightVisible(2))   send_oob->flagmask += NETMASK_CLIGHT3;
+		if (getCustomLightVisible(3))   send_oob->flagmask += NETMASK_CLIGHT4;
 
-		if (getBrakeLightVisible())		send_oob->flagmask+=NETMASK_BRAKES;
-		if (getReverseLightVisible())	send_oob->flagmask+=NETMASK_REVERSE;
-		if (getBeaconMode())			send_oob->flagmask+=NETMASK_BEACONS;
-		if (getCustomParticleMode())    send_oob->flagmask+=NETMASK_PARTICLE;
+		if (getBrakeLightVisible())		send_oob->flagmask += NETMASK_BRAKES;
+		if (getReverseLightVisible())	send_oob->flagmask += NETMASK_REVERSE;
+		if (getBeaconMode())			send_oob->flagmask += NETMASK_BEACONS;
+		if (getCustomParticleMode())    send_oob->flagmask += NETMASK_PARTICLE;
+
+		if(parkingbrake)                send_oob->flagmask += NETMASK_PBRAKE;
+		if(tractioncontrol)             send_oob->flagmask += NETMASK_TC_ACTIVE;
+		if(antilockbrake)               send_oob->flagmask += NETMASK_ALB_ACTIVE;
+
 #ifdef USE_OPENAL
 		if (ssm && ssm->getTrigState(trucknum, SS_TRIG_HORN)) send_oob->flagmask+=NETMASK_HORN;
 #endif //OPENAL

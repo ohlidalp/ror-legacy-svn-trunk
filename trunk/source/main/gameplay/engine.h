@@ -103,7 +103,7 @@ public:
 	void setAcc(float val);
 	float getTurboPSI();
 	float getAcc();
-	void netForceSettings(float rpm, float force);
+	void netForceSettings(float rpm, float force, float clutch, int gear, bool running, bool contact, char automode);
 	float getSmoke();
 	float getTorque();
 	void setSpin(float rpm);

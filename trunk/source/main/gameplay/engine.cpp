@@ -367,11 +367,16 @@ float BeamEngine::getAcc()
 }
 
 //this is mainly for smoke...
-void BeamEngine::netForceSettings(float rpm, float force)
+void BeamEngine::netForceSettings(float rpm, float force, float clutch, int gear, bool _running, bool _contact, char _automode)
 {
-	curEngineRPM=rpm;
-	curAcc=force;
-	running=(fabs(rpm)>10.0);
+	curEngineRPM = rpm;
+	curAcc       = force;
+	curClutch    = clutch;
+	curGear      = gear;
+	running      = _running; //(fabs(rpm)>10.0);
+	contact      = _contact;
+	if(_automode != -1)
+		automode     = _automode;
 }
 
 float BeamEngine::getSmoke()
