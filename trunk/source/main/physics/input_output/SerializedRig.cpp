@@ -2510,9 +2510,9 @@ int SerializedRig::loadTruck(String fname, SceneManager *manager, SceneNode *par
 			else if (c.mode == BTS_FLEXBODYWHEELS)
 			{
 				//parse meshwheels2
-				char meshw[256];
-				char texb[256]="tracks/trans";
-				char flexmesh[256];
+				char meshw[256]    = "";
+				char texb[256]     = "tracks/trans";
+				char flexmesh[256] = "";
 				float radius, rimradius, width, mass, spring, damp, rimspring, rimdamp;
 				char side;
 				int rays, node1, node2, snode, braked, propulsed, torquenode, node3;
@@ -2560,10 +2560,11 @@ int SerializedRig::loadTruck(String fname, SceneManager *manager, SceneNode *par
 					continue;
 				}
 				
-				c.line = "forset " + StringConverter::toString(node3) + "-" + StringConverter::toString(node3 + (rays*4) - 1);
+				char tmp_for_str[255];
+				sprintf(tmp_for_str, "%d-%d", node3, node3 + (rays * 4) - 1);
 
 				if(!virtuallyLoaded)
-					flexbodies[free_flexbody]=new FlexBody(manager, nodes, free_node, flexmesh, uname, node1, node2, node3, Vector3(0.5,0,0), Quaternion::ZERO, const_cast<char *>(c.line.substr(6).c_str()), materialFunctionMapper, usedSkin, (shadowmode!=0), materialReplacer);
+					flexbodies[free_flexbody]=new FlexBody(manager, nodes, free_node, flexmesh, uname, node1, node2, node3, Vector3(0.5,0,0), Quaternion::ZERO, tmp_for_str, materialFunctionMapper, usedSkin, (shadowmode!=0), materialReplacer);
 				free_flexbody++;
 				continue;
 			}
