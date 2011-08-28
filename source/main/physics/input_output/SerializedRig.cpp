@@ -96,6 +96,7 @@ trucksection_t truck_sections[] = {
 	{BTS_AIRBRAKES, "airbrakes", false},
 	{BTS_MESHWHEELS, "meshwheels", false},
 	{BTS_MESHWHEELS2, "meshwheels2", false},
+	{BTS_FLEXBODYWHEELS, "flexbodywheels", false},
 	{BTS_FLEXBODIES, "flexbodies", false},
 	{BTS_HOOKGROUP, "hookgroup", false},
 	{BTS_MATERIALFLAREBINDINGS, "materialflarebindings", false},
@@ -2504,6 +2505,66 @@ int SerializedRig::loadTruck(String fname, SceneManager *manager, SceneNode *par
 				strncpy(texb, args[15].c_str(), 255);
 
 				addWheel(manager, parent, radius,width,rays,node1,node2,snode,braked,propulsed, torquenode, mass, spring, damp, meshw, texb, true, true, rimradius, side!='r');
+				continue;
+			}
+			else if (c.mode == BTS_FLEXBODYWHEELS)
+			{
+				//parse meshwheels2
+				char meshw[256];
+				char texb[256]="tracks/trans";
+				char flexmesh[256];
+				float radius, rimradius, width, mass, spring, damp, rimspring, rimdamp;
+				char side;
+				int rays, node1, node2, snode, braked, propulsed, torquenode, node3;
+
+				int n = parse_args(c, args, 16);
+
+				radius     = PARSEREAL(args[0]);
+				rimradius  = PARSEREAL(args[1]);
+				width      = PARSEREAL(args[2]);
+				rays       = PARSEINT (args[3]);
+				node1      = parse_node_number(c, args[4]);
+				node2      = parse_node_number(c, args[5]);
+				
+				std::vector<int> special_numbers;
+				special_numbers.push_back(-1);
+				special_numbers.push_back(9999);
+
+				snode = parse_node_number(c, args[6], &special_numbers); // special behavior, beware
+
+				braked     = PARSEINT (args[7]);
+				propulsed  = PARSEINT (args[8]);
+				torquenode = parse_node_number(c, args[9]);
+				mass       = PARSEREAL(args[10]);
+				spring     = PARSEREAL(args[11]);
+				damp       = PARSEREAL(args[12]);
+				rimspring  = PARSEREAL(args[13]);
+				rimdamp    = PARSEREAL(args[14]);
+				side       = args[15][0];
+				strncpy(meshw, args[16].c_str(), 255);
+				strncpy(flexmesh, args[17].c_str(), 255);
+
+				node3 = free_node;
+
+				addWheel3(manager, parent, radius, rimradius, width, rays, node1, node2, snode, braked, propulsed, torquenode, mass, spring, damp, rimspring, rimdamp, meshw, texb, true, true, rimradius, side!='r');
+
+
+				//add flexbodies
+
+				char uname[256];
+				sprintf(uname, "flexbody-%s-%i", truckname, free_flexbody);
+
+				if(free_flexbody >= MAX_FLEXBODIES)
+				{
+					parser_warning(c, "flexbodies limit reached ("+TOSTRING(MAX_FLEXBODIES)+")", PARSER_ERROR);
+					continue;
+				}
+				
+				c.line = "forset " + StringConverter::toString(node3) + "-" + StringConverter::toString(node3 + (rays*4) - 1);
+
+				if(!virtuallyLoaded)
+					flexbodies[free_flexbody]=new FlexBody(manager, nodes, free_node, flexmesh, uname, node1, node2, node3, Vector3(0.5,0,0), Quaternion::ZERO, const_cast<char *>(c.line.substr(6).c_str()), materialFunctionMapper, usedSkin, (shadowmode!=0), materialReplacer);
+				free_flexbody++;
 				continue;
 			}
 			else if (c.mode == BTS_GLOBALS)
@@ -5865,6 +5926,249 @@ void SerializedRig::addWheel2(SceneManager *manager, SceneNode *parent, Real rad
 			parser_warning(c, "error loading mesh: "+String(wname), PARSER_ERROR);
 		}
 	}
+}
+
+void SerializedRig::addWheel3(SceneManager *manager, SceneNode *parent, Real radius, Real radius2, Real width, int rays, int node1, int node2, int snode, int braked, int propulsed, int torquenode, float mass, float wspring, float wdamp, float rspring, float rdamp, char* texf, char* texb, bool meshwheel, bool meshwheel2, float rimradius, bool rimreverse, parsecontext_t *c)
+{
+	if(propulsed)
+		propwheelcount++;
+	int i;
+	int nodebase=free_node;
+	int node3;
+	int contacter_wheel=1;
+	//ignore the width parameter
+	width=(nodes[node1].RelPosition-nodes[node2].RelPosition).length();
+	//enforce the "second node must have a larger Z coordinate than the first" constraint
+	if (nodes[node1].RelPosition.z>nodes[node2].RelPosition.z)
+	{
+		//swap
+		node3=node1;
+		node1=node2;
+		node2=node3;
+	}
+	//ignore the sign of snode, just do the thing automatically
+	//if (snode<0) node3=-snode; else node3=snode;
+	if (snode<0) snode=-snode;
+	bool closest1=false;
+	if (snode!=9999) closest1=(nodes[snode].RelPosition-nodes[node1].RelPosition).length()<(nodes[snode].RelPosition-nodes[node2].RelPosition).length();
+
+	Vector3 axis=nodes[node2].RelPosition-nodes[node1].RelPosition;
+	axis.normalise();
+	Quaternion rayrot=Quaternion(Degree(-360.0/(Real)(rays*2)), axis);
+
+	//rim nodes
+	Vector3 rayvec = axis.perpendicular() * radius2;
+
+	for (i=0; i<rays; i++)
+	{
+	//with propnodes and variable friction
+		Vector3 raypoint;
+		raypoint=nodes[node1].RelPosition+rayvec;
+		rayvec=rayrot*rayvec;
+		init_node(nodebase+i*2, raypoint.x, raypoint.y, raypoint.z, NODE_NORMAL, mass/(2.0*rays),1, WHEEL_FRICTION_COEF*width, -1, free_wheel, default_node_friction, default_node_volume, default_node_surface, NODE_LOADWEIGHT_DEFAULT);
+
+		// outer ring has wheelid%2 != 0
+		nodes[nodebase+i*2].iswheel = free_wheel*2+1;
+
+		if (contacter_wheel)
+		{
+			contacters[free_contacter].nodeid=nodebase+i*2;
+			contacters[free_contacter].contacted=0;
+			contacters[free_contacter].opticontact=0;
+			free_contacter++;;
+		}
+		raypoint=nodes[node2].RelPosition+rayvec;
+		rayvec=rayrot*rayvec;
+		init_node(nodebase+i*2+1, raypoint.x, raypoint.y, raypoint.z, NODE_NORMAL, mass/(2.0*rays),1, WHEEL_FRICTION_COEF*width, -1, free_wheel, default_node_friction, default_node_volume, default_node_surface, NODE_LOADWEIGHT_DEFAULT);
+
+		// inner ring has wheelid%2 == 0
+		nodes[nodebase+i*2+1].iswheel = free_wheel*2+2;
+		if (contacter_wheel)
+		{
+			contacters[free_contacter].nodeid=nodebase+i*2+1;
+			contacters[free_contacter].contacted=0;
+			contacters[free_contacter].opticontact=0;
+			free_contacter++;;
+		}
+		//wheel object
+		wheels[free_wheel].nodes[i*2]=&nodes[nodebase+i*2];
+		wheels[free_wheel].nodes[i*2+1]=&nodes[nodebase+i*2+1];
+	}
+	free_node+=2*rays;
+
+	//tire nodes
+	rayvec = axis.perpendicular() * radius;
+	//rotate half a node step
+	rayvec= rayrot * rayvec;
+
+
+	for (i=0; i<rays; i++)
+	{
+	//with propnodes and variable friction
+		Vector3 raypoint;
+		raypoint=nodes[node1].RelPosition+rayvec;
+		rayvec=rayrot*rayvec;
+		init_node(nodebase+i*2+rays*2, raypoint.x, raypoint.y, raypoint.z, NODE_NORMAL, mass/(2.0*rays),1, WHEEL_FRICTION_COEF*width, -1, free_wheel, default_node_friction, default_node_volume, default_node_surface, NODE_LOADWEIGHT_DEFAULT);
+
+		// outer ring has wheelid%2 != 0
+		nodes[nodebase+i*2+rays*2].iswheel = free_wheel*2+1;
+
+		if (contacter_wheel)
+		{
+			contacters[free_contacter].nodeid=nodebase+i*2+rays*2;
+			contacters[free_contacter].contacted=0;
+			contacters[free_contacter].opticontact=0;
+			free_contacter++;;
+		}
+		raypoint=nodes[node2].RelPosition+rayvec;
+		rayvec=rayrot*rayvec;
+
+		init_node(nodebase+i*2+1+rays*2, raypoint.x, raypoint.y, raypoint.z, NODE_NORMAL, mass/(2.0*rays),1, WHEEL_FRICTION_COEF*width, -1, free_wheel, default_node_friction, default_node_volume, default_node_surface, NODE_LOADWEIGHT_DEFAULT);
+
+		// inner ring has wheelid%2 == 0
+		nodes[nodebase+i*2+1+rays*2].iswheel = free_wheel*2+2;
+		if (contacter_wheel)
+		{
+			contacters[free_contacter].nodeid=nodebase+i*2+1+rays*2;
+			contacters[free_contacter].contacted=0;
+			contacters[free_contacter].opticontact=0;
+			free_contacter++;;
+		}
+		//wheel object
+		wheels[free_wheel].nodes[i*2+rays*2]=&nodes[nodebase+i*2+rays*2];
+		wheels[free_wheel].nodes[i*2+1+rays*2]=&nodes[nodebase+i*2+1+rays*2];
+	}
+	free_node+=2*rays;
+
+
+
+	for (i=0; i<rays; i++)
+	{
+		//rim axis to ring
+		add_beam(&nodes[node1], &nodes[nodebase+i*2], manager, parent, BEAM_INVISIBLE, default_break, rspring, rdamp, DEFAULT_DETACHER_GROUP);
+		add_beam(&nodes[node2], &nodes[nodebase+i*2+1], manager, parent, BEAM_INVISIBLE, default_break, rspring, rdamp, DEFAULT_DETACHER_GROUP);
+		add_beam(&nodes[node2], &nodes[nodebase+i*2], manager, parent, BEAM_INVISIBLE, default_break, rspring, rdamp, DEFAULT_DETACHER_GROUP);
+		add_beam(&nodes[node1], &nodes[nodebase+i*2+1], manager, parent, BEAM_INVISIBLE, default_break, rspring, rdamp, DEFAULT_DETACHER_GROUP);
+		//reinforcement (rim ring)
+		add_beam(&nodes[nodebase+i*2], &nodes[nodebase+i*2+1], manager, parent, BEAM_INVISIBLE, default_break, rspring, rdamp, DEFAULT_DETACHER_GROUP);
+		add_beam(&nodes[nodebase+i*2], &nodes[nodebase+((i+1)%rays)*2], manager, parent, BEAM_INVISIBLE, default_break, rspring, rdamp, DEFAULT_DETACHER_GROUP);
+		add_beam(&nodes[nodebase+i*2+1], &nodes[nodebase+((i+1)%rays)*2+1], manager, parent, BEAM_INVISIBLE, default_break, rspring, rdamp, DEFAULT_DETACHER_GROUP);
+		add_beam(&nodes[nodebase+i*2+1], &nodes[nodebase+((i+1)%rays)*2], manager, parent, BEAM_INVISIBLE, default_break, rspring, rdamp, DEFAULT_DETACHER_GROUP);
+
+		if (snode!=9999)
+		{
+
+			if (closest1) {add_beam(&nodes[snode], &nodes[nodebase+i*2], manager, parent, BEAM_VIRTUAL, default_break, rspring, rdamp, DEFAULT_DETACHER_GROUP);}
+			else         {add_beam(&nodes[snode], &nodes[nodebase+i*2+1], manager, parent, BEAM_VIRTUAL, default_break, rspring, rdamp, DEFAULT_DETACHER_GROUP);};
+		}
+	}
+
+	int rimnode;
+	int tirenode;
+
+
+	for (i=0; i<rays; i++)
+	{
+		//this wheels use set_beam_defaults-settings for the tiretread beams (meshwheels2)
+		//rim to tiretread
+
+		rimnode = nodebase + i*2;
+		tirenode = nodebase + i*2 + rays*2;
+
+		add_beam(&nodes[rimnode], &nodes[tirenode], manager, parent, BEAM_INVISIBLE, default_break, wspring, wdamp, DEFAULT_DETACHER_GROUP, -1.0, 0.66, 0.00);
+
+		if (i == 0)
+		{
+			add_beam(&nodes[rimnode], &nodes[tirenode+rays*2-1], manager, parent, BEAM_INVISIBLE, default_break, wspring, wdamp, DEFAULT_DETACHER_GROUP, -1.0, 0.66, 0.00);
+			add_beam(&nodes[rimnode], &nodes[tirenode+rays*2-2], manager, parent, BEAM_INVISIBLE, default_break, wspring, wdamp, DEFAULT_DETACHER_GROUP, -1.0, 0.66, 0.00);
+		} else
+		{
+			add_beam(&nodes[rimnode], &nodes[tirenode-1], manager, parent, BEAM_INVISIBLE, default_break, wspring, wdamp, DEFAULT_DETACHER_GROUP, -1.0, 0.66, 0.00);
+			add_beam(&nodes[rimnode], &nodes[tirenode-2], manager, parent, BEAM_INVISIBLE, default_break, wspring, wdamp, DEFAULT_DETACHER_GROUP, -1.0, 0.66, 0.00);
+		}
+
+		add_beam(&nodes[rimnode+1], &nodes[tirenode], manager, parent, BEAM_INVISIBLE, default_break, wspring, wdamp, DEFAULT_DETACHER_GROUP, -1.0, 0.66, 0.00);
+		add_beam(&nodes[rimnode+1], &nodes[tirenode+1], manager, parent, BEAM_INVISIBLE, default_break, wspring, wdamp, DEFAULT_DETACHER_GROUP, -1.0, 0.66, 0.00);
+
+		if (i == 0)
+		{
+			add_beam(&nodes[rimnode+1], &nodes[tirenode+rays*2-1], manager, parent, BEAM_INVISIBLE, default_break, wspring, wdamp, DEFAULT_DETACHER_GROUP, -1.0, 0.66, 0.00);
+		} else
+		{
+			add_beam(&nodes[rimnode+1], &nodes[tirenode-1], manager, parent, BEAM_INVISIBLE, default_break, wspring, wdamp, DEFAULT_DETACHER_GROUP, -1.0, 0.66, 0.00);
+		}
+		
+
+
+		//reinforcement (tire tread)
+		add_beam(&nodes[rimnode+rays*2], &nodes[nodebase+i*2+1+rays*2], manager, parent, BEAM_INVISIBLE, default_break, default_spring, default_damp, DEFAULT_DETACHER_GROUP);
+		add_beam(&nodes[rimnode+rays*2], &nodes[nodebase+((i+1)%rays)*2+rays*2], manager, parent, BEAM_INVISIBLE, default_break, default_spring, default_damp, DEFAULT_DETACHER_GROUP);
+		add_beam(&nodes[nodebase+i*2+1+rays*2], &nodes[nodebase+((i+1)%rays)*2+1+rays*2], manager, parent, BEAM_INVISIBLE, default_break, default_spring, default_damp, DEFAULT_DETACHER_GROUP);
+		add_beam(&nodes[rimnode+1+rays*2], &nodes[nodebase+((i+1)%rays)*2+rays*2], manager, parent, BEAM_INVISIBLE, default_break, default_spring, default_damp, DEFAULT_DETACHER_GROUP);
+
+		if (snode!=9999)
+		{
+
+			if (closest1) {add_beam(&nodes[snode], &nodes[nodebase+i*2+rays*2], manager, parent, BEAM_VIRTUAL, default_break, wspring, wdamp);}
+			else         {add_beam(&nodes[snode], &nodes[nodebase+i*2+1+rays*2], manager, parent, BEAM_VIRTUAL, default_break, wspring, wdamp);};
+		}
+	}
+
+	//wheel object
+	wheels[free_wheel].braked=braked;
+	wheels[free_wheel].propulsed=propulsed;
+	wheels[free_wheel].nbnodes=2*rays;
+	wheels[free_wheel].refnode0=&nodes[node1];
+	wheels[free_wheel].refnode1=&nodes[node2];
+	wheels[free_wheel].radius=radius;
+	wheels[free_wheel].speed=0.0;
+	wheels[free_wheel].rp=0;
+	wheels[free_wheel].rp1=0;
+	wheels[free_wheel].rp2=0;
+	wheels[free_wheel].rp3=0;
+	wheels[free_wheel].width=width;
+	wheels[free_wheel].arm=&nodes[torquenode];
+	wheels[free_wheel].lastContactInner=Vector3::ZERO;
+	wheels[free_wheel].lastContactOuter=Vector3::ZERO;
+	wheels[free_wheel].firstLock=false;
+	if (propulsed>0)
+	{
+		//for inter-differential locking
+		proppairs[proped_wheels]=free_wheel;
+		proped_wheels++;
+	}
+	if (braked) braked_wheels++;
+	//find near attach
+	Real l1=(nodes[node1].RelPosition-nodes[torquenode].RelPosition).length();
+	Real l2=(nodes[node2].RelPosition-nodes[torquenode].RelPosition).length();
+	if (l1<l2) wheels[free_wheel].near_attach=&nodes[node1]; else wheels[free_wheel].near_attach=&nodes[node2];
+	//visuals
+	char wname[256];
+	sprintf(wname, "wheel-%s-%i",truckname, free_wheel);
+	char wnamei[256];
+	sprintf(wnamei, "wheelobj-%s-%i",truckname, free_wheel);
+	//	strcpy(texf, "tracks/wheelface,");
+	vwheels[free_wheel].meshwheel = meshwheel;
+
+	if(!virtuallyLoaded)
+	{
+		vwheels[free_wheel].fm=new FlexMeshWheel(manager, wname, nodes, node1, node2, nodebase, rays, texf, texb, rimradius, rimreverse, materialFunctionMapper, usedSkin, materialReplacer);
+		try
+		{
+			Entity *ec = manager->createEntity(wnamei, wname);
+			vwheels[free_wheel].cnode = manager->getRootSceneNode()->createChildSceneNode();
+			if(ec)
+				vwheels[free_wheel].cnode->attachObject(ec);
+			MaterialFunctionMapper::replaceSimpleMeshMaterials(ec, ColourValue(0, 0.5, 0.5));
+			if(materialFunctionMapper) materialFunctionMapper->replaceMeshMaterials(ec);
+			if(materialReplacer) materialReplacer->replaceMeshMaterials(ec);
+			if(usedSkin) usedSkin->replaceMeshMaterials(ec);
+		}catch(...)
+		{
+			parser_warning(c, "error loading mesh: "+String(wname), PARSER_ERROR);
+		}
+	}
+	free_wheel++;
 }
 
 void SerializedRig::addCamera(int nodepos, int nodedir, int noderoll)

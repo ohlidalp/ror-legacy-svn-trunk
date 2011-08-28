@@ -159,6 +159,31 @@ protected:
 		, char* texf
 		, char* texb
 		, parsecontext_t *c=0);
+
+		void addWheel3(Ogre::SceneManager *manager
+		, Ogre::SceneNode *parent
+		, float radius
+		, float radius2
+		, float width
+		, int rays
+		, int node1
+		, int node2
+		, int snode
+		, int braked
+		, int propulsed
+		, int torquenode
+		, float mass
+		, float wspring
+		, float wdamp
+		, float rspring
+		, float rdamp
+		, char* texf
+		, char* texb
+		, bool meshwheel=false
+		, bool meshwheel2=false
+		, float rimradius=0.0
+		, bool rimreverse=false
+		, parsecontext_t *c=0);
 		
 	void addCamera(int nodepos, int nodedir, int noderoll);
 	float warea(Ogre::Vector3 ref, Ogre::Vector3 x, Ogre::Vector3 y, Ogre::Vector3 aref);
