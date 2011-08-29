@@ -2509,13 +2509,13 @@ int SerializedRig::loadTruck(String fname, SceneManager *manager, SceneNode *par
 			}
 			else if (c.mode == BTS_FLEXBODYWHEELS)
 			{
-				//parse meshwheels2
+				//parse flexbodywheels, meshwheels2 with rim and flexbody tire
 				char meshw[256]    = "";
 				char texb[256]     = "tracks/trans";
 				char flexmesh[256] = "";
-				float radius, rimradius, width, mass, spring, damp, rimspring, rimdamp;
+				float radius = 0.0f, rimradius = 0.0f, width = 0.0f, mass = 0.0f, spring = 0.0f, damp = 0.0f, rimspring = 0.0f, rimdamp = 0.0f;
 				char side;
-				int rays, node1, node2, snode, braked, propulsed, torquenode, node3;
+				int rays = 0, node1 = 0, node2 = 0, snode = 0, braked = 0, propulsed = 0, torquenode = 0, node3 = 0;
 
 				int n = parse_args(c, args, 16);
 
@@ -2544,6 +2544,7 @@ int SerializedRig::loadTruck(String fname, SceneManager *manager, SceneNode *par
 				strncpy(meshw, args[16].c_str(), 255);
 				strncpy(flexmesh, args[17].c_str(), 255);
 
+				//store the orientation node for rim and flexbody
 				node3 = free_node;
 
 				addWheel3(manager, parent, radius, rimradius, width, rays, node1, node2, snode, braked, propulsed, torquenode, mass, spring, damp, rimspring, rimdamp, meshw, texb, true, true, rimradius, side!='r');
@@ -5933,25 +5934,29 @@ void SerializedRig::addWheel3(SceneManager *manager, SceneNode *parent, Real rad
 {
 	if(propulsed)
 		propwheelcount++;
-	int i;
-	int nodebase=free_node;
-	int node3;
-	int contacter_wheel=1;
+
+	int i               = 0;
+	int nodebase        = free_node;
+	int node3           = 0;
+	int contacter_wheel = 1;
+
 	//ignore the width parameter
 	width=(nodes[node1].RelPosition-nodes[node2].RelPosition).length();
 	//enforce the "second node must have a larger Z coordinate than the first" constraint
 	if (nodes[node1].RelPosition.z>nodes[node2].RelPosition.z)
 	{
-		//swap
+		//swap ->hacky and does not always work correct with truck spawn rotation, the truck is already rotated here. Fix with using the parsed node z-position instead of using the relpos ?
 		node3=node1;
 		node1=node2;
 		node2=node3;
 	}
 	//ignore the sign of snode, just do the thing automatically
-	//if (snode<0) node3=-snode; else node3=snode;
-	if (snode<0) snode=-snode;
+	if (snode<0)
+		snode=-snode;
+
 	bool closest1=false;
-	if (snode!=9999) closest1=(nodes[snode].RelPosition-nodes[node1].RelPosition).length()<(nodes[snode].RelPosition-nodes[node2].RelPosition).length();
+	if (snode!=9999)
+		closest1=(nodes[snode].RelPosition-nodes[node1].RelPosition).length()<(nodes[snode].RelPosition-nodes[node2].RelPosition).length();
 
 	Vector3 axis=nodes[node2].RelPosition-nodes[node1].RelPosition;
 	axis.normalise();
@@ -5966,40 +5971,18 @@ void SerializedRig::addWheel3(SceneManager *manager, SceneNode *parent, Real rad
 		Vector3 raypoint;
 		raypoint=nodes[node1].RelPosition+rayvec;
 		rayvec=rayrot*rayvec;
-		init_node(nodebase+i*2, raypoint.x, raypoint.y, raypoint.z, NODE_NORMAL, mass/(2.0*rays),1, WHEEL_FRICTION_COEF*width, -1, free_wheel, default_node_friction, default_node_volume, default_node_surface, NODE_LOADWEIGHT_DEFAULT);
-
-		// outer ring has wheelid%2 != 0
-		nodes[nodebase+i*2].iswheel = free_wheel*2+1;
-
-		if (contacter_wheel)
-		{
-			contacters[free_contacter].nodeid=nodebase+i*2;
-			contacters[free_contacter].contacted=0;
-			contacters[free_contacter].opticontact=0;
-			free_contacter++;;
-		}
+		init_node(nodebase+i*2, raypoint.x, raypoint.y, raypoint.z, NODE_NORMAL, mass/(4.0*rays),1, WHEEL_FRICTION_COEF*width, -1, free_wheel, default_node_friction, default_node_volume, default_node_surface, NODE_LOADWEIGHT_DEFAULT);
+		nodes[nodebase+i*2].iswheel = 0;
 		raypoint=nodes[node2].RelPosition+rayvec;
 		rayvec=rayrot*rayvec;
-		init_node(nodebase+i*2+1, raypoint.x, raypoint.y, raypoint.z, NODE_NORMAL, mass/(2.0*rays),1, WHEEL_FRICTION_COEF*width, -1, free_wheel, default_node_friction, default_node_volume, default_node_surface, NODE_LOADWEIGHT_DEFAULT);
-
-		// inner ring has wheelid%2 == 0
-		nodes[nodebase+i*2+1].iswheel = free_wheel*2+2;
-		if (contacter_wheel)
-		{
-			contacters[free_contacter].nodeid=nodebase+i*2+1;
-			contacters[free_contacter].contacted=0;
-			contacters[free_contacter].opticontact=0;
-			free_contacter++;;
-		}
-		//wheel object
-		wheels[free_wheel].nodes[i*2]=&nodes[nodebase+i*2];
-		wheels[free_wheel].nodes[i*2+1]=&nodes[nodebase+i*2+1];
+		init_node(nodebase+i*2+1, raypoint.x, raypoint.y, raypoint.z, NODE_NORMAL, mass/(4.0*rays),1, WHEEL_FRICTION_COEF*width, -1, free_wheel, default_node_friction, default_node_volume, default_node_surface, NODE_LOADWEIGHT_DEFAULT);
+		nodes[nodebase+i*2+1].iswheel = 0;
 	}
 	free_node+=2*rays;
 
 	//tire nodes
 	rayvec = axis.perpendicular() * radius;
-	//rotate half a node step
+	//rotate half a node step (tire to rim node offset)
 	rayvec= rayrot * rayvec;
 
 
@@ -6009,11 +5992,8 @@ void SerializedRig::addWheel3(SceneManager *manager, SceneNode *parent, Real rad
 		Vector3 raypoint;
 		raypoint=nodes[node1].RelPosition+rayvec;
 		rayvec=rayrot*rayvec;
-		init_node(nodebase+i*2+rays*2, raypoint.x, raypoint.y, raypoint.z, NODE_NORMAL, mass/(2.0*rays),1, WHEEL_FRICTION_COEF*width, -1, free_wheel, default_node_friction, default_node_volume, default_node_surface, NODE_LOADWEIGHT_DEFAULT);
-
-		// outer ring has wheelid%2 != 0
+		init_node(nodebase+i*2+rays*2, raypoint.x, raypoint.y, raypoint.z, NODE_NORMAL, mass/(4.0*rays),1, WHEEL_FRICTION_COEF*width, -1, free_wheel, default_node_friction, default_node_volume, default_node_surface, NODE_LOADWEIGHT_DEFAULT);
 		nodes[nodebase+i*2+rays*2].iswheel = free_wheel*2+1;
-
 		if (contacter_wheel)
 		{
 			contacters[free_contacter].nodeid=nodebase+i*2+rays*2;
@@ -6023,10 +6003,7 @@ void SerializedRig::addWheel3(SceneManager *manager, SceneNode *parent, Real rad
 		}
 		raypoint=nodes[node2].RelPosition+rayvec;
 		rayvec=rayrot*rayvec;
-
-		init_node(nodebase+i*2+1+rays*2, raypoint.x, raypoint.y, raypoint.z, NODE_NORMAL, mass/(2.0*rays),1, WHEEL_FRICTION_COEF*width, -1, free_wheel, default_node_friction, default_node_volume, default_node_surface, NODE_LOADWEIGHT_DEFAULT);
-
-		// inner ring has wheelid%2 == 0
+		init_node(nodebase+i*2+1+rays*2, raypoint.x, raypoint.y, raypoint.z, NODE_NORMAL, mass/(4.0*rays),1, WHEEL_FRICTION_COEF*width, -1, free_wheel, default_node_friction, default_node_volume, default_node_surface, NODE_LOADWEIGHT_DEFAULT);
 		nodes[nodebase+i*2+1+rays*2].iswheel = free_wheel*2+2;
 		if (contacter_wheel)
 		{
@@ -6036,70 +6013,58 @@ void SerializedRig::addWheel3(SceneManager *manager, SceneNode *parent, Real rad
 			free_contacter++;;
 		}
 		//wheel object
-		wheels[free_wheel].nodes[i*2+rays*2]=&nodes[nodebase+i*2+rays*2];
-		wheels[free_wheel].nodes[i*2+1+rays*2]=&nodes[nodebase+i*2+1+rays*2];
+		wheels[free_wheel].nodes[i*2]=&nodes[nodebase+i*2+rays*2];
+		wheels[free_wheel].nodes[i*2+1]=&nodes[nodebase+i*2+1+rays*2];
 	}
 	free_node+=2*rays;
 
-
-
 	for (i=0; i<rays; i++)
 	{
-		//rim axis to ring
+		//rim axis to rim ring
 		add_beam(&nodes[node1], &nodes[nodebase+i*2], manager, parent, BEAM_INVISIBLE, default_break, rspring, rdamp, DEFAULT_DETACHER_GROUP);
 		add_beam(&nodes[node2], &nodes[nodebase+i*2+1], manager, parent, BEAM_INVISIBLE, default_break, rspring, rdamp, DEFAULT_DETACHER_GROUP);
 		add_beam(&nodes[node2], &nodes[nodebase+i*2], manager, parent, BEAM_INVISIBLE, default_break, rspring, rdamp, DEFAULT_DETACHER_GROUP);
 		add_beam(&nodes[node1], &nodes[nodebase+i*2+1], manager, parent, BEAM_INVISIBLE, default_break, rspring, rdamp, DEFAULT_DETACHER_GROUP);
-		//reinforcement (rim ring)
+		//reinforcement rim ring
 		add_beam(&nodes[nodebase+i*2], &nodes[nodebase+i*2+1], manager, parent, BEAM_INVISIBLE, default_break, rspring, rdamp, DEFAULT_DETACHER_GROUP);
 		add_beam(&nodes[nodebase+i*2], &nodes[nodebase+((i+1)%rays)*2], manager, parent, BEAM_INVISIBLE, default_break, rspring, rdamp, DEFAULT_DETACHER_GROUP);
 		add_beam(&nodes[nodebase+i*2+1], &nodes[nodebase+((i+1)%rays)*2+1], manager, parent, BEAM_INVISIBLE, default_break, rspring, rdamp, DEFAULT_DETACHER_GROUP);
 		add_beam(&nodes[nodebase+i*2+1], &nodes[nodebase+((i+1)%rays)*2], manager, parent, BEAM_INVISIBLE, default_break, rspring, rdamp, DEFAULT_DETACHER_GROUP);
-
-		if (snode!=9999)
-		{
-
-			if (closest1) {add_beam(&nodes[snode], &nodes[nodebase+i*2], manager, parent, BEAM_VIRTUAL, default_break, rspring, rdamp, DEFAULT_DETACHER_GROUP);}
-			else         {add_beam(&nodes[snode], &nodes[nodebase+i*2+1], manager, parent, BEAM_VIRTUAL, default_break, rspring, rdamp, DEFAULT_DETACHER_GROUP);};
-		}
 	}
 
 	int rimnode;
 	int tirenode;
 
-
 	for (i=0; i<rays; i++)
 	{
-		//this wheels use set_beam_defaults-settings for the tiretread beams (meshwheels2)
+		//this wheels use set_beam_defaults-settings for the tiretread beams like meshwheels2
 		//rim to tiretread
 
 		rimnode = nodebase + i*2;
 		tirenode = nodebase + i*2 + rays*2;
 
-		add_beam(&nodes[rimnode], &nodes[tirenode], manager, parent, BEAM_INVISIBLE, default_break, wspring, wdamp, DEFAULT_DETACHER_GROUP, -1.0, 0.66, 0.00);
+		add_beam(&nodes[rimnode], &nodes[tirenode], manager, parent, BEAM_INVISIBLE, default_break, wspring/2.0f, wdamp, DEFAULT_DETACHER_GROUP);
 
 		if (i == 0)
 		{
-			add_beam(&nodes[rimnode], &nodes[tirenode+rays*2-1], manager, parent, BEAM_INVISIBLE, default_break, wspring, wdamp, DEFAULT_DETACHER_GROUP, -1.0, 0.66, 0.00);
-			add_beam(&nodes[rimnode], &nodes[tirenode+rays*2-2], manager, parent, BEAM_INVISIBLE, default_break, wspring, wdamp, DEFAULT_DETACHER_GROUP, -1.0, 0.66, 0.00);
+			add_beam(&nodes[rimnode], &nodes[tirenode+rays*2-1], manager, parent, BEAM_INVISIBLE, default_break, wspring/2.0f, wdamp, DEFAULT_DETACHER_GROUP);
+			add_beam(&nodes[rimnode], &nodes[tirenode+rays*2-2], manager, parent, BEAM_INVISIBLE, default_break, wspring/2.0f, wdamp, DEFAULT_DETACHER_GROUP);
 		} else
 		{
-			add_beam(&nodes[rimnode], &nodes[tirenode-1], manager, parent, BEAM_INVISIBLE, default_break, wspring, wdamp, DEFAULT_DETACHER_GROUP, -1.0, 0.66, 0.00);
-			add_beam(&nodes[rimnode], &nodes[tirenode-2], manager, parent, BEAM_INVISIBLE, default_break, wspring, wdamp, DEFAULT_DETACHER_GROUP, -1.0, 0.66, 0.00);
+			add_beam(&nodes[rimnode], &nodes[tirenode-1], manager, parent, BEAM_INVISIBLE, default_break, wspring/2.0f, wdamp, DEFAULT_DETACHER_GROUP);
+			add_beam(&nodes[rimnode], &nodes[tirenode-2], manager, parent, BEAM_INVISIBLE, default_break, wspring/2.0f, wdamp, DEFAULT_DETACHER_GROUP);
 		}
 
-		add_beam(&nodes[rimnode+1], &nodes[tirenode], manager, parent, BEAM_INVISIBLE, default_break, wspring, wdamp, DEFAULT_DETACHER_GROUP, -1.0, 0.66, 0.00);
-		add_beam(&nodes[rimnode+1], &nodes[tirenode+1], manager, parent, BEAM_INVISIBLE, default_break, wspring, wdamp, DEFAULT_DETACHER_GROUP, -1.0, 0.66, 0.00);
+		add_beam(&nodes[rimnode+1], &nodes[tirenode], manager, parent, BEAM_INVISIBLE, default_break, wspring/2.0f, wdamp, DEFAULT_DETACHER_GROUP);
+		add_beam(&nodes[rimnode+1], &nodes[tirenode+1], manager, parent, BEAM_INVISIBLE, default_break, wspring/2.0f, wdamp, DEFAULT_DETACHER_GROUP);
 
 		if (i == 0)
 		{
-			add_beam(&nodes[rimnode+1], &nodes[tirenode+rays*2-1], manager, parent, BEAM_INVISIBLE, default_break, wspring, wdamp, DEFAULT_DETACHER_GROUP, -1.0, 0.66, 0.00);
+			add_beam(&nodes[rimnode+1], &nodes[tirenode+rays*2-1], manager, parent, BEAM_INVISIBLE, default_break, wspring/2.0f, wdamp, DEFAULT_DETACHER_GROUP);
 		} else
 		{
-			add_beam(&nodes[rimnode+1], &nodes[tirenode-1], manager, parent, BEAM_INVISIBLE, default_break, wspring, wdamp, DEFAULT_DETACHER_GROUP, -1.0, 0.66, 0.00);
+			add_beam(&nodes[rimnode+1], &nodes[tirenode-1], manager, parent, BEAM_INVISIBLE, default_break, wspring/2.0f, wdamp, DEFAULT_DETACHER_GROUP);
 		}
-		
-
 
 		//reinforcement (tire tread)
 		add_beam(&nodes[rimnode+rays*2], &nodes[nodebase+i*2+1+rays*2], manager, parent, BEAM_INVISIBLE, default_break, default_spring, default_damp, DEFAULT_DETACHER_GROUP);
@@ -6113,6 +6078,21 @@ void SerializedRig::addWheel3(SceneManager *manager, SceneNode *parent, Real rad
 			if (closest1) {add_beam(&nodes[snode], &nodes[nodebase+i*2+rays*2], manager, parent, BEAM_VIRTUAL, default_break, wspring, wdamp);}
 			else         {add_beam(&nodes[snode], &nodes[nodebase+i*2+1+rays*2], manager, parent, BEAM_VIRTUAL, default_break, wspring, wdamp);};
 		}
+	}
+
+	//calculate the point where the support beams get stiff and prevent the tire tread nodes bounce into the rim rimradius / tire radius and add 5%, this is a shortbound calc in % !
+	float length = 1.0f - ((radius2 / radius) * 0.95f);
+	float ropespring = rspring;
+
+	if (ropespring <= DEFAULT_SPRING)
+		ropespring = DEFAULT_SPRING;
+
+	for (i=0; i<rays; i++)
+	{
+		//tiretread anti collapse reinforcements, using precalced support beams
+		tirenode = nodebase + i*2 + rays*2;
+		add_beam(&nodes[node1], &nodes[tirenode], manager, parent, BEAM_INVISIBLE, default_break, wspring/2.0f, wdamp, DEFAULT_DETACHER_GROUP, -1.0f, length, 0.0);
+		add_beam(&nodes[node2], &nodes[tirenode+1], manager, parent, BEAM_INVISIBLE, default_break, wspring/2.0f, wdamp, DEFAULT_DETACHER_GROUP, -1.0f, length, 0.0);
 	}
 
 	//wheel object
