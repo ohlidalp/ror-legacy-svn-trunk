@@ -2596,11 +2596,11 @@ int SerializedRig::loadTruck(String fname, SceneManager *manager, SceneNode *par
 						MaterialPtr mat=(MaterialPtr)(MaterialManager::getSingleton().getByName(texname));
 						if(mat.getPointer() == 0)
 						{
-							parser_warning(c, "Material '" + String(texname) + "' used in Section 'globals' not found! We will try to use the material 'tracks/black' instead.", PARSER_ERROR);
-							mat=(MaterialPtr)(MaterialManager::getSingleton().getByName("tracks/black"));
+							parser_warning(c, "Material '" + String(texname) + "' used in Section 'globals' not found! We will try to use the material 'tracks/transred' instead.", PARSER_ERROR);
+							mat=(MaterialPtr)(MaterialManager::getSingleton().getByName("tracks/transred"));
 							if(mat.getPointer() == 0)
 							{
-								parser_warning(c, "Material not found! Try to ensure that tracks/black exists and retry.", PARSER_FATAL_ERROR);
+								parser_warning(c, "Material not found! Try to ensure that tracks/transred exists and retry.", PARSER_FATAL_ERROR);
 								return -9;
 							}
 						}
