@@ -149,6 +149,7 @@ void PreviewRenderer::render()
 	
 	cam->moveRelative(Ogre::Vector3(0.0,0.0,radius));
 
+	cam->setAspectRatio(1.0f);
 
 	// only render our object
 	//sceneMgr->clearSpecialCaseRenderQueues(); 
@@ -250,8 +251,11 @@ void PreviewRenderer::render3dpreview(Beam *truck, Camera *renderCamera, float m
 	//renderViewport->setBackgroundColour(ColourValue(1, 1, 1, 0));
 
 #ifdef USE_CAELUM
-	SkyManager::getSingleton().notifyCameraChanged(renderCamera);
-	SkyManager::getSingleton().forceUpdate(0.01f);
+	if(SkyManager::getSingletonPtr())
+	{
+		SkyManager::getSingleton().notifyCameraChanged(renderCamera);
+		SkyManager::getSingleton().forceUpdate(0.01f);
+	}
 #endif // USE_CAELUM
 
 	String skelmode = "normal";
@@ -285,20 +289,27 @@ void PreviewRenderer::render3dpreview(Beam *truck, Camera *renderCamera, float m
 				renderCamera->setOrientation(Ogre::Quaternion::IDENTITY);
 				renderCamera->yaw(Ogre::Degree(pitch));
 				renderCamera->pitch(Ogre::Degree(yaw));
-				renderCamera->moveRelative(Ogre::Vector3(0.0,0.0,radius));
+				renderCamera->moveRelative(Ogre::Vector3(0.0, 0.0, radius));
 
 				//Render into the texture
 				// only when rendering all images into one texture
 				//renderViewport->setDimensions((float)(o) * xDivFactor, (float)(i) * yDivFactor, xDivFactor, yDivFactor);
 
+				RoRWindowEventUtilities::messagePump();
+				Ogre::Root::getSingleton().renderOneFrame();
 				renderTarget->update();
-				//SkyManager::getSingleton().forceUpdate(0.01f);
+#ifdef USE_CAELUM
+				if(SkyManager::getSingletonPtr())
+				{
+					SkyManager::getSingleton().forceUpdate(0.01f);
+				}
+#endif //USE_CAELUM
 
 				char tmp[56];
 				sprintf(tmp, "%03d_%03d.jpg", i, o); // use .png for transparancy 
 				renderTarget->writeContentsToFile(fn + skelmode + SSETTING("dirsep") + String(tmp));
 				
-				LOG("rendered " + fn + skelmode + SSETTING("dirsep") + String(tmp));
+				LOG("rendered [" + TOSTRING(yaw) + String(" / ") + TOSTRING(pitch) + String(" / ") + TOSTRING(radius) + String("] ") + fn + skelmode + SSETTING("dirsep") + String(tmp));
 			}
 		}
 	}
