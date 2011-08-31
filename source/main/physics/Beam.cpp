@@ -2379,7 +2379,7 @@ void Beam::sendStreamData()
 		short *sbuf = (short*)ptr;
 		for (i = 1; i < first_wheel_node; i++)
 		{
-			Vector3 &relpos=nodes[i].AbsPosition-refpos;
+			Vector3 relpos =nodes[i].AbsPosition - refpos;
 			sbuf[(i - 1) * 3 + 0] = (short int)(relpos.x * 300.0f);
 			sbuf[(i - 1) * 3 + 1] = (short int)(relpos.y * 300.0f);
 			sbuf[(i - 1) * 3 + 2] = (short int)(relpos.z * 300.0f);
