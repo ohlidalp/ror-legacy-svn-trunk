@@ -29,6 +29,8 @@ along with Rigs of Rods.  If not, see <http://www.gnu.org/licenses/>.
 #include "RoRFrameListener.h"
 #include "network.h"
 
+#include "language.h"
+
 #include "libircclient.h"
 
 // hack, hacky but works well
@@ -36,8 +38,7 @@ irc_session_t *s   = 0;
 irc_ctx_t     *ctx = 0;
 
 // class
-
-Console::Console() : net(0)
+Console::Console() : net(0), autoCompleteNum(0)
 {
 	initialiseByAttributes(this);
 
@@ -48,6 +49,8 @@ Console::Console() : net(0)
 	size.height = size.height/3;
 	mMainWidget->setCoord(0, -size.height, size.width, size.height);
 	*/
+
+	((MyGUI::Window*)mMainWidget)->setCaption(_L("Console"));
 
 	MyGUI::Window *wnd = dynamic_cast<MyGUI::Window *>(mMainWidget);
 	wnd->eventWindowButtonPressed += MyGUI::newDelegate(this, &Console::notifyWindowXPressed);
@@ -133,15 +136,20 @@ void Console::addTab(Ogre::String name)
 	
 	t->mHistoryPosition = 0;
 	t->mHistory.push_back("");
-
 }
 
 void Console::setVisible(bool _visible)
 {
 	mVisible = _visible;
 
+	if(!_visible)
+	{
+		autoCompleteTemp.clear();
+		autoCompleteNum = 0;
+	}
+
 	mMainWidget->setEnabledSilent(_visible);
-	mMainWidget->setVisible(false);
+	mMainWidget->setVisible(_visible);
 	if (_visible)
 	{
 		MyGUI::InputManager::getInstance().setKeyFocusWidget(mCommandEdit);
@@ -272,6 +280,29 @@ void Console::eventButtonPressed(MyGUI::Widget* _sender, MyGUI::KeyCode _key, My
 		}
 		break;
 
+	case MyGUI::KeyCode::Tab:
+		{
+			// yay, auto-completion :)
+#ifdef USE_ANGELSCRIPT
+			if(current_tab->name == "Angelscript")
+			{
+				String command = mCommandEdit->getCaption();
+				
+				//if(autoCompleteTemp.empty())
+				autoCompleteTemp = ScriptEngine::getSingleton().getAutoComplete(command);
+				
+				if(!autoCompleteTemp.empty())
+				{
+					autoCompleteNum++;
+					if(autoCompleteNum >= autoCompleteTemp.size()) autoCompleteNum = 0;
+					// TODO: improve
+					Console::getInstance().print(">>> " + autoCompleteTemp[autoCompleteNum], current_tab->name);
+				}
+			}
+#endif //ANGELSCRIPT
+		}
+		break;
+
 	case MyGUI::KeyCode::ArrowDown:
 		if(current_tab->mHistoryPosition < (int)current_tab->mHistory.size() - 1)
 		{
@@ -316,6 +347,8 @@ void Console::eventCommandAccept(MyGUI::Edit* _sender)
 #ifdef USE_ANGELSCRIPT
 		Console::getInstance().print(">>> " + command, current_tab->name);
 		int res = ScriptEngine::getSingleton().executeString(command);
+		autoCompleteTemp.clear();
+		autoCompleteNum = 0;
 #endif //ANGELSCRIPT
 	}
 

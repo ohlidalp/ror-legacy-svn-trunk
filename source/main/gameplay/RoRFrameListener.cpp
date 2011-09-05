@@ -1973,6 +1973,10 @@ bool RoRFrameListener::updateEvents(float dt)
 
 		if(String(screenshotformat) == "png")
 		{
+
+			// possibly hide mouse cursor
+
+
 			// add some more data into the image
 			AdvancedScreen *as = new AdvancedScreen(mWindow, tmpfn);
 			as->addData("terrain_Name", loadedTerrain);

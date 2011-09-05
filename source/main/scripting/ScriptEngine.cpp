@@ -826,3 +826,66 @@ int ScriptEngine::loadScript(Ogre::String scriptname)
 
 	return 0;
 }
+
+
+Ogre::StringVector ScriptEngine::getAutoComplete(Ogre::String command)
+{
+	Ogre::StringVector result;
+	if(!engine) return result;
+	if(!context) context = engine->CreateContext();
+	AngelScript::asIScriptModule *mod = engine->GetModule(moduleName, AngelScript::asGM_CREATE_IF_NOT_EXISTS);
+
+	for(int i = 0; i < mod->GetGlobalVarCount(); i++)
+	{
+		const char *name = mod->GetGlobalVarDeclaration(i);
+		result.push_back(String(name));
+		//SLOG(" VAR > " + String(name));
+	}
+
+	for(int i = 0; i < mod->GetFunctionCount(); i++)
+	{
+		int idx = mod->GetFunctionIdByIndex(i);
+		AngelScript::asIScriptFunction *desc = mod->GetFunctionDescriptorById(idx);
+		result.push_back(String(desc->GetName()));
+		//SLOG(" FUNCTION > " + String(desc->GetName()));
+	}
+
+
+	for(int i = 0; i < engine->GetGlobalPropertyCount(); i++)
+	{
+		const char *name;
+		int  typeId = 0;
+		bool isConst = false;
+
+		if(!engine->GetGlobalPropertyByIndex(i, &name, &typeId, &isConst))
+		{
+			result.push_back(String(name));
+			//SLOG(" PROPERTY > " + String(name));
+		}
+
+	}
+
+	if(!command.empty())
+	{
+		StringVector res2;
+		// now check if we hit anything
+		for(int i = 0; i < result.size(); i++)
+		{
+			if(result[i].substr(0, command.size()) == command)
+			{
+				res2.push_back(result[i]);
+			}
+		}
+
+		if(command.find(".") != command.npos)
+		{
+			// oh, property of an object D:
+			// TODO
+		}
+
+		// give out filtered result
+		return res2;
+	}
+
+	return result;
+}
