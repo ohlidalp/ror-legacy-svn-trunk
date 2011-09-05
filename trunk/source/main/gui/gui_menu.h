@@ -29,6 +29,7 @@ along with Rigs of Rods.  If not, see <http://www.gnu.org/licenses/>.
 #include "OgreSingleton.h"
 #include "OgrePrerequisites.h"
 
+#include <pthread.h>
 
 class GUI_MainMenu : public Ogre::Singleton< GUI_MainMenu >
 {
@@ -43,14 +44,24 @@ public:
 
 	void updatePositionUponMousePosition(int x, int y);
 
+	void triggerUpdateVehicleList();
+
 protected:
 	RoRFrameListener *mefl;
 	MyGUI::MenuBarPtr mainmenu;
 	int menuWidth, menuHeight;
-	void onMenuBtn(MyGUI::MenuCtrlPtr _sender, MyGUI::MenuItemPtr _item);
 
-	const static int NUM_POPUPMENUS = 5;
+	pthread_mutex_t updateLock;
+
+	bool vehicleListNeedsUpdate;
+	
+	void onVehicleMenu(MyGUI::MenuControl* _sender, MyGUI::MenuItem* _item);
+	void onMenuBtn(MyGUI::MenuCtrlPtr _sender, MyGUI::MenuItemPtr _item);
+	void vehiclesListUpdate();
+
+	const static int NUM_POPUPMENUS = 6;
 	MyGUI::PopupMenuPtr pop[NUM_POPUPMENUS];
+	MyGUI::PopupMenuPtr vehiclesMenu;
 };
 
 #endif //GUI_MENU_H__

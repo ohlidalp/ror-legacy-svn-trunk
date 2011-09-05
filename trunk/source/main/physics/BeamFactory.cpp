@@ -34,6 +34,7 @@ along with Rigs of Rods.  If not, see <http://www.gnu.org/licenses/>.
 
 #ifdef USE_MYGUI
 #include "gui_mp.h"
+#include "gui_menu.h"
 #endif  // USE_MYGUI
 
 using namespace Ogre;
@@ -98,6 +99,11 @@ int BeamFactory::removeBeam(Beam *b)
 		}
 	}
 	unlockStreams();
+
+#ifdef USE_MYGUI
+	GUI_MainMenu::getSingleton().triggerUpdateVehicleList();
+#endif //USE_MYGUI
+
 	return 1;
 }
 
@@ -148,6 +154,10 @@ Beam *BeamFactory::createLocal(Ogre::Vector3 pos, Ogre::Quaternion rot, Ogre::St
 	std::map < int, std::map < unsigned int, Beam *> > &streamables = getStreams();
 	streamables[-1][10 + truck_num] = b; // 10 streams offset for beam constructions
 	unlockStreams();
+
+#ifdef USE_MYGUI
+	GUI_MainMenu::getSingleton().triggerUpdateVehicleList();
+#endif //USE_MYGUI
 
 	return b;
 }
@@ -237,6 +247,10 @@ Beam *BeamFactory::createRemoteInstance(stream_reg_t *reg)
 	//unlockStreams();
 
 	b->updateNetworkInfo();
+
+#ifdef USE_MYGUI
+	GUI_MainMenu::getSingleton().triggerUpdateVehicleList();
+#endif //USE_MYGUI
 
 	return b;
 }
@@ -555,6 +569,11 @@ void BeamFactory::_deleteTruck(Beam *b, int num)
 	trucks[num] = 0;
 	delete b;
 	b = 0;
+
+#ifdef USE_MYGUI
+	GUI_MainMenu::getSingleton().triggerUpdateVehicleList();
+#endif //USE_MYGUI
+
 }
 
 void BeamFactory::_waitForSync()
