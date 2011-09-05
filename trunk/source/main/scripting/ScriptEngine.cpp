@@ -869,7 +869,7 @@ Ogre::StringVector ScriptEngine::getAutoComplete(Ogre::String command)
 	{
 		StringVector res2;
 		// now check if we hit anything
-		for(int i = 0; i < result.size(); i++)
+		for(unsigned int i = 0; i < result.size(); i++)
 		{
 			if(result[i].substr(0, command.size()) == command)
 			{

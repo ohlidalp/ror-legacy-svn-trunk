@@ -142,7 +142,7 @@ void SkinManager::parseScript(DataStreamPtr& stream, const String& groupName)
 void SkinManager::parseAttribute(const String& line, Skin *pSkin)
 {
 	Ogre::StringVector params = StringUtil::split(line, "\t=,;\n");
-	for(int i=0; i < params.size(); i++)
+	for(unsigned int i=0; i < params.size(); i++)
 	{
 		// trim all parameters
 		StringUtil::trim(params[i]);
