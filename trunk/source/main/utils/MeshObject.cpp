@@ -159,8 +159,8 @@ void MeshObject::postProcess()
 				else if(i == 4) distance = std::max(20.0f, sightrange * 0.4f);
 			}
 
-			//Ogre::MeshManager::getSingleton().load(iterFiles->filename, mesh->getGroup());
-			//mesh->createManualLodLevel(distance, iterFiles->filename);
+			Ogre::MeshManager::getSingleton().load(iterFiles->filename, mesh->getGroup());
+			mesh->createManualLodLevel(distance, iterFiles->filename);
 		}
 
 		// the custom LODs
@@ -173,8 +173,8 @@ void MeshObject::postProcess()
 			int r = sscanf(iterFiles->filename.c_str(), format.c_str(), &i);
 			if(r <= 0 || i < 0) continue;
 
-			//Ogre::MeshManager::getSingleton().load(iterFiles->filename, mesh->getGroup());
-			//mesh->createManualLodLevel(i, iterFiles->filename);
+			Ogre::MeshManager::getSingleton().load(iterFiles->filename, mesh->getGroup());
+			mesh->createManualLodLevel(i, iterFiles->filename);
 		}
 	}
 
