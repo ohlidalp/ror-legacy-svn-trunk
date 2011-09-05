@@ -70,7 +70,7 @@ int Skin::addTextureReplace(Ogre::String from, Ogre::String to)
 
 int Skin::hasReplacementForMaterial(Ogre::String material)
 {
-	return (int)replaceMaterials.count(material);
+	return (int)replaceMaterials.count(stripMaterialNameUniqueNess(material));
 }
 
 int Skin::hasReplacementForTexture(Ogre::String texture)
@@ -85,9 +85,17 @@ Ogre::String Skin::getReplacementForTexture(Ogre::String texture)
 	return res;
 }
 
+Ogre::String Skin::stripMaterialNameUniqueNess(Ogre::String matName)
+{
+	// MORE MAGIC
+	size_t pos = matName.find("_#UNIQUESKINMATERIAL#_");
+	if(pos == matName.npos) return matName;
+	return matName.substr(0, pos);
+}
+
 Ogre::String Skin::getReplacementForMaterial(Ogre::String material)
 {
-	String res = replaceMaterials[material];
+	String res = replaceMaterials[stripMaterialNameUniqueNess(material)];
 	if(res.empty()) res = material;
 	return res;
 }
@@ -132,11 +140,15 @@ void Skin::replaceMeshMaterials(Ogre::Entity *e)
 {
 	if(!e) return;
 
+	// make it unique FIRST, otherwise we change the base material ...
+	uniquifyMeshMaterials(e);
+
+	// then walk the entity and look for replacements
 	for(int n=0; n<(int)e->getNumSubEntities();n++)
 	{
 		SubEntity *subent = e->getSubEntity(n);
 		String materialName = subent->getMaterialName();
-		std::map<Ogre::String, Ogre::String>::iterator it = replaceMaterials.find(materialName);
+		std::map<Ogre::String, Ogre::String>::iterator it = replaceMaterials.find(stripMaterialNameUniqueNess(materialName));
 		if(it != replaceMaterials.end())
 		{
 			materialName = it->second;
@@ -147,9 +159,6 @@ void Skin::replaceMeshMaterials(Ogre::Entity *e)
 			replaceMaterialTextures(subent->getMaterialName());
 		}
 	}
-
-	// make it unique
-	uniquifyMeshMaterials(e);
 }
 
 void Skin::uniquifyMeshMaterials(Ogre::Entity *e)
@@ -160,7 +169,8 @@ void Skin::uniquifyMeshMaterials(Ogre::Entity *e)
 	{
 		SubEntity *subent = e->getSubEntity(n);
 		String oldMaterialName = subent->getMaterialName();
-		String newMaterialName = oldMaterialName + "_" + TOSTRING(counter++);
+		// MAGGIICCCC
+		String newMaterialName = oldMaterialName + "_#UNIQUESKINMATERIAL#_" + TOSTRING(counter++);
 
 		MaterialPtr mat = MaterialManager::getSingleton().getByName(oldMaterialName);
 		if(!mat.isNull())

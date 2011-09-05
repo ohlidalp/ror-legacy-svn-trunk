@@ -53,7 +53,8 @@ public:
 	int addMaterialReplace(Ogre::String from, Ogre::String to);
 	int hasReplacementForMaterial(Ogre::String material);
 	Ogre::String getReplacementForMaterial(Ogre::String material);
-	
+	Ogre::String stripMaterialNameUniqueNess(Ogre::String matName);
+
 	// common
 	void uniquifyMeshMaterials(Ogre::Entity *e);
 
