@@ -44,8 +44,10 @@ GUI_MainMenu& GUI_MainMenu::getSingleton(void)
 	assert( ms_Singleton );  return ( *ms_Singleton );
 }
 
-GUI_MainMenu::GUI_MainMenu(RoRFrameListener *efl) : mefl(efl), menuWidth(800), menuHeight(20)
+GUI_MainMenu::GUI_MainMenu(RoRFrameListener *efl) : mefl(efl), menuWidth(800), menuHeight(20), vehicleListNeedsUpdate(false)
 {
+	pthread_mutex_init(&updateLock, NULL);
+
 	//MyGUI::WidgetPtr back = createWidget<MyGUI::Widget>("Panel", 0, 0, 912, 652,MyGUI::Align::Default, "Back");
 	mainmenu = MyGUI::Gui::getInstance().createWidget<MyGUI::MenuBar>("MenuBar", 0, 0, menuWidth, menuHeight,  MyGUI::Align::HStretch | MyGUI::Align::Top, "Back"); 
 	mainmenu->setCoord(0, 0, menuWidth, menuHeight);
@@ -56,6 +58,8 @@ GUI_MainMenu::GUI_MainMenu(RoRFrameListener *efl) : mefl(efl), menuWidth(800), m
 	pop[popCount] = mi->createWidget<MyGUI::PopupMenu>(MyGUI::WidgetStyle::Popup, "PopupMenu",MyGUI::IntCoord(0,0,88,68),MyGUI::Align::Default, "Popup");
 	mi->setItemType(MyGUI::MenuItemType::Popup);
 	mi->setCaption(_L("Simulation"));
+	pop[popCount]->setPopupAccept(true);
+	//mi->setPopupAccept(true);
 
 	MyGUI::IntSize s = mi->getTextSize();
 	menuHeight = s.height + 6;
@@ -72,6 +76,20 @@ GUI_MainMenu::GUI_MainMenu(RoRFrameListener *efl) : mefl(efl), menuWidth(800), m
 	pop[popCount]->addItem(_L("Load Scenery"), MyGUI::MenuItemType::Normal);
 	pop[popCount]->addItem("-", MyGUI::MenuItemType::Separator);
 	pop[popCount]->addItem(_L("Exit"), MyGUI::MenuItemType::Normal);
+
+	// vehicles
+	popCount++;
+	mi = mainmenu->createWidget<MyGUI::MenuItem>("MenuBarButton", 0, 0, 60, menuHeight,  MyGUI::Align::Default);
+	vehiclesMenu = mi->createWidget<MyGUI::PopupMenu>(MyGUI::WidgetStyle::Popup, "PopupMenu", MyGUI::IntCoord(0,0,88,68),MyGUI::Align::Default, "Popup");
+	pop[popCount] = vehiclesMenu;
+	mi->setItemType(MyGUI::MenuItemType::Popup);
+	mi->setCaption("Vehicles");
+	vehiclesMenu->addItem(_L("TEST"), MyGUI::MenuItemType::Normal, "test");
+
+	// this is not working :(
+	//vehiclesMenu->setPopupAccept(true);
+	//vehiclesMenu->eventMenuCtrlAccept += MyGUI::newDelegate(this, &GUI_MainMenu::onVehicleMenu);
+
 
 	// view
 	popCount++;
@@ -125,9 +143,40 @@ GUI_MainMenu::~GUI_MainMenu()
 {
 }
 
+void GUI_MainMenu::vehiclesListUpdate()
+{
+	vehiclesMenu->removeAllItems();
+	
+	int numTrucks = BeamFactory::getSingleton().getTruckCount();
+	Beam **trucks = BeamFactory::getSingleton().getTrucks();
+	for(int i = 0; i < numTrucks; i++)
+	{
+		if(!trucks[i]) continue;
+		
+		char tmp[255] = "";
+		sprintf(tmp, "[%d] %s", i, trucks[i]->realtruckname.c_str());
+
+		vehiclesMenu->addItem(String(tmp), MyGUI::MenuItemType::Normal, "TRUCK_"+TOSTRING(i));
+	}
+}
+
+void GUI_MainMenu::onVehicleMenu(MyGUI::MenuControl* _sender, MyGUI::MenuItem* _item)
+{
+	// not working :(
+	//vehiclesListUpdate();
+}
+
 void GUI_MainMenu::onMenuBtn(MyGUI::MenuCtrlPtr _sender, MyGUI::MenuItemPtr _item)
 {
 	String miname = _item->getCaption();
+	String id     = _item->getItemId();
+
+	if(id.substr(0,6) == "TRUCK_")
+	{
+		int truck = PARSEINT(id.substr(6));
+		if(truck >= 0 && truck < BeamFactory::getSingleton().getTruckCount())
+			BeamFactory::getSingleton().setCurrentTruck(truck);
+	}
 
 	if(miname == _L("get new Vehicle") && mefl->person)
 	{
@@ -229,7 +278,23 @@ void GUI_MainMenu::updatePositionUponMousePosition(int x, int y)
 		else
 			mainmenu->setPosition(0, std::min(0, -y+10));
 	}
+
+	// this is hacky, but needed as the click callback is not working
+	if(vehicleListNeedsUpdate)
+	{
+		vehiclesListUpdate();
+		MUTEX_LOCK(&updateLock)
+		vehicleListNeedsUpdate = false;
+		MUTEX_UNLOCK(&updateLock)
+	}
 }
+
+void GUI_MainMenu::triggerUpdateVehicleList()
+{
+	MUTEX_LOCK(&updateLock)
+	vehicleListNeedsUpdate = true;
+	MUTEX_UNLOCK(&updateLock)
+};
 
 #endif // MYGUI
 
