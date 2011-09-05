@@ -33,25 +33,40 @@ public:
 	int save(Ogre::String &filename);
 protected:
 	static const char *current_version;
+	static const int  entry_magic = 0xCAFED00D;
+	 
 
 	void logMessage(Ogre::String m);
 
-	// data structres for the file format below
+	// data structures for the file format below
+	// Rigs of Rods savegame file format:
+	
+	// savegame_header
+	// savegame_entry_header
+	// DATA
+	// savegame_entry_header
+	// DATA
+	// etc ...
+
 	struct savegame_header {
 		char savegame_version[28];
 		char ror_version[20];
 		unsigned int entries;
 		int current_truck;
-		float player_pos_x;
-		float player_pos_y;
-		float player_pos_z;
-		float cam_pos_x;
-		float cam_pos_y;
-		float cam_pos_z;
+		// character, TODO: animations
+		float player_pos[3];
+		// camera
+		float cam_pos[3];
+		float cam_ideal_pos[3];
+		float camRotX, camRotY, camDist;
+		float pushcamRotX, pushcamRotY;
+		float mMoveScale, mRotScale;
+		float lastPosition[3];
+		int cameramode, lastcameramode;
 	};
 	struct savegame_entry_header {
+		unsigned int magic;
 		char filename[1024];
-		unsigned int buffersize;
 		unsigned int free_nodes;
 		unsigned int free_beams;
 		unsigned int free_shock;
@@ -61,13 +76,6 @@ protected:
 		unsigned int state;
 		unsigned int engine;
 		float origin[3];
-	};
-	struct savegame_entry_data_engine {
-		// TODO
-	};
-
-	struct savegame_entry_data_node {
-
 	};
 };
 

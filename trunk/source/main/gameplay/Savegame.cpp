@@ -31,7 +31,7 @@ along with Rigs of Rods.  If not, see <http://www.gnu.org/licenses/>.
 
 using namespace Ogre;
 
-const char *Savegame::current_version = "ROR_SAVEGAME_v1";
+const char *Savegame::current_version = "ROR_SAVEGAME_v2";
 
 #define WRITEVAR(x)    fwrite(&x, sizeof(x), 1, f)
 #define WRITEARR(x, y) for(int n = 0; n < y; n++) { WRITEVAR(x); }
@@ -75,6 +75,40 @@ int Savegame::save(Ogre::String &filename)
 		h.entries       = free_truck;
 		h.current_truck = current_truck;
 
+		if(RoRFrameListener::eflsingleton)
+		{
+			// and generic things like character and camera
+			if(RoRFrameListener::eflsingleton->person)
+			{
+				Vector3 pos = RoRFrameListener::eflsingleton->person->getPosition();
+				// WARNING: breaks if Real == double!
+				memcpy(&h.player_pos, pos.ptr(), sizeof(float) * 3);
+			}
+			if(RoRFrameListener::eflsingleton->getCamera())
+			{
+				Vector3 pos = RoRFrameListener::eflsingleton->getCamera()->getPosition();
+				// WARNING: breaks if Real == double!
+				memcpy(&h.cam_pos, pos.ptr(), sizeof(float) * 3);
+			}
+			
+			h.camRotX = RoRFrameListener::eflsingleton->camRotX.valueRadians();
+			h.camRotY = RoRFrameListener::eflsingleton->camRotY.valueRadians();
+			h.camDist = RoRFrameListener::eflsingleton->camDist;
+
+
+			memcpy(&h.cam_ideal_pos, RoRFrameListener::eflsingleton->camIdealPosition.ptr(), sizeof(float) * 3);
+
+			h.pushcamRotX = RoRFrameListener::eflsingleton->pushcamRotX.valueRadians();
+			h.pushcamRotY = RoRFrameListener::eflsingleton->pushcamRotY.valueRadians();
+			h.mMoveScale  = RoRFrameListener::eflsingleton->mMoveScale;
+			h.mRotScale   = RoRFrameListener::eflsingleton->mRotScale.valueRadians();
+
+			memcpy(&h.lastPosition, RoRFrameListener::eflsingleton->lastPosition.ptr(), sizeof(float) * 3);
+
+			h.cameramode     = RoRFrameListener::eflsingleton->cameramode;
+			h.lastcameramode = RoRFrameListener::eflsingleton->lastcameramode;
+		}
+
 		// write header to file
 		fwrite(&h, sizeof(h), 1, f);
 	}
@@ -89,6 +123,7 @@ int Savegame::save(Ogre::String &filename)
 		{
 			struct savegame_entry_header dh;
 			memset(&dh, 0, sizeof(dh));
+			dh.magic = entry_magic;
 			dh.free_nodes = t->free_node;
 			dh.free_beams = t->free_beam;
 			dh.free_shock = t->free_shock;
@@ -96,16 +131,9 @@ int Savegame::save(Ogre::String &filename)
 			//dh.free_hooks = t->free_hooks;
 			dh.free_rotator = t->free_rotator;
 			strcpy(dh.filename, t->realtruckfilename.c_str());
-
-			dh.buffersize = t->free_node * sizeof(node_t);
-
 			memcpy(&dh.origin, t->origin.ptr(), sizeof(float) * 3);
 
-			if(t->engine)
-			{
-				dh.engine = 1;
-				//dh.buffersize += sizeof(t->engine);
-			}
+			if(t->engine) dh.engine = 1;
 
 			// write entry header to file
 			fwrite(&dh, sizeof(dh), 1, f);
@@ -188,7 +216,6 @@ int Savegame::load(Ogre::String &filename)
 	// wait for engine sync
 	BeamFactory::getSingleton()._waitForSync();
 
-	// TODO: show error
 	if(!f)
 	{
 		logMessage("error opening savegame");
@@ -212,11 +239,49 @@ int Savegame::load(Ogre::String &filename)
 		}
 	}
 
+	// restore generic things: characer and camera
+	if(RoRFrameListener::eflsingleton)
+	{
+		// and generic things like character and camera
+		if(RoRFrameListener::eflsingleton->person)
+		{
+			RoRFrameListener::eflsingleton->person->setPosition(Vector3(h.player_pos));
+		}
+		if(RoRFrameListener::eflsingleton->getCamera())
+		{
+			RoRFrameListener::eflsingleton->getCamera()->setPosition(Vector3(h.cam_pos));
+		}
+
+		RoRFrameListener::eflsingleton->camRotX = Radian(h.camRotX);
+		RoRFrameListener::eflsingleton->camRotY = Radian(h.camRotY);
+		RoRFrameListener::eflsingleton->camDist = h.camDist;
+
+		RoRFrameListener::eflsingleton->camIdealPosition = Vector3(h.cam_ideal_pos);
+
+		RoRFrameListener::eflsingleton->pushcamRotX = Radian(h.pushcamRotX);
+		RoRFrameListener::eflsingleton->pushcamRotY = Radian(h.pushcamRotY);
+		RoRFrameListener::eflsingleton->mMoveScale  = h.mMoveScale;
+		RoRFrameListener::eflsingleton->mRotScale   = Radian(h.mRotScale);
+
+		RoRFrameListener::eflsingleton->lastPosition = Vector3(h.lastPosition);
+
+		RoRFrameListener::eflsingleton->cameramode = h.cameramode;
+		RoRFrameListener::eflsingleton->lastcameramode = h.lastcameramode;
+	}
+
 	// iterate the trucks
 	for(unsigned int i = 0; i < h.entries; i++)
 	{
 		struct savegame_entry_header dh;
 		fread(&dh, sizeof(dh), 1, f);
+
+		// check magic first, to prevent reading corrupt data
+		if(dh.magic != entry_magic)
+		{
+			logMessage("savegame corrupted: " + filename);
+			fclose(f);
+			return 1;
+		}
 
 		// restore its origin
 		Vector3 origin = Vector3(dh.origin);

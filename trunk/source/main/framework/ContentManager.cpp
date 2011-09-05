@@ -74,7 +74,7 @@ void ContentManager::initBootstrap(void)
 	LOG("Loading Bootstrap");
 	loadMainResource("OgreCore", "Bootstrap");
 	LOG("Loading Wallpapers");
-	loadMainResource("Wallpapers", "Wallpapers");
+	loadMainResource("wallpapers", "Wallpapers");
 }
 
 bool ContentManager::init(void)

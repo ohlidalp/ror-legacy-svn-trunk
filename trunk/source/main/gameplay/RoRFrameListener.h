@@ -134,6 +134,7 @@ typedef struct
 class RoRFrameListener: public FrameListener, public Ogre::WindowEventListener
 {
 	friend class BeamFactory;
+	friend class Savegame;
 protected:
 	void initializeCompontents();
 	OverlayWrapper *ow;
