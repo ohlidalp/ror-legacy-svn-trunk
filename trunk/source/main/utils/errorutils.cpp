@@ -80,7 +80,7 @@ int showOgreWebError(Ogre::String title, Ogre::String err, Ogre::String url)
 	stored_url = url;
 
 	RigsOfRods *ror = RigsOfRods::getSingletonPtr();
-	if(ror) ror->shutdown();
+	if(ror) ror->tryShutdown();
 	
 #if OGRE_PLATFORM == OGRE_PLATFORM_LINUX
 	printf("\n\n%s: %s / url: %s\n\n", title.c_str(), err.c_str(), url.c_str());
