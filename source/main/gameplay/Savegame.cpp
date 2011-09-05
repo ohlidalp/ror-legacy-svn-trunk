@@ -171,7 +171,7 @@ int Savegame::save(Ogre::String &filename)
 			WRITEVAR(t->maxy);
 			WRITEVAR(t->maxz);
 
-			// TODO: commandkey, Skin, engine, slidenodes
+			// TODO: commandkey, Skin, engine, slidenodes, flexbodies (damage texture)
 		}
 	}
 	// and we are done :)
@@ -341,7 +341,6 @@ int Savegame::load(Ogre::String &filename)
 		{
 			rotator_t tmp;
 			fread(&tmp, sizeof(tmp), 1, f);
-			//TODO
 			t->rotators[n].angle = tmp.angle;
 			t->rotators[n].rate  = tmp.rate;
 			t->rotators[n].force = tmp.force;
@@ -386,6 +385,11 @@ int Savegame::load(Ogre::String &filename)
 		READVAR(t->maxx);
 		READVAR(t->maxy);
 		READVAR(t->maxz);
+
+		// important: active all vehicles upon loading!
+		// they will go sleeping automatically
+		if(t->state != ACTIVATED || t->state != DESACTIVATED)
+			t->state = DESACTIVATED; // deactivated = active but not leading
 	}
 
 	// try to set the current truck
