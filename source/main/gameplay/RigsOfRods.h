@@ -40,6 +40,7 @@ public:
 	void go();
 	void pauseRendering(void);
 	void shutdown(void);
+	void tryShutdown(void);
 
 	void update(double dt);
 protected:

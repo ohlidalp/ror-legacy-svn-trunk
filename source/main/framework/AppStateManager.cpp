@@ -223,12 +223,21 @@ void AppStateManager::pauseAppState()
 void AppStateManager::shutdown()
 {
 	// shutdown needs to be synced
-	pthread_mutex_trylock(&lock); // otherwise can crash upon an exception in the wrong code part
-	//MUTEX_LOCK(&lock);
+	MUTEX_LOCK(&lock);
 	m_bShutdown = true;
 	MUTEX_UNLOCK(&lock);
 }
 
+
+void AppStateManager::tryShutdown()
+{
+	// important: we need trylock here, otherwise it could happen
+	// that we run into a deadlock, when an exception is raised while the lock is hold.
+	// 
+	pthread_mutex_trylock(&lock);
+	m_bShutdown = true;
+	MUTEX_UNLOCK(&lock);
+}
 //|||||||||||||||||||||||||||||||||||||||||||||||
 
 void AppStateManager::pauseRendering()

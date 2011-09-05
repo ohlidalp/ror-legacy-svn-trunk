@@ -108,6 +108,12 @@ void RigsOfRods::shutdown()
 		stateManager->shutdown();
 }
 
+void RigsOfRods::tryShutdown()
+{
+	if(stateManager)
+		stateManager->tryShutdown();
+}
+
 void RigsOfRods::pauseRendering()
 {
 	stateManager->pauseRendering();
