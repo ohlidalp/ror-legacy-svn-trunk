@@ -104,6 +104,9 @@ protected:
 
 	Network *net;
 
+	Ogre::StringVector autoCompleteTemp;
+	int autoCompleteNum;
+
 	std::map<Ogre::String , tabctx_t > tabs;
 
 	tabctx_t *current_tab;

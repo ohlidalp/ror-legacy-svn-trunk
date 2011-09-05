@@ -125,12 +125,18 @@ void MeshObject::postProcess()
 	{
 		String basename, ext;
 		StringUtil::splitBaseFilename(meshName, basename, ext);
-		for(int i=1; i<4;i++)
+		
+		String group = ResourceGroupManager::getSingleton().findGroupContainingResource(meshName);
+		
+		// the classic LODs
+		FileInfoListPtr files = ResourceGroupManager::getSingleton().findResourceFileInfo(group, basename + "_lod*.mesh");
+		for (FileInfoList::iterator iterFiles = files->begin(); iterFiles!= files->end(); ++iterFiles)
 		{
-			String fn = basename + "_lod" + TOSTRING(i) + ".mesh";
-			bool exists = ResourceGroupManager::getSingleton().resourceExistsInAnyGroup(fn);
-			if(!exists) continue;
+			String format = basename + "_lod%d.mesh";
+			int i = -1;
+			int r = sscanf(iterFiles->filename.c_str(), format.c_str(), &i);
 
+			if(r <= 0 || i < 0) continue;
 
 			float distance = 3;
 
@@ -153,8 +159,22 @@ void MeshObject::postProcess()
 				else if(i == 4) distance = std::max(20.0f, sightrange * 0.4f);
 			}
 
-			Ogre::MeshManager::getSingleton().load(fn, Ogre::ResourceGroupManager::DEFAULT_RESOURCE_GROUP_NAME),
-				mesh->createManualLodLevel(distance, fn);
+			//Ogre::MeshManager::getSingleton().load(iterFiles->filename, mesh->getGroup());
+			//mesh->createManualLodLevel(distance, iterFiles->filename);
+		}
+
+		// the custom LODs
+		FileInfoListPtr files2 = ResourceGroupManager::getSingleton().findResourceFileInfo(group, basename + "_clod_*.mesh");
+		for (FileInfoList::iterator iterFiles = files2->begin(); iterFiles!= files2->end(); ++iterFiles)
+		{
+			// and custom LODs
+			String format = basename + "_clod_%d.mesh";
+			int i = -1;
+			int r = sscanf(iterFiles->filename.c_str(), format.c_str(), &i);
+			if(r <= 0 || i < 0) continue;
+
+			//Ogre::MeshManager::getSingleton().load(iterFiles->filename, mesh->getGroup());
+			//mesh->createManualLodLevel(i, iterFiles->filename);
 		}
 	}
 
