@@ -73,6 +73,7 @@ public:
 	void recursiveActivation(int j);
 	void checkSleepingState();
 
+	void _waitForSync();
 
 protected:
 	Ogre::SceneManager *manager;

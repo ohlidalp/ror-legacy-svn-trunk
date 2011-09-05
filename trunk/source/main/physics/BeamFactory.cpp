@@ -549,6 +549,17 @@ void BeamFactory::_deleteTruck(Beam *b, int num)
 		num = b->trucknum;
 
 	//block until all threads done
+	_waitForSync();
+
+	// synced delete
+	trucks[num] = 0;
+	delete b;
+	b = 0;
+}
+
+void BeamFactory::_waitForSync()
+{
+	//block until all threads done
 	if (thread_mode==THREAD_HT)
 	{
 		MUTEX_LOCK(&done_count_mutex);
@@ -556,11 +567,6 @@ void BeamFactory::_deleteTruck(Beam *b, int num)
 			pthread_cond_wait(&done_count_cv, &done_count_mutex);
 		MUTEX_UNLOCK(&done_count_mutex);
 	}
-
-	// synced delete
-	trucks[num] = 0;
-	delete b;
-	b = 0;
 }
 
 
