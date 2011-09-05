@@ -223,7 +223,8 @@ void AppStateManager::pauseAppState()
 void AppStateManager::shutdown()
 {
 	// shutdown needs to be synced
-	MUTEX_LOCK(&lock);
+	pthread_mutex_trylock(&lock); // otherwise can crash upon an exception in the wrong code part
+	//MUTEX_LOCK(&lock);
 	m_bShutdown = true;
 	MUTEX_UNLOCK(&lock);
 }
