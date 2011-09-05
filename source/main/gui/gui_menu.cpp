@@ -28,6 +28,7 @@ along with Rigs of Rods.  If not, see <http://www.gnu.org/licenses/>.
 #include "Ogre.h"
 #include "Settings.h"
 #include "BeamFactory.h"
+#include "Savegame.h"
 
 #include "language.h"
 
@@ -66,6 +67,9 @@ GUI_MainMenu::GUI_MainMenu(RoRFrameListener *efl) : mefl(efl), menuWidth(800), m
 	pop[popCount]->addItem(_L("activate all Vehicles"), MyGUI::MenuItemType::Normal);
 	pop[popCount]->addItem(_L("send all Vehicles to sleep"), MyGUI::MenuItemType::Normal);
 	//pop[popCount]->addItem(_L("switch Truck"), MyGUI::MenuItemType::Normal);
+	pop[popCount]->addItem("-", MyGUI::MenuItemType::Separator);
+	pop[popCount]->addItem(_L("Save Scenery"), MyGUI::MenuItemType::Normal);
+	pop[popCount]->addItem(_L("Load Scenery"), MyGUI::MenuItemType::Normal);
 	pop[popCount]->addItem("-", MyGUI::MenuItemType::Separator);
 	pop[popCount]->addItem(_L("Exit"), MyGUI::MenuItemType::Normal);
 
@@ -134,6 +138,24 @@ void GUI_MainMenu::onMenuBtn(MyGUI::MenuCtrlPtr _sender, MyGUI::MenuItemPtr _ite
 		mefl->freeTruckPosition=true;
 		mefl->loading_state=RELOADING;
 		SelectorWindow::get()->show(SelectorWindow::LT_AllBeam);
+
+	} else if(miname == _L("Save Scenery") || miname == _L("Load Scenery"))
+	{
+		if(mefl->loading_state != ALL_LOADED)
+		{
+			LOG("you need to open a map before trying to save or load its scenery.");
+			return;
+		}
+		String fname = SSETTING("Cache Path") + mefl->loadedTerrain + ".rorscene";
+
+		Savegame s;
+		if(miname == _L("Save Scenery"))
+		{
+			s.save(fname);
+		} else
+		{
+			s.load(fname);
+		}
 
 	} else if(miname == _L("remove current Vehicle"))
 	{
