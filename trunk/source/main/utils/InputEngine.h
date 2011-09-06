@@ -433,7 +433,7 @@ public:
 	float getEventBounceTime(int eventID);
 	static bool instanceExists() ;
 	// we need to use hwnd here, as we are also using this in the configurator
-	bool setup(Ogre::String hwnd, bool capture=false, bool capturemouse=false, int grabMode=0, bool captureKbd=true);
+	bool setup(Ogre::RenderWindow* rw, Ogre::String hwnd, bool capture=false, bool capturemouse=false, int grabMode=0, bool captureKbd=true);
 	Ogre::String getKeyForCommand(int eventID);
 	bool isKeyDown(OIS::KeyCode mod);
 
@@ -509,6 +509,8 @@ protected:
 	OIS::JoyStick* mJoy[MAX_JOYSTICKS];
 	int free_joysticks;
 	OIS::ForceFeedback* mForceFeedback;
+
+	Ogre::RenderWindow *renderWindow;
 
 	// JoyStickListener
 	bool buttonPressed( const OIS::JoyStickEvent &arg, int button );

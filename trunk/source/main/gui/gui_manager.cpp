@@ -94,6 +94,9 @@ void GUIManager::createGui()
 	
 	MyGUI::FontManager::getInstance().load(LanguageEngine::Instance().getMyGUIFontConfigFilename());
 
+	// move the mouse into the middle of the screen, assuming we start at the top left corner (0,0)
+	MyGUI::InputManager::getInstance().injectMouseMove(mWindow->getWidth()*0.5f, mWindow->getHeight()*0.5f, 0);
+
 	// now find that font texture and save it - for debugging purposes
 	/*
 	Ogre::ResourceManager::ResourceMapIterator it = Ogre::TextureManager::getSingleton().getResourceIterator();

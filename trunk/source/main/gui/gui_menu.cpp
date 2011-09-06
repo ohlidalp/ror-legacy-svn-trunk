@@ -70,7 +70,6 @@ GUI_MainMenu::GUI_MainMenu(RoRFrameListener *efl) : mefl(efl), menuWidth(800), m
 	pop[popCount]->addItem(_L("remove current Vehicle"), MyGUI::MenuItemType::Normal);
 	pop[popCount]->addItem(_L("activate all Vehicles"), MyGUI::MenuItemType::Normal);
 	pop[popCount]->addItem(_L("send all Vehicles to sleep"), MyGUI::MenuItemType::Normal);
-	//pop[popCount]->addItem(_L("switch Truck"), MyGUI::MenuItemType::Normal);
 	pop[popCount]->addItem("-", MyGUI::MenuItemType::Separator);
 	pop[popCount]->addItem(_L("Save Scenery"), MyGUI::MenuItemType::Normal);
 	pop[popCount]->addItem(_L("Load Scenery"), MyGUI::MenuItemType::Normal);
@@ -228,10 +227,6 @@ void GUI_MainMenu::onMenuBtn(MyGUI::MenuCtrlPtr _sender, MyGUI::MenuItemPtr _ite
 			mefl->reloadCurrentTruck();
 			GUIManager::getSingleton().unfocus();
 		}
-
-	} else if(miname == _L("switch Truck"))
-	{
-		// TODO
 
 	} else if(miname == _L("Friction Settings"))
 	{

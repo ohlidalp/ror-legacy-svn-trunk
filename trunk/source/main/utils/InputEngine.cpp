@@ -1529,7 +1529,7 @@ bool InputEngine::instanceExists()
 	return (myInstance != 0);
 }
 // Constructor takes a RenderWindow because it uses that to determine input context
-InputEngine::InputEngine() : mInputManager(0), mMouse(0), mKeyboard(0), mForceFeedback(0), captureMode(false), mappingLoaded(false), free_joysticks(0), inputsChanged(true)
+InputEngine::InputEngine() : mInputManager(0), mMouse(0), mKeyboard(0), mForceFeedback(0), captureMode(false), mappingLoaded(false), free_joysticks(0), inputsChanged(true), renderWindow(0)
 {
 	for(int i=0;i<MAX_JOYSTICKS;i++) mJoy[i]=0;
 #ifndef NOOGRE
@@ -1579,8 +1579,9 @@ void InputEngine::destroy()
 }
 
 
-bool InputEngine::setup(Ogre::String hwnd, bool capture, bool capturemouse, int _grabMode, bool captureKbd)
+bool InputEngine::setup(RenderWindow* rw, Ogre::String hwnd, bool capture, bool capturemouse, int _grabMode, bool captureKbd)
 {
+	renderWindow = rw;
 	grabMode = _grabMode;
 
 	// grab mode override in embedded mode
@@ -1730,6 +1731,14 @@ bool InputEngine::setup(Ogre::String hwnd, bool capture, bool capturemouse, int 
 		{
 			for(int i=0;i<free_joysticks;i++)
 				joyState[i] = mJoy[i]->getJoyStickState();
+		}
+
+		// set the mouse to the middle of the screen, hackish!
+		if(mMouse && renderWindow)
+		{
+			OIS::MouseState &mutableMouseState = const_cast<OIS::MouseState &>(mMouse->getMouseState());
+			mutableMouseState.X.abs = renderWindow->getWidth()  * 0.5f;
+			mutableMouseState.Y.abs = renderWindow->getHeight() * 0.5f;
 		}
 	}
 	//this becomes more and more convoluted!
@@ -2997,7 +3006,7 @@ bool InputEngine::saveMapping(Ogre::String outfile, Ogre::String hwnd, int joyNu
 	if(!mInputManager && !hwnd.empty())
 	{
 		destroy();
-		setup(hwnd, false, false);
+		setup(renderWindow, hwnd, false, false);
 		created=true;
 	}
 	/*
@@ -3376,7 +3385,7 @@ void InputEngine::setupDefault(Ogre::RenderWindow *win, Ogre::String inputhwnd)
 		size_t hWnd = 0;
 		win->getCustomAttribute("WINDOW", &hWnd);
 
-		INPUTENGINE.setup(TOSTRING(hWnd), true, true, inputGrabMode);
+		INPUTENGINE.setup(win, TOSTRING(hWnd), true, true, inputGrabMode);
 	} else
 	{
 
@@ -3388,7 +3397,7 @@ void InputEngine::setupDefault(Ogre::RenderWindow *win, Ogre::String inputhwnd)
 		printf("#### GLXWINDOW = %s\n", windowHndStr.str().c_str());
 		INPUTENGINE.setup(windowHndStr.str(), true, true, GRAB_NONE);
 	#else
-		INPUTENGINE.setup(inputhwnd, true, true, GRAB_NONE);
+		INPUTENGINE.setup(win, inputhwnd, true, true, GRAB_NONE);
 	#endif
 	}
 }
