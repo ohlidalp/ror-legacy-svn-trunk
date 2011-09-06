@@ -1971,10 +1971,9 @@ bool RoRFrameListener::updateEvents(float dt)
 		while(fileExists(tmpfn))
 			tmpfn = SSETTING("User Path") + String("screenshot_") + TOSTRING(++mNumScreenShots) + String(".") + String(screenshotformat);
 
+		MyGUI::PointerManager::getInstance().setVisible(false);
 		if(String(screenshotformat) == "png")
 		{
-
-			// possibly hide mouse cursor
 
 
 			// add some more data into the image
@@ -2017,6 +2016,7 @@ bool RoRFrameListener::updateEvents(float dt)
 		// hide any old flash message
 		if(ow) ow->hideFlashMessage();
 
+		MyGUI::PointerManager::getInstance().setVisible(true);
 
 		// show new flash message
 		char tmp1[256];
@@ -4652,9 +4652,10 @@ void RoRFrameListener::loadClassicTerrain(String terrainfile)
 			char ColorMap[256]="";
 			char DensityMap[256]="";
 			char treemesh[256]="";
+			float gridspacing = -1;
 			float yawfrom=0, yawto=0, scalefrom=0, scaleto=0, highdens=1;
 			int minDist=90, maxDist=700;
-			sscanf(line, "trees %f, %f, %f, %f, %f, %d, %d, %s %s %s", &yawfrom, &yawto, &scalefrom, &scaleto, &highdens, &minDist, &maxDist, treemesh, ColorMap, DensityMap);
+			sscanf(line, "trees %f, %f, %f, %f, %f, %d, %d, %s %s %s %f", &yawfrom, &yawto, &scalefrom, &scaleto, &highdens, &minDist, &maxDist, treemesh, ColorMap, DensityMap, &gridspacing);
 			if(strnlen(ColorMap, 3) == 0)
 			{
 				LOG("tree ColorMap map zero!");
@@ -4701,21 +4702,43 @@ void RoRFrameListener::loadClassicTerrain(String terrainfile)
 
 			float density = 0, yaw=0, scale=0;
 			int numTreesToPlace=0;
-			int gridsize = 10;
-			for(int x=0;x<mapsizex;x+=gridsize)
+			if(gridspacing > 0)
 			{
-				for(int z=0;z<mapsizez;z+=gridsize)
+				// grid style
+				for(float x=0;x<mapsizex;x+=gridspacing)
 				{
-					density = densityMap->_getDensityAt_Unfiltered(x, z, bounds);
-					numTreesToPlace = (int)((float)(highdens) * density * pagedDetailFactor);
-					float nx=0, nz=0;
-					while(numTreesToPlace-->0)
+					for(float z=0;z<mapsizez;z+=gridspacing)
 					{
-						nx = Math::RangeRandom(x, x + gridsize);
-						nz = Math::RangeRandom(z, z + gridsize);
+						density = densityMap->_getDensityAt_Unfiltered(x, z, bounds);
+						if(density < 0.8f) continue;
+						float nx=0, nz=0;
+						nx = x + gridspacing * 0.5f;
+						nz = z + gridspacing * 0.5f;
 						yaw = Math::RangeRandom(yawfrom, yawto);
 						scale = Math::RangeRandom(scalefrom, scaleto);
 						treeLoader->addTree(curTree, Vector3(nx, 0, nz), Degree(yaw), (Ogre::Real)scale);
+					}
+				}
+
+			} else
+			{
+				int gridsize = 10;
+				// normal style, random
+				for(int x=0;x<mapsizex;x+=gridsize)
+				{
+					for(int z=0;z<mapsizez;z+=gridsize)
+					{
+						density = densityMap->_getDensityAt_Unfiltered(x, z, bounds);
+						numTreesToPlace = (int)((float)(highdens) * density * pagedDetailFactor);
+						float nx=0, nz=0;
+						while(numTreesToPlace-->0)
+						{
+							nx = Math::RangeRandom(x, x + gridsize);
+							nz = Math::RangeRandom(z, z + gridsize);
+							yaw = Math::RangeRandom(yawfrom, yawto);
+							scale = Math::RangeRandom(scalefrom, scaleto);
+							treeLoader->addTree(curTree, Vector3(nx, 0, nz), Degree(yaw), (Ogre::Real)scale);
+						}
 					}
 				}
 			}
