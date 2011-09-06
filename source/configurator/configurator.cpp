@@ -741,41 +741,53 @@ int MyApp::OnRun()
 // 'Main program' equivalent: the program execution "starts" here
 bool MyApp::OnInit()
 {
-	//setup the user filesystem
-	if(!SETTINGS.setupPaths())
-		return false;
+	try
+	{
+		//setup the user filesystem
+		if(!SETTINGS.setupPaths())
+			return false;
 
-	if (!filesystemBootstrap()) return false;
+		if (!filesystemBootstrap()) return false;
 
-	initLogging();
-	initLanguage(wxT("languages"), UserPath);
+		initLogging();
+		initLanguage(wxT("languages"), UserPath);
 
 #if OGRE_PLATFORM == OGRE_PLATFORM_WIN32
-	// add windows specific crash handler. It will create nice memory dumps, so we can track the error
-	//LPVOID lpvState = Install(NULL, NULL, NULL);
-	//AddFile(lpvState, conv("configlog.txt"), conv("Rigs of Rods Configurator Crash log"));
+		// add windows specific crash handler. It will create nice memory dumps, so we can track the error
+		//LPVOID lpvState = Install(NULL, NULL, NULL);
+		//AddFile(lpvState, conv("configlog.txt"), conv("Rigs of Rods Configurator Crash log"));
 #endif
 
-	// call the base class initialization method, currently it only parses a
-	// few common command-line options but it could be do more in the future
-	if ( !wxApp::OnInit() )
-		return false;
+		// call the base class initialization method, currently it only parses a
+		// few common command-line options but it could be do more in the future
+		if ( !wxApp::OnInit() )
+			return false;
 
-	wxLogStatus(wxT("Creating dialog"));
-	// create the main application window
-	wxString title = wxString::Format(_("Rigs of Rods version %s configuration"), wxT(ROR_VERSION_STRING));
-	MyDialog *dialog = new MyDialog(title, this);
+		wxLogStatus(wxT("Creating dialog"));
+		// create the main application window
+		wxString title = wxString::Format(_("Rigs of Rods version %s configuration"), wxT(ROR_VERSION_STRING));
+		MyDialog *dialog = new MyDialog(title, this);
 
-	// and show it (the frames, unlike simple controls, are not shown when
-	// created initially)
-	wxLogStatus(wxT("Showing dialog"));
-	dialog->Show(true);
-	SetTopWindow(dialog);
-	SetExitOnFrameDelete(false);
-	// success: wxApp::OnRun() will be called which will enter the main message
-	// loop and the application will run. If we returned false here, the
-	// application would exit immediately.
-	wxLogStatus(wxT("App ready"));
+		// and show it (the frames, unlike simple controls, are not shown when
+		// created initially)
+		wxLogStatus(wxT("Showing dialog"));
+		dialog->Show(true);
+		SetTopWindow(dialog);
+		SetExitOnFrameDelete(false);
+		// success: wxApp::OnRun() will be called which will enter the main message
+		// loop and the application will run. If we returned false here, the
+		// application would exit immediately.
+		wxLogStatus(wxT("App ready"));
+	} catch (std::exception &e)
+	{
+		wxLogError(wxT("Cought exception:"));
+		wxLogError(wxString(e.what(), wxConvUTF8));
+		wxString warning = wxString(e.what(), wxConvUTF8);
+		wxString caption = _("caught exception");
+		wxMessageDialog *w = new wxMessageDialog(NULL, warning, caption, wxOK|wxICON_ERROR|wxSTAY_ON_TOP, wxDefaultPosition);
+		w->ShowModal();
+		delete(w);
+	}	
 	return true;
 }
 
@@ -1706,12 +1718,14 @@ void MyDialog::updateRendersystems(Ogre::RenderSystem *rs)
 		renderer_text[counter]->Show();
 
 		// add all values and select current value
-		int selection = 0;
+		Ogre::String selection = "";
 		int valueCounter = 0;
 		for(Ogre::StringVector::iterator valIt = optIt->second.possibleValues.begin(); valIt != optIt->second.possibleValues.end(); valIt++)
 		{
 			if(*valIt == optIt->second.currentValue)
-				selection = valueCounter;
+				selection = *valIt;
+
+			Ogre::String valStr = *valIt;
 
 			// filter video modes
 			if(optIt->first == "Video Mode")
@@ -1719,10 +1733,11 @@ void MyDialog::updateRendersystems(Ogre::RenderSystem *rs)
 				int res_x=-1, res_y=-1, res_d=-1;
 				int res = sscanf(valIt->c_str(), "%d x %d @ %d-bit colour", &res_x, &res_y, &res_d);
 
+				// opengl has no colour info in there
 				if(res == 3)
 				{
 					// discard low resolutions and 16 bit modes
-					if(res_d != -1 && res_d < 32)
+					if(res_d < 32)
 					{
 						wxLogStatus(wxT("discarding resolution as it is below 32 bits: ") + conv(valIt->c_str()));
 						continue;
@@ -1733,17 +1748,98 @@ void MyDialog::updateRendersystems(Ogre::RenderSystem *rs)
 					wxLogStatus(wxT("discarding resolution as the x res is below 800 pixels: ") + conv(valIt->c_str()));
 					continue;
 				}
+
+				// according to http://en.wikipedia.org/wiki/Display_resolution
+				char *ratio_str = "";
+				if     ( (float)res_x/(float)res_y - 1.25 < 0.0001f)
+					ratio_str = "5:4";
+				else if( (float)res_x/(float)res_y - 1.333333f < 0.0001f )
+					ratio_str = "4:3";
+				else if( (float)res_x/(float)res_y - 1.5f < 0.0001f )
+					ratio_str = "3:2";
+				else if( (float)res_x/(float)res_y - 1.6f < 0.0001f )
+					ratio_str = "16:10"; // or  8:5
+				else if( (float)res_x/(float)res_y - 1.666666f < 0.0001f )
+					ratio_str = "5:3";
+				else if( (float)res_x/(float)res_y - 1.777777f < 0.0001f )
+					ratio_str = "16:9";
+				else if( (float)res_x/(float)res_y - 1.8962962f < 0.0001f )
+					ratio_str = "17:9";
+
+				char *type_str = "";
+				// 5:4
+				if     (res_x == 1280 && res_y == 1024)
+					type_str = "SXGA";
+				else if(res_x == 2560 && res_y == 2048)
+					type_str = "QSXGA";
+				// 4:3
+				else if(res_x == 800 && res_y == 600)
+					type_str = "SVGA";
+				else if(res_x == 1024 && res_y == 768)
+					type_str = "XGA";
+				else if(res_x == 1400 && res_y == 1050)
+					type_str = "SXGA+";
+				else if(res_x == 1600 && res_y == 1200)
+					type_str = "UXGA";
+				else if(res_x == 2048 && res_y == 1536)
+					type_str = "QXGA";
+				// 3:2 has no names
+				// 16:10
+				else if(res_x == 1280 && res_y == 800)
+					type_str = "WXGA";
+				else if(res_x == 1680 && res_y == 1050)
+					type_str = "WSXGA+";
+				else if(res_x == 1920 && res_y == 1200)
+					type_str = "WUXGA";
+				else if(res_x == 2560 && res_y == 1600)
+					type_str = "WQXGA";
+				// 5:3
+				else if(res_x == 800 && res_y == 480)
+					type_str = "WVGA";
+				else if(res_x == 1280 && res_y == 768)
+					type_str = "WXGA";
+				// 16:9
+				else if(res_x == 854 && res_y == 480)
+					type_str = "WVGA";
+				else if(res_x == 1280 && res_y == 720)
+					type_str = "HD 720";
+				else if(res_x == 1920 && res_y == 1080)
+					type_str = "HD 1080";
+				// 17:9
+				else if(res_x == 2048 && res_y == 1080)
+					type_str = "2K";
+
+				// now compose the final string
+				char tmp[255];
+				sprintf(tmp, "%d x %d", res_x, res_y);
+
+				if(strlen(type_str) > 0)
+					sprintf(tmp + strlen(tmp), ", %s", type_str);
+				
+				if(strlen(ratio_str) > 0)
+					sprintf(tmp + strlen(tmp), ", %s", ratio_str);
+
+				valStr = Ogre::String(tmp);
+				valueCounter++;
+				s = conv(valIt->c_str());
+				wxString s2 = conv(valStr.c_str());
+
+				// this is special ...
+				renderer_choice[counter]->AppendValueItem(s, s2, res_d>0?res_x*res_y*res_d:res_x*res_y);
+
+				continue;
 			}
 
 			valueCounter++;
-			s = conv(valIt->c_str());
+			s = conv(valStr.c_str());
 #ifdef WIN32
 			renderer_choice[counter]->AppendValueItem(s, _(s));
 #else
 			renderer_choice[counter]->AppendValueItem(s, wxGetTranslation(s));
 #endif //WIN32
 		}
-		renderer_choice[counter]->SetSelection(selection);
+		renderer_choice[counter]->sort();
+		renderer_choice[counter]->setSelectedValue(selection);
 		renderer_choice[counter]->Show();
 		if(optIt->second.immutable)
 			renderer_choice[counter]->Disable();
