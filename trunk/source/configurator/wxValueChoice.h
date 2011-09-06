@@ -34,10 +34,18 @@ along with Rigs of Rods.  If not, see <http://www.gnu.org/licenses/>.
 class wxValueChoice : public wxChoice
 {
 protected:
-	std::map <int, wxString> id_value_map;
+	// some shortcuts
+	typedef std::pair<wxString, wxString> strPair;  // value, caption
+	typedef std::map <unsigned long, strPair> valMap; // id, [value/caption]
+	typedef std::map <unsigned int, unsigned long> ctrlValMap; // control id -> map id, 
+	
+	valMap id_value_map;
+	ctrlValMap id_id_map;
+	bool sortable;
+
 	
 public:
-	wxValueChoice()
+	wxValueChoice() : sortable(false) , id_value_map(), id_id_map()
 	{
 	}
 
@@ -47,33 +55,77 @@ public:
 		const wxSize& size = wxDefaultSize,
 		long style = 0,
 		const wxValidator& validator = wxDefaultValidator,
-		const wxString& name = wxChoiceNameStr)
+		const wxString& name = wxChoiceNameStr) : sortable(false), id_value_map(), id_id_map()
 	{
 		// create control
 		Create(parent, id, pos, size, 0, NULL, style, validator, name);
 	}
 
-	void AppendValueItem(wxString valueString, wxString caption)
+	void AppendValueItem(wxString valueString, wxString caption, unsigned long sortNum = 0)
 	{
 		int id = this->Append(caption);
-		id_value_map[id] = valueString;
+		unsigned long mapid = (sortNum==0?id:sortNum);
+		id_value_map[mapid] = strPair(valueString, caption);
+		id_id_map[id] = mapid;
+		if(sortNum != 0) sortable = true;
 	}
 	
-	void AppendValueItem(wxString captionAndValue)
+	void AppendValueItem(wxString captionAndValue, unsigned long sortNum = 0)
 	{
 		int id = this->Append(captionAndValue);
-		id_value_map[id] = captionAndValue;
+		unsigned long mapid = (sortNum==0?id:sortNum);
+		id_value_map[mapid] = strPair(captionAndValue, captionAndValue);
+		id_id_map[id] = mapid;
+		if(sortNum != 0) sortable = true;
+	}
+
+	void Clear()
+	{
+		wxChoice::Clear();
+		id_value_map.clear();
+		id_id_map.clear();
+		sortable=false;
+	}
+
+	void sort(bool descending = true)
+	{
+		if(!sortable) return;
+		// remove all items from the control and re-add them in the order of the map
+		wxChoice::Clear(); // clear items from control
+		id_id_map.clear();
+
+		// use the caption for the control (2. in the pair)
+
+		if(descending)
+		{
+			valMap::reverse_iterator it;
+			for(it = id_value_map.rbegin(); it != id_value_map.rend(); it++)
+			{
+				int id = this->Append(it->second.second);
+				id_id_map[id] = it->first;
+			}
+		} else
+		{
+			valMap::iterator it;
+			for(it = id_value_map.begin(); it != id_value_map.end(); it++)
+			{
+				int id = this->Append(it->second.second);
+				id_id_map[id] = it->first;
+			}
+		}
 	}
 
 	wxString getSelectedValue()
 	{
 		int id = this->GetSelection();
-		std::map <int, wxString>::iterator it = id_value_map.find(id);
-		if(it == id_value_map.end())
+		unsigned long mapid = id_id_map[id];
+		strPair p = id_value_map[mapid];
+		if(p.first.empty())
 		{
 			return wxT("error");
 		}
-		return it->second;
+		// return the value (first in pair)
+		return p.first;
 	}
 
 	std::string getSelectedValueAsSTDString()
@@ -90,12 +142,12 @@ public:
 	int setSelectedValue(wxString val)
 	{
 		if(val.empty()) return -1;
-		std::map <int, wxString>::iterator it;
+		valMap::iterator it;
 		for(it = id_value_map.begin(); it != id_value_map.end(); it++)
 		{
-			if(it->second == val)
+			if(it->second.first == val)
 			{
-				this->SetSelection(it->first);
+				this->SetStringSelection(it->second.second);
 				return it->first;
 			}
 		}
