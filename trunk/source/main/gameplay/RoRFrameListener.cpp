@@ -1495,7 +1495,11 @@ void RoRFrameListener::loadObject(const char* name, float px, float py, float pz
 
 	SceneNode *tenode = mSceneMgr->getRootSceneNode()->createChildSceneNode();
 	bool background_loading = BSETTING("Background Loading");
-	MeshObject *mo = new MeshObject(mScene, mesh, oname, tenode, NULL, background_loading);
+
+	MeshObject *mo = NULL;
+	if(String(mesh) != "none")
+		mo = new MeshObject(mScene, mesh, oname, tenode, NULL, background_loading);
+	
 	//mo->setQueryFlags(OBJECTS_MASK);
 	//tenode->attachObject(te);
 	tenode->setScale(scx,scy,scz);
@@ -1513,7 +1517,7 @@ void RoRFrameListener::loadObject(const char* name, float px, float py, float pz
 	obj->collTris.clear();
 
 
-	if(uniquifyMaterial && instancename)
+	if(mo && uniquifyMaterial && instancename)
 	{
 		for(unsigned int i = 0; i < mo->getEntity()->getNumSubEntities(); i++)
 		{
@@ -1526,8 +1530,8 @@ void RoRFrameListener::loadObject(const char* name, float px, float py, float pz
 		}
 	}
 
-	String meshGroup = ResourceGroupManager::getSingleton().findGroupContainingResource(mesh);
-	MeshPtr mainMesh = mo->getMesh();
+	//String meshGroup = ResourceGroupManager::getSingleton().findGroupContainingResource(mesh);
+	//MeshPtr mainMesh = mo->getMesh();
 
 	//collision box(es)
 	bool virt=false;
@@ -1690,20 +1694,26 @@ void RoRFrameListener::loadObject(const char* name, float px, float py, float pz
 			continue;
 		}
 
-		if (!strncmp("particleSystem", ptline, 14))
+		if (!strncmp("particleSystem", ptline, 14) && tenode)
 		{
 			float x=0, y=0, z=0, scale=0;
 			char pname[255]="", sname[255]="";
 			int res = sscanf(ptline, "particleSystem %f, %f, %f, %f, %s %s", &scale, &x, &y, &z, pname, sname);
 			if(res != 6) continue;
 
+			// hacky: prevent duplicates
+			String paname = String(pname);
+			while(mSceneMgr->hasParticleSystem(paname))
+				paname += "_";
+
 			// create particle system
-			ParticleSystem* pParticleSys = mSceneMgr->createParticleSystem(String(pname), String(sname));
-			SceneNode* pNode = mSceneMgr->getRootSceneNode()->createChildSceneNode();
-			pNode->attachObject(pParticleSys);
-			pNode->setPosition(px+x, py+y, pz+z);
-			pNode->setScale(scale,scale,scale);
-			pNode->setVisible(true);
+			ParticleSystem* pParticleSys = mSceneMgr->createParticleSystem(paname, String(sname));
+			pParticleSys->setCastShadows(false);
+			pParticleSys->setVisibilityFlags(DEPTHMAP_DISABLED); // disable particles in depthmap
+			SceneNode *sn = tenode->createChildSceneNode();
+			sn->attachObject(pParticleSys);
+			sn->pitch(Degree(90));
+			continue;
 		}
 
 		if (!strncmp("setMeshMaterial", ptline, 15))
@@ -1730,7 +1740,7 @@ void RoRFrameListener::loadObject(const char* name, float px, float py, float pz
 
 			continue;
 		}
-		if (!strncmp("playanimation", ptline, 13))
+		if (!strncmp("playanimation", ptline, 13) && mo)
 		{
 			char animname[256]="";
 			float speedfactorMin = 0, speedfactorMax = 0;
@@ -1767,7 +1777,7 @@ void RoRFrameListener::loadObject(const char* name, float px, float py, float pz
 			}
 			continue;
 		}
-		if (!strncmp("drawTextOnMeshTexture", ptline, 21))
+		if (!strncmp("drawTextOnMeshTexture", ptline, 21) && mo)
 		{
 			if(!mo->getEntity())
 				continue;
@@ -4653,7 +4663,7 @@ void RoRFrameListener::loadClassicTerrain(String terrainfile)
 			char DensityMap[256]="";
 			char treemesh[256]="";
 			char treeCollmesh[256]="";
-			float gridspacing = -1;
+			float gridspacing = 0;
 			float yawfrom=0, yawto=0, scalefrom=0, scaleto=0, highdens=1;
 			int minDist=90, maxDist=700;
 			sscanf(line, "trees %f, %f, %f, %f, %f, %d, %d, %s %s %s %f %s", &yawfrom, &yawto, &scalefrom, &scaleto, &highdens, &minDist, &maxDist, treemesh, ColorMap, DensityMap, &gridspacing, treeCollmesh);
@@ -4731,7 +4741,7 @@ void RoRFrameListener::loadClassicTerrain(String terrainfile)
 			} else
 			{
 				float gridsize = 10;
-				if(gridspacing < 0)
+				if(gridspacing < 0 && gridspacing != 0)
 					gridsize = -gridspacing;
 				float hd = highdens;
 				// normal style, random
