@@ -4652,10 +4652,11 @@ void RoRFrameListener::loadClassicTerrain(String terrainfile)
 			char ColorMap[256]="";
 			char DensityMap[256]="";
 			char treemesh[256]="";
+			char treeCollmesh[256]="";
 			float gridspacing = -1;
 			float yawfrom=0, yawto=0, scalefrom=0, scaleto=0, highdens=1;
 			int minDist=90, maxDist=700;
-			sscanf(line, "trees %f, %f, %f, %f, %f, %d, %d, %s %s %s %f", &yawfrom, &yawto, &scalefrom, &scaleto, &highdens, &minDist, &maxDist, treemesh, ColorMap, DensityMap, &gridspacing);
+			sscanf(line, "trees %f, %f, %f, %f, %f, %d, %d, %s %s %s %f %s", &yawfrom, &yawto, &scalefrom, &scaleto, &highdens, &minDist, &maxDist, treemesh, ColorMap, DensityMap, &gridspacing, treeCollmesh);
 			if(strnlen(ColorMap, 3) == 0)
 			{
 				LOG("tree ColorMap map zero!");
@@ -4716,20 +4717,31 @@ void RoRFrameListener::loadClassicTerrain(String terrainfile)
 						nz = z + gridspacing * 0.5f;
 						yaw = Math::RangeRandom(yawfrom, yawto);
 						scale = Math::RangeRandom(scalefrom, scaleto);
-						treeLoader->addTree(curTree, Vector3(nx, 0, nz), Degree(yaw), (Ogre::Real)scale);
+						Vector3 pos = Vector3(nx, 0, nz);
+						treeLoader->addTree(curTree, pos, Degree(yaw), (Ogre::Real)scale);
+						if(strlen(treeCollmesh))
+						{
+							pos.y = hfinder->getHeightAt(pos.x, pos.z);
+							scale *= 0.1f;
+							collisions->addCollisionMesh(String(treeCollmesh), pos, Quaternion(Degree(yaw), Vector3::UNIT_Y), Vector3(scale, scale, scale));
+						}
 					}
 				}
 
 			} else
 			{
-				int gridsize = 10;
+				float gridsize = 10;
+				if(gridspacing < 0)
+					gridsize = -gridspacing;
+				float hd = highdens;
 				// normal style, random
-				for(int x=0;x<mapsizex;x+=gridsize)
+				for(float x=0;x<mapsizex;x+=gridsize)
 				{
-					for(int z=0;z<mapsizez;z+=gridsize)
+					for(float z=0;z<mapsizez;z+=gridsize)
 					{
+						if(highdens < 0) hd = Math::RangeRandom(0, -highdens);
 						density = densityMap->_getDensityAt_Unfiltered(x, z, bounds);
-						numTreesToPlace = (int)((float)(highdens) * density * pagedDetailFactor);
+						numTreesToPlace = (int)((float)(hd) * density * pagedDetailFactor);
 						float nx=0, nz=0;
 						while(numTreesToPlace-->0)
 						{
@@ -4737,7 +4749,13 @@ void RoRFrameListener::loadClassicTerrain(String terrainfile)
 							nz = Math::RangeRandom(z, z + gridsize);
 							yaw = Math::RangeRandom(yawfrom, yawto);
 							scale = Math::RangeRandom(scalefrom, scaleto);
-							treeLoader->addTree(curTree, Vector3(nx, 0, nz), Degree(yaw), (Ogre::Real)scale);
+							Vector3 pos = Vector3(nx, 0, nz);
+							treeLoader->addTree(curTree, pos, Degree(yaw), (Ogre::Real)scale);
+							if(strlen(treeCollmesh))
+							{
+								pos.y = hfinder->getHeightAt(pos.x, pos.z);
+								collisions->addCollisionMesh(String(treeCollmesh),pos, Quaternion(Degree(yaw), Vector3::UNIT_Y), Vector3(scale, scale, scale));
+							}
 						}
 					}
 				}
