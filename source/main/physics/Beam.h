@@ -166,7 +166,7 @@ public:
 	void scaleTruck(float value);
 	float currentScale;
 	void updateDebugOverlay();
-	int nodedebugstate;
+	void setDebugOverlayState(int mode);
 	SceneManager *tsm;
 	//! @}
 

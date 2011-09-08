@@ -51,14 +51,13 @@ GUI_MainMenu::GUI_MainMenu(RoRFrameListener *efl) : mefl(efl), menuWidth(800), m
 	//MyGUI::WidgetPtr back = createWidget<MyGUI::Widget>("Panel", 0, 0, 912, 652,MyGUI::Align::Default, "Back");
 	mainmenu = MyGUI::Gui::getInstance().createWidget<MyGUI::MenuBar>("MenuBar", 0, 0, menuWidth, menuHeight,  MyGUI::Align::HStretch | MyGUI::Align::Top, "Back"); 
 	mainmenu->setCoord(0, 0, menuWidth, menuHeight);
-	int popCount = 0;
 	
-	// Simulation menu
+	// === Simulation menu
 	MyGUI::MenuItemPtr mi = mainmenu->createWidget<MyGUI::MenuItem>("MenuBarButton", 0, 0, 60, menuHeight,  MyGUI::Align::Default); 
-	pop[popCount] = mi->createWidget<MyGUI::PopupMenu>(MyGUI::WidgetStyle::Popup, "PopupMenu",MyGUI::IntCoord(0,0,88,68),MyGUI::Align::Default, "Popup");
+	MyGUI::PopupMenuPtr p = mi->createWidget<MyGUI::PopupMenu>(MyGUI::WidgetStyle::Popup, "PopupMenu",MyGUI::IntCoord(0,0,88,68),MyGUI::Align::Default, "Popup");
 	mi->setItemType(MyGUI::MenuItemType::Popup);
 	mi->setCaption(_L("Simulation"));
-	pop[popCount]->setPopupAccept(true);
+	p->setPopupAccept(true);
 	//mi->setPopupAccept(true);
 
 	MyGUI::IntSize s = mi->getTextSize();
@@ -66,70 +65,85 @@ GUI_MainMenu::GUI_MainMenu(RoRFrameListener *efl) : mefl(efl), menuWidth(800), m
 	mainmenu->setCoord(0, 0, menuWidth, menuHeight);
 
 	
-	pop[popCount]->addItem(_L("get new Vehicle"), MyGUI::MenuItemType::Normal);
-	pop[popCount]->addItem(_L("remove current Vehicle"), MyGUI::MenuItemType::Normal);
-	pop[popCount]->addItem(_L("activate all Vehicles"), MyGUI::MenuItemType::Normal);
-	pop[popCount]->addItem(_L("send all Vehicles to sleep"), MyGUI::MenuItemType::Normal);
-	pop[popCount]->addItem("-", MyGUI::MenuItemType::Separator);
-	pop[popCount]->addItem(_L("Save Scenery"), MyGUI::MenuItemType::Normal);
-	pop[popCount]->addItem(_L("Load Scenery"), MyGUI::MenuItemType::Normal);
-	pop[popCount]->addItem("-", MyGUI::MenuItemType::Separator);
-	pop[popCount]->addItem(_L("Exit"), MyGUI::MenuItemType::Normal);
+	p->addItem(_L("get new Vehicle"), MyGUI::MenuItemType::Normal);
+	p->addItem(_L("remove current Vehicle"), MyGUI::MenuItemType::Normal);
+	p->addItem(_L("activate all Vehicles"), MyGUI::MenuItemType::Normal);
+	p->addItem(_L("send all Vehicles to sleep"), MyGUI::MenuItemType::Normal);
+	p->addItem("-", MyGUI::MenuItemType::Separator);
+	p->addItem(_L("Save Scenery"), MyGUI::MenuItemType::Normal);
+	p->addItem(_L("Load Scenery"), MyGUI::MenuItemType::Normal);
+	p->addItem("-", MyGUI::MenuItemType::Separator);
+	p->addItem(_L("Exit"), MyGUI::MenuItemType::Normal);
+	pop.push_back(p);
 
-	// vehicles
-	popCount++;
+	// === vehicles
 	mi = mainmenu->createWidget<MyGUI::MenuItem>("MenuBarButton", 0, 0, 60, menuHeight,  MyGUI::Align::Default);
 	vehiclesMenu = mi->createWidget<MyGUI::PopupMenu>(MyGUI::WidgetStyle::Popup, "PopupMenu", MyGUI::IntCoord(0,0,88,68),MyGUI::Align::Default, "Popup");
-	pop[popCount] = vehiclesMenu;
+	p = vehiclesMenu;
 	mi->setItemType(MyGUI::MenuItemType::Popup);
 	mi->setCaption("Vehicles");
-	vehiclesMenu->addItem(_L("TEST"), MyGUI::MenuItemType::Normal, "test");
+	pop.push_back(p);
 
 	// this is not working :(
 	//vehiclesMenu->setPopupAccept(true);
 	//vehiclesMenu->eventMenuCtrlAccept += MyGUI::newDelegate(this, &GUI_MainMenu::onVehicleMenu);
 
 
-	// view
-	popCount++;
+	/*
+	// === view
 	mi = mainmenu->createWidget<MyGUI::MenuItem>("MenuBarButton", 0, 0, 60, menuHeight,  MyGUI::Align::Default); 
-	pop[popCount] = mi->createWidget<MyGUI::PopupMenu>(MyGUI::WidgetStyle::Popup, "PopupMenu",MyGUI::IntCoord(0,0,88,68),MyGUI::Align::Default, "Popup");
+	p = mi->createWidget<MyGUI::PopupMenu>(MyGUI::WidgetStyle::Popup, "PopupMenu",MyGUI::IntCoord(0,0,88,68),MyGUI::Align::Default, "Popup");
 	mi->setItemType(MyGUI::MenuItemType::Popup);
 	mi->setCaption(_L("View"));
-	MyGUI::MenuItemPtr mi2 = pop[popCount]->createWidget<MyGUI::MenuItem>("MenuBarButton", 0, 0, 60, menuHeight,  MyGUI::Align::Default); 
+	MyGUI::MenuItemPtr mi2 = p->createWidget<MyGUI::MenuItem>("MenuBarButton", 0, 0, 60, menuHeight,  MyGUI::Align::Default); 
 	mi2->setItemType(MyGUI::MenuItemType::Popup);
 	mi2->setCaption(_L("Camera Mode"));
 
-	popCount++;
-	pop[popCount] = mi2->createWidget<MyGUI::PopupMenu>(MyGUI::WidgetStyle::Popup, "PopupMenu",MyGUI::IntCoord(0,0,88,68),MyGUI::Align::Default, "Popup");
-	pop[popCount]->addItem(_L("First Person"), MyGUI::MenuItemType::Normal, "camera_first_person");
-	pop[popCount]->addItem(_L("External"), MyGUI::MenuItemType::Normal, "camera_external");
-	pop[popCount]->addItem(_L("Free Mode"), MyGUI::MenuItemType::Normal, "camera_free");
-	pop[popCount]->addItem(_L("Free fixed mode"), MyGUI::MenuItemType::Normal, "camera_freefixed");
-	pop[popCount]->addItem("-", MyGUI::MenuItemType::Separator);
+	p = mi2->createWidget<MyGUI::PopupMenu>(MyGUI::WidgetStyle::Popup, "PopupMenu",MyGUI::IntCoord(0,0,88,68),MyGUI::Align::Default, "Popup");
+	p->addItem(_L("First Person"), MyGUI::MenuItemType::Normal, "camera_first_person");
+	p->addItem(_L("External"), MyGUI::MenuItemType::Normal, "camera_external");
+	p->addItem(_L("Free Mode"), MyGUI::MenuItemType::Normal, "camera_free");
+	p->addItem(_L("Free fixed mode"), MyGUI::MenuItemType::Normal, "camera_freefixed");
+	p->addItem("-", MyGUI::MenuItemType::Separator);
 
-	mi2 = pop[popCount]->createWidget<MyGUI::MenuItem>("MenuBarButton", 0, 0, 60, menuHeight,  MyGUI::Align::Default); 
+	mi2 = p->createWidget<MyGUI::MenuItem>("MenuBarButton", 0, 0, 60, menuHeight,  MyGUI::Align::Default); 
 	mi2->setItemType(MyGUI::MenuItemType::Popup);
 	mi2->setCaption(_L("Truck Camera"));
 
-	popCount++;
-	pop[popCount] = mi2->createWidget<MyGUI::PopupMenu>(MyGUI::WidgetStyle::Popup, "PopupMenu",MyGUI::IntCoord(0,0,88,68),MyGUI::Align::Default, "Popup");
-	pop[popCount]->addItem(_L("1. Camera"), MyGUI::MenuItemType::Normal, "camera_truck_1");
-	pop[popCount]->addItem(_L("2. Camera"), MyGUI::MenuItemType::Normal, "camera_truck_2");
-	pop[popCount]->addItem(_L("3. Camera"), MyGUI::MenuItemType::Normal, "camera_truck_3");
+	p = mi2->createWidget<MyGUI::PopupMenu>(MyGUI::WidgetStyle::Popup, "PopupMenu",MyGUI::IntCoord(0,0,88,68),MyGUI::Align::Default, "Popup");
+	p->addItem(_L("1. Camera"), MyGUI::MenuItemType::Normal, "camera_truck_1");
+	p->addItem(_L("2. Camera"), MyGUI::MenuItemType::Normal, "camera_truck_2");
+	p->addItem(_L("3. Camera"), MyGUI::MenuItemType::Normal, "camera_truck_3");
+	*/
 
-	// windows
-	popCount++;
+	// === windows
 	mi = mainmenu->createWidget<MyGUI::MenuItem>("MenuBarButton", 0, 0, 60, menuHeight,  MyGUI::Align::Default); 
-	pop[popCount] = mi->createWidget<MyGUI::PopupMenu>(MyGUI::WidgetStyle::Popup, "PopupMenu",MyGUI::IntCoord(0,0,88,68),MyGUI::Align::Default, "Popup");
+	p = mi->createWidget<MyGUI::PopupMenu>(MyGUI::WidgetStyle::Popup, "PopupMenu",MyGUI::IntCoord(0,0,88,68),MyGUI::Align::Default, "Popup");
 	mi->setItemType(MyGUI::MenuItemType::Popup);
 	mi->setCaption("Windows");
-	pop[popCount]->addItem(_L("Camera Control"), MyGUI::MenuItemType::Normal, "cameratool");
-	pop[popCount]->addItem(_L("Friction Settings"), MyGUI::MenuItemType::Normal, "frictiongui");
-	pop[popCount]->addItem(_L("Show Console"), MyGUI::MenuItemType::Normal, "showConsole");
-	
+	//p->addItem(_L("Camera Control"), MyGUI::MenuItemType::Normal, "cameratool");
+	p->addItem(_L("Friction Settings"), MyGUI::MenuItemType::Normal, "frictiongui");
+	p->addItem(_L("Show Console"), MyGUI::MenuItemType::Normal, "showConsole");
+	pop.push_back(p);
 
-	// if you add a menu, fix NUM_POPUPMENUS
+	// === debug
+	mi = mainmenu->createWidget<MyGUI::MenuItem>("MenuBarButton", 0, 0, 60, menuHeight,  MyGUI::Align::Default); 
+	p = mi->createWidget<MyGUI::PopupMenu>(MyGUI::WidgetStyle::Popup, "PopupMenu",MyGUI::IntCoord(0,0,88,68),MyGUI::Align::Default, "Popup");
+	mi->setItemType(MyGUI::MenuItemType::Popup);
+	mi->setCaption("Debug");
+	p->addItem(_L("no visual debug"), MyGUI::MenuItemType::Normal, "debug-none");
+	p->addItem(_L("show Node numbers"), MyGUI::MenuItemType::Normal, "debug-node-numbers");
+	p->addItem(_L("show Beam numbers"), MyGUI::MenuItemType::Normal, "debug-beam-numbers");
+	p->addItem(_L("show Node&Beam numbers"), MyGUI::MenuItemType::Normal, "debug-nodenbeam-numbers");
+	p->addItem(_L("show Node mass"), MyGUI::MenuItemType::Normal, "debug-node-mass");
+	p->addItem(_L("show Node locked"), MyGUI::MenuItemType::Normal, "debug-node-locked");
+	p->addItem(_L("show Beam compression"), MyGUI::MenuItemType::Normal, "debug-beam-compression");
+	p->addItem(_L("show Beam broken"), MyGUI::MenuItemType::Normal, "debug-beam-broken");
+	p->addItem(_L("show Beam stress"), MyGUI::MenuItemType::Normal, "debug-beam-stress");
+	p->addItem(_L("show Beam strength"), MyGUI::MenuItemType::Normal, "debug-beam-strength");
+	p->addItem(_L("show Beam hydros"), MyGUI::MenuItemType::Normal, "debug-beam-hydros");
+	p->addItem(_L("show Beam commands"), MyGUI::MenuItemType::Normal, "debug-beam-commands");
+	pop.push_back(p);
 
 	// event callbacks
 	mainmenu->eventMenuCtrlAccept += MyGUI::newDelegate(this, &GUI_MainMenu::onMenuBtn);
@@ -179,6 +193,8 @@ void GUI_MainMenu::onMenuBtn(MyGUI::MenuCtrlPtr _sender, MyGUI::MenuItemPtr _ite
 
 	if(miname == _L("get new Vehicle") && mefl->person)
 	{
+		if(mefl->loading_state == NONE_LOADED)
+			return;
 		// get out first
 		if(BeamFactory::getSingleton().getCurrentTruckNumber() != -1)
 			BeamFactory::getSingleton().setCurrentTruck(-1);
@@ -239,6 +255,56 @@ void GUI_MainMenu::onMenuBtn(MyGUI::MenuCtrlPtr _sender, MyGUI::MenuItemPtr _ite
 	{
 		Console::getInstance().setVisible(true);
 	}
+	// the debug menu
+	else if(miname == _L("no visual debug"))
+	{
+		Beam *b = BeamFactory::getSingleton().getCurrentTruck();
+		if(b) b->setDebugOverlayState(0);
+	} else if(miname == _L("show Node numbers"))
+	{
+		Beam *b = BeamFactory::getSingleton().getCurrentTruck();
+		if(b) b->setDebugOverlayState(1);
+	} else if(miname == _L("show Beam numbers"))
+	{
+		Beam *b = BeamFactory::getSingleton().getCurrentTruck();
+		if(b) b->setDebugOverlayState(2);
+	} else if(miname == _L("show Node&Beam numbers"))
+	{
+		Beam *b = BeamFactory::getSingleton().getCurrentTruck();
+		if(b) b->setDebugOverlayState(3);
+	} else if(miname == _L("show Node mass"))
+	{
+		Beam *b = BeamFactory::getSingleton().getCurrentTruck();
+		if(b) b->setDebugOverlayState(4);
+	} else if(miname == _L("show Node locked"))
+	{
+		Beam *b = BeamFactory::getSingleton().getCurrentTruck();
+		if(b) b->setDebugOverlayState(5);
+	} else if(miname == _L("show Beam compression"))
+	{
+		Beam *b = BeamFactory::getSingleton().getCurrentTruck();
+		if(b) b->setDebugOverlayState(6);
+	} else if(miname == _L("show Beam broken"))
+	{
+		Beam *b = BeamFactory::getSingleton().getCurrentTruck();
+		if(b) b->setDebugOverlayState(7);
+	} else if(miname == _L("show Beam stress"))
+	{
+		Beam *b = BeamFactory::getSingleton().getCurrentTruck();
+		if(b) b->setDebugOverlayState(8);
+	} else if(miname == _L("show Beam strength"))
+	{
+		Beam *b = BeamFactory::getSingleton().getCurrentTruck();
+		if(b) b->setDebugOverlayState(9);
+	} else if(miname == _L("show Beam hydros"))
+	{
+		Beam *b = BeamFactory::getSingleton().getCurrentTruck();
+		if(b) b->setDebugOverlayState(10);
+	} else if(miname == _L("show Beam commands"))
+	{
+		Beam *b = BeamFactory::getSingleton().getCurrentTruck();
+		if(b) b->setDebugOverlayState(11);
+	}
 
 	//LOG(" menu button pressed: " + _item->getCaption());
 }
@@ -259,7 +325,7 @@ void GUI_MainMenu::updatePositionUponMousePosition(int x, int y)
 {
 	int h = mainmenu->getHeight();
 	bool focused = false;
-	for(int i=0;i<NUM_POPUPMENUS; i++)
+	for(unsigned int i=0;i<pop.size(); i++)
 		focused |= pop[i]->getVisible();
 
 	if(focused)

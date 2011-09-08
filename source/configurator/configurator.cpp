@@ -291,7 +291,6 @@ private:
 	wxCheckBox *hydrax;
 	wxCheckBox *rtshader;
 	wxCheckBox *dismap;
-	wxCheckBox *beamdebug;
 	wxCheckBox *autodl;
 	wxCheckBox *posstor;
 	wxCheckBox *extcam;
@@ -1154,10 +1153,6 @@ MyDialog::MyDialog(const wxString& title, MyApp *_app) : wxDialog(NULL, wxID_ANY
 	dcm->SetToolTip(_("Shows all Collision meshes in Red to be able to position them correctly. Only use for debugging!"));
 	y+=15;
 
-	beamdebug=new wxCheckBox(debugPanel, -1, _("Enable Visual Beam Debug"), wxPoint(10, y));
-	beamdebug->SetToolTip(_("Displays node numbers and more info along nodes and beams."));
-	y+=15;
-
 	dofdebug=new wxCheckBox(debugPanel, -1, _("Enable Depth of Field Debug"), wxPoint(10, y));
 	dofdebug->SetToolTip(_("Shows the DOF debug display on the screen in order to identify DOF problems"));
 	y+=15;
@@ -1920,7 +1915,6 @@ void MyDialog::SetDefaults()
 	dismap->SetValue(false);
 	autodl->SetValue(false);
 	posstor->SetValue(false);
-	beamdebug->SetValue(false);
 	extcam->SetValue(false);
 	mirror->SetValue(true);
 	envmap->SetValue(true);
@@ -1987,7 +1981,6 @@ void MyDialog::getSettingsControls()
 	settings["Hydrax"] = (hydrax->GetValue()) ? "Yes" : "No";
 	//settings["Use RTShader System"] = (rtshader->GetValue()) ? "Yes" : "No";
 	settings["disableOverViewMap"] = (dismap->GetValue()) ? "Yes" : "No";
-	settings["DebugBeams"] = (beamdebug->GetValue()) ? "Yes" : "No";
 	//settings["AutoDownload"] = (autodl->GetValue()) ? "Yes" : "No";
 	settings["Position Storage"] = (posstor->GetValue()) ? "Yes" : "No";
 	settings["GearboxMode"]= gearBoxMode->getSelectedValueAsSTDString();
@@ -2096,7 +2089,6 @@ void MyDialog::updateSettingsControls()
 	st = settings["External Camera Mode"]; if (st.length()>0) extcam->SetValue(st=="Static");
 	//st = settings["AutoDownload"]; if (st.length()>0) autodl->SetValue(st=="Yes");
 	st = settings["Position Storage"]; if (st.length()>0) posstor->SetValue(st=="Yes");
-	st = settings["DebugBeams"]; if (st.length()>0) beamdebug->SetValue(st=="Yes");
 	st = settings["Mirrors"]; if (st.length()>0) mirror->SetValue(st=="Yes");
 	st = settings["Creak Sound"]; if (st.length()>0) creaksound->SetValue(st=="No");
 	st = settings["Envmap"]; if (st.length()>0) envmap->SetValue(st=="Yes");
